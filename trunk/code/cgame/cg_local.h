@@ -377,62 +377,6 @@ typedef struct {
 	sfxHandle_t		sounds[MAX_CUSTOM_SOUNDS];
 } clientInfo_t;
 
-
-// each WP_* weapon enum has an associated weaponInfo_t
-// that contains media references necessary to present the
-// weapon and its effects
-typedef struct weaponInfo_s {
-	qboolean		registered;
-	gitem_t			*item;
-
-	qhandle_t		handsModel;			// the hands don't actually draw, they just position the weapon
-	qhandle_t		weaponModel;
-	qhandle_t		barrelModel;
-	qhandle_t		flashModel;
-
-	vec3_t			weaponMidpoint;		// so it will rotate centered instead of by tag
-
-	float			flashDlight;
-	vec3_t			flashDlightColor;
-	sfxHandle_t		flashSound[4];		// fast firing weapons randomly choose
-
-	qhandle_t		weaponIcon;
-	qhandle_t		ammoIcon;
-
-	qhandle_t		ammoModel;
-
-	qhandle_t		missileModel;
-	sfxHandle_t		missileSound;
-	void			(*missileTrailFunc)( centity_t *, const struct weaponInfo_s *wi );
-	float			missileDlight;
-	vec3_t			missileDlightColor;
-	int				missileRenderfx;
-
-	void			(*ejectBrassFunc)( centity_t * );
-
-	float			trailRadius;
-	float			wiTrailTime;
-
-	sfxHandle_t		readySound;
-	sfxHandle_t		firingSound;
-} weaponInfo_t;
-
-
-// each IT_* item has an associated itemInfo_t
-// that constains media references necessary to present the
-// item and its effects
-typedef struct {
-	qboolean		registered;
-	qhandle_t		models[MAX_ITEM_MODELS];
-	qhandle_t		icon;
-} itemInfo_t;
-
-
-typedef struct {
-	int				itemNum;
-} powerupInfo_t;
-
-
 #define MAX_SKULLTRAIL		10
 
 typedef struct {
@@ -1083,8 +1027,6 @@ typedef struct {
 extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
-extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
-extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
 extern	vmCvar_t		cg_centertime;
@@ -1368,7 +1310,6 @@ void CG_ShotgunFire( entityState_t *es );
 void CG_Bullet( vec3_t origin, int sourceEntityNum, vec3_t normal, qboolean flesh, int fleshEntityNum );
 
 void CG_RailTrail( clientInfo_t *ci, vec3_t start, vec3_t end );
-void CG_GrappleTrail( centity_t *ent, const weaponInfo_t *wi );
 void CG_AddViewWeapon (playerState_t *ps);
 void CG_AddPlayerWeapon( refEntity_t *parent, playerState_t *ps, centity_t *cent, int team );
 void CG_DrawWeaponSelect( void );

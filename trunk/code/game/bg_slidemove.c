@@ -308,13 +308,13 @@ void PM_StepSlideMove( qboolean gravity ) {
 		delta = pm->ps->origin[2] - start_o[2];
 		if ( delta > 2 ) {
 			if ( delta < 7 ) {
-				PM_AddEvent( EV_STEP_4 );
+			//	PM_AddEvent( EV_STEP_4 );
 			} else if ( delta < 11 ) {
-				PM_AddEvent( EV_STEP_8 );
+			//	PM_AddEvent( EV_STEP_8 );
 			} else if ( delta < 15 ) {
-				PM_AddEvent( EV_STEP_12 );
+			//	PM_AddEvent( EV_STEP_12 );
 			} else {
-				PM_AddEvent( EV_STEP_16 );
+				//PM_AddEvent( EV_STEP_16 );
 			}
 		}
 		if ( pm->debugLevel ) {

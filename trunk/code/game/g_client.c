@@ -1077,15 +1077,7 @@ void ClientSpawn(gentity_t *ent) {
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
 		spawnPoint = SelectSpectatorSpawnPoint ( 
 						spawn_origin, spawn_angles);
-	} else if (g_gametype.integer >= GT_CTF ) {
-		// all base oriented team games use the CTF spawn points
-		spawnPoint = SelectCTFSpawnPoint ( 
-						client->sess.sessionTeam, 
-						client->pers.teamState.state, 
-						spawn_origin, spawn_angles,
-						!!(ent->r.svFlags & SVF_BOT));
-	}
-	else
+	} else
 	{
 		// the first spawn should be at a good looking spot
 		if ( !client->pers.initialSpawn && client->pers.localClient )
@@ -1226,9 +1218,6 @@ void ClientSpawn(gentity_t *ent) {
 			// positively link the client, even if the command times are weird
 			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
 
-			tent = G_TempEntity(ent->client->ps.origin, EV_PLAYER_TELEPORT_IN);
-			tent->s.clientNum = ent->s.clientNum;
-
 			trap_LinkEntity (ent);
 		}
 	} else {
@@ -1277,24 +1266,6 @@ void ClientDisconnect( int clientNum ) {
 			&& level.clients[i].sess.spectatorClient == clientNum ) {
 			StopFollowing( &g_entities[i] );
 		}
-	}
-
-	// send effect if they were completely connected
-	if ( ent->client->pers.connected == CON_CONNECTED 
-		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
-		tent->s.clientNum = ent->s.clientNum;
-
-		// They don't get to take powerups with them!
-		// Especially important for stuff like CTF flags
-		TossClientItems( ent );
-#ifdef MISSIONPACK
-		TossClientPersistantPowerups( ent );
-		if( g_gametype.integer == GT_HARVESTER ) {
-			TossClientCubes( ent );
-		}
-#endif
-
 	}
 
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );

@@ -55,7 +55,7 @@ PM_AddEvent
 ===============
 */
 void PM_AddEvent( int newEvent ) {
-	BG_AddPredictableEventToPlayerstate( newEvent, 0, pm->ps );
+//	BG_AddPredictableEventToPlayerstate( newEvent, 0, pm->ps );
 }
 
 /*
@@ -378,7 +378,7 @@ static qboolean PM_CheckJump( void ) {
 
 	pm->ps->groundEntityNum = ENTITYNUM_NONE;
 	pm->ps->velocity[2] = JUMP_VELOCITY;
-	PM_AddEvent( EV_JUMP );
+//	PM_AddEvent( EV_JUMP );
 
 	if ( pm->cmd.forwardmove >= 0 ) {
 		PM_ForceLegsAnim( LEGS_JUMP );
@@ -895,23 +895,6 @@ static void PM_NoclipMove( void ) {
 
 //============================================================================
 
-/*
-================
-PM_FootstepForSurface
-
-Returns an event number apropriate for the groundsurface
-================
-*/
-static int PM_FootstepForSurface( void ) {
-	if ( pml.groundTrace.surfaceFlags & SURF_NOSTEPS ) {
-		return 0;
-	}
-	if ( pml.groundTrace.surfaceFlags & SURF_METALSTEPS ) {
-		return EV_FOOTSTEP_METAL;
-	}
-	return EV_FOOTSTEP;
-}
-
 
 /*
 =================
@@ -982,16 +965,16 @@ static void PM_CrashLand( void ) {
 	// want to take damage or play a crunch sound
 	if ( !(pml.groundTrace.surfaceFlags & SURF_NODAMAGE) )  {
 		if ( delta > 60 ) {
-			PM_AddEvent( EV_FALL_FAR );
+//			PM_AddEvent( EV_FALL_FAR );
 		} else if ( delta > 40 ) {
 			// this is a pain grunt, so don't play it if dead
 			if ( pm->ps->stats[STAT_HEALTH] > 0 ) {
-				PM_AddEvent( EV_FALL_MEDIUM );
+//				PM_AddEvent( EV_FALL_MEDIUM );
 			}
 		} else if ( delta > 7 ) {
-			PM_AddEvent( EV_FALL_SHORT );
+//			PM_AddEvent( EV_FALL_SHORT );
 		} else {
-			PM_AddEvent( PM_FootstepForSurface() );
+//			PM_AddEvent( PM_FootstepForSurface() );
 		}
 	}
 
@@ -1407,14 +1390,14 @@ static void PM_Footsteps( void ) {
 		if ( pm->waterlevel == 0 ) {
 			// on ground will only play sounds if running
 			if ( footstep && !pm->noFootsteps ) {
-				PM_AddEvent( PM_FootstepForSurface() );
+				//PM_AddEvent( PM_FootstepForSurface() );
 			}
 		} else if ( pm->waterlevel == 1 ) {
 			// splashing
-			PM_AddEvent( EV_FOOTSPLASH );
+//			PM_AddEvent( EV_FOOTSPLASH );
 		} else if ( pm->waterlevel == 2 ) {
 			// wading / swimming at surface
-			PM_AddEvent( EV_SWIM );
+//			PM_AddEvent( EV_SWIM );
 		} else if ( pm->waterlevel == 3 ) {
 			// no sound when completely underwater
 
@@ -1434,28 +1417,28 @@ static void PM_WaterEvents( void ) {		// FIXME?
 	// if just entered a water volume, play a sound
 	//
 	if (!pml.previous_waterlevel && pm->waterlevel) {
-		PM_AddEvent( EV_WATER_TOUCH );
+//		PM_AddEvent( EV_WATER_TOUCH );
 	}
 
 	//
 	// if just completely exited a water volume, play a sound
 	//
 	if (pml.previous_waterlevel && !pm->waterlevel) {
-		PM_AddEvent( EV_WATER_LEAVE );
+//		PM_AddEvent( EV_WATER_LEAVE );
 	}
 
 	//
 	// check for head just going under water
 	//
 	if (pml.previous_waterlevel != 3 && pm->waterlevel == 3) {
-		PM_AddEvent( EV_WATER_UNDER );
+//		PM_AddEvent( EV_WATER_UNDER );
 	}
 
 	//
 	// check for head just coming out of water
 	//
 	if (pml.previous_waterlevel == 3 && pm->waterlevel != 3) {
-		PM_AddEvent( EV_WATER_CLEAR );
+//		PM_AddEvent( EV_WATER_CLEAR );
 	}
 }
 
@@ -1478,7 +1461,7 @@ static void PM_BeginWeaponChange( int weapon ) {
 		return;
 	}
 
-	PM_AddEvent( EV_CHANGE_WEAPON );
+//	PM_AddEvent( EV_CHANGE_WEAPON );
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
 	PM_StartTorsoAnim( TORSO_DROP );
@@ -1535,173 +1518,7 @@ Generates weapon events and modifes the weapon counter
 ==============
 */
 static void PM_Weapon( void ) {
-	int		addTime;
-
-	// don't allow attack until all buttons are up
-	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
-		return;
-	}
-
-	// ignore if spectator
-	if ( pm->ps->persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
-		return;
-	}
-
-	// check for dead player
-	if ( pm->ps->stats[STAT_HEALTH] <= 0 ) {
-		pm->ps->weapon = WP_NONE;
-		return;
-	}
-
-	// check for item using
-	if ( pm->cmd.buttons & BUTTON_USE_HOLDABLE ) {
-		if ( ! ( pm->ps->pm_flags & PMF_USE_ITEM_HELD ) ) {
-			if ( bg_itemlist[pm->ps->stats[STAT_HOLDABLE_ITEM]].giTag == HI_MEDKIT
-				&& pm->ps->stats[STAT_HEALTH] >= (pm->ps->stats[STAT_MAX_HEALTH] + 25) ) {
-				// don't use medkit if at max health
-			} else {
-				pm->ps->pm_flags |= PMF_USE_ITEM_HELD;
-				PM_AddEvent( EV_USE_ITEM0 + bg_itemlist[pm->ps->stats[STAT_HOLDABLE_ITEM]].giTag );
-				pm->ps->stats[STAT_HOLDABLE_ITEM] = 0;
-			}
-			return;
-		}
-	} else {
-		pm->ps->pm_flags &= ~PMF_USE_ITEM_HELD;
-	}
-
-
-	// make weapon function
-	if ( pm->ps->weaponTime > 0 ) {
-		pm->ps->weaponTime -= pml.msec;
-	}
-
-	// check for weapon change
-	// can't change if weapon is firing, but can change
-	// again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
-		if ( pm->ps->weapon != pm->cmd.weapon ) {
-			PM_BeginWeaponChange( pm->cmd.weapon );
-		}
-	}
-
-	if ( pm->ps->weaponTime > 0 ) {
-		return;
-	}
-
-	// change weapon if time
-	if ( pm->ps->weaponstate == WEAPON_DROPPING ) {
-		PM_FinishWeaponChange();
-		return;
-	}
-
-	if ( pm->ps->weaponstate == WEAPON_RAISING ) {
-		pm->ps->weaponstate = WEAPON_READY;
-		if ( pm->ps->weapon == WP_GAUNTLET ) {
-			PM_StartTorsoAnim( TORSO_STAND2 );
-		} else {
-			PM_StartTorsoAnim( TORSO_STAND );
-		}
-		return;
-	}
-
-	// check for fire
-	if ( ! (pm->cmd.buttons & BUTTON_ATTACK) ) {
-		pm->ps->weaponTime = 0;
-		pm->ps->weaponstate = WEAPON_READY;
-		return;
-	}
-
-	// start the animation even if out of ammo
-	if ( pm->ps->weapon == WP_GAUNTLET ) {
-		// the guantlet only "fires" when it actually hits something
-		if ( !pm->gauntletHit ) {
-			pm->ps->weaponTime = 0;
-			pm->ps->weaponstate = WEAPON_READY;
-			return;
-		}
-		PM_StartTorsoAnim( TORSO_ATTACK2 );
-	} else {
-		PM_StartTorsoAnim( TORSO_ATTACK );
-	}
-
-	pm->ps->weaponstate = WEAPON_FIRING;
-
-	// check for out of ammo
-	if ( ! pm->ps->ammo[ pm->ps->weapon ] ) {
-		PM_AddEvent( EV_NOAMMO );
-		pm->ps->weaponTime += 500;
-		return;
-	}
-
-	// take an ammo away if not infinite
-	if ( pm->ps->ammo[ pm->ps->weapon ] != -1 ) {
-		pm->ps->ammo[ pm->ps->weapon ]--;
-	}
-
-	// fire weapon
-	PM_AddEvent( EV_FIRE_WEAPON );
-
-	switch( pm->ps->weapon ) {
-	default:
-	case WP_GAUNTLET:
-		addTime = 400;
-		break;
-	case WP_LIGHTNING:
-		addTime = 50;
-		break;
-	case WP_SHOTGUN:
-		addTime = 1000;
-		break;
-	case WP_MACHINEGUN:
-		addTime = 100;
-		break;
-	case WP_GRENADE_LAUNCHER:
-		addTime = 800;
-		break;
-	case WP_ROCKET_LAUNCHER:
-		addTime = 800;
-		break;
-	case WP_PLASMAGUN:
-		addTime = 100;
-		break;
-	case WP_RAILGUN:
-		addTime = 1500;
-		break;
-	case WP_BFG:
-		addTime = 200;
-		break;
-	case WP_GRAPPLING_HOOK:
-		addTime = 400;
-		break;
-#ifdef MISSIONPACK
-	case WP_NAILGUN:
-		addTime = 1000;
-		break;
-	case WP_PROX_LAUNCHER:
-		addTime = 800;
-		break;
-	case WP_CHAINGUN:
-		addTime = 30;
-		break;
-#endif
-	}
-
-#ifdef MISSIONPACK
-	if( bg_itemlist[pm->ps->stats[STAT_PERSISTANT_POWERUP]].giTag == PW_SCOUT ) {
-		addTime /= 1.5;
-	}
-	else
-	if( bg_itemlist[pm->ps->stats[STAT_PERSISTANT_POWERUP]].giTag == PW_AMMOREGEN ) {
-		addTime /= 1.3;
-  }
-  else
-#endif
-	if ( pm->ps->powerups[PW_HASTE] ) {
-		addTime /= 1.3;
-	}
-
-	pm->ps->weaponTime += addTime;
+	
 }
 
 /*
@@ -1715,7 +1532,7 @@ static void PM_Animate( void ) {
 		if ( pm->ps->torsoTimer == 0 ) {
 			PM_StartTorsoAnim( TORSO_GESTURE );
 			pm->ps->torsoTimer = TIMER_GESTURE;
-			PM_AddEvent( EV_TAUNT );
+//			PM_AddEvent( EV_TAUNT );
 		}
 #ifdef MISSIONPACK
 	} else if ( pm->cmd.buttons & BUTTON_GETFLAG ) {

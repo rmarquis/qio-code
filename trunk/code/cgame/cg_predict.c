@@ -100,12 +100,13 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 			continue;
 		}
 
-		if ( ent->solid == SOLID_BMODEL ) {
-			// special value for bmodel
-			cmodel = trap_CM_InlineModel( ent->modelindex );
-			VectorCopy( cent->lerpAngles, angles );
-			BG_EvaluateTrajectory( &cent->currentState.pos, cg.physicsTime, origin );
-		} else {
+		//if ( ent->solid == SOLID_BMODEL ) {
+		//	// special value for bmodel
+		//	cmodel = trap_CM_InlineModel( ent->modelindex );
+		//	VectorCopy( cent->lerpAngles, angles );
+		//	BG_EvaluateTrajectory( &cent->currentState.pos, cg.physicsTime, origin );
+		//} else
+		{
 			// encoded bbox
 			x = (ent->solid & 255);
 			zd = ((ent->solid>>8) & 255);
@@ -259,60 +260,7 @@ CG_TouchItem
 ===================
 */
 static void CG_TouchItem( centity_t *cent ) {
-	gitem_t		*item;
-
-	if ( !cg_predictItems.integer ) {
-		return;
-	}
-	if ( !BG_PlayerTouchesItem( &cg.predictedPlayerState, &cent->currentState, cg.time ) ) {
-		return;
-	}
-
-	// never pick an item up twice in a prediction
-	if ( cent->miscTime == cg.time ) {
-		return;
-	}
-
-	if ( !BG_CanItemBeGrabbed( cgs.gametype, &cent->currentState, &cg.predictedPlayerState ) ) {
-		return;		// can't hold it
-	}
-
-	item = &bg_itemlist[ cent->currentState.modelindex ];
-
-	// Special case for flags.  
-	// We don't predict touching our own flag
-#ifdef MISSIONPACK
-	if( cgs.gametype == GT_1FCTF ) {
-		if( item->giTag != PW_NEUTRALFLAG ) {
-			return;
-		}
-	}
-#endif
-	if( cgs.gametype == GT_CTF ) {
-		if (cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_RED &&
-			item->giTag == PW_REDFLAG)
-			return;
-		if (cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_BLUE &&
-			item->giTag == PW_BLUEFLAG)
-			return;
-	}
-
-	// grab it
-	BG_AddPredictableEventToPlayerstate( EV_ITEM_PICKUP, cent->currentState.modelindex , &cg.predictedPlayerState);
-
-	// remove it from the frame so it won't be drawn
-	cent->currentState.eFlags |= EF_NODRAW;
-
-	// don't touch it again this prediction
-	cent->miscTime = cg.time;
-
-	// if it's a weapon, give them some predicted ammo so the autoswitch will work
-	if ( item->giType == IT_WEAPON ) {
-		cg.predictedPlayerState.stats[ STAT_WEAPONS ] |= 1 << item->giTag;
-		if ( !cg.predictedPlayerState.ammo[ item->giTag ] ) {
-			cg.predictedPlayerState.ammo[ item->giTag ] = 1;
-		}
-	}
+	
 }
 
 
@@ -370,7 +318,7 @@ static void CG_TouchTriggerPrediction( void ) {
 		if ( ent->eType == ET_TELEPORT_TRIGGER ) {
 			cg.hyperspace = qtrue;
 		} else if ( ent->eType == ET_PUSH_TRIGGER ) {
-			BG_TouchJumpPad( &cg.predictedPlayerState, ent );
+
 		}
 	}
 
@@ -410,10 +358,8 @@ to ease the jerk.
 =================
 */
 void CG_PredictPlayerState( void ) {
-	int			cmdNum, current;
-	playerState_t	oldPlayerState;
+	int			cmdNum;
 	qboolean	moved;
-	usercmd_t	oldestCmd;
 	usercmd_t	latestCmd;
 
 	cg.hyperspace = qfalse;	// will be set if touching a trigger_teleport

@@ -329,128 +329,6 @@ typedef enum {
 #define	PLAYEREVENT_GAUNTLETREWARD		0x0002
 #define PLAYEREVENT_HOLYSHIT			0x0004
 
-// entityState_t->event values
-// entity events are for effects that take place relative
-// to an existing entities origin.  Very network efficient.
-
-// two bits at the top of the entityState->event field
-// will be incremented with each change in the event so
-// that an identical event started twice in a row can
-// be distinguished.  And off the value with ~EV_EVENT_BITS
-// to retrieve the actual event number
-#define	EV_EVENT_BIT1		0x00000100
-#define	EV_EVENT_BIT2		0x00000200
-#define	EV_EVENT_BITS		(EV_EVENT_BIT1|EV_EVENT_BIT2)
-
-#define	EVENT_VALID_MSEC	300
-
-typedef enum {
-	EV_NONE,
-
-	EV_FOOTSTEP,
-	EV_FOOTSTEP_METAL,
-	EV_FOOTSPLASH,
-	EV_FOOTWADE,
-	EV_SWIM,
-
-	EV_STEP_4,
-	EV_STEP_8,
-	EV_STEP_12,
-	EV_STEP_16,
-
-	EV_FALL_SHORT,
-	EV_FALL_MEDIUM,
-	EV_FALL_FAR,
-
-	EV_JUMP_PAD,			// boing sound at origin, jump sound on player
-
-	EV_JUMP,
-	EV_WATER_TOUCH,	// foot touches
-	EV_WATER_LEAVE,	// foot leaves
-	EV_WATER_UNDER,	// head touches
-	EV_WATER_CLEAR,	// head leaves
-
-	EV_ITEM_PICKUP,			// normal item pickups are predictable
-	EV_GLOBAL_ITEM_PICKUP,	// powerup / team sounds are broadcast to everyone
-
-	EV_NOAMMO,
-	EV_CHANGE_WEAPON,
-	EV_FIRE_WEAPON,
-
-	EV_USE_ITEM0,
-	EV_USE_ITEM1,
-	EV_USE_ITEM2,
-	EV_USE_ITEM3,
-	EV_USE_ITEM4,
-	EV_USE_ITEM5,
-	EV_USE_ITEM6,
-	EV_USE_ITEM7,
-	EV_USE_ITEM8,
-	EV_USE_ITEM9,
-	EV_USE_ITEM10,
-	EV_USE_ITEM11,
-	EV_USE_ITEM12,
-	EV_USE_ITEM13,
-	EV_USE_ITEM14,
-	EV_USE_ITEM15,
-
-	EV_ITEM_RESPAWN,
-	EV_ITEM_POP,
-	EV_PLAYER_TELEPORT_IN,
-	EV_PLAYER_TELEPORT_OUT,
-
-	EV_GRENADE_BOUNCE,		// eventParm will be the soundindex
-
-	EV_GENERAL_SOUND,
-	EV_GLOBAL_SOUND,		// no attenuation
-	EV_GLOBAL_TEAM_SOUND,
-
-	EV_BULLET_HIT_FLESH,
-	EV_BULLET_HIT_WALL,
-
-	EV_MISSILE_HIT,
-	EV_MISSILE_MISS,
-	EV_MISSILE_MISS_METAL,
-	EV_RAILTRAIL,
-	EV_SHOTGUN,
-	EV_BULLET,				// otherEntity is the shooter
-
-	EV_PAIN,
-	EV_DEATH1,
-	EV_DEATH2,
-	EV_DEATH3,
-	EV_OBITUARY,
-
-	EV_POWERUP_QUAD,
-	EV_POWERUP_BATTLESUIT,
-	EV_POWERUP_REGEN,
-
-	EV_GIB_PLAYER,			// gib a previously living player
-	EV_SCOREPLUM,			// score plum
-
-//#ifdef MISSIONPACK
-	EV_PROXIMITY_MINE_STICK,
-	EV_PROXIMITY_MINE_TRIGGER,
-	EV_KAMIKAZE,			// kamikaze explodes
-	EV_OBELISKEXPLODE,		// obelisk explodes
-	EV_OBELISKPAIN,			// obelisk is in pain
-	EV_INVUL_IMPACT,		// invulnerability sphere impact
-	EV_JUICED,				// invulnerability juiced effect
-	EV_LIGHTNINGBOLT,		// lightning bolt bounced of invulnerability sphere
-//#endif
-
-	EV_DEBUG_LINE,
-	EV_STOPLOOPINGSOUND,
-	EV_TAUNT,
-	EV_TAUNT_YES,
-	EV_TAUNT_NO,
-	EV_TAUNT_FOLLOWME,
-	EV_TAUNT_GETFLAG,
-	EV_TAUNT_GUARDBASE,
-	EV_TAUNT_PATROL
-
-} entity_event_t;
-
 
 typedef enum {
 	GTS_RED_CAPTURE,
@@ -606,53 +484,6 @@ typedef enum {
 
 //---------------------------------------------------------
 
-// gitem_t->type
-typedef enum {
-	IT_BAD,
-	IT_WEAPON,				// EFX: rotate + upscale + minlight
-	IT_AMMO,				// EFX: rotate
-	IT_ARMOR,				// EFX: rotate + minlight
-	IT_HEALTH,				// EFX: static external sphere + rotating internal
-	IT_POWERUP,				// instant on, timer based
-							// EFX: rotate + external ring that rotates
-	IT_HOLDABLE,			// single use, holdable item
-							// EFX: rotate + bob
-	IT_PERSISTANT_POWERUP,
-	IT_TEAM
-} itemType_t;
-
-#define MAX_ITEM_MODELS 4
-
-typedef struct gitem_s {
-	char		*classname;	// spawning name
-	char		*pickup_sound;
-	char		*world_model[MAX_ITEM_MODELS];
-
-	char		*icon;
-	char		*pickup_name;	// for printing on pickup
-
-	int			quantity;		// for ammo how much, or duration of powerup
-	itemType_t  giType;			// IT_* flags
-
-	int			giTag;
-
-	char		*precaches;		// string of all models and images this item will use
-	char		*sounds;		// string of all sounds this item will use
-} gitem_t;
-
-// included in both the game dll and the client
-extern	gitem_t	bg_itemlist[];
-extern	int		bg_numItems;
-
-gitem_t	*BG_FindItem( const char *pickupName );
-gitem_t	*BG_FindItemForWeapon( weapon_t weapon );
-gitem_t	*BG_FindItemForPowerup( powerup_t pw );
-gitem_t	*BG_FindItemForHoldable( holdable_t pw );
-#define	ITEM_INDEX(x) ((x)-bg_itemlist)
-
-qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const playerState_t *ps );
-
-
 // g_dmflags->integer flags
 #define	DF_NO_FALLING			8
 #define DF_FIXED_FOV			16
@@ -696,14 +527,9 @@ typedef enum {
 void	BG_EvaluateTrajectory( const trajectory_t *tr, int atTime, vec3_t result );
 void	BG_EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t result );
 
-void	BG_AddPredictableEventToPlayerstate( int newEvent, int eventParm, playerState_t *ps );
-
-void	BG_TouchJumpPad( playerState_t *ps, entityState_t *jumppad );
 
 void	BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap );
 void	BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s, int time, qboolean snap );
-
-qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTime );
 
 
 #define ARENAS_PER_TIER		4

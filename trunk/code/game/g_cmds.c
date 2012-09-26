@@ -207,95 +207,7 @@ Give items to a client
 */
 void Cmd_Give_f (gentity_t *ent)
 {
-	char		*name;
-	gitem_t		*it;
-	int			i;
-	qboolean	give_all;
-	gentity_t		*it_ent;
-	trace_t		trace;
 
-	if ( !CheatsOk( ent ) ) {
-		return;
-	}
-
-	name = ConcatArgs( 1 );
-
-	if (Q_stricmp(name, "all") == 0)
-		give_all = qtrue;
-	else
-		give_all = qfalse;
-
-	if (give_all || Q_stricmp( name, "health") == 0)
-	{
-		ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(name, "weapons") == 0)
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_NUM_WEAPONS) - 1 - 
-			( 1 << WP_GRAPPLING_HOOK ) - ( 1 << WP_NONE );
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(name, "ammo") == 0)
-	{
-		for ( i = 0 ; i < MAX_WEAPONS ; i++ ) {
-			ent->client->ps.ammo[i] = 999;
-		}
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(name, "armor") == 0)
-	{
-		ent->client->ps.stats[STAT_ARMOR] = 200;
-
-		if (!give_all)
-			return;
-	}
-
-	if (Q_stricmp(name, "excellent") == 0) {
-		ent->client->ps.persistant[PERS_EXCELLENT_COUNT]++;
-		return;
-	}
-	if (Q_stricmp(name, "impressive") == 0) {
-		ent->client->ps.persistant[PERS_IMPRESSIVE_COUNT]++;
-		return;
-	}
-	if (Q_stricmp(name, "gauntletaward") == 0) {
-		ent->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT]++;
-		return;
-	}
-	if (Q_stricmp(name, "defend") == 0) {
-		ent->client->ps.persistant[PERS_DEFEND_COUNT]++;
-		return;
-	}
-	if (Q_stricmp(name, "assist") == 0) {
-		ent->client->ps.persistant[PERS_ASSIST_COUNT]++;
-		return;
-	}
-
-	// spawn a specific item right on the player
-	if ( !give_all ) {
-		it = BG_FindItem (name);
-		if (!it) {
-			return;
-		}
-
-		it_ent = G_Spawn();
-		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
-		it_ent->classname = it->classname;
-		G_SpawnItem (it_ent, it);
-		FinishSpawningItem(it_ent );
-		memset( &trace, 0, sizeof( trace ) );
-		Touch_Item (it_ent, ent, &trace);
-		if (it_ent->inuse) {
-			G_FreeEntity( it_ent );
-		}
-	}
 }
 
 
@@ -809,15 +721,6 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	if ( other->client->pers.connected != CON_CONNECTED ) {
 		return;
 	}
-	if ( mode == SAY_TEAM  && !OnSameTeam(ent, other) ) {
-		return;
-	}
-	// no chatting to players in tournements
-	if ( (g_gametype.integer == GT_TOURNAMENT )
-		&& other->client->sess.sessionTeam == TEAM_FREE
-		&& ent->client->sess.sessionTeam != TEAM_FREE ) {
-		return;
-	}
 
 	trap_SendServerCommand( other-g_entities, va("%s \"%s%c%c%s\"", 
 		mode == SAY_TEAM ? "tchat" : "chat",
@@ -839,33 +742,11 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		mode = SAY_ALL;
 	}
 
-	switch ( mode ) {
-	default:
-	case SAY_ALL:
+
 		G_LogPrintf( "say: %s: %s\n", ent->client->pers.netname, chatText );
 		Com_sprintf (name, sizeof(name), "%s%c%c"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		color = COLOR_GREEN;
-		break;
-	case SAY_TEAM:
-		G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, chatText );
-		if (Team_GetLocationMsg(ent, location, sizeof(location)))
-			Com_sprintf (name, sizeof(name), EC"(%s%c%c"EC") (%s)"EC": ", 
-				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location);
-		else
-			Com_sprintf (name, sizeof(name), EC"(%s%c%c"EC")"EC": ", 
-				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
-		color = COLOR_CYAN;
-		break;
-	case SAY_TELL:
-		if (target && g_gametype.integer >= GT_TEAM &&
-			target->client->sess.sessionTeam == ent->client->sess.sessionTeam &&
-			Team_GetLocationMsg(ent, location, sizeof(location)))
-			Com_sprintf (name, sizeof(name), EC"[%s%c%c"EC"] (%s)"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE, location );
-		else
-			Com_sprintf (name, sizeof(name), EC"[%s%c%c"EC"]"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
-		color = COLOR_MAGENTA;
-		break;
-	}
+
 
 	Q_strncpyz( text, chatText, sizeof(text) );
 
@@ -1541,29 +1422,9 @@ Cmd_SetViewpos_f
 =================
 */
 void Cmd_SetViewpos_f( gentity_t *ent ) {
-	vec3_t		origin, angles;
-	char		buffer[MAX_TOKEN_CHARS];
-	int			i;
 
-	if ( !g_cheats.integer ) {
-		trap_SendServerCommand( ent-g_entities, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	if ( trap_Argc() != 5 ) {
-		trap_SendServerCommand( ent-g_entities, "print \"usage: setviewpos x y z yaw\n\"");
-		return;
-	}
 
-	VectorClear( angles );
-	for ( i = 0 ; i < 3 ; i++ ) {
-		trap_Argv( i + 1, buffer, sizeof( buffer ) );
-		origin[i] = atof( buffer );
-	}
 
-	trap_Argv( 4, buffer, sizeof( buffer ) );
-	angles[YAW] = atof( buffer );
-
-	TeleportPlayer( ent, origin, angles );
 }
 
 

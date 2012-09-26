@@ -119,32 +119,7 @@ Leave expanding blood puffs behind gibs
 ================
 */
 void CG_BloodTrail( localEntity_t *le ) {
-	int		t;
-	int		t2;
-	int		step;
-	vec3_t	newOrigin;
-	localEntity_t	*blood;
-
-	step = 150;
-	t = step * ( (cg.time - cg.frametime + step ) / step );
-	t2 = step * ( cg.time / step );
-
-	for ( ; t <= t2; t += step ) {
-		BG_EvaluateTrajectory( &le->pos, t, newOrigin );
-
-		blood = CG_SmokePuff( newOrigin, vec3_origin, 
-					  20,		// radius
-					  1, 1, 1, 1,	// color
-					  2000,		// trailTime
-					  t,		// startTime
-					  0,		// fadeInTime
-					  0,		// flags
-					  cgs.media.bloodTrailShader );
-		// use the optimized version
-		blood->leType = LE_FALL_SCALE_FADE;
-		// drop a total of 40 units over its lifetime
-		blood->pos.trDelta[2] = 40;
-	}
+	
 }
 
 
@@ -211,30 +186,7 @@ CG_ReflectVelocity
 ================
 */
 void CG_ReflectVelocity( localEntity_t *le, trace_t *trace ) {
-	vec3_t	velocity;
-	float	dot;
-	int		hitTime;
 
-	// reflect the velocity on the trace plane
-	hitTime = cg.time - cg.frametime + cg.frametime * trace->fraction;
-	BG_EvaluateTrajectoryDelta( &le->pos, hitTime, velocity );
-	dot = DotProduct( velocity, trace->plane.normal );
-	VectorMA( velocity, -2*dot, trace->plane.normal, le->pos.trDelta );
-
-	VectorScale( le->pos.trDelta, le->bounceFactor, le->pos.trDelta );
-
-	VectorCopy( trace->endpos, le->pos.trBase );
-	le->pos.trTime = cg.time;
-
-
-	// check for stop, making sure that even on low FPS systems it doesn't bobble
-	if ( trace->allsolid || 
-		( trace->plane.normal[2] > 0 && 
-		( le->pos.trDelta[2] < 40 || le->pos.trDelta[2] < -cg.frametime * le->pos.trDelta[2] ) ) ) {
-		le->pos.trType = TR_STATIONARY;
-	} else {
-
-	}
 }
 
 /*
@@ -243,76 +195,8 @@ CG_AddFragment
 ================
 */
 void CG_AddFragment( localEntity_t *le ) {
-	vec3_t	newOrigin;
-	trace_t	trace;
 
-	if ( le->pos.trType == TR_STATIONARY ) {
-		// sink into the ground if near the removal time
-		int		t;
-		float	oldZ;
-		
-		t = le->endTime - cg.time;
-		if ( t < SINK_TIME ) {
-			// we must use an explicit lighting origin, otherwise the
-			// lighting would be lost as soon as the origin went
-			// into the ground
-			VectorCopy( le->refEntity.origin, le->refEntity.lightingOrigin );
-			le->refEntity.renderfx |= RF_LIGHTING_ORIGIN;
-			oldZ = le->refEntity.origin[2];
-			le->refEntity.origin[2] -= 16 * ( 1.0 - (float)t / SINK_TIME );
-			trap_R_AddRefEntityToScene( &le->refEntity );
-			le->refEntity.origin[2] = oldZ;
-		} else {
-			trap_R_AddRefEntityToScene( &le->refEntity );
-		}
 
-		return;
-	}
-
-	// calculate new position
-	BG_EvaluateTrajectory( &le->pos, cg.time, newOrigin );
-
-	// trace a line from previous position to new position
-	CG_Trace( &trace, le->refEntity.origin, NULL, NULL, newOrigin, -1, CONTENTS_SOLID );
-	if ( trace.fraction == 1.0 ) {
-		// still in free fall
-		VectorCopy( newOrigin, le->refEntity.origin );
-
-		if ( le->leFlags & LEF_TUMBLE ) {
-			vec3_t angles;
-
-			BG_EvaluateTrajectory( &le->angles, cg.time, angles );
-			AnglesToAxis( angles, le->refEntity.axis );
-		}
-
-		trap_R_AddRefEntityToScene( &le->refEntity );
-
-		// add a blood trail
-		if ( le->leBounceSoundType == LEBS_BLOOD ) {
-			CG_BloodTrail( le );
-		}
-
-		return;
-	}
-
-	// if it is in a nodrop zone, remove it
-	// this keeps gibs from waiting at the bottom of pits of death
-	// and floating levels
-	if ( CG_PointContents( trace.endpos, 0 ) & CONTENTS_NODROP ) {
-		CG_FreeLocalEntity( le );
-		return;
-	}
-
-	// leave a mark
-	CG_FragmentBounceMark( le, &trace );
-
-	// do a bouncy sound
-	CG_FragmentBounceSound( le, &trace );
-
-	// reflect the velocity on the trace plane
-	CG_ReflectVelocity( le, &trace );
-
-	trap_R_AddRefEntityToScene( &le->refEntity );
 }
 
 /*
@@ -352,40 +236,7 @@ CG_AddMoveScaleFade
 ==================
 */
 static void CG_AddMoveScaleFade( localEntity_t *le ) {
-	refEntity_t	*re;
-	float		c;
-	vec3_t		delta;
-	float		len;
-
-	re = &le->refEntity;
-
-	if ( le->fadeInTime > le->startTime && cg.time < le->fadeInTime ) {
-		// fade / grow time
-		c = 1.0 - (float) ( le->fadeInTime - cg.time ) / ( le->fadeInTime - le->startTime );
-	}
-	else {
-		// fade / grow time
-		c = ( le->endTime - cg.time ) * le->lifeRate;
-	}
-
-	re->shaderRGBA[3] = 0xff * c * le->color[3];
-
-	if ( !( le->leFlags & LEF_PUFF_DONT_SCALE ) ) {
-		re->radius = le->radius * ( 1.0 - c ) + 8;
-	}
-
-	BG_EvaluateTrajectory( &le->pos, cg.time, re->origin );
-
-	// if the view would be "inside" the sprite, kill the sprite
-	// so it doesn't add too much overdraw
-	VectorSubtract( re->origin, cg.refdef.vieworg, delta );
-	len = VectorLength( delta );
-	if ( len < le->radius ) {
-		CG_FreeLocalEntity( le );
-		return;
-	}
-
-	trap_R_AddRefEntityToScene( re );
+	
 }
 
 

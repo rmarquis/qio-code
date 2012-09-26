@@ -69,12 +69,12 @@ void P_DamageFeedback( gentity_t *player ) {
 		client->ps.damageYaw = angles[YAW]/360.0 * 256;
 	}
 
-	// play an apropriate pain sound
-	if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) ) {
-		player->pain_debounce_time = level.time + 700;
-		G_AddEvent( player, EV_PAIN, player->health );
-		client->ps.damageEvent++;
-	}
+	//// play an apropriate pain sound
+	//if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) ) {
+	//	player->pain_debounce_time = level.time + 700;
+	//	G_AddEvent( player, EV_PAIN, player->health );
+	//	client->ps.damageEvent++;
+	//}
 
 
 	client->ps.damageCount = count;
@@ -149,7 +149,7 @@ void P_WorldEffects( gentity_t *ent ) {
 			&& ent->pain_debounce_time <= level.time	) {
 
 			if ( envirosuit ) {
-				G_AddEvent( ent, EV_POWERUP_BATTLESUIT, 0 );
+//				G_AddEvent( ent, EV_POWERUP_BATTLESUIT, 0 );
 			} else {
 				if (ent->watertype & CONTENTS_LAVA) {
 					G_Damage (ent, NULL, NULL, NULL, NULL, 
@@ -269,22 +269,10 @@ void	G_TouchTriggers( gentity_t *ent ) {
 			continue;
 		}
 
-		// ignore most entities if a spectator
-		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-			if ( hit->s.eType != ET_TELEPORT_TRIGGER &&
-				// this is ugly but adding a new ET_? type will
-				// most likely cause network incompatibilities
-				hit->touch != Touch_DoorTrigger) {
-				continue;
-			}
-		}
-
 		// use seperate code for determining if an item is picked up
 		// so you don't have to actually contact its bounding box
 		if ( hit->s.eType == ET_ITEM ) {
-			if ( !BG_PlayerTouchesItem( &ent->client->ps, &hit->s, level.time ) ) {
-				continue;
-			}
+
 		} else {
 			if ( !trap_EntityContact( mins, maxs, hit ) ) {
 				continue;
@@ -404,52 +392,13 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		client->timeResidual -= 1000;
 
 		// regenerate
-#ifdef MISSIONPACK
-		if( bg_itemlist[client->ps.stats[STAT_PERSISTANT_POWERUP]].giTag == PW_GUARD ) {
-			maxHealth = client->ps.stats[STAT_MAX_HEALTH] / 2;
-		}
-		else if ( client->ps.powerups[PW_REGEN] ) {
-			maxHealth = client->ps.stats[STAT_MAX_HEALTH];
-		}
-		else {
-			maxHealth = 0;
-		}
-		if( maxHealth ) {
-			if ( ent->health < maxHealth ) {
-				ent->health += 15;
-				if ( ent->health > maxHealth * 1.1 ) {
-					ent->health = maxHealth * 1.1;
-				}
-				G_AddEvent( ent, EV_POWERUP_REGEN, 0 );
-			} else if ( ent->health < maxHealth * 2) {
-				ent->health += 5;
-				if ( ent->health > maxHealth * 2 ) {
-					ent->health = maxHealth * 2;
-				}
-				G_AddEvent( ent, EV_POWERUP_REGEN, 0 );
-			}
-#else
-		if ( client->ps.powerups[PW_REGEN] ) {
-			if ( ent->health < client->ps.stats[STAT_MAX_HEALTH]) {
-				ent->health += 15;
-				if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] * 1.1 ) {
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 1.1;
-				}
-				G_AddEvent( ent, EV_POWERUP_REGEN, 0 );
-			} else if ( ent->health < client->ps.stats[STAT_MAX_HEALTH] * 2) {
-				ent->health += 5;
-				if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] * 2 ) {
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 2;
-				}
-				G_AddEvent( ent, EV_POWERUP_REGEN, 0 );
-			}
-#endif
-		} else {
+
+
 			// count down health when over max
 			if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] ) {
 				ent->health--;
 			}
-		}
+		
 
 		// count down armor when over max
 		if ( client->ps.stats[STAT_ARMOR] > client->ps.stats[STAT_MAX_HEALTH] ) {
@@ -526,128 +475,7 @@ but any server game effects are handled here
 ================
 */
 void ClientEvents( gentity_t *ent, int oldEventSequence ) {
-	int		i, j;
-	int		event;
-	gclient_t *client;
-	int		damage;
-	vec3_t	origin, angles;
-//	qboolean	fired;
-	gitem_t *item;
-	gentity_t *drop;
-
-	client = ent->client;
-
-	if ( oldEventSequence < client->ps.eventSequence - MAX_PS_EVENTS ) {
-		oldEventSequence = client->ps.eventSequence - MAX_PS_EVENTS;
-	}
-	for ( i = oldEventSequence ; i < client->ps.eventSequence ; i++ ) {
-		event = client->ps.events[ i & (MAX_PS_EVENTS-1) ];
-
-		switch ( event ) {
-		case EV_FALL_MEDIUM:
-		case EV_FALL_FAR:
-			if ( ent->s.eType != ET_PLAYER ) {
-				break;		// not in the player model
-			}
-			if ( g_dmflags.integer & DF_NO_FALLING ) {
-				break;
-			}
-			if ( event == EV_FALL_FAR ) {
-				damage = 10;
-			} else {
-				damage = 5;
-			}
-			ent->pain_debounce_time = level.time + 200;	// no normal pain sound
-			G_Damage (ent, NULL, NULL, NULL, NULL, damage, 0, MOD_FALLING);
-			break;
-
-		case EV_FIRE_WEAPON:
-			FireWeapon( ent );
-			break;
-
-		case EV_USE_ITEM1:		// teleporter
-			// drop flags in CTF
-			item = NULL;
-			j = 0;
-
-			if ( ent->client->ps.powerups[ PW_REDFLAG ] ) {
-				item = BG_FindItemForPowerup( PW_REDFLAG );
-				j = PW_REDFLAG;
-			} else if ( ent->client->ps.powerups[ PW_BLUEFLAG ] ) {
-				item = BG_FindItemForPowerup( PW_BLUEFLAG );
-				j = PW_BLUEFLAG;
-			} else if ( ent->client->ps.powerups[ PW_NEUTRALFLAG ] ) {
-				item = BG_FindItemForPowerup( PW_NEUTRALFLAG );
-				j = PW_NEUTRALFLAG;
-			}
-
-			if ( item ) {
-				drop = Drop_Item( ent, item, 0 );
-				// decide how many seconds it has left
-				drop->count = ( ent->client->ps.powerups[ j ] - level.time ) / 1000;
-				if ( drop->count < 1 ) {
-					drop->count = 1;
-				}
-
-				ent->client->ps.powerups[ j ] = 0;
-			}
-
-#ifdef MISSIONPACK
-			if ( g_gametype.integer == GT_HARVESTER ) {
-				if ( ent->client->ps.generic1 > 0 ) {
-					if ( ent->client->sess.sessionTeam == TEAM_RED ) {
-						item = BG_FindItem( "Blue Cube" );
-					} else {
-						item = BG_FindItem( "Red Cube" );
-					}
-					if ( item ) {
-						for ( j = 0; j < ent->client->ps.generic1; j++ ) {
-							drop = Drop_Item( ent, item, 0 );
-							if ( ent->client->sess.sessionTeam == TEAM_RED ) {
-								drop->spawnflags = TEAM_BLUE;
-							} else {
-								drop->spawnflags = TEAM_RED;
-							}
-						}
-					}
-					ent->client->ps.generic1 = 0;
-				}
-			}
-#endif
-			SelectSpawnPoint( ent->client->ps.origin, origin, angles, qfalse );
-			TeleportPlayer( ent, origin, angles );
-			break;
-
-		case EV_USE_ITEM2:		// medkit
-			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH] + 25;
-
-			break;
-
-#ifdef MISSIONPACK
-		case EV_USE_ITEM3:		// kamikaze
-			// make sure the invulnerability is off
-			ent->client->invulnerabilityTime = 0;
-			// start the kamikze
-			G_StartKamikaze( ent );
-			break;
-
-		case EV_USE_ITEM4:		// portal
-			if( ent->client->portalID ) {
-				DropPortalSource( ent );
-			}
-			else {
-				DropPortalDestination( ent );
-			}
-			break;
-		case EV_USE_ITEM5:		// invulnerability
-			ent->client->invulnerabilityTime = level.time + 10000;
-			break;
-#endif
-
-		default:
-			break;
-		}
-	}
+	
 
 }
 
@@ -844,7 +672,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// Let go of the hook if we aren't firing
 	if ( client->ps.weapon == WP_GRAPPLING_HOOK &&
 		client->hook && !( ucmd->buttons & BUTTON_ATTACK ) ) {
-		Weapon_HookFree(client->hook);
+		//Weapon_HookFree(client->hook);
 	}
 
 	// set up for pmove
@@ -852,12 +680,12 @@ void ClientThink_real( gentity_t *ent ) {
 
 	memset (&pm, 0, sizeof(pm));
 
-	// check for the hit-scan gauntlet, don't let the action
-	// go through as an attack unless it actually hits something
-	if ( client->ps.weapon == WP_GAUNTLET && !( ucmd->buttons & BUTTON_TALK ) &&
-		( ucmd->buttons & BUTTON_ATTACK ) && client->ps.weaponTime <= 0 ) {
-		pm.gauntletHit = CheckGauntletAttack( ent );
-	}
+	//// check for the hit-scan gauntlet, don't let the action
+	//// go through as an attack unless it actually hits something
+	//if ( client->ps.weapon == WP_GAUNTLET && !( ucmd->buttons & BUTTON_TALK ) &&
+	//	( ucmd->buttons & BUTTON_ATTACK ) && client->ps.weaponTime <= 0 ) {
+	//	pm.gauntletHit = CheckGauntletAttack( ent );
+	//}
 
 	if ( ent->flags & FL_FORCE_GESTURE ) {
 		ent->flags &= ~FL_FORCE_GESTURE;

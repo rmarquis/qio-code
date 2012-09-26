@@ -557,10 +557,7 @@ Adds an event+parm and twiddles the event counter
 ===============
 */
 void G_AddPredictableEvent( gentity_t *ent, int event, int eventParm ) {
-	if ( !ent->client ) {
-		return;
-	}
-	BG_AddPredictableEventToPlayerstate( event, eventParm, &ent->client->ps );
+
 }
 
 
@@ -572,27 +569,7 @@ Adds an event+parm and twiddles the event counter
 ===============
 */
 void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
-	int		bits;
-
-	if ( !event ) {
-		G_Printf( "G_AddEvent: zero event added for entity %i\n", ent->s.number );
-		return;
-	}
-
-	// clients need to add the event in playerState_t instead of entityState_t
-	if ( ent->client ) {
-		bits = ent->client->ps.externalEvent & EV_EVENT_BITS;
-		bits = ( bits + EV_EVENT_BIT1 ) & EV_EVENT_BITS;
-		ent->client->ps.externalEvent = event | bits;
-		ent->client->ps.externalEventParm = eventParm;
-		ent->client->ps.externalEventTime = level.time;
-	} else {
-		bits = ent->s.event & EV_EVENT_BITS;
-		bits = ( bits + EV_EVENT_BIT1 ) & EV_EVENT_BITS;
-		ent->s.event = event | bits;
-		ent->s.eventParm = eventParm;
-	}
-	ent->eventTime = level.time;
+	
 }
 
 
@@ -602,10 +579,7 @@ G_Sound
 =============
 */
 void G_Sound( gentity_t *ent, int channel, int soundIndex ) {
-	gentity_t	*te;
 
-	te = G_TempEntity( ent->r.currentOrigin, EV_GENERAL_SOUND );
-	te->s.eventParm = soundIndex;
 }
 
 

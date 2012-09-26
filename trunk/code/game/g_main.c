@@ -474,20 +474,11 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// reserve some spots for dead player bodies
 	InitBodyQue();
 
-	ClearRegisteredItems();
-
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
 	// general initialization
 	G_FindTeams();
-
-	// make sure we have flags for CTF, etc
-	if( g_gametype.integer >= GT_TEAM ) {
-		G_CheckTeamItems();
-	}
-
-	SaveRegisteredItems();
 
 	G_Printf ("-----------------------------------\n");
 
@@ -1751,28 +1742,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		// clear events that are too old
-		if ( level.time - ent->eventTime > EVENT_VALID_MSEC ) {
-			if ( ent->s.event ) {
-				ent->s.event = 0;	// &= EV_EVENT_BITS;
-				if ( ent->client ) {
-					ent->client->ps.externalEvent = 0;
-					// predicted events should never be set to zero
-					//ent->client->ps.events[0] = 0;
-					//ent->client->ps.events[1] = 0;
-				}
-			}
-			if ( ent->freeAfterEvent ) {
-				// tempEntities or dropped items completely go away after their event
-				G_FreeEntity( ent );
-				continue;
-			} else if ( ent->unlinkAfterEvent ) {
-				// items that will respawn will hide themselves after their pickup event
-				ent->unlinkAfterEvent = qfalse;
-				trap_UnlinkEntity( ent );
-			}
-		}
-
 		// temporary entities don't think
 		if ( ent->freeAfterEvent ) {
 			continue;
@@ -1783,17 +1752,17 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		if ( ent->s.eType == ET_MISSILE ) {
-			G_RunMissile( ent );
+			//G_RunMissile( ent );
 			continue;
 		}
 
 		if ( ent->s.eType == ET_ITEM || ent->physicsObject ) {
-			G_RunItem( ent );
+
 			continue;
 		}
 
 		if ( ent->s.eType == ET_MOVER ) {
-			G_RunMover( ent );
+			//G_RunMover( ent );
 			continue;
 		}
 
@@ -1818,9 +1787,6 @@ void G_RunFrame( int levelTime ) {
 
 	// see if it is time to end the level
 	CheckExitRules();
-
-	// update to team status?
-	CheckTeamStatus();
 
 	// cancel vote if timed out
 	CheckVote();

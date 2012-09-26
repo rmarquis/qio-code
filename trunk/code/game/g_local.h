@@ -173,7 +173,6 @@ struct gentity_s {
 	float		wait;
 	float		random;
 
-	gitem_t		*item;			// for bonus items
 };
 
 
@@ -431,29 +430,6 @@ void SetTeam( gentity_t *ent, char *s );
 void Cmd_FollowCycle_f( gentity_t *ent, int dir );
 
 //
-// g_items.c
-//
-void G_CheckTeamItems( void );
-void G_RunItem( gentity_t *ent );
-void RespawnItem( gentity_t *ent );
-
-void UseHoldableItem( gentity_t *ent );
-void PrecacheItem (gitem_t *it);
-gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle );
-gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity );
-void SetRespawn (gentity_t *ent, float delay);
-void G_SpawnItem (gentity_t *ent, gitem_t *item);
-void FinishSpawningItem( gentity_t *ent );
-void Think_Weapon (gentity_t *ent);
-int ArmorIndex (gentity_t *ent);
-void	Add_Ammo (gentity_t *ent, int weapon, int count);
-void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace);
-
-void ClearRegisteredItems( void );
-void RegisterItem( gitem_t *item );
-void SaveRegisteredItems( void );
-
-//
 // g_utils.c
 //
 int G_ModelIndex( char *name );
@@ -507,55 +483,6 @@ void TossClientCubes( gentity_t *self );
 #ifdef MISSIONPACK
 #define DAMAGE_NO_TEAM_PROTECTION	0x00000010  // armor, shields, invulnerability, and godmode have no effect
 #endif
-
-//
-// g_missile.c
-//
-void G_RunMissile( gentity_t *ent );
-
-gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir);
-gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir);
-gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
-#ifdef MISSIONPACK
-gentity_t *fire_nail( gentity_t *self, vec3_t start, vec3_t forward, vec3_t right, vec3_t up );
-gentity_t *fire_prox( gentity_t *self, vec3_t start, vec3_t aimdir );
-#endif
-
-
-//
-// g_mover.c
-//
-void G_RunMover( gentity_t *ent );
-void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace );
-
-//
-// g_trigger.c
-//
-void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace );
-
-
-//
-// g_misc.c
-//
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
-#ifdef MISSIONPACK
-void DropPortalSource( gentity_t *ent );
-void DropPortalDestination( gentity_t *ent );
-#endif
-
-
-//
-// g_weapon.c
-//
-qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
-void SnapVectorTowards( vec3_t v, vec3_t to );
-qboolean CheckGauntletAttack( gentity_t *ent );
-void Weapon_HookFree (gentity_t *ent);
-void Weapon_HookThink (gentity_t *ent);
-
 
 //
 // g_client.c
@@ -624,13 +551,6 @@ void ClientCommand( int clientNum );
 void ClientThink( int clientNum );
 void ClientEndFrame( gentity_t *ent );
 void G_RunClient( gentity_t *ent );
-
-//
-// g_team.c
-//
-qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 );
-void Team_CheckDroppedItem( gentity_t *dropped );
-qboolean CheckObeliskAttack( gentity_t *obelisk, gentity_t *attacker );
 
 //
 // g_mem.c
