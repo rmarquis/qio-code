@@ -655,38 +655,6 @@ void UpdateTournamentInfo( void );
 void SpawnModelsOnVictoryPads( void );
 void Svcmd_AbortPodium_f( void );
 
-//
-// g_bot.c
-//
-void G_InitBots( qboolean restart );
-char *G_GetBotInfoByNumber( int num );
-char *G_GetBotInfoByName( const char *name );
-void G_CheckBotSpawn( void );
-void G_RemoveQueuedBotBegin( int clientNum );
-qboolean G_BotConnect( int clientNum, qboolean restart );
-void Svcmd_AddBot_f( void );
-void Svcmd_BotList_f( void );
-void BotInterbreedEndMatch( void );
-
-// ai_main.c
-#define MAX_FILEPATH			144
-
-//bot settings
-typedef struct bot_settings_s
-{
-	char characterfile[MAX_FILEPATH];
-	float skill;
-	char team[MAX_FILEPATH];
-} bot_settings_t;
-
-int BotAISetup( int restart );
-int BotAIShutdown( int restart );
-int BotAILoadMap( int restart );
-int BotAISetupClient(int client, struct bot_settings_s *settings, qboolean restart);
-int BotAIShutdownClient( int client, qboolean restart );
-int BotAIStartFrame( int time );
-void BotTestAAS(vec3_t origin);
-
 #include "g_team.h" // teamplay specific stuff
 
 
@@ -789,9 +757,6 @@ int		trap_BotAllocateClient( void );
 void	trap_BotFreeClient( int clientNum );
 void	trap_GetUsercmd( int clientNum, usercmd_t *cmd );
 qboolean	trap_GetEntityToken( char *buffer, int bufferSize );
-
-int		trap_DebugPolygonCreate(int color, int numPoints, vec3_t *points);
-void	trap_DebugPolygonDelete(int id);
 
 int		trap_BotLibSetup( void );
 int		trap_BotLibShutdown( void );

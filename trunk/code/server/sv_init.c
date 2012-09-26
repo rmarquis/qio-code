@@ -507,7 +507,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	for (i = 0;i < 3; i++)
 	{
 		VM_Call (gvm, GAME_RUN_FRAME, sv.time);
-		SV_BotFrame (sv.time);
+	//	SV_BotFrame (sv.time);
 		sv.time += 100;
 		svs.time += 100;
 	}
@@ -564,7 +564,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 
 	// run another frame to allow things to look at all the players
 	VM_Call (gvm, GAME_RUN_FRAME, sv.time);
-	SV_BotFrame (sv.time);
+	//SV_BotFrame (sv.time);
 	sv.time += 100;
 	svs.time += 100;
 
@@ -688,12 +688,6 @@ void SV_Init (void)
 #endif
 	sv_banFile = Cvar_Get("sv_banFile", "serverbans.dat", CVAR_ARCHIVE);
 
-	// initialize bot cvars so they are listed and can be set before loading the botlib
-	SV_BotInitCvars();
-
-	// init the botlib here because we need the pre-compiler in the UI
-	SV_BotInitBotLib();
-	
 	// Load saved bans
 	Cbuf_AddText("rehashbans\n");
 }

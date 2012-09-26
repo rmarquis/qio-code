@@ -276,20 +276,7 @@ PC_SourceError
 =================
 */
 static __attribute__ ((format (printf, 2, 3))) void PC_SourceError(int handle, char *format, ...) {
-	int line;
-	char filename[128];
-	va_list argptr;
-	static char string[4096];
 
-	va_start (argptr, format);
-	Q_vsnprintf (string, sizeof(string), format, argptr);
-	va_end (argptr);
-
-	filename[0] = '\0';
-	line = 0;
-	trap_PC_SourceFileAndLine(handle, filename, &line);
-
-	Com_Printf(S_COLOR_RED "ERROR: %s, line %d: %s\n", filename, line, string);
 }
 
 /*
@@ -334,25 +321,8 @@ PC_Float_Parse
 =================
 */
 qboolean PC_Float_Parse(int handle, float *f) {
-	pc_token_t token;
-	int negative = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
 		return qfalse;
-	if (token.string[0] == '-') {
-		if (!trap_PC_ReadToken(handle, &token))
-			return qfalse;
-		negative = qtrue;
-	}
-	if (token.type != TT_NUMBER) {
-		PC_SourceError(handle, "expected float but found %s", token.string);
-		return qfalse;
-	}
-	if (negative)
-		*f = -token.floatvalue;
-	else
-		*f = token.floatvalue;
-	return qtrue;
 }
 
 /*
@@ -414,24 +384,9 @@ PC_Int_Parse
 =================
 */
 qboolean PC_Int_Parse(int handle, int *i) {
-	pc_token_t token;
-	int negative = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
 		return qfalse;
-	if (token.string[0] == '-') {
-		if (!trap_PC_ReadToken(handle, &token))
-			return qfalse;
-		negative = qtrue;
-	}
-	if (token.type != TT_NUMBER) {
-		PC_SourceError(handle, "expected integer but found %s", token.string);
-		return qfalse;
-	}
-	*i = token.intvalue;
-	if (negative)
-		*i = - *i;
-	return qtrue;
+
 }
 
 /*
@@ -492,13 +447,9 @@ PC_String_Parse
 =================
 */
 qboolean PC_String_Parse(int handle, const char **out) {
-	pc_token_t token;
 
-	if (!trap_PC_ReadToken(handle, &token))
 		return qfalse;
-	
-	*(out) = String_Alloc(token.string);
-    return qtrue;
+
 }
 
 /*
@@ -507,36 +458,9 @@ PC_Script_Parse
 =================
 */
 qboolean PC_Script_Parse(int handle, const char **out) {
-	char script[1024];
-	pc_token_t token;
 
-	memset(script, 0, sizeof(script));
-	// scripts start with { and have ; separated command lists.. commands are command, arg.. 
-	// basically we want everything between the { } as it will be interpreted at run time
-  
-	if (!trap_PC_ReadToken(handle, &token))
-		return qfalse;
-	if (Q_stricmp(token.string, "{") != 0) {
 	    return qfalse;
-	}
 
-	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token))
-			return qfalse;
-
-		if (Q_stricmp(token.string, "}") == 0) {
-			*out = String_Alloc(script);
-			return qtrue;
-		}
-
-		if (token.string[1] != '\0') {
-			Q_strcat(script, 1024, va("\"%s\"", token.string));
-		} else {
-			Q_strcat(script, 1024, token.string);
-		}
-		Q_strcat(script, 1024, " ");
-	}
-	return qfalse;
 }
 
 // display, window, menu, item code
@@ -4442,26 +4366,16 @@ qboolean ItemParse_model_fovy( itemDef_t *item, int handle ) {
 
 // model_rotation <integer>
 qboolean ItemParse_model_rotation( itemDef_t *item, int handle ) {
-	modelDef_t *modelPtr;
-	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
 
-	if (!PC_Int_Parse(handle, &modelPtr->rotationSpeed)) {
 		return qfalse;
-	}
-	return qtrue;
+
 }
 
 // model_angle <integer>
 qboolean ItemParse_model_angle( itemDef_t *item, int handle ) {
-	modelDef_t *modelPtr;
-	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
 
-	if (!PC_Int_Parse(handle, &modelPtr->angle)) {
 		return qfalse;
-	}
-	return qtrue;
+
 }
 
 // rect <rectangle>
@@ -4902,86 +4816,14 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	multiPtr->count = 0;
 	multiPtr->strDef = qtrue;
 
-	if (!trap_PC_ReadToken(handle, &token))
 		return qfalse;
-	if (*token.string != '{') {
-		return qfalse;
-	}
-
-	pass = 0;
-	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token)) {
-			PC_SourceError(handle, "end of file inside menu item");
-			return qfalse;
-		}
-
-		if (*token.string == '}') {
-			return qtrue;
-		}
-
-		if (*token.string == ',' || *token.string == ';') {
-			continue;
-		}
-
-		if (pass == 0) {
-			multiPtr->cvarList[multiPtr->count] = String_Alloc(token.string);
-			pass = 1;
-		} else {
-			multiPtr->cvarStr[multiPtr->count] = String_Alloc(token.string);
-			pass = 0;
-			multiPtr->count++;
-			if (multiPtr->count >= MAX_MULTI_CVARS) {
-				return qfalse;
-			}
-		}
-
-	}
-	return qfalse;
+	
 }
 
 qboolean ItemParse_cvarFloatList( itemDef_t *item, int handle ) {
-	pc_token_t token;
-	multiDef_t *multiPtr;
 	
-	Item_ValidateTypeData(item);
-	if (!item->typeData)
 		return qfalse;
-	multiPtr = (multiDef_t*)item->typeData;
-	multiPtr->count = 0;
-	multiPtr->strDef = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
-		return qfalse;
-	if (*token.string != '{') {
-		return qfalse;
-	}
-
-	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token)) {
-			PC_SourceError(handle, "end of file inside menu item");
-			return qfalse;
-		}
-
-		if (*token.string == '}') {
-			return qtrue;
-		}
-
-		if (*token.string == ',' || *token.string == ';') {
-			continue;
-		}
-
-		multiPtr->cvarList[multiPtr->count] = String_Alloc(token.string);
-		if (!PC_Float_Parse(handle, &multiPtr->cvarValue[multiPtr->count])) {
-			return qfalse;
-		}
-
-		multiPtr->count++;
-		if (multiPtr->count >= MAX_MULTI_CVARS) {
-			return qfalse;
-		}
-
-	}
-	return qfalse;
 }
 
 
@@ -5135,32 +4977,8 @@ qboolean Item_Parse(int handle, itemDef_t *item) {
 	keywordHash_t *key;
 
 
-	if (!trap_PC_ReadToken(handle, &token))
 		return qfalse;
-	if (*token.string != '{') {
-		return qfalse;
-	}
-	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token)) {
-			PC_SourceError(handle, "end of file inside menu item");
-			return qfalse;
-		}
 
-		if (*token.string == '}') {
-			return qtrue;
-		}
-
-		key = KeywordHash_Find(itemParseKeywordHash, token.string);
-		if (!key) {
-			PC_SourceError(handle, "unknown menu item keyword %s", token.string);
-			continue;
-		}
-		if ( !key->func(item, handle) ) {
-			PC_SourceError(handle, "couldn't parse menu item keyword %s", token.string);
-			return qfalse;
-		}
-	}
-	return qfalse;
 }
 
 
@@ -5542,35 +5360,9 @@ qboolean Menu_Parse(int handle, menuDef_t *menu) {
 	pc_token_t token;
 	keywordHash_t *key;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	
 		return qfalse;
-	if (*token.string != '{') {
-		return qfalse;
-	}
-    
-	while ( 1 ) {
 
-		memset(&token, 0, sizeof(pc_token_t));
-		if (!trap_PC_ReadToken(handle, &token)) {
-			PC_SourceError(handle, "end of file inside menu");
-			return qfalse;
-		}
-
-		if (*token.string == '}') {
-			return qtrue;
-		}
-
-		key = KeywordHash_Find(menuParseKeywordHash, token.string);
-		if (!key) {
-			PC_SourceError(handle, "unknown menu keyword %s", token.string);
-			continue;
-		}
-		if ( !key->func((itemDef_t*)menu, handle) ) {
-			PC_SourceError(handle, "couldn't parse menu keyword %s", token.string);
-			return qfalse;
-		}
-	}
-	return qfalse;
 }
 
 /*

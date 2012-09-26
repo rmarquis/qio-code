@@ -657,10 +657,6 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	// add the disconnect command
 	SV_SendServerCommand( drop, "disconnect \"%s\"", reason);
 
-	if ( isBot ) {
-		SV_BotFreeClient( drop - svs.clients );
-	}
-
 	// nuke user info
 	SV_SetUserinfo( drop - svs.clients, "" );
 	
