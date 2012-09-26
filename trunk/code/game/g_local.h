@@ -648,12 +648,6 @@ void G_InitSessionData( gclient_t *client, char *userinfo );
 void G_InitWorldSession( void );
 void G_WriteSessionData( void );
 
-//
-// g_arenas.c
-//
-void UpdateTournamentInfo( void );
-void SpawnModelsOnVictoryPads( void );
-void Svcmd_AbortPodium_f( void );
 
 #include "g_team.h" // teamplay specific stuff
 
