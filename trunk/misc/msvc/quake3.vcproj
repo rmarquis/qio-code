@@ -2218,10 +2218,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="asm"
-			>
-		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
