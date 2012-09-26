@@ -26,9 +26,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+#define C_ONLY
+
+#define STANDALONE
+
 #ifdef STANDALONE
   #define PRODUCT_NAME			"iofoo3"
-  #define BASEGAME			"foobar"
+  #define BASEGAME			"baseqio"
   #define CLIENT_WINDOW_TITLE     	"changeme"
   #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
   #define HOMEPATH_NAME_UNIX		".foo"
@@ -451,23 +455,24 @@ int Q_isnan(float x);
 #else
   // Q_ftol must expand to a function name so the pluggable renderer can take
   // its address
-  #define Q_ftol lrintf
+  //#define Q_ftol lrintf
+
+static long Q_ftol(float f) {
+	return (long)f;
+}
+
+  #define Q_round(v) do { if((v) < 0) (v) -= 0.5f; else (v) += 0.5f; (v) = Q_ftol((v)); } while(0)
+
   #define Q_SnapVector(vec)\
-	do\
-	{\
-		vec3_t *temp = (vec);\
-		\
-		(*temp)[0] = round((*temp)[0]);\
-		(*temp)[1] = round((*temp)[1]);\
-		(*temp)[2] = round((*temp)[2]);\
-	} while(0)
+		(vec)[0] = (int)((vec)[0]);\
+		(vec)[1] = (int)((vec)[1]);\
+		(vec)[2] = (int)((vec)[2]);
 #endif
 /*
 // if your system does not have lrintf() and round() you can try this block. Please also open a bug report at bugzilla.icculus.org
 // or write a mail to the ioq3 mailing list.
 #else
   #define Q_ftol(v) ((long) (v))
-  #define Q_round(v) do { if((v) < 0) (v) -= 0.5f; else (v) += 0.5f; (v) = Q_ftol((v)); } while(0)
   #define Q_SnapVector(vec) \
 	do\
 	{\
