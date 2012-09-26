@@ -783,75 +783,11 @@
 			Filter="h;hpp;hxx;hm;inl;fi;fd"
 			>
 			<File
-				RelativePath="..\..\code\game\ai_chat.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_cmd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_dmnet.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_dmq3.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_main.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_team.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\ai_vcmd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_aas.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_char.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_chat.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_gen.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_goal.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_move.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ai_weap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\be_ea.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\game\bg_local.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\game\bg_public.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\botlib.h"
 				>
 			</File>
 			<File
