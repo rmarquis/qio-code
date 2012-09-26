@@ -1221,17 +1221,17 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 		if ( !( Key_GetCatcher( ) & KEYCATCH_UI ) ) {
 			if ( clc.state == CA_ACTIVE && !clc.demoplaying ) {
-				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
+//				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
 			}
 			else if ( clc.state != CA_DISCONNECTED ) {
 				CL_Disconnect_f();
 				S_StopAllSounds();
-				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+//				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
 			}
 			return;
 		}
 
-		VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
+//		VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
 		return;
 	}
 
@@ -1240,7 +1240,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 		Console_Key( key );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		if ( uivm ) {
-			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
+//			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
 		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 		if ( cgvm ) {
@@ -1289,7 +1289,7 @@ void CL_KeyUpEvent( int key, unsigned time )
 		CL_ParseBinding( key, qfalse, time );
 
 	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
-		VM_Call( uivm, UI_KEY_EVENT, key, qfalse );
+//		VM_Call( uivm, UI_KEY_EVENT, key, qfalse );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
 		VM_Call( cgvm, CG_KEY_EVENT, key, qfalse );
 	}
@@ -1330,7 +1330,7 @@ void CL_CharEvent( int key ) {
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_UI )
 	{
-		VM_Call( uivm, UI_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
+//		VM_Call( uivm, UI_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) 
 	{

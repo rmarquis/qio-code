@@ -809,7 +809,7 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... )
 	int i;
 
 	if(!vm || !vm->name[0])
-		Com_Error(ERR_FATAL, "VM_Call with NULL vm");
+		return 0;
 
 	oldVM = currentVM;
 	currentVM = vm;
