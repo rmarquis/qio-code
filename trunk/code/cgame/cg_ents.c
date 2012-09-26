@@ -1016,6 +1016,8 @@ void CG_AddPacketEntities( void ) {
 									// no entities should be marked as interpolating
 	}
 
+	CG_Printf("frameInterpolation: %f\n",cg.frameInterpolation);
+
 	// the auto-rotating items will all have the same axis
 	cg.autoAngles[0] = 0;
 	cg.autoAngles[1] = ( cg.time & 2047 ) * 360 / 2048.0;
