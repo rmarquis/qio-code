@@ -37,10 +37,10 @@ clipHandle_t SV_ClipHandleForEntity( const sharedEntity_t *ent ) {
 		// explicit hulls in the BSP model
 		return CM_InlineModel( ent->s.modelindex );
 	}
-	if ( ent->r.svFlags & SVF_CAPSULE ) {
-		// create a temp capsule from bounding box sizes
-		return CM_TempBoxModel( ent->r.mins, ent->r.maxs, qtrue );
-	}
+	//if ( ent->r.svFlags & SVF_CAPSULE ) {
+	//	// create a temp capsule from bounding box sizes
+	//	return CM_TempBoxModel( ent->r.mins, ent->r.maxs, qtrue );
+	//}
 
 	// create a temp tree from bounding box sizes
 	return CM_TempBoxModel( ent->r.mins, ent->r.maxs, qfalse );
@@ -207,7 +207,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	int			leafs[MAX_TOTAL_ENT_LEAFS];
 	int			cluster;
 	int			num_leafs;
-	int			i, j, k;
+	int			i;
 	int			area;
 	int			lastLeaf;
 	float		*origin, *angles;
@@ -252,8 +252,8 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	}
 
 	// get the position
-	origin = gEnt->r.currentOrigin;
-	angles = gEnt->r.currentAngles;
+	origin = gEnt->s.origin;
+	angles = gEnt->s.angles;
 
 	// set the abs box
 	if ( gEnt->r.bmodel && (angles[0] || angles[1] || angles[2]) ) {
@@ -483,8 +483,8 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 	// might intersect, so do an exact clip
 	clipHandle = SV_ClipHandleForEntity (touch);
 
-	origin = touch->r.currentOrigin;
-	angles = touch->r.currentAngles;
+	origin = touch->s.origin;
+	angles = touch->s.angles;
 
 	if ( !touch->r.bmodel ) {
 		angles = vec3_origin;	// boxes don't rotate
@@ -554,8 +554,8 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity (touch);
 
-		origin = touch->r.currentOrigin;
-		angles = touch->r.currentAngles;
+		origin = touch->s.origin;
+		angles = touch->s.angles;
 
 
 		if ( !touch->r.bmodel ) {
@@ -674,12 +674,12 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		hit = SV_GentityNum( touch[i] );
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
-		angles = hit->r.currentAngles;
+		angles = hit->s.angles;
 		if ( !hit->r.bmodel ) {
 			angles = vec3_origin;	// boxes don't rotate
 		}
 
-		c2 = CM_TransformedPointContents (p, clipHandle, hit->r.currentOrigin, angles);
+		c2 = CM_TransformedPointContents (p, clipHandle, hit->s.origin, angles);
 
 		contents |= c2;
 	}

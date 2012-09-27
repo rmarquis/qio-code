@@ -216,8 +216,8 @@ qboolean	SV_EntityContact( vec3_t mins, vec3_t maxs, const sharedEntity_t *gEnt,
 	trace_t			trace;
 
 	// check for exact collision
-	origin = gEnt->r.currentOrigin;
-	angles = gEnt->r.currentAngles;
+	origin = gEnt->s.origin;
+	angles = gEnt->s.angles;
 
 	ch = SV_ClipHandleForEntity( gEnt );
 	CM_TransformedBoxTrace ( &trace, vec3_origin, vec3_origin, mins, maxs,

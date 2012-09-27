@@ -544,7 +544,6 @@ the simple info query.
 static void SVC_Status( netadr_t from ) {
 	char	status[MAX_MSGLEN];
 	int		statusLength;
-	int		playerLength;
 	char	infostring[MAX_INFO_STRING];
 
 	// Prevent using getstatus as an amplifier
@@ -901,10 +900,10 @@ static void SV_CalcPings( void ) {
 			cl->ping = 999;
 			continue;
 		}
-		if ( cl->gentity->r.svFlags & SVF_BOT ) {
-			cl->ping = 0;
-			continue;
-		}
+		//if ( cl->gentity->r.svFlags & SVF_BOT ) {
+		//	cl->ping = 0;
+		//	continue;
+		//}
 
 		total = 0;
 		count = 0;

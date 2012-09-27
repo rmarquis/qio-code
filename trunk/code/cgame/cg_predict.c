@@ -27,8 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "cg_local.h"
 
-static	pmove_t		cg_pmove;
-
 static	int			cg_numSolidEntities;
 static	centity_t	*cg_solidEntities[MAX_ENTITIES_IN_SNAPSHOT];
 static	int			cg_numTriggerEntities;
@@ -155,7 +153,6 @@ CG_PointContents
 ================
 */
 int		CG_PointContents( const vec3_t point, int passEntityNum ) {
-	int			i;
 	entityState_t	*ent;
 	centity_t	*cent;
 	clipHandle_t cmodel;
@@ -284,7 +281,7 @@ void CG_PredictPlayerState( void ) {
 
 
 	// demo playback just copies the moves
-	if ( cg.demoPlayback || (cg.snap->ps.pm_flags & PMF_FOLLOW) ) {
+	if ( cg.demoPlayback ) {
 		CG_InterpolatePlayerState( qfalse );
 		return;
 	}

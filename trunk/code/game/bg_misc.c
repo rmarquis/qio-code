@@ -61,9 +61,7 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 
 	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config
-	s->eFlags = ps->eFlags;
 
-	
 	s->groundEntityNum = ps->groundEntityNum;
 
 }
@@ -93,15 +91,13 @@ void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s
 	VectorCopy( ps->origin, s->origin );
 
 	// set the trDelta for flag direction and linear prediction
-	//VectorCopy( ps->velocity, s->velocity );
-
 	VectorCopy( ps->viewangles, s->angles );
 
 
 
 	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config
-	s->eFlags = ps->eFlags;
+///	s->eFlags = ps->eFlags;
 
 	s->groundEntityNum = ps->groundEntityNum;
 

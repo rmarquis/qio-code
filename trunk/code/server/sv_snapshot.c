@@ -330,31 +330,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			ent->s.number = e;
 		}
 
-		// entities can be flagged to explicitly not be sent to the client
-		if ( ent->r.svFlags & SVF_NOCLIENT ) {
-			continue;
-		}
-
-		// entities can be flagged to be sent to only one client
-		if ( ent->r.svFlags & SVF_SINGLECLIENT ) {
-			if ( ent->r.singleClient != frame->ps.clientNum ) {
-				continue;
-			}
-		}
-		// entities can be flagged to be sent to everyone but one client
-		if ( ent->r.svFlags & SVF_NOTSINGLECLIENT ) {
-			if ( ent->r.singleClient == frame->ps.clientNum ) {
-				continue;
-			}
-		}
-		// entities can be flagged to be sent to a given mask of clients
-		if ( ent->r.svFlags & SVF_CLIENTMASK ) {
-			if (frame->ps.clientNum >= 32)
-				Com_Error( ERR_DROP, "SVF_CLIENTMASK: clientNum >= 32" );
-			if (~ent->r.singleClient & (1 << frame->ps.clientNum))
-				continue;
-		}
-
 		svEnt = SV_SvEntityForGentity( ent );
 
 		// don't double add an entity through portals
@@ -363,11 +338,11 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		}
 
 		// broadcast entities are always sent
-		if ( ent->r.svFlags & SVF_BROADCAST ) {
+		//////////if ( ent->r.svFlags & SVF_BROADCAST ) {
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
-		}
-
+		////////}
+#if 0
 		// ignore if not touching a PV leaf
 		// check area
 		if ( !CM_AreasConnected( clientarea, svEnt->areanum ) ) {
@@ -423,7 +398,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		//	}
 		//	SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
 		//}
-
+#endif
 	}
 }
 
@@ -604,9 +579,9 @@ void SV_SendClientSnapshot( client_t *client ) {
 
 	// bots need to have their snapshots build, but
 	// the query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) {
-		return;
-	}
+	//if ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) {
+	//	return;
+	//}
 
 	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
 	msg.allowoverflow = qtrue;

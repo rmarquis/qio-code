@@ -81,114 +81,6 @@ int G_SoundIndex( char *name ) {
 //=====================================================================
 
 
-
-/*
-=============
-G_Find
-
-Searches all active entities for the next one that holds
-the matching string at fieldofs (use the FOFS() macro) in the structure.
-
-Searches beginning at the entity after from, or the beginning if NULL
-NULL will be returned if the end of the list is reached.
-
-=============
-*/
-gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
-{
-	char	*s;
-
-	if (!from)
-		from = g_entities;
-	else
-		from++;
-
-	for ( ; from < &g_entities[level.num_entities] ; from++)
-	{
-		if (!from->inuse)
-			continue;
-		s = *(char **) ((byte *)from + fieldofs);
-		if (!s)
-			continue;
-		if (!Q_stricmp (s, match))
-			return from;
-	}
-
-	return NULL;
-}
-
-
-/*
-=============
-TempVector
-
-This is just a convenience function
-for making temporary vectors for function calls
-=============
-*/
-float	*tv( float x, float y, float z ) {
-	static	int		index;
-	static	vec3_t	vecs[8];
-	float	*v;
-
-	// use an array so that multiple tempvectors won't collide
-	// for a while
-	v = vecs[index];
-	index = (index + 1)&7;
-
-	v[0] = x;
-	v[1] = y;
-	v[2] = z;
-
-	return v;
-}
-
-
-/*
-=============
-VectorToString
-
-This is just a convenience function
-for printing vectors
-=============
-*/
-char	*vtos( const vec3_t v ) {
-	static	int		index;
-	static	char	str[8][32];
-	char	*s;
-
-	// use an array so that multiple vtos won't collide
-	s = str[index];
-	index = (index + 1)&7;
-
-	Com_sprintf (s, 32, "(%i %i %i)", (int)v[0], (int)v[1], (int)v[2]);
-
-	return s;
-}
-
-
-float vectoyaw( const vec3_t vec ) {
-	float	yaw;
-	
-	if (vec[YAW] == 0 && vec[PITCH] == 0) {
-		yaw = 0;
-	} else {
-		if (vec[PITCH]) {
-			yaw = ( atan2( vec[YAW], vec[PITCH]) * 180 / M_PI );
-		} else if (vec[YAW] > 0) {
-			yaw = 90;
-		} else {
-			yaw = 270;
-		}
-		if (yaw < 0) {
-			yaw += 360;
-		}
-	}
-
-	return yaw;
-}
-
-
 void G_InitGentity( gentity_t *e ) {
 	e->inuse = qtrue;
 	e->classname = "noclass";
@@ -289,10 +181,6 @@ Marks the entity as free
 void G_FreeEntity( gentity_t *ed ) {
 	trap_UnlinkEntity (ed);		// unlink from world
 
-	if ( ed->neverFree ) {
-		return;
-	}
-
 	memset (ed, 0, sizeof(*ed));
 	ed->classname = "freed";
 	ed->freetime = level.time;
@@ -302,17 +190,3 @@ void G_FreeEntity( gentity_t *ed ) {
 
 
 //==============================================================================
-
-
-/*
-================
-G_SetOrigin
-
-Sets the pos trajectory for a fixed position
-================
-*/
-void G_SetOrigin( gentity_t *ent, vec3_t origin ) {
-	VectorCopy( origin, ent->s.origin );
-	VectorCopy( origin, ent->r.currentOrigin );
-}
-

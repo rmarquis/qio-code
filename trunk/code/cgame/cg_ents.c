@@ -69,39 +69,7 @@ CG_General
 ==================
 */
 static void CG_General( centity_t *cent ) {
-	refEntity_t			ent;
-	entityState_t		*s1;
-
-	s1 = &cent->currentState;
-
-	// if set to invisible, skip
-	if (!s1->modelindex) {
-		return;
-	}
-
-	memset (&ent, 0, sizeof(ent));
-
-	// set frame
-
-	ent.frame = s1->frame;
-	ent.oldframe = ent.frame;
-	ent.backlerp = 0;
-
-	VectorCopy( cent->lerpOrigin, ent.origin);
-	VectorCopy( cent->lerpOrigin, ent.oldorigin);
-
-	ent.hModel = cgs.gameModels[s1->modelindex];
-
-	// player model
-	if (s1->number == cg.snap->ps.clientNum) {
-		ent.renderfx |= RF_THIRD_PERSON;	// only draw from mirrors
-	}
-
-	// convert angles to axis
-	AnglesToAxis( cent->lerpAngles, ent.axis );
-
-	// add to refresh list
-	trap_R_AddRefEntityToScene (&ent);
+	
 }
 
 /*

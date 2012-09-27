@@ -88,10 +88,7 @@ void SV_UpdateConfigstrings(client_t *client)
 			continue;
 
 		// do not always send server info to all clients
-		if ( index == CS_SERVERINFO && client->gentity &&
-			(client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
-			continue;
-		}
+
 		SV_SendConfigstring(client, index);
 		client->csUpdated[index] = qfalse;
 	}
@@ -135,11 +132,7 @@ void SV_SetConfigstring (int index, const char *val) {
 					client->csUpdated[ index ] = qtrue;
 				continue;
 			}
-			// do not always send server info to all clients
-			if ( index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
-				continue;
-			}
-		
+
 			SV_SendConfigstring(client, index);
 		}
 	}

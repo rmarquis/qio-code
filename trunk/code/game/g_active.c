@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "g_local.h"
 
-
 /*
 ==============
 ClientThink
@@ -37,7 +36,6 @@ once for each server frame, which makes for smooth demo recording.
 */
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
-	pmove_t		pm;
 	int			msec;
 	usercmd_t	*ucmd;
 
@@ -70,117 +68,38 @@ void ClientThink_real( gentity_t *ent ) {
 		msec = 200;
 	}
 
-	if ( pmove_msec.integer < 8 ) {
-		trap_Cvar_Set("pmove_msec", "8");
-	}
-	else if (pmove_msec.integer > 33) {
-		trap_Cvar_Set("pmove_msec", "33");
-	}
 
-	if ( pmove_fixed.integer || client->pers.pmoveFixed ) {
-		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
-		//if (ucmd->serverTime - client->ps.commandTime <= 0)
-		//	return;
-	}
-
-	if ( client->noclip ) {
-		client->ps.pm_type = PM_NOCLIP;
-	} else {
-		client->ps.pm_type = PM_NORMAL;
+	// update the viewangles
+	PM_UpdateViewAngles( &ent->client->ps, ucmd );
+	{
+		vec3_t f,r,u;
+		vec3_t v = { 0, ent->client->ps.viewangles[1], 0 };
+		//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+		AngleVectors(v,f,r,u);
+		VectorScale(f,level.frameTime*ucmd->forwardmove,f);
+		VectorScale(r,level.frameTime*ucmd->rightmove,r);
+		VectorScale(u,level.frameTime*ucmd->upmove,u);
+		VectorAdd(ent->client->ps.origin,f,ent->client->ps.origin);
+		VectorAdd(ent->client->ps.origin,r,ent->client->ps.origin);
+		VectorAdd(ent->client->ps.origin,u,ent->client->ps.origin);
 	}
 
-	client->ps.gravity = g_gravity.value;
 
-	// set speed
-	client->ps.speed = g_speed.value;
-
-#ifdef MISSIONPACK
-	if( bg_itemlist[client->ps.stats[STAT_PERSISTANT_POWERUP]].giTag == PW_SCOUT ) {
-		client->ps.speed *= 1.5;
-	}
-	else
-#endif
-
-
-	memset (&pm, 0, sizeof(pm));
-
-	//// check for the hit-scan gauntlet, don't let the action
-	//// go through as an attack unless it actually hits something
-	//if ( client->ps.weapon == WP_GAUNTLET && !( ucmd->buttons & BUTTON_TALK ) &&
-	//	( ucmd->buttons & BUTTON_ATTACK ) && client->ps.weaponTime <= 0 ) {
-	//	pm.gauntletHit = CheckGauntletAttack( ent );
-	//}
-
-	pm.ps = &client->ps;
-	pm.cmd = *ucmd;
-	if ( pm.ps->pm_type == PM_DEAD ) {
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;
-	}
-	else if ( ent->r.svFlags & SVF_BOT ) {
-		pm.tracemask = MASK_PLAYERSOLID | CONTENTS_BOTCLIP;
-	}
-	else {
-		pm.tracemask = MASK_PLAYERSOLID;
-	}
-	pm.trace = trap_Trace;
-	pm.pointcontents = trap_PointContents;
-	pm.debugLevel = g_debugMove.integer;
-	pm.noFootsteps = ( g_dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
-
-	pm.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
-	pm.pmove_msec = pmove_msec.integer;
-
-	VectorCopy( client->ps.origin, client->oldOrigin );
-
-
-		Pmove (&pm);
-
-
-	if (g_smoothClients.integer) {
+	//if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
-	}
-	else {
-		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
-	}
-
-	// use the snapped origin for linking so it matches client predicted versions
-	VectorCopy( ent->s.origin, ent->r.currentOrigin );
-
-	VectorCopy (pm.mins, ent->r.mins);
-	VectorCopy (pm.maxs, ent->r.maxs);
-
-	ent->waterlevel = pm.waterlevel;
-	ent->watertype = pm.watertype;
+	//}
+	//else {
+	//	BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
+	//}
 
 	// link entity now, after any personal teleporters have been used
 	trap_LinkEntity (ent);
 
-	// NOTE: now copy the exact origin over otherwise clients can be snapped into solid
-	VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
 
 	// swap and latch button actions
 	client->oldbuttons = client->buttons;
 	client->buttons = ucmd->buttons;
-	client->latched_buttons |= client->buttons & ~client->oldbuttons;
-
-	// check for respawning
-	if ( ent->health <= 0 ) {
-		// wait for the attack button to be pressed
-		//if ( level.time > client->respawnTime ) {
-			// forcerespawn is to prevent users from waiting out powerups
-			if ( g_forcerespawn.integer > 0 ){
-				ClientRespawn( ent );
-				return;
-			}
-		
-			// pressing attack or use is the normal respawn method
-			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
-				ClientRespawn( ent );
-			}
-		//}
-		return;
-	}
-
+	//client->latched_buttons |= client->buttons & ~client->oldbuttons;
 }
 
 /*
@@ -195,21 +114,10 @@ void ClientThink( int clientNum ) {
 
 	ent = g_entities + clientNum;
 	trap_GetUsercmd( clientNum, &ent->client->pers.cmd );
-
-	// mark the time we got info, so we can display the
-	// phone jack if they don't get any for a while
-	ent->client->lastCmdTime = level.time;
-
-	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
-		ClientThink_real( ent );
-	}
 }
 
 
 void G_RunClient( gentity_t *ent ) {
-	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
-		return;
-	}
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink_real( ent );
 }
@@ -224,21 +132,7 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
 void ClientEndFrame( gentity_t *ent ) {
-
-	// add the EF_CONNECTION flag if we haven't gotten commands recently
-	if ( level.time - ent->client->lastCmdTime > 1000 ) {
-		ent->client->ps.eFlags |= EF_CONNECTION;
-	} else {
-		ent->client->ps.eFlags &= ~EF_CONNECTION;
-	}
-
-	// set the latest infor
-	if (g_smoothClients.integer) {
-		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
-	}
-	else {
-		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
-	}
+	BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 }
 
 

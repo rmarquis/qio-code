@@ -1125,27 +1125,14 @@ typedef struct {
 // from it.
 typedef struct playerState_s {
 	int			commandTime;	// cmd->serverTime of last executed command
-	int			pm_type;
-	int			pm_flags;		// ducked, jump_held, etc
-	int			pm_time;
 
 	vec3_t		origin;
 	vec3_t		velocity;
 
-	int			gravity;
-	int			speed;
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
 	int			groundEntityNum;// ENTITYNUM_NONE = in air
-
-
-	int			movementDir;	// a number 0 to 7 that represents the relative angle
-								// of movement to the view angle (axial and diagonals)
-								// when at rest, the value will remain unchanged
-								// used to twist the legs during strafing
-
-	int			eFlags;			// copied to entityState_t->eFlags
 
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 
@@ -1154,7 +1141,6 @@ typedef struct playerState_s {
 
 	// not communicated over the net at all
 	int			ping;			// server to game info for scoreboard
-	int			pmove_framecount;	// FIXME: don't transmit over the network
 } playerState_t;
 
 
@@ -1174,13 +1160,13 @@ typedef struct playerState_s {
 										// only generate a small move value for that frame
 										// walking will use different animations and
 										// won't generate footsteps
-#define BUTTON_AFFIRMATIVE	32
-#define	BUTTON_NEGATIVE		64
-
-#define BUTTON_GETFLAG		128
-#define BUTTON_GUARDBASE	256
-#define BUTTON_PATROL		512
-#define BUTTON_FOLLOWME		1024
+//#define BUTTON_AFFIRMATIVE	32
+//#define	BUTTON_NEGATIVE		64
+//
+//#define BUTTON_GETFLAG		128
+//#define BUTTON_GUARDBASE	256
+//#define BUTTON_PATROL		512
+//#define BUTTON_FOLLOWME		1024
 
 #define	BUTTON_ANY			2048			// any key whatsoever
 
@@ -1208,7 +1194,7 @@ typedef struct usercmd_s {
 typedef struct entityState_s {
 	int		number;			// entity index
 	int		eType;			// entityType_t
-	int		eFlags;
+	//int		eFlags;
 
 	vec3_t	origin;
 
@@ -1218,7 +1204,6 @@ typedef struct entityState_s {
 
 	int		modelindex;
 	int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
-	int		frame;
 
 	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
@@ -1304,16 +1289,6 @@ typedef enum {
 	FMV_ID_WAIT
 } e_status;
 
-typedef enum _flag_status {
-	FLAG_ATBASE = 0,
-	FLAG_TAKEN,			// CTF
-	FLAG_TAKEN_RED,		// One Flag CTF
-	FLAG_TAKEN_BLUE,	// One Flag CTF
-	FLAG_DROPPED
-} flagStatus_t;
-
-
-
 #define	MAX_GLOBAL_SERVERS				4096
 #define	MAX_OTHER_SERVERS					128
 #define MAX_PINGREQUESTS					32
@@ -1322,10 +1297,6 @@ typedef enum _flag_status {
 #define SAY_ALL		0
 #define SAY_TEAM	1
 #define SAY_TELL	2
-
-#define CDKEY_LEN 16
-#define CDCHKSUM_LEN 2
-
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )

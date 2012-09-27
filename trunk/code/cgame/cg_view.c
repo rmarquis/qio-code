@@ -62,68 +62,7 @@ CG_OffsetThirdPersonView
 */
 #define	FOCUS_DISTANCE	512
 static void CG_OffsetThirdPersonView( void ) {
-	vec3_t		forward, right, up;
-	vec3_t		view;
-	vec3_t		focusAngles;
-	trace_t		trace;
-	static vec3_t	mins = { -4, -4, -4 };
-	static vec3_t	maxs = { 4, 4, 4 };
-	vec3_t		focusPoint;
-	float		focusDist;
-	float		forwardScale, sideScale;
-
-	cg.refdef.vieworg[2] += cg.predictedPlayerState.viewheight;
-
-	VectorCopy( cg.refdefViewAngles, focusAngles );
-
-	if ( focusAngles[PITCH] > 45 ) {
-		focusAngles[PITCH] = 45;		// don't go too far overhead
-	}
-	AngleVectors( focusAngles, forward, NULL, NULL );
-
-	VectorMA( cg.refdef.vieworg, FOCUS_DISTANCE, forward, focusPoint );
-
-	VectorCopy( cg.refdef.vieworg, view );
-
-	view[2] += 8;
-
-	cg.refdefViewAngles[PITCH] *= 0.5;
-
-	AngleVectors( cg.refdefViewAngles, forward, right, up );
-
-	forwardScale = cos( cg_thirdPersonAngle.value / 180 * M_PI );
-	sideScale = sin( cg_thirdPersonAngle.value / 180 * M_PI );
-	VectorMA( view, -cg_thirdPersonRange.value * forwardScale, forward, view );
-	VectorMA( view, -cg_thirdPersonRange.value * sideScale, right, view );
-
-	// trace a ray from the origin to the viewpoint to make sure the view isn't
-	// in a solid block.  Use an 8 by 8 block to prevent the view from near clipping anything
-
-	if (!cg_cameraMode.integer) {
-		CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
-
-		if ( trace.fraction != 1.0 ) {
-			VectorCopy( trace.endpos, view );
-			view[2] += (1.0 - trace.fraction) * 32;
-			// try another trace to this position, because a tunnel may have the ceiling
-			// close enogh that this is poking out
-
-			CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
-			VectorCopy( trace.endpos, view );
-		}
-	}
-
-
-	VectorCopy( view, cg.refdef.vieworg );
-
-	// select pitch to look at focus point from vieword
-	VectorSubtract( focusPoint, cg.refdef.vieworg, focusPoint );
-	focusDist = sqrt( focusPoint[0] * focusPoint[0] + focusPoint[1] * focusPoint[1] );
-	if ( focusDist < 1 ) {
-		focusDist = 1;	// should never happen
-	}
-	cg.refdefViewAngles[PITCH] = -180 / M_PI * atan2( focusPoint[2], focusDist );
-	cg.refdefViewAngles[YAW] -= cg_thirdPersonAngle.value;
+	
 }
 
 
@@ -280,14 +219,15 @@ static int CG_CalcFov( void ) {
 
 	// warp if underwater
 	contents = CG_PointContents( cg.refdef.vieworg, -1 );
-	if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
-		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		v = WAVE_AMPLITUDE * sin( phase );
-		fov_x += v;
-		fov_y -= v;
-		inwater = qtrue;
-	}
-	else {
+	//if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
+	//	phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+	//	v = WAVE_AMPLITUDE * sin( phase );
+	//	fov_x += v;
+	//	fov_y -= v;
+	//	inwater = qtrue;
+	//}
+	//else 
+	{
 		inwater = qfalse;
 	}
 
