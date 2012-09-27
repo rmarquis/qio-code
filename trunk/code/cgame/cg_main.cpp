@@ -463,7 +463,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_ParseServerinfo();
 
 
-	trap_CM_LoadMap( cgs.mapname );
+//	trap_CM_LoadMap( cgs.mapname );
 
 #ifdef MISSIONPACK
 	String_Init();

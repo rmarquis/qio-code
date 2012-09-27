@@ -296,10 +296,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	sharedEntity_t *ent;
 	svEntity_t	*svEnt;
 	int		l;
-	int		clientarea, clientcluster;
-	int		leafnum;
-	byte	*clientpvs;
-	byte	*bitvector;
+	
 
 	// during an error shutdown message we may need to transmit
 	// the shutdown message after the server has shutdown, so
@@ -308,14 +305,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		return;
 	}
 
-	leafnum = CM_PointLeafnum (origin);
-	clientarea = CM_LeafArea (leafnum);
-	clientcluster = CM_LeafCluster (leafnum);
-
-	// calculate the visible areas
-	frame->areabytes = CM_WriteAreaBits( frame->areabits, clientarea );
-
-	clientpvs = CM_ClusterPVS (clientcluster);
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
 		ent = SV_GentityNum(e);
@@ -337,68 +326,8 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-		// broadcast entities are always sent
-		//////////if ( ent->r.svFlags & SVF_BROADCAST ) {
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
-		////////}
-#if 0
-		// ignore if not touching a PV leaf
-		// check area
-		if ( !CM_AreasConnected( clientarea, svEnt->areanum ) ) {
-			// doors can legally straddle two areas, so
-			// we may need to check another one
-			if ( !CM_AreasConnected( clientarea, svEnt->areanum2 ) ) {
-				continue;		// blocked by a door
-			}
-		}
-
-		bitvector = clientpvs;
-
-		// check individual leafs
-		if ( !svEnt->numClusters ) {
-			continue;
-		}
-		l = 0;
-		for ( i=0 ; i < svEnt->numClusters ; i++ ) {
-			l = svEnt->clusternums[i];
-			if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
-				break;
-			}
-		}
-
-		// if we haven't found it to be visible,
-		// check overflow clusters that coudln't be stored
-		if ( i == svEnt->numClusters ) {
-			if ( svEnt->lastCluster ) {
-				for ( ; l <= svEnt->lastCluster ; l++ ) {
-					if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
-						break;
-					}
-				}
-				if ( l == svEnt->lastCluster ) {
-					continue;	// not visible
-				}
-			} else {
-				continue;
-			}
-		}
-
-		// add it
-		SV_AddEntToSnapshot( svEnt, ent, eNums );
-
-		//// if it's a portal entity, add everything visible from its camera position
-		//if ( ent->r.svFlags & SVF_PORTAL ) {
-		//	if ( ent->s.generic1 ) {
-		//		vec3_t dir;
-		//		VectorSubtract(ent->s.origin, origin, dir);
-		//		if ( VectorLengthSquared(dir) > (float) ent->s.generic1 * ent->s.generic1 ) {
-		//			continue;
-		//		}
-		//	}
-		//	SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
-		//}
-#endif
 	}
 }
 

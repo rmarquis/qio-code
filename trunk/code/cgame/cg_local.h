@@ -510,27 +510,6 @@ void		trap_SendClientCommand( const char *s );
 // force a screen update, only used during gamestate load
 void		trap_UpdateScreen( void );
 
-// model collision
-void		trap_CM_LoadMap( const char *mapname );
-int			trap_CM_NumInlineModels( void );
-clipHandle_t trap_CM_InlineModel( int index );		// 0 = world, 1+ = bmodels
-clipHandle_t trap_CM_TempBoxModel( const vec3_t mins, const vec3_t maxs );
-int			trap_CM_PointContents( const vec3_t p, clipHandle_t model );
-int			trap_CM_TransformedPointContents( const vec3_t p, clipHandle_t model, const vec3_t origin, const vec3_t angles );
-void		trap_CM_BoxTrace( trace_t *results, const vec3_t start, const vec3_t end,
-					  const vec3_t mins, const vec3_t maxs,
-					  clipHandle_t model, int brushmask );
-void		trap_CM_TransformedBoxTrace( trace_t *results, const vec3_t start, const vec3_t end,
-					  const vec3_t mins, const vec3_t maxs,
-					  clipHandle_t model, int brushmask,
-					  const vec3_t origin, const vec3_t angles );
-
-// Returns the projection of a polygon onto the solid brushes in the world
-int			trap_CM_MarkFragments( int numPoints, const vec3_t *points, 
-			const vec3_t projection,
-			int maxPoints, vec3_t pointBuffer,
-			int maxFragments, markFragment_t *fragmentBuffer );
-
 // normal sounds will have their volume dynamically changed as their entity
 // moves and the listener moves
 void		trap_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );

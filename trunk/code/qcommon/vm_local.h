@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "q_shared.h"
 #include "qcommon.h"
+#include "qfiles.h"
 
 // don't change, this is hardcoded into x86 VMs, opStack protection relies
 // on this
@@ -180,11 +181,8 @@ struct vm_s {
 extern	vm_t	*currentVM;
 extern	int		vm_debugLevel;
 
-void VM_Compile( vm_t *vm, vmHeader_t *header );
 int	VM_CallCompiled( vm_t *vm, int *args );
 
-void VM_PrepareInterpreter( vm_t *vm, vmHeader_t *header );
-int	VM_CallInterpreted( vm_t *vm, int *args );
 
 vmSymbol_t *VM_ValueToFunctionSymbol( vm_t *vm, int value );
 int VM_SymbolToValue( vm_t *vm, const char *symbol );

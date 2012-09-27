@@ -356,168 +356,6 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 }
 
 
-/*
-=================
-VM_LoadQVM
-
-Load a .qvm file
-=================
-*/
-vmHeader_t *VM_LoadQVM( vm_t *vm, qboolean alloc, qboolean unpure)
-{
-	int					dataLength;
-	int					i;
-	char				filename[MAX_QPATH];
-	union {
-		vmHeader_t	*h;
-		void				*v;
-	} header;
-
-	// load the image
-	Com_sprintf( filename, sizeof(filename), "vm/%s.qvm", vm->name );
-	Com_Printf( "Loading vm file %s...\n", filename );
-
-	FS_ReadFileDir(filename, vm->searchPath, unpure, &header.v);
-
-	if ( !header.h ) {
-		Com_Printf( "Failed.\n" );
-		VM_Free( vm );
-
-		Com_Printf(S_COLOR_YELLOW "Warning: Couldn't open VM file %s\n", filename);
-
-		return NULL;
-	}
-
-	// show where the qvm was loaded from
-	FS_Which(filename, vm->searchPath);
-
-	if( LittleLong( header.h->vmMagic ) == VM_MAGIC_VER2 ) {
-		Com_Printf( "...which has vmMagic VM_MAGIC_VER2\n" );
-
-		// byte swap the header
-		for ( i = 0 ; i < sizeof( vmHeader_t ) / 4 ; i++ ) {
-			((int *)header.h)[i] = LittleLong( ((int *)header.h)[i] );
-		}
-
-		// validate
-		if ( header.h->jtrgLength < 0
-			|| header.h->bssLength < 0
-			|| header.h->dataLength < 0
-			|| header.h->litLength < 0
-			|| header.h->codeLength <= 0 )
-		{
-			VM_Free(vm);
-			FS_FreeFile(header.v);
-			
-			Com_Printf(S_COLOR_YELLOW "Warning: %s has bad header\n", filename);
-			return NULL;
-		}
-	} else if( LittleLong( header.h->vmMagic ) == VM_MAGIC ) {
-		// byte swap the header
-		// sizeof( vmHeader_t ) - sizeof( int ) is the 1.32b vm header size
-		for ( i = 0 ; i < ( sizeof( vmHeader_t ) - sizeof( int ) ) / 4 ; i++ ) {
-			((int *)header.h)[i] = LittleLong( ((int *)header.h)[i] );
-		}
-
-		// validate
-		if ( header.h->bssLength < 0
-			|| header.h->dataLength < 0
-			|| header.h->litLength < 0
-			|| header.h->codeLength <= 0 )
-		{
-			VM_Free(vm);
-			FS_FreeFile(header.v);
-
-			Com_Printf(S_COLOR_YELLOW "Warning: %s has bad header\n", filename);
-			return NULL;
-		}
-	} else {
-		VM_Free( vm );
-		FS_FreeFile(header.v);
-
-		Com_Printf(S_COLOR_YELLOW "Warning: %s does not have a recognisable "
-				"magic number in its header\n", filename);
-		return NULL;
-	}
-
-	// round up to next power of 2 so all data operations can
-	// be mask protected
-	dataLength = header.h->dataLength + header.h->litLength +
-		header.h->bssLength;
-	for ( i = 0 ; dataLength > ( 1 << i ) ; i++ ) {
-	}
-	dataLength = 1 << i;
-
-	if(alloc)
-	{
-		// allocate zero filled space for initialized and uninitialized data
-		vm->dataBase = Hunk_Alloc(dataLength, h_high);
-		vm->dataMask = dataLength - 1;
-	}
-	else
-	{
-		// clear the data, but make sure we're not clearing more than allocated
-		if(vm->dataMask + 1 != dataLength)
-		{
-			VM_Free(vm);
-			FS_FreeFile(header.v);
-
-			Com_Printf(S_COLOR_YELLOW "Warning: Data region size of %s not matching after "
-					"VM_Restart()\n", filename);
-			return NULL;
-		}
-		
-		Com_Memset(vm->dataBase, 0, dataLength);
-	}
-
-	// copy the intialized data
-	Com_Memcpy( vm->dataBase, (byte *)header.h + header.h->dataOffset,
-		header.h->dataLength + header.h->litLength );
-
-	// byte swap the longs
-	for ( i = 0 ; i < header.h->dataLength ; i += 4 ) {
-		*(int *)(vm->dataBase + i) = LittleLong( *(int *)(vm->dataBase + i ) );
-	}
-
-	if(header.h->vmMagic == VM_MAGIC_VER2)
-	{
-		int previousNumJumpTableTargets = vm->numJumpTableTargets;
-
-		header.h->jtrgLength &= ~0x03;
-
-		vm->numJumpTableTargets = header.h->jtrgLength >> 2;
-		Com_Printf("Loading %d jump table targets\n", vm->numJumpTableTargets);
-
-		if(alloc)
-		{
-			vm->jumpTableTargets = Hunk_Alloc(header.h->jtrgLength, h_high);
-		}
-		else
-		{
-			if(vm->numJumpTableTargets != previousNumJumpTableTargets)
-			{
-				VM_Free(vm);
-				FS_FreeFile(header.v);
-
-				Com_Printf(S_COLOR_YELLOW "Warning: Jump table size of %s not matching after "
-						"VM_Restart()\n", filename);
-				return NULL;
-			}
-
-			Com_Memset(vm->jumpTableTargets, 0, header.h->jtrgLength);
-		}
-
-		Com_Memcpy(vm->jumpTableTargets, (byte *) header.h + header.h->dataOffset +
-				header.h->dataLength + header.h->litLength, header.h->jtrgLength);
-
-		// byte swap the longs
-		for ( i = 0 ; i < header.h->jtrgLength ; i += 4 ) {
-			*(int *)(vm->jumpTableTargets + i) = LittleLong( *(int *)(vm->jumpTableTargets + i ) );
-		}
-	}
-
-	return header.h;
-}
 
 /*
 =================
@@ -551,11 +389,10 @@ vm_t *VM_Restart(vm_t *vm, qboolean unpure)
 	// load the image
 	Com_Printf("VM_Restart()\n");
 
-	if(!(header = VM_LoadQVM(vm, qfalse, unpure)))
-	{
+
 		Com_Error(ERR_DROP, "VM_Restart failed");
 		return NULL;
-	}
+
 
 	// free the original file
 	FS_FreeFile(header);
@@ -625,15 +462,6 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 			}
 			
 			Com_Printf("Failed loading dll, trying next\n");
-		}
-		else if(retval == VMI_COMPILED)
-		{
-			vm->searchPath = startSearch;
-			if((header = VM_LoadQVM(vm, qtrue, qfalse)))
-				break;
-
-			// VM_Free overwrites the name on failed load
-			Q_strncpyz(vm->name, module, sizeof(vm->name));
 		}
 	} while(retval >= 0);
 	

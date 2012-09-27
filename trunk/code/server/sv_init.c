@@ -421,7 +421,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 #endif
 
 	// clear collision map data
-	CM_ClearMap();
+	//CM_ClearMap();
 
 	// init client structures and svs.numSnapshotEntities 
 	if ( !Cvar_VariableValue("sv_running") ) {
@@ -469,7 +469,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	sv.checksumFeed = ( ((int) rand() << 16) ^ rand() ) ^ Com_Milliseconds();
 	FS_Restart( sv.checksumFeed );
 
-	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
+	//CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
 
 	// set serverinfo visible name
 	Cvar_Set( "mapname", server );

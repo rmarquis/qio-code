@@ -144,11 +144,6 @@ typedef struct {
 
 	void	(*Cmd_ExecuteText) (int exec_when, const char *text);
 
-	byte	*(*CM_ClusterPVS)(int cluster);
-
-	// visualization for debugging collision detection
-	void	(*CM_DrawDebugSurface)( void (*drawPoly)(int color, int numPoints, float *points) );
-
 	// a -1 return means the file does not exist
 	// NULL can be passed for buf to just determine existance
 	int		(*FS_FileIsInPAK)( const char *name, int *pCheckSum );

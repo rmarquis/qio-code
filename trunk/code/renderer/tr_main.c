@@ -1357,7 +1357,7 @@ void R_DebugGraphics( void ) {
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );
-	ri.CM_DrawDebugSurface( R_DebugPolygon );
+//	ri.CM_DrawDebugSurface( R_DebugPolygon );
 }
 
 

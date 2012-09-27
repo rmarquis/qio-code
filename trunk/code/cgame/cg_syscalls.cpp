@@ -125,66 +125,6 @@ void	trap_UpdateScreen( void ) {
 	syscall( CG_UPDATESCREEN );
 }
 
-void	trap_CM_LoadMap( const char *mapname ) {
-	syscall( CG_CM_LOADMAP, mapname );
-}
-
-int		trap_CM_NumInlineModels( void ) {
-	return syscall( CG_CM_NUMINLINEMODELS );
-}
-
-clipHandle_t trap_CM_InlineModel( int index ) {
-	return syscall( CG_CM_INLINEMODEL, index );
-}
-
-clipHandle_t trap_CM_TempBoxModel( const vec3_t mins, const vec3_t maxs ) {
-	return syscall( CG_CM_TEMPBOXMODEL, mins, maxs );
-}
-
-clipHandle_t trap_CM_TempCapsuleModel( const vec3_t mins, const vec3_t maxs ) {
-	return syscall( CG_CM_TEMPCAPSULEMODEL, mins, maxs );
-}
-
-int		trap_CM_PointContents( const vec3_t p, clipHandle_t model ) {
-	return syscall( CG_CM_POINTCONTENTS, p, model );
-}
-
-int		trap_CM_TransformedPointContents( const vec3_t p, clipHandle_t model, const vec3_t origin, const vec3_t angles ) {
-	return syscall( CG_CM_TRANSFORMEDPOINTCONTENTS, p, model, origin, angles );
-}
-
-void	trap_CM_BoxTrace( trace_t *results, const vec3_t start, const vec3_t end,
-						  const vec3_t mins, const vec3_t maxs,
-						  clipHandle_t model, int brushmask ) {
-	syscall( CG_CM_BOXTRACE, results, start, end, mins, maxs, model, brushmask );
-}
-
-void	trap_CM_CapsuleTrace( trace_t *results, const vec3_t start, const vec3_t end,
-						  const vec3_t mins, const vec3_t maxs,
-						  clipHandle_t model, int brushmask ) {
-	syscall( CG_CM_CAPSULETRACE, results, start, end, mins, maxs, model, brushmask );
-}
-
-void	trap_CM_TransformedBoxTrace( trace_t *results, const vec3_t start, const vec3_t end,
-						  const vec3_t mins, const vec3_t maxs,
-						  clipHandle_t model, int brushmask,
-						  const vec3_t origin, const vec3_t angles ) {
-	syscall( CG_CM_TRANSFORMEDBOXTRACE, results, start, end, mins, maxs, model, brushmask, origin, angles );
-}
-
-void	trap_CM_TransformedCapsuleTrace( trace_t *results, const vec3_t start, const vec3_t end,
-						  const vec3_t mins, const vec3_t maxs,
-						  clipHandle_t model, int brushmask,
-						  const vec3_t origin, const vec3_t angles ) {
-	syscall( CG_CM_TRANSFORMEDCAPSULETRACE, results, start, end, mins, maxs, model, brushmask, origin, angles );
-}
-
-int		trap_CM_MarkFragments( int numPoints, const vec3_t *points, 
-				const vec3_t projection,
-				int maxPoints, vec3_t pointBuffer,
-				int maxFragments, markFragment_t *fragmentBuffer ) {
-	return syscall( CG_CM_MARKFRAGMENTS, numPoints, points, projection, maxPoints, pointBuffer, maxFragments, fragmentBuffer );
-}
 
 void	trap_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx ) {
 	syscall( CG_S_STARTSOUND, origin, entityNum, entchannel, sfx );

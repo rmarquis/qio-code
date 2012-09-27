@@ -370,7 +370,7 @@ Just adds default parameters that cgame doesn't need to know about
 void CL_CM_LoadMap( const char *mapname ) {
 	int		checksum;
 
-	CM_LoadMap( mapname, qtrue, &checksum );
+	//CM_LoadMap( mapname, qtrue, &checksum );
 }
 
 /*
@@ -466,35 +466,8 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 // ZOID
 		SCR_UpdateScreen();
 		return 0;
-	case CG_CM_LOADMAP:
-		CL_CM_LoadMap( VMA(1) );
-		return 0;
-	case CG_CM_NUMINLINEMODELS:
-		return CM_NumInlineModels();
-	case CG_CM_INLINEMODEL:
-		return CM_InlineModel( args[1] );
-	case CG_CM_TEMPBOXMODEL:
-		return CM_TempBoxModel( VMA(1), VMA(2), /*int capsule*/ qfalse );
-	case CG_CM_TEMPCAPSULEMODEL:
-		return CM_TempBoxModel( VMA(1), VMA(2), /*int capsule*/ qtrue );
-	case CG_CM_POINTCONTENTS:
-		return CM_PointContents( VMA(1), args[2] );
-	case CG_CM_TRANSFORMEDPOINTCONTENTS:
-		return CM_TransformedPointContents( VMA(1), args[2], VMA(3), VMA(4) );
-	case CG_CM_BOXTRACE:
-		CM_BoxTrace( VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], /*int capsule*/ qfalse );
-		return 0;
-	case CG_CM_CAPSULETRACE:
-		CM_BoxTrace( VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], /*int capsule*/ qtrue );
-		return 0;
-	case CG_CM_TRANSFORMEDBOXTRACE:
-		CM_TransformedBoxTrace( VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], VMA(8), VMA(9), /*int capsule*/ qfalse );
-		return 0;
-	case CG_CM_TRANSFORMEDCAPSULETRACE:
-		CM_TransformedBoxTrace( VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], VMA(8), VMA(9), /*int capsule*/ qtrue );
-		return 0;
-	case CG_CM_MARKFRAGMENTS:
-		return re.MarkFragments( args[1], VMA(2), VMA(3), args[4], VMA(5), args[6], VMA(7) );
+
+
 	case CG_S_STARTSOUND:
 		S_StartSound( VMA(1), args[2], args[3], args[4] );
 		return 0;
