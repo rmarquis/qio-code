@@ -52,8 +52,6 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case CG_SHUTDOWN:
 		CG_Shutdown();
 		return 0;
-	case CG_CONSOLE_COMMAND:
-		return CG_ConsoleCommand();
 	case CG_DRAW_ACTIVE_FRAME:
 		CG_DrawActiveFrame( arg0, arg1, arg2 );
 		return 0;
@@ -339,33 +337,9 @@ void CG_RegisterCvars( void ) {
 	trap_Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
 	cgs.localServer = atoi( var );
 
-	forceModelModificationCount = cg_forceModel.modificationCount;
 
-	trap_Cvar_Register(NULL, "model", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "headmodel", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "team_model", DEFAULT_TEAM_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "team_headmodel", DEFAULT_TEAM_HEAD, CVAR_USERINFO | CVAR_ARCHIVE );
 }
-
-/*																																			
-===================
-CG_ForceModelChange
-===================
-*/
-static void CG_ForceModelChange( void ) {
-	int		i;
-
-	for (i=0 ; i<MAX_CLIENTS ; i++) {
-		const char		*clientInfo;
-
-		clientInfo = CG_ConfigString( CS_PLAYERS+i );
-		if ( !clientInfo[0] ) {
-			continue;
-		}
-		CG_NewClientInfo( i );
-	}
-}
-
+																															
 /*
 =================
 CG_UpdateCvars
@@ -393,11 +367,6 @@ void CG_UpdateCvars( void ) {
 		}
 	}
 
-	// if force model changed
-	if ( forceModelModificationCount != cg_forceModel.modificationCount ) {
-		forceModelModificationCount = cg_forceModel.modificationCount;
-		CG_ForceModelChange();
-	}
 }
 
 int CG_CrosshairPlayer( void ) {
@@ -473,105 +442,6 @@ const char *CG_Argv( int arg ) {
 
 
 //========================================================================
-
-/*
-=================
-CG_RegisterItemSounds
-
-The server says this item is used on this level
-=================
-*/
-static void CG_RegisterItemSounds( int itemNum ) {
-	
-}
-
-
-/*
-=================
-CG_RegisterSounds
-
-called during a precache command
-=================
-*/
-static void CG_RegisterSounds( void ) {
-
-
-}
-
-
-//===================================================================================
-
-
-/*
-=================
-CG_RegisterGraphics
-
-This function may execute for a couple of minutes with a slow disk.
-=================
-*/
-static void CG_RegisterGraphics( void ) {
-	// clear any references to old media
-	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
-	trap_R_ClearScene();
-
-	CG_LoadingString( cgs.mapname );
-
-	trap_R_LoadWorldMap( cgs.mapname );	
-}
-
-
-
-/*																																			
-=======================
-CG_BuildSpectatorString
-
-=======================
-*/
-void CG_BuildSpectatorString(void) {
-	int i;
-	cg.spectatorList[0] = 0;
-	for (i = 0; i < MAX_CLIENTS; i++) {
-		if (cgs.clientinfo[i].infoValid && cgs.clientinfo[i].team == TEAM_SPECTATOR ) {
-			Q_strcat(cg.spectatorList, sizeof(cg.spectatorList), va("%s     ", cgs.clientinfo[i].name));
-		}
-	}
-	i = strlen(cg.spectatorList);
-	if (i != cg.spectatorLen) {
-		cg.spectatorLen = i;
-		cg.spectatorWidth = -1;
-	}
-}
-
-
-/*																																			
-===================
-CG_RegisterClients
-===================
-*/
-static void CG_RegisterClients( void ) {
-	int		i;
-
-	CG_LoadingClient(cg.clientNum);
-	CG_NewClientInfo(cg.clientNum);
-
-	for (i=0 ; i<MAX_CLIENTS ; i++) {
-		const char		*clientInfo;
-
-		if (cg.clientNum == i) {
-			continue;
-		}
-
-		clientInfo = CG_ConfigString( CS_PLAYERS+i );
-		if ( !clientInfo[0]) {
-			continue;
-		}
-		CG_LoadingClient( i );
-		CG_NewClientInfo( i );
-	}
-	CG_BuildSpectatorString();
-}
-
-//===========================================================================
 
 /*
 =================
@@ -1291,8 +1161,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterCvars();
 
-	CG_InitConsoleCommands();
-
 	cg.weaponSelect = WP_MACHINEGUN;
 
 	cgs.redflag = cgs.blueflag = -1; // For compatibily, default to unset for
@@ -1318,8 +1186,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_ParseServerinfo();
 
-	// load the new map
-	CG_LoadingString( "collision map" );
 
 	trap_CM_LoadMap( cgs.mapname );
 
@@ -1329,22 +1195,12 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	cg.loading = qtrue;		// force players to load instead of defer
 
-	CG_LoadingString( "sounds" );
+	// clear any references to old media
+	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
+	trap_R_ClearScene();
 
-	CG_RegisterSounds();
+	trap_R_LoadWorldMap( cgs.mapname );
 
-	CG_LoadingString( "graphics" );
-
-	CG_RegisterGraphics();
-
-	CG_LoadingString( "clients" );
-
-	CG_RegisterClients();		// if low on memory, some clients will be deferred
-
-#ifdef MISSIONPACK
-	CG_AssetCache();
-	CG_LoadHudMenu();      // load new hud stuff
-#endif
 
 	cg.loading = qfalse;	// future players will be deferred
 
@@ -1355,8 +1211,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_SetConfigValues();
 
 	CG_StartMusic();
-
-	CG_LoadingString( "" );
 
 #ifdef MISSIONPACK
 	CG_InitTeamChat();

@@ -644,68 +644,9 @@ CL_ShutdownUI
 ====================
 */
 void CL_ShutdownUI( void ) {
-	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
-	cls.uiStarted = qfalse;
-	if ( !uivm ) {
-		return;
-	}
-////	VM_Call( uivm, UI_SHUTDOWN );
-	VM_Free( uivm );
-	uivm = NULL;
+
+
 }
-
-/*
-====================
-CL_InitUI
-====================
-*/
-#define UI_OLD_API_VERSION	4
-
-void CL_InitUI( void ) {
-	int		v;
-	vmInterpret_t		interpret;
-
-	// load the dll or bytecode
-	interpret = Cvar_VariableValue("vm_ui");
-	if(cl_connectedToPureServer)
-	{
-		// if sv_pure is set we only allow qvms to be loaded
-		if(interpret != VMI_COMPILED && interpret != VMI_BYTECODE)
-			interpret = VMI_COMPILED;
-	}
-
-	uivm = 0;
-
-	// sanity check
-//	v = VM_Call( uivm, UI_GETAPIVERSION );
-	if (v == UI_OLD_API_VERSION) {
-//		Com_Printf(S_COLOR_YELLOW "WARNING: loading old Quake III Arena User Interface version %d\n", v );
-		// init for this gamestate
-//		VM_Call( uivm, UI_INIT, (clc.state >= CA_AUTHORIZING && clc.state < CA_ACTIVE));
-	}
-	//else if (v != UI_API_VERSION) {
-	//	// Free uivm now, so UI_SHUTDOWN doesn't get called later.
-	//	VM_Free( uivm );
-	//	uivm = NULL;
-
-	//	Com_Error( ERR_DROP, "User Interface is version %d, expected %d", v, UI_API_VERSION );
-	//	cls.uiStarted = qfalse;
-	//}
-	else {
-		// init for this gamestate
-//		VM_Call( uivm, UI_INIT, (clc.state >= CA_AUTHORIZING && clc.state < CA_ACTIVE) );
-	}
-}
-
-#ifndef STANDALONE
-qboolean UI_usesUniqueCDKey( void ) {
-	if (uivm) {
-		return (VM_Call( uivm, UI_HASUNIQUECDKEY) == qtrue);
-	} else {
-		return qfalse;
-	}
-}
-#endif
 
 /*
 ====================

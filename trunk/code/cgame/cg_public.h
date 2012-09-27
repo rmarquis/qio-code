@@ -203,13 +203,6 @@ typedef enum {
 //	void (*CG_Shutdown)( void );
 	// oportunity to flush and close any open files
 
-	CG_CONSOLE_COMMAND,
-//	qboolean (*CG_ConsoleCommand)( void );
-	// a console command has been issued locally that is not recognized by the
-	// main game system.
-	// use Cmd_Argc() / Cmd_Argv() to read the command, return qfalse if the
-	// command is not known to the game
-
 	CG_DRAW_ACTIVE_FRAME,
 //	void (*CG_DrawActiveFrame)( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
 	// Generates and draws a game scene and status information at the given time.

@@ -24,151 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // for a 3D rendering
 #include "cg_local.h"
 
-
-/*
-=============================================================================
-
-  MODEL TESTING
-
-The viewthing and gun positioning tools from Q2 have been integrated and
-enhanced into a single model testing facility.
-
-Model viewing can begin with either "testmodel <modelname>" or "testgun <modelname>".
-
-The names must be the full pathname after the basedir, like 
-"models/weapons/v_launch/tris.md3" or "players/male/tris.md3"
-
-Testmodel will create a fake entity 100 units in front of the current view
-position, directly facing the viewer.  It will remain immobile, so you can
-move around it to view it from different angles.
-
-Testgun will cause the model to follow the player around and supress the real
-view weapon model.  The default frame 0 of most guns is completely off screen,
-so you will probably have to cycle a couple frames to see it.
-
-"nextframe", "prevframe", "nextskin", and "prevskin" commands will change the
-frame or skin of the testmodel.  These are bound to F5, F6, F7, and F8 in
-q3default.cfg.
-
-If a gun is being tested, the "gun_x", "gun_y", and "gun_z" variables will let
-you adjust the positioning.
-
-Note that none of the model testing features update while the game is paused, so
-it may be convenient to test with deathmatch set to 1 so that bringing down the
-console doesn't pause the game.
-
-=============================================================================
-*/
-
-/*
-=================
-CG_TestModel_f
-
-Creates an entity in front of the current position, which
-can then be moved around
-=================
-*/
-void CG_TestModel_f (void) {
-	vec3_t		angles;
-
-	memset( &cg.testModelEntity, 0, sizeof(cg.testModelEntity) );
-	if ( trap_Argc() < 2 ) {
-		return;
-	}
-
-	Q_strncpyz (cg.testModelName, CG_Argv( 1 ), MAX_QPATH );
-	cg.testModelEntity.hModel = trap_R_RegisterModel( cg.testModelName );
-
-	if ( trap_Argc() == 3 ) {
-		cg.testModelEntity.backlerp = atof( CG_Argv( 2 ) );
-		cg.testModelEntity.frame = 1;
-		cg.testModelEntity.oldframe = 0;
-	}
-	if (! cg.testModelEntity.hModel ) {
-		CG_Printf( "Can't register model\n" );
-		return;
-	}
-
-	VectorMA( cg.refdef.vieworg, 100, cg.refdef.viewaxis[0], cg.testModelEntity.origin );
-
-	angles[PITCH] = 0;
-	angles[YAW] = 180 + cg.refdefViewAngles[1];
-	angles[ROLL] = 0;
-
-	AnglesToAxis( angles, cg.testModelEntity.axis );
-	cg.testGun = qfalse;
-}
-
-/*
-=================
-CG_TestGun_f
-
-Replaces the current view weapon with the given model
-=================
-*/
-void CG_TestGun_f (void) {
-	CG_TestModel_f();
-	cg.testGun = qtrue;
-	cg.testModelEntity.renderfx = RF_MINLIGHT | RF_DEPTHHACK | RF_FIRST_PERSON;
-}
-
-
-void CG_TestModelNextFrame_f (void) {
-	cg.testModelEntity.frame++;
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
-}
-
-void CG_TestModelPrevFrame_f (void) {
-	cg.testModelEntity.frame--;
-	if ( cg.testModelEntity.frame < 0 ) {
-		cg.testModelEntity.frame = 0;
-	}
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
-}
-
-void CG_TestModelNextSkin_f (void) {
-	cg.testModelEntity.skinNum++;
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
-}
-
-void CG_TestModelPrevSkin_f (void) {
-	cg.testModelEntity.skinNum--;
-	if ( cg.testModelEntity.skinNum < 0 ) {
-		cg.testModelEntity.skinNum = 0;
-	}
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
-}
-
-static void CG_AddTestModel (void) {
-	int		i;
-
-	// re-register the model, because the level may have changed
-	cg.testModelEntity.hModel = trap_R_RegisterModel( cg.testModelName );
-	if (! cg.testModelEntity.hModel ) {
-		CG_Printf ("Can't register model\n");
-		return;
-	}
-
-	// if testing a gun, set the origin relative to the view origin
-	if ( cg.testGun ) {
-		VectorCopy( cg.refdef.vieworg, cg.testModelEntity.origin );
-		VectorCopy( cg.refdef.viewaxis[0], cg.testModelEntity.axis[0] );
-		VectorCopy( cg.refdef.viewaxis[1], cg.testModelEntity.axis[1] );
-		VectorCopy( cg.refdef.viewaxis[2], cg.testModelEntity.axis[2] );
-
-		// allow the position to be adjusted
-		for (i=0 ; i<3 ; i++) {
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[0][i] * cg_gun_x.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[1][i] * cg_gun_y.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[2][i] * cg_gun_z.value;
-		}
-	}
-
-	trap_R_AddRefEntityToScene( &cg.testModelEntity );
-}
-
-
-
 //============================================================================
 
 
@@ -547,59 +402,6 @@ static int CG_CalcFov( void ) {
 
 /*
 ===============
-CG_DamageBlendBlob
-
-===============
-*/
-static void CG_DamageBlendBlob( void ) {
-	int			t;
-	int			maxTime;
-	refEntity_t		ent;
-
-	if (!cg_blood.integer) {
-		return;
-	}
-
-	if ( !cg.damageValue ) {
-		return;
-	}
-
-	//if (cg.cameraMode) {
-	//	return;
-	//}
-
-	// ragePro systems can't fade blends, so don't obscure the screen
-	if ( cgs.glconfig.hardwareType == GLHW_RAGEPRO ) {
-		return;
-	}
-
-	maxTime = DAMAGE_TIME;
-	t = cg.time - cg.damageTime;
-	if ( t <= 0 || t >= maxTime ) {
-		return;
-	}
-
-
-	memset( &ent, 0, sizeof( ent ) );
-	ent.reType = RT_SPRITE;
-	ent.renderfx = RF_FIRST_PERSON;
-
-	VectorMA( cg.refdef.vieworg, 8, cg.refdef.viewaxis[0], ent.origin );
-	VectorMA( ent.origin, cg.damageX * -8, cg.refdef.viewaxis[1], ent.origin );
-	VectorMA( ent.origin, cg.damageY * 8, cg.refdef.viewaxis[2], ent.origin );
-
-	ent.radius = cg.damageValue * 3;
-	ent.customShader = cgs.media.viewBloodShader;
-	ent.shaderRGBA[0] = 255;
-	ent.shaderRGBA[1] = 255;
-	ent.shaderRGBA[2] = 255;
-	ent.shaderRGBA[3] = 200 * ( 1.0 - ((float)t / maxTime) );
-	trap_R_AddRefEntityToScene( &ent );
-}
-
-
-/*
-===============
 CG_CalcViewValues
 
 Sets cg.refdef view values
@@ -689,60 +491,6 @@ static int CG_CalcViewValues( void ) {
 }
 
 
-/*
-=====================
-CG_PowerupTimerSounds
-=====================
-*/
-static void CG_PowerupTimerSounds( void ) {
-	int		i;
-	int		t;
-
-	// powerup timers going away
-	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
-		t = cg.snap->ps.powerups[i];
-		if ( t <= cg.time ) {
-			continue;
-		}
-		if ( t - cg.time >= POWERUP_BLINKS * POWERUP_BLINK_TIME ) {
-			continue;
-		}
-		if ( ( t - cg.time ) / POWERUP_BLINK_TIME != ( t - cg.oldTime ) / POWERUP_BLINK_TIME ) {
-			trap_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_ITEM, cgs.media.wearOffSound );
-		}
-	}
-}
-
-/*
-=====================
-CG_AddBufferedSound
-=====================
-*/
-void CG_AddBufferedSound( sfxHandle_t sfx ) {
-	if ( !sfx )
-		return;
-	cg.soundBuffer[cg.soundBufferIn] = sfx;
-	cg.soundBufferIn = (cg.soundBufferIn + 1) % MAX_SOUNDBUFFER;
-	if (cg.soundBufferIn == cg.soundBufferOut) {
-		cg.soundBufferOut++;
-	}
-}
-
-/*
-=====================
-CG_PlayBufferedSounds
-=====================
-*/
-static void CG_PlayBufferedSounds( void ) {
-	if ( cg.soundTime < cg.time ) {
-		if (cg.soundBufferOut != cg.soundBufferIn && cg.soundBuffer[cg.soundBufferOut]) {
-			trap_S_StartLocalSound(cg.soundBuffer[cg.soundBufferOut], CHAN_ANNOUNCER);
-			cg.soundBuffer[cg.soundBufferOut] = 0;
-			cg.soundBufferOut = (cg.soundBufferOut + 1) % MAX_SOUNDBUFFER;
-			cg.soundTime = cg.time + 750;
-		}
-	}
-}
 
 //=========================================================================
 
@@ -762,13 +510,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// update cvars
 	CG_UpdateCvars();
 
-	// if we are only updating the screen as a loading
-	// pacifier, don't even try to read snapshots
-	if ( cg.infoScreenText[0] != 0 ) {
-		CG_DrawInformation();
-		return;
-	}
-
 	// any looped sounds will be respecified as entities
 	// are added to the render list
 	trap_S_ClearLoopingSounds(qfalse);
@@ -782,7 +523,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// if we haven't received any snapshots yet, all
 	// we can draw is the information screen
 	if ( !cg.snap || ( cg.snap->snapFlags & SNAPFLAG_NOT_ACTIVE ) ) {
-		CG_DrawInformation();
+		//CG_DrawInformation();
 		return;
 	}
 
@@ -801,36 +542,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
 
-	// first person blend blobs, done after AnglesToAxis
-	if ( !cg.renderingThirdPerson ) {
-		CG_DamageBlendBlob();
-	}
-
 	// build the render lists
 	if ( !cg.hyperspace ) {
 		CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 	}
 
-	// add buffered sounds
-	CG_PlayBufferedSounds();
-
-#ifdef MISSIONPACK
-	// play buffered voice chats
-	CG_PlayBufferedVoiceChats();
-#endif
-
-	// finish up the rest of the refdef
-	if ( cg.testModelEntity.hModel ) {
-		CG_AddTestModel();
-	}
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
-
-	// warning sounds when powerup is wearing off
-	CG_PowerupTimerSounds();
-
-	// update audio positions
-	trap_S_Respatialize( cg.snap->ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
 
 	// make sure the lagometerSample and frame timing isn't done twice when in stereo
 	if ( stereoView != STEREO_RIGHT ) {

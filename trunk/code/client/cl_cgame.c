@@ -778,7 +778,7 @@ qboolean CL_GameCommand( void ) {
 		return qfalse;
 	}
 
-	return VM_Call( cgvm, CG_CONSOLE_COMMAND );
+	return 0; //VM_Call( cgvm, CG_CONSOLE_COMMAND );
 }
 
 

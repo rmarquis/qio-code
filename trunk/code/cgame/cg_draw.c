@@ -1766,7 +1766,7 @@ Perform all drawing needed to completely fill the screen
 void CG_DrawActive( stereoFrame_t stereoView ) {
 	// optionally draw the info screen instead
 	if ( !cg.snap ) {
-		CG_DrawInformation();
+		//CG_DrawInformation();
 		return;
 	}
 

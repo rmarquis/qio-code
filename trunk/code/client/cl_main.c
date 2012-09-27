@@ -1230,7 +1230,6 @@ void CL_ShutdownAll(qboolean shutdownRef)
 	else if(re.Shutdown)
 		re.Shutdown(qfalse);		// don't destroy window or context
 
-	cls.uiStarted = qfalse;
 	cls.cgameStarted = qfalse;
 	cls.rendererStarted = qfalse;
 	cls.soundRegistered = qfalse;
@@ -1926,7 +1925,6 @@ void CL_Vid_Restart_f( void ) {
 		// reinitialize the filesystem if the game directory or checksum has changed
 
 		cls.rendererStarted = qfalse;
-		cls.uiStarted = qfalse;
 		cls.cgameStarted = qfalse;
 		cls.soundRegistered = qfalse;
 
@@ -3159,10 +3157,6 @@ void CL_StartHunkUsers( qboolean rendererOnly ) {
 		return;
 	}
 
-	if ( !cls.uiStarted ) {
-		cls.uiStarted = qtrue;
-		CL_InitUI();
-	}
 }
 
 /*

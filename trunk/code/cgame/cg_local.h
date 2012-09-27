@@ -1156,8 +1156,6 @@ void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);
 void CG_RankRunFrame( void );
 void CG_SetScoreSelection(void *menu);
-score_t *CG_GetSelectedScore( void );
-void CG_BuildSpectatorString( void );
 
 
 //
@@ -1255,8 +1253,6 @@ qhandle_t CG_StatusHandle(int task);
 void CG_Player( centity_t *cent );
 void CG_ResetPlayerEntity( centity_t *cent );
 void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team );
-void CG_NewClientInfo( int clientNum );
-sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName );
 
 //
 // cg_predict.c
@@ -1266,7 +1262,6 @@ int	CG_PointContents( const vec3_t point, int passEntityNum );
 void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 					 int skipNumber, int mask );
 void CG_PredictPlayerState( void );
-void CG_LoadDeferredPlayers( void );
 
 
 //
@@ -1296,14 +1291,6 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 // cg_snapshot.c
 //
 void CG_ProcessSnapshots( void );
-
-//
-// cg_info.c
-//
-void CG_LoadingString( const char *s );
-void CG_LoadingItem( int itemNum );
-void CG_LoadingClient( int clientNum );
-void CG_DrawInformation( void );
 
 //
 // cg_consolecmds.c
