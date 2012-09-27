@@ -640,46 +640,6 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 	if(retval < 0)
 		return NULL;
 
-	vm->systemCall = systemCalls;
-
-	// allocate space for the jump targets, which will be filled in by the compile/prep functions
-	vm->instructionCount = header->instructionCount;
-	vm->instructionPointers = Hunk_Alloc(vm->instructionCount * sizeof(*vm->instructionPointers), h_high);
-
-	// copy or compile the instructions
-	vm->codeLength = header->codeLength;
-
-	vm->compiled = qfalse;
-
-#ifdef NO_VM_COMPILED
-	if(interpret >= VMI_COMPILED) {
-		Com_Printf("Architecture doesn't have a bytecode compiler, using interpreter\n");
-		interpret = VMI_BYTECODE;
-	}
-#else
-	if(interpret != VMI_BYTECODE)
-	{
-		vm->compiled = qtrue;
-		VM_Compile( vm, header );
-	}
-#endif
-	// VM_Compile may have reset vm->compiled if compilation failed
-	if (!vm->compiled)
-	{
-		VM_PrepareInterpreter( vm, header );
-	}
-
-	// free the original file
-	FS_FreeFile( header );
-
-	// load the map file
-	VM_LoadSymbols( vm );
-
-	// the stack is implicitly at the end of the image
-	vm->programStack = vm->dataMask + 1;
-	vm->stackBottom = vm->programStack - PROGRAM_STACK_SIZE;
-
-	Com_Printf("%s loaded in %d bytes on the hunk\n", module, remaining - Hunk_MemoryRemaining());
 
 	return vm;
 }
@@ -835,33 +795,7 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... )
                             args[4],  args[5],  args[6], args[7],
                             args[8],  args[9]);
 	} else {
-#if ( id386 || idsparc ) && !defined __clang__ // calling convention doesn't need conversion in some cases
-#ifndef NO_VM_COMPILED
-		if ( vm->compiled )
-			r = VM_CallCompiled( vm, (int*)&callnum );
-		else
-#endif
-			r = VM_CallInterpreted( vm, (int*)&callnum );
-#else
-		struct {
-			int callnum;
-			int args[10];
-		} a;
-		va_list ap;
 
-		a.callnum = callnum;
-		va_start(ap, callnum);
-		for (i = 0; i < ARRAY_LEN(a.args); i++) {
-			a.args[i] = va_arg(ap, int);
-		}
-		va_end(ap);
-#ifndef NO_VM_COMPILED
-		if ( vm->compiled )
-			r = VM_CallCompiled( vm, &a.callnum );
-		else
-#endif
-			r = VM_CallInterpreted( vm, &a.callnum );
-#endif
 	}
 	--vm->callLevel;
 
