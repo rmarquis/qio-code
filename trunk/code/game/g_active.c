@@ -269,16 +269,6 @@ void	G_TouchTriggers( gentity_t *ent ) {
 			continue;
 		}
 
-		// use seperate code for determining if an item is picked up
-		// so you don't have to actually contact its bounding box
-		if ( hit->s.eType == ET_ITEM ) {
-
-		} else {
-			if ( !trap_EntityContact( mins, maxs, hit ) ) {
-				continue;
-			}
-		}
-
 		memset( &trace, 0, sizeof(trace) );
 
 		if ( hit->touch ) {
@@ -530,33 +520,7 @@ SendPendingPredictableEvents
 ==============
 */
 void SendPendingPredictableEvents( playerState_t *ps ) {
-	gentity_t *t;
-	int event, seq;
-	int extEvent, number;
 
-	// if there are still events pending
-	if ( ps->entityEventSequence < ps->eventSequence ) {
-		// create a temporary entity for this event which is sent to everyone
-		// except the client who generated the event
-		seq = ps->entityEventSequence & (MAX_PS_EVENTS-1);
-		event = ps->events[ seq ] | ( ( ps->entityEventSequence & 3 ) << 8 );
-		// set external event to zero before calling BG_PlayerStateToEntityState
-		extEvent = ps->externalEvent;
-		ps->externalEvent = 0;
-		// create temporary entity for event
-		t = G_TempEntity( ps->origin, event );
-		number = t->s.number;
-		BG_PlayerStateToEntityState( ps, &t->s, qtrue );
-		t->s.number = number;
-		t->s.eType = ET_EVENTS + event;
-		t->s.eFlags |= EF_PLAYER_EVENT;
-		t->s.otherEntityNum = ps->clientNum;
-		// send to everyone except the client who generated the event
-		t->r.svFlags |= SVF_NOTSINGLECLIENT;
-		t->r.singleClient = ps->clientNum;
-		// set back external event
-		ps->externalEvent = extEvent;
-	}
 }
 
 /*

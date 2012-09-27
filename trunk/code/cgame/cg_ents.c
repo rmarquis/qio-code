@@ -126,32 +126,6 @@ static void CG_EntityEffects( centity_t *cent ) {
 	// update sound origins
 	CG_SetEntitySoundPosition( cent );
 
-	// add loop sound
-	if ( cent->currentState.loopSound ) {
-		if (cent->currentState.eType != ET_SPEAKER) {
-			trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, 
-				cgs.gameSounds[ cent->currentState.loopSound ] );
-		} else {
-			trap_S_AddRealLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, 
-				cgs.gameSounds[ cent->currentState.loopSound ] );
-		}
-	}
-
-
-	// constant light glow
-	if(cent->currentState.constantLight)
-	{
-		int		cl;
-		float		i, r, g, b;
-
-		cl = cent->currentState.constantLight;
-		r = (float) (cl & 0xFF) / 255.0;
-		g = (float) ((cl >> 8) & 0xFF) / 255.0;
-		b = (float) ((cl >> 16) & 0xFF) / 255.0;
-		i = (float) ((cl >> 24) & 0xFF) * 4.0;
-		trap_R_AddLightToScene(cent->lerpOrigin, i, r, g, b);
-	}
-
 }
 
 
@@ -630,11 +604,6 @@ CG_AddCEntity
 ===============
 */
 static void CG_AddCEntity( centity_t *cent ) {
-	// event-only entities will have been dealt with already
-	if ( cent->currentState.eType >= ET_EVENTS ) {
-		return;
-	}
-
 	// calculate the current origin
 	CG_CalcEntityLerpPositions( cent );
 
@@ -645,40 +614,14 @@ static void CG_AddCEntity( centity_t *cent ) {
 	default:
 		CG_Error( "Bad entity type: %i", cent->currentState.eType );
 		break;
-	case ET_INVISIBLE:
-	case ET_PUSH_TRIGGER:
-	case ET_TELEPORT_TRIGGER:
-		break;
+
 	case ET_GENERAL:
 		CG_General( cent );
 		break;
 	case ET_PLAYER:
 		CG_Player( cent );
 		break;
-	case ET_ITEM:
-		CG_Item( cent );
-		break;
-	case ET_MISSILE:
-		CG_Missile( cent );
-		break;
-	case ET_MOVER:
-		CG_Mover( cent );
-		break;
-	case ET_BEAM:
-		CG_Beam( cent );
-		break;
-	case ET_PORTAL:
-		CG_Portal( cent );
-		break;
-	case ET_SPEAKER:
-		CG_Speaker( cent );
-		break;
-	case ET_GRAPPLE:
-		CG_Grapple( cent );
-		break;
-	case ET_TEAM:
-		CG_TeamBase( cent );
-		break;
+
 	}
 }
 

@@ -458,8 +458,7 @@ float vectoyaw( const vec3_t vec );
 void G_AddPredictableEvent( gentity_t *ent, int event, int eventParm );
 void G_AddEvent( gentity_t *ent, int event, int eventParm );
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
-void AddRemap(const char *oldShader, const char *newShader, float timeOffset);
-const char *BuildShaderStateConfig( void );
+
 
 //
 // g_combat.c
@@ -558,16 +557,6 @@ void G_RunClient( gentity_t *ent );
 void *G_Alloc( int size );
 void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
-
-//
-// g_session.c
-//
-void G_ReadSessionData( gclient_t *client );
-void G_InitSessionData( gclient_t *client, char *userinfo );
-
-void G_InitWorldSession( void );
-void G_WriteSessionData( void );
-
 
 #include "g_team.h" // teamplay specific stuff
 

@@ -442,8 +442,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_Printf( "Not logging to disk.\n" );
 	}
 
-	G_InitWorldSession();
-
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
 	level.gentities = g_entities;
@@ -506,9 +504,6 @@ void G_ShutdownGame( int restart ) {
 		trap_FS_FCloseFile( level.logFile );
 		level.logFile = 0;
 	}
-
-	// write all the client session data so we can get it back
-	G_WriteSessionData();
 }
 
 
@@ -1046,9 +1041,6 @@ void ExitLevel (void) {
 		}
 		cl->ps.persistant[PERS_SCORE] = 0;
 	}
-
-	// we need to do this here before changing to CON_CONNECTING
-	G_WriteSessionData();
 
 	// change all client states to connecting, so the early players into the
 	// next level will know the others aren't done reconnecting
@@ -1748,21 +1740,6 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		if ( !ent->r.linked && ent->neverFree ) {
-			continue;
-		}
-
-		if ( ent->s.eType == ET_MISSILE ) {
-			//G_RunMissile( ent );
-			continue;
-		}
-
-		if ( ent->s.eType == ET_ITEM || ent->physicsObject ) {
-
-			continue;
-		}
-
-		if ( ent->s.eType == ET_MOVER ) {
-			//G_RunMover( ent );
 			continue;
 		}
 

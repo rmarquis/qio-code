@@ -449,10 +449,6 @@ static void CG_MapRestart( void ) {
 		CG_Printf( "CG_MapRestart\n" );
 	}
 
-	CG_InitLocalEntities();
-	CG_InitMarkPolys();
-	CG_ClearParticles ();
-
 	// make sure the "3 frags left" warnings play again
 	cg.fraglimitWarnings = 0;
 

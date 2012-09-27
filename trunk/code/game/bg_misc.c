@@ -36,11 +36,12 @@ and after local prediction on the client
 void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap ) {
 	int		i;
 
-	if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
-		s->eType = ET_INVISIBLE;
-	} else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) {
-		s->eType = ET_INVISIBLE;
-	} else {
+	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
+	//	s->eType = ET_INVISIBLE;
+	//} else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) {
+	//	s->eType = ET_INVISIBLE;
+	//} else 
+	{
 		s->eType = ET_PLAYER;
 	}
 
@@ -112,11 +113,12 @@ and after local prediction on the client
 void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s, int time, qboolean snap ) {
 	int		i;
 
-	if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
-		s->eType = ET_INVISIBLE;
-	} else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) {
-		s->eType = ET_INVISIBLE;
-	} else {
+	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
+	//	s->eType = ET_INVISIBLE;
+	//} else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) {
+	//	s->eType = ET_INVISIBLE;
+	//} else 
+	{
 		s->eType = ET_PLAYER;
 	}
 

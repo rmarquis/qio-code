@@ -207,36 +207,7 @@ CG_CheckPlayerstateEvents
 ==============
 */
 void CG_CheckPlayerstateEvents( playerState_t *ps, playerState_t *ops ) {
-	int			i;
-	int			event;
-	centity_t	*cent;
 
-	if ( ps->externalEvent && ps->externalEvent != ops->externalEvent ) {
-		cent = &cg_entities[ ps->clientNum ];
-		cent->currentState.event = ps->externalEvent;
-		cent->currentState.eventParm = ps->externalEventParm;
-		CG_EntityEvent( cent, cent->lerpOrigin );
-	}
-
-	cent = &cg.predictedPlayerEntity; // cg_entities[ ps->clientNum ];
-	// go through the predictable events buffer
-	for ( i = ps->eventSequence - MAX_PS_EVENTS ; i < ps->eventSequence ; i++ ) {
-		// if we have a new predictable event
-		if ( i >= ops->eventSequence
-			// or the server told us to play another event instead of a predicted event we already issued
-			// or something the server told us changed our prediction causing a different event
-			|| (i > ops->eventSequence - MAX_PS_EVENTS && ps->events[i & (MAX_PS_EVENTS-1)] != ops->events[i & (MAX_PS_EVENTS-1)]) ) {
-
-			event = ps->events[ i & (MAX_PS_EVENTS-1) ];
-			cent->currentState.event = event;
-			cent->currentState.eventParm = ps->eventParms[ i & (MAX_PS_EVENTS-1) ];
-			CG_EntityEvent( cent, cent->lerpOrigin );
-
-			cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
-
-			cg.eventSequence++;
-		}
-	}
 }
 
 /*
@@ -245,34 +216,7 @@ CG_CheckChangedPredictableEvents
 ==================
 */
 void CG_CheckChangedPredictableEvents( playerState_t *ps ) {
-	int i;
-	int event;
-	centity_t	*cent;
-
-	cent = &cg.predictedPlayerEntity;
-	for ( i = ps->eventSequence - MAX_PS_EVENTS ; i < ps->eventSequence ; i++ ) {
-		//
-		if (i >= cg.eventSequence) {
-			continue;
-		}
-		// if this event is not further back in than the maximum predictable events we remember
-		if (i > cg.eventSequence - MAX_PREDICTED_EVENTS) {
-			// if the new playerstate event is different from a previously predicted one
-			if ( ps->events[i & (MAX_PS_EVENTS-1)] != cg.predictableEvents[i & (MAX_PREDICTED_EVENTS-1) ] ) {
-
-				event = ps->events[ i & (MAX_PS_EVENTS-1) ];
-				cent->currentState.event = event;
-				cent->currentState.eventParm = ps->eventParms[ i & (MAX_PS_EVENTS-1) ];
-				CG_EntityEvent( cent, cent->lerpOrigin );
-
-				cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
-
-				if ( cg_showmiss.integer ) {
-					CG_Printf("WARNING: changed predicted event\n");
-				}
-			}
-		}
-	}
+	
 }
 
 /*
@@ -325,12 +269,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		trap_S_StartLocalSound( cgs.media.hitTeamSound, CHAN_LOCAL_SOUND );
 	}
 
-	// health changes of more than -1 should make pain sounds
-	if ( ps->stats[STAT_HEALTH] < ops->stats[STAT_HEALTH] - 1 ) {
-		if ( ps->stats[STAT_HEALTH] > 0 ) {
-			CG_PainEvent( &cg.predictedPlayerEntity, ps->stats[STAT_HEALTH] );
-		}
-	}
+
 
 
 	// if we are going into the intermission, don't start any voices

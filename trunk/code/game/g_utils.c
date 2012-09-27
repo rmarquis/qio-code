@@ -24,49 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "g_local.h"
 
-typedef struct {
-  char oldShader[MAX_QPATH];
-  char newShader[MAX_QPATH];
-  float timeOffset;
-} shaderRemap_t;
-
-#define MAX_SHADER_REMAPS 128
-
-int remapCount = 0;
-shaderRemap_t remappedShaders[MAX_SHADER_REMAPS];
-
-void AddRemap(const char *oldShader, const char *newShader, float timeOffset) {
-	int i;
-
-	for (i = 0; i < remapCount; i++) {
-		if (Q_stricmp(oldShader, remappedShaders[i].oldShader) == 0) {
-			// found it, just update this one
-			strcpy(remappedShaders[i].newShader,newShader);
-			remappedShaders[i].timeOffset = timeOffset;
-			return;
-		}
-	}
-	if (remapCount < MAX_SHADER_REMAPS) {
-		strcpy(remappedShaders[remapCount].newShader,newShader);
-		strcpy(remappedShaders[remapCount].oldShader,oldShader);
-		remappedShaders[remapCount].timeOffset = timeOffset;
-		remapCount++;
-	}
-}
-
-const char *BuildShaderStateConfig(void) {
-	static char	buff[MAX_STRING_CHARS*4];
-	char out[(MAX_QPATH * 2) + 5];
-	int i;
-  
-	memset(buff, 0, MAX_STRING_CHARS);
-	for (i = 0; i < remapCount; i++) {
-		Com_sprintf(out, (MAX_QPATH * 2) + 5, "%s=%s:%5.2f@", remappedShaders[i].oldShader, remappedShaders[i].newShader, remappedShaders[i].timeOffset);
-		Q_strcat( buff, sizeof( buff ), out);
-	}
-	return buff;
-}
-
 /*
 =========================================================================
 
@@ -123,25 +80,6 @@ int G_SoundIndex( char *name ) {
 
 //=====================================================================
 
-
-/*
-================
-G_TeamCommand
-
-Broadcasts a command to only a specific team
-================
-*/
-void G_TeamCommand( team_t team, char *cmd ) {
-	int		i;
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if ( level.clients[i].pers.connected == CON_CONNECTED ) {
-			if ( level.clients[i].sess.sessionTeam == team ) {
-				trap_SendServerCommand( i, va("%s", cmd ));
-			}
-		}
-	}
-}
 
 
 /*
@@ -233,36 +171,7 @@ match (string)self.target and call their .use function
 ==============================
 */
 void G_UseTargets( gentity_t *ent, gentity_t *activator ) {
-	gentity_t		*t;
 	
-	if ( !ent ) {
-		return;
-	}
-
-	if (ent->targetShaderName && ent->targetShaderNewName) {
-		float f = level.time * 0.001;
-		AddRemap(ent->targetShaderName, ent->targetShaderNewName, f);
-		trap_SetConfigstring(CS_SHADERSTATE, BuildShaderStateConfig());
-	}
-
-	if ( !ent->target ) {
-		return;
-	}
-
-	t = NULL;
-	while ( (t = G_Find (t, FOFS(targetname), ent->target)) != NULL ) {
-		if ( t == ent ) {
-			G_Printf ("WARNING: Entity used itself.\n");
-		} else {
-			if ( t->use ) {
-				t->use (t, ent, activator);
-			}
-		}
-		if ( !ent->inuse ) {
-			G_Printf("entity was removed while using targets\n");
-			return;
-		}
-	}
 }
 
 
@@ -474,37 +383,6 @@ void G_FreeEntity( gentity_t *ed ) {
 	ed->inuse = qfalse;
 }
 
-/*
-=================
-G_TempEntity
-
-Spawns an event entity that will be auto-removed
-The origin will be snapped to save net bandwidth, so care
-must be taken if the origin is right on a surface (snap towards start vector first)
-=================
-*/
-gentity_t *G_TempEntity( vec3_t origin, int event ) {
-	gentity_t		*e;
-	vec3_t		snapped;
-
-	e = G_Spawn();
-	e->s.eType = ET_EVENTS + event;
-
-	e->classname = "tempEntity";
-	e->eventTime = level.time;
-	e->freeAfterEvent = qtrue;
-
-	VectorCopy( origin, snapped );
-	SnapVector( snapped );		// save network bandwidth
-	G_SetOrigin( e, snapped );
-
-	// find cluster for PVS
-	trap_LinkEntity( e );
-
-	return e;
-}
-
-
 
 /*
 ==============================================================================
@@ -523,25 +401,7 @@ of ent.  Ent should be unlinked before calling this!
 =================
 */
 void G_KillBox (gentity_t *ent) {
-	int			i, num;
-	int			touch[MAX_GENTITIES];
-	gentity_t	*hit;
-	vec3_t		mins, maxs;
 
-	VectorAdd( ent->client->ps.origin, ent->r.mins, mins );
-	VectorAdd( ent->client->ps.origin, ent->r.maxs, maxs );
-	num = trap_EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
-
-	for (i=0 ; i<num ; i++) {
-		hit = &g_entities[touch[i]];
-		if ( !hit->client ) {
-			continue;
-		}
-
-		// nail it
-		G_Damage ( hit, ent, ent, NULL, NULL,
-			100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
-	}
 
 }
 
