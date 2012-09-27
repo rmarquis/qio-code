@@ -137,22 +137,6 @@ typedef enum {
 	G_GET_SERVERINFO,	// ( char *buffer, int bufferSize );
 	// the serverinfo info string has all the cvars visible to server browsers
 
-	G_SET_BRUSH_MODEL,	// ( gentity_t *ent, const char *name );
-	// sets mins and maxs based on the brushmodel name
-
-	G_TRACE,	// ( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
-	// collision detection against all linked entities
-
-	G_POINT_CONTENTS,	// ( const vec3_t point, int passEntityNum );
-	// point contents against all linked entities
-
-	G_IN_PVS,			// ( const vec3_t p1, const vec3_t p2 );
-
-	G_IN_PVS_IGNORE_PORTALS,	// ( const vec3_t p1, const vec3_t p2 );
-
-	G_ADJUST_AREA_PORTAL_STATE,	// ( gentity_t *ent, qboolean open );
-
-	G_AREAS_CONNECTED,	// ( int area1, int area2 );
 
 	G_LINKENTITY,		// ( gentity_t *ent );
 	// an entity will never be sent to a client or used for collision
@@ -162,27 +146,13 @@ typedef enum {
 	G_UNLINKENTITY,		// ( gentity_t *ent );		
 	// call before removing an interactive entity
 
-	G_ENTITIES_IN_BOX,	// ( const vec3_t mins, const vec3_t maxs, gentity_t **list, int maxcount );
-	// EntitiesInBox will return brush models based on their bounding box,
-	// so exact determination must still be done with EntityContact
-
-	G_ENTITY_CONTACT,	// ( const vec3_t mins, const vec3_t maxs, const gentity_t *ent );
-	// perform an exact check against inline brush models of non-square shape
-
 	G_GET_USERCMD,	// ( int clientNum, usercmd_t *cmd )
 
-	G_GET_ENTITY_TOKEN,	// qboolean ( char *buffer, int bufferSize )
-	// Retrieves the next string token from the entity spawn text, returning
-	// false when all tokens have been parsed.
-	// This should only be done at GAME_INIT time.
 
 	G_FS_GETFILELIST,
 	G_REAL_TIME,
-	G_SNAPVECTOR,
 
-	G_TRACECAPSULE,	// ( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
-	G_ENTITY_CONTACTCAPSULE,	// ( const vec3_t mins, const vec3_t maxs, const gentity_t *ent );
-	
+
 
 } gameImport_t;
 
