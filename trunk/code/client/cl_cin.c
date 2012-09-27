@@ -32,7 +32,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *****************************************************************************/
 
 #include "client.h"
-#include "snd_local.h"
 
 #define MAXSIZE				8
 #define MINSIZE				4
@@ -1138,7 +1137,7 @@ redump:
 		case	ROQ_CODEBOOK:
 			decodeCodeBook( framedata, (unsigned short)cinTable[currentHandle].roq_flags );
 			break;
-		case	ZA_SOUND_MONO:
+	/*	case	ZA_SOUND_MONO:
 			if (!cinTable[currentHandle].silent) {
 				ssize = RllDecodeMonoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
                                 S_RawSamples(0, ssize, 22050, 2, 1, (byte *)sbuf, 1.0f, -1);
@@ -1153,7 +1152,7 @@ redump:
 				ssize = RllDecodeStereoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
                                 S_RawSamples(0, ssize, 22050, 2, 2, (byte *)sbuf, 1.0f, -1);
 			}
-			break;
+			break;*/
 		case	ROQ_QUAD_INFO:
 			if (cinTable[currentHandle].numQuads == -1) {
 				readQuadInfo( framedata );
@@ -1477,7 +1476,7 @@ int CIN_PlayCinematic( const char *arg, int x, int y, int w, int h, int systemBi
 		
 		Con_Close();
 
-		s_rawend[0] = s_soundtime;
+//		s_rawend[0] = s_soundtime;
 
 		return currentHandle;
 	}
@@ -1586,7 +1585,7 @@ void CIN_DrawCinematic (int handle) {
 	if (cinTable[handle].dirty && (cinTable[handle].CIN_WIDTH != cinTable[handle].drawX || cinTable[handle].CIN_HEIGHT != cinTable[handle].drawY)) {
 		int *buf2;
 
-		buf2 = Hunk_AllocateTempMemory( 256*256*4 );
+		buf2 = (int*)Hunk_AllocateTempMemory( 256*256*4 );
 
 		CIN_ResampleCinematic(handle, buf2);
 
@@ -1619,7 +1618,7 @@ void CL_PlayCinematic_f(void) {
 		bits |= CIN_loop;
 	}
 
-	S_StopAllSounds ();
+	//S_StopAllSounds ();
 
 	CL_handle = CIN_PlayCinematic( arg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bits );
 	if (CL_handle >= 0) {
@@ -1646,7 +1645,7 @@ void SCR_RunCinematic (void)
 void SCR_StopCinematic(void) {
 	if (CL_handle >= 0 && CL_handle < MAX_VIDEO_HANDLES) {
 		CIN_StopCinematic(CL_handle);
-		S_StopAllSounds ();
+	//	S_StopAllSounds ();
 		CL_handle = -1;
 	}
 }
@@ -1672,7 +1671,7 @@ void CIN_UploadCinematic(int handle) {
 		if (cinTable[handle].dirty && (cinTable[handle].CIN_WIDTH != cinTable[handle].drawX || cinTable[handle].CIN_HEIGHT != cinTable[handle].drawY))  {
 			int *buf2;
 
-			buf2 = Hunk_AllocateTempMemory( 256*256*4 );
+			buf2 = (int*)Hunk_AllocateTempMemory( 256*256*4 );
 
 			CIN_ResampleCinematic(handle, buf2);
 

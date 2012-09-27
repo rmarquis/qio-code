@@ -384,98 +384,98 @@ void CL_CaptureVoip(void)
 	// try to get more audio data from the sound card...
 
 	if (initialFrame) {
-		S_MasterGain(Com_Clamp(0.0f, 1.0f, cl_voipGainDuringCapture->value));
-		S_StartCapture();
+	//	//S_MasterGain(Com_Clamp(0.0f, 1.0f, cl_voipGainDuringCapture->value));
+	//	S_StartCapture();
 		CL_VoipNewGeneration();
 		CL_VoipParseTargets();
 	}
 
-	if ((cl_voipSend->integer) || (finalFrame)) { // user wants to capture audio?
-		int samples = S_AvailableCaptureSamples();
-		const int mult = (finalFrame) ? 1 : 4; // 4 == 80ms of audio.
+	//if ((cl_voipSend->integer) || (finalFrame)) { // user wants to capture audio?
+	//	int samples = S_AvailableCaptureSamples();
+	//	const int mult = (finalFrame) ? 1 : 4; // 4 == 80ms of audio.
 
-		// enough data buffered in audio hardware to process yet?
-		if (samples >= (clc.speexFrameSize * mult)) {
-			// audio capture is always MONO16 (and that's what speex wants!).
-			//  2048 will cover 12 uncompressed frames in narrowband mode.
-			static int16_t sampbuffer[2048];
-			float voipPower = 0.0f;
-			int speexFrames = 0;
-			int wpos = 0;
-			int pos = 0;
+	//	// enough data buffered in audio hardware to process yet?
+	//	if (samples >= (clc.speexFrameSize * mult)) {
+	//		// audio capture is always MONO16 (and that's what speex wants!).
+	//		//  2048 will cover 12 uncompressed frames in narrowband mode.
+	//		static int16_t sampbuffer[2048];
+	//		float voipPower = 0.0f;
+	//		int speexFrames = 0;
+	//		int wpos = 0;
+	//		int pos = 0;
 
-			if (samples > (clc.speexFrameSize * 4))
-				samples = (clc.speexFrameSize * 4);
+	//		if (samples > (clc.speexFrameSize * 4))
+	//			samples = (clc.speexFrameSize * 4);
 
-			// !!! FIXME: maybe separate recording from encoding, so voipPower
-			// !!! FIXME:  updates faster than 4Hz?
+	//		// !!! FIXME: maybe separate recording from encoding, so voipPower
+	//		// !!! FIXME:  updates faster than 4Hz?
 
-			samples -= samples % clc.speexFrameSize;
-			S_Capture(samples, (byte *) sampbuffer);  // grab from audio card.
+	//		samples -= samples % clc.speexFrameSize;
+	////		S_Capture(samples, (byte *) sampbuffer);  // grab from audio card.
 
-			// this will probably generate multiple speex packets each time.
-			while (samples > 0) {
-				int16_t *sampptr = &sampbuffer[pos];
-				int i, bytes;
+	//		// this will probably generate multiple speex packets each time.
+	//		while (samples > 0) {
+	//			int16_t *sampptr = &sampbuffer[pos];
+	//			int i, bytes;
 
-				// preprocess samples to remove noise...
-				speex_preprocess_run(clc.speexPreprocessor, sampptr);
+	//			// preprocess samples to remove noise...
+	//			speex_preprocess_run(clc.speexPreprocessor, sampptr);
 
-				// check the "power" of this packet...
-				for (i = 0; i < clc.speexFrameSize; i++) {
-					const float flsamp = (float) sampptr[i];
-					const float s = fabs(flsamp);
-					voipPower += s * s;
-					sampptr[i] = (int16_t) ((flsamp) * audioMult);
-				}
+	//			// check the "power" of this packet...
+	//			for (i = 0; i < clc.speexFrameSize; i++) {
+	//				const float flsamp = (float) sampptr[i];
+	//				const float s = fabs(flsamp);
+	//				voipPower += s * s;
+	//				sampptr[i] = (int16_t) ((flsamp) * audioMult);
+	//			}
 
-				// encode raw audio samples into Speex data...
-				speex_bits_reset(&clc.speexEncoderBits);
-				speex_encode_int(clc.speexEncoder, sampptr,
-				                 &clc.speexEncoderBits);
-				bytes = speex_bits_write(&clc.speexEncoderBits,
-				                         (char *) &clc.voipOutgoingData[wpos+1],
-				                         sizeof (clc.voipOutgoingData) - (wpos+1));
-				assert((bytes > 0) && (bytes < 256));
-				clc.voipOutgoingData[wpos] = (byte) bytes;
-				wpos += bytes + 1;
+	//			// encode raw audio samples into Speex data...
+	//			speex_bits_reset(&clc.speexEncoderBits);
+	//			speex_encode_int(clc.speexEncoder, sampptr,
+	//			                 &clc.speexEncoderBits);
+	//			bytes = speex_bits_write(&clc.speexEncoderBits,
+	//			                         (char *) &clc.voipOutgoingData[wpos+1],
+	//			                         sizeof (clc.voipOutgoingData) - (wpos+1));
+	//			assert((bytes > 0) && (bytes < 256));
+	//			clc.voipOutgoingData[wpos] = (byte) bytes;
+	//			wpos += bytes + 1;
 
-				// look at the data for the next packet...
-				pos += clc.speexFrameSize;
-				samples -= clc.speexFrameSize;
-				speexFrames++;
-			}
+	//			// look at the data for the next packet...
+	//			pos += clc.speexFrameSize;
+	//			samples -= clc.speexFrameSize;
+	//			speexFrames++;
+	//		}
 
-			clc.voipPower = (voipPower / (32768.0f * 32768.0f *
-			                 ((float) (clc.speexFrameSize * speexFrames)))) *
-			                 100.0f;
+	//		clc.voipPower = (voipPower / (32768.0f * 32768.0f *
+	//		                 ((float) (clc.speexFrameSize * speexFrames)))) *
+	//		                 100.0f;
 
-			if ((useVad) && (clc.voipPower < cl_voipVADThreshold->value)) {
-				CL_VoipNewGeneration();  // no "talk" for at least 1/4 second.
-			} else {
-				clc.voipOutgoingDataSize = wpos;
-				clc.voipOutgoingDataFrames = speexFrames;
+	//		if ((useVad) && (clc.voipPower < cl_voipVADThreshold->value)) {
+	//			CL_VoipNewGeneration();  // no "talk" for at least 1/4 second.
+	//		} else {
+	//			clc.voipOutgoingDataSize = wpos;
+	//			clc.voipOutgoingDataFrames = speexFrames;
 
-				Com_DPrintf("VoIP: Send %d frames, %d bytes, %f power\n",
-				            speexFrames, wpos, clc.voipPower);
+	//			Com_DPrintf("VoIP: Send %d frames, %d bytes, %f power\n",
+	//			            speexFrames, wpos, clc.voipPower);
 
-				#if 0
-				static FILE *encio = NULL;
-				if (encio == NULL) encio = fopen("voip-outgoing-encoded.bin", "wb");
-				if (encio != NULL) { fwrite(clc.voipOutgoingData, wpos, 1, encio); fflush(encio); }
-				static FILE *decio = NULL;
-				if (decio == NULL) decio = fopen("voip-outgoing-decoded.bin", "wb");
-				if (decio != NULL) { fwrite(sampbuffer, speexFrames * clc.speexFrameSize * 2, 1, decio); fflush(decio); }
-				#endif
-			}
-		}
-	}
+	//			#if 0
+	//			static FILE *encio = NULL;
+	//			if (encio == NULL) encio = fopen("voip-outgoing-encoded.bin", "wb");
+	//			if (encio != NULL) { fwrite(clc.voipOutgoingData, wpos, 1, encio); fflush(encio); }
+	//			static FILE *decio = NULL;
+	//			if (decio == NULL) decio = fopen("voip-outgoing-decoded.bin", "wb");
+	//			if (decio != NULL) { fwrite(sampbuffer, speexFrames * clc.speexFrameSize * 2, 1, decio); fflush(decio); }
+	//			#endif
+	//		}
+	//	}
+	//}
 
 	// User requested we stop recording, and we've now processed the last of
 	//  any previously-buffered data. Pause the capture device, etc.
 	if (finalFrame) {
-		S_StopCapture();
-		S_MasterGain(1.0f);
+	//	S_StopCapture();
+	//	S_MasterGain(1.0f);
 		clc.voipPower = 0.0f;  // force this value so it doesn't linger.
 	}
 }
@@ -1150,7 +1150,7 @@ void CL_ShutdownAll(qboolean shutdownRef)
 	CL_cURL_Shutdown();
 #endif
 	// clear sounds
-	S_DisableSounds();
+	//S_DisableSounds();
 	// shutdown CGame
 	CL_ShutdownCGame();
 	// shutdown UI
@@ -1370,7 +1370,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	}
 
 	SCR_StopCinematic ();
-	S_ClearSoundBuffer();
+	//S_ClearSoundBuffer();
 
 	// send a disconnect message to the server
 	// send it a few times in case one is dropped
@@ -1828,7 +1828,7 @@ void CL_Vid_Restart_f( void ) {
 		CL_StopRecord_f();
 
 	// don't let them loop during the restart
-	S_StopAllSounds();
+	//S_StopAllSounds();
 
 	if(!FS_ConditionalRestart(clc.checksumFeed, qtrue))
 	{
@@ -1889,7 +1889,7 @@ Restart the sound subsystem
 */
 void CL_Snd_Shutdown(void)
 {
-	S_Shutdown();
+	//S_Shutdown();
 	cls.soundStarted = qfalse;
 }
 
@@ -2869,7 +2869,7 @@ void CL_Frame ( int msec ) {
 			cls.frametime = msec;
 			cls.realtime += cls.frametime;
 			SCR_UpdateScreen();
-			S_Update();
+			//S_Update();
 			Con_RunConsole();
 			cls.framecount++;
 			return;
@@ -2884,7 +2884,7 @@ void CL_Frame ( int msec ) {
 	} else	if ( clc.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
 		&& !com_sv_running->integer && uivm ) {
 		// if disconnected, bring up the menu
-		S_StopAllSounds();
+		//S_StopAllSounds();
 //		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
 	}
 
@@ -2972,7 +2972,7 @@ void CL_Frame ( int msec ) {
 	SCR_UpdateScreen();
 
 	// update audio
-	S_Update();
+	//S_Update();
 
 #ifdef USE_VOIP
 	CL_CaptureVoip();
@@ -3077,12 +3077,12 @@ void CL_StartHunkUsers( qboolean rendererOnly ) {
 
 	if ( !cls.soundStarted ) {
 		cls.soundStarted = qtrue;
-		S_Init();
+		//S_Init();
 	}
 
 	if ( !cls.soundRegistered ) {
 		cls.soundRegistered = qtrue;
-		S_BeginRegistration();
+		//S_BeginRegistration();
 	}
 
 	if( com_dedicated->integer ) {

@@ -233,6 +233,22 @@
 			<File
 				RelativePath="..\..\code\client\cl_avi.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\client\cl_cgame.c"
@@ -245,6 +261,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -254,6 +271,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -268,6 +286,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -277,6 +296,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -291,6 +311,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -300,12 +321,29 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\client\cl_curl.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\client\cl_input.c"
@@ -318,6 +356,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -327,6 +366,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -341,6 +381,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -350,6 +391,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -364,6 +406,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -373,6 +416,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -387,6 +431,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -396,6 +441,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -410,6 +456,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -419,6 +466,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -433,6 +481,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -442,6 +491,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -456,6 +506,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -465,6 +516,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -479,6 +531,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -488,6 +541,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -502,6 +556,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -511,16 +566,49 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sys\con_log.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sys\con_passive.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\cvar.c"
@@ -533,6 +621,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -542,6 +631,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -556,6 +646,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -565,6 +656,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -579,6 +671,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -588,6 +681,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -602,6 +696,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -611,6 +706,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -625,6 +721,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -634,6 +731,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -648,6 +746,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -657,6 +756,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -671,6 +771,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -680,6 +781,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -694,6 +796,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -703,56 +806,139 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\net_ip.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\puff.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\.\qcommon\q_math.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\.\qcommon\q_shared.c"
 				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\qal.c"
-				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sdl\sdl_gamma.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sdl\sdl_glimp.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sdl\sdl_input.c"
 				>
-			</File>
-			<File
-				RelativePath="..\..\code\sdl\sdl_snd.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_adpcm.c"
-				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -760,120 +946,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_codec.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_codec_ogg.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_codec_wav.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_dma.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_main.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_mem.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_mix.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_openal.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\client\snd_wavelet.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -888,6 +961,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -897,6 +971,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -911,6 +986,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -920,6 +996,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -934,6 +1011,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -943,6 +1021,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -957,6 +1036,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -966,6 +1046,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -980,6 +1061,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -989,6 +1071,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1003,6 +1086,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1012,6 +1096,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1026,6 +1111,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1035,6 +1121,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1049,6 +1136,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1058,16 +1146,49 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sys\sys_main.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\sys\sys_win32.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\unzip.c"
@@ -1080,6 +1201,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1089,6 +1211,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1103,6 +1226,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1112,6 +1236,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
