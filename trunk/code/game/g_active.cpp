@@ -95,7 +95,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// link entity now, after any personal teleporters have been used
 	trap_LinkEntity (ent);
 
-
+	client->ps.commandTime = ucmd->serverTime;
 	// swap and latch button actions
 	client->oldbuttons = client->buttons;
 	client->buttons = ucmd->buttons;

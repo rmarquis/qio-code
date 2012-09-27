@@ -210,6 +210,8 @@ void ClientSpawn(gentity_t *ent) {
 	VectorCopy( spawn_origin, ent->s.origin );
 	VectorCopy( spawn_origin, client->ps.origin );
 
+	trap_LinkEntity(ent);
+
 	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
