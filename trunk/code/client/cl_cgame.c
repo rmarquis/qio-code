@@ -163,15 +163,6 @@ qboolean	CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 	return qtrue;
 }
 
-/*
-=====================
-CL_SetUserCmdValue
-=====================
-*/
-void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale ) {
-	cl.cgameUserCmdValue = userCmdValue;
-	cl.cgameSensitivity = sensitivityScale;
-}
 
 /*
 =====================
@@ -598,9 +589,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_GetCurrentCmdNumber();
 	case CG_GETUSERCMD:
 		return CL_GetUserCmd( args[1], VMA(2) );
-	case CG_SETUSERCMDVALUE:
-		CL_SetUserCmdValue( args[1], VMF(2) );
-		return 0;
 	case CG_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
   case CG_KEY_ISDOWN:
@@ -652,42 +640,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	}
 		return 0;
 
-	case CG_CIN_PLAYCINEMATIC:
-	  return CIN_PlayCinematic(VMA(1), args[2], args[3], args[4], args[5], args[6]);
-
-	case CG_CIN_STOPCINEMATIC:
-	  return CIN_StopCinematic(args[1]);
-
-	case CG_CIN_RUNCINEMATIC:
-	  return CIN_RunCinematic(args[1]);
-
-	case CG_CIN_DRAWCINEMATIC:
-	  CIN_DrawCinematic(args[1]);
-	  return 0;
-
-	case CG_CIN_SETEXTENTS:
-	  CIN_SetExtents(args[1], args[2], args[3], args[4], args[5]);
-	  return 0;
-
 	case CG_R_REMAP_SHADER:
 		re.RemapShader( VMA(1), VMA(2), VMA(3) );
 		return 0;
-
-/*
-	case CG_LOADCAMERA:
-		return loadCamera(VMA(1));
-
-	case CG_STARTCAMERA:
-		startCamera(args[1]);
-		return 0;
-
-	case CG_GETCAMERAINFO:
-		return getCameraInfo(args[1], VMA(2), VMA(3));
-*/
-	case CG_GET_ENTITY_TOKEN:
-		return re.GetEntityToken( VMA(1), args[2] );
-	case CG_R_INPVS:
-		return re.inPVS( VMA(1), VMA(2) );
 
 	default:
 	        assert(0);

@@ -217,7 +217,7 @@ static void CG_DrawLagometer( void ) {
 #endif
 
 	trap_R_SetColor( NULL );
-	CG_DrawPic( x, y, 48, 48, cgs.media.lagometerShader );
+	//CG_DrawPic( x, y, 48, 48, cgs.media.lagometerShader );
 
 	ax = x;
 	ay = y;
@@ -320,22 +320,7 @@ for a few moments
 ==============
 */
 void CG_CenterPrint( const char *str, int y, int charWidth ) {
-	char	*s;
-
-	Q_strncpyz( cg.centerPrint, str, sizeof(cg.centerPrint) );
-
-	cg.centerPrintTime = cg.time;
-	cg.centerPrintY = y;
-	cg.centerPrintCharWidth = charWidth;
-
-	// count the number of lines for centering
-	cg.centerPrintLines = 1;
-	s = cg.centerPrint;
-	while( *s ) {
-		if (*s == '\n')
-			cg.centerPrintLines++;
-		s++;
-	}
+	
 }
 
 
@@ -345,66 +330,7 @@ CG_DrawCenterString
 ===================
 */
 static void CG_DrawCenterString( void ) {
-	char	*start;
-	int		l;
-	int		x, y, w;
-#ifdef MISSIONPACK
-	int h;
-#endif
-	float	*color;
 
-	if ( !cg.centerPrintTime ) {
-		return;
-	}
-
-	color = CG_FadeColor( cg.centerPrintTime, 1000 * cg_centertime.value );
-	if ( !color ) {
-		return;
-	}
-
-	trap_R_SetColor( color );
-
-	start = cg.centerPrint;
-
-	y = cg.centerPrintY - cg.centerPrintLines * BIGCHAR_HEIGHT / 2;
-
-	while ( 1 ) {
-		char linebuffer[1024];
-
-		for ( l = 0; l < 50; l++ ) {
-			if ( !start[l] || start[l] == '\n' ) {
-				break;
-			}
-			linebuffer[l] = start[l];
-		}
-		linebuffer[l] = 0;
-
-#ifdef MISSIONPACK
-		w = CG_Text_Width(linebuffer, 0.5, 0);
-		h = CG_Text_Height(linebuffer, 0.5, 0);
-		x = (SCREEN_WIDTH - w) / 2;
-		CG_Text_Paint(x, y + h, 0.5, color, linebuffer, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE);
-		y += h + 6;
-#else
-		w = cg.centerPrintCharWidth * CG_DrawStrlen( linebuffer );
-
-		x = ( SCREEN_WIDTH - w ) / 2;
-
-		CG_DrawStringExt( x, y, linebuffer, color, qfalse, qtrue,
-			cg.centerPrintCharWidth, (int)(cg.centerPrintCharWidth * 1.5), 0 );
-
-		y += cg.centerPrintCharWidth * 1.5;
-#endif
-		while ( *start && ( *start != '\n' ) ) {
-			start++;
-		}
-		if ( !*start ) {
-			break;
-		}
-		start++;
-	}
-
-	trap_R_SetColor( NULL );
 }
 
 /*

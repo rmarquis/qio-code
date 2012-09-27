@@ -83,9 +83,6 @@ int trap_FS_GetFileList(  const char *path, const char *extension, char *listbuf
 	return syscall( G_FS_GETFILELIST, path, extension, listbuf, bufsize );
 }
 
-int trap_FS_Seek( fileHandle_t f, long offset, int origin ) {
-	return syscall( G_FS_SEEK, f, offset, origin );
-}
 
 void	trap_SendConsoleCommand( int exec_when, const char *text ) {
 	syscall( G_SEND_CONSOLE_COMMAND, exec_when, text );

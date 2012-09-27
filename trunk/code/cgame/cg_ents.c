@@ -215,19 +215,8 @@ void CG_AddPacketEntities( void ) {
 									// no entities should be marked as interpolating
 	}
 
-	CG_Printf("frameInterpolation: %f\n",cg.frameInterpolation);
+	//CG_Printf("frameInterpolation: %f\n",cg.frameInterpolation);
 
-	// the auto-rotating items will all have the same axis
-	cg.autoAngles[0] = 0;
-	cg.autoAngles[1] = ( cg.time & 2047 ) * 360 / 2048.0;
-	cg.autoAngles[2] = 0;
-
-	cg.autoAnglesFast[0] = 0;
-	cg.autoAnglesFast[1] = ( cg.time & 1023 ) * 360 / 1024.0f;
-	cg.autoAnglesFast[2] = 0;
-
-	AnglesToAxis( cg.autoAngles, cg.autoAxis );
-	AnglesToAxis( cg.autoAnglesFast, cg.autoAxisFast );
 
 	// generate and add the entity from the playerstate
 	ps = &cg.predictedPlayerState;

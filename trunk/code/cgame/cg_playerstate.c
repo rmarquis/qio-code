@@ -36,10 +36,8 @@ A respawn happened this snapshot
 */
 void CG_Respawn( void ) {
 	// no error decay on player movement
-	cg.thisFrameTeleport = qtrue;
+//	cg.thisFrameTeleport = qtrue;
 
-	// display weapons available
-	cg.weaponSelectTime = cg.time;
 
 }
 
@@ -54,7 +52,7 @@ CG_TransitionPlayerState
 void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 	// check for changing follow mode
 	if ( ps->clientNum != ops->clientNum ) {
-		cg.thisFrameTeleport = qtrue;
+//		cg.thisFrameTeleport = qtrue;
 		// make sure we don't get any unwanted transition effects
 		*ops = *ps;
 	}

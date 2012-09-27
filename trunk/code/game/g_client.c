@@ -35,16 +35,7 @@ Targets will be fired when someone spawns in on them.
 "nohumans" will prevent non-bots from using this spot.
 */
 void SP_info_player_deathmatch( gentity_t *ent ) {
-	int		i;
 
-	G_SpawnInt( "nobots", "0", &i);
-	if ( i ) {
-		ent->flags |= FL_NO_BOTS;
-	}
-	G_SpawnInt( "nohumans", "0", &i );
-	if ( i ) {
-		ent->flags |= FL_NO_HUMANS;
-	}
 }
 
 /*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32)
@@ -71,34 +62,6 @@ void SP_info_player_intermission( gentity_t *ent ) {
 
 =======================================================================
 */
-
-/*
-================
-SpotWouldTelefrag
-
-================
-*/
-qboolean SpotWouldTelefrag( gentity_t *spot ) {
-	int			i, num;
-	int			touch[MAX_GENTITIES];
-	gentity_t	*hit;
-	vec3_t		mins, maxs;
-
-	VectorAdd( spot->s.origin, playerMins, mins );
-	VectorAdd( spot->s.origin, playerMaxs, maxs );
-	num = trap_EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
-
-	for (i=0 ; i<num ; i++) {
-		hit = &g_entities[touch[i]];
-		//if ( hit->client && hit->client->ps.stats[STAT_HEALTH] > 0 ) {
-		if ( hit->client) {
-			return qtrue;
-		}
-
-	}
-
-	return qfalse;
-}
 
 /*
 ================
@@ -151,15 +114,7 @@ gentity_t *SelectRandomDeathmatchSpawnPoint(qboolean isbot) {
 
 	while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL && count < MAX_SPAWN_POINTS)
 	{
-		if(SpotWouldTelefrag(spot))
-			continue;
 
-		if(((spot->flags & FL_NO_BOTS) && isbot) ||
-		   ((spot->flags & FL_NO_HUMANS) && !isbot))
-		{
-			// spot is not for this human/bot player
-			continue;
-		}
 
 		spots[count] = spot;
 		count++;
@@ -193,15 +148,7 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 
 	while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
-		if(SpotWouldTelefrag(spot))
-			continue;
 
-		if(((spot->flags & FL_NO_BOTS) && isbot) ||
-		   ((spot->flags & FL_NO_HUMANS) && !isbot))
-		{
-			// spot is not for this human/bot player
-			continue;
-		}
 
 		VectorSubtract( spot->s.origin, avoidPoint, delta );
 		dist = VectorLength( delta );
@@ -312,17 +259,12 @@ gentity_t *SelectInitialSpawnPoint( vec3_t origin, vec3_t angles, qboolean isbot
 	
 	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
-		if(((spot->flags & FL_NO_BOTS) && isbot) ||
-		   ((spot->flags & FL_NO_HUMANS) && !isbot))
-		{
-			continue;
-		}
-		
+
 		if((spot->spawnflags & 0x01))
 			break;
 	}
 
-	if (!spot || SpotWouldTelefrag(spot))
+	if (!spot )
 		return SelectSpawnPoint(vec3_origin, origin, angles, isbot);
 
 	VectorCopy (spot->s.origin, origin);
@@ -340,67 +282,9 @@ SelectSpectatorSpawnPoint
 */
 gentity_t *SelectSpectatorSpawnPoint( vec3_t origin, vec3_t angles ) {
 
-	VectorCopy( level.intermission_origin, origin );
-	VectorCopy( level.intermission_angle, angles );
-
 	return NULL;
 }
 
-/*
-=======================================================================
-
-BODYQUE
-
-=======================================================================
-*/
-
-/*
-===============
-InitBodyQue
-===============
-*/
-void InitBodyQue (void) {
-	int		i;
-	gentity_t	*ent;
-
-	level.bodyQueIndex = 0;
-	for (i=0; i<BODY_QUEUE_SIZE ; i++) {
-		ent = G_Spawn();
-		ent->classname = "bodyque";
-		ent->neverFree = qtrue;
-		level.bodyQue[i] = ent;
-	}
-}
-
-/*
-=============
-BodySink
-
-After sitting around for five seconds, fall into the ground and dissapear
-=============
-*/
-void BodySink( gentity_t *ent ) {
-	if ( level.time - ent->timestamp > 6500 ) {
-		// the body ques are never actually freed, they are just unlinked
-		trap_UnlinkEntity( ent );
-		ent->physicsObject = qfalse;
-		return;	
-	}
-	ent->nextthink = level.time + 100;
-//	ent->s.pos.trBase[2] -= 1;
-}
-
-/*
-=============
-CopyToBodyQue
-
-A player is respawning, so make an entity that looks
-just like the existing corpse to leave behind.
-=============
-*/
-void CopyToBodyQue( gentity_t *ent ) {
-
-}
 
 //======================================================================
 
@@ -432,7 +316,7 @@ ClientRespawn
 */
 void ClientRespawn( gentity_t *ent ) {
 
-	CopyToBodyQue (ent);
+
 	ClientSpawn(ent);
 }
 
@@ -448,114 +332,7 @@ if desired.
 ============
 */
 void ClientUserinfoChanged( int clientNum ) {
-	gentity_t *ent;
-	int		teamTask, teamLeader, team;
-	char	*s;
-	char	model[MAX_QPATH];
-	char	headModel[MAX_QPATH];
-	char	oldname[MAX_STRING_CHARS];
-	gclient_t	*client;
-	char	c1[MAX_INFO_STRING];
-	char	c2[MAX_INFO_STRING];
-	char	redTeam[MAX_INFO_STRING];
-	char	blueTeam[MAX_INFO_STRING];
-	char	userinfo[MAX_INFO_STRING];
 
-	ent = g_entities + clientNum;
-	client = ent->client;
-
-	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
-
-	// check for malformed or illegal info strings
-	if ( !Info_Validate(userinfo) ) {
-		strcpy (userinfo, "\\name\\badinfo");
-		// don't keep those clients and userinfo
-		trap_DropClient(clientNum, "Invalid userinfo");
-	}
-
-	// check for local client
-	s = Info_ValueForKey( userinfo, "ip" );
-	if ( !strcmp( s, "localhost" ) ) {
-		client->pers.localClient = qtrue;
-	}
-
-	// check the item prediction
-	s = Info_ValueForKey( userinfo, "cg_predictItems" );
-	if ( !atoi( s ) ) {
-		client->pers.predictItemPickup = qfalse;
-	} else {
-		client->pers.predictItemPickup = qtrue;
-	}
-
-	// set name
-	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
-	s = Info_ValueForKey (userinfo, "name");
-	strcpy(client->pers.netname,s);
-
-
-	if ( client->pers.connected == CON_CONNECTED ) {
-		if ( strcmp( oldname, client->pers.netname ) ) {
-			trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " renamed to %s\n\"", oldname, 
-				client->pers.netname) );
-		}
-	}
-
-
-
-
-#ifdef MISSIONPACK
-	if (g_gametype.integer >= GT_TEAM) {
-		client->pers.teamInfo = qtrue;
-	} else {
-		s = Info_ValueForKey( userinfo, "teamoverlay" );
-		if ( ! *s || atoi( s ) != 0 ) {
-			client->pers.teamInfo = qtrue;
-		} else {
-			client->pers.teamInfo = qfalse;
-		}
-	}
-#else
-	// teamInfo
-	s = Info_ValueForKey( userinfo, "teamoverlay" );
-	if ( ! *s || atoi( s ) != 0 ) {
-		client->pers.teamInfo = qtrue;
-	} else {
-		client->pers.teamInfo = qfalse;
-	}
-#endif
-
-	// team task (0 = none, 1 = offence, 2 = defence)
-	teamTask = atoi(Info_ValueForKey(userinfo, "teamtask"));
-	// team Leader (1 = leader, 0 is normal player)
-	teamLeader = client->sess.teamLeader;
-
-	// colors
-	strcpy(c1, Info_ValueForKey( userinfo, "color1" ));
-	strcpy(c2, Info_ValueForKey( userinfo, "color2" ));
-
-	strcpy(redTeam, Info_ValueForKey( userinfo, "g_redteam" ));
-	strcpy(blueTeam, Info_ValueForKey( userinfo, "g_blueteam" ));
-	
-	// send over a subset of the userinfo keys so other clients can
-	// print scoreboards, display models, and play custom sounds
-	if (ent->r.svFlags & SVF_BOT)
-	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
-			client->pers.netname, team, model, headModel, c1, c2, 
-			client->pers.maxHealth, client->sess.wins, client->sess.losses,
-			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader );
-	}
-	else
-	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
-			client->pers.netname, 0, model, headModel, redTeam, blueTeam, c1, c2, 
-			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader);
-	}
-
-	trap_SetConfigstring( CS_PLAYERS+clientNum, s );
-
-	// this is not the userinfo, more like the configstring actually
-	G_LogPrintf( "ClientUserinfoChanged: %i %s\n", clientNum, s );
 }
 
 
@@ -663,13 +440,11 @@ void ClientBegin( int clientNum ) {
 		trap_UnlinkEntity( ent );
 	}
 	G_InitGentity( ent );
-	ent->touch = 0;
 	ent->pain = 0;
 	ent->client = client;
 
 	client->pers.connected = CON_CONNECTED;
 	client->pers.enterTime = level.time;
-	client->pers.teamState.state = TEAM_BEGIN;
 
 	// save eflags around this, because changing teams will
 	// cause this to happen with a valid entity, and we
@@ -703,13 +478,10 @@ void ClientSpawn(gentity_t *ent) {
 	vec3_t	spawn_origin, spawn_angles;
 	gclient_t	*client;
 	clientPersistant_t	saved;
-	clientSession_t		savedSess;
-	int		persistant[MAX_PERSISTANT];
 	gentity_t	*spawnPoint;
 	int		flags;
 	int		savedPing;
 //	char	*savedAreaBits;
-	int		accuracy_hits, accuracy_shots;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
@@ -736,35 +508,23 @@ void ClientSpawn(gentity_t *ent) {
 				spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 		}
 	
-	client->pers.teamState.state = TEAM_ACTIVE;
-
-	// always clear the kamikaze flag
-	ent->s.eFlags &= ~EF_KAMIKAZE;
 
 	// toggle the teleport bit so the client knows to not lerp
 	// and never clear the voted flag
-	flags = ent->client->ps.eFlags & (EF_TELEPORT_BIT | EF_VOTED | EF_TEAMVOTED);
+	flags = ent->client->ps.eFlags & (EF_TELEPORT_BIT );
 	flags ^= EF_TELEPORT_BIT;
 
 	// clear everything but the persistant data
 
 	saved = client->pers;
-	savedSess = client->sess;
 	savedPing = client->ps.ping;
-//	savedAreaBits = client->areabits;
-	accuracy_hits = client->accuracy_hits;
-	accuracy_shots = client->accuracy_shots;
+
 
 
 	Com_Memset (client, 0, sizeof(*client));
 
 	client->pers = saved;
-	client->sess = savedSess;
 	client->ps.ping = savedPing;
-//	client->areabits = savedAreaBits;
-	client->accuracy_hits = accuracy_hits;
-	client->accuracy_shots = accuracy_shots;
-	client->lastkilled_client = -1;
 
 
 
@@ -786,7 +546,6 @@ void ClientSpawn(gentity_t *ent) {
 	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
 	ent->clipmask = MASK_PLAYERSOLID;
-	ent->die = player_die;
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
@@ -813,8 +572,6 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 	client->ps.pm_time = 100;
 
-	client->respawnTime = level.time;
-	client->inactivityTime = level.time + g_inactivity.integer * 1000;
 	client->latched_buttons = 0;
 
 	
@@ -845,8 +602,6 @@ server system housekeeping.
 */
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
-	gentity_t	*tent;
-	int			i;
 
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {

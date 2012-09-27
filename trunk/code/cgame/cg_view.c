@@ -148,8 +148,6 @@ CG_OffsetFirstPersonView
 static void CG_OffsetFirstPersonView( void ) {
 	float			*origin;
 	float			*angles;
-	float			bob;
-	float			ratio;
 	float			delta;
 	float			speed;
 	float			f;
@@ -158,30 +156,6 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
-
-	// add angles based on damage kick
-	if ( cg.damageTime ) {
-		ratio = cg.time - cg.damageTime;
-		if ( ratio < DAMAGE_DEFLECT_TIME ) {
-			ratio /= DAMAGE_DEFLECT_TIME;
-			angles[PITCH] += ratio * cg.v_dmg_pitch;
-			angles[ROLL] += ratio * cg.v_dmg_roll;
-		} else {
-			ratio = 1.0 - ( ratio - DAMAGE_DEFLECT_TIME ) / DAMAGE_RETURN_TIME;
-			if ( ratio > 0 ) {
-				angles[PITCH] += ratio * cg.v_dmg_pitch;
-				angles[ROLL] += ratio * cg.v_dmg_roll;
-			}
-		}
-	}
-
-	// add pitch based on fall kick
-#if 0
-	ratio = ( cg.time - cg.landTime) / FALL_TIME;
-	if (ratio < 0)
-		ratio = 0;
-	angles[PITCH] += ratio * cg.fall_value;
-#endif
 
 	// add angles based on velocity
 	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
@@ -195,18 +169,8 @@ static void CG_OffsetFirstPersonView( void ) {
 	// add angles based on bob
 
 	// make sure the bob is visible even at low speeds
-	speed = cg.xyspeed > 200 ? cg.xyspeed : 200;
+	speed = 200;
 
-	delta = cg.bobfracsin * cg_bobpitch.value * speed;
-	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
-		delta *= 3;		// crouching
-	angles[PITCH] += delta;
-	delta = cg.bobfracsin * cg_bobroll.value * speed;
-	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
-		delta *= 3;		// crouching accentuates roll
-	if (cg.bobcycle & 1)
-		delta = -delta;
-	angles[ROLL] += delta;
 
 //===================================
 
@@ -220,13 +184,7 @@ static void CG_OffsetFirstPersonView( void ) {
 			* (DUCK_TIME - timeDelta) / DUCK_TIME;
 	}
 
-	// add bob height
-	bob = cg.bobfracsin * cg.xyspeed * cg_bobup.value;
-	if (bob > 6) {
-		bob = 6;
-	}
 
-	origin[2] += bob;
 
 
 	// add fall height
@@ -242,19 +200,6 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	// add step offset
 	CG_StepOffset();
-
-	// pivot the eye based on a neck length
-#if 0
-	{
-#define	NECK_LENGTH		8
-	vec3_t			forward, up;
- 
-	cg.refdef.vieworg[2] -= NECK_LENGTH;
-	AngleVectors( cg.refdefViewAngles, forward, NULL, up );
-	VectorMA( cg.refdef.vieworg, 3, forward, cg.refdef.vieworg );
-	VectorMA( cg.refdef.vieworg, NECK_LENGTH, up, cg.refdef.vieworg );
-	}
-#endif
 }
 
 //======================================================================
@@ -297,18 +242,14 @@ static int CG_CalcFov( void ) {
 	int		inwater;
 
 	{
-		// user selectable
-		if ( cgs.dmflags & DF_FIXED_FOV ) {
-			// dmflag to prevent wide fov for all clients
-			fov_x = 90;
-		} else {
+	
 			fov_x = cg_fov.value;
 			if ( fov_x < 1 ) {
 				fov_x = 1;
 			} else if ( fov_x > 160 ) {
 				fov_x = 160;
 			}
-		}
+		
 
 		// account for zooms
 		zoomFov = cg_zoomFov.value;
@@ -402,34 +343,11 @@ static int CG_CalcViewValues( void ) {
 */
 
 
-	cg.bobcycle = 0;
-	cg.bobfracsin = 0;
-	cg.xyspeed = sqrt( ps->velocity[0] * ps->velocity[0] +
-		ps->velocity[1] * ps->velocity[1] );
+
 
 
 	VectorCopy( ps->origin, cg.refdef.vieworg );
 	VectorCopy( ps->viewangles, cg.refdefViewAngles );
-
-	if (cg_cameraOrbit.integer) {
-		if (cg.time > cg.nextOrbitTime) {
-			cg.nextOrbitTime = cg.time + cg_cameraOrbitDelay.integer;
-			cg_thirdPersonAngle.value += cg_cameraOrbit.value;
-		}
-	}
-	// add error decay
-	if ( cg_errorDecay.value > 0 ) {
-		int		t;
-		float	f;
-
-		t = cg.time - cg.predictedErrorTime;
-		f = ( cg_errorDecay.value - t ) / cg_errorDecay.value;
-		if ( f > 0 && f < 1 ) {
-			VectorMA( cg.refdef.vieworg, f, cg.predictedError, cg.refdef.vieworg );
-		} else {
-			cg.predictedErrorTime = 0;
-		}
-	}
 
 	if ( cg.renderingThirdPerson ) {
 		// back away from character
@@ -486,9 +404,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		//CG_DrawInformation();
 		return;
 	}
-
-	// let the client system know what our weapon and zoom settings are
-	trap_SetUserCmdValue( cg.weaponSelect, cg.zoomSensitivity );
 
 	// this counter will be bumped for every valid scene we generate
 	cg.clientFrame++;

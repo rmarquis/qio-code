@@ -1111,8 +1111,6 @@ typedef struct {
 #define	MAX_POWERUPS			16
 #define	MAX_WEAPONS				16		
 
-#define	MAX_PS_EVENTS			2
-
 #define PS_PMOVEFRAMECOUNTBITS	6
 
 // playerState_t is the information needed by both the client and server
@@ -1199,26 +1197,6 @@ typedef struct usercmd_s {
 } usercmd_t;
 
 //===================================================================
-
-// if entityState->solid == SOLID_BMODEL, modelindex is an inline model number
-#define	SOLID_BMODEL	0xffffff
-
-typedef enum {
-	TR_STATIONARY,
-	TR_INTERPOLATE,				// non-parametric, but interpolate between snapshots
-	TR_LINEAR,
-	TR_LINEAR_STOP,
-	TR_SINE,					// value = base + sin( time / duration ) * delta
-	TR_GRAVITY
-} trType_t;
-
-typedef struct {
-	trType_t	trType;
-	int		trTime;
-	int		trDuration;			// if non 0, trTime + trDuration = stop time
-	vec3_t	trBase;
-	vec3_t	trDelta;			// velocity, etc
-} trajectory_t;
 
 // entityState_t is the information conveyed from the server
 // in an update message about entities that the client will

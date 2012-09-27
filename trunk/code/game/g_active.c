@@ -25,41 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 /*
-=================
-SpectatorThink
-=================
-*/
-void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
-	pmove_t	pm;
-	gclient_t	*client;
-
-	client = ent->client;
-
-	if ( client->sess.spectatorState != SPECTATOR_FOLLOW ) {
-		client->ps.pm_type = PM_SPECTATOR;
-		client->ps.speed = 400;	// faster than normal
-
-		// set up for pmove
-		memset (&pm, 0, sizeof(pm));
-		pm.ps = &client->ps;
-		pm.cmd = *ucmd;
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;	// spectators can fly through bodies
-		pm.trace = trap_Trace;
-		pm.pointcontents = trap_PointContents;
-
-		// perform a pmove
-		Pmove (&pm);
-		// save results of pmove
-		VectorCopy( client->ps.origin, ent->s.origin );
-		trap_UnlinkEntity( ent );
-	}
-
-	client->oldbuttons = client->buttons;
-	client->buttons = ucmd->buttons;
-
-}
-
-/*
 ==============
 ClientThink
 
@@ -98,7 +63,7 @@ void ClientThink_real( gentity_t *ent ) {
 	msec = ucmd->serverTime - client->ps.commandTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
-	if ( msec < 1 && client->sess.spectatorState != SPECTATOR_FOLLOW ) {
+	if ( msec < 1 ) {
 		return;
 	}
 	if ( msec > 200 ) {
@@ -146,11 +111,6 @@ void ClientThink_real( gentity_t *ent ) {
 	//	pm.gauntletHit = CheckGauntletAttack( ent );
 	//}
 
-	if ( ent->flags & FL_FORCE_GESTURE ) {
-		ent->flags &= ~FL_FORCE_GESTURE;
-		ent->client->pers.cmd.buttons |= BUTTON_GESTURE;
-	}
-
 	pm.ps = &client->ps;
 	pm.cmd = *ucmd;
 	if ( pm.ps->pm_type == PM_DEAD ) {
@@ -182,9 +142,6 @@ void ClientThink_real( gentity_t *ent ) {
 	else {
 		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 	}
-	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
-		client->fireHeld = qfalse;		// for grapple
-	}
 
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.origin, ent->r.currentOrigin );
@@ -209,10 +166,9 @@ void ClientThink_real( gentity_t *ent ) {
 	// check for respawning
 	if ( ent->health <= 0 ) {
 		// wait for the attack button to be pressed
-		if ( level.time > client->respawnTime ) {
+		//if ( level.time > client->respawnTime ) {
 			// forcerespawn is to prevent users from waiting out powerups
-			if ( g_forcerespawn.integer > 0 && 
-				( level.time - client->respawnTime ) > g_forcerespawn.integer * 1000 ) {
+			if ( g_forcerespawn.integer > 0 ){
 				ClientRespawn( ent );
 				return;
 			}
@@ -221,7 +177,7 @@ void ClientThink_real( gentity_t *ent ) {
 			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
 				ClientRespawn( ent );
 			}
-		}
+		//}
 		return;
 	}
 
@@ -268,13 +224,6 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
 void ClientEndFrame( gentity_t *ent ) {
-	//
-	// If the end of unit layout is displayed, don't give
-	// the player any normal movement attributes
-	//
-	if ( level.intermissiontime ) {
-		return;
-	}
 
 	// add the EF_CONNECTION flag if we haven't gotten commands recently
 	if ( level.time - ent->client->lastCmdTime > 1000 ) {

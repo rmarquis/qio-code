@@ -46,60 +46,6 @@ void CG_AdjustFrom640( float *x, float *y, float *w, float *h ) {
 
 /*
 ================
-CG_FillRect
-
-Coordinates are 640*480 virtual values
-=================
-*/
-void CG_FillRect( float x, float y, float width, float height, const float *color ) {
-	trap_R_SetColor( color );
-
-	CG_AdjustFrom640( &x, &y, &width, &height );
-	trap_R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader );
-
-	trap_R_SetColor( NULL );
-}
-
-/*
-================
-CG_DrawSides
-
-Coords are virtual 640x480
-================
-*/
-void CG_DrawSides(float x, float y, float w, float h, float size) {
-	CG_AdjustFrom640( &x, &y, &w, &h );
-	size *= cgs.screenXScale;
-	trap_R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap_R_DrawStretchPic( x + w - size, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
-}
-
-void CG_DrawTopBottom(float x, float y, float w, float h, float size) {
-	CG_AdjustFrom640( &x, &y, &w, &h );
-	size *= cgs.screenYScale;
-	trap_R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap_R_DrawStretchPic( x, y + h - size, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
-}
-/*
-================
-UI_DrawRect
-
-Coordinates are 640*480 virtual values
-=================
-*/
-void CG_DrawRect( float x, float y, float width, float height, float size, const float *color ) {
-	trap_R_SetColor( color );
-
-  CG_DrawTopBottom(x, y, width, height, size);
-  CG_DrawSides(x, y, width, height, size);
-
-	trap_R_SetColor( NULL );
-}
-
-
-
-/*
-================
 CG_DrawPic
 
 Coordinates are 640*480 virtual values
@@ -222,21 +168,6 @@ void CG_DrawBigString( int x, int y, const char *s, float alpha ) {
 	CG_DrawStringExt( x, y, s, color, qfalse, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
 }
 
-void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color ) {
-	CG_DrawStringExt( x, y, s, color, qtrue, qtrue, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, 0 );
-}
-
-void CG_DrawSmallString( int x, int y, const char *s, float alpha ) {
-	float	color[4];
-
-	color[0] = color[1] = color[2] = 1.0;
-	color[3] = alpha;
-	CG_DrawStringExt( x, y, s, color, qfalse, qfalse, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
-}
-
-void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color ) {
-	CG_DrawStringExt( x, y, s, color, qtrue, qfalse, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
-}
 
 /*
 =================

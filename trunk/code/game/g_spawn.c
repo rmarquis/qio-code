@@ -95,20 +95,10 @@ field_t fields[] = {
 	{"model", FOFS(model), F_STRING},
 	{"model2", FOFS(model2), F_STRING},
 	{"spawnflags", FOFS(spawnflags), F_INT},
-	{"speed", FOFS(speed), F_FLOAT},
-	{"target", FOFS(target), F_STRING},
 	{"targetname", FOFS(targetname), F_STRING},
-	{"message", FOFS(message), F_STRING},
-	{"team", FOFS(team), F_STRING},
-	{"wait", FOFS(wait), F_FLOAT},
-	{"random", FOFS(random), F_FLOAT},
-	{"count", FOFS(count), F_INT},
 	{"health", FOFS(health), F_INT},
-	{"dmg", FOFS(damage), F_INT},
 	{"angles", FOFS(s.angles), F_VECTOR},
 	{"angle", FOFS(s.angles), F_ANGLEHACK},
-	{"targetShaderName", FOFS(targetShaderName), F_STRING},
-	{"targetShaderNewName", FOFS(targetShaderNewName), F_STRING},
 
 	{NULL}
 };
@@ -386,22 +376,9 @@ void SP_worldspawn( void ) {
 
 	trap_SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
 
-	G_SpawnString( "music", "", &s );
-	trap_SetConfigstring( CS_MUSIC, s );
-
-	G_SpawnString( "message", "", &s );
-	trap_SetConfigstring( CS_MESSAGE, s );				// map specific message
-
-	trap_SetConfigstring( CS_MOTD, g_motd.string );		// message of the day
-
 	G_SpawnString( "gravity", "800", &s );
 	trap_Cvar_Set( "g_gravity", s );
 
-	G_SpawnString( "enableDust", "0", &s );
-	trap_Cvar_Set( "g_enableDust", s );
-
-	G_SpawnString( "enableBreath", "0", &s );
-	trap_Cvar_Set( "g_enableBreath", s );
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
@@ -411,17 +388,7 @@ void SP_worldspawn( void ) {
 	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_NONE].classname = "nothing";
 
-	// see if we want a warmup time
-	trap_SetConfigstring( CS_WARMUP, "" );
-	if ( g_restarted.integer ) {
-		trap_Cvar_Set( "g_restarted", "0" );
-		level.warmupTime = 0;
-	} else if ( g_doWarmup.integer ) { // Turn it on
-		level.warmupTime = -1;
-		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
-		G_LogPrintf( "Warmup:\n" );
-	}
-
+	
 }
 
 

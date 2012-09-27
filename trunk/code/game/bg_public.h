@@ -40,30 +40,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 // CS_SERVERINFO and CS_SYSTEMINFO are defined in q_shared.h
-#define	CS_MUSIC				2
-#define	CS_MESSAGE				3		// from the map worldspawn's message field
-#define	CS_MOTD					4		// g_motd string for server message of the day
-#define	CS_WARMUP				5		// server time when the match will be restarted
-#define	CS_SCORES1				6
-#define	CS_SCORES2				7
-#define CS_VOTE_TIME			8
-#define CS_VOTE_STRING			9
-#define	CS_VOTE_YES				10
-#define	CS_VOTE_NO				11
 
-#define CS_TEAMVOTE_TIME		12
-#define CS_TEAMVOTE_STRING		14
-#define	CS_TEAMVOTE_YES			16
-#define	CS_TEAMVOTE_NO			18
 
 #define	CS_GAME_VERSION			20
 #define	CS_LEVEL_START_TIME		21		// so the timer only shows the current level
-#define	CS_INTERMISSION			22		// when 1, fraglimit/timelimit has been hit and intermission will start in a second or two
-#define CS_FLAGSTATUS			23		// string indicating flag status in CTF
-#define CS_SHADERSTATE			24
-#define CS_BOTINFO				25
 
-#define	CS_ITEMS				27		// string of 0's and 1's that tell which items are present
+
 
 #define	CS_MODELS				32
 #define	CS_SOUNDS				(CS_MODELS+MAX_MODELS)
@@ -77,15 +59,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS
 #endif
 
-typedef enum {
-	GT_FFA,				// free for all
-	GT_TOURNAMENT,		// one on one tournament
-	GT_SINGLE_PLAYER,	// single player ffa
-
-
-} gametype_t;
-
-typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
 /*
 ===================================================================================
@@ -119,8 +92,6 @@ typedef enum {
 #define	PMF_USE_ITEM_HELD	1024
 #define PMF_GRAPPLE_PULL	2048	// pull towards grapple location
 #define PMF_FOLLOW			4096	// spectate following another player
-#define PMF_SCOREBOARD		8192	// spectate as a scoreboard
-#define PMF_INVULEXPAND		16384	// invulnerability sphere set to full size
 
 #define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
 
@@ -134,7 +105,6 @@ typedef struct {
 	int			tracemask;			// collide against these types of surfaces
 	int			debugLevel;			// if set, diagnostic output will be printed
 	qboolean	noFootsteps;		// if the game is setup for no footsteps by the server
-	qboolean	gauntletHit;		// true if a gauntlet attack would actually hit something
 
 	int			framecount;
 
@@ -165,47 +135,6 @@ void Pmove (pmove_t *pmove);
 
 //===================================================================================
 
-
-// player_state->stats[] indexes
-// NOTE: may not have more than 16
-typedef enum {
-	STAT_HEALTH,
-	STAT_HOLDABLE_ITEM,
-#ifdef MISSIONPACK
-	STAT_PERSISTANT_POWERUP,
-#endif
-	STAT_WEAPONS,					// 16 bit fields
-	STAT_ARMOR,				
-	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
-	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
-	STAT_MAX_HEALTH					// health / armor limit, changable by handicap
-} statIndex_t;
-
-
-// player_state->persistant[] indexes
-// these fields are the only part of player_state that isn't
-// cleared on respawn
-// NOTE: may not have more than 16
-typedef enum {
-	PERS_SCORE,						// !!! MUST NOT CHANGE, SERVER AND GAME BOTH REFERENCE !!!
-	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
-	PERS_RANK,						// player rank or team rank
-	PERS_TEAM,						// player team
-	PERS_SPAWN_COUNT,				// incremented every respawn
-	PERS_PLAYEREVENTS,				// 16 bits that can be flipped for events
-	PERS_ATTACKER,					// clientnum of last damage inflicter
-	PERS_ATTACKEE_ARMOR,			// health/armor of last person we attacked
-	PERS_KILLED,					// count of the number of times you died
-	// player awards tracking
-	PERS_IMPRESSIVE_COUNT,			// two railgun hits in a row
-	PERS_EXCELLENT_COUNT,			// two successive kills in a short amount of time
-	PERS_DEFEND_COUNT,				// defend awards
-	PERS_ASSIST_COUNT,				// assist awards
-	PERS_GAUNTLET_FRAG_COUNT,		// kills with the guantlet
-	PERS_CAPTURES					// captures
-} persEnum_t;
-
-
 // entityState_t->eFlags
 #define	EF_DEAD				0x00000001		// don't draw a foe marker over players with EF_DEAD
 #ifdef MISSIONPACK
@@ -224,12 +153,6 @@ typedef enum {
 #define EF_AWARD_CAP		0x00000800		// draw the capture sprite
 #define	EF_TALK				0x00001000		// draw a talk balloon
 #define	EF_CONNECTION		0x00002000		// draw a connection trouble sprite
-#define	EF_VOTED			0x00004000		// already cast a vote
-#define	EF_AWARD_IMPRESSIVE	0x00008000		// draw an impressive sprite
-#define	EF_AWARD_DEFEND		0x00010000		// draw a defend sprite
-#define	EF_AWARD_ASSIST		0x00020000		// draw a assist sprite
-#define EF_AWARD_DENIED		0x00040000		// denied
-#define EF_TEAMVOTED		0x00080000		// already cast a team vote
 
 // means of death
 typedef enum {
@@ -267,13 +190,8 @@ typedef enum {
 typedef enum {
 	ET_GENERAL,
 	ET_PLAYER,
-
 } entityType_t;
 
-
-
-void	BG_EvaluateTrajectory( const trajectory_t *tr, int atTime, vec3_t result );
-void	BG_EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t result );
 
 
 void	BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap );

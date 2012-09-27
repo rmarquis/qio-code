@@ -147,113 +147,12 @@ typedef struct centity_s {
 
 //======================================================================
 
-// local entities are created as a result of events or predicted actions,
-// and live independantly from all server transmitted entities
-
-typedef struct markPoly_s {
-	struct markPoly_s	*prevMark, *nextMark;
-	int			time;
-	qhandle_t	markShader;
-	qboolean	alphaFade;		// fade alpha instead of rgb
-	float		color[4];
-	poly_t		poly;
-	polyVert_t	verts[MAX_VERTS_ON_POLY];
-} markPoly_t;
-
-
-typedef enum {
-	LE_MARK,
-	LE_EXPLOSION,
-	LE_SPRITE_EXPLOSION,
-	LE_FRAGMENT,
-	LE_MOVE_SCALE_FADE,
-	LE_FALL_SCALE_FADE,
-	LE_FADE_RGB,
-	LE_SCALE_FADE,
-	LE_SCOREPLUM,
-#ifdef MISSIONPACK
-	LE_KAMIKAZE,
-	LE_INVULIMPACT,
-	LE_INVULJUICED,
-	LE_SHOWREFENTITY
-#endif
-} leType_t;
-
-typedef enum {
-	LEF_PUFF_DONT_SCALE  = 0x0001,			// do not scale size over time
-	LEF_TUMBLE			 = 0x0002,			// tumble over time, used for ejecting shells
-	LEF_SOUND1			 = 0x0004,			// sound 1 for kamikaze
-	LEF_SOUND2			 = 0x0008			// sound 2 for kamikaze
-} leFlag_t;
-
-typedef enum {
-	LEMT_NONE,
-	LEMT_BURN,
-	LEMT_BLOOD
-} leMarkType_t;			// fragment local entities can leave marks on walls
-
-typedef enum {
-	LEBS_NONE,
-	LEBS_BLOOD,
-	LEBS_BRASS
-} leBounceSoundType_t;	// fragment local entities can make sounds on impacts
-
-typedef struct localEntity_s {
-	struct localEntity_s	*prev, *next;
-	leType_t		leType;
-	int				leFlags;
-
-	int				startTime;
-	int				endTime;
-	int				fadeInTime;
-
-	float			lifeRate;			// 1.0 / (endTime - startTime)
-
-	trajectory_t	pos;
-	trajectory_t	angles;
-
-	float			bounceFactor;		// 0.0 = no bounce, 1.0 = perfect
-
-	float			color[4];
-
-	float			radius;
-
-	float			light;
-	vec3_t			lightColor;
-
-	leMarkType_t		leMarkType;		// mark to leave on fragment impact
-	leBounceSoundType_t	leBounceSoundType;
-
-	refEntity_t		refEntity;		
-} localEntity_t;
-
-//======================================================================
-
-
-typedef struct {
-	int				client;
-	int				score;
-	int				ping;
-	int				time;
-	int				scoreFlags;
-	int				powerUps;
-	int				accuracy;
-	int				impressiveCount;
-	int				excellentCount;
-	int				guantletCount;
-	int				defendCount;
-	int				assistCount;
-	int				captures;
-	qboolean	perfect;
-	int				team;
-} score_t;
 
 //======================================================================
 
 // all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
-#define MAX_PREDICTED_EVENTS	16
  
 typedef struct {
 	int			clientFrame;		// incremented each frame
@@ -262,9 +161,6 @@ typedef struct {
 	
 	qboolean	demoPlayback;
 	qboolean	levelShot;			// taking a level menu screenshot
-	int			deferredPlayerLoading;
-	qboolean	loading;			// don't defer players at initial startup
-	qboolean	intermissionStarted;	// don't play voice rewards, because game will end shortly
 
 	// there are only one or two snapshot_t that are relevent at a time
 	int			latestSnapshotNum;	// the number of snapshots the client system has received
@@ -276,9 +172,6 @@ typedef struct {
 
 	float		frameInterpolation;	// (float)( cg.time - cg.frame->serverTime ) / (cg.nextFrame->serverTime - cg.frame->serverTime)
 
-	qboolean	thisFrameTeleport;
-	qboolean	nextFrameTeleport;
-
 	int			frametime;		// cg.time - cg.oldTime
 
 	int			time;			// this is the time value that the client
@@ -286,9 +179,6 @@ typedef struct {
 	int			oldTime;		// time at last frame, used for missile trails and prediction checking
 
 	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
-
-	int			timelimitWarnings;	// 5 min, 1 min, overtime
-	int			fraglimitWarnings;
 
 	qboolean	mapRestart;			// set on a map restart to set back the weapon
 
@@ -299,11 +189,6 @@ typedef struct {
 	playerState_t	predictedPlayerState;
 	centity_t		predictedPlayerEntity;
 	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
-	int			predictedErrorTime;
-	vec3_t		predictedError;
-
-	int			eventSequence;
-	int			predictableEvents[MAX_PREDICTED_EVENTS];
 
 	float		stepChange;				// for stair up smoothing
 	int			stepTime;
@@ -315,13 +200,8 @@ typedef struct {
 	int			landTime;
 
 	// input state sent to server
-	int			weaponSelect;
 
-	// auto rotating items
-	vec3_t		autoAngles;
-	vec3_t		autoAxis[3];
-	vec3_t		autoAnglesFast;
-	vec3_t		autoAxisFast[3];
+
 
 	// view rendering
 	refdef_t	refdef;
@@ -332,104 +212,6 @@ typedef struct {
 	int			zoomTime;
 	float		zoomSensitivity;
 
-	// information screen text during loading
-	char		infoScreenText[MAX_STRING_CHARS];
-
-	// scoreboard
-	int			scoresRequestTime;
-	int			numScores;
-	int			selectedScore;
-	int			teamScores[2];
-	score_t		scores[MAX_CLIENTS];
-	qboolean	showScores;
-	qboolean	scoreBoardShowing;
-	int			scoreFadeTime;
-	char		killerName[MAX_NAME_LENGTH];
-	char			spectatorList[MAX_STRING_CHARS];		// list of names
-	int				spectatorLen;												// length of list
-	float			spectatorWidth;											// width in device units
-	int				spectatorTime;											// next time to offset
-	int				spectatorPaintX;										// current paint x
-	int				spectatorPaintX2;										// current paint x
-	int				spectatorOffset;										// current offset from start
-	int				spectatorPaintLen; 									// current offset from start
-
-#ifdef MISSIONPACK
-	// skull trails
-	skulltrail_t	skulltrails[MAX_CLIENTS];
-#endif
-
-	// centerprinting
-	int			centerPrintTime;
-	int			centerPrintCharWidth;
-	int			centerPrintY;
-	char		centerPrint[1024];
-	int			centerPrintLines;
-
-	// low ammo warning state
-	int			lowAmmoWarning;		// 1 = low, 2 = empty
-
-	// crosshair client ID
-	int			crosshairClientNum;
-	int			crosshairClientTime;
-
-	// powerup active flashing
-	int			powerupActive;
-	int			powerupTime;
-
-	// attacking player
-	int			attackerTime;
-	int			voiceTime;
-
-	// reward medals
-	int			rewardStack;
-	int			rewardTime;
-
-	// warmup countdown
-	int			warmup;
-	int			warmupCount;
-
-	//==========================
-
-	int			itemPickup;
-	int			itemPickupTime;
-	int			itemPickupBlendTime;	// the pulse around the crosshair is timed seperately
-
-	int			weaponSelectTime;
-	int			weaponAnimation;
-	int			weaponAnimationTime;
-
-	// blend blobs
-	float		damageTime;
-	float		damageX, damageY, damageValue;
-
-	// status bar head
-	float		headYaw;
-	float		headEndPitch;
-	float		headEndYaw;
-	int			headEndTime;
-	float		headStartPitch;
-	float		headStartYaw;
-	int			headStartTime;
-
-	// view movement
-	float		v_dmg_time;
-	float		v_dmg_pitch;
-	float		v_dmg_roll;
-
-	// temp working variables for player view
-	float		bobfracsin;
-	int			bobcycle;
-	float		xyspeed;
-	int     nextOrbitTime;
-
-	//qboolean cameraMode;		// if rendering from a loaded camera
-
-
-	// development tool
-	refEntity_t		testModelEntity;
-	char			testModelName[MAX_QPATH];
-	qboolean		testGun;
 
 } cg_t;
 
@@ -440,339 +222,11 @@ typedef struct {
 // stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
 typedef struct {
 	qhandle_t	charsetShader;
-	qhandle_t	charsetProp;
-	qhandle_t	charsetPropGlow;
-	qhandle_t	charsetPropB;
 	qhandle_t	whiteShader;
 
-#ifdef MISSIONPACK
-	qhandle_t	redCubeModel;
-	qhandle_t	blueCubeModel;
-	qhandle_t	redCubeIcon;
-	qhandle_t	blueCubeIcon;
-#endif
-	qhandle_t	redFlagModel;
-	qhandle_t	blueFlagModel;
-	qhandle_t	neutralFlagModel;
-	qhandle_t	redFlagShader[3];
-	qhandle_t	blueFlagShader[3];
-	qhandle_t	flagShader[4];
 
-	qhandle_t	flagPoleModel;
-	qhandle_t	flagFlapModel;
 
-	qhandle_t	redFlagFlapSkin;
-	qhandle_t	blueFlagFlapSkin;
-	qhandle_t	neutralFlagFlapSkin;
 
-	qhandle_t	redFlagBaseModel;
-	qhandle_t	blueFlagBaseModel;
-	qhandle_t	neutralFlagBaseModel;
-
-#ifdef MISSIONPACK
-	qhandle_t	overloadBaseModel;
-	qhandle_t	overloadTargetModel;
-	qhandle_t	overloadLightsModel;
-	qhandle_t	overloadEnergyModel;
-
-	qhandle_t	harvesterModel;
-	qhandle_t	harvesterRedSkin;
-	qhandle_t	harvesterBlueSkin;
-	qhandle_t	harvesterNeutralModel;
-#endif
-
-	qhandle_t	armorModel;
-	qhandle_t	armorIcon;
-
-	qhandle_t	teamStatusBar;
-
-	qhandle_t	deferShader;
-
-	// gib explosions
-	qhandle_t	gibAbdomen;
-	qhandle_t	gibArm;
-	qhandle_t	gibChest;
-	qhandle_t	gibFist;
-	qhandle_t	gibFoot;
-	qhandle_t	gibForearm;
-	qhandle_t	gibIntestine;
-	qhandle_t	gibLeg;
-	qhandle_t	gibSkull;
-	qhandle_t	gibBrain;
-
-	qhandle_t	smoke2;
-
-	qhandle_t	machinegunBrassModel;
-	qhandle_t	shotgunBrassModel;
-
-	qhandle_t	railRingsShader;
-	qhandle_t	railCoreShader;
-
-	qhandle_t	lightningShader;
-
-	qhandle_t	friendShader;
-
-	qhandle_t	balloonShader;
-	qhandle_t	connectionShader;
-
-	qhandle_t	selectShader;
-	qhandle_t	viewBloodShader;
-	qhandle_t	tracerShader;
-	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
-	qhandle_t	lagometerShader;
-	qhandle_t	backTileShader;
-	qhandle_t	noammoShader;
-
-	qhandle_t	smokePuffShader;
-	qhandle_t	smokePuffRageProShader;
-	qhandle_t	shotgunSmokePuffShader;
-	qhandle_t	plasmaBallShader;
-	qhandle_t	waterBubbleShader;
-	qhandle_t	bloodTrailShader;
-#ifdef MISSIONPACK
-	qhandle_t	nailPuffShader;
-	qhandle_t	blueProxMine;
-#endif
-
-	qhandle_t	numberShaders[11];
-
-	qhandle_t	shadowMarkShader;
-
-	qhandle_t	botSkillShaders[5];
-
-	// wall mark shaders
-	qhandle_t	wakeMarkShader;
-	qhandle_t	bloodMarkShader;
-	qhandle_t	bulletMarkShader;
-	qhandle_t	burnMarkShader;
-	qhandle_t	holeMarkShader;
-	qhandle_t	energyMarkShader;
-
-	// powerup shaders
-	qhandle_t	quadShader;
-	qhandle_t	redQuadShader;
-	qhandle_t	quadWeaponShader;
-	qhandle_t	invisShader;
-	qhandle_t	regenShader;
-	qhandle_t	battleSuitShader;
-	qhandle_t	battleWeaponShader;
-	qhandle_t	hastePuffShader;
-#ifdef MISSIONPACK
-	qhandle_t	redKamikazeShader;
-	qhandle_t	blueKamikazeShader;
-#endif
-
-	// weapon effect models
-	qhandle_t	bulletFlashModel;
-	qhandle_t	ringFlashModel;
-	qhandle_t	dishFlashModel;
-	qhandle_t	lightningExplosionModel;
-
-	// weapon effect shaders
-	qhandle_t	railExplosionShader;
-	qhandle_t	plasmaExplosionShader;
-	qhandle_t	bulletExplosionShader;
-	qhandle_t	rocketExplosionShader;
-	qhandle_t	grenadeExplosionShader;
-	qhandle_t	bfgExplosionShader;
-	qhandle_t	bloodExplosionShader;
-
-	// special effects models
-	qhandle_t	teleportEffectModel;
-	qhandle_t	teleportEffectShader;
-#ifdef MISSIONPACK
-	qhandle_t	kamikazeEffectModel;
-	qhandle_t	kamikazeShockWave;
-	qhandle_t	kamikazeHeadModel;
-	qhandle_t	kamikazeHeadTrail;
-	qhandle_t	guardPowerupModel;
-	qhandle_t	scoutPowerupModel;
-	qhandle_t	doublerPowerupModel;
-	qhandle_t	ammoRegenPowerupModel;
-	qhandle_t	invulnerabilityImpactModel;
-	qhandle_t	invulnerabilityJuicedModel;
-	qhandle_t	medkitUsageModel;
-	qhandle_t	dustPuffShader;
-	qhandle_t	heartShader;
-	qhandle_t	invulnerabilityPowerupModel;
-#endif
-
-	// scoreboard headers
-	qhandle_t	scoreboardName;
-	qhandle_t	scoreboardPing;
-	qhandle_t	scoreboardScore;
-	qhandle_t	scoreboardTime;
-
-	// medals shown during gameplay
-	qhandle_t	medalImpressive;
-	qhandle_t	medalExcellent;
-	qhandle_t	medalGauntlet;
-	qhandle_t	medalDefend;
-	qhandle_t	medalAssist;
-	qhandle_t	medalCapture;
-
-	// sounds
-	sfxHandle_t	quadSound;
-	sfxHandle_t	tracerSound;
-	sfxHandle_t	selectSound;
-	sfxHandle_t	useNothingSound;
-	sfxHandle_t	wearOffSound;
-	sfxHandle_t	footsteps[FOOTSTEP_TOTAL][4];
-	sfxHandle_t	sfx_lghit1;
-	sfxHandle_t	sfx_lghit2;
-	sfxHandle_t	sfx_lghit3;
-	sfxHandle_t	sfx_ric1;
-	sfxHandle_t	sfx_ric2;
-	sfxHandle_t	sfx_ric3;
-	//sfxHandle_t	sfx_railg;
-	sfxHandle_t	sfx_rockexp;
-	sfxHandle_t	sfx_plasmaexp;
-#ifdef MISSIONPACK
-	sfxHandle_t	sfx_proxexp;
-	sfxHandle_t	sfx_nghit;
-	sfxHandle_t	sfx_nghitflesh;
-	sfxHandle_t	sfx_nghitmetal;
-	sfxHandle_t	sfx_chghit;
-	sfxHandle_t	sfx_chghitflesh;
-	sfxHandle_t	sfx_chghitmetal;
-	sfxHandle_t kamikazeExplodeSound;
-	sfxHandle_t kamikazeImplodeSound;
-	sfxHandle_t kamikazeFarSound;
-	sfxHandle_t useInvulnerabilitySound;
-	sfxHandle_t invulnerabilityImpactSound1;
-	sfxHandle_t invulnerabilityImpactSound2;
-	sfxHandle_t invulnerabilityImpactSound3;
-	sfxHandle_t invulnerabilityJuicedSound;
-	sfxHandle_t obeliskHitSound1;
-	sfxHandle_t obeliskHitSound2;
-	sfxHandle_t obeliskHitSound3;
-	sfxHandle_t	obeliskRespawnSound;
-	sfxHandle_t	winnerSound;
-	sfxHandle_t	loserSound;
-#endif
-	sfxHandle_t	gibSound;
-	sfxHandle_t	gibBounce1Sound;
-	sfxHandle_t	gibBounce2Sound;
-	sfxHandle_t	gibBounce3Sound;
-	sfxHandle_t	teleInSound;
-	sfxHandle_t	teleOutSound;
-	sfxHandle_t	noAmmoSound;
-	sfxHandle_t	respawnSound;
-	sfxHandle_t talkSound;
-	sfxHandle_t landSound;
-	sfxHandle_t fallSound;
-	sfxHandle_t jumpPadSound;
-
-	sfxHandle_t oneMinuteSound;
-	sfxHandle_t fiveMinuteSound;
-	sfxHandle_t suddenDeathSound;
-
-	sfxHandle_t threeFragSound;
-	sfxHandle_t twoFragSound;
-	sfxHandle_t oneFragSound;
-
-	sfxHandle_t hitSound;
-	sfxHandle_t hitSoundHighArmor;
-	sfxHandle_t hitSoundLowArmor;
-	sfxHandle_t hitTeamSound;
-	sfxHandle_t impressiveSound;
-	sfxHandle_t excellentSound;
-	sfxHandle_t deniedSound;
-	sfxHandle_t humiliationSound;
-	sfxHandle_t assistSound;
-	sfxHandle_t defendSound;
-	sfxHandle_t firstImpressiveSound;
-	sfxHandle_t firstExcellentSound;
-	sfxHandle_t firstHumiliationSound;
-
-	sfxHandle_t takenLeadSound;
-	sfxHandle_t tiedLeadSound;
-	sfxHandle_t lostLeadSound;
-
-	sfxHandle_t voteNow;
-	sfxHandle_t votePassed;
-	sfxHandle_t voteFailed;
-
-	sfxHandle_t watrInSound;
-	sfxHandle_t watrOutSound;
-	sfxHandle_t watrUnSound;
-
-	sfxHandle_t flightSound;
-	sfxHandle_t medkitSound;
-
-#ifdef MISSIONPACK
-	sfxHandle_t weaponHoverSound;
-#endif
-
-	// teamplay sounds
-	sfxHandle_t captureAwardSound;
-	sfxHandle_t redScoredSound;
-	sfxHandle_t blueScoredSound;
-	sfxHandle_t redLeadsSound;
-	sfxHandle_t blueLeadsSound;
-	sfxHandle_t teamsTiedSound;
-
-	sfxHandle_t	captureYourTeamSound;
-	sfxHandle_t	captureOpponentSound;
-	sfxHandle_t	returnYourTeamSound;
-	sfxHandle_t	returnOpponentSound;
-	sfxHandle_t	takenYourTeamSound;
-	sfxHandle_t	takenOpponentSound;
-
-	sfxHandle_t redFlagReturnedSound;
-	sfxHandle_t blueFlagReturnedSound;
-#ifdef MISSIONPACK
-	sfxHandle_t neutralFlagReturnedSound;
-#endif
-	sfxHandle_t	enemyTookYourFlagSound;
-	sfxHandle_t yourTeamTookEnemyFlagSound;
-	sfxHandle_t	youHaveFlagSound;
-#ifdef MISSIONPACK
-	sfxHandle_t	enemyTookTheFlagSound;
-	sfxHandle_t yourTeamTookTheFlagSound;
-	sfxHandle_t yourBaseIsUnderAttackSound;
-#endif
-	sfxHandle_t holyShitSound;
-
-	// tournament sounds
-	sfxHandle_t	count3Sound;
-	sfxHandle_t	count2Sound;
-	sfxHandle_t	count1Sound;
-	sfxHandle_t	countFightSound;
-	sfxHandle_t	countPrepareSound;
-
-#ifdef MISSIONPACK
-	// new stuff
-	qhandle_t patrolShader;
-	qhandle_t assaultShader;
-	qhandle_t campShader;
-	qhandle_t followShader;
-	qhandle_t defendShader;
-	qhandle_t teamLeaderShader;
-	qhandle_t retrieveShader;
-	qhandle_t escortShader;
-	qhandle_t flagShaders[3];
-	sfxHandle_t	countPrepareTeamSound;
-
-	sfxHandle_t ammoregenSound;
-	sfxHandle_t doublerSound;
-	sfxHandle_t guardSound;
-	sfxHandle_t scoutSound;
-
-	qhandle_t cursor;
-	qhandle_t selectCursor;
-	qhandle_t sizeCursor;
-#endif
-
-	sfxHandle_t	regenSound;
-	sfxHandle_t	protectSound;
-	sfxHandle_t	n_healthSound;
-	sfxHandle_t	hgrenb1aSound;
-	sfxHandle_t	hgrenb2aSound;
-	sfxHandle_t	wstbimplSound;
-	sfxHandle_t	wstbimpmSound;
-	sfxHandle_t	wstbimpdSound;
-	sfxHandle_t	wstbactvSound;
 
 } cgMedia_t;
 
@@ -793,37 +247,12 @@ typedef struct {
 
 	qboolean		localServer;		// detected on startup by checking sv_running
 
-	// parsed from serverinfo
-	gametype_t		gametype;
-	int				dmflags;
-	int				teamflags;
-	int				fraglimit;
-	int				capturelimit;
-	int				timelimit;
 	int				maxclients;
 	char			mapname[MAX_QPATH];
-	char			redTeam[MAX_QPATH];
-	char			blueTeam[MAX_QPATH];
 
-	int				voteTime;
-	int				voteYes;
-	int				voteNo;
-	qboolean		voteModified;			// beep whenever changed
-	char			voteString[MAX_STRING_TOKENS];
-
-	int				teamVoteTime[2];
-	int				teamVoteYes[2];
-	int				teamVoteNo[2];
-	qboolean		teamVoteModified[2];	// beep whenever changed
-	char			teamVoteString[2][MAX_STRING_TOKENS];
 
 	int				levelStartTime;
 
-	int				scores1, scores2;		// from configstrings
-	int				redflag, blueflag;		// flag status from configstrings
-	int				flagStatus;
-
-	qboolean  newHud;
 
 	//
 	// locally derived information from gamestate
@@ -835,24 +264,6 @@ typedef struct {
 	qhandle_t		inlineDrawModel[MAX_MODELS];
 	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
-	int cursorX;
-	int cursorY;
-	qboolean eventHandling;
-	qboolean mouseCaptured;
-	qboolean sizingHud;
-	void *capturedItem;
-	qhandle_t activeCursor;
-
-	// orders
-	int currentOrder;
-	qboolean orderPending;
-	int orderTime;
-	int currentVoiceClient;
-	int acceptOrderTime;
-	int acceptTask;
-	int acceptLeader;
-	char acceptVoice[MAX_NAME_LENGTH];
-
 	// media
 	cgMedia_t		media;
 
@@ -863,7 +274,6 @@ typedef struct {
 extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
-extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
 extern	vmCvar_t		cg_centertime;
 extern	vmCvar_t		cg_runpitch;
@@ -996,107 +406,14 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 
 //
-// cg_drawtools.c
-//
-void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
-void CG_FillRect( float x, float y, float width, float height, const float *color );
-void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
-void CG_DrawString( float x, float y, const char *string, 
-				   float charWidth, float charHeight, const float *modulate );
-
-
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
-		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars );
-void CG_DrawBigString( int x, int y, const char *s, float alpha );
-void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color );
-void CG_DrawSmallString( int x, int y, const char *s, float alpha );
-void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color );
-
-int CG_DrawStrlen( const char *str );
-
-float	*CG_FadeColor( int startMsec, int totalMsec );
-float *CG_TeamColor( int team );
-void CG_TileClear( void );
-void CG_ColorForHealth( vec4_t hcolor );
-void CG_GetColorForHealth( int health, int armor, vec4_t hcolor );
-
-void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
-void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
-void CG_DrawSides(float x, float y, float w, float h, float size);
-void CG_DrawTopBottom(float x, float y, float w, float h, float size);
-
-
-
-void CG_AddLagometerFrameInfo( void );
-void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
-void CG_CenterPrint( const char *str, int y, int charWidth );
-void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
-void CG_DrawActive( stereoFrame_t stereoView );
-void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean force2D );
-void CG_DrawTeamBackground( int x, int y, int w, int h, float alpha, int team );
-void CG_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle);
-void CG_Text_Paint(float x, float y, float scale, vec4_t color, const char *text, float adjust, int limit, int style);
-int CG_Text_Width(const char *text, float scale, int limit);
-int CG_Text_Height(const char *text, float scale, int limit);
-void CG_SelectPrevPlayer( void );
-void CG_SelectNextPlayer( void );
-float CG_GetValue(int ownerDraw);
-qboolean CG_OwnerDrawVisible(int flags);
-void CG_RunMenuScript(char **args);
-void CG_ShowResponseHead( void );
-void CG_SetPrintString(int type, const char *p);
-void CG_InitTeamChat( void );
-void CG_GetTeamColor(vec4_t *color);
-const char *CG_GetGameStatusText( void );
-const char *CG_GetKillerText( void );
-void CG_Draw3DModel(float x, float y, float w, float h, qhandle_t model, qhandle_t skin, vec3_t origin, vec3_t angles);
-void CG_Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader);
-void CG_CheckOrderPending( void );
-const char *CG_GameTypeString( void );
-qboolean CG_YourTeamHasFlag( void );
-qboolean CG_OtherTeamHasFlag( void );
-qhandle_t CG_StatusHandle(int task);
-
-
-
-//
 // cg_player.c
 //
 void CG_Player( centity_t *cent );
-void CG_ResetPlayerEntity( centity_t *cent );
-void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team );
-
-//
-// cg_predict.c
-//
-void CG_BuildSolidList( void );
-int	CG_PointContents( const vec3_t point, int passEntityNum );
-void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-					 int skipNumber, int mask );
-void CG_PredictPlayerState( void );
-
-
-//
-// cg_events.c
-//
-void CG_CheckEvents( centity_t *cent );
-const char	*CG_PlaceString( int rank );
-void CG_EntityEvent( centity_t *cent, vec3_t position );
-void CG_PainEvent( centity_t *cent, int health );
-
 
 //
 // cg_ents.c
 //
-void CG_SetEntitySoundPosition( centity_t *cent );
 void CG_AddPacketEntities( void );
-void CG_Beam( centity_t *cent );
-void CG_AdjustPositionForMover(const vec3_t in, int moverNum, int fromTime, int toTime, vec3_t out, vec3_t angles_in, vec3_t angles_out);
-
-void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
-							qhandle_t parentModel, char *tagName );
-void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
-							qhandle_t parentModel, char *tagName );
 
 
 //
@@ -1116,11 +433,7 @@ void CG_InitConsoleCommands( void );
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
 void CG_SetConfigValues( void );
-#ifdef MISSIONPACK
-void CG_LoadVoiceChats( void );
-void CG_VoiceChatLocal( int mode, qboolean voiceOnly, int clientNum, int color, const char *cmd );
-void CG_PlayBufferedVoiceChats( void );
-#endif
+
 
 //
 // cg_playerstate.c
@@ -1284,12 +597,7 @@ int			trap_GetCurrentCmdNumber( void );
 
 qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
 
-// used for the weapon select and zoom
-void		trap_SetUserCmdValue( int stateValue, float sensitivityScale );
 
-// aids for VM testing
-void		testPrintInt( char *string, int i );
-void		testPrintFloat( char *string, float f );
 
 int			trap_MemoryRemaining( void );
 void		trap_R_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font);
@@ -1314,24 +622,7 @@ void trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
 
 void trap_SnapVector( float *v );
 
-qboolean	trap_loadCamera(const char *name);
-void		trap_startCamera(int time);
-qboolean	trap_getCameraInfo(int time, vec3_t *origin, vec3_t *angles);
-
 qboolean	trap_GetEntityToken( char *buffer, int bufferSize );
 
-void	CG_ClearParticles (void);
-void	CG_AddParticles (void);
-void	CG_ParticleSnow (qhandle_t pshader, vec3_t origin, vec3_t origin2, int turb, float range, int snum);
-void	CG_ParticleSmoke (qhandle_t pshader, centity_t *cent);
-void	CG_AddParticleShrapnel (localEntity_t *le);
-void	CG_ParticleSnowFlurry (qhandle_t pshader, centity_t *cent);
-void	CG_ParticleBulletDebris (vec3_t	org, vec3_t vel, int duration);
-void	CG_ParticleSparks (vec3_t org, vec3_t vel, int duration, float x, float y, float speed);
-void	CG_ParticleDust (centity_t *cent, vec3_t origin, vec3_t dir);
-void	CG_ParticleMisc (qhandle_t pshader, vec3_t origin, int size, int duration, float alpha);
-void	CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duration, int sizeStart, int sizeEnd);
-extern qboolean		initparticles;
-int CG_NewParticleArea ( int num );
 
 

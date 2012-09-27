@@ -52,7 +52,7 @@ void CG_BuildSolidList( void ) {
 	cg_numSolidEntities = 0;
 	cg_numTriggerEntities = 0;
 
-	if ( cg.nextSnap && !cg.nextFrameTeleport && !cg.thisFrameTeleport ) {
+	if ( cg.nextSnap ) {
 		snap = cg.nextSnap;
 	} else {
 		snap = cg.snap;
@@ -163,26 +163,26 @@ int		CG_PointContents( const vec3_t point, int passEntityNum ) {
 
 	contents = trap_CM_PointContents (point, 0);
 
-	for ( i = 0 ; i < cg_numSolidEntities ; i++ ) {
-		cent = cg_solidEntities[ i ];
+	//for ( i = 0 ; i < cg_numSolidEntities ; i++ ) {
+	//	cent = cg_solidEntities[ i ];
 
-		ent = &cent->currentState;
+	//	ent = &cent->currentState;
 
-		if ( ent->number == passEntityNum ) {
-			continue;
-		}
+	//	if ( ent->number == passEntityNum ) {
+	//		continue;
+	//	}
 
-		if (ent->solid != SOLID_BMODEL) { // special value for bmodel
-			continue;
-		}
+	//	if (ent->solid != SOLID_BMODEL) { // special value for bmodel
+	//		continue;
+	//	}
 
-		cmodel = trap_CM_InlineModel( ent->modelindex );
-		if ( !cmodel ) {
-			continue;
-		}
+	//	cmodel = trap_CM_InlineModel( ent->modelindex );
+	//	if ( !cmodel ) {
+	//		continue;
+	//	}
 
-		contents |= trap_CM_TransformedPointContents( point, cmodel, cent->lerpOrigin, cent->lerpAngles );
-	}
+	//	contents |= trap_CM_TransformedPointContents( point, cmodel, cent->lerpOrigin, cent->lerpAngles );
+	//}
 
 	return contents;
 }
@@ -219,10 +219,10 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 		PM_UpdateViewAngles( out, &cmd );
 	}
 
-	// if the next frame is a teleport, we can't lerp to it
-	if ( cg.nextFrameTeleport ) {
-		return;
-	}
+	//// if the next frame is a teleport, we can't lerp to it
+	//if ( cg.nextFrameTeleport ) {
+	//	return;
+	//}
 
 	if ( !next || next->serverTime <= prev->serverTime ) {
 		return;

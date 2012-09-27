@@ -1107,8 +1107,6 @@ static void PM_CheckDuck (void)
 {
 	trace_t	trace;
 
-	pm->ps->pm_flags &= ~PMF_INVULEXPAND;
-
 	pm->mins[0] = -15;
 	pm->mins[1] = -15;
 

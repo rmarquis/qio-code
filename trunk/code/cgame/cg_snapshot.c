@@ -38,7 +38,7 @@ static void CG_ResetEntity( centity_t *cent ) {
 	VectorCopy (cent->currentState.origin, cent->lerpOrigin);
 	VectorCopy (cent->currentState.angles, cent->lerpAngles);
 	if ( cent->currentState.eType == ET_PLAYER ) {
-		CG_ResetPlayerEntity( cent );
+//		CG_ResetPlayerEntity( cent );
 	}
 }
 
@@ -161,10 +161,6 @@ static void CG_TransitionSnapshot( void ) {
 
 		ops = &oldFrame->ps;
 		ps = &cg.snap->ps;
-		// teleporting checks are irrespective of prediction
-		if ( ( ps->eFlags ^ ops->eFlags ) & EF_TELEPORT_BIT ) {
-			cg.thisFrameTeleport = qtrue;	// will be cleared by prediction code
-		}
 
 		// if we are not doing client side movement prediction for any
 		// reason, then the client events and view changes will be issued now
@@ -209,24 +205,6 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 		} else {
 			cent->interpolate = qtrue;
 		}
-	}
-
-	// if the next frame is a teleport for the playerstate, we
-	// can't interpolate during demos
-	if ( cg.snap && ( ( snap->ps.eFlags ^ cg.snap->ps.eFlags ) & EF_TELEPORT_BIT ) ) {
-		cg.nextFrameTeleport = qtrue;
-	} else {
-		cg.nextFrameTeleport = qfalse;
-	}
-
-	// if changing follow mode, don't interpolate
-	if ( cg.nextSnap->ps.clientNum != cg.snap->ps.clientNum ) {
-		cg.nextFrameTeleport = qtrue;
-	}
-
-	// if changing server restarts, don't interpolate
-	if ( ( cg.nextSnap->snapFlags ^ cg.snap->snapFlags ) & SNAPFLAG_SERVERCOUNT ) {
-		cg.nextFrameTeleport = qtrue;
 	}
 
 	// sort out solid entities

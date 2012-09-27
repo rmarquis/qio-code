@@ -365,9 +365,9 @@ void CL_SystemInfoChanged( void ) {
 #endif
 	{
 		s = Info_ValueForKey( systemInfo, "sv_voip" );
-		if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive"))
-			clc.voipEnabled = qfalse;
-		else
+		//if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive"))
+		//	clc.voipEnabled = qfalse;
+		//else
 			clc.voipEnabled = atoi(s);
 	}
 #endif

@@ -120,63 +120,6 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 
 /*
 =============
-G_PickTarget
-
-Selects a random entity from among the targets
-=============
-*/
-#define MAXCHOICES	32
-
-gentity_t *G_PickTarget (char *targetname)
-{
-	gentity_t	*ent = NULL;
-	int		num_choices = 0;
-	gentity_t	*choice[MAXCHOICES];
-
-	if (!targetname)
-	{
-		G_Printf("G_PickTarget called with NULL targetname\n");
-		return NULL;
-	}
-
-	while(1)
-	{
-		ent = G_Find (ent, FOFS(targetname), targetname);
-		if (!ent)
-			break;
-		choice[num_choices++] = ent;
-		if (num_choices == MAXCHOICES)
-			break;
-	}
-
-	if (!num_choices)
-	{
-		G_Printf("G_PickTarget: target %s not found\n", targetname);
-		return NULL;
-	}
-
-	return choice[rand() % num_choices];
-}
-
-
-/*
-==============================
-G_UseTargets
-
-"activator" should be set to the entity that initiated the firing.
-
-Search for (string)targetname in all entities that
-match (string)self.target and call their .use function
-
-==============================
-*/
-void G_UseTargets( gentity_t *ent, gentity_t *activator ) {
-	
-}
-
-
-/*
-=============
 TempVector
 
 This is just a convenience function
@@ -221,33 +164,6 @@ char	*vtos( const vec3_t v ) {
 	Com_sprintf (s, 32, "(%i %i %i)", (int)v[0], (int)v[1], (int)v[2]);
 
 	return s;
-}
-
-
-/*
-===============
-G_SetMovedir
-
-The editor only specifies a single value for angles (yaw),
-but we have special constants to generate an up or down direction.
-Angles will be cleared, because it is being used to represent a direction
-instead of an orientation.
-===============
-*/
-void G_SetMovedir( vec3_t angles, vec3_t movedir ) {
-	static vec3_t VEC_UP		= {0, -1, 0};
-	static vec3_t MOVEDIR_UP	= {0, 0, 1};
-	static vec3_t VEC_DOWN		= {0, -2, 0};
-	static vec3_t MOVEDIR_DOWN	= {0, 0, -1};
-
-	if ( VectorCompare (angles, VEC_UP) ) {
-		VectorCopy (MOVEDIR_UP, movedir);
-	} else if ( VectorCompare (angles, VEC_DOWN) ) {
-		VectorCopy (MOVEDIR_DOWN, movedir);
-	} else {
-		AngleVectors (angles, movedir, NULL, NULL);
-	}
-	VectorClear( angles );
 }
 
 

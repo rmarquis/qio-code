@@ -32,7 +32,6 @@ typedef struct {
 	int			cvarFlags;
 	int			modificationCount;  // for tracking changes
 	qboolean	trackChange;	    // track this variable, and announce if changed
-  qboolean teamShader;        // track and if changed, update shader state
 } cvarTable_t;
 
 gentity_t		g_entities[MAX_GENTITIES];
@@ -187,8 +186,6 @@ static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
 void G_ShutdownGame( int restart );
-void CheckExitRules( void );
-
 
 /*
 ================
@@ -256,77 +253,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 }
 
 /*
-================
-G_FindTeams
-
-Chain together all entities with a matching team field.
-Entity teams are used for item groups and multi-entity mover groups.
-
-All but the first will have the FL_TEAMSLAVE flag set and teammaster field set
-All but the last will have the teamchain field set to the next one
-================
-*/
-void G_FindTeams( void ) {
-	gentity_t	*e, *e2;
-	int		i, j;
-	int		c, c2;
-
-	c = 0;
-	c2 = 0;
-	for ( i=1, e=g_entities+i ; i < level.num_entities ; i++,e++ ){
-		if (!e->inuse)
-			continue;
-		if (!e->team)
-			continue;
-		if (e->flags & FL_TEAMSLAVE)
-			continue;
-		e->teammaster = e;
-		c++;
-		c2++;
-		for (j=i+1, e2=e+1 ; j < level.num_entities ; j++,e2++)
-		{
-			if (!e2->inuse)
-				continue;
-			if (!e2->team)
-				continue;
-			if (e2->flags & FL_TEAMSLAVE)
-				continue;
-			if (!strcmp(e->team, e2->team))
-			{
-				c2++;
-				e2->teamchain = e->teamchain;
-				e->teamchain = e2;
-				e2->teammaster = e;
-				e2->flags |= FL_TEAMSLAVE;
-
-				// make sure that targets only point at the master
-				if ( e2->targetname ) {
-					e->targetname = e2->targetname;
-					e2->targetname = NULL;
-				}
-			}
-		}
-	}
-
-	G_Printf ("%i teams with %i entities\n", c, c2);
-}
-
-void G_RemapTeamShaders( void ) {
-#ifdef MISSIONPACK
-	char string[1024];
-	float f = level.time * 0.001;
-	Com_sprintf( string, sizeof(string), "team_icon/%s_red", g_redteam.string );
-	AddRemap("textures/ctf2/redteam01", string, f); 
-	AddRemap("textures/ctf2/redteam02", string, f); 
-	Com_sprintf( string, sizeof(string), "team_icon/%s_blue", g_blueteam.string );
-	AddRemap("textures/ctf2/blueteam01", string, f); 
-	AddRemap("textures/ctf2/blueteam02", string, f); 
-	trap_SetConfigstring(CS_SHADERSTATE, BuildShaderStateConfig());
-#endif
-}
-
-
-/*
 =================
 G_RegisterCvars
 =================
@@ -342,12 +268,9 @@ void G_RegisterCvars( void ) {
 		if ( cv->vmCvar )
 			cv->modificationCount = cv->vmCvar->modificationCount;
 
-		if (cv->teamShader) {
-			remapped = qtrue;
-		}
+
 	}
 
-	level.warmupModificationCount = g_warmup.modificationCount;
 }
 
 /*
@@ -372,16 +295,10 @@ void G_UpdateCvars( void ) {
 						cv->cvarName, cv->vmCvar->string ) );
 				}
 
-				if (cv->teamShader) {
-					remapped = qtrue;
-				}
 			}
 		}
 	}
 
-	if (remapped) {
-		G_RemapTeamShaders();
-	}
 }
 
 /*
@@ -407,28 +324,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
-
-	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
-
-	if ( g_gametype.integer != GT_SINGLE_PLAYER && g_logfile.string[0] ) {
-		if ( g_logfileSync.integer ) {
-			trap_FS_FOpenFile( g_logfile.string, &level.logFile, FS_APPEND_SYNC );
-		} else {
-			trap_FS_FOpenFile( g_logfile.string, &level.logFile, FS_APPEND );
-		}
-		if ( !level.logFile ) {
-			G_Printf( "WARNING: Couldn't open logfile: %s\n", g_logfile.string );
-		} else {
-			char	serverinfo[MAX_INFO_STRING];
-
-			trap_GetServerinfo( serverinfo, sizeof( serverinfo ) );
-
-			G_LogPrintf("------------------------------------------------------------\n" );
-			G_LogPrintf("InitGame: %s\n", serverinfo );
-		}
-	} else {
-		G_Printf( "Not logging to disk.\n" );
-	}
 
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
@@ -457,22 +352,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
-	// reserve some spots for dead player bodies
-	InitBodyQue();
-
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
-	// general initialization
-	G_FindTeams();
 
 	G_Printf ("-----------------------------------\n");
 
-	if( g_gametype.integer == GT_SINGLE_PLAYER || trap_Cvar_VariableIntegerValue( "com_buildScript" ) ) {
-		G_ModelIndex( SP_PODIUM_MODEL );
-	}
-
-	G_RemapTeamShaders();
 
 }
 
@@ -556,10 +441,6 @@ void ExitLevel (void) {
 		trap_SendConsoleCommand( EXEC_APPEND, "vstr nextmap\n" );
 	}
 
-	level.changemap = NULL;
-	level.intermissiontime = 0;
-
-
 
 	// change all client states to connecting, so the early players into the
 	// next level will know the others aren't done reconnecting
@@ -608,119 +489,6 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 }
 
 /*
-================
-LogExit
-
-Append information about this game to the log file
-================
-*/
-void LogExit( const char *string ) {
-
-
-
-}
-
-
-/*
-=================
-CheckIntermissionExit
-
-The level will stay at the intermission for a minimum of 5 seconds
-If all players wish to continue, the level will then exit.
-If one or more players have not acknowledged the continue, the game will
-wait 10 seconds before going on.
-=================
-*/
-void CheckIntermissionExit( void ) {
-
-}
-
-
-/*
-=================
-CheckExitRules
-
-There will be a delay between the time the exit is qualified for
-and the time everyone is moved to the intermission spot, so you
-can see the last frag.
-=================
-*/
-void CheckExitRules( void ) {
-
-
-
-}
-
-
-
-/*
-========================================================================
-
-FUNCTIONS CALLED EVERY FRAME
-
-========================================================================
-*/
-
-
-/*
-=============
-CheckTournament
-
-Once a frame, check for changes in tournement player state
-=============
-*/
-void CheckTournament( void ) {
-
-}
-
-
-/*
-==================
-CheckVote
-==================
-*/
-void CheckVote( void ) {
-
-}
-
-/*
-==================
-PrintTeam
-==================
-*/
-void PrintTeam(int team, char *message) {
-
-}
-
-/*
-==================
-SetLeader
-==================
-*/
-void SetLeader(int team, int client) {
-	
-}
-
-/*
-==================
-CheckTeamLeader
-==================
-*/
-void CheckTeamLeader( int team ) {
-
-}
-
-/*
-==================
-CheckTeamVote
-==================
-*/
-void CheckTeamVote( int team ) {
-	
-}
-
-
-/*
 ==================
 CheckCvars
 ==================
@@ -736,31 +504,6 @@ void CheckCvars( void ) {
 			trap_Cvar_Set( "g_needpass", "0" );
 		}
 	}
-}
-
-/*
-=============
-G_RunThink
-
-Runs thinking code for this frame if necessary
-=============
-*/
-void G_RunThink (gentity_t *ent) {
-	float	thinktime;
-
-	thinktime = ent->nextthink;
-	if (thinktime <= 0) {
-		return;
-	}
-	if (thinktime > level.time) {
-		return;
-	}
-	
-	ent->nextthink = 0;
-	if (!ent->think) {
-		G_Error ( "NULL ent->think");
-	}
-	ent->think (ent);
 }
 
 /*
@@ -795,11 +538,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		// temporary entities don't think
-		if ( ent->freeAfterEvent ) {
-			continue;
-		}
-
 		if ( !ent->r.linked && ent->neverFree ) {
 			continue;
 		}
@@ -809,7 +547,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		G_RunThink( ent );
 	}
 
 	// perform final fixups on the players
@@ -819,15 +556,6 @@ void G_RunFrame( int levelTime ) {
 			ClientEndFrame( ent );
 		}
 	}
-
-	// see if it is time to do a tournement restart
-	CheckTournament();
-
-	// see if it is time to end the level
-	CheckExitRules();
-
-	// cancel vote if timed out
-	CheckVote();
 
 	// for tracking changes
 	CheckCvars();

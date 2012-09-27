@@ -439,15 +439,9 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// load a few needed things before we do any screen updates
 	cgs.media.charsetShader		= trap_R_RegisterShader( "gfx/2d/bigchars" );
 	cgs.media.whiteShader		= trap_R_RegisterShader( "white" );
-	cgs.media.charsetProp		= trap_R_RegisterShaderNoMip( "menu/art/font1_prop.tga" );
-	cgs.media.charsetPropGlow	= trap_R_RegisterShaderNoMip( "menu/art/font1_prop_glo.tga" );
-	cgs.media.charsetPropB		= trap_R_RegisterShaderNoMip( "menu/art/font2_prop.tga" );
 
 	CG_RegisterCvars();
 
-	cgs.redflag = cgs.blueflag = -1; // For compatibily, default to unset for
-	cgs.flagStatus = -1;
-	// old servers
 
 	// get the rendering configuration from the client system
 	trap_GetGlconfig( &cgs.glconfig );
@@ -475,7 +469,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	String_Init();
 #endif
 
-	cg.loading = qtrue;		// force players to load instead of defer
+//	cg.loading = qtrue;		// force players to load instead of defer
 
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
@@ -484,10 +478,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	trap_R_LoadWorldMap( cgs.mapname );
 
 
-	cg.loading = qfalse;	// future players will be deferred
+//	cg.loading = qfalse;	// future players will be deferred
 
-	// remove the last loading update
-	cg.infoScreenText[0] = 0;
 
 
 	trap_S_ClearLoopingSounds( qtrue );

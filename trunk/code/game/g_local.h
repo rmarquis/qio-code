@@ -31,36 +31,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-#define BODY_QUEUE_SIZE		8
-
 #define INFINITE			1000000
 
 #define	FRAMETIME			100					// msec
-#define	CARNAGE_REWARD_TIME	3000
-#define REWARD_SPRITE_TIME	2000
-
-#define	INTERMISSION_DELAY_TIME	1000
-#define	SP_INTERMISSION_DELAY_TIME	5000
 
 // gentity->flags
 #define	FL_GODMODE				0x00000010
 #define	FL_NOTARGET				0x00000020
-#define	FL_TEAMSLAVE			0x00000400	// not the first on the team
-#define FL_NO_KNOCKBACK			0x00000800
-#define FL_DROPPED_ITEM			0x00001000
-#define FL_NO_BOTS				0x00002000	// spawn point not for bot use
-#define FL_NO_HUMANS			0x00004000	// spawn point just for bots
-#define FL_FORCE_GESTURE		0x00008000	// force gesture on client
-
-// movers are things like doors, plats, buttons, etc
-typedef enum {
-	MOVER_POS1,
-	MOVER_POS2,
-	MOVER_1TO2,
-	MOVER_2TO1
-} moverState_t;
-
-#define SP_PODIUM_MODEL		"models/mapobjects/podium/podium4.md3"
 
 //============================================================================
 
@@ -90,89 +67,27 @@ struct gentity_s {
 	char		*model;
 	char		*model2;
 	int			freetime;			// level.time when the object was freed
-	
-	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
-	qboolean	freeAfterEvent;
-	qboolean	unlinkAfterEvent;
 
-	qboolean	physicsObject;		// if true, it can be pushed by movers and fall off edges
-									// all game items are physicsObjects, 
-	float		physicsBounce;		// 1.0 = continuous bounce, 0.0 = no bounce
 	int			clipmask;			// brushes with this content value will be collided against
 									// when moving.  items and corpses do not collide against
 									// players, for instance
 
-	// movers
-	moverState_t moverState;
-	int			soundPos1;
-	int			sound1to2;
-	int			sound2to1;
-	int			soundPos2;
-	int			soundLoop;
-	gentity_t	*parent;
-	gentity_t	*nextTrain;
-	gentity_t	*prevTrain;
-	vec3_t		pos1, pos2;
 
-	char		*message;
-
-	int			timestamp;		// body queue sinking, etc
 
 	char		*target;
 	char		*targetname;
-	char		*team;
-	char		*targetShaderName;
-	char		*targetShaderNewName;
-	gentity_t	*target_ent;
-
-	float		speed;
-	vec3_t		movedir;
 
 	int			nextthink;
-	void		(*think)(gentity_t *self);
-	void		(*reached)(gentity_t *self);	// movers call this when hitting endpoint
-	void		(*blocked)(gentity_t *self, gentity_t *other);
-	void		(*touch)(gentity_t *self, gentity_t *other, trace_t *trace);
-	void		(*use)(gentity_t *self, gentity_t *other, gentity_t *activator);
 	void		(*pain)(gentity_t *self, gentity_t *attacker, int damage);
 	void		(*die)(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
-
-	int			pain_debounce_time;
-	int			fly_sound_debounce_time;	// wind tunnel
-	int			last_move_time;
 
 	int			health;
 
 	qboolean	takedamage;
 
-	int			damage;
-	int			splashDamage;	// quad will increase this without increasing radius
-	int			splashRadius;
-	int			methodOfDeath;
-	int			splashMethodOfDeath;
-
-	int			count;
-
-	gentity_t	*chain;
-	gentity_t	*enemy;
-	gentity_t	*activator;
-	gentity_t	*teamchain;		// next entity in team
-	gentity_t	*teammaster;	// master of the team
-
-#ifdef MISSIONPACK
-	int			kamikazeTime;
-	int			kamikazeShockTime;
-#endif
 
 	int			watertype;
 	int			waterlevel;
-
-	int			noise_index;
-
-	// timing variables
-	float		wait;
-	float		random;
-
 };
 
 
@@ -182,51 +97,8 @@ typedef enum {
 	CON_CONNECTED
 } clientConnected_t;
 
-typedef enum {
-	SPECTATOR_NOT,
-	SPECTATOR_FREE,
-	SPECTATOR_FOLLOW,
-	SPECTATOR_SCOREBOARD
-} spectatorState_t;
-
-typedef enum {
-	TEAM_BEGIN,		// Beginning a team game, spawn at base
-	TEAM_ACTIVE		// Now actively playing
-} playerTeamStateState_t;
-
-typedef struct {
-	playerTeamStateState_t	state;
-
-	int			location;
-
-	int			captures;
-	int			basedefense;
-	int			carrierdefense;
-	int			flagrecovery;
-	int			fragcarrier;
-	int			assists;
-
-	float		lasthurtcarrier;
-	float		lastreturnedflag;
-	float		flagsince;
-	float		lastfraggedcarrier;
-} playerTeamState_t;
-
-// client data that stays across multiple levels or tournament restarts
-// this is achieved by writing all the data to cvar strings at game shutdown
-// time and reading them back at connection time.  Anything added here
-// MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
-typedef struct {
-	int			spectatorNum;		// for determining next-in-line to play
-	spectatorState_t	spectatorState;
-	int			spectatorClient;	// for chasecam and follow mode
-	int			wins, losses;		// tournament stats
-	qboolean	teamLeader;			// true when this client is a team leader
-} clientSession_t;
-
 //
 #define MAX_NETNAME			36
-#define	MAX_VOTE_COUNT		3
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -240,10 +112,6 @@ typedef struct {
 	char		netname[MAX_NETNAME];
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
-	playerTeamState_t teamState;	// status in teamplay games
-	int			voteCount;			// to prevent people from constantly calling votes
-	int			teamVoteCount;		// to prevent people from constantly calling votes
-	qboolean	teamInfo;			// send team overlay updates?
 } clientPersistant_t;
 
 
@@ -255,7 +123,6 @@ struct gclient_s {
 
 	// the rest of the structure is private to game
 	clientPersistant_t	pers;
-	clientSession_t		sess;
 
 	qboolean	readyToExit;		// wishes to leave the intermission
 
@@ -270,36 +137,10 @@ struct gclient_s {
 
 	vec3_t		oldOrigin;
 
-	// sum up damage over an entire frame, so
-	// shotgun blasts give a single big kick
-	int			damage_armor;		// damage absorbed by armor
-	int			damage_blood;		// damage taken out of health
-	int			damage_knockback;	// impact damage
-	vec3_t		damage_from;		// origin for vector calculation
-	qboolean	damage_fromWorld;	// if true, don't use the damage_from vector
-
-	int			accurateCount;		// for "impressive" reward sound
-
-	int			accuracy_shots;		// total number of shots
-	int			accuracy_hits;		// total number of hits
-
-	//
-	int			lastkilled_client;	// last client that this client killed
-	int			lasthurt_client;	// last client that damaged this client
-	int			lasthurt_mod;		// type of damage the client did
-
-	// timers
-	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
-	int			inactivityTime;		// kick players when time > this
-	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
-	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
-
 	int			airOutTime;
 
 	int			lastKillTime;		// for multiple kill rewards
 
-	qboolean	fireHeld;			// used for hook
-	gentity_t	*hook;				// grapple hook if out
 
 	int			switchTeamTime;		// time the player switched teams
 
@@ -307,12 +148,6 @@ struct gclient_s {
 	// like health / armor countdowns and regeneration
 	int			timeResidual;
 
-#ifdef MISSIONPACK
-	gentity_t	*persistantPowerup;
-	int			portalID;
-	int			ammoTimes[WP_NUM_WEAPONS];
-	int			invulnerabilityTime;
-#endif
 
 	char		*areabits;
 };
@@ -330,8 +165,6 @@ typedef struct {
 	struct gentity_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
-
-	int			warmupTime;			// restart match at this time
 
 	fileHandle_t	logFile;
 
@@ -357,26 +190,6 @@ typedef struct {
 	int			sortedClients[MAX_CLIENTS];		// sorted by score
 	int			follow1, follow2;		// clientNums for auto-follow spectators
 
-	int			snd_fry;				// sound index for standing in lava
-
-	int			warmupModificationCount;	// for detecting if g_warmup is changed
-
-	// voting state
-	char		voteString[MAX_STRING_CHARS];
-	char		voteDisplayString[MAX_STRING_CHARS];
-	int			voteTime;				// level.time vote was called
-	int			voteExecuteTime;		// time the vote is executed
-	int			voteYes;
-	int			voteNo;
-	int			numVotingClients;		// set by CalculateRanks
-
-	// team voting state
-	char		teamVoteString[2][MAX_STRING_CHARS];
-	int			teamVoteTime[2];		// level.time vote was called
-	int			teamVoteYes[2];
-	int			teamVoteNo[2];
-	int			numteamVotingClients[2];// set by CalculateRanks
-
 	// spawn variables
 	qboolean	spawning;				// the G_Spawn*() functions are valid
 	int			numSpawnVars;
@@ -384,26 +197,6 @@ typedef struct {
 	int			numSpawnVarChars;
 	char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
-	// intermission state
-	int			intermissionQueued;		// intermission was qualified, but
-										// wait INTERMISSION_DELAY_TIME before
-										// actually going there so the last
-										// frag can be watched.  Disable future
-										// kills during this delay
-	int			intermissiontime;		// time the intermission was started
-	char		*changemap;
-	qboolean	readyToExit;			// at least one client wants to exit
-	int			exitTime;
-	vec3_t		intermission_origin;	// also used for spectator spawns
-	vec3_t		intermission_angle;
-
-	qboolean	locationLinked;			// target_locations get linked
-	gentity_t	*locationHead;			// head of the location list
-	int			bodyQueIndex;			// dead bodies
-	gentity_t	*bodyQue[BODY_QUEUE_SIZE];
-#ifdef MISSIONPACK
-	int			portalSequence;
-#endif
 } level_locals_t;
 
 
@@ -423,15 +216,9 @@ char *G_NewString( const char *string );
 //
 int G_ModelIndex( char *name );
 int		G_SoundIndex( char *name );
-void	G_KillBox (gentity_t *ent);
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
-gentity_t *G_PickTarget (char *targetname);
-void	G_UseTargets (gentity_t *ent, gentity_t *activator);
-void	G_SetMovedir ( vec3_t angles, vec3_t movedir);
-
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
-gentity_t *G_TempEntity( vec3_t origin, int event );
 void	G_FreeEntity( gentity_t *e );
 qboolean	G_EntitiesFree( void );
 
@@ -440,24 +227,7 @@ char	*vtos( const vec3_t v );
 
 float vectoyaw( const vec3_t vec );
 
-void G_AddPredictableEvent( gentity_t *ent, int event, int eventParm );
-void G_AddEvent( gentity_t *ent, int event, int eventParm );
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
-
-
-//
-// g_combat.c
-//
-qboolean CanDamage (gentity_t *targ, vec3_t origin);
-void G_Damage (gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod);
-qboolean G_RadiusDamage (vec3_t origin, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod);
-int G_InvulnerabilityEffect( gentity_t *targ, vec3_t dir, vec3_t point, vec3_t impactpoint, vec3_t bouncedir );
-void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath );
-void TossClientItems( gentity_t *self );
-#ifdef MISSIONPACK
-void TossClientPersistantPowerups( gentity_t *self );
-#endif
-void TossClientCubes( gentity_t *self );
 
 // damage flags
 #define DAMAGE_RADIUS				0x00000001	// damage was indirect
@@ -473,39 +243,13 @@ void TossClientCubes( gentity_t *self );
 //
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 gentity_t *SelectSpawnPoint (vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot);
-void CopyToBodyQue( gentity_t *ent );
 void ClientRespawn(gentity_t *ent);
-void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
-void player_die (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
-void AddScore( gentity_t *ent, vec3_t origin, int score );
-void CalculateRanks( void );
-qboolean SpotWouldTelefrag( gentity_t *spot );
-
-//
-// g_weapon.c
-//
-void FireWeapon( gentity_t *ent );
-#ifdef MISSIONPACK
-void G_StartKamikaze( gentity_t *ent );
-#endif
-
-//
-// g_cmds.c
-//
-void DeathmatchScoreboardMessage( gentity_t *ent );
 
 //
 // g_main.c
 //
-void MoveClientToIntermission( gentity_t *ent );
-void FindIntermissionPoint( void );
-void SetLeader(int team, int client);
-void CheckTeamLeader( int team );
-void G_RunThink (gentity_t *ent);
-void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
-void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
 

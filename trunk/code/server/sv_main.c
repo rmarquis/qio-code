@@ -542,19 +542,10 @@ the simple info query.
 ================
 */
 static void SVC_Status( netadr_t from ) {
-	char	player[1024];
 	char	status[MAX_MSGLEN];
-	int		i;
-	client_t	*cl;
-	playerState_t	*ps;
 	int		statusLength;
 	int		playerLength;
 	char	infostring[MAX_INFO_STRING];
-
-	// ignore if we are in single player
-	if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive")) {
-		return;
-	}
 
 	// Prevent using getstatus as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
@@ -609,11 +600,6 @@ void SVC_Info( netadr_t from ) {
 	int		i, count, humans;
 	char	*gamedir;
 	char	infostring[MAX_INFO_STRING];
-
-	// ignore if we are in single player
-	if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive")) {
-		return;
-	}
 
 	// Prevent using getinfo as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {

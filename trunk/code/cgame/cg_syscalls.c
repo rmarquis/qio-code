@@ -332,9 +332,6 @@ qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 	return syscall( CG_GETUSERCMD, cmdNumber, ucmd );
 }
 
-void		trap_SetUserCmdValue( int stateValue, float sensitivityScale ) {
-	syscall( CG_SETUSERCMDVALUE, stateValue, PASSFLOAT(sensitivityScale) );
-}
 
 void		testPrintInt( char *string, int i ) {
 	syscall( CG_TESTPRINTINT, string, i );
@@ -376,53 +373,3 @@ void trap_SnapVector( float *v ) {
 	syscall( CG_SNAPVECTOR, v );
 }
 
-// this returns a handle.  arg0 is the name in the format "idlogo.roq", set arg1 to NULL, alteredstates to qfalse (do not alter gamestate)
-int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits) {
-  return syscall(CG_CIN_PLAYCINEMATIC, arg0, xpos, ypos, width, height, bits);
-}
- 
-// stops playing the cinematic and ends it.  should always return FMV_EOF
-// cinematics must be stopped in reverse order of when they are started
-e_status trap_CIN_StopCinematic(int handle) {
-  return syscall(CG_CIN_STOPCINEMATIC, handle);
-}
-
-
-// will run a frame of the cinematic but will not draw it.  Will return FMV_EOF if the end of the cinematic has been reached.
-e_status trap_CIN_RunCinematic (int handle) {
-  return syscall(CG_CIN_RUNCINEMATIC, handle);
-}
- 
-
-// draws the current frame
-void trap_CIN_DrawCinematic (int handle) {
-  syscall(CG_CIN_DRAWCINEMATIC, handle);
-}
- 
-
-// allows you to resize the animation dynamically
-void trap_CIN_SetExtents (int handle, int x, int y, int w, int h) {
-  syscall(CG_CIN_SETEXTENTS, handle, x, y, w, h);
-}
-
-/*
-qboolean trap_loadCamera( const char *name ) {
-	return syscall( CG_LOADCAMERA, name );
-}
-
-void trap_startCamera(int time) {
-	syscall(CG_STARTCAMERA, time);
-}
-
-qboolean trap_getCameraInfo( int time, vec3_t *origin, vec3_t *angles) {
-	return syscall( CG_GETCAMERAINFO, time, origin, angles );
-}
-*/
-
-qboolean trap_GetEntityToken( char *buffer, int bufferSize ) {
-	return syscall( CG_GET_ENTITY_TOKEN, buffer, bufferSize );
-}
-
-qboolean trap_R_inPVS( const vec3_t p1, const vec3_t p2 ) {
-	return syscall( CG_R_INPVS, p1, p2 );
-}
