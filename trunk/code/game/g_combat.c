@@ -61,9 +61,7 @@ void AddScore( gentity_t *ent, vec3_t origin, int score ) {
 	ScorePlum(ent, origin, score);
 	//
 	ent->client->ps.persistant[PERS_SCORE] += score;
-	if ( g_gametype.integer == GT_TEAM )
-		level.teamScores[ ent->client->ps.persistant[PERS_TEAM] ] += score;
-	CalculateRanks();
+
 }
 
 /*
@@ -262,48 +260,7 @@ CheckAlmostCapture
 ==================
 */
 void CheckAlmostCapture( gentity_t *self, gentity_t *attacker ) {
-	gentity_t	*ent;
-	vec3_t		dir;
-	char		*classname;
-
-	// if this player was carrying a flag
-	if ( self->client->ps.powerups[PW_REDFLAG] ||
-		self->client->ps.powerups[PW_BLUEFLAG] ||
-		self->client->ps.powerups[PW_NEUTRALFLAG] ) {
-		// get the goal flag this player should have been going for
-		if ( g_gametype.integer == GT_CTF ) {
-			if ( self->client->sess.sessionTeam == TEAM_BLUE ) {
-				classname = "team_CTF_blueflag";
-			}
-			else {
-				classname = "team_CTF_redflag";
-			}
-		}
-		else {
-			if ( self->client->sess.sessionTeam == TEAM_BLUE ) {
-				classname = "team_CTF_redflag";
-			}
-			else {
-				classname = "team_CTF_blueflag";
-			}
-		}
-		ent = NULL;
-		do
-		{
-			ent = G_Find(ent, FOFS(classname), classname);
-		} while (ent && (ent->flags & FL_DROPPED_ITEM));
-		// if we found the destination flag and it's not picked up
-		if (ent && !(ent->r.svFlags & SVF_NOCLIENT) ) {
-			// if the player was *very* close
-			VectorSubtract( self->client->ps.origin, ent->s.origin, dir );
-			if ( VectorLength(dir) < 200 ) {
-				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_HOLYSHIT;
-				if ( attacker->client ) {
-					attacker->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_HOLYSHIT;
-				}
-			}
-		}
-	}
+	
 }
 
 /*
@@ -312,31 +269,7 @@ CheckAlmostScored
 ==================
 */
 void CheckAlmostScored( gentity_t *self, gentity_t *attacker ) {
-	gentity_t	*ent;
-	vec3_t		dir;
-	char		*classname;
-
-	// if the player was carrying cubes
-	if ( self->client->ps.generic1 ) {
-		if ( self->client->sess.sessionTeam == TEAM_BLUE ) {
-			classname = "team_redobelisk";
-		}
-		else {
-			classname = "team_blueobelisk";
-		}
-		ent = G_Find(NULL, FOFS(classname), classname);
-		// if we found the destination obelisk
-		if ( ent ) {
-			// if the player was *very* close
-			VectorSubtract( self->client->ps.origin, ent->s.origin, dir );
-			if ( VectorLength(dir) < 200 ) {
-				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_HOLYSHIT;
-				if ( attacker->client ) {
-					attacker->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_HOLYSHIT;
-				}
-			}
-		}
-	}
+	
 }
 
 /*
@@ -412,78 +345,13 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if (attacker && attacker->client) {
 		attacker->client->lastkilled_client = self->s.number;
 
-
-			AddScore( attacker, self->r.currentOrigin, 1 );
-
-			if( meansOfDeath == MOD_GAUNTLET ) {
-				
-				// play humiliation on player
-				attacker->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT]++;
-
-				// add the sprite over the player's head
-				attacker->client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
-				attacker->client->ps.eFlags |= EF_AWARD_GAUNTLET;
-				attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-
-				// also play humiliation on target
-				self->client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_GAUNTLETREWARD;
-			
-
-			// check for two kills in a short amount of time
-			// if this is close enough to the last kill, give a reward sound
-			if ( level.time - attacker->client->lastKillTime < CARNAGE_REWARD_TIME ) {
-				// play excellent on player
-				attacker->client->ps.persistant[PERS_EXCELLENT_COUNT]++;
-
-				// add the sprite over the player's head
-				attacker->client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
-				attacker->client->ps.eFlags |= EF_AWARD_EXCELLENT;
-				attacker->client->rewardTime = level.time + REWARD_SPRITE_TIME;
-			}
-			attacker->client->lastKillTime = level.time;
-
-		}
 	} else {
 		//AddScore( self, self->r.currentOrigin, -1 );
 	}
 
-	// if I committed suicide, the flag does not fall, it returns.
-	if (meansOfDeath == MOD_SUICIDE) {
-		if ( self->client->ps.powerups[PW_NEUTRALFLAG] ) {		// only happens in One Flag CTF
-		//	Team_ReturnFlag( TEAM_FREE );
-			self->client->ps.powerups[PW_NEUTRALFLAG] = 0;
-		}
-		else if ( self->client->ps.powerups[PW_REDFLAG] ) {		// only happens in standard CTF
-			//Team_ReturnFlag( TEAM_RED );
-			self->client->ps.powerups[PW_REDFLAG] = 0;
-		}
-		else if ( self->client->ps.powerups[PW_BLUEFLAG] ) {	// only happens in standard CTF
-			//Team_ReturnFlag( TEAM_BLUE );
-			self->client->ps.powerups[PW_BLUEFLAG] = 0;
-		}
-	}
-
-	Cmd_Score_f( self );		// show scores
-	// send updated scores to any clients that are following this one,
-	// or they would get stale scoreboards
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		gclient_t	*client;
-
-		client = &level.clients[i];
-		if ( client->pers.connected != CON_CONNECTED ) {
-			continue;
-		}
-		if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
-			continue;
-		}
-		if ( client->sess.spectatorClient == self->s.number ) {
-			Cmd_Score_f( g_entities + i );
-		}
-	}
 
 	self->takedamage = qtrue;	// can still be gibbed
 
-	self->s.weapon = WP_NONE;
 	self->s.powerups = 0;
 	self->r.contents = CONTENTS_CORPSE;
 
@@ -507,131 +375,12 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	// never gib in a nodrop
 	contents = trap_PointContents( self->r.currentOrigin, -1 );
 
-	if ( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) {
-		// gib death
-		///( self, killer );
-	} else {
-		// normal death
-	
-	}
+
 
 	trap_LinkEntity (self);
 
 }
 
-
-/*
-================
-CheckArmor
-================
-*/
-int CheckArmor (gentity_t *ent, int damage, int dflags)
-{
-	gclient_t	*client;
-	int			save;
-	int			count;
-
-	if (!damage)
-		return 0;
-
-	client = ent->client;
-
-	if (!client)
-		return 0;
-
-	if (dflags & DAMAGE_NO_ARMOR)
-		return 0;
-
-	// armor
-	count = client->ps.stats[STAT_ARMOR];
-	save = ceil( damage * ARMOR_PROTECTION );
-	if (save >= count)
-		save = count;
-
-	if (!save)
-		return 0;
-
-	client->ps.stats[STAT_ARMOR] -= save;
-
-	return save;
-}
-
-/*
-================
-RaySphereIntersections
-================
-*/
-int RaySphereIntersections( vec3_t origin, float radius, vec3_t point, vec3_t dir, vec3_t intersections[2] ) {
-	float b, c, d, t;
-
-	//	| origin - (point + t * dir) | = radius
-	//	a = dir[0]^2 + dir[1]^2 + dir[2]^2;
-	//	b = 2 * (dir[0] * (point[0] - origin[0]) + dir[1] * (point[1] - origin[1]) + dir[2] * (point[2] - origin[2]));
-	//	c = (point[0] - origin[0])^2 + (point[1] - origin[1])^2 + (point[2] - origin[2])^2 - radius^2;
-
-	// normalize dir so a = 1
-	VectorNormalize(dir);
-	b = 2 * (dir[0] * (point[0] - origin[0]) + dir[1] * (point[1] - origin[1]) + dir[2] * (point[2] - origin[2]));
-	c = (point[0] - origin[0]) * (point[0] - origin[0]) +
-		(point[1] - origin[1]) * (point[1] - origin[1]) +
-		(point[2] - origin[2]) * (point[2] - origin[2]) -
-		radius * radius;
-
-	d = b * b - 4 * c;
-	if (d > 0) {
-		t = (- b + sqrt(d)) / 2;
-		VectorMA(point, t, dir, intersections[0]);
-		t = (- b - sqrt(d)) / 2;
-		VectorMA(point, t, dir, intersections[1]);
-		return 2;
-	}
-	else if (d == 0) {
-		t = (- b ) / 2;
-		VectorMA(point, t, dir, intersections[0]);
-		return 1;
-	}
-	return 0;
-}
-
-#ifdef MISSIONPACK
-/*
-================
-G_InvulnerabilityEffect
-================
-*/
-int G_InvulnerabilityEffect( gentity_t *targ, vec3_t dir, vec3_t point, vec3_t impactpoint, vec3_t bouncedir ) {
-	gentity_t	*impact;
-	vec3_t		intersections[2], vec;
-	int			n;
-
-	if ( !targ->client ) {
-		return qfalse;
-	}
-	VectorCopy(dir, vec);
-	VectorInverse(vec);
-	// sphere model radius = 42 units
-	n = RaySphereIntersections( targ->client->ps.origin, 42, point, vec, intersections);
-	if (n > 0) {
-		impact = G_TempEntity( targ->client->ps.origin, EV_INVUL_IMPACT );
-		VectorSubtract(intersections[0], targ->client->ps.origin, vec);
-		vectoangles(vec, impact->s.angles);
-		impact->s.angles[0] += 90;
-		if (impact->s.angles[0] > 360)
-			impact->s.angles[0] -= 360;
-		if ( impactpoint ) {
-			VectorCopy( intersections[0], impactpoint );
-		}
-		if ( bouncedir ) {
-			VectorCopy( vec, bouncedir );
-			VectorNormalize( bouncedir );
-		}
-		return qtrue;
-	}
-	else {
-		return qfalse;
-	}
-}
-#endif
 /*
 ============
 T_Damage
@@ -783,16 +532,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		}
 	}
 
-	// battlesuit protects from all radius damage (but takes knockback)
-	// and protects 50% against all damage
-	if ( client && client->ps.powerups[PW_BATTLESUIT] ) {
-//		G_AddEvent( targ, EV_POWERUP_BATTLESUIT, 0 );
-		if ( ( dflags & DAMAGE_RADIUS ) || ( mod == MOD_FALLING ) ) {
-			return;
-		}
-		damage *= 0.5;
-	}
-
 
 	// always give half damage if hurting self
 	// calculated after knockback, so rocket jumping works
@@ -804,10 +543,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		damage = 1;
 	}
 	take = damage;
-
-	// save some from armor
-	asave = CheckArmor (targ, take, dflags);
-	take -= asave;
 
 	if ( g_debugDamage.integer ) {
 		G_Printf( "%i: client:%i health:%i damage:%i armor:%i\n", level.time, targ->s.number,

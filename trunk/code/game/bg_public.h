@@ -28,23 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	GAME_VERSION		BASEGAME "-1"
 
 #define	DEFAULT_GRAVITY		800
-#define	GIB_HEALTH			-40
-#define	ARMOR_PROTECTION	0.66
-
-#define	MAX_ITEMS			256
-
-#define	RANK_TIED_FLAG		0x4000
-
-#define DEFAULT_SHOTGUN_SPREAD	700
-#define DEFAULT_SHOTGUN_COUNT	11
-
-#define	ITEM_RADIUS			15		// item sizes are needed for client side pickup detection
-
-#define	LIGHTNING_RANGE		768
-
-#define	SCORE_NOT_PRESENT	-9999	// for the CS_SCORES[12] when only one player is present
-
-#define	VOTE_TIME			30000	// 30 seconds before vote times out
 
 #define	MINS_Z				-24
 #define	DEFAULT_VIEWHEIGHT	26
@@ -99,14 +82,7 @@ typedef enum {
 	GT_TOURNAMENT,		// one on one tournament
 	GT_SINGLE_PLAYER,	// single player ffa
 
-	//-- team games go after this --
 
-	GT_TEAM,			// team deathmatch
-	GT_CTF,				// capture the flag
-	GT_1FCTF,
-	GT_OBELISK,
-	GT_HARVESTER,
-	GT_MAX_GAME_TYPE
 } gametype_t;
 
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
@@ -128,16 +104,8 @@ typedef enum {
 	PM_SPECTATOR,	// still run into walls
 	PM_DEAD,		// no acceleration or turning, but free falling
 	PM_FREEZE,		// stuck in place with no control
-	PM_INTERMISSION,	// no movement or status bar
-	PM_SPINTERMISSION	// no movement or status bar
 } pmtype_t;
 
-typedef enum {
-	WEAPON_READY, 
-	WEAPON_RAISING,
-	WEAPON_DROPPING,
-	WEAPON_FIRING
-} weaponstate_t;
 
 // pmove->pm_flags
 #define	PMF_DUCKED			1
@@ -263,205 +231,9 @@ typedef enum {
 #define EF_AWARD_DENIED		0x00040000		// denied
 #define EF_TEAMVOTED		0x00080000		// already cast a team vote
 
-// NOTE: may not have more than 16
-typedef enum {
-	PW_NONE,
-
-	PW_QUAD,
-	PW_BATTLESUIT,
-	PW_HASTE,
-	PW_INVIS,
-	PW_REGEN,
-	PW_FLIGHT,
-
-	PW_REDFLAG,
-	PW_BLUEFLAG,
-	PW_NEUTRALFLAG,
-
-	PW_SCOUT,
-	PW_GUARD,
-	PW_DOUBLER,
-	PW_AMMOREGEN,
-	PW_INVULNERABILITY,
-
-	PW_NUM_POWERUPS
-
-} powerup_t;
-
-typedef enum {
-	HI_NONE,
-
-	HI_TELEPORTER,
-	HI_MEDKIT,
-	HI_KAMIKAZE,
-	HI_PORTAL,
-	HI_INVULNERABILITY,
-
-	HI_NUM_HOLDABLE
-} holdable_t;
-
-
-typedef enum {
-	WP_NONE,
-
-	WP_GAUNTLET,
-	WP_MACHINEGUN,
-	WP_SHOTGUN,
-	WP_GRENADE_LAUNCHER,
-	WP_ROCKET_LAUNCHER,
-	WP_LIGHTNING,
-	WP_RAILGUN,
-	WP_PLASMAGUN,
-	WP_BFG,
-	WP_GRAPPLING_HOOK,
-#ifdef MISSIONPACK
-	WP_NAILGUN,
-	WP_PROX_LAUNCHER,
-	WP_CHAINGUN,
-#endif
-
-	WP_NUM_WEAPONS
-} weapon_t;
-
-
-// reward sounds (stored in ps->persistant[PERS_PLAYEREVENTS])
-#define	PLAYEREVENT_DENIEDREWARD		0x0001
-#define	PLAYEREVENT_GAUNTLETREWARD		0x0002
-#define PLAYEREVENT_HOLYSHIT			0x0004
-
-
-typedef enum {
-	GTS_RED_CAPTURE,
-	GTS_BLUE_CAPTURE,
-	GTS_RED_RETURN,
-	GTS_BLUE_RETURN,
-	GTS_RED_TAKEN,
-	GTS_BLUE_TAKEN,
-	GTS_REDOBELISK_ATTACKED,
-	GTS_BLUEOBELISK_ATTACKED,
-	GTS_REDTEAM_SCORED,
-	GTS_BLUETEAM_SCORED,
-	GTS_REDTEAM_TOOK_LEAD,
-	GTS_BLUETEAM_TOOK_LEAD,
-	GTS_TEAMS_ARE_TIED,
-	GTS_KAMIKAZE
-} global_team_sound_t;
-
-// animations
-typedef enum {
-	BOTH_DEATH1,
-	BOTH_DEAD1,
-	BOTH_DEATH2,
-	BOTH_DEAD2,
-	BOTH_DEATH3,
-	BOTH_DEAD3,
-
-	TORSO_GESTURE,
-
-	TORSO_ATTACK,
-	TORSO_ATTACK2,
-
-	TORSO_DROP,
-	TORSO_RAISE,
-
-	TORSO_STAND,
-	TORSO_STAND2,
-
-	LEGS_WALKCR,
-	LEGS_WALK,
-	LEGS_RUN,
-	LEGS_BACK,
-	LEGS_SWIM,
-
-	LEGS_JUMP,
-	LEGS_LAND,
-
-	LEGS_JUMPB,
-	LEGS_LANDB,
-
-	LEGS_IDLE,
-	LEGS_IDLECR,
-
-	LEGS_TURN,
-
-	TORSO_GETFLAG,
-	TORSO_GUARDBASE,
-	TORSO_PATROL,
-	TORSO_FOLLOWME,
-	TORSO_AFFIRMATIVE,
-	TORSO_NEGATIVE,
-
-	MAX_ANIMATIONS,
-
-	LEGS_BACKCR,
-	LEGS_BACKWALK,
-	FLAG_RUN,
-	FLAG_STAND,
-	FLAG_STAND2RUN,
-
-	MAX_TOTALANIMATIONS
-} animNumber_t;
-
-
-typedef struct animation_s {
-	int		firstFrame;
-	int		numFrames;
-	int		loopFrames;			// 0 to numFrames
-	int		frameLerp;			// msec between frames
-	int		initialLerp;		// msec to get to first frame
-	int		reversed;			// true if animation is reversed
-	int		flipflop;			// true if animation should flipflop back to base
-} animation_t;
-
-
-// flip the togglebit every time an animation
-// changes so a restart of the same anim can be detected
-#define	ANIM_TOGGLEBIT		128
-
-
-typedef enum {
-	TEAM_FREE,
-	TEAM_RED,
-	TEAM_BLUE,
-	TEAM_SPECTATOR,
-
-	TEAM_NUM_TEAMS
-} team_t;
-
-// Time between location updates
-#define TEAM_LOCATION_UPDATE_TIME		1000
-
-// How many players on the overlay
-#define TEAM_MAXOVERLAY		32
-
-//team task
-typedef enum {
-	TEAMTASK_NONE,
-	TEAMTASK_OFFENSE, 
-	TEAMTASK_DEFENSE,
-	TEAMTASK_PATROL,
-	TEAMTASK_FOLLOW,
-	TEAMTASK_RETRIEVE,
-	TEAMTASK_ESCORT,
-	TEAMTASK_CAMP
-} teamtask_t;
-
 // means of death
 typedef enum {
 	MOD_UNKNOWN,
-	MOD_SHOTGUN,
-	MOD_GAUNTLET,
-	MOD_MACHINEGUN,
-	MOD_GRENADE,
-	MOD_GRENADE_SPLASH,
-	MOD_ROCKET,
-	MOD_ROCKET_SPLASH,
-	MOD_PLASMA,
-	MOD_PLASMA_SPLASH,
-	MOD_RAILGUN,
-	MOD_LIGHTNING,
-	MOD_BFG,
-	MOD_BFG_SPLASH,
 	MOD_WATER,
 	MOD_SLIME,
 	MOD_LAVA,
@@ -469,16 +241,6 @@ typedef enum {
 	MOD_TELEFRAG,
 	MOD_FALLING,
 	MOD_SUICIDE,
-	MOD_TARGET_LASER,
-	MOD_TRIGGER_HURT,
-#ifdef MISSIONPACK
-	MOD_NAIL,
-	MOD_CHAINGUN,
-	MOD_PROXIMITY_MINE,
-	MOD_KAMIKAZE,
-	MOD_JUICED,
-#endif
-	MOD_GRAPPLE
 } meansOfDeath_t;
 
 
@@ -516,35 +278,4 @@ void	BG_EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t resu
 
 void	BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap );
 void	BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s, int time, qboolean snap );
-
-
-#define ARENAS_PER_TIER		4
-#define MAX_ARENAS			1024
-#define	MAX_ARENAS_TEXT		8192
-
-#define MAX_BOTS			1024
-#define MAX_BOTS_TEXT		8192
-
-
-// Kamikaze
-
-// 1st shockwave times
-#define KAMI_SHOCKWAVE_STARTTIME		0
-#define KAMI_SHOCKWAVEFADE_STARTTIME	1500
-#define KAMI_SHOCKWAVE_ENDTIME			2000
-// explosion/implosion times
-#define KAMI_EXPLODE_STARTTIME			250
-#define KAMI_IMPLODE_STARTTIME			2000
-#define KAMI_IMPLODE_ENDTIME			2250
-// 2nd shockwave times
-#define KAMI_SHOCKWAVE2_STARTTIME		2000
-#define KAMI_SHOCKWAVE2FADE_STARTTIME	2500
-#define KAMI_SHOCKWAVE2_ENDTIME			3000
-// radius of the models without scaling
-#define KAMI_SHOCKWAVEMODEL_RADIUS		88
-#define KAMI_BOOMSPHEREMODEL_RADIUS		72
-// maximum radius of the models during the effect
-#define KAMI_SHOCKWAVE_MAXRADIUS		1320
-#define KAMI_BOOMSPHERE_MAXRADIUS		720
-#define KAMI_SHOCKWAVE2_MAXRADIUS		704
 

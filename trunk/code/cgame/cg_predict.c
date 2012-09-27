@@ -343,9 +343,6 @@ to ease the jerk.
 =================
 */
 void CG_PredictPlayerState( void ) {
-	int			cmdNum;
-	qboolean	moved;
-	usercmd_t	latestCmd;
 
 	cg.hyperspace = qfalse;	// will be set if touching a trigger_teleport
 

@@ -339,7 +339,6 @@ SelectSpectatorSpawnPoint
 ============
 */
 gentity_t *SelectSpectatorSpawnPoint( vec3_t origin, vec3_t angles ) {
-	FindIntermissionPoint();
 
 	VectorCopy( level.intermission_origin, origin );
 	VectorCopy( level.intermission_angle, angles );
@@ -400,103 +399,7 @@ just like the existing corpse to leave behind.
 =============
 */
 void CopyToBodyQue( gentity_t *ent ) {
-#ifdef MISSIONPACK
-	gentity_t	*e;
-	int i;
-#endif
-	gentity_t		*body;
-	int			contents;
 
-	trap_UnlinkEntity (ent);
-
-	// if client is in a nodrop area, don't leave the body
-	contents = trap_PointContents( ent->s.origin, -1 );
-	if ( contents & CONTENTS_NODROP ) {
-		return;
-	}
-
-	// grab a body que and cycle to the next one
-	body = level.bodyQue[ level.bodyQueIndex ];
-	level.bodyQueIndex = (level.bodyQueIndex + 1) % BODY_QUEUE_SIZE;
-
-	body->s = ent->s;
-	body->s.eFlags = EF_DEAD;		// clear EF_TALK, etc
-#ifdef MISSIONPACK
-	if ( ent->s.eFlags & EF_KAMIKAZE ) {
-		body->s.eFlags |= EF_KAMIKAZE;
-
-		// check if there is a kamikaze timer around for this owner
-		for (i = 0; i < MAX_GENTITIES; i++) {
-			e = &g_entities[i];
-			if (!e->inuse)
-				continue;
-			if (e->activator != ent)
-				continue;
-			if (strcmp(e->classname, "kamikaze timer"))
-				continue;
-			e->activator = body;
-			break;
-		}
-	}
-#endif
-	body->s.powerups = 0;	// clear powerups
-	body->s.loopSound = 0;	// clear lava burning
-	body->s.number = body - g_entities;
-	body->timestamp = level.time;
-	body->physicsObject = qtrue;
-	body->physicsBounce = 0;		// don't bounce
-	if ( body->s.groundEntityNum == ENTITYNUM_NONE ) {
-		body->s.pos.trType = TR_GRAVITY;
-		body->s.pos.trTime = level.time;
-		VectorCopy( ent->client->ps.velocity, body->s.pos.trDelta );
-	} else {
-		body->s.pos.trType = TR_STATIONARY;
-	}
-	body->s.event = 0;
-
-	// change the animation to the last-frame only, so the sequence
-	// doesn't repeat anew for the body
-	switch ( body->s.legsAnim & ~ANIM_TOGGLEBIT ) {
-	case BOTH_DEATH1:
-	case BOTH_DEAD1:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD1;
-		break;
-	case BOTH_DEATH2:
-	case BOTH_DEAD2:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD2;
-		break;
-	case BOTH_DEATH3:
-	case BOTH_DEAD3:
-	default:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD3;
-		break;
-	}
-
-	body->r.svFlags = ent->r.svFlags;
-	VectorCopy (ent->r.mins, body->r.mins);
-	VectorCopy (ent->r.maxs, body->r.maxs);
-	VectorCopy (ent->r.absmin, body->r.absmin);
-	VectorCopy (ent->r.absmax, body->r.absmax);
-
-	body->clipmask = CONTENTS_SOLID | CONTENTS_PLAYERCLIP;
-	body->r.contents = CONTENTS_CORPSE;
-	body->r.ownerNum = ent->s.number;
-
-	body->nextthink = level.time + 5000;
-	body->think = BodySink;
-
-	body->die = body_die;
-
-	// don't take more damage if already gibbed
-	if ( ent->health <= GIB_HEALTH ) {
-		body->takedamage = qfalse;
-	} else {
-		body->takedamage = qtrue;
-	}
-
-
-	VectorCopy ( body->s.pos.trBase, body->r.currentOrigin );
-	trap_LinkEntity (body);
 }
 
 //======================================================================
@@ -532,162 +435,6 @@ void ClientRespawn( gentity_t *ent ) {
 	CopyToBodyQue (ent);
 	ClientSpawn(ent);
 }
-
-/*
-================
-TeamCount
-
-Returns number of players on a team
-================
-*/
-team_t TeamCount( int ignoreClientNum, int team ) {
-	int		i;
-	int		count = 0;
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if ( i == ignoreClientNum ) {
-			continue;
-		}
-		if ( level.clients[i].pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-		if ( level.clients[i].sess.sessionTeam == team ) {
-			count++;
-		}
-	}
-
-	return count;
-}
-
-/*
-================
-TeamLeader
-
-Returns the client number of the team leader
-================
-*/
-int TeamLeader( int team ) {
-	int		i;
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if ( level.clients[i].pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-		if ( level.clients[i].sess.sessionTeam == team ) {
-			if ( level.clients[i].sess.teamLeader )
-				return i;
-		}
-	}
-
-	return -1;
-}
-
-
-/*
-================
-PickTeam
-
-================
-*/
-team_t PickTeam( int ignoreClientNum ) {
-	int		counts[TEAM_NUM_TEAMS];
-
-	counts[TEAM_BLUE] = TeamCount( ignoreClientNum, TEAM_BLUE );
-	counts[TEAM_RED] = TeamCount( ignoreClientNum, TEAM_RED );
-
-	if ( counts[TEAM_BLUE] > counts[TEAM_RED] ) {
-		return TEAM_RED;
-	}
-	if ( counts[TEAM_RED] > counts[TEAM_BLUE] ) {
-		return TEAM_BLUE;
-	}
-	// equal team count, so join the team with the lowest score
-	if ( level.teamScores[TEAM_BLUE] > level.teamScores[TEAM_RED] ) {
-		return TEAM_RED;
-	}
-	return TEAM_BLUE;
-}
-
-/*
-===========
-ForceClientSkin
-
-Forces a client's skin (for teamplay)
-===========
-*/
-/*
-static void ForceClientSkin( gclient_t *client, char *model, const char *skin ) {
-	char *p;
-
-	if ((p = strrchr(model, '/')) != 0) {
-		*p = 0;
-	}
-
-	Q_strcat(model, MAX_QPATH, "/");
-	Q_strcat(model, MAX_QPATH, skin);
-}
-*/
-
-/*
-===========
-ClientCheckName
-============
-*/
-static void ClientCleanName(const char *in, char *out, int outSize)
-{
-	int outpos = 0, colorlessLen = 0, spaces = 0;
-
-	// discard leading spaces
-	for(; *in == ' '; in++);
-	
-	for(; *in && outpos < outSize - 1; in++)
-	{
-		out[outpos] = *in;
-
-		if(*in == ' ')
-		{
-			// don't allow too many consecutive spaces
-			if(spaces > 2)
-				continue;
-			
-			spaces++;
-		}
-		else if(outpos > 0 && out[outpos - 1] == Q_COLOR_ESCAPE)
-		{
-			if(Q_IsColorString(&out[outpos - 1]))
-			{
-				colorlessLen--;
-				
-				if(ColorIndex(*in) == 0)
-				{
-					// Disallow color black in names to prevent players
-					// from getting advantage playing in front of black backgrounds
-					outpos--;
-					continue;
-				}
-			}
-			else
-			{
-				spaces = 0;
-				colorlessLen++;
-			}
-		}
-		else
-		{
-			spaces = 0;
-			colorlessLen++;
-		}
-		
-		outpos++;
-	}
-
-	out[outpos] = '\0';
-
-	// don't allow empty names
-	if( *out == '\0' || colorlessLen == 0)
-		Q_strncpyz(out, "UnnamedPlayer", outSize );
-}
-
 
 /*
 ===========
@@ -743,13 +490,8 @@ void ClientUserinfoChanged( int clientNum ) {
 	// set name
 	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey (userinfo, "name");
-	ClientCleanName( s, client->pers.netname, sizeof(client->pers.netname) );
+	strcpy(client->pers.netname,s);
 
-	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ) {
-			Q_strncpyz( client->pers.netname, "scoreboard", sizeof(client->pers.netname) );
-		}
-	}
 
 	if ( client->pers.connected == CON_CONNECTED ) {
 		if ( strcmp( oldname, client->pers.netname ) ) {
@@ -778,51 +520,6 @@ void ClientUserinfoChanged( int clientNum ) {
 #endif
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
-	// set model
-	if( g_gametype.integer >= GT_TEAM ) {
-		Q_strncpyz( model, Info_ValueForKey (userinfo, "team_model"), sizeof( model ) );
-		Q_strncpyz( headModel, Info_ValueForKey (userinfo, "team_headmodel"), sizeof( headModel ) );
-	} else {
-		Q_strncpyz( model, Info_ValueForKey (userinfo, "model"), sizeof( model ) );
-		Q_strncpyz( headModel, Info_ValueForKey (userinfo, "headmodel"), sizeof( headModel ) );
-	}
-
-	// bots set their team a few frames later
-	if (g_gametype.integer >= GT_TEAM && g_entities[clientNum].r.svFlags & SVF_BOT) {
-		s = Info_ValueForKey( userinfo, "team" );
-		if ( !Q_stricmp( s, "red" ) || !Q_stricmp( s, "r" ) ) {
-			team = TEAM_RED;
-		} else if ( !Q_stricmp( s, "blue" ) || !Q_stricmp( s, "b" ) ) {
-			team = TEAM_BLUE;
-		} else {
-			// pick the team with the least number of players
-			team = PickTeam( clientNum );
-		}
-	}
-	else {
-		team = client->sess.sessionTeam;
-	}
-
-/*	NOTE: all client side now
-
-	// team
-	switch( team ) {
-	case TEAM_RED:
-		ForceClientSkin(client, model, "red");
-//		ForceClientSkin(client, headModel, "red");
-		break;
-	case TEAM_BLUE:
-		ForceClientSkin(client, model, "blue");
-//		ForceClientSkin(client, headModel, "blue");
-		break;
-	}
-	// don't ever use a default skin in teamplay, it would just waste memory
-	// however bots will always join a team but they spawn in as spectator
-	if ( g_gametype.integer >= GT_TEAM && team == TEAM_SPECTATOR) {
-		ForceClientSkin(client, model, "red");
-//		ForceClientSkin(client, headModel, "red");
-	}
-*/
 
 #ifdef MISSIONPACK
 	if (g_gametype.integer >= GT_TEAM) {
@@ -844,15 +541,6 @@ void ClientUserinfoChanged( int clientNum ) {
 		client->pers.teamInfo = qfalse;
 	}
 #endif
-	/*
-	s = Info_ValueForKey( userinfo, "cg_pmove_fixed" );
-	if ( !*s || atoi( s ) == 0 ) {
-		client->pers.pmoveFixed = qfalse;
-	}
-	else {
-		client->pers.pmoveFixed = qtrue;
-	}
-	*/
 
 	// team task (0 = none, 1 = offence, 2 = defence)
 	teamTask = atoi(Info_ValueForKey(userinfo, "teamtask"));
@@ -878,7 +566,7 @@ void ClientUserinfoChanged( int clientNum ) {
 	else
 	{
 		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
-			client->pers.netname, client->sess.sessionTeam, model, headModel, redTeam, blueTeam, c1, c2, 
+			client->pers.netname, 0, model, headModel, redTeam, blueTeam, c1, c2, 
 			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader);
 	}
 
@@ -925,9 +613,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
  	// recommanding PB based IP / GUID banning, the builtin system is pretty limited
  	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
-	if ( G_FilterPacket( value ) ) {
-		return "You are banned from this server.";
-	}
 
   // we don't check password for bots and local client
   // NOTE: local client <-> "ip" "localhost"
@@ -965,13 +650,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
 	}
 
-	if ( g_gametype.integer >= GT_TEAM &&
-		client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		BroadcastTeamChange( client, -1 );
-	}
-
-	// count current clients and rank for scoreboard
-	CalculateRanks();
 
 	// for statistics
 //	client->areabits = areabits;
@@ -1023,15 +701,10 @@ void ClientBegin( int clientNum ) {
 	// locate ent at a spawn point
 	ClientSpawn( ent );
 
-	if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		if ( g_gametype.integer != GT_TOURNAMENT  ) {
 			trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", client->pers.netname) );
-		}
-	}
+
 	G_LogPrintf( "ClientBegin: %i\n", clientNum );
 
-	// count current clients and rank for scoreboard
-	CalculateRanks();
 }
 
 /*
@@ -1067,11 +740,7 @@ void ClientSpawn(gentity_t *ent) {
 	// find a spawn point
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
-	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		spawnPoint = SelectSpectatorSpawnPoint ( 
-						spawn_origin, spawn_angles);
-	} else
-	{
+	
 		// the first spawn should be at a good looking spot
 		if ( !client->pers.initialSpawn && client->pers.localClient )
 		{
@@ -1086,7 +755,7 @@ void ClientSpawn(gentity_t *ent) {
 				client->ps.origin, 
 				spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 		}
-	}
+	
 	client->pers.teamState.state = TEAM_ACTIVE;
 
 	// always clear the kamikaze flag
@@ -1126,7 +795,6 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.eventSequence = eventSequence;
 	// increment the spawncount so the client will detect the respawn
 	client->ps.persistant[PERS_SPAWN_COUNT]++;
-	client->ps.persistant[PERS_TEAM] = client->sess.sessionTeam;
 
 	client->airOutTime = level.time + 12000;
 
@@ -1157,16 +825,7 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
-	if ( g_gametype.integer == GT_TEAM ) {
-		client->ps.ammo[WP_MACHINEGUN] = 50;
-	} else {
-		client->ps.ammo[WP_MACHINEGUN] = 100;
-	}
-
-	client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GAUNTLET );
-	client->ps.ammo[WP_GAUNTLET] = -1;
-	client->ps.ammo[WP_GRAPPLING_HOOK] = -1;
+	
 
 	// health will count down towards max_health
 	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;
@@ -1187,36 +846,7 @@ void ClientSpawn(gentity_t *ent) {
 	client->inactivityTime = level.time + g_inactivity.integer * 1000;
 	client->latched_buttons = 0;
 
-	// set default animations
-	client->ps.torsoAnim = TORSO_STAND;
-	client->ps.legsAnim = LEGS_IDLE;
-
-	if (!level.intermissiontime) {
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
-			G_KillBox(ent);
-			// force the base weapon up
-			client->ps.weapon = WP_MACHINEGUN;
-			client->ps.weaponstate = WEAPON_READY;
-			// fire the targets of the spawn point
-			G_UseTargets(spawnPoint, ent);
-			// select the highest weapon number available, after any spawn given items have fired
-			client->ps.weapon = 1;
-
-			for (i = WP_NUM_WEAPONS - 1 ; i > 0 ; i--) {
-				if (client->ps.stats[STAT_WEAPONS] & (1 << i)) {
-					client->ps.weapon = i;
-					break;
-				}
-			}
-			// positively link the client, even if the command times are weird
-			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
-
-			trap_LinkEntity (ent);
-		}
-	} else {
-		// move players to intermission
-		MoveClientToIntermission(ent);
-	}
+	
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	client->ps.commandTime = level.time - 100;
@@ -1252,46 +882,19 @@ void ClientDisconnect( int clientNum ) {
 		return;
 	}
 
-	// stop any following clients
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if ( level.clients[i].sess.sessionTeam == TEAM_SPECTATOR
-			&& level.clients[i].sess.spectatorState == SPECTATOR_FOLLOW
-			&& level.clients[i].sess.spectatorClient == clientNum ) {
-			StopFollowing( &g_entities[i] );
-		}
-	}
-
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
 
-	// if we are playing in tourney mode and losing, give a win to the other player
-	if ( (g_gametype.integer == GT_TOURNAMENT )
-		&& !level.intermissiontime
-		&& !level.warmupTime && level.sortedClients[1] == clientNum ) {
-		level.clients[ level.sortedClients[0] ].sess.wins++;
-		ClientUserinfoChanged( level.sortedClients[0] );
-	}
 
-	if( g_gametype.integer == GT_TOURNAMENT &&
-		ent->client->sess.sessionTeam == TEAM_FREE &&
-		level.intermissiontime ) {
-
-		trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
-		level.restarted = qtrue;
-		level.changemap = NULL;
-		level.intermissiontime = 0;
-	}
 
 	trap_UnlinkEntity (ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
 	ent->classname = "disconnected";
 	ent->client->pers.connected = CON_DISCONNECTED;
-	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
-	ent->client->sess.sessionTeam = TEAM_FREE;
+
 
 	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
 
-	CalculateRanks();
 }
 
 

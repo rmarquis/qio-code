@@ -363,7 +363,7 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 //		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
 	} else if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
-		VM_Call (cgvm, CG_MOUSE_EVENT, dx, dy);
+//		VM_Call (cgvm, CG_MOUSE_EVENT, dx, dy);
 	} else {
 		cl.mouseDx[cl.mouseIndex] += dx;
 		cl.mouseDy[cl.mouseIndex] += dy;

@@ -108,39 +108,7 @@ void Con_MessageMode2_f (void) {
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
-/*
-================
-Con_MessageMode3_f
-================
-*/
-void Con_MessageMode3_f (void) {
-	chat_playerNum = VM_Call( cgvm, CG_CROSSHAIR_PLAYER );
-	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
-		chat_playerNum = -1;
-		return;
-	}
-	chat_team = qfalse;
-	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
-	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
-}
 
-/*
-================
-Con_MessageMode4_f
-================
-*/
-void Con_MessageMode4_f (void) {
-	chat_playerNum = VM_Call( cgvm, CG_LAST_ATTACKER );
-	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
-		chat_playerNum = -1;
-		return;
-	}
-	chat_team = qfalse;
-	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
-	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
-}
 
 /*
 ================
@@ -334,8 +302,6 @@ void Con_Init (void) {
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
 	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
-	Cmd_AddCommand ("messagemode3", Con_MessageMode3_f);
-	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
@@ -547,7 +513,7 @@ void Con_DrawNotify (void)
 			continue;
 		text = con.text + (i % con.totallines)*con.linewidth;
 
-		if (cl.snap.ps.pm_type != PM_INTERMISSION && Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
+		if (Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 			continue;
 		}
 

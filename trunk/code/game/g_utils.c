@@ -384,64 +384,6 @@ void G_FreeEntity( gentity_t *ed ) {
 }
 
 
-/*
-==============================================================================
-
-Kill box
-
-==============================================================================
-*/
-
-/*
-=================
-G_KillBox
-
-Kills all entities that would touch the proposed new positioning
-of ent.  Ent should be unlinked before calling this!
-=================
-*/
-void G_KillBox (gentity_t *ent) {
-
-
-}
-
-//==============================================================================
-
-/*
-===============
-G_AddPredictableEvent
-
-Use for non-pmove events that would also be predicted on the
-client side: jumppads and item pickups
-Adds an event+parm and twiddles the event counter
-===============
-*/
-void G_AddPredictableEvent( gentity_t *ent, int event, int eventParm ) {
-
-}
-
-
-/*
-===============
-G_AddEvent
-
-Adds an event+parm and twiddles the event counter
-===============
-*/
-void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
-	
-}
-
-
-/*
-=============
-G_Sound
-=============
-*/
-void G_Sound( gentity_t *ent, int channel, int soundIndex ) {
-
-}
-
 
 //==============================================================================
 
@@ -463,15 +405,3 @@ void G_SetOrigin( gentity_t *ent, vec3_t origin ) {
 	VectorCopy( origin, ent->r.currentOrigin );
 }
 
-/*
-================
-DebugLine
-
-  debug polygons only work when running a local game
-  with r_debugSurface set to 2
-================
-*/
-int DebugLine(vec3_t start, vec3_t end, int color) {
-	
-	return 0;
-}

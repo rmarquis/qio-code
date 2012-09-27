@@ -113,53 +113,8 @@ typedef enum {
 	IMPACTSOUND_FLESH
 } impactSound_t;
 
-//=================================================
-
-// player entities need to track more information
-// than any other type of entity.
-
-// note that not every player entity is a client entity,
-// because corpses after respawn are outside the normal
-// client numbering range
-
-// when changing animation, set animationTime to frameTime + lerping time
-// The current lerp will finish out, then it will lerp to the new animation
-typedef struct {
-	int			oldFrame;
-	int			oldFrameTime;		// time when ->oldFrame was exactly on
-
-	int			frame;
-	int			frameTime;			// time when ->frame will be exactly on
-
-	float		backlerp;
-
-	float		yawAngle;
-	qboolean	yawing;
-	float		pitchAngle;
-	qboolean	pitching;
-
-	int			animationNumber;	// may include ANIM_TOGGLEBIT
-	animation_t	*animation;
-	int			animationTime;		// time when the first frame of the animation will be exact
-} lerpFrame_t;
-
-
-typedef struct {
-	lerpFrame_t		legs, torso, flag;
-	int				painTime;
-	int				painDirection;	// flip from 0 to 1
-	int				lightningFiring;
-
-	int				railFireTime;
-
-	// machinegun spinning
-	float			barrelAngle;
-	int				barrelTime;
-	qboolean		barrelSpinning;
-} playerEntity_t;
 
 //=================================================
-
 
 
 // centity_t have a direct corespondence with gentity_t in the game, but
@@ -179,18 +134,10 @@ typedef struct centity_s {
 	int				miscTime;
 
 	int				snapShotTime;	// last time this entity was found in a snapshot
-
-	playerEntity_t	pe;
-
-	int				errorTime;		// decay the error from this time
-	vec3_t			errorOrigin;
-	vec3_t			errorAngles;
 	
 	qboolean		extrapolated;	// false if origin / angles is an interpolation
 	vec3_t			rawOrigin;
 	vec3_t			rawAngles;
-
-	vec3_t			beamEnd;
 
 	// exact interpolated position of entity on this frame
 	vec3_t			lerpOrigin;
@@ -300,93 +247,6 @@ typedef struct {
 	qboolean	perfect;
 	int				team;
 } score_t;
-
-// each client has an associated clientInfo_t
-// that contains media references necessary to present the
-// client model and other color coded effects
-// this is regenerated each time a client's configstring changes,
-// usually as a result of a userinfo (name, model, etc) change
-#define	MAX_CUSTOM_SOUNDS	32
-
-typedef struct {
-	qboolean		infoValid;
-
-	char			name[MAX_QPATH];
-	team_t			team;
-
-	int				botSkill;		// 0 = not bot, 1-5 = bot
-
-	vec3_t			color1;
-	vec3_t			color2;
-	
-	byte c1RGBA[4];
-	byte c2RGBA[4];
-
-	int				score;			// updated by score servercmds
-	int				location;		// location index for team mode
-	int				health;			// you only get this info about your teammates
-	int				armor;
-	int				curWeapon;
-
-	int				handicap;
-	int				wins, losses;	// in tourney mode
-
-	int				teamTask;		// task in teamplay (offence/defence)
-	qboolean		teamLeader;		// true when this is a team leader
-
-	int				powerups;		// so can display quad/flag status
-
-	int				medkitUsageTime;
-	int				invulnerabilityStartTime;
-	int				invulnerabilityStopTime;
-
-	int				breathPuffTime;
-
-	// when clientinfo is changed, the loading of models/skins/sounds
-	// can be deferred until you are dead, to prevent hitches in
-	// gameplay
-	char			modelName[MAX_QPATH];
-	char			skinName[MAX_QPATH];
-	char			headModelName[MAX_QPATH];
-	char			headSkinName[MAX_QPATH];
-	char			redTeam[MAX_TEAMNAME];
-	char			blueTeam[MAX_TEAMNAME];
-	qboolean		deferred;
-
-	qboolean		newAnims;		// true if using the new mission pack animations
-	qboolean		fixedlegs;		// true if legs yaw is always the same as torso yaw
-	qboolean		fixedtorso;		// true if torso never changes yaw
-
-	vec3_t			headOffset;		// move head in icon views
-	footstep_t		footsteps;
-	gender_t		gender;			// from model
-
-	qhandle_t		legsModel;
-	qhandle_t		legsSkin;
-
-	qhandle_t		torsoModel;
-	qhandle_t		torsoSkin;
-
-	qhandle_t		headModel;
-	qhandle_t		headSkin;
-
-	qhandle_t		modelIcon;
-
-	animation_t		animations[MAX_TOTALANIMATIONS];
-
-	sfxHandle_t		sounds[MAX_CUSTOM_SOUNDS];
-} clientInfo_t;
-
-#define MAX_SKULLTRAIL		10
-
-typedef struct {
-	vec3_t positions[MAX_SKULLTRAIL];
-	int numpositions;
-} skulltrail_t;
-
-
-#define MAX_REWARDSTACK		10
-#define MAX_SOUNDBUFFER		20
 
 //======================================================================
 
@@ -524,22 +384,6 @@ typedef struct {
 	// reward medals
 	int			rewardStack;
 	int			rewardTime;
-	int			rewardCount[MAX_REWARDSTACK];
-	qhandle_t	rewardShader[MAX_REWARDSTACK];
-	qhandle_t	rewardSound[MAX_REWARDSTACK];
-
-	// sound buffer mainly for announcer sounds
-	int			soundBufferIn;
-	int			soundBufferOut;
-	int			soundTime;
-	qhandle_t	soundBuffer[MAX_SOUNDBUFFER];
-
-#ifdef MISSIONPACK
-	// for voice chat buffer
-	int			voiceChatTime;
-	int			voiceChatBufferIn;
-	int			voiceChatBufferOut;
-#endif
 
 	// warmup countdown
 	int			warmup;
@@ -991,14 +835,6 @@ typedef struct {
 	qhandle_t		inlineDrawModel[MAX_MODELS];
 	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
-	clientInfo_t	clientinfo[MAX_CLIENTS];
-
-	// teamchat width is *3 because of embedded color codes
-	char			teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_WIDTH*3+1];
-	int				teamChatMsgTimes[TEAMCHAT_HEIGHT];
-	int				teamChatPos;
-	int				teamLastChatPos;
-
 	int cursorX;
 	int cursorY;
 	qboolean eventHandling;
@@ -1121,19 +957,6 @@ extern	vmCvar_t		cg_oldRail;
 extern	vmCvar_t		cg_oldRocket;
 extern	vmCvar_t		cg_oldPlasma;
 extern	vmCvar_t		cg_trueLightning;
-#ifdef MISSIONPACK
-extern	vmCvar_t		cg_redTeamName;
-extern	vmCvar_t		cg_blueTeamName;
-extern	vmCvar_t		cg_currentSelectedPlayer;
-extern	vmCvar_t		cg_currentSelectedPlayerName;
-extern	vmCvar_t		cg_singlePlayer;
-extern	vmCvar_t		cg_enableDust;
-extern	vmCvar_t		cg_enableBreath;
-extern	vmCvar_t		cg_singlePlayerActive;
-extern  vmCvar_t		cg_recordSPDemo;
-extern  vmCvar_t		cg_recordSPDemoName;
-extern	vmCvar_t		cg_obeliskRespawnDelay;
-#endif
 
 //
 // cg_main.c
@@ -1143,8 +966,6 @@ const char *CG_Argv( int arg );
 
 void QDECL CG_Printf( const char *msg, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL CG_Error( const char *msg, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
-
-void CG_StartMusic( void );
 
 void CG_UpdateCvars( void );
 
@@ -1205,15 +1026,6 @@ void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
 
 
-//
-// cg_draw.c, cg_newDraw.c
-//
-extern	int sortedTeamPlayers[TEAM_MAXOVERLAY];
-extern	int	numSortedTeamPlayers;
-extern	int drawTeamOverlayModificationCount;
-extern  char systemChat[256];
-extern  char teamChat1[256];
-extern  char teamChat2[256];
 
 void CG_AddLagometerFrameInfo( void );
 void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
@@ -1304,7 +1116,6 @@ void CG_InitConsoleCommands( void );
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
 void CG_SetConfigValues( void );
-void CG_ShaderStateChanged(void);
 #ifdef MISSIONPACK
 void CG_LoadVoiceChats( void );
 void CG_VoiceChatLocal( int mode, qboolean voiceOnly, int clientNum, int color, const char *cmd );

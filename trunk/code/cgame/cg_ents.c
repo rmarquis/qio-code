@@ -31,7 +31,37 @@ FUNCTIONS CALLED EACH FRAME
 
 ==========================================================================
 */
+/*
+===============
+CG_Player
+===============
+*/
+void CG_Player( centity_t *cent ) {
+	
 
+}
+
+
+//=====================================================================
+
+/*
+===============
+CG_ResetPlayerEntity
+
+A player just came into view or teleported, so reset all animation info
+===============
+*/
+void CG_ResetPlayerEntity( centity_t *cent ) {
+	cent->extrapolated = qfalse;	
+
+//	BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
+//	BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
+
+	VectorCopy( cent->lerpOrigin, cent->rawOrigin );
+	VectorCopy( cent->lerpAngles, cent->rawAngles );
+
+
+}
 
 /*
 ==================
@@ -75,53 +105,11 @@ static void CG_General( centity_t *cent ) {
 }
 
 /*
-=========================
-CG_AdjustPositionForMover
-
-Also called by client movement prediction code
-=========================
-*/
-void CG_AdjustPositionForMover(const vec3_t in, int moverNum, int fromTime, int toTime, vec3_t out, vec3_t angles_in, vec3_t angles_out) {
-	centity_t	*cent;
-	vec3_t	oldOrigin, origin, deltaOrigin;
-	vec3_t	oldAngles, angles, deltaAngles;
-
-	if ( moverNum <= 0 || moverNum >= ENTITYNUM_MAX_NORMAL ) {
-		VectorCopy( in, out );
-		VectorCopy(angles_in, angles_out);
-		return;
-	}
-
-	cent = &cg_entities[ moverNum ];
-	//if ( cent->currentState.eType != ET_MOVER )
-	{
-		VectorCopy( in, out );
-		VectorCopy(angles_in, angles_out);
-		return;
-	}
-
-	//BG_EvaluateTrajectory( &cent->currentState.pos, fromTime, oldOrigin );
-	//BG_EvaluateTrajectory( &cent->currentState.apos, fromTime, oldAngles );
-
-	//BG_EvaluateTrajectory( &cent->currentState.pos, toTime, origin );
-	//BG_EvaluateTrajectory( &cent->currentState.apos, toTime, angles );
-
-//	VectorSubtract( origin, oldOrigin, deltaOrigin );
-//	VectorSubtract( angles, oldAngles, deltaAngles );
-
-//	VectorAdd( in, deltaOrigin, out );
-//	VectorAdd( angles_in, deltaAngles, angles_out );
-	// FIXME: origin change when on a rotating object
-}
-
-
-/*
 =============================
 CG_InterpolateEntityPosition
 =============================
 */
 static void CG_InterpolateEntityPosition( centity_t *cent ) {
-	vec3_t		current, next;
 	float		f;
 
 	// it would be an internal error to find an entity that interpolates without
@@ -129,7 +117,7 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	if ( cg.nextSnap == NULL ) {
 		CG_Error( "CG_InterpoateEntityPosition: cg.nextSnap == NULL" );
 	}
-	CG_Printf("CG_InterpolateEntityPosition: TODO\n");
+	//CG_Printf("CG_InterpolateEntityPosition: TODO\n");
 	f = cg.frameInterpolation;
 
 	// this will linearize a sine or parabolic curve, but it is important
@@ -191,159 +179,6 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	//	CG_AdjustPositionForMover( cent->lerpOrigin, cent->currentState.groundEntityNum, 
 	//	cg.snap->serverTime, cg.time, cent->lerpOrigin, cent->lerpAngles, cent->lerpAngles);
 	//}
-}
-
-/*
-===============
-CG_TeamBase
-===============
-*/
-static void CG_TeamBase( centity_t *cent ) {
-	refEntity_t model;
-#ifdef MISSIONPACK
-	vec3_t angles;
-	int t, h;
-	float c;
-
-	if ( cgs.gametype == GT_CTF || cgs.gametype == GT_1FCTF ) {
-#else
-	if ( cgs.gametype == GT_CTF) {
-#endif
-		// show the flag base
-		memset(&model, 0, sizeof(model));
-		model.reType = RT_MODEL;
-		VectorCopy( cent->lerpOrigin, model.lightingOrigin );
-		VectorCopy( cent->lerpOrigin, model.origin );
-		AnglesToAxis( cent->currentState.angles, model.axis );
-		if ( cent->currentState.modelindex == TEAM_RED ) {
-			model.hModel = cgs.media.redFlagBaseModel;
-		}
-		else if ( cent->currentState.modelindex == TEAM_BLUE ) {
-			model.hModel = cgs.media.blueFlagBaseModel;
-		}
-		else {
-			model.hModel = cgs.media.neutralFlagBaseModel;
-		}
-		trap_R_AddRefEntityToScene( &model );
-	}
-#ifdef MISSIONPACK
-	else if ( cgs.gametype == GT_OBELISK ) {
-		// show the obelisk
-		memset(&model, 0, sizeof(model));
-		model.reType = RT_MODEL;
-		VectorCopy( cent->lerpOrigin, model.lightingOrigin );
-		VectorCopy( cent->lerpOrigin, model.origin );
-		AnglesToAxis( cent->currentState.angles, model.axis );
-
-		model.hModel = cgs.media.overloadBaseModel;
-		trap_R_AddRefEntityToScene( &model );
-		// if hit
-		if ( cent->currentState.frame == 1) {
-			// show hit model
-			// modelindex2 is the health value of the obelisk
-			c = cent->currentState.modelindex2;
-			model.shaderRGBA[0] = 0xff;
-			model.shaderRGBA[1] = c;
-			model.shaderRGBA[2] = c;
-			model.shaderRGBA[3] = 0xff;
-			//
-			model.hModel = cgs.media.overloadEnergyModel;
-			trap_R_AddRefEntityToScene( &model );
-		}
-		// if respawning
-		if ( cent->currentState.frame == 2) {
-			if ( !cent->miscTime ) {
-				cent->miscTime = cg.time;
-			}
-			t = cg.time - cent->miscTime;
-			h = (cg_obeliskRespawnDelay.integer - 5) * 1000;
-			//
-			if (t > h) {
-				c = (float) (t - h) / h;
-				if (c > 1)
-					c = 1;
-			}
-			else {
-				c = 0;
-			}
-			// show the lights
-			AnglesToAxis( cent->currentState.angles, model.axis );
-			//
-			model.shaderRGBA[0] = c * 0xff;
-			model.shaderRGBA[1] = c * 0xff;
-			model.shaderRGBA[2] = c * 0xff;
-			model.shaderRGBA[3] = c * 0xff;
-
-			model.hModel = cgs.media.overloadLightsModel;
-			trap_R_AddRefEntityToScene( &model );
-			// show the target
-			if (t > h) {
-				if ( !cent->muzzleFlashTime ) {
-					trap_S_StartSound (cent->lerpOrigin, ENTITYNUM_NONE, CHAN_BODY,  cgs.media.obeliskRespawnSound);
-					cent->muzzleFlashTime = 1;
-				}
-				VectorCopy(cent->currentState.angles, angles);
-				angles[YAW] += (float) 16 * acos(1-c) * 180 / M_PI;
-				AnglesToAxis( angles, model.axis );
-
-				VectorScale( model.axis[0], c, model.axis[0]);
-				VectorScale( model.axis[1], c, model.axis[1]);
-				VectorScale( model.axis[2], c, model.axis[2]);
-
-				model.shaderRGBA[0] = 0xff;
-				model.shaderRGBA[1] = 0xff;
-				model.shaderRGBA[2] = 0xff;
-				model.shaderRGBA[3] = 0xff;
-				//
-				model.origin[2] += 56;
-				model.hModel = cgs.media.overloadTargetModel;
-				trap_R_AddRefEntityToScene( &model );
-			}
-			else {
-				//FIXME: show animated smoke
-			}
-		}
-		else {
-			cent->miscTime = 0;
-			cent->muzzleFlashTime = 0;
-			// modelindex2 is the health value of the obelisk
-			c = cent->currentState.modelindex2;
-			model.shaderRGBA[0] = 0xff;
-			model.shaderRGBA[1] = c;
-			model.shaderRGBA[2] = c;
-			model.shaderRGBA[3] = 0xff;
-			// show the lights
-			model.hModel = cgs.media.overloadLightsModel;
-			trap_R_AddRefEntityToScene( &model );
-			// show the target
-			model.origin[2] += 56;
-			model.hModel = cgs.media.overloadTargetModel;
-			trap_R_AddRefEntityToScene( &model );
-		}
-	}
-	else if ( cgs.gametype == GT_HARVESTER ) {
-		// show harvester model
-		memset(&model, 0, sizeof(model));
-		model.reType = RT_MODEL;
-		VectorCopy( cent->lerpOrigin, model.lightingOrigin );
-		VectorCopy( cent->lerpOrigin, model.origin );
-		AnglesToAxis( cent->currentState.angles, model.axis );
-
-		if ( cent->currentState.modelindex == TEAM_RED ) {
-			model.hModel = cgs.media.harvesterModel;
-			model.customSkin = cgs.media.harvesterRedSkin;
-		}
-		else if ( cent->currentState.modelindex == TEAM_BLUE ) {
-			model.hModel = cgs.media.harvesterModel;
-			model.customSkin = cgs.media.harvesterBlueSkin;
-		}
-		else {
-			model.hModel = cgs.media.harvesterNeutralModel;
-			model.customSkin = 0;
-		}
-		trap_R_AddRefEntityToScene( &model );
-	}
-#endif
 }
 
 /*

@@ -37,22 +37,10 @@ Sets the coordinates of the rendered window
 static void CG_CalcVrect (void) {
 	int		size;
 
-	// the intermission should allways be full screen
-	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
-		size = 100;
-	} else {
-		// bound normal viewsize
-		if (cg_viewsize.integer < 30) {
-			trap_Cvar_Set ("cg_viewsize","30");
-			size = 30;
-		} else if (cg_viewsize.integer > 100) {
-			trap_Cvar_Set ("cg_viewsize","100");
-			size = 100;
-		} else {
-			size = cg_viewsize.integer;
-		}
 
-	}
+		size = 100;
+
+	
 	cg.refdef.width = cgs.glconfig.vidWidth*size/100;
 	cg.refdef.width &= ~1;
 
@@ -173,10 +161,6 @@ static void CG_OffsetFirstPersonView( void ) {
 	float			f;
 	vec3_t			predictedVelocity;
 	int				timeDelta;
-	
-	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
-		return;
-	}
 
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
@@ -327,10 +311,7 @@ static int CG_CalcFov( void ) {
 	float	f;
 	int		inwater;
 
-	if ( cg.predictedPlayerState.pm_type == PM_INTERMISSION ) {
-		// if in intermission, use a fixed value
-		fov_x = 90;
-	} else {
+	{
 		// user selectable
 		if ( cgs.dmflags & DF_FIXED_FOV ) {
 			// dmflag to prevent wide fov for all clients
@@ -434,13 +415,7 @@ static int CG_CalcViewValues( void ) {
 		}
 	}
 */
-	// intermission view
-	if ( ps->pm_type == PM_INTERMISSION ) {
-		VectorCopy( ps->origin, cg.refdef.vieworg );
-		VectorCopy( ps->viewangles, cg.refdefViewAngles );
-		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
-		return CG_CalcFov();
-	}
+
 
 	cg.bobcycle = ( ps->bobCycle & 128 ) >> 7;
 	cg.bobfracsin = fabs( sin( ( ps->bobCycle & 127 ) / 127.0 * M_PI ) );

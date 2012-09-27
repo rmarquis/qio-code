@@ -217,7 +217,6 @@ typedef struct {
 // time and reading them back at connection time.  Anything added here
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 typedef struct {
-	team_t		sessionTeam;
 	int			spectatorNum;		// for determining next-in-line to play
 	spectatorState_t	spectatorState;
 	int			spectatorClient;	// for chasecam and follow mode
@@ -345,7 +344,6 @@ typedef struct {
 
 	int			startTime;				// level.time the map was started
 
-	int			teamScores[TEAM_NUM_TEAMS];
 	int			lastTeamLocationTime;		// last time of client team location update
 
 	qboolean	newSession;				// don't use any old session data, because
@@ -421,20 +419,10 @@ void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
 //
-// g_cmds.c
-//
-void Cmd_Score_f (gentity_t *ent);
-void StopFollowing( gentity_t *ent );
-void BroadcastTeamChange( gclient_t *client, int oldTeam );
-void SetTeam( gentity_t *ent, char *s );
-void Cmd_FollowCycle_f( gentity_t *ent, int dir );
-
-//
 // g_utils.c
 //
 int G_ModelIndex( char *name );
 int		G_SoundIndex( char *name );
-void	G_TeamCommand( team_t team, char *cmd );
 void	G_KillBox (gentity_t *ent);
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
 gentity_t *G_PickTarget (char *targetname);
@@ -444,11 +432,8 @@ void	G_SetMovedir ( vec3_t angles, vec3_t movedir);
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
 gentity_t *G_TempEntity( vec3_t origin, int event );
-void	G_Sound( gentity_t *ent, int channel, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
 qboolean	G_EntitiesFree( void );
-
-void	G_TouchTriggers (gentity_t *ent);
 
 float	*tv (float x, float y, float z);
 char	*vtos( const vec3_t v );
@@ -486,27 +471,16 @@ void TossClientCubes( gentity_t *self );
 //
 // g_client.c
 //
-team_t TeamCount( int ignoreClientNum, int team );
-int TeamLeader( int team );
-team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 gentity_t *SelectSpawnPoint (vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot);
 void CopyToBodyQue( gentity_t *ent );
 void ClientRespawn(gentity_t *ent);
-void BeginIntermission (void);
 void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
 void player_die (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
 void AddScore( gentity_t *ent, vec3_t origin, int score );
 void CalculateRanks( void );
 qboolean SpotWouldTelefrag( gentity_t *spot );
-
-//
-// g_svcmds.c
-//
-qboolean	ConsoleCommand( void );
-void G_ProcessIPBans(void);
-qboolean G_FilterPacket (char *from);
 
 //
 // g_weapon.c
@@ -557,9 +531,6 @@ void G_RunClient( gentity_t *ent );
 void *G_Alloc( int size );
 void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
-
-#include "g_team.h" // teamplay specific stuff
-
 
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];

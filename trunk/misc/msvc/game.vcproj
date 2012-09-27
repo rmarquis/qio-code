@@ -446,29 +446,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\game\g_svcmds.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\code\game\g_syscalls.c"
 				>
 				<FileConfiguration
@@ -541,10 +518,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_public.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\g_team.h"
 				>
 			</File>
 			<File
