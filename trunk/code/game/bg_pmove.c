@@ -629,23 +629,7 @@ PM_GrappleMove
 ===================
 */
 static void PM_GrappleMove( void ) {
-	vec3_t vel, v;
-	float vlen;
-
-	VectorScale(pml.forward, -16, v);
-	VectorAdd(pm->ps->grapplePoint, v, v);
-	VectorSubtract(v, pm->ps->origin, vel);
-	vlen = VectorLength(vel);
-	VectorNormalize( vel );
-
-	if (vlen <= 100)
-		VectorScale(vel, 10 * vlen, vel);
-	else
-		VectorScale(vel, 800, vel);
-
-	VectorCopy(vel, pm->ps->velocity);
-
-	pml.groundPlane = qfalse;
+	
 }
 
 /*
@@ -870,76 +854,7 @@ Check for hard landings that generate sound events
 =================
 */
 static void PM_CrashLand( void ) {
-	float		delta;
-	float		dist;
-	float		vel, acc;
-	float		t;
-	float		a, b, c, den;
 
-
-	pm->ps->legsTimer = TIMER_LAND;
-
-	// calculate the exact velocity on landing
-	dist = pm->ps->origin[2] - pml.previous_origin[2];
-	vel = pml.previous_velocity[2];
-	acc = -pm->ps->gravity;
-
-	a = acc / 2;
-	b = vel;
-	c = -dist;
-
-	den =  b * b - 4 * a * c;
-	if ( den < 0 ) {
-		return;
-	}
-	t = (-b - sqrt( den ) ) / ( 2 * a );
-
-	delta = vel + t * acc;
-	delta = delta*delta * 0.0001;
-
-	// ducking while falling doubles damage
-	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		delta *= 2;
-	}
-
-	// never take falling damage if completely underwater
-	if ( pm->waterlevel == 3 ) {
-		return;
-	}
-
-	// reduce falling damage if there is standing water
-	if ( pm->waterlevel == 2 ) {
-		delta *= 0.25;
-	}
-	if ( pm->waterlevel == 1 ) {
-		delta *= 0.5;
-	}
-
-	if ( delta < 1 ) {
-		return;
-	}
-
-	// create a local entity event to play the sound
-
-	// SURF_NODAMAGE is used for bounce pads where you don't ever
-	// want to take damage or play a crunch sound
-	if ( !(pml.groundTrace.surfaceFlags & SURF_NODAMAGE) )  {
-		if ( delta > 60 ) {
-//			PM_AddEvent( EV_FALL_FAR );
-		} else if ( delta > 40 ) {
-			// this is a pain grunt, so don't play it if dead
-			if ( pm->ps->stats[STAT_HEALTH] > 0 ) {
-//				PM_AddEvent( EV_FALL_MEDIUM );
-			}
-		} else if ( delta > 7 ) {
-//			PM_AddEvent( EV_FALL_SHORT );
-		} else {
-//			PM_AddEvent( PM_FootstepForSurface() );
-		}
-	}
-
-	// start footstep cycle over
-	pm->ps->bobCycle = 0;
 }
 
 /*
@@ -1248,73 +1163,9 @@ PM_Footsteps
 ===============
 */
 static void PM_Footsteps( void ) {
-	float		bobmove;
-	int			old;
-	qboolean	footstep;
-
-	//
-	// calculate speed and cycle to be used for
-	// all cyclic walking effects
-	//
-	pm->xyspeed = sqrt( pm->ps->velocity[0] * pm->ps->velocity[0]
-		+  pm->ps->velocity[1] * pm->ps->velocity[1] );
-
-	if ( pm->ps->groundEntityNum == ENTITYNUM_NONE ) {
 
 
-		return;
-	}
 
-
-	footstep = qfalse;
-
-	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		bobmove = 0.5;	// ducked characters bob much faster
-	
-		// ducked characters never play footsteps
-	/*
-	} else 	if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
-		if ( !( pm->cmd.buttons & BUTTON_WALKING ) ) {
-			bobmove = 0.4;	// faster speeds bob faster
-			footstep = qtrue;
-		} else {
-			bobmove = 0.3;
-		}
-		PM_ContinueLegsAnim( LEGS_BACK );
-	*/
-	} else {
-		if ( !( pm->cmd.buttons & BUTTON_WALKING ) ) {
-			bobmove = 0.4f;	// faster speeds bob faster
-
-			footstep = qtrue;
-		} else {
-			bobmove = 0.3f;	// walking bobs slow
-
-		}
-	}
-bobmove = 0;
-	// check for footstep / splash sounds
-	old = pm->ps->bobCycle;
-	pm->ps->bobCycle = (int)( old + bobmove * pml.msec ) & 255;
-
-	// if we just crossed a cycle boundary, play an apropriate footstep event
-	if ( ( ( old + 64 ) ^ ( pm->ps->bobCycle + 64 ) ) & 128 ) {
-		if ( pm->waterlevel == 0 ) {
-			// on ground will only play sounds if running
-			if ( footstep && !pm->noFootsteps ) {
-				//PM_AddEvent( PM_FootstepForSurface() );
-			}
-		} else if ( pm->waterlevel == 1 ) {
-			// splashing
-//			PM_AddEvent( EV_FOOTSPLASH );
-		} else if ( pm->waterlevel == 2 ) {
-			// wading / swimming at surface
-//			PM_AddEvent( EV_SWIM );
-		} else if ( pm->waterlevel == 3 ) {
-			// no sound when completely underwater
-
-		}
-	}
 }
 
 /*
@@ -1404,45 +1255,7 @@ PM_Animate
 */
 
 static void PM_Animate( void ) {
-	if ( pm->cmd.buttons & BUTTON_GESTURE ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-//			PM_StartTorsoAnim( TORSO_GESTURE );
-			pm->ps->torsoTimer = TIMER_GESTURE;
-//			PM_AddEvent( EV_TAUNT );
-		}
-#ifdef MISSIONPACK
-	} else if ( pm->cmd.buttons & BUTTON_GETFLAG ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_GETFLAG );
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-	} else if ( pm->cmd.buttons & BUTTON_GUARDBASE ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_GUARDBASE );
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-	} else if ( pm->cmd.buttons & BUTTON_PATROL ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_PATROL );
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-	} else if ( pm->cmd.buttons & BUTTON_FOLLOWME ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_FOLLOWME );
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-	} else if ( pm->cmd.buttons & BUTTON_AFFIRMATIVE ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_AFFIRMATIVE);
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-	} else if ( pm->cmd.buttons & BUTTON_NEGATIVE ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_NEGATIVE );
-			pm->ps->torsoTimer = 600;	//TIMER_GESTURE;
-		}
-#endif
-	}
+	
 }
 
 
@@ -1462,20 +1275,7 @@ static void PM_DropTimers( void ) {
 		}
 	}
 
-	// drop animation counter
-	if ( pm->ps->legsTimer > 0 ) {
-		pm->ps->legsTimer -= pml.msec;
-		if ( pm->ps->legsTimer < 0 ) {
-			pm->ps->legsTimer = 0;
-		}
-	}
 
-	if ( pm->ps->torsoTimer > 0 ) {
-		pm->ps->torsoTimer -= pml.msec;
-		if ( pm->ps->torsoTimer < 0 ) {
-			pm->ps->torsoTimer = 0;
-		}
-	}
 }
 
 
@@ -1499,10 +1299,6 @@ void PmoveSingle (pmove_t *pmove) {
 	pm->watertype = 0;
 	pm->waterlevel = 0;
 
-	if ( pm->ps->stats[STAT_HEALTH] <= 0 ) {
-		pm->tracemask &= ~CONTENTS_BODY;	// corpses can fly through bodies
-	}
-
 	// make sure walking button is clear if they are running, to avoid
 	// proxy no-footsteps cheats
 	if ( abs( pm->cmd.forwardmove ) > 64 || abs( pm->cmd.rightmove ) > 64 ) {
@@ -1516,8 +1312,8 @@ void PmoveSingle (pmove_t *pmove) {
 		pm->ps->eFlags &= ~EF_TALK;
 	}
 
-	// clear the respawned flag if attack and use are cleared
-	if ( pm->ps->stats[STAT_HEALTH] > 0 && 
+	//// clear the respawned flag if attack and use are cleared
+	if ( /*pm->ps->stats[STAT_HEALTH] > 0 && */
 		!( pm->cmd.buttons & (BUTTON_ATTACK | BUTTON_USE_HOLDABLE) ) ) {
 		pm->ps->pm_flags &= ~PMF_RESPAWNED;
 	}

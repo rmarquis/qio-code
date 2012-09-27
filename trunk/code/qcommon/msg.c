@@ -1159,51 +1159,26 @@ netField_t	playerStateFields[] =
 { PSF(commandTime), 32 },				
 { PSF(origin[0]), 0 },
 { PSF(origin[1]), 0 },
-{ PSF(bobCycle), 8 },
 { PSF(velocity[0]), 0 },
 { PSF(velocity[1]), 0 },
 { PSF(viewangles[1]), 0 },
 { PSF(viewangles[0]), 0 },
-{ PSF(weaponTime), -16 },
 { PSF(origin[2]), 0 },
 { PSF(velocity[2]), 0 },
-{ PSF(legsTimer), 8 },
 { PSF(pm_time), -16 },
-{ PSF(eventSequence), 16 },
-{ PSF(torsoAnim), 8 },
 { PSF(movementDir), 4 },
-{ PSF(events[0]), 8 },
-{ PSF(legsAnim), 8 },
-{ PSF(events[1]), 8 },
 { PSF(pm_flags), 16 },
 { PSF(groundEntityNum), GENTITYNUM_BITS },
-{ PSF(weaponstate), 4 },
 { PSF(eFlags), 16 },
-{ PSF(externalEvent), 10 },
 { PSF(gravity), 16 },
 { PSF(speed), 16 },
 { PSF(delta_angles[1]), 16 },
-{ PSF(externalEventParm), 8 },
 { PSF(viewheight), -8 },
-{ PSF(damageEvent), 8 },
-{ PSF(damageYaw), 8 },
-{ PSF(damagePitch), 8 },
-{ PSF(damageCount), 8 },
-{ PSF(generic1), 8 },
 { PSF(pm_type), 8 },					
 { PSF(delta_angles[0]), 16 },
 { PSF(delta_angles[2]), 16 },
-{ PSF(torsoTimer), 12 },
-{ PSF(eventParms[0]), 8 },
-{ PSF(eventParms[1]), 8 },
 { PSF(clientNum), 8 },
-{ PSF(weapon), 5 },
 { PSF(viewangles[2]), 0 },
-{ PSF(grapplePoint[0]), 0 },
-{ PSF(grapplePoint[1]), 0 },
-{ PSF(grapplePoint[2]), 0 },
-{ PSF(jumppad_ent), GENTITYNUM_BITS },
-{ PSF(loopSound), 16 }
 };
 
 /*
@@ -1215,10 +1190,6 @@ MSG_WriteDeltaPlayerstate
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
 	int				i;
 	playerState_t	dummy;
-	int				statsbits;
-	int				persistantbits;
-	int				ammobits;
-	int				powerupbits;
 	int				numFields;
 	netField_t		*field;
 	int				*fromF, *toF;
@@ -1278,84 +1249,6 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		}
 	}
 
-
-	//
-	// send the arrays
-	//
-	statsbits = 0;
-	for (i=0 ; i<MAX_STATS ; i++) {
-		if (to->stats[i] != from->stats[i]) {
-			statsbits |= 1<<i;
-		}
-	}
-	persistantbits = 0;
-	for (i=0 ; i<MAX_PERSISTANT ; i++) {
-		if (to->persistant[i] != from->persistant[i]) {
-			persistantbits |= 1<<i;
-		}
-	}
-	ammobits = 0;
-	for (i=0 ; i<MAX_WEAPONS ; i++) {
-		if (to->ammo[i] != from->ammo[i]) {
-			ammobits |= 1<<i;
-		}
-	}
-	powerupbits = 0;
-	for (i=0 ; i<MAX_POWERUPS ; i++) {
-		if (to->powerups[i] != from->powerups[i]) {
-			powerupbits |= 1<<i;
-		}
-	}
-
-	if (!statsbits && !persistantbits && !ammobits && !powerupbits) {
-		MSG_WriteBits( msg, 0, 1 );	// no change
-		oldsize += 4;
-		return;
-	}
-	MSG_WriteBits( msg, 1, 1 );	// changed
-
-	if ( statsbits ) {
-		MSG_WriteBits( msg, 1, 1 );	// changed
-		MSG_WriteBits( msg, statsbits, MAX_STATS );
-		for (i=0 ; i<MAX_STATS ; i++)
-			if (statsbits & (1<<i) )
-				MSG_WriteShort (msg, to->stats[i]);
-	} else {
-		MSG_WriteBits( msg, 0, 1 );	// no change
-	}
-
-
-	if ( persistantbits ) {
-		MSG_WriteBits( msg, 1, 1 );	// changed
-		MSG_WriteBits( msg, persistantbits, MAX_PERSISTANT );
-		for (i=0 ; i<MAX_PERSISTANT ; i++)
-			if (persistantbits & (1<<i) )
-				MSG_WriteShort (msg, to->persistant[i]);
-	} else {
-		MSG_WriteBits( msg, 0, 1 );	// no change
-	}
-
-
-	if ( ammobits ) {
-		MSG_WriteBits( msg, 1, 1 );	// changed
-		MSG_WriteBits( msg, ammobits, MAX_WEAPONS );
-		for (i=0 ; i<MAX_WEAPONS ; i++)
-			if (ammobits & (1<<i) )
-				MSG_WriteShort (msg, to->ammo[i]);
-	} else {
-		MSG_WriteBits( msg, 0, 1 );	// no change
-	}
-
-
-	if ( powerupbits ) {
-		MSG_WriteBits( msg, 1, 1 );	// changed
-		MSG_WriteBits( msg, powerupbits, MAX_POWERUPS );
-		for (i=0 ; i<MAX_POWERUPS ; i++)
-			if (powerupbits & (1<<i) )
-				MSG_WriteLong( msg, to->powerups[i] );
-	} else {
-		MSG_WriteBits( msg, 0, 1 );	// no change
-	}
 }
 
 
@@ -1445,53 +1338,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		*toF = *fromF;
 	}
 
-
-	// read the arrays
-	if (MSG_ReadBits( msg, 1 ) ) {
-		// parse stats
-		if ( MSG_ReadBits( msg, 1 ) ) {
-			LOG("PS_STATS");
-			bits = MSG_ReadBits (msg, MAX_STATS);
-			for (i=0 ; i<MAX_STATS ; i++) {
-				if (bits & (1<<i) ) {
-					to->stats[i] = MSG_ReadShort(msg);
-				}
-			}
-		}
-
-		// parse persistant stats
-		if ( MSG_ReadBits( msg, 1 ) ) {
-			LOG("PS_PERSISTANT");
-			bits = MSG_ReadBits (msg, MAX_PERSISTANT);
-			for (i=0 ; i<MAX_PERSISTANT ; i++) {
-				if (bits & (1<<i) ) {
-					to->persistant[i] = MSG_ReadShort(msg);
-				}
-			}
-		}
-
-		// parse ammo
-		if ( MSG_ReadBits( msg, 1 ) ) {
-			LOG("PS_AMMO");
-			bits = MSG_ReadBits (msg, MAX_WEAPONS);
-			for (i=0 ; i<MAX_WEAPONS ; i++) {
-				if (bits & (1<<i) ) {
-					to->ammo[i] = MSG_ReadShort(msg);
-				}
-			}
-		}
-
-		// parse powerups
-		if ( MSG_ReadBits( msg, 1 ) ) {
-			LOG("PS_POWERUPS");
-			bits = MSG_ReadBits (msg, MAX_POWERUPS);
-			for (i=0 ; i<MAX_POWERUPS ; i++) {
-				if (bits & (1<<i) ) {
-					to->powerups[i] = MSG_ReadLong(msg);
-				}
-			}
-		}
-	}
 
 	if ( print ) {
 		if ( msg->bit == 0 ) {

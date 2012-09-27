@@ -73,7 +73,6 @@ once for each server frame, which makes for smooth demo recording.
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pm;
-	int			oldEventSequence;
 	int			msec;
 	usercmd_t	*ucmd;
 
@@ -121,8 +120,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if ( client->noclip ) {
 		client->ps.pm_type = PM_NOCLIP;
-	} else if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
-		client->ps.pm_type = PM_DEAD;
 	} else {
 		client->ps.pm_type = PM_NORMAL;
 	}
@@ -139,8 +136,6 @@ void ClientThink_real( gentity_t *ent ) {
 	else
 #endif
 
-	// set up for pmove
-	oldEventSequence = client->ps.eventSequence;
 
 	memset (&pm, 0, sizeof(pm));
 
@@ -181,10 +176,6 @@ void ClientThink_real( gentity_t *ent ) {
 		Pmove (&pm);
 
 
-	// save results of pmove
-	if ( ent->client->ps.eventSequence != oldEventSequence ) {
-		ent->eventTime = level.time;
-	}
 	if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
 	}
@@ -210,18 +201,13 @@ void ClientThink_real( gentity_t *ent ) {
 	// NOTE: now copy the exact origin over otherwise clients can be snapped into solid
 	VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
 
-	// save results of triggers and client events
-	if (ent->client->ps.eventSequence != oldEventSequence) {
-		ent->eventTime = level.time;
-	}
-
 	// swap and latch button actions
 	client->oldbuttons = client->buttons;
 	client->buttons = ucmd->buttons;
 	client->latched_buttons |= client->buttons & ~client->oldbuttons;
 
 	// check for respawning
-	if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
+	if ( ent->health <= 0 ) {
 		// wait for the attack button to be pressed
 		if ( level.time > client->respawnTime ) {
 			// forcerespawn is to prevent users from waiting out powerups
@@ -282,15 +268,6 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
 void ClientEndFrame( gentity_t *ent ) {
-	int			i;
-
-	// turn off any expired powerups
-	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
-		if ( ent->client->ps.powerups[ i ] < level.time ) {
-			ent->client->ps.powerups[ i ] = 0;
-		}
-	}
-
 	//
 	// If the end of unit layout is displayed, don't give
 	// the player any normal movement attributes
@@ -305,9 +282,6 @@ void ClientEndFrame( gentity_t *ent ) {
 	} else {
 		ent->client->ps.eFlags &= ~EF_CONNECTION;
 	}
-
-	ent->client->ps.stats[STAT_HEALTH] = ent->health;	// FIXME: get rid of ent->health...
-
 
 	// set the latest infor
 	if (g_smoothClients.integer) {

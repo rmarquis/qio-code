@@ -579,20 +579,20 @@ static void SVC_Status( netadr_t from ) {
 	status[0] = 0;
 	statusLength = 0;
 
-	for (i=0 ; i < sv_maxclients->integer ; i++) {
-		cl = &svs.clients[i];
-		if ( cl->state >= CS_CONNECTED ) {
-			ps = SV_GameClientNum( i );
-			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
-				ps->persistant[PERS_SCORE], cl->ping, cl->name);
-			playerLength = strlen(player);
-			if (statusLength + playerLength >= sizeof(status) ) {
-				break;		// can't hold any more
-			}
-			strcpy (status + statusLength, player);
-			statusLength += playerLength;
-		}
-	}
+	//for (i=0 ; i < sv_maxclients->integer ; i++) {
+	//	cl = &svs.clients[i];
+	//	if ( cl->state >= CS_CONNECTED ) {
+	//		ps = SV_GameClientNum( i );
+	//		Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
+	//			ps->persistant[PERS_SCORE], cl->ping, cl->name);
+	//		playerLength = strlen(player);
+	//		if (statusLength + playerLength >= sizeof(status) ) {
+	//			break;		// can't hold any more
+	//		}
+	//		strcpy (status + statusLength, player);
+	//		statusLength += playerLength;
+	//	}
+	//}
 
 	NET_OutOfBandPrint( NS_SERVER, from, "statusResponse\n%s\n%s", infostring, status );
 }

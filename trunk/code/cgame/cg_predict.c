@@ -230,11 +230,6 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 
 	f = (float)( cg.time - prev->serverTime ) / ( next->serverTime - prev->serverTime );
 
-	i = next->ps.bobCycle;
-	if ( i < prev->ps.bobCycle ) {
-		i += 256;		// handle wraparound
-	}
-	out->bobCycle = prev->ps.bobCycle + f * ( i - prev->ps.bobCycle );
 
 	for ( i = 0 ; i < 3 ; i++ ) {
 		out->origin[i] = prev->ps.origin[i] + f * (next->ps.origin[i] - prev->ps.origin[i] );
@@ -247,73 +242,6 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	}
 
 }
-
-/*
-===================
-CG_TouchItem
-===================
-*/
-static void CG_TouchItem( centity_t *cent ) {
-	
-}
-
-
-/*
-=========================
-CG_TouchTriggerPrediction
-
-Predict push triggers and items
-=========================
-*/
-static void CG_TouchTriggerPrediction( void ) {
-	int			i;
-	trace_t		trace;
-	entityState_t	*ent;
-	clipHandle_t cmodel;
-	centity_t	*cent;
-	qboolean	spectator;
-
-	// dead clients don't activate triggers
-	if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
-		return;
-	}
-
-	spectator = ( cg.predictedPlayerState.pm_type == PM_SPECTATOR );
-
-	if ( cg.predictedPlayerState.pm_type != PM_NORMAL && !spectator ) {
-		return;
-	}
-
-	for ( i = 0 ; i < cg_numTriggerEntities ; i++ ) {
-		cent = cg_triggerEntities[ i ];
-		ent = &cent->currentState;
-
-		if ( ent->solid != SOLID_BMODEL ) {
-			continue;
-		}
-
-		cmodel = trap_CM_InlineModel( ent->modelindex );
-		if ( !cmodel ) {
-			continue;
-		}
-
-		trap_CM_BoxTrace( &trace, cg.predictedPlayerState.origin, cg.predictedPlayerState.origin, 
-			cg_pmove.mins, cg_pmove.maxs, cmodel, -1 );
-
-		if ( !trace.startsolid ) {
-			continue;
-		}
-
-
-	}
-
-	// if we didn't touch a jump pad this pmove frame
-	if ( cg.predictedPlayerState.jumppad_frame != cg.predictedPlayerState.pmove_framecount ) {
-		cg.predictedPlayerState.jumppad_frame = 0;
-		cg.predictedPlayerState.jumppad_ent = 0;
-	}
-}
-
 
 
 /*

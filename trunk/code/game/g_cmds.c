@@ -102,7 +102,7 @@ void Cmd_Kill_f( gentity_t *ent ) {
 		return;
 	}
 	ent->flags &= ~FL_GODMODE;
-	ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
+	ent->health = -999;
 	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
 }
 

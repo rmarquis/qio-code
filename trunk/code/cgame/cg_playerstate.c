@@ -41,8 +41,6 @@ void CG_Respawn( void ) {
 	// display weapons available
 	cg.weaponSelectTime = cg.time;
 
-	// select the weapon the server says we are using
-	cg.weaponSelect = cg.snap->ps.weapon;
 }
 
 extern char *eventnames[];
@@ -59,11 +57,6 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 		cg.thisFrameTeleport = qtrue;
 		// make sure we don't get any unwanted transition effects
 		*ops = *ps;
-	}
-
-	// respawning
-	if ( ps->persistant[PERS_SPAWN_COUNT] != ops->persistant[PERS_SPAWN_COUNT] ) {
-		CG_Respawn();
 	}
 
 	if ( cg.mapRestart ) {
