@@ -172,8 +172,6 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 
 static int CG_CalcFov( void ) {
 	float	x;
-	float	phase;
-	float	v;
 	int		contents;
 	float	fov_x, fov_y;
 	float	zoomFov;
@@ -218,7 +216,7 @@ static int CG_CalcFov( void ) {
 	fov_y = fov_y * 360 / M_PI;
 
 	// warp if underwater
-	contents = CG_PointContents( cg.refdef.vieworg, -1 );
+	contents = 0;//CG_PointContents( cg.refdef.vieworg, -1 );
 	//if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
 	//	phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
 	//	v = WAVE_AMPLITUDE * sin( phase );
@@ -391,7 +389,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	}
 
 	// actually issue the rendering calls
-	CG_DrawActive( stereoView );
+	CG_DrawActive();
 
 	if ( cg_stats.integer ) {
 		CG_Printf( "cg.clientFrame:%i\n", cg.clientFrame );

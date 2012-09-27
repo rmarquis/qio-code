@@ -84,7 +84,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, qfalse );
 
 	// sort out solid entities
-	CG_BuildSolidList();
+//	CG_BuildSolidList();
 
 	CG_ExecuteNewServerCommands( snap->serverCommandSequence );
 
@@ -207,7 +207,7 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 	}
 
 	// sort out solid entities
-	CG_BuildSolidList();
+//	CG_BuildSolidList();
 }
 
 

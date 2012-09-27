@@ -53,7 +53,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		CG_Shutdown();
 		return 0;
 	case CG_DRAW_ACTIVE_FRAME:
-		CG_DrawActiveFrame( arg0, arg1, arg2 );
+		CG_DrawActiveFrame( arg0, (stereoFrame_t)arg1, arg2 );
 		return 0;
 	default:
 		CG_Error( "vmMain: unknown command %i", command );

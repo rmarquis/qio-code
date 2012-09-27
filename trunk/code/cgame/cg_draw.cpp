@@ -75,9 +75,9 @@ CG_DrawUpperRight
 
 =====================
 */
-static void CG_DrawUpperRight(stereoFrame_t stereoFrame)
+static void CG_DrawUpperRight()
 {
-	if (cg_drawFPS.integer && (stereoFrame == STEREO_CENTER || stereoFrame == STEREO_RIGHT)) {
+	if (cg_drawFPS.integer) {
 		CG_DrawFPS( 0 );
 	}
 }
@@ -312,33 +312,11 @@ CENTER PRINTING
 
 
 /*
-==============
-CG_CenterPrint
-
-Called for important messages that should stay in the center of the screen
-for a few moments
-==============
-*/
-void CG_CenterPrint( const char *str, int y, int charWidth ) {
-	
-}
-
-
-/*
-===================
-CG_DrawCenterString
-===================
-*/
-static void CG_DrawCenterString( void ) {
-
-}
-
-/*
 =================
 CG_Draw2D
 =================
 */
-static void CG_Draw2D(stereoFrame_t stereoFrame)
+static void CG_Draw2D()
 {
 	// if we are taking a levelshot for the menu, don't draw anything
 	if ( cg.levelShot ) {
@@ -351,7 +329,7 @@ static void CG_Draw2D(stereoFrame_t stereoFrame)
 
 	CG_DrawLagometer();
 
-	CG_DrawUpperRight(stereoFrame);
+	CG_DrawUpperRight();
 }
 
 /*
@@ -361,7 +339,7 @@ CG_DrawActive
 Perform all drawing needed to completely fill the screen
 =====================
 */
-void CG_DrawActive( stereoFrame_t stereoView ) {
+void CG_DrawActive() {
 	// optionally draw the info screen instead
 	if ( !cg.snap ) {
 		//CG_DrawInformation();
@@ -372,7 +350,7 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	trap_R_RenderScene( &cg.refdef );
 
 	// draw status bar and other floating elements
- 	CG_Draw2D(stereoView);
+ 	CG_Draw2D();
 }
 
 

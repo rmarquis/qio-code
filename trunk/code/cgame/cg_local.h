@@ -441,7 +441,22 @@ void CG_SetConfigValues( void );
 void CG_Respawn( void );
 void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops );
 void CG_CheckChangedPredictableEvents( playerState_t *ps );
+void CG_PredictPlayerState();
 
+//
+// cg_drawTools.c
+//
+void CG_DrawBigString( int x, int y, const char *s, float alpha );
+int CG_DrawStrlen( const char *str );
+void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
+
+//
+// cg_draw.c
+//
+void CG_DrawActive();
+void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
+void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
+void CG_AddLagometerFrameInfo( void ) ;
 
 //===============================================
 

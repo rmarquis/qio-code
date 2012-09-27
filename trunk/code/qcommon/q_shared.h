@@ -185,7 +185,9 @@ typedef int intptr_t;
 
 typedef unsigned char 		byte;
 
-typedef enum {qfalse, qtrue}	qboolean;
+typedef int	qboolean;
+#define qtrue 1 
+#define qfalse 0
 
 typedef union {
 	float f;

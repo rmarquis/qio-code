@@ -153,9 +153,9 @@ CG_PointContents
 ================
 */
 int		CG_PointContents( const vec3_t point, int passEntityNum ) {
-	entityState_t	*ent;
-	centity_t	*cent;
-	clipHandle_t cmodel;
+//	entityState_t	*ent;
+//	centity_t	*cent;
+//	clipHandle_t cmodel;
 	int			contents;
 
 	contents = trap_CM_PointContents (point, 0);
