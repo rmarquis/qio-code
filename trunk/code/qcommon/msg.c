@@ -839,57 +839,18 @@ typedef struct {
 
 netField_t	entityStateFields[] = 
 {
-{ NETF(pos.trTime), 32 },
-{ NETF(pos.trBase[0]), 0 },
-{ NETF(pos.trBase[1]), 0 },
-{ NETF(pos.trDelta[0]), 0 },
-{ NETF(pos.trDelta[1]), 0 },
-{ NETF(pos.trBase[2]), 0 },
-{ NETF(apos.trBase[1]), 0 },
-{ NETF(pos.trDelta[2]), 0 },
-{ NETF(apos.trBase[0]), 0 },
-{ NETF(event), 10 },
-{ NETF(angles2[1]), 0 },
 { NETF(eType), 8 },
-{ NETF(torsoAnim), 8 },
-{ NETF(eventParm), 8 },
-{ NETF(legsAnim), 8 },
 { NETF(groundEntityNum), GENTITYNUM_BITS },
-{ NETF(pos.trType), 8 },
 { NETF(eFlags), 19 },
-{ NETF(otherEntityNum), GENTITYNUM_BITS },
-{ NETF(weapon), 8 },
 { NETF(clientNum), 8 },
 { NETF(angles[1]), 0 },
-{ NETF(pos.trDuration), 32 },
-{ NETF(apos.trType), 8 },
 { NETF(origin[0]), 0 },
 { NETF(origin[1]), 0 },
 { NETF(origin[2]), 0 },
 { NETF(solid), 24 },
-{ NETF(powerups), MAX_POWERUPS },
 { NETF(modelindex), 8 },
-{ NETF(otherEntityNum2), GENTITYNUM_BITS },
-{ NETF(loopSound), 8 },
-{ NETF(generic1), 8 },
-{ NETF(origin2[2]), 0 },
-{ NETF(origin2[0]), 0 },
-{ NETF(origin2[1]), 0 },
-{ NETF(modelindex2), 8 },
 { NETF(angles[0]), 0 },
-{ NETF(time), 32 },
-{ NETF(apos.trTime), 32 },
-{ NETF(apos.trDuration), 32 },
-{ NETF(apos.trBase[2]), 0 },
-{ NETF(apos.trDelta[0]), 0 },
-{ NETF(apos.trDelta[1]), 0 },
-{ NETF(apos.trDelta[2]), 0 },
-{ NETF(time2), 32 },
 { NETF(angles[2]), 0 },
-{ NETF(angles2[0]), 0 },
-{ NETF(angles2[2]), 0 },
-{ NETF(constantLight), 32 },
-{ NETF(frame), 16 }
 };
 
 
@@ -1259,7 +1220,6 @@ MSG_ReadDeltaPlayerstate
 */
 void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *to ) {
 	int			i, lc;
-	int			bits;
 	netField_t	*field;
 	int			numFields;
 	int			startBit, endBit;

@@ -187,7 +187,7 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 
 	// use the snapped origin for linking so it matches client predicted versions
-	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
+	VectorCopy( ent->s.origin, ent->r.currentOrigin );
 
 	VectorCopy (pm.mins, ent->r.mins);
 	VectorCopy (pm.maxs, ent->r.maxs);

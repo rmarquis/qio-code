@@ -1318,10 +1318,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\ui\keycodes.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\client\keys.h"
 				>
 			</File>

@@ -146,28 +146,11 @@ CG_CalcEntityLerpPositions
 */
 static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 
-	// if this player does not want to see extrapolated players
-	if ( !cg_smoothClients.integer ) {
-		// make sure the clients use TR_INTERPOLATE
-		if ( cent->currentState.number < MAX_CLIENTS ) {
-			cent->currentState.pos.trType = TR_INTERPOLATE;
-			cent->nextState.pos.trType = TR_INTERPOLATE;
-		}
-	}
-
-	if ( cent->interpolate && cent->currentState.pos.trType == TR_INTERPOLATE ) {
+	if ( cent->interpolate) {
 		CG_InterpolateEntityPosition( cent );
 		return;
 	}
 
-	// first see if we can interpolate between two snaps for
-	// linear extrapolated clients
-	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP &&
-									cent->currentState.number < MAX_CLIENTS)
-	{
-		CG_InterpolateEntityPosition( cent );
-		return;
-	}
 
 	// just use the current frame and evaluate as best we can
 	//BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );

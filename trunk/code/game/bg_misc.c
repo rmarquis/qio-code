@@ -34,7 +34,6 @@ and after local prediction on the client
 ========================
 */
 void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap ) {
-	int		i;
 
 	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
 	//	s->eType = ET_INVISIBLE;
@@ -47,21 +46,18 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 
 	s->number = ps->clientNum;
 
-	s->pos.trType = TR_INTERPOLATE;
-	VectorCopy( ps->origin, s->pos.trBase );
-	if ( snap ) {
-		SnapVector( s->pos.trBase );
-	}
+	VectorCopy( ps->origin, s->origin );
+
 	// set the trDelta for flag direction
-	VectorCopy( ps->velocity, s->pos.trDelta );
+	//VectorCopy( ps->velocity, s->pos.trDelta );
 
-	s->apos.trType = TR_INTERPOLATE;
-	VectorCopy( ps->viewangles, s->apos.trBase );
-	if ( snap ) {
-		SnapVector( s->apos.trBase );
-	}
+	//s->apos.trType = TR_INTERPOLATE;
+	//VectorCopy( ps->viewangles, s->apos.trBase );
+	//if ( snap ) {
+	//	SnapVector( s->apos.trBase );
+	//}
 
-	s->angles2[YAW] = ps->movementDir;
+//	s->angles2[YAW] = ps->movementDir;
 
 	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config
@@ -81,7 +77,7 @@ and after local prediction on the client
 ========================
 */
 void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s, int time, qboolean snap ) {
-	int		i;
+
 
 	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
 	//	s->eType = ET_INVISIBLE;
@@ -94,25 +90,14 @@ void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s
 
 	s->number = ps->clientNum;
 
-	s->pos.trType = TR_LINEAR_STOP;
-	VectorCopy( ps->origin, s->pos.trBase );
-	if ( snap ) {
-		SnapVector( s->pos.trBase );
-	}
+	VectorCopy( ps->origin, s->origin );
+
 	// set the trDelta for flag direction and linear prediction
-	VectorCopy( ps->velocity, s->pos.trDelta );
-	// set the time for linear prediction
-	s->pos.trTime = time;
-	// set maximum extra polation time
-	s->pos.trDuration = 50; // 1000 / sv_fps (default = 20)
+	//VectorCopy( ps->velocity, s->velocity );
 
-	s->apos.trType = TR_INTERPOLATE;
-	VectorCopy( ps->viewangles, s->apos.trBase );
-	if ( snap ) {
-		SnapVector( s->apos.trBase );
-	}
+	VectorCopy( ps->viewangles, s->angles );
 
-	s->angles2[YAW] = ps->movementDir;
+
 
 	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config

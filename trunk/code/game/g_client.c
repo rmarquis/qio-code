@@ -387,7 +387,7 @@ void BodySink( gentity_t *ent ) {
 		return;	
 	}
 	ent->nextthink = level.time + 100;
-	ent->s.pos.trBase[2] -= 1;
+//	ent->s.pos.trBase[2] -= 1;
 }
 
 /*
@@ -702,7 +702,6 @@ void ClientSpawn(gentity_t *ent) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
 	gclient_t	*client;
-	int		i;
 	clientPersistant_t	saved;
 	clientSession_t		savedSess;
 	int		persistant[MAX_PERSISTANT];
