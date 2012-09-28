@@ -216,7 +216,7 @@
 			Filter="c"
 			>
 			<File
-				RelativePath="..\..\code\game\bg_misc.c"
+				RelativePath="..\..\code\game\bg_misc.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -226,6 +226,7 @@
 						Optimization="0"
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;"
 						BrowseInformation="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -235,6 +236,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
