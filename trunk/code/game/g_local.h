@@ -156,6 +156,16 @@ void ClientThink( int clientNum );
 void ClientEndFrame( gentity_t *ent );
 void G_RunClient( gentity_t *ent );
 
+
+//
+// g_bullet.cpp
+//
+void G_InitBullet();
+void G_ShudownBullet();
+void G_RunPhysics();
+void G_LoadMap(const char *mapName);
+
+
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];
 

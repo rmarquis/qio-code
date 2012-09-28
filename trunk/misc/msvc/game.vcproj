@@ -47,6 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -58,7 +59,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="1"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -77,6 +78,7 @@
 				OutputFile="..\..\game\baseqio\qagamex86.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
 				ModuleDefinitionFile=".\game.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\qagamex86.pdb"
@@ -144,6 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -174,6 +177,7 @@
 				OutputFile="..\..\game\baseqio\qagamex86.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
 				ModuleDefinitionFile=".\game.def"
 				ProgramDatabaseFile="$(IntDir)\qagamex86.pdb"
 				GenerateMapFile="true"
@@ -256,6 +260,26 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\game\g_bullet.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 						CompileAs="2"
 					/>
 				</FileConfiguration>

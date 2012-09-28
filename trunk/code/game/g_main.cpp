@@ -129,6 +129,7 @@ G_InitGame
 */
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
+	char mapName[128];
 
 	G_Printf ("------- Game Initialization -------\n");
 	G_Printf ("gamename: %s\n", GAMEVERSION);
@@ -170,6 +171,11 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	SP_worldspawn();
 
+	trap_Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
+	G_InitBullet();
+	G_LoadMap(mapName);
+
+
 
 	G_Printf ("-----------------------------------\n");
 }
@@ -181,6 +187,7 @@ G_ShutdownGame
 */
 void G_ShutdownGame( int restart ) {
 	G_Printf ("==== ShutdownGame ====\n");
+	G_ShudownBullet();
 }
 
 
@@ -224,6 +231,9 @@ void G_RunFrame( int levelTime ) {
 	level.previousTime = level.time;
 	level.time = levelTime;
 	level.frameTime = (level.time-level.previousTime)*0.001f;
+
+	G_RunPhysics();
+
 
 	//
 	// go through all allocated objects
