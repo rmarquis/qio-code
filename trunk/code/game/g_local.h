@@ -96,6 +96,7 @@ struct gclient_s {
 	// the rest of the structure is private to game
 	clientPersistant_t	pers;
 
+	class btKinematicCharacterController *characterController;
 
 	int			buttons;
 	int			oldbuttons;
@@ -164,7 +165,8 @@ void G_InitBullet();
 void G_ShudownBullet();
 void G_RunPhysics();
 void G_LoadMap(const char *mapName);
-
+void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *ch, vec3_t newPos);
+class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
 
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];

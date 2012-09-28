@@ -79,11 +79,18 @@ void ClientThink_real( gentity_t *ent ) {
 		VectorScale(f,level.frameTime*ucmd->forwardmove,f);
 		VectorScale(r,level.frameTime*ucmd->rightmove,r);
 		VectorScale(u,level.frameTime*ucmd->upmove,u);
-		VectorAdd(ent->client->ps.origin,f,ent->client->ps.origin);
-		VectorAdd(ent->client->ps.origin,r,ent->client->ps.origin);
-		VectorAdd(ent->client->ps.origin,u,ent->client->ps.origin);
+		vec3_t dir = {0,0,0};
+		VectorAdd(dir,f,dir);
+		VectorAdd(dir,r,dir);
+		VectorAdd(dir,u,dir);
+		if(0) {
+			VectorAdd(ent->client->ps.origin,dir,ent->client->ps.origin);
+		} else {
+			G_RunCharacterController(dir,ent->client->characterController, ent->client->ps.origin);
+		}
 	}
 
+	G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
 
 	//if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );

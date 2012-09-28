@@ -2,6 +2,8 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <LinearMath/btGeometryUtil.h>
+#include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #pragma comment( lib, "BulletCollision_debug.lib" )
 #pragma comment( lib, "BulletDynamics_debug.lib" )
@@ -82,6 +84,40 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	dynamicsWorld->addRigidBody(body);
 
 }
+
+void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {
+	// set the forward direction of the character controller
+	btVector3 walkDir(dir[0],dir[1],dir[2]);
+	ch->setWalkDirection(walkDir);
+
+	btVector3 c = ch->getGhostObject()->getWorldTransform().getOrigin();
+	newPos[0] = c.x();
+	newPos[1] = c.y();
+	newPos[2] = c.z();
+}
+
+btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
+	vec3_t pos, float characterHeight,  float characterWidth)
+{
+   btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
+   btConvexShape* characterShape = new btCapsuleShape(characterWidth,characterHeight);
+   btTransform trans;
+   trans.setIdentity();
+   btVector3 vPos(pos[0],pos[1],pos[2]);
+   trans.setOrigin(vPos);
+   ghostObject->setWorldTransform(trans);
+   ghostObject->setCollisionShape(characterShape);
+   btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject,
+		characterShape,stepHeight,1);
+   character->setUpAxis(2);
+
+   dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter,
+                     btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+
+   dynamicsWorld->addCharacter(character);
+	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
+   return character;
+};
 #include "../qcommon/qfiles.h"
 void G_LoadMap(const char *mapName) {
 #if 0
