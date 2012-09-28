@@ -57,9 +57,6 @@ void CG_ResetPlayerEntity( centity_t *cent ) {
 //	BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
 //	BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
 
-	VectorCopy( cent->lerpOrigin, cent->rawOrigin );
-	VectorCopy( cent->lerpAngles, cent->rawAngles );
-
 
 }
 

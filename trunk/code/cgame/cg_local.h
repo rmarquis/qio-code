@@ -31,88 +31,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
-#ifdef MISSIONPACK
-#define CG_FONT_THRESHOLD 0.1
-#endif
-
-#define	POWERUP_BLINKS		5
-
-#define	POWERUP_BLINK_TIME	1000
-#define	FADE_TIME			200
-#define	PULSE_TIME			200
-#define	DAMAGE_DEFLECT_TIME	100
-#define	DAMAGE_RETURN_TIME	400
-#define DAMAGE_TIME			500
 #define	LAND_DEFLECT_TIME	150
 #define	LAND_RETURN_TIME	300
 #define	STEP_TIME			200
 #define	DUCK_TIME			100
-#define	PAIN_TWITCH_TIME	200
-#define	WEAPON_SELECT_TIME	1400
-#define	ITEM_SCALEUP_TIME	1000
 #define	ZOOM_TIME			150
-#define	ITEM_BLOB_TIME		200
-#define	MUZZLE_FLASH_TIME	20
-#define	SINK_TIME			1000		// time for fragments to sink into ground before going away
-#define	ATTACKER_HEAD_TIME	10000
-#define	REWARD_TIME			3000
-
-#define	PULSE_SCALE			1.5			// amount to scale up the icons when activating
 
 #define	MAX_STEP_CHANGE		32
 
-#define	MAX_VERTS_ON_POLY	10
-#define	MAX_MARK_POLYS		256
-
-#define STAT_MINUS			10	// num frame for '-' stats digit
-
-#define	ICON_SIZE			48
 #define	CHAR_WIDTH			32
 #define	CHAR_HEIGHT			48
-#define	TEXT_ICON_SPACE		4
-
-#define	TEAMCHAT_WIDTH		80
-#define TEAMCHAT_HEIGHT		8
-
-// very large characters
-#define	GIANT_WIDTH			32
-#define	GIANT_HEIGHT		48
-
-#define	NUM_CROSSHAIRS		10
-
-#define TEAM_OVERLAY_MAXNAME_WIDTH	12
-#define TEAM_OVERLAY_MAXLOCATION_WIDTH	16
-
-#define	DEFAULT_MODEL			"sarge"
-#ifdef MISSIONPACK
-#define	DEFAULT_TEAM_MODEL		"james"
-#define	DEFAULT_TEAM_HEAD		"*james"
-#else
-#define	DEFAULT_TEAM_MODEL		"sarge"
-#define	DEFAULT_TEAM_HEAD		"sarge"
-#endif
-
-#define DEFAULT_REDTEAM_NAME		"Stroggs"
-#define DEFAULT_BLUETEAM_NAME		"Pagans"
-
-typedef enum {
-	FOOTSTEP_NORMAL,
-	FOOTSTEP_BOOT,
-	FOOTSTEP_FLESH,
-	FOOTSTEP_MECH,
-	FOOTSTEP_ENERGY,
-	FOOTSTEP_METAL,
-	FOOTSTEP_SPLASH,
-
-	FOOTSTEP_TOTAL
-} footstep_t;
-
-typedef enum {
-	IMPACTSOUND_DEFAULT,
-	IMPACTSOUND_METAL,
-	IMPACTSOUND_FLESH
-} impactSound_t;
-
 
 //=================================================
 
@@ -125,19 +53,9 @@ typedef struct centity_s {
 	qboolean		interpolate;	// true if next is valid to interpolate to
 	qboolean		currentValid;	// true if cg.frame holds this entity
 
-	int				muzzleFlashTime;	// move to playerEntity?
-	int				previousEvent;
-	int				teleportFlag;
-
-	int				trailTime;		// so missile trails can handle dropped initial packets
-	int				dustTrailTime;
-	int				miscTime;
-
 	int				snapShotTime;	// last time this entity was found in a snapshot
 	
 	qboolean		extrapolated;	// false if origin / angles is an interpolation
-	vec3_t			rawOrigin;
-	vec3_t			rawAngles;
 
 	// exact interpolated position of entity on this frame
 	vec3_t			lerpOrigin;
@@ -262,98 +180,16 @@ extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
 
-extern	vmCvar_t		cg_centertime;
-extern	vmCvar_t		cg_runpitch;
-extern	vmCvar_t		cg_runroll;
-extern	vmCvar_t		cg_bobup;
-extern	vmCvar_t		cg_bobpitch;
-extern	vmCvar_t		cg_bobroll;
-extern	vmCvar_t		cg_swingSpeed;
-extern	vmCvar_t		cg_shadows;
-extern	vmCvar_t		cg_gibs;
-extern	vmCvar_t		cg_drawTimer;
+extern	vmCvar_t		cg_lagometer;
 extern	vmCvar_t		cg_drawFPS;
-extern	vmCvar_t		cg_drawSnapshot;
-extern	vmCvar_t		cg_draw3dIcons;
-extern	vmCvar_t		cg_drawIcons;
-extern	vmCvar_t		cg_drawAmmoWarning;
-extern	vmCvar_t		cg_drawCrosshair;
-extern	vmCvar_t		cg_drawCrosshairNames;
-extern	vmCvar_t		cg_drawRewards;
-extern	vmCvar_t		cg_drawTeamOverlay;
-extern	vmCvar_t		cg_teamOverlayUserinfo;
-extern	vmCvar_t		cg_crosshairX;
-extern	vmCvar_t		cg_crosshairY;
-extern	vmCvar_t		cg_crosshairSize;
-extern	vmCvar_t		cg_crosshairHealth;
-extern	vmCvar_t		cg_drawStatus;
 extern	vmCvar_t		cg_draw2D;
-extern	vmCvar_t		cg_animSpeed;
-extern	vmCvar_t		cg_debugAnim;
-extern	vmCvar_t		cg_debugPosition;
-extern	vmCvar_t		cg_debugEvents;
-extern	vmCvar_t		cg_railTrailTime;
-extern	vmCvar_t		cg_errorDecay;
-extern	vmCvar_t		cg_nopredict;
-extern	vmCvar_t		cg_noPlayerAnims;
-extern	vmCvar_t		cg_showmiss;
-extern	vmCvar_t		cg_footsteps;
-extern	vmCvar_t		cg_addMarks;
-extern	vmCvar_t		cg_brassTime;
-extern	vmCvar_t		cg_gun_frame;
-extern	vmCvar_t		cg_gun_x;
-extern	vmCvar_t		cg_gun_y;
-extern	vmCvar_t		cg_gun_z;
-extern	vmCvar_t		cg_drawGun;
-extern	vmCvar_t		cg_viewsize;
-extern	vmCvar_t		cg_tracerChance;
-extern	vmCvar_t		cg_tracerWidth;
-extern	vmCvar_t		cg_tracerLength;
-extern	vmCvar_t		cg_autoswitch;
-extern	vmCvar_t		cg_ignore;
-extern	vmCvar_t		cg_simpleItems;
 extern	vmCvar_t		cg_fov;
-extern	vmCvar_t		cg_zoomFov;
 extern	vmCvar_t		cg_thirdPersonRange;
 extern	vmCvar_t		cg_thirdPersonAngle;
 extern	vmCvar_t		cg_thirdPerson;
-extern	vmCvar_t		cg_lagometer;
-extern	vmCvar_t		cg_drawAttacker;
-extern	vmCvar_t		cg_synchronousClients;
-extern	vmCvar_t		cg_teamChatTime;
-extern	vmCvar_t		cg_teamChatHeight;
-extern	vmCvar_t		cg_stats;
-extern	vmCvar_t 		cg_forceModel;
-extern	vmCvar_t 		cg_buildScript;
-extern	vmCvar_t		cg_paused;
-extern	vmCvar_t		cg_blood;
-extern	vmCvar_t		cg_predictItems;
-extern	vmCvar_t		cg_deferPlayers;
-extern	vmCvar_t		cg_drawFriend;
-extern	vmCvar_t		cg_teamChatsOnly;
-#ifdef MISSIONPACK
-extern	vmCvar_t		cg_noVoiceChats;
-extern	vmCvar_t		cg_noVoiceText;
-#endif
-extern  vmCvar_t		cg_scorePlum;
-extern	vmCvar_t		cg_smoothClients;
-extern	vmCvar_t		pmove_fixed;
-extern	vmCvar_t		pmove_msec;
-//extern	vmCvar_t		cg_pmove_fixed;
-extern	vmCvar_t		cg_cameraOrbit;
-extern	vmCvar_t		cg_cameraOrbitDelay;
+extern	vmCvar_t		cg_timescale;
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
-extern	vmCvar_t		cg_timescale;
-extern	vmCvar_t		cg_cameraMode;
-extern  vmCvar_t		cg_smallFont;
-extern  vmCvar_t		cg_bigFont;
-extern	vmCvar_t		cg_noTaunt;
-extern	vmCvar_t		cg_noProjectileTrail;
-extern	vmCvar_t		cg_oldRail;
-extern	vmCvar_t		cg_oldRocket;
-extern	vmCvar_t		cg_oldPlasma;
-extern	vmCvar_t		cg_trueLightning;
 
 //
 // cg_main.c
@@ -369,16 +205,6 @@ void CG_UpdateCvars( void );
 //
 // cg_view.c
 //
-void CG_TestModel_f (void);
-void CG_TestGun_f (void);
-void CG_TestModelNextFrame_f (void);
-void CG_TestModelPrevFrame_f (void);
-void CG_TestModelNextSkin_f (void);
-void CG_TestModelPrevSkin_f (void);
-void CG_ZoomDown_f( void );
-void CG_ZoomUp_f( void );
-void CG_AddBufferedSound( sfxHandle_t sfx);
-
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
 
 

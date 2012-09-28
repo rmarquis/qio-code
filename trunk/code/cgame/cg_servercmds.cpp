@@ -91,9 +91,7 @@ require a reload of all the media
 ===============
 */
 static void CG_MapRestart( void ) {
-	if ( cg_showmiss.integer ) {
-		CG_Printf( "CG_MapRestart\n" );
-	}
+
 
 //	cg.mapRestart = qtrue;
 

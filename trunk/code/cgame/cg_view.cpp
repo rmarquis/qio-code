@@ -99,11 +99,11 @@ static void CG_OffsetFirstPersonView( void ) {
 	// add angles based on velocity
 	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
 
-	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
-	angles[PITCH] += delta * cg_runpitch.value;
-	
-	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
-	angles[ROLL] -= delta * cg_runroll.value;
+	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
+	//angles[PITCH] += delta * cg_runpitch.value;
+	//
+	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
+	//angles[ROLL] -= delta * cg_runroll.value;
 
 	// add angles based on bob
 
@@ -174,11 +174,11 @@ static int CG_CalcFov( void ) {
 	float	x;
 	int		contents;
 	float	fov_x, fov_y;
-	float	zoomFov;
-	float	f;
+//	float	zoomFov;
+//	float	f;
 	int		inwater;
 
-	{
+	//{
 	
 			fov_x = cg_fov.value;
 			if ( fov_x < 1 ) {
@@ -188,28 +188,28 @@ static int CG_CalcFov( void ) {
 			}
 		
 
-		// account for zooms
-		zoomFov = cg_zoomFov.value;
-		if ( zoomFov < 1 ) {
-			zoomFov = 1;
-		} else if ( zoomFov > 160 ) {
-			zoomFov = 160;
-		}
+	//	// account for zooms
+	//	zoomFov = cg_zoomFov.value;
+	//	if ( zoomFov < 1 ) {
+	//		zoomFov = 1;
+	//	} else if ( zoomFov > 160 ) {
+	//		zoomFov = 160;
+	//	}
 
-		if ( cg.zoomed ) {
-			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
-			if ( f > 1.0 ) {
-				fov_x = zoomFov;
-			} else {
-				fov_x = fov_x + f * ( zoomFov - fov_x );
-			}
-		} else {
-			f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
-			if ( f <= 1.0 ) {
-				fov_x = zoomFov + f * ( fov_x - zoomFov );
-			}
-		}
-	}
+	//	if ( cg.zoomed ) {
+	//		f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
+	//		if ( f > 1.0 ) {
+	//			fov_x = zoomFov;
+	//		} else {
+	//			fov_x = fov_x + f * ( zoomFov - fov_x );
+	//		}
+	//	} else {
+	//		f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
+	//		if ( f <= 1.0 ) {
+	//			fov_x = zoomFov + f * ( fov_x - zoomFov );
+	//		}
+	//	}
+	//}
 
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
@@ -380,11 +380,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// actually issue the rendering calls
 	CG_DrawActive();
-
-	if ( cg_stats.integer ) {
-		CG_Printf( "cg.clientFrame:%i\n", cg.clientFrame );
-	}
-
 
 }
 
