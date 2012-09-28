@@ -80,11 +80,6 @@ typedef enum {
 	G_FS_WRITE,		// ( const void *buffer, int len, fileHandle_t f );
 	G_FS_FCLOSE_FILE,		// ( fileHandle_t f );
 
-	G_SEND_CONSOLE_COMMAND,	// ( const char *text );
-	// add commands to the console as if they were typed in
-	// for map changing, etc
-
-
 	//=========== server specific functionality =============
 
 	G_LOCATE_GAME_DATA,		// ( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t,

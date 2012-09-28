@@ -183,7 +183,7 @@ typedef int intptr_t;
 
 //=============================================================
 
-typedef unsigned char 		byte;
+#include "../shared/typedefs.h"
 
 typedef int	qboolean;
 #define qtrue 1 

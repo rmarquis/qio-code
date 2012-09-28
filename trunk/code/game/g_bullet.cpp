@@ -159,7 +159,7 @@ void G_LoadMap(const char *mapName) {
 	strcat(buf,mapName);
 	strcat(buf,".bsp");
 	fileHandle_t f;
-	int len = trap_FS_FOpenFile(buf,&f,fsMode_t::FS_READ);
+	int len = trap_FS_FOpenFile(buf,&f,FS_READ);
 	byte *data = (byte*)malloc(len);
 	trap_FS_Read(data,len,f);
 	trap_FS_FCloseFile(f);
