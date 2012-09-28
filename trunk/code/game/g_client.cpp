@@ -206,6 +206,7 @@ void ClientSpawn(gentity_t *ent) {
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
+	BT_FreeCharacter(client->characterController);
 	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 8, 30);
 
 	

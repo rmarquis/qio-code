@@ -30,6 +30,9 @@ void G_InitBullet() {
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0,0,-800));
+
+	// add ghostPairCallback for character controller collision detection
+	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 }
 void G_ShudownBullet() {
     // Clean up behind ourselves like good little programmers
@@ -101,6 +104,13 @@ void G_TryToJump(btKinematicCharacterController *ch) {
 		return;
 	ch->jump();
 }
+void BT_FreeCharacter(btKinematicCharacterController *c) {
+	if(c == 0)
+		return;
+	dynamicsWorld->removeCharacter(c);
+	delete c;
+
+}
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
@@ -122,7 +132,6 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 				 btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
 
 	dynamicsWorld->addCharacter(character);
-	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	return character;
 };
 #include "../qcommon/qfiles.h"

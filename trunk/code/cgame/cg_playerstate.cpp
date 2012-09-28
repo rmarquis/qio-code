@@ -57,10 +57,10 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 		*ops = *ps;
 	}
 
-	if ( cg.mapRestart ) {
-		CG_Respawn();
-		cg.mapRestart = qfalse;
-	}
+//	if ( cg.mapRestart ) {
+///		CG_Respawn();
+///		cg.mapRestart = qfalse;
+//	}
 
 	// smooth the ducking viewheight change
 	if ( ps->viewheight != ops->viewheight ) {

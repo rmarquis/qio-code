@@ -158,9 +158,8 @@ typedef struct {
 	int			clientFrame;		// incremented each frame
 
 	int			clientNum;
-	
+
 	qboolean	demoPlayback;
-	qboolean	levelShot;			// taking a level menu screenshot
 
 	// there are only one or two snapshot_t that are relevent at a time
 	int			latestSnapshotNum;	// the number of snapshots the client system has received
@@ -180,12 +179,7 @@ typedef struct {
 
 	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
 
-	qboolean	mapRestart;			// set on a map restart to set back the weapon
-
-	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
-
 	// prediction state
-	qboolean	hyperspace;				// true if prediction has hit a trigger_teleport
 	playerState_t	predictedPlayerState;
 	centity_t		predictedPlayerEntity;
 	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
@@ -225,9 +219,6 @@ typedef struct {
 	qhandle_t	whiteShader;
 
 
-
-
-
 } cgMedia_t;
 
 
@@ -259,10 +250,6 @@ typedef struct {
 	//
 	qhandle_t		gameModels[MAX_MODELS];
 	sfxHandle_t		gameSounds[MAX_SOUNDS];
-
-	int				numInlineModels;
-	qhandle_t		inlineDrawModel[MAX_MODELS];
-	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
 	// media
 	cgMedia_t		media;
@@ -378,16 +365,6 @@ void QDECL CG_Printf( const char *msg, ... ) __attribute__ ((format (printf, 1, 
 void QDECL CG_Error( const char *msg, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
 
 void CG_UpdateCvars( void );
-
-int CG_CrosshairPlayer( void );
-int CG_LastAttacker( void );
-void CG_LoadMenus(const char *menuFile);
-void CG_KeyEvent(int key, qboolean down);
-void CG_MouseEvent(int x, int y);
-void CG_EventHandling(int type);
-void CG_RankRunFrame( void );
-void CG_SetScoreSelection(void *menu);
-
 
 //
 // cg_view.c

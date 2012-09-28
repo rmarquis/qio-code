@@ -287,7 +287,7 @@ static int CG_CalcViewValues( void ) {
 	VectorCopy( ps->origin, cg.refdef.vieworg );
 	VectorCopy( ps->viewangles, cg.refdefViewAngles );
 
-	if ( cg.renderingThirdPerson ) {
+	if ( cg_thirdPerson.integer ) {
 		// back away from character
 		CG_OffsetThirdPersonView();
 	} else {
@@ -297,10 +297,6 @@ static int CG_CalcViewValues( void ) {
 
 	// position eye relative to origin
 	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
-
-	if ( cg.hyperspace ) {
-		cg.refdef.rdflags |= RDF_NOWORLDMODEL | RDF_HYPERSPACE;
-	}
 
 	// field of view
 	return CG_CalcFov();
@@ -321,7 +317,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	int		inwater;
 
 	cg.time = serverTime;
-	cg.demoPlayback = demoPlayback;
 
 	// update cvars
 	CG_UpdateCvars();
@@ -349,16 +344,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// update cg.predictedPlayerState
 	CG_PredictPlayerState();
 
-	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer;
-
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
 
 	// build the render lists
-	if ( !cg.hyperspace ) {
-		CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
-	}
+	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );

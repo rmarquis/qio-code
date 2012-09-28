@@ -318,11 +318,6 @@ CG_Draw2D
 */
 static void CG_Draw2D()
 {
-	// if we are taking a levelshot for the menu, don't draw anything
-	if ( cg.levelShot ) {
-		return;
-	}
-
 	if ( cg_draw2D.integer == 0 ) {
 		return;
 	}

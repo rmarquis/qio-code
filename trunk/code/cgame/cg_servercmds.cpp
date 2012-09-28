@@ -95,7 +95,7 @@ static void CG_MapRestart( void ) {
 		CG_Printf( "CG_MapRestart\n" );
 	}
 
-	cg.mapRestart = qtrue;
+//	cg.mapRestart = qtrue;
 
 
 
