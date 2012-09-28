@@ -48,6 +48,9 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 
 	VectorCopy( ps->origin, s->origin );
 
+	// set the trDelta for flag direction and linear prediction
+	VectorCopy( ps->viewangles, s->angles );
+
 	// set the trDelta for flag direction
 	//VectorCopy( ps->velocity, s->pos.trDelta );
 
@@ -63,46 +66,6 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 										// so corpses can also reference the proper config
 
 	s->groundEntityNum = ps->groundEntityNum;
-
-}
-
-/*
-========================
-BG_PlayerStateToEntityStateExtraPolate
-
-This is done after each set of usercmd_t on the server,
-and after local prediction on the client
-========================
-*/
-void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s, int time, qboolean snap ) {
-
-
-	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
-	//	s->eType = ET_INVISIBLE;
-	//} else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) {
-	//	s->eType = ET_INVISIBLE;
-	//} else 
-	{
-		s->eType = ET_PLAYER;
-	}
-
-	s->number = ps->clientNum;
-
-	VectorCopy( ps->origin, s->origin );
-
-	// set the trDelta for flag direction and linear prediction
-	VectorCopy( ps->viewangles, s->angles );
-
-
-
-	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
-										// so corpses can also reference the proper config
-///	s->eFlags = ps->eFlags;
-
-	s->groundEntityNum = ps->groundEntityNum;
-
-
-
 }
 
 
