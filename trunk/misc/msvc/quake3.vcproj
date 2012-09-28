@@ -231,14 +231,14 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 			>
 			<File
-				RelativePath="..\..\code\client\cl_avi.c"
+				RelativePath="..\..\code\client\cl_avi.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -246,12 +246,12 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_cgame.c"
+				RelativePath="..\..\code\client\cl_cgame.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -261,7 +261,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -271,12 +271,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_cin.c"
+				RelativePath="..\..\code\client\cl_cin.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -286,7 +286,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -296,12 +296,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_console.c"
+				RelativePath="..\..\code\client\cl_console.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -311,7 +311,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -321,19 +321,19 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_curl.c"
+				RelativePath="..\..\code\client\cl_curl.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -341,12 +341,12 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_input.c"
+				RelativePath="..\..\code\client\cl_input.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -356,7 +356,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -366,12 +366,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_keys.c"
+				RelativePath="..\..\code\client\cl_keys.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -381,7 +381,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -391,12 +391,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_main.c"
+				RelativePath="..\..\code\client\cl_main.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -406,7 +406,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -416,12 +416,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_net_chan.c"
+				RelativePath="..\..\code\client\cl_net_chan.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -431,7 +431,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -441,12 +441,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_parse.c"
+				RelativePath="..\..\code\client\cl_parse.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -456,7 +456,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -466,12 +466,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_scrn.c"
+				RelativePath="..\..\code\client\cl_scrn.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -481,7 +481,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -491,12 +491,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\client\cl_ui.c"
+				RelativePath="..\..\code\client\cl_ui.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -506,7 +506,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -516,12 +516,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\cmd.c"
+				RelativePath="..\..\code\qcommon\cmd.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -531,7 +531,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -541,12 +541,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\common.c"
+				RelativePath="..\..\code\qcommon\common.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -556,7 +556,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -566,19 +566,19 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sys\con_log.c"
+				RelativePath="..\..\code\sys\con_log.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -586,19 +586,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sys\con_passive.c"
+				RelativePath="..\..\code\sys\con_passive.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -606,12 +606,12 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\cvar.c"
+				RelativePath="..\..\code\qcommon\cvar.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -621,7 +621,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -631,12 +631,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\files.c"
+				RelativePath="..\..\code\qcommon\files.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -646,7 +646,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -656,12 +656,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\huffman.c"
+				RelativePath="..\..\code\qcommon\huffman.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -671,7 +671,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -681,7 +681,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -711,7 +711,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\md4.c"
+				RelativePath="..\..\code\qcommon\md4.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -721,7 +721,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -731,12 +731,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\md5.c"
+				RelativePath="..\..\code\qcommon\md5.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -746,7 +746,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -756,12 +756,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\msg.c"
+				RelativePath="..\..\code\qcommon\msg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -771,7 +771,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -781,12 +781,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\net_chan.c"
+				RelativePath="..\..\code\qcommon\net_chan.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -796,7 +796,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -806,19 +806,19 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\net_ip.c"
+				RelativePath="..\..\code\qcommon\net_ip.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -826,7 +826,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -851,14 +851,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\.\qcommon\q_math.c"
+				RelativePath="..\..\code\qcommon\q_math.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -866,19 +866,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\.\qcommon\q_shared.c"
+				RelativePath="..\..\code\qcommon\q_shared.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -886,19 +886,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sdl\sdl_gamma.c"
+				RelativePath="..\..\code\sdl\sdl_gamma.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -906,19 +906,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sdl\sdl_glimp.c"
+				RelativePath="..\..\code\sdl\sdl_glimp.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -926,19 +926,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sdl\sdl_input.c"
+				RelativePath="..\..\code\sdl\sdl_input.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -946,12 +946,12 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_ccmds.c"
+				RelativePath="..\..\code\server\sv_ccmds.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -961,7 +961,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -971,12 +971,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_client.c"
+				RelativePath="..\..\code\server\sv_client.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -986,7 +986,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -996,12 +996,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_game.c"
+				RelativePath="..\..\code\server\sv_game.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1011,7 +1011,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1021,12 +1021,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_init.c"
+				RelativePath="..\..\code\server\sv_init.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1036,7 +1036,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1046,12 +1046,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_main.c"
+				RelativePath="..\..\code\server\sv_main.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1061,7 +1061,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1071,12 +1071,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_net_chan.c"
+				RelativePath="..\..\code\server\sv_net_chan.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1086,7 +1086,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1096,12 +1096,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_snapshot.c"
+				RelativePath="..\..\code\server\sv_snapshot.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1111,7 +1111,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1121,12 +1121,12 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\server\sv_world.c"
+				RelativePath="..\..\code\server\sv_world.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1136,7 +1136,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1146,19 +1146,19 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sys\sys_main.c"
+				RelativePath="..\..\code\sys\sys_main.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1166,19 +1166,19 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\sys\sys_win32.c"
+				RelativePath="..\..\code\sys\sys_win32.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1186,7 +1186,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1216,7 +1216,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\vm.c"
+				RelativePath="..\..\code\qcommon\vm.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1226,7 +1226,7 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BrowseInformation="1"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1236,7 +1236,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>

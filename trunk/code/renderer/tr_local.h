@@ -24,6 +24,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef TR_LOCAL_H
 #define TR_LOCAL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
 #include "../qcommon/qcommon.h"
@@ -1745,6 +1749,10 @@ void RE_TakeVideoFrame( int width, int height,
 void R_InitFreeType( void );
 void R_DoneFreeType( void );
 void RE_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 
 #endif //TR_LOCAL_H

@@ -276,7 +276,7 @@ void VM_LoadSymbols( vm_t *vm ) {
 			break;
 		}
 		chars = strlen( token );
-		sym = Hunk_Alloc( sizeof( *sym ) + chars, h_high );
+		sym = (vmSymbol_t*)Hunk_Alloc( sizeof( *sym ) + chars, h_high );
 		*prev = sym;
 		prev = &sym->next;
 		sym->next = NULL;
@@ -670,7 +670,7 @@ void VM_VmProfile_f( void ) {
 		return;
 	}
 
-	sorted = Z_Malloc( vm->numSymbols * sizeof( *sorted ) );
+	sorted = (vmSymbol_t**)Z_Malloc( vm->numSymbols * sizeof( *sorted ) );
 	sorted[0] = vm->symbols;
 	total = sorted[0]->profileCount;
 	for ( i = 1 ; i < vm->numSymbols ; i++ ) {
