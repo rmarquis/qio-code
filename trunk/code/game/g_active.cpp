@@ -86,6 +86,8 @@ void ClientThink_real( gentity_t *ent ) {
 		if(0) {
 			VectorAdd(ent->client->ps.origin,dir,ent->client->ps.origin);
 		} else {
+			dir[2] = 0;
+			VectorScale(dir,0.75f,dir);
 			G_RunCharacterController(dir,ent->client->characterController, ent->client->ps.origin);
 		}
 	}

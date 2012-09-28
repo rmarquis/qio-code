@@ -99,24 +99,23 @@ void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, ve
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
-   btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
-   btConvexShape* characterShape = new btCapsuleShape(characterWidth,characterHeight);
-   btTransform trans;
-   trans.setIdentity();
-   btVector3 vPos(pos[0],pos[1],pos[2]);
-   trans.setOrigin(vPos);
-   ghostObject->setWorldTransform(trans);
-   ghostObject->setCollisionShape(characterShape);
-   btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject,
-		characterShape,stepHeight,1);
-   character->setUpAxis(2);
+	btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
+	btConvexShape* characterShape = new btCapsuleShape(characterWidth,characterHeight);
+	btTransform trans;
+	trans.setIdentity();
+	btVector3 vPos(pos[0],pos[1],pos[2]);
+	trans.setOrigin(vPos);
+	ghostObject->setWorldTransform(trans);
+	ghostObject->setCollisionShape(characterShape);
+	btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject, characterShape,stepHeight,2);
+	character->setMaxSlope(DEG2RAD(70));
 
-   dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter,
-                     btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter,
+				 btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
 
-   dynamicsWorld->addCharacter(character);
+	dynamicsWorld->addCharacter(character);
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-   return character;
+	return character;
 };
 #include "../qcommon/qfiles.h"
 void G_LoadMap(const char *mapName) {

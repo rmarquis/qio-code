@@ -200,12 +200,13 @@ void ClientSpawn(gentity_t *ent) {
 	
 	VectorCopy( spawn_origin, ent->s.origin );
 	VectorCopy( spawn_origin, client->ps.origin );
+	client->ps.viewheight = 26;
 
 	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
-	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 15, 24);
+	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 8, 24);
 
 	
 	// run a client frame to drop exactly to the floor,
