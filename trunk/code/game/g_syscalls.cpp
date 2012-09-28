@@ -139,14 +139,6 @@ void trap_GetServerinfo( char *buffer, int bufferSize ) {
 }
 
 
-void trap_LinkEntity( gentity_t *ent ) {
-	syscall( G_LINKENTITY, ent );
-}
-
-void trap_UnlinkEntity( gentity_t *ent ) {
-	syscall( G_UNLINKENTITY, ent );
-}
-
 void trap_GetUsercmd( int clientNum, usercmd_t *cmd ) {
 	syscall( G_GET_USERCMD, clientNum, cmd );
 }

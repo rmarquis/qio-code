@@ -25,39 +25,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	GAME_API_VERSION	8
 
+class test_c {
+
+};
 
 //===============================================================
 
 
-typedef struct {
-	qboolean	linked;				// qfalse if not in any good cluster
-	int			linkcount;
-
-	int			svFlags;			// SVF_NOCLIENT, SVF_BROADCAST, etc
-	
-
-	qboolean	bmodel;				// if false, assume an explicit mins / maxs bounding box
-									// only set by trap_SetBrushModel
-	vec3_t		mins, maxs;
-	int			contents;			// CONTENTS_TRIGGER, CONTENTS_SOLID, CONTENTS_BODY, etc
-									// a non-solid entity should set to 0
-
-	vec3_t		absmin, absmax;		// derived from mins/maxs and origin + rotation
-
-	// when a trace call is made and passEntityNum != ENTITYNUM_NONE,
-	// an ent will be excluded from testing if:
-	// ent->s.number == passEntityNum	(don't interact with self)
-	// ent->r.ownerNum == passEntityNum	(don't interact with your own missiles)
-	// entity[ent->r.ownerNum].r.ownerNum == passEntityNum	(don't interact with other missiles from owner)
-	int			ownerNum;
-} entityShared_t;
 
 
 
 // the server looks at a sharedEntity, which is the start of the game's gentity_t structure
 typedef struct {
 	entityState_t	s;				// communicated by server to clients
-	entityShared_t	r;				// shared by both the server system and game
+	qboolean	inuse;
 } sharedEntity_t;
 
 
@@ -136,15 +117,6 @@ typedef enum {
 
 	G_GET_SERVERINFO,	// ( char *buffer, int bufferSize );
 	// the serverinfo info string has all the cvars visible to server browsers
-
-
-	G_LINKENTITY,		// ( gentity_t *ent );
-	// an entity will never be sent to a client or used for collision
-	// if it is not passed to linkentity.  If the size, position, or
-	// solidity changes, it must be relinked.
-
-	G_UNLINKENTITY,		// ( gentity_t *ent );		
-	// call before removing an interactive entity
 
 	G_GET_USERCMD,	// ( int clientNum, usercmd_t *cmd )
 

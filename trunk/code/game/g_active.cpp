@@ -92,9 +92,6 @@ void ClientThink_real( gentity_t *ent ) {
 	//	BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 	//}
 
-	// link entity now, after any personal teleporters have been used
-	trap_LinkEntity (ent);
-
 	client->ps.commandTime = ucmd->serverTime;
 	// swap and latch button actions
 	client->oldbuttons = client->buttons;

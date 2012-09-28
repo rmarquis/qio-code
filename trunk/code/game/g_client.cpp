@@ -137,15 +137,11 @@ and on transition between teams, but doesn't happen on respawns
 void ClientBegin( int clientNum ) {
 	gentity_t	*ent;
 	gclient_t	*client;
-	int			flags;
 
 	ent = g_entities + clientNum;
 
 	client = level.clients + clientNum;
 
-	if ( ent->r.linked ) {
-		trap_UnlinkEntity( ent );
-	}
 	G_InitGentity( ent );
 	
 	ent->client = client;
@@ -175,8 +171,6 @@ void ClientSpawn(gentity_t *ent) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
 	gclient_t	*client;
-	clientPersistant_t	saved;
-	int		savedPing;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
@@ -199,18 +193,12 @@ void ClientSpawn(gentity_t *ent) {
 	ent->client = &level.clients[index];
 	ent->inuse = qtrue;
 	ent->classname = "player";
-	ent->r.contents = CONTENTS_BODY;
-
-	VectorCopy (playerMins, ent->r.mins);
-	VectorCopy (playerMaxs, ent->r.maxs);
 
 	client->ps.clientNum = index;
 
 	
 	VectorCopy( spawn_origin, ent->s.origin );
 	VectorCopy( spawn_origin, client->ps.origin );
-
-	trap_LinkEntity(ent);
 
 	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
@@ -251,7 +239,6 @@ void ClientDisconnect( int clientNum ) {
 		return;
 	}
 
-	trap_UnlinkEntity (ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
 	ent->classname = "disconnected";

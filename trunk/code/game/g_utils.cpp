@@ -85,7 +85,6 @@ void G_InitGentity( gentity_t *e ) {
 	e->inuse = qtrue;
 	e->classname = "noclass";
 	e->s.number = e - g_entities;
-	e->r.ownerNum = ENTITYNUM_NONE;
 }
 
 /*
@@ -179,8 +178,6 @@ Marks the entity as free
 =================
 */
 void G_FreeEntity( gentity_t *ed ) {
-	trap_UnlinkEntity (ed);		// unlink from world
-
 	memset (ed, 0, sizeof(*ed));
 	ed->classname = "freed";
 	ed->freetime = level.time;
