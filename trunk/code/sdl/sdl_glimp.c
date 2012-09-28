@@ -467,7 +467,7 @@ GLimp_StartDriverAndSetMode
 */
 static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
-	rserr_t err;
+	int err;
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
@@ -606,9 +606,9 @@ static void GLimp_InitExtensions( void )
 	{
 		if ( r_ext_multitexture->value )
 		{
-			qglMultiTexCoord2fARB = SDL_GL_GetProcAddress( "glMultiTexCoord2fARB" );
-			qglActiveTextureARB = SDL_GL_GetProcAddress( "glActiveTextureARB" );
-			qglClientActiveTextureARB = SDL_GL_GetProcAddress( "glClientActiveTextureARB" );
+			qglMultiTexCoord2fARB = (void (__stdcall *)(GLenum,GLfloat,GLfloat))SDL_GL_GetProcAddress( "glMultiTexCoord2fARB" );
+			qglActiveTextureARB = (void (__stdcall *)(GLenum))SDL_GL_GetProcAddress( "glActiveTextureARB" );
+			qglClientActiveTextureARB = (void (__stdcall *)(GLenum))SDL_GL_GetProcAddress( "glClientActiveTextureARB" );
 
 			if ( qglActiveTextureARB )
 			{

@@ -106,25 +106,25 @@ qboolean CL_cURL_Init()
 
 	clc.cURLEnabled = qtrue;
 
-	qcurl_version = GPA("curl_version");
+	qcurl_version = (char *(__cdecl *)(void))GPA("curl_version");
 
-	qcurl_easy_init = GPA("curl_easy_init");
-	qcurl_easy_setopt = GPA("curl_easy_setopt");
-	qcurl_easy_perform = GPA("curl_easy_perform");
-	qcurl_easy_cleanup = GPA("curl_easy_cleanup");
-	qcurl_easy_getinfo = GPA("curl_easy_getinfo");
-	qcurl_easy_duphandle = GPA("curl_easy_duphandle");
-	qcurl_easy_reset = GPA("curl_easy_reset");
-	qcurl_easy_strerror = GPA("curl_easy_strerror");
+	qcurl_easy_init = (CURL *(__cdecl *)(void))GPA("curl_easy_init");
+	qcurl_easy_setopt = (CURLcode (__cdecl *)(CURL *,CURLoption,...))GPA("curl_easy_setopt");
+	qcurl_easy_perform = (CURLcode (__cdecl *)(CURL *))GPA("curl_easy_perform");
+	qcurl_easy_cleanup = (void (__cdecl *)(CURL *))GPA("curl_easy_cleanup");
+	qcurl_easy_getinfo = (CURLcode (__cdecl *)(CURL *,CURLINFO,...))GPA("curl_easy_getinfo");
+	qcurl_easy_duphandle = (CURL *(__cdecl *)(CURL *))GPA("curl_easy_duphandle");
+	qcurl_easy_reset = (void (__cdecl *)(CURL *))GPA("curl_easy_reset");
+	qcurl_easy_strerror = (const char *(__cdecl *)(CURLcode))GPA("curl_easy_strerror");
 	
-	qcurl_multi_init = GPA("curl_multi_init");
-	qcurl_multi_add_handle = GPA("curl_multi_add_handle");
-	qcurl_multi_remove_handle = GPA("curl_multi_remove_handle");
-	qcurl_multi_fdset = GPA("curl_multi_fdset");
-	qcurl_multi_perform = GPA("curl_multi_perform");
-	qcurl_multi_cleanup = GPA("curl_multi_cleanup");
-	qcurl_multi_info_read = GPA("curl_multi_info_read");
-	qcurl_multi_strerror = GPA("curl_multi_strerror");
+	qcurl_multi_init = (CURLM *(__cdecl *)(void))GPA("curl_multi_init");
+	qcurl_multi_add_handle = (CURLMcode (__cdecl *)(CURLM *,CURL *))GPA("curl_multi_add_handle");
+	qcurl_multi_remove_handle = (CURLMcode (__cdecl *)(CURLM *,CURL *))GPA("curl_multi_remove_handle");
+	qcurl_multi_fdset = (CURLMcode (__cdecl *)(CURLM *,fd_set *,fd_set *,fd_set *,int *))GPA("curl_multi_fdset");
+	qcurl_multi_perform = (CURLMcode (__cdecl *)(CURLM *,int *))GPA("curl_multi_perform");
+	qcurl_multi_cleanup = (CURLMcode (__cdecl *)(CURLM *))GPA("curl_multi_cleanup");
+	qcurl_multi_info_read = (CURLMsg *(__cdecl *)(CURLM *,int *))GPA("curl_multi_info_read");
+	qcurl_multi_strerror = (const char *(__cdecl *)(CURLMcode))GPA("curl_multi_strerror");
 
 	if(!clc.cURLEnabled)
 	{

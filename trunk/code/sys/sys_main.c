@@ -142,7 +142,7 @@ static char *Sys_PIDFileName( void )
 {
 	const char *homePath = Sys_DefaultHomePath( );
 
-	if( *homePath != '\0' )
+	if( homePath && *homePath != '\0' )
 		return va( "%s/%s", homePath, PID_FILENAME );
 
 	return NULL;
@@ -240,7 +240,7 @@ Sys_GetProcessorFeatures
 */
 cpuFeatures_t Sys_GetProcessorFeatures( void )
 {
-	cpuFeatures_t features = 0;
+	int features = 0;
 
 #ifndef DEDICATED
 	if( SDL_HasRDTSC( ) )    features |= CF_RDTSC;
@@ -253,7 +253,7 @@ cpuFeatures_t Sys_GetProcessorFeatures( void )
 	if( SDL_HasAltiVec( ) )  features |= CF_ALTIVEC;
 #endif
 
-	return features;
+	return (cpuFeatures_t)features;
 }
 
 /*
@@ -495,8 +495,8 @@ void *Sys_LoadGameDll(const char *name,
 		return NULL;
 	}
 
-	dllEntry = Sys_LoadFunction( libHandle, "dllEntry" );
-	*entryPoint = Sys_LoadFunction( libHandle, "vmMain" );
+	dllEntry = (void (__cdecl *)(intptr_t (__cdecl *)(intptr_t,...)))Sys_LoadFunction( libHandle, "dllEntry" );
+	*entryPoint = (intptr_t (__cdecl *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
 
 	if ( !*entryPoint || !dllEntry )
 	{

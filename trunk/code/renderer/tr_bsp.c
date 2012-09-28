@@ -1741,7 +1741,7 @@ void R_LoadEntities( lump_t *l ) {
 			}
 			*s++ = 0;
 			if (r_vertexLight->integer) {
-				R_RemapShader(value, s, "0");
+				//R_RemapShader(value, s, "0");
 			}
 			continue;
 		}
@@ -1754,7 +1754,7 @@ void R_LoadEntities( lump_t *l ) {
 				break;
 			}
 			*s++ = 0;
-			R_RemapShader(value, s, "0");
+			//R_RemapShader(value, s, "0");
 			continue;
 		}
 		// check for a different grid size

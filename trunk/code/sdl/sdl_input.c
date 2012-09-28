@@ -115,6 +115,12 @@ static void IN_PrintKey( const SDL_keysym *keysym, keyNum_t key, qboolean down )
 
 #define MAX_CONSOLE_KEYS 16
 
+typedef enum cKType_e
+{
+	KEY,
+	CHARACTER
+} cKType_t;
+
 /*
 ===============
 IN_IsConsoleKey
@@ -124,11 +130,7 @@ static qboolean IN_IsConsoleKey( keyNum_t key, const unsigned char character )
 {
 	typedef struct consoleKey_s
 	{
-		enum
-		{
-			KEY,
-			CHARACTER
-		} type;
+		cKType_t type;
 
 		union
 		{
@@ -170,10 +172,10 @@ static qboolean IN_IsConsoleKey( keyNum_t key, const unsigned char character )
 			else
 			{
 				c->type = KEY;
-				c->u.key = Key_StringToKeynum( token );
+				c->u.key = (keyNum_t)Key_StringToKeynum( token );
 
 				// 0 isn't a key
-				if( c->u.key <= 0 )
+				if( c->u.key <= (keyNum_t)0 )
 					continue;
 			}
 
@@ -183,7 +185,7 @@ static qboolean IN_IsConsoleKey( keyNum_t key, const unsigned char character )
 
 	// If the character is the same as the key, prefer the character
 	if( key == character )
-		key = 0;
+		key = (keyNum_t)0;
 
 	for( i = 0; i < numConsoleKeys; i++ )
 	{
@@ -217,12 +219,12 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 	static unsigned char buf[ 2 ] = { '\0', '\0' };
 
 	*buf = '\0';
-	*key = 0;
+	*key = (keyNum_t)0;
 
 	if( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
 	{
 		// These happen to match the ASCII chars
-		*key = (int)keysym->sym;
+		*key = (keyNum_t)keysym->sym;
 	}
 	else
 	{
@@ -308,7 +310,8 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 
 			default:
 				if( keysym->sym >= SDLK_WORLD_0 && keysym->sym <= SDLK_WORLD_95 )
-					*key = ( keysym->sym - SDLK_WORLD_0 ) + K_WORLD_0;
+					//(*key) = (keyNum_t)( ((int)keysym->sym) - ((int)SDLK_WORLD_0 )) + ((int)K_WORLD_0);
+					(*((int*)key)) = ( ((int)keysym->sym) - ((int)160 )) + ((int)233);
 				break;
 		}
 	}
@@ -343,7 +346,7 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 		if( in_keyboardDebug->integer )
 			Com_Printf( "  Ignored dead key '%c'\n", *key );
 
-		*key = 0;
+		*key = (keyNum_t)0;
 	}
 
 	if( IN_IsConsoleKey( *key, *buf ) )
@@ -867,7 +870,7 @@ static void IN_ProcessEvents( void )
 {
 	SDL_Event e;
 	const char *character = NULL;
-	keyNum_t key = 0;
+	keyNum_t key = (keyNum_t)0;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 			return;

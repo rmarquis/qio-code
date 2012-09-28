@@ -308,8 +308,3 @@ void	trap_S_StopBackgroundTrack( void ) {
 int trap_RealTime(qtime_t *qtime) {
 	return syscall( CG_REAL_TIME, qtime );
 }
-
-void trap_SnapVector( float *v ) {
-	syscall( CG_SNAPVECTOR, v );
-}
-

@@ -228,10 +228,10 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_MILLISECONDS:
 		return Sys_Milliseconds();
 	case G_CVAR_REGISTER:
-		Cvar_Register( VMA(1), VMA(2), VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t*)VMA(1), (const char*)VMA(2), (const char*)VMA(3), args[4] ); 
 		return 0;
 	case G_CVAR_UPDATE:
-		Cvar_Update( VMA(1) );
+		Cvar_Update( (vmCvar_t*)VMA(1) );
 		return 0;
 	case G_CVAR_SET:
 		Cvar_SetSafe( (const char *)VMA(1), (const char *)VMA(2) );
@@ -239,19 +239,19 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_CVAR_VARIABLE_INTEGER_VALUE:
 		return Cvar_VariableIntegerValue( (const char *)VMA(1) );
 	case G_CVAR_VARIABLE_STRING_BUFFER:
-		Cvar_VariableStringBuffer( VMA(1), VMA(2), args[3] );
+		Cvar_VariableStringBuffer( (const char *)VMA(1), (char*)VMA(2), args[3] );
 		return 0;
 	case G_ARGC:
 		return Cmd_Argc();
 	case G_ARGV:
-		Cmd_ArgvBuffer( args[1], VMA(2), args[3] );
+		Cmd_ArgvBuffer( args[1], (char*)VMA(2), args[3] );
 		return 0;
 	case G_SEND_CONSOLE_COMMAND:
-		Cbuf_ExecuteText( args[1], VMA(2) );
+		Cbuf_ExecuteText( args[1], (const char *)VMA(2) );
 		return 0;
 
 	case G_FS_FOPEN_FILE:
-		return FS_FOpenFileByMode( VMA(1), VMA(2), args[3] );
+		return FS_FOpenFileByMode( (const char *)VMA(1), (fileHandle_t*)VMA(2), (fsMode_t)args[3] );
 	case G_FS_READ:
 		FS_Read2( VMA(1), args[2], args[3] );
 		return 0;
@@ -259,46 +259,46 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		FS_Write( VMA(1), args[2], args[3] );
 		return 0;
 	case G_FS_FCLOSE_FILE:
-		FS_FCloseFile( args[1] );
+		FS_FCloseFile( (fileHandle_t)args[1] );
 		return 0;
 	case G_FS_GETFILELIST:
-		return FS_GetFileList( VMA(1), VMA(2), VMA(3), args[4] );
+		return FS_GetFileList( (const char*)VMA(1), (const char*)VMA(2), (char*)VMA(3), args[4] );
 
 	case G_LOCATE_GAME_DATA:
-		SV_LocateGameData( VMA(1), args[2], args[3], VMA(4), args[5] );
+		SV_LocateGameData( (sharedEntity_t*)VMA(1), args[2], args[3], (playerState_t*)VMA(4), args[5] );
 		return 0;
 	case G_DROP_CLIENT:
-		SV_GameDropClient( args[1], VMA(2) );
+		SV_GameDropClient( args[1], (const char*)VMA(2) );
 		return 0;
 	case G_SEND_SERVER_COMMAND:
-		SV_GameSendServerCommand( args[1], VMA(2) );
+		SV_GameSendServerCommand( args[1], (const char*)VMA(2) );
 		return 0;
 	case G_LINKENTITY:
-		SV_LinkEntity( VMA(1) );
+		SV_LinkEntity( (sharedEntity_t*)VMA(1) );
 		return 0;
 	case G_UNLINKENTITY:
-		SV_UnlinkEntity( VMA(1) );
+		SV_UnlinkEntity( (sharedEntity_t*)VMA(1) );
 		return 0;
 
 	case G_SET_CONFIGSTRING:
-		SV_SetConfigstring( args[1], VMA(2) );
+		SV_SetConfigstring( args[1], (const char*)VMA(2) );
 		return 0;
 	case G_GET_CONFIGSTRING:
-		SV_GetConfigstring( args[1], VMA(2), args[3] );
+		SV_GetConfigstring( args[1], (char*)VMA(2), args[3] );
 		return 0;
 	case G_SET_USERINFO:
-		SV_SetUserinfo( args[1], VMA(2) );
+		SV_SetUserinfo( args[1], (const char*)VMA(2) );
 		return 0;
 	case G_GET_USERINFO:
-		SV_GetUserinfo( args[1], VMA(2), args[3] );
+		SV_GetUserinfo( args[1], (char*)VMA(2), args[3] );
 		return 0;
 	case G_GET_SERVERINFO:
-		SV_GetServerinfo( VMA(1), args[2] );
+		SV_GetServerinfo( (char*)VMA(1), args[2] );
 		return 0;
 
 
 	case G_GET_USERCMD:
-		SV_GetUsercmd( args[1], VMA(2) );
+		SV_GetUsercmd( args[1], (usercmd_t*)VMA(2) );
 		return 0;
 
 		//====================================
@@ -311,10 +311,6 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		Com_Memcpy( VMA(1), VMA(2), args[3] );
 		return 0;
 
-	case TRAP_STRNCPY:
-		strncpy( VMA(1), VMA(2), args[3] );
-		return args[1];
-
 	case TRAP_SIN:
 		return FloatAsInt( sin( VMF(1) ) );
 
@@ -326,18 +322,6 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	case TRAP_SQRT:
 		return FloatAsInt( sqrt( VMF(1) ) );
-
-	case TRAP_MATRIXMULTIPLY:
-		MatrixMultiply( VMA(1), VMA(2), VMA(3) );
-		return 0;
-
-	case TRAP_ANGLEVECTORS:
-		AngleVectors( VMA(1), VMA(2), VMA(3), VMA(4) );
-		return 0;
-
-	case TRAP_PERPENDICULARVECTOR:
-		PerpendicularVector( VMA(1), VMA(2) );
-		return 0;
 
 	case TRAP_FLOOR:
 		return FloatAsInt( floor( VMF(1) ) );
@@ -425,7 +409,7 @@ Called on a normal map change, not on a map_restart
 */
 void SV_InitGameProgs( void ) {
 	// load the dll or bytecode
-	gvm = VM_Create( "qagame", SV_GameSystemCalls, Cvar_VariableValue( "vm_game" ) );
+	gvm = VM_Create( "qagame", SV_GameSystemCalls, VMI_NATIVE );
 	if ( !gvm ) {
 		Com_Error( ERR_FATAL, "VM_Create on game failed" );
 	}
