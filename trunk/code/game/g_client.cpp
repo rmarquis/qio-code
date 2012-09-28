@@ -206,7 +206,7 @@ void ClientSpawn(gentity_t *ent) {
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
-	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 8, 24);
+	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 8, 30);
 
 	
 	// run a client frame to drop exactly to the floor,

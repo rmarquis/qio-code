@@ -29,7 +29,7 @@ void G_InitBullet() {
 
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0,-10,0));
+	dynamicsWorld->setGravity(btVector3(0,0,-800));
 }
 void G_ShudownBullet() {
     // Clean up behind ourselves like good little programmers
@@ -96,6 +96,11 @@ void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, ve
 	newPos[2] = c.z();
 }
 
+void G_TryToJump(btKinematicCharacterController *ch) {
+	if(ch->onGround() == false)
+		return;
+	ch->jump();
+}
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
@@ -109,6 +114,9 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	ghostObject->setCollisionShape(characterShape);
 	btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject, characterShape,stepHeight,2);
 	character->setMaxSlope(DEG2RAD(70));
+	character->setJumpSpeed(200);
+	character->setFallSpeed(300);
+	character->setGravity(300);
 
 	dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter,
 				 btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);

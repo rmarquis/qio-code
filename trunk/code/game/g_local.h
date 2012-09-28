@@ -167,6 +167,7 @@ void G_RunPhysics();
 void G_LoadMap(const char *mapName);
 void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *ch, vec3_t newPos);
 class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
+void G_TryToJump(btKinematicCharacterController *ch);
 
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];

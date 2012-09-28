@@ -89,6 +89,9 @@ void ClientThink_real( gentity_t *ent ) {
 			dir[2] = 0;
 			VectorScale(dir,0.75f,dir);
 			G_RunCharacterController(dir,ent->client->characterController, ent->client->ps.origin);
+			if(ucmd->upmove) {
+				G_TryToJump(ent->client->characterController);
+			}
 		}
 	}
 
