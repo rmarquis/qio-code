@@ -178,6 +178,7 @@ void ClientSpawn(gentity_t *ent) {
 
 	VectorClear(spawn_origin);
 	VectorClear(spawn_angles);
+	VectorSet(spawn_origin,1400,1340,470);
 	VectorClear(client->ps.delta_angles);
 	VectorClear(client->ps.velocity);
 
