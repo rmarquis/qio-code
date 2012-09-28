@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #else
 #include <winsock.h>
 #endif
+#include <api/iFaceMgrAPI.h>
+#include <api/coreAPI.h>
 
 int demo_protocols[] =
 { 67, 66, 0 };
@@ -343,6 +345,16 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	Sys_Error ("%s", com_errorMessage);
 }
 
+void QDECL Com_DropError(const char *error, ... ) {
+	va_list		argptr;
+	char		text[1024];
+
+	va_start (argptr, error);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
+	va_end (argptr);
+
+	Com_Error( ERR_DROP, text );
+}
 
 /*
 =============
@@ -2631,6 +2643,22 @@ static void Com_InitRand(void)
 		srand(time(NULL));
 }
 
+
+static coreAPI_s g_staticCoreAPI;
+coreAPI_s *g_core = 0;
+void Com_InitCoreAPI() {
+	g_staticCoreAPI.Print = Com_Printf;
+	g_staticCoreAPI.Error = Com_Error;
+	g_staticCoreAPI.DropError = Com_DropError;
+	g_staticCoreAPI.Milliseconds = Sys_Milliseconds;
+	g_staticCoreAPI.Argc = Cmd_Argc;
+	g_staticCoreAPI.Argv = Cmd_ArgvBuffer;
+	g_staticCoreAPI.Args = Cmd_ArgsBuffer;
+
+	g_core = &g_staticCoreAPI;
+	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
+}
+
 /*
 =================
 Com_Init
@@ -2645,6 +2673,9 @@ void Com_Init( char *commandLine ) {
 	if ( setjmp (abortframe) ) {
 		Sys_Error ("Error during initialization");
 	}
+
+	// let's do this first
+	Com_InitCoreAPI();
 
 	// Clear queues
 	Com_Memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
@@ -3572,4 +3603,8 @@ qboolean Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientN
 		return (voipTargets[index] & (1 << (clientNum & 0x07)));
 
 	return qfalse;
+}
+
+qioModule_e IFM_GetCurModule() {
+	return QMD_CORE;
 }

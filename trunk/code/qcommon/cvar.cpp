@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "q_shared.h"
 #include "qcommon.h"
+#include <api/iFaceMgrAPI.h>
+#include <api/cvarAPI.h>
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
@@ -1295,6 +1297,8 @@ Cvar_Init
 Reads in all archived cvars
 ============
 */
+cvarsAPI_s g_staticCvarsAPI;
+cvarsAPI_s *g_cvars = 0;
 void Cvar_Init (void)
 {
 	Com_Memset(cvar_indexes, '\0', sizeof(cvar_indexes));
@@ -1320,4 +1324,13 @@ void Cvar_Init (void)
 
 	Cmd_AddCommand ("cvarlist", Cvar_List_f);
 	Cmd_AddCommand ("cvar_restart", Cvar_Restart_f);
+
+	g_staticCvarsAPI.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
+	g_staticCvarsAPI.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
+	g_staticCvarsAPI.Cvar_VariableValue = Cvar_VariableValue;
+	g_staticCvarsAPI.Cvar_Register = Cvar_Register;
+	g_staticCvarsAPI.Cvar_Set = Cvar_Set;
+	g_staticCvarsAPI.Cvar_Update = Cvar_Update;
+	g_cvars = &g_staticCvarsAPI;
+	g_iFaceMan->registerInterface(&g_staticCvarsAPI,CVARS_API_IDENTSTR);
 }

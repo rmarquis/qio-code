@@ -31,13 +31,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define VFS_API_IDENTSTR "VFSAPI0001"
 
 // these are only temporary function pointers, TODO: rework them?
-struct vfsAPI_s : public iFaceBase_c {
+struct vfsAPI_s : public iFaceBase_i {
 	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	void (*FS_Read)( void *buffer, int len, fileHandle_t f );
-	void (*FS_Write)( const void *buffer, int len, fileHandle_t f );
+	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
+	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void (*FS_FCloseFile)( fileHandle_t f );
 	int (*FS_GetFileList)( const char *path, const char *extension, char *listbuf, int bufsize );
 	int (*FS_Seek)( fileHandle_t f, long offset, int origin ); // fsOrigin_t
 };
+
+extern vfsAPI_s *g_vfs;
 
 #endif // __VFSAPI_H__

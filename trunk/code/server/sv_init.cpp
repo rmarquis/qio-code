@@ -21,6 +21,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "server.h"
+#include <api/iFaceMgrAPI.h>
+#include <api/serverAPI.h>
+
+static svAPI_s g_staticSVApi;
+svAPI_s *g_server = 0;
+void SV_InitServerAPI() {
+	g_staticSVApi.DropClient = SV_GameDropClient;
+	g_staticSVApi.LocateGameData = (void (__cdecl *)(gentity_t *,int,int,playerState_t *,int))SV_LocateGameData;
+	g_staticSVApi.GetConfigstring = SV_GetConfigstring;
+	g_staticSVApi.SendServerCommand = SV_GameSendServerCommand;
+	g_staticSVApi.SetConfigstring = SV_SetConfigstring;
+	g_staticSVApi.GetUserinfo = SV_GetUserinfo;
+	g_staticSVApi.SetUserinfo = SV_SetUserinfo;
+	g_staticSVApi.GetUsercmd = SV_GetUsercmd;
+
+	g_server = &g_staticSVApi;
+	g_iFaceMan->registerInterface(&g_staticSVApi,SERVER_API_IDENTSTR);
+}
 
 
 /*
@@ -394,7 +412,7 @@ This is NOT called for map_restart
 */
 void SV_SpawnServer( char *server, qboolean killBots ) {
 	int			i;
-	int			checksum;
+//	int			checksum;
 	qboolean	isBot;
 	char		systemInfo[16384];
 	const char	*p;

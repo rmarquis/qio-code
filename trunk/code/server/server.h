@@ -386,7 +386,11 @@ sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt );
 void		SV_InitGameProgs ( void );
 void		SV_ShutdownGameProgs ( void );
 void		SV_RestartGameProgs( void );
-qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
+void SV_GameSendServerCommand( int clientNum, const char *text );
+void SV_GameDropClient( int clientNum, const char *reason );
+void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t,
+					   playerState_t *clients, int sizeofGameClient );
+void SV_GetUsercmd( int clientNum, usercmd_t *cmd );
 
 //============================================================
 

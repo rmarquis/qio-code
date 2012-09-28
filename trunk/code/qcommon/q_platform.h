@@ -110,7 +110,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #elif defined(_WIN32) || defined(__WIN32__)
 
 #undef QDECL
-#define QDECL __cdecl
+//#define QDECL __cdecl
+// why it has to be cdecl?
+#define QDECL
 
 #undef QCALL
 #define QCALL __stdcall

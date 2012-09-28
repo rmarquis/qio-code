@@ -31,13 +31,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define GAME_API_IDENTSTR "ServerGameAPI0001"
 
 // these are only temporary function pointers, TODO: rework them?
-struct gameAPI_s : public iFaceBase_c {
+struct gameAPI_s : public iFaceBase_i {
 	void (*InitGame)( int levelTime, int randomSeed, int restart );
 	void (*RunFrame)( int levelTime );
 	void (*ShutdownGame)( int restart );
 };
 
-struct gameClientAPI_s : public iFaceBase_c {
+struct gameClientAPI_s : public iFaceBase_i {
 	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
 	void (*ClientUserinfoChanged)( int clientNum );
 	void (*ClientDisconnect)( int clientNum );
@@ -46,5 +46,8 @@ struct gameClientAPI_s : public iFaceBase_c {
 	void (*ClientThink)( int clientNum );
 	void (*ClientEndFrame)( gentity_t *ent );
 };
+
+extern gameAPI_s *g_api;
+extern gameClientAPI_s *g_gameClients;
 
 #endif // __GAMEAPI_H__

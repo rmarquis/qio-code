@@ -32,6 +32,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q_shared.h"
 #include "qcommon.h"
 #include "unzip.h"
+#include <api/iFaceMgrAPI.h>
+#include <api/vfsAPI.h>
 
 /*
 =============================================================================
@@ -3755,6 +3757,19 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 		c = d;
 	
 	fs_numServerReferencedPaks = c;	
+}
+
+static vfsAPI_s g_staticVFSAPI;
+vfsAPI_s *g_vfs = 0;
+void FS_InitAPI() {
+	g_staticVFSAPI.FS_FOpenFile = FS_FOpenFileByMode;
+	g_staticVFSAPI.FS_Read = FS_Read;
+	g_staticVFSAPI.FS_Write = FS_Write;
+	g_staticVFSAPI.FS_FCloseFile = FS_FCloseFile;
+	g_staticVFSAPI.FS_GetFileList = FS_GetFileList;
+	g_staticVFSAPI.FS_Seek = FS_Seek;
+	g_vfs = &g_staticVFSAPI;
+	g_iFaceMan->registerInterface(&g_staticVFSAPI,VFS_API_IDENTSTR);
 }
 
 /*

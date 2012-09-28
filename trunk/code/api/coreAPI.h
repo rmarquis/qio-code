@@ -31,14 +31,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define CORE_API_IDENTSTR "CoreEngineAPI0001"
 
 // these are only temporary function pointers, TODO: rework them?
-struct svAPI_s : public iFaceBase_c {
-	void (*Print)( const char *text );
-	void (*Error)( const char *text ) __attribute__((noreturn));
+struct coreAPI_s : public iFaceBase_i {
+	void (*Print)( const char *text, ... );
+	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
+	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
 	int  (*Milliseconds)( void );
 	// engine command system api
 	int	(*Argc)( void );
 	void (*Argv)( int n, char *buffer, int bufferLength );
 	void (*Args)( char *buffer, int bufferLength );
 };
+
+extern coreAPI_s *g_core;
 
 #endif // __COREAPI_H__

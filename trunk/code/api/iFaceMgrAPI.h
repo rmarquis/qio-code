@@ -34,6 +34,9 @@ enum qioModule_e {
 	QMD_CGAME,
 };
 
+// this must be implemented in every module
+qioModule_e IFM_GetCurModule();
+
 class iFaceMgrAPI_i {
 public:
 	//
@@ -49,7 +52,23 @@ public:
 	//
 	// this should be called once at module startup. iFaceMgr will automatically set the iFaceUser ptr
 	// as soon as given API is avaible (registered trough registerInterface)
-	virtual void registerIFaceUser(iFaceBase_i **iFaceUser, const char *iFaceName, qioModule_e module) = 0;
+	virtual void registerIFaceUser(iFaceBase_i **iFaceUser, const char *iFaceName, qioModule_e module) = 0; 
+
+	//
+	// shortcuts so you dont have to type module name every time
+	//
+	inline void registerInterface(iFaceBase_i *iFace, const char *iFaceName) {
+		qioModule_e curModule = IFM_GetCurModule();
+		registerInterface(iFace,iFaceName,curModule);
+	}
+	inline void unregisterModuleInterfaces() {
+		qioModule_e curModule = IFM_GetCurModule();
+		unregisterModuleInterfaces(curModule);
+	}
+	inline void registerIFaceUser(void *iFaceUser, const char *iFaceName) {
+		qioModule_e curModule = IFM_GetCurModule();
+		registerIFaceUser((iFaceBase_i**)iFaceUser,iFaceName,curModule);
+	}
 };
 
 

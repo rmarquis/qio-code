@@ -388,7 +388,6 @@ void SV_RestartGameProgs( void ) {
 	SV_InitGameVM( qtrue );
 }
 
-
 /*
 ===============
 SV_InitGameProgs
