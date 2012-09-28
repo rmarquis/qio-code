@@ -1930,6 +1930,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\gameAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\serverAPI.h"
 				>
 			</File>

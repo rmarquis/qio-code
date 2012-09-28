@@ -48,6 +48,9 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case GAME_SHUTDOWN:
 		G_ShutdownGame( arg0 );
 		return 0;
+	case GAME_RUN_FRAME:
+		G_RunFrame( arg0 );
+		return 0;
 	case GAME_CLIENT_CONNECT:
 		return (intptr_t)ClientConnect( arg0, (qboolean)arg1, (qboolean)arg2 );
 	case GAME_CLIENT_THINK:
@@ -64,9 +67,6 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return 0;
 	case GAME_CLIENT_COMMAND:
 		ClientCommand( arg0 );
-		return 0;
-	case GAME_RUN_FRAME:
-		G_RunFrame( arg0 );
 		return 0;
 	case GAME_CONSOLE_COMMAND:
 		return 0;
