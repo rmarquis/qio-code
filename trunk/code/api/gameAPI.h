@@ -37,6 +37,8 @@ struct gameAPI_s : public iFaceBase_i {
 	void (*ShutdownGame)( int restart );
 };
 
+#define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"
+
 struct gameClientAPI_s : public iFaceBase_i {
 	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
 	void (*ClientUserinfoChanged)( int clientNum );
@@ -44,7 +46,6 @@ struct gameClientAPI_s : public iFaceBase_i {
 	void (*ClientBegin)( int clientNum );
 	void (*ClientCommand)( int clientNum );
 	void (*ClientThink)( int clientNum );
-	void (*ClientEndFrame)( gentity_t *ent );
 };
 
 extern gameAPI_s *g_api;

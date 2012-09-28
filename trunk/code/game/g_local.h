@@ -138,13 +138,16 @@ void ClientSpawn( gentity_t *ent );
 //
 // g_main.c
 //
+void G_InitGame( int levelTime, int randomSeed, int restart );
+void G_RunFrame( int levelTime );
+void G_ShutdownGame( int restart );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
 
 //
 // g_client.c
 //
-char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot );
+const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot );
 void ClientUserinfoChanged( int clientNum );
 void ClientDisconnect( int clientNum );
 void ClientBegin( int clientNum );
