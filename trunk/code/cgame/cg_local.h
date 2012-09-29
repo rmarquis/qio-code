@@ -270,27 +270,6 @@ void CG_AddLagometerFrameInfo( void ) ;
 // These functions are how the cgame communicates with the main game system
 //
 
-// print message on the local console
-void		trap_Print( const char *fmt );
-
-// abort the game
-void		trap_Error(const char *fmt) __attribute__((noreturn));
-
-// milliseconds should only be used for performance tuning, never
-// for anything game related.  Get time from the CG_DrawActiveFrame parameter
-int			trap_Milliseconds( void );
-
-// console variable interaction
-void		trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
-void		trap_Cvar_Update( vmCvar_t *vmCvar );
-void		trap_Cvar_Set( const char *var_name, const char *value );
-void		trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
-
-// ServerCommand and ConsoleCommand parameter access
-int			trap_Argc( void );
-void		trap_Argv( int n, char *buffer, int bufferLength );
-void		trap_Args( char *buffer, int bufferLength );
-
 // add commands to the local console as if they were typed in
 // for map changing, etc.  The command is not executed immediately,
 // but will be executed in order the next time console commands
@@ -303,9 +282,6 @@ void		trap_AddCommand( const char *cmdName );
 
 // send a string to the server over the network
 void		trap_SendClientCommand( const char *s );
-
-// force a screen update, only used during gamestate load
-void		trap_UpdateScreen( void );
 
 void		trap_R_LoadWorldMap( const char *mapname );
 
@@ -330,30 +306,5 @@ void		trap_R_DrawStretchPic( float x, float y, float w, float h,
 // all the qhandle_t are then invalid.
 void		trap_GetGlconfig( glconfig_t *glconfig );
 
-// the gamestate should be grabbed at startup, and whenever a
-// configstring changes
-void		trap_GetGameState( gameState_t *gamestate );
 
-// cgame will poll each frame to see if a newer snapshot has arrived
-// that it is interested in.  The time is returned seperately so that
-// snapshot latency can be calculated.
-void		trap_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime );
-
-// a snapshot get can fail if the snapshot (or the entties it holds) is so
-// old that it has fallen out of the client system queue
-qboolean	trap_GetSnapshot( int snapshotNumber, snapshot_t *snapshot );
-
-// retrieve a text command from the server stream
-// the current snapshot will hold the number of the most recent command
-// qfalse can be returned if the client system handled the command
-// argc() / argv() can be used to examine the parameters of the command
-qboolean	trap_GetServerCommand( int serverCommandNumber );
-
-// returns the most recent command number that can be passed to GetUserCmd
-// this will always be at least one higher than the number in the current
-// snapshot, and it may be quite a few higher if it is a fast computer on
-// a lagged connection
-int			trap_GetCurrentCmdNumber( void );	
-
-qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
 

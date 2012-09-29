@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl_main.c  -- client main loop
 
 #include "client.h"
-#include <limits.h>
+#include <api/iFaceMgrAPI.h>
+#include <api/clientAPI.h>
 
 #include "../sys/sys_local.h"
 #include "../sys/sys_loadlib.h"
@@ -1365,9 +1366,9 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		clc.demofile = 0;
 	}
 
-	if ( uivm && showMainMenu ) {
+//	if ( uivm && showMainMenu ) {
 //		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NONE );
-	}
+//	}
 
 	SCR_StopCinematic ();
 	//S_ClearSoundBuffer();
@@ -2881,8 +2882,8 @@ void CL_Frame ( int msec ) {
 		// bring up the cd error dialog if needed
 		cls.cddialog = qfalse;
 //		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NEED_CD );
-	} else	if ( clc.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
-		&& !com_sv_running->integer && uivm ) {
+//	} else	if ( clc.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
+//		&& !com_sv_running->integer && uivm ) {
 		// if disconnected, bring up the menu
 		//S_StopAllSounds();
 //		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
@@ -3344,6 +3345,22 @@ static void CL_GenerateQKey(void)
 	}
 } 
 
+static clAPI_s g_staticClientAPI;
+clAPI_s *g_client = &g_staticClientAPI;
+void CL_InitClientAPI() {
+	g_staticClientAPI.GetCurrentCmdNumber = CL_GetCurrentCmdNumber;
+	g_staticClientAPI.GetGameState = CL_GetGameState;
+	g_staticClientAPI.GetCurrentSnapshotNumber = CL_GetCurrentSnapshotNumber;
+	g_staticClientAPI.GetSnapshot = CL_GetSnapshot;
+	g_staticClientAPI.GetServerCommand = CL_GetServerCommand;
+	g_staticClientAPI.GetUserCmd = CL_GetUserCmd;
+
+	intptr_t QDECL VM_DllSyscall( intptr_t arg, ... );
+	g_staticClientAPI.syscall = VM_DllSyscall;
+
+	g_iFaceMan->registerInterface(&g_staticClientAPI,CLIENT_API_IDENTSTR);
+}
+
 /*
 ====================
 CL_Init
@@ -3351,6 +3368,8 @@ CL_Init
 */
 void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
+
+	CL_InitClientAPI();
 
 	Con_Init ();
 

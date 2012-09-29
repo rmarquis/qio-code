@@ -215,8 +215,8 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
   for (i = 1; i < ARRAY_LEN (args); i++)
     args[i] = va_arg(ap, intptr_t);
   va_end(ap);
-  
-  return currentVM->systemCall( args );
+  intptr_t CL_CgameSystemCalls( intptr_t *args );
+  return CL_CgameSystemCalls( args );
 #else // original id code
 	return currentVM->systemCall( &arg );
 #endif
@@ -402,15 +402,15 @@ void *VM_ArgPtr( intptr_t intValue ) {
 		return NULL;
 	}
 	// currentVM is missing on reconnect
-	if ( currentVM==NULL )
-	  return NULL;
+	//if ( currentVM==NULL )
+	//  return NULL;
 
-	if ( currentVM->entryPoint ) {
-		return (void *)(currentVM->dataBase + intValue);
-	}
-	else {
-		return (void *)(currentVM->dataBase + (intValue & currentVM->dataMask));
-	}
+	//if ( currentVM->entryPoint ) {
+		return (void *)(0 + intValue);
+	//}
+	///else {
+	///	return (void *)(currentVM->dataBase + (intValue & currentVM->dataMask));
+	//}
 }
 
 void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {

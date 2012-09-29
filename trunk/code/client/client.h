@@ -353,8 +353,6 @@ extern	clientStatic_t		cls;
 
 //=============================================================================
 
-extern	vm_t			*cgvm;	// interface to cgame dll or vm
-extern	vm_t			*uivm;	// interface to ui dll or vm
 extern	refexport_t		re;		// interface to refresh .dll
 
 
@@ -594,6 +592,13 @@ void CL_CGameRendering( stereoFrame_t stereo );
 void CL_SetCGameTime( void );
 void CL_FirstSnapshot( void );
 void CL_ShaderStateChanged(void);
+void CL_GetGameState( gameState_t *gs );
+void CL_GetGlconfig( glconfig_t *glconfig );
+qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
+int CL_GetCurrentCmdNumber( void );
+void CL_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime );
+qboolean CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot );
+qboolean CL_GetServerCommand( int serverCommandNumber );
 
 //
 // cl_ui.c

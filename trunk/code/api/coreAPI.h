@@ -35,6 +35,8 @@ struct coreAPI_s : public iFaceBase_i {
 	void (*Print)( const char *text, ... );
 	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
 	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
+	// milliseconds should only be used for performance tuning, never
+	// for anything game related.
 	int  (*Milliseconds)( void );
 	// engine command system api
 	int	(*Argc)( void );

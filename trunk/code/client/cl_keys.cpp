@@ -1239,9 +1239,9 @@ void CL_KeyDownEvent( int key, unsigned time )
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
 		Console_Key( key );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
-		if ( uivm ) {
+//		if ( uivm ) {
 //			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
-		} 
+//		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
@@ -1286,11 +1286,11 @@ void CL_KeyUpEvent( int key, unsigned time )
 	if( clc.state != CA_DISCONNECTED )
 		CL_ParseBinding( key, qfalse, time );
 
-	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
+//	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
 //		VM_Call( uivm, UI_KEY_EVENT, key, qfalse );
-	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
-
-	}
+//	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
+///
+//	}
 }
 
 /*

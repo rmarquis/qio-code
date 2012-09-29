@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // active (after loading) gameplay
 
 #include "cg_local.h"
+#include <api/coreAPI.h>
+#include <api/clientAPI.h>
 
 /*
 ==================
@@ -43,7 +45,7 @@ static float CG_DrawFPS( float y ) {
 
 	// don't use serverTime, because that will be drifting to
 	// correct for internet lag changes, timescales, timedemos, etc
-	t = trap_Milliseconds();
+	t = g_core->Milliseconds();
 	frameTime = t - previous;
 	previous = t;
 
@@ -161,8 +163,8 @@ static void CG_DrawDisconnect( void ) {
 	int			w;
 
 	// draw the phone jack if we are completely past our buffers
-	cmdNum = trap_GetCurrentCmdNumber() - CMD_BACKUP + 1;
-	trap_GetUserCmd( cmdNum, &cmd );
+	cmdNum = g_client->GetCurrentCmdNumber() - CMD_BACKUP + 1;
+	g_client->GetUserCmd( cmdNum, &cmd );
 	if ( cmd.serverTime <= cg.snap->ps.commandTime
 		|| cmd.serverTime > cg.time ) {	// special check for map_restart
 		return;

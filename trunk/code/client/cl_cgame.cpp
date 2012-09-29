@@ -22,14 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl_cgame.c  -- client system interaction with client game
 
 #include "client.h"
+#include <api/iFaceMgrAPI.h>
+#include <api/moduleManagerAPI.h>
+#include <api/cgameAPI.h>
+
+static moduleAPI_i *cl_cgameDLL = 0;
+cgameAPI_s *g_cgame = 0;
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
 #endif
-
-extern qboolean loadCamera(const char *name);
-extern void startCamera(int time);
-extern qboolean getCameraInfo(int time, vec3_t *origin, vec3_t *angles);
 
 /*
 ====================
@@ -375,25 +377,18 @@ void CL_CM_LoadMap( const char *mapname ) {
 
 /*
 ====================
-CL_ShutdonwCGame
+CL_ShutdownCGame
 
 ====================
 */
 void CL_ShutdownCGame( void ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 	cls.cgameStarted = qfalse;
-	if ( !cgvm ) {
+	if ( !cl_cgameDLL ) {
 		return;
 	}
-	VM_Call( cgvm, CG_SHUTDOWN );
-	VM_Free( cgvm );
-	cgvm = NULL;
-}
-
-static int	FloatAsInt( float f ) {
-	floatint_t fi;
-	fi.f = f;
-	return fi.i;
+	g_cgame->Shutdown();
+	g_moduleMgr->unload(&cl_cgameDLL);
 }
 
 /*
@@ -512,7 +507,6 @@ void CL_InitCGame( void ) {
 	const char			*info;
 	const char			*mapname;
 	int					t1, t2;
-	vmInterpret_t		interpret;
 
 	t1 = Sys_Milliseconds();
 
@@ -524,19 +518,19 @@ void CL_InitCGame( void ) {
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cl.mapname, sizeof( cl.mapname ), "maps/%s.bsp", mapname );
 
-	// load the dll or bytecode
-	interpret = VMI_NATIVE;
-
-	cgvm = VM_Create( "cgame", CL_CgameSystemCalls, interpret );
-	if ( !cgvm ) {
-		Com_Error( ERR_DROP, "VM_Create on cgame failed" );
+	// load cgame DLL
+	cl_cgameDLL = g_moduleMgr->load("cgame");
+	if ( !cl_cgameDLL ) {
+		Com_Error( ERR_DROP, "g_moduleMgr->load on cgame failed" );
 	}
+	g_iFaceMan->registerIFaceUser(&g_cgame,CGAME_API_IDENTSTR);
+
 	clc.state = CA_LOADING;
 
 	// init for this gamestate
 	// use the lastExecutedServerCommand instead of the serverCommandSequence
 	// otherwise server commands sent just before a gamestate are dropped
-	VM_Call( cgvm, CG_INIT, clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
+	g_cgame->Init( clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
 
 	// reset any CVAR_CHEAT cvars registered by cgame
 	if ( !clc.demoplaying && !cl_connectedToCheatServer )
@@ -572,7 +566,7 @@ See if the current console command is claimed by the cgame
 ====================
 */
 qboolean CL_GameCommand( void ) {
-	if ( !cgvm ) {
+	if ( !cl_cgameDLL ) {
 		return qfalse;
 	}
 
@@ -587,7 +581,7 @@ CL_CGameRendering
 =====================
 */
 void CL_CGameRendering( stereoFrame_t stereo ) {
-	VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, clc.demoplaying );
+	g_cgame->DrawActiveFrame( cl.serverTime, stereo, clc.demoplaying );
 }
 
 
