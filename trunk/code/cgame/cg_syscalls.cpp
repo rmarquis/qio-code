@@ -162,22 +162,6 @@ qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 	return syscall( CG_GETUSERCMD, cmdNumber, ucmd );
 }
 
-qboolean trap_Key_IsDown( int keynum ) {
-	return syscall( CG_KEY_ISDOWN, keynum );
-}
-
-int trap_Key_GetCatcher( void ) {
-	return syscall( CG_KEY_GETCATCHER );
-}
-
-void trap_Key_SetCatcher( int catcher ) {
-	syscall( CG_KEY_SETCATCHER, catcher );
-}
-
-int trap_Key_GetKey( const char *binding ) {
-	return syscall( CG_KEY_GETKEY, binding );
-}
-
 int trap_RealTime(qtime_t *qtime) {
 	return syscall( CG_REAL_TIME, qtime );
 }

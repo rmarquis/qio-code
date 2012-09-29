@@ -1942,6 +1942,14 @@
 			Name="APIs"
 			>
 			<File
+				RelativePath="..\..\code\api\cgameAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\clientAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\coreAPI.h"
 				>
 			</File>

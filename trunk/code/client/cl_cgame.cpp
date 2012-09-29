@@ -489,16 +489,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_GetCurrentCmdNumber();
 	case CG_GETUSERCMD:
 		return CL_GetUserCmd( args[1], (usercmd_t*)VMA(2) );
-  case CG_KEY_ISDOWN:
-		return Key_IsDown( args[1] );
-  case CG_KEY_GETCATCHER:
-		return Key_GetCatcher();
-  case CG_KEY_SETCATCHER:
-		// Don't allow the cgame module to close the console
-		Key_SetCatcher( args[1] | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
-    return 0;
-  case CG_KEY_GETKEY:
-		return Key_GetKey( (const char*)VMA(1) );
 
 	case CG_REAL_TIME:
 		return Com_RealTime( (qtime_t*)VMA(1) );

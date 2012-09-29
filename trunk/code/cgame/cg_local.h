@@ -194,6 +194,8 @@ extern	vmCvar_t		cg_timescaleFadeSpeed;
 //
 // cg_main.c
 //
+void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
+void CG_Shutdown( void );
 const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 

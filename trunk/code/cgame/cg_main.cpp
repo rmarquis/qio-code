@@ -31,10 +31,6 @@ displayContextDef_t cgDC;
 
 int forceModelModificationCount = -1;
 
-void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
-void CG_Shutdown( void );
-
-
 /*
 ================
 vmMain
