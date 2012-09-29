@@ -433,19 +433,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_ARGS:
 		Cmd_ArgsBuffer( (char*)VMA(1), args[2] );
 		return 0;
-	case CG_FS_FOPENFILE:
-		return FS_FOpenFileByMode( (const char*)VMA(1), (fileHandle_t*)VMA(2), (fsMode_t)args[3] );
-	case CG_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
-		return 0;
-	case CG_FS_WRITE:
-		FS_Write( VMA(1), args[2], args[3] );
-		return 0;
-	case CG_FS_FCLOSEFILE:
-		FS_FCloseFile( args[1] );
-		return 0;
-	case CG_FS_SEEK:
-		return FS_Seek( args[1], args[2], args[3] );
 	case CG_SENDCONSOLECOMMAND:
 		Cbuf_AddText( (const char *)VMA(1) );
 		return 0;
@@ -466,68 +453,15 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 // ZOID
 		SCR_UpdateScreen();
 		return 0;
-
-
-	case CG_S_STARTSOUND:
-		//S_StartSound( VMA(1), args[2], args[3], args[4] );
-		return 0;
-	case CG_S_STARTLOCALSOUND:
-		//S_StartLocalSound( args[1], args[2] );
-		return 0;
-	case CG_S_CLEARLOOPINGSOUNDS:
-		//S_ClearLoopingSounds(args[1]);
-		return 0;
-	case CG_S_ADDLOOPINGSOUND:
-		//S_AddLoopingSound( args[1], VMA(2), VMA(3), args[4] );
-		return 0;
-	case CG_S_ADDREALLOOPINGSOUND:
-		//S_AddRealLoopingSound( args[1], VMA(2), VMA(3), args[4] );
-		return 0;
-	case CG_S_STOPLOOPINGSOUND:
-		//S_StopLoopingSound( args[1] );
-		return 0;
-	case CG_S_UPDATEENTITYPOSITION:
-		//S_UpdateEntityPosition( args[1], VMA(2) );
-		return 0;
-	case CG_S_RESPATIALIZE:
-		//S_Respatialize( args[1], VMA(2), VMA(3), args[4] );
-		return 0;
-	case CG_S_REGISTERSOUND:
-		//return S_RegisterSound( VMA(1), args[2] );
-		return 0;
-	case CG_S_STARTBACKGROUNDTRACK:
-		//S_StartBackgroundTrack( VMA(1), VMA(2) );
-		return 0;
 	case CG_R_LOADWORLDMAP:
 		re.LoadWorld( (const char*)VMA(1) );
 		return 0; 
-	case CG_R_REGISTERMODEL:
-		return re.RegisterModel( (const char*)VMA(1) );
-	case CG_R_REGISTERSKIN:
-		return re.RegisterSkin( (const char*)VMA(1) );
 	case CG_R_REGISTERSHADER:
 		return re.RegisterShader( (const char*)VMA(1) );
 	case CG_R_REGISTERSHADERNOMIP:
 		return re.RegisterShaderNoMip( (const char*)VMA(1) );
-	case CG_R_REGISTERFONT:
-		re.RegisterFont( (const char*)VMA(1), args[2], (fontInfo_t*)VMA(3));
-		return 0;
 	case CG_R_CLEARSCENE:
 		re.ClearScene();
-		return 0;
-	case CG_R_ADDREFENTITYTOSCENE:
-		re.AddRefEntityToScene((const refEntity_t*)VMA(1) );
-		return 0;
-	case CG_R_ADDPOLYTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t*)VMA(3), 1 );
-		return 0;
-	case CG_R_LIGHTFORPOINT:
-		return re.LightForPoint( (float*)VMA(1), (float*)VMA(2), (float*)VMA(3), (float*)VMA(4) );
-	case CG_R_ADDLIGHTTOSCENE:
-		re.AddLightToScene( (const float*)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-		return 0;
-	case CG_R_ADDADDITIVELIGHTTOSCENE:
-		re.AddAdditiveLightToScene( (const float*)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 		return 0;
 	case CG_R_RENDERSCENE:
 		re.RenderScene( (const refdef_t*)VMA(1) );
@@ -537,11 +471,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 	case CG_R_DRAWSTRETCHPIC:
 		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
-		return 0;
-	case CG_R_MODELBOUNDS:
-
-		return 0;
-	case CG_R_LERPTAG:
 		return 0;
 	case CG_GETGLCONFIG:
 		CL_GetGlconfig( (glconfig_t*)VMA(1) );
@@ -560,8 +489,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_GetCurrentCmdNumber();
 	case CG_GETUSERCMD:
 		return CL_GetUserCmd( args[1], (usercmd_t*)VMA(2) );
-	case CG_MEMORY_REMAINING:
-		return Hunk_MemoryRemaining();
   case CG_KEY_ISDOWN:
 		return Key_IsDown( args[1] );
   case CG_KEY_GETCATCHER:
@@ -572,33 +499,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
     return 0;
   case CG_KEY_GETKEY:
 		return Key_GetKey( (const char*)VMA(1) );
-
-
-
-	case CG_MEMSET:
-		Com_Memset( VMA(1), args[2], args[3] );
-		return 0;
-	case CG_MEMCPY:
-		Com_Memcpy( VMA(1), VMA(2), args[3] );
-		return 0;
-	case CG_SIN:
-		return FloatAsInt( sin( VMF(1) ) );
-	case CG_COS:
-		return FloatAsInt( cos( VMF(1) ) );
-	case CG_ATAN2:
-		return FloatAsInt( atan2( VMF(1), VMF(2) ) );
-	case CG_SQRT:
-		return FloatAsInt( sqrt( VMF(1) ) );
-	case CG_FLOOR:
-		return FloatAsInt( floor( VMF(1) ) );
-	case CG_CEIL:
-		return FloatAsInt( ceil( VMF(1) ) );
-	case CG_ACOS:
-		return FloatAsInt( Q_acos( VMF(1) ) );
-
-	case CG_S_STOPBACKGROUNDTRACK:
-		//S_StopBackgroundTrack();
-		return 0;
 
 	case CG_REAL_TIME:
 		return Com_RealTime( (qtime_t*)VMA(1) );

@@ -85,26 +85,6 @@ void	trap_Args( char *buffer, int bufferLength ) {
 	syscall( CG_ARGS, buffer, bufferLength );
 }
 
-int		trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
-	return syscall( CG_FS_FOPENFILE, qpath, f, mode );
-}
-
-void	trap_FS_Read( void *buffer, int len, fileHandle_t f ) {
-	syscall( CG_FS_READ, buffer, len, f );
-}
-
-void	trap_FS_Write( const void *buffer, int len, fileHandle_t f ) {
-	syscall( CG_FS_WRITE, buffer, len, f );
-}
-
-void	trap_FS_FCloseFile( fileHandle_t f ) {
-	syscall( CG_FS_FCLOSEFILE, f );
-}
-
-int trap_FS_Seek( fileHandle_t f, long offset, int origin ) {
-	return syscall( CG_FS_SEEK, f, offset, origin );
-}
-
 void	trap_SendConsoleCommand( const char *text ) {
 	syscall( CG_SENDCONSOLECOMMAND, text );
 }
@@ -125,57 +105,8 @@ void	trap_UpdateScreen( void ) {
 	syscall( CG_UPDATESCREEN );
 }
 
-
-void	trap_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx ) {
-	syscall( CG_S_STARTSOUND, origin, entityNum, entchannel, sfx );
-}
-
-void	trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum ) {
-	syscall( CG_S_STARTLOCALSOUND, sfx, channelNum );
-}
-
-void	trap_S_ClearLoopingSounds( qboolean killall ) {
-	syscall( CG_S_CLEARLOOPINGSOUNDS, killall );
-}
-
-void	trap_S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx ) {
-	syscall( CG_S_ADDLOOPINGSOUND, entityNum, origin, velocity, sfx );
-}
-
-void	trap_S_AddRealLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx ) {
-	syscall( CG_S_ADDREALLOOPINGSOUND, entityNum, origin, velocity, sfx );
-}
-
-void	trap_S_StopLoopingSound( int entityNum ) {
-	syscall( CG_S_STOPLOOPINGSOUND, entityNum );
-}
-
-void	trap_S_UpdateEntityPosition( int entityNum, const vec3_t origin ) {
-	syscall( CG_S_UPDATEENTITYPOSITION, entityNum, origin );
-}
-
-void	trap_S_Respatialize( int entityNum, const vec3_t origin, vec3_t axis[3], int inwater ) {
-	syscall( CG_S_RESPATIALIZE, entityNum, origin, axis, inwater );
-}
-
-sfxHandle_t	trap_S_RegisterSound( const char *sample, qboolean compressed ) {
-	return syscall( CG_S_REGISTERSOUND, sample, compressed );
-}
-
-void	trap_S_StartBackgroundTrack( const char *intro, const char *loop ) {
-	syscall( CG_S_STARTBACKGROUNDTRACK, intro, loop );
-}
-
 void	trap_R_LoadWorldMap( const char *mapname ) {
 	syscall( CG_R_LOADWORLDMAP, mapname );
-}
-
-qhandle_t trap_R_RegisterModel( const char *name ) {
-	return syscall( CG_R_REGISTERMODEL, name );
-}
-
-qhandle_t trap_R_RegisterSkin( const char *name ) {
-	return syscall( CG_R_REGISTERSKIN, name );
 }
 
 qhandle_t trap_R_RegisterShader( const char *name ) {
@@ -186,36 +117,8 @@ qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 	return syscall( CG_R_REGISTERSHADERNOMIP, name );
 }
 
-void trap_R_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font) {
-	syscall(CG_R_REGISTERFONT, fontName, pointSize, font );
-}
-
 void	trap_R_ClearScene( void ) {
 	syscall( CG_R_CLEARSCENE );
-}
-
-void	trap_R_AddRefEntityToScene( const refEntity_t *re ) {
-	syscall( CG_R_ADDREFENTITYTOSCENE, re );
-}
-
-void	trap_R_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts ) {
-	syscall( CG_R_ADDPOLYTOSCENE, hShader, numVerts, verts );
-}
-
-void	trap_R_AddPolysToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts, int num ) {
-	syscall( CG_R_ADDPOLYSTOSCENE, hShader, numVerts, verts, num );
-}
-
-int		trap_R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir ) {
-	return syscall( CG_R_LIGHTFORPOINT, point, ambientLight, directedLight, lightDir );
-}
-
-void	trap_R_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b ) {
-	syscall( CG_R_ADDLIGHTTOSCENE, org, PASSFLOAT(intensity), PASSFLOAT(r), PASSFLOAT(g), PASSFLOAT(b) );
-}
-
-void	trap_R_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b ) {
-	syscall( CG_R_ADDADDITIVELIGHTTOSCENE, org, PASSFLOAT(intensity), PASSFLOAT(r), PASSFLOAT(g), PASSFLOAT(b) );
 }
 
 void	trap_R_RenderScene( const refdef_t *fd ) {
@@ -229,19 +132,6 @@ void	trap_R_SetColor( const float *rgba ) {
 void	trap_R_DrawStretchPic( float x, float y, float w, float h, 
 							   float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	syscall( CG_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
-}
-
-void	trap_R_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs ) {
-	syscall( CG_R_MODELBOUNDS, model, mins, maxs );
-}
-
-int		trap_R_LerpTag( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame, 
-					   float frac, const char *tagName ) {
-	return syscall( CG_R_LERPTAG, tag, mod, startFrame, endFrame, PASSFLOAT(frac), tagName );
-}
-
-void	trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset ) {
-	syscall( CG_R_REMAP_SHADER, oldShader, newShader, timeOffset );
 }
 
 void		trap_GetGlconfig( glconfig_t *glconfig ) {
@@ -272,19 +162,6 @@ qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 	return syscall( CG_GETUSERCMD, cmdNumber, ucmd );
 }
 
-
-void		testPrintInt( char *string, int i ) {
-	syscall( CG_TESTPRINTINT, string, i );
-}
-
-void		testPrintFloat( char *string, float f ) {
-	syscall( CG_TESTPRINTFLOAT, string, PASSFLOAT(f) );
-}
-
-int trap_MemoryRemaining( void ) {
-	return syscall( CG_MEMORY_REMAINING );
-}
-
 qboolean trap_Key_IsDown( int keynum ) {
 	return syscall( CG_KEY_ISDOWN, keynum );
 }
@@ -299,10 +176,6 @@ void trap_Key_SetCatcher( int catcher ) {
 
 int trap_Key_GetKey( const char *binding ) {
 	return syscall( CG_KEY_GETKEY, binding );
-}
-
-void	trap_S_StopBackgroundTrack( void ) {
-	syscall( CG_S_STOPBACKGROUNDTRACK );
 }
 
 int trap_RealTime(qtime_t *qtime) {
