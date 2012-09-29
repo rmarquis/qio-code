@@ -127,7 +127,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	character->setMaxSlope(DEG2RAD(70));
 	character->setJumpSpeed(200);
 	character->setFallSpeed(800);
-	character->setGravity(300);
+	character->setGravity(600);
 
 	dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter,
 				 btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
