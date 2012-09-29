@@ -203,7 +203,7 @@ void ClientSpawn(gentity_t *ent) {
 	// don't allow full run speed for a bit
 
 	BT_FreeCharacter(client->characterController);
-	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 8, 30);
+	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 48, 16);
 
 	
 	// run a client frame to drop exactly to the floor,

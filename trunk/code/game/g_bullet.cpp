@@ -116,7 +116,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
 	btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
-	btConvexShape* characterShape = new btCapsuleShape(characterWidth,characterHeight);
+	btConvexShape* characterShape = new btCapsuleShapeZ(characterWidth,characterHeight);
 	btTransform trans;
 	trans.setIdentity();
 	btVector3 vPos(pos[0],pos[1],pos[2]);
