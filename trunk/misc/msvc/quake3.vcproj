@@ -773,6 +773,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\qcommon\moduleManagerIMPL.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\msg.cpp"
 				>
 				<FileConfiguration
@@ -1934,11 +1954,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\moduleManagerAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\serverAPI.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\api\vfsAPI.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="shared"
+			>
+			<File
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 		</Filter>
