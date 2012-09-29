@@ -22,6 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // sv_game.c -- interface to the game dll
 
 #include "server.h"
+#include <api/iFaceMgrAPI.h>
+#include <api/moduleManagerAPI.h>
+#include <api/gameAPI.h>
+
+static moduleAPI_i *sv_gameDLL = 0;
+gameAPI_s *g_game = 0;
+gameClientAPI_s *g_gameClients = 0;
 
 // these functions must be used instead of pointer arithmetic, because
 // the game allocates gentities with private information after the server shared part
@@ -211,121 +218,6 @@ static int	FloatAsInt( float f ) {
 }
 
 /*
-====================
-SV_GameSystemCalls
-
-The module is making a system call
-====================
-*/
-intptr_t SV_GameSystemCalls( intptr_t *args ) {
-	switch( args[0] ) {
-	case G_PRINT:
-		Com_Printf( "%s", (const char*)VMA(1) );
-		return 0;
-	case G_ERROR:
-		Com_Error( ERR_DROP, "%s", (const char*)VMA(1) );
-		return 0;
-	case G_MILLISECONDS:
-		return Sys_Milliseconds();
-	case G_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t*)VMA(1), (const char*)VMA(2), (const char*)VMA(3), args[4] ); 
-		return 0;
-	case G_CVAR_UPDATE:
-		Cvar_Update( (vmCvar_t*)VMA(1) );
-		return 0;
-	case G_CVAR_SET:
-		Cvar_SetSafe( (const char *)VMA(1), (const char *)VMA(2) );
-		return 0;
-	case G_CVAR_VARIABLE_INTEGER_VALUE:
-		return Cvar_VariableIntegerValue( (const char *)VMA(1) );
-	case G_CVAR_VARIABLE_STRING_BUFFER:
-		Cvar_VariableStringBuffer( (const char *)VMA(1), (char*)VMA(2), args[3] );
-		return 0;
-	case G_ARGC:
-		return Cmd_Argc();
-	case G_ARGV:
-		Cmd_ArgvBuffer( args[1], (char*)VMA(2), args[3] );
-		return 0;
-	case G_FS_FOPEN_FILE:
-		return FS_FOpenFileByMode( (const char *)VMA(1), (fileHandle_t*)VMA(2), (fsMode_t)args[3] );
-	case G_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
-		return 0;
-	case G_FS_WRITE:
-		FS_Write( VMA(1), args[2], args[3] );
-		return 0;
-	case G_FS_FCLOSE_FILE:
-		FS_FCloseFile( (fileHandle_t)args[1] );
-		return 0;
-	case G_FS_GETFILELIST:
-		return FS_GetFileList( (const char*)VMA(1), (const char*)VMA(2), (char*)VMA(3), args[4] );
-
-	case G_LOCATE_GAME_DATA:
-		SV_LocateGameData( (sharedEntity_t*)VMA(1), args[2], args[3], (playerState_t*)VMA(4), args[5] );
-		return 0;
-	case G_DROP_CLIENT:
-		SV_GameDropClient( args[1], (const char*)VMA(2) );
-		return 0;
-	case G_SEND_SERVER_COMMAND:
-		SV_GameSendServerCommand( args[1], (const char*)VMA(2) );
-		return 0;
-	case G_SET_CONFIGSTRING:
-		SV_SetConfigstring( args[1], (const char*)VMA(2) );
-		return 0;
-	case G_GET_CONFIGSTRING:
-		SV_GetConfigstring( args[1], (char*)VMA(2), args[3] );
-		return 0;
-	case G_SET_USERINFO:
-		SV_SetUserinfo( args[1], (const char*)VMA(2) );
-		return 0;
-	case G_GET_USERINFO:
-		SV_GetUserinfo( args[1], (char*)VMA(2), args[3] );
-		return 0;
-	case G_GET_SERVERINFO:
-		SV_GetServerinfo( (char*)VMA(1), args[2] );
-		return 0;
-
-
-	case G_GET_USERCMD:
-		SV_GetUsercmd( args[1], (usercmd_t*)VMA(2) );
-		return 0;
-
-		//====================================
-
-	case TRAP_MEMSET:
-		Com_Memset( VMA(1), args[2], args[3] );
-		return 0;
-
-	case TRAP_MEMCPY:
-		Com_Memcpy( VMA(1), VMA(2), args[3] );
-		return 0;
-
-	case TRAP_SIN:
-		return FloatAsInt( sin( VMF(1) ) );
-
-	case TRAP_COS:
-		return FloatAsInt( cos( VMF(1) ) );
-
-	case TRAP_ATAN2:
-		return FloatAsInt( atan2( VMF(1), VMF(2) ) );
-
-	case TRAP_SQRT:
-		return FloatAsInt( sqrt( VMF(1) ) );
-
-	case TRAP_FLOOR:
-		return FloatAsInt( floor( VMF(1) ) );
-
-	case TRAP_CEIL:
-		return FloatAsInt( ceil( VMF(1) ) );
-
-
-	default:
-		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );
-	}
-	return 0;
-}
-
-/*
 ===============
 SV_ShutdownGameProgs
 
@@ -333,12 +225,11 @@ Called every time a map changes
 ===============
 */
 void SV_ShutdownGameProgs( void ) {
-	if ( !gvm ) {
+	if ( !sv_gameDLL ) {
 		return;
 	}
-	VM_Call( gvm, GAME_SHUTDOWN, qfalse );
-	VM_Free( gvm );
-	gvm = NULL;
+	g_game->ShutdownGame(qfalse);
+	g_moduleMgr->unload(&sv_gameDLL);
 }
 
 /*
@@ -361,7 +252,7 @@ static void SV_InitGameVM( qboolean restart ) {
 	
 	// use the current msec count for a random seed
 	// init for this gamestate
-	VM_Call (gvm, GAME_INIT, sv.time, Com_Milliseconds(), restart);
+	g_game->InitGame(sv.time, Com_Milliseconds(), restart);
 }
 
 
@@ -374,14 +265,14 @@ Called on a map_restart, but not on a normal map change
 ===================
 */
 void SV_RestartGameProgs( void ) {
-	if ( !gvm ) {
+	if ( !sv_gameDLL ) {
 		return;
 	}
-	VM_Call( gvm, GAME_SHUTDOWN, qtrue );
+	g_game->ShutdownGame(qtrue);
 
 	// do a restart instead of a free
-	gvm = VM_Restart(gvm, qtrue);
-	if ( !gvm ) {
+	sv_gameDLL = g_moduleMgr->restart(sv_gameDLL, qtrue);
+	if ( !sv_gameDLL ) {
 		Com_Error( ERR_FATAL, "VM_Restart on game failed" );
 	}
 
@@ -397,11 +288,12 @@ Called on a normal map change, not on a map_restart
 */
 void SV_InitGameProgs( void ) {
 	// load the dll or bytecode
-	gvm = VM_Create( "qagame", SV_GameSystemCalls, VMI_NATIVE );
-	if ( !gvm ) {
+	sv_gameDLL = g_moduleMgr->load("qagame");
+	if ( !sv_gameDLL ) {
 		Com_Error( ERR_FATAL, "VM_Create on game failed" );
 	}
-
+	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_gameClients,GAMECLIENTS_API_IDENTSTR);
 	SV_InitGameVM( qfalse );
 }
 
@@ -414,10 +306,10 @@ See if the current console command is claimed by the game
 ====================
 */
 qboolean SV_GameCommand( void ) {
-	if ( sv.state != SS_GAME ) {
+	//if ( sv.state != SS_GAME ) {
 		return qfalse;
-	}
-
-	return VM_Call( gvm, GAME_CONSOLE_COMMAND );
+	//}
+	// TODO
+	//return VM_Call( gvm, GAME_CONSOLE_COMMAND );
 }
 

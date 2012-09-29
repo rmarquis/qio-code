@@ -32,13 +32,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class moduleAPI_i {
 public:
-	
+	virtual const char *getName() const = 0;
 };
 
 class moduleManagerAPI_i : public iFaceBase_i {
 public:
-	class moduleAPI_i *load(const char *moduleName);
-	void unload(moduleAPI_i **mPtr);
+	virtual class moduleAPI_i *load(const char *moduleName) = 0;
+	virtual void unload(class moduleAPI_i **mPtr) = 0;
+	virtual class moduleAPI_i *restart(class moduleAPI_i *np, bool unPure) = 0;
 };
 
 extern moduleManagerAPI_i *g_moduleMgr;

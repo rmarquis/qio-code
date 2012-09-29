@@ -22,54 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 #include "g_local.h"
+#include <api/serverAPI.h>
+#include <api/cvarAPI.h>
+#include <api/coreAPI.h>
 
 level_locals_t	level;
 
 gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
-
-/*
-================
-vmMain
-
-This is the only way control passes into the module.
-This must be the very first function compiled into the .q3vm file
-================
-*/
-Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
-	switch ( command ) {
-	case GAME_INIT:
-		G_InitGame( arg0, arg1, arg2 );
-		return 0;
-	case GAME_SHUTDOWN:
-		G_ShutdownGame( arg0 );
-		return 0;
-	case GAME_RUN_FRAME:
-		G_RunFrame( arg0 );
-		return 0;
-	case GAME_CLIENT_CONNECT:
-		return (intptr_t)ClientConnect( arg0, (qboolean)arg1, (qboolean)arg2 );
-	case GAME_CLIENT_THINK:
-		ClientThink( arg0 );
-		return 0;
-	case GAME_CLIENT_USERINFO_CHANGED:
-		ClientUserinfoChanged( arg0 );
-		return 0;
-	case GAME_CLIENT_DISCONNECT:
-		ClientDisconnect( arg0 );
-		return 0;
-	case GAME_CLIENT_BEGIN:
-		ClientBegin( arg0 );
-		return 0;
-	case GAME_CLIENT_COMMAND:
-		ClientCommand( arg0 );
-		return 0;
-	case GAME_CONSOLE_COMMAND:
-		return 0;
-	}
-	return -1;
-}
-
 
 void QDECL G_Printf( const char *fmt, ... ) {
 	va_list		argptr;
@@ -79,7 +39,7 @@ void QDECL G_Printf( const char *fmt, ... ) {
 	Q_vsnprintf (text, sizeof(text), fmt, argptr);
 	va_end (argptr);
 
-	trap_Print( text );
+	g_core->Print( text );
 }
 
 void QDECL G_Error( const char *fmt, ... ) {
@@ -90,7 +50,7 @@ void QDECL G_Error( const char *fmt, ... ) {
 	Q_vsnprintf (text, sizeof(text), fmt, argptr);
 	va_end (argptr);
 
-	trap_Error( text );
+	g_core->DropError( text );
 }
 
 /*QUAKED worldspawn (0 0 0) ?
@@ -102,11 +62,11 @@ Every map should have exactly one worldspawn.
 */
 void SP_worldspawn( void ) {
 	// make some data visible to connecting client
-	trap_SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
+	g_server->SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
 
-	trap_SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
+	g_server->SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
 
-	trap_Cvar_Set( "g_gravity", "800" );
+	g_cvars->Cvar_Set( "g_gravity", "800" );
 
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
@@ -161,13 +121,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 
 	// let the server system know where the entites are
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	// parse the key/value pairs and spawn gentities
 	SP_worldspawn();
 
-	trap_Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
+	g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
 	G_InitBullet();
 	G_LoadMap(mapName);
 
@@ -198,7 +158,7 @@ void QDECL Com_Error ( int level, const char *error, ... ) {
 	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
-	trap_Error( text );
+	g_core->DropError( text );
 }
 
 void QDECL Com_Printf( const char *msg, ... ) {
@@ -209,7 +169,7 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
-	trap_Print( text );
+	g_core->Print( text );
 }
 
 /*

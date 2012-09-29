@@ -1,4 +1,5 @@
 #include "g_local.h"
+#include <api/vfsAPI.h>
 
 #include <btBulletDynamicsCommon.h>
 #include <LinearMath/btGeometryUtil.h>
@@ -159,10 +160,10 @@ void G_LoadMap(const char *mapName) {
 	strcat(buf,mapName);
 	strcat(buf,".bsp");
 	fileHandle_t f;
-	int len = trap_FS_FOpenFile(buf,&f,FS_READ);
+	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
 	byte *data = (byte*)malloc(len);
-	trap_FS_Read(data,len,f);
-	trap_FS_FCloseFile(f);
+	g_vfs->FS_Read(data,len,f);
+	g_vfs->FS_FCloseFile(f);
 #endif
 
 

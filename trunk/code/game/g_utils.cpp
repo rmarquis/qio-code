@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // g_utils.c -- misc utility functions for game module
 
 #include "g_local.h"
+#include <api/serverAPI.h>
 
 /*
 =========================================================================
@@ -47,7 +48,7 @@ int G_FindConfigstringIndex( char *name, int start, int max, qboolean create ) {
 	}
 
 	for ( i=1 ; i<max ; i++ ) {
-		trap_GetConfigstring( start + i, s, sizeof( s ) );
+		g_server->GetConfigstring( start + i, s, sizeof( s ) );
 		if ( !s[0] ) {
 			break;
 		}
@@ -64,7 +65,7 @@ int G_FindConfigstringIndex( char *name, int start, int max, qboolean create ) {
 		G_Error( "G_FindConfigstringIndex: overflow" );
 	}
 
-	trap_SetConfigstring( start + i, name );
+	g_server->SetConfigstring( start + i, name );
 
 	return i;
 }
@@ -142,7 +143,7 @@ gentity_t *G_Spawn( void ) {
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );

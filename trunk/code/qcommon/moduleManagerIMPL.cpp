@@ -4,14 +4,20 @@
 #include <shared/array.h>
 #include "../sys/sys_loadlib.h"
 
+typedef void (*shareAPIsFunc_t)(class iFaceMgrAPI_i *iFaceMgr);
+typedef qioModule_e (*getModuleIdentFunc_t)();
+
 class moduleIMPL_c : public moduleAPI_i {
 	friend class moduleManagerIMPL_c;
 	void *handle;
 	str name;
-	//str fullPath;
-};
+	str fullName;
+	getModuleIdentFunc_t getModuleIdentFunc;
 
-typedef void (*shareAPIsFunc_t)(class iFaceMgrAPI_i *iFaceMgr);
+	const char *getName() const {
+		return name;
+	}
+};
 
 class moduleManagerIMPL_c : public moduleManagerAPI_i {
 	arraySTD_c<moduleIMPL_c*> modules;
@@ -31,20 +37,35 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 			Com_Printf("moduleManagerIMPL_c::load: %s already loaded!\n",moduleName);
 			return loaded;
 		}
-
-		void *h = Sys_LoadDll(moduleName,true);
+		str fullName = "baseqio/"; // HACK, this should be fixed soon
+		fullName.append(moduleName);
+		fullName.append("x86.dll");
+		void *h = Sys_LoadDll(fullName,true);
 		if(h == 0) {
 			Com_Printf("moduleManagerIMPL_c::load: LoadLibrary failed for %s\n",moduleName);
 			return 0;
 		}
-		shareAPIsFunc_t shareAPIsFunc = (shareAPIsFunc_t)Sys_LoadFunction(h,"vmMain");
-		if(shareAPIsFunc == 0) {
-			Com_Printf("moduleManagerIMPL_c::load: cannot find ShareAPIs func in %s\n",moduleName);
+		// find "IFM_GetCurModule" function
+		getModuleIdentFunc_t getModuleIdentFunc = (getModuleIdentFunc_t)Sys_LoadFunction(h,"IFM_GetCurModule");
+		if(getModuleIdentFunc == 0) {
+			Com_Printf("moduleManagerIMPL_c::load: cannot find IFM_GetCurModule func in %s\n",moduleName);
+			Sys_UnloadLibrary(h);
 			return 0;
 		}
+		// find "ShareAPIs" function
+		shareAPIsFunc_t shareAPIsFunc = (shareAPIsFunc_t)Sys_LoadFunction(h,"ShareAPIs");
+		if(shareAPIsFunc == 0) {
+			Com_Printf("moduleManagerIMPL_c::load: cannot find ShareAPIs func in %s\n",moduleName);
+			Sys_UnloadLibrary(h);
+			return 0;
+		}
+		// link interfaces (exports and imports)
 		shareAPIsFunc(g_iFaceMan);
+
 		moduleIMPL_c *nm = new moduleIMPL_c;
 		nm->name = moduleName;
+		nm->fullName = fullName;
+		nm->getModuleIdentFunc = getModuleIdentFunc;
 		//nm->fullPath = fullPath;
 		modules.push_back(nm);
 		return nm;
@@ -61,9 +82,19 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 			return;
 		}
 		modules.remove(m);
+		// ensure that all of the references to given module are removed
+		qioModule_e mModuleType = m->getModuleIdentFunc();
+		g_iFaceMan->unregisterModuleInterfaces(mModuleType);
+		// unload DLL from memory
 		Sys_UnloadLibrary(m->handle);
 		delete m;
 		*mPtr = 0;
+	}
+	class moduleAPI_i *restart(class moduleAPI_i *np, bool unPure) {
+		str npName = np->getName();
+		unload(&np);
+		np = load(npName);
+		return np;
 	}
 };
 

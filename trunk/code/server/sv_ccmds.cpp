@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "server.h"
+#include <api/gameAPI.h>
 
 /*
 ===============================================================================
@@ -226,7 +227,7 @@ This allows fair starts with variable load times.
 static void SV_MapRestart_f( void ) {
 	int			i;
 	client_t	*client;
-	char		*denied;
+	const char	*denied;
 	qboolean	isBot;
 	int			delay;
 
@@ -299,7 +300,7 @@ static void SV_MapRestart_f( void ) {
 	// run a few frames to allow everything to settle
 	for (i = 0; i < 3; i++)
 	{
-		VM_Call (gvm, GAME_RUN_FRAME, sv.time);
+		g_game->RunFrame(sv.time);
 		sv.time += 100;
 		svs.time += 100;
 	}
@@ -326,7 +327,7 @@ static void SV_MapRestart_f( void ) {
 		SV_AddServerCommand( client, "map_restart\n" );
 
 		// connect the client again, without the firstTime flag
-		denied = (char*)VM_ExplicitArgPtr( gvm, VM_Call( gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot ) );
+		denied = g_gameClients->ClientConnect(i, qfalse, isBot);
 		if ( denied ) {
 			// this generally shouldn't happen, because the client
 			// was connected before the level change
@@ -347,7 +348,7 @@ static void SV_MapRestart_f( void ) {
 	}	
 
 	// run another frame to allow things to look at all the players
-	VM_Call (gvm, GAME_RUN_FRAME, sv.time);
+	g_game->RunFrame( sv.time);
 	sv.time += 100;
 	svs.time += 100;
 }

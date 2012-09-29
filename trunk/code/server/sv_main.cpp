@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "server.h"
+#include <api/gameAPI.h>
 
 #ifdef USE_VOIP
 cvar_t *sv_voip;
@@ -1139,7 +1140,7 @@ void SV_Frame( int msec ) {
 		sv.time += frameMsec;
 
 		// let everything in the world think and move
-		VM_Call (gvm, GAME_RUN_FRAME, sv.time);
+		g_game->RunFrame(sv.time);
 	}
 
 	if ( com_speeds->integer ) {

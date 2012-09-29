@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 //
 #include "g_local.h"
+#include <api/serverAPI.h>
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -114,7 +115,7 @@ const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
-		trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
+		g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
 	}
 
 	return NULL;
@@ -147,7 +148,7 @@ void ClientBegin( int clientNum ) {
 	// locate ent at a spawn point
 	ClientSpawn( ent );
 
-	trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", client->pers.netname) );
+	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", client->pers.netname) );
 
 	G_Printf( "ClientBegin: %i\n", clientNum );
 
@@ -178,7 +179,7 @@ void ClientSpawn(gentity_t *ent) {
 	VectorClear(client->ps.velocity);
 
 
-	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
+	g_server->GetUserinfo( index, userinfo, sizeof(userinfo) );
 	// set max health
 	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
@@ -197,7 +198,7 @@ void ClientSpawn(gentity_t *ent) {
 	VectorCopy( spawn_origin, client->ps.origin );
 	client->ps.viewheight = 26;
 
-	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
+	g_server->GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
@@ -244,7 +245,7 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->pers.connected = CON_DISCONNECTED;
 
 
-	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
+	g_server->SetConfigstring( CS_PLAYERS + clientNum, "");
 
 }
 

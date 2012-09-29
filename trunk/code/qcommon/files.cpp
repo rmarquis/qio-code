@@ -3795,6 +3795,8 @@ void FS_InitFilesystem( void ) {
 	// try to start up normally
 	FS_Startup(com_basegame->string);
 
+	FS_InitAPI();
+
 #ifndef STANDALONE
 	FS_CheckPak0( );
 #endif
