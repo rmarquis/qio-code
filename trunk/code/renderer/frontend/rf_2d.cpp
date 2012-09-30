@@ -25,6 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "rf_2d.h"
 
+static tess2d_c r_tess2D; // I dont need to access that class outside this file
+r2dCommandsQueue_c r_2dCmds;
+
+//
+//	tess2d_c class
+//
 tess2d_c::tess2d_c() {
 	material = 0;
 	curColor[0] = curColor[1] = curColor[2] = curColor[3] = 1.f;
@@ -87,3 +93,101 @@ void tess2d_c::drawStretchPic(float x, float y, float w, float h,
 
 
 
+
+//
+//	r2dCommandsQueue_c class
+//
+enum {
+	R2DCMD_STOP,
+	R2DCMD_SETCOLOR,
+	R2DCMD_SETCOLOR_DEFAULT,
+	R2DCMD_DRAWPIC,
+};
+struct setColorData_s {
+	float col[4];
+};
+struct drawPicData_s {
+	float pos[2];
+	float size[2];
+	float tcs[2];
+	float tcs2[2];
+	class mtrAPI_i *mat;
+};
+r2dCommandsQueue_c::r2dCommandsQueue_c() {
+	data.resize(1);
+	data[0] = 0;
+	at = 0;
+}
+void r2dCommandsQueue_c::ensureAlloced(u32 neededSize) {
+	if(data.size() + 1 >= neededSize) {
+		data.resize(neededSize+4);
+	}
+}
+void r2dCommandsQueue_c::addSetColorCmd(const float *rgba) {
+	if(rgba == 0) {
+		ensureAlloced(at+1);
+		data[at] = R2DCMD_SETCOLOR_DEFAULT;
+		at++;
+	} else {
+		ensureAlloced(at+1+sizeof(setColorData_s));
+		data[at] = R2DCMD_SETCOLOR;
+		at++;
+		setColorData_s *s = (setColorData_s*)&data[at];
+		s->col[0] = rgba[0];
+		s->col[1] = rgba[1];
+		s->col[2] = rgba[2];
+		s->col[3] = rgba[3];
+		at += sizeof(setColorData_s);
+	}
+	data[at] = 0;
+}
+void r2dCommandsQueue_c::addDrawStretchPic(float x, float y, float w, float h,
+	float s1, float t1, float s2, float t2, class mtrAPI_i *material) {
+	ensureAlloced(at+1+sizeof(drawPicData_s));
+	data[at] = R2DCMD_DRAWPIC;
+	at++;
+	drawPicData_s *dp = (drawPicData_s*)&data[at];
+	dp->mat = material;
+	dp->pos[0] = x;
+	dp->pos[1] = y;
+	dp->size[0] = w;
+	dp->size[1] = h;
+	dp->tcs[0] = s1;
+	dp->tcs[1] = t1;
+	dp->tcs2[0] = s2;
+	dp->tcs2[1] = t2;
+	at += sizeof(drawPicData_s);	
+	data[at] = 0;
+}
+void r2dCommandsQueue_c::executeCommands() {
+	if(at == 0)
+		return;
+	u32 stop = at;
+	at = 0;
+	while(at <= stop) {
+		byte type = data[at];
+		if(type == R2DCMD_STOP) {
+			break;
+		} 
+		at++;
+		if(type == R2DCMD_SETCOLOR) {
+			const float *col = (const float*)&data[at];
+			r_tess2D.set2DColor(col);
+			at += (sizeof(float)*4);
+		} else if(type == R2DCMD_SETCOLOR_DEFAULT) {
+			r_tess2D.set2DColor(0);
+		} else if(type == R2DCMD_DRAWPIC) {
+			const drawPicData_s *dp = (const drawPicData_s*)&data[at];
+			r_tess2D.drawStretchPic(dp->pos[0],dp->pos[1],dp->size[0],dp->size[1],dp->tcs[0],dp->tcs[1],
+				dp->tcs2[0],dp->tcs2[1],dp->mat);
+			at += sizeof(drawPicData_s);
+		} else {
+			printf("r2dCommandsQueue_c::executeCommands: unknown cmd id %i\n",type);
+			break;
+		}
+	}
+	at = 0;
+}
+void r2dCommandsQueue_c::clear() {
+	
+}

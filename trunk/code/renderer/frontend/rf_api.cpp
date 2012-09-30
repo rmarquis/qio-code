@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
 
+#include "rf_2d.h"
+
 class rAPIImpl_c : public rAPI_i {
 public:
 	// functions called every frame
@@ -48,18 +50,18 @@ public:
 
 	}
 	virtual void set2DColor(const float *rgba) {
-
+		r_2dCmds.addSetColorCmd(rgba);
 	}
 	virtual void drawStretchPic(float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) {
-
+		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
 	}
 	virtual void endFrame() {
 
 	}
 	// misc functions
 	virtual void loadWorldMap(const char *mapName)  {
-
+		
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		return 0;

@@ -22,6 +22,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_2d.h - 2d graphics batching and drawing
+#ifndef __RF_2D_H__
+#define __RF_2D_H__
 
 #include <math/vec2.h>
 #include <shared/array.h>
@@ -56,4 +58,19 @@ public:
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material); // NULL = white
 };
 
+class r2dCommandsQueue_c {
+	arraySTD_c<byte> data;
+	int at;
+	void ensureAlloced(u32 neededSize);
+public:
+	r2dCommandsQueue_c();
+	void addSetColorCmd(const float *rgba);	// NULL = 1,1,1,1
+	void addDrawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, class mtrAPI_i *material); // NULL = white
+	void executeCommands();
+	void clear();
+};
 
+extern r2dCommandsQueue_c r_2dCmds;
+
+#endif // __RF_2D_H__
