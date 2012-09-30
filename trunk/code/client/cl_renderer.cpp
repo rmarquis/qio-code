@@ -25,10 +25,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include <api/iFaceMgrAPI.h>
+#include <api/moduleManagerAPI.h>
 #include <api/rAPI.h>
 
 #include "../sys/sys_local.h"
 #include "../sys/sys_loadlib.h"
+
+static moduleAPI_i *cl_rendererDLL = 0;
 
 /*
 ============
@@ -73,6 +76,20 @@ CL_InitRef
 ============
 */
 void CL_InitRef( void ) {
+	// new renderer initialization
+
+	Com_Printf( "----- Initializing Renderer DLL ----\n" );
+	if ( cl_rendererDLL ) {
+		Com_Error (ERR_FATAL, "Renderer DLL already loaded!" );
+	}
+	cl_rendererDLL = g_moduleMgr->load("renderer");
+	if ( !cl_rendererDLL ) {
+		Com_Error (ERR_FATAL, "Couldn't load renderer DLL" );
+	}
+	Com_Printf( "-------------------------------\n");
+
+
+	// old renderer...
 	refimport_t	ri;
 	refexport_t	*ret;
 #ifdef USE_RENDERER_DLOPEN
@@ -80,33 +97,8 @@ void CL_InitRef( void ) {
 	char			dllName[MAX_OSPATH];
 #endif
 
-	Com_Printf( "----- Initializing Renderer ----\n" );
+	//Com_Printf( "----- Initializing Renderer ----\n" );
 
-#ifdef USE_RENDERER_DLOPEN
-	cl_renderer = Cvar_Get("cl_renderer", "opengl1", CVAR_ARCHIVE | CVAR_LATCH);
-
-	Com_sprintf(dllName, sizeof(dllName), "renderer_%s_" ARCH_STRING DLL_EXT, cl_renderer->string);
-
-	if(!(rendererLib = Sys_LoadDll(dllName, qfalse)) && strcmp(cl_renderer->string, cl_renderer->resetString))
-	{
-		Cvar_ForceReset("cl_renderer");
-
-		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl1_" ARCH_STRING DLL_EXT);
-		rendererLib = Sys_LoadDll(dllName, qfalse);
-	}
-
-	if(!rendererLib)
-	{
-		Com_Printf("failed:\n\"%s\"\n", Sys_LibraryError());
-		Com_Error(ERR_FATAL, "Failed to load renderer");
-	}
-
-	GetRefAPI = Sys_LoadFunction(rendererLib, "GetRefAPI");
-	if(!GetRefAPI)
-	{
-		Com_Error(ERR_FATAL, "Can't load symbol GetRefAPI: '%s'",  Sys_LibraryError());
-	}
-#endif
 
 	ri.Cmd_AddCommand = Cmd_AddCommand;
 	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
@@ -160,11 +152,7 @@ void CL_InitRef( void ) {
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
-#if defined __USEA3D && defined __A3D_GEOM
-	hA3Dg_ExportRenderGeom (ret);
-#endif
-
-	Com_Printf( "-------------------------------\n");
+	//Com_Printf( "-------------------------------\n");
 
 	if ( !ret ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );

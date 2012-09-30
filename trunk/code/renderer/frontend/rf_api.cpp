@@ -33,14 +33,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class rAPIImpl_c : public rAPI_i {
 public:
-	virtual void setupViewer(const class vec3_c &camPos, const vec3_c &camAngles) {
+	// functions called every frame
+	virtual void beginFrame() {
 
 	}
-	virtual void drawScene() {
+	virtual void setup3DViewer(const class vec3_c &camPos, const vec3_c &camAngles) {
 
 	}
-	virtual void loadWorldMap(const char *mapName) {
+	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
+	virtual void draw3DView() {
 
+	}
+	virtual void setup2DView() {
+
+	}
+	virtual void set2DColor(const float *rgba) {
+
+	}
+	virtual void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, class mtrAPI_i *material) {
+
+	}
+	virtual void endFrame() {
+
+	}
+	// misc functions
+	virtual void loadWorldMap(const char *mapName)  {
+
+	}
+	virtual class mtrAPI_i *registerMaterial(const char *matName) {
+		return 0;
 	}
 };
 

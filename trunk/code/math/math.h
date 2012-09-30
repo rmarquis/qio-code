@@ -21,33 +21,27 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rAPI.h - renderer frontend interface
+// math.h - stateless mathematical routines
+#ifndef __MATH_MATH_H__
+#define __MATH_MATH_H__
 
-#ifndef __RF_API_H__
-#define __RF_API_H__
+#include <cmath>
+#include "../shared/typedefs.h"
 
-#include "iFaceBase.h"
+inline float G_rsqrt(float x) {
+    float xhalf = 0.5f*x;
+    int i = *(int*)&x;
+    i = 0x5f3759df - (i >> 1);
+    x = *(float*)&i;
+    x = x*(1.5f - xhalf*x*x);
+    return x;
+}
 
-#define RENDERER_API_IDENTSTR "RendererAPI0001"
+inline float G_sqrt2(float n) {
+    float r = 0.f;
+    float i = 1.f;
+    while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
+    return r;
+}
 
-class rAPI_i : public iFaceBase_i {
-public:
-	// functions called every frame
-	virtual void beginFrame() = 0;
-	virtual void setup3DViewer(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
-	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
-	virtual void draw3DView() = 0;
-	virtual void setup2DView() = 0;
-	virtual void set2DColor(const float *rgba) = 0;	// NULL = 1,1,1,1
-	virtual void drawStretchPic(float x, float y, float w, float h,
-		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white
-	virtual void endFrame() = 0;
-
-
-	// misc functions
-	virtual void loadWorldMap(const char *mapName) = 0;
-	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
-};
-
-
-#endif // __RF_API_H__
+#endif // __MATH_MATH_H__

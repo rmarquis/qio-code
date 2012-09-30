@@ -21,33 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rAPI.h - renderer frontend interface
+// rf_2d.h - 2d graphics batching and drawing
 
-#ifndef __RF_API_H__
-#define __RF_API_H__
+#include <math/vec2.h>
+#include <shared/array.h>
 
-#include "iFaceBase.h"
+struct r2dVert_s {
+	vec2_c pos;
+	vec2_c texCoords;
 
-#define RENDERER_API_IDENTSTR "RendererAPI0001"
+	void set(float nX, float nY, float nS, float nT) {
+		pos.set(nX,nY);
+		texCoords.set(nS,nT);
+	}
+};
 
-class rAPI_i : public iFaceBase_i {
+// tess2d_c is used to batching 2D graphics.
+// Multiple images using the same color and material
+// (eg. font characters) can be merged into a single
+// draw call.
+class tess2d_c {
+	arraySTD_c<r2dVert_s> verts;
+	arraySTD_c<u16> indices;
+	u32 numVerts; // currently used
+	u32 numIndexes; // currently used
+	class mtrAPI_i *material;
+	float curColor[4];
 public:
-	// functions called every frame
-	virtual void beginFrame() = 0;
-	virtual void setup3DViewer(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
-	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
-	virtual void draw3DView() = 0;
-	virtual void setup2DView() = 0;
-	virtual void set2DColor(const float *rgba) = 0;	// NULL = 1,1,1,1
-	virtual void drawStretchPic(float x, float y, float w, float h,
-		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white
-	virtual void endFrame() = 0;
-
-
-	// misc functions
-	virtual void loadWorldMap(const char *mapName) = 0;
-	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
+	tess2d_c();
+	void finishDrawing();
+	void set2DColor(const float *rgba);	// NULL = 1,1,1,1
+	void ensureAlloced(u32 numNeedIndexes, u32 numNeedVerts);
+	void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, class mtrAPI_i *material); // NULL = white
 };
 
 
-#endif // __RF_API_H__
