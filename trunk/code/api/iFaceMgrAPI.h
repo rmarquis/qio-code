@@ -32,6 +32,7 @@ enum qioModule_e {
 	QMD_CORE,
 	QMD_GAME,
 	QMD_CGAME,
+	QMD_RENDERER,
 };
 
 // this must be implemented in every module

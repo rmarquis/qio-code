@@ -1966,6 +1966,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\rAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\serverAPI.h"
 				>
 			</File>
