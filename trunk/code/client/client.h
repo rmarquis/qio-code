@@ -463,9 +463,6 @@ void CL_GetPing( int n, char *buf, int buflen, int *pingtime );
 void CL_GetPingInfo( int n, char *buf, int buflen );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
-
-void CL_ShutdownRef( void );
-void CL_InitRef( void );
 qboolean CL_CDKeyValidate( const char *key, const char *checksum );
 int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
 
@@ -610,6 +607,13 @@ void Key_SetCatcher( int catcher );
 void LAN_LoadCachedServers( void );
 void LAN_SaveServersToCache( void );
 
+
+//
+// cl_renderer.cpp
+//
+void CL_InitRenderer( void );
+void CL_ShutdownRef( void );
+void CL_InitRef( void );
 
 //
 // cl_net_chan.c
