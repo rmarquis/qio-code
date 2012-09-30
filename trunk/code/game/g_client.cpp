@@ -193,7 +193,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.clientNum = index;
 
-	
 	VectorCopy( spawn_origin, ent->s.origin );
 	VectorCopy( spawn_origin, client->ps.origin );
 	client->ps.viewheight = 26;
@@ -205,7 +204,6 @@ void ClientSpawn(gentity_t *ent) {
 	BT_FreeCharacter(client->characterController);
 	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 48, 16);
 
-	
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	client->ps.commandTime = level.time - 100;
