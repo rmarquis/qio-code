@@ -89,9 +89,7 @@ void CL_InitRef( void ) {
 	}
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	Com_Printf( "-------------------------------\n");
-	// TEST
-void GLimp_Init( void );
-GLimp_Init();
+
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
 }

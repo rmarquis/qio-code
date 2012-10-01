@@ -3155,6 +3155,7 @@ static void CL_GenerateQKey(void)
 
 static clAPI_s g_staticClientAPI;
 clAPI_s *g_client = &g_staticClientAPI;
+void SDLOpenGL_RegisterBackEnd();
 void CL_InitClientAPI() {
 	g_staticClientAPI.GetCurrentCmdNumber = CL_GetCurrentCmdNumber;
 	g_staticClientAPI.GetGameState = CL_GetGameState;
@@ -3167,6 +3168,9 @@ void CL_InitClientAPI() {
 	g_staticClientAPI.syscall = VM_DllSyscall;
 
 	g_iFaceMan->registerInterface(&g_staticClientAPI,CLIENT_API_IDENTSTR);
+
+	// register GLIMP interface so new renderer dll can find it
+	SDLOpenGL_RegisterBackEnd();
 }
 
 /*

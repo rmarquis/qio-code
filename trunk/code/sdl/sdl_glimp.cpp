@@ -59,20 +59,9 @@ typedef void *QGLContext;
 static QGLContext opengl_context;
 static float displayAspect;
 
-struct glConfig_s {
-	int vidWidth;
-	int vidHeight;
-	float windowAspect;
-	bool isFullscreen;
-	int colorBits;
-	int depthBits;
-	int stencilBits;
-	bool deviceSupportsGamma;
-	char vendor_string[8192];
-	char renderer_string[8192];
-	char version_string[8192];
-	char extensions_string[8192];
-} glConfig;
+#include "sdl_glConfig.h"
+struct glConfig_s glConfig;
+
 
 typedef enum
 {

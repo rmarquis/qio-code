@@ -96,6 +96,9 @@ void tess2d_c::drawStretchPic(float x, float y, float w, float h,
 	v++;
 	v->set(x,y+h,s1,t2);
 	v++;
+
+	numVerts += 4;
+	numIndexes += 6;
 }
 
 
@@ -194,6 +197,7 @@ void r2dCommandsQueue_c::executeCommands() {
 		}
 	}
 	at = 0;
+	r_tess2D.finishDrawing();
 }
 void r2dCommandsQueue_c::clear() {
 	at = 0;

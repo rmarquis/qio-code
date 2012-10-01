@@ -27,16 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <math/vec2.h>
 #include <shared/array.h>
-
-struct r2dVert_s {
-	vec2_c pos;
-	vec2_c texCoords;
-
-	void set(float nX, float nY, float nS, float nT) {
-		pos.set(nX,nY);
-		texCoords.set(nS,nT);
-	}
-};
+#include <shared/r2dVert.h>
 
 // tess2d_c is used to batching 2D graphics.
 // Multiple images using the same color and material
@@ -60,7 +51,7 @@ public:
 
 class r2dCommandsQueue_c {
 	arraySTD_c<byte> data;
-	int at;
+	u32 at;
 	void ensureAlloced(u32 neededSize);
 public:
 	r2dCommandsQueue_c();

@@ -30,12 +30,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "iFaceBase.h"
 
 #define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
+#define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
 
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual void setMaterial(class mtrAPI_i *mat) = 0;
 	virtual void setColor4(const float *rgba) = 0;
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
+	virtual void beginFrame() = 0;
+	virtual void endFrame() = 0;
+	virtual void setup2DView() = 0;
+
+	virtual u32 getWinWidth() const = 0;
+	virtual u32 getWinHeight() const = 0;
+
+	virtual void init() = 0;
+	virtual void shutdown() = 0;
 };
 
 extern rbAPI_i *rb;

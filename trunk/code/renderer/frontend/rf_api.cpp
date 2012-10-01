@@ -38,7 +38,7 @@ class rAPIImpl_c : public rAPI_i {
 public:
 	// functions called every frame
 	virtual void beginFrame() {
-
+		rb->beginFrame();
 	}
 	virtual void setup3DViewer(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
 
@@ -48,7 +48,7 @@ public:
 
 	}
 	virtual void setup2DView() {
-
+		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {
 		r_2dCmds.addSetColorCmd(rgba);
@@ -58,7 +58,9 @@ public:
 		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
 	}
 	virtual void endFrame() {
+		setup2DView();
 		r_2dCmds.executeCommands();
+		rb->endFrame();
 	}
 	// misc functions
 	virtual void loadWorldMap(const char *mapName)  {
@@ -68,19 +70,21 @@ public:
 		return 0;
 	}	
 	virtual void init() {
-		
+		rb->init();
 	}
 	virtual void endRegistration() {
 
 	}
 	virtual void shutdown(bool destroyWindow) {
-		
+		if(destroyWindow) {
+			rb->shutdown();
+		}
 	}
 	virtual u32 getWinWidth() const {
-		return 1;
+		return rb->getWinWidth();
 	}
 	virtual u32 getWinHeight() const {
-		return 1;
+		return rb->getWinHeight();
 	}
 };
 
@@ -105,7 +109,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&rb,RB_SDLOPENGL_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {
