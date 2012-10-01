@@ -56,6 +56,10 @@ void tess2d_c::finishDrawing() {
 	numIndexes = 0;
 }
 void tess2d_c::set2DColor(const float *rgba) {	// NULL = 1,1,1,1
+	if(rgba == 0) {
+		float def[] = { 1, 1, 1, 1 };
+		rgba = def;
+	}
 	if(curColor[0] != rgba[0] || curColor[1] != rgba[1] || curColor[2] != rgba[2]
 	|| curColor[3] != rgba[3]) {
 		finishDrawing();
@@ -122,7 +126,7 @@ r2dCommandsQueue_c::r2dCommandsQueue_c() {
 	at = 0;
 }
 void r2dCommandsQueue_c::ensureAlloced(u32 neededSize) {
-	if(data.size() + 1 >= neededSize) {
+	if(data.size() + 1 <= neededSize) {
 		data.resize(neededSize+4);
 	}
 }

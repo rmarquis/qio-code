@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <api/iFaceMgrAPI.h>
 #include <api/clientAPI.h>
+#include <api/rAPI.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
@@ -43,10 +44,6 @@ cvar_t	*cl_voipGainDuringCapture;
 cvar_t	*cl_voipCaptureMult;
 cvar_t	*cl_voipShowMeter;
 cvar_t	*cl_voip;
-#endif
-
-#ifdef USE_RENDERER_DLOPEN
-cvar_t	*cl_renderer;
 #endif
 
 cvar_t	*cl_nodelta;
@@ -121,13 +118,6 @@ cvar_t	*cl_consoleKeys;
 clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
-vm_t				*cgvm;
-
-// Structure containing functions exported from refresh DLL
-refexport_t	re;
-#ifdef USE_RENDERER_DLOPEN
-static void	*rendererLib = NULL;
-#endif
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
@@ -1157,8 +1147,8 @@ void CL_ShutdownAll(qboolean shutdownRef)
 	// shutdown the renderer
 	if(shutdownRef)
 		CL_ShutdownRef();
-	else if(re.Shutdown)
-		re.Shutdown(qfalse);		// don't destroy window or context
+	else if(rf)
+		rf->shutdown(qfalse);		// don't destroy window or context
 
 	cls.cgameStarted = qfalse;
 	cls.rendererStarted = qfalse;

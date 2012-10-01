@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../client/client.h"
 #include "../sys/sys_local.h"
+#include <api/rAPI.h>
 
 #ifdef MACOS_X
 // Mouse acceleration needs to be disabled
@@ -527,7 +528,7 @@ static void IN_DeactivateMouse( void )
 
 		// Don't warp the mouse unless the cursor is within the window
 		if( SDL_GetAppState( ) & SDL_APPMOUSEFOCUS )
-			SDL_WarpMouse( cls.glconfig.vidWidth / 2, cls.glconfig.vidHeight / 2 );
+			SDL_WarpMouse( rf->getWinWidth() / 2, rf->getWinHeight() / 2 );
 
 		mouseActive = qfalse;
 	}

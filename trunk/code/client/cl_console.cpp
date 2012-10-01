@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // console.c
 
 #include "client.h"
-
+#include <api/rAPI.h>
 
 int g_console_field_width = 78;
 
@@ -472,7 +472,7 @@ void Con_DrawInput (void) {
 
 	y = con.vislines - ( SMALLCHAR_HEIGHT * 2 );
 
-	re.SetColor( con.color );
+	rf->set2DColor( con.color );
 
 	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
@@ -498,7 +498,7 @@ void Con_DrawNotify (void)
 	int		currentColor;
 
 	currentColor = 7;
-	re.SetColor( g_color_table[currentColor] );
+	rf->set2DColor( g_color_table[currentColor] );
 
 	v = 0;
 	for (i= con.current-NUM_CON_TIMES+1 ; i<=con.current ; i++)
@@ -523,7 +523,7 @@ void Con_DrawNotify (void)
 			}
 			if ( ( (text[x]>>8)&7 ) != currentColor ) {
 				currentColor = (text[x]>>8)&7;
-				re.SetColor( g_color_table[currentColor] );
+				rf->set2DColor( g_color_table[currentColor] );
 			}
 			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
@@ -531,7 +531,7 @@ void Con_DrawNotify (void)
 		v += SMALLCHAR_HEIGHT;
 	}
 
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 
 	if (Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 		return;
@@ -576,12 +576,12 @@ void Con_DrawSolidConsole( float frac ) {
 	int				currentColor;
 	vec4_t			color;
 
-	lines = cls.glconfig.vidHeight * frac;
+	lines = rf->getWinHeight() * frac;
 	if (lines <= 0)
 		return;
 
-	if (lines > cls.glconfig.vidHeight )
-		lines = cls.glconfig.vidHeight;
+	if (lines > rf->getWinHeight() )
+		lines = rf->getWinHeight();
 
 	// on wide screens, we will center the text
 	con.xadjust = 0;
@@ -605,12 +605,12 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// draw the version number
 
-	re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
+	rf->set2DColor( g_color_table[ColorIndex(COLOR_RED)] );
 
 	i = strlen( Q3_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
+		SCR_DrawSmallChar( rf->getWinWidth() - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			lines - SMALLCHAR_HEIGHT, Q3_VERSION[x] );
 	}
 
@@ -625,7 +625,7 @@ void Con_DrawSolidConsole( float frac ) {
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
-		re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
+		rf->set2DColor( g_color_table[ColorIndex(COLOR_RED)] );
 		for (x=0 ; x<con.linewidth ; x+=4)
 			SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, '^' );
 		y -= SMALLCHAR_HEIGHT;
@@ -639,7 +639,7 @@ void Con_DrawSolidConsole( float frac ) {
 	}
 
 	currentColor = 7;
-	re.SetColor( g_color_table[currentColor] );
+	rf->set2DColor( g_color_table[currentColor] );
 
 	for (i=0 ; i<rows ; i++, y -= SMALLCHAR_HEIGHT, row--)
 	{
@@ -659,7 +659,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 			if ( ( (text[x]>>8)&7 ) != currentColor ) {
 				currentColor = (text[x]>>8)&7;
-				re.SetColor( g_color_table[currentColor] );
+				rf->set2DColor( g_color_table[currentColor] );
 			}
 			SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
 		}
@@ -668,7 +668,7 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
 
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 }
 
 

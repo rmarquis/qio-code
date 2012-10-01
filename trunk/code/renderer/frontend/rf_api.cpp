@@ -58,7 +58,7 @@ public:
 		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
 	}
 	virtual void endFrame() {
-
+		r_2dCmds.executeCommands();
 	}
 	// misc functions
 	virtual void loadWorldMap(const char *mapName)  {
@@ -66,6 +66,21 @@ public:
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		return 0;
+	}	
+	virtual void init() {
+		
+	}
+	virtual void endRegistration() {
+
+	}
+	virtual void shutdown(bool destroyWindow) {
+		
+	}
+	virtual u32 getWinWidth() const {
+		return 1;
+	}
+	virtual u32 getWinHeight() const {
+		return 1;
 	}
 };
 
@@ -78,12 +93,13 @@ coreAPI_s *g_core = 0;
 rbAPI_i *rb = 0;
 // exports
 static rAPIImpl_c g_staticRFAPI;
+rAPI_i *rf = &g_staticRFAPI;
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
 	// exports
-	g_iFaceMan->registerInterface(&g_staticRFAPI,RENDERER_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)rf,RENDERER_API_IDENTSTR);
 
 	// imports
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);

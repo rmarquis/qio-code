@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../renderer/tr_public.h"
 #include "keys.h"
 #include "../cgame/cg_public.h"
 #include "../game/bg_public.h"
@@ -343,17 +342,17 @@ typedef struct {
 	netadr_t	authorizeServer;
 
 	// rendering info
-	glconfig_t	glconfig;
-	qhandle_t	charSetShader;
-	qhandle_t	whiteShader;
-	qhandle_t	consoleShader;
+//	glconfig_t	glconfig;
+	class mtrAPI_i *charSetShader;
+	class mtrAPI_i *whiteShader;
+	class mtrAPI_i *consoleShader;
 } clientStatic_t;
 
 extern	clientStatic_t		cls;
 
 //=============================================================================
 
-extern	refexport_t		re;		// interface to refresh .dll
+//extern	refexport_t		re;		// interface to refresh .dll
 
 
 //
@@ -553,7 +552,7 @@ int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coo
 void	SCR_AdjustFrom640( float *x, float *y, float *w, float *h );
 void	SCR_FillRect( float x, float y, float width, float height, 
 					 const float *color );
-void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
+void	SCR_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader );
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );
 
 void	SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape );			// draws a string with embedded color control characters with fade
@@ -585,12 +584,11 @@ void CIN_CloseAllVideos(void);
 void CL_InitCGame( void );
 void CL_ShutdownCGame( void );
 qboolean CL_GameCommand( void );
-void CL_CGameRendering( stereoFrame_t stereo );
+void CL_CGameRendering();
 void CL_SetCGameTime( void );
 void CL_FirstSnapshot( void );
 void CL_ShaderStateChanged(void);
 void CL_GetGameState( gameState_t *gs );
-void CL_GetGlconfig( glconfig_t *glconfig );
 qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
 int CL_GetCurrentCmdNumber( void );
 void CL_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime );

@@ -340,7 +340,7 @@ void CG_DrawActive() {
 	}
 
 	// draw 3D view
-	trap_R_RenderScene( &cg.refdef );
+	trap_R_RenderScene();
 
 	// draw status bar and other floating elements
  	CG_Draw2D();

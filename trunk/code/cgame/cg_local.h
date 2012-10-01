@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 //
 #include "../qcommon/q_shared.h"
-#include "../renderer/tr_types.h"
 #include "../game/bg_public.h"
 #include "cg_public.h"
 
@@ -71,6 +70,9 @@ typedef struct centity_s {
 // all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
+struct refdef_t {
+	vec3_t vieworg;
+};
  
 typedef struct {
 	int			clientFrame;		// incremented each frame
@@ -146,7 +148,7 @@ typedef struct {
 // all clients to begin playing instantly
 typedef struct {
 	gameState_t		gameState;			// gamestate from server
-	glconfig_t		glconfig;			// rendering configuration
+//	glconfig_t		glconfig;			// rendering configuration
 	float			screenXScale;		// derived from glconfig
 	float			screenYScale;
 	float			screenXBias;
@@ -207,7 +209,7 @@ void CG_UpdateCvars( void );
 //
 // cg_view.c
 //
-void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
+void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback );
 
 
 //
@@ -296,15 +298,7 @@ void		trap_R_ClearScene( void );
 
 // polys are intended for simple wall marks, not really for doing
 // significant construction
-void		trap_R_RenderScene( const refdef_t *fd );
+void		trap_R_RenderScene();
 void		trap_R_SetColor( const float *rgba );	// NULL = 1,1,1,1
 void		trap_R_DrawStretchPic( float x, float y, float w, float h, 
 			float s1, float t1, float s2, float t2, qhandle_t hShader );
-
-// The glconfig_t will not change during the life of a cgame.
-// If it needs to change, the entire cgame will be restarted, because
-// all the qhandle_t are then invalid.
-void		trap_GetGlconfig( glconfig_t *glconfig );
-
-
-

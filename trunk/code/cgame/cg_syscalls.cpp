@@ -53,7 +53,6 @@ void	trap_SendClientCommand( const char *s ) {
 
 
 void	trap_R_LoadWorldMap( const char *mapname ) {
-	g_client->syscall( CG_R_LOADWORLDMAP, mapname );
 }
 
 qhandle_t trap_R_RegisterShader( const char *name ) {
@@ -61,28 +60,22 @@ qhandle_t trap_R_RegisterShader( const char *name ) {
 }
 
 qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
-	return g_client->syscall( CG_R_REGISTERSHADERNOMIP, name );
+	return 0;
 }
 
 void	trap_R_ClearScene( void ) {
-	g_client->syscall( CG_R_CLEARSCENE );
 }
 
-void	trap_R_RenderScene( const refdef_t *fd ) {
-	g_client->syscall( CG_R_RENDERSCENE, fd );
+void	trap_R_RenderScene() {
+	
 }
 
 void	trap_R_SetColor( const float *rgba ) {
-	g_client->syscall( CG_R_SETCOLOR, rgba );
 }
 
 void	trap_R_DrawStretchPic( float x, float y, float w, float h, 
 							   float s1, float t1, float s2, float t2, qhandle_t hShader ) {
-	g_client->syscall( CG_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
-}
 
-void		trap_GetGlconfig( glconfig_t *glconfig ) {
-	g_client->syscall( CG_GETGLCONFIG, glconfig );
 }
 
 

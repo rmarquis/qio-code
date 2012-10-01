@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "client.h"
+#include <api/rAPI.h>
 
 #define INDEX_FILE_EXTENSION ".index.dat"
 
@@ -359,8 +360,8 @@ qboolean CL_OpenAVIForWriting( const char *fileName )
 
   afd.frameRate = cl_aviFrameRate->integer;
   afd.framePeriod = (int)( 1000000.0f / afd.frameRate );
-  afd.width = cls.glconfig.vidWidth;
-  afd.height = cls.glconfig.vidHeight;
+  afd.width = rf->getWinWidth();
+  afd.height = rf->getWinHeight();
 
   if( cl_aviMotionJpeg->integer )
     afd.motionJpeg = qtrue;
@@ -585,9 +586,8 @@ void CL_TakeVideoFrame( void )
   // AVI file isn't open
   if( !afd.fileOpen )
     return;
-
-  re.TakeVideoFrame( afd.width, afd.height,
-      afd.cBuffer, afd.eBuffer, afd.motionJpeg );
+  printf("re.TakeVideoFrame: todo!\n");
+ // re.TakeVideoFrame( afd.width, afd.height, afd.cBuffer, afd.eBuffer, afd.motionJpeg );
 }
 
 /*

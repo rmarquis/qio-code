@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/cgameAPI.h>
+#include <api/rAPI.h>
 
 static moduleAPI_i *cl_cgameDLL = 0;
 cgameAPI_s *g_cgame = 0;
@@ -41,16 +42,6 @@ CL_GetGameState
 void CL_GetGameState( gameState_t *gs ) {
 	*gs = cl.gameState;
 }
-
-/*
-====================
-CL_GetGlconfig
-====================
-*/
-void CL_GetGlconfig( glconfig_t *glconfig ) {
-	*glconfig = cls.glconfig;
-}
-
 
 /*
 ====================
@@ -448,28 +439,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 // ZOID
 		SCR_UpdateScreen();
 		return 0;
-	case CG_R_LOADWORLDMAP:
-		re.LoadWorld( (const char*)VMA(1) );
-		return 0; 
-	case CG_R_REGISTERSHADER:
-		return re.RegisterShader( (const char*)VMA(1) );
-	case CG_R_REGISTERSHADERNOMIP:
-		return re.RegisterShaderNoMip( (const char*)VMA(1) );
-	case CG_R_CLEARSCENE:
-		re.ClearScene();
-		return 0;
-	case CG_R_RENDERSCENE:
-		re.RenderScene( (const refdef_t*)VMA(1) );
-		return 0;
-	case CG_R_SETCOLOR:
-		re.SetColor( (const float*)VMA(1) );
-		return 0;
-	case CG_R_DRAWSTRETCHPIC:
-		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
-		return 0;
-	case CG_GETGLCONFIG:
-		CL_GetGlconfig( (glconfig_t*)VMA(1) );
-		return 0;
 	case CG_GETGAMESTATE:
 		CL_GetGameState( (gameState_t*)VMA(1) );
 		return 0;
@@ -546,7 +515,7 @@ void CL_InitCGame( void ) {
 
 	// have the renderer touch all its images, so they are present
 	// on the card even if the driver does deferred loading
-	re.EndRegistration();
+	rf->endRegistration();
 
 	// make sure everything is paged in
 	if (!Sys_LowPhysicalMemory()) {
@@ -580,8 +549,8 @@ qboolean CL_GameCommand( void ) {
 CL_CGameRendering
 =====================
 */
-void CL_CGameRendering( stereoFrame_t stereo ) {
-	g_cgame->DrawActiveFrame( cl.serverTime, stereo, clc.demoplaying );
+void CL_CGameRendering() {
+	g_cgame->DrawActiveFrame( cl.serverTime, clc.demoplaying );
 }
 
 

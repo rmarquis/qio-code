@@ -492,15 +492,6 @@ int LAN_GetServerStatus( char *serverAddress, char *serverStatus, int maxLen ) {
 
 /*
 ====================
-CL_GetGlConfig
-====================
-*/
-static void CL_GetGlconfig( glconfig_t *config ) {
-	*config = cls.glconfig;
-}
-
-/*
-====================
 CL_GetClipboardData
 ====================
 */

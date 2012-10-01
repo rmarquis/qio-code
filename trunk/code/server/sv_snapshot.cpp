@@ -292,10 +292,10 @@ SV_AddEntitiesVisibleFromPoint
 */
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
-	int		e, i;
+	int		e;//, i;
 	sharedEntity_t *ent;
 	svEntity_t	*svEnt;
-	int		l;
+	//int		l;
 	
 
 	// during an error shutdown message we may need to transmit

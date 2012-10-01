@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
 #include "client.h"
+#include <api/rAPI.h>
 
 qboolean	scr_initialized;		// ready to draw
 
@@ -39,13 +40,13 @@ Coordinates are 640*480 virtual values
 =================
 */
 void SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname ) {
-	qhandle_t	hShader;
+	mtrAPI_i *hShader;
 
 	assert( width != 0 );
 
-	hShader = re.RegisterShader( picname );
+	hShader = rf->registerMaterial( picname );
 	SCR_AdjustFrom640( &x, &y, &width, &height );
-	re.DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
+	rf->drawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
 
@@ -62,14 +63,14 @@ void SCR_AdjustFrom640( float *x, float *y, float *w, float *h ) {
 
 #if 0
 		// adjust for wide screens
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			*x += 0.5 * ( cls.glconfig.vidWidth - ( cls.glconfig.vidHeight * 640 / 480 ) );
+		if ( rf->getWinWidth() * 480 > rf->getWinHeight() * 640 ) {
+			*x += 0.5 * ( rf->getWinWidth() - ( rf->getWinHeight() * 640 / 480 ) );
 		}
 #endif
 
 	// scale for screen sizes
-	xscale = cls.glconfig.vidWidth / 640.0;
-	yscale = cls.glconfig.vidHeight / 480.0;
+	xscale = rf->getWinWidth() / 640.0;
+	yscale = rf->getWinHeight() / 480.0;
 	if ( x ) {
 		*x *= xscale;
 	}
@@ -92,12 +93,12 @@ Coordinates are 640*480 virtual values
 =================
 */
 void SCR_FillRect( float x, float y, float width, float height, const float *color ) {
-	re.SetColor( color );
+	rf->set2DColor( color );
 
 	SCR_AdjustFrom640( &x, &y, &width, &height );
-	re.DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
+	rf->drawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
 
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 }
 
 
@@ -108,9 +109,9 @@ SCR_DrawPic
 Coordinates are 640*480 virtual values
 =================
 */
-void SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader ) {
+void SCR_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader ) {
 	SCR_AdjustFrom640( &x, &y, &width, &height );
-	re.DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
+	rf->drawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
 
@@ -147,7 +148,7 @@ static void SCR_DrawChar( int x, int y, float size, int ch ) {
 	fcol = col*0.0625;
 	size = 0.0625;
 
-	re.DrawStretchPic( ax, ay, aw, ah,
+	rf->drawStretchPic( ax, ay, aw, ah,
 					   fcol, frow, 
 					   fcol + size, frow + size, 
 					   cls.charSetShader );
@@ -179,7 +180,7 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	fcol = col*0.0625;
 	size = 0.0625;
 
-	re.DrawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
+	rf->drawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
 					   fcol, frow, 
 					   fcol + size, frow + size, 
 					   cls.charSetShader );
@@ -205,7 +206,7 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 	// draw the drop shadow
 	color[0] = color[1] = color[2] = 0;
 	color[3] = setColor[3];
-	re.SetColor( color );
+	rf->set2DColor( color );
 	s = string;
 	xx = x;
 	while ( *s ) {
@@ -222,13 +223,13 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 	// draw the colored text
 	s = string;
 	xx = x;
-	re.SetColor( setColor );
+	rf->set2DColor( setColor );
 	while ( *s ) {
 		if ( !noColorEscape && Q_IsColorString( s ) ) {
 			if ( !forceColor ) {
 				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
-				re.SetColor( color );
+				rf->set2DColor( color );
 			}
 			s += 2;
 			continue;
@@ -237,7 +238,7 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 		xx += size;
 		s++;
 	}
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 }
 
 
@@ -271,13 +272,13 @@ void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 	// draw the colored text
 	s = string;
 	xx = x;
-	re.SetColor( setColor );
+	rf->set2DColor( setColor );
 	while ( *s ) {
 		if ( Q_IsColorString( s ) ) {
 			if ( !forceColor ) {
 				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
-				re.SetColor( color );
+				rf->set2DColor( color );
 			}
 			if ( !noColorEscape ) {
 				s += 2;
@@ -288,7 +289,7 @@ void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 		xx += SMALLCHAR_WIDTH;
 		s++;
 	}
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 }
 
 
@@ -422,13 +423,13 @@ void SCR_DrawDebugGraph (void)
 	//
 	// draw the graph
 	//
-	w = cls.glconfig.vidWidth;
+	w = rf->getWinWidth();
 	x = 0;
-	y = cls.glconfig.vidHeight;
-	re.SetColor( g_color_table[0] );
-	re.DrawStretchPic(x, y - cl_graphheight->integer, 
+	y = rf->getWinHeight();
+	rf->set2DColor( g_color_table[0] );
+	rf->drawStretchPic(x, y - cl_graphheight->integer, 
 		w, cl_graphheight->integer, 0, 0, 0, 0, cls.whiteShader );
-	re.SetColor( NULL );
+	rf->set2DColor( NULL );
 
 	for (a=0 ; a<w ; a++)
 	{
@@ -439,7 +440,7 @@ void SCR_DrawDebugGraph (void)
 		if (v < 0)
 			v += cl_graphheight->integer * (1+(int)(-v / cl_graphheight->integer));
 		h = (int)v % cl_graphheight->integer;
-		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls.whiteShader );
+		rf->drawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls.whiteShader );
 	}
 }
 
@@ -470,20 +471,20 @@ SCR_DrawScreenField
 This will be called twice if rendering in stereo mode
 ==================
 */
-void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
+void SCR_DrawScreenField() {
 	qboolean uiFullscreen;
 
-	re.BeginFrame( stereoFrame );
+	rf->beginFrame();
 
 	uiFullscreen = 0;// (uivm && VM_Call( uivm, UI_IS_FULLSCREEN ));
 
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
 	if ( uiFullscreen || (clc.state != CA_ACTIVE && clc.state != CA_CINEMATIC) ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			re.SetColor( g_color_table[0] );
-			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
-			re.SetColor( NULL );
+		if ( rf->getWinWidth() * 480 > rf->getWinHeight() * 640 ) {
+			rf->set2DColor( g_color_table[0] );
+			rf->drawStretchPic( 0, 0, rf->getWinWidth(), rf->getWinHeight(), 0, 0, 0, 0, cls.whiteShader );
+			rf->set2DColor( NULL );
 		}
 	}
 
@@ -513,7 +514,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		case CA_LOADING:
 		case CA_PRIMED:
 			// draw the game information screen and loading progress
-			CL_CGameRendering(stereoFrame);
+			CL_CGameRendering();
 
 			// also draw the connection information, so it doesn't
 			// flash away too briefly on local or lan games
@@ -523,7 +524,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			break;
 		case CA_ACTIVE:
 			// always supply STEREO_CENTER as vieworg offset is now done by the engine.
-			CL_CGameRendering(stereoFrame);
+			CL_CGameRendering();
 			SCR_DrawDemoRecording();
 #ifdef USE_VOIP
 			SCR_DrawVoipMeter();
@@ -570,21 +571,21 @@ void SCR_UpdateScreen( void ) {
 	// that case.
 	if( 1 || com_dedicated->integer )
 	{
-		// XXX
-		int in_anaglyphMode = Cvar_VariableIntegerValue("r_anaglyphMode");
-		// if running in stereo, we need to draw the frame twice
-		if ( cls.glconfig.stereoEnabled || in_anaglyphMode) {
-			SCR_DrawScreenField( STEREO_LEFT );
-			SCR_DrawScreenField( STEREO_RIGHT );
-		} else {
-			SCR_DrawScreenField( STEREO_CENTER );
-		}
+		//// XXX
+		//int in_anaglyphMode = Cvar_VariableIntegerValue("r_anaglyphMode");
+		//// if running in stereo, we need to draw the frame twice
+		//if ( cls.glconfig.stereoEnabled || in_anaglyphMode) {
+		//	SCR_DrawScreenField( STEREO_LEFT );
+		//	SCR_DrawScreenField( STEREO_RIGHT );
+		//} else {
+			SCR_DrawScreenField();
+		//}
 
-		if ( com_speeds->integer ) {
-			re.EndFrame( &time_frontend, &time_backend );
-		} else {
-			re.EndFrame( NULL, NULL );
-		}
+		//if ( com_speeds->integer ) {
+		//	re.EndFrame( &time_frontend, &time_backend );
+		//} else {
+			rf->endFrame();
+		//}
 	}
 	
 	recursive = 0;

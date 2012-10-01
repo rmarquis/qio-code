@@ -36,20 +36,7 @@ Sets the coordinates of the rendered window
 =================
 */
 static void CG_CalcVrect (void) {
-	int		size;
 
-
-		size = 100;
-
-	
-	cg.refdef.width = cgs.glconfig.vidWidth*size/100;
-	cg.refdef.width &= ~1;
-
-	cg.refdef.height = cgs.glconfig.vidHeight*size/100;
-	cg.refdef.height &= ~1;
-
-	cg.refdef.x = (cgs.glconfig.vidWidth - cg.refdef.width)/2;
-	cg.refdef.y = (cgs.glconfig.vidHeight - cg.refdef.height)/2;
 }
 
 //==============================================================================
@@ -172,76 +159,8 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 #define	WAVE_FREQUENCY	0.4
 
 static int CG_CalcFov( void ) {
-	float	x;
-	int		contents;
-	float	fov_x, fov_y;
-//	float	zoomFov;
-//	float	f;
-	int		inwater;
 
-	//{
-	
-			fov_x = cg_fov.value;
-			if ( fov_x < 1 ) {
-				fov_x = 1;
-			} else if ( fov_x > 160 ) {
-				fov_x = 160;
-			}
-		
-
-	//	// account for zooms
-	//	zoomFov = cg_zoomFov.value;
-	//	if ( zoomFov < 1 ) {
-	//		zoomFov = 1;
-	//	} else if ( zoomFov > 160 ) {
-	//		zoomFov = 160;
-	//	}
-
-	//	if ( cg.zoomed ) {
-	//		f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
-	//		if ( f > 1.0 ) {
-	//			fov_x = zoomFov;
-	//		} else {
-	//			fov_x = fov_x + f * ( zoomFov - fov_x );
-	//		}
-	//	} else {
-	//		f = ( cg.time - cg.zoomTime ) / (float)ZOOM_TIME;
-	//		if ( f <= 1.0 ) {
-	//			fov_x = zoomFov + f * ( fov_x - zoomFov );
-	//		}
-	//	}
-	//}
-
-	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
-	fov_y = atan2( cg.refdef.height, x );
-	fov_y = fov_y * 360 / M_PI;
-
-	// warp if underwater
-	contents = 0;//CG_PointContents( cg.refdef.vieworg, -1 );
-	//if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
-	//	phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-	//	v = WAVE_AMPLITUDE * sin( phase );
-	//	fov_x += v;
-	//	fov_y -= v;
-	//	inwater = qtrue;
-	//}
-	//else 
-	{
-		inwater = qfalse;
-	}
-
-
-	// set it
-	cg.refdef.fov_x = fov_x;
-	cg.refdef.fov_y = fov_y;
-
-	if ( !cg.zoomed ) {
-		cg.zoomSensitivity = 1;
-	} else {
-		cg.zoomSensitivity = cg.refdef.fov_y / 75.0;
-	}
-
-	return inwater;
+	return 0;
 }
 
 
@@ -297,7 +216,7 @@ static int CG_CalcViewValues( void ) {
 	}
 
 	// position eye relative to origin
-	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
+	//AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
 	// field of view
 	return CG_CalcFov();
@@ -314,7 +233,7 @@ CG_DrawActiveFrame
 Generates and draws a game scene and status information at the given time.
 =================
 */
-void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
+void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	int		inwater;
 
 	cg.time = serverTime;
@@ -347,18 +266,18 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// build the render lists
 	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 
-	cg.refdef.time = cg.time;
-	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
+//	cg.refdef.time = cg.time;
+//	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
 
 	// make sure the lagometerSample and frame timing isn't done twice when in stereo
-	if ( stereoView != STEREO_RIGHT ) {
+	//if ( stereoView != STEREO_RIGHT ) {
 		cg.frametime = cg.time - cg.oldTime;
 		if ( cg.frametime < 0 ) {
 			cg.frametime = 0;
 		}
 		cg.oldTime = cg.time;
 		CG_AddLagometerFrameInfo();
-	}
+	//}
 	if (cg_timescale.value != cg_timescaleFadeEnd.value) {
 		if (cg_timescale.value < cg_timescaleFadeEnd.value) {
 			cg_timescale.value += cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
