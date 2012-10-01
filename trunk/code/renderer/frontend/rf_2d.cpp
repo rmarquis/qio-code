@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_2d.cpp - 2d graphics batching and drawing
 
 #include "rf_2d.h"
+#include <api/rbAPI.h>
 
 static tess2d_c r_tess2D; // I dont need to access that class outside this file
 r2dCommandsQueue_c r_2dCmds;
@@ -47,7 +48,9 @@ void tess2d_c::finishDrawing() {
 		}
 		return;
 	}
-
+	rb->setMaterial(material);
+	rb->setColor4(curColor);
+	rb->draw2D(verts.getArray(),numVerts,indices.getArray(),numIndexes);
 	material = 0;
 	numVerts = 0;
 	numIndexes = 0;
@@ -189,5 +192,5 @@ void r2dCommandsQueue_c::executeCommands() {
 	at = 0;
 }
 void r2dCommandsQueue_c::clear() {
-	
+	at = 0;
 }
