@@ -89,6 +89,10 @@ public:
 		lastMat = mat;
 	}
 	virtual void setColor4(const float *rgba)  {
+		if(rgba == 0) {
+			float def[] = { 1, 1, 1, 1 };
+			rgba = def;
+		}
 		glColor4fv(rgba);
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {

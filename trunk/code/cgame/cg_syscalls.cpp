@@ -50,32 +50,3 @@ void	trap_RemoveCommand( const char *cmdName ) {
 void	trap_SendClientCommand( const char *s ) {
 	g_client->syscall( CG_SENDCLIENTCOMMAND, s );
 }
-
-
-void	trap_R_LoadWorldMap( const char *mapname ) {
-}
-
-qhandle_t trap_R_RegisterShader( const char *name ) {
-	return 0;
-}
-
-qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
-	return 0;
-}
-
-void	trap_R_ClearScene( void ) {
-}
-
-void	trap_R_RenderScene() {
-	
-}
-
-void	trap_R_SetColor( const float *rgba ) {
-}
-
-void	trap_R_DrawStretchPic( float x, float y, float w, float h, 
-							   float s1, float t1, float s2, float t2, qhandle_t hShader ) {
-
-}
-
-

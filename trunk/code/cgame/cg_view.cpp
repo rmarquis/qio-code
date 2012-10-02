@@ -242,7 +242,7 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	CG_UpdateCvars();
 
 	// clear all the render lists
-	trap_R_ClearScene();
+//	trap_R_ClearScene();
 
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();

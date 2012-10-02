@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc
 #include "cg_local.h"
+#include <api/rAPI.h>
 
 /*
 ================
@@ -51,9 +52,9 @@ CG_DrawPic
 Coordinates are 640*480 virtual values
 =================
 */
-void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader ) {
+void CG_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader ) {
 	CG_AdjustFrom640( &x, &y, &width, &height );
-	trap_R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
+	rf->drawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
 
@@ -90,7 +91,7 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	fcol = col*0.0625;
 	size = 0.0625;
 
-	trap_R_DrawStretchPic( ax, ay, aw, ah,
+	rf->drawStretchPic( ax, ay, aw, ah,
 					   fcol, frow, 
 					   fcol + size, frow + size, 
 					   cgs.media.charsetShader );
@@ -121,7 +122,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 	if (shadow) {
 		color[0] = color[1] = color[2] = 0;
 		color[3] = setColor[3];
-		trap_R_SetColor( color );
+		rf->set2DColor( color );
 		s = string;
 		xx = x;
 		cnt = 0;
@@ -141,13 +142,13 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 	s = string;
 	xx = x;
 	cnt = 0;
-	trap_R_SetColor( setColor );
+	rf->set2DColor( setColor );
 	while ( *s && cnt < maxChars) {
 		if ( Q_IsColorString( s ) ) {
 			if ( !forceColor ) {
 				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
-				trap_R_SetColor( color );
+				rf->set2DColor( color );
 			}
 			s += 2;
 			continue;
@@ -157,7 +158,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		cnt++;
 		s++;
 	}
-	trap_R_SetColor( NULL );
+	rf->set2DColor( NULL );
 }
 
 void CG_DrawBigString( int x, int y, const char *s, float alpha ) {

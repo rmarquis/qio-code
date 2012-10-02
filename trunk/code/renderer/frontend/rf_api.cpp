@@ -70,6 +70,7 @@ public:
 	// functions called every frame
 	virtual void beginFrame() {
 		rb->beginFrame();
+		rb->setColor4(0);
 	}
 	virtual void setup3DViewer(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
 

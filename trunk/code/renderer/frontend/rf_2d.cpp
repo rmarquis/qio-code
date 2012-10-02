@@ -64,6 +64,10 @@ void tess2d_c::set2DColor(const float *rgba) {	// NULL = 1,1,1,1
 	if(curColor[0] != rgba[0] || curColor[1] != rgba[1] || curColor[2] != rgba[2]
 	|| curColor[3] != rgba[3]) {
 		finishDrawing();
+		curColor[0] = rgba[0];
+		curColor[1] = rgba[1];
+		curColor[2] = rgba[2];
+		curColor[3] = rgba[3];
 	}
 }
 void tess2d_c::ensureAlloced(u32 numNeedIndexes, u32 numNeedVerts) {

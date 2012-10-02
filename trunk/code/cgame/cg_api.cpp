@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/cgameAPI.h>
+#include <api/rAPI.h>
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -38,6 +39,7 @@ clAPI_s *g_client = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
+rAPI_i *rf = 0;
 // exports
 static cgameAPI_s g_staticCGameAPI;
 
@@ -55,6 +57,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

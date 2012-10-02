@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
 #include <api/cvarAPI.h>
+#include <api/rAPI.h>
 
 cg_t				cg;
 cgs_t				cgs;
@@ -197,8 +198,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cgs.serverCommandSequence = serverCommandSequence;
 
 	// load a few needed things before we do any screen updates
-	cgs.media.charsetShader		= trap_R_RegisterShader( "gfx/2d/bigchars" );
-	cgs.media.whiteShader		= trap_R_RegisterShader( "white" );
+	cgs.media.charsetShader		= rf->registerMaterial( "gfx/2d/bigchars" );
+	cgs.media.whiteShader		= rf->registerMaterial( "white" );
 
 	CG_RegisterCvars();
 
@@ -233,9 +234,9 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
-	trap_R_ClearScene();
+	//trap_R_ClearScene();
 
-	trap_R_LoadWorldMap( cgs.mapname );
+	rf->loadWorldMap( cgs.mapname );
 
 
 //	cg.loading = qfalse;	// future players will be deferred

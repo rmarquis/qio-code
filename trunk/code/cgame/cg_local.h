@@ -135,8 +135,8 @@ typedef struct {
 // Other media that can be tied to clients, weapons, or items are
 // stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
 typedef struct {
-	qhandle_t	charsetShader;
-	qhandle_t	whiteShader;
+	class mtrAPI_i *charsetShader;
+	class mtrAPI_i *whiteShader;
 
 
 } cgMedia_t;
@@ -255,7 +255,7 @@ void CG_PredictPlayerState();
 //
 void CG_DrawBigString( int x, int y, const char *s, float alpha );
 int CG_DrawStrlen( const char *str );
-void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
+void CG_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader );
 
 //
 // cg_draw.c
@@ -285,20 +285,3 @@ void		trap_AddCommand( const char *cmdName );
 // send a string to the server over the network
 void		trap_SendClientCommand( const char *s );
 
-void		trap_R_LoadWorldMap( const char *mapname );
-
-// all media should be registered during level startup to prevent
-// hitches during gameplay
-qhandle_t	trap_R_RegisterShader( const char *name );			// returns all white if not found
-qhandle_t	trap_R_RegisterShaderNoMip( const char *name );			// returns all white if not found
-
-// a scene is built up by calls to R_ClearScene and the various R_Add functions.
-// Nothing is drawn until R_RenderScene is called.
-void		trap_R_ClearScene( void );
-
-// polys are intended for simple wall marks, not really for doing
-// significant construction
-void		trap_R_RenderScene();
-void		trap_R_SetColor( const float *rgba );	// NULL = 1,1,1,1
-void		trap_R_DrawStretchPic( float x, float y, float w, float h, 
-			float s1, float t1, float s2, float t2, qhandle_t hShader );
