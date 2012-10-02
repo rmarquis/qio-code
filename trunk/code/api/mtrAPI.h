@@ -21,36 +21,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rbAPI.h - renderer backend (openGL / DirectX) interface
-// (low-level drawing routines ONLY)
+// mat_api.h - material class interface
 
-#ifndef __RB_API_H__
-#define __RB_API_H__
+#ifndef __MTR_API_H__
+#define __MTR_API_H__
 
-#include "iFaceBase.h"
+#include <shared/safePtr.h>
 
-#define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
-#define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
-
-class rbAPI_i : public iFaceBase_i {
+class mtrAPI_i : public safePtrObject_c { 
 public:
-	virtual void setMaterial(class mtrAPI_i *mat) = 0;
-	virtual void setColor4(const float *rgba) = 0;
-	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
-	virtual void beginFrame() = 0;
-	virtual void endFrame() = 0;
-	virtual void setup2DView() = 0;
-
-	virtual u32 getWinWidth() const = 0;
-	virtual u32 getWinHeight() const = 0;
-
-	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
-	virtual void freeTextureData(class textureAPI_i *tex) = 0;
-
-	virtual void init() = 0;
-	virtual void shutdown() = 0;
+	virtual const char *getName() const = 0;
+	virtual u32 getNumStages() const = 0;
+	virtual const class mtrStageAPI_i *getStage(u32 stageNum) const = 0;
 };
 
-extern rbAPI_i *rb;
-
-#endif // __RB_API_H__
+#endif // __MTR_API_H__

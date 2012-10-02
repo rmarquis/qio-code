@@ -33,6 +33,8 @@ enum qioModule_e {
 	QMD_GAME,
 	QMD_CGAME,
 	QMD_RENDERER,
+	QMD_MATERIALSYSTEM,
+	QMD_IMAGELIB,
 };
 
 // this must be implemented in every module

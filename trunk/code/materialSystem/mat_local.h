@@ -21,29 +21,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// vfsAPI.h - virtual file system interface
+// mat_local.h - materialSystem local functions
 
-#ifndef __VFSAPI_H__
-#define __VFSAPI_H__
+#ifndef __MAT_LOCAL_H__
+#define __MAT_LOCAL_H__
 
-#include "iFaceBase.h"
+// mat_main.cpp
+void MAT_ScanForMaterialFiles();
+class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName);
+// mat_textures.cpp
+class textureAPI_i *MAT_GetDefaultTexture();
+class textureAPI_i *MAT_RegisterTexture(const char *texString);
+void MAT_FreeAllTextures();
+void MAT_FreeAllMaterials();
 
-#define VFS_API_IDENTSTR "VFSAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct vfsAPI_s : public iFaceBase_i {
-	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
-	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
-	void (*FS_FCloseFile)( fileHandle_t f );
-	int (*FS_GetFileList)( const char *path, const char *extension, char *listbuf, int bufsize );
-	int (*FS_Seek)( fileHandle_t f, long offset, int origin ); // fsOrigin_t
-	char **	(*FS_ListFiles)( const char *name, const char *extension, int *numfilesfound );
-	void	(*FS_FreeFileList)( char **filelist );
-	long (*FS_ReadFile)(const char *qpath, void **buffer);
-	void (*FS_FreeFile)( void *buffer );
-};
-
-extern vfsAPI_s *g_vfs;
-
-#endif // __VFSAPI_H__
+#endif // __MAT_LOCAL_H__

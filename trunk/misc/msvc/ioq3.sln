@@ -8,6 +8,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quake3", "quake3.vcproj", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "renderer", "renderer.vcproj", "{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "materialSystem", "materialSystem.vcproj", "{B93D05ED-C73C-4797-A47B-AC898ECF0459}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imageLib", "imageLib.vcproj", "{607BEC1E-1C28-4BB2-8B36-71377A41A631}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +34,14 @@ Global
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Debug|Win32.Build.0 = Debug|Win32
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Release|Win32.ActiveCfg = Release|Win32
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Release|Win32.Build.0 = Release|Win32
+		{B93D05ED-C73C-4797-A47B-AC898ECF0459}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B93D05ED-C73C-4797-A47B-AC898ECF0459}.Debug|Win32.Build.0 = Debug|Win32
+		{B93D05ED-C73C-4797-A47B-AC898ECF0459}.Release|Win32.ActiveCfg = Release|Win32
+		{B93D05ED-C73C-4797-A47B-AC898ECF0459}.Release|Win32.Build.0 = Release|Win32
+		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Debug|Win32.ActiveCfg = Debug|Win32
+		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Debug|Win32.Build.0 = Debug|Win32
+		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Release|Win32.ActiveCfg = Release|Win32
+		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

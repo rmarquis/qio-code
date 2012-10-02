@@ -21,36 +21,29 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rbAPI.h - renderer backend (openGL / DirectX) interface
-// (low-level drawing routines ONLY)
+// textureAPI.h - texture class interface
+// Note that a single material (in Q3 called: shader) might use
+// multiple textures, even in the single stage.
 
-#ifndef __RB_API_H__
-#define __RB_API_H__
+#ifndef __TEXTUREAPI_H__
+#define __TEXTUREAPI_H__
 
-#include "iFaceBase.h"
+#include <shared/typedefs.h>
 
-#define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
-#define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
-
-class rbAPI_i : public iFaceBase_i {
+class textureAPI_i {
 public:
-	virtual void setMaterial(class mtrAPI_i *mat) = 0;
-	virtual void setColor4(const float *rgba) = 0;
-	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
-	virtual void beginFrame() = 0;
-	virtual void endFrame() = 0;
-	virtual void setup2DView() = 0;
+	// returns the path to the texture file (with extension)
+	virtual const char *getName() const = 0;
 
-	virtual u32 getWinWidth() const = 0;
-	virtual u32 getWinHeight() const = 0;
-
-	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
-	virtual void freeTextureData(class textureAPI_i *tex) = 0;
-
-	virtual void init() = 0;
-	virtual void shutdown() = 0;
+	virtual u32 getWidth() const = 0;
+	virtual u32 getHeight() const = 0;
+	virtual void setWidth(u32 newWidth) = 0;
+	virtual void setHeight(u32 newHeight) = 0;
+	
+	virtual void *getInternalHandleV() const = 0;
+	virtual void setInternalHandleV(void *newHandle) = 0;
+	virtual u32 getInternalHandleU32() const = 0;
+	virtual void setInternalHandleU32(u32 newHandle) = 0;
 };
 
-extern rbAPI_i *rb;
-
-#endif // __RB_API_H__
+#endif // __TEXTUREAPI_H__

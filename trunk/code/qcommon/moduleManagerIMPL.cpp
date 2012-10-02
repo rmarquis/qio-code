@@ -66,6 +66,7 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 		nm->name = moduleName;
 		nm->fullName = fullName;
 		nm->getModuleIdentFunc = getModuleIdentFunc;
+		nm->handle = h;
 		//nm->fullPath = fullPath;
 		modules.push_back(nm);
 		return nm;

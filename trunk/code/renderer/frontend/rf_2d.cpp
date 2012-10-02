@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "rf_2d.h"
 #include <api/rbAPI.h>
+#include <api/materialSystemAPI.h>
 
 static tess2d_c r_tess2D; // I dont need to access that class outside this file
 r2dCommandsQueue_c r_2dCmds;
@@ -78,6 +79,7 @@ void tess2d_c::drawStretchPic(float x, float y, float w, float h,
 	if(material != pMaterial) {
 		finishDrawing();
 	}
+	material = pMaterial;
 	ensureAlloced(numIndexes + 6, numVerts + 4);
 	// add a quad (two triangles)
 	indices[numIndexes + 0] = numVerts + 3;

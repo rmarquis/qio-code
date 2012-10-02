@@ -31,11 +31,42 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/moduleManagerAPI.h>
+#include <api/materialSystemAPI.h>
 
 #include "rf_2d.h"
 
 class rAPIImpl_c : public rAPI_i {
+	moduleAPI_i *materialSystemDLL;
+	bool initialized;
+
+	void unloadMaterialSystem() {
+		if(materialSystemDLL == 0) {
+			// should never happen
+			g_core->Print("rAPIImpl_c::unloadMaterialSystem: materialSystemDLL is already unloaded\n");
+			return;
+		}
+		g_ms->shutdownMaterialsSystem();
+		g_moduleMgr->unload(&materialSystemDLL);
+	}
+	void loadMaterialSystem() {
+		if(materialSystemDLL) {
+			// should never happen
+			g_core->Print("rAPIImpl_c::unloadMaterialSystem: materialSystemDLL is already loaded\n");
+			return;
+		}
+		materialSystemDLL = g_moduleMgr->load("materialSystem");
+		if(materialSystemDLL == 0) {
+			g_core->DropError("Cannot load materialSystem DLL");
+		}
+		g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+		g_ms->initMaterialsSystem();
+	}
 public:
+	rAPIImpl_c() {
+		materialSystemDLL = 0;
+		initialized = false;
+	}
 	// functions called every frame
 	virtual void beginFrame() {
 		rb->beginFrame();
@@ -67,15 +98,27 @@ public:
 		
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
-		return 0;
+		if(g_ms == 0)
+			return 0;
+		return g_ms->registerMaterial(matName);
 	}	
 	virtual void init() {
+		if(initialized) {
+			g_core->DropError("rAPIImpl_c::init: already initialized\n");
+		}
+		initialized = true;
+		loadMaterialSystem();
 		rb->init();
 	}
 	virtual void endRegistration() {
 
 	}
 	virtual void shutdown(bool destroyWindow) {
+		if(initialized == false) {
+			g_core->DropError("rAPIImpl_c::shutdown: not initialized\n");
+		}
+		initialized = false;
+		unloadMaterialSystem();
 		if(destroyWindow) {
 			rb->shutdown();
 		}
@@ -95,6 +138,9 @@ vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
 rbAPI_i *rb = 0;
+moduleManagerAPI_i *g_moduleMgr = 0;
+materialSystemAPI_i *g_ms = 0;
+
 // exports
 static rAPIImpl_c g_staticRFAPI;
 rAPI_i *rf = &g_staticRFAPI;
@@ -110,6 +156,9 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RB_SDLOPENGL_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+
 }
 
 qioModule_e IFM_GetCurModule() {

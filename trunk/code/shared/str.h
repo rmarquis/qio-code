@@ -36,6 +36,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 inline bool G_isWS(char c) {
 	return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
 }
+// returns pointer to the extension of file path (first character afer '.')
+inline const char* G_strgetExt(const char *str) {
+	// -2, since we're assuming that '.' is not a last char
+	// l != 1 because there must be at least one character before the '.'
+	for(int l = (strlen(str)-2); l !=  1; l--) {
+		if(str[l] == '.') {
+			l++;
+			return &str[l];
+		}
+	}
+	return 0;
+}
 
 class str {
 	char *data;

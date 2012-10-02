@@ -3768,6 +3768,11 @@ void FS_InitAPI() {
 	g_staticVFSAPI.FS_FCloseFile = FS_FCloseFile;
 	g_staticVFSAPI.FS_GetFileList = FS_GetFileList;
 	g_staticVFSAPI.FS_Seek = FS_Seek;
+	g_staticVFSAPI.FS_ListFiles = FS_ListFiles;
+	g_staticVFSAPI.FS_FreeFileList = FS_FreeFileList;
+	g_staticVFSAPI.FS_ReadFile = FS_ReadFile;
+	g_staticVFSAPI.FS_FreeFile = FS_FreeFile;
+
 	g_vfs = &g_staticVFSAPI;
 	g_iFaceMan->registerInterface(&g_staticVFSAPI,VFS_API_IDENTSTR);
 }

@@ -21,29 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// vfsAPI.h - virtual file system interface
+// sdl_glConfig.h - glconfig struct
 
-#ifndef __VFSAPI_H__
-#define __VFSAPI_H__
+extern struct glConfig_s {
+	int vidWidth;
+	int vidHeight;
+	float windowAspect;
+	bool isFullscreen;
+	int colorBits;
+	int depthBits;
+	int stencilBits;
+	bool deviceSupportsGamma;
+	char vendor_string[8192];
+	char renderer_string[8192];
+	char version_string[8192];
+	char extensions_string[8192];
+} glConfig;
 
-#include "iFaceBase.h"
-
-#define VFS_API_IDENTSTR "VFSAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct vfsAPI_s : public iFaceBase_i {
-	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
-	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
-	void (*FS_FCloseFile)( fileHandle_t f );
-	int (*FS_GetFileList)( const char *path, const char *extension, char *listbuf, int bufsize );
-	int (*FS_Seek)( fileHandle_t f, long offset, int origin ); // fsOrigin_t
-	char **	(*FS_ListFiles)( const char *name, const char *extension, int *numfilesfound );
-	void	(*FS_FreeFileList)( char **filelist );
-	long (*FS_ReadFile)(const char *qpath, void **buffer);
-	void (*FS_FreeFile)( void *buffer );
-};
-
-extern vfsAPI_s *g_vfs;
-
-#endif // __VFSAPI_H__

@@ -21,29 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// vfsAPI.h - virtual file system interface
+// r2dVert.h - simple vertex struct for 2d graphics (UI)
+#ifndef __R2DVERT_H__
+#define __R2DVERT_H__
 
-#ifndef __VFSAPI_H__
-#define __VFSAPI_H__
+#include <math/vec2.h>
 
-#include "iFaceBase.h"
+struct r2dVert_s {
+	vec2_c pos;
+	vec2_c texCoords;
 
-#define VFS_API_IDENTSTR "VFSAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct vfsAPI_s : public iFaceBase_i {
-	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
-	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
-	void (*FS_FCloseFile)( fileHandle_t f );
-	int (*FS_GetFileList)( const char *path, const char *extension, char *listbuf, int bufsize );
-	int (*FS_Seek)( fileHandle_t f, long offset, int origin ); // fsOrigin_t
-	char **	(*FS_ListFiles)( const char *name, const char *extension, int *numfilesfound );
-	void	(*FS_FreeFileList)( char **filelist );
-	long (*FS_ReadFile)(const char *qpath, void **buffer);
-	void (*FS_FreeFile)( void *buffer );
+	void set(float nX, float nY, float nS, float nT) {
+		pos.set(nX,nY);
+		texCoords.set(nS,nT);
+	}
 };
 
-extern vfsAPI_s *g_vfs;
-
-#endif // __VFSAPI_H__
+#endif // __R2DVERT_H__

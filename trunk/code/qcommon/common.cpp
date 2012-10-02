@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <winsock.h>
 #endif
 #include <api/iFaceMgrAPI.h>
+#include <api/moduleManagerAPI.h>
 #include <api/coreAPI.h>
 
 int demo_protocols[] =
@@ -2657,6 +2658,18 @@ void Com_InitCoreAPI() {
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
+}
+
+// it could be in client module, but I think that server
+// might need image library for loading terrain heightmaps,
+// so it's shared right now.
+static moduleAPI_i *com_imageLib = 0;
+void Com_InitImageLib() {
+	com_imageLib = g_moduleMgr->load("imageLib");
+	if(com_imageLib == 0) {
+		Com_Error(ERR_DROP,"Cannot load imageLib DLL");
+	}
 }
 
 /*
@@ -2720,6 +2733,8 @@ void Com_Init( char *commandLine ) {
 	FS_InitFilesystem ();
 
 	Com_InitJournaling();
+
+	Com_InitImageLib();
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);
