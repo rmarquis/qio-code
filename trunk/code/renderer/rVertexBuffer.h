@@ -35,6 +35,7 @@ public:
 	vec3_c normal;
 	vec2_c tc;
 	vec2_c lc;
+	byte color[4];
 	//vec2_c tan;
 	//vec2_c bin;
 };

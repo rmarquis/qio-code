@@ -157,6 +157,10 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		ov->tc = iv->st;
 		ov->lc = iv->lightmap;
 		ov->normal = iv->normal;
+		ov->color[0] = iv->color[0];
+		ov->color[1] = iv->color[1];
+		ov->color[2] = iv->color[2];
+		ov->color[3] = iv->color[3];
 	}
 	c_bezierPatches = 0;
 	c_flares = 0;
@@ -278,8 +282,10 @@ void rBspTree_c::addDrawCalls() {
 		for(u32 i = 0; i < batches.size(); i++) {
 			bspSurfBatch_s *b = batches[i];
 			//rcq->addDrawCall(this->verts,b->indices,b->mat,b->lightmap,b->getSort());
+			rb->setBindVertexColors(true);
 			rb->setMaterial(b->mat,b->lightmap);
 			rb->drawElements(this->verts,b->indices);
+			rb->setBindVertexColors(false);
 		}
 	}
 }

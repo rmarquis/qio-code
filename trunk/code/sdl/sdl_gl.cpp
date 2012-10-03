@@ -73,6 +73,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	// materials
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
+	bool bindVertexColors;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -117,7 +118,20 @@ public:
 		}
 		Com_Printf("GL_CheckErrors: %s\n", s );
 	}
-
+	// GL_COLOR_ARRAY changes
+	bool colorArrayActive;
+	void enableColorArray() {
+		if(colorArrayActive == true)
+			return;
+		glEnableClientState(GL_COLOR_ARRAY);
+		colorArrayActive = true;
+	}
+	void disableColorArray() {
+		if(colorArrayActive == false)
+			return;
+		glDisableClientState(GL_COLOR_ARRAY);
+		colorArrayActive = false;
+	}
 	//
 	// texture changes
 	//
@@ -225,7 +239,11 @@ public:
 		}
 		glColor4fv(rgba);
 	}
+	virtual void setBindVertexColors(bool bBindVertexColors) {
+		this->bindVertexColors = bBindVertexColors;
+	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+		disableColorArray();
 		glDisable(GL_DEPTH_TEST);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
@@ -265,11 +283,32 @@ public:
 		//if(lastLightmap) {
 			selectTex(1);
 			enableTexCoordArrayForCurrentTexSlot();
+#if 1
+			// increase lightmap brightness. They are very dark when vertex colors are enabled.
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+
+			//	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_ADD);
+
+				glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE);
+			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PREVIOUS_ARB);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_PREVIOUS_ARB);
+			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 4.0f);
+#endif
 			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->lc.x);
 		//} else {
 		//
 		//	disableTexCoordArrayForTexSlot(1);
 		//}
+		if(bindVertexColors) {
+			enableColorArray();
+			glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),&verts.getArray()->color[0]);
+		} else {
+			disableColorArray();
+		}
 		checkErrors();
 		if(lastMat) {
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
