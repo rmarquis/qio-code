@@ -21,28 +21,45 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// math.h - stateless mathematical routines
-#ifndef __MATH_MATH_H__
-#define __MATH_MATH_H__
+// rVertexBuffer.h 
+#ifndef __RVERTEXBUFFER_H__
+#define __RVERTEXBUFFER_H__
 
-#include <cmath>
-#include "../shared/typedefs.h"
-#include "../qcommon/q_shared.h" // M_PI, etc
+#include <math/vec3.h>
+#include <math/vec2.h>
+#include <shared/array.h>
 
-inline float G_rsqrt(float x) {
-    float xhalf = 0.5f*x;
-    int i = *(int*)&x;
-    i = 0x5f3759df - (i >> 1);
-    x = *(float*)&i;
-    x = x*(1.5f - xhalf*x*x);
-    return x;
-}
+class rVert_c {
+public:
+	vec3_c xyz;
+	vec3_c normal;
+	vec2_c tc;
+	vec2_c lc;
+	//vec2_c tan;
+	//vec2_c bin;
+};
+class rVertexBuffer_c {
+	arraySTD_c<rVert_c> data;
+	union {
+		u32 handleU32;
+		void *handleV;
+	};
+public:
+	void resize(u32 newSize) {
+		data.resize(newSize);
+	}
+	const rVert_c &operator [] (u32 index) const {
+		return data[index];
+	}
+	rVert_c &operator [] (u32 index) {
+		return data[index];
+	}
+	const rVert_c *getArray() const {
+		return data.getArray();
+	}
+	rVert_c *getArray() {
+		return data.getArray();
+	}
+};
 
-inline float G_sqrt2(float n) {
-    float r = 0.f;
-    float i = 1.f;
-    while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
-    return r;
-}
-
-#endif // __MATH_MATH_H__
+#endif // __RVERTEXBUFFER_H__

@@ -32,14 +32,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
 #define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
 
+// projection matrix (camera eye) definition
+struct projDef_s {
+	float fovX;
+	// fovY will be automatically calculated from window aspect
+	float zFar;
+	float zNear;
+
+	void setDefaults() {
+		fovX = 80;
+		zFar = 8192.f;
+		zNear = 1.f;
+	}
+};
+
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual void setMaterial(class mtrAPI_i *mat) = 0;
 	virtual void setColor4(const float *rgba) = 0;
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
+	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) = 0;
 	virtual void beginFrame() = 0;
 	virtual void endFrame() = 0;
 	virtual void setup2DView() = 0;
+	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) = 0;
+	virtual void setupProjection3D(const projDef_s *pd = 0) = 0;
 
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;

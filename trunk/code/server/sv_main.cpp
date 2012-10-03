@@ -29,7 +29,6 @@ cvar_t *sv_voip;
 
 serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
-vm_t			*gvm = NULL;				// game virtual machine
 
 cvar_t	*sv_fps = NULL;			// time rate for running non-clients
 cvar_t	*sv_timeout;			// seconds without any message

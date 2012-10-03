@@ -35,7 +35,7 @@ class materialSystemAPI_i : public iFaceBase_i {
 public:
 	virtual void initMaterialsSystem() = 0;
 	virtual void shutdownMaterialsSystem() = 0;
-	virtual mtrAPI_i *registerMaterial(const char *matName) = 0;
+	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual class mtrAPI_i *getDefaultMaterial() = 0;
 	virtual class textureAPI_i *getDefaultTexture() = 0;
 };

@@ -53,10 +53,6 @@ struct clAPI_s : public iFaceBase_i {
 	// a lagged connection
 	int (*GetCurrentCmdNumber)( void );	
 	qboolean (*GetUserCmd)( int cmdNumber, usercmd_t *ucmd );
-
-	// TEMPORARY HACK FOR RENDERER 
-	intptr_t (QDECL *syscall)( intptr_t arg, ... );
-
 };
 
 extern clAPI_s *g_client;

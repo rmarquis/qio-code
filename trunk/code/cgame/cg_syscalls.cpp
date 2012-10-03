@@ -29,24 +29,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 #include <api/clientAPI.h>
 
-int PASSFLOAT( float x ) {
-	floatint_t fi;
-	fi.f = x;
-	return fi.i;
-}
-
 void	trap_SendConsoleCommand( const char *text ) {
-	g_client->syscall( CG_SENDCONSOLECOMMAND, text );
+	//g_client->syscall( CG_SENDCONSOLECOMMAND, text );
 }
 
 void	trap_AddCommand( const char *cmdName ) {
-	g_client->syscall( CG_ADDCOMMAND, cmdName );
+	//g_client->syscall( CG_ADDCOMMAND, cmdName );
 }
 
 void	trap_RemoveCommand( const char *cmdName ) {
-	g_client->syscall( CG_REMOVECOMMAND, cmdName );
+	//g_client->syscall( CG_REMOVECOMMAND, cmdName );
 }
 
 void	trap_SendClientCommand( const char *s ) {
-	g_client->syscall( CG_SENDCLIENTCOMMAND, s );
+	//g_client->syscall( CG_SENDCLIENTCOMMAND, s );
 }

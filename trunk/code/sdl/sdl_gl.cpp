@@ -37,8 +37,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <shared/r2dVert.h>
+#include <math/matrix.h>
+#include <math/axis.h>
 
 #include "sdl_glConfig.h"
+
+#include <renderer/rVertexBuffer.h>
+#include <renderer/rIndexBuffer.h>
 
 
 void GLimp_Init();
@@ -47,6 +52,12 @@ void GLimp_EndFrame();
 
 class rbSDLOpenGL_c : public rbAPI_i {
 	mtrAPI_i *lastMat;
+	matrix_c worldModelMatrix;
+	matrix_c resultMatrix;
+	bool usingWorldSpace;
+	axis_c entityAxis;
+	vec3_c entityOrigin;
+	matrix_c entityMatrix;
 public:
 	rbSDLOpenGL_c() {
 		lastMat = 0;
@@ -96,6 +107,7 @@ public:
 		glColor4fv(rgba);
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+		glDisable(GL_DEPTH_TEST);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
@@ -126,6 +138,32 @@ public:
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
+	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		glEnable(GL_DEPTH_TEST);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts.getArray());
+		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->tc.x);
+		checkErrors();
+		if(lastMat) {
+			glEnable(GL_TEXTURE_2D);
+			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
+				const mtrStageAPI_i *s = lastMat->getStage(i);
+				textureAPI_i *t = s->getTexture();
+				u32 handle = t->getInternalHandleU32();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D,handle);
+				checkErrors();
+				glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
+				checkErrors();
+			}
+			glDisable(GL_TEXTURE_2D);
+		} else {
+			glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
+		}
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -144,6 +182,63 @@ public:
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 	}
+	matrix_c currentModelViewMatrix;
+	void loadModelViewMatrix(const matrix_c &newMat) {
+		//if(newMat.compare(currentModelViewMatrix)) 
+		//	return;
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixf(newMat);
+		currentModelViewMatrix = newMat;
+	}
+	virtual void setupWorldSpace() {
+		resultMatrix = worldModelMatrix;
+
+		this->loadModelViewMatrix(this->resultMatrix);
+
+		usingWorldSpace = true;
+	}
+	virtual void setupEntitySpace(const axis_c &axis, const vec3_c &origin) {
+		entityAxis = axis;
+		entityOrigin = origin;
+
+		entityMatrix.fromAxisAndOrigin(axis,origin);
+
+		this->resultMatrix = this->worldModelMatrix * entityMatrix;
+
+		this->loadModelViewMatrix(this->resultMatrix);
+
+		usingWorldSpace = false;
+	}
+	virtual bool isUsingWorldSpace() const {
+		return usingWorldSpace;
+	}
+	virtual const matrix_c &getEntitySpaceMatrix() const {
+		// we dont need to call it when usingWorldSpace == true, 
+		// just use identity matrix
+		assert(usingWorldSpace == false);
+		return entityMatrix;
+	}
+	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
+		// transform by the camera placement and view axis
+		this->worldModelMatrix.invFromAxisAndVector(newCamAxis,newCamPos);
+		// convert to gl coord system
+		this->worldModelMatrix.toGL();
+
+		setupWorldSpace();
+	}
+	virtual void setupProjection3D(const projDef_s *pd) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		matrix_c proj;
+		float viewPortW = this->getWinWidth();
+		float viewPortH = this->getWinHeight();
+		float x = viewPortW / tan( pd->fovX / 360 * M_PI );
+		float fovY = atan2( viewPortH, x );
+		fovY = fovY * 360 / M_PI;
+		//frustum.setup(fovX, fovY, zFar, axis, origin);
+		proj.setupProjection(pd->fovX,fovY,pd->zNear,pd->zFar);
+		glLoadMatrixf(proj);
+	}
 	virtual void init()  {
 		GLimp_Init();
 		u32 res = glewInit();
@@ -151,7 +246,6 @@ public:
 			Com_Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
 			return;
 		}
-
 	}
 	virtual void shutdown()  {
 		GLimp_Shutdown();

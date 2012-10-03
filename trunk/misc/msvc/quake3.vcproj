@@ -1262,31 +1262,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\code\qcommon\vm.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1345,10 +1320,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\qfiles.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\qgl.h"
 				>
 			</File>
@@ -1394,10 +1365,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\unzip.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\vm_local.h"
 				>
 			</File>
 			<File
@@ -1657,6 +1624,54 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\..\code\math\aabb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\axis.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\math.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="speex"

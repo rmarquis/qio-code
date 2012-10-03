@@ -21,28 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// math.h - stateless mathematical routines
-#ifndef __MATH_MATH_H__
-#define __MATH_MATH_H__
+// rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
+#ifndef __RF_WORLD_H__
+#define __RF_WORLD_H__
 
-#include <cmath>
-#include "../shared/typedefs.h"
-#include "../qcommon/q_shared.h" // M_PI, etc
+bool RF_LoadWorldMap(const char *name);
+void RF_ClearWorldMap();
+void RF_AddWorldDrawCalls();
 
-inline float G_rsqrt(float x) {
-    float xhalf = 0.5f*x;
-    int i = *(int*)&x;
-    i = 0x5f3759df - (i >> 1);
-    x = *(float*)&i;
-    x = x*(1.5f - xhalf*x*x);
-    return x;
-}
+#endif // __RF_BSP_H__
 
-inline float G_sqrt2(float n) {
-    float r = 0.f;
-    float i = 1.f;
-    while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
-    return r;
-}
-
-#endif // __MATH_MATH_H__

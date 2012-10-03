@@ -21,28 +21,26 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// math.h - stateless mathematical routines
-#ifndef __MATH_MATH_H__
-#define __MATH_MATH_H__
+// rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
+#include "rf_bsp.h"
 
-#include <cmath>
-#include "../shared/typedefs.h"
-#include "../qcommon/q_shared.h" // M_PI, etc
+static class rBspTree_c *r_bspTree = 0;
 
-inline float G_rsqrt(float x) {
-    float xhalf = 0.5f*x;
-    int i = *(int*)&x;
-    i = 0x5f3759df - (i >> 1);
-    x = *(float*)&i;
-    x = x*(1.5f - xhalf*x*x);
-    return x;
+void RF_ClearWorldMap() {
+	if(r_bspTree) {
+		delete r_bspTree;
+		r_bspTree = 0;
+	}
 }
-
-inline float G_sqrt2(float n) {
-    float r = 0.f;
-    float i = 1.f;
-    while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
-    return r;
+bool RF_LoadWorldMap(const char *name) {
+	RF_ClearWorldMap();
+	r_bspTree = RF_LoadBSP(name);
+	if(r_bspTree)
+		return false; // ok
+	return true; // error
 }
-
-#endif // __MATH_MATH_H__
+void RF_AddWorldDrawCalls() {
+	if(r_bspTree) {
+		r_bspTree->addDrawCalls();
+	}
+}

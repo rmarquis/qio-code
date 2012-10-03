@@ -33,12 +33,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/materialSystemAPI.h>
+#include <math/matrix.h>
+#include <math/axis.h>
 
 #include "rf_2d.h"
+#include "rf_world.h"
 
 class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
 	bool initialized;
+	matrix_c worldModelMatrix;
+	vec3_c camPos;
+	vec3_c camAngles;
+	axis_c camAxis;
+	projDef_s projDef;
 
 	void unloadMaterialSystem() {
 		if(materialSystemDLL == 0) {
@@ -72,14 +80,25 @@ public:
 		rb->beginFrame();
 		rb->setColor4(0);
 	}
-	virtual void setup3DViewer(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
-
+	virtual void setupProjection3D(const projDef_s *pd) {
+		if(pd == 0) {
+			projDef.setDefaults();
+		} else {
+			projDef = *pd;
+		}
+		rb->setupProjection3D(&projDef);
+	}
+	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
+		camPos = newCamPos;
+		camAngles = newCamAngles;
+		camAxis.fromAngles(newCamAngles);
+		rb->setup3DView(camPos, camAxis);
 	}
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	virtual void draw3DView() {
-
 	}
 	virtual void setup2DView() {
+		RF_AddWorldDrawCalls();
 		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {
@@ -96,7 +115,8 @@ public:
 	}
 	// misc functions
 	virtual void loadWorldMap(const char *mapName)  {
-		
+		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
+		RF_LoadWorldMap(mapName);
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		if(g_ms == 0)

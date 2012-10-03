@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // for a 3D rendering
 #include "cg_local.h"
 #include <api/cvarAPI.h>
+#include <api/rAPI.h>
+#include <math/vec3.h>
 
 //============================================================================
 
@@ -158,11 +160,6 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 #define	WAVE_AMPLITUDE	1
 #define	WAVE_FREQUENCY	0.4
 
-static int CG_CalcFov( void ) {
-
-	return 0;
-}
-
 
 
 /*
@@ -218,8 +215,10 @@ static int CG_CalcViewValues( void ) {
 	// position eye relative to origin
 	//AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
-	// field of view
-	return CG_CalcFov();
+	rf->setupProjection3D(0);
+	rf->setup3DView(cg.refdef.vieworg,cg.refdefViewAngles);
+
+	return 0;
 }
 
 

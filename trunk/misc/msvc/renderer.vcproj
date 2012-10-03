@@ -172,10 +172,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\frontend\rf_api.cpp"
 				>
 			</File>
@@ -187,12 +183,40 @@
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_world.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_world.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_bsp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_surface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rIndexBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rVertexBuffer.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -208,7 +232,19 @@
 			Name="math"
 			>
 			<File
+				RelativePath="..\..\code\math\aabb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\axis.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\math.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
 				>
 			</File>
 			<File
@@ -225,6 +261,14 @@
 			>
 			<File
 				RelativePath="..\..\code\shared\r2dVert.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="fileformats"
+			>
+			<File
+				RelativePath="..\..\code\fileformats\bspFileFormat.h"
 				>
 			</File>
 		</Filter>

@@ -220,8 +220,8 @@ public:
 		for (u32 i = 0; i < 3; i++) {
 			if (angles[i] != 0) {
 				float dAngle = angles[i] * M_PI / 180.0f;
-				float c = (vec_t)cos(dAngle);
-				float s = (vec_t)sin(dAngle);
+				float c = (float)cos(dAngle);
+				float s = (float)sin(dAngle);
 				vWork[nIndex[i][0]] = va[nIndex[i][0]] * c - va[nIndex[i][1]] * s;
 				vWork[nIndex[i][1]] = va[nIndex[i][0]] * s + va[nIndex[i][1]] * c;
 			}
@@ -396,17 +396,17 @@ public:
 	}
 
 	// fast-access operators
-	inline operator vec_t *() const {
-		return (vec_t*)&x;
+	inline operator float *() const {
+		return (float*)&x;
 	}
-	inline operator vec_t *() {
-		return (vec_t*)&x;
+	inline operator float *() {
+		return (float*)&x;
 	}
-	inline vec_t operator [] (const int index) const {
-		return ((vec_t*)this)[index];
+	inline float operator [] (const int index) const {
+		return ((float*)this)[index];
 	}
-	inline vec_t &operator [] (const int index) {
-		return ((vec_t*)this)[index];
+	inline float &operator [] (const int index) {
+		return ((float*)this)[index];
 	}
 
 

@@ -135,7 +135,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	dynamicsWorld->addCharacter(character);
 	return character;
 };
-#include "../qcommon/qfiles.h"
+#include "../fileformats/bspFileFormat.h"
 void G_LoadMap(const char *mapName) {
 #if 0
 	FILE *f = fopen(mapName,"rb");
@@ -167,20 +167,20 @@ void G_LoadMap(const char *mapName) {
 #endif
 
 
-	dheader_t *h = (dheader_t*)data;
-	dbrush_t *b = (dbrush_t*)(data + h->lumps[LUMP_BRUSHES].fileofs);
-	dbrushside_t *sides = (dbrushside_t*)(data + h->lumps[LUMP_BRUSHSIDES].fileofs);
-	dshader_t *mats = (dshader_t*)(data + h->lumps[LUMP_SHADERS].fileofs);
-	dplane_t *planes = (dplane_t*)(data + h->lumps[LUMP_PLANES].fileofs);
-	int numBrushes = h->lumps[LUMP_BRUSHES].filelen / sizeof(dbrush_t);
+	q3Header_s *h = (q3Header_s*)data;
+	q3Brush_s *b = (q3Brush_s*)(data + h->lumps[Q3_BRUSHES].fileOfs);
+	q3BrushSide_s *sides = (q3BrushSide_s*)(data + h->lumps[Q3_BRUSHSIDES].fileOfs);
+	q3BSPMaterial_s *mats = (q3BSPMaterial_s*)(data + h->lumps[Q3_SHADERS].fileOfs);
+	q3Plane_s *planes = (q3Plane_s*)(data + h->lumps[Q3_PLANES].fileOfs);
+	int numBrushes = h->lumps[Q3_BRUSHES].fileLen / sizeof(q3Brush_s);
 	for(int i = 0; i < numBrushes; i++, b++) {
-		dshader_t &m = mats[b->shaderNum];
+		q3BSPMaterial_s &m = mats[b->materialNum];
 		if((m.contentFlags & 1) == false)
 			continue;
 		btAlignedObjectArray<btVector3> planeEquations;
-		dbrushside_t *s = sides + b->firstSide;
+		q3BrushSide_s *s = sides + b->firstSide;
 		for(int j = 0; j < b->numSides; j++, s++) {
-			dplane_t &plane = planes[s->planeNum];
+			q3Plane_s &plane = planes[s->planeNum];
 			btVector3 planeEq;
 			planeEq.setValue(plane.normal[0],plane.normal[1],plane.normal[2]);
 			planeEq[3] = -plane.dist;

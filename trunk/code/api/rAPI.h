@@ -34,10 +34,11 @@ class rAPI_i : public iFaceBase_i {
 public:
 	// functions called every frame
 	virtual void beginFrame() = 0;
-	virtual void setup3DViewer(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
+	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
+	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
-	virtual void draw3DView() = 0;
-	virtual void setup2DView() = 0;
+	//virtual void draw3DView() = 0;
+	//virtual void setup2DView() = 0;
 	virtual void set2DColor(const float *rgba) = 0;	// NULL = 1,1,1,1
 	virtual void drawStretchPic(float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white

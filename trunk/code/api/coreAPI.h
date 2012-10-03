@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __COREAPI_H__
 
 #include "iFaceBase.h"
+#include "../qcommon/q_shared.h" // only for __attribute__
 
 #define CORE_API_IDENTSTR "CoreEngineAPI0001"
 

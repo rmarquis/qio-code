@@ -3164,9 +3164,6 @@ void CL_InitClientAPI() {
 	g_staticClientAPI.GetServerCommand = CL_GetServerCommand;
 	g_staticClientAPI.GetUserCmd = CL_GetUserCmd;
 
-	intptr_t QDECL VM_DllSyscall( intptr_t arg, ... );
-	g_staticClientAPI.syscall = VM_DllSyscall;
-
 	g_iFaceMan->registerInterface(&g_staticClientAPI,CLIENT_API_IDENTSTR);
 
 	// register GLIMP interface so new renderer dll can find it
