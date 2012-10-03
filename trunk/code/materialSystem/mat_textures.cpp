@@ -103,7 +103,12 @@ class textureAPI_i *MAT_GetDefaultTexture() {
 	}
 	return mat_defaultTexture;
 }
-
+class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h) {
+	// for lightmaps
+	textureIMPL_c *nl =  new textureIMPL_c;
+	rb->uploadLightmapRGB(nl,data,w,h);
+	return nl;
+}
 // texString can contain doom3-like modifiers
 // TODO: what if a texture is reused with different picmip setting?
 class textureAPI_i *MAT_RegisterTexture(const char *texString) {

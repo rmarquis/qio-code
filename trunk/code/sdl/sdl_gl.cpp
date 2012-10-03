@@ -50,8 +50,30 @@ void GLimp_Init();
 void GLimp_Shutdown();
 void GLimp_EndFrame();
 
+#define MAX_TEXTURE_SLOTS 32
+
+struct texState_s {
+	bool enabledTexture2D;
+	bool texCoordArrayEnabled;
+	u32 index;
+	matrixExt_c mat;
+
+	texState_s() {
+		enabledTexture2D = false;
+		texCoordArrayEnabled = false;
+		index = 0;
+	}
+};
+
 class rbSDLOpenGL_c : public rbAPI_i {
+	// gl state
+	texState_s texStates[MAX_TEXTURE_SLOTS];
+	int curTexSlot;
+	int highestTCSlotUsed;
+	// materials
 	mtrAPI_i *lastMat;
+	textureAPI_i *lastLightmap;
+	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
 	bool usingWorldSpace;
@@ -96,8 +118,105 @@ public:
 		Com_Printf("GL_CheckErrors: %s\n", s );
 	}
 
-	virtual void setMaterial(class mtrAPI_i *mat) {
+	//
+	// texture changes
+	//
+	void selectTex(int slot) {
+		if(slot+1 > highestTCSlotUsed) {
+			highestTCSlotUsed = slot+1;
+		}
+		if(curTexSlot != slot) {
+			glActiveTexture(GL_TEXTURE0 + slot);
+			glClientActiveTexture(GL_TEXTURE0 + slot);
+			curTexSlot = slot;
+		}
+	}
+	void bindTex(int slot, u32 tex) {
+		texState_s *s = &texStates[slot];
+		if(s->enabledTexture2D == true && s->index == tex)
+			return;
+
+		selectTex(slot);
+		if(s->enabledTexture2D == false) {
+			glEnable(GL_TEXTURE_2D);
+			s->enabledTexture2D = true;
+		}
+		if(s->index != tex) {
+			glBindTexture(GL_TEXTURE_2D,tex);
+			s->index = tex;
+		}
+	}
+	void disableAllTextures() {
+		texState_s *s = &texStates[0];
+		for(int i = 0; i < highestTCSlotUsed; i++, s++) {
+			if(s->enabledTexture2D == false && s->index == 0)
+				continue;
+			selectTex(i);
+			if(s->index != 0) {
+				glBindTexture(GL_TEXTURE_2D,0);
+				s->index = 0;
+			}
+			if(s->enabledTexture2D) {
+				glDisable(GL_TEXTURE_2D);
+				s->enabledTexture2D = false;
+			}
+		}
+		highestTCSlotUsed = -1;
+	}
+	// tex coords arrays
+	void enableTexCoordArrayForCurrentTexSlot() {
+		texState_s *s = &texStates[curTexSlot];
+		if(s->texCoordArrayEnabled==true)
+			return;
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		s->texCoordArrayEnabled = true;
+	}
+	void disableTexCoordArrayForCurrentTexSlot() {
+		texState_s *s = &texStates[curTexSlot];
+		if(s->texCoordArrayEnabled==false)
+			return;
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		s->texCoordArrayEnabled = false;
+	}
+	void disableTexCoordArrayForTexSlot(u32 slotNum) {
+		texState_s *s = &texStates[slotNum];
+		if(s->texCoordArrayEnabled==false)
+			return;
+		selectTex(slotNum);
+		disableTexCoordArrayForCurrentTexSlot();
+	}
+	// texture matrices
+	void turnOffTextureMatrices() {
+		for(u32 i = 0; i < MAX_TEXTURE_SLOTS; i++) {
+			setTextureMatrixIdentity(i);
+		}
+	}
+	void setTextureMatrixCustom(u32 slot, const matrix_c &mat) {
+		texState_s *ts = &this->texStates[slot];
+		if(ts->mat.set(mat) == false)
+			return; // no change
+
+		this->selectTex(slot);
+		glPushAttrib(GL_TRANSFORM_BIT);
+		glMatrixMode(GL_TEXTURE);
+		glLoadMatrixf(mat);
+		glPopAttrib();
+	}
+	void setTextureMatrixIdentity(u32 slot) {
+		texState_s *ts = &this->texStates[slot];
+		if(ts->mat.isIdentity())
+			return; // no change
+		ts->mat.setIdentity();
+
+		this->selectTex(slot);
+		glPushAttrib(GL_TRANSFORM_BIT);
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glPopAttrib();
+	}
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
 		lastMat = mat;
+		lastLightmap = lightmap;
 	}
 	virtual void setColor4(const float *rgba)  {
 		if(rgba == 0) {
@@ -109,12 +228,13 @@ public:
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
 		glDisable(GL_DEPTH_TEST);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
+		disableTexCoordArrayForTexSlot(1);
+		selectTex(0);
+		enableTexCoordArrayForCurrentTexSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
 		checkErrors();
 		if(lastMat) {
-			glEnable(GL_TEXTURE_2D);
 			glEnable(GL_BLEND);
 			// NOTE: this is the way Q3 draws all the 2d menu graphics
 			// (it worked before with bigchars.tga, even when the bigchars
@@ -123,46 +243,51 @@ public:
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				textureAPI_i *t = s->getTexture();
-				u32 handle = t->getInternalHandleU32();
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D,handle);
+				bindTex(0,t->getInternalHandleU32());
+				bindTex(1,0);
 				checkErrors();
 				glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 				checkErrors();
 			}
 			glDisable(GL_BLEND);
-			glDisable(GL_TEXTURE_2D);
 		} else {
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		}
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		glEnable(GL_DEPTH_TEST);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts.getArray());
+		selectTex(0);
+		enableTexCoordArrayForCurrentTexSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->tc.x);
+		//if(lastLightmap) {
+			selectTex(1);
+			enableTexCoordArrayForCurrentTexSlot();
+			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->lc.x);
+		//} else {
+		//
+		//	disableTexCoordArrayForTexSlot(1);
+		//}
 		checkErrors();
 		if(lastMat) {
-			glEnable(GL_TEXTURE_2D);
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				textureAPI_i *t = s->getTexture();
-				u32 handle = t->getInternalHandleU32();
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D,handle);
-				checkErrors();
+				bindTex(0,t->getInternalHandleU32());
+				if(lastLightmap) {
+					bindTex(1,lastLightmap->getInternalHandleU32());
+				} else {
+					bindTex(1,0);
+				}
 				glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
 				checkErrors();
 			}
-			glDisable(GL_TEXTURE_2D);
 		} else {
 			glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
 		}
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
@@ -282,6 +407,23 @@ public:
 		u32 handle = tex->getInternalHandleU32();
 		glDeleteTextures(1,&handle);
 		tex->setInternalHandleU32(0);
+	}
+	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+		out->setWidth(w);
+		out->setHeight(h);
+		u32 texID;
+		glGenTextures(1, &texID);
+		glBindTexture(GL_TEXTURE_2D, texID);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);	
+		checkErrors();
+		glBindTexture(GL_TEXTURE_2D, 0);
+		out->setInternalHandleU32(texID);	
 	}
 };
 

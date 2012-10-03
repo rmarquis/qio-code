@@ -48,7 +48,7 @@ struct projDef_s {
 
 class rbAPI_i : public iFaceBase_i {
 public:
-	virtual void setMaterial(class mtrAPI_i *mat) = 0;
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap = 0) = 0;
 	virtual void setColor4(const float *rgba) = 0;
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) = 0;
@@ -62,6 +62,7 @@ public:
 	virtual u32 getWinHeight() const = 0;
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
+	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
 
 	virtual void init() = 0;

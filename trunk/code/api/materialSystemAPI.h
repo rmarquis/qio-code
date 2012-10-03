@@ -37,6 +37,7 @@ public:
 	virtual void shutdownMaterialsSystem() = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual class mtrAPI_i *getDefaultMaterial() = 0;
+	virtual class textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) = 0;
 	virtual class textureAPI_i *getDefaultTexture() = 0;
 };
 

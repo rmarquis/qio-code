@@ -26,11 +26,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __MAT_LOCAL_H__
 #define __MAT_LOCAL_H__
 
+#include <shared/typedefs.h>
+
 // mat_main.cpp
 void MAT_ScanForMaterialFiles();
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName);
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
+class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();

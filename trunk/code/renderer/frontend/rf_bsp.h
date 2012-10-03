@@ -95,12 +95,17 @@ class rBspTree_c {
 	void createBatches();
 	void deleteBatches();
 
+	bool loadLightmaps(u32 lumpNum);
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadModels(u32 modelsLump);
 public:
+	rBspTree_c();
+	~rBspTree_c();
+
 	bool load(const char *fname);
+	void clear();
 
 	void addDrawCalls();
 };

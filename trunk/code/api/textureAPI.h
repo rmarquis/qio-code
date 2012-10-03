@@ -32,6 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class textureAPI_i {
 public:
+	virtual ~textureAPI_i() {
+
+	}
+
 	// returns the path to the texture file (with extension)
 	virtual const char *getName() const = 0;
 

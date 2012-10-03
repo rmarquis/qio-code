@@ -49,6 +49,9 @@ public:
 	virtual textureAPI_i *getDefaultTexture() {
 		return MAT_GetDefaultTexture();
 	}
+	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) {
+		return MAT_CreateLightmap(data,w,h);
+	}
 	virtual mtrAPI_i *getDefaultMaterial() {
 		return MAT_RegisterMaterialAPI("default");
 	}

@@ -27,8 +27,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/rbAPI.h>
+#include <api/textureAPI.h>
 #include <fileformats/bspFileFormat.h>
 
+rBspTree_c::rBspTree_c() {
+
+}
+rBspTree_c::~rBspTree_c() {
+	clear();
+}
 void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
@@ -67,6 +74,21 @@ void rBspTree_c::deleteBatches() {
 		delete batches[i];
 	}
 	batches.clear();
+}
+bool rBspTree_c::loadLightmaps(u32 lumpNum) {
+	const lump_s &l = h->lumps[lumpNum];
+	if(l.fileLen % (128*128*3)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanes: invalid planes lump size\n");
+		return true; // error
+	}
+	u32 numLightmaps = l.fileLen / (128*128*3);
+	lightmaps.resize(numLightmaps);
+	const byte *p = h->getLumpData(lumpNum);
+	for(u32 i = 0; i < numLightmaps; i++) {
+		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(p,128,128);
+		p += (128*128*3);
+	}
+	return false; // OK
 }
 bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	const lump_s &pll = h->lumps[lumpPlanes];
@@ -218,6 +240,10 @@ bool rBspTree_c::load(const char *fname) {
 	}
 	h = (const q3Header_s*) fileData;
 	if(h->ident == BSP_IDENT_IBSP && (h->version == BSP_VERSION_Q3 || h->version == BSP_VERSION_ET)) {
+		if(loadLightmaps(Q3_LIGHTMAPS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 		if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
@@ -226,6 +252,8 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+
+		
 	} else {
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error
@@ -238,13 +266,19 @@ bool rBspTree_c::load(const char *fname) {
 
 	return false;
 }
+void rBspTree_c::clear() {
+	for(u32 i = 0; i < lightmaps.size(); i++) {
+		delete lightmaps[i];
+		lightmaps[i] = 0;
+	}
+}
 void rBspTree_c::addDrawCalls() {
 	if(1) {
 		// no pvs
 		for(u32 i = 0; i < batches.size(); i++) {
 			bspSurfBatch_s *b = batches[i];
 			//rcq->addDrawCall(this->verts,b->indices,b->mat,b->lightmap,b->getSort());
-			rb->setMaterial(b->mat);
+			rb->setMaterial(b->mat,b->lightmap);
 			rb->drawElements(this->verts,b->indices);
 		}
 	}
