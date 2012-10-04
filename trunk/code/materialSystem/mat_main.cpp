@@ -30,25 +30,77 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <shared/hashTableTemplate.h>
 
+struct matFile_s {
+	str fname;
+	str text;
+};
+
 static hashTableTemplateExt_c<mtrIMPL_c> materials;
+static arraySTD_c<matFile_s*> matFiles;
 
 void MAT_CacheMatFileText(const char *fname) {
-	
+	char *data;
+	u32 len = g_vfs->FS_ReadFile(fname,(void**)&data);
+	if(data == 0)
+		return;
+	matFile_s *mf = new matFile_s;
+	mf->fname = fname;
+	mf->text = data;
+	g_vfs->FS_FreeFile(data);
+	matFiles.push_back(mf);
 }
+const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
+	u32 matNameLen = strlen(matName);
+	const char *p = text;
+	while(*p) {
+		if(!Q_stricmpn(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
+			const char *matNameStart = p;
+			p += matNameLen;
+			p = G_SkipToNextToken(p);
+			if(*p != '{') {
+				continue;
+			}
+			const char *brace = p;
+			p++;
+			G_SkipToNextToken(p);
+			// now we're sure that 'p' is at valid material text,
+			// so we can start parsing
+			return brace;
+		}
+		p++;
+	}
+	return 0;
+}
+
+bool MAT_FindMaterialText(const char *matName, matTextDef_s &out) {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		matFile_s *mf = matFiles[i];
+		const char *p = MAT_FindMaterialDefInText(matName,mf->text);
+		if(p) {
+			out.p = p;
+			out.textBase = mf->text;
+			out.sourceFile = mf->fname;
+			return true;
+		}
+	}
+	return false;
+}
+
 void MAT_ScanForFiles(const char *path, const char *ext) {
 	int numFiles;
 	char **fnames = g_vfs->FS_ListFiles(path,ext,&numFiles);
 	for(u32 i = 0; i < numFiles; i++) {
 		const char *fname = fnames[i];
-		MAT_CacheMatFileText(fname);
+		str fullPath = path;
+		fullPath.append(fname);
+		MAT_CacheMatFileText(fullPath);
 	}
 	g_vfs->FS_FreeFileList(fnames);
 }
 void MAT_ScanForMaterialFiles() {
-	MAT_ScanForFiles("scripts",".shader");
-	MAT_ScanForFiles("materials",".mtr");
+	MAT_ScanForFiles("scripts/",".shader");
+	MAT_ScanForFiles("materials/",".mtr");
 }
-
 mtrIMPL_c *MAT_RegisterMaterial(const char *matName) {
 	mtrIMPL_c *ret = materials.getEntry(matName);
 	if(ret) {
@@ -56,8 +108,16 @@ mtrIMPL_c *MAT_RegisterMaterial(const char *matName) {
 	}
 	ret = new mtrIMPL_c;
 	ret->setName(matName);
-	ret->createFromImage();
 	materials.addObject(ret);
+
+	// try to load from material text (.shader/.mtr files)
+	matTextDef_s text;
+	if(MAT_FindMaterialText(matName,text)) {
+		ret->loadFromText(text);
+		return ret;
+	}
+	// create material directly from image
+	ret->createFromImage();
 	return ret;
 }
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName) {

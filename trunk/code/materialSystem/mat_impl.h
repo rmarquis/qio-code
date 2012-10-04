@@ -30,20 +30,27 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <shared/str.h>
 #include <shared/array.h>
+#include "mat_public.h"
 
 class mtrStage_c : public mtrStageAPI_i {
 	class textureAPI_i *texture;
+	alphaFunc_e alphaFunc;
 public:
-	mtrStage_c() {
-		texture = 0;
-	}
+	mtrStage_c();
 
 	void setTexture(class textureAPI_i *nt) {
 		texture = nt;
 	}
 	virtual textureAPI_i *getTexture() const {
 		return texture;
+	}	
+	void setAlphaFunc(alphaFunc_e newAF) {
+		alphaFunc = newAF;
 	}
+	alphaFunc_e getAlphaFunc() const {
+		return alphaFunc;
+	}
+	void setTexture(const char *newMapName);
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
@@ -74,6 +81,7 @@ public:
 	}
 
 	void createFromImage();
+	bool loadFromText(const struct matTextDef_s &txt);
 };
 
 #endif // __MAT_IMPL_H__

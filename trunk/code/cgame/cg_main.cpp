@@ -203,9 +203,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterCvars();
 
-
 	// get the rendering configuration from the client system
-	//trap_GetGlconfig( &cgs.glconfig );
 	cgs.screenXScale = rf->getWinWidth() / 640.0;
 	cgs.screenYScale = rf->getWinHeight() / 480.0;
 

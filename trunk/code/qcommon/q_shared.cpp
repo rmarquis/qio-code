@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // q_shared.c -- stateless support routines that are included in each code dll
 #include "q_shared.h"
+#include <api/coreAPI.h>
 
 float Com_Clamp( float min, float max, float value ) {
 	if ( value < min ) {
@@ -312,7 +313,7 @@ void COM_ParseError( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("ERROR: %s, line %d: %s\n", com_parsename, com_lines, string);
+	g_core->Print("ERROR: %s, line %d: %s\n", com_parsename, com_lines, string);
 }
 
 void COM_ParseWarning( char *format, ... )
@@ -324,7 +325,7 @@ void COM_ParseWarning( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("WARNING: %s, line %d: %s\n", com_parsename, com_lines, string);
+	g_core->Print("WARNING: %s, line %d: %s\n", com_parsename, com_lines, string);
 }
 
 /*
@@ -537,7 +538,7 @@ void COM_MatchToken( char **buf_p, char *match ) {
 
 	token = COM_Parse( buf_p );
 	if ( strcmp( token, match ) ) {
-		Com_Error( ERR_DROP, "MatchToken: %s != %s", token, match );
+		g_core->Error( ERR_DROP, "MatchToken: %s != %s", token, match );
 	}
 }
 
@@ -763,13 +764,13 @@ Safe strncpy that ensures a trailing zero
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
   if ( !dest ) {
-    Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+    g_core->Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
   }
 	if ( !src ) {
-		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
+		g_core->Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
 	if ( destsize < 1 ) {
-		Com_Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		g_core->Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
 	}
 
 	strncpy( dest, src, destsize-1 );
@@ -867,7 +868,7 @@ void Q_strcat( char *dest, int size, const char *src ) {
 
 	l1 = strlen( dest );
 	if ( l1 >= size ) {
-		Com_Error( ERR_FATAL, "Q_strcat: already overflowed" );
+		g_core->Error( ERR_FATAL, "Q_strcat: already overflowed" );
 	}
 	Q_strncpyz( dest + l1, src, size - l1 );
 }
@@ -972,7 +973,7 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 	va_end (argptr);
 
 	if(len >= size)
-		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
+		g_core->Print("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
 	
 	return len;
 }
@@ -1051,7 +1052,7 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 	}
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_ValueForKey: oversize infostring" );
+		g_core->Error( ERR_DROP, "Info_ValueForKey: oversize infostring" );
 	}
 
 	valueindex ^= 1;
@@ -1142,7 +1143,7 @@ void Info_RemoveKey( char *s, const char *key ) {
 	char	*o;
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_RemoveKey: oversize infostring" );
+		g_core->Error( ERR_DROP, "Info_RemoveKey: oversize infostring" );
 	}
 
 	if (strchr (key, '\\')) {
@@ -1198,7 +1199,7 @@ void Info_RemoveKey_Big( char *s, const char *key ) {
 	char	*o;
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_RemoveKey_Big: oversize infostring" );
+		g_core->Error( ERR_DROP, "Info_RemoveKey_Big: oversize infostring" );
 	}
 
 	if (strchr (key, '\\')) {
@@ -1274,14 +1275,14 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 	const char* blacklist = "\\;\"";
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
+		g_core->Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
 	}
 
 	for(; *blacklist; ++blacklist)
 	{
 		if (strchr (key, *blacklist) || strchr (value, *blacklist))
 		{
-			Com_Printf (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
+			g_core->Print (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
 			return;
 		}
 	}
@@ -1294,7 +1295,7 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 
 	if (strlen(newi) + strlen(s) >= MAX_INFO_STRING)
 	{
-		Com_Printf ("Info string length exceeded\n");
+		g_core->Print ("Info string length exceeded\n");
 		return;
 	}
 
@@ -1315,14 +1316,14 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	const char* blacklist = "\\;\"";
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
+		g_core->Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
 	}
 
 	for(; *blacklist; ++blacklist)
 	{
 		if (strchr (key, *blacklist) || strchr (value, *blacklist))
 		{
-			Com_Printf (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
+			g_core->Print (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
 			return;
 		}
 	}
@@ -1335,7 +1336,7 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 
 	if (strlen(newi) + strlen(s) >= BIG_INFO_STRING)
 	{
-		Com_Printf ("BIG Info string length exceeded\n");
+		g_core->Print ("BIG Info string length exceeded\n");
 		return;
 	}
 

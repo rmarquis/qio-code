@@ -28,9 +28,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/typedefs.h>
 
+struct matTextDef_s {
+	const char *sourceFile; // name of the source .shader / .mtr file
+	const char *p; // pointer to the first '{' (the one after material name)
+	const char *textBase; // pointer to the start of cached material file text
+
+	void clear() {
+		sourceFile = 0;
+		p = 0;
+		textBase = 0;
+	}
+	matTextDef_s() {
+		clear();
+	}
+};
+
 // mat_main.cpp
 void MAT_ScanForMaterialFiles();
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName);
+// returns true if material text is found
+bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps

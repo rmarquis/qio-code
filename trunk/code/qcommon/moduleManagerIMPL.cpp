@@ -1,5 +1,6 @@
 #include <api/moduleManagerAPI.h>
 #include <api/iFaceMgrAPI.h>
+#include <api/coreAPI.h>
 #include <shared/str.h>
 #include <shared/array.h>
 #include "../sys/sys_loadlib.h"
@@ -34,7 +35,7 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 	class moduleAPI_i *load(const char *moduleName) {
 		moduleAPI_i *loaded = findModuleInternal(moduleName);
 		if(loaded) {
-			Com_Printf("moduleManagerIMPL_c::load: %s already loaded!\n",moduleName);
+			g_core->Print("moduleManagerIMPL_c::load: %s already loaded!\n",moduleName);
 			return loaded;
 		}
 		str fullName = "baseqio/"; // HACK, this should be fixed soon
@@ -42,20 +43,20 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 		fullName.append("x86.dll");
 		void *h = Sys_LoadDll(fullName,true);
 		if(h == 0) {
-			Com_Printf("moduleManagerIMPL_c::load: LoadLibrary failed for %s\n",moduleName);
+			g_core->Print("moduleManagerIMPL_c::load: LoadLibrary failed for %s\n",moduleName);
 			return 0;
 		}
 		// find "IFM_GetCurModule" function
 		getModuleIdentFunc_t getModuleIdentFunc = (getModuleIdentFunc_t)Sys_LoadFunction(h,"IFM_GetCurModule");
 		if(getModuleIdentFunc == 0) {
-			Com_Printf("moduleManagerIMPL_c::load: cannot find IFM_GetCurModule func in %s\n",moduleName);
+			g_core->Print("moduleManagerIMPL_c::load: cannot find IFM_GetCurModule func in %s\n",moduleName);
 			Sys_UnloadLibrary(h);
 			return 0;
 		}
 		// find "ShareAPIs" function
 		shareAPIsFunc_t shareAPIsFunc = (shareAPIsFunc_t)Sys_LoadFunction(h,"ShareAPIs");
 		if(shareAPIsFunc == 0) {
-			Com_Printf("moduleManagerIMPL_c::load: cannot find ShareAPIs func in %s\n",moduleName);
+			g_core->Print("moduleManagerIMPL_c::load: cannot find ShareAPIs func in %s\n",moduleName);
 			Sys_UnloadLibrary(h);
 			return 0;
 		}
@@ -79,7 +80,7 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 		moduleIMPL_c *m = (moduleIMPL_c*)(*mPtr);
 		if(modules.isOnList(m) == false) {
 			// this should never happen
-			Com_Printf("moduleManagerIMPL_c::load: %x is not a valid module ptr!\n",m);
+			g_core->Print("moduleManagerIMPL_c::load: %x is not a valid module ptr!\n",m);
 			return;
 		}
 		modules.remove(m);

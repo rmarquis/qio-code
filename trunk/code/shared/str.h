@@ -49,6 +49,45 @@ inline const char* G_strgetExt(const char *str) {
 	return 0;
 }
 
+// skip all comments and whitespaces before next token
+inline const char *G_SkipToNextToken(const char *p) {
+	while(*p) {
+		if(p[0] == '/') {
+			if(p[1] == '*') {
+				p += 2; // skip "/*"
+				while(1) {
+					if(*p == 0) {
+						printf("Error: unexpected end of file hit in multi-line comment\n");
+						return 0;
+					} else if(p[0] == '*' && p[1] == '/') {
+						break;
+					}
+				}
+				p += 2;  // skip "*/"
+			} else if(p[1] == '/') {
+				p += 2; // skip "//"
+				while(*p != '\n') {
+					if(*p == 0) {
+						printf("Error: unexpected end of file hit in single-line comment\n");
+						return 0;		
+					}
+					p++;
+				}
+				p++; // skip '\n'
+			} else {
+				break;
+			}
+		} else if(G_isWS(*p) == false) {
+			break;
+		} else {
+			p++;
+		}
+	}
+	if(*p == 0)
+		return 0;
+	return p;
+}
+
 class str {
 	char *data;
 	char buffer[16];

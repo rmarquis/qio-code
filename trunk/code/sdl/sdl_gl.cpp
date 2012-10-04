@@ -42,6 +42,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "sdl_glConfig.h"
 
+#include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
 
@@ -177,6 +178,31 @@ public:
 		}
 		highestTCSlotUsed = -1;
 	}
+	//
+	// alphaFunc changes
+	//
+	alphaFunc_e prevAlphaFunc;
+	void setAlphaFunc(alphaFunc_e newAlphaFunc) {
+		if(prevAlphaFunc == newAlphaFunc) {
+			return; // no change
+		}
+		if(newAlphaFunc == AF_NONE) {
+			glDisable(GL_ALPHA_TEST);
+		} else if(newAlphaFunc == AF_GT0) {
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc( GL_GREATER, 0.0f ); 
+		} else if(newAlphaFunc == AF_GE128) {
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc( GL_GREATER, 0.5f ); 
+		} else if(newAlphaFunc == AF_LT128) {
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc( GL_LESS, 0.5f ); 
+		}
+		prevAlphaFunc = newAlphaFunc;
+	}
+	void turnOffAlphaFunc() {
+		setAlphaFunc(AF_NONE);
+	}
 	// tex coords arrays
 	void enableTexCoordArrayForCurrentTexSlot() {
 		texState_s *s = &texStates[curTexSlot];
@@ -260,6 +286,7 @@ public:
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				setAlphaFunc(s->getAlphaFunc());
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				bindTex(1,0);
@@ -313,6 +340,7 @@ public:
 		if(lastMat) {
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				setAlphaFunc(s->getAlphaFunc());
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				if(lastLightmap) {

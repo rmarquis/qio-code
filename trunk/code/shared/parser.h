@@ -21,15 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// parser.h - simple parser class
+#ifndef __SHARED_PARSER_H__
+#define __SHARED_PARSER_H__
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
+#include "typedefs.h"
+#include "str.h"
 
-class mtrStageAPI_i  { 
+class parser_c {
+	const char *base; // start of the text
+	const char *p; // current position in the text
+	str debugFileName;
+	str lastToken;
+
+	// returns true if eof is reached
+	bool skipToNextToken();
+
 public:
-	virtual class textureAPI_i *getTexture() const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
+	void setup(const char *newText, const char *newP = 0);
+	void setDebugFileName(const char *newDebugFileName);
+	const char *getToken(str &out);
+	const char *getToken() {
+		return getToken(this->lastToken);
+	}
+	bool atChar(char ch);
+	bool atWord(const char *word);
+
+	inline bool atEOF() const {
+		return *p == 0;
+	}
+
+
 };
 
-#endif // __MTRSTAGE_API_H__
+
+#endif // __SHARED_PARSER_H__
+
