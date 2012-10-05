@@ -21,35 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// gameAPI.h - server game DLL interface
+// ddAPI.h - deb
 
-#ifndef __GAMEAPI_H__
-#define __GAMEAPI_H__
+#ifndef __DD_API_H__
+#define __DD_API_H__
 
 #include "iFaceBase.h"
 
-#define GAME_API_IDENTSTR "ServerGameAPI0001"
+#define RENDERER_API_IDENTSTR "RendererAPI0001"
 
-// these are only temporary function pointers, TODO: rework them?
-struct gameAPI_s : public iFaceBase_i {
-	void (*InitGame)( int levelTime, int randomSeed, int restart );
-	void (*RunFrame)( int levelTime );
-	void (*ShutdownGame)( int restart );
-	void (*DebugDrawFrame)(class rAPI_i *pRFAPI);
+class rDebugDrawer_i : public iFaceBase_i {
+public:
+	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 };
 
-#define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"
+extern rDebugDrawer_i *r_dd;
 
-struct gameClientAPI_s : public iFaceBase_i {
-	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
-	void (*ClientUserinfoChanged)( int clientNum );
-	void (*ClientDisconnect)( int clientNum );
-	void (*ClientBegin)( int clientNum );
-	void (*ClientCommand)( int clientNum );
-	void (*ClientThink)( int clientNum );
-};
-
-extern gameAPI_s *g_game;
-extern gameClientAPI_s *g_gameClients;
-
-#endif // __GAMEAPI_H__
+#endif // __DD_API_H__

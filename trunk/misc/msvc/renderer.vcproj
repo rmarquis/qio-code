@@ -180,6 +180,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_debugDrawIMPL.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_debugDrawing.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
 				>
 			</File>
@@ -203,6 +211,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_bsp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_local.h"
 				>
 			</File>
 			<File

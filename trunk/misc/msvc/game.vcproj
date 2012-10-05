@@ -312,6 +312,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_debugDraw.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_main.cpp"
 				>
 				<FileConfiguration

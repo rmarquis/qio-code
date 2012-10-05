@@ -21,35 +21,35 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// gameAPI.h - server game DLL interface
+// rf_debugDrawing.cpp
 
-#ifndef __GAMEAPI_H__
-#define __GAMEAPI_H__
+#include <qcommon/q_shared.h>
+#include <api/iFaceMgrAPI.h>
+#include <api/cvarAPI.h>
+#include <api/coreAPI.h>
+#include <api/gameAPI.h>
+#include <api/rAPI.h>
 
-#include "iFaceBase.h"
+// draw debug info for game module 
+// this works (obviously) only for local client
+// on non-dedicated server.
+// The clientside prediction/interpolation
+// does not affect orientations of displayed objects.
+void RF_GameDebugDrawing() {
+	if(g_game->DebugDrawFrame == 0)
+		return;
+	g_game->DebugDrawFrame(rf);
+}
+void RF_DoDebugDrawing() {
+	if(g_game) {
+		RF_GameDebugDrawing();
+	}
+}
 
-#define GAME_API_IDENTSTR "ServerGameAPI0001"
 
-// these are only temporary function pointers, TODO: rework them?
-struct gameAPI_s : public iFaceBase_i {
-	void (*InitGame)( int levelTime, int randomSeed, int restart );
-	void (*RunFrame)( int levelTime );
-	void (*ShutdownGame)( int restart );
-	void (*DebugDrawFrame)(class rAPI_i *pRFAPI);
-};
 
-#define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"
 
-struct gameClientAPI_s : public iFaceBase_i {
-	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
-	void (*ClientUserinfoChanged)( int clientNum );
-	void (*ClientDisconnect)( int clientNum );
-	void (*ClientBegin)( int clientNum );
-	void (*ClientCommand)( int clientNum );
-	void (*ClientThink)( int clientNum );
-};
 
-extern gameAPI_s *g_game;
-extern gameClientAPI_s *g_gameClients;
 
-#endif // __GAMEAPI_H__
+
+

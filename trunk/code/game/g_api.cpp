@@ -49,6 +49,8 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_staticGameAPI.InitGame = G_InitGame;
 	g_staticGameAPI.RunFrame = G_RunFrame;
 	g_staticGameAPI.ShutdownGame = G_ShutdownGame;
+	g_staticGameAPI.DebugDrawFrame = G_DebugDrawFrame;
+
 	g_iFaceMan->registerInterface(&g_staticGameAPI,GAME_API_IDENTSTR);
 
 	g_staticGameClientsAPI.ClientBegin = ClientBegin;

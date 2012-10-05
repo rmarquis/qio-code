@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RB_API_H__
 #define __RB_API_H__
 
+#include <shared/typedefs.h>
 #include "iFaceBase.h"
 
 #define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
@@ -49,6 +50,7 @@ struct projDef_s {
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap = 0) = 0;
+	virtual void unbindMaterial() = 0;
 	virtual void setColor4(const float *rgba) = 0;
 	virtual void setBindVertexColors(bool bBindVertexColors) = 0;
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
@@ -58,6 +60,7 @@ public:
 	virtual void setup2DView() = 0;
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) = 0;
 	virtual void setupProjection3D(const projDef_s *pd = 0) = 0;
+	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;

@@ -1889,6 +1889,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\ddAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\gameAPI.h"
 				>
 			</File>

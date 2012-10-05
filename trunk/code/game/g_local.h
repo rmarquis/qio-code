@@ -173,5 +173,10 @@ class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_
 void G_TryToJump(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);
 
+//
+// g_debugDraw.cpp
+//
+void G_DebugDrawFrame(class rAPI_i *pRFAPI);
+
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];

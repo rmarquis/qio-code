@@ -23,7 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_api.cpp - renderer DLL entry point
 
-//#include "rf_local.h"
+#include "rf_local.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -31,8 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/ddAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/gameAPI.h> // only for debug drawing
 #include <math/matrix.h>
 #include <math/axis.h>
 
@@ -99,6 +101,7 @@ public:
 	}
 	virtual void setup2DView() {
 		RF_AddWorldDrawCalls();
+		RF_DoDebugDrawing();
 		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {
@@ -123,6 +126,9 @@ public:
 			return 0;
 		return g_ms->registerMaterial(matName);
 	}	
+	virtual class rDebugDrawer_i *getDebugDrawer() {
+		return r_dd;
+	}
 	virtual void init() {
 		if(initialized) {
 			g_core->DropError("rAPIImpl_c::init: already initialized\n");
@@ -161,6 +167,8 @@ coreAPI_s *g_core = 0;
 rbAPI_i *rb = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
 materialSystemAPI_i *g_ms = 0;
+// game module api - only for debug drawing on non-dedicated server
+gameAPI_s *g_game = 0;
 
 // exports
 static rAPIImpl_c g_staticRFAPI;
@@ -179,6 +187,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&rb,RB_SDLOPENGL_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
 
 }
 

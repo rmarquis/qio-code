@@ -85,6 +85,10 @@ class rbSDLOpenGL_c : public rbAPI_i {
 public:
 	rbSDLOpenGL_c() {
 		lastMat = 0;
+		lastLightmap = 0;
+		bindVertexColors = 0;
+		curTexSlot = 0;
+		highestTCSlotUsed = 0;
 	}
 	void checkErrors() {
 		int		err;
@@ -258,6 +262,13 @@ public:
 		lastMat = mat;
 		lastLightmap = lightmap;
 	}
+	virtual void unbindMaterial() {
+		disableAllTextures();
+		turnOffAlphaFunc();
+		disableColorArray();
+		lastMat = 0;
+		lastLightmap = 0;
+	}
 	virtual void setColor4(const float *rgba)  {
 		if(rgba == 0) {
 			float def[] = { 1, 1, 1, 1 };
@@ -289,7 +300,6 @@ public:
 				setAlphaFunc(s->getAlphaFunc());
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
-				bindTex(1,0);
 				checkErrors();
 				glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 				checkErrors();
@@ -431,6 +441,27 @@ public:
 		proj.setupProjection(pd->fovX,fovY,pd->zNear,pd->zFar);
 		glLoadMatrixf(proj);
 	}
+	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
+		//glDisable(GL_DEPTH_TEST);
+		glTranslatef(xyz[0],xyz[1],xyz[2]);
+		// draw lower sphere (sliding on the ground)
+		glTranslatef(0,0,-(h*0.5f));
+		glutSolidSphere(w,12,12);
+		glTranslatef(0,0,(h*0.5f));
+		// draw upper sphere (player's "head")
+		glTranslatef(0,0,(h*0.5f));
+		glutSolidSphere(w,12,12);
+		glTranslatef(0,0,-(h*0.5f));
+		//glutSolidSphere(32,16,16);
+
+			// draw 'body'
+		glTranslatef(0,0,-(h*0.5f));
+		GLUquadricObj *obj = gluNewQuadric();
+		gluCylinder(obj, w, w, h, 30, 30);
+		gluDeleteQuadric(obj);
+		glTranslatef(0,0,(h*0.5f));
+		glTranslatef(-xyz[0],-xyz[1],-xyz[2]);
+	}
 	virtual void init()  {
 		GLimp_Init();
 		u32 res = glewInit();
@@ -438,6 +469,16 @@ public:
 			Com_Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
 			return;
 		}
+		// ensure that all the states are reset after vid_restart
+		memset(texStates,0,sizeof(texStates));
+		curTexSlot = -1;
+		highestTCSlotUsed = 0;
+		// materials
+		lastMat = 0;
+		lastLightmap = 0;
+		bindVertexColors = 0;
+		//glShadeModel( GL_SMOOTH );
+		//glDepthFunc( GL_LEQUAL );
 	}
 	virtual void shutdown()  {
 		GLimp_Shutdown();

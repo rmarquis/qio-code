@@ -21,35 +21,17 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// gameAPI.h - server game DLL interface
+// g_debugDraw.cpp - debug drawing for game module.
+#include "g_local.h"
+#include <api/rAPI.h>
+#include <api/ddAPI.h>
 
-#ifndef __GAMEAPI_H__
-#define __GAMEAPI_H__
-
-#include "iFaceBase.h"
-
-#define GAME_API_IDENTSTR "ServerGameAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct gameAPI_s : public iFaceBase_i {
-	void (*InitGame)( int levelTime, int randomSeed, int restart );
-	void (*RunFrame)( int levelTime );
-	void (*ShutdownGame)( int restart );
-	void (*DebugDrawFrame)(class rAPI_i *pRFAPI);
-};
-
-#define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"
-
-struct gameClientAPI_s : public iFaceBase_i {
-	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
-	void (*ClientUserinfoChanged)( int clientNum );
-	void (*ClientDisconnect)( int clientNum );
-	void (*ClientBegin)( int clientNum );
-	void (*ClientCommand)( int clientNum );
-	void (*ClientThink)( int clientNum );
-};
-
-extern gameAPI_s *g_game;
-extern gameClientAPI_s *g_gameClients;
-
-#endif // __GAMEAPI_H__
+void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
+	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
+	for(u32 i = 0; i < MAX_CLIENTS; i++) {
+		gentity_s *ent = &g_entities[i];
+		if(ent->inuse == false)
+			continue;
+		dd->drawCapsuleZ(ent->client->ps.origin, 48, 16);
+	}
+}

@@ -49,6 +49,8 @@ public:
 	virtual void loadWorldMap(const char *mapName) = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 
+	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
+
 	virtual void init() = 0;
 	virtual void endRegistration() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
