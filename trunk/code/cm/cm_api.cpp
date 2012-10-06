@@ -21,57 +21,54 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// g_api.cpp - game DLL entry point
-
-#include "g_local.h"
+// cm_api.cpp - CM API implementation
+#include "cm_local.h"
+#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
-#include <api/serverAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
-#include <api/gameAPI.h>
 #include <api/cmAPI.h>
+#include <api/moduleManagerAPI.h>
+
+class cmAPIImpl_c : public cmAPI_i {
+	// capsule for bullet character controller
+	virtual class cmCapsule_i *registerCapsule(float height, float radius) {
+		return CM_RegisterCapsule(height,radius);
+	}
+	// simple box for basic items / physics testing
+	virtual class cmBBExts_i *registerBoxExts(float halfSizeX, float halfSizeY, float halfSizeZ) {
+		return CM_RegisterBoxExts(halfSizeX,halfSizeY,halfSizeZ);
+	}
+
+};
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
 // imports
-svAPI_s *g_server = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
-cmAPI_i *cm = 0;
+moduleManagerAPI_i *g_moduleMgr = 0;
+
 // exports
-static gameAPI_s g_staticGameAPI;
-static gameClientAPI_s g_staticGameClientsAPI;
+static cmAPIImpl_c g_staticCMAPI;
+cmAPI_i *cm = &g_staticCMAPI;
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
 	// exports
-	g_staticGameAPI.InitGame = G_InitGame;
-	g_staticGameAPI.RunFrame = G_RunFrame;
-	g_staticGameAPI.ShutdownGame = G_ShutdownGame;
-	g_staticGameAPI.DebugDrawFrame = G_DebugDrawFrame;
-
-	g_iFaceMan->registerInterface(&g_staticGameAPI,GAME_API_IDENTSTR);
-
-	g_staticGameClientsAPI.ClientBegin = ClientBegin;
-	g_staticGameClientsAPI.ClientCommand = ClientCommand;
-	g_staticGameClientsAPI.ClientUserinfoChanged = ClientUserinfoChanged;
-	g_staticGameClientsAPI.ClientConnect = ClientConnect;
-	g_staticGameClientsAPI.ClientThink = ClientThink;
-	g_staticGameClientsAPI.ClientDisconnect = ClientDisconnect;
-	g_iFaceMan->registerInterface(&g_staticGameClientsAPI,GAMECLIENTS_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)cm,CM_API_IDENTSTR);
 
 	// imports
-	g_iFaceMan->registerIFaceUser(&g_server,SERVER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&cm,CM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {
-	return QMD_GAME;
+	return QMD_CM;
 }
 

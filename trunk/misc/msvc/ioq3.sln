@@ -12,6 +12,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "materialSystem", "materialS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imageLib", "imageLib.vcproj", "{607BEC1E-1C28-4BB2-8B36-71377A41A631}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cm", "cm.vcproj", "{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "..\..\code\external\bullet-2.80-rev2531\msvc\vs2008\BulletDynamics.vcproj", "{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -42,6 +46,14 @@ Global
 		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Debug|Win32.Build.0 = Debug|Win32
 		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Release|Win32.ActiveCfg = Release|Win32
 		{607BEC1E-1C28-4BB2-8B36-71377A41A631}.Release|Win32.Build.0 = Release|Win32
+		{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}.Debug|Win32.Build.0 = Debug|Win32
+		{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}.Release|Win32.ActiveCfg = Release|Win32
+		{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}.Release|Win32.Build.0 = Release|Win32
+		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Debug|Win32.Build.0 = Debug|Win32
+		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Release|Win32.ActiveCfg = Release|Win32
+		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

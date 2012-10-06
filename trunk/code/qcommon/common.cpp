@@ -2671,6 +2671,13 @@ void Com_InitImageLib() {
 		Com_Error(ERR_DROP,"Cannot load imageLib DLL");
 	}
 }
+static moduleAPI_i *com_cmLib = 0;
+void Com_InitCMDLL() {
+	com_cmLib = g_moduleMgr->load("cm");
+	if(com_cmLib == 0) {
+		Com_Error(ERR_DROP,"Cannot load CM DLL");
+	}
+}
 
 /*
 =================
@@ -2735,6 +2742,8 @@ void Com_Init( char *commandLine ) {
 	Com_InitJournaling();
 
 	Com_InitImageLib();
+
+	Com_InitCMDLL();
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);

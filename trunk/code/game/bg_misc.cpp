@@ -54,6 +54,7 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 	// set the trDelta for flag direction
 	//VectorCopy( ps->velocity, s->pos.trDelta );
 
+
 	//s->apos.trType = TR_INTERPOLATE;
 	//VectorCopy( ps->viewangles, s->apos.trBase );
 	//if ( snap ) {

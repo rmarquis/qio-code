@@ -205,6 +205,10 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
+		if(ent->body) {
+			G_UpdatePhysicsObject(ent);
+		}
+
 	}
 
 	// perform final fixups on the players

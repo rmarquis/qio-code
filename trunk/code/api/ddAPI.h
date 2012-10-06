@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class rDebugDrawer_i : public iFaceBase_i {
 public:
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
+	virtual void drawBBExts(const float *xyz, const float *angles, const float *halfSizes) = 0;	
 };
 
 extern rDebugDrawer_i *r_dd;

@@ -24,12 +24,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_debugDrawIMPL.cpp - implementation of debug drawer
 #include <api/ddAPI.h>
 #include <api/rbAPI.h>
+#include <math/vec3.h>
 
 class rDebugDrawerIMPL_c : public rDebugDrawer_i {
 public:
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
 		rb->unbindMaterial();
 		rb->drawCapsuleZ(xyz,h,w);
+	}
+	virtual void drawBBExts(const float *xyz, const float *angles, const float *halfSizes) {
+		rb->setupEntitySpace2(angles,xyz);
+		rb->drawBoxHalfSizes(halfSizes);
 	}
 };
 

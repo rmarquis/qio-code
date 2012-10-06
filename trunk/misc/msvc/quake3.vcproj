@@ -1665,6 +1665,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\quat.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\vec2.h"
 				>
 			</File>
@@ -1878,6 +1882,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\clientAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\cmAPI.h"
 				>
 			</File>
 			<File

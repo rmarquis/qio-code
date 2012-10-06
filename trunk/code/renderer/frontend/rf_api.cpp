@@ -96,6 +96,14 @@ public:
 		camAxis.fromAngles(newCamAngles);
 		rb->setup3DView(camPos, camAxis);
 	}
+	// used while drawing world surfaces and particles
+	virtual void setupWorldSpace() {
+		rb->setupWorldSpace();
+	}
+	// used while drawing entities
+	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
+		rb->setupEntitySpace(axis,origin);
+	}
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	virtual void draw3DView() {
 	}

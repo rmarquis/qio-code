@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 #include "g_local.h"
 #include <api/serverAPI.h>
+#include <api/cmAPI.h>
+#include <math/vec3.h>
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -201,8 +203,17 @@ void ClientSpawn(gentity_t *ent) {
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
+	cmCapsule_i *m;
+	ent->cmod = m = cm->registerCapsule(48,16);
+	float h = m->getHeight();
+	float r = m->getRadius();
 	BT_FreeCharacter(client->characterController);
-	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, 48, 16);
+	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, h, r);
+
+	vec3_c tmp(1400,1340,470);
+	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,128),vec3_c(16,16,16),0);
+	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
+	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
@@ -248,5 +259,8 @@ void ClientDisconnect( int clientNum ) {
 }
 
 void ClientCommand( int clientNum ) {
-
+	vec3_c tmp(1400,1340,470);
+	BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
+	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
+	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
 }

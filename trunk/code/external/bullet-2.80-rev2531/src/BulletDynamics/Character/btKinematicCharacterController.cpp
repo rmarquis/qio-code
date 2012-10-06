@@ -201,6 +201,29 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 				} else {
 					//printf("touching %f\n", dist);
 				}
+
+#if 1
+				float ofs = 1.f;
+				//if(dist < 0) {
+				//	ofs = dist;
+				//} else {
+				//	ofs = -dist;
+				//}
+					btCollisionObject *c;
+					if(manifold->getBody0() == m_ghostObject) {
+						c = (btCollisionObject*)manifold->getBody1();
+					} else {
+						c = (btCollisionObject*)manifold->getBody0();
+					}
+					if(c) {
+						if(c->isStaticOrKinematicObject() == false) {
+							btRigidBody *rb = (btRigidBody*)c;
+							rb->activate(true);
+							//rb->setLinearVelocity(pt.m_normalWorldOnB * directionSign * ofs * 500.f);
+							rb->applyCentralImpulse(pt.m_normalWorldOnB * directionSign * ofs * 250.f);
+						}
+					}
+#endif
 			}
 			
 			//manifold->clearManifold();

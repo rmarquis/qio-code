@@ -25,13 +25,23 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include <api/rAPI.h>
 #include <api/ddAPI.h>
+#include <api/cmAPI.h>
+#include <math/vec3.h>
 
 void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
-	for(u32 i = 0; i < MAX_CLIENTS; i++) {
+	for(u32 i = 0; i < MAX_GENTITIES; i++) {
 		gentity_s *ent = &g_entities[i];
 		if(ent->inuse == false)
 			continue;
-		dd->drawCapsuleZ(ent->client->ps.origin, 48, 16);
+		if(ent->cmod) {
+			if(ent->cmod->isCapsule()) {
+				cmCapsule_i *c = ent->cmod->getCapsule();
+				dd->drawCapsuleZ(ent->client->ps.origin, c->getHeight(), c->getRadius());
+			} else if(ent->cmod->isBBExts()) {
+				cmBBExts_i *bb = ent->cmod->getBBExts();
+				dd->drawBBExts(ent->s.origin,ent->s.angles,bb->getHalfSizes());
+			}
+		}
 	}
 }

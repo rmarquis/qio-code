@@ -60,6 +60,10 @@ struct gentity_s {
 
 	int			freetime;			// level.time when the object was freed
 
+	// bullet physics object
+	class btRigidBody *body;
+	// simplified model for collision detection
+	class cMod_i *cmod;
 };
 
 
@@ -172,6 +176,9 @@ void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *
 class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
 void G_TryToJump(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);
+void G_UpdatePhysicsObject(gentity_s *ent);
+void BT_CreateBoxEntity(gentity_s *ent, const float *pos, const float *halfSizes, const float *startVel);
+gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel);
 
 //
 // g_debugDraw.cpp

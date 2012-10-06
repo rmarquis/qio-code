@@ -411,6 +411,11 @@ public:
 
 		usingWorldSpace = false;
 	}
+	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
+		axis_c ax;
+		ax.fromAngles(angles);
+		setupEntitySpace(ax,origin);
+	}
 	virtual bool isUsingWorldSpace() const {
 		return usingWorldSpace;
 	}
@@ -462,6 +467,9 @@ public:
 		glTranslatef(0,0,(h*0.5f));
 		glTranslatef(-xyz[0],-xyz[1],-xyz[2]);
 	}
+	virtual void drawBoxHalfSizes(const float *halfSizes) {
+		glutSolidCube(halfSizes[0]*2);
+	}
 	virtual void init()  {
 		GLimp_Init();
 		u32 res = glewInit();
@@ -481,6 +489,8 @@ public:
 		//glDepthFunc( GL_LEQUAL );
 	}
 	virtual void shutdown()  {
+		lastMat = 0;
+		lastLightmap = 0;
 		GLimp_Shutdown();
 	}
 	virtual u32 getWinWidth() const {

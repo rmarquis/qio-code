@@ -36,6 +36,7 @@ public:
 	virtual void beginFrame() = 0;
 	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
+
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	//virtual void draw3DView() = 0;
 	//virtual void setup2DView() = 0;

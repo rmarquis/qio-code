@@ -1,5 +1,7 @@
 #include "g_local.h"
 #include <api/vfsAPI.h>
+#include <api/cmAPI.h>
+#include <math/quat.h>
 
 #include <btBulletDynamicsCommon.h>
 #include <LinearMath/btGeometryUtil.h>
@@ -30,7 +32,7 @@ void G_InitBullet() {
 
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0,0,-800));
+	dynamicsWorld->setGravity(btVector3(0,0,-500));
 
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
@@ -52,6 +54,7 @@ void G_RunPhysics() {
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
 }
+#define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	float mass = 0.f;
 	btTransform startTransform;
@@ -71,7 +74,6 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 		shape->calculateLocalInertia(mass,localInertia);
 
 	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-#define USE_MOTIONSTATE 1
 #ifdef USE_MOTIONSTATE
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 
@@ -88,7 +90,61 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	dynamicsWorld->addRigidBody(body);
 
 }
+btRigidBody* CreateRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape)
+{
+	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
 
+	//rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0,0,0);
+	if (isDynamic)
+		shape->calculateLocalInertia(mass,localInertia);
+
+	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+#ifdef USE_MOTIONSTATE
+	btDefaultMotionState* motionState = new btDefaultMotionState(startTransform);
+
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, motionState, shape, localInertia);
+
+	btRigidBody* body = new btRigidBody(cInfo);
+	body->setContactProcessingThreshold(BT_LARGE_FLOAT);
+
+#else
+	btRigidBody* body = new btRigidBody(mass, 0, shape, localInertia);
+	body->setWorldTransform(startTransform);
+#endif//
+
+	dynamicsWorld->addRigidBody(body);
+
+	return body;
+}
+void QuatToAngles(const float *q, vec3_t angles)
+{
+	float          q2[4];
+
+	q2[0] = q[0] * q[0];
+	q2[1] = q[1] * q[1];
+	q2[2] = q[2] * q[2];
+	q2[3] = q[3] * q[3];
+
+	angles[PITCH] = RAD2DEG(asin(-2 * (q[2] * q[0] - q[3] * q[1])));
+	angles[YAW] = RAD2DEG(atan2(2 * (q[2] * q[3] + q[0] * q[1]), (q2[2] - q2[3] - q2[0] + q2[1])));
+	angles[ROLL] = RAD2DEG(atan2(2 * (q[3] * q[0] + q[2] * q[1]), (-q2[2] - q2[3] + q2[0] + q2[1])));
+}
+
+void G_UpdatePhysicsObject(gentity_s *ent) {
+	btRigidBody *body = ent->body;
+	if(body == 0)
+		return;
+	btTransform trans;
+	body->getMotionState()->getWorldTransform(trans);
+	VectorSet(ent->s.origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
+	//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
+	btQuaternion q = trans.getRotation();
+	quat_c q2(q.x(),q.y(),q.z(),q.w());
+	QuatToAngles(q2,ent->s.angles);
+}
 void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {
 	// set the forward direction of the character controller
 	btVector3 walkDir(dir[0],dir[1],dir[2]);
@@ -112,6 +168,62 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 	delete c;
 
 }
+btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel) {
+	btBoxShape* boxShape = new btBoxShape(btVector3(halfSizes[0], halfSizes[1], halfSizes[2]));
+	boxShape->initializePolyhedralFeatures();
+		
+	const btVector3 btStart(pos[0], pos[1], pos[2]);
+
+	btTransform startTransform;
+	startTransform.setIdentity();
+	startTransform.setOrigin(btStart);
+
+	float mass = 10.0f;
+
+	// rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0, 0, 0);
+	if (isDynamic) 
+	{
+		boxShape->calculateLocalInertia(mass, localInertia);
+	}
+
+	btRigidBody *body = CreateRigidBody(mass, startTransform, boxShape);
+	body->setLinearFactor(btVector3(1, 1, 1));
+		
+//	body->getWorldTransform().setOrigin(btStart);
+
+	if(startVel) {
+		btVector3 vel(startVel[0], startVel[1], startVel[2]);
+		vel *= 150;
+
+		body->setLinearVelocity(vel);
+	}
+		
+	body->setAngularVelocity(btVector3(0,0,0));
+	body->setContactProcessingThreshold(1e30);
+		
+	//enable CCD if the object moves more than 1 meter in one simulation frame
+	//rigidBody.setCcdSweptSphereRadius(20);
+
+	//if (g_physUseCCD.integer)
+	//{
+	//	body->setCcdMotionThreshold(maxs[0]);
+	//	body->setCcdSweptSphereRadius(6);
+	//}
+	return body;
+}
+void BT_CreateBoxEntity(gentity_s *ent, const float *pos, const float *halfSizes, const float *startVel) {
+	ent->body = BT_CreateBoxBody(pos,halfSizes,startVel);
+	ent->cmod = cm->registerBoxExts(halfSizes);
+	ent->body->setUserPointer(ent);
+}
+gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
+	gentity_s *e = G_Spawn();
+	BT_CreateBoxEntity(e,pos,halfSizes,startVel);
+	return e;
+}
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
@@ -128,6 +240,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	character->setJumpSpeed(200);
 	character->setFallSpeed(800);
 	character->setGravity(600);
+	//character->setUseGhostSweepTest(
 
 	dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter, 
 		btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter | btBroadphaseProxy::CharacterFilter);

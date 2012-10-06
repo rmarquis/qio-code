@@ -61,6 +61,14 @@ public:
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) = 0;
 	virtual void setupProjection3D(const projDef_s *pd = 0) = 0;
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
+	virtual void drawBoxHalfSizes(const float *halfSizes) = 0;
+
+	// used while drawing world surfaces and particles
+	virtual void setupWorldSpace() = 0;
+	// used while drawing entities
+	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) = 0;
+	// same as above but with angles instead of axis
+	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) = 0;
 
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;
