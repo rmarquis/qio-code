@@ -208,10 +208,10 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 	//rigidBody.setCcdSweptSphereRadius(20);
 
 	//if (g_physUseCCD.integer)
-	//{
-	//	body->setCcdMotionThreshold(maxs[0]);
-	//	body->setCcdSweptSphereRadius(6);
-	//}
+	{
+		body->setCcdMotionThreshold(halfSizes[0]);
+		body->setCcdSweptSphereRadius(6);
+	}
 	return body;
 }
 void BT_CreateBoxEntity(gentity_s *ent, const float *pos, const float *halfSizes, const float *startVel) {
