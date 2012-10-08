@@ -52,7 +52,7 @@ typedef struct svEntity_s {
 	struct worldSector_s *worldSector;
 	struct svEntity_s *nextEntityInWorldSector;
 	
-	entityState_t	baseline;		// for delta compression of initial sighting
+	entityState_s	baseline;		// for delta compression of initial sighting
 	int			numClusters;		// if -1, use headnode instead
 	int			clusternums[MAX_ENT_CLUSTERS];
 	int			lastCluster;		// if all the clusters don't fit in clusternums
@@ -83,12 +83,12 @@ typedef struct {
 	svEntity_t		svEntities[MAX_GENTITIES];
 
 	// the game virtual machine will update these on init and changes
-	sharedEntity_t	*gentities;
+	edict_s	*gentities;
 	int				gentitySize;
 	int				num_entities;		// current number, <= MAX_GENTITIES
 
-	playerState_t	*gameClients;
-	int				gameClientSize;		// will be > sizeof(playerState_t) due to game private data
+	playerState_s	*gameClients;
+	int				gameClientSize;		// will be > sizeof(playerState_s) due to game private data
 
 	int				restartTime;
 	int				time;
@@ -101,7 +101,7 @@ typedef struct {
 typedef struct {
 	int				areabytes;
 	byte			areabits[MAX_MAP_AREA_BYTES];		// portalarea visibility bits
-	playerState_t	ps;
+	playerState_s	ps;
 	int				num_entities;
 	int				first_entity;		// into the circular sv_packet_entities[]
 										// the entities MUST be in increasing state number
@@ -142,11 +142,11 @@ typedef struct client_s {
 	int				gamestateMessageNum;	// netchan->outgoingSequence of gamestate
 	int				challenge;
 
-	usercmd_t		lastUsercmd;
+	usercmd_s		lastUsercmd;
 	int				lastMessageNum;		// for delta compression
 	int				lastClientCommand;	// reliable client message sequence
 	char			lastClientCommandString[MAX_STRING_CHARS];
-	sharedEntity_t	*gentity;			// SV_GentityNum(clientnum)
+	edict_s	*gentity;			// SV_GentityNum(clientnum)
 	char			name[MAX_NAME_LENGTH];			// extracted from userinfo, high bits masked
 
 	// downloading
@@ -236,7 +236,7 @@ typedef struct {
 	client_t	*clients;					// [sv_maxclients->integer];
 	int			numSnapshotEntities;		// sv_maxclients->integer*PACKET_BACKUP*MAX_PACKET_ENTITIES
 	int			nextSnapshotEntities;		// next snapshotEntities to use
-	entityState_t	*snapshotEntities;		// [numSnapshotEntities]
+	entityState_s	*snapshotEntities;		// [numSnapshotEntities]
 	int			nextHeartbeatTime;
 	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
 	netadr_t	redirectAddress;			// for rcon return messages
@@ -347,12 +347,12 @@ void SV_AuthorizeIpPacket( netadr_t from );
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );
 void SV_UserinfoChanged( client_t *cl );
 
-void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd );
+void SV_ClientEnterWorld( client_t *client, usercmd_s *cmd );
 void SV_FreeClient(client_t *client);
 void SV_DropClient( client_t *drop, const char *reason );
 
 void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK );
-void SV_ClientThink (client_t *cl, usercmd_t *cmd);
+void SV_ClientThink (client_t *cl, usercmd_s *cmd);
 
 int SV_WriteDownloadToClient(client_t *cl , msg_t *msg);
 int SV_SendDownloadMessages(void);
@@ -377,19 +377,19 @@ void SV_SendClientSnapshot( client_t *client );
 //
 // sv_game.c
 //
-int	SV_NumForGentity( sharedEntity_t *ent );
-sharedEntity_t *SV_GentityNum( int num );
-playerState_t *SV_GameClientNum( int num );
-svEntity_t	*SV_SvEntityForGentity( sharedEntity_t *gEnt );
-sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt );
+int	SV_NumForGentity( edict_s *ent );
+edict_s *SV_GentityNum( int num );
+playerState_s *SV_GameClientNum( int num );
+svEntity_t	*SV_SvEntityForGentity( edict_s *gEnt );
+edict_s *SV_GEntityForSvEntity( svEntity_t *svEnt );
 void		SV_InitGameProgs ( void );
 void		SV_ShutdownGameProgs ( void );
 void		SV_RestartGameProgs( void );
 void SV_GameSendServerCommand( int clientNum, const char *text );
 void SV_GameDropClient( int clientNum, const char *reason );
-void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t,
-					   playerState_t *clients, int sizeofGameClient );
-void SV_GetUsercmd( int clientNum, usercmd_t *cmd );
+void SV_LocateGameData( edict_s *gEnts, int numGEntities, int sizeofGEntity_t,
+					   playerState_s *clients, int sizeofGameClient );
+void SV_GetUsercmd( int clientNum, usercmd_s *cmd );
 
 //============================================================
 

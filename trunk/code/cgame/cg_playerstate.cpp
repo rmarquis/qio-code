@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 //
-// cg_playerstate.c -- this file acts on changes in a new playerState_t
+// cg_playerstate.c -- this file acts on changes in a new playerState_s
 // With normal play, this will be done after local prediction, but when
 // following another player or playing back a demo, it will be checked
 // when the snapshot transitions like all the other entities
@@ -49,7 +49,7 @@ CG_TransitionPlayerState
 
 ===============
 */
-void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
+void CG_TransitionPlayerState( playerState_s *ps, playerState_s *ops ) {
 	// check for changing follow mode
 	if ( ps->clientNum != ops->clientNum ) {
 //		cg.thisFrameTeleport = qtrue;

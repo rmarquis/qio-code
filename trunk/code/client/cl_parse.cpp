@@ -60,9 +60,9 @@ Parses deltas from the given base and adds the resulting entity
 to the current frame
 ==================
 */
-void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t *old, 
+void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_s *old, 
 					 qboolean unchanged) {
-	entityState_t	*state;
+	entityState_s	*state;
 
 	// save the parsed entity state into the big circular buffer so
 	// it can be used as the source for a later delta
@@ -89,7 +89,7 @@ CL_ParsePacketEntities
 */
 void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *newframe) {
 	int			newnum;
-	entityState_t	*oldstate;
+	entityState_s	*oldstate;
 	int			oldindex, oldnum;
 
 	newframe->parseEntitiesNum = cl.parseEntitiesNum;
@@ -463,9 +463,9 @@ CL_ParseGamestate
 */
 void CL_ParseGamestate( msg_t *msg ) {
 	int				i;
-	entityState_t	*es;
+	entityState_s	*es;
 	int				newnum;
-	entityState_t	nullstate;
+	entityState_s	nullstate;
 	int				cmd;
 	char			*s;
 	char oldGame[MAX_QPATH];

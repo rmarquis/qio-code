@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/serverAPI.h>
 #include <api/cmAPI.h>
 #include <math/vec3.h>
+#include "classes/BaseEntity.h"
+#include "classes/Player.h"
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -35,7 +37,7 @@ SetClientViewAngle
 
 ==================
 */
-void SetClientViewAngle( gentity_s *ent, vec3_t angle ) {
+void SetClientViewAngle( edict_s *ent, vec3_t angle ) {
 	int			i;
 
 	// set the delta angle
@@ -54,7 +56,7 @@ void SetClientViewAngle( gentity_s *ent, vec3_t angle ) {
 ClientRespawn
 ================
 */
-void ClientRespawn( gentity_s *ent ) {
+void ClientRespawn( edict_s *ent ) {
 
 
 	ClientSpawn(ent);
@@ -98,7 +100,7 @@ restarts.
 */
 const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	gclient_s	*client;
-	gentity_s	*ent;
+	edict_s	*ent;
 
 	ent = &g_entities[ clientNum ];
 
@@ -133,7 +135,7 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
-	gentity_s	*ent;
+	edict_s	*ent;
 	gclient_s	*client;
 
 	ent = g_entities + clientNum;
@@ -141,6 +143,14 @@ void ClientBegin( int clientNum ) {
 	client = level.clients + clientNum;
 
 	G_InitGentity( ent );
+
+	if(ent->ent) {
+		G_Printf(S_COLOR_YELLOW"ClientBegin: freeing old player class\n");
+		delete ent->ent;
+	}
+	// create a player class for given edict
+	BE_SetForcedEdict(ent);
+	ent->ent = new Player;
 	
 	ent->client = client;
 
@@ -165,7 +175,7 @@ after the first ClientBegin, and after each respawn
 Initializes all non-persistant parts of playerState
 ============
 */
-void ClientSpawn(gentity_s *ent) {
+void ClientSpawn(edict_s *ent) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
 	gclient_s	*client;
@@ -173,6 +183,7 @@ void ClientSpawn(gentity_s *ent) {
 
 	index = ent - g_entities;
 	client = ent->client;
+	Player *pl = (Player*)ent->ent;
 
 	VectorClear(spawn_origin);
 	VectorClear(spawn_angles);
@@ -190,8 +201,9 @@ void ClientSpawn(gentity_s *ent) {
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
 	ent->client = &level.clients[index];
+	pl->client = ent->client;
 	ent->inuse = qtrue;
-	ent->classname = "player";
+	//ent->classname = "player";
 
 	client->ps.clientNum = index;
 
@@ -203,17 +215,7 @@ void ClientSpawn(gentity_s *ent) {
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 
-	cmCapsule_i *m;
-	ent->cmod = m = cm->registerCapsule(48,16);
-	float h = m->getHeight();
-	float r = m->getRadius();
-	BT_FreeCharacter(client->characterController);
-	client->characterController = BT_CreateCharacter(8.f,client->ps.origin, h, r);
-
-	vec3_c tmp(1400,1340,470);
-	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,128),vec3_c(16,16,16),0);
-	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
-	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
+	pl->createCharacterControllerCapsule(48,16);
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
@@ -241,16 +243,21 @@ server system housekeeping.
 ============
 */
 void ClientDisconnect( int clientNum ) {
-	gentity_s	*ent;
+	edict_s	*ent;
 
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
 		return;
 	}
 
+	if(ent->ent) {
+		delete ent->ent;
+		ent->ent = 0;
+	}
+
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
-	ent->classname = "disconnected";
+//ent->classname = "disconnected";
 	ent->client->pers.connected = CON_DISCONNECTED;
 
 #ifdef CS_PLAYERS
@@ -260,7 +267,10 @@ void ClientDisconnect( int clientNum ) {
 
 void ClientCommand( int clientNum ) {
 	vec3_c tmp(1400,1340,470);
-	BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
+	//BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
+	BaseEntity *n = new BaseEntity;
+	n->setOrigin(tmp);
+	n->createBoxPhysicsObject(tmp,vec3_c(16,16,16),0);
 }

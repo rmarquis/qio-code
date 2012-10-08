@@ -264,7 +264,7 @@ public:
 			return mins;
 		if(index == 1)
 			return maxs;
-		assert(index >= 0 && index < 2);
+//		assert(index >= 0 && index < 2);
 		static vec3_c dummy;
 		dummy.clear();
 		return dummy;
@@ -274,7 +274,7 @@ public:
 			return mins;
 		if(index == 1)
 			return maxs;
-		assert(index >= 0 && index < 2);
+//		assert(index >= 0 && index < 2);
 		static vec3_c dummy;
 		dummy.clear();
 		return dummy;

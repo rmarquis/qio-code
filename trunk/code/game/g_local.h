@@ -41,29 +41,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //============================================================================
 
-struct gentity_s {
-	entityState_t	s;				// communicated by server to clients
-	qboolean	inuse;
-
-	// DO NOT MODIFY ANYTHING ABOVE THIS, THE SERVER
-	// EXPECTS THE FIELDS IN THAT ORDER!
-	//================================
-
-	struct gclient_s	*client;			// NULL if not a client
-
-
-
-	char		*classname;			// set in QuakeEd
-
-	int			freetime;			// level.time when the object was freed
-
-	// bullet physics object
-	class btRigidBody *body;
-	// simplified model for collision detection
-	class cMod_i *cmod;
-};
-
-
 typedef enum {
 	CON_DISCONNECTED,
 	CON_CONNECTING,
@@ -77,7 +54,7 @@ typedef enum {
 // on each level change or team change at ClientBegin()
 typedef struct {
 	clientConnected_t	connected;	
-	usercmd_t	cmd;				// we would lose angles if not persistant
+	usercmd_s	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
 	qboolean	initialSpawn;		// the first spawn should be at a cool location
 	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
@@ -92,12 +69,10 @@ typedef struct {
 // except for 'client->pers' and 'client->sess'
 struct gclient_s {
 	// ps MUST be the first element, because the server expects it
-	playerState_t	ps;				// communicated by server to clients
+	playerState_s	ps;				// communicated by server to clients
 
 	// the rest of the structure is private to game
 	clientPersistant_t	pers;
-
-	class btKinematicCharacterController *characterController;
 
 	int			buttons;
 	int			oldbuttons;
@@ -106,7 +81,7 @@ struct gclient_s {
 typedef struct {
 	struct gclient_s	*clients;		// [maxclients]
 
-	struct gentity_s	*gentities;
+	struct edict_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
 
@@ -124,18 +99,18 @@ typedef struct {
 int G_ModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
 int		G_SoundIndex( const char *name );
-gentity_s *G_Find (gentity_s *from, int fieldofs, const char *match);
-void	G_InitGentity( gentity_s *e );
-gentity_s	*G_Spawn (void);
-void	G_FreeEntity( gentity_s *e );
+edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
+void	G_InitGentity( edict_s *e );
+edict_s	*G_Spawn (void);
+void	G_FreeEntity( edict_s *e );
 qboolean	G_EntitiesFree( void );
 
 //
 // g_client.c
 //
-void SetClientViewAngle( gentity_s *ent, vec3_t angle );
-void ClientRespawn(gentity_s *ent);
-void ClientSpawn( gentity_s *ent );
+void SetClientViewAngle( edict_s *ent, vec3_t angle );
+void ClientRespawn(edict_s *ent);
+void ClientSpawn( edict_s *ent );
 
 //
 // g_main.c
@@ -159,8 +134,8 @@ void ClientCommand( int clientNum );
 // g_active.c
 //
 void ClientThink( int clientNum );
-void ClientEndFrame( gentity_s *ent );
-void G_RunClient( gentity_s *ent );
+void ClientEndFrame( edict_s *ent );
+void G_RunClient( edict_s *ent );
 
 
 //
@@ -174,9 +149,9 @@ void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *
 class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
 void G_TryToJump(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);
-void G_UpdatePhysicsObject(gentity_s *ent);
-void BT_CreateBoxEntity(gentity_s *ent, const float *pos, const float *halfSizes, const float *startVel);
-gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel);
+void G_UpdatePhysicsObject(edict_s *ent);
+void BT_CreateBoxEntity(edict_s *ent, const float *pos, const float *halfSizes, const float *startVel);
+edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel);
 
 //
 // g_debugDraw.cpp
@@ -184,4 +159,4 @@ gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const fl
 void G_DebugDrawFrame(class rAPI_i *pRFAPI);
 
 extern	level_locals_t	level;
-extern	gentity_s		g_entities[MAX_GENTITIES];
+extern	edict_s		g_entities[MAX_GENTITIES];

@@ -21,45 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// math.h - stateless mathematical routines
-#ifndef __MATH_MATH_H__
-#define __MATH_MATH_H__
+// Player.h - Game Client class header
 
-#include <cmath>
-#include "../shared/typedefs.h"
+#ifndef __PLAYER_H__
+#define __PLAYER_H__
 
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
-typedef vec_t vec5_t[5];
+#include "BaseEntity.h"
 
-#ifndef M_PI
-#define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
-#endif
+class Player : public BaseEntity {
+	
+	class btKinematicCharacterController *characterController;
+public:
+	Player();
 
-#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
-#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+	struct gclient_s *client; // will be removed soon?
 
-// angle indexes
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
+	void createCharacterControllerCapsule(float cHeight, float cRadius);
+	void runPlayer(struct usercmd_s *ucmd);
+};
 
-inline float G_rsqrt(float x) {
-    float xhalf = 0.5f*x;
-    int i = *(int*)&x;
-    i = 0x5f3759df - (i >> 1);
-    x = *(float*)&i;
-    x = x*(1.5f - xhalf*x*x);
-    return x;
-}
-
-inline float G_sqrt2(float n) {
-    float r = 0.f;
-    float i = 1.f;
-    while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
-    return r;
-}
-
-#endif // __MATH_MATH_H__
+#endif // __PLAYER_H__

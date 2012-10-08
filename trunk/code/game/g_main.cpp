@@ -25,10 +25,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/serverAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
+#include "classes/BaseEntity.h"
 
 level_locals_t	level;
 
-gentity_s		g_entities[MAX_GENTITIES];
+edict_s		g_entities[MAX_GENTITIES];
 gclient_s		g_clients[MAX_CLIENTS];
 
 void QDECL G_Printf( const char *fmt, ... ) {
@@ -70,10 +71,10 @@ void SP_worldspawn( void ) {
 
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
-	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
+//	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
 
 	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
-	g_entities[ENTITYNUM_NONE].classname = "nothing";
+///	g_entities[ENTITYNUM_NONE].classname = "nothing";
 
 	
 }
@@ -117,11 +118,11 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.num_entities = MAX_CLIENTS;
 
 	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
-		g_entities[i].classname = "clientslot";
+//		g_entities[i].classname = "clientslot";
 	}
 
 	// let the server system know where the entites are
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_s ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( edict_s ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	// parse the key/value pairs and spawn gentities
@@ -181,7 +182,7 @@ Advances the non-player objects in the world
 */
 void G_RunFrame( int levelTime ) {
 	int			i;
-	gentity_s	*ent;
+	edict_s	*ed;
 
 	level.framenum++;
 	level.previousTime = level.time;
@@ -194,28 +195,27 @@ void G_RunFrame( int levelTime ) {
 	//
 	// go through all allocated objects
 	//
-	ent = &g_entities[0];
-	for (i=0 ; i<level.num_entities ; i++, ent++) {
-		if ( !ent->inuse ) {
+	ed = &g_entities[0];
+	for (i=0 ; i<level.num_entities ; i++, ed++) {
+		if ( !ed->inuse ) {
 			continue;
 		}
 
 		if ( i < MAX_CLIENTS ) {
-			G_RunClient( ent );
+			G_RunClient( ed );
 			continue;
 		}
-
-		if(ent->body) {
-			G_UpdatePhysicsObject(ent);
+		BaseEntity *e = ed->ent;
+		if(e->hasPhysicsObject()) {
+			e->runPhysicsObject();
 		}
-
 	}
 
 	// perform final fixups on the players
-	ent = &g_entities[0];
-	for (i=0 ; i < MAX_CLIENTS; i++, ent++ ) {
-		if ( ent->inuse ) {
-			ClientEndFrame( ent );
+	ed = &g_entities[0];
+	for (i=0 ; i < MAX_CLIENTS; i++, ed++ ) {
+		if ( ed->inuse ) {
+			ClientEndFrame( ed );
 		}
 	}
 }

@@ -29,11 +29,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ========================
 BG_PlayerStateToEntityState
 
-This is done after each set of usercmd_t on the server,
+This is done after each set of usercmd_s on the server,
 and after local prediction on the client
 ========================
 */
-void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap ) {
+void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean snap ) {
 
 	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
 	//	s->eType = ET_INVISIBLE;
@@ -78,7 +78,7 @@ This can be used as another entry point when only the viewangles
 are being updated isntead of a full move
 ================
 */
-void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
+void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd ) {
 	short		temp;
 	int		i;
 

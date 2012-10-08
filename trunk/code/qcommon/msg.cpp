@@ -661,7 +661,7 @@ float MSG_ReadDeltaKeyFloat( msg_t *msg, int key, float oldV ) {
 /*
 ============================================================================
 
-usercmd_t communication
+usercmd_s communication
 
 ============================================================================
 */
@@ -681,7 +681,7 @@ usercmd_t communication
 MSG_WriteDeltaUsercmd
 =====================
 */
-void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
+void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
 	if ( to->serverTime - from->serverTime < 256 ) {
 		MSG_WriteBits( msg, 1, 1 );
 		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
@@ -705,7 +705,7 @@ void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
 MSG_ReadDeltaUsercmd
 =====================
 */
-void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
+void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
 	} else {
@@ -732,7 +732,7 @@ void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
 MSG_WriteDeltaUsercmd
 =====================
 */
-void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
+void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to ) {
 	if ( to->serverTime - from->serverTime < 256 ) {
 		MSG_WriteBits( msg, 1, 1 );
 		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
@@ -770,7 +770,7 @@ void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *
 MSG_ReadDeltaUsercmd
 =====================
 */
-void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
+void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
 	} else {
@@ -807,7 +807,7 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 /*
 =============================================================================
 
-entityState_t communication
+entityState_s communication
   
 =============================================================================
 */
@@ -835,7 +835,7 @@ typedef struct {
 } netField_t;
 
 // using the stringizing operator to save typing...
-#define	NETF(x) #x,(size_t)&((entityState_t*)0)->x
+#define	NETF(x) #x,(size_t)&((entityState_s*)0)->x
 
 netField_t	entityStateFields[] = 
 {
@@ -882,7 +882,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 
 	// all fields should be 32 bits to avoid any compiler packing issues
 	// the "number" field is not part of the field list
-	// if this assert fails, someone added a field to the entityState_t
+	// if this assert fails, someone added a field to the entityState_s
 	// struct without updating the message fields
 	assert( numFields + 1 == sizeof( *from )/4 );
 
@@ -981,12 +981,12 @@ MSG_ReadDeltaEntity
 The entity number has already been read from the message, which
 is how the from state is identified.
 
-If the delta removes the entity, entityState_t->number will be set to MAX_GENTITIES-1
+If the delta removes the entity, entityState_s->number will be set to MAX_GENTITIES-1
 
 Can go from either a baseline or a previous packet_entity
 ==================
 */
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_s *from, entityState_s *to, 
 						 int number) {
 	int			i, lc;
 	int			numFields;
@@ -1112,7 +1112,7 @@ plyer_state_t communication
 */
 
 // using the stringizing operator to save typing...
-#define	PSF(x) #x,(size_t)&((playerState_t*)0)->x
+#define	PSF(x) #x,(size_t)&((playerState_s*)0)->x
 
 netField_t	playerStateFields[] = 
 {
@@ -1142,7 +1142,7 @@ MSG_WriteDeltaPlayerstate
 */
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
 	int				i;
-	playerState_t	dummy;
+	playerState_s	dummy;
 	int				numFields;
 	netField_t		*field;
 	int				*fromF, *toF;
@@ -1210,7 +1210,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 MSG_ReadDeltaPlayerstate
 ===================
 */
-void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *to ) {
+void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_s *from, playerState_s *to ) {
 	int			i, lc;
 	netField_t	*field;
 	int			numFields;
@@ -1218,7 +1218,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 	int			print;
 	int			*fromF, *toF;
 	int			trunc;
-	playerState_t	dummy;
+	playerState_s	dummy;
 
 	if ( !from ) {
 		from = &dummy;

@@ -311,10 +311,10 @@ void CL_AdjustAngles( void ) {
 ================
 CL_KeyMove
 
-Sets the usercmd_t based on key states
+Sets the usercmd_s based on key states
 ================
 */
-void CL_KeyMove( usercmd_t *cmd ) {
+void CL_KeyMove( usercmd_s *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
 
@@ -389,7 +389,7 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 CL_JoystickMove
 =================
 */
-void CL_JoystickMove( usercmd_t *cmd ) {
+void CL_JoystickMove( usercmd_s *cmd ) {
 	float	anglespeed;
 
 	if ( !(in_speed.active ^ cl_run->integer) ) {
@@ -427,7 +427,7 @@ CL_MouseMove
 =================
 */
 
-void CL_MouseMove(usercmd_t *cmd)
+void CL_MouseMove(usercmd_s *cmd)
 {
 	float mx, my;
 
@@ -516,7 +516,7 @@ void CL_MouseMove(usercmd_t *cmd)
 CL_CmdButtons
 ==============
 */
-void CL_CmdButtons( usercmd_t *cmd ) {
+void CL_CmdButtons( usercmd_s *cmd ) {
 	int		i;
 
 	//
@@ -548,7 +548,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 CL_FinishMove
 ==============
 */
-void CL_FinishMove( usercmd_t *cmd ) {
+void CL_FinishMove( usercmd_s *cmd ) {
 	int		i;
 
 	// copy the state that the cgame is currently sending
@@ -569,8 +569,8 @@ void CL_FinishMove( usercmd_t *cmd ) {
 CL_CreateCmd
 =================
 */
-usercmd_t CL_CreateCmd( void ) {
-	usercmd_t	cmd;
+usercmd_s CL_CreateCmd( void ) {
+	usercmd_s	cmd;
 	vec3_t		oldAngles;
 
 	VectorCopy( cl.viewangles, oldAngles );
@@ -619,7 +619,7 @@ usercmd_t CL_CreateCmd( void ) {
 =================
 CL_CreateNewCommands
 
-Create a new usercmd_t structure for this frame
+Create a new usercmd_s structure for this frame
 =================
 */
 void CL_CreateNewCommands( void ) {
@@ -732,8 +732,8 @@ void CL_WritePacket( void ) {
 	msg_t		buf;
 	byte		data[MAX_MSGLEN];
 	int			i, j;
-	usercmd_t	*cmd, *oldcmd;
-	usercmd_t	nullcmd;
+	usercmd_s	*cmd, *oldcmd;
+	usercmd_s	nullcmd;
 	int			packetNum;
 	int			oldPacketNum;
 	int			count, key;

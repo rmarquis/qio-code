@@ -152,7 +152,8 @@ public:
 		if(initialized == false) {
 			g_core->DropError("rAPIImpl_c::shutdown: not initialized\n");
 		}
-		initialized = false;
+		initialized = false;	
+		RF_ClearWorldMap();
 		unloadMaterialSystem();
 		if(destroyWindow) {
 			rb->shutdown();

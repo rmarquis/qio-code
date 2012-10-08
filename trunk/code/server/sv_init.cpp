@@ -30,7 +30,7 @@ svAPI_s *g_server = 0;
 
 void SV_InitServerAPI() {
 	g_staticSVApi.DropClient = SV_GameDropClient;
-	g_staticSVApi.LocateGameData = (void (__cdecl *)(gentity_s *,int,int,playerState_t *,int))SV_LocateGameData;
+	g_staticSVApi.LocateGameData = (void (__cdecl *)(edict_s *,int,int,playerState_s *,int))SV_LocateGameData;
 	g_staticSVApi.GetConfigstring = SV_GetConfigstring;
 	g_staticSVApi.SendServerCommand = SV_GameSendServerCommand;
 	g_staticSVApi.SetConfigstring = SV_SetConfigstring;
@@ -228,7 +228,7 @@ baseline will be transmitted
 ================
 */
 static void SV_CreateBaseline( void ) {
-	sharedEntity_t *svent;
+	edict_s *svent;
 	int				entnum;	
 
 	for ( entnum = 1; entnum < sv.num_entities ; entnum++ ) {
@@ -457,7 +457,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	FS_ClearPakReferences(0);
 
 	// allocate the snapshot entities on the hunk
-	svs.snapshotEntities = (entityState_t*)Hunk_Alloc( sizeof(entityState_t)*svs.numSnapshotEntities, h_high );
+	svs.snapshotEntities = (entityState_s*)Hunk_Alloc( sizeof(entityState_s)*svs.numSnapshotEntities, h_high );
 	svs.nextSnapshotEntities = 0;
 
 	// toggle the server bit so clients can detect that a
@@ -558,7 +558,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 				}
 				else {
 					client_t		*client;
-					sharedEntity_t	*ent;
+					edict_s	*ent;
 
 					client = &svs.clients[i];
 					client->state = CS_ACTIVE;

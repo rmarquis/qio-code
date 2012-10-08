@@ -238,7 +238,7 @@ Sets cg.refdef view values
 ===============
 */
 static int CG_CalcViewValues( void ) {
-	playerState_t	*ps;
+	playerState_s	*ps;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 

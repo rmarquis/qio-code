@@ -72,7 +72,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curTexSlot;
 	int highestTCSlotUsed;
 	// materials
-	mtrAPI_i *lastMat;
+	safePtr_c<mtrAPI_i> lastMat;
 	textureAPI_i *lastLightmap;
 	bool bindVertexColors;
 	// matrices

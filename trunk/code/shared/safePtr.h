@@ -35,11 +35,21 @@ friend class safePtrObject_c;
 class safePtrObject_c {
 	class safePtrBase_c *safePtrList;
 public:
+	safePtrObject_c() {
+		safePtrList = 0;
+	}
+	~safePtrObject_c() {
+		nullAllReferences();
+	}
+	void nullAllReferences();
+
 	void addSafePtr(safePtrBase_c *p) {
 		p->next = safePtrList;
 		safePtrList = p;
 	}
 	void removeSafePtr(safePtrBase_c *p) {
+		if(safePtrList == 0)
+			return;
 		if(p == safePtrList) {
 			safePtrList = p->next;
 			p->next = 0;
@@ -71,12 +81,12 @@ public:
 };
 
 template<class _Ty>
-class safePtr_c {
+class safePtr_c : public safePtrBase_c {
+friend class safePtrObject_c;
 	_Ty *myPtr;
 public:
 	safePtr_c() {
 		myPtr = 0;
-		next = 0;
 	}
 	~safePtr_c() {
 		nullPtr();
@@ -91,12 +101,33 @@ public:
 		if(myPtr) {
 			nullPtr();
 		}
+		if(ptr == 0)
+			return 0;
 		myPtr = ptr;
 		myPtr->addSafePtr(this);
+		return ptr;
 	}
 	operator _Ty *() {
 		return myPtr;
 	}
+	_Ty *operator ->() {
+		return myPtr;
+	}
+	const _Ty *operator ->() const {
+		return myPtr;
+	}
 };
+
+inline void safePtrObject_c::nullAllReferences() {
+	safePtrBase_c *p = safePtrList;
+	while(p) {
+		safePtr_c<safePtrObject_c> *sp = (safePtr_c<safePtrObject_c>*)p;
+		if(p->next != sp->next)
+			__asm int 3
+		sp->myPtr = 0;
+		p = p->next;
+		sp->next = 0;
+	}
+}
 
 #endif // __SAFEPTR_H__

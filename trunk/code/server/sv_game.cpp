@@ -32,7 +32,7 @@ gameClientAPI_s *g_gameClients = 0;
 
 // these functions must be used instead of pointer arithmetic, because
 // the game allocates gentities with private information after the server shared part
-int	SV_NumForGentity( sharedEntity_t *ent ) {
+int	SV_NumForGentity( edict_s *ent ) {
 	int		num;
 
 	num = ( (byte *)ent - (byte *)sv.gentities ) / sv.gentitySize;
@@ -40,30 +40,30 @@ int	SV_NumForGentity( sharedEntity_t *ent ) {
 	return num;
 }
 
-sharedEntity_t *SV_GentityNum( int num ) {
-	sharedEntity_t *ent;
+edict_s *SV_GentityNum( int num ) {
+	edict_s *ent;
 
-	ent = (sharedEntity_t *)((byte *)sv.gentities + sv.gentitySize*(num));
+	ent = (edict_s *)((byte *)sv.gentities + sv.gentitySize*(num));
 
 	return ent;
 }
 
-playerState_t *SV_GameClientNum( int num ) {
-	playerState_t	*ps;
+playerState_s *SV_GameClientNum( int num ) {
+	playerState_s	*ps;
 
-	ps = (playerState_t *)((byte *)sv.gameClients + sv.gameClientSize*(num));
+	ps = (playerState_s *)((byte *)sv.gameClients + sv.gameClientSize*(num));
 
 	return ps;
 }
 
-svEntity_t	*SV_SvEntityForGentity( sharedEntity_t *gEnt ) {
+svEntity_t	*SV_SvEntityForGentity( edict_s *gEnt ) {
 	if ( !gEnt || gEnt->s.number < 0 || gEnt->s.number >= MAX_GENTITIES ) {
 		Com_Error( ERR_DROP, "SV_SvEntityForGentity: bad gEnt" );
 	}
 	return &sv.svEntities[ gEnt->s.number ];
 }
 
-sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt ) {
+edict_s *SV_GEntityForSvEntity( svEntity_t *svEnt ) {
 	int		num;
 
 	num = svEnt - sv.svEntities;
@@ -111,7 +111,7 @@ SV_SetBrushModel
 sets mins and maxs for inline bmodels
 =================
 */
-void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
+void SV_SetBrushModel( edict_s *ent, const char *name ) {
 
 }
 
@@ -150,7 +150,7 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 SV_AdjustAreaPortalState
 ========================
 */
-void SV_AdjustAreaPortalState( sharedEntity_t *ent, qboolean open ) {
+void SV_AdjustAreaPortalState( edict_s *ent, qboolean open ) {
 
 }
 
@@ -160,7 +160,7 @@ void SV_AdjustAreaPortalState( sharedEntity_t *ent, qboolean open ) {
 SV_EntityContact
 ==================
 */
-qboolean	SV_EntityContact( vec3_t mins, vec3_t maxs, const sharedEntity_t *gEnt, int capsule ) {
+qboolean	SV_EntityContact( vec3_t mins, vec3_t maxs, const edict_s *gEnt, int capsule ) {
 
 	return qfalse;
 }
@@ -185,8 +185,8 @@ SV_LocateGameData
 
 ===============
 */
-void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t,
-					   playerState_t *clients, int sizeofGameClient ) {
+void SV_LocateGameData( edict_s *gEnts, int numGEntities, int sizeofGEntity_t,
+					   playerState_s *clients, int sizeofGameClient ) {
 	sv.gentities = gEnts;
 	sv.gentitySize = sizeofGEntity_t;
 	sv.num_entities = numGEntities;
@@ -202,7 +202,7 @@ SV_GetUsercmd
 
 ===============
 */
-void SV_GetUsercmd( int clientNum, usercmd_t *cmd ) {
+void SV_GetUsercmd( int clientNum, usercmd_s *cmd ) {
 	if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 		Com_Error( ERR_DROP, "SV_GetUsercmd: bad clientNum:%i", clientNum );
 	}

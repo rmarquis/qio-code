@@ -62,13 +62,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 // if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd );
+void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd );
 
 //===================================================================================
 
 //---------------------------------------------------------
 //
-// entityState_t->eType
+// entityState_s->eType
 //
 typedef enum {
 	ET_GENERAL,
@@ -76,4 +76,4 @@ typedef enum {
 } entityType_t;
 
 
-void	BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean snap );
+void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean snap );

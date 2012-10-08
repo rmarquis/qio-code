@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 #include "g_local.h"
+#include "classes/Player.h"
 #include <api/serverAPI.h>
 
 /*
@@ -35,10 +36,9 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
-void ClientThink_real( gentity_s *ent ) {
+void ClientThink_real( edict_s *ent ) {
 	gclient_s	*client;
-	int			msec;
-	usercmd_t	*ucmd;
+	usercmd_s	*ucmd;
 
 	client = ent->client;
 
@@ -49,67 +49,8 @@ void ClientThink_real( gentity_s *ent ) {
 	// mark the time, so the connection sprite can be removed
 	ucmd = &ent->client->pers.cmd;
 
-	// sanity check the command time to prevent speedup cheating
-	if ( ucmd->serverTime > level.time + 200 ) {
-		ucmd->serverTime = level.time + 200;
-//		G_Printf("serverTime <<<<<\n" );
-	}
-	if ( ucmd->serverTime < level.time - 1000 ) {
-		ucmd->serverTime = level.time - 1000;
-//		G_Printf("serverTime >>>>>\n" );
-	} 
-
-	msec = ucmd->serverTime - client->ps.commandTime;
-	// following others may result in bad times, but we still want
-	// to check for follow toggles
-	if ( msec < 1 ) {
-		return;
-	}
-	if ( msec > 200 ) {
-		msec = 200;
-	}
-
-
-	// update the viewangles
-	PM_UpdateViewAngles( &ent->client->ps, ucmd );
-	{
-		vec3_t f,r,u;
-		vec3_t v = { 0, ent->client->ps.viewangles[1], 0 };
-		//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
-		AngleVectors(v,f,r,u);
-		VectorScale(f,level.frameTime*ucmd->forwardmove,f);
-		VectorScale(r,level.frameTime*ucmd->rightmove,r);
-		VectorScale(u,level.frameTime*ucmd->upmove,u);
-		vec3_t dir = {0,0,0};
-		VectorAdd(dir,f,dir);
-		VectorAdd(dir,r,dir);
-		VectorAdd(dir,u,dir);
-		if(0) {
-			VectorAdd(ent->client->ps.origin,dir,ent->client->ps.origin);
-		} else {
-			dir[2] = 0;
-			VectorScale(dir,0.75f,dir);
-			G_RunCharacterController(dir,ent->client->characterController, ent->client->ps.origin);
-			if(ucmd->upmove) {
-				G_TryToJump(ent->client->characterController);
-			}
-		}
-	}
-
-	//G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
-
-	//if (g_smoothClients.integer) {
-	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
-	//}
-	//else {
-		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
-	//}
-
-	client->ps.commandTime = ucmd->serverTime;
-	// swap and latch button actions
-	client->oldbuttons = client->buttons;
-	client->buttons = ucmd->buttons;
-	//client->latched_buttons |= client->buttons & ~client->oldbuttons;
+	Player *pl = dynamic_cast<Player*>(ent->ent);
+	pl->runPlayer(ucmd);
 }
 
 /*
@@ -120,14 +61,14 @@ A new command has arrived from the client
 ==================
 */
 void ClientThink( int clientNum ) {
-	gentity_s *ent;
+	edict_s *ent;
 
 	ent = g_entities + clientNum;
 	g_server->GetUsercmd( clientNum, &ent->client->pers.cmd );
 }
 
 
-void G_RunClient( gentity_s *ent ) {
+void G_RunClient( edict_s *ent ) {
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink_real( ent );
 }
@@ -141,7 +82,7 @@ A fast client will have multiple ClientThink for each ClientEdFrame,
 while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
-void ClientEndFrame( gentity_s *ent ) {
+void ClientEndFrame( edict_s *ent ) {
 	BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 }
 

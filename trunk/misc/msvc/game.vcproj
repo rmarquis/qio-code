@@ -383,6 +383,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\bt_include.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_local.h"
 				>
 			</File>
@@ -404,6 +408,26 @@
 			>
 			<File
 				RelativePath=".\game.def"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="classes"
+			>
+			<File
+				RelativePath="..\..\code\game\classes\BaseEntity.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\BaseEntity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Player.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Player.h"
 				>
 			</File>
 		</Filter>

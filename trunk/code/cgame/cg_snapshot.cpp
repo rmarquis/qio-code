@@ -76,7 +76,7 @@ FIXME: Also called by map_restart?
 void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	int				i;
 	centity_t		*cent;
-	entityState_t	*state;
+	entityState_s	*state;
 
 	cg.snap = snap;
 
@@ -95,7 +95,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 		state = &cg.snap->entities[ i ];
 		cent = &cg_entities[ state->number ];
 
-		memcpy(&cent->currentState, state, sizeof(entityState_t));
+		memcpy(&cent->currentState, state, sizeof(entityState_s));
 		//cent->currentState = *state;
 		cent->interpolate = qfalse;
 		cent->currentValid = qtrue;
@@ -156,7 +156,7 @@ static void CG_TransitionSnapshot( void ) {
 
 	// check for playerstate transition events
 	if ( oldFrame ) {
-		playerState_t	*ops, *ps;
+		playerState_s	*ops, *ps;
 
 		ops = &oldFrame->ps;
 		ps = &cg.snap->ps;
@@ -180,7 +180,7 @@ A new snapshot has just been read in from the client system.
 */
 static void CG_SetNextSnap( snapshot_t *snap ) {
 	int					num;
-	entityState_t		*es;
+	entityState_s		*es;
 	centity_t			*cent;
 
 	cg.nextSnap = snap;
@@ -193,7 +193,7 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 		es = &snap->entities[num];
 		cent = &cg_entities[ es->number ];
 
-		memcpy(&cent->nextState, es, sizeof(entityState_t));
+		memcpy(&cent->nextState, es, sizeof(entityState_s));
 		//cent->nextState = *es;
 
 		// if this frame is a teleport, or the entity wasn't in the

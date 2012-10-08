@@ -86,9 +86,9 @@ int G_SoundIndex( const char *name ) {
 //=====================================================================
 
 
-void G_InitGentity( gentity_s *e ) {
+void G_InitGentity( edict_s *e ) {
 	e->inuse = qtrue;
-	e->classname = "noclass";
+	///e->classname = "noclass";
 	e->s.number = e - g_entities;
 }
 
@@ -107,9 +107,9 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_s *G_Spawn( void ) {
+edict_s *G_Spawn( void ) {
 	int			i, force;
-	gentity_s	*e;
+	edict_s	*e;
 
 	e = NULL;	// shut up warning
 	i = 0;		// shut up warning
@@ -138,7 +138,7 @@ gentity_s *G_Spawn( void ) {
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL ) {
 		for (i = 0; i < MAX_GENTITIES; i++) {
-			G_Printf("%4i: %s\n", i, g_entities[i].classname);
+	//		G_Printf("%4i: %s\n", i, g_entities[i].classname);
 		}
 		G_Error( "G_Spawn: no free entities" );
 	}
@@ -147,7 +147,7 @@ gentity_s *G_Spawn( void ) {
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_s ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( edict_s ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );
@@ -161,7 +161,7 @@ G_EntitiesFree
 */
 qboolean G_EntitiesFree( void ) {
 	int			i;
-	gentity_s	*e;
+	edict_s	*e;
 
 	e = &g_entities[MAX_CLIENTS];
 	for ( i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
@@ -182,9 +182,9 @@ G_FreeEntity
 Marks the entity as free
 =================
 */
-void G_FreeEntity( gentity_s *ed ) {
+void G_FreeEntity( edict_s *ed ) {
 	memset (ed, 0, sizeof(*ed));
-	ed->classname = "freed";
+//	ed->classname = "freed";
 	ed->freetime = level.time;
 	ed->inuse = qfalse;
 }

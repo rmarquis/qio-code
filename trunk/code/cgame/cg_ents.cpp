@@ -163,7 +163,7 @@ CG_AddPacketEntities
 void CG_AddPacketEntities( void ) {
 	int					num;
 	centity_t			*cent;
-	playerState_t		*ps;
+	playerState_s		*ps;
 
 	// set cg.frameInterpolation
 	if ( cg.nextSnap ) {

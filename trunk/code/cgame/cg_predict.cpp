@@ -90,7 +90,7 @@ cg.snap->player_state and cg.nextFrame->player_state
 static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 	float			f;
 	int				i;
-	playerState_t	*out;
+	playerState_s	*out;
 	snapshot_t		*prev, *next;
 
 	out = &cg.predictedPlayerState;
@@ -101,7 +101,7 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 
 	// if we are still allowing local input, short circuit the view angles
 	if ( grabAngles ) {
-		usercmd_t	cmd;
+		usercmd_s	cmd;
 		int			cmdNum;
 
 		cmdNum = g_client->GetCurrentCmdNumber();
@@ -143,19 +143,19 @@ Generates cg.predictedPlayerState for the current cg.time
 cg.predictedPlayerState is guaranteed to be valid after exiting.
 
 For demo playback, this will be an interpolation between two valid
-playerState_t.
+playerState_s.
 
-For normal gameplay, it will be the result of predicted usercmd_t on
-top of the most recent playerState_t received from the server.
+For normal gameplay, it will be the result of predicted usercmd_s on
+top of the most recent playerState_s received from the server.
 
 Each new snapshot will usually have one or more new usercmd over the last,
 but we simulate all unacknowledged commands each time, not just the new ones.
 This means that on an internet connection, quite a few pmoves may be issued
 each frame.
 
-OPTIMIZE: don't re-simulate unless the newly arrived snapshot playerState_t
+OPTIMIZE: don't re-simulate unless the newly arrived snapshot playerState_s
 differs from the predicted one.  Would require saving all intermediate
-playerState_t during prediction.
+playerState_s during prediction.
 
 We detect prediction errors and allow them to be decayed off over several frames
 to ease the jerk.

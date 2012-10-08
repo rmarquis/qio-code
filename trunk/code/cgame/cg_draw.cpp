@@ -159,7 +159,7 @@ Should we draw something differnet for long lag vs no packets?
 static void CG_DrawDisconnect( void ) {
 	float		x, y;
 	int			cmdNum;
-	usercmd_t	cmd;
+	usercmd_s	cmd;
 	const char		*s;
 	int			w;
 

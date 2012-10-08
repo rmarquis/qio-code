@@ -35,9 +35,14 @@ woven in by Terry Thorsen 1/2003.
  */
 
 
-#include "../qcommon/q_shared.h"
-#include "../qcommon/qcommon.h"
+//#include "../qcommon/q_shared.h"
+//#include "../qcommon/qcommon.h"
+#include <ctype.h>
 #include "unzip.h"
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 #ifndef local
 #  define local static

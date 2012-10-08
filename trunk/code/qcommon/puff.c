@@ -168,7 +168,7 @@ local int32_t stored(struct state *s)
 
     /* copy len bytes from in to out */
     if (s->incnt + len > s->inlen) return 2;    /* not enough input */
-    if (s->out != NULL) {
+    if (s->out != 0) {
         if (s->outcnt + len > s->outlen)
             return 1;                           /* not enough output space */
         while (len--)
@@ -414,7 +414,7 @@ local int32_t codes(struct state *s,
         if (symbol < 0) return symbol;  /* invalid symbol */
         if (symbol < 256) {             /* literal: symbol is the byte */
             /* write out the literal */
-            if (s->out != NULL) {
+            if (s->out != 0) {
                 if (s->outcnt == s->outlen) return 1;
                 s->out[s->outcnt] = symbol;
             }
@@ -434,7 +434,7 @@ local int32_t codes(struct state *s,
                 return -10;     /* distance too far back */
 
             /* copy length bytes from distance bytes back */
-            if (s->out != NULL) {
+            if (s->out != 0) {
                 if (s->outcnt + len > s->outlen) return 1;
                 while (len--) {
                     s->out[s->outcnt] = s->out[s->outcnt - dist];
@@ -723,7 +723,7 @@ int32_t puff(uint8_t  *dest,           /* pointer to destination pointer */
 
     /* initialize output state */
     s.out = dest;
-    s.outlen = *destlen;                /* ignored if dest is NULL */
+    s.outlen = *destlen;                /* ignored if dest is 0 */
     s.outcnt = 0;
 
     /* initialize input state */

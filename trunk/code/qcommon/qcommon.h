@@ -96,12 +96,12 @@ int		MSG_LookaheadByte (msg_t *msg);
 void MSG_WriteDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
 void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
 
-void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
-void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
+void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to );
+void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to );
 
 void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
 						   , qboolean force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_s *from, entityState_s *to, 
 						 int number );
 
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
@@ -132,7 +132,7 @@ NET
 							// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
-#define	MAX_PACKET_USERCMDS		32		// max number of usercmd_t in a packet
+#define	MAX_PACKET_USERCMDS		32		// max number of usercmd_s in a packet
 
 #define	PORT_ANY			-1
 
@@ -309,8 +309,8 @@ enum svc_ops_e {
 enum clc_ops_e {
 	clc_bad,
 	clc_nop, 		
-	clc_move,				// [[usercmd_t]
-	clc_moveNoDelta,		// [[usercmd_t]
+	clc_move,				// [[usercmd_s]
+	clc_moveNoDelta,		// [[usercmd_s]
 	clc_clientCommand,		// [string] message
 	clc_EOF,
 

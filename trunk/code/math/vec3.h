@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __MATH_VEC3_H__
 
 #include "math.h"
+#include <stdio.h> // sscanf
 
 class vec3_c {
 public:

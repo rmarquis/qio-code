@@ -27,15 +27,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "math.h"
 #include "vec3.h"
+#include <string.h> // memcmp
 
 
 class matrix_c {
 	union {
 		struct {
-			vec4_t _m[4];
+			float _m[4][4];
 		};
 		struct {
-			vec_t _v[16];
+			float _v[16];
 		};
 	};
 public:
@@ -154,8 +155,8 @@ public:
 		_v[ 3] = 0;              _v[ 7] = 0;              _v[11] = 0;      _v[15] = 1;
 	}
 	void fromAxisAndOrigin(const axis_c &ax, const vec3_c &origin);
-	void setupXRotation(vec_t degrees) {
-		vec_t a = DEG2RAD(degrees);
+	void setupXRotation(float degrees) {
+		float a = DEG2RAD(degrees);
 
 		_v[ 0] = 1;      _v[ 4] = 0;              _v[ 8] = 0;              _v[12] = 0;
 		_v[ 1] = 0;      _v[ 5] = cos(a);         _v[ 9] =-sin(a);         _v[13] = 0;
@@ -163,8 +164,8 @@ public:
 		_v[ 3] = 0;      _v[ 7] = 0;              _v[11] = 0;              _v[15] = 1;
 	}
 
-	void setupYRotation(vec_t degrees) {
-		vec_t a = DEG2RAD(degrees);
+	void setupYRotation(float degrees) {
+		float a = DEG2RAD(degrees);
 
 		_v[ 0] = cos(a);         _v[ 4] = 0;      _v[ 8] = sin(a);         _v[12] = 0;
 		_v[ 1] = 0;              _v[ 5] = 1;      _v[ 9] = 0;              _v[13] = 0;
@@ -172,8 +173,8 @@ public:
 		_v[ 3] = 0;              _v[ 7] = 0;      _v[11] = 0;              _v[15] = 1;
 	}
 
-	void setupZRotation(vec_t degrees) {
-		vec_t a = DEG2RAD(degrees);
+	void setupZRotation(float degrees) {
+		float a = DEG2RAD(degrees);
 
 		_v[ 0] = cos(a);         _v[ 4] =-sin(a);         _v[ 8] = 0;      _v[12] = 0;
 		_v[ 1] = sin(a);         _v[ 5] = cos(a);         _v[ 9] = 0;      _v[13] = 0;
@@ -186,17 +187,17 @@ public:
 		this->_v[2] = 0.0; this->_v[6] = 0.0; this->_v[10] = 1.0; this->_v[14] = z;
 		this->_v[3] = 0.0; this->_v[7] = 0.0; this->_v[11] = 0.0; this->_v[15] = 1.0;
 	}
-	void rotateX(vec_t degrees) {
+	void rotateX(float degrees) {
 		matrix_c rot;
 		rot.setupXRotation(degrees);
 		*this = *this * rot;
 	}
-	void rotateY(vec_t degrees) {
+	void rotateY(float degrees) {
 		matrix_c rot;
 		rot.setupYRotation(degrees);
 		*this = *this * rot;
 	}
-	void rotateZ(vec_t degrees) {
+	void rotateZ(float degrees) {
 		matrix_c rot;
 		rot.setupZRotation(degrees);
 		*this = *this * rot;
@@ -448,7 +449,7 @@ public:
 	
 	void print() const;
 	bool compare(const matrix_c &other) const {
-		return !memcmp(this,&other,sizeof(matrix_c));
+		return !memcmp(this,&other,sizeof(matrix_c)); // FIXME
 	}
 
 	inline vec4_t *getVec4() {

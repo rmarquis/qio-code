@@ -33,13 +33,20 @@ class test_c {
 
 
 
-
-
-// the server looks at a sharedEntity, which is the start of the game's gentity_s structure
-typedef struct {
-	entityState_t	s;				// communicated by server to clients
+// DO NOT MODIFY THIS STRUCT
+// (unless you're able to rebuild both server and client)
+struct edict_s {
+	entityState_s	s;				// communicated by server to clients
 	qboolean	inuse;
-} sharedEntity_t;
+	int			freetime;			// level.time when the object was freed
+
+	// entity class for game-only usage
+	class BaseEntity *ent;
+
+
+	// will be removed soon?
+	struct gclient_s	*client;			// NULL if not a client
+};
 
 
 
@@ -82,8 +89,8 @@ typedef enum {
 
 	//=========== server specific functionality =============
 
-	G_LOCATE_GAME_DATA,		// ( gentity_s *gEnts, int numGEntities, int sizeofGEntity_t,
-	//							playerState_t *clients, int sizeofGameClient );
+	G_LOCATE_GAME_DATA,		// ( edict_s *gEnts, int numGEntities, int sizeofGEntity_t,
+	//							playerState_s *clients, int sizeofGameClient );
 	// the game needs to let the server system know where and how big the gentities
 	// are, so it can look at them directly without going through an interface
 
@@ -113,7 +120,7 @@ typedef enum {
 	G_GET_SERVERINFO,	// ( char *buffer, int bufferSize );
 	// the serverinfo info string has all the cvars visible to server browsers
 
-	G_GET_USERCMD,	// ( int clientNum, usercmd_t *cmd )
+	G_GET_USERCMD,	// ( int clientNum, usercmd_s *cmd )
 
 
 	G_FS_GETFILELIST,

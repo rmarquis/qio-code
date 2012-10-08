@@ -2,11 +2,9 @@
 #include <api/vfsAPI.h>
 #include <api/cmAPI.h>
 #include <math/quat.h>
+#include "classes/BaseEntity.h"
 
-#include <btBulletDynamicsCommon.h>
-#include <LinearMath/btGeometryUtil.h>
-#include <BulletDynamics/Character/btKinematicCharacterController.h>
-#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include "bt_include.h"
 
 #pragma comment( lib, "BulletCollision_debug.lib" )
 #pragma comment( lib, "BulletDynamics_debug.lib" )
@@ -119,32 +117,7 @@ btRigidBody* CreateRigidBody(float mass, const btTransform& startTransform, btCo
 
 	return body;
 }
-void QuatToAngles(const float *q, vec3_t angles)
-{
-	float          q2[4];
 
-	q2[0] = q[0] * q[0];
-	q2[1] = q[1] * q[1];
-	q2[2] = q[2] * q[2];
-	q2[3] = q[3] * q[3];
-
-	angles[PITCH] = RAD2DEG(asin(-2 * (q[2] * q[0] - q[3] * q[1])));
-	angles[YAW] = RAD2DEG(atan2(2 * (q[2] * q[3] + q[0] * q[1]), (q2[2] - q2[3] - q2[0] + q2[1])));
-	angles[ROLL] = RAD2DEG(atan2(2 * (q[3] * q[0] + q[2] * q[1]), (-q2[2] - q2[3] + q2[0] + q2[1])));
-}
-
-void G_UpdatePhysicsObject(gentity_s *ent) {
-	btRigidBody *body = ent->body;
-	if(body == 0)
-		return;
-	btTransform trans;
-	body->getMotionState()->getWorldTransform(trans);
-	VectorSet(ent->s.origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
-	//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
-	btQuaternion q = trans.getRotation();
-	quat_c q2(q.x(),q.y(),q.z(),q.w());
-	QuatToAngles(q2,ent->s.angles);
-}
 void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {
 	// set the forward direction of the character controller
 	btVector3 walkDir(dir[0],dir[1],dir[2]);
@@ -214,15 +187,10 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 	}
 	return body;
 }
-void BT_CreateBoxEntity(gentity_s *ent, const float *pos, const float *halfSizes, const float *startVel) {
-	ent->body = BT_CreateBoxBody(pos,halfSizes,startVel);
-	ent->cmod = cm->registerBoxExts(halfSizes);
-	ent->body->setUserPointer(ent);
-}
-gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
-	gentity_s *e = G_Spawn();
-	BT_CreateBoxEntity(e,pos,halfSizes,startVel);
-	return e;
+edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
+	BaseEntity *e = new BaseEntity;
+	e->createBoxPhysicsObject(pos,halfSizes,startVel);
+	return 0;
 }
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)

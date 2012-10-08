@@ -44,11 +44,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //=================================================
 
 
-// centity_t have a direct corespondence with gentity_s in the game, but
-// only the entityState_t is directly communicated to the cgame
+// centity_t have a direct corespondence with edict_s in the game, but
+// only the entityState_s is directly communicated to the cgame
 typedef struct centity_s {
-	entityState_t	currentState;	// from cg.frame
-	entityState_t	nextState;		// from cg.nextFrame, if available
+	entityState_s	currentState;	// from cg.frame
+	entityState_s	nextState;		// from cg.nextFrame, if available
 	qboolean		interpolate;	// true if next is valid to interpolate to
 	qboolean		currentValid;	// true if cg.frame holds this entity
 
@@ -100,7 +100,7 @@ typedef struct {
 	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
 
 	// prediction state
-	playerState_t	predictedPlayerState;
+	playerState_s	predictedPlayerState;
 	centity_t		predictedPlayerEntity;
 	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
 
@@ -247,8 +247,8 @@ void CG_SetConfigValues( void );
 // cg_playerstate.c
 //
 void CG_Respawn( void );
-void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops );
-void CG_CheckChangedPredictableEvents( playerState_t *ps );
+void CG_TransitionPlayerState( playerState_s *ps, playerState_s *ops );
+void CG_CheckChangedPredictableEvents( playerState_s *ps );
 void CG_PredictPlayerState();
 
 //

@@ -30,7 +30,26 @@
 #ifndef __PUFF_H
 #define __PUFF_H
 
-#include "q_shared.h"			/* for definitions of the <stdint.h> types */
+#ifdef _MSC_VER
+  #include <io.h>
+
+  typedef __int64 int64_t;
+  typedef __int32 int32_t;
+  typedef __int16 int16_t;
+//  typedef __int8 int8_t;
+  typedef unsigned __int64 uint64_t;
+  typedef unsigned __int32 uint32_t;
+  typedef unsigned __int16 uint16_t;
+  typedef unsigned __int8 uint8_t;
+
+  // vsnprintf is ISO/IEC 9899:1999
+  // abstracting this to make it portable
+  int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#else
+  #include <stdint.h>
+
+  #define Q_vsnprintf vsnprintf
+#endif	/* for definitions of the <stdint.h> types */
 
 /*
  * See puff.c for purpose and usage.

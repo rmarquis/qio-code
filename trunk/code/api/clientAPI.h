@@ -52,7 +52,7 @@ struct clAPI_s : public iFaceBase_i {
 	// snapshot, and it may be quite a few higher if it is a fast computer on
 	// a lagged connection
 	int (*GetCurrentCmdNumber)( void );	
-	qboolean (*GetUserCmd)( int cmdNumber, usercmd_t *ucmd );
+	qboolean (*GetUserCmd)( int cmdNumber, usercmd_s *ucmd );
 };
 
 extern clAPI_s *g_client;

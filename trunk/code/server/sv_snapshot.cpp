@@ -49,11 +49,11 @@ A normal server packet will look like:
 =============
 SV_EmitPacketEntities
 
-Writes a delta update of an entityState_t list to the message.
+Writes a delta update of an entityState_s list to the message.
 =============
 */
 static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to, msg_t *msg ) {
-	entityState_t	*oldent, *newent;
+	entityState_s	*oldent, *newent;
 	int		oldindex, newindex;
 	int		oldnum, newnum;
 	int		from_num_entities;
@@ -269,7 +269,7 @@ static int QDECL SV_QsortEntityNumbers( const void *a, const void *b ) {
 SV_AddEntToSnapshot
 ===============
 */
-static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapshotEntityNumbers_t *eNums ) {
+static void SV_AddEntToSnapshot( svEntity_t *svEnt, edict_s *gEnt, snapshotEntityNumbers_t *eNums ) {
 	// if we have already added this entity to this snapshot, don't add again
 	if ( svEnt->snapshotCounter == sv.snapshotCounter ) {
 		return;
@@ -293,7 +293,7 @@ SV_AddEntitiesVisibleFromPoint
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e;//, i;
-	sharedEntity_t *ent;
+	edict_s *ent;
 	svEntity_t	*svEnt;
 	//int		l;
 	
@@ -349,12 +349,12 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	clientSnapshot_t			*frame;
 	snapshotEntityNumbers_t		entityNumbers;
 	int							i;
-	sharedEntity_t				*ent;
-	entityState_t				*state;
+	edict_s				*ent;
+	entityState_s				*state;
 	svEntity_t					*svEnt;
-	sharedEntity_t				*clent;
+	edict_s				*clent;
 	int							clientNum;
-	playerState_t				*ps;
+	playerState_s				*ps;
 
 	// bump the counter used to prevent double adding
 	sv.snapshotCounter++;
@@ -374,7 +374,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 		return;
 	}
 
-	// grab the current playerState_t
+	// grab the current playerState_s
 	ps = SV_GameClientNum( client - svs.clients );
 	frame->ps = *ps;
 
@@ -522,8 +522,8 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// (re)send any reliable server commands
 	SV_UpdateServerCommandsToClient( client, &msg );
 
-	// send over all the relevant entityState_t
-	// and the playerState_t
+	// send over all the relevant entityState_s
+	// and the playerState_s
 	SV_WriteSnapshotToClient( client, &msg );
 
 #ifdef USE_VOIP

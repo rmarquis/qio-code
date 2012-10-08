@@ -888,7 +888,7 @@ static void SV_CalcPings( void ) {
 	client_t	*cl;
 	int			total, count;
 	int			delta;
-	playerState_t	*ps;
+	playerState_s	*ps;
 
 	for (i=0 ; i < sv_maxclients->integer ; i++) {
 		cl = &svs.clients[i];
