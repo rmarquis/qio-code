@@ -35,7 +35,7 @@ SetClientViewAngle
 
 ==================
 */
-void SetClientViewAngle( gentity_t *ent, vec3_t angle ) {
+void SetClientViewAngle( gentity_s *ent, vec3_t angle ) {
 	int			i;
 
 	// set the delta angle
@@ -54,7 +54,7 @@ void SetClientViewAngle( gentity_t *ent, vec3_t angle ) {
 ClientRespawn
 ================
 */
-void ClientRespawn( gentity_t *ent ) {
+void ClientRespawn( gentity_s *ent ) {
 
 
 	ClientSpawn(ent);
@@ -97,8 +97,8 @@ restarts.
 ============
 */
 const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-	gclient_t	*client;
-	gentity_t	*ent;
+	gclient_s	*client;
+	gentity_s	*ent;
 
 	ent = &g_entities[ clientNum ];
 
@@ -133,8 +133,8 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
-	gentity_t	*ent;
-	gclient_t	*client;
+	gentity_s	*ent;
+	gclient_s	*client;
 
 	ent = g_entities + clientNum;
 
@@ -165,10 +165,10 @@ after the first ClientBegin, and after each respawn
 Initializes all non-persistant parts of playerState
 ============
 */
-void ClientSpawn(gentity_t *ent) {
+void ClientSpawn(gentity_s *ent) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
+	gclient_s	*client;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
@@ -241,7 +241,7 @@ server system housekeeping.
 ============
 */
 void ClientDisconnect( int clientNum ) {
-	gentity_t	*ent;
+	gentity_s	*ent;
 
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
@@ -253,9 +253,9 @@ void ClientDisconnect( int clientNum ) {
 	ent->classname = "disconnected";
 	ent->client->pers.connected = CON_DISCONNECTED;
 
-
+#ifdef CS_PLAYERS
 	g_server->SetConfigstring( CS_PLAYERS + clientNum, "");
-
+#endif
 }
 
 void ClientCommand( int clientNum ) {

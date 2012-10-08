@@ -69,3 +69,27 @@ class cmBBExts_i *CM_RegisterBoxExts(float halfSizeX, float halfSizeY, float hal
 	cm_models.addObject(n);
 	return n;
 }
+class cMod_i *CM_RegisterModel(const char *modName) {
+	cMod_i *existing = CM_FindModelInternal(modName);
+	if(existing) {
+		return existing;
+	}
+	// check for primitive models
+	if(modName[0] == '_') {
+		const char *t = modName+1;
+		if(!Q_stricmpn(t,"c",1)) {
+			// that's a capsule
+			float radius, height;
+			sscanf(modName,"_c%f_%f",&height,&radius);
+			return CM_RegisterCapsule(height,radius);
+		} else if(!Q_stricmpn(t,"bhe",3)) {
+			// that's a bb defined by halfsizes
+			vec3_c halfSizes;
+			sscanf(modName,"_bhe%f_%f_%f",&halfSizes.x,&halfSizes.y,&halfSizes.z);
+			return CM_RegisterBoxExts(halfSizes.x,halfSizes.y,halfSizes.z);
+		} else {
+			return 0;
+		}
+	}
+	return 0;
+}

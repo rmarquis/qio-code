@@ -44,14 +44,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	CS_LEVEL_START_TIME		21		// so the timer only shows the current level
 
 
-
+// renderer models
 #define	CS_MODELS				32
-#define	CS_SOUNDS				(CS_MODELS+MAX_MODELS)
-#define	CS_PLAYERS				(CS_SOUNDS+MAX_SOUNDS)
-#define CS_LOCATIONS			(CS_PLAYERS+MAX_CLIENTS)
-#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS) 
-
-#define CS_MAX					(CS_PARTICLES+MAX_LOCATIONS)
+// collision models (cm module)
+#define	CS_COLLMODELS			(CS_MODELS+MAX_MODELS)
+// sounds
+#define	CS_SOUNDS				(CS_COLLMODELS+MAX_MODELS)
+//#define	CS_PLAYERS				(CS_SOUNDS+MAX_SOUNDS)
+//#define CS_LOCATIONS			(CS_PLAYERS+MAX_CLIENTS)
+//#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS) 
+//
+//#define CS_MAX					(CS_PARTICLES+MAX_LOCATIONS)
+#define CS_MAX					(CS_SOUNDS+MAX_SOUNDS)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS

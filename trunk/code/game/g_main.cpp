@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 level_locals_t	level;
 
-gentity_t		g_entities[MAX_GENTITIES];
-gclient_t		g_clients[MAX_CLIENTS];
+gentity_s		g_entities[MAX_GENTITIES];
+gclient_s		g_clients[MAX_CLIENTS];
 
 void QDECL G_Printf( const char *fmt, ... ) {
 	va_list		argptr;
@@ -121,7 +121,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 
 	// let the server system know where the entites are
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_s ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	// parse the key/value pairs and spawn gentities
@@ -181,7 +181,7 @@ Advances the non-player objects in the world
 */
 void G_RunFrame( int levelTime ) {
 	int			i;
-	gentity_t	*ent;
+	gentity_s	*ent;
 
 	level.framenum++;
 	level.previousTime = level.time;

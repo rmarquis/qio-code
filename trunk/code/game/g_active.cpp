@@ -35,8 +35,8 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
-void ClientThink_real( gentity_t *ent ) {
-	gclient_t	*client;
+void ClientThink_real( gentity_s *ent ) {
+	gclient_s	*client;
 	int			msec;
 	usercmd_t	*ucmd;
 
@@ -120,14 +120,14 @@ A new command has arrived from the client
 ==================
 */
 void ClientThink( int clientNum ) {
-	gentity_t *ent;
+	gentity_s *ent;
 
 	ent = g_entities + clientNum;
 	g_server->GetUsercmd( clientNum, &ent->client->pers.cmd );
 }
 
 
-void G_RunClient( gentity_t *ent ) {
+void G_RunClient( gentity_s *ent ) {
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink_real( ent );
 }
@@ -141,7 +141,7 @@ A fast client will have multiple ClientThink for each ClientEdFrame,
 while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
-void ClientEndFrame( gentity_t *ent ) {
+void ClientEndFrame( gentity_s *ent ) {
 	BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
 }
 

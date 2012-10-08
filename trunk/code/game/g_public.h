@@ -35,7 +35,7 @@ class test_c {
 
 
 
-// the server looks at a sharedEntity, which is the start of the game's gentity_t structure
+// the server looks at a sharedEntity, which is the start of the game's gentity_s structure
 typedef struct {
 	entityState_t	s;				// communicated by server to clients
 	qboolean	inuse;
@@ -82,7 +82,7 @@ typedef enum {
 
 	//=========== server specific functionality =============
 
-	G_LOCATE_GAME_DATA,		// ( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t,
+	G_LOCATE_GAME_DATA,		// ( gentity_s *gEnts, int numGEntities, int sizeofGEntity_t,
 	//							playerState_t *clients, int sizeofGameClient );
 	// the game needs to let the server system know where and how big the gentities
 	// are, so it can look at them directly without going through an interface

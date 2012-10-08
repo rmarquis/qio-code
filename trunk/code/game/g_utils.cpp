@@ -39,7 +39,7 @@ G_FindConfigstringIndex
 
 ================
 */
-int G_FindConfigstringIndex( char *name, int start, int max, qboolean create ) {
+int G_FindConfigstringIndex( const char *name, int start, int max, qboolean create ) {
 	int		i;
 	char	s[MAX_STRING_CHARS];
 
@@ -71,18 +71,22 @@ int G_FindConfigstringIndex( char *name, int start, int max, qboolean create ) {
 }
 
 
-int G_ModelIndex( char *name ) {
+int G_ModelIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, qtrue);
 }
 
-int G_SoundIndex( char *name ) {
+int G_CollisionModelIndex( const char *name ) {
+	return G_FindConfigstringIndex (name, CS_COLLMODELS, MAX_MODELS, qtrue);
+}
+
+int G_SoundIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
 
 //=====================================================================
 
 
-void G_InitGentity( gentity_t *e ) {
+void G_InitGentity( gentity_s *e ) {
 	e->inuse = qtrue;
 	e->classname = "noclass";
 	e->s.number = e - g_entities;
@@ -103,9 +107,9 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_t *G_Spawn( void ) {
+gentity_s *G_Spawn( void ) {
 	int			i, force;
-	gentity_t	*e;
+	gentity_s	*e;
 
 	e = NULL;	// shut up warning
 	i = 0;		// shut up warning
@@ -143,7 +147,7 @@ gentity_t *G_Spawn( void ) {
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( gentity_s ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );
@@ -157,7 +161,7 @@ G_EntitiesFree
 */
 qboolean G_EntitiesFree( void ) {
 	int			i;
-	gentity_t	*e;
+	gentity_s	*e;
 
 	e = &g_entities[MAX_CLIENTS];
 	for ( i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
@@ -178,7 +182,7 @@ G_FreeEntity
 Marks the entity as free
 =================
 */
-void G_FreeEntity( gentity_t *ed ) {
+void G_FreeEntity( gentity_s *ed ) {
 	memset (ed, 0, sizeof(*ed));
 	ed->classname = "freed";
 	ed->freetime = level.time;

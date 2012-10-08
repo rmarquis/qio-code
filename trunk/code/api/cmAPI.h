@@ -77,6 +77,9 @@ public:
 		return registerBoxExts(hfs[0],hfs[1],hfs[2]);
 	}
 
+	// works with any model type
+	virtual class cMod_i *registerModel(const char *modName) = 0;
+
 };
 
 extern cmAPI_i *cm;

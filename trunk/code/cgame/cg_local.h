@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //=================================================
 
 
-// centity_t have a direct corespondence with gentity_t in the game, but
+// centity_t have a direct corespondence with gentity_s in the game, but
 // only the entityState_t is directly communicated to the cgame
 typedef struct centity_s {
 	entityState_t	currentState;	// from cg.frame
@@ -169,6 +169,7 @@ typedef struct {
 	// locally derived information from gamestate
 	//
 	qhandle_t		gameModels[MAX_MODELS];
+	class cMod_i *	gameCollModels[MAX_MODELS];
 	sfxHandle_t		gameSounds[MAX_SOUNDS];
 
 	// media

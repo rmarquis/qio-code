@@ -30,11 +30,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #define SERVER_API_IDENTSTR "ServerAPI0001"
 
-typedef struct gentity_s gentity_t;
+typedef struct gentity_s gentity_s;
 
 // these are only temporary function pointers, TODO: rework them?
 struct svAPI_s : public iFaceBase_i {
-	void (*LocateGameData)( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *gameClients, int sizeofGameClient );
+	void (*LocateGameData)( gentity_s *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *gameClients, int sizeofGameClient );
 	void (*DropClient)( int clientNum, const char *reason );
 	void (*SendServerCommand)( int clientNum, const char *text );
 	void (*SetConfigstring)( int num, const char *string );

@@ -41,9 +41,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //============================================================================
 
-typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
-
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
 	qboolean	inuse;
@@ -124,20 +121,21 @@ typedef struct {
 //
 // g_utils.c
 //
-int G_ModelIndex( char *name );
-int		G_SoundIndex( char *name );
-gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
-void	G_InitGentity( gentity_t *e );
-gentity_t	*G_Spawn (void);
-void	G_FreeEntity( gentity_t *e );
+int G_ModelIndex( const char *name );
+int G_CollisionModelIndex( const char *name );
+int		G_SoundIndex( const char *name );
+gentity_s *G_Find (gentity_s *from, int fieldofs, const char *match);
+void	G_InitGentity( gentity_s *e );
+gentity_s	*G_Spawn (void);
+void	G_FreeEntity( gentity_s *e );
 qboolean	G_EntitiesFree( void );
 
 //
 // g_client.c
 //
-void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-void ClientRespawn(gentity_t *ent);
-void ClientSpawn( gentity_t *ent );
+void SetClientViewAngle( gentity_s *ent, vec3_t angle );
+void ClientRespawn(gentity_s *ent);
+void ClientSpawn( gentity_s *ent );
 
 //
 // g_main.c
@@ -161,8 +159,8 @@ void ClientCommand( int clientNum );
 // g_active.c
 //
 void ClientThink( int clientNum );
-void ClientEndFrame( gentity_t *ent );
-void G_RunClient( gentity_t *ent );
+void ClientEndFrame( gentity_s *ent );
+void G_RunClient( gentity_s *ent );
 
 
 //
@@ -186,4 +184,4 @@ gentity_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const fl
 void G_DebugDrawFrame(class rAPI_i *pRFAPI);
 
 extern	level_locals_t	level;
-extern	gentity_t		g_entities[MAX_GENTITIES];
+extern	gentity_s		g_entities[MAX_GENTITIES];

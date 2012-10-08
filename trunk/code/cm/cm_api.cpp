@@ -41,6 +41,11 @@ class cmAPIImpl_c : public cmAPI_i {
 		return CM_RegisterBoxExts(halfSizeX,halfSizeY,halfSizeZ);
 	}
 
+	
+	virtual class cMod_i *registerModel(const char *modName) {
+		return CM_RegisterModel(modName);
+	}
+
 };
 
 // interface manager (import)
