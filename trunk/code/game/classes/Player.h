@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "BaseEntity.h"
 
+#include "../../shared/str.h"
 #include "../../qcommon/q_shared.h" // for ucmd
 
 typedef enum {
@@ -45,10 +46,6 @@ typedef struct {
 	clientConnected_t	connected;	
 	usercmd_s	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
-	qboolean	initialSpawn;		// the first spawn should be at a cool location
-	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
-	qboolean	pmoveFixed;			//
-	char		netname[MAX_NETNAME];
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 } clientPersistant_t;
@@ -60,6 +57,7 @@ typedef struct {
 
 class Player : public BaseEntity {
 	class btKinematicCharacterController *characterController;
+	str netName;
 public:
 	Player();
 
@@ -75,6 +73,8 @@ public:
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
 	void setClientViewAngle(const vec3_c &angle);
+	void setNetName(const char *newNetName);
+	const char *getNetName() const;
 
 	struct playerState_s *getPlayerState();
 };

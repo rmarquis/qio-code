@@ -116,7 +116,12 @@ void Player::setClientViewAngle(const vec3_c &angle) {
 	VectorCopy( angle, myEdict->s.angles );
 	VectorCopy (myEdict->s.angles, this->ps.viewangles);
 }
-
+void Player::setNetName(const char *newNetName) {
+	netName = newNetName;
+}
+const char *Player::getNetName() const {
+	return netName;
+}
 struct playerState_s *Player::getPlayerState() {
 	return &this->ps;
 }

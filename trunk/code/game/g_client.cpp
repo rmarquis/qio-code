@@ -55,7 +55,16 @@ if desired.
 ============
 */
 void ClientUserinfoChanged( int clientNum ) {
+	Player *pl = dynamic_cast<Player*>(g_entities[clientNum].ent);
 
+	char buf[BIG_INFO_STRING];
+	g_server->GetUserinfo(clientNum,buf,sizeof(buf));
+	const char *s = Info_ValueForKey(buf, "name");
+	if(s == 0) {
+		pl->setNetName("UnnamedPlayer");
+	} else {
+		pl->setNetName(s);
+	}
 }
 
 
@@ -102,7 +111,7 @@ const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
-		g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", pl->pers.netname) );
+		g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", pl->getNetName()) );
 	}
 
 	return NULL;
@@ -138,7 +147,7 @@ void ClientBegin( int clientNum ) {
 	// locate ent at a spawn point
 	ClientSpawn( ent );
 
-	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", pl->pers.netname) );
+	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", pl->getNetName()) );
 
 	G_Printf( "ClientBegin: %i\n", clientNum );
 
