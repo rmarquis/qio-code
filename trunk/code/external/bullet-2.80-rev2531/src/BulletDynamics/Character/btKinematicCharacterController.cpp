@@ -217,10 +217,15 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 					}
 					if(c) {
 						if(c->isStaticOrKinematicObject() == false) {
-							btRigidBody *rb = (btRigidBody*)c;
-							rb->activate(true);
-							//rb->setLinearVelocity(pt.m_normalWorldOnB * directionSign * ofs * 500.f);
-							rb->applyCentralImpulse(pt.m_normalWorldOnB * directionSign * ofs * 250.f);
+							float d = (pt.m_normalWorldOnB * directionSign).dot(btVector3(0,0,-1));
+							// dont push down bodies while standing on them
+							// TODO: detect groundEntity here??
+							if(d < 0.70) {
+								btRigidBody *rb = (btRigidBody*)c;
+								rb->activate(true);
+								//rb->setLinearVelocity(pt.m_normalWorldOnB * directionSign * ofs * 500.f);
+								rb->applyCentralImpulse(pt.m_normalWorldOnB * directionSign * ofs * 250.f);
+							}
 						}
 					}
 #endif
