@@ -129,6 +129,7 @@ void ClientUserinfoChanged( int clientNum );
 void ClientDisconnect( int clientNum );
 void ClientBegin( int clientNum );
 void ClientCommand( int clientNum );
+struct playerState_s *ClientGetPlayerState(u32 clientNum);
 
 //
 // g_active.c

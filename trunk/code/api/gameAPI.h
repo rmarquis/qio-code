@@ -47,6 +47,7 @@ struct gameClientAPI_s : public iFaceBase_i {
 	void (*ClientBegin)( int clientNum );
 	void (*ClientCommand)( int clientNum );
 	void (*ClientThink)( int clientNum );
+	struct playerState_s *(*ClientGetPlayerState)(u32 clientNum);
 };
 
 extern gameAPI_s *g_game;

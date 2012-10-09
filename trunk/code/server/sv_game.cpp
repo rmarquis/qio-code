@@ -35,7 +35,8 @@ gameClientAPI_s *g_gameClients = 0;
 int	SV_NumForGentity( edict_s *ent ) {
 	int		num;
 
-	num = ( (byte *)ent - (byte *)sv.gentities ) / sv.gentitySize;
+	// NOTE: edict_s size is now fixed. All the game code should be put in revelant entity classes
+	num = ( (byte *)ent - (byte *)sv.gentities ) / sizeof(edict_s);
 
 	return num;
 }
@@ -43,7 +44,8 @@ int	SV_NumForGentity( edict_s *ent ) {
 edict_s *SV_GentityNum( int num ) {
 	edict_s *ent;
 
-	ent = (edict_s *)((byte *)sv.gentities + sv.gentitySize*(num));
+	// NOTE: edict_s size is now fixed. All the game code should be put in revelant entity classes
+	ent = (edict_s *)((byte *)sv.gentities + sizeof(edict_s)*(num));
 
 	return ent;
 }
@@ -51,7 +53,7 @@ edict_s *SV_GentityNum( int num ) {
 playerState_s *SV_GameClientNum( int num ) {
 	playerState_s	*ps;
 
-	ps = (playerState_s *)((byte *)sv.gameClients + sv.gameClientSize*(num));
+	ps = g_gameClients->ClientGetPlayerState(num);
 
 	return ps;
 }
@@ -185,14 +187,9 @@ SV_LocateGameData
 
 ===============
 */
-void SV_LocateGameData( edict_s *gEnts, int numGEntities, int sizeofGEntity_t,
-					   playerState_s *clients, int sizeofGameClient ) {
+void SV_LocateGameData( edict_s *gEnts, int numGEntities) {
 	sv.gentities = gEnts;
-	sv.gentitySize = sizeofGEntity_t;
 	sv.num_entities = numGEntities;
-
-	sv.gameClients = clients;
-	sv.gameClientSize = sizeofGameClient;
 }
 
 

@@ -103,3 +103,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	client->buttons = ucmd->buttons;
 	//client->latched_buttons |= client->buttons & ~client->oldbuttons;
 }
+
+struct playerState_s *Player::getPlayerState() {
+	return &client->ps;
+}

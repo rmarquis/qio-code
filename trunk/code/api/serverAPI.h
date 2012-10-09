@@ -34,7 +34,7 @@ typedef struct edict_s edict_s;
 
 // these are only temporary function pointers, TODO: rework them?
 struct svAPI_s : public iFaceBase_i {
-	void (*LocateGameData)( edict_s *gEnts, int numGEntities, int sizeofGEntity_t, playerState_s *gameClients, int sizeofGameClient );
+	void (*LocateGameData)( edict_s *gEnts, int numGEntities );
 	void (*DropClient)( int clientNum, const char *reason );
 	void (*SendServerCommand)( int clientNum, const char *text );
 	void (*SetConfigstring)( int num, const char *string );

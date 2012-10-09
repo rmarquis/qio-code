@@ -122,8 +122,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 
 	// let the server system know where the entites are
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( edict_s ), 
-		&level.clients[0].ps, sizeof( level.clients[0] ) );
+	g_server->LocateGameData( level.gentities, level.num_entities );
 
 	// parse the key/value pairs and spawn gentities
 	SP_worldspawn();

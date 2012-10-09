@@ -38,6 +38,8 @@ public:
 
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
+
+	struct playerState_s *getPlayerState();
 };
 
 #endif // __PLAYER_H__

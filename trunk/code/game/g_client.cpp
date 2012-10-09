@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 #include <api/serverAPI.h>
 #include <api/cmAPI.h>
+#include <api/coreAPI.h>
 #include <math/vec3.h>
 #include "classes/BaseEntity.h"
 #include "classes/Player.h"
@@ -274,3 +275,21 @@ void ClientCommand( int clientNum ) {
 	n->setOrigin(tmp);
 	n->createBoxPhysicsObject(tmp,vec3_c(16,16,16),0);
 }
+
+playerState_s dummy;
+struct playerState_s *ClientGetPlayerState(u32 clientNum) {
+	edict_s *ed = &g_entities[clientNum];
+	if(ed->inuse == qfalse) {
+		g_core->Print(S_COLOR_RED"ClientGetPlayerState: edict %i isnt active\n",clientNum);
+		memset(&dummy,0,sizeof(dummy));
+		return &dummy;
+	}
+	Player *pl = dynamic_cast<Player*>(ed->ent);
+	if(pl == 0) {
+		g_core->Print(S_COLOR_RED"ClientGetPlayerState: can't get Player class of edict %i\n",clientNum);
+		memset(&dummy,0,sizeof(dummy));
+		return &dummy;
+	}
+	return pl->getPlayerState();
+}
+

@@ -61,6 +61,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_staticGameClientsAPI.ClientConnect = ClientConnect;
 	g_staticGameClientsAPI.ClientThink = ClientThink;
 	g_staticGameClientsAPI.ClientDisconnect = ClientDisconnect;
+	g_staticGameClientsAPI.ClientGetPlayerState = ClientGetPlayerState;
 	g_iFaceMan->registerInterface(&g_staticGameClientsAPI,GAMECLIENTS_API_IDENTSTR);
 
 	// imports

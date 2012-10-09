@@ -147,8 +147,7 @@ edict_s *G_Spawn( void ) {
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	g_server->LocateGameData( level.gentities, level.num_entities, sizeof( edict_s ), 
-		&level.clients[0].ps, sizeof( level.clients[0] ) );
+	g_server->LocateGameData( level.gentities, level.num_entities );
 
 	G_InitGentity( e );
 	return e;

@@ -84,11 +84,7 @@ typedef struct {
 
 	// the game virtual machine will update these on init and changes
 	edict_s	*gentities;
-	int				gentitySize;
 	int				num_entities;		// current number, <= MAX_GENTITIES
-
-	playerState_s	*gameClients;
-	int				gameClientSize;		// will be > sizeof(playerState_s) due to game private data
 
 	int				restartTime;
 	int				time;
@@ -387,8 +383,7 @@ void		SV_ShutdownGameProgs ( void );
 void		SV_RestartGameProgs( void );
 void SV_GameSendServerCommand( int clientNum, const char *text );
 void SV_GameDropClient( int clientNum, const char *reason );
-void SV_LocateGameData( edict_s *gEnts, int numGEntities, int sizeofGEntity_t,
-					   playerState_s *clients, int sizeofGameClient );
+void SV_LocateGameData( edict_s *gEnts, int numGEntities );
 void SV_GetUsercmd( int clientNum, usercmd_s *cmd );
 
 //============================================================

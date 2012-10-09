@@ -30,7 +30,7 @@ svAPI_s *g_server = 0;
 
 void SV_InitServerAPI() {
 	g_staticSVApi.DropClient = SV_GameDropClient;
-	g_staticSVApi.LocateGameData = (void (__cdecl *)(edict_s *,int,int,playerState_s *,int))SV_LocateGameData;
+	g_staticSVApi.LocateGameData = (void (__cdecl *)(edict_s *,int))SV_LocateGameData;
 	g_staticSVApi.GetConfigstring = SV_GetConfigstring;
 	g_staticSVApi.SendServerCommand = SV_GameSendServerCommand;
 	g_staticSVApi.SetConfigstring = SV_SetConfigstring;
