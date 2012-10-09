@@ -41,46 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //============================================================================
 
-typedef enum {
-	CON_DISCONNECTED,
-	CON_CONNECTING,
-	CON_CONNECTED
-} clientConnected_t;
-
-//
-#define MAX_NETNAME			36
-
-// client data that stays across multiple respawns, but is cleared
-// on each level change or team change at ClientBegin()
 typedef struct {
-	clientConnected_t	connected;	
-	usercmd_s	cmd;				// we would lose angles if not persistant
-	qboolean	localClient;		// true if "ip" info key is "localhost"
-	qboolean	initialSpawn;		// the first spawn should be at a cool location
-	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
-	qboolean	pmoveFixed;			//
-	char		netname[MAX_NETNAME];
-	int			maxHealth;			// for handicapping
-	int			enterTime;			// level.time the client entered the game
-} clientPersistant_t;
-
-
-// this structure is cleared on each ClientSpawn(),
-// except for 'client->pers' and 'client->sess'
-struct gclient_s {
-	// ps MUST be the first element, because the server expects it
-	playerState_s	ps;				// communicated by server to clients
-
-	// the rest of the structure is private to game
-	clientPersistant_t	pers;
-
-	int			buttons;
-	int			oldbuttons;
-};
-
-typedef struct {
-	struct gclient_s	*clients;		// [maxclients]
-
 	struct edict_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
@@ -108,7 +69,6 @@ qboolean	G_EntitiesFree( void );
 //
 // g_client.c
 //
-void SetClientViewAngle( edict_s *ent, vec3_t angle );
 void ClientRespawn(edict_s *ent);
 void ClientSpawn( edict_s *ent );
 

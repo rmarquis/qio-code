@@ -33,26 +33,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //======================================================================
 
 /*
-==================
-SetClientViewAngle
-
-==================
-*/
-void SetClientViewAngle( edict_s *ent, vec3_t angle ) {
-	int			i;
-
-	// set the delta angle
-	for (i=0 ; i<3 ; i++) {
-		int		cmdAngle;
-
-		cmdAngle = ANGLE2SHORT(angle[i]);
-		ent->client->ps.delta_angles[i] = cmdAngle - ent->client->pers.cmd.angles[i];
-	}
-	VectorCopy( angle, ent->s.angles );
-	VectorCopy (ent->s.angles, ent->client->ps.viewangles);
-}
-
-/*
 ================
 ClientRespawn
 ================
@@ -100,19 +80,21 @@ restarts.
 ============
 */
 const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-	gclient_s	*client;
+	Player *pl;
 	edict_s	*ent;
 
 	ent = &g_entities[ clientNum ];
 
+	if(ent->ent) {
+		G_Printf(S_COLOR_YELLOW"ClientBegin: freeing old player class\n");
+		delete ent->ent;
+	}
+	// create a player class for given edict
+	BE_SetForcedEdict(ent);
+	ent->ent = pl = new Player;
 
 	// they can connect
-	ent->client = level.clients + clientNum;
-	client = ent->client;
-
-	memset( client, 0, sizeof(*client) );
-
-	client->pers.connected = CON_CONNECTING;
+	pl->pers.connected = CON_CONNECTING;
 
 	// get and distribute relevent paramters
 	G_Printf( "ClientConnect: %i\n", clientNum );
@@ -120,7 +102,7 @@ const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
-		g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
+		g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", pl->pers.netname) );
 	}
 
 	return NULL;
@@ -137,31 +119,26 @@ and on transition between teams, but doesn't happen on respawns
 */
 void ClientBegin( int clientNum ) {
 	edict_s	*ent;
-	gclient_s	*client;
 
 	ent = g_entities + clientNum;
 
-	client = level.clients + clientNum;
+	if(ent->ent == 0) {
+		// this should never happen
+		g_core->DropError("ClientBegin on edict without entity!");
+		return;
+	}
 
 	G_InitGentity( ent );
 
-	if(ent->ent) {
-		G_Printf(S_COLOR_YELLOW"ClientBegin: freeing old player class\n");
-		delete ent->ent;
-	}
-	// create a player class for given edict
-	BE_SetForcedEdict(ent);
-	ent->ent = new Player;
-	
-	ent->client = client;
+	Player *pl = dynamic_cast<Player*>(ent->ent);
 
-	client->pers.connected = CON_CONNECTED;
-	client->pers.enterTime = level.time;
+	pl->pers.connected = CON_CONNECTED;
+	pl->pers.enterTime = level.time;
 
 	// locate ent at a spawn point
 	ClientSpawn( ent );
 
-	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", client->pers.netname) );
+	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", pl->pers.netname) );
 
 	G_Printf( "ClientBegin: %i\n", clientNum );
 
@@ -179,55 +156,58 @@ Initializes all non-persistant parts of playerState
 void ClientSpawn(edict_s *ent) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_s	*client;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
-	client = ent->client;
-	Player *pl = (Player*)ent->ent;
+
+	if(ent->ent == 0) {
+		// this should never happen
+		g_core->DropError("ClientSpawn on edict without entity!");
+		return;
+	}
+	Player *pl = dynamic_cast<Player*>(ent->ent);
+
 
 	VectorClear(spawn_origin);
 	VectorClear(spawn_angles);
 	VectorSet(spawn_origin,1400,1340,470);
-	VectorClear(client->ps.delta_angles);
-	VectorClear(client->ps.velocity);
+	VectorClear(pl->ps.delta_angles);
+	VectorClear(pl->ps.velocity);
 
 
 	g_server->GetUserinfo( index, userinfo, sizeof(userinfo) );
 	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-		client->pers.maxHealth = 100;
+	pl->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+	if ( pl->pers.maxHealth < 1 || pl->pers.maxHealth > 100 ) {
+		pl->pers.maxHealth = 100;
 	}
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
-	ent->client = &level.clients[index];
-	pl->client = ent->client;
 	ent->inuse = qtrue;
 	//ent->classname = "player";
 
-	client->ps.clientNum = index;
+	pl->ps.clientNum = index;
 
 	VectorCopy( spawn_origin, ent->s.origin );
-	VectorCopy( spawn_origin, client->ps.origin );
-	client->ps.viewheight = 26;
+	VectorCopy( spawn_origin, pl->ps.origin );
+	pl->ps.viewheight = 26;
 
-	g_server->GetUsercmd( client - level.clients, &ent->client->pers.cmd );
-	SetClientViewAngle( ent, spawn_angles );
+	g_server->GetUsercmd( index, &pl->pers.cmd );
+	pl->setClientViewAngle(spawn_angles );
 	// don't allow full run speed for a bit
 
 	pl->createCharacterControllerCapsule(48,16);
 
-	// run a client frame to drop exactly to the floor,
+	// run a pl frame to drop exactly to the floor,
 	// initialize animations and other things
-	client->ps.commandTime = level.time - 100;
-	ent->client->pers.cmd.serverTime = level.time;
-	ClientThink( ent-g_entities );
+	pl->ps.commandTime = level.time - 100;
+	pl->pers.cmd.serverTime = level.time;
+	ClientThink( index );
 	// run the presend to set anything else
 	ClientEndFrame( ent );
 
 	// clear entity state values
-	BG_PlayerStateToEntityState( &client->ps, &ent->s, qtrue );
+	BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
 }
 
 
@@ -247,9 +227,14 @@ void ClientDisconnect( int clientNum ) {
 	edict_s	*ent;
 
 	ent = g_entities + clientNum;
-	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
+	if (!ent->ent) {
 		return;
 	}
+	//// ||
+	//Player *pl = dynamic_cast<Player*>(ent->ent);
+	//if(pl->pers.connected == CON_DISCONNECTED) {
+	//	return;
+	//}
 
 	if(ent->ent) {
 		delete ent->ent;
@@ -259,7 +244,7 @@ void ClientDisconnect( int clientNum ) {
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
 //ent->classname = "disconnected";
-	ent->client->pers.connected = CON_DISCONNECTED;
+	//ent->client->pers.connected = CON_DISCONNECTED;
 
 #ifdef CS_PLAYERS
 	g_server->SetConfigstring( CS_PLAYERS + clientNum, "");

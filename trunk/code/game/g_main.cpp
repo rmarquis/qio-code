@@ -30,7 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 level_locals_t	level;
 
 edict_s		g_entities[MAX_GENTITIES];
-gclient_s		g_clients[MAX_CLIENTS];
 
 void QDECL G_Printf( const char *fmt, ... ) {
 	va_list		argptr;
@@ -102,15 +101,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
 	level.gentities = g_entities;
-
-	// initialize all clients for this game
-	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
-	level.clients = g_clients;
-
-	// set client fields on player ents
-	for ( i=0 ; i<MAX_CLIENTS; i++ ) {
-		g_entities[i].client = level.clients + i;
-	}
 
 	// always leave room for the max number of clients,
 	// even if they aren't all used, so numbers inside that

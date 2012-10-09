@@ -28,16 +28,53 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "BaseEntity.h"
 
+#include "../../qcommon/q_shared.h" // for ucmd
+
+typedef enum {
+	CON_DISCONNECTED,
+	CON_CONNECTING,
+	CON_CONNECTED
+} clientConnected_t;
+
+//
+#define MAX_NETNAME			36
+
+// client data that stays across multiple respawns, but is cleared
+// on each level change or team change at ClientBegin()
+typedef struct {
+	clientConnected_t	connected;	
+	usercmd_s	cmd;				// we would lose angles if not persistant
+	qboolean	localClient;		// true if "ip" info key is "localhost"
+	qboolean	initialSpawn;		// the first spawn should be at a cool location
+	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
+	qboolean	pmoveFixed;			//
+	char		netname[MAX_NETNAME];
+	int			maxHealth;			// for handicapping
+	int			enterTime;			// level.time the client entered the game
+} clientPersistant_t;
+
+
+// this structure is cleared on each ClientSpawn(),
+// except for 'client->pers' and 'client->sess'
+
+
 class Player : public BaseEntity {
-	
 	class btKinematicCharacterController *characterController;
 public:
 	Player();
 
-	struct gclient_s *client; // will be removed soon?
+	playerState_s	ps;				// communicated by server to clients
+
+	// the rest of the structure is private to game
+	clientPersistant_t	pers;
+
+	int			buttons;
+	int			oldbuttons;
+
 
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
+	void setClientViewAngle(const vec3_c &angle);
 
 	struct playerState_s *getPlayerState();
 };
