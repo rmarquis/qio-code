@@ -59,10 +59,10 @@ playerState_s *SV_GameClientNum( int num ) {
 }
 
 svEntity_t	*SV_SvEntityForGentity( edict_s *gEnt ) {
-	if ( !gEnt || gEnt->s.number < 0 || gEnt->s.number >= MAX_GENTITIES ) {
+	if ( !gEnt || gEnt->s->number < 0 || gEnt->s->number >= MAX_GENTITIES ) {
 		Com_Error( ERR_DROP, "SV_SvEntityForGentity: bad gEnt" );
 	}
-	return &sv.svEntities[ gEnt->s.number ];
+	return &sv.svEntities[ gEnt->s->number ];
 }
 
 edict_s *SV_GEntityForSvEntity( svEntity_t *svEnt ) {

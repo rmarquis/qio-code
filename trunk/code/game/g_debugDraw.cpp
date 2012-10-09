@@ -30,7 +30,7 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
 	for(u32 i = 0; i < MAX_GENTITIES; i++) {
 		edict_s *ent = &g_entities[i];
-		if(ent->inuse == false)
+		if(ent->s == 0)
 			continue;
 		ent->ent->debugDrawCMObject(dd);
 	}

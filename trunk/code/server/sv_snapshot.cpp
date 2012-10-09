@@ -281,7 +281,7 @@ static void SV_AddEntToSnapshot( svEntity_t *svEnt, edict_s *gEnt, snapshotEntit
 		return;
 	}
 
-	eNums->snapshotEntities[ eNums->numSnapshotEntities ] = gEnt->s.number;
+	eNums->snapshotEntities[ eNums->numSnapshotEntities ] = gEnt->s->number;
 	eNums->numSnapshotEntities++;
 }
 
@@ -310,13 +310,13 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		ent = SV_GentityNum(e);
 
 		// never send entities that aren't active
-		if ( ent->inuse == qfalse ) {
+		if ( ent->s == 0 ) {
 			continue;
 		}
 
-		if (ent->s.number != e) {
+		if (ent->s->number != e) {
 			Com_DPrintf ("FIXING ENT->S.NUMBER!!!\n");
-			ent->s.number = e;
+			ent->s->number = e;
 		}
 
 		svEnt = SV_SvEntityForGentity( ent );
@@ -415,7 +415,8 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	for ( i = 0 ; i < entityNumbers.numSnapshotEntities ; i++ ) {
 		ent = SV_GentityNum(entityNumbers.snapshotEntities[i]);
 		state = &svs.snapshotEntities[svs.nextSnapshotEntities % svs.numSnapshotEntities];
-		*state = ent->s;
+		// copy entityState_s from entity/player
+		*state = *ent->s;
 		svs.nextSnapshotEntities++;
 		// this should never hit, map should always be restarted first in SV_Frame
 		if ( svs.nextSnapshotEntities >= 0x7FFFFFFE ) {

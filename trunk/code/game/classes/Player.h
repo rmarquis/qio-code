@@ -60,6 +60,7 @@ class Player : public BaseEntity {
 	str netName;
 public:
 	Player();
+	virtual ~Player();
 
 	playerState_s	ps;				// communicated by server to clients
 

@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BASEENTITY_H__
 
 class BaseEntity {
+	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
@@ -36,7 +37,7 @@ protected:
 	class cMod_i *cmod;
 public:
 	BaseEntity();
-	~BaseEntity();
+	virtual ~BaseEntity();
 
 	void setOrigin(const class vec3_c &newXYZ);
 	void setAngles(const class vec3_c &newAngles);

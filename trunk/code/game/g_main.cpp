@@ -69,10 +69,10 @@ void SP_worldspawn( void ) {
 	g_cvars->Cvar_Set( "g_gravity", "800" );
 
 
-	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
+//	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 //	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
 
-	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
+//	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
 ///	g_entities[ENTITYNUM_NONE].classname = "nothing";
 
 	
@@ -133,6 +133,12 @@ G_ShutdownGame
 */
 void G_ShutdownGame( int restart ) {
 	G_Printf ("==== ShutdownGame ====\n");
+	for(u32 i = 0; i < level.num_entities; i++) {
+		edict_s *e = &g_entities[i];
+		if(e->s == 0)
+			continue;
+		delete e->ent;
+	}
 	G_ShudownBullet();
 }
 
@@ -186,7 +192,7 @@ void G_RunFrame( int levelTime ) {
 	//
 	ed = &g_entities[0];
 	for (i=0 ; i<level.num_entities ; i++, ed++) {
-		if ( !ed->inuse ) {
+		if ( ed->s == 0 ) {
 			continue;
 		}
 
@@ -203,7 +209,7 @@ void G_RunFrame( int levelTime ) {
 	// perform final fixups on the players
 	ed = &g_entities[0];
 	for (i=0 ; i < MAX_CLIENTS; i++, ed++ ) {
-		if ( ed->inuse ) {
+		if ( ed->s ) {
 			ClientEndFrame( ed );
 		}
 	}

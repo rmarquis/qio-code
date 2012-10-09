@@ -32,20 +32,13 @@ class test_c {
 //===============================================================
 
 
-
 // DO NOT MODIFY THIS STRUCT
 // (unless you're able to rebuild both server and client)
 struct edict_s {
-	entityState_s	s;				// communicated by server to clients
-	qboolean	inuse;
-	int			freetime;			// level.time when the object was freed
-
+	entityState_s *s;	// communicated by server to clients; this is non-zero only for active entities
+	int freetime;	// level.time when the object was freed
 	// entity class for game-only usage
 	class BaseEntity *ent;
-
-
-	// will be removed soon?
-	struct gclient_s	*client;			// NULL if not a client
 };
 
 

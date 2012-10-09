@@ -33,6 +33,9 @@ Player::Player() {
 	buttons = 0;
 	oldbuttons = 0;
 }
+Player::~Player() {
+
+}
 
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
@@ -98,7 +101,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
 	//}
 	//else {
-		BG_PlayerStateToEntityState( &this->ps, &myEdict->s, qtrue );
+	//	BG_PlayerStateToEntityState( &this->ps, &myEdict->s, qtrue );
 	//}
 
 	this->ps.commandTime = ucmd->serverTime;
@@ -113,8 +116,10 @@ void Player::setClientViewAngle(const vec3_c &angle) {
 		int cmdAngle = ANGLE2SHORT(angle[i]);
 		this->ps.delta_angles[i] = cmdAngle - this->pers.cmd.angles[i];
 	}
-	VectorCopy( angle, myEdict->s.angles );
-	VectorCopy (myEdict->s.angles, this->ps.viewangles);
+	// set the pitch/yaw view angles
+	VectorCopy(angle, this->ps.viewangles);
+	// set the model angle - only yaw (turning left/right)
+	VectorSet(this->ps.angles,0,angle[YAW],0);
 }
 void Player::setNetName(const char *newNetName) {
 	netName = newNetName;

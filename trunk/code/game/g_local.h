@@ -61,7 +61,6 @@ int G_ModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
 int		G_SoundIndex( const char *name );
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
-void	G_InitGentity( edict_s *e );
 edict_s	*G_Spawn (void);
 void	G_FreeEntity( edict_s *e );
 qboolean	G_EntitiesFree( void );

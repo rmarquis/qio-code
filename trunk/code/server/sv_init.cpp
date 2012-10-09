@@ -231,17 +231,17 @@ static void SV_CreateBaseline( void ) {
 	edict_s *svent;
 	int				entnum;	
 
-	for ( entnum = 1; entnum < sv.num_entities ; entnum++ ) {
+	// dont create baselines for players
+	for ( entnum = MAX_CLIENTS; entnum < sv.num_entities ; entnum++ ) {
 		svent = SV_GentityNum(entnum);
-		if (svent->inuse == qfalse) {
+
+		// skip if entity is inactive
+		if (svent->s == 0) {
 			continue;
 		}
-		svent->s.number = entnum;
 
-		//
 		// take current state as baseline
-		//
-		sv.svEntities[entnum].baseline = svent->s;
+		sv.svEntities[entnum].baseline = *svent->s;
 	}
 }
 
@@ -563,7 +563,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 					client = &svs.clients[i];
 					client->state = CS_ACTIVE;
 					ent = SV_GentityNum( i );
-					ent->s.number = i;
+					ent->s->number = i;
 					client->gentity = ent;
 
 					client->deltaMessage = -1;

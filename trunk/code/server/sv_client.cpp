@@ -770,7 +770,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_s *cmd ) {
 	// set up the entity for the client
 	clientNum = client - svs.clients;
 	ent = SV_GentityNum( clientNum );
-	ent->s.number = clientNum;
+	ent->s->number = clientNum;
 	client->gentity = ent;
 
 	client->deltaMessage = -1;

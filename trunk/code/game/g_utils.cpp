@@ -85,13 +85,6 @@ int G_SoundIndex( const char *name ) {
 
 //=====================================================================
 
-
-void G_InitGentity( edict_s *e ) {
-	e->inuse = qtrue;
-	///e->classname = "noclass";
-	e->s.number = e - g_entities;
-}
-
 /*
 =================
 G_Spawn
@@ -118,7 +111,7 @@ edict_s *G_Spawn( void ) {
 		// override the normal minimum times before use
 		e = &g_entities[MAX_CLIENTS];
 		for ( i = MAX_CLIENTS ; i<level.num_entities ; i++, e++) {
-			if ( e->inuse ) {
+			if ( e->s != 0 ) {
 				continue;
 			}
 
@@ -129,7 +122,6 @@ edict_s *G_Spawn( void ) {
 			}
 
 			// reuse this slot
-			G_InitGentity( e );
 			return e;
 		}
 		if ( i != MAX_GENTITIES ) {
@@ -149,7 +141,6 @@ edict_s *G_Spawn( void ) {
 	// let the server system know that there are more entities
 	g_server->LocateGameData( level.gentities, level.num_entities );
 
-	G_InitGentity( e );
 	return e;
 }
 
@@ -164,7 +155,7 @@ qboolean G_EntitiesFree( void ) {
 
 	e = &g_entities[MAX_CLIENTS];
 	for ( i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
-		if ( e->inuse ) {
+		if ( e->s != 0 ) {
 			continue;
 		}
 		// slot available
@@ -172,22 +163,5 @@ qboolean G_EntitiesFree( void ) {
 	}
 	return qfalse;
 }
-
-
-/*
-=================
-G_FreeEntity
-
-Marks the entity as free
-=================
-*/
-void G_FreeEntity( edict_s *ed ) {
-	memset (ed, 0, sizeof(*ed));
-//	ed->classname = "freed";
-	ed->freetime = level.time;
-	ed->inuse = qfalse;
-}
-
-
 
 //==============================================================================

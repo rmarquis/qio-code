@@ -1099,6 +1099,14 @@ struct entityState_s {
 
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
+	entityState_s() {
+		number = -1;
+		eType = 0;
+		origin.clear();
+		angles.clear();
+		groundEntityNum = ENTITYNUM_NONE;
+		modelindex = 0;
+	}
 };
 
 // bit field limits

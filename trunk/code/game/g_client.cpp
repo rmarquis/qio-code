@@ -137,8 +137,6 @@ void ClientBegin( int clientNum ) {
 		return;
 	}
 
-	G_InitGentity( ent );
-
 	Player *pl = dynamic_cast<Player*>(ent->ent);
 
 	pl->pers.connected = CON_CONNECTED;
@@ -191,13 +189,8 @@ void ClientSpawn(edict_s *ent) {
 		pl->pers.maxHealth = 100;
 	}
 
-	ent->s.groundEntityNum = ENTITYNUM_NONE;
-	ent->inuse = qtrue;
-	//ent->classname = "player";
-
 	pl->ps.clientNum = index;
 
-	VectorCopy( spawn_origin, ent->s.origin );
 	VectorCopy( spawn_origin, pl->ps.origin );
 	pl->ps.viewheight = 26;
 
@@ -216,7 +209,7 @@ void ClientSpawn(edict_s *ent) {
 	ClientEndFrame( ent );
 
 	// clear entity state values
-	BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
+	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
 }
 
 
@@ -250,8 +243,6 @@ void ClientDisconnect( int clientNum ) {
 		ent->ent = 0;
 	}
 
-	ent->s.modelindex = 0;
-	ent->inuse = qfalse;
 //ent->classname = "disconnected";
 	//ent->client->pers.connected = CON_DISCONNECTED;
 
@@ -273,8 +264,8 @@ void ClientCommand( int clientNum ) {
 playerState_s dummy;
 struct playerState_s *ClientGetPlayerState(u32 clientNum) {
 	edict_s *ed = &g_entities[clientNum];
-	if(ed->inuse == qfalse) {
-		g_core->Print(S_COLOR_RED"ClientGetPlayerState: edict %i isnt active\n",clientNum);
+	if(ed->s == 0) {
+		g_core->Print(S_COLOR_RED"ClientGetPlayerState: edict %i isnt activeb (has NULL state)\n",clientNum);
 		memset(&dummy,0,sizeof(dummy));
 		return &dummy;
 	}
