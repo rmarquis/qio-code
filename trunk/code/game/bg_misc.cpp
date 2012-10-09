@@ -63,7 +63,7 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 
 //	s->angles2[YAW] = ps->movementDir;
 
-	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
+////	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config
 
 	s->groundEntityNum = ps->groundEntityNum;

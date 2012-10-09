@@ -1078,13 +1078,34 @@ typedef struct {
 
 #include "../math/vec3.h" // needed by entityState_s and playerState_s
 
+// entityState_s is the information conveyed from the server
+// in an update message about entities that the client will
+// need to render in some way
+// Different eTypes may use the information in different ways
+// The messages are delta compressed, so it doesn't really matter if
+// the structure size is fairly large
+
+struct entityState_s {
+	int		number;			// entity index
+	int		eType;			// entityType_t
+
+	class vec3_c	origin;
+	class vec3_c	angles;
+
+	int		groundEntityNum;	// ENTITYNUM_NONE = in air
+
+	int		modelindex;
+	//int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
+
+//	int		solid;			// for client side prediction, trap_linkentity sets this properly
+
+};
+
 // bit field limits
 #define	MAX_STATS				16
 #define	MAX_PERSISTANT			16
 #define	MAX_POWERUPS			16
 #define	MAX_WEAPONS				16		
-
-#define PS_PMOVEFRAMECOUNTBITS	6
 
 // playerState_s is the information needed by both the client and server
 // to predict player motion and actions
@@ -1096,16 +1117,15 @@ typedef struct {
 // playerState_s is a full superset of entityState_s as it is used by players,
 // so if a playerState_s is transmitted, the entityState_s can be fully derived
 // from it.
-struct playerState_s {
+struct playerState_s : public entityState_s {
 	int			commandTime;	// cmd->serverTime of last executed command
 
-	vec3_t		origin;
 	vec3_t		velocity;
 
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
-	int			groundEntityNum;// ENTITYNUM_NONE = in air
+//	int			groundEntityNum;// ENTITYNUM_NONE = in air
 
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 
@@ -1156,30 +1176,6 @@ typedef struct usercmd_s {
 } usercmd_s;
 
 //===================================================================
-
-// entityState_s is the information conveyed from the server
-// in an update message about entities that the client will
-// need to render in some way
-// Different eTypes may use the information in different ways
-// The messages are delta compressed, so it doesn't really matter if
-// the structure size is fairly large
-
-struct entityState_s {
-	int		number;			// entity index
-	int		eType;			// entityType_t
-
-	class vec3_c	origin;
-
-	class vec3_c	angles;
-
-	int		groundEntityNum;	// ENTITYNUM_NONE = in air
-
-	int		modelindex;
-	int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
-
-	int		solid;			// for client side prediction, trap_linkentity sets this properly
-
-};
 
 typedef enum {
 	CA_UNINITIALIZED,
