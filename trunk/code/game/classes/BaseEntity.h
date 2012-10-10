@@ -44,6 +44,9 @@ public:
 	const class vec3_c &getOrigin() const;
 	const class vec3_c &getAngles() const;
 
+	void setColModel(const char *newCModelName);
+	void setColModel(class cMod_i *newCModel);
+
 	void runPhysicsObject();
 
 	void createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel);

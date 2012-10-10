@@ -840,16 +840,17 @@ typedef struct {
 netField_t	entityStateFields[] = 
 {
 { NETF(eType), 8 },
-{ NETF(groundEntityNum), GENTITYNUM_BITS },
-//{ NETF(clientNum), 8 },
-{ NETF(angles[1]), 0 },
 { NETF(origin[0]), 0 },
 { NETF(origin[1]), 0 },
 { NETF(origin[2]), 0 },
-//{ NETF(solid), 24 },
-{ NETF(modelindex), 8 },
 { NETF(angles[0]), 0 },
+{ NETF(angles[1]), 0 },
 { NETF(angles[2]), 0 },
+{ NETF(groundEntityNum), GENTITYNUM_BITS },
+//{ NETF(clientNum), 8 },
+//{ NETF(solid), 24 },
+{ NETF(colModelIndex), 8 },
+{ NETF(rModelIndex), 8 },
 };
 
 
@@ -1119,19 +1120,21 @@ netField_t	playerStateFields[] =
 { PSF(commandTime), 32 },				
 { PSF(origin[0]), 0 },
 { PSF(origin[1]), 0 },
+{ PSF(origin[2]), 0 },
 { PSF(velocity[0]), 0 },
 { PSF(velocity[1]), 0 },
+{ PSF(velocity[2]), 0 },
 { PSF(viewangles[1]), 0 },
 { PSF(viewangles[0]), 0 },
-{ PSF(origin[2]), 0 },
-{ PSF(velocity[2]), 0 },
+{ PSF(viewangles[2]), 0 },
 { PSF(groundEntityNum), GENTITYNUM_BITS },
-{ PSF(delta_angles[1]), 16 },
 { PSF(viewheight), -8 },				
 { PSF(delta_angles[0]), 16 },
+{ PSF(delta_angles[1]), 16 },
 { PSF(delta_angles[2]), 16 },
 { PSF(clientNum), 8 },
-{ PSF(viewangles[2]), 0 },
+{ PSF(colModelIndex), 8 },
+{ PSF(rModelIndex), 8 },
 };
 
 /*

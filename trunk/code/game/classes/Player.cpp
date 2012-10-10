@@ -40,7 +40,8 @@ Player::~Player() {
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	cmCapsule_i *m;
-	cmod = m = cm->registerCapsule(48,16);
+	m = cm->registerCapsule(48,16);
+	this->setColModel(m);
 	float h = m->getHeight();
 	float r = m->getRadius();
 	BT_FreeCharacter(this->characterController);

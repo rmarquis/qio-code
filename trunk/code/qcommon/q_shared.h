@@ -1094,7 +1094,9 @@ struct entityState_s {
 
 	int		groundEntityNum;	// ENTITYNUM_NONE = in air
 
-	int		modelindex;
+	int	rModelIndex; // only for clientside rendering
+	int colModelIndex; // for collision detection
+
 	//int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
 
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
@@ -1105,7 +1107,8 @@ struct entityState_s {
 		origin.clear();
 		angles.clear();
 		groundEntityNum = ENTITYNUM_NONE;
-		modelindex = 0;
+		rModelIndex = 0;
+		colModelIndex = 0;
 	}
 };
 

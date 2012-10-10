@@ -89,6 +89,13 @@ const vec3_c &BaseEntity::getOrigin() const {
 const vec3_c &BaseEntity::getAngles() const {
 	return myEdict->s->angles;
 }
+void BaseEntity::setColModel(const char *newCModelName) {
+	this->cmod = cm->registerModel(newCModelName);
+	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
+}
+void BaseEntity::setColModel(class cMod_i *newCModel) {
+	setColModel(newCModel->getName());
+}
 void BaseEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 	if(cmod == 0)
 		return;
@@ -115,6 +122,6 @@ void BaseEntity::runPhysicsObject() {
 
 void BaseEntity::createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel) {
 	this->body = BT_CreateBoxBody(pos,halfSizes,startVel);
-	this->cmod = cm->registerBoxExts(halfSizes);
+	this->setColModel(cm->registerBoxExts(halfSizes));
 	this->body->setUserPointer(this);
 }
