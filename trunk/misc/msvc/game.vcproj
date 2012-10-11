@@ -287,6 +287,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_classes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_client.cpp"
 				>
 				<FileConfiguration
@@ -341,6 +345,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_spawn.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_utils.cpp"
 				>
 				<FileConfiguration
@@ -387,6 +395,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_classes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_local.h"
 				>
 			</File>
@@ -423,11 +435,43 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\InfoPlayerStart.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\InfoPlayerStart.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Player.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\Player.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="shared"
+			>
+			<File
+				RelativePath="..\..\code\shared\entDefsList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\entDefsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
 				>
 			</File>
 		</Filter>

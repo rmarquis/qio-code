@@ -62,6 +62,8 @@ public:
 	Player();
 	virtual ~Player();
 
+	DECLARE_CLASS( Player );
+
 	playerState_s	ps;				// communicated by server to clients
 
 	// the rest of the structure is private to game

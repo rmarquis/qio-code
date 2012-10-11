@@ -88,6 +88,7 @@ const char *parser_c::getToken(str &out) {
 				printf("parser_c::getToken: unexpected end of file hit in quoted string\n");
 				break;
 			}
+			p++;
 		}
 		end = p;
 		if(*p != 0) {

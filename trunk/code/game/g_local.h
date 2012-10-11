@@ -25,19 +25,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "g_public.h"
+#include <shared/array.h>
 
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-#define INFINITE			1000000
-
 #define	FRAMETIME			100					// msec
-
-// gentity->flags
-#define	FL_GODMODE				0x00000010
-#define	FL_NOTARGET				0x00000020
 
 //============================================================================
 
@@ -55,15 +50,17 @@ typedef struct {
 } level_locals_t;
 
 //
-// g_utils.c
+// g_utils.cpp
 //
 int G_ModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
-int		G_SoundIndex( const char *name );
+int	G_SoundIndex( const char *name );
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
 edict_s	*G_Spawn (void);
-void	G_FreeEntity( edict_s *e );
-qboolean	G_EntitiesFree( void );
+void G_FreeEntity( edict_s *e );
+qboolean G_EntitiesFree( void );
+u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
+class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
 
 //
 // g_client.c
@@ -117,6 +114,11 @@ edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const floa
 // g_debugDraw.cpp
 //
 void G_DebugDrawFrame(class rAPI_i *pRFAPI);
+
+//
+// g_spawn.cpp
+//
+void G_SpawnMapEntities(const char *mapName);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

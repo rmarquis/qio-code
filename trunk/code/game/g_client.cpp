@@ -162,7 +162,7 @@ Initializes all non-persistant parts of playerState
 */
 void ClientSpawn(edict_s *ent) {
 	int		index;
-	vec3_t	spawn_origin, spawn_angles;
+	vec3_c	spawn_origin, spawn_angles;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
@@ -174,10 +174,15 @@ void ClientSpawn(edict_s *ent) {
 	}
 	Player *pl = dynamic_cast<Player*>(ent->ent);
 
+	BaseEntity *spawnPoint = G_GetRandomEntityOfClass("InfoPlayerStart");
 
 	VectorClear(spawn_origin);
 	VectorClear(spawn_angles);
-	VectorSet(spawn_origin,1400,1340,470);
+	if(spawnPoint) {
+		spawn_origin = spawnPoint->getOrigin();
+	}
+	//	VectorSet(spawn_origin,1400,1340,470);
+
 	VectorClear(pl->ps.delta_angles);
 	VectorClear(pl->ps.velocity);
 

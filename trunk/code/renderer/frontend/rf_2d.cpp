@@ -135,8 +135,8 @@ r2dCommandsQueue_c::r2dCommandsQueue_c() {
 	at = 0;
 }
 void r2dCommandsQueue_c::ensureAlloced(u32 neededSize) {
-	if(data.size() + 1 <= neededSize) {
-		data.resize(neededSize+4);
+	if(data.size() <= (neededSize+16)) {
+		data.resize(neededSize+16);
 	}
 }
 void r2dCommandsQueue_c::addSetColorCmd(const float *rgba) {

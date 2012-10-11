@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/quat.h>
 #include "Player.h"
 
+DEFINE_CLASS(BaseEntity, "None");
+
 // use this to force BaseEntity::ctor() to use a specific edict instead of allocating a new one
 static edict_s *be_forcedEdict = 0;
 void BE_SetForcedEdict(edict_s *nfe) {
@@ -76,7 +78,15 @@ BaseEntity::~BaseEntity() {
 	myEdict->freetime = level.time;
 	myEdict->s = 0;
 }
+void BaseEntity::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"origin")) {
+		this->setOrigin(value);
+	} else if(!stricmp(key,"angles")) {
+		this->setAngles(value);
+	} else {
 
+	}
+}
 void BaseEntity::setOrigin(const vec3_c &newXYZ) {
 	myEdict->s->origin = newXYZ;
 }

@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // g_utils.c -- misc utility functions for game module
 
 #include "g_local.h"
+#include "g_classes.h"
+#include "classes/BaseEntity.h"
 #include <api/serverAPI.h>
 
 /*
@@ -150,11 +152,8 @@ G_EntitiesFree
 =================
 */
 qboolean G_EntitiesFree( void ) {
-	int			i;
-	edict_s	*e;
-
-	e = &g_entities[MAX_CLIENTS];
-	for ( i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for ( u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
 		if ( e->s != 0 ) {
 			continue;
 		}
@@ -162,6 +161,30 @@ qboolean G_EntitiesFree( void ) {
 		return qtrue;
 	}
 	return qfalse;
+}
+
+u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<BaseEntity*> &out) {
+	const char *className = G_TranslateClassAlias(classNameOrig);
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		if (e->s == 0) {
+			continue;
+		}
+		const char *entClass = e->ent->getClassName();
+		if(!stricmp(entClass,className)) {
+			out.push_back(e->ent);
+		}
+	}	
+	return out.size();
+}
+
+BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig) {
+	arraySTD_c<BaseEntity*> ents;
+	G_GetEntitiesOfClass(classNameOrig,ents);
+	if(ents.size() == 0)
+		return 0;
+	int i = rand() % ents.size();
+	return ents[i];
 }
 
 //==============================================================================

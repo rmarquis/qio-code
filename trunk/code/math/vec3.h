@@ -52,6 +52,9 @@ public:
 		this->y = y;
 		this->z = z;
 	}
+	vec3_c(const char *text) {
+		this->fromString(text);
+	}
 
 	void set(float x,float y, float z){
 		this->x = x;

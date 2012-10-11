@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __BASEENTITY_H__
 #define __BASEENTITY_H__
 
+#include "../g_classes.h" // DECLARE_CLASS, etc
+
 class BaseEntity {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 protected:
@@ -38,6 +40,10 @@ protected:
 public:
 	BaseEntity();
 	virtual ~BaseEntity();
+
+	DECLARE_CLASS( BaseEntity );
+
+	virtual void setKeyValue(const char *key, const char *value);
 
 	void setOrigin(const class vec3_c &newXYZ);
 	void setAngles(const class vec3_c &newAngles);

@@ -118,10 +118,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	SP_worldspawn();
 
 	g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
+
+	// init bullet physics library
 	G_InitBullet();
+	// load map for Bullet
 	G_LoadMap(mapName);
-
-
+	// load map entities and spawn them
+	G_SpawnMapEntities(mapName);
 
 	G_Printf ("-----------------------------------\n");
 }
