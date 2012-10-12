@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_bsp.cpp - rBspTree_c class implementation
 #include "rf_bsp.h"
+#include "rf_bezier.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -167,20 +168,22 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 	for(u32 i = 0; i < numSurfs; i++, out++) {
 		const q3BSPMaterial_s *bspMaterial = (const q3BSPMaterial_s *)(materials + sizeofMat * sf->materialNum);
 		mtrAPI_i *mat = g_ms->registerMaterial(bspMaterial->shader);
+		textureAPI_i *lightmap;
+		if(sf->lightmapNum < 0) {
+			lightmap = 0;
+		} else {
+			if(sf->lightmapNum >= lightmaps.size()) {
+				lightmap = 0;
+			} else {
+				lightmap = lightmaps[sf->lightmapNum];
+			}
+		}
 		if(sf->surfaceType == Q3MST_PLANAR) {
 			out->type = BSPSF_PLANAR;
 parsePlanarSurf:;
 			bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 			ts->mat = mat;
-			if(sf->lightmapNum < 0) {
-				ts->lightmap = 0;
-			} else {
-				if(sf->lightmapNum >= lightmaps.size()) {
-					ts->lightmap = 0;
-				} else {
-					ts->lightmap = lightmaps[sf->lightmapNum];
-				}
-			}
+			ts->lightmap = lightmap;
 			const u32 *firstIndex = indices + sf->firstIndex;
 			// get the largest index value of this surface
 			// to determine if we can use U16 index buffer
@@ -207,8 +210,18 @@ parsePlanarSurf:;
 
 		} else if(sf->surfaceType == Q3MST_PATCH) {
 			out->type = BSPSF_BEZIER;
+			r_bezierPatch_c *bp = out->patch = new r_bezierPatch_c;
+			bp->setMaterial(mat);
+			bp->setLightmap(lightmap);
+			bp->setHeight(sf->patchHeight);
+			bp->setWidth(sf->patchWidth);
+			for(u32 j = 0; j < sf->numVerts; j++) {
+				u32 vertIndex = sf->firstVert + j;
+				const rVert_c &v = this->verts[vertIndex];
+				bp->addVertex(v);
+			}		
+			bp->tesselate(4);
 			c_bezierPatches++;
-
 		} else if(sf->surfaceType == Q3MST_TRIANGLE_SOUP) {
 			out->type = BSPSF_TRIANGLES;
 			goto parsePlanarSurf;
@@ -287,7 +300,14 @@ void rBspTree_c::addDrawCalls() {
 			rb->drawElements(this->verts,b->indices);
 			rb->setBindVertexColors(false);
 		}
-	}
+		bspSurf_s *sf = surfs.getArray();
+		for(u32 i = 0; i < surfs.size(); i++, sf++) {
+			if(sf->type == BSPSF_BEZIER) {
+				r_bezierPatch_c *p = sf->patch;
+				p->draw();
+			}
+		}
+	} 
 }
 
 

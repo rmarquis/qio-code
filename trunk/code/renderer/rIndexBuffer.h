@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RINDEXBUFFER_H__
 #define __RINDEXBUFFER_H__
 
+#include <shared/array.h>
+
 #ifndef U16_MAX
 #define U16_MAX  65536
 #endif // U16_MAX
@@ -173,6 +175,30 @@ public:
 		if(data.size() == 0)
 			return 0;
 		return (void*)data.getArray();
+	}
+	void addIndex(u32 idx) {
+		if(type == IBO_NOT_SET) {
+			if(idx < U16_MAX) {
+				type = IBO_U16;
+			} else {
+				type = IBO_U32;
+			}
+		} else if(type == IBO_U16) {
+			if(type >= U16_MAX) {
+				this->convertToU32Buffer();
+			}
+		}
+		u32 prevSize = data.size();
+		if(type == IBO_U16) {
+			data.resize(prevSize+2);
+			u16 *p = (u16*)&data[prevSize];
+			*p = idx;
+		} else if(type == IBO_U32) {
+			data.resize(prevSize+4);
+			u32 *p = (u32*)&data[prevSize];
+			*p = idx;
+		}
+		this->numIndices++;
 	}
 };
 

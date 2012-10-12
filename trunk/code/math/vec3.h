@@ -252,6 +252,11 @@ public:
 		outColorRGB[ 1 ] = sample[1];
 		outColorRGB[ 2 ] = sample[2];
 	}
+	void fromByteRGB(const byte *rgb) {
+		x = rgb[0];
+		y = rgb[1];
+		z = rgb[2];
+	}
 	void rad2deg() {
 		x = RAD2DEG(x);
 		y = RAD2DEG(y);

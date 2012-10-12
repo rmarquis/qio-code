@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_bezier.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_bsp.cpp"
 				>
 			</File>
@@ -189,6 +193,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_surface.cpp"
 				>
 			</File>
 			<File
@@ -207,6 +215,10 @@
 			>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_bezier.h"
 				>
 			</File>
 			<File

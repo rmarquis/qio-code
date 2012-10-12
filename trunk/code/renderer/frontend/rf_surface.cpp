@@ -21,51 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_surface.h
-#ifndef __RF_SURFACE_H__
-#define __RF_SURFACE_H__
+// rf_surface.cpp - static surface class
+#include "rf_surface.h"
+#include <api/rbAPI.h>
 
-#include "../rIndexBuffer.h"
-#include "../rVertexBuffer.h"
-#include <shared/str.h>
-
-class r_surface_c {
-	str name;
-	str matName;
-	class mtrAPI_i *mat;
-	class textureAPI_i *lightmap;
-	rVertexBuffer_c verts;
-	rIndexBuffer_c indices;
-public:
-	r_surface_c() {
-		mat = 0;
-	}
-	u32 getNumVerts() const {
-		return verts.size();
-	}
-	void addVert(const rVert_c &v) {
-		verts.push_back(v);
-	}
-	void addIndex(u32 idx) {
-		indices.addIndex(idx);
-	}
-	void clear() {
-		indices.destroy();
-		verts.destroy();
-	}
-	void setMaterial(mtrAPI_i *newMat) {
-		mat = newMat;
-	}
-	void setLightmap(textureAPI_i *newLM) {
-		lightmap = newLM;
-	}
-
-
-	void drawSurface();
-
-
-
-};
-
-#endif // __RF_SURFACE_H__
-
+void r_surface_c::drawSurface() {
+	rb->setBindVertexColors(true);
+	rb->setMaterial(this->mat,this->lightmap);
+	rb->drawElements(this->verts,this->indices);
+	rb->setBindVertexColors(false);
+}
