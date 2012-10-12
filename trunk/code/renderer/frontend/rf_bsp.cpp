@@ -348,7 +348,8 @@ void rBspTree_c::addDrawCalls() {
 void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	bspSurf_s &sf = surfs[surfNum];
 	if(sf.type == BSPSF_BEZIER) {
-
+		r_bezierPatch_c *bp = sf.patch;
+		bp->traceRay(out);
 	} else {
 		bspTriSurf_s *t = sf.sf;
 		if(out.getTraceBounds().intersect(t->bounds) == false)

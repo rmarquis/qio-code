@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../rIndexBuffer.h"
 #include "../rVertexBuffer.h"
 #include <shared/str.h>
+#include <math/aabb.h>
 
 class r_surface_c {
 	str name;
@@ -36,6 +37,7 @@ class r_surface_c {
 	class textureAPI_i *lightmap;
 	rVertexBuffer_c verts;
 	rIndexBuffer_c indices;
+	aabb bounds;
 public:
 	r_surface_c() {
 		mat = 0;
@@ -60,9 +62,15 @@ public:
 		lightmap = newLM;
 	}
 
-
+	void recalcBB() {
+		bounds.clear();
+		for(u32 i = 0; i < verts.size(); i++) {
+			bounds.addPoint(verts[i].xyz);
+		}
+	}
 	void drawSurface();
 
+	void traceRay(class trace_c &tr);
 
 
 };

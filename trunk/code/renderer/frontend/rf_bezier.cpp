@@ -107,6 +107,7 @@ void bezierPatch3x3_c::tesselate(u32 level, class r_surface_c *out) {
 	for(u32 i = 0; i < ctrls3x3.size(); i++, g++) {
 		g->tesselate(level,out);
 	}
+	out->recalcBB();
 }
 
 r_bezierPatch_c::r_bezierPatch_c() {
@@ -138,4 +139,12 @@ void r_bezierPatch_c::tesselate(u32 newLevel) {
 }
 void r_bezierPatch_c::draw() {
 	sf->drawSurface();
+}
+void r_bezierPatch_c::traceRay(class trace_c &tr) {
+	if(sf == 0) {
+		// patch must be instanced
+		tesselate(4);
+	}
+	// fallback to r_surface_c::traceRay
+	sf->traceRay(tr);
 }

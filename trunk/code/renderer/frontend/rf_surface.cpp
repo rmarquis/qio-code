@@ -24,10 +24,25 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_surface.cpp - static surface class
 #include "rf_surface.h"
 #include <api/rbAPI.h>
+#include <shared/trace.h>
 
 void r_surface_c::drawSurface() {
 	rb->setBindVertexColors(true);
 	rb->setMaterial(this->mat,this->lightmap);
 	rb->drawElements(this->verts,this->indices);
 	rb->setBindVertexColors(false);
+}
+
+void r_surface_c::traceRay(class trace_c &tr) {
+	if(tr.getTraceBounds().intersect(this->bounds) == false)
+		return;
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		const rVert_c &v0 = verts[i0];
+		const rVert_c &v1 = verts[i1];
+		const rVert_c &v2 = verts[i2];
+		tr.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true);
+	}
 }
