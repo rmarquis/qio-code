@@ -116,7 +116,6 @@ float thirdPersonRange = 128.f;
 		}
 	}
 
-//view[2] -= 64;
 	VectorCopy( view, cg.refdef.vieworg );
 
 	// select pitch to look at focus point from vieword

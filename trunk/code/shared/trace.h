@@ -46,6 +46,7 @@ class trace_c {
 	void updateForNewHitPos();
 public:
 
+	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
@@ -61,6 +62,9 @@ public:
 	}
 	float getFraction() const {
 		return fraction;
+	}
+	const aabb &getTraceBounds() const {
+		return traceBounds;
 	}
 
 };

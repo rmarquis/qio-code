@@ -33,10 +33,17 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->len = this->delta.len();
 	this->fraction = 1.f;
 	this->traveled = this->len;
+	recalcRayTraceBounds();
+}
+void trace_c::recalcRayTraceBounds() {
+	traceBounds.reset(from);
+	traceBounds.addPoint(hitPos);
+	traceBounds.extend(0.25f);
 }
 void trace_c::updateForNewHitPos() {
 	this->traveled = (hitPos - from).len();
 	this->fraction = this->traveled / this->len;
+	recalcRayTraceBounds();
 }
 bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided) {
 	vec3_c newHit;

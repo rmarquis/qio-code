@@ -37,6 +37,7 @@ enum bspSurfaceType_e {
 	BSPSF_TRIANGLES,
 };
 struct bspTriSurf_s {
+	aabb bounds;
 	class mtrAPI_i *mat;
 	class textureAPI_i *lightmap;
 	// indexes to rBspTree_c::verts array (global vertices), for batching

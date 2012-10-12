@@ -199,20 +199,24 @@ parsePlanarSurf:;
 					largestIndex = idx;
 				}
 			}
+			ts->bounds.clear();
 			if(largestIndex + 1 < U16_MAX) {
 				g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
 				u16 *u16Indexes = ts->absIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
 					u16Indexes[j] = sf->firstVert + firstIndex[j];	
+					// update bounding box as well
+					ts->bounds.addPoint(this->verts[u16Indexes[j]].xyz);
 				}
 			} else {
 				g_core->Print("rBspTree_c::loadSurfs: using U32 index buffer for surface %i\n",i);
 				u32 *u32Indexes = ts->absIndexes.initU32(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
-					u32Indexes[j] = sf->firstVert + firstIndex[j];	
+					u32Indexes[j] = sf->firstVert + firstIndex[j];
+					// update bounding box as well	
+					ts->bounds.addPoint(this->verts[u32Indexes[j]].xyz);
 				}
 			}
-
 		} else if(sf->surfaceType == Q3MST_PATCH) {
 			out->type = BSPSF_BEZIER;
 			r_bezierPatch_c *bp = out->patch = new r_bezierPatch_c;
@@ -347,6 +351,8 @@ void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 
 	} else {
 		bspTriSurf_s *t = sf.sf;
+		if(out.getTraceBounds().intersect(t->bounds) == false)
+			return;
 		for(u32 i = 0; i < t->absIndexes.getNumIndices(); i+=3) {
 			u32 i0 = t->absIndexes[i+0];
 			u32 i1 = t->absIndexes[i+1];
