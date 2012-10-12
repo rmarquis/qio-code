@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/textureAPI.h>
 #include <fileformats/bspFileFormat.h>
+#include <shared/trace.h>
 
 rBspTree_c::rBspTree_c() {
 
@@ -79,7 +80,7 @@ void rBspTree_c::deleteBatches() {
 bool rBspTree_c::loadLightmaps(u32 lumpNum) {
 	const lump_s &l = h->lumps[lumpNum];
 	if(l.fileLen % (128*128*3)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanes: invalid planes lump size\n");
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
 		return true; // error
 	}
 	u32 numLightmaps = l.fileLen / (128*128*3);
@@ -117,8 +118,12 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
 		return true; // error
 	}
-
-
+	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
+	u32 numLeaves = ll.fileLen / sizeof(q3Leaf_s);
+	nodes.resize(numNodes);
+	leaves.resize(numLeaves);
+	memcpy(nodes.getArray(),h->getLumpData(lumpNodes),h->getLumpSize(lumpNodes));
+	memcpy(leaves.getArray(),h->getLumpData(lumpLeaves),h->getLumpSize(lumpLeaves));
 	return false; // OK
 }
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
@@ -248,6 +253,17 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	}
 	return false; // OK
 }
+bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
+	const lump_s &sl = h->lumps[leafSurfsLump];
+	if(sl.fileLen % sizeof(u32)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
+		return true; // error
+	}	
+	u32 numLeafSurfaces = sl.fileLen / sizeof(u32);
+	leafSurfaces.resize(numLeafSurfaces);
+	memcpy(leafSurfaces.getArray(),h->getLumpData(leafSurfsLump),sl.fileLen);
+	return false;
+}
 bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
@@ -269,6 +285,22 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+		if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadLeafIndexes(Q3_LEAFSURFACES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadPlanes(Q3_PLANES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+
+
+
+
 
 		
 	} else {
@@ -309,7 +341,57 @@ void rBspTree_c::addDrawCalls() {
 		}
 	} 
 }
+void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
+	bspSurf_s &sf = surfs[surfNum];
+	if(sf.type == BSPSF_BEZIER) {
 
+	} else {
+		bspTriSurf_s *t = sf.sf;
+		for(u32 i = 0; i < t->absIndexes.getNumIndices(); i+=3) {
+			u32 i0 = t->absIndexes[i+0];
+			u32 i1 = t->absIndexes[i+1];
+			u32 i2 = t->absIndexes[i+2];
+			const rVert_c &v0 = this->verts[i0];
+			const rVert_c &v1 = this->verts[i1];
+			const rVert_c &v2 = this->verts[i2];
+			out.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true);
+		}
+	}
+}
+void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
+	if(nodeNum < 0) {
+		// that's a leaf
+		const q3Leaf_s &l = leaves[(-nodeNum-1)];
+		for(u32 i = 0; i < l.numLeafSurfaces; i++) {
+			u32 surfNum = this->leafSurfaces[l.firstLeafSurface + i];
+			traceSurfaceRay(surfNum,out);
+		}
+		return; // done.
+	}
+	const q3Node_s &n = nodes[nodeNum];
+	const bspPlane_s &pl = planes[n.planeNum];
+	// classify ray against split plane
+	float d0 = pl.distance(out.getStartPos());
+	// hitPos is the actual endpos of the trace
+	float d1 = pl.distance(out.getHitPos());
+
+	if (d0 >= 0 && d1 >= 0) {
+		// trace is on the front side of the plane
+        traceNodeRay(n.children[0],out);
+	} else if (d0 < 0 && d1 < 0) {
+		// trace is on the back side of the plane
+        traceNodeRay(n.children[1],out);
+	} else {
+		// trace crosses the plane - both childs must be checked.
+		// TODO: clip the trace start/end points?
+        traceNodeRay(n.children[0],out);
+        traceNodeRay(n.children[1],out);
+	}
+}	
+
+void rBspTree_c::traceRay(class trace_c &out) {
+	traceNodeRay(0,out);
+}
 
 rBspTree_c *RF_LoadBSP(const char *fname) {
 	rBspTree_c *bsp = new rBspTree_c;

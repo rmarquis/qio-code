@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cvarAPI.h>
 #include <api/rAPI.h>
 #include <math/vec3.h>
+#include <shared/trace.h>
 
 //============================================================================
 
@@ -53,9 +54,8 @@ CG_OffsetThirdPersonView
 #define	FOCUS_DISTANCE	512
 static void CG_OffsetThirdPersonView( void ) {
 	vec3_t		forward, right, up;
-	vec3_t		view;
+	vec3_c		view;
 	vec3_t		focusAngles;
-//	trace_t		trace;
 	static vec3_t	mins = { -4, -4, -4 };
 	static vec3_t	maxs = { 4, 4, 4 };
 	vec3_t		focusPoint;
@@ -97,9 +97,13 @@ float thirdPersonRange = 128.f;
 
 //	if (!cg_cameraMode.integer)
 	{
+		trace_c trace;
+		trace.setupRay(cg.refdef.vieworg,view);
+
+		rf->rayTraceWorldMap(trace);
 		//CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 
-		//if ( trace.fraction != 1.0 ) {
+		if (trace.getFraction() != 1.f) {
 		//	VectorCopy( trace.endpos, view );
 		//	view[2] += (1.0 - trace.fraction) * 32;
 		//	// try another trace to this position, because a tunnel may have the ceiling
@@ -107,7 +111,9 @@ float thirdPersonRange = 128.f;
 
 		//	CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 		//	VectorCopy( trace.endpos, view );
-		//}
+			view = trace.getHitPos();
+			view -= trace.getDir() * 5.f;
+		}
 	}
 
 //view[2] -= 64;

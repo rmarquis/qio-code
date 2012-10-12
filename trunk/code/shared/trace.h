@@ -21,31 +21,48 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
-#include "rf_bsp.h"
+// trace.h
+#ifndef __TRACE_H__
+#define __TRACE_H__
 
-static class rBspTree_c *r_bspTree = 0;
+#include "../math/vec3.h"
+#include "../math/aabb.h"
+//#include "../math/plane.h"
 
-void RF_ClearWorldMap() {
-	if(r_bspTree) {
-		delete r_bspTree;
-		r_bspTree = 0;
+class trace_c {
+	// input
+	vec3_c from;
+	vec3_c to;
+	// derived from input
+	aabb traceBounds;
+	vec3_c delta;
+	float len;
+	// output
+	vec3_c hitPos;
+	float fraction;
+	float traveled;
+	//plane_c hitPlane;
+
+	void updateForNewHitPos();
+public:
+
+	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
+
+	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
+
+	const vec3_c &getStartPos() const {
+		return from;
 	}
-}
-bool RF_LoadWorldMap(const char *name) {
-	RF_ClearWorldMap();
-	r_bspTree = RF_LoadBSP(name);
-	if(r_bspTree)
-		return false; // ok
-	return true; // error
-}
-void RF_AddWorldDrawCalls() {
-	if(r_bspTree) {
-		r_bspTree->addDrawCalls();
+	const vec3_c &getHitPos() const {
+		return hitPos;
 	}
-}
-void RF_RayTraceWorld(class trace_c &tr) {
-	if(r_bspTree) {
-		r_bspTree->traceRay(tr);
+	const vec3_c getDir() const {
+		return delta.getNormalized();
 	}
-}
+	float getFraction() const {
+		return fraction;
+	}
+
+};
+
+#endif // __TRACE_H__

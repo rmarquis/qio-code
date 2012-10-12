@@ -21,31 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
-#include "rf_bsp.h"
+// collisionUtils.h - various coldet routines
+#ifndef __COLLISIONUTILS_H__
+#define __COLLISIONUTILS_H__
 
-static class rBspTree_c *r_bspTree = 0;
+class vec3_c;
 
-void RF_ClearWorldMap() {
-	if(r_bspTree) {
-		delete r_bspTree;
-		r_bspTree = 0;
-	}
-}
-bool RF_LoadWorldMap(const char *name) {
-	RF_ClearWorldMap();
-	r_bspTree = RF_LoadBSP(name);
-	if(r_bspTree)
-		return false; // ok
-	return true; // error
-}
-void RF_AddWorldDrawCalls() {
-	if(r_bspTree) {
-		r_bspTree->addDrawCalls();
-	}
-}
-void RF_RayTraceWorld(class trace_c &tr) {
-	if(r_bspTree) {
-		r_bspTree->traceRay(tr);
-	}
-}
+// intersect_RayTriangle(): intersect a ray with a 3D triangle
+//    Input:  a ray R, and a triangle T
+//    Output: *I = intersection point (when it exists)
+//    Return: -1 = triangle is degenerate (a segment or point)
+//             0 = disjoint (no intersect)
+//             1 = intersect in unique point I1
+//             2 = are in the same plane
+int CU_RayTraceTriangle(const vec3_c &rayStart, const vec3_c &rayEnd,
+	const vec3_c &pointA, const vec3_c &pointB, const vec3_c &pointC, vec3_c *out);
+
+#endif // __COLLISIONUTILS_H__

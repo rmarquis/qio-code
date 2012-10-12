@@ -200,6 +200,17 @@ public:
 		}
 		this->numIndices++;
 	}
+	u32 operator [] (u32 idx) const {
+		if(type == IBO_U16) {
+			const u16 *p16 = (const u16*)data.getArray();
+			return p16[idx];
+		} else if(type == IBO_U32) {
+			const u32 *p32 = (const u32*)data.getArray();
+			return p32[idx];
+		} else {
+			return 0;
+		}
+	}
 };
 
 #endif // __RINDEXBUFFER_H__

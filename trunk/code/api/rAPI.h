@@ -45,6 +45,7 @@ public:
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white
 	virtual void endFrame() = 0;
 
+	virtual void rayTraceWorldMap(class trace_c &tr) = 0;
 
 	// misc functions
 	virtual void loadWorldMap(const char *mapName) = 0;

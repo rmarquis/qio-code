@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 #include "../rVertexBuffer.h"
 #include "../rIndexBuffer.h"
+#include <fileFormats/bspFileFormat.h>
 
 enum bspSurfaceType_e {
 	BSPSF_PLANAR,
@@ -77,6 +78,12 @@ struct bspModel_s {
 struct bspPlane_s {
 	float normal[3];
 	float dist;
+
+	float distance(const vec3_c &p) const {
+		float r = p.x * normal[0] + p.y * normal[1] + p.z * normal[2];
+		r -= dist;
+		return r;
+	}
 };
 class rBspTree_c {
 	byte *fileData;
@@ -90,6 +97,9 @@ class rBspTree_c {
 	arraySTD_c<bspSurfBatch_s*> batches;
 	arraySTD_c<bspModel_s> models;
 	arraySTD_c<bspPlane_s> planes;
+	arraySTD_c<q3Node_s> nodes;
+	arraySTD_c<q3Leaf_s> leaves;
+	arraySTD_c<u32> leafSurfaces;
 
 	void addSurfToBatches(u32 surfNum);
 	void createBatches();
@@ -100,6 +110,10 @@ class rBspTree_c {
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadModels(u32 modelsLump);
+	bool loadLeafIndexes(u32 leafSurfsLump);
+
+	void traceSurfaceRay(u32 surfNum, class trace_c &out);
+	void traceNodeRay(int nodeNum, class trace_c &out);
 public:
 	rBspTree_c();
 	~rBspTree_c();
@@ -108,6 +122,8 @@ public:
 	void clear();
 
 	void addDrawCalls();
+
+	void traceRay(class trace_c &out);
 };
 
 rBspTree_c *RF_LoadBSP(const char *fname);

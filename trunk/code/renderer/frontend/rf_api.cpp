@@ -129,6 +129,9 @@ public:
 		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
 		RF_LoadWorldMap(mapName);
 	}
+	virtual void rayTraceWorldMap(class trace_c &tr) {
+		RF_RayTraceWorld(tr);
+	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		if(g_ms == 0)
 			return 0;

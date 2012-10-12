@@ -190,6 +190,9 @@ struct q3Header_s {
 	const byte *getLumpData(u32 lumpNum) const {
 		return (const byte*)(((const byte*)this)+lumps[lumpNum].fileOfs);
 	}
+	u32 getLumpSize(u32 lumpNum) const {
+		return lumps[lumpNum].fileLen;
+	}
 	u32 getLumpStructCount(u32 lumpNum, u32 elemSize) const {
 		return lumps[lumpNum].fileLen / elemSize;
 	}

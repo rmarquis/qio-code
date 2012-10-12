@@ -21,31 +21,36 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
-#include "rf_bsp.h"
+// trace.cpp
+#include "trace.h"
+#include "collisionUtils.h"
 
-static class rBspTree_c *r_bspTree = 0;
-
-void RF_ClearWorldMap() {
-	if(r_bspTree) {
-		delete r_bspTree;
-		r_bspTree = 0;
-	}
+void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
+	this->to = newTo;
+	this->from = newFrom;
+	this->hitPos = this->to;
+	this->delta = newTo - newFrom;
+	this->len = this->delta.len();
+	this->fraction = 1.f;
+	this->traveled = this->len;
 }
-bool RF_LoadWorldMap(const char *name) {
-	RF_ClearWorldMap();
-	r_bspTree = RF_LoadBSP(name);
-	if(r_bspTree)
-		return false; // ok
-	return true; // error
+void trace_c::updateForNewHitPos() {
+	this->traveled = (hitPos - from).len();
+	this->fraction = this->traveled / this->len;
 }
-void RF_AddWorldDrawCalls() {
-	if(r_bspTree) {
-		r_bspTree->addDrawCalls();
+bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided) {
+	vec3_c newHit;
+	int res = CU_RayTraceTriangle(from,hitPos,p0,p1,p2,&newHit);
+	if(res != 1) {
+		return false; 
 	}
-}
-void RF_RayTraceWorld(class trace_c &tr) {
-	if(r_bspTree) {
-		r_bspTree->traceRay(tr);
+#if 1
+	float checkLen = newHit.dist(from);
+	if(checkLen >= this->traveled) {
+		return false;
 	}
+#endif
+	hitPos = newHit;
+	this->updateForNewHitPos();
+	return true;
 }
