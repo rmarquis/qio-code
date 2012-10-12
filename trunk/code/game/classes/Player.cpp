@@ -26,7 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include <api/cmAPI.h>
 
-DEFINE_CLASS(Player, "BaseEntity");
+DEFINE_CLASS(Player, "ModelEntity");
 
 Player::Player() {
 	this->characterController = 0;

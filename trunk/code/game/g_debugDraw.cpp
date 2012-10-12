@@ -32,6 +32,6 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 		edict_s *ent = &g_entities[i];
 		if(ent->s == 0)
 			continue;
-		ent->ent->debugDrawCMObject(dd);
+		ent->ent->debugDraw(dd);
 	}
 }

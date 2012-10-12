@@ -26,7 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-#include "BaseEntity.h"
+#include "ModelEntity.h"
 
 #include "../../shared/str.h"
 #include "../../qcommon/q_shared.h" // for ucmd
@@ -55,7 +55,7 @@ typedef struct {
 // except for 'client->pers' and 'client->sess'
 
 
-class Player : public BaseEntity {
+class Player : public ModelEntity {
 	class btKinematicCharacterController *characterController;
 	str netName;
 public:

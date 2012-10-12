@@ -21,43 +21,47 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// BaseEntity.h - base class for all entities
+// BaseEntity.h - base class for all entities with 3d model
 
-#ifndef __BASEENTITY_H__
-#define __BASEENTITY_H__
+#ifndef __MODELENTITY_H__
+#define __MODELENTITY_H__
 
-#include "../g_classes.h" // DECLARE_CLASS, etc
+#include "BaseEntity.h"
 
-class BaseEntity {
-	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
+class ModelEntity : public BaseEntity {
 protected:
-	// entity's edict, set once during entity allocation
-	struct edict_s *myEdict;
 	// bullet physics object
 	class btRigidBody *body;
 	// simplified model for collision detection
 	class cMod_i *cmod;
 public:
-	BaseEntity();
-	virtual ~BaseEntity();
+	ModelEntity();
+	virtual ~ModelEntity();
 
-	DECLARE_CLASS( BaseEntity );
-
-	virtual void setKeyValue(const char *key, const char *value);
+	DECLARE_CLASS( ModelEntity );
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
-	const class vec3_c &getOrigin() const;
-	const class vec3_c &getAngles() const;
 
-	virtual void runFrame() {
+	void setColModel(const char *newCModelName);
+	void setColModel(class cMod_i *newCModel);
 
+	void runPhysicsObject();
+
+	void createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel);
+	
+	void debugDrawCMObject(class rDebugDrawer_i *dd);
+
+	bool hasPhysicsObject() const {
+		if(body)
+			return true;
+		return false;
 	}
-	virtual void debugDraw(class rDebugDrawer_i *dd) {
 
+	virtual void runFrame();
+	virtual void debugDraw(class rDebugDrawer_i *dd) {
+		debugDrawCMObject(dd);
 	}
 };
 
-void BE_SetForcedEdict(edict_s *nfe);
-
-#endif // __BASEENTITY_H__
+#endif // __MODELENTITY_H__

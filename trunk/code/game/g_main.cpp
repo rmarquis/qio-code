@@ -204,9 +204,8 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 		BaseEntity *e = ed->ent;
-		if(e->hasPhysicsObject()) {
-			e->runPhysicsObject();
-		}
+
+		e->runFrame();
 	}
 
 	// perform final fixups on the players

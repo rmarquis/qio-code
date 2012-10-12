@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
 #include <math/vec3.h>
-#include "classes/BaseEntity.h"
+#include "classes/ModelEntity.h"
 #include "classes/Player.h"
 
 // g_client.c -- client functions that don't happen every frame
@@ -261,7 +261,7 @@ void ClientCommand( int clientNum ) {
 	//BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
-	BaseEntity *n = new BaseEntity;
+	ModelEntity *n = new ModelEntity;
 	n->setOrigin(tmp);
 	n->createBoxPhysicsObject(tmp,vec3_c(16,16,16),0);
 }

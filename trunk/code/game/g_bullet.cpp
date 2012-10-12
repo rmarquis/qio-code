@@ -2,7 +2,7 @@
 #include <api/vfsAPI.h>
 #include <api/cmAPI.h>
 #include <math/quat.h>
-#include "classes/BaseEntity.h"
+#include "classes/ModelEntity.h"
 
 #include "bt_include.h"
 
@@ -188,7 +188,7 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 	return body;
 }
 edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
-	BaseEntity *e = new BaseEntity;
+	ModelEntity *e = new ModelEntity;
 	e->createBoxPhysicsObject(pos,halfSizes,startVel);
 	return 0;
 }
