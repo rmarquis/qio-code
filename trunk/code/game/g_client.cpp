@@ -180,6 +180,7 @@ void ClientSpawn(edict_s *ent) {
 	VectorClear(spawn_angles);
 	if(spawnPoint) {
 		spawn_origin = spawnPoint->getOrigin();
+		//spawn_origin.z += 128;
 	}
 	//	VectorSet(spawn_origin,1400,1340,470);
 

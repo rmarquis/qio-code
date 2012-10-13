@@ -81,6 +81,8 @@ bool entDefsList_c::load(const char *fname) {
 	q3Header_s *h = (q3Header_s*)data;
 	if(h->ident == BSP_IDENT_IBSP) {
 		text = (const char*)h->getLumpData(Q3_ENTITIES);
+	} else if(h->ident == BSP_IDENT_2015 || h->ident == BSP_IDENT_EALA) {
+		text = (const char*)h->getLumpData(MOH_ENTITIES);
 	} else {
 		g_core->Print(S_COLOR_RED"entDefsList_c::load: unknown bsp type\n");
 		text = 0;

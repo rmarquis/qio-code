@@ -215,4 +215,5 @@ void G_RunFrame( int levelTime ) {
 			ClientEndFrame( ed );
 		}
 	}
+
 }

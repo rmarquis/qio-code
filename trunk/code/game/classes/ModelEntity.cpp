@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <math/vec3.h>
 #include <math/quat.h>
+#include "../bt_include.h"
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 
@@ -37,7 +38,9 @@ ModelEntity::ModelEntity() {
 	cmod = 0;
 }
 ModelEntity::~ModelEntity() {
-
+	if(body) {
+		BT_RemoveRigidBody(body);
+	}
 }
 void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 	BaseEntity::setOrigin(newXYZ);

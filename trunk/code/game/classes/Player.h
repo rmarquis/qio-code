@@ -72,7 +72,6 @@ public:
 	int			buttons;
 	int			oldbuttons;
 
-
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
 	void setClientViewAngle(const vec3_c &angle);

@@ -13,5 +13,6 @@ extern btSequentialImpulseConstraintSolver* solver;
 extern btDiscreteDynamicsWorld* dynamicsWorld;
 
 class btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel);
+void BT_RemoveRigidBody(class btRigidBody *body);
 
 #endif // __BT_INLCUDE_H__

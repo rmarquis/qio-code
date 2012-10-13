@@ -32,6 +32,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileformats/bspFileFormat.h>
 #include <shared/trace.h>
 
+void memcpy_strided(void *_dest, const void *_src, int elementCount, int elementSize, int destStride, int sourceStride) {
+	byte *dest = (byte*) _dest;
+	byte *src = (byte*) _src;
+	if(destStride == 0) {
+		destStride = elementSize;
+	}
+	if(sourceStride == 0) {
+		sourceStride = elementSize;
+	}
+	for(int i = 0; i < elementCount; i++) {
+		memcpy(dest,src,elementSize);
+		dest += destStride;
+		src += sourceStride;
+	}
+}
+
 rBspTree_c::rBspTree_c() {
 
 }
@@ -78,7 +94,7 @@ void rBspTree_c::deleteBatches() {
 	batches.clear();
 }
 bool rBspTree_c::loadLightmaps(u32 lumpNum) {
-	const lump_s &l = h->lumps[lumpNum];
+	const lump_s &l = h->getLumps()[lumpNum];
 	if(l.fileLen % (128*128*3)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
 		return true; // error
@@ -93,7 +109,7 @@ bool rBspTree_c::loadLightmaps(u32 lumpNum) {
 	return false; // OK
 }
 bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
-	const lump_s &pll = h->lumps[lumpPlanes];
+	const lump_s &pll = h->getLumps()[lumpPlanes];
 	if(pll.fileLen % sizeof(q3Plane_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanes: invalid planes lump size\n");
 		return true; // error
@@ -108,41 +124,41 @@ bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	return false; // OK
 }
 bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
-	const lump_s &nl = h->lumps[lumpNodes];
+	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(q3Node_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
 		return true; // error
 	}
-	const lump_s &ll = h->lumps[lumpLeaves];
+	const lump_s &ll = h->getLumps()[lumpLeaves];
 	if(ll.fileLen % sizeOfLeaf) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
-	u32 numLeaves = ll.fileLen / sizeof(q3Leaf_s);
+	u32 numLeaves = ll.fileLen / sizeOfLeaf;
 	nodes.resize(numNodes);
 	leaves.resize(numLeaves);
 	memcpy(nodes.getArray(),h->getLumpData(lumpNodes),h->getLumpSize(lumpNodes));
-	memcpy(leaves.getArray(),h->getLumpData(lumpLeaves),h->getLumpSize(lumpLeaves));
+	memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(q3Leaf_s),sizeOfLeaf);
 	return false; // OK
 }
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
-	const lump_s &sl = h->lumps[lumpSurfs];
+	const lump_s &sl = h->getLumps()[lumpSurfs];
 	if(sl.fileLen % sizeofSurf) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid surfs lump size\n");
 		return true; // error
 	}
-	const lump_s &il = h->lumps[lumpIndexes];
+	const lump_s &il = h->getLumps()[lumpIndexes];
 	if(il.fileLen % sizeof(int)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
 		return true; // error
 	}
-	const lump_s &vl = h->lumps[lumpVerts];
+	const lump_s &vl = h->getLumps()[lumpVerts];
 	if(vl.fileLen % sizeof(q3Vert_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
 		return true; // error
 	}
-	const lump_s &ml = h->lumps[lumpMats];
+	const lump_s &ml = h->getLumps()[lumpMats];
 	if(ml.fileLen % sizeofMat) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid material lump size\n");
 		return true; // error
@@ -242,7 +258,7 @@ parsePlanarSurf:;
 	return false; // OK
 }
 bool rBspTree_c::loadModels(u32 modelsLump) {
-	const lump_s &ml = h->lumps[modelsLump];
+	const lump_s &ml = h->getLumps()[modelsLump];
 	if(ml.fileLen % sizeof(q3Model_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadModels: invalid models lump size\n");
 		return true; // error
@@ -258,7 +274,7 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	return false; // OK
 }
 bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
-	const lump_s &sl = h->lumps[leafSurfsLump];
+	const lump_s &sl = h->getLumps()[leafSurfsLump];
 	if(sl.fileLen % sizeof(u32)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
 		return true; // error
@@ -301,12 +317,31 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
-
-
-
-
-
-		
+	} else if(h->ident == BSP_IDENT_2015|| h->ident == BSP_IDENT_EALA) {
+		if(loadLightmaps(MOH_LIGHTMAPS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadSurfs(MOH_SURFACES, sizeof(q3Surface_s)+4, MOH_DRAWINDEXES, MOH_DRAWVERTS, MOH_SHADERS, sizeof(q3BSPMaterial_s)+64+4)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadModels(MOH_MODELS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadNodesAndLeaves(MOH_NODES,MOH_LEAVES,sizeof(q3Leaf_s)+16)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadLeafIndexes(MOH_LEAFSURFACES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadPlanes(MOH_PLANES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 	} else {
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error

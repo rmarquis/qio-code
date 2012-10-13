@@ -51,6 +51,7 @@ void G_ShudownBullet() {
 void G_RunPhysics() {
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
+	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
 }
 #define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
@@ -187,6 +188,20 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 	}
 	return body;
 }
+void BT_RemoveRigidBody(class btRigidBody *body) {
+	btMotionState *s = body->getMotionState();
+	if(s) {
+		delete s;
+		body->setMotionState(0);
+	}
+	btCollisionShape *shape = body->getCollisionShape();
+	if(shape) {
+		delete shape;
+		body->setCollisionShape(0);
+	}
+	dynamicsWorld->removeRigidBody(body);
+	delete body;
+}
 edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
 	ModelEntity *e = new ModelEntity;
 	e->createBoxPhysicsObject(pos,halfSizes,startVel);
@@ -249,19 +264,17 @@ void G_LoadMap(const char *mapName) {
 
 
 	q3Header_s *h = (q3Header_s*)data;
-	q3Brush_s *b = (q3Brush_s*)(data + h->lumps[Q3_BRUSHES].fileOfs);
-	q3BrushSide_s *sides = (q3BrushSide_s*)(data + h->lumps[Q3_BRUSHSIDES].fileOfs);
-	q3BSPMaterial_s *mats = (q3BSPMaterial_s*)(data + h->lumps[Q3_SHADERS].fileOfs);
-	q3Plane_s *planes = (q3Plane_s*)(data + h->lumps[Q3_PLANES].fileOfs);
-	int numBrushes = h->lumps[Q3_BRUSHES].fileLen / sizeof(q3Brush_s);
+	const q3Brush_s *b = h->getBrushes();
+	const q3Plane_s *planes = h->getPlanes();
+	int numBrushes = h->getNumBrushes();
 	for(int i = 0; i < numBrushes; i++, b++) {
-		q3BSPMaterial_s &m = mats[b->materialNum];
-		if((m.contentFlags & 1) == false)
+		const q3BSPMaterial_s *m = h->getMat(b->materialNum);
+		if((m->contentFlags & 1) == false)
 			continue;
 		btAlignedObjectArray<btVector3> planeEquations;
-		q3BrushSide_s *s = sides + b->firstSide;
-		for(int j = 0; j < b->numSides; j++, s++) {
-			q3Plane_s &plane = planes[s->planeNum];
+		for(int j = 0; j < b->numSides; j++) {
+			const q3BrushSide_s *s = h->getBrushSide(b->firstSide+j);
+			const q3Plane_s &plane = planes[s->planeNum];
 			btVector3 planeEq;
 			planeEq.setValue(plane.normal[0],plane.normal[1],plane.normal[2]);
 			planeEq[3] = -plane.dist;
