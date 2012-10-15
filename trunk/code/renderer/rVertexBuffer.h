@@ -114,6 +114,7 @@ public:
 	}
 	void destroy() {
 		data.clear();
+		unloadFromGPU();
 	}
 
 	u32 getInternalHandleU32() const {

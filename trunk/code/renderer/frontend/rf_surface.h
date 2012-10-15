@@ -55,6 +55,9 @@ public:
 		indices.destroy();
 		verts.destroy();
 	}
+	void createVBO() {
+		verts.uploadToGPU();
+	}
 	void setMaterial(mtrAPI_i *newMat) {
 		mat = newMat;
 	}
