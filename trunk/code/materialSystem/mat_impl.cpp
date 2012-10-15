@@ -99,7 +99,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			} else if(level == 2) {
 				if(p.atWord("map")) {
 					const char *mapName = p.getToken();
-					stage->setTexture(mapName);
+					if(!stricmp(mapName,"$lightmap")) {
+
+					} else {
+						stage->setTexture(mapName);
+					}
 				} else if(p.atWord("alphaFunc")) {
 					if(p.atWord("GT0")) {
 						stage->setAlphaFunc(AF_GT0);

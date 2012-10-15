@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_api.cpp - renderer DLL entry point
 
 #include "rf_local.h"
+#include "rf_drawCall.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -106,10 +107,15 @@ public:
 	}
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	virtual void draw3DView() {
+		// generate drawcalls
+		RF_AddWorldDrawCalls();
+		// sort and issue drawcalls (transparency rendering)
+		RF_SortAndIssueDrawCalls();
+		// do a debug drawing on top of everything
+		RF_DoDebugDrawing();
 	}
 	virtual void setup2DView() {
-		RF_AddWorldDrawCalls();
-		RF_DoDebugDrawing();
+		draw3DView(); // fixme
 		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {

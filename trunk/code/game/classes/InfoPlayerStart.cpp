@@ -30,6 +30,11 @@ DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_intermission);
 DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_red);
 DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_blue);
 DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_deathmatch);
+// MoHAA-specific spawnpoints
+DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_axis);
+DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_allied);
+// NOTE: this is confusing... https://developer.valvesoftware.com/wiki/Info_player_allies
+
 
 
 

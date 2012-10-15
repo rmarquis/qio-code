@@ -33,7 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mat_public.h"
 
 class mtrStage_c : public mtrStageAPI_i {
-	class textureAPI_i *texture;
+	class textureAPI_i *texture; 
 	alphaFunc_e alphaFunc;
 public:
 	mtrStage_c();

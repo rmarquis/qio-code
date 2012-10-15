@@ -192,6 +192,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_drawCall.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_drawCall.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
 				>
 			</File>
@@ -213,6 +221,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\renderer\drawCallSort.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
 				>

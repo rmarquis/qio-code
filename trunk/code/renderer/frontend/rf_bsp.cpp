@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_bsp.cpp - rBspTree_c class implementation
 #include "rf_bsp.h"
 #include "rf_bezier.h"
+#include "rf_drawCall.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -365,11 +366,7 @@ void rBspTree_c::addDrawCalls() {
 		// no pvs
 		for(u32 i = 0; i < batches.size(); i++) {
 			bspSurfBatch_s *b = batches[i];
-			//rcq->addDrawCall(this->verts,b->indices,b->mat,b->lightmap,b->getSort());
-			rb->setBindVertexColors(true);
-			rb->setMaterial(b->mat,b->lightmap);
-			rb->drawElements(this->verts,b->indices);
-			rb->setBindVertexColors(false);
+			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
 		}
 		bspSurf_s *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {

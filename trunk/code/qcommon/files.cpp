@@ -3119,6 +3119,7 @@ static void FS_Startup( const char *gameName )
 	}
 #endif
 
+	FS_AddGameDirectory("E:/MoHAA","main");
 	// add our commands
 	Cmd_AddCommand ("path", FS_Path_f);
 	Cmd_AddCommand ("dir", FS_Dir_f );
