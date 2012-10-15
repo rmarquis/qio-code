@@ -106,8 +106,9 @@ public:
 		}
 		arraySTD_c<u16> tmp;
 		tmp.resize(numIndices);
-		memcpy(data,tmp,numIndices*sizeof(u16));
+		memcpy(tmp,data,numIndices*sizeof(u16));
 		destroy();
+		type = IBO_U32;
 		addU16Array(tmp.getArray(),tmp.size());
 	}
 	void addIndexBuffer(const rIndexBuffer_c &add) {
