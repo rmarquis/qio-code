@@ -77,8 +77,13 @@ public:
 	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
 
+	// vertex buffers (VBOs)
 	virtual bool createVBO(class rVertexBuffer_c *vbo) = 0;
 	virtual bool destroyVBO(class rVertexBuffer_c *vbo) = 0;
+
+	// index buffers (IBOs)
+	virtual bool createIBO(class rIndexBuffer_c *ibo) = 0;
+	virtual bool destroyIBO(class rIndexBuffer_c *ibo) = 0;
 
 	virtual void init() = 0;
 	virtual void shutdown() = 0;

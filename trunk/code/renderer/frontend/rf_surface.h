@@ -58,6 +58,9 @@ public:
 	void createVBO() {
 		verts.uploadToGPU();
 	}
+	void createIBO() {
+		indices.uploadToGPU();
+	}
 	void setMaterial(mtrAPI_i *newMat) {
 		mat = newMat;
 	}

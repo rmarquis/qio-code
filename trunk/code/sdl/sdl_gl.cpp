@@ -86,6 +86,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
 
+	const class rIndexBuffer_c *boundIBO;
+	u32 boundGPUIBO;
+
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
 
@@ -347,7 +350,36 @@ public:
 		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
 	}
+	void unbindIBO() {
+		if(boundGPUIBO) {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+			boundGPUIBO = 0;
+		}		
+		boundIBO = 0;
+	}
+	void bindIBO(const class rIndexBuffer_c *indices) {
+		if(boundIBO == indices)
+			return;
+		if(indices == 0) {
+			unbindIBO();
+			return;
+		}
+		u32 h = indices->getInternalHandleU32();
+		if(h != boundGPUIBO) {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,h);
+			boundGPUIBO = h;
+		}
+		boundIBO = indices;
+	}
+	void drawCurIBO() {
+		if(boundGPUIBO == 0) {
+			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), boundIBO->getVoidPtr());
+		} else {
+			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), 0);
+		}
+	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
@@ -373,11 +405,10 @@ public:
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		}
 	}
-
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		bindVertexBuffer(&verts);
+		bindIBO(&indices);
 
-		checkErrors();
 		if(lastMat) {
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
@@ -389,11 +420,11 @@ public:
 				} else {
 					bindTex(1,0);
 				}
-				glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
+				drawCurIBO();
 				checkErrors();
 			}
 		} else {
-			glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
+			drawCurIBO();
 		}
 	}
 	virtual void beginFrame() {
@@ -487,6 +518,9 @@ public:
 		glLoadMatrixf(proj);
 	}
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
+		this->bindIBO(0);
+		this->unbindVertexBuffer();
+
 		//glDisable(GL_DEPTH_TEST);
 		glTranslatef(xyz[0],xyz[1],xyz[2]);
 		// draw lower sphere (sliding on the ground)
@@ -508,6 +542,9 @@ public:
 		glTranslatef(-xyz[0],-xyz[1],-xyz[2]);
 	}
 	virtual void drawBoxHalfSizes(const float *halfSizes) {
+		this->bindIBO(0);
+		this->unbindVertexBuffer();
+
 		glutSolidCube(halfSizes[0]*2);
 	}
 	virtual void init()  {
@@ -525,6 +562,9 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		bindVertexColors = 0;
+		boundVBO = 0;
+		boundIBO = 0;
+		boundGPUIBO = false;
 		//glShadeModel( GL_SMOOTH );
 		//glDepthFunc( GL_LEQUAL );
 		
@@ -630,7 +670,32 @@ public:
 		vbo->setInternalHandleU32(0);
 		return false; // ok
 	}
-
+	virtual bool createIBO(class rIndexBuffer_c *ibo) {
+		if(ibo->getInternalHandleU32()) {
+			destroyIBO(ibo);
+		}
+		if(glGenBuffers == 0)
+			return true; // VBO not supported
+		u32 h;
+		glGenBuffers(1,&h);
+		ibo->setInternalHandleU32(h);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, h);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibo->getSizeInBytes(), ibo->getArray(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		return false; // ok		
+	}
+	virtual bool destroyIBO(class rIndexBuffer_c *ibo) {
+		if(ibo == 0)
+			return true; // NULL ptr
+		if(glDeleteBuffers == 0)
+			return true; // no VBO support
+		u32 h = ibo->getInternalHandleU32();
+		if(h == 0)
+			return true; // buffer wasnt uploaded to gpu
+		glDeleteBuffers(1,&h);
+		ibo->setInternalHandleU32(0);
+		return false; // ok
+	}
 };
 
 static rbSDLOpenGL_c g_staticSDLOpenGLBackend;

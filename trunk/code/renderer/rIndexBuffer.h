@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __RINDEXBUFFER_H__
 
 #include <shared/array.h>
+#include <api/rbAPI.h>
 
 #ifndef U16_MAX
 #define U16_MAX  65536
@@ -144,15 +145,33 @@ public:
 	void destroy() {
 		data.clear();
 		numIndices = 0;
+		unloadFromGPU();
 	}
 	void unloadFromGPU() {
-
+		rb->destroyIBO(this);
 	}
 	void uploadToGPU() {
-
+		rb->createIBO(this);
+	}
+	u32 getInternalHandleU32() const {
+		return handleU32;
+	}
+	void setInternalHandleU32(u32 nh) {
+		handleU32 = nh;
 	}
 	u32 getNumIndices() const {
 		return numIndices;
+	}
+	u32 getSizeInBytes() const {
+		if(type == IBO_U16) {
+			return numIndices * sizeof(u16);
+		} else if(type == IBO_U32) {
+			return numIndices * sizeof(u32);
+		}
+		return 0;
+	}
+	const void *getArray() const {
+		return data.getArray();
 	}
 	const u32 *getU32Ptr() const {
 		if(type != IBO_U32)
