@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/vec2.h>
 #include <shared/array.h>
+#include <api/rbAPI.h>
 
 class rVert_c {
 public:
@@ -76,6 +77,20 @@ class rVertexBuffer_c {
 		void *handleV;
 	};
 public:
+	rVertexBuffer_c() {
+		handleU32 = 0;
+	}
+	~rVertexBuffer_c() {
+		if(handleU32) {
+			unloadFromGPU();
+		}
+	}
+	void uploadToGPU() {
+		rb->createVBO(this);
+	}
+	void unloadFromGPU() {
+		rb->destroyVBO(this);
+	}
 	void resize(u32 newSize) {
 		data.resize(newSize);
 	}
@@ -99,6 +114,13 @@ public:
 	}
 	void destroy() {
 		data.clear();
+	}
+
+	u32 getInternalHandleU32() const {
+		return handleU32;
+	}
+	void setInternalHandleU32(u32 nh) {
+		handleU32 = nh;
 	}
 };
 

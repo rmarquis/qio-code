@@ -105,6 +105,7 @@ class rBspTree_c {
 	void addSurfToBatches(u32 surfNum);
 	void createBatches();
 	void deleteBatches();
+	void createVBO();
 
 	bool loadLightmaps(u32 lumpNum);
 	bool loadPlanes(u32 lumpPlanes);

@@ -82,6 +82,13 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	axis_c entityAxis;
 	vec3_c entityOrigin;
 	matrix_c entityMatrix;
+	
+	bool boundVBOVertexColors;
+	const rVertexBuffer_c *boundVBO;
+
+	// counters
+	u32 c_frame_vbsReusedByDifferentDrawCall;
+
 public:
 	rbSDLOpenGL_c() {
 		lastMat = 0;
@@ -89,6 +96,7 @@ public:
 		bindVertexColors = 0;
 		curTexSlot = 0;
 		highestTCSlotUsed = 0;
+		boundVBO = 0;
 	}
 	void checkErrors() {
 		int		err;
@@ -279,12 +287,68 @@ public:
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bindVertexColors = bBindVertexColors;
 	}
-	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+	void bindVertexBuffer(const class rVertexBuffer_c *verts) {
+		if(boundVBO == verts) {
+			if(boundVBOVertexColors == bindVertexColors) {
+				c_frame_vbsReusedByDifferentDrawCall++;
+				return; // already bound
+			} else {
+
+			}
+		}
+		u32 h = verts->getInternalHandleU32();
+		glBindBuffer(GL_ARRAY_BUFFER,h);
+		if(h == 0) {
+			// buffer wasnt uploaded to GPU
+			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts->getArray());
+			selectTex(0);
+			enableTexCoordArrayForCurrentTexSlot();
+			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->tc.x);
+			selectTex(1);
+			enableTexCoordArrayForCurrentTexSlot();
+			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
+			if(bindVertexColors) {
+				enableColorArray();
+				glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),&verts->getArray()->color[0]);
+			} else {
+				disableColorArray();
+			}
+		} else {
+			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
+			selectTex(0);
+			enableTexCoordArrayForCurrentTexSlot();
+			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,tc));
+			selectTex(1);
+			enableTexCoordArrayForCurrentTexSlot();
+			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
+			if(bindVertexColors) {
+				enableColorArray();
+				glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),(void*)offsetof(rVert_c,color));
+			} else {
+				disableColorArray();
+			}
+		}
+		boundVBOVertexColors = bindVertexColors;
+		boundVBO = verts;
+	}
+	void unbindVertexBuffer() {
+		if(boundVBO == 0)
+			return;
+		if(boundVBO->getInternalHandleU32()) {
+			glBindBuffer(GL_ARRAY_BUFFER,0);
+		}
+		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
+		selectTex(0);
+		disableTexCoordArrayForCurrentTexSlot();
+		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),0);
+		selectTex(1);
+		disableTexCoordArrayForCurrentTexSlot();
+		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),0);
+		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
-		glDisable(GL_DEPTH_TEST);
-		glEnableClientState(GL_VERTEX_ARRAY);
+	}
+	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
-		disableTexCoordArrayForTexSlot(1);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
@@ -308,44 +372,11 @@ public:
 		} else {
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		}
-		glDisableClientState(GL_VERTEX_ARRAY);
 	}
+
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
-		glEnable(GL_DEPTH_TEST);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts.getArray());
-		selectTex(0);
-		enableTexCoordArrayForCurrentTexSlot();
-		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->tc.x);
-		//if(lastLightmap) {
-			selectTex(1);
-			enableTexCoordArrayForCurrentTexSlot();
-#if 1
-			// increase lightmap brightness. They are very dark when vertex colors are enabled.
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+		bindVertexBuffer(&verts);
 
-			//	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_ADD);
-
-				glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
-
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PREVIOUS_ARB);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_PREVIOUS_ARB);
-			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 4.0f);
-#endif
-			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts.getArray()->lc.x);
-		//} else {
-		//
-		//	disableTexCoordArrayForTexSlot(1);
-		//}
-		if(bindVertexColors) {
-			enableColorArray();
-			glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),&verts.getArray()->color[0]);
-		} else {
-			disableColorArray();
-		}
 		checkErrors();
 		if(lastMat) {
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
@@ -364,12 +395,14 @@ public:
 		} else {
 			glDrawElements(GL_TRIANGLES, indices.getNumIndices(), indices.getGLIndexType(), indices.getVoidPtr());
 		}
-		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0,0,0,0);
+
+		// reset counters
+		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}
 	virtual void endFrame() {
 		GLimp_EndFrame();
@@ -383,6 +416,11 @@ public:
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		
+		// depth test is not needed while drawing 2d graphics
+		glDisable(GL_DEPTH_TEST);
+		// rVertexBuffers are used only for 3d
+		unbindVertexBuffer();
 	}
 	matrix_c currentModelViewMatrix;
 	void loadModelViewMatrix(const matrix_c &newMat) {
@@ -432,6 +470,8 @@ public:
 		this->worldModelMatrix.toGL();
 
 		setupWorldSpace();
+
+		glEnable(GL_DEPTH_TEST);
 	}
 	virtual void setupProjection3D(const projDef_s *pd) {
 		glMatrixMode(GL_PROJECTION);
@@ -487,6 +527,27 @@ public:
 		bindVertexColors = 0;
 		//glShadeModel( GL_SMOOTH );
 		//glDepthFunc( GL_LEQUAL );
+		
+		glEnableClientState(GL_VERTEX_ARRAY);
+
+
+#if 1
+		selectTex(1);
+		// increase lightmap brightness. They are very dark when vertex colors are enabled.
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+
+		//	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_ADD);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE);
+		glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PREVIOUS_ARB);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_PREVIOUS_ARB);
+		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 4.0f);
+		selectTex(0);
+#endif
 	}
 	virtual void shutdown()  {
 		lastMat = 0;
@@ -543,6 +604,33 @@ public:
 		glBindTexture(GL_TEXTURE_2D, 0);
 		out->setInternalHandleU32(texID);	
 	}
+	virtual bool createVBO(class rVertexBuffer_c *vbo) {
+		if(vbo->getInternalHandleU32()) {
+			destroyVBO(vbo);
+		}
+		if(glGenBuffers == 0)
+			return true; // VBO not supported
+		u32 h;
+		glGenBuffers(1,&h);
+		vbo->setInternalHandleU32(h);
+		glBindBuffer(GL_ARRAY_BUFFER, h);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(rVert_c)*vbo->size(), vbo->getArray(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		return false; // ok
+	}
+	virtual bool destroyVBO(class rVertexBuffer_c *vbo) {
+		if(vbo == 0)
+			return true; // NULL ptr
+		if(glDeleteBuffers == 0)
+			return true; // no VBO support
+		u32 h = vbo->getInternalHandleU32();
+		if(h == 0)
+			return true; // buffer wasnt uploaded to gpu
+		glDeleteBuffers(1,&h);
+		vbo->setInternalHandleU32(0);
+		return false; // ok
+	}
+
 };
 
 static rbSDLOpenGL_c g_staticSDLOpenGLBackend;

@@ -94,6 +94,9 @@ void rBspTree_c::deleteBatches() {
 	}
 	batches.clear();
 }
+void rBspTree_c::createVBO() {
+	verts.uploadToGPU();
+}
 bool rBspTree_c::loadLightmaps(u32 lumpNum) {
 	const lump_s &l = h->getLumps()[lumpNum];
 	if(l.fileLen % (128*128*3)) {
@@ -352,6 +355,7 @@ bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
 
 	createBatches();
+	createVBO();
 
 	return false;
 }
