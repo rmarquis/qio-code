@@ -1,0 +1,76 @@
+================================================================
+Title:		chartres
+BSP name:	chartres.bsp
+Author:		Chris "QkennyQ" Niell
+Release date:	October 8, 2001
+Email address:	ccniell@sbcglobal.net
+Home page:	http://qkennyq.tripod.com
+Game:		Quake 3 Arena Tourney/FFA
+File size:	chartres.pk3 10.6MB
+
+Description:	A cathedral map based on Chartres. This construction shows 
+		blatant disregard for anything even remotely associated with standard 		mapping principles. If you are looking for a exciting fast paced
+		DM ,..move along! :) This was done out of love for the architecture 			involed and should be viewed as such.(2 players).
+
+Thanks to:	ttimo and crew for all the effort with Radiant
+		id for the quake series.
+				
+		BETA/PLAY TESTING:
+		everyone at quake3world for the 
+		tireless support during an insanely
+		long development
+		
+		Allison Stone, for her wonderful resources
+		Dr. Jeffery Howe, for all the research, and resources.
+
+Credits:	Evil Lair, for the excellent wall portal
+
+
+
+
+Previous work : cnid2
+		
+                                                                            
+================================================================
+
+* MAP Information *
+
+New textures:	yes
+New sounds:	None
+New models:	yes, md3 included enjoy!
+
+================================================================
+
+* gameplay *
+
+general: this was NOT constructed to be a deathmatch level, 
+	 it was constructed to see if it could be done.
+	 Gameplay is sluggish at best, but multplayer support is provided
+	 I would suggest LAN play against a real player, bots are 
+	 not very good at navigating this map.
+weapons: 2 rail guns
+
+bots	: not very good :(
+
+
+
+================================================================
+
+
+* Construction *
+
+Base:		 From scratch
+Const. time:	 eons, couldn't begin to guess really. It began development 11 months ago.
+Compile machine: 1ghz PIII, 512mb RAM
+Compile time:	 roughly 18 hours fullvis, light -patchshadows, optimized aas.
+Editor used:	 hmmmm,,,rad192, rad 197, rad 201, rad 202, GtkRadiant v1.1 TA "I'm sure I 		 missed some. :)
+Other programs:	 Q3 Map Explorer v1.3
+Known Bugs:	 None known. 
+
+================================================================
+
+* Distribution / Copyright / Permissions *
+
+Quake III Arena is a registered trademark of id Software, Inc.
+Any commercial use without permission is prohibited.
+Authors MAY NOT decompile the BSP as a base to build additional levels.
