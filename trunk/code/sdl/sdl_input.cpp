@@ -48,7 +48,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <IOKit/hidsystem/event_status_driver.h>
 #endif
 
-static cvar_t *in_keyboardDebug     = NULL;
+static cvar_s *in_keyboardDebug     = NULL;
 
 static SDL_Joystick *stick = NULL;
 
@@ -56,18 +56,18 @@ static qboolean mouseAvailable = qfalse;
 static qboolean mouseActive = qfalse;
 static qboolean keyRepeatEnabled = qfalse;
 
-static cvar_t *in_mouse             = NULL;
+static cvar_s *in_mouse             = NULL;
 #ifdef MACOS_X_ACCELERATION_HACK
-static cvar_t *in_disablemacosxmouseaccel = NULL;
+static cvar_s *in_disablemacosxmouseaccel = NULL;
 static double originalMouseSpeed = -1.0;
 #endif
-static cvar_t *in_nograb;
+static cvar_s *in_nograb;
 
-static cvar_t *in_joystick          = NULL;
-static cvar_t *in_joystickDebug     = NULL;
-static cvar_t *in_joystickThreshold = NULL;
-static cvar_t *in_joystickNo        = NULL;
-static cvar_t *in_joystickUseAnalog = NULL;
+static cvar_s *in_joystick          = NULL;
+static cvar_s *in_joystickDebug     = NULL;
+static cvar_s *in_joystickThreshold = NULL;
+static cvar_s *in_joystickNo        = NULL;
+static cvar_s *in_joystickUseAnalog = NULL;
 
 static int vidRestartTime = 0;
 

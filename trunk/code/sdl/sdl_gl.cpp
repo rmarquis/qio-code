@@ -46,6 +46,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
 
+#include <shared/autoCvar.h>
+
+aCvar_c gl_showTris("gl_showTris","0");
+
 
 void GLimp_Init();
 void GLimp_Shutdown();
@@ -192,6 +196,18 @@ public:
 			}
 		}
 		highestTCSlotUsed = -1;
+	}
+	//
+	// depthRange changes
+	//
+	float depthRangeNearVal;
+	float depthRangeFarVal;
+	void setDepthRange(float nearVal, float farVal) {
+		if(nearVal == depthRangeNearVal && farVal == depthRangeFarVal)
+			return; // no change
+		glDepthRange(nearVal,farVal);
+		depthRangeNearVal = nearVal;
+		depthRangeFarVal = farVal;
 	}
 	//
 	// alphaFunc changes
@@ -425,6 +441,16 @@ public:
 			}
 		} else {
 			drawCurIBO();
+		}
+		if(gl_showTris.getInt()) {
+			this->unbindMaterial();
+			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+			if(gl_showTris.getInt()==1)
+				setDepthRange( 0, 0 ); 
+			drawCurIBO();	
+			if(gl_showTris.getInt()==1)
+				setDepthRange( 0, 1 ); 
+			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 		}
 	}
 	virtual void beginFrame() {

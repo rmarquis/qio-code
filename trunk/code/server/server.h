@@ -256,43 +256,43 @@ typedef struct
 extern	serverStatic_t	svs;				// persistant server info across maps
 extern	server_t		sv;					// cleared each map
 
-extern	cvar_t	*sv_fps;
-extern	cvar_t	*sv_timeout;
-extern	cvar_t	*sv_zombietime;
-extern	cvar_t	*sv_rconPassword;
-extern	cvar_t	*sv_privatePassword;
-extern	cvar_t	*sv_allowDownload;
-extern	cvar_t	*sv_maxclients;
+extern	cvar_s	*sv_fps;
+extern	cvar_s	*sv_timeout;
+extern	cvar_s	*sv_zombietime;
+extern	cvar_s	*sv_rconPassword;
+extern	cvar_s	*sv_privatePassword;
+extern	cvar_s	*sv_allowDownload;
+extern	cvar_s	*sv_maxclients;
 
-extern	cvar_t	*sv_privateClients;
-extern	cvar_t	*sv_hostname;
-extern	cvar_t	*sv_master[MAX_MASTER_SERVERS];
-extern	cvar_t	*sv_reconnectlimit;
-extern	cvar_t	*sv_showloss;
-extern	cvar_t	*sv_padPackets;
-extern	cvar_t	*sv_killserver;
-extern	cvar_t	*sv_mapname;
-extern	cvar_t	*sv_mapChecksum;
-extern	cvar_t	*sv_serverid;
-extern	cvar_t	*sv_minRate;
-extern	cvar_t	*sv_maxRate;
-extern	cvar_t	*sv_dlRate;
-extern	cvar_t	*sv_minPing;
-extern	cvar_t	*sv_maxPing;
-extern	cvar_t	*sv_gametype;
-extern	cvar_t	*sv_pure;
-extern	cvar_t	*sv_floodProtect;
-extern	cvar_t	*sv_lanForceRate;
+extern	cvar_s	*sv_privateClients;
+extern	cvar_s	*sv_hostname;
+extern	cvar_s	*sv_master[MAX_MASTER_SERVERS];
+extern	cvar_s	*sv_reconnectlimit;
+extern	cvar_s	*sv_showloss;
+extern	cvar_s	*sv_padPackets;
+extern	cvar_s	*sv_killserver;
+extern	cvar_s	*sv_mapname;
+extern	cvar_s	*sv_mapChecksum;
+extern	cvar_s	*sv_serverid;
+extern	cvar_s	*sv_minRate;
+extern	cvar_s	*sv_maxRate;
+extern	cvar_s	*sv_dlRate;
+extern	cvar_s	*sv_minPing;
+extern	cvar_s	*sv_maxPing;
+extern	cvar_s	*sv_gametype;
+extern	cvar_s	*sv_pure;
+extern	cvar_s	*sv_floodProtect;
+extern	cvar_s	*sv_lanForceRate;
 #ifndef STANDALONE
-extern	cvar_t	*sv_strictAuth;
+extern	cvar_s	*sv_strictAuth;
 #endif
-extern	cvar_t	*sv_banFile;
+extern	cvar_s	*sv_banFile;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
 
 #ifdef USE_VOIP
-extern	cvar_t	*sv_voip;
+extern	cvar_s	*sv_voip;
 #endif
 
 

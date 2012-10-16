@@ -38,6 +38,9 @@ struct cvarsAPI_s : public iFaceBase_i {
 	int	(*Cvar_VariableIntegerValue)( const char *var_name );
 	float (*Cvar_VariableValue)( const char *var_name );
 	void (*Cvar_VariableStringBuffer)( const char *var_name, char *buffer, int bufsize );
+	struct cvar_s *(*Cvar_Get)( const char *var_name, const char *var_value, int flags );
+	void (*Cvar_AddModificationCallback)(struct cvar_s *cv, class cvarModifyCallback_i *callback);
+	void (*Cvar_RemoveModificationCallback)(struct cvar_s *cv, class cvarModifyCallback_i *callback);
 };
 
 extern cvarsAPI_s *g_cvars;

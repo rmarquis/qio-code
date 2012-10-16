@@ -245,17 +245,17 @@ typedef struct searchpath_s {
 } searchpath_t;
 
 static	char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
-static	cvar_t		*fs_debug;
-static	cvar_t		*fs_homepath;
+static	cvar_s		*fs_debug;
+static	cvar_s		*fs_homepath;
 
 #ifdef MACOS_X
 // Also search the .app bundle for .pk3 files
-static  cvar_t          *fs_apppath;
+static  cvar_s          *fs_apppath;
 #endif
 
-static	cvar_t		*fs_basepath;
-static	cvar_t		*fs_basegame;
-static	cvar_t		*fs_gamedirvar;
+static	cvar_s		*fs_basepath;
+static	cvar_s		*fs_basegame;
+static	cvar_s		*fs_gamedirvar;
 static	searchpath_t	*fs_searchpaths;
 static	int			fs_readCount;			// total bytes read
 static	int			fs_loadCount;			// total files read
@@ -3109,7 +3109,7 @@ static void FS_Startup( const char *gameName )
 #ifndef STANDALONE
 	if(!com_standalone->integer)
 	{
-		cvar_t	*fs;
+		cvar_s	*fs;
 
 		Com_ReadCDKey(BASEGAME);
 		fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );

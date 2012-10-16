@@ -31,89 +31,89 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #ifdef USE_MUMBLE
-cvar_t	*cl_useMumble;
-cvar_t	*cl_mumbleScale;
+cvar_s	*cl_useMumble;
+cvar_s	*cl_mumbleScale;
 #endif
 
 #ifdef USE_VOIP
-cvar_t	*cl_voipUseVAD;
-cvar_t	*cl_voipVADThreshold;
-cvar_t	*cl_voipSend;
-cvar_t	*cl_voipSendTarget;
-cvar_t	*cl_voipGainDuringCapture;
-cvar_t	*cl_voipCaptureMult;
-cvar_t	*cl_voipShowMeter;
-cvar_t	*cl_voip;
+cvar_s	*cl_voipUseVAD;
+cvar_s	*cl_voipVADThreshold;
+cvar_s	*cl_voipSend;
+cvar_s	*cl_voipSendTarget;
+cvar_s	*cl_voipGainDuringCapture;
+cvar_s	*cl_voipCaptureMult;
+cvar_s	*cl_voipShowMeter;
+cvar_s	*cl_voip;
 #endif
 
-cvar_t	*cl_nodelta;
-cvar_t	*cl_debugMove;
+cvar_s	*cl_nodelta;
+cvar_s	*cl_debugMove;
 
-cvar_t	*cl_noprint;
+cvar_s	*cl_noprint;
 #ifdef UPDATE_SERVER_NAME
-cvar_t	*cl_motd;
+cvar_s	*cl_motd;
 #endif
 
-cvar_t	*rcon_client_password;
-cvar_t	*rconAddress;
+cvar_s	*rcon_client_password;
+cvar_s	*rconAddress;
 
-cvar_t	*cl_timeout;
-cvar_t	*cl_maxpackets;
-cvar_t	*cl_packetdup;
-cvar_t	*cl_timeNudge;
-cvar_t	*cl_showTimeDelta;
-cvar_t	*cl_freezeDemo;
+cvar_s	*cl_timeout;
+cvar_s	*cl_maxpackets;
+cvar_s	*cl_packetdup;
+cvar_s	*cl_timeNudge;
+cvar_s	*cl_showTimeDelta;
+cvar_s	*cl_freezeDemo;
 
-cvar_t	*cl_shownet;
-cvar_t	*cl_showSend;
-cvar_t	*cl_timedemo;
-cvar_t	*cl_timedemoLog;
-cvar_t	*cl_autoRecordDemo;
-cvar_t	*cl_aviFrameRate;
-cvar_t	*cl_aviMotionJpeg;
-cvar_t	*cl_forceavidemo;
+cvar_s	*cl_shownet;
+cvar_s	*cl_showSend;
+cvar_s	*cl_timedemo;
+cvar_s	*cl_timedemoLog;
+cvar_s	*cl_autoRecordDemo;
+cvar_s	*cl_aviFrameRate;
+cvar_s	*cl_aviMotionJpeg;
+cvar_s	*cl_forceavidemo;
 
-cvar_t	*cl_freelook;
-cvar_t	*cl_sensitivity;
+cvar_s	*cl_freelook;
+cvar_s	*cl_sensitivity;
 
-cvar_t	*cl_mouseAccel;
-cvar_t	*cl_mouseAccelOffset;
-cvar_t	*cl_mouseAccelStyle;
-cvar_t	*cl_showMouseRate;
+cvar_s	*cl_mouseAccel;
+cvar_s	*cl_mouseAccelOffset;
+cvar_s	*cl_mouseAccelStyle;
+cvar_s	*cl_showMouseRate;
 
-cvar_t	*m_pitch;
-cvar_t	*m_yaw;
-cvar_t	*m_forward;
-cvar_t	*m_side;
-cvar_t	*m_filter;
+cvar_s	*m_pitch;
+cvar_s	*m_yaw;
+cvar_s	*m_forward;
+cvar_s	*m_side;
+cvar_s	*m_filter;
 
-cvar_t	*j_pitch;
-cvar_t	*j_yaw;
-cvar_t	*j_forward;
-cvar_t	*j_side;
-cvar_t	*j_up;
-cvar_t	*j_pitch_axis;
-cvar_t	*j_yaw_axis;
-cvar_t	*j_forward_axis;
-cvar_t	*j_side_axis;
-cvar_t	*j_up_axis;
+cvar_s	*j_pitch;
+cvar_s	*j_yaw;
+cvar_s	*j_forward;
+cvar_s	*j_side;
+cvar_s	*j_up;
+cvar_s	*j_pitch_axis;
+cvar_s	*j_yaw_axis;
+cvar_s	*j_forward_axis;
+cvar_s	*j_side_axis;
+cvar_s	*j_up_axis;
 
-cvar_t	*cl_activeAction;
+cvar_s	*cl_activeAction;
 
-cvar_t	*cl_motdString;
+cvar_s	*cl_motdString;
 
-cvar_t	*cl_allowDownload;
-cvar_t	*cl_conXOffset;
-cvar_t	*cl_inGameVideo;
+cvar_s	*cl_allowDownload;
+cvar_s	*cl_conXOffset;
+cvar_s	*cl_inGameVideo;
 
-cvar_t	*cl_serverStatusResendTime;
-cvar_t	*cl_trn;
+cvar_s	*cl_serverStatusResendTime;
+cvar_s	*cl_trn;
 
-cvar_t	*cl_lanForcePackets;
+cvar_s	*cl_lanForcePackets;
 
-cvar_t	*cl_guidServerUniq;
+cvar_s	*cl_guidServerUniq;
 
-cvar_t	*cl_consoleKeys;
+cvar_s	*cl_consoleKeys;
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -1515,7 +1515,7 @@ in anyway.
 void CL_RequestAuthorization( void ) {
 	char	nums[64];
 	int		i, j, l;
-	cvar_t	*fs;
+	cvar_s	*fs;
 
 	if ( !cls.authorizeServer.port ) {
 		Com_Printf( "Resolving %s\n", AUTHORIZE_SERVER_NAME );

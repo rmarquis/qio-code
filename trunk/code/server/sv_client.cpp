@@ -158,7 +158,7 @@ void SV_GetChallenge(netadr_t from)
 		else
 		{
 			// otherwise send their ip to the authorize server
-			cvar_t	*fs;
+			cvar_s	*fs;
 			char	game[1024];
 
 			Com_DPrintf( "sending getIpAuthorize for %s\n", NET_AdrToString( from ));

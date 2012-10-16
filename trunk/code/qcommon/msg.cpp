@@ -560,7 +560,7 @@ delta functions
 =============================================================================
 */
 
-extern cvar_t *cl_shownet;
+extern cvar_s *cl_shownet;
 
 #define	LOG(x) if( cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
 

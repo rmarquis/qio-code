@@ -1949,6 +1949,26 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\autoCvar.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cvarModificationCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>

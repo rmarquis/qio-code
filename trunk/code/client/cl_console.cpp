@@ -57,8 +57,8 @@ extern	console_t	con;
 
 console_t	con;
 
-cvar_t		*con_conspeed;
-cvar_t		*con_notifytime;
+cvar_s		*con_conspeed;
+cvar_s		*con_notifytime;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 

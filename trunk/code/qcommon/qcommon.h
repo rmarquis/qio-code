@@ -417,7 +417,7 @@ CVAR
 
 /*
 
-cvar_t variables are used to hold scalar or string variables that can be changed
+cvar_s variables are used to hold scalar or string variables that can be changed
 or displayed at the console or prog code as well as accessed directly
 in C code.
 
@@ -434,7 +434,7 @@ modules of the program.
 
 */
 
-cvar_t *Cvar_Get( const char *var_name, const char *value, int flags );
+cvar_s *Cvar_Get( const char *var_name, const char *value, int flags );
 // creates the variable if it doesn't exist, or returns the existing one
 // if it exists, the value will not be changed, but flags will be ORed in
 // that allows variables to be unarchived without needing bitflags
@@ -449,7 +449,7 @@ void	Cvar_Update( vmCvar_t *vmCvar );
 void 	Cvar_Set( const char *var_name, const char *value );
 // will create the variable with no flags if it doesn't exist
 
-cvar_t	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
+cvar_s	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
 // same as Cvar_Set, but allows more control over setting of cvar
 
 void	Cvar_SetSafe( const char *var_name, const char *value );
@@ -498,7 +498,7 @@ char	*Cvar_InfoString_Big( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
-void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
+void Cvar_CheckRange( cvar_s *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
@@ -775,38 +775,38 @@ void		Com_StartupVariable( const char *match );
 // only a set with the exact name.  Only used during startup.
 
 
-extern	cvar_t	*com_developer;
-extern	cvar_t	*com_dedicated;
-extern	cvar_t	*com_speeds;
-extern	cvar_t	*com_timescale;
-extern	cvar_t	*com_sv_running;
-extern	cvar_t	*com_cl_running;
-extern	cvar_t	*com_version;
-extern	cvar_t	*com_blood;
-extern	cvar_t	*com_buildScript;		// for building release pak files
-extern	cvar_t	*com_journal;
-extern	cvar_t	*com_cameraMode;
-extern	cvar_t	*com_ansiColor;
-extern	cvar_t	*com_unfocused;
-extern	cvar_t	*com_maxfpsUnfocused;
-extern	cvar_t	*com_minimized;
-extern	cvar_t	*com_maxfpsMinimized;
-extern	cvar_t	*com_altivec;
-extern	cvar_t	*com_standalone;
-extern	cvar_t	*com_basegame;
-extern	cvar_t	*com_homepath;
+extern	cvar_s	*com_developer;
+extern	cvar_s	*com_dedicated;
+extern	cvar_s	*com_speeds;
+extern	cvar_s	*com_timescale;
+extern	cvar_s	*com_sv_running;
+extern	cvar_s	*com_cl_running;
+extern	cvar_s	*com_version;
+extern	cvar_s	*com_blood;
+extern	cvar_s	*com_buildScript;		// for building release pak files
+extern	cvar_s	*com_journal;
+extern	cvar_s	*com_cameraMode;
+extern	cvar_s	*com_ansiColor;
+extern	cvar_s	*com_unfocused;
+extern	cvar_s	*com_maxfpsUnfocused;
+extern	cvar_s	*com_minimized;
+extern	cvar_s	*com_maxfpsMinimized;
+extern	cvar_s	*com_altivec;
+extern	cvar_s	*com_standalone;
+extern	cvar_s	*com_basegame;
+extern	cvar_s	*com_homepath;
 
 // both client and server must agree to pause
-extern	cvar_t	*cl_paused;
-extern	cvar_t	*sv_paused;
+extern	cvar_s	*cl_paused;
+extern	cvar_s	*sv_paused;
 
-extern	cvar_t	*cl_packetdelay;
-extern	cvar_t	*sv_packetdelay;
+extern	cvar_s	*cl_packetdelay;
+extern	cvar_s	*sv_packetdelay;
 
-extern	cvar_t	*com_gamename;
-extern	cvar_t	*com_protocol;
+extern	cvar_s	*com_gamename;
+extern	cvar_s	*com_protocol;
 #ifdef LEGACY_PROTOCOL
-extern	cvar_t	*com_legacyprotocol;
+extern	cvar_s	*com_legacyprotocol;
 #endif
 
 // com_speeds times

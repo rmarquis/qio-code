@@ -24,43 +24,43 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/gameAPI.h>
 
 #ifdef USE_VOIP
-cvar_t *sv_voip;
+cvar_s *sv_voip;
 #endif
 
 serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
 
-cvar_t	*sv_fps = NULL;			// time rate for running non-clients
-cvar_t	*sv_timeout;			// seconds without any message
-cvar_t	*sv_zombietime;			// seconds to sink messages after disconnect
-cvar_t	*sv_rconPassword;		// password for remote server commands
-cvar_t	*sv_privatePassword;		// password for the privateClient slots
-cvar_t	*sv_allowDownload;
-cvar_t	*sv_maxclients;
+cvar_s	*sv_fps = NULL;			// time rate for running non-clients
+cvar_s	*sv_timeout;			// seconds without any message
+cvar_s	*sv_zombietime;			// seconds to sink messages after disconnect
+cvar_s	*sv_rconPassword;		// password for remote server commands
+cvar_s	*sv_privatePassword;		// password for the privateClient slots
+cvar_s	*sv_allowDownload;
+cvar_s	*sv_maxclients;
 
-cvar_t	*sv_privateClients;		// number of clients reserved for password
-cvar_t	*sv_hostname;
-cvar_t	*sv_master[MAX_MASTER_SERVERS];	// master server ip address
-cvar_t	*sv_reconnectlimit;		// minimum seconds between connect messages
-cvar_t	*sv_showloss;			// report when usercmds are lost
-cvar_t	*sv_padPackets;			// add nop bytes to messages
-cvar_t	*sv_killserver;			// menu system can set to 1 to shut server down
-cvar_t	*sv_mapname;
-cvar_t	*sv_mapChecksum;
-cvar_t	*sv_serverid;
-cvar_t	*sv_minRate;
-cvar_t	*sv_maxRate;
-cvar_t	*sv_dlRate;
-cvar_t	*sv_minPing;
-cvar_t	*sv_maxPing;
-cvar_t	*sv_gametype;
-cvar_t	*sv_pure;
-cvar_t	*sv_floodProtect;
-cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
+cvar_s	*sv_privateClients;		// number of clients reserved for password
+cvar_s	*sv_hostname;
+cvar_s	*sv_master[MAX_MASTER_SERVERS];	// master server ip address
+cvar_s	*sv_reconnectlimit;		// minimum seconds between connect messages
+cvar_s	*sv_showloss;			// report when usercmds are lost
+cvar_s	*sv_padPackets;			// add nop bytes to messages
+cvar_s	*sv_killserver;			// menu system can set to 1 to shut server down
+cvar_s	*sv_mapname;
+cvar_s	*sv_mapChecksum;
+cvar_s	*sv_serverid;
+cvar_s	*sv_minRate;
+cvar_s	*sv_maxRate;
+cvar_s	*sv_dlRate;
+cvar_s	*sv_minPing;
+cvar_s	*sv_maxPing;
+cvar_s	*sv_gametype;
+cvar_s	*sv_pure;
+cvar_s	*sv_floodProtect;
+cvar_s	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
 #ifndef STANDALONE
-cvar_t	*sv_strictAuth;
+cvar_s	*sv_strictAuth;
 #endif
-cvar_t	*sv_banFile;
+cvar_s	*sv_banFile;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;

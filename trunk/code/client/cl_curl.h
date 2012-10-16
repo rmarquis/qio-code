@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define ALTERNATE_CURL_LIB "libcurl.so.3"
 #endif
 
-extern cvar_t *cl_cURLLib;
+extern cvar_s *cl_cURLLib;
 
 extern char* (*qcurl_version)(void);
 

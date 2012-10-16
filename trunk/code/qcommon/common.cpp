@@ -58,44 +58,44 @@ static fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_speeds;
-cvar_t	*com_developer;
-cvar_t	*com_dedicated;
-cvar_t	*com_timescale;
-cvar_t	*com_fixedtime;
-cvar_t	*com_journal;
-cvar_t	*com_maxfps;
-cvar_t	*com_altivec;
-cvar_t	*com_timedemo;
-cvar_t	*com_sv_running;
-cvar_t	*com_cl_running;
-cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
-cvar_t	*com_pipefile;
-cvar_t	*com_showtrace;
-cvar_t	*com_version;
-cvar_t	*com_blood;
-cvar_t	*com_buildScript;	// for automated data building scripts
-cvar_t	*com_introPlayed;
-cvar_t	*cl_paused;
-cvar_t	*sv_paused;
-cvar_t  *cl_packetdelay;
-cvar_t  *sv_packetdelay;
-cvar_t	*com_cameraMode;
-cvar_t	*com_ansiColor;
-cvar_t	*com_unfocused;
-cvar_t	*com_maxfpsUnfocused;
-cvar_t	*com_minimized;
-cvar_t	*com_maxfpsMinimized;
-cvar_t	*com_abnormalExit;
-cvar_t	*com_standalone;
-cvar_t	*com_gamename;
-cvar_t	*com_protocol;
+cvar_s	*com_speeds;
+cvar_s	*com_developer;
+cvar_s	*com_dedicated;
+cvar_s	*com_timescale;
+cvar_s	*com_fixedtime;
+cvar_s	*com_journal;
+cvar_s	*com_maxfps;
+cvar_s	*com_altivec;
+cvar_s	*com_timedemo;
+cvar_s	*com_sv_running;
+cvar_s	*com_cl_running;
+cvar_s	*com_logfile;		// 1 = buffer log, 2 = flush after each print
+cvar_s	*com_pipefile;
+cvar_s	*com_showtrace;
+cvar_s	*com_version;
+cvar_s	*com_blood;
+cvar_s	*com_buildScript;	// for automated data building scripts
+cvar_s	*com_introPlayed;
+cvar_s	*cl_paused;
+cvar_s	*sv_paused;
+cvar_s  *cl_packetdelay;
+cvar_s  *sv_packetdelay;
+cvar_s	*com_cameraMode;
+cvar_s	*com_ansiColor;
+cvar_s	*com_unfocused;
+cvar_s	*com_maxfpsUnfocused;
+cvar_s	*com_minimized;
+cvar_s	*com_maxfpsMinimized;
+cvar_s	*com_abnormalExit;
+cvar_s	*com_standalone;
+cvar_s	*com_gamename;
+cvar_s	*com_protocol;
 #ifdef LEGACY_PROTOCOL
-cvar_t	*com_legacyprotocol;
+cvar_s	*com_legacyprotocol;
 #endif
-cvar_t	*com_basegame;
-cvar_t  *com_homepath;
-cvar_t	*com_busyWait;
+cvar_s	*com_basegame;
+cvar_s  *com_homepath;
+cvar_s	*com_busyWait;
 
 #if idx64
 	int (*Q_VMftol)(void);
@@ -1432,7 +1432,7 @@ void Com_InitSmallZoneMemory( void ) {
 }
 
 void Com_InitZoneMemory( void ) {
-	cvar_t	*cv;
+	cvar_s	*cv;
 
 	// Please note: com_zoneMegs can only be set on the command line, and
 	// not in q3config.cfg or Com_StartupVariable, as they haven't been
@@ -1541,7 +1541,7 @@ Com_InitZoneMemory
 =================
 */
 void Com_InitHunkMemory( void ) {
-	cvar_t	*cv;
+	cvar_s	*cv;
 	int nMinAlloc;
 	char *pMsg = NULL;
 
@@ -2973,7 +2973,7 @@ Writes key bindings and archived cvars to config file if modified
 */
 void Com_WriteConfiguration( void ) {
 #if !defined(DEDICATED) && !defined(STANDALONE)
-	cvar_t	*fs;
+	cvar_s	*fs;
 #endif
 	// if we are quiting without fully initializing, make sure
 	// we don't write out anything

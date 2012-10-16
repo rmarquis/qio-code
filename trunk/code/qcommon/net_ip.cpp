@@ -94,22 +94,22 @@ typedef int	ioctlarg_t;
 static qboolean usingSocks = qfalse;
 static int networkingEnabled = 0;
 
-static cvar_t	*net_enabled;
+static cvar_s	*net_enabled;
 
-static cvar_t	*net_socksEnabled;
-static cvar_t	*net_socksServer;
-static cvar_t	*net_socksPort;
-static cvar_t	*net_socksUsername;
-static cvar_t	*net_socksPassword;
+static cvar_s	*net_socksEnabled;
+static cvar_s	*net_socksServer;
+static cvar_s	*net_socksPort;
+static cvar_s	*net_socksUsername;
+static cvar_s	*net_socksPassword;
 
-static cvar_t	*net_ip;
-static cvar_t	*net_ip6;
-static cvar_t	*net_port;
-static cvar_t	*net_port6;
-static cvar_t	*net_mcast6addr;
-static cvar_t	*net_mcast6iface;
+static cvar_s	*net_ip;
+static cvar_s	*net_ip6;
+static cvar_s	*net_port;
+static cvar_s	*net_port6;
+static cvar_s	*net_mcast6addr;
+static cvar_s	*net_mcast6iface;
 
-static cvar_t	*net_dropsim;
+static cvar_s	*net_dropsim;
 
 static struct sockaddr	socksRelayAddr;
 

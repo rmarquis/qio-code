@@ -358,81 +358,81 @@ extern	clientStatic_t		cls;
 //
 // cvars
 //
-extern	cvar_t	*cl_nodelta;
-extern	cvar_t	*cl_debugMove;
-extern	cvar_t	*cl_noprint;
-extern	cvar_t	*cl_timegraph;
-extern	cvar_t	*cl_maxpackets;
-extern	cvar_t	*cl_packetdup;
-extern	cvar_t	*cl_shownet;
-extern	cvar_t	*cl_showSend;
-extern	cvar_t	*cl_timeNudge;
-extern	cvar_t	*cl_showTimeDelta;
-extern	cvar_t	*cl_freezeDemo;
+extern	cvar_s	*cl_nodelta;
+extern	cvar_s	*cl_debugMove;
+extern	cvar_s	*cl_noprint;
+extern	cvar_s	*cl_timegraph;
+extern	cvar_s	*cl_maxpackets;
+extern	cvar_s	*cl_packetdup;
+extern	cvar_s	*cl_shownet;
+extern	cvar_s	*cl_showSend;
+extern	cvar_s	*cl_timeNudge;
+extern	cvar_s	*cl_showTimeDelta;
+extern	cvar_s	*cl_freezeDemo;
 
-extern	cvar_t	*cl_yawspeed;
-extern	cvar_t	*cl_pitchspeed;
-extern	cvar_t	*cl_run;
-extern	cvar_t	*cl_anglespeedkey;
+extern	cvar_s	*cl_yawspeed;
+extern	cvar_s	*cl_pitchspeed;
+extern	cvar_s	*cl_run;
+extern	cvar_s	*cl_anglespeedkey;
 
-extern	cvar_t	*cl_sensitivity;
-extern	cvar_t	*cl_freelook;
+extern	cvar_s	*cl_sensitivity;
+extern	cvar_s	*cl_freelook;
 
-extern	cvar_t	*cl_mouseAccel;
-extern	cvar_t	*cl_mouseAccelOffset;
-extern	cvar_t	*cl_mouseAccelStyle;
-extern	cvar_t	*cl_showMouseRate;
+extern	cvar_s	*cl_mouseAccel;
+extern	cvar_s	*cl_mouseAccelOffset;
+extern	cvar_s	*cl_mouseAccelStyle;
+extern	cvar_s	*cl_showMouseRate;
 
-extern	cvar_t	*m_pitch;
-extern	cvar_t	*m_yaw;
-extern	cvar_t	*m_forward;
-extern	cvar_t	*m_side;
-extern	cvar_t	*m_filter;
+extern	cvar_s	*m_pitch;
+extern	cvar_s	*m_yaw;
+extern	cvar_s	*m_forward;
+extern	cvar_s	*m_side;
+extern	cvar_s	*m_filter;
 
-extern	cvar_t	*j_pitch;
-extern	cvar_t	*j_yaw;
-extern	cvar_t	*j_forward;
-extern	cvar_t	*j_side;
-extern	cvar_t	*j_up;
-extern	cvar_t	*j_pitch_axis;
-extern	cvar_t	*j_yaw_axis;
-extern	cvar_t	*j_forward_axis;
-extern	cvar_t	*j_side_axis;
-extern	cvar_t	*j_up_axis;
+extern	cvar_s	*j_pitch;
+extern	cvar_s	*j_yaw;
+extern	cvar_s	*j_forward;
+extern	cvar_s	*j_side;
+extern	cvar_s	*j_up;
+extern	cvar_s	*j_pitch_axis;
+extern	cvar_s	*j_yaw_axis;
+extern	cvar_s	*j_forward_axis;
+extern	cvar_s	*j_side_axis;
+extern	cvar_s	*j_up_axis;
 
-extern	cvar_t	*cl_timedemo;
-extern	cvar_t	*cl_aviFrameRate;
-extern	cvar_t	*cl_aviMotionJpeg;
+extern	cvar_s	*cl_timedemo;
+extern	cvar_s	*cl_aviFrameRate;
+extern	cvar_s	*cl_aviMotionJpeg;
 
-extern	cvar_t	*cl_activeAction;
+extern	cvar_s	*cl_activeAction;
 
-extern	cvar_t	*cl_allowDownload;
-extern  cvar_t  *cl_downloadMethod;
-extern	cvar_t	*cl_conXOffset;
-extern	cvar_t	*cl_inGameVideo;
+extern	cvar_s	*cl_allowDownload;
+extern  cvar_s  *cl_downloadMethod;
+extern	cvar_s	*cl_conXOffset;
+extern	cvar_s	*cl_inGameVideo;
 
-extern	cvar_t	*cl_lanForcePackets;
-extern	cvar_t	*cl_autoRecordDemo;
+extern	cvar_s	*cl_lanForcePackets;
+extern	cvar_s	*cl_autoRecordDemo;
 
-extern	cvar_t	*cl_consoleKeys;
+extern	cvar_s	*cl_consoleKeys;
 
 #ifdef USE_MUMBLE
-extern	cvar_t	*cl_useMumble;
-extern	cvar_t	*cl_mumbleScale;
+extern	cvar_s	*cl_useMumble;
+extern	cvar_s	*cl_mumbleScale;
 #endif
 
 #ifdef USE_VOIP
 // cl_voipSendTarget is a string: "all" to broadcast to everyone, "none" to
 //  send to no one, or a comma-separated list of client numbers:
 //  "0,7,2,23" ... an empty string is treated like "all".
-extern	cvar_t	*cl_voipUseVAD;
-extern	cvar_t	*cl_voipVADThreshold;
-extern	cvar_t	*cl_voipSend;
-extern	cvar_t	*cl_voipSendTarget;
-extern	cvar_t	*cl_voipGainDuringCapture;
-extern	cvar_t	*cl_voipCaptureMult;
-extern	cvar_t	*cl_voipShowMeter;
-extern	cvar_t	*cl_voip;
+extern	cvar_s	*cl_voipUseVAD;
+extern	cvar_s	*cl_voipVADThreshold;
+extern	cvar_s	*cl_voipSend;
+extern	cvar_s	*cl_voipSendTarget;
+extern	cvar_s	*cl_voipGainDuringCapture;
+extern	cvar_s	*cl_voipCaptureMult;
+extern	cvar_s	*cl_voipShowMeter;
+extern	cvar_s	*cl_voip;
 #endif
 
 //=================================================

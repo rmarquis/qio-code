@@ -274,12 +274,12 @@ void IN_CenterView (void) {
 
 //==========================================================================
 
-cvar_t	*cl_yawspeed;
-cvar_t	*cl_pitchspeed;
+cvar_s	*cl_yawspeed;
+cvar_s	*cl_pitchspeed;
 
-cvar_t	*cl_run;
+cvar_s	*cl_run;
 
-cvar_t	*cl_anglespeedkey;
+cvar_s	*cl_anglespeedkey;
 
 
 /*

@@ -76,12 +76,12 @@ typedef enum
 static SDL_Surface *screen = NULL;
 static const SDL_VideoInfo *videoInfo = NULL;
 
-cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
-cvar_t *r_allowResize; // make window resizable
-cvar_t *r_centerWindow;
-cvar_t *r_sdlDriver;
-cvar_t *r_fullscreen;
-cvar_t *r_mode;
+cvar_s *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
+cvar_s *r_allowResize; // make window resizable
+cvar_s *r_centerWindow;
+cvar_s *r_sdlDriver;
+cvar_s *r_fullscreen;
+cvar_s *r_mode;
 
 
 

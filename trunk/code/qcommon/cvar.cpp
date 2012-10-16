@@ -25,17 +25,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qcommon.h"
 #include <api/iFaceMgrAPI.h>
 #include <api/cvarAPI.h>
+#include <shared/cvarModificationCallback.h>
+#include <shared/autoCvar.h>
 
-cvar_t		*cvar_vars = NULL;
-cvar_t		*cvar_cheats;
+cvar_s		*cvar_vars = NULL;
+cvar_s		*cvar_cheats;
 int			cvar_modifiedFlags;
 
 #define	MAX_CVARS	1024
-cvar_t		cvar_indexes[MAX_CVARS];
+cvar_s		cvar_indexes[MAX_CVARS];
 int			cvar_numIndexes;
 
 #define FILE_HASH_SIZE		256
-static	cvar_t	*hashTable[FILE_HASH_SIZE];
+static	cvar_s	*hashTable[FILE_HASH_SIZE];
 
 /*
 ================
@@ -84,8 +86,8 @@ static qboolean Cvar_ValidateString( const char *s ) {
 Cvar_FindVar
 ============
 */
-static cvar_t *Cvar_FindVar( const char *var_name ) {
-	cvar_t	*var;
+static cvar_s *Cvar_FindVar( const char *var_name ) {
+	cvar_s	*var;
 	long hash;
 
 	hash = generateHashValue(var_name);
@@ -105,7 +107,7 @@ Cvar_VariableValue
 ============
 */
 float Cvar_VariableValue( const char *var_name ) {
-	cvar_t	*var;
+	cvar_s	*var;
 	
 	var = Cvar_FindVar (var_name);
 	if (!var)
@@ -120,7 +122,7 @@ Cvar_VariableIntegerValue
 ============
 */
 int Cvar_VariableIntegerValue( const char *var_name ) {
-	cvar_t	*var;
+	cvar_s	*var;
 	
 	var = Cvar_FindVar (var_name);
 	if (!var)
@@ -135,7 +137,7 @@ Cvar_VariableString
 ============
 */
 char *Cvar_VariableString( const char *var_name ) {
-	cvar_t *var;
+	cvar_s *var;
 	
 	var = Cvar_FindVar (var_name);
 	if (!var)
@@ -150,7 +152,7 @@ Cvar_VariableStringBuffer
 ============
 */
 void Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize ) {
-	cvar_t *var;
+	cvar_s *var;
 	
 	var = Cvar_FindVar (var_name);
 	if (!var) {
@@ -168,7 +170,7 @@ Cvar_Flags
 */
 int Cvar_Flags(const char *var_name)
 {
-	cvar_t *var;
+	cvar_s *var;
 	
 	if(!(var = Cvar_FindVar(var_name)))
 		return CVAR_NONEXISTENT;
@@ -188,7 +190,7 @@ Cvar_CommandCompletion
 */
 void Cvar_CommandCompletion(void (*callback)(const char *s))
 {
-	cvar_t		*cvar;
+	cvar_s		*cvar;
 	
 	for(cvar = cvar_vars; cvar; cvar = cvar->next)
 	{
@@ -202,7 +204,7 @@ void Cvar_CommandCompletion(void (*callback)(const char *s))
 Cvar_Validate
 ============
 */
-static const char *Cvar_Validate( cvar_t *var,
+static const char *Cvar_Validate( cvar_s *var,
     const char *value, qboolean warn )
 {
 	static char s[ MAX_CVAR_VALUE_STRING ];
@@ -309,8 +311,8 @@ If the variable already exists, the value will not be set unless CVAR_ROM
 The flags will be or'ed in if the variable exists.
 ============
 */
-cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
-	cvar_t	*var;
+cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
+	cvar_s	*var;
 	long	hash;
 	int	index;
 
@@ -473,7 +475,7 @@ Cvar_Print
 Prints the value, default, and latched string of the given variable
 ============
 */
-void Cvar_Print( cvar_t *v ) {
+void Cvar_Print( cvar_s *v ) {
 	Com_Printf ("\"%s\" is:\"%s" S_COLOR_WHITE "\"",
 			v->name, v->string );
 
@@ -498,8 +500,8 @@ void Cvar_Print( cvar_t *v ) {
 Cvar_Set2
 ============
 */
-cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
-	cvar_t	*var;
+cvar_s *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
+	cvar_s	*var;
 
 //	Com_DPrintf( "Cvar_Set2: %s %s\n", var_name, value );
 
@@ -615,6 +617,14 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
 	var->value = atof (var->string);
 	var->integer = atoi (var->string);
 
+	// fire modification callbacks (used eg. to update
+	// autocvars in DLLs)
+	cvarModifyCallback_i *cb = var->modificationCallback;
+	while(cb) {
+		cb->onCvarModified(value);
+		cb = cb->getNext();
+	}
+
 	return var;
 }
 
@@ -718,7 +728,7 @@ Any testing variables will be reset to the safe values
 */
 void Cvar_SetCheatState(void)
 {
-	cvar_t	*var;
+	cvar_s	*var;
 
 	// set all default vars to the safe value
 	for(var = cvar_vars; var ; var = var->next)
@@ -746,7 +756,7 @@ Handles variable inspection and changing from the console
 ============
 */
 qboolean Cvar_Command( void ) {
-	cvar_t	*v;
+	cvar_s	*v;
 
 	// check variables
 	v = Cvar_FindVar (Cmd_Argv(0));
@@ -777,7 +787,7 @@ Prints the contents of a cvar
 void Cvar_Print_f(void)
 {
 	char *name;
-	cvar_t *cv;
+	cvar_s *cv;
 	
 	if(Cmd_Argc() != 2)
 	{
@@ -850,7 +860,7 @@ weren't declared in C code.
 void Cvar_Set_f( void ) {
 	int		c;
 	char	*cmd;
-	cvar_t	*v;
+	cvar_s	*v;
 
 	c = Cmd_Argc();
 	cmd = Cmd_Argv(0);
@@ -913,7 +923,7 @@ with the archive flag set to qtrue.
 */
 void Cvar_WriteVariables(fileHandle_t f)
 {
-	cvar_t	*var;
+	cvar_s	*var;
 	char	buffer[1024];
 
 	for (var = cvar_vars; var; var = var->next)
@@ -949,7 +959,7 @@ Cvar_List_f
 ============
 */
 void Cvar_List_f( void ) {
-	cvar_t	*var;
+	cvar_s	*var;
 	int		i;
 	char	*match;
 
@@ -1026,9 +1036,9 @@ Unsets a cvar
 ============
 */
 
-cvar_t *Cvar_Unset(cvar_t *cv)
+cvar_s *Cvar_Unset(cvar_s *cv)
 {
-	cvar_t *next = cv->next;
+	cvar_s *next = cv->next;
 
 	if(cv->name)
 		Z_Free(cv->name);
@@ -1068,7 +1078,7 @@ Unsets a userdefined cvar
 
 void Cvar_Unset_f(void)
 {
-	cvar_t *cv;
+	cvar_s *cv;
 	
 	if(Cmd_Argc() != 2)
 	{
@@ -1100,7 +1110,7 @@ and variables added via the VMs if requested.
 
 void Cvar_Restart(qboolean unsetVM)
 {
-	cvar_t	*curvar;
+	cvar_s	*curvar;
 
 	curvar = cvar_vars;
 
@@ -1145,7 +1155,7 @@ Cvar_InfoString
 char *Cvar_InfoString(int bit)
 {
 	static char	info[MAX_INFO_STRING];
-	cvar_t	*var;
+	cvar_s	*var;
 
 	info[0] = 0;
 
@@ -1168,7 +1178,7 @@ Cvar_InfoString_Big
 char *Cvar_InfoString_Big(int bit)
 {
 	static char	info[BIG_INFO_STRING];
-	cvar_t	*var;
+	cvar_s	*var;
 
 	info[0] = 0;
 
@@ -1196,7 +1206,7 @@ void Cvar_InfoStringBuffer( int bit, char* buff, int buffsize ) {
 Cvar_CheckRange
 =====================
 */
-void Cvar_CheckRange( cvar_t *var, float min, float max, qboolean integral )
+void Cvar_CheckRange( cvar_s *var, float min, float max, qboolean integral )
 {
 	var->validate = qtrue;
 	var->min = min;
@@ -1216,7 +1226,7 @@ basically a slightly modified Cvar_Get for the interpreted modules
 */
 void Cvar_Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags)
 {
-	cvar_t	*cv;
+	cvar_s	*cv;
 
 	// There is code in Cvar_Get to prevent CVAR_ROM cvars being changed by the
 	// user. In other words CVAR_ARCHIVE and CVAR_ROM are mutually exclusive
@@ -1247,7 +1257,7 @@ updates an interpreted modules' version of a cvar
 =====================
 */
 void	Cvar_Update( vmCvar_t *vmCvar ) {
-	cvar_t	*cv = NULL;
+	cvar_s	*cv = NULL;
 	assert(vmCvar);
 
 	if ( (unsigned)vmCvar->handle >= cvar_numIndexes ) {
@@ -1288,6 +1298,32 @@ void Cvar_CompleteCvarName( char *args, int argNum )
 		if( p > args )
 			Field_CompleteCommand( p, qfalse, qtrue );
 	}
+}
+
+void Cvar_AddModificationCallback(struct cvar_s *cv, class cvarModifyCallback_i *callback) {
+	callback->setNext(cv->modificationCallback);
+	cv->modificationCallback = callback;
+}
+
+void Cvar_RemoveModificationCallback(struct cvar_s *cv, class cvarModifyCallback_i *callback) {
+	if(cv->modificationCallback == callback) {
+		cv->modificationCallback = cv->modificationCallback->getNext();
+		callback->setNext(0);
+		return;
+	}
+	cvarModifyCallback_i *prev = cv->modificationCallback;
+	cvarModifyCallback_i *p = prev->getNext();
+	while(p) {
+		if(p == callback) {
+			prev->setNext(p->getNext());
+			p->setNext(0);
+			return;
+		}
+		prev = p;
+		p = p->getNext();
+	}
+	// maybe we should do a Com_Error here...
+	Com_Printf(S_COLOR_RED"Cvar_RemoveModificationCallback: callback pointer not found!!!\n");
 }
 
 /*
@@ -1331,6 +1367,12 @@ void Cvar_Init (void)
 	g_staticCvarsAPI.Cvar_Register = Cvar_Register;
 	g_staticCvarsAPI.Cvar_Set = Cvar_Set;
 	g_staticCvarsAPI.Cvar_Update = Cvar_Update;
+	g_staticCvarsAPI.Cvar_Get = Cvar_Get;
+	g_staticCvarsAPI.Cvar_AddModificationCallback = Cvar_AddModificationCallback;
+	g_staticCvarsAPI.Cvar_RemoveModificationCallback = Cvar_RemoveModificationCallback;
+
 	g_cvars = &g_staticCvarsAPI;
 	g_iFaceMan->registerInterface(&g_staticCvarsAPI,CVARS_API_IDENTSTR);
+
+	AUTOCVAR_RegisterAutoCvars();
 }
