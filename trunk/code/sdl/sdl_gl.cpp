@@ -365,6 +365,7 @@ public:
 		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),0);
 		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
+		boundVBO = 0;
 	}
 	void unbindIBO() {
 		if(boundGPUIBO) {
@@ -395,7 +396,6 @@ public:
 		}
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
-		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
@@ -426,7 +426,8 @@ public:
 		bindIBO(&indices);
 
 		if(lastMat) {
-			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
+			u32 numMatStages = lastMat->getNumStages();
+			for(u32 i = 0; i < numMatStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				setAlphaFunc(s->getAlphaFunc());
 				textureAPI_i *t = s->getTexture();
@@ -478,6 +479,7 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		// rVertexBuffers are used only for 3d
 		unbindVertexBuffer();
+		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics
 	}
 	matrix_c currentModelViewMatrix;
 	void loadModelViewMatrix(const matrix_c &newMat) {

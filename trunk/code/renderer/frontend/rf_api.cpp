@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/gameAPI.h> // only for debug drawing
 #include <math/matrix.h>
 #include <math/axis.h>
+#include <shared/autoCvar.h>
 
 #include "rf_2d.h"
 #include "rf_world.h"
@@ -151,6 +152,7 @@ public:
 			g_core->DropError("rAPIImpl_c::init: already initialized\n");
 		}
 		initialized = true;
+		AUTOCVAR_RegisterAutoCvars();
 		loadMaterialSystem();
 		rb->init();
 	}
@@ -164,6 +166,7 @@ public:
 		initialized = false;	
 		RF_ClearWorldMap();
 		unloadMaterialSystem();
+		AUTOCVAR_UnregisterAutoCvars();
 		if(destroyWindow) {
 			rb->shutdown();
 		}

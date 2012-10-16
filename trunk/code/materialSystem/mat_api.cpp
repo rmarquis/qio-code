@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/imgAPI.h>
 #include <api/materialSystemAPI.h>
+#include <shared/autoCvar.h>
 
 class msIMPL_c : public materialSystemAPI_i {
 public:

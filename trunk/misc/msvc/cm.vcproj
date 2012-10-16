@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="materialSystem"
-	ProjectGUID="{B93D05ED-C73C-4797-A47B-AC898ECF0459}"
-	RootNamespace="materialSystem"
+	Name="cm"
+	ProjectGUID="{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}"
+	RootNamespace="cm"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -58,8 +58,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\materialSystemx86.dll"
-				ModuleDefinitionFile="materialSystem.def"
+				OutputFile="..\..\game\baseqio\cmx86.dll"
+				ModuleDefinitionFile="cm.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -89,7 +89,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
@@ -129,7 +129,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\materialSystemx86.dll"
+				OutputFile="..\..\game\baseqio\cmx86.dll"
+				ModuleDefinitionFile="cm.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -167,19 +168,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_api.cpp"
+				RelativePath="..\..\code\cm\cm_api.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_impl.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\materialSystem\mat_main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\materialSystem\mat_textures.cpp"
+				RelativePath="..\..\code\cm\cm_model.cpp"
 				>
 			</File>
 		</Filter>
@@ -189,15 +182,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_impl.h"
+				RelativePath="..\..\code\cm\cm_local.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_local.h"
+				RelativePath="..\..\code\cm\cm_model.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_public.h"
+				RelativePath="..\..\code\api\cmAPI.h"
 				>
 			</File>
 		</Filter>
@@ -207,7 +200,7 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\materialSystem.def"
+				RelativePath=".\cm.def"
 				>
 			</File>
 		</Filter>
@@ -215,39 +208,11 @@
 			Name="shared"
 			>
 			<File
-				RelativePath="..\..\code\shared\array.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCvar.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCvar.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\hashTableTemplate.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\parser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\parser.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\q_shared.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\safePtr.h"
 				>
 			</File>
 		</Filter>

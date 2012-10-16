@@ -32,6 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <fileformats/bspFileFormat.h>
 #include <shared/trace.h>
+#include <shared/autoCvar.h>
+
+aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
+aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
 
 void memcpy_strided(void *_dest, const void *_src, int elementCount, int elementSize, int destStride, int sourceStride) {
 	byte *dest = (byte*) _dest;
@@ -373,13 +377,17 @@ void rBspTree_c::addDrawCalls() {
 		// no pvs
 		for(u32 i = 0; i < batches.size(); i++) {
 			bspSurfBatch_s *b = batches[i];
-			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
+			if(rf_bsp_noSurfaces.getInt() == 0) {
+				RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
+			}
 		}
 		bspSurf_s *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
 			if(sf->type == BSPSF_BEZIER) {
 				r_bezierPatch_c *p = sf->patch;
-				p->draw();
+				if(rf_bsp_noBezierPatches.getInt() == 0) {
+					p->draw();
+				}
 			}
 		}
 	} 
