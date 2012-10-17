@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
 #include <api/cvarAPI.h>
+#include <api/cmAPI.h>
 #include <api/rAPI.h>
 
 cg_t				cg;
@@ -222,20 +223,31 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_ParseServerinfo();
 
 
-//	trap_CM_LoadMap( cgs.mapname );
-
-#ifdef MISSIONPACK
-	String_Init();
-#endif
-
-//	cg.loading = qtrue;		// force players to load instead of defer
-
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	//trap_R_ClearScene();
 
+	// load world map first so inline models are present when requested
 	rf->loadWorldMap( cgs.mapname );
 
+	for(u32 i = 0; i < MAX_MODELS; i++) {
+		const char *str = CG_ConfigString(CS_MODELS+i);
+		if(str && str[0]) {
+			cgs.gameModels[i] = rf->registerModel(str);
+		}
+	}
+	for(u32 i = 0; i < MAX_MODELS; i++) {
+		const char *str = CG_ConfigString(CS_COLLMODELS+i);
+		if(str && str[0]) {
+			cgs.gameCollModels[i] = cm->registerModel(str);
+		}
+	}
+	for(u32 i = 0; i < MAX_SOUNDS; i++) {
+		const char *str = CG_ConfigString(CS_SOUNDS+i);
+		if(str && str[0]) {
+			cgs.gameSounds[i] = 0;//snd->registerSound(str);
+		}
+	}
 
 //	cg.loading = qfalse;	// future players will be deferred
 }

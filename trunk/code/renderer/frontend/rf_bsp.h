@@ -106,6 +106,7 @@ class rBspTree_c {
 	void createBatches();
 	void deleteBatches();
 	void createVBOandIBOs();
+	void createRenderModelsForBSPInlineModels();
 
 	bool loadLightmaps(u32 lumpNum);
 	bool loadPlanes(u32 lumpPlanes);
@@ -113,6 +114,8 @@ class rBspTree_c {
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadModels(u32 modelsLump);
 	bool loadLeafIndexes(u32 leafSurfsLump);
+
+	void addBSPSurfaceDrawCall(u32 sfNum);
 
 	void traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay(int nodeNum, class trace_c &out);
@@ -124,6 +127,7 @@ public:
 	void clear();
 
 	void addDrawCalls();
+	void addModelDrawCalls(u32 inlineModelNum);
 
 	void traceRay(class trace_c &out);
 };

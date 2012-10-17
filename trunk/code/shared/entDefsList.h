@@ -51,6 +51,12 @@ public:
 	void getKeyValue(u32 idx, const char **key, const char **value) {
 		return ePairs.getKeyValue(idx,key,value);
 	}
+	bool hasKey(const char *key) const {
+		return ePairs.hasKey(key);
+	}
+	const char *getKeyValue(const char *key) const {
+		return ePairs.getKeyValue(key);
+	}
 };
 
 class entDefsList_c {

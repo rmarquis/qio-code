@@ -48,6 +48,11 @@ void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 void ModelEntity::setAngles(const class vec3_c &newAngles) {
 	BaseEntity::setAngles(newAngles);
 }
+void ModelEntity::setRenderModel(const char *newRModelName) {
+	// NOTE: render model pointer isnt stored in game module.
+	// It's clientside only.
+	this->myEdict->s->rModelIndex = G_RenderModelIndex(newRModelName);
+}
 void ModelEntity::setColModel(const char *newCModelName) {
 	this->cmod = cm->registerModel(newCModelName);
 	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
@@ -64,6 +69,14 @@ void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 	} else if(cmod->isBBExts()) {
 		cmBBExts_i *bb = cmod->getBBExts();
 		dd->drawBBExts(getOrigin(),getAngles(),bb->getHalfSizes());
+	}
+}	
+void ModelEntity::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"model")) {
+		this->setRenderModel(value);
+	} else {
+		// fallback to parent class keyvalues
+		BaseEntity::setKeyValue(key,value);
 	}
 }
 #include "../bt_include.h"

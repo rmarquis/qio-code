@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_drawCall.cpp - drawCalls managment and sorting
 #include "rf_drawCall.h"
+#include "rf_entities.h"
 #include <api/rbAPI.h>
 #include <shared/array.h>
 
@@ -35,6 +36,7 @@ public:
 	class rVertexBuffer_c *verts;
 	class rIndexBuffer_c *indices;
 	enum drawCallSort_e sort;
+	rEntityAPI_i *entity;
 //public:
 	
 };
@@ -56,17 +58,31 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	n->lightmap = lightmap;
 	n->sort = sort;
 	n->bindVertexColors = bindVertexColors;
+	n->entity = rf_currentEntity;
 	rf_numDrawCalls++;
 }
 
 	
 void RF_SortAndIssueDrawCalls() {
 	drawCall_c *c = rf_drawCalls.getArray();
+	rEntityAPI_i *prevEntity = 0;
 	for(u32 i = 0; i < rf_numDrawCalls; i++, c++) {
+		if(prevEntity != c->entity) {
+			if(c->entity == 0) {
+				rb->setupWorldSpace();
+			} else {
+				rb->setupEntitySpace(c->entity->getAxis(),c->entity->getOrigin());
+			}
+			prevEntity = c->entity;
+		}
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setMaterial(c->material,c->lightmap);
 		rb->drawElements(*c->verts,*c->indices);
 	}
 	rb->setBindVertexColors(false);		
 	rf_numDrawCalls = 0;
+	if(prevEntity) {
+		rb->setupWorldSpace();
+		prevEntity = 0;
+	}
 }

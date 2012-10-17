@@ -142,6 +142,9 @@ void r_bezierPatch_c::tesselate(u32 newLevel) {
 void r_bezierPatch_c::draw() {
 	sf->drawSurface();
 }
+void r_bezierPatch_c::addDrawCall() {
+	sf->addDrawCall();
+}
 void r_bezierPatch_c::traceRay(class trace_c &tr) {
 	if(sf == 0) {
 		// patch must be instanced

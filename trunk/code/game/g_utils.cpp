@@ -73,7 +73,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 }
 
 
-int G_ModelIndex( const char *name ) {
+int G_RenderModelIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, qtrue);
 }
 

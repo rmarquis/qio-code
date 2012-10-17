@@ -43,6 +43,7 @@ public:
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
 
+	void setRenderModel(const char *newRModelName);
 	void setColModel(const char *newCModelName);
 	void setColModel(class cMod_i *newCModel);
 
@@ -57,6 +58,8 @@ public:
 			return true;
 		return false;
 	}
+
+	virtual void setKeyValue(const char *key, const char *value); 
 
 	virtual void runFrame();
 	virtual void debugDraw(class rDebugDrawer_i *dd) {

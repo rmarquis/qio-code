@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_bsp.h"
 #include "rf_bezier.h"
 #include "rf_drawCall.h"
+#include "rf_model.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -102,6 +103,13 @@ void rBspTree_c::createVBOandIBOs() {
 	verts.uploadToGPU();
 	for(u32 i = 0; i < batches.size(); i++) {
 		batches[i]->indices.uploadToGPU();
+	}
+}
+void rBspTree_c::createRenderModelsForBSPInlineModels() {
+	for(u32 i = 1; i < models.size(); i++) {
+		str modName = va("*%i",i);
+		model_c *m = RF_AllocModel(modName);
+		m->initInlineModel(this,i);
 	}
 }
 bool rBspTree_c::loadLightmaps(u32 lumpNum) {
@@ -363,6 +371,7 @@ bool rBspTree_c::load(const char *fname) {
 
 	createBatches();
 	createVBOandIBOs();
+	createRenderModelsForBSPInlineModels();
 
 	return false;
 }
@@ -386,11 +395,25 @@ void rBspTree_c::addDrawCalls() {
 			if(sf->type == BSPSF_BEZIER) {
 				r_bezierPatch_c *p = sf->patch;
 				if(rf_bsp_noBezierPatches.getInt() == 0) {
-					p->draw();
+					p->addDrawCall();
 				}
 			}
 		}
 	} 
+}
+void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
+	bspSurf_s &sf = this->surfs[sfNum];
+	if(sf.type == BSPSF_BEZIER) {
+		sf.patch->addDrawCall();
+	} else {
+		RF_AddDrawCall(&this->verts,&sf.sf->absIndexes,sf.sf->mat,sf.sf->lightmap,DCS_OPAQUE_WORLD,true);
+	}
+}
+void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
+	bspModel_s &m = models[inlineModelNum];
+	for(u32 i = 0; i < m.numSurfs; i++) {
+		addBSPSurfaceDrawCall(m.firstSurf+i);
+	}
 }
 void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	bspSurf_s &sf = surfs[surfNum];

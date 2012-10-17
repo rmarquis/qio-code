@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "rf_local.h"
 #include "rf_drawCall.h"
+#include "rf_model.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -110,6 +111,7 @@ public:
 	virtual void draw3DView() {
 		// generate drawcalls
 		RF_AddWorldDrawCalls();
+		RFE_AddEntityDrawCalls();
 		// sort and issue drawcalls (transparency rendering)
 		RF_SortAndIssueDrawCalls();
 		// do a debug drawing on top of everything
@@ -138,12 +140,21 @@ public:
 	}
 	virtual void rayTraceWorldMap(class trace_c &tr) {
 		RF_RayTraceWorld(tr);
+	}	
+	virtual class rEntityAPI_i *allocEntity() {
+		return RFE_AllocEntity();
+	}
+	virtual void removeEntity(class rEntityAPI_i *ent) {
+		RFE_RemoveEntity(ent);
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		if(g_ms == 0)
 			return 0;
 		return g_ms->registerMaterial(matName);
 	}	
+	virtual class rModelAPI_i *registerModel(const char *modName) {
+		return RF_RegisterModel(modName);
+	}
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;
 	}
@@ -165,6 +176,7 @@ public:
 		}
 		initialized = false;	
 		RF_ClearWorldMap();
+		RF_ClearModels();
 		unloadMaterialSystem();
 		AUTOCVAR_UnregisterAutoCvars();
 		if(destroyWindow) {

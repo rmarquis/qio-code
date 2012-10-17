@@ -25,8 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "cg_local.h"
 #include <api/clientAPI.h>
-
-
+#include <api/rAPI.h>
+#include <api/rEntityAPI.h>
 
 /*
 ==================
@@ -57,10 +57,29 @@ static void CG_TransitionEntity( centity_t *cent ) {
 		CG_ResetEntity( cent );
 	}
 
+	// temporary hack. TODO: interpolation
+	cent->rEnt->setOrigin(cent->currentState.origin);
+	cent->rEnt->setAngles(cent->currentState.angles);
+	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
+
 	// clear the next state.  if will be set by the next CG_SetNextSnap
 	cent->interpolate = qfalse;
 }
 
+static void CG_RemoveEntity(u32 entNum) {
+	centity_t *cent = &cg_entities[entNum];
+	if(cent->rEnt) {
+		rf->removeEntity(cent->rEnt);
+	}
+}
+static void CG_NewEntity(u32 entNum) {
+	centity_t *cent = &cg_entities[entNum];
+	if(cent->rEnt) {
+		CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rEntity assigned\n",entNum);
+		rf->removeEntity(cent->rEnt);
+	}
+	cent->rEnt = rf->allocEntity();
+}
 
 /*
 ==================
@@ -101,6 +120,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 		cent->currentValid = qtrue;
 
 		CG_ResetEntity( cent );
+		CG_NewEntity( state->number );
 	}
 }
 
@@ -115,7 +135,6 @@ The transition point from snap to nextSnap has passed
 static void CG_TransitionSnapshot( void ) {
 	centity_t			*cent;
 	snapshot_t			*oldFrame;
-	int					i;
 
 	if ( !cg.snap ) {
 		CG_Error( "CG_TransitionSnapshot: NULL cg.snap" );
@@ -130,7 +149,7 @@ static void CG_TransitionSnapshot( void ) {
 	// if we had a map_restart, set everthing with initial
 	if ( !cg.snap ) {
 	}
-
+#if 0
 	// clear the currentValid flag for all entities in the existing snapshot
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		cent = &cg_entities[ cg.snap->entities[ i ].number ];
@@ -151,6 +170,36 @@ static void CG_TransitionSnapshot( void ) {
 		// remember time of snapshot this entity was last updated in
 		cent->snapShotTime = cg.snap->serverTime;
 	}
+#else
+	u32 snapEnt = 0;
+	for(u32 i = 0; i < MAX_GENTITIES; i++) {
+		cent = &cg_entities[i];	
+		u32 snapEntNum = cg.snap->entities[snapEnt].number;
+		if(snapEntNum == i) {
+			if(cent->currentValid == false) {
+				CG_Printf("CG_TransitionSnapshot: %i: new entity %i\n",cg.snap->serverTime,i);
+				CG_NewEntity(i);
+			}
+			CG_TransitionEntity( cent );
+
+			// remember time of snapshot this entity was last updated in
+			cent->snapShotTime = cg.snap->serverTime;
+
+			snapEnt++;
+		} else if(cent->currentValid) {
+			CG_Printf("CG_TransitionSnapshot: %i: removed entity %i\n",cg.snap->serverTime,i);
+			CG_RemoveEntity(i);
+			cent->currentValid = false;
+		}
+	}
+
+	// move nextSnap to snap and do the transitions
+	oldFrame = cg.snap;
+	cg.snap = cg.nextSnap;
+
+	BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, qfalse );
+	cg_entities[ cg.snap->ps.clientNum ].interpolate = qfalse;
+#endif
 
 	cg.nextSnap = NULL;
 

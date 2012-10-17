@@ -200,7 +200,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_entities.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_entities.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_model.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_orientations.cpp"
 				>
 			</File>
 			<File
@@ -242,11 +258,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_model.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_surface.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\rIndexBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rModelAPI.h"
 				>
 			</File>
 			<File
@@ -309,6 +333,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
 			<File

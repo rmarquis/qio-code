@@ -59,6 +59,15 @@ class ePairList_c {
 		}
 		return 0;
 	}
+	const ePair_c *find(const char *key) const {
+		for(u32 i = 0; i < pairs.size(); i++) {
+			const ePair_c *ep = pairs[i];
+			if(!stricmp(key,ep->key)) {
+				return ep;
+			}
+		}
+		return 0;
+	}
 public:
 	ePairList_c() {
 
@@ -90,6 +99,20 @@ public:
 	}
 	u32 size() const {
 		return pairs.size();
+	}
+
+	bool hasKey(const char *key) const {
+		if(find(key)) {
+			return true;
+		}
+		return false;
+	}
+	const char *getKeyValue(const char *key) const {
+		const ePair_c *p = find(key);
+		if(p) {
+			return p->getValue();
+		}
+		return 0;
 	}
 };
 

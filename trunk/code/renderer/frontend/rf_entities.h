@@ -21,33 +21,47 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_surface.cpp - static surface class
-#include "rf_surface.h"
-#include "rf_drawCall.h"
-#include <api/rbAPI.h>
-#include <shared/trace.h>
+// rf_entities.h
+#ifndef __RF_ENTITIES_H__
+#define __RF_ENTITIES_H__
 
-void r_surface_c::drawSurface() {
-	rb->setBindVertexColors(true);
-	rb->setMaterial(this->mat,this->lightmap);
-	rb->drawElements(this->verts,this->indices);
-	rb->setBindVertexColors(false);
-}
+#include <shared/array.h>
+#include <math/vec3.h>
+#include <math/axis.h>
+#include <api/rEntityAPI.h>
 
-void r_surface_c::addDrawCall() {
-	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,DCS_OPAQUE_WORLD,true);
-}
-
-void r_surface_c::traceRay(class trace_c &tr) {
-	if(tr.getTraceBounds().intersect(this->bounds) == false)
-		return;
-	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
-		u32 i0 = indices[i+0];
-		u32 i1 = indices[i+1];
-		u32 i2 = indices[i+2];
-		const rVert_c &v0 = verts[i0];
-		const rVert_c &v1 = verts[i1];
-		const rVert_c &v2 = verts[i2];
-		tr.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true);
+class rEntityImpl_c : public rEntityAPI_i {
+	//matrix_c matrix;
+	vec3_c angles;
+	axis_c axis;
+	vec3_c origin;
+	class rModelAPI_i *model;
+public:
+	rEntityImpl_c() {
+		model = 0;
 	}
-}
+	virtual void setOrigin(const vec3_c &newXYZ) {
+		origin = newXYZ;
+	}
+	virtual void setAngles(const vec3_c &newAngles) { 
+		angles = newAngles;
+		axis.fromAngles(angles);
+	}
+	virtual void setModel(class rModelAPI_i *newModel) {
+		model = newModel;
+	}
+	virtual rModelAPI_i *getModel() const {
+		return model;
+	}
+	virtual const axis_c &getAxis() const {
+		return axis;
+	}
+	virtual const vec3_c &getOrigin() const {
+		return origin;
+	}
+};
+
+// NULL == worldspawn
+extern class rEntityAPI_i *rf_currentEntity;
+
+#endif // __RF_ENTITIES_H__

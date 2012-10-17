@@ -52,7 +52,7 @@ typedef struct {
 //
 // g_utils.cpp
 //
-int G_ModelIndex( const char *name );
+int G_RenderModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
 int	G_SoundIndex( const char *name );
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);

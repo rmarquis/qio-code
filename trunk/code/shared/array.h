@@ -108,7 +108,7 @@ public:
 		std::vector<_Ty>::erase(this->begin()+index);
 	}
 	void remove(const _Ty &t) {
-		for(int i = 0; i < this->size(); i++) {
+		for(u32 i = 0; i < this->size(); i++) {
 			if(t == (*this)[i]) {
 				erase(i);
 				return;

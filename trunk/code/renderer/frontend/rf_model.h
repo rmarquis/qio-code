@@ -21,66 +21,49 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_surface.h
-#ifndef __RF_SURFACE_H__
-#define __RF_SURFACE_H__
+// rf_model.h
+#ifndef __RF_MODEL_H__
+#define __RF_MODEL_H__
 
-#include "../rIndexBuffer.h"
-#include "../rVertexBuffer.h"
+#include "../rModelAPI.h"
 #include <shared/str.h>
-#include <math/aabb.h>
 
-class r_surface_c {
+class model_c : public rModelAPI_i {
 	str name;
-	str matName;
-	class mtrAPI_i *mat;
-	class textureAPI_i *lightmap;
-	rVertexBuffer_c verts;
-	rIndexBuffer_c indices;
-	aabb bounds;
+	model_c *hashNext;
+
+	class rBspTree_c *myBSP;
+	u32 bspModelNum;
 public:
-	r_surface_c() {
-		mat = 0;
+	model_c() {
+		hashNext = 0;
+		myBSP = 0;
 	}
-	u32 getNumVerts() const {
-		return verts.size();
+	virtual const char *getName() const {
+		return name;
 	}
-	void addVert(const rVert_c &v) {
-		verts.push_back(v);
+	inline void setHashNext(model_c *hn) {
+		this->hashNext = hn;
 	}
-	void addIndex(u32 idx) {
-		indices.addIndex(idx);
-	}
-	void clear() {
-		indices.destroy();
-		verts.destroy();
-	}
-	void createVBO() {
-		verts.uploadToGPU();
-	}
-	void createIBO() {
-		indices.uploadToGPU();
-	}
-	void setMaterial(mtrAPI_i *newMat) {
-		mat = newMat;
-	}
-	void setLightmap(textureAPI_i *newLM) {
-		lightmap = newLM;
+	inline model_c *getHashNext() const {
+		return hashNext;
 	}
 
-	void recalcBB() {
-		bounds.clear();
-		for(u32 i = 0; i < verts.size(); i++) {
-			bounds.addPoint(verts[i].xyz);
-		}
+	void addModelDrawCalls();
+
+	// for bsp inline model
+	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
+		this->myBSP = pMyBSP;
+		this->bspModelNum = myBSPModNum;
 	}
-	void drawSurface();
-	void addDrawCall();
 
-	void traceRay(class trace_c &tr);
-
-
+// model creation access for BSP class (bsp inline models)
+friend void RF_ClearModels();
+friend void RF_ClearModel(model_c *m);
+friend model_c *RF_AllocModel(const char *modName);
+friend rModelAPI_i *RF_FindModel(const char *modName);
+friend rModelAPI_i *RF_RegisterModel(const char *modName);
 };
 
-#endif // __RF_SURFACE_H__
+#endif // __RF_MODEL_H__
 

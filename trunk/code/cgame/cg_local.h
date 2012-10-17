@@ -59,6 +59,8 @@ typedef struct centity_s {
 	// exact interpolated position of entity on this frame
 	vec3_t			lerpOrigin;
 	vec3_t			lerpAngles;
+
+	class rEntityAPI_i *rEnt;
 } centity_t;
 
 
@@ -168,8 +170,8 @@ typedef struct {
 	//
 	// locally derived information from gamestate
 	//
-	qhandle_t		gameModels[MAX_MODELS];
-	class cMod_i *	gameCollModels[MAX_MODELS];
+	class rModelAPI_i	*gameModels[MAX_MODELS];
+	class cMod_i		*gameCollModels[MAX_MODELS];
 	sfxHandle_t		gameSounds[MAX_SOUNDS];
 
 	// media

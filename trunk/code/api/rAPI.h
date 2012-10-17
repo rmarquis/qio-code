@@ -37,6 +37,9 @@ public:
 	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
 
+	virtual class rEntityAPI_i *allocEntity() = 0;
+	virtual void removeEntity(class rEntityAPI_i *ent) = 0;
+
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	//virtual void draw3DView() = 0;
 	//virtual void setup2DView() = 0;
@@ -50,6 +53,7 @@ public:
 	// misc functions
 	virtual void loadWorldMap(const char *mapName) = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
+	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
 
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 

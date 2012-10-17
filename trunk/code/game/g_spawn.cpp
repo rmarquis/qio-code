@@ -48,8 +48,13 @@ void G_SpawnMapEntities(const char *mapName) {
 		}
 		BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);
 		if(ent == 0) {
-			g_core->Print("Failed to spawn class %s\n",className);
-			continue;
+			// hack to spawn inline models
+			if(e->hasKey("model") && e->getKeyValue("model")[0] == '*') {
+				ent = (BaseEntity*)G_SpawnClass("ModelEntity");
+			} else {
+				g_core->Print("Failed to spawn class %s\n",className);
+				continue;
+			}
 		}
 		g_core->Print("Spawning %s\n",className);
 		for(u32 j = 0; j < e->getNumKeyValues(); j++) {
