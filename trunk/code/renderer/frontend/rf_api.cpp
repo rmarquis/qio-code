@@ -176,6 +176,7 @@ public:
 		}
 		initialized = false;	
 		RF_ClearWorldMap();
+		RFE_ClearEntities();
 		RF_ClearModels();
 		unloadMaterialSystem();
 		AUTOCVAR_UnregisterAutoCvars();

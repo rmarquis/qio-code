@@ -51,3 +51,11 @@ void RFE_AddEntityDrawCalls() {
 	}
 	rf_currentEntity = 0;
 }
+
+void RFE_ClearEntities() {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		delete rf_entities[i];
+		rf_entities[i] = 0;
+	}
+	rf_entities.clear();
+}
