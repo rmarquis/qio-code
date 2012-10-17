@@ -28,28 +28,27 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <math/vec3.h>
 #include <math/axis.h>
+#include <math/matrix.h>
+#include <math/aabb.h>
 #include <api/rEntityAPI.h>
 
 class rEntityImpl_c : public rEntityAPI_i {
-	//matrix_c matrix;
+	matrix_c matrix;
 	vec3_c angles;
 	axis_c axis;
 	vec3_c origin;
 	class rModelAPI_i *model;
+	aabb absBB;
 public:
 	rEntityImpl_c() {
 		model = 0;
 	}
-	virtual void setOrigin(const vec3_c &newXYZ) {
-		origin = newXYZ;
-	}
-	virtual void setAngles(const vec3_c &newAngles) { 
-		angles = newAngles;
-		axis.fromAngles(angles);
-	}
-	virtual void setModel(class rModelAPI_i *newModel) {
-		model = newModel;
-	}
+	void recalcABSBounds();
+	void recalcMatrix();
+	virtual void setOrigin(const vec3_c &newXYZ);
+	virtual void setAngles(const vec3_c &newAngles);
+	virtual void setModel(class rModelAPI_i *newModel);
+
 	virtual rModelAPI_i *getModel() const {
 		return model;
 	}
@@ -59,6 +58,14 @@ public:
 	virtual const vec3_c &getOrigin() const {
 		return origin;
 	}
+	virtual const matrix_c &getMatrix() const {
+		return matrix;
+	}
+	virtual const class aabb &getBoundsABS() const {
+		return absBB;
+	}
+
+	bool rayTrace(class trace_c &tr) const;
 };
 
 // NULL == worldspawn

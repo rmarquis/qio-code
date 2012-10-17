@@ -110,6 +110,7 @@ void rBspTree_c::createRenderModelsForBSPInlineModels() {
 		str modName = va("*%i",i);
 		model_c *m = RF_AllocModel(modName);
 		m->initInlineModel(this,i);
+		m->setBounds(models[i].bb);
 	}
 }
 bool rBspTree_c::loadLightmaps(u32 lumpNum) {
@@ -289,6 +290,7 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	for(u32 i = 0; i < numModels; i++, m++, om++) {
 		om->firstSurf = m->firstSurface;
 		om->numSurfs = m->numSurfaces;
+		om->bb.fromTwoPoints(m->maxs,m->mins);
 	}
 	return false; // OK
 }
@@ -415,15 +417,16 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 		addBSPSurfaceDrawCall(m.firstSurf+i);
 	}
 }
-void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
+bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	bspSurf_s &sf = surfs[surfNum];
 	if(sf.type == BSPSF_BEZIER) {
 		r_bezierPatch_c *bp = sf.patch;
-		bp->traceRay(out);
+		return bp->traceRay(out);
 	} else {
+		bool hasHit = false;
 		bspTriSurf_s *t = sf.sf;
 		if(out.getTraceBounds().intersect(t->bounds) == false)
-			return;
+			return false;
 		for(u32 i = 0; i < t->absIndexes.getNumIndices(); i+=3) {
 			u32 i0 = t->absIndexes[i+0];
 			u32 i1 = t->absIndexes[i+1];
@@ -431,8 +434,11 @@ void rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 			const rVert_c &v0 = this->verts[i0];
 			const rVert_c &v1 = this->verts[i1];
 			const rVert_c &v2 = this->verts[i2];
-			out.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true);
+			if(out.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true)) {
+				hasHit = true;
+			}
 		}
+		return hasHit;
 	}
 }
 void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
@@ -465,11 +471,26 @@ void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
         traceNodeRay(n.children[1],out);
 	}
 }	
-
 void rBspTree_c::traceRay(class trace_c &out) {
 	traceNodeRay(0,out);
 }
-
+bool rBspTree_c::traceRayInlineModel(u32 inlineModelNum, class trace_c &out) {
+	if(inlineModelNum == 0) {
+		float initialFrac = out.getFraction();
+		traceRay(out);
+		if(initialFrac != out.getFraction())
+			return true;
+		return false;
+	}
+	bool hasHit = false;
+	const bspModel_s &m = models[inlineModelNum];
+	for(u32 i = 0; i < m.numSurfs; i++) {
+		if(traceSurfaceRay(m.firstSurf+i,out)) {
+			hasHit = true;
+		}
+	}
+	return hasHit;
+}
 rBspTree_c *RF_LoadBSP(const char *fname) {
 	rBspTree_c *bsp = new rBspTree_c;
 	if(bsp->load(fname)) {

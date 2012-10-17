@@ -75,6 +75,7 @@ struct bspSurf_s {
 struct bspModel_s {
 	u32 firstSurf;
 	u32 numSurfs;
+	aabb bb;
 };
 struct bspPlane_s {
 	float normal[3];
@@ -117,7 +118,7 @@ class rBspTree_c {
 
 	void addBSPSurfaceDrawCall(u32 sfNum);
 
-	void traceSurfaceRay(u32 surfNum, class trace_c &out);
+	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay(int nodeNum, class trace_c &out);
 public:
 	rBspTree_c();
@@ -130,6 +131,7 @@ public:
 	void addModelDrawCalls(u32 inlineModelNum);
 
 	void traceRay(class trace_c &out);
+	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);
 };
 
 rBspTree_c *RF_LoadBSP(const char *fname);

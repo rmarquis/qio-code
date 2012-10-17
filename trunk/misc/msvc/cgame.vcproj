@@ -245,6 +245,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_collision.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_draw.cpp"
 				>
 				<FileConfiguration

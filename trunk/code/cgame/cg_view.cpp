@@ -100,7 +100,7 @@ float thirdPersonRange = 128.f;
 		trace_c trace;
 		trace.setupRay(cg.refdef.vieworg,view);
 
-		rf->rayTraceWorldMap(trace);
+		CG_RayTrace(trace);
 		//CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 
 		if (trace.getFraction() != 1.f) {

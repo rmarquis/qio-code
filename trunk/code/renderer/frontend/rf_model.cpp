@@ -30,6 +30,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 void model_c::addModelDrawCalls() {
 	myBSP->addModelDrawCalls(bspModelNum);
 }
+bool model_c::rayTrace(class trace_c &tr) const {
+	return myBSP->traceRayInlineModel(bspModelNum,tr);
+}
+
 
 static hashTableTemplateExt_c<model_c> rf_models;
 

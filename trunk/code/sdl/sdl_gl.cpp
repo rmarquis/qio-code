@@ -463,8 +463,8 @@ public:
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				setAlphaFunc(s->getAlphaFunc());
-				const blendDef_s &bd = s->getBlendDef();
-				setBlendFunc(bd.src,bd.dst);
+				//const blendDef_s &bd = s->getBlendDef();
+				//setBlendFunc(bd.src,bd.dst);
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				checkErrors();
@@ -484,7 +484,9 @@ public:
 			u32 numMatStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numMatStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
-				setAlphaFunc(s->getAlphaFunc());
+				setAlphaFunc(s->getAlphaFunc());	
+				const blendDef_s &bd = s->getBlendDef();
+				setBlendFunc(bd.src,bd.dst);
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				if(lastLightmap) {

@@ -21,21 +21,37 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rModelAPI.h - interface of renderer model class.
-// This interface must NOT be used in server / serverGame,
-// because renderer models are present only on client side.
-#ifndef __RMODELAPI_H__
-#define __RMODELAPI_H__
+// cg_collision.cpp - clientside-only collision detection system.
+// Usefull for 3rd person camera clipping, local entities and particles.
+#include "cg_local.h"
+#include <api/rAPI.h>
+#include <api/rEntityAPI.h>
+#include <shared/trace.h>
 
-class rModelAPI_i {
-public:
-	virtual const char *getName() const = 0;
-	virtual const class aabb &getBounds() const = 0;
-	// does an in-place raytrace check against all of the models triangles.
-	// This obviously works only for static models.
-	// Dynamic (animated) models must be instanced before tracing.
-	// Returns true if a collision occurred.
-	virtual bool rayTrace(class trace_c &tr) const = 0;
-};
+bool CG_RayTrace(class trace_c &tr) {
+	rf->rayTraceWorldMap(tr);
+	for(u32 i = 0; i < MAX_GENTITIES; i++) {
+		centity_s *cent = &cg_entities[i];
+		if(cent->currentValid == false) {
+			continue;
+		}
+		if(cent->rEnt == 0) {
+			continue;
+		}
+		const aabb &bb = cent->rEnt->getBoundsABS();
+		if(tr.getTraceBounds().intersect(bb) == false) {
+			continue;
+		}
+		trace_c transformedTrace;
+		tr.getTransformed(transformedTrace,cent->rEnt->getMatrix());
+		if(cent->rEnt->rayTrace(transformedTrace)) {
+			tr.updateResultsFromTransformedTrace(transformedTrace);
+		}
+	}
+	return tr.hasHit();
+}
 
-#endif // __RMODELAPI_H__
+
+
+
+

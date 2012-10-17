@@ -145,11 +145,11 @@ void r_bezierPatch_c::draw() {
 void r_bezierPatch_c::addDrawCall() {
 	sf->addDrawCall();
 }
-void r_bezierPatch_c::traceRay(class trace_c &tr) {
+bool r_bezierPatch_c::traceRay(class trace_c &tr) {
 	if(sf == 0) {
 		// patch must be instanced
 		tesselate(4);
 	}
 	// fallback to r_surface_c::traceRay
-	sf->traceRay(tr);
+	return sf->traceRay(tr);
 }

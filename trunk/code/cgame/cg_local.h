@@ -268,6 +268,11 @@ void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
 void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
 void CG_AddLagometerFrameInfo( void ) ;
 
+//
+// cg_collision.cpp
+//
+bool CG_RayTrace(class trace_c &tr);
+
 //===============================================
 
 //

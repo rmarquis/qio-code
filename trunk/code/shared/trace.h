@@ -39,17 +39,26 @@ class trace_c {
 	float len;
 	// output
 	vec3_c hitPos;
-	float fraction;
+	float fraction; // 1.f == didnt hit anything
 	float traveled;
 	//plane_c hitPlane;
 
 	void updateForNewHitPos();
+	void updateForNewFraction();
+	inline void calcFromToDelta() {
+		this->delta = this->to - this->from;
+		this->len = this->delta.len();
+	}
 public:
 
 	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
+
+	// transforms world-space trace into entity-space trace
+	void getTransformed(trace_c &out, const class matrix_c &entityMatrix) const;
+	void updateResultsFromTransformedTrace(trace_c &selfTransformed);
 
 	const vec3_c &getStartPos() const {
 		return from;
@@ -65,6 +74,9 @@ public:
 	}
 	const aabb &getTraceBounds() const {
 		return traceBounds;
+	}
+	bool hasHit() const {
+		return fraction != 1.f;
 	}
 
 };

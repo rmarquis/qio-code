@@ -34,6 +34,12 @@ public:
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const class axis_c &getAxis() const = 0;
 	virtual const class vec3_c &getOrigin() const = 0;
+	virtual const class matrix_c &getMatrix() const = 0;
+	virtual const class aabb &getBoundsABS() const = 0;
+
+	// trace must be transformed into entity coordinates before calling this function.
+	// Returns true if a collision occured
+	virtual bool rayTrace(class trace_c &tr) const = 0;
 };
 
 #endif // __RENTITYAPI_H__

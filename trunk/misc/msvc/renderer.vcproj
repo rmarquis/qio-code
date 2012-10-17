@@ -304,6 +304,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\matrix.h"
 				>
 			</File>

@@ -25,6 +25,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_entities.h"
 #include "rf_model.h"
 
+void rEntityImpl_c::recalcABSBounds() {
+	if(model == 0) {
+		absBB.clear();
+		return;
+	}
+	const aabb &bb = model->getBounds();
+	matrix.transformAABB(bb,this->absBB);
+}
+void rEntityImpl_c::recalcMatrix() {
+	// TODO: use axis instead of angles
+	matrix.fromAnglesAndOrigin(angles,origin);
+	recalcABSBounds();
+}
+void rEntityImpl_c::setOrigin(const vec3_c &newXYZ) {
+	origin = newXYZ;
+	recalcMatrix();
+}
+void rEntityImpl_c::setAngles(const vec3_c &newAngles) { 
+	angles = newAngles;
+	axis.fromAngles(angles);
+	recalcMatrix();
+}
+void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
+	model = newModel;
+	recalcABSBounds();
+}
+bool rEntityImpl_c::rayTrace(class trace_c &tr) const {
+	return model->rayTrace(tr);
+}
+
 static arraySTD_c<rEntityImpl_c*> rf_entities;
 rEntityAPI_i *rf_currentEntity = 0;
 

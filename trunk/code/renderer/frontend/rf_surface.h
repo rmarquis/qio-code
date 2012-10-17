@@ -77,7 +77,7 @@ public:
 	void drawSurface();
 	void addDrawCall();
 
-	void traceRay(class trace_c &tr);
+	bool traceRay(class trace_c &tr);
 
 
 };

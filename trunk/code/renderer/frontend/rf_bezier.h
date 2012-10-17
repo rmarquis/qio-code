@@ -79,6 +79,6 @@ public:
 	void tesselate(u32 newLevel);
 	void draw();
 	void addDrawCall();
-	void traceRay(class trace_c &tr);
+	bool traceRay(class trace_c &tr);
 };
 #endif // __RF_BEZIER_H__

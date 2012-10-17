@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "../rModelAPI.h"
 #include <shared/str.h>
+#include <math/aabb.h>
 
 class model_c : public rModelAPI_i {
 	str name;
@@ -34,6 +35,7 @@ class model_c : public rModelAPI_i {
 
 	class rBspTree_c *myBSP;
 	u32 bspModelNum;
+	aabb bb;
 public:
 	model_c() {
 		hashNext = 0;
@@ -42,11 +44,21 @@ public:
 	virtual const char *getName() const {
 		return name;
 	}
+	virtual const class aabb &getBounds() const {
+		return bb;
+	}
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}
 	inline model_c *getHashNext() const {
 		return hashNext;
+	}
+	void setBounds(const aabb &newBB) {
+		bb = newBB;
+	}
+	void setBounds(const vec3_c &newMins, const vec3_c &newMaxs) {
+		bb.mins = newMins;
+		bb.maxs = newMaxs;
 	}
 
 	void addModelDrawCalls();
@@ -56,6 +68,9 @@ public:
 		this->myBSP = pMyBSP;
 		this->bspModelNum = myBSPModNum;
 	}
+
+	
+	virtual bool rayTrace(class trace_c &tr) const;
 
 // model creation access for BSP class (bsp inline models)
 friend void RF_ClearModels();

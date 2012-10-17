@@ -24,13 +24,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 // trace.cpp
 #include "trace.h"
 #include "collisionUtils.h"
+#include <math/matrix.h>
 
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->to = newTo;
 	this->from = newFrom;
 	this->hitPos = this->to;
-	this->delta = newTo - newFrom;
-	this->len = this->delta.len();
+	calcFromToDelta();
 	this->fraction = 1.f;
 	this->traveled = this->len;
 	recalcRayTraceBounds();
@@ -43,6 +43,11 @@ void trace_c::recalcRayTraceBounds() {
 void trace_c::updateForNewHitPos() {
 	this->traveled = (hitPos - from).len();
 	this->fraction = this->traveled / this->len;
+	recalcRayTraceBounds();
+}
+void trace_c::updateForNewFraction() {
+	this->traveled = this->fraction * this->len;
+	this->hitPos = from + delta * fraction;
 	recalcRayTraceBounds();
 }
 bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided) {
@@ -60,4 +65,21 @@ bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p
 	hitPos = newHit;
 	this->updateForNewHitPos();
 	return true;
+}
+
+void trace_c::getTransformed(trace_c &out, const matrix_c &entityMatrix) const {
+	matrix_c inv = entityMatrix;
+	inv.inverse();
+	inv.transformPoint(this->from,out.from);
+	inv.transformPoint(this->to,out.to);
+	out.fraction = this->fraction;
+	out.calcFromToDelta();
+	out.updateForNewFraction();
+}
+
+void trace_c::updateResultsFromTransformedTrace(trace_c &selfTransformed) {
+	if(selfTransformed.fraction >= this->fraction)
+		return;
+	this->fraction = selfTransformed.fraction;
+	this->updateForNewFraction();
 }

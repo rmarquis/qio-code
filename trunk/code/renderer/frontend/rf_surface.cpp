@@ -38,9 +38,10 @@ void r_surface_c::addDrawCall() {
 	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,DCS_OPAQUE_WORLD,true);
 }
 
-void r_surface_c::traceRay(class trace_c &tr) {
+bool r_surface_c::traceRay(class trace_c &tr) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
-		return;
+		return false;
+	bool hasHit = false;
 	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
 		u32 i0 = indices[i+0];
 		u32 i1 = indices[i+1];
@@ -48,6 +49,9 @@ void r_surface_c::traceRay(class trace_c &tr) {
 		const rVert_c &v0 = verts[i0];
 		const rVert_c &v1 = verts[i1];
 		const rVert_c &v2 = verts[i2];
-		tr.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true);
+		if(tr.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true)) {
+			hasHit = true;
+		}
 	}
+	return hasHit;
 }
