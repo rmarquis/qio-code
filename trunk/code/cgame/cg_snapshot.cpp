@@ -70,6 +70,7 @@ static void CG_RemoveEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
 	if(cent->rEnt) {
 		rf->removeEntity(cent->rEnt);
+		cent->rEnt = 0;
 	}
 }
 static void CG_NewEntity(u32 entNum) {
