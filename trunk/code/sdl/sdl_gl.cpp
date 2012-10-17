@@ -233,6 +233,57 @@ public:
 	}
 	void turnOffAlphaFunc() {
 		setAlphaFunc(AF_NONE);
+	}	//
+	// GL_BLEND changes
+	//
+	bool blendEnable;
+	void enableGLBlend() {
+		if(blendEnable)
+			return;
+		glEnable(GL_BLEND);
+		blendEnable = true;
+	}
+	void disableGLBlend() {
+		if(blendEnable==false)
+			return;
+		glDisable(GL_BLEND);
+		blendEnable = false;
+
+		blendSrc = BM_NOT_SET;
+		blendDst = BM_NOT_SET;
+	}
+	static int blendModeEnumToGLBlend(int in) {
+		static int blendTable [] = {
+			0, // BM_NOT_SET
+			GL_ZERO,
+			GL_ONE,
+			GL_ONE_MINUS_SRC_COLOR,
+			GL_ONE_MINUS_DST_COLOR,
+			GL_ONE_MINUS_SRC_ALPHA,
+			GL_ONE_MINUS_DST_ALPHA,
+			GL_DST_COLOR,
+			GL_DST_ALPHA,
+			GL_SRC_COLOR,
+			GL_SRC_ALPHA,
+			GL_SRC_ALPHA_SATURATE,
+		};
+		return blendTable[in];
+	}
+	short blendSrc;
+	short blendDst;
+	void setBlendFunc( short src, short dst ) {
+		if( blendSrc != src || blendDst != dst ) {
+			blendSrc = src;
+			blendDst = dst;
+			if(src == BM_NOT_SET && dst == BM_NOT_SET) {
+				//setDepthMask( true );
+				disableGLBlend(); //glDisable( GL_BLEND );
+			} else {
+				enableGLBlend(); // glEnable( GL_BLEND );
+				glBlendFunc( blendModeEnumToGLBlend(blendSrc), blendModeEnumToGLBlend(blendDst) );
+				//setDepthMask( false );
+			}
+		}
 	}
 	// tex coords arrays
 	void enableTexCoordArrayForCurrentTexSlot() {
@@ -293,6 +344,7 @@ public:
 		disableAllTextures();
 		turnOffAlphaFunc();
 		disableColorArray();
+		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 		lastMat = 0;
 		lastLightmap = 0;
 	}
@@ -402,21 +454,24 @@ public:
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
 		checkErrors();
 		if(lastMat) {
-			glEnable(GL_BLEND);
+			//glEnable(GL_BLEND);
 			// NOTE: this is the way Q3 draws all the 2d menu graphics
 			// (it worked before with bigchars.tga, even when the bigchars
 			// shader was missing!!!)
-			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			//glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			setBlendFunc(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				setAlphaFunc(s->getAlphaFunc());
+				const blendDef_s &bd = s->getBlendDef();
+				setBlendFunc(bd.src,bd.dst);
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				checkErrors();
 				glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 				checkErrors();
 			}
-			glDisable(GL_BLEND);
+			//glDisable(GL_BLEND);
 		} else {
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		}
@@ -441,6 +496,7 @@ public:
 				checkErrors();
 			}
 		} else {
+			setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 			drawCurIBO();
 		}
 		if(gl_showTris.getInt()) {
@@ -594,11 +650,9 @@ public:
 		boundIBO = 0;
 		boundGPUIBO = false;
 		//glShadeModel( GL_SMOOTH );
-		//glDepthFunc( GL_LEQUAL );
+		glDepthFunc( GL_LEQUAL );
 		
 		glEnableClientState(GL_VERTEX_ARRAY);
-
-
 #if 1
 		selectTex(1);
 		// increase lightmap brightness. They are very dark when vertex colors are enabled.

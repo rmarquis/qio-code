@@ -46,6 +46,10 @@ public:
 	}
 	bool atChar(char ch);
 	bool atWord(const char *word);
+	const char *getDebugFileName() const {
+		return debugFileName;
+	}
+	u32 getCurrentLineNumber() const;
 
 	inline bool atEOF() const {
 		return *p == 0;

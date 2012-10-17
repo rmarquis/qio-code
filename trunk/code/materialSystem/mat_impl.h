@@ -35,20 +35,28 @@ or simply visit <http://www.gnu.org/licenses/>.
 class mtrStage_c : public mtrStageAPI_i {
 	class textureAPI_i *texture; 
 	alphaFunc_e alphaFunc;
+	blendDef_s blend;
 public:
 	mtrStage_c();
 
-	void setTexture(class textureAPI_i *nt) {
-		texture = nt;
-	}
 	virtual textureAPI_i *getTexture() const {
 		return texture;
 	}	
+	virtual alphaFunc_e getAlphaFunc() const {
+		return alphaFunc;
+	}
+	virtual const struct blendDef_s &getBlendDef() const {
+		return blend;
+	}
+	void setTexture(class textureAPI_i *nt) {
+		texture = nt;
+	}
 	void setAlphaFunc(alphaFunc_e newAF) {
 		alphaFunc = newAF;
 	}
-	alphaFunc_e getAlphaFunc() const {
-		return alphaFunc;
+	void setBlendDef(u16 srcEnum, u16 dstEnum) {
+		blend.src = srcEnum;
+		blend.dst = dstEnum;
 	}
 	void setTexture(const char *newMapName);
 };
@@ -81,6 +89,7 @@ public:
 	}
 
 	void createFromImage();
+	u16 readBlendEnum(class parser_c &p);
 	bool loadFromText(const struct matTextDef_s &txt);
 };
 

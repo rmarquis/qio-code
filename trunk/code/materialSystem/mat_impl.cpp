@@ -52,7 +52,23 @@ void mtrIMPL_c::createFromImage() {
 	ns->setTexture(tex);
 	stages.push_back(ns);
 }
-
+u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
+#define ADDOPTION(label, value) if(p.atWord(label)) return value;
+	ADDOPTION("GL_ONE",BM_ONE)
+	ADDOPTION("GL_ZERO",BM_ZERO) 
+	ADDOPTION("GL_DST_COLOR",BM_DST_COLOR)
+	ADDOPTION("GL_SRC_COLOR",BM_SRC_COLOR)
+	ADDOPTION("GL_ONE_MINUS_DST_COLOR",BM_ONE_MINUS_DST_COLOR)
+	ADDOPTION("GL_ONE_MINUS_SRC_COLOR",BM_ONE_MINUS_SRC_COLOR)
+	ADDOPTION("GL_ONE_MINUS_SRC_ALPHA",BM_ONE_MINUS_SRC_ALPHA)
+	ADDOPTION("GL_ONE_MINUS_DST_ALPHA",BM_ONE_MINUS_DST_ALPHA)
+	ADDOPTION("GL_DST_ALPHA",BM_DST_ALPHA)
+	ADDOPTION("GL_SRC_ALPHA",BM_SRC_ALPHA)
+	ADDOPTION("GL_SRC_ALPHA_SATURATE",BM_SRC_ALPHA_SATURATE)
+#undef ADDOPTION
+	g_core->Print(S_COLOR_RED,"Unknown blendFunc src/dst %s in file %s, setting to BM_ONE \n",p.getToken(),p.getDebugFileName(),p.getCurrentLineNumber());
+	return BM_ZERO;
+}
 bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
 	p.setup(txt.textBase,txt.p);
@@ -114,6 +130,20 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						
 					}
+				} else if(p.atWord("blendFunc")) {
+					if(p.atWord("add")) {
+						stage->setBlendDef(BM_ONE,BM_ONE);
+					} else if(p.atWord("filter")) {
+						stage->setBlendDef(BM_DST_COLOR,BM_ZERO);
+					} else if(p.atWord("blend")) {
+						stage->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
+					} else if(p.atWord("alphaadd")) {
+						stage->setBlendDef(BM_SRC_ALPHA,BM_ONE);
+					} else {
+						u16 src = readBlendEnum(p);
+						u16 dst = readBlendEnum(p);
+						stage->setBlendDef(src,dst);
+					}
 				} else if(p.atWord("depthWrite")) {
 
 				} else if(p.atWord("rgbGen")) {
@@ -123,7 +153,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				}
 			} else {
 				p.getToken();
-				g_core->Print("mtrIMPL_c::loadFromText: invalid level %s\n");
+				g_core->Print("mtrIMPL_c::loadFromText: invalid level %i\n",level);
 			}
 		}
 	}

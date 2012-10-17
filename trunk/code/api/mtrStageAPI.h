@@ -30,6 +30,7 @@ class mtrStageAPI_i  {
 public:
 	virtual class textureAPI_i *getTexture() const = 0;
 	virtual enum alphaFunc_e getAlphaFunc() const = 0;
+	virtual const struct blendDef_s &getBlendDef() const = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

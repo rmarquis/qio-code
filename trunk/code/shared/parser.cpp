@@ -127,3 +127,16 @@ bool parser_c::atWord(const char *word) {
 	}
 	return false;
 }
+
+u32 parser_c::getCurrentLineNumber() const {
+	const char *t = base;
+	u32 lineNum = 0;
+	while(t != p) {
+		if(*t == '\n') {
+			lineNum++;
+		}
+		t++;
+	}
+	return lineNum;
+
+}
