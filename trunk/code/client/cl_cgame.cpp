@@ -410,6 +410,9 @@ void CL_InitCGame( void ) {
 		Com_Error( ERR_DROP, "g_moduleMgr->load on cgame failed" );
 	}
 	g_iFaceMan->registerIFaceUser(&g_cgame,CGAME_API_IDENTSTR);
+	if( !g_cgame ) {
+		Com_Error( ERR_DROP, "CGame module has wrong interface version (%s required)", CGAME_API_IDENTSTR );
+	}
 
 	clc.state = CA_LOADING;
 

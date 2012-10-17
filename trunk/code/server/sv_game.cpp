@@ -290,7 +290,13 @@ void SV_InitGameProgs( void ) {
 		Com_Error( ERR_FATAL, "VM_Create on game failed" );
 	}
 	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
+	if(!g_game) {
+		Com_Error( ERR_DROP, "Game module has wrong interface version (%s required)", GAME_API_IDENTSTR );
+	}
 	g_iFaceMan->registerIFaceUser(&g_gameClients,GAMECLIENTS_API_IDENTSTR);
+	if(!g_gameClients) {
+		Com_Error( ERR_DROP, "GameClients module has wrong interface version (%s required)", GAMECLIENTS_API_IDENTSTR );
+	}
 	SV_InitGameVM( qfalse );
 }
 
