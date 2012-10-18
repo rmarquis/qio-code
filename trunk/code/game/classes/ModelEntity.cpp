@@ -80,16 +80,26 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	}
 }
 #include "../bt_include.h"
+#include <math/matrix.h>
 void ModelEntity::runPhysicsObject() {
 	if(body == 0)
 		return;
 	btTransform trans;
 	body->getMotionState()->getWorldTransform(trans);
+#if 0
 	VectorSet(myEdict->s->origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
 	//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
 	btQuaternion q = trans.getRotation();
+	// quaterion->angles conversion doesnt work correctly here!
+	// You can debug it with "btd_drawWireFrame 1" on local server
 	quat_c q2(q.x(),q.y(),q.z(),q.w());
 	q2.toAngles(myEdict->s->angles);
+#else
+	matrix_c mat;
+	trans.getOpenGLMatrix(mat);
+	myEdict->s->angles = mat.getAngles();
+	myEdict->s->origin = mat.getOrigin();
+#endif
 }
 
 void ModelEntity::createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel) {
