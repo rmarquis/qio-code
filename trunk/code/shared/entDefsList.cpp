@@ -72,6 +72,9 @@ bool entDefsList_c::load(const char *fname) {
 	strcat(buf,".bsp");
 	fileHandle_t f;
 	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+	if(f == 0) {
+		return true;
+	}
 	byte *data = (byte*)malloc(len);
 	g_vfs->FS_Read(data,len,f);
 	g_vfs->FS_FCloseFile(f);

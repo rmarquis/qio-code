@@ -2,6 +2,7 @@
 #include <api/vfsAPI.h>
 #include <api/cmAPI.h>
 #include <math/quat.h>
+#include <math/aabb.h>
 #include "classes/ModelEntity.h"
 
 #include "bt_include.h"
@@ -235,6 +236,19 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 };
 #include "../fileformats/bspFileFormat.h"
 void G_LoadMap(const char *mapName) {
+	if(!stricmp(mapName,"_empty")) {
+		const float worldSize = 10000.f;
+		aabb bb;
+		bb.fromTwoPoints(vec3_c(-worldSize,-worldSize,-16.f),vec3_c(worldSize,worldSize,0));
+		btAlignedObjectArray<btVector3>	vertices;
+		for(u32 i = 0; i < 8; i++) {
+			vec3_c p = bb.getPoint(i);
+			vertices.push_back(btVector3(p.x,p.y,p.z));
+		}
+		BT_CreateWorldBrush(vertices);
+
+		return;
+	}
 #if 0
 	FILE *f = fopen(mapName,"rb");
 	if(f == 0) {
