@@ -633,6 +633,18 @@ public:
 
 		glutSolidCube(halfSizes[0]*2);
 	}
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) {
+		this->bindIBO(0);
+		this->unbindVertexBuffer();
+		this->unbindMaterial();
+
+		glBegin(GL_LINES);
+		glColor3fv(colorRGB);
+		glVertex3fv(from);
+		glColor3fv(colorRGB);
+		glVertex3fv(to);
+		glEnd();
+	}
 	virtual void init()  {
 		GLimp_Init();
 		u32 res = glewInit();

@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include "classes/BaseEntity.h"
+#include <shared/autoCvar.h>
 
 level_locals_t	level;
 
@@ -93,6 +94,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	srand( randomSeed );
 
+	// init autoCvars
+	AUTOCVAR_RegisterAutoCvars();
+
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
@@ -143,6 +147,7 @@ void G_ShutdownGame( int restart ) {
 		delete e->ent;
 	}
 	G_ShudownBullet();
+	AUTOCVAR_UnregisterAutoCvars();
 }
 
 

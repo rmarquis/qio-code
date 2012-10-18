@@ -36,6 +36,10 @@ public:
 		rb->setupEntitySpace2(angles,xyz);
 		rb->drawBoxHalfSizes(halfSizes);
 	}
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) {
+		rb->setupWorldSpace();
+		rb->drawLineFromTo(from,to,colorRGB);
+	}
 };
 
 static rDebugDrawerIMPL_c r_debugDrawer;

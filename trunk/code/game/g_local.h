@@ -120,5 +120,10 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI);
 //
 void G_SpawnMapEntities(const char *mapName);
 
+//
+// g_bullet_debugDraw.cpp
+//
+void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
