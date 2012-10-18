@@ -25,42 +25,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "bt_include.h"
 
-#define FORCE_ZAXIS_UP
-
 #define VEH_SCALE 48.f
 
 #define CUBE_HALF_EXTENTS 1.f*VEH_SCALE
 
-#ifdef FORCE_ZAXIS_UP
-		int rightIndex = 0; 
-		int upIndex = 2; 
-		int forwardIndex = 1;
-		btVector3 wheelDirectionCS0(0,0,-1);
-	btVector3 wheelAxleCS(1,0,0);
-#else
-		int rightIndex = 0;
-		int upIndex = 1;
-		int forwardIndex = 2;
-		btVector3 wheelDirectionCS0(0,-1,0);
-		btVector3 wheelAxleCS(-1,0,0);
-#endif
+int rightIndex = 0; 
+int upIndex = 2; 
+int forwardIndex = 1;
+btVector3 wheelDirectionCS0(0,0,-1);
+btVector3 wheelAxleCS(1,0,0);
 
-//
-//const int maxProxies = 32766;
-//const int maxOverlap = 65535;
-//
-/////btRaycastVehicle is the interface for the constraint that implements the raycast vehicle
-/////notice that for higher-quality slow-moving vehicles, another approach might be better
-/////implementing explicit hinged-wheel constraints with cylinder collision, rather then raycasts
-//float	gEngineForce = 0.f;
-//float	gBreakingForce = 0.f;
-//
-//float	maxEngineForce = 1000.f;//this should be engine/velocity dependent
-//float	maxBreakingForce = 100.f;
-//
-//float	gVehicleSteering = 0.f;
-//float	steeringIncrement = 0.04f;
-//float	steeringClamp = 0.3f;
+
 float	wheelRadius = 0.5f*VEH_SCALE;
 float	wheelWidth = 0.4f*VEH_SCALE;
 float	wheelFriction = 1000;//BT_LARGE_FLOAT;
@@ -69,10 +44,10 @@ float	suspensionDamping = 2.3f;
 float	suspensionCompression = 4.4f;
 float	rollInfluence = 0.1f;//1.0f;
 //
-//
 btScalar suspensionRestLength(0.6*VEH_SCALE);
 
-	btRaycastVehicle*	m_vehicle;
+btRaycastVehicle*	m_vehicle;
+
 void BT_CreateVehicle(const vec3_c &pos) {
 
 	btRigidBody* m_carChassis;
@@ -80,8 +55,6 @@ void BT_CreateVehicle(const vec3_c &pos) {
 	btVehicleRaycaster*	m_vehicleRayCaster;
 	btCollisionShape*	m_wheelShape;
 
-
-#ifdef FORCE_ZAXIS_UP
 //   indexRightAxis = 0; 
 //   indexUpAxis = 2; 
 //   indexForwardAxis = 1; 
@@ -91,17 +64,6 @@ void BT_CreateVehicle(const vec3_c &pos) {
 	localTrans.setIdentity();
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,0,1));
-#else
-	btCollisionShape* chassisShape = new btBoxShape(btVector3(1.f,0.5f,2.f));
-	m_collisionShapes.push_back(chassisShape);
-
-	btCompoundShape* compound = new btCompoundShape();
-	m_collisionShapes.push_back(compound);
-	btTransform localTrans;
-	localTrans.setIdentity();
-	//localTrans effectively shifts the center of mass with respect to the chassis
-	localTrans.setOrigin(btVector3(0,1,0));
-#endif
 
 	compound->addChildShape(localTrans,chassisShape);
 
@@ -138,33 +100,18 @@ tr.setIdentity();
 
 		//choose coordinate system
 		m_vehicle->setCoordinateSystem(rightIndex,upIndex,forwardIndex);
-
-#ifdef FORCE_ZAXIS_UP
 		btVector3 connectionPointCS0(CUBE_HALF_EXTENTS-(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-#else
-		btVector3 connectionPointCS0(CUBE_HALF_EXTENTS-(0.3*wheelWidth),connectionHeight,2*CUBE_HALF_EXTENTS-wheelRadius);
-#endif
 
 		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-#ifdef FORCE_ZAXIS_UP
 		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-#else
-		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),connectionHeight,2*CUBE_HALF_EXTENTS-wheelRadius);
-#endif
 
 		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-#ifdef FORCE_ZAXIS_UP
 		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-#else
-		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),connectionHeight,-2*CUBE_HALF_EXTENTS+wheelRadius);
-#endif //FORCE_ZAXIS_UP
 		isFrontWheel = false;
 		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-#ifdef FORCE_ZAXIS_UP
+
 		connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS-(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-#else
-		connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS-(0.3*wheelWidth),connectionHeight,-2*CUBE_HALF_EXTENTS+wheelRadius);
-#endif
+
 		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
 		
 		for (int i=0;i<m_vehicle->getNumWheels();i++)

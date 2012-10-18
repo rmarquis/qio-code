@@ -237,7 +237,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 #include "../fileformats/bspFileFormat.h"
 void G_LoadMap(const char *mapName) {
 	if(!stricmp(mapName,"_empty")) {
-		const float worldSize = 10000.f;
+		const float worldSize = 4096.f;
 		aabb bb;
 		bb.fromTwoPoints(vec3_c(-worldSize,-worldSize,-16.f),vec3_c(worldSize,worldSize,0));
 		btAlignedObjectArray<btVector3>	vertices;
