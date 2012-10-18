@@ -49,6 +49,8 @@ void G_ShudownBullet() {
 	broadphase = 0;
 }
 void G_RunPhysics() {
+	void BT_RunVehicles() ;
+	BT_RunVehicles();
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
 	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
@@ -89,7 +91,7 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	dynamicsWorld->addRigidBody(body);
 
 }
-btRigidBody* CreateRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape)
+btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape)
 {
 	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
 
@@ -163,7 +165,7 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 		boxShape->calculateLocalInertia(mass, localInertia);
 	}
 
-	btRigidBody *body = CreateRigidBody(mass, startTransform, boxShape);
+	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, boxShape);
 	body->setLinearFactor(btVector3(1, 1, 1));
 		
 //	body->getWorldTransform().setOrigin(btStart);

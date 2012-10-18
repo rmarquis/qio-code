@@ -238,6 +238,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\bt_vehicle.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_active.cpp"
 				>
 				<FileConfiguration

@@ -326,12 +326,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-	vec3_t delta;
-	VectorSubtract(ent->s->origin,origin,delta);
-	float d = VectorLength(delta);
-	if( d > 256)
-		continue;
-
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 	}

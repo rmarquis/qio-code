@@ -24,7 +24,7 @@ subject to the following restrictions:
 //
 // By default, Bullet Vehicle uses Y as up axis.
 // You can override the up axis, for example Z-axis up. Enable this define to see how to:
-//#define FORCE_ZAXIS_UP 1
+#define FORCE_ZAXIS_UP 1
 //
 
 #ifdef FORCE_ZAXIS_UP
