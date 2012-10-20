@@ -260,8 +260,6 @@ void ClientDisconnect( int clientNum ) {
 void ClientCommand( int clientNum ) {
 	vec3_c tmp(1400,1340,470);
 	
-void BT_CreateVehicle(const vec3_c &pos) ;
-
 BT_CreateVehicle(tmp);
 //BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);

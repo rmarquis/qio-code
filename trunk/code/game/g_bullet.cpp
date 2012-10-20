@@ -37,7 +37,9 @@ void G_InitBullet() {
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 }
 void G_ShudownBullet() {
-    // Clean up behind ourselves like good little programmers
+	// free vehicles 
+	BT_ShutdownVehicles();
+	// free global physics data
     delete dynamicsWorld;
 	dynamicsWorld = 0;
     delete solver;
@@ -50,7 +52,6 @@ void G_ShudownBullet() {
 	broadphase = 0;
 }
 void G_RunPhysics() {
-	void BT_RunVehicles() ;
 	BT_RunVehicles();
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
@@ -208,7 +209,7 @@ void BT_RemoveRigidBody(class btRigidBody *body) {
 edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
 	ModelEntity *e = new ModelEntity;
 	e->createBoxPhysicsObject(pos,halfSizes,startVel);
-	return 0;
+	return e->getEdict();
 }
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)

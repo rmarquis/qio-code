@@ -109,6 +109,9 @@ void BT_FreeCharacter(class btKinematicCharacterController *c);
 void G_UpdatePhysicsObject(edict_s *ent);
 void BT_CreateBoxEntity(edict_s *ent, const float *pos, const float *halfSizes, const float *startVel);
 edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel);
+class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos);
+void BT_RunVehicles();
+void BT_ShutdownVehicles();
 
 //
 // g_debugDraw.cpp

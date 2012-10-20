@@ -33,10 +33,6 @@ class BaseEntity {
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
-	// bullet physics object
-	class btRigidBody *body;
-	// simplified model for collision detection
-	class cMod_i *cmod;
 public:
 	BaseEntity();
 	virtual ~BaseEntity();
@@ -49,6 +45,10 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles);
 	const class vec3_c &getOrigin() const;
 	const class vec3_c &getAngles() const;
+
+	edict_s *getEdict() {
+		return this->myEdict;
+	}
 
 	virtual void runFrame() {
 
