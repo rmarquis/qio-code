@@ -260,8 +260,8 @@ void ClientDisconnect( int clientNum ) {
 void ClientCommand( int clientNum ) {
 	vec3_c tmp(1400,1340,470);
 	
-BT_CreateVehicle(tmp);
-//BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
+//BT_CreateVehicle(tmp);
+BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
 	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
 //	ModelEntity *n = new ModelEntity;

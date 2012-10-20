@@ -112,7 +112,7 @@ float thirdPersonRange = 128.f;
 		//	CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 		//	VectorCopy( trace.endpos, view );
 			view = trace.getHitPos();
-			view -= trace.getDir() * 5.f;
+			view -= trace.getDir() * 7.f;
 		}
 	}
 

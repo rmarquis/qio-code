@@ -238,6 +238,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\code\renderer\cameraDef.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\drawCallSort.h"
 				>
 			</File>
@@ -329,6 +333,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\bitSet.h"
 				>
 			</File>
 			<File
