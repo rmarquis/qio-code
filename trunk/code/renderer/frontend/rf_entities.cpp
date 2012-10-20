@@ -24,6 +24,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_entities.cpp
 #include "rf_entities.h"
 #include "rf_model.h"
+#include "rf_local.h"
+#include <api/coreAPI.h>
 
 void rEntityImpl_c::recalcABSBounds() {
 	if(model == 0) {
@@ -70,6 +72,7 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 }
 
 void RFE_AddEntityDrawCalls() {
+	u32 c_entitiesCulledByABSBounds = 0;
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		rEntityImpl_c *ent = rf_entities[i];
 		rf_currentEntity = ent;
@@ -77,7 +80,14 @@ void RFE_AddEntityDrawCalls() {
 		if(model == 0) {
 			continue;
 		}
+		if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
+			c_entitiesCulledByABSBounds++;
+			continue;
+		}
 		model->addModelDrawCalls();
+	}
+	if(1) {
+		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());
 	}
 	rf_currentEntity = 0;
 }
