@@ -33,20 +33,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
 #define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
 
-// projection matrix (camera eye) definition
-struct projDef_s {
-	float fovX;
-	// fovY will be automatically calculated from window aspect
-	float zFar;
-	float zNear;
-
-	void setDefaults() {
-		fovX = 80;
-		zFar = 8192.f;
-		zNear = 1.f;
-	}
-};
-
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap = 0) = 0;
@@ -59,7 +45,7 @@ public:
 	virtual void endFrame() = 0;
 	virtual void setup2DView() = 0;
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) = 0;
-	virtual void setupProjection3D(const projDef_s *pd = 0) = 0;
+	virtual void setupProjection3D(const struct projDef_s *pd = 0) = 0;
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 	virtual void drawBoxHalfSizes(const float *halfSizes) = 0;
 	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) = 0;
@@ -91,5 +77,28 @@ public:
 };
 
 extern rbAPI_i *rb;
+
+#include <math/math.h>
+// projection matrix (camera eye) definition
+struct projDef_s {
+	float fovX;
+	// fovY will be automatically calculated from window aspect
+	float fovY;
+	float zFar;
+	float zNear;
+
+	void calcFovY() {
+		float viewPortW = rb->getWinWidth();
+		float viewPortH = rb->getWinHeight();
+		float x = viewPortW / tan( this->fovX / 360 * M_PI );
+		this->fovY = atan2( viewPortH, x ) * 360 / M_PI;
+	}
+	void setDefaults() {
+		fovX = 80;
+		calcFovY();
+		zFar = 8192.f;
+		zNear = 1.f;
+	}
+};
 
 #endif // __RB_API_H__

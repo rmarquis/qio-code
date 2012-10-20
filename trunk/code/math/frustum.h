@@ -21,36 +21,37 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// cameraDef.h 
-#ifndef __CAMERADEF_H__
-#define __CAMERADEF_H__
+// frustum.h - simple frustum class (defined by 6 planes)
+#ifndef __FRUSTUM_H__
+#define __FRUSTUM_H__
 
-#include <math/vec3.h>
-#include <math/axis.h>
-#include <math/frustum.h>
+#include "plane.h"
+#include <shared/cullResult.h>
 
-#include <api/rbAPI.h>
+enum {
+	FRP_RIGHT_PLANE,
+	FRP_LEFT_PLANE,
+	FRP_BOTTOM_PLANE,
+	FRP_TOP_PLANE,
+	FRP_FAR_PLANE,
+	FRP_NUM_FRUSTUM_PLANES
+};
 
-class cameraDef_c {
-	projDef_s proj;
-	vec3_c origin;
-	//vec3_c angles;
-	axis_c axis;
-	frustum_c frustum;
+class frustum_c {
+	plane_c planes[FRP_NUM_FRUSTUM_PLANES];
 public:
-	void setup(const vec3_c &newOrigin, const axis_c &newAxis, const projDef_s &pd) {
-		origin = newOrigin;
-		axis = newAxis;
-		proj = pd;
-		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
-	}
+	cullResult_e cull(const class aabb &bb) const;
+	void setup(float fovX, float fovY, float zFar, const class axis_c &axis, const class vec3_c &origin);
 
-	const frustum_c &getFrustum() const {
-		return frustum;
+	const plane_c &getPlane(u32 i) const {
+		return planes[i];
 	}
-	const vec3_c &getOrigin() const {
-		return origin;
+	plane_c &getPlane(u32 i) {
+		return planes[i];
 	}
 };
 
-#endif // __CAMERADEF_H__
+#endif // __FRUSTUM_H__
+
+
+

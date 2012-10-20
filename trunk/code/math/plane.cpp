@@ -21,36 +21,41 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// cameraDef.h 
-#ifndef __CAMERADEF_H__
-#define __CAMERADEF_H__
+// plane.cpp
+#include "plane.h"
+#include "aabb.h"
 
-#include <math/vec3.h>
-#include <math/axis.h>
-#include <math/frustum.h>
-
-#include <api/rbAPI.h>
-
-class cameraDef_c {
-	projDef_s proj;
-	vec3_c origin;
-	//vec3_c angles;
-	axis_c axis;
-	frustum_c frustum;
-public:
-	void setup(const vec3_c &newOrigin, const axis_c &newAxis, const projDef_s &pd) {
-		origin = newOrigin;
-		axis = newAxis;
-		proj = pd;
-		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
+planeSide_e plane_c::onSide(const aabb &bb) const {
+#if 0
+	planeSide_e s = onSide(bb.getPoint(0));
+	for(u32 i = 1; i < 8; i++) {
+		planeSide_e s2 = onSide(bb.getPoint(i));
+		if(s2 != s) {
+			return SIDE_CROSS;
+		}
 	}
-
-	const frustum_c &getFrustum() const {
-		return frustum;
+	return s;
+#else
+	vec3_t corners[2];
+	for (int i = 0; i < 3; i++) {
+		if (this->norm[i] < 0) {
+			corners[0][i] = bb.mins[i];
+			corners[1][i] = bb.maxs[i];
+		} else {
+			corners[1][i] = bb.mins[i];
+			corners[0][i] = bb.maxs[i];
+		}
 	}
-	const vec3_c &getOrigin() const {
-		return origin;
+	float dist1 = this->distance(corners[0]);
+	float dist2 = this->distance(corners[1]);
+	bool front = false;
+	if (dist1 >= 0) {
+		if (dist2 < 0)
+			return SIDE_CROSS;
+		return SIDE_FRONT;
 	}
-};
-
-#endif // __CAMERADEF_H__
+	if (dist2 < 0)
+		return SIDE_BACK;
+	//assert(0);
+#endif
+}

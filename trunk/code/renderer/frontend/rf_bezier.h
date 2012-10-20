@@ -80,5 +80,6 @@ public:
 	void draw();
 	void addDrawCall();
 	bool traceRay(class trace_c &tr);
+	const aabb &getBB() const;
 };
 #endif // __RF_BEZIER_H__

@@ -79,6 +79,9 @@ public:
 
 	bool traceRay(class trace_c &tr);
 
+	const aabb &getBB() const {
+		return bounds;
+	}
 
 };
 

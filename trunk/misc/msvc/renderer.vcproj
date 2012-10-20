@@ -304,6 +304,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\frustum.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\frustum.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\math.h"
 				>
 			</File>
@@ -313,6 +321,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\plane.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\plane.h"
 				>
 			</File>
 			<File
@@ -345,6 +361,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cullResult.h"
 				>
 			</File>
 			<File

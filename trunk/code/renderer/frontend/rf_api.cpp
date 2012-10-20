@@ -96,7 +96,7 @@ public:
 		//camAngles = newCamAngles;
 		axis_c camAxis;
 		camAxis.fromAngles(newCamAngles);
-		rf_camera.setup(newCamPos,camAxis);
+		rf_camera.setup(newCamPos,camAxis,projDef);
 		rb->setup3DView(newCamPos, camAxis);
 	}
 	// used while drawing world surfaces and particles

@@ -515,13 +515,21 @@ void rBspTree_c::updateVisibility() {
 void rBspTree_c::addDrawCalls() {
 	updateVisibility();
 
+	u32 c_culledBatches = 0;
 	// add batches made of planar bsp surfaces
 	for(u32 i = 0; i < batches.size(); i++) {
 		bspSurfBatch_s *b = batches[i];
+		if(b->indices.getNumIndices() == 0)
+			continue;
+		if(rf_camera.getFrustum().cull(b->bounds) == CULL_OUT) {
+			c_culledBatches++;
+			continue;
+		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
 			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
 		}
 	}
+	u32 c_culledBezierPatches = 0;
 	// add bezier patches (they are a subtype of bspSurf_s)
 	bspSurf_s *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -529,11 +537,18 @@ void rBspTree_c::addDrawCalls() {
 			if(sf->lastVisCount != this->visCounter) {
 				continue; // culled by PVS
 			}
+			if(rf_camera.getFrustum().cull(sf->patch->getBB()) == CULL_OUT) {
+				c_culledBezierPatches++;
+				continue;
+			}
 			r_bezierPatch_c *p = sf->patch;
 			if(rf_bsp_noBezierPatches.getInt() == 0) {
 				p->addDrawCall();
 			}
 		}
+	}
+	if(1) {
+		g_core->Print("%i patches and %i batches culled by frustum\n",c_culledBezierPatches,c_culledBatches);
 	}
 }
 void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {

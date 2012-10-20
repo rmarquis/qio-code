@@ -591,16 +591,12 @@ public:
 		glEnable(GL_DEPTH_TEST);
 	}
 	virtual void setupProjection3D(const projDef_s *pd) {
+		matrix_c proj;
+		//frustum.setup(fovX, fovY, zFar, axis, origin);
+		proj.setupProjection(pd->fovX,pd->fovY,pd->zNear,pd->zFar);
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		matrix_c proj;
-		float viewPortW = this->getWinWidth();
-		float viewPortH = this->getWinHeight();
-		float x = viewPortW / tan( pd->fovX / 360 * M_PI );
-		float fovY = atan2( viewPortH, x );
-		fovY = fovY * 360 / M_PI;
-		//frustum.setup(fovX, fovY, zFar, axis, origin);
-		proj.setupProjection(pd->fovX,fovY,pd->zNear,pd->zFar);
 		glLoadMatrixf(proj);
 	}
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {

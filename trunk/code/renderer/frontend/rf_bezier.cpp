@@ -153,3 +153,7 @@ bool r_bezierPatch_c::traceRay(class trace_c &tr) {
 	// fallback to r_surface_c::traceRay
 	return sf->traceRay(tr);
 }
+const aabb &r_bezierPatch_c::getBB() const {
+	return sf->getBB();
+}
+

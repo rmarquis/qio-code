@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 #include <api/cvarAPI.h>
 #include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <math/vec3.h>
 #include <shared/trace.h>
 
@@ -288,7 +289,9 @@ static int CG_CalcViewValues( void ) {
 	// position eye relative to origin
 	//AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
-	rf->setupProjection3D(0);
+	projDef_s projDef;
+	projDef.setDefaults();
+	rf->setupProjection3D(&projDef);
 	rf->setup3DView(cg.refdef.vieworg,cg.refdefViewAngles);
 
 	return 0;

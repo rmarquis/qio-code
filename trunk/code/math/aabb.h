@@ -71,7 +71,7 @@ public:
 	}
 	bool isValid() const {
 		for(u32 i = 0; i < 3; i++) {
-			if(mins[i] >= maxs[i]) {
+			if(mins[i] > maxs[i]) {
 				return false;
 			}
 		}
