@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_bsp.cpp - rBspTree_c class implementation
+#include "rf_local.h"
 #include "rf_bsp.h"
 #include "rf_bezier.h"
 #include "rf_drawCall.h"
@@ -55,7 +56,9 @@ void memcpy_strided(void *_dest, const void *_src, int elementCount, int element
 }
 
 rBspTree_c::rBspTree_c() {
-
+	vis = 0;
+	h = 0;
+	visCounter = 1;
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
@@ -75,12 +78,12 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 			continue;
 		}
 		// TODO: merge only surfaces in the same cluster/area ? 
-		b->addSurface(sf);
+		b->addSurface(bs);
 		return;
 	}
 	// create a new batch
 	bspSurfBatch_s *nb = new bspSurfBatch_s;
-	nb->initFromSurface(sf);
+	nb->initFromSurface(bs);
 	batches.push_back(nb);
 }
 void rBspTree_c::createBatches() {
@@ -305,6 +308,16 @@ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	memcpy(leafSurfaces.getArray(),h->getLumpData(leafSurfsLump),sl.fileLen);
 	return false;
 }
+bool rBspTree_c::loadVisibility(u32 visLump) {
+	const lump_s &vl = h->getLumps()[visLump];
+	if(vl.fileLen == 0) {
+		g_core->Print(S_COLOR_YELLOW "rBspTree_c::loadVis: visibility lump is emtpy\n");
+		return false; // dont do the error
+	}
+	vis = (visHeader_s*)malloc(vl.fileLen);
+	memcpy(vis,h->getLumpData(visLump),vl.fileLen);
+	return false; // no error
+}
 bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
@@ -338,6 +351,10 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+		if(loadVisibility(Q3_VISIBILITY)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 	} else if(h->ident == BSP_IDENT_2015|| h->ident == BSP_IDENT_EALA) {
 		if(loadLightmaps(MOH_LIGHTMAPS)) {
 			g_vfs->FS_FreeFile(fileData);
@@ -363,6 +380,10 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+		if(loadVisibility(MOH_VISIBILITY)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 	} else {
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error
@@ -382,26 +403,118 @@ void rBspTree_c::clear() {
 		delete lightmaps[i];
 		lightmaps[i] = 0;
 	}
+	if(vis) {
+		free(vis);
+		vis = 0;
+	}
+}
+int rBspTree_c::pointInLeaf(const vec3_c &pos) const {
+	// special case for empty bsp trees
+	if(nodes.size() == 0) {
+		return 0;
+	}
+	int index = 0;
+	do {
+		const q3Node_s &n = nodes[index];
+		const bspPlane_s &pl = planes[n.planeNum];
+		float d = pl.distance(pos);
+		if (d >= 0) 
+			index = n.children[0]; // front
+		else 
+			index = n.children[1]; // back
+	}
+	while (index > 0) ;
+	return -index - 1;
+}
+int rBspTree_c::pointInCluster(const vec3_c &pos) const {
+	int leaf = pointInLeaf(pos);
+	return leaves[leaf].cluster;
+}
+// checks if one cluster is visible from another
+bool rBspTree_c::isClusterVisible(int visCluster, int testCluster) const {
+ 	if(vis == 0)
+		return true;
+	if(visCluster < 0)
+		return false;
+	if(testCluster < 0)
+		return false;
+	byte visSet = vis->data[(visCluster * vis->clusterSize) + (testCluster >> 3)];
+	return (visSet & (1<<(testCluster&7))) != 0;
+}
+void rBspTree_c::updateVisibility() {
+	int camCluster = pointInCluster(rf_camera.getOrigin());
+	if(camCluster == lastCluster) {
+		return;
+	}
+	lastCluster = camCluster;
+	this->visCounter++;
+	q3Leaf_s *l = leaves.getArray();
+	for(u32 i = 0; i < leaves.size(); i++, l++) {
+		if(isClusterVisible(l->cluster,camCluster) == false) {
+			continue; // skip leaves that are not visible
+		}
+		for(u32 j = 0; j < l->numLeafSurfaces; j++) {
+			u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
+			this->surfs[sfNum].lastVisCount = this->visCounter;
+		}
+	}
+	for(u32 i = 0; i < batches.size(); i++) {
+		bspSurfBatch_s *b = batches[i];
+		// see if we have to rebuild IBO of current batch
+		bool changed = false;
+		for(u32 j = 0; j < b->sfs.size(); j++) {
+			bool visible = b->sfs[j]->lastVisCount == this->visCounter;
+			bool wasVisible = b->lastVisSet.get(j);
+			if(visible != wasVisible) {
+				changed = true;
+				b->lastVisSet.set(j,visible);
+			}
+		}
+		if(changed == false) {
+			continue;
+		}
+		// recreate index buffer with the indices of potentially visible surfaces
+		u32 newNumIndices = 0;
+		b->bounds.clear();
+		for(u32 j = 0; j < b->sfs.size(); j++) {
+			bool isVisible = b->lastVisSet.get(j);
+			if(isVisible == false) {
+				continue;
+			}
+			bspTriSurf_s *sf = b->sfs[j]->sf;
+			b->bounds.addBox(sf->bounds);
+			for(u32 k = 0; k < sf->absIndexes.getNumIndices(); k++) {
+				b->indices.setIndex(newNumIndices,sf->absIndexes[k]);
+				newNumIndices++;
+			}
+		}
+		b->indices.forceSetIndexCount(newNumIndices);
+		b->indices.reUploadToGPU();
+	}
 }
 void rBspTree_c::addDrawCalls() {
-	if(1) {
-		// no pvs
-		for(u32 i = 0; i < batches.size(); i++) {
-			bspSurfBatch_s *b = batches[i];
-			if(rf_bsp_noSurfaces.getInt() == 0) {
-				RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
+	updateVisibility();
+
+	// add batches made of planar bsp surfaces
+	for(u32 i = 0; i < batches.size(); i++) {
+		bspSurfBatch_s *b = batches[i];
+		if(rf_bsp_noSurfaces.getInt() == 0) {
+			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
+		}
+	}
+	// add bezier patches (they are a subtype of bspSurf_s)
+	bspSurf_s *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(sf->type == BSPSF_BEZIER) {
+			if(sf->lastVisCount != this->visCounter) {
+				continue; // culled by PVS
+			}
+			r_bezierPatch_c *p = sf->patch;
+			if(rf_bsp_noBezierPatches.getInt() == 0) {
+				p->addDrawCall();
 			}
 		}
-		bspSurf_s *sf = surfs.getArray();
-		for(u32 i = 0; i < surfs.size(); i++, sf++) {
-			if(sf->type == BSPSF_BEZIER) {
-				r_bezierPatch_c *p = sf->patch;
-				if(rf_bsp_noBezierPatches.getInt() == 0) {
-					p->addDrawCall();
-				}
-			}
-		}
-	} 
+	}
 }
 void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 	bspSurf_s &sf = this->surfs[sfNum];

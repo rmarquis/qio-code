@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../rVertexBuffer.h"
 #include "../rIndexBuffer.h"
 #include <fileFormats/bspFileFormat.h>
+#include <shared/bitSet.h>
 
 enum bspSurfaceType_e {
 	BSPSF_PLANAR,
@@ -43,34 +44,38 @@ struct bspTriSurf_s {
 	// indexes to rBspTree_c::verts array (global vertices), for batching
 	rIndexBuffer_c absIndexes;
 };
-struct bspSurfBatch_s {
-	// we can only merge surfaces with the same material and lightmap....
-	class mtrAPI_i *mat;
-	class textureAPI_i *lightmap;
-	// surfaces to merge
-	arraySTD_c<bspTriSurf_s*> sfs;
-	// this index buffer will be recalculated and reuploaded to GPU
-	// everytime a new vis cluster is entered.
-	rIndexBuffer_c indices;
-	// bounds are recalculated as well
-	aabb bounds;
-
-	void addSurface(bspTriSurf_s *nSF) {
-		sfs.push_back(nSF);
-		indices.addIndexBuffer(nSF->absIndexes);
-	}
-	void initFromSurface(bspTriSurf_s *nSF) {
-		mat = nSF->mat;
-		lightmap = nSF->lightmap;
-		addSurface(nSF);
-	}
-};
 struct bspSurf_s {
 	bspSurfaceType_e type;
 	union {
 		struct bspTriSurf_s *sf; // only if type == BSPSF_PLANAR || type == BSPSF_TRIANGLES
 		class r_bezierPatch_c *patch; // only if type == BSPSF_BEZIER
 	};
+	int lastVisCount; // if sf->lastVisCount == bsp->visCounter then a surface is potentialy visible (in PVS)
+};
+struct bspSurfBatch_s {
+	// we can only merge surfaces with the same material and lightmap....
+	class mtrAPI_i *mat;
+	class textureAPI_i *lightmap;
+	// surfaces to merge
+	arraySTD_c<bspSurf_s*> sfs;
+	// surface bit flags (1 if surfaces indexes are included in current IBO)
+	bitSet_c lastVisSet;
+
+	// this index buffer will be recalculated and reuploaded to GPU
+	// everytime a new vis cluster is entered.
+	rIndexBuffer_c indices;
+	// bounds are recalculated as well
+	aabb bounds;
+
+	void addSurface(bspSurf_s *nSF) {
+		sfs.push_back(nSF);
+		indices.addIndexBuffer(nSF->sf->absIndexes);
+	}
+	void initFromSurface(bspSurf_s *nSF) {
+		mat = nSF->sf->mat;
+		lightmap = nSF->sf->lightmap;
+		addSurface(nSF);
+	}
 };
 struct bspModel_s {
 	u32 firstSurf;
@@ -87,11 +92,17 @@ struct bspPlane_s {
 		return r;
 	}
 };
+struct visHeader_s {
+	int numClusters;
+	int clusterSize; // in bytes
+	byte data[4]; // variable-sized
+};
 class rBspTree_c {
 	byte *fileData;
 	const struct q3Header_s *h;
 	u32 c_bezierPatches;
 	u32 c_flares;
+	visHeader_s *vis;
 
 	rVertexBuffer_c verts;
 	arraySTD_c<textureAPI_i*> lightmaps;
@@ -102,6 +113,10 @@ class rBspTree_c {
 	arraySTD_c<q3Node_s> nodes;
 	arraySTD_c<q3Leaf_s> leaves;
 	arraySTD_c<u32> leafSurfaces;
+
+	// incremented every time a new vis cluster is entered
+	int visCounter;
+	int lastCluster;
 
 	void addSurfToBatches(u32 surfNum);
 	void createBatches();
@@ -115,11 +130,16 @@ class rBspTree_c {
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadModels(u32 modelsLump);
 	bool loadLeafIndexes(u32 leafSurfsLump);
+	bool loadVisibility(u32 visLump);
 
 	void addBSPSurfaceDrawCall(u32 sfNum);
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay(int nodeNum, class trace_c &out);
+
+	int pointInLeaf(const vec3_c &pos) const;
+	int pointInCluster(const vec3_c &pos) const;
+	bool isClusterVisible(int visCluster, int testCluster) const;
 public:
 	rBspTree_c();
 	~rBspTree_c();
@@ -127,6 +147,7 @@ public:
 	bool load(const char *fname);
 	void clear();
 
+	void updateVisibility();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
 

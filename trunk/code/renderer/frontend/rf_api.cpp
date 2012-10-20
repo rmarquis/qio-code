@@ -44,13 +44,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_2d.h"
 #include "rf_world.h"
 
+cameraDef_c rf_camera;
+
 class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
 	bool initialized;
-	matrix_c worldModelMatrix;
-	vec3_c camPos;
-	vec3_c camAngles;
-	axis_c camAxis;
 	projDef_s projDef;
 
 	void unloadMaterialSystem() {
@@ -94,10 +92,12 @@ public:
 		rb->setupProjection3D(&projDef);
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
-		camPos = newCamPos;
-		camAngles = newCamAngles;
+		//camPos = newCamPos;
+		//camAngles = newCamAngles;
+		axis_c camAxis;
 		camAxis.fromAngles(newCamAngles);
-		rb->setup3DView(camPos, camAxis);
+		rf_camera.setup(newCamPos,camAxis);
+		rb->setup3DView(newCamPos, camAxis);
 	}
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() {

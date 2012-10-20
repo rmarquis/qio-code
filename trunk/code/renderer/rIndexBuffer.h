@@ -152,6 +152,14 @@ public:
 	}
 	void uploadToGPU() {
 		rb->createIBO(this);
+	}		
+	void reUploadToGPU() {
+#if 1
+		unloadFromGPU();
+		uploadToGPU();
+#else
+		// TODO
+#endif
 	}
 	u32 getInternalHandleU32() const {
 		return handleU32;
@@ -161,6 +169,10 @@ public:
 	}
 	u32 getNumIndices() const {
 		return numIndices;
+	}
+	// use this with caution...
+	void forceSetIndexCount(u32 newNumIndices) {
+		numIndices = newNumIndices;
 	}
 	u32 getSizeInBytes() const {
 		if(type == IBO_U16) {
@@ -219,6 +231,26 @@ public:
 			*p = idx;
 		}
 		this->numIndices++;
+	}
+	u32 getSingleIndexSize() const {
+		if(type == IBO_U16) {
+			return 2;
+		} else if(type == IBO_U32) {
+			return 4;
+		}
+		return 0;
+	}
+	void setIndex(u32 number, u32 value) {
+		if(getSingleIndexSize()*data.size() <= number) {
+			data.resize((number+1)*getSingleIndexSize());
+		}
+		if(type == IBO_U16) {
+			u16 *p16 = (u16*)data.getArray();
+			p16[number] = value;
+		} else if(type == IBO_U32) {
+			u32 *p32 = (u32*)data.getArray();
+			p32[number] = value;
+		}
 	}
 	u32 operator [] (u32 idx) const {
 		if(type == IBO_U16) {
