@@ -67,6 +67,7 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
 		return; // we're not batching bezier patches
+	numBatchSurfIndexes += bs->sf->absIndexes.getNumIndices();
 	bspTriSurf_s *sf = bs->sf;
 	// see if we can add this surface to existing batch
 	for(u32 i = 0; i < batches.size(); i++) {
@@ -88,6 +89,7 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 }
 void rBspTree_c::createBatches() {
 	deleteBatches();
+	numBatchSurfIndexes = 0;
 	u32 numWorldSurfs = models[0].numSurfs;
 	for(u32 i = 0; i < numWorldSurfs; i++) {
 		addSurfToBatches(i);
@@ -449,8 +451,10 @@ void rBspTree_c::updateVisibility() {
 	lastCluster = camCluster;
 	this->visCounter++;
 	q3Leaf_s *l = leaves.getArray();
+	int c_leavesCulledByPVS = 0;
 	for(u32 i = 0; i < leaves.size(); i++, l++) {
 		if(isClusterVisible(l->cluster,camCluster) == false) {
+			c_leavesCulledByPVS++;
 			continue; // skip leaves that are not visible
 		}
 		for(u32 j = 0; j < l->numLeafSurfaces; j++) {
@@ -458,6 +462,7 @@ void rBspTree_c::updateVisibility() {
 			this->surfs[sfNum].lastVisCount = this->visCounter;
 		}
 	}
+	u32 c_curBatchIndexesCount = 0;
 	for(u32 i = 0; i < batches.size(); i++) {
 		bspSurfBatch_s *b = batches[i];
 		// see if we have to rebuild IBO of current batch
@@ -471,6 +476,7 @@ void rBspTree_c::updateVisibility() {
 			}
 		}
 		if(changed == false) {
+			c_curBatchIndexesCount += b->indices.getNumIndices();
 			continue;
 		}
 		// recreate index buffer with the indices of potentially visible surfaces
@@ -490,6 +496,20 @@ void rBspTree_c::updateVisibility() {
 		}
 		b->indices.forceSetIndexCount(newNumIndices);
 		b->indices.reUploadToGPU();
+
+		c_curBatchIndexesCount += b->indices.getNumIndices();
+	}
+
+	if(1) {
+		int c_leavesInPVS = leaves.size()-c_leavesCulledByPVS;
+		float leavesInPVSPercent = (float(c_leavesInPVS) / float(leaves.size()))*100.f;
+		g_core->Print("rBspTree_c::updateVisibility: total leaf count %i, leaves in PVS: %i (%f percent)\n",
+			leaves.size(),c_leavesInPVS,leavesInPVSPercent);
+	}
+	if(1) {
+		float usedIndicesPercent = (float(c_curBatchIndexesCount) / float(this->numBatchSurfIndexes))*100.f;
+		g_core->Print("rBspTree_c::updateVisibility: active indices: %i, total %i (%f percent)\n",
+			c_curBatchIndexesCount,numBatchSurfIndexes,usedIndicesPercent);
 	}
 }
 void rBspTree_c::addDrawCalls() {

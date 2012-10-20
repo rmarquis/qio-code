@@ -114,6 +114,9 @@ class rBspTree_c {
 	arraySTD_c<q3Leaf_s> leaves;
 	arraySTD_c<u32> leafSurfaces;
 
+	// total number of surface indexes in batches (this->batches)
+	u32 numBatchSurfIndexes;
+
 	// incremented every time a new vis cluster is entered
 	int visCounter;
 	int lastCluster;
