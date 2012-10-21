@@ -191,6 +191,8 @@ static void CG_TransitionSnapshot( void ) {
 			CG_Printf("CG_TransitionSnapshot: %i: removed entity %i\n",cg.snap->serverTime,i);
 			CG_RemoveEntity(i);
 			cent->currentValid = false;
+		} else if(cent->rEnt) {
+			CG_Error("CG_TransitionSnapshot: found entity with currentValid == qfalse and renderEntity present\n");
 		}
 	}
 

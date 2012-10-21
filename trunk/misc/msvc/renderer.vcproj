@@ -216,10 +216,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\renderer\frontend\rf_orientations.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\frontend\rf_surface.cpp"
 				>
 			</File>

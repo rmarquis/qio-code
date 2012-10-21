@@ -134,6 +134,9 @@ public:
 		rb->endFrame();
 	}
 	// misc functions
+	virtual void clearEntities() {
+		RFE_ClearEntities();
+	}
 	virtual void loadWorldMap(const char *mapName)  {
 		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
 		RF_LoadWorldMap(mapName);

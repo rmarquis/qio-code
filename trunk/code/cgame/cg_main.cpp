@@ -225,6 +225,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
+	rf->clearEntities();
 	//trap_R_ClearScene();
 
 	// load world map first so inline models are present when requested

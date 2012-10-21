@@ -1198,6 +1198,22 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\server\sv_vis.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\server\sv_vis.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\sys\sys_main.cpp"
 				>
 				<FileConfiguration
@@ -1969,7 +1985,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\bspBoxDesc.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cvarModificationCallback.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\shared.h"
 				>
 			</File>
 			<File

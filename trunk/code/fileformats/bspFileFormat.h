@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BSP_QUAKE3__
 
 #include <shared/typedefs.h>
+#include <math/plane.h>
+#include <math/aabb.h>
 
 // original BSP structures designed by ID Software
 // used in their Quake3 game
@@ -107,10 +109,50 @@ struct q3BSPMaterial_s {
 };
 
 // planes x^1 is allways the opposite of plane x
-
 struct q3Plane_s {
-	float		normal[3];
-	float		dist;
+	float normal[3];
+	float dist;
+	
+	float distance(const vec3_c &point) const {
+		float d = (normal[0]*point.x+normal[1]*point.y+normal[2]*point.z) - dist;
+		return d;
+	}
+	planeSide_e onSide(const aabb &bb) const {
+#if 0
+		planeSide_e s = onSide(bb.getPoint(0));
+		for(u32 i = 1; i < 8; i++) {
+			planeSide_e s2 = onSide(bb.getPoint(i));
+			if(s2 != s) {
+				return SIDE_CROSS;
+			}
+		}
+		return s;
+#else
+		vec3_t corners[2];
+		for (int i = 0; i < 3; i++) {
+			if (this->normal[i] > 0) {
+				corners[0][i] = bb.mins[i];
+				corners[1][i] = bb.maxs[i];
+			} else {
+				corners[1][i] = bb.mins[i];
+				corners[0][i] = bb.maxs[i];
+			}
+		}
+		float dist1 = this->distance(corners[0]);
+		float dist2 = this->distance(corners[1]);
+		bool front = false;
+		if (dist1 >= 0) {
+			if (dist2 < 0)
+				return SIDE_CROSS;
+			return SIDE_FRONT;
+		}
+		if (dist2 < 0)
+			return SIDE_BACK;
+		//assert(0); // this could happen only if AABB mins are higher than maxs
+		return SIDE_CROSS;
+#endif
+	}
+
 };
 
 struct q3Node_s {
@@ -187,6 +229,12 @@ struct q3Surface_s {
 
 	int			patchWidth;
 	int			patchHeight;
+};
+
+struct visHeader_s {
+	int numClusters;
+	int clusterSize; // in bytes
+	byte data[4]; // variable-sized
 };
 
 struct lump_s {

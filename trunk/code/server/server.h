@@ -385,6 +385,8 @@ void SV_GameSendServerCommand( int clientNum, const char *text );
 void SV_GameDropClient( int clientNum, const char *reason );
 void SV_LocateGameData( edict_s *gEnts, int numGEntities );
 void SV_GetUsercmd( int clientNum, usercmd_s *cmd );
+void SV_LinkEntity(edict_s *ed);
+void SV_UnlinkEntity(edict_s *ed);
 
 //============================================================
 

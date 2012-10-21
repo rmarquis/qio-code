@@ -167,6 +167,21 @@ qboolean	SV_EntityContact( vec3_t mins, vec3_t maxs, const edict_s *gEnt, int ca
 	return qfalse;
 }
 
+#include "sv_vis.h"
+void SV_LinkEntity(edict_s *ed) {
+	// ensure that we have bspBoxDesc allocated
+	if(ed->bspBoxDesc == 0) {
+		ed->bspBoxDesc = new bspBoxDesc_s;
+	}
+	sv_bsp->filterBB(ed->absBounds,*ed->bspBoxDesc);
+}
+void SV_UnlinkEntity(edict_s *ed) {
+	// free bspBoxDesc
+	if(ed->bspBoxDesc) {
+		delete ed->bspBoxDesc;
+		ed->bspBoxDesc = 0;
+	}	
+}
 
 /*
 ===============

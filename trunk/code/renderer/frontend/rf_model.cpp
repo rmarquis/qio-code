@@ -34,11 +34,10 @@ bool model_c::rayTrace(class trace_c &tr) const {
 	return myBSP->traceRayInlineModel(bspModelNum,tr);
 }
 
-
 static hashTableTemplateExt_c<model_c> rf_models;
 
 void RF_ClearModel(model_c *m) {
-
+	// bsp inline models are fried in rf_bsp.cpp
 }
 model_c *RF_AllocModel(const char *modName) {
 	model_c *check = (model_c*)RF_FindModel(modName);

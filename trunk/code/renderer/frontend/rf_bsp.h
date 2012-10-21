@@ -92,14 +92,9 @@ struct bspPlane_s {
 		return r;
 	}
 };
-struct visHeader_s {
-	int numClusters;
-	int clusterSize; // in bytes
-	byte data[4]; // variable-sized
-};
 class rBspTree_c {
 	byte *fileData;
-	const struct q3Header_s *h;
+	const struct q3Header_s *h; // used only while loading
 	u32 c_bezierPatches;
 	u32 c_flares;
 	visHeader_s *vis;

@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 // g_public.h -- game module information visible to server
+#include <math/vec3.h>
+#include <math/aabb.h>
 
 #define	GAME_API_VERSION	8
 
@@ -39,6 +41,9 @@ struct edict_s {
 	int freetime;	// level.time when the object was freed
 	// entity class for game-only usage
 	class BaseEntity *ent;
+	// for serverside entity culling (BSP PVS)
+	aabb absBounds;
+	struct bspBoxDesc_s *bspBoxDesc;
 };
 
 

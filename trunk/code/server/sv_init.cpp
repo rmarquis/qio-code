@@ -37,6 +37,8 @@ void SV_InitServerAPI() {
 	g_staticSVApi.GetUserinfo = SV_GetUserinfo;
 	g_staticSVApi.SetUserinfo = SV_SetUserinfo;
 	g_staticSVApi.GetUsercmd = SV_GetUsercmd;
+	g_staticSVApi.linkEntity = SV_LinkEntity;
+	g_staticSVApi.unlinkEntity = SV_UnlinkEntity;
 
 	g_server = &g_staticSVApi;
 	g_iFaceMan->registerInterface(&g_staticSVApi,SERVER_API_IDENTSTR);
@@ -403,6 +405,23 @@ static void SV_TouchCGame(void) {
 	}
 }
 
+#include "sv_vis.h"
+svBSP_c *sv_bsp;
+void SV_LoadMapVis(const char *mapName) {
+	sv_bsp = new svBSP_c;
+	bool error = sv_bsp->load(mapName);
+	if(error){ 
+		delete sv_bsp;
+		sv_bsp = 0;
+	}
+}
+void SV_FreeMap() {
+	if(sv_bsp) {
+		delete sv_bsp;
+		sv_bsp = 0;
+	}
+}
+
 /*
 ================
 SV_SpawnServer
@@ -489,6 +508,9 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	sv.checksumFeed = ( ((int) rand() << 16) ^ rand() ) ^ Com_Milliseconds();
 	FS_Restart( sv.checksumFeed );
 
+	// load map visibility data used to cull entities unreachable by player on the serverside
+	// This saves a lot of bandwith on large indoor maps compiled with PVS
+	SV_LoadMapVis( va("maps/%s.bsp", server) );
 	//CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
 
 	// set serverinfo visible name
@@ -764,6 +786,8 @@ void SV_Shutdown( char *finalmsg ) {
 	SV_RemoveOperatorCommands();
 	SV_MasterShutdown();
 	SV_ShutdownGameProgs();
+	
+	SV_FreeMap();
 
 	// free current level
 	SV_ClearServer();

@@ -290,6 +290,7 @@ static void SV_AddEntToSnapshot( svEntity_t *svEnt, edict_s *gEnt, snapshotEntit
 SV_AddEntitiesVisibleFromPoint
 ===============
 */
+#include "sv_vis.h"
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e;//, i;
@@ -305,6 +306,9 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		return;
 	}
 
+	bspPointDesc_s eyeDesc;
+	sv_bsp->filterPoint(origin,eyeDesc);
+
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
 		ent = SV_GentityNum(e);
@@ -319,6 +323,10 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			ent->s->number = e;
 		}
 
+		if(ent->bspBoxDesc == 0) {
+			continue; // not linked
+		}
+
 		svEnt = SV_SvEntityForGentity( ent );
 
 		// don't double add an entity through portals
@@ -326,8 +334,10 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+		if(sv_bsp->checkVisibility(eyeDesc,*ent->bspBoxDesc)) {
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
+		}
 	}
 }
 

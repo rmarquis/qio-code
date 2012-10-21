@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "BaseEntity.h"
 #include <math/vec3.h>
 #include "Player.h"
+#include <api/serverAPI.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 
@@ -62,6 +63,7 @@ BaseEntity::BaseEntity() {
 	myEdict->ent = this;
 }
 BaseEntity::~BaseEntity() {
+	unlink(); // fries edict_s::bspBoxDesc
 	if(_myEntityState) {
 		// free the entityState_s that we have alloced
 		assert(_myEntityState == myEdict->s);
@@ -81,12 +83,27 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 	} else {
 
 	}
+}	
+// maybe I should put those functions in ModelEntity...
+void BaseEntity::link() {
+	// let the server handle the linking
+	g_server->linkEntity(this->myEdict);
+}
+void BaseEntity::unlink() {
+	// unlink entity from server
+	g_server->unlinkEntity(this->myEdict);
 }
 void BaseEntity::setOrigin(const vec3_c &newXYZ) {
 	myEdict->s->origin = newXYZ;
+	matrix.fromAnglesAndOrigin(this->myEdict->s->angles,this->myEdict->s->origin);
+	recalcABSBounds();
+	link();
 }
 void BaseEntity::setAngles(const class vec3_c &newAngles) {
 	myEdict->s->angles = newAngles;
+	matrix.fromAnglesAndOrigin(this->myEdict->s->angles,this->myEdict->s->origin);
+	recalcABSBounds();
+	link();
 }
 const vec3_c &BaseEntity::getOrigin() const {
 	return myEdict->s->origin;
@@ -94,4 +111,11 @@ const vec3_c &BaseEntity::getOrigin() const {
 const vec3_c &BaseEntity::getAngles() const {
 	return myEdict->s->angles;
 }
-
+void BaseEntity::recalcABSBounds() {
+	aabb tmpLocalBB;
+	this->getLocalBounds(tmpLocalBB);
+	matrix.transformAABB(tmpLocalBB,myEdict->absBounds);
+}
+void BaseEntity::getLocalBounds(aabb &out) const {
+	out.fromHalfSize(16.f);
+}

@@ -33,27 +33,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/textureAPI.h>
 #include <fileformats/bspFileFormat.h>
+#include <shared/shared.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
-
-void memcpy_strided(void *_dest, const void *_src, int elementCount, int elementSize, int destStride, int sourceStride) {
-	byte *dest = (byte*) _dest;
-	byte *src = (byte*) _src;
-	if(destStride == 0) {
-		destStride = elementSize;
-	}
-	if(sourceStride == 0) {
-		sourceStride = elementSize;
-	}
-	for(int i = 0; i < elementCount; i++) {
-		memcpy(dest,src,elementSize);
-		dest += destStride;
-		src += sourceStride;
-	}
-}
+aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
 
 rBspTree_c::rBspTree_c() {
 	vis = 0;
@@ -93,6 +79,10 @@ void rBspTree_c::createBatches() {
 	u32 numWorldSurfs = models[0].numSurfs;
 	for(u32 i = 0; i < numWorldSurfs; i++) {
 		addSurfToBatches(i);
+	}
+	for(u32 i = 0; i < batches.size(); i++) {
+		bspSurfBatch_s *b = batches[i];
+		b->lastVisSet.init(b->sfs.size(),true);
 	}
 	u32 numMergableSurfs = surfs.size() - c_flares - c_bezierPatches;
 	g_core->Print(S_COLOR_GREEN "rBspTree_c::createBatches: %i surfaces merged into %i batches\n",
@@ -513,6 +503,9 @@ void rBspTree_c::updateVisibility() {
 	}
 }
 void rBspTree_c::addDrawCalls() {
+	if(rf_bsp_drawBSPWorld.getInt() == 0)
+		return;
+
 	updateVisibility();
 
 	u32 c_culledBatches = 0;

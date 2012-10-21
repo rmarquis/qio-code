@@ -499,6 +499,30 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\..\code\math\aabb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\axis.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

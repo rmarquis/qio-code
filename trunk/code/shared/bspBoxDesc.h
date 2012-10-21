@@ -21,32 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// serverAPI.h - server core API, used by serverGame module
+// bspBoxDesc.h
+#ifndef __SHARED_BSPBOXDESC_H__
+#define __SHARED_BSPBOXDESC_H__
 
-#ifndef __SERVERAPI_H__
-#define __SERVERAPI_H__
+#include "array.h"
 
-#include "iFaceBase.h"
-
-#define SERVER_API_IDENTSTR "ServerAPI0001"
-
-typedef struct edict_s edict_s;
-
-// these are only temporary function pointers, TODO: rework them?
-struct svAPI_s : public iFaceBase_i {
-	void (*LocateGameData)( edict_s *gEnts, int numGEntities );
-	void (*DropClient)( int clientNum, const char *reason );
-	void (*SendServerCommand)( int clientNum, const char *text );
-	void (*SetConfigstring)( int num, const char *string );
-	void (*GetConfigstring)( int num, char *buffer, int bufferSize );
-	void (*GetUserinfo)( int num, char *buffer, int bufferSize );
-	void (*SetUserinfo)( int num, const char *buffer );
-	void (*GetUsercmd)( int clientNum, usercmd_s *cmd );
-
-	void (*linkEntity)(edict_s *ed);
-	void (*unlinkEntity)(edict_s *ed);
+// bspPointDesc_s describes a point filtered into BSP tree
+struct bspPointDesc_s {
+	int leaf;
+	int cluster;
+	int area;
+	const byte *clusterPVS;
 };
 
-extern svAPI_s *g_server;
+// bspBoxDesc_s describes an AABB filtered into BSP tree
+struct bspBoxDesc_s {
+	arraySTD_c<int> leaves;
+	arraySTD_c<int> clusters;
+	arraySTD_c<int> areas; // there should NOT be more than 2 areas in most of cases...
 
-#endif // __SERVERAPI_H__
+	void clear() {
+		leaves.clear();
+		clusters.clear();
+		areas.clear();
+	}
+};
+
+#endif // __SHARED_BSPBOXDESC_H__

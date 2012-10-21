@@ -27,9 +27,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BASEENTITY_H__
 
 #include "../g_classes.h" // DECLARE_CLASS, etc
+#include <math/matrix.h>
 
 class BaseEntity {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
+	matrix_c matrix;
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
@@ -41,6 +43,11 @@ public:
 
 	virtual void setKeyValue(const char *key, const char *value);
 
+	// maybe I should put those functions in ModelEntity...
+	void link();
+	void unlink();
+	void recalcABSBounds();
+
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
 	const class vec3_c &getOrigin() const;
@@ -49,6 +56,8 @@ public:
 	edict_s *getEdict() {
 		return this->myEdict;
 	}
+
+	virtual void getLocalBounds(aabb &out) const;
 
 	virtual void runFrame() {
 

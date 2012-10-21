@@ -57,6 +57,15 @@ public:
 			free(data);
 		}
 	}
+	void init(u32 initialBitCount, bool defaultTrue) {
+		ensureAllocatedBits(initialBitCount+1);
+		numBits = initialBitCount;
+		if(defaultTrue) {
+			memset(data,0xff,numBytes);
+		} else {
+			memset(data,0,numBytes);
+		}
+	}
 	void set(u32 bitNum, bool bValue) {
 		if(bitNum >= numBits) {
 			numBits = bitNum + 1;
