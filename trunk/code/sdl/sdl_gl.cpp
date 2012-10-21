@@ -659,9 +659,11 @@ public:
 		boundVBO = 0;
 		boundIBO = 0;
 		boundGPUIBO = false;
+		blendSrc = -2;
+		blendDst = -2;
+		blendEnable = false;
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
-		
 		glEnableClientState(GL_VERTEX_ARRAY);
 #if 1
 		selectTex(1);

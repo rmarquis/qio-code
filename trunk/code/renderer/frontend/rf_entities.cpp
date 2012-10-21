@@ -86,7 +86,7 @@ void RFE_AddEntityDrawCalls() {
 		}
 		model->addModelDrawCalls();
 	}
-	if(1) {
+	if(0) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());
 	}
 	rf_currentEntity = 0;
