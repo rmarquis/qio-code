@@ -621,7 +621,7 @@ void CL_Record_f( void ) {
 	int			len;
 	entityState_s	*ent;
 	entityState_s	nullstate;
-	char		*s;
+	const char		*s;
 
 	if ( Cmd_Argc() > 2 ) {
 		Com_Printf ("record <demoname>\n");
@@ -910,7 +910,7 @@ void CL_ReadDemoMessage( void ) {
 CL_WalkDemoExt
 ====================
 */
-static int CL_WalkDemoExt(char *arg, char *name, int *demofile)
+static int CL_WalkDemoExt(const char *arg, char *name, int *demofile)
 {
 	int i = 0;
 	*demofile = 0;
@@ -994,7 +994,7 @@ demo <demoname>
 */
 void CL_PlayDemo_f( void ) {
 	char		name[MAX_OSPATH];
-	char		*arg, *ext_test;
+	const char		*arg, *ext_test;
 	int			protocol, i;
 	char		retry[MAX_OSPATH];
 
@@ -1416,7 +1416,7 @@ so when they are typed in at the console, they will need to be forwarded.
 ===================
 */
 void CL_ForwardCommandToServer( const char *string ) {
-	char	*cmd;
+	const char	*cmd;
 
 	cmd = Cmd_Argv(0);
 
@@ -1617,7 +1617,7 @@ CL_Connect_f
 ================
 */
 void CL_Connect_f( void ) {
-	char	*server;
+	const char	*server;
 	const char	*serverString;
 	int argc = Cmd_Argc();
 	netadrtype_t family = NA_UNSPEC;
@@ -2506,7 +2506,7 @@ Responses to broadcasts, etc
 */
 void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	char	*s;
-	char	*c;
+	const char	*c;
 	int challenge = 0;
 
 	MSG_BeginReadingOOB( msg );
@@ -2523,7 +2523,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// challenge from the server we are connecting to
 	if (!Q_stricmp(c, "challengeResponse"))
 	{
-		char *strver;
+		const char *strver;
 		int ver;
 	
 		if (clc.state != CA_CONNECTING)
@@ -3027,7 +3027,7 @@ void CL_StartHunkUsers( qboolean rendererOnly ) {
 
 
 void CL_SetModel_f( void ) {
-	char	*arg;
+	const char	*arg;
 	char	name[256];
 
 	arg = Cmd_Argv( 1 );
@@ -4108,7 +4108,7 @@ CL_Ping_f
 void CL_Ping_f( void ) {
 	netadr_t	to;
 	ping_t*		pingptr;
-	char*		server;
+	const char*		server;
 	int			argc;
 	netadrtype_t	family = NA_UNSPEC;
 
@@ -4261,7 +4261,7 @@ CL_ServerStatus_f
 */
 void CL_ServerStatus_f(void) {
 	netadr_t	to, *toptr = NULL;
-	char		*server;
+	const char		*server;
 	serverStatus_t *serverStatus;
 	int			argc;
 	netadrtype_t	family = NA_UNSPEC;

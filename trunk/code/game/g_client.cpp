@@ -258,15 +258,25 @@ void ClientDisconnect( int clientNum ) {
 }
 
 void ClientCommand( int clientNum ) {
-	vec3_c tmp(1400,1340,470);
-	
-//BT_CreateVehicle(tmp);
-BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
-	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,198),vec3_c(16,16,16),0);
-	//BT_CreateBoxEntity(vec3_c(client->ps.origin) + vec3_c(0,0,228),vec3_c(16,16,16),0);
-//	ModelEntity *n = new ModelEntity;
-//	n->setOrigin(tmp);
-//	n->createBoxPhysicsObject(tmp,vec3_c(16,16,16),0);
+	Player *pl = (Player*)g_entities[clientNum].ent;
+	if(pl == 0) {
+		g_core->Print("ClientCommand: client %i is NULL\n",clientNum);
+		return;
+	}
+
+	const char *cmd = g_core->Argv(0);
+	if(!stricmp(cmd,"noclip")) {
+		pl->toggleNoclip();
+	} else if(!stricmp(cmd,"shootbox")) {
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 32.f;
+		BT_CreateBoxEntity(p,vec3_c(16,16,16),pl->getForward());
+	} else {
+		vec3_c tmp(1400,1340,470);
+		//BT_CreateVehicle(tmp);
+		BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
+	}
 }
 
 playerState_s dummy;

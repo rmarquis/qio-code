@@ -21,12 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_bezier.cpp - bezier patch class
-#include "rf_bezier.h"
+// cmBezierPatch.cpp - simplified bezier patch class for collision detection
+#include "cmBezierPatch.h"
+#include <api/colMeshBuilderAPI.h>
 
-void bezierPatchControlGroup3x3_s::tesselate(u32 level, class r_surface_c *out) {
+void cmBezierPatchControlGroup3x3_s::tesselate(u32 level, class colMeshBuilderAPI_i *out) {
 	//	calculate how many vertices across/down there are
-	arraySTD_c<rVert_c> column[3];
+	arraySTD_c<vec3_c> column[3];
 	column[0].resize( level + 1 );
 	column[1].resize( level + 1 );
 	column[2].resize( level + 1 );
@@ -36,20 +37,19 @@ void bezierPatchControlGroup3x3_s::tesselate(u32 level, class r_surface_c *out) 
 	// tesselate along the columns
 	for( s32 j = 0; j <= level; j++ ) {
 		const f64 f = w * (f64) j;
-
-		column[0][j] = verts[0].getInterpolated_quadratic(verts[3], verts[6], f );
-		column[1][j] = verts[1].getInterpolated_quadratic(verts[4], verts[7], f );
-		column[2][j] = verts[2].getInterpolated_quadratic(verts[5], verts[8], f );
+		for(u32 c = 0; c < 3; c++) {
+			G_GetInterpolated_quadraticn(3,column[c][j],verts[c],verts[3+c],verts[6+c],f);
+		}
 	}
 
 	const u32 idx = out->getNumVerts();
 	// tesselate across the rows to get final vertices
-	rVert_c f;
+	vec3_c f;
 	for( s32 j = 0; j <= level; ++j)
 	{
 		for( s32 k = 0; k <= level; ++k)
 		{
-			f = column[0][j].getInterpolated_quadratic(column[1][j], column[2][j], w * (f64) k);
+			G_GetInterpolated_quadraticn(3,f,column[0][j],column[1][j],column[2][j], w * (f64) k);
 			out->addVert( f );
 		}
 	}
@@ -73,7 +73,7 @@ void bezierPatchControlGroup3x3_s::tesselate(u32 level, class r_surface_c *out) 
 	}
 }
 
-void bezierPatch3x3_c::init(const class r_bezierPatch_c *in) {
+void cmBezierPatch3x3_c::init(const class cmBezierPatch_c *in) {
 	// number of biquadratic patches
 	const u32 biquadWidth = (in->width - 1)/2;
 	const u32 biquadHeight = (in->height - 1)/2;
@@ -86,8 +86,8 @@ void bezierPatch3x3_c::init(const class r_bezierPatch_c *in) {
 		for(u32 k = 0; k < biquadWidth; k++) {
 			// set up this patch
 			const s32 inx = j*in->width*2 + k*2;
-			bezierPatchControlGroup3x3_s cl;
-			rVert_c *bezierControls = &cl.verts[0];
+			cmBezierPatchControlGroup3x3_s cl;
+			vec3_c *bezierControls = &cl.verts[0];
 			// setup bezier control points for this patch
 			bezierControls[0] = in->verts[ inx + 0 ];
 			bezierControls[1] = in->verts[ inx + 1 ];
@@ -102,61 +102,31 @@ void bezierPatch3x3_c::init(const class r_bezierPatch_c *in) {
 		}
 	}	
 }
-void bezierPatch3x3_c::tesselate(u32 level, class r_surface_c *out) {
-	bezierPatchControlGroup3x3_s *g = ctrls3x3.getArray();
+void cmBezierPatch3x3_c::tesselate(u32 level, class colMeshBuilderAPI_i *out) {
+	cmBezierPatchControlGroup3x3_s *g = ctrls3x3.getArray();
 	for(u32 i = 0; i < ctrls3x3.size(); i++, g++) {
 		g->tesselate(level,out);
 	}
-	out->recalcBB();
 }
 
-r_bezierPatch_c::r_bezierPatch_c() {
-	sf = 0;
+cmBezierPatch_c::cmBezierPatch_c() {
 	width = 0;
 	height = 0;
-	mat = 0;
-	lightmap = 0;
 	as3x3 = 0;
 }
-r_bezierPatch_c::~r_bezierPatch_c() {
+cmBezierPatch_c::~cmBezierPatch_c() {
 	if(as3x3) {
 		delete as3x3;
 	}
-	if(sf) {
-		delete sf;
-	}
 }
 
-void r_bezierPatch_c::tesselate(u32 newLevel) {
-	if(sf == 0) {
-		sf = new r_surface_c;
-	}
-	sf->clear();
-	sf->setMaterial(this->mat);
-	sf->setLightmap(this->lightmap);
+void cmBezierPatch_c::tesselate(u32 newLevel, colMeshBuilderAPI_i *out) {
 	if(as3x3 == 0) {
-		as3x3 = new bezierPatch3x3_c;
+		as3x3 = new cmBezierPatch3x3_c;
 		as3x3->init(this);
 	}
-	as3x3->tesselate(newLevel,sf);
-	sf->createVBO();
-	sf->createIBO();
+	as3x3->tesselate(newLevel,out);
 }
-void r_bezierPatch_c::draw() {
-	sf->drawSurface();
-}
-void r_bezierPatch_c::addDrawCall() {
-	sf->addDrawCall();
-}
-bool r_bezierPatch_c::traceRay(class trace_c &tr) {
-	if(sf == 0) {
-		// patch must be instanced
-		tesselate(4);
-	}
-	// fallback to r_surface_c::traceRay
-	return sf->traceRay(tr);
-}
-const aabb &r_bezierPatch_c::getBB() const {
-	return sf->getBB();
-}
+
+
 

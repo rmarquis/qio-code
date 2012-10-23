@@ -43,7 +43,7 @@ Returns the player with player id or name from Cmd_Argv(1)
 static client_t *SV_GetPlayerByHandle( void ) {
 	client_t	*cl;
 	int			i;
-	char		*s;
+	const char		*s;
 	char		cleanName[64];
 
 	// make sure server is running
@@ -107,7 +107,7 @@ static client_t *SV_GetPlayerByNum( void ) {
 	client_t	*cl;
 	int			i;
 	int			idnum;
-	char		*s;
+	const char		*s;
 
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
@@ -152,8 +152,8 @@ Restart the server on a different map
 ==================
 */
 static void SV_Map_f( void ) {
-	char		*cmd;
-	char		*map;
+	const char		*cmd;
+	const char		*map;
 	qboolean	killBots, cheat;
 	char		expanded[MAX_QPATH];
 	char		mapname[MAX_QPATH];
@@ -775,8 +775,11 @@ Parse a CIDR notation type string and return a netadr_t and suffix by reference
 ==================
 */
 
-static qboolean SV_ParseCIDRNotation(netadr_t *dest, int *mask, char *adrstr)
+static qboolean SV_ParseCIDRNotation(netadr_t *dest, int *mask, const char *adrstroriginal)
 {
+	char adrstr[MAX_STRING_CHARS];
+	Q_strncpyz(adrstr,adrstroriginal, sizeof(adrstr));
+
 	char *suffix;
 	
 	suffix = strchr(adrstr, '/');
@@ -822,7 +825,7 @@ Ban a user from being able to play on this server based on his ip address.
 
 static void SV_AddBanToList(qboolean isexception)
 {
-	char *banstring;
+	const char *banstring;
 	char addy2[NET_ADDRSTRMAXLEN];
 	netadr_t ip;
 	int index, argc, mask;
@@ -967,7 +970,7 @@ static void SV_DelBanFromList(qboolean isexception)
 {
 	int index, count = 0, todel, mask;
 	netadr_t ip;
-	char *banstring;
+	const char *banstring;
 	
 	if(Cmd_Argc() != 2)
 	{

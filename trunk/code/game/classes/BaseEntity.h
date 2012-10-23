@@ -52,6 +52,9 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles);
 	const class vec3_c &getOrigin() const;
 	const class vec3_c &getAngles() const;
+	const vec3_c &getForward() const {
+		return matrix.getForward();
+	}
 
 	edict_s *getEdict() {
 		return this->myEdict;

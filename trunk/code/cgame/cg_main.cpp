@@ -155,7 +155,7 @@ CG_Argv
 const char *CG_Argv( int arg ) {
 	static char	buffer[MAX_STRING_CHARS];
 
-	g_core->Argv( arg, buffer, sizeof( buffer ) );
+	g_core->ArgvBuffer( arg, buffer, sizeof( buffer ) );
 
 	return buffer;
 }

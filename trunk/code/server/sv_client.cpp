@@ -60,7 +60,7 @@ void SV_GetChallenge(netadr_t from)
 	int		clientChallenge;
 	challenge_t	*challenge;
 	qboolean wasfound = qfalse;
-	char *gameName;
+	const char *gameName;
 	qboolean gameMismatch;
 
 	gameName = Cmd_Argv(2);

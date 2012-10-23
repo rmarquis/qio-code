@@ -479,6 +479,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\entDefsList.cpp"
 				>
 			</File>

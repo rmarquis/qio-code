@@ -256,10 +256,14 @@ struct q3Header_s {
 		}
 	}
 	const q3Model_s *getModels() const {
-		return (const q3Model_s*)(((const byte*)this)+lumps[Q3_MODELS].fileOfs);
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs);
+		} else {
+			return (const q3Model_s*)(((const byte*)this)+getLumps()[Q3_MODELS].fileOfs);
+		}
 	}
 	const q3BSPMaterial_s *getMaterials() const {
-		return (const q3BSPMaterial_s*)(((const byte*)this)+lumps[Q3_SHADERS].fileOfs);
+		return (const q3BSPMaterial_s*)(((const byte*)this)+getLumps()[Q3_SHADERS].fileOfs);
 	}
 	const q3Plane_s *getPlanes() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
@@ -292,10 +296,25 @@ struct q3Header_s {
 		}
 	}
 	const q3Vert_s *getVerts() const {
-		return (const q3Vert_s*)(((const byte*)this)+lumps[Q3_DRAWVERTS].fileOfs);
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Vert_s*)(((const byte*)this)+getLumps()[MOH_DRAWVERTS].fileOfs);
+		} else {
+			return (const q3Vert_s*)(((const byte*)this)+getLumps()[Q3_DRAWVERTS].fileOfs);
+		}
 	}
 	const q3Surface_s *getSurfaces() const {
-		return (const q3Surface_s*)(((const byte*)this)+lumps[Q3_SURFACES].fileOfs);
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs);
+		} else {
+			return (const q3Surface_s*)(((const byte*)this)+getLumps()[Q3_SURFACES].fileOfs);
+		}
+	}
+	const q3Surface_s *getNextSurface(const q3Surface_s *sf) const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Surface_s*)(((const byte*)sf)+(sizeof(q3Surface_s)+4));
+		} else {
+			return (const q3Surface_s*)(((const byte*)sf)+sizeof(q3Surface_s));
+		}
 	}
 	const q3BSPMaterial_s *getMat(u32 matNum) const {
 		u32 matSize;

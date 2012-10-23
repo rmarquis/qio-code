@@ -26,6 +26,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_model.h"
 #include "rf_local.h"
 #include <api/coreAPI.h>
+#include <shared/autoCvar.h>
+
+aCvar_c rf_skipEntities("rf_skipEntities","0");
 
 void rEntityImpl_c::recalcABSBounds() {
 	if(model == 0) {
@@ -72,6 +75,9 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 }
 
 void RFE_AddEntityDrawCalls() {
+	if(rf_skipEntities.getInt())
+		return;
+
 	u32 c_entitiesCulledByABSBounds = 0;
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		rEntityImpl_c *ent = rf_entities[i];

@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RVERTEXBUFFER_H__
 #define __RVERTEXBUFFER_H__
 
+#include <math/math.h>
 #include <math/vec3.h>
 #include <math/vec2.h>
 #include <shared/array.h>
@@ -40,32 +41,21 @@ public:
 	//vec2_c tan;
 	//vec2_c bin;
 
-	// quadratic interpolation for n-dimensional vector
-	inline void mc_getInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)
-	{
-		const f32 inv = 1.0 - d;
-		const f32 mul0 = inv * inv;
-		const f32 mul1 =  2.0 * d * inv;
-		const f32 mul2 = d * d;
-		for(int i = 0; i < rows; i++) {
-			out[i] = (v1[i] * mul0 + v2[i] * mul1 + v3[i] * mul2);
-		}
-	}
 	// returns the result of quadratic interpolation between this vertex and two other vertices
 	rVert_c getInterpolated_quadratic(rVert_c &a, rVert_c &b, float s) {
 		rVert_c out;
-		mc_getInterpolated_quadraticn(3,out.xyz,xyz,a.xyz,b.xyz,s);
-		mc_getInterpolated_quadraticn(2,out.tc,tc,a.tc,b.tc,s);
-		mc_getInterpolated_quadraticn(2,out.lc,lc,a.lc,b.lc,s);
-		mc_getInterpolated_quadraticn(3,out.normal,normal,a.normal,b.normal,s);
-		//mc_getInterpolated_quadraticn(3,out.bin,bin,a.bin,b.bin,s);
-		//mc_getInterpolated_quadraticn(3,out.tan,tan,a.tan,b.tan,s);
+		G_GetInterpolated_quadraticn(3,out.xyz,xyz,a.xyz,b.xyz,s);
+		G_GetInterpolated_quadraticn(2,out.tc,tc,a.tc,b.tc,s);
+		G_GetInterpolated_quadraticn(2,out.lc,lc,a.lc,b.lc,s);
+		G_GetInterpolated_quadraticn(3,out.normal,normal,a.normal,b.normal,s);
+		//G_GetInterpolated_quadraticn(3,out.bin,bin,a.bin,b.bin,s);
+		//G_GetInterpolated_quadraticn(3,out.tan,tan,a.tan,b.tan,s);
 		vec3_c ct, ca, cb;
 		ct.fromByteRGB(this->color);
 		ca.fromByteRGB(a.color);
 		cb.fromByteRGB(b.color);
 		vec3_c res;
-		mc_getInterpolated_quadraticn(3,res,ct,ca,cb,s);
+		G_GetInterpolated_quadraticn(3,res,ct,ca,cb,s);
 		res.colorToBytes(out.color);
 		return out;
 	}

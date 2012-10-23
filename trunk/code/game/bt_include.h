@@ -5,6 +5,7 @@
 #include <LinearMath/btGeometryUtil.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 extern btBroadphaseInterface* broadphase;
 extern btDefaultCollisionConfiguration* collisionConfiguration;

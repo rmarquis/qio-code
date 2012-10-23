@@ -21,31 +21,40 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// coreAPI.h - engine core interface
+// cmSurface.h - simple trimesh surface for collision detection
+#ifndef __CMSURFACE_H__
+#define __CMSURFACE_H__
 
-#ifndef __COREAPI_H__
-#define __COREAPI_H__
+#include "array.h"
+#include <math/vec3.h>
+#include <api/colMeshBuilderAPI.h>
 
-#include "iFaceBase.h"
-#include "../qcommon/q_shared.h" // only for __attribute__
-
-#define CORE_API_IDENTSTR "CoreEngineAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct coreAPI_s : public iFaceBase_i {
-	void (*Print)( const char *text, ... );
-	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
-	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
-	// milliseconds should only be used for performance tuning, never
-	// for anything game related.
-	int  (*Milliseconds)( void );
-	// engine command system api
-	int	(*Argc)( void );
-	void (*ArgvBuffer)( int n, char *buffer, int bufferLength );
-	void (*Args)( char *buffer, int bufferLength );
-	const char *(*Argv)( int n );
+class cmSurface_c : public colMeshBuilderAPI_i {
+	arraySTD_c<u32> indices;
+	arraySTD_c<vec3_c> verts;
+public:
+	// colMeshBuilderAPI_i api
+	virtual void addVert(const class vec3_c &nv) {
+		verts.push_back(nv);
+	}
+	virtual void addIndex(const u32 idx) {
+		indices.push_back(idx);
+	}
+	virtual u32 getNumVerts() const {
+		return verts.size();
+	}
+	virtual u32 getNumIndices() const {
+		return indices.size();
+	}
+	virtual u32 getNumTris() const {
+		return indices.size()/3;
+	}
+	const byte *getVerticesBase() const {
+		return (const byte*)verts.getArray();
+	}
+	const byte *getIndicesBase() const {
+		return (const byte*)indices.getArray();
+	}
 };
 
-extern coreAPI_s *g_core;
-
-#endif // __COREAPI_H__
+#endif // __CMSURFACE_H__

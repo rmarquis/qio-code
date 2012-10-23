@@ -208,6 +208,10 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\api\colMeshBuilderAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\q_shared.cpp"
 				>
 			</File>

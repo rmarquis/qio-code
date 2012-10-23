@@ -60,6 +60,18 @@ inline float G_sqrt2(float n) {
     float i = 1.f;
     while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
     return r;
+}	
+
+// quadratic interpolation for n-dimensional vector
+inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)
+{
+	const f32 inv = 1.0 - d;
+	const f32 mul0 = inv * inv;
+	const f32 mul1 =  2.0 * d * inv;
+	const f32 mul2 = d * d;
+	for(int i = 0; i < rows; i++) {
+		out[i] = (v1[i] * mul0 + v2[i] * mul1 + v3[i] * mul2);
+	}
 }
 
 #endif // __MATH_MATH_H__

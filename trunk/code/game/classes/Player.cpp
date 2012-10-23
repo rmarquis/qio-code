@@ -34,11 +34,39 @@ Player::Player() {
 	memset(&pers,0,sizeof(pers));
 	buttons = 0;
 	oldbuttons = 0;
+	noclip = false;
 }
 Player::~Player() {
-
+	if(characterController) {
+		BT_FreeCharacter(this->characterController);
+		characterController = 0;
+	}
 }
 
+void Player::toggleNoclip() {
+	noclip = !noclip;
+	if(noclip) {
+		disableCharacterController();
+	} else {
+		enableCharacterController();
+	}
+}
+void Player::disableCharacterController() {
+	if(characterController) {
+		BT_FreeCharacter(this->characterController);
+		characterController = 0;
+	}
+}
+void Player::enableCharacterController() {
+	if(this->cmod == 0) {
+		return;
+	}
+	cmCapsule_i *c = this->cmod->getCapsule();
+	float h = c->getHeight();
+	float r = c->getRadius();
+	BT_FreeCharacter(this->characterController);
+	this->characterController = BT_CreateCharacter(8.f, this->ps.origin, h, r);
+}
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	cmCapsule_i *m;
@@ -86,17 +114,22 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		VectorAdd(dir,f,dir);
 		VectorAdd(dir,r,dir);
 		VectorAdd(dir,u,dir);
-		if(0) {
-			VectorAdd(this->ps.origin,dir,this->ps.origin);
+		vec3_c newOrigin;
+		if(noclip) {
+			VectorAdd(this->ps.origin,dir,newOrigin);
 		} else {
 			dir[2] = 0;
 			VectorScale(dir,0.75f,dir);
-			G_RunCharacterController(dir,this->characterController, this->ps.origin);
+			G_RunCharacterController(dir,this->characterController, newOrigin);
 			if(ucmd->upmove) {
 				G_TryToJump(this->characterController);
 			}
 		}
+		ps.angles.set(0,ps.viewangles[1],0);
+		ModelEntity::setOrigin(newOrigin);
 	}
+
+	this->link();
 
 	//G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
 
@@ -129,6 +162,9 @@ void Player::setNetName(const char *newNetName) {
 }
 const char *Player::getNetName() const {
 	return netName;
+}
+int Player::getViewHeight() const {
+	return this->ps.viewheight;
 }
 struct playerState_s *Player::getPlayerState() {
 	return &this->ps;

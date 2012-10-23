@@ -54,7 +54,6 @@ typedef struct {
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
 
-
 class Player : public ModelEntity {
 	class btKinematicCharacterController *characterController;
 	str netName;
@@ -69,14 +68,21 @@ public:
 	// the rest of the structure is private to game
 	clientPersistant_t	pers;
 
+	bool noclip;
+
 	int			buttons;
 	int			oldbuttons;
 
+	void disableCharacterController();
+	void enableCharacterController();
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
 	void setClientViewAngle(const vec3_c &angle);
 	void setNetName(const char *newNetName);
 	const char *getNetName() const;
+	int getViewHeight() const;
+
+	void toggleNoclip();
 
 	struct playerState_s *getPlayerState();
 };

@@ -4,6 +4,7 @@
 #include <math/quat.h>
 #include <math/aabb.h>
 #include "classes/ModelEntity.h"
+#include <shared/cmSurface.h>
 
 #include "bt_include.h"
 
@@ -16,6 +17,10 @@ btDefaultCollisionConfiguration* collisionConfiguration = 0;
 btCollisionDispatcher* dispatcher = 0;
 btSequentialImpulseConstraintSolver* solver = 0;
 btDiscreteDynamicsWorld* dynamicsWorld = 0;
+
+// they need to be alloced as long as they are used
+static arraySTD_c<btTriangleIndexVertexArray*> bt_trimeshes;
+static arraySTD_c<cmSurface_c*> bt_cmSurfs;
 
 
 void G_InitBullet() {
@@ -39,6 +44,14 @@ void G_InitBullet() {
 void G_ShudownBullet() {
 	// free vehicles 
 	BT_ShutdownVehicles();
+	for(u32 i = 0; i < bt_trimeshes.size(); i++) {
+		delete bt_trimeshes[i];
+	}
+	bt_trimeshes.clear();
+	for(u32 i = 0; i < bt_cmSurfs.size(); i++) {
+		delete bt_cmSurfs[i];
+	}
+	bt_cmSurfs.clear();
 	// free global physics data
     delete dynamicsWorld;
 	dynamicsWorld = 0;
@@ -65,9 +78,6 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	startTransform.setIdentity();
 	//this create an internal copy of the vertices
 	btCollisionShape* shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
-	//m_demoApp->m_collisionShapes.push_back(shape);
-
-	//m_demoApp->localCreateRigidBody(mass, startTransform,shape);
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);
@@ -82,6 +92,7 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass,myMotionState,shape,localInertia);
 
+	// TODO: free this rigid body in BT_Shutdown() ?
 	btRigidBody* body = new btRigidBody(cInfo);
 	//body->setContactProcessingThreshold(m_defaultContactProcessingThreshold);
 
@@ -91,7 +102,52 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 #endif//
 
 	dynamicsWorld->addRigidBody(body);
+}
+void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
+	float mass = 0.f;
+	btTransform startTransform;
+	//can use a shift
+	startTransform.setIdentity();
+	//this create an internal copy of the vertices
+	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
+	bt_trimeshes.push_back(mesh);
 
+	btIndexedMesh subMesh;
+	subMesh.m_numTriangles = sf.getNumTris();
+	subMesh.m_numVertices = sf.getNumVerts();
+	subMesh.m_vertexStride = sizeof(vec3_c);
+	subMesh.m_vertexType = PHY_FLOAT;
+	subMesh.m_vertexBase = sf.getVerticesBase();
+	subMesh.m_indexType = PHY_INTEGER;
+	subMesh.m_triangleIndexBase = sf.getIndicesBase();
+	subMesh.m_triangleIndexStride = sizeof(int)*3;
+	mesh->addIndexedMesh(subMesh);
+	btCollisionShape* shape = new btBvhTriangleMeshShape(mesh,true);
+
+
+	//rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0,0,0);
+	if (isDynamic)
+		shape->calculateLocalInertia(mass,localInertia);
+
+	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+#ifdef USE_MOTIONSTATE
+	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass,myMotionState,shape,localInertia);
+
+	// TODO: free this rigid body in BT_Shutdown() ?
+	btRigidBody* body = new btRigidBody(cInfo);
+	//body->setContactProcessingThreshold(m_defaultContactProcessingThreshold);
+
+#else
+	btRigidBody* body = new btRigidBody(mass,0,shape,localInertia);	
+	body->setWorldTransform(startTransform);
+#endif//
+
+	dynamicsWorld->addRigidBody(body);
 }
 btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape)
 {
@@ -236,6 +292,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	return character;
 };
 #include "../fileformats/bspFileFormat.h"
+#include <shared/cmBezierPatch.h>
 void G_LoadMap(const char *mapName) {
 	if(!stricmp(mapName,"_empty")) {
 		const float worldSize = 4096.f;
@@ -283,8 +340,8 @@ void G_LoadMap(const char *mapName) {
 	q3Header_s *h = (q3Header_s*)data;
 	const q3Brush_s *b = h->getBrushes();
 	const q3Plane_s *planes = h->getPlanes();
-	int numBrushes = h->getNumBrushes();
-	for(int i = 0; i < numBrushes; i++, b++) {
+	u32 numBrushes = h->getModels()->numBrushes;
+	for(u32 i = 0; i < numBrushes; i++, b++) {
 		const q3BSPMaterial_s *m = h->getMat(b->materialNum);
 		if((m->contentFlags & 1) == false)
 			continue;
@@ -300,6 +357,25 @@ void G_LoadMap(const char *mapName) {
 		btAlignedObjectArray<btVector3>	vertices;
 		btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
 		BT_CreateWorldBrush(vertices);
+	}
+	// load only bezier patches (brushes are used for collision detection instead of planar surfaces)
+	u32 numSurfs = h->getModels()->numSurfaces;
+	const q3Surface_s *sf = h->getSurfaces();
+	for(u32 i = 0; i < numSurfs; i++) {
+		if(sf->surfaceType == Q3MST_PATCH) {
+			cmBezierPatch_c bp;
+			const q3Vert_s *v = h->getVerts() + sf->firstVert;
+			for(u32 j = 0; j < sf->numVerts; j++, v++) {
+				bp.addVertex(v->xyz);
+			}
+			bp.setHeight(sf->patchHeight);
+			bp.setWidth(sf->patchWidth);
+			cmSurface_c *cmSF = new cmSurface_c;
+			bp.tesselate(4,cmSF);
+			BT_CreateWorldTriMesh(*cmSF);
+			bt_cmSurfs.push_back(cmSF); // we'll need to free it later
+		}
+		sf = h->getNextSurface(sf);
 	}
 
 	free(data);

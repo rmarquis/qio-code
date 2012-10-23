@@ -28,7 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "math.h"
 #include "vec3.h"
 #include <string.h> // memcmp
-
+#include <float.h> // FLT_EPSILON
 
 class matrix_c {
 	union {

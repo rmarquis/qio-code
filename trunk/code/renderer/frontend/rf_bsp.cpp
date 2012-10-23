@@ -40,6 +40,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
 aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
+aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
 
 rBspTree_c::rBspTree_c() {
 	vis = 0;
@@ -540,7 +541,7 @@ void rBspTree_c::addDrawCalls() {
 			}
 		}
 	}
-	if(1) {
+	if(rf_bsp_printFrustumCull.getInt()) {
 		g_core->Print("%i patches and %i batches culled by frustum\n",c_culledBezierPatches,c_culledBatches);
 	}
 }

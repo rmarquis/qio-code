@@ -74,6 +74,9 @@ void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 void ModelEntity::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model")) {
 		this->setRenderModel(value);
+		if(value[0] == '*') {
+			this->setColModel(value);
+		}
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

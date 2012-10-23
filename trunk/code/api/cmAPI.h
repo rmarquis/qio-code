@@ -80,6 +80,8 @@ public:
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;
 
+
+	//virtual void loadMap(const char *mapName) = 0;
 };
 
 extern cmAPI_i *cm;
