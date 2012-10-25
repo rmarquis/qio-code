@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_drawCall.h"
 #include <api/rbAPI.h>
 #include <shared/trace.h>
+#include <api/mtrAPI.h>
 
 void r_surface_c::drawSurface() {
 	rb->setBindVertexColors(true);
@@ -35,7 +36,7 @@ void r_surface_c::drawSurface() {
 }
 
 void r_surface_c::addDrawCall() {
-	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,DCS_OPAQUE_WORLD,true);
+	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),true);
 }
 
 bool r_surface_c::traceRay(class trace_c &tr) {

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cvarAPI.h>
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
+#include <shared/autoCvar.h>
 
 cg_t				cg;
 cgs_t				cgs;
@@ -202,6 +203,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cgs.media.charsetShader		= rf->registerMaterial( "gfx/2d/bigchars" );
 	cgs.media.whiteShader		= rf->registerMaterial( "white" );
 
+	// init cgame console variables
+	AUTOCVAR_RegisterAutoCvars();
 	CG_RegisterCvars();
 
 	// get the rendering configuration from the client system
@@ -263,6 +266,8 @@ Called before every level change or subsystem restart
 void CG_Shutdown( void ) {
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
+	// unlink autocvars
+	AUTOCVAR_UnregisterAutoCvars();
 }
 
 

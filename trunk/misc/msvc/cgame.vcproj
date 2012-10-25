@@ -539,6 +539,14 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\autoCvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\collisionUtils.cpp"
 				>
 			</File>

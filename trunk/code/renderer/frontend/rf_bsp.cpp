@@ -36,11 +36,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/shared.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
+#include <api/mtrAPI.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
 aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
 aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
+aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
+aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
 
 rBspTree_c::rBspTree_c() {
 	vis = 0;
@@ -425,6 +428,8 @@ int rBspTree_c::pointInCluster(const vec3_c &pos) const {
 }
 // checks if one cluster is visible from another
 bool rBspTree_c::isClusterVisible(int visCluster, int testCluster) const {
+	if(rf_bsp_noVis.getInt())
+		return true;
  	if(vis == 0)
 		return true;
 	if(visCluster < 0)
@@ -436,9 +441,10 @@ bool rBspTree_c::isClusterVisible(int visCluster, int testCluster) const {
 }
 void rBspTree_c::updateVisibility() {
 	int camCluster = pointInCluster(rf_camera.getOrigin());
-	if(camCluster == lastCluster) {
+	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
 		return;
 	}
+	prevNoVis = rf_bsp_noVis.getInt();
 	lastCluster = camCluster;
 	this->visCounter++;
 	q3Leaf_s *l = leaves.getArray();
@@ -491,13 +497,13 @@ void rBspTree_c::updateVisibility() {
 		c_curBatchIndexesCount += b->indices.getNumIndices();
 	}
 
-	if(1) {
+	if(rf_bsp_printVisChangeStats.getInt()) {
 		int c_leavesInPVS = leaves.size()-c_leavesCulledByPVS;
 		float leavesInPVSPercent = (float(c_leavesInPVS) / float(leaves.size()))*100.f;
 		g_core->Print("rBspTree_c::updateVisibility: total leaf count %i, leaves in PVS: %i (%f percent)\n",
 			leaves.size(),c_leavesInPVS,leavesInPVSPercent);
 	}
-	if(1) {
+	if(rf_bsp_printVisChangeStats.getInt()) {
 		float usedIndicesPercent = (float(c_curBatchIndexesCount) / float(this->numBatchSurfIndexes))*100.f;
 		g_core->Print("rBspTree_c::updateVisibility: active indices: %i, total %i (%f percent)\n",
 			c_curBatchIndexesCount,numBatchSurfIndexes,usedIndicesPercent);
@@ -520,7 +526,7 @@ void rBspTree_c::addDrawCalls() {
 			continue;
 		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
-			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,DCS_OPAQUE_WORLD,true);
+			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true);
 		}
 	}
 	u32 c_culledBezierPatches = 0;
@@ -550,7 +556,7 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 	if(sf.type == BSPSF_BEZIER) {
 		sf.patch->addDrawCall();
 	} else {
-		RF_AddDrawCall(&this->verts,&sf.sf->absIndexes,sf.sf->mat,sf.sf->lightmap,DCS_OPAQUE_WORLD,true);
+		RF_AddDrawCall(&this->verts,&sf.sf->absIndexes,sf.sf->mat,sf.sf->lightmap,sf.sf->mat->getSort(),true);
 	}
 }
 void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {

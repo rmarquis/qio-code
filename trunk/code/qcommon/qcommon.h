@@ -534,9 +534,9 @@ issues.
 #define	MAX_FILE_HANDLES	64
 
 #ifdef DEDICATED
-#	define Q3CONFIG_CFG "q3config_server.cfg"
+#	define QIOCONFIG_CFG "qioconfig_server.cfg"
 #else
-#	define Q3CONFIG_CFG "q3config.cfg"
+#	define QIOCONFIG_CFG "qioconfig.cfg"
 #endif
 
 qboolean FS_Initialized( void );

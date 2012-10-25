@@ -47,6 +47,7 @@ bool parser_c::skipToNextToken() {
 					} else if(p[0] == '*' && p[1] == '/') {
 						break;
 					}
+					p++;
 				}
 				p += 2;  // skip "*/"
 			} else if(p[1] == '/') {

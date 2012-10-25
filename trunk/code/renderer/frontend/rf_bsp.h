@@ -115,6 +115,7 @@ class rBspTree_c {
 	// incremented every time a new vis cluster is entered
 	int visCounter;
 	int lastCluster;
+	int prevNoVis; // last value of rf_bsp_noVis cvar
 
 	void addSurfToBatches(u32 surfNum);
 	void createBatches();

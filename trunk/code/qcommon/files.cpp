@@ -3067,6 +3067,9 @@ static void FS_Startup( const char *gameName )
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
+	// temporary hack
+	FS_AddGameDirectory("E:/MoHAA","main");
+
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {
 		FS_AddGameDirectory( fs_basepath->string, gameName );
@@ -3119,7 +3122,6 @@ static void FS_Startup( const char *gameName )
 	}
 #endif
 
-	FS_AddGameDirectory("E:/MoHAA","main");
 	// add our commands
 	Cmd_AddCommand ("path", FS_Path_f);
 	Cmd_AddCommand ("dir", FS_Dir_f );
@@ -3768,9 +3770,9 @@ void FS_Restart( int checksumFeed ) {
 	}
 
 	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
-		// skip the q3config.cfg if "safe" is on the command line
+		// skip the qioconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
+			Cbuf_AddText ("exec " QIOCONFIG_CFG "\n");
 		}
 	}
 

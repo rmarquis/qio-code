@@ -26,6 +26,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_entities.h"
 #include <api/rbAPI.h>
 #include <shared/array.h>
+#include <shared/autoCvar.h>
+
+aCvar_c rf_noLightmaps("rf_noLightmaps","0");
+aCvar_c rf_noVertexColors("rf_noVertexColors","0");
 
 class drawCall_c {
 public:
@@ -55,15 +59,41 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
-	n->lightmap = lightmap;
+	if(rf_noLightmaps.getInt()) {
+		n->lightmap = 0;
+	} else {
+		n->lightmap = lightmap;
+	}
 	n->sort = sort;
-	n->bindVertexColors = bindVertexColors;
+	if(rf_noVertexColors.getInt()) {
+		n->bindVertexColors = false;
+	} else {
+		n->bindVertexColors = bindVertexColors;
+	}
 	n->entity = rf_currentEntity;
 	rf_numDrawCalls++;
 }
 
-	
+int compareDrawCall(const void *v0, const void *v1) {
+	const drawCall_c *c0 = (const drawCall_c *)v0;
+	const drawCall_c *c1 = (const drawCall_c *)v1;
+	if(c0->sort > c1->sort) {
+		return 1;
+	} else if(c0->sort < c1->sort) {
+		return -1;
+	}
+	// sorts are equal, sort by material pointer
+	if(c0->material > c1->material) {
+		return -1;
+	} else if(c0->material < c1->material) {
+		return 1;
+	}
+	// materials are equal too
+	return 0;
+}
+
 void RF_SortAndIssueDrawCalls() {
+	qsort(rf_drawCalls.getArray(),rf_numDrawCalls,sizeof(drawCall_c),compareDrawCall);
 	drawCall_c *c = rf_drawCalls.getArray();
 	rEntityAPI_i *prevEntity = 0;
 	for(u32 i = 0; i < rf_numDrawCalls; i++, c++) {

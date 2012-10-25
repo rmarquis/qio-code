@@ -27,10 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 enum drawCallSort_e {
 	DCS_BAD,
-	DCS_PORTAL, 
-	DCS_OPAQUE_WORLD,
+	//DCS_PORTAL, 
+	//DCS_OPAQUE_WORLD,
 	DCS_OPAQUE,
-	DCS_BLEND_WORLD,
+	//DCS_BLEND_WORLD,
 	DCS_BLEND,
 	DCS_NUM_DRAWCALLSORTS,
 };

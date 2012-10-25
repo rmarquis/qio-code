@@ -62,6 +62,7 @@ inline const char *G_SkipToNextToken(const char *p) {
 					} else if(p[0] == '*' && p[1] == '/') {
 						break;
 					}
+					p++;
 				}
 				p += 2;  // skip "*/"
 			} else if(p[1] == '/') {

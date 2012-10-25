@@ -110,12 +110,13 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		VectorScale(f,level.frameTime*ucmd->forwardmove,f);
 		VectorScale(r,level.frameTime*ucmd->rightmove,r);
 		VectorScale(u,level.frameTime*ucmd->upmove,u);
-		vec3_t dir = {0,0,0};
+		vec3_c dir(0,0,0);
 		VectorAdd(dir,f,dir);
 		VectorAdd(dir,r,dir);
 		VectorAdd(dir,u,dir);
 		vec3_c newOrigin;
 		if(noclip) {
+			dir.scale(4.f);
 			VectorAdd(this->ps.origin,dir,newOrigin);
 		} else {
 			dir[2] = 0;

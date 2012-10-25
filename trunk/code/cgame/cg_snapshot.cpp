@@ -27,6 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 
 /*
 ==================
@@ -178,8 +181,13 @@ static void CG_TransitionSnapshot( void ) {
 		u32 snapEntNum = cg.snap->entities[snapEnt].number;
 		if(snapEntNum == i) {
 			if(cent->currentValid == false) {
-				CG_Printf("CG_TransitionSnapshot: %i: new entity %i\n",cg.snap->serverTime,i);
+				if(cg_printSnapEntities.getInt()) {
+					CG_Printf("CG_TransitionSnapshot: %i: new entity %i\n",cg.snap->serverTime,i);
+				}
 				CG_NewEntity(i);
+			}
+			if(cg_printSnapEntities.getInt() > 1) {
+				CG_Printf("CG_TransitionSnapshot: %i: transition entity %i\n",cg.snap->serverTime,i);
 			}
 			CG_TransitionEntity( cent );
 
@@ -188,7 +196,9 @@ static void CG_TransitionSnapshot( void ) {
 
 			snapEnt++;
 		} else if(cent->currentValid) {
-			CG_Printf("CG_TransitionSnapshot: %i: removed entity %i\n",cg.snap->serverTime,i);
+			if(cg_printSnapEntities.getInt()) {
+				CG_Printf("CG_TransitionSnapshot: %i: removed entity %i\n",cg.snap->serverTime,i);
+			}
 			CG_RemoveEntity(i);
 			cent->currentValid = false;
 		} else if(cent->rEnt) {

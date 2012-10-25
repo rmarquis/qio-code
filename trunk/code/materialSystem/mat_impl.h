@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <shared/str.h>
 #include <shared/array.h>
+#include <renderer/drawCallSort.h>
 #include "mat_public.h"
 
 class mtrStage_c : public mtrStageAPI_i {
@@ -57,6 +58,11 @@ public:
 	void setBlendDef(u16 srcEnum, u16 dstEnum) {
 		blend.src = srcEnum;
 		blend.dst = dstEnum;
+	}
+	bool hasBlendFunc() const {
+		if(blend.src || blend.dst)
+			return true;
+		return false;
 	}
 	void setTexture(const char *newMapName);
 };
@@ -86,6 +92,20 @@ public:
 	}
 	inline void setHashNext(mtrIMPL_c *p) {
 		hashNext = p;
+	}
+	bool hasStageWithBlendFunc() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasBlendFunc()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	virtual enum drawCallSort_e getSort() const { 
+		if(hasStageWithBlendFunc()) {
+			return DCS_BLEND;
+		}
+		return DCS_OPAQUE;
 	}
 
 	void createFromImage();

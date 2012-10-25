@@ -29,6 +29,7 @@ void G_InitBullet() {
 
 	// Set up the collision configuration and dispatcher
 	collisionConfiguration = new btDefaultCollisionConfiguration();
+
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
 	// The actual physics solver
@@ -371,13 +372,11 @@ void G_LoadMap(const char *mapName) {
 			bp.setHeight(sf->patchHeight);
 			bp.setWidth(sf->patchWidth);
 			cmSurface_c *cmSF = new cmSurface_c;
-			bp.tesselate(4,cmSF);
+			bp.tesselate(2,cmSF);
 			BT_CreateWorldTriMesh(*cmSF);
 			bt_cmSurfs.push_back(cmSF); // we'll need to free it later
 		}
 		sf = h->getNextSurface(sf);
 	}
-
 	free(data);
-
 }
