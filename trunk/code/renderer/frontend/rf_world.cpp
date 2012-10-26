@@ -49,3 +49,10 @@ void RF_RayTraceWorld(class trace_c &tr) {
 		r_bspTree->traceRay(tr);
 	}
 }
+void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes) {
+	if(r_bspTree) {
+		r_bspTree->setWorldAreaBits(bytes,numBytes);
+	}
+}
+
+

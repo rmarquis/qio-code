@@ -45,6 +45,14 @@ struct svPortal_s {
 	// TODO
 	//int areas[2];
 };
+struct svBSPArea_s {
+	svBSPArea_s() {
+		floodNum = 0;
+		floodValid = 0;
+	}
+	int floodNum;
+	int floodValid;
+};
 // BSP data needed by server to cull entities before sending them to players.
 // (leaves, nodes, planes, areas and vis)
 class svBSP_c {
@@ -52,13 +60,20 @@ class svBSP_c {
 	arraySTD_c<svBSPLeaf_s> leaves;
 	arraySTD_c<svBSPNode_s> nodes;
 	arraySTD_c<q3Plane_s> planes;
+	arraySTD_c<svBSPArea_s> areas;
 	struct visHeader_s *vis;
+	int floodValid;
+	int *areaPortalStates;
 
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadVisibility(u32 visLump);
 
 	void filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nodeNum) const;
+
+	void floodArea_r(int areaNum, int floodNum);
+	void floodAreaConnections();
+	bool areasConnected(int area0, int area1) const;
 public:
 	svBSP_c();
 	~svBSP_c();
@@ -68,6 +83,13 @@ public:
 	void filterBB(const class aabb &bb, struct bspBoxDesc_s &out) const;
 	void filterPoint(const class vec3_c &p, struct bspPointDesc_s &out) const;
 	bool checkVisibility(struct bspPointDesc_s &p, const struct bspBoxDesc_s &box) const;
+	void adjustAreaPortalState(int area0, int area1, bool open);
+	u32 getNumAreaBytes() const;
+	void appendCurrentAreaBits(int area, class bitSet_c &bs);
+
+	u32 getNumAreas() const {
+		return areas.size();
+	}
 };
 
 extern svBSP_c *sv_bsp;

@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 svBSP_c::svBSP_c() {
 	h = 0;
+	areaPortalStates = 0;
 }
 svBSP_c::~svBSP_c() {
 	clear();
@@ -39,6 +40,11 @@ svBSP_c::~svBSP_c() {
 void svBSP_c::clear() {
 	if(vis) {
 		free(vis);
+		vis = 0;
+	}
+	if(areaPortalStates) {
+		free(areaPortalStates);
+		areaPortalStates = 0;
 	}
 }
 bool svBSP_c::loadPlanes(u32 lumpPlanes) {
@@ -69,6 +75,20 @@ bool svBSP_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) 
 	leaves.resize(numLeaves);
 	memcpy_strided(nodes.getArray(),h->getLumpData(lumpNodes),numNodes,sizeof(svBSPNode_s),sizeof(svBSPNode_s),sizeof(q3Node_s));
 	memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(svBSPLeaf_s),sizeof(svBSPLeaf_s),sizeOfLeaf);
+	// find the areas count
+	int numAreas = -1;
+	const svBSPLeaf_s *l = leaves.getArray();
+	for(u32 i = 0; i < leaves.size(); i++, l++) {
+		if(l->area >= numAreas) {
+			numAreas = l->area+1;
+		}
+	}
+	areas.resize(numAreas);
+	if(numAreas) {
+		areaPortalStates = (int*)malloc(numAreas*numAreas*sizeof(int));
+		memset(areaPortalStates,0,numAreas*numAreas*sizeof(int));
+		floodAreaConnections();
+	}
 	return false; // OK
 }
 bool svBSP_c::loadVisibility(u32 visLump) {
@@ -125,7 +145,6 @@ bool svBSP_c::load(const char *fname) {
 }
 
 void svBSP_c::filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nodeNum) const {
-	out.clear();
 	while(nodeNum >= 0) {
 		const svBSPNode_s &node = nodes[nodeNum];
 		const q3Plane_s &pl = planes[node.planeNum];
@@ -143,10 +162,13 @@ void svBSP_c::filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nod
 	int leafNum = (-nodeNum - 1);
 	out.leaves.push_back(leafNum);
 	const svBSPLeaf_s &l = leaves[leafNum];
-	out.clusters.add_unique(l.cluster);
-	out.areas.add_unique(l.area);
+	if(l.cluster != -1) {
+		out.clusters.add_unique(l.cluster);
+		out.areas.add_unique(l.area);
+	}
 }
 void svBSP_c::filterBB(const class aabb &bb, struct bspBoxDesc_s &out) const {
+	out.clear();
 	filterBB_r(bb,out,0);
 }
 void svBSP_c::filterPoint(const class vec3_c &p, struct bspPointDesc_s &out) const {
@@ -182,9 +204,8 @@ void svBSP_c::filterPoint(const class vec3_c &p, struct bspPointDesc_s &out) con
 bool svBSP_c::checkVisibility(struct bspPointDesc_s &p, const struct bspBoxDesc_s &box) const {
 	bool bAreasConnected = false;
 	for(u32 i = 0; i < box.areas.size(); i++) {
-		u32 boxArea = box.areas[i];
-	//	if(areasConnected(p.area,boxArea)) 
-		{
+		int boxArea = box.areas[i];
+		if(areasConnected(p.area,boxArea)) {
 			bAreasConnected = true;
 			break;
 		}
@@ -206,4 +227,87 @@ bool svBSP_c::checkVisibility(struct bspPointDesc_s &p, const struct bspBoxDesc_
 		}
 	}
 	return true; // visible
+}
+void svBSP_c::floodArea_r(int areaNum, int floodNum) {
+	svBSPArea_s &area = areas[areaNum];
+	if(area.floodValid == floodValid) {
+		if(area.floodNum == floodNum)
+			return;
+		g_core->Print(S_COLOR_RED"svBSP_c::floodArea_r: reflooded\n");
+		return;
+	}
+
+	area.floodNum = floodNum;
+	area.floodValid = floodValid;
+	int *con = areaPortalStates + areaNum * areas.size();
+	for(u32 i = 0; i < areas.size(); i++) {
+		if(con[i] > 0) {
+			floodArea_r(i, floodNum);
+		}
+	}
+}
+
+void svBSP_c::floodAreaConnections() {
+	// all current floods are now invalid
+	floodValid++;
+	int floodNum = 0;
+
+	for(u32 i = 0; i < areas.size(); i++) {
+		svBSPArea_s &area = areas[i];
+		if(area.floodValid == floodValid) {
+			continue;			// already flooded into
+		}
+		floodNum++;
+		floodArea_r(i, floodNum);
+	}
+}
+bool svBSP_c::areasConnected(int area0, int area1) const {
+	if(area0 < 0 || area1 < 0) {
+		return false;
+	}
+	if(areas[area0].floodNum == areas[area1].floodNum)
+		return true;
+	return false;
+}
+void svBSP_c::adjustAreaPortalState(int area0, int area1, bool open) {
+	if(area0 < 0 || area1 < 0) {
+		return;
+	}
+	if(area0 >= areas.size()) {
+		g_core->Print(S_COLOR_RED"svBSP_c::adjustAreaPortalState: area index %i out of range <0,%i)\n",
+			area0,areas.size());
+		return;
+	}
+	if(area1 >= areas.size()) {
+		g_core->Print(S_COLOR_RED"svBSP_c::adjustAreaPortalState: area index %i out of range <0,%i)\n",
+			area1,areas.size());
+		return;
+	}
+
+	if(open) {
+		areaPortalStates[area0 * areas.size() + area1]++;
+		areaPortalStates[area1 * areas.size() + area0]++;
+	} else {
+		areaPortalStates[area0 * areas.size() + area1]--;
+		areaPortalStates[area1 * areas.size() + area0]--;
+		if(areaPortalStates[area1 * areas.size() + area0] < 0) {
+			g_core->Print(S_COLOR_RED"svBSP_c::adjustAreaPortalState: negative portal reference count!\n");
+		}
+	}
+	floodAreaConnections();
+}
+u32 svBSP_c::getNumAreaBytes() const {
+	return (areas.size() + 7) >> 3;
+}
+#include <shared/bitset.h>
+void svBSP_c::appendCurrentAreaBits(int area, class bitSet_c &bs) {
+	if(area == -1) {
+		bs.setAll(true); // mark all areas as visible
+	} else {
+		u32 floodNum = areas[area].floodNum;
+		for(u32 i = 0; i < areas.size(); i++) {
+			if(areas[i].floodNum == floodNum)
+				bs.set(i,true);
+		}
+	}
 }

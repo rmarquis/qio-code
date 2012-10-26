@@ -35,6 +35,7 @@ public:
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 	virtual void drawBBExts(const float *xyz, const float *angles, const float *halfSizes) = 0;	
 	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) = 0;
+	virtual void drawBBLines(const class aabb &bb) = 0;
 };
 
 extern rDebugDrawer_i *r_dd;

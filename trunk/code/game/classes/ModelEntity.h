@@ -27,8 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __MODELENTITY_H__
 
 #include "BaseEntity.h"
+#include <shared/str.h>
 
 class ModelEntity : public BaseEntity {
+	str renderModelName;
 protected:
 	// bullet physics object
 	class btRigidBody *body;
@@ -62,7 +64,11 @@ public:
 	virtual void setKeyValue(const char *key, const char *value); 
 
 	virtual void runFrame();
+
+	virtual void getLocalBounds(aabb &out) const;
+
 	virtual void debugDraw(class rDebugDrawer_i *dd) {
+		BaseEntity::debugDraw(dd);
 		debugDrawCMObject(dd);
 	}
 };

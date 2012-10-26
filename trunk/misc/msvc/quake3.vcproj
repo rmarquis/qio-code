@@ -1985,6 +1985,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\bitSet.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\bspBoxDesc.h"
 				>
 			</File>

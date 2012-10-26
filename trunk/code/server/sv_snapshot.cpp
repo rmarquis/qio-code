@@ -291,8 +291,9 @@ SV_AddEntitiesVisibleFromPoint
 ===============
 */
 #include "sv_vis.h"
+#include <shared/bitset.h>
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
-									snapshotEntityNumbers_t *eNums, qboolean portal ) {
+									snapshotEntityNumbers_t *eNums, qboolean portal, bitSet_c &areaBits ) {
 	int		e;//, i;
 	edict_s *ent;
 	svEntity_t	*svEnt;
@@ -308,6 +309,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 
 	bspPointDesc_s eyeDesc;
 	sv_bsp->filterPoint(origin,eyeDesc);
+	sv_bsp->appendCurrentAreaBits(eyeDesc.area,areaBits);
 
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
@@ -404,7 +406,12 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 	// add all the entities directly visible to the eye, which
 	// may include portal entities that merge other viewpoints
-	SV_AddEntitiesVisibleFromPoint( org, frame, &entityNumbers, qfalse );
+	bitSet_c areaBits;
+	areaBits.init(sv_bsp->getNumAreas(),false);
+	SV_AddEntitiesVisibleFromPoint( org, frame, &entityNumbers, qfalse, areaBits );
+
+	memcpy(frame->areabits,areaBits.getArray(),areaBits.getSizeInBytes());
+	frame->areabytes = areaBits.getSizeInBytes();
 
 	// if there were portals visible, there may be out of order entities
 	// in the list which will need to be resorted for the delta compression

@@ -117,6 +117,13 @@ struct q3Plane_s {
 		float d = (normal[0]*point.x+normal[1]*point.y+normal[2]*point.z) - dist;
 		return d;
 	}
+	planeSide_e onSide(const vec3_c &p) const {
+		float d = distance(p);
+		if(d < 0) {
+			return SIDE_BACK;
+		}
+		return SIDE_FRONT;
+	}
 	planeSide_e onSide(const aabb &bb) const {
 #if 0
 		planeSide_e s = onSide(bb.getPoint(0));
@@ -127,6 +134,30 @@ struct q3Plane_s {
 			}
 		}
 		return s;
+#elif 1
+
+	// unoptimized, general code
+	vec3_t	corners[2];
+	for (int i = 0; i < 3; i++) {
+		if (this->normal[i] < 0) {
+			corners[0][i] = bb.mins[i];
+			corners[1][i] = bb.maxs[i];
+		} else {
+			corners[1][i] = bb.mins[i];
+			corners[0][i] = bb.maxs[i];
+		}
+	}
+#define DotProduct(x,y)			((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+	float dist1 = DotProduct (this->normal, corners[0]) - this->dist;
+	float dist2 = DotProduct (this->normal, corners[1]) - this->dist;
+	bool front = false;
+	if (dist1 >= 0) {
+		if (dist2 < 0)
+			return SIDE_CROSS;
+		return SIDE_FRONT;
+	}
+	if (dist2 < 0)
+		return SIDE_BACK;
 #else
 		vec3_t corners[2];
 		for (int i = 0; i < 3; i++) {
@@ -262,6 +293,13 @@ struct q3Header_s {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[Q3_MODELS].fileOfs);
 		}
 	}
+	u32 getNumModels() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return getLumps()[MOH_MODELS].fileLen/sizeof(q3Model_s);
+		} else {
+			return getLumps()[Q3_MODELS].fileLen/sizeof(q3Model_s);
+		}
+	}
 	const q3BSPMaterial_s *getMaterials() const {
 		return (const q3BSPMaterial_s*)(((const byte*)this)+getLumps()[Q3_SHADERS].fileOfs);
 	}
@@ -314,6 +352,13 @@ struct q3Header_s {
 			return (const q3Surface_s*)(((const byte*)sf)+(sizeof(q3Surface_s)+4));
 		} else {
 			return (const q3Surface_s*)(((const byte*)sf)+sizeof(q3Surface_s));
+		}
+	}
+	const q3Surface_s *getSurface(u32 surfNum) const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs+(sizeof(q3Surface_s)+4)*surfNum);
+		} else {
+			return (const q3Surface_s*)(((const byte*)this)+getLumps()[Q3_SURFACES].fileOfs+sizeof(q3Surface_s)*surfNum);
 		}
 	}
 	const q3BSPMaterial_s *getMat(u32 matNum) const {

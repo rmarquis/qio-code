@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl_parse.c  -- parse a message received from the server
 
 #include "client.h"
+#include <api/rAPI.h>
 
 char *svc_strings[256] = {
 	"svc_bad",
@@ -269,6 +270,9 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	}
 	
 	MSG_ReadData( msg, &newSnap.areamask, len);
+	if(rf) {
+		rf->setAreaBits(newSnap.areamask,len);
+	}
 
 	// read playerinfo
 	SHOWNET( msg, "playerstate" );

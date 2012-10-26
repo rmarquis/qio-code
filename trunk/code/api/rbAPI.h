@@ -49,6 +49,7 @@ public:
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 	virtual void drawBoxHalfSizes(const float *halfSizes) = 0;
 	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) = 0;
+	virtual void drawBBLines(const class aabb &bb) = 0;
 
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() = 0;

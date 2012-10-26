@@ -449,10 +449,15 @@ void rBspTree_c::updateVisibility() {
 	this->visCounter++;
 	q3Leaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
+	int c_leavesCulledByAreaBits = 0;
 	for(u32 i = 0; i < leaves.size(); i++, l++) {
 		if(isClusterVisible(l->cluster,camCluster) == false) {
 			c_leavesCulledByPVS++;
 			continue; // skip leaves that are not visible
+		}
+		if(areaBits.get(l->area)) {
+			c_leavesCulledByAreaBits++;
+			continue;
 		}
 		for(u32 j = 0; j < l->numLeafSurfaces; j++) {
 			u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
@@ -564,6 +569,13 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 	for(u32 i = 0; i < m.numSurfs; i++) {
 		addBSPSurfaceDrawCall(m.firstSurf+i);
 	}
+}
+void rBspTree_c::setWorldAreaBits(const byte *bytes, u32 numBytes) {
+	if(areaBits.getSizeInBytes() == numBytes && !memcmp(areaBits.getArray(),bytes,numBytes)) {
+		return; // no change
+	}
+	areaBits.fromBytes(bytes,numBytes);
+	lastCluster = -4; // force updateVisibility refresh
 }
 bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	bspSurf_s &sf = surfs[surfNum];

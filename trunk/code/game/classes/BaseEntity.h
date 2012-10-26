@@ -65,9 +65,7 @@ public:
 	virtual void runFrame() {
 
 	}
-	virtual void debugDraw(class rDebugDrawer_i *dd) {
-
-	}
+	virtual void debugDraw(class rDebugDrawer_i *dd);
 };
 
 void BE_SetForcedEdict(edict_s *nfe);

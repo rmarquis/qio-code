@@ -40,6 +40,10 @@ public:
 		rb->setupWorldSpace();
 		rb->drawLineFromTo(from,to,colorRGB);
 	}
+	virtual void drawBBLines(const class aabb &bb) {
+		rb->setupWorldSpace();
+		rb->drawBBLines(bb);
+	}
 };
 
 static rDebugDrawerIMPL_c r_debugDrawer;

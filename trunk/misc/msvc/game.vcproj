@@ -479,6 +479,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cmBezierPatch.cpp"
 				>
 			</File>

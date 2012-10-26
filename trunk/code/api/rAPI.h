@@ -50,6 +50,8 @@ public:
 
 	virtual void rayTraceWorldMap(class trace_c &tr) = 0;
 
+	virtual void setAreaBits(const byte *bytes, u32 numBytes) = 0;
+
 	// misc functions	
 	virtual void clearEntities() = 0;
 	virtual void loadWorldMap(const char *mapName) = 0;

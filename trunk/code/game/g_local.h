@@ -112,6 +112,7 @@ edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const floa
 class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos);
 void BT_RunVehicles();
 void BT_ShutdownVehicles();
+const class aabb &G_GetInlineModelBounds(u32 inlineModelNum);
 
 //
 // g_debugDraw.cpp

@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
+#include <math/aabb.h>
 
 #include "sdl_glConfig.h"
 
@@ -640,6 +641,43 @@ public:
 		glColor3fv(colorRGB);
 		glVertex3fv(to);
 		glEnd();
+	}	
+	virtual void drawBBLines(const class aabb &bb) {
+		vec3_c verts[8];
+		for(u32 i = 0; i < 8; i++) {
+			verts[i] = bb.getPoint(i);
+		}
+		glBegin(GL_LINES);
+		// mins.z
+		glVertex3fv(verts[0]);
+		glVertex3fv(verts[1]);
+		glVertex3fv(verts[0]);
+		glVertex3fv(verts[2]);
+		glVertex3fv(verts[2]);
+		glVertex3fv(verts[3]);
+		glVertex3fv(verts[3]);
+		glVertex3fv(verts[1]);
+		// maxs.z
+		glVertex3fv(verts[4]);
+		glVertex3fv(verts[5]);
+		glVertex3fv(verts[4]);
+		glVertex3fv(verts[6]);
+		glVertex3fv(verts[6]);
+		glVertex3fv(verts[7]);
+		glVertex3fv(verts[7]);
+		glVertex3fv(verts[5]);
+		// mins.z -> maxs.z
+		glVertex3fv(verts[0]);
+		glVertex3fv(verts[4]);
+		glVertex3fv(verts[1]);
+		glVertex3fv(verts[5]);
+		glVertex3fv(verts[2]);
+		glVertex3fv(verts[6]);
+		glVertex3fv(verts[3]);
+		glVertex3fv(verts[7]);
+		glEnd();
+
+
 	}
 	virtual void init()  {
 		GLimp_Init();

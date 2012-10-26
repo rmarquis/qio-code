@@ -82,6 +82,13 @@ public:
 			data[byteNum] &= ~(1 << bitNum);
 		}
 	}
+	void setAll(bool b) {
+		if(b) {
+			memset(data,0xff,numBytes);
+		} else {
+			memset(data,0,numBytes);
+		}
+	}
 	bool get(u32 bitNum) const {
 		if(bitNum >= numBits) {
 			return 0; // bit index out of range - should never happen
@@ -93,7 +100,17 @@ public:
 		}
 		return ((data[byteNum] & (1 << bitNum) ) != 0);
 	}
-
+	void fromBytes(const byte *np, u32 numNewBytes) {
+		ensureAllocatedBytes(numNewBytes);
+		numBits = numNewBytes * 8;
+		memcpy(data,np,numNewBytes);
+	}
+	const byte *getArray() const {
+		return data;
+	}
+	u32 getSizeInBytes() const {
+		return numBytes;
+	}
 };
 
 #endif // __BITSET_H__

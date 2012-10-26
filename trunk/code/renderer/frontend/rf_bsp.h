@@ -97,6 +97,7 @@ class rBspTree_c {
 	const struct q3Header_s *h; // used only while loading
 	u32 c_bezierPatches;
 	u32 c_flares;
+	bitSet_c areaBits;
 	visHeader_s *vis;
 
 	rVertexBuffer_c verts;
@@ -149,6 +150,8 @@ public:
 	void updateVisibility();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
+
+	void setWorldAreaBits(const byte *bytes, u32 numBytes);
 
 	void traceRay(class trace_c &out);
 	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);

@@ -52,6 +52,10 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	// NOTE: render model pointer isnt stored in game module.
 	// It's clientside only.
 	this->myEdict->s->rModelIndex = G_RenderModelIndex(newRModelName);
+	renderModelName = newRModelName;
+
+	this->recalcABSBounds();
+	this->link();
 }
 void ModelEntity::setColModel(const char *newCModelName) {
 	this->cmod = cm->registerModel(newCModelName);
@@ -112,4 +116,14 @@ void ModelEntity::createBoxPhysicsObject(const float *pos, const float *halfSize
 }
 void ModelEntity::runFrame() {
 	runPhysicsObject();
+}
+void ModelEntity::getLocalBounds(aabb &out) const {
+	if(renderModelName.length() == 0) {
+		BaseEntity::getLocalBounds(out);
+		return;
+	}
+	if(renderModelName[0] == '*') {
+		out = G_GetInlineModelBounds(atoi(renderModelName.c_str()+1));
+		out.extend(0.5f);
+	}
 }

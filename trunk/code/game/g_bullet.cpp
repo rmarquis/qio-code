@@ -1,5 +1,4 @@
 #include "g_local.h"
-#include <api/vfsAPI.h>
 #include <api/cmAPI.h>
 #include <math/quat.h>
 #include <math/aabb.h>
@@ -291,9 +290,41 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 
 	dynamicsWorld->addCharacter(character);
 	return character;
-};
-#include "../fileformats/bspFileFormat.h"
-#include <shared/cmBezierPatch.h>
+}
+#include <shared/bspPhysicsDataLoader.h>
+bspPhysicsDataLoader_c *g_bspPhysicsLoader;
+
+// brush converting
+btAlignedObjectArray<btVector3> planeEquations;
+void BT_AddBrushPlane(const float q3Plane[4]) {
+	btVector3 planeEq;
+	planeEq.setValue(q3Plane[0],q3Plane[1],q3Plane[2]);
+	// q3 plane equation is Ax + By + Cz - D = 0, so negate D
+	planeEq[3] = -q3Plane[3];
+	planeEquations.push_back(planeEq);
+}
+void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+	planeEquations.clear();
+	g_bspPhysicsLoader->iterateBrushPlanes(brushNum,BT_AddBrushPlane);
+	// convert plane equations -> vertex cloud
+	btAlignedObjectArray<btVector3>	vertices;
+	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
+	BT_CreateWorldBrush(vertices);
+}
+void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+	cmSurface_c *newSF = new cmSurface_c;
+	bt_cmSurfs.push_back(newSF); // we'll need to free it later
+	g_bspPhysicsLoader->convertBezierPatchToTriSurface(surfNum,2,*newSF);
+	BT_CreateWorldTriMesh(*newSF);
+}
+arraySTD_c<aabb> g_inlineModelBounds;
+const class aabb &G_GetInlineModelBounds(u32 inlineModelNum) {
+	return g_inlineModelBounds[inlineModelNum];
+}
 void G_LoadMap(const char *mapName) {
 	if(!stricmp(mapName,"_empty")) {
 		const float worldSize = 4096.f;
@@ -308,75 +339,63 @@ void G_LoadMap(const char *mapName) {
 
 		return;
 	}
-#if 0
-	FILE *f = fopen(mapName,"rb");
-	if(f == 0) {
-		char buf[256];
-		strcpy(buf,"baseqio/");
-		strcat(buf,mapName);
-		strcat(buf,".bsp");
-		f = fopen(buf,"rb");
-	}
-	if(f == 0)
-		return 0;
-	fseek(f,0,SEEK_END);
-	int len = ftell(f);
-	rewind(f);
-	byte *data = (byte*)malloc(len);
-	fread(data,1,len,f);
-	fclose(f);
-#else
-	char buf[256];
-	strcpy(buf,"maps/");
-	strcat(buf,mapName);
-	strcat(buf,".bsp");
-	fileHandle_t f;
-	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
-	byte *data = (byte*)malloc(len);
-	g_vfs->FS_Read(data,len,f);
-	g_vfs->FS_FCloseFile(f);
-#endif
+	bspPhysicsDataLoader_c l;
+	if(l.loadBSPFile(mapName)) {
 
+		return;
+	}
+	g_bspPhysicsLoader = &l;
+	// load world model
+	l.iterateModelBrushes(0,BT_ConvertWorldBrush);
+	l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+	// load inline models - TODO
+	for(u32 i = 0; i < l.getNumInlineModels(); i++) {
+		aabb bb;
+		l.getInlineModelBounds(i,bb);
+		g_inlineModelBounds.push_back(bb);
+	}
 
-	q3Header_s *h = (q3Header_s*)data;
-	const q3Brush_s *b = h->getBrushes();
-	const q3Plane_s *planes = h->getPlanes();
-	u32 numBrushes = h->getModels()->numBrushes;
-	for(u32 i = 0; i < numBrushes; i++, b++) {
-		const q3BSPMaterial_s *m = h->getMat(b->materialNum);
-		if((m->contentFlags & 1) == false)
-			continue;
-		btAlignedObjectArray<btVector3> planeEquations;
-		for(int j = 0; j < b->numSides; j++) {
-			const q3BrushSide_s *s = h->getBrushSide(b->firstSide+j);
-			const q3Plane_s &plane = planes[s->planeNum];
-			btVector3 planeEq;
-			planeEq.setValue(plane.normal[0],plane.normal[1],plane.normal[2]);
-			planeEq[3] = -plane.dist;
-			planeEquations.push_back(planeEq);
-		}
-		btAlignedObjectArray<btVector3>	vertices;
-		btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
-		BT_CreateWorldBrush(vertices);
-	}
-	// load only bezier patches (brushes are used for collision detection instead of planar surfaces)
-	u32 numSurfs = h->getModels()->numSurfaces;
-	const q3Surface_s *sf = h->getSurfaces();
-	for(u32 i = 0; i < numSurfs; i++) {
-		if(sf->surfaceType == Q3MST_PATCH) {
-			cmBezierPatch_c bp;
-			const q3Vert_s *v = h->getVerts() + sf->firstVert;
-			for(u32 j = 0; j < sf->numVerts; j++, v++) {
-				bp.addVertex(v->xyz);
-			}
-			bp.setHeight(sf->patchHeight);
-			bp.setWidth(sf->patchWidth);
-			cmSurface_c *cmSF = new cmSurface_c;
-			bp.tesselate(2,cmSF);
-			BT_CreateWorldTriMesh(*cmSF);
-			bt_cmSurfs.push_back(cmSF); // we'll need to free it later
-		}
-		sf = h->getNextSurface(sf);
-	}
-	free(data);
+	l.clear();
+	g_bspPhysicsLoader = 0;
+
+	//const q3Brush_s *b = h->getBrushes();
+	//const q3Plane_s *planes = h->getPlanes();
+	//u32 numBrushes = h->getModels()->numBrushes;
+	//for(u32 i = 0; i < numBrushes; i++, b++) {
+	//	const q3BSPMaterial_s *m = h->getMat(b->materialNum);
+	//	if((m->contentFlags & 1) == false)
+	//		continue;
+	//	btAlignedObjectArray<btVector3> planeEquations;
+	//	for(int j = 0; j < b->numSides; j++) {
+	//		const q3BrushSide_s *s = h->getBrushSide(b->firstSide+j);
+	//		const q3Plane_s &plane = planes[s->planeNum];
+	//		btVector3 planeEq;
+	//		planeEq.setValue(plane.normal[0],plane.normal[1],plane.normal[2]);
+	//		planeEq[3] = -plane.dist;
+	//		planeEquations.push_back(planeEq);
+	//	}
+	//	btAlignedObjectArray<btVector3>	vertices;
+	//	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
+	//	BT_CreateWorldBrush(vertices);
+	//}
+	//// load only bezier patches (brushes are used for collision detection instead of planar surfaces)
+	//u32 numSurfs = h->getModels()->numSurfaces;
+	//const q3Surface_s *sf = h->getSurfaces();
+	//for(u32 i = 0; i < numSurfs; i++) {
+	//	if(sf->surfaceType == Q3MST_PATCH) {
+	//		cmBezierPatch_c bp;
+	//		const q3Vert_s *v = h->getVerts() + sf->firstVert;
+	//		for(u32 j = 0; j < sf->numVerts; j++, v++) {
+	//			bp.addVertex(v->xyz);
+	//		}
+	//		bp.setHeight(sf->patchHeight);
+	//		bp.setWidth(sf->patchWidth);
+	//		cmSurface_c *cmSF = new cmSurface_c;
+	//		bp.tesselate(2,cmSF);
+	//		BT_CreateWorldTriMesh(*cmSF);
+	//		bt_cmSurfs.push_back(cmSF); // we'll need to free it later
+	//	}
+	//	sf = h->getNextSurface(sf);
+	//}
+	//free(data);
 }

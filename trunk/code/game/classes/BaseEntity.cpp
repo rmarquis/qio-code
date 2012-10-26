@@ -119,3 +119,7 @@ void BaseEntity::recalcABSBounds() {
 void BaseEntity::getLocalBounds(aabb &out) const {
 	out.fromHalfSize(16.f);
 }
+#include <api/ddAPI.h>
+void BaseEntity::debugDraw(class rDebugDrawer_i *dd) {
+	dd->drawBBLines(this->myEdict->absBounds);
+}

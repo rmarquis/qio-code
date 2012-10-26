@@ -144,6 +144,9 @@ public:
 	virtual void rayTraceWorldMap(class trace_c &tr) {
 		RF_RayTraceWorld(tr);
 	}	
+	virtual void setAreaBits(const byte *bytes, u32 numBytes) {
+		RF_SetWorldAreaBits(bytes, numBytes);
+	}
 	virtual class rEntityAPI_i *allocEntity() {
 		return RFE_AllocEntity();
 	}
