@@ -1,0 +1,71 @@
+# 3ds Max Wavefront OBJ Exporter v0.94b - (c)2007 guruware
+# File Created: 27.06.2008 20:17:32
+
+newmtl 01___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka skincop\0000.BMP
+	map_Kd skincop\0000.BMP
+	map_bump skin00\0000.BMP
+	bump skin00\0000.BMP
+	map_refl Map__6_Raytrace.tga
+
+newmtl 02___Default
+	Ns 19.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.6210 0.6210 0.6210
+	Ke 0.0000 0.0000 0.0000
+	map_Ka car\0001.bmp
+	map_Kd car\0001.bmp
+	map_bump car\0000.BMP
+	bump car\0000.BMP
+	map_refl Map__8_Raytrace.tga
+
+newmtl myglass_HL
+	Ns 50.0000
+	Ni 1.5000
+	d 0.3000
+	Tr 0.3000
+	Tf 0.3000 0.3000 0.3000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.0980 0.1137 0.1255
+	Ks 0.5400 0.5400 0.5400
+	Ke 0.0000 0.0000 0.0000
+	map_refl Map__9_Raytrace.tga
+
+newmtl wire_173173173
+	Ns 32
+	d 1
+	Tr 1
+	Tf 1 1 1
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.6784 0.6784 0.6784
+	Ks 0.3500 0.3500 0.3500
+
+newmtl relfection_Material
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 1.0000 1.0000 1.0000
