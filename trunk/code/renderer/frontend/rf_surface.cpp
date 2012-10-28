@@ -82,7 +82,22 @@ bool r_surface_c::traceRay(class trace_c &tr) {
 		}
 	}
 	return hasHit;
+}	
+void r_surface_c::scaleXYZ(float scale) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		v->xyz *= scale;
+	}
 }
+void r_surface_c::swapYZ() {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		float tmp = v->xyz.y;
+		v->xyz.y = v->xyz.z;
+		v->xyz.z = tmp;
+	}
+}
+
 //
 //	r_model_c class
 //
@@ -90,6 +105,18 @@ void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	r_surface_c *sf = registerSurf(matName);
 	sf->addTriangle(v0,v1,v2);
+}
+void r_model_c::scaleXYZ(float scale) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->scaleXYZ(scale);
+	}
+}
+void r_model_c::swapYZ() {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->swapYZ();
+	}
 }
 r_surface_c *r_model_c::registerSurf(const char *matName) {
 	r_surface_c *sf = surfs.getArray();

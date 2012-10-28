@@ -168,6 +168,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\code\modelLoader\mod_postProcess.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\modelLoaderAPI.cpp"
 				>
 			</File>

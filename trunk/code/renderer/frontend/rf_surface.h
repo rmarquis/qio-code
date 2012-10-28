@@ -85,6 +85,9 @@ public:
 
 	bool traceRay(class trace_c &tr);
 
+	void scaleXYZ(float scale);
+	void swapYZ();
+
 	const aabb &getBB() const {
 		return bounds;
 	}
@@ -99,6 +102,9 @@ public:
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	// modelPostProcessFuncs_i implementation
+	virtual void scaleXYZ(float scale);
+	virtual void swapYZ();
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();

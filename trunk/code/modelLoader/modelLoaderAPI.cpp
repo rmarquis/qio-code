@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <api/staticModelCreatorAPI.h>
 #include <shared/autoCvar.h>
 
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
@@ -43,8 +44,17 @@ public:
 			return true;
 		}
 		ext++; // skip '.'
+		bool error;
 		if(!stricmp(ext,"obj")) {
-			return MOD_LoadOBJ(fname,out);
+			error = MOD_LoadOBJ(fname,out);
+		} else {
+			error = true;
+		}
+		if(error == false) {
+			// apply model postprocess steps (scaling, rotating, etc)
+			// defined in optional .mdlpp file
+			MOD_ApplyPostProcess(fname,out);
+			return false; // no error
 		}
 		return true;
 	}

@@ -21,16 +21,15 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderLocal.h - local model loader header
-#ifndef __MODELLOADERLOCAL_H__
-#define __MODELLOADERLOCAL_H__
+// modelPostProcessFuncs.h - functions used by model postprocessing code
+// (scaling, rotating, etc)
+#ifndef __MODELPOSTPROCESSFUNCS_H__
+#define __MODELPOSTPROCESSFUNCS_H__
 
-class staticModelCreatorAPI_i;
+class modelPostProcessFuncs_i {
+public:
+	virtual void scaleXYZ(float scale) = 0;
+	virtual void swapYZ() = 0;
+};
 
-// staticModelLoaders/wavefrontOBJModelLoader.cpp
-bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out);
-
-// mod_postProcess.cpp
-bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout);
-
-#endif // __MODELLOADERLOCAL_H__
+#endif // __MODELPOSTPROCESSFUNCS_H__

@@ -124,7 +124,7 @@ const char *parser_c::getToken(str &out) {
 		}
 	} else {
 		start = p;
-		while(G_isWS(*p) == false) {
+		while((G_isWS(*p) == false) && (*p != 0)) {
 			p++;
 		}
 		end = p;
