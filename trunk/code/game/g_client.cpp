@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <math/vec3.h>
 #include "classes/ModelEntity.h"
 #include "classes/Player.h"
+#include "classes/VehicleCar.h"
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -272,6 +273,14 @@ void ClientCommand( int clientNum ) {
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 32.f;
 		BT_CreateBoxEntity(p,vec3_c(16,16,16),pl->getForward());
+	} else if(!stricmp(cmd,"createkubelwagen") || !stricmp(cmd,"createporshe")) {
+		VehicleCar *veh = new VehicleCar;
+		veh->spawnPhysicsVehicle();
+		if(!stricmp(cmd,"createkubelwagen")) {
+			veh->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
+		} else {
+			veh->setRenderModel("models/vehicles/Porsche_911/porsche-911.obj");
+		}
 	} else {
 		vec3_c tmp(1400,1340,470);
 		//BT_CreateVehicle(tmp);

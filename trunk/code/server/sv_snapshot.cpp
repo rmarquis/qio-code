@@ -308,8 +308,10 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	}
 
 	bspPointDesc_s eyeDesc;
-	sv_bsp->filterPoint(origin,eyeDesc);
-	sv_bsp->appendCurrentAreaBits(eyeDesc.area,areaBits);
+	if(sv_bsp) {
+		sv_bsp->filterPoint(origin,eyeDesc);
+		sv_bsp->appendCurrentAreaBits(eyeDesc.area,areaBits);
+	}
 
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
@@ -336,7 +338,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-		if(sv_bsp->checkVisibility(eyeDesc,*ent->bspBoxDesc)) {
+		if(sv_bsp == 0 || sv_bsp->checkVisibility(eyeDesc,*ent->bspBoxDesc)) {
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 		}
@@ -407,7 +409,9 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	// add all the entities directly visible to the eye, which
 	// may include portal entities that merge other viewpoints
 	bitSet_c areaBits;
-	areaBits.init(sv_bsp->getNumAreas(),false);
+	if(sv_bsp) {
+		areaBits.init(sv_bsp->getNumAreas(),false);
+	}
 	SV_AddEntitiesVisibleFromPoint( org, frame, &entityNumbers, qfalse, areaBits );
 
 	memcpy(frame->areabits,areaBits.getArray(),areaBits.getSizeInBytes());

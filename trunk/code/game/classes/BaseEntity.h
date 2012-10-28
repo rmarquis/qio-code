@@ -50,6 +50,7 @@ public:
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
+	virtual void setMatrix(const class matrix_c &newMat);
 	const class vec3_c &getOrigin() const;
 	const class vec3_c &getAngles() const;
 	const vec3_c &getForward() const {

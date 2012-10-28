@@ -104,8 +104,7 @@ void ModelEntity::runPhysicsObject() {
 #else
 	matrix_c mat;
 	trans.getOpenGLMatrix(mat);
-	myEdict->s->angles = mat.getAngles();
-	myEdict->s->origin = mat.getOrigin();
+	this->setMatrix(mat);
 #endif
 }
 

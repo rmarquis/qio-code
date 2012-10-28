@@ -411,6 +411,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_physVehicleAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_public.h"
 				>
 			</File>
@@ -464,6 +468,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\Player.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\VehicleCar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\VehicleCar.h"
 				>
 			</File>
 		</Filter>

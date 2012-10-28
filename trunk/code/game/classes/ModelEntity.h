@@ -49,7 +49,7 @@ public:
 	void setColModel(const char *newCModelName);
 	void setColModel(class cMod_i *newCModel);
 
-	void runPhysicsObject();
+	virtual void runPhysicsObject();
 
 	void createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel);
 	

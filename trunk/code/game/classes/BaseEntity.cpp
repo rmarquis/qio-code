@@ -105,6 +105,13 @@ void BaseEntity::setAngles(const class vec3_c &newAngles) {
 	recalcABSBounds();
 	link();
 }
+void BaseEntity::setMatrix(const class matrix_c &newMat) {
+	myEdict->s->angles = newMat.getAngles();
+	myEdict->s->origin = newMat.getOrigin();	
+	this->matrix = newMat;
+	recalcABSBounds();
+	link();
+}
 const vec3_c &BaseEntity::getOrigin() const {
 	return myEdict->s->origin;
 }

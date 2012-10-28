@@ -24,6 +24,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 // bt_vehicle.cpp
 #include "g_local.h"
 #include "bt_include.h"
+#include "g_physVehicleAPI.h"
+#include <math/matrix.h>
 
 #define VEH_SCALE 48.f
 
@@ -46,10 +48,6 @@ static btScalar suspensionRestLength(0.6f*VEH_SCALE);
 static float gEngineForce = 100000.f;
 static float gVehicleSteering = 0.1f;
 
-class physVehicleAPI_i {
-	
-};
-
 class btVehicle_c : public physVehicleAPI_i {
 	btRaycastVehicle *m_vehicle;
 	btRigidBody *m_carChassis;
@@ -65,6 +63,11 @@ public:
 	}
 	~btVehicle_c() {
 		destroyVehicle();
+	}
+	virtual void getMatrix(matrix_c &out) {
+		btTransform trans;
+		m_carChassis->getMotionState()->getWorldTransform(trans);	
+		trans.getOpenGLMatrix(out);
 	}
 	void init(const vec3_c &pos) {
 		btCollisionShape *chassisShape = new btBoxShape(btVector3(1.f*VEH_SCALE,2.f*VEH_SCALE, 0.5f*VEH_SCALE));

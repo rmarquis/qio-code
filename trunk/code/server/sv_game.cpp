@@ -173,7 +173,9 @@ void SV_LinkEntity(edict_s *ed) {
 	if(ed->bspBoxDesc == 0) {
 		ed->bspBoxDesc = new bspBoxDesc_s;
 	}
-	sv_bsp->filterBB(ed->absBounds,*ed->bspBoxDesc);
+	if(sv_bsp) {
+		sv_bsp->filterBB(ed->absBounds,*ed->bspBoxDesc);
+	}
 }
 void SV_UnlinkEntity(edict_s *ed) {
 	// free bspBoxDesc
