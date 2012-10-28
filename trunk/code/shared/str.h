@@ -113,6 +113,13 @@ public:
 		len = otherStr.len;
 	}
 	str(const char *otherStr) {
+		if(otherStr == 0 || otherStr[0] == 0) {
+			data = buffer;
+			buffer[0] = 0;
+			len = 0;
+			allocated = 16;
+			return;
+		}
 		u32 otherStrLen = strlen(otherStr);
 		if(otherStrLen + 1 >= 16) {
 			allocated = otherStrLen + 1;

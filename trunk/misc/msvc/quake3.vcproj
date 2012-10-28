@@ -1929,6 +1929,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\modelLoaderDLLAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\moduleManagerAPI.h"
 				>
 			</File>
@@ -1954,6 +1958,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\serverAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\staticModelCreatorAPI.h"
 				>
 			</File>
 			<File

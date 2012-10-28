@@ -25,9 +25,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_drawCall.h"
 #include <api/rbAPI.h>
-#include <shared/trace.h>
+#include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
+#include <shared/trace.h>
 
+//
+//	r_surface_c class
+//
+void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+	indices.addIndex(verts.size());
+	indices.addIndex(verts.size()+1);
+	indices.addIndex(verts.size()+2);
+	rVert_c nv;
+	nv.xyz = v0.xyz;
+	nv.tc = v0.tc;
+	verts.push_back(nv);
+	nv.xyz = v1.xyz;
+	nv.tc = v1.tc;
+	verts.push_back(nv);
+	nv.xyz = v2.xyz;
+	nv.tc = v2.tc;
+	verts.push_back(nv);
+}
+void r_surface_c::setMaterial(mtrAPI_i *newMat) {
+	mat = newMat;
+	matName = newMat->getName();
+}
+void r_surface_c::setMaterial(const char *newMatName) {
+	matName = newMatName;
+	mat = g_ms->registerMaterial(newMatName);
+}
 void r_surface_c::drawSurface() {
 	rb->setBindVertexColors(true);
 	rb->setMaterial(this->mat,this->lightmap);
@@ -55,4 +82,29 @@ bool r_surface_c::traceRay(class trace_c &tr) {
 		}
 	}
 	return hasHit;
+}
+//
+//	r_model_c class
+//
+void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
+							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+	r_surface_c *sf = registerSurf(matName);
+	sf->addTriangle(v0,v1,v2);
+}
+r_surface_c *r_model_c::registerSurf(const char *matName) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(!Q_stricmp(sf->getMatName(),matName)) {
+			return sf;
+		}
+	}	
+	sf = &surfs.pushBack();
+	sf->setMaterial(matName);
+	return sf;
+}
+void r_model_c::addDrawCalls() {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->addDrawCall();
+	}
 }

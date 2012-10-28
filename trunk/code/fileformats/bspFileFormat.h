@@ -134,7 +134,7 @@ struct q3Plane_s {
 			}
 		}
 		return s;
-#elif 1
+#elif 0
 
 	// unoptimized, general code
 	vec3_t	corners[2];

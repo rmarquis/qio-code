@@ -21,32 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// coreAPI.h - engine core interface
+// mtlFile.h - simple WaveFront Obj .mtl file reader
+#ifndef __MTLFILE_H__
+#define __MTLFILE_H__
 
-#ifndef __COREAPI_H__
-#define __COREAPI_H__
+#include <shared/str.h>
+#include <shared/array.h>
 
-#include "iFaceBase.h"
-#include "../qcommon/q_shared.h" // only for __attribute__
-
-#define CORE_API_IDENTSTR "CoreEngineAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct coreAPI_s : public iFaceBase_i {
-	void (*Print)( const char *text, ... );
-	void (*RedWarning)( const char *text, ... );
-	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
-	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
-	// milliseconds should only be used for performance tuning, never
-	// for anything game related.
-	int  (*Milliseconds)( void );
-	// engine command system api
-	int	(*Argc)( void );
-	void (*ArgvBuffer)( int n, char *buffer, int bufferLength );
-	void (*Args)( char *buffer, int bufferLength );
-	const char *(*Argv)( int n );
+struct mtlEntry_s {
+	str name;
+	str map_Ka;
+	str map_Kd;
+	str map_bump;
+	str bump;
+	str map_refl;
+	str map_d;
 };
 
-extern coreAPI_s *g_core;
+class mtlFile_c {
+	str name;
+	arraySTD_c<mtlEntry_s> entries;
+public:
+	bool loadMTL(const char *fileName);
 
-#endif // __COREAPI_H__
+	const mtlEntry_s *findEntry(const char *mtlName) const;
+};
+
+#endif // __MTLFILE_H__
+

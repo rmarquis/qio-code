@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../rVertexBuffer.h"
 #include <shared/str.h>
 #include <math/aabb.h>
+#include <api/staticModelCreatorAPI.h>
 
 class r_surface_c {
 	str name;
@@ -41,9 +42,13 @@ class r_surface_c {
 public:
 	r_surface_c() {
 		mat = 0;
+		lightmap = 0;
 	}
 	u32 getNumVerts() const {
 		return verts.size();
+	}
+	const char *getMatName() const {
+		return matName;
 	}
 	void addVert(const rVert_c &v) {
 		verts.push_back(v);
@@ -51,6 +56,8 @@ public:
 	void addIndex(u32 idx) {
 		indices.addIndex(idx);
 	}
+	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+
 	void clear() {
 		indices.destroy();
 		verts.destroy();
@@ -61,9 +68,8 @@ public:
 	void createIBO() {
 		indices.uploadToGPU();
 	}
-	void setMaterial(mtrAPI_i *newMat) {
-		mat = newMat;
-	}
+	void setMaterial(mtrAPI_i *newMat);
+	void setMaterial(const char *newMatName);
 	void setLightmap(textureAPI_i *newLM) {
 		lightmap = newLM;
 	}
@@ -83,6 +89,19 @@ public:
 		return bounds;
 	}
 
+};
+
+class r_model_c : public staticModelCreatorAPI_i {
+	arraySTD_c<r_surface_c> surfs;
+	aabb bounds;
+	str name;
+public:
+	// staticModelCreatorAPI_i implementation
+	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
+		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+
+	r_surface_c *registerSurf(const char *matName);
+	void addDrawCalls();
 };
 
 #endif // __RF_SURFACE_H__

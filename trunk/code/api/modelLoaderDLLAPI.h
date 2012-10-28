@@ -21,32 +21,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// coreAPI.h - engine core interface
+// modelLoaderDLLAPI.h - interface of model loading module
+#ifndef __MODELLOADERDLLAPI_H__
+#define __MODELLOADERDLLAPI_H__
 
-#ifndef __COREAPI_H__
-#define __COREAPI_H__
+#define MODELLOADERDLL_API_IDENTSTR "ModelLoaderDLLAPI0001"
 
-#include "iFaceBase.h"
-#include "../qcommon/q_shared.h" // only for __attribute__
-
-#define CORE_API_IDENTSTR "CoreEngineAPI0001"
-
-// these are only temporary function pointers, TODO: rework them?
-struct coreAPI_s : public iFaceBase_i {
-	void (*Print)( const char *text, ... );
-	void (*RedWarning)( const char *text, ... );
-	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
-	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
-	// milliseconds should only be used for performance tuning, never
-	// for anything game related.
-	int  (*Milliseconds)( void );
-	// engine command system api
-	int	(*Argc)( void );
-	void (*ArgvBuffer)( int n, char *buffer, int bufferLength );
-	void (*Args)( char *buffer, int bufferLength );
-	const char *(*Argv)( int n );
+class modelLoaderDLLAPI_i {
+public:
+	virtual bool isStaticModelFile(const char *fname) = 0;
+	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
 };
 
-extern coreAPI_s *g_core;
+extern class modelLoaderDLLAPI_i *g_modelLoader;
 
-#endif // __COREAPI_H__
+#endif // __MODELLOADERDLLAPI_H__

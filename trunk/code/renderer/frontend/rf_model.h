@@ -29,17 +29,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <math/aabb.h>
 
+enum modelType_e {
+	MOD_BAD,
+	MOD_BSP, // inline bsp model (model name starts with '*')
+	MOD_STATIC, // static (non-animated) triangle model
+	MOD_NUM_MODEL_TYPES,
+};
+
 class model_c : public rModelAPI_i {
 	str name;
 	model_c *hashNext;
 
-	class rBspTree_c *myBSP;
-	u32 bspModelNum;
+	modelType_e type;
+	union {
+		struct {
+			class rBspTree_c *myBSP;
+			u32 bspModelNum;
+		}; // only if this->type == MOD_BSP
+		class r_model_c *staticModel; // only if this->type == MOD_STATIC
+	};
 	aabb bb;
 public:
 	model_c() {
 		hashNext = 0;
 		myBSP = 0;
+		type = MOD_BAD;
 	}
 	virtual const char *getName() const {
 		return name;

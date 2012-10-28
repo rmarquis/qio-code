@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cm", "cm.vcproj", "{FEFA37D
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "..\..\code\external\bullet-2.80-rev2531\msvc\vs2008\BulletDynamics.vcproj", "{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelLoader", "modelLoader.vcproj", "{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -54,6 +56,10 @@ Global
 		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Debug|Win32.Build.0 = Debug|Win32
 		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Release|Win32.ActiveCfg = Release|Win32
 		{AFBF2695-6BBA-7D41-80E4-308FCB2A37B7}.Release|Win32.Build.0 = Release|Win32
+		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Debug|Win32.Build.0 = Debug|Win32
+		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Release|Win32.ActiveCfg = Release|Win32
+		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

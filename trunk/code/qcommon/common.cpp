@@ -230,6 +230,16 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 }
 
 
+void QDECL Com_RedWarning( const char *fmt, ... ) {
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+
+	va_start (argptr,fmt);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+	Com_Printf("%s%s",S_COLOR_RED,msg);
+}
+
 /*
 ================
 Com_DPrintf
@@ -2649,6 +2659,7 @@ static coreAPI_s g_staticCoreAPI;
 coreAPI_s *g_core = 0;
 void Com_InitCoreAPI() {
 	g_staticCoreAPI.Print = Com_Printf;
+	g_staticCoreAPI.RedWarning = Com_RedWarning;
 	g_staticCoreAPI.Error = Com_Error;
 	g_staticCoreAPI.DropError = Com_DropError;
 	g_staticCoreAPI.Milliseconds = Sys_Milliseconds;
@@ -2679,7 +2690,13 @@ void Com_InitCMDLL() {
 		Com_Error(ERR_DROP,"Cannot load CM DLL");
 	}
 }
-
+static moduleAPI_i *com_modelLoaderDLL = 0;
+void Com_InitModelLoaderDLL() {
+	com_modelLoaderDLL = g_moduleMgr->load("modelLoader");
+	if(com_modelLoaderDLL == 0) {
+		Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
+	}
+}
 /*
 =================
 Com_Init
@@ -2745,6 +2762,8 @@ void Com_Init( char *commandLine ) {
 	Com_InitImageLib();
 
 	Com_InitCMDLL();
+
+	Com_InitModelLoaderDLL();
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);

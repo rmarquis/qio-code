@@ -50,6 +50,7 @@ public:
 	rIndexBuffer_c() {
 		type = IBO_NOT_SET;
 		numIndices = 0;
+		handleV = 0;
 	}
 	u16 *initU16(u32 newCount) {
 		destroy();

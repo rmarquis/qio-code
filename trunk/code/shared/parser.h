@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class parser_c {
 	const char *base; // start of the text
 	const char *p; // current position in the text
+	char *fileData; // alloced by filesystem in parser_c::openFile
 	str debugFileName;
 	str lastToken;
 
@@ -38,21 +39,62 @@ class parser_c {
 	bool skipToNextToken();
 
 public:
+	parser_c();
+	~parser_c();
+	bool openFile(const char *fname);
 	void setup(const char *newText, const char *newP = 0);
+	void clear();
 	void setDebugFileName(const char *newDebugFileName);
 	const char *getToken(str &out);
 	const char *getToken() {
 		return getToken(this->lastToken);
 	}
+	float getFloat();
+	int getInteger();
+	// eg "0 0 0 128"
+	bool getFloatMat(float *out, u32 dims) {
+		const char *s;
+		for(u32 i = 0; i < dims; i++) {
+			s = getToken();
+			//if(isNotANumber(s))
+			//return true; // error
+			out[i] = atof(s);
+		}
+		return false; // OK
+	}
 	bool atChar(char ch);
 	bool atWord(const char *word);
+	bool atWord_dontNeedWS(const char *word);
+
+	void skipLine();
+
 	const char *getDebugFileName() const {
 		return debugFileName;
 	}
 	u32 getCurrentLineNumber() const;
 
 	inline bool atEOF() const {
-		return *p == 0;
+		const char *tmp = p;
+		while(*tmp) {
+			if(G_isWS(*tmp) == false) {
+				return false;
+			}
+			tmp++;
+		}
+		return true;
+	}
+	inline bool isAtEOL() const {
+		const char *tmp = p;
+		while(*tmp) {
+			if(*tmp == '\n') {
+				return true;
+			}
+			if(G_isWS(*tmp) == false) {
+				return false;
+			}
+			tmp++;
+		}
+		return false;
 	}
 
 

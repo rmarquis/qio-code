@@ -36,6 +36,7 @@ enum qioModule_e {
 	QMD_MATERIALSYSTEM,
 	QMD_IMAGELIB,
 	QMD_CM,
+	QMD_MODELLOADER,
 };
 
 // this must be implemented in every module

@@ -23,15 +23,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_model.cpp
 #include "rf_model.h"
+#include "rf_surface.h"
 #include "rf_bsp.h"
 #include <shared/hashTableTemplate.h>
 #include <api/coreAPI.h>
+#include <api/modelLoaderDLLAPI.h>
 
 void model_c::addModelDrawCalls() {
-	myBSP->addModelDrawCalls(bspModelNum);
+	if(type == MOD_BSP) {
+		myBSP->addModelDrawCalls(bspModelNum);
+	} else if(type == MOD_STATIC) {
+		staticModel->addDrawCalls();
+	}
 }
 bool model_c::rayTrace(class trace_c &tr) const {
-	return myBSP->traceRayInlineModel(bspModelNum,tr);
+	if(type == MOD_BSP) {
+		return myBSP->traceRayInlineModel(bspModelNum,tr);
+	} else {
+
+		return false;
+	}
 }
 
 static hashTableTemplateExt_c<model_c> rf_models;
@@ -61,9 +72,18 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 	if(existing) {
 		return existing;
 	}
-	
-
-	return 0;
+	model_c *ret = RF_AllocModel(modName);
+	if(g_modelLoader->isStaticModelFile(modName)) {
+		ret->staticModel = new r_model_c;
+		if(g_modelLoader->loadStaticModelFile(modName,ret->staticModel)) {
+			g_core->Print(S_COLOR_RED"Loading of static model %s failed\n",modName);
+			delete ret->staticModel;
+			ret->staticModel = 0;
+		} else {
+			ret->type = MOD_STATIC; // that's a valid model
+		}
+	}
+	return ret;
 }
 
 void RF_ClearModels() {

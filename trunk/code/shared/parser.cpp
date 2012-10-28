@@ -23,8 +23,35 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // parser.h - simple parser class
 #include "parser.h"
+#include <api/vfsAPI.h>
 
+parser_c::parser_c() {
+	base = 0;
+	p = 0;
+	fileData = 0;
+}
+parser_c::~parser_c() {
+	clear();
+}
+
+void parser_c::clear() {
+	if(fileData) {
+		g_vfs->FS_FreeFile(fileData);
+	}
+}
+bool parser_c::openFile(const char *fname) {
+	this->clear();
+	int len = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open
+	}
+	base = (const char *)fileData;
+	p = base;
+	debugFileName = fname;
+	return false;
+}
 void parser_c::setup(const char *newText, const char *newP) {
+	this->clear();
 	base = newText;
 	if(newP == 0) {
 		p = base;
@@ -105,6 +132,14 @@ const char *parser_c::getToken(str &out) {
 	out.setFromTo(start,end);
 	return out;
 }
+float parser_c::getFloat() {
+	const char *t = getToken();
+	return atof(t);
+}
+int parser_c::getInteger() {
+	const char *t = getToken();
+	return atoi(t);
+}
 bool parser_c::atChar(char ch) {
 	if(skipToNextToken()) {
 		printf("parser_c::atChar: EOF reached\n");
@@ -128,7 +163,26 @@ bool parser_c::atWord(const char *word) {
 	}
 	return false;
 }
-
+bool parser_c::atWord_dontNeedWS(const char *word) {
+	if(skipToNextToken()) {
+		printf("parser_c::atChar: EOF reached\n");
+		return false;
+	}
+	u32 checkLen = strlen(word);
+	if(!Q_stricmpn(word,p,checkLen)/* && G_isWS(p[checkLen])*/) {
+		p += checkLen;
+		return true;
+	}
+	return false;
+}
+void parser_c::skipLine() {
+	while(*p) {
+		if(*p == '\n') {
+			break;
+		}
+		p++;
+	}
+}
 u32 parser_c::getCurrentLineNumber() const {
 	const char *t = base;
 	u32 lineNum = 0;
