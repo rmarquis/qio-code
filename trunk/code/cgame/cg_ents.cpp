@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_ents.c -- present snapshot entities, happens every single frame
 
 #include "cg_local.h"
+#include <api/rEntityAPI.h>
 
 /*
 ==========================================================================
@@ -90,17 +91,27 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	//BG_EvaluateTrajectory( &cent->currentState.pos, cg.snap->serverTime, current );
 	//BG_EvaluateTrajectory( &cent->nextState.pos, cg.nextSnap->serverTime, next );
 
-	//cent->lerpOrigin[0] = current[0] + f * ( next[0] - current[0] );
-	//cent->lerpOrigin[1] = current[1] + f * ( next[1] - current[1] );
-	//cent->lerpOrigin[2] = current[2] + f * ( next[2] - current[2] );
+	const float *current = cent->currentState.origin;
+	const float *next = cent->nextState.origin;
+
+	cent->lerpOrigin[0] = current[0] + f * ( next[0] - current[0] );
+	cent->lerpOrigin[1] = current[1] + f * ( next[1] - current[1] );
+	cent->lerpOrigin[2] = current[2] + f * ( next[2] - current[2] );
 
 	//BG_EvaluateTrajectory( &cent->currentState.apos, cg.snap->serverTime, current );
 	//BG_EvaluateTrajectory( &cent->nextState.apos, cg.nextSnap->serverTime, next );
 
-	//cent->lerpAngles[0] = LerpAngle( current[0], next[0], f );
-	//cent->lerpAngles[1] = LerpAngle( current[1], next[1], f );
-	//cent->lerpAngles[2] = LerpAngle( current[2], next[2], f );
+	current = cent->currentState.angles;
+	next = cent->nextState.angles;
 
+	cent->lerpAngles[0] = LerpAngle( current[0], next[0], f );
+	cent->lerpAngles[1] = LerpAngle( current[1], next[1], f );
+	cent->lerpAngles[2] = LerpAngle( current[2], next[2], f );
+
+	if(cent->rEnt) {
+		cent->rEnt->setOrigin(cent->lerpOrigin);
+		cent->rEnt->setAngles(cent->lerpAngles);
+	}
 }
 
 /*
