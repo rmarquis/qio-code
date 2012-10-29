@@ -45,8 +45,8 @@ static float	rollInfluence = 0.1f;//1.0f;
 //
 static btScalar suspensionRestLength(0.6f*VEH_SCALE);
 
-static float gEngineForce = 100000.f;
-static float gVehicleSteering = 0.1f;
+//static float gEngineForce = 100000.f;
+//static float gVehicleSteering = 0.1f;
 
 class btVehicle_c : public physVehicleAPI_i {
 	btRaycastVehicle *m_vehicle;
@@ -54,12 +54,16 @@ class btVehicle_c : public physVehicleAPI_i {
 	btVehicleRaycaster *m_vehicleRayCaster;
 	btCollisionShape *m_wheelShape;
 	btRaycastVehicle::btVehicleTuning m_tuning;
+	float curEngineForce;
+	float curSteerRot;
 public:
 	btVehicle_c() {
 		m_vehicle = 0;
 		m_carChassis = 0;
 		m_vehicleRayCaster = 0;
 		m_wheelShape = 0;
+		curEngineForce = 100000.f;
+		curSteerRot= 0.1f;
 	}
 	~btVehicle_c() {
 		destroyVehicle();
@@ -73,9 +77,12 @@ public:
 		btCollisionShape *chassisShape = new btBoxShape(btVector3(1.f*VEH_SCALE,2.f*VEH_SCALE, 0.5f*VEH_SCALE));
 		btCompoundShape *compound = new btCompoundShape();
 		btTransform localTrans;
+
+const float hOfs = 32.f;
 		localTrans.setIdentity();
 		//localTrans effectively shifts the center of mass with respect to the chassis
-		localTrans.setOrigin(btVector3(0,0,1));
+		localTrans.setOrigin(btVector3(0,0,1+hOfs));
+	
 
 		compound->addChildShape(localTrans,chassisShape);
 
@@ -85,6 +92,7 @@ public:
 		tr.setOrigin(btVector3(pos[0],pos[1],pos[2]));
 
 		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);//chassisShape);
+	//	m_carChassis = BT_CreateRigidBodyInternal(800,tr,chassisShape);
 		
 		m_wheelShape = new btCylinderShapeX(btVector3(wheelWidth,wheelRadius,wheelRadius));
 
@@ -99,9 +107,8 @@ public:
 
 			dynamicsWorld->addVehicle(m_vehicle);
 
-			float connectionHeight = 1.2f;
+			float connectionHeight = 1.2f + hOfs;
 
-		
 			bool isFrontWheel=true;
 
 			//choose coordinate system
@@ -145,6 +152,10 @@ public:
 			m_wheelShape = 0;
 		}
 	}
+	virtual void setSteering(float newEngineForce, float steerRot) {
+		this->curEngineForce = newEngineForce;
+		this->curSteerRot = steerRot;
+	}
 	void runFrame() {
 		if(m_vehicle == 0)
 			return;
@@ -153,16 +164,16 @@ public:
 			m_vehicle->updateWheelTransform(i,true);
 		}
 		int wheelIndex = 2;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->applyEngineForce(this->curEngineForce,wheelIndex);
 		//m_vehicle->setBrake(gBreakingForce,wheelIndex);
 		wheelIndex = 3;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->applyEngineForce(this->curEngineForce,wheelIndex);
 		//m_vehicle->setBrake(gBreakingForce,wheelIndex);
 
 		wheelIndex = 0;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+		m_vehicle->setSteeringValue(this->curSteerRot,wheelIndex);
 		wheelIndex = 1;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+		m_vehicle->setSteeringValue(this->curSteerRot,wheelIndex);
 	}
 };
 

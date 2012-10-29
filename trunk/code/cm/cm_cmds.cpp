@@ -79,6 +79,7 @@ void CM_AddConsoleCommands() {
 }
 void CM_RemoveConsoleCommands() {
 	g_core->Cmd_RemoveCommand("cm_createHullForRenderModel");
+	g_core->Cmd_RemoveCommand("cm_createHullForRenderModelAABB");
 }
 
 

@@ -72,15 +72,23 @@ public:
 
 	int			buttons;
 	int			oldbuttons;
+	
+	bool useHeld;
+
+	class VehicleCar *vehicle;
 
 	void disableCharacterController();
 	void enableCharacterController();
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
+	void onUseKeyDown();
 	void setClientViewAngle(const vec3_c &angle);
 	void setNetName(const char *newNetName);
 	const char *getNetName() const;
 	int getViewHeight() const;
+	vec3_c getEyePos() const;
+
+	void setVehicle(class VehicleCar *newVeh);
 
 	void toggleNoclip();
 

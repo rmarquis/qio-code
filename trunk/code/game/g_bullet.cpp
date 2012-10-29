@@ -199,6 +199,8 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 	if(c == 0)
 		return;
 	dynamicsWorld->removeCharacter(c);
+	dynamicsWorld->removeCollisionObject(c->getGhostObject());
+	delete c->getGhostObject();
 	delete c;
 
 }

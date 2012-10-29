@@ -129,5 +129,10 @@ void G_SpawnMapEntities(const char *mapName);
 //
 void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
 
+//
+// g_collision.cpp
+//
+bool G_TraceRay(class trace_c &tr);
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

@@ -53,6 +53,9 @@ public:
 	virtual void setMatrix(const class matrix_c &newMat);
 	const class vec3_c &getOrigin() const;
 	const class vec3_c &getAngles() const;
+	const class matrix_c &getMatrix() const {
+		return matrix;
+	}
 	const vec3_c &getForward() const {
 		return matrix.getForward();
 	}
@@ -63,7 +66,16 @@ public:
 
 	virtual void getLocalBounds(aabb &out) const;
 
+	virtual bool traceWorldRay(class trace_c &tr) {
+		return false;
+	}	
+	//virtual bool traceLocalRay(class trace_c &tr) {
+	//	return false;
+	//}
 	virtual void runFrame() {
+
+	}
+	virtual void doUse(class Player *activator) {
 
 	}
 	virtual void debugDraw(class rDebugDrawer_i *dd);

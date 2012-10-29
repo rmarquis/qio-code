@@ -47,6 +47,8 @@ public:
 	}
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
+
+	virtual bool traceRay(class trace_c &tr) = 0;
 };
 
 // cm primitives

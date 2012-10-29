@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // VehicleCar.cpp
 #include "VehicleCar.h"
+#include "Player.h"
 #include "../g_local.h"
 #include "../g_physVehicleAPI.h"
 
@@ -30,6 +31,7 @@ DEFINE_CLASS(VehicleCar, "ModelEntity");
 
 VehicleCar::VehicleCar() {
 	physVehicle = 0;
+	driver = 0;
 }
 VehicleCar::~VehicleCar() {
 
@@ -37,6 +39,18 @@ VehicleCar::~VehicleCar() {
 
 void VehicleCar::spawnPhysicsVehicle() {
 	physVehicle = BT_CreateVehicle(this->getOrigin());
+}
+void VehicleCar::doUse(class Player *activator) {
+	if(driver) {
+		return;
+	}
+	activator->setVehicle(this);
+	driver = activator;
+}
+void VehicleCar::steerUCmd(const struct usercmd_s *ucmd) {
+	float rightMove = float(ucmd->rightmove)/320.f;
+	float engineForce = float(ucmd->forwardmove) * 750.f;
+	physVehicle->setSteering(engineForce,-rightMove);
 }
 void VehicleCar::runPhysicsObject() {
 	if(physVehicle == 0)

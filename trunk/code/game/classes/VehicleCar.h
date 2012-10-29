@@ -33,12 +33,21 @@ public:
 	DECLARE_CLASS( VehicleCar );
 
 	class physVehicleAPI_i *physVehicle;
+	class Player *driver;
 
 	VehicleCar();
 	~VehicleCar();
 
 	void spawnPhysicsVehicle();
 
+	void steerUCmd(const struct usercmd_s *ucmd);
+
+	void detachPlayer(class Player *pl) {
+		if(pl == driver) {
+			driver = 0;
+		}
+	}
+	virtual void doUse(class Player *activator);
 	virtual void runPhysicsObject();
 };
 

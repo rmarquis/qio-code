@@ -124,5 +124,26 @@ void ModelEntity::getLocalBounds(aabb &out) const {
 	if(renderModelName[0] == '*') {
 		out = G_GetInlineModelBounds(atoi(renderModelName.c_str()+1));
 		out.extend(0.5f);
+	} else {
+		out.fromRadius(64.f);
 	}
+}
+#include <shared/trace.h>
+bool ModelEntity::traceWorldRay(class trace_c &tr) {
+	trace_c transformedTrace;
+	tr.getTransformed(transformedTrace,this->getMatrix());
+	if(this->traceLocalRay(transformedTrace)) {
+		tr.updateResultsFromTransformedTrace(transformedTrace);
+		return true;
+	}
+	return false;
+}
+bool ModelEntity::traceLocalRay(class trace_c &tr) {
+	if(cmod) {
+		return cmod->traceRay(tr);
+	}
+	tr.setFraction(tr.getFraction()-0.01f);
+	tr.setHitEntity(this);
+	return true;
+	return false;
 }

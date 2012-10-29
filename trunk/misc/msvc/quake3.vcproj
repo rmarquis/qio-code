@@ -2016,6 +2016,10 @@
 				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\userCmd.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

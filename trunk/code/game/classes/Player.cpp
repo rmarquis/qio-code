@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Player.cpp - Game Client class
 #include "Player.h"
+#include "VehicleCar.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
 
@@ -35,6 +36,8 @@ Player::Player() {
 	buttons = 0;
 	oldbuttons = 0;
 	noclip = false;
+	useHeld = false;
+	vehicle = 0;
 }
 Player::~Player() {
 	if(characterController) {
@@ -42,7 +45,10 @@ Player::~Player() {
 		characterController = 0;
 	}
 }
-
+void Player::setVehicle(class VehicleCar *newVeh) {
+	vehicle = newVeh;
+	disableCharacterController();
+}
 void Player::toggleNoclip() {
 	noclip = !noclip;
 	if(noclip) {
@@ -100,37 +106,58 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	}
 
 
-	// update the viewangles
-	PM_UpdateViewAngles( &this->ps, ucmd );
-	{
-		vec3_t f,r,u;
-		vec3_t v = { 0, this->ps.viewangles[1], 0 };
-		//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
-		AngleVectors(v,f,r,u);
-		VectorScale(f,level.frameTime*ucmd->forwardmove,f);
-		VectorScale(r,level.frameTime*ucmd->rightmove,r);
-		VectorScale(u,level.frameTime*ucmd->upmove,u);
-		vec3_c dir(0,0,0);
-		VectorAdd(dir,f,dir);
-		VectorAdd(dir,r,dir);
-		VectorAdd(dir,u,dir);
-		vec3_c newOrigin;
-		if(noclip) {
-			dir.scale(4.f);
-			VectorAdd(this->ps.origin,dir,newOrigin);
-		} else {
-			dir[2] = 0;
-			VectorScale(dir,0.75f,dir);
-			G_RunCharacterController(dir,this->characterController, newOrigin);
-			if(ucmd->upmove) {
-				G_TryToJump(this->characterController);
+	if(vehicle) {
+		this->setOrigin(vehicle->getOrigin()+vec3_c(0,0,64.f));
+		vehicle->steerUCmd(ucmd);
+		//this->setClientViewAngle(vehicle->getAngles());
+	} else {
+		// update the viewangles
+		PM_UpdateViewAngles( &this->ps, ucmd );
+		{
+			vec3_t f,r,u;
+			vec3_t v = { 0, this->ps.viewangles[1], 0 };
+			//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+			AngleVectors(v,f,r,u);
+			VectorScale(f,level.frameTime*ucmd->forwardmove,f);
+			VectorScale(r,level.frameTime*ucmd->rightmove,r);
+			VectorScale(u,level.frameTime*ucmd->upmove,u);
+			vec3_c dir(0,0,0);
+			VectorAdd(dir,f,dir);
+			VectorAdd(dir,r,dir);
+			VectorAdd(dir,u,dir);
+			vec3_c newOrigin;
+			if(noclip) {
+				dir.scale(4.f);
+				VectorAdd(this->ps.origin,dir,newOrigin);
+			} else {
+				dir[2] = 0;
+				VectorScale(dir,0.75f,dir);
+				G_RunCharacterController(dir,this->characterController, newOrigin);
+				if(ucmd->upmove) {
+					G_TryToJump(this->characterController);
+				}
 			}
+			ps.angles.set(0,ps.viewangles[1],0);
+			ModelEntity::setOrigin(newOrigin);
 		}
-		ps.angles.set(0,ps.viewangles[1],0);
-		ModelEntity::setOrigin(newOrigin);
 	}
 
 	this->link();
+
+	if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
+		if(useHeld) {
+			//G_Printf("Use held\n");
+		} else {
+			//G_Printf("Use pressed\n");
+			useHeld = true;
+			onUseKeyDown();
+		}
+	} else {
+		if(useHeld) {
+			//G_Printf("Use released\n");
+			useHeld = false;
+		}
+	}
 
 	//G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
 
@@ -146,6 +173,29 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	this->oldbuttons = this->buttons;
 	this->buttons = ucmd->buttons;
 	//client->latched_buttons |= client->buttons & ~client->oldbuttons;
+}
+#include <shared/trace.h>
+void Player::onUseKeyDown() {
+	if(this->vehicle) {
+		this->vehicle->detachPlayer(this);
+		this->vehicle = 0;
+		this->enableCharacterController();
+		return;
+	}
+	vec3_c eye = this->getEyePos();
+	trace_c tr;
+	vec3_c dir;
+	AngleVectors(this->ps.viewangles,dir,0,0);
+	tr.setupRay(eye,eye + dir * 64.f);
+	if(G_TraceRay(tr)) {
+		BaseEntity *hit = tr.getHitEntity();
+		if(hit == 0) {
+			G_Printf("Player::onUseKeyDown: WARNING: null hit entity\n");
+			return;
+		}
+		G_Printf("Use trace hit\n");
+		hit->doUse(this);
+	}
 }
 void Player::setClientViewAngle(const vec3_c &angle) {
 	// set the delta angle
@@ -166,6 +216,11 @@ const char *Player::getNetName() const {
 }
 int Player::getViewHeight() const {
 	return this->ps.viewheight;
+}
+vec3_c Player::getEyePos() const {
+	vec3_c ret = this->ps.origin;
+	ret.z += this->ps.viewheight;
+	return ret;
 }
 struct playerState_s *Player::getPlayerState() {
 	return &this->ps;

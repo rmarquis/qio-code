@@ -324,6 +324,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_collision.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_debugDraw.cpp"
 				>
 			</File>
@@ -515,6 +519,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\collisionUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\entDefsList.cpp"
 				>
 			</File>
@@ -532,6 +544,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.h"
 				>
 			</File>
 		</Filter>

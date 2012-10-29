@@ -60,6 +60,9 @@ public:
 	virtual class cmCapsule_i *getCapsule() {
 		return this;
 	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false; // TODO
+	}
 	// cmCapsule_c access
 	virtual float getHeight() const {
 		return height;
@@ -91,6 +94,9 @@ public:
 	}
 	virtual class cmCapsule_i *getCapsule() {
 		return 0;
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false; // TODO
 	}
 	// cmBBExts_i access
 	virtual const class vec3_c &getHalfSizes() const {

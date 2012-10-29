@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class physVehicleAPI_i {
 public:
 	virtual void getMatrix(class matrix_c &out) = 0;
+	virtual void setSteering(float engineForce, float steerRot) = 0;
 };
 
 #endif // __G_PHYSVEHICLEAPI_H__

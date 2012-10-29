@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
+	this->hitEntity = 0;
 	this->to = newTo;
 	this->from = newFrom;
 	this->hitPos = this->to;
@@ -80,6 +81,7 @@ void trace_c::getTransformed(trace_c &out, const matrix_c &entityMatrix) const {
 void trace_c::updateResultsFromTransformedTrace(trace_c &selfTransformed) {
 	if(selfTransformed.fraction >= this->fraction)
 		return;
+	this->hitEntity = selfTransformed.hitEntity;
 	this->fraction = selfTransformed.fraction;
 	this->updateForNewFraction();
 }

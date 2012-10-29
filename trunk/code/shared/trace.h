@@ -43,6 +43,10 @@ class trace_c {
 	float traveled;
 	//plane_c hitPlane;
 
+	union {
+		class BaseEntity *hitEntity; // for game module
+	};
+
 	void updateForNewHitPos();
 	void updateForNewFraction();
 	inline void calcFromToDelta() {
@@ -60,6 +64,16 @@ public:
 	void getTransformed(trace_c &out, const class matrix_c &entityMatrix) const;
 	void updateResultsFromTransformedTrace(trace_c &selfTransformed);
 
+
+	void setHitEntity(class BaseEntity *newHitEntity) {
+		hitEntity = newHitEntity;
+	}
+	void setFraction(float newFrac) {
+		this->fraction = newFrac;
+	}
+	class BaseEntity *getHitEntity() const {
+		return hitEntity;
+	}
 	const vec3_c &getStartPos() const {
 		return from;
 	}

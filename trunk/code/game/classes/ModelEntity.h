@@ -67,6 +67,9 @@ public:
 
 	virtual void getLocalBounds(aabb &out) const;
 
+	virtual bool traceWorldRay(class trace_c &tr);
+	virtual bool traceLocalRay(class trace_c &tr);
+
 	virtual void debugDraw(class rDebugDrawer_i *dd) {
 		BaseEntity::debugDraw(dd);
 		debugDrawCMObject(dd);
