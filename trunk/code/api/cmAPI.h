@@ -26,11 +26,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __CM_API_H__
 
 #include "iFaceBase.h"
+#include <shared/typedefs.h>
 
 enum cModType_e {
 	CMOD_BAD,
 	CMOD_CAPSULE,
 	CMOD_BBEXTS, // bounding box defined by halfsizes
+	CMOD_HULL, // aka brush - single convex volume
+};
+
+// cm helpers are used to position joints,
+// motors and car wheels
+class cmHelper_i {
+public:
+
 };
 
 // cm object base
@@ -47,6 +56,7 @@ public:
 	}
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
+	virtual class cmHull_i *getHull() = 0;
 
 	virtual bool traceRay(class trace_c &tr) = 0;
 };
@@ -61,6 +71,20 @@ public:
 class cmBBExts_i : public cMod_i {
 public:
 	virtual const class vec3_c &getHalfSizes() const = 0;
+};
+
+// single convex hull (aka brush)
+class cmHull_i : public cMod_i {
+public:
+	virtual u32 getNumSides() const = 0;
+	virtual const class plane_c &getSidePlane(u32 sideNum) const = 0;
+};
+
+// compound shape - cm object made of multiple cm primitives
+class cmCompound_i : public cMod_i {
+public:
+	virtual u32 getNumSubShapes() = 0;
+	virtual cMod_i *getSubShapeN(u32 subShapeNum) = 0;
 };
 
 #define CM_API_IDENTSTR "CM0001"

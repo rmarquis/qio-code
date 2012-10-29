@@ -280,6 +280,7 @@ void ClientCommand( int clientNum ) {
 			veh->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
 		} else {
 			veh->setRenderModel("models/vehicles/Porsche_911/porsche-911.obj");
+			veh->setColModel("models/vehicles/Porsche_911/porsche-911.map");
 		}
 	} else {
 		vec3_c tmp(1400,1340,470);

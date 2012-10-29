@@ -62,6 +62,19 @@ public:
 		}
 		return false; // OK
 	}
+	// eg "( 0 0 1 128 )"
+	bool getFloatMat_braced(float *out, u32 dims) {
+		if(atWord("(") == false)
+			return true; // error
+		const char *s;
+		for(u32 i = 0; i < dims; i++) {
+			s = getToken();
+			out[i] = atof(s);
+		}
+		if(atWord(")") == false)
+			return true; // error
+		return false; // OK
+	}
 	bool atChar(char ch);
 	bool atWord(const char *word);
 	bool atWord_dontNeedWS(const char *word);

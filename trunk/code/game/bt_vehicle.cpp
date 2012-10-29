@@ -45,9 +45,6 @@ static float	rollInfluence = 0.1f;//1.0f;
 //
 static btScalar suspensionRestLength(0.6f*VEH_SCALE);
 
-//static float gEngineForce = 100000.f;
-//static float gVehicleSteering = 0.1f;
-
 class btVehicle_c : public physVehicleAPI_i {
 	btRaycastVehicle *m_vehicle;
 	btRigidBody *m_carChassis;
@@ -63,7 +60,7 @@ public:
 		m_vehicleRayCaster = 0;
 		m_wheelShape = 0;
 		curEngineForce = 100000.f;
-		curSteerRot= 0.1f;
+		curSteerRot = 0.1f;
 	}
 	~btVehicle_c() {
 		destroyVehicle();
@@ -78,10 +75,10 @@ public:
 		btCompoundShape *compound = new btCompoundShape();
 		btTransform localTrans;
 
-const float hOfs = 32.f;
+const float hOfs = 0;//32.f;
 		localTrans.setIdentity();
 		//localTrans effectively shifts the center of mass with respect to the chassis
-		localTrans.setOrigin(btVector3(0,0,1+hOfs));
+		localTrans.setOrigin(btVector3(0,0,1.f*VEH_SCALE+hOfs));
 	
 
 		compound->addChildShape(localTrans,chassisShape);
@@ -107,7 +104,7 @@ const float hOfs = 32.f;
 
 			dynamicsWorld->addVehicle(m_vehicle);
 
-			float connectionHeight = 1.2f + hOfs;
+			float connectionHeight = 1.2f*VEH_SCALE + hOfs;
 
 			bool isFrontWheel=true;
 

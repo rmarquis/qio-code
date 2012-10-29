@@ -266,7 +266,7 @@ void BT_RemoveRigidBody(class btRigidBody *body) {
 }
 edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
 	ModelEntity *e = new ModelEntity;
-	//e->createBoxPhysicsObject(pos,halfSizes,startVel);
+	e->createBoxPhysicsObject(pos,halfSizes,startVel);
 	//// test model loading....
 	//e->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
 	////e->setRenderModel("models/vehicles/Porsche_911/porsche-911.obj");

@@ -51,8 +51,14 @@ public:
 		}
 		return false;
 	}
-
+	u32 getNumSides() const {
+		return sides.size();
+	}
+	const class plane_c &getSidePlane(u32 sideNum) const {
+		return sides[sideNum];
+	}
 	
+	bool parseBrushQ3(class parser_c &p);
 	void writeSingleBrushToMapFileVersion2(class writeStreamAPI_i *out);
 	void writeSingleBrushToMapFileVersion2(const char *outFName);
 };

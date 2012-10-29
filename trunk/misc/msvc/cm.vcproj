@@ -190,6 +190,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\code\cm\cm_helper.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cm\cm_local.h"
 				>
 			</File>
@@ -233,6 +237,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\fileStreamHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
 				>
 			</File>
 			<File

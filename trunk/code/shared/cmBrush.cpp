@@ -70,7 +70,49 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 		}
 	}
 }
+#include <shared/parser.h>
+bool cmBrush_c::parseBrushQ3(class parser_c &p) {
+	// old brush format
+	// Number of sides isnt explicitly specified,
+	// so parse until the closing brace is hit
+	while(p.atWord("}") == false) {
+		// ( 2304 -512 1024 ) ( 2304 -768 1024 ) ( -2048 -512 1024 ) german/railgun_flat 0 0 0 0.5 0.5 0 0 0
+		vec3_c p0;
+		if(p.getFloatMat_braced(p0,3)) {
+			g_core->RedWarning("cmBrush_c::parseBrushQ3: failed to read old brush def first point in file %s at line %i\n",p.getDebugFileName(),p.getCurrentLineNumber());
+			return true; // error
+		}
+		vec3_c p1;
+		if(p.getFloatMat_braced(p1,3)) {
+			g_core->RedWarning("cmBrush_c::parseBrushQ3: failed to read old brush def second point in file %s at line %i\n",p.getDebugFileName(),p.getCurrentLineNumber());
+			return true; // error
+		}
+		vec3_c p2;
+		if(p.getFloatMat_braced(p2,3)) {
+			g_core->RedWarning("cmBrush_c::parseBrushQ3: failed to read old brush def third point in file %s at line %i\n",p.getDebugFileName(),p.getCurrentLineNumber());
+			return true; // error
+		}
+		//str matName = p.getWord();
+		p.skipLine();
 
+		// check for extra surfaceParms (MoHAA-specific ?)
+		if(p.atWord_dontNeedWS("+")) {
+			if(p.atWord("surfaceparm")) {
+				const char *surfaceParmName = p.getToken();
+
+			} else {
+				g_core->RedWarning("cmBrush_c::parseBrushQ3: unknown extra parameters %s\n",p.getToken());
+				p.skipLine();
+			}
+		}
+	
+		plane_c pl;
+		pl.fromThreePoints(p0,p1,p2);
+
+		sides.push_back(pl);
+	}
+	return false; // no error
+}
 #include <api/writeStreamAPI.h>
 #include <shared/fileStreamHelper.h>
 void cmBrush_c::writeSingleBrushToMapFileVersion2(class writeStreamAPI_i *out) {

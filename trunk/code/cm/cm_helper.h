@@ -21,46 +21,22 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// VehicleCar.cpp
-#include "VehicleCar.h"
-#include "Player.h"
-#include "../g_local.h"
-#include "../g_physVehicleAPI.h"
+// cm_helper.h
+#ifndef __CM_HELPER_H__
+#define __CM_HELPER_H__
 
-DEFINE_CLASS(VehicleCar, "ModelEntity");
+#include <api/cmApi.h>
+#include <shared/ePairsList.h>
 
-VehicleCar::VehicleCar() {
-	physVehicle = 0;
-	driver = 0;
-}
-VehicleCar::~VehicleCar() {
-
-}
-
-void VehicleCar::spawnPhysicsVehicle() {
-	physVehicle = BT_CreateVehicle(this->getOrigin());
-}
-void VehicleCar::doUse(class Player *activator) {
-	if(driver) {
-		return;
+class cmHelper_c : public cmHelper_i {
+	ePairList_c keyValues;
+public:
+	void setKeyPairs(const ePairList_c &newList) {
+		this->keyValues = newList;
 	}
-	activator->setVehicle(this);
-	driver = activator;
-}
-void VehicleCar::steerUCmd(const struct usercmd_s *ucmd) {
-	float rightMove = float(ucmd->rightmove)/480.f;
-	float engineForce = float(ucmd->forwardmove) * 750.f;
-	physVehicle->setSteering(engineForce,-rightMove);
-}
-void VehicleCar::runPhysicsObject() {
-	if(physVehicle == 0)
-		return;
-	matrix_c mat;
-	physVehicle->getMatrix(mat);
-	BaseEntity::setMatrix(mat);
-}
+	const ePairList_c &getEPairs() const {
+		return this->keyValues;
+	}
+};
 
-
-
-
-
+#endif // __CM_HELPER_H__

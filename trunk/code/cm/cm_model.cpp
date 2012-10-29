@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // cm_model.cpp
 #include "cm_model.h"
+#include "cm_helper.h"
 #include <api/coreAPI.h>
 #include <shared/hashTableTemplate.h>
 
@@ -69,6 +70,93 @@ class cmBBExts_i *CM_RegisterBoxExts(float halfSizeX, float halfSizeY, float hal
 	cm_models.addObject(n);
 	return n;
 }
+#include <shared/parser.h>
+#include <shared/ePairsList.h>
+#include <shared/cmBrush.h>
+struct cmMapFileEntity_s {
+	ePairList_c ePairs;
+	arraySTD_c<cmBrush_c*> brushes;
+
+	cmHelper_c *allocHelper() {
+		cmHelper_c *ret = new cmHelper_c;
+		ret->setKeyPairs(ePairs);
+		return ret;
+	}
+};
+class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
+	parser_c p;
+	if(p.openFile(fname)) {
+		g_core->RedWarning("CM_LoadModelFromMapFile: cannot open %s\n",fname);
+		return 0;
+	}
+	bool parseError = false;
+	u32 numEntitiesWithBrushes = 0;
+	u32 numTotalBrushes = 0;
+	cmBrush_c *firstBrush = 0;
+	arraySTD_c<cmMapFileEntity_s*> entities;
+	while(p.atEOF() == false && parseError == false) {
+		if(p.atWord("{")) {
+			// enter new entity
+			cmMapFileEntity_s *ne = new cmMapFileEntity_s;
+			entities.push_back(ne);
+			while(p.atWord("}") == false && parseError == false) {
+				if(p.atEOF()) {			
+					g_core->RedWarning("CM_LoadModelFromMapFile: unexpected end of file hit while parsing %s\n",fname);
+					break;
+				}
+				if(p.atWord("{")) {
+					// enter new primitive
+					cmBrush_c *nb = new cmBrush_c;
+					ne->brushes.push_back(nb);
+					if(nb->parseBrushQ3(p)) {		
+						g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing brush at line %i of %s\n",p.getCurrentLineNumber(),fname);
+						parseError = true;
+						break;
+					}
+					if(firstBrush == 0) {
+						firstBrush = nb;
+					}
+				} else {
+					// parse key pair
+					str key, val;
+					p.getToken(key);
+					p.getToken(val);
+					ne->ePairs.set(key,val);
+				}
+			}
+			// current entity parsing done
+			if(ne->brushes.size()) {
+				numEntitiesWithBrushes++;
+				numTotalBrushes += ne->brushes.size();
+			} else {
+
+			}
+		}
+	}
+	cMod_i *ret = 0;
+	// see if we can simplify the cModel
+	if(numTotalBrushes == 1) {
+		cmHull_c *hull = new cmHull_c(fname,*firstBrush);
+		ret = hull;
+		// convert the rest of map entities to cmHelpers
+		for(u32 i = 0; i < entities.size(); i++) {
+			cmMapFileEntity_s *e = entities[i];
+			if(e->brushes.size())
+				continue;
+			cmHelper_c *helper = e->allocHelper();
+			hull->addHelper(helper);
+		}
+	} else if(numEntitiesWithBrushes == 1) {
+		// TODO ?
+	} else {
+		// TODO ?
+	}
+
+	for(u32 i = 0; i < entities.size(); i++) {
+		delete entities[i];
+	}
+	return ret;
+}
 class cMod_i *CM_RegisterModel(const char *modName) {
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
@@ -89,6 +177,13 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 			return CM_RegisterBoxExts(halfSizes.x,halfSizes.y,halfSizes.z);
 		} else {
 			return 0;
+		}
+	}
+	// check if modName is a fileName
+	const char *ext = G_strgetExt(modName);
+	if(ext) {
+		if(!stricmp(ext,"map")) {
+			return CM_LoadModelFromMapFile(modName);
 		}
 	}
 	return 0;

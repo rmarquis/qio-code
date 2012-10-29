@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // cm_model.h
 #include <api/cmAPI.h>
 #include <shared/str.h>
+#include <shared/cmBrush.h>
 #include <math/aabb.h>
 
 class cmObjectBase_c {
@@ -31,6 +32,7 @@ class cmObjectBase_c {
 protected:
 	str name;
 	aabb bounds;
+	arraySTD_c<class cmHelper_c*> helpers;
 public:
 	cmObjectBase_c *getHashNext() const {
 		return hashNext;
@@ -38,8 +40,15 @@ public:
 	void setHashNext(cmObjectBase_c *p) {
 		hashNext = p;
 	}
-	virtual const char *getName() const {
+	const char *getName() const {
 		return name;
+	}
+	void addHelper(class cmHelper_c *newHelper) {
+		helpers.push_back(newHelper);
+	}
+
+	virtual void thisClassMustBePolyMorphic() {
+
 	}
 };
 class cmCapsule_c : public cmObjectBase_c, public cmCapsule_i {
@@ -59,6 +68,9 @@ public:
 	}
 	virtual class cmCapsule_i *getCapsule() {
 		return this;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
 	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
@@ -95,6 +107,9 @@ public:
 	virtual class cmCapsule_i *getCapsule() {
 		return 0;
 	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
 	}
@@ -109,5 +124,44 @@ public:
 	}
 };
 
+class cmHull_c : public cmObjectBase_c, public cmHull_i {
+	cmBrush_c myBrush;
+public:
+	// cmObjectBase_c access
+	virtual const char *getName() const {
+		return name;
+	}
+	virtual enum cModType_e getType() const {
+		return CMOD_HULL;
+	}
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return this;
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false; // TODO
+	}
+	// cmHull_i access
+	virtual u32 getNumSides() const {
+		return myBrush.getNumSides();
+	}
+	virtual const class plane_c &getSidePlane(u32 sideNum) const {
+		return myBrush.getSidePlane(sideNum);
+	}
+
+	void setSingleBrush(const class cmBrush_c &br) {
+		this->myBrush = br;
+	}
+
+	cmHull_c(const char *newName, const class cmBrush_c &br) {
+		this->name = newName;
+		this->setSingleBrush(br);
+	}
+};
 
 
