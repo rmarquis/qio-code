@@ -234,6 +234,10 @@ public:
 		maxs *= scale;
 		mins *= scale;
 	}
+	void swapYZ() {
+		maxs.swapYZ();
+		mins.swapYZ();
+	}
 	void extend(float scalar) {
 		mins.x -= scalar;
 		mins.y -= scalar;

@@ -2667,6 +2667,8 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Argv = Cmd_Argv;
 	g_staticCoreAPI.ArgvBuffer = Cmd_ArgvBuffer;
 	g_staticCoreAPI.Args = Cmd_ArgsBuffer;
+	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
+	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);

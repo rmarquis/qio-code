@@ -131,6 +131,16 @@ public:
 		ret.dist = -dist;
 		return ret;
 	}
+	bool compare2(const vec3_c &oNorm, const float oDist, const float normalEps = PL_NORM_EPS, const float distEps = PL_DIST_EPS) const {
+		if(abs(this->dist - oDist) > distEps)
+			return false;
+		if(oNorm.compare(this->norm,normalEps))
+			return true;
+		return false;
+	}
+	bool compare(const plane_c &pl, const float normalEps = PL_NORM_EPS, const float distEps = PL_DIST_EPS) const {
+		return compare2(pl.norm,pl.dist,normalEps,distEps);
+	}
 };
 
 #endif // __MATH_PLANE_H__

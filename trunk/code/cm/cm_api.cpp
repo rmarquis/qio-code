@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/cmAPI.h>
+#include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
 
 class cmAPIImpl_c : public cmAPI_i {
@@ -54,6 +55,7 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
+modelLoaderDLLAPI_i *g_modelLoader = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
 
 // exports
@@ -71,6 +73,10 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
+
+	// TODO: put it in CM_Init()
+	CM_AddConsoleCommands();
 }
 
 qioModule_e IFM_GetCurModule() {
