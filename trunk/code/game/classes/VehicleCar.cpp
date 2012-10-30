@@ -34,11 +34,17 @@ VehicleCar::VehicleCar() {
 	driver = 0;
 }
 VehicleCar::~VehicleCar() {
-
+	destroyPhysicsVehicle();
 }
 
 void VehicleCar::spawnPhysicsVehicle() {
-	physVehicle = BT_CreateVehicle(this->getOrigin());
+	physVehicle = BT_CreateVehicle(this->getOrigin(),this->cmod);
+}
+void VehicleCar::destroyPhysicsVehicle() {
+	if(physVehicle == 0)
+		return;
+	BT_RemoveVehicle(physVehicle);
+	physVehicle = 0;
 }
 void VehicleCar::doUse(class Player *activator) {
 	if(driver) {

@@ -37,6 +37,13 @@ public:
 	const ePairList_c &getEPairs() const {
 		return this->keyValues;
 	}
+
+	virtual u32 getNumKeyPairs() const {
+		return keyValues.size();
+	}
+	virtual const char *getKeyValue(const char *key) const {
+		return keyValues.getKeyValue(key);
+	}
 };
 
 #endif // __CM_HELPER_H__

@@ -39,6 +39,7 @@ public:
 	~VehicleCar();
 
 	void spawnPhysicsVehicle();
+	void destroyPhysicsVehicle();
 
 	void steerUCmd(const struct usercmd_s *ucmd);
 

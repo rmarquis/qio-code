@@ -57,6 +57,13 @@ public:
 	const class plane_c &getSidePlane(u32 sideNum) const {
 		return sides[sideNum];
 	}
+	void iterateSidePlanes(void (*callback)(const float planeEq[4])) const {
+		for(u32 i = 0; i < sides.size(); i++) {
+			callback(&sides[i].norm.x);
+		}
+	}
+
+	bool traceRay(class trace_c &tr);
 	
 	bool parseBrushQ3(class parser_c &p);
 	void writeSingleBrushToMapFileVersion2(class writeStreamAPI_i *out);

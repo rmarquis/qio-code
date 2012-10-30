@@ -77,6 +77,12 @@ public:
 	const vec3_c &getStartPos() const {
 		return from;
 	}
+	const vec3_c &getFrom() const {
+		return from;
+	}
+	const vec3_c &getTo() const {
+		return to;
+	}
 	const vec3_c &getHitPos() const {
 		return hitPos;
 	}

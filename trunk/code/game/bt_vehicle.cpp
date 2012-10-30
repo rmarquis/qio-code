@@ -38,9 +38,9 @@ static btVector3 wheelAxleCS(1,0,0);
 static float	wheelRadius = 0.5f*VEH_SCALE;
 static float	wheelWidth = 0.4f*VEH_SCALE;
 static float	wheelFriction = 1000;//BT_LARGE_FLOAT;
-static float	suspensionStiffness = 20.f;
-static float	suspensionDamping = 2.3f;
-static float	suspensionCompression = 4.4f;
+static float	suspensionStiffness = 20.f;//*VEH_SCALE;
+static float	suspensionDamping = 2.3f;//*VEH_SCALE;
+static float	suspensionCompression = 4.4f;//*VEH_SCALE;
 static float	rollInfluence = 0.1f;//1.0f;
 //
 static btScalar suspensionRestLength(0.6f*VEH_SCALE);
@@ -70,69 +70,69 @@ public:
 		m_carChassis->getMotionState()->getWorldTransform(trans);	
 		trans.getOpenGLMatrix(out);
 	}
-	void init(const vec3_c &pos) {
-		btCollisionShape *chassisShape = new btBoxShape(btVector3(1.f*VEH_SCALE,2.f*VEH_SCALE, 0.5f*VEH_SCALE));
+	void init(const vec3_c &pos, class cMod_i *cmodel) {
 		btCompoundShape *compound = new btCompoundShape();
-		btTransform localTrans;
+	
+		// pass NULL cmodel here to use default car shape
+		cmodel = 0;
 
-const float hOfs = 0;//32.f;
+		const float hOfs = 0;//32.f;
+		btTransform localTrans;
 		localTrans.setIdentity();
 		//localTrans effectively shifts the center of mass with respect to the chassis
 		localTrans.setOrigin(btVector3(0,0,1.f*VEH_SCALE+hOfs));
-	
-
-		compound->addChildShape(localTrans,chassisShape);
+		
+		if(cmodel) {
+			BT_AddCModelToCompoundShape(compound,localTrans,cmodel);
+		} else {
+			btCollisionShape *chassisShape = new btBoxShape(btVector3(1.f*VEH_SCALE,2.f*VEH_SCALE, 0.5f*VEH_SCALE));
+			compound->addChildShape(localTrans,chassisShape);
+		}
 
 		btTransform tr;
 		tr.setIdentity();
-
 		tr.setOrigin(btVector3(pos[0],pos[1],pos[2]));
 
-		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);//chassisShape);
-	//	m_carChassis = BT_CreateRigidBodyInternal(800,tr,chassisShape);
+		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);
 		
 		m_wheelShape = new btCylinderShapeX(btVector3(wheelWidth,wheelRadius,wheelRadius));
 
-		/// create vehicle
+		m_vehicleRayCaster = new btDefaultVehicleRaycaster(dynamicsWorld);
+		m_vehicle = new btRaycastVehicle(m_tuning,m_carChassis,m_vehicleRayCaster);
+		
+		///never deactivate the vehicle
+		m_carChassis->setActivationState(DISABLE_DEACTIVATION);
+
+		dynamicsWorld->addVehicle(m_vehicle);
+
+		float connectionHeight = 1.2f*VEH_SCALE + hOfs;
+
+		bool isFrontWheel=true;
+
+		//choose coordinate system
+		m_vehicle->setCoordinateSystem(0,2,1);
+		btVector3 connectionPointCS0(CUBE_HALF_EXTENTS-(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
+
+		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
+		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
+
+		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
+		connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
+		isFrontWheel = false;
+		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
+
+		connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS-(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
+
+		m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
+		
+		for (int i=0;i<m_vehicle->getNumWheels();i++)
 		{
-			
-			m_vehicleRayCaster = new btDefaultVehicleRaycaster(dynamicsWorld);
-			m_vehicle = new btRaycastVehicle(m_tuning,m_carChassis,m_vehicleRayCaster);
-			
-			///never deactivate the vehicle
-			m_carChassis->setActivationState(DISABLE_DEACTIVATION);
-
-			dynamicsWorld->addVehicle(m_vehicle);
-
-			float connectionHeight = 1.2f*VEH_SCALE + hOfs;
-
-			bool isFrontWheel=true;
-
-			//choose coordinate system
-			m_vehicle->setCoordinateSystem(0,2,1);
-			btVector3 connectionPointCS0(CUBE_HALF_EXTENTS-(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-
-			m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-			connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-
-			m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-			connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-			isFrontWheel = false;
-			m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-
-			connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS-(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-
-			m_vehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,m_tuning,isFrontWheel);
-			
-			for (int i=0;i<m_vehicle->getNumWheels();i++)
-			{
-				btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
-				wheel.m_suspensionStiffness = suspensionStiffness;
-				wheel.m_wheelsDampingRelaxation = suspensionDamping;
-				wheel.m_wheelsDampingCompression = suspensionCompression;
-				wheel.m_frictionSlip = wheelFriction;
-				wheel.m_rollInfluence = rollInfluence;
-			}
+			btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
+			wheel.m_suspensionStiffness = suspensionStiffness;
+			wheel.m_wheelsDampingRelaxation = suspensionDamping;
+			wheel.m_wheelsDampingCompression = suspensionCompression;
+			wheel.m_frictionSlip = wheelFriction;
+			wheel.m_rollInfluence = rollInfluence;
 		}
 	}
 	void destroyVehicle() {
@@ -176,11 +176,20 @@ const float hOfs = 0;//32.f;
 
 static arraySTD_c<btVehicle_c*> bt_vehicles;
 
-physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos) {
+physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, class cMod_i *cmodel) {
 	btVehicle_c *nv = new btVehicle_c;
-	nv->init(pos);
+	nv->init(pos, cmodel);
 	bt_vehicles.push_back(nv);
 	return nv;
+}
+void BT_RemoveVehicle(class physVehicleAPI_i *pv) {
+	btVehicle_c *v = dynamic_cast<btVehicle_c*>(pv);
+	if(v == 0) {
+		return;
+	}
+	bt_vehicles.removeObject(v);
+	v->destroyVehicle();
+	delete v;
 }
 
 void BT_RunVehicles() {		

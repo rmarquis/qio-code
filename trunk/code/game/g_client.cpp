@@ -275,13 +275,14 @@ void ClientCommand( int clientNum ) {
 		BT_CreateBoxEntity(p,vec3_c(16,16,16),pl->getForward());
 	} else if(!stricmp(cmd,"createkubelwagen") || !stricmp(cmd,"createporshe")) {
 		VehicleCar *veh = new VehicleCar;
-		veh->spawnPhysicsVehicle();
 		if(!stricmp(cmd,"createkubelwagen")) {
 			veh->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
+			veh->setColModel("models/vehicles/kubeldakwre/kubeldakwre.map");
 		} else {
 			veh->setRenderModel("models/vehicles/Porsche_911/porsche-911.obj");
 			veh->setColModel("models/vehicles/Porsche_911/porsche-911.map");
 		}
+		veh->spawnPhysicsVehicle();
 	} else {
 		vec3_c tmp(1400,1340,470);
 		//BT_CreateVehicle(tmp);

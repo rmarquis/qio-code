@@ -70,6 +70,66 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 		}
 	}
 }
+#include <shared/trace.h>
+#define BRUSH_EPSILON 0.00000001f
+bool cmBrush_c::traceRay(class trace_c &tr) {
+    float startFraction = -1.0f;
+    float endFraction = 1.0f;
+    bool startsOut = false;
+    bool endsOut = false;
+	const plane_c *clipPlane = 0;
+    for (int i = 0; i < sides.size(); i++) {
+        const plane_c *pl = &sides[i];
+		float startDistance = pl->distance(tr.getFrom());
+		float endDistance = pl->distance(tr.getTo());
+
+        if (startDistance > 0)
+            startsOut = true;
+        if (endDistance > 0)
+            endsOut = true;
+
+        // make sure the trace isn't completely on one side of the brush
+        if (startDistance > 0 && endDistance > 0) {   
+            return false; // both are in front of the plane, its outside of this brush
+        }
+        if (startDistance <= 0 && endDistance <= 0) {   
+            continue; // both are behind this plane, it will get clipped by another one
+        }
+
+        if (startDistance > endDistance) {
+           // line is entering into the brush
+            float fraction = (startDistance - BRUSH_EPSILON) / (startDistance - endDistance);
+            if (fraction > startFraction) {
+				clipPlane = pl;
+                startFraction = fraction;
+			}
+        } else {   
+			// line is leaving the brush
+            float fraction = (startDistance + BRUSH_EPSILON) / (startDistance - endDistance);
+            if (fraction < endFraction) {
+                endFraction = fraction;
+			}
+        }
+    }
+    if (startsOut == false) {
+		if (endsOut == false) {
+           // tr.setAllSolid(true);
+		}
+		//tr.setStartSolid(true);
+		tr.setFraction(0);
+		return true;
+    }
+    if (startFraction < endFraction) {
+        if (startFraction > -1 && startFraction < 1.f) {
+            if (startFraction < 0)
+                startFraction = 0;
+			tr.setFraction(startFraction);
+			//tr.setPlane(*clipPlane);
+			return true;
+        }
+    }
+	return false; // no hit
+}
 #include <shared/parser.h>
 bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 	// old brush format
@@ -107,7 +167,7 @@ bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 		}
 	
 		plane_c pl;
-		pl.fromThreePoints(p0,p1,p2);
+		pl.fromThreePointsINV(p0,p1,p2);
 
 		sides.push_back(pl);
 	}

@@ -16,5 +16,6 @@ extern btDiscreteDynamicsWorld* dynamicsWorld;
 class btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel);
 void BT_RemoveRigidBody(class btRigidBody *body);
 class btRigidBody* BT_CreateRigidBodyInternal(float mass, const class btTransform& startTransform, class btCollisionShape* shape);
+void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans,class cMod_i *cmodel);
 
 #endif // __BT_INLCUDE_H__

@@ -39,7 +39,8 @@ enum cModType_e {
 // motors and car wheels
 class cmHelper_i {
 public:
-
+	virtual u32 getNumKeyPairs() const = 0;
+	virtual const char *getKeyValue(const char *key) const = 0;
 };
 
 // cm object base
@@ -54,9 +55,17 @@ public:
 	virtual bool isBBExts() const {
 		return getType() == CMOD_BBEXTS;
 	}
+	virtual bool isHull() const {
+		return getType() == CMOD_HULL;
+	}
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
 	virtual class cmHull_i *getHull() = 0;
+
+	// helpers
+	virtual u32 getNumHelpers() const = 0;
+	virtual cmHelper_i *getHelper(u32 helperNum) = 0;
+	///virtual cmHelper_i *getNextHelperOfClass(const char *className, cmHelper_i *cur = 0) = 0;
 
 	virtual bool traceRay(class trace_c &tr) = 0;
 };
@@ -78,6 +87,7 @@ class cmHull_i : public cMod_i {
 public:
 	virtual u32 getNumSides() const = 0;
 	virtual const class plane_c &getSidePlane(u32 sideNum) const = 0;
+	virtual void iterateSidePlanes(void (*callback)(const float planeEq[4])) const = 0;
 };
 
 // compound shape - cm object made of multiple cm primitives

@@ -178,7 +178,6 @@ btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTran
 
 	return body;
 }
-
 void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {
 	// set the forward direction of the character controller
 	btVector3 walkDir(dir[0],dir[1],dir[2]);
@@ -308,6 +307,12 @@ void BT_AddBrushPlane(const float q3Plane[4]) {
 	planeEq[3] = -q3Plane[3];
 	planeEquations.push_back(planeEq);
 }
+void BT_AddBrushPlane2(const float q3Plane[4]) {
+	btVector3 planeEq;
+	planeEq.setValue(q3Plane[0],q3Plane[1],q3Plane[2]);
+	planeEq[3] = q3Plane[3];
+	planeEquations.push_back(planeEq);
+}
 void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
 	if((contentFlags & 1) == 0)
 		return;
@@ -404,3 +409,19 @@ void G_LoadMap(const char *mapName) {
 	//}
 	//free(data);
 }
+
+
+void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans, class cMod_i *cmodel) {
+	if(cmodel->isHull()) {
+		cmHull_i *h = cmodel->getHull();
+		planeEquations.clear();
+		h->iterateSidePlanes(BT_AddBrushPlane2);
+		// convert plane equations -> vertex cloud
+		btAlignedObjectArray<btVector3>	vertices;
+		btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
+		// this create an internal copy of the vertices
+		btCollisionShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+		compound->addChildShape(localTrans,shape);
+	}
+}
+

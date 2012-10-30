@@ -140,10 +140,14 @@ bool ModelEntity::traceWorldRay(class trace_c &tr) {
 }
 bool ModelEntity::traceLocalRay(class trace_c &tr) {
 	if(cmod) {
-		return cmod->traceRay(tr);
+		if(cmod->traceRay(tr)) {
+			tr.setHitEntity(this);
+			return true;
+		}
+		return false;
 	}
-	tr.setFraction(tr.getFraction()-0.01f);
-	tr.setHitEntity(this);
-	return true;
+	//////tr.setFraction(tr.getFraction()-0.01f);
+	//////tr.setHitEntity(this);
+	//////return true;
 	return false;
 }

@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/cmBrush.h>
 #include <math/aabb.h>
+#include "cm_helper.h"
 
 class cmObjectBase_c {
 	cmObjectBase_c *hashNext;
@@ -82,6 +83,13 @@ public:
 	virtual float getRadius() const {
 		return radius;
 	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
+	}
 
 	cmCapsule_c(const char *newName, float newHeight, float newRadius) {
 		this->name = newName;
@@ -117,6 +125,13 @@ public:
 	virtual const class vec3_c &getHalfSizes() const {
 		return halfSizes;
 	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
+	}
 
 	cmBBExts_c(const char *newName, const vec3_c &newHalfSizes) {
 		this->name = newName;
@@ -144,7 +159,7 @@ public:
 		return this;
 	}
 	virtual bool traceRay(class trace_c &tr) {
-		return false; // TODO
+		return myBrush.traceRay(tr);
 	}
 	// cmHull_i access
 	virtual u32 getNumSides() const {
@@ -152,6 +167,16 @@ public:
 	}
 	virtual const class plane_c &getSidePlane(u32 sideNum) const {
 		return myBrush.getSidePlane(sideNum);
+	}
+	virtual void iterateSidePlanes(void (*callback)(const float planeEq[4])) const {
+		myBrush.iterateSidePlanes(callback);
+	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
 	}
 
 	void setSingleBrush(const class cmBrush_c &br) {
