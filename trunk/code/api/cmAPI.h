@@ -67,6 +67,8 @@ public:
 	virtual class cmHull_i *getHull() = 0;
 	virtual class cmCompound_i *getCompound() = 0;
 
+	virtual void getBounds(class aabb &out) = 0;
+
 	// helpers
 	virtual u32 getNumHelpers() const = 0;
 	virtual cmHelper_i *getHelper(u32 helperNum) = 0;

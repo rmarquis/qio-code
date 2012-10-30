@@ -76,6 +76,9 @@ public:
 	virtual class cmCompound_i *getCompound() {
 		return 0;
 	}
+	virtual void getBounds(class aabb &out) {
+		out.fromCapsuleZ(height,radius);
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
 	}
@@ -124,6 +127,9 @@ public:
 	virtual class cmCompound_i *getCompound() {
 		return 0;
 	}
+	virtual void getBounds(class aabb &out) {
+		out.fromHalfSizes(halfSizes);
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
 	}
@@ -166,6 +172,9 @@ public:
 	}
 	virtual class cmCompound_i *getCompound() {
 		return 0;
+	}
+	virtual void getBounds(class aabb &out) {
+		out = myBrush.getBounds();
 	}
 	virtual bool traceRay(class trace_c &tr) {
 		return myBrush.traceRay(tr);
@@ -220,6 +229,14 @@ public:
 	}
 	virtual class cmCompound_i *getCompound() {
 		return this;
+	}
+	virtual void getBounds(class aabb &out) {
+		out.clear();
+		for(u32 i = 0; i < shapes.size(); i++) {
+			aabb bb;
+			shapes[i]->getBounds(bb);
+			out.addBox(bb);
+		}
 	}
 	virtual bool traceRay(class trace_c &tr) {
 		bool hit = false;

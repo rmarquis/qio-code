@@ -125,7 +125,11 @@ void ModelEntity::getLocalBounds(aabb &out) const {
 		out = G_GetInlineModelBounds(atoi(renderModelName.c_str()+1));
 		out.extend(0.5f);
 	} else {
-		out.fromRadius(64.f);
+		if(cmod) {
+			cmod->getBounds(out);
+		} else {
+			out.fromRadius(64.f);
+		}
 	}
 }
 #include <shared/trace.h>

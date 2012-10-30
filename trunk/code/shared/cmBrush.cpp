@@ -130,6 +130,24 @@ bool cmBrush_c::traceRay(class trace_c &tr) {
     }
 	return false; // no hit
 }
+#include <shared/cmWinding.h>
+bool cmBrush_c::calcBounds() {
+	this->bounds.clear();
+	for(u32 i = 0; i < sides.size(); i++) {
+		const plane_c &iPlane = sides[i];
+
+		cmWinding_c winding;
+		winding.createBaseWindingFromPlane(iPlane);
+		for(u32 j = 0; j < sides.size(); j++) {
+			if(i == j)
+				continue;
+			const plane_c &jPlane = sides[j];
+			winding.clipWindingByPlane(jPlane.getOpposite());
+		}
+		winding.addPointsToBounds(this->bounds);
+	}
+	return false; // ok
+}
 #include <shared/parser.h>
 bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 	// old brush format

@@ -51,6 +51,12 @@ public:
 		maxs.y = radius;
 		maxs.z = radius;
 	}
+	void fromCapsuleZ(float h, float r) {
+		maxs.z = h * 0.5 + r;
+		mins.z = -maxs.z;
+		mins.x = mins.y = -r;
+		maxs.x = maxs.y = r;
+	}
 	void fromPointAndRadius(const vec3_c &p, float radius) {
 		mins.x = -radius;
 		mins.y = -radius;
@@ -68,6 +74,14 @@ public:
 		maxs.x = halfSize;
 		maxs.y = halfSize;
 		maxs.z = halfSize;
+	}
+	void fromHalfSizes(const vec3_c &halfSizes) {
+		mins.x = -halfSizes.x;
+		mins.y = -halfSizes.y;
+		mins.z = -halfSizes.z;
+		maxs.x = halfSizes.x;
+		maxs.y = halfSizes.y;
+		maxs.z = halfSizes.z;
 	}
 	bool isValid() const {
 		for(u32 i = 0; i < 3; i++) {

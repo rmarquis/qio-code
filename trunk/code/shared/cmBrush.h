@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/array.h>
 #include <math/vec3.h>
+#include <math/aabb.h>
 #include <math/plane.h>
 
 //class cmBrushSide_c {
@@ -34,9 +35,25 @@ or simply visit <http://www.gnu.org/licenses/>.
 //	plane_c pl;
 //	
 //};
+//struct cmEdge_s {
+//	u16 verts[2];
+//};
+//class cmBrushMeshSide_c {
+//public:
+//	u16 firstEdgeIndex;
+//	u16 numEdgeIndexes;
+//};
+//class cmBrushMesh_c {
+//	arraySTD_c<vec3_c> points;
+//	arraySTD_c<cmEdge_s> edges;
+//	arraySTD_c<short> edges;
+//public:
+//	void fromBrush(const class cmBrush_c &in);
+//};
 
 class cmBrush_c {
 	arraySTD_c<plane_c> sides;
+	aabb bounds;
 public:
 	void fromBounds(const class aabb &bb);
 	void fromPoints(const vec3_c *points, u32 numPoints);
@@ -57,11 +74,17 @@ public:
 	const class plane_c &getSidePlane(u32 sideNum) const {
 		return sides[sideNum];
 	}
+	const aabb &getBounds() const {
+		return bounds;
+	}
 	void iterateSidePlanes(void (*callback)(const float planeEq[4])) const {
 		for(u32 i = 0; i < sides.size(); i++) {
 			callback(&sides[i].norm.x);
 		}
 	}
+
+	// returns true if brush is invalid
+	bool calcBounds();
 
 	bool traceRay(class trace_c &tr);
 	

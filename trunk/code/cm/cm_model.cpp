@@ -113,6 +113,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 						parseError = true;
 						break;
 					}
+					nb->calcBounds();
 					if(firstBrush == 0) {
 						firstBrush = nb;
 					}

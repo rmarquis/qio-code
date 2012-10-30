@@ -228,6 +228,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmWinding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmWinding.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\colMeshBuilderAPI.h"
 				>
 			</File>

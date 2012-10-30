@@ -76,11 +76,14 @@ public:
 		// pass NULL cmodel here to use default car shape
 		//cmodel = 0;
 
-		const float hOfs = -32.f;//32.f;
+		const float hOfs = 0;//32.f;
 		btTransform localTrans;
 		localTrans.setIdentity();
+		bool doLocalTrans = false;
 		//localTrans effectively shifts the center of mass with respect to the chassis
-		localTrans.setOrigin(btVector3(0,0,1.f*VEH_SCALE+hOfs));
+		if(doLocalTrans) {
+			localTrans.setOrigin(btVector3(0,0,1.f*VEH_SCALE+hOfs));
+		}
 		
 		if(cmodel) {
 			BT_AddCModelToCompoundShape(compound,localTrans,cmodel);
@@ -105,7 +108,12 @@ public:
 
 		dynamicsWorld->addVehicle(m_vehicle);
 
-		float connectionHeight = 1.2f*VEH_SCALE + hOfs;
+		float connectionHeight;
+		if(doLocalTrans) {
+			connectionHeight = 1.2f*VEH_SCALE + hOfs;
+		} else {
+			connectionHeight = 0.2f*VEH_SCALE + hOfs;
+		}
 
 		bool isFrontWheel=true;
 
