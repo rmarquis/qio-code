@@ -33,6 +33,7 @@ enum cModType_e {
 	CMOD_CAPSULE,
 	CMOD_BBEXTS, // bounding box defined by halfsizes
 	CMOD_HULL, // aka brush - single convex volume
+	CMOD_COMPOUND,
 };
 
 // cm helpers are used to position joints,
@@ -58,9 +59,13 @@ public:
 	virtual bool isHull() const {
 		return getType() == CMOD_HULL;
 	}
+	virtual bool isCompound() const {
+		return getType() == CMOD_COMPOUND;
+	}
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
 	virtual class cmHull_i *getHull() = 0;
+	virtual class cmCompound_i *getCompound() = 0;
 
 	// helpers
 	virtual u32 getNumHelpers() const = 0;

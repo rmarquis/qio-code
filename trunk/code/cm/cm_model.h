@@ -73,6 +73,9 @@ public:
 	virtual class cmHull_i *getHull() {
 		return 0;
 	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
 	}
@@ -118,6 +121,9 @@ public:
 	virtual class cmHull_i *getHull() {
 		return 0;
 	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return false; // TODO
 	}
@@ -158,6 +164,9 @@ public:
 	virtual class cmHull_i *getHull() {
 		return this;
 	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
 	virtual bool traceRay(class trace_c &tr) {
 		return myBrush.traceRay(tr);
 	}
@@ -190,3 +199,57 @@ public:
 };
 
 
+class cmCompound_c : public cmObjectBase_c, public cmCompound_i {
+	arraySTD_c<cMod_i*> shapes;
+public:
+	// cmObjectBase_c access
+	virtual const char *getName() const {
+		return name;
+	}
+	virtual enum cModType_e getType() const {
+		return CMOD_COMPOUND;
+	}
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
+	virtual class cmCompound_i *getCompound() {
+		return this;
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		bool hit = false;
+		for(u32 i = 0; i < shapes.size(); i++) {
+			if(shapes[i]->traceRay(tr)) {
+				hit = true;
+			}
+		}
+		return hit;
+	}
+	// cmCompound_i access
+	virtual u32 getNumSubShapes() {
+		return shapes.size();
+	}
+	virtual cMod_i *getSubShapeN(u32 subShapeNum) {
+		return shapes[subShapeNum];
+	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
+	}
+
+	void addShape(class cMod_i *m) {
+		shapes.push_back(m);
+	}
+
+	cmCompound_c(const char *newName) {
+		this->name = newName;
+	}
+};

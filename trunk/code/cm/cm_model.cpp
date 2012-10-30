@@ -147,7 +147,21 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 			hull->addHelper(helper);
 		}
 	} else if(numEntitiesWithBrushes == 1) {
-		// TODO ?
+		cmCompound_c *compound = new cmCompound_c(fname);
+		ret = compound;
+		// add helpers and brushes
+		for(u32 i = 0; i < entities.size(); i++) {
+			cmMapFileEntity_s *e = entities[i];
+			if(e->brushes.size()) {
+				for(u32 j = 0; j < e->brushes.size(); j++) {
+					cmHull_c *hull = new cmHull_c(va("%s::subBrush%i",fname,j),*e->brushes[j]);
+					compound->addShape(hull);
+				}
+				continue;
+			}
+			cmHelper_c *helper = e->allocHelper();
+			compound->addHelper(helper);
+		}
 	} else {
 		// TODO ?
 	}

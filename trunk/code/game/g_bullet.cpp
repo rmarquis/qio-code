@@ -367,47 +367,6 @@ void G_LoadMap(const char *mapName) {
 
 	l.clear();
 	g_bspPhysicsLoader = 0;
-
-	//const q3Brush_s *b = h->getBrushes();
-	//const q3Plane_s *planes = h->getPlanes();
-	//u32 numBrushes = h->getModels()->numBrushes;
-	//for(u32 i = 0; i < numBrushes; i++, b++) {
-	//	const q3BSPMaterial_s *m = h->getMat(b->materialNum);
-	//	if((m->contentFlags & 1) == false)
-	//		continue;
-	//	btAlignedObjectArray<btVector3> planeEquations;
-	//	for(int j = 0; j < b->numSides; j++) {
-	//		const q3BrushSide_s *s = h->getBrushSide(b->firstSide+j);
-	//		const q3Plane_s &plane = planes[s->planeNum];
-	//		btVector3 planeEq;
-	//		planeEq.setValue(plane.normal[0],plane.normal[1],plane.normal[2]);
-	//		planeEq[3] = -plane.dist;
-	//		planeEquations.push_back(planeEq);
-	//	}
-	//	btAlignedObjectArray<btVector3>	vertices;
-	//	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
-	//	BT_CreateWorldBrush(vertices);
-	//}
-	//// load only bezier patches (brushes are used for collision detection instead of planar surfaces)
-	//u32 numSurfs = h->getModels()->numSurfaces;
-	//const q3Surface_s *sf = h->getSurfaces();
-	//for(u32 i = 0; i < numSurfs; i++) {
-	//	if(sf->surfaceType == Q3MST_PATCH) {
-	//		cmBezierPatch_c bp;
-	//		const q3Vert_s *v = h->getVerts() + sf->firstVert;
-	//		for(u32 j = 0; j < sf->numVerts; j++, v++) {
-	//			bp.addVertex(v->xyz);
-	//		}
-	//		bp.setHeight(sf->patchHeight);
-	//		bp.setWidth(sf->patchWidth);
-	//		cmSurface_c *cmSF = new cmSurface_c;
-	//		bp.tesselate(2,cmSF);
-	//		BT_CreateWorldTriMesh(*cmSF);
-	//		bt_cmSurfs.push_back(cmSF); // we'll need to free it later
-	//	}
-	//	sf = h->getNextSurface(sf);
-	//}
-	//free(data);
 }
 
 
@@ -420,8 +379,19 @@ void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransf
 		btAlignedObjectArray<btVector3>	vertices;
 		btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
 		// this create an internal copy of the vertices
-		btCollisionShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+		btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+#if 1
+		// This is not needed by physics code itself, but its needed by bt debug drawing.
+		// (without it convex shapes edges are messed up)
+		shape->initializePolyhedralFeatures();
+#endif
 		compound->addChildShape(localTrans,shape);
+	} else if(cmodel->isCompound()) {
+		cmCompound_i *cmCompound = cmodel->getCompound();
+		for(u32 i = 0; i < cmCompound->getNumSubShapes(); i++) {
+			cMod_i *sub = cmCompound->getSubShapeN(i);
+			BT_AddCModelToCompoundShape(compound,localTrans,sub);
+		}
 	}
 }
 

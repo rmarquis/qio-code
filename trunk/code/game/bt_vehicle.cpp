@@ -74,9 +74,9 @@ public:
 		btCompoundShape *compound = new btCompoundShape();
 	
 		// pass NULL cmodel here to use default car shape
-		cmodel = 0;
+		//cmodel = 0;
 
-		const float hOfs = 0;//32.f;
+		const float hOfs = -32.f;//32.f;
 		btTransform localTrans;
 		localTrans.setIdentity();
 		//localTrans effectively shifts the center of mass with respect to the chassis

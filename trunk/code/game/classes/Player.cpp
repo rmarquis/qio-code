@@ -178,6 +178,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 void Player::onUseKeyDown() {
 	if(this->vehicle) {
 		this->vehicle->detachPlayer(this);
+		this->setOrigin(this->getOrigin()+vec3_c(0,0,64));
 		this->vehicle = 0;
 		this->enableCharacterController();
 		return;
