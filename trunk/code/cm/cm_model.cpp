@@ -94,6 +94,10 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	u32 numTotalBrushes = 0;
 	cmBrush_c *firstBrush = 0;
 	arraySTD_c<cmMapFileEntity_s*> entities;
+
+	if(p.atWord("version")) {
+		p.getToken(); // skip doom3/quake4 version ident
+	}
 	while(p.atEOF() == false && parseError == false) {
 		if(p.atWord("{")) {
 			// enter new entity
@@ -107,12 +111,22 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 				if(p.atWord("{")) {
 					// enter new primitive
 					cmBrush_c *nb = new cmBrush_c;
-					ne->brushes.push_back(nb);
-					if(nb->parseBrushQ3(p)) {		
-						g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing brush at line %i of %s\n",p.getCurrentLineNumber(),fname);
-						parseError = true;
-						break;
+					if(p.atWord("brushDef3")) {
+						if(nb->parseBrushD3(p)) {		
+							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing brushDef3 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							delete nb;
+							break;
+						}
+					} else {
+						if(nb->parseBrushQ3(p)) {		
+							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing old brush format at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							delete nb;
+							break;
+						}
 					}
+					ne->brushes.push_back(nb);
 					nb->calcBounds();
 					if(firstBrush == 0) {
 						firstBrush = nb;
@@ -130,8 +144,12 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 				numEntitiesWithBrushes++;
 				numTotalBrushes += ne->brushes.size();
 			} else {
-
 			}
+		} else {
+			int line = p.getCurrentLineNumber();
+			str token = p.getToken();
+			g_core->RedWarning("CM_LoadModelFromMapFile: unknown token %s at line %i of %s\n",token.c_str(),line,fname);
+			parseError = true;
 		}
 	}
 	cMod_i *ret = 0;

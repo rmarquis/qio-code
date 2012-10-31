@@ -85,6 +85,14 @@ public:
 		}
 		bb.swapYZ();
 	}
+	virtual void translateY(float ofs) {
+		vec3_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			v->y += ofs;
+		}
+		bb.mins.y += ofs;
+		bb.maxs.y += ofs;
+	}
 
 	const aabb &getAABB() const {
 		return bb;

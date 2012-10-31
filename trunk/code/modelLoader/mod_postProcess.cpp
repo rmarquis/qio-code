@@ -43,6 +43,9 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			inout->scaleXYZ(scale);
 		} else if(p.atWord("swapYZ")) {
 			inout->swapYZ();
+		} else if(p.atWord("translateY")) {
+			float ofs = p.getFloat();
+			inout->translateY(ofs);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

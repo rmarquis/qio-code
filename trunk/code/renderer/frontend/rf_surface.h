@@ -87,6 +87,7 @@ public:
 
 	void scaleXYZ(float scale);
 	void swapYZ();
+	void translateY(float ofs);
 
 	const aabb &getBB() const {
 		return bounds;
@@ -105,6 +106,7 @@ public:
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();
+	virtual void translateY(float ofs);
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();

@@ -52,7 +52,8 @@ public:
 	virtual void runPhysicsObject();
 
 	void createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel);
-	
+	void initRigidBodyPhysics();
+
 	void debugDrawCMObject(class rDebugDrawer_i *dd);
 
 	bool hasPhysicsObject() const {

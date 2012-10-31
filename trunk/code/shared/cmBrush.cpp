@@ -170,7 +170,7 @@ bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 			g_core->RedWarning("cmBrush_c::parseBrushQ3: failed to read old brush def third point in file %s at line %i\n",p.getDebugFileName(),p.getCurrentLineNumber());
 			return true; // error
 		}
-		//str matName = p.getWord();
+		//str matName = p.getToken();
 		p.skipLine();
 
 		// check for extra surfaceParms (MoHAA-specific ?)
@@ -188,6 +188,72 @@ bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 		pl.fromThreePointsINV(p0,p1,p2);
 
 		sides.push_back(pl);
+	}
+	return false; // no error
+}
+bool cmBrush_c::parseBrushD3(class parser_c &p) {
+	// new brush format (with explicit plane equations)
+	// Number of sides isnt explicitly specified,
+	// so parse until the closing brace is hit
+	if(p.atWord("{") == false) {
+		g_core->RedWarning("brush_c::parseBrushD3: expected { to follow brushDef3, found %s at line %i of file %s\n",
+			p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+	}
+	while(p.atWord_dontNeedWS("}") == false) {
+		//  ( -0 -0 -1 1548 ) ( ( 0.0078125 0 -4.0625004768 ) ( -0 0.0078125 0.03125 ) ) "textures/common/clip" 0 0 0
+		plane_c sidePlane;
+
+		if(p.atWord("(") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ( to follow brushSide plane equation, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		p.getFloatMat(sidePlane.norm,3);
+		sidePlane.dist = p.getFloat();
+
+		if(p.atWord(")") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ) after brushSide plane equation, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		if(p.atWord("(") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ( to follow brushSide texMat, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		vec3_c mat[2];
+		if(p.getFloatMat_braced(mat[0],3)) {
+			g_core->RedWarning("brush_c::parseBrushD3: failed to read brush texMat at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+		if(p.getFloatMat_braced(mat[1],3)) {
+			g_core->RedWarning("brush_c::parseBrushD3: failed to read brush texMat at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		if(p.atWord(")") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ) after brushSide texMat, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+		// get material name
+		//str matName = p.getToken();
+		// after material name we usually have 3 zeroes
+	
+		p.skipLine();
+
+		this->sides.push_back(sidePlane);
+	}
+	if(p.atWord("}") == false) {
+		g_core->RedWarning("brush_c::parseBrushD3: expected } after brushDef3, found %s at line %i of file %s\n",
+			p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+		return true;
 	}
 	return false; // no error
 }

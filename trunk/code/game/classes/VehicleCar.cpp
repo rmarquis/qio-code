@@ -38,7 +38,7 @@ VehicleCar::~VehicleCar() {
 }
 
 void VehicleCar::spawnPhysicsVehicle() {
-	physVehicle = BT_CreateVehicle(this->getOrigin(),this->cmod);
+	physVehicle = BT_CreateVehicle(this->getOrigin(),this->getAngles(),this->cmod);
 }
 void VehicleCar::destroyPhysicsVehicle() {
 	if(physVehicle == 0)

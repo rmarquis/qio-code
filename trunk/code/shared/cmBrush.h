@@ -89,6 +89,7 @@ public:
 	bool traceRay(class trace_c &tr);
 	
 	bool parseBrushQ3(class parser_c &p);
+	bool parseBrushD3(class parser_c &p);
 	void writeSingleBrushToMapFileVersion2(class writeStreamAPI_i *out);
 	void writeSingleBrushToMapFileVersion2(const char *outFName);
 };

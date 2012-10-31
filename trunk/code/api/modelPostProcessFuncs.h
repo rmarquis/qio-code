@@ -30,6 +30,7 @@ class modelPostProcessFuncs_i {
 public:
 	virtual void scaleXYZ(float scale) = 0;
 	virtual void swapYZ() = 0;
+	virtual void translateY(float ofs) = 0;
 };
 
 #endif // __MODELPOSTPROCESSFUNCS_H__

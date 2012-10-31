@@ -272,9 +272,37 @@ void ClientCommand( int clientNum ) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 32.f;
+#if 0
 		BT_CreateBoxEntity(p,vec3_c(16,16,16),pl->getForward());
+#else
+		int r = rand() % 4;
+		ModelEntity *e = new ModelEntity;
+		if(r == 0) {
+			e->setRenderModel("models/props/crates/crate1.obj");
+			e->setColModel("models/props/crates/crate1.map");
+		} else if(r == 1) {
+			e->setRenderModel("models/props/crates/crate2.obj");
+			e->setColModel("models/props/crates/crate2.map");
+		} else if(r == 2) {
+			e->setRenderModel("models/props/crates/crate3.obj");
+			e->setColModel("models/props/crates/crate3.map");
+		} else {
+			e->setRenderModel("models/props/crates/crate4.obj");
+			e->setColModel("models/props/crates/crate4.map");
+		}
+		e->setOrigin(p);
+		e->initRigidBodyPhysics();
+#endif
 	} else if(!stricmp(cmd,"createkubelwagen") || !stricmp(cmd,"createporshe")) {
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 128.f;
+		vec3_c angles = pl->getAngles();
+		//angles.y += 90;
+
 		VehicleCar *veh = new VehicleCar;
+		veh->setOrigin(p);
+		veh->setAngles(angles);
 		if(!stricmp(cmd,"createkubelwagen")) {
 			veh->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
 			veh->setColModel("models/vehicles/kubeldakwre/kubeldakwre.map");

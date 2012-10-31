@@ -69,6 +69,13 @@ void G_RunPhysics() {
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
 	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
+
+	matrix_c tmp;
+	tmp.identity();
+	aabb bb;
+	bb.addPoint(8,8,8);
+	bb.addPoint(-8,-8,64);
+	BT_IsInSolid(tmp, bb);
 }
 #define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
@@ -77,7 +84,11 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	//can use a shift
 	startTransform.setIdentity();
 	//this create an internal copy of the vertices
-	btCollisionShape* shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+	btConvexHullShape* shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+#if 0
+	// Bullet debug drawind does not work without it
+	shape->initializePolyhedralFeatures(); // causes crash on 20kdm2
+#endif
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);
@@ -100,8 +111,43 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	btRigidBody* body = new btRigidBody(mass,0,shape,localInertia);	
 	body->setWorldTransform(startTransform);
 #endif//
-
 	dynamicsWorld->addRigidBody(body);
+}
+
+static class btCollisionObject *bt_queryCollisionObject = 0;
+static arraySTD_c<const btCollisionObject*> bt_intersected;
+class myBTContactResultCallback_c : public btCollisionWorld::ContactResultCallback {
+	virtual	btScalar	addSingleResult(btManifoldPoint& cp,	const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1) {
+		const btCollisionObject *other;
+		if(colObj0 == bt_queryCollisionObject) {
+			other = colObj0;
+		} else {
+			other = colObj1;
+		}
+		bt_intersected.push_back(other);
+		return 0.f;
+	}
+};
+
+bool BT_IsInSolid(const matrix_c &mat, const aabb &bb) {
+	btAlignedObjectArray<btVector3> vertices;
+	for(u32 i = 0; i < 8; i++) {
+		vec3_c p = bb.getPoint(i);
+		mat.transformPoint(p);
+		vertices.push_back(btVector3(p.x,p.y,p.z));
+	}
+	bt_intersected.clear();
+	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+	btCollisionObject collisionObject;
+	bt_queryCollisionObject = &collisionObject;
+	collisionObject.setCollisionShape(shape);
+	myBTContactResultCallback_c resultCallback;
+	dynamicsWorld->contactTest(&collisionObject,resultCallback);
+	delete shape;
+
+	if(bt_intersected.size()) 
+		return true;
+	return false;
 }
 void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
 	float mass = 0.f;
@@ -249,6 +295,65 @@ btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const fl
 	}
 	return body;
 }
+btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel) {
+	btCollisionShape *shape;
+	if(cModel->isBBExts()) {
+		vec3_c halfSizes = cModel->getBBExts()->getHalfSizes();
+		btBoxShape *boxShape = new btBoxShape(btVector3(halfSizes[0], halfSizes[1], halfSizes[2]));
+		shape = boxShape;
+	} else if(cModel->isCompound()) {
+		btCompoundShape *compound = new btCompoundShape;
+		BT_AddCModelToCompoundShape(compound,btTransform::getIdentity(),cModel);
+		shape = compound;
+	} else if(cModel->isHull()) {
+		shape = BT_CModelHullToConvex(cModel->getHull());
+	}
+	
+	
+
+		
+	const btVector3 btStart(pos[0], pos[1], pos[2]);
+
+	btTransform startTransform;
+	startTransform.setIdentity();
+	startTransform.setOrigin(btStart);
+
+	float mass = 10.0f;
+
+	// rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0, 0, 0);
+	if (isDynamic) 
+	{
+		shape->calculateLocalInertia(mass, localInertia);
+	}
+
+	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, shape);
+	body->setLinearFactor(btVector3(1, 1, 1));
+		
+//	body->getWorldTransform().setOrigin(btStart);
+
+	if(startVel) {
+		btVector3 vel(startVel[0], startVel[1], startVel[2]);
+		vel *= 150;
+
+		body->setLinearVelocity(vel);
+	}
+		
+	body->setAngularVelocity(btVector3(0,0,0));
+	body->setContactProcessingThreshold(1e30);
+		
+	//enable CCD if the object moves more than 1 meter in one simulation frame
+	//rigidBody.setCcdSweptSphereRadius(20);
+
+	//if (g_physUseCCD.integer)
+	{
+		body->setCcdMotionThreshold(32.f);
+		body->setCcdSweptSphereRadius(6);
+	}
+	return body;
+}
 void BT_RemoveRigidBody(class btRigidBody *body) {
 	btMotionState *s = body->getMotionState();
 	if(s) {
@@ -368,23 +473,34 @@ void G_LoadMap(const char *mapName) {
 	l.clear();
 	g_bspPhysicsLoader = 0;
 }
-
+btConvexHullShape *BT_CModelHullToConvex(cmHull_i *h) {
+	planeEquations.clear();
+	h->iterateSidePlanes(BT_AddBrushPlane2);
+	// convert plane equations -> vertex cloud
+	btAlignedObjectArray<btVector3>	vertices;
+	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
+#if 0
+	for(u32 i = 0; i < vertices.size(); i++) {
+		// TODO: use rotation too
+		vertices[i] -= localTrans.getOrigin();
+	}
+#endif
+	if(vertices.size() == 0)
+		return 0;
+	// this create an internal copy of the vertices
+	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+#if 1
+	// This is not needed by physics code itself, but its needed by bt debug drawing.
+	// (without it convex shapes edges are messed up)
+	shape->initializePolyhedralFeatures();
+#endif
+	return shape;
+}
 
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans, class cMod_i *cmodel) {
 	if(cmodel->isHull()) {
 		cmHull_i *h = cmodel->getHull();
-		planeEquations.clear();
-		h->iterateSidePlanes(BT_AddBrushPlane2);
-		// convert plane equations -> vertex cloud
-		btAlignedObjectArray<btVector3>	vertices;
-		btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
-		// this create an internal copy of the vertices
-		btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
-#if 1
-		// This is not needed by physics code itself, but its needed by bt debug drawing.
-		// (without it convex shapes edges are messed up)
-		shape->initializePolyhedralFeatures();
-#endif
+		btConvexHullShape *shape = BT_CModelHullToConvex(h);
 		compound->addChildShape(localTrans,shape);
 	} else if(cmodel->isCompound()) {
 		cmCompound_i *cmCompound = cmodel->getCompound();

@@ -70,7 +70,7 @@ public:
 		m_carChassis->getMotionState()->getWorldTransform(trans);	
 		trans.getOpenGLMatrix(out);
 	}
-	void init(const vec3_c &pos, class cMod_i *cmodel) {
+	void init(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel) {
 		btCompoundShape *compound = new btCompoundShape();
 	
 		// pass NULL cmodel here to use default car shape
@@ -94,10 +94,12 @@ public:
 
 		btTransform tr;
 		tr.setIdentity();
-		tr.setOrigin(btVector3(pos[0],pos[1],pos[2]));
+		matrix_c mat;
+		mat.fromAnglesAndOrigin(angles,pos);
+		tr.setFromOpenGLMatrix(mat);
 
 		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);
-		
+
 		m_wheelShape = new btCylinderShapeX(btVector3(wheelWidth,wheelRadius,wheelRadius));
 
 		m_vehicleRayCaster = new btDefaultVehicleRaycaster(dynamicsWorld);
@@ -112,7 +114,7 @@ public:
 		if(doLocalTrans) {
 			connectionHeight = 1.2f*VEH_SCALE + hOfs;
 		} else {
-			connectionHeight = 0.2f*VEH_SCALE + hOfs;
+			connectionHeight = 1.2f*VEH_SCALE + hOfs;
 		}
 
 		bool isFrontWheel=true;
@@ -184,9 +186,9 @@ public:
 
 static arraySTD_c<btVehicle_c*> bt_vehicles;
 
-physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, class cMod_i *cmodel) {
+physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel) {
 	btVehicle_c *nv = new btVehicle_c;
-	nv->init(pos, cmodel);
+	nv->init(pos, angles, cmodel);
 	bt_vehicles.push_back(nv);
 	return nv;
 }

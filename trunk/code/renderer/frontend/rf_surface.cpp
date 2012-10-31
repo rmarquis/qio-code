@@ -97,6 +97,12 @@ void r_surface_c::swapYZ() {
 		v->xyz.z = tmp;
 	}
 }
+void r_surface_c::translateY(float ofs) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		v->xyz.y += ofs;
+	}
+}
 
 //
 //	r_model_c class
@@ -116,6 +122,12 @@ void r_model_c::swapYZ() {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->swapYZ();
+	}
+}
+void r_model_c::translateY(float ofs) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->translateY(ofs);
 	}
 }
 r_surface_c *r_model_c::registerSurf(const char *matName) {

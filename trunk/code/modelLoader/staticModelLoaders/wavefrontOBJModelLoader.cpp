@@ -146,6 +146,8 @@ bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out) {
 					imageFile.append(me->map_Ka);
 				} else if(me->map_refl.length()) {
 					imageFile.append(me->map_refl);
+				} else if(me->map_Kd.length()) {
+					imageFile.append(me->map_Kd);
 				}
 				currentMaterialName = imageFile;
 				//sf->setMaterial(imageFile);

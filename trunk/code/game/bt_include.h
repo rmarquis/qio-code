@@ -14,8 +14,10 @@ extern btSequentialImpulseConstraintSolver* solver;
 extern btDiscreteDynamicsWorld* dynamicsWorld;
 
 class btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel);
+class btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, class cMod_i *cModel);
 void BT_RemoveRigidBody(class btRigidBody *body);
 class btRigidBody* BT_CreateRigidBodyInternal(float mass, const class btTransform& startTransform, class btCollisionShape* shape);
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans,class cMod_i *cmodel);
+class btConvexHullShape *BT_CModelHullToConvex(class cmHull_i *h);
 
 #endif // __BT_INLCUDE_H__
