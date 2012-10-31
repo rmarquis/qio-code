@@ -41,6 +41,9 @@ public:
 	//vec2_c tan;
 	//vec2_c bin;
 
+	rVert_c() {
+		memset(color,0xff,sizeof(color));
+	}
 	// returns the result of quadratic interpolation between this vertex and two other vertices
 	rVert_c getInterpolated_quadratic(rVert_c &a, rVert_c &b, float s) {
 		rVert_c out;

@@ -257,7 +257,27 @@ void ClientDisconnect( int clientNum ) {
 	g_server->SetConfigstring( CS_PLAYERS + clientNum, "");
 #endif
 }
-
+ModelEntity *G_SpawnRandomBoxAt(const vec3_c &pos, const vec3_c &rot) {
+	int r = rand() % 4;
+	ModelEntity *e = new ModelEntity;
+	if(r == 0) {
+		e->setRenderModel("models/props/crates/crate1.obj");
+		e->setColModel("models/props/crates/crate1.map");
+	} else if(r == 1) {
+		e->setRenderModel("models/props/crates/crate2.obj");
+		e->setColModel("models/props/crates/crate2.map");
+	} else if(r == 2) {
+		e->setRenderModel("models/props/crates/crate3.obj");
+		e->setColModel("models/props/crates/crate3.map");
+	} else {
+		e->setRenderModel("models/props/crates/crate4.obj");
+		e->setColModel("models/props/crates/crate4.map");
+	}
+	e->setOrigin(pos);
+	e->setAngles(rot);
+	e->initRigidBodyPhysics();
+	return e;
+}
 void ClientCommand( int clientNum ) {
 	Player *pl = (Player*)g_entities[clientNum].ent;
 	if(pl == 0) {
@@ -271,28 +291,26 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"shootbox")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
-		p += pl->getForward() * 32.f;
-#if 0
-		BT_CreateBoxEntity(p,vec3_c(16,16,16),pl->getForward());
-#else
-		int r = rand() % 4;
-		ModelEntity *e = new ModelEntity;
-		if(r == 0) {
-			e->setRenderModel("models/props/crates/crate1.obj");
-			e->setColModel("models/props/crates/crate1.map");
-		} else if(r == 1) {
-			e->setRenderModel("models/props/crates/crate2.obj");
-			e->setColModel("models/props/crates/crate2.map");
-		} else if(r == 2) {
-			e->setRenderModel("models/props/crates/crate3.obj");
-			e->setColModel("models/props/crates/crate3.map");
-		} else {
-			e->setRenderModel("models/props/crates/crate4.obj");
-			e->setColModel("models/props/crates/crate4.map");
-		}
-		e->setOrigin(p);
-		e->initRigidBodyPhysics();
-#endif
+		p += pl->getForward() * 64.f;
+		G_SpawnRandomBoxAt(p,pl->getAngles());
+	} else if(!stricmp(cmd,"createboxstack")) {
+		vec3_c p = pl->getOrigin();
+		//p.z += float(pl->getViewHeight())*0.5;
+		p.z -= 32;
+		p += pl->getForward() * 64.f;
+		vec3_c up = pl->getUp();
+		vec3_c left = pl->getLeft();
+		float boxSize = 32.f;
+		vec3_c angles = pl->getAngles();
+		// bottom boxes
+		G_SpawnRandomBoxAt(p+left*boxSize,angles);
+		G_SpawnRandomBoxAt(p,angles);
+		G_SpawnRandomBoxAt(p-left*boxSize,angles);
+		// middle boxes
+		G_SpawnRandomBoxAt(p+left*boxSize*0.5+up*boxSize,angles);
+		G_SpawnRandomBoxAt(p-left*boxSize*0.5+up*boxSize,angles);
+		// top box
+		G_SpawnRandomBoxAt(p+up*boxSize*2.f,angles);
 	} else if(!stricmp(cmd,"createkubelwagen") || !stricmp(cmd,"createporshe")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();

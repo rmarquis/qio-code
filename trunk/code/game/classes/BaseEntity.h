@@ -59,6 +59,12 @@ public:
 	const vec3_c &getForward() const {
 		return matrix.getForward();
 	}
+	const vec3_c &getLeft() const {
+		return matrix.getLeft();
+	}
+	const vec3_c &getUp() const {
+		return matrix.getUp();
+	}
 
 	edict_s *getEdict() {
 		return this->myEdict;

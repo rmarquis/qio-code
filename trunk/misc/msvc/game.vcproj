@@ -176,6 +176,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				IgnoreDefaultLibraryNames="libcmtd.lib"
 				ModuleDefinitionFile=".\game.def"
 				ProgramDatabaseFile="$(IntDir)\qagamex86.pdb"
 				GenerateMapFile="true"
