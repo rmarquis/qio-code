@@ -107,8 +107,6 @@ class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_
 void G_TryToJump(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);
 void G_UpdatePhysicsObject(edict_s *ent);
-void BT_CreateBoxEntity(edict_s *ent, const float *pos, const float *halfSizes, const float *startVel);
-edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel);
 class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel);
 void BT_RemoveVehicle(class physVehicleAPI_i *pv);
 void BT_RunVehicles();

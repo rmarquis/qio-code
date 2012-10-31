@@ -312,9 +312,9 @@ void ClientCommand( int clientNum ) {
 		}
 		veh->spawnPhysicsVehicle();
 	} else {
-		vec3_c tmp(1400,1340,470);
-		//BT_CreateVehicle(tmp);
-		BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
+		////vec3_c tmp(1400,1340,470);
+		//////BT_CreateVehicle(tmp);
+		////BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);
 	}
 }
 

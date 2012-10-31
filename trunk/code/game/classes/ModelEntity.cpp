@@ -108,11 +108,6 @@ void ModelEntity::runPhysicsObject() {
 #endif
 }
 
-void ModelEntity::createBoxPhysicsObject(const float *pos, const float *halfSizes, const float *startVel) {
-	this->body = BT_CreateBoxBody(pos,halfSizes,startVel);
-	this->setColModel(cm->registerBoxExts(halfSizes));
-	this->body->setUserPointer(this);
-}
 void ModelEntity::initRigidBodyPhysics() {
 	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod);
 	this->body->setUserPointer(this);

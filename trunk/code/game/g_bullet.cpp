@@ -247,54 +247,53 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 	dynamicsWorld->removeCollisionObject(c->getGhostObject());
 	delete c->getGhostObject();
 	delete c;
-
 }
-btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel) {
-	btBoxShape* boxShape = new btBoxShape(btVector3(halfSizes[0], halfSizes[1], halfSizes[2]));
-	boxShape->initializePolyhedralFeatures();
-		
-	const btVector3 btStart(pos[0], pos[1], pos[2]);
-
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(btStart);
-
-	float mass = 10.0f;
-
-	// rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic) 
-	{
-		boxShape->calculateLocalInertia(mass, localInertia);
-	}
-
-	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, boxShape);
-	body->setLinearFactor(btVector3(1, 1, 1));
-		
-//	body->getWorldTransform().setOrigin(btStart);
-
-	if(startVel) {
-		btVector3 vel(startVel[0], startVel[1], startVel[2]);
-		vel *= 150;
-
-		body->setLinearVelocity(vel);
-	}
-		
-	body->setAngularVelocity(btVector3(0,0,0));
-	body->setContactProcessingThreshold(1e30);
-		
-	//enable CCD if the object moves more than 1 meter in one simulation frame
-	//rigidBody.setCcdSweptSphereRadius(20);
-
-	//if (g_physUseCCD.integer)
-	{
-		body->setCcdMotionThreshold(halfSizes[0]);
-		body->setCcdSweptSphereRadius(6);
-	}
-	return body;
-}
+//btRigidBody *BT_CreateBoxBody(const float *pos, const float *halfSizes, const float *startVel) {
+//	btBoxShape* boxShape = new btBoxShape(btVector3(halfSizes[0], halfSizes[1], halfSizes[2]));
+//	boxShape->initializePolyhedralFeatures();
+//		
+//	const btVector3 btStart(pos[0], pos[1], pos[2]);
+//
+//	btTransform startTransform;
+//	startTransform.setIdentity();
+//	startTransform.setOrigin(btStart);
+//
+//	float mass = 10.0f;
+//
+//	// rigidbody is dynamic if and only if mass is non zero, otherwise static
+//	bool isDynamic = (mass != 0.f);
+//
+//	btVector3 localInertia(0, 0, 0);
+//	if (isDynamic) 
+//	{
+//		boxShape->calculateLocalInertia(mass, localInertia);
+//	}
+//
+//	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, boxShape);
+//	body->setLinearFactor(btVector3(1, 1, 1));
+//		
+////	body->getWorldTransform().setOrigin(btStart);
+//
+//	if(startVel) {
+//		btVector3 vel(startVel[0], startVel[1], startVel[2]);
+//		vel *= 150;
+//
+//		body->setLinearVelocity(vel);
+//	}
+//		
+//	body->setAngularVelocity(btVector3(0,0,0));
+//	body->setContactProcessingThreshold(1e30);
+//		
+//	//enable CCD if the object moves more than 1 meter in one simulation frame
+//	//rigidBody.setCcdSweptSphereRadius(20);
+//
+//	//if (g_physUseCCD.integer)
+//	{
+//		body->setCcdMotionThreshold(halfSizes[0]);
+//		body->setCcdSweptSphereRadius(6);
+//	}
+//	return body;
+//}
 btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel) {
 	btCollisionShape *shape;
 	if(cModel->isBBExts()) {
@@ -367,14 +366,6 @@ void BT_RemoveRigidBody(class btRigidBody *body) {
 	}
 	dynamicsWorld->removeRigidBody(body);
 	delete body;
-}
-edict_s *BT_CreateBoxEntity(const float *pos, const float *halfSizes, const float *startVel) {
-	ModelEntity *e = new ModelEntity;
-	e->createBoxPhysicsObject(pos,halfSizes,startVel);
-	//// test model loading....
-	//e->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
-	////e->setRenderModel("models/vehicles/Porsche_911/porsche-911.obj");
-	return e->getEdict();
 }
 btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
