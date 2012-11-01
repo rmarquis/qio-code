@@ -83,6 +83,8 @@ float bt_collisionMargin = 4.f;
 
 #define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
+	if(vertices.size() == 0)
+		return;
 	float mass = 0.f;
 	btTransform startTransform;
 	//can use a shift
@@ -423,8 +425,8 @@ void BT_AddBrushPlane2(const float q3Plane[4]) {
 	planeEquations.push_back(planeEq);
 }
 void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
-	if((contentFlags & 1) == 0)
-		return;
+	//if((contentFlags & 1) == 0)
+	//	return;
 	planeEquations.clear();
 	g_bspPhysicsLoader->iterateBrushPlanes(brushNum,BT_AddBrushPlane);
 	// convert plane equations -> vertex cloud

@@ -56,26 +56,93 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 	g_vfs->FS_Read(data,len,f);
 	g_vfs->FS_FCloseFile(f);
 	h = (q3Header_s*)data;
+	if(h->isBSPCoD1()) {
+		h->swapCoDLumpLenOfsValues();
+	}
 	return false;
 }
 
 void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 matNum)) {
-	const q3Model_s *mod = h->getModels() + modelNum;
-	const q3Brush_s *b = h->getBrushes() + mod->firstBrush;
-	for(u32 i = 0; i < mod->numBrushes; i++, b++) {
-		perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(b->materialNum));
+	const q3Model_s *mod = h->getModel(modelNum);
+	if(h->isBSPCoD1()) {
+		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
+		for(u32 i = 0; i < mod->numBrushes; i++, codBrush++) {
+			perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(codBrush->materialNum));
+		}		
+	} else {
+		const q3Brush_s *b = h->getBrushes() + mod->firstBrush;
+		for(u32 i = 0; i < mod->numBrushes; i++, b++) {
+			perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(b->materialNum));
+		}
 	}
 }
+struct codBrushSideAxial_s {
+	float distance; // axial plane distance to origin
+	int material;
+};
+struct codBrushSideNonAxial_s {
+	int planeNumber;
+	int material;
+};
+struct codBrushSides_s {
+	codBrushSideAxial_s axialSides[6]; // always 6
+	codBrushSideNonAxial_s nonAxialSides[32]; // variable-sized
+};
 void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) {
-	const q3Brush_s *b = h->getBrushes() + brushNum;
 	const q3Plane_s *planes = h->getPlanes();
-	for(u32 i = 0; i < b->numSides; i++) {
-		const q3BrushSide_s *s = h->getBrushSide(b->firstSide+i);
-		const q3Plane_s &plane = planes[s->planeNum];
-		sideCallback((const float*)&plane);
+	if(h->isBSPCoD1()) {
+		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
+		u32 sidesDataOffset = 0;
+		// get the side offset
+		u32 tmp = brushNum;
+		while(tmp) {
+			sidesDataOffset += codBrush->numSides * 8;
+			codBrush++;
+			tmp--;
+		}
+		u32 totalSidesDataLen = h->getLumpSize(COD1_BRUSHSIDES);
+		if(totalSidesDataLen <= sidesDataOffset) {
+			return;
+		}
+		const codBrushSides_s *sides = (const codBrushSides_s*)(((const byte*)h->getLumpData(COD1_BRUSHSIDES))+sidesDataOffset);
+		// that's the order of normals from q3 bsp file...
+#if 1
+		vec3_c normals [] = {
+			vec3_c(-1,0,0),
+			vec3_c(1,0,0),
+			vec3_c(0,-1,0),
+			vec3_c(0,1,0),
+			vec3_c(0,0,-1),
+			vec3_c(0,0,1),
+		};
+#else
+		// TODO: find the valid order of normals
+#endif
+		for(u32 i = 0; i < 6; i++) {
+			plane_c pl;
+			pl.norm = normals[i];
+			pl.dist = sides->axialSides[i].distance;
+			sideCallback(pl.norm);
+		}
+		u32 extraSides = codBrush->numSides - 6;
+		for(u32 i = 0; i < extraSides; i++) {
+			const q3Plane_s &plane = planes[sides->nonAxialSides[i].planeNumber];
+			sideCallback((const float*)&plane);
+		}
+	} else {
+		const q3Brush_s *b = h->getBrushes() + brushNum;
+		for(u32 i = 0; i < b->numSides; i++) {
+			const q3BrushSide_s *s = h->getBrushSide(b->firstSide+i);
+			const q3Plane_s &plane = planes[s->planeNum];
+			sideCallback((const float*)&plane);
+		}
 	}
 }
 void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 matNum)) {
+	if(h->isBSPCoD1()) {
+		// it seems that there are no bezier patches in CoD bsp files...
+		return;
+	}
 	const q3Model_s *mod = h->getModels() + modelNum;
 	const q3Surface_s *sf = h->getSurfaces() + mod->firstSurface;
 	for(u32 i = 0; i < mod->numSurfaces; i++) {
@@ -100,7 +167,8 @@ void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tes
 }
 
 u32 bspPhysicsDataLoader_c::getMaterialContentFlags(u32 matNum) const {
-	return h->getMat(matNum)->contentFlags;
+	const q3BSPMaterial_s *m = h->getMat(matNum);
+	return m->contentFlags;
 }
 
 u32 bspPhysicsDataLoader_c::getNumInlineModels() const {

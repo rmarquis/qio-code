@@ -44,6 +44,7 @@ aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
 aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
 aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
+aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","1");
 
 rBspTree_c::rBspTree_c() {
 	vis = 0;
@@ -148,18 +149,57 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
 		return true; // error
 	}
-	const lump_s &ll = h->getLumps()[lumpLeaves];
-	if(ll.fileLen % sizeOfLeaf) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
-		return true; // error
-	}
 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
-	u32 numLeaves = ll.fileLen / sizeOfLeaf;
 	nodes.resize(numNodes);
-	leaves.resize(numLeaves);
 	memcpy(nodes.getArray(),h->getLumpData(lumpNodes),h->getLumpSize(lumpNodes));
-	memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(q3Leaf_s),sizeOfLeaf);
+
+	if(h->isBSPCoD1()) {
+		const lump_s &ll = h->getLumps()[COD1_LEAFS];
+		if(ll.fileLen % sizeof(cod1Leaf_s)) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+			return true; // error
+		}
+		u32 numLeaves = ll.fileLen / sizeOfLeaf;
+		leaves.resize(numLeaves);
+		q3Leaf_s *l = leaves.getArray();
+		const cod1Leaf_s *il = (const cod1Leaf_s*)h->getLumpData(COD1_LEAFS);
+		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+			l->area = il->area;
+			l->cluster = il->cluster;
+			l->firstLeafBrush = il->firstLeafBrush;
+			l->firstLeafSurface = il->firstLeafSurface;
+			l->numLeafBrushes = il->numLeafBrushes;
+			l->numLeafSurfaces = il->numLeafSurfaces;
+		}
+	} else {
+		const lump_s &ll = h->getLumps()[lumpLeaves];
+		if(ll.fileLen % sizeOfLeaf) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+			return true; // error
+		}
+		u32 numLeaves = ll.fileLen / sizeOfLeaf;
+		leaves.resize(numLeaves);
+		memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(q3Leaf_s),sizeOfLeaf);
+	}
 	return false; // OK
+}
+bool rBspTree_c::loadVerts(u32 lumpVerts) {
+	const q3Vert_s *iv = (const q3Vert_s*) h->getLumpData(lumpVerts);
+	u32 numVerts = h->getLumpStructCount(lumpVerts,sizeof(q3Vert_s));
+	verts.resize(numVerts);
+	rVert_c *ov = verts.getArray();
+	// convert vertices
+	for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
+		ov->xyz = iv->xyz;
+		ov->tc = iv->st;
+		ov->lc = iv->lightmap;
+		ov->normal = iv->normal;
+		ov->color[0] = iv->color[0];
+		ov->color[1] = iv->color[1];
+		ov->color[2] = iv->color[2];
+		ov->color[3] = iv->color[3];
+	}
+	return false; // no error
 }
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
 	const lump_s &sl = h->getLumps()[lumpSurfs];
@@ -188,21 +228,9 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 	surfs.resize(numSurfs);
 	bspSurf_s *out = surfs.getArray();
 	const u32 *indices = (const u32 *) h->getLumpData(lumpIndexes);
-	const q3Vert_s *iv = (const q3Vert_s*) h->getLumpData(lumpVerts);
-	u32 numVerts = h->getLumpStructCount(lumpVerts,sizeof(q3Vert_s));
-	verts.resize(numVerts);
-	rVert_c *ov = verts.getArray();
-	// convert vertices
-	for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
-		ov->xyz = iv->xyz;
-		ov->tc = iv->st;
-		ov->lc = iv->lightmap;
-		ov->normal = iv->normal;
-		ov->color[0] = iv->color[0];
-		ov->color[1] = iv->color[1];
-		ov->color[2] = iv->color[2];
-		ov->color[3] = iv->color[3];
-	}
+	// load vertices
+	loadVerts(lumpVerts);
+
 	c_bezierPatches = 0;
 	c_flares = 0;
 	for(u32 i = 0; i < numSurfs; i++, out++) {
@@ -276,9 +304,65 @@ parsePlanarSurf:;
 	}
 	return false; // OK
 }
+bool rBspTree_c::loadSurfsCoD() {
+	loadVerts(COD1_DRAWVERTS);
+	const cod1Surface_s *sf = (const cod1Surface_s *)h->getLumpData(COD1_SURFACES);
+	u32 numSurfs = h->getLumpStructNum(COD1_SURFACES,sizeof(cod1Surface_s));
+	surfs.resize(numSurfs);
+	bspSurf_s *out = surfs.getArray();
+	// NOTE: CoD drawIndexes are 16 bit (not 32 bit like in Q3)
+	const u16 *indices = (const u16 *) h->getLumpData(COD1_DRAWINDEXES);
+	for(u32 i = 0; i < numSurfs; i++, sf++, out++) {
+		const q3BSPMaterial_s *bspMaterial = h->getMat(sf->materialNum);;
+		mtrAPI_i *mat = g_ms->registerMaterial(bspMaterial->shader);
+		textureAPI_i *lightmap;
+		if(sf->lightmapNum < 0) {
+			lightmap = 0;
+		} else {
+			if(sf->lightmapNum >= lightmaps.size()) {
+				lightmap = 0;
+			} else {
+				lightmap = lightmaps[sf->lightmapNum];
+			}
+		}
+		out->type = BSPSF_PLANAR; // is this really always a planar surface??
+		bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
+		ts->mat = mat;
+		ts->lightmap = lightmap;
+		const u16 *firstIndex = indices + sf->firstIndex;
+		// get the largest index value of this surface
+		// to determine if we can use U16 index buffer
+		u32 largestIndex = 0;
+		for(u32 j = 0; j < sf->numIndexes; j++) {
+			u32 idx = sf->firstVert + u32(firstIndex[j]);
+			if(idx > largestIndex) {
+				largestIndex = idx;
+			}
+		}
+		ts->bounds.clear();
+		if(largestIndex + 1 < U16_MAX) {
+			g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
+			u16 *u16Indexes = ts->absIndexes.initU16(sf->numIndexes);
+			for(u32 j = 0; j < sf->numIndexes; j++) {
+				u16Indexes[j] = sf->firstVert + firstIndex[j];	
+				// update bounding box as well
+				ts->bounds.addPoint(this->verts[u16Indexes[j]].xyz);
+			}
+		} else {
+			g_core->Print("rBspTree_c::loadSurfs: using U32 index buffer for surface %i\n",i);
+			u32 *u32Indexes = ts->absIndexes.initU32(sf->numIndexes);
+			for(u32 j = 0; j < sf->numIndexes; j++) {
+				u32Indexes[j] = sf->firstVert + firstIndex[j];
+				// update bounding box as well	
+				ts->bounds.addPoint(this->verts[u32Indexes[j]].xyz);
+			}
+		}
+	}
+	return false; // ok
+}
 bool rBspTree_c::loadModels(u32 modelsLump) {
 	const lump_s &ml = h->getLumps()[modelsLump];
-	if(ml.fileLen % sizeof(q3Model_s)) {
+	if(ml.fileLen % h->getModelStructSize()) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadModels: invalid models lump size\n");
 		return true; // error
 	}
@@ -286,10 +370,12 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	models.resize(numModels);
 	const q3Model_s *m = (const q3Model_s *)h->getLumpData(modelsLump);
 	bspModel_s *om = models.getArray();
-	for(u32 i = 0; i < numModels; i++, m++, om++) {
+	for(u32 i = 0; i < numModels; i++, om++) {
 		om->firstSurf = m->firstSurface;
 		om->numSurfs = m->numSurfaces;
 		om->bb.fromTwoPoints(m->maxs,m->mins);
+
+		m = h->getNextModel(m);
 	}
 	return false; // OK
 }
@@ -352,6 +438,7 @@ bool rBspTree_c::load(const char *fname) {
 			return true; // error
 		}
 	} else if(h->ident == BSP_IDENT_2015|| h->ident == BSP_IDENT_EALA) {
+		// MoHAA/MoHBT/MoHSH bsp file
 		if(loadLightmaps(MOH_LIGHTMAPS)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
@@ -377,6 +464,29 @@ bool rBspTree_c::load(const char *fname) {
 			return true; // error
 		}
 		if(loadVisibility(MOH_VISIBILITY)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+	} else if(h->ident == BSP_IDENT_IBSP && h->version == BSP_VERSION_COD1) {
+		// Call Of Duty .bsp file
+		((q3Header_s*)h)->swapCoDLumpLenOfsValues();
+		if(loadModels(COD1_MODELS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadSurfsCoD()) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadNodesAndLeaves(COD1_NODES,COD1_LEAFS,sizeof(cod1Leaf_s))) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadLeafIndexes(COD1_LEAFSURFACES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadPlanes(COD1_PLANES)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
@@ -450,18 +560,24 @@ void rBspTree_c::updateVisibility() {
 	q3Leaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
 	int c_leavesCulledByAreaBits = 0;
-	for(u32 i = 0; i < leaves.size(); i++, l++) {
-		if(isClusterVisible(l->cluster,camCluster) == false) {
-			c_leavesCulledByPVS++;
-			continue; // skip leaves that are not visible
+	if(rf_bsp_forceEverythingVisible.getInt()) {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			this->surfs[i].lastVisCount = this->visCounter;
 		}
-		if(areaBits.get(l->area)) {
-			c_leavesCulledByAreaBits++;
-			continue;
-		}
-		for(u32 j = 0; j < l->numLeafSurfaces; j++) {
-			u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
-			this->surfs[sfNum].lastVisCount = this->visCounter;
+	} else {
+		for(u32 i = 0; i < leaves.size(); i++, l++) {
+			if(isClusterVisible(l->cluster,camCluster) == false) {
+				c_leavesCulledByPVS++;
+				continue; // skip leaves that are not visible
+			}
+			if(areaBits.get(l->area)) {
+				c_leavesCulledByAreaBits++;
+				continue;
+			}
+			for(u32 j = 0; j < l->numLeafSurfaces; j++) {
+				u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
+				this->surfs[sfNum].lastVisCount = this->visCounter;
+			}
 		}
 	}
 	u32 c_curBatchIndexesCount = 0;
@@ -578,6 +694,11 @@ void rBspTree_c::setWorldAreaBits(const byte *bytes, u32 numBytes) {
 	lastCluster = -4; // force updateVisibility refresh
 }
 bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
+	if(surfNum >= surfs.size()) {
+		// it actually HAPPENS on CoD1 maps and I'm not sure why
+		g_core->RedWarning("rBspTree_c::traceSurfaceRay: surface index %i out of range %i\n",surfNum,surfs.size());
+		return false;
+	}
 	bspSurf_s &sf = surfs[surfNum];
 	if(sf.type == BSPSF_BEZIER) {
 		r_bezierPatch_c *bp = sf.patch;

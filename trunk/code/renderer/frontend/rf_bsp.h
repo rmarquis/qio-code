@@ -128,6 +128,8 @@ class rBspTree_c {
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
+	bool loadVerts(u32 lumpVerts); // called from loadSurfs / loadSurfsCoD
+	bool loadSurfsCoD();
 	bool loadModels(u32 modelsLump);
 	bool loadLeafIndexes(u32 leafSurfsLump);
 	bool loadVisibility(u32 visLump);

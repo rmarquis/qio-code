@@ -408,6 +408,7 @@ public:
 	inline operator float *() const {
 		return (float*)&x;
 	}
+
 	inline operator float *() {
 		return (float*)&x;
 	}

@@ -40,12 +40,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #define BSP_VERSION_Q3		46
 #define BSP_VERSION_RTCW	47
-#define BSP_VERSION_ET	47
+#define BSP_VERSION_ET		47
+#define BSP_VERSION_COD1	59
 
 #define BSP_VERSION_MOHAA			19
 #define BSP_VERSION_MOHSH			20
 #define BSP_VERSION_MOHBT			21
 
+// Quake3 / RTCW / ET lumps
 #define	Q3_ENTITIES		0
 #define	Q3_SHADERS		1
 #define	Q3_PLANES			2
@@ -65,6 +67,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define	Q3_VISIBILITY		16
 #define	Q3_LUMPS		17
 
+// MoHAA/MoHSH/MoHBT/MoHPA lumps
 #define MOH_SHADERS			0
 #define MOH_PLANES				1
 #define MOH_LIGHTMAPS			2
@@ -95,6 +98,44 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define MOH_DUMMY10			27
 
 #define	MOH_LUMPS		28
+
+// Call of Duty lumps
+#define	COD1_SHADERS		0
+#define	COD1_LIGHTMAPS		1
+#define	COD1_PLANES			2
+#define	COD1_BRUSHSIDES		3
+#define	COD1_BRUSHES		4
+// lump 5 unknown
+#define	COD1_SURFACES		6 // lump 6 triangle soups
+#define	COD1_DRAWVERTS		7
+#define	COD1_DRAWINDEXES	8
+#define COD1_CULLGROUPS 9 // Lump[9] - Cull Groups // 32 bytes per entry. 
+#define COD1_CULLINDEXES 10 // Lump[10] - Cull Group Indexes  //4 bytes per entry. 
+#define COD1_PORTALVERTS 11 // Lump[11] - Portal Verts  12 bytes per entry.
+#define COD1_OCCLUDERS 12 // Lump[12] - Occludersc - 20 bytes per entry. 
+#define COD1_OCCLUDERPLANES 13 // Lump[13] - Occluder Planes 4 bytes per entry. 
+#define COD1_OCCLUDEREDGES 14 // Lump[14] - Occluder Edges 4 bytes per entry. 
+#define COD1_OCCLUDERINDEXES 15 // Lump[15] - Occluder Indexes 2 bytes per entry. 
+#define COD1_AABBTREES 16 // Lump[16] - AABB Trees 12 bytes per entry.
+#define	COD1_CELLS 17 // Lump[17] - Cells 52 bytes per entry.
+#define	COD1_PORTALS 18 // Lump[18] - Portals 16 bytes per entry. 
+/* Lump[19] - Light Indexes 
+2 bytes per entry.*/
+#define	COD1_NODES			20
+#define	COD1_LEAFS			21
+#define	COD1_LEAFBRUSHES	22
+#define	COD1_LEAFSURFACES	23
+// Lump[24] - Patch Collision - 16 bytes per entry
+// Lump[25] - Collision Verts - 12 bytes per entry. 
+// Lump[26] - Collision Indexes - 2 bytes per entry.
+#define	COD1_MODELS			27
+#define	COD1_VISIBILITY		28
+#define	COD1_ENTITIES		29
+// Lump[30] - Lights 72 bytes per entry.
+//#define	COD1_FOGS			12
+//#define	COD1_SURFACES		13
+//#define	COD1_LIGHTGRID		15
+#define	COD1_LUMPS		32
 
 struct q3Model_s {
 	float		mins[3], maxs[3];
@@ -207,6 +248,26 @@ struct q3Leaf_s {
 	int			numLeafBrushes;
 };
 
+struct cod1Leaf_s {
+	int			cluster;			// -1 = opaque cluster (do I still store these?)
+	int			area;
+/*
+	// they are not present here in Call Of Duty 1
+	int			mins[3];			// for frustum culling
+	int			maxs[3];
+*/
+	int			firstLeafSurface;
+	int			numLeafSurfaces;
+
+	int			firstLeafBrush;
+	int			numLeafBrushes;
+
+	int			cellNum; // may be -1
+	int			dummy1;
+	int			dummy2;
+};
+
+
 struct q3BrushSide_s {
 	int			planeNum;			// positive plane side faces out of the leaf
 	int			materialNum;
@@ -217,6 +278,12 @@ struct q3Brush_s {
 	int			numSides;
 	int			materialNum;		// the shader that determines the contents flags
 };
+
+// CoD1 brush structure is totally different from q3
+struct cod1Brush_s {
+	short		numSides;
+	short		materialNum;		// the shader that determines the contents flags
+}; // sizeof(cod1Brush)==4
 
 struct q3Fog_s {
 	char		shader[64];
@@ -262,6 +329,18 @@ struct q3Surface_s {
 	int			patchHeight;
 };
 
+// the very simplified Call Of Duty surface struct.
+struct cod1Surface_s {
+	u16			materialNum;
+	s16			lightmapNum; // that certainly not a surfaceType (has value 12 on stalingrad.bsp); it must be signed because -1 index means that surf has no lightmap
+
+	u32			firstVert;
+	u16			numVerts;
+
+	u16			numIndexes;
+	u32			firstIndex;
+};
+
 struct visHeader_s {
 	int numClusters;
 	int clusterSize; // in bytes
@@ -293,9 +372,20 @@ struct q3Header_s {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[Q3_MODELS].fileOfs);
 		}
 	}
+	const q3Model_s *getModel(u32 modelNum) const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs+modelNum*sizeof(q3Model_s));
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return (const q3Model_s*)(((const byte*)this)+getLumps()[COD1_MODELS].fileOfs+modelNum*(sizeof(q3Model_s)+8));
+		} else {
+			return (const q3Model_s*)(((const byte*)this)+getLumps()[Q3_MODELS].fileOfs+modelNum*sizeof(q3Model_s));
+		}
+	}
 	u32 getNumModels() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return getLumps()[MOH_MODELS].fileLen/sizeof(q3Model_s);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return getLumps()[COD1_MODELS].fileLen/(sizeof(q3Model_s)+8);
 		} else {
 			return getLumps()[Q3_MODELS].fileLen/sizeof(q3Model_s);
 		}
@@ -354,9 +444,27 @@ struct q3Header_s {
 			return (const q3Surface_s*)(((const byte*)sf)+sizeof(q3Surface_s));
 		}
 	}
+	u32 getModelStructSize() const {
+		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			// CoD1 model struct is 8 bytes larger
+			return (sizeof(q3Model_s)+8);
+		}
+		// Q3, RTCW, ET, and MoH are using the classic q3Model_s struct
+		return (sizeof(q3Model_s));	
+	}
+	const q3Model_s *getNextModel(const q3Model_s *mod) const {
+		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			// CoD1 model struct is 8 bytes larger
+			return (const q3Model_s*)(((const byte*)mod)+(sizeof(q3Model_s)+8));
+		}
+		// Q3, RTCW, ET, and MoH are using the classic q3Model_s struct
+		return (const q3Model_s*)(((const byte*)mod)+(sizeof(q3Model_s)));
+	}
 	const q3Surface_s *getSurface(u32 surfNum) const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs+(sizeof(q3Surface_s)+4)*surfNum);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return 0; // dont use this function for CoD bsps
 		} else {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[Q3_SURFACES].fileOfs+sizeof(q3Surface_s)*surfNum);
 		}
@@ -368,6 +476,9 @@ struct q3Header_s {
 			// MoHAA has extended material struct
 			matSize = sizeof(q3BSPMaterial_s) + 64 + 4;
 			p = getLumpData(MOH_SHADERS);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			matSize = sizeof(q3BSPMaterial_s);
+			p = getLumpData(COD1_SHADERS);
 		} else {
 			matSize = sizeof(q3BSPMaterial_s);
 			p = getLumpData(Q3_SHADERS);
@@ -389,6 +500,27 @@ struct q3Header_s {
 	}
 	const byte *getLumpData(u32 lumpNum) const {
 		return (const byte*)(((const byte*)this)+getLumps()[lumpNum].fileOfs);
+	}
+	const u32 getLumpStructNum(u32 lumpNum, u32 structSize) const {
+		return (getLumps()[lumpNum].fileLen / structSize);
+	}
+
+	bool isBSPCoD1() const {
+		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1)
+			return true;
+		return false;
+	}
+	
+	// for some reasons Call Of Duty bsps has swapped lump_t fields.
+	// We need to swap them back before loading the map
+	void swapCoDLumpLenOfsValues() {
+		if(ident != BSP_IDENT_IBSP || version != BSP_VERSION_COD1) 
+			return; // that's not a COD bsp
+		for(u32 i = 0; i < COD1_LUMPS; i++) {
+			u32 tmp = lumps[i].fileLen;
+			lumps[i].fileLen = lumps[i].fileOfs;
+			lumps[i].fileOfs = tmp;
+		}
 	}
 	u32 getLumpSize(u32 lumpNum) const {
 		return getLumps()[lumpNum].fileLen;
