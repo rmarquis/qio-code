@@ -38,7 +38,12 @@ void cmBrush_c::fromBounds(const class aabb &bb) {
 		this->sides[3+i].set(normal, -bb.mins[i]);
 	}
 }
+#include "cmWinding.h"
 void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
+	cmWinding_c w;
+	w.addPointsUnique(points,numPoints);
+	points = w.getPoints().getArray();
+	numPoints = w.size();
 	// simple bruce method (slow)
 	for(u32 i = 0; i < numPoints; i++) {
 		for(u32 j = 0; j < numPoints; j++) {
@@ -62,9 +67,9 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 							break;
 						}
 					}
-				}
-				if(add) {
-					sides.push_back(pl);
+					if(add) {
+						sides.push_back(pl);
+					}
 				}
 			}
 		}

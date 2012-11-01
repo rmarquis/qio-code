@@ -329,6 +329,16 @@ void ClientCommand( int clientNum ) {
 			veh->setColModel("models/vehicles/Porsche_911/porsche-911.map");
 		}
 		veh->spawnPhysicsVehicle();
+	} else if(!stricmp(cmd,"createbarrel")) {
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setRenderModel("models/props/barrel_c/barrel_c.obj");
+		e->setColModel("models/props/barrel_c/barrel_c.map");
+		e->setOrigin(p);
+		//e->setAngles(rot);
+		e->initRigidBodyPhysics();
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

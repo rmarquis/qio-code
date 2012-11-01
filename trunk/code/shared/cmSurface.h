@@ -93,6 +93,20 @@ public:
 		bb.mins.y += ofs;
 		bb.maxs.y += ofs;
 	}
+	virtual void multTexCoordsY(float f) { 
+		// ignore. Collision models dont need texcoords.
+	}
+	virtual void translateXYZ(const class vec3_c &ofs) {
+		vec3_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			(*v) += ofs;
+		}
+		bb.mins += ofs;
+		bb.maxs += ofs;
+	}
+	virtual void getCurrentBounds(class aabb &out) {
+		out = bb;
+	}
 
 	const aabb &getAABB() const {
 		return bb;

@@ -4,6 +4,7 @@
 #include <math/aabb.h>
 #include "classes/ModelEntity.h"
 #include <shared/cmSurface.h>
+#include <api/coreAPI.h>
 
 #include "bt_include.h"
 
@@ -69,14 +70,17 @@ void G_RunPhysics() {
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,10);
 	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
-
-	matrix_c tmp;
-	tmp.identity();
-	aabb bb;
-	bb.addPoint(8,8,8);
-	bb.addPoint(-8,-8,64);
-	BT_IsInSolid(tmp, bb);
+	btContactSolverInfo &csi = dynamicsWorld->getSolverInfo();
+	//matrix_c tmp;
+	//tmp.identity();
+	//aabb bb;
+	//bb.addPoint(8,8,8);
+	//bb.addPoint(-8,-8,64);
+	//BT_IsInSolid(tmp, bb);
 }
+// this is a (temporary?) fix to objects (especially barrels) jittering.
+float bt_collisionMargin = 4.f;
+
 #define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	float mass = 0.f;
@@ -85,6 +89,7 @@ void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {
 	startTransform.setIdentity();
 	//this create an internal copy of the vertices
 	btConvexHullShape* shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+	shape->setMargin(bt_collisionMargin);
 #if 0
 	// Bullet debug drawind does not work without it
 	shape->initializePolyhedralFeatures(); // causes crash on 20kdm2
@@ -170,6 +175,7 @@ void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
 	mesh->addIndexedMesh(subMesh);
 	btCollisionShape* shape = new btBvhTriangleMeshShape(mesh,true);
 
+	shape->setMargin(bt_collisionMargin);
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);
@@ -198,6 +204,8 @@ void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
 btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape)
 {
 	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
+
+	shape->setMargin(bt_collisionMargin);
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);
@@ -295,6 +303,11 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 //	return body;
 //}
 btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel) {
+	if(cModel == 0) {
+		g_core->RedWarning("BT_CreateRigidBodyWithCModel: NULL cmodel\n");
+		return 0;
+	}
+
 	btCollisionShape *shape;
 	if(cModel->isBBExts()) {
 		vec3_c halfSizes = cModel->getBBExts()->getHalfSizes();

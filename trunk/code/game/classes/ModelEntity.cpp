@@ -109,6 +109,9 @@ void ModelEntity::runPhysicsObject() {
 }
 
 void ModelEntity::initRigidBodyPhysics() {
+	if(this->cmod == 0) {
+		return;
+	}
 	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod);
 	this->body->setUserPointer(this);
 }

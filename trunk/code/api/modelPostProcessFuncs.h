@@ -31,6 +31,9 @@ public:
 	virtual void scaleXYZ(float scale) = 0;
 	virtual void swapYZ() = 0;
 	virtual void translateY(float ofs) = 0;
+	virtual void multTexCoordsY(float f) = 0;
+	virtual void translateXYZ(const class vec3_c &ofs) = 0;
+	virtual void getCurrentBounds(class aabb &out) = 0;
 };
 
 #endif // __MODELPOSTPROCESSFUNCS_H__

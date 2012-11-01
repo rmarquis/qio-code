@@ -103,6 +103,24 @@ void r_surface_c::translateY(float ofs) {
 		v->xyz.y += ofs;
 	}
 }
+void r_surface_c::multTexCoordsY(float f) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		v->tc.y *= f;
+	}
+}
+void r_surface_c::translateXYZ(const vec3_c &ofs) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		v->xyz += ofs;
+	}
+}
+void r_surface_c::addPointsToBounds(aabb &out) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		out.addPoint(v->xyz);
+	}
+}
 
 //
 //	r_model_c class
@@ -128,6 +146,24 @@ void r_model_c::translateY(float ofs) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->translateY(ofs);
+	}
+}
+void r_model_c::multTexCoordsY(float f) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->multTexCoordsY(f);
+	}
+}
+void r_model_c::translateXYZ(const class vec3_c &ofs) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->translateXYZ(ofs);
+	}
+}
+void r_model_c::getCurrentBounds(class aabb &out) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->addPointsToBounds(out);
 	}
 }
 r_surface_c *r_model_c::registerSurf(const char *matName) {

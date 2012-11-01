@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // them from various file formats.
 #include <shared/str.h>
 #include <shared/parser.h>
+#include <math/aabb.h>
 #include <api/coreAPI.h>
 #include <api/modelPostProcessFuncs.h>
 
@@ -46,6 +47,14 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 		} else if(p.atWord("translateY")) {
 			float ofs = p.getFloat();
 			inout->translateY(ofs);
+		} else if(p.atWord("multTexY")) {
+			float f = p.getFloat();
+			inout->multTexCoordsY(f);
+		} else if(p.atWord("centerize")) {
+			aabb bb;
+			inout->getCurrentBounds(bb);
+			vec3_c center = bb.getCenter();
+			inout->translateXYZ(-center);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

@@ -88,6 +88,9 @@ public:
 	void scaleXYZ(float scale);
 	void swapYZ();
 	void translateY(float ofs);
+	void multTexCoordsY(float f);
+	void translateXYZ(const vec3_c &ofs);
+	void addPointsToBounds(aabb &out);
 
 	const aabb &getBB() const {
 		return bounds;
@@ -107,6 +110,9 @@ public:
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();
 	virtual void translateY(float ofs);
+	virtual void multTexCoordsY(float f);
+	virtual void translateXYZ(const class vec3_c &ofs);
+	virtual void getCurrentBounds(class aabb &out);
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();

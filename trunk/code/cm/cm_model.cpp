@@ -156,6 +156,8 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	// see if we can simplify the cModel
 	if(numTotalBrushes == 1) {
 		cmHull_c *hull = new cmHull_c(fname,*firstBrush);
+		cm_models.addObject(hull);
+
 		ret = hull;
 		// convert the rest of map entities to cmHelpers
 		for(u32 i = 0; i < entities.size(); i++) {
@@ -167,6 +169,8 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 		}
 	} else if(numEntitiesWithBrushes == 1) {
 		cmCompound_c *compound = new cmCompound_c(fname);
+		cm_models.addObject(compound);
+
 		ret = compound;
 		// add helpers and brushes
 		for(u32 i = 0; i < entities.size(); i++) {

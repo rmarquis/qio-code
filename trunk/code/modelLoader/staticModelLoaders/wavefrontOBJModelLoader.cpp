@@ -65,8 +65,10 @@ bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out) {
 		} else if(p.atWord("vt")) {
 			vec2_c &newTC = texCoords.pushBack();
 			p.getFloatMat(newTC,2);
-			// it might break some models texcorods instead of fixing them..?
 #if 1
+			// it might break some models texcorods instead of fixing them..?
+			// I was right, it breaks texcoords of barrel_c model from
+			// http://thefree3dmodels.com/stuff/accessories/radioactive_barrel/21-1-0-1481
 			newTC.y *= -1;
 #endif
 			if(p.isAtEOL() == false) {

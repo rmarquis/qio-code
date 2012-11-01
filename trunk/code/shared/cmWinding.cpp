@@ -213,4 +213,18 @@ void cmWinding_c::removeDuplicatedPoints(float epsilon) {
 	}
 }
 
-
+void cmWinding_c::addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon) {
+	for(u32 i = 0; i < numPoints; i++) {
+		const vec3_c &p = first[i];
+		bool found = false;
+		for(u32 j = 0; j < points.size(); j++) {
+			if(points[j].compare(p,epsilon)) {
+				found = true;
+				break;
+			}
+		}
+		if(found)
+			continue;
+		points.push_back(p);
+	}
+}

@@ -43,6 +43,14 @@ public:
 	void getBounds(class aabb &out) const;
 	void addPointsToBounds(class aabb &out) const;
 	void removeDuplicatedPoints(float epsilon = 0.001f);
+	void addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon = 0.001f);
+
+	u32 size() const {
+		return points.size();
+	}
+	const arraySTD_c<vec3_c> &getPoints() const {
+		return points;
+	}
 };
 
 #endif // __CMWINDING_H__
