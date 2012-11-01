@@ -41,13 +41,17 @@ public:
 	bool loadBSPFile(const char *fname);
 
 	void iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags));
+	void iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags));
 	void iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 contentFlags));
 
 	void iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4]));
 	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out);
+	void getTriangleSurface(u32 surfNum, class cmSurface_c &out);
 
 	u32 getNumInlineModels() const;
 	void getInlineModelBounds(u32 modelNum, class aabb &bb) const;
+
+	bool isCoD1BSP() const;
 };
 
 #endif // __BSPPHYSICSDATALOADER_H__

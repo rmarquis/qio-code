@@ -426,6 +426,8 @@ struct q3Header_s {
 	const q3Vert_s *getVerts() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Vert_s*)(((const byte*)this)+getLumps()[MOH_DRAWVERTS].fileOfs);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return (const q3Vert_s*)(((const byte*)this)+getLumps()[COD1_DRAWVERTS].fileOfs);
 		} else {
 			return (const q3Vert_s*)(((const byte*)this)+getLumps()[Q3_DRAWVERTS].fileOfs);
 		}
@@ -436,6 +438,9 @@ struct q3Header_s {
 		} else {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[Q3_SURFACES].fileOfs);
 		}
+	}
+	const cod1Surface_s *getCoD1Surfaces() const {
+		return (const cod1Surface_s*)(((const byte*)this)+getLumps()[COD1_SURFACES].fileOfs);
 	}
 	const q3Surface_s *getNextSurface(const q3Surface_s *sf) const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {

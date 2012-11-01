@@ -425,14 +425,22 @@ void BT_AddBrushPlane2(const float q3Plane[4]) {
 	planeEquations.push_back(planeEq);
 }
 void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
-	//if((contentFlags & 1) == 0)
-	//	return;
+	if((contentFlags & 1) == 0)
+		return;
 	planeEquations.clear();
 	g_bspPhysicsLoader->iterateBrushPlanes(brushNum,BT_AddBrushPlane);
 	// convert plane equations -> vertex cloud
 	btAlignedObjectArray<btVector3>	vertices;
 	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
 	BT_CreateWorldBrush(vertices);
+}
+void BT_ConvertWorldTriSurf(u32 surfNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+	cmSurface_c *newSF = new cmSurface_c;
+	bt_cmSurfs.push_back(newSF); // we'll need to free it later
+	g_bspPhysicsLoader->getTriangleSurface(surfNum,*newSF);
+	BT_CreateWorldTriMesh(*newSF);
 }
 void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
 	if((contentFlags & 1) == 0)
@@ -467,8 +475,12 @@ void G_LoadMap(const char *mapName) {
 	}
 	g_bspPhysicsLoader = &l;
 	// load world model
-	l.iterateModelBrushes(0,BT_ConvertWorldBrush);
-	l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+	if(l.isCoD1BSP()) {
+		l.iterateModelTriSurfs(0,BT_ConvertWorldTriSurf);
+	} else {
+		l.iterateModelBrushes(0,BT_ConvertWorldBrush);
+		l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+	}
 	// load inline models - TODO
 	for(u32 i = 0; i < l.getNumInlineModels(); i++) {
 		aabb bb;

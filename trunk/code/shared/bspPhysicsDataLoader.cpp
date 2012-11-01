@@ -62,7 +62,7 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 	return false;
 }
 
-void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 matNum)) {
+void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags)) {
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(h->isBSPCoD1()) {
 		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
@@ -73,6 +73,21 @@ void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCa
 		const q3Brush_s *b = h->getBrushes() + mod->firstBrush;
 		for(u32 i = 0; i < mod->numBrushes; i++, b++) {
 			perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(b->materialNum));
+		}
+	}
+}
+void bspPhysicsDataLoader_c::iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags)) {
+	const q3Model_s *mod = h->getModel(modelNum);
+	if(h->isBSPCoD1()) {
+		const cod1Surface_s *codSF = h->getCoD1Surfaces() + mod->firstSurface;
+		for(u32 i = 0; i < mod->numSurfaces; i++, codSF++) {
+			perSurfCallback(mod->firstBrush+i, getMaterialContentFlags(codSF->materialNum));
+		}		
+	} else {
+		const q3Surface_s *sf = h->getSurface(mod->firstSurface);
+		for(u32 i = 0; i < mod->numSurfaces; i++) {
+			perSurfCallback(mod->firstBrush+i, getMaterialContentFlags(sf->materialNum));
+			sf = h->getNextSurface(sf);
 		}
 	}
 }
@@ -165,7 +180,24 @@ void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tes
 	// convert cmBezierPatch_c to cmSurface_c
 	bp.tesselate(tesselationLevel,&out);
 }
+void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &out) {
+	if(h->isBSPCoD1()) {
+		const cod1Surface_s *codSF = h->getCoD1Surfaces()+surfNum;
+		const q3Vert_s *v = h->getVerts() + codSF->firstVert;
+		const u16 *codIndices = (const u16*)h->getLumpData(COD1_DRAWINDEXES);
+		out.setNumVerts(codSF->numVerts);
+		for(u32 i = 0; i < codSF->numVerts; i++, v++) {
+			out.setVertex(i,v->xyz);
+		}
+		out.setNumIndices(codSF->numIndexes);
+		for(u32 i = 0; i < codSF->numIndexes; i++) {
+			u16 val = codIndices[codSF->firstIndex+i];
+			out.setIndex(i,val);
+		}
+	} else {
 
+	}
+}
 u32 bspPhysicsDataLoader_c::getMaterialContentFlags(u32 matNum) const {
 	const q3BSPMaterial_s *m = h->getMat(matNum);
 	return m->contentFlags;
@@ -179,3 +211,6 @@ void bspPhysicsDataLoader_c::getInlineModelBounds(u32 modelNum, class aabb &bb) 
 	bb.fromTwoPoints(m->maxs,m->mins);
 }
 
+bool bspPhysicsDataLoader_c::isCoD1BSP() const {
+	return h->isBSPCoD1();
+}
