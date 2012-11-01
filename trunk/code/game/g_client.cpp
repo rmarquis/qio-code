@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/serverAPI.h>
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
+#include <api/vfsAPI.h>
 #include <math/vec3.h>
 #include "classes/ModelEntity.h"
 #include "classes/Player.h"
@@ -339,6 +340,29 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		//e->setAngles(rot);
 		e->initRigidBodyPhysics();
+	} else if(!stricmp(cmd,"spawn")) {
+		str model = g_core->Argv(1);
+		if(model.length()) {
+			if(g_vfs->FS_ReadFile(model,0) < 1) {
+				str fixed = "models/";
+				fixed.append(model);
+				if(g_vfs->FS_ReadFile(model,0) < 1) {
+					g_core->Print("%s does not exist\n",model.c_str());
+					return;
+				}
+				model = fixed;
+			}
+			str collisionModelName = model;
+			collisionModelName.setExtension("map");
+			vec3_c p = pl->getOrigin();
+			p.z += pl->getViewHeight();
+			p += pl->getForward() * 64.f;
+			ModelEntity *e = new ModelEntity;
+			e->setRenderModel(model);
+			e->setColModel(collisionModelName);
+			e->setOrigin(p);
+			e->initRigidBodyPhysics();
+		}
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
