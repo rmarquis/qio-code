@@ -57,12 +57,15 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->recalcABSBounds();
 	this->link();
 }
-void ModelEntity::setColModel(const char *newCModelName) {
+bool ModelEntity::setColModel(const char *newCModelName) {
 	this->cmod = cm->registerModel(newCModelName);
+	if(this->cmod == 0)
+		return true; // error
 	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
+	return false;
 }
-void ModelEntity::setColModel(class cMod_i *newCModel) {
-	setColModel(newCModel->getName());
+bool ModelEntity::setColModel(class cMod_i *newCModel) {
+	return setColModel(newCModel->getName());
 }
 void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 	if(cmod == 0)
@@ -113,6 +116,14 @@ void ModelEntity::initRigidBodyPhysics() {
 		return;
 	}
 	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod);
+	this->body->setUserPointer(this);
+}
+void ModelEntity::initStaticBodyPhysics() {
+	if(this->cmod == 0) {
+		return;
+	}
+	// static physics bodies have NULL mass
+	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod,0);
 	this->body->setUserPointer(this);
 }
 void ModelEntity::runFrame() {

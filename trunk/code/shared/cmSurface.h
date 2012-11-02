@@ -53,6 +53,12 @@ public:
 	virtual u32 getNumTris() const {
 		return indices.size()/3;
 	}
+	const vec3_c *getVerts() const {
+		return verts.getArray();
+	}
+	const u32 *getIndices() const  {
+		return indices.getArray();
+	}
 	void setNumVerts(u32 newNumVerts) {
 		verts.resize(newNumVerts);
 	}

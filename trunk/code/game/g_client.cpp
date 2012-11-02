@@ -363,6 +363,33 @@ void ClientCommand( int clientNum ) {
 			e->setOrigin(p);
 			e->initRigidBodyPhysics();
 		}
+	} else if(!stricmp(cmd,"spawnStatic")) {
+		str model = g_core->Argv(1);
+		if(model.length()) {
+			if(g_vfs->FS_ReadFile(model,0) < 1) {
+				str fixed = "models/";
+				fixed.append(model);
+				if(g_vfs->FS_ReadFile(model,0) < 1) {
+					g_core->Print("%s does not exist\n",model.c_str());
+					return;
+				}
+				model = fixed;
+			}
+			str collisionModelName = model;
+			collisionModelName.setExtension("map");
+			vec3_c p = pl->getOrigin();
+			p.z += pl->getViewHeight();
+			p += pl->getForward() * 64.f;
+			ModelEntity *e = new ModelEntity;
+			e->setRenderModel(model);
+			if(e->setColModel(collisionModelName) == true) {
+				// .map file collision model not present,
+				// try to load triangles directly from render model file
+				e->setColModel(model);
+			}
+			e->setOrigin(p);
+			e->initStaticBodyPhysics();
+		}
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

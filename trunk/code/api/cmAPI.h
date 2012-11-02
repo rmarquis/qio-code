@@ -34,6 +34,7 @@ enum cModType_e {
 	CMOD_BBEXTS, // bounding box defined by halfsizes
 	CMOD_HULL, // aka brush - single convex volume
 	CMOD_COMPOUND,
+	CMOD_TRIMESH, // for static (non-moveable) physics object
 };
 
 // cm helpers are used to position joints,
@@ -50,22 +51,26 @@ public:
 	virtual const char *getName() const = 0;
 	virtual enum cModType_e getType() const = 0;
 
-	virtual bool isCapsule() const {
+	bool isCapsule() const {
 		return getType() == CMOD_CAPSULE;
 	}
-	virtual bool isBBExts() const {
+	bool isBBExts() const {
 		return getType() == CMOD_BBEXTS;
 	}
-	virtual bool isHull() const {
+	bool isHull() const {
 		return getType() == CMOD_HULL;
 	}
-	virtual bool isCompound() const {
+	bool isCompound() const {
 		return getType() == CMOD_COMPOUND;
+	}
+	bool isTriMesh() const {
+		return getType() == CMOD_TRIMESH;
 	}
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
 	virtual class cmHull_i *getHull() = 0;
 	virtual class cmCompound_i *getCompound() = 0;
+	virtual class cmTriMesh_i *getTriMesh() = 0;
 
 	virtual void getBounds(class aabb &out) = 0;
 
@@ -102,6 +107,16 @@ class cmCompound_i : public cMod_i {
 public:
 	virtual u32 getNumSubShapes() = 0;
 	virtual cMod_i *getSubShapeN(u32 subShapeNum) = 0;
+};
+
+// trimesh object for static physics object
+class cmTriMesh_i : public cMod_i {
+public:
+	virtual const vec3_c *getVerts() const = 0;
+	virtual const u32 *getIndices() const = 0;
+	virtual u32 getNumIndices() const = 0;
+	virtual u32 getNumVerts() const = 0;
+	virtual const class cmSurface_c *getCMSurface() const = 0;
 };
 
 #define CM_API_IDENTSTR "CM0001"

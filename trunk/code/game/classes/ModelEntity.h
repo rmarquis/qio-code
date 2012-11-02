@@ -46,12 +46,13 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles);
 
 	void setRenderModel(const char *newRModelName);
-	void setColModel(const char *newCModelName);
-	void setColModel(class cMod_i *newCModel);
+	bool setColModel(const char *newCModelName);
+	bool setColModel(class cMod_i *newCModel);
 
 	virtual void runPhysicsObject();
 
 	void initRigidBodyPhysics();
+	void initStaticBodyPhysics();
 
 	void debugDrawCMObject(class rDebugDrawer_i *dd);
 

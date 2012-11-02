@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <shared/str.h>
 #include <shared/cmBrush.h>
+#include <shared/cmSurface.h>
 #include <math/aabb.h>
 #include "cm_helper.h"
 
@@ -74,6 +75,9 @@ public:
 		return 0;
 	}
 	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
 		return 0;
 	}
 	virtual void getBounds(class aabb &out) {
@@ -127,6 +131,9 @@ public:
 	virtual class cmCompound_i *getCompound() {
 		return 0;
 	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
 	virtual void getBounds(class aabb &out) {
 		out.fromHalfSizes(halfSizes);
 	}
@@ -171,6 +178,9 @@ public:
 		return this;
 	}
 	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
 		return 0;
 	}
 	virtual void getBounds(class aabb &out) {
@@ -230,6 +240,9 @@ public:
 	virtual class cmCompound_i *getCompound() {
 		return this;
 	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
 	virtual void getBounds(class aabb &out) {
 		out.clear();
 		for(u32 i = 0; i < shapes.size(); i++) {
@@ -268,5 +281,75 @@ public:
 
 	cmCompound_c(const char *newName) {
 		this->name = newName;
+	}
+};
+
+class cmTriMesh_c : public cmObjectBase_c, public cmTriMesh_i {
+	cmSurface_c *sf;
+public:
+	cmTriMesh_c() {
+		sf = 0;
+	}
+	~cmTriMesh_c() {
+		if(sf) {
+			delete sf;
+			sf = 0;
+		}
+	}
+	// cmObjectBase_c access
+	virtual const char *getName() const {
+		return name;
+	}
+	virtual enum cModType_e getType() const {
+		return CMOD_TRIMESH;
+	}
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return this;
+	}
+	virtual void getBounds(class aabb &out) {
+		out = sf->getAABB();
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false;
+	}
+	// cmTriMesh_i access
+	virtual const vec3_c *getVerts() const {
+		return sf->getVerts();
+	}
+	virtual const u32 *getIndices() const  {
+		return sf->getIndices();
+	}
+	virtual u32 getNumIndices() const  {
+		return sf->getNumIndices();
+	}
+	virtual u32 getNumVerts() const  {
+		return sf->getNumVerts();
+	}
+	virtual const class cmSurface_c *getCMSurface() const {
+		return sf;
+	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
+	}
+
+	cmTriMesh_c(const char *newName, cmSurface_c *newSFPtr) {
+		this->name = newName;
+		this->sf = newSFPtr;
 	}
 };

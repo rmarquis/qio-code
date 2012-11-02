@@ -156,12 +156,7 @@ bool BT_IsInSolid(const matrix_c &mat, const aabb &bb) {
 		return true;
 	return false;
 }
-void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
-	float mass = 0.f;
-	btTransform startTransform;
-	//can use a shift
-	startTransform.setIdentity();
-	//this create an internal copy of the vertices
+btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
 	bt_trimeshes.push_back(mesh);
 
@@ -175,7 +170,16 @@ void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
 	subMesh.m_triangleIndexBase = sf.getIndicesBase();
 	subMesh.m_triangleIndexStride = sizeof(int)*3;
 	mesh->addIndexedMesh(subMesh);
-	btCollisionShape* shape = new btBvhTriangleMeshShape(mesh,true);
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh,true);
+	return shape;
+}
+void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
+	float mass = 0.f;
+	btTransform startTransform;
+	//can use a shift
+	startTransform.setIdentity();
+
+	btCollisionShape* shape = BT_CreateBHVTriMeshForCMSurface(sf);
 
 	shape->setMargin(bt_collisionMargin);
 
@@ -304,7 +308,7 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 //	}
 //	return body;
 //}
-btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel) {
+btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel, float mass) {
 	if(cModel == 0) {
 		g_core->RedWarning("BT_CreateRigidBodyWithCModel: NULL cmodel\n");
 		return 0;
@@ -321,6 +325,11 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 		shape = compound;
 	} else if(cModel->isHull()) {
 		shape = BT_CModelHullToConvex(cModel->getHull());
+	} else if(cModel->isTriMesh()) {
+		const cmSurface_c *sf = cModel->getTriMesh()->getCMSurface();
+		shape = BT_CreateBHVTriMeshForCMSurface(*sf);
+	} else {
+		return 0;
 	}
 	
 	
@@ -331,8 +340,6 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(btStart);
-
-	float mass = 10.0f;
 
 	// rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);

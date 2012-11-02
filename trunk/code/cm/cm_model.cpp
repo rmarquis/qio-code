@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // cm_model.cpp
+#include "cm_local.h"
 #include "cm_model.h"
 #include "cm_helper.h"
 #include <api/coreAPI.h>
@@ -194,6 +195,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	}
 	return ret;
 }
+#include <api/modelLoaderDLLAPI.h>
 class cMod_i *CM_RegisterModel(const char *modName) {
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
@@ -221,6 +223,14 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	if(ext) {
 		if(!stricmp(ext,"map")) {
 			return CM_LoadModelFromMapFile(modName);
+		} else if(g_modelLoader->isStaticModelFile(modName)) {
+			cmSurface_c *sf = new cmSurface_c;
+			if(CM_LoadRenderModelToSingleSurface(modName,*sf) == false) {
+				cmTriMesh_c *triMesh = new cmTriMesh_c(modName,sf);
+				cm_models.addObject(triMesh);
+				return triMesh;
+			}
+			delete sf;
 		}
 	}
 	return 0;

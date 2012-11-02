@@ -44,6 +44,8 @@ class aCvar_c : public cvarModifyCallback_i {
 public:
 	aCvar_c(const char *newName, const char *newDefaultStr, int newCvarFlags = 0);
 
+	void setString(const char *newStr);
+
 	int getInt() const {
 		return valInt;
 	}

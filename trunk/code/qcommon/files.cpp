@@ -3069,6 +3069,7 @@ static void FS_Startup( const char *gameName )
 
 	// temporary hack
 	FS_AddGameDirectory("E:/MoHAA","main");
+	//FS_AddGameDirectory("E:/Call of Duty","main");
 
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {

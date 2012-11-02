@@ -44,7 +44,7 @@ aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
 aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
 aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
-aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","1");
+aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
 
 rBspTree_c::rBspTree_c() {
 	vis = 0;
@@ -407,6 +407,7 @@ bool rBspTree_c::load(const char *fname) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::load: cannot open %s\n",fname);
 		return true;
 	}
+	rf_bsp_forceEverythingVisible.setString("0");
 	h = (const q3Header_s*) fileData;
 	if(h->ident == BSP_IDENT_IBSP && (h->version == BSP_VERSION_Q3 || h->version == BSP_VERSION_ET)) {
 		if(loadLightmaps(Q3_LIGHTMAPS)) {
@@ -490,6 +491,9 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+		// temporary fix for Call of Duty bsp's.
+		// (there is something wrong with leafSurfaces)
+		rf_bsp_forceEverythingVisible.setString("1");
 	} else {
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error
