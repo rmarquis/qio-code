@@ -1,0 +1,189 @@
+
+newmtl models/landscape/Island_001/nomaterial
+map_d nomaterial
+map_Kd nomaterial
+
+newmtl models/landscape/Island_001/Island_001
+map_d Island_001
+map_Kd Island_001
+
+newmtl models/landscape/Island_001/303cef73.dds
+map_d 303cef73.dds
+map_Kd 03cef73.dds
+
+newmtl models\landscape\Island_001\Texture\d40839b9.jpg
+map_d Texture\d40839b9.jpg
+map_Kd Texture\d40839b9.jpg
+
+newmtl models/landscape/Island_001/d40839b9.dds
+map_d d40839b9.dds
+map_Kd d40839b9.dds
+
+newmtl models\landscape\Island_001\Texture\hibara_001.jpg
+map_d Texture\hibara_001.jpg
+map_Kd Texture\hibara_001.jpg
+
+newmtl models/landscape/Island_001/3668c80e.dds
+map_d 3668c80e.dds
+map_Kd 668c80e.dds
+
+newmtl none
+map_d none
+map_Kd none
+
+newmtl models/landscape/Island_001/3e0c0333.dds
+map_d 3e0c0333.dds
+map_Kd e0c0333.dds
+
+newmtl models/landscape/Island_001/ad77fd31.dds
+map_d ad77fd31.dds
+map_Kd ad77fd31.dds
+
+newmtl models\landscape\Island_001\Texture\Hibara_003.jpg
+map_d Texture\Hibara_003.jpg
+map_Kd Texture\Hibara_003.jpg
+
+newmtl models/landscape/Island_001/5b860562.dds
+map_d 5b860562.dds
+map_Kd 5b860562.dds
+
+newmtl models\landscape\Island_001\Texture\ed79fe48.jpg
+map_d Texture\ed79fe48.jpg
+map_Kd Texture\ed79fe48.jpg
+
+newmtl models/landscape/Island_001/ed79fe48.dds
+map_d ed79fe48.dds
+map_Kd ed79fe48.dds
+
+newmtl models\landscape\Island_001\Texture\Dom_002.jpg
+map_d Texture\Dom_002.jpg
+map_Kd Texture\Dom_002.jpg
+
+newmtl models/landscape/Island_001/a33406ac.dds
+map_d a33406ac.dds
+map_Kd a33406ac.dds
+
+newmtl models\landscape\Island_001\Texture\dom_003.jpg
+map_d Texture\dom_003.jpg
+map_Kd Texture\dom_003.jpg
+
+newmtl models/landscape/Island_001/2927be26.dds
+map_d 2927be26.dds
+map_Kd 2927be26.dds
+
+newmtl models\landscape\Island_001\Texture\dom004.jpg
+map_d Texture\dom004.jpg
+map_Kd Texture\dom004.jpg
+
+newmtl models/landscape/Island_001/8262fb83.dds
+map_d 8262fb83.dds
+map_Kd 8262fb83.dds
+
+newmtl models\landscape\Island_001\Texture\e1e075eb.jpg
+map_d Texture\e1e075eb.jpg
+map_Kd Texture\e1e075eb.jpg
+
+newmtl models/landscape/Island_001/e1e075eb.dds
+map_d e1e075eb.dds
+map_Kd e1e075eb.dds
+
+newmtl models\landscape\Island_001\Texture\30e5522d.jpg
+map_d Texture\30e5522d.jpg
+map_Kd Texture\30e5522d.jpg
+
+newmtl models/landscape/Island_001/30e5522d.dds
+map_d 30e5522d.dds
+map_Kd 0e5522d.dds
+
+newmtl models\landscape\Island_001\Texture\domedv.jpg
+map_d Texture\domedv.jpg
+map_Kd Texture\domedv.jpg
+
+newmtl models/landscape/Island_001/ed875bfc.dds
+map_d ed875bfc.dds
+map_Kd ed875bfc.dds
+
+newmtl models\landscape\Island_001\Texture\dom005.jpg
+map_d Texture\dom005.jpg
+map_Kd Texture\dom005.jpg
+
+newmtl models/landscape/Island_001/ae9a4955.dds
+map_d ae9a4955.dds
+map_Kd ae9a4955.dds
+
+newmtl models\landscape\Island_001\Texture\dom009.jpg
+map_d Texture\dom009.jpg
+map_Kd Texture\dom009.jpg
+
+newmtl models/landscape/Island_001/ee9829cf.dds
+map_d ee9829cf.dds
+map_Kd ee9829cf.dds
+
+newmtl models\landscape\Island_001\Texture\dom008.jpg
+map_d Texture\dom008.jpg
+map_Kd Texture\dom008.jpg
+
+newmtl models/landscape/Island_001/2a3f1c0e.dds
+map_d 2a3f1c0e.dds
+map_Kd 2a3f1c0e.dds
+
+newmtl models\landscape\Island_001\Texture\osobnyk.jpg
+map_d Texture\osobnyk.jpg
+map_Kd Texture\osobnyk.jpg
+
+newmtl models/landscape/Island_001/b64ba825.dds
+map_d b64ba825.dds
+map_Kd b64ba825.dds
+
+newmtl models\landscape\Island_001\Texture\scaly.jpg
+map_d Texture\scaly.jpg
+map_Kd Texture\scaly.jpg
+
+newmtl models/landscape/Island_001/fa2f5b9f.dds
+map_d fa2f5b9f.dds
+map_Kd fa2f5b9f.dds
+
+newmtl models\landscape\Island_001\Texture\63d9d8cd.jpg
+map_d Texture\63d9d8cd.jpg
+map_Kd Texture\63d9d8cd.jpg
+
+newmtl models/landscape/Island_001/63d9d8cd.dds
+map_d 63d9d8cd.dds
+map_Kd 63d9d8cd.dds
+
+newmtl models\landscape\Island_001\Texture\tovpalat.jpg
+map_d Texture\tovpalat.jpg
+map_Kd Texture\tovpalat.jpg
+
+newmtl models\landscape\Island_001\Texture\Tavern.jpg
+map_d Texture\Tavern.jpg
+map_Kd Texture\Tavern.jpg
+
+newmtl models/landscape/Island_001/b7951627.dds
+map_d b7951627.dds
+map_Kd b7951627.dds
+
+newmtl models\landscape\Island_001\Texture\Shipyard.jpg
+map_d Texture\Shipyard.jpg
+map_Kd Texture\Shipyard.jpg
+
+newmtl models/landscape/Island_001/eca440c1.dds
+map_d eca440c1.dds
+map_Kd eca440c1.dds
+
+newmtl models/landscape/Island_001/036c2427.dds
+map_d 036c2427.dds
+map_Kd 036c2427.dds
+
+newmtl models\landscape\Island_001\Texture\pena1.tga
+map_d Texture\pena1.tga
+map_Kd Texture\pena1.tga
+
+newmtl models/landscape/Island_001/01_-_Default
+map_d 01_-_Default
+map_Kd 01_-_Default
+
+newmtl models/landscape/Island_001/02_-_Default
+map_d 02_-_Default
+map_Kd 02_-_Default
+
