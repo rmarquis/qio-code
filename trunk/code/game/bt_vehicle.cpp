@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "bt_include.h"
 #include "g_physVehicleAPI.h"
 #include <math/matrix.h>
+#include <math/aabb.h>
+#include <api/cmAPI.h>
 
 #define VEH_SCALE 48.f
 
@@ -98,11 +100,15 @@ public:
 		mat.fromAnglesAndOrigin(angles,pos);
 		tr.setFromOpenGLMatrix(mat);
 
+		compound->setMargin(bt_collisionMargin);
 		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);
 
 		m_wheelShape = new btCylinderShapeX(btVector3(wheelWidth,wheelRadius,wheelRadius));
+		m_wheelShape->setMargin(bt_collisionMargin);
 
 		m_vehicleRayCaster = new btDefaultVehicleRaycaster(dynamicsWorld);
+
+		//m_tuning.m_maxSuspensionTravelCm *= 100.f;
 		m_vehicle = new btRaycastVehicle(m_tuning,m_carChassis,m_vehicleRayCaster);
 		
 		///never deactivate the vehicle
@@ -111,7 +117,12 @@ public:
 		dynamicsWorld->addVehicle(m_vehicle);
 
 		float connectionHeight;
-		if(doLocalTrans) {
+		if(cmodel) {
+			aabb bb;
+			cmodel->getBounds(bb);
+			connectionHeight = bb.mins.z;
+			connectionHeight += wheelRadius;
+		} else if(doLocalTrans) {
 			connectionHeight = 1.2f*VEH_SCALE + hOfs;
 		} else {
 			connectionHeight = 1.2f*VEH_SCALE + hOfs;

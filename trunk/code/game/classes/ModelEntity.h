@@ -61,6 +61,11 @@ public:
 			return true;
 		return false;
 	}
+	bool hasCollisionModel() const {
+		if(cmod)
+			return true;
+		return false;
+	}
 
 	virtual void setKeyValue(const char *key, const char *value); 
 

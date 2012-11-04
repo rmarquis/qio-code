@@ -6,6 +6,7 @@
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
 extern btBroadphaseInterface* broadphase;
 extern btDefaultCollisionConfiguration* collisionConfiguration;
@@ -19,5 +20,7 @@ void BT_RemoveRigidBody(class btRigidBody *body);
 class btRigidBody* BT_CreateRigidBodyInternal(float mass, const class btTransform& startTransform, class btCollisionShape* shape);
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans,class cMod_i *cmodel);
 class btConvexHullShape *BT_CModelHullToConvex(class cmHull_i *h);
+
+extern float bt_collisionMargin;
 
 #endif // __BT_INLCUDE_H__

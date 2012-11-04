@@ -46,6 +46,73 @@ btDiscreteDynamicsWorld* dynamicsWorld = 0;
 static arraySTD_c<btTriangleIndexVertexArray*> bt_trimeshes;
 static arraySTD_c<cmSurface_c*> bt_cmSurfs;
 
+#if 1
+#define TRYTOFIX_INTERNAL_EDGES
+#endif
+
+#ifdef TRYTOFIX_INTERNAL_EDGES
+
+extern ContactAddedCallback		gContactAddedCallback;
+
+///User can override this material combiner by implementing gContactAddedCallback and setting body0->m_collisionFlags |= btCollisionObject::customMaterialCallback;
+inline btScalar	calculateCombinedFriction(float friction0,float friction1)
+{
+	return 0.f;
+	btScalar friction = friction0 * friction1;
+
+	const btScalar MAX_FRICTION  = 10.f;
+	if (friction < -MAX_FRICTION)
+		friction = -MAX_FRICTION;
+	if (friction > MAX_FRICTION)
+		friction = MAX_FRICTION;
+	return friction;
+
+}
+
+inline btScalar	calculateCombinedRestitution(float restitution0,float restitution1)
+{
+	return restitution0 * restitution1;
+}
+static bool CustomMaterialCombinerCallback(btManifoldPoint& cp,	const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
+{
+
+	if (1)
+	{
+		btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1);
+		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_BACKFACE_MODE);
+		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_DOUBLE_SIDED+BT_TRIANGLE_CONCAVE_DOUBLE_SIDED);
+	}
+return false;
+	/*float friction0 = colObj0->getFriction();
+	float friction1 = colObj1->getFriction();
+	float restitution0 = colObj0->getRestitution();
+	float restitution1 = colObj1->getRestitution();
+
+	if (colObj0->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		friction0 = 1.0;//partId0,index0
+		restitution0 = 0.f;
+	}
+	if (colObj1->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		if (index1&1)
+		{
+			friction1 = 1.0f;//partId1,index1
+		} else
+		{
+			friction1 = 0.f;
+		}
+		restitution1 = 0.f;
+	}
+
+	cp.m_combinedFriction = calculateCombinedFriction(friction0,friction1);
+	cp.m_combinedRestitution = calculateCombinedRestitution(restitution0,restitution1);
+
+	//this return value is currently ignored, but to be on the safe side: return false if you don't calculate friction
+	return true;*/
+}
+
+#endif // TRYTOFIX_INTERNAL_EDGES
 
 void G_InitBullet() {
 	// Build the broadphase
@@ -65,6 +132,13 @@ void G_InitBullet() {
 
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
+
+	dynamicsWorld->getSolverInfo().m_splitImpulse = true;
+
+#ifdef TRYTOFIX_INTERNAL_EDGES
+	// enable internal edges fix
+	gContactAddedCallback = CustomMaterialCombinerCallback;
+#endif // TRYTOFIX_INTERNAL_EDGES
 }
 void G_ShudownBullet() {
 	// free vehicles 
@@ -195,6 +269,15 @@ btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	subMesh.m_triangleIndexStride = sizeof(int)*3;
 	mesh->addIndexedMesh(subMesh);
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh,true);
+
+#ifdef TRYTOFIX_INTERNAL_EDGES
+	btTriangleInfoMap* triangleInfoMap = new btTriangleInfoMap();
+	//now you can adjust some thresholds in triangleInfoMap  if needed.
+	//btGenerateInternalEdgeInfo fills in the btTriangleInfoMap and stores it as a user pointer of trimeshShape (trimeshShape->setUserPointer(triangleInfoMap))
+	btGenerateInternalEdgeInfo(shape,triangleInfoMap);
+	shape->setTriangleInfoMap(triangleInfoMap);
+#endif // TRYTOFIX_INTERNAL_EDGES
+
 	return shape;
 }
 void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
@@ -203,7 +286,7 @@ void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
 	//can use a shift
 	startTransform.setIdentity();
 
-	btCollisionShape* shape = BT_CreateBHVTriMeshForCMSurface(sf);
+	btBvhTriangleMeshShape* shape = BT_CreateBHVTriMeshForCMSurface(sf);
 
 	shape->setMargin(bt_collisionMargin);
 
@@ -257,6 +340,11 @@ btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTran
 	btRigidBody* body = new btRigidBody(mass, 0, shape, localInertia);
 	body->setWorldTransform(startTransform);
 #endif//
+
+#ifdef TRYTOFIX_INTERNAL_EDGES
+	//enable custom material callback
+	body->setCollisionFlags(body->getCollisionFlags()  | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+#endif 
 
 	dynamicsWorld->addRigidBody(body);
 

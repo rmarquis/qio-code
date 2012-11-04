@@ -61,14 +61,17 @@ public:
 
 class entDefsList_c {
 	arraySTD_c<entDef_c*> entities;
+
 	bool fromString(const char *txt);
+	bool loadEntitiesFromBSPFile(const char *mapName); // .bsp
+	bool loadEntitiesFromMapFile(const char *mapName); // .map
 public:
 	entDefsList_c();
 	~entDefsList_c();
 	void clear();
 
 	// loads entity list from .map / .bsp / .ent file
-	bool load(const char *fname);
+	bool load(const char *mapName);
 
 
 	u32 size() const {

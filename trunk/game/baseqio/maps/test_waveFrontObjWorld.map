@@ -1,0 +1,15 @@
+// entity 0
+{
+"classname" "worldspawn"
+}
+// entity 1
+{
+"classname" "func_static"
+"rendermodel" "models/landscape/Island_001/Island_001.obj"
+"collisionmodel" "models/landscape/Island_001/Island_001.obj"
+}
+// entity 2
+{
+"classname" "info_player_start"
+"origin" "0 0 256"
+}

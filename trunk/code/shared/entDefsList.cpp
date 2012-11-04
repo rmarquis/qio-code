@@ -46,6 +46,13 @@ void entDefsList_c::clear() {
 bool entDefsList_c::fromString(const char *text) {
 	parser_c p;
 	p.setup(text);
+
+	int mapFileVersion = -1;
+
+	// only for Doom3/Quake4 .map files - skip version ident
+	if(p.atWord("Version")) {
+		mapFileVersion = p.getInteger();
+	}
 	while(p.atEOF() == false) {
 		if(p.atChar('{')) {
 			entDef_c *ed = new entDef_c;
@@ -65,10 +72,10 @@ bool entDefsList_c::fromString(const char *text) {
 	}
 	return false; // OK
 }
-bool entDefsList_c::load(const char *fname) {
+bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 	char buf[256];
 	strcpy(buf,"maps/");
-	strcat(buf,fname);
+	strcat(buf,mapName);
 	strcat(buf,".bsp");
 	fileHandle_t f;
 	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
@@ -95,6 +102,34 @@ bool entDefsList_c::load(const char *fname) {
 	bool error = this->fromString(text);
 	free(data);
 	return error;
+}
+bool entDefsList_c::loadEntitiesFromMapFile(const char *mapName) {
+	char buf[256];
+	strcpy(buf,"maps/");
+	strcat(buf,mapName);
+	strcat(buf,".map");
+	fileHandle_t f;
+	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+	if(f == 0) {
+		return true;
+	}
+	byte *data = (byte*)malloc(len);
+	g_vfs->FS_Read(data,len,f);
+	g_vfs->FS_FCloseFile(f);
+	const char *text = (const char*)data;
+	bool error = this->fromString(text);
+	free(data);
+	return error;
+}
+bool entDefsList_c::load(const char *mapName) {
+	if(loadEntitiesFromBSPFile(mapName) == false) {
+		return false;
+	}
+	if(loadEntitiesFromMapFile(mapName) == false) {
+		return false;
+	}
+	g_core->RedWarning("Cannot load entity list for map %s\n",mapName);
+	return true;
 }
 
 

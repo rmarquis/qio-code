@@ -33,6 +33,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 
+// temporary (?) alias for .map loading (.obj models are using this)
+DEFINE_CLASS_ALIAS(ModelEntity, func_static);
+
 ModelEntity::ModelEntity() {
 	body = 0;
 	cmod = 0;
@@ -79,11 +82,13 @@ void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 	}
 }	
 void ModelEntity::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model")) {
+	if(!stricmp(key,"model") || !stricmp(key,"rendermodel")) {
 		this->setRenderModel(value);
 		if(value[0] == '*') {
 			this->setColModel(value);
 		}
+	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
+		this->setColModel(value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

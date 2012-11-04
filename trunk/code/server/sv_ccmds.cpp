@@ -169,8 +169,12 @@ static void SV_Map_f( void ) {
 		// a typo at the server console won't end the game
 		Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
 		if ( FS_ReadFile (expanded, NULL) == -1 ) {
-			Com_Printf ("SV_Map_f: Can't find map %s\n", expanded);
-			return;
+			// we're supporting .map files as well
+			Com_sprintf (expanded, sizeof(expanded), "maps/%s.map", map);
+			if ( FS_ReadFile (expanded, NULL) == -1 ) {
+				Com_Printf ("SV_Map_f: Can't find map %s\n", map);
+				return;
+			}
 		}
 	}
 

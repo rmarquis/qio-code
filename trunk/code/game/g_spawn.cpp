@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/entDefsList.h>
 #include <api/coreAPI.h>
 #include "classes/BaseEntity.h"
+#include "classes/ModelEntity.h"
 
 static entDefsList_c g_entDefs;
 
@@ -62,6 +63,13 @@ void G_SpawnMapEntities(const char *mapName) {
 			e->getKeyValue(j,&key,&value);
 			ent->setKeyValue(key,value);
 		}
+		
+#if 1
+		ModelEntity *m = dynamic_cast<ModelEntity*>(ent);
+		if(m && m->hasCollisionModel()) {
+			m->initStaticBodyPhysics();
+		}
+#endif
 	}
 }
 
