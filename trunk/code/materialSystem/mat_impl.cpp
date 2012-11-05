@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mat_local.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
+#include <api/textureAPI.h>
 
 // material stage class
 mtrStage_c::mtrStage_c() {
@@ -35,6 +36,12 @@ mtrStage_c::mtrStage_c() {
 void mtrStage_c::setTexture(const char *newMapName) {
 	textureAPI_i *tex = MAT_RegisterTexture(newMapName);
 	this->setTexture(tex);
+}
+int mtrStage_c::getImageWidth() const {
+	return texture->getWidth();
+}
+int mtrStage_c::getImageHeight() const {
+	return texture->getHeight();
 }
 // material class
 mtrIMPL_c::mtrIMPL_c() {
@@ -158,6 +165,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		}
 	}
 
+
+	if(stages.size() == 0) {
+		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
+		this->createFromImage();
+	}
 
 	//const char *p = txt.p;
 	//if(*p != '{') {

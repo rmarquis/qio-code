@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/clientAPI.h>
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
+#include <api/vfsAPI.h>
 
 /*
 ================
@@ -45,7 +46,14 @@ void CG_ParseServerinfo( void ) {
 
 	cgs.maxclients = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
 	mapname = Info_ValueForKey( info, "mapname" );
+	// fix and format the world map name
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
+	if(g_vfs->FS_FileExists(cgs.mapname) == false) {
+		// if there is no .bsp file, fall back to .map
+		// (NOTE: .bsp files are a compiled .map files with some extra info
+		// like lightmaps, lightgrid, PVS, etc...)
+		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );
+	}
 
 }
 

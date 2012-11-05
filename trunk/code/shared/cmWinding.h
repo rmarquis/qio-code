@@ -51,6 +51,9 @@ public:
 	const arraySTD_c<vec3_c> &getPoints() const {
 		return points;
 	}
+	const vec3_c &operator [] (u32 index) const {
+		return points[index];
+	}
 };
 
 #endif // __CMWINDING_H__

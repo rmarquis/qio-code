@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "classes/ModelEntity.h"
 #include <shared/cmSurface.h>
 #include <api/coreAPI.h>
+#include <api/cmAPI.h>
 
 #include "bt_include.h"
 
@@ -527,6 +528,13 @@ arraySTD_c<aabb> g_inlineModelBounds;
 const class aabb &G_GetInlineModelBounds(u32 inlineModelNum) {
 	return g_inlineModelBounds[inlineModelNum];
 }
+void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
+	for(u32 i = 0; i < cm->getNumSubShapes(); i++) {
+		cMod_i *m = cm->getSubShapeN(i);
+		// set the mass to 0, so the body is static
+		btRigidBody *staticBody = BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,m,0);
+	}
+}
 void G_LoadMap(const char *mapName) {
 	if(!stricmp(mapName,"_empty")) {
 		const float worldSize = 4096.f;
@@ -543,7 +551,17 @@ void G_LoadMap(const char *mapName) {
 	}
 	bspPhysicsDataLoader_c l;
 	if(l.loadBSPFile(mapName)) {
-
+		str fixed = "maps/";
+		fixed.append(mapName);
+		fixed.setExtension("map");
+		cMod_i *worldCMod = cm->registerModel(fixed);
+		if(worldCMod) {
+			if(worldCMod->isCompound()) {
+				BT_SpawnStaticCompoundModel(worldCMod->getCompound());
+			} else {
+				BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,worldCMod,0);
+			}
+		}
 		return;
 	}
 	g_bspPhysicsLoader = &l;

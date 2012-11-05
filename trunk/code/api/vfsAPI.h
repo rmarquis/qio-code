@@ -42,6 +42,11 @@ struct vfsAPI_s : public iFaceBase_i {
 	void	(*FS_FreeFileList)( char **filelist );
 	long (*FS_ReadFile)(const char *qpath, void **buffer);
 	void (*FS_FreeFile)( void *buffer );
+	bool FS_FileExists(const char *fname) {
+		if(FS_ReadFile(fname,0) > 0)
+			return true;
+		return false;
+	}
 };
 
 extern vfsAPI_s *g_vfs;

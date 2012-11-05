@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/staticModelCreatorAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
 
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
@@ -47,6 +48,8 @@ public:
 		bool error;
 		if(!stricmp(ext,"obj")) {
 			error = MOD_LoadOBJ(fname,out);
+		} else if(!stricmp(ext,"map")) {
+			error = MOD_LoadConvertMapFileToStaticTriMesh(fname,out);
 		} else {
 			error = true;
 		}
@@ -66,6 +69,7 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
+materialSystemAPI_i *g_ms = 0;
 // exports
 static modelLoaderDLLIMPL_c g_staticModelLoaderDLLAPI;
 modelLoaderDLLAPI_i *g_modelLoader = &g_staticModelLoaderDLLAPI;
@@ -80,6 +84,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

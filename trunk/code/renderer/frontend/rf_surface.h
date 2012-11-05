@@ -114,6 +114,8 @@ public:
 	virtual void translateXYZ(const class vec3_c &ofs);
 	virtual void getCurrentBounds(class aabb &out);
 
+	bool traceRay(class trace_c &tr);
+
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();
 };

@@ -65,6 +65,8 @@ public:
 		return false;
 	}
 	void setTexture(const char *newMapName);
+	int getImageWidth() const;
+	int getImageHeight() const;
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
@@ -106,6 +108,16 @@ public:
 			return DCS_BLEND;
 		}
 		return DCS_OPAQUE;
+	}
+	virtual int getImageWidth() const {
+		if(stages.size() == 0)
+			return 32;
+		return stages[0]->getImageWidth();
+	}
+	virtual int getImageHeight() const {
+		if(stages.size() == 0)
+			return 32;
+		return stages[0]->getImageHeight();
 	}
 
 	void createFromImage();

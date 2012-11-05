@@ -210,10 +210,13 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 				//	ofs = -dist;
 				//}
 					btCollisionObject *c;
+					btVector3 pointOnRB;
 					if(manifold->getBody0() == m_ghostObject) {
 						c = (btCollisionObject*)manifold->getBody1();
+						pointOnRB = pt.m_localPointA;
 					} else {
 						c = (btCollisionObject*)manifold->getBody0();
+						pointOnRB = pt.m_localPointB;
 					}
 					if(c) {
 						if(c->isStaticOrKinematicObject() == false) {
@@ -224,7 +227,9 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 								btRigidBody *rb = (btRigidBody*)c;
 								rb->activate(true);
 								//rb->setLinearVelocity(pt.m_normalWorldOnB * directionSign * ofs * 500.f);
-								rb->applyCentralImpulse(pt.m_normalWorldOnB * directionSign * ofs * 250.f);
+								btVector3 imp = pt.m_normalWorldOnB * directionSign * ofs * 250.f;
+								rb->applyCentralImpulse(imp);
+								//rb->applyImpulse(imp,pointOnRB);
 							}
 						}
 					}

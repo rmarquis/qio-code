@@ -46,6 +46,9 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	nv.xyz = v2.xyz;
 	nv.tc = v2.tc;
 	verts.push_back(nv);
+	bounds.addPoint(v0.xyz);
+	bounds.addPoint(v1.xyz);
+	bounds.addPoint(v2.xyz);
 }
 void r_surface_c::setMaterial(mtrAPI_i *newMat) {
 	mat = newMat;
@@ -129,6 +132,9 @@ void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	r_surface_c *sf = registerSurf(matName);
 	sf->addTriangle(v0,v1,v2);
+	this->bounds.addPoint(v0.xyz);
+	this->bounds.addPoint(v1.xyz);
+	this->bounds.addPoint(v2.xyz);
 }
 void r_model_c::scaleXYZ(float scale) {
 	r_surface_c *sf = surfs.getArray();
@@ -165,6 +171,21 @@ void r_model_c::getCurrentBounds(class aabb &out) {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->addPointsToBounds(out);
 	}
+}
+bool r_model_c::traceRay(class trace_c &tr) {
+	if(tr.getTraceBounds().intersect(this->bounds) == false)
+		return false;
+	bool hit = false;
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(tr.getTraceBounds().intersect(sf->getBB()) == false) {
+			continue;
+		}
+		if(sf->traceRay(tr)) {
+			hit = true;
+		}
+	}
+	return hit;
 }
 r_surface_c *r_model_c::registerSurf(const char *matName) {
 	r_surface_c *sf = surfs.getArray();

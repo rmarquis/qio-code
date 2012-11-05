@@ -200,6 +200,10 @@
 			Name="StaticModelLoaders"
 			>
 			<File
+				RelativePath="..\..\code\modelLoader\staticModelLoaders\mapFileConverter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\staticModelLoaders\mtlFile.cpp"
 				>
 			</File>
@@ -215,6 +219,14 @@
 		<Filter
 			Name="shared"
 			>
+			<File
+				RelativePath="..\..\code\shared\cmWinding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmWinding.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>

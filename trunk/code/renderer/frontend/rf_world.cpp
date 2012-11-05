@@ -23,30 +23,58 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
 #include "rf_bsp.h"
+#include "rf_surface.h"
+#include <api/coreAPI.h>
+#include <api/modelLoaderDLLAPI.h>
 
-static class rBspTree_c *r_bspTree = 0;
+static class rBspTree_c *r_bspTree = 0; // for .bsp files
+static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes)
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
 		delete r_bspTree;
 		r_bspTree = 0;
 	}
+	if(r_worldModel) {
+		delete r_worldModel;
+		r_worldModel = 0;
+	}
 }
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();
-	r_bspTree = RF_LoadBSP(name);
-	if(r_bspTree)
-		return false; // ok
-	return true; // error
+	const char *ext = G_strgetExt(name);
+	if(ext == 0) {
+		g_core->RedWarning("RF_LoadWorldMap: %s has no extension\n",name);
+		return true;
+	}
+	if(!stricmp(ext,"bsp")) {
+		r_bspTree = RF_LoadBSP(name);
+		if(r_bspTree)
+			return false; // ok
+		return true; // error
+	} else if(g_modelLoader->isStaticModelFile(name)) {
+		r_model_c *m = new r_model_c;
+		if(g_modelLoader->loadStaticModelFile(name,m)) {
+			delete m;
+			return true; // error
+		}
+		r_worldModel = m;
+	}
 }
 void RF_AddWorldDrawCalls() {
 	if(r_bspTree) {
 		r_bspTree->addDrawCalls();
 	}
+	if(r_worldModel) {
+		r_worldModel->addDrawCalls();
+	}
 }
 void RF_RayTraceWorld(class trace_c &tr) {
 	if(r_bspTree) {
 		r_bspTree->traceRay(tr);
+	}
+	if(r_worldModel) {
+		r_worldModel->traceRay(tr);
 	}
 }
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes) {
