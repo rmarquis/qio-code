@@ -22,6 +22,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendGL", "backendGL.vcpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendNULL", "backendNULL.vcproj", "{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendDX9", "backendDX9.vcproj", "{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -72,6 +74,10 @@ Global
 		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Debug|Win32.Build.0 = Debug|Win32
 		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Release|Win32.ActiveCfg = Release|Win32
 		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Release|Win32.Build.0 = Release|Win32
+		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Debug|Win32.Build.0 = Debug|Win32
+		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Release|Win32.ActiveCfg = Release|Win32
+		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

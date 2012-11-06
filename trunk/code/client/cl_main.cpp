@@ -115,6 +115,8 @@ cvar_s	*cl_guidServerUniq;
 
 cvar_s	*cl_consoleKeys;
 
+cvar_s	*cl_r_backEnd;
+
 clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
@@ -3297,6 +3299,9 @@ void CL_Init( void ) {
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+
+	// backend for renderer ("GL", "NULL", "DX9"...)
+	cl_r_backEnd = Cvar_Get( "r_backEnd", "GL", CVAR_ARCHIVE);
 
 	// userinfo
 	Cvar_Get ("name", "UnnamedPlayer", CVAR_USERINFO | CVAR_ARCHIVE );

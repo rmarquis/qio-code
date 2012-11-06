@@ -2656,6 +2656,7 @@ static void Com_InitRand(void)
 
 
 void IN_InitInputSystemAPI();
+void Com_InitSysEventCasterAPI();
 
 static coreAPI_s g_staticCoreAPI;
 coreAPI_s *g_core = 0;
@@ -2678,6 +2679,7 @@ void Com_InitCoreAPI() {
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 
 	IN_InitInputSystemAPI();
+	Com_InitSysEventCasterAPI();
 }
 
 // it could be in client module, but I think that server

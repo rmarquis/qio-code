@@ -25,14 +25,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __R2DVERT_H__
 #define __R2DVERT_H__
 
+#include <math/vec3.h>
 #include <math/vec2.h>
 
 struct r2dVert_s {
-	vec2_c pos;
+	//vec2_c pos;
+	vec3_c pos; // changed to vec3 for DX9
 	vec2_c texCoords;
 
 	void set(float nX, float nY, float nS, float nT) {
-		pos.set(nX,nY);
+		pos.x = nX;
+		pos.y = nY;
 		texCoords.set(nS,nT);
 	}
 };

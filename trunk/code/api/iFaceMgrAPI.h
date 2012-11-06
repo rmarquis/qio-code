@@ -39,6 +39,7 @@ enum qioModule_e {
 	QMD_MODELLOADER,
 	QMD_REF_BACKEND_GL,
 	QMD_REF_BACKEND_NULL,
+	QMD_REF_BACKEND_DX9,
 };
 
 // this must be implemented in every module

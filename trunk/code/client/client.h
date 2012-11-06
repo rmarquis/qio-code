@@ -416,6 +416,8 @@ extern	cvar_s	*cl_autoRecordDemo;
 
 extern	cvar_s	*cl_consoleKeys;
 
+extern	cvar_s	*cl_r_backEnd;
+
 #ifdef USE_MUMBLE
 extern	cvar_s	*cl_useMumble;
 extern	cvar_s	*cl_mumbleScale;

@@ -204,6 +204,14 @@ public:
 		}
 		return 0;
 	}
+	enum _D3DFORMAT getDX9IndexType() const {
+		if(type == IBO_U16) {
+			return (_D3DFORMAT)101; // D3DFMT_INDEX16
+		} else if(type == IBO_U32) {
+			return (_D3DFORMAT)102;
+		}
+		return (_D3DFORMAT)0;
+	}
 	const void *getVoidPtr() const {
 		if(data.size() == 0)
 			return 0;

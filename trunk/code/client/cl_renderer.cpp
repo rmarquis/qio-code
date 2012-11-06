@@ -27,6 +27,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/rAPI.h>
+#include <api/coreAPI.h>
+
+#include <shared/str.h>
 
 #include "../sys/sys_local.h"
 #include "../sys/sys_loadlib.h"
@@ -83,11 +86,17 @@ void CL_InitRef( void ) {
 	if ( cl_rendererBackEndDLL ) {
 		Com_Error (ERR_FATAL, "Renderer BackEnd DLL already loaded!" );
 	}
-	cl_rendererBackEndDLL = g_moduleMgr->load("backendNULL");
+	str backEndModuleName = "backend";
+	backEndModuleName.append(cl_r_backEnd->string);
+	cl_rendererBackEndDLL = g_moduleMgr->load(backEndModuleName);
 	if ( !cl_rendererBackEndDLL ) {
-		Com_Error (ERR_FATAL, "Couldn't load renderer backend DLL" );
+		g_core->RedWarning("Failed to initialize renderer backend \"%s\"\n",cl_r_backEnd->string);
+		g_core->Print("Trying to load GL backend instead...\n");
+		cl_rendererBackEndDLL = g_moduleMgr->load("backendGL");
+		if ( !cl_rendererBackEndDLL ) {
+			Com_Error (ERR_FATAL, "Couldn't load renderer backend DLL" );
+		}
 	}
-	//g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 
 	Com_Printf( "----- Initializing Renderer DLL ----\n" );
 	if ( cl_rendererDLL ) {

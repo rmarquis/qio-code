@@ -21,23 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// inputSystemAPI.h
-#ifndef __INPUTSYSTEMAPI_API_H__
-#define __INPUTSYSTEMAPI_API_H__
+// sysEventCasterAPI.h
+#ifndef __SYSEVENTCASTERAPI_H__
+#define __SYSEVENTCASTERAPI_H__
 
-#include <shared/typedefs.h>
 #include "iFaceBase.h"
 
-#define INPUT_SYSTEM_API_IDENTSTR "InputSystemAPI0001"
+#define SYSEVENTCASTER_API_IDENTSTR "SysEventCasterAPI0001"
 
-class inputSystemAPI_i : public iFaceBase_i {
+class sysEventCasterAPI_c : public iFaceBase_i {
 public:
-	void (*IN_Shutdown)();
-	// IN_Init must be called after SDL_Init(SDL_INIT_VIDEO), otherwise we'd get a Com_Error
-	void (*IN_Init)();
-	void (*IN_Restart)();
+	virtual void postMouseMotionEvent(float deltaX, float deltaY)  = 0;
+	virtual void postMouseRightButtonDownEvent()  = 0;
+	virtual void postMouseRightButtonUpEvent()  = 0;
+	virtual void postMouseLeftButtonDownEvent()  = 0;
+	virtual void postMouseLeftButtonUpEvent() = 0;
 };
 
-extern inputSystemAPI_i *g_inputSystem;
+extern sysEventCasterAPI_c *g_sysEventCaster;
 
-#endif // __INPUTSYSTEMAPI_API_H__
+#endif // __SYSEVENTCASTERAPI_H__
