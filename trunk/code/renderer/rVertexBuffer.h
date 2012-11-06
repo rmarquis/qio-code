@@ -35,9 +35,9 @@ class rVert_c {
 public:
 	vec3_c xyz;
 	vec3_c normal;
+	byte color[4];
 	vec2_c tc;
 	vec2_c lc;
-	byte color[4];
 	//vec2_c tan;
 	//vec2_c bin;
 
