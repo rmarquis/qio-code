@@ -182,10 +182,13 @@ GLimp_Minimize
 Minimize the game so that user is back at the desktop
 ===============
 */
+#if 0
+// NOTE: this is not called anywhere right now
 void GLimp_Minimize(void)
 {
 	SDL_WM_IconifyWindow();
 }
+#endif
 
 
 /*
