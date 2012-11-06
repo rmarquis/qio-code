@@ -1,0 +1,3 @@
+Known Qio bugs:
+- car physics is jittery on triangle meshes (internal edges issue, known for a very long time for Bullet Physics users)
+- there are several Bullet-related memory leaks, most of them will be fixed soon

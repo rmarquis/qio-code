@@ -1,0 +1,3 @@
+Everything except MSVC 2008 projects (in misc/msvc) is OUTDATED.
+If you want to compile Qio with something else than MSVC 2008, I wish you good luck.
+Any porting help is welcome.

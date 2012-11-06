@@ -1,0 +1,34 @@
+game
+ - written from scratch with C++ class system
+ - serverside Bullet physics for rigid bodies and cars
+ - player movement is done by Bullet character controler
+ 
+cgame 
+ - cleared up code
+ - better communication with renderer
+ 
+renderer
+ - written from scratch in C++
+ - Quake3, RTCW, ET, MoHAA and CoD1 (partial) BSP support with PVS and lightmapping
+ - direct .map files loading
+ - openGL backend totally separated from frontend
+ - VBO/IBO based (several times faster than Q3 renderer)
+ - deltaRefEntities system
+
+modelLoader
+ - written from scratch in C++
+ - waveFront .obj support (with .mtl files)
+ - usefull .mdpp (MoDelPreProcess) "scripts" system used to scale/rotate model after loading
+ 
+materialSystem
+ - written from scratch in C++
+ - BASIC q3 shaders support
+ 
+common
+ - interfaces system similiar to one in SourceEngine
+
+shared
+ - many math, geometry and util C++ classes
+ - autoCvar_c class for easier ConVars usage
+ 
+ 
