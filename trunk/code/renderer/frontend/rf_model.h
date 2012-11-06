@@ -79,6 +79,7 @@ public:
 
 	// for bsp inline model
 	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
+		this->type = MOD_BSP;
 		this->myBSP = pMyBSP;
 		this->bspModelNum = myBSPModNum;
 	}
