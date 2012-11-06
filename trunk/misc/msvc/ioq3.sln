@@ -18,6 +18,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "..\..\cod
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelLoader", "modelLoader.vcproj", "{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendGL", "backendGL.vcproj", "{B5D7E8CF-796B-4547-BE0A-A4A877A62456}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendNULL", "backendNULL.vcproj", "{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -60,6 +64,14 @@ Global
 		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Debug|Win32.Build.0 = Debug|Win32
 		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Release|Win32.ActiveCfg = Release|Win32
 		{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}.Release|Win32.Build.0 = Release|Win32
+		{B5D7E8CF-796B-4547-BE0A-A4A877A62456}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B5D7E8CF-796B-4547-BE0A-A4A877A62456}.Debug|Win32.Build.0 = Debug|Win32
+		{B5D7E8CF-796B-4547-BE0A-A4A877A62456}.Release|Win32.ActiveCfg = Release|Win32
+		{B5D7E8CF-796B-4547-BE0A-A4A877A62456}.Release|Win32.Build.0 = Release|Win32
+		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Debug|Win32.Build.0 = Debug|Win32
+		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Release|Win32.ActiveCfg = Release|Win32
+		{624D80B4-9EE5-44FE-A7C9-8D794F4C0CD7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

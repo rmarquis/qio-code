@@ -21,42 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mat_api.cpp - material system interface
-
-#include "mat_local.h"
+// backEndGLAPI.cpp
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
-#include <api/rAPI.h>
-#include <api/rbAPI.h>
-#include <api/imgAPI.h>
-#include <api/materialSystemAPI.h>
-#include <shared/autoCvar.h>
-
-class msIMPL_c : public materialSystemAPI_i {
-public:
-	virtual void initMaterialsSystem() {
-		MAT_ScanForMaterialFiles();
-	}
-	virtual void shutdownMaterialsSystem() {
-		MAT_FreeAllMaterials();
-		MAT_FreeAllTextures();
-	}
-	virtual mtrAPI_i *registerMaterial(const char *matName) {
-		return MAT_RegisterMaterialAPI(matName);
-	}
-	virtual textureAPI_i *getDefaultTexture() {
-		return MAT_GetDefaultTexture();
-	}
-	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) {
-		return MAT_CreateLightmap(data,w,h);
-	}
-	virtual mtrAPI_i *getDefaultMaterial() {
-		return MAT_RegisterMaterialAPI("default");
-	}
-};
+#include <api/inputSystemAPI.h>
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -64,29 +35,24 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
-rAPI_i *rf = 0;
-rbAPI_i *rb = 0;
-imgAPI_i *g_img = 0;
-// exports
-static msIMPL_c g_staticMaterialSystemAPI;
-materialSystemAPI_i *g_ms = &g_staticMaterialSystemAPI;
+inputSystemAPI_i * g_inputSystem = 0;
+
+void SDLOpenGL_RegisterBackEnd();
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
 	// exports
-	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	SDLOpenGL_RegisterBackEnd();
 
 	// imports
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_inputSystem,INPUT_SYSTEM_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {
-	return QMD_MATERIALSYSTEM;
+	return QMD_REF_BACKEND_GL;
 }
 

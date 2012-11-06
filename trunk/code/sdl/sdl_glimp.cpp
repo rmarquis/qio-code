@@ -42,6 +42,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../client/client.h"
 #include "../sys/sys_local.h"
 #include "../renderer/qgl.h"
+#include <api/coreAPI.h>
+#include <api/cvarAPI.h>
+#include <api/inputSystemAPI.h>
 #include "sdl_icon.h"
 
 /* Just hack it for now. */
@@ -151,12 +154,12 @@ static void R_ModeList_f( void )
 {
 	int i;
 
-	Com_Printf("\n");
+	g_core->Print("\n");
 	for ( i = 0; i < s_numVidModes; i++ )
 	{
-		Com_Printf("%s\n", r_vidModes[i].description);
+		g_core->Print("%s\n", r_vidModes[i].description);
 	}
-	Com_Printf("\n");
+	g_core->Print("\n");
 }
 
 /*
@@ -166,7 +169,7 @@ GLimp_Shutdown
 */
 void GLimp_Shutdown( void )
 {
-	IN_Shutdown();
+	g_inputSystem->IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 	screen = NULL;
@@ -243,13 +246,13 @@ static void GLimp_DetectAvailableModes(void)
 
 	if( !modes )
 	{
-		Com_Warning( "Can't get list of available modes\n" );
+		g_core->RedWarning( "Can't get list of available modes\n" );
 		return;
 	}
 
 	if( modes == (SDL_Rect **)-1 )
 	{
-		Com_Printf( "Display supports any resolution\n" );
+		g_core->Print( "Display supports any resolution\n" );
 		return; // can set any resolution
 	}
 
@@ -265,14 +268,14 @@ static void GLimp_DetectAvailableModes(void)
 		if( strlen( newModeString ) < (int)sizeof( buf ) - strlen( buf ) )
 			Q_strcat( buf, sizeof( buf ), newModeString );
 		else
-			Com_Warning( "Skipping mode %ux%x, buffer too small\n", modes[i]->w, modes[i]->h );
+			g_core->RedWarning( "Skipping mode %ux%x, buffer too small\n", modes[i]->w, modes[i]->h );
 	}
 
 	if( *buf )
 	{
 		buf[ strlen( buf ) - 1 ] = 0;
-		Com_Printf( "Available modes: '%s'\n", buf );
-		Cvar_Set( "r_availableModes", buf );
+		g_core->Print( "Available modes: '%s'\n", buf );
+		g_cvars->Cvar_Set( "r_availableModes", buf );
 	}
 }
 
@@ -307,7 +310,7 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 		GetVersionEx( &vinfo );
 		if( vinfo.dwMajorVersion >= 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT )
 		{
-			Com_DPrintf("performing gamma clamp.\n" );
+			g_core->Print("performing gamma clamp.\n" );
 			for( j = 0 ; j < 3 ; j++ )
 			{
 				for( i = 0 ; i < 128 ; i++ )
@@ -353,7 +356,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	SDL_Surface *vidscreen = NULL;
 	Uint32 flags = SDL_OPENGL;
 
-	Com_Printf( "Initializing OpenGL display\n");
+	g_core->Print( "Initializing OpenGL display\n");
 
 	if ( r_allowResize->integer )
 		flags |= SDL_RESIZABLE;
@@ -379,16 +382,16 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			// the display's native aspect ratio
 			displayAspect = (float)videoInfo->current_w / (float)videoInfo->current_h;
 
-			Com_Printf( "Estimated display aspect: %.3f\n", displayAspect );
+			g_core->Print( "Estimated display aspect: %.3f\n", displayAspect );
 		}
 		else
 		{
-			Com_Printf( 
+			g_core->Print( 
 					"Cannot estimate display aspect, assuming 1.333\n" );
 		}
 	}
 
-	Com_Printf( "...setting mode %d:", mode );
+	g_core->Print( "...setting mode %d:", mode );
 
 	if (mode == -2)
 	{
@@ -402,7 +405,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		{
 			glConfig.vidWidth = 640;
 			glConfig.vidHeight = 480;
-			Com_Printf( 
+			g_core->Print( 
 					"Cannot determine display resolution, assuming 640x480\n" );
 		}
 
@@ -410,10 +413,10 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	}
 	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, &glConfig.windowAspect, mode ) )
 	{
-		Com_Printf( " invalid mode\n" );
+		g_core->Print( " invalid mode\n" );
 		return RSERR_INVALID_MODE;
 	}
-	Com_Printf( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
+	g_core->Print( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
 
 	if (fullscreen)
 	{
@@ -535,14 +538,14 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		{
 			if( SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 ) < 0 )
 			{
-				Com_Printf( "Unable to guarantee accelerated "
+				g_core->Print( "Unable to guarantee accelerated "
 						"visual with libSDL < 1.2.10\n" );
 			}
 		}
 #endif
 
 		if( SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0/*r_swapInterval->integer*/ ) < 0 )
-			Com_Printf( "r_swapInterval requires libSDL >= 1.2.10\n" );
+			g_core->Print( "r_swapInterval requires libSDL >= 1.2.10\n" );
 
 #ifdef USE_ICON
 		{
@@ -569,13 +572,13 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 		if (!(vidscreen = SDL_SetVideoMode(glConfig.vidWidth, glConfig.vidHeight, colorbits, flags)))
 		{
-			Com_DPrintf("SDL_SetVideoMode failed: %s\n", SDL_GetError( ) );
+			g_core->Print("SDL_SetVideoMode failed: %s\n", SDL_GetError( ) );
 			continue;
 		}
 
 		opengl_context = GLimp_GetCurrentContext();
 
-		Com_Printf( "Using %d/%d/%d Color bits, %d depth, %d stencil display.\n",
+		g_core->Print( "Using %d/%d/%d Color bits, %d depth, %d stencil display.\n",
 				sdlcolorbits, sdlcolorbits, sdlcolorbits, tdepthbits, tstencilbits);
 
 		glConfig.colorBits = tcolorbits;
@@ -588,14 +591,14 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	if (!vidscreen)
 	{
-		Com_Printf( "Couldn't get a visual\n" );
+		g_core->Print( "Couldn't get a visual\n" );
 		return RSERR_INVALID_MODE;
 	}
 
 	screen = vidscreen;
 
 	glstring = (char *) qglGetString (GL_RENDERER);
-	Com_Printf( "GL_RENDERER: %s\n", glstring );
+	g_core->Print( "GL_RENDERER: %s\n", glstring );
 
 	return RSERR_OK;
 }
@@ -615,20 +618,20 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
-			Com_Printf( "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n",
+			g_core->Print( "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n",
 					SDL_GetError());
 			return qfalse;
 		}
 
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
-		Com_Printf( "SDL using driver \"%s\"\n", driverName );
-		Cvar_Set( "r_sdlDriver", driverName );
+		g_core->Print( "SDL using driver \"%s\"\n", driverName );
+		g_cvars->Cvar_Set( "r_sdlDriver", driverName );
 	}
 
-	if (fullscreen && Cvar_VariableIntegerValue( "in_nograb" ) )
+	if (fullscreen && g_cvars->Cvar_VariableIntegerValue( "in_nograb" ) )
 	{
-		Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
-		Cvar_Set( "r_fullscreen", "0" );
+		g_core->Print( "Fullscreen not allowed with in_nograb 1\n");
+		g_cvars->Cvar_Set( "r_fullscreen", "0" );
 		r_fullscreen->modified = qfalse;
 		fullscreen = qfalse;
 	}
@@ -638,10 +641,10 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 	switch ( err )
 	{
 		case RSERR_INVALID_FULLSCREEN:
-			Com_Printf( "...WARNING: fullscreen unavailable in this mode\n" );
+			g_core->Print( "...WARNING: fullscreen unavailable in this mode\n" );
 			return qfalse;
 		case RSERR_INVALID_MODE:
-			Com_Printf( "...WARNING: could not set the given mode (%d)\n", mode );
+			g_core->Print( "...WARNING: could not set the given mode (%d)\n", mode );
 			return qfalse;
 		default:
 			break;
@@ -671,30 +674,33 @@ of OpenGL
 */
 void GLimp_Init( void )
 {
-	r_sdlDriver = Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
-	r_allowResize = Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
-	r_centerWindow = Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
-	r_fullscreen = Cvar_Get( "r_fullscreen", "0", CVAR_ARCHIVE );
-	r_mode = Cvar_Get( "r_mode", "0", CVAR_ARCHIVE );
+	r_sdlDriver = g_cvars->Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
+	r_allowResize = g_cvars->Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
+	r_centerWindow = g_cvars->Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
+	r_fullscreen = g_cvars->Cvar_Get( "r_fullscreen", "0", CVAR_ARCHIVE );
+	r_mode = g_cvars->Cvar_Get( "r_mode", "0", CVAR_ARCHIVE );
 
-	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
+	if( g_cvars->Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
-		Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
-		Cvar_Set( "r_fullscreen", "0" );
-		Cvar_Set( "r_centerWindow", "0" );
-		Cvar_Set( "com_abnormalExit", "0" );
+		g_cvars->Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
+		g_cvars->Cvar_Set( "r_fullscreen", "0" );
+		g_cvars->Cvar_Set( "r_centerWindow", "0" );
+		g_cvars->Cvar_Set( "com_abnormalExit", "0" );
 	}
 
+// TODO?
+#if 0
 	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
+#endif
 
-	Sys_GLimpInit( );
+	//Sys_GLimpInit( ); // TODO
 
 	// Create the window and set up the context
 	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, /*r_noborder->integer*/0))
 		goto success;
 
 	// Try again, this time in a platform specific "safe mode"
-	Sys_GLimpSafeInit( );
+	//Sys_GLimpSafeInit( ); // TODO
 
 	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, qfalse))
 		goto success;
@@ -702,7 +708,7 @@ void GLimp_Init( void )
 	// Finally, try the default screen resolution
 	if( r_mode->integer != R_MODE_FALLBACK )
 	{
-		Com_Printf( "Setting r_mode %d failed, falling back on r_mode %d\n",
+		g_core->Print( "Setting r_mode %d failed, falling back on r_mode %d\n",
 				r_mode->integer, R_MODE_FALLBACK );
 
 		if(GLimp_StartDriverAndSetMode(R_MODE_FALLBACK, qfalse, qfalse))
@@ -710,7 +716,7 @@ void GLimp_Init( void )
 	}
 
 	// Nothing worked, give up
-	Com_Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
+	g_core->Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
 
 success:
 	// This values force the UI to disable driver selection
@@ -730,10 +736,10 @@ success:
 	Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
 	Q_strncpyz( glConfig.extensions_string, (char *) qglGetString (GL_EXTENSIONS), sizeof( glConfig.extensions_string ) );
 
-	Cvar_Get( "r_availableModes", "", CVAR_ROM );
+	g_cvars->Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
-	IN_Init( );
+	g_inputSystem->IN_Init( );
 }
 
 
@@ -764,10 +770,10 @@ void GLimp_EndFrame( void )
 			// Find out the current state
 			fullscreen = !!( s->flags & SDL_FULLSCREEN );
 				
-			if( r_fullscreen->integer && Cvar_VariableIntegerValue( "in_nograb" ) )
+			if( r_fullscreen->integer && g_cvars->Cvar_VariableIntegerValue( "in_nograb" ) )
 			{
-				Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
-				Cvar_Set( "r_fullscreen", "0" );
+				g_core->Print( "Fullscreen not allowed with in_nograb 1\n");
+				g_cvars->Cvar_Set( "r_fullscreen", "0" );
 				r_fullscreen->modified = qfalse;
 			}
 
@@ -782,9 +788,9 @@ void GLimp_EndFrame( void )
 		{
 			// SDL_WM_ToggleFullScreen didn't work, so do it the slow way
 			if( !sdlToggled )
-				Cbuf_ExecuteText(EXEC_APPEND, "vid_restart");
+				g_core->Cbuf_ExecuteText(EXEC_APPEND, "vid_restart");
 
-			IN_Restart( );
+			g_inputSystem->IN_Restart( );
 		}
 
 		r_fullscreen->modified = qfalse;

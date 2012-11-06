@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../sys/sys_local.h"
 #include "../renderer/qgl.h"
 #include "sdl_icon.h"
+#include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/textureAPI.h>
@@ -137,7 +138,7 @@ public:
 				Com_sprintf( s, sizeof(s), "%i", err);
 				break;
 		}
-		Com_Printf("GL_CheckErrors: %s\n", s );
+		g_core->Print("GL_CheckErrors: %s\n", s );
 	}
 	// GL_COLOR_ARRAY changes
 	bool colorArrayActive;
@@ -681,7 +682,7 @@ public:
 		GLimp_Init();
 		u32 res = glewInit();
 		if (GLEW_OK != res) {
-			Com_Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
+			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
 			return;
 		}
 		// ensure that all the states are reset after vid_restart
@@ -831,5 +832,5 @@ public:
 static rbSDLOpenGL_c g_staticSDLOpenGLBackend;
 
 void SDLOpenGL_RegisterBackEnd() {
-	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_staticSDLOpenGLBackend,RB_SDLOPENGL_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_staticSDLOpenGLBackend,RENDERER_BACKEND_API_IDENTSTR);
 }

@@ -59,7 +59,10 @@ bool RF_LoadWorldMap(const char *name) {
 			return true; // error
 		}
 		r_worldModel = m;
+		return false; // ok
 	}
+	g_core->RedWarning("Cannot load worldmap %s\n",name);
+	return true; // error
 }
 void RF_AddWorldDrawCalls() {
 	if(r_bspTree) {

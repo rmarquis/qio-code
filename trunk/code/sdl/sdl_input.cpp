@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../client/client.h"
 #include "../sys/sys_local.h"
 #include <api/rAPI.h>
+#include <api/coreAPI.h>
 
 #ifdef MACOS_X
 // Mouse acceleration needs to be disabled
@@ -81,37 +82,37 @@ IN_PrintKey
 static void IN_PrintKey( const SDL_keysym *keysym, keyNum_t key, qboolean down )
 {
 	if( down )
-		Com_Printf( "+ " );
+		g_core->Print( "+ " );
 	else
-		Com_Printf( "  " );
+		g_core->Print( "  " );
 
-	Com_Printf( "0x%02x \"%s\"", keysym->scancode,
+	g_core->Print( "0x%02x \"%s\"", keysym->scancode,
 			SDL_GetKeyName( keysym->sym ) );
 
-	if( keysym->mod & KMOD_LSHIFT )   Com_Printf( " KMOD_LSHIFT" );
-	if( keysym->mod & KMOD_RSHIFT )   Com_Printf( " KMOD_RSHIFT" );
-	if( keysym->mod & KMOD_LCTRL )    Com_Printf( " KMOD_LCTRL" );
-	if( keysym->mod & KMOD_RCTRL )    Com_Printf( " KMOD_RCTRL" );
-	if( keysym->mod & KMOD_LALT )     Com_Printf( " KMOD_LALT" );
-	if( keysym->mod & KMOD_RALT )     Com_Printf( " KMOD_RALT" );
-	if( keysym->mod & KMOD_LMETA )    Com_Printf( " KMOD_LMETA" );
-	if( keysym->mod & KMOD_RMETA )    Com_Printf( " KMOD_RMETA" );
-	if( keysym->mod & KMOD_NUM )      Com_Printf( " KMOD_NUM" );
-	if( keysym->mod & KMOD_CAPS )     Com_Printf( " KMOD_CAPS" );
-	if( keysym->mod & KMOD_MODE )     Com_Printf( " KMOD_MODE" );
-	if( keysym->mod & KMOD_RESERVED ) Com_Printf( " KMOD_RESERVED" );
+	if( keysym->mod & KMOD_LSHIFT )   g_core->Print( " KMOD_LSHIFT" );
+	if( keysym->mod & KMOD_RSHIFT )   g_core->Print( " KMOD_RSHIFT" );
+	if( keysym->mod & KMOD_LCTRL )    g_core->Print( " KMOD_LCTRL" );
+	if( keysym->mod & KMOD_RCTRL )    g_core->Print( " KMOD_RCTRL" );
+	if( keysym->mod & KMOD_LALT )     g_core->Print( " KMOD_LALT" );
+	if( keysym->mod & KMOD_RALT )     g_core->Print( " KMOD_RALT" );
+	if( keysym->mod & KMOD_LMETA )    g_core->Print( " KMOD_LMETA" );
+	if( keysym->mod & KMOD_RMETA )    g_core->Print( " KMOD_RMETA" );
+	if( keysym->mod & KMOD_NUM )      g_core->Print( " KMOD_NUM" );
+	if( keysym->mod & KMOD_CAPS )     g_core->Print( " KMOD_CAPS" );
+	if( keysym->mod & KMOD_MODE )     g_core->Print( " KMOD_MODE" );
+	if( keysym->mod & KMOD_RESERVED ) g_core->Print( " KMOD_RESERVED" );
 
-	Com_Printf( " Q:0x%02x(%s)", key, Key_KeynumToString( key ) );
+	g_core->Print( " Q:0x%02x(%s)", key, Key_KeynumToString( key ) );
 
 	if( keysym->unicode )
 	{
-		Com_Printf( " U:0x%02x", keysym->unicode );
+		g_core->Print( " U:0x%02x", keysym->unicode );
 
 		if( keysym->unicode > ' ' && keysym->unicode < '~' )
-			Com_Printf( "(%c)", (char)keysym->unicode );
+			g_core->Print( "(%c)", (char)keysym->unicode );
 	}
 
-	Com_Printf( "\n" );
+	g_core->Print( "\n" );
 }
 
 #define MAX_CONSOLE_KEYS 16
@@ -345,7 +346,7 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 		keysym->unicode == 0 )
 	{
 		if( in_keyboardDebug->integer )
-			Com_Printf( "  Ignored dead key '%c'\n", *key );
+			g_core->Print( "  Ignored dead key '%c'\n", *key );
 
 		*key = (keyNum_t)0;
 	}
@@ -429,23 +430,23 @@ static void IN_ActivateMouse( void )
 			{
 				if(IOHIDGetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), &originalMouseSpeed) == kIOReturnSuccess)
 				{
-					Com_Printf("previous mouse acceleration: %f\n", originalMouseSpeed);
+					g_core->Print("previous mouse acceleration: %f\n", originalMouseSpeed);
 					if(IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), -1.0) != kIOReturnSuccess)
 					{
-						Com_Printf("Could not disable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
+						g_core->Print("Could not disable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
 						Cvar_Set ("in_disablemacosxmouseaccel", 0);
 					}
 				}
 				else
 				{
-					Com_Printf("Could not disable mouse acceleration (failed at IOHIDGetAccelerationWithKey).\n");
+					g_core->Print("Could not disable mouse acceleration (failed at IOHIDGetAccelerationWithKey).\n");
 					Cvar_Set ("in_disablemacosxmouseaccel", 0);
 				}
 				IOServiceClose(mouseDev);
 			}
 			else
 			{
-				Com_Printf("Could not disable mouse acceleration (failed at IO_GetIOHandle).\n");
+				g_core->Print("Could not disable mouse acceleration (failed at IO_GetIOHandle).\n");
 				Cvar_Set ("in_disablemacosxmouseaccel", 0);
 			}
 		}
@@ -509,13 +510,13 @@ static void IN_DeactivateMouse( void )
 			io_connect_t mouseDev = IN_GetIOHandle();
 			if(mouseDev != 0)
 			{
-				Com_Printf("restoring mouse acceleration to: %f\n", originalMouseSpeed);
+				g_core->Print("restoring mouse acceleration to: %f\n", originalMouseSpeed);
 				if(IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), originalMouseSpeed) != kIOReturnSuccess)
-					Com_Printf("Could not re-enable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
+					g_core->Print("Could not re-enable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
 				IOServiceClose(mouseDev);
 			}
 			else
-				Com_Printf("Could not re-enable mouse acceleration (failed at IO_GetIOHandle).\n");
+				g_core->Print("Could not re-enable mouse acceleration (failed at IO_GetIOHandle).\n");
 		}
 	}
 #endif
@@ -934,7 +935,7 @@ static void IN_ProcessEvents( void )
 				break;
 
 			case SDL_QUIT:
-				Cbuf_ExecuteText(EXEC_NOW, "quit Closed window\n");
+				g_core->Cbuf_ExecuteText(EXEC_NOW, "quit Closed window\n");
 				break;
 
 			case SDL_VIDEORESIZE:
@@ -1091,4 +1092,15 @@ void IN_Restart( void )
 {
 	IN_ShutdownJoystick( );
 	IN_Init( );
+}
+
+#include <api/inputSystemAPI.h>
+#include <api/iFaceMgrAPI.h>
+inputSystemAPI_i g_inputAPIIMPL;
+
+void IN_InitInputSystemAPI() {
+	g_inputAPIIMPL.IN_Init = IN_Init;
+	g_inputAPIIMPL.IN_Restart = IN_Restart;
+	g_inputAPIIMPL.IN_Shutdown = IN_Shutdown;
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_inputAPIIMPL,INPUT_SYSTEM_API_IDENTSTR);
 }

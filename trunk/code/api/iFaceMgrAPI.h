@@ -37,6 +37,8 @@ enum qioModule_e {
 	QMD_IMAGELIB,
 	QMD_CM,
 	QMD_MODELLOADER,
+	QMD_REF_BACKEND_GL,
+	QMD_REF_BACKEND_NULL,
 };
 
 // this must be implemented in every module

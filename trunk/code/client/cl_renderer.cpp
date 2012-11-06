@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../sys/sys_loadlib.h"
 
 static moduleAPI_i *cl_rendererDLL = 0;
+static moduleAPI_i *cl_rendererBackEndDLL = 0;
 rAPI_i *rf;
 
 /*
@@ -78,6 +79,15 @@ CL_InitRef
 */
 void CL_InitRef( void ) {
 	// new renderer initialization
+	Com_Printf( "----- Initializing Renderer BackEnd DLL ----\n" );
+	if ( cl_rendererBackEndDLL ) {
+		Com_Error (ERR_FATAL, "Renderer BackEnd DLL already loaded!" );
+	}
+	cl_rendererBackEndDLL = g_moduleMgr->load("backendNULL");
+	if ( !cl_rendererBackEndDLL ) {
+		Com_Error (ERR_FATAL, "Couldn't load renderer backend DLL" );
+	}
+	//g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 
 	Com_Printf( "----- Initializing Renderer DLL ----\n" );
 	if ( cl_rendererDLL ) {
@@ -104,6 +114,7 @@ void CL_ShutdownRef( void ) {
 		return;
 	}
 	rf->shutdown( qtrue );
+	g_moduleMgr->unload(&cl_rendererBackEndDLL);
 	g_moduleMgr->unload(&cl_rendererDLL);
 }
 

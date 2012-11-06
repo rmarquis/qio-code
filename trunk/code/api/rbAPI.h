@@ -31,7 +31,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "iFaceBase.h"
 
 #define RENDERER_BACKEND_API_IDENTSTR "RendererBackendAPI0001"
-#define RB_SDLOPENGL_API_IDENTSTR "RB_SDLOpenGL_API0001"
 
 class rbAPI_i : public iFaceBase_i {
 public:

@@ -2655,6 +2655,8 @@ static void Com_InitRand(void)
 }
 
 
+void IN_InitInputSystemAPI();
+
 static coreAPI_s g_staticCoreAPI;
 coreAPI_s *g_core = 0;
 void Com_InitCoreAPI() {
@@ -2669,10 +2671,13 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Args = Cmd_ArgsBuffer;
 	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
 	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
+	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
+
+	IN_InitInputSystemAPI();
 }
 
 // it could be in client module, but I think that server

@@ -47,6 +47,7 @@ struct coreAPI_s : public iFaceBase_i {
 	const char *(*Argv)( int n );
 	void (*Cmd_AddCommand)(const char *name, void (*func)());
 	void (*Cmd_RemoveCommand)(const char *name);
+	void (*Cbuf_ExecuteText)(int exec_when, const char *text);
 };
 
 extern coreAPI_s *g_core;
