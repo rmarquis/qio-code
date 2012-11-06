@@ -676,8 +676,6 @@ public:
 		glVertex3fv(verts[3]);
 		glVertex3fv(verts[7]);
 		glEnd();
-
-
 	}
 	virtual void init()  {
 		GLimp_Init();
