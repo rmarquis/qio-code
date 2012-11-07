@@ -189,6 +189,11 @@ public:
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 		pDev->SetFVF(R2DVERT_FVF);
+
+		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+		pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
 		if(curMat) {
 			const mtrStageAPI_i *s = curMat->getStage(0);
 			IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
@@ -199,6 +204,7 @@ public:
 			pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,numVerts,numIndices/3,indices,D3DFMT_INDEX16,
 				verts,sizeof(r2dVert_s));
 		}
+		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(curMat) {
@@ -210,9 +216,6 @@ public:
 			pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
 				indices.getArray(),
 				indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
-
-		//	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,numVerts,numIndices/3,indices,D3DFMT_INDEX16,
-		//		verts,sizeof(r2dVert_s));
 		}
 
 		
@@ -277,6 +280,9 @@ public:
 	}
 	// used while drawing entities
 	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
+		worldMatrix.fromAxisAndOrigin(axis,origin);
+
+		pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&worldMatrix);
 	}
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
