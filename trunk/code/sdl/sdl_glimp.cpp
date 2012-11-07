@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+// TODO: make routines from this file shared between DX9 and GL backends
+
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
 #else
@@ -180,31 +182,6 @@ void GLimp_Shutdown( void )
 
 /*
 ===============
-GLimp_Minimize
-
-Minimize the game so that user is back at the desktop
-===============
-*/
-#if 0
-// NOTE: this is not called anywhere right now
-void GLimp_Minimize(void)
-{
-	SDL_WM_IconifyWindow();
-}
-#endif
-
-
-/*
-===============
-GLimp_LogComment
-===============
-*/
-void GLimp_LogComment( char *comment )
-{
-}
-
-/*
-===============
 GLimp_CompareModes
 ===============
 */
@@ -354,12 +331,9 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	int samples;
 	int i = 0;
 	SDL_Surface *vidscreen = NULL;
-	Uint32 flags = SDL_OPENGL;
 
 	g_core->Print( "Initializing OpenGL display\n");
 
-	if ( r_allowResize->integer )
-		flags |= SDL_RESIZABLE;
 
 	if( videoInfo == NULL )
 	{
@@ -417,6 +391,10 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		return RSERR_INVALID_MODE;
 	}
 	g_core->Print( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
+
+	Uint32 flags = SDL_OPENGL;
+	if ( r_allowResize->integer )
+		flags |= SDL_RESIZABLE;
 
 	if (fullscreen)
 	{

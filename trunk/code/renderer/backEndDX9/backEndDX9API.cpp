@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
+#include <materialSystem/mat_public.h> // alphaFunc_e etc
 
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
@@ -100,18 +101,23 @@ class rbDX9_c : public rbAPI_i {
 	IDirect3DDevice9* pDev;
 	HWND hWnd;
 	int dxWidth, dxHeight;
-	class mtrAPI_i *curMat;
+	mtrAPI_i *lastMat;
+	textureAPI_i *lastLightmap;
 public:
 	rbDX9_c() {
 		hWnd = 0;
-		curMat = 0;
+		lastMat = 0;
+		lastLightmap = 0;
+	}
+	virtual backEndType_e getType() const {
+		return BET_DX9;
 	}
 	void initDX9State() {
 		pDev->SetRenderState(D3DRS_ZENABLE, true);
 		pDev->SetRenderState(D3DRS_AMBIENT,RGB(255,255,255));
 		pDev->SetRenderState(D3DRS_LIGHTING,false);
-		pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
-		pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_LESSEQUAL);
+		pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_NONE);
+		pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_LESSEQUAL); // less or EQUAL - for multistage materials
 
 		pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC); 
 		pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC); 
@@ -178,10 +184,11 @@ public:
 	}
 
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
-		curMat = mat;
+		lastMat = mat;
+		lastLightmap = lightmap;
 	}
 	virtual void unbindMaterial() {
-		curMat = 0;
+		lastMat = 0;
 	}
 	virtual void setColor4(const float *rgba) {
 	}
@@ -194,8 +201,8 @@ public:
 		pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 		pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		if(curMat) {
-			const mtrStageAPI_i *s = curMat->getStage(0);
+		if(lastMat) {
+			const mtrStageAPI_i *s = lastMat->getStage(0);
 			IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
 			pDev->SetTexture(0,texDX9);
 			pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,numVerts,numIndices/3,indices,D3DFMT_INDEX16,
@@ -206,16 +213,122 @@ public:
 		}
 		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	}
-	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
-		if(curMat) {
-			const mtrStageAPI_i *s = curMat->getStage(0);
-			IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
-			pDev->SetTexture(0,texDX9);
-			pDev->SetFVF(RVERT_FVF);
+	void setLightmap(IDirect3DTexture9 *lightmapDX9) {
+		pDev->SetTexture(1,lightmapDX9);
 
-			pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
-				indices.getArray(),
-				indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
+		pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		pDev->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+		pDev->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_TEXTURE );
+		pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
+		pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE );
+		pDev->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
+
+		pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE4X );
+		//pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_ADDSIGNED );
+		pDev->SetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+		pDev->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );
+		pDev->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+		pDev->SetTextureStageState( 1, D3DTSS_ALPHAARG1, D3DTA_CURRENT );
+		pDev->SetTextureStageState( 1, D3DTSS_TEXCOORDINDEX, 1);
+
+		pDev->SetTextureStageState( 2, D3DTSS_COLOROP,   D3DTOP_DISABLE );
+		pDev->SetTextureStageState( 2, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
+	}
+	void disableLightmap() {
+		pDev->SetTexture(1,0);
+	}
+	//
+	// alphaFunc changes
+	//
+	alphaFunc_e prevAlphaFunc;
+	void setAlphaFunc(alphaFunc_e newAlphaFunc) {
+		if(prevAlphaFunc == newAlphaFunc) {
+			return; // no change
+		}
+		if(newAlphaFunc == AF_NONE) {
+			pDev->SetRenderState( D3DRS_ALPHATESTENABLE, false );			
+		} else if(newAlphaFunc == AF_GT0) {
+			pDev->SetRenderState( D3DRS_ALPHAREF, 0x00000000 );
+			pDev->SetRenderState( D3DRS_ALPHATESTENABLE, true );
+			pDev->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATER );	
+		} else if(newAlphaFunc == AF_GE128) {
+			pDev->SetRenderState( D3DRS_ALPHAREF, 0x00000080 );
+			pDev->SetRenderState( D3DRS_ALPHATESTENABLE, true );
+			pDev->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATER );	
+		} else if(newAlphaFunc == AF_LT128) {
+			pDev->SetRenderState( D3DRS_ALPHAREF, 0x00000080 );
+			pDev->SetRenderState( D3DRS_ALPHATESTENABLE, true );
+			pDev->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_LESSEQUAL );			
+		}
+		prevAlphaFunc = newAlphaFunc;
+	}
+	void turnOffAlphaFunc() {
+		setAlphaFunc(AF_NONE);
+	}
+	int blendModeEnumToDX9Blend(int in) {
+		static int blendTable [] = {
+			0, // BM_NOT_SET
+			D3DBLEND_ZERO, // 0
+			D3DBLEND_ONE, // 1
+			D3DBLEND_INVSRCCOLOR, // 2
+			D3DBLEND_INVDESTCOLOR, // 3
+			D3DBLEND_INVSRCALPHA, // 4
+			D3DBLEND_INVDESTALPHA, // 5 
+			D3DBLEND_DESTCOLOR, // 6
+			D3DBLEND_DESTALPHA, // 7 
+			D3DBLEND_SRCCOLOR, //8 
+			D3DBLEND_SRCALPHA, // 9
+			D3DBLEND_ZERO//GL_SRC_ALPHA_SATURATE,
+		};
+		return blendTable[in];
+	}
+	short blendSrc;
+	short blendDst;
+	void setBlendFunc( short src, short dst ) {
+		if( blendSrc != src || blendDst != dst ) {
+			blendSrc = src;
+			blendDst = dst;
+			if(src == BM_NOT_SET && dst == BM_NOT_SET) {
+				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+				//pDev->SetRenderState(D3DRS_ZENABLE, true);
+			} else {
+				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+				//pDev->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
+				//pDev->SetRenderState(D3DRS_ZENABLE, false);
+				pDev->SetRenderState(D3DRS_SRCBLEND, blendModeEnumToDX9Blend(src));
+				pDev->SetRenderState(D3DRS_DESTBLEND, blendModeEnumToDX9Blend(dst));
+			}
+		}
+	}
+	void disableBlendFunc() {
+		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
+	}
+	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		if(lastMat) {
+			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
+				const mtrStageAPI_i *s = lastMat->getStage(i);
+				IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
+				
+				// set alphafunc (for grates, etc)
+				setAlphaFunc(s->getAlphaFunc());
+				// set blendfunc (for particles, etc)
+				const blendDef_s &bd = s->getBlendDef();
+				setBlendFunc(bd.src,bd.dst);
+				// bind colormap (from material stage)
+				pDev->SetTexture(0,texDX9);
+				// bind lightmap (only for BSP planar surfaces and bezier patches)
+				if(lastLightmap) {
+					setLightmap((IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+				} else {
+					disableLightmap();
+				}
+
+				pDev->SetFVF(RVERT_FVF);
+
+				pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
+					indices.getArray(),
+					indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
+			}
 		}
 
 		
@@ -336,6 +449,42 @@ public:
 		out->setInternalHandleV(tex);
 	}
 	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+		IDirect3DTexture9 *tex = 0;
+		// lightmaps dont have alpha channel
+		HRESULT hr = pDev->CreateTexture(w,h,0,D3DUSAGE_AUTOGENMIPMAP,D3DFMT_X8R8G8B8,D3DPOOL_MANAGED,&tex,0);
+		if (FAILED(hr)) {
+			out->setInternalHandleV(0);
+			printf("rbDX9_c::uploadLightmap: pDev->CreateTexture failed\n");
+			return;
+		}
+		D3DLOCKED_RECT rect;
+		hr = tex->LockRect(0, &rect, 0, 0);
+		if (FAILED(hr)) {
+			out->setInternalHandleV(0);
+			printf("rbDX9_c::uploadLightmap: tex->LockRect failed\n");
+			return;
+		}
+		byte *outPicData = (byte*)rect.pBits;
+		//memcpy(rect.pBits,pic,w*h*4);
+		for(u32 i = 0; i < w; i++) {
+			for(u32 j = 0; j < h; j++) {
+				const byte *inPixel = data + (i * h + j)*3;
+				byte *outPixel = outPicData + (i * h + j)*4;
+				outPixel[0] = inPixel[0];
+				outPixel[1] = inPixel[1];
+				outPixel[2] = inPixel[2];
+				outPixel[3] = 255;
+			}
+		}
+		hr = tex->UnlockRect(0);
+		if (FAILED(hr)) {
+			out->setInternalHandleV(0);
+			printf("rbDX9_c::uploadLightmap: tex->UnlockRect(0) failed\n");
+			return;
+		}
+		out->setWidth(w);
+		out->setHeight(h);
+		out->setInternalHandleV(tex);
 	}
 	virtual void freeTextureData(class textureAPI_i *tex) {
 		IDirect3DTexture9 *texD9 = (IDirect3DTexture9 *)tex->getInternalHandleV();

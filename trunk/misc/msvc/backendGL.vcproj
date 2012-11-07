@@ -180,15 +180,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\sdl\sdl_glConfig.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\sdl\sdl_glimp.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\sdl\sdl_icon.h"
 				>
 			</File>
 		</Filter>
@@ -197,6 +189,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\sdl\sdl_glConfig.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\sdl\sdl_icon.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="shared"

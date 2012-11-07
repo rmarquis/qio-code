@@ -107,6 +107,9 @@ public:
 		highestTCSlotUsed = 0;
 		boundVBO = 0;
 	}
+	virtual backEndType_e getType() const {
+		return BET_GL;
+	}
 	void checkErrors() {
 		int		err;
 		char	s[64];
