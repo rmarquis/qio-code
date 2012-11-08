@@ -68,9 +68,9 @@ public:
 	void setNumIndices(u32 newNumIndices) {
 		indices.resize(newNumIndices);
 	}
-	void setIndex(u32 idx, u32 indexValue) {
-		indices[idx] = indexValue;
-	}
+	//void setIndex(u32 idx, u32 indexValue) {
+	//	indices[idx] = indexValue;
+	//}
 	const byte *getVerticesBase() const {
 		return (const byte*)verts.getArray();
 	}
@@ -88,6 +88,18 @@ public:
 		this->addVert(v0.xyz);
 		this->addVert(v1.xyz);
 		this->addVert(v2.xyz);
+	}
+	virtual void resizeVerts(u32 newNumVerts) {
+		verts.resize(newNumVerts);
+	}
+	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) {
+		verts[vertexIndex] = v.xyz;
+	}
+	virtual void resizeIndices(u32 newNumIndices) {
+		indices.resize(newNumIndices);
+	}
+	virtual void setIndex(u32 indexNum, u32 value) {
+		indices[indexNum] = value;
 	}
 	// modelPostProcessFuncs_i api
 	virtual void scaleXYZ(float scale) {

@@ -29,11 +29,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
+#include <api/imgAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
-
+bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
 public:
 	virtual bool isStaticModelFile(const char *fname) {
@@ -50,6 +51,8 @@ public:
 			error = MOD_LoadOBJ(fname,out);
 		} else if(!stricmp(ext,"map")) {
 			error = MOD_LoadConvertMapFileToStaticTriMesh(fname,out);
+		} else if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp")) {
+			error = MOD_LoadModelFromHeightmap(fname,out);
 		} else {
 			error = true;
 		}
@@ -70,6 +73,7 @@ vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
 materialSystemAPI_i *g_ms = 0;
+imgAPI_i *g_img = 0;
 // exports
 static modelLoaderDLLIMPL_c g_staticModelLoaderDLLAPI;
 modelLoaderDLLAPI_i *g_modelLoader = &g_staticModelLoaderDLLAPI;
@@ -85,6 +89,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

@@ -32,6 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 //
 //	r_surface_c class
 //
+r_surface_c::r_surface_c() {
+	mat = g_ms->registerMaterial("defaultMaterial");
+	lightmap = 0;
+}
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	indices.addIndex(verts.size());
 	indices.addIndex(verts.size()+1);
@@ -49,6 +53,21 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	bounds.addPoint(v0.xyz);
 	bounds.addPoint(v1.xyz);
 	bounds.addPoint(v2.xyz);
+}
+void r_surface_c::resizeVerts(u32 newNumVerts) {
+	verts.resize(newNumVerts);
+}
+void r_surface_c::setVert(u32 vertexIndex, const struct simpleVert_s &v) {
+	rVert_c &rv = verts[vertexIndex];
+	rv.xyz = v.xyz;
+	rv.tc = v.tc;
+}
+void r_surface_c::resizeIndices(u32 newNumIndices) {
+	// TODO: see if we can use u16 buffer here
+	indices.initU32(newNumIndices);
+}
+void r_surface_c::setIndex(u32 indexNum, u32 value) {
+	indices.setIndex(indexNum,value);
 }
 void r_surface_c::setMaterial(mtrAPI_i *newMat) {
 	mat = newMat;
@@ -135,6 +154,26 @@ void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 	this->bounds.addPoint(v0.xyz);
 	this->bounds.addPoint(v1.xyz);
 	this->bounds.addPoint(v2.xyz);
+}
+void r_model_c::resizeVerts(u32 newNumVerts) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	surfs[0].resizeVerts(newNumVerts);
+}
+void r_model_c::setVert(u32 vertexIndex, const struct simpleVert_s &v) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	surfs[0].setVert(vertexIndex,v);
+}
+void r_model_c::resizeIndices(u32 newNumIndices) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	surfs[0].resizeIndices(newNumIndices);
+}
+void r_model_c::setIndex(u32 indexNum, u32 value) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	surfs[0].setIndex(indexNum,value);
 }
 void r_model_c::scaleXYZ(float scale) {
 	r_surface_c *sf = surfs.getArray();

@@ -1,0 +1,9 @@
+// entity 0
+{
+"classname" "worldspawn"
+}
+// entity 1
+{
+"classname" "func_heightmap"
+"heightmap" "maps/test_heightmap/hmap1.png"
+}

@@ -33,9 +33,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "bt_include.h"
 
+#ifdef DEBUG
 #pragma comment( lib, "BulletCollision_debug.lib" )
 #pragma comment( lib, "BulletDynamics_debug.lib" )
 #pragma comment( lib, "LinearMath_debug.lib" )
+#else
+#pragma comment( lib, "BulletCollision.lib" )
+#pragma comment( lib, "BulletDynamics.lib" )
+#pragma comment( lib, "LinearMath.lib" )
+#endif
 
 btBroadphaseInterface* broadphase = 0;
 btDefaultCollisionConfiguration* collisionConfiguration = 0;
@@ -167,9 +173,9 @@ void G_ShudownBullet() {
 void G_RunPhysics() {
 	BT_RunVehicles();
 	float frameTime = level.frameTime;
-	dynamicsWorld->stepSimulation(frameTime,10);
+	dynamicsWorld->stepSimulation(frameTime,2);
 	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
-	btContactSolverInfo &csi = dynamicsWorld->getSolverInfo();
+	//btContactSolverInfo &csi = dynamicsWorld->getSolverInfo();
 	//matrix_c tmp;
 	//tmp.identity();
 	//aabb bb;

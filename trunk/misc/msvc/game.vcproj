@@ -476,6 +476,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Terrain.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Terrain.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\VehicleCar.cpp"
 				>
 			</File>

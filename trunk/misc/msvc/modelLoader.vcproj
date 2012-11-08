@@ -200,6 +200,10 @@
 			Name="StaticModelLoaders"
 			>
 			<File
+				RelativePath="..\..\code\modelLoader\staticModelLoaders\heightmapLoader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\staticModelLoaders\mapFileConverter.cpp"
 				>
 			</File>

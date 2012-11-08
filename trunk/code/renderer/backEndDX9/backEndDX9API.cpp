@@ -304,6 +304,7 @@ public:
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		pDev->SetFVF(RVERT_FVF);
 		if(lastMat) {
 			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
@@ -322,8 +323,6 @@ public:
 				} else {
 					disableLightmap();
 				}
-
-				pDev->SetFVF(RVERT_FVF);
 
 				pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
 					indices.getArray(),

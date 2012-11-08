@@ -21,31 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// staticModelCreatorAPI.h
-#ifndef __STATICMODELCREATORAPI_H__
-#define __STATICMODELCREATORAPI_H__
+// Terrain.h - terrain mesh entity
 
-#include "modelPostProcessFuncs.h"
+#include "../g_local.h"
+#include "Terrain.h"
 
-#include <math/vec3.h>
-#include <math/vec2.h>
+DEFINE_CLASS(Terrain, "ModelEntity");
 
-struct simpleVert_s {
-	vec3_c xyz;
-	vec2_c tc;
-};
+DEFINE_CLASS_ALIAS(Terrain, func_heightmap);
 
-// this class is used by modelLoader.dll
-// to pass model file data to cm/renderer modules
-class staticModelCreatorAPI_i : public modelPostProcessFuncs_i {
-public:
-	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
-		const struct simpleVert_s &v1, const struct simpleVert_s &v2) = 0;
-
-	virtual void resizeVerts(u32 newNumVerts) = 0;
-	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) = 0;
-	virtual void resizeIndices(u32 newNumIndices) = 0;
-	virtual void setIndex(u32 indexNum, u32 value) = 0;
-};
-
-#endif // __STATICMODELCREATORAPI_H__
+void Terrain::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"heightmap")) {
+		this->setRenderModel(value);
+		this->setColModel(value);
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
+}

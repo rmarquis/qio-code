@@ -40,10 +40,8 @@ class r_surface_c {
 	rIndexBuffer_c indices;
 	aabb bounds;
 public:
-	r_surface_c() {
-		mat = 0;
-		lightmap = 0;
-	}
+	r_surface_c();
+
 	u32 getNumVerts() const {
 		return verts.size();
 	}
@@ -57,6 +55,11 @@ public:
 		indices.addIndex(idx);
 	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+
+	void resizeVerts(u32 newNumVerts);
+	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
+	void resizeIndices(u32 newNumIndices);
+	void setIndex(u32 indexNum, u32 value);
 
 	void clear() {
 		indices.destroy();
@@ -106,6 +109,11 @@ public:
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	// for default, first surface
+	virtual void resizeVerts(u32 newNumVerts);
+	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);
+	virtual void resizeIndices(u32 newNumIndices);
+	virtual void setIndex(u32 indexNum, u32 value);
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();

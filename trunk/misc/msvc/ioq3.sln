@@ -24,6 +24,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendNULL", "backendNULL.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendDX9", "backendDX9.vcproj", "{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "..\..\code\external\bullet-2.80-rev2531\msvc\vs2008\BulletCollision.vcproj", "{4F1BDDF1-05B3-5441-B16F-FACB6696E8F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "..\..\code\external\bullet-2.80-rev2531\msvc\vs2008\LinearMath.vcproj", "{35B8E590-78AB-7444-B8A8-171B3827EF1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -78,6 +82,14 @@ Global
 		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Debug|Win32.Build.0 = Debug|Win32
 		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Release|Win32.ActiveCfg = Release|Win32
 		{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}.Release|Win32.Build.0 = Release|Win32
+		{4F1BDDF1-05B3-5441-B16F-FACB6696E8F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4F1BDDF1-05B3-5441-B16F-FACB6696E8F8}.Debug|Win32.Build.0 = Debug|Win32
+		{4F1BDDF1-05B3-5441-B16F-FACB6696E8F8}.Release|Win32.ActiveCfg = Release|Win32
+		{4F1BDDF1-05B3-5441-B16F-FACB6696E8F8}.Release|Win32.Build.0 = Release|Win32
+		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Debug|Win32.Build.0 = Debug|Win32
+		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Release|Win32.ActiveCfg = Release|Win32
+		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
