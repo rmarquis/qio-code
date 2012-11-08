@@ -121,6 +121,7 @@ public:
 	virtual void multTexCoordsY(float f);
 	virtual void translateXYZ(const class vec3_c &ofs);
 	virtual void getCurrentBounds(class aabb &out);
+	virtual void setAllSurfsMaterial(const char *newMatName);
 
 	bool traceRay(class trace_c &tr);
 

@@ -137,6 +137,9 @@ public:
 	virtual void getCurrentBounds(class aabb &out) {
 		out = bb;
 	}
+	virtual void setAllSurfsMaterial(const char *newMatName) {
+
+	}
 
 	const aabb &getAABB() const {
 		return bb;

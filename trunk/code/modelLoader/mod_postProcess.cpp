@@ -55,6 +55,9 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			inout->getCurrentBounds(bb);
 			vec3_c center = bb.getCenter();
 			inout->translateXYZ(-center);
+		} else if(p.atWord("setallsurfsmaterial")) {
+			str matName = p.getToken();
+			inout->setAllSurfsMaterial(matName);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

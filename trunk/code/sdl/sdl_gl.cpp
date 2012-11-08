@@ -106,6 +106,8 @@ public:
 		curTexSlot = 0;
 		highestTCSlotUsed = 0;
 		boundVBO = 0;
+		boundGPUIBO = 0;
+		boundIBO = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;

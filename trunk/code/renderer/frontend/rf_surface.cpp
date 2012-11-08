@@ -211,6 +211,12 @@ void r_model_c::getCurrentBounds(class aabb &out) {
 		sf->addPointsToBounds(out);
 	}
 }
+void r_model_c::setAllSurfsMaterial(const char *newMatName) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->setMaterial(newMatName);
+	}
+}
 bool r_model_c::traceRay(class trace_c &tr) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
 		return false;
