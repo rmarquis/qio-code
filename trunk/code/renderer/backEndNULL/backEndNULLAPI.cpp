@@ -54,10 +54,16 @@ public:
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+	}	
+	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
+
 	}
 	virtual void beginFrame() {
 	}
 	virtual void endFrame() {
+	}
+	virtual void clearDepthBuffer() {
+
 	}
 	virtual void setup2DView() {
 	}

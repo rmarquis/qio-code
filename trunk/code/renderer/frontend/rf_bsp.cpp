@@ -58,6 +58,9 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
 		return; // we're not batching bezier patches
+	// ignore surfaces with 'sky' material; sky is drawn other way
+	if(bs->sf->mat->getSkyParms() != 0)
+		return;
 	numBatchSurfIndexes += bs->sf->absIndexes.getNumIndices();
 	bspTriSurf_s *sf = bs->sf;
 	// see if we can add this surface to existing batch
@@ -261,6 +264,9 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 				lightmap = lightmaps[sf->lightmapNum];
 			}
 		}
+		if(mat->getSkyParms()) {
+			RF_SetSkyMaterial(mat);
+		}
 		if(sf->surfaceType == Q3MST_PLANAR) {
 			out->type = BSPSF_PLANAR;
 parsePlanarSurf:;
@@ -339,6 +345,9 @@ bool rBspTree_c::loadSurfsCoD() {
 			} else {
 				lightmap = lightmaps[sf->lightmapNum];
 			}
+		}
+		if(mat->getSkyParms()) {
+			RF_SetSkyMaterial(mat);
 		}
 		out->type = BSPSF_PLANAR; // is this really always a planar surface??
 		bspTriSurf_s *ts = out->sf = new bspTriSurf_s;

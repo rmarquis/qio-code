@@ -47,8 +47,10 @@ public:
 	virtual void setBindVertexColors(bool bBindVertexColors) = 0;
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) = 0;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) = 0;
+	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) = 0;
 	virtual void beginFrame() = 0;
 	virtual void endFrame() = 0;
+	virtual void clearDepthBuffer() = 0;
 	virtual void setup2DView() = 0;
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd = 0) = 0;

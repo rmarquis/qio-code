@@ -36,4 +36,21 @@ struct blendDef_s {
 	}
 };
 
+class skyBoxAPI_i {
+public:
+	virtual class textureAPI_i *getUp() const = 0;
+	virtual class textureAPI_i *getDown() const = 0;
+	virtual class textureAPI_i *getRight() const = 0;
+	virtual class textureAPI_i *getLeft() const = 0;
+	virtual class textureAPI_i *getFront() const = 0;
+	virtual class textureAPI_i *getBack() const = 0;
+};
+
+class skyParmsAPI_i {
+public:
+	virtual float getCloudHeight() const = 0;
+	virtual const skyBoxAPI_i *getFarBox() const = 0;
+	virtual const skyBoxAPI_i *getNearBox() const = 0;
+};
+
 #endif // __MAT_PUBLIC_H__

@@ -113,6 +113,8 @@ public:
 		// generate drawcalls
 		RF_AddWorldDrawCalls();
 		RFE_AddEntityDrawCalls();
+		// first draw sky (without writing to the depth buffer)
+		RF_DrawSky();
 		// sort and issue drawcalls (transparency rendering)
 		RF_SortAndIssueDrawCalls();
 		// do a debug drawing on top of everything
@@ -173,6 +175,7 @@ public:
 		AUTOCVAR_RegisterAutoCvars();
 		loadMaterialSystem();
 		rb->init();
+		RF_InitSky();
 	}
 	virtual void endRegistration() {
 

@@ -51,6 +51,9 @@ public:
 	const vec3_c &getOrigin() const {
 		return origin;
 	}
+	const axis_c &getAxis() const {
+		return axis;
+	}
 };
 
 #endif // __CAMERADEF_H__

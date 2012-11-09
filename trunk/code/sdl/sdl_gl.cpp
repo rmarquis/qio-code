@@ -519,6 +519,15 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 		}
 	}
+	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
+		if(tex == 0)
+			return;
+		disableAllTextures();
+		bindVertexBuffer(&verts);
+		bindIBO(&indices);			
+		bindTex(0,tex->getInternalHandleU32());
+		drawCurIBO();
+	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -530,6 +539,9 @@ public:
 	virtual void endFrame() {
 		GLimp_EndFrame();
 	}	
+	virtual void clearDepthBuffer() {
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 	virtual void setup2DView() {
 		glViewport(0,0,getWinWidth(),getWinHeight());
 		glMatrixMode(GL_PROJECTION);

@@ -132,6 +132,15 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString) {
 	mat_textures.addObject(ret);
 	return ret;
 }
+//void MAT_FreeTexture(class textureAPI_i **p) {
+//	textureAPI_i *ptr = *p;
+//	if(ptr == 0)
+//		return;
+//	(*p) = 0;
+//	textureIMPL_c *impl = (textureIMPL_c*) ptr;
+//	mat_textures.removeEntry(impl);
+//	delete impl;
+//}
 void MAT_FreeAllTextures() {
 	for(u32 i = 0; i < mat_textures.size(); i++) {
 		textureIMPL_c *t = mat_textures[i];

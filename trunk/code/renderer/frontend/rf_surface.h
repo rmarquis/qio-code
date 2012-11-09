@@ -51,8 +51,24 @@ public:
 	void addVert(const rVert_c &v) {
 		verts.push_back(v);
 	}
+	void addVertXYZTC(const vec3_c &xyz, float tX, float tY) {
+		rVert_c nv;
+		nv.xyz = xyz;
+		nv.tc.set(tX,tY);
+		verts.push_back(nv);
+	}
+	void setVertXYZTC(u32 vertNum, const vec3_c &xyz, float tX, float tY) {
+		rVert_c &nv = verts[vertNum];
+		nv.xyz = xyz;
+		nv.tc.set(tX,tY);
+	}
 	void addIndex(u32 idx) {
 		indices.addIndex(idx);
+	}
+	void add3Indices(u32 i0, u32 i1, u32 i2) {
+		indices.addIndex(i0);
+		indices.addIndex(i1);
+		indices.addIndex(i2);
 	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 
@@ -84,6 +100,7 @@ public:
 		}
 	}
 	void drawSurface();
+	void drawSurfaceWithSingleTexture(class textureAPI_i *tex);
 	void addDrawCall();
 
 	bool traceRay(class trace_c &tr);

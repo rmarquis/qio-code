@@ -33,7 +33,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 //	r_surface_c class
 //
 r_surface_c::r_surface_c() {
-	mat = g_ms->registerMaterial("defaultMaterial");
+	if(g_ms) {
+		mat = g_ms->registerMaterial("defaultMaterial");
+	} else {
+		mat = 0;
+	}
 	lightmap = 0;
 }
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
@@ -82,6 +86,10 @@ void r_surface_c::drawSurface() {
 	rb->setMaterial(this->mat,this->lightmap);
 	rb->drawElements(this->verts,this->indices);
 	rb->setBindVertexColors(false);
+}
+void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
+	rb->setBindVertexColors(false);
+	rb->drawElementsWithSingleTexture(this->verts,this->indices,tex);
 }
 
 void r_surface_c::addDrawCall() {

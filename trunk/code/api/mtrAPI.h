@@ -33,6 +33,7 @@ public:
 	virtual const char *getName() const = 0;
 	virtual u32 getNumStages() const = 0;
 	virtual const class mtrStageAPI_i *getStage(u32 stageNum) const = 0;
+	virtual const class skyParmsAPI_i *getSkyParms() const = 0;
 	virtual enum drawCallSort_e getSort() const = 0;
 
 	virtual int getImageWidth() const = 0;

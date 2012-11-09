@@ -329,8 +329,9 @@ public:
 					indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
 			}
 		}
+	}	
+	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
 
-		
 	}
 	virtual void beginFrame() {
 		pDev->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0xfff000ff, 1, 0);
@@ -339,6 +340,9 @@ public:
 	virtual void endFrame() {
 		pDev->EndScene();
 		pDev->Present(0, 0, 0, 0);
+	}
+	virtual void clearDepthBuffer() {
+		pDev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0xfff000ff, 1, 0);
 	}
 	virtual void setup2DView() {
 		D3DVIEWPORT9 vp;

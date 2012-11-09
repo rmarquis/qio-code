@@ -33,8 +33,64 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/drawCallSort.h>
 #include "mat_public.h"
 
+class skyBox_c : public skyBoxAPI_i {
+	str baseName;
+	class textureAPI_i *up;
+	class textureAPI_i *down;
+	class textureAPI_i *right;
+	class textureAPI_i *left;
+	class textureAPI_i *front;
+	class textureAPI_i *back;
+	class textureAPI_i *loadSubTexture(const char *sufix);
+public:
+	void setBaseName(const char *newBaseName);
+	void uploadTextures();
+	//void freeTextures();
+	skyBox_c();
+	///~skyBox_c();
+	//void clear();
+	virtual textureAPI_i *getUp() const {
+		return up;
+	}
+	virtual textureAPI_i *getDown() const {
+		return down;
+	}
+	virtual textureAPI_i *getRight() const {
+		return right;
+	}
+	virtual textureAPI_i *getLeft() const {
+		return left;
+	}
+	virtual textureAPI_i *getFront() const {
+		return front;
+	}
+	virtual textureAPI_i *getBack() const {
+		return back;
+	}
+};
+class skyParms_c : public skyParmsAPI_i {
+	skyBox_c farBox;
+	float cloudHeight;
+	skyBox_c nearBox;
+public:
+	skyParms_c(const char *farBoxName, float newCloudHeight, const char *nearBoxName);
+	void uploadTextures() {
+		farBox.uploadTextures();
+		nearBox.uploadTextures();
+	}
+	virtual float getCloudHeight() const {
+		return cloudHeight;
+	}
+	virtual const skyBoxAPI_i *getFarBox() const {
+		return &farBox;
+	}
+	virtual const skyBoxAPI_i *getNearBox() const {
+		return &nearBox;
+	}
+};
+
 class mtrStage_c : public mtrStageAPI_i {
-	class textureAPI_i *texture; 
+	class textureAPI_i *texture;
 	alphaFunc_e alphaFunc;
 	blendDef_s blend;
 public:
@@ -73,6 +129,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	str name;
 	mtrIMPL_c *hashNext;
 	arraySTD_c<mtrStage_c*> stages;
+	skyParms_c *skyParms;
 public:
 	mtrIMPL_c();
 	~mtrIMPL_c();
@@ -103,6 +160,9 @@ public:
 		}
 		return false;
 	}
+	virtual const class skyParmsAPI_i *getSkyParms() const {
+		return skyParms;
+	}
 	virtual enum drawCallSort_e getSort() const { 
 		if(hasStageWithBlendFunc()) {
 			return DCS_BLEND;
@@ -122,6 +182,7 @@ public:
 
 	void createFromImage();
 	u16 readBlendEnum(class parser_c &p);
+	void setSkyParms(const char *farBox, const char *cloudHeight, const char *nearBox);
 	bool loadFromText(const struct matTextDef_s &txt);
 };
 

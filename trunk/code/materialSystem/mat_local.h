@@ -52,6 +52,7 @@ bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString);
+void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();
 
