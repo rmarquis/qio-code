@@ -71,17 +71,17 @@ void Player::enableCharacterController() {
 	float h = c->getHeight();
 	float r = c->getRadius();
 	BT_FreeCharacter(this->characterController);
-	this->characterController = BT_CreateCharacter(8.f, this->ps.origin, h, r);
+	this->characterController = BT_CreateCharacter(20.f, this->ps.origin, h, r);
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	cmCapsule_i *m;
-	m = cm->registerCapsule(48,16);
+	m = cm->registerCapsule(48,19);
 	this->setColModel(m);
 	float h = m->getHeight();
 	float r = m->getRadius();
 	BT_FreeCharacter(this->characterController);
-	this->characterController = BT_CreateCharacter(8.f, this->ps.origin, h, r);
+	this->characterController = BT_CreateCharacter(20.f, this->ps.origin, h, r);
 }
 
 void Player::runPlayer(usercmd_s *ucmd) {
