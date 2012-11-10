@@ -63,6 +63,7 @@ struct r_brushSide_s {
 	plane_c plane;
 	str matName;
 	float oldVecs[2][4];
+	vec3_c texMat[2];
 
 	void setQ3TexVecs(const vec2_c &shift, const float rotate, const vec2_c &scale) {
 		int		sv, tv;
@@ -132,11 +133,120 @@ struct r_brushSide_s {
 		out.x /= mat->getImageWidth();
 		out.y /= mat->getImageHeight();
 	}
+	void calcTexCoordsForPointNEW(const vec3_c &xyz, const mtrAPI_i *mat, vec2_c &out, const plane_c &pl) const {
+		vec3_c texX, texY;
+
+		vec4_t newVecs[2];
+		MOD_TextureAxisFromNormal( -pl.norm, texX, texY );
+		for ( u32 i = 0; i < 2; i++ ) {
+			newVecs[i][0] = texX[0] * texMat[i][0] + texY[0] * texMat[i][1];
+			newVecs[i][1] = texX[1] * texMat[i][0] + texY[1] * texMat[i][1];
+			newVecs[i][2] = texX[2] * texMat[i][0] + texY[2] * texMat[i][1];
+			newVecs[i][3] = texMat[i][2];// + ( origin.dotProduct(v[i]));
+		}
+
+		out.x = xyz.dotProduct(newVecs[0]) + newVecs[0][3];
+		out.y = xyz.dotProduct(newVecs[1]) + newVecs[1][3];
+	}
 };
 
 static bool MOD_ConvertBrushD3(class parser_c &p, staticModelCreatorAPI_i *out) {
+	arraySTD_c<r_brushSide_s> sides;
 
-	return false;
+	// new brush format (with explicit plane equations)
+	// Number of sides isnt explicitly specified,
+	// so parse until the closing brace is hit
+	if(p.atWord("{") == false) {
+		g_core->RedWarning("brush_c::parseBrushD3: expected { to follow brushDef3, found %s at line %i of file %s\n",
+			p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+	}
+	while(p.atWord_dontNeedWS("}") == false) {
+		//  ( -0 -0 -1 1548 ) ( ( 0.0078125 0 -4.0625004768 ) ( -0 0.0078125 0.03125 ) ) "textures/common/clip" 0 0 0
+
+		if(p.atWord("(") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ( to follow brushSide plane equation, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		r_brushSide_s &newSide = sides.pushBack();
+
+		p.getFloatMat(newSide.plane.norm,3);
+		newSide.plane.dist = p.getFloat();
+
+		if(p.atWord(")") == false) {
+			g_core->RedWarning("brush_c::parseBrushD3: expected ) after brushSide plane equation, found %s at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+
+		if(p.getFloatMat2D_braced(2,3,&newSide.texMat[0].x)) {
+			g_core->RedWarning("brush_c::parseBrushD3: failed to read brush texMat at line %i of file %s\n",
+				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+			return true;
+		}
+	
+		// get material name
+		newSide.matName = p.getToken();
+		// after material name we usually have 3 zeroes
+	
+		if(p.isAtEOL() == false) {
+			p.skipLine();
+		}
+	}
+	if(p.atWord("}") == false) {
+		g_core->RedWarning("brush_c::parseBrushD3: expected } after brushDef3, found %s at line %i of file %s\n",
+			p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+		return true;
+	}
+	arraySTD_c<simpleVert_s> outVerts;
+	//
+	// 2. convert brush to triangle soup
+	//
+	u32 c_badSides = 0;
+	for(u32 i = 0; i < sides.size(); i++) {
+		const r_brushSide_s &bs = sides[i];
+		cmWinding_c winding;
+		// create an "infinite" rectangle lying on the current side plane
+		winding.createBaseWindingFromPlane(bs.plane);
+		for(u32 j = 0; j < sides.size(); j++) {
+			if(i == j)
+				continue; // dont clip by self
+			// clip it by other side planes
+			winding.clipWindingByPlane(sides[j].plane.getOpposite());
+		}
+		if(winding.size() == 0) {
+			c_badSides++;
+			continue;
+		}
+		// ensure that we have enough of space in output vertices array
+		if(outVerts.size() < winding.size()) {
+			outVerts.resize(winding.size());
+		}
+		// unfortunatelly I need to access brushSide's material here,
+		// because its image dimensions (width and height)
+		// are needed to calculate valid texcoords 
+		// from q3 texVecs
+		mtrAPI_i *material = g_ms->registerMaterial(bs.matName);
+		// now we have XYZ positions of brush vertices
+		// next step is to calculate the texture coordinates for each vertex
+		simpleVert_s *o = outVerts.getArray();
+		for(u32 j = 0; j < winding.size(); j++, o++) {
+			const vec3_c &p = winding[j];
+			o->xyz = p;
+			// calculate o->tc
+			bs.calcTexCoordsForPointNEW(o->xyz,material,o->tc,sides[i].plane);
+		}
+		// now we have a valid polygon with texcoords
+		// let's triangulate it
+		u32 prev = 1;
+		for(u32 j = 2; j < winding.size(); j++) {
+			out->addTriangle(bs.matName,outVerts[0],outVerts[prev],outVerts[j]);
+			prev = j;
+		}
+	}
+	return false; // no error
 }
 
 static bool MOD_ConvertBrushQ3(class parser_c &p, staticModelCreatorAPI_i *out) {
@@ -266,8 +376,27 @@ bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreator
 				if(p.atWord("{")) {
 					// enter new primitive
 					if(p.atWord("brushDef3")) {
+#if 0
+						if(p.skipCurlyBracedBlock()) {
+							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing brushDef3 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
+#else 
 						if(MOD_ConvertBrushD3(p,out)) {		
 							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing brushDef3 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
+#endif
+					} else if(p.atWord("patchDef2") || p.atWord("patchDef3")) {
+						if(p.skipCurlyBracedBlock()) {
+							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
+						if(p.atWord("}") == false) {
+							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
 							parseError = true;
 							break;
 						}

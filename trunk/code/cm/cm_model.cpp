@@ -111,15 +111,28 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 				}
 				if(p.atWord("{")) {
 					// enter new primitive
-					cmBrush_c *nb = new cmBrush_c;
+					cmBrush_c *nb = 0;
 					if(p.atWord("brushDef3")) {
+						nb = new cmBrush_c;
 						if(nb->parseBrushD3(p)) {		
 							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing brushDef3 at line %i of %s\n",p.getCurrentLineNumber(),fname);
 							parseError = true;
 							delete nb;
 							break;
 						}
+					} else if(p.atWord("patchDef2") || p.atWord("patchDef3")) {
+						if(p.skipCurlyBracedBlock()) {							
+							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
+						if(p.atWord("}") == false) {
+							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
 					} else {
+						nb = new cmBrush_c;
 						if(nb->parseBrushQ3(p)) {		
 							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing old brush format at line %i of %s\n",p.getCurrentLineNumber(),fname);
 							parseError = true;
@@ -127,10 +140,12 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 							break;
 						}
 					}
-					ne->brushes.push_back(nb);
-					nb->calcBounds();
-					if(firstBrush == 0) {
-						firstBrush = nb;
+					if(nb) {
+						ne->brushes.push_back(nb);
+						nb->calcBounds();
+						if(firstBrush == 0) {
+							firstBrush = nb;
+						}
 					}
 				} else {
 					// parse key pair
@@ -168,7 +183,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 			cmHelper_c *helper = e->allocHelper();
 			hull->addHelper(helper);
 		}
-	} else if(numEntitiesWithBrushes == 1) {
+	} else if(numEntitiesWithBrushes == 1 || 1) {
 		cmCompound_c *compound = new cmCompound_c(fname);
 		cm_models.addObject(compound);
 

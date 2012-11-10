@@ -75,6 +75,18 @@ public:
 			return true; // error
 		return false; // OK
 	}
+	bool getFloatMat2D_braced(int y, int x, float *m) {
+		if(atWord("(") == false)
+			return true; // error
+		for(u32 i = 0; i < y; i++ ) {
+			if (getFloatMat_braced(m + i * x, x)) {
+				return true;
+			}
+		}
+		if(atWord(")") == false)
+			return true; // error
+		return false; // OK
+	}
 	bool atChar(char ch);
 	bool atWord(const char *word);
 	bool atWord_dontNeedWS(const char *word);
@@ -108,6 +120,28 @@ public:
 			tmp++;
 		}
 		return false;
+	}
+	bool skipCurlyBracedBlock() {
+		skipToNextToken();
+		if(*p == 0)
+			return true;
+		if(*p != '{')
+			return true;
+		int level = 1;
+		p++;
+		while(*p) {
+			if(*p == '{') {
+				level++;
+			} else if(*p == '}') {
+				level--;
+				if(level == 0) {
+					p++;
+					return false; // OK
+				}
+			}
+			p++;
+		}
+		return true; // unexpected end of file hit
 	}
 
 

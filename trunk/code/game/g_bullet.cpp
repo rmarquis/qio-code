@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 #include "classes/ModelEntity.h"
 #include <shared/cmSurface.h>
+#include <shared/autoCvar.h>
 #include <api/coreAPI.h>
 #include <api/cmAPI.h>
 
@@ -170,7 +171,12 @@ void G_ShudownBullet() {
     delete broadphase;
 	broadphase = 0;
 }
+aCvar_c bt_runPhysics("bt_runPhysics","1");
+
 void G_RunPhysics() {
+	if(bt_runPhysics.getInt() == 0)
+		return;
+
 	BT_RunVehicles();
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,2);
@@ -404,6 +410,9 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	} else {
 		return 0;
 	}
+
+	if(shape == 0)
+		return 0;
 	
 	
 

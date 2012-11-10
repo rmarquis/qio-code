@@ -58,6 +58,7 @@ bool RF_LoadWorldMap(const char *name) {
 			delete m;
 			return true; // error
 		}
+		m->createVBOsAndIBOs();
 		r_worldModel = m;
 		return false; // ok
 	}

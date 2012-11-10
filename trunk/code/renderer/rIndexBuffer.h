@@ -225,7 +225,7 @@ public:
 				type = IBO_U32;
 			}
 		} else if(type == IBO_U16) {
-			if(type >= U16_MAX) {
+			if(idx >= U16_MAX) {
 				this->convertToU32Buffer();
 			}
 		}

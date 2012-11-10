@@ -140,6 +140,8 @@ public:
 	virtual void getCurrentBounds(class aabb &out);
 	virtual void setAllSurfsMaterial(const char *newMatName);
 
+	void createVBOsAndIBOs();
+
 	bool traceRay(class trace_c &tr);
 
 	r_surface_c *registerSurf(const char *matName);

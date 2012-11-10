@@ -31,7 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cmWinding_c {
 	arraySTD_c<vec3_c> points;
 public:
-	bool createBaseWindingFromPlane(const class plane_c &pl, float maxCoord = 8192.f);
+	bool createBaseWindingFromPlane(const class plane_c &pl, float maxCoord = 131072.f);
 	void addWindingPointsUnique(const vec3_c *addPoints, u32 numPointsToAdd);
 	void addWindingPointsUnique(const arraySTD_c<vec3_c> &otherPoints) {
 		addWindingPointsUnique(otherPoints.getArray(),otherPoints.size());
@@ -39,7 +39,7 @@ public:
 	void addWindingPointsUnique(const cmWinding_c &other) {
 		addWindingPointsUnique(other.points.getArray(),other.points.size());
 	}
-	enum planeSide_e clipWindingByPlane(const class plane_c &pl, float epsilon = 0.001f);
+	enum planeSide_e clipWindingByPlane(const class plane_c &pl, float epsilon = 0.1f);
 	void getBounds(class aabb &out) const;
 	void addPointsToBounds(class aabb &out) const;
 	void removeDuplicatedPoints(float epsilon = 0.001f);
