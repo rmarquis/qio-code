@@ -2750,8 +2750,13 @@ void FS_AddGameDirectory( const char *path, const char *dir ) {
 	Q_strncpyz(curpath, FS_BuildOSPath(path, dir, ""), sizeof(curpath));
 	curpath[strlen(curpath) - 1] = '\0';	// strip the trailing slash
 
+#if 0
 	pakfiles = Sys_ListFiles(curpath, ".pk3", NULL, &numfiles, qfalse);
-
+#else
+	// hack to load .pk4 files as well
+	// TODO: it could be done better way
+	pakfiles = Sys_ListFiles(curpath, ".pk*", NULL, &numfiles, qfalse);
+#endif
 	qsort( pakfiles, numfiles, sizeof(char*), paksort );
 
 	for ( i = 0 ; i < numfiles ; i++ ) {

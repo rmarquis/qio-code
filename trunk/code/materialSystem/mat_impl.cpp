@@ -210,6 +210,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
 					}
+				} else if(p.atWord("diffusemap")) {
+					// "diffusemap" keyword is a shortcut for a material stage with single image
+					// it was introduced in Doom3
+					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
+					newDiffuseMapStage->setTexture(p.getToken());
+					stages.push_back(newDiffuseMapStage);
 				} else {
 					p.getToken();
 				}
