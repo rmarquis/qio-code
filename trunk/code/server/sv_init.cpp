@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/serverAPI.h>
 #include <api/gameAPI.h>
+#include <api/loadingScreenMgrAPI.h>
 
 static svAPI_s g_staticSVApi;
 svAPI_s *g_server = 0;
@@ -447,6 +448,10 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	// if not running a dedicated server CL_MapLoading will connect the client to the server
 	// also print some status stuff
 	CL_MapLoading();
+	// update new loading screen
+	if(g_loadingScreen) {
+		g_loadingScreen->addLoadingString("SV_SpawnServer: %s\n",server);
+	}
 
 	// make sure all the client stuff is unloaded
 	CL_ShutdownAll(qfalse);
@@ -648,6 +653,12 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	SV_Heartbeat_f();
 
 	Hunk_SetMark();
+
+	// update new loading screen
+	if(g_loadingScreen) {
+		g_loadingScreen->addLoadingString("SV_SpawnServer: finished initializing %s\n",server);
+		g_loadingScreen->addLoadingString("-------------- Server Ready --------------\n",server);
+	}
 
 	Com_Printf ("-----------------------------------\n");
 }

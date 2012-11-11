@@ -31,7 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/coreAPI.h>
 #include <api/cmAPI.h>
-
+#include <api/loadingScreenMgrAPI.h>
 #include "bt_include.h"
 
 #ifdef DEBUG
@@ -551,6 +551,9 @@ void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
 	}
 }
 void G_LoadMap(const char *mapName) {
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("G_LoadMap: \"%s\"...",mapName);
+	}
 	if(!stricmp(mapName,"_empty")) {
 		const float worldSize = 4096.f;
 		aabb bb;
@@ -561,41 +564,43 @@ void G_LoadMap(const char *mapName) {
 			vertices.push_back(btVector3(p.x,p.y,p.z));
 		}
 		BT_CreateWorldBrush(vertices);
-
-		return;
-	}
-	bspPhysicsDataLoader_c l;
-	if(l.loadBSPFile(mapName)) {
-		str fixed = "maps/";
-		fixed.append(mapName);
-		fixed.setExtension("map");
-		cMod_i *worldCMod = cm->registerModel(fixed);
-		if(worldCMod) {
-			if(worldCMod->isCompound()) {
-				BT_SpawnStaticCompoundModel(worldCMod->getCompound());
-			} else {
-				BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,worldCMod,0);
-			}
-		}
-		return;
-	}
-	g_bspPhysicsLoader = &l;
-	// load world model
-	if(l.isCoD1BSP()) {
-		l.iterateModelTriSurfs(0,BT_ConvertWorldTriSurf);
 	} else {
-		l.iterateModelBrushes(0,BT_ConvertWorldBrush);
-		l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
-	}
-	// load inline models - TODO
-	for(u32 i = 0; i < l.getNumInlineModels(); i++) {
-		aabb bb;
-		l.getInlineModelBounds(i,bb);
-		g_inlineModelBounds.push_back(bb);
-	}
+		bspPhysicsDataLoader_c l;
+		if(l.loadBSPFile(mapName)) {
+			str fixed = "maps/";
+			fixed.append(mapName);
+			fixed.setExtension("map");
+			cMod_i *worldCMod = cm->registerModel(fixed);
+			if(worldCMod) {
+				if(worldCMod->isCompound()) {
+					BT_SpawnStaticCompoundModel(worldCMod->getCompound());
+				} else {
+					BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,worldCMod,0);
+				}
+			}
+		} else {
+			g_bspPhysicsLoader = &l;
+			// load world model
+			if(l.isCoD1BSP()) {
+				l.iterateModelTriSurfs(0,BT_ConvertWorldTriSurf);
+			} else {
+				l.iterateModelBrushes(0,BT_ConvertWorldBrush);
+				l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+			}
+			// load inline models - TODO
+			for(u32 i = 0; i < l.getNumInlineModels(); i++) {
+				aabb bb;
+				l.getInlineModelBounds(i,bb);
+				g_inlineModelBounds.push_back(bb);
+			}
 
-	l.clear();
-	g_bspPhysicsLoader = 0;
+			l.clear();
+			g_bspPhysicsLoader = 0;
+		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" done.\n");
+	}
 }
 btConvexHullShape *BT_CModelHullToConvex(cmHull_i *h) {
 	planeEquations.clear();

@@ -592,6 +592,10 @@ int main( int argc, char **argv )
 #		error A more recent version of SDL is required
 #	endif
 
+	AllocConsole();
+	freopen( "CON", "w", stdout );
+	freopen( "CON", "w", stderr );
+
 	// Run time
 	const SDL_version *ver = SDL_Linked_Version( );
 

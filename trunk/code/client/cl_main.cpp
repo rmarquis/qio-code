@@ -3178,6 +3178,7 @@ void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
 
 	CL_InitClientAPI();
+	CL_InitLoadingScreenMGR();
 
 	Con_Init ();
 

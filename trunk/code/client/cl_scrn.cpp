@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 #include <api/rAPI.h>
+#include <api/loadingScreenMgrAPI.h>
 
 qboolean	scr_initialized;		// ready to draw
 
@@ -476,6 +477,12 @@ void SCR_DrawScreenField() {
 
 	rf->beginFrame();
 
+	// let the loadingScreenMGR override old drawing routines
+	if(g_loadingScreen && g_loadingScreen->isEmpty() == false) {
+		g_loadingScreen->addDrawCalls();
+		return; 
+	}
+
 	uiFullscreen = 0;// (uivm && VM_Call( uivm, UI_IS_FULLSCREEN ));
 
 	// wide aspect ratio screens need to have the sides cleared
@@ -570,7 +577,8 @@ void SCR_UpdateScreen( void ) {
 	// If there is no VM, there are also no rendering commands issued. Stop the renderer in
 	// that case.
 	if( 1 || com_dedicated->integer )
-	{
+	{	
+
 		//// XXX
 		//int in_anaglyphMode = Cvar_VariableIntegerValue("r_anaglyphMode");
 		//// if running in stereo, we need to draw the frame twice
@@ -580,6 +588,7 @@ void SCR_UpdateScreen( void ) {
 		//} else {
 			SCR_DrawScreenField();
 		//}
+		
 
 		//if ( com_speeds->integer ) {
 		//	re.EndFrame( &time_frontend, &time_backend );

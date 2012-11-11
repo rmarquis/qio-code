@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/moduleManagerAPI.h>
 #include <api/cgameAPI.h>
 #include <api/rAPI.h>
+#include <api/loadingScreenMgrAPI.h>
 
 static moduleAPI_i *cl_cgameDLL = 0;
 cgameAPI_s *g_cgame = 0;
@@ -440,6 +441,10 @@ void CL_InitCGame( void ) {
 	// make sure everything is paged in
 	if (!Sys_LowPhysicalMemory()) {
 		Com_TouchMemory();
+	}
+
+	if(g_loadingScreen) {
+		g_loadingScreen->clear();
 	}
 
 	// clear anything that got printed

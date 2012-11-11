@@ -636,3 +636,9 @@ qboolean CL_VideoRecording( void );
 //
 void CL_WriteDemoMessage ( msg_t *msg, int headerBytes );
 
+//
+// cl_loadingScreenMgr.cpp
+//
+void CL_InitLoadingScreenMGR();
+
+

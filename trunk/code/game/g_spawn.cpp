@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_classes.h"
 #include <shared/entDefsList.h>
 #include <api/coreAPI.h>
+#include <api/loadingScreenMgrAPI.h>
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
 
@@ -40,7 +41,13 @@ void G_LoadMapEntities(const char *mapName) {
 	return;
 }
 void G_SpawnMapEntities(const char *mapName) {
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("G_SpawnMapEntities: \"%s\" ",mapName);
+	}
 	G_LoadMapEntities(mapName);
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("- %i entdefs.\nSpawning...",g_entDefs.size());
+	}
 	for(u32 i = 0; i < g_entDefs.size(); i++) {
 		entDef_c *e = g_entDefs[i];
 		const char *className = e->getClassName();
@@ -70,6 +77,10 @@ void G_SpawnMapEntities(const char *mapName) {
 			m->initStaticBodyPhysics();
 		}
 #endif
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" done.\n");
+		g_loadingScreen->addLoadingString("Current game entities count: %i.\n",level.num_entities);
 	}
 }
 

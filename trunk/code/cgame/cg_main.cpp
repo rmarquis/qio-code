@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cvarAPI.h>
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
+#include <api/loadingScreenMgrAPI.h>
 #include <shared/autoCvar.h>
 
 cg_t				cg;
@@ -193,6 +194,10 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( &cg, 0, sizeof( cg ) );
 	memset( cg_entities, 0, sizeof(cg_entities) );
+
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("CG_Init: clientNum %i\n",clientNum);
+	}
 	
 	cg.clientNum = clientNum;
 
@@ -231,20 +236,41 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	rf->clearEntities();
 	//trap_R_ClearScene();
 
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("CG_Init: loading world map \"%s\"...",cgs.mapname);
+	}
 	// load world map first so inline models are present when requested
 	rf->loadWorldMap( cgs.mapname );
 
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("done.\n");
+	}
+
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString("CG_Init: registering render models...");
+	}
+	u32 c_renderModelsLoaded = 0;
 	for(u32 i = 0; i < MAX_MODELS; i++) {
 		const char *str = CG_ConfigString(CS_MODELS+i);
 		if(str && str[0]) {
 			cgs.gameModels[i] = rf->registerModel(str);
+			c_renderModelsLoaded++;
 		}
 	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i rModels\n",c_renderModelsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering collision models...");
+	}
+	u32 c_collisionModelsLoaded = 0;
 	for(u32 i = 0; i < MAX_MODELS; i++) {
 		const char *str = CG_ConfigString(CS_COLLMODELS+i);
 		if(str && str[0]) {
 			cgs.gameCollModels[i] = cm->registerModel(str);
+			c_collisionModelsLoaded++;
 		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i cmModels\n",c_collisionModelsLoaded);
 	}
 	for(u32 i = 0; i < MAX_SOUNDS; i++) {
 		const char *str = CG_ConfigString(CS_SOUNDS+i);
