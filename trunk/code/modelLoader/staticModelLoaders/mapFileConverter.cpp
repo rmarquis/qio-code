@@ -137,7 +137,7 @@ struct r_brushSide_s {
 		vec3_c texX, texY;
 
 		vec4_t newVecs[2];
-		MOD_TextureAxisFromNormal( -pl.norm, texX, texY );
+		MOD_TextureAxisFromNormal( pl.norm, texX, texY );
 		for ( u32 i = 0; i < 2; i++ ) {
 			newVecs[i][0] = texX[0] * texMat[i][0] + texY[0] * texMat[i][1];
 			newVecs[i][1] = texX[1] * texMat[i][0] + texY[1] * texMat[i][1];
@@ -149,6 +149,28 @@ struct r_brushSide_s {
 		out.y = xyz.dotProduct(newVecs[1]) + newVecs[1][3];
 	}
 };
+
+#include <qcommon/q_shared.h>
+inline const char *G_strFind(const char *buf, const char *s) {
+	u32 sLen = strlen(s);
+	const char *p = buf;
+	while(*p) {
+		if(!Q_stricmpn(p,s,sLen))
+			return p;
+		p++;
+	}
+	return 0;
+}
+static bool MOD_NeedsMaterial(const char *matName, staticModelCreatorAPI_i *c) {
+	if(G_strFind(matName,"nodraw"))
+		return false;
+	// Id Tech 4 editor/visportal material
+	if(G_strFind(matName,"visportal"))
+		return false;
+	if(G_strFind(matName,"caulk"))
+		return false;
+	return true;
+}
 
 static bool MOD_ConvertBrushD3(class parser_c &p, staticModelCreatorAPI_i *out) {
 	arraySTD_c<r_brushSide_s> sides;
@@ -207,6 +229,8 @@ static bool MOD_ConvertBrushD3(class parser_c &p, staticModelCreatorAPI_i *out) 
 	u32 c_badSides = 0;
 	for(u32 i = 0; i < sides.size(); i++) {
 		const r_brushSide_s &bs = sides[i];
+		if(MOD_NeedsMaterial(bs.matName,out) == false)
+			continue; // we dont need this side for rendering
 		cmWinding_c winding;
 		// create an "infinite" rectangle lying on the current side plane
 		winding.createBaseWindingFromPlane(bs.plane);
@@ -312,6 +336,8 @@ static bool MOD_ConvertBrushQ3(class parser_c &p, staticModelCreatorAPI_i *out) 
 	u32 c_badSides = 0;
 	for(u32 i = 0; i < sides.size(); i++) {
 		const r_brushSide_s &bs = sides[i];
+		if(MOD_NeedsMaterial(bs.matName,out) == false)
+			continue; // we dont need this side for rendering
 		cmWinding_c winding;
 		// create an "infinite" rectangle lying on the current side plane
 		winding.createBaseWindingFromPlane(bs.plane);

@@ -418,6 +418,17 @@ int MSG_ReadShort( msg_t *msg ) {
 	return c;
 }
 
+int MSG_ReadUShort( msg_t *msg ) {
+	int	c;
+	
+	c = (unsigned short)MSG_ReadBits( msg, 16 );
+	if ( msg->readcount > msg->cursize ) {
+		c = -1;
+	}	
+
+	return c;
+}
+
 int MSG_ReadLong( msg_t *msg ) {
 	int	c;
 	
@@ -849,8 +860,8 @@ netField_t	entityStateFields[] =
 { NETF(groundEntityNum), GENTITYNUM_BITS },
 //{ NETF(clientNum), 8 },
 //{ NETF(solid), 24 },
-{ NETF(colModelIndex), 8 },
-{ NETF(rModelIndex), 8 },
+{ NETF(colModelIndex), MODELNUM_BITS },
+{ NETF(rModelIndex), MODELNUM_BITS },
 };
 
 
@@ -1133,8 +1144,8 @@ netField_t	playerStateFields[] =
 { PSF(delta_angles[1]), 16 },
 { PSF(delta_angles[2]), 16 },
 { PSF(clientNum), 8 },
-{ PSF(colModelIndex), 8 },
-{ PSF(rModelIndex), 8 },
+{ PSF(colModelIndex), MODELNUM_BITS },
+{ PSF(rModelIndex), MODELNUM_BITS },
 };
 
 /*

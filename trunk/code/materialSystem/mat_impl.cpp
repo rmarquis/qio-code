@@ -216,10 +216,41 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
 					newDiffuseMapStage->setTexture(p.getToken());
 					stages.push_back(newDiffuseMapStage);
+				} else if(p.atWord("bumpmap")) {
+					p.skipLine();	
+				} else if(p.atWord("specularmap")) {
+					p.skipLine();	
+				} else if(p.atWord("lightFalloffImage")) {
+					p.skipLine();			
+				} else if(p.atWord("deform")) {
+					p.skipLine();			
+				} else if(p.atWord("unsmoothedtangents")) {
+
+				} else if(p.atWord("polygonOffset")) {
+					//this->polygonOffset = 
+					p.getFloat();
+				} else if(p.atWord("twosided")) {
+
+				} else if(p.atWord("nonsolid")) {
+
+				} else if(p.atWord("noimpact")) {
+					
+				} else if(p.atWord("noselfshadow")) {
+
+				} else if(p.atWord("noshadows")) {
+
+				} else if(p.atWord("translucent")) {
+				} else if(p.atWord("spectrum")) {
+					p.skipLine();
+				} else if(p.atWord("renderbump")) {
+					p.skipLine();
+				} else if(p.atWord("materialType")) {
+					p.skipLine(); // "glass", etc
 				} else {
 					p.getToken();
 				}
 			} else if(level == 2) {
+				// parse stage
 				if(p.atWord("map")) {
 					const char *mapName = p.getToken();
 					if(!stricmp(mapName,"$lightmap")) {
@@ -255,6 +286,50 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("rgbGen")) {
 
+				// Id Tech 4 keywords
+				} else if(p.atWord("blend")) {
+					if(p.atWord("add")) {
+					} else if(p.atWord("blend")) {
+
+					} else if(p.atWord("bumpmap")) {
+
+					} else if(p.atWord("specularMap")) {
+
+					} else if(p.atWord("diffusemap")) {
+
+					} else {
+						str src, dst;
+						src = p.getToken();
+						if(p.atWord(",")) {
+
+						}
+						dst = p.getToken();
+						src.removeCharacter(',');
+						dst.removeCharacter(',');
+					}
+				} else if(p.atWord("alphatest")) {
+				} else if(p.atWord("red")) {
+					p.skipLine();
+				} else if(p.atWord("green")) {
+					p.skipLine();
+				} else if(p.atWord("blue")) {
+					p.skipLine();
+				} else if(p.atWord("alpha")) {
+					p.skipLine();
+				} else if(p.atWord("zeroClamp")) {
+					// no arguments
+				} else if(p.atWord("colored")) {
+					// no arguments
+				} else if(p.atWord("rgb")) {
+					p.skipLine();
+				} else if(p.atWord("nomips")) {
+
+				} else if(p.atWord("highquality")) {
+					
+				} else if(p.atWord("cubemap")) {
+					p.skipLine();
+				} else if(p.atWord("texgen")) {
+					p.skipLine();
 				} else {
 					p.getToken();
 				}

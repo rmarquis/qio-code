@@ -55,6 +55,9 @@ public:
 	const char *getStr() const {
 		return valStr;
 	}
+	u32 strLen() const {
+		return strlen(valStr);
+	}
 
 // this should be called once on every module startup
 friend void AUTOCVAR_RegisterAutoCvars();

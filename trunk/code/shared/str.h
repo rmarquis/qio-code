@@ -200,6 +200,19 @@ public:
 		this->len--;
 		this->data[len] = 0;
 	}
+	void removeCharacter(char ch) {
+		u32 j = 0;
+		for(u32 i = 0; i < len; i++) {
+			if(data[i] == ch) {
+			
+			} else {
+				data[j] = data[i];
+				j++;
+			}
+		}
+		len = j;
+		data[j] = 0;
+	}
 	void insertAt(int pos, char ch) {
 		if(pos == len) {
 			this->appendChar(ch);

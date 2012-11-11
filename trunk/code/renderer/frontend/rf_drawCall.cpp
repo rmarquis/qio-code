@@ -25,11 +25,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_drawCall.h"
 #include "rf_entities.h"
 #include <api/rbAPI.h>
+#include <api/mtrAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
 
 aCvar_c rf_noLightmaps("rf_noLightmaps","0");
 aCvar_c rf_noVertexColors("rf_noVertexColors","0");
+aCvar_c rf_ignoreSpecificMaterial("rf_ignoreSpecificMaterial","");
+aCvar_c rf_ignoreSpecificMaterial2("rf_ignoreSpecificMaterial2","");
+aCvar_c rf_forceSpecificMaterial("rf_forceSpecificMaterial","");
 
 class drawCall_c {
 public:
@@ -50,6 +55,21 @@ static u32 rf_numDrawCalls = 0;
 void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
 		bool bindVertexColors) {
+	// developers can supress manually some materials for debugging purposes
+	if(rf_ignoreSpecificMaterial.strLen()) {
+		if(!stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {
+			return;
+		}
+	}
+	if(rf_ignoreSpecificMaterial2.strLen()) {
+		if(!stricmp(rf_ignoreSpecificMaterial2.getStr(),mat->getName())) {
+			return;
+		}
+	}
+	// developers can force a specific material on ALL surfaces as well
+	if(rf_forceSpecificMaterial.strLen()) {
+		mat = g_ms->registerMaterial(rf_forceSpecificMaterial.getStr());
+	}
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {
 		n = &rf_drawCalls.pushBack();

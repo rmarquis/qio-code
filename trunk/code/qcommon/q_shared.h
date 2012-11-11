@@ -1045,7 +1045,7 @@ typedef enum {
 #define	MAX_CLIENTS			64		// absolute limit
 #define MAX_LOCATIONS		64
 
-#define	GENTITYNUM_BITS		10		// don't need to send any more
+#define	GENTITYNUM_BITS		11		// don't need to send any more
 #define	MAX_GENTITIES		(1<<GENTITYNUM_BITS)
 
 // entitynums are communicated with GENTITY_BITS, so any reserved
@@ -1055,12 +1055,14 @@ typedef enum {
 #define	ENTITYNUM_WORLD		(MAX_GENTITIES-2)
 #define	ENTITYNUM_MAX_NORMAL	(MAX_GENTITIES-2)
 
+#define	MODELNUM_BITS		9		// don't need to send any more
+#define	MAX_MODELS			(1<<MODELNUM_BITS)
 
-#define	MAX_MODELS			256		// these are sent over the net as 8 bits
-#define	MAX_SOUNDS			256		// so they cannot be blindly increased
+// these are sent over the net as 8 bits so they cannot be blindly increased
+#define	MAX_SOUNDS			256
 
 
-#define	MAX_CONFIGSTRINGS	1024
+#define	MAX_CONFIGSTRINGS	2048
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication

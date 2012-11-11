@@ -84,6 +84,7 @@ int		MSG_ReadBits( msg_t *msg, int bits );
 int		MSG_ReadChar (msg_t *sb);
 int		MSG_ReadByte (msg_t *sb);
 int		MSG_ReadShort (msg_t *sb);
+int		MSG_ReadUShort (msg_t *sb);
 int		MSG_ReadLong (msg_t *sb);
 float	MSG_ReadFloat (msg_t *sb);
 char	*MSG_ReadString (msg_t *sb);
@@ -187,7 +188,7 @@ void		NET_LeaveMulticast6(void);
 void		NET_Sleep(int msec);
 
 
-#define	MAX_MSGLEN				16384		// max length of a message, which may
+#define	MAX_MSGLEN				65536 //16384		// max length of a message, which may
 											// be fragmented into multiple packets
 
 #define MAX_DOWNLOAD_WINDOW		48	// ACK window of 48 download chunks. Cannot set this higher, or clients

@@ -51,6 +51,12 @@ char	*com_argv[MAX_NUM_ARGVS+1];
 
 jmp_buf abortframe;		// an ERR_DROP occured, exit the entire frame
 
+class tmpFix_c {
+public:
+	tmpFix_c() {
+		memset(abortframe,0,sizeof(abortframe));
+	}
+} fix;
 
 FILE *debuglogfile;
 static fileHandle_t pipefile;

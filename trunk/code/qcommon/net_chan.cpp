@@ -279,8 +279,10 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 	// read the fragment information
 	if ( fragmented ) {
-		fragmentStart = MSG_ReadShort( msg );
-		fragmentLength = MSG_ReadShort( msg );
+		// NOTE: MSG_ReadShort returns negative number
+		// when a fragmentStart is higher than 32768
+		fragmentStart = MSG_ReadUShort( msg );
+		fragmentLength = MSG_ReadUShort( msg );
 	} else {
 		fragmentStart = 0;		// stop warning message
 		fragmentLength = 0;
