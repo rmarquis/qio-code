@@ -90,6 +90,7 @@ bool tsOctTreeHeader_s::traceNodeRay(u32 nodeNum, class trace_c &tr) {
 	return hit;
 }
 bool tsOctTreeHeader_s::traceRay(class trace_c &tr) {
+	this->checkCount++;
 	if(cms_tsOctTree_checkAllTris.getInt()) {
 		bool hit = false;
 		u32 numTris = this->numIndexes/3;
