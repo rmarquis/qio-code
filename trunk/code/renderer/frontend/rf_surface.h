@@ -45,6 +45,9 @@ public:
 	u32 getNumVerts() const {
 		return verts.size();
 	}
+	u32 getNumTris() const {
+		return indices.getNumIndices() / 3;
+	}
 	const char *getMatName() const {
 		return matName;
 	}
@@ -103,6 +106,8 @@ public:
 	void drawSurfaceWithSingleTexture(class textureAPI_i *tex);
 	void addDrawCall();
 
+	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
+
 	bool traceRay(class trace_c &tr);
 
 	void scaleXYZ(float scale);
@@ -122,7 +127,12 @@ class r_model_c : public staticModelCreatorAPI_i {
 	arraySTD_c<r_surface_c> surfs;
 	aabb bounds;
 	str name;
+	// used to speed up raycasting
+	struct tsOctTreeHeader_s *extraCollOctTree;
 public:
+	r_model_c();
+	~r_model_c();
+
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
@@ -142,10 +152,20 @@ public:
 
 	void createVBOsAndIBOs();
 
+	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
+
 	bool traceRay(class trace_c &tr);
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();
+
+	u32 getTotalTriangleCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumTris();
+		}
+		return ret;
+	}
 };
 
 #endif // __RF_SURFACE_H__

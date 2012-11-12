@@ -53,6 +53,39 @@ public:
 	virtual u32 getNumTris() const {
 		return indices.size()/3;
 	}
+	virtual void addXYZTri(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
+		indices.push_back(verts.size()+0);
+		indices.push_back(verts.size()+1);
+		indices.push_back(verts.size()+2);
+		addVert(p0);
+		addVert(p1);
+		addVert(p2);
+	}
+	virtual void addMesh(const float *pVerts, u32 vertStride, u32 numVerts, const void *pIndices, bool indices32Bit, u32 numIndices) {
+		u32 firstVert = verts.size();
+		verts.resize(firstVert + numVerts);
+		const float *v = pVerts;
+		vec3_c *nv = &verts[firstVert];
+		for(u32 i = 0; i < numVerts; i++, nv++) {
+			*nv = v;
+			bb.addPoint(v);
+			v = (const float*)(((byte*)v)+vertStride);
+		}
+		u32 firstIndex = indices.size();
+		indices.resize(firstIndex + numIndices);
+		u32 *newIndices = &indices[firstIndex];
+		if(indices32Bit) {
+			const u32 *indices32 = (const u32*)pIndices;
+			for(u32 i = 0; i < numIndices; i++) {
+				newIndices[i] = firstVert+indices32[i];
+			}
+		} else {
+			const u16 *indices16 = (const u16*)pIndices;
+			for(u32 i = 0; i < numIndices; i++) {
+				newIndices[i] = firstVert+indices16[i];
+			}
+		}
+	}
 	const vec3_c *getVerts() const {
 		return verts.getArray();
 	}
@@ -139,6 +172,26 @@ public:
 	}
 	virtual void setAllSurfsMaterial(const char *newMatName) {
 
+	}
+	void addTriPointsToAABB(u32 triNum, aabb &out) const {
+		u32 i0 = indices[triNum*3+0];
+		u32 i1 = indices[triNum*3+1];
+		u32 i2 = indices[triNum*3+2];
+		out.addPoint(verts[i0]);
+		out.addPoint(verts[i1]);
+		out.addPoint(verts[i2]);
+	}
+	void calcTriListBounds(const arraySTD_c<u32> &triNums, class aabb &out) const {
+		for(u32 i = 0; i < triNums.size(); i++) {
+			u32 tri = triNums[i];
+			addTriPointsToAABB(tri,out);
+		}
+	}
+	const vec3_c &getVert(u32 vertNum) const {
+		return verts[vertNum];
+	}
+	u32 getIndex(u32 idx) const {
+		return indices[idx];
 	}
 
 	const aabb &getAABB() const {

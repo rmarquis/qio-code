@@ -183,6 +183,9 @@ public:
 		}
 		return 0;
 	}
+	bool is32Bit() const {
+		return (type == IBO_U32);
+	}
 	const void *getArray() const {
 		return data.getArray();
 	}

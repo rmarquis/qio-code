@@ -39,6 +39,8 @@ void model_c::addModelDrawCalls() {
 bool model_c::rayTrace(class trace_c &tr) const {
 	if(type == MOD_BSP) {
 		return myBSP->traceRayInlineModel(bspModelNum,tr);
+	} else if(type == MOD_STATIC) {
+		return staticModel->traceRay(tr);
 	} else {
 
 		return false;

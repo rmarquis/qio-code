@@ -31,6 +31,8 @@ public:
 	virtual void addIndex(const u32 idx) = 0;
 	virtual u32 getNumVerts() const = 0;
 	virtual u32 getNumIndices() const = 0;
+	virtual void addXYZTri(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) = 0;
+	virtual void addMesh(const float *verts, u32 vertStride, u32 numVerts, const void *indices, bool indices32Bits, u32 numIndices) = 0;
 };
 
 #endif // __COLMESHBUILDERAPI_H__

@@ -95,11 +95,26 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 void r_surface_c::addDrawCall() {
 	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),true);
 }
-
+#include <api/colMeshBuilderAPI.h>
+void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
+#if 0
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		const rVert_c &v0 = verts[i0];
+		const rVert_c &v1 = verts[i1];
+		const rVert_c &v2 = verts[i2];
+		out->addXYZTri(v0.xyz,v1.xyz,v2.xyz);
+	}
+#else
+	out->addMesh(verts.getArray()->xyz,sizeof(rVert_c),verts.size(),
+		indices.getArray(),indices.is32Bit(),indices.getNumIndices());
+#endif
+}
 bool r_surface_c::traceRay(class trace_c &tr) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
 		return false;
-	return false;
 	bool hasHit = false;
 	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
 		u32 i0 = indices[i+0];
@@ -127,6 +142,7 @@ void r_surface_c::scaleXYZ(float scale) {
 	for(u32 i = 0; i < verts.size(); i++, v++) {
 		v->xyz *= scale;
 	}
+	bounds.scaleBB(scale);
 }
 void r_surface_c::swapYZ() {
 	rVert_c *v = verts.getArray();
@@ -135,6 +151,7 @@ void r_surface_c::swapYZ() {
 		v->xyz.y = v->xyz.z;
 		v->xyz.z = tmp;
 	}
+	bounds.swapYZ();
 }
 void r_surface_c::translateY(float ofs) {
 	rVert_c *v = verts.getArray();
@@ -164,6 +181,16 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 //
 //	r_model_c class
 //
+#include <shared/cmTriSoupOctTree.h>
+r_model_c::r_model_c() {
+	extraCollOctTree = 0;
+}
+r_model_c::~r_model_c() {
+	if(extraCollOctTree) {
+		CMU_FreeTriSoupOctTree(extraCollOctTree);
+		extraCollOctTree = 0;
+	}
+}
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	r_surface_c *sf = registerSurf(matName);
@@ -197,12 +224,14 @@ void r_model_c::scaleXYZ(float scale) {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->scaleXYZ(scale);
 	}
+	bounds.scaleBB(scale);
 }
 void r_model_c::swapYZ() {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->swapYZ();
 	}
+	bounds.swapYZ();
 }
 void r_model_c::translateY(float ofs) {
 	r_surface_c *sf = surfs.getArray();
@@ -241,9 +270,29 @@ void r_model_c::createVBOsAndIBOs() {
 		sf->createVBO();
 	}
 }
+void r_model_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->addGeometryToColMeshBuilder(out);
+	}
+}
+#include <shared/cmSurface.h>
+#include <shared/autoCvar.h>
+aCvar_c r_useTriSoupOctTrees("r_useTriSoupOctTrees","1");
 bool r_model_c::traceRay(class trace_c &tr) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
 		return false;
+	if(r_useTriSoupOctTrees.getInt()) {
+		if(extraCollOctTree) {
+			return extraCollOctTree->traceRay(tr);
+		}
+		if(getTotalTriangleCount() > 8192 || 1) {
+			cmSurface_c sf;
+			addGeometryToColMeshBuilder(&sf);
+			extraCollOctTree = CMU_BuildTriSoupOctTree(sf);
+			return extraCollOctTree->traceRay(tr);
+		}
+	}
 	bool hit = false;
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {

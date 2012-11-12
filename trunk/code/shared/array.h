@@ -56,7 +56,7 @@ public:
 		}
 		push_back(add);
 	}
-	void addArray(std::vector<typename _Ty> &other) {
+	void addArray(const std::vector<typename _Ty> &other) {
 		int s = other.size();
 		for(int i = 0; i < s; i++) {
 			push_back(other[i]);

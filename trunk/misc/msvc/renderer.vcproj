@@ -356,6 +356,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmTriSoupOctTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmTriSoupOctTree.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\collisionUtils.cpp"
 				>
 			</File>
