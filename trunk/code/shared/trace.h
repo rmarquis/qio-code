@@ -57,6 +57,7 @@ public:
 
 	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
+	void setHitPos(const vec3_c &newHitPos);
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
 

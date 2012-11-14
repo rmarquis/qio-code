@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Player.cpp - Game Client class
 #include "Player.h"
 #include "VehicleCar.h"
+#include "Weapon.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
 
@@ -31,18 +32,22 @@ DEFINE_CLASS(Player, "ModelEntity");
 
 Player::Player() {
 	this->characterController = 0;
-	memset(&ps,0,sizeof(ps));
 	memset(&pers,0,sizeof(pers));
 	buttons = 0;
-	oldbuttons = 0;
+	oldButtons = 0;
 	noclip = false;
 	useHeld = false;
+	fireHeld = false;
 	vehicle = 0;
+	curWeapon = 0;
 }
 Player::~Player() {
 	if(characterController) {
 		BT_FreeCharacter(this->characterController);
 		characterController = 0;
+	}
+	if(curWeapon) {
+		delete curWeapon;
 	}
 }
 void Player::setVehicle(class VehicleCar *newVeh) {
@@ -159,6 +164,29 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		}
 	}
 
+	if(this->pers.cmd.buttons & BUTTON_ATTACK) {
+		if(fireHeld) {
+			G_Printf("Fire held\n");
+			onFireKeyHeld();
+		} else {
+			G_Printf("Fire pressed\n");
+			fireHeld = true;
+			onFireKeyDown();
+		}
+	} else {
+		if(fireHeld) {
+			G_Printf("Fire released\n");
+			fireHeld = false;
+		}
+	}
+
+#if 1
+	if(curWeapon) {
+		curWeapon->setOrigin(this->getEyePos());
+		curWeapon->setAngles(this->getAngles());
+	}
+#endif
+
 	//G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
 
 	//if (g_smoothClients.integer) {
@@ -170,9 +198,9 @@ void Player::runPlayer(usercmd_s *ucmd) {
 
 	this->ps.commandTime = ucmd->serverTime;
 	// swap and latch button actions
-	this->oldbuttons = this->buttons;
+	this->oldButtons = this->buttons;
 	this->buttons = ucmd->buttons;
-	//client->latched_buttons |= client->buttons & ~client->oldbuttons;
+	this->latchedButtons |= this->buttons & ~this->oldButtons;
 }
 #include <shared/trace.h>
 void Player::onUseKeyDown() {
@@ -187,7 +215,7 @@ void Player::onUseKeyDown() {
 	trace_c tr;
 	vec3_c dir;
 	AngleVectors(this->ps.viewangles,dir,0,0);
-	tr.setupRay(eye,eye + dir * 64.f);
+	tr.setupRay(eye,eye + dir * 96.f);
 	if(G_TraceRay(tr)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
@@ -196,6 +224,24 @@ void Player::onUseKeyDown() {
 		}
 		G_Printf("Use trace hit\n");
 		hit->doUse(this);
+	}
+}
+void Player::onFireKeyHeld() {
+	if(vehicle) {
+		return;
+	}
+	if(curWeapon) {
+		curWeapon->onFireKeyHeld();
+		return;
+	}
+}
+void Player::onFireKeyDown() {
+	if(vehicle) {
+		return;
+	}
+	if(curWeapon) {
+		curWeapon->onFireKeyDown();
+		return;
 	}
 }
 void Player::setClientViewAngle(const vec3_c &angle) {
@@ -225,4 +271,15 @@ vec3_c Player::getEyePos() const {
 }
 struct playerState_s *Player::getPlayerState() {
 	return &this->ps;
+}
+void Player::addWeapon(class Weapon *newWeapon) {
+#if 1
+	if(curWeapon) {
+		//dropCurWeapon();
+	}
+	curWeapon = newWeapon;
+	curWeapon->setParent(this,-1);
+#else
+
+#endif
 }

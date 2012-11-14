@@ -36,6 +36,7 @@ public:
 	virtual void beginFrame() = 0;
 	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
+	virtual void setRenderTimeMsec(int msec) = 0;
 
 	virtual class rEntityAPI_i *allocEntity() = 0;
 	virtual void removeEntity(class rEntityAPI_i *ent) = 0;
@@ -59,6 +60,7 @@ public:
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
 
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
+	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
 
 	virtual void init() = 0;
 	virtual void endRegistration() = 0;

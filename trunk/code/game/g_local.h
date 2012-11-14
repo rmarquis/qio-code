@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "bg_public.h"
 #include "g_public.h"
 #include <shared/array.h>
+#include <math/vec3.h>
 
 //==================================================================
 
@@ -113,6 +114,7 @@ void BT_RunVehicles();
 void BT_ShutdownVehicles();
 const class aabb &G_GetInlineModelBounds(u32 inlineModelNum);
 bool BT_IsInSolid(const class matrix_c &mat, const class aabb &bb);
+bool BT_TraceRay(class trace_c &tr);
 
 //
 // g_debugDraw.cpp
@@ -123,6 +125,9 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI);
 // g_spawn.cpp
 //
 void G_SpawnMapEntities(const char *mapName);
+// spawns a new entity with classname and key values
+// loaded from .entDef file
+BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName);
 
 //
 // g_bullet_debugDraw.cpp
@@ -133,6 +138,11 @@ void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
 // g_collision.cpp
 //
 bool G_TraceRay(class trace_c &tr);
+
+//
+// g_weapons.cpp
+//
+void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

@@ -53,6 +53,7 @@ public:
 
 	void initRigidBodyPhysics();
 	void initStaticBodyPhysics();
+	void destroyPhysicsObject();
 
 	void debugDrawCMObject(class rDebugDrawer_i *dd);
 

@@ -178,7 +178,12 @@ static void CG_TransitionSnapshot( void ) {
 	u32 snapEnt = 0;
 	for(u32 i = 0; i < MAX_GENTITIES; i++) {
 		cent = &cg_entities[i];	
-		u32 snapEntNum = cg.snap->entities[snapEnt].number;
+		u32 snapEntNum;
+		if(snapEnt == cg.snap->numEntities) {
+			snapEntNum = MAX_GENTITIES;
+		} else {
+			snapEntNum = cg.snap->entities[snapEnt].number;
+		}
 		if(snapEntNum == i) {
 			if(cent->currentValid == false) {
 				if(cg_printSnapEntities.getInt()) {
@@ -205,7 +210,9 @@ static void CG_TransitionSnapshot( void ) {
 			CG_Error("CG_TransitionSnapshot: found entity with currentValid == qfalse and renderEntity present\n");
 		}
 	}
-
+	if(snapEnt != cg.snap->numEntities) {
+		CG_Error("CG_TransitionSnapshot: snapEnt != cg.snap->numEntities\n");
+	}
 	// move nextSnap to snap and do the transitions
 	oldFrame = cg.snap;
 	cg.snap = cg.nextSnap;

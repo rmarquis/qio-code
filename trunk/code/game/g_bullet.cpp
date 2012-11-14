@@ -262,10 +262,54 @@ bool BT_IsInSolid(const matrix_c &mat, const aabb &bb) {
 	myBTContactResultCallback_c resultCallback;
 	dynamicsWorld->contactTest(&collisionObject,resultCallback);
 	delete shape;
-
 	if(bt_intersected.size()) 
 		return true;
 	return false;
+}
+#include <shared/trace.h>
+class btRayCallback_c : public btCollisionWorld::RayResultCallback {
+public:
+	btRayCallback_c(const btVector3&	rayFromWorld,const btVector3&	rayToWorld)
+	:m_rayFromWorld(rayFromWorld),
+	m_rayToWorld(rayToWorld)
+	{
+	}
+
+	btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
+	btVector3	m_rayToWorld;
+
+	btVector3	m_hitNormalWorld;
+	btVector3	m_hitPointWorld;
+		
+	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
+	{
+		//caller already does the filter on the m_closestHitFraction
+		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
+		
+		m_closestHitFraction = rayResult.m_hitFraction;
+		m_collisionObject = rayResult.m_collisionObject;
+		if (normalInWorldSpace)
+		{
+			m_hitNormalWorld = rayResult.m_hitNormalLocal;
+		} else
+		{
+			///need to transform normal into worldspace
+			m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis()*rayResult.m_hitNormalLocal;
+		}
+		m_hitPointWorld.setInterpolate3(m_rayFromWorld,m_rayToWorld,rayResult.m_hitFraction);
+		return rayResult.m_hitFraction;
+	}
+};
+
+bool BT_TraceRay(class trace_c &tr) {
+	btVector3 rayFrom;
+	rayFrom = (btVector3(tr.getStartPos().x,tr.getStartPos().y,tr.getStartPos().z));
+	btVector3 rayTo;
+	rayTo = (btVector3(tr.getTo().x,tr.getTo().y,tr.getTo().z));
+	btRayCallback_c rayCallback(rayFrom,rayTo);
+	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
+	tr.setHitPos(rayCallback.m_hitPointWorld.m_floats);
+	return rayCallback.hasHit();
 }
 btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;

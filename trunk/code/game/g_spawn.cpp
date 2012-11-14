@@ -40,6 +40,48 @@ void G_LoadMapEntities(const char *mapName) {
 	}
 	return;
 }
+BaseEntity *G_SpawnEntDef(const class entDef_c *entDef) {
+	const char *className = entDef->getClassName();
+	if(className == 0 || className[0] == 0) {
+		return 0;
+	}
+	BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);
+	if(ent == 0) {
+		// hack to spawn inline models
+		if(entDef->hasKey("model") && entDef->getKeyValue("model")[0] == '*') {
+			ent = (BaseEntity*)G_SpawnClass("ModelEntity");
+		} else {
+			g_core->Print("G_SpawnEntDef: Failed to spawn class %s\n",className);
+			return 0;
+		}
+	}
+	g_core->Print("G_SpawnEntDef: Spawning %s\n",className);
+	for(u32 j = 0; j < entDef->getNumKeyValues(); j++) {
+		const char *key, *value;
+		entDef->getKeyValue(j,&key,&value);
+		ent->setKeyValue(key,value);
+	}
+	
+#if 1
+	{
+		ModelEntity *m = dynamic_cast<ModelEntity*>(ent);
+		if(m && m->hasCollisionModel()) {
+			//m->initStaticBodyPhysics();
+			m->initRigidBodyPhysics();
+		}
+	}
+#endif
+	return ent;
+}
+BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName) {
+	entDef_c entDef;
+	if(entDef.readFirstEntDefFromFile(fileName)) {
+		g_core->RedWarning("G_SpawnFirstEntDefFromFile: failed to read entDef from %s\n",fileName);
+		return 0;
+	}
+	BaseEntity *ret = G_SpawnEntDef(&entDef);
+	return ret;
+}
 void G_SpawnMapEntities(const char *mapName) {
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString("G_SpawnMapEntities: \"%s\" ",mapName);
@@ -49,34 +91,8 @@ void G_SpawnMapEntities(const char *mapName) {
 		g_loadingScreen->addLoadingString("- %i entdefs.\nSpawning...",g_entDefs.size());
 	}
 	for(u32 i = 0; i < g_entDefs.size(); i++) {
-		entDef_c *e = g_entDefs[i];
-		const char *className = e->getClassName();
-		if(className == 0 || className[0] == 0) {
-			continue;
-		}
-		BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);
-		if(ent == 0) {
-			// hack to spawn inline models
-			if(e->hasKey("model") && e->getKeyValue("model")[0] == '*') {
-				ent = (BaseEntity*)G_SpawnClass("ModelEntity");
-			} else {
-				g_core->Print("Failed to spawn class %s\n",className);
-				continue;
-			}
-		}
-		g_core->Print("Spawning %s\n",className);
-		for(u32 j = 0; j < e->getNumKeyValues(); j++) {
-			const char *key, *value;
-			e->getKeyValue(j,&key,&value);
-			ent->setKeyValue(key,value);
-		}
-		
-#if 1
-		ModelEntity *m = dynamic_cast<ModelEntity*>(ent);
-		if(m && m->hasCollisionModel()) {
-			m->initStaticBodyPhysics();
-		}
-#endif
+		entDef_c *entDef = g_entDefs[i];
+		G_SpawnEntDef(entDef);
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" done.\n");

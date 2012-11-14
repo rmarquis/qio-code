@@ -21,29 +21,37 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_local.h - local header for renderer frontend module
-#ifndef __RF_LOCAL_H__
-#define __RF_LOCAL_H__
+// Weapon.cpp
+#include "../g_local.h"
+#include "Weapon.h"
+#include "Player.h"
+#include <api/coreAPI.h>
 
-#include "../cameraDef.h"
+DEFINE_CLASS(Weapon, "ModelEntity");
 
-// rf_debugDrawing.cpp
-void RF_DoDebugDrawing();
-void RFDL_DrawDebugLines();
-u32 RFDL_AddDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life);
+Weapon::Weapon() {
+	owner = 0;
+}
+Weapon::~Weapon() {
 
-// rf_entities.cpp
-class rEntityAPI_i *RFE_AllocEntity();
-void RFE_RemoveEntity(class rEntityAPI_i *ent);
-void RFE_AddEntityDrawCalls();
-void RFE_ClearEntities();
+}
+void Weapon::setKeyValue(const char *key, const char *value) {
 
-// rf_sky.cpp
-void RF_InitSky();
-void RF_DrawSky();
-void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
+	ModelEntity::setKeyValue(key,value);
+}
+void Weapon::doUse(class Player *activator) {
+	if(owner) {
+		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
+		return;
+	}
+	activator->addWeapon(this);
+	this->destroyPhysicsObject();
+	this->unlink();
+}
+void Weapon::onFireKeyHeld() {
+	
+}
+void Weapon::onFireKeyDown() {
+	G_BulletAttack(this->getOrigin(),this->getForward());
+}
 
-extern class cameraDef_c rf_camera;
-extern int rf_curTimeMsec;
-
-#endif // __RF_LOCAL_H__

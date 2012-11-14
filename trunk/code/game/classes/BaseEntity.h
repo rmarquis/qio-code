@@ -27,11 +27,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BASEENTITY_H__
 
 #include "../g_classes.h" // DECLARE_CLASS, etc
+#include <shared/array.h>
 #include <math/matrix.h>
 
 class BaseEntity {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 	matrix_c matrix;
+	// for entity attaching
+	arraySTD_c<BaseEntity*> attachments; // for parents
+	BaseEntity *parent; // for children
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
@@ -56,19 +60,23 @@ public:
 	const class matrix_c &getMatrix() const {
 		return matrix;
 	}
-	const vec3_c &getForward() const {
+	vec3_c getForward() const {
 		return matrix.getForward();
 	}
-	const vec3_c &getLeft() const {
+	vec3_c getLeft() const {
 		return matrix.getLeft();
 	}
-	const vec3_c &getUp() const {
+	vec3_c getUp() const {
 		return matrix.getUp();
 	}
 
 	edict_s *getEdict() {
 		return this->myEdict;
 	}
+	u32 getEntNum() const;
+
+	void setParent(BaseEntity *newParent, int tagNum = -1);
+	void detachFromParent();
 
 	virtual void getLocalBounds(aabb &out) const;
 

@@ -86,7 +86,7 @@ public:
 		ePair_c *np = new ePair_c(key,val);
 		pairs.push_back(np);
 	}
-	void getKeyValue(u32 idx, const char **key, const char **value) {
+	void getKeyValue(u32 idx, const char **key, const char **value) const {
 		if(idx >= pairs.size()) {
 			// this should never happen
 			*key = 0;

@@ -95,6 +95,7 @@ bool svBSP_c::loadVisibility(u32 visLump) {
 	const lump_s &vl = h->getLumps()[visLump];
 	if(vl.fileLen == 0) {
 		g_core->Print(S_COLOR_YELLOW "svBSP_c::loadVis: visibility lump is emtpy\n");
+		vis = 0;
 		return false; // dont do the error
 	}
 	vis = (visHeader_s*)malloc(vl.fileLen);

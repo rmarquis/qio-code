@@ -32,6 +32,8 @@ class entDef_c {
 	ePairList_c ePairs; // key-values
 	// ePrimList_c primitives; // TODO: for .map files
 
+	bool parseSingleEntDef(class parser_c &p);
+
 public:
 	void setKeyValue(const char *key, const char *value) {
 		if(!stricmp(key,"classname")) {
@@ -40,7 +42,7 @@ public:
 		}
 		ePairs.set(key,value);
 	}
-	const char *getClassName() {
+	const char *getClassName() const {
 		if(className.length())
 			return className;
 		return 0;
@@ -48,7 +50,7 @@ public:
 	u32 getNumKeyValues() const {
 		return ePairs.size();
 	}
-	void getKeyValue(u32 idx, const char **key, const char **value) {
+	void getKeyValue(u32 idx, const char **key, const char **value) const {
 		return ePairs.getKeyValue(idx,key,value);
 	}
 	bool hasKey(const char *key) const {
@@ -57,6 +59,8 @@ public:
 	const char *getKeyValue(const char *key) const {
 		return ePairs.getKeyValue(key);
 	}
+	bool fromString(const char *txt);
+	bool readFirstEntDefFromFile(const char *fileName);
 };
 
 class entDefsList_c {

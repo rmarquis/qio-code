@@ -21,7 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "server.h"
+#include <shared/autoCvar.h>
 
+static aCvar_c sv_debugPlayerSnapshotEntities("sv_debugPlayerSnapshotEntities","-1");
 
 /*
 =============================================================================
@@ -85,6 +87,10 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 		}
 
 		if ( newnum == oldnum ) {
+			if(sv_debugPlayerSnapshotEntities.getInt() == to->ps.number) {
+				//Com_Printf("SV_EmitPacketEntities: delting entity %i from player %i view\n",
+				//	oldnum,from->ps.number);
+			}
 			// delta update from old position
 			// because the force parm is qfalse, this will not result
 			// in any bytes being emited if the entity has not changed at all
@@ -95,6 +101,10 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 		}
 
 		if ( newnum < oldnum ) {
+			if(sv_debugPlayerSnapshotEntities.getInt() == to->ps.number) {
+				Com_Printf("SV_EmitPacketEntities: adding entity %i from player %i view\n",
+					newnum,from->ps.number);
+			}
 			// this is a new entity, send it from the baseline
 			MSG_WriteDeltaEntity (msg, &sv.svEntities[newnum].baseline, newent, qtrue );
 			newindex++;
@@ -102,6 +112,10 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 		}
 
 		if ( newnum > oldnum ) {
+			if(sv_debugPlayerSnapshotEntities.getInt() == to->ps.number) {
+				Com_Printf("SV_EmitPacketEntities: removing entity %i from player %i view\n",
+					oldnum,from->ps.number);
+			}
 			// the old entity isn't present in the new message
 			MSG_WriteDeltaEntity (msg, oldent, NULL, qtrue );
 			oldindex++;
@@ -327,7 +341,11 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			ent->s->number = e;
 		}
 
-		if(ent->bspBoxDesc == 0) {
+		edict_s *visEnt = ent;
+		while(visEnt->s->parentNum != ENTITYNUM_NONE) {
+			visEnt = SV_GentityNum(visEnt->s->parentNum);
+		}
+		if(visEnt->bspBoxDesc == 0) {
 			continue; // not linked
 		}
 
@@ -338,7 +356,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-		if(sv_bsp == 0 || sv_bsp->checkVisibility(eyeDesc,*ent->bspBoxDesc)) {
+		if(sv_bsp == 0 || sv_bsp->checkVisibility(eyeDesc,*visEnt->bspBoxDesc)) {
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 		}

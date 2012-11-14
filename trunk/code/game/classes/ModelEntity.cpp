@@ -42,11 +42,23 @@ ModelEntity::ModelEntity() {
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
-		BT_RemoveRigidBody(body);
+		destroyPhysicsObject();
 	}
 }
 void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 	BaseEntity::setOrigin(newXYZ);
+	if(body) {
+#if 1
+		btTransform transform;
+		transform.setFromOpenGLMatrix(this->getMatrix());
+		body->setWorldTransform(transform);
+		//body->getMotionState()->setWorldTransform(transform);
+		body->activate(true);
+#else
+		this->destroyPhysicsObject();
+		this->initRigidBodyPhysics();
+#endif
+	}
 }
 void ModelEntity::setAngles(const class vec3_c &newAngles) {
 	BaseEntity::setAngles(newAngles);
@@ -130,6 +142,12 @@ void ModelEntity::initStaticBodyPhysics() {
 	// static physics bodies have NULL mass
 	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod,0);
 	this->body->setUserPointer(this);
+}
+void ModelEntity::destroyPhysicsObject() {
+	if(body == 0)
+		return;
+	BT_RemoveRigidBody(body);
+	body = 0;
 }
 void ModelEntity::runFrame() {
 	runPhysicsObject();

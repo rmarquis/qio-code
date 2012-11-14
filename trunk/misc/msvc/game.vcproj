@@ -387,6 +387,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_weapons.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\q_math.cpp"
 				>
 			</File>
@@ -489,6 +493,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\VehicleCar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Weapon.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Weapon.h"
 				>
 			</File>
 		</Filter>

@@ -81,6 +81,7 @@ bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out) {
 			u32 vertIndexes[512];
 			u32 texVertIndexes[512];
 			u32 numPoints = 0;
+			int l = p.getCurrentLineNumber();
 			bool hasTexVerts = false;
 			while(p.isAtEOL() == false) {
 				const char *w = p.getToken();

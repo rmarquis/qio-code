@@ -554,6 +554,10 @@ public:
 		
 		// depth test is not needed while drawing 2d graphics
 		glDisable(GL_DEPTH_TEST);
+		// disable lightmaps
+		disableAllTextures();
+		// disable texmodes
+		turnOffTextureMatrices();
 		// rVertexBuffers are used only for 3d
 		unbindVertexBuffer();
 		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics

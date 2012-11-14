@@ -57,6 +57,7 @@ typedef struct {
 class Player : public ModelEntity {
 	class btKinematicCharacterController *characterController;
 	str netName;
+	class Weapon *curWeapon;
 public:
 	Player();
 	virtual ~Player();
@@ -70,10 +71,12 @@ public:
 
 	bool noclip;
 
-	int			buttons;
-	int			oldbuttons;
+	int buttons;
+	int oldButtons;
+	int latchedButtons;
 	
-	bool useHeld;
+	bool useHeld; // we might use latchedButtons instead of it
+	bool fireHeld;
 
 	class VehicleCar *vehicle;
 
@@ -82,6 +85,8 @@ public:
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void runPlayer(struct usercmd_s *ucmd);
 	void onUseKeyDown();
+	void onFireKeyHeld();
+	void onFireKeyDown();
 	void setClientViewAngle(const vec3_c &angle);
 	void setNetName(const char *newNetName);
 	const char *getNetName() const;
@@ -93,6 +98,9 @@ public:
 	void toggleNoclip();
 
 	struct playerState_s *getPlayerState();
+
+	// called from Weapon::doUse
+	void addWeapon(class Weapon *newWeapon);
 };
 
 #endif // __PLAYER_H__

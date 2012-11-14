@@ -343,6 +343,7 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 
 //	cg.refdef.time = cg.time;
 //	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
+	rf->setRenderTimeMsec(cg.time);
 
 	// make sure the lagometerSample and frame timing isn't done twice when in stereo
 	//if ( stereoView != STEREO_RIGHT ) {

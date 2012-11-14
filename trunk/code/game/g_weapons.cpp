@@ -21,29 +21,24 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_local.h - local header for renderer frontend module
-#ifndef __RF_LOCAL_H__
-#define __RF_LOCAL_H__
+// g_weapons.cpp - helper functions for Weapon class
+#include "g_local.h"
+#include <shared/trace.h>
+#include <api/rApi.h>
+#include <api/serverApi.h>
 
-#include "../cameraDef.h"
+void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir) {
+	trace_c tr;
+	tr.setupRay(muzzle,muzzle + dir * 10000.f);
+	BT_TraceRay(tr);
+	G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	if(rf) {
+		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
+	}
+	g_server->SendServerCommand(-1,va("test_bulletAttack %f %f %f %f %f %f",muzzle.x,muzzle.y,muzzle.z,
+		dir.x,dir.y,dir.z));
+}
 
-// rf_debugDrawing.cpp
-void RF_DoDebugDrawing();
-void RFDL_DrawDebugLines();
-u32 RFDL_AddDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life);
 
-// rf_entities.cpp
-class rEntityAPI_i *RFE_AllocEntity();
-void RFE_RemoveEntity(class rEntityAPI_i *ent);
-void RFE_AddEntityDrawCalls();
-void RFE_ClearEntities();
 
-// rf_sky.cpp
-void RF_InitSky();
-void RF_DrawSky();
-void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
 
-extern class cameraDef_c rf_camera;
-extern int rf_curTimeMsec;
-
-#endif // __RF_LOCAL_H__

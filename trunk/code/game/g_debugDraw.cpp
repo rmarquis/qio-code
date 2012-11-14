@@ -25,8 +25,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "classes/BaseEntity.h"
 #include <api/rAPI.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c g_enableDebugDrawing("g_enableDebugDrawing","0");
 
 void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
+	if(g_enableDebugDrawing.getInt() == 0)
+		return;
 	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
 	for(u32 i = 0; i < MAX_GENTITIES; i++) {
 		edict_s *ent = &g_entities[i];

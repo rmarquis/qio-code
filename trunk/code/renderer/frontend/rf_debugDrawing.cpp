@@ -22,13 +22,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_debugDrawing.cpp
-
+#include "rf_local.h"
 #include <qcommon/q_shared.h>
+#include <shared/array.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/gameAPI.h>
 #include <api/rAPI.h>
+#include <api/rbAPI.h>
 
 // draw debug info for game module 
 // this works (obviously) only for local client
@@ -44,8 +46,45 @@ void RF_DoDebugDrawing() {
 	if(g_game) {
 		RF_GameDebugDrawing();
 	}
+	RFDL_DrawDebugLines();
 }
 
+//
+// debug lines
+//
+struct rDebugLine_s {
+	vec3_c from;
+	vec3_c to;
+	vec3_c color;
+	int endTime;
+};
+static arraySTD_c<rDebugLine_s> rf_debugLines;
+
+u32 RFDL_AddDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) {
+	u32 ret;
+	rDebugLine_s *next = rf_debugLines.getArray();
+	for(ret = 0; ret < rf_debugLines.size(); ret++, next++) {
+		if(next->endTime < rf_curTimeMsec) {
+			break;
+		}
+	}
+	if(ret == rf_debugLines.size()) {
+		next = &rf_debugLines.pushBack();
+	}
+	next->from = from;
+	next->to = to;
+	next->color = color;
+	next->endTime = rf_curTimeMsec + (life*1000.f);
+	return ret;
+}
+void RFDL_DrawDebugLines() {
+	const rDebugLine_s *l = rf_debugLines.getArray();
+	for(u32 i = 0; i < rf_debugLines.size(); i++, l++) {
+		if(l->endTime < rf_curTimeMsec)
+			continue;
+		rb->drawLineFromTo(l->from,l->to,l->color);
+	}
+}
 
 
 

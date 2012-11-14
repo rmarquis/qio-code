@@ -36,6 +36,10 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->traveled = this->len;
 	recalcRayTraceBounds();
 }
+void trace_c::setHitPos(const vec3_c &newHitPos) {
+	this->hitPos = newHitPos;
+	updateForNewHitPos();
+}
 void trace_c::recalcRayTraceBounds() {
 	traceBounds.reset(from);
 	traceBounds.addPoint(hitPos);

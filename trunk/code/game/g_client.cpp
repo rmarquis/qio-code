@@ -352,16 +352,22 @@ void ClientCommand( int clientNum ) {
 				}
 				model = fixed;
 			}
-			str collisionModelName = model;
-			collisionModelName.setExtension("map");
-			vec3_c p = pl->getOrigin();
-			p.z += pl->getViewHeight();
-			p += pl->getForward() * 64.f;
-			ModelEntity *e = new ModelEntity;
-			e->setRenderModel(model);
-			e->setColModel(collisionModelName);
-			e->setOrigin(p);
-			e->initRigidBodyPhysics();
+			vec3_c spawnPos = pl->getOrigin();
+			spawnPos.z += pl->getViewHeight();
+			spawnPos += pl->getForward() * 64.f;
+			const char *ext = G_strgetExt(model);
+			if(ext && !stricmp(ext,"entDef")) {
+				BaseEntity *be = G_SpawnFirstEntDefFromFile(model);
+				be->setOrigin(spawnPos);
+			} else {
+				str collisionModelName = model;
+				collisionModelName.setExtension("map");
+				ModelEntity *me = new ModelEntity;
+				me->setRenderModel(model);
+				me->setColModel(collisionModelName);
+				me->setOrigin(spawnPos);
+				me->initRigidBodyPhysics();
+			}
 		}
 	} else if(!stricmp(cmd,"spawnStatic")) {
 		str model = g_core->Argv(1);

@@ -46,6 +46,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_world.h"
 
 cameraDef_c rf_camera;
+int rf_curTimeMsec;
 
 class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
@@ -91,6 +92,9 @@ public:
 			projDef = *pd;
 		}
 		rb->setupProjection3D(&projDef);
+	}
+	virtual void setRenderTimeMsec(int msec) {
+		rf_curTimeMsec = msec;
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
 		//camPos = newCamPos;
@@ -166,6 +170,9 @@ public:
 	}
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;
+	}
+	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) {
+		return RFDL_AddDebugLine(from,to,color,life);
 	}
 	virtual void init() {
 		if(initialized) {

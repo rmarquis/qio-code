@@ -1,0 +1,5 @@
+{
+"classname" "Weapon"
+"model" "models/testweapons/smallGun.obj"
+"cmodel" "models/testweapons/smallGun.map"
+}

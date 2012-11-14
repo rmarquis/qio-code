@@ -61,8 +61,10 @@ BaseEntity::BaseEntity() {
 	// set entityState_s::number
 	myEdict->s->number = myEdict - g_entities;
 	myEdict->ent = this;
+	parent = 0;
 }
 BaseEntity::~BaseEntity() {
+	detachFromParent();
 	unlink(); // fries edict_s::bspBoxDesc
 	if(_myEntityState) {
 		// free the entityState_s that we have alloced
@@ -126,6 +128,29 @@ void BaseEntity::recalcABSBounds() {
 void BaseEntity::getLocalBounds(aabb &out) const {
 	out.fromHalfSize(16.f);
 }
+u32 BaseEntity::getEntNum() const {
+	return myEdict->s->number;
+}
+void BaseEntity::setParent(BaseEntity *newParent, int tagNum) {
+	if(parent) {
+		detachFromParent();
+	}
+	parent = newParent;
+	myEdict->s->parentNum = newParent->getEntNum();
+	myEdict->s->parentTagNum = tagNum;
+	parent->attachments.push_back(this);
+}
+void BaseEntity::detachFromParent() {
+	if(parent == 0) {
+		assert(this->myEdict->s->parentNum == ENTITYNUM_NONE);
+		return;
+	}
+	parent->attachments.remove(this);
+	parent = 0;
+	myEdict->s->parentNum = ENTITYNUM_NONE;
+	myEdict->s->parentTagNum = -1;
+}
+
 #include <api/ddAPI.h>
 #include <shared/autoCvar.h>
 

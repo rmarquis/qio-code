@@ -1058,6 +1058,9 @@ typedef enum {
 #define	MODELNUM_BITS		9		// don't need to send any more
 #define	MAX_MODELS			(1<<MODELNUM_BITS)
 
+#define TAGNUM_BITS			8
+#define MAX_BONES			(1<<TAGNUM_BITS)
+
 // these are sent over the net as 8 bits so they cannot be blindly increased
 #define	MAX_SOUNDS			256
 
@@ -1101,11 +1104,14 @@ struct entityState_s {
 	int	rModelIndex; // only for clientside rendering
 	int colModelIndex; // for collision detection
 
+	int parentNum; // ENTITYNUM_NONE = not attached
+	int parentTagNum;
+
 	//int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
 
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
-	entityState_s() {
+	void setDefaults() {
 		number = -1;
 		eType = 0;
 		origin.clear();
@@ -1113,6 +1119,11 @@ struct entityState_s {
 		groundEntityNum = ENTITYNUM_NONE;
 		rModelIndex = 0;
 		colModelIndex = 0;
+		parentNum = ENTITYNUM_NONE;
+		parentTagNum = -1;
+	}
+	entityState_s() {
+		setDefaults();
 	}
 };
 

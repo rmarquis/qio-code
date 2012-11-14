@@ -862,6 +862,8 @@ netField_t	entityStateFields[] =
 //{ NETF(solid), 24 },
 { NETF(colModelIndex), MODELNUM_BITS },
 { NETF(rModelIndex), MODELNUM_BITS },
+{ NETF(parentNum), GENTITYNUM_BITS },
+{ NETF(parentTagNum), TAGNUM_BITS },
 };
 
 
@@ -1146,6 +1148,8 @@ netField_t	playerStateFields[] =
 { PSF(clientNum), 8 },
 { PSF(colModelIndex), MODELNUM_BITS },
 { PSF(rModelIndex), MODELNUM_BITS },
+{ PSF(parentNum), GENTITYNUM_BITS },
+{ PSF(parentTagNum), TAGNUM_BITS },
 };
 
 /*
