@@ -12,6 +12,7 @@ renderer
  - Quake3, RTCW, ET, MoHAA and CoD1 (partial) BSP support with PVS and lightmapping
  - direct .map files loading
  - openGL backend totally separated from frontend
+ - basic DirectX 9 backend
  - VBO/IBO based (several times faster than Q3 renderer)
  - deltaRefEntities system
 
