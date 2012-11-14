@@ -46,6 +46,14 @@ aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
 aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
 
+const aabb &bspSurf_s::getBounds() const {
+	if(type == BSPSF_BEZIER) {
+		return patch->getBB();
+	} else {
+		return sf->bounds;
+	}
+}
+
 rBspTree_c::rBspTree_c() {
 	vis = 0;
 	h = 0;
@@ -577,6 +585,33 @@ bool rBspTree_c::isClusterVisible(int visCluster, int testCluster) const {
 	byte visSet = vis->data[(visCluster * vis->clusterSize) + (testCluster >> 3)];
 	return (visSet & (1<<(testCluster&7))) != 0;
 }
+void rBspTree_c::boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const {
+	while(nodeNum >= 0) {
+		const q3Node_s &n = nodes[nodeNum];
+		const bspPlane_s &pl = planes[n.planeNum];
+		planeSide_e ps = pl.onSide(bb);
+		if(ps == SIDE_FRONT) {
+			nodeNum = n.children[0];
+		} else if(ps == SIDE_BACK) {
+			nodeNum = n.children[1];
+		} else {
+			nodeNum = n.children[0];
+			boxSurfaces_r(bb,out,n.children[1]);
+		}
+	}
+	int leafNum = -nodeNum - 1;
+	const q3Leaf_s &l = leaves[leafNum];
+	for(u32 i = 0; i < l.numLeafSurfaces; i++) {
+		u32 sfNum = this->leafSurfaces[l.firstLeafSurface+i];
+		if(bb.intersect(this->surfs[sfNum].getBounds())) {
+			out.add_unique(sfNum);
+		}
+	}
+}
+u32 rBspTree_c::boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const {
+	boxSurfaces_r(bb,out,0);
+	return out.size();
+}
 void rBspTree_c::updateVisibility() {
 	int camCluster = pointInCluster(rf_camera.getOrigin());
 	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
@@ -714,6 +749,134 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 		addBSPSurfaceDrawCall(m.firstSurf+i);
 	}
 }
+#include <math/plane.h>
+#include <shared/cmWinding.h>
+#include <shared/simpleTexturedPoly.h>
+#include "rf_decals.h"
+class decalProjector_c {
+	plane_c planes[6];
+	aabb bounds;
+	arraySTD_c<cmWinding_c> results;
+	mtrAPI_i *mat;
+	vec3_c inPos;
+	vec3_c inNormal;
+	float inRadius;
+	vec3_c perp, perp2; // vectors perpendicular to inNormal
+public:
+	decalProjector_c() {
+		mat = 0;
+	}
+	void init(const vec3_c &pos, const vec3_c &normal, float radius) {
+		inPos = pos;
+		inNormal = normal;
+		inRadius = radius;
+
+		planes[0].fromPointAndNormal(pos-normal*radius,normal);
+		planes[1].fromPointAndNormal(pos+normal*radius,-normal);
+		perp = normal.getPerpendicular();
+		perp2.crossProduct(normal,perp);
+		RFDL_AddDebugLine(pos-normal,pos+perp*10.f-normal,vec3_c(0,0,1),5.f);
+		RFDL_AddDebugLine(pos-normal,pos+perp2*10.f-normal,vec3_c(0,1,0),5.f);
+		vec3_c points[4];
+		points[0] = pos + perp * radius + perp2 * radius - normal * radius;
+		points[1] = pos - perp * radius + perp2 * radius - normal * radius;
+		points[2] = pos - perp * radius - perp2 * radius - normal * radius;
+		points[3] = pos + perp * radius - perp2 * radius - normal * radius;
+		bounds.addPoint(points[0]);
+		bounds.addPoint(points[1]);
+		bounds.addPoint(points[2]);
+		bounds.addPoint(points[3]);
+		bounds.addPoint(points[0] + normal*radius*2.f);
+		bounds.addPoint(points[1] + normal*radius*2.f);
+		bounds.addPoint(points[2] + normal*radius*2.f);
+		bounds.addPoint(points[3] + normal*radius*2.f);
+		planes[2].fromThreePointsINV(points[0],points[1],points[1] + normal*radius*2.f);
+		planes[3].fromThreePointsINV(points[1],points[2],points[2] + normal*radius*2.f);
+		planes[4].fromThreePointsINV(points[2],points[3],points[3] + normal*radius*2.f);
+		planes[5].fromThreePointsINV(points[3],points[0],points[0] + normal*radius*2.f);
+	}
+	void setMaterial(class mtrAPI_i *newMat) {
+		mat = newMat;
+	}
+	void clipTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
+		aabb tmpBB;
+		tmpBB.fromThreePoints(p0,p1,p2);
+		if(tmpBB.intersect(bounds) == false)
+			return;
+		plane_c triPlane;
+		triPlane.fromThreePoints(p0,p1,p2);
+		triPlane.norm *= 0.001f;
+		cmWinding_c w(p0-triPlane.norm,p1-triPlane.norm,p2-triPlane.norm);
+		for(u32 i = 0; i < 6; i++) {
+			w.clipWindingByPlane(planes[i]);
+		}
+		if(w.size() == 0) {
+			g_core->Print("decalProjector_c::clipTriangle: winding chopped away\n");
+			return;
+		}
+		g_core->Print("decalProjector_c::clipTriangle: remaining windings points: %i\n",w.size());
+		results.push_back(w);
+	}
+	void iterateResults(void (*untexturedTriCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) {
+		for(u32 i = 0; i < results.size(); i++) {
+			results[i].iterateTriangles(untexturedTriCallback);
+		}
+	}
+	void iterateResults(class staticModelCreatorAPI_i *smc) {
+		for(u32 i = 0; i < results.size(); i++) {
+			results[i].iterateTriangles(smc);
+		}
+	}
+	void addResultsToDecalBatcher(class simpleDecalBatcher_c *batcher) {
+		float texCoordScale = 0.5f * 1.0f / inRadius;
+		for(u32 i = 0; i < results.size(); i++) {
+			const cmWinding_c &w = results[i];
+			simplePoly_s p;
+			p.material = this->mat;
+			p.verts.resize(w.size());
+			for(u32 j = 0; j < w.size(); j++) {
+				p.verts[j].xyz = w[j];		
+				vec3_c delta = w[j] - inPos;
+				p.verts[j].tc.x = 0.5 + delta.dotProduct(perp)*texCoordScale;
+				p.verts[j].tc.y = 0.5 + delta.dotProduct(perp2)*texCoordScale;
+			}
+			batcher->addDecal(p);
+		}		
+	}
+	const aabb &getBounds() const {
+		return bounds;
+	}
+};
+
+int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
+	if(material == 0) {
+		material = g_ms->registerMaterial("defaultMaterial");
+	}
+	decalProjector_c proj;
+	proj.init(pos,normal,radius);
+	arraySTD_c<u32> sfNums;
+	boxSurfaces(proj.getBounds(),sfNums);
+	for(u32 i = 0; i < sfNums.size(); i++) {
+		bspSurf_s &sf = surfs[sfNums[i]];
+		if(sf.type == BSPSF_PLANAR) {
+			const rIndexBuffer_c &indices = sf.sf->absIndexes;
+			for(u32 j = 0; j < indices.getNumIndices(); j+= 3) {
+				u32 i0 = indices[j];
+				u32 i1 = indices[j+1];
+				u32 i2 = indices[j+2];
+				const vec3_c &v0 = verts[i0].xyz;
+				const vec3_c &v1 = verts[i1].xyz;
+				const vec3_c &v2 = verts[i2].xyz;
+				proj.clipTriangle(v0,v1,v2);
+			}
+		} else {
+			
+		}
+	}
+	proj.setMaterial(material);
+	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
+	return 0;
+}
 void rBspTree_c::setWorldAreaBits(const byte *bytes, u32 numBytes) {
 	if(areaBits.getSizeInBytes() == numBytes && !memcmp(areaBits.getArray(),bytes,numBytes)) {
 		return; // no change
@@ -780,8 +943,12 @@ void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
         traceNodeRay(n.children[1],out);
 	}
 }	
-void rBspTree_c::traceRay(class trace_c &out) {
+bool rBspTree_c::traceRay(class trace_c &out) {
+	float prevFrac = out.getFraction();
 	traceNodeRay(0,out);
+	if(out.getFraction() < prevFrac)
+		return true;
+	return false;
 }
 bool rBspTree_c::traceRayInlineModel(u32 inlineModelNum, class trace_c &out) {
 	if(inlineModelNum == 0) {

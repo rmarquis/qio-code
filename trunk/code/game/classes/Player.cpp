@@ -243,6 +243,7 @@ void Player::onFireKeyDown() {
 		curWeapon->onFireKeyDown();
 		return;
 	}
+	G_BulletAttack(this->getEyePos(),this->getForward());
 }
 void Player::setClientViewAngle(const vec3_c &angle) {
 	// set the delta angle

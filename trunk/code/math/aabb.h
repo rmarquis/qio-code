@@ -43,6 +43,11 @@ public:
 		maxs = mins = p0;
 		addPoint(p1);
 	}
+	void fromThreePoints(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
+		maxs = mins = p0;
+		addPoint(p1);
+		addPoint(p2);
+	}
 	void fromRadius(const float radius) {
 		mins.x = -radius;
 		mins.y = -radius;

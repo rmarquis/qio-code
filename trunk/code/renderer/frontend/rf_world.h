@@ -28,8 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 bool RF_LoadWorldMap(const char *name);
 void RF_ClearWorldMap();
 void RF_AddWorldDrawCalls();
-void RF_RayTraceWorld(class trace_c &tr);
+bool RF_RayTraceWorld(class trace_c &tr);
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes);
+int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 
 #endif // __RF_BSP_H__
 

@@ -27,7 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "../math/vec3.h"
 #include "../math/aabb.h"
-//#include "../math/plane.h"
+#include "../math/plane.h"
 
 class trace_c {
 	// input
@@ -41,10 +41,11 @@ class trace_c {
 	vec3_c hitPos;
 	float fraction; // 1.f == didnt hit anything
 	float traveled;
-	//plane_c hitPlane;
+	plane_c hitPlane;
 
 	union {
 		class BaseEntity *hitEntity; // for game module
+		struct centity_s *clEntity;
 	};
 
 	void updateForNewHitPos();
@@ -69,11 +70,17 @@ public:
 	void setHitEntity(class BaseEntity *newHitEntity) {
 		hitEntity = newHitEntity;
 	}
+	void setHitCGEntity(struct centity_s *newHitCGEntity) {
+		clEntity = newHitCGEntity;
+	}
 	void setFraction(float newFrac) {
 		this->fraction = newFrac;
 	}
 	class BaseEntity *getHitEntity() const {
 		return hitEntity;
+	}
+	struct centity_s *getHitCGEntity() const {
+		return clEntity;
 	}
 	const vec3_c &getStartPos() const {
 		return from;
@@ -86,6 +93,9 @@ public:
 	}
 	const vec3_c &getHitPos() const {
 		return hitPos;
+	}
+	const vec3_c &getHitPlaneNormal() const {
+		return hitPlane.norm;
 	}
 	const vec3_c getDir() const {
 		return delta.getNormalized();

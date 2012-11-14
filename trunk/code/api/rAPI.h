@@ -41,6 +41,8 @@ public:
 	virtual class rEntityAPI_i *allocEntity() = 0;
 	virtual void removeEntity(class rEntityAPI_i *ent) = 0;
 
+	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) = 0;
+
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	//virtual void draw3DView() = 0;
 	//virtual void setup2DView() = 0;
@@ -49,7 +51,7 @@ public:
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white
 	virtual void endFrame() = 0;
 
-	virtual void rayTraceWorldMap(class trace_c &tr) = 0;
+	virtual bool rayTraceWorldMap(class trace_c &tr) = 0;
 
 	virtual void setAreaBits(const byte *bytes, u32 numBytes) = 0;
 

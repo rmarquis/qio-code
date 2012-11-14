@@ -48,6 +48,9 @@ public:
 	u32 getNumTris() const {
 		return indices.getNumIndices() / 3;
 	}
+	mtrAPI_i *getMat() const {
+		return mat;
+	}
 	const char *getMatName() const {
 		return matName;
 	}
@@ -74,6 +77,7 @@ public:
 		indices.addIndex(i2);
 	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	void addPoly(const struct simplePoly_s &poly);
 
 	void resizeVerts(u32 newNumVerts);
 	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
@@ -89,6 +93,10 @@ public:
 	}
 	void createIBO() {
 		indices.uploadToGPU();
+	}
+	void createVBOandIBO() {
+		createVBO();
+		createIBO();
 	}
 	void setMaterial(mtrAPI_i *newMat);
 	void setMaterial(const char *newMatName);

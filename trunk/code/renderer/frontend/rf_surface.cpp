@@ -57,6 +57,12 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	bounds.addPoint(v0.xyz);
 	bounds.addPoint(v1.xyz);
 	bounds.addPoint(v2.xyz);
+}	
+#include <shared/simpleTexturedPoly.h>
+void r_surface_c::addPoly(const simplePoly_s &poly) {
+	for(u32 i = 2; i < poly.verts.size(); i++) {
+		addTriangle(poly.verts[0],poly.verts[i-1],poly.verts[i]);
+	}
 }
 void r_surface_c::resizeVerts(u32 newNumVerts) {
 	verts.resize(newNumVerts);

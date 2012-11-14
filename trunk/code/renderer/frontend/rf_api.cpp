@@ -117,6 +117,7 @@ public:
 		// generate drawcalls
 		RF_AddWorldDrawCalls();
 		RFE_AddEntityDrawCalls();
+		RF_AddWorldDecalDrawCalls();
 		// first draw sky (without writing to the depth buffer)
 		RF_DrawSky();
 		// sort and issue drawcalls (transparency rendering)
@@ -148,8 +149,8 @@ public:
 		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
 		RF_LoadWorldMap(mapName);
 	}
-	virtual void rayTraceWorldMap(class trace_c &tr) {
-		RF_RayTraceWorld(tr);
+	virtual bool rayTraceWorldMap(class trace_c &tr) {
+		return RF_RayTraceWorld(tr);
 	}	
 	virtual void setAreaBits(const byte *bytes, u32 numBytes) {
 		RF_SetWorldAreaBits(bytes, numBytes);
@@ -159,6 +160,9 @@ public:
 	}
 	virtual void removeEntity(class rEntityAPI_i *ent) {
 		RFE_RemoveEntity(ent);
+	}
+	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
+		return RF_AddWorldMapDecal(pos,normal,radius,material);
 	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		if(g_ms == 0)
@@ -183,6 +187,7 @@ public:
 		loadMaterialSystem();
 		rb->init();
 		RF_InitSky();
+		RF_InitDecals();
 	}
 	virtual void endRegistration() {
 
@@ -195,6 +200,7 @@ public:
 		RF_ClearWorldMap();
 		RFE_ClearEntities();
 		RF_ClearModels();
+		RF_ShutdownDecals();
 		unloadMaterialSystem();
 		AUTOCVAR_UnregisterAutoCvars();
 		if(destroyWindow) {

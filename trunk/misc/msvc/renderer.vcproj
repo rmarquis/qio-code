@@ -192,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_decals.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_drawCall.cpp"
 				>
 			</File>
@@ -255,6 +259,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_bsp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_decals.h"
 				>
 			</File>
 			<File
@@ -364,6 +372,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmWinding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmWinding.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\collisionUtils.cpp"
 				>
 			</File>
@@ -385,6 +401,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\r2dVert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\simpleTexturedPoly.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\simpleVert.h"
 				>
 			</File>
 			<File

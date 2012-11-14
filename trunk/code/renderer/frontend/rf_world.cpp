@@ -73,18 +73,25 @@ void RF_AddWorldDrawCalls() {
 		r_worldModel->addDrawCalls();
 	}
 }
-void RF_RayTraceWorld(class trace_c &tr) {
+bool RF_RayTraceWorld(class trace_c &tr) {
 	if(r_bspTree) {
-		r_bspTree->traceRay(tr);
+		return r_bspTree->traceRay(tr);
 	}
 	if(r_worldModel) {
-		r_worldModel->traceRay(tr);
+		return r_worldModel->traceRay(tr);
 	}
+	return false;
 }
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes) {
 	if(r_bspTree) {
 		r_bspTree->setWorldAreaBits(bytes,numBytes);
 	}
+}
+int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
+	if(r_bspTree) {
+		return r_bspTree->addWorldMapDecal(pos,normal,radius,material);
+	}
+	return -1;
 }
 
 

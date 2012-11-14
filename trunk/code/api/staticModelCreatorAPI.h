@@ -30,10 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/vec2.h>
 
-struct simpleVert_s {
-	vec3_c xyz;
-	vec2_c tc;
-};
+#include <shared/simpleVert.h>
 
 // this class is used by modelLoader.dll
 // to pass model file data to cm/renderer modules
@@ -41,6 +38,16 @@ class staticModelCreatorAPI_i : public modelPostProcessFuncs_i {
 public:
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2) = 0;
+	virtual void addTriangleOnlyXYZ(const char *matName, const vec3_c &p0,
+		const vec3_c &p1, const vec3_c &p2) {
+		simpleVert_s v0;
+		v0.xyz = p0;
+		simpleVert_s v1;
+		v1.xyz = p1;
+		simpleVert_s v2;
+		v2.xyz = p2;
+		addTriangle(matName,v0,v1,v2);
+	}
 
 	virtual void resizeVerts(u32 newNumVerts) = 0;
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) = 0;

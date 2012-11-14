@@ -29,7 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 
 bool CG_RayTrace(class trace_c &tr) {
-	rf->rayTraceWorldMap(tr);
+	if(rf->rayTraceWorldMap(tr)) {
+		tr.setHitCGEntity(&cg_entities[ENTITYNUM_WORLD]);	
+	}
 	for(u32 i = 0; i < MAX_GENTITIES; i++) {
 		centity_s *cent = &cg_entities[i];
 		if(cent->currentValid == false) {
@@ -46,6 +48,7 @@ bool CG_RayTrace(class trace_c &tr) {
 		tr.getTransformed(transformedTrace,cent->rEnt->getMatrix());
 		if(cent->rEnt->rayTrace(transformedTrace)) {
 			tr.updateResultsFromTransformedTrace(transformedTrace);
+			tr.setHitCGEntity(cent);
 		}
 	}
 	return tr.hasHit();

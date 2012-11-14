@@ -228,3 +228,15 @@ void cmWinding_c::addPointsUnique(const vec3_c *first, u32 numPoints, float epsi
 		points.push_back(p);
 	}
 }
+void cmWinding_c::iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) {
+	for(u32 i = 2; i < points.size(); i++) {
+		triCallback(points[0],points[i-1],points[i]);
+	}
+}
+#include <api/staticModelCreatorAPI.h>
+void cmWinding_c::iterateTriangles(class staticModelCreatorAPI_i *smc) {
+	for(u32 i = 2; i < points.size(); i++) {
+		smc->addTriangleOnlyXYZ("nomaterial",points[0],points[i-1],points[i]);
+	}
+}
+

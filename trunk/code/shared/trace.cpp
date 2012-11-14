@@ -69,6 +69,7 @@ bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p
 #endif
 	hitPos = newHit;
 	this->updateForNewHitPos();
+	this->hitPlane.fromThreePoints(p0,p1,p2);
 	return true;
 }
 

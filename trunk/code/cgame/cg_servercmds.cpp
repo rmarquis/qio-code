@@ -110,6 +110,31 @@ static void CG_MapRestart( void ) {
 
 }
 
+#include <shared/trace.h>
+static void CG_TestBulletAttack() {
+	vec3_c p, d;
+	p.x = atof(CG_Argv(1));
+	p.y = atof(CG_Argv(2));
+	p.z = atof(CG_Argv(3));
+	d.x = atof(CG_Argv(4));
+	d.y = atof(CG_Argv(5));
+	d.z = atof(CG_Argv(6));
+	CG_Printf("CG_TestBulletAttack: from %f %f %f, dir %f %f %f\n",p.x,p.y,p.z,d.x,d.y,d.z);
+	trace_c tr;
+	tr.setupRay(p,d*100000.f);
+	if(CG_RayTrace(tr) == false) {
+		
+		return; // no hit
+	}
+	centity_s *hit = tr.getHitCGEntity();
+	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+		mtrAPI_i *decalMaterial = 0;
+		rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + 16.f * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
+		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),16.f,decalMaterial);
+		return;
+	}
+}
+
 /*
 =================
 CG_ServerCommand
@@ -131,15 +156,14 @@ static void CG_ServerCommand( void ) {
 	if ( !strcmp( cmd, "cs" ) ) {
 		CG_ConfigStringModified();
 		return;
-	}
-
-	if ( !strcmp( cmd, "print" ) ) {
+	} else if ( !strcmp( cmd, "print" ) ) {
 		CG_Printf( "%s", CG_Argv(1) );
 		return;
-	}
-
-	if ( !strcmp( cmd, "map_restart" ) ) {
+	} else if ( !strcmp( cmd, "map_restart" ) ) {
 		CG_MapRestart();
+		return;
+	} else if ( !strcmp( cmd, "test_bulletAttack" ) ) {
+		CG_TestBulletAttack();
 		return;
 	}
 

@@ -51,6 +51,8 @@ struct bspSurf_s {
 		class r_bezierPatch_c *patch; // only if type == BSPSF_BEZIER
 	};
 	int lastVisCount; // if sf->lastVisCount == bsp->visCounter then a surface is potentialy visible (in PVS)
+
+	const aabb &getBounds() const;
 };
 struct bspSurfBatch_s {
 	// we can only merge surfaces with the same material and lightmap....
@@ -90,6 +92,29 @@ struct bspPlane_s {
 		float r = p.x * normal[0] + p.y * normal[1] + p.z * normal[2];
 		r -= dist;
 		return r;
+	}
+	planeSide_e onSide(const aabb &bb) const {
+		vec3_t corners[2];
+		for (int i = 0; i < 3; i++) {
+			if (this->normal[i] > 0) {
+				corners[0][i] = bb.mins[i];
+				corners[1][i] = bb.maxs[i];
+			} else {
+				corners[1][i] = bb.mins[i];
+				corners[0][i] = bb.maxs[i];
+			}
+		}
+		float dist1 = this->distance(corners[0]);
+		float dist2 = this->distance(corners[1]);
+		bool front = false;
+		if (dist1 >= 0) {
+			if (dist2 < 0)
+				return SIDE_CROSS;
+			return SIDE_FRONT;
+		}
+		if (dist2 < 0)
+			return SIDE_BACK;
+		//assert(0);
 	}
 };
 class rBspTree_c {
@@ -142,6 +167,8 @@ class rBspTree_c {
 	int pointInLeaf(const vec3_c &pos) const;
 	int pointInCluster(const vec3_c &pos) const;
 	bool isClusterVisible(int visCluster, int testCluster) const;
+	u32 boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const;
+	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
 public:
 	rBspTree_c();
 	~rBspTree_c();
@@ -152,10 +179,12 @@ public:
 	void updateVisibility();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
+	
+	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	void setWorldAreaBits(const byte *bytes, u32 numBytes);
 
-	void traceRay(class trace_c &out);
+	bool traceRay(class trace_c &out);
 	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);
 };
 

@@ -31,6 +31,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cmWinding_c {
 	arraySTD_c<vec3_c> points;
 public:
+	cmWinding_c() {
+
+	}
+	cmWinding_c(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
+		points.push_back(p0);
+		points.push_back(p1);
+		points.push_back(p2);
+	}
 	bool createBaseWindingFromPlane(const class plane_c &pl, float maxCoord = 131072.f);
 	void addWindingPointsUnique(const vec3_c *addPoints, u32 numPointsToAdd);
 	void addWindingPointsUnique(const arraySTD_c<vec3_c> &otherPoints) {
@@ -44,6 +52,9 @@ public:
 	void addPointsToBounds(class aabb &out) const;
 	void removeDuplicatedPoints(float epsilon = 0.001f);
 	void addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon = 0.001f);
+	
+	void iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2));
+	void iterateTriangles(class staticModelCreatorAPI_i *smc);
 
 	u32 size() const {
 		return points.size();
