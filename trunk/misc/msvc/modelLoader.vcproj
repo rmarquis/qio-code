@@ -248,6 +248,58 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="SkeletalModelLoaders"
+			>
+			<File
+				RelativePath="..\..\code\modelLoader\skelModelImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\skelModelImpl.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="API"
+			>
+			<File
+				RelativePath="..\..\code\api\skelModelAPI.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\..\code\math\aabb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\axis.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\quat.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

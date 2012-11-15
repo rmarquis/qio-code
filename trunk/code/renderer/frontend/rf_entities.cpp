@@ -26,20 +26,28 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_model.h"
 #include "rf_local.h"
 #include "rf_decals.h"
+#include "rf_surface.h"
 #include <api/coreAPI.h>
+#include <api/skelModelAPI.h>
 #include <shared/autoCvar.h>
 
 aCvar_c rf_skipEntities("rf_skipEntities","0");
 rEntityImpl_c::rEntityImpl_c() {
 	model = 0;
 	staticDecals = 0;
+	instance = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
 		delete staticDecals;
 		staticDecals = 0;
 	}
+	if(instance) {
+		delete instance;
+		instance = 0;
+	}
 }
+
 void rEntityImpl_c::recalcABSBounds() {
 	if(model == 0) {
 		absBB.clear();
@@ -62,9 +70,37 @@ void rEntityImpl_c::setAngles(const vec3_c &newAngles) {
 	axis.fromAngles(angles);
 	recalcMatrix();
 }
+
 void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
+	if(model == newModel) {
+		return;
+	}
+	if(staticDecals) {
+		delete staticDecals;
+		staticDecals = 0;
+	}
+	if(instance) {
+		delete instance;
+		instance = 0;
+	}
+	if(newModel->isStatic() == false) {
+		instance = new r_model_c;
+		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
+		instance->initSkelModelInstance(skelModel);
+		instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
+	}
 	model = newModel;
 	recalcABSBounds();
+}
+void rEntityImpl_c::addDrawCalls() {
+	if(model->isStatic()) {
+		((model_c*)model)->addModelDrawCalls();
+		if(staticDecals) {
+			staticDecals->addDrawCalls();
+		}
+	} else if(instance) {
+		instance->addDrawCalls();
+	}
 }
 bool rEntityImpl_c::rayTrace(class trace_c &tr) const {
 	return model->rayTrace(tr);
@@ -117,11 +153,7 @@ void RFE_AddEntityDrawCalls() {
 			c_entitiesCulledByABSBounds++;
 			continue;
 		}
-		model->addModelDrawCalls();
-		class simpleDecalBatcher_c *staticDecals = ent->getStaticDecalsBatch();
-		if(staticDecals) {
-			staticDecals->addDrawCalls();
-		}
+		ent->addDrawCalls();
 	}
 	if(0) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());

@@ -100,6 +100,13 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 		} else {
 			ret->type = MOD_STATIC; // that's a valid model
 		}
+	} else if(g_modelLoader->isSkelModelFile(modName)) {
+		ret->skelModel = g_modelLoader->loadSkelModelFile(modName);
+		if(ret->skelModel) {
+			ret->type = MOD_SKELETAL; // that's a valid model
+		} else {
+			g_core->Print(S_COLOR_RED"Loading of skeletal model %s failed\n",modName);
+		}
 	}
 	return ret;
 }

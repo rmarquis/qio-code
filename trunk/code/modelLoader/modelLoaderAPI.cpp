@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // modelLoaderAPI.cpp - model loader interface
 
 #include "modelLoaderLocal.h"
+#include "skelModelImpl.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -34,11 +35,23 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
+
 bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
 public:
 	virtual bool isStaticModelFile(const char *fname) {
-		return true;
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return false;
+		}
+		ext++;
+		if(!stricmp(ext,"obj"))
+			return true;
+		if(!stricmp(ext,"map"))
+			return true;
+		if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp"))
+			return true;
+		return false;
 	}
 	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out)  {
 		const char *ext = strchr(fname,'.');
@@ -63,6 +76,24 @@ public:
 			return false; // no error
 		}
 		return true;
+	}
+	virtual bool isSkelModelFile(const char *fname) {
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return false;
+		}
+		ext++;
+		if(!stricmp(ext,"md5mesh"))
+			return true;
+		return false;
+	}
+	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
+		skelModelIMPL_c *skelModel = new skelModelIMPL_c;
+		if(skelModel->loadMD5Mesh(fname)) {
+			delete skelModel;
+			return 0;
+		}
+		return skelModel;
 	}
 };
 

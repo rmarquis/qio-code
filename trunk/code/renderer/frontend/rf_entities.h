@@ -39,7 +39,10 @@ class rEntityImpl_c : public rEntityAPI_i {
 	vec3_c origin;
 	class rModelAPI_i *model;
 	aabb absBB;
-	class simpleDecalBatcher_c *staticDecals; // used only for static (non-animated) model entities
+	// used only for static (non-animated) model entities
+	class simpleDecalBatcher_c *staticDecals; 
+	// only for skeletal models; model geometry instanced at the current time of animation
+	class r_model_c *instance;
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();
@@ -71,6 +74,7 @@ public:
 		return staticDecals;
 	}
 
+	void addDrawCalls();
 	bool rayTrace(class trace_c &tr) const;
 };
 

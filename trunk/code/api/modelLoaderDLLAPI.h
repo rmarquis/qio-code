@@ -29,8 +29,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class modelLoaderDLLAPI_i {
 public:
+	// static (non animated) models.
 	virtual bool isStaticModelFile(const char *fname) = 0;
 	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
+	// skeletal animated models
+	virtual bool isSkelModelFile(const char *fname) = 0;
+	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) = 0;
 };
 
 extern class modelLoaderDLLAPI_i *g_modelLoader;

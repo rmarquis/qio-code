@@ -33,6 +33,7 @@ enum modelType_e {
 	MOD_BAD,
 	MOD_BSP, // inline bsp model (model name starts with '*')
 	MOD_STATIC, // static (non-animated) triangle model
+	MOD_SKELETAL, // animated skeletal model
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -47,6 +48,7 @@ class model_c : public rModelAPI_i {
 			u32 bspModelNum;
 		}; // only if this->type == MOD_BSP
 		class r_model_c *staticModel; // only if this->type == MOD_STATIC
+		class skelModelAPI_i *skelModel; // only if this->type == MOD_SKELETAL
 	};
 	aabb bb;
 public:
@@ -95,6 +97,12 @@ public:
 	virtual bool rayTrace(class trace_c &tr) const;
 	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
+
+	virtual class skelModelAPI_i *getSkelModelAPI() const {
+		if(type == MOD_SKELETAL)
+			return skelModel;
+		return 0;
+	}
 
 	void clear();
 

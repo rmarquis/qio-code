@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "matrix.h"
 #include "aabb.h"
 #include "axis.h"
+#include "quat.h"
 
 void matrix_c::transformAABB(const aabb &in, aabb &out) const {
 #if 0
@@ -253,6 +254,83 @@ quat_c matrix_c::getQuat() const {
 	return q;
 }
 #endif
+
+void matrix_c::fromQuat(const quat_c &q) {
+#if 0
+	float xx,xy,xz,xw,yy,yz,yw,zz,zw;
+
+	xx      = q[0] * q[0];
+	xy      = q[0] * q[1];
+	xz      = q[0] * q[2];
+	xw      = q[0] * q[3];
+
+	yy      = q[1] * q[1];
+	yz      = q[1] * q[2];
+	yw      = q[1] * q[3];
+
+	zz      = q[2] * q[2];
+	zw      = q[2] * q[3];
+
+	_v[0]  = 1 - 2 * ( yy + zz );
+	_v[4]  =     2 * ( xy - zw );
+	_v[8]  =     2 * ( xz + yw );
+
+	_v[1]  =     2 * ( xy + zw );
+	_v[5]  = 1 - 2 * ( xx + zz );
+	_v[9]  =     2 * ( yz - xw );
+
+	_v[2]  =     2 * ( xz - yw );
+	_v[6]  =     2 * ( yz + xw );
+	_v[10] = 1 - 2 * ( xx + yy );
+
+	_v[3]  = _v[7] = _v[11] = _v[12] = _v[13] = _v[14] = 0;
+	_v[15] = 1;
+#else
+	/*
+	From Quaternion to Matrix and Back
+	February 27th 2005
+	J.M.P. van Waveren
+
+	http://www.intel.com/cd/ids/developer/asmo-na/eng/293748.htm
+	*/
+	float			x2, y2, z2, w2;
+	float			yy2, xy2;
+	float			xz2, yz2, zz2;
+	float			wz2, wy2, wx2, xx2;
+
+	x2 = q[0] + q[0];
+	y2 = q[1] + q[1];
+	z2 = q[2] + q[2];
+	w2 = q[3] + q[3];
+
+	yy2 = q[1] * y2;
+	xy2 = q[0] * y2;
+
+	xz2 = q[0] * z2;
+	yz2 = q[1] * z2;
+	zz2 = q[2] * z2;
+
+	wz2 = q[3] * z2;
+	wy2 = q[3] * y2;
+	wx2 = q[3] * x2;
+	xx2 = q[0] * x2;
+
+	_v[ 0] = - yy2 - zz2 + 1.0f;
+	_v[ 1] =   xy2 + wz2;
+	_v[ 2] =   xz2 - wy2;
+
+	_v[ 4] =   xy2 - wz2;
+	_v[ 5] = - xx2 - zz2 + 1.0f;
+	_v[ 6] =   yz2 + wx2;
+
+	_v[ 8] =   xz2 + wy2;
+	_v[ 9] =   yz2 - wx2;
+	_v[10] = - xx2 - yy2 + 1.0f;
+
+	_v[ 3] = _v[ 7] = _v[11] = _v[12] = _v[13] = _v[14] = 0;
+	_v[15] = 1;
+#endif
+}
 void matrix_c::print() const {
 	for(u32 i = 0; i < 4; i++) {
 		printf("%f %f %f %f\n",_m[i][0],_m[i][1],_m[i][2],_m[i][3]);

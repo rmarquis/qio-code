@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
+#include <api/skelModelAPI.h>
 #include <shared/trace.h>
 #include "rf_decalProjector.h"
 
@@ -169,6 +170,31 @@ bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
 	}
 	return newPoints;
 }
+void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
+	clear();
+	setMaterial(skelSF->getMatName());
+	verts.resize(skelSF->getNumVerts());
+	rVert_c *v = verts.getArray();
+	const skelVert_s *inV = skelSF->getVerts();
+	for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
+		v->tc = inV->tc;
+	}
+	indices.addU16Array(skelSF->getIndices(),skelSF->getNumIndices());
+}
+void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneArray_c &bones) {
+	rVert_c *v = verts.getArray();
+	const skelVert_s *inV = skelSF->getVerts();
+	const skelWeight_s *inWeights = skelSF->getWeights();
+	for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
+		const skelWeight_s *w = inWeights + inV->firstWeight;
+		v->xyz.clear();
+		for(u32 j = 0; j < inV->numWeights; j++, w++) {
+			vec3_c p;
+			bones[w->boneIndex].mat.transformPoint(w->ofs,p);
+			v->xyz += p * w->weight;
+		}
+	}	
+}
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -308,6 +334,21 @@ void r_model_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->addGeometryToColMeshBuilder(out);
+	}
+}
+void r_model_c::initSkelModelInstance(class skelModelAPI_i *skel) {
+	surfs.resize(skel->getNumSurfs());
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
+		sf->initSkelSurfInstance(inSF);
+	}
+}
+void r_model_c::updateSkelModelInstance(class skelModelAPI_i *skel, const class boneArray_c &bones) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
+		sf->updateSkelSurfInstance(inSF,bones);
 	}
 }
 #include <shared/cmSurface.h>

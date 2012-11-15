@@ -1,0 +1,283 @@
+models/player/shina/cloth
+{
+	{ 
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth.png
+	}
+	specularMap		models/player/shina/cloth_s.png
+	bumpMap			models/player/shina/cloth_n.png
+}
+
+models/player/shina/cloth_bright
+{
+	{ 
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth.png
+	}
+	specularMap		models/player/shina/cloth_s.png
+	bumpMap			models/player/shina/cloth_n.png
+	glowMap			models/player/shina/cloth_bright.png
+}
+
+models/player/shina/cloth_red
+{
+	{ 
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_red.png
+	}
+	specularMap		models/player/shina/cloth_s.png
+	bumpMap			models/player/shina/cloth_n.png
+	glowMap			models/player/shina/cloth_red_bright.png
+}
+models/player/shina/cloth_blue
+{
+	{ 
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_blue.png
+	}
+	specularMap		models/player/shina/cloth_s.png
+	bumpMap			models/player/shina/cloth_n.png
+	glowMap			models/player/shina/cloth_blue_bright.png
+}
+
+models/player/shina/cloth_head
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_head.png
+	}
+	specularMap		models/player/shina/cloth_head_s.png
+	bumpMap			models/player/shina/cloth_head_n.png
+}
+
+models/player/shina/cloth_head_bright
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_head.png
+	}
+	specularMap		models/player/shina/cloth_head_s.png
+	bumpMap			models/player/shina/cloth_head_n.png
+	glowMap			models/player/shina/cloth_head_bright.png
+}
+
+models/player/shina/cloth_head_red
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_head_red.png
+	}
+	specularMap		models/player/shina/cloth_head_s.png
+	bumpMap			models/player/shina/cloth_head_n.png
+}
+
+models/player/shina/cloth_head_blue
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_head_blue.png
+	}
+	specularMap		models/player/shina/cloth_head_s.png
+	bumpMap			models/player/shina/cloth_head_n.png
+}
+models/player/shina/cloth_middle
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_middle.png
+	}
+	specularMap		models/player/shina/cloth_middle_s.png
+	bumpMap			models/player/shina/cloth_middle_n.png
+}
+
+models/player/shina/cloth_middle_bright
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_middle.png
+	}
+	specularMap		models/player/shina/cloth_middle_s.png
+	bumpMap			models/player/shina/cloth_middle_n.png
+	glowMap			models/player/shina/cloth_middle_bright.png
+}
+
+models/player/shina/cloth_middle_red
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_middle_red.png
+	}
+	specularMap		models/player/shina/cloth_middle_s.png
+	bumpMap			models/player/shina/cloth_middle_n.png
+	glowMap			models/player/shina/cloth_middle_red_bright.png
+}
+
+models/player/shina/cloth_middle_blue
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_middle_blue.png
+	}
+	specularMap		models/player/shina/cloth_middle_s.png
+	bumpMap			models/player/shina/cloth_middle_n.png
+	glowMap			models/player/shina/cloth_middle_blue_bright.png
+}
+
+models/player/shina/cloth_lower
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_lower.png
+	}
+	specularMap		models/player/shina/cloth_lower_s.png
+	bumpMap			models/player/shina/cloth_lower_n.png
+}
+
+models/player/shina/cloth_lower_bright
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_lower.png
+	}
+	specularMap		models/player/shina/cloth_lower_s.png
+	bumpMap			models/player/shina/cloth_lower_n.png
+	glowMap			models/player/shina/cloth_lower_bright.png
+}
+
+models/player/shina/cloth_upper
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/cloth_upper.png
+	}
+	specularMap		models/player/shina/cloth_upper_s.png
+	bumpMap			models/player/shina/cloth_upper_n.png
+}
+
+
+models/player/shina/accessecoires
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/accessecoires.png
+	}
+	specularMap		models/player/shina/accessecoires_s.png
+	bumpMap			models/player/shina/accessecoires_s.png
+	{
+		if(parm4 <= 0.5)
+		map		models/player/shina/accessecoires_glow.png
+		blend		blend
+		alpha		0.6 + 0.3 * ( 1.0 -  (   (sinTable[time * .8] + 1.0) / 2.0 ) )
+	}
+}
+
+models/player/shina/skin
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/skin.png
+	}
+	specularMap		models/player/shina/skin_s.png
+	bumpMap			models/player/shina/skin_n.png
+}
+
+models/player/shina/skin_red
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/skin.png
+	}
+	specularMap		models/player/shina/skin_s.png
+	bumpMap			models/player/shina/skin_n.png
+	glowMap			models/player/shina/skin_red_bright.png
+}
+
+models/player/shina/skin_blue
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/skin.png
+	}
+	specularMap		models/player/shina/skin_s.png
+	bumpMap			models/player/shina/skin_n.png
+	glowMap			models/player/shina/skin_blue_bright.png
+}
+
+models/player/shina/skin_bright
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/skin.png
+	}
+	specularMap		models/player/shina/skin_s.png
+	bumpMap			models/player/shina/skin_n.png
+	glowMap			models/player/shina/skin_bright.png
+}
+
+models/player/shina/skin_red
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/skin.png
+	}
+	specularMap		models/player/shina/skin_s.png
+	bumpMap			models/player/shina/skin_n.png
+	glowMap			models/player/shina/skin_red_bright.png
+}
+
+models/player/shina/hair
+{
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/hair.png
+	}	
+	specularMap		models/player/shina/hair.png
+	bumpMap			heightmap(models/player/shina/hair_s.png, 1.0)
+}
+
+models/player/shina/hair_transp
+{
+	translucent
+	twosided
+	{
+		if(parm4 <= 0.5)
+		blend		blend
+		map		models/player/shina/hair_transp.png	
+	}
+}
+
+
+models/player/shina/eyelash
+{
+	translucent
+	twosided
+	{
+		if(parm4 <= 0.5)
+		stage		diffuseMap
+		map		models/player/shina/hair_transp.png
+		alphaTest	0.5
+	}
+}
+
