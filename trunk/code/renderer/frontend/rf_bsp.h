@@ -169,6 +169,7 @@ class rBspTree_c {
 	bool isClusterVisible(int visCluster, int testCluster) const;
 	u32 boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
+	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;
 public:
 	rBspTree_c();
 	~rBspTree_c();
@@ -186,6 +187,8 @@ public:
 
 	bool traceRay(class trace_c &out);
 	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);
+	bool createInlineModelDecal(u32 inlineModelNum, class simpleDecalBatcher_c *out, const class vec3_c &pos,
+								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 };
 
 rBspTree_c *RF_LoadBSP(const char *fname);

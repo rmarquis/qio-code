@@ -751,33 +751,37 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 }
 
 #include "rf_decalProjector.h"
-
+u32 rBspTree_c::createSurfDecals(u32 surfNum, class decalProjector_c &proj) const {
+	u32 added = 0;
+	const bspSurf_s &sf = surfs[surfNum];
+	if(sf.type == BSPSF_PLANAR) {
+		const rIndexBuffer_c &indices = sf.sf->absIndexes;
+		for(u32 j = 0; j < indices.getNumIndices(); j+= 3) {
+			u32 i0 = indices[j];
+			u32 i1 = indices[j+1];
+			u32 i2 = indices[j+2];
+			const vec3_c &v0 = verts[i0].xyz;
+			const vec3_c &v1 = verts[i1].xyz;
+			const vec3_c &v2 = verts[i2].xyz;
+			added += proj.clipTriangle(v0,v1,v2);
+		}
+	} else {
+		
+	}
+	return added;
+}
 int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 	if(material == 0) {
 		material = g_ms->registerMaterial("defaultMaterial");
 	}
 	decalProjector_c proj;
 	proj.init(pos,normal,radius);
+	proj.setMaterial(material);
 	arraySTD_c<u32> sfNums;
 	boxSurfaces(proj.getBounds(),sfNums);
 	for(u32 i = 0; i < sfNums.size(); i++) {
-		bspSurf_s &sf = surfs[sfNums[i]];
-		if(sf.type == BSPSF_PLANAR) {
-			const rIndexBuffer_c &indices = sf.sf->absIndexes;
-			for(u32 j = 0; j < indices.getNumIndices(); j+= 3) {
-				u32 i0 = indices[j];
-				u32 i1 = indices[j+1];
-				u32 i2 = indices[j+2];
-				const vec3_c &v0 = verts[i0].xyz;
-				const vec3_c &v1 = verts[i1].xyz;
-				const vec3_c &v2 = verts[i2].xyz;
-				proj.clipTriangle(v0,v1,v2);
-			}
-		} else {
-			
-		}
+		createSurfDecals(sfNums[i],proj);
 	}
-	proj.setMaterial(material);
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
 	return 0;
 }
@@ -869,6 +873,21 @@ bool rBspTree_c::traceRayInlineModel(u32 inlineModelNum, class trace_c &out) {
 			hasHit = true;
 		}
 	}
+	return hasHit;
+}	
+bool rBspTree_c::createInlineModelDecal(u32 inlineModelNum, class simpleDecalBatcher_c *out, const class vec3_c &pos,
+										const class vec3_c &normal, float radius, class mtrAPI_i *material) {
+	decalProjector_c proj;
+	proj.init(pos,normal,radius);
+	proj.setMaterial(material);
+	bool hasHit = false;
+	const bspModel_s &m = models[inlineModelNum];
+	for(u32 i = 0; i < m.numSurfs; i++) {
+		if(createSurfDecals(m.firstSurf+i,proj)) {
+			hasHit = true;
+		}
+	}
+	proj.addResultsToDecalBatcher(out);
 	return hasHit;
 }
 rBspTree_c *RF_LoadBSP(const char *fname) {
