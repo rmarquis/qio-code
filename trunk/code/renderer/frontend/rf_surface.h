@@ -41,6 +41,7 @@ class r_surface_c {
 	aabb bounds;
 public:
 	r_surface_c();
+	~r_surface_c();
 
 	u32 getNumVerts() const {
 		return verts.size();

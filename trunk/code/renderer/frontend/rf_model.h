@@ -96,9 +96,10 @@ public:
 	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
 
+	void clear();
+
 // model creation access for BSP class (bsp inline models)
 friend void RF_ClearModels();
-friend void RF_ClearModel(model_c *m);
 friend model_c *RF_AllocModel(const char *modName);
 friend rModelAPI_i *RF_FindModel(const char *modName);
 friend rModelAPI_i *RF_RegisterModel(const char *modName);

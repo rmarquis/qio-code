@@ -41,6 +41,9 @@ r_surface_c::r_surface_c() {
 	}
 	lightmap = 0;
 }
+r_surface_c::~r_surface_c() {
+	this->clear();
+}
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	indices.addIndex(verts.size());
 	indices.addIndex(verts.size()+1);

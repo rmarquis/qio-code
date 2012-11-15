@@ -56,16 +56,23 @@ bool model_c::createStaticModelDecal(class simpleDecalBatcher_c *out, const clas
 	}
 	return false;
 }
+
+void model_c::clear() {
+	if(type == MOD_BSP) {
+		// bsp inline models are fried in rf_bsp.cpp
+	} else if(type == MOD_STATIC) {
+		delete staticModel;
+		staticModel = 0;
+	}
+}
+
 static hashTableTemplateExt_c<model_c> rf_models;
 
-void RF_ClearModel(model_c *m) {
-	// bsp inline models are fried in rf_bsp.cpp
-}
 model_c *RF_AllocModel(const char *modName) {
 	model_c *check = (model_c*)RF_FindModel(modName);
 	if(check) {
 		g_core->Print(S_COLOR_RED,"RF_AllocModel: model %s already exist. Overwriting.\n",modName);
-		RF_ClearModel(check);
+		check->clear();
 		return check;
 	}
 	model_c *nm = new model_c;
@@ -100,7 +107,7 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 void RF_ClearModels() {
 	for(u32 i = 0; i < rf_models.size(); i++) {
 		model_c *m = rf_models[i];
-		RF_ClearModel(m);
+		m->clear();
 		delete m;
 		rf_models[i] = 0;
 	}
