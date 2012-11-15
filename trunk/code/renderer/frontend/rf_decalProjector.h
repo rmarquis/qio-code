@@ -21,27 +21,33 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_decals.cpp - decals managment, storage, and drawing
-#ifndef __RF_DECALS_H__
-#define __RF_DECALS_H__
+// rf_decalProjector.h
+#ifndef __RF_DECALPROJECTOR_H__
+#define __RF_DECALPROJECTOR_H__
 
-#include <shared/array.h>
+#include <math/aabb.h>
+#include <math/plane.h>
+#include <shared/cmWinding.h>
+#include <shared/simpleTexturedPoly.h>
 
-// TODO: pvsDecalBatcher for BSP trees
-// and octreeDecalBatches for larger outdoor scenes?
-class simpleDecalBatcher_c {
-	arraySTD_c<class r_surface_c*> batches;
-	arraySTD_c<struct simpleDecal_s*> decals;
-
-	void addDecalsWithMatToBatch(class mtrAPI_i *mat, class r_surface_c *batch);
-	bool hasDecalWithMat(class mtrAPI_i *m);
-	void rebuildBatchWithMat(class mtrAPI_i *m);
+class decalProjector_c {
+	plane_c planes[6];
+	aabb bounds;
+	arraySTD_c<cmWinding_c> results;
+	mtrAPI_i *mat;
+	vec3_c inPos;
+	vec3_c inNormal;
+	float inRadius;
+	vec3_c perp, perp2; // vectors perpendicular to inNormal
 public:
-	simpleDecalBatcher_c();
-	~simpleDecalBatcher_c();
-
-	void addDecal(const struct simplePoly_s &decalPoly);
-	void addDrawCalls();
+	decalProjector_c();
+	void init(const vec3_c &pos, const vec3_c &normal, float radius);
+	void setMaterial(class mtrAPI_i *newMat);
+	u32 clipTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2);
+	void iterateResults(void (*untexturedTriCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2));
+	void iterateResults(class staticModelCreatorAPI_i *smc);
+	void addResultsToDecalBatcher(class simpleDecalBatcher_c *batcher);
+	const aabb &getBounds() const;
 };
 
-#endif // __RF_DECALS_H__
+#endif // __RF_DECALPROJECTOR_H__

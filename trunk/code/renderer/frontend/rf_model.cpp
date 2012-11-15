@@ -47,6 +47,15 @@ bool model_c::rayTrace(class trace_c &tr) const {
 	}
 }
 
+bool model_c::createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+								 const class vec3_c &normal, float radius, class mtrAPI_i *material) {
+	if(type == MOD_BSP) {
+		//return myBSP->addDecalWorldSpace(bspModelNum,tr);
+	} else if(type == MOD_STATIC) {
+		return staticModel->createDecal(out,pos,normal,radius,material);
+	}
+	return false;
+}
 static hashTableTemplateExt_c<model_c> rf_models;
 
 void RF_ClearModel(model_c *m) {

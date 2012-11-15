@@ -27,7 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "vec3.h"
 
-#define AABB_INFINITE 99999999
+#define AABB_INFINITE 99999999.f
 
 class aabb {
 public:

@@ -39,15 +39,18 @@ class rEntityImpl_c : public rEntityAPI_i {
 	vec3_c origin;
 	class rModelAPI_i *model;
 	aabb absBB;
+	class simpleDecalBatcher_c *staticDecals; // used only for static (non-animated) model entities
 public:
-	rEntityImpl_c() {
-		model = 0;
-	}
+	rEntityImpl_c();
+	~rEntityImpl_c();
+
 	void recalcABSBounds();
 	void recalcMatrix();
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setModel(class rModelAPI_i *newModel);
+	virtual int addDecalWorldSpace(const class vec3_c &pos, 
+		const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	virtual rModelAPI_i *getModel() const {
 		return model;
@@ -63,6 +66,9 @@ public:
 	}
 	virtual const class aabb &getBoundsABS() const {
 		return absBB;
+	}
+	class simpleDecalBatcher_c *getStaticDecalsBatch() {
+		return staticDecals;
 	}
 
 	bool rayTrace(class trace_c &tr) const;

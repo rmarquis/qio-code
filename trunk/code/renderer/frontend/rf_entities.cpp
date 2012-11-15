@@ -25,11 +25,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_entities.h"
 #include "rf_model.h"
 #include "rf_local.h"
+#include "rf_decals.h"
 #include <api/coreAPI.h>
 #include <shared/autoCvar.h>
 
 aCvar_c rf_skipEntities("rf_skipEntities","0");
-
+rEntityImpl_c::rEntityImpl_c() {
+	model = 0;
+	staticDecals = 0;
+}
+rEntityImpl_c::~rEntityImpl_c() {
+	if(staticDecals) {
+		delete staticDecals;
+		staticDecals = 0;
+	}
+}
 void rEntityImpl_c::recalcABSBounds() {
 	if(model == 0) {
 		absBB.clear();
@@ -58,6 +68,23 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 }
 bool rEntityImpl_c::rayTrace(class trace_c &tr) const {
 	return model->rayTrace(tr);
+}
+int rEntityImpl_c::addDecalWorldSpace(const class vec3_c &pos, 
+	const class vec3_c &normal, float radius, class mtrAPI_i *material) {
+	if(model == 0)
+		return -1;
+	matrix_c matrixInverse = matrix.getInversed();
+	vec3_c posLocal;
+	matrixInverse.transformPoint(pos,posLocal);
+	vec3_c normLocal;
+	matrixInverse.transformNormal(normal,normLocal);
+	if(model->isStatic()) {
+		if(this->staticDecals == 0) {
+			this->staticDecals = new simpleDecalBatcher_c;
+		}
+		model->createStaticModelDecal(this->staticDecals,posLocal,normLocal,radius,material);
+	}
+	return -1;
 }
 
 static arraySTD_c<rEntityImpl_c*> rf_entities;
@@ -91,6 +118,10 @@ void RFE_AddEntityDrawCalls() {
 			continue;
 		}
 		model->addModelDrawCalls();
+		class simpleDecalBatcher_c *staticDecals = ent->getStaticDecalsBatch();
+		if(staticDecals) {
+			staticDecals->addDrawCalls();
+		}
 	}
 	if(0) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());

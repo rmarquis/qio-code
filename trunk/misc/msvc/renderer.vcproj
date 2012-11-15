@@ -192,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_decalProjector.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_decals.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_bsp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_decalProjector.h"
 				>
 			</File>
 			<File

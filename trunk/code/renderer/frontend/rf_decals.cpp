@@ -86,7 +86,6 @@ void simpleDecalBatcher_c::rebuildBatchWithMat(mtrAPI_i *m) {
 	// create a new one
 	r_surface_c *nb = new r_surface_c;
 	nb->setMaterial(m);
-	nb->setMaterial(m);
 	addDecalsWithMatToBatch(m,nb);
 	nb->createVBOandIBO();
 	batches.push_back(nb);

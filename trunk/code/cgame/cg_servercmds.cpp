@@ -111,6 +111,7 @@ static void CG_MapRestart( void ) {
 }
 
 #include <shared/trace.h>
+#include <api/rEntityAPI.h>
 static void CG_TestBulletAttack() {
 	vec3_c p, d;
 	p.x = atof(CG_Argv(1));
@@ -123,15 +124,24 @@ static void CG_TestBulletAttack() {
 	trace_c tr;
 	tr.setupRay(p,d*100000.f);
 	if(CG_RayTrace(tr) == false) {
-		
+		CG_Printf("CG_TestBulletAttack: no hit\n");
 		return; // no hit
 	}
+	mtrAPI_i *decalMaterial = 0;
+	float radius = 8.f;
 	centity_s *hit = tr.getHitCGEntity();
 	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
-		mtrAPI_i *decalMaterial = 0;
-		rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + 16.f * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
-		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),16.f,decalMaterial);
+		CG_Printf("CG_TestBulletAttack: hit Worldspawn\n");
+		rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
+		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		return;
+	} else {
+		CG_Printf("CG_TestBulletAttack: hit entity\n");
+		if(hit->rEnt) {
+			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		} else {
+			CG_Printf("CG_TestBulletAttack: hit centity has NULL rEnt\n");
+		}
 	}
 }
 

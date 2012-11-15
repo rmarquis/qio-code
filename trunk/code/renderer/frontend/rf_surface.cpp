@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <shared/trace.h>
+#include "rf_decalProjector.h"
 
 //
 //	r_surface_c class
@@ -80,8 +81,17 @@ void r_surface_c::setIndex(u32 indexNum, u32 value) {
 	indices.setIndex(indexNum,value);
 }
 void r_surface_c::setMaterial(mtrAPI_i *newMat) {
+#if 1
+	if(newMat == 0) {
+		newMat = g_ms->registerMaterial("noMaterial");
+	}
+#endif
 	mat = newMat;
-	matName = newMat->getName();
+	if(newMat == 0) {
+		matName = "noMaterial";
+	} else {
+		matName = newMat->getName();
+	}
 }
 void r_surface_c::setMaterial(const char *newMatName) {
 	matName = newMatName;
@@ -143,6 +153,19 @@ bool r_surface_c::traceRay(class trace_c &tr) {
 	}
 	return hasHit;
 }	
+bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
+	u32 newPoints = 0;
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		const rVert_c &v0 = verts[i0];
+		const rVert_c &v1 = verts[i1];
+		const rVert_c &v2 = verts[i2];
+		newPoints += proj.clipTriangle(v0.xyz,v1.xyz,v2.xyz);
+	}
+	return newPoints;
+}
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -176,6 +199,7 @@ void r_surface_c::translateXYZ(const vec3_c &ofs) {
 	for(u32 i = 0; i < verts.size(); i++, v++) {
 		v->xyz += ofs;
 	}
+	bounds.translate(ofs);
 }
 void r_surface_c::addPointsToBounds(aabb &out) {
 	rVert_c *v = verts.getArray();
@@ -256,6 +280,7 @@ void r_model_c::translateXYZ(const class vec3_c &ofs) {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->translateXYZ(ofs);
 	}
+	bounds.translate(ofs);
 }
 void r_model_c::getCurrentBounds(class aabb &out) {
 	r_surface_c *sf = surfs.getArray();
@@ -309,6 +334,25 @@ bool r_model_c::traceRay(class trace_c &tr) {
 			hit = true;
 		}
 	}
+	return hit;
+}
+bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+								   const class vec3_c &normal, float radius, class mtrAPI_i *material) {
+	bool hit = false;
+	decalProjector_c proj;
+	proj.init(pos,normal,radius);
+	proj.setMaterial(material);
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		//if(proj.getBounds().intersect(sf->getBB()) == false) {
+		//	continue;
+		//}
+		if(sf->createDecalInternal(proj)) {
+			hit = true;
+		}
+	}	
+	// get results
+	proj.addResultsToDecalBatcher(out);
 	return hit;
 }
 r_surface_c *r_model_c::registerSurf(const char *matName) {

@@ -40,6 +40,9 @@ public:
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured
 	virtual bool rayTrace(class trace_c &tr) const = 0;
+
+	virtual int addDecalWorldSpace(const class vec3_c &pos, 
+		const class vec3_c &normal, float radius, class mtrAPI_i *material) = 0;
 };
 
 #endif // __RENTITYAPI_H__

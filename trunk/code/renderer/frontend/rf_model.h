@@ -61,6 +61,13 @@ public:
 	virtual const class aabb &getBounds() const {
 		return bb;
 	}
+	virtual bool isStatic() {
+		if(type == MOD_STATIC)
+			return true;
+		if(type == MOD_BSP)
+			return true; // bsp models are never animated (obviously)
+		return false;
+	}
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}
@@ -86,6 +93,8 @@ public:
 
 	
 	virtual bool rayTrace(class trace_c &tr) const;
+	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
 
 // model creation access for BSP class (bsp inline models)
 friend void RF_ClearModels();

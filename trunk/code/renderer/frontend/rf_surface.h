@@ -115,6 +115,7 @@ public:
 	void addDrawCall();
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
+	bool createDecalInternal(class decalProjector_c &proj);
 
 	bool traceRay(class trace_c &tr);
 
@@ -163,6 +164,8 @@ public:
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 
 	bool traceRay(class trace_c &tr);
+	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();

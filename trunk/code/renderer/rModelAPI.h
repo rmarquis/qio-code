@@ -36,6 +36,11 @@ public:
 	// Dynamic (animated) models must be instanced before tracing.
 	// Returns true if a collision occurred.
 	virtual bool rayTrace(class trace_c &tr) const = 0;
+	// returns true if model is static (non-animated)
+	virtual bool isStatic() = 0;
+	// TODO: use decalBatcherAPI_i or smth like that
+	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+		const class vec3_c &normal,	float radius, class mtrAPI_i *material) = 0;
 };
 
 #endif // __RMODELAPI_H__
