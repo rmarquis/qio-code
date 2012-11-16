@@ -63,7 +63,14 @@ u32 SK_RegisterString(const char *s) {
 	return sk_boneNames.registerString(s);
 }
 
+skelModelIMPL_c::skelModelIMPL_c() {
 
+}
+skelModelIMPL_c::~skelModelIMPL_c() {
+	bones.clear();
+	baseFrameABS.clear();
+	surfs.clear();
+}
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;

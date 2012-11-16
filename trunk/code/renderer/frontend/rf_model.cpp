@@ -63,6 +63,9 @@ void model_c::clear() {
 	} else if(type == MOD_STATIC) {
 		delete staticModel;
 		staticModel = 0;
+	} else if(type == MOD_SKELETAL) {
+		delete skelModel;
+		skelModel = 0;
 	}
 }
 

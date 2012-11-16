@@ -82,6 +82,9 @@ class skelModelIMPL_c : public skelModelAPI_i {
 		return baseFrameABS;
 	}
 public:
+	skelModelIMPL_c();
+	~skelModelIMPL_c();
+
 	bool loadMD5Mesh(const char *fname);
 };
 
