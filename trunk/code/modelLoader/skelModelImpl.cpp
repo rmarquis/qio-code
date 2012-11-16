@@ -75,6 +75,7 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;
 	if(p.openFile(fname) == true) {
+		g_core->RedWarning("skelModelIMPL_c::loadMD5Mesh: cannot open %s\n",fname);
 		return true;
 	}
 

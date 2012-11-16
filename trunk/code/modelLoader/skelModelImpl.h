@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __SKELMODELIMPL_H__
 #define __SKELMODELIMPL_H__
 
+#include "sk_local.h"
 #include <api/skelModelAPI.h>
 #include <shared/array.h>
 #include <shared/str.h>
@@ -62,15 +63,11 @@ friend class skelModelIMPL_c;
 		return indices.getArray();
 	}
 };
-struct boneDef_s {
-	u16 nameIndex;
-	short parentIndex;
-};
 class skelModelIMPL_c : public skelModelAPI_i {
 	str name;
 	arraySTD_c<skelSurfIMPL_c> surfs;
-	arraySTD_c<boneDef_s> bones;
-	boneArray_c baseFrameABS;
+	boneDefArray_c bones;
+	boneOrArray_c baseFrameABS;
 
 	virtual u32 getNumSurfs() const {
 		return surfs.size();
@@ -78,7 +75,7 @@ class skelModelIMPL_c : public skelModelAPI_i {
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const {
 		return &surfs[surfNum];
 	}
-	virtual const boneArray_c &getBaseFrameABS() const {
+	virtual const boneOrArray_c &getBaseFrameABS() const {
 		return baseFrameABS;
 	}
 public:

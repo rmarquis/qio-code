@@ -21,25 +21,34 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderDLLAPI.h - interface of model loading module
-#ifndef __MODELLOADERDLLAPI_H__
-#define __MODELLOADERDLLAPI_H__
+// skelUtils.h - helper functions for skeletal animation
+#ifndef __SKELUTILS_H__
+#define __SKELUTILS_H__
 
-#define MODELLOADERDLL_API_IDENTSTR "ModelLoaderDLLAPI0001"
+#include <math/matrix.h>
+#include <shared/array.h>
 
-class modelLoaderDLLAPI_i {
+//
+// shared raw data structs
+//
+struct boneOr_s {
+	matrix_c mat;
+	u32 boneName;
+};
+// array of bone orientations
+class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:
-	// static (non animated) models.
-	virtual bool isStaticModelFile(const char *fname) = 0;
-	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
-	// skeletal animated models
-	virtual bool isSkelModelFile(const char *fname) = 0;
-	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) = 0;
-	// skeletal animations
-	virtual bool isSkelAnimFile(const char *fname) = 0;
-	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) = 0;
+	// concat bone transforms
+	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
 };
 
-extern class modelLoaderDLLAPI_i *g_modelLoader;
+struct boneDef_s {
+	u16 nameIndex;
+	short parentIndex;
+};
+// array of bone definitions (name index + parent index)
+class boneDefArray_c :  public arraySTD_c<boneDef_s> {
 
-#endif // __MODELLOADERDLLAPI_H__
+};
+
+#endif // __SKELUTILS_H__

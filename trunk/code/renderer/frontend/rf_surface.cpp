@@ -181,7 +181,7 @@ void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
 	}
 	indices.addU16Array(skelSF->getIndices(),skelSF->getNumIndices());
 }
-void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneArray_c &bones) {
+void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneOrArray_c &bones) {
 	rVert_c *v = verts.getArray();
 	const skelVert_s *inV = skelSF->getVerts();
 	const skelWeight_s *inWeights = skelSF->getWeights();
@@ -344,7 +344,7 @@ void r_model_c::initSkelModelInstance(class skelModelAPI_i *skel) {
 		sf->initSkelSurfInstance(inSF);
 	}
 }
-void r_model_c::updateSkelModelInstance(class skelModelAPI_i *skel, const class boneArray_c &bones) {
+void r_model_c::updateSkelModelInstance(class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);

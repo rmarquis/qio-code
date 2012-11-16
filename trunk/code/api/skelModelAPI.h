@@ -29,15 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/matrix.h>
 #include <shared/array.h>
+#include <shared/skelUtils.h>
 
 // shared raw data structs
-struct boneOr_s {
-	matrix_c mat;
-	u32 boneName;
-};
-class boneArray_c :  public arraySTD_c<boneOr_s> {
-
-};
 struct skelVert_s {
 	vec2_c tc;
 	u16 firstWeight;
@@ -70,7 +64,7 @@ public:
 	virtual ~skelModelAPI_i() { };
 	virtual u32 getNumSurfs() const = 0;
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const = 0;
-	virtual const boneArray_c &getBaseFrameABS() const = 0;
+	virtual const boneOrArray_c &getBaseFrameABS() const = 0;
 };
 
 #endif // __SKELMODELAPI_H__

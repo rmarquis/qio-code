@@ -21,25 +21,19 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderDLLAPI.h - interface of model loading module
-#ifndef __MODELLOADERDLLAPI_H__
-#define __MODELLOADERDLLAPI_H__
+// skelAnimAPI.h
+#ifndef __SKELANIMAPI_H__
+#define __SKELANIMAPI_H__
 
-#define MODELLOADERDLL_API_IDENTSTR "ModelLoaderDLLAPI0001"
-
-class modelLoaderDLLAPI_i {
+class skelAnimAPI_i {
 public:
-	// static (non animated) models.
-	virtual bool isStaticModelFile(const char *fname) = 0;
-	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
-	// skeletal animated models
-	virtual bool isSkelModelFile(const char *fname) = 0;
-	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) = 0;
-	// skeletal animations
-	virtual bool isSkelAnimFile(const char *fname) = 0;
-	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) = 0;
+	virtual const char *getName() const = 0;
+	virtual u32 getNumFrames() const = 0;
+	virtual u32 getNumBones() const = 0;
+	// boneDefs array might be not present for some other animation types than md5 (??)
+	virtual const class boneDefArray_c *getBoneDefs() const = 0;
+
+	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
 };
 
-extern class modelLoaderDLLAPI_i *g_modelLoader;
-
-#endif // __MODELLOADERDLLAPI_H__
+#endif // __SKELANIMAPI_H__

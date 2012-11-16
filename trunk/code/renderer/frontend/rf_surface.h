@@ -118,7 +118,7 @@ public:
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	bool createDecalInternal(class decalProjector_c &proj);
 	void initSkelSurfInstance(const class skelSurfaceAPI_i *skelSF);
-	void updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneArray_c &bones);
+	void updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneOrArray_c &bones);
 
 	bool traceRay(class trace_c &tr);
 
@@ -166,7 +166,7 @@ public:
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	void initSkelModelInstance(class skelModelAPI_i *skel);
-	void updateSkelModelInstance(class skelModelAPI_i *skel, const class boneArray_c &bones);
+	void updateSkelModelInstance(class skelModelAPI_i *skel, const class boneOrArray_c &bones);
 
 	bool traceRay(class trace_c &tr);
 	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,

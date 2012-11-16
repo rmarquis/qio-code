@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "modelLoaderLocal.h"
 #include "skelModelImpl.h"
+#include "skelAnimImpl.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -94,6 +95,32 @@ public:
 			return 0;
 		}
 		return skelModel;
+	}
+	virtual bool isSkelAnimFile(const char *fname) {
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return false;
+		}
+		ext++;
+		if(!stricmp(ext,"md5anim"))
+			return true;
+		return false;
+	}
+	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) {
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return 0;
+		}
+		ext++; // skip '.'
+		if(!stricmp(ext,"md5anim")) {
+			skelAnimMD5_c *md5Anim = new skelAnimMD5_c;
+			if(md5Anim->loadMD5Anim(fname)) {
+				delete md5Anim;
+				return 0;
+			}
+			return md5Anim;
+		}
+		return 0;
 	}
 };
 

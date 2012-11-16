@@ -21,25 +21,30 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderDLLAPI.h - interface of model loading module
-#ifndef __MODELLOADERDLLAPI_H__
-#define __MODELLOADERDLLAPI_H__
+// rf_anims.h - animation loader wrapper for renderer
+#ifndef __RF_ANIMS_H__
+#define __RF_ANIMS_H__
 
-#define MODELLOADERDLL_API_IDENTSTR "ModelLoaderDLLAPI0001"
+#include <shared/str.h>
 
-class modelLoaderDLLAPI_i {
+class rfAnimation_c {
+	str name;
+	class skelAnimAPI_i *api;
+	class rfAnimation_c *hashNext;
 public:
-	// static (non animated) models.
-	virtual bool isStaticModelFile(const char *fname) = 0;
-	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
-	// skeletal animated models
-	virtual bool isSkelModelFile(const char *fname) = 0;
-	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) = 0;
-	// skeletal animations
-	virtual bool isSkelAnimFile(const char *fname) = 0;
-	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) = 0;
+	const char *getName() const {
+		return name;
+	}
+	rfAnimation_c *getHashNext() const {
+		return hashNext;
+	}
+	void setNext(rfAnimation_c *newNext) {
+		hashNext = newNext;
+	}
+	const class skelAnimAPI_i *getAPI() const {
+		return api;
+	}
+friend rfAnimation_c *RF_RegisterAnimation(const char *animName);
 };
 
-extern class modelLoaderDLLAPI_i *g_modelLoader;
-
-#endif // __MODELLOADERDLLAPI_H__
+#endif // __RF_ANIMS_H__

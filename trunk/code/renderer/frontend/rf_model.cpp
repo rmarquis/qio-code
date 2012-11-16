@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/hashTableTemplate.h>
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <api/skelModelAPI.h>
 
 void model_c::addModelDrawCalls() {
 	if(type == MOD_BSP) {

@@ -27,8 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_decals.h"
 #include "rf_surface.h"
+#include "rf_anims.h"
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/skelAnimAPI.h>
 #include <shared/autoCvar.h>
 
 aCvar_c rf_skipEntities("rf_skipEntities","0");
@@ -87,7 +89,16 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		instance = new r_model_c;
 		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
 		instance->initSkelModelInstance(skelModel);
+#if 0
 		instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
+#else
+		rfAnimation_c *anim = RF_RegisterAnimation("models/player/shina/run.md5anim");
+		boneOrArray_c bones;
+		bones.resize(anim->getAPI()->getNumBones());
+		anim->getAPI()->buildFrameBonesLocal(0,bones);
+		bones.localBonesToAbsBones(anim->getAPI()->getBoneDefs());
+		instance->updateSkelModelInstance(skelModel,bones);	
+#endif
 	}
 	model = newModel;
 	recalcABSBounds();
