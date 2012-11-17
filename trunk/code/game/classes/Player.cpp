@@ -132,6 +132,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 			if(noclip) {
 				dir.scale(4.f);
 				VectorAdd(this->ps.origin,dir,newOrigin);
+				ModelEntity::setOrigin(newOrigin);
 			} else {
 				dir[2] = 0;
 				VectorScale(dir,0.75f,dir);
@@ -139,9 +140,9 @@ void Player::runPlayer(usercmd_s *ucmd) {
 				if(ucmd->upmove) {
 					G_TryToJump(this->characterController);
 				}
+				ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 			}
 			ps.angles.set(0,ps.viewangles[1],0);
-			ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 		}
 		if(ucmd->upmove) {
 			this->setAnimation("models/player/shina/jump.md5anim");
