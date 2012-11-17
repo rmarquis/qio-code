@@ -64,12 +64,44 @@ u32 SK_RegisterString(const char *s) {
 }
 
 skelModelIMPL_c::skelModelIMPL_c() {
-
+	curScale.set(1.f,1.f,1.f);
 }
 skelModelIMPL_c::~skelModelIMPL_c() {
 	bones.clear();
 	baseFrameABS.clear();
 	surfs.clear();
+}
+void skelModelIMPL_c::scaleXYZ(float scale) {
+	baseFrameABS.scale(scale);
+	skelSurfIMPL_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->scaleXYZ(scale);
+	}
+	curScale *= scale;
+}
+void skelModelIMPL_c::swapYZ() {
+	skelSurfIMPL_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		//sf->swapYZ();
+	}
+}
+void skelModelIMPL_c::translateY(float ofs) {
+
+}
+void skelModelIMPL_c::multTexCoordsY(float f) {
+
+}
+void skelModelIMPL_c::translateXYZ(const class vec3_c &ofs) {
+
+}
+void skelModelIMPL_c::getCurrentBounds(class aabb &out) {
+
+}
+void skelModelIMPL_c::setAllSurfsMaterial(const char *newMatName) {
+	skelSurfIMPL_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		sf->setMaterial(newMatName);
+	}
 }
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing

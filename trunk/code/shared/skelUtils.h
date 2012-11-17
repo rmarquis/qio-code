@@ -40,6 +40,9 @@ class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:
 	// concat bone transforms
 	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
+	
+	void scale(float scale);
+	void scaleXYZ(const vec3_c &scaleXYZ);
 };
 
 struct boneDef_s {

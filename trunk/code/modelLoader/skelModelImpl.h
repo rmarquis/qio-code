@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "sk_local.h"
 #include <api/skelModelAPI.h>
+#include <api/modelPostProcessFuncs.h>
 #include <shared/array.h>
 #include <shared/str.h>
 
@@ -37,6 +38,7 @@ friend class skelModelIMPL_c;
 	arraySTD_c<skelWeight_s> weights;
 	arraySTD_c<skelVert_s> verts;
 	arraySTD_c<u16> indices;
+
 	virtual const char *getMatName() const {
 		return matName;
 	}
@@ -62,13 +64,25 @@ friend class skelModelIMPL_c;
 	virtual const u16 *getIndices() const {
 		return indices.getArray();
 	}
+
+	void scaleXYZ(float scale) {
+		skelWeight_s *w = weights.getArray();
+		for(u32 i = 0; i < weights.size(); i++, w++) {
+			w->ofs.scale(scale);
+		}
+	}
+	void setMaterial(const char *newMatName) {
+		matName = newMatName;
+	}
 };
-class skelModelIMPL_c : public skelModelAPI_i {
+class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	str name;
 	arraySTD_c<skelSurfIMPL_c> surfs;
 	boneDefArray_c bones;
 	boneOrArray_c baseFrameABS;
+	vec3_c curScale;
 
+	// skelModelAPI_i impl
 	virtual u32 getNumSurfs() const {
 		return surfs.size();
 	}
@@ -78,6 +92,22 @@ class skelModelIMPL_c : public skelModelAPI_i {
 	virtual const boneOrArray_c &getBaseFrameABS() const {
 		return baseFrameABS;
 	}
+	virtual bool hasCustomScaling() const {
+		if(curScale.compare(vec3_c(1.f,1.f,1.f)))
+			return false;
+		return true;
+	}
+	virtual const vec3_c& getScaleXYZ() const {
+		return curScale;
+	}
+	// modelPostProcessFuncs_i impl
+	virtual void scaleXYZ(float scale);
+	virtual void swapYZ();
+	virtual void translateY(float ofs);
+	virtual void multTexCoordsY(float f);
+	virtual void translateXYZ(const class vec3_c &ofs);
+	virtual void getCurrentBounds(class aabb &out);
+	virtual void setAllSurfsMaterial(const char *newMatName);
 public:
 	skelModelIMPL_c();
 	~skelModelIMPL_c();

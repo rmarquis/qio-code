@@ -93,7 +93,12 @@ public:
 		if(skelModel->loadMD5Mesh(fname)) {
 			delete skelModel;
 			return 0;
-		}
+		}		
+		//if(skelModel) {
+			// apply model postprocess steps (scaling, rotating, etc)
+			// defined in optional .mdlpp file
+			MOD_ApplyPostProcess(fname,skelModel);
+		//}
 		return skelModel;
 	}
 	virtual bool isSkelAnimFile(const char *fname) {

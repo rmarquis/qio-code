@@ -49,7 +49,12 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 	VectorCopy( ps->origin, s->origin );
 
 	// set the trDelta for flag direction and linear prediction
-	VectorCopy( ps->viewangles, s->angles );
+#if 0
+	VectorCopy( ps->angles, s->angles );
+#else
+	// use yaw (only) from viewangles
+	s->angles.set(0,ps->viewangles.y,0);
+#endif
 
 	// set the trDelta for flag direction
 	//VectorCopy( ps->velocity, s->pos.trDelta );
@@ -66,6 +71,8 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 ////	s->clientNum = ps->clientNum;		// ET_PLAYER looks here instead of at number
 										// so corpses can also reference the proper config
 
+	s->rModelIndex = ps->rModelIndex;
+	s->colModelIndex = ps->colModelIndex;
 	s->groundEntityNum = ps->groundEntityNum;
 }
 

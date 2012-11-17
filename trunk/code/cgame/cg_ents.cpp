@@ -195,12 +195,14 @@ void CG_AddPacketEntities( void ) {
 
 
 	// generate and add the entity from the playerstate
-	ps = &cg.predictedPlayerState;
-	BG_PlayerStateToEntityState( ps, &cg.predictedPlayerEntity.currentState, qfalse );
-	CG_AddCEntity( &cg.predictedPlayerEntity );
+	//ps = &cg.predictedPlayerState;
+	//BG_PlayerStateToEntityState( ps, &cg.predictedPlayerEntity.currentState, qfalse );
+	//CG_AddCEntity( &cg.predictedPlayerEntity );
 
 	// lerp the non-predicted value for lightning gun origins
-	CG_CalcEntityLerpPositions( &cg_entities[ cg.snap->ps.clientNum ] );
+	//CG_CalcEntityLerpPositions( &cg_entities[ cg.snap->ps.clientNum ] );
+
+	CG_AddCEntity( &cg_entities[ cg.snap->ps.clientNum ] );
 
 	// add each entity sent over by the server
 	for ( num = 0 ; num < cg.snap->numEntities ; num++ ) {

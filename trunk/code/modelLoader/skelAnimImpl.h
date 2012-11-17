@@ -82,6 +82,7 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 public:
+	virtual ~skelAnimMD5_c();
 	bool loadMD5Anim(const char *fname);
 };
 

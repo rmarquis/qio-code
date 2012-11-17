@@ -97,6 +97,9 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		bones.resize(anim->getAPI()->getNumBones());
 		anim->getAPI()->buildFrameBonesLocal(0,bones);
 		bones.localBonesToAbsBones(anim->getAPI()->getBoneDefs());
+		if(skelModel->hasCustomScaling()) {
+			bones.scaleXYZ(skelModel->getScaleXYZ());
+		}
 		instance->updateSkelModelInstance(skelModel,bones);	
 #endif
 	}

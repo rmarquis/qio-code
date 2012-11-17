@@ -65,6 +65,8 @@ public:
 	virtual u32 getNumSurfs() const = 0;
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const = 0;
 	virtual const boneOrArray_c &getBaseFrameABS() const = 0;
+	virtual bool hasCustomScaling() const = 0;
+	virtual const vec3_c& getScaleXYZ() const = 0;
 };
 
 #endif // __SKELMODELAPI_H__

@@ -87,7 +87,7 @@ void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
 		return;
 	if(cmod->isCapsule()) {
 		cmCapsule_i *c = cmod->getCapsule();
-		dd->drawCapsuleZ(getOrigin(), c->getHeight(), c->getRadius());
+		dd->drawCapsuleZ(getCModelOrigin(), c->getHeight(), c->getRadius());
 	} else if(cmod->isBBExts()) {
 		cmBBExts_i *bb = cmod->getBBExts();
 		dd->drawBBExts(getOrigin(),getAngles(),bb->getHalfSizes());

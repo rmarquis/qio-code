@@ -27,10 +27,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	GAME_VERSION		BASEGAME "-1"
 
-#define	DEFAULT_GRAVITY		800
+//#define	DEFAULT_GRAVITY		800
 
-#define	MINS_Z				-24
-#define	DEFAULT_VIEWHEIGHT	26
+//#define	MINS_Z				-24
+#define	DEFAULT_VIEWHEIGHT	82
 
 //
 // config strings are a general means of communicating variable length strings

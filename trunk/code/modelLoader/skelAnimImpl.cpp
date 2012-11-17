@@ -28,6 +28,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "skelAnimImpl.h"
 #include <shared/skelUtils.h> // boneOrArray_c
 
+skelAnimMD5_c::~skelAnimMD5_c() {
+	frames.clear();
+	bones.clear();
+	md5AnimBones.clear();
+	baseFrame.clear();
+}
 //
 //	Doom3 .md5anim files loading
 //

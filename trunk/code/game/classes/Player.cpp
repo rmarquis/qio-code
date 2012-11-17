@@ -75,18 +75,16 @@ void Player::enableCharacterController() {
 	cmCapsule_i *c = this->cmod->getCapsule();
 	float h = c->getHeight();
 	float r = c->getRadius();
+	characterControllerOffset.set(0,0,h);
 	BT_FreeCharacter(this->characterController);
-	this->characterController = BT_CreateCharacter(20.f, this->ps.origin, h, r);
+	this->characterController = BT_CreateCharacter(20.f, this->ps.origin+characterControllerOffset, h, r);
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	cmCapsule_i *m;
 	m = cm->registerCapsule(48,19);
 	this->setColModel(m);
-	float h = m->getHeight();
-	float r = m->getRadius();
-	BT_FreeCharacter(this->characterController);
-	this->characterController = BT_CreateCharacter(20.f, this->ps.origin, h, r);
+	enableCharacterController();
 }
 
 void Player::runPlayer(usercmd_s *ucmd) {
@@ -143,7 +141,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 				}
 			}
 			ps.angles.set(0,ps.viewangles[1],0);
-			ModelEntity::setOrigin(newOrigin);
+			ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 		}
 	}
 

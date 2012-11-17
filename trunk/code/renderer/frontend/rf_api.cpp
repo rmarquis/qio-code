@@ -199,6 +199,7 @@ public:
 		initialized = false;	
 		RF_ClearWorldMap();
 		RFE_ClearEntities();
+		RF_ClearAnims();
 		RF_ClearModels();
 		RF_ShutdownDecals();
 		unloadMaterialSystem();

@@ -39,3 +39,21 @@ void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 		}
 	}
 }
+void boneOrArray_c::scale(float scale) {
+	boneOr_s *or = this->getArray();
+	for(u32 i = 0; i < size(); i++, or++) {
+		/////or->mat.scale(scale,scale,scale);
+		vec3_c p = or->mat.getOrigin();
+		p *= scale;
+		or->mat.setOrigin(p);
+	}
+}
+void boneOrArray_c::scaleXYZ(const vec3_c &vScaleXYZ) {
+	boneOr_s *or = this->getArray();
+	for(u32 i = 0; i < size(); i++, or++) {
+		/////or->mat.scale(scale,scale,scale);
+		vec3_c p = or->mat.getOrigin();
+		p.scaleXYZ(vScaleXYZ.x,vScaleXYZ.y,vScaleXYZ.z);
+		or->mat.setOrigin(p);
+	}
+}

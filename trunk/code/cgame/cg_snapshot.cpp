@@ -104,6 +104,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	cg.snap = snap;
 
 	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, qfalse );
+	CG_NewEntity(snap->ps.clientNum);
 
 	// sort out solid entities
 //	CG_BuildSolidList();
@@ -184,6 +185,12 @@ static void CG_TransitionSnapshot( void ) {
 		} else {
 			snapEntNum = cg.snap->entities[snapEnt].number;
 		}
+		if(i == cg.clientNum) {
+			if(i == snapEntNum) {
+				CG_Error("CG_TransitionSnapshot: found local player entityState in snapshot entities\n");
+			}
+			continue;
+		}
 		if(snapEntNum == i) {
 			if(cent->currentValid == false) {
 				if(cg_printSnapEntities.getInt()) {
@@ -217,7 +224,11 @@ static void CG_TransitionSnapshot( void ) {
 	oldFrame = cg.snap;
 	cg.snap = cg.nextSnap;
 
-	BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, qfalse );
+	if(oldFrame == 0) {
+		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, qfalse );
+	} else {
+		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].nextState, qfalse );
+	}
 	cg_entities[ cg.snap->ps.clientNum ].interpolate = qfalse;
 #endif
 
@@ -235,6 +246,7 @@ static void CG_TransitionSnapshot( void ) {
 		//if ( cg_nopredict.integer || cg_synchronousClients.integer ) {
 			CG_TransitionPlayerState( ps, ops );
 		//}
+		CG_TransitionEntity(&cg_entities[ps->clientNum]);
 	}
 
 }

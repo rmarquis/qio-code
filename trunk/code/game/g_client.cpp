@@ -200,12 +200,13 @@ void ClientSpawn(edict_s *ent) {
 	pl->ps.clientNum = index;
 
 	VectorCopy( spawn_origin, pl->ps.origin );
-	pl->ps.viewheight = 26;
+	pl->ps.viewheight = DEFAULT_VIEWHEIGHT;
 
 	g_server->GetUsercmd( index, &pl->pers.cmd );
 	pl->setClientViewAngle(spawn_angles );
 	// don't allow full run speed for a bit
 
+	pl->setRenderModel("models/player/shina/body.md5mesh");
 	pl->createCharacterControllerCapsule(48,16);
 
 	// run a pl frame to drop exactly to the floor,

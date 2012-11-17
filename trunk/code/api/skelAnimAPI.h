@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class skelAnimAPI_i {
 public:
+	virtual ~skelAnimAPI_i() { };
 	virtual const char *getName() const = 0;
 	virtual u32 getNumFrames() const = 0;
 	virtual u32 getNumBones() const = 0;

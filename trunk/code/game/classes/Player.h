@@ -58,6 +58,7 @@ class Player : public ModelEntity {
 	class btKinematicCharacterController *characterController;
 	str netName;
 	class Weapon *curWeapon;
+	vec3_c characterControllerOffset;
 public:
 	Player();
 	virtual ~Player();
@@ -92,7 +93,9 @@ public:
 	const char *getNetName() const;
 	int getViewHeight() const;
 	vec3_c getEyePos() const;
-
+	virtual vec3_c getCModelOrigin() const {
+		return getOrigin()+characterControllerOffset;
+	}
 	void setVehicle(class VehicleCar *newVeh);
 
 	void toggleNoclip();

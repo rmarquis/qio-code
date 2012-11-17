@@ -25,6 +25,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_anims.h"
 #include <shared/hashTableTemplate.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <api/skelAnimAPI.h>
+
+void rfAnimation_c::clear() {
+	if(api) {
+		delete api;
+		api = 0;
+	}
+}
 
 static hashTableTemplateExt_c<rfAnimation_c> rf_animations;
 
@@ -37,4 +45,13 @@ rfAnimation_c *RF_RegisterAnimation(const char *animName) {
 	ret->api = g_modelLoader->loadSkelAnimFile(animName);
 	ret->name = animName;
 	return ret;
+}
+void RF_ClearAnims() {
+	for(u32 i = 0; i < rf_animations.size(); i++) {
+		rfAnimation_c *a = rf_animations[i];
+		a->clear();
+		delete a;
+		rf_animations[i] = 0;
+	}
+	rf_animations.clear();
 }

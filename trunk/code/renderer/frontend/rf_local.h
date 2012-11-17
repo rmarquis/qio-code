@@ -49,6 +49,9 @@ void RF_ShutdownDecals();
 void RF_AddWorldDecalDrawCalls();
 class simpleDecalBatcher_c *RF_GetWorldDecalBatcher();
 
+// rf_anims.cpp
+void RF_ClearAnims();
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 

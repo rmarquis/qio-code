@@ -44,6 +44,9 @@ public:
 	const class skelAnimAPI_i *getAPI() const {
 		return api;
 	}
+	
+	void clear();
+
 friend rfAnimation_c *RF_RegisterAnimation(const char *animName);
 };
 
