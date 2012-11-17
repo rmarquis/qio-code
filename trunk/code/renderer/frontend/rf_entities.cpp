@@ -98,11 +98,11 @@ public:
 		time += deltaTimeSec;
 		if(anim == nextAnim) {
 			while(time > anim->getTotalTimeSec()) {
-				g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
+			//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
 				time -= anim->getTotalTimeSec();
 			}
 			if(anim_printAnimCtrlTime.getInt()) {
-				g_core->Print("Final time: %f\n",time);
+			//	g_core->Print("Final time: %f\n",time);
 			}
 		} else {
 			while(time > blendTime) {
@@ -116,7 +116,7 @@ public:
 		if(anim == nextAnim) {
 			singleAnimLerp_s lerp;
 			getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
-			g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
+			//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
 
 			bones.resize(anim->getNumBones());
 			//anim->buildFrameBonesLocal(lerp.from,bones);
@@ -135,7 +135,7 @@ public:
 			
 			// do the interpolation
 			float frac = this->time / this->blendTime;
-			g_core->Print("Blending between two anims, frac: %f\n",frac);	
+		//	g_core->Print("Blending between two anims, frac: %f\n",frac);	
 			bones.setBlendResult(previous, newBones, frac);		
 		}
 		bones.localBonesToAbsBones(anim->getBoneDefs());
