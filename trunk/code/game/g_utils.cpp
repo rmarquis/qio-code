@@ -84,6 +84,9 @@ int G_CollisionModelIndex( const char *name ) {
 int G_SoundIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
+int G_AnimationIndex( const char *name ) {
+	return G_FindConfigstringIndex (name, CS_ANIMATIONS, MAX_ANIMATIONS, qtrue);
+}
 
 //=====================================================================
 

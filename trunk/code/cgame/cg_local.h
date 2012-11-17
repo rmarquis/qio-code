@@ -173,6 +173,7 @@ typedef struct {
 	class rModelAPI_i	*gameModels[MAX_MODELS];
 	class cMod_i		*gameCollModels[MAX_MODELS];
 	sfxHandle_t		gameSounds[MAX_SOUNDS];
+	const class skelAnimAPI_i	*gameAnims[MAX_ANIMATIONS];
 
 	// media
 	cgMedia_t		media;

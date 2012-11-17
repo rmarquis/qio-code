@@ -60,6 +60,7 @@ public:
 	virtual void loadWorldMap(const char *mapName) = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
+	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) = 0;
 
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;

@@ -33,11 +33,82 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelAnimAPI.h>
 #include <shared/autoCvar.h>
 
+aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","1");
+
+// unfinished animation blender
+class animController_c {
+	float time;
+	const class skelAnimAPI_i *anim;
+	int lastUpdateTime;
+	static void getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
+		if(anim->getNumFrames() == 1) {
+			out.from = 0;
+			out.to = 0;
+			out.frac = 0.f;
+			return;
+		}
+		float step = anim->getFrameTime();
+		float cur = 0;
+		float next = step;
+		for(u32 i = 0; i < anim->getNumFrames(); i++) {
+			if(time >= cur && time < next) {
+				out.from = i;
+				out.to = i + 1;
+				if(out.to == anim->getNumFrames()) {
+					out.to = 0;
+				}
+				out.frac = (time - cur) / step;
+				return;
+			}
+			next += step;
+			cur += step;
+		}
+	}
+public:
+	void resetToAnim(const class skelAnimAPI_i *newAnim) {
+		time = 0.f;
+		anim = newAnim;
+		lastUpdateTime = rf_curTimeMsec;
+	}
+	void runAnimController() {
+		int deltaTime = rf_curTimeMsec - lastUpdateTime;
+		if(deltaTime == 0)
+			return;
+		lastUpdateTime = rf_curTimeMsec;
+		float deltaTimeSec = float(deltaTime) * 0.001f;
+		time += deltaTimeSec;
+		while(time > anim->getTotalTimeSec()) {
+			g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
+			time -= anim->getTotalTimeSec();
+		}
+		if(anim_printAnimCtrlTime.getInt()) {
+			g_core->Print("Final time: %f\n",time);
+		}
+	}
+	void updateModelAnimation(const class skelModelAPI_i *skelModel, class r_model_c *instance) {
+		singleAnimLerp_s lerp;
+		getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
+		g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
+
+		boneOrArray_c bones;
+		bones.resize(anim->getNumBones());
+		//anim->buildFrameBonesLocal(lerp.from,bones);
+		anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+		bones.localBonesToAbsBones(anim->getBoneDefs());
+		if(skelModel->hasCustomScaling()) {
+			bones.scaleXYZ(skelModel->getScaleXYZ());
+		}
+		instance->updateSkelModelInstance(skelModel,bones);	
+	}
+};
+
 aCvar_c rf_skipEntities("rf_skipEntities","0");
+
 rEntityImpl_c::rEntityImpl_c() {
 	model = 0;
 	staticDecals = 0;
 	instance = 0;
+	animCtrl = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -47,6 +118,10 @@ rEntityImpl_c::~rEntityImpl_c() {
 	if(instance) {
 		delete instance;
 		instance = 0;
+	}
+	if(animCtrl) {
+		delete animCtrl;
+		animCtrl = 0;
 	}
 }
 
@@ -89,7 +164,7 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		instance = new r_model_c;
 		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
 		instance->initSkelModelInstance(skelModel);
-#if 0
+#if 1
 		instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
 #else
 		rfAnimation_c *anim = RF_RegisterAnimation("models/player/shina/run.md5anim");
@@ -106,6 +181,16 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	model = newModel;
 	recalcABSBounds();
 }
+void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
+	if(anim == 0 && animCtrl == 0)
+		return; // ignore
+	if(animCtrl == 0) {
+		animCtrl = new animController_c;
+		animCtrl->resetToAnim(anim);
+	} else {
+		// TODO
+	}
+}
 void rEntityImpl_c::addDrawCalls() {
 	if(model->isStatic()) {
 		((model_c*)model)->addModelDrawCalls();
@@ -113,6 +198,10 @@ void rEntityImpl_c::addDrawCalls() {
 			staticDecals->addDrawCalls();
 		}
 	} else if(instance) {
+		if(animCtrl) {
+			animCtrl->runAnimController();
+			animCtrl->updateModelAnimation(model->getSkelModelAPI(),instance);
+		}
 		instance->addDrawCalls();
 	}
 }

@@ -1061,9 +1061,11 @@ typedef enum {
 #define TAGNUM_BITS			8
 #define MAX_BONES			(1<<TAGNUM_BITS)
 
-// these are sent over the net as 8 bits so they cannot be blindly increased
-#define	MAX_SOUNDS			256
+#define ANIMNUM_BITS		8
+#define MAX_ANIMATIONS		(1<<ANIMNUM_BITS)
 
+#define SOUNDNUM_BITS		8
+#define MAX_SOUNDS			(1<<SOUNDNUM_BITS)
 
 #define	MAX_CONFIGSTRINGS	2048
 
@@ -1111,6 +1113,8 @@ struct entityState_s {
 
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
+	int animIndex;
+
 	void setDefaults() {
 		number = -1;
 		eType = 0;
@@ -1121,6 +1125,7 @@ struct entityState_s {
 		colModelIndex = 0;
 		parentNum = ENTITYNUM_NONE;
 		parentTagNum = -1;
+		animIndex = 0;
 	}
 	entityState_s() {
 		setDefaults();

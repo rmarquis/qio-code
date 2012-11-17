@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_model.h"
+#include "rf_anims.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -44,6 +45,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "rf_2d.h"
 #include "rf_world.h"
+#include "rf_anims.h"
 
 cameraDef_c rf_camera;
 int rf_curTimeMsec;
@@ -171,6 +173,9 @@ public:
 	}	
 	virtual class rModelAPI_i *registerModel(const char *modName) {
 		return RF_RegisterModel(modName);
+	}
+	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) {
+		return RF_RegisterAnimation_GetAPI(animName);
 	}
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;

@@ -56,6 +56,7 @@ typedef struct {
 int G_RenderModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
 int	G_SoundIndex( const char *name );
+int G_AnimationIndex( const char *name );
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
 edict_s	*G_Spawn (void);
 void G_FreeEntity( edict_s *e );

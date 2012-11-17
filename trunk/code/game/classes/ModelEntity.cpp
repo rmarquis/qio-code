@@ -72,6 +72,10 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->recalcABSBounds();
 	this->link();
 }
+void ModelEntity::setAnimation(const char *newAnimName) {
+	this->myEdict->s->animIndex = G_AnimationIndex(newAnimName);
+	// nothing else to do right now...
+}
 bool ModelEntity::setColModel(const char *newCModelName) {
 	this->cmod = cm->registerModel(newCModelName);
 	if(this->cmod == 0)

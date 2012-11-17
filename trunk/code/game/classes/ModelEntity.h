@@ -49,6 +49,8 @@ public:
 	bool setColModel(const char *newCModelName);
 	bool setColModel(class cMod_i *newCModel);
 
+	void setAnimation(const char *animName);
+
 	virtual void runPhysicsObject();
 
 	void initRigidBodyPhysics();

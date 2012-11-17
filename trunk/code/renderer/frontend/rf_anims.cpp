@@ -46,6 +46,13 @@ rfAnimation_c *RF_RegisterAnimation(const char *animName) {
 	ret->name = animName;
 	return ret;
 }
+const skelAnimAPI_i *RF_RegisterAnimation_GetAPI(const char *animName) {
+	rfAnimation_c *rfAnim = RF_RegisterAnimation(animName);
+	if(rfAnim && rfAnim->getAPI()) {
+		return rfAnim->getAPI();
+	}
+	return 0;
+}
 void RF_ClearAnims() {
 	for(u32 i = 0; i < rf_animations.size(); i++) {
 		rfAnimation_c *a = rf_animations[i];

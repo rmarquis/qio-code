@@ -165,8 +165,8 @@ public:
 	void createVBOsAndIBOs();
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
-	void initSkelModelInstance(class skelModelAPI_i *skel);
-	void updateSkelModelInstance(class skelModelAPI_i *skel, const class boneOrArray_c &bones);
+	void initSkelModelInstance(const class skelModelAPI_i *skel);
+	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones);
 
 	bool traceRay(class trace_c &tr);
 	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,

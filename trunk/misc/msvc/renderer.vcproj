@@ -172,6 +172,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_anims.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_api.cpp"
 				>
 			</File>
@@ -255,6 +259,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_anims.h"
 				>
 			</File>
 			<File
@@ -417,6 +425,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\simpleVert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\skelUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\skelUtils.h"
 				>
 			</File>
 			<File

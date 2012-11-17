@@ -207,6 +207,7 @@ void ClientSpawn(edict_s *ent) {
 	// don't allow full run speed for a bit
 
 	pl->setRenderModel("models/player/shina/body.md5mesh");
+	pl->setAnimation("models/player/shina/run.md5anim");
 	pl->createCharacterControllerCapsule(48,16);
 
 	// run a pl frame to drop exactly to the floor,

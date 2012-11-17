@@ -30,6 +30,7 @@ public:
 	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
 	virtual void setAngles(const class vec3_c &newAngles) = 0;
 	virtual void setModel(class rModelAPI_i *mod) = 0;
+	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const class axis_c &getAxis() const = 0;

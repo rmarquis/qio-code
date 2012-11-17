@@ -173,11 +173,47 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 			g_core->RedWarning("Unknown token %s in md5anim file %s\n",p.getToken(),fname);
 		}
 	}
+	frameTime = 1.f / frameRate;
+	totalTime = frameTime * float(frames.size());
 	return false; // no error
 }
 // 
 //	md5 animation code
 //
+void skelAnimMD5_c::buildSingleBone(int boneNum, const md5Frame_c &f, vec3_c &pos, quat_c &quat) const {
+	const md5BoneVal_s &base = baseFrame[boneNum];
+	const md5AnimBone_s &mb = md5AnimBones[boneNum];
+	pos = base.pos;
+	quat = base.quat;
+	if(mb.componentFlags) {
+		int c = 0;
+		if(mb.componentFlags & COMPONENT_BIT_TX) {
+			pos[0] = f.components[mb.firstComponent + c];
+			c++;
+		}
+		if(mb.componentFlags & COMPONENT_BIT_TY) {
+			pos[1] = f.components[mb.firstComponent + c];
+			c++;
+		}
+		if(mb.componentFlags & COMPONENT_BIT_TZ) {
+			pos[2] = f.components[mb.firstComponent + c];
+			c++;
+		}
+		if(mb.componentFlags & COMPONENT_BIT_QX) {
+			quat[0] = f.components[mb.firstComponent + c];
+			c++;
+		}
+		if(mb.componentFlags & COMPONENT_BIT_QY) {
+			quat[1] = f.components[mb.firstComponent + c];
+			c++;
+		}
+		if(mb.componentFlags & COMPONENT_BIT_QZ) {
+			quat[2] = f.components[mb.firstComponent + c];
+			c++;
+		}
+	}
+	quat.calcW();
+}
 void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const {
 	const md5Frame_c &f = this->frames[frameNum];
 	if(out.size() != bones.size()) {
@@ -185,43 +221,36 @@ void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out)
 		// some issues (as long we dont have own memory system)
 		g_core->DropError("skelAnimMD5_c::buildFrameBonesLocal: out.size() != this->bones.size()\n");
 	}
-	const md5BoneVal_s *base = baseFrame.getArray();
-	const md5AnimBone_s *mb = md5AnimBones.getArray();
 	const boneDef_s *boneDef = bones.getArray();
 	boneOr_s *outBone = out.getArray();
-	for(u32 i = 0; i < bones.size(); i++, base++, mb++, outBone++) {
-		vec3_c pos = base->pos;
-		quat_c quat = base->quat;
-		if(mb->componentFlags) {
-			int c = 0;
-			if(mb->componentFlags & COMPONENT_BIT_TX) {
-				pos[0] = f.components[mb->firstComponent + c];
-				c++;
-			}
-			if(mb->componentFlags & COMPONENT_BIT_TY) {
-				pos[1] = f.components[mb->firstComponent + c];
-				c++;
-			}
-			if(mb->componentFlags & COMPONENT_BIT_TZ) {
-				pos[2] = f.components[mb->firstComponent + c];
-				c++;
-			}
-			if(mb->componentFlags & COMPONENT_BIT_QX) {
-				quat[0] = f.components[mb->firstComponent + c];
-				c++;
-			}
-			if(mb->componentFlags & COMPONENT_BIT_QY) {
-				quat[1] = f.components[mb->firstComponent + c];
-				c++;
-			}
-			if(mb->componentFlags & COMPONENT_BIT_QZ) {
-				quat[2] = f.components[mb->firstComponent + c];
-				c++;
-			}
-		}
-		quat.calcW();
-		//quat.conjugate();
-
+	for(u32 i = 0; i < bones.size(); i++, boneDef++, outBone++) {
+		quat_c quat;
+		vec3_c pos;
+		buildSingleBone(i,f,pos,quat);
+		outBone->boneName = boneDef->nameIndex;
+		outBone->mat.fromQuatAndOrigin(quat,pos);
+	}
+}
+void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
+	const md5Frame_c &from = this->frames[lerp.from];
+	const md5Frame_c &to = this->frames[lerp.to];
+	if(out.size() != bones.size()) {
+		// reallocating array_c memory in another module might cause
+		// some issues (as long we dont have own memory system)
+		g_core->DropError("skelAnimMD5_c::buildFrameBonesLocal: out.size() != this->bones.size()\n");
+	}
+	const boneDef_s *boneDef = bones.getArray();
+	boneOr_s *outBone = out.getArray();
+	for(u32 i = 0; i < bones.size(); i++, boneDef++, outBone++) {
+		vec3_c posFrom, posTo;
+		quat_c quatFrom, quatTo;
+		buildSingleBone(i,from,posFrom,quatFrom);
+		buildSingleBone(i,to,posTo,quatTo);
+		// lerp frame values
+		quat_c quat;
+		vec3_c pos;
+		quat.slerp(quatFrom,quatTo,lerp.frac);
+		pos.lerp(posFrom,posTo,lerp.frac);
 		outBone->boneName = boneDef->nameIndex;
 		outBone->mat.fromQuatAndOrigin(quat,pos);
 	}

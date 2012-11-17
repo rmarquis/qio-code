@@ -378,6 +378,9 @@ public:
 		vec3_c ret = *this + frac * (other - *this);
 		return ret;
 	}
+	void lerp(const vec3_c &from, const vec3_c &to, float frac) {
+		*this = from + frac * (to - from);
+	}
 	void operator *= ( const float f ) {
 		this->x *= f;
 		this->y *= f;

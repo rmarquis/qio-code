@@ -48,6 +48,7 @@ public:
 	void clear();
 
 friend rfAnimation_c *RF_RegisterAnimation(const char *animName);
+friend const skelAnimAPI_i *RF_RegisterAnimation_GetAPI(const char *animName);
 };
 
 #endif // __RF_ANIMS_H__

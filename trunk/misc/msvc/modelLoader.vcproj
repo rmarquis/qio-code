@@ -247,10 +247,30 @@
 				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\skelUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\skelUtils.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="SkeletalModelLoaders"
 			>
+			<File
+				RelativePath="..\..\code\modelLoader\sk_local.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\skelAnimImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\skelAnimImpl.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\modelLoader\skelModelImpl.cpp"
 				>
@@ -263,6 +283,10 @@
 		<Filter
 			Name="API"
 			>
+			<File
+				RelativePath="..\..\code\api\skelAnimAPI.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\api\skelModelAPI.h"
 				>

@@ -43,6 +43,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	class simpleDecalBatcher_c *staticDecals; 
 	// only for skeletal models; model geometry instanced at the current time of animation
 	class r_model_c *instance;
+	class animController_c *animCtrl;
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();
@@ -52,6 +53,7 @@ public:
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setModel(class rModelAPI_i *newModel);
+	virtual void setAnim(const class skelAnimAPI_i *anim) ;
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
 		const class vec3_c &normal, float radius, class mtrAPI_i *material);
 

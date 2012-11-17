@@ -25,6 +25,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __SKELANIMAPI_H__
 #define __SKELANIMAPI_H__
 
+// used for single looping animations
+struct singleAnimLerp_s {
+	u16 from; // previous frame num
+	u16 to; // next frame num
+	float frac; // 0.0 - 1.0 lerp value
+};
+
 class skelAnimAPI_i {
 public:
 	virtual ~skelAnimAPI_i() { };
@@ -33,8 +40,12 @@ public:
 	virtual u32 getNumBones() const = 0;
 	// boneDefs array might be not present for some other animation types than md5 (??)
 	virtual const class boneDefArray_c *getBoneDefs() const = 0;
+	virtual float getFrameTime() const = 0;
+	virtual float getTotalTimeSec() const = 0;
 
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
+	// for looping animations
+	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const = 0;
 };
 
 #endif // __SKELANIMAPI_H__

@@ -64,6 +64,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	cent->rEnt->setOrigin(cent->currentState.origin);
 	cent->rEnt->setAngles(cent->currentState.angles);
 	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
+	cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap
 	cent->interpolate = qfalse;

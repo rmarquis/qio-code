@@ -31,10 +31,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <shared/str.h>
 
-class skelFrameMD5_c {
-
-};
-
 struct md5BoneVal_s {
 	float pos[4];
 	float quat[4]; // W component will be calculated
@@ -60,7 +56,9 @@ friend class skelAnimMD5_c;
 };
 class skelAnimMD5_c : public skelAnimAPI_i {
 	str animFileName;
-	float frameRate;
+	float frameRate; // fps
+	float frameTime; // 1 / fps
+	float totalTime; // frameTime * frames.size()
 	arraySTD_c<md5Frame_c> frames;
 	boneDefArray_c bones;
 	arraySTD_c<md5AnimBone_s> md5AnimBones;
@@ -79,8 +77,15 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual const class boneDefArray_c *getBoneDefs() const {
 		return &bones;
 	}
-
+	virtual float getFrameTime() const {
+		return frameTime;
+	}
+	virtual float getTotalTimeSec() const {
+		return totalTime;
+	}
+	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
+	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
 public:
 	virtual ~skelAnimMD5_c();
 	bool loadMD5Anim(const char *fname);

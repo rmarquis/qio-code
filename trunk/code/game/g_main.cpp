@@ -115,6 +115,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 //		g_entities[i].classname = "clientslot";
 	}
 
+	G_AnimationIndex("noanim");
+
 	// let the server system know where the entites are
 	g_server->LocateGameData( level.gentities, level.num_entities );
 

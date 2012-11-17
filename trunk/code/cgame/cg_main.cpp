@@ -259,6 +259,18 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" %i rModels\n",c_renderModelsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering animations...");
+	}
+	u32 c_animationsLoaded = 0;
+	for(u32 i = 0; i < MAX_ANIMATIONS; i++) {
+		const char *str = CG_ConfigString(CS_ANIMATIONS+i);
+		if(str && str[0]) {
+			cgs.gameAnims[i] = rf->registerAnimation_getAPI(str);
+			c_animationsLoaded++;
+		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i animations\n",c_animationsLoaded);
 		g_loadingScreen->addLoadingString("CG_Init: registering collision models...");
 	}
 	u32 c_collisionModelsLoaded = 0;

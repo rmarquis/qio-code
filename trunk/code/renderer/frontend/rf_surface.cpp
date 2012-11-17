@@ -336,7 +336,7 @@ void r_model_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
 		sf->addGeometryToColMeshBuilder(out);
 	}
 }
-void r_model_c::initSkelModelInstance(class skelModelAPI_i *skel) {
+void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 	surfs.resize(skel->getNumSurfs());
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -344,7 +344,7 @@ void r_model_c::initSkelModelInstance(class skelModelAPI_i *skel) {
 		sf->initSkelSurfInstance(inSF);
 	}
 }
-void r_model_c::updateSkelModelInstance(class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
+void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
