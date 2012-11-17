@@ -143,6 +143,13 @@ void Player::runPlayer(usercmd_s *ucmd) {
 			ps.angles.set(0,ps.viewangles[1],0);
 			ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 		}
+		if(ucmd->upmove) {
+			this->setAnimation("models/player/shina/jump.md5anim");
+		} else if(ucmd->hasMovement()) {
+			this->setAnimation("models/player/shina/run.md5anim");
+		} else {
+			this->setAnimation("models/player/shina/idle.md5anim");
+		}
 	}
 
 	this->link();

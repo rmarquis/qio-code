@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // skelUtils.cpp - helper functions for skeletal animation
 // This file should be included in each module using bones system.
 #include "skelUtils.h"
+#include <math/quat.h>
 
 void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 	// TODO: validate the bones order and their names?
@@ -37,6 +38,27 @@ void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 			matrix_c parent = (*this)[def->parentIndex].mat;
 			or->mat = parent * or->mat;
 		}
+	}
+}
+void boneOrArray_c::setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac) {
+	// this works only if bones count and order in "from" is the same as in "to"
+	this->resize(from.size());
+	boneOr_s *or = this->getArray();
+	const boneOr_s *orFrom = from.getArray();
+	const boneOr_s *orTo = to.getArray();
+	for(u32 i = 0; i < size(); i++, or++, orFrom++, orTo++) {
+		quat_c qFrom, qTo;
+		vec3_c pFrom, pTo;
+		qFrom = orFrom->mat.getQuat();
+		qTo = orTo->mat.getQuat();
+		pFrom = orFrom->mat.getOrigin();
+		pTo = orTo->mat.getOrigin();
+		vec3_c p;
+		p.lerp(pFrom,pTo,frac);
+		quat_c q;
+		q.slerp(qFrom,qTo,frac);
+		or->mat.fromQuatAndOrigin(q,p);
+		or->boneName = orTo->boneName;
 	}
 }
 void boneOrArray_c::scale(float scale) {

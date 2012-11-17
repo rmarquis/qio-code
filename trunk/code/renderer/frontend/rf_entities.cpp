@@ -40,6 +40,11 @@ class animController_c {
 	float time;
 	const class skelAnimAPI_i *anim;
 	int lastUpdateTime;
+	// extra variables for blending between new and old animation
+	singleAnimLerp_s oldState;
+	const class skelAnimAPI_i *nextAnim;
+	float blendTime;
+
 	static void getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
 		if(anim->getNumFrames() == 1) {
 			out.from = 0;
@@ -68,7 +73,21 @@ public:
 	void resetToAnim(const class skelAnimAPI_i *newAnim) {
 		time = 0.f;
 		anim = newAnim;
+		nextAnim = anim;
 		lastUpdateTime = rf_curTimeMsec;
+	}
+	void setNextAnim(const class skelAnimAPI_i *newAnim) {
+		if(anim == newAnim)
+			return;
+		if(nextAnim == newAnim)
+			return;
+		if(nextAnim != anim) {
+			g_core->RedWarning("animController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
+		}
+		getSingleLoopAnimLerpValuesForTime(oldState,anim,time);
+		time = 0;
+		blendTime = 0.1f;
+		nextAnim = newAnim;
 	}
 	void runAnimController() {
 		int deltaTime = rf_curTimeMsec - lastUpdateTime;
@@ -77,23 +96,48 @@ public:
 		lastUpdateTime = rf_curTimeMsec;
 		float deltaTimeSec = float(deltaTime) * 0.001f;
 		time += deltaTimeSec;
-		while(time > anim->getTotalTimeSec()) {
-			g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
-			time -= anim->getTotalTimeSec();
-		}
-		if(anim_printAnimCtrlTime.getInt()) {
-			g_core->Print("Final time: %f\n",time);
+		if(anim == nextAnim) {
+			while(time > anim->getTotalTimeSec()) {
+				g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
+				time -= anim->getTotalTimeSec();
+			}
+			if(anim_printAnimCtrlTime.getInt()) {
+				g_core->Print("Final time: %f\n",time);
+			}
+		} else {
+			while(time > blendTime) {
+				time -= blendTime;
+				anim = nextAnim;
+			}
 		}
 	}
 	void updateModelAnimation(const class skelModelAPI_i *skelModel, class r_model_c *instance) {
-		singleAnimLerp_s lerp;
-		getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
-		g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
-
 		boneOrArray_c bones;
-		bones.resize(anim->getNumBones());
-		//anim->buildFrameBonesLocal(lerp.from,bones);
-		anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+		if(anim == nextAnim) {
+			singleAnimLerp_s lerp;
+			getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
+			g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
+
+			bones.resize(anim->getNumBones());
+			//anim->buildFrameBonesLocal(lerp.from,bones);
+			anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+		} else {
+			// build old skeleton first
+			// ( TODO: we might do it once and just store the bones here...)
+			boneOrArray_c previous;
+			previous.resize(anim->getNumBones());
+			anim->buildLoopAnimLerpFrameBonesLocal(oldState,previous);
+			
+			// build skeleton for the first frame of new animation
+			boneOrArray_c newBones;
+			newBones.resize(nextAnim->getNumBones());
+			nextAnim->buildFrameBonesLocal(0,newBones);
+			
+			// do the interpolation
+			float frac = this->time / this->blendTime;
+			g_core->Print("Blending between two anims, frac: %f\n",frac);	
+			bones.setBlendResult(previous, newBones, frac);		
+		}
 		bones.localBonesToAbsBones(anim->getBoneDefs());
 		if(skelModel->hasCustomScaling()) {
 			bones.scaleXYZ(skelModel->getScaleXYZ());
@@ -189,6 +233,7 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 		animCtrl->resetToAnim(anim);
 	} else {
 		// TODO
+		animCtrl->setNextAnim(anim);
 	}
 }
 void rEntityImpl_c::addDrawCalls() {

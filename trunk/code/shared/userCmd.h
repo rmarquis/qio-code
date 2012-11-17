@@ -57,6 +57,16 @@ struct usercmd_s {
 	int 			buttons;
 	byte			weapon;           // weapon 
 	signed char	forwardmove, rightmove, upmove;
+
+	bool hasMovement() const {
+		if(forwardmove)
+			return true;
+		if(rightmove)
+			return true;
+		if(upmove)
+			return true;
+		return false;
+	}
 };
 
 #endif // __USERCMD_H__
