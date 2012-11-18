@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class simpleDecalBatcher_c {
 	arraySTD_c<class r_surface_c*> batches;
 	arraySTD_c<struct simpleDecal_s*> decals;
+	arraySTD_c<class mtrAPI_i*> touchedMaterials; // used by addDecalToBatch and rebuildBatches
 
 	void addDecalsWithMatToBatch(class mtrAPI_i *mat, class r_surface_c *batch);
 	bool hasDecalWithMat(class mtrAPI_i *m);
@@ -40,7 +41,8 @@ public:
 	simpleDecalBatcher_c();
 	~simpleDecalBatcher_c();
 
-	void addDecal(const struct simplePoly_s &decalPoly);
+	void addDecalToBatch(const struct simplePoly_s &decalPoly);
+	void rebuildBatches();
 	void addDrawCalls();
 };
 

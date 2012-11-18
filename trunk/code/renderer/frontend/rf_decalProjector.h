@@ -29,8 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 #include <shared/cmWinding.h>
 #include <shared/simpleTexturedPoly.h>
+#include <api/boxTrianglesCallback.h>
 
-class decalProjector_c {
+class decalProjector_c : public boxTrianglesCallback_i {
 	plane_c planes[6];
 	aabb bounds;
 	arraySTD_c<cmWinding_c> results;
@@ -48,6 +49,14 @@ public:
 	void iterateResults(class staticModelCreatorAPI_i *smc);
 	void addResultsToDecalBatcher(class simpleDecalBatcher_c *batcher);
 	const aabb &getBounds() const;
+	u32 getNumCreatedWindings() const {
+		return results.size();
+	}
+
+	// boxTrianglesCallback_i impl
+	virtual void onBoxTriangle(const class vec3_c &p0, const class vec3_c &p1, const class vec3_c &p2) {
+		clipTriangle(p0,p1,p2);
+	}
 };
 
 #endif // __RF_DECALPROJECTOR_H__

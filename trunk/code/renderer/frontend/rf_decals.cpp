@@ -90,8 +90,7 @@ void simpleDecalBatcher_c::rebuildBatchWithMat(mtrAPI_i *m) {
 	nb->createVBOandIBO();
 	batches.push_back(nb);
 }
-void simpleDecalBatcher_c::addDecal(const simplePoly_s &decalPoly) {
-	arraySTD_c<mtrAPI_i*> touchedMaterials;
+void simpleDecalBatcher_c::addDecalToBatch(const simplePoly_s &decalPoly) {
 	while(decals.size() >= rf_maxDecals.getInt()) {
 		// TODO: do it other way, erase is slow
 		touchedMaterials.add_unique(decals[0]->poly.material);
@@ -101,10 +100,13 @@ void simpleDecalBatcher_c::addDecal(const simplePoly_s &decalPoly) {
 	}
 	touchedMaterials.add_unique(decalPoly.material);
 	decals.push_back(new simpleDecal_s(decalPoly));
+}
+void simpleDecalBatcher_c::rebuildBatches() {
 	// rebuild batches and reupload IBO/VBO
 	for(u32 i = 0; i < touchedMaterials.size(); i++) {
 		rebuildBatchWithMat(touchedMaterials[i]);
 	}
+	touchedMaterials.clear();
 }
 void simpleDecalBatcher_c::addDrawCalls() {
 	for(u32 i = 0; i < batches.size(); i++) {

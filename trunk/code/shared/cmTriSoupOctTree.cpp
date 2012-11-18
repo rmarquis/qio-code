@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "cmSurface.h"
 #include "trace.h"
 #include "autoCvar.h"
+#include <api/boxTrianglesCallback.h>
 
 // check all of the triangles in octTree instead of using node/leaves data (default false)
 static aCvar_c cms_tsOctTree_checkAllTris("cms_tsOctTree_checkAllTris","0");
@@ -70,7 +71,7 @@ bool tsOctTreeHeader_s::traceNodeRay(u32 nodeNum, class trace_c &tr) {
 				hit = true;
 			}
 		}
-		return hit; // nothing else to do for nodes
+		return hit; // nothing else to do for leaves
 	}
 	float d0 = node.plane.distance(tr.getStartPos());
 	float d1 = node.plane.distance(tr.getHitPos());
@@ -103,7 +104,60 @@ bool tsOctTreeHeader_s::traceRay(class trace_c &tr) {
 	} 
 	return traceNodeRay(0,tr);
 }
+bool tsOctTreeHeader_s::logBoxTri(const class aabb &bounds, class boxTrianglesCallback_i *callback, u32 triangleNum) { 
+	// see if the triangle was already checked
+	if(cms_tsOctTree_useCheckCounts.getInt() && this->triCheckCounts[triangleNum] == this->checkCount){
+		return false;
+	}
+	// mark as already checked
+	this->triCheckCounts[triangleNum] = this->checkCount;
 
+	const u32 *indices = this->getTriIndexes();
+	u32 i0 = indices[triangleNum*3+0];
+	u32 i1 = indices[triangleNum*3+1];
+	u32 i2 = indices[triangleNum*3+2];
+	const vec3_c &p0 = this->getTriPoints()[i0];
+	const vec3_c &p1 = this->getTriPoints()[i1];
+	const vec3_c &p2 = this->getTriPoints()[i2];
+	aabb tmpBB;
+	tmpBB.fromThreePoints(p0,p1,p2);
+	if(tmpBB.intersect(bounds) == false)
+		return false;
+
+	callback->onBoxTriangle(p0,p1,p2);
+	return true;
+}
+void tsOctTreeHeader_s::boxTriangles_r(const class aabb &bounds, class boxTrianglesCallback_i *callback, int nodeNum) {
+	while(1) {
+		tsOctTreeNode_s &node = this->getNodes()[nodeNum];
+		if(bounds.intersect(node.bounds) == false)
+			return;
+		if(node.plane.axis == -1) {
+			const u32 *leafTriIndexes = this->getLeafTriIndexes() + node.firstTri;
+			for(u32 i = 0; i < node.numTris; i++) {
+				u32 triNum = leafTriIndexes[i];
+				logBoxTri(bounds,callback,triNum);
+			}
+			return; // nothing else to do for leaves
+		}
+		planeSide_e side = node.plane.onSide(bounds);
+		if(side == SIDE_FRONT) {
+			nodeNum = node.children[0];
+		} else if(side == SIDE_BACK) {
+			nodeNum = node.children[1];
+		} else {
+			nodeNum = node.children[0];
+			boxTriangles_r(bounds,callback,node.children[1]);
+		}
+	}
+}
+void tsOctTreeHeader_s::boxTriangles(const class aabb &bounds, class boxTrianglesCallback_i *callback) {
+	this->checkCount++;
+	//if(cms_tsOctTree_checkAllTris.getInt()) {
+	//
+	//} 
+	boxTriangles_r(bounds,callback,0);
+}
 // ======================================
 //
 //	tsOctTreeHeader_s "compiler"

@@ -452,6 +452,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="api"
+			>
+			<File
+				RelativePath="..\..\code\api\boxTrianglesCallback.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

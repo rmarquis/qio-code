@@ -109,8 +109,9 @@ void decalProjector_c::addResultsToDecalBatcher(class simpleDecalBatcher_c *batc
 			p.verts[j].tc.x = 0.5 + delta.dotProduct(perp)*texCoordScale;
 			p.verts[j].tc.y = 0.5 + delta.dotProduct(perp2)*texCoordScale;
 		}
-		batcher->addDecal(p);
+		batcher->addDecalToBatch(p);
 	}		
+	batcher->rebuildBatches();
 }
 const aabb &decalProjector_c::getBounds() const {
 	return bounds;

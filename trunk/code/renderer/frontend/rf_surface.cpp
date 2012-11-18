@@ -353,18 +353,27 @@ void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const 
 }
 #include <shared/cmSurface.h>
 #include <shared/autoCvar.h>
-aCvar_c r_useTriSoupOctTrees("r_useTriSoupOctTrees","1");
+
+static aCvar_c r_useTriSoupOctTreesForRayTracing("r_useTriSoupOctTreesForRayTracing","1");
+static aCvar_c r_useTriSoupOctTreesForDecalCreation("r_useTriSoupOctTreesForDecalCreation","1");
+static aCvar_c r_minOctTreeTrisCount("r_minOctTreeTrisCount","2048");
+
+void r_model_c::ensureExtraTrisoupOctTreeIsBuild() {
+	if(extraCollOctTree)
+		return;
+	if(getTotalTriangleCount() > r_minOctTreeTrisCount.getInt()) {
+		cmSurface_c sf;
+		addGeometryToColMeshBuilder(&sf);
+		extraCollOctTree = CMU_BuildTriSoupOctTree(sf);
+	}
+}
+
 bool r_model_c::traceRay(class trace_c &tr) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
 		return false;
-	if(r_useTriSoupOctTrees.getInt()) {
+	if(r_useTriSoupOctTreesForRayTracing.getInt()) {
+		ensureExtraTrisoupOctTreeIsBuild();
 		if(extraCollOctTree) {
-			return extraCollOctTree->traceRay(tr);
-		}
-		if(getTotalTriangleCount() > 8192 || 1) {
-			cmSurface_c sf;
-			addGeometryToColMeshBuilder(&sf);
-			extraCollOctTree = CMU_BuildTriSoupOctTree(sf);
 			return extraCollOctTree->traceRay(tr);
 		}
 	}
@@ -386,6 +395,20 @@ bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c 
 	decalProjector_c proj;
 	proj.init(pos,normal,radius);
 	proj.setMaterial(material);
+
+	// see if we can use extra octree structure to speed up
+	// decal creation
+	if(r_useTriSoupOctTreesForDecalCreation.getInt()) {
+		ensureExtraTrisoupOctTreeIsBuild();
+		if(extraCollOctTree) {
+			u32 prev = proj.getNumCreatedWindings();
+			extraCollOctTree->boxTriangles(proj.getBounds(),&proj);
+			// get results
+			proj.addResultsToDecalBatcher(out);
+			return proj.getNumCreatedWindings() != prev;
+		}
+	}
+
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		//if(proj.getBounds().intersect(sf->getBB()) == false) {

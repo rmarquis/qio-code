@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <math/vec3.h>
 #include <math/aabb.h>
+#include <math/plane.h>
 
 struct aaPlane_s {
 	int axis;
@@ -36,6 +37,13 @@ struct aaPlane_s {
 	float distance(const float *p) const {
 		float ret = p[axis] + dist;
 		return ret;
+	}	
+	planeSide_e onSide(const aabb &bb) const {
+		if(bb.mins[axis] > -this->dist)
+			return SIDE_FRONT;
+		if(bb.maxs[axis] < -this->dist)
+			return SIDE_BACK;
+		return SIDE_CROSS;
 	}
 };
 struct tsOctTreeNode_s {
@@ -48,6 +56,7 @@ struct tsOctTreeNode_s {
 		};
 	};
 };
+
 struct tsOctTreeHeader_s {
 	int ident;
 	int version;
@@ -65,9 +74,13 @@ private:
 	// internal functions
 	bool traceTriangleRay(u32 triangleNum, class trace_c &tr);
 	bool traceNodeRay(u32 nodeNum, class trace_c &tr);
+	void boxTriangles_r(const class aabb &bounds, class boxTrianglesCallback_i *callback, int nodeNum);
+	bool logBoxTri(const class aabb &bounds, class boxTrianglesCallback_i *callback, u32 triangleNum);
 public:
 	// raycasting entry point
 	bool traceRay(class trace_c &tr);
+	// iterate all the triangles intersecting given bounds
+	void boxTriangles(const class aabb &bounds, class boxTrianglesCallback_i *callback);
 
 	// direct data access
 	tsOctTreeNode_s *getNodes() {

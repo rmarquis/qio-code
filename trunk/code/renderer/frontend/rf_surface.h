@@ -139,8 +139,10 @@ class r_model_c : public staticModelCreatorAPI_i {
 	arraySTD_c<r_surface_c> surfs;
 	aabb bounds;
 	str name;
-	// used to speed up raycasting
+	// used to speed up raycasting / decal creation
 	struct tsOctTreeHeader_s *extraCollOctTree;
+
+	void ensureExtraTrisoupOctTreeIsBuild();
 public:
 	r_model_c();
 	~r_model_c();
