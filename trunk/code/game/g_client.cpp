@@ -298,7 +298,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"createboxstack")) {
 		vec3_c p = pl->getOrigin();
 		//p.z += float(pl->getViewHeight())*0.5;
-		p.z -= 32;
+		p.z += 32;
 		p += pl->getForward() * 64.f;
 		vec3_c up = pl->getUp();
 		vec3_c left = pl->getLeft();

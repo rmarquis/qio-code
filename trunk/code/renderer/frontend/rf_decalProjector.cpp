@@ -67,18 +67,22 @@ u32 decalProjector_c::clipTriangle(const vec3_c &p0, const vec3_c &p1, const vec
 	tmpBB.fromThreePoints(p0,p1,p2);
 	if(tmpBB.intersect(bounds) == false)
 		return 0;
+#if 0
 	plane_c triPlane;
 	triPlane.fromThreePoints(p0,p1,p2);
 	triPlane.norm *= 0.001f;
 	cmWinding_c w(p0-triPlane.norm,p1-triPlane.norm,p2-triPlane.norm);
+#else
+	cmWinding_c w(p0,p1,p2);
+#endif
 	for(u32 i = 0; i < 6; i++) {
 		w.clipWindingByPlane(planes[i]);
 	}
 	if(w.size() == 0) {
-		g_core->Print("decalProjector_c::clipTriangle: winding chopped away\n");
+		//g_core->Print("decalProjector_c::clipTriangle: winding chopped away\n");
 		return 0;
 	}
-	g_core->Print("decalProjector_c::clipTriangle: remaining windings points: %i\n",w.size());
+	//g_core->Print("decalProjector_c::clipTriangle: remaining windings points: %i\n",w.size());
 	results.push_back(w);
 	return w.size();
 }
