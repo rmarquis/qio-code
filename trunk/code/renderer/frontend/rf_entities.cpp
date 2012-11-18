@@ -84,7 +84,12 @@ public:
 		if(nextAnim != anim) {
 			g_core->RedWarning("animController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
 		}
-		getSingleLoopAnimLerpValuesForTime(oldState,anim,time);
+		if(anim->getBLoopLastFrame() && (time > anim->getTotalTimeSec())) {
+			oldState.from = oldState.to = anim->getNumFrames()-1;
+			oldState.frac = 0.f;
+		} else {
+			getSingleLoopAnimLerpValuesForTime(oldState,anim,time);
+		}
 		time = 0;
 		blendTime = 0.1f;
 		nextAnim = newAnim;
@@ -97,12 +102,16 @@ public:
 		float deltaTimeSec = float(deltaTime) * 0.001f;
 		time += deltaTimeSec;
 		if(anim == nextAnim) {
-			while(time > anim->getTotalTimeSec()) {
-			//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
-				time -= anim->getTotalTimeSec();
-			}
-			if(anim_printAnimCtrlTime.getInt()) {
-			//	g_core->Print("Final time: %f\n",time);
+			if(anim->getBLoopLastFrame()) {
+				return; // dont loop this animation, just stop at the last frame
+			} else {
+				while(time > anim->getTotalTimeSec()) {
+				//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
+					time -= anim->getTotalTimeSec();
+				}
+				if(anim_printAnimCtrlTime.getInt()) {
+				//	g_core->Print("Final time: %f\n",time);
+				}
 			}
 		} else {
 			while(time > blendTime) {
@@ -114,13 +123,17 @@ public:
 	void updateModelAnimation(const class skelModelAPI_i *skelModel, class r_model_c *instance) {
 		boneOrArray_c bones;
 		if(anim == nextAnim) {
-			singleAnimLerp_s lerp;
-			getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
-			//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
-
 			bones.resize(anim->getNumBones());
-			//anim->buildFrameBonesLocal(lerp.from,bones);
-			anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+			if(anim->getBLoopLastFrame() && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
+				anim->buildFrameBonesLocal(anim->getNumFrames()-1,bones);			
+			} else {
+				singleAnimLerp_s lerp;
+				getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
+				//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
+
+				//anim->buildFrameBonesLocal(lerp.from,bones);
+				anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+			}
 		} else {
 			// build old skeleton first
 			// ( TODO: we might do it once and just store the bones here...)

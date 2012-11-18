@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Weapon.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
+#include <api/coreAPI.h>
+#include <shared/trace.h>
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -38,6 +40,7 @@ Player::Player() {
 	noclip = false;
 	useHeld = false;
 	fireHeld = false;
+	onGround = false;
 	vehicle = 0;
 	curWeapon = 0;
 }
@@ -114,6 +117,8 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		vehicle->steerUCmd(ucmd);
 		//this->setClientViewAngle(vehicle->getAngles());
 	} else {
+		bool bJumped = false;
+		bool bLanding = false;
 		// update the viewangles
 		PM_UpdateViewAngles( &this->ps, ucmd );
 		{
@@ -133,21 +138,54 @@ void Player::runPlayer(usercmd_s *ucmd) {
 				dir.scale(4.f);
 				VectorAdd(this->ps.origin,dir,newOrigin);
 				ModelEntity::setOrigin(newOrigin);
+				onGround = false;
 			} else {
 				dir[2] = 0;
 				VectorScale(dir,0.75f,dir);
 				G_RunCharacterController(dir,this->characterController, newOrigin);
-				if(ucmd->upmove) {
-					G_TryToJump(this->characterController);
+				bool isNowOnGround = BT_IsCharacterOnGround(this->characterController);
+				if(isNowOnGround) {
+					if(ucmd->upmove) {
+						bJumped = G_TryToJump(this->characterController);
+					}
+					if(onGround == false) {
+						bLanding = true;
+						g_core->Print("Player::runPlayer: LANDING\n");
+					}
 				}
+				onGround = isNowOnGround;
 				ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 			}
 			ps.angles.set(0,ps.viewangles[1],0);
 		}
-		if(ucmd->upmove) {
+		float groundDist = 0.f;
+		if(onGround == false) {
+			trace_c tr;
+			tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
+			BT_TraceRay(tr);
+			groundDist = tr.getTraveled();
+			G_Printf("GroundDist: %f\n",groundDist);
+		}
+		if(bLanding) {
+			this->setAnimation("models/player/shina/run.md5anim");
+		} else if(bJumped) {
+			this->setAnimation("models/player/shina/jump.md5anim");
+		} else if(groundDist > 32.f) {
 			this->setAnimation("models/player/shina/jump.md5anim");
 		} else if(ucmd->hasMovement()) {
-			this->setAnimation("models/player/shina/run.md5anim");
+			if(ucmd->forwardmove < 82) {
+				if(ucmd->forwardmove < 0) {
+					if(ucmd->forwardmove < -82) {
+						this->setAnimation("models/player/shina/run_backwards.md5anim");
+					} else {
+						this->setAnimation("models/player/shina/walk_backwards.md5anim");
+					}
+				} else {
+					this->setAnimation("models/player/shina/walk.md5anim");
+				}
+			} else {
+				this->setAnimation("models/player/shina/run.md5anim");
+			}
 		} else {
 			this->setAnimation("models/player/shina/idle.md5anim");
 		}

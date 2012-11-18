@@ -52,7 +52,15 @@ struct boneDef_s {
 };
 // array of bone definitions (name index + parent index)
 class boneDefArray_c :  public arraySTD_c<boneDef_s> {
-
+public:
+	int getLocalBoneIndexForBoneName(u16 boneName) const {
+		const boneDef_s *d = getArray();
+		for(u32 i = 0; i < size(); i++, d++) {
+			if(d->nameIndex == boneName)
+				return i;
+		}
+		return -1;
+	}
 };
 
 #endif // __SKELUTILS_H__

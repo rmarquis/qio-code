@@ -21,20 +21,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderLocal.h - local model loader header
-#ifndef __MODELLOADERLOCAL_H__
-#define __MODELLOADERLOCAL_H__
+// skelAnimPostProcessFuncs.h - animation postprocessing functions
+#ifndef __SKELANIMPOSTPROCESSFUNCS_H__
+#define __SKELANIMPOSTPROCESSFUNCS_H__
 
-class staticModelCreatorAPI_i;
+class skelAnimPostProcessFuncs_i {
+public:
+	virtual void scaleAnimationSpeed(float scale) = 0;
+	virtual void setLoopLastFrame(bool bLoopLastFrame) = 0;
+	// md5anim-specific functions
+	virtual void clearMD5BoneComponentFlags(const char *boneName) {
 
-// staticModelLoaders/wavefrontOBJModelLoader.cpp
-bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out);
-// staticModelLoaders/mapFileConverter.cpp
-bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreatorAPI_i *out);
+	};
+};
 
-// mod_postProcess.cpp
-bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout);
-// skel_animPostProcess.cpp
-bool SK_ApplyAnimPostProcess(const char *modName, class skelAnimPostProcessFuncs_i *inout);
-
-#endif // __MODELLOADERLOCAL_H__
+#endif // __MODELPOSTPROCESSFUNCS_H__

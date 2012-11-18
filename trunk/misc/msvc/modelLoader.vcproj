@@ -175,6 +175,10 @@
 				RelativePath="..\..\code\modelLoader\modelLoaderAPI.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\skel_animPostProcess.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -285,6 +289,10 @@
 			>
 			<File
 				RelativePath="..\..\code\api\skelAnimAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\skelAnimPostProcessFuncs.h"
 				>
 			</File>
 			<File

@@ -59,6 +59,7 @@ class Player : public ModelEntity {
 	str netName;
 	class Weapon *curWeapon;
 	vec3_c characterControllerOffset;
+	bool onGround; // this is always false if player is using "noclip"
 public:
 	Player();
 	virtual ~Player();

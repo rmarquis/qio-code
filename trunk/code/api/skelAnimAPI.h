@@ -25,6 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __SKELANIMAPI_H__
 #define __SKELANIMAPI_H__
 
+#include "skelAnimPostProcessFuncs.h"
+
+enum {
+	AF_LOOP_LAST_FRAME = 1, // stop the animation at the last frame instead of looping it
+};
+
 // used for single looping animations
 struct singleAnimLerp_s {
 	u16 from; // previous frame num
@@ -32,7 +38,7 @@ struct singleAnimLerp_s {
 	float frac; // 0.0 - 1.0 lerp value
 };
 
-class skelAnimAPI_i {
+class skelAnimAPI_i : public skelAnimPostProcessFuncs_i {
 public:
 	virtual ~skelAnimAPI_i() { };
 	virtual const char *getName() const = 0;
@@ -42,6 +48,8 @@ public:
 	virtual const class boneDefArray_c *getBoneDefs() const = 0;
 	virtual float getFrameTime() const = 0;
 	virtual float getTotalTimeSec() const = 0;
+	// returns true if animation should stop after reaching the last frame (instead of starting again)
+	virtual bool getBLoopLastFrame() const = 0;
 
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
 	// for looping animations

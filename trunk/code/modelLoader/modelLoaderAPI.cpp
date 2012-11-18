@@ -117,15 +117,19 @@ public:
 			return 0;
 		}
 		ext++; // skip '.'
+		skelAnimAPI_i *ret;
 		if(!stricmp(ext,"md5anim")) {
 			skelAnimMD5_c *md5Anim = new skelAnimMD5_c;
 			if(md5Anim->loadMD5Anim(fname)) {
 				delete md5Anim;
 				return 0;
 			}
-			return md5Anim;
+			ret = md5Anim;
+		} else {
+			return 0;
 		}
-		return 0;
+		SK_ApplyAnimPostProcess(fname,ret);
+		return ret;
 	}
 };
 

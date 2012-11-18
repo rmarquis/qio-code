@@ -28,6 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "skelAnimImpl.h"
 #include <shared/skelUtils.h> // boneOrArray_c
 
+skelAnimMD5_c::skelAnimMD5_c() {
+	animFlags = 0;
+}
 skelAnimMD5_c::~skelAnimMD5_c() {
 	frames.clear();
 	bones.clear();
@@ -176,6 +179,14 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 	frameTime = 1.f / frameRate;
 	totalTime = frameTime * float(frames.size());
 	return false; // no error
+}	
+void skelAnimMD5_c::clearMD5BoneComponentFlags(const char *boneName) {
+	int localIndex = SK_RegisterString(boneName);
+	if(localIndex == -1) {
+		g_core->RedWarning("skelAnimMD5_c::clearMD5BoneComponentFlags: Bone %s not found\n",boneName);
+		return;
+	}
+	md5AnimBones[localIndex].componentFlags = 0;
 }
 // 
 //	md5 animation code

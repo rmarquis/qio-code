@@ -418,10 +418,14 @@ void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, ve
 	newPos[2] = c.z();
 }
 
-void G_TryToJump(btKinematicCharacterController *ch) {
+bool G_TryToJump(btKinematicCharacterController *ch) {
 	if(ch->onGround() == false)
-		return;
-	ch->jump();
+		return false; // didnt jump
+	ch->jump(); // jumped
+	return true;
+}
+bool BT_IsCharacterOnGround(btKinematicCharacterController *ch) {
+	return ch->onGround();
 }
 void BT_FreeCharacter(btKinematicCharacterController *c) {
 	if(c == 0)

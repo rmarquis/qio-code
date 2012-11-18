@@ -63,6 +63,7 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	boneDefArray_c bones;
 	arraySTD_c<md5AnimBone_s> md5AnimBones;
 	arraySTD_c<md5BoneVal_s> baseFrame;
+	int animFlags;
 
 	virtual const char *getName() const {
 		return animFileName;
@@ -83,10 +84,30 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual float getTotalTimeSec() const {
 		return totalTime;
 	}
+	// anim post process funcs impl
+	virtual void scaleAnimationSpeed(float scale) {
+		frameTime *= scale;
+		frameRate = 1.f / frameTime;
+		totalTime = frames.size() * frameTime;
+	}
+	virtual void clearMD5BoneComponentFlags(const char *boneName);
+	virtual void setLoopLastFrame(bool bLoopLastFrame) {
+		if(bLoopLastFrame) {
+			animFlags |= AF_LOOP_LAST_FRAME;
+		} else {
+			animFlags &= ~AF_LOOP_LAST_FRAME;
+		}
+	}
+
+	virtual bool getBLoopLastFrame() const {
+		return animFlags & AF_LOOP_LAST_FRAME;
+	}
+
 	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
 public:
+	skelAnimMD5_c();
 	virtual ~skelAnimMD5_c();
 	bool loadMD5Anim(const char *fname);
 };

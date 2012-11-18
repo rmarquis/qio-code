@@ -37,6 +37,11 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	recalcRayTraceBounds();
 }
 void trace_c::setHitPos(const vec3_c &newHitPos) {
+#if 1
+	float newTraveled = this->from.dist(newHitPos);
+	if(newTraveled > traveled)
+		return;
+#endif
 	this->hitPos = newHitPos;
 	updateForNewHitPos();
 }

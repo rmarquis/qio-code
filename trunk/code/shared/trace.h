@@ -103,6 +103,9 @@ public:
 	float getFraction() const {
 		return fraction;
 	}
+	float getTraveled() const {
+		return traveled;
+	}
 	const aabb &getTraceBounds() const {
 		return traceBounds;
 	}
