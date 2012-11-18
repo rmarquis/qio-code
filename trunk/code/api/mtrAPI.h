@@ -38,6 +38,8 @@ public:
 
 	virtual int getImageWidth() const = 0;
 	virtual int getImageHeight() const = 0;
+
+	virtual float getPolygonOffset() const = 0;
 };
 
 #endif // __MTR_API_H__

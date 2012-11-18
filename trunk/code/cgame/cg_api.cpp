@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/cmAPI.h>
 #include <api/loadingScreenMgrAPI.h>
+#include <api/materialSystemAPI.h>
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -46,6 +47,7 @@ rAPI_i *rf = 0;
 rbAPI_i *rb = 0;
 cmAPI_i *cm = 0;
 loadingScreenMgrAPI_i *g_loadingScreen = 0;
+materialSystemAPI_i *g_ms = 0;
 // exports
 static cgameAPI_s g_staticCGameAPI;
 
@@ -67,6 +69,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&cm,CM_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_loadingScreen,LOADINGSCREENMGR_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

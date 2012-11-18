@@ -401,6 +401,21 @@ public:
 		y *= scale;
 		z *= scale;
 	}
+	// for angles
+	vec3_c getForward() const {
+		float angle = (*this)[YAW] * (M_PI*2 / 360);
+		float sy = sin(angle);
+		float cy = cos(angle);
+		angle = (*this)[PITCH] * (M_PI*2 / 360);
+		float sp = sin(angle);
+		float cp = cos(angle);
+
+		vec3_c forward;
+		forward[0] = cp*cy;
+		forward[1] = cp*sy;
+		forward[2] = -sp;
+		return forward;
+	}
 
 
 	const float *floatPtr() const {

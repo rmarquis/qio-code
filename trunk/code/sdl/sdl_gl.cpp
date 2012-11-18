@@ -343,6 +343,21 @@ public:
 		glLoadIdentity();
 		glPopAttrib();
 	}
+	bool polygonOffsetEnabled;
+	// polygon offset (for decals)
+	void setPolygonOffset(float factor, float units) {
+		if(polygonOffsetEnabled == false) {
+			polygonOffsetEnabled = true;
+			glEnable(GL_POLYGON_OFFSET_FILL);
+		}
+		glPolygonOffset(factor,units);
+	}
+	void turnOffPolygonOffset() {
+		if(polygonOffsetEnabled == true) {
+			glDisable(GL_POLYGON_OFFSET_FILL);
+			polygonOffsetEnabled = false;
+		}
+	}
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
 		lastMat = mat;
 		lastLightmap = lightmap;
@@ -350,7 +365,8 @@ public:
 	virtual void unbindMaterial() {
 		disableAllTextures();
 		turnOffAlphaFunc();
-		disableColorArray();
+		disableColorArray();	
+		turnOffPolygonOffset();
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 		lastMat = 0;
 		lastLightmap = 0;
@@ -488,6 +504,11 @@ public:
 		bindIBO(&indices);
 
 		if(lastMat) {
+			if(lastMat->getPolygonOffset()) {
+				this->setPolygonOffset(-1,-2);
+			} else {
+				this->turnOffPolygonOffset();
+			}
 			u32 numMatStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numMatStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);

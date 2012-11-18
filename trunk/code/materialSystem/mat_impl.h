@@ -130,6 +130,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	mtrIMPL_c *hashNext;
 	arraySTD_c<mtrStage_c*> stages;
 	skyParms_c *skyParms;
+	float polygonOffset;
 public:
 	mtrIMPL_c();
 	~mtrIMPL_c();
@@ -178,6 +179,9 @@ public:
 		if(stages.size() == 0)
 			return 32;
 		return stages[0]->getImageHeight();
+	}
+	virtual float getPolygonOffset() const {
+		return polygonOffset;
 	}
 
 	void createFromImage();

@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
 #include <api/vfsAPI.h>
+#include <api/materialSystemAPI.h>
+
 
 /*
 ================
@@ -129,7 +131,7 @@ static void CG_TestBulletAttack() {
 		CG_Printf("CG_TestBulletAttack: no hit\n");
 		return; // no hit
 	}
-	mtrAPI_i *decalMaterial = 0;
+	mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
 	float radius = 8.f;
 	centity_s *hit = tr.getHitCGEntity();
 	if(hit == &cg_entities[ENTITYNUM_WORLD]) {

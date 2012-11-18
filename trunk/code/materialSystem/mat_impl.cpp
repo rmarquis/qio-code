@@ -115,6 +115,7 @@ int mtrStage_c::getImageHeight() const {
 // material class
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
+	polygonOffset = 0;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	for(u32 i = 0; i < stages.size(); i++) {
@@ -227,8 +228,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("unsmoothedtangents")) {
 
 				} else if(p.atWord("polygonOffset")) {
-					//this->polygonOffset = 
-					p.getFloat();
+					this->polygonOffset = p.getFloat();
 				} else if(p.atWord("twosided")) {
 
 				} else if(p.atWord("nonsolid")) {
