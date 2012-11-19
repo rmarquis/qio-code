@@ -103,7 +103,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 		if ( newnum < oldnum ) {
 			if(sv_debugPlayerSnapshotEntities.getInt() == to->ps.number) {
 				Com_Printf("SV_EmitPacketEntities: adding entity %i from player %i view\n",
-					newnum,from->ps.number);
+					newnum,to->ps.number);
 			}
 			// this is a new entity, send it from the baseline
 			MSG_WriteDeltaEntity (msg, &sv.svEntities[newnum].baseline, newent, qtrue );
@@ -114,7 +114,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 		if ( newnum > oldnum ) {
 			if(sv_debugPlayerSnapshotEntities.getInt() == to->ps.number) {
 				Com_Printf("SV_EmitPacketEntities: removing entity %i from player %i view\n",
-					oldnum,from->ps.number);
+					oldnum,to->ps.number);
 			}
 			// the old entity isn't present in the new message
 			MSG_WriteDeltaEntity (msg, oldent, NULL, qtrue );

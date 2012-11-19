@@ -188,6 +188,13 @@ void cmWinding_c::getBounds(aabb &out) const {
 		out.addPoint(points[i]);
 	}
 }
+void cmWinding_c::getPlane(class plane_c &out) const {
+	if(size() < 3) {
+		out.clear();
+		return;
+	}
+	out.fromThreePoints(points[0],points[1],points[2]);
+}
 void cmWinding_c::addPointsToBounds(aabb &out) const {
 	for(u32 i = 0; i < points.size(); i++) {
 		out.addPoint(points[i]);

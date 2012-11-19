@@ -208,15 +208,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\renderer\frontend\rf_drawCall.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\frontend\rf_entities.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\renderer\frontend\rf_entities.h"
 				>
 			</File>
 			<File
@@ -225,6 +217,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_model.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_proc.cpp"
 				>
 			</File>
 			<File
@@ -282,11 +278,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_drawCall.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_entities.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_local.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_model.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_proc.h"
 				>
 			</File>
 			<File
@@ -333,6 +341,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\frustum.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\frustumExt.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\frustumExt.h"
 				>
 			</File>
 			<File
@@ -405,6 +421,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\cullResult.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
 				>
 			</File>
 			<File

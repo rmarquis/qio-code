@@ -520,7 +520,10 @@ public:
 		// This depends on SDL_INIT_VIDEO, hence having it here
 		g_inputSystem->IN_Init();
 	}
-	virtual void shutdown() {
+	virtual void shutdown(bool destroyWindow) {
+		if(destroyWindow == false) {
+			return;
+		}
 		if(hWnd == 0) {
 			g_core->RedWarning("rbDX9_c::shutdown: hWnd is already NULL\n");
 			return;

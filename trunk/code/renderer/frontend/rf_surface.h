@@ -129,6 +129,8 @@ public:
 	void translateXYZ(const vec3_c &ofs);
 	void addPointsToBounds(aabb &out);
 
+	bool parseProcSurface(class parser_c &p);
+
 	const aabb &getBB() const {
 		return bounds;
 	}
@@ -146,6 +148,22 @@ class r_model_c : public staticModelCreatorAPI_i {
 public:
 	r_model_c();
 	~r_model_c();
+
+	const char *getName() const {
+		return name;
+	}
+
+	bool isAreaModel() const {
+		if(!Q_stricmpn(name,"_area",5))
+			return true;
+		return false;
+	}
+	int getAreaNumber() const {
+		if(isAreaModel() == false)
+			return -1;
+		const char *num = name.c_str() + 5;
+		return atoi(num);
+	}
 
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
@@ -176,6 +194,8 @@ public:
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls();
+
+	bool parseProcModel(class parser_c &p);
 
 	u32 getTotalTriangleCount() const {
 		u32 ret = 0;

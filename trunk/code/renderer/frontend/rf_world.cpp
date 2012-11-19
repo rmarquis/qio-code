@@ -24,11 +24,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_world.h - functions used for all world map types (.bsp, .map, .proc...)
 #include "rf_bsp.h"
 #include "rf_surface.h"
+#include "rf_proc.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
-static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes)
+static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
+static class procTree_c *r_procTree = 0; // for .proc files
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
@@ -39,6 +41,10 @@ void RF_ClearWorldMap() {
 		delete r_worldModel;
 		r_worldModel = 0;
 	}
+	if(r_procTree) {
+		delete r_procTree;
+		r_procTree = 0;
+	}
 }
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();
@@ -48,11 +54,19 @@ bool RF_LoadWorldMap(const char *name) {
 		return true;
 	}
 	if(!stricmp(ext,"bsp")) {
+		// Q3/RTCW/ET/MoH/CoD .bsp file
 		r_bspTree = RF_LoadBSP(name);
 		if(r_bspTree)
 			return false; // ok
 		return true; // error
+	} else if(!stricmp(ext,"proc")) {
+		// Doom3 / Quake4 .proc
+		r_procTree = RF_LoadPROC(name);
+		if(r_procTree)
+			return false; // ok
+		return true; // error
 	} else if(g_modelLoader->isStaticModelFile(name)) {
+		// .map file or any other static model format
 		r_model_c *m = new r_model_c;
 		if(g_modelLoader->loadStaticModelFile(name,m)) {
 			delete m;
@@ -72,6 +86,9 @@ void RF_AddWorldDrawCalls() {
 	if(r_worldModel) {
 		r_worldModel->addDrawCalls();
 	}
+	if(r_procTree) {
+		r_procTree->addDrawCalls();
+	}
 }
 bool RF_RayTraceWorld(class trace_c &tr) {
 	if(r_bspTree) {
@@ -79,6 +96,9 @@ bool RF_RayTraceWorld(class trace_c &tr) {
 	}
 	if(r_worldModel) {
 		return r_worldModel->traceRay(tr);
+	}
+	if(r_procTree) {
+		return r_procTree->traceRay(tr);
 	}
 	return false;
 }

@@ -58,7 +58,7 @@ bool tsOctTreeHeader_s::traceTriangleRay(u32 triangleNum, class trace_c &tr) {
 	}
 	return false;
 }
-bool tsOctTreeHeader_s::traceNodeRay(u32 nodeNum, class trace_c &tr) {
+bool tsOctTreeHeader_s::traceNodeRay_r(u32 nodeNum, class trace_c &tr) {
 	tsOctTreeNode_s &node = this->getNodes()[nodeNum];
 	if(tr.getTraceBounds().intersect(node.bounds) == false)
 		return false;
@@ -77,15 +77,15 @@ bool tsOctTreeHeader_s::traceNodeRay(u32 nodeNum, class trace_c &tr) {
 	float d1 = node.plane.distance(tr.getHitPos());
 	const float eps = 0.01f;
 	if(d0 > eps && d1 > eps)
-		return traceNodeRay(node.children[0],tr);
+		return traceNodeRay_r(node.children[0],tr);
 	if(d0 < -eps && d1 < -eps)
-		return traceNodeRay(node.children[1],tr);
+		return traceNodeRay_r(node.children[1],tr);
 
 	bool hit = false;
-	if(traceNodeRay(node.children[0],tr)) {
+	if(traceNodeRay_r(node.children[0],tr)) {
 		hit = true;
 	}
-	if(traceNodeRay(node.children[1],tr)) {
+	if(traceNodeRay_r(node.children[1],tr)) {
 		hit = true;
 	}
 	return hit;
@@ -102,7 +102,7 @@ bool tsOctTreeHeader_s::traceRay(class trace_c &tr) {
 		}
 		return hit;
 	} 
-	return traceNodeRay(0,tr);
+	return traceNodeRay_r(0,tr);
 }
 bool tsOctTreeHeader_s::logBoxTri(const class aabb &bounds, class boxTrianglesCallback_i *callback, u32 triangleNum) { 
 	// see if the triangle was already checked

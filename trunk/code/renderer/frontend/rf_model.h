@@ -34,6 +34,7 @@ enum modelType_e {
 	MOD_BSP, // inline bsp model (model name starts with '*')
 	MOD_STATIC, // static (non-animated) triangle model
 	MOD_SKELETAL, // animated skeletal model
+	MOD_PROC, // inline proc model
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -49,6 +50,10 @@ class model_c : public rModelAPI_i {
 		}; // only if this->type == MOD_BSP
 		class r_model_c *staticModel; // only if this->type == MOD_STATIC
 		class skelModelAPI_i *skelModel; // only if this->type == MOD_SKELETAL
+		struct {
+			class r_model_c *procModel;
+			class procTree_c *myProcTree;
+		}; // only if this->type == MOD_PROC
 	};
 	aabb bb;
 public:
@@ -68,6 +73,8 @@ public:
 			return true;
 		if(type == MOD_BSP)
 			return true; // bsp models are never animated (obviously)
+		if(type == MOD_PROC)
+			return true; // the same goes for proc models
 		return false;
 	}
 	inline void setHashNext(model_c *hn) {
@@ -86,12 +93,19 @@ public:
 
 	void addModelDrawCalls();
 
-	// for bsp inline model
+	// for bsp inline models
 	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
 		this->type = MOD_BSP;
 		this->myBSP = pMyBSP;
 		this->bspModelNum = myBSPModNum;
 	}
+	// for proc inline models
+	void initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr) {
+		this->type = MOD_PROC;
+		this->myProcTree = pMyPROC;
+		this->procModel = modPtr;
+	}
+
 
 	
 	virtual bool rayTrace(class trace_c &tr) const;

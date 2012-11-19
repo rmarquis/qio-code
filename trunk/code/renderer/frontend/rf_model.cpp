@@ -35,12 +35,16 @@ void model_c::addModelDrawCalls() {
 		myBSP->addModelDrawCalls(bspModelNum);
 	} else if(type == MOD_STATIC) {
 		staticModel->addDrawCalls();
+	} else if(type == MOD_PROC) {
+		staticModel->addDrawCalls();
 	}
 }
 bool model_c::rayTrace(class trace_c &tr) const {
 	if(type == MOD_BSP) {
 		return myBSP->traceRayInlineModel(bspModelNum,tr);
 	} else if(type == MOD_STATIC) {
+		return staticModel->traceRay(tr);
+	} else if(type == MOD_PROC) {
 		return staticModel->traceRay(tr);
 	} else {
 
@@ -53,6 +57,8 @@ bool model_c::createStaticModelDecal(class simpleDecalBatcher_c *out, const clas
 	if(type == MOD_BSP) {
 		return myBSP->createInlineModelDecal(bspModelNum,out,pos,normal,radius,material);
 	} else if(type == MOD_STATIC) {
+		return staticModel->createDecal(out,pos,normal,radius,material);
+	} else if(type == MOD_PROC) {
 		return staticModel->createDecal(out,pos,normal,radius,material);
 	}
 	return false;
@@ -67,6 +73,8 @@ void model_c::clear() {
 	} else if(type == MOD_SKELETAL) {
 		delete skelModel;
 		skelModel = 0;
+	} else if(type == MOD_PROC) {
+		// proc inline models are fried in rf_proc.cpp
 	}
 }
 

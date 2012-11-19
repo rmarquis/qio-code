@@ -821,7 +821,7 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 		return hasHit;
 	}
 }
-void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
+void rBspTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	if(nodeNum < 0) {
 		// that's a leaf
 		const q3Leaf_s &l = leaves[(-nodeNum-1)];
@@ -840,20 +840,20 @@ void rBspTree_c::traceNodeRay(int nodeNum, class trace_c &out) {
 
 	if (d0 >= 0 && d1 >= 0) {
 		// trace is on the front side of the plane
-        traceNodeRay(n.children[0],out);
+        traceNodeRay_r(n.children[0],out);
 	} else if (d0 < 0 && d1 < 0) {
 		// trace is on the back side of the plane
-        traceNodeRay(n.children[1],out);
+        traceNodeRay_r(n.children[1],out);
 	} else {
 		// trace crosses the plane - both childs must be checked.
 		// TODO: clip the trace start/end points?
-        traceNodeRay(n.children[0],out);
-        traceNodeRay(n.children[1],out);
+        traceNodeRay_r(n.children[0],out);
+        traceNodeRay_r(n.children[1],out);
 	}
 }	
 bool rBspTree_c::traceRay(class trace_c &out) {
 	float prevFrac = out.getFraction();
-	traceNodeRay(0,out);
+	traceNodeRay_r(0,out);
 	if(out.getFraction() < prevFrac)
 		return true;
 	return false;

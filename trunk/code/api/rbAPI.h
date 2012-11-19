@@ -82,7 +82,7 @@ public:
 	virtual bool destroyIBO(class rIndexBuffer_c *ibo) = 0;
 
 	virtual void init() = 0;
-	virtual void shutdown() = 0;
+	virtual void shutdown(bool destroyWindow) = 0;
 };
 
 extern rbAPI_i *rb;

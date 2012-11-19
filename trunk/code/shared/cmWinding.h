@@ -49,6 +49,7 @@ public:
 	}
 	enum planeSide_e clipWindingByPlane(const class plane_c &pl, float epsilon = 0.1f);
 	void getBounds(class aabb &out) const;
+	void getPlane(class plane_c &out) const;
 	void addPointsToBounds(class aabb &out) const;
 	void removeDuplicatedPoints(float epsilon = 0.001f);
 	void addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon = 0.001f);
@@ -56,6 +57,26 @@ public:
 	void iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2));
 	void iterateTriangles(class staticModelCreatorAPI_i *smc);
 
+	cmWinding_c getReversed() const {
+		cmWinding_c ret;
+		ret.resize(points.size());
+		int j = points.size()-1;
+		for(u32 i = 0; i < points.size(); i++) {
+			ret.points[j] = points[i];
+			j--;
+		}
+		return ret;
+	}
+
+	void resize(u32 newPointsCount) {
+		points.resize(newPointsCount);
+	}
+	const vec3_c *getArray() const {
+		return points.getArray();
+	}
+	vec3_c *getArray() {
+		return points.getArray();
+	}
 	u32 size() const {
 		return points.size();
 	}

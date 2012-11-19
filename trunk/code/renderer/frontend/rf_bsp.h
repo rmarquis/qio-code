@@ -162,7 +162,7 @@ class rBspTree_c {
 	void addBSPSurfaceDrawCall(u32 sfNum);
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
-	void traceNodeRay(int nodeNum, class trace_c &out);
+	void traceNodeRay_r(int nodeNum, class trace_c &out);
 
 	int pointInLeaf(const vec3_c &pos) const;
 	int pointInCluster(const vec3_c &pos) const;

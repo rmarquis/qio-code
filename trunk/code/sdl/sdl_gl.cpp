@@ -95,6 +95,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	const class rIndexBuffer_c *boundIBO;
 	u32 boundGPUIBO;
 
+	bool backendInitialized;
+
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
 
@@ -108,6 +110,7 @@ public:
 		boundVBO = 0;
 		boundGPUIBO = 0;
 		boundIBO = 0;
+		backendInitialized = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -721,6 +724,13 @@ public:
 		glEnd();
 	}
 	virtual void init()  {
+		if(backendInitialized) {
+			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: already initialized\n");
+			return;		
+		}
+		// cvars
+		AUTOCVAR_RegisterAutoCvars();
+
 		GLimp_Init();
 		u32 res = glewInit();
 		if (GLEW_OK != res) {
@@ -761,11 +771,20 @@ public:
 		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 4.0f);
 		selectTex(0);
 #endif
+		backendInitialized = true;
 	}
-	virtual void shutdown()  {
+	virtual void shutdown(bool destroyWindow)  {
+		if(backendInitialized == false) {
+			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::shutdown: already shutdown\n");
+			return;		
+		}
+		AUTOCVAR_UnregisterAutoCvars();
 		lastMat = 0;
 		lastLightmap = 0;
-		GLimp_Shutdown();
+		if(destroyWindow) {
+			GLimp_Shutdown();
+		}
+		backendInitialized = false;
 	}
 	virtual u32 getWinWidth() const {
 		return glConfig.vidWidth;

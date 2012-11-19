@@ -51,10 +51,14 @@ void CG_ParseServerinfo( void ) {
 	// fix and format the world map name
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	if(g_vfs->FS_FileExists(cgs.mapname) == false) {
-		// if there is no .bsp file, fall back to .map
-		// (NOTE: .bsp files are a compiled .map files with some extra info
-		// like lightmaps, lightgrid, PVS, etc...)
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );
+		// if there is no .bsp file, fall back to .proc (Doom3 .bsp tree with portals but without PVS)
+		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.proc", mapname );
+		if(g_vfs->FS_FileExists(cgs.mapname) == false) {
+			// and finally, if there is no .proc file fall back to .map
+			// (NOTE: .bsp files are a compiled .map files with some extra info
+			// like lightmaps, lightgrid, PVS, etc...)
+			Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );
+		}
 	}
 
 }

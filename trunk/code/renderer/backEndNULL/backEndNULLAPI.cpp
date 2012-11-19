@@ -121,7 +121,7 @@ public:
 
 	virtual void init() {
 	}
-	virtual void shutdown() {
+	virtual void shutdown(bool destroyWindow) {
 	}
 };
 

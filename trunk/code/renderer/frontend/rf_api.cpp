@@ -209,9 +209,7 @@ public:
 		RF_ShutdownDecals();
 		unloadMaterialSystem();
 		AUTOCVAR_UnregisterAutoCvars();
-		if(destroyWindow) {
-			rb->shutdown();
-		}
+		rb->shutdown(destroyWindow);
 	}
 	virtual u32 getWinWidth() const {
 		return rb->getWinWidth();

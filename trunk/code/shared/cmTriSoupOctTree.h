@@ -73,7 +73,7 @@ struct tsOctTreeHeader_s {
 private:
 	// internal functions
 	bool traceTriangleRay(u32 triangleNum, class trace_c &tr);
-	bool traceNodeRay(u32 nodeNum, class trace_c &tr);
+	bool traceNodeRay_r(u32 nodeNum, class trace_c &tr);
 	void boxTriangles_r(const class aabb &bounds, class boxTrianglesCallback_i *callback, int nodeNum);
 	bool logBoxTri(const class aabb &bounds, class boxTrianglesCallback_i *callback, u32 triangleNum);
 public:

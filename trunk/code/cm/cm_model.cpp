@@ -141,10 +141,15 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 						}
 					}
 					if(nb) {
-						ne->brushes.push_back(nb);
-						nb->calcBounds();
-						if(firstBrush == 0) {
-							firstBrush = nb;
+						if(nb->hasSideWithMaterial("textures/editor/visportal")) {
+							// temporary hack needed to remove blocking visportal brushes
+							delete nb;
+						} else {
+							ne->brushes.push_back(nb);
+							nb->calcBounds();
+							if(firstBrush == 0) {
+								firstBrush = nb;
+							}
 						}
 					}
 				} else {

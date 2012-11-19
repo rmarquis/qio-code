@@ -32,10 +32,10 @@ void cmBrush_c::fromBounds(const class aabb &bb) {
 		vec3_c normal(0,0,0);
 
 		normal[i] = -1;
-		this->sides[i].set(normal, bb.maxs[i]);
+		this->sides[i].pl.set(normal, bb.maxs[i]);
 
 		normal[i] = 1;
-		this->sides[3+i].set(normal, -bb.mins[i]);
+		this->sides[3+i].pl.set(normal, -bb.mins[i]);
 	}
 }
 #include "cmWinding.h"
@@ -68,7 +68,7 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 						}
 					}
 					if(add) {
-						sides.push_back(pl);
+						sides.push_back(cmBrushSide_c(pl));
 					}
 				}
 			}
@@ -84,7 +84,7 @@ bool cmBrush_c::traceRay(class trace_c &tr) {
     bool endsOut = false;
 	const plane_c *clipPlane = 0;
     for (int i = 0; i < sides.size(); i++) {
-        const plane_c *pl = &sides[i];
+		const plane_c *pl = &sides[i].pl;
 		float startDistance = pl->distance(tr.getFrom());
 		float endDistance = pl->distance(tr.getTo());
 
@@ -134,19 +134,26 @@ bool cmBrush_c::traceRay(class trace_c &tr) {
         }
     }
 	return false; // no hit
+}	
+bool cmBrush_c::hasSideWithMaterial(const char *matName) const {
+	for(u32 i = 0; i < sides.size(); i++) {
+		if(!Q_stricmp(sides[i].matName,matName))
+			return true;
+	}
+	return false;
 }
 #include <shared/cmWinding.h>
 bool cmBrush_c::calcBounds() {
 	this->bounds.clear();
 	for(u32 i = 0; i < sides.size(); i++) {
-		const plane_c &iPlane = sides[i];
+		const plane_c &iPlane = sides[i].pl;
 
 		cmWinding_c winding;
 		winding.createBaseWindingFromPlane(iPlane);
 		for(u32 j = 0; j < sides.size(); j++) {
 			if(i == j)
 				continue;
-			const plane_c &jPlane = sides[j];
+			const plane_c &jPlane = sides[j].pl;
 			winding.clipWindingByPlane(jPlane.getOpposite());
 		}
 		winding.addPointsToBounds(this->bounds);
@@ -175,7 +182,8 @@ bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 			g_core->RedWarning("cmBrush_c::parseBrushQ3: failed to read old brush def third point in file %s at line %i\n",p.getDebugFileName(),p.getCurrentLineNumber());
 			return true; // error
 		}
-		//str matName = p.getToken();
+		cmBrushSide_c &newSide = sides.pushBack();
+		newSide.matName = p.getToken();
 		p.skipLine();
 
 		// check for extra surfaceParms (MoHAA-specific ?)
@@ -188,11 +196,7 @@ bool cmBrush_c::parseBrushQ3(class parser_c &p) {
 				p.skipLine();
 			}
 		}
-	
-		plane_c pl;
-		pl.fromThreePointsINV(p0,p1,p2);
-
-		sides.push_back(pl);
+		newSide.pl.fromThreePointsINV(p0,p1,p2);
 	}
 	return false; // no error
 }
@@ -247,13 +251,13 @@ bool cmBrush_c::parseBrushD3(class parser_c &p) {
 				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
 			return true;
 		}
+		cmBrushSide_c &newSide = sides.pushBack();
+		newSide.pl = sidePlane;
 		// get material name
-		//str matName = p.getToken();
+		newSide.matName = p.getToken();
 		// after material name we usually have 3 zeroes
 	
 		p.skipLine();
-
-		this->sides.push_back(sidePlane);
 	}
 	if(p.atWord("}") == false) {
 		g_core->RedWarning("brush_c::parseBrushD3: expected } after brushDef3, found %s at line %i of file %s\n",
@@ -274,7 +278,7 @@ void cmBrush_c::writeSingleBrushToMapFileVersion2(class writeStreamAPI_i *out) {
 	out->writeText("\tbrushDef3\n");
 	out->writeText("\t{\n"); // open brushdef
 	for(u32 i = 0; i < sides.size(); i++) {
-		const plane_c &pl = sides[i];
+		const plane_c &pl = sides[i].pl;
 		plane_c writePlane = pl.getOpposite();
 		// fake S/T axes for texturing
 		//vec3_c sAxis = pl.norm.getPerpendicular();

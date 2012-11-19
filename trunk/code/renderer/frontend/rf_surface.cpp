@@ -28,7 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/coreAPI.h>
 #include <shared/trace.h>
+#include <shared/parser.h> // for Doom3 .proc surfaces parsing
 #include "rf_decalProjector.h"
 
 //
@@ -236,7 +238,53 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 		out.addPoint(v->xyz);
 	}
 }
-
+bool r_surface_c::parseProcSurface(class parser_c &p) {
+	int sky = -1;
+	if(p.atWord("{")==false) {
+		// check for extra 'sky' parameter used in Q4 proc files
+		str token = p.getToken();
+		if(token.isNumerical() && p.atWord("{")) {
+			sky = atoi(token);
+		} else {
+			g_core->RedWarning("r_surface_c::parseProcSurface: expected '{' to follow \"model\"'s surface in file %s at line %i, found %s\n",
+				p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+			return true; // error
+		}
+	}
+	this->matName = p.getToken();
+	this->mat = g_ms->registerMaterial(this->matName);
+	u32 numVerts = p.getInteger();
+	u32 numIndices = p.getInteger();
+	// read verts
+	verts.resize(numVerts);
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < numVerts; i++, v++) {
+		if(p.atWord("(")==false) {
+			g_core->RedWarning("r_surface_c::parseProcSurface: expected '(' to follow vertex %i in file %s at line %i, found %s\n",
+				i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+			return true; // error
+		}
+		p.getFloatMat(v->xyz,3);
+		p.getFloatMat(v->tc,2);
+		p.getFloatMat(v->normal,3);
+		if(p.atWord(")")==false) {
+			g_core->RedWarning("r_surface_c::parseProcSurface: expected '(' after vertex %i in file %s at line %i, found %s\n",
+				i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+			return true; // error
+		}
+	}
+	// read triangles
+	u16 *indicesu16 = indices.initU16(numIndices);
+	for(u32 i = 0; i < numIndices; i++) {
+		indicesu16[i] = p.getInteger();
+	}
+	if(p.atWord("}")==false) {
+		g_core->RedWarning("r_surface_c::parseProcSurface: expected closing '}' for \"model\"'s surface block in file %s at line %i, found %s\n",
+			p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+		return true; // error
+	}
+	return false; // OK
+}
 //
 //	r_model_c class
 //
@@ -438,4 +486,30 @@ void r_model_c::addDrawCalls() {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->addDrawCall();
 	}
+}
+bool r_model_c::parseProcModel(class parser_c &p) {
+	if(p.atWord("{")==false) {
+		g_core->RedWarning("r_model_c::parseProcModel: expected '{' to follow \"model\" in file %s at line %i, found %s\n",
+			p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+		return true; // error
+	}
+	this->name = p.getToken();
+	u32 numSurfs = p.getInteger();
+	if(numSurfs) {
+		this->bounds.clear();
+		this->surfs.resize(numSurfs);
+		for(u32 i = 0; i < numSurfs; i++) {
+			r_surface_c &sf = surfs[i];
+			if(sf.parseProcSurface(p))
+				return true; // error occured while parsing the surface
+			sf.recalcBB();
+			this->bounds.addBox(sf.getBB());
+		}
+	}
+	if(p.atWord("}")==false) {
+		g_core->RedWarning("r_model_c::parseProcModel: expected closing '}' for \"model\" block in file %s at line %i, found %s\n",
+			p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+		return true; // error
+	}
+	return false;; // OK
 }
