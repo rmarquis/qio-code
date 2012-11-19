@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_bsp.h"
 #include "rf_surface.h"
 #include "rf_proc.h"
+#include "rf_local.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 
@@ -113,6 +114,9 @@ int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, c
 	}
 	if(r_procTree) {
 		return r_procTree->addWorldMapDecal(pos,normal,radius,material);
+	}
+	if(r_worldModel) {
+		return r_worldModel->createDecal(RF_GetWorldDecalBatcher(),pos,normal,radius,material);
 	}
 	return -1;
 }
