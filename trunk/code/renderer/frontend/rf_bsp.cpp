@@ -771,9 +771,6 @@ u32 rBspTree_c::createSurfDecals(u32 surfNum, class decalProjector_c &proj) cons
 	return added;
 }
 int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
-	if(material == 0) {
-		material = g_ms->registerMaterial("defaultMaterial");
-	}
 	decalProjector_c proj;
 	proj.init(pos,normal,radius);
 	proj.setMaterial(material);
@@ -783,7 +780,7 @@ int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 		createSurfDecals(sfNums[i],proj);
 	}
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
-	return 0;
+	return 0; // TODO: return valid decal handle?
 }
 void rBspTree_c::setWorldAreaBits(const byte *bytes, u32 numBytes) {
 	if(areaBits.getSizeInBytes() == numBytes && !memcmp(areaBits.getArray(),bytes,numBytes)) {

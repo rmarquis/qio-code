@@ -111,6 +111,9 @@ int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, c
 	if(r_bspTree) {
 		return r_bspTree->addWorldMapDecal(pos,normal,radius,material);
 	}
+	if(r_procTree) {
+		return r_procTree->addWorldMapDecal(pos,normal,radius,material);
+	}
 	return -1;
 }
 

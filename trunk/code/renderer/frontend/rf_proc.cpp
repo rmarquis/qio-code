@@ -222,6 +222,46 @@ int procTree_c::pointArea(const vec3_c &xyz) {
 		}
 	} while(nodeNum > 0);
 	return -nodeNum - 1;
+}	
+void procTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) {
+	while(1) {
+		if(nodeNum < 0) {
+			int areaNum = (-nodeNum-1);
+			procArea_c *ar = areas[areaNum];
+			if(ar->visCount != this->visCount) {
+				out.push_back(areaNum);
+			}
+			return; // done.
+		}
+		const procNode_c &n = nodes[nodeNum];
+		planeSide_e ps = n.plane.onSide(bb);
+
+		if (ps == SIDE_FRONT) {
+			if(n.children[0] == 0) {
+				return;
+			}
+			nodeNum = n.children[0];
+		} else if (ps == SIDE_BACK) {
+			if(n.children[1] == 0) {
+				return;
+			}
+			nodeNum = n.children[1];
+		} else {
+			if(n.children[0]) {
+				nodeNum = n.children[0];
+				if(n.children[1]) {
+					boxAreas_r(bb,out,n.children[1]);
+				}
+			} else {
+				nodeNum = n.children[1];
+			}
+		}
+	}
+}
+u32 procTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) {
+	visCount++;
+	boxAreas_r(bb,out,0);
+	return out.size();
 }
 void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal) {
 	if(areaNum >= areas.size() || areaNum < 0)
@@ -316,7 +356,24 @@ bool procTree_c::traceRay(class trace_c &out) {
 		return true;
 	return false;
 }
-
+#include "rf_decalProjector.h"
+u32 procTree_c::createAreaDecals(u32 areaNum, class decalProjector_c &proj) const {
+	const procArea_c *ar = areas[areaNum];
+	ar->areaModel->createDecalInternal(proj);
+	return 0;
+}
+int procTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
+	decalProjector_c proj;
+	proj.init(pos,normal,radius);
+	proj.setMaterial(material);
+	arraySTD_c<u32> arNums;
+	boxAreas(proj.getBounds(),arNums);
+	for(u32 i = 0; i < arNums.size(); i++) {
+		createAreaDecals(arNums[i],proj);
+	}
+	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
+	return 0; // TODO: return valid decal handle?
+}
 procTree_c *RF_LoadPROC(const char *fname) {
 	procTree_c *ret = new procTree_c;
 	if(ret->loadProcFile(fname)) {

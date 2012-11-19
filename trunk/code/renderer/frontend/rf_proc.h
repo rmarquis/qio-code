@@ -86,6 +86,8 @@ class procTree_c {
 
 	void addAreaDrawCalls_r(int areaNum, const class frustumExt_c &fr, procPortal_c *prevPortal);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);
+	void boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum);
+	u32 createAreaDecals(u32 areaNum, class decalProjector_c &proj) const;
 public:
 	procTree_c() {
 	}
@@ -104,9 +106,11 @@ public:
 	}
 
 	int pointArea(const vec3_c &xyz);
+	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out);
 
 	void addDrawCalls();
 	bool traceRay(class trace_c &tr);
+	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 };
 
 procTree_c *RF_LoadPROC(const char *fname);

@@ -189,6 +189,7 @@ public:
 	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones);
 
 	bool traceRay(class trace_c &tr);
+	bool createDecalInternal(class decalProjector_c &proj);
 	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 

@@ -437,13 +437,7 @@ bool r_model_c::traceRay(class trace_c &tr) {
 	}
 	return hit;
 }
-bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
-								   const class vec3_c &normal, float radius, class mtrAPI_i *material) {
-	bool hit = false;
-	decalProjector_c proj;
-	proj.init(pos,normal,radius);
-	proj.setMaterial(material);
-
+bool r_model_c::createDecalInternal(class decalProjector_c &proj) {
 	// see if we can use extra octree structure to speed up
 	// decal creation
 	if(r_useTriSoupOctTreesForDecalCreation.getInt()) {
@@ -451,12 +445,11 @@ bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c 
 		if(extraCollOctTree) {
 			u32 prev = proj.getNumCreatedWindings();
 			extraCollOctTree->boxTriangles(proj.getBounds(),&proj);
-			// get results
-			proj.addResultsToDecalBatcher(out);
 			return proj.getNumCreatedWindings() != prev;
 		}
 	}
 
+	bool hit = false;
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		//if(proj.getBounds().intersect(sf->getBB()) == false) {
@@ -466,6 +459,16 @@ bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c 
 			hit = true;
 		}
 	}	
+	return hit;
+}
+bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
+								   const class vec3_c &normal, float radius, class mtrAPI_i *material) {
+	decalProjector_c proj;
+	proj.init(pos,normal,radius);
+	proj.setMaterial(material);
+	
+	bool hit = createDecalInternal(proj);
+
 	// get results
 	proj.addResultsToDecalBatcher(out);
 	return hit;
