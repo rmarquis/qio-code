@@ -103,6 +103,12 @@ void skelModelIMPL_c::setAllSurfsMaterial(const char *newMatName) {
 		sf->setMaterial(newMatName);
 	}
 }
+void skelModelIMPL_c::setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) {
+	for(u32 i = 0; i < numSurfIndexes; i++) {
+		u32 sfNum = surfIndexes[i];
+		surfs[sfNum].setMaterial(newMatName);
+	}
+}
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;

@@ -289,6 +289,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				// Id Tech 4 keywords
 				} else if(p.atWord("blend")) {
 					if(p.atWord("add")) {
+						// needed by Xreal machinegun model
+						stage->setBlendDef(BM_ONE,BM_ONE);
 					} else if(p.atWord("blend")) {
 
 					} else if(p.atWord("bumpmap")) {

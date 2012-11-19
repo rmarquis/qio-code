@@ -48,6 +48,8 @@ public:
 		v2.xyz = p2;
 		addTriangle(matName,v0,v1,v2);
 	}
+	virtual void addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
+		const struct simpleVert_s &v1, const struct simpleVert_s &v2) = 0;
 
 	virtual void resizeVerts(u32 newNumVerts) = 0;
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) = 0;

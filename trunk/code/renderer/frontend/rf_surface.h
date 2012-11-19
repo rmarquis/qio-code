@@ -181,6 +181,10 @@ public:
 	virtual void translateXYZ(const class vec3_c &ofs);
 	virtual void getCurrentBounds(class aabb &out);
 	virtual void setAllSurfsMaterial(const char *newMatName);
+	virtual u32 getNumSurfs() const;
+	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName);
+	virtual void addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
+		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 
 	void createVBOsAndIBOs();
 

@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __MODELPOSTPROCESSFUNCS_H__
 #define __MODELPOSTPROCESSFUNCS_H__
 
+#include <shared/typedefs.h>
+
 class modelPostProcessFuncs_i {
 public:
 	virtual void scaleXYZ(float scale) = 0;
@@ -35,6 +37,8 @@ public:
 	virtual void translateXYZ(const class vec3_c &ofs) = 0;
 	virtual void getCurrentBounds(class aabb &out) = 0;
 	virtual void setAllSurfsMaterial(const char *newMatName) = 0;
+	virtual u32 getNumSurfs() const = 0;
+	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) = 0;
 };
 
 #endif // __MODELPOSTPROCESSFUNCS_H__

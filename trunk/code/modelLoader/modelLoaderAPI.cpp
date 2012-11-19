@@ -50,6 +50,8 @@ public:
 			return true;
 		if(!stricmp(ext,"map"))
 			return true;
+		if(!stricmp(ext,"ase"))
+			return true;
 		if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp"))
 			return true;
 		return false;
@@ -63,6 +65,8 @@ public:
 		bool error;
 		if(!stricmp(ext,"obj")) {
 			error = MOD_LoadOBJ(fname,out);
+		} else if(!stricmp(ext,"ase")) {
+			error = MOD_LoadASE(fname,out);
 		} else if(!stricmp(ext,"map")) {
 			error = MOD_LoadConvertMapFileToStaticTriMesh(fname,out);
 		} else if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp")) {

@@ -31,6 +31,8 @@ class staticModelCreatorAPI_i;
 bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out);
 // staticModelLoaders/mapFileConverter.cpp
 bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreatorAPI_i *out);
+// staticModelLoaders/aseLoader.cpp
+bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out);
 
 // mod_postProcess.cpp
 bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout);

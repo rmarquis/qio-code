@@ -121,12 +121,15 @@ public:
 		}
 		return false;
 	}
-	bool skipCurlyBracedBlock() {
+	bool skipCurlyBracedBlock(bool needFirstBrace = true) {
 		skipToNextToken();
 		if(*p == 0)
 			return true;
-		if(*p != '{')
-			return true;
+		if(needFirstBrace) {
+			if(*p != '{') {
+				return true;
+			}
+		}
 		int level = 1;
 		p++;
 		while(*p) {

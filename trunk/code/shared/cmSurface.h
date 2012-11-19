@@ -122,6 +122,17 @@ public:
 		this->addVert(v1.xyz);
 		this->addVert(v2.xyz);
 	}
+	// "surfNum" is ignored here
+	virtual void addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
+		const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+		// add a single triangle
+		indices.push_back(verts.size());
+		indices.push_back(verts.size()+1);
+		indices.push_back(verts.size()+2);
+		this->addVert(v0.xyz);
+		this->addVert(v1.xyz);
+		this->addVert(v2.xyz);
+	}
 	virtual void resizeVerts(u32 newNumVerts) {
 		verts.resize(newNumVerts);
 	}
@@ -173,6 +184,13 @@ public:
 	virtual void setAllSurfsMaterial(const char *newMatName) {
 
 	}
+	virtual u32 getNumSurfs() const {
+		return 0;
+	}
+	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) {
+		
+	}
+
 	void addTriPointsToAABB(u32 triNum, aabb &out) const {
 		u32 i0 = indices[triNum*3+0];
 		u32 i1 = indices[triNum*3+1];

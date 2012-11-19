@@ -371,6 +371,22 @@ void r_model_c::setAllSurfsMaterial(const char *newMatName) {
 		sf->setMaterial(newMatName);
 	}
 }
+u32 r_model_c::getNumSurfs() const {
+	return surfs.size();
+}
+void r_model_c::setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) {
+	for(u32 i = 0; i < numSurfIndexes; i++) {
+		u32 sfNum = surfIndexes[i];
+		surfs[sfNum].setMaterial(newMatName);
+	}
+}
+void r_model_c::addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
+	const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+	if(surfNum >= surfs.size()) {
+		surfs.resize(surfNum+1);
+	}
+	surfs[surfNum].addTriangle(v0,v1,v2);
+}
 void r_model_c::createVBOsAndIBOs() {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {

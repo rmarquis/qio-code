@@ -217,7 +217,7 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		delete instance;
 		instance = 0;
 	}
-	if(newModel->isStatic() == false) {
+	if(newModel->isStatic() == false && newModel->isValid()) {
 		instance = new r_model_c;
 		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
 		instance->initSkelModelInstance(skelModel);

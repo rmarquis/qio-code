@@ -43,6 +43,7 @@ public:
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material) = 0;
 	// this will return NULL if this model is not a skeletal model
 	virtual class skelModelAPI_i *getSkelModelAPI() const = 0;
+	virtual bool isValid() = 0;
 };
 
 #endif // __RMODELAPI_H__

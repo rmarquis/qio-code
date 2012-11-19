@@ -77,6 +77,11 @@ public:
 			return true; // the same goes for proc models
 		return false;
 	}
+	virtual bool isValid() {
+		if(type == MOD_BAD)
+			return false;
+		return true;
+	}
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}
