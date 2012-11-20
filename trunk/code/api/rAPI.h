@@ -34,7 +34,7 @@ class rAPI_i : public iFaceBase_i {
 public:
 	// functions called every frame
 	virtual void beginFrame() = 0;
-	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles) = 0;
+	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles, bool thirdPersonRendering) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
 	virtual void setRenderTimeMsec(int msec) = 0;
 

@@ -65,6 +65,11 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	cent->rEnt->setAngles(cent->currentState.angles);
 	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
 	cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
+	if(cent->currentState.number == cg.clientNum) {
+		cent->rEnt->setThirdPersonOnly(true);
+	} else {
+		cent->rEnt->setThirdPersonOnly(false);
+	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap
 	cent->interpolate = qfalse;

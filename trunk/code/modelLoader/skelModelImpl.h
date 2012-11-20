@@ -100,6 +100,10 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual const vec3_c& getScaleXYZ() const {
 		return curScale;
 	}
+	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const {
+		u16 nameIndex = SK_RegisterString(nameStr);
+		return bones.getLocalBoneIndexForBoneName(nameIndex);
+	}
 	// modelPostProcessFuncs_i impl
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();

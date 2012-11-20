@@ -26,11 +26,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __RF_ENTITIES_H__
 
 #include <shared/array.h>
+#include <shared/flags32.h>
 #include <math/vec3.h>
 #include <math/axis.h>
 #include <math/matrix.h>
 #include <math/aabb.h>
 #include <api/rEntityAPI.h>
+#include <renderer/rfSurfsFlagsArray.h>
 
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
@@ -39,6 +41,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	vec3_c origin;
 	class rModelAPI_i *model;
 	aabb absBB;
+	bool bFirstPersonOnly;
+	bool bThirdPersonOnly;
+	rfSurfsFlagsArray_t surfaceFlags; // surfaceFlags.size() == this->getNumSurfaces()
 	// used only for static (non-animated) model entities
 	class simpleDecalBatcher_c *staticDecals; 
 	// only for skeletal models; model geometry instanced at the current time of animation
@@ -53,9 +58,23 @@ public:
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setModel(class rModelAPI_i *newModel);
-	virtual void setAnim(const class skelAnimAPI_i *anim) ;
+	virtual void setAnim(const class skelAnimAPI_i *anim);
+	virtual void setThirdPersonOnly(bool bOn) {
+		bThirdPersonOnly = bOn;
+	}
+	virtual void setFirstPersonOnly(bool bOn) {
+		bFirstPersonOnly = bOn;
+	}
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
 		const class vec3_c &normal, float radius, class mtrAPI_i *material);
+
+	bool isFirstPersonOnly() const {
+		return bFirstPersonOnly;
+	}
+	bool isThirdPersonOnly() const {
+		return bThirdPersonOnly;
+	}
+
 
 	virtual rModelAPI_i *getModel() const {
 		return model;
@@ -76,8 +95,13 @@ public:
 		return staticDecals;
 	}
 
+	virtual void hideSurface(u32 surfNum);
+
 	void addDrawCalls();
-	bool rayTrace(class trace_c &tr) const;
+
+	virtual bool rayTrace(class trace_c &tr) const;
+	virtual bool getBoneWorldOrientation(const char *boneName, class matrix_c &out);
+	virtual bool getBoneWorldOrientation(int localBoneIndex, class matrix_c &out);
 };
 
 // NULL == worldspawn

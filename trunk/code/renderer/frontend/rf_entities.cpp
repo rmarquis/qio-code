@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
 #include <shared/autoCvar.h>
+#include <renderer/rfSurfFlags.h>
 
 aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","1");
 
@@ -44,6 +45,9 @@ class animController_c {
 	singleAnimLerp_s oldState;
 	const class skelAnimAPI_i *nextAnim;
 	float blendTime;
+
+	// bones that were used to create model instance in last update
+	boneOrArray_c currentBonesArray;
 
 	static void getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
 		if(anim->getNumFrames() == 1) {
@@ -121,18 +125,17 @@ public:
 		}
 	}
 	void updateModelAnimation(const class skelModelAPI_i *skelModel, class r_model_c *instance) {
-		boneOrArray_c bones;
 		if(anim == nextAnim) {
-			bones.resize(anim->getNumBones());
+			currentBonesArray.resize(anim->getNumBones());
 			if(anim->getBLoopLastFrame() && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
-				anim->buildFrameBonesLocal(anim->getNumFrames()-1,bones);			
+				anim->buildFrameBonesLocal(anim->getNumFrames()-1,currentBonesArray);			
 			} else {
 				singleAnimLerp_s lerp;
 				getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
 				//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
 
 				//anim->buildFrameBonesLocal(lerp.from,bones);
-				anim->buildLoopAnimLerpFrameBonesLocal(lerp,bones);
+				anim->buildLoopAnimLerpFrameBonesLocal(lerp,currentBonesArray);
 			}
 		} else {
 			// build old skeleton first
@@ -149,13 +152,16 @@ public:
 			// do the interpolation
 			float frac = this->time / this->blendTime;
 		//	g_core->Print("Blending between two anims, frac: %f\n",frac);	
-			bones.setBlendResult(previous, newBones, frac);		
+			currentBonesArray.setBlendResult(previous, newBones, frac);		
 		}
-		bones.localBonesToAbsBones(anim->getBoneDefs());
+		currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
 		if(skelModel->hasCustomScaling()) {
-			bones.scaleXYZ(skelModel->getScaleXYZ());
+			currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
 		}
-		instance->updateSkelModelInstance(skelModel,bones);	
+		instance->updateSkelModelInstance(skelModel,currentBonesArray);	
+	}
+	const boneOrArray_c &getCurBones() const {
+		return currentBonesArray;
 	}
 };
 
@@ -166,6 +172,10 @@ rEntityImpl_c::rEntityImpl_c() {
 	staticDecals = 0;
 	instance = 0;
 	animCtrl = 0;
+	axis.identity();
+	matrix.identity();
+	bFirstPersonOnly = false;
+	bThirdPersonOnly = false;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -217,6 +227,8 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		delete instance;
 		instance = 0;
 	}
+	surfaceFlags.resize(newModel->getNumSurfaces());
+	surfaceFlags.nullMemory();
 	if(newModel->isStatic() == false && newModel->isValid()) {
 		instance = new r_model_c;
 		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
@@ -249,9 +261,17 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 		animCtrl->setNextAnim(anim);
 	}
 }
+void rEntityImpl_c::hideSurface(u32 surfNum) {
+	if(surfaceFlags.size() <= surfNum) {
+		g_core->RedWarning("rEntityImpl_c::hideSurface: surface index %i out of range <0,%i)\n",surfNum,surfaceFlags.size());
+		return;
+	}
+	surfaceFlags[surfNum].setFlag(RSF_HIDDEN_3RDPERSON);
+	surfaceFlags[surfNum].setFlag(RSF_HIDDEN_1STPERSON);
+}
 void rEntityImpl_c::addDrawCalls() {
 	if(model->isStatic()) {
-		((model_c*)model)->addModelDrawCalls();
+		((model_c*)model)->addModelDrawCalls(&surfaceFlags);
 		if(staticDecals) {
 			staticDecals->addDrawCalls();
 		}
@@ -260,8 +280,30 @@ void rEntityImpl_c::addDrawCalls() {
 			animCtrl->runAnimController();
 			animCtrl->updateModelAnimation(model->getSkelModelAPI(),instance);
 		}
-		instance->addDrawCalls();
+		instance->addDrawCalls(&surfaceFlags);
 	}
+}
+bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) {
+	skelModelAPI_i *skel = model->getSkelModelAPI();
+	if(skel == 0)
+		return true; // error 
+	if(animCtrl == 0)
+		return true; // error
+	const boneOrArray_c &curBones = animCtrl->getCurBones();
+	const matrix_c &localMat = curBones[localBoneIndex].mat;
+	out = this->matrix * localMat;
+	return false;
+}
+bool rEntityImpl_c::getBoneWorldOrientation(const char *boneName, class matrix_c &out) {
+	if(model == 0)
+		return true; // error
+	skelModelAPI_i *skel = model->getSkelModelAPI();
+	if(skel == 0)
+		return true;
+	int boneIndex = skel->getLocalBoneIndexForBoneName(boneName);
+	if(boneIndex == -1)
+		return true; // error, bone not found
+	return getBoneWorldOrientation(boneIndex,out);
 }
 bool rEntityImpl_c::rayTrace(class trace_c &tr) const {
 	return model->rayTrace(tr);
@@ -309,6 +351,13 @@ void RFE_AddEntityDrawCalls() {
 		model_c *model = (model_c*)ent->getModel();
 		if(model == 0) {
 			continue;
+		}
+		if(rf_camera.isThirdPerson()) {
+			if(ent->isFirstPersonOnly())
+				continue;
+		} else {
+			if(ent->isThirdPersonOnly())
+				continue;
 		}
 		if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
 			c_entitiesCulledByABSBounds++;

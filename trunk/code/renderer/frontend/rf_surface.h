@@ -198,10 +198,13 @@ public:
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	r_surface_c *registerSurf(const char *matName);
-	void addDrawCalls();
+	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0);
 
 	bool parseProcModel(class parser_c &p);
 
+	const aabb &getBounds() const {
+		return bounds;
+	}
 	u32 getTotalTriangleCount() const {
 		u32 ret = 0;
 		for(u32 i = 0; i < surfs.size(); i++) {

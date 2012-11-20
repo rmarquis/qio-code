@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_surface.cpp - static surface class
+#include "rf_local.h"
 #include "rf_surface.h"
 #include "rf_drawCall.h"
 #include <api/rbAPI.h>
@@ -43,6 +44,7 @@ r_surface_c::r_surface_c() {
 		mat = 0;
 	}
 	lightmap = 0;
+	bounds.clear();
 }
 r_surface_c::~r_surface_c() {
 	this->clear();
@@ -291,6 +293,7 @@ bool r_surface_c::parseProcSurface(class parser_c &p) {
 #include <shared/cmTriSoupOctTree.h>
 r_model_c::r_model_c() {
 	extraCollOctTree = 0;
+	bounds.clear();
 }
 r_model_c::~r_model_c() {
 	if(extraCollOctTree) {
@@ -386,6 +389,9 @@ void r_model_c::addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
 		surfs.resize(surfNum+1);
 	}
 	surfs[surfNum].addTriangle(v0,v1,v2);
+	bounds.addPoint(v0.xyz);
+	bounds.addPoint(v1.xyz);
+	bounds.addPoint(v2.xyz);
 }
 void r_model_c::createVBOsAndIBOs() {
 	r_surface_c *sf = surfs.getArray();
@@ -500,10 +506,28 @@ r_surface_c *r_model_c::registerSurf(const char *matName) {
 	sf->setMaterial(matName);
 	return sf;
 }
-void r_model_c::addDrawCalls() {
-	r_surface_c *sf = surfs.getArray();
-	for(u32 i = 0; i < surfs.size(); i++, sf++) {
-		sf->addDrawCall();
+#include <renderer/rfSurfsFlagsArray.h>
+#include <renderer/rfSurfFlags.h>
+void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
+	if(extraSfFlags) {
+		r_surface_c *sf = surfs.getArray();
+		for(u32 i = 0; i < surfs.size(); i++, sf++) {
+			if(rf_camera.isThirdPerson()) {
+				if(extraSfFlags->getFlags(i).isFlag(RSF_HIDDEN_3RDPERSON)) {
+					continue;
+				}
+			} else {
+				if(extraSfFlags->getFlags(i).isFlag(RSF_HIDDEN_1STPERSON)) {
+					continue;
+				}
+			}
+			sf->addDrawCall();
+		}
+	} else {
+		r_surface_c *sf = surfs.getArray();
+		for(u32 i = 0; i < surfs.size(); i++, sf++) {
+			sf->addDrawCall();
+		}
 	}
 }
 bool r_model_c::parseProcModel(class parser_c &p) {

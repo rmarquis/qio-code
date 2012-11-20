@@ -77,11 +77,12 @@ public:
 			return true; // the same goes for proc models
 		return false;
 	}
-	virtual bool isValid() {
+	virtual bool isValid() const {
 		if(type == MOD_BAD)
 			return false;
 		return true;
 	}
+	virtual u32 getNumSurfaces() const;
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}
@@ -96,20 +97,12 @@ public:
 		bb.maxs = newMaxs;
 	}
 
-	void addModelDrawCalls();
+	void addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags);
 
 	// for bsp inline models
-	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
-		this->type = MOD_BSP;
-		this->myBSP = pMyBSP;
-		this->bspModelNum = myBSPModNum;
-	}
+	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum);
 	// for proc inline models
-	void initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr) {
-		this->type = MOD_PROC;
-		this->myProcTree = pMyPROC;
-		this->procModel = modPtr;
-	}
+	void initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr);
 
 
 	

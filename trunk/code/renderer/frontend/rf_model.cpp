@@ -30,13 +30,38 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelLoaderDLLAPI.h>
 #include <api/skelModelAPI.h>
 
-void model_c::addModelDrawCalls() {
+// for bsp inline models
+void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
+	this->type = MOD_BSP;
+	this->myBSP = pMyBSP;
+	this->bspModelNum = myBSPModNum;
+}
+// for proc inline models
+void model_c::initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr) {
+	this->type = MOD_PROC;
+	this->myProcTree = pMyPROC;
+	this->procModel = modPtr;
+	this->bb = modPtr->getBounds();
+}
+u32 model_c::getNumSurfaces() const {
+	if(type == MOD_BSP) {
+		return 1; // FIXME?
+	} else if(type == MOD_STATIC) {
+		return staticModel->getNumSurfs();
+	} else if(type == MOD_PROC) {
+		return staticModel->getNumSurfs();
+	} else if(type == MOD_SKELETAL) {
+		return skelModel->getNumSurfs();
+	}
+	return 0;
+}
+void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
 	if(type == MOD_BSP) {
 		myBSP->addModelDrawCalls(bspModelNum);
 	} else if(type == MOD_STATIC) {
-		staticModel->addDrawCalls();
+		staticModel->addDrawCalls(extraSfFlags);
 	} else if(type == MOD_PROC) {
-		staticModel->addDrawCalls();
+		staticModel->addDrawCalls(extraSfFlags);
 	}
 }
 bool model_c::rayTrace(class trace_c &tr) const {
@@ -110,6 +135,7 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 			delete ret->staticModel;
 			ret->staticModel = 0;
 		} else {
+			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model
 		}
 	} else if(g_modelLoader->isSkelModelFile(modName)) {

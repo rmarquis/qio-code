@@ -469,6 +469,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_testModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_view.cpp"
 				>
 				<FileConfiguration
@@ -560,6 +564,26 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\trace.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\..\code\math\axis.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec3.h"
 				>
 			</File>
 		</Filter>

@@ -292,7 +292,7 @@ static int CG_CalcViewValues( void ) {
 	projDef_s projDef;
 	projDef.setDefaults();
 	rf->setupProjection3D(&projDef);
-	rf->setup3DView(cg.refdef.vieworg,cg.refdefViewAngles);
+	rf->setup3DView(cg.refdef.vieworg,cg.refdefViewAngles,cg_thirdPerson.integer);
 
 	return 0;
 }
@@ -312,6 +312,8 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	int		inwater;
 
 	cg.time = serverTime;
+
+	rf->setRenderTimeMsec(cg.time);
 
 	// update cvars
 	CG_UpdateCvars();
@@ -338,12 +340,14 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
 
+	// update test model
+	CG_RunTestModel();
+
 	// build the render lists
 	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 
 //	cg.refdef.time = cg.time;
 //	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
-	rf->setRenderTimeMsec(cg.time);
 
 	// make sure the lagometerSample and frame timing isn't done twice when in stereo
 	//if ( stereoView != STEREO_RIGHT ) {

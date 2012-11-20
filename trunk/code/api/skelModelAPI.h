@@ -67,6 +67,7 @@ public:
 	virtual const boneOrArray_c &getBaseFrameABS() const = 0;
 	virtual bool hasCustomScaling() const = 0;
 	virtual const vec3_c& getScaleXYZ() const = 0;
+	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const = 0;
 };
 
 #endif // __SKELMODELAPI_H__

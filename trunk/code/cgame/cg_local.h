@@ -274,6 +274,11 @@ void CG_AddLagometerFrameInfo( void ) ;
 //
 bool CG_RayTrace(class trace_c &tr);
 
+//
+// cg_testModel.cpp
+//
+void CG_RunTestModel();
+
 //===============================================
 
 //

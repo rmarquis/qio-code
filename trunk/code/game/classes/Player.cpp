@@ -164,9 +164,11 @@ void Player::runPlayer(usercmd_s *ucmd) {
 			tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
 			BT_TraceRay(tr);
 			groundDist = tr.getTraveled();
-			G_Printf("GroundDist: %f\n",groundDist);
+			//G_Printf("GroundDist: %f\n",groundDist);
 		}
-		if(bLanding) {
+		if(0) {
+			this->setAnimation("models/player/shina/attack.md5anim");
+		} else if(bLanding) {
 			this->setAnimation("models/player/shina/run.md5anim");
 		} else if(bJumped) {
 			this->setAnimation("models/player/shina/jump.md5anim");

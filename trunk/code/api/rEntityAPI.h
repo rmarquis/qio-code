@@ -31,6 +31,8 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles) = 0;
 	virtual void setModel(class rModelAPI_i *mod) = 0;
 	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
+	virtual void setThirdPersonOnly(bool bOn) = 0;
+	virtual void setFirstPersonOnly(bool bOn) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const class axis_c &getAxis() const = 0;
@@ -38,9 +40,16 @@ public:
 	virtual const class matrix_c &getMatrix() const = 0;
 	virtual const class aabb &getBoundsABS() const = 0;
 
+	virtual void hideSurface(u32 surfNum) = 0;
+
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured
 	virtual bool rayTrace(class trace_c &tr) const = 0;
+
+	/// for skeletal models
+	// NOTE: this will force bones recalculation if skeleton is not up to date!
+	virtual bool getBoneWorldOrientation(const char *boneName, class matrix_c &out) = 0;
+	virtual bool getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) = 0;
 
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
 		const class vec3_c &normal, float radius, class mtrAPI_i *material) = 0;

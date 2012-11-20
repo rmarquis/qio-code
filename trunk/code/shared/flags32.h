@@ -21,44 +21,40 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// cameraDef.h 
-#ifndef __CAMERADEF_H__
-#define __CAMERADEF_H__
+// flags32.h - utility class for handling bit flags
+#ifndef __FLAGS32_H__
+#define __FLAGS32_H__
 
-#include <math/vec3.h>
-#include <math/axis.h>
-#include <math/frustum.h>
+#include "typedefs.h"
 
-#include <api/rbAPI.h>
-
-class cameraDef_c {
-	projDef_s proj;
-	vec3_c origin;
-	//vec3_c angles;
-	axis_c axis;
-	frustum_c frustum;
-	bool thirdPersonRendering;
+class flags32_c {
+	u32 value;
 public:
-	void setup(const vec3_c &newOrigin, const axis_c &newAxis, const projDef_s &pd, bool bThirdPersonRendering = false) {
-		origin = newOrigin;
-		axis = newAxis;
-		proj = pd;
-		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
-		thirdPersonRendering = bThirdPersonRendering;
+	flags32_c() {
+		value = 0;
 	}
-
-	bool isThirdPerson() const {
-		return thirdPersonRendering;
+	u32 getValue() const {
+		return value;
 	}
-	const frustum_c &getFrustum() const {
-		return frustum;
+	void setValue(const u32 newVal) {
+		value = newVal;
 	}
-	const vec3_c &getOrigin() const {
-		return origin;
+	void setFlag(u32 newFlag) {
+		value |= newFlag;
 	}
-	const axis_c &getAxis() const {
-		return axis;
+	void clearFlag(u32 flagToClear) {
+		value &= ~flagToClear;
+	}
+	bool isFlag(u32 flagToCheck) const {
+		return value & flagToCheck;
+	}
+	void setFlag(u32 flag, bool on) {
+		if(on) {
+			value |= flag;
+		} else {
+			value &= ~flag;
+		}
 	}
 };
 
-#endif // __CAMERADEF_H__
+#endif // __FLAGS32_H__

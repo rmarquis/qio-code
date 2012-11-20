@@ -56,18 +56,18 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
 		bool bindVertexColors) {
 	// developers can supress manually some materials for debugging purposes
-	if(rf_ignoreSpecificMaterial.strLen()) {
+	if(rf_ignoreSpecificMaterial.strLen() && rf_ignoreSpecificMaterial.getStr()[0] != '0') {
 		if(!stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {
 			return;
 		}
 	}
-	if(rf_ignoreSpecificMaterial2.strLen()) {
+	if(rf_ignoreSpecificMaterial2.strLen() && rf_ignoreSpecificMaterial2.getStr()[0] != '0') {
 		if(!stricmp(rf_ignoreSpecificMaterial2.getStr(),mat->getName())) {
 			return;
 		}
 	}
 	// developers can force a specific material on ALL surfaces as well
-	if(rf_forceSpecificMaterial.strLen()) {
+	if(rf_forceSpecificMaterial.strLen() && rf_forceSpecificMaterial.getStr()[0] != '0') {
 		mat = g_ms->registerMaterial(rf_forceSpecificMaterial.getStr());
 	}
 	drawCall_c *n;

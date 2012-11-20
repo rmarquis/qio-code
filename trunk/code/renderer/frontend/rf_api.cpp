@@ -98,12 +98,12 @@ public:
 	virtual void setRenderTimeMsec(int msec) {
 		rf_curTimeMsec = msec;
 	}
-	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles) {
+	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles, bool thirdPersonRendering) {
 		//camPos = newCamPos;
 		//camAngles = newCamAngles;
 		axis_c camAxis;
 		camAxis.fromAngles(newCamAngles);
-		rf_camera.setup(newCamPos,camAxis,projDef);
+		rf_camera.setup(newCamPos,camAxis,projDef,thirdPersonRendering);
 		rb->setup3DView(newCamPos, camAxis);
 	}
 	// used while drawing world surfaces and particles

@@ -302,6 +302,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\rfSurfsFlagsArray.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\rIndexBuffer.h"
 				>
 			</File>
@@ -424,6 +428,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\flags32.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>
@@ -441,6 +449,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\r2dVert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rfSurfFlags.h"
 				>
 			</File>
 			<File
@@ -481,6 +493,26 @@
 			>
 			<File
 				RelativePath="..\..\code\api\boxTrianglesCallback.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\mtrAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\mtrStageAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\rAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\rbAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\rEntityAPI.h"
 				>
 			</File>
 		</Filter>
