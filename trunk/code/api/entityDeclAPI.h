@@ -21,38 +21,17 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Weapon.cpp
-#include "../g_local.h"
-#include "Weapon.h"
-#include "Player.h"
-#include <api/coreAPI.h>
+// entityDeclAPI.h
+#ifndef __ENTITYDECLAPI_H__
+#define __ENTITYDECLAPI_H__
 
-DEFINE_CLASS(Weapon, "ModelEntity");
-DEFINE_CLASS_ALIAS(Weapon, idItem);
+#include <shared/typedefs.h>
 
-Weapon::Weapon() {
-	owner = 0;
-}
-Weapon::~Weapon() {
+class entityDeclAPI_i {
+public:
+	virtual const char *getDeclName() const = 0;
+	virtual const class entDefAPI_i *getEntDefAPI() const = 0;
+};
 
-}
-void Weapon::setKeyValue(const char *key, const char *value) {
-
-	ModelEntity::setKeyValue(key,value);
-}
-void Weapon::doUse(class Player *activator) {
-	if(owner) {
-		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
-		return;
-	}
-	activator->addWeapon(this);
-	this->destroyPhysicsObject();
-	this->unlink();
-}
-void Weapon::onFireKeyHeld() {
-	
-}
-void Weapon::onFireKeyDown() {
-	G_BulletAttack(this->getOrigin(),this->getForward());
-}
+#endif // __ENTITYDECLAPI_H__
 

@@ -26,42 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __ENTDEFSLIST_H__
 
 #include "ePairsList.h"
-
-class entDef_c {
-	str className;
-	ePairList_c ePairs; // key-values
-	// ePrimList_c primitives; // TODO: for .map files
-
-	bool parseSingleEntDef(class parser_c &p);
-
-public:
-	void setKeyValue(const char *key, const char *value) {
-		if(!stricmp(key,"classname")) {
-			this->className = value;
-			return;
-		}
-		ePairs.set(key,value);
-	}
-	const char *getClassName() const {
-		if(className.length())
-			return className;
-		return 0;
-	}
-	u32 getNumKeyValues() const {
-		return ePairs.size();
-	}
-	void getKeyValue(u32 idx, const char **key, const char **value) const {
-		return ePairs.getKeyValue(idx,key,value);
-	}
-	bool hasKey(const char *key) const {
-		return ePairs.hasKey(key);
-	}
-	const char *getKeyValue(const char *key) const {
-		return ePairs.getKeyValue(key);
-	}
-	bool fromString(const char *txt);
-	bool readFirstEntDefFromFile(const char *fileName);
-};
+#include "entDef.h"
 
 class entDefsList_c {
 	arraySTD_c<entDef_c*> entities;

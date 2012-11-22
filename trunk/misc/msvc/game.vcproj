@@ -548,6 +548,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\entDef.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\entDef.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\entDefsList.cpp"
 				>
 			</File>

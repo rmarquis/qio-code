@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "..\..\co
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "..\..\code\external\bullet-2.80-rev2531\msvc\vs2008\LinearMath.vcproj", "{35B8E590-78AB-7444-B8A8-171B3827EF1C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "declManager", "declManager.vcproj", "{20638E69-F228-4CC1-94CF-C7CE326D2D88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -90,6 +92,10 @@ Global
 		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Debug|Win32.Build.0 = Debug|Win32
 		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Release|Win32.ActiveCfg = Release|Win32
 		{35B8E590-78AB-7444-B8A8-171B3827EF1C}.Release|Win32.Build.0 = Release|Win32
+		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Debug|Win32.Build.0 = Debug|Win32
+		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Release|Win32.ActiveCfg = Release|Win32
+		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

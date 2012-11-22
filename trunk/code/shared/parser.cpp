@@ -132,6 +132,26 @@ const char *parser_c::getToken(str &out) {
 	out.setFromTo(start,end);
 	return out;
 }
+const char *parser_c::getLine(str &out) {
+	if(skipToNextToken()) {
+		printf("parser_c::getLine: EOF reached\n");
+		out.clear();
+		return 0;
+	}
+	const char *start, *end;
+	start = p;
+	while(1) {
+		if(*p == '\n')
+			break;
+		if(*p == 0) {
+			break;
+		}
+		p++;
+	}
+	end = p;
+	out.setFromTo(start,end);
+	return out;
+}
 float parser_c::getFloat() {
 	const char *t = getToken();
 	return atof(t);

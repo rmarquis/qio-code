@@ -30,46 +30,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <shared/str.h>
 
-bool entDef_c::parseSingleEntDef(class parser_c &p) {
-	bool hasOpeningBrace = false;
-	if(p.atChar('{')) {
-		hasOpeningBrace = true;
-	} else {
-		hasOpeningBrace = false;
-	}
-	while(p.atChar('}') == false) {
-		if(p.atEOF()) {
-			break;
-		}
-		if(p.atChar('}')) {
-			g_core->RedWarning("entDef_c::fromString: unexpected '}'\n");
-			return true; // error
-		}
-		if(p.atChar('{')) {
-			g_core->RedWarning("entDef_c::fromString: unexpected '{'\n");
-			return true; // error
-		}
-		str key = p.getToken();
-		str val = p.getToken();
-		this->setKeyValue(key,val);
-	}
-	return false;
-}
-bool entDef_c::fromString(const char *text) {
-	parser_c p;
-	p.setup(text);	
-	return parseSingleEntDef(p);
-}
-
-bool entDef_c::readFirstEntDefFromFile(const char *fileName) {
-	parser_c p;
-	if(p.openFile(fileName)) {
-		g_core->RedWarning("entDef_c::readFirstEntDefFromFile: cannot open \"%s\"\n",fileName);
-		return true; // error
-	}
-	return parseSingleEntDef(p);
-}
-
 entDefsList_c::entDefsList_c() {
 	
 }

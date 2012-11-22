@@ -197,8 +197,13 @@ void rEntityImpl_c::recalcABSBounds() {
 		absBB.clear();
 		return;
 	}
-	const aabb &bb = model->getBounds();
-	matrix.transformAABB(bb,this->absBB);
+	if(instance) {
+		const aabb &bb = instance->getBounds();
+		matrix.transformAABB(bb,this->absBB);
+	} else {
+		const aabb &bb = model->getBounds();
+		matrix.transformAABB(bb,this->absBB);
+	}
 }
 void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles

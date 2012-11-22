@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
+#include <api/declManagerAPI.h>
 #include <math/vec3.h>
 #include "classes/ModelEntity.h"
 #include "classes/Player.h"
@@ -344,18 +345,29 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
+			vec3_c spawnPos = pl->getOrigin();
+			spawnPos.z += pl->getViewHeight();
+			spawnPos += pl->getForward() * 64.f;
 			if(g_vfs->FS_ReadFile(model,0) < 1) {
 				str fixed = "models/";
 				fixed.append(model);
 				if(g_vfs->FS_ReadFile(model,0) < 1) {
-					g_core->Print("%s does not exist\n",model.c_str());
+					// if "model" string is not a file name,
+					// it might a entityDef name from .def files (Doom3 declarations)
+					if(g_declMgr->registerEntityDecl(model)) {
+						BaseEntity *be = G_SpawnEntityFromEntDecl(model);
+						if(be) {
+							be->setOrigin(spawnPos);
+						} else {
+							g_core->Print("Failed to spawn %s\n",model.c_str());
+						}
+					} else {
+						g_core->Print("%s does not exist\n",model.c_str());
+					}
 					return;
 				}
 				model = fixed;
 			}
-			vec3_c spawnPos = pl->getOrigin();
-			spawnPos.z += pl->getViewHeight();
-			spawnPos += pl->getForward() * 64.f;
 			const char *ext = G_strgetExt(model);
 			if(ext && !stricmp(ext,"entDef")) {
 				BaseEntity *be = G_SpawnFirstEntDefFromFile(model);

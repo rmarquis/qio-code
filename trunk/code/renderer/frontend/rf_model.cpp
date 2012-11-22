@@ -29,6 +29,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/modelDeclAPI.h>
+#include <api/declManagerAPI.h>
 
 // for bsp inline models
 void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
@@ -52,6 +54,8 @@ u32 model_c::getNumSurfaces() const {
 		return staticModel->getNumSurfs();
 	} else if(type == MOD_SKELETAL) {
 		return skelModel->getNumSurfs();
+	} else if(type == MOD_DECL) {
+		return declModel->getNumSurfaces();
 	}
 	return 0;
 }
@@ -88,7 +92,15 @@ bool model_c::createStaticModelDecal(class simpleDecalBatcher_c *out, const clas
 	}
 	return false;
 }
-
+class skelModelAPI_i *model_c::getSkelModelAPI() const {
+	if(type == MOD_SKELETAL) {
+		return skelModel;
+	}
+	if(type == MOD_DECL) {
+		return declModel->getSkelModel();
+	}
+	return 0;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp
@@ -142,8 +154,17 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 		ret->skelModel = g_modelLoader->loadSkelModelFile(modName);
 		if(ret->skelModel) {
 			ret->type = MOD_SKELETAL; // that's a valid model
+//			ret->bb = ret->skelModel->getEstimatedBounds();
+			ret->bb.fromRadius(96.f);
 		} else {
 			g_core->Print(S_COLOR_RED"Loading of skeletal model %s failed\n",modName);
+		}
+	} else {
+		ret->declModel = g_declMgr->registerModelDecl(modName);
+		if(ret->declModel) {
+			ret->type = MOD_DECL;
+//			ret->bb = ret->declModel->getEstimatedBounds();
+			ret->bb.fromRadius(96.f);
 		}
 	}
 	return ret;

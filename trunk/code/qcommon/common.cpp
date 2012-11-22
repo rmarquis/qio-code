@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/coreAPI.h>
+#include <api/declManagerAPI.h>
 
 int demo_protocols[] =
 { 67, 66, 0 };
@@ -2712,6 +2713,16 @@ void Com_InitModelLoaderDLL() {
 		Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
 	}
 }
+static moduleAPI_i *com_declMgrLib = 0;
+declManagerAPI_i *g_declMgr;
+void Com_InitDeclManagerDLL() {
+	com_declMgrLib = g_moduleMgr->load("declManager");
+	if(com_declMgrLib == 0) {
+		Com_Error(ERR_DROP,"Cannot load declManager DLL");
+	}
+	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
+	g_declMgr->init();
+}
 /*
 =================
 Com_Init
@@ -2779,6 +2790,8 @@ void Com_Init( char *commandLine ) {
 	Com_InitCMDLL();
 
 	Com_InitModelLoaderDLL();
+
+	Com_InitDeclManagerDLL();
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);

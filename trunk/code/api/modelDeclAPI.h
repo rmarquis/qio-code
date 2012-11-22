@@ -21,38 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Weapon.cpp
-#include "../g_local.h"
-#include "Weapon.h"
-#include "Player.h"
-#include <api/coreAPI.h>
+// modelDeclAPI.h
+#ifndef __MODELDECLAPI_H__
+#define __MODELDECLAPI_H__
 
-DEFINE_CLASS(Weapon, "ModelEntity");
-DEFINE_CLASS_ALIAS(Weapon, idItem);
+class animDefAPI_i {
+public:
+	//virtual const char *getAlias() const = 0;
+	//virtual const char *getAnimFileName() const = 0;
+	//virtual class skelAnimAPI_i *getAnim() const = 0;
+};
 
-Weapon::Weapon() {
-	owner = 0;
-}
-Weapon::~Weapon() {
+class modelDeclAPI_i {
+public:
+	virtual const char *getModelDeclName() = 0;
+	virtual const char *getMeshName() = 0;
+	virtual class skelModelAPI_i *getSkelModel() = 0;
 
-}
-void Weapon::setKeyValue(const char *key, const char *value) {
+	virtual u32 getNumSurfaces() = 0;
 
-	ModelEntity::setKeyValue(key,value);
-}
-void Weapon::doUse(class Player *activator) {
-	if(owner) {
-		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
-		return;
-	}
-	activator->addWeapon(this);
-	this->destroyPhysicsObject();
-	this->unlink();
-}
-void Weapon::onFireKeyHeld() {
-	
-}
-void Weapon::onFireKeyDown() {
-	G_BulletAttack(this->getOrigin(),this->getForward());
-}
+	//// animations list access
+	//virtual u32 getNumAnims() const = 0;
+	//virtual const char *animAliasForNum(u32 index) = 0;
+	//virtual const char *animFileNameForNum(u32 index) = 0;
+	//virtual const class animDefAPI_i *animDefForNum(u32 index) = 0;
+	//virtual int animIndexForAnimAlias(const char *alias) = 0;
+};
 
+#endif // __MODELDECLAPI_H__

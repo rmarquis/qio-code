@@ -189,6 +189,7 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 	rVert_c *v = verts.getArray();
 	const skelVert_s *inV = skelSF->getVerts();
 	const skelWeight_s *inWeights = skelSF->getWeights();
+	bounds.clear();
 	for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
 		const skelWeight_s *w = inWeights + inV->firstWeight;
 		v->xyz.clear();
@@ -197,6 +198,7 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 			bones[w->boneIndex].mat.transformPoint(w->ofs,p);
 			v->xyz += p * w->weight;
 		}
+		bounds.addPoint(v->xyz);
 	}	
 }
 void r_surface_c::scaleXYZ(float scale) {
@@ -416,9 +418,11 @@ void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 }
 void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
 	r_surface_c *sf = surfs.getArray();
+	this->bounds.clear();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
 		sf->updateSkelSurfInstance(inSF,bones);
+		this->bounds.addBox(sf->getBB());
 	}
 }
 #include <shared/cmSurface.h>

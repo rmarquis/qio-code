@@ -38,7 +38,7 @@ public:
 	rfAnimation_c *getHashNext() const {
 		return hashNext;
 	}
-	void setNext(rfAnimation_c *newNext) {
+	void setHashNext(rfAnimation_c *newNext) {
 		hashNext = newNext;
 	}
 	const class skelAnimAPI_i *getAPI() const {

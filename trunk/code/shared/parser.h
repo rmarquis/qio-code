@@ -48,6 +48,10 @@ public:
 	const char *getToken(str &out);
 	const char *getToken() {
 		return getToken(this->lastToken);
+	}	
+	const char *getLine(str &out);
+	const char *getLine() {
+		return getLine(this->lastToken);
 	}
 	float getFloat();
 	int getInteger();

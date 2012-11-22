@@ -89,25 +89,25 @@ public:
 		return getEntry(en->name);
 	}
 	void removeEntry(TYPE *en) {
-		currentHash = hashForString(en->name);
+		currentHash = hashForString(en->getName());
 		TYPE *other = hashTable[currentHash];
 		if(other == 0) {
 			return;
 		}
 		if(other == en) {
-			hashTable[currentHash] = other->hashNext;
+			hashTable[currentHash] = other->getHashNext();
 			return;
 		}
 		TYPE *prev = other;
-		other = other->hashNext;
+		other = other->getHashNext();
 		while(other) {
 			if(other==en) {
-				G_assert(prev->hashNext == other);
-				prev->hashNext = other->hashNext;
+//				G_assert(prev->getHashNext() == other);
+				prev->setHashNext(other->getHashNext());
 				return;
 			}
 			prev = other;
-			other = other->hashNext;
+			other = other->getHashNext();
 		}
 	}
 	void clear() {

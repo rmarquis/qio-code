@@ -40,7 +40,14 @@ enum qioModule_e {
 	QMD_REF_BACKEND_GL,
 	QMD_REF_BACKEND_NULL,
 	QMD_REF_BACKEND_DX9,
+	QMD_DECL_MANAGER,
 };
+
+inline bool QM_IsServerSide(qioModule_e m) {
+	if(m == QMD_GAME)
+		return true;
+	return false;
+}
 
 // this must be implemented in every module
 qioModule_e IFM_GetCurModule();

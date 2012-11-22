@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 
 static aCvar_c cg_testModel("cg_testModel","");
+static aCvar_c cg_testAnim("cg_testAnim","");
 static aCvar_c cg_testModelParentEntity("cg_testModelParentEntity","");
 static aCvar_c cg_testModelParentTag("cg_testModelParentTag","MG_ATTACHER");
 static aCvar_c cg_testModelAttached_extraYaw("cg_testModelAttached_extraYaw","0");
@@ -58,9 +59,10 @@ void CG_RunTestModel() {
 	}
 	if(cg_testModelEntity == 0) {
 		cg_testModelEntity = rf->allocEntity();
-		cg_testModelEntity->setOrigin(cg.predictedPlayerState.origin);
+		cg_testModelEntity->setOrigin(cg.refdef.vieworg);
 	}
 	cg_testModelEntity->setModel(mod);
+	cg_testModelEntity->setAnim(rf->registerAnimation_getAPI(cg_testAnim.getStr()));
 	if(cg_testModelParentEntity.strLen() && stricmp(cg_testModelParentEntity.getStr(),"none")) {
 		int entNum = atoi(cg_testModelParentEntity.getStr());
 		centity_s *cent = &cg_entities[entNum];
@@ -78,8 +80,8 @@ void CG_RunTestModel() {
 		cg_testModelEntity->setOrigin(cg.refdef.vieworg);
 		cg_testModelEntity->setAngles(cg.refdefViewAngles);
 	}
-	cg_testModelEntity->hideSurface(2);
-	cg_testModelEntity->hideSurface(3);
-	cg_testModelEntity->hideSurface(4);
-	cg_testModelEntity->hideSurface(5);
+	//cg_testModelEntity->hideSurface(2);
+	//cg_testModelEntity->hideSurface(3);
+	//cg_testModelEntity->hideSurface(4);
+	//cg_testModelEntity->hideSurface(5);
 }

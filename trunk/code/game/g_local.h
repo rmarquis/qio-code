@@ -130,6 +130,8 @@ void G_SpawnMapEntities(const char *mapName);
 // spawns a new entity with classname and key values
 // loaded from .entDef file
 BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName);
+// spawn entity defined in .def file (Doom3 decls)
+BaseEntity *G_SpawnEntityFromEntDecl(const char *declName);
 
 //
 // g_bullet_debugDraw.cpp

@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/gameAPI.h> // only for debug drawing
 #include <api/modelLoaderDLLAPI.h>
+#include <api/declManagerAPI.h>
 #include <math/matrix.h>
 #include <math/axis.h>
 #include <shared/autoCvar.h>
@@ -208,6 +209,7 @@ public:
 		RF_ClearModels();
 		RF_ShutdownDecals();
 		unloadMaterialSystem();
+		g_declMgr->onRendererShutdown();
 		AUTOCVAR_UnregisterAutoCvars();
 		rb->shutdown(destroyWindow);
 	}
@@ -231,6 +233,7 @@ materialSystemAPI_i *g_ms = 0;
 modelLoaderDLLAPI_i *g_modelLoader = 0;
 // game module api - only for debug drawing on non-dedicated server
 gameAPI_s *g_game = 0;
+declManagerAPI_i *g_declMgr = 0;
 
 // exports
 static rAPIImpl_c g_staticRFAPI;
@@ -251,6 +254,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

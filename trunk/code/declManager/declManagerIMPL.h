@@ -21,45 +21,38 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_anims.cpp
-#include "rf_anims.h"
+// declManagerIMPL.h
+#include <api/declManagerAPI.h>
+#include <shared/str.h>
+#include <shared/array.h>
 #include <shared/hashTableTemplate.h>
-#include <api/modelLoaderDLLAPI.h>
-#include <api/skelAnimAPI.h>
 
-void rfAnimation_c::clear() {
-	if(api) {
-		delete api;
-		api = 0;
-	}
-}
+struct defFile_s {
+	str fname;
+	str text;
+};
 
-static hashTableTemplateExt_c<rfAnimation_c> rf_animations;
+class modelDecl_c;
+class entityDecl_c;
 
-rfAnimation_c *RF_RegisterAnimation(const char *animName) {
-	rfAnimation_c *ret = rf_animations.getEntry(animName);
-	if(ret) {
-		return ret;
-	}
-	ret = new rfAnimation_c;
-	ret->api = g_modelLoader->loadSkelAnimFile(animName);
-	ret->name = animName;
-	rf_animations.addObject(ret);
-	return ret;
-}
-const skelAnimAPI_i *RF_RegisterAnimation_GetAPI(const char *animName) {
-	rfAnimation_c *rfAnim = RF_RegisterAnimation(animName);
-	if(rfAnim && rfAnim->getAPI()) {
-		return rfAnim->getAPI();
-	}
-	return 0;
-}
-void RF_ClearAnims() {
-	for(u32 i = 0; i < rf_animations.size(); i++) {
-		rfAnimation_c *a = rf_animations[i];
-		a->clear();
-		delete a;
-		rf_animations[i] = 0;
-	}
-	rf_animations.clear();
-}
+class declManagerIMPL_c : public declManagerAPI_i {
+	// raw .def files text
+	arraySTD_c<defFile_s*> defFiles;
+	u32 totalDefBytes;
+	// parsed structures
+	hashTableTemplateExt_c<modelDecl_c> modelDecls;
+	hashTableTemplateExt_c<entityDecl_c> entityDecls;
+
+	void cacheDefFileText(const char *fname);
+	const char *findDeclInText(const char *declName, const char *declType, const char *text);
+	bool findDeclText(const char *declName, const char *declType, struct declTextDef_s &out);
+
+	virtual void init();
+	virtual class modelDeclAPI_i *_registerModelDecl(const char *name, qioModule_e userModule);
+	virtual class entityDeclAPI_i *_registerEntityDecl(const char *name, qioModule_e userModule);
+
+	void removeUnrefrencedDecls();
+	virtual void onGameShutdown();
+	virtual void onRendererShutdown();
+};
+

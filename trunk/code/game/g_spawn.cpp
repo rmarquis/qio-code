@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/entDefsList.h>
 #include <api/coreAPI.h>
 #include <api/loadingScreenMgrAPI.h>
+#include <api/declManagerAPI.h>
+#include <api/entityDeclAPI.h>
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
 
@@ -40,7 +42,7 @@ void G_LoadMapEntities(const char *mapName) {
 	}
 	return;
 }
-BaseEntity *G_SpawnEntDef(const class entDef_c *entDef) {
+BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	const char *className = entDef->getClassName();
 	if(className == 0 || className[0] == 0) {
 		return 0;
@@ -80,6 +82,13 @@ BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName) {
 		return 0;
 	}
 	BaseEntity *ret = G_SpawnEntDef(&entDef);
+	return ret;
+}
+BaseEntity *G_SpawnEntityFromEntDecl(const char *declName) {
+	entityDeclAPI_i *decl = g_declMgr->registerEntityDecl(declName);
+	if(decl == 0)
+		return 0;
+	BaseEntity *ret = G_SpawnEntDef(decl->getEntDefAPI());
 	return ret;
 }
 void G_SpawnMapEntities(const char *mapName) {

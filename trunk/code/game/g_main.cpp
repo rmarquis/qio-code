@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/serverAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
+#include <api/declManagerAPI.h>
 #include "classes/BaseEntity.h"
 #include <shared/autoCvar.h>
 
@@ -149,6 +150,7 @@ void G_ShutdownGame( int restart ) {
 		delete e->ent;
 	}
 	G_ShudownBullet();
+	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();
 }
 

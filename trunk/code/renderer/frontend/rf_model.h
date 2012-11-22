@@ -35,6 +35,7 @@ enum modelType_e {
 	MOD_STATIC, // static (non-animated) triangle model
 	MOD_SKELETAL, // animated skeletal model
 	MOD_PROC, // inline proc model
+	MOD_DECL, // model declared in Doom3 .def files
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -54,6 +55,7 @@ class model_c : public rModelAPI_i {
 			class r_model_c *procModel;
 			class procTree_c *myProcTree;
 		}; // only if this->type == MOD_PROC
+		class modelDeclAPI_i *declModel; // only if this->type == MOD_DECL
 	};
 	aabb bb;
 public:
@@ -110,11 +112,7 @@ public:
 	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
 
-	virtual class skelModelAPI_i *getSkelModelAPI() const {
-		if(type == MOD_SKELETAL)
-			return skelModel;
-		return 0;
-	}
+	virtual class skelModelAPI_i *getSkelModelAPI() const;
 
 	void clear();
 
