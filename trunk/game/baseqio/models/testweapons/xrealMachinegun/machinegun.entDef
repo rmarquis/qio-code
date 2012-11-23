@@ -1,0 +1,6 @@
+{
+"classname" "Weapon"
+"model" "models/testweapons/xrealMachinegun/machinegun.obj"
+"cmodel" "models/testweapons/xrealMachinegun/machinegun.map"
+"model_view" "models/testweapons/xrealMachinegun/machinegun_view.md5mesh"
+}
