@@ -409,6 +409,11 @@ void ClientCommand( int clientNum ) {
 			e->setOrigin(p);
 			e->initStaticBodyPhysics();
 		}
+	} else if(!stricmp(cmd,"spawntestbtragdoll")) {
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		BT_TestSpawnInternalRagDoll(p);
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
