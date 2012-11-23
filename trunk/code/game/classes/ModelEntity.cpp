@@ -39,6 +39,7 @@ DEFINE_CLASS_ALIAS(ModelEntity, func_static);
 ModelEntity::ModelEntity() {
 	body = 0;
 	cmod = 0;
+	cmSkel = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -71,6 +72,14 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 
 	this->recalcABSBounds();
 	this->link();
+}
+int ModelEntity::getBoneNumForName(const char *boneName) {
+	if(cmSkel == 0) {
+		cmSkel = cm->registerSkelModel(this->renderModelName);
+	}
+	if(cmSkel == 0)
+		return -1;
+	return cmSkel->getBoneNumForName(boneName);
 }
 void ModelEntity::setAnimation(const char *newAnimName) {
 	this->myEdict->s->animIndex = G_AnimationIndex(newAnimName);
@@ -105,6 +114,10 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		}
 	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
 		this->setColModel(value);
+	} else if(!stricmp(key,"size")) {
+		vec3_c sizes(value);
+		cmBBExts_i *cmBB = cm->registerBoxExts(sizes);
+		this->setColModel(cmBB);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

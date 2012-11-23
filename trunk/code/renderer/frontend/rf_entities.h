@@ -43,6 +43,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	aabb absBB;
 	bool bFirstPersonOnly;
 	bool bThirdPersonOnly;
+	bool bHidden;
 	rfSurfsFlagsArray_t surfaceFlags; // surfaceFlags.size() == this->getNumSurfaces()
 	// used only for static (non-animated) model entities
 	class simpleDecalBatcher_c *staticDecals; 
@@ -65,6 +66,8 @@ public:
 	virtual void setFirstPersonOnly(bool bOn) {
 		bFirstPersonOnly = bOn;
 	}
+	virtual void hideModel();
+	virtual void showModel();
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
 		const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
@@ -73,6 +76,9 @@ public:
 	}
 	bool isThirdPersonOnly() const {
 		return bThirdPersonOnly;
+	}
+	bool isHidden() const {
+		return bHidden;
 	}
 
 

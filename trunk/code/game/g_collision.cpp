@@ -40,12 +40,17 @@ u32 G_BoxEntities(const aabb &bb, arraySTD_c<BaseEntity*> &out) {
 	return out.size();
 }
 
-bool G_TraceRay(class trace_c &tr) {
+bool G_TraceRay(class trace_c &tr, BaseEntity *baseSkip) {
 	arraySTD_c<BaseEntity*> ents;
 	G_BoxEntities(tr.getTraceBounds(),ents);
 	bool hasHit = false;
 	for(u32 i = 0; i < ents.size(); i++) {
 		BaseEntity *e = ents[i];
+		if(baseSkip) {
+			if(e == baseSkip || e->getOwner() == baseSkip) {
+				continue;
+			}
+		}
 		if(e->traceWorldRay(tr)) {
 			hasHit = true;
 		}

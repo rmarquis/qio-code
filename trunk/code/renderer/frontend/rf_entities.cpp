@@ -176,6 +176,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	matrix.identity();
 	bFirstPersonOnly = false;
 	bThirdPersonOnly = false;
+	bHidden = false;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -235,22 +236,24 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	surfaceFlags.resize(newModel->getNumSurfaces());
 	surfaceFlags.nullMemory();
 	if(newModel->isStatic() == false && newModel->isValid()) {
-		instance = new r_model_c;
 		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
-		instance->initSkelModelInstance(skelModel);
+		if(skelModel) {
+			instance = new r_model_c;
+			instance->initSkelModelInstance(skelModel);
 #if 1
-		instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
+			instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
 #else
-		rfAnimation_c *anim = RF_RegisterAnimation("models/player/shina/run.md5anim");
-		boneOrArray_c bones;
-		bones.resize(anim->getAPI()->getNumBones());
-		anim->getAPI()->buildFrameBonesLocal(0,bones);
-		bones.localBonesToAbsBones(anim->getAPI()->getBoneDefs());
-		if(skelModel->hasCustomScaling()) {
-			bones.scaleXYZ(skelModel->getScaleXYZ());
-		}
-		instance->updateSkelModelInstance(skelModel,bones);	
+			rfAnimation_c *anim = RF_RegisterAnimation("models/player/shina/run.md5anim");
+			boneOrArray_c bones;
+			bones.resize(anim->getAPI()->getNumBones());
+			anim->getAPI()->buildFrameBonesLocal(0,bones);
+			bones.localBonesToAbsBones(anim->getAPI()->getBoneDefs());
+			if(skelModel->hasCustomScaling()) {
+				bones.scaleXYZ(skelModel->getScaleXYZ());
+			}
+			instance->updateSkelModelInstance(skelModel,bones);	
 #endif
+		}
 	}
 	model = newModel;
 	recalcABSBounds();
@@ -265,6 +268,12 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 		// TODO
 		animCtrl->setNextAnim(anim);
 	}
+}
+void rEntityImpl_c::hideModel() {
+	bHidden = true;
+}
+void rEntityImpl_c::showModel() {
+	bHidden = false;
 }
 void rEntityImpl_c::hideSurface(u32 surfNum) {
 	if(surfaceFlags.size() <= surfNum) {
@@ -289,12 +298,18 @@ void rEntityImpl_c::addDrawCalls() {
 	}
 }
 bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) {
+	if(model == 0)
+		return true; // error
 	skelModelAPI_i *skel = model->getSkelModelAPI();
 	if(skel == 0)
 		return true; // error 
 	if(animCtrl == 0)
 		return true; // error
 	const boneOrArray_c &curBones = animCtrl->getCurBones();
+	if(localBoneIndex < 0 || localBoneIndex >= curBones.size()) {
+		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());
+		return true;
+	}
 	const matrix_c &localMat = curBones[localBoneIndex].mat;
 	out = this->matrix * localMat;
 	return false;
@@ -344,38 +359,49 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 	rf_entities.remove(rent);
 	delete rent;
 }
-
+static u32 c_entitiesCulledByABSBounds;
+void RFE_AddEntity(rEntityImpl_c *ent) {
+	rf_currentEntity = ent;
+	model_c *model = (model_c*)ent->getModel();
+	if(model == 0) {
+		return;
+	}
+	if(ent->isHidden())
+		return;
+	if(rf_camera.isThirdPerson()) {
+		if(ent->isFirstPersonOnly())
+			return;
+	} else {
+		if(ent->isThirdPersonOnly())
+			return;
+	}
+	if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
+		c_entitiesCulledByABSBounds++;
+		return;
+	}
+	ent->addDrawCalls();
+}
 void RFE_AddEntityDrawCalls() {
 	if(rf_skipEntities.getInt())
 		return;
 
-	u32 c_entitiesCulledByABSBounds = 0;
+	c_entitiesCulledByABSBounds = 0;
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		rEntityImpl_c *ent = rf_entities[i];
-		rf_currentEntity = ent;
-		model_c *model = (model_c*)ent->getModel();
-		if(model == 0) {
-			continue;
-		}
-		if(rf_camera.isThirdPerson()) {
-			if(ent->isFirstPersonOnly())
-				continue;
-		} else {
-			if(ent->isThirdPersonOnly())
-				continue;
-		}
-		if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
-			c_entitiesCulledByABSBounds++;
-			continue;
-		}
-		ent->addDrawCalls();
+		RFE_AddEntity(ent);
 	}
 	if(0) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());
 	}
 	rf_currentEntity = 0;
 }
-
+void RFE_DrawEntityAbsBounds() {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		rEntityImpl_c *ent = rf_entities[i];
+		const aabb &bb = ent->getBoundsABS();
+		rb->drawBBLines(bb);
+	}
+}
 void RFE_ClearEntities() {
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		delete rf_entities[i];

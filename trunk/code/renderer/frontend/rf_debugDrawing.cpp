@@ -25,12 +25,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include <qcommon/q_shared.h>
 #include <shared/array.h>
+#include <shared/autoCvar.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/gameAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+
+static aCvar_c rf_showEntityABSBounds("rf_showEntityABSBounds","0");
 
 // draw debug info for game module 
 // this works (obviously) only for local client
@@ -46,7 +49,13 @@ void RF_DoDebugDrawing() {
 	if(g_game) {
 		RF_GameDebugDrawing();
 	}
+	rb->unbindMaterial();
 	RFDL_DrawDebugLines();
+	if(rf_showEntityABSBounds.getInt()) {
+		float redColor [4] = { 1, 0, 0, 1 };
+		rb->setColor4(redColor);
+		RFE_DrawEntityAbsBounds();
+	}
 }
 
 //

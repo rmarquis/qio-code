@@ -56,6 +56,8 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 	s->angles.set(0,ps->viewangles.y,0);
 #endif
 	s->animIndex = ps->animIndex;
+	s->parentNum = ps->parentNum;
+	s->parentTagNum = ps->parentTagNum;
 
 	// set the trDelta for flag direction
 	//VectorCopy( ps->velocity, s->pos.trDelta );

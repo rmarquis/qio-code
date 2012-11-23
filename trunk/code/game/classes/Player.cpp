@@ -262,7 +262,7 @@ void Player::onUseKeyDown() {
 	vec3_c dir;
 	AngleVectors(this->ps.viewangles,dir,0,0);
 	tr.setupRay(eye,eye + dir * 96.f);
-	if(G_TraceRay(tr)) {
+	if(G_TraceRay(tr,this)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
 			G_Printf("Player::onUseKeyDown: WARNING: null hit entity\n");
@@ -289,7 +289,7 @@ void Player::onFireKeyDown() {
 		curWeapon->onFireKeyDown();
 		return;
 	}
-	G_BulletAttack(this->getEyePos(),this->ps.viewangles.getForward());
+	//G_BulletAttack(this->getEyePos(),this->ps.viewangles.getForward());
 }
 void Player::setClientViewAngle(const vec3_c &angle) {
 	// set the delta angle
@@ -325,7 +325,18 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		//dropCurWeapon();
 	}
 	curWeapon = newWeapon;
-	curWeapon->setParent(this,-1);
+	if(curWeapon == 0) {
+		ps.curWeaponEntNum = ENTITYNUM_NONE;
+		ps.customViewRModelIndex = 0;
+	} else {
+		ps.curWeaponEntNum = curWeapon->getEntNum();
+		if(curWeapon->hasCustomViewModel()) {
+			ps.customViewRModelIndex = G_RenderModelIndex(curWeapon->getCustomViewModelName());
+		} else {
+			ps.customViewRModelIndex = 0;
+		}
+		curWeapon->setParent(this,getBoneNumForName("MG_ATTACHER"));
+	}
 #else
 
 #endif

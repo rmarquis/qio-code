@@ -46,6 +46,9 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual class cMod_i *registerModel(const char *modName) {
 		return CM_RegisterModel(modName);
 	}
+	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) {
+		return CM_RegisterSkelModel(skelModelName);
+	}
 
 };
 

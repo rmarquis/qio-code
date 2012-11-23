@@ -77,6 +77,9 @@ public:
 		return this->myEdict;
 	}
 	u32 getEntNum() const;
+	virtual BaseEntity *getOwner() const {
+		return 0;
+	}
 
 	void setParent(BaseEntity *newParent, int tagNum = -1);
 	void detachFromParent();

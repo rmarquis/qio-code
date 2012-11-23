@@ -61,6 +61,7 @@ public:
 	void setHitPos(const vec3_c &newHitPos);
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
+	bool clipByAABB(const aabb &bb);
 
 	// transforms world-space trace into entity-space trace
 	void getTransformed(trace_c &out, const class matrix_c &entityMatrix) const;

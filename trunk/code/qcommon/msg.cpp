@@ -1152,6 +1152,8 @@ netField_t	playerStateFields[] =
 { PSF(parentNum), GENTITYNUM_BITS },
 { PSF(parentTagNum), TAGNUM_BITS },
 { PSF(animIndex), ANIMNUM_BITS },
+{ PSF(curWeaponEntNum), GENTITYNUM_BITS },
+{ PSF(customViewRModelIndex), MODELNUM_BITS },
 };
 
 /*

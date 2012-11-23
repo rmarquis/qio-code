@@ -141,12 +141,12 @@ void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
 //
 // g_collision.cpp
 //
-bool G_TraceRay(class trace_c &tr);
+bool G_TraceRay(class trace_c &tr, BaseEntity *baseSkip);
 
 //
 // g_weapons.cpp
 //
-void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir);
+void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

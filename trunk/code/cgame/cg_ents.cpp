@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "cg_local.h"
 #include <api/rEntityAPI.h>
+#include <math/matrix.h>
 
 /*
 ==========================================================================
@@ -114,6 +115,8 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	}
 }
 
+
+static void CG_AddCEntity( centity_t *cent );
 /*
 ===============
 CG_CalcEntityLerpPositions
@@ -121,6 +124,21 @@ CG_CalcEntityLerpPositions
 ===============
 */
 static void CG_CalcEntityLerpPositions( centity_t *cent ) {
+	if(cent->currentState.parentNum != ENTITYNUM_NONE) {
+		centity_t *parent = &cg_entities[cent->currentState.parentNum];
+		if(parent->rEnt == 0)
+			return;
+		CG_AddCEntity(parent);
+		matrix_c mat;
+		parent->rEnt->getBoneWorldOrientation(cent->currentState.parentTagNum,mat);
+		cent->lerpAngles = mat.getAngles();
+		cent->lerpOrigin = mat.getOrigin();
+		if(cent->rEnt) {
+			cent->rEnt->setOrigin(cent->lerpOrigin);
+			cent->rEnt->setAngles(cent->lerpAngles);
+		}
+		return;
+	}
 
 	if ( cent->interpolate) {
 		CG_InterpolateEntityPosition( cent );
@@ -147,6 +165,10 @@ CG_AddCEntity
 ===============
 */
 static void CG_AddCEntity( centity_t *cent ) {
+	if(cent->lastUpdateFrame == cg.clientFrame)
+		return;
+	cent->lastUpdateFrame = cg.clientFrame;
+
 	// calculate the current origin
 	CG_CalcEntityLerpPositions( cent );
 

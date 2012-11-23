@@ -101,7 +101,7 @@ float thirdPersonRange = 128.f;
 		trace_c trace;
 		trace.setupRay(cg.refdef.vieworg,view);
 
-		CG_RayTrace(trace);
+		CG_RayTrace(trace, cg.clientNum);
 		//CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 
 		if (trace.getFraction() != 1.f) {
@@ -342,6 +342,9 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 
 	// update test model
 	CG_RunTestModel();
+
+	// update view model
+	CG_RunViewModel();
 
 	// build the render lists
 	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct

@@ -1158,6 +1158,12 @@ struct playerState_s : public entityState_s {
 
 //	int			groundEntityNum;// ENTITYNUM_NONE = in air
 
+	// current mainhand weapon / item
+	int			curWeaponEntNum;
+
+	// index in CS_MODELS
+	int			customViewRModelIndex; // 0 means that there is no custom view render model
+
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 
 	vec3_c		viewangles;		// for fixed views
@@ -1165,6 +1171,10 @@ struct playerState_s : public entityState_s {
 
 	// not communicated over the net at all
 	int			ping;			// server to game info for scoreboard
+
+	playerState_s() {
+		curWeaponEntNum = ENTITYNUM_NONE;
+	}
 };
 
 

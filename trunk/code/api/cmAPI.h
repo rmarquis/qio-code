@@ -35,6 +35,7 @@ enum cModType_e {
 	CMOD_HULL, // aka brush - single convex volume
 	CMOD_COMPOUND,
 	CMOD_TRIMESH, // for static (non-moveable) physics object
+	CMOD_SKELMODEL, // dynamic, skeletal model which must be instanced before raycasting
 };
 
 // cm helpers are used to position joints,
@@ -71,6 +72,7 @@ public:
 	virtual class cmHull_i *getHull() = 0;
 	virtual class cmCompound_i *getCompound() = 0;
 	virtual class cmTriMesh_i *getTriMesh() = 0;
+	virtual class cmSkelModel_i *getSkelModel() = 0;
 
 	virtual void getBounds(class aabb &out) = 0;
 
@@ -119,6 +121,13 @@ public:
 	virtual const class cmSurface_c *getCMSurface() const = 0;
 };
 
+// skeletal model
+class cmSkelModel_i : public cMod_i {
+public:
+	virtual const class skelModelAPI_i *getSkelModelAPI() const = 0;
+	virtual int getBoneNumForName(const char *boneName) const = 0;
+};
+
 #define CM_API_IDENTSTR "CM0001"
 
 class cmAPI_i : public iFaceBase_i {
@@ -137,7 +146,7 @@ public:
 
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;
-
+	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) = 0;
 
 	//virtual void loadMap(const char *mapName) = 0;
 };

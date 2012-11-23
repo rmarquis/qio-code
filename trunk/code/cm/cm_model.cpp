@@ -215,7 +215,19 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	}
 	return ret;
 }
-#include <api/modelLoaderDLLAPI.h>
+#include <api/modelLoaderDLLAPI.h>]
+class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName) {
+	cMod_i *existing = CM_FindModelInternal(skelModelName);
+	if(existing)
+		return existing->getSkelModel();
+	skelModelAPI_i *skel = g_modelLoader->loadSkelModelFile(skelModelName);
+	if(skel) {
+		cmSkelModel_c *skelModel = new cmSkelModel_c(skelModelName,skel);
+		cm_models.addObject(skelModel);
+		return skelModel;		
+	}
+	return 0;
+}
 class cMod_i *CM_RegisterModel(const char *modName) {
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
@@ -251,6 +263,8 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 				return triMesh;
 			}
 			delete sf;
+		} else if(g_modelLoader->isSkelModelFile(modName)) {
+			return CM_RegisterSkelModel(modName);
 		}
 	}
 	return 0;

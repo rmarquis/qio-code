@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mtlFile.h"
 #include <api/coreAPI.h>
 #include <api/staticModelCreatorAPI.h>
-
+#include <api/rAPI.h>
 
 bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out) {
 	parser_c p;
@@ -143,17 +143,23 @@ bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out) {
 			g_core->Print("rModel_c::loadOBJ: usemtl %s\n",mtlName.c_str());
 			const struct mtlEntry_s *me = mtlFile.findEntry(mtlName);
 			if(me) {
-				str imageFile = fname;
-				imageFile.toDir();
+				str mtlImageName;
 				if(me->map_Ka.length()) { 
-					imageFile.append(me->map_Ka);
+					mtlImageName.append(me->map_Ka);
 				} else if(me->map_refl.length()) {
-					imageFile.append(me->map_refl);
+					mtlImageName.append(me->map_refl);
 				} else if(me->map_Kd.length()) {
-					imageFile.append(me->map_Kd);
+					mtlImageName.append(me->map_Kd);
 				}
-				currentMaterialName = imageFile;
-				//sf->setMaterial(imageFile);
+				if(rf && rf->isMaterialOrImagePresent(mtlImageName)) {
+					currentMaterialName = mtlImageName;
+				} else {
+					str imageFile = fname;
+					imageFile.toDir();
+					imageFile.append(mtlImageName);
+					currentMaterialName = imageFile;
+					//sf->setMaterial(imageFile);
+				}
 			} else {
 				currentMaterialName = mtlName;
 				//sf->setMaterial(mtlName);

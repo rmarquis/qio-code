@@ -77,7 +77,20 @@ bool trace_c::clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p
 	this->hitPlane.fromThreePoints(p0,p1,p2);
 	return true;
 }
-
+bool trace_c::clipByAABB(const aabb &bb) {
+	vec3_c newHit;
+	if(CU_IntersectLineAABB(this->from,this->to,bb,newHit)==false)
+		return false;
+#if 1
+	float checkLen = newHit.dist(from);
+	if(checkLen >= this->traveled) {
+		return false;
+	}
+#endif
+	hitPos = newHit;
+	this->updateForNewHitPos();
+	return true;
+}
 void trace_c::getTransformed(trace_c &out, const matrix_c &entityMatrix) const {
 	matrix_c inv = entityMatrix;
 	inv.inverse();

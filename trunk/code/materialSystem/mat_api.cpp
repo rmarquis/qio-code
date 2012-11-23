@@ -50,6 +50,9 @@ public:
 	virtual textureAPI_i *getDefaultTexture() {
 		return MAT_GetDefaultTexture();
 	}
+	virtual bool isMaterialOrImagePresent(const char *matName) {
+		return MAT_IsMaterialOrImagePresent(matName);
+	}
 	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) {
 		return MAT_CreateLightmap(data,w,h);
 	}

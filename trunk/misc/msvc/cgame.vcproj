@@ -498,6 +498,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_viewModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\q_math.cpp"
 				>
 			</File>

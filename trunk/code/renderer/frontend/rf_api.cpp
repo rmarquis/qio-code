@@ -172,6 +172,11 @@ public:
 			return 0;
 		return g_ms->registerMaterial(matName);
 	}	
+	virtual bool isMaterialOrImagePresent(const char *matName) {
+		if(g_ms == 0)
+			return false;
+		return g_ms->isMaterialOrImagePresent(matName);
+	}
 	virtual class rModelAPI_i *registerModel(const char *modName) {
 		return RF_RegisterModel(modName);
 	}

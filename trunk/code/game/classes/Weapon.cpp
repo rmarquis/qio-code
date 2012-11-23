@@ -37,22 +37,34 @@ Weapon::~Weapon() {
 
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
-
-	ModelEntity::setKeyValue(key,value);
+	if(!stricmp(key,"model_view")) {
+		model_view = value;
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
 }
 void Weapon::doUse(class Player *activator) {
 	if(owner) {
 		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
 		return;
 	}
+	owner = activator;
 	activator->addWeapon(this);
 	this->destroyPhysicsObject();
 	this->unlink();
+}
+
+BaseEntity *Weapon::getOwner() const {
+	return owner;
 }
 void Weapon::onFireKeyHeld() {
 	
 }
 void Weapon::onFireKeyDown() {
-	G_BulletAttack(this->getOrigin(),this->getForward());
+	if(owner) {
+		G_BulletAttack(owner->getEyePos(),owner->getViewAngles().getForward(),owner);
+	} else {
+		G_BulletAttack(this->getOrigin(),this->getForward(),this);
+	}
 }
 

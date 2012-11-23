@@ -30,14 +30,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Weapon : public ModelEntity {
 	class Player *owner;
+	// custom viewmodel for Doom3-style weapons
+	str model_view;
 public:
 	Weapon();
 	virtual ~Weapon();
 
 	DECLARE_CLASS( Weapon );
 
+	virtual BaseEntity *getOwner() const;
+
 	void onFireKeyHeld();
 	void onFireKeyDown();
+	bool hasCustomViewModel() const {
+		if(model_view.length())
+			return true;
+		return false;
+	}
+	const char *getCustomViewModelName() const {
+		return model_view;
+	}
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual void doUse(class Player *activator);

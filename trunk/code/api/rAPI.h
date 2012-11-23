@@ -59,6 +59,7 @@ public:
 	virtual void clearEntities() = 0;
 	virtual void loadWorldMap(const char *mapName) = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
+	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
 	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) = 0;
 

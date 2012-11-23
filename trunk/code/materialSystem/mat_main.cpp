@@ -24,10 +24,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // mat_main.cpp - renderer materials managment
 #include "mat_local.h"
 #include "mat_impl.h"
-
 #include <qcommon/q_shared.h>
 #include <api/vfsAPI.h>
 #include <api/rbAPI.h>
+#include <api/imgAPI.h>
 #include <shared/hashTableTemplate.h>
 
 struct matFile_s {
@@ -122,6 +122,22 @@ mtrIMPL_c *MAT_RegisterMaterial(const char *matName) {
 }
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName) {
 	return MAT_RegisterMaterial(matName);
+}
+bool MAT_IsMaterialOrImagePresent(const char *matName) {
+	// try to load from material text (.shader/.mtr files)
+	matTextDef_s text;
+	if(MAT_FindMaterialText(matName,text)) {
+		return true; // OK, found
+	}
+	// see if the image with such name (or similiar, extension can be different!) exists
+	byte *data = 0;
+	u32 w, h;
+	const char *fixedPath = g_img->loadImage(matName,&data,&w,&h);
+	if(data == 0) {
+		return false;
+	}
+	g_img->freeImageData(data);
+	return true; // OK, texture image exists
 }
 void MAT_FreeAllMaterials() {
 	for(u32 i = 0; i < materials.size(); i++) {

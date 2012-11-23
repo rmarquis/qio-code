@@ -53,12 +53,13 @@ typedef struct centity_s {
 	qboolean		currentValid;	// true if cg.frame holds this entity
 
 	int				snapShotTime;	// last time this entity was found in a snapshot
-	
+	int				lastUpdateFrame; // cg.frameNum when entity was updated
+
 	qboolean		extrapolated;	// false if origin / angles is an interpolation
 
 	// exact interpolated position of entity on this frame
-	vec3_t			lerpOrigin;
-	vec3_t			lerpAngles;
+	vec3_c			lerpOrigin;
+	vec3_c			lerpAngles;
 
 	class rEntityAPI_i *rEnt;
 } centity_t;
@@ -272,12 +273,17 @@ void CG_AddLagometerFrameInfo( void ) ;
 //
 // cg_collision.cpp
 //
-bool CG_RayTrace(class trace_c &tr);
+bool CG_RayTrace(class trace_c &tr, int skipEntNum = ENTITYNUM_NONE);
 
 //
 // cg_testModel.cpp
 //
 void CG_RunTestModel();
+
+//
+// cg_viewModel.cpp
+//
+void CG_RunViewModel();
 
 //===============================================
 

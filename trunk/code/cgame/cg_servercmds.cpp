@@ -128,10 +128,11 @@ static void CG_TestBulletAttack() {
 	d.x = atof(CG_Argv(4));
 	d.y = atof(CG_Argv(5));
 	d.z = atof(CG_Argv(6));
+	int skipEntityNum = atoi(CG_Argv(7));
 	CG_Printf("CG_TestBulletAttack: from %f %f %f, dir %f %f %f\n",p.x,p.y,p.z,d.x,d.y,d.z);
 	trace_c tr;
 	tr.setupRay(p,d*100000.f);
-	if(CG_RayTrace(tr) == false) {
+	if(CG_RayTrace(tr,skipEntityNum) == false) {
 		CG_Printf("CG_TestBulletAttack: no hit\n");
 		return; // no hit
 	}

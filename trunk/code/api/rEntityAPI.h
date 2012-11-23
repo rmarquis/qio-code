@@ -40,6 +40,8 @@ public:
 	virtual const class matrix_c &getMatrix() const = 0;
 	virtual const class aabb &getBoundsABS() const = 0;
 
+	virtual void hideModel() = 0;
+	virtual void showModel() = 0;
 	virtual void hideSurface(u32 surfNum) = 0;
 
 	// trace must be transformed into entity coordinates before calling this function.

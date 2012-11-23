@@ -37,4 +37,12 @@ class vec3_c;
 int CU_RayTraceTriangle(const vec3_c &rayStart, const vec3_c &rayEnd,
 	const vec3_c &pointA, const vec3_c &pointB, const vec3_c &pointC, vec3_c *out);
 
+//Check collision between a line segment and an AABB
+//Param:    Start point of line segement, End point of line segment,
+//          One corner of AABB, opposite corner of AABB,
+//          Location where line hits the AABB (OUT)
+//Return:   True if a collision occurs, False otherwise
+//Note:     If no collision occurs, OUT param is not reassigned and is not considered useable
+bool CU_IntersectLineAABB(const vec3_c& s, const vec3_c& e, const class aabb &bb, vec3_c& hitPoint);
+
 #endif // __COLLISIONUTILS_H__

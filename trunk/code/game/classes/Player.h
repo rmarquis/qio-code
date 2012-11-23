@@ -97,6 +97,9 @@ public:
 	virtual vec3_c getCModelOrigin() const {
 		return getOrigin()+characterControllerOffset;
 	}
+	const vec3_c &getViewAngles() const {
+		return ps.viewangles;
+	}
 	void setVehicle(class VehicleCar *newVeh);
 
 	void toggleNoclip();

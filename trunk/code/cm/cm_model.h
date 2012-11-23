@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/cmBrush.h>
 #include <shared/cmSurface.h>
+#include <shared/trace.h>
 #include <math/aabb.h>
 #include "cm_helper.h"
 
@@ -80,11 +81,16 @@ public:
 	virtual class cmTriMesh_i *getTriMesh() {
 		return 0;
 	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return 0;
+	}
 	virtual void getBounds(class aabb &out) {
 		out.fromCapsuleZ(height,radius);
 	}
 	virtual bool traceRay(class trace_c &tr) {
-		return false; // TODO
+		if(tr.clipByAABB(this->bounds))
+			return true;
+		return false;
 	}
 	// cmCapsule_c access
 	virtual float getHeight() const {
@@ -105,6 +111,7 @@ public:
 		this->name = newName;
 		this->height = newHeight;
 		this->radius = newRadius;
+		this->bounds.fromCapsuleZ(height,radius);
 	}
 };
 class cmBBExts_c : public cmObjectBase_c, public cmBBExts_i {
@@ -134,11 +141,16 @@ public:
 	virtual class cmTriMesh_i *getTriMesh() {
 		return 0;
 	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return 0;
+	}
 	virtual void getBounds(class aabb &out) {
 		out.fromHalfSizes(halfSizes);
 	}
 	virtual bool traceRay(class trace_c &tr) {
-		return false; // TODO
+		if(tr.clipByAABB(this->bounds))
+			return true;
+		return false;
 	}
 	// cmBBExts_i access
 	virtual const class vec3_c &getHalfSizes() const {
@@ -155,6 +167,7 @@ public:
 	cmBBExts_c(const char *newName, const vec3_c &newHalfSizes) {
 		this->name = newName;
 		this->halfSizes = newHalfSizes;
+		this->bounds.fromHalfSizes(halfSizes);
 	}
 };
 
@@ -181,6 +194,9 @@ public:
 		return 0;
 	}
 	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
+	virtual class cmSkelModel_i *getSkelModel() {
 		return 0;
 	}
 	virtual void getBounds(class aabb &out) {
@@ -241,6 +257,9 @@ public:
 		return this;
 	}
 	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
+	virtual class cmSkelModel_i *getSkelModel() {
 		return 0;
 	}
 	virtual void getBounds(class aabb &out) {
@@ -318,6 +337,9 @@ public:
 	virtual class cmTriMesh_i *getTriMesh() {
 		return this;
 	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return 0;
+	}
 	virtual void getBounds(class aabb &out) {
 		out = sf->getAABB();
 	}
@@ -351,5 +373,61 @@ public:
 	cmTriMesh_c(const char *newName, cmSurface_c *newSFPtr) {
 		this->name = newName;
 		this->sf = newSFPtr;
+	}
+};
+
+class cmSkelModel_c : public cmObjectBase_c, public cmSkelModel_i {
+	skelModelAPI_i *skel;
+public:
+	cmSkelModel_c();
+	~cmSkelModel_c();
+
+	// cmObjectBase_c access
+	virtual const char *getName() const {
+		return name;
+	}
+	virtual enum cModType_e getType() const {
+		return CMOD_SKELMODEL;
+	}
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return this;
+	}
+	virtual void getBounds(class aabb &out) {
+		//out = sf->getAABB();
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false;
+	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return 0;
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return 0;
+	}
+	// cmSkelModel_i access
+	virtual const class skelModelAPI_i *getSkelModelAPI() const {
+		return skel;
+	}
+	virtual int getBoneNumForName(const char *boneName) const;
+
+	cmSkelModel_c(const char *newName, skelModelAPI_i *newSkel) {
+		this->name = newName;
+		this->skel = newSkel;
 	}
 };

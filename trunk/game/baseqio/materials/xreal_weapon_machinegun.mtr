@@ -1,0 +1,100 @@
+
+//==================
+// MACHINEGUN
+//==================
+
+models/weapons/machinegun/machinegun
+{
+	diffusemap		models/testweapons/xrealMachinegun/machinegun_d
+	specularmap		models/testweapons/xrealMachinegun/machinegun_s
+	bumpmap			models/testweapons/xrealMachinegun/machinegun_local
+  {
+		blend 		add
+		map		models/testweapons/xrealMachinegun/machinegun_add
+		red 		( q2firetable2 [Parm4 + (time / 6) ]) * Parm0
+		green 		( q2firetable2 [Parm4 + (time / 6) ]) * Parm1
+		blue 		( q2firetable2 [Parm4 + (time / 6) ]) * Parm2
+	}
+}
+
+models/weapons/machinegun/w_machinegun
+{
+	diffusemap		models/testweapons/xrealMachinegun/machinegun_d
+	specularmap		models/testweapons/xrealMachinegun/machinegun_s
+	bumpmap			addnormals(models/testweapons/xrealMachinegun/machinegun_local, heightmap(models/testweapons/xrealMachinegun/machinegun_h, 6 ) )
+}
+
+models/weapons/machinegun/machinegun_muzzflash
+{
+	twoSided
+	deform sprite
+	sort nearest
+	noShadows
+	{
+		forceHighQuality
+		if 	( time + parm4 ) * 8 < 1.0
+		blend 	add
+		map 	models/testweapons/xrealMachinegun/machinegun_muzzflash_strip
+		scale 	1 / 12 , 1
+		scroll 	q2table12[ (time + parm4) * 8 ] , 0
+		rotate	q2rotate90[ parm5 ]
+	}
+}
+
+models/weapons/machinegun/machinegun_muzzflashb
+{
+	twoSided
+	deform sprite
+	sort nearest
+	noShadows
+	{
+		forceHighQuality
+		if 	( time + parm4 ) * 7 < 1.0
+		blend 	add
+		map 	models/testweapons/xrealMachinegun/machinegun_muzzflash_strip
+		scale 	1 / 12 , 1
+		scroll 	q2table12[ (time + parm4) * 7 ] , 0
+		rotate	q2rotate90[ parm5 ]
+	}
+}
+
+models/weapons/machinegun/machinegun_muzzflash2
+{
+	twoSided
+	sort nearest
+	noShadows
+	{
+		forceHighQuality
+		if 	( time + parm4 ) * 7 < 1.0
+		blend 	add
+		map 	models/testweapons/xrealMachinegun/machinegun_muzzflash2_strip
+		scale 	1 / 4 , 1
+		scroll 	q2table4[ (time + parm4) * 7] , 0
+	}
+}
+
+models/weapons/machinegun/machinegun_muzzflash2b
+{
+	twoSided
+	sort nearest
+	noShadows
+	{
+		forceHighQuality
+		if 	( time + parm4 ) * 6 < 1.0
+		blend 	add
+		map 	models/testweapons/xrealMachinegun/machinegun_muzzflash2_strip
+		scale 	1 / 4 , 1
+		scroll 	q2table4[ (time + parm4) * 6] , 0
+	}
+}
+
+models/weapons/machinegun/f_machinegun
+{
+	twoSided
+	sort additive
+	noshadows
+	{
+		map	models/testweapons/xrealMachinegun/f_machinegun.png
+		blend	add
+	}
+}

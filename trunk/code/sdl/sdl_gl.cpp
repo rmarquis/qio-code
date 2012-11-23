@@ -503,6 +503,9 @@ public:
 		}
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		if(indices.getNumIndices() == 0)
+			return;
+
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);
 

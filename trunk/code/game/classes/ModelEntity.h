@@ -36,6 +36,8 @@ protected:
 	class btRigidBody *body;
 	// simplified model for collision detection
 	class cMod_i *cmod;
+	// cmSkeleton for serverside bones access and animation
+	class cmSkelModel_i *cmSkel;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -49,6 +51,7 @@ public:
 	bool setColModel(const char *newCModelName);
 	bool setColModel(class cMod_i *newCModel);
 
+	int getBoneNumForName(const char *boneName);
 	void setAnimation(const char *animName);
 
 	virtual void runPhysicsObject();

@@ -222,6 +222,7 @@ void r_surface_c::translateY(float ofs) {
 	for(u32 i = 0; i < verts.size(); i++, v++) {
 		v->xyz.y += ofs;
 	}
+	bounds.translate(vec3_c(0,ofs,0));
 }
 void r_surface_c::multTexCoordsY(float f) {
 	rVert_c *v = verts.getArray();
@@ -350,6 +351,7 @@ void r_model_c::translateY(float ofs) {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->translateY(ofs);
 	}
+	bounds.translate(vec3_c(0,ofs,0));
 }
 void r_model_c::multTexCoordsY(float f) {
 	r_surface_c *sf = surfs.getArray();
