@@ -146,6 +146,8 @@ public:
 				bodies[i] = 0;
 				continue;
 			}
+			// set global collision margin value
+			bm->setMargin(bt_collisionMargin);
 			btTransform tr;
 			tr.setIdentity();
 			matrix_c mat;
