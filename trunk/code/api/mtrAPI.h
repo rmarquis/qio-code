@@ -28,7 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/safePtr.h>
 
-class mtrAPI_i : public safePtrObject_c { 
+class mtrAPI_i //: public safePtrObject_c 
+{ 
 public:
 	virtual const char *getName() const = 0;
 	virtual u32 getNumStages() const = 0;

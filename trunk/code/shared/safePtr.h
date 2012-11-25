@@ -128,6 +128,7 @@ inline void safePtrObject_c::nullAllReferences() {
 		p = p->next;
 		sp->next = 0;
 	}
+	safePtrList = 0;
 }
 
 #endif // __SAFEPTR_H__
