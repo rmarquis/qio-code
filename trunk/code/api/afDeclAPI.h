@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __AFDECLAPI_H__
 
 #include <shared/str.h>
+#include <shared/array.h>
 
 //
 //	public AF structs
@@ -73,6 +74,9 @@ struct afBody_s {
 	vec3_c angles; // in Doom3 src it's idAngles
 	float density;
 	arraySTD_c<str> containedJoints;
+	// cached data - is it really needed here?
+	//arraySTD_c<int> containedJointNums;
+	//arraySTD_c<matrix_c> jointOffsets;
 };
 enum afConstraintType_e {
 	AFC_UNIVERSALJOINT,
@@ -114,8 +118,10 @@ struct afPublicData_s {
 };
 class afDeclAPI_i {
 public:
+	virtual const char *getName() const = 0;
 	virtual const afPublicData_s *getData() const = 0;
 	virtual const char *getDefaultRenderModelName() const = 0;
+	virtual u32 getNumBodies() const = 0;
 };
 
 #endif // __AFDECLAPI_H__

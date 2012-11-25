@@ -31,7 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
+#include <api/afDeclAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/boneOrQP.h>
+#include <shared/afRagdollHelper.h>
 #include <renderer/rfSurfFlags.h>
 
 aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","1");
@@ -177,6 +180,8 @@ rEntityImpl_c::rEntityImpl_c() {
 	bFirstPersonOnly = false;
 	bThirdPersonOnly = false;
 	bHidden = false;
+	myRagdollDef = 0;
+	ragOrs = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -191,6 +196,10 @@ rEntityImpl_c::~rEntityImpl_c() {
 		delete animCtrl;
 		animCtrl = 0;
 	}
+	if(ragOrs) {
+		delete ragOrs;
+		ragOrs = 0;
+	}
 }
 
 void rEntityImpl_c::recalcABSBounds() {
@@ -198,7 +207,9 @@ void rEntityImpl_c::recalcABSBounds() {
 		absBB.clear();
 		return;
 	}
-	if(instance) {
+	if(myRagdollDef) {
+		this->absBB.fromHalfSize(999999.f); // TODO
+	} else if(instance) {
 		const aabb &bb = instance->getBounds();
 		matrix.transformAABB(bb,this->absBB);
 	} else {
@@ -283,6 +294,29 @@ void rEntityImpl_c::hideSurface(u32 surfNum) {
 	surfaceFlags[surfNum].setFlag(RSF_HIDDEN_3RDPERSON);
 	surfaceFlags[surfNum].setFlag(RSF_HIDDEN_1STPERSON);
 }
+void rEntityImpl_c::setRagdoll(const class afDeclAPI_i *af) {
+	if(myRagdollDef == af)
+		return;
+	myRagdollDef = af;
+	if(myRagdollDef == 0) {
+		if(ragOrs != 0) {
+			delete ragOrs;
+			ragOrs = 0;
+		}
+		return;
+	}
+	if(ragOrs == 0) {
+		ragOrs = new boneOrQPArray_t;
+	}
+	ragOrs->resize(af->getNumBodies());
+	afRagdollHelper_c rh;
+	rh.calcBoneParentBody2BoneOfsets(af->getName(),boneParentBody2Bone);
+}
+void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) {
+	if(ragOrs == 0)
+		return;
+	(*ragOrs)[partIndex] = or;
+}
 void rEntityImpl_c::addDrawCalls() {
 	if(model->isStatic()) {
 		((model_c*)model)->addModelDrawCalls(&surfaceFlags);
@@ -290,9 +324,42 @@ void rEntityImpl_c::addDrawCalls() {
 			staticDecals->addDrawCalls();
 		}
 	} else if(instance) {
-		if(animCtrl) {
+		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+		// ragdoll controlers ovverides all the animations
+		if(myRagdollDef) {
+			rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
+			const afPublicData_s *af = this->myRagdollDef->getData();
+			arraySTD_c<u32> refCounts;
+			boneOrArray_c bones;
+			refCounts.resize(skelModel->getNumBones());
+			refCounts.nullMemory();
+			bones.resize(skelModel->getNumBones());
+			for(u32 i = 0; i < af->bodies.size(); i++) {
+				const afBody_s &b = af->bodies[i];
+				const boneOrQP_c &partOr = (*ragOrs)[i];
+				matrix_c bodyMat;
+				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
+				for(u32 j = 0; j < b.containedJoints.size(); j++) {
+					const char *boneNameStr = b.containedJoints[j];
+					int boneNum = skelModel->getLocalBoneIndexForBoneName(boneNameStr);
+					if(boneNum == -1) {
+
+						continue;
+					}
+					if(refCounts[boneNum]) {
+						// it should NEVER happen
+						g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
+						continue;
+					}
+					refCounts[boneNum] ++;
+					const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
+					bones[boneNum].mat = bodyMat * bpb2b;
+				}
+			}
+			instance->updateSkelModelInstance(skelModel,bones);	
+		} else if(animCtrl) {
 			animCtrl->runAnimController();
-			animCtrl->updateModelAnimation(model->getSkelModelAPI(),instance);
+			animCtrl->updateModelAnimation(skelModel,instance);
 		}
 		instance->addDrawCalls(&surfaceFlags);
 	}

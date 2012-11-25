@@ -33,6 +33,8 @@ public:
 	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
 	virtual void setThirdPersonOnly(bool bOn) = 0;
 	virtual void setFirstPersonOnly(bool bOn) = 0;
+	virtual void setRagdoll(const class afDeclAPI_i *af) = 0;
+	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const class axis_c &getAxis() const = 0;

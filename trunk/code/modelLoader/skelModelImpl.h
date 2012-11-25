@@ -86,6 +86,9 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual u32 getNumSurfs() const {
 		return surfs.size();
 	}
+	virtual u32 getNumBones() const {
+		return bones.size();
+	}
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const {
 		return &surfs[surfNum];
 	}

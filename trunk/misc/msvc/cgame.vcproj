@@ -555,6 +555,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\boneOrQP.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\collisionUtils.cpp"
 				>
 			</File>

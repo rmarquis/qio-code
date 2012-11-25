@@ -36,14 +36,17 @@ class afDecl_c : public afDeclAPI_i, public declRefState_c {
 	afDecl_c *hashNext;
 	afPublicData_s data;
 public:
+	virtual const char *getName() const {
+		return data.name;
+	}
 	virtual const afPublicData_s *getData() const {
 		return &data;
 	}
 	virtual const char *getDefaultRenderModelName() const {
 		return data.modelName;
 	}
-	const char *getName() const {
-		return data.name;
+	virtual u32 getNumBodies() const {
+		return data.bodies.size();
 	}
 	void setHashNext(afDecl_c *newHashNext) {
 		hashNext = newHashNext;

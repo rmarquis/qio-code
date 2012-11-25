@@ -27,8 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/ddAPI.h>
 #include <shared/autoCvar.h>
 
-aCvar_c btd_drawWireFrame("btd_drawWireFrame","0");
-aCvar_c btd_drawAABB("btd_drawAABB","0");
+aCvar_c btd_drawWireFrame("btd_drawWireFrame","1");
+aCvar_c btd_drawAABB("btd_drawAABB","1");
 aCvar_c btd_disableDebugDraw("btd_disableDebugDraw","0");
 
 static class rDebugDrawer_i *g_dd = 0;

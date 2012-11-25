@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/declManagerAPI.h>
 
 
 /*
@@ -90,6 +91,8 @@ static void CG_ConfigStringModified( void ) {
 		cgs.gameModels[ num-CS_MODELS ] = rf->registerModel( str );
 	} else if ( num >= CS_ANIMATIONS && num < CS_ANIMATIONS+MAX_ANIMATIONS ) {
 		cgs.gameAnims[ num-CS_ANIMATIONS ] = rf->registerAnimation_getAPI( str );
+	} else if ( num >= CS_RAGDOLLDEFSS && num < CS_RAGDOLLDEFSS+MAX_RAGDOLLDEFS ) {
+		cgs.gameAFs[ num-CS_RAGDOLLDEFSS ] = g_declMgr->registerAFDecl( str );
 	} else if ( num >= CS_COLLMODELS && num < CS_MODELS+MAX_MODELS ) {
 		cgs.gameCollModels[ num-CS_COLLMODELS ] = cm->registerModel( str );
 	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {

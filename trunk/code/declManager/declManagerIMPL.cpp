@@ -107,6 +107,7 @@ public:
 	void precache() {
 		if(cached)
 			return;
+		cached = true;
 		skelModel = g_modelLoader->loadSkelModelFile(meshName);
 	}
 	bool parse(const char *text, const char *textBase, const char *fname) {

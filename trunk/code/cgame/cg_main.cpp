@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
 #include <api/loadingScreenMgrAPI.h>
+#include <api/declManagerAPI.h>
 #include <shared/autoCvar.h>
 
 cg_t				cg;
@@ -273,6 +274,18 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" %i animations\n",c_animationsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering articulated figures decls...");
+	}
+	u32 c_afsLoaded = 0;
+	for(u32 i = 0; i < MAX_RAGDOLLDEFS; i++) {
+		const char *str = CG_ConfigString(CS_RAGDOLLDEFSS+i);
+		if(str && str[0]) {
+			cgs.gameAFs[i] = g_declMgr->registerAFDecl(str);
+			c_afsLoaded++;
+		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i AFs\n",c_afsLoaded);
 		g_loadingScreen->addLoadingString("CG_Init: registering collision models...");
 	}
 	u32 c_collisionModelsLoaded = 0;

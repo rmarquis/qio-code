@@ -175,6 +175,7 @@ typedef struct {
 	class cMod_i		*gameCollModels[MAX_MODELS];
 	sfxHandle_t		gameSounds[MAX_SOUNDS];
 	const class skelAnimAPI_i	*gameAnims[MAX_ANIMATIONS];
+	const class afDeclAPI_i	*gameAFs[MAX_RAGDOLLDEFS];
 
 	// media
 	cgMedia_t		media;

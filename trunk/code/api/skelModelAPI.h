@@ -63,6 +63,7 @@ class skelModelAPI_i {
 public:
 	virtual ~skelModelAPI_i() { };
 	virtual u32 getNumSurfs() const = 0;
+	virtual u32 getNumBones() const = 0;
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const = 0;
 	virtual const boneOrArray_c &getBaseFrameABS() const = 0;
 	virtual bool hasCustomScaling() const = 0;

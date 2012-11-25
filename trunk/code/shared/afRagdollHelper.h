@@ -21,23 +21,28 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// g_debugDraw.cpp - debug drawing for game module.
-#include "g_local.h"
-#include "classes/BaseEntity.h"
-#include <api/rAPI.h>
-#include <shared/autoCvar.h>
+// afRagdollHelper.h
+#ifndef __AFRAGDOLLHELPER_H__
+#define __AFRAGDOLLHELPER_H__
 
-static aCvar_c g_enableDebugDrawing("g_enableDebugDrawing","1");
+#include <shared/skelUtils.h> // boneOrArray_c
+#include <shared/array.h>
 
-void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
-	if(g_enableDebugDrawing.getInt() == 0)
-		return;
-	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
-	for(u32 i = 0; i < MAX_GENTITIES; i++) {
-		edict_s *ent = &g_entities[i];
-		if(ent->s == 0)
-			continue;
-		ent->ent->debugDraw(dd);
-	}
-	G_DoBulletDebugDrawing(dd);
-}
+class afRagdollHelper_c {
+protected:
+	boneOrArray_c bones;
+	const class boneDefArray_c *boneDefs;
+	const class skelAnimAPI_i *anim;
+	const class afDeclAPI_i *af;
+	const struct afPublicData_s *afd;
+	const class modelDeclAPI_i *model;
+
+	vec3_c getAFVec3Value(const struct afVec3_s &v);
+	bool createConvexPointSoupForAFModel(const struct afModel_s &m, arraySTD_c<vec3_c> &outPoints);
+	bool getBodyTransform(u32 bodyNum, matrix_c &out);
+public:
+	bool setupRagdollHelper(const char *afName);
+	bool calcBoneParentBody2BoneOfsets(const char *afName, arraySTD_c<matrix_c> &out);
+};
+
+#endif // __AFRAGDOLLHELPER_H__

@@ -27,7 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/afDeclAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/boneOrQP.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 
@@ -60,7 +62,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 		CG_ResetEntity( cent );
 	}
 
-	// temporary hack. TODO: interpolation
+	// set all the values here in case that entity cant be interpolated between two snapshots
 	cent->rEnt->setOrigin(cent->currentState.origin);
 	cent->rEnt->setAngles(cent->currentState.angles);
 	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
@@ -69,6 +71,21 @@ static void CG_TransitionEntity( centity_t *cent ) {
 		cent->rEnt->setThirdPersonOnly(true);
 	} else {
 		cent->rEnt->setThirdPersonOnly(false);
+	}
+	if(cent->currentState.activeRagdollDefNameIndex) {
+		const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
+		cent->rEnt->setRagdoll(af);
+		if(af) {
+			for(u32 i = 0; i < af->getNumBodies(); i++) {
+				const netBoneOr_s &in = cent->currentState.boneOrs[i];
+				boneOrQP_c or;
+				or.setPos(in.xyz);
+				or.setQuatXYZ(in.quatXYZ);
+				cent->rEnt->setRagdollBodyOr(i,or);
+			}
+		}
+	} else {
+		cent->rEnt->setRagdoll(0);
 	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap

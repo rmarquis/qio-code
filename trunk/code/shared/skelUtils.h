@@ -28,13 +28,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <shared/array.h>
 
-//
-// shared raw data structs
-//
+///
+/// shared raw data structs
+///
+
+// bone orientation defined by 4x4 matrix and bone name index
 struct boneOr_s {
 	matrix_c mat;
 	u32 boneName;
-};
+}; // 68 bytes
 // array of bone orientations
 class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:

@@ -50,6 +50,10 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// only for skeletal models; model geometry instanced at the current time of animation
 	class r_model_c *instance;
 	class animController_c *animCtrl;
+	// for ragdolls
+	const class afDeclAPI_i *myRagdollDef;
+	class boneOrQPArray_t *ragOrs;
+	arraySTD_c<matrix_c> boneParentBody2Bone;
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();
@@ -66,6 +70,8 @@ public:
 	virtual void setFirstPersonOnly(bool bOn) {
 		bFirstPersonOnly = bOn;
 	}
+	virtual void setRagdoll(const class afDeclAPI_i *af);
+	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
 	virtual void hideModel();
 	virtual void showModel();
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 

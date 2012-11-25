@@ -1090,6 +1090,13 @@ typedef struct {
 
 #include "../math/vec3.h" // needed by entityState_s and playerState_s
 
+// compressed bone orientation
+struct netBoneOr_s {
+	vec3_c xyz;
+	vec3_c quatXYZ; // W can be easily recalculated
+};
+#define MAX_NETWORKED_BONES 64
+
 // entityState_s is the information conveyed from the server
 // in an update message about entities that the client will
 // need to render in some way
@@ -1117,6 +1124,9 @@ struct entityState_s {
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
 	int animIndex;
+
+	// for networked ragdolls (and bone controllers?)
+	netBoneOr_s boneOrs[MAX_NETWORKED_BONES];
 
 	// index of ragdoll def for ACTIVE ragdoll entities (CS_RAGDOLLDEFS)
 	int activeRagdollDefNameIndex; // Doom3 ArticulatedFigure decl name

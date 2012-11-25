@@ -143,23 +143,40 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 #include "../bt_include.h"
 #include <math/matrix.h>
 void ModelEntity::runPhysicsObject() {
-	if(body == 0)
-		return;
-	btTransform trans;
-	body->getMotionState()->getWorldTransform(trans);
-#if 0
-	VectorSet(myEdict->s->origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
-	//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
-	btQuaternion q = trans.getRotation();
-	// quaterion->angles conversion doesnt work correctly here!
-	// You can debug it with "btd_drawWireFrame 1" on local server
-	quat_c q2(q.x(),q.y(),q.z(),q.w());
-	q2.toAngles(myEdict->s->angles);
-#else
-	matrix_c mat;
-	trans.getOpenGLMatrix(mat);
-	this->setMatrix(mat);
+	if(body) {
+		btTransform trans;
+		body->getMotionState()->getWorldTransform(trans);
+	#if 0
+		VectorSet(myEdict->s->origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
+		//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
+		btQuaternion q = trans.getRotation();
+		// quaterion->angles conversion doesnt work correctly here!
+		// You can debug it with "btd_drawWireFrame 1" on local server
+		quat_c q2(q.x(),q.y(),q.z(),q.w());
+		q2.toAngles(myEdict->s->angles);
+	#else
+		matrix_c mat;
+		trans.getOpenGLMatrix(mat);
+		this->setMatrix(mat);
 #endif
+	} else if(ragdoll) {
+		ragdoll->updateWorldTransforms();
+		// copy current bodies transforms to entityState
+		const arraySTD_c<matrix_c> &mats = ragdoll->getCurWorldMatrices();
+		entityState_s *out = myEdict->s;
+		for(u32 i = 0; i < mats.size(); i++) {
+			const matrix_c &m = mats[i];
+			quat_c q = m.getQuat();
+			vec3_c p = m.getOrigin();
+			// ensure that quat_c::calcW() will recreate the same rotation
+			if(q.w > 0) {
+				q.negate();
+			}
+			netBoneOr_s &bor = out->boneOrs[i];
+			bor.quatXYZ = q.floatPtr(); // quat_c layout is: XYZW so that's ok
+			bor.xyz = p;
+		}
+	}
 }
 bool ModelEntity::initRagdollRenderAndPhysicsObject(const char *afName) {
 	afDeclAPI_i *af = g_declMgr->registerAFDecl(afName);
