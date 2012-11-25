@@ -7,6 +7,7 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
+#include <BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h>
 
 extern btBroadphaseInterface* broadphase;
 extern btDefaultCollisionConfiguration* collisionConfiguration;

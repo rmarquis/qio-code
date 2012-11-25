@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelDeclAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/skelAnimAPI.h>
 #include <api/entityDeclAPI.h>
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
@@ -66,6 +67,17 @@ public:
 	animDef_c() {
 		anim = 0;
 	}
+	~animDef_c() {
+		if(anim) {
+			delete anim;
+		}
+	}
+
+	void precacheAnim() {
+		if(anim)
+			return;
+		anim = g_modelLoader->loadSkelAnimFile(animFile);
+	}
 
 	// animDefAPI_i impl
 	virtual const char *getAlias() const {
@@ -75,35 +87,8 @@ public:
 		return animFile;
 	}
 	virtual class skelAnimAPI_i *getAnim() const {
+		((animDef_c*)this)->precacheAnim();
 		return anim;
-	}
-};
-class declRefState_c {
-	bool referencedByClient;
-	bool referencedByServer;
-public:
-	declRefState_c() {
-		referencedByClient = false;
-		referencedByServer = false;
-	}
-	void setReferencedByClient() {
-		referencedByClient = true;
-	}
-	void setReferencedByServer() {
-		referencedByServer = true;
-	}
-	void clearServerRef() {
-		referencedByServer = false;
-	}
-	void clearClientRef() {
-		referencedByClient = false;
-	}
-	bool isReferenced() const {
-		if(referencedByClient)
-			return true;
-		if(referencedByServer)
-			return true;
-		return false;
 	}
 };
 class modelDecl_c : public modelDeclAPI_i, public declRefState_c {
@@ -202,6 +187,19 @@ public:
 			return 0;
 		return skelModel->getNumSurfs();
 	}
+	const animDef_c *findAnimDef(const char *alias) const {
+		for(u32 i = 0; i < anims.size(); i++) {
+			if(!stricmp(anims[i].animAlias,alias)) 
+				return &anims[i];
+		}
+		return 0;
+	}
+	virtual const class skelAnimAPI_i *getSkelAnimAPIForAlias(const char *alias) const {
+		const animDef_c *ad = findAnimDef(alias);
+		if(ad == 0)
+			return 0;
+		return ad->getAnim();
+	}
 };
 class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	str declName;
@@ -251,7 +249,7 @@ public:
 	}
 };
 
-const char *declManagerIMPL_c::findDeclInText(const char *declName, const char *declType, const char *text) {
+const char *fileTextDataCache_c::findDeclInText(const char *declName, const char *declType, const char *text) {
 	u32 declNameLen = strlen(declName);
 	u32 declTypeLen = strlen(declType);
 	const char *p = text;
@@ -291,7 +289,9 @@ const char *declManagerIMPL_c::findDeclInText(const char *declName, const char *
 	return 0;
 }
 
-bool declManagerIMPL_c::findDeclText(const char *declName, const char *declType, declTextDef_s &out) {
+bool fileTextDataCache_c::findDeclText(const char *declName, const char *declType, declTextDef_s &out) {
+	if(declName == 0 || declName[0] == 0)
+		return false;
 	for(u32 i = 0; i < defFiles.size(); i++) {
 		defFile_s *mf = defFiles[i];
 		const char *p = findDeclInText(declName,declType,mf->text);
@@ -321,7 +321,7 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 	ret = new modelDecl_c;
 	ret->setDeclName(name);
 	modelDecls.addObject(ret);
-	if(findDeclText(name,"model",txt) == false) {
+	if(defFiles.findDeclText(name,"model",txt) == false) {
 		return 0;
 	}
 	ret->parse(txt.p,txt.textBase,txt.sourceFile);
@@ -350,7 +350,36 @@ class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, 
 	ret = new entityDecl_c;
 	ret->setDeclName(name);
 	entityDecls.addObject(ret);
-	if(findDeclText(name,"entityDef",txt) == false) {
+	if(defFiles.findDeclText(name,"entityDef",txt) == false) {
+		return 0;
+	}
+	ret->parse(txt.p,txt.textBase,txt.sourceFile);
+	if(QM_IsServerSide(userModule) == false) {
+		ret->setReferencedByClient();
+	} else {
+		ret->setReferencedByServer();
+	}
+	if(ret->isValid())
+		return ret;
+	return 0;
+}
+class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModule_e userModule) {
+	afDecl_c *ret = afDecls.getEntry(name);
+	if(ret) {
+		if(QM_IsServerSide(userModule) == false) {
+			ret->setReferencedByClient();
+		} else {
+			ret->setReferencedByServer();
+		}
+		if(ret->isValid())
+			return ret;
+		return 0;
+	}
+	declTextDef_s txt;
+	ret = new afDecl_c;
+	ret->setDeclName(name);
+	afDecls.addObject(ret);
+	if(afFiles.findDeclText(name,"articulatedFigure",txt) == false) {
 		return 0;
 	}
 	ret->parse(txt.p,txt.textBase,txt.sourceFile);
@@ -380,6 +409,14 @@ void declManagerIMPL_c::removeUnrefrencedDecls() {
 			delete md;
 		}
 	}
+	for(int i = 0; i < afDecls.size(); i++) {
+		afDecl_c *af = afDecls[i];
+		if(af->isReferenced() == false) {
+			afDecls.removeEntry(af);
+			i--;
+			delete af;
+		}
+	}
 }
 void declManagerIMPL_c::onGameShutdown() {
 	for(u32 i = 0; i < entityDecls.size(); i++) {
@@ -389,6 +426,10 @@ void declManagerIMPL_c::onGameShutdown() {
 	for(u32 i = 0; i < modelDecls.size(); i++) {
 		modelDecl_c *md = modelDecls[i];
 		md->clearServerRef();
+	}
+	for(u32 i = 0; i < afDecls.size(); i++) {
+		afDecl_c *af = afDecls[i];
+		af->clearServerRef();
 	}
 	removeUnrefrencedDecls();
 }
@@ -401,37 +442,50 @@ void declManagerIMPL_c::onRendererShutdown() {
 		modelDecl_c *md = modelDecls[i];
 		md->clearClientRef();
 	}	
+	for(u32 i = 0; i < afDecls.size(); i++) {
+		afDecl_c *af = afDecls[i];
+		af->clearClientRef();
+	}
 	removeUnrefrencedDecls();
 }
-void declManagerIMPL_c::cacheDefFileText(const char *fname) {
+void fileTextDataCache_c::cacheDefFileText(const char *fname) {
 	char *data;
 	u32 len = g_vfs->FS_ReadFile(fname,(void**)&data);
 	if(data == 0)
 		return;
 	totalDefBytes += len;
-	g_core->Print("Caching .def file: %s... - %i bytes\n",fname,len);
+	const char *ext = G_strgetExt(fname);
+	g_core->Print("Caching .%s file: %s... - %i bytes\n",ext,fname,len);
 	defFile_s *df = new defFile_s;
 	df->fname = fname;
 	df->text = data;
 	g_vfs->FS_FreeFile(data);
 	defFiles.push_back(df);
 }
-void declManagerIMPL_c::init() {
-	g_core->Print("----- Initializing Decls -----\n");
+u32 fileTextDataCache_c::cacheFileList(const char *path, const char *ext) {
 	int numFiles;
 	totalDefBytes = 0;
-	char **fnames = g_vfs->FS_ListFiles("def/",".def",&numFiles);
+	char **fnames = g_vfs->FS_ListFiles(path,ext,&numFiles);
 	for(u32 i = 0; i < numFiles; i++) {
 		const char *fname = fnames[i];
-		str fullPath = "def/";
+		str fullPath = path;
 		fullPath.append(fname);
 		cacheDefFileText(fullPath);
 	}
-	g_core->Print("----- Total %i decl bytes in %i def files -----\n",totalDefBytes,numFiles);
 	g_vfs->FS_FreeFileList(fnames);
-#if 0
-	registerModelDecl("monster_qwizard");
+	return numFiles;
+}
+void declManagerIMPL_c::init() {
+	g_core->Print("----- Initializing Decls -----\n");
+	defFiles.cacheFileList("def/",".def");
+	afFiles.cacheFileList("af/",".af");
+	g_core->Print("----- Total %i decl bytes in %i def and %i af files -----\n",
+		defFiles.getTotalTextSizeInBytes()+afFiles.getTotalTextSizeInBytes(),
+		defFiles.getNumFiles(),afFiles.getNumFiles());
 
+#if 0
+	//registerModelDecl("monster_qwizard");
+	registerAFDecl("monster_qwizard");
 #endif
 }
 

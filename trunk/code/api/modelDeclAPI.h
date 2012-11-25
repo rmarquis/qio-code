@@ -46,6 +46,7 @@ public:
 	//virtual const char *animFileNameForNum(u32 index) = 0;
 	//virtual const class animDefAPI_i *animDefForNum(u32 index) = 0;
 	//virtual int animIndexForAnimAlias(const char *alias) = 0;
+	virtual const class skelAnimAPI_i *getSkelAnimAPIForAlias(const char *alias) const = 0;
 };
 
 #endif // __MODELDECLAPI_H__

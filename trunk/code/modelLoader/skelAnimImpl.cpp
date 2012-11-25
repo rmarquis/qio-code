@@ -242,6 +242,10 @@ void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out)
 		outBone->mat.fromQuatAndOrigin(quat,pos);
 	}
 }
+void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
+	buildFrameBonesLocal(frameNum,out);
+	out.localBonesToAbsBones(&this->bones);
+}
 void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
 	const md5Frame_c &from = this->frames[lerp.from];
 	const md5Frame_c &to = this->frames[lerp.to];

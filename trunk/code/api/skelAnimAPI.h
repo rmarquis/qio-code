@@ -50,8 +50,10 @@ public:
 	virtual float getTotalTimeSec() const = 0;
 	// returns true if animation should stop after reaching the last frame (instead of starting again)
 	virtual bool getBLoopLastFrame() const = 0;
+	virtual int getLocalBoneIndexForBoneName(const char *boneName) const = 0;
 
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
+	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const = 0;
 	// for looping animations
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const = 0;
 };

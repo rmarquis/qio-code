@@ -330,6 +330,20 @@ public:
 		dst.normalize();
 		return dst;
 	}
+	void makeNormalVectors(vec3_c &left, vec3_c &down) const {
+		float d = x * x + y * y;
+		if ( !d ) {
+			left[0] = 1;
+			left[1] = 0;
+			left[2] = 0;
+		} else {
+			d = G_rsqrt(d);
+			left[0] = -y * d;
+			left[1] = x * d;
+			left[2] = 0;
+		}
+		down = left.crossProduct( *this );
+	}
 	// 	assumes that *this == to - from
 	float getYaw() const {
 		return (atan2(y, x) * 180 / M_PI);

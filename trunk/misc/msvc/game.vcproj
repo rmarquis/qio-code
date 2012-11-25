@@ -358,6 +358,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_ragdoll.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_spawn.cpp"
 				>
 			</File>

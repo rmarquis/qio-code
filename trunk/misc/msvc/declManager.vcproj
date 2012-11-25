@@ -166,6 +166,10 @@
 			Name="Source Files"
 			>
 			<File
+				RelativePath="..\..\code\declManager\articulatedFigure.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\declManager\declManagerIMPL.cpp"
 				>
 			</File>
@@ -174,13 +178,25 @@
 			Name="Header Files"
 			>
 			<File
+				RelativePath="..\..\code\declManager\articulatedFigure.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\declManager\declManagerIMPL.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\declManager\declRefState.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="API"
 			>
+			<File
+				RelativePath="..\..\code\api\afDeclAPI.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\api\declManagerAPI.h"
 				>

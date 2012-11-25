@@ -53,6 +53,7 @@ public:
 	const char *getLine() {
 		return getLine(this->lastToken);
 	}
+	const char *getD3Token();
 	float getFloat();
 	int getInteger();
 	// eg "0 0 0 128"
@@ -91,10 +92,47 @@ public:
 			return true; // error
 		return false; // OK
 	}
+	// numbers might be separatede by ','
+	bool getFloatMatD3(float *out, u32 dims) {
+		const char *s;
+		for(u32 i = 0; i < dims; i++) {
+			s = getD3Token();
+			out[i] = atof(s);
+		}
+		return false;
+	}
+	// eg "( 0, 0, 1, 128 )"
+	bool getFloatMatD3_braced(float *out, u32 dims) {
+		if(atWord_dontNeedWS("(") == false)
+			return true; // error
+		const char *s;
+		for(u32 i = 0; i < dims; i++) {
+			s = getD3Token();
+			out[i] = atof(s);
+		}
+		if(atWord_dontNeedWS(")") == false)
+			return true; // error
+		// skip optional (?) ','
+		if(atWord_dontNeedWS(",")) {
+
+		}
+		return false; // OK
+	}
 	bool atChar(char ch);
 	bool atWord(const char *word);
 	bool atWord_dontNeedWS(const char *word);
-
+	int getD3Integer() {
+		const char *w = getD3Token();
+		if(w == 0)
+			return 0;
+		return atoi(w);
+	}
+	float getD3Float() {
+		const char *w = getD3Token();
+		if(w == 0)
+			return 0;
+		return atof(w);
+	}
 	void skipLine();
 
 	const char *getDebugFileName() const {

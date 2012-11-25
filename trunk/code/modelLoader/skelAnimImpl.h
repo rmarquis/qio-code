@@ -102,9 +102,13 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual bool getBLoopLastFrame() const {
 		return animFlags & AF_LOOP_LAST_FRAME;
 	}
-
+	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const {
+		u16 nameIndex = SK_RegisterString(nameStr);
+		return bones.getLocalBoneIndexForBoneName(nameIndex);
+	}
 	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
+	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
 public:
 	skelAnimMD5_c();

@@ -414,6 +414,10 @@ void ClientCommand( int clientNum ) {
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
 		BT_TestSpawnInternalRagDoll(p);
+	} else if(!stricmp(cmd,"spawntestaf")) {
+		str afName = g_core->Argv(1);
+void G_SpawnTestRagdollFromAF(const char *afName);
+		G_SpawnTestRagdollFromAF(afName);
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

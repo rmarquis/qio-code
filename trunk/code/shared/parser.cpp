@@ -151,6 +151,42 @@ const char *parser_c::getLine(str &out) {
 	end = p;
 	out.setFromTo(start,end);
 	return out;
+}	
+const char *parser_c::getD3Token() {
+	if(skipToNextToken()) {
+		printf("parser_c::getD3Token: EOF reached\n");
+		return 0;
+	}
+	if(*p == '"') {
+		p++;
+		const char *start = p;
+		while(*p != '"') {
+			if(*p == 0) {
+				break;
+			}
+			p++;
+		}
+		lastToken.setFromTo(start,p);
+		p++;
+		if(*p == ',')
+			p++;
+		return lastToken;
+	}
+	const char *end;
+	end = p+1;
+	while(G_isWS(*end) == false) {
+		if(*end == ',') {
+			// hit special character
+			lastToken.setFromTo(p,end);
+			p = end;
+			p++;
+			return lastToken;
+		}
+		end++;
+	}
+	lastToken.setFromTo(p,end);
+	p = end;
+	return lastToken;
 }
 float parser_c::getFloat() {
 	const char *t = getToken();

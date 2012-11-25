@@ -85,7 +85,19 @@ public:
 		m_floats[1] = y;
 		m_floats[2] = z;
 		m_floats[3] = btScalar(0.);
+	} 
+	/**@brief Constructor from scalars 
+   * @param pXYZ 3 btScalar values pointer
+   */
+	SIMD_FORCE_INLINE btVector3(const btScalar *pXYZ)
+	{
+		m_floats[0] = pXYZ[0];
+		m_floats[1] = pXYZ[1];
+		m_floats[2] = pXYZ[2];
+		m_floats[3] = btScalar(0.);
 	}
+
+
 
 	
 /**@brief Add a vector to this one 
