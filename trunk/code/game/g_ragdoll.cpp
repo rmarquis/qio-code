@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // g_ragdoll.cpp
 #include "g_local.h"
+#include "g_ragdoll.h"
 #include "bt_include.h"
 #include <api/afDeclAPI.h>
 #include <api/declManagerAPI.h>
@@ -130,6 +131,51 @@ void CU_InitD3TRMDodecahedronConvexPoints(const aabb &dodBounds, arraySTD_c<vec3
 	out[18].set( offset.x       , offset.y + b[1], offset.z - c[2] );
 	out[19].set( offset.x       , offset.y - b[1], offset.z - c[2] );
 }
+
+class ragdoll_c : public ragdollAPI_i {
+friend class afRagdollSpawner_c;
+	// ragdoll definition
+	const afDeclAPI_i *af;
+	const afPublicData_s *afd;
+	//arraySTD_c<matrix_c> afPose;
+	// Bullet Physics ragdoll representation
+	arraySTD_c<btCollisionShape*> shapes;
+	arraySTD_c<btRigidBody*> bodies;
+	arraySTD_c<btTypedConstraint*> constraints;
+	// bodies transforms, updated every frame
+	arraySTD_c<matrix_c> curTransforms;
+public:
+	ragdoll_c() {
+		af = 0;
+		afd = 0;
+	}
+	~ragdoll_c() {
+		for(u32 i = 0; i < constraints.size(); i++) {
+			dynamicsWorld->removeConstraint(constraints[i]);
+			delete constraints[i];
+		}
+		constraints.clear();
+		for(u32 i = 0; i < bodies.size(); i++) {
+			dynamicsWorld->removeRigidBody(bodies[i]);
+			delete bodies[i];
+		}
+		bodies.clear();
+		for(u32 i = 0; i < shapes.size(); i++) {
+			shapes[i];
+			delete shapes[i];
+		}
+		shapes.clear();
+	}
+	virtual const arraySTD_c<matrix_c> &getCurWorldMatrices() const {
+		return curTransforms;
+	}
+	virtual void updateWorldTransforms() {
+		for(u32 i = 0; i < bodies.size(); i++) {
+			btRigidBody *b = bodies[i];
+			b->getWorldTransform().getOpenGLMatrix(curTransforms[i]);
+		}
+	}
+};
 
 class afRagdollSpawner_c {
 	boneOrArray_c bones;
@@ -291,32 +337,38 @@ class afRagdollSpawner_c {
 		return 0;
 	}
 public:
-	void spawnRagdollFromAF(const char *afName) {
+	ragdoll_c *spawnRagdollFromAF(const char *afName, const vec3_c &pos) {
 		afDeclAPI_i *af = g_declMgr->registerAFDecl(afName);
 		if(af == 0) {
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: failed to find articulatedFigure \"%s\"\n",afName);
-			return;
+			return 0;
 		}
 		const afPublicData_s *afd = af->getData();
 		const modelDeclAPI_i *model = g_declMgr->registerModelDecl(afd->modelName);
 		if(model == 0) {
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: failed to find model %s (needed for articulatedFigure \"%s\")\n",afd->modelName.c_str(),afName);
-			return;
+			return 0;
 		}
 		anim = model->getSkelAnimAPIForAlias("af_pose");
 		if(anim == 0) {
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: failed to find \"af_pose\" animation in model \"%s\" of af \"%s\"\n",
 				afd->modelName.c_str(),afName);
-			return;
+			return 0;
 		}
+		matrix_c extraWorldTransform;
+		extraWorldTransform.setupOrigin(pos.x,pos.y,pos.z);
+		ragdoll_c *ret = new ragdoll_c;
+		ret->af = af;
+		ret->afd = afd;
 		bones.resize(anim->getNumBones());
 		anim->buildFrameBonesABS(0,bones);
 		// spawn bullet bodies
-		arraySTD_c<btCollisionShape*> shapes;
-		arraySTD_c<btRigidBody*> bodies;
+		arraySTD_c<btCollisionShape*> &shapes = ret->shapes;
+		arraySTD_c<btRigidBody*> &bodies = ret->bodies;
 		arraySTD_c<matrix_c> matrices;
 		matrices.resize(afd->bodies.size());
 		bodies.resize(afd->bodies.size());
+		ret->curTransforms.resize(afd->bodies.size());
 		for(u32 i = 0; i < afd->bodies.size(); i++) {
 			const afBody_s &b = afd->bodies[i];
 			const afModel_s &m = b.model;
@@ -345,12 +397,16 @@ public:
 				vec3_c angles = b.angles;
 				mat.fromAnglesAndOrigin(angles,p);
 			}
+			// add world transform
+			mat = extraWorldTransform * mat;
 			matrices[i] = mat;
 			tr.setFromOpenGLMatrix(mat);
 			float spawnMass = 10.f;
 			bodies[i] = localCreateRigidBody(spawnMass,tr,bm);
 		}
 		// spawn bullet contraints
+		arraySTD_c<btTypedConstraint*> &constraints = ret->constraints;
+		constraints.resize(afd->constraints.size());
 		for(u32 i = 0; i < afd->constraints.size(); i++) {
 			const afConstraint_s &c = afd->constraints[i];
 			int b0Index = afd->getLocalIndexForBodyName(c.body0Name);
@@ -378,6 +434,9 @@ public:
 			vec3_c anchor = getAFVec3Value(c.anchor);
 			matrix_c cMat;
 			cMat.setupOrigin(anchor.x,anchor.y,anchor.z);
+			// add world transform
+			cMat = extraWorldTransform * cMat;
+
 			matrix_c b0Mat = matrices[b0Index].getInversed()*cMat;
 			matrix_c b1Mat = matrices[b1Index].getInversed()*cMat;
 			btTransform frameA, frameB;
@@ -392,12 +451,14 @@ public:
 			bc->setLimit(3,-1,0);
 			bc->setLimit(4,-1,0);
 			bc->setLimit(5,-1,0);
+			constraints[i] = bc;
 			dynamicsWorld->addConstraint(bc);
 		}
+		return ret;
 	}
 };
 
-void G_SpawnTestRagdollFromAF(const char *afName) {
+class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos) {
 	afRagdollSpawner_c s;
-	s.spawnRagdollFromAF(afName);
+	return s.spawnRagdollFromAF(afName, pos);
 }

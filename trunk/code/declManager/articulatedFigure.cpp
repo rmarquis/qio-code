@@ -191,6 +191,16 @@ bool afDecl_c::parseBody(class parser_c &p) {
 				return true; // parse error
 		} else if(p.atWord("density")) {
 			newBody.density = p.getFloat();
+		} else if(p.atWord("containedJoints")) {
+			// all of the joint names are in single quoted string
+			str names = p.getToken();
+			str name;
+			const char *p = names.getToken(name,0);
+			newBody.containedJoints.push_back(name);
+			while(p) {
+				p = names.getToken(name,p);
+				newBody.containedJoints.push_back(name);
+			}
 		} else {
 			p.getToken();
 		}

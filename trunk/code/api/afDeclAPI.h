@@ -72,6 +72,7 @@ struct afBody_s {
 	afVec3_s origin; // in Doom3 src its idAFVector
 	vec3_c angles; // in Doom3 src it's idAngles
 	float density;
+	arraySTD_c<str> containedJoints;
 };
 enum afConstraintType_e {
 	AFC_UNIVERSALJOINT,
@@ -114,6 +115,7 @@ struct afPublicData_s {
 class afDeclAPI_i {
 public:
 	virtual const afPublicData_s *getData() const = 0;
+	virtual const char *getDefaultRenderModelName() const = 0;
 };
 
 #endif // __AFDECLAPI_H__

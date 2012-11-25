@@ -1064,6 +1064,9 @@ typedef enum {
 #define ANIMNUM_BITS		8
 #define MAX_ANIMATIONS		(1<<ANIMNUM_BITS)
 
+#define RAGDOLLDEFNUM_BITS	8
+#define MAX_RAGDOLLDEFS		(1<<RAGDOLLDEFNUM_BITS)
+
 #define SOUNDNUM_BITS		8
 #define MAX_SOUNDS			(1<<SOUNDNUM_BITS)
 
@@ -1115,6 +1118,9 @@ struct entityState_s {
 
 	int animIndex;
 
+	// index of ragdoll def for ACTIVE ragdoll entities (CS_RAGDOLLDEFS)
+	int activeRagdollDefNameIndex; // Doom3 ArticulatedFigure decl name
+
 	void setDefaults() {
 		number = -1;
 		eType = 0;
@@ -1126,6 +1132,7 @@ struct entityState_s {
 		parentNum = ENTITYNUM_NONE;
 		parentTagNum = -1;
 		animIndex = 0;
+		activeRagdollDefNameIndex = 0;
 	}
 	entityState_s() {
 		setDefaults();

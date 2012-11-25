@@ -865,6 +865,7 @@ netField_t	entityStateFields[] =
 { NETF(parentNum), GENTITYNUM_BITS },
 { NETF(parentTagNum), TAGNUM_BITS },
 { NETF(animIndex), ANIMNUM_BITS },
+{ NETF(activeRagdollDefNameIndex), RAGDOLLDEFNUM_BITS },
 };
 
 
@@ -1154,6 +1155,7 @@ netField_t	playerStateFields[] =
 { PSF(animIndex), ANIMNUM_BITS },
 { PSF(curWeaponEntNum), GENTITYNUM_BITS },
 { PSF(customViewRModelIndex), MODELNUM_BITS },
+{ PSF(activeRagdollDefNameIndex), RAGDOLLDEFNUM_BITS },
 };
 
 /*

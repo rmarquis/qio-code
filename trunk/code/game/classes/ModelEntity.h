@@ -38,6 +38,9 @@ protected:
 	class cMod_i *cmod;
 	// cmSkeleton for serverside bones access and animation
 	class cmSkelModel_i *cmSkel;
+	// ragdoll interface
+	str ragdollDefName; // set by "ragdoll" key in Doom3; the name of articulatedFigure decl
+	class ragdollAPI_i *ragdoll;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -50,15 +53,23 @@ public:
 	void setRenderModel(const char *newRModelName);
 	bool setColModel(const char *newCModelName);
 	bool setColModel(class cMod_i *newCModel);
+	void setRagdollName(const char *ragName);
 
 	int getBoneNumForName(const char *boneName);
 	void setAnimation(const char *animName);
 
 	virtual void runPhysicsObject();
 
+	// returns true on error
+	bool initRagdollRenderAndPhysicsObject(const char *afName);
+
+	// rigid body physics
 	void initRigidBodyPhysics();
-	void initStaticBodyPhysics();
+	void initStaticBodyPhysics(); // static body
 	void destroyPhysicsObject();
+	// ragdoll physics
+	void initRagdollPhysics();
+	//void destroyPhysicsRagdoll();
 
 	void debugDrawCMObject(class rDebugDrawer_i *dd);
 

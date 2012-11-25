@@ -57,6 +57,7 @@ int G_RenderModelIndex( const char *name );
 int G_CollisionModelIndex( const char *name );
 int	G_SoundIndex( const char *name );
 int G_AnimationIndex( const char *name );
+int G_RagdollDefIndex( const char *name );
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
 edict_s	*G_Spawn (void);
 void G_FreeEntity( edict_s *e );
@@ -148,6 +149,11 @@ bool G_TraceRay(class trace_c &tr, BaseEntity *baseSkip);
 // g_weapons.cpp
 //
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
+
+//
+// g_ragdoll.cpp
+//
+class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

@@ -30,6 +30,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/quat.h>
 #include "../bt_include.h"
+#include "../g_ragdoll.h"
+#include <api/declManagerAPI.h>
+#include <api/afDeclAPI.h>
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 
@@ -40,10 +43,14 @@ ModelEntity::ModelEntity() {
 	body = 0;
 	cmod = 0;
 	cmSkel = 0;
+	ragdoll = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
 		destroyPhysicsObject();
+	}
+	if(ragdoll) {
+		delete ragdoll;
 	}
 }
 void ModelEntity::setOrigin(const vec3_c &newXYZ) {
@@ -91,6 +98,16 @@ bool ModelEntity::setColModel(const char *newCModelName) {
 		return true; // error
 	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
 	return false;
+}
+void ModelEntity::setRagdollName(const char *ragName) {
+	if(ragdoll) {
+		delete ragdoll;
+		ragdoll = 0;
+		this->ragdollDefName = ragName;
+		initRagdollPhysics();
+	} else {
+		this->ragdollDefName = ragName;
+	}
 }
 bool ModelEntity::setColModel(class cMod_i *newCModel) {
 	return setColModel(newCModel->getName());
@@ -144,7 +161,18 @@ void ModelEntity::runPhysicsObject() {
 	this->setMatrix(mat);
 #endif
 }
-
+bool ModelEntity::initRagdollRenderAndPhysicsObject(const char *afName) {
+	afDeclAPI_i *af = g_declMgr->registerAFDecl(afName);
+	if(af == 0)
+		return true; // error, articulatedFigure decl not found
+	setRenderModel(af->getDefaultRenderModelName());
+	setRagdollName(afName);
+	initRagdollPhysics();
+	if(ragdoll == 0) {
+		return true; // something went wrong in g_ragdoll.cpp code
+	}
+	return false; // no error
+}
 void ModelEntity::initRigidBodyPhysics() {
 	if(this->cmod == 0) {
 		return;
@@ -160,11 +188,25 @@ void ModelEntity::initStaticBodyPhysics() {
 	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod,0);
 	this->body->setUserPointer(this);
 }
-void ModelEntity::destroyPhysicsObject() {
-	if(body == 0)
+void ModelEntity::initRagdollPhysics() {
+	destroyPhysicsObject();
+	if(this->ragdollDefName.length() == 0)
 		return;
-	BT_RemoveRigidBody(body);
-	body = 0;
+	ragdoll = G_SpawnTestRagdollFromAF(ragdollDefName,this->getOrigin());
+	if(ragdoll) {
+		this->myEdict->s->activeRagdollDefNameIndex = G_RagdollDefIndex(ragdollDefName);
+	}
+}
+void ModelEntity::destroyPhysicsObject() {
+	if(body) {
+		BT_RemoveRigidBody(body);
+		body = 0;
+	}
+	if(ragdoll) {
+		delete ragdoll;
+		ragdoll = 0;
+		this->myEdict->s->activeRagdollDefNameIndex = 0;
+	}
 }
 void ModelEntity::runFrame() {
 	runPhysicsObject();

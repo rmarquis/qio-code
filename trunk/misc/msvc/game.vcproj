@@ -432,6 +432,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_ragdoll.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>

@@ -87,6 +87,9 @@ int G_SoundIndex( const char *name ) {
 int G_AnimationIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_ANIMATIONS, MAX_ANIMATIONS, qtrue);
 }
+int G_RagdollDefIndex( const char *name ) {
+	return G_FindConfigstringIndex (name, CS_RAGDOLLDEFSS, MAX_RAGDOLLDEFS, qtrue);
+}
 
 //=====================================================================
 
