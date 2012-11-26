@@ -101,6 +101,12 @@ class skelModelAPI_i *model_c::getSkelModelAPI() const {
 	}
 	return 0;
 }
+const class skelAnimAPI_i *model_c::getDeclModelAFPoseAnim() const {
+	if(type == MOD_DECL) {
+		return declModel->getSkelAnimAPIForAlias("af_pose");
+	}
+	return 0;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

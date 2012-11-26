@@ -325,6 +325,7 @@ void rEntityImpl_c::addDrawCalls() {
 		}
 	} else if(instance) {
 		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
 		// ragdoll controlers ovverides all the animations
 		if(myRagdollDef) {
 			rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
@@ -339,13 +340,10 @@ void rEntityImpl_c::addDrawCalls() {
 				const boneOrQP_c &partOr = (*ragOrs)[i];
 				matrix_c bodyMat;
 				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
-				for(u32 j = 0; j < b.containedJoints.size(); j++) {
-					const char *boneNameStr = b.containedJoints[j];
-					int boneNum = skelModel->getLocalBoneIndexForBoneName(boneNameStr);
-					if(boneNum == -1) {
-
-						continue;
-					}
+				arraySTD_c<u32> boneNumbers;
+				afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
+				for(u32 j = 0; j < boneNumbers.size(); j++) {
+					int boneNum = boneNumbers[j];
 					if(refCounts[boneNum]) {
 						// it should NEVER happen
 						g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);

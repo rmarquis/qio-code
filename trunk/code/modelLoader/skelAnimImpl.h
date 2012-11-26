@@ -106,6 +106,36 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 		u16 nameIndex = SK_RegisterString(nameStr);
 		return bones.getLocalBoneIndexForBoneName(nameIndex);
 	}
+	virtual void addChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const {
+		int baseBoneIndex = getLocalBoneIndexForBoneName(baseBoneName);
+		if(baseBoneIndex == -1)
+			return;
+		for(u32 i = 0; i < bones.size(); i++) {
+			int p = i;
+			while(p != -1) {
+				if(p == baseBoneIndex) {
+					list.add_unique(i);
+					break;
+				}
+				p = bones[p].parentIndex;
+			}
+		}
+	}
+	virtual void removeChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const {
+		int baseBoneIndex = getLocalBoneIndexForBoneName(baseBoneName);
+		if(baseBoneIndex == -1)
+			return;
+		for(u32 i = 0; i < bones.size(); i++) {
+			int p = i;
+			while(p != -1) {
+				if(p == baseBoneIndex) {
+					list.remove(i);
+					break;
+				}
+				p = bones[p].parentIndex;
+			}
+		}
+	}
 	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;

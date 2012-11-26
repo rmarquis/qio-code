@@ -113,6 +113,7 @@ public:
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
 
 	virtual class skelModelAPI_i *getSkelModelAPI() const;
+	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const;
 
 	void clear();
 

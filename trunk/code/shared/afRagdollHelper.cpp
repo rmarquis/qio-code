@@ -253,6 +253,25 @@ bool afRagdollHelper_c::setupRagdollHelper(const char *afName) {
 	anim->buildFrameBonesABS(0,bones);
 	return false;
 }
+void afRagdollHelper_c::containedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim, const char *afName) {
+	for(u32 j = 0; j < containedJoints.size(); j++) {
+		const char *boneNameStr = containedJoints[j];
+		if(boneNameStr[0] == '*') {
+			anim->addChildrenOf(boneNumbers,boneNameStr+1);
+			continue;
+		} else if(boneNameStr[0] == '-' && boneNameStr[1] == '*') {
+			anim->removeChildrenOf(boneNumbers,boneNameStr+2);
+			continue;
+		} else {
+			int boneNum = anim->getLocalBoneIndexForBoneName(boneNameStr);
+			if(boneNum == -1) {
+				g_core->RedWarning("Cant find bone %s for af %s\n",boneNameStr,afName);
+				continue;
+			}
+			boneNumbers.push_back(boneNum);
+		}
+	}
+}
 bool afRagdollHelper_c::calcBoneParentBody2BoneOfsets(const char *afName, arraySTD_c<matrix_c> &out) {
 	if(setupRagdollHelper(afName))
 		return true;
@@ -265,13 +284,11 @@ bool afRagdollHelper_c::calcBoneParentBody2BoneOfsets(const char *afName, arrayS
 		matrix_c bodyMat;
 		getBodyTransform(i,bodyMat);
 		matrix_c bodyMatInv = bodyMat.getInversed();
-		for(u32 j = 0; j < b.containedJoints.size(); j++) {
-			const char *boneNameStr = b.containedJoints[j];
-			int boneNum = anim->getLocalBoneIndexForBoneName(boneNameStr);
-			if(boneNum == -1) {
-
-				continue;
-			}
+		arraySTD_c<u32> boneNumbers;
+		boneNumbers.reserve(anim->getNumBones()*2);
+		containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,afName);
+		for(u32 j = 0; j < boneNumbers.size(); j++) {
+			u32 boneNum = boneNumbers[j];
 			if(refCounts[boneNum]) {
 				// it should NEVER happen
 				g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
