@@ -105,6 +105,9 @@ public:
 	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum);
 	// for proc inline models
 	void initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr);
+	// for static models (r_model_c class)
+	// NOTE: "myNewModelPtr" will be stored in this model class and fried on renderer shutdown!
+	void initStaticModel(class r_model_c *myNewModelPtr);
 
 
 	

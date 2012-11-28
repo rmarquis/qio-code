@@ -188,26 +188,39 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 			cmHelper_c *helper = e->allocHelper();
 			hull->addHelper(helper);
 		}
-	} else if(numEntitiesWithBrushes == 1 || 1) {
+	} else {
 		cmCompound_c *compound = new cmCompound_c(fname);
 		cm_models.addObject(compound);
 
 		ret = compound;
-		// add helpers and brushes
-		for(u32 i = 0; i < entities.size(); i++) {
+		// add main brushes
+		cmMapFileEntity_s *e = entities[0];
+		for(u32 j = 0; j < e->brushes.size(); j++) {
+			cmHull_c *hull = new cmHull_c(va("%s::subBrush%i",fname,j),*e->brushes[j]);
+			compound->addShape(hull);
+		}
+		// add helpers and their brushes
+		for(u32 i = 1; i < entities.size(); i++) {
+			// create a cmHelper_c for subentity
 			cmMapFileEntity_s *e = entities[i];
+			cmHelper_c *helper = e->allocHelper();
 			if(e->brushes.size()) {
+				// if subentity has geometry, create a compound group for helper
+				cmCompound_c *subEntityCompoundGroup = helper->registerCompound();
 				for(u32 j = 0; j < e->brushes.size(); j++) {
 					cmHull_c *hull = new cmHull_c(va("%s::subBrush%i",fname,j),*e->brushes[j]);
-					compound->addShape(hull);
+					subEntityCompoundGroup->addShape(hull);
 				}
-				continue;
+				aabb bb;
+				subEntityCompoundGroup->getBounds(bb);
+				vec3_c center = bb.getCenter();
+				if(center.lenSQ()) {
+					subEntityCompoundGroup->translateXYZ(-center);
+					subEntityCompoundGroup->setCenterOfMassOffset(center);
+				}
 			}
-			cmHelper_c *helper = e->allocHelper();
 			compound->addHelper(helper);
 		}
-	} else {
-		// TODO ?
 	}
 
 	for(u32 i = 0; i < entities.size(); i++) {

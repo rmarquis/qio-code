@@ -268,10 +268,14 @@ const char *fileTextDataCache_c::findDeclInText(const char *declName, const char
 			if(declTypeStringEnd == 0)
 				continue;
 			const char *declTypeStringStart = declTypeStringEnd - declTypeLen - 1;
-			if(declTypeStringStart < text)
+			if(declTypeStringStart < text) {
+				p++;
 				continue;
-			if(Q_stricmpn(declTypeStringStart,declType,declTypeLen))
+			}
+			if(Q_stricmpn(declTypeStringStart,declType,declTypeLen)) {
+				p++;
 				continue; // decl type didnt match
+			}
 			const char *declNameStart = p;
 			p += declNameLen;
 			p = G_SkipToNextToken(p);

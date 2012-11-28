@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cm\cm_helper.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cm\cm_model.cpp"
 				>
 			</File>

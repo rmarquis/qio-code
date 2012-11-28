@@ -55,6 +55,7 @@ btDiscreteDynamicsWorld* dynamicsWorld = 0;
 // they need to be alloced as long as they are used
 static arraySTD_c<btTriangleIndexVertexArray*> bt_trimeshes;
 static arraySTD_c<cmSurface_c*> bt_cmSurfs;
+class cMod_i *bt_worldCMod = 0;
 
 #if 1
 #define TRYTOFIX_INTERNAL_EDGES
@@ -471,6 +472,8 @@ void G_ShudownBullet() {
 	collisionConfiguration = 0;
     delete broadphase;
 	broadphase = 0;
+	
+	bt_worldCMod = 0;
 }
 aCvar_c bt_runPhysics("bt_runPhysics","1");
 
@@ -772,14 +775,6 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	startTransform.setIdentity();
 	startTransform.setOrigin(btStart);
 
-	// rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic) 
-	{
-		shape->calculateLocalInertia(mass, localInertia);
-	}
 
 	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, shape);
 	body->setLinearFactor(btVector3(1, 1, 1));
@@ -795,7 +790,17 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 		
 	body->setAngularVelocity(btVector3(0,0,0));
 	body->setContactProcessingThreshold(1e30);
-		
+
+	//aabb bb;
+	//cModel->getBounds(bb);
+	//vec3_c center = bb.getCenter();
+	//if(center.lenSQ()) {
+	//	btTransform comt;
+	//	comt.setIdentity();
+	//	comt.setOrigin(center);
+	//	body->setCenterOfMassTransform(comt);
+	//}
+	//	
 	//enable CCD if the object moves more than 1 meter in one simulation frame
 	//rigidBody.setCcdSweptSphereRadius(20);
 
@@ -893,7 +898,25 @@ void BT_TestSpawnInternalRagDoll(const vec3_c &at) {
 }
 arraySTD_c<aabb> g_inlineModelBounds;
 const class aabb &G_GetInlineModelBounds(u32 inlineModelNum) {
+	if(bt_worldCMod) {
+		cmCompound_i *c = bt_worldCMod->getSubModel(inlineModelNum);
+		if(c == 0) {
+			return aabb();
+		}
+		// FIXME, this is dirty!
+		aabb ret;
+		c->getBounds(ret);
+		return ret;
+	}
 	return g_inlineModelBounds[inlineModelNum];
+}
+class cMod_i *BT_GetSubModelCModel(u32 inlineModelNum) {
+	if(bt_worldCMod) {
+		u32 realSubModelNum = inlineModelNum-1;
+		cmCompound_i *c = bt_worldCMod->getSubModel(realSubModelNum);
+		return c;
+	}
+	return 0;
 }
 void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
 	for(u32 i = 0; i < cm->getNumSubShapes(); i++) {
@@ -903,6 +926,7 @@ void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
 	}
 }
 void G_LoadMap(const char *mapName) {
+	bt_worldCMod = 0;
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString("G_LoadMap: \"%s\"...",mapName);
 	}
@@ -922,12 +946,12 @@ void G_LoadMap(const char *mapName) {
 			str fixed = "maps/";
 			fixed.append(mapName);
 			fixed.setExtension("map");
-			cMod_i *worldCMod = cm->registerModel(fixed);
-			if(worldCMod) {
-				if(worldCMod->isCompound()) {
-					BT_SpawnStaticCompoundModel(worldCMod->getCompound());
+			bt_worldCMod = cm->registerModel(fixed);
+			if(bt_worldCMod) {
+				if(bt_worldCMod->isCompound()) {
+					BT_SpawnStaticCompoundModel(bt_worldCMod->getCompound());
 				} else {
-					BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,worldCMod,0);
+					BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,bt_worldCMod,0);
 				}
 			}
 		} else {

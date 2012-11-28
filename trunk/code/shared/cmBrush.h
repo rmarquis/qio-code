@@ -91,6 +91,7 @@ public:
 		}
 	}
 	bool hasSideWithMaterial(const char *matName) const;
+	void translateXYZ(const class vec3_c &ofs);
 
 	// returns true if brush is invalid
 	bool calcBounds();

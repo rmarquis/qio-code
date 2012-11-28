@@ -53,6 +53,9 @@ class simpleDecalBatcher_c *RF_GetWorldDecalBatcher();
 // rf_anims.cpp
 void RF_ClearAnims();
 
+// rf_map.cpp - load world map directly from .map file
+class r_model_c *RF_LoadMAPFile(const char *fname);
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 

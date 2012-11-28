@@ -391,9 +391,11 @@ bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreator
 	if(p.atWord("version")) {
 		p.getToken(); // skip doom3/quake4 version ident
 	}
+	u32 entityNum = 0;
 	while(p.atEOF() == false && parseError == false) {
 		if(p.atWord("{")) {
 			// enter new entity
+			out->onNewMapEntity(entityNum);
 			while(p.atWord("}") == false && parseError == false) {
 				if(p.atEOF()) {			
 					g_core->RedWarning("CM_LoadModelFromMapFile: unexpected end of file hit while parsing %s\n",fname);
@@ -439,8 +441,10 @@ bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreator
 					p.getToken(key);
 					p.getToken(val);
 					// 
+					//out->onMapEntityKeyValue(entityNum,key,val);
 				}
 			}
+			entityNum++;
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

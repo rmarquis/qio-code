@@ -142,6 +142,12 @@ bool cmBrush_c::hasSideWithMaterial(const char *matName) const {
 	}
 	return false;
 }
+void cmBrush_c::translateXYZ(const class vec3_c &ofs) {
+	for(u32 i = 0; i < sides.size(); i++) {
+		sides[i].pl.translate(ofs);
+	}
+	bounds.translate(ofs);
+}
 #include <shared/cmWinding.h>
 bool cmBrush_c::calcBounds() {
 	this->bounds.clear();

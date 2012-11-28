@@ -45,6 +45,7 @@ void G_LoadMapEntities(const char *mapName) {
 BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	const char *className = entDef->getClassName();
 	if(className == 0 || className[0] == 0) {
+		g_core->Print("G_SpawnEntDef: No classname set\n");
 		return 0;
 	}
 	BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);

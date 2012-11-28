@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "iFaceBase.h"
 #include <shared/typedefs.h>
+#include <math/vec3.h>
 
 enum cModType_e {
 	CMOD_BAD,
@@ -79,9 +80,22 @@ public:
 	// helpers
 	virtual u32 getNumHelpers() const = 0;
 	virtual cmHelper_i *getHelper(u32 helperNum) = 0;
+	virtual cmCompound_i *getSubModel(u32 subModelNum) = 0;
 	///virtual cmHelper_i *getNextHelperOfClass(const char *className, cmHelper_i *cur = 0) = 0;
 
 	virtual bool traceRay(class trace_c &tr) = 0;
+
+	// NEW testing functions
+	// collision shapes postprocessing
+	virtual void translateXYZ(const class vec3_c &ofs) {
+
+	}
+	virtual bool hasCenterOfMassOffset() const {
+		return false;
+	}
+	virtual const vec3_c &getCenterOfMassOffset() const {
+		return vec3_c(0,0,0);
+	}
 };
 
 // cm primitives

@@ -53,18 +53,31 @@ bool entDefsList_c::fromString(const char *text) {
 	if(p.atWord("Version")) {
 		mapFileVersion = p.getInteger();
 	}
+	u32 curModNum = 0;
 	while(p.atEOF() == false) {
 		if(p.atChar('{')) {
 			entDef_c *ed = new entDef_c;
 			this->entities.push_back(ed);
+			bool bHadMapPrimitives = false;
 			while(p.atChar('}') == false) {
 				if(p.atEOF()) {
 
 					break;
 				}
-				str key = p.getToken();
-				str val = p.getToken();
-				ed->setKeyValue(key,val);
+				if(p.atChar('{')) {
+					p.skipCurlyBracedBlock(false);
+					bHadMapPrimitives = true;
+				} else {
+					str key = p.getToken();
+					str val = p.getToken();
+					ed->setKeyValue(key,val);
+				}
+			}
+			if(bHadMapPrimitives) {
+				if(curModNum) {
+					ed->setKeyValue("model",va("*%i",curModNum));
+				}
+				curModNum++;
 			}
 		} else {
 			p.getToken();

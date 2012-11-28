@@ -21,38 +21,33 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// cm_helper.h
-#ifndef __CM_HELPER_H__
-#define __CM_HELPER_H__
+// cm_helper.cpp
+#include "cm_local.h"
+#include "cm_model.h"
+#include "cm_helper.h"
 
-#include <api/cmApi.h>
-#include <shared/ePairsList.h>
-
-class cmHelper_c : public cmHelper_i {
-	ePairList_c keyValues;
-	class cmCompound_c *myCompound;
-public:
-	cmHelper_c();
-	~cmHelper_c();
-	void setKeyPairs(const ePairList_c &newList) {
-		this->keyValues = newList;
+cmHelper_c::cmHelper_c() {
+	myCompound = 0;
+}
+cmHelper_c::~cmHelper_c() {
+	if(myCompound) {
+		delete myCompound;
 	}
-	const ePairList_c &getEPairs() const {
-		return this->keyValues;
+}
+class cmCompound_c *cmHelper_c::registerCompound() {
+	if(this->myCompound == 0) {
+		this->myCompound = new cmCompound_c("helperCompound");
 	}
-
-	// that function will alloc this->compound if its not present
-	class cmCompound_c *registerCompound();
-	bool hasCompoundModel() const;
-	class cmCompound_c *getCompound() const;
-	class cmCompound_i *getCompoundAPI() const;
-
-	virtual u32 getNumKeyPairs() const {
-		return keyValues.size();
-	}
-	virtual const char *getKeyValue(const char *key) const {
-		return keyValues.getKeyValue(key);
-	}
-};
-
-#endif // __CM_HELPER_H__
+	return this->myCompound;
+}
+bool cmHelper_c::hasCompoundModel() const {
+	if(myCompound)
+		return true;
+	return false;
+}
+class cmCompound_c *cmHelper_c::getCompound() const { 
+	return myCompound;
+}
+class cmCompound_i *cmHelper_c::getCompoundAPI() const { 
+	return myCompound;
+}

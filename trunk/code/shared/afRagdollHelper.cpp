@@ -278,6 +278,9 @@ bool afRagdollHelper_c::calcBoneParentBody2BoneOfsets(const char *afName, arrayS
 	arraySTD_c<u32> refCounts;
 	refCounts.resize(anim->getNumBones());
 	out.resize(anim->getNumBones());
+	for(u32 i = 0; i < anim->getNumBones(); i++) {
+		out[i].identity();
+	}
 	refCounts.nullMemory();
 	for(u32 i = 0; i < afd->bodies.size(); i++) {
 		const afBody_s &b = afd->bodies[i];

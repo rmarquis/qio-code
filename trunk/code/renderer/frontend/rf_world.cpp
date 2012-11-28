@@ -66,8 +66,14 @@ bool RF_LoadWorldMap(const char *name) {
 		if(r_procTree)
 			return false; // ok
 		return true; // error
+	} else if(!stricmp(ext,"map")) {
+		// load .map file directly
+		r_worldModel = RF_LoadMAPFile(name);
+		if(r_worldModel)
+			return false; // ok
+		return true; // error
 	} else if(g_modelLoader->isStaticModelFile(name)) {
-		// .map file or any other static model format
+		// any other static model format
 		r_model_c *m = new r_model_c;
 		if(g_modelLoader->loadStaticModelFile(name,m)) {
 			delete m;

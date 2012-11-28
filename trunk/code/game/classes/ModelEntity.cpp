@@ -93,9 +93,21 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 	// nothing else to do right now...
 }
 bool ModelEntity::setColModel(const char *newCModelName) {
-	this->cmod = cm->registerModel(newCModelName);
+	if(newCModelName[0] == '*' && BT_GetSubModelCModel(atoi(newCModelName+1))) {
+		this->cmod = BT_GetSubModelCModel(atoi(newCModelName+1));
+	} else {
+		this->cmod = cm->registerModel(newCModelName);
+	}
 	if(this->cmod == 0)
 		return true; // error
+#if 1 
+	if(this->cmod->hasCenterOfMassOffset()) {
+		// PRIMITIVE fix for inline models loaded from .map files
+		vec3_c p = this->getOrigin();
+		p += this->cmod->getCenterOfMassOffset();
+		this->setOrigin(p);
+	}
+#endif
 	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
 	return false;
 }

@@ -45,6 +45,11 @@ void model_c::initProcModel(class procTree_c *pMyPROC, class r_model_c *modPtr) 
 	this->procModel = modPtr;
 	this->bb = modPtr->getBounds();
 }
+void model_c::initStaticModel(class r_model_c *myNewModelPtr) {
+	this->type = MOD_STATIC;
+	this->staticModel = myNewModelPtr;
+	this->bb = myNewModelPtr->getBounds();
+}
 u32 model_c::getNumSurfaces() const {
 	if(type == MOD_BSP) {
 		return 1; // FIXME?

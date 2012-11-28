@@ -30,13 +30,39 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 #include "cm_helper.h"
 
+class cmHelpersList_c : public arraySTD_c<class cmHelper_c*> {
+
+public:
+	class cmCompound_i *findSubModel(u32 subModelNum) {
+		u32 curModelNum = 0;
+		for(u32 i = 0; i < this->size(); i++) {
+			cmHelper_c *h = (*this)[i];
+			if(h->hasCompoundModel()) {
+				if(curModelNum == subModelNum)
+					return h->getCompoundAPI();
+				curModelNum++;
+			}
+		}
+		return 0;
+	}
+};
 class cmObjectBase_c {
 	cmObjectBase_c *hashNext;
 protected:
 	str name;
 	aabb bounds;
-	arraySTD_c<class cmHelper_c*> helpers;
+	cmHelpersList_c helpers;
+	vec3_c centerOfMassOffset;
+	bool bHasCenterOfMassOffset;
 public:
+	cmObjectBase_c() {
+		centerOfMassOffset.set(0,0,0);
+		bHasCenterOfMassOffset = false;
+	}
+	void setCenterOfMassOffset(const vec3_c &newOfs) {
+		centerOfMassOffset = newOfs;
+		bHasCenterOfMassOffset = true;
+	}
 	cmObjectBase_c *getHashNext() const {
 		return hashNext;
 	}
@@ -106,6 +132,9 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return helpers[helperNum];
 	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
 
 	cmCapsule_c(const char *newName, float newHeight, float newRadius) {
 		this->name = newName;
@@ -163,6 +192,9 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return helpers[helperNum];
 	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
 
 	cmBBExts_c(const char *newName, const vec3_c &newHalfSizes) {
 		this->name = newName;
@@ -204,6 +236,9 @@ public:
 	}
 	virtual bool traceRay(class trace_c &tr) {
 		return myBrush.traceRay(tr);
+	}	
+	virtual void translateXYZ(const class vec3_c &ofs) {
+		myBrush.translateXYZ(ofs);
 	}
 	// cmHull_i access
 	virtual u32 getNumSides() const {
@@ -222,6 +257,9 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return helpers[helperNum];
 	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
 
 	void setSingleBrush(const class cmBrush_c &br) {
 		this->myBrush = br;
@@ -232,7 +270,6 @@ public:
 		this->setSingleBrush(br);
 	}
 };
-
 
 class cmCompound_c : public cmObjectBase_c, public cmCompound_i {
 	arraySTD_c<cMod_i*> shapes;
@@ -279,6 +316,12 @@ public:
 		}
 		return hit;
 	}
+	virtual bool hasCenterOfMassOffset() const {
+		return bHasCenterOfMassOffset;
+	}
+	virtual const vec3_c &getCenterOfMassOffset() const {
+		return centerOfMassOffset;
+	}
 	// cmCompound_i access
 	virtual u32 getNumSubShapes() {
 		return shapes.size();
@@ -293,9 +336,17 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return helpers[helperNum];
 	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
 
 	void addShape(class cMod_i *m) {
 		shapes.push_back(m);
+	}
+	void translateXYZ(const vec3_c &ofs) {
+		for(u32 i = 0; i < shapes.size(); i++) {
+			shapes[i]->translateXYZ(ofs);
+		}
 	}
 
 	cmCompound_c(const char *newName) {
@@ -369,6 +420,9 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return helpers[helperNum];
 	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
 
 	cmTriMesh_c(const char *newName, cmSurface_c *newSFPtr) {
 		this->name = newName;
@@ -419,6 +473,9 @@ public:
 	}
 	virtual cmHelper_i *getHelper(u32 helperNum) {
 		return 0;
+	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
 	}
 	// cmSkelModel_i access
 	virtual const class skelModelAPI_i *getSkelModelAPI() const {
