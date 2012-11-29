@@ -59,7 +59,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="devil.lib"
-				OutputFile="..\..\game\baseqio\imageLibx86.dll"
+				OutputFile="..\..\game\system\imageLibx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				ModuleDefinitionFile="imageLib.def"
 				GenerateDebugInformation="true"
@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="devil.lib"
-				OutputFile="..\..\game\baseqio\imageLibx86.dll"
+				OutputFile="..\..\game\system\imageLibx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				ModuleDefinitionFile="imageLib.def"
 				GenerateDebugInformation="true"

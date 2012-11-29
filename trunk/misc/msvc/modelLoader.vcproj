@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\modelLoaderx86.dll"
+				OutputFile="..\..\game\system\modelLoaderx86.dll"
 				ModuleDefinitionFile="modelLoader.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -129,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\modelLoaderx86.dll"
+				OutputFile="..\..\game\system\modelLoaderx86.dll"
 				ModuleDefinitionFile="modelLoader.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

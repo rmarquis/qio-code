@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\declManagerx86.dll"
+				OutputFile="..\..\game\system\declManagerx86.dll"
 				ModuleDefinitionFile="declManager.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -129,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\declManagerx86.dll"
+				OutputFile="..\..\game\system\declManagerx86.dll"
 				ModuleDefinitionFile="declManager.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

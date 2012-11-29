@@ -59,7 +59,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="SDLmain.lib SDL.lib OpenGL32.lib glew32.lib"
-				OutputFile="..\..\game\baseqio\backendNULLx86.dll"
+				OutputFile="..\..\game\system\backendNULLx86.dll"
 				AdditionalLibraryDirectories="..\..\code\libs\win32"
 				ModuleDefinitionFile="backendNULL.def"
 				GenerateDebugInformation="true"
@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="SDLmain.lib SDL.lib OpenGL32.lib glew32.lib"
-				OutputFile="..\..\game\baseqio\backendNULLx86.dll"
+				OutputFile="..\..\game\system\backendNULLx86.dll"
 				AdditionalLibraryDirectories="..\..\code\libs\win32"
 				ModuleDefinitionFile="backendNULL.def"
 				GenerateDebugInformation="true"

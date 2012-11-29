@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\cmx86.dll"
+				OutputFile="..\..\game\system\cmx86.dll"
 				ModuleDefinitionFile="cm.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -129,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\cmx86.dll"
+				OutputFile="..\..\game\system\cmx86.dll"
 				ModuleDefinitionFile="cm.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\materialSystemx86.dll"
+				OutputFile="..\..\game\system\materialSystemx86.dll"
 				ModuleDefinitionFile="materialSystem.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -129,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\materialSystemx86.dll"
+				OutputFile="..\..\game\system\materialSystemx86.dll"
 				ModuleDefinitionFile="materialSystem.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

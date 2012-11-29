@@ -38,10 +38,10 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 			g_core->Print("moduleManagerIMPL_c::load: %s already loaded!\n",moduleName);
 			return loaded;
 		}
-		str fullName = "baseqio/"; // HACK, this should be fixed soon
+		str fullName = "system/";
 		fullName.append(moduleName);
 		fullName.append("x86.dll");
-		void *h = Sys_LoadDll(fullName,true);
+		void *h = Sys_LoadDll(fullName);
 		if(h == 0) {
 			g_core->Print("moduleManagerIMPL_c::load: LoadLibrary failed for %s\n",moduleName);
 			return 0;

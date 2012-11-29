@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\rendererx86.dll"
+				OutputFile="..\..\game\system\rendererx86.dll"
 				ModuleDefinitionFile=".\renderer.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -129,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\baseqio\rendererx86.dll"
+				OutputFile="..\..\game\system\rendererx86.dll"
 				ModuleDefinitionFile=".\renderer.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
