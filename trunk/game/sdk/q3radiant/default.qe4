@@ -1,0 +1,12 @@
+{
+"brush_primit" "0"
+"basepath" "e:\Qio\game\"
+"rshcmd" ""
+"autosave" "e:\Qio\game\baseqio\maps\autosave\autosave.map"
+"mapspath" "e:\Qio\game\baseqio\maps"
+"texturepath" "e:\Qio\game\baseqio\textures"
+"remotebasepath" ""
+"modelmask" "*.md5mesh"
+"entitydir" "code/"
+"moddir" "/baseqio"
+}

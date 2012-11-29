@@ -1,0 +1,5 @@
+If you're getting "cannot open afxwin.h" errors while compiling Radiant.vcproj, download Microsoft Visual Studio 6.0 (or any other version with MFC) and copy MFC dir here.
+The paths should look like this:
+qio/code/tools/radiantAFXInclude/MFC/Include
+qio/code/tools/radiantAFXInclude/MFC/Lib
+qio/code/tools/radiantAFXInclude/MFC/SRC
