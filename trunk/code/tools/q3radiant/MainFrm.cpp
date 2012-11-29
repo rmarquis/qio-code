@@ -2219,23 +2219,17 @@ void CMainFrame::OnViewZoomin()
 {
   if (m_pXYWnd && m_pXYWnd->Active())
   {
-    m_pXYWnd->SetScale(m_pXYWnd->Scale() * 5.0 / 4);
-    if (m_pXYWnd->Scale() > 20)
-      m_pXYWnd->SetScale(20);
+    m_pXYWnd->doZoomIn();
   }
 
   if (m_pXZWnd && m_pXZWnd->Active())
   {
-    m_pXZWnd->SetScale(m_pXZWnd->Scale() * 5.0 / 4);
-    if (m_pXZWnd->Scale() > 20)
-      m_pXZWnd->SetScale(20);
+    m_pXZWnd->doZoomIn();
   }
 
   if (m_pYZWnd && m_pYZWnd->Active())
   {
-    m_pYZWnd->SetScale(m_pYZWnd->Scale() * 5.0 / 4);
-    if (m_pYZWnd->Scale() > 20)
-      m_pYZWnd->SetScale(20);
+    m_pYZWnd->doZoomIn();
   }
 
 
@@ -2247,23 +2241,17 @@ void CMainFrame::OnViewZoomout()
 
   if (m_pXYWnd && m_pXYWnd->Active())
   {
-    m_pXYWnd->SetScale(m_pXYWnd->Scale() * 4.0 / 5);
-    if (m_pXYWnd->Scale() < 0.1 / 32)
-      m_pXYWnd->SetScale(0.1 /32);
+    m_pXYWnd->doZoomOut();
   }
 
   if (m_pXZWnd && m_pXZWnd->Active())
   {
-    m_pXZWnd->SetScale(m_pXZWnd->Scale() * 4.0 / 5);
-    if (m_pXZWnd->Scale() < 0.1 / 32)
-      m_pXZWnd->SetScale(0.1 / 32);
+    m_pXZWnd->doZoomOut();
   }
 
   if (m_pYZWnd && m_pYZWnd->Active())
   {
-    m_pYZWnd->SetScale(m_pYZWnd->Scale() * 4.0 / 5);
-    if (m_pYZWnd->Scale() < 0.1 / 32)
-      m_pYZWnd->SetScale(0.1 / 32);
+    m_pYZWnd->doZoomOut();
   }
 	Sys_UpdateWindows (W_XY|W_XY_OVERLAY);
 }

@@ -164,6 +164,7 @@ BEGIN_MESSAGE_MAP(CXYWnd, CWnd)
 	ON_WM_MBUTTONUP()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSEWHEEL() // V: added for Qio
 	ON_WM_PAINT()
 	ON_WM_KEYDOWN()
 	ON_WM_SIZE()
@@ -925,7 +926,16 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point)
   else
     SetCursor(::LoadCursor(NULL, IDC_ARROW));
 }
-
+afx_msg BOOL CXYWnd::OnMouseWheel(UINT fFlags, short zDelta, CPoint point) {
+	if(zDelta < 0) {
+		doZoomOut();
+	} else {
+		doZoomIn();
+	}
+	// always remember to redraw the windows after changing camera parameters!
+	Sys_UpdateWindows (W_XY|W_XY_OVERLAY);
+	return false;
+}
 void CXYWnd::RetainClipMode(bool bMode)
 {
   bool bSave = g_bRogueClipMode;
