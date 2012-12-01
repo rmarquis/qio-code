@@ -43,10 +43,11 @@ class trace_c {
 	float traveled;
 	plane_c hitPlane;
 
-	union {
+	//union {
 		class BaseEntity *hitEntity; // for game module
-		struct centity_s *clEntity;
-	};
+		struct centity_s *clEntity; // for cgame module
+		class rEntityAPI_i *hitREntity; // for cgame and renderer
+	//};
 
 	void updateForNewHitPos();
 	void updateForNewFraction();
@@ -74,6 +75,9 @@ public:
 	void setHitCGEntity(struct centity_s *newHitCGEntity) {
 		clEntity = newHitCGEntity;
 	}
+	void setHitREntity(class rEntityAPI_i *newHitREnt) {
+		hitREntity = newHitREnt;
+	}
 	void setFraction(float newFrac) {
 		this->fraction = newFrac;
 	}
@@ -82,6 +86,9 @@ public:
 	}
 	struct centity_s *getHitCGEntity() const {
 		return clEntity;
+	}
+	class rEntityAPI_i *getHitREntity() const {
+		return hitREntity;
 	}
 	const vec3_c &getStartPos() const {
 		return from;

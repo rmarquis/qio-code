@@ -433,7 +433,7 @@ int Q_isnan(float x);
   // its address
   //#define Q_ftol lrintf
 
-static long Q_ftol(float f) {
+inline long Q_ftol(float f) {
 	return (long)f;
 }
 

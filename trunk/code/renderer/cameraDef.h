@@ -59,6 +59,9 @@ public:
 	const axis_c &getAxis() const {
 		return axis;
 	}
+	const vec3_c &getForward() const {
+		return axis.getForward();
+	}
 };
 
 #endif // __CAMERADEF_H__

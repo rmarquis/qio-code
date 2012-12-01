@@ -28,6 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->hitEntity = 0;
+	this->clEntity = 0;
+	this->hitREntity = 0;
 	this->to = newTo;
 	this->from = newFrom;
 	this->hitPos = this->to;
@@ -105,6 +107,8 @@ void trace_c::updateResultsFromTransformedTrace(trace_c &selfTransformed) {
 	if(selfTransformed.fraction >= this->fraction)
 		return;
 	this->hitEntity = selfTransformed.hitEntity;
+	this->hitREntity = selfTransformed.hitREntity;
+	this->clEntity = selfTransformed.clEntity;
 	this->fraction = selfTransformed.fraction;
 	this->updateForNewFraction();
 }

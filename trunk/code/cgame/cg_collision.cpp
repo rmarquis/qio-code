@@ -28,7 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rEntityAPI.h>
 #include <shared/trace.h>
 
-bool CG_RayTrace(class trace_c &tr, int skipEntNum) {
+bool CG_RayTrace(class trace_c &tr, u32 skipEntNum) {
 	if(rf->rayTraceWorldMap(tr)) {
 		tr.setHitCGEntity(&cg_entities[ENTITYNUM_WORLD]);	
 	}
@@ -50,10 +50,7 @@ bool CG_RayTrace(class trace_c &tr, int skipEntNum) {
 		if(tr.getTraceBounds().intersect(bb) == false) {
 			continue;
 		}
-		trace_c transformedTrace;
-		tr.getTransformed(transformedTrace,cent->rEnt->getMatrix());
-		if(cent->rEnt->rayTrace(transformedTrace)) {
-			tr.updateResultsFromTransformedTrace(transformedTrace);
+		if(cent->rEnt->rayTraceWorld(tr)) {
 			tr.setHitCGEntity(cent);
 		}
 	}

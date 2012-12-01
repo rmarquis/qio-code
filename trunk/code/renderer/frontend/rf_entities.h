@@ -44,6 +44,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	bool bFirstPersonOnly;
 	bool bThirdPersonOnly;
 	bool bHidden;
+	bool bIsPlayerModel;
 	rfSurfsFlagsArray_t surfaceFlags; // surfaceFlags.size() == this->getNumSurfaces()
 	// used only for static (non-animated) model entities
 	class simpleDecalBatcher_c *staticDecals; 
@@ -70,6 +71,12 @@ public:
 	virtual void setFirstPersonOnly(bool bOn) {
 		bFirstPersonOnly = bOn;
 	}
+	virtual void setIsPlayerModel(bool bNewIsPlayerModel) {
+		bIsPlayerModel = bNewIsPlayerModel;
+	}
+	virtual bool isPlayerModel() const {
+		return bIsPlayerModel;
+	}
 	virtual void setRagdoll(const class afDeclAPI_i *af);
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
 	virtual void hideModel();
@@ -86,11 +93,16 @@ public:
 	bool isHidden() const {
 		return bHidden;
 	}
-
-
-	virtual rModelAPI_i *getModel() const {
-		return model;
+	virtual bool isRagdoll() const {
+		if(myRagdollDef)
+			return true;
+		return false;
 	}
+
+
+
+	virtual rModelAPI_i *getModel() const;
+	virtual const char *getModelName() const;
 	virtual const axis_c &getAxis() const {
 		return axis;
 	}
@@ -111,7 +123,8 @@ public:
 
 	void addDrawCalls();
 
-	virtual bool rayTrace(class trace_c &tr) const;
+	virtual bool rayTraceLocal(class trace_c &tr) const;
+	virtual bool rayTraceWorld(class trace_c &tr) const;
 	virtual bool getBoneWorldOrientation(const char *boneName, class matrix_c &out);
 	virtual bool getBoneWorldOrientation(int localBoneIndex, class matrix_c &out);
 };

@@ -253,6 +253,10 @@ static void CG_TransitionSnapshot( void ) {
 		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].nextState, qfalse );
 	}
 	cg_entities[ cg.snap->ps.clientNum ].interpolate = qfalse;
+	if(cg_entities[cg.snap->ps.clientNum].rEnt) {
+		// set the playerModel flag as soon as its possible
+		cg_entities[cg.snap->ps.clientNum].rEnt->setIsPlayerModel(true);
+	}
 #endif
 
 	cg.nextSnap = NULL;

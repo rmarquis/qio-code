@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_decals.h"
 #include "rf_surface.h"
 #include "rf_anims.h"
+#include "rf_world.h"
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
@@ -35,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
+#include <shared/trace.h>
 #include <renderer/rfSurfFlags.h>
 
 aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","1");
@@ -180,6 +182,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	bFirstPersonOnly = false;
 	bThirdPersonOnly = false;
 	bHidden = false;
+	bIsPlayerModel = false;
 	myRagdollDef = 0;
 	ragOrs = 0;
 }
@@ -285,6 +288,14 @@ void rEntityImpl_c::hideModel() {
 }
 void rEntityImpl_c::showModel() {
 	bHidden = false;
+}	
+rModelAPI_i *rEntityImpl_c::getModel() const {
+	return model;
+}
+const char *rEntityImpl_c::getModelName() const {
+	if(model == 0)
+		return "noModel";
+	return model->getName();
 }
 void rEntityImpl_c::hideSurface(u32 surfNum) {
 	if(surfaceFlags.size() <= surfNum) {
@@ -390,8 +401,36 @@ bool rEntityImpl_c::getBoneWorldOrientation(const char *boneName, class matrix_c
 		return true; // error, bone not found
 	return getBoneWorldOrientation(boneIndex,out);
 }
-bool rEntityImpl_c::rayTrace(class trace_c &tr) const {
-	return model->rayTrace(tr);
+bool rEntityImpl_c::rayTraceLocal(class trace_c &tr) const {
+	if(instance) {
+		// TODO: ensure that skeletal model instance is up to date?
+		if(instance->traceRay(tr,false)) {
+			tr.setHitREntity((class rEntityImpl_c*)this);
+			return true; // hit skeletal model instance
+		}
+		return false; // no hit
+	} else if(model) {
+		// raycast static model
+		if(model->rayTrace(tr)) {
+			tr.setHitREntity((class rEntityImpl_c*)this);
+			return true; // hit
+		}
+		return false; // no hit
+	}
+	return false; // no hit
+}
+bool rEntityImpl_c::rayTraceWorld(class trace_c &tr) const {
+	if(this->myRagdollDef) {
+		// ragdolls are in world space
+		return this->rayTraceLocal(tr);
+	}
+	trace_c transformedTrace;
+	tr.getTransformed(transformedTrace,this->getMatrix());
+	if(rayTraceLocal(transformedTrace)) {
+		tr.updateResultsFromTransformedTrace(transformedTrace);
+		return true; // hit
+	}
+	return false; // no hit
 }
 int rEntityImpl_c::addDecalWorldSpace(const class vec3_c &pos, 
 	const class vec3_c &normal, float radius, class mtrAPI_i *material) {
@@ -473,4 +512,21 @@ void RFE_ClearEntities() {
 		rf_entities[i] = 0;
 	}
 	rf_entities.clear();
+}
+
+bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels) {
+	bool bHit = RF_RayTraceWorld(tr);
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		const rEntityImpl_c *ent = rf_entities[i];
+		if(bSkipPlayerModels && ent->isPlayerModel()) {
+			continue;
+		}
+		const aabb &worldBB = ent->getBoundsABS();
+		if(tr.getTraceBounds().intersect(worldBB) == false)
+			continue;
+		if(ent->rayTraceWorld(tr)) {
+			bHit = true;
+		}
+	}
+	return bHit;
 }

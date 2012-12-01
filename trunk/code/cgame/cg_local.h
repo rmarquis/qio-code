@@ -274,7 +274,7 @@ void CG_AddLagometerFrameInfo( void ) ;
 //
 // cg_collision.cpp
 //
-bool CG_RayTrace(class trace_c &tr, int skipEntNum = ENTITYNUM_NONE);
+bool CG_RayTrace(class trace_c &tr, u32 skipEntNum = ENTITYNUM_NONE);
 
 //
 // cg_testModel.cpp

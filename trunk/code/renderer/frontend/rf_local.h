@@ -38,6 +38,7 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent);
 void RFE_AddEntityDrawCalls();
 void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
+bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 
 // rf_sky.cpp
 void RF_InitSky();

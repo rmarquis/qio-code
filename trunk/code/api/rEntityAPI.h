@@ -33,10 +33,12 @@ public:
 	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
 	virtual void setThirdPersonOnly(bool bOn) = 0;
 	virtual void setFirstPersonOnly(bool bOn) = 0;
+	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;
 	virtual void setRagdoll(const class afDeclAPI_i *af) = 0;
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
+	virtual const char *getModelName() const = 0;
 	virtual const class axis_c &getAxis() const = 0;
 	virtual const class vec3_c &getOrigin() const = 0;
 	virtual const class matrix_c &getMatrix() const = 0;
@@ -45,10 +47,14 @@ public:
 	virtual void hideModel() = 0;
 	virtual void showModel() = 0;
 	virtual void hideSurface(u32 surfNum) = 0;
+	virtual bool isRagdoll() const = 0;
 
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured
-	virtual bool rayTrace(class trace_c &tr) const = 0;
+	virtual bool rayTraceLocal(class trace_c &tr) const = 0;
+	// this will automatically transform ray from world to this entity
+	// coordinates and call "rayTraceLocal"
+	virtual bool rayTraceWorld(class trace_c &tr) const = 0;
 
 	/// for skeletal models
 	// NOTE: this will force bones recalculation if skeleton is not up to date!

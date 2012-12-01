@@ -26,14 +26,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <qcommon/q_shared.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
+#include <shared/trace.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/gameAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/rEntityAPI.h>
 
 static aCvar_c rf_showEntityABSBounds("rf_showEntityABSBounds","0");
+static aCvar_c r_showSurfaceInfo("r_showSurfaceInfo","1");
+
+void RF_ShowCrossairSurfaceInfo() {
+	trace_c tr;
+	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
+	tr.setupRay(rf_camera.getOrigin(),to);
+	RF_TraceSceneRay(tr,true);
+	if(tr.hasHit() == false)
+		return;
+	rEntityAPI_i *rEnt = tr.getHitREntity();
+	if(rEnt) {
+		if(rEnt->isRagdoll()) {
+			g_core->Print("Hit render RAGDOLL entity with model %s\n",rEnt->getModelName());
+		} else {
+			g_core->Print("Hit render entity with model %s\n",rEnt->getModelName());
+		}
+	} else {
+		g_core->Print("Hit render World\n");
+	}
+}
 
 // draw debug info for game module 
 // this works (obviously) only for local client
@@ -50,6 +72,9 @@ void RF_DoDebugDrawing() {
 		RF_GameDebugDrawing();
 	}
 	rb->unbindMaterial();
+	if(r_showSurfaceInfo.getInt()) {
+		RF_ShowCrossairSurfaceInfo();
+	}
 	RFDL_DrawDebugLines();
 	if(rf_showEntityABSBounds.getInt()) {
 		float redColor [4] = { 1, 0, 0, 1 };
