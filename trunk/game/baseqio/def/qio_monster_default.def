@@ -1,0 +1,6 @@
+
+
+entityDef monster_default {
+	"classname" "ModelEntity"
+	
+}
