@@ -21,6 +21,7 @@ void BT_RemoveRigidBody(class btRigidBody *body);
 class btRigidBody* BT_CreateRigidBodyInternal(float mass, const class btTransform& startTransform, class btCollisionShape* shape);
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans,class cMod_i *cmodel);
 class btConvexHullShape *BT_CModelHullToConvex(class cmHull_i *h);
+btConvexHullShape *BT_AABBMinsMaxsToConvex(const class aabb &bb);
 
 extern float bt_collisionMargin;
 

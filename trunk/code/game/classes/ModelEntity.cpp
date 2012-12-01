@@ -124,7 +124,7 @@ void ModelEntity::setRagdollName(const char *ragName) {
 bool ModelEntity::setColModel(class cMod_i *newCModel) {
 	return setColModel(newCModel->getName());
 }
-void ModelEntity::debugDrawCMObject(class rDebugDrawer_i *dd) {
+void ModelEntity::debugDrawCollisionModel(class rDebugDrawer_i *dd) {
 	if(cmod == 0)
 		return;
 	if(cmod->isCapsule()) {
@@ -145,7 +145,18 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		this->setColModel(value);
 	} else if(!stricmp(key,"size")) {
 		vec3_c sizes(value);
+#if 0
 		cmBBExts_i *cmBB = cm->registerBoxExts(sizes);
+#else
+		aabb bb;
+		bb.maxs.x = sizes.x * 0.5f;
+		bb.maxs.y = sizes.y * 0.5f;
+		bb.maxs.z = sizes.z;
+		bb.mins.x = -bb.maxs.x;
+		bb.mins.y = -bb.maxs.y;
+		bb.mins.z = 0;
+		cMod_i *cmBB = cm->registerAABB(bb);
+#endif
 		this->setColModel(cmBB);
 	} else {
 		// fallback to parent class keyvalues

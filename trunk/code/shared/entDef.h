@@ -55,6 +55,11 @@ public:
 	virtual u32 getNumKeyValues() const {
 		return ePairs.size();
 	}
+	virtual bool hasClassName() const {
+		if(className.length())
+			return true;
+		return false;
+	}
 	virtual void getKeyValue(u32 idx, const char **key, const char **value) const {
 		return ePairs.getKeyValue(idx,key,value);
 	}
@@ -66,6 +71,13 @@ public:
 	}
 	bool fromString(const char *txt);
 	bool readFirstEntDefFromFile(const char *fileName);
+	void fromOtherAPI(const class entDefAPI_i *p);
+	void appendOtherAPI_overwrite(const class entDefAPI_i *p);
+
+	void operator = (const entDef_c &other) {
+		this->className = other.className;
+		this->ePairs = other.ePairs;
+	}
 };
 
 #endif // __ENTDEF_H__

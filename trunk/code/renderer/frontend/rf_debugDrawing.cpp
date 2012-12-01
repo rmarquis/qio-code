@@ -34,9 +34,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/mtrAPI.h>
 
 static aCvar_c rf_showEntityABSBounds("rf_showEntityABSBounds","0");
-static aCvar_c r_showSurfaceInfo("r_showSurfaceInfo","1");
+static aCvar_c r_showSurfaceInfo("r_showSurfaceInfo","0");
 
 void RF_ShowCrossairSurfaceInfo() {
 	trace_c tr;
@@ -45,15 +46,20 @@ void RF_ShowCrossairSurfaceInfo() {
 	RF_TraceSceneRay(tr,true);
 	if(tr.hasHit() == false)
 		return;
+	mtrAPI_i *rMat = tr.getHitRMaterial();
+	if(rMat == 0) {
+		g_core->RedWarning("RF_SnowCrossairSurfaceInfo(): NULL hit material - this should never happen!\n");
+		return;
+	}
 	rEntityAPI_i *rEnt = tr.getHitREntity();
 	if(rEnt) {
 		if(rEnt->isRagdoll()) {
-			g_core->Print("Hit render RAGDOLL entity with model %s\n",rEnt->getModelName());
+			g_core->Print("Hit render RAGDOLL entity with model %s and material %s\n",rEnt->getModelName(),rMat->getName());
 		} else {
-			g_core->Print("Hit render entity with model %s\n",rEnt->getModelName());
+			g_core->Print("Hit render entity with model %s and material %s\n",rEnt->getModelName(),rMat->getName());
 		}
 	} else {
-		g_core->Print("Hit render World\n");
+		g_core->Print("Hit render World, material %s\n",rMat->getName());
 	}
 }
 

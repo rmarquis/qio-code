@@ -71,7 +71,7 @@ public:
 	void initRagdollPhysics();
 	//void destroyPhysicsRagdoll();
 
-	void debugDrawCMObject(class rDebugDrawer_i *dd);
+	virtual void debugDrawCollisionModel(class rDebugDrawer_i *dd);
 
 	bool hasPhysicsObject() const {
 		if(body)
@@ -92,11 +92,6 @@ public:
 
 	virtual bool traceWorldRay(class trace_c &tr);
 	virtual bool traceLocalRay(class trace_c &tr);
-
-	virtual void debugDraw(class rDebugDrawer_i *dd) {
-		BaseEntity::debugDraw(dd);
-		debugDrawCMObject(dd);
-	}
 };
 
 #endif // __MODELENTITY_H__

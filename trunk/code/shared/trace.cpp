@@ -30,6 +30,7 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->hitEntity = 0;
 	this->clEntity = 0;
 	this->hitREntity = 0;
+	this->hitRMaterial = 0;
 	this->to = newTo;
 	this->from = newFrom;
 	this->hitPos = this->to;

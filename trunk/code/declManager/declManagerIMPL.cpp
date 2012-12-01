@@ -219,6 +219,7 @@ public:
 		parser_c p;
 		p.setup(textBase, text);
 		p.setDebugFileName(fname);
+		str inherit;
 		while(p.atWord_dontNeedWS("}") == false) {
 			if(p.atEOF()) {
 				g_core->RedWarning("entityDecl_c::parse: unexpected EOF hit while parsing entityDef %s declaration in file %s\n",
@@ -227,12 +228,29 @@ public:
 			}
 			str key = p.getToken();
 			str val = p.getToken();
-			entDef.setKeyValue(key,val);
+			if(!stricmp(key,"inherit")) {
+				inherit = val;
+			} else {
+				entDef.setKeyValue(key,val);
+			}
+		}
+		if(inherit.length()) {
+			entityDeclAPI_i *inheritDecl = g_declMgr->registerEntityDecl(inherit);
+			if(inheritDecl == 0) {
+				g_core->RedWarning("entityDecl_c::parse: cannot find entityDef \"%s\" for inherit keyword of \"%s\"\n",
+					inherit.c_str(),this->declName.c_str());
+			} else {
+				entDef_c tmp = this->entDef;
+				this->entDef.fromOtherAPI(inheritDecl->getEntDefAPI());
+				this->entDef.appendOtherAPI_overwrite(&tmp);
+			}
 		}
 		return false;
 	}
 	bool isValid() const {
 		if(entDef.getNumKeyValues())
+			return true;
+		if(entDef.hasClassName())
 			return true;
 		return false;
 	}	

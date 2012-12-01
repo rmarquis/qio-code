@@ -815,6 +815,9 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 				hasHit = true;
 			}
 		}
+		if(hasHit) {
+			out.setHitRMaterial(t->mat);
+		}
 		return hasHit;
 	}
 }

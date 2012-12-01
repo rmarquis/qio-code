@@ -98,7 +98,11 @@ public:
 	virtual void doUse(class Player *activator) {
 
 	}
-	virtual void debugDraw(class rDebugDrawer_i *dd);
+	virtual void debugDrawAbsBounds(class rDebugDrawer_i *dd);
+
+	virtual void debugDrawCollisionModel(class rDebugDrawer_i *dd) {
+		// this will be overriden by ModelEntity
+	}
 };
 
 void BE_SetForcedEdict(edict_s *nfe);

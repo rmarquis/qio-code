@@ -759,6 +759,10 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	} else if(cModel->isTriMesh()) {
 		const cmSurface_c *sf = cModel->getTriMesh()->getCMSurface();
 		shape = BT_CreateBHVTriMeshForCMSurface(*sf);
+	} else if(cModel->isBBMinsMaxs()) {
+		aabb bb;
+		cModel->getBounds(bb);
+		shape = BT_AABBMinsMaxsToConvex(bb);
 	} else {
 		return 0;
 	}
@@ -1002,6 +1006,23 @@ btConvexHullShape *BT_CModelHullToConvex(cmHull_i *h) {
 	return shape;
 }
 
+btConvexHullShape *BT_AABBMinsMaxsToConvex(const aabb &bb) {
+	btAlignedObjectArray<btVector3>	vertices;
+	vertices.resize(8);
+	for(u32 i = 0; i < 8; i++) {
+		vertices[i] = bb.getPoint(i).floatPtr();
+	}
+	if(vertices.size() == 0)
+		return 0;
+	// this create an internal copy of the vertices
+	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+#if 1
+	// This is not needed by physics code itself, but its needed by bt debug drawing.
+	// (without it convex shapes edges are messed up)
+	shape->initializePolyhedralFeatures();
+#endif
+	return shape;
+}
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans, class cMod_i *cmodel) {
 	if(cmodel->isHull()) {
 		cmHull_i *h = cmodel->getHull();

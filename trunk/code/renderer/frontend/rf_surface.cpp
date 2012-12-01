@@ -159,6 +159,9 @@ bool r_surface_c::traceRay(class trace_c &tr) {
 			hasHit = true;
 		}
 	}
+	if(hasHit) {
+		tr.setHitRMaterial(this->mat);
+	}
 	return hasHit;
 }	
 bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {

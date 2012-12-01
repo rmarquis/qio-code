@@ -37,6 +37,7 @@ enum cModType_e {
 	CMOD_COMPOUND,
 	CMOD_TRIMESH, // for static (non-moveable) physics object
 	CMOD_SKELMODEL, // dynamic, skeletal model which must be instanced before raycasting
+	CMOD_BBMINSMAXS, // bounding box defined by mins and maxs vectors
 };
 
 // cm helpers are used to position joints,
@@ -68,6 +69,10 @@ public:
 	bool isTriMesh() const {
 		return getType() == CMOD_TRIMESH;
 	}
+	bool isBBMinsMaxs() const {
+		return getType() == CMOD_BBMINSMAXS;
+	}
+
 	virtual class cmBBExts_i *getBBExts() = 0;
 	virtual class cmCapsule_i *getCapsule() = 0;
 	virtual class cmHull_i *getHull() = 0;
@@ -108,6 +113,11 @@ public:
 class cmBBExts_i : public cMod_i {
 public:
 	virtual const class vec3_c &getHalfSizes() const = 0;
+};
+
+class cmBBMinsMaxs_i : public cMod_i {
+public:
+	// use cMod_i::getBounds() to access AABB shape
 };
 
 // single convex hull (aka brush)
@@ -157,6 +167,8 @@ public:
 	class cmBBExts_i *registerBoxExts(const float *hfs) {
 		return registerBoxExts(hfs[0],hfs[1],hfs[2]);
 	}
+	// aabb defined by mins and maxs
+	virtual class cmBBMinsMaxs_i *registerAABB(const class aabb &bb) = 0;
 
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;

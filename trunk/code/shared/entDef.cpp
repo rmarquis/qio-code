@@ -68,3 +68,26 @@ bool entDef_c::readFirstEntDefFromFile(const char *fileName) {
 	}
 	return parseSingleEntDef(p);
 }
+
+void entDef_c::fromOtherAPI(const class entDefAPI_i *p) {
+	this->className = p->getClassName();
+	this->ePairs.clear();
+	for(u32 i = 0; i < p->getNumKeyValues(); i++) {
+		const char *key, *value;
+		p->getKeyValue(i,&key,&value);
+		setKeyValue(key,value);
+	}
+}
+void entDef_c::appendOtherAPI_overwrite(const class entDefAPI_i *p) {
+	if(p->getClassName() && p->getClassName()[0]) {
+		this->className = p->getClassName();
+	}
+	//this->ePairs.clear(); // dont clear existing key-values because we're appending
+	for(u32 i = 0; i < p->getNumKeyValues(); i++) {
+		const char *key, *value;
+		p->getKeyValue(i,&key,&value);
+		setKeyValue(key,value);
+	}
+}
+
+

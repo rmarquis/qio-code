@@ -72,10 +72,22 @@ public:
 	ePairList_c() {
 
 	}
+	ePairList_c(const ePairList_c &other) {
+		for(u32 i = 0; i < other.pairs.size(); i++) {
+			const ePair_c *p = other.pairs[i];
+			this->set(p->getKey(),p->getValue());
+		}
+	}
 	~ePairList_c() {
 		for(u32 i = 0; i < pairs.size(); i++) {
 			delete pairs[i];
 		}
+	}
+	void clear() {
+		for(u32 i = 0; i < pairs.size(); i++) {
+			delete pairs[i];
+		}
+		pairs.clear();
 	}
 	void set(const char *key, const char *val) {
 		ePair_c *ep = find(key);

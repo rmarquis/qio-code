@@ -28,16 +28,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 
 static aCvar_c g_enableDebugDrawing("g_enableDebugDrawing","1");
+static aCvar_c gdd_drawEntityAbsBounds("gdd_drawEntityAbsBounds","0");
+static aCvar_c gdd_drawEntityCollisionModels("gdd_drawEntityCollisionModels","0");
 
 void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 	if(g_enableDebugDrawing.getInt() == 0)
 		return;
 	class rDebugDrawer_i *dd = pRFAPI->getDebugDrawer();
-	for(u32 i = 0; i < MAX_GENTITIES; i++) {
-		edict_s *ent = &g_entities[i];
-		if(ent->s == 0)
-			continue;
-		ent->ent->debugDraw(dd);
+
+	if(gdd_drawEntityAbsBounds.getInt()) {
+		for(u32 i = 0; i < MAX_GENTITIES; i++) {
+			edict_s *ent = &g_entities[i];
+			if(ent->s == 0)
+				continue;
+			ent->ent->debugDrawAbsBounds(dd);
+		}
 	}
+	if(gdd_drawEntityCollisionModels.getInt()) {
+		for(u32 i = 0; i < MAX_GENTITIES; i++) {
+			edict_s *ent = &g_entities[i];
+			if(ent->s == 0)
+				continue;
+			ent->ent->debugDrawCollisionModel(dd);
+		}
+	}
+
+	
 	G_DoBulletDebugDrawing(dd);
 }

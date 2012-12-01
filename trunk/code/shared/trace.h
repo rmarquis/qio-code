@@ -44,9 +44,12 @@ class trace_c {
 	plane_c hitPlane;
 
 	//union {
+		// SERVERSIDE trace hit info
 		class BaseEntity *hitEntity; // for game module
+		// CLIENTSIDE trace hit info
 		struct centity_s *clEntity; // for cgame module
 		class rEntityAPI_i *hitREntity; // for cgame and renderer
+		class mtrAPI_i *hitRMaterial; // for cgame and renderer
 	//};
 
 	void updateForNewHitPos();
@@ -78,6 +81,9 @@ public:
 	void setHitREntity(class rEntityAPI_i *newHitREnt) {
 		hitREntity = newHitREnt;
 	}
+	void setHitRMaterial(class mtrAPI_i *newHitRMaterial) {
+		hitRMaterial = newHitRMaterial;
+	}
 	void setFraction(float newFrac) {
 		this->fraction = newFrac;
 	}
@@ -89,6 +95,9 @@ public:
 	}
 	class rEntityAPI_i *getHitREntity() const {
 		return hitREntity;
+	}
+	class mtrAPI_i *getHitRMaterial() const {
+		return hitRMaterial;
 	}
 	const vec3_c &getStartPos() const {
 		return from;

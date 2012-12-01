@@ -41,6 +41,9 @@ void CM_FormatCapsuleModelName(str &out, float h, float r) {
 void CM_FormatBBExtsModelName(str &out, const float *halfSizes) {
 	out = va("_bhe%f_%f_%f",halfSizes[0],halfSizes[1],halfSizes[2]);
 }
+void CM_FormatBBMinsMaxsModelName(str &out, const aabb &bb) {
+	out = va("_bmx%f_%f_%f",bb.mins.x,bb.mins.y,bb.mins.x,bb.maxs.x,bb.maxs.y,bb.maxs.z);
+}
 cmCapsule_i *CM_RegisterCapsule(float height, float radius) {
 	str modName;
 	CM_FormatCapsuleModelName(modName,height,radius);
@@ -68,6 +71,21 @@ class cmBBExts_i *CM_RegisterBoxExts(float halfSizeX, float halfSizeY, float hal
 		return (cmBBExts_i*)existing;
 	}
 	cmBBExts_c *n = new cmBBExts_c(modName, vec3_c(halfSizeX, halfSizeY, halfSizeZ));
+	cm_models.addObject(n);
+	return n;
+}
+class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb) {
+	str modName;
+	CM_FormatBBMinsMaxsModelName(modName,bb);
+	cMod_i *existing = CM_FindModelInternal(modName);
+	if(existing) {
+		if(existing->getType() != CMOD_BBEXTS) {
+			g_core->DropError("CM_RegisterBoxExts: found non-bbexts model using bbexts name syntax");
+			return 0;
+		}
+		return (cmBBMinsMaxs_i*)existing;
+	}
+	cmBBMinsMaxs_c *n = new cmBBMinsMaxs_c(modName, bb);
 	cm_models.addObject(n);
 	return n;
 }

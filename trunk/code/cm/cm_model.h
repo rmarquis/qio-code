@@ -203,6 +203,60 @@ public:
 	}
 };
 
+class cmBBMinsMaxs_c : public cmObjectBase_c, public cmBBMinsMaxs_i {
+	// nothing else needed here...
+public:
+
+	// cmObjectBase_c access
+	virtual const char *getName() const {
+		return name;
+	}
+	virtual enum cModType_e getType() const {
+		return CMOD_BBMINSMAXS;
+	}
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return 0;
+	}
+	virtual void getBounds(class aabb &out) {
+		out = this->bounds;
+	}
+	virtual bool traceRay(class trace_c &tr) {
+		if(tr.clipByAABB(this->bounds))
+			return true;
+		return false;
+	}
+	// helpers api
+	virtual u32 getNumHelpers() const {
+		return helpers.size();
+	}
+	virtual cmHelper_i *getHelper(u32 helperNum) {
+		return helpers[helperNum];
+	}
+	virtual cmCompound_i *getSubModel(u32 subModelNum) {
+		return helpers.findSubModel(subModelNum);
+	}
+
+	cmBBMinsMaxs_c(const char *newName, const aabb &newBounds) {
+		this->name = newName;
+		this->bounds = newBounds;
+	}
+};
+
 class cmHull_c : public cmObjectBase_c, public cmHull_i {
 	cmBrush_c myBrush;
 public:

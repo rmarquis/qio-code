@@ -41,6 +41,9 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual class cmBBExts_i *registerBoxExts(float halfSizeX, float halfSizeY, float halfSizeZ) {
 		return CM_RegisterBoxExts(halfSizeX,halfSizeY,halfSizeZ);
 	}
+	virtual class cmBBMinsMaxs_i *registerAABB(const class aabb &bb) {
+		return CM_RegisterAABB(bb);
+	}
 
 	
 	virtual class cMod_i *registerModel(const char *modName) {

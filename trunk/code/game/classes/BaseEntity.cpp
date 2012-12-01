@@ -152,12 +152,7 @@ void BaseEntity::detachFromParent() {
 }
 
 #include <api/ddAPI.h>
-#include <shared/autoCvar.h>
 
-aCvar_c gdd_drawEntityAbsBounds("gdd_drawEntityAbsBounds","0");
-
-void BaseEntity::debugDraw(class rDebugDrawer_i *dd) {
-	if(gdd_drawEntityAbsBounds.getInt()) {
-		dd->drawBBLines(this->myEdict->absBounds);
-	}
+void BaseEntity::debugDrawAbsBounds(class rDebugDrawer_i *dd) {
+	dd->drawBBLines(this->myEdict->absBounds);
 }
