@@ -613,6 +613,12 @@ bool BT_TraceRay(class trace_c &tr) {
 	btRayCallback_c rayCallback(rayFrom,rayTo);
 	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
 	tr.setHitPos(rayCallback.m_hitPointWorld.m_floats);
+	if(rayCallback.m_collisionObject) {
+		void *uPtr = rayCallback.m_collisionObject->getUserPointer();
+		if(uPtr) {
+			tr.setHitEntity((BaseEntity*)uPtr);
+		}
+	}
 	return rayCallback.hasHit();
 }
 btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {

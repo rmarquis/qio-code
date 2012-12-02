@@ -116,13 +116,13 @@ class afRagdollSpawner_c : public afRagdollHelper_c {
 		return shape;
 	}
 public:
-	ragdoll_c *spawnRagdollFromAF(const char *afName, const vec3_c &pos) {
+	ragdoll_c *spawnRagdollFromAF(const char *afName, const vec3_c &pos, const vec3_c &angles) {
 		if(setupRagdollHelper(afName)) {
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: failed to setup afRagdollHelper for AF \"%s\"\n",afName);
 			return 0;
 		}
 		matrix_c extraWorldTransform;
-		extraWorldTransform.setupOrigin(pos.x,pos.y,pos.z);
+		extraWorldTransform.fromAnglesAndOrigin(angles,pos);
 		ragdoll_c *ret = new ragdoll_c;
 		ret->af = af;
 		ret->afd = afd;
@@ -213,7 +213,7 @@ public:
 	}
 };
 
-class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos) {
+class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos, const vec3_c &angles) {
 	afRagdollSpawner_c s;
-	return s.spawnRagdollFromAF(afName, pos);
+	return s.spawnRagdollFromAF(afName, pos, angles);
 }

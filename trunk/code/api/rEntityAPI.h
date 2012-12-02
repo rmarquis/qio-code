@@ -36,6 +36,7 @@ public:
 	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;
 	virtual void setRagdoll(const class afDeclAPI_i *af) = 0;
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) = 0;
+	virtual void setDeclModelAnimLocalIndex(int localAnimIndex) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const char *getModelName() const = 0;
@@ -48,6 +49,7 @@ public:
 	virtual void showModel() = 0;
 	virtual void hideSurface(u32 surfNum) = 0;
 	virtual bool isRagdoll() const = 0;
+	virtual bool hasDeclModel() const = 0;
 
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured

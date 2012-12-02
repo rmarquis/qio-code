@@ -106,6 +106,12 @@ class skelModelAPI_i *model_c::getSkelModelAPI() const {
 	}
 	return 0;
 }
+class modelDeclAPI_i *model_c::getDeclModelAPI() const {  
+	if(type == MOD_DECL) {
+		return declModel;
+	}
+	return 0;
+}
 const class skelAnimAPI_i *model_c::getDeclModelAFPoseAnim() const {
 	if(type == MOD_DECL) {
 		return declModel->getSkelAnimAPIForAlias("af_pose");

@@ -28,9 +28,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "../g_classes.h" // DECLARE_CLASS, etc
 #include <shared/array.h>
+#include <shared/safePtr.h>
 #include <math/matrix.h>
 
-class BaseEntity {
+class BaseEntity : public safePtrObject_c {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 	matrix_c matrix;
 	// for entity attaching
@@ -96,6 +97,9 @@ public:
 
 	}
 	virtual void doUse(class Player *activator) {
+
+	}
+	virtual void onBulletHit(const vec3_c &dirWorld, int damage) {
 
 	}
 	virtual void debugDrawAbsBounds(class rDebugDrawer_i *dd);

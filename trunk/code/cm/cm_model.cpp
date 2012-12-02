@@ -79,8 +79,8 @@ class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb) {
 	CM_FormatBBMinsMaxsModelName(modName,bb);
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
-		if(existing->getType() != CMOD_BBEXTS) {
-			g_core->DropError("CM_RegisterBoxExts: found non-bbexts model using bbexts name syntax");
+		if(existing->getType() != CMOD_BBMINSMAXS) {
+			g_core->DropError("CM_RegisterAABB: found non-bbminsmaxs model using CMOD_BBMINSMAXS name syntax");
 			return 0;
 		}
 		return (cmBBMinsMaxs_i*)existing;

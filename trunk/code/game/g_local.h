@@ -154,7 +154,7 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 //
 // g_ragdoll.cpp
 //
-class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos);
+class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos, const vec3_c &angles);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

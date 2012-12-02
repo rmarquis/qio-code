@@ -2,5 +2,6 @@
 
 entityDef monster_default {
 	"classname" "ModelEntity"
-	
+	"anim" "af_pose"
+  "takeDamage" "1"
 }

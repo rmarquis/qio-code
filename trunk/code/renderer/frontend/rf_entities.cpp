@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
 #include <api/afDeclAPI.h>
+#include <api/modelDeclAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
@@ -283,12 +284,27 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 		animCtrl->setNextAnim(anim);
 	}
 }
+void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
+	if(model->isDeclModel() == false) {
+		g_core->Print("rEntityImpl_c::setDeclModelAnimLocalIndex: called on non-decl model %s\n",model->getName());
+		return;
+	}
+	const class skelAnimAPI_i *a = model->getDeclModelAPI()->getSkelAnimAPIForLocalIndex(localAnimIndex);
+	this->setAnim(a);
+}
 void rEntityImpl_c::hideModel() {
 	bHidden = true;
 }
 void rEntityImpl_c::showModel() {
 	bHidden = false;
 }	
+bool rEntityImpl_c::hasDeclModel() const {
+	if(model == 0)
+		return false;
+	if(model->isDeclModel())
+		return true;
+	return false;
+}
 rModelAPI_i *rEntityImpl_c::getModel() const {
 	return model;
 }

@@ -419,7 +419,7 @@ void ClientCommand( int clientNum ) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
-		G_SpawnTestRagdollFromAF(afName,p);
+		G_SpawnTestRagdollFromAF(afName,p,vec3_c(0,0,0));
 	} else if(!stricmp(cmd,"spawntestaf")) {
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();

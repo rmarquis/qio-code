@@ -25,19 +25,28 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "classes/BaseEntity.h"
 #include <shared/trace.h>
+#include <shared/autoCvar.h>
 #include <api/rApi.h>
 #include <api/serverApi.h>
+
+static aCvar_c g_showBulletTraces("g_showBulletTraces","0");
 
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
 	trace_c tr;
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	BT_TraceRay(tr);
 	G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
-	if(rf) {
+	if(rf && g_showBulletTraces.getInt()) {
 		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
 	}
 	g_server->SendServerCommand(-1,va("test_bulletAttack %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
 		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
+	if(tr.hasHit()) {
+		BaseEntity *h = tr.getHitEntity();
+		if(h) {
+			h->onBulletHit(dir, 100);
+		}
+	}
 }
 
 

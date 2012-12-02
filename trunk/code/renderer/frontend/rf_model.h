@@ -84,6 +84,11 @@ public:
 			return false;
 		return true;
 	}
+	virtual bool isDeclModel() const {
+		if(type == MOD_DECL)
+			return true;
+		return false;
+	}
 	virtual u32 getNumSurfaces() const;
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
@@ -116,6 +121,7 @@ public:
 		const class vec3_c &normal,	float radius, class mtrAPI_i *material);
 
 	virtual class skelModelAPI_i *getSkelModelAPI() const;
+	virtual class modelDeclAPI_i *getDeclModelAPI() const;
 	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const;
 
 	void clear();

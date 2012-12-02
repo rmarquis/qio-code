@@ -79,6 +79,7 @@ public:
 	}
 	virtual void setRagdoll(const class afDeclAPI_i *af);
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
+	virtual void setDeclModelAnimLocalIndex(int localAnimIndex);
 	virtual void hideModel();
 	virtual void showModel();
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
@@ -98,6 +99,7 @@ public:
 			return true;
 		return false;
 	}
+	virtual bool hasDeclModel() const;
 
 
 

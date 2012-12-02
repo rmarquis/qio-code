@@ -180,6 +180,48 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	g_core->Print( text );
 }
 
+void G_TestSafePtrs() {
+	BaseEntity *ne = new BaseEntity;
+	safePtr_c<BaseEntity> np = ne;
+	delete ne;
+	if(np.getPtr()) {
+		g_core->DropError("G_TestSafePtrs: ERROR\n");
+	}
+	np = new BaseEntity;
+	safePtr_c<BaseEntity> others[8];
+	safePtr_c<BaseEntity> others2[8];
+	for(u32 i = 0; i < 8; i++) {
+		others[i] = np;
+	}
+	delete np;
+	for(u32 i = 0; i < 8; i++) {
+		if(others[i].getPtr()) {
+			g_core->DropError("G_TestSafePtrs: ERROR\n");
+		}
+		if(others2[i].getPtr()) {
+			g_core->DropError("G_TestSafePtrs: ERROR\n");
+		}
+	}
+	for(u32 i = 0; i < 8; i++) {
+		others[i] = new BaseEntity;
+		np = others[i];
+		others2[i] = np;
+	}
+	delete np;
+	for(u32 i = 0; i < 8; i++) {
+		if(others[i]) {
+			delete others[i];
+		}
+	}
+	for(u32 i = 0; i < 8; i++) {
+		if(others[i].getPtr()) {
+			g_core->DropError("G_TestSafePtrs: ERROR\n");
+		}
+		if(others2[i].getPtr()) {
+			g_core->DropError("G_TestSafePtrs: ERROR\n");
+		}
+	}
+}
 /*
 ================
 G_RunFrame
@@ -195,6 +237,8 @@ void G_RunFrame( int levelTime ) {
 	level.previousTime = level.time;
 	level.time = levelTime;
 	level.frameTime = (level.time-level.previousTime)*0.001f;
+
+	//G_TestSafePtrs();
 
 	G_RunPhysics();
 

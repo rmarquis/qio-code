@@ -195,11 +195,25 @@ public:
 		}
 		return 0;
 	}
+	virtual int getAnimIndexForAnimAlias(const char *alias) const {
+		for(u32 i = 0; i < anims.size(); i++) {
+			if(!stricmp(anims[i].animAlias,alias)) 
+				return i;
+		}
+		return -1;
+	}
 	virtual const class skelAnimAPI_i *getSkelAnimAPIForAlias(const char *alias) const {
 		const animDef_c *ad = findAnimDef(alias);
 		if(ad == 0)
 			return 0;
 		return ad->getAnim();
+	}
+	virtual const class skelAnimAPI_i *getSkelAnimAPIForLocalIndex(int localIndex) const {
+		if(localIndex < 0)
+			return 0;
+		if(localIndex >= anims.size())
+			return 0;
+		return anims[localIndex].getAnim();
 	}
 };
 class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {

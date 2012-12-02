@@ -44,8 +44,17 @@ public:
 	void nullAllReferences();
 
 	void addSafePtr(safePtrBase_c *p) {
-		p->next = safePtrList;
-		safePtrList = p;
+		if(safePtrList == 0) {
+			safePtrList = p;
+		} else {
+			// add to the tail of the list
+			safePtrBase_c *tmp = safePtrList;
+			while(tmp->next) {
+				tmp = tmp->next;
+			}
+			tmp->next = p;
+		}
+		p->next = 0;
 	}
 	void removeSafePtr(safePtrBase_c *p) {
 		if(safePtrList == 0)
@@ -88,6 +97,10 @@ public:
 	safePtr_c() {
 		myPtr = 0;
 	}
+	safePtr_c(_Ty *newPtr) {
+		myPtr = 0;
+		(*this) = newPtr;
+	}
 	~safePtr_c() {
 		nullPtr();
 	}
@@ -106,6 +119,23 @@ public:
 		myPtr = ptr;
 		myPtr->addSafePtr(this);
 		return ptr;
+	}
+	_Ty *operator = (const safePtr_c &otherSafePtr) {
+		if(myPtr) {
+			nullPtr();
+		}
+		_Ty *ptr = otherSafePtr.myPtr;
+		if(ptr == 0)
+			return 0;
+		myPtr = ptr;
+		myPtr->addSafePtr(this);
+		return ptr;
+	}
+	const _Ty *getPtr() const {
+		return myPtr;
+	}
+	_Ty *getPtr() {
+		return myPtr;
 	}
 	operator _Ty *() {
 		return myPtr;

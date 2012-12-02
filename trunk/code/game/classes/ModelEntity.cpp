@@ -32,7 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../bt_include.h"
 #include "../g_ragdoll.h"
 #include <api/declManagerAPI.h>
+#include <api/modelDeclAPI.h>
 #include <api/afDeclAPI.h>
+#include <api/coreAPI.h>
+
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 
@@ -44,6 +47,9 @@ ModelEntity::ModelEntity() {
 	cmod = 0;
 	cmSkel = 0;
 	ragdoll = 0;
+	health = 100;
+	modelDecl = 0;
+	bTakeDamage = false;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -76,6 +82,12 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	// It's clientside only.
 	this->myEdict->s->rModelIndex = G_RenderModelIndex(newRModelName);
 	renderModelName = newRModelName;
+	// decl models are present on both client and server
+	this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
+	if(this->modelDecl) {
+		// update animation indexes
+		setAnimation(this->animName);
+	}
 
 	this->recalcABSBounds();
 	this->link();
@@ -89,8 +101,14 @@ int ModelEntity::getBoneNumForName(const char *boneName) {
 	return cmSkel->getBoneNumForName(boneName);
 }
 void ModelEntity::setAnimation(const char *newAnimName) {
-	this->myEdict->s->animIndex = G_AnimationIndex(newAnimName);
-	// nothing else to do right now...
+	if(this->modelDecl) {
+		int animIndex = this->modelDecl->getAnimIndexForAnimAlias(newAnimName);
+		this->myEdict->s->animIndex = animIndex;
+	} else {
+		this->myEdict->s->animIndex = G_AnimationIndex(newAnimName);
+		// nothing else to do right now...
+	}
+	animName = newAnimName;
 }
 bool ModelEntity::setColModel(const char *newCModelName) {
 	if(newCModelName[0] == '*' && BT_GetSubModelCModel(atoi(newCModelName+1))) {
@@ -158,6 +176,18 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		cMod_i *cmBB = cm->registerAABB(bb);
 #endif
 		this->setColModel(cmBB);
+	} else if(!stricmp(key,"ragdoll")) {
+		// Doom3 "ragdoll" keyword (name of ArticulatedFigure)
+		this->ragdollDefName = value;
+	} else if(!stricmp(key,"articulatedFigure")) {
+		// I dont really know whats the difference between "ragdoll"
+		// and "articulatedFigure" keywords, they are both used in Doom3
+		// and seem to have the same meaning
+		this->ragdollDefName = value;
+	} else if(!stricmp(key,"anim")) {
+		this->setAnimation(value);
+	} else if(!stricmp(key,"takeDamage")) {
+		this->bTakeDamage = atoi(value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
@@ -232,7 +262,7 @@ void ModelEntity::initRagdollPhysics() {
 	destroyPhysicsObject();
 	if(this->ragdollDefName.length() == 0)
 		return;
-	ragdoll = G_SpawnTestRagdollFromAF(ragdollDefName,this->getOrigin());
+	ragdoll = G_SpawnTestRagdollFromAF(ragdollDefName,this->getOrigin(),this->getAngles());
 	if(ragdoll) {
 		this->myEdict->s->activeRagdollDefNameIndex = G_RagdollDefIndex(ragdollDefName);
 	}
@@ -289,4 +319,26 @@ bool ModelEntity::traceLocalRay(class trace_c &tr) {
 	//////tr.setHitEntity(this);
 	//////return true;
 	return false;
+}
+void ModelEntity::onDeath() {
+	if(health > 0) {
+		health = -1; // ensure that this entity is dead
+	}
+	if(ragdollDefName.length() && (ragdoll == 0)) {
+		this->initRagdollPhysics();
+	}
+	if(ragdoll == 0) {
+		delete this;
+	}
+}
+void ModelEntity::onBulletHit(const vec3_c &dirWorld, int damage) {
+	// apply hit damage
+	if(bTakeDamage) {
+		int prevHealth = health;
+		health -= damage;
+		g_core->Print("ModelEntity::onBulletHit: prev health %i, health now %i\n",prevHealth,health);
+		if(prevHealth > 0 && health <= 0) {
+			this->onDeath();
+		}
+	}
 }

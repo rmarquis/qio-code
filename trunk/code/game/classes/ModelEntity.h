@@ -38,9 +38,14 @@ protected:
 	class cMod_i *cmod;
 	// cmSkeleton for serverside bones access and animation
 	class cmSkelModel_i *cmSkel;
+	// extra model decl access
+	class modelDeclAPI_i *modelDecl;
 	// ragdoll interface
 	str ragdollDefName; // set by "ragdoll" key in Doom3; the name of articulatedFigure decl
 	class ragdollAPI_i *ragdoll;
+	int health;
+	bool bTakeDamage;
+	str animName; // current animation name
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -89,6 +94,9 @@ public:
 	virtual void runFrame();
 
 	virtual void getLocalBounds(aabb &out) const;
+
+	virtual void onDeath();
+	virtual void onBulletHit(const vec3_c &dirWorld, int damage);
 
 	virtual bool traceWorldRay(class trace_c &tr);
 	virtual bool traceLocalRay(class trace_c &tr);
