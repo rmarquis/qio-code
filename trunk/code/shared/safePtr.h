@@ -131,7 +131,7 @@ public:
 		myPtr->addSafePtr(this);
 		return ptr;
 	}
-	const _Ty *getPtr() const {
+	_Ty *getPtr() const {
 		return myPtr;
 	}
 	_Ty *getPtr() {

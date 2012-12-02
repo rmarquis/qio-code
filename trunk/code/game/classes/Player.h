@@ -57,7 +57,7 @@ typedef struct {
 class Player : public ModelEntity {
 	class btKinematicCharacterController *characterController;
 	str netName;
-	class Weapon *curWeapon;
+	safePtr_c<Weapon> curWeapon;
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
 public:

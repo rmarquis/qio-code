@@ -168,8 +168,8 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		}
 		if(0) {
 			this->setAnimation("models/player/shina/attack.md5anim");
-		} else if(bLanding) {
-			this->setAnimation("models/player/shina/run.md5anim");
+		//} else if(bLanding) {
+		//	this->setAnimation("models/player/shina/run.md5anim");
 		} else if(bJumped) {
 			this->setAnimation("models/player/shina/jump.md5anim");
 		} else if(groundDist > 32.f) {

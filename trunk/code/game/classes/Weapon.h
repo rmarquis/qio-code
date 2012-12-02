@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class Weapon : public ModelEntity {
-	class Player *owner;
+	safePtr_c<Player> owner;
 	// custom viewmodel for Doom3-style weapons
 	str model_view;
 public:

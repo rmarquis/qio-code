@@ -48,7 +48,8 @@ class animController_c {
 	const class skelAnimAPI_i *anim;
 	int lastUpdateTime;
 	// extra variables for blending between new and old animation
-	singleAnimLerp_s oldState;
+	//singleAnimLerp_s oldState;
+	boneOrArray_c oldBonesState;
 	const class skelAnimAPI_i *nextAnim;
 	float blendTime;
 
@@ -94,11 +95,16 @@ public:
 		if(nextAnim != anim) {
 			g_core->RedWarning("animController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
 		}
+		g_core->Print("setNextAnim: %i, %s\n",rf_curTimeMsec,newAnim->getName());
+		oldBonesState.resize(anim->getNumBones());
 		if(anim->getBLoopLastFrame() && (time > anim->getTotalTimeSec())) {
-			oldState.from = oldState.to = anim->getNumFrames()-1;
-			oldState.frac = 0.f;
+			//oldState.from = oldState.to = anim->getNumFrames()-1;
+			//oldState.frac = 0.f;
+			anim->buildFrameBonesLocal(anim->getNumFrames()-1,oldBonesState);
 		} else {
-			getSingleLoopAnimLerpValuesForTime(oldState,anim,time);
+			singleAnimLerp_s oldStateTMP;
+			getSingleLoopAnimLerpValuesForTime(oldStateTMP,anim,time);
+			anim->buildLoopAnimLerpFrameBonesLocal(oldStateTMP,oldBonesState);
 		}
 		time = 0;
 		blendTime = 0.1f;
@@ -146,9 +152,9 @@ public:
 		} else {
 			// build old skeleton first
 			// ( TODO: we might do it once and just store the bones here...)
-			boneOrArray_c previous;
-			previous.resize(anim->getNumBones());
-			anim->buildLoopAnimLerpFrameBonesLocal(oldState,previous);
+			//boneOrArray_c previous;
+			//previous.resize(anim->getNumBones());
+			//anim->buildLoopAnimLerpFrameBonesLocal(oldState,previous);
 			
 			// build skeleton for the first frame of new animation
 			boneOrArray_c newBones;
@@ -158,7 +164,7 @@ public:
 			// do the interpolation
 			float frac = this->time / this->blendTime;
 		//	g_core->Print("Blending between two anims, frac: %f\n",frac);	
-			currentBonesArray.setBlendResult(previous, newBones, frac);		
+			currentBonesArray.setBlendResult(oldBonesState, newBones, frac);		
 		}
 		currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
 		if(skelModel->hasCustomScaling()) {

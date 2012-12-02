@@ -29,6 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "BaseEntity.h"
 #include <shared/str.h>
 
+class Weapon;
+class Player;
+
 class ModelEntity : public BaseEntity {
 	str renderModelName;
 protected:

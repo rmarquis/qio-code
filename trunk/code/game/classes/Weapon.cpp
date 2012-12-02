@@ -55,7 +55,7 @@ void Weapon::doUse(class Player *activator) {
 }
 
 BaseEntity *Weapon::getOwner() const {
-	return owner;
+	return owner.getPtr();
 }
 void Weapon::onFireKeyHeld() {
 	
