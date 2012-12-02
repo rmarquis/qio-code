@@ -38,152 +38,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
 #include <shared/trace.h>
+#include <shared/animationController.h>
 #include <renderer/rfSurfFlags.h>
-
-aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","1");
-
-// unfinished animation blender
-class animController_c {
-	float time;
-	const class skelAnimAPI_i *anim;
-	int lastUpdateTime;
-	// extra variables for blending between new and old animation
-	//singleAnimLerp_s oldState;
-	boneOrArray_c oldBonesState;
-	const class skelAnimAPI_i *nextAnim;
-	float blendTime;
-
-	// bones that were used to create model instance in last update
-	boneOrArray_c currentBonesArray;
-
-	static void getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
-		if(anim->getNumFrames() == 1) {
-			out.from = 0;
-			out.to = 0;
-			out.frac = 0.f;
-			return;
-		}
-		float step = anim->getFrameTime();
-		float cur = 0;
-		float next = step;
-		for(u32 i = 0; i < anim->getNumFrames(); i++) {
-			if(time >= cur && time < next) {
-				out.from = i;
-				out.to = i + 1;
-				if(out.to == anim->getNumFrames()) {
-					out.to = 0;
-				}
-				out.frac = (time - cur) / step;
-				return;
-			}
-			next += step;
-			cur += step;
-		}
-	}
-public:
-	void resetToAnim(const class skelAnimAPI_i *newAnim) {
-		time = 0.f;
-		anim = newAnim;
-		nextAnim = anim;
-		lastUpdateTime = rf_curTimeMsec;
-	}
-	void setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel) {
-		if(anim == newAnim)
-			return;
-		if(nextAnim == newAnim)
-			return;
-		g_core->Print("setNextAnim: %i, %s\n",rf_curTimeMsec,newAnim->getName());
-		// build previous bone state which we will use
-		// to interpolate between old animation state and newAnim
-		oldBonesState.resize(anim->getNumBones());
-		if(nextAnim != anim) {
-			g_core->RedWarning("animController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
-			updateModelAnimationLocal(skelModel,oldBonesState);
-		} else {
-			if(anim->getBLoopLastFrame() && (time > anim->getTotalTimeSec())) {
-				//oldState.from = oldState.to = anim->getNumFrames()-1;
-				//oldState.frac = 0.f;
-				anim->buildFrameBonesLocal(anim->getNumFrames()-1,oldBonesState);
-			} else {
-				singleAnimLerp_s oldStateTMP;
-				getSingleLoopAnimLerpValuesForTime(oldStateTMP,anim,time);
-				anim->buildLoopAnimLerpFrameBonesLocal(oldStateTMP,oldBonesState);
-			}
-		}
-		time = 0;
-		blendTime = 0.1f;
-		nextAnim = newAnim;
-	}
-	void runAnimController() {
-		int deltaTime = rf_curTimeMsec - lastUpdateTime;
-		if(deltaTime == 0)
-			return;
-		lastUpdateTime = rf_curTimeMsec;
-		float deltaTimeSec = float(deltaTime) * 0.001f;
-		time += deltaTimeSec;
-		if(anim == nextAnim) {
-			if(anim->getBLoopLastFrame()) {
-				return; // dont loop this animation, just stop at the last frame
-			} else {
-				while(time > anim->getTotalTimeSec()) {
-				//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
-					time -= anim->getTotalTimeSec();
-				}
-				if(anim_printAnimCtrlTime.getInt()) {
-				//	g_core->Print("Final time: %f\n",time);
-				}
-			}
-		} else {
-			while(time > blendTime) {
-				time -= blendTime;
-				anim = nextAnim;
-			}
-		}
-	}
-	void updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones) {
-		if(anim == nextAnim) {
-			outLocalBones.resize(anim->getNumBones());
-			if(anim->getBLoopLastFrame() && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
-				anim->buildFrameBonesLocal(anim->getNumFrames()-1,outLocalBones);			
-			} else {
-				singleAnimLerp_s lerp;
-				getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
-				//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
-
-				//anim->buildFrameBonesLocal(lerp.from,bones);
-				anim->buildLoopAnimLerpFrameBonesLocal(lerp,outLocalBones);
-			}
-		} else {
-			// build old skeleton first
-			// ( TODO: we might do it once and just store the bones here...)
-			//boneOrArray_c previous;
-			//previous.resize(anim->getNumBones());
-			//anim->buildLoopAnimLerpFrameBonesLocal(oldState,previous);
-			
-			// build skeleton for the first frame of new animation
-			boneOrArray_c newBones;
-			newBones.resize(nextAnim->getNumBones());
-			nextAnim->buildFrameBonesLocal(0,newBones);
-			
-			// do the interpolation
-			float frac = this->time / this->blendTime;
-		//	g_core->Print("Blending between two anims, frac: %f\n",frac);	
-			outLocalBones.setBlendResult(oldBonesState, newBones, frac);		
-		}
-	}
-	void updateModelAnimation(const class skelModelAPI_i *skelModel) {
-		// create bone matrices (relative to their parents)
-		updateModelAnimationLocal(skelModel,currentBonesArray);
-		// convert relative bones matrices to absolute bone matrices
-		currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
-		if(skelModel->hasCustomScaling()) {
-			currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
-		}
-	}
-	const boneOrArray_c &getCurBones() const {
-		return currentBonesArray;
-	}
-};
 
 aCvar_c rf_skipEntities("rf_skipEntities","0");
 
@@ -295,10 +151,10 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 	const class skelModelAPI_i *skelModel = this->model->getSkelModelAPI();
 	if(animCtrl == 0) {
 		animCtrl = new animController_c;
-		animCtrl->resetToAnim(anim);
+		animCtrl->resetToAnim(anim,rf_curTimeMsec);
 	} else {
 		// TODO
-		animCtrl->setNextAnim(anim,skelModel);
+		animCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
 	}
 }
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
@@ -400,7 +256,7 @@ void rEntityImpl_c::addDrawCalls() {
 			}
 			instance->updateSkelModelInstance(skelModel,bones);	
 		} else if(animCtrl) {
-			animCtrl->runAnimController();
+			animCtrl->runAnimController(rf_curTimeMsec);
 			animCtrl->updateModelAnimation(skelModel);
 			instance->updateSkelModelInstance(skelModel,animCtrl->getCurBones());	
 		}
