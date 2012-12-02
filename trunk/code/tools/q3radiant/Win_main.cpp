@@ -55,6 +55,8 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
 	char	src[2048];
 	char	rsh[2048];
 	char	base[2048];
+	const char *basePath;
+	const char *modDir;
 
 	strcpy(src, mapname);
 	strlwr(src);
@@ -99,6 +101,10 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
   QE_ConvertDOSToUnixName(src, src);
 
 	in = ValueForKey( g_qeglobals.d_project_entity, bspaction );
+	basePath = ValueForKey( g_qeglobals.d_project_entity, "basepath" );
+	modDir = ValueForKey( g_qeglobals.d_project_entity, "moddir" );
+	if(modDir[0] == '/' || modDir[0] == '\\')
+		modDir++;
 	while (*in)
 	{
 		if (in[0] == '!')
@@ -110,6 +116,15 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
 		}
 		if (in[0] == '$')
 		{
+			strcpy(out,"-gamedir ");
+			out += strlen ("-gamedir ");
+			strcpy(out,basePath);
+			out += strlen(basePath);
+			strcpy(out,modDir);
+			out += strlen(modDir);
+			
+			*out = ' ';
+			out++;
 			strcpy (out, src);
 			out += strlen(src);
 			in++;
@@ -326,8 +341,16 @@ void RunBsp (char *command)
 	  //
 	  // write qe3bsp.bat
 	  //
-
-	  sprintf (batpath, "%sqe3bsp.bat", temppath);
+	//const char *basePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+	//if(basePath) {
+		//const char *mapName = 
+		//sprintf(batpath,"%s/maps/%s.bat",basePath,mapName);
+	  strcpy(batpath,currentmap);
+	  char *dot = strchr(batpath,'.');
+	  strcpy(dot,".bat");
+	//} else {
+	//  sprintf (batpath, "%sqe3bsp.bat", temppath);
+	//}
 	  hFile = fopen(batpath, "w");
 	  if (!hFile)
 		  Error ("Can't write to %s", batpath);

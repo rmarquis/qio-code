@@ -81,6 +81,7 @@ void	Q_mkdir( const char *path );
 extern	char		qdir[1024];
 extern	char		gamedir[1024];
 extern  char		writedir[1024];
+void SetQDir(const char *newQDir);
 void SetQdirFromPath( const char *path );
 char *ExpandArg( const char *path );	// from cmd line
 char *ExpandPath( const char *path );	// from scripts

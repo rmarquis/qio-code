@@ -197,17 +197,24 @@ static void LoadShaderImage( shaderInfo_t *si ) {
 
   // just try the shader name with a .tga
 	// on unix, we have case sensitivity problems...
-  sprintf( filename, "%s%s.tga", gamedir, si->shader );
+	strcpy(filename, gamedir);
+	i = strlen(filename)-1;
+	if(filename[i] != '\\' && filename[i] != '/') {
+		strcat(filename,"/");
+	}
+	strcat(filename,si->shader);
+	strcat(filename,".tga");
+ /// sprintf( filename, "%s%s.tga", gamedir, si->shader );
   buffer = LoadImageFile(filename, &bTGA);
   if ( buffer != NULL) {
 		goto loadTga;
 	}
 
-  sprintf( filename, "%s%s.TGA", gamedir, si->shader );
-  buffer = LoadImageFile(filename, &bTGA);
-  if ( buffer != NULL) {
-		goto loadTga;
-	}
+ // sprintf( filename, "%s%s.TGA", gamedir, si->shader );
+ // buffer = LoadImageFile(filename, &bTGA);
+ // if ( buffer != NULL) {
+	//	goto loadTga;
+	//}
 
 	// couldn't load anything
 	_printf("WARNING: Couldn't find image for shader %s\n", si->shader );
@@ -591,6 +598,10 @@ void LoadShaderInfo( void ) {
 	int				numShaderFiles;
 
 	sprintf( filename, "%sscripts/shaderlist.txt", gamedir );
+	if(FileExists(filename) == qfalse) {
+		printf("cannot open scripts/shaderlist.txt\n");
+		return;
+	}
 	LoadScriptFile( filename );
 
 	numShaderFiles = 0;

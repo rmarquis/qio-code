@@ -400,6 +400,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\animationController.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\animationController.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\autoCvar.cpp"
 				>
 			</File>

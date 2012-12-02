@@ -217,6 +217,31 @@ char		qdir[1024];
 char		gamedir[1024];
 char		writedir[1024];
 
+char *findLast(const char *str, char ch) {
+	char *prev;
+	char *cur;
+	prev = str;
+	while(1) {
+		cur = strchr(prev+1,ch);
+		if(cur == 0)
+			break;
+		prev = cur;
+	}
+	return prev;
+}
+void SetQDir(const char *newQDir) {
+	char *slash, *s2;
+	strcpy(gamedir,newQDir);
+	strcpy(writedir,newQDir);
+	strcpy(qdir,newQDir);
+	slash = findLast(qdir,'/');
+	s2 = findLast(qdir,'\\');
+	if(s2 > slash) {
+		slash = s2;
+	}
+	*slash = 0;
+}
+
 void SetQdirFromPath( const char *path )
 {
 	char	temp[1024];
@@ -647,8 +672,14 @@ FILE *SafeOpenWrite (const char *filename)
 FILE *SafeOpenRead (const char *filename)
 {
 	FILE	*f;
+	char path[1024];
 
 	f = fopen(filename, "rb");
+	if(f == 0) {
+		strcpy(path,gamedir);
+		strcat(path,filename);
+		f = fopen(path,"rb");
+	}
 
 	if (!f)
 		Error ("Error opening %s: %s",filename,strerror(errno));

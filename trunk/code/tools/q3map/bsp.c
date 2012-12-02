@@ -363,6 +363,7 @@ int main (int argc, char **argv) {
 	int		i;
 	double		start, end;
 	char		path[1024];
+qboolean basePathSetManually;
 
 	_printf ("Q3Map v1.0s (c) 1999 Id Software Inc.\n");
   
@@ -397,7 +398,7 @@ int main (int argc, char **argv) {
 	_printf ("---- q3map ----\n");
 
   tempsource[0] = '\0';
-
+	basePathSetManually = qfalse;
 	for (i=1 ; i<argc ; i++)
 	{
 		if (!strcmp(argv[i],"-tempname"))
@@ -519,6 +520,13 @@ int main (int argc, char **argv) {
 			if (samplesize < 1) samplesize = 1;
 			i++;
 			_printf("lightmap sample size is %dx%d units\n", samplesize, samplesize);
+
+		}
+		else if (!strcmp(argv[i], "-gamedir"))
+		{
+			SetQDir(argv[i+1]);
+			i++;
+			basePathSetManually = qtrue;
 		}
 		else if (argv[i][0] == '-')
 			Error ("Unknown option \"%s\"", argv[i]);
@@ -533,13 +541,21 @@ int main (int argc, char **argv) {
 
 	ThreadSetDefault ();
 	//numthreads = 1;		// multiple threads aren't helping because of heavy malloc use
-	SetQdirFromPath (argv[i]);
+	if(basePathSetManually) {
+		// do nothing, it's already set...
+	} else {
+		SetQdirFromPath (argv[i]);
+	}
 
 #ifdef _WIN32
   InitPakFile(gamedir, NULL);
 #endif
 
 	strcpy (source, ExpandArg (argv[i]));
+	if(FileExists(source) == qfalse) {
+		strcpy(source,gamedir);
+		strcat(source,argv[i]);
+	}
 	StripExtension (source);
 
 	// delete portal and line files
