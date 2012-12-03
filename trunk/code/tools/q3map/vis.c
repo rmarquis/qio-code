@@ -1082,10 +1082,13 @@ int VisMain (int argc, char **argv)
 	char		portalfile[1024];
 	char		name[1024];
 	int		i;
+	char tmp[1024];
 	double		start, end;
+qboolean basePathSetManually;
 		
 	_printf ("---- vis ----\n");
 
+	basePathSetManually = qfalse;
 	verbose = qfalse;
 	for (i=1 ; i<argc ; i++) {
 		if (!strcmp(argv[i],"-threads")) {
@@ -1123,6 +1126,12 @@ int VisMain (int argc, char **argv)
 			strcpy (inbase, "/tmp");
 		} else if (!strcmp (argv[i],"-tmpout")) {
 			strcpy (outbase, "/tmp");
+		}
+		else if (!strcmp(argv[i], "-gamedir"))
+		{
+			SetQDir(argv[i+1]);
+			i++;
+			basePathSetManually = qtrue;
 		} else if (argv[i][0] == '-') {
 			Error ("Unknown option \"%s\"", argv[i]);
 		} else {
@@ -1141,21 +1150,31 @@ int VisMain (int argc, char **argv)
 	
 	ThreadSetDefault ();
 
-	SetQdirFromPath (argv[i]);	
+	if(basePathSetManually == qfalse) {
+		SetQdirFromPath (argv[i]);	
+	}
 
 #ifdef _WIN32
   InitPakFile(gamedir, NULL);
 #endif
 
+	strcpy (tmp, ExpandArg (argv[i]));
+	if(FileExists(tmp) == qfalse) {
+		strcpy(tmp,gamedir);
+		strcat(tmp,argv[i]);
+	}
+
 	// load the bsp
-	sprintf (name, "%s%s", inbase, ExpandArg(argv[i]));
+	//sprintf (name, "%s%s", inbase, ExpandArg(argv[i]));
+	strcpy(name,tmp);
 	StripExtension (name);
 	strcat (name, ".bsp");
 	_printf ("reading %s\n", name);
 	LoadBSPFile (name);
 
 	// load the portal file
-	sprintf (portalfile, "%s%s", inbase, ExpandArg(argv[i]));
+	//sprintf (portalfile, "%s%s", inbase, ExpandArg(argv[i]));
+	strcpy(portalfile,tmp);
 	StripExtension (portalfile);
 	strcat (portalfile, ".prt");
 	_printf ("reading %s\n", portalfile);
