@@ -116,18 +116,31 @@ int mtrStage_c::getImageHeight() const {
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
 	polygonOffset = 0;
+	hashNext = 0;
 }
 mtrIMPL_c::~mtrIMPL_c() {
+	clear();
+}
+void mtrIMPL_c::clear() {
+	// free allocated sub-structures
 	for(u32 i = 0; i < stages.size(); i++) {
 		delete stages[i];
 	}
+	stages.clear();
 	if(skyParms) {
 		delete skyParms;
+		skyParms = 0;
 	}
+	// reset variables to their default values
+	polygonOffset = 0;
+	// but don't clear material name and this->hashNext pointer...
 }
 
 void mtrIMPL_c::createFromImage() {
 	textureAPI_i *tex = MAT_RegisterTexture(this->name);
+	// save the source file name
+	this->sourceFileName = tex->getName();
+	// create single material stage
 	mtrStage_c *ns = new mtrStage_c;
 	ns->setTexture(tex);
 	stages.push_back(ns);
@@ -160,14 +173,19 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	p.setDebugFileName(txt.sourceFile);
 	
 	if(p.atChar('{') == false) {
-
+		int line = p.getCurrentLineNumber();
+		str tok = p.getToken();
+		g_core->RedWarning("mtrIMPL_c::loadFromText: expected '{' to follow material %s at line %i of %s, found %s\n",
+			getName(),line,txt.sourceFile,tok.c_str());
 		return true; // error
 	}
+	// save the source file name
+	this->sourceFileName = txt.sourceFile;
 	mtrStage_c *stage = 0;
 	int level = 1;
 	while(level) {
 		if(p.atEOF()) {
-			g_core->Print(S_COLOR_RED"mtrIMPL_c::loadFromText: unexpected end of file hit while parsing material %s in file %s\n",
+			g_core->RedWarning("mtrIMPL_c::loadFromText: unexpected end of file hit while parsing material %s in file %s\n",
 				getName(),txt.sourceFile);
 			break;
 		}
@@ -337,7 +355,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				}
 			} else {
 				p.getToken();
-				g_core->Print("mtrIMPL_c::loadFromText: invalid level %i\n",level);
+				g_core->RedWarning("mtrIMPL_c::loadFromText: invalid level %i\n",level);
 			}
 		}
 	}

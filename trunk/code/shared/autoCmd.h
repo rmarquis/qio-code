@@ -21,29 +21,28 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// materialSystemAPI.h - .shader / .mtr script parsing and evaluation
-// Note that entire materialSystem is CLIENT-ONLY.
+// autoCmd.h - automatic console command system for dll modules
+#ifndef __AUTOCMD_H__
+#define __AUTOCMD_H__
 
-#ifndef __MATERIALSYSTEM_API_H__
-#define __MATERIALSYSTEM_API_H__
+#include "str.h"
+#include "cvarModificationCallback.h"
 
-#include "iFaceBase.h"
+typedef void (*consoleCommandFunc_t)(void);
 
-#define MATERIALSYSTEM_API_IDENTSTR "MaterialSystemAPI0001"
+class aCmd_c {
+	const char *cmdName;
+	consoleCommandFunc_t function;
 
-class materialSystemAPI_i : public iFaceBase_i {
+	aCmd_c *nextModuleCMD;
 public:
-	virtual void initMaterialsSystem() = 0;
-	virtual void shutdownMaterialsSystem() = 0;
-	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
-	virtual class mtrAPI_i *getDefaultMaterial() = 0;
-	virtual class textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) = 0;
-	virtual class textureAPI_i *getDefaultTexture() = 0;
-	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
-	virtual void reloadSingleMaterial(const char *matName) = 0;
-	virtual void reloadMaterialFileSource(const char *mtrSourceFileName) = 0;
+	aCmd_c(const char *newName, consoleCommandFunc_t newFunc);
+
+// this should be called once on every module startup
+friend void AUTOCMD_RegisterAutoConsoleCommands();
+// and this on module shutdown (BEFORE g_cvars api is NULL'ed!)
+friend void AUTOCMD_UnregisterAutoConsoleCommands();
 };
 
-extern materialSystemAPI_i *g_ms;
 
-#endif // __MATERIALSYSTEM_API_H__
+#endif // __AUTOCMD_H__

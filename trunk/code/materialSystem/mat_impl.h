@@ -126,7 +126,8 @@ public:
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
-	str name;
+	str name; // name of the material (without extension)
+	str sourceFileName; // name of material source file (.shader, .mtr or .tga/.jpg/.png - if loaded directly)
 	mtrIMPL_c *hashNext;
 	arraySTD_c<mtrStage_c*> stages;
 	skyParms_c *skyParms;
@@ -135,8 +136,13 @@ public:
 	mtrIMPL_c();
 	~mtrIMPL_c();
 
+	void clear();
+
 	virtual const char *getName() const {
 		return name;
+	}
+	const char *getSourceFileName() const {
+		return sourceFileName;
 	}
 	void setName(const char *newName) {
 		name = newName;

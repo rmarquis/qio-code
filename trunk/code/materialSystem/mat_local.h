@@ -49,6 +49,8 @@ class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName);
 bool MAT_IsMaterialOrImagePresent(const char *matName);
 // returns true if material text is found
 bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
+void MAT_ReloadSingleMaterial(const char *matName);
+void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName);
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps

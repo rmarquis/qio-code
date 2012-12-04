@@ -21,29 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// materialSystemAPI.h - .shader / .mtr script parsing and evaluation
-// Note that entire materialSystem is CLIENT-ONLY.
+// autoCmd.cpp - automatic cmd system implementation.
+// This cpp file must be included in EVERY module which is using automatic cmds.
+#include "autoCmd.h"
+#include <api/coreAPI.h>
 
-#ifndef __MATERIALSYSTEM_API_H__
-#define __MATERIALSYSTEM_API_H__
+static aCmd_c *module_autoCmds = 0;
 
-#include "iFaceBase.h"
+aCmd_c::aCmd_c(const char *newName, consoleCommandFunc_t newFunc) {
+	this->cmdName = newName;
+	this->function = newFunc;
 
-#define MATERIALSYSTEM_API_IDENTSTR "MaterialSystemAPI0001"
-
-class materialSystemAPI_i : public iFaceBase_i {
-public:
-	virtual void initMaterialsSystem() = 0;
-	virtual void shutdownMaterialsSystem() = 0;
-	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
-	virtual class mtrAPI_i *getDefaultMaterial() = 0;
-	virtual class textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) = 0;
-	virtual class textureAPI_i *getDefaultTexture() = 0;
-	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
-	virtual void reloadSingleMaterial(const char *matName) = 0;
-	virtual void reloadMaterialFileSource(const char *mtrSourceFileName) = 0;
-};
-
-extern materialSystemAPI_i *g_ms;
-
-#endif // __MATERIALSYSTEM_API_H__
+	this->nextModuleCMD = module_autoCmds;
+	module_autoCmds = this;
+}
+void AUTOCMD_RegisterAutoConsoleCommands() {
+	aCmd_c *c = module_autoCmds;
+	while(c) {
+		g_core->Cmd_AddCommand(c->cmdName,c->function);
+		c = c->nextModuleCMD;
+	}
+}
+void AUTOCMD_UnregisterAutoConsoleCommands() {
+	aCmd_c *c = module_autoCmds;
+	while(c) {
+		g_core->Cmd_RemoveCommand(c->cmdName);
+		c = c->nextModuleCMD;
+	}
+}

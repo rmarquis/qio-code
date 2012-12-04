@@ -34,13 +34,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/imgAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/autoCmd.h>
 
 class msIMPL_c : public materialSystemAPI_i {
 public:
 	virtual void initMaterialsSystem() {
+		AUTOCVAR_RegisterAutoCvars();
+		AUTOCMD_RegisterAutoConsoleCommands();
 		MAT_ScanForMaterialFiles();
 	}
 	virtual void shutdownMaterialsSystem() {
+		AUTOCVAR_UnregisterAutoCvars();
+		AUTOCMD_UnregisterAutoConsoleCommands();
 		MAT_FreeAllMaterials();
 		MAT_FreeAllTextures();
 	}
@@ -58,6 +63,12 @@ public:
 	}
 	virtual mtrAPI_i *getDefaultMaterial() {
 		return MAT_RegisterMaterialAPI("default");
+	}
+	virtual void reloadSingleMaterial(const char *matName) {
+		MAT_ReloadSingleMaterial(matName);
+	}
+	virtual void reloadMaterialFileSource(const char *mtrSourceFileName) {
+		MAT_ReloadMaterialFileSource(mtrSourceFileName);
 	}
 };
 
