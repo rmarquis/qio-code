@@ -66,38 +66,6 @@ inputSystemAPI_i * g_inputSystem = 0;
 //sysEventCasterAPI_c *g_sysEventCaster = 0;
 sdlSharedAPI_i *g_sharedSDLAPI = 0;
 
-//#include <windows.h> // DX9 is windows only
-//
-//static int prevMouseX = -999;
-//static int prevMouseY = -999;
-//LRESULT CALLBACK DX9WindowWNDProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-//{
-//	//switch (uMsg) {
-//	//	case WM_MOUSEMOVE:
-//	//	{
-//	//		int xPos = LOWORD(lParam); 
-//	//		int yPos = HIWORD(lParam); 
-//	//		if(prevMouseX == -999) {
-//	//			prevMouseX = xPos;
-//	//			prevMouseY = yPos;
-//	//			return 0;
-//	//		}
-//	//		
-//	//		int deltaX = xPos - prevMouseX;
-//	//		int deltaY = yPos - prevMouseY;
-//
-//	//		prevMouseX = xPos;
-//	//		prevMouseY = yPos;
-//
-//	//		return 0;
-//	//	}
-//	//}
-//
-//
-//
-//	// pass all unhandled messages to DefWindowProc
-//	return DefWindowProc(hWnd,uMsg,wParam,lParam);
-//}
 class rbDX9_c : public rbAPI_i {
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDev;
@@ -139,12 +107,16 @@ public:
 	}
 	virtual void unbindMaterial() {
 		lastMat = 0;
+		disableLightmap();
+		disableBlendFunc();
 	}
 	virtual void setColor4(const float *rgba) {
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+		disableLightmap();
+
 		pDev->SetFVF(R2DVERT_FVF);
 
 		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
@@ -519,30 +491,11 @@ public:
 	}
 
 	virtual void init() {
-		/// CREATE WINDOW
-		/*HINSTANCE hProg = GetModuleHandle(0);
-		WNDCLASS wc;
-		wc.cbClsExtra = 0;
-		wc.cbWndExtra = 0;
-		wc.hInstance = hProg;
-		wc.lpfnWndProc = DX9WindowWNDProc;
-		wc.lpszClassName = "WndClass";
-		wc.lpszMenuName = 0;
-		wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		wc.hIcon = LoadIcon(hProg, IDI_WINLOGO);
-		wc.style = CS_HREDRAW | CS_VREDRAW;
-		wc.hCursor = LoadCursor(hProg, IDC_ARROW);
-
- 		RegisterClass(&wc);
-		hWnd = CreateWindowEx(0, "WndClass", title, WS_OVERLAPPEDWINDOW,
-  			0, 0, width, height, 0, 0, hProg, 0);*/
-#if 0
-		if( SDL_Init( SDL_INIT_VIDEO ) < 0 || !SDL_GetVideoInfo() )
-			return 0; 
-		SDL_SetVideoMode( width, height, SDL_GetVideoInfo()->vfmt->BitsPerPixel, SDL_RESIZABLE );
-#else
+		// init SDL window
 		g_sharedSDLAPI->init();
-#endif
+
+		// hack to get HWND (that wasnt needed for GL!)
+		// I hope it won't cause any bugs
 		hWnd = GetActiveWindow();
 
 		ShowWindow(hWnd, 5);
