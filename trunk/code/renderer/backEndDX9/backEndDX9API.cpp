@@ -274,9 +274,15 @@ public:
 					disableLightmap();
 				}
 
-				pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
-					indices.getArray(),
-					indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
+				if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
+					pDev->SetIndices((IDirect3DIndexBuffer9 *)indices.getInternalHandleVoid());
+					pDev->SetStreamSource(0,(IDirect3DVertexBuffer9*)verts.getInternalHandleVoid(),0,sizeof(rVert_c));
+					pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,verts.size(),0,indices.getNumIndices()/3);
+				} else {
+					pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
+						indices.getArray(),
+						indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
+				}
 			}
 		}
 	}	
@@ -449,18 +455,66 @@ public:
 	}
 
 	// vertex buffers (VBOs)
-	virtual bool createVBO(class rVertexBuffer_c *vbo) {
+	virtual bool createVBO(class rVertexBuffer_c *ptr) {
+		IDirect3DVertexBuffer9 *vbo = 0;
+		HRESULT createResult = pDev->CreateVertexBuffer(ptr->getSizeInBytes(), D3DUSAGE_WRITEONLY, RVERT_FVF, D3DPOOL_MANAGED, &vbo, NULL);
+		if (FAILED(createResult)) {
+			g_core->RedWarning("refApiDX9_c::createVBO: pDev->CreateVertexBuffer failed\n");
+			return true;
+		}
+		void *bufData;
+		HRESULT lockResult = vbo->Lock(0,0,&bufData,0);
+		if (FAILED(lockResult)) {
+			g_core->RedWarning("refApiDX9_c::createVBO: vbo->Lock failed\n");
+			return true; 
+		}
+		memcpy(bufData,ptr->getArray(),ptr->getSizeInBytes());
+		HRESULT unlockResult = vbo->Unlock();
+		if (FAILED(unlockResult)) {
+			g_core->RedWarning("refApiDX9_c::createVBO: vbo->Unlock() failed\n");
+			return true;
+		}
+		ptr->setInternalHandleVoid((void*)vbo);
 		return false;
 	}
-	virtual bool destroyVBO(class rVertexBuffer_c *vbo) {
+	virtual bool destroyVBO(class rVertexBuffer_c *ptr) {
+		if(ptr->getInternalHandleVoid() == 0)
+			return true;
+		IDirect3DVertexBuffer9 *vbo = (IDirect3DVertexBuffer9 *)ptr->getInternalHandleVoid();
+		vbo->Release();
+		ptr->setInternalHandleVoid(0);
 		return false;
 	}
 
 	// index buffers (IBOs)
-	virtual bool createIBO(class rIndexBuffer_c *ibo) {
+	virtual bool createIBO(class rIndexBuffer_c *ptr) {	
+		IDirect3DIndexBuffer9 *ibo = 0;
+		HRESULT createResult = pDev->CreateIndexBuffer(ptr->getSizeInBytes(), D3DUSAGE_WRITEONLY, ptr->getDX9IndexType(), D3DPOOL_MANAGED, &ibo, NULL);
+		if (FAILED(createResult)) {
+			g_core->RedWarning("refApiDX9_c::createIBO: pDev->CreateIndexBuffer failed\n");
+			return true;
+		}
+		void *bufData;
+		HRESULT lockResult = ibo->Lock(0,0,&bufData,0);
+		if (FAILED(lockResult)) {
+			g_core->RedWarning("refApiDX9_c::createIBO: ibo->Lock failed\n");
+			return true;
+		}
+		memcpy(bufData,ptr->getArray(),ptr->getSizeInBytes());
+		HRESULT unlockResult = ibo->Unlock();
+		if (FAILED(unlockResult)) {
+			g_core->RedWarning("refApiDX9_c::createIBO: ibo->Unlock() failed\n");
+			return true;
+		}
+		ptr->setInternalHandleVoid(ibo);
 		return false;
 	}
 	virtual bool destroyIBO(class rIndexBuffer_c *ibo) {
+		if(ibo->getInternalHandleVoid() == 0)
+			return false;
+		IDirect3DIndexBuffer9 *ib = (IDirect3DIndexBuffer9 *)ibo->getInternalHandleVoid();
+		ib->Release();
+		ibo->setInternalHandleVoid(0);
 		return false;
 	}
 

@@ -90,6 +90,9 @@ public:
 	void push_back(const rVert_c &nv) {
 		data.push_back(nv);
 	}
+	u32 getSizeInBytes() const {
+		return data.getSizeInBytes();
+	}
 	u32 size() const {
 		return data.size();
 	}
@@ -115,6 +118,12 @@ public:
 	}
 	void setInternalHandleU32(u32 nh) {
 		handleU32 = nh;
+	}
+	void *getInternalHandleVoid() const {
+		return handleV;
+	}
+	void setInternalHandleVoid(void *nh) {
+		handleV = nh;
 	}
 };
 

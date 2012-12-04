@@ -168,6 +168,12 @@ public:
 	void setInternalHandleU32(u32 nh) {
 		handleU32 = nh;
 	}
+	void *getInternalHandleVoid() const {
+		return handleV;
+	}
+	void setInternalHandleVoid(void *nh) {
+		handleV = nh;
+	}
 	u32 getNumIndices() const {
 		return numIndices;
 	}
