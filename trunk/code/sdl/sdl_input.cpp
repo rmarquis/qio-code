@@ -1097,6 +1097,7 @@ void IN_Restart( void )
 #include <api/inputSystemAPI.h>
 #include <api/iFaceMgrAPI.h>
 inputSystemAPI_i g_inputAPIIMPL;
+class inputSystemAPI_i *g_inputSystem = &g_inputAPIIMPL;
 
 void IN_InitInputSystemAPI() {
 	g_inputAPIIMPL.IN_Init = IN_Init;

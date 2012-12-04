@@ -2664,6 +2664,7 @@ static void Com_InitRand(void)
 
 void IN_InitInputSystemAPI();
 void Com_InitSysEventCasterAPI();
+void SDLShared_InitSharedSDLAPI();
 
 static coreAPI_s g_staticCoreAPI;
 coreAPI_s *g_core = 0;
@@ -2687,6 +2688,7 @@ void Com_InitCoreAPI() {
 
 	IN_InitInputSystemAPI();
 	Com_InitSysEventCasterAPI();
+	SDLShared_InitSharedSDLAPI();
 }
 
 // it could be in client module, but I think that server

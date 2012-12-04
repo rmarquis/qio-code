@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/mtrAPI.h>
+#include <api/sdlSharedAPI.h>
 
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
@@ -62,7 +63,8 @@ vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
 inputSystemAPI_i * g_inputSystem = 0;
-sysEventCasterAPI_c *g_sysEventCaster = 0;
+//sysEventCasterAPI_c *g_sysEventCaster = 0;
+sdlSharedAPI_i *g_sharedSDLAPI = 0;
 
 //#include <windows.h> // DX9 is windows only
 //
@@ -127,58 +129,6 @@ public:
 		pDev->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC); 
 	}
 	bool createWindow(const char *title, int width, int height, int colorBits, bool useFullscreen) {
-		/// CREATE WINDOW
-		/*HINSTANCE hProg = GetModuleHandle(0);
-		WNDCLASS wc;
-		wc.cbClsExtra = 0;
-		wc.cbWndExtra = 0;
-		wc.hInstance = hProg;
-		wc.lpfnWndProc = DX9WindowWNDProc;
-		wc.lpszClassName = "WndClass";
-		wc.lpszMenuName = 0;
-		wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		wc.hIcon = LoadIcon(hProg, IDI_WINLOGO);
-		wc.style = CS_HREDRAW | CS_VREDRAW;
-		wc.hCursor = LoadCursor(hProg, IDC_ARROW);
-
- 		RegisterClass(&wc);
-		hWnd = CreateWindowEx(0, "WndClass", title, WS_OVERLAPPEDWINDOW,
-  			0, 0, width, height, 0, 0, hProg, 0);*/
-		if( SDL_Init( SDL_INIT_VIDEO ) < 0 || !SDL_GetVideoInfo() )
-			return 0; 
-		SDL_SetVideoMode( width, height, SDL_GetVideoInfo()->vfmt->BitsPerPixel, SDL_RESIZABLE );
-
-		hWnd = GetActiveWindow();
-
-		ShowWindow(hWnd, 5);
-
-		// create Dx9 device
-		pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-
-		D3DPRESENT_PARAMETERS d3dpp;
-		ZeroMemory(&d3dpp, sizeof(d3dpp));
-		d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-		d3dpp.Windowed = true;
-		d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
-		d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
-		// this turns off V-sync (60 fps limit)
-		d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-
-		dxWidth = d3dpp.BackBufferWidth = width; // CreateDevice will crash if its set to 0 while Windowed is set to true
-		dxHeight = d3dpp.BackBufferHeight = height;
-
-		// add z buffer for depth tests
-		d3dpp.EnableAutoDepthStencil = true;
-		d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-
-		pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
-			D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDev);
-
-		ShowWindow(hWnd,SW_SHOW);
-		SetForegroundWindow(hWnd);
-		SetFocus(hWnd);
-
-		initDX9State();
 
 		return false;
 	}
@@ -339,6 +289,7 @@ public:
 	}
 	virtual void endFrame() {
 		pDev->EndScene();
+		//g_sharedSDLAPI->endFrame();
 		pDev->Present(0, 0, 0, 0);
 	}
 	virtual void clearDepthBuffer() {
@@ -514,28 +465,77 @@ public:
 	}
 
 	virtual void init() {
-		if(hWnd == 0) {
-			createWindow("Test",640,480,32,false);
-		}
+		/// CREATE WINDOW
+		/*HINSTANCE hProg = GetModuleHandle(0);
+		WNDCLASS wc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.hInstance = hProg;
+		wc.lpfnWndProc = DX9WindowWNDProc;
+		wc.lpszClassName = "WndClass";
+		wc.lpszMenuName = 0;
+		wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+		wc.hIcon = LoadIcon(hProg, IDI_WINLOGO);
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+		wc.hCursor = LoadCursor(hProg, IDC_ARROW);
+
+ 		RegisterClass(&wc);
+		hWnd = CreateWindowEx(0, "WndClass", title, WS_OVERLAPPEDWINDOW,
+  			0, 0, width, height, 0, 0, hProg, 0);*/
+#if 0
+		if( SDL_Init( SDL_INIT_VIDEO ) < 0 || !SDL_GetVideoInfo() )
+			return 0; 
+		SDL_SetVideoMode( width, height, SDL_GetVideoInfo()->vfmt->BitsPerPixel, SDL_RESIZABLE );
+#else
+		g_sharedSDLAPI->init();
+#endif
+		hWnd = GetActiveWindow();
+
+		ShowWindow(hWnd, 5);
+
+		// create Dx9 device
+		pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+
+		D3DPRESENT_PARAMETERS d3dpp;
+		ZeroMemory(&d3dpp, sizeof(d3dpp));
+		d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+		d3dpp.Windowed = true;
+		d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+		d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+		// this turns off V-sync (60 fps limit)
+		d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+		dxWidth = d3dpp.BackBufferWidth = g_sharedSDLAPI->getWinWidth(); // CreateDevice will crash if its set to 0 while Windowed is set to true
+		dxHeight = d3dpp.BackBufferHeight = g_sharedSDLAPI->getWinHeigth();
+
+		// add z buffer for depth tests
+		d3dpp.EnableAutoDepthStencil = true;
+		d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+
+		pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
+			D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDev);
+
+		ShowWindow(hWnd,SW_SHOW);
+		SetForegroundWindow(hWnd);
+		SetFocus(hWnd);
+
+		initDX9State();
+
 		// This depends on SDL_INIT_VIDEO, hence having it here
 		g_inputSystem->IN_Init();
 	}
 	virtual void shutdown(bool destroyWindow) {
-		if(destroyWindow == false) {
-			return;
-		}
-		if(hWnd == 0) {
-			g_core->RedWarning("rbDX9_c::shutdown: hWnd is already NULL\n");
-			return;
-		}
+		lastMat = 0;
+		lastLightmap = 0;
+
 		pDev->Release();
 		pD3D->Release();
-		g_inputSystem->IN_Shutdown();
-
-		SDL_QuitSubSystem( SDL_INIT_VIDEO );
 		hWnd = 0;
 		pDev = 0;
 		pD3D = 0;
+		if(destroyWindow) {
+			g_sharedSDLAPI->shutdown();
+		}
 	}
 };
 
@@ -553,7 +553,8 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_cvars,CVARS_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_inputSystem,INPUT_SYSTEM_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&g_sysEventCaster,SYSEVENTCASTER_API_IDENTSTR);
+	//g_iFaceMan->registerIFaceUser(&g_sysEventCaster,SYSEVENTCASTER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_sharedSDLAPI,SHARED_SDL_API_IDENTSTRING);
 }
 
 qioModule_e IFM_GetCurModule() {

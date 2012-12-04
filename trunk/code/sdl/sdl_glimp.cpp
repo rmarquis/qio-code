@@ -43,7 +43,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../client/client.h"
 #include "../sys/sys_local.h"
-#include "../renderer/qgl.h"
 #include <api/coreAPI.h>
 #include <api/cvarAPI.h>
 #include <api/inputSystemAPI.h>
@@ -324,7 +323,6 @@ GLimp_SetMode
 */
 static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
-	const char*   glstring;
 	int sdlcolorbits;
 	int colorbits, depthbits, stencilbits;
 	int tcolorbits, tdepthbits, tstencilbits;
@@ -574,9 +572,9 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	}
 
 	screen = vidscreen;
-
-	glstring = (char *) qglGetString (GL_RENDERER);
-	g_core->Print( "GL_RENDERER: %s\n", glstring );
+	
+//	const char *glstring = (char *) qglGetString (GL_RENDERER);
+	//g_core->Print( "GL_RENDERER: %s\n", glstring );
 
 	return RSERR_OK;
 }
@@ -707,12 +705,12 @@ success:
 	glConfig.deviceSupportsGamma = SDL_SetGamma( 1.0f, 1.0f, 1.0f ) >= 0;
 
 	// get our config strings
-	Q_strncpyz( glConfig.vendor_string, (char *) qglGetString (GL_VENDOR), sizeof( glConfig.vendor_string ) );
-	Q_strncpyz( glConfig.renderer_string, (char *) qglGetString (GL_RENDERER), sizeof( glConfig.renderer_string ) );
-	if (*glConfig.renderer_string && glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
-		glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;
-	Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
-	Q_strncpyz( glConfig.extensions_string, (char *) qglGetString (GL_EXTENSIONS), sizeof( glConfig.extensions_string ) );
+	//Q_strncpyz( glConfig.vendor_string, (char *) qglGetString (GL_VENDOR), sizeof( glConfig.vendor_string ) );
+	//Q_strncpyz( glConfig.renderer_string, (char *) qglGetString (GL_RENDERER), sizeof( glConfig.renderer_string ) );
+	//if (*glConfig.renderer_string && glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
+	//	glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;
+	//Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
+	//Q_strncpyz( glConfig.extensions_string, (char *) qglGetString (GL_EXTENSIONS), sizeof( glConfig.extensions_string ) );
 
 	g_cvars->Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
@@ -773,4 +771,30 @@ void GLimp_EndFrame( void )
 
 		r_fullscreen->modified = qfalse;
 	}
+}
+#include <api/sdlSharedAPI.h>
+class sdlSharedIMPL_c : public sdlSharedAPI_i {
+public:
+	virtual u32 getWinWidth() const {
+		return glConfig.vidWidth;
+	}
+	virtual u32 getWinHeigth() const {
+		return glConfig.vidHeight;
+	}
+	virtual void endFrame() {
+		GLimp_EndFrame();
+	}
+	virtual void init() {
+		GLimp_Init();
+	}
+	virtual void shutdown() {
+		GLimp_Shutdown();
+	}
+};
+static sdlSharedIMPL_c sharedSDLImpl;
+sdlSharedAPI_i *g_sharedSDLAPI = &sharedSDLImpl;
+
+#include <api/iFaceMgrAPI.h>
+void SDLShared_InitSharedSDLAPI() {
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_sharedSDLAPI,SHARED_SDL_API_IDENTSTRING);
 }

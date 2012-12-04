@@ -29,7 +29,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <gl/glut.h>
 #include "../client/client.h"
 #include "../sys/sys_local.h"
-#include "../renderer/qgl.h"
 #include "sdl_icon.h"
 #include <api/coreAPI.h>
 #include <api/rbAPI.h>
@@ -37,12 +36,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
+#include <api/sdlSharedAPI.h>
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
 #include <math/aabb.h>
-
-#include "sdl_glConfig.h"
 
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <renderer/rVertexBuffer.h>
@@ -51,11 +49,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 
 aCvar_c gl_showTris("gl_showTris","0");
-
-
-void GLimp_Init();
-void GLimp_Shutdown();
-void GLimp_EndFrame();
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -565,7 +558,7 @@ public:
 		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}
 	virtual void endFrame() {
-		GLimp_EndFrame();
+		g_sharedSDLAPI->endFrame();
 	}	
 	virtual void clearDepthBuffer() {
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -733,7 +726,9 @@ public:
 		// cvars
 		AUTOCVAR_RegisterAutoCvars();
 
-		GLimp_Init();
+		// init SDL window
+		g_sharedSDLAPI->init();
+
 		u32 res = glewInit();
 		if (GLEW_OK != res) {
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
@@ -784,15 +779,17 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		if(destroyWindow) {
-			GLimp_Shutdown();
+			g_sharedSDLAPI->shutdown();
 		}
 		backendInitialized = false;
 	}
 	virtual u32 getWinWidth() const {
-		return glConfig.vidWidth;
+		//return glConfig.vidWidth;
+		return g_sharedSDLAPI->getWinWidth();
 	}
 	virtual u32 getWinHeight() const {
-		return glConfig.vidHeight;
+		//return glConfig.vidHeight;
+		return g_sharedSDLAPI->getWinHeigth();
 	}
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		out->setWidth(w);
