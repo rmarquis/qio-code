@@ -41,6 +41,7 @@ enum qioModule_e {
 	QMD_REF_BACKEND_NULL,
 	QMD_REF_BACKEND_DX9,
 	QMD_DECL_MANAGER,
+	QMD_REF_BACKEND_DX10,
 };
 
 inline bool QM_IsServerSide(qioModule_e m) {

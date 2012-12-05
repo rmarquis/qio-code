@@ -35,7 +35,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 enum backEndType_e {
 	BET_GL,
 	BET_NULL,
-	BET_DX9
+	BET_DX9,
+	BET_DX10
 };
 
 class rbAPI_i : public iFaceBase_i {

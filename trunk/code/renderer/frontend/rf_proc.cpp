@@ -205,6 +205,211 @@ bool procTree_c::loadProcFile(const char *fname) {
 
 	return false; // OK
 }
+#include <api/vfsAPI.h>
+class readStreamAPI_i {
+public:
+	virtual u32 readData(void *out, u32 numBytes) = 0;
+	virtual bool isAtData(const void *out, u32 numBytes) = 0;
+	virtual u32 skipBytes(u32 numBytesToSkip) = 0;
+	virtual const void *getCurDataPtr() const = 0;
+	virtual u32 getPos() const = 0;
+	virtual void setPos(u32 newPosABS) = 0;
+	int readInt() {
+		int ret;
+		readData(&ret,sizeof(ret));
+		return ret;
+	}
+
+	u32 readCharArray(char *out, u32 numCharacters) {
+		return readData(out,numCharacters);
+	}
+	bool isAtCharArray(const char *str, u32 numCharacters) {
+		return isAtData(str,numCharacters);
+	}
+	bool isAtStr(const char *str) {
+		return isAtData(str,strlen(str));
+	}
+};
+class readStream_c : public readStreamAPI_i {
+	long streamLen;
+	void *fileData;
+	byte *data;
+	u32 ofs;
+public:
+	bool loadFromFile(const char *fname) {
+		streamLen = g_vfs->FS_ReadFile(fname,&fileData);
+		if(fileData == 0) {
+			return true; // failed to open file
+		}
+		data = (byte*)fileData;
+		ofs = 0;
+		return false; // OK
+	}
+	bool isAtEOF() const {
+		return streamLen == ofs;
+	}
+	virtual u32 readData(void *out, u32 numBytes) {
+		u32 left = streamLen - ofs;
+		u32 read;
+		if(left < numBytes) {
+			read = left;
+		} else {
+			read = numBytes;
+		}
+		if(read) {
+			memcpy(out,data+ofs,read);
+			ofs += read;
+		}
+		return read;
+	}
+	virtual bool isAtData(const void *out, u32 numBytes) {
+		u32 left = streamLen - ofs;
+		if(left < numBytes)
+			return false;
+		if(memcmp(data+ofs,out,numBytes)) {
+			return false;
+		}
+		data += numBytes; // skip it
+		return true;
+	}
+	virtual u32 skipBytes(u32 numBytesToSkip) {
+		u32 left = streamLen - ofs;
+		u32 skip;
+		if(left < numBytesToSkip) {
+			skip = left;
+		} else {
+			skip = numBytesToSkip;
+		}
+		ofs += skip;
+		return skip;
+	}
+	virtual const void *getCurDataPtr() const {
+		if(streamLen == ofs)
+			return 0; // EOF
+		return data + ofs;
+	}
+	virtual u32 getPos() const {
+		return ofs;
+	}
+	virtual void setPos(u32 newPosABS) {
+		ofs = newPosABS;
+	}
+};
+#pragma pack(push)
+#pragma pack(1)
+struct procbSurface_s {
+	int materialIndex;
+	byte hasVertexColor;
+	vec3_c mins;
+	vec3_c maxs;
+	int numVerts;
+	int numIndices;
+	int __privateCount;
+};
+#pragma pack(pop)
+bool procTree_c::loadProcFileBinary(const char *fname) {
+	readStream_c s;
+	if(s.loadFromFile(fname)) {
+
+		return true;
+	}
+	int version = s.readInt();
+	char identStr[15];
+	s.readCharArray(identStr,14);
+	u32 numMaterials;
+	int numAreas, numAreaPortals;
+	while(s.isAtEOF()==false) {
+		int subSectionNameStringLen = s.readInt();
+		if(s.isAtCharArray("materials",subSectionNameStringLen)) {
+			numMaterials = s.readInt();
+			for(u32 i = 0; i < numMaterials; i++) {
+				u32 len = s.readInt();
+				char buf[256];
+				s.readCharArray(buf,len);
+				buf[len] = 0;
+				g_core->Print("procTree_c::loadProcFileBinary: mat %i is a string %s with len %i\n",i,buf,len);
+			}
+		} else if(s.isAtCharArray("interAreaPortals",subSectionNameStringLen)) {
+			numAreas = s.readInt();
+			numAreaPortals = s.readInt();
+#if 1
+			while(s.isAtStr("model") == false) {
+				s.skipBytes(1);
+			}
+			goto parseModel;
+#endif
+		} else if(s.isAtCharArray("model",subSectionNameStringLen)) {
+parseModel:
+			int modelDataLen = s.readInt();
+			int modelDataLenEnd = s.getPos()+modelDataLen;
+			int nameLen = s.readInt();
+			char name[256];
+			s.readCharArray(name,nameLen);
+			name[nameLen] = 0;
+			g_core->Print("Model name: %s\n",name);
+			int numModelSurfs = s.readInt();
+			int numModelAreas = s.readInt();
+			for(u32 i = 0; i < numModelAreas; i++) {
+				int ar = s.readInt();
+			}
+			r_model_c *mod = new r_model_c;
+			mod->setName(name);
+			mod->resizeSurfaces(numModelSurfs);
+			this->models.push_back(mod);
+			for(u32 i = 0; i < numModelSurfs; i++) {
+				const procbSurface_s *sf = (procbSurface_s *)s.getCurDataPtr();
+				if(sf->materialIndex < 0) {
+					g_core->RedWarning("bad material index\n");
+				}
+				s.skipBytes(sizeof(procbSurface_s));
+				r_surface_c *out = mod->getSurf(i);
+				rVertexBuffer_c &verts = out->getVerts();
+				verts.resize(sf->numVerts);
+				rVert_c *ov = verts.getArray();
+				for(u32 j = 0; j < sf->numVerts; j++, ov++) {
+					int numVertexElements = s.readInt();
+					float vertexData[32];
+					s.readData(vertexData,numVertexElements * sizeof(float));
+					if(sf->hasVertexColor) {
+						int numColorElements = s.readInt();
+						s.skipBytes(numColorElements * sizeof(byte));
+					}
+					ov->xyz = &vertexData[0];
+					ov->tc = &vertexData[3];
+					ov->normal = &vertexData[5];
+				}
+				rIndexBuffer_c &indices = out->getIndices();
+				if(sf->numVerts < U16_MAX) {
+					// use 16 bit indices
+					u16 *u16Indices = indices.initU16(sf->numIndices);
+					for(u32 j = 0; j < sf->numIndices; j++) {
+						u16Indices[j] = s.readInt();
+					}
+				} else {
+					// use 32 bit indices
+					indices.initU32(sf->numIndices);
+					s.readData(indices.getArray(),sf->numIndices*sizeof(int));
+				}
+				for(u32 j = 0; j < sf->__privateCount; j++) {
+					float prv[6];
+					int pri[4];
+					s.readData(prv,sizeof(prv));
+					s.readData(pri,sizeof(pri));
+				}
+			}
+			mod->createVBOsAndIBOs();
+			int modelDataRealEnd = s.getPos();
+			if(modelDataLenEnd != modelDataRealEnd) {
+				s.setPos(modelDataLenEnd);
+			}
+		} else {
+			s.skipBytes(subSectionNameStringLen);
+			int subSectionSize = s.readInt();
+			s.skipBytes(subSectionSize);
+		}
+	}
+	return false; // OK
+}
 int procTree_c::pointArea(const vec3_c &xyz) {
 	if(nodes.size() == 0)
 		return 0;
@@ -260,6 +465,10 @@ void procTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) {
 }
 u32 procTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) {
 	visCount++;
+	if(nodes.size() == 0) {
+		out.push_back(0);
+		return 1;
+	}
 	boxAreas_r(bb,out,0);
 	return out.size();
 }
@@ -305,6 +514,12 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 }
 void procTree_c::addDrawCalls() {
 	visCount++;
+	if(nodes.size() == 0) {
+		for(u32 i = 0; i < models.size(); i++) {
+			models[i]->addDrawCalls();
+		}
+		return;
+	}
 	int camArea = pointArea(rf_camera.getOrigin());
 	printf("camera is in area %i of %i\n",camArea,areas.size());
 	frustumExt_c baseFrustum(rf_camera.getFrustum());
@@ -377,6 +592,14 @@ int procTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 procTree_c *RF_LoadPROC(const char *fname) {
 	procTree_c *ret = new procTree_c;
 	if(ret->loadProcFile(fname)) {
+		delete ret;
+		return 0;
+	}
+	return ret;
+}
+procTree_c *RF_LoadPROCB(const char *fname) {
+	procTree_c *ret = new procTree_c;
+	if(ret->loadProcFileBinary(fname)) {
 		delete ret;
 		return 0;
 	}

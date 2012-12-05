@@ -95,6 +95,7 @@ public:
 		clear();
 	}
 	bool loadProcFile(const char *fname);
+	bool loadProcFileBinary(const char *fname);
 
 	u32 getAreaModels(arraySTD_c<const r_model_c *> &out) const {
 		for(u32 i = 0; i < areas.size(); i++) {
@@ -114,6 +115,7 @@ public:
 };
 
 procTree_c *RF_LoadPROC(const char *fname);
+procTree_c *RF_LoadPROCB(const char *fname);
 
 #endif // __RF_PROC_H__
 

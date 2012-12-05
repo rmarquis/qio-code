@@ -30,6 +30,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "..\..\code\ex
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "declManager", "declManager.vcproj", "{20638E69-F228-4CC1-94CF-C7CE326D2D88}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backendDX10", "backendDX10.vcproj", "{C04471A6-13A6-418B-8D96-A4929C67FAA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -96,6 +98,10 @@ Global
 		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Debug|Win32.Build.0 = Debug|Win32
 		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Release|Win32.ActiveCfg = Release|Win32
 		{20638E69-F228-4CC1-94CF-C7CE326D2D88}.Release|Win32.Build.0 = Release|Win32
+		{C04471A6-13A6-418B-8D96-A4929C67FAA8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C04471A6-13A6-418B-8D96-A4929C67FAA8}.Debug|Win32.Build.0 = Debug|Win32
+		{C04471A6-13A6-418B-8D96-A4929C67FAA8}.Release|Win32.ActiveCfg = Release|Win32
+		{C04471A6-13A6-418B-8D96-A4929C67FAA8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -195,6 +195,9 @@ public:
 	const void *getArray() const {
 		return data.getArray();
 	}
+	void *getArray() {
+		return data.getArray();
+	}
 	const u32 *getU32Ptr() const {
 		if(type != IBO_U32)
 			return 0;

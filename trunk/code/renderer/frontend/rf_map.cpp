@@ -102,6 +102,10 @@ public:
 		entModels[currentEntityNum] = 0;//new r_model_c;
 	}
 	r_model_c *getWorldModel() const {
+		if(entModels.size() == 0) {
+			g_core->RedWarning("rWorldMapLoader_c::getWorldModel: world map loader has 0 entModels\n");
+			return 0;
+		}
 		return entModels[0];
 	}
 	void registerSubModels() {

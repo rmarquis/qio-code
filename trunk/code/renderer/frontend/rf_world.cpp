@@ -66,6 +66,12 @@ bool RF_LoadWorldMap(const char *name) {
 		if(r_procTree)
 			return false; // ok
 		return true; // error
+	} else if(!stricmp(ext,"procb")) {
+		// ETQW binary .proc
+		r_procTree = RF_LoadPROCB(name);
+		if(r_procTree)
+			return false; // ok
+		return true; // error
 	} else if(!stricmp(ext,"map")) {
 		// load .map file directly
 		r_worldModel = RF_LoadMAPFile(name);

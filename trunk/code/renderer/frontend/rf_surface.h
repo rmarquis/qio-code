@@ -55,6 +55,12 @@ public:
 	const char *getMatName() const {
 		return matName;
 	}
+	rVertexBuffer_c &getVerts() {
+		return verts;
+	}
+	rIndexBuffer_c &getIndices() {
+		return indices;
+	}
 	void addVert(const rVert_c &v) {
 		verts.push_back(v);
 	}
@@ -152,6 +158,9 @@ public:
 	const char *getName() const {
 		return name;
 	}
+	inline void setName(const char *newName) {
+		name = newName;
+	}
 
 	bool isAreaModel() const {
 		if(!Q_stricmpn(name,"_area",5))
@@ -202,8 +211,18 @@ public:
 
 	bool parseProcModel(class parser_c &p);
 
+	void resizeSurfaces(u32 newNumSurfs) {
+		surfs.resize(newNumSurfs);
+	}
+	r_surface_c *getSurf(u32 sfNum) {
+		return &surfs[sfNum];
+	}
+
 	const aabb &getBounds() const {
 		return bounds;
+	}
+	inline void setBounds(const aabb &newBB) {
+		bounds = newBB;
 	}
 	u32 getTotalTriangleCount() const {
 		u32 ret = 0;

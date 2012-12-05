@@ -172,8 +172,13 @@ static void SV_Map_f( void ) {
 			// we're supporting .map files as well
 			Com_sprintf (expanded, sizeof(expanded), "maps/%s.map", map);
 			if ( FS_ReadFile (expanded, NULL) == -1 ) {
-				Com_Printf ("SV_Map_f: Can't find map %s\n", map);
-				return;
+				// and ETQW .procb files (we dont have to check for D3 proc's because they 
+				// are always present with .map files)
+				Com_sprintf (expanded, sizeof(expanded), "maps/%s.procb", map);
+				if ( FS_ReadFile (expanded, NULL) == -1 ) {
+					Com_Printf ("SV_Map_f: Can't find map %s\n", map);
+					return;
+				}
 			}
 		}
 	}

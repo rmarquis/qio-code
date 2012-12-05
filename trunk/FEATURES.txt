@@ -2,6 +2,7 @@ game
  - written from scratch with C++ class system
  - serverside Bullet physics for rigid bodies and cars
  - player movement is done by Bullet character controler
+ - networked ragdoll system based on Doom3 ArticulatedFigures and Bullet physics
  
 cgame 
  - cleared up code
@@ -10,7 +11,9 @@ cgame
 renderer
  - written from scratch in C++
  - Quake3, RTCW, ET, MoHAA and CoD1 (partial) BSP support with PVS and lightmapping
- - direct .map files loading
+ - Doom3/Quake4 .proc support with portal rendering system
+ - ET:QW .procb support (without portals)
+ - direct .map files loading (both Q3 and Doom3 versions)
  - openGL backend totally separated from frontend
  - basic DirectX 9 backend
  - VBO/IBO based (several times faster than Q3 renderer)
@@ -19,11 +22,18 @@ renderer
 modelLoader
  - written from scratch in C++
  - waveFront .obj support (with .mtl files)
+ - .ASE models support
  - usefull .mdpp (MoDelPreProcess) "scripts" system used to scale/rotate model after loading
+ - Doom3 .md5mesh / .md5anim support
  
 materialSystem
  - written from scratch in C++
  - BASIC q3 shaders support
+ 
+ declManager
+ - Doom3 model decls support (.def files)
+ - Doom3 entity decls support (.def files)
+ - Doom3 Articulated Figures (.af files - ragdoll definitions) support
  
 common
  - interfaces system similiar to one in SourceEngine
@@ -31,5 +41,12 @@ common
 shared
  - many math, geometry and util C++ classes
  - autoCvar_c class for easier ConVars usage
+ 
+ q3radiant
+ - ???
+ 
+ q3map
+ - ???
+ 
  
  
