@@ -32,8 +32,9 @@ class entDefsList_c {
 	arraySTD_c<entDef_c*> entities;
 
 	bool fromString(const char *txt);
-	bool loadEntitiesFromBSPFile(const char *mapName); // .bsp
-	bool loadEntitiesFromMapFile(const char *mapName); // .map
+	bool loadEntitiesFromBSPFile(const char *mapName); // .bsp (Q1, Q2, Q3, RTCW, ET, MoH, etc..)
+	bool loadEntitiesFromMapFile(const char *mapName); // .map (D3, Q4, raw .map files)
+	bool loadEntitiesFromEntitiesFile(const char *mapName); // .entities (ET:QW)
 public:
 	entDefsList_c();
 	~entDefsList_c();

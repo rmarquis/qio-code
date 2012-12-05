@@ -86,7 +86,7 @@ bool entDefsList_c::fromString(const char *text) {
 	return false; // OK
 }
 bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
-	char buf[256];
+	char buf[512];
 	strcpy(buf,"maps/");
 	strcat(buf,mapName);
 	strcat(buf,".bsp");
@@ -117,7 +117,7 @@ bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 	return error;
 }
 bool entDefsList_c::loadEntitiesFromMapFile(const char *mapName) {
-	char buf[256];
+	char buf[512];
 	strcpy(buf,"maps/");
 	strcat(buf,mapName);
 	strcat(buf,".map");
@@ -134,11 +134,48 @@ bool entDefsList_c::loadEntitiesFromMapFile(const char *mapName) {
 	free(data);
 	return error;
 }
+bool entDefsList_c::loadEntitiesFromEntitiesFile(const char *mapName) {
+	char buf[512];
+	strcpy(buf,"maps/");
+	strcat(buf,mapName);
+	strcat(buf,".entities");
+	parser_c p;
+	if(p.openFile(buf)) {
+		return true;
+	}
+	if(p.atWord("Version")) {
+		p.getInteger();
+	}
+	while(p.atEOF() == false) {
+		if(p.atWord("{")) {
+			entDef_c *ed = new entDef_c;
+			this->entities.push_back(ed);
+			while(p.atWord("}")==false) {
+				if(p.atEOF()) {
+					g_core->RedWarning("entDefsList_c::loadEntitiesFromEntitiesFile: unexpected EOF hit while parsing entity %i\n",entities.size());
+					break;
+				}
+				str key, val;
+				key = p.getToken();
+				val = p.getToken();
+				ed->setKeyValue(key,val);
+			}
+		} else {
+			int line = p.getCurrentLineNumber();
+			const char *tok = p.getToken();
+			g_core->RedWarning("entDefsList_c::loadEntitiesFromEntitiesFile: unknown token \"%s\" at line %i of %s\n",tok,line,buf);
+		}
+	}
+	return false;
+}
 bool entDefsList_c::load(const char *mapName) {
 	if(loadEntitiesFromBSPFile(mapName) == false) {
 		return false;
 	}
 	if(loadEntitiesFromMapFile(mapName) == false) {
+		return false;
+	}
+	if(loadEntitiesFromEntitiesFile(mapName) == false) {
 		return false;
 	}
 	g_core->RedWarning("Cannot load entity list for map %s\n",mapName);

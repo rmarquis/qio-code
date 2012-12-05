@@ -317,17 +317,20 @@ bool procTree_c::loadProcFileBinary(const char *fname) {
 	char identStr[15];
 	s.readCharArray(identStr,14);
 	u32 numMaterials;
+	arraySTD_c<str> matNames;
 	int numAreas, numAreaPortals;
 	while(s.isAtEOF()==false) {
 		int subSectionNameStringLen = s.readInt();
 		if(s.isAtCharArray("materials",subSectionNameStringLen)) {
 			numMaterials = s.readInt();
+			matNames.resize(numMaterials);
 			for(u32 i = 0; i < numMaterials; i++) {
 				u32 len = s.readInt();
 				char buf[256];
 				s.readCharArray(buf,len);
 				buf[len] = 0;
-				g_core->Print("procTree_c::loadProcFileBinary: mat %i is a string %s with len %i\n",i,buf,len);
+				matNames[i] = buf;
+				//g_core->Print("procTree_c::loadProcFileBinary: mat %i is a string %s with len %i\n",i,buf,len);
 			}
 		} else if(s.isAtCharArray("interAreaPortals",subSectionNameStringLen)) {
 			numAreas = s.readInt();
@@ -396,6 +399,9 @@ parseModel:
 					s.readData(prv,sizeof(prv));
 					s.readData(pri,sizeof(pri));
 				}
+				// set material
+				const char *matName = matNames[sf->materialIndex];
+				out->setMaterial(matName);
 			}
 			mod->createVBOsAndIBOs();
 			int modelDataRealEnd = s.getPos();
@@ -566,7 +572,13 @@ void procTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 bool procTree_c::traceRay(class trace_c &out) {
 	visCount++;
 	float prevFrac = out.getFraction();
-	traceNodeRay_r(0,out);
+	if(nodes.size()) {
+		traceNodeRay_r(0,out);
+	} else {
+		for(u32 i = 0; i < models.size(); i++) {
+			models[i]->traceRay(out);
+		}
+	}
 	if(out.getFraction() < prevFrac)
 		return true;
 	return false;
