@@ -246,6 +246,26 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 		out.addPoint(v->xyz);
 	}
 }
+void r_surface_c::recalcNormals() {
+	verts.nullNormals();
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		rVert_c &v0 = verts[i0];
+		rVert_c &v1 = verts[i1];
+		rVert_c &v2 = verts[i2];
+		vec3_c e0 = v2.xyz - v0.xyz;
+		vec3_c e1 = v1.xyz - v0.xyz;
+		vec3_c newNorm;
+		newNorm.crossProduct(e0,e1);
+		newNorm.normalize();
+		v0.normal += newNorm;
+		v1.normal += newNorm;
+		v2.normal += newNorm;
+	}
+	verts.normalizeNormals();
+}
 bool r_surface_c::parseProcSurface(class parser_c &p) {
 	int sky = -1;
 	if(p.atWord("{")==false) {

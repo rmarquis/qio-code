@@ -25,18 +25,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_world.h"
+#include <shared/autocvar.h>
+
+static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
 
 void RF_AddGenericDrawCalls() {
 	RF_AddWorldDrawCalls();
 	RFE_AddEntityDrawCalls();
 	RF_AddWorldDecalDrawCalls();
 }
-
+void RF_GenerateDepthBufferOnlySceneDrawCalls() {
+	rf_bDrawOnlyOnDepthBuffer = true;
+	RF_AddWorldDrawCalls();
+	RFE_AddEntityDrawCalls();
+	RF_AddWorldDecalDrawCalls();
+	rf_bDrawOnlyOnDepthBuffer = false;
+}
 void RF_Draw3DView() {
-	// generate prelit world drawcalls
-	RF_AddGenericDrawCalls();
-	// add drawcalls of light interactions
-	RFL_AddLightInteractionsDrawCalls();
+	if(rf_enableMultipassRendering.getInt() == 0) { 
+		RF_AddGenericDrawCalls();
+	} else {
+		if(0) {
+			// generate prelit world drawcalls
+			RF_AddGenericDrawCalls();
+		} else {
+			// draw on depth buffer
+			RF_GenerateDepthBufferOnlySceneDrawCalls();
+		}
+		// add drawcalls of light interactions
+		RFL_AddLightInteractionsDrawCalls();
+	}
 	// first draw sky (without writing to the depth buffer)
 	if(RF_HasSky()) {
 		RF_DrawSky();

@@ -137,6 +137,8 @@ public:
 
 	bool parseProcSurface(class parser_c &p);
 
+	void recalcNormals();
+
 	const aabb &getBB() const {
 		return bounds;
 	}
@@ -210,6 +212,12 @@ public:
 	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0);
 
 	bool parseProcModel(class parser_c &p);
+
+	void recalcModelNormals() {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			surfs[i].recalcNormals();
+		}
+	}
 
 	void resizeSurfaces(u32 newNumSurfs) {
 		surfs.resize(newNumSurfs);

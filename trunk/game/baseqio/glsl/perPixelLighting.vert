@@ -21,31 +21,15 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_lights.h
-#ifndef __RF_LIGHTS_H__
-#define __RF_LIGHTS_H__
+// glsl/perPixelLighting.vert - per pixel lighting shader for OpenGL backend
 
-#include <math/vec3.h>
-#include <math/aabb.h>
-#include <api/rLightAPI.h>
+// shader varying variables
+varying vec3 v_vertXYZ;
+varying vec3 v_vertNormal; 
 
-class rLightImpl_c : public rLightAPI_i {
-	vec3_c pos;
-	float radius;
-
-	aabb absBounds;
-
-	virtual void setOrigin(const class vec3_c &newXYZ);
-	virtual void setRadius(float newRadius);
-	virtual const vec3_c &getOrigin() const {
-		return pos;
-	}
-	virtual float getRadius() const {
-		return radius;
-	}
-public:
-	rLightImpl_c();
-
-};
-
-#endif // __RF_LIGHTS_H__
+void main() {
+	gl_Position = ftransform();
+	v_vertXYZ = gl_Vertex.xyz;
+	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+	v_vertNormal = normalize(gl_Normal);
+}

@@ -86,6 +86,9 @@ public:
 	virtual void setCurLight(const class rLightAPI_i *light) {
 
 	}
+	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
+
+	}
 
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;

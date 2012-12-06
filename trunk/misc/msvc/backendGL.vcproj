@@ -172,11 +172,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\sdl\backEndGLAPI.cpp"
+				RelativePath="..\..\code\renderer\backEndGL\backEndGLAPI.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\sdl\sdl_gl.cpp"
+				RelativePath="..\..\code\renderer\backEndGL\gl_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\backEndGL\gl_shader.cpp"
 				>
 			</File>
 		</Filter>
@@ -186,7 +190,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\code\sdl\sdl_icon.h"
+				RelativePath="..\..\code\renderer\backEndGL\gl_local.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\backEndGL\gl_shader.h"
 				>
 			</File>
 		</Filter>
@@ -215,6 +223,18 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="shaders"
+			>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\perPixelLighting.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\perPixelLighting.vert"
 				>
 			</File>
 		</Filter>

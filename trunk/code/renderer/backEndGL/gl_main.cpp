@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // gl_main.cpp - SDL / openGL backend
 
 #include "gl_local.h"
+#include "gl_shader.h"
 #include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/iFaceMgrAPI.h>
@@ -41,6 +42,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rIndexBuffer.h>
 
 #include <shared/autoCvar.h>
+#include <api/rLightAPI.h>
 
 aCvar_c gl_showTris("gl_showTris","0");
 
@@ -232,7 +234,8 @@ public:
 	}
 	void turnOffAlphaFunc() {
 		setAlphaFunc(AF_NONE);
-	}	//
+	}	
+	//
 	// GL_BLEND changes
 	//
 	bool blendEnable;
@@ -250,6 +253,22 @@ public:
 
 		blendSrc = BM_NOT_SET;
 		blendDst = BM_NOT_SET;
+	}
+	//
+	// GL_NORMAL_ARRAY changes
+	//
+	bool glNormalArrayEnabled;
+	void enableNormalArray() {
+		if(glNormalArrayEnabled)
+			return;
+		glEnable(GL_NORMAL_ARRAY);
+		glNormalArrayEnabled = true;
+	}
+	void disableNormalArray() {
+		if(glNormalArrayEnabled==false)
+			return;
+		glDisable(GL_NORMAL_ARRAY);
+		glNormalArrayEnabled = false;
 	}
 	static int blendModeEnumToGLBlend(int in) {
 		static int blendTable [] = {
@@ -399,6 +418,8 @@ public:
 			} else {
 				disableColorArray();
 			}
+			enableNormalArray();
+			glNormalPointer(GL_FLOAT,sizeof(rVert_c),&verts->getArray()->normal.x);
 		} else {
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
 			selectTex(0);
@@ -413,6 +434,8 @@ public:
 			} else {
 				disableColorArray();
 			}
+			enableNormalArray();
+			glNormalPointer(GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,normal));
 		}
 		boundVBOVertexColors = bindVertexColors;
 		boundVBO = verts;
@@ -463,10 +486,13 @@ public:
 		}
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+		bindShader(0);
+
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
+		disableNormalArray();
 		checkErrors();
 		if(lastMat) {
 			//glEnable(GL_BLEND);
@@ -492,12 +518,63 @@ public:
 		}
 	}
 	const rLightAPI_i *curLight;
+	bool bDrawOnlyOnDepthBuffer;
 	virtual void setCurLight(const class rLightAPI_i *light) {
 		this->curLight = light;
+	}
+	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
+		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
+	}
+	void bindShader(class glShader_c *newShader) {
+		if(newShader == 0) {
+			glUseProgram(0);
+		} else {
+			glUseProgram(newShader->getGLHandle());
+			if(newShader->sColorMap != -1) {
+				glUniform1i(newShader->sColorMap,0);
+			}
+			if(curLight) {
+				if(newShader->uLightOrigin != -1) {
+					const vec3_c &xyz = curLight->getOrigin();
+					if(usingWorldSpace) {
+						glUniform3f(newShader->uLightOrigin,xyz.x,xyz.y,xyz.z);
+					} else {
+						matrix_c entityMatrixInv = entityMatrix.getInversed();
+						vec3_c xyzLocal;
+						entityMatrixInv.transformPoint(xyz,xyzLocal);
+						glUniform3f(newShader->uLightOrigin,xyzLocal.x,xyzLocal.y,xyzLocal.z);
+					}
+				}
+				if(newShader->uLightRadius != -1) {
+					glUniform1f(newShader->uLightRadius,curLight->getRadius());
+				}
+			}
+		}
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
+
+		if(bDrawOnlyOnDepthBuffer) {
+			glColorMask(false, false, false, false);
+			bindShader(0);
+			bindVertexBuffer(&verts);
+			bindIBO(&indices);
+			turnOffAlphaFunc();
+			turnOffPolygonOffset();
+			turnOffTextureMatrices();
+			disableAllTextures();
+			drawCurIBO();
+			return;
+		}
+		glColorMask(true, true, true, true);
+
+		if(curLight) {
+			glShader_c *sh = GL_RegisterShader("perpixellighting");
+			bindShader(sh);
+		} else {
+			bindShader(0);
+		}
 
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);
@@ -530,7 +607,12 @@ public:
 				checkErrors();
 			}
 		} else {
-			setBlendFunc(BM_NOT_SET,BM_NOT_SET);
+			if(curLight == 0) {
+				setBlendFunc(BM_NOT_SET,BM_NOT_SET);
+			} else {
+				// light interactions are appended with addictive blending
+				setBlendFunc(BM_ONE,BM_ONE);
+			}
 			drawCurIBO();
 		}
 		if(gl_showTris.getInt()) {

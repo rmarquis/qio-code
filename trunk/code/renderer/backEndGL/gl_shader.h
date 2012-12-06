@@ -21,31 +21,41 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_lights.h
-#ifndef __RF_LIGHTS_H__
-#define __RF_LIGHTS_H__
+// gl_shader.h - GLSL shaders for openGL backend
+#ifndef __GL_SHADER_H__
+#define __GL_SHADER_H__
 
-#include <math/vec3.h>
-#include <math/aabb.h>
-#include <api/rLightAPI.h>
+#include "gl_local.h"
+#include <shared/str.h>
 
-class rLightImpl_c : public rLightAPI_i {
-	vec3_c pos;
-	float radius;
+class glShader_c {
+friend class rbSDLOpenGL_c;
+	str name; // shader name
+	GLuint handle; // openGL handle
+	
+	// uniform locations
+	int uLightOrigin;
+	int uLightRadius;
 
-	aabb absBounds;
+	// sampler2D locations
+	int sColorMap; // main diffuse texture
 
-	virtual void setOrigin(const class vec3_c &newXYZ);
-	virtual void setRadius(float newRadius);
-	virtual const vec3_c &getOrigin() const {
-		return pos;
-	}
-	virtual float getRadius() const {
-		return radius;
-	}
+friend glShader_c *GL_RegisterShader(const char *baseName);
 public:
-	rLightImpl_c();
-
+	glShader_c() {
+		handle = 0;
+	}
+	const char *getName() const {
+		return name;
+	}
+	GLuint getGLHandle() const {
+		return handle;
+	}
+	bool isValid() const {
+		if(handle)
+			return true;
+		return false;
+	}
 };
 
-#endif // __RF_LIGHTS_H__
+#endif // __GL_SHADER_H__

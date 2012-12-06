@@ -255,10 +255,12 @@ void rEntityImpl_c::addDrawCalls() {
 				}
 			}
 			instance->updateSkelModelInstance(skelModel,bones);	
+			instance->recalcModelNormals(); // this is slow
 		} else if(animCtrl) {
 			animCtrl->runAnimController(rf_curTimeMsec);
 			animCtrl->updateModelAnimation(skelModel);
 			instance->updateSkelModelInstance(skelModel,animCtrl->getCurBones());	
+			instance->recalcModelNormals(); // this is slow
 		}
 		instance->addDrawCalls(&surfaceFlags);
 	}

@@ -41,6 +41,7 @@ class drawCall_c {
 public:
 	const char *source; // for debuging, should never be fried
 	bool bindVertexColors; // temporary?
+	bool drawOnlyOnDepthBuffer;
 	class mtrAPI_i *material;
 	class textureAPI_i *lightmap; // for bsp surfaces
 	class rVertexBuffer_c *verts;
@@ -53,6 +54,7 @@ public:
 };
 static arraySTD_c<drawCall_c> rf_drawCalls;
 static u32 rf_numDrawCalls = 0;
+bool rf_bDrawOnlyOnDepthBuffer = false;
 
 void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
@@ -92,6 +94,7 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	} else {
 		n->bindVertexColors = bindVertexColors;
 	}
+	n->drawOnlyOnDepthBuffer = rf_bDrawOnlyOnDepthBuffer;
 	n->entity = rf_currentEntity;
 	n->curLight = rf_curLightAPI;
 	rf_numDrawCalls++;
@@ -137,6 +140,7 @@ void RF_SortAndIssueDrawCalls() {
 		}
 		rb->setCurLight(c->curLight);
 		rb->setBindVertexColors(c->bindVertexColors);
+		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 		rb->setMaterial(c->material,c->lightmap);
 		rb->drawElements(*c->verts,*c->indices);
 	}

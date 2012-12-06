@@ -29,6 +29,9 @@ class rLightAPI_i {
 public:
 	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
 	virtual void setRadius(float newRadius) = 0;
+
+	virtual const vec3_c &getOrigin() const = 0;
+	virtual float getRadius() const = 0;
 };
 
 #endif // __RLIGHTAPI_H__

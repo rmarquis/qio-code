@@ -132,6 +132,13 @@ public:
 			modelNum++;
 		}
 	}
+	void calcNormals() {
+		for(u32 i = 0; i < entModels.size(); i++) {
+			if(entModels[i]) {
+				entModels[i]->recalcModelNormals();
+			}
+		}
+	}
 };
 
 class r_model_c *RF_LoadMAPFile(const char *fname) {
@@ -139,6 +146,7 @@ class r_model_c *RF_LoadMAPFile(const char *fname) {
 	if(g_modelLoader->loadStaticModelFile(fname,&loader)) {
 		return 0;
 	}
+	loader.calcNormals();
 	loader.registerSubModels();
 	return loader.getWorldModel();
 }

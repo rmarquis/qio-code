@@ -113,6 +113,19 @@ public:
 		unloadFromGPU();
 	}
 
+	inline void nullNormals() {
+		rVert_c *v = this->getArray();
+		for(u32 i = 0; i < this->size(); i++, v++) {
+			v->normal.clear();
+		}
+	}
+	inline void normalizeNormals() {
+		rVert_c *v = this->getArray();
+		for(u32 i = 0; i < this->size(); i++, v++) {
+			v->normal.normalize();
+		}
+	}
+
 	u32 getInternalHandleU32() const {
 		return handleU32;
 	}

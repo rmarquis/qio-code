@@ -32,5 +32,6 @@ void RF_AddDrawCall(class rVertexBuffer_c *verts, class rIndexBuffer_c *indices,
 		bool bindVertexColors);
 
 void RF_SortAndIssueDrawCalls();
+extern bool rf_bDrawOnlyOnDepthBuffer;
 
 #endif // __RF_DRAWCALL_H__
