@@ -117,16 +117,7 @@ public:
 	}
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	virtual void draw3DView() {
-		// generate drawcalls
-		RF_AddWorldDrawCalls();
-		RFE_AddEntityDrawCalls();
-		RF_AddWorldDecalDrawCalls();
-		// first draw sky (without writing to the depth buffer)
-		RF_DrawSky();
-		// sort and issue drawcalls (transparency rendering)
-		RF_SortAndIssueDrawCalls();
-		// do a debug drawing on top of everything
-		RF_DoDebugDrawing();
+		RF_Draw3DView();
 	}
 	virtual void setup2DView() {
 		draw3DView(); // fixme

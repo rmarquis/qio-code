@@ -33,6 +33,11 @@ void RF_InitSky() {
 	rf_skyMaterial = 0;
 }
 
+bool RF_HasSky() {
+	if(rf_skyMaterial == 0)
+		return false;
+	return true;
+}
 void RF_DrawSky() {
 	if(rf_skyMaterial == 0)
 		return;

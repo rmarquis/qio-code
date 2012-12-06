@@ -27,6 +27,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "../cameraDef.h"
 
+// rf_main.cpp
+void RF_Draw3DView();
+
 // rf_debugDrawing.cpp
 void RF_DoDebugDrawing();
 void RFDL_DrawDebugLines();
@@ -47,6 +50,7 @@ void RFL_RemoveLight(class rLightAPI_i *ent);
 // rf_sky.cpp
 void RF_InitSky();
 void RF_DrawSky();
+bool RF_HasSky();
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
 
 // rf_decals.cpp
