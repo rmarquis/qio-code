@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "cg_local.h"
 #include <api/rEntityAPI.h>
+#include <api/rLightAPI.h>
 #include <math/matrix.h>
 
 /*
@@ -38,10 +39,10 @@ FUNCTIONS CALLED EACH FRAME
 CG_Player
 ===============
 */
-void CG_Player( centity_t *cent ) {
-	
-
-}
+//void CG_Player( centity_t *cent ) {
+//	
+//
+//}
 
 
 //=====================================================================
@@ -67,9 +68,9 @@ void CG_ResetPlayerEntity( centity_t *cent ) {
 CG_General
 ==================
 */
-static void CG_General( centity_t *cent ) {
-	
-}
+//static void CG_General( centity_t *cent ) {
+//	
+//}
 
 /*
 =============================
@@ -112,6 +113,9 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	if(cent->rEnt) {
 		cent->rEnt->setOrigin(cent->lerpOrigin);
 		cent->rEnt->setAngles(cent->lerpAngles);
+	} 
+	if(cent->rLight) {
+		cent->rLight->setOrigin(cent->lerpOrigin);
 	}
 }
 
@@ -128,6 +132,8 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		centity_t *parent = &cg_entities[cent->currentState.parentNum];
 		if(parent->rEnt == 0)
 			return;
+		// first we have to update parent orientation (pos + rot),
+		// then we can attach current entity to it
 		CG_AddCEntity(parent);
 		matrix_c mat;
 		parent->rEnt->getBoneWorldOrientation(cent->currentState.parentTagNum,mat);
@@ -166,7 +172,7 @@ CG_AddCEntity
 */
 static void CG_AddCEntity( centity_t *cent ) {
 	if(cent->lastUpdateFrame == cg.clientFrame)
-		return;
+		return; // it was already updated (this may happen for attachment parents)
 	cent->lastUpdateFrame = cg.clientFrame;
 
 	// calculate the current origin
@@ -178,12 +184,14 @@ static void CG_AddCEntity( centity_t *cent ) {
 		break;
 
 	case ET_GENERAL:
-		CG_General( cent );
+		//CG_General( cent );
 		break;
 	case ET_PLAYER:
-		CG_Player( cent );
+		//CG_Player( cent );
 		break;
-
+	case ET_LIGHT:
+		//CG_Light( cent );
+		break;
 	}
 }
 

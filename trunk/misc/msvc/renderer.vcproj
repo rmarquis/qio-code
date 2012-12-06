@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_lights.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_main.cpp"
 				>
 			</File>
@@ -287,6 +291,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_entities.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_lights.h"
 				>
 			</File>
 			<File
@@ -533,6 +541,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\rEntityAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\rLightAPI.h"
 				>
 			</File>
 		</Filter>

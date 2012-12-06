@@ -61,7 +61,8 @@ typedef struct centity_s {
 	vec3_c			lerpOrigin;
 	vec3_c			lerpAngles;
 
-	class rEntityAPI_i *rEnt;
+	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
+	class rLightAPI_i *rLight; // only for ET_LIGHT
 } centity_t;
 
 

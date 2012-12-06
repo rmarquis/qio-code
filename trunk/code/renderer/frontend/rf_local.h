@@ -40,6 +40,10 @@ void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 
+// rf_lights.cpp
+class rLightAPI_i *RFL_AllocLight();
+void RFL_RemoveLight(class rLightAPI_i *ent);
+
 // rf_sky.cpp
 void RF_InitSky();
 void RF_DrawSky();

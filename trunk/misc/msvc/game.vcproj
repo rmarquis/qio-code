@@ -472,6 +472,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Light.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Light.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\ModelEntity.cpp"
 				>
 			</File>

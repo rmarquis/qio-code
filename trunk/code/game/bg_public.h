@@ -74,6 +74,7 @@ void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd );
 typedef enum {
 	ET_GENERAL,
 	ET_PLAYER,
+	ET_LIGHT,
 } entityType_t;
 
 

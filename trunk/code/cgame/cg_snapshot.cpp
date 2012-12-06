@@ -27,11 +27,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/rLightAPI.h>
 #include <api/afDeclAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
+static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
 
 /*
 ==================
@@ -63,33 +65,38 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	}
 
 	// set all the values here in case that entity cant be interpolated between two snapshots
-	cent->rEnt->setOrigin(cent->currentState.origin);
-	cent->rEnt->setAngles(cent->currentState.angles);
-	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
-	if(cent->rEnt->hasDeclModel()) {
-		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
+	if(cent->currentState.eType == ET_LIGHT) {
+		cent->rLight->setOrigin(cent->currentState.origin);
+		//cent->rLight->setRadius(128.f);
 	} else {
-		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
-	}
-	if(cent->currentState.number == cg.clientNum) {
-		cent->rEnt->setThirdPersonOnly(true);
-	} else {
-		cent->rEnt->setThirdPersonOnly(false);
-	}
-	if(cent->currentState.activeRagdollDefNameIndex) {
-		const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
-		cent->rEnt->setRagdoll(af);
-		if(af) {
-			for(u32 i = 0; i < af->getNumBodies(); i++) {
-				const netBoneOr_s &in = cent->currentState.boneOrs[i];
-				boneOrQP_c or;
-				or.setPos(in.xyz);
-				or.setQuatXYZ(in.quatXYZ);
-				cent->rEnt->setRagdollBodyOr(i,or);
-			}
+		cent->rEnt->setOrigin(cent->currentState.origin);
+		cent->rEnt->setAngles(cent->currentState.angles);
+		cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
+		if(cent->rEnt->hasDeclModel()) {
+			cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
+		} else {
+			cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
 		}
-	} else {
-		cent->rEnt->setRagdoll(0);
+		if(cent->currentState.number == cg.clientNum) {
+			cent->rEnt->setThirdPersonOnly(true);
+		} else {
+			cent->rEnt->setThirdPersonOnly(false);
+		}
+		if(cent->currentState.activeRagdollDefNameIndex) {
+			const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
+			cent->rEnt->setRagdoll(af);
+			if(af) {
+				for(u32 i = 0; i < af->getNumBodies(); i++) {
+					const netBoneOr_s &in = cent->currentState.boneOrs[i];
+					boneOrQP_c or;
+					or.setPos(in.xyz);
+					or.setQuatXYZ(in.quatXYZ);
+					cent->rEnt->setRagdollBodyOr(i,or);
+				}
+			}
+		} else {
+			cent->rEnt->setRagdoll(0);
+		}
 	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap
@@ -98,18 +105,38 @@ static void CG_TransitionEntity( centity_t *cent ) {
 
 static void CG_RemoveEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
-	if(cent->rEnt) {
-		rf->removeEntity(cent->rEnt);
-		cent->rEnt = 0;
+	if(cent->currentState.eType == ET_LIGHT) {
+		if(cent->rLight) {
+			rf->removeLight(cent->rLight);
+			cent->rLight = 0;
+		}
+	} else {
+		if(cent->rEnt) {
+			rf->removeEntity(cent->rEnt);
+			cent->rEnt = 0;
+		}
 	}
 }
 static void CG_NewEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
-	if(cent->rEnt) {
-		CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rEntity assigned\n",entNum);
-		rf->removeEntity(cent->rEnt);
+	if(cg_printNewSnapEntities.getInt()) {
+		CG_Printf("CG_NewEntity: entNum %i, eType %i, ptr %i\n",entNum,cent->currentState.eType,cent);
 	}
-	cent->rEnt = rf->allocEntity();
+	if(cent->currentState.eType == ET_LIGHT) {
+		// new render light
+		if(cent->rLight) {
+			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rLight assigned\n",entNum);
+			rf->removeLight(cent->rLight);
+		}
+		cent->rLight = rf->allocLight();
+	} else {
+		// new render entity
+		if(cent->rEnt) {
+			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rEntity assigned\n",entNum);
+			rf->removeEntity(cent->rEnt);
+		}
+		cent->rEnt = rf->allocEntity();
+	}
 }
 
 /*

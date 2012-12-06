@@ -41,6 +41,9 @@ public:
 	virtual class rEntityAPI_i *allocEntity() = 0;
 	virtual void removeEntity(class rEntityAPI_i *ent) = 0;
 
+	virtual class rLightAPI_i *allocLight() = 0;
+	virtual void removeLight(class rLightAPI_i *light) = 0;
+
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) = 0;
 
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;

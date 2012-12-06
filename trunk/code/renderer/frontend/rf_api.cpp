@@ -164,6 +164,12 @@ public:
 	virtual void removeEntity(class rEntityAPI_i *ent) {
 		RFE_RemoveEntity(ent);
 	}
+	virtual class rLightAPI_i *allocLight() {
+		return RFL_AllocLight();
+	}
+	virtual void removeLight(class rLightAPI_i *ent) {
+		RFL_RemoveLight(ent);
+	}
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 		return RF_AddWorldMapDecal(pos,normal,radius,material);
 	}
