@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_drawCall.cpp - drawCalls managment and sorting
+#include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_entities.h"
 #include <api/rbAPI.h>
@@ -45,7 +46,8 @@ public:
 	class rVertexBuffer_c *verts;
 	class rIndexBuffer_c *indices;
 	enum drawCallSort_e sort;
-	rEntityAPI_i *entity;
+	class rEntityAPI_i *entity;
+	class rLightAPI_i *curLight;
 //public:
 	
 };
@@ -91,16 +93,24 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 		n->bindVertexColors = bindVertexColors;
 	}
 	n->entity = rf_currentEntity;
+	n->curLight = rf_curLightAPI;
 	rf_numDrawCalls++;
 }
 
 int compareDrawCall(const void *v0, const void *v1) {
 	const drawCall_c *c0 = (const drawCall_c *)v0;
 	const drawCall_c *c1 = (const drawCall_c *)v1;
+	if(c0->curLight) {
+		if(c1->curLight == 0) {
+			return 1; // c1 first
+		}
+	} else if(c1->curLight) {
+		return -1; // c0 first
+	}
 	if(c0->sort > c1->sort) {
-		return 1;
+		return 1; // c1 first
 	} else if(c0->sort < c1->sort) {
-		return -1;
+		return -1; // c0 first
 	}
 	// sorts are equal, sort by material pointer
 	if(c0->material > c1->material) {
@@ -125,6 +135,7 @@ void RF_SortAndIssueDrawCalls() {
 			}
 			prevEntity = c->entity;
 		}
+		rb->setCurLight(c->curLight);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setMaterial(c->material,c->lightmap);
 		rb->drawElements(*c->verts,*c->indices);

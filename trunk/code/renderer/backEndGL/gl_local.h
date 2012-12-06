@@ -21,28 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_main.cpp
-#include "rf_local.h"
-#include "rf_drawCall.h"
-#include "rf_world.h"
+// gl_local.h - local headers for OpenGL renderer backend
+#ifndef __GL_LOCAL_H__
+#define __GL_LOCAL_H__
 
-void RF_AddGenericDrawCalls() {
-	RF_AddWorldDrawCalls();
-	RFE_AddEntityDrawCalls();
-	RF_AddWorldDecalDrawCalls();
-}
+#define NO_SDL_GLEXT
+#include <stdlib.h>
+#include <gl/glew.h>
+#include <gl/glut.h>
 
-void RF_Draw3DView() {
-	// generate prelit world drawcalls
-	RF_AddGenericDrawCalls();
-	// add drawcalls of light interactions
-	RFL_AddLightInteractionsDrawCalls();
-	// first draw sky (without writing to the depth buffer)
-	if(RF_HasSky()) {
-		RF_DrawSky();
-	}
-	// sort and issue drawcalls (transparency rendering)
-	RF_SortAndIssueDrawCalls();
-	// do a debug drawing on top of everything
-	RF_DoDebugDrawing();
-}
+#endif // __GL_LOCAL_H__

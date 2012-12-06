@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 // rf_main.cpp
 void RF_Draw3DView();
+void RF_AddGenericDrawCalls();
 
 // rf_debugDrawing.cpp
 void RF_DoDebugDrawing();
@@ -46,6 +47,7 @@ bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();
 void RFL_RemoveLight(class rLightAPI_i *ent);
+void RFL_AddLightInteractionsDrawCalls();
 
 // rf_sky.cpp
 void RF_InitSky();
@@ -67,5 +69,6 @@ class r_model_c *RF_LoadMAPFile(const char *fname);
 
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
+extern class rLightAPI_i *rf_curLightAPI;
 
 #endif // __RF_LOCAL_H__

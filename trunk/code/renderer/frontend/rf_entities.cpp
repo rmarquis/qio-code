@@ -41,7 +41,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/animationController.h>
 #include <renderer/rfSurfFlags.h>
 
-aCvar_c rf_skipEntities("rf_skipEntities","0");
+static aCvar_c rf_skipEntities("rf_skipEntities","0");
 
 rEntityImpl_c::rEntityImpl_c() {
 	model = 0;

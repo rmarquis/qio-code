@@ -82,6 +82,11 @@ public:
 	virtual bool createIBO(class rIndexBuffer_c *ibo) = 0;
 	virtual bool destroyIBO(class rIndexBuffer_c *ibo) = 0;
 
+	// experimental lighting system
+	virtual void setCurLight(const class rLightAPI_i *light) {
+
+	}
+
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
 };

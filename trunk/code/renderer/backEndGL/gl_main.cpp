@@ -21,15 +21,9 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// sdl_gl.cpp - SDL / openGL backend
+// gl_main.cpp - SDL / openGL backend
 
-#define NO_SDL_GLEXT
-#include <windows.h>
-#include <gl/glew.h>
-#include <gl/glut.h>
-#include "../client/client.h"
-#include "../sys/sys_local.h"
-#include "sdl_icon.h"
+#include "gl_local.h"
 #include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/iFaceMgrAPI.h>
@@ -105,6 +99,7 @@ public:
 		boundGPUIBO = 0;
 		boundIBO = 0;
 		backendInitialized = false;
+		curLight = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -496,6 +491,10 @@ public:
 			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		}
 	}
+	const rLightAPI_i *curLight;
+	virtual void setCurLight(const class rLightAPI_i *light) {
+		this->curLight = light;
+	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
@@ -513,8 +512,13 @@ public:
 			for(u32 i = 0; i < numMatStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
 				setAlphaFunc(s->getAlphaFunc());	
-				const blendDef_s &bd = s->getBlendDef();
-				setBlendFunc(bd.src,bd.dst);
+				if(curLight == 0) {
+					const blendDef_s &bd = s->getBlendDef();
+					setBlendFunc(bd.src,bd.dst);
+				} else {
+					// light interactions are appended with addictive blending
+					setBlendFunc(BM_ONE,BM_ONE);
+				}
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
 				if(lastLightmap) {
@@ -748,6 +752,7 @@ public:
 		blendSrc = -2;
 		blendDst = -2;
 		blendEnable = false;
+		curLight = 0;
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

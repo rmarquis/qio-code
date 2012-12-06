@@ -22,8 +22,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_lights.cpp
+#include "rf_local.h"
 #include "rf_lights.h"
 #include <shared/array.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;
@@ -74,4 +78,15 @@ void RF_RenderSceneWithDynamicLighting() {
 	}
 	
 	*/
+}
+rLightAPI_i *rf_curLightAPI = 0;
+void RFL_AddLightInteractionsDrawCalls() {
+	if(rf_skipLightInteractionsDrawCalls.getInt())
+		return;
+	for(u32 i = 0; i < rf_lights.size(); i++) {
+		rLightImpl_c *light = rf_lights[i];
+		rf_curLightAPI = light;
+		RF_AddGenericDrawCalls();
+	}
+	rf_curLightAPI = 0;
 }
