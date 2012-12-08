@@ -145,3 +145,9 @@ glShader_c *GL_RegisterShader(const char *baseName) {
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	return ret;
 }
+void GL_ShutdownHLSLShaders() {
+	for(u32 i = 0; i < gl_shaders.size(); i++) {
+		delete gl_shaders[i];
+	}
+	gl_shaders.clear();
+}

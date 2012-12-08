@@ -175,12 +175,24 @@
 				RelativePath="..\..\code\renderer\backendDX9\backendDX9API.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\renderer\backEndDX9\dx9_shader.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\renderer\backEndDX9\dx9_local.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\backEndDX9\dx9_shader.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="shared"
@@ -207,6 +219,18 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="shaders"
+			>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx9\perPixelLighting.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx9\simpleTexturing.fx"
 				>
 			</File>
 		</Filter>

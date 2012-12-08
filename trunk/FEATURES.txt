@@ -19,6 +19,7 @@ renderer
  - VBO/IBO based (several times faster than Q3 renderer)
  - deltaRefEntities system
  - GLSL shaders support in backendGL
+ - HLSL shaders support in backendDX9 (DirectX9 .fx files)
  - (not yet finished) per pixel realtime lighting rendering mode
 
 modelLoader

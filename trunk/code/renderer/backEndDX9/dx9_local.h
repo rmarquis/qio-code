@@ -21,48 +21,17 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// gl_shader.h - GLSL shaders for openGL backend
-#ifndef __GL_SHADER_H__
-#define __GL_SHADER_H__
+// dx9_local.h
+#ifndef __DX9_LOCAL_H__
+#define __DX9_LOCAL_H__
 
-#include "gl_local.h"
+#include <d3dx9.h>
+#include <shared/array.h>
 #include <shared/str.h>
+#include <api/coreAPI.h>
+#include <api/vfsAPI.h>
 
-class glShader_c {
-friend class rbSDLOpenGL_c;
-	str name; // shader name
-	GLuint handle; // openGL handle
-	
-	// uniform locations
-	int uLightOrigin;
-	int uLightRadius;
+extern IDirect3D9 *pD3D;
+extern IDirect3DDevice9 *pDev;
 
-	// sampler2D locations
-	int sColorMap; // main diffuse texture
-
-public:
-	glShader_c() {
-		handle = 0;
-	}
-	~glShader_c() {
-		if(handle) {
-			glDeleteProgram(handle);
-		}
-	}
-	const char *getName() const {
-		return name;
-	}
-	GLuint getGLHandle() const {
-		return handle;
-	}
-	bool isValid() const {
-		if(handle)
-			return true;
-		return false;
-	}
-
-friend glShader_c *GL_RegisterShader(const char *baseName);
-friend void GL_ShutdownGLSLShaders();
-};
-
-#endif // __GL_SHADER_H__
+#endif // __DX9_LOCAL_H__
