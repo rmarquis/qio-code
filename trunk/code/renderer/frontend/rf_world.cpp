@@ -132,5 +132,15 @@ int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, c
 	}
 	return -1;
 }
-
-
+void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
+	if(r_bspTree) {
+		//r_bspTree->cacheLightWorldInteractions(l);
+	}
+	if(r_procTree) {
+		//r_procTree->cacheLightWorldInteractions(l);
+	}
+	if(r_worldModel) {
+		// assumes that world model is a static model
+		r_worldModel->cacheLightStaticModelInteractions(l);
+	}
+}

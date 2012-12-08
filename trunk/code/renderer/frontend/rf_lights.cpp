@@ -24,13 +24,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_lights.cpp
 #include "rf_local.h"
 #include "rf_lights.h"
-#include <shared/array.h>
+#include "rf_surface.h"
+#include "rf_entities.h"
+#include "rf_world.h"
 #include <shared/autoCvar.h>
 
 static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
 
 rLightImpl_c::rLightImpl_c() {
-	radius = 512.f;
+	radius = 512.f;	
+	numCurrentStaticInteractions = 0;
+	numCurrentEntityInteractions = 0;
+}
+rLightImpl_c::~rLightImpl_c() {
+	clearInteractions();
 }
 void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	if(pos.compare(newXYZ)) {
@@ -38,6 +45,7 @@ void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	}
 	pos = newXYZ;
 	absBounds.fromPointAndRadius(pos,radius);
+	recalcLightInteractions();
 }
 void rLightImpl_c::setRadius(float newRadius) {
 	if(radius == newRadius) {
@@ -45,8 +53,60 @@ void rLightImpl_c::setRadius(float newRadius) {
 	}
 	radius = newRadius;
 	absBounds.fromPointAndRadius(pos,radius);
+	recalcLightInteractions();
 }
-
+void rLightImpl_c::clearInteractionsWithDynamicEntities() {
+	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
+		entityInteraction_s &in = this->entityInteractions[i];
+		//in.ent->removeInteraction(this);
+	}
+	numCurrentEntityInteractions = 0;
+}
+void rLightImpl_c::clearInteractions() {
+	clearInteractionsWithDynamicEntities();
+	numCurrentStaticInteractions = 0;
+}
+void rLightImpl_c::recalcLightInteractionsWithStaticWorld() {
+	RF_CacheLightWorldInteractions(this);
+}
+void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
+	clearInteractionsWithDynamicEntities();
+	arraySTD_c<rEntityImpl_c*> ents;
+	RFE_BoxEntities(this->absBounds,ents);
+	if(entityInteractions.size() < ents.size()) {
+		entityInteractions.resize(ents.size());
+	}
+	numCurrentEntityInteractions = ents.size();
+	for(u32 i = 0; i < ents.size(); i++) {
+		rEntityImpl_c *ent = ents[i];
+		entityInteractions[i].ent = ent;
+		//ent->addInteraction(this);
+	}
+}
+void rLightImpl_c::recalcLightInteractions() {
+	recalcLightInteractionsWithDynamicEntities();
+	recalcLightInteractionsWithStaticWorld();
+}
+void rLightImpl_c::drawLightInteractions() {
+	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
+		staticSurfInteraction_s &in = this->staticInteractions[i];
+		if(in.sf) {
+			in.sf->addDrawCall();
+		}
+	}
+	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
+		entityInteraction_s &in = this->entityInteractions[i];
+#if 0
+		in.ent->addDrawCalls();
+#else
+		// check if the entity is needed for a current scene
+		// (first person models are not drawn in 3rd person mode, etc)
+		// then do a frustum check, and if the entity is visible,
+		// add its draw calls
+		RFE_AddEntity(in.ent);
+#endif
+	}
+}
 
 static arraySTD_c<rLightImpl_c*> rf_lights;
 
@@ -61,24 +121,8 @@ void RFL_RemoveLight(class rLightAPI_i *light) {
 	delete rlight;
 }
 
-void RF_RenderSceneWithDynamicLighting() {
-	/*
-	// draw on depth buffer / draw lightmapped
-	if(RF_WorldHasLightmaps()) {
-		RF_DrawLightmapped();
-		// draw entities as well??? use lightgrid?
-	} else {
-		RF_DrawOnDepthBuffer();
-	}
-	for(u32 i = 0; i < rf_lights.size(); i++) {
-		rLightImpl_c *l = rf_lights[i];
-		if(l->isCulled())
-			continue;
-		RF_RenderLightInteractions();
-	}
-	
-	*/
-}
+static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
+
 rLightAPI_i *rf_curLightAPI = 0;
 void RFL_AddLightInteractionsDrawCalls() {
 	if(rf_skipLightInteractionsDrawCalls.getInt())
@@ -86,7 +130,16 @@ void RFL_AddLightInteractionsDrawCalls() {
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];
 		rf_curLightAPI = light;
-		RF_AddGenericDrawCalls();
+
+		// TODO: dont do this every frame
+		light->recalcLightInteractionsWithDynamicEntities();
+
+		if(rf_redrawEntireSceneForEachLight.getInt()) {
+			RF_AddGenericDrawCalls();
+		} else {
+			// blend light interactions (surfaces intersecting light bounds) with drawn world
+			light->drawLightInteractions();
+		}
 	}
 	rf_curLightAPI = 0;
 }

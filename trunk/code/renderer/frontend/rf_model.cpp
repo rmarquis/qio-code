@@ -164,6 +164,10 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 			delete ret->staticModel;
 			ret->staticModel = 0;
 		} else {
+			// FIXME: dont do this here, it might be not needed for some models
+			// that have normals precompued and stored on disk
+			ret->staticModel->recalcModelNormals();
+
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model
 		}

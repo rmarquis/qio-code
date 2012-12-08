@@ -28,6 +28,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/aabb.h>
 #include <api/rLightAPI.h>
+#include <shared/array.h>
+
+enum staticSurfInteractionType_e {
+	SSINTER_BAD,
+	SSINTER_BSP,
+	SSINTER_RSURF,
+};
+struct staticSurfInteraction_s {
+	class r_surface_c *sf;
+	u32 bspSurfaceNumber;
+};
+struct entityInteraction_s {
+	class rEntityImpl_c *ent;
+};
 
 class rLightImpl_c : public rLightAPI_i {
 	vec3_c pos;
@@ -35,17 +49,45 @@ class rLightImpl_c : public rLightAPI_i {
 
 	aabb absBounds;
 
+	arraySTD_c<staticSurfInteraction_s> staticInteractions;
+	int numCurrentStaticInteractions;
+	arraySTD_c<entityInteraction_s> entityInteractions;
+	int numCurrentEntityInteractions;
+
+public:
+	rLightImpl_c();
+	~rLightImpl_c();
+
+	void clearInteractions();
+	void clearInteractionsWithDynamicEntities();
+	void recalcLightInteractionsWithStaticWorld();
+	void recalcLightInteractionsWithDynamicEntities();
+	void recalcLightInteractions();
+
+	void drawLightInteractions();
+
+	void addStaticModelSurfaceInteraction(/*class r_model_c *mod, */class r_surface_c *sf) {
+		numCurrentStaticInteractions++;
+		if(staticInteractions.size() < numCurrentStaticInteractions) {
+			staticInteractions.resize(numCurrentStaticInteractions);
+		}
+		staticSurfInteraction_s &n = staticInteractions[numCurrentStaticInteractions-1];
+		n.sf = sf;
+		n.bspSurfaceNumber = 0;
+	}
+
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setRadius(float newRadius);
+
 	virtual const vec3_c &getOrigin() const {
 		return pos;
 	}
 	virtual float getRadius() const {
 		return radius;
 	}
-public:
-	rLightImpl_c();
-
+	const aabb &getABSBounds() const {
+		return absBounds;
+	}
 };
 
 #endif // __RF_LIGHTS_H__

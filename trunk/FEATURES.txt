@@ -18,6 +18,8 @@ renderer
  - basic DirectX 9 backend
  - VBO/IBO based (several times faster than Q3 renderer)
  - deltaRefEntities system
+ - GLSL shaders support in backendGL
+ - (not yet finished) per pixel realtime lighting rendering mode
 
 modelLoader
  - written from scratch in C++
@@ -28,16 +30,17 @@ modelLoader
  
 materialSystem
  - written from scratch in C++
- - BASIC q3 shaders support
+ - BASIC q3 shaders / Doom3 materials support
  
- declManager
+declManager
  - Doom3 model decls support (.def files)
  - Doom3 entity decls support (.def files)
  - Doom3 Articulated Figures (.af files - ragdoll definitions) support
  
 common
  - interfaces system similiar to one in SourceEngine
-
+ - engine core based on IOQuake3 code
+ 
 shared
  - many math, geometry and util C++ classes
  - autoCvar_c class for easier ConVars usage

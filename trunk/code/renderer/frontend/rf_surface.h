@@ -210,6 +210,7 @@ public:
 
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0);
+	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
 
 	bool parseProcModel(class parser_c &p);
 

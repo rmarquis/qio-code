@@ -560,6 +560,16 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
 		}
 	}
 }
+#include "rf_lights.h"
+void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
+	// TODO: handle models with non-identity orientations
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(sf->getBB().intersect(light->getABSBounds())) {
+			light->addStaticModelSurfaceInteraction(/*this,*/sf);
+		}
+	}
+}
 bool r_model_c::parseProcModel(class parser_c &p) {
 	if(p.atWord("{")==false) {
 		g_core->RedWarning("r_model_c::parseProcModel: expected '{' to follow \"model\" in file %s at line %i, found %s\n",

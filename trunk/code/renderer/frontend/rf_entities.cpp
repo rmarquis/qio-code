@@ -218,6 +218,11 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 	(*ragOrs)[partIndex] = or;
 }
 void rEntityImpl_c::addDrawCalls() {
+	// this is needed here so rf_drawCalls.cpp know
+	// which orientation should be used 
+	// (world identity matrix vs. entity pos/angles matrix)
+	rf_currentEntity = this;
+
 	if(model->isStatic()) {
 		((model_c*)model)->addModelDrawCalls(&surfaceFlags);
 		if(staticDecals) {
@@ -264,6 +269,9 @@ void rEntityImpl_c::addDrawCalls() {
 		}
 		instance->addDrawCalls(&surfaceFlags);
 	}
+
+	// done.
+	rf_currentEntity = 0;
 }
 bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) {
 	if(model == 0)
@@ -357,7 +365,6 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 }
 static u32 c_entitiesCulledByABSBounds;
 void RFE_AddEntity(rEntityImpl_c *ent) {
-	rf_currentEntity = ent;
 	model_c *model = (model_c*)ent->getModel();
 	if(model == 0) {
 		return;
@@ -405,7 +412,16 @@ void RFE_ClearEntities() {
 	}
 	rf_entities.clear();
 }
-
+u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<rEntityImpl_c*> &out) {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		rEntityImpl_c *ent = rf_entities[i];
+		const aabb &entBB = ent->getBoundsABS();
+		if(absBounds.intersect(entBB)) {
+			out.push_back(ent);
+		}
+	}	
+	return out.size();
+}
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels) {
 	bool bHit = RF_RayTraceWorld(tr);
 	for(u32 i = 0; i < rf_entities.size(); i++) {

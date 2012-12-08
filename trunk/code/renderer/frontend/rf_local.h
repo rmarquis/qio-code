@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __RF_LOCAL_H__
 
 #include "../cameraDef.h"
+#include <shared/array.h>
 
 // rf_main.cpp
 void RF_Draw3DView();
@@ -43,6 +44,8 @@ void RFE_AddEntityDrawCalls();
 void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
+u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
+void RFE_AddEntity(class rEntityImpl_c *ent);
 
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();
