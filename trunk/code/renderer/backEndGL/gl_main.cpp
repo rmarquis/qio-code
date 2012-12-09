@@ -45,6 +45,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rLightAPI.h>
 
 aCvar_c gl_showTris("gl_showTris","0");
+// use a special GLSL shader to show normal vectors as colors
+aCvar_c rb_showNormalColors("rb_showNormalColors","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -439,6 +441,7 @@ public:
 		}
 		boundVBOVertexColors = bindVertexColors;
 		boundVBO = verts;
+		checkErrors();
 	}
 	void unbindVertexBuffer() {
 		if(boundVBO == 0)
@@ -456,6 +459,7 @@ public:
 		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
 		boundVBO = 0;
+		checkErrors();
 	}
 	void unbindIBO() {
 		if(boundGPUIBO) {
@@ -484,18 +488,20 @@ public:
 		} else {
 			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), 0);
 		}
+		checkErrors();
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
 		bindShader(0);
+		checkErrors();
 
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
+		checkErrors();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
 		disableNormalArray();
 		checkErrors();
 		if(lastMat) {
-			//glEnable(GL_BLEND);
 			// NOTE: this is the way Q3 draws all the 2d menu graphics
 			// (it worked before with bigchars.tga, even when the bigchars
 			// shader was missing!!!)
@@ -569,8 +575,23 @@ public:
 		}
 		glColorMask(true, true, true, true);
 
+		if(rb_showNormalColors.getInt()) {
+			glShader_c *sh = GL_RegisterShader("showNormalColors");
+			if(sh) {
+				turnOffAlphaFunc();
+				turnOffPolygonOffset();
+				turnOffTextureMatrices();
+				disableAllTextures();
+				bindShader(sh);
+				bindVertexBuffer(&verts);
+				bindIBO(&indices);
+				drawCurIBO();
+				return;
+			}
+		}
+
 		if(curLight) {
-			glShader_c *sh = GL_RegisterShader("perpixellighting");
+			glShader_c *sh = GL_RegisterShader("perPixelLighting");
 			bindShader(sh);
 		} else {
 			bindShader(0);

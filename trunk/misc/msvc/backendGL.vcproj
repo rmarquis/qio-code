@@ -237,6 +237,14 @@
 				RelativePath="..\..\game\baseqio\glsl\perPixelLighting.vert"
 				>
 			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\showNormalColors.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\showNormalColors.vert"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
