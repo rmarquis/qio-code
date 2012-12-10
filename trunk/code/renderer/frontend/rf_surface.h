@@ -55,6 +55,12 @@ public:
 	const char *getMatName() const {
 		return matName;
 	}
+	const rVertexBuffer_c &getVerts() const {
+		return verts;
+	}
+	const rIndexBuffer_c &getIndices() const {
+		return indices;
+	}
 	rVertexBuffer_c &getVerts() {
 		return verts;
 	}
@@ -222,6 +228,9 @@ public:
 
 	void resizeSurfaces(u32 newNumSurfs) {
 		surfs.resize(newNumSurfs);
+	}
+	const r_surface_c *getSurf(u32 sfNum) const {
+		return &surfs[sfNum];
 	}
 	r_surface_c *getSurf(u32 sfNum) {
 		return &surfs[sfNum];

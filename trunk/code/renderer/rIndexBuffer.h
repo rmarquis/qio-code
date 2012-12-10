@@ -98,6 +98,10 @@ public:
 			numIndices += numAddIndices;	
 		}
 	}
+	void setNullCount() {
+		numIndices = 0;
+		type = IBO_U16;
+	}
 	void convertToU32Buffer() {
 		if(type == IBO_U32) {
 			return;
@@ -229,6 +233,11 @@ public:
 			return 0;
 		return (void*)data.getArray();
 	}
+	void ensureAllocated(u32 numBytes) {
+		if(data.size() >= numBytes)
+			return;
+		data.resize(numBytes);
+	}
 	void addIndex(u32 idx) {
 		if(type == IBO_NOT_SET) {
 			if(idx < U16_MAX) {
@@ -241,17 +250,30 @@ public:
 				this->convertToU32Buffer();
 			}
 		}
-		u32 prevSize = data.size();
+		u32 prevSize = numIndices * this->getSingleIndexSize();
 		if(type == IBO_U16) {
-			data.resize(prevSize+2);
+			ensureAllocated(prevSize+2);
 			u16 *p = (u16*)&data[prevSize];
 			*p = idx;
 		} else if(type == IBO_U32) {
-			data.resize(prevSize+4);
+			ensureAllocated(prevSize+4);
 			u32 *p = (u32*)&data[prevSize];
 			*p = idx;
 		}
 		this->numIndices++;
+	}
+	void addTriangle(u32 i0, u32 i1, u32 i2) {
+		addIndex(i0);
+		addIndex(i1);
+		addIndex(i2);
+	}
+	void addQuad(u32 i0, u32 i1, u32 i2, u32 i3) {
+		addIndex(i0);
+		addIndex(i1);
+		addIndex(i2);
+		addIndex(i1);
+		addIndex(i3);
+		addIndex(i2);
 	}
 	u32 getSingleIndexSize() const {
 		if(type == IBO_U16) {

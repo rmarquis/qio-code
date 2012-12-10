@@ -40,6 +40,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
+#include <renderer/rPointBuffer.h>
+
+#include <shared/cullType.h>
 
 #include <shared/autoCvar.h>
 #include <api/rLightAPI.h>
@@ -371,6 +374,45 @@ public:
 			polygonOffsetEnabled = false;
 		}
 	}
+	// glDepthMask
+	bool bDepthMask;
+	void setGLDepthMask(bool bOn) {
+		if(bOn == bDepthMask) {
+			return;
+		}
+		bDepthMask = bOn;
+		glDepthMask(bDepthMask);
+	}
+	// GL_CULL
+	cullType_e prevCullType;
+	void glCull(cullType_e cullType) {
+		if(prevCullType == cullType) {
+			return;
+		}
+		prevCullType = cullType;
+		if(cullType == CT_TWO_SIDED) {
+			glDisable(GL_CULL_FACE);
+		} else {
+			glEnable( GL_CULL_FACE );
+			if(cullType == CT_BACK_SIDED) {
+				glCullFace(GL_BACK);
+			} else {
+				glCullFace(GL_FRONT);
+			}
+		}
+	}
+	// GL_STENCIL_TEST
+	bool stencilTestEnabled;
+	void setGLStencilTest(bool bOn) {
+		if(stencilTestEnabled == bOn)
+			return;
+		stencilTestEnabled = bOn;
+		if(bOn) {
+			glEnable(GL_STENCIL_TEST);
+		} else {
+			glDisable(GL_STENCIL_TEST);
+		}
+	}
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
 		lastMat = mat;
 		lastLightmap = lightmap;
@@ -491,6 +533,7 @@ public:
 		checkErrors();
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
+		stopDrawingShadowVolumes();
 		bindShader(0);
 		checkErrors();
 
@@ -525,6 +568,7 @@ public:
 	}
 	const rLightAPI_i *curLight;
 	bool bDrawOnlyOnDepthBuffer;
+	bool bDrawingShadowVolumes;
 	virtual void setCurLight(const class rLightAPI_i *light) {
 		this->curLight = light;
 	}
@@ -561,6 +605,8 @@ public:
 		if(indices.getNumIndices() == 0)
 			return;
 
+		stopDrawingShadowVolumes();
+
 		if(bDrawOnlyOnDepthBuffer) {
 			glColorMask(false, false, false, false);
 			bindShader(0);
@@ -596,6 +642,8 @@ public:
 		} else {
 			bindShader(0);
 		}
+		
+		glCull(CT_FRONT_SIDED);
 
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);
@@ -650,15 +698,72 @@ public:
 	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
 		if(tex == 0)
 			return;
+
+		stopDrawingShadowVolumes();
+
 		disableAllTextures();
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);			
 		bindTex(0,tex->getInternalHandleU32());
 		drawCurIBO();
 	}
+	void startDrawingShadowVolumes() {
+		if(bDrawingShadowVolumes == true)
+			return;
+		//disableAllTextures();
+		//disableNormalArray();
+		//disableTexCoordArrayForTexSlot(1);
+		//disableTexCoordArrayForTexSlot(0);
+		unbindVertexBuffer();
+		unbindMaterial();
+        glClear(GL_STENCIL_BUFFER_BIT); // We clear the stencil buffer
+        glDepthFunc(GL_LESS); // We change the z-testing function to LESS, to avoid little bugs in shadow
+        glColorMask(false, false, false, false); // We dont draw it to the screen
+        glStencilFunc(GL_ALWAYS, 0, 0); // We always draw whatever we have in the stencil buffer
+		setGLDepthMask(false);
+		setGLStencilTest(true);
+
+		bDrawingShadowVolumes = true;
+	}
+	void stopDrawingShadowVolumes() {
+		if(bDrawingShadowVolumes == false)
+			return;
+
+		// We draw our lighting now that we created the shadows area in the stencil buffer
+        glDepthFunc(GL_LEQUAL); // we put it again to LESS or EQUAL (or else you will get some z-fighting)
+		glCull(CT_FRONT_SIDED);// glCullFace(GL_FRONT);//BACK); // we draw the front face
+        glColorMask(true, true, true, true); // We enable color buffer
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Drawing will not affect the stencil buffer
+        glStencilFunc(GL_EQUAL, 0x0, 0xff); // And the most important thing, the stencil function. Drawing if equal to 0
+
+		bDrawingShadowVolumes = false;
+	}
+	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+		startDrawingShadowVolumes();
+
+		bindIBO(indices);
+		glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),points->getArray());
+		
+		glCull(CT_BACK_SIDED);
+		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP); // increment if the depth test fails
+
+		drawCurIBO(); // draw the shadow volume
+
+		glCull(CT_FRONT_SIDED);
+		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP); // decrement if the depth test fails
+
+		drawCurIBO(); // draw the shadow volume
+
+		glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),0);
+		bindIBO(0);
+	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if(1) {
+		    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		} else {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 		glClearColor(0,0,0,0);
 
 		// reset counters
@@ -671,6 +776,9 @@ public:
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 	virtual void setup2DView() {
+		setGLDepthMask(true);
+		setGLStencilTest(false);
+
 		glViewport(0,0,getWinWidth(),getWinHeight());
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -856,6 +964,11 @@ public:
 		blendDst = -2;
 		blendEnable = false;
 		curLight = 0;
+		bDrawOnlyOnDepthBuffer = false;
+		bDrawingShadowVolumes = false;
+		bDepthMask = true;
+		prevCullType = CT_NOT_SET;
+		stencilTestEnabled = 0;
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

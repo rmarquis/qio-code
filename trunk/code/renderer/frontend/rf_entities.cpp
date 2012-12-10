@@ -186,6 +186,18 @@ const char *rEntityImpl_c::getModelName() const {
 		return "noModel";
 	return model->getName();
 }
+const class r_model_c *rEntityImpl_c::getCurrentRModelInstance() const {
+	if(model == 0)
+		return 0;
+	if(instance)
+		return instance;
+	model_c *m = dynamic_cast<model_c*>(model);
+	if(m == 0) {
+		g_core->RedWarning("rEntityImpl_c::getCurrentRModelInstance: dynamic cast failed\n");
+		return 0;
+	}
+	return m->getRModel();
+}
 void rEntityImpl_c::hideSurface(u32 surfNum) {
 	if(surfaceFlags.size() <= surfNum) {
 		g_core->RedWarning("rEntityImpl_c::hideSurface: surface index %i out of range <0,%i)\n",surfNum,surfaceFlags.size());

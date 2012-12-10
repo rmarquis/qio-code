@@ -232,6 +232,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_shadowVolume.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_sky.cpp"
 				>
 			</File>
@@ -310,6 +314,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_shadowVolume.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_surface.h"
 				>
 			</File>
@@ -323,6 +331,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\rModelAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rPointBuffer.h"
 				>
 			</File>
 			<File
@@ -505,6 +517,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\trace.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\vec3hash.h"
 				>
 			</File>
 		</Filter>

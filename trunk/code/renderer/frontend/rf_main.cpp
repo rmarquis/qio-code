@@ -28,7 +28,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autocvar.h>
 
 static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
+static aCvar_c rf_shadows("rf_shadows","0");
 
+bool RF_IsUsingShadowVolumes() {
+	// TODO: see if the stencil buffer is supported
+	if(rf_shadows.getInt() == 1) {
+		return true;
+	}
+	return false;
+}
 void RF_AddGenericDrawCalls() {
 	RF_AddWorldDrawCalls();
 	RFE_AddEntityDrawCalls();

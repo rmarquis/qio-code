@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_entities.h"
+#include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
@@ -44,11 +45,12 @@ public:
 	bool drawOnlyOnDepthBuffer;
 	class mtrAPI_i *material;
 	class textureAPI_i *lightmap; // for bsp surfaces
-	class rVertexBuffer_c *verts;
-	class rIndexBuffer_c *indices;
+	const class rVertexBuffer_c *verts;
+	const class rIndexBuffer_c *indices;
 	enum drawCallSort_e sort;
 	class rEntityAPI_i *entity;
 	class rLightAPI_i *curLight;
+	const class rPointBuffer_c *points; // ONLY for shadow volumes
 //public:
 	
 };
@@ -56,7 +58,7 @@ static arraySTD_c<drawCall_c> rf_drawCalls;
 static u32 rf_numDrawCalls = 0;
 bool rf_bDrawOnlyOnDepthBuffer = false;
 
-void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
+void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
 		bool bindVertexColors) {
 	// developers can supress manually some materials for debugging purposes
@@ -99,12 +101,44 @@ void RF_AddDrawCall(rVertexBuffer_c *verts, rIndexBuffer_c *indices,
 	n->curLight = rf_curLightAPI;
 	rf_numDrawCalls++;
 }
+void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+	if(rf_curLightAPI == 0) {
+		// should never happen..
+		g_core->RedWarning("RF_AddShadowVolumeDrawCall: rf_curLightAPI is NULL!!!\n");
+		return;
+	}
+	drawCall_c *n;
+	if(rf_numDrawCalls == rf_drawCalls.size()) {
+		n = &rf_drawCalls.pushBack();
+	} else {
+		n = &rf_drawCalls[rf_numDrawCalls];
+	}
+	n->verts = 0;
+	n->points = points;
+	n->indices = indices;
+	n->material = 0;
+	n->lightmap = 0;
+	n->sort = DCS_SPECIAL_SHADOWVOLUME;
+	n->bindVertexColors = false;
+	n->drawOnlyOnDepthBuffer = false;
+	n->entity = rf_currentEntity;
+	n->curLight = rf_curLightAPI;
+	rf_numDrawCalls++;
+}
 
 int compareDrawCall(const void *v0, const void *v1) {
 	const drawCall_c *c0 = (const drawCall_c *)v0;
 	const drawCall_c *c1 = (const drawCall_c *)v1;
 	if(c0->curLight) {
 		if(c1->curLight == 0) {
+			return 1; // c1 first
+		}
+		// light shadow volumes are drawn before light interactions
+		if(c0->sort == DCS_SPECIAL_SHADOWVOLUME) {
+			if(c1->sort == DCS_SPECIAL_SHADOWVOLUME)
+				return 0; // equal
+			return -1; // c0 first
+		} else if(c1->sort == DCS_SPECIAL_SHADOWVOLUME) {
 			return 1; // c1 first
 		}
 	} else if(c1->curLight) {
@@ -142,7 +176,13 @@ void RF_SortAndIssueDrawCalls() {
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 		rb->setMaterial(c->material,c->lightmap);
-		rb->drawElements(*c->verts,*c->indices);
+		if(c->verts) {
+			// draw surface
+			rb->drawElements(*c->verts,*c->indices);
+		} else {
+			// draw shadow volume points
+			rb->drawIndexedShadowVolume(c->points,c->indices);
+		}
 	}
 	rb->setBindVertexColors(false);		
 	rf_numDrawCalls = 0;

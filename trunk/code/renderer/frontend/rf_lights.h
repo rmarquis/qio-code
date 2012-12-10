@@ -41,6 +41,7 @@ struct staticSurfInteraction_s {
 };
 struct entityInteraction_s {
 	class rEntityImpl_c *ent;
+	class rIndexedShadowVolume_c *shadowVolume; // only for stencil shadows
 };
 
 class rLightImpl_c : public rLightAPI_i {
@@ -64,7 +65,8 @@ public:
 	void recalcLightInteractionsWithDynamicEntities();
 	void recalcLightInteractions();
 
-	void drawLightInteractions();
+	void addLightInteractionDrawCalls();
+	void addLightShadowVolumesDrawCalls();
 
 	void addStaticModelSurfaceInteraction(/*class r_model_c *mod, */class r_surface_c *sf) {
 		numCurrentStaticInteractions++;
@@ -78,6 +80,8 @@ public:
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setRadius(float newRadius);
+
+	virtual void calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) const;
 
 	virtual const vec3_c &getOrigin() const {
 		return pos;

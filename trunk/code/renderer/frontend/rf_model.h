@@ -114,7 +114,12 @@ public:
 	// NOTE: "myNewModelPtr" will be stored in this model class and fried on renderer shutdown!
 	void initStaticModel(class r_model_c *myNewModelPtr);
 
-
+	const r_model_c *getRModel() const {
+		if(type == MOD_STATIC) {
+			return staticModel;
+		}
+		return 0;
+	}
 	
 	virtual bool rayTrace(class trace_c &tr) const;
 	virtual bool createStaticModelDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,

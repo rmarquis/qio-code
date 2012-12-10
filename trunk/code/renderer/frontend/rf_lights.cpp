@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_entities.h"
 #include "rf_world.h"
+#include "rf_shadowVolume.h"
 #include <shared/autoCvar.h>
 
 static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
@@ -38,6 +39,13 @@ rLightImpl_c::rLightImpl_c() {
 }
 rLightImpl_c::~rLightImpl_c() {
 	clearInteractions();
+	for(u32 i = 0; i < entityInteractions.size(); i++) {
+		entityInteraction_s &in = this->entityInteractions[i];
+		if(in.shadowVolume) {
+			delete in.shadowVolume;
+			in.shadowVolume = 0;
+		}
+	}
 }
 void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	if(pos.compare(newXYZ)) {
@@ -66,6 +74,11 @@ void rLightImpl_c::clearInteractions() {
 	clearInteractionsWithDynamicEntities();
 	numCurrentStaticInteractions = 0;
 }
+void rLightImpl_c::calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) const {
+	const matrix_c &entityMatrix = ent->getMatrix();
+	matrix_c entityMatrixInv = entityMatrix.getInversed();
+	entityMatrixInv.transformPoint(this->pos,out);
+}
 void rLightImpl_c::recalcLightInteractionsWithStaticWorld() {
 	RF_CacheLightWorldInteractions(this);
 }
@@ -79,15 +92,24 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 	numCurrentEntityInteractions = ents.size();
 	for(u32 i = 0; i < ents.size(); i++) {
 		rEntityImpl_c *ent = ents[i];
-		entityInteractions[i].ent = ent;
+		entityInteraction_s &in = this->entityInteractions[i];
+		in.ent = ent;
 		//ent->addInteraction(this);
+		if(RF_IsUsingShadowVolumes()) {
+			if(in.shadowVolume == 0) {
+				in.shadowVolume = new rIndexedShadowVolume_c;
+			}
+			vec3_c lightInEntitySpace;
+			this->calcPosInEntitySpace(ent,lightInEntitySpace);
+			in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
+		}
 	}
 }
 void rLightImpl_c::recalcLightInteractions() {
 	recalcLightInteractionsWithDynamicEntities();
 	recalcLightInteractionsWithStaticWorld();
 }
-void rLightImpl_c::drawLightInteractions() {
+void rLightImpl_c::addLightInteractionDrawCalls() {
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.sf) {
@@ -106,6 +128,16 @@ void rLightImpl_c::drawLightInteractions() {
 		RFE_AddEntity(in.ent);
 #endif
 	}
+}
+void rLightImpl_c::addLightShadowVolumesDrawCalls() {
+	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
+		entityInteraction_s &in = this->entityInteractions[i];
+		if(in.shadowVolume == 0)
+			continue;
+		rf_currentEntity = in.ent;
+		in.shadowVolume->addDrawCall();
+	}
+	rf_currentEntity = 0;
 }
 
 static arraySTD_c<rLightImpl_c*> rf_lights;
@@ -134,11 +166,14 @@ void RFL_AddLightInteractionsDrawCalls() {
 		// TODO: dont do this every frame
 		light->recalcLightInteractionsWithDynamicEntities();
 
+		if(RF_IsUsingShadowVolumes()) {
+			light->addLightShadowVolumesDrawCalls();
+		}
 		if(rf_redrawEntireSceneForEachLight.getInt()) {
 			RF_AddGenericDrawCalls();
 		} else {
 			// blend light interactions (surfaces intersecting light bounds) with drawn world
-			light->drawLightInteractions();
+			light->addLightInteractionDrawCalls();
 		}
 	}
 	rf_curLightAPI = 0;

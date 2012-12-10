@@ -89,6 +89,9 @@ public:
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 
 	}
+	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+
+	}
 
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;

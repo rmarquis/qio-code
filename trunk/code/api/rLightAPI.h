@@ -32,6 +32,9 @@ public:
 
 	virtual const vec3_c &getOrigin() const = 0;
 	virtual float getRadius() const = 0;
+
+	
+	virtual void calcPosInEntitySpace(const class rEntityAPI_i *ent, class vec3_c &out) const = 0;
 };
 
 #endif // __RLIGHTAPI_H__

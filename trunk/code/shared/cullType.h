@@ -21,18 +21,16 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_drawCall.h - drawCalls managment and sorting
-#ifndef __RF_DRAWCALL_H__
-#define __RF_DRAWCALL_H__
+// cullType.e
+#ifndef __CULLTYPE_H__
+#define __CULLTYPE_H__
 
-#include "../drawCallSort.h"
+enum cullType_e {
+	CT_FRONT_SIDED,
+	CT_BACK_SIDED,
+	CT_TWO_SIDED,
 
-void RF_AddDrawCall(const class rVertexBuffer_c *verts, const class rIndexBuffer_c *indices,
-	class mtrAPI_i *mat, class textureAPI_i *lightmap, enum drawCallSort_e sort,
-		bool bindVertexColors);
-void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices);
+	CT_NOT_SET,
+};
 
-void RF_SortAndIssueDrawCalls();
-extern bool rf_bDrawOnlyOnDepthBuffer;
-
-#endif // __RF_DRAWCALL_H__
+#endif // __CULLTYPE_H__

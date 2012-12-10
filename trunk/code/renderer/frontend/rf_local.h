@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_main.cpp
 void RF_Draw3DView();
 void RF_AddGenericDrawCalls();
+bool RF_IsUsingShadowVolumes();
 
 // rf_debugDrawing.cpp
 void RF_DoDebugDrawing();
@@ -73,5 +74,7 @@ class r_model_c *RF_LoadMAPFile(const char *fname);
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern class rLightAPI_i *rf_curLightAPI;
+// NULL == worldspawn
+extern class rEntityAPI_i *rf_currentEntity;
 
 #endif // __RF_LOCAL_H__

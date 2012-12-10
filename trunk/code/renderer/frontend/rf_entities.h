@@ -121,6 +121,8 @@ public:
 		return staticDecals;
 	}
 
+	const class r_model_c *getCurrentRModelInstance() const;
+
 	virtual void hideSurface(u32 surfNum);
 
 	void addDrawCalls();

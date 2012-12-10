@@ -415,7 +415,8 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		depthbits = 24;
 	//else
 	//	depthbits = r_depthbits->value;
-	stencilbits = 0;//r_stencilbits->value;
+		// stencil bits are needed for stencil shadows
+	stencilbits = 32;//r_stencilbits->value;
 	samples = 0;//r_ext_multisample->value;
 
 	for (i = 0; i < 16; i++)
