@@ -320,6 +320,8 @@ public:
 				hlslShader_c *sh = DX9_RegisterShader("perPixelLighting");
 				initRVertDecl();
 				if(sh && rVertDecl) {
+
+
 					pDev->SetVertexDeclaration(rVertDecl);
 					if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
 						pDev->SetStreamSource(0,(IDirect3DVertexBuffer9*)verts.getInternalHandleVoid(),0,sizeof(rVert_c));
@@ -331,8 +333,18 @@ public:
 					D3DXMATRIX worldViewProjectionMatrix;
 					worldViewProjectionMatrix = dxWorld * dxView * dxProj;
 					sh->effect->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
-					IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)lastMat->getStage(0)->getTexture()->getInternalHandleV();
+					const mtrStageAPI_i *s = lastMat->getStage(0);
+					IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
 					sh->effect->SetTexture("colorMapTexture", texDX9);
+
+					// set blendfunc (for particles, etc)
+					if(curLight) {
+						// light interactions are appended with addictive blending
+						setBlendFunc(BM_ONE,BM_ONE);
+					} else {
+						const blendDef_s &bd = s->getBlendDef();
+						setBlendFunc(bd.src,bd.dst);
+					}
 
 					const vec3_c &xyz = curLight->getOrigin();
 					if(usingWorldSpace) {
