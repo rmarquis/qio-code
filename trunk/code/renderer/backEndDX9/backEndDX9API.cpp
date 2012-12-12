@@ -448,14 +448,14 @@ public:
 
 		setCull(CT_FRONT_SIDED);
 
-		pDev->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_INCR );
+		pDev->SetRenderState( D3DRS_STENCILZFAIL, D3DSTENCILOP_INCR );
 
 		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,points->size(),indices->getNumIndices()/3,indices->getArray(),indices->getDX9IndexType(),
 			points->getArray(),sizeof(hashVec3_c)); // draw the shadow volume
 
 		setCull(CT_BACK_SIDED);
 
-		pDev->SetRenderState(   D3DRS_STENCILPASS, D3DSTENCILOP_DECR );
+		pDev->SetRenderState(   D3DRS_STENCILZFAIL, D3DSTENCILOP_DECR );
 
 		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,points->size(),indices->getNumIndices()/3,indices->getArray(),indices->getDX9IndexType(),
 			points->getArray(),sizeof(hashVec3_c)); // draw the shadow volume
