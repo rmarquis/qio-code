@@ -40,8 +40,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
+#include <renderer/rPointBuffer.h>
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <api/rLightAPI.h>
+
+#include <shared/cullType.h>
 
 #include "dx9_local.h"
 #include "dx9_shader.h"
@@ -58,6 +61,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 const DWORD R2DVERT_FVF = D3DFVF_XYZ | D3DFVF_TEX2;
 const DWORD RVERT_FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2;
+// shadow volume vertices dont need anything else
+const DWORD RSHADOWVOLUMEVERT_FVF = D3DFVF_XYZ;
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -91,6 +96,7 @@ class rbDX9_c : public rbAPI_i {
 	textureAPI_i *lastLightmap;
 	IDirect3DVertexDeclaration9 *rVertDecl;
 	bool usingWorldSpace;
+	bool bDrawingShadowVolumes;
 public:
 	rbDX9_c() {
 		hWnd = 0;
@@ -114,6 +120,14 @@ public:
 		pDev->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC); 
 		pDev->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC); 
 		pDev->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC); 
+		
+		//pDev->SetRenderState( D3DRS_STENCILREF,       0 );
+		//pDev->SetRenderState( D3DRS_STENCILMASK,       0 );
+		//pDev->SetRenderState( D3DRS_STENCILWRITEMASK, 0xffffffff );
+		//pDev->SetRenderState( D3DRS_CCW_STENCILFUNC,  D3DCMP_ALWAYS );
+		//pDev->SetRenderState( D3DRS_CCW_STENCILZFAIL,  D3DSTENCILOP_KEEP );
+		//pDev->SetRenderState( D3DRS_CCW_STENCILFAIL,  D3DSTENCILOP_KEEP );
+		//pDev->SetRenderState( D3DRS_CCW_STENCILPASS,  D3DSTENCILOP_DECR );
 	}
 
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
@@ -133,13 +147,9 @@ public:
 		disableLightmap();
 
 		pDev->SetFVF(R2DVERT_FVF);
+		setCull(CT_FRONT_SIDED);
 
-		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-
-		// HACK
-		disableBlendFunc();
-		pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-		pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		setBlendFunc(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
 
 		if(lastMat) {
 			const mtrStageAPI_i *s = lastMat->getStage(0);
@@ -151,7 +161,6 @@ public:
 			pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,numVerts,numIndices/3,indices,D3DFMT_INDEX16,
 				verts,sizeof(r2dVert_s));
 		}
-		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	}
 	void setLightmap(IDirect3DTexture9 *lightmapDX9) {
 		pDev->SetTexture(1,lightmapDX9);
@@ -243,6 +252,32 @@ public:
 	void disableBlendFunc() {
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 	}	
+	// D3DRS_STENCILENABLE state
+	void setDX9StencilTest(bool bEnable) {
+		pDev->SetRenderState(D3DRS_STENCILENABLE,bEnable);
+	}
+	// glDepthMask equivalent
+	// disable/enable writing to depth buffer
+	void setDX9DepthMask(bool bEnable) {
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE,bEnable);
+	}
+	// GL_CULL
+	cullType_e prevCullType;
+	void setCull(cullType_e cullType) {
+		if(prevCullType == cullType) {
+			return;
+		}
+		prevCullType = cullType;
+		if(cullType == CT_TWO_SIDED) {
+			pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_NONE);
+		} else {
+			if(cullType == CT_BACK_SIDED) {
+				pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CW);
+			} else {
+				pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
+			}
+		}
+	}
 	const rLightAPI_i *curLight;
 	bool bDrawOnlyOnDepthBuffer;
 	virtual void setCurLight(const class rLightAPI_i *light) {
@@ -265,13 +300,18 @@ public:
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		pDev->SetFVF(RVERT_FVF);
 
+		stopDrawingShadowVolumes();
+		setCull(CT_FRONT_SIDED);
+
 		if(bDrawOnlyOnDepthBuffer) {
 			turnOffAlphaFunc();
 
+			// set the color mask
 			pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
 			drawIndexedTrimeshInternal(verts,indices);
 			return;
 		}
+		// set the color mask
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
 			D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);
 
@@ -350,6 +390,63 @@ public:
 	}	
 	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
 
+	}	
+	void startDrawingShadowVolumes() {
+		if(bDrawingShadowVolumes == true)
+			return;
+		unbindMaterial();
+		pDev->Clear(0, 0, D3DCLEAR_STENCIL, 0, 1, 0); // clear the stencil buffer before drawing new light
+		pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_LESS); // We change the z-testing function to LESS, to avoid little bugs in shadow
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
+		pDev->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS); // always draw to stencil buffer
+		pDev->SetRenderState(D3DRS_STENCILREF, 0);
+		pDev->SetRenderState(D3DRS_STENCILMASK, 0);
+		setDX9DepthMask(false);
+		setDX9StencilTest(true);
+
+		bDrawingShadowVolumes = true;
+	}
+	void stopDrawingShadowVolumes() {
+		if(bDrawingShadowVolumes == false)
+			return;
+
+		// We draw our lighting now that we created the shadows area in the stencil buffer
+		pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_LESSEQUAL); // we put it again to LESS or EQUAL (or else you will get some z-fighting)
+		setCull(CT_FRONT_SIDED); // we draw the front face
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
+			D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);
+
+		pDev->SetRenderState( D3DRS_STENCILREF, 0 );
+		pDev->SetRenderState( D3DRS_STENCILMASK, 0xffffffff );
+		pDev->SetRenderState( D3DRS_STENCILWRITEMASK, 0xffffffff );
+		pDev->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_KEEP );
+		pDev->SetRenderState( D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP );
+		pDev->SetRenderState( D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP );
+		pDev->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_EQUAL );
+
+		bDrawingShadowVolumes = false;
+	}
+	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+		startDrawingShadowVolumes();
+
+		pDev->SetFVF(RSHADOWVOLUMEVERT_FVF);
+
+		// TODO: incr/decr when a depth test fail
+		// the current code causes problems when a viewer eye is inside shadow volume
+
+		setCull(CT_FRONT_SIDED);
+
+		pDev->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_INCR );
+
+		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,points->size(),indices->getNumIndices()/3,indices->getArray(),indices->getDX9IndexType(),
+			points->getArray(),sizeof(hashVec3_c)); // draw the shadow volume
+
+		setCull(CT_BACK_SIDED);
+
+		pDev->SetRenderState(   D3DRS_STENCILPASS, D3DSTENCILOP_DECR );
+
+		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,points->size(),indices->getNumIndices()/3,indices->getArray(),indices->getDX9IndexType(),
+			points->getArray(),sizeof(hashVec3_c)); // draw the shadow volume
 	}
 	virtual void beginFrame() {
 		pDev->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
@@ -364,6 +461,9 @@ public:
 		pDev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1, 0);
 	}
 	virtual void setup2DView() {
+		setDX9StencilTest(false);
+		setDX9DepthMask(true);
+
 		D3DVIEWPORT9 vp;
 		vp.X = 0;
 		vp.Y = 0;
@@ -624,7 +724,9 @@ public:
 
 		// add z buffer for depth tests
 		d3dpp.EnableAutoDepthStencil = true;
-		d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+		//d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+		d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
+		d3dpp.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
 
 		pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
 			D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDev);
@@ -636,6 +738,9 @@ public:
 		curLight = 0;
 		bDrawOnlyOnDepthBuffer = false;
 		rVertDecl = 0;
+		bDrawingShadowVolumes = false;
+		prevCullType = CT_NOT_SET;
+		 
 
 		initDX9State();
 
