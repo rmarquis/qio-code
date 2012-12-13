@@ -103,6 +103,12 @@ public:
 	inline hashVec3_c &operator [] (const int index) {
 		return data[index];
 	}
+	inline const vec3_c &getVec3(const int index) const {
+		return data[index].v;
+	}
+	inline vec3_c &getVec3(const int index) {
+		return data[index].v;
+	}
 	const hashVec3_c *getArray() const {
 		return data.getArray();
 	}

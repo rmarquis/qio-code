@@ -90,6 +90,7 @@ public:
 		indices.addIndex(i2);
 	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	void getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const;
 	void addPoly(const struct simplePoly_s &poly);
 
 	void resizeVerts(u32 newNumVerts);
@@ -157,6 +158,8 @@ class r_model_c : public staticModelCreatorAPI_i {
 	str name;
 	// used to speed up raycasting / decal creation
 	struct tsOctTreeHeader_s *extraCollOctTree;
+	// used to speed up stencil shadow volumes generation
+	class r_stencilShadowCaster_c *ssvCaster;
 
 	void ensureExtraTrisoupOctTreeIsBuild();
 public:
@@ -225,7 +228,10 @@ public:
 			surfs[i].recalcNormals();
 		}
 	}
-
+	void precalculateStencilShadowCaster();
+	const class r_stencilShadowCaster_c *getStencilShadowCaster() const {
+		return this->ssvCaster;
+	}
 	void resizeSurfaces(u32 newNumSurfs) {
 		surfs.resize(newNumSurfs);
 	}

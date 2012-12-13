@@ -54,7 +54,11 @@ public:
 	void createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light);
 	void addRSurface(const class r_surface_c *sf, const vec3_c &light);
 	void fromRModel(const class r_model_c *m, const vec3_c &light);
+	void fromPrecalculatedStencilShadowCaster(const class r_stencilShadowCaster_c *ssvCaster, const vec3_c &light);
 	void addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light);
+
+	void addFrontCapAndBackCapForTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light);
+	void addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light);
 };
 
 class rEntityShadowVolume_c {

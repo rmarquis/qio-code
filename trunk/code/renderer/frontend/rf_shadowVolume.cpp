@@ -27,7 +27,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_entities.h"
 #include "rf_surface.h"
+#include "rf_stencilShadowCaster.h"
 #include <math/plane.h>
+#include <shared/autoCvar.h>
+#include <api/coreAPI.h>
+
+static aCvar_c rf_printShadowVolumesStats("rf_printShadowVolumesStats","1");
+static aCvar_c rf_dontUsePrecomputedSSVCasters("rf_dontUsePrecomputedSSVCasters","0");
+
+const float shadowVolumeInf = 4096.f;
 
 void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	plane_c triPlane;
@@ -35,7 +43,6 @@ void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, con
 	float d = triPlane.distance(light);
 	if(d < 0)
 		return;
-const float shadowVolumeInf = 4096.f;
 	vec3_c p0Projected = p0 - light;
 	p0Projected.normalize();
 	p0Projected *= shadowVolumeInf;
@@ -62,6 +69,47 @@ const float shadowVolumeInf = 4096.f;
 	indices.addQuad(i1,i2,pi1,pi2);
 	indices.addQuad(i2,i0,pi2,pi0);
 }
+void rIndexedShadowVolume_c::addFrontCapAndBackCapForTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
+	vec3_c p0Projected = p0 - light;
+	p0Projected.normalize();
+	p0Projected *= shadowVolumeInf;
+	p0Projected += p0;
+	vec3_c p1Projected = p1 - light;
+	p1Projected.normalize();
+	p1Projected *= shadowVolumeInf;
+	p1Projected += p1;
+	vec3_c p2Projected = p2 - light;
+	p2Projected.normalize();
+	p2Projected *= shadowVolumeInf;
+	p2Projected += p2;
+
+	u32 i0 = points.registerVec3(p0);
+	u32 i1 = points.registerVec3(p1);
+	u32 i2 = points.registerVec3(p2);
+	u32 pi0 = points.registerVec3(p0Projected);
+	u32 pi1 = points.registerVec3(p1Projected);
+	u32 pi2 = points.registerVec3(p2Projected);
+
+	indices.addTriangle(i2,i1,i0);
+	indices.addTriangle(pi0,pi1,pi2);
+}
+void rIndexedShadowVolume_c::addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light) {
+	vec3_c p0Projected = p0 - light;
+	p0Projected.normalize();
+	p0Projected *= shadowVolumeInf;
+	p0Projected += p0;
+	vec3_c p1Projected = p1 - light;
+	p1Projected.normalize();
+	p1Projected *= shadowVolumeInf;
+	p1Projected += p1;
+
+	u32 i0 = points.registerVec3(p0);
+	u32 i1 = points.registerVec3(p1);
+	u32 pi0 = points.registerVec3(p0Projected);
+	u32 pi1 = points.registerVec3(p1Projected);
+
+	indices.addQuad(i0,i1,pi0,pi1);
+}
 void rIndexedShadowVolume_c::addDrawCall() {
 	RF_AddShadowVolumeDrawCall(&this->points,&this->indices);
 }
@@ -71,6 +119,9 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 		fromRModel(m,light);
 	} else {
 		
+	}
+	if(rf_printShadowVolumesStats.getInt()) {
+		g_core->Print("rIndexedShadowVolume_c::createShadowVolumeForEntity: %i points, %i tris for model %s\n",points.size(),indices.getNumIndices()/3,ent->getModelName());
 	}
 }
 void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3_c &light) {
@@ -88,10 +139,17 @@ void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3
 }
 void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light) {
 	clear();
+	if(m->getStencilShadowCaster() && rf_dontUsePrecomputedSSVCasters.getInt() == 0) {
+		this->fromPrecalculatedStencilShadowCaster(m->getStencilShadowCaster(),light);
+		return;
+	}
 	for(u32 i = 0; i < m->getNumSurfs(); i++) {
 		const r_surface_c *sf = m->getSurf(i);
 		addRSurface(sf,light);
 	}
+}
+void rIndexedShadowVolume_c::fromPrecalculatedStencilShadowCaster(const class r_stencilShadowCaster_c *ssvCaster, const vec3_c &light) {
+	ssvCaster->generateShadowVolume(this,light);
 }
 void rEntityShadowVolume_c::addDrawCall() {
 	rf_currentEntity = this->ent;

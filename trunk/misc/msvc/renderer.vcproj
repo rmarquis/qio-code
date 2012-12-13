@@ -240,6 +240,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_stencilShadowCaster.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_surface.cpp"
 				>
 			</File>
@@ -315,6 +319,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_shadowVolume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_stencilShadowCaster.h"
 				>
 			</File>
 			<File

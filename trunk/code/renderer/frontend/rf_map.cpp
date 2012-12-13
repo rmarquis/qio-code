@@ -127,6 +127,8 @@ public:
 #endif
 			str modName = va("*%i",modelNum);
 			model_c *mod = RF_AllocModel(modName);
+			// precalculate data for stencil shadow volumes generation
+			m->precalculateStencilShadowCaster();
 			mod->initStaticModel(m);
 			entModels[i] = 0;
 			modelNum++;

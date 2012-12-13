@@ -167,7 +167,7 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 			// FIXME: dont do this here, it might be not needed for some models
 			// that have normals precompued and stored on disk
 			ret->staticModel->recalcModelNormals();
-
+			ret->staticModel->precalculateStencilShadowCaster();
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model
 		}

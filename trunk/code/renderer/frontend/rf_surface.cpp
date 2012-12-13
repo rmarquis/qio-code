@@ -67,6 +67,18 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	bounds.addPoint(v1.xyz);
 	bounds.addPoint(v2.xyz);
 }	
+void r_surface_c::getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const {
+	u32 i = triNum * 3;
+	u32 i0 = indices[i+0];
+	u32 i1 = indices[i+1];
+	u32 i2 = indices[i+2];
+	const rVert_c &vert0 = verts[i0];
+	const rVert_c &vert1 = verts[i1];
+	const rVert_c &vert2 = verts[i2];
+	v0 = vert0.xyz;
+	v1 = vert1.xyz;
+	v2 = vert2.xyz;
+}
 #include <shared/simpleTexturedPoly.h>
 void r_surface_c::addPoly(const simplePoly_s &poly) {
 	for(u32 i = 2; i < poly.verts.size(); i++) {
@@ -320,12 +332,26 @@ bool r_surface_c::parseProcSurface(class parser_c &p) {
 r_model_c::r_model_c() {
 	extraCollOctTree = 0;
 	bounds.clear();
+	ssvCaster = 0;
 }
+#include "rf_stencilShadowCaster.h"
 r_model_c::~r_model_c() {
 	if(extraCollOctTree) {
 		CMU_FreeTriSoupOctTree(extraCollOctTree);
 		extraCollOctTree = 0;
 	}
+	if(ssvCaster) {
+		delete ssvCaster;
+		ssvCaster = 0;
+	}
+}
+void r_model_c::precalculateStencilShadowCaster() {
+	if(ssvCaster) {
+		delete ssvCaster;
+	}
+	ssvCaster = new r_stencilShadowCaster_c;
+	ssvCaster->addRModel(this);
+	ssvCaster->calcEdges();
 }
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
