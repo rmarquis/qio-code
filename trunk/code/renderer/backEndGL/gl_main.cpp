@@ -50,8 +50,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 aCvar_c gl_showTris("gl_showTris","0");
 // use a special GLSL shader to show normal vectors as colors
 aCvar_c rb_showNormalColors("rb_showNormalColors","0");
+aCvar_c gl_callGLFinish("gl_callGLFinish","0");
+aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
 
 #define MAX_TEXTURE_SLOTS 32
+
+#ifndef offsetof
+#ifdef  _WIN64
+#define offsetof(s,m)   (size_t)( (ptrdiff_t)&reinterpret_cast<const volatile char&>((((s *)0)->m)) )
+#else
+#define offsetof(s,m)   (size_t)&reinterpret_cast<const volatile char&>((((s *)0)->m))
+#endif
+#endif // not defined offsetof
 
 struct texState_s {
 	bool enabledTexture2D;
@@ -65,6 +75,7 @@ struct texState_s {
 		index = 0;
 	}
 };
+#define CHECK_GL_ERRORS checkForGLErrorsInternal(__FUNCTION__,__LINE__);
 
 class rbSDLOpenGL_c : public rbAPI_i {
 	// gl state
@@ -111,7 +122,10 @@ public:
 	virtual backEndType_e getType() const {
 		return BET_GL;
 	}
-	void checkErrors() {
+	void checkForGLErrorsInternal(const char *functionName, u32 line) {
+		if(gl_checkForGLErrors.getInt() == 0)
+			return;
+
 		int		err;
 		char	s[64];
 
@@ -142,7 +156,7 @@ public:
 				Com_sprintf( s, sizeof(s), "%i", err);
 				break;
 		}
-		g_core->Print("GL_CheckErrors: %s\n", s );
+		g_core->Print("GL_CheckErrors (%s:%i): %s\n", functionName, line, s );
 	}
 	// GL_COLOR_ARRAY changes
 	bool colorArrayActive;
@@ -483,7 +497,7 @@ public:
 		}
 		boundVBOVertexColors = bindVertexColors;
 		boundVBO = verts;
-		checkErrors();
+		CHECK_GL_ERRORS;
 	}
 	void unbindVertexBuffer() {
 		if(boundVBO == 0)
@@ -501,7 +515,7 @@ public:
 		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
 		boundVBO = 0;
-		checkErrors();
+		CHECK_GL_ERRORS;
 	}
 	void unbindIBO() {
 		if(boundGPUIBO) {
@@ -530,20 +544,23 @@ public:
 		} else {
 			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), 0);
 		}
-		checkErrors();
+		CHECK_GL_ERRORS;
+		if(gl_callGLFinish.getInt()==2) {
+			glFinish();
+		}
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
 		stopDrawingShadowVolumes();
 		bindShader(0);
-		checkErrors();
+		CHECK_GL_ERRORS;
 
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
 		selectTex(0);
 		enableTexCoordArrayForCurrentTexSlot();
-		checkErrors();
+		CHECK_GL_ERRORS;
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
 		disableNormalArray();
-		checkErrors();
+		CHECK_GL_ERRORS;
 		if(lastMat) {
 			// NOTE: this is the way Q3 draws all the 2d menu graphics
 			// (it worked before with bigchars.tga, even when the bigchars
@@ -557,9 +574,9 @@ public:
 				//setBlendFunc(bd.src,bd.dst);
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
-				checkErrors();
+				CHECK_GL_ERRORS;
 				glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
-				checkErrors();
+				CHECK_GL_ERRORS;
 			}
 			//glDisable(GL_BLEND);
 		} else {
@@ -673,7 +690,7 @@ public:
 					bindTex(1,0);
 				}
 				drawCurIBO();
-				checkErrors();
+				CHECK_GL_ERRORS;
 			}
 		} else {
 			if(curLight == 0) {
@@ -699,6 +716,8 @@ public:
 		if(tex == 0)
 			return;
 
+		this->glCull(CT_TWO_SIDED);
+
 		stopDrawingShadowVolumes();
 
 		disableAllTextures();
@@ -710,10 +729,10 @@ public:
 	void startDrawingShadowVolumes() {
 		if(bDrawingShadowVolumes == true)
 			return;
-		//disableAllTextures();
-		//disableNormalArray();
-		//disableTexCoordArrayForTexSlot(1);
-		//disableTexCoordArrayForTexSlot(0);
+		disableAllTextures();
+		disableNormalArray();
+		disableTexCoordArrayForTexSlot(1);
+		disableTexCoordArrayForTexSlot(0);
 		unbindVertexBuffer();
 		unbindMaterial();
         glClear(GL_STENCIL_BUFFER_BIT); // We clear the stencil buffer
@@ -739,6 +758,8 @@ public:
 		bDrawingShadowVolumes = false;
 	}
 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+		if(indices->getNumIndices() == 0)
+			return;
 		startDrawingShadowVolumes();
 
 		bindIBO(indices);
@@ -754,8 +775,8 @@ public:
 
 		drawCurIBO(); // draw the shadow volume
 
-		glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),0);
-		bindIBO(0);
+		//glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),0);
+		//bindIBO(0);
 	}
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
@@ -770,6 +791,9 @@ public:
 		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}
 	virtual void endFrame() {
+		if(gl_callGLFinish.getInt()) {
+			glFinish();
+		}
 		g_sharedSDLAPI->endFrame();
 	}	
 	virtual void clearDepthBuffer() {
@@ -1024,13 +1048,13 @@ public:
 #else
 		gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,w,h,GL_RGBA,GL_UNSIGNED_BYTE, data);
 #endif
-		checkErrors();
+		CHECK_GL_ERRORS;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
 		//glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-		checkErrors();
+		CHECK_GL_ERRORS;
 		glBindTexture(GL_TEXTURE_2D, 0);	
 		out->setInternalHandleU32(texID);
 	}
@@ -1052,7 +1076,7 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);	
-		checkErrors();
+		CHECK_GL_ERRORS;
 		glBindTexture(GL_TEXTURE_2D, 0);
 		out->setInternalHandleU32(texID);	
 	}

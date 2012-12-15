@@ -57,7 +57,7 @@ static arraySTD_c<btTriangleIndexVertexArray*> bt_trimeshes;
 static arraySTD_c<cmSurface_c*> bt_cmSurfs;
 class cMod_i *bt_worldCMod = 0;
 
-#if 1
+#if 0
 #define TRYTOFIX_INTERNAL_EDGES
 #endif
 
@@ -443,7 +443,7 @@ void G_InitBullet() {
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 
-	dynamicsWorld->getSolverInfo().m_splitImpulse = true;
+	//dynamicsWorld->getSolverInfo().m_splitImpulse = true;
 
 #ifdef TRYTOFIX_INTERNAL_EDGES
 	// enable internal edges fix
@@ -476,11 +476,15 @@ void G_ShudownBullet() {
 	bt_worldCMod = 0;
 }
 aCvar_c bt_runPhysics("bt_runPhysics","1");
+aCvar_c bt_printTimeStep("bt_printTimeStep","0");
 
 void G_RunPhysics() {
 	if(bt_runPhysics.getInt() == 0)
 		return;
 
+	if(bt_printTimeStep.getInt()) {
+		g_core->Print("Frametime: %f\n",level.frameTime);
+	}
 	BT_RunVehicles();
 	float frameTime = level.frameTime;
 	dynamicsWorld->stepSimulation(frameTime,2);
@@ -494,7 +498,13 @@ void G_RunPhysics() {
 	//BT_IsInSolid(tmp, bb);
 }
 // this is a (temporary?) fix to objects (especially barrels) jittering.
+#if 1
 float bt_collisionMargin = 4.f;
+#else
+// NOTE: collision margin can't be as high as 4.f 
+// because it makes entities seem to float in air above ground
+float bt_collisionMargin = CONVEX_DISTANCE_MARGIN;
+#endif
 
 #define USE_MOTIONSTATE 1
 void BT_CreateWorldBrush(btAlignedObjectArray<btVector3> &vertices) {

@@ -38,10 +38,20 @@ enum staticSurfInteractionType_e {
 struct staticSurfInteraction_s {
 	class r_surface_c *sf;
 	u32 bspSurfaceNumber;
+
+	staticSurfInteraction_s() {
+		sf = 0;
+		bspSurfaceNumber = 0;
+	}
 };
 struct entityInteraction_s {
 	class rEntityImpl_c *ent;
 	class rIndexedShadowVolume_c *shadowVolume; // only for stencil shadows
+
+	entityInteraction_s() {
+		ent = 0;
+		shadowVolume = 0;
+	}
 };
 
 class rLightImpl_c : public rLightAPI_i {
@@ -52,6 +62,8 @@ class rLightImpl_c : public rLightAPI_i {
 
 	arraySTD_c<staticSurfInteraction_s> staticInteractions;
 	int numCurrentStaticInteractions;
+	rIndexedShadowVolume_c *staticShadowVolume; 
+
 	arraySTD_c<entityInteraction_s> entityInteractions;
 	int numCurrentEntityInteractions;
 
@@ -61,6 +73,7 @@ public:
 
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();
+	void recalcShadowVolumeOfStaticInteractions();
 	void recalcLightInteractionsWithStaticWorld();
 	void recalcLightInteractionsWithDynamicEntities();
 	void recalcLightInteractions();
@@ -68,14 +81,22 @@ public:
 	void addLightInteractionDrawCalls();
 	void addLightShadowVolumesDrawCalls();
 
-	void addStaticModelSurfaceInteraction(/*class r_model_c *mod, */class r_surface_c *sf) {
+	staticSurfInteraction_s &getNextStaticInteraction() {	
 		numCurrentStaticInteractions++;
 		if(staticInteractions.size() < numCurrentStaticInteractions) {
 			staticInteractions.resize(numCurrentStaticInteractions);
 		}
-		staticSurfInteraction_s &n = staticInteractions[numCurrentStaticInteractions-1];
+		return staticInteractions[numCurrentStaticInteractions-1];
+	}
+	void addStaticModelSurfaceInteraction(/*class r_model_c *mod, */class r_surface_c *sf) {
+		staticSurfInteraction_s &n = getNextStaticInteraction();
 		n.sf = sf;
 		n.bspSurfaceNumber = 0;
+	}
+	void addBSPSurfaceInteraction(u32 bspSurfaceNum) {
+		staticSurfInteraction_s &n = getNextStaticInteraction();
+		n.sf = 0;
+		n.bspSurfaceNumber = bspSurfaceNum;
 	}
 
 	virtual void setOrigin(const class vec3_c &newXYZ);

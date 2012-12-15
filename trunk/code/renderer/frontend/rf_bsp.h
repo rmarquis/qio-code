@@ -43,6 +43,9 @@ struct bspTriSurf_s {
 	class textureAPI_i *lightmap;
 	// indexes to rBspTree_c::verts array (global vertices), for batching
 	rIndexBuffer_c absIndexes;
+	plane_c plane; // this is valid only for planar surfaces
+	u32 firstVert;
+	u32 numVerts;
 };
 struct bspSurf_s {
 	bspSurfaceType_e type;
@@ -159,8 +162,6 @@ class rBspTree_c {
 	bool loadLeafIndexes(u32 leafSurfsLump);
 	bool loadVisibility(u32 visLump);
 
-	void addBSPSurfaceDrawCall(u32 sfNum);
-
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);
 
@@ -180,6 +181,8 @@ public:
 	void updateVisibility();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
+	void addBSPSurfaceDrawCall(u32 sfNum);
+	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume);
 	
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 
@@ -189,6 +192,8 @@ public:
 	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);
 	bool createInlineModelDecal(u32 inlineModelNum, class simpleDecalBatcher_c *out, const class vec3_c &pos,
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
+	
+	void cacheLightWorldInteractions(class rLightImpl_c *l);
 };
 
 rBspTree_c *RF_LoadBSP(const char *fname);

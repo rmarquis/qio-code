@@ -24,6 +24,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_stencilShadowCaster.cpp
 #include "rf_stencilShadowCaster.h"
 #include "rf_surface.h"
+#include <shared/autoCvar.h>
+#include <api/coreAPI.h>
+
+static aCvar_c rf_stencilShadowCaster_verboseGeneration("rf_stencilShadowCaster_verboseGeneration","1");
+
 void r_stencilShadowCaster_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
 	u32 i0 = points.registerVec3(p0);
 	u32 i1 = points.registerVec3(p1);
@@ -67,6 +72,10 @@ void r_stencilShadowCaster_c::calcEdges() {
 		addEdge(i,t->indices[2],t->indices[0]);
 	}
 	c_unmatchedEdges = edges.size() - c_matchedEdges;
+	if(rf_stencilShadowCaster_verboseGeneration.getInt()) {
+		g_core->Print("r_stencilShadowCaster_c::calcEdges: %i edges (%i matched, %i unmatched) from %i triangles\n",
+			edges.size(),c_matchedEdges,c_unmatchedEdges,tris.size());
+	}
 }
 void r_stencilShadowCaster_c::addRSurface(const class r_surface_c *sf) {
 	for(u32 i = 0; i < sf->getNumTris(); i++) {
@@ -76,6 +85,7 @@ void r_stencilShadowCaster_c::addRSurface(const class r_surface_c *sf) {
 	}
 }
 void r_stencilShadowCaster_c::addRModel(const class r_model_c *mod) {
+	this->points.setEqualVertexEpsilon(0.f);
 	for(u32 i = 0; i < mod->getNumSurfs(); i++) {
 		addRSurface(mod->getSurf(i));
 	}
@@ -99,20 +109,65 @@ void r_stencilShadowCaster_c::generateShadowVolume(class rIndexedShadowVolume_c 
 			out->addFrontCapAndBackCapForTriangle(v0,v1,v2,light);
 		}
 	}
-	const rEdge_s *e = edges.getArray();
-	for(u32 i = 0; i < edges.size(); i++, e++) {
-		if(e->isMatched() == false)
-			continue;
-		int t0 = e->getTriangleIndex(0);
-		int t1 = e->getTriangleIndex(1);
-		if(bFrontFacing[t0] == bFrontFacing[t1])
-			continue;
-		const vec3_c &v0 = points.getVec3(e->verts[0]);
-		const vec3_c &v1 = points.getVec3(e->verts[1]);
-		if(bFrontFacing[t0]) {
-			out->addEdge(v0,v1,light);
-		} else {
-			out->addEdge(v1,v0,light);
+	if(this->c_unmatchedEdges == 0) {
+		// the ideal case: model has no unmatched edges
+		const rEdge_s *e = edges.getArray();
+		for(u32 i = 0; i < edges.size(); i++, e++) {
+			if(e->isMatched() == false) {
+				continue;
+			}
+			int t0 = e->getTriangleIndex(0);
+			int t1 = e->getTriangleIndex(1);
+			if(bFrontFacing[t0] == bFrontFacing[t1])
+				continue;
+			const vec3_c &v0 = points.getVec3(e->verts[0]);
+			const vec3_c &v1 = points.getVec3(e->verts[1]);
+			if(bFrontFacing[t0]) {
+				out->addEdge(v0,v1,light);
+			} else {
+				out->addEdge(v1,v0,light);
+			}
+		}
+	} else {
+		// try to handle models with unmatched edges as well
+		//arraySTD_c<byte> bTriAdded;
+		//bTriAdded.resize(tris.size());
+		//bTriAdded.nullMemory();
+		const rEdge_s *e = edges.getArray();
+		for(u32 i = 0; i < edges.size(); i++, e++) {
+			if(e->isMatched() == false) {
+				if(bFrontFacing[e->tris[0]] == false)
+					continue;
+#if 1
+				const vec3_c &v0 = points.getVec3(e->verts[0]);
+				const vec3_c &v1 = points.getVec3(e->verts[1]);
+				out->addEdge(v0,v1,light);
+#else
+				u32 t = e->tris[0];
+				if(bTriAdded[t]) {
+					continue;
+				}
+				bTriAdded[t] = 1;
+				const vec3_c &tv0 = points.getVec3(tris[t].indices[0]);
+				const vec3_c &tv1 = points.getVec3(tris[t].indices[1]);
+				const vec3_c &tv2 = points.getVec3(tris[t].indices[2]);
+				out->addEdge(tv0,tv1,light);
+				out->addEdge(tv1,tv2,light);
+				out->addEdge(tv2,tv0,light);
+#endif
+				continue;
+			}
+			int t0 = e->getTriangleIndex(0);
+			int t1 = e->getTriangleIndex(1);
+			if(bFrontFacing[t0] == bFrontFacing[t1])
+				continue;
+			const vec3_c &v0 = points.getVec3(e->verts[0]);
+			const vec3_c &v1 = points.getVec3(e->verts[1]);
+			if(bFrontFacing[t0]) {
+				out->addEdge(v0,v1,light);
+			} else {
+				out->addEdge(v1,v0,light);
+			}
 		}
 	}
 }

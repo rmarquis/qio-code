@@ -64,6 +64,9 @@ public:
 		data.clear();
 		numVecs = 0;
 	}
+	void setEqualVertexEpsilon(float newEpsilon) {
+		this->equalVertexEpsilon = newEpsilon; 
+	}
 	void setNullCount() {
 		memset(table,0xff,sizeof(table));
 		numVecs = 0;
@@ -90,6 +93,9 @@ public:
 		table[hash] = ret;
 		nv.v = v;
 		return ret;
+	}
+	void ensureAllocated(u32 neededVertCount) {
+		data.reserve(neededVertCount);
 	}
 	u32 size() const {
 		return numVecs;

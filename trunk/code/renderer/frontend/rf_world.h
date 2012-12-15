@@ -32,6 +32,8 @@ bool RF_RayTraceWorld(class trace_c &tr);
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes);
 int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 void RF_CacheLightWorldInteractions(class rLightImpl_c *l);
+void RF_DrawSingleBSPSurface(u32 sfNum);
+void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume);
 
 #endif // __RF_BSP_H__
 

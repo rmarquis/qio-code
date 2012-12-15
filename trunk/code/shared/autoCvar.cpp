@@ -34,9 +34,13 @@ aCvar_c::aCvar_c(const char *newName, const char *newDefaultStr, int newCvarFlag
 	this->valFloat = atof(this->valStr);
 	this->valInt = atoi(this->valStr);
 	this->cvarFlags = newCvarFlags;
+	this->extraModificationCallback = 0;
 
 	this->nextModuleCvar = module_autoCvars;
 	module_autoCvars = this;
+}
+void aCvar_c::setExtraModificationCallback(autoCvarModificationCallback_t newModCallback) {
+	this->extraModificationCallback = newModCallback;
 }
 void aCvar_c::setString(const char *newStr) {
 	g_cvars->Cvar_Set(this->name,newStr);
@@ -45,6 +49,9 @@ void aCvar_c::onCvarModified(const char *newText) {
 	this->valStr = newText;
 	this->valFloat = atof(this->valStr);
 	this->valInt = atoi(this->valStr);
+	if(this->extraModificationCallback) {
+		this->extraModificationCallback(this);
+	}
 }
 void AUTOCVAR_RegisterAutoCvars() {
 	aCvar_c *c = module_autoCvars;

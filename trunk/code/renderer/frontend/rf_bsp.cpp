@@ -281,6 +281,13 @@ parsePlanarSurf:;
 			bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 			ts->mat = mat;
 			ts->lightmap = lightmap;
+			ts->firstVert = sf->firstVert;
+			ts->numVerts = sf->numVerts;
+			if(sf->numVerts > 2) {
+				ts->plane.fromThreePoints(verts[sf->firstVert + 0].xyz,
+					verts[sf->firstVert + 1].xyz,
+					verts[sf->firstVert + 2].xyz);
+			}
 			const u32 *firstIndex = indices + sf->firstIndex;
 			// get the largest index value of this surface
 			// to determine if we can use U16 index buffer
@@ -296,7 +303,7 @@ parsePlanarSurf:;
 				g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
 				u16 *u16Indexes = ts->absIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
-					u16Indexes[j] = sf->firstVert + firstIndex[j];	
+					u16Indexes[j] = sf->firstVert + firstIndex[j];
 					// update bounding box as well
 					ts->bounds.addPoint(this->verts[u16Indexes[j]].xyz);
 				}
@@ -743,6 +750,29 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 		RF_AddDrawCall(&this->verts,&sf.sf->absIndexes,sf.sf->mat,sf.sf->lightmap,sf.sf->mat->getSort(),true);
 	}
 }
+#include "rf_shadowVolume.h"
+void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume) {
+	bspSurf_s &sf = this->surfs[sfNum];
+	if(sf.type == BSPSF_BEZIER) {
+
+	//} else if(sf.type == BSPSF_PLANAR) {
+	//	bspTriSurf_s *ts = sf.sf;
+	//	float d = ts->plane.distance(light);
+	//	if(d < 0)
+	//		return;
+	//	u32 prev = ts->numVerts-1;
+	//	for(u32 i = 0; i < ts->numVerts; i++) {
+	//		const vec3_c &v0 = verts[ts->firstVert+prev].xyz;
+	//		const vec3_c &v1 = verts[ts->firstVert+i].xyz;
+	//		staticShadowVolume->addEdge(v0,v1,light);
+	//		prev = i;
+	//	}
+	//	staticShadowVolume->addFrontCapAndBackCapForIndexedVertsList(ts->absIndexes,this->verts,light);
+	} else {
+		bspTriSurf_s *ts = sf.sf;
+		staticShadowVolume->addIndexedVertexList(ts->absIndexes,this->verts,light);
+	}
+}
 void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 	bspModel_s &m = models[inlineModelNum];
 	for(u32 i = 0; i < m.numSurfs; i++) {
@@ -889,6 +919,14 @@ bool rBspTree_c::createInlineModelDecal(u32 inlineModelNum, class simpleDecalBat
 	}
 	proj.addResultsToDecalBatcher(out);
 	return hasHit;
+}
+#include "rf_lights.h"
+void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
+	arraySTD_c<u32> sfNums;
+	boxSurfaces(l->getABSBounds(),sfNums);
+	for(u32 i = 0; i < sfNums.size(); i++) {
+		l->addBSPSurfaceInteraction(sfNums[i]);
+	}
 }
 rBspTree_c *RF_LoadBSP(const char *fname) {
 	rBspTree_c *bsp = new rBspTree_c;

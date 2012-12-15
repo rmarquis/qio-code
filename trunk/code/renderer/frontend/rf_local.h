@@ -29,9 +29,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 
 // rf_main.cpp
+void RF_InitMain();
 void RF_Draw3DView();
 void RF_AddGenericDrawCalls();
 bool RF_IsUsingShadowVolumes();
+enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);
 
 // rf_debugDrawing.cpp
 void RF_DoDebugDrawing();
@@ -52,6 +54,7 @@ void RFE_AddEntity(class rEntityImpl_c *ent);
 class rLightAPI_i *RFL_AllocLight();
 void RFL_RemoveLight(class rLightAPI_i *ent);
 void RFL_AddLightInteractionsDrawCalls();
+void RFL_RecalculateLightsInteractions();
 
 // rf_sky.cpp
 void RF_InitSky();

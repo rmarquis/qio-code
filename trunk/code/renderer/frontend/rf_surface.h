@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../rVertexBuffer.h"
 #include <shared/str.h>
 #include <math/aabb.h>
+#include <shared/planeArray.h>
 #include <api/staticModelCreatorAPI.h>
 
 class r_surface_c {
@@ -39,6 +40,11 @@ class r_surface_c {
 	rVertexBuffer_c verts;
 	rIndexBuffer_c indices;
 	aabb bounds;
+	// triangle planes are calculated while recalculating model normals.
+	// they are used by shadow volumes creation algorithm
+	planeArray_c trianglePlanes; // arraySTD_c of plane_c
+	// this is not NULL only for skeletal model instances
+	const class skelSurfaceAPI_i *mySkelSF;
 public:
 	r_surface_c();
 	~r_surface_c();
@@ -60,6 +66,9 @@ public:
 	}
 	const rIndexBuffer_c &getIndices() const {
 		return indices;
+	}
+	const planeArray_c &getTriPlanes() const {
+		return trianglePlanes;
 	}
 	rVertexBuffer_c &getVerts() {
 		return verts;
@@ -97,6 +106,8 @@ public:
 	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
 	void resizeIndices(u32 newNumIndices);
 	void setIndex(u32 indexNum, u32 value);
+
+	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
 
 	void clear() {
 		indices.destroy();
@@ -160,6 +171,8 @@ class r_model_c : public staticModelCreatorAPI_i {
 	struct tsOctTreeHeader_s *extraCollOctTree;
 	// used to speed up stencil shadow volumes generation
 	class r_stencilShadowCaster_c *ssvCaster;
+	// this is not NULL only for skeletal model instances
+	const class skelModelAPI_i *mySkel;
 
 	void ensureExtraTrisoupOctTreeIsBuild();
 public:

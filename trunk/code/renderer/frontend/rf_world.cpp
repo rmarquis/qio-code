@@ -134,7 +134,7 @@ int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, c
 }
 void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
 	if(r_bspTree) {
-		//r_bspTree->cacheLightWorldInteractions(l);
+		r_bspTree->cacheLightWorldInteractions(l);
 	}
 	if(r_procTree) {
 		//r_procTree->cacheLightWorldInteractions(l);
@@ -143,4 +143,10 @@ void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
 		// assumes that world model is a static model
 		r_worldModel->cacheLightStaticModelInteractions(l);
 	}
+}
+void RF_DrawSingleBSPSurface(u32 sfNum) {
+	r_bspTree->addBSPSurfaceDrawCall(sfNum);
+}
+void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume) {
+	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume);
 }

@@ -41,6 +41,7 @@ class frustum_c {
 	plane_c planes[FRP_NUM_FRUSTUM_PLANES];
 public:
 	cullResult_e cull(const class aabb &bb) const;
+	cullResult_e cullSphere(const class vec3_c &p, float radius) const;
 	void setup(float fovX, float fovY, float zFar, const class axis_c &axis, const class vec3_c &origin);
 
 	const plane_c &getPlane(u32 i) const {

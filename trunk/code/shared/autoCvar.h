@@ -29,6 +29,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "str.h"
 #include "cvarModificationCallback.h"
 
+typedef void (*autoCvarModificationCallback_t)(const class aCvar_c *aCvar);
+
 class aCvar_c : public cvarModifyCallback_i {
 	str name; // name of variable
 	str valStr; // value string
@@ -36,14 +38,17 @@ class aCvar_c : public cvarModifyCallback_i {
 	int valInt; // value converted to integer
 	int cvarFlags;
 	aCvar_c *nextModuleCvar;
-
+	
 	struct cvar_s *internalCvar;
+
+	autoCvarModificationCallback_t extraModificationCallback;
 
 	// this is called when cvar is modified trough console
 	void onCvarModified(const char *newText);
 public:
 	aCvar_c(const char *newName, const char *newDefaultStr, int newCvarFlags = 0);
 
+	void setExtraModificationCallback(autoCvarModificationCallback_t newModCallback);
 	void setString(const char *newStr);
 
 	int getInt() const {

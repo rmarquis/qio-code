@@ -361,8 +361,14 @@ void ClientCommand( int clientNum ) {
 						} else {
 							g_core->Print("Failed to spawn %s\n",model.c_str());
 						}
-					} else {
-						g_core->Print("%s does not exist\n",model.c_str());
+					} else {						
+						// maybe the model is the classname itself
+						BaseEntity *bent = (BaseEntity *)G_SpawnClass(model);
+						if(bent) {
+							bent->setOrigin(spawnPos);
+						} else {
+							g_core->Print("%s does not exist\n",model.c_str());
+						}
 					}
 					return;
 				}

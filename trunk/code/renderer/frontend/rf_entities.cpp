@@ -178,6 +178,13 @@ bool rEntityImpl_c::hasDeclModel() const {
 		return true;
 	return false;
 }
+bool rEntityImpl_c::isAnimated() const {
+	if(model == 0)
+		return false;
+	if(model->getSkelModelAPI())
+		return true;
+	return false;
+}
 rModelAPI_i *rEntityImpl_c::getModel() const {
 	return model;
 }
@@ -396,6 +403,7 @@ void RFE_AddEntity(rEntityImpl_c *ent) {
 	}
 	ent->addDrawCalls();
 }
+static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
 void RFE_AddEntityDrawCalls() {
 	if(rf_skipEntities.getInt())
 		return;
@@ -405,7 +413,7 @@ void RFE_AddEntityDrawCalls() {
 		rEntityImpl_c *ent = rf_entities[i];
 		RFE_AddEntity(ent);
 	}
-	if(0) {
+	if(rf_printAddEntityDrawCallsCullStats.getInt()) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());
 	}
 	rf_currentEntity = 0;

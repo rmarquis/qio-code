@@ -52,6 +52,21 @@ cullResult_e frustum_c::cull(const aabb &bb) const {
 	return CULL_IN;
 #endif
 }
+cullResult_e frustum_c::cullSphere(const class vec3_c &p, float radius) const {
+	bool clip = false;
+	for(u32 i = 0; i < FRP_NUM_FRUSTUM_PLANES; i++) {	
+		int side = planes[i].onSide(p,radius);
+		if(side == SIDE_BACK)
+			return CULL_OUT;
+		if(side == SIDE_CROSS) {
+			clip = true;
+		}
+	}	
+	if(clip) {
+		return CULL_CLIP;
+	}
+	return CULL_IN;
+}
 
 void frustum_c::setup(float fovX, float fovY, float zFar, const axis_c &axis, const vec3_c &origin) {
 #if 1

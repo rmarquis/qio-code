@@ -80,6 +80,7 @@ public:
 		return SIDE_FRONT;
 	}
 	enum planeSide_e onSide(const class aabb &bb) const;
+	enum planeSide_e onSide(const class vec3_c &center, float radius) const;
 	// returns true if given triangle points are degenerate
 	bool fromThreePoints(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
 		// build directional vectors

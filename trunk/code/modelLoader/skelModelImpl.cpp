@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/parser.h>
 #include <shared/hashTableTemplate.h>
+#include <shared/extraSurfEdgesData.h>
 #include <math/quat.h>
 
 class stringRegister_c {
@@ -61,6 +62,78 @@ static stringRegister_c sk_boneNames;
 
 u32 SK_RegisterString(const char *s) {
 	return sk_boneNames.registerString(s);
+}
+skelSurfIMPL_c::skelSurfIMPL_c() {
+	edgesData = 0;
+}
+skelSurfIMPL_c::~skelSurfIMPL_c() {
+	if(edgesData) {
+		delete edgesData;
+	}
+}
+bool skelSurfIMPL_c::compareWeights(u32 wi0, u32 wi1) const {
+	const skelWeight_s &w0 = weights[wi0];
+	const skelWeight_s &w1 = weights[wi1];
+	//if(abs(w0.weight-w1.weight) > 0.0001f)
+	if(w0.weight != w1.weight)
+		return false;
+	if(w0.boneIndex != w1.boneIndex)
+		return false;
+	if(w0.ofs.compare(w1.ofs)==false)
+		return false;
+	return true;
+}
+bool skelSurfIMPL_c::compareVertexWeights(u32 i0, u32 i1) const {
+	const skelVert_s &v0 = verts[i0];
+	const skelVert_s &v1 = verts[i1];
+	if(v0.numWeights != v1.numWeights)
+		return false;
+	for(u32 i = 0; i < v1.numWeights; i++) {
+		if(compareWeights(v0.firstWeight + i, v1.firstWeight + i) == false) {
+			return false;
+		}
+	}
+	return true;
+}
+void skelSurfIMPL_c::calcEqualPointsMapping(arraySTD_c<u16> &mapping) {
+	mapping.resize(verts.size());
+	mapping.setMemory(0xff);
+	u32 c_aliases = 0;
+	for(u32 i = 0; i < verts.size(); i++) {
+		if(mapping[i] != 0xffff)
+			continue;
+		for(u32 j = i + 1; j < verts.size(); j++) {
+			if(compareVertexWeights(i,j)) {
+				mapping[j] = i;
+				g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: vertex %i is an alias of %i\n",j,i);
+				c_aliases++;
+			}
+		}
+		mapping[i] = i;
+	}
+	g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: %i verts, %i alias\n",verts.size(),c_aliases);
+}
+void skelSurfIMPL_c::calcEdges() {
+	arraySTD_c<u16> mapping;
+	calcEqualPointsMapping(mapping);
+	u32 triNum = 0;
+	if(edgesData) {
+		delete edgesData;
+	}
+	edgesData = new extraSurfEdgesData_s;
+	for(u32 i = 0; i < indices.size(); i+=3, triNum++) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		i0 = mapping[i0];
+		i1 = mapping[i1];
+		i2 = mapping[i2];
+		edgesData->addEdge(triNum,i0,i1);
+		edgesData->addEdge(triNum,i1,i2);
+		edgesData->addEdge(triNum,i2,i0);
+	}
+	g_core->Print("skelSurfIMPL_c::calcEdges: %i edges (%i unmatched) from %i triangles\n",edgesData->edges.size(),
+		(edgesData->edges.size()-edgesData->c_matchedEdges),indices.size()/3);
 }
 
 skelModelIMPL_c::skelModelIMPL_c() {
@@ -107,6 +180,12 @@ void skelModelIMPL_c::setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexe
 	for(u32 i = 0; i < numSurfIndexes; i++) {
 		u32 sfNum = surfIndexes[i];
 		surfs[sfNum].setMaterial(newMatName);
+	}
+}
+void skelModelIMPL_c::recalcEdges() {
+	skelSurfIMPL_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->calcEdges();
 	}
 }
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {

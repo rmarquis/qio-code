@@ -38,6 +38,7 @@ friend class skelModelIMPL_c;
 	arraySTD_c<skelWeight_s> weights;
 	arraySTD_c<skelVert_s> verts;
 	arraySTD_c<u16> indices;
+	struct extraSurfEdgesData_s *edgesData;
 
 	virtual const char *getMatName() const {
 		return matName;
@@ -64,6 +65,9 @@ friend class skelModelIMPL_c;
 	virtual const u16 *getIndices() const {
 		return indices.getArray();
 	}
+	virtual const struct extraSurfEdgesData_s *getEdgesData() const {
+		return edgesData;
+	}
 
 	void scaleXYZ(float scale) {
 		skelWeight_s *w = weights.getArray();
@@ -74,6 +78,13 @@ friend class skelModelIMPL_c;
 	void setMaterial(const char *newMatName) {
 		matName = newMatName;
 	}
+	bool compareWeights(u32 wi0, u32 wi1) const;
+	bool compareVertexWeights(u32 v0, u32 v1) const;
+	void calcEqualPointsMapping(arraySTD_c<u16> &mapping);
+	void calcEdges();
+public:
+	skelSurfIMPL_c();
+	~skelSurfIMPL_c();
 };
 class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	str name;
@@ -121,6 +132,7 @@ public:
 	~skelModelIMPL_c();
 
 	bool loadMD5Mesh(const char *fname);
+	void recalcEdges();
 };
 
 #endif // __SKELMODELIMPL_H__

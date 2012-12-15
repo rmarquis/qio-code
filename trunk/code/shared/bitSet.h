@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __BITSET_H__
 #define __BITSET_H__
 
+#include <stdlib.h> // memset
+
 class bitSet_c {
 	u32 numBits;
 	u32 numBytes;

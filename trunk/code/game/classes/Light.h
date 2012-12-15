@@ -36,6 +36,7 @@ public:
 	DECLARE_CLASS( Light );
 
 	virtual void setKeyValue(const char *key, const char *value); 
+	virtual void getLocalBounds(aabb &out) const;
 };
 
 #endif // __LIGHT_H__

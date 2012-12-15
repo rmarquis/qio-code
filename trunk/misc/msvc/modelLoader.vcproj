@@ -240,6 +240,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\extraSurfEdgesData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>

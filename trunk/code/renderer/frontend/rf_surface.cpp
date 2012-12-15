@@ -44,6 +44,7 @@ r_surface_c::r_surface_c() {
 		mat = 0;
 	}
 	lightmap = 0;
+	mySkelSF = 0;
 	bounds.clear();
 }
 r_surface_c::~r_surface_c() {
@@ -99,6 +100,11 @@ void r_surface_c::resizeIndices(u32 newNumIndices) {
 }
 void r_surface_c::setIndex(u32 indexNum, u32 value) {
 	indices.setIndex(indexNum,value);
+}
+const struct extraSurfEdgesData_s *r_surface_c::getExtraSurfEdgesData() const {
+	if(mySkelSF == 0)
+		return 0;
+	return mySkelSF->getEdgesData();
 }
 void r_surface_c::setMaterial(mtrAPI_i *newMat) {
 #if 1
@@ -191,6 +197,7 @@ bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
 }
 void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
 	clear();
+	this->mySkelSF = skelSF;
 	setMaterial(skelSF->getMatName());
 	verts.resize(skelSF->getNumVerts());
 	rVert_c *v = verts.getArray();
@@ -260,13 +267,16 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 }
 void r_surface_c::recalcNormals() {
 	verts.nullNormals();
-	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+	trianglePlanes.resize(indices.getNumTriangles());
+	plane_c *op = trianglePlanes.getArray();
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3, op++) {
 		u32 i0 = indices[i+0];
 		u32 i1 = indices[i+1];
 		u32 i2 = indices[i+2];
 		rVert_c &v0 = verts[i0];
 		rVert_c &v1 = verts[i1];
 		rVert_c &v2 = verts[i2];
+#if 0
 		vec3_c e0 = v2.xyz - v0.xyz;
 		vec3_c e1 = v1.xyz - v0.xyz;
 		vec3_c newNorm;
@@ -275,6 +285,12 @@ void r_surface_c::recalcNormals() {
 		v0.normal += newNorm;
 		v1.normal += newNorm;
 		v2.normal += newNorm;
+#else
+		op->fromThreePoints(v2.xyz,v1.xyz,v0.xyz);
+		v0.normal += op->norm;
+		v1.normal += op->norm;
+		v2.normal += op->norm;
+#endif
 	}
 	verts.normalizeNormals();
 }
@@ -333,6 +349,7 @@ r_model_c::r_model_c() {
 	extraCollOctTree = 0;
 	bounds.clear();
 	ssvCaster = 0;
+	mySkel = 0;
 }
 #include "rf_stencilShadowCaster.h"
 r_model_c::~r_model_c() {
@@ -462,6 +479,7 @@ void r_model_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
 void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 	surfs.resize(skel->getNumSurfs());
 	r_surface_c *sf = surfs.getArray();
+	this->mySkel = skel;
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
 		sf->initSkelSurfInstance(inSF);

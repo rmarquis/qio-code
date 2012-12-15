@@ -100,6 +100,7 @@ public:
 		return false;
 	}
 	virtual bool hasDeclModel() const;
+	virtual bool isAnimated() const;
 
 
 

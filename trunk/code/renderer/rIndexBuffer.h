@@ -181,6 +181,9 @@ public:
 	u32 getNumIndices() const {
 		return numIndices;
 	}
+	u32 getNumTriangles() const {
+		return numIndices/3;
+	}
 	// use this with caution...
 	void forceSetIndexCount(u32 newNumIndices) {
 		numIndices = newNumIndices;
@@ -233,10 +236,16 @@ public:
 			return 0;
 		return (void*)data.getArray();
 	}
-	void ensureAllocated(u32 numBytes) {
+	void ensureAllocated_bytes(u32 numBytes) {
 		if(data.size() >= numBytes)
 			return;
 		data.resize(numBytes);
+	}
+	void ensureAllocated_indices(u32 neededIndicesCount) {
+		if(type == IBO_NOT_SET)
+			type = IBO_U16;
+		u32 requiredMemory = getSingleIndexSize() * neededIndicesCount;
+		ensureAllocated_bytes(requiredMemory);
 	}
 	void addIndex(u32 idx) {
 		if(type == IBO_NOT_SET) {
@@ -252,11 +261,11 @@ public:
 		}
 		u32 prevSize = numIndices * this->getSingleIndexSize();
 		if(type == IBO_U16) {
-			ensureAllocated(prevSize+2);
+			ensureAllocated_bytes(prevSize+2);
 			u16 *p = (u16*)&data[prevSize];
 			*p = idx;
 		} else if(type == IBO_U32) {
-			ensureAllocated(prevSize+4);
+			ensureAllocated_bytes(prevSize+4);
 			u32 *p = (u32*)&data[prevSize];
 			*p = idx;
 		}

@@ -57,6 +57,7 @@ public:
 	virtual const skelVert_s *getVerts() const = 0;
 	virtual const skelWeight_s *getWeights() const = 0;
 	virtual const u16 *getIndices() const = 0;
+	virtual const struct extraSurfEdgesData_s *getEdgesData() const = 0;
 };
 
 class skelModelAPI_i {

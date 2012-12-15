@@ -37,6 +37,7 @@ aCvar_c rf_noVertexColors("rf_noVertexColors","0");
 aCvar_c rf_ignoreSpecificMaterial("rf_ignoreSpecificMaterial","");
 aCvar_c rf_ignoreSpecificMaterial2("rf_ignoreSpecificMaterial2","");
 aCvar_c rf_forceSpecificMaterial("rf_forceSpecificMaterial","");
+aCvar_c rf_ignoreShadowVolumeDrawCalls("rf_ignoreShadowVolumeDrawCalls","0");
 
 class drawCall_c {
 public:
@@ -107,6 +108,9 @@ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class 
 		g_core->RedWarning("RF_AddShadowVolumeDrawCall: rf_curLightAPI is NULL!!!\n");
 		return;
 	}
+	if(rf_ignoreShadowVolumeDrawCalls.getInt()) {
+		return;
+	}
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {
 		n = &rf_drawCalls.pushBack();
@@ -133,6 +137,13 @@ int compareDrawCall(const void *v0, const void *v1) {
 		if(c1->curLight == 0) {
 			return 1; // c1 first
 		}
+		if(c0->curLight > c1->curLight) {
+			return 1;
+		}
+		if(c0->curLight < c1->curLight) {
+			return -1;
+		}
+		// c0->curLight == c1->curLight
 		// light shadow volumes are drawn before light interactions
 		if(c0->sort == DCS_SPECIAL_SHADOWVOLUME) {
 			if(c1->sort == DCS_SPECIAL_SHADOWVOLUME)

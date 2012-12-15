@@ -25,7 +25,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_world.h"
+#include <api/coreAPI.h>
+#include <api/rEntityAPI.h>
 #include <shared/autocvar.h>
+#include <math/matrix.h>
+#include <math/aabb.h>
 
 static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
 static aCvar_c rf_shadows("rf_shadows","0");
@@ -50,6 +54,7 @@ void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	rf_bDrawOnlyOnDepthBuffer = false;
 }
 void RF_Draw3DView() {
+
 	if(rf_enableMultipassRendering.getInt() == 0) { 
 		RF_AddGenericDrawCalls();
 	} else {
@@ -72,3 +77,28 @@ void RF_Draw3DView() {
 	// do a debug drawing on top of everything
 	RF_DoDebugDrawing();
 }
+static aCvar_c rf_printCullEntitySpaceBounds("rf_printCullEntitySpaceBounds","0");
+enum cullResult_e RF_CullEntitySpaceBounds(const aabb &bb) {
+	if(rf_currentEntity == 0) {
+		// if rf_currentEntity is NULL, we're using world space
+		return rf_camera.getFrustum().cull(bb);
+	}
+	const matrix_c &mat = rf_currentEntity->getMatrix();
+	aabb transformed;
+	mat.transformAABB(bb,transformed);
+	if(rf_printCullEntitySpaceBounds.getInt()) {
+		g_core->Print("RF_CullEntitySpaceBounds: entitySpace bounds: %f %f %f, %f %f %f\n"
+			"worldSpace bounds: %f %f %f, %f %f %f\n",
+			bb.mins.x,bb.mins.y,bb.mins.z,bb.maxs.x,bb.maxs.y,bb.maxs.z,
+			transformed.mins.x,transformed.mins.y,transformed.mins.z,transformed.maxs.x,transformed.maxs.y,transformed.maxs.z);
+	}
+
+	return rf_camera.getFrustum().cull(transformed);
+}
+void RF_OnRFShadowsCvarModified(const class aCvar_c *cv) {
+	RFL_RecalculateLightsInteractions();
+}
+void RF_InitMain() {
+	rf_shadows.setExtraModificationCallback(RF_OnRFShadowsCvarModified);
+}
+

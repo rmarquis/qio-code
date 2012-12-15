@@ -589,7 +589,7 @@ usercmd_s CL_CreateCmd( void ) {
 	CL_MouseMove( &cmd );
 
 	// get basic movement from joystick
-	CL_JoystickMove( &cmd );
+//	CL_JoystickMove( &cmd );
 
 	// check to make sure the angles haven't wrapped
 	if ( cl.viewangles[PITCH] - oldAngles[PITCH] > 90 ) {

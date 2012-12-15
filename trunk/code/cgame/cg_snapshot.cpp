@@ -119,6 +119,11 @@ static void CG_RemoveEntity(u32 entNum) {
 }
 static void CG_NewEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
+#if 1
+	if(cent->currentState.number != entNum) {
+		cent->currentState = cent->nextState;
+	}
+#endif
 	if(cg_printNewSnapEntities.getInt()) {
 		CG_Printf("CG_NewEntity: entNum %i, eType %i, ptr %i\n",entNum,cent->currentState.eType,cent);
 	}

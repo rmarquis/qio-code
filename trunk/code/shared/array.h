@@ -79,6 +79,10 @@ public:
 		int mySizeInBytes = size()*getElementSize();
 		memset(getArray(),0,mySizeInBytes);
 	}
+	void setMemory(byte p) {
+		int mySizeInBytes = size()*getElementSize();
+		memset(getArray(),p,mySizeInBytes);
+	}
 	s32 indexOf(const _Ty &t) const {
 		for(u32 i = 0; i < this->size(); i++) {
 			if(t == (*this)[i]) {

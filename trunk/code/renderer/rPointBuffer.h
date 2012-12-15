@@ -72,6 +72,9 @@ public:
 	hashVec3_c *getArray() {
 		return data.getArray();
 	}
+	void ensureAllocated(u32 neededVertCount) {
+		data.ensureAllocated(neededVertCount);
+	}
 	void destroy() {
 		data.clear();
 		unloadFromGPU();
@@ -79,6 +82,9 @@ public:
 	void setNullCount() {
 		data.setNullCount();
 		unloadFromGPU();
+	}
+	void setEqualVertexEpsilon(float newEpsilon) {
+		data.setEqualVertexEpsilon(newEpsilon); 
 	}
 
 

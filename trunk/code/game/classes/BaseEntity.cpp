@@ -62,6 +62,7 @@ BaseEntity::BaseEntity() {
 	myEdict->s->number = myEdict - g_entities;
 	myEdict->ent = this;
 	parent = 0;
+	matrix.identity();
 }
 BaseEntity::~BaseEntity() {
 	detachFromParent();

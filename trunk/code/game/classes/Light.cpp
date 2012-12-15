@@ -26,7 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 
 DEFINE_CLASS(Light, "BaseEntity");
-//DEFINE_CLASS_ALIAS(Light, light_dynamic);
+DEFINE_CLASS_ALIAS(Light, light_dynamic);
 
 Light::Light() {
 	radius = 128.f;
@@ -39,7 +39,12 @@ void Light::setKeyValue(const char *key, const char *value) {
 		BaseEntity::setKeyValue(key,value);
 	}
 }
-
-
+// NOTE: we cant use just point pvs for lights,
+// because renderer might need them
+// even if light center (origin) 
+// is outside player PVS
+void Light::getLocalBounds(aabb &out) const {
+	out.fromHalfSize(radius);
+}
 
 

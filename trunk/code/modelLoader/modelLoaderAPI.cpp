@@ -99,6 +99,7 @@ public:
 			delete skelModel;
 			return 0;
 		}		
+		skelModel->recalcEdges();
 		//if(skelModel) {
 			// apply model postprocess steps (scaling, rotating, etc)
 			// defined in optional .mdlpp file

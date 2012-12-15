@@ -29,13 +29,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_world.h"
 #include "rf_shadowVolume.h"
 #include <shared/autoCvar.h>
+#include "rf_bsp.h"
+#include <api/coreAPI.h>
 
 static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
+static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
+static aCvar_c rf_cullLights("rf_cullLights","1");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
 	numCurrentStaticInteractions = 0;
 	numCurrentEntityInteractions = 0;
+	staticShadowVolume = 0;
 }
 rLightImpl_c::~rLightImpl_c() {
 	clearInteractions();
@@ -45,6 +50,9 @@ rLightImpl_c::~rLightImpl_c() {
 			delete in.shadowVolume;
 			in.shadowVolume = 0;
 		}
+	}
+	if(staticShadowVolume) {
+		delete staticShadowVolume;
 	}
 }
 void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
@@ -80,7 +88,26 @@ void rLightImpl_c::calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) co
 	entityMatrixInv.transformPoint(this->pos,out);
 }
 void rLightImpl_c::recalcLightInteractionsWithStaticWorld() {
+	numCurrentStaticInteractions = 0;
 	RF_CacheLightWorldInteractions(this);
+	if(RF_IsUsingShadowVolumes()) {
+		recalcShadowVolumeOfStaticInteractions();
+	}
+}
+void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
+	if(staticShadowVolume == 0) {
+		staticShadowVolume = new rIndexedShadowVolume_c;
+	} else {
+		staticShadowVolume->clear();
+	}
+	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
+		staticSurfInteraction_s &in = this->staticInteractions[i];
+		if(in.sf) {
+			
+		} else {
+			RF_AddBSPSurfaceToShadowVolume(in.bspSurfaceNumber,pos,staticShadowVolume);
+		}
+	}
 }
 void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 	clearInteractionsWithDynamicEntities();
@@ -114,6 +141,8 @@ void rLightImpl_c::addLightInteractionDrawCalls() {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.sf) {
 			in.sf->addDrawCall();
+		} else {
+			RF_DrawSingleBSPSurface(in.bspSurfaceNumber);
 		}
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
@@ -129,12 +158,25 @@ void rLightImpl_c::addLightInteractionDrawCalls() {
 #endif
 	}
 }
+static aCvar_c rf_printShadowVolumesCulledByViewFrustum("rf_printShadowVolumesCulledByViewFrustum","0");
 void rLightImpl_c::addLightShadowVolumesDrawCalls() {
+	if(staticShadowVolume) {
+		staticShadowVolume->addDrawCall();
+	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
 		entityInteraction_s &in = this->entityInteractions[i];
 		if(in.shadowVolume == 0)
 			continue;
 		rf_currentEntity = in.ent;
+		// try to cull this shadow volume by view frustum
+		// (NOTE: even if the shadow caster entity is outside view frustum,
+		// it's shadow volume STILL might be visible !!!)
+		if(rf_cullShadowVolumes.getInt() && RF_CullEntitySpaceBounds(in.shadowVolume->getAABB()) == CULL_OUT) {
+			if(rf_printShadowVolumesCulledByViewFrustum.getInt()) {
+				g_core->Print("Shadow volume of model \"%s\" culled by view frustum for light %i\n",rf_currentEntity->getModelName(),this);
+			}
+			continue;
+		}
 		in.shadowVolume->addDrawCall();
 	}
 	rf_currentEntity = 0;
@@ -154,14 +196,35 @@ void RFL_RemoveLight(class rLightAPI_i *light) {
 }
 
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
+static aCvar_c light_printCullStats("light_printCullStats","0");
 
 rLightAPI_i *rf_curLightAPI = 0;
 void RFL_AddLightInteractionsDrawCalls() {
 	if(rf_skipLightInteractionsDrawCalls.getInt())
 		return;
+	u32 c_lightsCulled = 0;
+	u32 c_lightsCulledByAABBTest = 0;
+	u32 c_lightsCulledBySphereTest = 0;
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];
 		rf_curLightAPI = light;
+
+		const aabb &bb = light->getABSBounds();
+		// try to cull the entire light (culling light
+		// will cull out all of its interactions
+		// and shadows as well)
+		if(rf_cullLights.getInt()) {
+			if(rf_camera.getFrustum().cull(bb) == CULL_OUT) {
+				c_lightsCulled++;
+				c_lightsCulledByAABBTest++;
+				continue;
+			}
+			if(rf_camera.getFrustum().cullSphere(light->getOrigin(),light->getRadius()) == CULL_OUT) {
+				c_lightsCulled++;
+				c_lightsCulledBySphereTest++;
+				continue;
+			}
+		}
 
 		// TODO: dont do this every frame
 		light->recalcLightInteractionsWithDynamicEntities();
@@ -177,4 +240,15 @@ void RFL_AddLightInteractionsDrawCalls() {
 		}
 	}
 	rf_curLightAPI = 0;
+	if(light_printCullStats.getInt()) {
+		g_core->Print("RFL_AddLightInteractionsDrawCalls: %i lights, %i culled (%i by aabb, %i by sphere\n",
+			rf_lights.size(),c_lightsCulled,c_lightsCulledByAABBTest,c_lightsCulledBySphereTest);
+	}
+}
+
+void RFL_RecalculateLightsInteractions() {
+	for(u32 i = 0; i < rf_lights.size(); i++) {
+		rLightImpl_c *light = rf_lights[i];
+		light->recalcLightInteractions();
+	}
 }

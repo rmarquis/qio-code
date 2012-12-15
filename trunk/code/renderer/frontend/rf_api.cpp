@@ -190,8 +190,14 @@ public:
 		if(initialized) {
 			g_core->DropError("rAPIImpl_c::init: already initialized\n");
 		}
+#ifdef _HAS_ITERATOR_DEBUGGING
+		g_core->Print("rAPIImpl_c::init(): _HAS_ITERATOR_DEBUGGING is %i\n",_HAS_ITERATOR_DEBUGGING);
+#else
+		g_core->Print("rAPIImpl_c::init(): _HAS_ITERATOR_DEBUGGING is not defined.\n");
+#endif
 		initialized = true;
 		AUTOCVAR_RegisterAutoCvars();
+		RF_InitMain();
 		loadMaterialSystem();
 		rb->init();
 		RF_InitSky();

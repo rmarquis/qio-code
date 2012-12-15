@@ -59,3 +59,12 @@ planeSide_e plane_c::onSide(const aabb &bb) const {
 	//assert(0);
 #endif
 }
+
+enum planeSide_e plane_c::onSide(const class vec3_c &center, float radius) const {
+	float d = distance(center);
+	if(abs(d) <= radius)
+		return SIDE_CROSS;
+	if(d < 0)
+		return SIDE_BACK;
+	return SIDE_FRONT;
+}
