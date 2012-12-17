@@ -34,6 +34,7 @@ public:
 	virtual void swapYZ() = 0;
 	virtual void translateY(float ofs) = 0;
 	virtual void multTexCoordsY(float f) = 0;
+	virtual void multTexCoordsXY(float f) = 0;
 	virtual void translateXYZ(const class vec3_c &ofs) = 0;
 	virtual void getCurrentBounds(class aabb &out) = 0;
 	virtual void setAllSurfsMaterial(const char *newMatName) = 0;

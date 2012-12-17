@@ -60,6 +60,13 @@ class rWorldMapLoader_c : public staticModelCreatorAPI_i {
 			}
 		}
 	}
+	virtual void multTexCoordsXY(float f) {
+		for(u32 i = 0; i < entModels.size(); i++) {
+			if(entModels[i]) {
+				entModels[i]->multTexCoordsXY(f);
+			}
+		}
+	}
 	virtual void translateXYZ(const class vec3_c &ofs) {
 		for(u32 i = 0; i < entModels.size(); i++) {
 			if(entModels[i]) {

@@ -773,8 +773,11 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	} else if(cModel->isHull()) {
 		shape = BT_CModelHullToConvex(cModel->getHull());
 	} else if(cModel->isTriMesh()) {
-		const cmSurface_c *sf = cModel->getTriMesh()->getCMSurface();
+		const cmTriMesh_i *triMesh = cModel->getTriMesh();
+		const cmSurface_c *sf = triMesh->getCMSurface();
 		shape = BT_CreateBHVTriMeshForCMSurface(*sf);
+
+		mass = 0.f; // moving BHV trimeshes are not supported by BULLET
 	} else if(cModel->isBBMinsMaxs()) {
 		aabb bb;
 		cModel->getBounds(bb);

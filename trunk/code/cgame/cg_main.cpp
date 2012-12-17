@@ -231,8 +231,16 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	s = CG_ConfigString( CS_LEVEL_START_TIME );
 	cgs.levelStartTime = atoi( s );
 
-	CG_ParseServerinfo();
+	s = CG_ConfigString(CS_WORLD_SKYMATERIAL);
+	if(s && s[0]) {
+		rf->setSkyMaterial(s);
+	}
+	s = CG_ConfigString(CS_WORLD_WATERLEVEL);
+	if(s && s[0]) {
+		rf->setWaterLevel(s);
+	}
 
+	CG_ParseServerinfo();
 
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );

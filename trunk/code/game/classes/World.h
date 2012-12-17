@@ -21,25 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// modelLoaderLocal.h - local model loader header
-#ifndef __MODELLOADERLOCAL_H__
-#define __MODELLOADERLOCAL_H__
+// World.h
+#ifndef __WORLD_H__
+#define __WORLD_H__
 
-class staticModelCreatorAPI_i;
+#include <shared/str.h>
 
-// staticModelLoaders/wavefrontOBJModelLoader.cpp
-bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out);
-// staticModelLoaders/mapFileConverter.cpp
-bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreatorAPI_i *out);
-// staticModelLoaders/aseLoader.cpp
-bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out);
+class World {
+	str skyMaterial;
+	float waterLevel;
+	bool hasWaterLevel;
 
-// mod_postProcess.cpp
-// .mdlpp commands parsing and execution
-bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout);
-// inline postprocess commands parsing and execution
-bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFuncs_i *inout);
-// skel_animPostProcess.cpp
-bool SK_ApplyAnimPostProcess(const char *modName, class skelAnimPostProcessFuncs_i *inout);
+	void runGlobalWaterPhysics();
+public:
+	World();
 
-#endif // __MODELLOADERLOCAL_H__
+	// called once on game startup
+	//void initWorldSpawn();
+
+	// called every frame
+	void runWorldFrame();
+
+	virtual void setKeyValue(const char *key, const char *value);
+};
+
+extern World g_world;
+
+#endif // __WORLD_H__
+

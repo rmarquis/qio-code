@@ -7,3 +7,9 @@
 "classname" "func_heightmap"
 "heightmap" "maps/test_heightmap/hmap1.png"
 }
+// entity 2
+{
+"classname" "info_player_start"
+"origin" "0 0 256"
+}
+

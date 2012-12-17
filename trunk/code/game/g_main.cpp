@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include "classes/BaseEntity.h"
+#include "classes/World.h"
 #include <shared/autoCvar.h>
 
 level_locals_t	level;
@@ -55,30 +56,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 	g_core->DropError( text );
 }
 
-/*QUAKED worldspawn (0 0 0) ?
-
-Every map should have exactly one worldspawn.
-"music"		music wav file
-"gravity"	800 is default gravity
-"message"	Text to print during connection process
-*/
-void SP_worldspawn( void ) {
-	// make some data visible to connecting client
-	g_server->SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
-
-	g_server->SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
-
-	g_cvars->Cvar_Set( "g_gravity", "800" );
-
-
-//	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
-//	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
-
-//	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
-///	g_entities[ENTITYNUM_NONE].classname = "nothing";
-
-	
-}
 /*
 ============
 G_InitGame
@@ -112,17 +89,21 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// range are NEVER anything but clients
 	level.num_entities = MAX_CLIENTS;
 
-	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
-//		g_entities[i].classname = "clientslot";
-	}
+//	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
+////		g_entities[i].classname = "clientslot";
+//	}
 
-	G_AnimationIndex("noanim");
+	//G_AnimationIndex("noanim");
 
 	// let the server system know where the entites are
 	g_server->LocateGameData( level.gentities, level.num_entities );
 
-	// parse the key/value pairs and spawn gentities
-	SP_worldspawn();
+	// make some data visible to connecting client
+	g_server->SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
+
+	g_server->SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
+
+	g_cvars->Cvar_Set( "g_gravity", "800" );
 
 	g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
 
@@ -242,6 +223,7 @@ void G_RunFrame( int levelTime ) {
 
 	G_RunPhysics();
 
+	g_world.runWorldFrame();
 
 	//
 	// go through all allocated objects

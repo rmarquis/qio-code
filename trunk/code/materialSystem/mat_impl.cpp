@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mat_impl.h"
 #include "mat_local.h"
 #include <shared/parser.h>
+#include <shared/cullType.h>
 #include <api/coreAPI.h>
 #include <api/textureAPI.h>
 
@@ -35,7 +36,7 @@ void skyBox_c::setBaseName(const char *newBaseName) {
 class textureAPI_i *skyBox_c::loadSubTexture(const char *sufix) {
 	str fullPath = baseName;
 	fullPath.append(sufix);
-	return MAT_RegisterTexture(fullPath);
+	return MAT_RegisterTexture(fullPath,true);
 }
 void skyBox_c::uploadTextures() {
 	if(baseName.length() == 0 || baseName[0] == '-')
@@ -117,6 +118,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
 	polygonOffset = 0;
 	hashNext = 0;
+	cullType = CT_FRONT_SIDED;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -133,6 +135,7 @@ void mtrIMPL_c::clear() {
 	}
 	// reset variables to their default values
 	polygonOffset = 0;
+	cullType = CT_FRONT_SIDED;
 	// but don't clear material name and this->hashNext pointer...
 }
 
@@ -209,7 +212,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		} else {
 			if(level == 1) {
 				if(p.atWord("cull")) {
-
+					if(p.atWord("none")) {
+						cullType = CT_TWO_SIDED;
+					} else {
+						u32 lineNum = p.getCurrentLineNumber();
+						str tok = p.getToken();
+						g_core->Print("Unkownn culltype \"%s\" at line %i of %s\n",tok.c_str(),lineNum,p.getDebugFileName());
+					}
 				} else if(p.atWord("surfaceparm")) {
 					p.getToken();
 				} else if(p.atWord("skyparms")) {

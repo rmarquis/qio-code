@@ -123,6 +123,7 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual void swapYZ();
 	virtual void translateY(float ofs);
 	virtual void multTexCoordsY(float f);
+	virtual void multTexCoordsXY(float f);
 	virtual void translateXYZ(const class vec3_c &ofs);
 	virtual void getCurrentBounds(class aabb &out);
 	virtual void setAllSurfsMaterial(const char *newMatName);

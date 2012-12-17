@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/entityDeclAPI.h>
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
+#include "classes/World.h"
 
 static entDefsList_c g_entDefs;
 
@@ -46,6 +47,14 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	const char *className = entDef->getClassName();
 	if(className == 0 || className[0] == 0) {
 		g_core->Print("G_SpawnEntDef: No classname set\n");
+		return 0;
+	}
+	if(!stricmp(className,"worldspawn") || !stricmp(className,"world")) {
+		for(u32 j = 0; j < entDef->getNumKeyValues(); j++) {
+			const char *key, *value;
+			entDef->getKeyValue(j,&key,&value);
+			g_world.setKeyValue(key,value);
+		}
 		return 0;
 	}
 	BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);

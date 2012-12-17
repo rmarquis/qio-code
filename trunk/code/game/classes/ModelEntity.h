@@ -79,6 +79,9 @@ public:
 	void initRagdollPhysics();
 	//void destroyPhysicsRagdoll();
 
+	virtual void applyCentralForce(const vec3_c &velToAdd);
+	virtual void applyCentralImpulse(const vec3_c &impToAdd);
+
 	virtual void debugDrawCollisionModel(class rDebugDrawer_i *dd);
 
 	bool hasPhysicsObject() const {

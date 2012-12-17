@@ -29,6 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
 #include <shared/trace.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -233,8 +236,9 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	}
 #endif
 
-	//G_Printf("at %f %f %f\n",ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2]);
-
+	if(g_printPlayerPositions.getInt()) {
+		G_Printf("Player::runPlayer: client %i is at %f %f %f\n",myEdict->s->number,myEdict->s->origin[0],myEdict->s->origin[1],myEdict->s->origin[2]);
+	}
 	//if (g_smoothClients.integer) {
 	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
 	//}

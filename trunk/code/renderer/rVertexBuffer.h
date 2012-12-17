@@ -38,8 +38,10 @@ public:
 	byte color[4];
 	vec2_c tc;
 	vec2_c lc;
-	//vec2_c tan;
-	//vec2_c bin;
+#ifdef STORE_TANGENTS
+	vec2_c tan;
+	vec2_c bin;
+#endif
 
 	rVert_c() {
 		memset(color,0xff,sizeof(color));
@@ -61,6 +63,20 @@ public:
 		G_GetInterpolated_quadraticn(3,res,ct,ca,cb,s);
 		res.colorToBytes(out.color);
 		return out;
+	}	
+	void lerpAll(const rVert_c &a, const rVert_c &b, const float f) {
+		xyz = a.xyz + f * ( b.xyz - a.xyz );
+		tc = a.tc + f * ( b.tc - a.tc );
+		lc = a.lc + f * ( b.lc - a.lc );
+		normal = a.normal + f * ( b.normal - a.normal );
+#ifdef STORE_TANGENTS
+		tan = a.tan + f * ( b.tan - a.tan );
+		bin = a.bin + f * ( b.bin - a.bin );
+#endif
+		color[0] = (byte)( a.color[0] + f * ( b.color[0] - a.color[0] ) );
+		color[1] = (byte)( a.color[1] + f * ( b.color[1] - a.color[1] ) );
+		color[2] = (byte)( a.color[2] + f * ( b.color[2] - a.color[2] ) );
+		color[3] = (byte)( a.color[3] + f * ( b.color[3] - a.color[3] ) );
 	}
 };
 class rVertexBuffer_c {

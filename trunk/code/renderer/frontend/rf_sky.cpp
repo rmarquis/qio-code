@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_sky.cpp - sky materials (skybox) drawing
 #include <api/mtrAPI.h>
+#include <api/materialSystemAPI.h>
 #include <materialSystem/mat_public.h>
 #include "rf_local.h"
 #include "rf_surface.h"
@@ -88,4 +89,7 @@ void RF_DrawSky() {
 }
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial) {
 	rf_skyMaterial = newSkyMaterial;
+}
+void RF_SetSkyMaterial(const char *skyMaterialName) {
+	rf_skyMaterial = g_ms->registerMaterial(skyMaterialName);
 }

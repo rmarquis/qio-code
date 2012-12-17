@@ -28,9 +28,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rbAPI.h>
 #include <math/vec3.h>
 #include <shared/trace.h>
+#include <shared/autoCvar.h>
 
 //============================================================================
 
+static aCvar_c cg_printCurCamPos("cg_printCurCamPos","0");
 
 /*
 =================
@@ -284,6 +286,10 @@ static int CG_CalcViewValues( void ) {
 	} else {
 		// offset for local bobbing and kicks
 		CG_OffsetFirstPersonView();
+	}
+
+	if(cg_printCurCamPos.getInt()) {
+		CG_Printf("CG_CalcViewValues: camera eye is at %f %f %f\n",cg.refdef.vieworg[0],cg.refdef.vieworg[1],cg.refdef.vieworg[2]);
 	}
 
 	// position eye relative to origin

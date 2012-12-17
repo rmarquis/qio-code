@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/modelPostProcessFuncs.h>
 
+int		Q_stricmpn (const char *s1, const char *s2, int n);
+
 bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout) {
 	str mdlppName = modName;
 	mdlppName.setExtension("mdlpp");
@@ -63,6 +65,55 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			str token = p.getToken();
 			g_core->RedWarning("MOD_ApplyPostProcess: unknown postprocess command %s at line %i of file %s\n",
 				token.c_str(),line,mdlppName.c_str());
+		}
+	}
+	return false;
+}
+const char *G_getFirstOf(const char *s, const char *charSet) {
+	const char *p = s;
+	u32 charSetLen = strlen(charSet);
+	while(*p) {
+		for(u32 i = 0; i < charSetLen; i++) {
+			if(charSet[i] == *p) {
+				return p;
+			}
+		}
+		p++;
+	}
+	return 0;
+}
+void MOD_GetInlineTextArg(str &out, const char **p) {
+	const char *cur = *p;
+	const char *end = G_getFirstOf(cur,",|");
+	if(end) {
+		out.setFromTo(cur,end);
+		if(*end == ',' || *end == '|')
+			end++;
+		*p = end;
+	} else {
+		out = cur;
+		*p = 0;
+	}
+}
+float MOD_GetInlineTextArgAsFloat(const char **p) {
+	str tmp;
+	MOD_GetInlineTextArg(tmp,p);
+	return atof(tmp);
+}
+bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFuncs_i *inout) {
+	const char *p = cmdsText;
+	str tmp;
+	while(p && *p) {
+		if(!Q_stricmpn(p,"scaleTexST",strlen("scaleTexST"))) {
+			p += strlen("scaleTexST");
+			float stScale = MOD_GetInlineTextArgAsFloat(&p);
+			inout->multTexCoordsXY(stScale);
+		} else if(!Q_stricmpn(p,"material",strlen("material"))) {
+			p += strlen("material");
+			MOD_GetInlineTextArg(tmp,&p);
+			inout->setAllSurfsMaterial(tmp);
+		} else {
+			p++;
 		}
 	}
 	return false;

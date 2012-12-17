@@ -267,6 +267,16 @@ void ModelEntity::initRagdollPhysics() {
 		this->myEdict->s->activeRagdollDefNameIndex = G_RagdollDefIndex(ragdollDefName);
 	}
 }
+void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
+	if(this->body == 0)
+		return;
+	this->body->applyCentralForce(forceToAdd.floatPtr());
+}
+void ModelEntity::applyCentralImpulse(const vec3_c &forceToAdd) {
+	if(this->body == 0)
+		return;
+	this->body->applyCentralImpulse(forceToAdd.floatPtr());
+}
 void ModelEntity::destroyPhysicsObject() {
 	if(body) {
 		BT_RemoveRigidBody(body);

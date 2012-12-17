@@ -4,3 +4,14 @@ qiotests/testdecalmaterial
   polygonoffset 1
 
 }
+
+qiotests/cpuWaterTest1
+{
+  cull none
+  {
+    map textures/qiotests/qiotestwater
+	// blendfunc add
+	blendfunc GL_SRC_COLOR GL_DST_COLOR
+  }
+}
+

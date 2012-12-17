@@ -82,6 +82,13 @@ public:
 		return 0;
 	}
 
+	virtual void applyCentralForce(const vec3_c &velToAdd) {
+
+	}
+	virtual void applyCentralImpulse(const vec3_c &impToAdd) {
+
+	}
+
 	void setParent(BaseEntity *newParent, int tagNum = -1);
 	void detachFromParent();
 

@@ -300,8 +300,13 @@ public:
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		pDev->SetFVF(RVERT_FVF);
 
-		stopDrawingShadowVolumes();
-		setCull(CT_FRONT_SIDED);
+		stopDrawingShadowVolumes();		
+
+		if(lastMat) {
+			setCull(lastMat->getCullType());
+		} else {
+			setCull(CT_FRONT_SIDED);
+		}
 
 		if(bDrawOnlyOnDepthBuffer) {
 			turnOffAlphaFunc();

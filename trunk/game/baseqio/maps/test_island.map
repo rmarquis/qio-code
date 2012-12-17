@@ -1,0 +1,26 @@
+// entity 0
+{
+"classname" "worldspawn"
+"skymaterial" "textures/sky/mohday1"
+"waterlevel" "128"
+}
+// entity 1
+{
+"classname" "func_heightmap"
+"heightmap" "maps/test_island/hmap1.png"
+}
+// entity 2
+{
+"classname" "ModelEntity"
+"model" "_quadZ32768x32768|scaletexST100|materialtextures\qiotests\simpleground"
+"cmodel" "_quadZ32768x32768"
+"origin" "0 0 5"
+"comment" "This is the bottom of the ocean."
+}
+// entity 3
+{
+"classname" "info_player_start"
+"origin" "0 0 1024"
+}
+
+

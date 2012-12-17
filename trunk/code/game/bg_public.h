@@ -42,7 +42,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	CS_GAME_VERSION			20
 #define	CS_LEVEL_START_TIME		21		// so the timer only shows the current level
-
+#define CS_WORLD_SKYMATERIAL	22
+#define CS_WORLD_WATERLEVEL		23
 
 // renderer models
 #define	CS_MODELS				32

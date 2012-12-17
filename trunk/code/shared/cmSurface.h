@@ -170,6 +170,9 @@ public:
 	virtual void multTexCoordsY(float f) { 
 		// ignore. Collision models dont need texcoords.
 	}
+	virtual void multTexCoordsXY(float f) { 
+		// ignore. Collision models dont need texcoords.
+	}
 	virtual void translateXYZ(const class vec3_c &ofs) {
 		vec3_c *v = verts.getArray();
 		for(u32 i = 0; i < verts.size(); i++, v++) {

@@ -61,6 +61,7 @@ void RF_InitSky();
 void RF_DrawSky();
 bool RF_HasSky();
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
+void RF_SetSkyMaterial(const char *skyMaterialName);
 
 // rf_decals.cpp
 void RF_InitDecals();
@@ -73,6 +74,10 @@ void RF_ClearAnims();
 
 // rf_map.cpp - load world map directly from .map file
 class r_model_c *RF_LoadMAPFile(const char *fname);
+
+// rf_water.cpp
+void RF_SetWaterLevel(const char *waterLevel);
+void RF_AddWaterDrawCalls();
 
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;

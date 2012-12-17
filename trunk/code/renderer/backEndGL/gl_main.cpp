@@ -660,7 +660,11 @@ public:
 			bindShader(0);
 		}
 		
-		glCull(CT_FRONT_SIDED);
+		if(lastMat) {
+			glCull(lastMat->getCullType());
+		} else {
+			glCull(CT_FRONT_SIDED);
+		}
 
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);
@@ -1051,8 +1055,15 @@ public:
 		CHECK_GL_ERRORS;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+		if(out->getBClampToEdge()) {
+			// this is used for skyboxes 
+			// (without it they are shown with strange artifacts at texture edges)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+		} else {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+		}
 		//glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		CHECK_GL_ERRORS;
 		glBindTexture(GL_TEXTURE_2D, 0);	

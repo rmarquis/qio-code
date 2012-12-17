@@ -132,6 +132,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	arraySTD_c<mtrStage_c*> stages;
 	skyParms_c *skyParms;
 	float polygonOffset;
+	enum cullType_e cullType;
 public:
 	mtrIMPL_c();
 	~mtrIMPL_c();
@@ -152,6 +153,9 @@ public:
 	}
 	virtual const mtrStageAPI_i *getStage(u32 stageNum) const {
 		return stages[stageNum];
+	}
+	virtual enum cullType_e getCullType() const {
+		return cullType;
 	}
 	inline mtrIMPL_c *getHashNext() const {
 		return hashNext;

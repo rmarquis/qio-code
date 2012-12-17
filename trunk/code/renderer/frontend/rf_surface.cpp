@@ -252,6 +252,12 @@ void r_surface_c::multTexCoordsY(float f) {
 		v->tc.y *= f;
 	}
 }
+void r_surface_c::multTexCoordsXY(float f) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		v->tc *= f;
+	}
+}
 void r_surface_c::translateXYZ(const vec3_c &ofs) {
 	rVert_c *v = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -341,6 +347,91 @@ bool r_surface_c::parseProcSurface(class parser_c &p) {
 	}
 	return false; // OK
 }
+u32 getQTIndex(u32 factor, u32 x, u32 y) {
+	u32 out = x * (factor + 1) + y;
+	return out;
+}
+void r_surface_c::createFlatGrid(float size, int rows) {
+	float halfSize = size * 0.5f;
+
+	rVert_c controls[4];
+	controls[0].xyz.set(-halfSize,-halfSize,0);
+	controls[0].tc.set(0,0);
+	controls[0].normal.set(0,0,1);
+	controls[1].xyz.set(halfSize,-halfSize,0);
+	controls[1].tc.set(0,1);
+	controls[1].normal.set(0,0,1);
+	controls[2].xyz.set(halfSize,halfSize,0);
+	controls[2].tc.set(1,1);
+	controls[2].normal.set(0,0,1);
+	controls[3].xyz.set(-halfSize,halfSize,0);
+	controls[3].tc.set(1,0);
+	controls[3].normal.set(0,0,1);
+
+	int factor = rows;
+	
+	this->verts.resize(Square(factor+1));
+	u32 vertIndex = 0;
+
+	// calc first (factor+1)*2 vertices
+	for(int i = 0; i <= factor; i++) {
+		float frac = float(i) / float(factor);
+		rVert_c first, second;
+		first.lerpAll(controls[0],controls[1],frac);
+		this->verts[vertIndex] = first;
+		vertIndex++;
+		second.lerpAll(controls[3],controls[2],frac);
+		for(int j = 1; j < factor; j++) {
+			float frac = float(j) / float(factor);
+			rVert_c nv;
+			nv.lerpAll(first,second,frac);
+			this->verts[vertIndex] = nv;
+			vertIndex++;
+		}
+		this->verts[vertIndex] = second;
+		vertIndex++;
+	}
+	// create indices
+	// quads
+	//u16 *indices16 = this->indices.initU16(Square(factor) * 4);
+	// triangle pairs
+	u16 *indices16 = this->indices.initU16(Square(factor) * 6);
+	u32 i = 0;
+	for(int x = 0; x < factor; x++) {
+		for(int y = 0; y < factor; y++) {
+			u32 i0 = getQTIndex(factor,x,y);;
+			u32 i1 = getQTIndex(factor,x,y+1);
+			u32 i2 = getQTIndex(factor,x+1,y+1);
+			u32 i3 = getQTIndex(factor,x+1,y);
+#if 0
+			// quads (GL_QUADS)
+			indices16[i] = i0;
+			i++;
+			indices16[i] = i1;
+			i++;
+			indices16[i] = i2;
+			i++;
+			indices16[i] = i3;
+			i++;
+#else
+			// two triangles (GL_TRIANGLES)
+			indices16[i] = i0;
+			i++;
+			indices16[i] = i1;
+			i++;
+			indices16[i] = i2;
+			i++;
+
+			indices16[i] = i3;
+			i++;
+			indices16[i] = i0;
+			i++;
+			indices16[i] = i2;
+			i++;
+#endif
+		}
+	}
+}
 //
 //	r_model_c class
 //
@@ -423,6 +514,12 @@ void r_model_c::multTexCoordsY(float f) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		sf->multTexCoordsY(f);
+	}
+}
+void r_model_c::multTexCoordsXY(float f) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->multTexCoordsXY(f);
 	}
 }
 void r_model_c::translateXYZ(const class vec3_c &ofs) {

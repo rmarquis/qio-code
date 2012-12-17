@@ -54,7 +54,7 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName);
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps
-class textureAPI_i *MAT_RegisterTexture(const char *texString);
+class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge = false);
 void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();

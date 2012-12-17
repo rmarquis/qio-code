@@ -71,18 +71,18 @@ bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out)
 			u32 i2 = getIndex(x,y-1,w,h);
 			u32 i3 = getIndex(x-1,y-1,w,h);
 
+			out->setIndex(idx,i2);
+			idx++;
+			out->setIndex(idx,i1);
+			idx++;
 			out->setIndex(idx,i0);
 			idx++;
-			out->setIndex(idx,i1);
-			idx++;
-			out->setIndex(idx,i2);
-			idx++;
 
-			out->setIndex(idx,i3);
+			out->setIndex(idx,i1);
 			idx++;
 			out->setIndex(idx,i2);
 			idx++;
-			out->setIndex(idx,i1);
+			out->setIndex(idx,i3);
 			idx++;
 		}
 	}

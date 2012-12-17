@@ -164,6 +164,9 @@ void skelModelIMPL_c::translateY(float ofs) {
 void skelModelIMPL_c::multTexCoordsY(float f) {
 
 }
+void skelModelIMPL_c::multTexCoordsXY(float f) {
+
+}
 void skelModelIMPL_c::translateXYZ(const class vec3_c &ofs) {
 
 }

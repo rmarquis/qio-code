@@ -519,6 +519,14 @@
 				RelativePath="..\..\code\game\classes\Weapon.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\game\classes\World.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\World.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="shared"

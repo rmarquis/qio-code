@@ -150,10 +150,20 @@ public:
 	void swapYZ();
 	void translateY(float ofs);
 	void multTexCoordsY(float f);
+	void multTexCoordsXY(float f);
 	void translateXYZ(const vec3_c &ofs);
 	void addPointsToBounds(aabb &out);
 
 	bool parseProcSurface(class parser_c &p);
+
+	// procedural mesh generation
+	void createFlatGrid(float size, int rows);
+	void scaleTexCoords(float tcScale) {
+		rVert_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			v->tc *= tcScale;
+		}
+	}
 
 	void recalcNormals();
 
@@ -211,6 +221,7 @@ public:
 	virtual void swapYZ();
 	virtual void translateY(float ofs);
 	virtual void multTexCoordsY(float f);
+	virtual void multTexCoordsXY(float f);
 	virtual void translateXYZ(const class vec3_c &ofs);
 	virtual void getCurrentBounds(class aabb &out);
 	virtual void setAllSurfsMaterial(const char *newMatName);

@@ -43,6 +43,9 @@ public:
 	virtual u32 getHeight() const = 0;
 	virtual void setWidth(u32 newWidth) = 0;
 	virtual void setHeight(u32 newHeight) = 0;
+
+	// bClampToEdge should be set to true for skybox textures
+	virtual bool getBClampToEdge() const = 0;
 	
 	virtual void *getInternalHandleV() const = 0;
 	virtual void setInternalHandleV(void *newHandle) = 0;

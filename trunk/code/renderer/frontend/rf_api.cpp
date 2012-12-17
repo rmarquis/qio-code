@@ -149,6 +149,12 @@ public:
 	virtual void setAreaBits(const byte *bytes, u32 numBytes) {
 		RF_SetWorldAreaBits(bytes, numBytes);
 	}
+	virtual void setSkyMaterial(const char *skyMaterialName) {
+		RF_SetSkyMaterial(skyMaterialName);
+	}
+	virtual void setWaterLevel(const char *waterLevel) {
+		RF_SetWaterLevel(waterLevel);
+	}
 	virtual class rEntityAPI_i *allocEntity() {
 		return RFE_AllocEntity();
 	}

@@ -57,6 +57,8 @@ public:
 	virtual bool rayTraceWorldMap(class trace_c &tr) = 0;
 
 	virtual void setAreaBits(const byte *bytes, u32 numBytes) = 0;
+	virtual void setSkyMaterial(const char *skyMaterialName) = 0;
+	virtual void setWaterLevel(const char *waterLevel) = 0; // number or "none"
 
 	// misc functions	
 	virtual void clearEntities() = 0;

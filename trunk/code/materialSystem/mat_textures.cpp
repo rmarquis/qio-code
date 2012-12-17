@@ -35,12 +35,14 @@ class textureIMPL_c : public textureAPI_i {
 		void *handleV;
 	};
 	u32 w, h;
+	bool bClampToEdge;
 	textureIMPL_c *hashNext;
 public:
 	textureIMPL_c() {
 		hashNext = 0;
 		w = h = 0;
 		handleV = 0;
+		bClampToEdge = false; // use GL_REPEAT by default
 	}
 	~textureIMPL_c() {
 		if(rb == 0)
@@ -55,6 +57,9 @@ public:
 	void setName(const char *newName) {
 		name = newName;
 	}
+	void setBClampToEdge(bool newBClampToEdge) {
+		bClampToEdge = newBClampToEdge;
+	}
 	virtual u32 getWidth() const {
 		return w;
 	}
@@ -66,6 +71,10 @@ public:
 	}
 	virtual void setHeight(u32 newHeight) {
 		h = newHeight;
+	}	
+	// bClampToEdge should be set to true for skybox textures
+	virtual bool getBClampToEdge() const {
+		return bClampToEdge;
 	}
 	virtual void *getInternalHandleV() const {
 		return handleV;
@@ -111,7 +120,7 @@ class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h) {
 }
 // texString can contain doom3-like modifiers
 // TODO: what if a texture is reused with different picmip setting?
-class textureAPI_i *MAT_RegisterTexture(const char *texString) {
+class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge) {
 	textureIMPL_c *ret = mat_textures.getEntry(texString);
 	if(ret) {
 		return ret;
@@ -127,6 +136,7 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString) {
 	}
 	ret = new textureIMPL_c;
 	ret->setName(fixedPath);
+	ret->setBClampToEdge(bClampToEdge);
 	rb->uploadTextureRGBA(ret,data,w,h);
 	g_img->freeImageData(data);
 	mat_textures.addObject(ret);

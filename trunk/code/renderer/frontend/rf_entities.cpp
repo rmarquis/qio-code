@@ -42,6 +42,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rfSurfFlags.h>
 
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
+static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 
 rEntityImpl_c::rEntityImpl_c() {
 	model = 0;
@@ -237,6 +238,8 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 	(*ragOrs)[partIndex] = or;
 }
 void rEntityImpl_c::addDrawCalls() {
+	if(rf_noEntityDrawCalls.getInt())
+		return;
 	// this is needed here so rf_drawCalls.cpp know
 	// which orientation should be used 
 	// (world identity matrix vs. entity pos/angles matrix)

@@ -38,26 +38,68 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
 
+int		Q_stricmpn (const char *s1, const char *s2, int n);
+
 bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
 public:
 	virtual bool isStaticModelFile(const char *fname) {
+		// that's a procedural model
+		if(fname[0] == '_')
+			return true;
 		const char *ext = strchr(fname,'.');
 		if(ext == 0) {
 			return false;
 		}
 		ext++;
+		// Wavefront .obj static triangle model
 		if(!stricmp(ext,"obj"))
 			return true;
+		// raw .map file that will be converted to trimesh
 		if(!stricmp(ext,"map"))
 			return true;
+		// .ASE model (this format is used in Doom3)
 		if(!stricmp(ext,"ase"))
 			return true;
+		// we can load heightmaps here as well
 		if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp"))
 			return true;
 		return false;
 	}
-	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out)  {
+	virtual bool loadStaticModelFile(const char *fileNameWithExtraCommands, class staticModelCreatorAPI_i *out)  {
+		// extra post process commands (like model scaling, rotating, etc)
+		// can be applied directly in model name string, after special '|' character, eg:
+		// "models/props/truck.obj|scale10|texturespecialTexture"
+		const char *inlinePostProcessCommandMarker = strchr(fileNameWithExtraCommands,'|');
+		// get raw filename
+		str fname = fileNameWithExtraCommands;
+		if(inlinePostProcessCommandMarker) {
+			fname.capLen(inlinePostProcessCommandMarker-fileNameWithExtraCommands);
+		}
+		// see if it's a build-in model shape
+		if(fname[0] == '_') {
+			if(!Q_stricmpn(fname+1,"quadZ",5)) {
+				// it's a flat, Z-oriented quad
+				// (in Q3 Z axis is up-down)
+				float x,y;
+				sscanf(fname+1+5,"%fx%f",&x,&y);
+				simpleVert_s points[4];
+				points[0].xyz.set(x*0.5f,y*0.5,0);
+				points[0].tc.set(1,0);
+				points[1].xyz.set(x*0.5f,-y*0.5,0);
+				points[1].tc.set(1,1);
+				points[2].xyz.set(-x*0.5f,-y*0.5,0);
+				points[2].tc.set(0,1);
+				points[3].xyz.set(-x*0.5f,y*0.5,0);
+				points[3].tc.set(0,0);
+				out->addTriangle("nomaterial",points[0],points[1],points[2]);
+				out->addTriangle("nomaterial",points[2],points[3],points[0]);
+				if(inlinePostProcessCommandMarker) {
+					MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
+				}
+				return false; // no error
+			}
+		}
 		const char *ext = strchr(fname,'.');
 		if(ext == 0) {
 			return true;
@@ -79,6 +121,9 @@ public:
 			// apply model postprocess steps (scaling, rotating, etc)
 			// defined in optional .mdlpp file
 			MOD_ApplyPostProcess(fname,out);
+			if(inlinePostProcessCommandMarker) {
+				MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
+			}
 			return false; // no error
 		}
 		return true;
