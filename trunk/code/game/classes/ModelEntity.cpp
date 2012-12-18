@@ -67,6 +67,7 @@ void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 #if 1
 		btTransform transform;
 		transform.setFromOpenGLMatrix(this->getMatrix());
+		transform.scaleOrigin(QIO_TO_BULLET);
 		body->setWorldTransform(transform);
 		//body->getMotionState()->setWorldTransform(transform);
 		body->activate(true);
@@ -292,7 +293,28 @@ void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 void ModelEntity::applyCentralImpulse(const vec3_c &forceToAdd) {
 	if(this->body == 0)
 		return;
+	this->body->activate(true);
 	this->body->applyCentralImpulse(forceToAdd.floatPtr());
+}
+const vec3_c ModelEntity::getLinearVelocity() const {
+	if(this->body == 0)
+		return vec3_c(0,0,0);
+	return body->getLinearVelocity();
+}
+void ModelEntity::setLinearVelocity(const vec3_c &newVel) {
+	if(this->body == 0)
+		return;
+	return body->setLinearVelocity(btVector3(newVel));
+}
+const vec3_c ModelEntity::getAngularVelocity() const {
+	if(this->body == 0)
+		return vec3_c(0,0,0);
+	return body->getAngularVelocity();
+}
+void ModelEntity::setAngularVelocity(const vec3_c &newAVel) {
+	if(this->body == 0)
+		return;
+	return body->setAngularVelocity(btVector3(newAVel));
 }
 void ModelEntity::runWaterPhysics(float curWaterLevel) {
 	if(this->body == 0)

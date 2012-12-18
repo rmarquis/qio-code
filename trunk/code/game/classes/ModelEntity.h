@@ -81,6 +81,10 @@ public:
 
 	virtual void applyCentralForce(const vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const vec3_c &impToAdd);
+	virtual const vec3_c getLinearVelocity() const;
+	virtual void setLinearVelocity(const vec3_c &newVel);
+	virtual const vec3_c getAngularVelocity() const;
+	virtual void setAngularVelocity(const vec3_c &newAVel);
 	virtual void runWaterPhysics(float curWaterLevel);
 
 	virtual void debugDrawCollisionModel(class rDebugDrawer_i *dd);

@@ -48,7 +48,7 @@ public:
 			driver = 0;
 		}
 	}
-	virtual void doUse(class Player *activator);
+	virtual bool doUse(class Player *activator);
 	virtual void runPhysicsObject();
 };
 

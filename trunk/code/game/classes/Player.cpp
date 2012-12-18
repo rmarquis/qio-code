@@ -196,6 +196,17 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		}
 	}
 
+	if(carryingEntity) {
+		vec3_c pos = carryingEntity->getOrigin();
+		vec3_c neededPos = this->getEyePos() + this->getForward() * 60.f;
+		vec3_c delta = neededPos - pos;
+
+		carryingEntity->setLinearVelocity(carryingEntity->getLinearVelocity()*0.5f);
+		carryingEntity->setAngularVelocity(carryingEntity->getAngularVelocity()*0.5f);
+		carryingEntity->applyCentralImpulse(delta);
+		//carryingEntity->setOrigin(neededPos);
+	}
+
 	this->link();
 
 	if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
@@ -254,6 +265,10 @@ void Player::runPlayer(usercmd_s *ucmd) {
 }
 #include <shared/trace.h>
 void Player::onUseKeyDown() {
+	if(this->isCarryingEntity()) {
+		this->dropCarryingEntity();
+		return;
+	}
 	if(this->vehicle) {
 		this->vehicle->detachPlayer(this);
 		this->setOrigin(this->getOrigin()+vec3_c(0,0,64));
@@ -273,7 +288,10 @@ void Player::onUseKeyDown() {
 			return;
 		}
 		G_Printf("Use trace hit\n");
-		hit->doUse(this);
+		if(hit->doUse(this) == false) {
+			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
+			this->pickupPhysicsProp(me);
+		}
 	}
 }
 void Player::onFireKeyHeld() {
@@ -294,6 +312,25 @@ void Player::onFireKeyDown() {
 		return;
 	}
 	//G_BulletAttack(this->getEyePos(),this->ps.viewangles.getForward());
+}
+void Player::pickupPhysicsProp(class ModelEntity *ent) {
+	if(carryingEntity) {
+		return;
+	}
+	g_core->Print("Picked up %s\n",ent->getClassName());
+	carryingEntity = ent;
+}
+bool Player::isCarryingEntity() const {
+	if(carryingEntity.getPtr()) {
+		return true;
+	}
+	return false;
+}
+void Player::dropCarryingEntity() {
+	if(carryingEntity == 0)
+		return;
+	g_core->Print("Player::dropCarryingEntity: dropping %s\n",carryingEntity->getClassName());
+	carryingEntity = 0;
 }
 void Player::setClientViewAngle(const vec3_c &angle) {
 	// set the delta angle

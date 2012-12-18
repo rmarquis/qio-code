@@ -81,6 +81,8 @@ public:
 	bool fireHeld;
 
 	class VehicleCar *vehicle;
+	// Half Life2 - style entity carrying
+	safePtr_c<ModelEntity> carryingEntity;
 
 	void disableCharacterController();
 	void enableCharacterController();
@@ -89,6 +91,9 @@ public:
 	void onUseKeyDown();
 	void onFireKeyHeld();
 	void onFireKeyDown();
+	void pickupPhysicsProp(class ModelEntity *ent);
+	bool isCarryingEntity() const;
+	void dropCarryingEntity();
 	void setClientViewAngle(const vec3_c &angle);
 	void setNetName(const char *newNetName);
 	const char *getNetName() const;

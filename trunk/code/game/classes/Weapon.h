@@ -52,7 +52,7 @@ public:
 	}
 
 	virtual void setKeyValue(const char *key, const char *value); 
-	virtual void doUse(class Player *activator);
+	virtual bool doUse(class Player *activator);
 };
 
 #endif // __MODELENTITY_H__

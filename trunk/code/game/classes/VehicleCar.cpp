@@ -46,12 +46,13 @@ void VehicleCar::destroyPhysicsVehicle() {
 	BT_RemoveVehicle(physVehicle);
 	physVehicle = 0;
 }
-void VehicleCar::doUse(class Player *activator) {
+bool VehicleCar::doUse(class Player *activator) {
 	if(driver) {
-		return;
+		return true; // cannot pickup entity
 	}
 	activator->setVehicle(this);
 	driver = activator;
+	return true; // cannot pickup entity
 }
 void VehicleCar::steerUCmd(const struct usercmd_s *ucmd) {
 	float rightMove = float(ucmd->rightmove)/480.f;

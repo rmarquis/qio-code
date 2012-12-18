@@ -43,15 +43,16 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		ModelEntity::setKeyValue(key,value);
 	}
 }
-void Weapon::doUse(class Player *activator) {
+bool Weapon::doUse(class Player *activator) {
 	if(owner) {
 		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
-		return;
+		return true; // this item cannot be carried
 	}
 	owner = activator;
 	activator->addWeapon(this);
 	this->destroyPhysicsObject();
 	this->unlink();
+	return true; // this item cannot be carried
 }
 
 BaseEntity *Weapon::getOwner() const {

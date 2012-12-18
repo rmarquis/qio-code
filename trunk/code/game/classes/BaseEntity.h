@@ -107,8 +107,8 @@ public:
 	virtual void runFrame() {
 
 	}
-	virtual void doUse(class Player *activator) {
-
+	virtual bool doUse(class Player *activator) {
+		return false;
 	}
 	virtual void onBulletHit(const vec3_c &dirWorld, int damage) {
 

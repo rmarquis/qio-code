@@ -109,6 +109,7 @@ public:
 			return;
 		safePtrObject_c *p = myPtr;
 		p->removeSafePtr(this);
+		myPtr = 0;
 	}
 	_Ty *operator = (_Ty *ptr) {
 		if(myPtr) {
