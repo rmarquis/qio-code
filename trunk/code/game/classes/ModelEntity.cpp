@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/afDeclAPI.h>
 #include <api/coreAPI.h>
 #include "../physics_scale.h"
+#include <shared/keyValuesListener.h>
 
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
@@ -193,6 +194,20 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
 	}
+}
+void ModelEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
+	if(this->renderModelName.length()) {
+		listener->addKeyValue("model",renderModelName.c_str());
+	}
+	if(this->cmod) {
+		listener->addKeyValue("cmodel",cmod->getName());
+	}
+	if(this->ragdollDefName.length()) {
+		listener->addKeyValue("articulatedFigure",ragdollDefName.c_str());
+	}
+
+	// call the "iterateKeyValues" of base class
+	BaseEntity::iterateKeyValues(listener);
 }
 #include "../bt_include.h"
 #include <math/matrix.h>

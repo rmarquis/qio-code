@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include "Player.h"
 #include <api/serverAPI.h>
+#include <shared/keyValuesListener.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 
@@ -87,6 +88,16 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 
 	}
 }	
+void BaseEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
+	vec3_c curPosition = this->getOrigin();
+	if(curPosition.isNull() == false) {
+		listener->addKeyValue("origin",curPosition);
+	}
+	vec3_c curAngles = this->getAngles();
+	if(curAngles.isNull() == false) {
+		listener->addKeyValue("angles",curAngles);
+	}
+}
 // maybe I should put those functions in ModelEntity...
 void BaseEntity::link() {
 	// let the server handle the linking

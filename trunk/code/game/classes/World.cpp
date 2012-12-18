@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include <api/serverAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/keyValuesListener.h>
 
 static aCvar_c g_printGlobalWaterForces("g_printGlobalWaterForces","0");
 
@@ -46,6 +47,14 @@ void World::setKeyValue(const char *key, const char *value) {
 		g_server->SetConfigstring(CS_WORLD_WATERLEVEL, value);
 	} else {
 
+	}
+}
+void World::iterateKeyValues(class keyValuesListener_i *listener) const {
+	if(this->skyMaterial.length()) {
+		listener->addKeyValue("skymaterial",this->skyMaterial);
+	}
+	if(this->hasWaterLevel) {
+		listener->addKeyValue("waterlevel",this->waterLevel);
 	}
 }
 void World::runGlobalWaterPhysics() {

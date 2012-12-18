@@ -21,34 +21,16 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// World.h
-#ifndef __WORLD_H__
-#define __WORLD_H__
+// keyValuesListener.h
+#ifndef __KEYVALUESLISTENER_H__
+#define __KEYVALUESLISTENER_H__
 
-#include <shared/str.h>
-
-class World {
-	str skyMaterial;
-	float waterLevel;
-	bool hasWaterLevel;
-
-	void runGlobalWaterPhysics();
+// used to pass key values to mapFileWriter_c
+class keyValuesListener_i {
 public:
-	World();
-
-	// called once on game startup
-	//void initWorldSpawn();
-
-	// called every frame
-	void runWorldFrame();
-
-	// .map file - > Entity key values communication
-	virtual void setKeyValue(const char *key, const char *value);
-	// Entity -> .map file key values communiaction
-	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
+	virtual void addKeyValue(const char *key, const char *value) = 0;
+	virtual void addKeyValue(const char *key, float floatVal) = 0;
+	virtual void addKeyValue(const char *key, const class vec3_c &v3) = 0;
 };
 
-extern World g_world;
-
-#endif // __WORLD_H__
-
+#endif // __KEYVALUESLISTENER_H__

@@ -97,6 +97,7 @@ public:
 	}
 
 	virtual void setKeyValue(const char *key, const char *value); 
+	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
 
 	virtual void runFrame();
 

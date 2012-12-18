@@ -156,5 +156,10 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 //
 class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &pos, const vec3_c &angles);
 
+//
+// g_saveMapFile.cpp
+//
+bool G_SaveCurrentSceneToMapFile(const char *outFName);
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

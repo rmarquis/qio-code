@@ -21,34 +21,33 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// World.h
-#ifndef __WORLD_H__
-#define __WORLD_H__
+// mapFileWriter.h - helper class for writing .map files to disk
+#ifndef __MAPFILEWRITER_H__
+#define __MAPFILEWRITER_H__
 
-#include <shared/str.h>
+#include "typedefs.h"
+#include "keyValuesListener.h"
 
-class World {
-	str skyMaterial;
-	float waterLevel;
-	bool hasWaterLevel;
-
-	void runGlobalWaterPhysics();
+class mapFileWriter_c : public keyValuesListener_i {
+	u32 c_curEntity;
+	bool writingEntity;
+	class fileStreamHelper_c *myFile;
+	class writeStreamAPI_i *writeStream;
 public:
-	World();
+	mapFileWriter_c();
+	~mapFileWriter_c();
 
-	// called once on game startup
-	//void initWorldSpawn();
+	// returns true on error
+	bool beginWritingMapFile(const char *fname);
 
-	// called every frame
-	void runWorldFrame();
-
-	// .map file - > Entity key values communication
-	virtual void setKeyValue(const char *key, const char *value);
-	// Entity -> .map file key values communiaction
-	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
+	void beginEntity(const char *className);
+	void endEntity(); 
+	
+	// keyValuesListener_i IMPL
+	// adds a key value to a current entity (this->writingEntity must be true!)
+	virtual void addKeyValue(const char *key, const char *value);
+	virtual void addKeyValue(const char *key, float floatVal);
+	virtual void addKeyValue(const char *key, const class vec3_c &v3);
 };
 
-extern World g_world;
-
-#endif // __WORLD_H__
-
+#endif // __FILESTREAMHELPER_H__
