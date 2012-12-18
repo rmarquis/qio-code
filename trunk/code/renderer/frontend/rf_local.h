@@ -78,6 +78,7 @@ class r_model_c *RF_LoadMAPFile(const char *fname);
 // rf_water.cpp
 void RF_SetWaterLevel(const char *waterLevel);
 void RF_AddWaterDrawCalls();
+void RF_ShutdownWater();
 
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;

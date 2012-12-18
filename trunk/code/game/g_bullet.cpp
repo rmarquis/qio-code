@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include "bt_include.h"
+#include "physics_scale.h"
 
 #ifdef DEBUG
 #pragma comment( lib, "BulletCollision_debug.lib" )
@@ -438,7 +439,7 @@ void G_InitBullet() {
 
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0,0,-500));
+	dynamicsWorld->setGravity(btVector3(0,0,-10));
 
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
@@ -499,7 +500,7 @@ void G_RunPhysics() {
 }
 // this is a (temporary?) fix to objects (especially barrels) jittering.
 #if 1
-float bt_collisionMargin = 4.f;
+float bt_collisionMargin = 0.004f;
 #else
 // NOTE: collision margin can't be as high as 4.f 
 // because it makes entities seem to float in air above ground
@@ -640,7 +641,7 @@ btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	subMesh.m_numVertices = sf.getNumVerts();
 	subMesh.m_vertexStride = sizeof(vec3_c);
 	subMesh.m_vertexType = PHY_FLOAT;
-	subMesh.m_vertexBase = sf.getVerticesBase();
+	subMesh.m_vertexBase = sf.getScaledVerticesBase();
 	subMesh.m_indexType = PHY_INTEGER;
 	subMesh.m_triangleIndexBase = sf.getIndicesBase();
 	subMesh.m_triangleIndexStride = sizeof(int)*3;
@@ -711,7 +712,9 @@ btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTran
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, motionState, shape, localInertia);
 
 	btRigidBody* body = new btRigidBody(cInfo);
-	body->setContactProcessingThreshold(BT_LARGE_FLOAT);
+
+	//body->setContactProcessingThreshold(0);
+	//body->setContactProcessingThreshold(1e30);
 
 #else
 	btRigidBody* body = new btRigidBody(mass, 0, shape, localInertia);
@@ -729,13 +732,13 @@ btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTran
 }
 void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {
 	// set the forward direction of the character controller
-	btVector3 walkDir(dir[0],dir[1],dir[2]);
+	btVector3 walkDir(dir[0]*QIO_TO_BULLET,dir[1]*QIO_TO_BULLET,dir[2]*QIO_TO_BULLET);
 	ch->setWalkDirection(walkDir);
 
 	btVector3 c = ch->getGhostObject()->getWorldTransform().getOrigin();
-	newPos[0] = c.x();
-	newPos[1] = c.y();
-	newPos[2] = c.z();
+	newPos[0] = c.x()*BULLET_TO_QIO;
+	newPos[1] = c.y()*BULLET_TO_QIO;
+	newPos[2] = c.z()*BULLET_TO_QIO;
 }
 
 bool G_TryToJump(btKinematicCharacterController *ch) {
@@ -764,7 +767,7 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	btCollisionShape *shape;
 	if(cModel->isBBExts()) {
 		vec3_c halfSizes = cModel->getBBExts()->getHalfSizes();
-		btBoxShape *boxShape = new btBoxShape(btVector3(halfSizes[0], halfSizes[1], halfSizes[2]));
+		btBoxShape *boxShape = new btBoxShape(btVector3(halfSizes[0]*QIO_TO_BULLET, halfSizes[1]*QIO_TO_BULLET, halfSizes[2]*QIO_TO_BULLET));
 		shape = boxShape;
 	} else if(cModel->isCompound()) {
 		btCompoundShape *compound = new btCompoundShape;
@@ -774,6 +777,7 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 		shape = BT_CModelHullToConvex(cModel->getHull());
 	} else if(cModel->isTriMesh()) {
 		const cmTriMesh_i *triMesh = cModel->getTriMesh();
+		((cmTriMesh_i*)triMesh)->precacheScaledVerts(QIO_TO_BULLET);
 		const cmSurface_c *sf = triMesh->getCMSurface();
 		shape = BT_CreateBHVTriMeshForCMSurface(*sf);
 
@@ -792,7 +796,7 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	
 
 		
-	const btVector3 btStart(pos[0], pos[1], pos[2]);
+	const btVector3 btStart(pos[0]*QIO_TO_BULLET, pos[1]*QIO_TO_BULLET, pos[2]*QIO_TO_BULLET);
 
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -811,8 +815,8 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 		body->setLinearVelocity(vel);
 	}
 		
-	body->setAngularVelocity(btVector3(0,0,0));
-	body->setContactProcessingThreshold(1e30);
+	//body->setAngularVelocity(btVector3(0,0,0));
+	//body->setContactProcessingThreshold(1e30);
 
 	//aabb bb;
 	//cModel->getBounds(bb);
@@ -828,10 +832,10 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	//rigidBody.setCcdSweptSphereRadius(20);
 
 	//if (g_physUseCCD.integer)
-	{
-		body->setCcdMotionThreshold(32.f);
-		body->setCcdSweptSphereRadius(6);
-	}
+	//{
+	//	body->setCcdMotionThreshold(32.f);
+	//	body->setCcdSweptSphereRadius(6);
+	//}
 	return body;
 }
 void BT_RemoveRigidBody(class btRigidBody *body) {
@@ -852,18 +856,18 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	vec3_t pos, float characterHeight,  float characterWidth)
 {
 	btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
-	btConvexShape* characterShape = new btCapsuleShapeZ(characterWidth,characterHeight);
+	btConvexShape* characterShape = new btCapsuleShapeZ(characterWidth*QIO_TO_BULLET,characterHeight*QIO_TO_BULLET);
 	btTransform trans;
 	trans.setIdentity();
-	btVector3 vPos(pos[0],pos[1],pos[2]);
+	btVector3 vPos(pos[0]*QIO_TO_BULLET,pos[1]*QIO_TO_BULLET,pos[2]*QIO_TO_BULLET);
 	trans.setOrigin(vPos);
 	ghostObject->setWorldTransform(trans);
 	ghostObject->setCollisionShape(characterShape);
-	btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject, characterShape, stepHeight,2);
-	character->setMaxSlope(DEG2RAD(70));
-	character->setJumpSpeed(200);
-	character->setFallSpeed(800);
-	character->setGravity(600);
+	btKinematicCharacterController *character = new btKinematicCharacterController (ghostObject, characterShape, stepHeight*QIO_TO_BULLET,2);
+	//character->setMaxSlope(DEG2RAD(70));
+	/*character->setJumpSpeed(200*QIO_TO_BULLET);
+	character->setFallSpeed(800*QIO_TO_BULLET);
+	character->setGravity(600*QIO_TO_BULLET);*/
 	//character->setUseGhostSweepTest(
 
 	dynamicsWorld->addCollisionObject( ghostObject, btBroadphaseProxy::CharacterFilter, 
@@ -890,6 +894,11 @@ void BT_AddBrushPlane2(const float q3Plane[4]) {
 	planeEq[3] = q3Plane[3];
 	planeEquations.push_back(planeEq);
 }
+void BT_ConvertVerticesArrayFromQioToBullet(btAlignedObjectArray<btVector3> &vertices) {
+	for(u32 i = 0; i < vertices.size(); i++) {
+		vertices[i] *= QIO_TO_BULLET;
+	}
+}
 void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
 	if((contentFlags & 1) == 0)
 		return;
@@ -898,6 +907,7 @@ void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
 	// convert plane equations -> vertex cloud
 	btAlignedObjectArray<btVector3>	vertices;
 	btGeometryUtil::getVerticesFromPlaneEquations(planeEquations,vertices);
+	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	BT_CreateWorldBrush(vertices);
 }
 void BT_ConvertWorldTriSurf(u32 surfNum, u32 contentFlags) {
@@ -906,6 +916,7 @@ void BT_ConvertWorldTriSurf(u32 surfNum, u32 contentFlags) {
 	cmSurface_c *newSF = new cmSurface_c;
 	bt_cmSurfs.push_back(newSF); // we'll need to free it later
 	g_bspPhysicsLoader->getTriangleSurface(surfNum,*newSF);
+	newSF->prepareScaledVerts(QIO_TO_BULLET);
 	BT_CreateWorldTriMesh(*newSF);
 }
 void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
@@ -914,6 +925,7 @@ void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
 	cmSurface_c *newSF = new cmSurface_c;
 	bt_cmSurfs.push_back(newSF); // we'll need to free it later
 	g_bspPhysicsLoader->convertBezierPatchToTriSurface(surfNum,2,*newSF);
+	newSF->prepareScaledVerts(QIO_TO_BULLET);
 	BT_CreateWorldTriMesh(*newSF);
 }
 void BT_TestSpawnInternalRagDoll(const vec3_c &at) {
@@ -1015,6 +1027,7 @@ btConvexHullShape *BT_CModelHullToConvex(cmHull_i *h) {
 #endif
 	if(vertices.size() == 0)
 		return 0;
+	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	// this create an internal copy of the vertices
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
 #if 1
@@ -1033,6 +1046,7 @@ btConvexHullShape *BT_AABBMinsMaxsToConvex(const aabb &bb) {
 	}
 	if(vertices.size() == 0)
 		return 0;
+	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	// this create an internal copy of the vertices
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
 #if 1

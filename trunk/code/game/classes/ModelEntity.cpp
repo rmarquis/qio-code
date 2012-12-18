@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelDeclAPI.h>
 #include <api/afDeclAPI.h>
 #include <api/coreAPI.h>
+#include "../physics_scale.h"
 
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
@@ -210,6 +211,7 @@ void ModelEntity::runPhysicsObject() {
 	#else
 		matrix_c mat;
 		trans.getOpenGLMatrix(mat);
+		mat.scaleOriginXYZ(BULLET_TO_QIO);
 		this->setMatrix(mat);
 #endif
 	} else if(ragdoll) {
@@ -276,6 +278,22 @@ void ModelEntity::applyCentralImpulse(const vec3_c &forceToAdd) {
 	if(this->body == 0)
 		return;
 	this->body->applyCentralImpulse(forceToAdd.floatPtr());
+}
+void ModelEntity::runWaterPhysics(float curWaterLevel) {
+	if(this->body == 0)
+		return;
+	//cmod->getVolume(); // TODO
+	float deltaZ = curWaterLevel - this->getOrigin().z;
+	float frac;
+	if(deltaZ < 50) {
+		frac = deltaZ / 50.f;
+	} else {
+		frac = 1.f;
+	}
+	float force = 350*frac;
+	this->body->setLinearVelocity(this->body->getLinearVelocity()*0.9f);
+	this->body->setAngularVelocity(this->body->getAngularVelocity()*0.9f);
+	this->applyCentralForce(vec3_c(0,0,force));
 }
 void ModelEntity::destroyPhysicsObject() {
 	if(body) {

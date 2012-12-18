@@ -259,6 +259,9 @@ class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName) {
 	}
 	return 0;
 }
+#if 1
+#define SWAP_TRIMESH_INDEXES
+#endif
 class cMod_i *CM_RegisterModel(const char *modName) {
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
@@ -278,7 +281,22 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 			sscanf(modName,"_bhe%f_%f_%f",&halfSizes.x,&halfSizes.y,&halfSizes.z);
 			return CM_RegisterBoxExts(halfSizes.x,halfSizes.y,halfSizes.z);
 		} else {
-			return 0;
+			// it might be a procedural static model
+			if(g_modelLoader->isStaticModelFile(modName)) {
+				cmSurface_c *sf = new cmSurface_c;
+				if(CM_LoadRenderModelToSingleSurface(modName,*sf) == false) {
+					// swap triangle indexes for Bullet
+#ifdef SWAP_TRIMESH_INDEXES
+					sf->swapIndexes();
+#endif // SWAP_TRIMESH_INDEXES
+					cmTriMesh_c *triMesh = new cmTriMesh_c(modName,sf);
+					cm_models.addObject(triMesh);
+					return triMesh;
+				}
+				delete sf;
+			} else {
+				return 0;
+			}
 		}
 	}
 	// check if modName is a fileName
@@ -289,6 +307,10 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 		} else if(g_modelLoader->isStaticModelFile(modName)) {
 			cmSurface_c *sf = new cmSurface_c;
 			if(CM_LoadRenderModelToSingleSurface(modName,*sf) == false) {
+				// swap triangle indexes for Bullet
+#ifdef SWAP_TRIMESH_INDEXES
+				sf->swapIndexes();
+#endif // SWAP_TRIMESH_INDEXES
 				cmTriMesh_c *triMesh = new cmTriMesh_c(modName,sf);
 				cm_models.addObject(triMesh);
 				return triMesh;

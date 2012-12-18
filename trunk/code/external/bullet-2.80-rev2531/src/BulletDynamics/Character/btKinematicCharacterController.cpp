@@ -227,7 +227,7 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 								btRigidBody *rb = (btRigidBody*)c;
 								rb->activate(true);
 								//rb->setLinearVelocity(pt.m_normalWorldOnB * directionSign * ofs * 500.f);
-								btVector3 imp = pt.m_normalWorldOnB * directionSign * ofs * 250.f;
+								btVector3 imp = pt.m_normalWorldOnB * directionSign * ofs * 2.5f;
 								rb->applyCentralImpulse(imp);
 								//rb->applyImpulse(imp,pointOnRB);
 							}
@@ -460,6 +460,8 @@ void btKinematicCharacterController::stepDown ( btCollisionWorld* collisionWorld
 		m_verticalVelocity = 0.0;
 		m_verticalOffset = 0.0;
 		m_wasJumping = false;
+		// and thus we're on ground
+		m_wasOnGround = true;
 	} else {
 		// we dropped the full height
 		
@@ -549,20 +551,21 @@ void btKinematicCharacterController::playerStep (  btCollisionWorld* collisionWo
 		return;		// no motion
 	}
 
+	if (!(m_wasOnGround && m_walkDirection.isZero())) {
+		// Update fall velocity.
+		m_verticalVelocity -= m_gravity * dt;
+		if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
+		{
+			m_verticalVelocity = m_jumpSpeed;
+		}
+		if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > btFabs(m_fallSpeed))
+		{
+			m_verticalVelocity = -btFabs(m_fallSpeed);
+		}
+		m_verticalOffset = m_verticalVelocity * dt;
+	}
+
 	m_wasOnGround = onGround();
-
-	// Update fall velocity.
-	m_verticalVelocity -= m_gravity * dt;
-	if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
-	{
-		m_verticalVelocity = m_jumpSpeed;
-	}
-	if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > btFabs(m_fallSpeed))
-	{
-		m_verticalVelocity = -btFabs(m_fallSpeed);
-	}
-	m_verticalOffset = m_verticalVelocity * dt;
-
 
 	btTransform xform;
 	xform = m_ghostObject->getWorldTransform ();

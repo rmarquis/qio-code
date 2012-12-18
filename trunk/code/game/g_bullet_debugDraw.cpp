@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "bt_include.h"
 #include <api/ddAPI.h>
 #include <shared/autoCvar.h>
+#include "physics_scale.h"
 
 aCvar_c btd_drawWireFrame("btd_drawWireFrame","0");
 aCvar_c btd_drawAABB("btd_drawAABB","0");
@@ -35,7 +36,7 @@ static class rDebugDrawer_i *g_dd = 0;
 
 class qioBulletDebugDraw_c : public btIDebugDraw {
 	virtual void drawLine(const btVector3& from,const btVector3& to,const btVector3& color) {
-		g_dd->drawLineFromTo(from,to,color);
+		g_dd->drawLineFromTo(from*BULLET_TO_QIO,to*BULLET_TO_QIO,color);
 	}
 	virtual void	drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color)  {
 

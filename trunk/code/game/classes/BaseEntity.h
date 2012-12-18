@@ -88,6 +88,9 @@ public:
 	virtual void applyCentralImpulse(const vec3_c &impToAdd) {
 
 	}
+	virtual void runWaterPhysics(float curWaterLevel) {
+
+	}
 
 	void setParent(BaseEntity *newParent, int tagNum = -1);
 	void detachFromParent();

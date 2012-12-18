@@ -55,7 +55,7 @@ void VehicleCar::doUse(class Player *activator) {
 }
 void VehicleCar::steerUCmd(const struct usercmd_s *ucmd) {
 	float rightMove = float(ucmd->rightmove)/480.f;
-	float engineForce = float(ucmd->forwardmove) * 750.f;
+	float engineForce = float(ucmd->forwardmove) * 5.f;
 	physVehicle->setSteering(engineForce,-rightMove);
 }
 void VehicleCar::runPhysicsObject() {

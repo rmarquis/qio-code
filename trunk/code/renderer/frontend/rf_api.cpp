@@ -222,6 +222,7 @@ public:
 		RF_ClearAnims();
 		RF_ClearModels();
 		RF_ShutdownDecals();
+		RF_ShutdownWater();
 		unloadMaterialSystem();
 		g_declMgr->onRendererShutdown();
 		AUTOCVAR_UnregisterAutoCvars();

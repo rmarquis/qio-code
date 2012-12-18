@@ -467,6 +467,11 @@ public:
 	virtual const class cmSurface_c *getCMSurface() const {
 		return sf;
 	}
+	virtual void precacheScaledVerts(float scaledVertsScale) {
+		if(sf->getScaledVerticesBase() == 0) {
+			sf->prepareScaledVerts(scaledVertsScale);
+		}
+	}
 	// helpers api
 	virtual u32 getNumHelpers() const {
 		return helpers.size();

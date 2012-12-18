@@ -44,7 +44,7 @@ void RF_SetWaterLevel(const char *waterLevel) {
 	rf_hasGlobalWaterLevel = true;
 	rf_waterLevel = atof(waterLevel);
 	rf_waterSurface = new r_surface_c;
-	float sizeXY = 16384;
+	float sizeXY = 16384*1.5;
 	rf_waterSurface->createFlatGrid(sizeXY,sizeXY/128);
 	rf_waterSurface->scaleTexCoords(sizeXY/256);
 	rf_waterSurface->translateXYZ(vec3_c(0,0,rf_waterLevel));
@@ -61,5 +61,13 @@ void RF_AddWaterDrawCalls() {
 	rf_waterSurface->addDrawCall();
 }
 
+void RF_ShutdownWater() {
+	if(rf_waterSurface) {
+		delete rf_waterSurface;
+		rf_waterSurface = 0;
+	}
+	rf_waterLevel = -1.f;
+	rf_hasGlobalWaterLevel = false;
+}
 
 

@@ -73,6 +73,9 @@ public:
 		return *this;
 	}
 
+	void scaleOrigin(float newScale) {
+		m_origin *= newScale;
+	}
 
   /**@brief Set the current transform as the value of the product of two transforms
    * @param t1 Transform 1

@@ -143,6 +143,8 @@ public:
 	virtual u32 getNumIndices() const = 0;
 	virtual u32 getNumVerts() const = 0;
 	virtual const class cmSurface_c *getCMSurface() const = 0;
+
+	virtual void precacheScaledVerts(float scaledVertsScale) = 0;
 };
 
 // skeletal model

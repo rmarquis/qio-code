@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/skelUtils.h>
 #include <shared/afRagdollHelper.h>
 #include <math/axis.h>
+#include "physics_scale.h"
 
 class ragdoll_c : public ragdollAPI_i {
 friend class afRagdollSpawner_c;
@@ -76,6 +77,7 @@ public:
 		for(u32 i = 0; i < bodies.size(); i++) {
 			btRigidBody *b = bodies[i];
 			b->getWorldTransform().getOpenGLMatrix(curTransforms[i]);
+			curTransforms[i].scaleOriginXYZ(BULLET_TO_QIO);
 		}
 	}
 };
@@ -106,6 +108,7 @@ class afRagdollSpawner_c : public afRagdollHelper_c {
 		for(u32 i = 0; i < points.size(); i++) {
 			vertices.push_back(points[i].floatPtr());
 		}
+		BT_ConvertVerticesArrayFromQioToBullet(vertices);
 		// this create an internal copy of the vertices
 		btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
 #if 1
@@ -157,6 +160,7 @@ public:
 			matrices[i] = mat;
 			tr.setFromOpenGLMatrix(mat);
 			float spawnMass = 10.f;
+			tr.scaleOrigin(QIO_TO_BULLET);
 			bodies[i] = localCreateRigidBody(spawnMass,tr,bm);
 		}
 		// spawn bullet contraints
@@ -196,7 +200,9 @@ public:
 			matrix_c b1Mat = matrices[b1Index].getInversed()*cMat;
 			btTransform frameA, frameB;
 			frameA.setFromOpenGLMatrix(b0Mat);
+			frameA.scaleOrigin(QIO_TO_BULLET);
 			frameB.setFromOpenGLMatrix(b1Mat);
+			frameB.scaleOrigin(QIO_TO_BULLET);
 			btGeneric6DofConstraint *bc = new btGeneric6DofConstraint(*b0,*b1,frameA,frameB,false);
 			// lock linear transforms
 			bc->setLimit(0,0,0);

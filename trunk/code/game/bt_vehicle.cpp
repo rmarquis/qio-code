@@ -28,8 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <math/aabb.h>
 #include <api/cmAPI.h>
+#include "physics_scale.h"
 
-#define VEH_SCALE 48.f
+#define VEH_SCALE 1.f
 
 #define CUBE_HALF_EXTENTS 1.f*VEH_SCALE
 
@@ -61,7 +62,7 @@ public:
 		m_carChassis = 0;
 		m_vehicleRayCaster = 0;
 		m_wheelShape = 0;
-		curEngineForce = 100000.f;
+		curEngineForce = 500.f;
 		curSteerRot = 0.1f;
 	}
 	~btVehicle_c() {
@@ -71,6 +72,7 @@ public:
 		btTransform trans;
 		m_carChassis->getMotionState()->getWorldTransform(trans);	
 		trans.getOpenGLMatrix(out);
+		out.scaleOriginXYZ(BULLET_TO_QIO);
 	}
 	void init(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel) {
 		btCompoundShape *compound = new btCompoundShape();
@@ -97,11 +99,11 @@ public:
 		btTransform tr;
 		tr.setIdentity();
 		matrix_c mat;
-		mat.fromAnglesAndOrigin(angles,pos);
+		mat.fromAnglesAndOrigin(angles,pos*QIO_TO_BULLET);
 		tr.setFromOpenGLMatrix(mat);
 
 		compound->setMargin(bt_collisionMargin);
-		m_carChassis = BT_CreateRigidBodyInternal(800,tr,compound);
+		m_carChassis = BT_CreateRigidBodyInternal(400,tr,compound);
 
 		m_wheelShape = new btCylinderShapeX(btVector3(wheelWidth,wheelRadius,wheelRadius));
 		m_wheelShape->setMargin(bt_collisionMargin);

@@ -34,8 +34,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cmSurface_c : public colMeshBuilderAPI_i, public staticModelCreatorAPI_i {
 	arraySTD_c<u32> indices;
 	arraySTD_c<vec3_c> verts;
+	arraySTD_c<vec3_c> *scaledVerts; // scaled vertices for Bullet
 	aabb bb;
 public:
+	cmSurface_c() {
+		scaledVerts = 0;
+	}
+	~cmSurface_c() {
+		if(scaledVerts) {
+			delete scaledVerts;
+		}
+	}
+	void prepareScaledVerts(float scaledVertsScale) {
+		if(scaledVerts == 0) {
+			scaledVerts = new arraySTD_c<vec3_c>;
+		}
+		scaledVerts->resize(verts.size());
+		for(u32 i = 0; i < verts.size(); i++) {
+			(*scaledVerts)[i] = verts[i] * scaledVertsScale;
+		}
+	}
 	// colMeshBuilderAPI_i api
 	virtual void addVert(const class vec3_c &nv) {
 		bb.addPoint(nv);
@@ -110,6 +128,11 @@ public:
 	const byte *getIndicesBase() const {
 		return (const byte*)indices.getArray();
 	}
+	const byte *getScaledVerticesBase() const {
+		if(scaledVerts == 0)
+			return 0;
+		return (const byte*)scaledVerts->getArray();
+	}
 	// staticModelCreatorAPI_i api
 	// NOTE: material name is ignored here
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
@@ -158,6 +181,13 @@ public:
 			v->swapYZ();
 		}
 		bb.swapYZ();
+	}
+	virtual void swapIndexes()  {
+		for(u32 i = 0; i < indices.size(); i+= 3) {
+			u32 tmp = indices[i];
+			indices[i] = indices[i+2];
+			indices[i+2] = tmp;
+		}
 	}
 	virtual void translateY(float ofs) {
 		vec3_c *v = verts.getArray();
