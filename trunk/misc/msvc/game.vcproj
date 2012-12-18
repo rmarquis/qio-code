@@ -362,6 +362,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_saveMapFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_spawn.cpp"
 				>
 			</File>
@@ -601,6 +605,26 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\fileStreamHelper.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\fileStreamHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\keyValuesListener.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\mapFileWriter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\mapFileWriter.h"
 				>
 			</File>
 			<File
