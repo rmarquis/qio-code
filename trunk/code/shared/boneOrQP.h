@@ -19,6 +19,9 @@ public:
 		q.z = xyzQuat.z;
 		q.calcW();
 	}
+	void setQuat(const quat_c &newQuat) {
+		q = newQuat;
+	}
 	const quat_c &getQuat() const {
 		return q;
 	}
@@ -28,7 +31,13 @@ public:
 };
 
 class boneOrQPArray_t : public arraySTD_c<boneOrQP_c> {
-
+public:
+	void setVec3(u32 boneIndex, const vec3_c &v) {
+		(*this)[boneIndex].setPos(v);
+	}
+	void setQuat(u32 boneIndex, const quat_c &q) {
+		(*this)[boneIndex].setQuat(q);
+	}
 };
 
 #endif // __BONEORQP_H_

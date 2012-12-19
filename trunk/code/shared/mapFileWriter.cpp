@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mapFileWriter.h"
 #include "fileStreamHelper.h"
 #include <math/vec3.h>
+#include <math/quat.h>
 #include <api/coreAPI.h>
 
 mapFileWriter_c::mapFileWriter_c() {
@@ -80,5 +81,8 @@ void mapFileWriter_c::addKeyValue(const char *key, float floatVal) {
 }
 void mapFileWriter_c::addKeyValue(const char *key, const class vec3_c &v3) {
 	writeStream->writeText("\"%s\" \"%f %f %f\"\n",key,v3.x,v3.y,v3.z);
+}
+void mapFileWriter_c::addKeyValue(const char *key, const class quat_c &qXYZW) {
+	writeStream->writeText("\"%s\" \"%f %f %f %f\"\n",key,qXYZW.x,qXYZW.y,qXYZW.z,qXYZW.w);
 }
 

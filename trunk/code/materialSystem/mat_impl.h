@@ -89,12 +89,20 @@ public:
 	}
 };
 
+enum stageType_e {
+	ST_NOT_SET,
+	ST_LIGHTMAP,
+};
+
 class mtrStage_c : public mtrStageAPI_i {
 	class textureAPI_i *texture;
 	alphaFunc_e alphaFunc;
 	blendDef_s blend;
+	class texModArray_c *texMods;
+	stageType_e type;
 public:
 	mtrStage_c();
+	~mtrStage_c();
 
 	virtual textureAPI_i *getTexture() const {
 		return texture;
@@ -104,6 +112,21 @@ public:
 	}
 	virtual const struct blendDef_s &getBlendDef() const {
 		return blend;
+	}
+	virtual bool hasTexMods() const {
+		if(texMods)
+			return true;
+		return false;
+	}
+	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const;
+	stageType_e getStageType() const {
+		return type;
+	}
+	bool isLightmapStage() const {
+		return (type == ST_LIGHTMAP);
+	}
+	void setStageType(stageType_e newType) {
+		this->type = newType;
 	}
 	void setTexture(class textureAPI_i *nt) {
 		texture = nt;
@@ -123,6 +146,7 @@ public:
 	void setTexture(const char *newMapName);
 	int getImageWidth() const;
 	int getImageHeight() const;
+	void addTexMod(const class texMod_c &newTM);
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
@@ -142,7 +166,7 @@ public:
 	virtual const char *getName() const {
 		return name;
 	}
-	const char *getSourceFileName() const {
+	virtual const char *getSourceFileName() const {
 		return sourceFileName;
 	}
 	void setName(const char *newName) {

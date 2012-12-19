@@ -48,6 +48,7 @@ public:
 	virtual void addKeyValue(const char *key, const char *value);
 	virtual void addKeyValue(const char *key, float floatVal);
 	virtual void addKeyValue(const char *key, const class vec3_c &v3);
+	virtual void addKeyValue(const char *key, const class quat_c &qXYZW);
 };
 
 #endif // __FILESTREAMHELPER_H__

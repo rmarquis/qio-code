@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include <shared/waveForm.h>
 
 class msIMPL_c : public materialSystemAPI_i {
 public:
@@ -98,6 +99,8 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
+
+	waveForm_c::initTables();
 }
 
 qioModule_e IFM_GetCurModule() {

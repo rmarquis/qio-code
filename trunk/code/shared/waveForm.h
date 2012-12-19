@@ -21,18 +21,42 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// waveForm.h
+#ifndef __WAVEFORM_H__
+#define __WAVEFORM_H__
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
-
-class mtrStageAPI_i  { 
-public:
-	virtual class textureAPI_i *getTexture() const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
-	virtual const struct blendDef_s &getBlendDef() const = 0;
-	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
+enum genFunc_e {
+	GF_NONE,
+	GF_SIN,
+	GF_SQUARE,
+	GF_TRIANGLE,
+	GF_SAWTOOTH,
+	GF_INVERSE_SAWTOOTH,
+	GF_NOISE,
 };
 
-#endif // __MTRSTAGE_API_H__
+enum {
+	BASETABLE_SIZE = 1024,
+	BASETABLE_MASK = BASETABLE_SIZE-1,
+};
+
+class waveForm_c {
+friend class texMod_c; // HACK
+	genFunc_e type;
+	float base, amplitude, phase, frequency;
+	static float sinTable[BASETABLE_SIZE];
+	static float squareTable[BASETABLE_SIZE];
+	static float triangleTable[BASETABLE_SIZE];
+	static float sawToothTable[BASETABLE_SIZE];
+	static float inverseSawToothTable[BASETABLE_SIZE];
+	static bool initialized;
+public:
+	static void initTables();
+	static float genericSinValue(float at);
+	bool parseParameters(class parser_c &p);
+	bool parse(class parser_c &p);
+	const float *getTable() const;
+	float evaluate(float curTimeSeconds, float extraPhase = 0.f) const;
+};
+
+#endif // __WAVEFORM_H__

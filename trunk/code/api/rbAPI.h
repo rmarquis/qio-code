@@ -93,6 +93,10 @@ public:
 
 	}
 
+	virtual void setRenderTimeSeconds(float newCurTime) {
+
+	}
+
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
 };

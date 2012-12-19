@@ -77,9 +77,10 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 #if 1
 	{
 		ModelEntity *m = dynamic_cast<ModelEntity*>(ent);
-		if(m && m->hasCollisionModel()) {
-			//m->initStaticBodyPhysics();
-			m->initRigidBodyPhysics();
+		if(m/* && m->hasCollisionModel()*/) {
+			// this will call "initRigidBodyPhysics()" for ModelEntities,
+			// and "initVehiclePhysics" for VehicleCars
+			m->postSpawn();
 		}
 	}
 #endif

@@ -31,6 +31,7 @@ public:
 	virtual void addKeyValue(const char *key, const char *value) = 0;
 	virtual void addKeyValue(const char *key, float floatVal) = 0;
 	virtual void addKeyValue(const char *key, const class vec3_c &v3) = 0;
+	virtual void addKeyValue(const char *key, const class quat_c &qXYZW) = 0;
 };
 
 #endif // __KEYVALUESLISTENER_H__

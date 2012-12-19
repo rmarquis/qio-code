@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\materialSystem\mat_texMods.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\materialSystem\mat_textures.cpp"
 				>
 			</File>
@@ -199,6 +203,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\materialSystem\mat_public.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_texMods.h"
 				>
 			</File>
 		</Filter>
@@ -257,6 +265,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\safePtr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\waveForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\waveForm.h"
 				>
 			</File>
 		</Filter>

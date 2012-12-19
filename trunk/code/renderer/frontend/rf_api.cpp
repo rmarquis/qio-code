@@ -50,6 +50,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 cameraDef_c rf_camera;
 int rf_curTimeMsec;
+float rf_curTimeSeconds;
 
 class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
@@ -98,6 +99,8 @@ public:
 	}
 	virtual void setRenderTimeMsec(int msec) {
 		rf_curTimeMsec = msec;
+		rf_curTimeSeconds = float(msec)*0.001f;
+		rb->setRenderTimeSeconds(rf_curTimeSeconds);
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles, bool thirdPersonRendering) {
 		//camPos = newCamPos;

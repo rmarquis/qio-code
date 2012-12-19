@@ -54,12 +54,12 @@ void RF_ShowCrossairSurfaceInfo() {
 	rEntityAPI_i *rEnt = tr.getHitREntity();
 	if(rEnt) {
 		if(rEnt->isRagdoll()) {
-			g_core->Print("Hit render RAGDOLL entity with model %s and material %s\n",rEnt->getModelName(),rMat->getName());
+			g_core->Print("Hit render RAGDOLL entity with model %s and material %s (loaded from %s)\n",rEnt->getModelName(),rMat->getName(),rMat->getSourceFileName());
 		} else {
-			g_core->Print("Hit render entity with model %s and material %s\n",rEnt->getModelName(),rMat->getName());
+			g_core->Print("Hit render entity with model %s and material %s (loaded from %s)\n",rEnt->getModelName(),rMat->getName(),rMat->getSourceFileName());
 		}
 	} else {
-		g_core->Print("Hit render World, material %s\n",rMat->getName());
+		g_core->Print("Hit render World, material %s (loaded from %s)\n",rMat->getName(),rMat->getSourceFileName());
 	}
 }
 

@@ -24,10 +24,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 // mat_impl.cpp - material class implementation Source
 #include "mat_impl.h"
 #include "mat_local.h"
+#include "mat_texMods.h"
 #include <shared/parser.h>
 #include <shared/cullType.h>
 #include <api/coreAPI.h>
 #include <api/textureAPI.h>
+#include <math/matrix.h>
 
 // skybox
 void skyBox_c::setBaseName(const char *newBaseName) {
@@ -102,6 +104,12 @@ skyParms_c::skyParms_c(const char *farBoxName, float newCloudHeight, const char 
 mtrStage_c::mtrStage_c() {
 	texture = 0;
 	alphaFunc = AF_NONE;
+	texMods = 0;
+}
+mtrStage_c::~mtrStage_c() {
+	if(texMods) {
+		delete texMods;
+	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
 	textureAPI_i *tex = MAT_RegisterTexture(newMapName);
@@ -112,6 +120,19 @@ int mtrStage_c::getImageWidth() const {
 }
 int mtrStage_c::getImageHeight() const {
 	return texture->getHeight();
+}
+void mtrStage_c::addTexMod(const class texMod_c &newTM) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->push_back(newTM);
+}
+void mtrStage_c::applyTexMods(class matrix_c &out, float curTimeSec) const {
+	if(texMods == 0) {
+		out.identity();
+		return;
+	}
+	texMods->calcTexMatrix(out,curTimeSec);
 }
 // material class
 mtrIMPL_c::mtrIMPL_c() {
@@ -281,7 +302,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				if(p.atWord("map")) {
 					const char *mapName = p.getToken();
 					if(!stricmp(mapName,"$lightmap")) {
-
+						stage->setStageType(ST_LIGHTMAP);
 					} else {
 						stage->setTexture(mapName);
 					}
@@ -313,6 +334,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("rgbGen")) {
 
+				} else if(p.atWord("tcmod")) {
+					// texture coordinates modifier
+					texMod_c tm;
+					if(tm.parse(p)) {
+						//p.skipLine();
+					} else {
+						stage->addTexMod(tm);
+					}
 				// Id Tech 4 keywords
 				} else if(p.atWord("blend")) {
 					if(p.atWord("add")) {
@@ -357,7 +386,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					
 				} else if(p.atWord("cubemap")) {
 					p.skipLine();
-				} else if(p.atWord("texgen")) {
+				} else if(p.atWord("texgen") || p.atWord("tcgen")) {
 					p.skipLine();
 				} else {
 					p.getToken();
@@ -373,6 +402,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	if(stages.size() == 0) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		this->createFromImage();
+	} else {
+		for(int i = 0; i < stages.size(); i++) {
+			mtrStage_c *s = stages[i];
+			if(s->isLightmapStage()) {
+				delete s;
+				stages.erase(i);
+				i--;
+			}
+		}
 	}
 
 	//const char *p = txt.p;

@@ -36,6 +36,7 @@ enum bspSurfaceType_e {
 	BSPSF_PLANAR,
 	BSPSF_BEZIER,
 	BSPSF_TRIANGLES,
+	BSPSF_FLARE,
 };
 struct bspTriSurf_s {
 	aabb bounds;
@@ -56,6 +57,9 @@ struct bspSurf_s {
 	int lastVisCount; // if sf->lastVisCount == bsp->visCounter then a surface is potentialy visible (in PVS)
 
 	const aabb &getBounds() const;
+	bool isFlare() const {
+		return (type == BSPSF_FLARE);
+	}
 };
 struct bspSurfBatch_s {
 	// we can only merge surfaces with the same material and lightmap....

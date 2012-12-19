@@ -41,6 +41,9 @@ public:
 	void spawnPhysicsVehicle();
 	void destroyPhysicsVehicle();
 
+	// calls "spawnPhysicsVehicle"
+	virtual void postSpawn();
+
 	void steerUCmd(const struct usercmd_s *ucmd);
 
 	void detachPlayer(class Player *pl) {

@@ -49,6 +49,9 @@ public:
 		z = nZ;
 		w = nW;
 	}
+	quat_c(const char *str) {
+		this->fromStringXYZW(str);
+	}
 	void set(float nX, float nY, float nZ, float nW) {
 		x = nX;
 		y = nY;
@@ -191,6 +194,9 @@ public:
 		angles[PITCH] = RAD2DEG(asin(-2 * (val[2] * val[0] - val[3] * val[1])));
 		angles[YAW] = RAD2DEG(atan2(2 * (val[2] * val[3] + val[0] * val[1]), (q2[2] - q2[3] - q2[0] + q2[1])));
 		angles[ROLL] = RAD2DEG(atan2(2 * (val[3] * val[0] + val[2] * val[1]), (-q2[2] - q2[3] + q2[0] + q2[1])));
+	}
+	void fromStringXYZW(const char *str) {
+		sscanf(str,"%f %f %f %f",&this->x,&this->y,&this->z,&this->w);
 	}
 
 	const float *floatPtr() const {

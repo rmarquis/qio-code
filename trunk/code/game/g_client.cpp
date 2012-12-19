@@ -438,7 +438,7 @@ void ClientCommand( int clientNum ) {
 		}
 	} else if(!stricmp(cmd,"quicksave")) {
 		// well, this should be a server command and NOT a client command, but I'll leave it here for testing
-		G_SaveCurrentSceneToMapFile("saves/quicksave.map");
+		G_SaveCurrentSceneToMapFile("maps/saves/quicksave.map");
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

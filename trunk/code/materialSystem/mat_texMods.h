@@ -21,18 +21,47 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// mat_texmods.h
+#ifndef __MAT_TEXMODS_H__
+#define __MAT_TEXMODS_H__
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
+#include <shared/array.h>
+#include <shared/waveForm.h>
 
-class mtrStageAPI_i  { 
-public:
-	virtual class textureAPI_i *getTexture() const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
-	virtual const struct blendDef_s &getBlendDef() const = 0;
-	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
+enum texModType_e {
+	TCMOD_BAD,
+	TCMOD_SCROLL,
+	TCMOD_TRANSFORM,
+	TCMOD_SCALE,
+	TCMOD_STRETCH,
+	TCMOD_TURBULENT,
+	TCMOD_ROTATE,
+	TCMOD_NUM_TEXMODS,
 };
 
-#endif // __MTRSTAGE_API_H__
+class texMod_c {
+	texModType_e type;
+	union {
+		float scroll[2];
+		// for tcmod tranform
+		struct {
+			float matrix[2][2];		// s' = s * m[0][0] + t * m[1][0] + trans[0]
+			float translate[2];		// t' = s * m[0][1] + t * m[0][1] + trans[1]
+		};
+		float scale[2];
+		float rotationSpeed;
+		waveForm_c wave;
+	};
+public:
+	bool parse(class parser_c &p);
+	// appends a tcmod transform to given matrix
+	void appendTransform(class matrix_c &mat, float timeNowSeconds);
+};
+
+class texModArray_c : public arraySTD_c<texMod_c> {
+public:
+	void calcTexMatrix(class matrix_c &out, float timeNowSeconds);
+};
+
+
+#endif // __MAT_TEXMODS_H__

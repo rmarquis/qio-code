@@ -103,6 +103,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	bool backendInitialized;
 
+	float timeNowSeconds;
+
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
 
@@ -436,6 +438,7 @@ public:
 		turnOffAlphaFunc();
 		disableColorArray();	
 		turnOffPolygonOffset();
+		turnOffTextureMatrices();
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 		lastMat = 0;
 		lastLightmap = 0;
@@ -685,6 +688,13 @@ public:
 				} else {
 					// light interactions are appended with addictive blending
 					setBlendFunc(BM_ONE,BM_ONE);
+				}
+				if(s->hasTexMods()) {
+					matrix_c mat;
+					s->applyTexMods(mat,this->timeNowSeconds);
+					this->setTextureMatrixCustom(0,mat);
+				} else {
+					this->setTextureMatrixIdentity(0);
 				}
 				textureAPI_i *t = s->getTexture();
 				bindTex(0,t->getInternalHandleU32());
@@ -960,6 +970,9 @@ public:
 		glVertex3fv(verts[3]);
 		glVertex3fv(verts[7]);
 		glEnd();
+	}
+	virtual void setRenderTimeSeconds(float newCurTime) {
+		this->timeNowSeconds = newCurTime;
 	}
 	virtual void init()  {
 		if(backendInitialized) {

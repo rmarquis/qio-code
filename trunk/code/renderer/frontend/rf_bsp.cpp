@@ -65,7 +65,11 @@ rBspTree_c::~rBspTree_c() {
 void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
-		return; // we're not batching bezier patches
+		return; // we're not batching bezier patches and flares
+	if(bs->sf == 0) {
+		g_core->RedWarning("rBspTree_c::addSurfToBatches: surface %i of type %i has NULL sf ptr\n",surfNum,bs->type);
+		return;
+	}
 	// ignore surfaces with 'sky' material; sky is drawn other way
 	if(bs->sf->mat->getSkyParms() != 0)
 		return;
@@ -334,6 +338,7 @@ parsePlanarSurf:;
 			out->type = BSPSF_TRIANGLES;
 			goto parsePlanarSurf;
 		} else {
+			out->type = BSPSF_FLARE;
 			c_flares++;
 		}
 		sf = (const q3Surface_s *) (((const byte*)sf)+sizeofSurf);
@@ -610,7 +615,7 @@ void rBspTree_c::boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum
 	const q3Leaf_s &l = leaves[leafNum];
 	for(u32 i = 0; i < l.numLeafSurfaces; i++) {
 		u32 sfNum = this->leafSurfaces[l.firstLeafSurface+i];
-		if(bb.intersect(this->surfs[sfNum].getBounds())) {
+		if(this->surfs[sfNum].isFlare() == false && bb.intersect(this->surfs[sfNum].getBounds())) {
 			out.add_unique(sfNum);
 		}
 	}
@@ -829,6 +834,8 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	if(sf.type == BSPSF_BEZIER) {
 		r_bezierPatch_c *bp = sf.patch;
 		return bp->traceRay(out);
+	} else if(sf.type == BSPSF_FLARE) {
+		return false; // never collide with flares
 	} else {
 		bool hasHit = false;
 		bspTriSurf_s *t = sf.sf;

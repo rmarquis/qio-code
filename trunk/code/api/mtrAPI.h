@@ -31,7 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 class mtrAPI_i //: public safePtrObject_c 
 { 
 public:
+	// returns the material name (usually the image name without extension)
 	virtual const char *getName() const = 0;
+	// returns the material def source file name - .shader file or image file (if loaded directly)
+	virtual const char *getSourceFileName() const = 0;
 	virtual u32 getNumStages() const = 0;
 	virtual const class mtrStageAPI_i *getStage(u32 stageNum) const = 0;
 	virtual const class skyParmsAPI_i *getSkyParms() const = 0;

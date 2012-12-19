@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/skelUtils.h>
 #include <shared/afRagdollHelper.h>
+#include <shared/boneOrQP.h>
 #include <math/axis.h>
 #include "physics_scale.h"
 
@@ -79,6 +80,20 @@ public:
 			b->getWorldTransform().getOpenGLMatrix(curTransforms[i]);
 			curTransforms[i].scaleOriginXYZ(BULLET_TO_QIO);
 		}
+	}
+	virtual bool setPose(const class boneOrQPArray_t &bodyORs) {
+		if(bodyORs.size() != bodies.size())
+			return true; // error
+		for(u32 i = 0; i < bodies.size(); i++) {
+			btRigidBody *b = bodies[i];
+			const boneOrQP_c &bor = bodyORs[i];
+			matrix_c mat;
+			mat.fromQuatAndOrigin(bor.getQuat(),bor.getPos()*QIO_TO_BULLET);
+			btTransform tr;
+			tr.setFromOpenGLMatrix(mat);
+			b->setWorldTransform(tr);
+		}
+		return false;
 	}
 };
 

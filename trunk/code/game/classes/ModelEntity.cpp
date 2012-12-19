@@ -37,6 +37,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include "../physics_scale.h"
 #include <shared/keyValuesListener.h>
+#include <shared/boneOrQP.h>
 
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
@@ -52,6 +53,7 @@ ModelEntity::ModelEntity() {
 	health = 100;
 	modelDecl = 0;
 	bTakeDamage = false;
+	initialRagdolPose = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -59,6 +61,9 @@ ModelEntity::~ModelEntity() {
 	}
 	if(ragdoll) {
 		delete ragdoll;
+	}
+	if(initialRagdolPose) {
+		delete initialRagdolPose;
 	}
 }
 void ModelEntity::setOrigin(const vec3_c &newXYZ) {
@@ -191,6 +196,30 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		this->setAnimation(value);
 	} else if(!stricmp(key,"takeDamage")) {
 		this->bTakeDamage = atoi(value);
+	} else if(!Q_stricmpn(key,"_articulatedFigureBody",strlen("_articulatedFigureBody"))) {
+		// this is a saved pos/quat of single AF (ragdoll) body
+		const char *p = key + strlen("_articulatedFigureBody");
+		const char *indexStr = p;
+		while(isdigit(*p)) {
+			p++;
+		}
+		str tmp;
+		tmp.setFromTo(indexStr,p);
+		u32 bodyIndex = atoi(tmp);
+		
+		if(initialRagdolPose == 0) {
+			initialRagdolPose = new boneOrQPArray_t;
+		}
+		if(initialRagdolPose->size() < bodyIndex + 1) {
+			initialRagdolPose->resize(bodyIndex+1);
+		}
+		if(!stricmp(p,"pos")) {
+			vec3_c vec3Value(value);
+			initialRagdolPose->setVec3(bodyIndex,vec3Value);
+		} else if(!stricmp(p,"quat")) {
+			quat_c quatValue(value);
+			initialRagdolPose->setQuat(bodyIndex,quatValue);
+		}
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
@@ -205,6 +234,20 @@ void ModelEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
 	}
 	if(this->ragdollDefName.length()) {
 		listener->addKeyValue("articulatedFigure",ragdollDefName.c_str());
+	}
+	// if we have an active ragdoll, write the positions and quaternions
+	// of it's physical bodies
+	if(this->ragdoll) {
+		const arraySTD_c<matrix_c> &mats = this->ragdoll->getCurWorldMatrices();
+		for(u32 i = 0; i < mats.size(); i++) {
+			vec3_c pos = mats[i].getOrigin();
+			quat_c quat = mats[i].getQuat();
+			str tmp;
+			tmp = va("_articulatedFigureBody%iPos",i);
+			listener->addKeyValue(tmp,pos);
+			tmp = va("_articulatedFigureBody%iQuat",i);
+			listener->addKeyValue(tmp,quat);
+		}
 	}
 
 	// call the "iterateKeyValues" of base class
@@ -284,10 +327,27 @@ void ModelEntity::initRagdollPhysics() {
 	if(ragdoll) {
 		this->myEdict->s->activeRagdollDefNameIndex = G_RagdollDefIndex(ragdollDefName);
 	}
+	if(this->initialRagdolPose) {
+		// set the ragdoll pose
+		ragdoll->setPose(*this->initialRagdolPose);
+		// we no longer need it
+		delete this->initialRagdolPose;
+		this->initialRagdolPose = 0;
+	}
+}
+void ModelEntity::postSpawn() {
+	if(this->ragdollDefName.length()) {
+		// create a networked ragdoll
+		this->initRagdollPhysics();
+	} else if(cmod) {
+		// create a rigid body (physics prop)
+		initRigidBodyPhysics();
+	}  
 }
 void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 	if(this->body == 0)
 		return;
+	this->body->activate(true);
 	this->body->applyCentralForce(forceToAdd.floatPtr());
 }
 void ModelEntity::applyCentralImpulse(const vec3_c &forceToAdd) {

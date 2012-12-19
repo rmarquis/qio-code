@@ -178,6 +178,7 @@
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
 				IgnoreDefaultLibraryNames="libcmtd.lib"
 				ModuleDefinitionFile=".\game.def"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\qagamex86.pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\qagamex86.map"

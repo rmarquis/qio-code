@@ -43,6 +43,9 @@ void RF_DrawSky() {
 	if(rf_skyMaterial == 0)
 		return;
 	const skyParmsAPI_i *skyParms = rf_skyMaterial->getSkyParms();
+	if(skyParms == 0) {
+		return; // invalid sky material (missing skyparms keyword in .mtr/.shader file)
+	}
 	const skyBoxAPI_i *skyBox = skyParms->getNearBox();
 	const vec3_c &eye = rf_camera.getOrigin();
 	r_surface_c tmp; 

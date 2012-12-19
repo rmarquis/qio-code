@@ -46,6 +46,7 @@ protected:
 	// ragdoll interface
 	str ragdollDefName; // set by "ragdoll" key in Doom3; the name of articulatedFigure decl
 	class ragdollAPI_i *ragdoll;
+	class boneOrQPArray_t *initialRagdolPose; // if this is non-zero, spawned ragdoll bodies will use positions/quaternions from here
 	int health;
 	bool bTakeDamage;
 	str animName; // current animation name
@@ -78,6 +79,9 @@ public:
 	// ragdoll physics
 	void initRagdollPhysics();
 	//void destroyPhysicsRagdoll();
+
+	// called after all of the key values are set
+	virtual void postSpawn();
 
 	virtual void applyCentralForce(const vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const vec3_c &impToAdd);
