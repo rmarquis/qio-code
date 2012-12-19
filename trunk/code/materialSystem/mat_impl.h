@@ -98,6 +98,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	class textureAPI_i *texture;
 	alphaFunc_e alphaFunc;
 	blendDef_s blend;
+	texCoordGen_e tcGen;
 	class texModArray_c *texMods;
 	stageType_e type;
 public:
@@ -142,6 +143,15 @@ public:
 		if(blend.src || blend.dst)
 			return true;
 		return false;
+	}
+	void setTCGen(texCoordGen_e nTCGen) {
+		tcGen = nTCGen;
+	}
+	bool hasTexGen() const {
+		return (tcGen != TCG_NONE);
+	}
+	enum texCoordGen_e getTexGen() const {
+		return tcGen;
 	}
 	void setTexture(const char *newMapName);
 	int getImageWidth() const;

@@ -21,20 +21,29 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// rVertexBuffer.cpp
+#include "rVertexBuffer.h"
+#include "rIndexBuffer.h"
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
+void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->size(); i++, v++) {
+		v->calcEnvironmentTexCoords(viewerOrigin);
+	}
+}
+void rVertexBuffer_c::calcEnvironmentTexCoordsForReferencedVertices(const class rIndexBuffer_c &ibo, const class vec3_c &viewerOrigin) {
+	static arraySTD_c<byte> bVertexCalculated;
+	if(this->size() > bVertexCalculated.size()) {
+		bVertexCalculated.resize(this->size());
+	}
+	memset(bVertexCalculated.getArray(),0,this->size());
+	for(u32 i = 0; i < ibo.getNumIndices(); i++) {
+		u32 index = ibo[i];
+		if(bVertexCalculated[index] == 0) {
+			this->data[index].calcEnvironmentTexCoords(viewerOrigin);
+			bVertexCalculated[index] = 1;
+		}
+	}
+}
 
-class mtrStageAPI_i  { 
-public:
-	virtual class textureAPI_i *getTexture() const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
-	virtual const struct blendDef_s &getBlendDef() const = 0;
-	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
-	virtual bool hasTexGen() const = 0;
-	virtual enum texCoordGen_e getTexGen() const = 0;
-};
 
-#endif // __MTRSTAGE_API_H__

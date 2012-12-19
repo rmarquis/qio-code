@@ -105,6 +105,7 @@ mtrStage_c::mtrStage_c() {
 	texture = 0;
 	alphaFunc = AF_NONE;
 	texMods = 0;
+	tcGen = TCG_NONE;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -387,7 +388,18 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("cubemap")) {
 					p.skipLine();
 				} else if(p.atWord("texgen") || p.atWord("tcgen")) {
-					p.skipLine();
+					if(p.atWord("environment")) {
+						stage->setTCGen(TCG_ENVIRONMENT);
+					} else if(p.atWord("skybox")) {
+						// used eg. in Prey's (Id Tech 4) dave.mtr -> textures/skybox/dchtest
+						//stage->setTCGen(TCG_SKYBOX);
+					} else if(p.atWord("reflect")) {
+						//stage->setTCGen(TCG_REFLECT);
+					} else {
+						str tok = p.getToken();
+						g_core->RedWarning("mtrIMPL_c::loadFromText: unknown texgen type %s in definition of material %s in file %s at line %i\n",
+							tok.c_str(),this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else {
 					p.getToken();
 				}

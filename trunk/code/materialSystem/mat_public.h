@@ -9,6 +9,17 @@ enum alphaFunc_e {
 	AF_GE128,
 };
 
+// texCoordGens automatically
+// overwrites existing texcoords
+enum texCoordGen_e {
+	TCG_NONE,
+	TCG_ENVIRONMENT,
+	// added for Doom3
+	//TCG_SKYBOX,
+	//TCG_REFLECT,
+	TCG_NUM_GENS,
+};
+
 // blend modes; abstracted so they can apply to both opengl and dx
 // if you edit this enum, remember to mirror your changes in blendModeEnumToGLBlend array.
 enum blendMode_e {

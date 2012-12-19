@@ -90,10 +90,13 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
+	vec3_c camOriginWorldSpace;
+	vec3_c camOriginEntitySpace;
 	bool usingWorldSpace;
 	axis_c entityAxis;
 	vec3_c entityOrigin;
 	matrix_c entityMatrix;
+	matrix_c entityMatrixInverse;
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
@@ -621,6 +624,9 @@ public:
 			}
 		}
 	}
+	// temporary vertex buffer for stages that requires CPU 
+	// vertex calculations, eg. texgen enviromental, etc.
+	rVertexBuffer_c stageVerts;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
@@ -702,6 +708,23 @@ public:
 					bindTex(1,lastLightmap->getInternalHandleU32());
 				} else {
 					bindTex(1,0);
+				}
+				// see if we have to modify current vertex array on CPU
+				// TODO: do deforms and texgens in GLSL shader
+				if(s->hasTexGen()) {
+					stageVerts = verts;
+					if(s->getTexGen() == TCG_ENVIRONMENT) {
+						if(indices.getNumIndices() < verts.size()) {
+							// if there are more vertices than indexes, we're sure that some of verts are unreferenced,
+							// so we dont have to calculate texcoords for EVERY ONE of them
+							stageVerts.calcEnvironmentTexCoordsForReferencedVertices(indices,this->camOriginEntitySpace);
+						} else {
+							stageVerts.calcEnvironmentTexCoords(this->camOriginEntitySpace);
+						}
+					}
+					bindVertexBuffer(&stageVerts);
+				} else {
+					bindVertexBuffer(&verts);
 				}
 				drawCurIBO();
 				CHECK_GL_ERRORS;
@@ -847,6 +870,8 @@ public:
 
 		this->loadModelViewMatrix(this->resultMatrix);
 
+		camOriginEntitySpace = this->camOriginWorldSpace;
+
 		usingWorldSpace = true;
 	}
 	virtual void setupEntitySpace(const axis_c &axis, const vec3_c &origin) {
@@ -854,6 +879,9 @@ public:
 		entityOrigin = origin;
 
 		entityMatrix.fromAxisAndOrigin(axis,origin);
+		entityMatrixInverse = entityMatrix.getInversed();
+
+		entityMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
 
 		this->resultMatrix = this->worldModelMatrix * entityMatrix;
 
@@ -876,6 +904,8 @@ public:
 		return entityMatrix;
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
+		camOriginWorldSpace = newCamPos;
+
 		// transform by the camera placement and view axis
 		this->worldModelMatrix.invFromAxisAndVector(newCamAxis,newCamPos);
 		// convert to gl coord system

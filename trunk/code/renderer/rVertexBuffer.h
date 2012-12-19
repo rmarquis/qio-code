@@ -78,6 +78,22 @@ public:
 		color[2] = (byte)( a.color[2] + f * ( b.color[2] - a.color[2] ) );
 		color[3] = (byte)( a.color[3] + f * ( b.color[3] - a.color[3] ) );
 	}
+	// texgen enviromental CPU implementation
+	// NOTE: texgen requires vertex NORMALS to be calculated!!!
+	inline void calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
+		vec3_c dir = viewerOrigin - this->xyz;
+		dir.normalize();
+		float dot = this->normal.dotProduct(dir);
+		float twoDot = 2.f * dot;
+
+		vec3_c reflected;
+		reflected.x = this->normal.x * twoDot - dir.x;
+		reflected.y = this->normal.y * twoDot - dir.y;
+		reflected.z = this->normal.z * twoDot - dir.z;
+
+		this->tc.x = 0.5f + reflected.y * 0.5f;
+		this->tc.y = 0.5f - reflected.z * 0.5f;
+	}
 };
 class rVertexBuffer_c {
 	arraySTD_c<rVert_c> data;
@@ -93,6 +109,15 @@ public:
 		if(handleU32) {
 			unloadFromGPU();
 		}
+	}
+	void operator = (const rVertexBuffer_c &other) {
+		// free the previous GPU buffer
+		unloadFromGPU();
+		// copy vertex data
+		this->data = other.data;
+		// DONT upload new buffer automatically,
+		// if it's needed it must be done manually
+		//uploadToGPU();
 	}
 	void uploadToGPU() {
 		rb->createVBO(this);
@@ -154,6 +179,10 @@ public:
 	void setInternalHandleVoid(void *nh) {
 		handleV = nh;
 	}
+
+	// rVertexBuffer.cpp - CPU texgens/colorgens/texmods, etc
+	void calcEnvironmentTexCoords(const class vec3_c &viewerOrigin);
+	void calcEnvironmentTexCoordsForReferencedVertices(const class rIndexBuffer_c &ibo, const class vec3_c &viewerOrigin);
 };
 
 #endif // __RVERTEXBUFFER_H__
