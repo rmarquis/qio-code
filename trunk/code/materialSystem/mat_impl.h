@@ -201,6 +201,20 @@ public:
 	virtual enum cullType_e getCullType() const {
 		return cullType;
 	}
+	virtual bool hasTexGen() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasTexGen())
+				return true;
+		}
+		return false;
+	}
+	virtual bool hasRGBGen() const  {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasRGBGen())
+				return true;
+		}
+		return false;
+	}
 	inline mtrIMPL_c *getHashNext() const {
 		return hashNext;
 	}

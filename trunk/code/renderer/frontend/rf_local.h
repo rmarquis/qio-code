@@ -34,6 +34,7 @@ void RF_Draw3DView();
 void RF_AddGenericDrawCalls();
 bool RF_IsUsingDynamicLights();
 bool RF_IsUsingShadowVolumes();
+bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat);
 enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);
 
 // rf_debugDrawing.cpp

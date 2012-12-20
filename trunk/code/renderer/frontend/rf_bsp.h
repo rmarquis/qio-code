@@ -44,6 +44,8 @@ struct bspTriSurf_s {
 	class textureAPI_i *lightmap;
 	// indexes to rBspTree_c::verts array (global vertices), for batching
 	rIndexBuffer_c absIndexes;
+	rIndexBuffer_c localIndexes;
+	rVertexBuffer_c localVerts;
 	plane_c plane; // this is valid only for planar surfaces
 	u32 firstVert;
 	u32 numVerts;
@@ -174,7 +176,9 @@ class rBspTree_c {
 	bool isClusterVisible(int visCluster, int testCluster) const;
 	u32 boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
-	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;
+	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;		
+	
+	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
 public:
 	rBspTree_c();
 	~rBspTree_c();

@@ -27,12 +27,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_world.h"
 #include <api/coreAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/mtrAPI.h>
 #include <shared/autocvar.h>
 #include <math/matrix.h>
 #include <math/aabb.h>
 
 static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
 static aCvar_c rf_shadows("rf_shadows","0");
+static aCvar_c rf_debugMaterialNeedsCPUCheck("rf_debugMaterialNeedsCPUCheck","0");
 
 bool RF_IsUsingDynamicLights() {
 	if(rf_enableMultipassRendering.getInt())
@@ -43,6 +45,27 @@ bool RF_IsUsingShadowVolumes() {
 	// TODO: see if the stencil buffer is supported
 	if(rf_shadows.getInt() == 1) {
 		return true;
+	}
+	return false;
+}
+bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
+	if(mat->hasTexGen()) {
+		if(rf_debugMaterialNeedsCPUCheck.getInt()) {
+			g_core->Print("RF_MaterialNeedsCPU: material %s from file %s needs CPU because GPU texGens are not supported by current backend\n",
+				mat->getName(),mat->getSourceFileName());
+		}
+		return true;
+	}
+	if(mat->hasRGBGen()) {
+		if(rf_debugMaterialNeedsCPUCheck.getInt()) {
+			g_core->Print("RF_MaterialNeedsCPU: material %s from file %s needs CPU because GPU rgbGens are not supported by current backend\n",
+				mat->getName(),mat->getSourceFileName());
+		}
+		return true;
+	}
+	if(rf_debugMaterialNeedsCPUCheck.getInt()) {
+		g_core->Print("RF_MaterialNeedsCPU: material %s from file %s dont need CPU calculations\n",
+			mat->getName(),mat->getSourceFileName());
 	}
 	return false;
 }

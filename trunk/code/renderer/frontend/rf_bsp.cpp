@@ -45,6 +45,9 @@ aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
 aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
 aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
+aCvar_c rf_bsp_doAllSurfaceBatchesOnCPU("rf_bsp_doAllSurfaceBatchesOnCPU","0");
+aCvar_c rf_bsp_printCPUSurfVertsCount("rf_bsp_printCPUSurfVertsCount","0");
+aCvar_c rf_bsp_skipGPUSurfaces("rf_bsp_skipGPUSurfaces","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -306,7 +309,9 @@ parsePlanarSurf:;
 			if(largestIndex + 1 < U16_MAX) {
 				g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
 				u16 *u16Indexes = ts->absIndexes.initU16(sf->numIndexes);
+				u16 *u16IndexesLocal = ts->localIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
+					u16IndexesLocal[j] = firstIndex[j];
 					u16Indexes[j] = sf->firstVert + firstIndex[j];
 					// update bounding box as well
 					ts->bounds.addPoint(this->verts[u16Indexes[j]].xyz);
@@ -314,7 +319,9 @@ parsePlanarSurf:;
 			} else {
 				g_core->Print("rBspTree_c::loadSurfs: using U32 index buffer for surface %i\n",i);
 				u32 *u32Indexes = ts->absIndexes.initU32(sf->numIndexes);
+				u16 *u16IndexesLocal = ts->localIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
+					u16IndexesLocal[j] = firstIndex[j];
 					u32Indexes[j] = sf->firstVert + firstIndex[j];
 					// update bounding box as well	
 					ts->bounds.addPoint(this->verts[u32Indexes[j]].xyz);
@@ -704,6 +711,15 @@ void rBspTree_c::updateVisibility() {
 		g_core->Print("rBspTree_c::updateVisibility: active indices: %i, total %i (%f percent)\n",
 			c_curBatchIndexesCount,numBatchSurfIndexes,usedIndicesPercent);
 	}
+}	
+// alloc per-surface vertex buffer
+// That's a big optimisation for q3 .shader effects
+// which are done on CPU
+void rBspTree_c::ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF) {
+	if(stSF->localVerts.size() == 0){
+		stSF->localVerts.resize(stSF->numVerts);
+		memcpy(stSF->localVerts.getArray(),this->verts.getArray()+stSF->firstVert,stSF->numVerts*sizeof(rVert_c));
+	}
 }
 void rBspTree_c::addDrawCalls() {
 	if(rf_bsp_drawBSPWorld.getInt() == 0)
@@ -722,7 +738,37 @@ void rBspTree_c::addDrawCalls() {
 			continue;
 		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
-			RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true);
+			if(RF_MaterialNeedsCPU(b->mat) || rf_bsp_doAllSurfaceBatchesOnCPU.getInt()) {
+				// Quake3 .shader files effects performs faster on small vertex arrays.
+				// Don't use this->verts, use per-surface vertices instead
+				for(u32 j = 0; j < b->sfs.size(); j++) {
+					bspSurf_s *subSF = b->sfs[j];
+					if(subSF->sf->numVerts == 0) {
+						g_core->RedWarning("Found surface with numVerts == 0\n");
+						continue;
+					}
+					// cull separate surfaces
+					if(rf_camera.getFrustum().cull(subSF->getBounds()) == CULL_OUT) {
+						// we dont need this one
+						continue;
+					}
+					// add separate drawcalls
+					bspTriSurf_s *stSF = subSF->sf;
+
+					// alloc surface's private vertex buffer if its not present yet
+					ensureSurfaceLocalVertsAllocated(stSF);
+
+					if(rf_bsp_printCPUSurfVertsCount.getInt()) {
+						g_core->Print("rBspTree_c::addDrawCalls()[%i]: %i verts, %i indices - mat %s, type %i\n",
+							rf_curTimeMsec,stSF->localVerts.size(),stSF->localIndexes.getNumIndices(),b->mat->getName(),subSF->type);
+					}
+					RF_AddDrawCall(&stSF->localVerts,&stSF->localIndexes,b->mat,b->lightmap,b->mat->getSort(),true);
+				}
+			} else {
+				if(rf_bsp_skipGPUSurfaces.getInt() == 0) {
+					RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true);
+				}
+			}
 		}
 	}
 	u32 c_culledBezierPatches = 0;
@@ -751,8 +797,16 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 	bspSurf_s &sf = this->surfs[sfNum];
 	if(sf.type == BSPSF_BEZIER) {
 		sf.patch->addDrawCall();
+	} else if(sf.type == BSPSF_FLARE) {
+		// nothing to do for flares?
 	} else {
-		RF_AddDrawCall(&this->verts,&sf.sf->absIndexes,sf.sf->mat,sf.sf->lightmap,sf.sf->mat->getSort(),true);
+		bspTriSurf_s *triSurf = sf.sf;
+		if(RF_MaterialNeedsCPU(triSurf->mat)) {
+			ensureSurfaceLocalVertsAllocated(triSurf);
+			RF_AddDrawCall(&triSurf->localVerts,&triSurf->localIndexes,triSurf->mat,triSurf->lightmap,triSurf->mat->getSort(),true);
+		} else {
+			RF_AddDrawCall(&this->verts,&triSurf->absIndexes,triSurf->mat,triSurf->lightmap,triSurf->mat->getSort(),true);
+		}
 	}
 }
 #include "rf_shadowVolume.h"

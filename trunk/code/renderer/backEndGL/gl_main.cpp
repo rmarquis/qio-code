@@ -54,6 +54,7 @@ aCvar_c gl_showTris("gl_showTris","0");
 aCvar_c rb_showNormalColors("rb_showNormalColors","0");
 aCvar_c gl_callGLFinish("gl_callGLFinish","0");
 aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
+aCvar_c gl_printMemcpyVertexArrayBottleneck("gl_printMemcpyVertexArrayBottleneck","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -722,6 +723,9 @@ public:
 					if(selectedVertexBuffer == &verts) {
 						stageVerts = verts;
 						selectedVertexBuffer = &stageVerts;
+						if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
+							g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+						}
 					}
 					// apply texgen effect (new texcoords)
 					if(s->getTexGen() == TCG_ENVIRONMENT) {
@@ -740,6 +744,9 @@ public:
 					if(selectedVertexBuffer == &verts) {
 						stageVerts = verts;
 						selectedVertexBuffer = &stageVerts;
+						if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
+							g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+						}
 					}
 					// apply rgbGen effect (new rgb colors)
 					//bindStageColors = true; // FIXME, it's already set!!!
