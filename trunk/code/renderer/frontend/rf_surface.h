@@ -135,7 +135,6 @@ public:
 			bounds.addPoint(verts[i].xyz);
 		}
 	}
-	void drawSurface();
 	void drawSurfaceWithSingleTexture(class textureAPI_i *tex);
 	void addDrawCall();
 

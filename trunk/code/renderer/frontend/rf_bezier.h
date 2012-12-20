@@ -77,7 +77,6 @@ public:
 		verts.push_back(nv);
 	}
 	void tesselate(u32 newLevel);
-	void draw();
 	void addDrawCall();
 	bool traceRay(class trace_c &tr);
 	const aabb &getBB() const;

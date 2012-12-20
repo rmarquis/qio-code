@@ -142,9 +142,6 @@ void r_bezierPatch_c::tesselate(u32 newLevel) {
 	sf->createVBO();
 	sf->createIBO();
 }
-void r_bezierPatch_c::draw() {
-	sf->drawSurface();
-}
 void r_bezierPatch_c::addDrawCall() {
 	sf->addDrawCall();
 }

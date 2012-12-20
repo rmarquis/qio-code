@@ -123,12 +123,6 @@ void r_surface_c::setMaterial(const char *newMatName) {
 	matName = newMatName;
 	mat = g_ms->registerMaterial(newMatName);
 }
-void r_surface_c::drawSurface() {
-	rb->setBindVertexColors(true);
-	rb->setMaterial(this->mat,this->lightmap);
-	rb->drawElements(this->verts,this->indices);
-	rb->setBindVertexColors(false);
-}
 void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 	rb->setBindVertexColors(false);
 	rb->drawElementsWithSingleTexture(this->verts,this->indices,tex);
