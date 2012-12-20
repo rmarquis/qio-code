@@ -46,4 +46,23 @@ void rVertexBuffer_c::calcEnvironmentTexCoordsForReferencedVertices(const class 
 	}
 }
 
-
+void rVertexBuffer_c::setVertexColorsToConstValue(byte val) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->size(); i++, v++) {
+		v->color[0] = v->color[1] = v->color[2] = v->color[3] = val;
+	}
+}
+void rVertexBuffer_c::setVertexColorsToConstValues(byte *rgbVals) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->size(); i++, v++) {
+		v->color[0] = rgbVals[0];
+		v->color[1] = rgbVals[1];
+		v->color[2] = rgbVals[2];
+	}
+}
+void rVertexBuffer_c::setVertexAlphaToConstValue(byte val) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->size(); i++, v++) {
+		v->color[3] = val;
+	}
+}

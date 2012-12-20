@@ -21,24 +21,49 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// mat_rgbGen.h
+#ifndef __MAT_RGBGEN_H__
+#define __MAT_RGBGEN_H__
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
+#include <shared/waveForm.h>
+#include "mat_public.h"
 
-class mtrStageAPI_i  { 
+class rgbGen_c {
+	rgbGen_e type;
+	union {
+		waveForm_c wave;
+		float constValue[3];
+	};
 public:
-	virtual class textureAPI_i *getTexture(float curTimeSec = 0.f) const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
-	virtual const struct blendDef_s &getBlendDef() const = 0;
-	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
-	virtual bool hasTexGen() const = 0;
-	virtual enum texCoordGen_e getTexGen() const = 0;
-	virtual enum stageType_e getStageType() const = 0;
-	virtual bool hasRGBGen() const = 0;
-	virtual enum rgbGen_e getRGBGenType() const = 0;
-	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
+	rgbGen_c() {
+		type = RGBGEN_NONE;
+	}
+	bool parse(class parser_c &p);
+	bool isNone() const {
+		return (type == RGBGEN_NONE);
+	}
+	bool isConst() const {
+		return (type == RGBGEN_CONST);
+	}
+	inline rgbGen_e getType() const {
+		return type;
+	}
+	const waveForm_c &getWaveForm() const {
+		return this->wave;
+	}
+	float getConstRedValueAsByte() const {
+		return constValue[0] * 255.f;
+	}
+	float getConstBlueValueAsByte() const {
+		return constValue[2] * 255.f;
+	}
+	float getConstGreenValueAsByte() const {
+		return constValue[1] * 255.f;
+	}
+	const float *getConstValues() const {
+		return constValue;
+	}
 };
 
-#endif // __MTRSTAGE_API_H__
+#endif // __MAT_RGBGEN_H__
+

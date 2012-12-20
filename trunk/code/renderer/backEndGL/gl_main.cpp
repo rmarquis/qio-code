@@ -47,6 +47,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/rLightAPI.h>
 
+#include <shared/byteRGB.h>
+
 aCvar_c gl_showTris("gl_showTris","0");
 // use a special GLSL shader to show normal vectors as colors
 aCvar_c rb_showNormalColors("rb_showNormalColors","0");
@@ -578,7 +580,7 @@ public:
 				setAlphaFunc(s->getAlphaFunc());
 				//const blendDef_s &bd = s->getBlendDef();
 				//setBlendFunc(bd.src,bd.dst);
-				textureAPI_i *t = s->getTexture();
+				textureAPI_i *t = s->getTexture(this->timeNowSeconds);
 				bindTex(0,t->getInternalHandleU32());
 				CHECK_GL_ERRORS;
 				glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
@@ -702,17 +704,26 @@ public:
 				} else {
 					this->setTextureMatrixIdentity(0);
 				}
-				textureAPI_i *t = s->getTexture();
+				textureAPI_i *t = s->getTexture(this->timeNowSeconds);
 				bindTex(0,t->getInternalHandleU32());
 				if(lastLightmap) {
 					bindTex(1,lastLightmap->getInternalHandleU32());
 				} else {
 					bindTex(1,0);
 				}
+				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
+				const rVertexBuffer_c *selectedVertexBuffer = &verts;
+
 				// see if we have to modify current vertex array on CPU
 				// TODO: do deforms and texgens in GLSL shader
 				if(s->hasTexGen()) {
-					stageVerts = verts;
+					// copy vertices data (first big CPU bottleneck)
+					// (but only if we havent done this already)
+					if(selectedVertexBuffer == &verts) {
+						stageVerts = verts;
+						selectedVertexBuffer = &stageVerts;
+					}
+					// apply texgen effect (new texcoords)
 					if(s->getTexGen() == TCG_ENVIRONMENT) {
 						if(indices.getNumIndices() < verts.size()) {
 							// if there are more vertices than indexes, we're sure that some of verts are unreferenced,
@@ -722,10 +733,38 @@ public:
 							stageVerts.calcEnvironmentTexCoords(this->camOriginEntitySpace);
 						}
 					}
-					bindVertexBuffer(&stageVerts);
-				} else {
-					bindVertexBuffer(&verts);
 				}
+				if(s->hasRGBGen()) {
+					// copy vertices data (first big CPU bottleneck)
+					// (but only if we havent done this already)
+					if(selectedVertexBuffer == &verts) {
+						stageVerts = verts;
+						selectedVertexBuffer = &stageVerts;
+					}
+					// apply rgbGen effect (new rgb colors)
+					//bindStageColors = true; // FIXME, it's already set!!!
+					enum rgbGen_e rgbGenType = s->getRGBGenType();
+					if(rgbGenType == RGBGEN_CONST) {
+						byteRGB_s col;
+						vec3_c colFloats;
+						s->getRGBGenConstantColor3f(colFloats);
+						col.fromFloats(colFloats);
+						stageVerts.setVertexColorsToConstValues(col);
+						stageVerts.setVertexAlphaToConstValue(255);
+					} else if(rgbGenType == RGBGEN_WAVE) {
+						//float val = s->rgbGen.getWaveForm().evaluate();
+						//byte valAsByte = val * 255.f;
+						//stageVerts.setVertexColorsToConstValue(valAsByte);
+						//stageVerts.setVertexAlphaToConstValue(255);
+					} else if(rgbGenType == RGBGEN_VERTEX) {
+
+					} else {
+
+					}
+				}
+				// draw the current material stage using selected vertex buffer.
+				bindVertexBuffer(selectedVertexBuffer);
+
 				drawCurIBO();
 				CHECK_GL_ERRORS;
 			}

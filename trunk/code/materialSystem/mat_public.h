@@ -1,6 +1,8 @@
 #ifndef __MAT_PUBLIC_H__
 #define __MAT_PUBLIC_H__
 
+#include <shared/typedefs.h>
+
 // hardcoded alpha func test values (for non-blended transparency)
 enum alphaFunc_e {
 	AF_NONE,
@@ -18,6 +20,15 @@ enum texCoordGen_e {
 	//TCG_SKYBOX,
 	//TCG_REFLECT,
 	TCG_NUM_GENS,
+};
+
+// vertex color generator (red, green, blue)
+enum rgbGen_e {
+	RGBGEN_NONE,
+	RGBGEN_WAVE,
+	RGBGEN_VERTEX,
+	RGBGEN_CONST,
+	RGBGEN_IDENTITY,
 };
 
 // blend modes; abstracted so they can apply to both opengl and dx

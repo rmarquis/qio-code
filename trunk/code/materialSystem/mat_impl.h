@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <renderer/drawCallSort.h>
 #include "mat_public.h"
+#include "mat_stageTexture.h"
 
 class skyBox_c : public skyBoxAPI_i {
 	str baseName;
@@ -95,18 +96,19 @@ enum stageType_e {
 };
 
 class mtrStage_c : public mtrStageAPI_i {
-	class textureAPI_i *texture;
+	stageTexture_c stageTexture;
 	alphaFunc_e alphaFunc;
 	blendDef_s blend;
-	texCoordGen_e tcGen;
+	enum texCoordGen_e tcGen;
 	class texModArray_c *texMods;
-	stageType_e type;
+	enum stageType_e type;
+	class rgbGen_c *rgbGen;
 public:
 	mtrStage_c();
 	~mtrStage_c();
 
-	virtual textureAPI_i *getTexture() const {
-		return texture;
+	virtual textureAPI_i *getTexture(float curTimeSec) const {
+		return stageTexture.getTexture(curTimeSec);
 	}	
 	virtual alphaFunc_e getAlphaFunc() const {
 		return alphaFunc;
@@ -120,9 +122,13 @@ public:
 		return false;
 	}
 	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const;
-	stageType_e getStageType() const {
+	virtual stageType_e getStageType() const {
 		return type;
 	}
+	virtual bool hasRGBGen() const;
+	virtual enum rgbGen_e getRGBGenType() const;
+	virtual bool getRGBGenConstantColor3f(float *out3Floats) const;
+
 	bool isLightmapStage() const {
 		return (type == ST_LIGHTMAP);
 	}
@@ -130,7 +136,7 @@ public:
 		this->type = newType;
 	}
 	void setTexture(class textureAPI_i *nt) {
-		texture = nt;
+		stageTexture.fromTexturePointer(nt);
 	}
 	void setAlphaFunc(alphaFunc_e newAF) {
 		alphaFunc = newAF;
@@ -157,6 +163,10 @@ public:
 	int getImageWidth() const;
 	int getImageHeight() const;
 	void addTexMod(const class texMod_c &newTM);
+	class rgbGen_c *allocRGBGen();
+	class stageTexture_c &getStageTexture() {
+		return stageTexture;
+	}
 };
 
 class mtrIMPL_c : public mtrAPI_i { 

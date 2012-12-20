@@ -133,6 +133,9 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 	}
 }
 void rLightImpl_c::recalcLightInteractions() {
+	if(RF_IsUsingDynamicLights() == false) {
+		return; // we dont need light interactions
+	}
 	recalcLightInteractionsWithDynamicEntities();
 	recalcLightInteractionsWithStaticWorld();
 }

@@ -56,6 +56,7 @@ cent->nextState is moved to cent->currentState and events are fired
 ===============
 */
 static void CG_TransitionEntity( centity_t *cent ) {
+	entityState_s previousState = cent->currentState;
 	cent->currentState = cent->nextState;
 	cent->currentValid = qtrue;
 

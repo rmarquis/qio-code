@@ -21,24 +21,30 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// mtrStage_api.h - material stage class interface
+// mat_rgbGen.cpp
+#include "mat_rgbGen.h"
+#include <shared/parser.h>
 
-#ifndef __MTRSTAGE_API_H__
-#define __MTRSTAGE_API_H__
+bool rgbGen_c::parse(class parser_c &p) {
+	if(p.atWord("wave")) {
+		type = RGBGEN_WAVE;
+		wave.parse(p);
+	} else if(p.atWord("const")) {
+		type = RGBGEN_CONST;
+		p.getFloatMat_braced(constValue,3);
+	} else if(p.atWord("vertex")) {
+		type = RGBGEN_VERTEX;
+	} else if(p.atWord("identity")) {
+		type = RGBGEN_IDENTITY;
+	} else if(p.atWord("static")) {
+		// seem to be used in MoHAA static models.
+		// It might be related to MoHAA precomputed static models lighting (vertex lighting)
+	} else if(p.atWord("lightingSpherical")) {
+		// MoHAA-specific spherical lighting?
+	} else {
+		return true;
+	}
+	return false;
+}
 
-class mtrStageAPI_i  { 
-public:
-	virtual class textureAPI_i *getTexture(float curTimeSec = 0.f) const = 0;
-	virtual enum alphaFunc_e getAlphaFunc() const = 0;
-	virtual const struct blendDef_s &getBlendDef() const = 0;
-	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
-	virtual bool hasTexGen() const = 0;
-	virtual enum texCoordGen_e getTexGen() const = 0;
-	virtual enum stageType_e getStageType() const = 0;
-	virtual bool hasRGBGen() const = 0;
-	virtual enum rgbGen_e getRGBGenType() const = 0;
-	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
-};
 
-#endif // __MTRSTAGE_API_H__

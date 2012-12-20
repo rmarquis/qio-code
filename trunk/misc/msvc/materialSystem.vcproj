@@ -180,6 +180,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\materialSystem\mat_rgbGen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_stageTexture.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_stageTexture.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\materialSystem\mat_texMods.cpp"
 				>
 			</File>
@@ -203,6 +215,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\materialSystem\mat_public.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_rgbGen.h"
 				>
 			</File>
 			<File

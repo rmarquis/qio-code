@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "typedefs.h"
 #include "str.h"
+#include <api/coreAPI.h>
 
 class parser_c {
 	const char *base; // start of the text
@@ -52,6 +53,9 @@ public:
 	const char *getLine(str &out);
 	const char *getLine() {
 		return getLine(this->lastToken);
+	}
+	const char *getLastStoredToken() const {
+		return lastToken;
 	}
 	const char *getD3Token();
 	float getFloat();
@@ -133,6 +137,32 @@ public:
 			return 0;
 		return atof(w);
 	}
+	const char *getNextWordInLine() {
+		// see if we're at the end of the line
+		while(1) {
+			if(*p == '\n') {
+				return 0;
+			} else if(p[0] == '/' && p[1] == '/') {
+				return 0;
+			} else if(p[0] == '/' && p[1] == '*') {
+				p+=2;
+				while((p[0] == '*' && p[1] == '/') == false) {
+					if(*p == 0) {
+						return 0;
+					}
+					p++;
+				}
+			} else if(G_isWS(*p)==false) {
+				break;
+			} else {
+				p++;
+			}
+		}
+		if(*p == 0)
+			return 0;
+		getToken();
+		return lastToken;
+	}
 	void skipLine();
 
 	const char *getDebugFileName() const {
@@ -187,6 +217,67 @@ public:
 			p++;
 		}
 		return true; // unexpected end of file hit
+	}
+	bool getBracedBlock() {
+		skipToNextToken();
+		if(*p != '(') {
+			return true; // error
+		}
+		const char *start = p;
+		p++;
+		int level = 1;
+		lastToken.clear();
+		while(level) {
+			if(*p == '(') {
+				level++;
+			} else if(*p == ')') {
+				level--;
+			} else if(*p == 0) {
+				g_core->RedWarning("parser_c::getBracedBlock: unexpected end of file\n");
+				return true; // error
+			} else if(p[0] == '/') {
+				if(p[1] == '*') {
+					str tmp;
+					tmp.setFromTo(start,p);
+					lastToken.append(tmp);
+					// skip multi-line comment
+					p+=2;
+					while(1) {
+						if(*p == 0) {
+							g_core->RedWarning("parser_c::getBracedBlock: unexpected end of file found in multiline comment\n");
+							return true; // error
+						} else if(p[0] == '*' && p[1] == '/') {
+							p+=2;
+							break;
+						}
+					}
+					start = p;
+					continue;
+				} else if(p[1] == '/') {
+					str tmp;
+					tmp.setFromTo(start,p);
+					lastToken.append(tmp);
+					// skip single-line comment
+					p+=2;
+					while(*p != '\n') {
+						if(*p == 0) {
+							g_core->RedWarning("parser_c::getBracedBlock: unexpected end of file found in comment\n");
+							return true; // error
+						}
+						p++;
+					}
+					start = p;
+					continue;
+				}
+			}
+			p++;
+		}
+		if(start != p) {
+			str tmp;
+			tmp.setFromTo(start,p);
+			lastToken.append(tmp);
+		}
+		return false; // OK
 	}
 
 

@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 void RF_InitMain();
 void RF_Draw3DView();
 void RF_AddGenericDrawCalls();
+bool RF_IsUsingDynamicLights();
 bool RF_IsUsingShadowVolumes();
 enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);
 

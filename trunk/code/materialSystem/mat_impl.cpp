@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "mat_impl.h"
 #include "mat_local.h"
 #include "mat_texMods.h"
+#include "mat_rgbGen.h"
 #include <shared/parser.h>
 #include <shared/cullType.h>
 #include <api/coreAPI.h>
@@ -102,14 +103,17 @@ skyParms_c::skyParms_c(const char *farBoxName, float newCloudHeight, const char 
 
 // material stage class
 mtrStage_c::mtrStage_c() {
-	texture = 0;
 	alphaFunc = AF_NONE;
 	texMods = 0;
 	tcGen = TCG_NONE;
+	rgbGen = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
 		delete texMods;
+	}
+	if(rgbGen) {
+		delete rgbGen;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -117,10 +121,10 @@ void mtrStage_c::setTexture(const char *newMapName) {
 	this->setTexture(tex);
 }
 int mtrStage_c::getImageWidth() const {
-	return texture->getWidth();
+	return stageTexture.getAnyTexture()->getWidth();
 }
 int mtrStage_c::getImageHeight() const {
-	return texture->getHeight();
+	return stageTexture.getAnyTexture()->getHeight();
 }
 void mtrStage_c::addTexMod(const class texMod_c &newTM) {
 	if(this->texMods == 0) {
@@ -134,6 +138,36 @@ void mtrStage_c::applyTexMods(class matrix_c &out, float curTimeSec) const {
 		return;
 	}
 	texMods->calcTexMatrix(out,curTimeSec);
+}
+bool mtrStage_c::hasRGBGen() const {
+	if(rgbGen == 0)
+		return false;
+	if(rgbGen->isNone()) {
+		return false; // ignore invalid rgbGens
+	}
+	return true;
+}
+enum rgbGen_e mtrStage_c::getRGBGenType() const {
+	if(rgbGen == 0)
+		return RGBGEN_NONE;
+	return rgbGen->getType();
+}
+class rgbGen_c *mtrStage_c::allocRGBGen() {
+	if(rgbGen)
+		return rgbGen;
+	rgbGen = new rgbGen_c;
+	return rgbGen;
+}
+bool mtrStage_c::getRGBGenConstantColor3f(float *out3Floats) const {
+	if(rgbGen == 0)
+		return true; // error
+	if(rgbGen->isConst() == false)
+		return true; // error
+	const float *in = rgbGen->getConstValues();
+	out3Floats[0] = in[0];
+	out3Floats[1] = in[1];
+	out3Floats[2] = in[2];
+	return false;
 }
 // material class
 mtrIMPL_c::mtrIMPL_c() {
@@ -222,7 +256,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		} else if(p.atChar('}')) {
 			if(level == 2) {
 				if(stage) {
-					if(stage->getTexture() == 0) {
+					if(stage->getTexture(0) == 0) {
 						delete stage;
 					} else {
 						stages.push_back(stage);
@@ -301,12 +335,24 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			} else if(level == 2) {
 				// parse stage
 				if(p.atWord("map")) {
+#if 1
+					if(p.atWord("$lightmap")) {
+						stage->setStageType(ST_LIGHTMAP);
+					} else {
+						stage->getStageTexture().parseMap(p);
+						stage->getStageTexture().uploadTexture();
+					}
+#else
 					const char *mapName = p.getToken();
 					if(!stricmp(mapName,"$lightmap")) {
 						stage->setStageType(ST_LIGHTMAP);
 					} else {
 						stage->setTexture(mapName);
 					}
+#endif				
+				} else if(p.atWord("animmap")) {
+					stage->getStageTexture().parseAnimMap(p);
+					stage->getStageTexture().uploadTexture();
 				} else if(p.atWord("alphaFunc")) {
 					if(p.atWord("GT0")) {
 						stage->setAlphaFunc(AF_GT0);
@@ -334,7 +380,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("depthWrite")) {
 
 				} else if(p.atWord("rgbGen")) {
-
+					if(stage->hasRGBGen()) {
+						g_core->RedWarning("mtrIMPL_c::loadFromText: WARNING: rgbGen defined twice at line %i of file %s in material def %s\n",
+							p.getCurrentLineNumber(),p.getDebugFileName(),this->getName());
+					}
+					if(stage->allocRGBGen()->parse(p)) {
+						//stage->freeRGBGen();
+					}
 				} else if(p.atWord("tcmod")) {
 					// texture coordinates modifier
 					texMod_c tm;

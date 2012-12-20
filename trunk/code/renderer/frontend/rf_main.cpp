@@ -34,6 +34,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
 static aCvar_c rf_shadows("rf_shadows","0");
 
+bool RF_IsUsingDynamicLights() {
+	if(rf_enableMultipassRendering.getInt())
+		return true;
+	return false;
+}
 bool RF_IsUsingShadowVolumes() {
 	// TODO: see if the stencil buffer is supported
 	if(rf_shadows.getInt() == 1) {
@@ -97,9 +102,19 @@ enum cullResult_e RF_CullEntitySpaceBounds(const aabb &bb) {
 	return rf_camera.getFrustum().cull(transformed);
 }
 void RF_OnRFShadowsCvarModified(const class aCvar_c *cv) {
-	RFL_RecalculateLightsInteractions();
+	if(cv->getInt()) {
+		// user has enabled on rf_shadows
+		RFL_RecalculateLightsInteractions();
+	}
+}
+void RF_OnRFEnableMultipassRenderingCvarModified(const class aCvar_c *cv) {
+	if(cv->getInt()) {
+		// user has enabled rf_multipassRendering
+		RFL_RecalculateLightsInteractions();
+	}
 }
 void RF_InitMain() {
 	rf_shadows.setExtraModificationCallback(RF_OnRFShadowsCvarModified);
+	rf_enableMultipassRendering.setExtraModificationCallback(RF_OnRFEnableMultipassRenderingCvarModified);
 }
 
