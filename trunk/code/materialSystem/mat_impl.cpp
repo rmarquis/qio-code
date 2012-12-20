@@ -274,6 +274,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	this->sourceFileName = txt.sourceFile;
 	mtrStage_c *stage = 0;
 	int level = 1;
+	bool depthWriteSetInMaterial = false;
 	while(level) {
 		if(p.atEOF()) {
 			g_core->RedWarning("mtrIMPL_c::loadFromText: unexpected end of file hit while parsing material %s in file %s\n",
@@ -284,6 +285,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			level++;
 			if(level == 2) {
 				stage = new mtrStage_c;
+				depthWriteSetInMaterial = false;
 			}
 		} else if(p.atChar('}')) {
 			if(level == 2) {
@@ -413,9 +415,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						stage->setBlendDef(src,dst);
 					}
 					// disable writing to depth buffer for translucent surfaces
-					stage->setDepthWrite(false);
+					// (unless otherwise specified)
+					if(depthWriteSetInMaterial == false) {
+						stage->setDepthWrite(false);
+					}
 				} else if(p.atWord("depthWrite")) {
-					
+					depthWriteSetInMaterial = true;
+					stage->setDepthWrite(true);
 				} else if(p.atWord("rgbGen")) {
 					if(stage->hasRGBGen()) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: WARNING: rgbGen defined twice at line %i of file %s in material def %s\n",
