@@ -27,7 +27,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 enum drawCallSort_e {
 	DCS_BAD,
-	//DCS_PORTAL, 
+	// mirrors, portals, viewscreens
+	DCS_PORTAL, // materials with "portal" keyword
+
 	//DCS_OPAQUE_WORLD,
 	DCS_OPAQUE,
 	//DCS_BLEND_WORLD,

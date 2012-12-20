@@ -90,6 +90,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
 	bool bindVertexColors;
+	bool bHasVertexColors;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -472,6 +473,7 @@ public:
 		glColor4fv(rgba);
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
+		this->bHasVertexColors = bBindVertexColors;
 		this->bindVertexColors = bBindVertexColors;
 	}
 	bool bBoundLightmapCoordsToFirstTextureSlot;
@@ -836,6 +838,14 @@ public:
 						} else {
 
 						}
+					}
+				} else {
+					// if (rgbGen is not set) and (lightmap is not present) and (vertex colors are present)
+					// -> enable drawing with vertex colors
+					if(bHasVertexColors && (lastLightmap == 0)) {
+						// this is a fix for q3 static "md3" models 
+						// (those loaded directly from .bsp file and not from .md3 file)
+						bindVertexColors = true;
 					}
 				}
 				// draw the current material stage using selected vertex buffer.

@@ -129,7 +129,7 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 }
 
 void r_surface_c::addDrawCall() {
-	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),true);
+	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),false);
 }
 #include <api/colMeshBuilderAPI.h>
 void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {

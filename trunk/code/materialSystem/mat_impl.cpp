@@ -180,6 +180,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	polygonOffset = 0;
 	hashNext = 0;
 	cullType = CT_FRONT_SIDED;
+	bPortalMaterial = false;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -197,6 +198,7 @@ void mtrIMPL_c::clear() {
 	// reset variables to their default values
 	polygonOffset = 0;
 	cullType = CT_FRONT_SIDED;
+	bPortalMaterial = false;
 	// but don't clear material name and this->hashNext pointer...
 }
 
@@ -359,6 +361,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					p.skipLine();
 				} else if(p.atWord("materialType")) {
 					p.skipLine(); // "glass", etc
+				} else if(p.atWord("portal")) {
+					// QuakeIII portal keyword.
+					// See q3 textures/sfx/portal_sfx from scripts/common.shader.
+					// It's the shader of q3dm0 portal (teleporter)
+					this->bPortalMaterial = true;
 				} else {
 					p.getToken();
 				}
