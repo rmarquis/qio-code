@@ -66,6 +66,7 @@ public:
 	// this function should be used by renderer backend so animated images works
 	textureAPI_i *getTexture(float time = 0.f) const;
 	void fromTexturePointer(textureAPI_i *newTexturePtr);
+	bool isEmpty() const;
 };
 
 #endif // __MAT_STAGETEXTURE_H__

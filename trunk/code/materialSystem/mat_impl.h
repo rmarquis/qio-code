@@ -90,11 +90,6 @@ public:
 	}
 };
 
-enum stageType_e {
-	ST_NOT_SET,
-	ST_LIGHTMAP,
-};
-
 class mtrStage_c : public mtrStageAPI_i {
 	stageTexture_c stageTexture;
 	alphaFunc_e alphaFunc;
@@ -177,6 +172,10 @@ class mtrIMPL_c : public mtrAPI_i {
 	skyParms_c *skyParms;
 	float polygonOffset;
 	enum cullType_e cullType;
+
+	void removeAllStagesOfType(enum stageType_e type);
+	class mtrStage_c *getFirstStageOfType(enum stageType_e type);
+	void replaceStageType(enum stageType_e stageTypeToFind, enum stageType_e replaceWith);
 public:
 	mtrIMPL_c();
 	~mtrIMPL_c();

@@ -39,9 +39,19 @@ bool rgbGen_c::parse(class parser_c &p) {
 	} else if(p.atWord("static")) {
 		// seem to be used in MoHAA static models.
 		// It might be related to MoHAA precomputed static models lighting (vertex lighting)
+		type = RGBGEN_STATIC;
 	} else if(p.atWord("lightingSpherical")) {
 		// MoHAA-specific spherical lighting?
+		type = RGBGEN_LIGHTINGSPHERICAL;
+	} else if(p.atWord("identityLighting")) {
+		type = RGBGEN_IDENTITYLIGHTING;
+	} else if(p.atWord("exactVertex")) {
+		type = RGBGEN_EXACTVERTEX;
+	} else if(p.atWord("constLighting")) {
+		type = RGBGEN_CONSTLIGHTING; // added for Call Of Duty??
 	} else {
+		str tok = p.getToken();
+		g_core->RedWarning("rgbGen_c::parse: unknown rgbGen %s\n",tok.c_str());
 		return true;
 	}
 	return false;

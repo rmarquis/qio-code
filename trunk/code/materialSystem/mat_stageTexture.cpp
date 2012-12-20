@@ -184,3 +184,10 @@ void stageTexture_c::fromTexturePointer(textureAPI_i *newTexturePtr) {
 	this->singleTexture = newTexturePtr;
 	this->mapName = newTexturePtr->getName();
 }
+bool stageTexture_c::isEmpty() const {
+	if(mapName.length())
+		return false;
+	if(animated)
+		return false;
+	return true; // nothing loaded
+}

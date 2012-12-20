@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <shared/autoCmd.h>
 
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
 static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
@@ -150,3 +151,12 @@ void RF_DrawSingleBSPSurface(u32 sfNum) {
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume) {
 	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume);
 }
+
+void RF_PrintWorldMapMaterials_f() {
+	if(r_bspTree) {
+		//r_bspTree->printMaterialsList();
+	}
+	g_core->RedWarning("RF_PrintWorldMapMaterials_f: TODO\n");
+}
+
+static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);

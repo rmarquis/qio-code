@@ -3,6 +3,14 @@
 
 #include <shared/typedefs.h>
 
+// material stage type.
+enum stageType_e {
+	ST_NOT_SET,
+	ST_LIGHTMAP, // draw only lightmap (0th texture slot)
+	ST_COLORMAP, // draw only colormap (0th texture slot)
+	ST_COLORMAP_LIGHTMAPPED, // draw lightmapped colormap (colormap at slot 0, lightmap at slot 1)
+};
+
 // hardcoded alpha func test values (for non-blended transparency)
 enum alphaFunc_e {
 	AF_NONE,
@@ -29,6 +37,11 @@ enum rgbGen_e {
 	RGBGEN_VERTEX,
 	RGBGEN_CONST,
 	RGBGEN_IDENTITY,
+	RGBGEN_IDENTITYLIGHTING,
+	RGBGEN_STATIC,
+	RGBGEN_LIGHTINGSPHERICAL,
+	RGBGEN_EXACTVERTEX,
+	RGBGEN_CONSTLIGHTING,
 };
 
 // blend modes; abstracted so they can apply to both opengl and dx

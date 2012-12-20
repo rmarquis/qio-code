@@ -61,6 +61,7 @@ rBspTree_c::rBspTree_c() {
 	vis = 0;
 	h = 0;
 	visCounter = 1;
+	c_flares = 0;
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
@@ -380,6 +381,8 @@ bool rBspTree_c::loadSurfsCoD() {
 		bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 		ts->mat = mat;
 		ts->lightmap = lightmap;
+		ts->firstVert = sf->firstVert;
+		ts->numVerts = sf->numVerts;
 		const u16 *firstIndex = indices + sf->firstIndex;
 		// get the largest index value of this surface
 		// to determine if we can use U16 index buffer

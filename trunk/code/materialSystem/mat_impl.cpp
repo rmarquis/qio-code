@@ -31,6 +31,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/textureAPI.h>
 #include <math/matrix.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c mat_collapseMaterialStages("mat_collapseMaterialStages","1");
 
 // skybox
 void skyBox_c::setBaseName(const char *newBaseName) {
@@ -107,6 +110,7 @@ mtrStage_c::mtrStage_c() {
 	texMods = 0;
 	tcGen = TCG_NONE;
 	rgbGen = 0;
+	type = ST_NOT_SET;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -202,6 +206,7 @@ void mtrIMPL_c::createFromImage() {
 	// create single material stage
 	mtrStage_c *ns = new mtrStage_c;
 	ns->setTexture(tex);
+	ns->setStageType(ST_COLORMAP_LIGHTMAPPED);
 	stages.push_back(ns);
 }
 u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
@@ -225,6 +230,30 @@ void mtrIMPL_c::setSkyParms(const char *farBox, const char *cloudHeightStr, cons
 	float cloudHeight = atof(cloudHeightStr);
 	skyParms = new skyParms_c(farBox,cloudHeight,nearBox);
 	skyParms->uploadTextures();
+}
+mtrStage_c *mtrIMPL_c::getFirstStageOfType(enum stageType_e type) {
+	for(u32 i = 0; i < stages.size(); i++) {
+		if(stages[i]->getStageType() == type) {
+			return stages[i];
+		}
+	}
+	return 0;
+}
+void mtrIMPL_c::replaceStageType(enum stageType_e stageTypeToFind, enum stageType_e replaceWith) {
+	for(u32 i = 0; i < stages.size(); i++) {
+		if(stages[i]->getStageType() == stageTypeToFind) {
+			stages[i]->setStageType(replaceWith);
+		}
+	}
+}
+void mtrIMPL_c::removeAllStagesOfType(enum stageType_e type) {
+	for(int i = 0; i < stages.size(); i++) {
+		if(stages[i]->getStageType() == type) {
+			delete stages[i];
+			stages.erase(i);
+			i--;
+		}
+	}
 }
 bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
@@ -335,21 +364,19 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			} else if(level == 2) {
 				// parse stage
 				if(p.atWord("map")) {
-#if 1
 					if(p.atWord("$lightmap")) {
-						stage->setStageType(ST_LIGHTMAP);
+						// quick fix for MoHAA "nextbundle" keyword
+						// .. just do not ever overwrite colormaps with $lightmap
+						if(stage->getStageTexture().isEmpty()) {
+							stage->setStageType(ST_LIGHTMAP);
+						} else {
+							// just let the stage know it's lightmap-compatible
+							stage->setStageType(ST_COLORMAP_LIGHTMAPPED);
+						}
 					} else {
 						stage->getStageTexture().parseMap(p);
 						stage->getStageTexture().uploadTexture();
-					}
-#else
-					const char *mapName = p.getToken();
-					if(!stricmp(mapName,"$lightmap")) {
-						stage->setStageType(ST_LIGHTMAP);
-					} else {
-						stage->setTexture(mapName);
-					}
-#endif				
+					}		
 				} else if(p.atWord("animmap")) {
 					stage->getStageTexture().parseAnimMap(p);
 					stage->getStageTexture().uploadTexture();
@@ -467,6 +494,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		this->createFromImage();
 	} else {
+#if 0
 		for(int i = 0; i < stages.size(); i++) {
 			mtrStage_c *s = stages[i];
 			if(s->isLightmapStage()) {
@@ -474,6 +502,22 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				stages.erase(i);
 				i--;
 			}
+		}
+#endif
+		if(mat_collapseMaterialStages.getInt()) {
+		mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
+		if(lightmapped) {
+			// if we have a non-lightmap stage without blendfunc, we can collapse...
+			for(int i = 0; i < stages.size(); i++) {
+				mtrStage_c *s = stages[i];
+				if(s->isLightmapStage() == false && s->hasBlendFunc() == false) {
+					this->removeAllStagesOfType(ST_LIGHTMAP);
+					this->replaceStageType(ST_NOT_SET,ST_COLORMAP_LIGHTMAPPED);
+					this->replaceStageType(ST_COLORMAP,ST_COLORMAP_LIGHTMAPPED);
+					break;
+				}
+			}
+		}
 		}
 	}
 

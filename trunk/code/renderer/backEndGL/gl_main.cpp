@@ -208,6 +208,21 @@ public:
 			s->index = tex;
 		}
 	}
+	void unbindTex(int slot) {
+		texState_s *s = &texStates[slot];
+		if(s->enabledTexture2D == false && s->index == 0)
+			return;
+
+		selectTex(slot);
+		if(s->enabledTexture2D == true) {
+			glDisable(GL_TEXTURE_2D);
+			s->enabledTexture2D = false;
+		}
+		if(s->index != 0) {
+			glBindTexture(GL_TEXTURE_2D,0);
+			s->index = 0;
+		}
+	}
 	void disableAllTextures() {
 		texState_s *s = &texStates[0];
 		for(int i = 0; i < highestTCSlotUsed; i++, s++) {
@@ -459,11 +474,14 @@ public:
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bindVertexColors = bBindVertexColors;
 	}
-	void bindVertexBuffer(const class rVertexBuffer_c *verts) {
+	bool bBoundLightmapCoordsToFirstTextureSlot;
+	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
 		if(boundVBO == verts) {
 			if(boundVBOVertexColors == bindVertexColors) {
-				c_frame_vbsReusedByDifferentDrawCall++;
-				return; // already bound
+				if(bBoundLightmapCoordsToFirstTextureSlot == bindLightmapCoordsToFirstTextureSlot) {
+					c_frame_vbsReusedByDifferentDrawCall++;
+					return; // already bound
+				}
 			} else {
 
 			}
@@ -475,10 +493,15 @@ public:
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts->getArray());
 			selectTex(0);
 			enableTexCoordArrayForCurrentTexSlot();
-			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->tc.x);
-			selectTex(1);
-			enableTexCoordArrayForCurrentTexSlot();
-			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
+			if(bindLightmapCoordsToFirstTextureSlot) {
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
+				disableTexCoordArrayForTexSlot(1);
+			} else {
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->tc.x);
+				selectTex(1);
+				enableTexCoordArrayForCurrentTexSlot();
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
+			}
 			if(bindVertexColors) {
 				enableColorArray();
 				glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),&verts->getArray()->color[0]);
@@ -491,10 +514,15 @@ public:
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
 			selectTex(0);
 			enableTexCoordArrayForCurrentTexSlot();
-			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,tc));
-			selectTex(1);
-			enableTexCoordArrayForCurrentTexSlot();
-			glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
+			if(bindLightmapCoordsToFirstTextureSlot) {
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
+				disableTexCoordArrayForTexSlot(1);
+			} else {
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,tc));
+				selectTex(1);
+				enableTexCoordArrayForCurrentTexSlot();
+				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
+			}
 			if(bindVertexColors) {
 				enableColorArray();
 				glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),(void*)offsetof(rVert_c,color));
@@ -505,6 +533,7 @@ public:
 			glNormalPointer(GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,normal));
 		}
 		boundVBOVertexColors = bindVertexColors;
+		bBoundLightmapCoordsToFirstTextureSlot = bindLightmapCoordsToFirstTextureSlot;
 		boundVBO = verts;
 		CHECK_GL_ERRORS;
 	}
@@ -678,7 +707,7 @@ public:
 			glCull(CT_FRONT_SIDED);
 		}
 
-		bindVertexBuffer(&verts);
+		//bindVertexBuffer(&verts);
 		bindIBO(&indices);
 
 		if(lastMat) {
@@ -690,6 +719,7 @@ public:
 			u32 numMatStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numMatStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				enum stageType_e stageType = s->getStageType();
 				setAlphaFunc(s->getAlphaFunc());	
 				if(curLight == 0) {
 					const blendDef_s &bd = s->getBlendDef();
@@ -705,12 +735,33 @@ public:
 				} else {
 					this->setTextureMatrixIdentity(0);
 				}
-				textureAPI_i *t = s->getTexture(this->timeNowSeconds);
-				bindTex(0,t->getInternalHandleU32());
-				if(lastLightmap) {
-					bindTex(1,lastLightmap->getInternalHandleU32());
+				bool bindLightmapCoordinatesToFirstTextureSlot = false;
+				if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+					// draw multitextured surface with
+					// - colormap at slot 0
+					// - lightmap at slot 1
+					textureAPI_i *t = s->getTexture(this->timeNowSeconds);
+					bindTex(0,t->getInternalHandleU32());
+					if(lastLightmap) {
+						bindTex(1,lastLightmap->getInternalHandleU32());
+					} else {
+						bindTex(1,0);
+					}
+				} else if(stageType == ST_LIGHTMAP) {
+					// bind lightmap to first texture slot.
+					// draw ONLY lightmap
+					if(lastLightmap) {
+						bindTex(0,lastLightmap->getInternalHandleU32());
+					} else {
+						bindTex(0,0);
+					}
+					bindLightmapCoordinatesToFirstTextureSlot = true;
+					unbindTex(1);
 				} else {
-					bindTex(1,0);
+					// draw colormap only
+					textureAPI_i *t = s->getTexture(this->timeNowSeconds);
+					bindTex(0,t->getInternalHandleU32());
+					unbindTex(1);
 				}
 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
@@ -738,39 +789,47 @@ public:
 						}
 					}
 				}
+				// by default dont use vertex colors...
+				// (right now it overrides the setting from frontend)
+				bindVertexColors = false;
 				if(s->hasRGBGen()) {
-					// copy vertices data (first big CPU bottleneck)
-					// (but only if we havent done this already)
-					if(selectedVertexBuffer == &verts) {
-						stageVerts = verts;
-						selectedVertexBuffer = &stageVerts;
-						if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
-							g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
-						}
-					}
-					// apply rgbGen effect (new rgb colors)
-					//bindStageColors = true; // FIXME, it's already set!!!
-					enum rgbGen_e rgbGenType = s->getRGBGenType();
-					if(rgbGenType == RGBGEN_CONST) {
-						byteRGB_s col;
-						vec3_c colFloats;
-						s->getRGBGenConstantColor3f(colFloats);
-						col.fromFloats(colFloats);
-						stageVerts.setVertexColorsToConstValues(col);
-						stageVerts.setVertexAlphaToConstValue(255);
-					} else if(rgbGenType == RGBGEN_WAVE) {
-						//float val = s->rgbGen.getWaveForm().evaluate();
-						//byte valAsByte = val * 255.f;
-						//stageVerts.setVertexColorsToConstValue(valAsByte);
-						//stageVerts.setVertexAlphaToConstValue(255);
-					} else if(rgbGenType == RGBGEN_VERTEX) {
-
+					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
+						bindVertexColors = false;
 					} else {
+						bindVertexColors = true;
+						// copy vertices data (first big CPU bottleneck)
+						// (but only if we havent done this already)
+						if(selectedVertexBuffer == &verts) {
+							stageVerts = verts;
+							selectedVertexBuffer = &stageVerts;
+							if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
+								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+							}
+						}
+						// apply rgbGen effect (new rgb colors)
+						//bindStageColors = true; // FIXME, it's already set!!!
+						enum rgbGen_e rgbGenType = s->getRGBGenType();
+						if(rgbGenType == RGBGEN_CONST) {
+							byteRGB_s col;
+							vec3_c colFloats;
+							s->getRGBGenConstantColor3f(colFloats);
+							col.fromFloats(colFloats);
+							stageVerts.setVertexColorsToConstValues(col);
+							stageVerts.setVertexAlphaToConstValue(255);
+						} else if(rgbGenType == RGBGEN_WAVE) {
+							//float val = s->rgbGen.getWaveForm().evaluate();
+							//byte valAsByte = val * 255.f;
+							//stageVerts.setVertexColorsToConstValue(valAsByte);
+							//stageVerts.setVertexAlphaToConstValue(255);
+						} else if(rgbGenType == RGBGEN_VERTEX) {
 
+						} else {
+
+						}
 					}
 				}
 				// draw the current material stage using selected vertex buffer.
-				bindVertexBuffer(selectedVertexBuffer);
+				bindVertexBuffer(selectedVertexBuffer,bindLightmapCoordinatesToFirstTextureSlot);
 
 				drawCurIBO();
 				CHECK_GL_ERRORS;
@@ -1089,7 +1148,15 @@ public:
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);
-#if 1
+
+		// THE hack below is not needed now,
+		// lightmapped surfaces were too dark because
+		// they were drawn with vertex colors enabled
+		// Right now, when I have added basic 
+		// "rgbGen" Q3 shader keyword handling,
+		// vertex colors are enabled only
+		// when they are really needed...
+#if 0
 		selectTex(1);
 		// increase lightmap brightness. They are very dark when vertex colors are enabled.
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
