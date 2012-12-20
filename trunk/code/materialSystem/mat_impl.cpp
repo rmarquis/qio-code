@@ -111,6 +111,7 @@ mtrStage_c::mtrStage_c() {
 	tcGen = TCG_NONE;
 	rgbGen = 0;
 	type = ST_NOT_SET;
+	depthWrite = true;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -404,8 +405,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						u16 dst = readBlendEnum(p);
 						stage->setBlendDef(src,dst);
 					}
+					// disable writing to depth buffer for translucent surfaces
+					stage->setDepthWrite(false);
 				} else if(p.atWord("depthWrite")) {
-
+					
 				} else if(p.atWord("rgbGen")) {
 					if(stage->hasRGBGen()) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: WARNING: rgbGen defined twice at line %i of file %s in material def %s\n",

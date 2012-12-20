@@ -69,6 +69,13 @@ struct blendDef_s {
 		src = BM_NOT_SET;
 		dst = BM_NOT_SET;
 	}
+	bool isNonZero() const {
+		if(src)
+			return true;
+		if(dst)
+			return true;
+		return false;
+	}
 };
 
 class skyBoxAPI_i {

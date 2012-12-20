@@ -336,12 +336,12 @@ public:
 			blendSrc = src;
 			blendDst = dst;
 			if(src == BM_NOT_SET && dst == BM_NOT_SET) {
-				//setDepthMask( true );
+				//setGLDepthMask(true);
 				disableGLBlend(); //glDisable( GL_BLEND );
 			} else {
 				enableGLBlend(); // glEnable( GL_BLEND );
 				glBlendFunc( blendModeEnumToGLBlend(blendSrc), blendModeEnumToGLBlend(blendDst) );
-				//setDepthMask( false );
+				//setGLDepthMask(false);
 			}
 		}
 	}
@@ -728,6 +728,16 @@ public:
 					// light interactions are appended with addictive blending
 					setBlendFunc(BM_ONE,BM_ONE);
 				}
+#if 1
+				// test; it seems beam shader should be drawn with depthmask off..
+				//if(!stricmp(lastMat->getName(),"textures/sfx/beam")) {
+				//if(s->getBlendDef().isNonZero()) {
+				if(s->getDepthWrite()==false) {
+					setGLDepthMask(false);
+				} else {
+					setGLDepthMask(true);
+				}
+#endif
 				if(s->hasTexMods()) {
 					matrix_c mat;
 					s->applyTexMods(mat,this->timeNowSeconds);

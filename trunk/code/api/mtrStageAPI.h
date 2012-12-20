@@ -39,6 +39,7 @@ public:
 	virtual bool hasRGBGen() const = 0;
 	virtual enum rgbGen_e getRGBGenType() const = 0;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
+	virtual bool getDepthWrite() const = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

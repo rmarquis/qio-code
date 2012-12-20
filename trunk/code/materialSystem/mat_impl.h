@@ -98,6 +98,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	class texModArray_c *texMods;
 	enum stageType_e type;
 	class rgbGen_c *rgbGen;
+	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -123,7 +124,9 @@ public:
 	virtual bool hasRGBGen() const;
 	virtual enum rgbGen_e getRGBGenType() const;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const;
-
+	virtual bool getDepthWrite() const {
+		return depthWrite;
+	}
 	bool isLightmapStage() const {
 		return (type == ST_LIGHTMAP);
 	}
@@ -153,6 +156,9 @@ public:
 	}
 	enum texCoordGen_e getTexGen() const {
 		return tcGen;
+	}
+	void setDepthWrite(bool newDepthWrite) {
+		this->depthWrite = newDepthWrite;
 	}
 	void setTexture(const char *newMapName);
 	int getImageWidth() const;
@@ -228,14 +234,36 @@ public:
 		}
 		return false;
 	}
+	bool hasStageWithoutBlendFunc() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasBlendFunc() == false) {
+				return true;
+			}
+		}
+		return false;
+	}
 	virtual const class skyParmsAPI_i *getSkyParms() const {
 		return skyParms;
 	}
+	// TODO: precalculate stage->sort once and just return the stored value here?
 	virtual enum drawCallSort_e getSort() const { 
 		if(hasStageWithBlendFunc()) {
-			return DCS_BLEND;
+			// we must distinct between two more shader types.
+			// otherwise bsp surfaces (like walls) are sometimes drawn
+			// ON TOP of beams/glass panels. (q3dm11, etc)
+			if(hasStageWithoutBlendFunc()) {
+				// this material has fixed blendfunc stages with non-blendfunc stages
+				// Such materials are used on q3 map walls, etc...
+				return DCS_BLEND; // 2 # priority
+			} else {
+				// this material has ONLY blendfunc stages
+				// Such materials are used on q3 glass panels and beams.
+				// They must be drawn last.
+				// (eg. see textures/sfx/beam from q3 shaders/sfx.shader)
+				return DCS_BLEND2; // 3 # priority 
+			}
 		}
-		return DCS_OPAQUE;
+		return DCS_OPAQUE; // 1 # priority
 	}
 	virtual int getImageWidth() const {
 		if(stages.size() == 0)
