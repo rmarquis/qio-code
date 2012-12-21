@@ -246,6 +246,14 @@
 			Name="shaders"
 			>
 			<File
+				RelativePath="..\..\game\baseqio\glsl\genericShader.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\genericShader.vert"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\glsl\perPixelLighting.frag"
 				>
 			</File>

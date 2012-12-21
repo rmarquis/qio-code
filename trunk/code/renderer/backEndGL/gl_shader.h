@@ -28,6 +28,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "gl_local.h"
 #include <shared/str.h>
 
+// GLSL shaders can be compiled with various 
+// options and defines
+struct permutationFlags_s {
+	bool hasLightmap; // #define HAS_LIGHTMAP
+	bool hasVertexColors; // #define HAS_VERTEXCOLORS
+	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+
+	permutationFlags_s() {
+		memset(this,0,sizeof(*this));
+	}
+};
+
 class glShader_c {
 friend class rbSDLOpenGL_c;
 	str name; // shader name
@@ -36,9 +48,13 @@ friend class rbSDLOpenGL_c;
 	// uniform locations
 	int uLightOrigin;
 	int uLightRadius;
+	int uViewOrigin;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
+	int sLightMap; // Quake3 bsp lightmap
+
+	permutationFlags_s permutations;
 
 public:
 	glShader_c() {
@@ -55,13 +71,16 @@ public:
 	GLuint getGLHandle() const {
 		return handle;
 	}
+	const permutationFlags_s &getPermutations() const {
+		return permutations;
+	}
 	bool isValid() const {
 		if(handle)
 			return true;
 		return false;
 	}
 
-friend glShader_c *GL_RegisterShader(const char *baseName);
+friend glShader_c *GL_RegisterShader(const char *baseName, const permutationFlags_s *permutations = 0);
 friend void GL_ShutdownGLSLShaders();
 };
 

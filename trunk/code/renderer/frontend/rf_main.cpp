@@ -53,12 +53,16 @@ bool RF_IsUsingShadowVolumes() {
 }
 bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
 	if(mat->hasTexGen()) {
-		if(rf_debugMaterialNeedsCPUCheck.getInt()) {
-			g_core->Print("RF_MaterialNeedsCPU: material %s from file %s needs CPU because GPU texGens are not supported by current backend\n",
-				mat->getName(),mat->getSourceFileName());
+		// see if the texGen effect is supported by renderer backend GPU shaders
+		if(rb->gpuTexGensSupported() == false) {
+			if(rf_debugMaterialNeedsCPUCheck.getInt()) {
+				g_core->Print("RF_MaterialNeedsCPU: material %s from file %s needs CPU because GPU texGens are not supported by current backend\n",
+					mat->getName(),mat->getSourceFileName());
+			}
+			return true;
 		}
-		return true;
 	}
+#if 0
 	if(mat->hasRGBGen()) {
 		if(rf_debugMaterialNeedsCPUCheck.getInt()) {
 			g_core->Print("RF_MaterialNeedsCPU: material %s from file %s needs CPU because GPU rgbGens are not supported by current backend\n",
@@ -66,6 +70,7 @@ bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
 		}
 		return true;
 	}
+#endif
 	if(rf_debugMaterialNeedsCPUCheck.getInt()) {
 		g_core->Print("RF_MaterialNeedsCPU: material %s from file %s dont need CPU calculations\n",
 			mat->getName(),mat->getSourceFileName());

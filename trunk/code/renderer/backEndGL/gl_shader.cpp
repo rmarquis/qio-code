@@ -46,29 +46,46 @@ bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 	return false;
 }
 
-bool GL_LoadFileTextToString(str &out, const char *fname) {
+bool GL_AppendFileTextToString(str &out, const char *fname) {
 	char *fileData;
 	int len = g_vfs->FS_ReadFile(fname,(void**)&fileData);
 	if(fileData == 0) {
 		return true; // cannot open
 	}
-	out = fileData;
+	out.append(fileData);
 	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 arraySTD_c<glShader_c*> gl_shaders;
-static glShader_c *GL_FindShader(const char *baseName) {
+static glShader_c *GL_FindShader(const char *baseName, const permutationFlags_s &permutations) {
 	for(u32 i = 0; i < gl_shaders.size(); i++) {
 		glShader_c *s = gl_shaders[i];
 		if(!stricmp(baseName,s->getName())) {
-			return s;
+			if(!memcmp(&s->getPermutations(),&permutations,sizeof(permutationFlags_s))) {
+				return s;
+			}
 		}
 	}
 	return 0;
 }
-glShader_c *GL_RegisterShader(const char *baseName) {
+void GL_AppendPermutationDefinesToString(str &out, const permutationFlags_s &p) {
+	if(p.hasLightmap) {
+		out.append("#define HAS_LIGHTMAP\n");
+	}
+	if(p.hasVertexColors) {
+		out.append("#define HAS_VERTEXCOLORS\n");
+	}
+	if(p.hasTexGenEnvironment) {
+		out.append("#define HAS_TEXGEN_ENVIROMENT\n");
+	}
+}
+static permutationFlags_s gl_defaultPermutations;
+glShader_c *GL_RegisterShader(const char *baseName, const permutationFlags_s *permutations) {
+	if(permutations == 0) {
+		permutations = &gl_defaultPermutations;
+	}
 	// see if the shader is already loaded
-	glShader_c *ret = GL_FindShader(baseName);
+	glShader_c *ret = GL_FindShader(baseName,*permutations);
 	if(ret) {
 		if(ret->isValid())
 			return ret;
@@ -82,6 +99,7 @@ glShader_c *GL_RegisterShader(const char *baseName) {
 	fragFile.append(baseName);
 	fragFile.append(".frag");
 	ret = new glShader_c;
+	ret->permutations = *permutations;
 	ret->name = baseName;
 	gl_shaders.push_back(ret);
 	if(g_vfs->FS_FileExists(fragFile) == false) {
@@ -93,12 +111,16 @@ glShader_c *GL_RegisterShader(const char *baseName) {
 		return 0;
 	}
 	str vertexSource;
-	if(GL_LoadFileTextToString(vertexSource,vertFile)) {
+	// append system #defines
+	GL_AppendPermutationDefinesToString(vertexSource,*permutations);
+	if(GL_AppendFileTextToString(vertexSource,vertFile)) {
 		g_core->RedWarning("GL_RegisterShader: cannot open %s for reading\n",vertFile.c_str());
 		return 0;
 	}
 	str fragmentSource;
-	if(GL_LoadFileTextToString(fragmentSource,fragFile)) {
+	// append system #defines
+	GL_AppendPermutationDefinesToString(fragmentSource,*permutations);
+	if(GL_AppendFileTextToString(fragmentSource,fragFile)) {
 		g_core->RedWarning("GL_RegisterShader: cannot open %s for reading\n",fragFile.c_str());
 		return 0;
 	}
@@ -141,8 +163,10 @@ glShader_c *GL_RegisterShader(const char *baseName) {
 	ret->handle = shader;
 	// precache uniform locations
 	ret->sColorMap = glGetUniformLocation(shader,"colorMap");
+	ret->sLightMap = glGetUniformLocation(shader,"lightMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
+	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
 	return ret;
 }
 void GL_ShutdownHLSLShaders() {

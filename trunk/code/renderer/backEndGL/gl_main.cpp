@@ -56,6 +56,8 @@ aCvar_c rb_showNormalColors("rb_showNormalColors","0");
 aCvar_c gl_callGLFinish("gl_callGLFinish","0");
 aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
 aCvar_c gl_printMemcpyVertexArrayBottleneck("gl_printMemcpyVertexArrayBottleneck","0");
+aCvar_c gl_gpuTexGens("gl_gpuTexGens","0");
+aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -170,6 +172,23 @@ public:
 				break;
 		}
 		g_core->Print("GL_CheckErrors (%s:%i): %s\n", functionName, line, s );
+	}
+	virtual bool isGLSLSupportAvaible() const {
+		// TODO: do a better check to see if GLSL shaders are supported
+		if(glCreateProgram == 0) {
+			return false;
+		}
+		if(glCreateShader == 0) {
+			return false;
+		}
+	}
+	// returns true if "texgen environment" q3 shader effect can be done on GPU
+	virtual bool gpuTexGensSupported() const {
+		if(gl_gpuTexGens.getInt() == 0)
+			return false;
+		if(isGLSLSupportAvaible() == false)
+			return false;
+		return true;
 	}
 	// GL_COLOR_ARRAY changes
 	bool colorArrayActive;
@@ -653,6 +672,9 @@ public:
 			if(newShader->sColorMap != -1) {
 				glUniform1i(newShader->sColorMap,0);
 			}
+			if(newShader->sLightMap != -1) {
+				glUniform1i(newShader->sLightMap,1);
+			}
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
 					const vec3_c &xyz = curLight->getOrigin();
@@ -668,6 +690,12 @@ public:
 				if(newShader->uLightRadius != -1) {
 					glUniform1f(newShader->uLightRadius,curLight->getRadius());
 				}
+			}
+			if(newShader->uViewOrigin != -1) {
+				glUniform3f(newShader->uViewOrigin,
+					this->camOriginEntitySpace.x,
+					this->camOriginEntitySpace.y,
+					this->camOriginEntitySpace.z);
 			}
 		}
 	}
@@ -793,7 +821,7 @@ public:
 
 				// see if we have to modify current vertex array on CPU
 				// TODO: do deforms and texgens in GLSL shader
-				if(s->hasTexGen()) {
+				if(s->hasTexGen() && (this->gpuTexGensSupported()==false)) {
 					// copy vertices data (first big CPU bottleneck)
 					// (but only if we havent done this already)
 					if(selectedVertexBuffer == &verts) {
@@ -820,7 +848,11 @@ public:
 				if(s->hasRGBGen()) {
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
 						bindVertexColors = false;
-					} else {
+					} else if(s->getRGBGenType() == RGBGEN_VERTEX) {
+						// just use vertex colors from VBO,
+						// nothing to calculate on CPU
+						bindVertexColors = true;
+					} else if(0) {
 						bindVertexColors = true;
 						// copy vertices data (first big CPU bottleneck)
 						// (but only if we havent done this already)
@@ -860,6 +892,35 @@ public:
 						// (those loaded directly from .bsp file and not from .md3 file)
 						bindVertexColors = true;
 					}
+				}
+	
+				bool modifiedVertexArrayOnCPU = (selectedVertexBuffer != &verts);
+
+				// see if we have to bind a GLSL shader
+				if(lastMat->isPortalMaterial() == false &&
+					(
+					gl_alwaysUseGLSLShaders.getInt() ||
+					(modifiedVertexArrayOnCPU == false && (s->hasTexGen() && this->gpuTexGensSupported()))
+					)
+					) {
+					glShader_c *selectedShader;
+					permutationFlags_s glslShaderDesc;
+					if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+						glslShaderDesc.hasLightmap = true;
+					}
+					if(bindVertexColors) {
+						glslShaderDesc.hasVertexColors = true;
+					}
+					if(s->hasTexGen()) {
+						glslShaderDesc.hasTexGenEnvironment = true;
+					}
+
+					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					}
+				} else {
+					bindShader(0);
 				}
 				// draw the current material stage using selected vertex buffer.
 				bindVertexBuffer(selectedVertexBuffer,bindLightmapCoordinatesToFirstTextureSlot);
