@@ -24,9 +24,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 // frustum.cpp
 #include "frustum.h"
 #include "axis.h"
+#include <shared/autoCvar.h>
+
+static aCvar_c frustum_noCull("frustum_noCull","0");
 
 cullResult_e frustum_c::cull(const aabb &bb) const {
-	//return CULL_IN;
+	if(frustum_noCull.getInt()) {
+		return CULL_IN;
+	}
 #if 0
 	for(u32 i = 0; i < FRP_NUM_FRUSTUM_PLANES; i++) {	
 		if(planes[i].onSide(bb) == SIDE_BACK)
@@ -52,7 +57,10 @@ cullResult_e frustum_c::cull(const aabb &bb) const {
 	return CULL_IN;
 #endif
 }
-cullResult_e frustum_c::cullSphere(const class vec3_c &p, float radius) const {
+cullResult_e frustum_c::cullSphere(const class vec3_c &p, float radius) const {	
+	if(frustum_noCull.getInt()) {
+		return CULL_IN;
+	}
 	bool clip = false;
 	for(u32 i = 0; i < FRP_NUM_FRUSTUM_PLANES; i++) {	
 		int side = planes[i].onSide(p,radius);

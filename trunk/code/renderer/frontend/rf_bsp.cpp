@@ -42,6 +42,7 @@ aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
 aCvar_c rf_bsp_drawBSPWorld("rf_bsp_drawBSPWorld","1");
 aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
+aCvar_c rf_bsp_noFrustumCull("rf_bsp_noFrustumCull","0");
 aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
 aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
@@ -635,7 +636,7 @@ u32 rBspTree_c::boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const {
 	return out.size();
 }
 void rBspTree_c::updateVisibility() {
-	int camCluster = pointInCluster(rf_camera.getOrigin());
+	int camCluster = pointInCluster(rf_camera.getPVSOrigin());
 	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
 		return;
 	}
@@ -744,7 +745,7 @@ void rBspTree_c::addDrawCalls() {
 		bspSurfBatch_s *b = batches[i];
 		if(b->indices.getNumIndices() == 0)
 			continue;
-		if(rf_camera.getFrustum().cull(b->bounds) == CULL_OUT) {
+		if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(b->bounds) == CULL_OUT) {
 			c_culledBatches++;
 			continue;
 		}
@@ -758,11 +759,16 @@ void rBspTree_c::addDrawCalls() {
 						g_core->RedWarning("Found surface with numVerts == 0\n");
 						continue;
 					}
+					if(subSF->lastVisCount != this->visCounter) {
+						continue; // surface was culled by PVS
+					}
 					// cull separate surfaces
-					if(rf_camera.getFrustum().cull(subSF->getBounds()) == CULL_OUT) {
+					if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(subSF->getBounds()) == CULL_OUT) {
 						// we dont need this one
 						continue;
 					}
+					//if(rf_camera.getPortalPlane().onSide(subSF->getBounds()) == SIDE_FRONT)
+					//	continue;
 					// add separate drawcalls
 					bspTriSurf_s *stSF = subSF->sf;
 
@@ -790,7 +796,7 @@ void rBspTree_c::addDrawCalls() {
 			if(sf->lastVisCount != this->visCounter) {
 				continue; // culled by PVS
 			}
-			if(rf_camera.getFrustum().cull(sf->patch->getBB()) == CULL_OUT) {
+			if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(sf->patch->getBB()) == CULL_OUT) {
 				c_culledBezierPatches++;
 				continue;
 			}

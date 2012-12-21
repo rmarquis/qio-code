@@ -164,6 +164,20 @@ int compareDrawCall(const void *v0, const void *v1) {
 	} else if(c0->sort < c1->sort) {
 		return -1; // c0 first
 	}
+#if 1
+	if(c0->sort == DCS_PORTAL) {
+		// fix for q3dm0 where teleporter portal
+		// was visible in mirror...
+		vec3_c p = rf_camera.getPVSOrigin();
+		vec3_c center0, center1;
+		c0->verts->getCenter(*c0->indices,center0);
+		c1->verts->getCenter(*c1->indices,center1);
+		if(p.distSQ(center0) < p.distSQ(center1)) {
+			return -1;
+		}
+		return 1;
+	}
+#endif
 	// sorts are equal, sort by material pointer
 	if(c0->material > c1->material) {
 		return -1;
@@ -177,11 +191,12 @@ void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	// sort the needed part of the drawCalls array
 	qsort(rf_drawCalls.getArray()+firstDrawCall,numDrawCalls,sizeof(drawCall_c),compareDrawCall);
 }
+void RF_Generate3DSubView();
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
-	for(u32 i = firstDrawCall; i < numDrawCalls; i++, c++) {
+	for(u32 i = 0; i < numDrawCalls; i++, c++) {
 		if(prevEntity != c->entity) {
 			if(c->entity == 0) {
 				rb->setupWorldSpace();
@@ -208,18 +223,95 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		prevEntity = 0;
 	}
 }
+
+// from Q3 SDK, code for mirrors
+void R_MirrorPoint(vec3_t in, vec3_t surfaceOrigin, vec3_t cameraOrigin, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
+	int             i;
+	vec3_t          local;
+	vec3_t          transformed;
+	float           d;
+
+	VectorSubtract(in, surfaceOrigin, local);
+
+	VectorClear(transformed);
+	for(i = 0; i < 3; i++)
+	{
+		d = DotProduct(local, surfaceAxis[i]);
+		VectorMA(transformed, d, cameraAxis[i], transformed);
+	}
+
+	VectorAdd(transformed, cameraOrigin, out);
+}
+void R_MirrorVector(vec3_t in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
+	VectorClear(out);
+	for(u32 i = 0; i < 3; i++) {
+		float d = DotProduct(in, surfaceAxis[i]);
+		VectorMA(out, d, cameraAxis[i], out);
+	}
+}
+void R_MirrorAxis(const axis_c &in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], axis_c &out) {
+	for(u32 i = 0; i < 3; i++) {
+		R_MirrorVector(in[i],surfaceAxis,cameraAxis,out[i]);
+	}
+}
 void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) {
 	// drawcalls are already sorted
 	// search for DCS_PORTAL
-	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
-	for(u32 i = firstDrawCall; i < numDrawCalls; i++, c++) {
-		if(c->sort > DCS_PORTAL) {
+	for(u32 i = firstDrawCall; i < numDrawCalls; i++) {
+		drawCall_c &dc = rf_drawCalls.getArray()[i];
+		if(dc.sort > DCS_PORTAL) {
 			return; // dont have to check any more
 		}
 		plane_c surfacePlane;
-		if(c->verts->getPlane(surfacePlane)) {
+		if(dc.verts->getPlane(*dc.indices,surfacePlane)) {
 			g_core->RedWarning("RF_CheckDrawCallsForMirrorsAndPortals: mirror/portal surface not planar!\n");
 			continue;
+		}
+		float cameraDist = surfacePlane.distance(rf_camera.getOrigin());
+		if(cameraDist > 0) {
+			continue; // camera is behind surface plane
+		}
+		//g_core->Print("Found DCS_PORTAL drawCall with material %s (abs index %i)\n",dc.material->getName(),i);
+		// do the automatic mirror for now 
+		if(1 && !stricmp(dc.material->getName(),"textures/common/mirror2")) {
+			//vec3_c center;
+			//dc.verts->getCenter(*dc.indices, center);
+			vec3_c surfaceOrigin = surfacePlane.norm * -surfacePlane.dist;
+			//g_core->Print("Center %f %f %f, origin %f %f %f\n",center.x,center.y,center.z,surfaceOrigin.x,surfaceOrigin.y,surfaceOrigin.z);
+
+			axis_c surfaceAxis;
+			surfaceAxis[0] = surfacePlane.norm;
+			surfacePlane.norm.makeNormalVectors(surfaceAxis[1],surfaceAxis[2]);
+			surfaceAxis[2] = - surfaceAxis[2]; // makeNormalVectors returns "down" instead of "up"
+			// store previous camera def
+			cameraDef_c prevCamera = rf_camera;
+			const axis_c &prevAxis = prevCamera.getAxis();
+			const vec3_c &prevEye = prevCamera.getOrigin();
+
+			axis_c cameraAxis;
+			cameraAxis[0] = -surfaceAxis[0];
+			cameraAxis[1] = surfaceAxis[1];
+			cameraAxis[2] = surfaceAxis[2];
+			//g_core->Print("Cam axis: %s\n",cameraAxis.toString());
+
+			vec3_c newEye;
+			axis_c newAxis;
+			R_MirrorPoint(prevEye, surfaceOrigin, surfaceOrigin, surfaceAxis, cameraAxis, newEye);
+
+			plane_c portalPlane;
+			portalPlane.norm = -cameraAxis[0];
+			portalPlane.dist = -surfaceOrigin.dotProduct(portalPlane.norm);
+
+			R_MirrorAxis(prevAxis,surfaceAxis,cameraAxis,newAxis);
+
+			rf_camera.setup(newEye,newAxis,rf_camera.getProjDef(),true);
+			rf_camera.setPortalPlane(portalPlane);
+			rf_camera.setIsMirror(true);
+			rf_camera.setPVSOrigin(prevCamera.getPVSOrigin());
+
+			RF_Generate3DSubView();
+			// restore previous camera def
+			rf_camera = prevCamera;
 		}
 	}
 }

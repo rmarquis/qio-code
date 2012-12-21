@@ -35,6 +35,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_enableMultipassRendering("rf_enableMultipassRendering","0");
 static aCvar_c rf_shadows("rf_shadows","0");
 static aCvar_c rf_debugMaterialNeedsCPUCheck("rf_debugMaterialNeedsCPUCheck","0");
+// draw only mirrored/visible trough portal view
+static aCvar_c rf_portalOnly("rf_portalOnly","0");
+static aCvar_c rf_skipMirrorAndPortalSubViews("rf_skipMirrorAndPortalSubViews","0");
 
 bool RF_IsUsingDynamicLights() {
 	if(rf_enableMultipassRendering.getInt())
@@ -83,6 +86,11 @@ void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	rf_bDrawOnlyOnDepthBuffer = false;
 }
 void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
+	rb->clearDepthBuffer();
+	rb->setupProjection3D(&rf_camera.getProjDef());
+	rb->setup3DView(rf_camera.getOrigin(), rf_camera.getAxis());
+	rb->setIsMirror(rf_camera.isMirror());
+	rb->setPortalClipPlane(rf_camera.getPortalPlane(),rf_camera.isPortal());
 	// first draw sky (without writing to the depth buffer)
 	if(RF_HasSky()) {
 		RF_DrawSky();
@@ -115,15 +123,24 @@ void RF_Generate3DSubView() {
 	// check the drawcalls for mirror/portals surfaces.
 	// this might call another RF_Generate3DSubView
 	// instance recursively
-	RF_CheckDrawCallsForMirrorsAndPortals(firstDrawCall,numDrawCalls);
+	if(rf_camera.isPortal() == false) {
+		if(rf_skipMirrorAndPortalSubViews.getInt()==0) {
+			RF_CheckDrawCallsForMirrorsAndPortals(firstDrawCall,numDrawCalls);
+		}
+	}
 	// finally, send the drawcalls to the renderer backend
-	RF_Draw3DSubView(firstDrawCall,numDrawCalls);
+	if(rf_portalOnly.getInt() && (rf_camera.isPortal()==false)) {
+
+	} else {
+		RF_Draw3DSubView(firstDrawCall,numDrawCalls);
+	}
 }
 void RF_Draw3DView() {
 	RF_Generate3DSubView();
 	RF_DrawCallsEndFrame();
 }
 static aCvar_c rf_printCullEntitySpaceBounds("rf_printCullEntitySpaceBounds","0");
+
 enum cullResult_e RF_CullEntitySpaceBounds(const aabb &bb) {
 	if(rf_currentEntity == 0) {
 		// if rf_currentEntity is NULL, we're using world space

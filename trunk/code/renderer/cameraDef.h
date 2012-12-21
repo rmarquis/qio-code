@@ -34,17 +34,39 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cameraDef_c {
 	projDef_s proj;
 	vec3_c origin;
+	// pvsOrigin is different than this->origin for potals
+	// (it's the real, non-reflected origin)
+	vec3_c pvsOrigin;
 	//vec3_c angles;
 	axis_c axis;
 	frustum_c frustum;
 	bool thirdPersonRendering;
+	bool bIsPortal;
+	bool bIsMirror;
+	plane_c portalPlane;
 public:
+	cameraDef_c() {
+		thirdPersonRendering = false;
+		bIsPortal = false;
+		bIsMirror = false;
+	}
 	void setup(const vec3_c &newOrigin, const axis_c &newAxis, const projDef_s &pd, bool bThirdPersonRendering = false) {
 		origin = newOrigin;
+		pvsOrigin = newOrigin;
 		axis = newAxis;
 		proj = pd;
 		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
 		thirdPersonRendering = bThirdPersonRendering;
+	}
+	void setPVSOrigin(const vec3_c &newPVSOrigin) {
+		pvsOrigin = newPVSOrigin;
+	}
+	void setPortalPlane(const plane_c &pl) {
+		portalPlane = pl;
+		bIsPortal = true;
+	}
+	void setIsMirror(bool newBIsMirror) {
+		bIsMirror = newBIsMirror;
 	}
 
 	bool isThirdPerson() const {
@@ -56,11 +78,26 @@ public:
 	const vec3_c &getOrigin() const {
 		return origin;
 	}
+	const vec3_c &getPVSOrigin() const {
+		return pvsOrigin;
+	}
 	const axis_c &getAxis() const {
 		return axis;
 	}
 	const vec3_c &getForward() const {
 		return axis.getForward();
+	}
+	const projDef_s &getProjDef() const {
+		return proj;
+	}
+	const plane_c &getPortalPlane() const {
+		return portalPlane;
+	}
+	bool isPortal() const {
+		return bIsPortal;
+	}
+	bool isMirror() const {
+		return bIsMirror;
 	}
 };
 

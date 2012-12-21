@@ -28,16 +28,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
 	rVert_c *v = this->getArray();
-	for(u32 i = 0; i < this->size(); i++, v++) {
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		v->calcEnvironmentTexCoords(viewerOrigin);
 	}
 }
 void rVertexBuffer_c::calcEnvironmentTexCoordsForReferencedVertices(const class rIndexBuffer_c &ibo, const class vec3_c &viewerOrigin) {
 	static arraySTD_c<byte> bVertexCalculated;
-	if(this->size() > bVertexCalculated.size()) {
-		bVertexCalculated.resize(this->size());
+	if(this->numVerts > bVertexCalculated.size()) {
+		bVertexCalculated.resize(this->numVerts);
 	}
-	memset(bVertexCalculated.getArray(),0,this->size());
+	memset(bVertexCalculated.getArray(),0,this->numVerts);
 	for(u32 i = 0; i < ibo.getNumIndices(); i++) {
 		u32 index = ibo[i];
 		if(bVertexCalculated[index] == 0) {
@@ -49,13 +49,13 @@ void rVertexBuffer_c::calcEnvironmentTexCoordsForReferencedVertices(const class 
 
 void rVertexBuffer_c::setVertexColorsToConstValue(byte val) {
 	rVert_c *v = this->getArray();
-	for(u32 i = 0; i < this->size(); i++, v++) {
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		v->color[0] = v->color[1] = v->color[2] = v->color[3] = val;
 	}
 }
 void rVertexBuffer_c::setVertexColorsToConstValues(byte *rgbVals) {
 	rVert_c *v = this->getArray();
-	for(u32 i = 0; i < this->size(); i++, v++) {
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		v->color[0] = rgbVals[0];
 		v->color[1] = rgbVals[1];
 		v->color[2] = rgbVals[2];
@@ -63,7 +63,7 @@ void rVertexBuffer_c::setVertexColorsToConstValues(byte *rgbVals) {
 }
 void rVertexBuffer_c::setVertexAlphaToConstValue(byte val) {
 	rVert_c *v = this->getArray();
-	for(u32 i = 0; i < this->size(); i++, v++) {
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		v->color[3] = val;
 	}
 }
@@ -80,3 +80,67 @@ bool rVertexBuffer_c::getPlane(class plane_c &pl) const {
 	}
 	return false;
 }
+bool rVertexBuffer_c::getPlane(const class rIndexBuffer_c &ibo, class plane_c &pl) const {
+	if(ibo.getNumIndices() < 3)
+		return true; // error
+	bool planeOK = false;
+	const rVert_c *v = this->getArray();
+	for(u32 i = 2; i < ibo.getNumIndices(); i++) {
+		u32 i0 = ibo[i-2];
+		u32 i1 = ibo[i-1];
+		u32 i2 = ibo[i];
+		if(pl.fromThreePoints(v[i0].xyz,v[i1].xyz,v[i2].xyz)==false) {
+			planeOK = true;
+			break;
+		}
+	}
+	if(planeOK == false) {
+		// all of the planes were denegarate
+		// this should never happen...
+		return true; // error
+	}
+	for(u32 i = 0; i < ibo.getNumIndices(); i++) {
+		u32 index = ibo[i];
+		float d = pl.distance(v[index].xyz);
+		if(abs(d) > 0.1f) {
+			return true; // error
+		}
+	}
+	return false;
+}
+void rVertexBuffer_c::getCenter(const class rIndexBuffer_c &ibo, class vec3_c &out) const {
+	if(ibo.getNumIndices() == 0) {
+		out.set(0,0,0);
+		return;
+	}
+	if(this->numVerts == 0) {
+		out.set(0,0,0);
+		return;
+	}
+	static arraySTD_c<byte> bVertexChecked;
+	if(this->numVerts > bVertexChecked.size()) {
+		bVertexChecked.resize(this->numVerts);
+	}
+	u32 numUniqueVertices = 0;
+	double cX = 0;
+	double cY = 0;
+	double cZ = 0;
+	memset(bVertexChecked.getArray(),0,this->numVerts);
+	const rVert_c *v = this->getArray();
+	for(u32 i = 0; i < ibo.getNumIndices(); i++) {
+		u32 index = ibo[i];
+		if(bVertexChecked[index] == 0) {
+			const vec3_c &p = v[index].xyz;
+			cX += p.x;
+			cY += p.y;
+			cZ += p.z;
+			bVertexChecked[index] = 1;
+			numUniqueVertices++;
+		}
+	}
+	cX /= double(numUniqueVertices);
+	cY /= double(numUniqueVertices);
+	cZ /= double(numUniqueVertices);
+	out.set(cX,cY,cZ);
+}
+

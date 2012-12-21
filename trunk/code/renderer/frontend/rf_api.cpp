@@ -96,7 +96,6 @@ public:
 		} else {
 			projDef = *pd;
 		}
-		rb->setupProjection3D(&projDef);
 	}
 	virtual void setRenderTimeMsec(int msec) {
 		rf_curTimeMsec = msec;
@@ -109,16 +108,15 @@ public:
 		axis_c camAxis;
 		camAxis.fromAngles(newCamAngles);
 		rf_camera.setup(newCamPos,camAxis,projDef,thirdPersonRendering);
-		rb->setup3DView(newCamPos, camAxis);
 	}
-	// used while drawing world surfaces and particles
-	virtual void setupWorldSpace() {
-		rb->setupWorldSpace();
-	}
-	// used while drawing entities
-	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
-		rb->setupEntitySpace(axis,origin);
-	}
+	//// used while drawing world surfaces and particles
+	//virtual void setupWorldSpace() {
+	//	rb->setupWorldSpace();
+	//}
+	//// used while drawing entities
+	//virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
+	//	rb->setupEntitySpace(axis,origin);
+	//}
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	virtual void draw3DView() {
 		RF_Draw3DView();

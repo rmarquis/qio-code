@@ -162,6 +162,8 @@ public:
 		angles[ROLL] = roll;
 		return angles;
 	}
+
+	const char *toString() const;
 };
 
 #endif // __MATH_AXIS_H__

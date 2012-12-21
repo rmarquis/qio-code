@@ -101,20 +101,29 @@ class rVertexBuffer_c {
 		u32 handleU32;
 		void *handleV;
 	};
+	u32 numVerts;
 public:
 	rVertexBuffer_c() {
 		handleU32 = 0;
+		numVerts = 0;
 	}
 	~rVertexBuffer_c() {
 		if(handleU32) {
 			unloadFromGPU();
 		}
 	}
+	void ensureAllocated(u32 needVerts) {
+		if(data.size() >= needVerts)
+			return;
+		data.resize(needVerts);
+	}
 	void operator = (const rVertexBuffer_c &other) {
 		// free the previous GPU buffer
 		unloadFromGPU();
 		// copy vertex data
-		this->data = other.data;
+		this->ensureAllocated(other.size());
+		memcpy(this->data.getArray(),other.data.getArray(),other.getSizeInBytes());
+		this->numVerts = other.numVerts;
 		// DONT upload new buffer automatically,
 		// if it's needed it must be done manually
 		//uploadToGPU();
@@ -127,15 +136,18 @@ public:
 	}
 	void resize(u32 newSize) {
 		data.resize(newSize);
+		numVerts = newSize;
 	}
 	void push_back(const rVert_c &nv) {
-		data.push_back(nv);
+		this->ensureAllocated(numVerts+1);
+		data[numVerts] = nv;
+		numVerts++;
 	}
 	u32 getSizeInBytes() const {
-		return data.getSizeInBytes();
+		return numVerts*sizeof(rVert_c);
 	}
 	u32 size() const {
-		return data.size();
+		return numVerts;
 	}
 	const rVert_c &operator [] (u32 index) const {
 		return data[index];
@@ -156,13 +168,13 @@ public:
 
 	inline void nullNormals() {
 		rVert_c *v = this->getArray();
-		for(u32 i = 0; i < this->size(); i++, v++) {
+		for(u32 i = 0; i < numVerts; i++, v++) {
 			v->normal.clear();
 		}
 	}
 	inline void normalizeNormals() {
 		rVert_c *v = this->getArray();
-		for(u32 i = 0; i < this->size(); i++, v++) {
+		for(u32 i = 0; i < numVerts; i++, v++) {
 			v->normal.normalize();
 		}
 	}
@@ -189,6 +201,9 @@ public:
 
 	// returns true if vertices are not on the same plane
 	bool getPlane(class plane_c &pl) const;
+	bool getPlane(const class rIndexBuffer_c &ibo, class plane_c &pl) const;
+	// returns the center of vertices referenced in IBO
+	void getCenter(const class rIndexBuffer_c &ibo, class vec3_c &p) const;
 };
 
 #endif // __RVERTEXBUFFER_H__

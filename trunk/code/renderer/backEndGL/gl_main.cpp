@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <math/axis.h>
 #include <math/aabb.h>
+#include <math/plane.h>
 
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <renderer/rVertexBuffer.h>
@@ -94,6 +95,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
+	axis_c viewAxis; // viewer's camera axis
 	vec3_c camOriginWorldSpace;
 	vec3_c camOriginEntitySpace;
 	bool usingWorldSpace;
@@ -111,6 +113,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool backendInitialized;
 
 	float timeNowSeconds;
+	bool isMirror;
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
@@ -127,6 +130,7 @@ public:
 		boundIBO = 0;
 		backendInitialized = false;
 		curLight = 0;
+		isMirror = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -432,10 +436,19 @@ public:
 			glDisable(GL_CULL_FACE);
 		} else {
 			glEnable( GL_CULL_FACE );
-			if(cullType == CT_BACK_SIDED) {
-				glCullFace(GL_BACK);
+			if(isMirror) {
+				// swap CT_FRONT with CT_BACK for mirror views
+				if(cullType == CT_BACK_SIDED) {
+					glCullFace(GL_FRONT);
+				} else {
+					glCullFace(GL_BACK);
+				}
 			} else {
-				glCullFace(GL_FRONT);
+				if(cullType == CT_BACK_SIDED) {
+					glCullFace(GL_BACK);
+				} else {
+					glCullFace(GL_FRONT);
+				}
 			}
 		}
 	}
@@ -959,9 +972,17 @@ public:
 		g_sharedSDLAPI->endFrame();
 	}	
 	virtual void clearDepthBuffer() {
+		if(bDepthMask == false) {
+			glDepthMask(true);
+		}
+		// glClear(GL_DEPTH_BUFFER_BIT) doesnt work when glDepthMask is false...
 		glClear(GL_DEPTH_BUFFER_BIT);
+		if(bDepthMask == false) {
+			glDepthMask(false);
+		}
 	}
 	virtual void setup2DView() {
+		disablePortalClipPlane();
 		setGLDepthMask(true);
 		setGLStencilTest(false);
 
@@ -1030,6 +1051,7 @@ public:
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
 		camOriginWorldSpace = newCamPos;
+		viewAxis = newCamAxis;
 
 		// transform by the camera placement and view axis
 		this->worldModelMatrix.invFromAxisAndVector(newCamAxis,newCamPos);
@@ -1128,6 +1150,37 @@ public:
 	}
 	virtual void setRenderTimeSeconds(float newCurTime) {
 		this->timeNowSeconds = newCurTime;
+	}
+	virtual void setIsMirror(bool newBIsMirror) {
+		if(newBIsMirror == this->isMirror)
+			return;
+		this->isMirror = newBIsMirror;
+		// force cullType reset, because mirror views
+		// must have CT_BACK with CT_FRONT swapped
+		this->prevCullType = CT_NOT_SET;
+	}
+	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
+		double plane2[4];
+#if 0
+		plane2[0] = viewAxis[0].dotProduct(pl.norm);
+		plane2[1] = viewAxis[1].dotProduct(pl.norm);
+		plane2[2] = viewAxis[2].dotProduct(pl.norm);
+		plane2[3] = pl.norm.dotProduct(camOriginWorldSpace) - pl.dist;
+#else
+		plane2[0] = -pl.norm.x;
+		plane2[1] = -pl.norm.y;
+		plane2[2] = -pl.norm.z;
+		plane2[3] = -pl.dist;
+#endif
+		if(bEnabled) {
+			glClipPlane (GL_CLIP_PLANE0, plane2);
+			glEnable (GL_CLIP_PLANE0);
+		} else {
+			glDisable (GL_CLIP_PLANE0);	
+		}
+	}
+	virtual void disablePortalClipPlane() {
+		glDisable (GL_CLIP_PLANE0);	
 	}
 	virtual void init()  {
 		if(backendInitialized) {

@@ -96,6 +96,12 @@ public:
 	virtual void setRenderTimeSeconds(float newCurTime) {
 
 	}
+	virtual void setIsMirror(bool newBIsMirror) {
+
+	}
+	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
+
+	}
 
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
