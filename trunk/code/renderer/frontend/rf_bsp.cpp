@@ -642,6 +642,14 @@ void rBspTree_c::updateVisibility() {
 	prevNoVis = rf_bsp_noVis.getInt();
 	lastCluster = camCluster;
 	this->visCounter++;
+	if(lastCluster == -1) {
+		// if camera is outside map,
+		// draw everything so we can locate BSP world
+		for(u32 i = 0; i < surfs.size(); i++) {
+			this->surfs[i].lastVisCount = this->visCounter;
+		}
+		return;
+	}
 	q3Leaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
 	int c_leavesCulledByAreaBits = 0;
