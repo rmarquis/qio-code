@@ -186,6 +186,9 @@ public:
 	void setVertexColorsToConstValue(byte val);
 	void setVertexColorsToConstValues(byte *rgbVals);
 	void setVertexAlphaToConstValue(byte val);
+
+	// returns true if vertices are not on the same plane
+	bool getPlane(class plane_c &pl) const;
 };
 
 #endif // __RVERTEXBUFFER_H__

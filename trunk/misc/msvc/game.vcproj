@@ -536,6 +536,26 @@
 				RelativePath="..\..\code\game\classes\World.h"
 				>
 			</File>
+			<Filter
+				Name="Quake3"
+				>
+				<File
+					RelativePath="..\..\code\game\classes\PortalCamera.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\PortalCamera.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\PortalSurface.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\PortalSurface.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="shared"

@@ -42,6 +42,7 @@ public:
 	virtual enum cullType_e getCullType() const = 0;
 	virtual bool hasTexGen() const = 0;
 	virtual bool hasRGBGen() const = 0;
+	virtual bool isPortalMaterial() const = 0; // returns true if material definition had "portal" keyword
 
 	virtual int getImageWidth() const = 0;
 	virtual int getImageHeight() const = 0;

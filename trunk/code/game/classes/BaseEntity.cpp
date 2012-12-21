@@ -84,6 +84,10 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		this->setOrigin(value);
 	} else if(!stricmp(key,"angles")) {
 		this->setAngles(value);
+	} else if(!stricmp(key,"targetname")) {
+		this->setTargetName(value);
+	} else if(!stricmp(key,"target")) {
+		this->setTarget(value);
 	} else {
 
 	}
@@ -96,6 +100,12 @@ void BaseEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
 	vec3_c curAngles = this->getAngles();
 	if(curAngles.isNull() == false) {
 		listener->addKeyValue("angles",curAngles);
+	}
+	if(this->hasTargetName()) {
+		listener->addKeyValue("targetname",getTargetName());
+	}
+	if(this->hasTarget()) {
+		listener->addKeyValue("target",getTarget());
 	}
 }
 // maybe I should put those functions in ModelEntity...
@@ -142,6 +152,28 @@ void BaseEntity::getLocalBounds(aabb &out) const {
 }
 u32 BaseEntity::getEntNum() const {
 	return myEdict->s->number;
+}
+const char *BaseEntity::getTargetName() const {
+	return targetName;
+}
+void BaseEntity::setTargetName(const char *newTargetName) {
+	targetName = newTargetName;
+}
+bool BaseEntity::hasTargetName() const {
+	if(targetName.length())
+		return true;
+	return false;
+}
+const char *BaseEntity::getTarget() const {
+	return target;
+}
+void BaseEntity::setTarget(const char *newTarget) {
+	target = newTarget;
+}
+bool BaseEntity::hasTarget() const {
+	if(target.length())
+		return true;
+	return false;
 }
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum) {
 	if(parent) {

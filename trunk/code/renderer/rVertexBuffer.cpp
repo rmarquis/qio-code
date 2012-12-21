@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rVertexBuffer.cpp
 #include "rVertexBuffer.h"
 #include "rIndexBuffer.h"
+#include <math/plane.h>
 
 void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
 	rVert_c *v = this->getArray();
@@ -65,4 +66,17 @@ void rVertexBuffer_c::setVertexAlphaToConstValue(byte val) {
 	for(u32 i = 0; i < this->size(); i++, v++) {
 		v->color[3] = val;
 	}
+}
+bool rVertexBuffer_c::getPlane(class plane_c &pl) const {
+	if(size() < 3)
+		return true; // error
+	const rVert_c *v = this->getArray();
+	pl.fromThreePoints(v[0].xyz,v[1].xyz,v[2].xyz);
+	for(u32 i = 0; i < size(); i++, v++) {
+		float d = pl.distance(v->xyz);
+		if(abs(d) > 0.1f) {
+			return true; // error
+		}
+	}
+	return false;
 }

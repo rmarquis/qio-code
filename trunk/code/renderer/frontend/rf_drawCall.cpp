@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_entities.h"
+#include "../rVertexBuffer.h"
 #include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/mtrAPI.h>
@@ -129,6 +130,9 @@ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class 
 	n->curLight = rf_curLightAPI;
 	rf_numDrawCalls++;
 }
+u32 RF_GetCurrentDrawcallsCount() {
+	return rf_numDrawCalls;
+}
 
 int compareDrawCall(const void *v0, const void *v1) {
 	const drawCall_c *c0 = (const drawCall_c *)v0;
@@ -169,12 +173,15 @@ int compareDrawCall(const void *v0, const void *v1) {
 	// materials are equal too
 	return 0;
 }
-
-void RF_SortAndIssueDrawCalls() {
-	qsort(rf_drawCalls.getArray(),rf_numDrawCalls,sizeof(drawCall_c),compareDrawCall);
-	drawCall_c *c = rf_drawCalls.getArray();
+void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
+	// sort the needed part of the drawCalls array
+	qsort(rf_drawCalls.getArray()+firstDrawCall,numDrawCalls,sizeof(drawCall_c),compareDrawCall);
+}
+void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
+	// issue the drawcalls
+	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
-	for(u32 i = 0; i < rf_numDrawCalls; i++, c++) {
+	for(u32 i = firstDrawCall; i < numDrawCalls; i++, c++) {
 		if(prevEntity != c->entity) {
 			if(c->entity == 0) {
 				rb->setupWorldSpace();
@@ -196,9 +203,26 @@ void RF_SortAndIssueDrawCalls() {
 		}
 	}
 	rb->setBindVertexColors(false);		
-	rf_numDrawCalls = 0;
 	if(prevEntity) {
 		rb->setupWorldSpace();
 		prevEntity = 0;
 	}
+}
+void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) {
+	// drawcalls are already sorted
+	// search for DCS_PORTAL
+	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
+	for(u32 i = firstDrawCall; i < numDrawCalls; i++, c++) {
+		if(c->sort > DCS_PORTAL) {
+			return; // dont have to check any more
+		}
+		plane_c surfacePlane;
+		if(c->verts->getPlane(surfacePlane)) {
+			g_core->RedWarning("RF_CheckDrawCallsForMirrorsAndPortals: mirror/portal surface not planar!\n");
+			continue;
+		}
+	}
+}
+void RF_DrawCallsEndFrame() {
+	rf_numDrawCalls = 0;
 }

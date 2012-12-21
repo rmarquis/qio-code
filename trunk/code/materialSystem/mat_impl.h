@@ -221,6 +221,9 @@ public:
 		}
 		return false;
 	}
+	virtual bool isPortalMaterial() const {
+		return this->bPortalMaterial;
+	}
 	inline mtrIMPL_c *getHashNext() const {
 		return hashNext;
 	}

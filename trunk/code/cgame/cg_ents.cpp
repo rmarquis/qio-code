@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 #include <api/rEntityAPI.h>
 #include <api/rLightAPI.h>
+#include <api/coreAPI.h>
 #include <math/matrix.h>
 
 /*
@@ -180,9 +181,12 @@ static void CG_AddCEntity( centity_t *cent ) {
 
 	switch ( cent->currentState.eType ) {
 	default:
-		CG_Error( "Bad entity type: %i", cent->currentState.eType );
+		g_core->RedWarning( "Bad entity type: %i\n", cent->currentState.eType );
 		break;
 
+	case ET_PORTAL:
+
+		break;
 	case ET_GENERAL:
 		//CG_General( cent );
 		break;

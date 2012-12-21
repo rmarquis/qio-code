@@ -75,7 +75,10 @@ void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd );
 typedef enum {
 	ET_GENERAL,
 	ET_PLAYER,
+	// dynamic light entity
 	ET_LIGHT,
+	// camera view portal; used for example on q3dm0
+	ET_PORTAL, // classname: misc_portal_surface
 } entityType_t;
 
 

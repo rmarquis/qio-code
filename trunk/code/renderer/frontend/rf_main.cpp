@@ -82,8 +82,18 @@ void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	RF_AddWorldDecalDrawCalls();
 	rf_bDrawOnlyOnDepthBuffer = false;
 }
-void RF_Draw3DView() {
-
+void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
+	// first draw sky (without writing to the depth buffer)
+	if(RF_HasSky()) {
+		RF_DrawSky();
+	}
+	// issue drawcalls to the renderer backend
+	RF_IssueDrawCalls(firstDrawCall,numDrawCalls);
+	// do a debug drawing on top of everything
+	RF_DoDebugDrawing();
+}
+void RF_Generate3DSubView() {
+	u32 firstDrawCall = RF_GetCurrentDrawcallsCount();
 	if(rf_enableMultipassRendering.getInt() == 0) { 
 		RF_AddGenericDrawCalls();
 	} else {
@@ -97,14 +107,21 @@ void RF_Draw3DView() {
 		// add drawcalls of light interactions
 		RFL_AddLightInteractionsDrawCalls();
 	}
-	// first draw sky (without writing to the depth buffer)
-	if(RF_HasSky()) {
-		RF_DrawSky();
-	}
-	// sort and issue drawcalls (transparency rendering)
-	RF_SortAndIssueDrawCalls();
-	// do a debug drawing on top of everything
-	RF_DoDebugDrawing();
+	u32 lastDrawCall = RF_GetCurrentDrawcallsCount();
+	u32 numDrawCalls = lastDrawCall - firstDrawCall;
+	// sort the drawcalls generated for this subview
+	// (opaque surfaces must be drawn first, then translucent ones)
+	RF_SortDrawCalls(firstDrawCall,numDrawCalls);
+	// check the drawcalls for mirror/portals surfaces.
+	// this might call another RF_Generate3DSubView
+	// instance recursively
+	RF_CheckDrawCallsForMirrorsAndPortals(firstDrawCall,numDrawCalls);
+	// finally, send the drawcalls to the renderer backend
+	RF_Draw3DSubView(firstDrawCall,numDrawCalls);
+}
+void RF_Draw3DView() {
+	RF_Generate3DSubView();
+	RF_DrawCallsEndFrame();
 }
 static aCvar_c rf_printCullEntitySpaceBounds("rf_printCullEntitySpaceBounds","0");
 enum cullResult_e RF_CullEntitySpaceBounds(const aabb &bb) {

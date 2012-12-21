@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_classes.h" // DECLARE_CLASS, etc
 #include <shared/array.h>
 #include <shared/safePtr.h>
+#include <shared/str.h>
 #include <math/matrix.h>
 
 class BaseEntity : public safePtrObject_c {
@@ -37,6 +38,8 @@ class BaseEntity : public safePtrObject_c {
 	// for entity attaching
 	arraySTD_c<BaseEntity*> attachments; // for parents
 	BaseEntity *parent; // for children
+	str targetName; // name of this entity; set in radiant or trough script
+	str target; // entity's target - FIXME: use safePtr<BaseEntity> here instead of string?
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
@@ -82,6 +85,16 @@ public:
 	virtual BaseEntity *getOwner() const {
 		return 0;
 	}
+
+	// "targetname" field (unique name of this entity)
+	const char *getTargetName() const;
+	void setTargetName(const char *newTargetName);
+	bool hasTargetName() const;
+	// "target" field
+	const char *getTarget() const;
+	void setTarget(const char *newTarget);
+	bool hasTarget() const;
+
 
 	virtual void applyCentralForce(const vec3_c &velToAdd) {
 

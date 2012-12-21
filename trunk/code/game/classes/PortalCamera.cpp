@@ -21,25 +21,16 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_drawCall.h - drawCalls managment and sorting
-#ifndef __RF_DRAWCALL_H__
-#define __RF_DRAWCALL_H__
+// PortalCamera.cpp - camera class for Quake3 portal
 
-#include "../drawCallSort.h"
+#include "PortalCamera.h"
 
-void RF_AddDrawCall(const class rVertexBuffer_c *verts, const class rIndexBuffer_c *indices,
-	class mtrAPI_i *mat, class textureAPI_i *lightmap, enum drawCallSort_e sort,
-		bool bindVertexColors);
-void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices);
+DEFINE_CLASS(PortalCamera, "BaseEntity");
+DEFINE_CLASS_ALIAS(PortalCamera, misc_portal_camera);
 
-// NOTE: RF_SortAndIssueDrawCalls might be called more than once
-// in a single renderer frame when there are active mirrors/portals views
-void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls);
-void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls);
-void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls);
-void RF_DrawCallsEndFrame(); // sets the current drawCalls count to 0
-u32 RF_GetCurrentDrawcallsCount();
+PortalCamera::PortalCamera() {
 
-extern bool rf_bDrawOnlyOnDepthBuffer;
+}
+PortalCamera::~PortalCamera() {
 
-#endif // __RF_DRAWCALL_H__
+}
