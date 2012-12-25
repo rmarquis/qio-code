@@ -30,12 +30,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 // GLSL shaders can be compiled with various 
 // options and defines
-struct permutationFlags_s {
+struct glslPermutationFlags_s {
 	bool hasLightmap; // #define HAS_LIGHTMAP
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 
-	permutationFlags_s() {
+	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
 	}
 };
@@ -54,7 +54,7 @@ friend class rbSDLOpenGL_c;
 	int sColorMap; // main diffuse texture
 	int sLightMap; // Quake3 bsp lightmap
 
-	permutationFlags_s permutations;
+	glslPermutationFlags_s permutations;
 
 public:
 	glShader_c() {
@@ -71,7 +71,7 @@ public:
 	GLuint getGLHandle() const {
 		return handle;
 	}
-	const permutationFlags_s &getPermutations() const {
+	const glslPermutationFlags_s &getPermutations() const {
 		return permutations;
 	}
 	bool isValid() const {
@@ -80,7 +80,7 @@ public:
 		return false;
 	}
 
-friend glShader_c *GL_RegisterShader(const char *baseName, const permutationFlags_s *permutations = 0);
+friend glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations = 0);
 friend void GL_ShutdownGLSLShaders();
 };
 

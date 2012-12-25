@@ -105,13 +105,13 @@ void skelSurfIMPL_c::calcEqualPointsMapping(arraySTD_c<u16> &mapping) {
 		for(u32 j = i + 1; j < verts.size(); j++) {
 			if(compareVertexWeights(i,j)) {
 				mapping[j] = i;
-				g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: vertex %i is an alias of %i\n",j,i);
+				//g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: vertex %i is an alias of %i\n",j,i);
 				c_aliases++;
 			}
 		}
 		mapping[i] = i;
 	}
-	g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: %i verts, %i alias\n",verts.size(),c_aliases);
+	//g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: %i verts, %i alias\n",verts.size(),c_aliases);
 }
 void skelSurfIMPL_c::calcEdges() {
 	arraySTD_c<u16> mapping;

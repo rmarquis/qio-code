@@ -117,6 +117,8 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	} 
 	if(cent->rLight) {
 		cent->rLight->setOrigin(cent->lerpOrigin);
+		// TODO: lerp light radius?
+		cent->rLight->setRadius(cent->currentState.lightRadius);
 	}
 }
 

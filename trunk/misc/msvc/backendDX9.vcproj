@@ -221,16 +221,24 @@
 				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\renderer\rVertexBuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\rVertexBuffer.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="shaders"
 			>
 			<File
-				RelativePath="..\..\game\baseqio\hlsl\dx9\perPixelLighting.fx"
+				RelativePath="..\..\game\baseqio\hlsl\dx9\genericShader.fx"
 				>
 			</File>
 			<File
-				RelativePath="..\..\game\baseqio\hlsl\dx9\simpleTexturing.fx"
+				RelativePath="..\..\game\baseqio\hlsl\dx9\perPixelLighting.fx"
 				>
 			</File>
 		</Filter>

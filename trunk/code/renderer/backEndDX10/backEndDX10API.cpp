@@ -99,7 +99,38 @@ public:
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
-	
+		if(lastMat == 0)
+			return;
+		if(lastMat->getNumStages() == 0)
+			return;
+		//
+		//	just display the current texture on the entire screen to test DX10 driver
+		//
+		// Get a pointer to the back buffer texture
+		ID3D10Texture2D *pBackBuffer;
+		HRESULT hr = pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D),
+		 (LPVOID*)&pBackBuffer);
+		if(hr != S_OK)
+		{
+			return;
+		}
+		//D3D10_BOX sourceRegion;
+		//sourceRegion.left = 0;
+		//sourceRegion.right = 640;
+		//sourceRegion.top = 0;
+		//sourceRegion.bottom = 480;
+		//sourceRegion.front = 0;
+		//sourceRegion.back = 1;
+
+		const mtrStageAPI_i *s = lastMat->getStage(0);
+		ID3D10Texture2D *srcTexture = (ID3D10Texture2D *)s->getTexture(0)->getInternalHandleV();
+		// Copy part of a texture resource to the back buffer texture
+		// The last parameter is a D3D10_BOX structure which defines the rectangle to copy to the back
+		// buffer. Passing in 0 will copy the whole buffer.
+		//pD3DDevice->CopySubresourceRegion(pBackBuffer, 0, 0, 0, 0, srcTexture, 0,
+		//&sourceRegion);
+		pD3DDevice->CopySubresourceRegion(pBackBuffer, 0, 0, 0, 0, srcTexture, 0,
+			0);
 	}
 	void disableLightmap() {
 	}
@@ -240,18 +271,35 @@ public:
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		ID3D10Texture2D *tex = 0;
+#if 1
+		D3D10_TEXTURE2D_DESC desc; 
+		ZeroMemory( &desc, sizeof(desc)); 
+		desc.Width = w; 
+		desc.Height = h; 
+		desc.MipLevels = 1; // 0 causes INVALIDARG error
+		desc.ArraySize = 1; // create a single texture
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+		desc.SampleDesc.Count = 1; 
+		desc.Usage = D3D10_USAGE_DYNAMIC; 
+		desc.BindFlags = D3D10_BIND_SHADER_RESOURCE; 
+		desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE; 
+		HRESULT hr = pD3DDevice->CreateTexture2D( &desc, NULL, &tex ); 
+#else
 		D3D10_TEXTURE2D_DESC desc;
 		memset(&desc,0,sizeof(desc));
 		desc.Width = w;
 		desc.Height = h;
-		desc.MipLevels = 0;
-		desc.ArraySize = 1;
+		desc.MipLevels = 0; // 0 = autogenerate mipmaps
+		desc.ArraySize = 1; // create a single texture
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.SampleDesc.Count = 1;
-		desc.Usage = D3D10_USAGE_DYNAMIC;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D10_USAGE_DEFAULT;
 		desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+		desc.MiscFlags = D3D10_RESOURCE_MISC_GENERATE_MIPS;  
+		desc.CPUAccessFlags = 0;
 		HRESULT hr = this->pD3DDevice->CreateTexture2D(&desc,0,&tex);
+#endif
 		if (FAILED(hr)) {
 			out->setInternalHandleV(0);
 			printf("rbDX10_c::uploadTexture: pD3DDevice->CreateTexture2D failed\n");
@@ -267,7 +315,7 @@ public:
 		}
 		byte *outPTexels = (UCHAR*)mappedTex.pData;
 		memcpy(outPTexels,data,w*h*4);
-		tex->Unmap( D3D10CalcSubresource(0, 0, 1) );
+		tex->Unmap( D3D10CalcSubresource(0, 0, 1) ); // NOTE: unmap "returns" void
 		out->setInternalHandleV(tex);
 	}
 	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {

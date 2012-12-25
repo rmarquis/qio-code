@@ -23,9 +23,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 
 float4x4 worldViewProjectionMatrix;
+float3 viewOrigin;
 
 texture colorMapTexture;
+#ifdef HAS_LIGHTMAP
+texture lightMapTexture;
+#endif
 
+#ifndef ONLY_LIGHTMAP
 sampler2D colorMap = sampler_state
 {
 	Texture = <colorMapTexture>;
@@ -34,6 +39,18 @@ sampler2D colorMap = sampler_state
     MipFilter = Linear;
     MaxAnisotropy = 16;
 };
+#endif
+#ifdef HAS_LIGHTMAP
+sampler2D lightMap = sampler_state
+{
+	Texture = <lightMapTexture>;
+    MagFilter = Linear;
+    MinFilter = Anisotropic;
+    MipFilter = Linear;
+    MaxAnisotropy = 16;
+};
+#endif
+
 
 struct VS_INPUT
 {
@@ -48,29 +65,70 @@ struct VS_OUTPUT
 {
 	float4 position : POSITION;
 	float2 texCoord : TEXCOORD0;
+#ifdef HAS_LIGHTMAP
+	float2 lmCoord : TEXCOORD1;
+#endif
+#ifdef HAS_VERTEXCOLORS
+	float4 vertexColor : COLOR;
+#endif
 };
 
-VS_OUTPUT VS_SimpleTexturing(VS_INPUT IN)
+VS_OUTPUT VS_GeneringShader(VS_INPUT IN)
 {
     VS_OUTPUT OUT;
     
     OUT.position = mul(float4(IN.position, 1.0f), worldViewProjectionMatrix);
+	// NOTE: texGen environment is now not compatible with lightmap-only stages
+#ifdef HAS_TEXGEN_ENVIROMENT
+	float3 dir = viewOrigin - IN.position;
+	dir = normalize(dir);
+	float dotValue = dot(IN.normal,dir);
+	float twoDot = 2.f * dotValue;
+
+	float3 reflected;
+	reflected.x = IN.normal.x * twoDot - dir.x;
+	reflected.y = IN.normal.y * twoDot - dir.y;
+	reflected.z = IN.normal.z * twoDot - dir.z;
+
+	OUT.texCoord.x = 0.5f + reflected.y * 0.5f;
+	OUT.texCoord.y = 0.5f - reflected.z * 0.5f;
+#else
 	OUT.texCoord = IN.texCoord;
-       
+#endif
+#ifdef HAS_LIGHTMAP
+	OUT.lmCoord = IN.lmCoord;
+#endif       
+#ifdef HAS_VERTEXCOLORS
+	OUT.vertexColor = IN.normal;
+#endif
     return OUT;
 }
 
-float4 PS_SimpleTexturing(VS_OUTPUT IN) : COLOR
+float4 PS_GeneringShader(VS_OUTPUT IN) : COLOR
 {
-	return tex2D(colorMap, IN.texCoord);
-	//return tex2D(colorMap, IN.texCoord*2);
+	float4 ret;
+#ifdef ONLY_LIGHTMAP
+	ret = tex2D(lightMap, IN.lmCoord);
+#else
+#ifdef HAS_LIGHTMAP
+	ret = tex2D(colorMap, IN.texCoord)*tex2D(lightMap, IN.lmCoord);
+#else
+	ret = tex2D(colorMap, IN.texCoord);
+#endif
+#endif // not defined ONLY_LIGHTMAP
+
+// append vertex colors (if needed)
+#ifdef HAS_VERTEXCOLORS
+	ret = IN.vertexColor;
+#endif
+	return ret;
 }
 
-technique SimpleTexturing
+technique GeneringShader
 {
 	pass
 	{
-		VertexShader = compile vs_2_0 VS_SimpleTexturing();
-		PixelShader = compile ps_2_0 PS_SimpleTexturing();
+		VertexShader = compile vs_2_0 VS_GeneringShader();
+		PixelShader = compile ps_2_0 PS_GeneringShader();
 	}
 }

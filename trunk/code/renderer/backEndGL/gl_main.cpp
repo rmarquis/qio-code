@@ -50,14 +50,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/byteRGB.h>
 
-aCvar_c gl_showTris("gl_showTris","0");
+static aCvar_c rb_showTris("rb_showTris","0");
 // use a special GLSL shader to show normal vectors as colors
-aCvar_c rb_showNormalColors("rb_showNormalColors","0");
-aCvar_c gl_callGLFinish("gl_callGLFinish","0");
-aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
-aCvar_c gl_printMemcpyVertexArrayBottleneck("gl_printMemcpyVertexArrayBottleneck","0");
-aCvar_c gl_gpuTexGens("gl_gpuTexGens","0");
-aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
+static aCvar_c rb_showNormalColors("rb_showNormalColors","0");
+static aCvar_c gl_callGLFinish("gl_callGLFinish","0");
+static aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
+static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBottleneck","0");
+static aCvar_c rb_gpuTexGens("rb_gpuTexGens","0");
+// always use GLSL shaders, even if they are not needed for any material effects
+static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -184,7 +185,7 @@ public:
 	}
 	// returns true if "texgen environment" q3 shader effect can be done on GPU
 	virtual bool gpuTexGensSupported() const {
-		if(gl_gpuTexGens.getInt() == 0)
+		if(rb_gpuTexGens.getInt() == 0)
 			return false;
 		if(isGLSLSupportAvaible() == false)
 			return false;
@@ -737,13 +738,6 @@ public:
 			}
 		}
 
-		if(curLight) {
-			glShader_c *sh = GL_RegisterShader("perPixelLighting");
-			bindShader(sh);
-		} else {
-			bindShader(0);
-		}
-		
 		if(lastMat) {
 			glCull(lastMat->getCullType());
 		} else {
@@ -775,10 +769,13 @@ public:
 				// test; it seems beam shader should be drawn with depthmask off..
 				//if(!stricmp(lastMat->getName(),"textures/sfx/beam")) {
 				//if(s->getBlendDef().isNonZero()) {
-				if(s->getDepthWrite()==false) {
-					setGLDepthMask(false);
-				} else {
-					setGLDepthMask(true);
+				// (only if not doing multipass lighting)
+				if(curLight == 0) {
+					if(s->getDepthWrite()==false) {
+						setGLDepthMask(false);
+					} else {
+						setGLDepthMask(true);
+					}
 				}
 #endif
 				if(s->hasTexMods()) {
@@ -820,15 +817,15 @@ public:
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
 
 				// see if we have to modify current vertex array on CPU
-				// TODO: do deforms and texgens in GLSL shader
+				// TODO: do deforms in GLSL shader
 				if(s->hasTexGen() && (this->gpuTexGensSupported()==false)) {
 					// copy vertices data (first big CPU bottleneck)
 					// (but only if we havent done this already)
 					if(selectedVertexBuffer == &verts) {
 						stageVerts = verts;
 						selectedVertexBuffer = &stageVerts;
-						if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
-							g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+						if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
+							g_core->Print("RB_GL: Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
 						}
 					}
 					// apply texgen effect (new texcoords)
@@ -859,7 +856,7 @@ public:
 						if(selectedVertexBuffer == &verts) {
 							stageVerts = verts;
 							selectedVertexBuffer = &stageVerts;
-							if(gl_printMemcpyVertexArrayBottleneck.getInt()) {
+							if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
 								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
 							}
 						}
@@ -887,7 +884,7 @@ public:
 				} else {
 					// if (rgbGen is not set) and (lightmap is not present) and (vertex colors are present)
 					// -> enable drawing with vertex colors
-					if(bHasVertexColors && (lastLightmap == 0)) {
+					if(bHasVertexColors && (lastLightmap == 0) && (curLight == 0)) {
 						// this is a fix for q3 static "md3" models 
 						// (those loaded directly from .bsp file and not from .md3 file)
 						bindVertexColors = true;
@@ -897,14 +894,18 @@ public:
 				bool modifiedVertexArrayOnCPU = (selectedVertexBuffer != &verts);
 
 				// see if we have to bind a GLSL shader
-				if(lastMat->isPortalMaterial() == false &&
+				glShader_c *selectedShader = 0;
+				if(curLight) {
+					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
+					selectedShader = GL_RegisterShader("perPixelLighting");
+					bindShader(selectedShader);
+				} else if(lastMat->isPortalMaterial() == false &&
 					(
 					gl_alwaysUseGLSLShaders.getInt() ||
 					(modifiedVertexArrayOnCPU == false && (s->hasTexGen() && this->gpuTexGensSupported()))
 					)
 					) {
-					glShader_c *selectedShader;
-					permutationFlags_s glslShaderDesc;
+					glslPermutationFlags_s glslShaderDesc;
 					if(stageType == ST_COLORMAP_LIGHTMAPPED) {
 						glslShaderDesc.hasLightmap = true;
 					}
@@ -937,13 +938,13 @@ public:
 			}
 			drawCurIBO();
 		}
-		if(gl_showTris.getInt()) {
+		if(rb_showTris.getInt()) {
 			this->unbindMaterial();
 			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-			if(gl_showTris.getInt()==1)
+			if(rb_showTris.getInt()==1)
 				setDepthRange( 0, 0 ); 
 			drawCurIBO();	
-			if(gl_showTris.getInt()==1)
+			if(rb_showTris.getInt()==1)
 				setDepthRange( 0, 1 ); 
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 		}
@@ -1043,9 +1044,10 @@ public:
 		}
 	}
 	virtual void setup2DView() {
-		disablePortalClipPlane();
 		setGLDepthMask(true);
 		setGLStencilTest(false);
+		disablePortalClipPlane();
+		setIsMirror(false);
 
 		glViewport(0,0,getWinWidth(),getWinHeight());
 		glMatrixMode(GL_PROJECTION);

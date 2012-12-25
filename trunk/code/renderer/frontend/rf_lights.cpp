@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
 static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
 static aCvar_c rf_cullLights("rf_cullLights","1");
+static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
@@ -64,6 +65,7 @@ void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	recalcLightInteractions();
 }
 void rLightImpl_c::setRadius(float newRadius) {
+	newRadius *= rf_lightRadiusMult.getFloat();
 	if(radius == newRadius) {
 		return; // no change
 	}

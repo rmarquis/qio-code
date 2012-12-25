@@ -21,7 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// backEndDX9API.cpp
+// backEndDX9API.cpp - DirectX9 renderer backend
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -34,10 +34,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <api/mtrAPI.h>
 #include <api/sdlSharedAPI.h>
+#include <api/rbAPI.h>
 
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
+#include <math/plane.h>
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
 #include <renderer/rPointBuffer.h>
@@ -45,6 +47,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rLightAPI.h>
 
 #include <shared/cullType.h>
+#include <shared/autoCvar.h>
 
 #include "dx9_local.h"
 #include "dx9_shader.h"
@@ -73,6 +76,13 @@ coreAPI_s *g_core = 0;
 inputSystemAPI_i * g_inputSystem = 0;
 //sysEventCasterAPI_c *g_sysEventCaster = 0;
 sdlSharedAPI_i *g_sharedSDLAPI = 0;
+rbAPI_i *rb = 0;
+
+static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBottleneck","0");
+static aCvar_c rb_showTris("rb_showTris","0");
+static aCvar_c rb_gpuTexGens("rb_gpuTexGens","1");
+// always use HLSL shaders, even if they are not needed for any material effects
+static aCvar_c dx9_alwaysUseHLSLShaders("dx9_alwaysUseHLSLShaders","0");
 
 // I need them in dx9_shader.cpp
 IDirect3D9 *pD3D;
@@ -85,18 +95,49 @@ D3DVERTEXELEMENT9 dx_rVertexDecl[] =
     {0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0},
 	{0, 24, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   0},
     {0, 28, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
- //   {0, 36, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+    {0, 36, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
     D3DDECL_END()
 };
+struct texState_s {
+	//bool enabledTexture2D;
+	//bool texCoordArrayEnabled;
+	//u32 index;
+	matrixExt_c mat;
 
+	texState_s() {
+		//enabledTexture2D = false;
+		///texCoordArrayEnabled = false;
+		///index = 0;
+	}
+};
+#define MAX_TEXTURE_SLOTS 4
 class rbDX9_c : public rbAPI_i {
+	// DirectX9 window
 	HWND hWnd;
 	int dxWidth, dxHeight;
+	// surface material and lightmap
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
+	// vertex declaration - only for HLSL shaders
 	IDirect3DVertexDeclaration9 *rVertDecl;
 	bool usingWorldSpace;
 	bool bDrawingShadowVolumes;
+	texState_s texStates[MAX_TEXTURE_SLOTS]; 
+	bool bHasVertexColors;
+	// cgame time for shader effects (texmods, deforms)
+	float timeNowSeconds;
+	bool bIsMirror;
+	// matrices
+	D3DXMATRIX dxView, dxWorld, dxProj;
+	// queried on startup
+	D3DCAPS9 devCaps;
+
+	matrix_c viewMatrix;
+	matrix_c entityMatrix;
+	matrix_c entityMatrixInverse;
+	axis_c viewAxis; // viewer's camera axis
+	vec3_c camOriginWorldSpace;
+	vec3_c camOriginEntitySpace;
 public:
 	rbDX9_c() {
 		hWnd = 0;
@@ -106,6 +147,17 @@ public:
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX9;
+	}
+	bool isHLSLSupportAvaible() const {
+		return true; // TODO
+	}
+	// returns true if "texgen environment" q3 shader effect can be done on GPU
+	virtual bool gpuTexGensSupported() const {
+		if(rb_gpuTexGens.getInt() == 0)
+			return false;
+		if(isHLSLSupportAvaible() == false)
+			return false;
+		return true;
 	}
 	void initDX9State() {
 		pDev->SetRenderState(D3DRS_ZENABLE, true);
@@ -138,10 +190,12 @@ public:
 		lastMat = 0;
 		disableLightmap();
 		disableBlendFunc();
+		turnOffTextureMatrices();
 	}
 	virtual void setColor4(const float *rgba) {
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
+		bHasVertexColors = bBindVertexColors;
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 		disableLightmap();
@@ -185,6 +239,7 @@ public:
 	}
 	void disableLightmap() {
 		pDev->SetTexture(1,0);
+		pDev->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
 	}
 	//
 	// alphaFunc changes
@@ -271,12 +326,49 @@ public:
 		if(cullType == CT_TWO_SIDED) {
 			pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_NONE);
 		} else {
-			if(cullType == CT_BACK_SIDED) {
-				pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CW);
+			if(bIsMirror) {
+				// swap CT_FRONT with CT_BACK for mirror views
+				if(cullType == CT_BACK_SIDED) {
+					pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
+				} else {
+					pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CW);
+				}
 			} else {
-				pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
+				if(cullType == CT_BACK_SIDED) {
+					pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CW);
+				} else {
+					pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
+				}
 			}
 		}
+	}
+	// texture matrices
+	void turnOffTextureMatrices() {
+		for(u32 i = 0; i < MAX_TEXTURE_SLOTS; i++) {
+			setTextureMatrixIdentity(i);
+		}
+	}
+	void setTextureMatrixCustom(u32 slot, const matrix_c &mat) {
+		texState_s *ts = &this->texStates[slot];
+		if(ts->mat.set(mat) == false)
+			return; // no change
+
+//		this->selectTex(slot);
+		// FIXME: this is not correct! 
+		pDev->SetTransform( D3DTRANSFORMSTATETYPE(D3DTS_TEXTURE0+slot), (D3DMATRIX*)&mat );
+		pDev->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, 
+                                 D3DTTFF_COUNT2 );
+	}
+	void setTextureMatrixIdentity(u32 slot) {
+		texState_s *ts = &this->texStates[slot];
+		if(ts->mat.isIdentity())
+			return; // no change
+		ts->mat.setIdentity();
+
+	//	this->selectTex(slot);
+		D3DXMATRIX matTrans;
+		D3DXMatrixIdentity(&matTrans);
+		pDev->SetTransform( D3DTRANSFORMSTATETYPE(D3DTS_TEXTURE0+slot), &matTrans );
 	}
 	const rLightAPI_i *curLight;
 	bool bDrawOnlyOnDepthBuffer;
@@ -285,7 +377,7 @@ public:
 	}
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
-	}
+	}	
 	inline void drawIndexedTrimeshInternal(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
 			pDev->SetIndices((IDirect3DIndexBuffer9 *)indices.getInternalHandleVoid());
@@ -296,6 +388,170 @@ public:
 				indices.getArray(),
 				indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
 		}
+	}
+	inline void drawIndexedTrimesh(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		drawIndexedTrimeshInternal(verts,indices);
+		// show triangle outlines (classic "r_showTris" effect; only for debuging)
+		if(rb_showTris.getInt()) {
+			pDev->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
+			if(rb_showTris.getInt()==1) {
+				pDev->SetRenderState(D3DRS_ZENABLE,false);
+			}
+			disableLightmap();
+			disableBlendFunc();
+			turnOffTextureMatrices();
+			pDev->SetTexture(0,0);
+			drawIndexedTrimeshInternal(verts,indices);
+			pDev->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+			if(rb_showTris.getInt()==1) {
+				pDev->SetRenderState(D3DRS_ZENABLE,true);
+			}
+		}
+	}
+	hlslShader_c *boundShader;
+	bool bindHLSLShader(hlslShader_c *newShader, const mtrStageAPI_i *stage) {
+		if(newShader == 0) {
+			boundShader = 0;
+			return true; // error
+		}
+		if(newShader->isValid() == false) {
+			boundShader = 0;
+			return true; // error
+		}
+		// ensure that IDirect3DVertexDeclaration9 is initialized
+		// (it's needed only for rendering with HLSL shaders)
+		initRVertDecl();
+		if(rVertDecl == 0) {
+			boundShader = 0;
+			return true; // somehow vertex decl creation failed
+		}
+		// set vertex declation
+		pDev->SetVertexDeclaration(rVertDecl);
+		// select technique handle
+		//D3DXHANDLE hTechnique = newShader->effect->GetTechniqueByName("SimpleTexturing");
+		D3DXHANDLE hTechnique = newShader->effect->GetTechnique(0);
+		newShader->effect->SetTechnique(hTechnique);
+		// set view origin (in entity space)
+		newShader->effect->SetValue("viewOrigin", camOriginEntitySpace, sizeof(vec3_c));
+		// set final matrix, which we will use in shader to transform vertices
+		D3DXMATRIX worldViewProjectionMatrix;
+		worldViewProjectionMatrix = dxWorld * dxView * dxProj;
+		newShader->effect->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
+		// set colorMap and lightMap textures
+		IDirect3DTexture9 *colorMapDX9 = (IDirect3DTexture9 *)stage->getTexture(this->timeNowSeconds)->getInternalHandleV();
+		newShader->effect->SetTexture("colorMapTexture", colorMapDX9);
+		if(lastLightmap) {
+			IDirect3DTexture9 *lightMapDX9 = (IDirect3DTexture9 *)lastLightmap->getInternalHandleV();
+			newShader->effect->SetTexture("lightMapTexture", lightMapDX9);
+		} else {
+			newShader->effect->SetTexture("lightMapTexture", 0);
+		}
+		// if we're drawing a lighting pass, send light paramters to shader
+		if(curLight) {
+			const vec3_c &xyz = curLight->getOrigin();
+			if(usingWorldSpace) {
+				newShader->effect->SetValue("lightOrigin", xyz, sizeof(vec3_c));
+			} else {
+				matrix_c entityMatrixInv = entityMatrix.getInversed();
+				vec3_c xyzLocal;
+				entityMatrixInv.transformPoint(xyz,xyzLocal);
+				newShader->effect->SetValue("lightOrigin", xyzLocal, sizeof(vec3_c));
+			}
+			newShader->effect->SetFloat("lightRadius", curLight->getRadius());
+		}
+		boundShader = newShader;
+		// shader is now setup and ready for drawing...
+		return false;
+	}
+	rVertexBuffer_c stageVerts;		
+	void drawStageFixedFunctionPipeline(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, const class mtrStageAPI_i *s) {
+		enum stageType_e stageType = s->getStageType();
+		IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
+		// draw without HLSL shader (fixed function pipeline)
+		pDev->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
+		pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+			// draw multitextured surface with
+			// - colormap at slot 0
+			// - lightmap at slot 1
+			// bind colormap (from material stage)
+			pDev->SetTexture(0,texDX9);
+			// bind lightmap (only for BSP planar surfaces and bezier patches)
+			if(lastLightmap) {
+				setLightmap((IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+			} else {
+				disableLightmap();
+			}
+		} else if(stageType == ST_LIGHTMAP) {
+			// bind lightmap to FIRST texture slot
+			pDev->SetTexture(0,(IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+			disableLightmap();
+
+#if 1
+			pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_PREMODULATE );
+#else
+			pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
+#endif
+			// make first texture slot use second slot coordinates (lightmap coords)
+			pDev->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 1);
+			//// bind lightmap (only for BSP planar surfaces and bezier patches)
+			//if(lastLightmap) {
+			//	setLightmap((IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+			//} else {
+			//	disableLightmap();
+			//}
+		} else {
+			// draw colormap only
+			pDev->SetTexture(0,texDX9);
+			disableLightmap();
+		}
+		// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
+		const rVertexBuffer_c *selectedVertexBuffer = &verts;
+
+		// see if we have to modify current vertex array on CPU
+		// TODO: do deforms and texgens in HLSL shader
+		if(s->hasTexGen() && (this->gpuTexGensSupported()==false)) {
+			// copy vertices data (first big CPU bottleneck)
+			// (but only if we havent done this already)
+			if(selectedVertexBuffer == &verts) {
+				stageVerts = verts;
+				selectedVertexBuffer = &stageVerts;
+				if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
+					g_core->Print("RB_DX9: Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+				}
+			}
+			// apply texgen effect (new texcoords)
+			if(s->getTexGen() == TCG_ENVIRONMENT) {
+				if(indices.getNumIndices() < verts.size()) {
+					// if there are more vertices than indexes, we're sure that some of verts are unreferenced,
+					// so we dont have to calculate texcoords for EVERY ONE of them
+					stageVerts.calcEnvironmentTexCoordsForReferencedVertices(indices,this->camOriginEntitySpace);
+				} else {
+					stageVerts.calcEnvironmentTexCoords(this->camOriginEntitySpace);
+				}
+			}
+		}
+		drawIndexedTrimesh(*selectedVertexBuffer,indices);
+	}	
+	void drawStageWithHLSLShader(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, const class mtrStageAPI_i *s) {
+		if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
+			pDev->SetIndices((IDirect3DIndexBuffer9 *)indices.getInternalHandleVoid());
+			pDev->SetStreamSource(0,(IDirect3DVertexBuffer9*)verts.getInternalHandleVoid(),0,sizeof(rVert_c));
+		}
+		u32 numDX9EffectPasses;
+		boundShader->effect->Begin(&numDX9EffectPasses,0);
+		for(u32 i = 0; i < numDX9EffectPasses; i++) {
+			boundShader->effect->BeginPass(i);
+			if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
+				pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,verts.size(),0,indices.getNumIndices()/3);
+			} else {
+				pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
+					indices.getArray(),
+					indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
+			}
+			boundShader->effect->EndPass();
+		}
+		boundShader->effect->End();
 	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		pDev->SetFVF(RVERT_FVF);
@@ -313,7 +569,7 @@ public:
 
 			// set the color mask
 			pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
-			drawIndexedTrimeshInternal(verts,indices);
+			drawIndexedTrimesh(verts,indices);
 			return;
 		}
 		// set the color mask
@@ -321,65 +577,10 @@ public:
 			D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);
 
 		if(lastMat) {
-			if(curLight) {
-				hlslShader_c *sh = DX9_RegisterShader("perPixelLighting");
-				initRVertDecl();
-				if(sh && rVertDecl) {
-
-
-					pDev->SetVertexDeclaration(rVertDecl);
-					if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
-						pDev->SetStreamSource(0,(IDirect3DVertexBuffer9*)verts.getInternalHandleVoid(),0,sizeof(rVert_c));
-						pDev->SetIndices((IDirect3DIndexBuffer9 *)indices.getInternalHandleVoid());
-					} 
-					//D3DXHANDLE hTechnique = sh->effect->GetTechniqueByName("SimpleTexturing");
-					D3DXHANDLE hTechnique = sh->effect->GetTechnique(0);
-					sh->effect->SetTechnique(hTechnique);
-					D3DXMATRIX worldViewProjectionMatrix;
-					worldViewProjectionMatrix = dxWorld * dxView * dxProj;
-					sh->effect->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
-					const mtrStageAPI_i *s = lastMat->getStage(0);
-					IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
-					sh->effect->SetTexture("colorMapTexture", texDX9);
-
-					// set blendfunc (for particles, etc)
-					if(curLight) {
-						// light interactions are appended with addictive blending
-						setBlendFunc(BM_ONE,BM_ONE);
-					} else {
-						const blendDef_s &bd = s->getBlendDef();
-						setBlendFunc(bd.src,bd.dst);
-					}
-
-					const vec3_c &xyz = curLight->getOrigin();
-					if(usingWorldSpace) {
-						sh->effect->SetValue("lightOrigin", xyz, sizeof(vec3_c));
-					} else {
-						matrix_c entityMatrixInv = worldMatrix.getInversed();
-						vec3_c xyzLocal;
-						entityMatrixInv.transformPoint(xyz,xyzLocal);
-						sh->effect->SetValue("lightOrigin", xyzLocal, sizeof(vec3_c));
-					}
-					sh->effect->SetFloat("lightRadius", curLight->getRadius());
-					u32 numDX9EffectPasses;
-					sh->effect->Begin(&numDX9EffectPasses,0);
-					for(u32 i = 0; i < numDX9EffectPasses; i++) {
-						sh->effect->BeginPass(i);
-						if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
-							pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,verts.size(),0,indices.getNumIndices()/3);
-						} else {
-							pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,0,verts.size(),indices.getNumIndices()/3,
-								indices.getArray(),
-								indices.getDX9IndexType(),verts.getArray(),sizeof(rVert_c));
-						}
-						sh->effect->EndPass();
-					}
-					sh->effect->End();
-					return;
-				}	
-			}
-			for(u32 i = 0; i < lastMat->getNumStages(); i++) {
+			u32 numStages = lastMat->getNumStages();
+			for(u32 i = 0; i < numStages; i++) {
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				enum stageType_e stageType = s->getStageType();
 				IDirect3DTexture9 *texDX9 = (IDirect3DTexture9 *)s->getTexture()->getInternalHandleV();
 				
 				// set alphafunc (for grates, etc)
@@ -392,16 +593,81 @@ public:
 					const blendDef_s &bd = s->getBlendDef();
 					setBlendFunc(bd.src,bd.dst);
 				}
-				// bind colormap (from material stage)
-				pDev->SetTexture(0,texDX9);
-				// bind lightmap (only for BSP planar surfaces and bezier patches)
-				if(lastLightmap) {
-					setLightmap((IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
-				} else {
-					disableLightmap();
+				if(curLight == 0) {
+					if(s->getDepthWrite()==false) {
+						setDX9DepthMask(false);
+					} else {
+						setDX9DepthMask(true);
+					}
 				}
 
-				drawIndexedTrimeshInternal(verts,indices);
+				if(s->hasTexMods()) {
+					matrix_c mat;
+					s->applyTexMods(mat,this->timeNowSeconds);
+					this->setTextureMatrixCustom(0,mat);
+				} else {
+					this->setTextureMatrixIdentity(0);
+				}	
+
+				// select the shader
+
+				// true if we have an effect that's faster on GPU path (eg. "texgen environment")
+				bool bShouldUseGPU = false;
+				// true if we have an effect that must be calculated on CPU
+				bool bMustUseCPU = false;
+				hlslShader_c *selectedShader = 0;
+				hlslPermutationFlags_s shaderDef;
+				if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+					if(lastLightmap) {
+						shaderDef.hasLightmap = true;
+					}
+				}
+				if(stageType == ST_LIGHTMAP) {
+					shaderDef.onlyLightmap = true;
+					shaderDef.hasLightmap = true;
+				}
+				if(s->hasTexGen()) {
+					// genericShader.fx can do "texgen enviromental" effect on GPU
+					shaderDef.hasTexGenEnvironment = true;
+					if(this->gpuTexGensSupported()) {
+						bShouldUseGPU = true;
+					} else {
+						bMustUseCPU = true;
+					}
+				}
+				bool bindVertexColors = false;
+				if(bHasVertexColors) {
+					if(lastLightmap == 0) {
+						// if we have vertex colors but dont have lightmap
+						bindVertexColors = true; // use vertex colors
+					}
+				}
+				if(bindVertexColors) {
+					pDev->SetRenderState(D3DRS_COLORVERTEX,true);
+					shaderDef.hasVertexColors = true;
+				} else {
+					pDev->SetRenderState(D3DRS_COLORVERTEX,false);
+				}
+				if(curLight) {
+					selectedShader = DX9_RegisterShader("perPixelLighting",&shaderDef);
+				} else {
+					if(
+						dx9_alwaysUseHLSLShaders.getInt()
+						||
+						(bMustUseCPU == false && bShouldUseGPU == true)
+						) {
+						selectedShader = DX9_RegisterShader("genericShader",&shaderDef);
+					}
+				}
+				// bind the selected shader (NULL or valid)
+				bindHLSLShader(selectedShader,s); // bindHLSLShader call will set this->boundShader pointer
+
+
+				if(boundShader == 0) {
+					drawStageFixedFunctionPipeline(verts,indices,s);
+				} else {
+					drawStageWithHLSLShader(verts,indices,s);
+				}
 			}
 		}
 	}	
@@ -444,6 +710,18 @@ public:
 		bDrawingShadowVolumes = false;
 	}
 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+		if(points == 0) {
+			return;
+		}
+		if(indices == 0) {
+			return;
+		}
+		if(indices->getNumIndices() == 0) {
+			return;
+		}
+		if(points->size() == 0) {
+			return;
+		}
 		startDrawingShadowVolumes();
 
 		pDev->SetFVF(RSHADOWVOLUMEVERT_FVF);
@@ -480,6 +758,8 @@ public:
 	virtual void setup2DView() {
 		setDX9StencilTest(false);
 		setDX9DepthMask(true);
+		disablePortalClipPlane();
+		setIsMirror(false);
 
 		D3DVIEWPORT9 vp;
 		vp.X = 0;
@@ -499,13 +779,12 @@ public:
 		pDev->SetTransform(D3DTS_WORLD,&id);
 		pDev->SetTransform(D3DTS_VIEW,&id);
 	}
-	D3DXMATRIX dxView, dxWorld, dxProj;
+	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
+		camOriginWorldSpace = newCamPos;
+		viewAxis = newCamAxis;
 
-	matrix_c viewMatrix;
-	matrix_c worldMatrix;
-	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) {
 		// transform by the camera placement and view axis
-		viewMatrix.invFromAxisAndVector(camAxis,newCamPos);
+		viewMatrix.invFromAxisAndVector(newCamAxis,newCamPos);
 		// convert to gl coord system
 		viewMatrix.toGL();
 
@@ -529,21 +808,49 @@ public:
 	}
 	virtual void drawBBLines(const class aabb &bb) {
 	}
+	virtual void setRenderTimeSeconds(float newCurTime) {
+		this->timeNowSeconds = newCurTime;
+	}
+	virtual void setIsMirror(bool newBIsMirror) {
+		if(newBIsMirror == this->bIsMirror)
+			return;
+		this->bIsMirror = newBIsMirror;
+		// force cullType reset, because mirror views
+		// must have CT_BACK with CT_FRONT swapped
+		this->prevCullType = CT_NOT_SET;
+	}
+	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
+		plane_c plInversed = pl.getOpposite();
+		pDev->SetClipPlane(0,plInversed.norm);
+		if(bEnabled) {
+			pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,true);
+		} else {
+			pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,false);
+		}
+	}
+	virtual void disablePortalClipPlane() {
+		pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,false);
+	}
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() {
-		worldMatrix.identity();
+		entityMatrix.identity();
 
-		dxWorld = *(const D3DMATRIX *)&worldMatrix;
-		pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&worldMatrix);
+		dxWorld = *(const D3DMATRIX *)&entityMatrix;
+		pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&entityMatrix);
+
+		camOriginEntitySpace = this->camOriginWorldSpace;
 
 		usingWorldSpace = true;
 	}
 	// used while drawing entities
 	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
-		worldMatrix.fromAxisAndOrigin(axis,origin);
+		entityMatrix.fromAxisAndOrigin(axis,origin);
+		entityMatrixInverse = entityMatrix.getInversed();
 
-		dxWorld = *(const D3DMATRIX *)&worldMatrix;
-		pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&worldMatrix);
+		entityMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
+
+		dxWorld = *(const D3DMATRIX *)&entityMatrix;
+		pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&entityMatrix);
 		
 		usingWorldSpace = false;
 	}
@@ -581,10 +888,17 @@ public:
 			for(u32 j = 0; j < h; j++) {
 				const byte *inPixel = data + (i * h + j)*4;
 				byte *outPixel = outDXData + (i * h + j)*4;
+#if 1
 				outPixel[0] = inPixel[2];
 				outPixel[1] = inPixel[1];
 				outPixel[2] = inPixel[0];
 				outPixel[3] = inPixel[3];
+#else
+				outPixel[0] = inPixel[3];
+				outPixel[1] = inPixel[0];
+				outPixel[2] = inPixel[1];
+				outPixel[3] = inPixel[2];
+#endif
 			}
 		}
 #endif
@@ -620,10 +934,17 @@ public:
 			for(u32 j = 0; j < h; j++) {
 				const byte *inPixel = data + (i * h + j)*3;
 				byte *outPixel = outPicData + (i * h + j)*4;
+#if 1
 				outPixel[0] = inPixel[0];
 				outPixel[1] = inPixel[1];
 				outPixel[2] = inPixel[2];
 				outPixel[3] = 255;
+#else
+				outPixel[0] = 255;
+				outPixel[1] = inPixel[0];
+				outPixel[2] = inPixel[1];
+				outPixel[3] = inPixel[2];
+#endif
 			}
 		}
 		hr = tex->UnlockRect(0);
@@ -685,7 +1006,11 @@ public:
 	// index buffers (IBOs)
 	virtual bool createIBO(class rIndexBuffer_c *ptr) {	
 		IDirect3DIndexBuffer9 *ibo = 0;
-		HRESULT createResult = pDev->CreateIndexBuffer(ptr->getSizeInBytes(), D3DUSAGE_WRITEONLY, ptr->getDX9IndexType(), D3DPOOL_MANAGED, &ibo, NULL);
+		u32 iboSizeInBytes = ptr->getSizeInBytes();
+		if(iboSizeInBytes == 0) {
+			return true; // pDev->CreateIndexBuffer would fail for 0 bytes
+		}
+		HRESULT createResult = pDev->CreateIndexBuffer(iboSizeInBytes, D3DUSAGE_WRITEONLY, ptr->getDX9IndexType(), D3DPOOL_MANAGED, &ibo, NULL);
 		if (FAILED(createResult)) {
 			g_core->RedWarning("refApiDX9_c::createIBO: pDev->CreateIndexBuffer failed\n");
 			return true;
@@ -696,7 +1021,7 @@ public:
 			g_core->RedWarning("refApiDX9_c::createIBO: ibo->Lock failed\n");
 			return true;
 		}
-		memcpy(bufData,ptr->getArray(),ptr->getSizeInBytes());
+		memcpy(bufData,ptr->getArray(),iboSizeInBytes);
 		HRESULT unlockResult = ibo->Unlock();
 		if (FAILED(unlockResult)) {
 			g_core->RedWarning("refApiDX9_c::createIBO: ibo->Unlock() failed\n");
@@ -715,6 +1040,8 @@ public:
 	}
 
 	virtual void init() {
+		// cvars
+		AUTOCVAR_RegisterAutoCvars();
 		// init SDL window
 		g_sharedSDLAPI->init();
 
@@ -748,6 +1075,13 @@ public:
 		pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
 			D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDev);
 
+		// get caps
+		ZeroMemory( &devCaps, sizeof(devCaps) );
+		HRESULT getCapsResult = pDev->GetDeviceCaps(&devCaps);
+		if(FAILED(getCapsResult)) {
+			g_core->RedWarning("rbDX9_c::init: pDev->GetDeviceCaps FAILED\n");
+		} else {
+		}
 		ShowWindow(hWnd,SW_SHOW);
 		SetForegroundWindow(hWnd);
 		SetFocus(hWnd);
@@ -757,6 +1091,8 @@ public:
 		rVertDecl = 0;
 		bDrawingShadowVolumes = false;
 		prevCullType = CT_NOT_SET;
+		boundShader = 0;
+		bHasVertexColors = false;
 		 
 
 		initDX9State();
@@ -765,6 +1101,8 @@ public:
 		g_inputSystem->IN_Init();
 	}
 	virtual void shutdown(bool destroyWindow) {
+		AUTOCVAR_UnregisterAutoCvars();
+
 		lastMat = 0;
 		lastLightmap = 0;
 
@@ -800,6 +1138,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_inputSystem,INPUT_SYSTEM_API_IDENTSTR);
 	//g_iFaceMan->registerIFaceUser(&g_sysEventCaster,SYSEVENTCASTER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_sharedSDLAPI,SHARED_SDL_API_IDENTSTRING);
+	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

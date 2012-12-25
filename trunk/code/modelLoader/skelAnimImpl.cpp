@@ -247,6 +247,14 @@ void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) c
 	out.localBonesToAbsBones(&this->bones);
 }
 void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
+	if(lerp.to >= this->frames.size()) {
+		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
+		return;
+	}
+	if(lerp.from >= this->frames.size()) {
+		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame index %i out of range <0,%i)\n",lerp.from,frames.size());
+		return;
+	}
 	const md5Frame_c &from = this->frames[lerp.from];
 	const md5Frame_c &to = this->frames[lerp.to];
 	if(out.size() != bones.size()) {

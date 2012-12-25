@@ -27,11 +27,27 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "dx9_local.h"
 
+// HLSL shaders can be compiled with various 
+// options and defines
+struct hlslPermutationFlags_s {
+	// draw colormap with lightmap
+	bool hasLightmap; // #define HAS_LIGHTMAP 
+	bool onlyLightmap; // draw ONLY lightmap
+	bool hasVertexColors; // #define HAS_VERTEXCOLORS
+	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+
+	hlslPermutationFlags_s() {
+		memset(this,0,sizeof(*this));
+	}
+};
+
+
 class hlslShader_c {
 friend class rbDX9_c;
 	str name;
 	ID3DXEffect *effect;
 
+	hlslPermutationFlags_s permutations;
 public:
 	hlslShader_c() {
 		effect = 0;
@@ -45,13 +61,16 @@ public:
 	const char *getName() const {
 		return name;
 	}
+	const hlslPermutationFlags_s &getPermutations() const {
+		return permutations;
+	}
 	bool isValid() const {
 		if(effect)
 			return true;
 		return false;
 	}
 
-friend hlslShader_c *DX9_RegisterShader(const char *baseName);
+friend hlslShader_c *DX9_RegisterShader(const char *baseName, const hlslPermutationFlags_s *p = 0);
 friend void DX9_ShutdownHLSLShaders();
 };
 

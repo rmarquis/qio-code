@@ -822,6 +822,12 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 			ensureSurfaceLocalVertsAllocated(triSurf);
 			RF_AddDrawCall(&triSurf->localVerts,&triSurf->localIndexes,triSurf->mat,triSurf->lightmap,triSurf->mat->getSort(),true);
 		} else {
+#if 1
+			// ensure that IBO is created
+			if(triSurf->absIndexes.getInternalHandleVoid() == 0) {
+				triSurf->absIndexes.uploadToGPU();
+			}
+#endif
 			RF_AddDrawCall(&this->verts,&triSurf->absIndexes,triSurf->mat,triSurf->lightmap,triSurf->mat->getSort(),true);
 		}
 	}

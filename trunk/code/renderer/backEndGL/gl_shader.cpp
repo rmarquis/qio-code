@@ -57,18 +57,18 @@ bool GL_AppendFileTextToString(str &out, const char *fname) {
 	return false;
 }
 arraySTD_c<glShader_c*> gl_shaders;
-static glShader_c *GL_FindShader(const char *baseName, const permutationFlags_s &permutations) {
+static glShader_c *GL_FindShader(const char *baseName, const glslPermutationFlags_s &permutations) {
 	for(u32 i = 0; i < gl_shaders.size(); i++) {
 		glShader_c *s = gl_shaders[i];
 		if(!stricmp(baseName,s->getName())) {
-			if(!memcmp(&s->getPermutations(),&permutations,sizeof(permutationFlags_s))) {
+			if(!memcmp(&s->getPermutations(),&permutations,sizeof(glslPermutationFlags_s))) {
 				return s;
 			}
 		}
 	}
 	return 0;
 }
-void GL_AppendPermutationDefinesToString(str &out, const permutationFlags_s &p) {
+void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s &p) {
 	if(p.hasLightmap) {
 		out.append("#define HAS_LIGHTMAP\n");
 	}
@@ -79,8 +79,8 @@ void GL_AppendPermutationDefinesToString(str &out, const permutationFlags_s &p) 
 		out.append("#define HAS_TEXGEN_ENVIROMENT\n");
 	}
 }
-static permutationFlags_s gl_defaultPermutations;
-glShader_c *GL_RegisterShader(const char *baseName, const permutationFlags_s *permutations) {
+static glslPermutationFlags_s gl_defaultPermutations;
+glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
 	if(permutations == 0) {
 		permutations = &gl_defaultPermutations;
 	}

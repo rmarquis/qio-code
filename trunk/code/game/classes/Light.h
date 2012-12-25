@@ -35,6 +35,8 @@ public:
 
 	DECLARE_CLASS( Light );
 
+	void setRadius(float newRadius);
+
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual void getLocalBounds(aabb &out) const;
 };

@@ -1125,6 +1125,8 @@ struct entityState_s {
 
 	int animIndex;
 
+	float lightRadius; // only for ET_LIGHT 
+
 	// for networked ragdolls (and bone controllers?)
 	netBoneOr_s boneOrs[MAX_NETWORKED_BONES];
 

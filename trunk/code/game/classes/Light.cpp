@@ -29,12 +29,16 @@ DEFINE_CLASS(Light, "BaseEntity");
 DEFINE_CLASS_ALIAS(Light, light_dynamic);
 
 Light::Light() {
-	radius = 128.f;
 	this->myEdict->s->eType = ET_LIGHT;
+	setRadius(128.f);
+}
+void Light::setRadius(float newRadius) {
+	this->radius = newRadius;
+	this->myEdict->s->lightRadius = newRadius;
 }
 void Light::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"light")) {
-		this->radius = atof(value);
+		this->setRadius(atof(value));
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

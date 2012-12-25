@@ -68,7 +68,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	// set all the values here in case that entity cant be interpolated between two snapshots
 	if(cent->currentState.eType == ET_LIGHT) {
 		cent->rLight->setOrigin(cent->currentState.origin);
-		//cent->rLight->setRadius(128.f);
+		cent->rLight->setRadius(cent->currentState.lightRadius);
 	} else {
 		cent->rEnt->setOrigin(cent->currentState.origin);
 		cent->rEnt->setAngles(cent->currentState.angles);
