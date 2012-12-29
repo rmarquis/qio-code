@@ -318,10 +318,27 @@ public:
 	void setSingleBrush(const class cmBrush_c &br) {
 		this->myBrush = br;
 	}
+	const class cmBrush_c &getMyBrush() const {
+		return this->myBrush;
+	}
+	class cmBrush_c &getMyBrush() {
+		return this->myBrush;
+	}
+	bool recalcBounds() {
+		if(myBrush.calcBounds()) {
+			this->bounds.clear();
+			return true;
+		}
+		this->bounds = myBrush.getBounds();
+		return false;
+	}
 
 	cmHull_c(const char *newName, const class cmBrush_c &br) {
 		this->name = newName;
 		this->setSingleBrush(br);
+	}
+	cmHull_c(const char *newName) {
+		this->name = newName;
 	}
 };
 
@@ -449,6 +466,8 @@ public:
 		out = sf->getAABB();
 	}
 	virtual bool traceRay(class trace_c &tr) {
+		if(tr.clipByAABB(this->bounds))
+			return true;
 		return false;
 	}
 	// cmTriMesh_i access

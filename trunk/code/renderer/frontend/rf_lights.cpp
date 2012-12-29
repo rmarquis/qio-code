@@ -42,6 +42,7 @@ rLightImpl_c::rLightImpl_c() {
 	numCurrentStaticInteractions = 0;
 	numCurrentEntityInteractions = 0;
 	staticShadowVolume = 0;
+	oq = 0;
 }
 rLightImpl_c::~rLightImpl_c() {
 	clearInteractions();
@@ -54,6 +55,9 @@ rLightImpl_c::~rLightImpl_c() {
 	}
 	if(staticShadowVolume) {
 		delete staticShadowVolume;
+	}
+	if(oq) {
+		delete oq;
 	}
 }
 void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
@@ -72,6 +76,23 @@ void rLightImpl_c::setRadius(float newRadius) {
 	radius = newRadius;
 	absBounds.fromPointAndRadius(pos,radius);
 	recalcLightInteractions();
+}
+occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
+	if(oq) {
+		return oq;
+	}
+	oq = rb->allocOcclusionQuery();
+	return oq;
+}
+bool rLightImpl_c::setBCameraInside() {
+	const vec3_c &cameraWorld = rf_camera.getOrigin();
+	float distSQ = cameraWorld.distSQ(this->pos);
+	if(distSQ > Square((this->radius+2))) {
+		bCameraInside = false;
+	} else {
+		bCameraInside = true;
+	}
+	return bCameraInside;
 }
 void rLightImpl_c::clearInteractionsWithDynamicEntities() {
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
@@ -202,6 +223,11 @@ void RFL_RemoveLight(class rLightAPI_i *light) {
 
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
 static aCvar_c light_printCullStats("light_printCullStats","0");
+static aCvar_c light_useGPUOcclusionQueries("light_useGPUOcclusionQueries","0");
+
+bool RFL_GPUOcclusionQueriesForLightsEnabled() {
+	return light_useGPUOcclusionQueries.getInt();
+}
 
 rLightAPI_i *rf_curLightAPI = 0;
 void RFL_AddLightInteractionsDrawCalls() {
@@ -210,6 +236,7 @@ void RFL_AddLightInteractionsDrawCalls() {
 	u32 c_lightsCulled = 0;
 	u32 c_lightsCulledByAABBTest = 0;
 	u32 c_lightsCulledBySphereTest = 0;
+	
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];
 		rf_curLightAPI = light;
@@ -222,14 +249,17 @@ void RFL_AddLightInteractionsDrawCalls() {
 			if(rf_camera.getFrustum().cull(bb) == CULL_OUT) {
 				c_lightsCulled++;
 				c_lightsCulledByAABBTest++;
+				light->setCulled(true);
 				continue;
 			}
 			if(rf_camera.getFrustum().cullSphere(light->getOrigin(),light->getRadius()) == CULL_OUT) {
 				c_lightsCulled++;
 				c_lightsCulledBySphereTest++;
+				light->setCulled(true);
 				continue;
 			}
 		}
+		light->setCulled(false);
 
 		// TODO: dont do this every frame
 		light->recalcLightInteractionsWithDynamicEntities();
@@ -250,7 +280,30 @@ void RFL_AddLightInteractionsDrawCalls() {
 			rf_lights.size(),c_lightsCulled,c_lightsCulledByAABBTest,c_lightsCulledBySphereTest);
 	}
 }
-
+#include <api/occlusionQueryAPI.h>
+void RFL_AssignLightOcclusionQueries() {
+	if(light_useGPUOcclusionQueries.getInt() == 0)
+		return;
+	// assign occlusion queries for potentially visible lights
+	// (lights intersecting view frustum)
+	for(u32 i = 0; i < rf_lights.size(); i++) {
+		rLightImpl_c *light = rf_lights[i];
+		if(light->getBCulled()) {
+			continue;
+		}
+		if(light->setBCameraInside()) {
+			// if camera is inside this light, occlusion checks are meaningless
+			continue;
+		}
+		occlusionQueryAPI_i *oq = light->ensureOcclusionQueryAllocated();
+		if(oq == 0) {
+			continue; // occlusion queries not supported by renderer backend
+		}
+		float lightRadius = light->getRadius();
+		const vec3_c &lightPos = light->getOrigin();
+		oq->assignSphereQuery(lightPos,lightRadius);
+	}
+}
 void RFL_RecalculateLightsInteractions() {
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];

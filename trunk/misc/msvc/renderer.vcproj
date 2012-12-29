@@ -583,6 +583,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\occlusionQueryAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\rAPI.h"
 				>
 			</File>

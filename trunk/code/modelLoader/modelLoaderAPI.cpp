@@ -64,6 +64,9 @@ public:
 		// we can load heightmaps here as well
 		if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp"))
 			return true;
+		// Quake3 .md3 models (without animations; only first frame is loaded)
+		if(!stricmp(ext,"md3"))
+			return true;
 		return false;
 	}
 	virtual bool loadStaticModelFile(const char *fileNameWithExtraCommands, class staticModelCreatorAPI_i *out)  {
@@ -114,6 +117,9 @@ public:
 			error = MOD_LoadConvertMapFileToStaticTriMesh(fname,out);
 		} else if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp")) {
 			error = MOD_LoadModelFromHeightmap(fname,out);
+		} else if(!stricmp(ext,"md3")) {
+			// load md3 as static model (first animation frame)
+			error = MOD_LoadStaticMD3(fname,out);
 		} else {
 			error = true;
 		}
@@ -181,6 +187,10 @@ public:
 		}
 		SK_ApplyAnimPostProcess(fname,ret);
 		return ret;
+	}
+	// read the number of animation frames in .md3 file (1 for non-animated models, 0 if model file does not exist)
+	virtual u32 readMD3FrameCount(const char *fname) {
+		return MOD_ReadMD3FileFrameCount(fname);
 	}
 };
 

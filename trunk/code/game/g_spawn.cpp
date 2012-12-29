@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // g_spawn.cpp - game entities spawning
 #include "g_local.h"
 #include "g_classes.h"
+#include "g_scriptedClasses.h"
 #include <shared/entDefsList.h>
 #include <api/coreAPI.h>
 #include <api/loadingScreenMgrAPI.h>
@@ -43,6 +44,32 @@ void G_LoadMapEntities(const char *mapName) {
 	}
 	return;
 }
+// classnName is name of hardcoded classDef or name of scripted class
+// (from .def file)
+BaseEntity *G_SpawnClass(const char *className) {
+	BaseEntity *ent = (BaseEntity*)G_SpawnClassDef(className);
+	if(ent) {
+		return ent;
+	}
+	const scriptedClass_c *scriptedClassDef = G_FindScriptedClassDef(className);
+	if(scriptedClassDef) {
+		ent = G_SpawnClass(scriptedClassDef->getBaseClassName());
+		if(ent == 0) {
+			g_core->RedWarning("G_SpawnClass: failed to spawn base class %s of scripted class %s\n",
+				scriptedClassDef->getBaseClassName(),className);
+			return 0;
+		}
+		const ePairList_c &epairs = scriptedClassDef->getKeyValues();
+		for(u32 i = 0; i < epairs.size(); i++) {		
+			const char *key, *value;
+			epairs.getKeyValue(i,&key,&value);
+			ent->setKeyValue(key,value);
+		}
+		return ent;
+	}
+	ent = G_SpawnEntityFromEntDecl(className);
+	return ent;
+}
 BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	const char *className = entDef->getClassName();
 	if(className == 0 || className[0] == 0) {
@@ -57,11 +84,14 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 		}
 		return 0;
 	}
-	BaseEntity *ent = (BaseEntity*)G_SpawnClass(className);
+	BaseEntity *ent = G_SpawnClass(className);
 	if(ent == 0) {
 		// hack to spawn inline models
-		if(entDef->hasKey("model") && entDef->getKeyValue("model")[0] == '*') {
-			ent = (BaseEntity*)G_SpawnClass("ModelEntity");
+		if(0 && entDef->hasKey("model") && entDef->getKeyValue("model")[0] == '*') {
+			ModelEntity *mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
+			// make them immobile
+			mEnt->setRigidBodyPhysicsEnabled(false);
+			ent = mEnt;
 		} else {
 			g_core->Print("G_SpawnEntDef: Failed to spawn class %s\n",className);
 			return 0;

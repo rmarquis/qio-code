@@ -67,9 +67,29 @@ class rLightImpl_c : public rLightAPI_i {
 	arraySTD_c<entityInteraction_s> entityInteractions;
 	int numCurrentEntityInteractions;
 
+	bool bCulled;
+	class occlusionQueryAPI_i *oq;
+	bool bCameraInside; // true if camera eye is inside light sphere
+
 public:
 	rLightImpl_c();
 	~rLightImpl_c();
+
+	void setCulled(bool newBCulled) {
+		bCulled = newBCulled;
+	}
+	bool getBCulled() const {
+		return bCulled;
+	}
+
+	class occlusionQueryAPI_i *ensureOcclusionQueryAllocated();
+	virtual class occlusionQueryAPI_i *getOcclusionQuery() {
+		return oq;
+	}
+	bool setBCameraInside();
+	virtual bool getBCameraInside() const {
+		return bCameraInside;
+	}
 
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();

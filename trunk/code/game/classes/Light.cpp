@@ -30,7 +30,7 @@ DEFINE_CLASS_ALIAS(Light, light_dynamic);
 
 Light::Light() {
 	this->myEdict->s->eType = ET_LIGHT;
-	setRadius(128.f);
+	setRadius(512.f);
 }
 void Light::setRadius(float newRadius) {
 	this->radius = newRadius;

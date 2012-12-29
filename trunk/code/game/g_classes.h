@@ -85,7 +85,7 @@ public:
 
 #define DEFINE_CLASS_ALIAS( className, aliasName ) static gClassAlias_c aliasName(#className,#aliasName);
 
-void *G_SpawnClass(const char *className);
+void *G_SpawnClassDef(const char *className);
 const char *G_TranslateClassAlias(const char *classNameOrAlias);
 
 #endif // __G_CLASSES_H__

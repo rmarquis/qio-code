@@ -47,6 +47,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/autoCvar.h>
 #include <api/rLightAPI.h>
+#include <api/occlusionQueryAPI.h>
 
 #include <shared/byteRGB.h>
 
@@ -69,6 +70,21 @@ static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 #define offsetof(s,m)   (size_t)&reinterpret_cast<const volatile char&>((((s *)0)->m))
 #endif
 #endif // not defined offsetof
+
+class glOcclusionQuery_c : public occlusionQueryAPI_i {
+	u32 oqHandle;
+	bool waitingForResult;
+	mutable u32 lastResult;
+public:
+	glOcclusionQuery_c();
+	~glOcclusionQuery_c();
+	virtual void generateOcclusionQuery();
+	virtual void assignSphereQuery(const vec3_c &p, float radius);
+	virtual u32 getNumSamplesPassed() const;
+	virtual bool isResultAvailable() const;
+	virtual u32 getPreviousResult() const;
+	virtual u32 waitForLatestResult() const;
+};
 
 struct texState_s {
 	bool enabledTexture2D;
@@ -776,6 +792,10 @@ public:
 					} else {
 						setGLDepthMask(true);
 					}
+				} else {
+					// lighting passes (and shadow volume drawcalls)
+					// should be done with glDepthMask off
+					setGLDepthMask(false);
 				}
 #endif
 				if(s->hasTexMods()) {
@@ -1210,7 +1230,22 @@ public:
 		glVertex3fv(verts[3]);
 		glVertex3fv(verts[7]);
 		glEnd();
+	}        
+	virtual bool areGPUOcclusionQueriesSupported() const {
+		int bitsSupported = 0;
+        glGetQueryiv(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &bitsSupported);
+        if (bitsSupported == 0) {
+           return false;
+        }
+		return true;
 	}
+	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
+		if(areGPUOcclusionQueriesSupported() == false)
+			return 0;
+		glOcclusionQuery_c *ret = new glOcclusionQuery_c;
+		ret->generateOcclusionQuery();
+		return ret;
+	}  
 	virtual void setRenderTimeSeconds(float newCurTime) {
 		this->timeNowSeconds = newCurTime;
 	}
@@ -1438,6 +1473,63 @@ public:
 };
 
 static rbSDLOpenGL_c g_staticSDLOpenGLBackend;
+
+glOcclusionQuery_c::glOcclusionQuery_c() {
+	oqHandle = 0;
+	lastResult = 0xffffffff;
+	waitingForResult = false;
+}
+glOcclusionQuery_c::~glOcclusionQuery_c() {
+
+}
+void glOcclusionQuery_c::generateOcclusionQuery() {
+	glGenQueriesARB(1, &oqHandle);
+}
+void glOcclusionQuery_c::assignSphereQuery(const vec3_c &p, float radius) {
+	// stop drawing shadow volumes
+	g_staticSDLOpenGLBackend.stopDrawingShadowVolumes();
+	glColorMask(false,false,false,false);
+	g_staticSDLOpenGLBackend.setGLDepthMask(false);
+	g_staticSDLOpenGLBackend.glCull(CT_TWO_SIDED);
+	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, oqHandle);
+	glTranslatef(p.x,p.y,p.z);
+	glutSolidSphere(radius, 20, 20);
+	glTranslatef(-p.x,-p.y,-p.z);
+	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
+	g_staticSDLOpenGLBackend.setGLDepthMask(true);
+	glColorMask(true,true,true,true);
+	waitingForResult = true;
+}
+u32 glOcclusionQuery_c::getNumSamplesPassed() const {
+	if(waitingForResult == false) {
+		return this->lastResult;
+	}
+	u32 resultSamples;
+	glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_ARB, &resultSamples);
+	this->lastResult = resultSamples;
+	return resultSamples;
+}
+bool glOcclusionQuery_c::isResultAvailable() const {
+	u32 bAvail;
+	glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_AVAILABLE_ARB, &bAvail);
+	if(bAvail)
+		return true;
+	return false;
+}
+u32 glOcclusionQuery_c::waitForLatestResult() const {
+	u32 bAvail;
+	while(1) {
+		glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_AVAILABLE_ARB, &bAvail);
+		if(bAvail) {
+			break;
+		}
+	}
+	return getNumSamplesPassed();
+}
+u32 glOcclusionQuery_c::getPreviousResult() const {
+	return lastResult;
+}
+
 
 void SDLOpenGL_RegisterBackEnd() {
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_staticSDLOpenGLBackend,RENDERER_BACKEND_API_IDENTSTR);

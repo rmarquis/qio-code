@@ -31,6 +31,15 @@ decalProjector_c::decalProjector_c() {
 	mat = 0;
 }
 void decalProjector_c::init(const vec3_c &pos, const vec3_c &normal, float radius) {
+	if(radius <= 0) {
+		g_core->RedWarning("decalProjector_c::init: radius (%f) <= 0\n",radius);
+		return; // TODO: return error
+	}
+	if(normal.lenSQ() < 0.01f) {
+		g_core->RedWarning("decalProjector_c::init: normal.lenSQ() < 0.01f (%f, %f, %f)\n",normal.x,normal.y,normal.z);
+		return; // TODO: return error
+	}
+
 	inPos = pos;
 	inNormal = normal;
 	inRadius = radius;
@@ -97,6 +106,9 @@ void decalProjector_c::iterateResults(class staticModelCreatorAPI_i *smc) {
 	}
 }
 void decalProjector_c::addResultsToDecalBatcher(class simpleDecalBatcher_c *batcher) {
+	if(results.size() == 0) {
+		return;
+	}
 	float texCoordScale = 0.5f * 1.0f / inRadius;
 	for(u32 i = 0; i < results.size(); i++) {
 		const cmWinding_c &w = results[i];

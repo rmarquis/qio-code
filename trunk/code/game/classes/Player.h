@@ -87,6 +87,7 @@ public:
 	void disableCharacterController();
 	void enableCharacterController();
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
+	void touchTriggers();
 	void runPlayer(struct usercmd_s *ucmd);
 	void onUseKeyDown();
 	void onFireKeyHeld();
@@ -105,6 +106,8 @@ public:
 	const vec3_c &getViewAngles() const {
 		return ps.viewangles;
 	}
+	virtual void setOrigin(const vec3_c &newXYZ);
+	virtual void setLinearVelocity(const vec3_c &newVel);
 	void setVehicle(class VehicleCar *newVeh);
 
 	void toggleNoclip();

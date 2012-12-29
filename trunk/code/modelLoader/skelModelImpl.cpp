@@ -25,38 +25,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/parser.h>
 #include <shared/hashTableTemplate.h>
+#include <shared/stringHashTable.h>
 #include <shared/extraSurfEdgesData.h>
 #include <math/quat.h>
-
-class stringRegister_c {
-	struct strEntry_s {
-		str name;
-		u32 index;
-		strEntry_s *hashNext;
-		inline const char *getName() const {
-			return name;
-		}
-		inline strEntry_s *getHashNext() const {
-			return hashNext;
-		}
-		inline void setHashNext(strEntry_s *newNext) {
-			hashNext = newNext;
-		}
-	};
-	hashTableTemplateExt_c<strEntry_s> table;
-
-public:
-	u32 registerString(const char *str) {
-		strEntry_s *e = table.getEntry(str);
-		if(e == 0) {
-			e = new strEntry_s;
-			e->name = str;
-			e->index = table.size();
-		}
-		table.addObject(e);
-		return e->index;
-	}
-};
 
 static stringRegister_c sk_boneNames;
 

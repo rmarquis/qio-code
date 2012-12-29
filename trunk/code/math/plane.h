@@ -60,6 +60,14 @@ public:
 	vec3_c norm;
 	float dist;
 
+	plane_c() {
+
+	}
+	// plane equation format is such: normX, normY, normZ, dist
+	plane_c(const float *planeEQ) {
+		norm = planeEQ;
+		dist = planeEQ[3];
+	}
 	void clear() {
 		norm.clear();
 		dist = 0.f;

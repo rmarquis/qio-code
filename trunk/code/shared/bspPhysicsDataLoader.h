@@ -21,7 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// bspPhysicsDataLoader.h - simple loaded for bsp brushes/surfaces
+// bspPhysicsDataLoader.h - simple loader for bsp brushes/surfaces
 // This is for physics system only, so texture coordinate, vertex normals,
 // lightmaps, etc are ignored.
 #ifndef __BSPPHYSICSDATALOADER_H__
@@ -45,11 +45,15 @@ public:
 	void iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 contentFlags));
 
 	void iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4]));
+	void iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack);
 	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out);
 	void getTriangleSurface(u32 surfNum, class cmSurface_c &out);
 
 	u32 getNumInlineModels() const;
 	void getInlineModelBounds(u32 modelNum, class aabb &bb) const;
+	u32 getInlineModelBrushCount(u32 modelNum) const;
+	u32 getInlineModelSurfaceCount(u32 modelNum) const;
+	u32 getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const;
 
 	bool isCoD1BSP() const;
 };

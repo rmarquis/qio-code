@@ -79,6 +79,8 @@ typedef enum {
 	ET_LIGHT,
 	// camera view portal; used for example on q3dm0
 	ET_PORTAL, // classname: misc_portal_surface
+	// server-only entity for triggers
+	ET_TRIGGER, 
 } entityType_t;
 
 

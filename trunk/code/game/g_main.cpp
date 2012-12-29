@@ -107,6 +107,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
 
+	G_InitScriptedClasses();
+
 	// init bullet physics library
 	G_InitBullet();
 	// load map for Bullet
@@ -131,6 +133,7 @@ void G_ShutdownGame( int restart ) {
 		delete e->ent;
 	}
 	G_ShudownBullet();
+	G_ShutdownScriptedClasses();
 	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();
 }

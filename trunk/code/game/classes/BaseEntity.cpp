@@ -31,6 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/keyValuesListener.h>
 
 DEFINE_CLASS(BaseEntity, "None");
+// Quake3 "misc_teleporter_dest" for q3dm0 teleporter 
+DEFINE_CLASS_ALIAS(BaseEntity, misc_teleporter_dest);
+// Q3 "target_position" for q3dm11 teleporter (yes, "misc_teleporter_dest" is not used on that map!)
+DEFINE_CLASS_ALIAS(BaseEntity, target_position);
 
 // use this to force BaseEntity::ctor() to use a specific edict instead of allocating a new one
 static edict_s *be_forcedEdict = 0;
@@ -193,6 +197,9 @@ void BaseEntity::detachFromParent() {
 	parent = 0;
 	myEdict->s->parentNum = ENTITYNUM_NONE;
 	myEdict->s->parentTagNum = -1;
+}
+const aabb &BaseEntity::getAbsBounds() const {
+	return this->myEdict->absBounds;
 }
 
 #include <api/ddAPI.h>

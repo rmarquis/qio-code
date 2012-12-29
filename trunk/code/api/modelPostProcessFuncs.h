@@ -40,6 +40,27 @@ public:
 	virtual void setAllSurfsMaterial(const char *newMatName) = 0;
 	virtual u32 getNumSurfs() const = 0;
 	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) = 0;
+	virtual void recalcBoundingBoxes() = 0;
+
+	// optional, per-surface functions
+	virtual bool hasPerSurfaceFunctionsImplemented() const {
+		return false;
+	}
+	virtual void setNumSurfs(u32 newSurfsCount) {
+
+	}
+	virtual void resizeSurfaceVerts(u32 surfNum, u32 numVerts)  {
+
+	}
+	virtual void setSurfaceVert(u32 surfNum, u32 vertIndex, const float *xyz, const float *st)  {
+
+	}
+	virtual void setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices)  {
+
+	}
+	virtual void setSurfaceMaterial(u32 surfNum, const char *material) {
+
+	}
 };
 
 #endif // __MODELPOSTPROCESSFUNCS_H__

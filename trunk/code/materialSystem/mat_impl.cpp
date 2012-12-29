@@ -345,7 +345,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("unsmoothedtangents")) {
 
 				} else if(p.atWord("polygonOffset")) {
-					this->polygonOffset = p.getFloat();
+					if(p.getNextWordInLine()) {
+						this->polygonOffset = atof(p.getLastStoredToken());
+					} else {
+						// FIXME? textures/decals/xlabs from RTCW decals.shader
+						// has polygonoffset without value specified
+						this->polygonOffset = 0.1f;
+					}
 				} else if(p.atWord("twosided")) {
 
 				} else if(p.atWord("nonsolid")) {

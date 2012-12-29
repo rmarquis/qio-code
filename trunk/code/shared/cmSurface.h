@@ -168,6 +168,12 @@ public:
 	virtual void setIndex(u32 indexNum, u32 value) {
 		indices[indexNum] = value;
 	}
+	virtual void recalcBoundingBoxes() {
+		bb.clear();
+		for(u32 i = 0; i < verts.size(); i++) {
+			bb.addPoint(verts[i]);
+		}
+	}
 	// modelPostProcessFuncs_i api
 	virtual void scaleXYZ(float scale) {
 		for(u32 i = 0; i < verts.size(); i++) {

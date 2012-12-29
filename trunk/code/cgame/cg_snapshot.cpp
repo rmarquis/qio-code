@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rEntityAPI.h>
 #include <api/rLightAPI.h>
 #include <api/afDeclAPI.h>
+#include <api/coreAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 
@@ -48,6 +49,48 @@ static void CG_ResetEntity( centity_t *cent ) {
 	}
 }
 
+static void CG_TransitionLight(centity_t *cent) {
+	if(cent->rLight == 0) {
+		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",cent->currentState.number);
+		return;
+	}
+	cent->rLight->setOrigin(cent->currentState.origin);
+	cent->rLight->setRadius(cent->currentState.lightRadius);
+}
+static void CG_TransitionModel(centity_t *cent) {
+	if(cent->rEnt == 0) {
+		g_core->RedWarning("CG_TransitionModel: found entity without rEntity (entity %i)\n",cent->currentState.number);
+		return;
+	}
+	cent->rEnt->setOrigin(cent->currentState.origin);
+	cent->rEnt->setAngles(cent->currentState.angles);
+	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
+	if(cent->rEnt->hasDeclModel()) {
+		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
+	} else {
+		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
+	}
+	if(cent->currentState.number == cg.clientNum) {
+		cent->rEnt->setThirdPersonOnly(true);
+	} else {
+		cent->rEnt->setThirdPersonOnly(false);
+	}
+	if(cent->currentState.activeRagdollDefNameIndex) {
+		const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
+		cent->rEnt->setRagdoll(af);
+		if(af) {
+			for(u32 i = 0; i < af->getNumBodies(); i++) {
+				const netBoneOr_s &in = cent->currentState.boneOrs[i];
+				boneOrQP_c or;
+				or.setPos(in.xyz);
+				or.setQuatXYZ(in.quatXYZ);
+				cent->rEnt->setRagdollBodyOr(i,or);
+			}
+		}
+	} else {
+		cent->rEnt->setRagdoll(0);
+	}
+}
 /*
 ===============
 CG_TransitionEntity
@@ -67,37 +110,9 @@ static void CG_TransitionEntity( centity_t *cent ) {
 
 	// set all the values here in case that entity cant be interpolated between two snapshots
 	if(cent->currentState.eType == ET_LIGHT) {
-		cent->rLight->setOrigin(cent->currentState.origin);
-		cent->rLight->setRadius(cent->currentState.lightRadius);
+		CG_TransitionLight(cent);
 	} else {
-		cent->rEnt->setOrigin(cent->currentState.origin);
-		cent->rEnt->setAngles(cent->currentState.angles);
-		cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
-		if(cent->rEnt->hasDeclModel()) {
-			cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
-		} else {
-			cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
-		}
-		if(cent->currentState.number == cg.clientNum) {
-			cent->rEnt->setThirdPersonOnly(true);
-		} else {
-			cent->rEnt->setThirdPersonOnly(false);
-		}
-		if(cent->currentState.activeRagdollDefNameIndex) {
-			const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
-			cent->rEnt->setRagdoll(af);
-			if(af) {
-				for(u32 i = 0; i < af->getNumBodies(); i++) {
-					const netBoneOr_s &in = cent->currentState.boneOrs[i];
-					boneOrQP_c or;
-					or.setPos(in.xyz);
-					or.setQuatXYZ(in.quatXYZ);
-					cent->rEnt->setRagdollBodyOr(i,or);
-				}
-			}
-		} else {
-			cent->rEnt->setRagdoll(0);
-		}
+		CG_TransitionModel(cent);
 	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap

@@ -192,5 +192,21 @@ BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig) {
 	int i = rand() % ents.size();
 	return ents[i];
 }
+class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName) {
+	if(targetName == 0 || targetName[0] == 0) {
+		return 0;
+	}
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		const char *beTargetName = be->getTargetName();
+		if(!stricmp(beTargetName,targetName)) {
+			return be;
+		}
+	}
+	return 0;
+}
 
 //==============================================================================

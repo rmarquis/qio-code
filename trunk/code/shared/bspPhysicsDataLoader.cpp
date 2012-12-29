@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/cmSurface.h>
 #include <shared/cmBezierPatch.h>
 #include <shared/bspPhysicsDataLoader.h>
+#include <shared/perPlaneCallback.h>
 
 bspPhysicsDataLoader_c::bspPhysicsDataLoader_c() {
 	h = 0;
@@ -153,6 +154,19 @@ void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallbac
 		}
 	}
 }
+void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack) {
+	const q3Plane_s *planes = h->getPlanes();
+	if(h->isBSPCoD1()) {	
+		// TODO
+	} else {
+		const q3Brush_s *b = h->getBrushes() + brushNum;
+		for(u32 i = 0; i < b->numSides; i++) {
+			const q3BrushSide_s *s = h->getBrushSide(b->firstSide+i);
+			const q3Plane_s &plane = planes[s->planeNum];
+			callBack->perPlaneCallback((const float*)&plane);
+		}
+	}
+}
 void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 matNum)) {
 	if(h->isBSPCoD1()) {
 		// it seems that there are no bezier patches in CoD bsp files...
@@ -209,6 +223,19 @@ u32 bspPhysicsDataLoader_c::getNumInlineModels() const {
 void bspPhysicsDataLoader_c::getInlineModelBounds(u32 modelNum, class aabb &bb) const {
 	const q3Model_s *m = h->getModels() + modelNum;
 	bb.fromTwoPoints(m->maxs,m->mins);
+}
+u32 bspPhysicsDataLoader_c::getInlineModelBrushCount(u32 modelNum) const {
+	const q3Model_s *mod = h->getModel(modelNum);
+	return mod->numBrushes;
+}
+u32 bspPhysicsDataLoader_c::getInlineModelSurfaceCount(u32 modelNum) const {
+	const q3Model_s *mod = h->getModel(modelNum);
+	return mod->numSurfaces;
+}
+u32 bspPhysicsDataLoader_c::getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const {
+	const q3Model_s *mod = h->getModel(subModelNum);
+	u32 retBrushIndex = mod->firstBrush + localBrushIndex;
+	return retBrushIndex;
 }
 
 bool bspPhysicsDataLoader_c::isCoD1BSP() const {

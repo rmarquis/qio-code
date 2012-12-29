@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cm\cm_inlineBSPModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cm\cm_model.cpp"
 				>
 			</File>
@@ -236,6 +240,22 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cmBrush.cpp"
 				>
 			</File>
@@ -277,6 +297,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\perPlaneCallback.h"
 				>
 			</File>
 			<File

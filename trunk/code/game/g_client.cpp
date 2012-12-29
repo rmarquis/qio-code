@@ -358,14 +358,16 @@ void ClientCommand( int clientNum ) {
 						BaseEntity *be = G_SpawnEntityFromEntDecl(model);
 						if(be) {
 							be->setOrigin(spawnPos);
+							be->postSpawn();
 						} else {
 							g_core->Print("Failed to spawn %s\n",model.c_str());
 						}
 					} else {						
 						// maybe the model is the classname itself
-						BaseEntity *bent = (BaseEntity *)G_SpawnClass(model);
+						BaseEntity *bent = G_SpawnClass(model);
 						if(bent) {
 							bent->setOrigin(spawnPos);
+							bent->postSpawn();
 						} else {
 							g_core->Print("%s does not exist\n",model.c_str());
 						}
@@ -439,6 +441,14 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"quicksave")) {
 		// well, this should be a server command and NOT a client command, but I'll leave it here for testing
 		G_SaveCurrentSceneToMapFile("maps/saves/quicksave.map");
+	} else if(!stricmp(cmd,"tele")) {
+		if(g_core->Argc() >= 3) {
+			vec3_c newPos;
+			newPos.x = atof(g_core->Argv(1));
+			newPos.y = atof(g_core->Argv(2));
+			newPos.z = atof(g_core->Argv(3));
+			pl->setOrigin(newPos);
+		}
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

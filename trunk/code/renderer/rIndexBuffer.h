@@ -66,6 +66,35 @@ public:
 		numIndices = newCount;
 		return (u32*)data.getArray();
 	}
+	void fromU32Array(u32 numNewIndices, const u32 *newIndices) {
+		// see if we need to 32 bit indices
+		bool needU32 = false;
+		for(u32 i = 0; i < numNewIndices; i++) {
+			u32 idx = newIndices[i];
+			if(idx >= U16_MAX) {
+				needU32 = true;
+				break;
+			}
+		}
+		// copy data
+		if(needU32) {
+			u32 *pNewData32 = initU32(numNewIndices);
+			this->numIndices = numNewIndices;
+#if 0
+			for(u32 i = 0; i < numNewIndices; i++) {
+				pNewData32[i] = newIndices[i];
+			}
+#else
+			memcpy(pNewData32,newIndices,sizeof(u32)*this->numIndices);
+#endif
+		} else {
+			u16 *pNewData16 = initU16(numNewIndices);
+			this->numIndices = numNewIndices;
+			for(u32 i = 0; i < numNewIndices; i++) {
+				pNewData16[i] = newIndices[i];
+			}
+		}
+	}
 	bool hasU32Index() const {
 		if(type == IBO_U32) {
 			const u32 *ptr = (const u32*)data.getArray();

@@ -49,6 +49,8 @@ bool rgbGen_c::parse(class parser_c &p) {
 		type = RGBGEN_EXACTVERTEX;
 	} else if(p.atWord("constLighting")) {
 		type = RGBGEN_CONSTLIGHTING; // added for Call Of Duty??
+	} else if(p.atWord("lightingdiffuse")) {
+		type = RGBGEN_LIGHTINGDIFFUSE; // added for RTCW? 
 	} else {
 		str tok = p.getToken();
 		g_core->RedWarning("rgbGen_c::parse: unknown rgbGen %s\n",tok.c_str());

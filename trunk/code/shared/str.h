@@ -40,7 +40,7 @@ inline bool G_isWS(char c) {
 inline const char* G_strgetExt(const char *str) {
 	// -2, since we're assuming that '.' is not a last char
 	// l != 1 because there must be at least one character before the '.'
-	for(int l = (strlen(str)-2); l !=  1; l--) {
+	for(int l = (strlen(str)-2); l > 1; l--) {
 		if(str[l] == '.') {
 			l++;
 			return &str[l];
@@ -155,6 +155,7 @@ public:
 		} else {
 			data = (char*)realloc(data,newSize + 8);
 		}
+		allocated = newSize + 8;
 	}
 	void allocEmptyString(u32 stringLen) {
 		ensureAllocated(stringLen+1);
@@ -169,6 +170,15 @@ public:
 		this->ensureAllocated(this->len + addLen + 1);
 		this->len += addLen;
 		strcat(this->data,addToString);
+	}
+	void append(const char *start, const char *stop) {
+		if(start >= stop)
+			return;
+		u32 addLen = stop - start;
+		this->ensureAllocated(this->len + addLen + 1);
+		memcpy(this->data+this->len,start,addLen);
+		this->len += addLen;
+		this->data[this->len] = 0;
 	}
 	char getLastChar() const {
 		if(len == 0)

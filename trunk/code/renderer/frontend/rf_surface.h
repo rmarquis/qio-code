@@ -98,6 +98,9 @@ public:
 		indices.addIndex(i1);
 		indices.addIndex(i2);
 	}
+	void setIndicesU32(u32 newNumIndices, const u32 *newFirstIndex) {
+		indices.fromU32Array(newNumIndices,newFirstIndex);
+	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 	void getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const;
 	void addPoly(const struct simplePoly_s &poly);
@@ -228,6 +231,15 @@ public:
 	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName);
 	virtual void addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	virtual void setNumSurfs(u32 newSurfsCount);
+	virtual void resizeSurfaceVerts(u32 surfNum, u32 numVerts);
+	virtual void setSurfaceVert(u32 surfNum, u32 vertIndex, const float *xyz, const float *st);
+	virtual void setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices);
+	virtual void setSurfaceMaterial(u32 surfNum, const char *matName);
+	virtual void recalcBoundingBoxes();
+	virtual bool hasPerSurfaceFunctionsImplemented() const {
+		return true;
+	}
 
 	void createVBOsAndIBOs();
 

@@ -57,6 +57,9 @@ class rLightAPI_i *RFL_AllocLight();
 void RFL_RemoveLight(class rLightAPI_i *ent);
 void RFL_AddLightInteractionsDrawCalls();
 void RFL_RecalculateLightsInteractions();
+ // called when depth pass if done
+void RFL_AssignLightOcclusionQueries();
+bool RFL_GPUOcclusionQueriesForLightsEnabled();
 
 // rf_sky.cpp
 void RF_InitSky();

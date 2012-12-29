@@ -42,6 +42,7 @@ enum rgbGen_e {
 	RGBGEN_LIGHTINGSPHERICAL,
 	RGBGEN_EXACTVERTEX,
 	RGBGEN_CONSTLIGHTING,
+	RGBGEN_LIGHTINGDIFFUSE,
 };
 
 // blend modes; abstracted so they can apply to both opengl and dx

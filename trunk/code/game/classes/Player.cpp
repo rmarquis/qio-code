@@ -56,6 +56,22 @@ Player::~Player() {
 		delete curWeapon;
 	}
 }
+void Player::setOrigin(const vec3_c &newXYZ) {
+	ModelEntity::setOrigin(newXYZ);
+	if(characterController) {
+#if 0
+		BT_SetCharacterPos(characterController,newXYZ);
+#else
+		disableCharacterController();
+		enableCharacterController();
+#endif
+	}
+}
+void Player::setLinearVelocity(const vec3_c &newVel) {
+	if(characterController) {
+		BT_SetCharacterVelocity(characterController,newVel);
+	}
+}
 void Player::setVehicle(class VehicleCar *newVeh) {
 	vehicle = newVeh;
 	disableCharacterController();
@@ -92,7 +108,15 @@ void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	this->setColModel(m);
 	enableCharacterController();
 }
-
+#include "Trigger.h"
+void Player::touchTriggers() {
+	arraySTD_c<class Trigger*> triggers;
+	G_BoxTriggers(this->getAbsBounds(), triggers);
+	for(u32 i = 0; i < triggers.size(); i++) {
+		Trigger *t = triggers[i];
+		t->onTriggerContact(this);
+	}
+}
 void Player::runPlayer(usercmd_s *ucmd) {
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {
@@ -238,6 +262,10 @@ void Player::runPlayer(usercmd_s *ucmd) {
 			G_Printf("Fire released\n");
 			fireHeld = false;
 		}
+	}
+
+	if(noclip == false) {
+		touchTriggers();
 	}
 
 #if 1

@@ -69,7 +69,7 @@ public:
 
 	// transforms world-space trace into entity-space trace
 	void getTransformed(trace_c &out, const class matrix_c &entityMatrix) const;
-	void updateResultsFromTransformedTrace(trace_c &selfTransformed);
+	void updateResultsFromTransformedTrace(trace_c &selfTransformed, const class matrix_c &entityMatrix);
 
 
 	void setHitEntity(class BaseEntity *newHitEntity) {

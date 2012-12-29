@@ -107,6 +107,10 @@ public:
 		return false;
 	}
 
+	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
+		return 0;
+	}
+
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
 };

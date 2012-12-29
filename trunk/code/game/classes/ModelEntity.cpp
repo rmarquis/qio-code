@@ -54,6 +54,10 @@ ModelEntity::ModelEntity() {
 	modelDecl = 0;
 	bTakeDamage = false;
 	initialRagdolPose = 0;
+	bUseRModelToCreateDynamicCVXShape = false;
+	bUseDynamicConvexForTrimeshCMod = false;
+	bPhysicsBodyKinematic = false;
+	bRigidBodyPhysicsEnabled = true;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -162,7 +166,7 @@ void ModelEntity::debugDrawCollisionModel(class rDebugDrawer_i *dd) {
 	}
 }	
 void ModelEntity::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model") || !stricmp(key,"rendermodel")) {
+	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model")) {
 		this->setRenderModel(value);
 		if(value[0] == '*') {
 			this->setColModel(value);
@@ -220,6 +224,9 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 			quat_c quatValue(value);
 			initialRagdolPose->setQuat(bodyIndex,quatValue);
 		}
+	} else if(!stricmp(key,"bUseRModelToCreateDynamicCVXShape")) {
+		this->bUseRModelToCreateDynamicCVXShape = atoi(value);
+		this->bUseDynamicConvexForTrimeshCMod = true;
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
@@ -252,6 +259,26 @@ void ModelEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
 
 	// call the "iterateKeyValues" of base class
 	BaseEntity::iterateKeyValues(listener);
+}
+void ModelEntity::setPhysicsObjectKinematic(bool newBKinematic) {
+	if(this->bPhysicsBodyKinematic == newBKinematic) {
+		return;
+	}
+	this->bPhysicsBodyKinematic = newBKinematic;
+	if(body) {
+		g_core->RedWarning("ModelEntity::setPhysicsObjectKinematic: TODO: update rigid body\n");
+	}
+}
+void ModelEntity::setRigidBodyPhysicsEnabled(bool bRBPhysEnable) {
+	if(this->bRigidBodyPhysicsEnabled == bRBPhysEnable) {
+		return;
+	}
+	this->bRigidBodyPhysicsEnabled = bRBPhysEnable;
+	//if(bRigidBodyPhysicsEnabled) {
+	//	initRigidBodyPhysics();
+	//} else {
+	//	destroyPhysicsObject();
+	//}
 }
 #include "../bt_include.h"
 #include <math/matrix.h>
@@ -308,8 +335,27 @@ void ModelEntity::initRigidBodyPhysics() {
 	if(this->cmod == 0) {
 		return;
 	}
-	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod);
+	if(this->bRigidBodyPhysicsEnabled == false) {
+		return; // rigid body physics was disabled for this entity
+	}
+	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),
+		0,this->cmod,10.f,bUseDynamicConvexForTrimeshCMod);
+	if(this->body == 0) {
+		g_core->RedWarning("ModelEntity::initRigidBodyPhysics: BT_CreateRigidBodyWithCModel failed for cModel %s\n",this->cmod->getName());
+		return;
+	}
 	this->body->setUserPointer(this);
+	if(bPhysicsBodyKinematic) {
+#if 1
+		// FIXME!!! For some resons my kinematic/static entities (func_door) don't collide with items/boxes (BUT they do collide with player controller)
+		//this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
+		this->body->setActivationState(DISABLE_DEACTIVATION);
+#else
+		this->destroyPhysicsObject();
+		return;
+#endif
+	}
 }
 void ModelEntity::initStaticBodyPhysics() {
 	if(this->cmod == 0) {
@@ -342,7 +388,10 @@ void ModelEntity::postSpawn() {
 	} else if(cmod) {
 		// create a rigid body (physics prop)
 		initRigidBodyPhysics();
-	}  
+	} else if(bUseRModelToCreateDynamicCVXShape) {
+		this->setColModel(this->renderModelName);
+		initRigidBodyPhysics();
+	}
 }
 void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 	if(this->body == 0)
@@ -427,7 +476,7 @@ bool ModelEntity::traceWorldRay(class trace_c &tr) {
 	trace_c transformedTrace;
 	tr.getTransformed(transformedTrace,this->getMatrix());
 	if(this->traceLocalRay(transformedTrace)) {
-		tr.updateResultsFromTransformedTrace(transformedTrace);
+		tr.updateResultsFromTransformedTrace(transformedTrace,this->getMatrix());
 		return true;
 	}
 	return false;

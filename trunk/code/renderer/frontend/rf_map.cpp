@@ -101,6 +101,11 @@ public:
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) { }
 	virtual void resizeIndices(u32 newNumIndices) { }
 	virtual void setIndex(u32 indexNum, u32 value) { }
+	virtual void recalcBoundingBoxes() {
+		if(entModels[currentEntityNum]) {
+			entModels[currentEntityNum]->recalcBoundingBoxes();
+		}
+	}
 
 	// only for .map -> trimesh converter
 	virtual void onNewMapEntity(u32 entityNum) {

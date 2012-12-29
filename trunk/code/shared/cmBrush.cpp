@@ -26,6 +26,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 #include <api/coreAPI.h>
 
+void cmBrush_c::perPlaneCallback(const float plEq[4]) {
+	plane_c pl(plEq);
+	cmBrushSide_c newSide(pl);
+	sides.push_back(newSide);
+}
 void cmBrush_c::fromBounds(const class aabb &bb) {
 	sides.resize(6);
 	for(u32 i = 0; i < 3; i++) {

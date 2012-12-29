@@ -104,12 +104,16 @@ void trace_c::getTransformed(trace_c &out, const matrix_c &entityMatrix) const {
 	out.updateForNewFraction();
 }
 
-void trace_c::updateResultsFromTransformedTrace(trace_c &selfTransformed) {
+void trace_c::updateResultsFromTransformedTrace(trace_c &selfTransformed, const matrix_c &entityMatrix) {
 	if(selfTransformed.fraction >= this->fraction)
 		return;
+	matrix_c entityMatrixInv = entityMatrix.getInversed();
 	this->hitEntity = selfTransformed.hitEntity;
 	this->hitREntity = selfTransformed.hitREntity;
 	this->clEntity = selfTransformed.clEntity;
+	this->hitRMaterial = selfTransformed.hitRMaterial;
 	this->fraction = selfTransformed.fraction;
 	this->updateForNewFraction();
+	// transform hit normal (TODO: hit plane?)
+	entityMatrixInv.transformNormal(selfTransformed.hitPlane.norm,this->hitPlane.norm);
 }

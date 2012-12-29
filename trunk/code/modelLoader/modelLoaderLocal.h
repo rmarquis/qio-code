@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __MODELLOADERLOCAL_H__
 #define __MODELLOADERLOCAL_H__
 
+#include <shared/typedefs.h>
+
 class staticModelCreatorAPI_i;
 
 // staticModelLoaders/wavefrontOBJModelLoader.cpp
@@ -33,6 +35,10 @@ bool MOD_LoadOBJ(const char *fname, staticModelCreatorAPI_i *out);
 bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreatorAPI_i *out);
 // staticModelLoaders/aseLoader.cpp
 bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out);
+// staticModelLoaders/md3StaticLoader.cpp
+// (loading of non-animated md3 models)
+bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out);
+u32 MOD_ReadMD3FileFrameCount(const char *fname);
 
 // mod_postProcess.cpp
 // .mdlpp commands parsing and execution

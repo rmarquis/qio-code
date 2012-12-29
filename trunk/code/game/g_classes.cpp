@@ -72,7 +72,7 @@ gClassDef_c *G_FindClassDefBasic(const char *origClassName) {
 	return 0;
 }
 
-void *G_SpawnClass(const char *className) {
+void *G_SpawnClassDef(const char *className) {
 	gClassDef_c *cd = G_FindClassDefBasic(className);
 	if(cd == 0)
 		return 0;

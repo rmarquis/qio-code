@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\modelLoader\staticModelLoaders\md3StaticLoader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\staticModelLoaders\mtlFile.cpp"
 				>
 			</File>
@@ -267,6 +271,10 @@
 				RelativePath="..\..\code\shared\skelUtils.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\stringHashTable.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="SkeletalModelLoaders"
@@ -295,6 +303,10 @@
 		<Filter
 			Name="API"
 			>
+			<File
+				RelativePath="..\..\code\api\modelLoaderDLLAPI.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\api\skelAnimAPI.h"
 				>
@@ -337,6 +349,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="fileformats"
+			>
+			<File
+				RelativePath="..\..\code\fileformats\md3_file_format.h"
 				>
 			</File>
 		</Filter>

@@ -623,7 +623,9 @@ bool BT_TraceRay(class trace_c &tr) {
 	rayTo = (btVector3(tr.getTo().x,tr.getTo().y,tr.getTo().z));
 	btRayCallback_c rayCallback(rayFrom,rayTo);
 	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
-	tr.setHitPos(rayCallback.m_hitPointWorld.m_floats);
+	if(rayCallback.hasHit()) {
+		tr.setHitPos(rayCallback.m_hitPointWorld.m_floats);
+	}
 	if(rayCallback.m_collisionObject) {
 		void *uPtr = rayCallback.m_collisionObject->getUserPointer();
 		if(uPtr) {
@@ -758,13 +760,20 @@ void BT_FreeCharacter(btKinematicCharacterController *c) {
 	delete c->getGhostObject();
 	delete c;
 }
-btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel, float mass) {
+void BT_SetCharacterPos(class btKinematicCharacterController *c, const vec3_c &p) {
+	c->warp(btVector3(p.floatPtr())*QIO_TO_BULLET);
+}
+// this function is needed for Q3 jumppads
+void BT_SetCharacterVelocity(class btKinematicCharacterController *c, const vec3_c &newVel) {
+	// setVelocityForTimeInterval is not suitable here.... so jumppads are not working for now
+	//c->setVelocityForTimeInterval(btVector3(newVel.floatPtr())*QIO_TO_BULLET,10.f);
+}
+btCollisionShape *BT_ConvertQioCModelToCollisionShape(cMod_i *cModel, float &mass, bool bUseDynamicConvexForTrimeshCMod) {
 	if(cModel == 0) {
-		g_core->RedWarning("BT_CreateRigidBodyWithCModel: NULL cmodel\n");
+		g_core->RedWarning("BT_ConvertQioCModelToCollisionShape: NULL cmodel (with mass %f)\n",mass);
 		return 0;
 	}
-
-	btCollisionShape *shape;
+	btCollisionShape *shape = 0;
 	if(cModel->isBBExts()) {
 		vec3_c halfSizes = cModel->getBBExts()->getHalfSizes();
 		btBoxShape *boxShape = new btBoxShape(btVector3(halfSizes[0]*QIO_TO_BULLET, halfSizes[1]*QIO_TO_BULLET, halfSizes[2]*QIO_TO_BULLET));
@@ -779,41 +788,47 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 		const cmTriMesh_i *triMesh = cModel->getTriMesh();
 		((cmTriMesh_i*)triMesh)->precacheScaledVerts(QIO_TO_BULLET);
 		const cmSurface_c *sf = triMesh->getCMSurface();
-		shape = BT_CreateBHVTriMeshForCMSurface(*sf);
+		if(sf->getNumIndices() == 0) {
+			return 0;
+		}
+		if(sf->getNumVerts() == 0) {
+			return 0;
+		}
+		if(bUseDynamicConvexForTrimeshCMod) {
+			btAlignedObjectArray<btVector3>	vertices;
+			vertices.resize(sf->getNumVerts());
+			for(u32 i = 0; i < sf->getNumVerts(); i++) {
+				vertices[i] = sf->getVert(i).floatPtr();
+			}
+			BT_ConvertVerticesArrayFromQioToBullet(vertices);
+			shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());		
+		} else {
+			shape = BT_CreateBHVTriMeshForCMSurface(*sf);
 
-		mass = 0.f; // moving BHV trimeshes are not supported by BULLET
+			mass = 0.f; // moving BHV trimeshes are not supported by BULLET
+		}
 	} else if(cModel->isBBMinsMaxs()) {
 		aabb bb;
 		cModel->getBounds(bb);
 		shape = BT_AABBMinsMaxsToConvex(bb);
 	} else {
-		return 0;
+		g_core->RedWarning("BT_ConvertQioCModelToCollisionShape: unhandled cmodel %s type %i (with mass %f)\n",cModel->getName(),cModel->getType(),mass);
 	}
-
-	if(shape == 0)
-		return 0;
-	
-	
-
-		
+	return shape;
+}
+btRigidBody *BT_CreateRigidBodyWithBTCollisionShape(btCollisionShape *shape, const vec3_c &pos, float mass) {
 	const btVector3 btStart(pos[0]*QIO_TO_BULLET, pos[1]*QIO_TO_BULLET, pos[2]*QIO_TO_BULLET);
 
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(btStart);
 
-
 	btRigidBody *body = BT_CreateRigidBodyInternal(mass, startTransform, shape);
 	body->setLinearFactor(btVector3(1, 1, 1));
 		
 //	body->getWorldTransform().setOrigin(btStart);
 
-	if(startVel) {
-		btVector3 vel(startVel[0], startVel[1], startVel[2]);
-	/*	vel *= 150;*/
 
-		body->setLinearVelocity(vel);
-	}
 		
 	//body->setAngularVelocity(btVector3(0,0,0));
 	//body->setContactProcessingThreshold(1e30);
@@ -836,6 +851,22 @@ btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles,
 	//	body->setCcdMotionThreshold(32.f);
 	//	body->setCcdSweptSphereRadius(6);
 	//}
+	return body;
+}
+btRigidBody *BT_CreateRigidBodyWithCModel(const float *pos, const float *angles, const float *startVel, cMod_i *cModel, float mass, bool bUseDynamicConvexForTrimeshCMod) {
+	if(cModel == 0) {
+		g_core->RedWarning("BT_CreateRigidBodyWithCModel: NULL cmodel (with mass %f)\n",mass);
+		return 0;
+	}
+	btCollisionShape *shape = BT_ConvertQioCModelToCollisionShape(cModel,mass,bUseDynamicConvexForTrimeshCMod);
+	if(shape == 0) {
+		return 0;
+	}
+	btRigidBody *body = BT_CreateRigidBodyWithBTCollisionShape(shape,pos,mass);
+	if(startVel) {
+		btVector3 vel(startVel[0], startVel[1], startVel[2]);
+		body->setLinearVelocity(vel);
+	}
 	return body;
 }
 void BT_RemoveRigidBody(class btRigidBody *body) {

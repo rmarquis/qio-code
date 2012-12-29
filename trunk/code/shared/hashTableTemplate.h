@@ -37,7 +37,7 @@ class hashTableTemplate_c {
 	//friend TYPE;
 protected:
 	TYPE *hashTable[DEFAULT_HASH_TABLE_SIZE];
-	int currentHash;
+	mutable int currentHash;
 	void addEntry(TYPE *en) {
 		en->setHashNext(hashTable[currentHash]);
 		hashTable[currentHash] = en;
@@ -65,6 +65,18 @@ public:
 		return hashTable;
 	}
 	TYPE *getEntry(const char *entryName) {
+		if(entryName == 0 || entryName[0] == 0)
+			return 0;
+		currentHash = hashForString(entryName);
+		TYPE *ret;
+		for (ret = hashTable[currentHash]; ret; ret = ret->getHashNext()) {
+			//if(compareEntryWithNameStr(ret,entryName))
+			if(!stricmp(ret->getName(),entryName))
+				return ret;
+		}
+		return 0;
+	}
+	const TYPE *getEntry(const char *entryName) const {
 		if(entryName == 0 || entryName[0] == 0)
 			return 0;
 		currentHash = hashForString(entryName);
@@ -123,6 +135,11 @@ friend TYPE;
 public:
 	arraySTD_c<TYPE*> ar;
 	TYPE *getEntry(const char *entryName) {
+		if(entryName == 0 || entryName[0] == 0)
+			return 0;
+		return table.getEntry(entryName);
+	}
+	const TYPE *getEntry(const char *entryName) const {
 		if(entryName == 0 || entryName[0] == 0)
 			return 0;
 		return table.getEntry(entryName);
@@ -191,6 +208,11 @@ public:
 		return table.getTable();
 	}
 	inline TYPE *objectAt(u32 index) {
+		if(ar.size() < index)
+			return 0;
+		return ar[index];
+	}
+	inline const TYPE *objectAt(u32 index) const {
 		if(ar.size() < index)
 			return 0;
 		return ar[index];

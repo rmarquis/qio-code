@@ -105,11 +105,15 @@ public:
 	virtual void runWaterPhysics(float curWaterLevel) {
 
 	}
+	virtual void postSpawn() {
+
+	}
 
 	void setParent(BaseEntity *newParent, int tagNum = -1);
 	void detachFromParent();
 
 	virtual void getLocalBounds(aabb &out) const;
+	const class aabb &getAbsBounds() const;
 
 	virtual bool traceWorldRay(class trace_c &tr) {
 		return false;

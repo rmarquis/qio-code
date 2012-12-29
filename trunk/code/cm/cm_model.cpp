@@ -26,9 +26,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "cm_model.h"
 #include "cm_helper.h"
 #include <api/coreAPI.h>
+#include <api/cvarAPI.h>
 #include <shared/hashTableTemplate.h>
 
 static hashTableTemplateExt_c<cmObjectBase_c> cm_models;
+
+void CM_AddCObjectBaseToHashTable(cmObjectBase_c *newCMObject) {
+	cm_models.addObject(newCMObject);
+}
 
 cMod_i *CM_FindModelInternal(const char *name) {
 	cmObjectBase_c *b = cm_models.getEntry(name);
@@ -267,7 +272,7 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	if(existing) {
 		return existing;
 	}
-	// check for primitive models
+	// check for primitive models (procedurally generated)
 	if(modName[0] == '_') {
 		const char *t = modName+1;
 		if(!Q_stricmpn(t,"c",1)) {
@@ -298,6 +303,14 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 				return 0;
 			}
 		}
+	}
+	// check for .BSP inline models
+	// (FIXME: they all should be precached once on map startup??)
+	if(modName[0] == '*') {
+		u32 modelNumber = atoi(modName+1);
+		char mapName[256];
+		g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
+		return CM_LoadBSPFileSubModel(mapName,modelNumber);
 	}
 	// check if modName is a fileName
 	const char *ext = G_strgetExt(modName);

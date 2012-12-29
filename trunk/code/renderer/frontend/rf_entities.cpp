@@ -349,7 +349,7 @@ bool rEntityImpl_c::rayTraceWorld(class trace_c &tr) const {
 	trace_c transformedTrace;
 	tr.getTransformed(transformedTrace,this->getMatrix());
 	if(rayTraceLocal(transformedTrace)) {
-		tr.updateResultsFromTransformedTrace(transformedTrace);
+		tr.updateResultsFromTransformedTrace(transformedTrace,this->getMatrix());
 		return true; // hit
 	}
 	return false; // no hit

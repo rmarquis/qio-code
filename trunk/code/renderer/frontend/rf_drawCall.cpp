@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/occlusionQueryAPI.h>
+#include <api/rLightAPI.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
 
@@ -192,10 +194,12 @@ void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	qsort(rf_drawCalls.getArray()+firstDrawCall,numDrawCalls,sizeof(drawCall_c),compareDrawCall);
 }
 void RF_Generate3DSubView();
+static aCvar_c light_printLightsCulledByGPUOcclusionQueries("light_printLightsCulledByGPUOcclusionQueries","0");
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
+	rLightAPI_i *prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
 		if(prevEntity != c->entity) {
 			if(c->entity == 0) {
@@ -205,7 +209,36 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			}
 			prevEntity = c->entity;
 		}
-		rb->setCurLight(c->curLight);
+		if(prevLight != c->curLight) {
+			if(prevLight == 0) {
+				// depth pass finished
+				RFL_AssignLightOcclusionQueries();
+			}
+			rb->setCurLight(c->curLight);
+			prevLight = c->curLight;
+		}
+		if(c->curLight && RFL_GPUOcclusionQueriesForLightsEnabled() && (c->curLight->getBCameraInside()==false)) {
+			// see if the light is culled by GPU occlusion query
+			class occlusionQueryAPI_i *oq = c->curLight->getOcclusionQuery();
+			if(oq) {
+				u32 passed;
+#if 1
+				if(oq->isResultAvailable()) {
+					passed = oq->getNumSamplesPassed();
+				} else {
+					passed = oq->getPreviousResult();
+				}
+#else
+				passed = oq->waitForLatestResult();
+#endif
+				if(passed == 0) {
+					if(light_printLightsCulledByGPUOcclusionQueries.getInt()) {
+						g_core->Print("Skipping drawcall with light %i\n",c->curLight);
+					}
+					continue;
+				}
+			}
+		}
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 		rb->setMaterial(c->material,c->lightmap);
@@ -217,7 +250,8 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			rb->drawIndexedShadowVolume(c->points,c->indices);
 		}
 	}
-	rb->setBindVertexColors(false);		
+	rb->setBindVertexColors(false);	
+	rb->setCurLight(0);	
 	if(prevEntity) {
 		rb->setupWorldSpace();
 		prevEntity = 0;

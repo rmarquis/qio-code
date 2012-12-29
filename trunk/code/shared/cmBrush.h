@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/vec3.h>
 #include <math/aabb.h>
 #include <math/plane.h>
+#include <shared/perPlaneCallback.h>
 
 class cmBrushSide_c {
 friend class cmBrush_c;
@@ -59,10 +60,14 @@ public:
 //	void fromBrush(const class cmBrush_c &in);
 //};
 
-class cmBrush_c {
+class cmBrush_c : public perPlaneCallbackListener_i {
 	arraySTD_c<cmBrushSide_c> sides;
 	aabb bounds;
 public:
+	/// perPlaneCallbackListener_i IMPL
+	// add a new plane to current brush
+	virtual void perPlaneCallback(const float plEq[4]);
+
 	void fromBounds(const class aabb &bb);
 	void fromPoints(const vec3_c *points, u32 numPoints);
 	void fromPoints(const arraySTD_c<vec3_c> &points) {
@@ -88,6 +93,11 @@ public:
 	void iterateSidePlanes(void (*callback)(const float planeEq[4])) const {
 		for(u32 i = 0; i < sides.size(); i++) {
 			callback(&sides[i].pl.norm.x);
+		}
+	}
+	void negatePlaneDistances() {
+		for(u32 i = 0; i < sides.size(); i++) {
+			sides[i].pl.dist *= -1;
 		}
 	}
 	bool hasSideWithMaterial(const char *matName) const;

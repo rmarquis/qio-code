@@ -120,6 +120,11 @@ void r_surface_c::setMaterial(mtrAPI_i *newMat) {
 	}
 }
 void r_surface_c::setMaterial(const char *newMatName) {
+	if(newMatName == 0 || newMatName[0] == 0) {
+		matName = "noMaterial";
+		mat = g_ms->registerMaterial("noMaterial");
+		return;
+	}
 	matName = newMatName;
 	mat = g_ms->registerMaterial(newMatName);
 }
@@ -554,6 +559,29 @@ void r_model_c::addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
 	bounds.addPoint(v1.xyz);
 	bounds.addPoint(v2.xyz);
 }
+void r_model_c::setNumSurfs(u32 newSurfsCount) {
+	surfs.resize(newSurfsCount);
+}
+void r_model_c::resizeSurfaceVerts(u32 surfNum, u32 numVerts) {
+	surfs[surfNum].resizeVerts(numVerts);
+}
+void r_model_c::setSurfaceVert(u32 surfNum, u32 vertIndex, const float *xyz, const float *st) {
+	surfs[surfNum].setVertXYZTC(vertIndex,xyz,st[0],st[1]);
+}
+void r_model_c::setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices) {
+	surfs[surfNum].setIndicesU32(numIndices,indices);
+}
+void r_model_c::setSurfaceMaterial(u32 surfNum, const char *matName) {
+	surfs[surfNum].setMaterial(matName);
+}	
+void r_model_c::recalcBoundingBoxes() {
+	bounds.clear();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		surfs[i].recalcBB();
+		bounds.addBox(surfs[i].getBB());
+	}
+}
+
 void r_model_c::createVBOsAndIBOs() {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {

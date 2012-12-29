@@ -49,6 +49,10 @@ protected:
 	class boneOrQPArray_t *initialRagdolPose; // if this is non-zero, spawned ragdoll bodies will use positions/quaternions from here
 	int health;
 	bool bTakeDamage;
+	bool bUseRModelToCreateDynamicCVXShape;
+	bool bUseDynamicConvexForTrimeshCMod;
+	bool bPhysicsBodyKinematic;
+	bool bRigidBodyPhysicsEnabled; // if false, this->initRigidBodyPhysics will always fail
 	str animName; // current animation name
 public:
 	ModelEntity();
@@ -69,11 +73,14 @@ public:
 
 	virtual void runPhysicsObject();
 
+	void setPhysicsObjectKinematic(bool newBKinematic);
+	void setRigidBodyPhysicsEnabled(bool bRBPhysEnable);
+
 	// returns true on error
 	bool initRagdollRenderAndPhysicsObject(const char *afName);
 
 	// rigid body physics
-	void initRigidBodyPhysics();
+	void initRigidBodyPhysics(); // this will work only if this->bRigidBodyPhysicsEnabled is true
 	void initStaticBodyPhysics(); // static body
 	void destroyPhysicsObject();
 	// ragdoll physics

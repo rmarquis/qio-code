@@ -367,6 +367,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_scriptedClasses.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_spawn.cpp"
 				>
 			</File>
@@ -441,6 +445,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_scriptedClasses.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\physics_scale.h"
 				>
 			</File>
@@ -470,6 +478,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\BaseEntity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Door.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Door.h"
 				>
 			</File>
 			<File
@@ -513,6 +529,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Trigger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Trigger.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\VehicleCar.cpp"
 				>
 			</File>
@@ -553,6 +577,22 @@
 				</File>
 				<File
 					RelativePath="..\..\code\game\classes\PortalSurface.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\TriggerPush.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\TriggerPush.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\TriggerTeleport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\TriggerTeleport.h"
 					>
 				</File>
 			</Filter>
@@ -606,6 +646,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cStylePreprocessor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cStylePreprocessor.h"
 				>
 			</File>
 			<File
@@ -687,6 +735,30 @@
 			<File
 				RelativePath="..\..\code\math\vec3.h"
 				>
+			</File>
+		</Filter>
+		<Filter
+			Name="srcItemDefs"
+			>
+			<File
+				RelativePath="..\..\game\baseqio\srcItemDefs\quake3Items.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 	</Files>

@@ -64,6 +64,7 @@ void G_FreeEntity( edict_s *e );
 qboolean G_EntitiesFree( void );
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
 class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
+class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
 
 //
 // g_client.c
@@ -110,6 +111,8 @@ class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_
 bool G_TryToJump(btKinematicCharacterController *ch);
 bool BT_IsCharacterOnGround(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);
+void BT_SetCharacterPos(class btKinematicCharacterController *c, const vec3_c &p);
+void BT_SetCharacterVelocity(class btKinematicCharacterController *c, const vec3_c &newVel);
 void G_UpdatePhysicsObject(edict_s *ent);
 class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel);
 void BT_RemoveVehicle(class physVehicleAPI_i *pv);
@@ -135,6 +138,7 @@ void G_SpawnMapEntities(const char *mapName);
 BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName);
 // spawn entity defined in .def file (Doom3 decls)
 BaseEntity *G_SpawnEntityFromEntDecl(const char *declName);
+BaseEntity *G_SpawnClass(const char *className);
 
 //
 // g_bullet_debugDraw.cpp
@@ -160,6 +164,14 @@ class ragdollAPI_i *G_SpawnTestRagdollFromAF(const char *afName, const vec3_c &p
 // g_saveMapFile.cpp
 //
 bool G_SaveCurrentSceneToMapFile(const char *outFName);
+
+//
+// g_scriptedClasses.cpp
+//
+void G_InitScriptedClasses();
+void G_ShutdownScriptedClasses();
+const class scriptedClass_c *G_FindScriptedClassDef(const char *className);
+u32 G_GetNumKnownScriptedClassDefs();
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
