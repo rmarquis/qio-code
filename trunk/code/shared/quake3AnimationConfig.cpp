@@ -37,6 +37,8 @@ bool q3AnimCfg_c::parse(const char *fileName) {
 			p.skipLine();
 		} else if(p.atWord("sex")) {
 			p.skipLine();
+		} else if(p.atWord("footsteps")) {
+			p.skipLine();
 		} else {
 			u32 animNum = anims.size();
 			q3AnimDef_s &nextAnim = anims.pushBack();

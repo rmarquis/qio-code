@@ -165,6 +165,7 @@ void Player::setVehicle(class VehicleCar *newVeh) {
 	disableCharacterController();
 }
 void Player::setPlayerModel(const char *newPlayerModelName) {
+	this->disableCharacterController();
 	setRenderModel(newPlayerModelName);
 	if(animHandler) {
 		delete animHandler;
@@ -172,8 +173,19 @@ void Player::setPlayerModel(const char *newPlayerModelName) {
 	if(newPlayerModelName[0] == '$') {
 		// QuakeIII three-part player model
 		animHandler = new q3PlayerAnimController_c;
+		this->setRenderModelSkin("default");
+		// NOTE: Q3 player model origin is in the center of the model.
+		// Model feet are at 0,0,-24
+		float h = 30;
+		this->createCharacterControllerCapsule(h,15);
+		this->setCharacterControllerZOffset(h-24);
+		this->ps.viewheight = 26;
 	} else {
 		animHandler = new qioPlayerAnimController_c;
+		// NOTE: shina models origin is on the ground, between its feet
+		this->createCharacterControllerCapsule(48,19);
+		this->setCharacterControllerZOffset(48);
+		this->ps.viewheight = 82;
 	}
 	animHandler->setGameEntity(this);
 	animHandler->setModelName(newPlayerModelName);

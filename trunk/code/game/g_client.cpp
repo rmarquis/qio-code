@@ -208,20 +208,9 @@ void ClientSpawn(edict_s *ent) {
 
 #if 0
 	pl->setPlayerModel("models/player/shina/body.md5mesh");
-	// NOTE: shina models origin is on the ground, between its feet
-	pl->createCharacterControllerCapsule(48,19);
-	pl->setCharacterControllerZOffset(48);
-	pl->ps.viewheight = 82;
 #else
 	// load q3 player model (three .md3's)
 	pl->setPlayerModel("$sarge");
-	pl->setRenderModelSkin("default");
-	// NOTE: Q3 player model origin is in the center of the model.
-	// Model feet are at 0,0,-24
-	float h = 30;
-	pl->createCharacterControllerCapsule(h,15);
-	pl->setCharacterControllerZOffset(h-24);
-	pl->ps.viewheight = 26;
 #endif
 
 	// run a pl frame to drop exactly to the floor,
@@ -463,6 +452,9 @@ void ClientCommand( int clientNum ) {
 			newPos.z = atof(g_core->Argv(3));
 			pl->setOrigin(newPos);
 		}
+	} else if(!stricmp(cmd,"forcePlayerModelChange")) {
+		str newPlayerModel = g_core->Argv(1);
+		pl->setPlayerModel(newPlayerModel);
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
