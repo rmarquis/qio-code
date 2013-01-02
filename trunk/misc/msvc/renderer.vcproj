@@ -239,6 +239,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_skin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_sky.cpp"
 				>
 			</File>
@@ -326,6 +330,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\frontend\rf_shadowVolume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_skin.h"
 				>
 			</File>
 			<File
@@ -544,6 +552,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\skelUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\tagOr.cpp"
 				>
 			</File>
 			<File

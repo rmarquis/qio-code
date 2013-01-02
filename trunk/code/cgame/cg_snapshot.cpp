@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
+#include <shared/quake3Anims.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
@@ -67,8 +68,16 @@ static void CG_TransitionModel(centity_t *cent) {
 	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
 	if(cent->rEnt->hasDeclModel()) {
 		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
+	} else if(cent->rEnt->isQ3PlayerModel()) {
+		cent->rEnt->setQ3LegsAnimLocalIndex(cent->currentState.animIndex);
+		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
 	} else {
 		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
+	}
+	if(cent->currentState.rSkinIndex) {
+		// if we have a custom skin...
+		const char *skinName = CG_ConfigString(CS_SKINS + cent->currentState.rSkinIndex);
+		cent->rEnt->setSkin(skinName);
 	}
 	if(cent->currentState.number == cg.clientNum) {
 		cent->rEnt->setThirdPersonOnly(true);

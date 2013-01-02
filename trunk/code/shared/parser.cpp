@@ -190,10 +190,14 @@ const char *parser_c::getD3Token() {
 }
 float parser_c::getFloat() {
 	const char *t = getToken();
+	if(t == 0)
+		return 0;
 	return atof(t);
 }
 int parser_c::getInteger() {
 	const char *t = getToken();
+	if(t == 0)
+		return 0;
 	return atoi(t);
 }
 bool parser_c::atChar(char ch) {

@@ -75,6 +75,7 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 										// so corpses can also reference the proper config
 
 	s->rModelIndex = ps->rModelIndex;
+	s->rSkinIndex = ps->rSkinIndex;
 	s->colModelIndex = ps->colModelIndex;
 	s->groundEntityNum = ps->groundEntityNum;
 }

@@ -39,6 +39,10 @@ class r_surface_c {
 	class textureAPI_i *lightmap;
 	rVertexBuffer_c verts;
 	rIndexBuffer_c indices;
+	// shared index buffer (if it's used then this->indices can be left empty)
+	// Used for animated models, where they vertices data is different
+	// but indices remain the same
+	const rIndexBuffer_c *refIndices;
 	aabb bounds;
 	// triangle planes are calculated while recalculating model normals.
 	// they are used by shadow volumes creation algorithm
@@ -54,6 +58,9 @@ public:
 	}
 	u32 getNumTris() const {
 		return indices.getNumIndices() / 3;
+	}
+	const char *getName() const {
+		return name;
 	}
 	mtrAPI_i *getMat() const {
 		return mat;
@@ -109,6 +116,8 @@ public:
 	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
 	void resizeIndices(u32 newNumIndices);
 	void setIndex(u32 indexNum, u32 value);
+	
+	void transform(const class matrix_c &mat);
 
 	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
 
@@ -143,8 +152,12 @@ public:
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	bool createDecalInternal(class decalProjector_c &proj);
+	// skeletal models instancing
 	void initSkelSurfInstance(const class skelSurfaceAPI_i *skelSF);
 	void updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneOrArray_c &bones);
+	// keyframed models instancing
+	void initKeyframedSurfaceInstance(const class kfSurfAPI_i *sfApi);
+	void updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame);
 
 	bool traceRay(class trace_c &tr);
 
@@ -244,8 +257,15 @@ public:
 	void createVBOsAndIBOs();
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
+	// skeletal models instancing
 	void initSkelModelInstance(const class skelModelAPI_i *skel);
 	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones);
+	// keyframed models instacing
+	void initKeyframedModelInstance(const class kfModelAPI_i *kf);
+	void updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum);
+	// q3 multipart models (separate .md3's for head, torso, legs...)
+	void initQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp);
+	void updateQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp, u32 legsFrameNum, u32 torsoFrameNum);
 
 	bool traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation = true);
 	bool createDecalInternal(class decalProjector_c &proj);
@@ -255,6 +275,8 @@ public:
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0);
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
+	void setSurfMaterial(const char *surfName, const char *matName);
+	void appendSkinRemap(const class rSkinRemap_c *skin);
 
 	bool parseProcModel(class parser_c &p);
 

@@ -129,6 +129,9 @@ struct md3Header_s {
 		}
 		return sf;
 	}
+	const md3Tag_s *getTags() const {
+		return (const md3Tag_s*)(((const byte*)this)+ofsTags);
+	}
 };
 
 #endif // __MD3_FILE_FORMAT_H__

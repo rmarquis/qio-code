@@ -201,14 +201,28 @@ void ClientSpawn(edict_s *ent) {
 	pl->ps.clientNum = index;
 
 	VectorCopy( spawn_origin, pl->ps.origin );
-	pl->ps.viewheight = DEFAULT_VIEWHEIGHT;
 
 	g_server->GetUsercmd( index, &pl->pers.cmd );
 	pl->setClientViewAngle(spawn_angles );
 	// don't allow full run speed for a bit
 
-	pl->setRenderModel("models/player/shina/body.md5mesh");
-	pl->createCharacterControllerCapsule(48,16);
+#if 0
+	pl->setPlayerModel("models/player/shina/body.md5mesh");
+	// NOTE: shina models origin is on the ground, between its feet
+	pl->createCharacterControllerCapsule(48,19);
+	pl->setCharacterControllerZOffset(48);
+	pl->ps.viewheight = 82;
+#else
+	// load q3 player model (three .md3's)
+	pl->setPlayerModel("$sarge");
+	pl->setRenderModelSkin("default");
+	// NOTE: Q3 player model origin is in the center of the model.
+	// Model feet are at 0,0,-24
+	float h = 30;
+	pl->createCharacterControllerCapsule(h,15);
+	pl->setCharacterControllerZOffset(h-24);
+	pl->ps.viewheight = 26;
+#endif
 
 	// run a pl frame to drop exactly to the floor,
 	// initialize animations and other things

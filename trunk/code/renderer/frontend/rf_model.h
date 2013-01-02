@@ -36,6 +36,9 @@ enum modelType_e {
 	MOD_SKELETAL, // animated skeletal model
 	MOD_PROC, // inline proc model
 	MOD_DECL, // model declared in Doom3 .def files
+	MOD_KEYFRAMED, // per-vertex animation (single .md3 model)
+	// Quake3 three-parts player model (separate .md3 for legs, for torso, and for head)
+	MOD_Q3PLAYERMODEL, 
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -56,6 +59,8 @@ class model_c : public rModelAPI_i {
 			class procTree_c *myProcTree;
 		}; // only if this->type == MOD_PROC
 		class modelDeclAPI_i *declModel; // only if this->type == MOD_DECL
+		class kfModelAPI_i *kfModel; // only if this->type == MOD_KEYFRAMED
+		class q3PlayerModelAPI_i *q3PlayerModel;  // only if this->type == MOD_Q3PLAYERMODEL
 	};
 	aabb bb;
 public:
@@ -86,6 +91,21 @@ public:
 	}
 	virtual bool isDeclModel() const {
 		if(type == MOD_DECL)
+			return true;
+		return false;
+	}
+	virtual bool isSkeletal() const { 
+		if(type == MOD_SKELETAL)
+			return true;
+		return false;
+	}
+	virtual bool isKeyframed() const { 
+		if(type == MOD_KEYFRAMED)
+			return true;
+		return false;
+	}
+	virtual bool isQ3PlayerModel() const { 
+		if(type == MOD_Q3PLAYERMODEL)
 			return true;
 		return false;
 	}
@@ -128,6 +148,8 @@ public:
 	virtual class skelModelAPI_i *getSkelModelAPI() const;
 	virtual class modelDeclAPI_i *getDeclModelAPI() const;
 	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const;
+	virtual class kfModelAPI_i *getKFModelAPI() const;
+	virtual const q3PlayerModelAPI_i *getQ3PlayerModelAPI() const;
 
 	void clear();
 

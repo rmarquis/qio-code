@@ -28,8 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/skelUtils.h>
 
 // unfinished animation blender
-class animController_c {
-	float time;
+class skelAnimController_c {
+	float time; // in seconds
 	const class skelAnimAPI_i *anim;
 	int lastUpdateTime;
 	// extra variables for blending between new and old animation

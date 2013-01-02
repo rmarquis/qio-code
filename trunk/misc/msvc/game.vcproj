@@ -359,6 +359,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_playerModels.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_ragdoll.cpp"
 				>
 			</File>
@@ -702,6 +706,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\quake3Anims.h"
 				>
 			</File>
 			<File

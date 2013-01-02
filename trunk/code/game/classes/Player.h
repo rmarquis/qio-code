@@ -60,6 +60,7 @@ class Player : public ModelEntity {
 	safePtr_c<Weapon> curWeapon;
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
+	class playerAnimControllerAPI_i *animHandler;
 public:
 	Player();
 	virtual ~Player();
@@ -86,6 +87,7 @@ public:
 
 	void disableCharacterController();
 	void enableCharacterController();
+	void setCharacterControllerZOffset(float ofs);
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void touchTriggers();
 	void runPlayer(struct usercmd_s *ucmd);
@@ -109,10 +111,12 @@ public:
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	void setVehicle(class VehicleCar *newVeh);
+	void setPlayerModel(const char *newPlayerModelName);
 
 	void toggleNoclip();
 
 	struct playerState_s *getPlayerState();
+
 
 	// called from Weapon::doUse
 	void addWeapon(class Weapon *newWeapon);

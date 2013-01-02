@@ -67,9 +67,12 @@ public:
 	bool setColModel(const char *newCModelName);
 	bool setColModel(class cMod_i *newCModel);
 	void setRagdollName(const char *ragName);
+	void setRenderModelSkin(const char *newSkinName);
 
 	int getBoneNumForName(const char *boneName);
+
 	void setAnimation(const char *animName);
+	void setInternalAnimationIndex(int newAnimIndex);
 
 	virtual void runPhysicsObject();
 

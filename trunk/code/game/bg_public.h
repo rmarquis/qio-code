@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //#define	DEFAULT_GRAVITY		800
 
 //#define	MINS_Z				-24
-#define	DEFAULT_VIEWHEIGHT	82
+//#define	DEFAULT_VIEWHEIGHT	82
 
 //
 // config strings are a general means of communicating variable length strings
@@ -53,11 +53,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	CS_SOUNDS				(CS_COLLMODELS+MAX_MODELS)
 #define	CS_ANIMATIONS			(CS_SOUNDS+MAX_SOUNDS)
 #define CS_RAGDOLLDEFSS			(CS_ANIMATIONS+MAX_ANIMATIONS)
+#define CS_SKINS				(CS_RAGDOLLDEFSS+MAX_RAGDOLLDEFS)
 //#define CS_LOCATIONS			(CS_PLAYERS+MAX_CLIENTS)
 //#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS) 
 //
 //#define CS_MAX					(CS_PARTICLES+MAX_LOCATIONS)
-#define CS_MAX					(CS_RAGDOLLDEFSS+MAX_RAGDOLLDEFS)
+#define CS_MAX					(CS_SKINS+MAX_SKINS)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS

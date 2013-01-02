@@ -173,6 +173,10 @@
 				RelativePath="..\..\code\declManager\declManagerIMPL.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\declManager\q3PlayerModelDecl.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -187,6 +191,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\declManager\declRefState.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\declManager\q3PlayerModelDecl.h"
 				>
 			</File>
 		</Filter>
@@ -211,6 +219,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\modelDeclAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\q3PlayerModelDeclAPI.h"
 				>
 			</File>
 		</Filter>
@@ -239,6 +251,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\quake3AnimationConfig.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\quake3AnimationConfig.h"
 				>
 			</File>
 		</Filter>

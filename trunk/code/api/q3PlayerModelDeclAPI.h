@@ -21,46 +21,21 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// declRefState.h - used to track which module are using decls
-#ifndef __DECLREFSTATE_H__
-#define __DECLREFSTATE_H__
+// q3PlayerModelDeclAPI.h
+#ifndef __Q3PLAYERMODELDECLAPI_H__
+#define __Q3PLAYERMODELDECLAPI_H__
 
-#include <api/iFaceMgrAPI.h> // only for QM_IsServerSide
-
-class declRefState_c {
-	bool referencedByClient;
-	bool referencedByServer;
+class q3PlayerModelAPI_i {
 public:
-	declRefState_c() {
-		referencedByClient = false;
-		referencedByServer = false;
-	}
-	void setReferencedByClient() {
-		referencedByClient = true;
-	}
-	void setReferencedByServer() {
-		referencedByServer = true;
-	}
-	void setReferencedByModule(enum qioModule_e userModule) {
-		if(QM_IsServerSide(userModule) == false) {
-			this->setReferencedByClient();
-		} else {
-			this->setReferencedByServer();
-		}
-	}
-	void clearServerRef() {
-		referencedByServer = false;
-	}
-	void clearClientRef() {
-		referencedByClient = false;
-	}
-	bool isReferenced() const {
-		if(referencedByClient)
-			return true;
-		if(referencedByServer)
-			return true;
-		return false;
-	}
+	virtual u32 getNumTotalSurfaces() const = 0;
+	virtual const class kfModelAPI_i *getLegsModel() const = 0;
+	virtual const class kfModelAPI_i *getTorsoModel() const = 0;
+	virtual const class kfModelAPI_i *getHeadModel() const = 0;
+	virtual const char *getLegsModelName() const = 0;
+	virtual const char *getTorsoModelName() const = 0;
+	virtual const char *getHeadModelName() const = 0;
+	virtual const struct q3AnimDef_s *getAnimCFGForIndex(u32 localAnimIndex) const = 0;
 };
 
-#endif // __DECLREFSTATE_H__
+#endif // __Q3PLAYERMODELDECLAPI_H__
+

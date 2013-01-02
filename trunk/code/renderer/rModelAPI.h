@@ -46,8 +46,13 @@ public:
 	virtual class modelDeclAPI_i *getDeclModelAPI() const = 0;
 	// this works only if this is a decl model
 	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const = 0;
+	virtual class kfModelAPI_i *getKFModelAPI() const = 0;
+	virtual const class q3PlayerModelAPI_i *getQ3PlayerModelAPI() const = 0;
 	virtual bool isValid() const = 0;
 	virtual bool isDeclModel() const = 0;
+	virtual bool isSkeletal() const = 0;
+	virtual bool isKeyframed() const = 0;
+	virtual bool isQ3PlayerModel() const = 0;
 	// returns the number of surfaces in static/skeletal model
 	virtual unsigned int getNumSurfaces() const = 0;
 };

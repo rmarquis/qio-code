@@ -21,46 +21,40 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// declRefState.h - used to track which module are using decls
-#ifndef __DECLREFSTATE_H__
-#define __DECLREFSTATE_H__
+// quake3AnimationConfig.h - quake3 animation.cfg files loader
+#ifndef __SHARED_QUAKE3ANIMATIONCONFIG_H__
+#define __SHARED_QUAKE3ANIMATIONCONFIG_H__
 
-#include <api/iFaceMgrAPI.h> // only for QM_IsServerSide
+#include <shared/typedefs.h>
+#include <shared/array.h>
 
-class declRefState_c {
-	bool referencedByClient;
-	bool referencedByServer;
-public:
-	declRefState_c() {
-		referencedByClient = false;
-		referencedByServer = false;
+// first frame, num frames, looping frames, frames per second
+struct q3AnimDef_s {
+	u32 firstFrame;
+	u32 numFrames;
+	u32 loopingFrames;
+	float FPS;
+	float frameTime;
+	float totalTime;
+
+	inline void calcFrameTimeFromFPS() {
+		frameTime = 1.f / FPS;
 	}
-	void setReferencedByClient() {
-		referencedByClient = true;
-	}
-	void setReferencedByServer() {
-		referencedByServer = true;
-	}
-	void setReferencedByModule(enum qioModule_e userModule) {
-		if(QM_IsServerSide(userModule) == false) {
-			this->setReferencedByClient();
-		} else {
-			this->setReferencedByServer();
-		}
-	}
-	void clearServerRef() {
-		referencedByServer = false;
-	}
-	void clearClientRef() {
-		referencedByClient = false;
-	}
-	bool isReferenced() const {
-		if(referencedByClient)
-			return true;
-		if(referencedByServer)
-			return true;
-		return false;
+	inline void calcTotalTimeFromFrameTime() {
+		totalTime = float(numFrames) * frameTime;
 	}
 };
 
-#endif // __DECLREFSTATE_H__
+class q3AnimCfg_c {
+	arraySTD_c<q3AnimDef_s> anims;
+public:
+	bool parse(const char *fileName);
+	const struct q3AnimDef_s *getAnimCFGForIndex(u32 localAnimIndex) const {
+		if(anims.size() <= localAnimIndex)
+			return 0;
+		return &anims[localAnimIndex];
+	}
+};
+
+#endif // __SHARED_QUAKE3ANIMATIONCONFIG_H__
+

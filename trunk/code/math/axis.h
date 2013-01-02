@@ -52,6 +52,11 @@ public:
 		mat[2][1] = v2y;
 		mat[2][2] = v2z;
 	}
+	axis_c(const vec3_t ax[3]) {
+		mat[0] = ax[0];
+		mat[1] = ax[1];
+		mat[2] = ax[2];
+	}
 
 	inline void identity() {
 		this->mat[0].set(1,0,0);

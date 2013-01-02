@@ -57,7 +57,8 @@ public:
 	const char *getLastStoredToken() const {
 		return lastToken;
 	}
-	const char *getD3Token();
+	// allows token to be separated by ','
+	const char *getD3Token(); // (q3 CommaParse equivalent)
 	float getFloat();
 	int getInteger();
 	// eg "0 0 0 128"
@@ -173,6 +174,30 @@ public:
 	inline bool atEOF() const {
 		const char *tmp = p;
 		while(*tmp) {
+			if(tmp[0] == '/') {
+				if(tmp[1] == '/') {
+					// skip single line comment
+					tmp += 2;
+					while(*tmp != '\n') {
+						if(*tmp == 0) {
+							return true; // EOF hit
+						}
+						tmp++;
+					}
+				} else if(tmp[1] == '*') {
+					tmp += 2;
+					while(1) {
+						if(*tmp == 0) {
+							return true; // EOF hit
+						} else if(tmp[0] == '*' && tmp[1] == '/') {
+							tmp += 2;
+							break;
+						} else {
+							tmp++;
+						}
+					}
+				}
+			}
 			if(G_isWS(*tmp) == false) {
 				return false;
 			}

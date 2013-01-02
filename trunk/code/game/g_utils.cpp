@@ -90,6 +90,9 @@ int G_AnimationIndex( const char *name ) {
 int G_RagdollDefIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_RAGDOLLDEFSS, MAX_RAGDOLLDEFS, qtrue);
 }
+int G_RenderSkinIndex( const char *name ) {
+	return G_FindConfigstringIndex (name, CS_SKINS, MAX_SKINS, qtrue);
+}
 
 //=====================================================================
 

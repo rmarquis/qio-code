@@ -32,6 +32,9 @@ public:
 	/// static (non animated) models.
 	virtual bool isStaticModelFile(const char *fname) = 0;
 	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
+	/// models with per-vertex animation (Quake3 .md3, etc..)
+	virtual bool isKeyFramedModelFile(const char *fname) = 0;
+	virtual class kfModelAPI_i *loadKeyFramedModelFile(const char *fname) = 0;
 	/// skeletal animated models
 	virtual bool isSkelModelFile(const char *fname) = 0;
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) = 0;

@@ -35,6 +35,93 @@ static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
+enum sharedGameAnim_e {
+	SGA_BAD,
+	SGA_IDLE,
+	SGA_WALK,
+	SGA_RUN,
+	SGA_WALK_BACKWARDS,
+	SGA_RUN_BACKWARDS,
+	SGA_JUMP,
+};
+const char *sharedGameAnimNames[] = {
+	"bad",
+	"idle",
+	"walk",
+	"run",
+	"walk_backwards",
+	"run_backwards",
+	"jump",
+};
+class playerAnimControllerAPI_i {
+public:
+	virtual ~playerAnimControllerAPI_i() {
+	}
+
+	virtual void setGameEntity(class ModelEntity *ent) = 0;
+	virtual void setAnimBoth(enum sharedGameAnim_e anim) = 0;
+	virtual void setModelName(const char *newModelName) = 0;
+	//virtual void setTorsoAnim(enum sharedGameAnim_e anim) = 0;
+};
+#include <shared/quake3Anims.h>
+class q3PlayerAnimController_c : public playerAnimControllerAPI_i {
+	ModelEntity *ctrlEnt;
+	str modelName;
+public:
+	virtual ~q3PlayerAnimController_c() {
+	}
+
+	virtual void setGameEntity(class ModelEntity *ent) {
+		ctrlEnt = ent;
+	}
+	virtual void setModelName(const char *newModelName) {
+		modelName = newModelName;
+	}
+	virtual void setAnimBoth(enum sharedGameAnim_e anim) {
+		if(anim == SGA_IDLE) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_IDLE);
+		} else if(anim == SGA_WALK) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_WALK);
+		} else if(anim == SGA_RUN) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_RUN);
+		} else if(anim == SGA_JUMP) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_JUMP);
+		} else if(anim == SGA_RUN_BACKWARDS) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_RUN);
+		} else if(anim == SGA_WALK_BACKWARDS) {
+			ctrlEnt->setInternalAnimationIndex(LEGS_WALK);
+		}
+	}
+
+};
+
+class qioPlayerAnimController_c : public playerAnimControllerAPI_i {
+	ModelEntity *ctrlEnt;
+	str modelName;
+	str animsDir;
+public:
+	virtual ~qioPlayerAnimController_c() {
+	}
+
+	virtual void setGameEntity(class ModelEntity *ent) {
+		ctrlEnt = ent;
+	}
+	virtual void setModelName(const char *newModelName) {
+		modelName = newModelName;
+		animsDir = modelName;
+		animsDir.stripExtension();
+		animsDir.toDir();
+	}
+	virtual void setAnimBoth(enum sharedGameAnim_e anim) {
+		str newAnimPath = animsDir;
+		const char *animName = sharedGameAnimNames[anim];
+		newAnimPath.append(animName);
+		newAnimPath.append(".md5anim");
+		ctrlEnt->setAnimation(newAnimPath);
+	}
+};
+
+
 Player::Player() {
 	this->characterController = 0;
 	memset(&pers,0,sizeof(pers));
@@ -46,6 +133,7 @@ Player::Player() {
 	onGround = false;
 	vehicle = 0;
 	curWeapon = 0;
+	animHandler = 0;
 }
 Player::~Player() {
 	if(characterController) {
@@ -76,6 +164,20 @@ void Player::setVehicle(class VehicleCar *newVeh) {
 	vehicle = newVeh;
 	disableCharacterController();
 }
+void Player::setPlayerModel(const char *newPlayerModelName) {
+	setRenderModel(newPlayerModelName);
+	if(animHandler) {
+		delete animHandler;
+	}
+	if(newPlayerModelName[0] == '$') {
+		// QuakeIII three-part player model
+		animHandler = new q3PlayerAnimController_c;
+	} else {
+		animHandler = new qioPlayerAnimController_c;
+	}
+	animHandler->setGameEntity(this);
+	animHandler->setModelName(newPlayerModelName);
+}
 void Player::toggleNoclip() {
 	noclip = !noclip;
 	if(noclip) {
@@ -90,6 +192,9 @@ void Player::disableCharacterController() {
 		characterController = 0;
 	}
 }
+void Player::setCharacterControllerZOffset(float ofs) {
+	characterControllerOffset.set(0,0,ofs);
+}
 void Player::enableCharacterController() {
 	if(this->cmod == 0) {
 		return;
@@ -97,14 +202,13 @@ void Player::enableCharacterController() {
 	cmCapsule_i *c = this->cmod->getCapsule();
 	float h = c->getHeight();
 	float r = c->getRadius();
-	characterControllerOffset.set(0,0,h);
 	BT_FreeCharacter(this->characterController);
 	this->characterController = BT_CreateCharacter(20.f, this->ps.origin+characterControllerOffset, h, r);
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	cmCapsule_i *m;
-	m = cm->registerCapsule(48,19);
+	m = cm->registerCapsule(cHeight,cRadius);
 	this->setColModel(m);
 	enableCharacterController();
 }
@@ -193,30 +297,38 @@ void Player::runPlayer(usercmd_s *ucmd) {
 			groundDist = tr.getTraveled();
 			//G_Printf("GroundDist: %f\n",groundDist);
 		}
-		if(0) {
-			this->setAnimation("models/player/shina/attack.md5anim");
+		//if(0) {
+			//this->setAnimation("models/player/shina/attack.md5anim");
 		//} else if(bLanding) {
 		//	this->setAnimation("models/player/shina/run.md5anim");
-		} else if(bJumped) {
-			this->setAnimation("models/player/shina/jump.md5anim");
+		//} else
+		if(bJumped) {
+			animHandler->setAnimBoth(SGA_JUMP);
+			//this->setAnimation("models/player/shina/jump.md5anim");
 		} else if(groundDist > 32.f) {
-			this->setAnimation("models/player/shina/jump.md5anim");
+			animHandler->setAnimBoth(SGA_JUMP);
+			//this->setAnimation("models/player/shina/jump.md5anim");
 		} else if(ucmd->hasMovement()) {
 			if(ucmd->forwardmove < 82) {
 				if(ucmd->forwardmove < 0) {
 					if(ucmd->forwardmove < -82) {
-						this->setAnimation("models/player/shina/run_backwards.md5anim");
+						animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
+						//this->setAnimation("models/player/shina/run_backwards.md5anim");
 					} else {
-						this->setAnimation("models/player/shina/walk_backwards.md5anim");
+						animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
+						//this->setAnimation("models/player/shina/walk_backwards.md5anim");
 					}
 				} else {
-					this->setAnimation("models/player/shina/walk.md5anim");
+					animHandler->setAnimBoth(SGA_WALK);
+					//this->setAnimation("models/player/shina/walk.md5anim");
 				}
 			} else {
-				this->setAnimation("models/player/shina/run.md5anim");
+				animHandler->setAnimBoth(SGA_RUN);
+				//this->setAnimation("models/player/shina/run.md5anim");
 			}
 		} else {
-			this->setAnimation("models/player/shina/idle.md5anim");
+			animHandler->setAnimBoth(SGA_IDLE);
+			//this->setAnimation("models/player/shina/idle.md5anim");
 		}
 	}
 

@@ -25,10 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_surface.h"
 #include "rf_drawCall.h"
+#include "rf_skin.h"
 #include <api/rbAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/kfModelAPI.h>
 #include <api/coreAPI.h>
 #include <shared/trace.h>
 #include <shared/parser.h> // for Doom3 .proc surfaces parsing
@@ -46,6 +48,7 @@ r_surface_c::r_surface_c() {
 	lightmap = 0;
 	mySkelSF = 0;
 	bounds.clear();
+	refIndices = 0;
 }
 r_surface_c::~r_surface_c() {
 	this->clear();
@@ -101,6 +104,13 @@ void r_surface_c::resizeIndices(u32 newNumIndices) {
 void r_surface_c::setIndex(u32 indexNum, u32 value) {
 	indices.setIndex(indexNum,value);
 }
+void r_surface_c::transform(const class matrix_c &mat) {
+	rVert_c *v = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, v++) {
+		mat.transformPoint(v->xyz);
+		mat.transformNormal(v->normal);
+	}
+}
 const struct extraSurfEdgesData_s *r_surface_c::getExtraSurfEdgesData() const {
 	if(mySkelSF == 0)
 		return 0;
@@ -134,7 +144,11 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 }
 
 void r_surface_c::addDrawCall() {
-	RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),false);
+	if(refIndices) {
+		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),false);
+	} else {
+		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),false);
+	}
 }
 #include <api/colMeshBuilderAPI.h>
 void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
@@ -197,6 +211,7 @@ bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
 void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
 	clear();
 	this->mySkelSF = skelSF;
+	//this->name = skelSF->getSurfName();
 	setMaterial(skelSF->getMatName());
 	verts.resize(skelSF->getNumVerts());
 	rVert_c *v = verts.getArray();
@@ -221,6 +236,19 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 		}
 		bounds.addPoint(v->xyz);
 	}	
+}
+void r_surface_c::initKeyframedSurfaceInstance(const kfSurfAPI_i *sfApi) {
+	u32 numVerts = sfApi->getNumVertices();
+	verts.resize(numVerts);
+	sfApi->copyTexCoords(verts[0].tc,sizeof(rVert_c));
+	this->name = sfApi->getSurfName();
+	const char *sfMatName = sfApi->getMatName();
+	this->setMaterial(sfMatName);
+	this->refIndices = sfApi->getIBO();
+	updateKeyframedSurfInstance(sfApi,0);
+}
+void r_surface_c::updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame) {
+	sfApi->instanceSingleFrame(verts[0].xyz,sizeof(rVert_c),singleFrame);
 }
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
@@ -613,6 +641,92 @@ void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const 
 		this->bounds.addBox(sf->getBB());
 	}
 }
+void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf) {
+	u32 numSurfs = kf->getNumSurfaces();
+	surfs.resize(numSurfs);
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < numSurfs; i++, sf++) {
+		const kfSurfAPI_i *sfApi = kf->getSurfAPI(i);
+		sf->initKeyframedSurfaceInstance(sfApi);
+	}
+}
+void r_model_c::updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum) {
+	u32 numSurfs = surfs.size();
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < numSurfs; i++, sf++) {
+		const kfSurfAPI_i *sfApi = kf->getSurfAPI(i);
+		sf->updateKeyframedSurfInstance(sfApi,frameNum);
+	}
+}
+#include <api/q3PlayerModelDeclAPI.h>
+#include <shared/tagOr.h>
+void r_model_c::initQ3PlayerModelInstance(const q3PlayerModelAPI_i *qp) {
+	u32 totalSurfs = qp->getNumTotalSurfaces();
+	surfs.resize(totalSurfs);
+	r_surface_c *sf = surfs.getArray();
+	const kfModelAPI_i *legs = qp->getLegsModel();
+	if(legs) {
+		for(u32 i = 0; i < legs->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = legs->getSurfAPI(i);
+			sf->initKeyframedSurfaceInstance(sfApi);
+		}
+	}
+	const kfModelAPI_i *torso = qp->getTorsoModel();
+	if(torso) {
+		for(u32 i = 0; i < torso->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = torso->getSurfAPI(i);
+			sf->initKeyframedSurfaceInstance(sfApi);
+		}
+	}
+	const kfModelAPI_i *head = qp->getHeadModel();
+	if(head) {
+		for(u32 i = 0; i < head->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = head->getSurfAPI(i);
+			sf->initKeyframedSurfaceInstance(sfApi);
+		}
+	}
+}
+void r_model_c::updateQ3PlayerModelInstance(const q3PlayerModelAPI_i *qp, u32 legsFrameNum, u32 torsoFrameNum) {
+	u32 totalSurfs = qp->getNumTotalSurfaces();
+	r_surface_c *sf = surfs.getArray();
+	const kfModelAPI_i *legs = qp->getLegsModel();
+	u32 fixedLegsFrameNum;
+	u32 fixedTorsoFrameNum;
+	if(legs) {
+		fixedLegsFrameNum = legs->fixFrameNum(legsFrameNum);
+		for(u32 i = 0; i < legs->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = legs->getSurfAPI(i);
+			sf->updateKeyframedSurfInstance(sfApi,fixedLegsFrameNum);
+		}
+	}
+	const kfModelAPI_i *torso = qp->getTorsoModel();
+	matrix_c torsoTagMat;
+	if(torso && legs) {
+		// attach torso model to legs model tag
+		const tagOr_c *torsoTag = legs->getTagOrientation("tag_torso",fixedLegsFrameNum);
+		torsoTag->toMatrix(torsoTagMat);
+		fixedTorsoFrameNum = torso->fixFrameNum(torsoFrameNum);
+		for(u32 i = 0; i < torso->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = torso->getSurfAPI(i);
+			sf->updateKeyframedSurfInstance(sfApi,fixedTorsoFrameNum);
+			sf->transform(torsoTagMat);
+		}
+	}
+	const kfModelAPI_i *head = qp->getHeadModel();
+	if(head && torso && legs) {
+		// attach head model to torso model tah
+		const tagOr_c *headTagInTorsoSpace = torso->getTagOrientation("tag_head",fixedTorsoFrameNum);
+		matrix_c headTagInTorsoSpaceMat;
+		headTagInTorsoSpace->toMatrix(headTagInTorsoSpaceMat);
+		matrix_c headInLegsSpace = torsoTagMat * headTagInTorsoSpaceMat;
+		//u32 fixedFrameNum = head->fixFrameNum(frameNum);
+		for(u32 i = 0; i < head->getNumSurfaces(); i++, sf++) {
+			const kfSurfAPI_i *sfApi = head->getSurfAPI(i);
+			sf->updateKeyframedSurfInstance(sfApi,0);
+			sf->transform(headInLegsSpace);
+		}
+	}
+}
 #include <shared/cmSurface.h>
 #include <shared/autoCvar.h>
 
@@ -721,6 +835,23 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
 			sf->addDrawCall();
 		}
+	}
+}
+void r_model_c::setSurfMaterial(const char *surfName, const char *matName) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(!stricmp(sf->getName(),surfName)) {
+		//if(!Q_stricmpn(sf->getName(),surfName,strlen(surfName))) {
+			sf->setMaterial(matName);
+		}
+	}
+}
+void r_model_c::appendSkinRemap(const class rSkinRemap_c *skin) {
+	if(skin == 0)
+		return;
+	for(u32 i = 0; i < skin->size(); i++) {
+		const rSkinSurface_s &ss = skin->getSkinSurf(i);
+		this->setSurfMaterial(ss.surfName,ss.matName);
 	}
 }
 #include "rf_lights.h"

@@ -21,15 +21,10 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physics_scale.h - conversion between Id Tech units and Bullet Physics units.
-#ifndef __PHYSICS_SCALE_H__
-#define __PHYSICS_SCALE_H__
+// tagOr.cpp - bone/tag orientation defined by axis and vector
+#include "tagOr.h"
+#include <math/matrix.h>
 
-#define QIO_TO_BULLET 0.01905
-#define BULLET_TO_QIO 52.4934383
-
-#define CONVERT_QIO_TO_BULLET(x) ((x)*QIO_TO_BULLET)
-#define CONVERT_BULLET_TO_QIO(x) ((x)*BULLET_TO_QIO)
-
-#endif // __PHYSICS_SCALE_H__
-
+void tagOr_c::toMatrix(class matrix_c &out) const {
+	out.fromAxisAndOrigin(axis,pos);
+}

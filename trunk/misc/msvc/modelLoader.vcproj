@@ -275,6 +275,10 @@
 				RelativePath="..\..\code\shared\stringHashTable.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\tagOr.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="SkeletalModelLoaders"
@@ -303,6 +307,10 @@
 		<Filter
 			Name="API"
 			>
+			<File
+				RelativePath="..\..\code\api\kfModelAPI.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\api\modelLoaderDLLAPI.h"
 				>
@@ -357,6 +365,18 @@
 			>
 			<File
 				RelativePath="..\..\code\fileformats\md3_file_format.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="KeyframedModelLoaders"
+			>
+			<File
+				RelativePath="..\..\code\modelLoader\keyFramedModelImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\keyFramedModelImpl.h"
 				>
 			</File>
 		</Filter>

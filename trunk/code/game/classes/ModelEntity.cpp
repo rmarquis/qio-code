@@ -104,6 +104,9 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->recalcABSBounds();
 	this->link();
 }
+void ModelEntity::setRenderModelSkin(const char *newSkinName) {
+	this->myEdict->s->rSkinIndex = G_RenderSkinIndex(newSkinName);
+}
 int ModelEntity::getBoneNumForName(const char *boneName) {
 	if(cmSkel == 0) {
 		cmSkel = cm->registerSkelModel(this->renderModelName);
@@ -112,14 +115,21 @@ int ModelEntity::getBoneNumForName(const char *boneName) {
 		return -1;
 	return cmSkel->getBoneNumForName(boneName);
 }
+void ModelEntity::setInternalAnimationIndex(int newAnimIndex) {
+	this->myEdict->s->animIndex = newAnimIndex;
+	animName = va("_internalAnim%i",newAnimIndex);
+}
 void ModelEntity::setAnimation(const char *newAnimName) {
+	// get the animation index (for networking)
+	int newAnimIndex;
 	if(this->modelDecl) {
-		int animIndex = this->modelDecl->getAnimIndexForAnimAlias(newAnimName);
-		this->myEdict->s->animIndex = animIndex;
+		newAnimIndex = this->modelDecl->getAnimIndexForAnimAlias(newAnimName);
 	} else {
-		this->myEdict->s->animIndex = G_AnimationIndex(newAnimName);
+		newAnimIndex = G_AnimationIndex(newAnimName);
 		// nothing else to do right now...
 	}
+	this->myEdict->s->animIndex = newAnimIndex;
+	// save the animation string name
 	animName = newAnimName;
 }
 bool ModelEntity::setColModel(const char *newCModelName) {

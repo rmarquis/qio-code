@@ -182,10 +182,18 @@ public:
 		unloadFromGPU();
 	}
 	void unloadFromGPU() {
-		rb->destroyIBO(this);
+		// rb pointer (renderer backend)
+		// is NULL on dedicated servers
+		if(rb) {
+			rb->destroyIBO(this);
+		}
 	}
 	void uploadToGPU() {
-		rb->createIBO(this);
+		// rb pointer (renderer backend)
+		// is NULL on dedicated servers
+		if(rb) {
+			rb->createIBO(this);
+		}
 	}		
 	void reUploadToGPU() {
 #if 1

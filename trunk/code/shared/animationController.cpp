@@ -31,7 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","0");
 aCvar_c anim_printAnimChange("anim_printAnimChange","0");
 
-void animController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
+void skelAnimController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
 	if(anim->getNumFrames() == 1) {
 		out.from = 0;
 		out.to = 0;
@@ -55,13 +55,13 @@ void animController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out,
 		cur += step;
 	}
 }
-void animController_c::resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec) {
+void skelAnimController_c::resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec) {
 	time = 0.f;
 	anim = newAnim;
 	nextAnim = anim;
 	lastUpdateTime = curGlobalTimeMSec;
 }
-void animController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec) {
+void skelAnimController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec) {
 	if(anim == newAnim)
 		return;
 	if(nextAnim == newAnim)
@@ -73,7 +73,7 @@ void animController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const cla
 	// to interpolate between old animation state and newAnim
 	oldBonesState.resize(anim->getNumBones());
 	if(nextAnim != anim) {
-		g_core->RedWarning("animController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
+		g_core->RedWarning("skelAnimController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
 		updateModelAnimationLocal(skelModel,oldBonesState);
 	} else {
 		if(anim->getBLoopLastFrame() && (time > anim->getTotalTimeSec())) {
@@ -90,7 +90,7 @@ void animController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const cla
 	blendTime = 0.1f;
 	nextAnim = newAnim;
 }
-void animController_c::runAnimController(int curGlobalTimeMSec) {
+void skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
 	int deltaTime = curGlobalTimeMSec - lastUpdateTime;
 	if(deltaTime == 0)
 		return;
@@ -116,7 +116,7 @@ void animController_c::runAnimController(int curGlobalTimeMSec) {
 		}
 	}
 }
-void animController_c::updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones) {
+void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones) {
 	if(anim == nextAnim) {
 		outLocalBones.resize(anim->getNumBones());
 		if(anim->getBLoopLastFrame() && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
@@ -147,7 +147,7 @@ void animController_c::updateModelAnimationLocal(const class skelModelAPI_i *ske
 		outLocalBones.setBlendResult(oldBonesState, newBones, frac);		
 	}
 }
-void animController_c::updateModelAnimation(const class skelModelAPI_i *skelModel) {
+void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel) {
 	// create bone matrices (relative to their parents)
 	updateModelAnimationLocal(skelModel,currentBonesArray);
 	// convert relative bones matrices to absolute bone matrices
@@ -156,6 +156,6 @@ void animController_c::updateModelAnimation(const class skelModelAPI_i *skelMode
 		currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
 	}
 }
-const boneOrArray_c &animController_c::getCurBones() const {
+const boneOrArray_c &skelAnimController_c::getCurBones() const {
 	return currentBonesArray;
 }

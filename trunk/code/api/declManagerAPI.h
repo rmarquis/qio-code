@@ -34,6 +34,7 @@ class declManagerAPI_i : public iFaceBase_i {
 	virtual class modelDeclAPI_i *_registerModelDecl(const char *name, qioModule_e userModule) = 0;
 	virtual class entityDeclAPI_i *_registerEntityDecl(const char *name, qioModule_e userModule) = 0;
 	virtual class afDeclAPI_i *_registerAFDecl(const char *name, qioModule_e userModule) = 0;
+	virtual class q3PlayerModelAPI_i *_registerQ3PlayerDecl(const char *name, qioModule_e userModule) = 0;
 public:
 	virtual void init() = 0;
 	// NOTE: those functions must be inlined, otherwise IFM_GetCurModule() trick wouldnt work
@@ -51,6 +52,11 @@ public:
 		// NOTE: IFM_GetCurModule must be implemented in each and every Qio module!
 		qioModule_e userModule = IFM_GetCurModule();
 		return _registerAFDecl(name,userModule);
+	}
+	inline class q3PlayerModelAPI_i *registerQ3PlayerDecl(const char *name) {
+		// NOTE: IFM_GetCurModule must be implemented in each and every Qio module!
+		qioModule_e userModule = IFM_GetCurModule();
+		return _registerQ3PlayerDecl(name,userModule);
 	}
 	// clear up unused decls
 	virtual void onGameShutdown() = 0;

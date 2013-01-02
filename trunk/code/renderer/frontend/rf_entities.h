@@ -27,12 +27,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/array.h>
 #include <shared/flags32.h>
+#include <shared/str.h>
 #include <math/vec3.h>
 #include <math/axis.h>
 #include <math/matrix.h>
 #include <math/aabb.h>
 #include <api/rEntityAPI.h>
 #include <renderer/rfSurfsFlagsArray.h>
+
 
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
@@ -46,15 +48,24 @@ class rEntityImpl_c : public rEntityAPI_i {
 	bool bHidden;
 	bool bIsPlayerModel;
 	rfSurfsFlagsArray_t surfaceFlags; // surfaceFlags.size() == this->getNumSurfaces()
+	str skinName;
+	// the skin definition itself
+	//class rSkinRemap_c *skin; 
+	// model materials after applying the skin
+	class rSkinMatList_c *skinMatList;
 	// used only for static (non-animated) model entities
 	class simpleDecalBatcher_c *staticDecals; 
 	// only for skeletal models; model geometry instanced at the current time of animation
 	class r_model_c *instance;
-	class animController_c *animCtrl;
+	class skelAnimController_c *skelAnimCtrl;
+	class q3AnimCtrl_c *q3AnimCtrl;
 	// for ragdolls
 	const class afDeclAPI_i *myRagdollDef;
 	class boneOrQPArray_t *ragOrs;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
+
+	// this is called when a model skin, or a model itself is changed
+	void updateModelSkin();
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();
@@ -80,6 +91,9 @@ public:
 	virtual void setRagdoll(const class afDeclAPI_i *af);
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
 	virtual void setDeclModelAnimLocalIndex(int localAnimIndex);
+	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
+	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
+	virtual void setSkin(const char *skinName);
 	virtual void hideModel();
 	virtual void showModel();
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
@@ -100,6 +114,7 @@ public:
 		return false;
 	}
 	virtual bool hasDeclModel() const;
+	virtual bool isQ3PlayerModel() const;
 	virtual bool isAnimated() const;
 
 

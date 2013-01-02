@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/imgAPI.h>
 #include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
@@ -134,6 +135,31 @@ public:
 		}
 		return true;
 	}
+	virtual bool isKeyFramedModelFile(const char *fname) {
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return false;
+		}	
+		ext++; // skip '.'
+		if(!stricmp(ext,"md3")) {
+			u32 numFrames = MOD_ReadMD3FileFrameCount(fname);
+			if(numFrames > 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	virtual class kfModelAPI_i *loadKeyFramedModelFile(const char *fname) {
+		const char *ext = strchr(fname,'.');
+		if(ext == 0) {
+			return 0;
+		}	
+		//if(!stricmp(ext,"md3")) {
+		//	return MOD_LoadAnimatedMD3(fname);
+		//}
+		return KF_LoadKeyFramedModelAPI(fname);
+		//return 0;
+	}
 	virtual bool isSkelModelFile(const char *fname) {
 		const char *ext = strchr(fname,'.');
 		if(ext == 0) {
@@ -203,6 +229,7 @@ coreAPI_s *g_core = 0;
 materialSystemAPI_i *g_ms = 0;
 imgAPI_i *g_img = 0;
 rAPI_i *rf = 0;
+rbAPI_i *rb = 0;
 // exports
 static modelLoaderDLLIMPL_c g_staticModelLoaderDLLAPI;
 modelLoaderDLLAPI_i *g_modelLoader = &g_staticModelLoaderDLLAPI;
@@ -220,6 +247,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

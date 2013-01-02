@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelModelAPI.h>
 #include <api/modelDeclAPI.h>
 #include <api/declManagerAPI.h>
+#include <api/kfModelAPI.h>
+#include <api/q3PlayerModelDeclAPI.h>
 
 // for bsp inline models
 void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
@@ -61,6 +63,10 @@ u32 model_c::getNumSurfaces() const {
 		return skelModel->getNumSurfs();
 	} else if(type == MOD_DECL) {
 		return declModel->getNumSurfaces();
+	} else if(type == MOD_KEYFRAMED) {
+		return kfModel->getNumSurfaces();
+	} else if(type == MOD_Q3PLAYERMODEL) {
+		return q3PlayerModel->getNumTotalSurfaces();
 	}
 	return 0;
 }
@@ -118,6 +124,18 @@ const class skelAnimAPI_i *model_c::getDeclModelAFPoseAnim() const {
 	}
 	return 0;
 }
+class kfModelAPI_i *model_c::getKFModelAPI() const {
+	if(type == MOD_KEYFRAMED) {
+		return this->kfModel;
+	}
+	return 0;
+}
+const q3PlayerModelAPI_i *model_c::getQ3PlayerModelAPI() const {
+	if(type == MOD_Q3PLAYERMODEL) {
+		return this->q3PlayerModel;
+	}
+	return 0;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp
@@ -157,7 +175,24 @@ rModelAPI_i *RF_RegisterModel(const char *modName) {
 		return existing;
 	}
 	model_c *ret = RF_AllocModel(modName);
-	if(g_modelLoader->isStaticModelFile(modName)) {
+	if(modName[0] == '$') {
+		// check for "virtual" Quake3 player models
+		const char *playerModelName = modName+1;
+		// playerModelName is "sarge", "biker", etc...
+		ret->q3PlayerModel = g_declMgr->registerQ3PlayerDecl(playerModelName);
+		if(ret->q3PlayerModel == 0) {
+			g_core->RedWarning("Loading Q3 $player model %s failed\n",modName);
+		} else {
+			ret->type = MOD_Q3PLAYERMODEL; // that's a valid model
+		}
+	} else if(g_modelLoader->isKeyFramedModelFile(modName)) {
+		ret->kfModel = g_modelLoader->loadKeyFramedModelFile(modName);
+		if(ret->kfModel == 0) {
+			g_core->RedWarning("Loading keyframed model %s failed\n",modName);
+		} else {
+			ret->type = MOD_KEYFRAMED; // that's a valid model
+		}
+	} else if(g_modelLoader->isStaticModelFile(modName)) {
 		ret->staticModel = new r_model_c;
 		if(g_modelLoader->loadStaticModelFile(modName,ret->staticModel)) {
 			g_core->Print(S_COLOR_RED"Loading of static model %s failed\n",modName);

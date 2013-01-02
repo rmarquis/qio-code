@@ -29,26 +29,103 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_anims.h"
 #include "rf_world.h"
+#include "rf_skin.h"
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
 #include <api/afDeclAPI.h>
 #include <api/modelDeclAPI.h>
+#include <api/kfModelAPI.h>
+#include <api/q3PlayerModelDeclAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
 #include <shared/trace.h>
 #include <shared/animationController.h>
+#include <shared/quake3AnimationConfig.h>
 #include <renderer/rfSurfFlags.h>
 
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
+static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
+
+struct kfAnimCtrl_s {
+	int prevTimeMsec;
+	float curTime; // in seconds
+	const q3AnimDef_s *animDef;
+	singleAnimLerp_s curLerp;
+
+	kfAnimCtrl_s() {
+		curTime = 0;
+		animDef = 0;
+	}
+	void setAnim(u32 animIndex, const rModelAPI_i *model) {
+		const q3PlayerModelAPI_i *q3model = model->getQ3PlayerModelAPI();
+		const q3AnimDef_s *newAnimDef = q3model->getAnimCFGForIndex(animIndex);
+		if(newAnimDef == animDef) {
+			return; // no change
+		}
+		animDef = newAnimDef;
+		curTime = 0;
+	}
+	void runAnimController(int curGlobalTimeMSec) {
+		if(prevTimeMsec >= curGlobalTimeMSec)
+			return;
+		if(animDef == 0) {
+			prevTimeMsec = curGlobalTimeMSec;
+			return;
+		}
+		int deltaMsec = curGlobalTimeMSec - prevTimeMsec;
+		prevTimeMsec = curGlobalTimeMSec;
+		float deltaTimeSec = float(deltaMsec) * 0.001f;
+		curTime += deltaTimeSec;
+		float t = curTime;
+		u32 first = 0;
+		while(t > animDef->frameTime) {
+			t -= animDef->frameTime;
+			first ++;
+			if(first == animDef->numFrames) {
+				first = 0;
+				curTime -= animDef->totalTime;
+			}
+		}
+		u32 next = first + 1;
+		if(next >= animDef->numFrames) {
+			next = 0;
+		}
+		curLerp.from = animDef->firstFrame + first;
+		curLerp.to = animDef->firstFrame + next;
+		curLerp.frac = t / animDef->frameTime;
+		//g_core->Print("From %i, to %i, frac %f\n",curLerp.from,curLerp.to,curLerp.frac);
+	}
+};
+class q3AnimCtrl_c {
+	kfAnimCtrl_s legs;
+	kfAnimCtrl_s torso;
+public:	
+	void setLegsAnim(u32 animIndex, const rModelAPI_i *model) {
+		legs.setAnim(animIndex,model);
+	}
+	void setTorsoAnim(u32 animIndex, const rModelAPI_i *model) {
+		torso.setAnim(animIndex,model);
+	}
+	void runAnimController(int curGlobalTimeMSec) {
+		legs.runAnimController(curGlobalTimeMSec);
+		torso.runAnimController(curGlobalTimeMSec);
+	}
+	const kfAnimCtrl_s &getLegs() const {
+		return legs;
+	}
+	const kfAnimCtrl_s &getTorso() const {
+		return torso;
+	}
+};
 
 rEntityImpl_c::rEntityImpl_c() {
 	model = 0;
 	staticDecals = 0;
 	instance = 0;
-	animCtrl = 0;
+	skelAnimCtrl = 0;
 	axis.identity();
 	matrix.identity();
 	bFirstPersonOnly = false;
@@ -57,6 +134,8 @@ rEntityImpl_c::rEntityImpl_c() {
 	bIsPlayerModel = false;
 	myRagdollDef = 0;
 	ragOrs = 0;
+	q3AnimCtrl = 0;
+	skinMatList = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -67,13 +146,21 @@ rEntityImpl_c::~rEntityImpl_c() {
 		delete instance;
 		instance = 0;
 	}
-	if(animCtrl) {
-		delete animCtrl;
-		animCtrl = 0;
+	if(skelAnimCtrl) {
+		delete skelAnimCtrl;
+		skelAnimCtrl = 0;
+	}
+	if(q3AnimCtrl) {
+		delete q3AnimCtrl;
+		q3AnimCtrl = 0;
 	}
 	if(ragOrs) {
 		delete ragOrs;
 		ragOrs = 0;
+	}
+	if(skinMatList) {
+		delete skinMatList;
+		skinMatList = 0;
 	}
 }
 
@@ -106,7 +193,49 @@ void rEntityImpl_c::setAngles(const vec3_c &newAngles) {
 	axis.fromAngles(angles);
 	recalcMatrix();
 }
-
+void rEntityImpl_c::updateModelSkin() {
+	if(model == 0) {
+		if(skinMatList) {
+			delete skinMatList;
+			skinMatList = 0;
+		}
+		return;
+	}
+	if(skinName.length() == 0) {
+		if(skinMatList) {
+			delete skinMatList;
+			skinMatList = 0;
+		}
+		return;
+	}
+	if(model->isQ3PlayerModel()) {
+		const q3PlayerModelAPI_i *q3p = model->getQ3PlayerModelAPI();
+		// in this special case we need to load 3 skin files:
+		// skin file for head model, for upper body model, and for lower body model
+		rSkinRemap_c *skinHead = RF_RegisterSkinForModel(q3p->getHeadModelName(),skinName);
+		rSkinRemap_c *skinTorso = RF_RegisterSkinForModel(q3p->getTorsoModelName(),skinName);
+		rSkinRemap_c *skinLegs = RF_RegisterSkinForModel(q3p->getLegsModelName(),skinName);
+		if(skinHead || skinTorso || skinLegs) {
+			//skinMatList = new rSkinMatList_c;
+			instance->appendSkinRemap(skinHead);
+			instance->appendSkinRemap(skinTorso);
+			instance->appendSkinRemap(skinLegs);
+		}
+	} else {
+		// load single skin file
+		rSkinRemap_c *skin = RF_RegisterSkinForModel(model->getName(),skinName);
+		if(skin) {
+			if(instance) {
+				instance->appendSkinRemap(skin);
+			} else {
+				// if we havent a dynamic model instance,
+				// we can't apply skin directly.
+				// We need to use external material list
+			//skinMatList = new rSkinMatList_c;
+			}
+		}
+	}
+}
 void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	if(model == newModel) {
 		return;
@@ -122,40 +251,40 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	surfaceFlags.resize(newModel->getNumSurfaces());
 	surfaceFlags.nullMemory();
 	if(newModel->isStatic() == false && newModel->isValid()) {
-		skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
-		if(skelModel) {
+		// init skelmodel / keyframed model instance
+		if(newModel->isSkeletal()) {
+			const skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
 			instance = new r_model_c;
 			instance->initSkelModelInstance(skelModel);
-#if 1
 			instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
-#else
-			rfAnimation_c *anim = RF_RegisterAnimation("models/player/shina/run.md5anim");
-			boneOrArray_c bones;
-			bones.resize(anim->getAPI()->getNumBones());
-			anim->getAPI()->buildFrameBonesLocal(0,bones);
-			bones.localBonesToAbsBones(anim->getAPI()->getBoneDefs());
-			if(skelModel->hasCustomScaling()) {
-				bones.scaleXYZ(skelModel->getScaleXYZ());
-			}
-			instance->updateSkelModelInstance(skelModel,bones);	
-#endif
+		} else if(newModel->isKeyframed()) {
+			const kfModelAPI_i *kfModel = newModel->getKFModelAPI();
+			instance = new r_model_c;
+			instance->initKeyframedModelInstance(kfModel);
+			instance->updateKeyframedModelInstance(kfModel,0);
+		} else if(newModel->isQ3PlayerModel()) {
+			const q3PlayerModelAPI_i *q3PlayerModel = newModel->getQ3PlayerModelAPI();
+			instance = new r_model_c;
+			instance->initQ3PlayerModelInstance(q3PlayerModel);
+			instance->updateQ3PlayerModelInstance(q3PlayerModel,0,0);
 		}
 	}
 	model = newModel;
 	recalcABSBounds();
+	updateModelSkin();
 }
 void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
-	if(anim == 0 && animCtrl == 0)
+	if(anim == 0 && skelAnimCtrl == 0)
 		return; // ignore
 	if(this->model == 0)
 		return; // ignore
 	const class skelModelAPI_i *skelModel = this->model->getSkelModelAPI();
-	if(animCtrl == 0) {
-		animCtrl = new animController_c;
-		animCtrl->resetToAnim(anim,rf_curTimeMsec);
+	if(skelAnimCtrl == 0) {
+		skelAnimCtrl = new skelAnimController_c;
+		skelAnimCtrl->resetToAnim(anim,rf_curTimeMsec);
 	} else {
 		// TODO
-		animCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
+		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
 	}
 }
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
@@ -165,6 +294,33 @@ void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
 	}
 	const class skelAnimAPI_i *a = model->getDeclModelAPI()->getSkelAnimAPIForLocalIndex(localAnimIndex);
 	this->setAnim(a);
+}
+void rEntityImpl_c::setQ3LegsAnimLocalIndex(int localAnimIndex) {
+	if(model->isQ3PlayerModel() == false) {
+		g_core->Print("rEntityImpl_c::setQ3LegsAnimLocalIndex: called on non-decl model %s\n",model->getName());
+		return;
+	}
+	if(q3AnimCtrl == 0) {
+		q3AnimCtrl = new q3AnimCtrl_c;
+	}
+	q3AnimCtrl->setLegsAnim(localAnimIndex,model);
+}
+void rEntityImpl_c::setQ3TorsoAnimLocalIndex(int localAnimIndex) {
+	if(model->isQ3PlayerModel() == false) {
+		g_core->Print("rEntityImpl_c::setQ3TorsoAnimLocalIndex: called on non-decl model %s\n",model->getName());
+		return;
+	}
+	if(q3AnimCtrl == 0) {
+		q3AnimCtrl = new q3AnimCtrl_c;
+	}
+	q3AnimCtrl->setTorsoAnim(localAnimIndex,model);
+}
+void rEntityImpl_c::setSkin(const char *newSkinName) {
+	if(!stricmp(newSkinName,this->skinName)) {
+		return; // no change
+	}
+	this->skinName = newSkinName;
+	updateModelSkin();
 }
 void rEntityImpl_c::hideModel() {
 	bHidden = true;
@@ -176,6 +332,13 @@ bool rEntityImpl_c::hasDeclModel() const {
 	if(model == 0)
 		return false;
 	if(model->isDeclModel())
+		return true;
+	return false;
+}
+bool rEntityImpl_c::isQ3PlayerModel() const {
+	if(model == 0)
+		return false;
+	if(model->isQ3PlayerModel())
 		return true;
 	return false;
 }
@@ -251,43 +414,70 @@ void rEntityImpl_c::addDrawCalls() {
 			staticDecals->addDrawCalls();
 		}
 	} else if(instance) {
-		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
-		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
-		// ragdoll controlers ovverides all the animations
-		if(myRagdollDef) {
-			rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
-			const afPublicData_s *af = this->myRagdollDef->getData();
-			arraySTD_c<u32> refCounts;
-			boneOrArray_c bones;
-			refCounts.resize(skelModel->getNumBones());
-			refCounts.nullMemory();
-			bones.resize(skelModel->getNumBones());
-			for(u32 i = 0; i < af->bodies.size(); i++) {
-				const afBody_s &b = af->bodies[i];
-				const boneOrQP_c &partOr = (*ragOrs)[i];
-				matrix_c bodyMat;
-				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
-				arraySTD_c<u32> boneNumbers;
-				afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
-				for(u32 j = 0; j < boneNumbers.size(); j++) {
-					int boneNum = boneNumbers[j];
-					if(refCounts[boneNum]) {
-						// it should NEVER happen
-						g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
-						continue;
+		// we have an instance of dynamic model.
+		// It might be an instance of skeletal model (.md5mesh, etc)
+		// or an instance of keyframed model (.md3, .mdc, .md2, etc...)
+		if(model->isSkeletal()) {
+			const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+			const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
+			// ragdoll controlers ovverides all the animations
+			if(myRagdollDef) {
+				rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
+				const afPublicData_s *af = this->myRagdollDef->getData();
+				arraySTD_c<u32> refCounts;
+				boneOrArray_c bones;
+				refCounts.resize(skelModel->getNumBones());
+				refCounts.nullMemory();
+				bones.resize(skelModel->getNumBones());
+				for(u32 i = 0; i < af->bodies.size(); i++) {
+					const afBody_s &b = af->bodies[i];
+					const boneOrQP_c &partOr = (*ragOrs)[i];
+					matrix_c bodyMat;
+					bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
+					arraySTD_c<u32> boneNumbers;
+					afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
+					for(u32 j = 0; j < boneNumbers.size(); j++) {
+						int boneNum = boneNumbers[j];
+						if(refCounts[boneNum]) {
+							// it should NEVER happen
+							g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
+							continue;
+						}
+						refCounts[boneNum] ++;
+						const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
+						bones[boneNum].mat = bodyMat * bpb2b;
 					}
-					refCounts[boneNum] ++;
-					const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
-					bones[boneNum].mat = bodyMat * bpb2b;
+				}
+				instance->updateSkelModelInstance(skelModel,bones);	
+				instance->recalcModelNormals(); // this is slow
+			} else if(skelAnimCtrl) {
+				skelAnimCtrl->runAnimController(rf_curTimeMsec);
+				skelAnimCtrl->updateModelAnimation(skelModel);
+				instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+				instance->recalcModelNormals(); // this is slow
+			}
+		} else {
+			if(model->isKeyframed()) {
+				const kfModelAPI_i *kfModel = model->getKFModelAPI();
+				if(rf_forceKFModelsFrame.getInt() >= 0) {
+					u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
+					instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
+				} else {
+
+				}
+			} else {
+				const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
+				if(rf_forceKFModelsFrame.getInt() >= 0) {
+					instance->updateQ3PlayerModelInstance(q3Player,rf_forceKFModelsFrame.getInt(),rf_forceKFModelsFrame.getInt());
+				} else {
+					if(q3AnimCtrl) {
+						q3AnimCtrl->runAnimController(rf_curTimeMsec);
+						instance->updateQ3PlayerModelInstance(q3Player,
+							q3AnimCtrl->getLegs().curLerp.from,
+							q3AnimCtrl->getTorso().curLerp.from);	
+					}
 				}
 			}
-			instance->updateSkelModelInstance(skelModel,bones);	
-			instance->recalcModelNormals(); // this is slow
-		} else if(animCtrl) {
-			animCtrl->runAnimController(rf_curTimeMsec);
-			animCtrl->updateModelAnimation(skelModel);
-			instance->updateSkelModelInstance(skelModel,animCtrl->getCurBones());	
-			instance->recalcModelNormals(); // this is slow
 		}
 		instance->addDrawCalls(&surfaceFlags);
 	}
@@ -301,9 +491,9 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 	skelModelAPI_i *skel = model->getSkelModelAPI();
 	if(skel == 0)
 		return true; // error 
-	if(animCtrl == 0)
+	if(skelAnimCtrl == 0)
 		return true; // error
-	const boneOrArray_c &curBones = animCtrl->getCurBones();
+	const boneOrArray_c &curBones = skelAnimCtrl->getCurBones();
 	if(localBoneIndex < 0 || localBoneIndex >= curBones.size()) {
 		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());
 		return true;

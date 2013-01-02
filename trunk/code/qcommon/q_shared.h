@@ -1070,7 +1070,10 @@ typedef enum {
 #define SOUNDNUM_BITS		8
 #define MAX_SOUNDS			(1<<SOUNDNUM_BITS)
 
-#define	MAX_CONFIGSTRINGS	2048
+#define SKINNUM_BITS	8
+#define MAX_SKINS		(1<<SKINNUM_BITS)
+
+#define	MAX_CONFIGSTRINGS	4096 // 2048
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
@@ -1114,6 +1117,7 @@ struct entityState_s {
 	int		groundEntityNum;	// ENTITYNUM_NONE = in air
 
 	int	rModelIndex; // only for clientside rendering
+	int rSkinIndex;
 	int colModelIndex; // for collision detection
 
 	int parentNum; // ENTITYNUM_NONE = not attached
@@ -1145,6 +1149,7 @@ struct entityState_s {
 		parentTagNum = -1;
 		animIndex = 0;
 		activeRagdollDefNameIndex = 0;
+		rSkinIndex = 0;
 	}
 	entityState_s() {
 		setDefaults();
@@ -1193,6 +1198,10 @@ struct playerState_s : public entityState_s {
 
 	playerState_s() {
 		curWeaponEntNum = ENTITYNUM_NONE;
+		customViewRModelIndex = 0;
+		viewangles.set(0,0,0);
+		viewheight = 0;
+		ping = 0;
 	}
 };
 

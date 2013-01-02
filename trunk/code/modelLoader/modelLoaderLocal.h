@@ -48,4 +48,8 @@ bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFunc
 // skel_animPostProcess.cpp
 bool SK_ApplyAnimPostProcess(const char *modName, class skelAnimPostProcessFuncs_i *inout);
 
+// keyFramedModelIMPL.cpp
+class kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname);
+class kfModelAPI_i *KF_LoadKeyFramedModelAPI(const char *fname);
+
 #endif // __MODELLOADERLOCAL_H__

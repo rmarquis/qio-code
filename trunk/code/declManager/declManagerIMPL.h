@@ -52,6 +52,7 @@ public:
 
 class modelDecl_c;
 class entityDecl_c;
+class q3PlayerModelDecl_c;
 
 class declManagerIMPL_c : public declManagerAPI_i {
 	// file text cached
@@ -62,11 +63,13 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	hashTableTemplateExt_c<modelDecl_c> modelDecls;
 	hashTableTemplateExt_c<entityDecl_c> entityDecls;
 	hashTableTemplateExt_c<afDecl_c> afDecls;
+	hashTableTemplateExt_c<q3PlayerModelDecl_c> q3PlayerDecls;
 
 	virtual void init();
 	virtual class modelDeclAPI_i *_registerModelDecl(const char *name, qioModule_e userModule);
 	virtual class entityDeclAPI_i *_registerEntityDecl(const char *name, qioModule_e userModule);
 	virtual class afDeclAPI_i *_registerAFDecl(const char *name, qioModule_e userModule);
+	virtual class q3PlayerModelAPI_i *_registerQ3PlayerDecl(const char *name, qioModule_e userModule);
 
 	void removeUnrefrencedDecls();
 	virtual void onGameShutdown();

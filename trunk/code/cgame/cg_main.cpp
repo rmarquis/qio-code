@@ -270,6 +270,18 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" %i rModels\n",c_renderModelsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering skins...");
+	}
+	u32 c_renderSkinsLoaded = 0;
+	for(u32 i = 0; i < MAX_SKINS; i++) {
+		const char *str = CG_ConfigString(CS_SKINS+i);
+		if(str && str[0]) {
+			//cgs.gameSkins[i] = rf->registerSkin(str);
+			c_renderSkinsLoaded++;
+		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i rSkins\n",c_renderSkinsLoaded);
 		g_loadingScreen->addLoadingString("CG_Init: registering animations...");
 	}
 	u32 c_animationsLoaded = 0;
@@ -306,12 +318,18 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" %i cmModels\n",c_collisionModelsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering sounds...");
 	}
+	u32 c_soundsLoaded = 0;
 	for(u32 i = 0; i < MAX_SOUNDS; i++) {
 		const char *str = CG_ConfigString(CS_SOUNDS+i);
 		if(str && str[0]) {
 			cgs.gameSounds[i] = 0;//snd->registerSound(str);
+			c_soundsLoaded++;
 		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i sounds\n",c_soundsLoaded);
 	}
 
 //	cg.loading = qfalse;	// future players will be deferred

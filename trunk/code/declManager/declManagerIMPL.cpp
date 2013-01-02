@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
 #include <shared/entDef.h>
+#include "q3PlayerModelDecl.h"
 
 struct declTextDef_s {
 	const char *sourceFile; // name of the source .def file
@@ -345,13 +346,10 @@ bool fileTextDataCache_c::findDeclText(const char *declName, const char *declTyp
 class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qioModule_e userModule) {
 	modelDecl_c *ret = modelDecls.getEntry(name);
 	if(ret) {
-		if(QM_IsServerSide(userModule) == false) {
-			ret->setReferencedByClient();
-		} else {
-			ret->setReferencedByServer();
-		}
-		if(ret->isValid())
+		ret->setReferencedByModule(userModule);
+		if(ret->isValid()) {
 			return ret;
+		}
 		return 0;
 	}
 	declTextDef_s txt;
@@ -362,25 +360,19 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 		return 0;
 	}
 	ret->parse(txt.p,txt.textBase,txt.sourceFile);
-	if(QM_IsServerSide(userModule) == false) {
-		ret->setReferencedByClient();
-	} else {
-		ret->setReferencedByServer();
-	}
-	if(ret->isValid())
+	ret->setReferencedByModule(userModule);
+	if(ret->isValid()) {
 		return ret;
+	}
 	return 0;
 }
 class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, qioModule_e userModule) {
 	entityDecl_c *ret = entityDecls.getEntry(name);
 	if(ret) {
-		if(QM_IsServerSide(userModule) == false) {
-			ret->setReferencedByClient();
-		} else {
-			ret->setReferencedByServer();
-		}
-		if(ret->isValid())
+		ret->setReferencedByModule(userModule);
+		if(ret->isValid()) {
 			return ret;
+		}
 		return 0;
 	}
 	declTextDef_s txt;
@@ -391,25 +383,19 @@ class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, 
 		return 0;
 	}
 	ret->parse(txt.p,txt.textBase,txt.sourceFile);
-	if(QM_IsServerSide(userModule) == false) {
-		ret->setReferencedByClient();
-	} else {
-		ret->setReferencedByServer();
-	}
-	if(ret->isValid())
+	ret->setReferencedByModule(userModule);
+	if(ret->isValid()) {
 		return ret;
+	}
 	return 0;
 }
 class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModule_e userModule) {
 	afDecl_c *ret = afDecls.getEntry(name);
 	if(ret) {
-		if(QM_IsServerSide(userModule) == false) {
-			ret->setReferencedByClient();
-		} else {
-			ret->setReferencedByServer();
-		}
-		if(ret->isValid())
+		ret->setReferencedByModule(userModule);
+		if(ret->isValid()) {
 			return ret;
+		}
 		return 0;
 	}
 	declTextDef_s txt;
@@ -420,13 +406,29 @@ class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModul
 		return 0;
 	}
 	ret->parse(txt.p,txt.textBase,txt.sourceFile);
-	if(QM_IsServerSide(userModule) == false) {
-		ret->setReferencedByClient();
-	} else {
-		ret->setReferencedByServer();
-	}
-	if(ret->isValid())
+	ret->setReferencedByModule(userModule);
+	if(ret->isValid()) {
 		return ret;
+	}
+	return 0;
+}
+class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *name, qioModule_e userModule) {
+	q3PlayerModelDecl_c *ret = q3PlayerDecls.getEntry(name);
+	if(ret) {
+		ret->setReferencedByModule(userModule);
+		if(ret->isValid()) {
+			return ret;
+		}
+		return 0;
+	}
+	ret = new q3PlayerModelDecl_c;
+	ret->setDeclName(name);
+	q3PlayerDecls.addObject(ret);
+	ret->loadQ3PlayerDecl();
+	ret->setReferencedByModule(userModule);
+	if(ret->isValid()) {
+		return ret;
+	}
 	return 0;
 }
 void declManagerIMPL_c::removeUnrefrencedDecls() {
@@ -468,6 +470,10 @@ void declManagerIMPL_c::onGameShutdown() {
 		afDecl_c *af = afDecls[i];
 		af->clearServerRef();
 	}
+	for(u32 i = 0; i < q3PlayerDecls.size(); i++) {
+		q3PlayerModelDecl_c *pd = q3PlayerDecls[i];
+		pd->clearServerRef();
+	}
 	removeUnrefrencedDecls();
 }
 void declManagerIMPL_c::onRendererShutdown() {
@@ -482,6 +488,10 @@ void declManagerIMPL_c::onRendererShutdown() {
 	for(u32 i = 0; i < afDecls.size(); i++) {
 		afDecl_c *af = afDecls[i];
 		af->clearClientRef();
+	}
+	for(u32 i = 0; i < q3PlayerDecls.size(); i++) {
+		q3PlayerModelDecl_c *pd = q3PlayerDecls[i];
+		pd->clearClientRef();
 	}
 	removeUnrefrencedDecls();
 }

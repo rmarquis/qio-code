@@ -21,46 +21,19 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// declRefState.h - used to track which module are using decls
-#ifndef __DECLREFSTATE_H__
-#define __DECLREFSTATE_H__
+// tagOr.h - bone/tag orientation defined by axis and vector
+#ifndef __TAG_OR_H__
+#define __TAG_OR_H__
 
-#include <api/iFaceMgrAPI.h> // only for QM_IsServerSide
+#include <math/vec3.h>
+#include <math/axis.h>
 
-class declRefState_c {
-	bool referencedByClient;
-	bool referencedByServer;
+class tagOr_c {
 public:
-	declRefState_c() {
-		referencedByClient = false;
-		referencedByServer = false;
-	}
-	void setReferencedByClient() {
-		referencedByClient = true;
-	}
-	void setReferencedByServer() {
-		referencedByServer = true;
-	}
-	void setReferencedByModule(enum qioModule_e userModule) {
-		if(QM_IsServerSide(userModule) == false) {
-			this->setReferencedByClient();
-		} else {
-			this->setReferencedByServer();
-		}
-	}
-	void clearServerRef() {
-		referencedByServer = false;
-	}
-	void clearClientRef() {
-		referencedByClient = false;
-	}
-	bool isReferenced() const {
-		if(referencedByClient)
-			return true;
-		if(referencedByServer)
-			return true;
-		return false;
-	}
+	vec3_c pos;
+	axis_c axis;
+
+	void toMatrix(class matrix_c &out) const;
 };
 
-#endif // __DECLREFSTATE_H__
+#endif // __TAG_OR_H__
