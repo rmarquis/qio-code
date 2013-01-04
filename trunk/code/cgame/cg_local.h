@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/q_shared.h"
 #include "../game/bg_public.h"
 #include "cg_public.h"
+#include <math/vec3.h>
+#include <math/axis.h>
 
 
 // The entire cgame module is unloaded and reloaded on each level change,
@@ -74,10 +76,6 @@ typedef struct centity_s {
 // all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
-struct refdef_t {
-	vec3_t vieworg;
-};
- 
 typedef struct {
 	int			clientFrame;		// incremented each frame
 
@@ -122,8 +120,9 @@ typedef struct {
 
 
 	// view rendering
-	refdef_t	refdef;
-	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
+	vec3_c		refdefViewOrigin;
+	vec3_c		refdefViewAngles;		// will be converted to refdef.viewaxis
+	axis_c		refdefViewAxis;
 
 	// zoom key
 	qboolean	zoomed;

@@ -243,7 +243,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_ParseServerinfo();
 
 	// clear any references to old media
-	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	rf->clearEntities();
 	//trap_R_ClearScene();
 

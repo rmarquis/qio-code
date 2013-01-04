@@ -143,6 +143,9 @@ Player::~Player() {
 	if(curWeapon) {
 		delete curWeapon;
 	}
+	if(animHandler) {
+		delete animHandler;
+	}
 }
 void Player::setOrigin(const vec3_c &newXYZ) {
 	ModelEntity::setOrigin(newXYZ);

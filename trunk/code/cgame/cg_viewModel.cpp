@@ -30,6 +30,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <math/axis.h>
 
+static aCvar_c cg_gunX("cg_gunX","0");
+static aCvar_c cg_gunY("cg_gunY","0");
+static aCvar_c cg_gunZ("cg_gunZ","0");
+
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
 void CG_FreeViewModelEntity() {
@@ -60,15 +64,36 @@ void CG_RunViewModel() {
 	if(cg_entities[viewModelEntity].rEnt) {
 		cg_entities[viewModelEntity].rEnt->hideModel();
 	}
-	rModelAPI_i *viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
+	rModelAPI_i *viewModel;
+	if(cg.snap->ps.customViewRModelIndex) {
+		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
+	} else {
+		viewModel = 0;//cg_entities[viewModelEntity].rEnt->getModel();
+	}
 	if(viewModel == 0) {
 		CG_FreeViewModelEntity();
 		return;
 	}
 	CG_AllocViewModelEntity();
+
+	vec3_c origin = cg.refdefViewOrigin;
+	vec3_c angles = cg.refdefViewAngles;
+
+	// set local offset
+	vec3_c localOfs(0,0,0);
+
+	localOfs.x += cg_gunX.getFloat();
+	localOfs.y += cg_gunY.getFloat();
+	localOfs.z += cg_gunZ.getFloat();
+
+	// add local offset to hand origin
+	origin.vectorMA(origin,cg.refdefViewAxis[0],localOfs.x);
+	origin.vectorMA(origin,cg.refdefViewAxis[1],localOfs.y);
+	origin.vectorMA(origin,cg.refdefViewAxis[2],localOfs.z);
+
 	// always update viewmodel position
-	cg_viewModelEntity->setOrigin(cg.refdef.vieworg);
-	cg_viewModelEntity->setAngles(cg.refdefViewAngles);
+	cg_viewModelEntity->setOrigin(origin);
+	cg_viewModelEntity->setAngles(angles);
 	// set viewmodel model
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);

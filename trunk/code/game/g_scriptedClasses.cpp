@@ -636,6 +636,9 @@ void G_LoadQuake3ItemDefs() {
 	const cOutData_c *d = cp.getConstResults();
 	const cStructInstanceArray_c *bg_items = d->findGlobalStructInstancesArray("bg_itemlist");
 	if(bg_items) {
+		u32 world_modelStrIndex;
+		bool bFoundWorldModelStr = d->findString("world_model",world_modelStrIndex);
+
 		u32 giTypeStrIndex;
 		if(d->findString("giType",giTypeStrIndex)) {
 			for(u32 i = 0; i < bg_items->size(); i++) {
@@ -648,6 +651,18 @@ void G_LoadQuake3ItemDefs() {
 						newClass->setBaseClass("ModelEntity");//"ItemHealth");
 					} else if(!stricmp(giTypeStr,"IT_ARMOR")) {
 						newClass->setBaseClass("ModelEntity");//"ItemArmor");
+					} else if(!stricmp(giTypeStr,"IT_WEAPON")) {
+						newClass->setBaseClass("ModelEntity");
+						//newClass->setBaseClass("Weapon");
+						//if(bFoundWorldModelStr) {
+						//	const cFieldValue_c *worldModelField = si->findFieldValue(world_modelStrIndex);
+						//	if(worldModelField) {
+						//		str worldModel0 = worldModelField->getArrayValue();
+						//		worldModel0.stripExtension();
+						//		worldModel0.append("_hand.md3");
+						//		newClass->setKeyValue("model_view",worldModel0);
+						//	}
+						//}
 					} else {
 						newClass->setBaseClass("ModelEntity");
 					}

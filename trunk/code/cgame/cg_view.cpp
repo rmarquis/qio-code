@@ -65,7 +65,7 @@ static void CG_OffsetThirdPersonView( void ) {
 	float		focusDist;
 	float		forwardScale, sideScale;
 
-	cg.refdef.vieworg[2] += cg.predictedPlayerState.viewheight;
+	cg.refdefViewOrigin[2] += cg.predictedPlayerState.viewheight;
 
 	VectorCopy( cg.refdefViewAngles, focusAngles );
 
@@ -80,9 +80,9 @@ static void CG_OffsetThirdPersonView( void ) {
 	}
 	AngleVectors( focusAngles, forward, NULL, NULL );
 
-	VectorMA( cg.refdef.vieworg, FOCUS_DISTANCE, forward, focusPoint );
+	VectorMA( cg.refdefViewOrigin, FOCUS_DISTANCE, forward, focusPoint );
 
-	VectorCopy( cg.refdef.vieworg, view );
+	VectorCopy( cg.refdefViewOrigin, view );
 
 	view[2] += 8;
 
@@ -101,10 +101,10 @@ float thirdPersonRange = 128.f;
 //	if (!cg_cameraMode.integer)
 	{
 		trace_c trace;
-		trace.setupRay(cg.refdef.vieworg,view);
+		trace.setupRay(cg.refdefViewOrigin,view);
 
 		CG_RayTrace(trace, cg.clientNum);
-		//CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
+		//CG_Trace( &trace, cg.refdefViewOrigin, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 
 		if (trace.getFraction() != 1.f) {
 		//	VectorCopy( trace.endpos, view );
@@ -112,17 +112,17 @@ float thirdPersonRange = 128.f;
 		//	// try another trace to this position, because a tunnel may have the ceiling
 		//	// close enogh that this is poking out
 
-		//	CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
+		//	CG_Trace( &trace, cg.refdefViewOrigin, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 		//	VectorCopy( trace.endpos, view );
 			view = trace.getHitPos();
 			view -= trace.getDir() * 7.f;
 		}
 	}
 
-	VectorCopy( view, cg.refdef.vieworg );
+	VectorCopy( view, cg.refdefViewOrigin );
 
 	// select pitch to look at focus point from vieword
-	VectorSubtract( focusPoint, cg.refdef.vieworg, focusPoint );
+	VectorSubtract( focusPoint, cg.refdefViewOrigin, focusPoint );
 	focusDist = sqrt( focusPoint[0] * focusPoint[0] + focusPoint[1] * focusPoint[1] );
 	if ( focusDist < 1 ) {
 		focusDist = 1;	// should never happen
@@ -139,7 +139,7 @@ static void CG_StepOffset( void ) {
 	// smooth out stair climbing
 	timeDelta = cg.time - cg.stepTime;
 	if ( timeDelta < STEP_TIME ) {
-		cg.refdef.vieworg[2] -= cg.stepChange 
+		cg.refdefViewOrigin[2] -= cg.stepChange 
 			* (STEP_TIME - timeDelta) / STEP_TIME;
 	}
 }
@@ -159,7 +159,7 @@ static void CG_OffsetFirstPersonView( void ) {
 	vec3_t			predictedVelocity;
 	int				timeDelta;
 
-	origin = cg.refdef.vieworg;
+	origin = cg.refdefViewOrigin;
 	angles = cg.refdefViewAngles;
 
 	// add angles based on velocity
@@ -185,7 +185,7 @@ static void CG_OffsetFirstPersonView( void ) {
 	// smooth out duck height changes
 	timeDelta = cg.time - cg.duckTime;
 	if ( timeDelta < DUCK_TIME) {
-		cg.refdef.vieworg[2] -= cg.duckChange 
+		cg.refdefViewOrigin[2] -= cg.duckChange 
 			* (DUCK_TIME - timeDelta) / DUCK_TIME;
 	}
 
@@ -196,11 +196,11 @@ static void CG_OffsetFirstPersonView( void ) {
 	delta = cg.time - cg.landTime;
 	if ( delta < LAND_DEFLECT_TIME ) {
 		f = delta / LAND_DEFLECT_TIME;
-		cg.refdef.vieworg[2] += cg.landChange * f;
+		cg.refdefViewOrigin[2] += cg.landChange * f;
 	} else if ( delta < LAND_DEFLECT_TIME + LAND_RETURN_TIME ) {
 		delta -= LAND_DEFLECT_TIME;
 		f = 1.0 - ( delta / LAND_RETURN_TIME );
-		cg.refdef.vieworg[2] += cg.landChange * f;
+		cg.refdefViewOrigin[2] += cg.landChange * f;
 	}
 
 	// add step offset
@@ -248,38 +248,15 @@ Sets cg.refdef view values
 static int CG_CalcViewValues( void ) {
 	playerState_s	*ps;
 
-	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
-
-	// strings for in game rendering
-	// Q_strncpyz( cg.refdef.text[0], "Park Ranger", sizeof(cg.refdef.text[0]) );
-	// Q_strncpyz( cg.refdef.text[1], "19", sizeof(cg.refdef.text[1]) );
-
 	// calculate size of 3D view
 	CG_CalcVrect();
 
 	ps = &cg.predictedPlayerState;
-/*
-	if (cg.cameraMode) {
-		vec3_t origin, angles;
-		if (trap_getCameraInfo(cg.time, &origin, &angles)) {
-			VectorCopy(origin, cg.refdef.vieworg);
-			angles[ROLL] = 0;
-			VectorCopy(angles, cg.refdefViewAngles);
-			AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
-			return CG_CalcFov();
-		} else {
-			cg.cameraMode = qfalse;
-		}
-	}
-*/
 
+	cg.refdefViewOrigin = ps->origin;
+	cg.refdefViewAngles = ps->viewangles;
 
-
-
-
-	VectorCopy( ps->origin, cg.refdef.vieworg );
-	VectorCopy( ps->viewangles, cg.refdefViewAngles );
-
+	// add first person / third person view offset
 	if ( cg_thirdPerson.integer ) {
 		// back away from character
 		CG_OffsetThirdPersonView();
@@ -287,18 +264,16 @@ static int CG_CalcViewValues( void ) {
 		// offset for local bobbing and kicks
 		CG_OffsetFirstPersonView();
 	}
+	cg.refdefViewAxis.fromAngles(cg.refdefViewAngles);
 
 	if(cg_printCurCamPos.getInt()) {
-		CG_Printf("CG_CalcViewValues: camera eye is at %f %f %f\n",cg.refdef.vieworg[0],cg.refdef.vieworg[1],cg.refdef.vieworg[2]);
+		CG_Printf("CG_CalcViewValues: camera eye is at %f %f %f\n",cg.refdefViewOrigin[0],cg.refdefViewOrigin[1],cg.refdefViewOrigin[2]);
 	}
-
-	// position eye relative to origin
-	//AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
 	projDef_s projDef;
 	projDef.setDefaults();
 	rf->setupProjection3D(&projDef);
-	rf->setup3DView(cg.refdef.vieworg,cg.refdefViewAngles,cg_thirdPerson.integer);
+	rf->setup3DView(cg.refdefViewOrigin,cg.refdefViewAngles,cg_thirdPerson.integer);
 
 	return 0;
 }

@@ -59,7 +59,7 @@ void CG_RunTestModel() {
 	}
 	if(cg_testModelEntity == 0) {
 		cg_testModelEntity = rf->allocEntity();
-		cg_testModelEntity->setOrigin(cg.refdef.vieworg);
+		cg_testModelEntity->setOrigin(cg.refdefViewOrigin);
 	}
 	cg_testModelEntity->setModel(mod);
 	cg_testModelEntity->setAnim(rf->registerAnimation_getAPI(cg_testAnim.getStr()));
@@ -77,7 +77,7 @@ void CG_RunTestModel() {
 			cg_testModelEntity->setAngles(angles);
 		}
 	} else if(cg_testModel_attachToCamera.getInt()) {
-		cg_testModelEntity->setOrigin(cg.refdef.vieworg);
+		cg_testModelEntity->setOrigin(cg.refdefViewOrigin);
 		cg_testModelEntity->setAngles(cg.refdefViewAngles);
 	}
 	//cg_testModelEntity->hideSurface(2);
