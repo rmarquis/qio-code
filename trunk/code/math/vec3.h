@@ -410,6 +410,11 @@ public:
 		y *= sy;
 		z *= sz;
 	}
+	void scaleXYZ(const float *scaleXYZ) {
+		x *= scaleXYZ[0];
+		y *= scaleXYZ[1];
+		z *= scaleXYZ[2];
+	}
 	void scale(float scale) {
 		x *= scale;
 		y *= scale;

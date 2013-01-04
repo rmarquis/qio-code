@@ -128,6 +128,9 @@ public:
 	// famous Quake3 md3
 	bool loadMD3(const char *fname);
 	bool loadMD3(const byte *buf, const u32 fileLen, const char *fname);
+	// Quake2 md2
+	bool loadMD2(const char *fname);
+	bool loadMD2(const byte *buf, const u32 fileLen, const char *fname);
 };
 
 kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname);

@@ -147,6 +147,10 @@ public:
 				return true;
 			}
 		}
+		if(!stricmp(ext,"md2")) {
+			// TODO: read the number of md2 frame?
+			return true;
+		}
 		return false;
 	}
 	virtual class kfModelAPI_i *loadKeyFramedModelFile(const char *fname) {

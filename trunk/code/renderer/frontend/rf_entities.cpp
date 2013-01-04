@@ -58,6 +58,7 @@ struct kfAnimCtrl_s {
 	kfAnimCtrl_s() {
 		curTime = 0;
 		animDef = 0;
+		prevTimeMsec = 0;
 	}
 	void setAnim(u32 animIndex, const rModelAPI_i *model) {
 		const q3PlayerModelAPI_i *q3model = model->getQ3PlayerModelAPI();
@@ -67,6 +68,7 @@ struct kfAnimCtrl_s {
 		}
 		animDef = newAnimDef;
 		curTime = 0;
+		//prevTimeMsec = curGlobalTimeMSec;
 	}
 	void runAnimController(int curGlobalTimeMSec) {
 		if(prevTimeMsec >= curGlobalTimeMSec)

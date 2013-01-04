@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // keyFramedModelImpl.cpp - per vertex model animation (Quake3 md3 style)
 #include "keyFramedModelImpl.h"
 #include "../fileFormats/md3_file_format.h"
+#include "../fileFormats/md2_file_format.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -87,6 +88,8 @@ bool kfModelImpl_c::load(const char *fname) {
 	const char *ext = G_strgetExt(fname);
 	if(!stricmp(ext,"md3")) {
 		return loadMD3(fname);
+	} else if(!stricmp(ext,"md2")) {
+		return loadMD2(fname);
 	} else {
 		g_core->RedWarning("kfModelImpl_c::load: %s has unknown extension\n",fname);
 	}
@@ -176,6 +179,88 @@ bool kfModelImpl_c::loadMD3(const byte *buf, const u32 fileLen, const char *fnam
 	}
 	return false; // no error
 }
+bool kfModelImpl_c::loadMD2(const char *fname) {
+	byte *buf;
+	u32 len = g_vfs->FS_ReadFile(fname,(void**)&buf);
+	if(buf == 0)
+		return true;
+	bool res = loadMD2(buf,len,fname);
+	g_vfs->FS_FreeFile(buf);
+	return res;
+}
+bool kfModelImpl_c::loadMD2(const byte *buf, const u32 fileLen, const char *fname) {
+	const md2Header_s *h = (const md2Header_s *) buf;
+	if(h->ident != MD2_IDENT) {
+		g_core->RedWarning("kfModel_c::loadMD2: %s has bad ident %i, should be \"IDP2\"\n",fname,h->ident);
+		return true; // error
+	}
+	if(h->version != MD2_VERSION) {
+		g_core->RedWarning("kfModel_c::loadMD2: %s has bad version %i, should be 8\n",fname,h->version);
+		return true; // error
+	}
+	kfSurf_c &sf = surfs.pushBack();
+	if(h->numSkins) {
+		const md2Skin_s *s = h->pSkin(0);
+		sf.matName = s->name;
+	} else {
+		sf.matName = fname;
+		sf.matName.stripExtension();
+	}
+	// decode texcoords
+	sf.texCoords.resize(h->numTris*3);
+	for(u32 j = 0; j < h->numTris; j++) {
+		const md2Triangle_s *t = h->pTri(j);
+		for(u32 k = 0; k < 3; k++) {
+			const md2TexCoord_s *tc = h->pTC(t->st[k]);
+			vec2_c v(tc->s,tc->t);
+			v.x /= h->skinWidth;
+			v.y /= h->skinHeight;
+			sf.texCoords[j*3+k] = v;
+		}
+		sf.indices.addIndex(j*3+0);
+		sf.indices.addIndex(j*3+1);
+		sf.indices.addIndex(j*3+2);
+	}
+	// decode frames and vertices
+	this->frames.resize(h->numFrames);
+	sf.xyzFrames.resize(h->numFrames);
+	for(u32 i = 0; i < h->numFrames; i++) {
+		kfFrame_c &of = frames[i];
+		const md2Frame_s *f = h->pFrame(i);
+		//of.scale = f->scale;
+		//of.offset = f->translate;
+		vec3_c frameScale = f->scale;
+		vec3_c frameTranslate = f->translate;
+		of.name = f->name;
+
+		//for(u32 j = 0; j < h->numVertices; j++) {
+		//	const md2Vertex_s *v = f->pVertex(j);
+		//	printf("Vert %i of %i - normalIndex %i\n",i,h->numVertices,v->normalIndex);
+		//	vec3_c p(v->v[0],v->v[1],v->v[2]);
+		//	
+
+		//}
+		kfSurfFrame_c &xyzFrame = sf.xyzFrames[i];
+		xyzFrame.verts.resize(h->numTris*3);
+		kfVert_c *ov = xyzFrame.verts.getArray();
+		for(u32 j = 0; j < h->numTris; j++) {
+			const md2Triangle_s *t = h->pTri(j);
+			const md2Vertex_s *v[3];
+			//const md2TexCoord_s *tc[3];
+			for(u32 k = 0; k < 3; k++) {
+				v[k] = f->pVertex(t->vertex[k]);
+				//tc[k] = h->pTC(t->st[k]);
+			}
+			for(u32 k = 0; k < 3; k++, ov++) {
+				ov->xyz.set(v[k]->v[0],v[k]->v[1],v[k]->v[2]);
+				ov->xyz.scaleXYZ(frameScale);
+				ov->xyz += frameTranslate;
+			}
+		}
+	}
+
+	return false; // no error
+}
 kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname) {
 	if(g_vfs->FS_FileExists(fname)==false) {
 		g_core->RedWarning("KF_LoadKeyFramedModel: file %s does not exist\n",fname);
@@ -192,12 +277,16 @@ kfModelAPI_i *KF_LoadKeyFramedModelAPI(const char *fname) {
 	return KF_LoadKeyFramedModel(fname);
 }
 
-bool KF_HasKeyFramedModelExt(const char *fname) {
-	const char *ext = G_strgetExt(fname);
-	if(ext == 0)
-		return false;
-	if(!stricmp(ext,"md3")) {
-		return true;
-	}
-	return false;
-}
+//bool KF_HasKeyFramedModelExt(const char *fname) {
+//	const char *ext = G_strgetExt(fname);
+//	if(ext == 0)
+//		return false;
+//	if(!stricmp(ext,"md3")) {
+//		return true;
+//	}
+//	if(!stricmp(ext,"md2")) {
+//		return true;
+//	}
+//	return false;
+//}
+
