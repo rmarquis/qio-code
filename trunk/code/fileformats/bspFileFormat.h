@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 #include <math/aabb.h>
 
+#include "bspFileFormat_q2.h"
+
 // original BSP structures designed by ID Software
 // used in their Quake3 game
 #define BSP_IDENT_IBSP	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
@@ -512,6 +514,11 @@ struct q3Header_s {
 
 	bool isBSPCoD1() const {
 		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1)
+			return true;
+		return false;
+	}
+	bool isBSPQ2() const {
+		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_Q2)
 			return true;
 		return false;
 	}

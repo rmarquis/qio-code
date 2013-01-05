@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BSPPHYSICSDATALOADER_H__
 
 #include "typedefs.h"
+#include "array.h"
 
 class bspPhysicsDataLoader_c {
 	struct q3Header_s *h;
@@ -40,6 +41,7 @@ public:
 	void clear();
 	bool loadBSPFile(const char *fname);
 
+	void nodeBrushes_r(int nodeNum, arraySTD_c<u32> &out) const;
 	void iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags));
 	void iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags));
 	void iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 contentFlags));

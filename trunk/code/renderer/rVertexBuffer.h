@@ -46,6 +46,9 @@ public:
 	rVert_c() {
 		memset(color,0xff,sizeof(color));
 	}
+	rVert_c(const vec3_c &newXYZ) {
+		this->xyz = newXYZ;
+	}
 	// returns the result of quadratic interpolation between this vertex and two other vertices
 	rVert_c getInterpolated_quadratic(rVert_c &a, rVert_c &b, float s) {
 		rVert_c out;
@@ -127,6 +130,11 @@ public:
 		// DONT upload new buffer automatically,
 		// if it's needed it must be done manually
 		//uploadToGPU();
+	}
+	void addArray(const arraySTD_c<rVert_c> &ar) {
+		ensureAllocated(numVerts+ar.size());
+		memcpy(data.getArray()+numVerts,ar.getArray(),ar.getSizeInBytes());
+		numVerts += ar.size();
 	}
 	void uploadToGPU() {
 		rb->createVBO(this);

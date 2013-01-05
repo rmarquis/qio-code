@@ -94,7 +94,7 @@ struct bspModel_s {
 	aabb bb;
 };
 struct bspPlane_s {
-	float normal[3];
+	vec3_c normal;
 	float dist;
 
 	float distance(const vec3_c &p) const {
@@ -160,12 +160,17 @@ class rBspTree_c {
 
 	bool loadLightmaps(u32 lumpNum);
 	bool loadPlanes(u32 lumpPlanes);
+	bool loadPlanesQ2(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
+	bool loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves);
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
+	bool loadSurfsQ2();
 	bool loadVerts(u32 lumpVerts); // called from loadSurfs / loadSurfsCoD
 	bool loadSurfsCoD();
 	bool loadModels(u32 modelsLump);
+	bool loadModelsQ2(u32 modelsLump);
 	bool loadLeafIndexes(u32 leafSurfsLump);
+	bool loadLeafIndexes16Bit(u32 leafSurfsLump); // for QuakeII
 	bool loadVisibility(u32 visLump);
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);

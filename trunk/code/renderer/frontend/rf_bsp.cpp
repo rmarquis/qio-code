@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/textureAPI.h>
 #include <fileformats/bspFileFormat.h>
+#include <fileformats/bspFileFormat_q2.h>
 #include <shared/shared.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
@@ -49,6 +50,7 @@ aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
 aCvar_c rf_bsp_doAllSurfaceBatchesOnCPU("rf_bsp_doAllSurfaceBatchesOnCPU","0");
 aCvar_c rf_bsp_printCPUSurfVertsCount("rf_bsp_printCPUSurfVertsCount","0");
 aCvar_c rf_bsp_skipGPUSurfaces("rf_bsp_skipGPUSurfaces","0");
+aCvar_c rf_bsp_printCamClusterNum("rf_bsp_printCamClusterNum","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -163,6 +165,22 @@ bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	memcpy(planes.getArray(),h->getLumpData(lumpPlanes),pll.fileLen);
 	return false; // OK
 }
+bool rBspTree_c::loadPlanesQ2(u32 lumpPlanes) {
+	const lump_s &pll = h->getLumps()[lumpPlanes];
+	if(pll.fileLen % sizeof(q2Plane_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
+		return true; // error
+	}
+	u32 numPlanes = pll.fileLen / sizeof(q2Plane_s);
+	planes.resize(numPlanes);
+	const q2Plane_s *ip = (const q2Plane_s*)h->getLumpData(lumpPlanes);
+	bspPlane_s *pl = planes.getArray();
+	for(u32 i = 0; i < numPlanes; i++, pl++, ip++) {
+		pl->normal = ip->normal;
+		pl->dist = ip->dist;
+	}
+	return false; // OK
+}
 bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
 	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(q3Node_s)) {
@@ -201,6 +219,41 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 		leaves.resize(numLeaves);
 		memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(q3Leaf_s),sizeOfLeaf);
 	}
+	return false; // OK
+}
+bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
+	const lump_s &nl = h->getLumps()[lumpNodes];
+	if(nl.fileLen % sizeof(q2Node_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid nodes lump size\n");
+		return true; // error
+	}
+	u32 numNodes = nl.fileLen / sizeof(q2Node_s);
+	nodes.resize(numNodes);
+	const q2Node_s *in = (const q2Node_s*)h->getLumpData(lumpNodes);
+	q3Node_s *on = nodes.getArray();
+	for(u32 i = 0; i < numNodes; i++, in++, on++) {
+		on->children[0] = in->children[0];
+		on->children[1] = in->children[1];
+		on->planeNum = in->planeNum;
+	}
+	const lump_s &ll = h->getLumps()[lumpLeaves];
+	if(ll.fileLen % sizeof(q2Leaf_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid leaves lump size\n");
+		return true; // error
+	}
+	u32 numLeaves = ll.fileLen / sizeof(q2Leaf_s);
+	leaves.resize(numLeaves);
+	q3Leaf_s *l = leaves.getArray();
+	const q2Leaf_s *il = (const q2Leaf_s*)h->getLumpData(lumpLeaves);
+	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+		l->area = il->area;
+		l->cluster = il->cluster;
+		l->firstLeafBrush = il->firstLeafBrush;
+		l->firstLeafSurface = il->firstLeafSurface;
+		l->numLeafBrushes = il->numLeafBrushes;
+		l->numLeafSurfaces = il->numLeafSurfaces;
+	}
+	
 	return false; // OK
 }
 bool rBspTree_c::loadVerts(u32 lumpVerts) {
@@ -354,6 +407,127 @@ parsePlanarSurf:;
 	}
 	return false; // OK
 }
+class q2PolyBuilder_c {
+	arraySTD_c<rVert_c> verts;
+	arraySTD_c<u16> indices;
+public:
+	void addEdge(const vec3_c &v0, const vec3_c &v1, u32 localNum) {
+		if(localNum == 0) {
+			verts.push_back(rVert_c(v0));
+		}
+		verts.push_back(rVert_c(v1));
+	}
+	void calcTriIndexes() {
+		for(u32 i = 2; i < verts.size(); i++) {
+			indices.push_back(0);
+			indices.push_back(i-1);
+			indices.push_back(i);
+		}
+	}
+	void calcTexCoords(const float vecs[2][4], float texDimX, float texDimY) {
+		rVert_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			float tU = v->xyz[0]*vecs[0][0] + v->xyz[1]*vecs[0][1] + v->xyz[2]*vecs[0][2] + vecs[0][3];
+			float tV = v->xyz[0]*vecs[1][0] + v->xyz[1]*vecs[1][1] + v->xyz[2]*vecs[1][2] + vecs[1][3];
+			tU /= texDimX;
+			tV /= texDimY;
+			v->tc.set(tU,tV);
+		}
+	}
+	void addVertsToBounds(aabb &out) {
+		for(u32 i = 0; i < verts.size(); i++) {
+			out.addPoint(verts[i].xyz);
+		}
+	}
+	const arraySTD_c<rVert_c> &getVerts() const {
+		return verts;
+	}
+	const arraySTD_c<u16> &getIndices() const {
+		return indices;
+	}
+	u16 getIndex(u32 i) const {
+		return indices[i];
+	}
+	u32 getNumVerts() const {
+		return verts.size();
+	}
+	u32 getNumIndices() const {
+		return indices.size();
+	}
+};
+
+bool rBspTree_c::loadSurfsQ2() {
+	const lump_s &sl = h->getLumps()[Q2_FACES];
+	if(sl.fileLen % sizeof(q2Surface_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfs lump size\n");
+		return true; // error
+	}
+	const lump_s &el = h->getLumps()[Q2_EDGES];
+	if(el.fileLen % sizeof(q2Edge_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid edges lump size\n");
+		return true; // error
+	}
+	const lump_s &tl = h->getLumps()[Q2_TEXINFO];
+	if(tl.fileLen % sizeof(q2TexInfo_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid texinfo lump size\n");
+		return true; // error
+	}
+	const lump_s &vl = h->getLumps()[Q2_VERTEXES];
+	if(vl.fileLen % sizeof(q2Vert_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid vertexes lump size\n");
+		return true; // error
+	}
+	const lump_s &sel = h->getLumps()[Q2_SURFEDGES];
+	if(sel.fileLen % sizeof(int)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfEdges lump size\n");
+		return true; // error
+	}
+	u32 numSurfaces = sl.fileLen / sizeof(q2Surface_s);
+	u32 numVerts = vl.fileLen / sizeof(q2Vert_s);
+	const q2Surface_s *isf = (const q2Surface_s *)h->getLumpData(Q2_FACES);
+	const q2Vert_s *iv = (const q2Vert_s *)h->getLumpData(Q2_VERTEXES);
+	const q2Edge_s *ie = (const q2Edge_s *)h->getLumpData(Q2_EDGES);
+	const q2TexInfo_s *it = (const q2TexInfo_s *)h->getLumpData(Q2_TEXINFO);
+	const int *surfEdges = (const int *)h->getLumpData(Q2_SURFEDGES);
+	surfs.resize(numSurfaces);
+	bspSurf_s *oSF = surfs.getArray();
+	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
+		const q2TexInfo_s *sfTexInfo = it + isf->texinfo;
+		str matName = "textures/";
+		matName.append(sfTexInfo->texture);
+		matName.append(".wal");
+		oSF->type = BSPSF_PLANAR;
+		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
+		ts->mat = g_ms->registerMaterial(matName);
+		ts->lightmap = 0;
+		q2PolyBuilder_c polyBuilder;
+		for(u32 j = 0; j < isf->numEdges-1; j++) {
+			int ei = surfEdges[isf->firstEdge + j];
+			u32 realEdgeIndex;
+			if(ei < 0) {
+				realEdgeIndex = -ei;
+				const q2Edge_s *ed = ie + realEdgeIndex;
+				// reverse vertex order
+				polyBuilder.addEdge(iv[ed->v[1]].point,iv[ed->v[0]].point,j);
+			} else {
+				realEdgeIndex = ei;
+				const q2Edge_s *ed = ie + realEdgeIndex;
+				polyBuilder.addEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
+			}
+		}
+		polyBuilder.calcTexCoords(sfTexInfo->vecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+		ts->firstVert = verts.size();
+		ts->numVerts = polyBuilder.getNumVerts();
+		verts.addArray(polyBuilder.getVerts());
+		polyBuilder.calcTriIndexes();
+		polyBuilder.addVertsToBounds(ts->bounds);
+		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
+		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
+			indicesU32[j] = ts->firstVert+polyBuilder.getIndex(j);
+		}
+	}
+	return false; // OK
+}
 bool rBspTree_c::loadSurfsCoD() {
 	loadVerts(COD1_DRAWVERTS);
 	const cod1Surface_s *sf = (const cod1Surface_s *)h->getLumpData(COD1_SURFACES);
@@ -434,6 +608,23 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	}
 	return false; // OK
 }
+bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
+	const lump_s &ml = h->getLumps()[modelsLump];
+	if(ml.fileLen % sizeof(q2Model_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsQ2: invalid models lump size\n");
+		return true; // error
+	}
+	u32 numModels = ml.fileLen / sizeof(q2Model_s);
+	models.resize(numModels);
+	const q2Model_s *m = (const q2Model_s *)h->getLumpData(modelsLump);
+	bspModel_s *om = models.getArray();
+	for(u32 i = 0; i < numModels; i++, om++, m++) {
+		om->firstSurf = m->firstSurface;
+		om->numSurfs = m->numSurfaces;
+		om->bb.fromTwoPoints(m->maxs,m->mins);
+	}
+	return false; // OK
+}
 bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	const lump_s &sl = h->getLumps()[leafSurfsLump];
 	if(sl.fileLen % sizeof(u32)) {
@@ -443,6 +634,20 @@ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	u32 numLeafSurfaces = sl.fileLen / sizeof(u32);
 	leafSurfaces.resize(numLeafSurfaces);
 	memcpy(leafSurfaces.getArray(),h->getLumpData(leafSurfsLump),sl.fileLen);
+	return false;
+}
+bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
+	const lump_s &sl = h->getLumps()[leafSurfsLump];
+	if(sl.fileLen % sizeof(u16)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
+		return true; // error
+	}	
+	u32 numLeafSurfaces = sl.fileLen / sizeof(u16);
+	const u16 *inLeafSurfaces = (const u16*)h->getLumpData(leafSurfsLump);
+	leafSurfaces.resize(numLeafSurfaces);
+	for(u32 i = 0; i < numLeafSurfaces; i++) {
+		leafSurfaces[i] = inLeafSurfaces[i];
+	}
 	return false;
 }
 bool rBspTree_c::loadVisibility(u32 visLump) {
@@ -464,32 +669,61 @@ bool rBspTree_c::load(const char *fname) {
 	}
 	rf_bsp_forceEverythingVisible.setString("0");
 	h = (const q3Header_s*) fileData;
-	if(h->ident == BSP_IDENT_IBSP && (h->version == BSP_VERSION_Q3 || h->version == BSP_VERSION_ET)) {
-		if(loadLightmaps(Q3_LIGHTMAPS)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadModels(Q3_MODELS)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadLeafIndexes(Q3_LEAFSURFACES)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadPlanes(Q3_PLANES)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadVisibility(Q3_VISIBILITY)) {
+	if(h->ident == BSP_IDENT_IBSP) {
+		if((h->version == BSP_VERSION_Q3 || h->version == BSP_VERSION_ET)) {
+			// Quake3 / ET / RTCW bsp
+			if(loadLightmaps(Q3_LIGHTMAPS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadModels(Q3_MODELS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafIndexes(Q3_LEAFSURFACES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadPlanes(Q3_PLANES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadVisibility(Q3_VISIBILITY)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else if(h->version == BSP_VERSION_Q2) {
+			// QuakeII bsp
+			if(loadPlanesQ2(Q2_PLANES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadNodesAndLeavesQ2(Q2_NODES,Q2_LEAFS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadModelsQ2(Q2_MODELS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadSurfsQ2()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafIndexes16Bit(Q2_LEAFFACES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else {
+			g_core->RedWarning("rBspTree_c::load: IBSP has unknown version %i\n",h->version);
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
@@ -639,6 +873,9 @@ void rBspTree_c::updateVisibility() {
 	int camCluster = pointInCluster(rf_camera.getPVSOrigin());
 	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
 		return;
+	}
+	if(rf_bsp_printCamClusterNum.getInt()) {
+		g_core->Print("rBspTree_c::updateVisibility(): cluster: %i\n",camCluster);
 	}
 	prevNoVis = rf_bsp_noVis.getInt();
 	lastCluster = camCluster;

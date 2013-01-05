@@ -62,14 +62,39 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 	}
 	return false;
 }
-
+void bspPhysicsDataLoader_c::nodeBrushes_r(int nodeNum, arraySTD_c<u32> &out) const {
+	const q2Node_s *nodes = (const q2Node_s *)h->getLumpData(Q2_NODES);
+	while(nodeNum >= 0) {
+		const q2Node_s &node = nodes[nodeNum];
+		nodeNum = node.children[0];
+		nodeBrushes_r(node.children[1],out);
+	}
+	const u16 *leafBrushNums = (const u16*)h->getLumpData(Q2_LEAFBRUSHES);
+	const q2Leaf_s *l = (const q2Leaf_s *)h->getLumpData(Q2_LEAFS)+(-nodeNum+1);
+	for(u32 i = 0; i < l->numLeafBrushes; i++) {
+		u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
+		out.add_unique(brushNum);
+	}
+}
 void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags)) {
+	if(h->isBSPQ2()) {
+		const q2Model_s *q2Mod = (const q2Model_s *)h->getLumpData(Q2_MODELS);
+		arraySTD_c<u32> brushes;
+		nodeBrushes_r(q2Mod->headnode,brushes);
+		for(u32 i = 0; i < brushes.size(); i++) {
+			u32 brushNum = brushes[i];
+			const q2Brush_s *q2Brush = (const q2Brush_s *)h->getLumpData(Q2_BRUSHES)+brushNum;
+			perBrushCallback(brushNum,q2Brush->contents);
+		}
+		return;
+	}
+
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(h->isBSPCoD1()) {
 		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
 		for(u32 i = 0; i < mod->numBrushes; i++, codBrush++) {
 			perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(codBrush->materialNum));
-		}		
+		}	
 	} else {
 		const q3Brush_s *b = h->getBrushes() + mod->firstBrush;
 		for(u32 i = 0; i < mod->numBrushes; i++, b++) {
@@ -105,6 +130,16 @@ struct codBrushSides_s {
 	codBrushSideNonAxial_s nonAxialSides[32]; // variable-sized
 };
 void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) {
+	if(h->isBSPQ2()) {
+		const q2Plane_s *q2Planes = (const q2Plane_s *)h->getLumpData(Q2_PLANES);
+		const q2Brush_s *q2Brush = (const q2Brush_s *)h->getLumpData(Q2_BRUSHES)+brushNum;
+		const q2BrushSide_s *q2Bs = (const q2BrushSide_s *)h->getLumpData(Q2_BRUSHSIDES)+q2Brush->firstside;
+		for(u32 i = 0; i < q2Brush->numsides; i++, q2Bs++) {
+			const q2Plane_s &sidePlane = q2Planes[q2Bs->planenum];
+			sideCallback(sidePlane.normal);
+		}
+		return;
+	}
 	const q3Plane_s *planes = h->getPlanes();
 	if(h->isBSPCoD1()) {
 		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
@@ -168,6 +203,10 @@ void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, class perPlaneCall
 	}
 }
 void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 matNum)) {
+	if(h->isBSPQ2()) {
+		// no bezier patches in Q2?
+		return;
+	}
 	if(h->isBSPCoD1()) {
 		// it seems that there are no bezier patches in CoD bsp files...
 		return;

@@ -578,6 +578,10 @@
 				RelativePath="..\..\code\fileformats\bspFileFormat.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\fileformats\bspFileFormat_q2.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="api"
