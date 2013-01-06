@@ -207,6 +207,9 @@ void mtrIMPL_c::createFromImage() {
 	// save the source file name
 	this->sourceFileName = tex->getName();
 	// create single material stage
+	this->createFromTexturePointer(tex);
+}
+void mtrIMPL_c::createFromTexturePointer(class textureAPI_i *tex) {
 	mtrStage_c *ns = new mtrStage_c;
 	ns->setTexture(tex);
 	ns->setStageType(ST_COLORMAP_LIGHTMAPPED);

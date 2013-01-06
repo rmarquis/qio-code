@@ -287,6 +287,7 @@ public:
 	}
 
 	void createFromImage();
+	void createFromTexturePointer(class textureAPI_i *tex);
 	u16 readBlendEnum(class parser_c &p);
 	void setSkyParms(const char *farBox, const char *cloudHeight, const char *nearBox);
 	bool loadFromText(const struct matTextDef_s &txt);
