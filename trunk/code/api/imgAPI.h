@@ -38,6 +38,9 @@ public:
 	// image loading (with preprocessor)
 	virtual const char *loadImage(const char *fname, byte **outData, u32 *outW, u32 *outH) = 0;
 	virtual void freeImageData(byte *data) = 0;
+
+	// image processing
+	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
 };
 
 extern imgAPI_i *g_img;

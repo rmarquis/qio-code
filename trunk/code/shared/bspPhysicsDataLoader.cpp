@@ -88,6 +88,9 @@ void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCa
 		}
 		return;
 	}
+	if(h->isBSPHL()) {
+		return; // there are no brushes in HL1 bsps
+	}
 
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(h->isBSPCoD1()) {
@@ -103,6 +106,26 @@ void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCa
 	}
 }
 void bspPhysicsDataLoader_c::iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags)) {
+	if(h->isBSPQ2()) {
+		const q2Model_s *q2Mod = (const q2Model_s *)h->getLumpData(Q2_MODELS);
+		const q2Surface_s *surfs = (const q2Surface_s *)h->getLumpData(Q2_FACES);
+		for(u32 i = 0; i < q2Mod->numSurfaces; i++) {
+			u32 sfNum = q2Mod->firstSurface + i;
+			// TODO: find surface contents?
+			perSurfCallback(sfNum,1);
+		}
+		return;
+	}
+	if(h->isBSPHL()) {
+		const hlModel_s *hlMod = (const hlModel_s *)h->getLumpData(HL_MODELS);
+		const hlSurface_s *surfs = (const hlSurface_s *)h->getLumpData(HL_FACES);
+		for(u32 i = 0; i < hlMod->numSurfaces; i++) {
+			u32 sfNum = hlMod->firstSurface + i;
+			// TODO: find surface contents?
+			perSurfCallback(sfNum,1);
+		}
+		return;
+	}
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(h->isBSPCoD1()) {
 		const cod1Surface_s *codSF = h->getCoD1Surfaces() + mod->firstSurface;
@@ -211,6 +234,10 @@ void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perB
 		// it seems that there are no bezier patches in CoD bsp files...
 		return;
 	}
+	if(h->isBSPHL()) {
+		// no bezier patches
+		return;
+	}
 	const q3Model_s *mod = h->getModels() + modelNum;
 	const q3Surface_s *sf = h->getSurfaces() + mod->firstSurface;
 	for(u32 i = 0; i < mod->numSurfaces; i++) {
@@ -234,7 +261,29 @@ void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tes
 	bp.tesselate(tesselationLevel,&out);
 }
 void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &out) {
-	if(h->isBSPCoD1()) {
+	if(h->isBSPHL()) {
+		const hlSurface_s *isf = (const hlSurface_s *)h->getLumpData(HL_FACES)+surfNum;
+		const hlVert_s *iv = (const hlVert_s *)h->getLumpData(HL_VERTEXES);
+		const hlEdge_s *ie = (const hlEdge_s *)h->getLumpData(HL_EDGES);
+		const hlTexInfo_s *it = (const hlTexInfo_s *)h->getLumpData(HL_TEXINFO);
+		const int *surfEdges = (const int *)h->getLumpData(HL_SURFEDGES);
+		// generate indexes from BSP edges data
+		for(int j = 0; j < isf->numEdges-1; j++) {
+			int ei = surfEdges[isf->firstEdge + j];
+			u32 realEdgeIndex;
+			if(ei < 0) {
+				realEdgeIndex = -ei;
+				const hlEdge_s *ed = ie + realEdgeIndex;
+				// reverse vertex order
+				out.addPolyEdge(iv[ed->v[1]].point,iv[ed->v[0]].point,j);
+			} else {
+				realEdgeIndex = ei;
+				const hlEdge_s *ed = ie + realEdgeIndex;
+				out.addPolyEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
+			}
+		}
+		out.calcPolygonIndexes();
+	} else if(h->isBSPCoD1()) {
 		const cod1Surface_s *codSF = h->getCoD1Surfaces()+surfNum;
 		const q3Vert_s *v = h->getVerts() + codSF->firstVert;
 		const u16 *codIndices = (const u16*)h->getLumpData(COD1_DRAWINDEXES);
@@ -260,6 +309,16 @@ u32 bspPhysicsDataLoader_c::getNumInlineModels() const {
 	return h->getNumModels();
 }
 void bspPhysicsDataLoader_c::getInlineModelBounds(u32 modelNum, class aabb &bb) const {
+	if(h->isBSPQ2()) {
+		const q2Model_s *q2Mod = ((const q2Model_s*)h->getLumpData(Q2_MODELS))+modelNum;
+		bb.fromTwoPoints(q2Mod->maxs,q2Mod->mins);
+		return;
+	}
+	if(h->isBSPHL()) {
+		const hlModel_s *hlMod = ((const hlModel_s*)h->getLumpData(HL_MODELS))+modelNum;
+		bb.fromTwoPoints(hlMod->maxs,hlMod->mins);
+		return;
+	}
 	const q3Model_s *m = h->getModels() + modelNum;
 	bb.fromTwoPoints(m->maxs,m->mins);
 }
@@ -280,3 +339,7 @@ u32 bspPhysicsDataLoader_c::getInlineModelGlobalBrushIndex(u32 subModelNum, u32 
 bool bspPhysicsDataLoader_c::isCoD1BSP() const {
 	return h->isBSPCoD1();
 }
+bool bspPhysicsDataLoader_c::isHLBSP() const {
+	return h->isBSPHL();
+}
+

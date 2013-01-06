@@ -209,6 +209,24 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName) {
 		return;
 	}
 }
+class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
+	mtrIMPL_c *ret = materials.getEntry(newMatName);
+	if(ret == 0) {
+		ret = new mtrIMPL_c;
+		// set material name first and add it to hash table
+		ret->setName(newMatName);
+		materials.addObject(ret);
+	} else {
+		// just clear the existing material
+		ret->clear();
+	}
+	byte *converted = 0;
+	u32 convertedW, convertedH;
+	g_img->convert8BitImageToRGBA32(&converted,&convertedW,&convertedH,pixels,width,height,palette);
+	textureAPI_i *tex = MAT_CreateTexture(newMatName,pixels,width,height);
+	g_img->freeImageData(converted);
+	return ret;
+}
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName) {
 	return MAT_RegisterMaterial(matName);
 }

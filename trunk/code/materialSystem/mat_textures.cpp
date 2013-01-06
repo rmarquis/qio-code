@@ -142,6 +142,14 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge
 	mat_textures.addObject(ret);
 	return ret;
 }
+class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h) {
+	textureIMPL_c *ret = new textureIMPL_c;
+	ret->setName(texName);
+	ret->setBClampToEdge(false);
+	rb->uploadTextureRGBA(ret,picData,w,h);
+	mat_textures.addObject(ret);
+	return ret;
+}
 //void MAT_FreeTexture(class textureAPI_i **p) {
 //	textureAPI_i *ptr = *p;
 //	if(ptr == 0)

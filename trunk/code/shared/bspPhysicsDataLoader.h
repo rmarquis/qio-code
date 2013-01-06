@@ -58,6 +58,7 @@ public:
 	u32 getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const;
 
 	bool isCoD1BSP() const;
+	bool isHLBSP() const;
 };
 
 #endif // __BSPPHYSICSDATALOADER_H__

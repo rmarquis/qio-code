@@ -248,10 +248,65 @@ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 		l->area = il->area;
 		l->cluster = il->cluster;
+		l->maxs[0] = il->maxs[0];
+		l->maxs[1] = il->maxs[1];
+		l->maxs[2] = il->maxs[2];
+		l->mins[0] = il->mins[0];
+		l->mins[1] = il->mins[1];
+		l->mins[2] = il->mins[2];
 		l->firstLeafBrush = il->firstLeafBrush;
 		l->firstLeafSurface = il->firstLeafSurface;
 		l->numLeafBrushes = il->numLeafBrushes;
 		l->numLeafSurfaces = il->numLeafSurfaces;
+	}
+	
+	return false; // OK
+}
+bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
+	const lump_s &nl = h->getLumps()[lumpNodes];
+	if(nl.fileLen % sizeof(hlNode_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid nodes lump size\n");
+		return true; // error
+	}
+	u32 numNodes = nl.fileLen / sizeof(hlNode_s);
+	nodes.resize(numNodes);
+	const hlNode_s *in = (const hlNode_s*)h->getLumpData(lumpNodes);
+	q3Node_s *on = nodes.getArray();
+	for(u32 i = 0; i < numNodes; i++, in++, on++) {
+		// NOTE: hlNode_s::children indexes are signed shorts,
+		// and q3Node_s::children and q2Node_s::children are signed integers
+		on->children[0] = in->children[0];
+		on->children[1] = in->children[1];
+		on->planeNum = in->planeNum;
+	}
+	const lump_s &ll = h->getLumps()[lumpLeaves];
+	if(ll.fileLen % sizeof(hlLeaf_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid leaves lump size\n");
+		return true; // error
+	}
+	u32 numLeaves = ll.fileLen / sizeof(hlLeaf_s);
+	leaves.resize(numLeaves);
+	q3Leaf_s *l = leaves.getArray();
+	const hlLeaf_s *il = (const hlLeaf_s*)h->getLumpData(lumpLeaves);
+	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+		// there are no areas in HL bsps
+		l->area = 0;//il->area;
+		// there are no clusters in HL bsps....
+		//l->cluster = il->cluster;
+		// ...so fake the cluster number
+		l->cluster = i;
+
+		l->maxs[0] = il->maxs[0];
+		l->maxs[1] = il->maxs[1];
+		l->maxs[2] = il->maxs[2];
+		l->mins[0] = il->mins[0];
+		l->mins[1] = il->mins[1];
+		l->mins[2] = il->mins[2];
+		l->firstLeafSurface = il->firstMarkSurface;
+		l->numLeafSurfaces = il->numMarkSurfaces;
+		// there are no brush data in HL bsps
+		l->firstLeafBrush = 0;
+		l->numLeafBrushes = 0;
 	}
 	
 	return false; // OK
@@ -501,7 +556,7 @@ bool rBspTree_c::loadSurfsQ2() {
 		ts->mat = g_ms->registerMaterial(matName);
 		ts->lightmap = 0;
 		q2PolyBuilder_c polyBuilder;
-		for(u32 j = 0; j < isf->numEdges-1; j++) {
+		for(int j = 0; j < isf->numEdges-1; j++) {
 			int ei = surfEdges[isf->firstEdge + j];
 			u32 realEdgeIndex;
 			if(ei < 0) {
@@ -512,6 +567,114 @@ bool rBspTree_c::loadSurfsQ2() {
 			} else {
 				realEdgeIndex = ei;
 				const q2Edge_s *ed = ie + realEdgeIndex;
+				polyBuilder.addEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
+			}
+		}
+		polyBuilder.calcTexCoords(sfTexInfo->vecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+		ts->firstVert = verts.size();
+		ts->numVerts = polyBuilder.getNumVerts();
+		verts.addArray(polyBuilder.getVerts());
+		polyBuilder.calcTriIndexes();
+		polyBuilder.addVertsToBounds(ts->bounds);
+		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
+		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
+			indicesU32[j] = ts->firstVert+polyBuilder.getIndex(j);
+		}
+	}
+	return false; // OK
+}
+bool rBspTree_c::loadSurfsHL() {
+	const lump_s &sl = h->getLumps()[HL_FACES];
+	if(sl.fileLen % sizeof(hlSurface_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfs lump size\n");
+		return true; // error
+	}
+	const lump_s &el = h->getLumps()[HL_EDGES];
+	if(el.fileLen % sizeof(hlEdge_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid edges lump size\n");
+		return true; // error
+	}
+	const lump_s &tl = h->getLumps()[HL_TEXINFO];
+	if(tl.fileLen % sizeof(hlTexInfo_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid texinfo lump size\n");
+		return true; // error
+	}
+	const lump_s &vl = h->getLumps()[HL_VERTEXES];
+	if(vl.fileLen % sizeof(hlVert_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid vertexes lump size\n");
+		return true; // error
+	}
+	const lump_s &sel = h->getLumps()[HL_SURFEDGES];
+	if(sel.fileLen % sizeof(int)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfEdges lump size\n");
+		return true; // error
+	}
+	u32 numSurfaces = sl.fileLen / sizeof(hlSurface_s);
+	u32 numVerts = vl.fileLen / sizeof(hlVert_s);
+	const hlSurface_s *isf = (const hlSurface_s *)h->getLumpData(HL_FACES);
+	const hlVert_s *iv = (const hlVert_s *)h->getLumpData(HL_VERTEXES);
+	const hlEdge_s *ie = (const hlEdge_s *)h->getLumpData(HL_EDGES);
+	const hlTexInfo_s *it = (const hlTexInfo_s *)h->getLumpData(HL_TEXINFO);
+	const int *surfEdges = (const int *)h->getLumpData(HL_SURFEDGES);
+	// textures data lump
+	const hlMipTexLump_s *mipTexLump = (const hlMipTexLump_s*)h->getLumpData(HL_TEXTURES);
+
+	surfs.resize(numSurfaces);
+	bspSurf_s *oSF = surfs.getArray();
+	arraySTD_c<mtrAPI_i*> mipTexCache;
+	mipTexCache.resize(mipTexLump->numMipTex);
+	mipTexCache.nullMemory();
+	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
+		const hlTexInfo_s *sfTexInfo = it + isf->texInfo;
+		str matName = "textures/";
+		//matName.append(sfTexInfo->texture);
+		//matName.append(".wal");
+		oSF->type = BSPSF_PLANAR;
+		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
+		// get texture image data
+		if(sfTexInfo->miptex < 0 || sfTexInfo->miptex >= mipTexLump->numMipTex) {
+			g_core->RedWarning("rBspTree_c::loadSurfsHL(): miptex index %i out of range <0,%i) for surface %i\n",
+				sfTexInfo->miptex,mipTexLump->numMipTex,i);
+			ts->mat = g_ms->registerMaterial("invalidHLMiptexIndex");
+		} else {
+			if(mipTexCache[sfTexInfo->miptex] == 0) {
+				int mipTexOfs = mipTexLump->dataofs[sfTexInfo->miptex];
+				if(mipTexOfs >= 0) {
+					const hlMipTex_s *mipTex = (const hlMipTex_s*)(h->getLumpData(HL_TEXTURES)+mipTexOfs);
+					if(mipTex->offsets[0] != 0) {
+						// palette is just after texture data
+						const byte *pal = ((const byte*)mipTex +
+							mipTex->offsets[3] +
+							(mipTex->width/8) * (mipTex->height/8))
+							+ 2; // unknown 2 bytes, always [?] 0x00 0x01
+						const byte *pixels = (((const byte*)mipTex) + mipTex->offsets[0]);
+						str matName = va("*%s",mipTex->name);
+						mipTexCache[sfTexInfo->miptex] = g_ms->createHLBSPTexture(matName,pixels,mipTex->width,mipTex->height,pal);
+					} else {
+
+					}
+				} else {
+
+				}
+			}
+			ts->mat = mipTexCache[sfTexInfo->miptex];
+		}
+		if(ts->mat == 0) {
+			ts->mat = g_ms->registerMaterial("noMaterial");
+		}
+		ts->lightmap = 0;
+		q2PolyBuilder_c polyBuilder;
+		for(int j = 0; j < isf->numEdges-1; j++) {
+			int ei = surfEdges[isf->firstEdge + j];
+			u32 realEdgeIndex;
+			if(ei < 0) {
+				realEdgeIndex = -ei;
+				const hlEdge_s *ed = ie + realEdgeIndex;
+				// reverse vertex order
+				polyBuilder.addEdge(iv[ed->v[1]].point,iv[ed->v[0]].point,j);
+			} else {
+				realEdgeIndex = ei;
+				const hlEdge_s *ed = ie + realEdgeIndex;
 				polyBuilder.addEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
 			}
 		}
@@ -617,6 +780,23 @@ bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
 	u32 numModels = ml.fileLen / sizeof(q2Model_s);
 	models.resize(numModels);
 	const q2Model_s *m = (const q2Model_s *)h->getLumpData(modelsLump);
+	bspModel_s *om = models.getArray();
+	for(u32 i = 0; i < numModels; i++, om++, m++) {
+		om->firstSurf = m->firstSurface;
+		om->numSurfs = m->numSurfaces;
+		om->bb.fromTwoPoints(m->maxs,m->mins);
+	}
+	return false; // OK
+}
+bool rBspTree_c::loadModelsHL(u32 modelsLump) {
+	const lump_s &ml = h->getLumps()[modelsLump];
+	if(ml.fileLen % sizeof(hlModel_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsHL: invalid models lump size\n");
+		return true; // error
+	}
+	u32 numModels = ml.fileLen / sizeof(hlModel_s);
+	models.resize(numModels);
+	const hlModel_s *m = (const hlModel_s *)h->getLumpData(modelsLump);
 	bspModel_s *om = models.getArray();
 	for(u32 i = 0; i < numModels; i++, om++, m++) {
 		om->firstSurf = m->firstSurface;
@@ -783,6 +963,32 @@ bool rBspTree_c::load(const char *fname) {
 		// temporary fix for Call of Duty bsp's.
 		// (there is something wrong with leafSurfaces)
 		rf_bsp_forceEverythingVisible.setString("1");
+	} else if(h->ident == BSP_VERSION_HL) {
+		// Half Life and Counter Strike 1.6 bsps (de_dust2, etc)
+		// older bsp versions dont have "ident" field
+		// NOTE: HL_PLANES == Q2_PLANES.
+		// The plane_t struct is the same as well
+		if(loadPlanesQ2(HL_PLANES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadNodesAndLeavesHL(HL_NODES,HL_LEAFS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		// hl model_t struct is different from Q2
+		if(loadModelsHL(HL_MODELS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadSurfsHL()) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadLeafIndexes16Bit(HL_MARKSURFACES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 	} else {
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error

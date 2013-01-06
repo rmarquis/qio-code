@@ -51,10 +51,13 @@ bool MAT_IsMaterialOrImagePresent(const char *matName);
 bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
 void MAT_ReloadSingleMaterial(const char *matName);
 void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName);
+class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette);
+
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge = false);
+class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h);
 void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();

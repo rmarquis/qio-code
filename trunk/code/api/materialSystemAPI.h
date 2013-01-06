@@ -42,6 +42,8 @@ public:
 	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
 	virtual void reloadSingleMaterial(const char *matName) = 0;
 	virtual void reloadMaterialFileSource(const char *mtrSourceFileName) = 0;
+	// creates new material for HL-bsp texture data
+	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
 };
 
 extern materialSystemAPI_i *g_ms;

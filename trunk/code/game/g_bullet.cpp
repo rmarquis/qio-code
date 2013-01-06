@@ -1023,7 +1023,9 @@ void G_LoadMap(const char *mapName) {
 		} else {
 			g_bspPhysicsLoader = &l;
 			// load world model
-			if(l.isCoD1BSP()) {
+			if(l.isCoD1BSP() || l.isHLBSP()) {
+				// HL bsps dont have brush data
+				// COD bsps have brush data, but we havent reverse engineered it fully yet
 				l.iterateModelTriSurfs(0,BT_ConvertWorldTriSurf);
 			} else {
 				l.iterateModelBrushes(0,BT_ConvertWorldBrush);

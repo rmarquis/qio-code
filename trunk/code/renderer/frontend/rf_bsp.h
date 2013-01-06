@@ -163,12 +163,15 @@ class rBspTree_c {
 	bool loadPlanesQ2(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves);
+	bool loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves);
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadSurfsQ2();
+	bool loadSurfsHL();
 	bool loadVerts(u32 lumpVerts); // called from loadSurfs / loadSurfsCoD
 	bool loadSurfsCoD();
 	bool loadModels(u32 modelsLump);
 	bool loadModelsQ2(u32 modelsLump);
+	bool loadModelsHL(u32 modelsLump);
 	bool loadLeafIndexes(u32 leafSurfsLump);
 	bool loadLeafIndexes16Bit(u32 leafSurfsLump); // for QuakeII
 	bool loadVisibility(u32 visLump);

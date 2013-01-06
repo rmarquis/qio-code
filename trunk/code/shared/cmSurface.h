@@ -230,6 +230,21 @@ public:
 		
 	}
 
+	// quake polygon generation
+	void addPolyEdge(const vec3_c &v0, const vec3_c &v1, u32 localNum) {
+		if(localNum == 0) {
+			verts.push_back(v0);
+		}
+		verts.push_back(v1);
+	}
+	void calcPolygonIndexes() {
+		for(u32 i = 2; i < verts.size(); i++) {
+			indices.push_back(0);
+			indices.push_back(i-1);
+			indices.push_back(i);
+		}
+	}
+
 	void addTriPointsToAABB(u32 triNum, aabb &out) const {
 		u32 i0 = indices[triNum*3+0];
 		u32 i1 = indices[triNum*3+1];

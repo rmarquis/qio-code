@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 
 #include "bspFileFormat_q2.h"
+#include "bspFileFormat_hl.h"
 
 // original BSP structures designed by ID Software
 // used in their Quake3 game
@@ -363,6 +364,9 @@ struct q3Header_s {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			// MoH maps have checksum integer before lumps
 			return ((const lump_s*)(((const byte*)&lumps[0])+4));
+		} else if(ident == BSP_VERSION_HL) {
+			// older bsp versions don't have "ident" field, only version
+			return ((const lump_s*)(((const byte*)&lumps[0])-4));
 		} else {
 			return &lumps[0];
 		}
@@ -519,6 +523,13 @@ struct q3Header_s {
 	}
 	bool isBSPQ2() const {
 		if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_Q2)
+			return true;
+		return false;
+	}
+	bool isBSPHL() const {
+		// HL bsps have no ident field
+		// (version field is at the beginning of header)
+		if(ident == BSP_VERSION_HL)
 			return true;
 		return false;
 	}
