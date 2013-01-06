@@ -54,6 +54,17 @@ public:
 			(*scaledVerts)[i] = verts[i] * scaledVertsScale;
 		}
 	}
+	void addSurface(const cmSurface_c &other) {
+		u32 prevVerts = verts.size();
+		u32 prevIndices = indices.size();
+		verts.resize(verts.size()+other.verts.size());
+		indices.resize(indices.size()+other.indices.size());
+		memcpy(verts.getArray()+prevVerts,other.verts.getArray(),other.verts.getSizeInBytes());
+		u32 *newIndices = indices.getArray() + prevIndices;
+		for(u32 i = 0; i < other.indices.size(); i++) {
+			newIndices[i] = prevVerts + other.indices[i]; 
+		}
+	}
 	// colMeshBuilderAPI_i api
 	virtual void addVert(const class vec3_c &nv) {
 		bb.addPoint(nv);

@@ -95,7 +95,11 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->myEdict->s->rModelIndex = G_RenderModelIndex(newRModelName);
 	renderModelName = newRModelName;
 	// decl models are present on both client and server
-	this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
+	if(newRModelName[0] != '*') {
+		this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
+	} else {
+		this->modelDecl = 0;
+	}
 	if(this->modelDecl) {
 		// update animation indexes
 		setAnimation(this->animName);

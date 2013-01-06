@@ -648,7 +648,21 @@ btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	subMesh.m_triangleIndexBase = sf.getIndicesBase();
 	subMesh.m_triangleIndexStride = sizeof(int)*3;
 	mesh->addIndexedMesh(subMesh);
-	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh,true);
+
+	btBvhTriangleMeshShape* shape;
+	if(sf.getNumTris() < 13) {
+		// dont build BHV for really small meshes
+		shape = new btBvhTriangleMeshShape(mesh,false,false);
+	} else {
+		// this function is slow, so tell user what we're doing
+		if(sf.getNumTris() > 1024) {
+			g_core->Print("BT_CreateBHVTriMeshForCMSurface: building BVH for cmSurface with %i tris and %i vertices...\n",sf.getNumTris(),sf.getNumVerts());
+		}
+		shape = new btBvhTriangleMeshShape(mesh,true);
+		if(sf.getNumTris() > 1024) {
+			g_core->Print("... done!\n");
+		}
+	}
 
 #ifdef TRYTOFIX_INTERNAL_EDGES
 	btTriangleInfoMap* triangleInfoMap = new btTriangleInfoMap();
@@ -909,6 +923,7 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 }
 #include <shared/bspPhysicsDataLoader.h>
 bspPhysicsDataLoader_c *g_bspPhysicsLoader;
+cmSurface_c g_worldSurface;
 
 // brush converting
 btAlignedObjectArray<btVector3> planeEquations;
@@ -949,6 +964,13 @@ void BT_ConvertWorldTriSurf(u32 surfNum, u32 contentFlags) {
 	g_bspPhysicsLoader->getTriangleSurface(surfNum,*newSF);
 	newSF->prepareScaledVerts(QIO_TO_BULLET);
 	BT_CreateWorldTriMesh(*newSF);
+}
+void BT_ConvertWorldPoly(u32 surfNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+	cmSurface_c tmpSF;
+	g_bspPhysicsLoader->getTriangleSurface(surfNum,tmpSF);
+	g_worldSurface.addSurface(tmpSF);
 }
 void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
 	if((contentFlags & 1) == 0)
@@ -993,6 +1015,7 @@ void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
 }
 void G_LoadMap(const char *mapName) {
 	bt_worldCMod = 0;
+//	g_worldSurface.clear();
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString("G_LoadMap: \"%s\"...",mapName);
 	}
@@ -1026,7 +1049,7 @@ void G_LoadMap(const char *mapName) {
 			if(l.isCoD1BSP() || l.isHLBSP()) {
 				// HL bsps dont have brush data
 				// COD bsps have brush data, but we havent reverse engineered it fully yet
-				l.iterateModelTriSurfs(0,BT_ConvertWorldTriSurf);
+				l.iterateModelTriSurfs(0,BT_ConvertWorldPoly);
 			} else {
 				l.iterateModelBrushes(0,BT_ConvertWorldBrush);
 				l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
@@ -1041,6 +1064,10 @@ void G_LoadMap(const char *mapName) {
 			l.clear();
 			g_bspPhysicsLoader = 0;
 		}
+	}
+	if(g_worldSurface.getNumTris()) {
+		g_worldSurface.prepareScaledVerts(QIO_TO_BULLET);
+		BT_CreateWorldTriMesh(g_worldSurface);
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" done.\n");

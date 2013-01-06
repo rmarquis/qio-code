@@ -344,6 +344,10 @@ bool fileTextDataCache_c::findDeclText(const char *declName, const char *declTyp
 }
 
 class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qioModule_e userModule) {
+	if(name[0] == '*') {
+		g_core->RedWarning("declManagerIMPL_c::_registerModelDecl: ignoring inline model \"%s\" request.\n",name);
+		return 0;
+	}
 	modelDecl_c *ret = modelDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);

@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <api/rAPI.h>
 #include <api/loadingScreenMgrAPI.h>
+#include <shared/str.h>
 
 qboolean	scr_initialized;		// ready to draw
 
@@ -547,6 +548,11 @@ void SCR_DrawScreenField() {
 
 	// console draws next
 	Con_DrawConsole ();
+
+	if(1 && clc.downloadName[0]) {
+		str txt = va("Downloading %s....\n",clc.downloadName);
+		SCR_DrawBigString(30,30,txt,1,false);
+	}
 
 	// debug graph can be drawn on top of anything
 	if ( cl_debuggraph->integer || cl_timegraph->integer || cl_debugMove->integer ) {
