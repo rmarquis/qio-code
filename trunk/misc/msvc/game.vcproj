@@ -493,6 +493,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\FuncStatic.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncStatic.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\InfoPlayerStart.cpp"
 				>
 			</File>

@@ -112,6 +112,7 @@ mtrStage_c::mtrStage_c() {
 	rgbGen = 0;
 	type = ST_NOT_SET;
 	depthWrite = true;
+	bMarkedForDelete = false;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -181,6 +182,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	hashNext = 0;
 	cullType = CT_FRONT_SIDED;
 	bPortalMaterial = false;
+	bMirrorMaterial = false;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -216,7 +218,8 @@ void mtrIMPL_c::createFromTexturePointer(class textureAPI_i *tex) {
 	stages.push_back(ns);
 }
 u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
-#define ADDOPTION(label, value) if(p.atWord(label)) return value;
+	str token = p.getD3Token();
+#define ADDOPTION(label, value) if(!stricmp(token,label)) return value;
 	ADDOPTION("GL_ONE",BM_ONE)
 	ADDOPTION("GL_ZERO",BM_ZERO) 
 	ADDOPTION("GL_DST_COLOR",BM_DST_COLOR)
@@ -229,7 +232,7 @@ u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
 	ADDOPTION("GL_SRC_ALPHA",BM_SRC_ALPHA)
 	ADDOPTION("GL_SRC_ALPHA_SATURATE",BM_SRC_ALPHA_SATURATE)
 #undef ADDOPTION
-	g_core->Print(S_COLOR_RED,"Unknown blendFunc src/dst %s in file %s, setting to BM_ONE \n",p.getToken(),p.getDebugFileName(),p.getCurrentLineNumber());
+	g_core->Print(S_COLOR_RED"Unknown blendFunc src/dst %s in file %s at line %i, setting to BM_ONE \n",token.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 	return BM_ZERO;
 }
 void mtrIMPL_c::setSkyParms(const char *farBox, const char *cloudHeightStr, const char *nearBox) {
@@ -377,6 +380,22 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// See q3 textures/sfx/portal_sfx from scripts/common.shader.
 					// It's the shader of q3dm0 portal (teleporter)
 					this->bPortalMaterial = true;
+				} else if(p.atWord("decal_macro")) {
+					// Doom3 decal_macro
+
+					// set polygon offset
+					this->polygonOffset = 0.1f;
+
+					// turn of shadow casting - TODO
+
+					// clear CONTENTS_SOLID - TODO
+
+					// set decal sort - TODO
+
+				} else if(p.atWord("mirror")) {
+					// Doom3 mirror
+					// used eg. in Prey's game/roadhouse.proc
+					this->bMirrorMaterial = true;
 				} else {
 					p.getToken();
 				}
@@ -453,22 +472,21 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						// needed by Xreal machinegun model
 						stage->setBlendDef(BM_ONE,BM_ONE);
 					} else if(p.atWord("blend")) {
-
+						stage->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
 					} else if(p.atWord("bumpmap")) {
 
 					} else if(p.atWord("specularMap")) {
 
 					} else if(p.atWord("diffusemap")) {
 
+					} else if(p.atWord("filter")) {
+						stage->setBlendDef(BM_DST_COLOR,BM_ZERO);
 					} else {
-						str src, dst;
-						src = p.getToken();
-						if(p.atWord(",")) {
-
-						}
-						dst = p.getToken();
-						src.removeCharacter(',');
-						dst.removeCharacter(',');
+						// NOTE: for some reasons blend types are separated
+						// with ',' in Doom3
+						u16 src = readBlendEnum(p);
+						u16 dst = readBlendEnum(p);
+						stage->setBlendDef(src,dst);
 					}
 				} else if(p.atWord("alphatest")) {
 				} else if(p.atWord("red")) {
@@ -504,6 +522,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: unknown texgen type %s in definition of material %s in file %s at line %i\n",
 							tok.c_str(),this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
+				} else if(p.atWord("if")) {
+					// TODO: evaluate Doom3 conditional expressions?
+					stage->setMarkedForDelete(true);
 				} else {
 					p.getToken();
 				}
@@ -519,16 +540,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		this->createFromImage();
 	} else {
-#if 0
+		// delete unwanted stages
 		for(int i = 0; i < stages.size(); i++) {
 			mtrStage_c *s = stages[i];
-			if(s->isLightmapStage()) {
+			if(s->isMarkedForDelete()) {
 				delete s;
 				stages.erase(i);
 				i--;
 			}
 		}
-#endif
 		if(mat_collapseMaterialStages.getInt()) {
 		mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
 		if(lightmapped) {

@@ -21,18 +21,19 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Door.h
-#ifndef __DOOR_H__
-#define __DOOR_H__
+// FuncStatic.h
+#ifndef __FUNC_STATIC_H__
+#define __FUNC_STATIC_H__
 
 #include "ModelEntity.h"
 
-class Door : public ModelEntity {
+class FuncStatic : public ModelEntity {
 public:
-	Door();
+	FuncStatic();
 
-	DECLARE_CLASS( Door );
+	DECLARE_CLASS( FuncStatic );
 
 };
 
-#endif // __DOOR_H__
+#endif // __FUNC_STATIC_H__
+

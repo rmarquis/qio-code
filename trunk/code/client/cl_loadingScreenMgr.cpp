@@ -57,7 +57,9 @@ class clLoadingScreenMgrIMPL_c : public loadingScreenMgrAPI_i {
 		}
 	}
 	void redraw() {
+		//printf("clLoadingScreenMgrIMPL_c::redraw() callind SCR_UpdateScreen...\n");
 		SCR_UpdateScreen();
+		//printf("clLoadingScreenMgrIMPL_c::redraw() done.\n");
 	}
 	virtual void addLoadingString(const char *fmt, ...) {	
 		va_list	argptr;

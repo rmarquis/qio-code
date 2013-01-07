@@ -296,8 +296,13 @@ void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) 
 		if(dc.sort > DCS_PORTAL) {
 			return; // dont have to check any more
 		}
+		static rVertexBuffer_c pointsTransformed;
+		dc.verts->getReferencedPoints(pointsTransformed,*dc.indices);
+		if(dc.entity) {
+			pointsTransformed.transform(dc.entity->getMatrix());
+		}
 		plane_c surfacePlane;
-		if(dc.verts->getPlane(*dc.indices,surfacePlane)) {
+		if(pointsTransformed.getPlane(surfacePlane)) {
 			g_core->RedWarning("RF_CheckDrawCallsForMirrorsAndPortals: mirror/portal surface not planar!\n");
 			continue;
 		}
@@ -307,7 +312,7 @@ void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) 
 		}
 		//g_core->Print("Found DCS_PORTAL drawCall with material %s (abs index %i)\n",dc.material->getName(),i);
 		// do the automatic mirror for now 
-		if(1 && !stricmp(dc.material->getName(),"textures/common/mirror2")) {
+		if(dc.material->isMirrorMaterial() || !stricmp(dc.material->getName(),"textures/common/mirror2")) {
 			//vec3_c center;
 			//dc.verts->getCenter(*dc.indices, center);
 			vec3_c surfaceOrigin = surfacePlane.norm * -surfacePlane.dist;

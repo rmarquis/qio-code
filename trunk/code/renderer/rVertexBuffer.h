@@ -208,11 +208,15 @@ public:
 	void setVertexColorsToConstValues(byte *rgbVals);
 	void setVertexAlphaToConstValue(byte val);
 
+	void transform(const class matrix_c &mat);
+
 	// returns true if vertices are not on the same plane
 	bool getPlane(class plane_c &pl) const;
 	bool getPlane(const class rIndexBuffer_c &ibo, class plane_c &pl) const;
 	// returns the center of vertices referenced in IBO
 	void getCenter(const class rIndexBuffer_c &ibo, class vec3_c &p) const;
+
+	void getReferencedPoints(rVertexBuffer_c &out, const class rIndexBuffer_c &ibo) const;
 };
 
 #endif // __RVERTEXBUFFER_H__

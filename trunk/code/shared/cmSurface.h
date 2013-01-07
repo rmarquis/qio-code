@@ -270,6 +270,10 @@ public:
 			addTriPointsToAABB(tri,out);
 		}
 	}
+
+	// load vertices/triangles data directly from Doom3 .proc file
+	bool loadDoom3ProcFileWorldModel(const char *fname);
+
 	const vec3_c &getVert(u32 vertNum) const {
 		return verts[vertNum];
 	}

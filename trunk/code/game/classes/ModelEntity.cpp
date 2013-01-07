@@ -42,9 +42,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 
-// temporary (?) alias for .map loading (.obj models are using this)
-DEFINE_CLASS_ALIAS(ModelEntity, func_static);
-
 ModelEntity::ModelEntity() {
 	body = 0;
 	cmod = 0;

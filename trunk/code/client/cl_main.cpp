@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
+#include <shared/str.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
@@ -2077,11 +2078,20 @@ void CL_NextDownload(void)
 	// A download has finished, check whether this matches a referenced checksum
 	if(*clc.downloadName)
 	{
-		char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
-		zippath[strlen(zippath)-1] = '\0';
+		const char *ext = G_strgetExt(clc.downloadName);
+		if(ext) {
+			if(ext[0] == '.') {
+				ext++;
+			}
+			// do it only for .pk3 files (zip archives)
+			if(!stricmp(ext,"pk3")) {
+				char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
+				zippath[strlen(zippath)-1] = '\0';
 
-		if(!FS_CompareZipChecksum(zippath))
-			Com_Error(ERR_DROP, "Incorrect checksum for file: %s", clc.downloadName);
+				if(!FS_CompareZipChecksum(zippath))
+					Com_Error(ERR_DROP, "Incorrect checksum for file: %s", clc.downloadName);
+			}
+		}
 	}
 
 	*clc.downloadTempName = *clc.downloadName = 0;
@@ -3114,6 +3124,11 @@ void CL_StopVideo_f( void )
   CL_CloseAVI( );
 }
 
+void CL_ForceDownload_f() {
+	const char *file = Cmd_Argv(1);
+	CL_BeginDownload(file,file);
+}
+
 /*
 ===============
 CL_GenerateQKey
@@ -3388,6 +3403,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("model", CL_SetModel_f );
 	Cmd_AddCommand ("video", CL_Video_f );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
+	Cmd_AddCommand ("forcedownload", CL_ForceDownload_f );
+	
 	CL_InitRef();
 
 	SCR_Init ();

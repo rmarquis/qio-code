@@ -526,7 +526,7 @@ void procTree_c::addDrawCalls() {
 		}
 		return;
 	}
-	int camArea = pointArea(rf_camera.getOrigin());
+	int camArea = pointArea(rf_camera.getPVSOrigin());
 	printf("camera is in area %i of %i\n",camArea,areas.size());
 	frustumExt_c baseFrustum(rf_camera.getFrustum());
 	addAreaDrawCalls_r(camArea,baseFrustum,0);

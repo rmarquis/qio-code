@@ -99,6 +99,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	enum stageType_e type;
 	class rgbGen_c *rgbGen;
 	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
+	bool bMarkedForDelete;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -160,6 +161,12 @@ public:
 	void setDepthWrite(bool newDepthWrite) {
 		this->depthWrite = newDepthWrite;
 	}
+	void setMarkedForDelete(bool newbMarkedForDelete) {
+		this->bMarkedForDelete = newbMarkedForDelete;
+	}
+	bool isMarkedForDelete() const {
+		return bMarkedForDelete;
+	}
 	void setTexture(const char *newMapName);
 	int getImageWidth() const;
 	int getImageHeight() const;
@@ -179,6 +186,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	float polygonOffset;
 	enum cullType_e cullType;
 	bool bPortalMaterial; // set to true by "portal" global material keyword
+	bool bMirrorMaterial; // set to true by "mirror" global material keyword
 
 	void removeAllStagesOfType(enum stageType_e type);
 	class mtrStage_c *getFirstStageOfType(enum stageType_e type);
@@ -224,6 +232,9 @@ public:
 	virtual bool isPortalMaterial() const {
 		return this->bPortalMaterial;
 	}
+	virtual bool isMirrorMaterial() const {
+		return this->bMirrorMaterial;
+	}
 	inline mtrIMPL_c *getHashNext() const {
 		return hashNext;
 	}
@@ -252,6 +263,9 @@ public:
 	// TODO: precalculate stage->sort once and just return the stored value here?
 	virtual enum drawCallSort_e getSort() const { 
 		if(bPortalMaterial) {
+			return DCS_PORTAL;
+		}
+		if(bMirrorMaterial) {
 			return DCS_PORTAL;
 		}
 		if(hasStageWithBlendFunc()) {

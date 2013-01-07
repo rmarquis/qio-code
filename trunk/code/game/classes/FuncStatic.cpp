@@ -21,18 +21,14 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Door.h
-#ifndef __DOOR_H__
-#define __DOOR_H__
+// FuncStatic.cpp
+#include "FuncStatic.h"
 
-#include "ModelEntity.h"
+DEFINE_CLASS(FuncStatic, "ModelEntity");
+DEFINE_CLASS_ALIAS(FuncStatic, func_static);
 
-class Door : public ModelEntity {
-public:
-	Door();
+// func_static entities are inmovable
+FuncStatic::FuncStatic() {
+	bPhysicsBodyKinematic = true;
+}
 
-	DECLARE_CLASS( Door );
-
-};
-
-#endif // __DOOR_H__

@@ -44,14 +44,17 @@ void bspPhysicsDataLoader_c::clear() {
 	}
 }
 bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
-	char buf[256];
-	strcpy(buf,"maps/");
-	strcat(buf,fname);
-	strcat(buf,".bsp");
 	fileHandle_t f;
-	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+	int len = g_vfs->FS_FOpenFile(fname,&f,FS_READ);
 	if(len < 0) {
-		return true; // error
+		char buf[256];
+		strcpy(buf,"maps/");
+		strcat(buf,fname);
+		strcat(buf,".bsp");
+		int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+		if(len < 0) {
+			return true; // error
+		}
 	}
 	byte *data = (byte*)malloc(len);
 	g_vfs->FS_Read(data,len,f);

@@ -996,6 +996,9 @@ const class aabb &G_GetInlineModelBounds(u32 inlineModelNum) {
 		c->getBounds(ret);
 		return ret;
 	}
+	if(inlineModelNum >= g_inlineModelBounds.size()) {
+		return aabb();
+	}
 	return g_inlineModelBounds[inlineModelNum];
 }
 class cMod_i *BT_GetSubModelCModel(u32 inlineModelNum) {
@@ -1012,6 +1015,29 @@ void BT_SpawnStaticCompoundModel(class cmCompound_i *cm) {
 		// set the mass to 0, so the body is static
 		btRigidBody *staticBody = BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,m,0);
 	}
+}
+#include <api/vfsAPI.h>
+bool G_FixMapPath(str &out, const char *mapName) {
+	if(Q_stricmpn(mapName,"maps/",5) && !Q_stricmpn(mapName,"maps\\",5)) {
+		out.append("maps/");
+	}
+	out.append(mapName);
+	if(g_vfs->FS_FileExists(out) == true) {
+		return false; // OK
+	}
+	out.setExtension("bsp");
+	if(g_vfs->FS_FileExists(out) == true) {
+		return false; // OK
+	}
+	out.setExtension("proc");
+	if(g_vfs->FS_FileExists(out) == true) {
+		return false; // OK
+	}
+	out.setExtension("map");
+	if(g_vfs->FS_FileExists(out) == true) {
+		return false; // OK
+	}
+	return true; // error
 }
 void G_LoadMap(const char *mapName) {
 	bt_worldCMod = 0;
@@ -1034,13 +1060,20 @@ void G_LoadMap(const char *mapName) {
 		if(l.loadBSPFile(mapName)) {
 			str fixed = "maps/";
 			fixed.append(mapName);
-			fixed.setExtension("map");
-			bt_worldCMod = cm->registerModel(fixed);
-			if(bt_worldCMod) {
-				if(bt_worldCMod->isCompound()) {
-					BT_SpawnStaticCompoundModel(bt_worldCMod->getCompound());
-				} else {
-					BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,bt_worldCMod,0);
+			fixed.setExtension("proc");
+			if(g_vfs->FS_FileExists(fixed)) {
+				g_worldSurface.loadDoom3ProcFileWorldModel(fixed);
+			} else {
+				fixed = "maps/";
+				fixed.append(mapName);
+				fixed.setExtension("map");
+				bt_worldCMod = cm->registerModel(fixed);
+				if(bt_worldCMod) {
+					if(bt_worldCMod->isCompound()) {
+						BT_SpawnStaticCompoundModel(bt_worldCMod->getCompound());
+					} else {
+						BT_CreateRigidBodyWithCModel(vec3_origin,vec3_origin,0,bt_worldCMod,0);
+					}
 				}
 			}
 		} else {

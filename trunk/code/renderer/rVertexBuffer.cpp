@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rVertexBuffer.h"
 #include "rIndexBuffer.h"
 #include <math/plane.h>
+#include <math/matrix.h>
 
 void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
 	rVert_c *v = this->getArray();
@@ -65,6 +66,13 @@ void rVertexBuffer_c::setVertexAlphaToConstValue(byte val) {
 	rVert_c *v = this->getArray();
 	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		v->color[3] = val;
+	}
+}
+void rVertexBuffer_c::transform(const class matrix_c &mat) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		mat.transformPoint(v->xyz);
+		mat.transformNormal(v->normal);
 	}
 }
 bool rVertexBuffer_c::getPlane(class plane_c &pl) const {
@@ -144,3 +152,25 @@ void rVertexBuffer_c::getCenter(const class rIndexBuffer_c &ibo, class vec3_c &o
 	out.set(cX,cY,cZ);
 }
 
+void rVertexBuffer_c::getReferencedPoints(rVertexBuffer_c &out, const class rIndexBuffer_c &ibo) const {
+	if(ibo.getNumIndices() == 0) {
+		return;
+	}
+	if(this->numVerts == 0) {
+		return;
+	}
+	static arraySTD_c<byte> bVertexChecked;
+	if(this->numVerts > bVertexChecked.size()) {
+		bVertexChecked.resize(this->numVerts);
+	}
+	out.numVerts = 0;
+	memset(bVertexChecked.getArray(),0,this->numVerts);
+	const rVert_c *v = this->getArray();
+	for(u32 i = 0; i < ibo.getNumIndices(); i++) {
+		u32 index = ibo[i];
+		if(bVertexChecked[index] == 0) {
+			out.push_back(v[index]);
+			bVertexChecked[index] = 1;
+		}
+	}
+}

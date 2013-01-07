@@ -75,7 +75,12 @@ bool entDefsList_c::fromString(const char *text) {
 			}
 			if(bHadMapPrimitives) {
 				if(curModNum) {
-					ed->setKeyValue("model",va("*%i",curModNum));
+					// automatically set model field for direct 
+					// .map files loading, but dont override
+					// Doom3 func_static names (they are used with .proc files)
+					if(ed->hasKey("model") == false) {
+						ed->setKeyValue("model",va("*%i",curModNum));
+					}
 				}
 				curModNum++;
 			}

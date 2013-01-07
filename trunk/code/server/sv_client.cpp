@@ -893,7 +893,6 @@ static void SV_BeginDownload_f( client_t *cl ) {
 	// the file itself
 	Q_strncpyz( cl->downloadName, Cmd_Argv(1), sizeof(cl->downloadName) );
 }
-
 /*
 ==================
 SV_WriteDownloadToClient
@@ -959,12 +958,13 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 		}
 
 		cl->download = 0;
-
+unreferenced = 0; // HACK
 		// We open the file here
 		if ( !(sv_allowDownload->integer & DLF_ENABLE) ||
 			(sv_allowDownload->integer & DLF_NO_UDP) ||
 			idPack || unreferenced ||
-			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
+			//( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
+			( cl->downloadSize = FS_FOpenFileRead( cl->downloadName, &cl->download, qtrue ) ) < 0 ) {
 			// cannot auto-download file
 			if(unreferenced)
 			{

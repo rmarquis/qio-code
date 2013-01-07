@@ -552,6 +552,8 @@ void SCR_DrawScreenField() {
 	if(1 && clc.downloadName[0]) {
 		str txt = va("Downloading %s....\n",clc.downloadName);
 		SCR_DrawBigString(30,30,txt,1,false);
+		txt = va("Block %i, count %i\n",clc.downloadBlock,clc.downloadCount);
+		SCR_DrawBigString(30,60,txt,1,false);
 	}
 
 	// debug graph can be drawn on top of anything
