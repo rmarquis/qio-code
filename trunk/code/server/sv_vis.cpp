@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 svBSP_c::svBSP_c() {
 	h = 0;
 	areaPortalStates = 0;
+	vis = 0;
 }
 svBSP_c::~svBSP_c() {
 	clear();
