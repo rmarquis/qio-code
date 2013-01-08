@@ -29,6 +29,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 // HL bsps has no ident field,
 // version field is at the beginning of file
 #define BSP_VERSION_HL 30
+// Quake1 bsp is similiar to HL
+#define BSP_VERSION_QUAKE1 29
 
 #define	HL_ENTITIES		0
 #define	HL_PLANES		1

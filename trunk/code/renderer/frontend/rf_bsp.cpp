@@ -642,11 +642,16 @@ bool rBspTree_c::loadSurfsHL() {
 				if(mipTexOfs >= 0) {
 					const hlMipTex_s *mipTex = (const hlMipTex_s*)(h->getLumpData(HL_TEXTURES)+mipTexOfs);
 					if(mipTex->offsets[0] != 0) {
-						// palette is just after texture data
-						const byte *pal = ((const byte*)mipTex +
-							mipTex->offsets[3] +
-							(mipTex->width/8) * (mipTex->height/8))
-							+ 2; // unknown 2 bytes, always [?] 0x00 0x01
+						const byte *pal;
+						if(h->ident == BSP_VERSION_HL) {
+							// palette is just after texture data
+							pal = ((const byte*)mipTex +
+								mipTex->offsets[3] +
+								(mipTex->width/8) * (mipTex->height/8))
+								+ 2; // unknown 2 bytes, always [?] 0x00 0x01
+						} else {
+							pal = 0;
+						}
 						const byte *pixels = (((const byte*)mipTex) + mipTex->offsets[0]);
 						str matName = va("*%s",mipTex->name);
 						mipTexCache[sfTexInfo->miptex] = g_ms->createHLBSPTexture(matName,pixels,mipTex->width,mipTex->height,pal);
@@ -963,7 +968,7 @@ bool rBspTree_c::load(const char *fname) {
 		// temporary fix for Call of Duty bsp's.
 		// (there is something wrong with leafSurfaces)
 		rf_bsp_forceEverythingVisible.setString("1");
-	} else if(h->ident == BSP_VERSION_HL) {
+	} else if(h->ident == BSP_VERSION_HL || h->ident == BSP_VERSION_QUAKE1) {
 		// Half Life and Counter Strike 1.6 bsps (de_dust2, etc)
 		// older bsp versions dont have "ident" field
 		// NOTE: HL_PLANES == Q2_PLANES.

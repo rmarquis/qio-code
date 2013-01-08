@@ -51,7 +51,7 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 		strcpy(buf,"maps/");
 		strcat(buf,fname);
 		strcat(buf,".bsp");
-		int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+		len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
 		if(len < 0) {
 			return true; // error
 		}

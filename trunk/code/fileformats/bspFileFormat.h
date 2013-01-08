@@ -364,7 +364,7 @@ struct q3Header_s {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			// MoH maps have checksum integer before lumps
 			return ((const lump_s*)(((const byte*)&lumps[0])+4));
-		} else if(ident == BSP_VERSION_HL) {
+		} else if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
 			// older bsp versions don't have "ident" field, only version
 			return ((const lump_s*)(((const byte*)&lumps[0])-4));
 		} else {
@@ -392,6 +392,10 @@ struct q3Header_s {
 			return getLumps()[MOH_MODELS].fileLen/sizeof(q3Model_s);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return getLumps()[COD1_MODELS].fileLen/(sizeof(q3Model_s)+8);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_Q2) {
+			return getLumps()[Q2_MODELS].fileLen / sizeof(q2Model_s);
+		} else if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
+			return getLumps()[HL_MODELS].fileLen / sizeof(hlModel_s);
 		} else {
 			return getLumps()[Q3_MODELS].fileLen/sizeof(q3Model_s);
 		}
@@ -530,6 +534,9 @@ struct q3Header_s {
 		// HL bsps have no ident field
 		// (version field is at the beginning of header)
 		if(ident == BSP_VERSION_HL)
+			return true;
+		// quake1 bsps are similiar to HL ones
+		if(ident == BSP_VERSION_QUAKE1)
 			return true;
 		return false;
 	}
