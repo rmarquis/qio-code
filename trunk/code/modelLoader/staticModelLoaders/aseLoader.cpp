@@ -101,6 +101,8 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 			asciiExportVersion = p.getInteger();
 		} else if(p.atWord("*COMMENT")) {
 			comment = p.getToken();
+		} else if(p.atWord("*SCENE")) {
+			p.skipCurlyBracedBlock();
 		} else if(p.atWord("*MATERIAL_LIST")) {
 			if(p.atWord("{") == false) {
 				g_core->RedWarning("MOD_LoadASE: expected '{' to follow \"*MATERIAL_LIST\", found %s in line %i of ASE file %s\n",

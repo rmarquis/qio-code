@@ -29,10 +29,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <shared/autoCmd.h>
+#include <shared/autoCvar.h>
+#include <shared/trace.h>
 
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
 static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
 static class procTree_c *r_procTree = 0; // for .proc files
+
+static aCvar_c rf_printWorldRayCasts("rf_printWorldRayCasts","0");
+static aCvar_c rf_printWorldUpdates("rf_printWorldUpdates","0");
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
@@ -95,16 +100,29 @@ bool RF_LoadWorldMap(const char *name) {
 }
 void RF_AddWorldDrawCalls() {
 	if(r_bspTree) {
+		if(rf_printWorldUpdates.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: adding r_bspTree drawCalls\n");
+		}
 		r_bspTree->addDrawCalls();
 	}
 	if(r_worldModel) {
+		if(rf_printWorldUpdates.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: adding r_worldModel drawCalls\n");
+		}
 		r_worldModel->addDrawCalls();
 	}
 	if(r_procTree) {
+		if(rf_printWorldUpdates.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: adding r_procTree drawCalls\n");
+		}
 		r_procTree->addDrawCalls();
 	}
 }
 bool RF_RayTraceWorld(class trace_c &tr) {
+	if(rf_printWorldRayCasts.getInt()) {
+		g_core->Print("RF_RayTraceWorld: from %f %f %f to %f %f %f\n",tr.getStartPos().x,tr.getStartPos().y,tr.getStartPos().z,
+			tr.getTo().x,tr.getTo().y,tr.getTo().z);
+	}
 	if(r_bspTree) {
 		return r_bspTree->traceRay(tr);
 	}
@@ -158,5 +176,18 @@ void RF_PrintWorldMapMaterials_f() {
 	}
 	g_core->RedWarning("RF_PrintWorldMapMaterials_f: TODO\n");
 }
+void RF_PrintWorldMapInfo_f() {
+	if(r_bspTree) {
+		g_core->Print("World map type: BSP\n");
+	} else if(r_procTree) {
+		g_core->Print("World map type: PROC\n");
+	} else if(r_worldModel) {
+		g_core->Print("World map type: MODEL\n");
+	} else {
+		g_core->RedWarning("No world map...\n");
+	}
+}
 
 static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);
+static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
+

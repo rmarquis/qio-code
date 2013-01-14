@@ -98,6 +98,13 @@ struct lwoPoly_s {
 	u32 numVerts;
 	u32 vertices[6];
 };
+
+void LWO_VerbosePrintf(const char *fmt, ...) {
+	//if(lwo_verbose.getInteger() == 0)
+	//	return;
+
+	// TODO
+}
 bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 	readStream_c r;
 	if(r.loadFromFile(fname)) {
@@ -136,7 +143,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 			while(r.getPos() != secDataEndPos) {
 				str tagName;
 				LWO_ReadLWOName(r,tagName);
-				g_core->Print("LWO tagName: %s\n",tagName.c_str());
+				LWO_VerbosePrintf("LWO tagName: %s\n",tagName.c_str());
 				matNames.push_back(tagName);
 			}
 		} else if(secIdent == LWO_LAYR) {
@@ -151,7 +158,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 			if(r.getPos() != secDataEndPos) {
 				parent = r.swReadU16();
 			}
-			g_core->Print("LWO layer: %s with pivot %f %f %f and parent %i\n",layerName.c_str(),pivot.x,pivot.y,pivot.z,parent);
+			LWO_VerbosePrintf("LWO layer: %s with pivot %f %f %f and parent %i\n",layerName.c_str(),pivot.x,pivot.y,pivot.z,parent);
 		} else if(secIdent == LWO_POINTS) {
 			if(points.size()) {
 				g_core->Print("MOD_LoadLWO: LWO_POINTS section found more than once! Part of model geometry might be missing in %s\n",fname);
@@ -206,7 +213,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 			int numDim = r.swReadU16();
 			str mapName;
 			LWO_ReadLWOName(r,mapName);
-			g_core->Print("LWO_VMAP: id %i, numDims %i, name %s\n",mapID,numDim,mapName);
+			LWO_VerbosePrintf("LWO_VMAP: id %i, numDims %i, name %s\n",mapID,numDim,mapName);
 			if(mapID == LWO_TXUV) {
 				while(r.getPos() != secDataEndPos) {
 					lwoVMap_s newMap;
@@ -223,7 +230,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 			int numDim = r.swReadU16();
 			str mapName;
 			LWO_ReadLWOName(r,mapName);
-			g_core->Print("LWO_VMAD: id %i, numDims %i, name %s\n",mapID,numDim,mapName);
+			LWO_VerbosePrintf("LWO_VMAD: id %i, numDims %i, name %s\n",mapID,numDim,mapName);
 			if(mapID == LWO_TXUV) {
 				while(r.getPos() != secDataEndPos) {
 					lwoVMad_s newMad;
@@ -281,7 +288,10 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 					break;
 				}
 				if(foundTC == false) {
-					g_core->RedWarning("LWO texcoords not found!\n");
+					//g_core->RedWarning
+					// it happens often on Prey maps 
+					// (and I think it's the same for Doom3)
+					LWO_VerbosePrintf("LWO texcoords not found!\n");
 				}
 			}
 		}
