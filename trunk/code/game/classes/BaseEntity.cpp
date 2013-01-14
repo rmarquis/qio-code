@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include "BaseEntity.h"
 #include <math/vec3.h>
+#include <math/axis.h>
 #include "Player.h"
 #include <api/serverAPI.h>
 #include <shared/keyValuesListener.h>
@@ -88,6 +89,10 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		this->setOrigin(value);
 	} else if(!stricmp(key,"angles")) {
 		this->setAngles(value);
+	} else if(!stricmp(key,"rotation")) {
+		axis_c ax;
+		ax.fromString(value);
+		this->setAngles(ax.toAngles());
 	} else if(!stricmp(key,"targetname")) {
 		this->setTargetName(value);
 	} else if(!stricmp(key,"target")) {

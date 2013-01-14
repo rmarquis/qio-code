@@ -490,6 +490,10 @@ void r_model_c::precalculateStencilShadowCaster() {
 }
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+	// HACK: ignore collision surfaces from Prey LWO models!
+	if(!stricmp(matName,"textures/common/collision") || !stricmp(matName,"textures/common/collision_metal")) {
+		return;
+	}
 	r_surface_c *sf = registerSurf(matName);
 	sf->addTriangle(v0,v1,v2);
 	this->bounds.addPoint(v0.xyz);
@@ -727,6 +731,17 @@ void r_model_c::updateQ3PlayerModelInstance(const q3PlayerModelAPI_i *qp, u32 le
 		}
 	}
 }
+mtrAPI_i *r_model_c::getMaterialForABSTriangleIndex(u32 absTriNum) const {
+	u32 firstTri = 0;
+	const r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		u32 lastTri = firstTri + sf->getNumTris();
+		if(firstTri <= absTriNum && absTriNum < lastTri)
+			return sf->getMat();
+		firstTri += sf->getNumTris();
+	}
+	return 0;
+}
 #include <shared/cmSurface.h>
 #include <shared/autoCvar.h>
 
@@ -751,7 +766,13 @@ bool r_model_c::traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation) {
 	if(r_useTriSoupOctTreesForRayTracing.getInt() && bAllowExtraOctTreeCreation) {
 		ensureExtraTrisoupOctTreeIsBuild();
 		if(extraCollOctTree) {
-			return extraCollOctTree->traceRay(tr);
+			if(extraCollOctTree->traceRay(tr)) {
+				u32 absTriNum = tr.getHitTriangleIndex();
+				mtrAPI_i *hitMat = this->getMaterialForABSTriangleIndex(absTriNum);
+				tr.setHitRMaterial(hitMat);
+				return true;
+			}
+			return false;
 		}
 	}
 	bool hit = false;

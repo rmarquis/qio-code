@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\modelLoader\staticModelLoaders\lwoLoader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\staticModelLoaders\mapFileConverter.cpp"
 				>
 			</File>
@@ -261,6 +265,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\readStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\readStream.h"
 				>
 			</File>
 			<File

@@ -267,6 +267,8 @@ public:
 	void initQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp);
 	void updateQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp, u32 legsFrameNum, u32 torsoFrameNum);
 
+	mtrAPI_i *getMaterialForABSTriangleIndex(u32 absTriNum) const;
+
 	bool traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation = true);
 	bool createDecalInternal(class decalProjector_c &proj);
 	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,

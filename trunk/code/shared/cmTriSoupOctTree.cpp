@@ -54,6 +54,7 @@ bool tsOctTreeHeader_s::traceTriangleRay(u32 triangleNum, class trace_c &tr) {
 	const vec3_c &p1 = this->getTriPoints()[i1];
 	const vec3_c &p2 = this->getTriPoints()[i2];
 	if(tr.clipByTriangle(p0,p1,p2,true)) {
+		tr.setHitTriangleIndex(triangleNum);
 		return true;
 	}
 	return false;

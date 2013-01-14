@@ -141,7 +141,10 @@ void MAT_LoadMaterial(class mtrIMPL_c *mat) {
 		mat->createFromImage();
 	}
 }
-mtrIMPL_c *MAT_RegisterMaterial(const char *matName) {
+mtrIMPL_c *MAT_RegisterMaterial(const char *inMatName) {
+	// strip the image name extension (if any)
+	str matName = inMatName;
+	matName.stripExtension();
 	mtrIMPL_c *ret = materials.getEntry(matName);
 	if(ret) {
 		return ret;

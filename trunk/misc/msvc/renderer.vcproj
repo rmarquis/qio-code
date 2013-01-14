@@ -531,6 +531,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\readStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\readStream.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\rfSurfFlags.h"
 				>
 			</File>
@@ -612,6 +620,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\rbAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\readStreamAPI.h"
 				>
 			</File>
 			<File

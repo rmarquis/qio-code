@@ -39,6 +39,8 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out);
 // (loading of non-animated md3 models)
 bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out);
 u32 MOD_ReadMD3FileFrameCount(const char *fname);
+// staticModelLoaders/lwoLoader.cpp
+bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out);
 
 // mod_postProcess.cpp
 // .mdlpp commands parsing and execution

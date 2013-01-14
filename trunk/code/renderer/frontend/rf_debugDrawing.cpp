@@ -48,7 +48,7 @@ void RF_ShowCrossairSurfaceInfo() {
 		return;
 	mtrAPI_i *rMat = tr.getHitRMaterial();
 	if(rMat == 0) {
-		g_core->RedWarning("RF_SnowCrossairSurfaceInfo(): NULL hit material - this should never happen!\n");
+		g_core->RedWarning("RF_ShowCrossairSurfaceInfo(): NULL hit material - this should never happen!\n");
 		return;
 	}
 	rEntityAPI_i *rEnt = tr.getHitREntity();

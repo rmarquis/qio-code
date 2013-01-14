@@ -68,6 +68,9 @@ public:
 		// Quake3 .md3 models (without animations; only first frame is loaded)
 		if(!stricmp(ext,"md3"))
 			return true;
+		// LWO, used in Doom3 along with ASE
+		if(!stricmp(ext,"lwo"))
+			return true;
 		return false;
 	}
 	virtual bool loadStaticModelFile(const char *fileNameWithExtraCommands, class staticModelCreatorAPI_i *out)  {
@@ -121,6 +124,8 @@ public:
 		} else if(!stricmp(ext,"md3")) {
 			// load md3 as static model (first animation frame)
 			error = MOD_LoadStaticMD3(fname,out);
+		} else if(!stricmp(ext,"lwo")) {
+			error = MOD_LoadLWO(fname,out);
 		} else {
 			error = true;
 		}

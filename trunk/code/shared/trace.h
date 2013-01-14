@@ -51,6 +51,7 @@ class trace_c {
 		class rEntityAPI_i *hitREntity; // for cgame and renderer
 		class mtrAPI_i *hitRMaterial; // for cgame and renderer
 	//};
+	u32 hitTriangleIndex;
 
 	void updateForNewHitPos();
 	void updateForNewFraction();
@@ -63,6 +64,12 @@ public:
 	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
 	void setHitPos(const vec3_c &newHitPos);
+	void setHitTriangleIndex(u32 newHitTriIndex) {
+		hitTriangleIndex = newHitTriIndex;
+	}
+	u32 getHitTriangleIndex() const {
+		return hitTriangleIndex;
+	}
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);
 	bool clipByAABB(const aabb &bb);

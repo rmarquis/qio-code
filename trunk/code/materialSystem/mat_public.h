@@ -9,6 +9,9 @@ enum stageType_e {
 	ST_LIGHTMAP, // draw only lightmap (0th texture slot)
 	ST_COLORMAP, // draw only colormap (0th texture slot)
 	ST_COLORMAP_LIGHTMAPPED, // draw lightmapped colormap (colormap at slot 0, lightmap at slot 1)
+	// added for Doom3
+	ST_BUMPMAP,
+	ST_SPECULARMAP,
 };
 
 // hardcoded alpha func test values (for non-blended transparency)

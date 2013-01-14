@@ -37,6 +37,9 @@ static u32 ase_d3PrefixLen = strlen(ase_d3Prefix);
 static const char *ase_preyPrefix = "C:/Prey/base/";
 static u32 ase_preyPrefixLen = strlen(ase_preyPrefix);
 
+static const char *ase_prey2Prefix = "D:/Prey/base/";
+static u32 ase_prey2PrefixLen = strlen(ase_prey2Prefix);
+
 static const char *ase_q4Prefix = "C:/Ritual/Q4ritual/game/q4base/";
 static u32 ase_q4PrefixLen = strlen(ase_q4Prefix);
 
@@ -53,6 +56,10 @@ struct aseMaterial_s {
 		// Prey prefix
 		if(!Q_stricmpn(ase_preyPrefix,bitmapName,ase_preyPrefixLen)) {
 			return bitmapName.c_str() + ase_preyPrefixLen;
+		}
+		// Prey prefix2
+		if(!Q_stricmpn(ase_prey2Prefix,bitmapName,ase_prey2PrefixLen)) {
+			return bitmapName.c_str() + ase_prey2PrefixLen;
 		}
 		// Quake4 prefix
 		if(!Q_stricmpn(ase_q4Prefix,bitmapName,ase_q4PrefixLen)) {
@@ -500,7 +507,7 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 									// I'm not sure if it's needed for all of the ASE models.
 									verts[k].tc.y *= -1;
 								}
-								out->addTriangleToSF(newSurfNum,verts[0],verts[1],verts[2]);
+								out->addTriangleToSF(newSurfNum,verts[2],verts[1],verts[0]);
 							}
 						}
 					}

@@ -635,6 +635,10 @@ bool BT_TraceRay(class trace_c &tr) {
 	return rayCallback.hasHit();
 }
 btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
+	if(sf.getNumIndices() == 0 || sf.getNumVerts() == 0) {
+		g_core->RedWarning("BT_CreateBHVTriMeshForCMSurface: ignoring empty surface\n");
+		return 0;
+	}
 	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
 	bt_trimeshes.push_back(mesh);
 
@@ -675,12 +679,20 @@ btBvhTriangleMeshShape *BT_CreateBHVTriMeshForCMSurface(const cmSurface_c &sf) {
 	return shape;
 }
 void BT_CreateWorldTriMesh(const cmSurface_c &sf) {
+	if(sf.getNumIndices() == 0 || sf.getNumVerts() == 0) {
+		g_core->RedWarning("BT_CreateWorldTriMesh: ignoring empty cmSurface_c\n");
+		return;
+	}
 	float mass = 0.f;
 	btTransform startTransform;
 	//can use a shift
 	startTransform.setIdentity();
 
 	btBvhTriangleMeshShape* shape = BT_CreateBHVTriMeshForCMSurface(sf);
+	if(shape == 0) {
+		g_core->RedWarning("BT_CreateWorldTriMesh: BT_CreateBHVTriMeshForCMSurface returned NULL shape pointer\n");
+		return;
+	}
 
 	shape->setMargin(bt_collisionMargin);
 
@@ -1098,7 +1110,7 @@ void G_LoadMap(const char *mapName) {
 			g_bspPhysicsLoader = 0;
 		}
 	}
-	if(g_worldSurface.getNumTris()) {
+	if(g_worldSurface.getNumTris() && g_worldSurface.getNumVerts()) {
 		g_worldSurface.prepareScaledVerts(QIO_TO_BULLET);
 		BT_CreateWorldTriMesh(g_worldSurface);
 	}

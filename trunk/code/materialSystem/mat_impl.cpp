@@ -359,7 +359,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						this->polygonOffset = 0.1f;
 					}
 				} else if(p.atWord("twosided")) {
-
+					this->cullType = CT_TWO_SIDED;
 				} else if(p.atWord("nonsolid")) {
 
 				} else if(p.atWord("noimpact")) {
@@ -474,13 +474,22 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("blend")) {
 						stage->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
 					} else if(p.atWord("bumpmap")) {
-
+						stage->setStageType(ST_BUMPMAP);
 					} else if(p.atWord("specularMap")) {
-
+						stage->setStageType(ST_SPECULARMAP);
 					} else if(p.atWord("diffusemap")) {
-
+						// ST_COLORMAP is a default stage type, but set it anyway
+						stage->setStageType(ST_COLORMAP);
 					} else if(p.atWord("filter")) {
 						stage->setBlendDef(BM_DST_COLOR,BM_ZERO);
+					} else if(p.atWord("shader")) {
+						// seen in Prey textures/dreamworld/la_floor, etc (dreamworld.mtr)
+						// for stages with custom shader? (.vfp files)
+
+					} else if(p.atWord("none")) {
+
+					} else if(p.atWord("map")) {
+
 					} else {
 						// NOTE: for some reasons blend types are separated
 						// with ',' in Doom3
@@ -489,7 +498,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						stage->setBlendDef(src,dst);
 					}
 				} else if(p.atWord("alphatest")) {
+					// example: "alphaTest ( time + parm4 ) * 0.5 - 0.2"
+					// TODO: handle Doom3 math expressions for alphaTest?
+					float val = p.getFloat();
+					if(val == 0.5) {
+						stage->setAlphaFunc(AF_GE128);
+					}
 				} else if(p.atWord("red")) {
+					// example: "red 0.68"
 					p.skipLine();
 				} else if(p.atWord("green")) {
 					p.skipLine();
@@ -523,8 +539,24 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							tok.c_str(),this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
 				} else if(p.atWord("if")) {
+					// example: "if ( parm5 == 0 )"
 					// TODO: evaluate Doom3 conditional expressions?
 					stage->setMarkedForDelete(true);
+
+				} else if(p.atWord("glowStage")) {
+
+				} else if(p.atWord("vertexcolor")) {
+
+				} else if(p.atWord("inversevertexcolor")) {
+
+				} else if(p.atWord("rotate")) {
+					// example: rotate time / -700
+
+				} else if(p.atWord("scroll") || p.atWord("translate")) {
+					// NOTE: "scroll" and "translate" are handled in one 'if' block in Doom3 as well
+					// example: "scroll time / 1000, time / 1000"
+				} else if(p.atWord("scale")) {
+					// example: "scale	0.5 - parm4, 0.5 - parm4"
 				} else {
 					p.getToken();
 				}
@@ -538,7 +570,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 	if(stages.size() == 0) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
-		this->createFromImage();
+		//this->createFromImage();
 	} else {
 		// delete unwanted stages
 		for(int i = 0; i < stages.size(); i++) {
@@ -549,6 +581,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				i--;
 			}
 		}
+		this->removeAllStagesOfType(ST_BUMPMAP);
+		this->removeAllStagesOfType(ST_SPECULARMAP);
 		if(mat_collapseMaterialStages.getInt()) {
 		mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
 		if(lightmapped) {
