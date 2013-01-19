@@ -125,10 +125,12 @@ void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
 	}
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
-		if(in.sf) {
-			
-		} else {
+		if(in.type == SIT_BSP) {
 			RF_AddBSPSurfaceToShadowVolume(in.bspSurfaceNumber,pos,staticShadowVolume);
+		} else if(in.type == SIT_PROC) {
+			staticShadowVolume->addRSurface(in.sf,pos,0);
+		} else if(in.type == SIT_STATIC) {
+
 		}
 	}
 }
@@ -146,11 +148,15 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 		in.ent = ent;
 		//ent->addInteraction(this);
 		if(RF_IsUsingShadowVolumes()) {
-			if(in.shadowVolume == 0) {
-				in.shadowVolume = new rIndexedShadowVolume_c;
-			}
 			vec3_c lightInEntitySpace;
 			this->calcPosInEntitySpace(ent,lightInEntitySpace);
+			if(in.shadowVolume == 0) {
+				in.shadowVolume = new rIndexedShadowVolume_c;
+			} else {
+				if(lightInEntitySpace.compare(in.shadowVolume->getLightPos())) {
+					continue; // dont have to recalculate shadow volume
+				}
+			}
 			in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
 		}
 	}
@@ -162,13 +168,25 @@ void rLightImpl_c::recalcLightInteractions() {
 	recalcLightInteractionsWithDynamicEntities();
 	recalcLightInteractionsWithStaticWorld();
 }
+static aCvar_c rf_proc_printLitSurfsCull("rf_proc_printLitSurfsCull","0");
 void rLightImpl_c::addLightInteractionDrawCalls() {
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
-		if(in.sf) {
-			in.sf->addDrawCall();
-		} else {
+		if(in.type == SIT_BSP) {
 			RF_DrawSingleBSPSurface(in.bspSurfaceNumber);
+		} else if(in.type == SIT_STATIC) {
+			in.sf->addDrawCall();
+		} else if(in.type == SIT_PROC) {
+			if(RF_IsWorldAreaVisible(in.areaNum)) {
+				if(rf_proc_printLitSurfsCull.getInt()) {
+					g_core->Print("rLightImpl_c::addLightInteractionDrawCalls: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
+				}
+				in.sf->addDrawCall();
+			} else {
+				if(rf_proc_printLitSurfsCull.getInt()) {
+					g_core->Print("rLightImpl_c::addLightInteractionDrawCalls: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
+				}
+			}
 		}
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {

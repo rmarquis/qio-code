@@ -43,8 +43,12 @@ friend class procTree_c;
 	procArea_c() {
 		areaModel = 0;
 		visCount = -1;
+		litCount = -1;
+		checkCount = -1;
 	}
 	int visCount;
+	int litCount;
+	int checkCount;
 	arraySTD_c<class procPortal_c*> portals;
 	class r_model_c *areaModel; // this is a pointer to model from procTree_c::models array
 };
@@ -58,6 +62,9 @@ class procTree_c {
 	arraySTD_c<procPortal_c*> portals;
 
 	int visCount;
+	int litCount;
+	int checkCount;
+	int camArea;
 
 	procArea_c *getArea(u32 areaNum) {
 		u32 needAreaCount = areaNum+1;
@@ -106,12 +113,25 @@ public:
 		return out.size();
 	}
 
+	bool isAreaVisibleByPlayer(int areaNum) const {
+		if(areas[areaNum]->visCount == this->visCount)
+			return true;
+		return false;
+	}
+
 	int pointArea(const vec3_c &xyz);
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out);
+	u32 boxAreaSurfaces(const aabb &bb, arraySTD_c<const class r_surface_c*> &out);
 
 	void addDrawCalls();
 	bool traceRay(class trace_c &tr);
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
+
+	bool cullBoundsByPortals(const aabb &absBB);
+
+	void addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l);
+	void cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal);
+	void cacheLightWorldInteractions(class rLightImpl_c *l);
 };
 
 procTree_c *RF_LoadPROC(const char *fname);

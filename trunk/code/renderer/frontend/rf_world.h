@@ -34,6 +34,8 @@ int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, c
 void RF_CacheLightWorldInteractions(class rLightImpl_c *l);
 void RF_DrawSingleBSPSurface(u32 sfNum);
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume);
+bool RF_IsWorldAreaVisible(int areaNum);
+bool RF_CullBoundsByPortals(const aabb &absBB);
 
 #endif // __RF_BSP_H__
 

@@ -88,3 +88,23 @@ void frustumExt_c::adjustFrustum(const frustumExt_c &other, const vec3_c &eye, c
 	}
 	this->planes.push_back(cap);
 }
+void frustumExt_c::fromPointAndWinding(const vec3_c &eye, const class cmWinding_c &points, const plane_c &plane) {
+	cmWinding_c copy;
+	plane_c cap;
+	if(plane.onSide(eye) != SIDE_BACK) {
+		copy = points.getReversed();
+		cap = plane.getOpposite();
+	} else {
+		copy = points;
+		cap = plane;
+	}
+	// build fr's planes clockwise
+	this->planes.resize(copy.size());
+	int prev = copy.size()-1;
+	for(int i = 0; i < copy.size(); i++) {
+		this->planes[i].fromThreePoints(eye, copy[prev], copy[i]);
+		prev = i;
+	}
+	this->planes.push_back(cap);
+}
+

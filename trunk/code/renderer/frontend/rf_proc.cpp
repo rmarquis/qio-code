@@ -31,13 +31,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/cmWinding.h>
 #include <math/frustumExt.h>
 
+#define MAX_PORTAL_VISIT_COUNT 4
+
 class procPortal_c {
 friend class procTree_c;
 	int areas[2];
 	cmWinding_c points;
 	plane_c plane;
 	aabb bounds;
+	frustumExt_c lastFrustum[MAX_PORTAL_VISIT_COUNT];
+	int visitCount;
+	int visCount;
 
+	procPortal_c() {
+		visCount = -1;
+		visitCount = 0;
+	}
 	void calcPlane() {
 		points.getPlane(plane);
 	}
@@ -351,7 +360,8 @@ void procTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) {
 		if(nodeNum < 0) {
 			int areaNum = (-nodeNum-1);
 			procArea_c *ar = areas[areaNum];
-			if(ar->visCount != this->visCount) {
+			if(ar->checkCount != this->checkCount) {
+				ar->checkCount = this->checkCount;
 				out.push_back(areaNum);
 			}
 			return; // done.
@@ -382,12 +392,21 @@ void procTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) {
 	}
 }
 u32 procTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) {
-	visCount++;
+	checkCount++;
 	if(nodes.size() == 0) {
 		out.push_back(0);
 		return 1;
 	}
 	boxAreas_r(bb,out,0);
+	return out.size();
+}
+u32 procTree_c::boxAreaSurfaces(const aabb &bb, arraySTD_c<const r_surface_c*> &out) {
+	arraySTD_c<u32> areaNums;
+	boxAreas(bb,areaNums);
+	for(u32 i = 0; i < areaNums.size(); i++) {
+		procArea_c *area = areas[areaNums[i]];
+		area->areaModel->boxSurfaces(bb,out);
+	}
 	return out.size();
 }
 void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal) {
@@ -423,6 +442,19 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		// adjust the frustum, so addAreaDrawCalls_r will never loop and cause a stack overflow...
 		frustumExt_c adjusted;
 		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
+
+		if(p->visCount != this->visCount) {
+			p->visCount = this->visCount;
+			p->visitCount = 0;
+		} else {
+			if(p->visitCount == MAX_PORTAL_VISIT_COUNT) {
+				g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
+				continue;
+			}
+		}
+		p->lastFrustum[p->visitCount] = adjusted;
+		p->visitCount++;
+
 		if(p->areas[0] == areaNum) {
 			addAreaDrawCalls_r(p->areas[1],adjusted,p);
 		} else {
@@ -438,7 +470,7 @@ void procTree_c::addDrawCalls() {
 		}
 		return;
 	}
-	int camArea = pointArea(rf_camera.getPVSOrigin());
+	camArea = pointArea(rf_camera.getPVSOrigin());
 	printf("camera is in area %i of %i\n",camArea,areas.size());
 	frustumExt_c baseFrustum(rf_camera.getFrustum());
 	addAreaDrawCalls_r(camArea,baseFrustum,0);
@@ -448,9 +480,9 @@ void procTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	if(nodeNum < 0) {
 		int areaNum = (-nodeNum-1);
 		procArea_c *ar = areas[areaNum];
-		if(ar->visCount != this->visCount) {
+		if(ar->checkCount != this->checkCount) {
 			ar->areaModel->traceRay(out);
-			ar->visCount = this->visCount;
+			ar->checkCount = this->checkCount;
 		}
 		return; // done.
 	}
@@ -482,7 +514,7 @@ void procTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	}
 }	
 bool procTree_c::traceRay(class trace_c &out) {
-	visCount++;
+	checkCount++;
 	float prevFrac = out.getFraction();
 	if(nodes.size()) {
 		traceNodeRay_r(0,out);
@@ -512,6 +544,134 @@ int procTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 	}
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
 	return 0; // TODO: return valid decal handle?
+}
+bool procTree_c::cullBoundsByPortals(const aabb &absBB) {
+	arraySTD_c<u32> areaNums;
+	boxAreas(absBB,areaNums);
+	for(u32 i = 0; i < areaNums.size(); i++) {
+		u32 areaNum = areaNums[i];
+		if(areaNum == camArea) {
+			return false; // didnt cull
+		}
+	}
+	for(u32 i = 0; i < areaNums.size(); i++) {
+		u32 areaNum = areaNums[i];
+		if(areaNum == camArea) {
+			continue;
+		}
+		procArea_c *ar = areas[areaNum];
+		if(ar->visCount == this->visCount) {
+			//printf("Checking area %i with %i portals\n",areaNum,ar->portals.size());
+			for(u32 j = 0; j < ar->portals.size(); j++) {
+				procPortal_c *p = ar->portals[j];
+				if(p->visCount == this->visCount) 
+				{
+					//printf("Portal visicount %i\n",p->visitCount);
+					for(u32 k = 0; k < p->visitCount; k++) {
+						if(p->lastFrustum[k].cull(absBB) != CULL_OUT) {
+							//printf("Area %i ent visible\n",areaNum);
+							return false; // didnt cull
+						}
+					}
+				}
+			}
+		}
+	}
+	// entity is not visible by player (culled by portals)
+	return true;
+}
+#include "rf_lights.h"
+void procTree_c::addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l) {
+	procArea_c *ar = areas[areaNum];
+	if(ar->litCount == this->litCount)
+		return;
+	ar->litCount = this->litCount;
+	r_model_c *areaModel = ar->areaModel;
+	for(u32 i = 0; i < areaModel->getNumSurfs(); i++) {
+		r_surface_c *sf = areaModel->getSurf(i);
+		if(sf->getBB().intersect(l->getABSBounds()) == false) {
+			continue;
+		}
+		l->addProcAreaSurfaceInteraction(areaNum,sf);
+	}
+}
+void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal) {
+	if(areaNum >= areas.size() || areaNum < 0)
+		return;
+	procArea_c *ar = areas[areaNum];
+	if(ar == 0)
+		return;
+	addSingleAreaSurfacesInteractions(areaNum,l);
+	for(u32 i = 0; i < ar->portals.size(); i++) {
+		procPortal_c *p = ar->portals[i];
+		if(p == prevPortal) {
+			continue;
+		}
+		// first check if the portal is in the frustum
+		if(fr.cull(p->bounds) == CULL_OUT)
+			continue;
+		// then check if the portal side facing camera
+		// belong to current area. If not, portal is occluded
+		// by the wall and is not really visible
+		float d = p->plane.distance(rf_camera.getOrigin());
+		if(p->areas[0] == areaNum) {
+			if(d > 0)
+				continue;
+		} else {
+			if(d < 0)
+				continue;
+		}
+		// adjust the frustum, so cacheLightWorldInteractions_r will never loop and cause a stack overflow...
+		frustumExt_c adjusted;
+		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
+		if(p->areas[0] == areaNum) {
+			cacheLightWorldInteractions_r(l,p->areas[1],adjusted,p);
+		} else {
+			cacheLightWorldInteractions_r(l,p->areas[0],adjusted,p);
+		}
+	}
+}
+void procTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
+#if 0
+	arraySTD_c<const r_surface_c*> sfs;
+	getAreasVisibleByLight(l->getOrigin(),l->getRadius(),
+	boxAreaSurfaces(l->getABSBounds(),sfs);
+	for(u32 i = 0; i < sfs.size(); i++) {
+		l->addStaticModelSurfaceInteraction((r_surface_c*)sfs[i]);
+	}
+#else
+	litCount++;
+	int lightArea = this->pointArea(l->getOrigin());
+	if(lightArea < 0)
+		return;
+	const procArea_c *ar = areas[lightArea];
+	addSingleAreaSurfacesInteractions(lightArea,l);
+	for(u32 i = 0; i < ar->portals.size(); i++) {
+		procPortal_c *portal = ar->portals[i];
+		frustumExt_c fr;
+		// create light->portal frustum
+		fr.fromPointAndWinding(l->getOrigin(),portal->points, portal->plane);
+		// add far plane
+		vec3_c center = portal->points.getCenter();
+		vec3_c normal = center - l->getOrigin();
+		normal.normalize();
+		plane_c farPlane;
+		farPlane.fromPointAndNormal(center,normal);
+		fr.addPlane(farPlane);
+
+	/*	if(fr.cull(portal->points.getCenter() != CULL_IN) {
+			g_core->RedWarning("bad frustum for portal %i\n",i);
+		}*/
+		//g_core->Print("procTree_c::cacheLightWorldInteractions: area %i to portal %i frustum has %i planes\n",lightArea,i,fr.size());
+		int otherArea;
+		if(lightArea == portal->areas[0]) {
+			otherArea = portal->areas[1];
+		} else {
+			otherArea = portal->areas[0];
+		}
+		cacheLightWorldInteractions_r(l, otherArea, fr, portal);
+	}
+#endif
 }
 procTree_c *RF_LoadPROC(const char *fname) {
 	procTree_c *ret = new procTree_c;

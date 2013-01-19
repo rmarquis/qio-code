@@ -235,6 +235,20 @@ void cmWinding_c::addPointsUnique(const vec3_c *first, u32 numPoints, float epsi
 		points.push_back(p);
 	}
 }
+vec3_c cmWinding_c::getCenter() const {
+	double v[3];
+	v[0] = v[1] = v[2] = 0;
+	for(u32 i = 0; i < points.size(); i++) {
+		const vec3_c &p = points[i];
+		v[0] += p.x;
+		v[1] += p.y;
+		v[2] += p.z;
+	}
+	v[0] /= double(points.size());
+	v[1] /= double(points.size());
+	v[2] /= double(points.size());
+	return vec3_c(v);
+}
 void cmWinding_c::iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) {
 	for(u32 i = 2; i < points.size(); i++) {
 		triCallback(points[0],points[i-1],points[i]);

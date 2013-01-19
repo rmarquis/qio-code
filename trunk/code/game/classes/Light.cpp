@@ -38,7 +38,14 @@ void Light::setRadius(float newRadius) {
 }
 void Light::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"light")) {
-		this->setRadius(atof(value));
+		// Q3 light value
+		float lightKeyValue = atof(value);
+		this->setRadius(lightKeyValue);
+	} else if(!stricmp(key,"light_radius")) {
+		// Doom3 light value? 3 values
+		vec3_c sizes(value);
+		// FIXME: 
+		this->setRadius((sizes.x+sizes.y+sizes.z)/3.f);
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

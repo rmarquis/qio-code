@@ -47,6 +47,11 @@ public:
 		y = i[1];
 		z = i[2];
 	}
+	vec3_c(const double *d) {
+		x = d[0];
+		y = d[1];
+		z = d[2];
+	}
 	vec3_c(float x,float y, float z){
 		this->x = x;
 		this->y = y;

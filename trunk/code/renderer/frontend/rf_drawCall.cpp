@@ -80,6 +80,20 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	if(rf_forceSpecificMaterial.strLen() && rf_forceSpecificMaterial.getStr()[0] != '0') {
 		mat = g_ms->registerMaterial(rf_forceSpecificMaterial.getStr());
 	}
+	// ignore blendfunc surfaces if we're using dynamic lights
+	if(rf_curLightAPI) {
+		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
+			return;
+		}
+	}
+	// if we're drawing only on depth buffer
+	if(rf_bDrawOnlyOnDepthBuffer) {
+		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
+			//sort = DCS_BLEND_AFTER_LIGHTING;
+			return;
+		}
+	}
+
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {
 		n = &rf_drawCalls.pushBack();
@@ -139,6 +153,14 @@ u32 RF_GetCurrentDrawcallsCount() {
 int compareDrawCall(const void *v0, const void *v1) {
 	const drawCall_c *c0 = (const drawCall_c *)v0;
 	const drawCall_c *c1 = (const drawCall_c *)v1;
+
+	if(c1->sort == DCS_BLEND_AFTER_LIGHTING && c1->sort != c0->sort) {
+		return -1; // c0 first
+	}
+	if(c0->sort == DCS_BLEND_AFTER_LIGHTING && c1->sort != c0->sort) {
+		return 1; // c1 first
+	}
+
 	if(c0->curLight) {
 		if(c1->curLight == 0) {
 			return 1; // c1 first

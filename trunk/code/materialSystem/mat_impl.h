@@ -155,6 +155,11 @@ public:
 	bool hasTexGen() const {
 		return (tcGen != TCG_NONE);
 	}
+	bool hasAlphaTest() const {
+		if(alphaFunc == AF_NONE)
+			return false;
+		return true;
+	}
 	enum texCoordGen_e getTexGen() const {
 		return tcGen;
 	}
@@ -225,6 +230,20 @@ public:
 	virtual bool hasRGBGen() const  {
 		for(u32 i = 0; i < stages.size(); i++) {
 			if(stages[i]->hasRGBGen())
+				return true;
+		}
+		return false;
+	}
+	virtual bool hasBlendFunc() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasBlendFunc())
+				return true;
+		}
+		return false;
+	}
+	virtual bool hasAlphaTest() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasAlphaTest())
 				return true;
 		}
 		return false;

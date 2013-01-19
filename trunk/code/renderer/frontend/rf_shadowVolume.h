@@ -40,6 +40,7 @@ class rIndexedShadowVolume_c {
 	u32 c_capTriPairsAdded;
 	bool hasCapsSeparated;
 	u32 numIndicesNoCaps;
+	vec3_c lightPos;
 
 	u32 registerPoint(const vec3_c &p) {
 		bounds.addPoint(p);
@@ -81,6 +82,10 @@ public:
 	void addFrontCapAndBackCapForTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light);
 	void addFrontCapAndBackCapForIndexedVertsList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light);
 	void addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light);
+
+	const vec3_c &getLightPos() const {
+		return lightPos;
+	}
 };
 
 class rEntityShadowVolume_c {

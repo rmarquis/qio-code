@@ -57,6 +57,7 @@ planeSide_e plane_c::onSide(const aabb &bb) const {
 	if (dist2 < 0)
 		return SIDE_BACK;
 	//assert(0);
+	return SIDE_ERROR;
 #endif
 }
 

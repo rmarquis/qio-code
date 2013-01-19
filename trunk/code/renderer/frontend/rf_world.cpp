@@ -156,7 +156,7 @@ void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
 		r_bspTree->cacheLightWorldInteractions(l);
 	}
 	if(r_procTree) {
-		//r_procTree->cacheLightWorldInteractions(l);
+		r_procTree->cacheLightWorldInteractions(l);
 	}
 	if(r_worldModel) {
 		// assumes that world model is a static model
@@ -187,7 +187,18 @@ void RF_PrintWorldMapInfo_f() {
 		g_core->RedWarning("No world map...\n");
 	}
 }
-
+bool RF_IsWorldAreaVisible(int areaNum) {
+	if(r_procTree) {
+		return r_procTree->isAreaVisibleByPlayer(areaNum);
+	}
+	return true;
+}
+bool RF_CullBoundsByPortals(const aabb &absBB) {
+	if(r_procTree) {
+		return r_procTree->cullBoundsByPortals(absBB);
+	}
+	return false;
+}
 static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);
 static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
 

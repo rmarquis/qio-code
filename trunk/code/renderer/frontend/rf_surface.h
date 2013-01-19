@@ -279,6 +279,7 @@ public:
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
 	void setSurfMaterial(const char *surfName, const char *matName);
 	void appendSkinRemap(const class rSkinRemap_c *skin);
+	void boxSurfaces(const class aabb &bb, arraySTD_c<const class r_surface_c*> &out) const;
 
 	bool parseProcModel(class parser_c &p);
 

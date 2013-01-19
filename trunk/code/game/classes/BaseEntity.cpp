@@ -93,6 +93,11 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		axis_c ax;
 		ax.fromString(value);
 		this->setAngles(ax.toAngles());
+	} else if(!stricmp(key,"angle")) {
+		// it's used in Q3 maps and somehow
+		// in Prey's game/roadhouse as well
+		float angle = atof(value);
+		this->setAngles(vec3_c(0,angle,0));
 	} else if(!stricmp(key,"targetname")) {
 		this->setTargetName(value);
 	} else if(!stricmp(key,"target")) {

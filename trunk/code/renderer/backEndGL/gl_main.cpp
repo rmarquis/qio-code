@@ -960,6 +960,7 @@ public:
 		}
 		if(rb_showTris.getInt()) {
 			this->unbindMaterial();
+			this->bindShader(0);
 			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 			if(rb_showTris.getInt()==1)
 				setDepthRange( 0, 0 ); 

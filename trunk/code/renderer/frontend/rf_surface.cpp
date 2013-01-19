@@ -144,6 +144,10 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 }
 
 void r_surface_c::addDrawCall() {
+	if(this->mat == 0)
+		return;
+	if(this->mat->getNumStages() == 0)
+		return;
 	if(refIndices) {
 		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),false);
 	} else {
@@ -875,12 +879,22 @@ void r_model_c::appendSkinRemap(const class rSkinRemap_c *skin) {
 		this->setSurfMaterial(ss.surfName,ss.matName);
 	}
 }
+void r_model_c::boxSurfaces(const class aabb &bb, arraySTD_c<const r_surface_c*> &out) const {
+	const r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(sf->getBB().intersect(bb)) {
+			out.push_back(sf);
+		}
+	}
+}
 #include "rf_lights.h"
 void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 	// TODO: handle models with non-identity orientations
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		if(sf->getBB().intersect(light->getABSBounds())) {
+			if(sf->getMat()->hasBlendFunc())
+				continue;
 			light->addStaticModelSurfaceInteraction(/*this,*/sf);
 		}
 	}

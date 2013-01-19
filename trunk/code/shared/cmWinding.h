@@ -53,6 +53,7 @@ public:
 	void addPointsToBounds(class aabb &out) const;
 	void removeDuplicatedPoints(float epsilon = 0.001f);
 	void addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon = 0.001f);
+	vec3_c getCenter() const;
 	
 	void iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2));
 	void iterateTriangles(class staticModelCreatorAPI_i *smc);

@@ -578,6 +578,7 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 	delete rent;
 }
 static u32 c_entitiesCulledByABSBounds;
+static u32 c_entitiesCulledByPortals;
 void RFE_AddEntity(rEntityImpl_c *ent) {
 	model_c *model = (model_c*)ent->getModel();
 	if(model == 0) {
@@ -596,6 +597,10 @@ void RFE_AddEntity(rEntityImpl_c *ent) {
 		c_entitiesCulledByABSBounds++;
 		return;
 	}
+	if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
+		c_entitiesCulledByPortals++;		
+		return;
+	}
 	ent->addDrawCalls();
 }
 static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
@@ -604,12 +609,13 @@ void RFE_AddEntityDrawCalls() {
 		return;
 
 	c_entitiesCulledByABSBounds = 0;
+	c_entitiesCulledByPortals = 0;
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		rEntityImpl_c *ent = rf_entities[i];
 		RFE_AddEntity(ent);
 	}
 	if(rf_printAddEntityDrawCallsCullStats.getInt()) {
-		g_core->Print("RFE_AddEntityDrawCalls: %i of %i entities culled\n",c_entitiesCulledByABSBounds,rf_entities.size());
+		g_core->Print("RFE_AddEntityDrawCalls: %i culled by frustum, %i by portals (total entiy count %i)\n",c_entitiesCulledByABSBounds,c_entitiesCulledByPortals,rf_entities.size());
 	}
 	rf_currentEntity = 0;
 }

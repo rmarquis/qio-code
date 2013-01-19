@@ -32,7 +32,8 @@ enum planeSide_e {
 	SIDE_BACK		= 1,
 	SIDE_ON			= 2,
 	SIDE_CROSS		= 3,
-	SIDE_UNKNOWN	= 4
+	SIDE_UNKNOWN	= 4,
+	SIDE_ERROR		= 5,	
 };
 
 #ifndef assert

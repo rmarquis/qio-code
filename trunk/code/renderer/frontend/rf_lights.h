@@ -31,15 +31,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 
 enum staticSurfInteractionType_e {
-	SSINTER_BAD,
-	SSINTER_BSP,
-	SSINTER_RSURF,
+	SIT_BAD,
+	SIT_STATIC,
+	SIT_BSP,
+	SIT_PROC,
 };
 struct staticSurfInteraction_s {
+	staticSurfInteractionType_e type;
 	class r_surface_c *sf;
-	u32 bspSurfaceNumber;
+	union {
+		u32 bspSurfaceNumber; // for SIT_BSP
+		int areaNum; // for SIT_PROC
+	};
 
 	staticSurfInteraction_s() {
+		type = SIT_BAD;
 		sf = 0;
 		bspSurfaceNumber = 0;
 	}
@@ -110,13 +116,21 @@ public:
 	}
 	void addStaticModelSurfaceInteraction(/*class r_model_c *mod, */class r_surface_c *sf) {
 		staticSurfInteraction_s &n = getNextStaticInteraction();
+		n.type = SIT_STATIC;
 		n.sf = sf;
 		n.bspSurfaceNumber = 0;
 	}
 	void addBSPSurfaceInteraction(u32 bspSurfaceNum) {
 		staticSurfInteraction_s &n = getNextStaticInteraction();
+		n.type = SIT_BSP;
 		n.sf = 0;
 		n.bspSurfaceNumber = bspSurfaceNum;
+	}
+	void addProcAreaSurfaceInteraction(int areaNum, class r_surface_c *sf) {
+		staticSurfInteraction_s &n = getNextStaticInteraction();
+		n.type = SIT_PROC;
+		n.sf = sf;
+		n.areaNum = areaNum;
 	}
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
