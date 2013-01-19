@@ -138,7 +138,8 @@ void rIndexedShadowVolume_c::addDrawCall() {
 void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light) {
 	clear();
 	// save the last light position
-	this->lightPos = light;
+	//this->lightPos = light;
+
 	if(ent->getModel() == 0)
 		return;
 	if(ent->isAnimated() && rf_skipAnimatedObjectsShadows.getInt())

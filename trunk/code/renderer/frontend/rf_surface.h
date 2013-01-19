@@ -72,6 +72,15 @@ public:
 		return verts;
 	}
 	const rIndexBuffer_c &getIndices() const {
+		if(refIndices) {
+			return *refIndices;
+		}
+		return indices;
+	}
+	const rIndexBuffer_c &getIndices2() const {
+		if(refIndices) {
+			return *refIndices;
+		}
 		return indices;
 	}
 	const planeArray_c &getTriPlanes() const {

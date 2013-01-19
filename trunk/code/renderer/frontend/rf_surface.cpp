@@ -304,12 +304,13 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 }
 void r_surface_c::recalcNormals() {
 	verts.nullNormals();
-	trianglePlanes.resize(indices.getNumTriangles());
+	const rIndexBuffer_c &pIndices = getIndices2();
+	trianglePlanes.resize(pIndices.getNumTriangles());
 	plane_c *op = trianglePlanes.getArray();
-	for(u32 i = 0; i < indices.getNumIndices(); i+=3, op++) {
-		u32 i0 = indices[i+0];
-		u32 i1 = indices[i+1];
-		u32 i2 = indices[i+2];
+	for(u32 i = 0; i < pIndices.getNumIndices(); i+=3, op++) {
+		u32 i0 = pIndices[i+0];
+		u32 i1 = pIndices[i+1];
+		u32 i2 = pIndices[i+2];
 		rVert_c &v0 = verts[i0];
 		rVert_c &v1 = verts[i1];
 		rVert_c &v2 = verts[i2];

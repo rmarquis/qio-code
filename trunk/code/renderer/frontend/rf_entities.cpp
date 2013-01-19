@@ -467,6 +467,7 @@ void rEntityImpl_c::addDrawCalls() {
 				} else {
 
 				}
+				instance->recalcModelNormals(); // this is slow
 			} else {
 				const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
 				if(rf_forceKFModelsFrame.getInt() >= 0) {
@@ -479,6 +480,7 @@ void rEntityImpl_c::addDrawCalls() {
 							q3AnimCtrl->getTorso().curLerp.from);	
 					}
 				}
+				instance->recalcModelNormals(); // this is slow
 			}
 		}
 		instance->addDrawCalls(&surfaceFlags);
