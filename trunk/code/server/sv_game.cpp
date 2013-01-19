@@ -105,68 +105,6 @@ void SV_GameDropClient( int clientNum, const char *reason ) {
 	SV_DropClient( svs.clients + clientNum, reason );	
 }
 
-
-/*
-=================
-SV_SetBrushModel
-
-sets mins and maxs for inline bmodels
-=================
-*/
-void SV_SetBrushModel( edict_s *ent, const char *name ) {
-
-}
-
-
-
-/*
-=================
-SV_inPVS
-
-Also checks portalareas so that doors block sight
-=================
-*/
-qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
-{
-
-	return qtrue;
-}
-
-
-/*
-=================
-SV_inPVSIgnorePortals
-
-Does NOT check portalareas
-=================
-*/
-qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
-{
-	
-	return qtrue;
-}
-
-
-/*
-========================
-SV_AdjustAreaPortalState
-========================
-*/
-void SV_AdjustAreaPortalState( edict_s *ent, qboolean open ) {
-
-}
-
-
-/*
-==================
-SV_EntityContact
-==================
-*/
-qboolean	SV_EntityContact( vec3_t mins, vec3_t maxs, const edict_s *gEnt, int capsule ) {
-
-	return qfalse;
-}
-
 #include "sv_vis.h"
 void SV_LinkEntity(edict_s *ed) {
 	// ensure that we have bspBoxDesc allocated
@@ -224,12 +162,6 @@ void SV_GetUsercmd( int clientNum, usercmd_s *cmd ) {
 }
 
 //==============================================
-
-static int	FloatAsInt( float f ) {
-	floatint_t fi;
-	fi.f = f;
-	return fi.i;
-}
 
 /*
 ===============

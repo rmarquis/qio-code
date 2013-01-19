@@ -72,6 +72,13 @@ public:
 		norm.clear();
 		dist = 0.f;
 	}
+	void setNormal(const float *p) {
+		norm.set(p);
+	}
+	// NOTE: Doom3 setDist function negates the dist value here!
+	void setDist(float newDist) {
+		dist = newDist;
+	}
 
 	float distance(const vec3_c &point) const {
 		float d = norm.dotProduct(point) + dist;

@@ -302,10 +302,18 @@ static void SV_AddEntToSnapshot( svEntity_t *svEnt, edict_s *gEnt, snapshotEntit
 /*
 ===============
 SV_AddEntitiesVisibleFromPoint
+
+use BSP PVS / proc portals data to determine
+which entities are potentialy visible by player.
 ===============
 */
-#include "sv_vis.h"
+// for .bsp maps (Quake3, RTCW, ET, MoHAA, COD)
+#include "sv_vis.h" 
 #include <shared/bitset.h>
+// for .proc maps (Doom3, Quake4)
+#include <shared/doom3ProcPVSClass.h> 
+#include <shared/autoCvar.h> 
+static aCvar_c sv_cullEntities("sv_cullEntities","1");
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
 									snapshotEntityNumbers_t *eNums, qboolean portal, bitSet_c &areaBits ) {
 	int		e;//, i;
@@ -313,7 +321,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	svEntity_t	*svEnt;
 	//int		l;
 	
-
 	// during an error shutdown message we may need to transmit
 	// the shutdown message after the server has shutdown, so
 	// specfically check for it
@@ -321,10 +328,13 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		return;
 	}
 
-	bspPointDesc_s eyeDesc;
+	bspPointDesc_s eyeDesc; // for .bsp PVS
+	pvsHandle_t procVisHandle; // for .proc vis
 	if(sv_bsp) {
 		sv_bsp->filterPoint(origin,eyeDesc);
 		sv_bsp->appendCurrentAreaBits(eyeDesc.area,areaBits);
+	} else if(sv_procVis) {
+		procVisHandle = sv_procVis->SetupCurrentPVS(origin);		
 	}
 
 
@@ -356,10 +366,19 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-		if(sv_bsp == 0 || sv_bsp->checkVisibility(eyeDesc,*visEnt->bspBoxDesc)) {
-			SV_AddEntToSnapshot( svEnt, ent, eNums );
-			continue;
+		if(sv_cullEntities.getInt()) {
+			if(sv_bsp && sv_bsp->checkVisibility(eyeDesc,*visEnt->bspBoxDesc) == false) {
+				continue; // culled by .bsp PVS
+			}
+			if(sv_procVis && sv_procVis->InCurrentPVS(procVisHandle,visEnt->absBounds) == false) {
+				continue; // culled by Doom3 .proc vis
+			}
 		}
+
+		SV_AddEntToSnapshot( svEnt, ent, eNums );
+	}	
+	if(sv_procVis) {
+		sv_procVis->FreeCurrentPVS(procVisHandle);		
 	}
 }
 

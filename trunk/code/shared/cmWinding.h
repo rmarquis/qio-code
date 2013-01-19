@@ -80,6 +80,11 @@ public:
 	u32 size() const {
 		return points.size();
 	}
+	inline cmWinding_c *copy() const {
+		cmWinding_c *ret = new cmWinding_c;
+		*ret = *this;
+		return ret;
+	}
 	const arraySTD_c<vec3_c> &getPoints() const {
 		return points;
 	}

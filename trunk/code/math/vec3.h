@@ -60,6 +60,11 @@ public:
 		this->x = x;
 		this->y = y;
 		this->z = z;
+	}	
+	void set(const float *f) {
+		x = f[0];
+		y = f[1];
+		z = f[2];
 	}
 	void clear() {
 		x = y = z = 0;

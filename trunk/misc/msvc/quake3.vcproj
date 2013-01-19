@@ -190,7 +190,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\code\libs\win32"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\quake3.pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\quake3.map"
@@ -1461,6 +1461,30 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\plane.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\math\plane.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\quat.h"
 				>
 			</File>
@@ -1737,6 +1761,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\portalizedWorldAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\rAPI.h"
 				>
 			</File>
@@ -1809,7 +1837,103 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmWinding.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmWinding.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cvarModificationCallback.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\doom3ProcPVSClass.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\doom3ProcPVSClass.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\portalizedBSPTree.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\portalizedBSPTree.h"
 				>
 			</File>
 			<File

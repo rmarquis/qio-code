@@ -256,6 +256,13 @@ typedef struct
 extern	serverStatic_t	svs;				// persistant server info across maps
 extern	server_t		sv;					// cleared each map
 
+// ===== serverside entity culling =====
+// ...for .bsp world maps (Quake3, ET, RTCW, MoHAA, CoD)
+extern class svBSP_c *sv_bsp;
+// ...for .proc world maps (Doom3 and Quake4)
+extern class portalizedBSPTree_c *sv_procTree;
+extern class idPVS *sv_procVis;
+
 extern	cvar_s	*sv_fps;
 extern	cvar_s	*sv_timeout;
 extern	cvar_s	*sv_zombietime;

@@ -407,19 +407,47 @@ static void SV_TouchCGame(void) {
 }
 
 #include "sv_vis.h"
-svBSP_c *sv_bsp;
+#include <shared/portalizedBSPTree.h> 
+#include <shared/doom3ProcPVSClass.h> 
+
+// for .bsp world maps
+svBSP_c *sv_bsp = 0;
+// for .proc world maps
+portalizedBSPTree_c *sv_procTree = 0;
+idPVS *sv_procVis = 0;
+
+
 void SV_LoadMapVis(const char *mapName) {
 	sv_bsp = new svBSP_c;
 	bool error = sv_bsp->load(mapName);
 	if(error){ 
 		delete sv_bsp;
 		sv_bsp = 0;
+		sv_procTree = new portalizedBSPTree_c;
+		str fixed = mapName;
+		fixed.setExtension("proc");
+		error = sv_procTree->load(fixed);
+		if(error){ 
+			delete sv_procTree;
+			sv_procTree = 0;
+		} else {
+			sv_procVis = new idPVS;
+			sv_procVis->Init(sv_procTree);
+		}
 	}
 }
 void SV_FreeMap() {
 	if(sv_bsp) {
 		delete sv_bsp;
 		sv_bsp = 0;
+	}
+	if(sv_procVis) {
+		delete sv_procVis;
+		sv_procVis = 0;
+	}
+	if(sv_procTree) {
+		delete sv_procTree;
+		sv_procTree = 0;
 	}
 }
 

@@ -92,7 +92,5 @@ public:
 	}
 };
 
-extern svBSP_c *sv_bsp;
-
 #endif // __SV_VIS_H__
 
