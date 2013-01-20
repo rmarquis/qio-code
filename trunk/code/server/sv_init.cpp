@@ -418,6 +418,8 @@ idPVS *sv_procVis = 0;
 
 
 void SV_LoadMapVis(const char *mapName) {
+	SV_FreeMap();
+
 	sv_bsp = new svBSP_c;
 	bool error = sv_bsp->load(mapName);
 	if(error){ 
@@ -427,7 +429,7 @@ void SV_LoadMapVis(const char *mapName) {
 		str fixed = mapName;
 		fixed.setExtension("proc");
 		error = sv_procTree->load(fixed);
-		if(error){ 
+		if(error || (sv_procTree->getNumAreas() <= 1)){ 
 			delete sv_procTree;
 			sv_procTree = 0;
 		} else {

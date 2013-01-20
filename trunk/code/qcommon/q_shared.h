@@ -1055,7 +1055,9 @@ typedef enum {
 #define	ENTITYNUM_WORLD		(MAX_GENTITIES-2)
 #define	ENTITYNUM_MAX_NORMAL	(MAX_GENTITIES-2)
 
-#define	MODELNUM_BITS		9		// don't need to send any more
+// NOTE: 9 modelnum bits is not enough for Prey's game/feedingtowera
+// (because of very large func_static .proc model count)
+#define	MODELNUM_BITS		10		// don't need to send any more
 #define	MAX_MODELS			(1<<MODELNUM_BITS)
 
 #define TAGNUM_BITS			8

@@ -230,6 +230,9 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 		return &entDef;
 	}
 public:	
+	entityDecl_c() {
+		hashNext = 0;
+	}
 	bool parse(const char *text, const char *textBase, const char *fname) {
 		parser_c p;
 		p.setup(textBase, text);
@@ -251,7 +254,7 @@ public:
 		}
 		if(inherit.length()) {
 			entityDeclAPI_i *inheritDecl = g_declMgr->registerEntityDecl(inherit);
-			if(inheritDecl == 0) {
+			if(inheritDecl == 0 || (inheritDecl->getEntDefAPI() == 0)) {
 				g_core->RedWarning("entityDecl_c::parse: cannot find entityDef \"%s\" for inherit keyword of \"%s\"\n",
 					inherit.c_str(),this->declName.c_str());
 			} else {
@@ -371,6 +374,10 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 	return 0;
 }
 class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, qioModule_e userModule) {
+	if(name == 0) {
+		return 0;
+	}
+	g_core->Print("declManagerIMPL_c::_registerEntityDecl: registering %s\n",name);
 	entityDecl_c *ret = entityDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);

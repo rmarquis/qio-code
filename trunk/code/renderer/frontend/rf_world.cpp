@@ -50,8 +50,9 @@ void RF_ClearWorldMap() {
 	}
 	if(r_procTree) {
 		delete r_procTree;
-		r_procTree = 0;
+		r_procTree = 0;	
 	}
+	RFL_FreeAllLights();
 }
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();

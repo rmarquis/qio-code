@@ -70,6 +70,10 @@ bool entDef_c::readFirstEntDefFromFile(const char *fileName) {
 }
 
 void entDef_c::fromOtherAPI(const class entDefAPI_i *p) {
+	if(p == 0) {
+		g_core->RedWarning("entDef_c::fromOtherAPI: NULL entDefAPI_i pointer passed\n");
+		return;
+	}
 	this->className = p->getClassName();
 	this->ePairs.clear();
 	for(u32 i = 0; i < p->getNumKeyValues(); i++) {
@@ -79,6 +83,10 @@ void entDef_c::fromOtherAPI(const class entDefAPI_i *p) {
 	}
 }
 void entDef_c::appendOtherAPI_overwrite(const class entDefAPI_i *p) {
+	if(p == 0) {
+		g_core->RedWarning("entDef_c::appendOtherAPI_overwrite: NULL entDefAPI_i pointer passed\n");
+		return;
+	}
 	if(p->getClassName() && p->getClassName()[0]) {
 		this->className = p->getClassName();
 	}

@@ -225,7 +225,12 @@ void	btBvhTriangleMeshShape::performConvexcast (btTriangleCallback* callback, co
 
 	MyNodeOverlapCallback	myNodeCallback(callback,m_meshInterface);
 
-	m_bvh->reportBoxCastOverlappingNodex (&myNodeCallback, raySource, rayTarget, aabbMin, aabbMax);
+	if(m_bvh) {
+		m_bvh->reportBoxCastOverlappingNodex (&myNodeCallback, raySource, rayTarget, aabbMin, aabbMax);
+	} else {
+		// V: TODO: print some kind of warning?
+		// m_bhv of some model is NULL on Prey's game/deathwalk1.proc
+	}
 }
 
 //perform bvh tree traversal and report overlapping triangles to 'callback'
@@ -320,7 +325,12 @@ void	btBvhTriangleMeshShape::processAllTriangles(btTriangleCallback* callback,co
 
 	MyNodeOverlapCallback	myNodeCallback(callback,m_meshInterface);
 
-	m_bvh->reportAabbOverlappingNodex(&myNodeCallback,aabbMin,aabbMax);
+	if(m_bvh) {
+		m_bvh->reportAabbOverlappingNodex(&myNodeCallback,aabbMin,aabbMax);
+	} else {
+		// V: TODO: print some kind of warning?
+		// m_bhv of some model is NULL on Prey's game/deathwalk1.proc
+	}
 
 
 #endif//DISABLE_BVH

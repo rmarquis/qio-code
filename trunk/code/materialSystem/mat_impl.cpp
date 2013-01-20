@@ -533,6 +533,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						//stage->setTCGen(TCG_SKYBOX);
 					} else if(p.atWord("reflect")) {
 						//stage->setTCGen(TCG_REFLECT);
+					} else if(p.atWord("screen")) {
+						// Prey's keyword?
+						//stage->setTCGen(TCG_SCREEN);
 					} else {
 						str tok = p.getToken();
 						g_core->RedWarning("mtrIMPL_c::loadFromText: unknown texgen type %s in definition of material %s in file %s at line %i\n",

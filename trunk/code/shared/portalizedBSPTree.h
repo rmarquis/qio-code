@@ -91,12 +91,6 @@ class portalizedBSPTree_c : public portalizedWorldAPI_i {
 	bool parseNodes(class parser_c &p, const char *fname);
 	bool parseAreaPortals(class parser_c &p, const char *fname);
 
-	virtual u32 getNumAreas() const {
-		return areas.size();
-	}
-	virtual u32 getNumPortals() const {
-		return portals.size();
-	}
 	virtual u32 getNumPortalsInArea(u32 areaNum) const {
 		return areas[areaNum].portalIndexes.size();
 	}
@@ -120,6 +114,12 @@ public:
 	bool load(const char *fname);
 	bool loadProcFile(const char *fname);
 
+	virtual u32 getNumAreas() const {
+		return areas.size();
+	}
+	virtual u32 getNumPortals() const {
+		return portals.size();
+	}
 };
 
 #endif // __PORTALIZEDBSPTREE_H__

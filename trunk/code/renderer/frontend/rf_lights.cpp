@@ -238,6 +238,12 @@ void RFL_RemoveLight(class rLightAPI_i *light) {
 	rf_lights.remove(rlight);
 	delete rlight;
 }
+void RFL_FreeAllLights() {
+	for(u32 i = 0; i < rf_lights.size(); i++) {
+		delete rf_lights[i];
+	}
+	rf_lights.clear();
+}
 
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
 static aCvar_c light_printCullStats("light_printCullStats","0");

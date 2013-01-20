@@ -596,6 +596,10 @@ public:
 		strcpy(data,other.c_str());
 	}
 	void operator = (const char *otherString) {
+		if(otherString == 0) {
+			this->clear();
+			return;
+		}
 		this->len = strlen(otherString);
 		ensureAllocated(this->len+1);
 		strcpy(data,otherString);
