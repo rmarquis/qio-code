@@ -257,6 +257,9 @@ bool mtrIMPL_c::loadFromVMTFile() {
 	}
 	this->sourceFileName = vmtName;
 
+	int iAlphaTest = -1;
+	bool bAlphaTestSetInVMT = false;
+
 	while(p.atEOF() == false) {
 		if(p.atWord("$basetexture")) {
 			str baseTexture = "materials/";
@@ -267,8 +270,16 @@ bool mtrIMPL_c::loadFromVMTFile() {
 			mtrStage_c *newStage = new mtrStage_c;
 			newStage->setTexture(baseTexture);
 			stages.push_back(newStage);
+		} else if(p.atWord("$alphatest")) {
+			iAlphaTest = p.getInteger();
+			bAlphaTestSetInVMT = true;
 		} else {
 			const char *unkToken = p.getToken();
+		}
+	}
+	if(bAlphaTestSetInVMT && iAlphaTest) {
+		for(u32 i = 0; i < stages.size(); i++) {
+			stages[i]->setAlphaFunc(AF_GE128);
 		}
 	}
 	return false; // ok
