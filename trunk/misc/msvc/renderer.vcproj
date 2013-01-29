@@ -607,6 +607,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\bspFileFormat_hl2.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\bspFileFormat_q2.h"
 				>
 			</File>

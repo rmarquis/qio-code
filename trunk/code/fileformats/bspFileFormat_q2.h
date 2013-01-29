@@ -29,13 +29,7 @@
 #define	Q2_AREAPORTALS	18
 #define	Q2_LUMPS		19
 
-//struct dheader_s
-//{
-//	int			ident;
-//	int			version;	
-//	lump_t		lumps[Q2_LUMPS];
-//};
-
+// NOTE: Quake2 bsp model struct is exacly the same as Source Engine model struct
 struct q2Model_s
 {
 	float		mins[3], maxs[3];
@@ -52,18 +46,9 @@ struct q2Vert_s
 };
 
 
-//// 0-2 are axial planes
-//#define	PLANE_X			0
-//#define	PLANE_Y			1
-//#define	PLANE_Z			2
-//
-//// 3-5 are non-axial planes snapped to the nearest
-//#define	PLANE_ANYX		3
-//#define	PLANE_ANYY		4
-//#define	PLANE_ANYZ		5
-//
-//// planes (x&~1) and (x&~1)+1 are always opposites
 
+// planes (x&~1) and (x&~1)+1 are always opposites
+// NOTE: the same plane structure is used in Source Engine
 struct q2Plane_s
 {
 	float	normal[3];
@@ -138,6 +123,7 @@ struct q2BrushSide_s
 	short	texinfo;
 };
 
+// NOTE: Quake2 brush structure is exacly the same as Source Engine brush
 struct q2Brush_s
 {
 	int			firstside;

@@ -137,14 +137,22 @@ void MAT_LoadMaterial(class mtrIMPL_c *mat) {
 	if(MAT_FindMaterialText(mat->getName(),text)) {
 		mat->loadFromText(text);
 	} else {
-		// create material directly from image
-		mat->createFromImage();
+		if(mat->isVMTMaterial()) {
+			mat->loadFromVMTFile();
+		} else {
+			// create material directly from image
+			mat->createFromImage();
+		}
 	}
 }
 mtrIMPL_c *MAT_RegisterMaterial(const char *inMatName) {
 	// strip the image name extension (if any)
 	str matName = inMatName;
-	matName.stripExtension();
+	const char *ext = matName.getExt();
+	// strip non-vmt extensions
+	if(ext && stricmp(ext,"vmt")) {
+		matName.stripExtension();
+	}
 	mtrIMPL_c *ret = materials.getEntry(matName);
 	if(ret) {
 		return ret;

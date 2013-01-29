@@ -128,7 +128,10 @@ struct bspPlane_s {
 };
 class rBspTree_c {
 	byte *fileData;
-	const struct q3Header_s *h; // used only while loading
+	union {
+		const struct q3Header_s *h; // used only while loading
+		const struct srcHeader_s *srcH; // for SourceEngine .bsp loading
+	};
 	u32 c_bezierPatches;
 	u32 c_flares;
 	bitSet_c areaBits;
@@ -164,9 +167,11 @@ class rBspTree_c {
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves);
 	bool loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves);
+	bool loadNodesAndLeavesSE();
 	bool loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat);
 	bool loadSurfsQ2();
 	bool loadSurfsHL();
+	bool loadSurfsSE();
 	bool loadVerts(u32 lumpVerts); // called from loadSurfs / loadSurfsCoD
 	bool loadSurfsCoD();
 	bool loadModels(u32 modelsLump);

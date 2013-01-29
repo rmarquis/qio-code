@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "bspFileFormat_q2.h"
 #include "bspFileFormat_hl.h"
+#include "bspFileFormat_hl2.h"
 
 // original BSP structures designed by ID Software
 // used in their Quake3 game
@@ -360,6 +361,48 @@ struct q3Header_s {
 	int			version;
 	lump_s		lumps[Q3_LUMPS];
 
+	// check whether this bsp file format is supported
+	bool isKnownBSPHeader() const {
+		if(this->ident == BSP_IDENT_IBSP) {
+			if(this->version == BSP_VERSION_Q2) {
+				return true;
+			}
+			if(this->version == BSP_VERSION_Q3) {
+				return true;
+			}
+			if(this->version == BSP_VERSION_RTCW) {
+				return true;
+			}
+			if(this->version == BSP_VERSION_ET) {
+				return true;
+			}
+			if(this->version == BSP_VERSION_COD1) {
+				return true;
+			}	
+		} else if(this->ident == BSP_IDENT_2015) {
+			if(this->version == BSP_VERSION_MOHAA) {
+				return true;
+			}
+		} else if(this->ident == BSP_IDENT_EALA) {
+			if(this->version == BSP_VERSION_MOHSH) {
+				return true;
+			}
+			if(this->version == BSP_VERSION_MOHBT) {
+				return true;
+			}
+		} else if(this->ident == BSP_IDENT_VBSP) {
+			// Source Engine (Half Life 2, etc) bsp
+			if(this->version == BSP_VERSION_HL2_19) {
+				return true;
+			}
+		// older bsp versions don't have "ident" field, only version
+		} else if(this->ident == BSP_VERSION_HL) {
+			return true;
+		} else if(this->ident == BSP_VERSION_QUAKE1) {
+			return true;
+		}
+		return false; // this bsp file format is not supported
+	}
 	const lump_s *getLumps() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			// MoH maps have checksum integer before lumps
@@ -475,6 +518,34 @@ struct q3Header_s {
 		// Q3, RTCW, ET, and MoH are using the classic q3Model_s struct
 		return (const q3Model_s*)(((const byte*)mod)+(sizeof(q3Model_s)));
 	}
+	// Source Engine (HL2) and Quake2 bsps has the same model structure
+	const q2Model_s *getQ2Models() const {
+		if(this->isBSPSource()) {
+			return (const q2Model_s *)getLumpData(SRC_MODELS);
+		}		
+		if(this->isBSPQ2()) {
+			return (const q2Model_s *)getLumpData(Q2_MODELS);
+		}
+		return 0;
+	}
+	const q2Brush_s *getQ2Brushes() const {
+		if(this->isBSPSource()) {
+			return (const q2Brush_s *)getLumpData(SRC_BRUSHES);
+		}		
+		if(this->isBSPQ2()) {
+			return (const q2Brush_s *)getLumpData(Q2_BRUSHES);
+		}
+		return 0;
+	}
+	const q2Plane_s *getQ2Planes() const {
+		if(this->isBSPSource()) {
+			return (const q2Plane_s *)getLumpData(SRC_PLANES);
+		}		
+		if(this->isBSPQ2()) {
+			return (const q2Plane_s *)getLumpData(Q2_PLANES);
+		}
+		return 0;
+	}
 	const q3Surface_s *getSurface(u32 surfNum) const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs+(sizeof(q3Surface_s)+4)*surfNum);
@@ -513,10 +584,23 @@ struct q3Header_s {
 		}
 		return (const q3BrushSide_s*)(p + sideSize * bsNum);
 	}
+	const srcHeader_s *getSourceBSPHeader() const {
+		if(this->isBSPSource() == false)
+			return 0;
+		return ((const srcHeader_s*)this);
+	}
 	const byte *getLumpData(u32 lumpNum) const {
+		if(this->isBSPSource()) {
+			const srcHeader_s *realH = getSourceBSPHeader();
+			return (const byte*)(((const byte*)this)+realH->lumps[lumpNum].fileOfs);
+		}
 		return (const byte*)(((const byte*)this)+getLumps()[lumpNum].fileOfs);
 	}
 	const u32 getLumpStructNum(u32 lumpNum, u32 structSize) const {
+		if(this->isBSPSource()) {
+			const srcHeader_s *realH = getSourceBSPHeader();
+			return (realH->lumps[lumpNum].fileLen / structSize);
+		}
 		return (getLumps()[lumpNum].fileLen / structSize);
 	}
 
@@ -540,6 +624,11 @@ struct q3Header_s {
 			return true;
 		return false;
 	}
+	bool isBSPSource() const {
+		if(ident != BSP_IDENT_VBSP)
+			return false;
+		return true;
+	}
 	
 	// for some reasons Call Of Duty bsps has swapped lump_t fields.
 	// We need to swap them back before loading the map
@@ -553,10 +642,14 @@ struct q3Header_s {
 		}
 	}
 	u32 getLumpSize(u32 lumpNum) const {
+		if(this->isBSPSource()) {
+			const srcHeader_s *realH = getSourceBSPHeader();
+			return realH->lumps[lumpNum].fileLen;
+		}
 		return getLumps()[lumpNum].fileLen;
 	}
 	u32 getLumpStructCount(u32 lumpNum, u32 elemSize) const {
-		return getLumps()[lumpNum].fileLen / elemSize;
+		return getLumpSize(lumpNum) / elemSize;
 	}
 };
 

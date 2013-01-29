@@ -166,12 +166,12 @@ bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	return false; // OK
 }
 bool rBspTree_c::loadPlanesQ2(u32 lumpPlanes) {
-	const lump_s &pll = h->getLumps()[lumpPlanes];
-	if(pll.fileLen % sizeof(q2Plane_s)) {
+	u32 planesLumpLen = h->getLumpSize(lumpPlanes);
+	if(planesLumpLen % sizeof(q2Plane_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
 		return true; // error
 	}
-	u32 numPlanes = pll.fileLen / sizeof(q2Plane_s);
+	u32 numPlanes = planesLumpLen / sizeof(q2Plane_s);
 	planes.resize(numPlanes);
 	const q2Plane_s *ip = (const q2Plane_s*)h->getLumpData(lumpPlanes);
 	bspPlane_s *pl = planes.getArray();
@@ -307,6 +307,54 @@ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 		// there are no brush data in HL bsps
 		l->firstLeafBrush = 0;
 		l->numLeafBrushes = 0;
+	}
+	
+	return false; // OK
+}
+bool rBspTree_c::loadNodesAndLeavesSE() {
+	const srcLump_s &nl = srcH->getLumps()[SRC_NODES];
+	if(nl.fileLen % sizeof(srcNode_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid nodes lump size\n");
+		return true; // error
+	}
+	u32 numNodes = nl.fileLen / sizeof(srcNode_s);
+	nodes.resize(numNodes);
+	const srcNode_s *in = (const srcNode_s*)srcH->getLumpData(SRC_NODES);
+	q3Node_s *on = nodes.getArray();
+	for(u32 i = 0; i < numNodes; i++, in++, on++) {
+		on->children[0] = in->children[0];
+		on->children[1] = in->children[1];
+		on->maxs[0] = in->maxs[0];
+		on->maxs[1] = in->maxs[1];
+		on->maxs[2] = in->maxs[2];
+		on->mins[0] = in->mins[0];
+		on->mins[1] = in->mins[1];
+		on->mins[2] = in->mins[2];
+		on->planeNum = in->planeNum;
+	}
+	const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
+	if(ll.fileLen % sizeof(srcLeaf_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+		return true; // error
+	}
+	u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
+	leaves.resize(numLeaves);
+	q3Leaf_s *l = leaves.getArray();
+	const srcLeaf_s *il = (const srcLeaf_s*)srcH->getLumpData(SRC_LEAFS);
+	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+		l->area = il->area;
+		l->cluster = il->cluster;
+
+		l->maxs[0] = il->maxs[0];
+		l->maxs[1] = il->maxs[1];
+		l->maxs[2] = il->maxs[2];
+		l->mins[0] = il->mins[0];
+		l->mins[1] = il->mins[1];
+		l->mins[2] = il->mins[2];
+		l->firstLeafSurface = il->firstLeafSurface;
+		l->numLeafSurfaces = il->numLeafSurfaces;
+		l->firstLeafBrush = il->firstLeafBrush;
+		l->numLeafBrushes = il->numLeafBrushes;
 	}
 	
 	return false; // OK
@@ -696,6 +744,84 @@ bool rBspTree_c::loadSurfsHL() {
 	}
 	return false; // OK
 }
+bool rBspTree_c::loadSurfsSE() {
+	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
+	if(sl.fileLen % sizeof(srcSurface_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+		return true; // error
+	}
+	const srcLump_s &el = srcH->getLumps()[SRC_EDGES];
+	if(el.fileLen % sizeof(srcEdge_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid edges lump size\n");
+		return true; // error
+	}
+	const srcLump_s &tl = srcH->getLumps()[SRC_TEXINFO];
+	if(tl.fileLen % sizeof(srcTexInfo_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid texinfo lump size\n");
+		return true; // error
+	}
+	const srcLump_s &vl = srcH->getLumps()[SRC_VERTEXES];
+	if(vl.fileLen % sizeof(srcVert_s)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid vertexes lump size\n");
+		return true; // error
+	}
+	const srcLump_s &sel = srcH->getLumps()[SRC_SURFEDGES];
+	if(sel.fileLen % sizeof(int)) {
+		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
+		return true; // error
+	}
+	u32 numSurfaces = sl.fileLen / sizeof(srcSurface_s);
+	u32 numVerts = vl.fileLen / sizeof(srcVert_s);
+	const srcSurface_s *isf = (const srcSurface_s *)srcH->getLumpData(SRC_FACES);
+	const srcVert_s *iv = (const srcVert_s *)srcH->getLumpData(SRC_VERTEXES);
+	const srcEdge_s *ie = (const srcEdge_s *)srcH->getLumpData(SRC_EDGES);
+	const srcTexInfo_s *it = (const srcTexInfo_s *)srcH->getLumpData(SRC_TEXINFO);
+	const int *surfEdges = (const int *)srcH->getLumpData(SRC_SURFEDGES);
+	const srcTexData_s *texData = (const srcTexData_s*)srcH->getLumpData(SRC_TEXDATA);
+	const u32 *texDataIndexes = (u32*) srcH->getLumpData(SRC_TEXDATA_STRING_TABLE);
+	const char *texDataStr = (const char*)srcH->getLumpData(SRC_TEXDATA_STRING_DATA);
+
+	surfs.resize(numSurfaces);
+	bspSurf_s *oSF = surfs.getArray();
+	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
+		oSF->type = BSPSF_PLANAR;
+		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
+		// get vmt file name
+		const srcTexInfo_s *sfTexInfo = it + isf->texInfo;
+		const srcTexData_s *sfTexData = texData + sfTexInfo->texData;
+		u32 ofs = texDataIndexes[sfTexData->nameStringTableID];
+		str matName = texDataStr + ofs;
+		matName.defaultExtension("vmt");
+		ts->mat = g_ms->registerMaterial(matName);
+		ts->lightmap = 0;
+		q2PolyBuilder_c polyBuilder;
+		for(int j = 0; j < isf->numEdges-1; j++) {
+			int ei = surfEdges[isf->firstEdge + j];
+			u32 realEdgeIndex;
+			if(ei < 0) {
+				realEdgeIndex = -ei;
+				const srcEdge_s *ed = ie + realEdgeIndex;
+				// reverse vertex order
+				polyBuilder.addEdge(iv[ed->v[1]].point,iv[ed->v[0]].point,j);
+			} else {
+				realEdgeIndex = ei;
+				const srcEdge_s *ed = ie + realEdgeIndex;
+				polyBuilder.addEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
+			}
+		}
+		polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+		ts->firstVert = verts.size();
+		ts->numVerts = polyBuilder.getNumVerts();
+		verts.addArray(polyBuilder.getVerts());
+		polyBuilder.calcTriIndexes();
+		polyBuilder.addVertsToBounds(ts->bounds);
+		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
+		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
+			indicesU32[j] = ts->firstVert+polyBuilder.getIndex(j);
+		}
+	}
+	return false; // OK
+}
 bool rBspTree_c::loadSurfsCoD() {
 	loadVerts(COD1_DRAWVERTS);
 	const cod1Surface_s *sf = (const cod1Surface_s *)h->getLumpData(COD1_SURFACES);
@@ -777,12 +903,12 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 	return false; // OK
 }
 bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
-	const lump_s &ml = h->getLumps()[modelsLump];
-	if(ml.fileLen % sizeof(q2Model_s)) {
+	u32 lumpLen = h->getLumpSize(modelsLump);
+	if(lumpLen % sizeof(q2Model_s)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsQ2: invalid models lump size\n");
 		return true; // error
 	}
-	u32 numModels = ml.fileLen / sizeof(q2Model_s);
+	u32 numModels = lumpLen / sizeof(q2Model_s);
 	models.resize(numModels);
 	const q2Model_s *m = (const q2Model_s *)h->getLumpData(modelsLump);
 	bspModel_s *om = models.getArray();
@@ -994,7 +1120,30 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
+	} else if(h->ident == BSP_IDENT_VBSP) {
+		// SourceEngine plane struct is the same as in Q2/Q1
+		if(loadPlanesQ2(SRC_PLANES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}		
+		if(loadModelsQ2(SRC_MODELS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadLeafIndexes16Bit(SRC_LEAFFACES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadNodesAndLeavesSE()) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadSurfsSE()) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
 	} else {
+		g_core->RedWarning("rBspTree_c::load: unknown bsp type; cannot load %s\n",fname);
 		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}

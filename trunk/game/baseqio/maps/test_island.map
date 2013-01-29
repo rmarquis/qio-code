@@ -20,7 +20,13 @@
 // entity 3
 {
 "classname" "info_player_start"
-"origin" "0 0 1024"
+"origin" "0 128 1024"
 }
+// entity 4
+{
+"classname" "weapon_assault"
+"origin" "0 140 1024"
+}
+
 
 

@@ -211,6 +211,68 @@ void mtrIMPL_c::createFromImage() {
 	// create single material stage
 	this->createFromTexturePointer(tex);
 }
+// Source Engine .vmt support (Valve MaTerials)
+bool mtrIMPL_c::loadFromVMTFile() {
+	str vmtName = this->name;
+	vmtName.defaultExtension("vmt");
+
+	// fix the strange .vmt paths
+	if(!Q_stricmpn(vmtName,"maps/",5)) {
+		// fix the strange map-dependant file names
+		// change this:
+		// vmtName = {data=0x05517738 "materials/maps/d1_town_01/tile/tileroof004b_503_632_-2999.vmt" buffer=0x0018e91c "面面面面面面面面=" len=61 ...}
+		// into this:
+		// "materials/tile/tileroof004b.vmt"
+		
+		str fixed = "";
+		const char *p = vmtName.c_str() + strlen("maps/");
+		p = strchr(p,'/');
+		p++;
+		fixed.append(p);
+		fixed.stripExtension();
+		const char *e = fixed.c_str() + fixed.length() - 1;
+		for(u32 i = 0; i < 3; i++) {
+			while(isdigit(*e) || *e == '-') {
+				e--;
+			}
+			if(*e != '_')
+				break;
+			e--;
+		}
+		e++;
+		vmtName.setFromTo(fixed.c_str(),e);
+		vmtName.setExtension("vmt");
+	}
+
+	// parse the .vmt file
+	parser_c p;
+	if(p.openFile(vmtName) == true) {
+		str fixed = "materials/";
+		fixed.append(vmtName);
+		fixed.defaultExtension("vmt");
+		if(p.openFile(fixed) == true) {	
+			return true; // error.
+		}
+		vmtName = fixed;
+	}
+	this->sourceFileName = vmtName;
+
+	while(p.atEOF() == false) {
+		if(p.atWord("$basetexture")) {
+			str baseTexture = "materials/";
+			baseTexture.append(p.getToken());
+			// without it TEX_Load might load .jpg thumbnail file first instead of desired vtf
+			baseTexture.setExtension("vtf");
+			
+			mtrStage_c *newStage = new mtrStage_c;
+			newStage->setTexture(baseTexture);
+			stages.push_back(newStage);
+		} else {
+			const char *unkToken = p.getToken();
+		}
+	}
+	return false; // ok
+}
 void mtrIMPL_c::createFromTexturePointer(class textureAPI_i *tex) {
 	mtrStage_c *ns = new mtrStage_c;
 	ns->setTexture(tex);

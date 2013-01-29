@@ -319,7 +319,13 @@ public:
 		return polygonOffset;
 	}
 
+	bool isVMTMaterial() const {
+		return name.hasExt("vmt");
+	}
+
 	void createFromImage();
+	// Source Engine .vmt support (Valve MaTerials)
+	bool loadFromVMTFile();
 	void createFromTexturePointer(class textureAPI_i *tex);
 	u16 readBlendEnum(class parser_c &p);
 	void setSkyParms(const char *farBox, const char *cloudHeight, const char *nearBox);

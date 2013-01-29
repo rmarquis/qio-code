@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <qcommon/q_shared.h>
 #include "bspPhysicsDataLoader.h"
 #include <api/vfsAPI.h>
+#include <api/coreAPI.h>
 #include <fileFormats/bspFileFormat.h>
 #include <shared/cmSurface.h>
 #include <shared/cmBezierPatch.h>
@@ -60,33 +61,54 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 	g_vfs->FS_Read(data,len,f);
 	g_vfs->FS_FCloseFile(f);
 	h = (q3Header_s*)data;
+	// see if the bsp file format is supported
+	if(h->isKnownBSPHeader() == false) {
+		g_core->RedWarning("bspPhysicsDataLoader_c::loadBSPFile: %s bsp format is unsupported\n",fname);
+		return true;
+	}
 	if(h->isBSPCoD1()) {
 		h->swapCoDLumpLenOfsValues();
 	}
 	return false;
 }
 void bspPhysicsDataLoader_c::nodeBrushes_r(int nodeNum, arraySTD_c<u32> &out) const {
-	const q2Node_s *nodes = (const q2Node_s *)h->getLumpData(Q2_NODES);
-	while(nodeNum >= 0) {
-		const q2Node_s &node = nodes[nodeNum];
-		nodeNum = node.children[0];
-		nodeBrushes_r(node.children[1],out);
-	}
-	const u16 *leafBrushNums = (const u16*)h->getLumpData(Q2_LEAFBRUSHES);
-	const q2Leaf_s *l = (const q2Leaf_s *)h->getLumpData(Q2_LEAFS)+(-nodeNum+1);
-	for(u32 i = 0; i < l->numLeafBrushes; i++) {
-		u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
-		out.add_unique(brushNum);
+	if(h->isBSPQ2()) {
+		const q2Node_s *nodes = (const q2Node_s *)h->getLumpData(Q2_NODES);
+		while(nodeNum >= 0) {
+			const q2Node_s &node = nodes[nodeNum];
+			nodeNum = node.children[0];
+			nodeBrushes_r(node.children[1],out);
+		}
+		const u16 *leafBrushNums = (const u16*)h->getLumpData(Q2_LEAFBRUSHES);
+		const q2Leaf_s *l = (const q2Leaf_s *)h->getLumpData(Q2_LEAFS)+(-nodeNum+1);
+		for(u32 i = 0; i < l->numLeafBrushes; i++) {
+			u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
+			out.add_unique(brushNum);
+		}
+	}else if(h->isBSPSource()) {
+		const srcNode_s *nodes = (const srcNode_s *)h->getLumpData(SRC_NODES);
+		while(nodeNum >= 0) {
+			const srcNode_s &node = nodes[nodeNum];
+			nodeNum = node.children[0];
+			nodeBrushes_r(node.children[1],out);
+		}
+		const u16 *leafBrushNums = (const u16*)h->getLumpData(SRC_LEAFBRUSHES);
+		const srcLeaf_s *l = (const srcLeaf_s *)h->getLumpData(SRC_LEAFS)+(-nodeNum+1);
+		for(u32 i = 0; i < l->numLeafBrushes; i++) {
+			u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
+			out.add_unique(brushNum);
+		}
 	}
 }
 void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags)) {
-	if(h->isBSPQ2()) {
-		const q2Model_s *q2Mod = (const q2Model_s *)h->getLumpData(Q2_MODELS);
+	if(h->isBSPQ2() || h->isBSPSource()) {
+		// Quake2 + Source Engine games path
+		const q2Model_s *q2Mod = h->getQ2Models();
 		arraySTD_c<u32> brushes;
 		nodeBrushes_r(q2Mod->headnode,brushes);
 		for(u32 i = 0; i < brushes.size(); i++) {
 			u32 brushNum = brushes[i];
-			const q2Brush_s *q2Brush = (const q2Brush_s *)h->getLumpData(Q2_BRUSHES)+brushNum;
+			const q2Brush_s *q2Brush = h->getQ2Brushes()+brushNum;
 			perBrushCallback(brushNum,q2Brush->contents);
 		}
 		return;
@@ -97,6 +119,7 @@ void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCa
 
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(h->isBSPCoD1()) {
+		// Call of Duty path
 		const cod1Brush_s *codBrush = (const cod1Brush_s *)h->getLumpData(COD1_BRUSHES);
 		for(u32 i = 0; i < mod->numBrushes; i++, codBrush++) {
 			perBrushCallback(mod->firstBrush+i, getMaterialContentFlags(codBrush->materialNum));
@@ -156,13 +179,23 @@ struct codBrushSides_s {
 	codBrushSideNonAxial_s nonAxialSides[32]; // variable-sized
 };
 void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) {
-	if(h->isBSPQ2()) {
-		const q2Plane_s *q2Planes = (const q2Plane_s *)h->getLumpData(Q2_PLANES);
-		const q2Brush_s *q2Brush = (const q2Brush_s *)h->getLumpData(Q2_BRUSHES)+brushNum;
-		const q2BrushSide_s *q2Bs = (const q2BrushSide_s *)h->getLumpData(Q2_BRUSHSIDES)+q2Brush->firstside;
-		for(u32 i = 0; i < q2Brush->numsides; i++, q2Bs++) {
-			const q2Plane_s &sidePlane = q2Planes[q2Bs->planenum];
-			sideCallback(sidePlane.normal);
+	if(h->isBSPQ2() || h->isBSPSource()) {
+		const q2Plane_s *q2Planes = h->getQ2Planes();
+		const q2Brush_s *q2Brush = h->getQ2Brushes()+brushNum;
+		if(h->isBSPQ2()) {
+			// this is Quake2 bsp
+			const q2BrushSide_s *q2Bs = (const q2BrushSide_s *)h->getLumpData(Q2_BRUSHSIDES)+q2Brush->firstside;
+			for(u32 i = 0; i < q2Brush->numsides; i++, q2Bs++) {
+				const q2Plane_s &sidePlane = q2Planes[q2Bs->planenum];
+				sideCallback(sidePlane.normal);
+			}
+		} else {
+			// this is a Source Engine bsp
+			const srcBrushSide_s *srcBs = (const srcBrushSide_s *)h->getLumpData(SRC_BRUSHSIDES)+q2Brush->firstside;
+			for(u32 i = 0; i < q2Brush->numsides; i++, srcBs++) {
+				const q2Plane_s &sidePlane = q2Planes[srcBs->planeNum];
+				sideCallback(sidePlane.normal);
+			}
 		}
 		return;
 	}
@@ -241,6 +274,10 @@ void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perB
 		// no bezier patches
 		return;
 	}
+	if(h->isBSPSource()) {
+		// no bezier patches
+		return;
+	}
 	const q3Model_s *mod = h->getModels() + modelNum;
 	const q3Surface_s *sf = h->getSurfaces() + mod->firstSurface;
 	for(u32 i = 0; i < mod->numSurfaces; i++) {
@@ -312,8 +349,8 @@ u32 bspPhysicsDataLoader_c::getNumInlineModels() const {
 	return h->getNumModels();
 }
 void bspPhysicsDataLoader_c::getInlineModelBounds(u32 modelNum, class aabb &bb) const {
-	if(h->isBSPQ2()) {
-		const q2Model_s *q2Mod = ((const q2Model_s*)h->getLumpData(Q2_MODELS))+modelNum;
+	if(h->isBSPQ2() || h->isBSPSource()) {
+		const q2Model_s *q2Mod = h->getQ2Models()+modelNum;
 		bb.fromTwoPoints(q2Mod->maxs,q2Mod->mins);
 		return;
 	}

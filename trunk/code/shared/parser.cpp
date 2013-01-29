@@ -217,9 +217,16 @@ bool parser_c::atWord(const char *word) {
 		return false;
 	}
 	u32 checkLen = strlen(word);
-	if(!Q_stricmpn(word,p,checkLen) && (G_isWS(p[checkLen]) || p[checkLen] == 0)) {
-		p += checkLen;
-		return true;
+	if(*p == '"') {
+		if(!Q_stricmpn(word,p+1,checkLen) && (p[checkLen+1]=='"')) {
+			p += checkLen + 1 + 1;
+			return true;
+		}
+	} else {
+		if(!Q_stricmpn(word,p,checkLen) && (G_isWS(p[checkLen]) || p[checkLen] == 0)) {
+			p += checkLen;
+			return true;
+		}
 	}
 	return false;
 }
