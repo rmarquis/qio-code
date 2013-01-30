@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "modelLoaderLocal.h"
 #include "skelModelImpl.h"
 #include "skelAnimImpl.h"
+#include "hl2MDLReader.h"
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
@@ -70,6 +71,9 @@ public:
 			return true;
 		// LWO, used in Doom3 along with ASE
 		if(!stricmp(ext,"lwo"))
+			return true;
+		// HL2 (Source Engine) .mdl (without animations)
+		if(!stricmp(ext,"mdl"))
 			return true;
 		return false;
 	}
@@ -126,6 +130,14 @@ public:
 			error = MOD_LoadStaticMD3(fname,out);
 		} else if(!stricmp(ext,"lwo")) {
 			error = MOD_LoadLWO(fname,out);
+		} else if(!stricmp(ext,"mdl")) {
+			hl2MDLReader_c r;
+			if(r.beginReading(fname) == false) {
+				error = r.getStaticModelData(out);
+			} else {
+				error = true;
+			}
+
 		} else {
 			error = true;
 		}

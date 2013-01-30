@@ -79,6 +79,12 @@ const void *readStream_c::getCurDataPtr() const {
 		return 0; // EOF
 	return data + ofs;
 }
+const void *readStream_c::getDataPtr() const {
+	return data;
+}
+u32 readStream_c::pointerToOfs(const void *p) const {
+	return ((byte*)p) - data;
+}
 u32 readStream_c::getPos() const {
 	return ofs;
 }

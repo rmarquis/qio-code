@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __VFSAPI_H__
 
 #include "iFaceBase.h"
+#include <qcommon/q_shared.h> // for filehandle
 
 #define VFS_API_IDENTSTR "VFSAPI0001"
 

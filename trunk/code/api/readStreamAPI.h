@@ -34,6 +34,8 @@ public:
 	virtual bool isAtData(const void *out, u32 numBytes) = 0;
 	virtual u32 skipBytes(u32 numBytesToSkip) = 0;
 	virtual const void *getCurDataPtr() const = 0;
+	virtual const void *getDataPtr() const = 0;
+	virtual u32 pointerToOfs(const void *p) const = 0;
 	virtual u32 getPos() const = 0;
 	virtual void setPos(u32 newPosABS) = 0;
 	virtual bool isAtEOF() const = 0;

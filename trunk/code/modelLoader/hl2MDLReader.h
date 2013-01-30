@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,32 +21,35 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// readStream.h - binary file reader
-#ifndef __SHARED_READSTREAM_H__
-#define __SHARED_READSTREAM_H__
+// hl2MDLReader.h
+#ifndef __HL2_MDL_READER_H__
+#define __HL2_MDL_READER_H__
 
-#include <api/readStreamAPI.h>
+#include <shared/array.h>
+#include <shared/str.h>
+#include <shared/readStream.h>
 
-class readStream_c : public readStreamAPI_i {
-	long streamLen;
-	void *fileData;
-	byte *data;
-	u32 ofs;
+class hl2MDLReader_c {
+	str name;
+	// .mdl file data
+	readStream_c data;
+	long fileLen;
+	u32 version;
+	arraySTD_c<str> matNames;
+	// vvd file data
+	long vvdFileLen;
+	struct vvd4FileHeader_s *vvd;
+
+	bool readMatNames();
 public:
-	bool loadFromFile(const char *fname);
+	hl2MDLReader_c();
+	~hl2MDLReader_c();
+	bool beginReading(const char *fname);
+	
+	bool getStaticModelData(class staticModelCreatorAPI_i *out);
 
-	virtual bool isAtEOF() const;
-	virtual u32 readData(void *out, u32 numBytes);
-	virtual bool isAtData(const void *out, u32 numBytes);
-	virtual u32 skipBytes(u32 numBytesToSkip);
-	virtual const void *getCurDataPtr() const;
-	virtual const void *getDataPtr() const;
-	virtual u32 pointerToOfs(const void *p) const;
-	virtual u32 getPos() const;
-	virtual void setPos(u32 newPosABS);
-	virtual u32 getTotalLen() const;	
-	virtual void readByteString(class str &out);
+	u32 getNumMaterials() const;
+	const char *getMatName(u32 matIndex) const;
 };
 
-#endif // __SHARED_READSTREAM_H__
-
+#endif // __HL2_MDL_READER_H__

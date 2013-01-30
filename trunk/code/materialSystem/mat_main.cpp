@@ -138,7 +138,9 @@ void MAT_LoadMaterial(class mtrIMPL_c *mat) {
 		mat->loadFromText(text);
 	} else {
 		if(mat->isVMTMaterial()) {
-			mat->loadFromVMTFile();
+			if(mat->loadFromVMTFile()) {
+				mat->createFromImage();
+			}
 		} else {
 			// create material directly from image
 			mat->createFromImage();

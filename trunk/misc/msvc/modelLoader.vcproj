@@ -168,6 +168,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\code\modelLoader\hl2MDLReader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\mod_postProcess.cpp"
 				>
 			</File>
@@ -185,6 +189,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\modelLoader\hl2MDLReader.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\modelLoader\modelLoaderLocal.h"
 				>
@@ -381,6 +389,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\fileformats\md3_file_format.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\fileformats\vvdFileFormat.h"
 				>
 			</File>
 		</Filter>
