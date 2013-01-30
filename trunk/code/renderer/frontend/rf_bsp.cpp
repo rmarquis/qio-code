@@ -757,6 +757,110 @@ bool rBspTree_c::loadSurfsHL() {
 	}
 	return false; // OK
 }
+struct sfLightmapDef_s {
+	u32 x, y;
+	u32 h, w;
+	u32 mergeIndex;
+};
+class lightmapAllocator_c {
+	// renderer backend lightmaps
+	arraySTD_c<class textureAPI_i*> lightmaps;
+	// per-fragment lightmap definitions
+	arraySTD_c<sfLightmapDef_s> surfLightmaps;
+	u32 lightmapSize;
+	// for statistics
+	u32 numSubLightmaps;
+	// current lightmap image allocation state
+	arraySTD_c<u32> allocated; // [lightmapSize]
+	// current lightmap image data (pixels RGB)
+	arraySTD_c<byte> curData;
+public:
+	void prepareNextLightmap() {
+		g_core->Print("lightmapAllocator_c::prepareNextLightmap: %i sublightmaps merged into lightmap texture %i\n",numSubLightmaps,lightmaps.size());
+		allocated.nullMemory();
+		textureAPI_i *prev = g_ms->createLightmap(curData.getArray(),lightmapSize,lightmapSize);
+		lightmaps.push_back(prev);
+		curData.nullMemory();
+		numSubLightmaps = 0;
+	}
+	bool allocNextBlock(struct sfLightmapDef_s &lm) {
+		int best = this->lightmapSize;
+
+		for (int i = 0; i <= this->lightmapSize-lm.w; i++) {
+			int best2 = 0;
+			int j;
+			for (j = 0; j < lm.w; j++) {
+				if (allocated[i+j] >= best) {
+					break;
+				}
+				if (allocated[i+j] > best2) {
+					best2 = allocated[i+j];
+				}
+			}
+			if (j == lm.w)	{	// this is a valid spot
+				lm.x = i;
+				lm.y = best = best2;
+			}
+		}
+
+		if (best + lm.h > this->lightmapSize) {
+			return false;
+		}
+		for (int i = 0; i < lm.w; i++) {
+			allocated[lm.x + i] = best + lm.h;
+		}
+		return true;
+	}
+public:	
+	void init(u32 newLightmapSize = 128) {
+		this->lightmapSize = newLightmapSize;
+		allocated.resize(this->lightmapSize);
+		curData.resize(this->lightmapSize * this->lightmapSize * 3);
+		allocated.nullMemory();
+		numSubLightmaps = 0;
+		assert(lightmaps.size() == 0);
+	}
+	u32 addLightmap(const byte *data, u32 w, u32 h) {
+		u32 ret = surfLightmaps.size();
+		sfLightmapDef_s &n = surfLightmaps.pushBack();
+		n.w = w;
+		n.h = h;
+		if(allocNextBlock(n) == false) {
+			this->prepareNextLightmap();
+			if (!this->allocNextBlock(n)) {
+				printf("lightmapAllocator_c::addLightmap: allocNextBlock failed twice!\n");
+				return 0;
+			}
+		}
+		this->numSubLightmaps++;
+		n.mergeIndex = lightmaps.size();
+		for(u32 i = 0; i < n.w; i++) {
+			for(u32 j = 0; j < n.h; j++) {
+				u32 nowX = n.x + i;
+				u32 nowY = n.y + j;
+				byte *out = &curData[(nowY*lightmapSize+nowX)*3];
+				const byte *in = data + (j*w+i)*3;
+				out[0] = in[0];
+				out[1] = in[1];
+				out[2] = in[2];
+			}
+		}
+		return ret;
+	}
+	void finalize() {
+		prepareNextLightmap();
+	}
+	const sfLightmapDef_s &getLightmapDef(u32 index) const {
+		return surfLightmaps[index];
+	}
+	u32 getLightmapSize() const {
+		return lightmapSize;
+	}
+	class textureAPI_i *getSurfLightmap(u32 sfIndex) const {
+		return lightmaps[surfLightmaps[sfIndex].mergeIndex];
+	}
+};
+
 bool rBspTree_c::loadSurfsSE() {
 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
 	if(sl.fileLen % sizeof(srcSurface_s)) {
@@ -798,6 +902,9 @@ bool rBspTree_c::loadSurfsSE() {
 	// used while converting SE lightmaps to our format
 	arraySTD_c<byte> rgbs;
 
+	lightmapAllocator_c la;
+	la.init(1024);
+
 	surfs.resize(numSurfaces);
 	bspSurf_s *oSF = surfs.getArray();
 	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
@@ -832,9 +939,9 @@ bool rBspTree_c::loadSurfsSE() {
 				// decode Source Engine color
 				vec3_c rgb;
 				// r,g,b are unsigned chars
-				float rgb.x = in[0];
-				float rgb.y = in[1];
-				float rgb.z = in[2];
+				rgb.x = in[0];
+				rgb.y = in[1];
+				rgb.z = in[2];
 				// exponent is signed
 				float exp = ((char*)in)[3];
 				float mult = pow(2.f,exp);
@@ -847,12 +954,13 @@ bool rBspTree_c::loadSurfsSE() {
 					rgb *= mult2;
 				}
 				// save RGB color bytes
-				outColor[0] = p.x;
-				outColor[1] = p.y;
-				outColor[2] = p.z;
+				outColor[0] = rgb.x;
+				outColor[1] = rgb.y;
+				outColor[2] = rgb.z;
 			}
-			// TODO: merge lightmaps!
-			ts->lightmap = g_ms->createLightmap(rgbs.getArray(),w,h);
+			//ts->lightmap = g_ms->createLightmap(rgbs.getArray(),w,h);
+			ts->lightmap = (textureAPI_i*)(1 + la.addLightmap(rgbs.getArray(),w,h));
+			//la.prepareNextLightmap();
 		} else {
 			ts->lightmap = 0;
 		}
@@ -873,6 +981,16 @@ bool rBspTree_c::loadSurfsSE() {
 		}
 		polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
 		if(ts->lightmap) {
+			const sfLightmapDef_s &lightmapDef = la.getLightmapDef((u32)(ts->lightmap)-1);
+
+			float invSize = 1.f / float(la.getLightmapSize());
+
+			float ofsU = float(lightmapDef.x) * invSize;
+			float scaleU = float(w) * invSize;
+
+			float ofsV = float(lightmapDef.y) * invSize;
+			float scaleV = float(h) * invSize;
+
 			// calculate lightmap coordinates
 			arraySTD_c<rVert_c> &pVerts = polyBuilder.getVerts();
 			rVert_c *v = pVerts.getArray();
@@ -885,7 +1003,7 @@ bool rBspTree_c::loadSurfsSE() {
 				tV += 0.5f;
 				tU /= w;
 				tV /= h;
-				v->lc.set(tU,tV);
+				v->lc.set(ofsU+tU*scaleU,ofsV+tV*scaleV);
 			}
 		}
 
@@ -897,6 +1015,16 @@ bool rBspTree_c::loadSurfsSE() {
 		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
 		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
 			indicesU32[j] = ts->firstVert+polyBuilder.getIndex(j);
+		}
+	}
+	la.finalize();
+	oSF = surfs.getArray();
+	for(u32 i = 0; i < numSurfaces; i++, oSF++) {
+		oSF->type = BSPSF_PLANAR;
+		bspTriSurf_s *ts = oSF->sf;
+		if(ts->lightmap) {
+			u32 index = (u32)(ts->lightmap)-1;
+			ts->lightmap = la.getSurfLightmap(index);
 		}
 	}
 	return false; // OK
