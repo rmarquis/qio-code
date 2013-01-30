@@ -71,7 +71,7 @@ public:
 	virtual u32 getWinHeight() const = 0;
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
-	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
+	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
 
 	// vertex buffers (VBOs)

@@ -98,7 +98,7 @@ public:
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 	}
-	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 	}
 	virtual void freeTextureData(class textureAPI_i *tex) {
 	}

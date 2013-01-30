@@ -268,6 +268,7 @@ bool mtrIMPL_c::loadFromVMTFile() {
 			baseTexture.setExtension("vtf");
 			
 			mtrStage_c *newStage = new mtrStage_c;
+			newStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 			newStage->setTexture(baseTexture);
 			stages.push_back(newStage);
 		} else if(p.atWord("$alphatest")) {

@@ -112,10 +112,10 @@ class textureAPI_i *MAT_GetDefaultTexture() {
 	}
 	return mat_defaultTexture;
 }
-class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h) {
+class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h, bool rgba) {
 	// for lightmaps
 	textureIMPL_c *nl =  new textureIMPL_c;
-	rb->uploadLightmapRGB(nl,data,w,h);
+	rb->uploadLightmap(nl,data,w,h, rgba);
 	return nl;
 }
 // texString can contain doom3-like modifiers

@@ -912,7 +912,7 @@ public:
 		out->setHeight(h);
 		out->setInternalHandleV(tex);
 	}
-	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 		IDirect3DTexture9 *tex = 0;
 		// lightmaps dont have alpha channel
 		HRESULT hr = pDev->CreateTexture(w,h,0,D3DUSAGE_AUTOGENMIPMAP,D3DFMT_X8R8G8B8,D3DPOOL_MANAGED,&tex,0);

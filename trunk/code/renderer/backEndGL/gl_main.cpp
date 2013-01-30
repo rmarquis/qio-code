@@ -1402,7 +1402,7 @@ public:
 		glDeleteTextures(1,&handle);
 		tex->setInternalHandleU32(0);
 	}
-	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 		out->setWidth(w);
 		out->setHeight(h);
 		u32 texID;
@@ -1414,7 +1414,11 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);	
+		if(rgba) {
+			glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);	
+		} else {
+			glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);	
+		}
 		CHECK_GL_ERRORS;
 		glBindTexture(GL_TEXTURE_2D, 0);
 		out->setInternalHandleU32(texID);	

@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define SRC_NODES 5
 #define SRC_TEXINFO 6
 #define SRC_FACES 7
+#define SRC_LIGHTING 8
 #define SRC_LEAFS 10
 #define SRC_EDGES 12
 #define SRC_SURFEDGES 13

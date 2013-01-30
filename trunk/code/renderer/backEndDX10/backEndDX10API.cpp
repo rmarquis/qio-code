@@ -318,7 +318,7 @@ public:
 		tex->Unmap( D3D10CalcSubresource(0, 0, 1) ); // NOTE: unmap "returns" void
 		out->setInternalHandleV(tex);
 	}
-	virtual void uploadLightmapRGB(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 		
 	}
 	virtual void freeTextureData(class textureAPI_i *ptr) {

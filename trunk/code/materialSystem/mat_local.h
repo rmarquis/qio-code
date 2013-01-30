@@ -55,7 +55,7 @@ class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixel
 
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
-class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h); // for lightmaps
+class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h, bool rgba); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge = false);
 class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h);
 void MAT_FreeTexture(class textureAPI_i **p);

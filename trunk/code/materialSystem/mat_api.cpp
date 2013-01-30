@@ -59,8 +59,8 @@ public:
 	virtual bool isMaterialOrImagePresent(const char *matName) {
 		return MAT_IsMaterialOrImagePresent(matName);
 	}
-	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h) {
-		return MAT_CreateLightmap(data,w,h);
+	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h, bool rgba) {
+		return MAT_CreateLightmap(data,w,h,rgba);
 	}
 	virtual mtrAPI_i *getDefaultMaterial() {
 		return MAT_RegisterMaterialAPI("default");

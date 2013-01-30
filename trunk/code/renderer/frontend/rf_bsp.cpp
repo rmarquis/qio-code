@@ -537,12 +537,25 @@ public:
 			v->tc.set(tU,tV);
 		}
 	}
+	void calcLightmapCoords(const float vecs[2][4], float texDimX, float texDimY) {
+		rVert_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			float tU = v->xyz[0]*vecs[0][0] + v->xyz[1]*vecs[0][1] + v->xyz[2]*vecs[0][2] + vecs[0][3];
+			float tV = v->xyz[0]*vecs[1][0] + v->xyz[1]*vecs[1][1] + v->xyz[2]*vecs[1][2] + vecs[1][3];
+			tU /= texDimX;
+			tV /= texDimY;
+			v->lc.set(tU,tV);
+		}
+	}
 	void addVertsToBounds(aabb &out) {
 		for(u32 i = 0; i < verts.size(); i++) {
 			out.addPoint(verts[i].xyz);
 		}
 	}
 	const arraySTD_c<rVert_c> &getVerts() const {
+		return verts;
+	}
+	arraySTD_c<rVert_c> &getVerts() {
 		return verts;
 	}
 	const arraySTD_c<u16> &getIndices() const {
@@ -780,6 +793,10 @@ bool rBspTree_c::loadSurfsSE() {
 	const srcTexData_s *texData = (const srcTexData_s*)srcH->getLumpData(SRC_TEXDATA);
 	const u32 *texDataIndexes = (u32*) srcH->getLumpData(SRC_TEXDATA_STRING_TABLE);
 	const char *texDataStr = (const char*)srcH->getLumpData(SRC_TEXDATA_STRING_DATA);
+	const byte *lightmaps = (const byte*)srcH->getLumpData(SRC_LIGHTING);
+		
+	// used while converting SE lightmaps to our format
+	arraySTD_c<byte> rgbs;
 
 	surfs.resize(numSurfaces);
 	bspSurf_s *oSF = surfs.getArray();
@@ -793,7 +810,52 @@ bool rBspTree_c::loadSurfsSE() {
 		str matName = texDataStr + ofs;
 		matName.defaultExtension("vmt");
 		ts->mat = g_ms->registerMaterial(matName);
-		ts->lightmap = 0;
+		u32 w = isf->lightmapTextureSizeInLuxels[0] + 1;
+		u32 h = isf->lightmapTextureSizeInLuxels[1] + 1;
+		u32 numSamples = w * h;
+		if(isf->lightOfs != -1) {
+			const byte *lmData = lightmaps + isf->lightOfs;
+			// ensure that we have enough of bytes in the buffer
+			if(rgbs.size() < numSamples * 3) {
+				rgbs.resize(numSamples*3);
+			}
+			// convert each sample
+			for(u32 j = 0; j < numSamples; j++) {
+				byte *outColor = &rgbs[j*3];
+				const byte *in = lmData + j * 4;
+				if(0) {
+					outColor[0] = in[0];
+					outColor[1] = in[1];
+					outColor[2] = in[2];
+					continue;
+				}
+				// decode Source Engine color
+				vec3_c rgb;
+				// r,g,b are unsigned chars
+				float rgb.x = in[0];
+				float rgb.y = in[1];
+				float rgb.z = in[2];
+				// exponent is signed
+				float exp = ((char*)in)[3];
+				float mult = pow(2.f,exp);
+				rgb *= mult;
+				rgb *= 255.f;
+				// see if we have to normalize rgb into 0-255.f range
+				if(rgb.getLargestAxisLen() > 255.f) {
+					float l = rgb.getLargestAxisLen();
+					float mult2 = 255.f/l;
+					rgb *= mult2;
+				}
+				// save RGB color bytes
+				outColor[0] = p.x;
+				outColor[1] = p.y;
+				outColor[2] = p.z;
+			}
+			// TODO: merge lightmaps!
+			ts->lightmap = g_ms->createLightmap(rgbs.getArray(),w,h);
+		} else {
+			ts->lightmap = 0;
+		}
 		q2PolyBuilder_c polyBuilder;
 		for(int j = 0; j < isf->numEdges-1; j++) {
 			int ei = surfEdges[isf->firstEdge + j];
@@ -810,6 +872,23 @@ bool rBspTree_c::loadSurfsSE() {
 			}
 		}
 		polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+		if(ts->lightmap) {
+			// calculate lightmap coordinates
+			arraySTD_c<rVert_c> &pVerts = polyBuilder.getVerts();
+			rVert_c *v = pVerts.getArray();
+			for(u32 i = 0; i < pVerts.size(); i++, v++) {
+				float tU = v->xyz[0]*sfTexInfo->lightmapVecs[0][0] + v->xyz[1]*sfTexInfo->lightmapVecs[0][1] + v->xyz[2]*sfTexInfo->lightmapVecs[0][2] + sfTexInfo->lightmapVecs[0][3];
+				float tV = v->xyz[0]*sfTexInfo->lightmapVecs[1][0] + v->xyz[1]*sfTexInfo->lightmapVecs[1][1] + v->xyz[2]*sfTexInfo->lightmapVecs[1][2] + sfTexInfo->lightmapVecs[1][3];
+				tU -= isf->lightmapTextureMinsInLuxels[0];
+				tV -= isf->lightmapTextureMinsInLuxels[1];
+				tU += 0.5f;
+				tV += 0.5f;
+				tU /= w;
+				tV /= h;
+				v->lc.set(tU,tV);
+			}
+		}
+
 		ts->firstVert = verts.size();
 		ts->numVerts = polyBuilder.getNumVerts();
 		verts.addArray(polyBuilder.getVerts());
