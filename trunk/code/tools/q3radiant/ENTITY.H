@@ -22,7 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     // entity.h
 
     void Eclass_InitForSourceDirectory (char *path);
+	// this will create a new eclass_t if one is not present
     eclass_t *Eclass_ForName (char *name, qboolean has_brushes);
+	// this will return 0 if class with given name is not present
+	eclass_t *Eclass_FindExisting (const char *name);
+	void EClass_CreateNewFromText(const char *text);
     
     // forward declare this one
     class IPluginEntity;

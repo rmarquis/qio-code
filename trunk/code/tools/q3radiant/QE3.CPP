@@ -298,6 +298,20 @@ qboolean QE_LoadProject (char *projectfile)
 
 
 	Eclass_InitForSourceDirectory (ValueForKey (g_qeglobals.d_project_entity, "entitypath"));
+	
+	// ensure we have basic classes available
+	if(Eclass_FindExisting("info_player_start") == 0) {
+		// Q3 info_player_start size: (-16 -16 -24) (16 16 24)
+		// MoHAA info_player_start size: (-16 -16 0) (16 16 96)
+		EClass_CreateNewFromText("/*QUAKED info_player_start (0.75 0.75 0) (-16 -16 -24) (16 16 24)\n"
+				"The normal starting point for a level.\n"
+				"******************************************************************************/\n");
+	}
+	if(Eclass_FindExisting("light") == 0) {
+		EClass_CreateNewFromText("/*QUAKED light (0.75 0.5 0) (-8 -8 -8) (8 8 8)\n"
+				"Light.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

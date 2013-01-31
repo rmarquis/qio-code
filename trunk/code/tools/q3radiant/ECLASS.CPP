@@ -415,9 +415,9 @@ void setSpecialLoad(eclass_t *e, const char* pWhat, char*& p)
 
 char	*debugname;
 
-eclass_t *Eclass_InitFromText (char *text)
+eclass_t *Eclass_InitFromText (const char *text)
 {
-	char	*t;
+	const char	*t;
 	int		len;
 	int		r, i;
 	char	parms[256], *p;
@@ -430,7 +430,7 @@ eclass_t *Eclass_InitFromText (char *text)
 	text += strlen("/*QUAKED ");
 	
 // grab the name
-	text = COM_Parse (text);
+	text = COM_Parse ((char*)text);
 	e->name = (char*)qmalloc (strlen(com_token)+1);
 	strcpy (e->name, com_token);
 	debugname = e->name;
@@ -452,7 +452,7 @@ eclass_t *Eclass_InitFromText (char *text)
 	text++;
 	
 // get the size	
-	text = COM_Parse (text);
+	text = COM_Parse ((char*)text);
 	if (com_token[0] == '(')
 	{	// parse the size as two vectors
 		e->fixedsize = true;
@@ -550,7 +550,13 @@ eclass_t *Eclass_InitFromText (char *text)
 
   return e;
 }
-
+void Eclass_InsertAlphabetized (eclass_t *e);
+void EClass_CreateNewFromText(const char *text) {
+	eclass_t *cl = Eclass_InitFromText(text);
+	if(cl) {
+		Eclass_InsertAlphabetized(cl);
+	}
+}
 qboolean Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
 {
 	int i;
@@ -845,6 +851,19 @@ void Eclass_InitForSourceDirectory (char *path)
 	eclass_bad = Eclass_InitFromText ("/*QUAKED UNKNOWN_CLASS (0 0.5 0) ?");
 }
 
+eclass_t *Eclass_FindExisting (const char *name) {
+	eclass_t	*e;
+	char		init[1024];
+
+	if (!name)
+		return 0;
+
+	for (e=eclass ; e ; e=e->next)
+		if (!strcmp (name, e->name))
+			return e;
+
+	return 0;
+}
 eclass_t *Eclass_ForName (char *name, qboolean has_brushes)
 {
 	eclass_t	*e;
