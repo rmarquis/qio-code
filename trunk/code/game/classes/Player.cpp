@@ -443,7 +443,7 @@ void Player::onUseKeyDown() {
 			return;
 		}
 		G_Printf("Use trace hit\n");
-		if(hit->doUse(this) == false) {
+		if(hit->doUse(this) == false && hit->isDynamic()) {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->pickupPhysicsProp(me);
 		}

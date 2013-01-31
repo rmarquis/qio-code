@@ -214,6 +214,9 @@ u16 CMU_BuildNode(const arraySTD_c<u32> &triNums, const aabb &prevBB, u32 depth)
 	}
 	pl.dist = -(bb.mins[pl.axis] + axLen*0.5f);
 	arraySTD_c<u32> front, back;
+	u32 c_front = 0;
+	u32 c_back = 0;
+	u32 c_split = 0;
 	for(u32 i = 0; i < triNums.size(); i++) {
 		u32 triangleIndex = triNums[i];
 		u32 i0 = ts_sourceSurf->getIndex(triangleIndex*3+0);
@@ -228,14 +231,23 @@ u16 CMU_BuildNode(const arraySTD_c<u32> &triNums, const aabb &prevBB, u32 depth)
 		const float eps = 0.01f;
 		if(d0 > eps && d1 > eps && d2 > eps) {
 			front.push_back(triangleIndex);
+			c_front++;
 		} else if(d0 < -eps && d1 < -eps && d2 < -eps) {
 			back.push_back(triangleIndex);
+			c_back++;
 		} else {
 			front.push_back(triangleIndex);
 			back.push_back(triangleIndex);
+			c_split++;
 		}
 	}
-
+	if(c_front == 0 && c_back == 0) {
+		ts_nodes[nodeNum].plane.axis = -1;
+		ts_nodes[nodeNum].firstTri = ts_leafTris.size();
+		ts_nodes[nodeNum].numTris = triNums.size();
+		ts_leafTris.addArray(triNums);
+		return nodeNum;
+	}
 	ts_nodes[nodeNum].plane = pl;
 
 	aabb frontBB = bb;

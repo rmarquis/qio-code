@@ -103,16 +103,9 @@ public:
 
 	virtual void debugDrawCollisionModel(class rDebugDrawer_i *dd);
 
-	bool hasPhysicsObject() const {
-		if(body)
-			return true;
-		return false;
-	}
-	bool hasCollisionModel() const {
-		if(cmod)
-			return true;
-		return false;
-	}
+	virtual bool hasPhysicsObject() const;
+	virtual bool hasCollisionModel() const;
+	virtual bool isDynamic() const;
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;

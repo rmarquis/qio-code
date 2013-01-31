@@ -172,6 +172,7 @@ public:
 	}
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) {
 		verts[vertexIndex] = v.xyz;
+		bb.addPoint(v.xyz);
 	}
 	virtual void resizeIndices(u32 newNumIndices) {
 		indices.resize(newNumIndices);

@@ -35,6 +35,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/parser.h> // for Doom3 .proc surfaces parsing
 #include "rf_decalProjector.h"
+#include <shared/simpleTexturedPoly.h>
+#include <api/colMeshBuilderAPI.h>
 
 //
 //	r_surface_c class
@@ -83,7 +85,6 @@ void r_surface_c::getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) co
 	v1 = vert1.xyz;
 	v2 = vert2.xyz;
 }
-#include <shared/simpleTexturedPoly.h>
 void r_surface_c::addPoly(const simplePoly_s &poly) {
 	for(u32 i = 2; i < poly.verts.size(); i++) {
 		addTriangle(poly.verts[0],poly.verts[i-1],poly.verts[i]);
@@ -154,7 +155,6 @@ void r_surface_c::addDrawCall() {
 		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),false);
 	}
 }
-#include <api/colMeshBuilderAPI.h>
 void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
 #if 0
 	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {

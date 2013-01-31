@@ -97,6 +97,9 @@ public:
 	virtual bool isSkeletal() const { 
 		if(type == MOD_SKELETAL)
 			return true;
+		if(type == MOD_DECL) {
+			return true; // FIXME?
+		}
 		return false;
 	}
 	virtual bool isKeyframed() const { 

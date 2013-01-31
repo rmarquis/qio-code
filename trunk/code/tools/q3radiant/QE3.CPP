@@ -312,6 +312,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Light.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("misc_model") == 0) {
+		EClass_CreateNewFromText("/*QUAKED misc_model (0 0.5 0) (-8 -8 -8) (8 8 8)\n"
+				"Misc model.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

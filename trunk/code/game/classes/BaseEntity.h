@@ -95,6 +95,15 @@ public:
 	void setTarget(const char *newTarget);
 	bool hasTarget() const;
 
+	virtual bool hasPhysicsObject() const {
+		return false;
+	}
+	virtual bool hasCollisionModel() const {
+		return false;
+	}
+	virtual bool isDynamic() const {
+		return false;
+	}
 
 	virtual void applyCentralForce(const vec3_c &velToAdd) {
 

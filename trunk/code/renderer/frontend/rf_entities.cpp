@@ -606,6 +606,7 @@ void RFE_AddEntity(rEntityImpl_c *ent) {
 	ent->addDrawCalls();
 }
 static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
+static aCvar_c rf_printAddedEntityModelNames("rf_printAddedEntityModelNames","0");
 void RFE_AddEntityDrawCalls() {
 	if(rf_skipEntities.getInt())
 		return;
@@ -614,6 +615,9 @@ void RFE_AddEntityDrawCalls() {
 	c_entitiesCulledByPortals = 0;
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		rEntityImpl_c *ent = rf_entities[i];
+		if(rf_printAddedEntityModelNames.getInt()) {
+			g_core->Print("RFE_AddEntityDrawCalls: adding entity %i of %i with model %s\n",i,rf_entities.size(),ent->getModelName());
+		}
 		RFE_AddEntity(ent);
 	}
 	if(rf_printAddEntityDrawCallsCullStats.getInt()) {

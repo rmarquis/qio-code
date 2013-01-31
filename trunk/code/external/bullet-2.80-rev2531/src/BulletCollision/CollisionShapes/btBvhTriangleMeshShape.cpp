@@ -156,7 +156,12 @@ void	btBvhTriangleMeshShape::performRaycast (btTriangleCallback* callback, const
 
 	MyNodeOverlapCallback	myNodeCallback(callback,m_meshInterface);
 
-	m_bvh->reportRayOverlappingNodex(&myNodeCallback,raySource,rayTarget);
+	// V. : Why is m_bvh NULL sometimes?!
+	if(m_bvh) {
+		m_bvh->reportRayOverlappingNodex(&myNodeCallback,raySource,rayTarget);
+	} else {
+	
+	}
 }
 
 void	btBvhTriangleMeshShape::performConvexcast (btTriangleCallback* callback, const btVector3& raySource, const btVector3& rayTarget, const btVector3& aabbMin, const btVector3& aabbMax)

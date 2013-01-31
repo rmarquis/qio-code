@@ -175,7 +175,26 @@ void ModelEntity::debugDrawCollisionModel(class rDebugDrawer_i *dd) {
 		cmBBExts_i *bb = cmod->getBBExts();
 		dd->drawBBExts(getOrigin(),getAngles(),bb->getHalfSizes());
 	}
-}	
+}		
+bool ModelEntity::hasPhysicsObject() const {
+	if(body)
+		return true;
+	return false;
+}
+bool ModelEntity::hasCollisionModel() const {
+	if(cmod)
+		return true;
+	return false;
+}
+bool ModelEntity::isDynamic() const {
+	if(body == 0)
+		return false;
+	if(body->getCollisionFlags() & btCollisionObject::CF_STATIC_OBJECT)
+		return false;
+	if(body->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
+		return false;
+	return true;
+}
 void ModelEntity::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model")) {
 		this->setRenderModel(value);

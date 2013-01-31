@@ -240,6 +240,14 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\autoCvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\bspPhysicsDataLoader.cpp"
 				>
 			</File>
@@ -261,6 +269,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\cmBrush.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmTriSoupOctTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmTriSoupOctTree.h"
 				>
 			</File>
 			<File

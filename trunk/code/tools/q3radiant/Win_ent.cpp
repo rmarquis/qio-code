@@ -1145,6 +1145,7 @@ void AssignModel()
 
   CFileDialog dlgFile(TRUE, NULL, NULL, OFN_OVERWRITEPROMPT, "Model files (*.md3)|*.md3||", g_pParentWnd);
   dlgFile.m_ofn.lpstrInitialDir = strPath;
+  // FIXME: it crashes if user clicks "Cancel" instead of selecting model
   if (dlgFile.DoModal() == IDOK)
   {
 	  SendMessage(hwndEnt[EntKeyField], WM_SETTEXT, 0, (LPARAM)"model");

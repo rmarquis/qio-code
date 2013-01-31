@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <math/aabb.h>
 #include "cm_helper.h"
+#include <shared/cmTriSoupOctTree.h>
 
 class cmHelpersList_c : public arraySTD_c<class cmHelper_c*> {
 
@@ -58,6 +59,7 @@ public:
 	cmObjectBase_c() {
 		centerOfMassOffset.set(0,0,0);
 		bHasCenterOfMassOffset = false;
+		bounds.clear();
 	}
 	void setCenterOfMassOffset(const vec3_c &newOfs) {
 		centerOfMassOffset = newOfs;
@@ -427,14 +429,20 @@ public:
 
 class cmTriMesh_c : public cmObjectBase_c, public cmTriMesh_i {
 	cmSurface_c *sf;
+	// extra collision tri for faster raycast checks
+	tsOctTreeHeader_s *extraCMTree;
 public:
 	cmTriMesh_c() {
 		sf = 0;
+		extraCMTree = 0;
 	}
 	~cmTriMesh_c() {
 		if(sf) {
 			delete sf;
 			sf = 0;
+		}
+		if(extraCMTree) {
+			CMU_FreeTriSoupOctTree(extraCMTree);
 		}
 	}
 	// cmObjectBase_c access
@@ -466,9 +474,15 @@ public:
 		out = sf->getAABB();
 	}
 	virtual bool traceRay(class trace_c &tr) {
+		if(tr.getTraceBounds().intersect(this->bounds) == false)
+			return false;
+#if 0
 		if(tr.clipByAABB(this->bounds))
 			return true;
 		return false;
+#else
+		return this->extraCMTree->traceRay(tr);
+#endif
 	}
 	// cmTriMesh_i access
 	virtual const vec3_c *getVerts() const {
@@ -505,6 +519,8 @@ public:
 	cmTriMesh_c(const char *newName, cmSurface_c *newSFPtr) {
 		this->name = newName;
 		this->sf = newSFPtr;
+		this->bounds = this->sf->getAABB();
+		this->extraCMTree = CMU_BuildTriSoupOctTree(*this->sf);
 	}
 };
 
