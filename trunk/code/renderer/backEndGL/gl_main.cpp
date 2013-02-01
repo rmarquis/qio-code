@@ -44,6 +44,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rPointBuffer.h>
 
 #include <shared/cullType.h>
+#include <renderer/drawCallSort.h>
 
 #include <shared/autoCvar.h>
 #include <api/rLightAPI.h>
@@ -111,6 +112,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	textureAPI_i *lastLightmap;
 	bool bindVertexColors;
 	bool bHasVertexColors;
+	drawCallSort_e curDrawCallSort;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -525,6 +527,9 @@ public:
 		this->bHasVertexColors = bBindVertexColors;
 		this->bindVertexColors = bBindVertexColors;
 	}
+	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
+		this->curDrawCallSort = sort;
+	}
 	bool bBoundLightmapCoordsToFirstTextureSlot;
 	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
 		if(boundVBO == verts) {
@@ -738,6 +743,11 @@ public:
 			return;
 		}
 		glColorMask(true, true, true, true);
+
+		if(curDrawCallSort == DCS_BLEND_AFTER_LIGHTING) {
+			// disable stencil buffer
+			setGLStencilTest(false);
+		}
 
 		if(rb_showNormalColors.getInt()) {
 			glShader_c *sh = GL_RegisterShader("showNormalColors");

@@ -102,6 +102,9 @@ public:
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
 
 	}
+	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
+
+	}
 	// returns true if "texgen environment" q3 shader effect can be done on GPU
 	virtual bool gpuTexGensSupported() const {
 		return false;

@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "BaseEntity.h"
 
 enum constraintType_e {
-	PCT_DOF6,
+	PCT_BALL,
 	PCT_HINGE,
 };
 

@@ -86,19 +86,23 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 			return;
 		}
 	}
-	// if we're drawing only on depth buffer
-	if(rf_bDrawOnlyOnDepthBuffer) {
-		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
-			//sort = DCS_BLEND_AFTER_LIGHTING;
-			return;
-		}
-	}
-
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {
 		n = &rf_drawCalls.pushBack();
 	} else {
 		n = &rf_drawCalls[rf_numDrawCalls];
+	}
+	// if we're drawing only on depth buffer
+	if(rf_bDrawOnlyOnDepthBuffer) {
+		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
+			sort = DCS_BLEND_AFTER_LIGHTING;
+			n->drawOnlyOnDepthBuffer = false;
+			//return;
+		} else {
+			n->drawOnlyOnDepthBuffer = true;
+		}
+	} else {
+		n->drawOnlyOnDepthBuffer = false;
 	}
 	n->verts = verts;
 	n->indices = indices;
@@ -114,7 +118,6 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	} else {
 		n->bindVertexColors = bindVertexColors;
 	}
-	n->drawOnlyOnDepthBuffer = rf_bDrawOnlyOnDepthBuffer;
 	n->entity = rf_currentEntity;
 	n->curLight = rf_curLightAPI;
 	rf_numDrawCalls++;
@@ -261,6 +264,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 				}
 			}
 		}
+		rb->setCurrentDrawCallSort(c->sort);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 		rb->setMaterial(c->material,c->lightmap);
