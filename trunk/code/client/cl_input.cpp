@@ -22,9 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl.input.c  -- builds an intended movement command to send to the server
 
 #include "client.h"
+#include <shared/autoCvar.h>
+#include <api/coreAPI.h>
 
 unsigned	frame_msec;
 int			old_com_frameTime;
+
+static aCvar_c cl_printMouseEvents("cl_printMouseEvents","0");
 
 /*
 ===============================================================================
@@ -180,7 +184,14 @@ float CL_KeyState( kbutton_t *key ) {
 		Com_Printf ("%i ", msec);
 	}
 #endif
+	
+	// V: this check was missing in IOQuake3
+	if(frame_msec < 1) {
+		// don't divide by zero
+		return 0;
+	}
 
+	// V: if frame_msec is 0 this would cause dividing by zero
 	val = (float)msec / frame_msec;
 	if ( val < 0 ) {
 		val = 0;
@@ -361,10 +372,19 @@ CL_MouseEvent
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
+		if(cl_printMouseEvents.getInt()) {
+			Com_Printf("CL_MouseEvent: %i %i - %i, forwarded to UI\n",dx,dy,time);
+		}
 //		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
 	} else if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
+		if(cl_printMouseEvents.getInt()) {
+			Com_Printf("CL_MouseEvent: %i %i - %i, forwarded to cgame\n",dx,dy,time);
+		}
 //		VM_Call (cgvm, CG_MOUSE_EVENT, dx, dy);
 	} else {
+		if(cl_printMouseEvents.getInt()) {
+			Com_Printf("CL_MouseEvent: %i %i - %i\n",dx,dy,time);
+		}
 		cl.mouseDx[cl.mouseIndex] += dx;
 		cl.mouseDy[cl.mouseIndex] += dy;
 	}
@@ -634,8 +654,12 @@ void CL_CreateNewCommands( void ) {
 
 	// if running less than 5fps, truncate the extra time to prevent
 	// unexpected moves after a hitch
-	if ( frame_msec > 200 ) {
+	if (frame_msec > 200) {
 		frame_msec = 200;
+	} else if(frame_msec < 1) {
+		// V: this check was missing in IOQuake3
+		g_core->RedWarning("CL_CreateNewCommands: frame_msec is %i.\n Please set your com_maxFPS to lower value!\n",frame_msec);
+		return;
 	}
 	old_com_frameTime = com_frameTime;
 
