@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_drawCall.h"
 #include "rf_skin.h"
+#include "rf_bezier.h"
 #include <api/rbAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
@@ -484,6 +485,9 @@ r_model_c::~r_model_c() {
 		delete ssvCaster;
 		ssvCaster = 0;
 	}
+	for(u32 i = 0; i < bezierPatches.size(); i++) {
+		delete bezierPatches[i];
+	}
 }
 void r_model_c::precalculateStencilShadowCaster() {
 	if(ssvCaster) {
@@ -618,7 +622,12 @@ void r_model_c::recalcBoundingBoxes() {
 		bounds.addBox(surfs[i].getBB());
 	}
 }
-
+void r_model_c::addPatch(class r_bezierPatch_c *newPatch) {
+	// pretesselate the patch so we can get the valid bounding box
+	newPatch->tesselate(3);
+	bounds.addBox(newPatch->getBB());
+	bezierPatches.push_back(newPatch);
+}
 void r_model_c::createVBOsAndIBOs() {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -861,6 +870,9 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
 			sf->addDrawCall();
 		}
+	}
+	for(u32 i = 0; i < bezierPatches.size(); i++) {
+		bezierPatches[i]->addDrawCall();
 	}
 }
 void r_model_c::setSurfMaterial(const char *surfName, const char *matName) {

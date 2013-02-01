@@ -35,10 +35,6 @@ class parser_c {
 	char *fileData; // alloced by filesystem in parser_c::openFile
 	str debugFileName;
 	str lastToken;
-
-	// returns true if eof is reached
-	bool skipToNextToken();
-
 public:
 	parser_c();
 	~parser_c();
@@ -46,6 +42,10 @@ public:
 	void setup(const char *newText, const char *newP = 0);
 	void clear();
 	void setDebugFileName(const char *newDebugFileName);
+
+	// returns true if eof is reached
+	bool skipToNextToken();
+
 	const char *getToken(str &out);
 	const char *getToken() {
 		return getToken(this->lastToken);
@@ -304,8 +304,12 @@ public:
 		}
 		return false; // OK
 	}
-
-
+	const char *getCurDataPtr() const {
+		return p;
+	}
+	void setCurDataPtr(const char *newP) {
+		p = newP;
+	}
 };
 
 

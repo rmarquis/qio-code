@@ -402,6 +402,8 @@ bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreator
 					break;
 				}
 				if(p.atWord("{")) {
+					p.skipToNextToken();
+					const char *primitiveTypeTokenAt = p.getCurDataPtr();
 					// enter new primitive
 					if(p.atWord("brushDef3")) {
 #if 0
@@ -428,6 +430,9 @@ bool MOD_LoadConvertMapFileToStaticTriMesh(const char *fname, staticModelCreator
 							parseError = true;
 							break;
 						}
+						const char *patchDefEnd = p.getCurDataPtr();
+						// let the caller handle bezier patches
+						out->onBezierPatch(primitiveTypeTokenAt,patchDefEnd);
 					} else {
 						if(MOD_ConvertBrushQ3(p,out)) {		
 							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing old brush format at line %i of %s\n",p.getCurrentLineNumber(),fname);

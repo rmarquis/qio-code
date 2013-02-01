@@ -65,5 +65,6 @@ public:
 		verts.push_back(nv);
 	}
 	void tesselate(u32 level, colMeshBuilderAPI_i *out);
+	void fromMapBezierPatch(const class mapBezierPatch_c *in);
 };
 #endif // __RF_BEZIER_H__

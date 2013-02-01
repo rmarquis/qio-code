@@ -21,7 +21,8 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rf_bezier.h - bezier patch class
+// rf_bezier.h - bezier patch class. 
+// Used for both .bsp file patches and .map file patches.
 #ifndef __RF_BEZIER_H__
 #define __RF_BEZIER_H__
 
@@ -61,6 +62,8 @@ public:
 	r_bezierPatch_c();
 	~r_bezierPatch_c();
 
+	void setMaterial(const char *matName);
+
 	inline void setMaterial(class mtrAPI_i *newMat) {
 		mat = newMat;
 	}
@@ -80,5 +83,8 @@ public:
 	void addDrawCall();
 	bool traceRay(class trace_c &tr);
 	const aabb &getBB() const;
+	// load .map file bezier patch definition
+	bool fromMapBezierPatch(const class mapBezierPatch_c *p);
+	bool fromString(const char *pDefStart, const char *pDefEnd);
 };
 #endif // __RF_BEZIER_H__

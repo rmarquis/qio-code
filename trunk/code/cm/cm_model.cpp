@@ -97,14 +97,27 @@ class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb) {
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
 #include <shared/cmBrush.h>
+#include <shared/cmBezierPatch.h>
+#include <shared/mapBezierPatch.h>
 struct cmMapFileEntity_s {
 	ePairList_c ePairs;
 	arraySTD_c<cmBrush_c*> brushes;
+	arraySTD_c<cmSurface_c*> bezierPatches;
 
 	cmHelper_c *allocHelper() {
 		cmHelper_c *ret = new cmHelper_c;
 		ret->setKeyPairs(ePairs);
 		return ret;
+	}
+
+	~cmMapFileEntity_s() {
+		for(u32 i = 0; i < brushes.size(); i++) {
+			delete brushes[i];
+		}
+		// don't free cmSurface_c's, cmTriMesh_c uses them
+		for(u32 i = 0; i < bezierPatches.size(); i++) {
+			//delete bezierPatches[i];
+		}
 	}
 };
 class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
@@ -116,6 +129,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	bool parseError = false;
 	u32 numEntitiesWithBrushes = 0;
 	u32 numTotalBrushes = 0;
+	u32 numTotalPatches = 0;
 	cmBrush_c *firstBrush = 0;
 	arraySTD_c<cmMapFileEntity_s*> entities;
 
@@ -135,6 +149,8 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 				if(p.atWord("{")) {
 					// enter new primitive
 					cmBrush_c *nb = 0;
+					p.skipToNextToken();
+					const char *primTypePos = p.getCurDataPtr();
 					if(p.atWord("brushDef3")) {
 						nb = new cmBrush_c;
 						if(nb->parseBrushD3(p)) {		
@@ -144,11 +160,33 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 							break;
 						}
 					} else if(p.atWord("patchDef2") || p.atWord("patchDef3")) {
+#if 0
 						if(p.skipCurlyBracedBlock()) {							
 							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
 							parseError = true;
 							break;
 						}
+#else
+						p.setCurDataPtr(primTypePos);
+						numTotalPatches++;
+						mapBezierPatch_c bp;
+						if(bp.parse(p)) {
+							g_core->RedWarning("CM_LoadModelFromMapFile: error while parsing patchDef* at line %i of %s\n",p.getCurrentLineNumber(),fname);
+							parseError = true;
+							break;
+						}
+						cmSurface_c *triData = new cmSurface_c;
+#if 0
+						// do the fastest, low-detail bezier patch tesselation
+						bp.getLowestDetailCMSurface(triData);
+#else
+						// it seems that low-detail bezier patch tesselation is not enough.
+						cmBezierPatch_c cmBP;
+						cmBP.fromMapBezierPatch(&bp);
+						cmBP.tesselate(3,triData);
+#endif
+						ne->bezierPatches.push_back(triData);
+#endif
 						if(p.atWord("}") == false) {
 							g_core->RedWarning("MOD_LoadConvertMapFileToStaticTriMesh: error while parsing patchDef2 at line %i of %s\n",p.getCurrentLineNumber(),fname);
 							parseError = true;
@@ -198,7 +236,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 	}
 	cMod_i *ret = 0;
 	// see if we can simplify the cModel
-	if(numTotalBrushes == 1) {
+	if(numTotalBrushes == 1 && numTotalPatches == 0) {
 		cmHull_c *hull = new cmHull_c(fname,*firstBrush);
 		cm_models.addObject(hull);
 
@@ -221,6 +259,10 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 		for(u32 j = 0; j < e->brushes.size(); j++) {
 			cmHull_c *hull = new cmHull_c(va("%s::subBrush%i",fname,j),*e->brushes[j]);
 			compound->addShape(hull);
+		}
+		for(u32 j = 0; j < e->bezierPatches.size(); j++) {
+			cmTriMesh_c *triMesh = new cmTriMesh_c(va("%s::subBezierPatch%i",fname,j),e->bezierPatches[j]);
+			compound->addShape(triMesh);
 		}
 		// add helpers and their brushes
 		for(u32 i = 1; i < entities.size(); i++) {

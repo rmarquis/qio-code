@@ -23,6 +23,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_bezier.cpp - bezier patch class
 #include "rf_bezier.h"
+#include <shared/parser.h>
+#include <api/materialSystemAPI.h>
 
 void bezierPatchControlGroup3x3_s::tesselate(u32 level, class r_surface_c *out) {
 	//	calculate how many vertices across/down there are
@@ -126,7 +128,9 @@ r_bezierPatch_c::~r_bezierPatch_c() {
 		delete sf;
 	}
 }
-
+void r_bezierPatch_c::setMaterial(const char *matName) {
+	this->mat = g_ms->registerMaterial(matName);
+}
 void r_bezierPatch_c::tesselate(u32 newLevel) {
 	if(sf == 0) {
 		sf = new r_surface_c;
@@ -156,4 +160,24 @@ bool r_bezierPatch_c::traceRay(class trace_c &tr) {
 const aabb &r_bezierPatch_c::getBB() const {
 	return sf->getBB();
 }
-
+#include <shared/mapBezierPatch.h>
+bool r_bezierPatch_c::fromMapBezierPatch(const mapBezierPatch_c *p) {
+	this->width = p->getWidth();
+	this->height = p->getHeight();
+	this->setMaterial(p->getMatName());
+	verts.resize(p->getNumVerts());
+	for(u32 i = 0; i < verts.size(); i++) {
+		const simpleVert_s &s = p->getVert(i);
+		verts[i].xyz = s.xyz;
+		verts[i].tc = s.tc;
+	}
+	return false;
+}
+bool r_bezierPatch_c::fromString(const char *pDefStart, const char *pDefEnd) {
+	mapBezierPatch_c mapPatch;
+	if(mapPatch.fromString(pDefStart,pDefEnd)) {
+		return true;
+	}
+	this->fromMapBezierPatch(&mapPatch);
+	return false;
+}

@@ -507,6 +507,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\mapBezierPatch.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\mapBezierPatch.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 				<FileConfiguration

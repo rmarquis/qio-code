@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_surface.h"
 #include "rf_model.h"
+#include "rf_bezier.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 
@@ -112,6 +113,20 @@ public:
 		currentEntityNum = entityNum;
 		entModels.resize(currentEntityNum+1);
 		entModels[currentEntityNum] = 0;//new r_model_c;
+	}
+	virtual bool onBezierPatch(const char *patchDefStart, const char *patchDefEnd) {
+		// ensure that model is allocated
+		if(entModels[currentEntityNum] == 0) {
+			entModels[currentEntityNum] = new r_model_c;
+		}
+		r_model_c *mod = entModels[currentEntityNum];
+		r_bezierPatch_c *bezierPatch = new r_bezierPatch_c;
+		if(bezierPatch->fromString(patchDefStart,patchDefEnd)) {
+			delete bezierPatch;
+		} else {
+			mod->addPatch(bezierPatch);
+		}
+		return true;
 	}
 	r_model_c *getWorldModel() const {
 		if(entModels.size() == 0) {

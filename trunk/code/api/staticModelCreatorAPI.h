@@ -60,6 +60,9 @@ public:
 	virtual void onNewMapEntity(u32 entityNum) {
 
 	}
+	virtual bool onBezierPatch(const char *patchDefStart, const char *patchDefEnd) {
+		return false;
+	}
 };
 
 #endif // __STATICMODELCREATORAPI_H__

@@ -198,7 +198,10 @@ public:
 };
 
 class r_model_c : public staticModelCreatorAPI_i {
+	// non-animated render model surfaces
 	arraySTD_c<r_surface_c> surfs;
+	// extra bezier patches data
+	arraySTD_c<class r_bezierPatch_c*> bezierPatches;
 	aabb bounds;
 	str name;
 	// used to speed up raycasting / decal creation
@@ -262,6 +265,8 @@ public:
 	virtual bool hasPerSurfaceFunctionsImplemented() const {
 		return true;
 	}
+
+	void addPatch(class r_bezierPatch_c *newPatch);
 
 	void createVBOsAndIBOs();
 

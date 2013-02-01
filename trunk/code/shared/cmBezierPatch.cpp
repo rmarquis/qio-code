@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // cmBezierPatch.cpp - simplified bezier patch class for collision detection
 #include "cmBezierPatch.h"
 #include <api/colMeshBuilderAPI.h>
+#include <shared/mapBezierPatch.h>
 
 void cmBezierPatchControlGroup3x3_s::tesselate(u32 level, class colMeshBuilderAPI_i *out) {
 	//	calculate how many vertices across/down there are
@@ -126,6 +127,14 @@ void cmBezierPatch_c::tesselate(u32 newLevel, colMeshBuilderAPI_i *out) {
 		as3x3->init(this);
 	}
 	as3x3->tesselate(newLevel,out);
+}
+void cmBezierPatch_c::fromMapBezierPatch(const class mapBezierPatch_c *in) {
+	verts.resize(in->getNumVerts());
+	for(u32 i = 0; i < verts.size(); i++) {
+		verts[i] = in->getVert(i).xyz;
+	}
+	width = in->getWidth();
+	height = in->getHeight();
 }
 
 
