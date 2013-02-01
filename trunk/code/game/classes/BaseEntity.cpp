@@ -102,6 +102,8 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		this->setTargetName(value);
 	} else if(!stricmp(key,"target")) {
 		this->setTarget(value);
+	} else if(!stricmp(key,"parent")) {
+		this->setParent(value,-1,true);
 	} else {
 
 	}
@@ -189,14 +191,27 @@ bool BaseEntity::hasTarget() const {
 		return true;
 	return false;
 }
-void BaseEntity::setParent(BaseEntity *newParent, int tagNum) {
+void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {
 	if(parent) {
 		detachFromParent();
 	}
+	if(newParent == 0)
+		return;
 	parent = newParent;
 	myEdict->s->parentNum = newParent->getEntNum();
 	myEdict->s->parentTagNum = tagNum;
+	if(enableLocalOffset) {
+		const matrix_c &thisMat = this->getMatrix();
+		const matrix_c &parentMat = parent->getMatrix();
+		matrix_c ofs = parentMat.getInversed() * thisMat;
+		myEdict->s->parentOffset = ofs.getOrigin();
+	} else {
+		myEdict->s->parentOffset.zero();
+	}
 	parent->attachments.push_back(this);
+}
+void BaseEntity::setParent(const char *parentTargetName, int tagNum, bool enableLocalOffset) {
+	setParent(G_FindFirstEntityWithTargetName(parentTargetName),tagNum,enableLocalOffset);
 }
 void BaseEntity::detachFromParent() {
 	if(parent == 0) {

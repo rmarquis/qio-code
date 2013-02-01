@@ -485,6 +485,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Constraint.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Constraint.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Door.cpp"
 				>
 			</File>

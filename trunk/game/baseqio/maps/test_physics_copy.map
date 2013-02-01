@@ -171,8 +171,8 @@
 }
 // entity 1
 {
-"targetname" "chain1_body1"
 "classname" "brushmodel"
+"targetname" "chain1_body1"
 // brush 0
 {
 ( 384 -72 360 ) ( 384 -80 336 ) ( 400 -76 348 ) unnamed 0 0 0 0.500000 0.500000 0 0 0
@@ -183,21 +183,20 @@
 ( 392 -88 336 ) ( 400 -88 360 ) ( 396 -72 348 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 384 -88 360 ) ( 392 -88 336 ) ( 388 -72 348 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 392 -88 384 ) ( 384 -88 360 ) ( 388 -72 372 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
-( 384 -82 383 ) ( 384 -78 383 ) ( 400 -80 383 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 }
 }
 // entity 2
 {
-"body1" "chain1_body1"
-"body0" "worldspawn"
-"origin" "392 -80 384"
 "classname" "func_constraint"
+"origin" "392 -80 384"
+"body0" "worldspawn"
+"body1" "chain1_body1"
 }
 // entity 3
 {
-"classname" "light"
-"light" "128"
 "origin" "-240 48 144"
+"light" "128"
+"classname" "light"
 }
 // entity 4
 {
@@ -214,8 +213,8 @@
 }
 // entity 5
 {
-"classname" "info_player_start"
 "origin" "8 -120 72"
+"classname" "info_player_start"
 }
 // entity 6
 {
@@ -375,15 +374,15 @@
 }
 // entity 18
 {
-"body1" "chain1_body2"
-"body0" "chain1_body1"
-"classname" "func_constraint"
 "origin" "392 -80 336"
+"classname" "func_constraint"
+"body0" "chain1_body1"
+"body1" "chain1_body2"
 }
 // entity 19
 {
-"targetname" "chain1_body2"
 "classname" "brushmodel"
+"targetname" "chain1_body2"
 // brush 0
 {
 ( 384 -72 312 ) ( 384 -80 288 ) ( 400 -76 300 ) unnamed 0 0 0 0.500000 0.500000 0 0 0
@@ -394,20 +393,19 @@
 ( 392 -88 288 ) ( 400 -88 312 ) ( 396 -72 300 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 384 -88 312 ) ( 392 -88 288 ) ( 388 -72 300 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 392 -88 336 ) ( 384 -88 312 ) ( 388 -72 324 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
-( 384 -81 335 ) ( 384 -78 335 ) ( 400 -79 335 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 }
 }
 // entity 20
 {
-"body1" "chain1_body3"
-"body0" "chain1_body2"
-"origin" "392 -80 288"
 "classname" "func_constraint"
+"origin" "392 -80 288"
+"body0" "chain1_body2"
+"body1" "chain1_body3"
 }
 // entity 21
 {
-"targetname" "chain1_body3"
 "classname" "brushmodel"
+"targetname" "chain1_body3"
 // brush 0
 {
 ( 384 -72 264 ) ( 384 -80 240 ) ( 400 -76 252 ) unnamed 0 0 0 0.500000 0.500000 0 0 0
@@ -418,20 +416,19 @@
 ( 392 -88 240 ) ( 400 -88 264 ) ( 396 -72 252 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 384 -88 264 ) ( 392 -88 240 ) ( 388 -72 252 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 ( 392 -88 288 ) ( 384 -88 264 ) ( 388 -72 276 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
-( 384 -81 287 ) ( 384 -78 287 ) ( 400 -79 287 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
 }
 }
 // entity 22
 {
-"classname" "func_constraint"
-"origin" "392 -80 240"
-"body0" "chain1_body4"
 "body1" "chain1_body3"
+"body0" "chain1_body4"
+"origin" "392 -80 240"
+"classname" "func_constraint"
 }
 // entity 23
 {
-"classname" "brushmodel"
 "targetname" "chain1_body4"
+"classname" "brushmodel"
 // brush 0
 {
 ( 384 -72 216 ) ( 384 -80 192 ) ( 400 -76 204 ) unnamed 0 -32 0 0.500000 0.500000 0 0 0
@@ -442,19 +439,18 @@
 ( 392 -88 192 ) ( 400 -88 216 ) ( 396 -72 204 ) unnamed -32 -32 0 0.500000 0.500000 0 0 0
 ( 384 -88 216 ) ( 392 -88 192 ) ( 388 -72 204 ) unnamed -32 -32 0 0.500000 0.500000 0 0 0
 ( 392 -88 240 ) ( 384 -88 216 ) ( 388 -72 228 ) unnamed -32 -32 0 0.500000 0.500000 0 0 0
-( 384 -82 239 ) ( 384 -78 239 ) ( 400 -80 239 ) unnamed -32 -32 0 0.500000 0.500000 0 0 0
 }
 }
 // entity 24
 {
-"classname" "light"
-"origin" "392 -80 184"
 "parent" "chain1_body4"
+"origin" "392 -80 184"
+"classname" "light"
 }
 // entity 25
 {
-"classname" "brushmodel"
 "targetname" "chain2_body1"
+"classname" "brushmodel"
 // brush 0
 {
 ( 80 104 168 ) ( 80 96 144 ) ( 96 100 156 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
@@ -469,22 +465,22 @@
 }
 // entity 26
 {
-"classname" "func_constraint"
-"origin" "88 96 192"
-"body0" "worldspawn"
 "body1" "chain2_body1"
+"body0" "worldspawn"
+"origin" "88 96 192"
+"classname" "func_constraint"
 }
 // entity 27
 {
-"origin" "88 96 144"
-"classname" "func_constraint"
-"body0" "chain2_body1"
 "body1" "chain2_body2"
+"body0" "chain2_body1"
+"classname" "func_constraint"
+"origin" "88 96 144"
 }
 // entity 28
 {
-"classname" "brushmodel"
 "targetname" "chain2_body2"
+"classname" "brushmodel"
 // brush 0
 {
 ( 80 104 120 ) ( 80 96 96 ) ( 96 100 108 ) unnamed -32 0 0 0.500000 0.500000 0 0 0
@@ -499,15 +495,15 @@
 }
 // entity 29
 {
-"classname" "func_constraint"
-"origin" "88 96 96"
-"body0" "chain2_body2"
 "body1" "chain2_body3"
+"body0" "chain2_body2"
+"origin" "88 96 96"
+"classname" "func_constraint"
 }
 // entity 30
 {
-"classname" "brushmodel"
 "targetname" "chain2_body3"
+"classname" "brushmodel"
 // brush 0
 {
 ( 80 104 72 ) ( 80 96 48 ) ( 96 100 60 ) unnamed -32 0 0 0.500000 0.500000 0 0 0

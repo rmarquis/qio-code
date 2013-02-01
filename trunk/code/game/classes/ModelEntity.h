@@ -106,6 +106,9 @@ public:
 	virtual bool hasPhysicsObject() const;
 	virtual bool hasCollisionModel() const;
 	virtual bool isDynamic() const;
+	virtual class btRigidBody *getRigidBody() const {
+		return body;
+	}
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;

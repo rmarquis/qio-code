@@ -111,6 +111,11 @@ class afRagdollSpawner_c : public afRagdollHelper_c {
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
 		btRigidBody* body = new btRigidBody(rbInfo);
 
+		// these are the settings from Bullet Ragdoll demo
+		body->setDamping(0.05, 0.85);
+		body->setDeactivationTime(0.8);
+		body->setSleepingThresholds(1.6, 2.5);
+
 		dynamicsWorld->addRigidBody(body);
 		return body;
 	}

@@ -144,6 +144,12 @@ void G_SpawnMapEntities(const char *mapName) {
 		entDef_c *entDef = g_entDefs[i];
 		G_SpawnEntDef(entDef);
 	}
+	// FIXME: do this other way
+	for(u32 i = 0; i < level.num_entities; i++) {
+		if(g_entities[i].ent) {
+			g_entities[i].ent->postSpawn2();
+		}
+	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" done.\n");
 		g_loadingScreen->addLoadingString("Current game entities count: %i.\n",level.num_entities);

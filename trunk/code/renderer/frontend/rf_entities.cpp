@@ -490,13 +490,19 @@ void rEntityImpl_c::addDrawCalls() {
 	rf_currentEntity = 0;
 }
 bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) {
-	if(model == 0)
-		return true; // error
-	skelModelAPI_i *skel = model->getSkelModelAPI();
-	if(skel == 0)
+	if(model == 0) {
+		out = this->matrix;
 		return true; // error 
-	if(skelAnimCtrl == 0)
-		return true; // error
+	}
+	skelModelAPI_i *skel = model->getSkelModelAPI();
+	if(skel == 0) {
+		out = this->matrix;
+		return true; // error 
+	}
+	if(skelAnimCtrl == 0) {
+		out = this->matrix;
+		return true; // error 
+	}
 	const boneOrArray_c &curBones = skelAnimCtrl->getCurBones();
 	if(localBoneIndex < 0 || localBoneIndex >= curBones.size()) {
 		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());

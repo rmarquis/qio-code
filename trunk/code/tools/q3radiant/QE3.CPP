@@ -322,6 +322,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Brush model.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("func_constraint") == 0) {
+		EClass_CreateNewFromText("/*QUAKED func_constraint (0.75 0.5 0) (-8 -8 -8) (8 8 8)\n"
+				"Physics constraint, used to connect two bodies together.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

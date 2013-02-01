@@ -142,9 +142,18 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		parent->rEnt->getBoneWorldOrientation(cent->currentState.parentTagNum,mat);
 		cent->lerpAngles = mat.getAngles();
 		cent->lerpOrigin = mat.getOrigin();
+		if(cent->currentState.parentOffset.isAlmostZero() == false) {
+			matrix_c matAngles = mat;
+			matAngles.setOrigin(vec3_origin);
+			vec3_c ofs;
+			matAngles.transformPoint(cent->currentState.parentOffset,ofs);
+			cent->lerpOrigin += ofs;
+		}
 		if(cent->rEnt) {
 			cent->rEnt->setOrigin(cent->lerpOrigin);
 			cent->rEnt->setAngles(cent->lerpAngles);
+		} else if(cent->rLight) {
+			cent->rLight->setOrigin(cent->lerpOrigin);
 		}
 		return;
 	}

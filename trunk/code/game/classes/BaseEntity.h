@@ -104,6 +104,9 @@ public:
 	virtual bool isDynamic() const {
 		return false;
 	}
+	virtual class btRigidBody *getRigidBody() const {
+		return 0;
+	}
 
 	virtual void applyCentralForce(const vec3_c &velToAdd) {
 
@@ -114,11 +117,17 @@ public:
 	virtual void runWaterPhysics(float curWaterLevel) {
 
 	}
+	// used to create rigid bodies
 	virtual void postSpawn() {
 
 	}
+	// used to create constraints linking rigid bodies
+	virtual void postSpawn2() {
+	
+	}
 
-	void setParent(BaseEntity *newParent, int tagNum = -1);
+	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
+	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();
 
 	virtual void getLocalBounds(aabb &out) const;
