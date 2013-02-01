@@ -317,6 +317,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Misc model.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("brushmodel") == 0) {
+		EClass_CreateNewFromText("/*QUAKED brushmodel (0 0.5 0)\n"
+				"Brush model.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

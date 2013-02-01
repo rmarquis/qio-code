@@ -130,7 +130,7 @@ void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
 		} else if(in.type == SIT_PROC) {
 			staticShadowVolume->addRSurface(in.sf,pos,0);
 		} else if(in.type == SIT_STATIC) {
-
+			staticShadowVolume->addRSurface(in.sf,pos,0);
 		}
 	}
 }

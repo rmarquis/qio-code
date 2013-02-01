@@ -911,6 +911,15 @@ void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 			light->addStaticModelSurfaceInteraction(/*this,*/sf);
 		}
 	}
+	for(u32 i = 0; i < bezierPatches.size(); i++) {
+		class r_bezierPatch_c *bp = bezierPatches[i];
+		if(bp->getBB().intersect(light->getABSBounds())) {
+			if(bp->getMat()->hasBlendFunc())
+				continue;
+			//light->addBezierPatchInteraction(/*this,*/bp);
+			light->addStaticModelSurfaceInteraction((r_surface_c*)bp->getInstancePtr());
+		}
+	}
 }
 bool r_model_c::parseProcModel(class parser_c &p) {
 	if(p.atWord("{")==false) {

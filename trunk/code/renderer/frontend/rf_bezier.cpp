@@ -160,6 +160,105 @@ bool r_bezierPatch_c::traceRay(class trace_c &tr) {
 const aabb &r_bezierPatch_c::getBB() const {
 	return sf->getBB();
 }
+void r_bezierPatch_c::calcNormals() {
+	u32 i;
+	for (i = 0; i < height; i++) {
+		vec3_c delta = verts[i*width].xyz - verts[i*width+width-1].xyz;
+		float len = delta.lenSQ();//delta.length();
+		if (len > 1.0) {
+			break;
+		}
+	}
+	bool wrapWidth;
+	if (i == height) {
+		wrapWidth = true;
+	} else{
+		wrapWidth = false;
+	}
+
+	for ( i = 0; i < width; i++ ) {
+		vec3_c delta = verts[i].xyz - verts[i + (height-1)*width].xyz;
+		float len = delta.lenSQ();//delta.length();
+		if (len > 1.0) {
+			break;
+		}
+	}
+	bool wrapHeight;
+	if (i == width) {
+		wrapHeight = true;
+	} else {
+		wrapHeight = false;
+	}
+
+	static int	neighbors[8][2] = {
+		{0,1}, {1,1}, {1,0}, {1,-1}, {0,-1}, {-1,-1}, {-1,0}, {-1,1}
+	};
+		
+	for (i = 0; i < width; i++) {
+		for (u32 j = 0; j < height; j++) {
+			int count = 0;
+			rVert_c *dv = &verts[j*width+i];
+			const vec3_c &base = dv->xyz;
+			bool good[8];
+			vec3_c around[8];
+			for (u32 k = 0; k < 8; k++) {
+				around[k].zero();
+				good[k] = false;
+
+				for (u32 dist = 1; dist <= 3; dist++) {
+					int x = i + neighbors[k][0] * dist;
+					int y = j + neighbors[k][1] * dist;
+					if ( wrapWidth ) {
+						if ( x < 0 ) {
+							x = width - 1 + x;
+						} else if ( x >= width ) {
+							x = 1 + x - width;
+						}
+					}
+					if ( wrapHeight ) {
+						if ( y < 0 ) {
+							y = height - 1 + y;
+						} else if ( y >= height ) {
+							y = 1 + y - height;
+						}
+					}
+
+					if ( x < 0 || x >= width || y < 0 || y >= height ) {
+						break;					// edge of patch
+					}
+					vec3_c temp = verts[y*width+x].xyz - base;
+					if ( temp.normalize2() == 0 ) {
+						continue;				// degenerate edge, get more dist
+					} else {
+						good[k] = true;
+						around[k] = temp;
+						break;					// good edge
+					}
+				}
+			}
+
+			vec3_c sum;
+			sum.zero();
+			for (u32 k = 0; k < 8; k++) {
+				int other = (k+1)&7; // second point index
+				if ( !good[k] || !good[other] ) {
+					continue;	// didn't get two points
+				}
+				vec3_c normal;
+				normal.crossProduct( around[other], around[k] );
+				if ( normal.normalize2() == 0 ) {
+					continue;
+				}
+				sum += normal;
+				count++;
+			}
+			if ( count == 0 ) {
+				count = 1;
+			}
+			dv->normal = sum.getNormalized();
+		}
+	}
+}
 #include <shared/mapBezierPatch.h>
 bool r_bezierPatch_c::fromMapBezierPatch(const mapBezierPatch_c *p) {
 	this->width = p->getWidth();
@@ -171,6 +270,7 @@ bool r_bezierPatch_c::fromMapBezierPatch(const mapBezierPatch_c *p) {
 		verts[i].xyz = s.xyz;
 		verts[i].tc = s.tc;
 	}
+	calcNormals();
 	return false;
 }
 bool r_bezierPatch_c::fromString(const char *pDefStart, const char *pDefEnd) {

@@ -58,6 +58,8 @@ friend class bezierPatch3x3_c;
 	class textureAPI_i *lightmap;
 	bezierPatch3x3_c *as3x3;
 	r_surface_c *sf;
+
+	void calcNormals();
 public:
 	r_bezierPatch_c();
 	~r_bezierPatch_c();
@@ -78,6 +80,12 @@ public:
 	}
 	void addVertex(const rVert_c &nv) {
 		verts.push_back(nv);
+	}
+	const r_surface_c *getInstancePtr() const {
+		return sf;
+	}
+	mtrAPI_i *getMat() const {
+		return mat;
 	}
 	void tesselate(u32 newLevel);
 	void addDrawCall();
