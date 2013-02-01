@@ -31,7 +31,7 @@ DEFINE_CLASS(Constraint, "BaseEntity");
 DEFINE_CLASS_ALIAS(Constraint, func_constraint);
 
 Constraint::Constraint() {
-
+	type = PCT_BALL;
 }
 void Constraint::postSpawn2() {
 	e0 = G_FindFirstEntityWithTargetName(e0TargetName);
@@ -52,31 +52,51 @@ void Constraint::postSpawn2() {
 	btTransform frameA;
 	frameA.setFromOpenGLMatrix(b0Mat);
 	frameA.scaleOrigin(QIO_TO_BULLET);
-	btGeneric6DofConstraint *bc;
-	if(e1 && e0) {
-		matrix_c b1Mat = e1->getMatrix().getInversed()*cMat;
-		btTransform frameB;
-		frameB.setFromOpenGLMatrix(b1Mat);
-		frameB.scaleOrigin(QIO_TO_BULLET);
-		bc = new btGeneric6DofConstraint(*e0->getRigidBody(),*e1->getRigidBody(),frameA,frameB,false);
-	} else {
-		bc = new btGeneric6DofConstraint(*e0->getRigidBody(),frameA,false);
+	if(type == PCT_BALL) {
+		btGeneric6DofConstraint *bc;
+		if(e1 && e0) {
+			matrix_c b1Mat = e1->getMatrix().getInversed()*cMat;
+			btTransform frameB;
+			frameB.setFromOpenGLMatrix(b1Mat);
+			frameB.scaleOrigin(QIO_TO_BULLET);
+			bc = new btGeneric6DofConstraint(*e0->getRigidBody(),*e1->getRigidBody(),frameA,frameB,false);
+		} else {
+			bc = new btGeneric6DofConstraint(*e0->getRigidBody(),frameA,false);
+		}
+		// lock linear transforms
+		bc->setLimit(0,0,0);
+		bc->setLimit(1,0,0);
+		bc->setLimit(2,0,0);
+		// free the angular axes
+		bc->setLimit(3,-1,0);
+		bc->setLimit(4,-1,0);
+		bc->setLimit(5,-1,0);
+		dynamicsWorld->addConstraint(bc);
+	} else if(type == PCT_HINGE) {
+		btHingeConstraint *hinge;
+		if(e1 && e0) {
+			matrix_c b1Mat = e1->getMatrix().getInversed()*cMat;
+			btTransform frameB;
+			frameB.setFromOpenGLMatrix(b1Mat);
+			frameB.scaleOrigin(QIO_TO_BULLET);
+			hinge = new btHingeConstraint(*e0->getRigidBody(),*e1->getRigidBody(),frameA,frameB,false);
+		} else {
+			hinge = new btHingeConstraint(*e0->getRigidBody(),frameA,false);
+		}
+		btVector3 ax(0,0,1);
+		hinge->setAxis(ax);
+		dynamicsWorld->addConstraint(hinge);
 	}
-	// lock linear transforms
-	bc->setLimit(0,0,0);
-	bc->setLimit(1,0,0);
-	bc->setLimit(2,0,0);
-	// free the angular axes
-	bc->setLimit(3,-1,0);
-	bc->setLimit(4,-1,0);
-	bc->setLimit(5,-1,0);
-	dynamicsWorld->addConstraint(bc);
 }
 void Constraint::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"body0")) {
 		e0TargetName = value;
 	} else if(!stricmp(key,"body1")) {
 		e1TargetName = value;
+	} else if(!stricmp(key,"type")) {
+		if(!stricmp(value,"hinge")) {
+			type = PCT_HINGE;
+		}	
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

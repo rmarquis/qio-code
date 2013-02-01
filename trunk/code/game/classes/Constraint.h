@@ -28,11 +28,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "BaseEntity.h"
 
+enum constraintType_e {
+	PCT_DOF6,
+	PCT_HINGE,
+};
+
 class Constraint : public BaseEntity {
 	safePtr_c<BaseEntity> e0;
 	str e0TargetName;
 	safePtr_c<BaseEntity> e1;
 	str e1TargetName;
+	constraintType_e type;
 public:
 	Constraint();
 
