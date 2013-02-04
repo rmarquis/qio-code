@@ -653,7 +653,7 @@ void G_LoadQuake3ItemDefs() {
 						newClass->setBaseClass("ModelEntity");//"ItemArmor");
 					} else if(!stricmp(giTypeStr,"IT_WEAPON")) {
 						//newClass->setBaseClass("ModelEntity");
-						newClass->setBaseClass("Weapon");
+						newClass->setBaseClass("Q3Weapon");
 						//if(bFoundWorldModelStr) {
 						//	const cFieldValue_c *worldModelField = si->findFieldValue(world_modelStrIndex);
 						//	if(worldModelField) {

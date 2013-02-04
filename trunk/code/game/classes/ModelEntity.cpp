@@ -109,6 +109,13 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 void ModelEntity::setRenderModelSkin(const char *newSkinName) {
 	this->myEdict->s->rSkinIndex = G_RenderSkinIndex(newSkinName);
 }
+void ModelEntity::setSpriteModel(const char *newSpriteMaterial, float newSpriteRadius) {
+	// "sprites/plasma1|sprite|radius,32"
+	str newRenderModelName = newSpriteMaterial;
+	newRenderModelName.append("|sprite");
+	newRenderModelName.append(va("|radius,%f",newSpriteRadius));
+	this->setRenderModel(newRenderModelName);
+}
 int ModelEntity::getBoneNumForName(const char *boneName) {
 	if(cmSkel == 0) {
 		cmSkel = cm->registerSkelModel(this->renderModelName);

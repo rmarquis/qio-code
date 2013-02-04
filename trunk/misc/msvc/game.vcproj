@@ -600,6 +600,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\Q3Weapon.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Q3Weapon.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\TriggerPush.cpp"
 					>
 				</File>

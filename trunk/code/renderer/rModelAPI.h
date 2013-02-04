@@ -53,6 +53,9 @@ public:
 	virtual bool isSkeletal() const = 0;
 	virtual bool isKeyframed() const = 0;
 	virtual bool isQ3PlayerModel() const = 0;
+	virtual bool isSprite() const = 0;
+	virtual float getSpriteRadius() const = 0;
+	virtual mtrAPI_i *getSpriteMaterial() const = 0;
 	// returns the number of surfaces in static/skeletal model
 	virtual unsigned int getNumSurfaces() const = 0;
 };

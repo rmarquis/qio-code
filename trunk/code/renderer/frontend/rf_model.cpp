@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/declManagerAPI.h>
 #include <api/kfModelAPI.h>
 #include <api/q3PlayerModelDeclAPI.h>
+#include <api/materialSystemAPI.h>
 
 // for bsp inline models
 void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
@@ -51,6 +52,12 @@ void model_c::initStaticModel(class r_model_c *myNewModelPtr) {
 	this->type = MOD_STATIC;
 	this->staticModel = myNewModelPtr;
 	this->bb = myNewModelPtr->getBounds();
+}
+void model_c::initSprite(const char *matName, float newSpriteRadius) {
+	this->type = MOD_SPRITE;
+	this->spriteMaterial = g_ms->registerMaterial(matName);
+	this->spriteRadius = newSpriteRadius;
+	this->bb.fromRadius(newSpriteRadius);
 }
 u32 model_c::getNumSurfaces() const {
 	if(type == MOD_BSP) {
@@ -168,14 +175,126 @@ rModelAPI_i *RF_FindModel(const char *modName) {
 	model_c *ret = rf_models.getEntry(modName);
 	return ret;
 }
-rModelAPI_i *RF_RegisterModel(const char *modName) {
+class strParm_c {
+	str name;
+	arraySTD_c<str> args;
+public:
+	void fromStringArray(const arraySTD_c<str> &strings) {
+		if(strings.size() == 0) {
+			g_core->RedWarning("strParm_c::fromStringArray: strings.size() is 0\n");
+			return;
+		}
+		name = strings[0];
+		args.resize(strings.size()-1);
+		for(u32 i = 1; i < strings.size(); i++) {
+			args[i-1] = strings[i];
+		}
+	}
+	const char *getName() const {
+		return name;
+	}
+	bool getNumArgs() const {
+		return args.size();
+	}
+	const char *getArg(u32 argNum) const {
+		return args[argNum];
+	}
+};
+class strParmList_c {
+	arraySTD_c<strParm_c> parms;
+	strParm_c *getParmForName(const char *parmName) {
+		for(u32 i = 0; i < parms.size(); i++) {
+			if(!stricmp(parms[i].getName(),parmName)) {
+				return &parms[i];
+			}
+		}
+		return 0;
+	}
+	const strParm_c *getParmForName(const char *parmName) const {
+		for(u32 i = 0; i < parms.size(); i++) {
+			if(!stricmp(parms[i].getName(),parmName)) {
+				return &parms[i];
+			}
+		}
+		return 0;
+	}
+public:
+	void addParmString(const arraySTD_c<str> &strings) {
+		strParm_c &newParm = parms.pushBack();
+		newParm.fromStringArray(strings);
+	}
+	bool hasKey(const char *keyName) const {
+		for(u32 i = 0; i < parms.size(); i++) {
+			if(!stricmp(parms[i].getName(),keyName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	bool getFloatForKey(const char *keyName, float &out) const {
+		const strParm_c *p = getParmForName(keyName);
+		if(p == 0) {
+			return false; // not found
+		}
+		if(p->getNumArgs() < 1) {
+			return false;
+		}
+		out = atof(p->getArg(0));
+		return true; // ok
+	}
+};
+void P_ProcessFileNameWithParameters(const char *nameWithParameters, str &outRawFName, strParmList_c &outKeys) {
+	const char *p = strchr(nameWithParameters,'|');
+	if(p == 0) {
+		// no parameters
+		outRawFName = nameWithParameters;
+		return;
+	}
+	outRawFName.setFromTo(nameWithParameters,p);
+	p++; // skip '|'
+	const char *start = p;
+	arraySTD_c<str> strings;
+	do {
+		p++;
+		if(*p == ',') {
+			strings.pushBack().setFromTo(start,p);
+			p++;
+			start = p;
+		} else if(*p == '|' || *p == 0) {
+			strings.pushBack().setFromTo(start,p);
+			outKeys.addParmString(strings);
+			strings.clear();
+			if(*p == 0)
+				break;
+			p++;
+			start = p;
+		}
+	} while(*p);
+}
+
+rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 	// see if the model is already loaded
-	rModelAPI_i *existing = rf_models.getEntry(modName);
+	rModelAPI_i *existing = rf_models.getEntry(modNameWithParameters);
 	if(existing) {
 		return existing;
 	}
-	model_c *ret = RF_AllocModel(modName);
-	if(modName[0] == '$') {
+	// parse optional parameters list
+	str modName;
+	strParmList_c modelParms;
+	P_ProcessFileNameWithParameters(modNameWithParameters,modName,modelParms);
+
+	bool isSprite = modelParms.hasKey("sprite");
+
+	// alloc new model (valid or not)
+	model_c *ret = RF_AllocModel(modNameWithParameters);
+	if(isSprite) {
+		float radius;
+		if(modelParms.getFloatForKey("radius",radius) == false) {
+			// if radius key was not found, set the default value
+			radius = 16.f;
+		}
+		ret->initSprite(modName,radius);
+	} else if(modName[0] == '$') {
 		// check for "virtual" Quake3 player models
 		const char *playerModelName = modName+1;
 		// playerModelName is "sarge", "biker", etc...

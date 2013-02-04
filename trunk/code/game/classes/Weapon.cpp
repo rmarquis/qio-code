@@ -32,6 +32,9 @@ DEFINE_CLASS_ALIAS(Weapon, idItem);
 
 Weapon::Weapon() {
 	owner = 0;
+	autoFire = true;
+	delayBetweenShots = 250;
+	lastShotTime = 0;
 }
 Weapon::~Weapon() {
 
@@ -59,9 +62,20 @@ BaseEntity *Weapon::getOwner() const {
 	return owner.getPtr();
 }
 void Weapon::onFireKeyHeld() {
-	
+	if(autoFire) {
+		if(canFireAgain()) {
+			doWeaponAttack();
+		}
+	}
 }
 void Weapon::onFireKeyDown() {
+	if(canFireAgain()) {
+		doWeaponAttack();
+	}
+}
+
+void Weapon::doWeaponAttack() {
+	this->lastShotTime = level.time;
 	if(owner) {
 		G_BulletAttack(owner->getEyePos(),owner->getViewAngles().getForward(),owner);
 	} else {
@@ -69,3 +83,12 @@ void Weapon::onFireKeyDown() {
 	}
 }
 
+bool Weapon::canFireAgain() const {
+	u32 timeElapsed = level.time - this->lastShotTime;
+	if(timeElapsed < this->delayBetweenShots) {
+		g_core->Print("Weapon::canFireAgain: cant fire because elapsed time is %i and delay is %i\n",timeElapsed,this->delayBetweenShots);
+		return false;
+	}
+	g_core->Print("Weapon::canFireAgain: CAN FIRE, because elapsed time is %i and delay is %i\n",timeElapsed,this->delayBetweenShots);
+	return true;
+}

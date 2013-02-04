@@ -36,9 +36,11 @@ enum modelType_e {
 	MOD_SKELETAL, // animated skeletal model
 	MOD_PROC, // inline proc model
 	MOD_DECL, // model declared in Doom3 .def files
-	MOD_KEYFRAMED, // per-vertex animation (single .md3 model)
+	MOD_KEYFRAMED, // per-vertex animation (single .md3/.md2 model)
 	// Quake3 three-parts player model (separate .md3 for legs, for torso, and for head)
 	MOD_Q3PLAYERMODEL, 
+	// single sprite, defined by material name and radius
+	MOD_SPRITE,
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -61,6 +63,10 @@ class model_c : public rModelAPI_i {
 		class modelDeclAPI_i *declModel; // only if this->type == MOD_DECL
 		class kfModelAPI_i *kfModel; // only if this->type == MOD_KEYFRAMED
 		class q3PlayerModelAPI_i *q3PlayerModel;  // only if this->type == MOD_Q3PLAYERMODEL
+		struct {
+			class mtrAPI_i *spriteMaterial;
+			float spriteRadius;
+		}; // only if this->type == MOD_SPRITE
 	};
 	aabb bb;
 public:
@@ -112,6 +118,23 @@ public:
 			return true;
 		return false;
 	}
+	virtual bool isSprite() const {
+		if(type == MOD_SPRITE)
+			return true;
+		return false;
+	}
+	virtual float getSpriteRadius() const {
+		if(type != MOD_SPRITE) {
+			return 0;
+		}
+		return spriteRadius;
+	}
+	virtual mtrAPI_i *getSpriteMaterial() const {
+		if(type != MOD_SPRITE) {
+			return 0;
+		}
+		return spriteMaterial;
+	}
 	virtual u32 getNumSurfaces() const;
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
@@ -136,6 +159,8 @@ public:
 	// for static models (r_model_c class)
 	// NOTE: "myNewModelPtr" will be stored in this model class and fried on renderer shutdown!
 	void initStaticModel(class r_model_c *myNewModelPtr);
+	// for sprites
+	void initSprite(const char *matName, float newSpriteRadius);
 
 	const r_model_c *getRModel() const {
 		if(type == MOD_STATIC) {

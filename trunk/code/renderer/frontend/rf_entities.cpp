@@ -269,6 +269,9 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 			instance = new r_model_c;
 			instance->initQ3PlayerModelInstance(q3PlayerModel);
 			instance->updateQ3PlayerModelInstance(q3PlayerModel,0,0);
+		} else if(newModel->isSprite()) {
+			instance = new r_model_c;
+			instance->initSprite(newModel->getSpriteMaterial(),newModel->getSpriteRadius());
 		}
 	}
 	model = newModel;
@@ -445,30 +448,30 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
 			instance->recalcModelNormals(); // this is slow
 		}
-	} else {
-		if(model->isKeyframed()) {
-			const kfModelAPI_i *kfModel = model->getKFModelAPI();
-			if(rf_forceKFModelsFrame.getInt() >= 0) {
-				u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
-				instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
-			} else {
-
-			}
-			instance->recalcModelNormals(); // this is slow
+	} else if(model->isKeyframed()) {
+		const kfModelAPI_i *kfModel = model->getKFModelAPI();
+		if(rf_forceKFModelsFrame.getInt() >= 0) {
+			u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
+			instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
 		} else {
-			const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
-			if(rf_forceKFModelsFrame.getInt() >= 0) {
-				instance->updateQ3PlayerModelInstance(q3Player,rf_forceKFModelsFrame.getInt(),rf_forceKFModelsFrame.getInt());
-			} else {
-				if(q3AnimCtrl) {
-					q3AnimCtrl->runAnimController(rf_curTimeMsec);
-					instance->updateQ3PlayerModelInstance(q3Player,
-						q3AnimCtrl->getLegs().curLerp.from,
-						q3AnimCtrl->getTorso().curLerp.from);	
-				}
-			}
-			instance->recalcModelNormals(); // this is slow
+
 		}
+		instance->recalcModelNormals(); // this is slow
+	} else if(model->isQ3PlayerModel()) {
+		const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
+		if(rf_forceKFModelsFrame.getInt() >= 0) {
+			instance->updateQ3PlayerModelInstance(q3Player,rf_forceKFModelsFrame.getInt(),rf_forceKFModelsFrame.getInt());
+		} else {
+			if(q3AnimCtrl) {
+				q3AnimCtrl->runAnimController(rf_curTimeMsec);
+				instance->updateQ3PlayerModelInstance(q3Player,
+					q3AnimCtrl->getLegs().curLerp.from,
+					q3AnimCtrl->getTorso().curLerp.from);	
+			}
+		}
+		instance->recalcModelNormals(); // this is slow
+	} else if(model->isSprite()) {
+		instance->updateSprite(rf_camera.getAxis(),model->getSpriteRadius());
 	}
 }
 void rEntityImpl_c::addDrawCalls() {

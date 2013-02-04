@@ -255,6 +255,53 @@ void r_surface_c::initKeyframedSurfaceInstance(const kfSurfAPI_i *sfApi) {
 void r_surface_c::updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame) {
 	sfApi->instanceSingleFrame(verts[0].xyz,sizeof(rVert_c),singleFrame);
 }
+void r_surface_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius) {
+	// set material
+	this->setMaterial(newSpriteMaterial);
+
+	// init indices
+	u16 *iPtr = indices.initU16(6);
+	iPtr[0] = 0;
+	iPtr[1] = 1;
+	iPtr[2] = 2;
+	iPtr[3] = 2;
+	iPtr[4] = 3;
+	iPtr[5] = 0;
+
+	// init vertices
+	verts.resize(4);
+
+	verts[0].tc[0] = 0.f;
+	verts[0].tc[1] = 0.f;
+
+	verts[1].tc[0] = 1.f;
+	verts[1].tc[1] = 0.f;
+
+	verts[2].tc[0] = 1.f;
+	verts[2].tc[1] = 1.f;
+
+	verts[3].tc[0] = 0.f;
+	verts[3].tc[1] = 1.f;
+
+	// just to be safe - force a single update with identity camera axis
+	axis_c axisIdentity;
+	axisIdentity.identity();
+	updateSprite(axisIdentity,newSpriteRadius);
+}
+void r_surface_c::updateSprite(const class axis_c &ax, float newSpriteRadius) {
+	vec3_c up = ax.getUp() * newSpriteRadius;
+	vec3_c left = ax.getLeft() * newSpriteRadius;
+	vec3_c origin(0,0,0);
+
+	verts[0].xyz = origin + left + up;
+	verts[1].xyz = origin - left + up;
+	verts[2].xyz = origin - left - up;
+	verts[3].xyz = origin + left - up;
+	verts[0].normal = ax.getForward();
+	verts[1].normal = ax.getForward();
+	verts[2].normal = ax.getForward();
+	verts[3].normal = ax.getForward();
+}
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -744,6 +791,14 @@ void r_model_c::updateQ3PlayerModelInstance(const q3PlayerModelAPI_i *qp, u32 le
 			sf->transform(headInLegsSpace);
 		}
 	}
+}
+void r_model_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius) {
+	if(surfs.size() != 1)
+		surfs.resize(1);
+	surfs[0].initSprite(newSpriteMaterial, newSpriteRadius);
+}
+void r_model_c::updateSprite(const class axis_c &ax, float newSpriteRadius) {
+	surfs[0].updateSprite(ax,newSpriteRadius);
 }
 mtrAPI_i *r_model_c::getMaterialForABSTriangleIndex(u32 absTriNum) const {
 	u32 firstTri = 0;

@@ -167,6 +167,9 @@ public:
 	// keyframed models instancing
 	void initKeyframedSurfaceInstance(const class kfSurfAPI_i *sfApi);
 	void updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame);
+	// single sprite surface
+	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius);
+	void updateSprite(const class axis_c &ax, float newSpriteRadius);
 
 	bool traceRay(class trace_c &tr);
 
@@ -280,6 +283,9 @@ public:
 	// q3 multipart models (separate .md3's for head, torso, legs...)
 	void initQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp);
 	void updateQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp, u32 legsFrameNum, u32 torsoFrameNum);
+	// single sprite models
+	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius);
+	void updateSprite(const class axis_c &ax, float newSpriteRadius);
 
 	mtrAPI_i *getMaterialForABSTriangleIndex(u32 absTriNum) const;
 

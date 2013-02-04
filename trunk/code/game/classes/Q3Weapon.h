@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,46 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Weapon.h
+// Q3Weapon.h
 
-#ifndef __WEAPON_H__
-#define __WEAPON_H__
+#ifndef __Q3WEAPON_H__
+#define __Q3WEAPON_H__
 
-#include "ModelEntity.h"
+#include "Weapon.h"
 
-class Weapon : public ModelEntity {
-	// custom viewmodel for Doom3-style weapons
-	str model_view;
-	bool autoFire;
-	// those values are in msec
-	u32 delayBetweenShots;
-	u32 lastShotTime;
-protected:
-	safePtr_c<Player> owner;
+class Q3Weapon : public Weapon {
+	enum quake3WeaponType_e q3WeaponType;
 public:
-	Weapon();
-	virtual ~Weapon();
+	Q3Weapon();
 
-	DECLARE_CLASS( Weapon );
+	DECLARE_CLASS( Q3Weapon );
 
-	virtual BaseEntity *getOwner() const;
-
-	void onFireKeyHeld();
-	void onFireKeyDown();
 	virtual void doWeaponAttack();
-	bool canFireAgain() const;
 
-	bool hasCustomViewModel() const {
-		if(model_view.length())
-			return true;
-		return false;
-	}
-	const char *getCustomViewModelName() const {
-		return model_view;
-	}
-
-	virtual void setKeyValue(const char *key, const char *value); 
-	virtual bool doUse(class Player *activator);
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-#endif // __WEAPON_H__
+#endif // __Q3WEAPON_H__
