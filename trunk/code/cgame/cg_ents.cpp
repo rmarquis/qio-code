@@ -111,6 +111,8 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	cent->lerpAngles[1] = LerpAngle( current[1], next[1], f );
 	cent->lerpAngles[2] = LerpAngle( current[2], next[2], f );
 
+	
+	// NOTE: some centities might have both rEnt and rLight present
 	if(cent->rEnt) {
 		cent->rEnt->setOrigin(cent->lerpOrigin);
 		cent->rEnt->setAngles(cent->lerpAngles);
@@ -149,10 +151,12 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 			matAngles.transformPoint(cent->currentState.parentOffset,ofs);
 			cent->lerpOrigin += ofs;
 		}
+		// NOTE: some centities might have both rEnt and rLight present
 		if(cent->rEnt) {
 			cent->rEnt->setOrigin(cent->lerpOrigin);
 			cent->rEnt->setAngles(cent->lerpAngles);
-		} else if(cent->rLight) {
+		} 
+		if(cent->rLight) {
 			cent->rLight->setOrigin(cent->lerpOrigin);
 		}
 		return;

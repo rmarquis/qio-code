@@ -223,6 +223,9 @@ void BaseEntity::detachFromParent() {
 	myEdict->s->parentNum = ENTITYNUM_NONE;
 	myEdict->s->parentTagNum = -1;
 }
+void BaseEntity::setEntityLightRadius(float newEntityLightRadius) {
+	myEdict->s->lightRadius = newEntityLightRadius;
+}
 const aabb &BaseEntity::getAbsBounds() const {
 	return this->myEdict->absBounds;
 }

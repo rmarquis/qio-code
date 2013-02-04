@@ -114,6 +114,9 @@ public:
 	virtual void applyCentralImpulse(const vec3_c &impToAdd) {
 
 	}
+	virtual void applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs) {
+
+	}
 	virtual void runWaterPhysics(float curWaterLevel) {
 
 	}
@@ -129,6 +132,8 @@ public:
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();
+
+	void setEntityLightRadius(float newEntityLightRadius);
 
 	virtual void getLocalBounds(aabb &out) const;
 	const class aabb &getAbsBounds() const;

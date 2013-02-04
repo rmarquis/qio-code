@@ -354,6 +354,13 @@ bool rEntityImpl_c::isAnimated() const {
 		return true;
 	return false;
 }
+bool rEntityImpl_c::isSprite() const {
+	if(model == 0)
+		return false;
+	if(model->isSprite())
+		return true;
+	return false;
+}
 rModelAPI_i *rEntityImpl_c::getModel() const {
 	return model;
 }

@@ -75,7 +75,12 @@ void CG_RunViewModel() {
 		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
 	} else {
 		viewModel = cg_entities[viewModelEntity].rEnt->getModel();
-		if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")) {
+		if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+			|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+			|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+			|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+			// it could be better for grenade launcher
+			|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 			localOfs.set(5,-5,-10);
 		}
 	}

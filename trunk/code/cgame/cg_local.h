@@ -64,7 +64,7 @@ typedef struct centity_s {
 	vec3_c			lerpAngles;
 
 	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
-	class rLightAPI_i *rLight; // only for ET_LIGHT
+	class rLightAPI_i *rLight; // for ET_LIGHT and for all entities with entityState_t::lightRadius != 0.f
 } centity_t;
 
 

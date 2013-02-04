@@ -54,6 +54,7 @@ public:
 	virtual bool isRagdoll() const = 0;
 	virtual bool hasDeclModel() const = 0;
 	virtual bool isQ3PlayerModel() const = 0;
+	virtual bool isSprite() const = 0;
 
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured

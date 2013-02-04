@@ -316,13 +316,13 @@ public:
 
 bool BT_TraceRay(class trace_c &tr) {
 	btVector3 rayFrom;
-	rayFrom = (btVector3(tr.getStartPos().x,tr.getStartPos().y,tr.getStartPos().z));
+	rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_BULLET,tr.getStartPos().y*QIO_TO_BULLET,tr.getStartPos().z*QIO_TO_BULLET));
 	btVector3 rayTo;
-	rayTo = (btVector3(tr.getTo().x,tr.getTo().y,tr.getTo().z));
+	rayTo = (btVector3(tr.getTo().x*QIO_TO_BULLET,tr.getTo().y*QIO_TO_BULLET,tr.getTo().z*QIO_TO_BULLET));
 	btRayCallback_c rayCallback(rayFrom,rayTo);
 	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
 	if(rayCallback.hasHit()) {
-		tr.setHitPos(rayCallback.m_hitPointWorld.m_floats);
+		tr.setHitPos(vec3_c(rayCallback.m_hitPointWorld.m_floats)*BULLET_TO_QIO);
 	}
 	if(rayCallback.m_collisionObject) {
 		void *uPtr = rayCallback.m_collisionObject->getUserPointer();

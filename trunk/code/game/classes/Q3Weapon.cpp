@@ -24,7 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Q3Weapon.cpp
 #include "Q3Weapon.h"
 #include "Player.h"
-//#include "Projectile.h"
+#include "Projectile.h"
 #include <api/coreAPI.h>
 
 DEFINE_CLASS(Q3Weapon, "Weapon");
@@ -44,6 +44,7 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 		g_core->Print("Q3Weapon::setKeyValue: giTag: %s\n",value);
 		if(!stricmp(value,"WP_PLASMAGUN")) {
 			q3WeaponType = EQ3WPN_PLASMAGUN;
+			this->setDelayBetweenShorts(500);
 		}
 	} else {
 		Weapon::setKeyValue(key,value);
@@ -52,10 +53,12 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 
 void Q3Weapon::doWeaponAttack() {
 	if(q3WeaponType == EQ3WPN_PLASMAGUN) {
-		ModelEntity *plasma = new ModelEntity;
+		Projectile *plasma = new Projectile;
 		plasma->setSpriteModel("sprites/plasma1",32.f);
-		plasma->setOrigin(owner->getEyePos());
-		//plasma->setVelocity(owner->getViewAngles().getForward()*5.f);
+		vec3_c forward = owner->getViewAngles().getForward();
+		plasma->setEntityLightRadius(128.f);
+		plasma->setOrigin(owner->getEyePos()+forward*32);
+		plasma->setLinearVelocity(forward*500.f);
 	
 	}
 }

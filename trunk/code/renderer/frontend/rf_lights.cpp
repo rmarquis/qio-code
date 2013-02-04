@@ -148,16 +148,24 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 		in.ent = ent;
 		//ent->addInteraction(this);
 		if(RF_IsUsingShadowVolumes()) {
-			vec3_c lightInEntitySpace;
-			this->calcPosInEntitySpace(ent,lightInEntitySpace);
-			if(in.shadowVolume == 0) {
-				in.shadowVolume = new rIndexedShadowVolume_c;
-			} else {
-				if(lightInEntitySpace.compare(in.shadowVolume->getLightPos())) {
-					continue; // dont have to recalculate shadow volume
+			if(ent->isSprite()) {
+				printf("skipping sprite..\n");
+				if(in.shadowVolume) {
+					in.shadowVolume = 0;
+					delete in.shadowVolume;
 				}
+			} else {
+				vec3_c lightInEntitySpace;
+				this->calcPosInEntitySpace(ent,lightInEntitySpace);
+				if(in.shadowVolume == 0) {
+					in.shadowVolume = new rIndexedShadowVolume_c;
+				} else {
+					if(lightInEntitySpace.compare(in.shadowVolume->getLightPos())) {
+						continue; // dont have to recalculate shadow volume
+					}
+				}
+				in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
 			}
-			in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
 		}
 	}
 }

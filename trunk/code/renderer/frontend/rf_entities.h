@@ -116,6 +116,7 @@ public:
 	virtual bool hasDeclModel() const;
 	virtual bool isQ3PlayerModel() const;
 	virtual bool isAnimated() const;
+	virtual bool isSprite() const;
 
 
 

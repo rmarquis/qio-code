@@ -54,6 +54,7 @@ protected:
 	bool bPhysicsBodyKinematic;
 	bool bRigidBodyPhysicsEnabled; // if false, this->initRigidBodyPhysics will always fail
 	str animName; // current animation name
+	mutable vec3_c linearVelocity;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -96,6 +97,7 @@ public:
 
 	virtual void applyCentralForce(const vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const vec3_c &impToAdd);
+	virtual void applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs);
 	virtual const vec3_c getLinearVelocity() const;
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	virtual const vec3_c getAngularVelocity() const;

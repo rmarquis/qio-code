@@ -118,9 +118,25 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	}
 
 	// set all the values here in case that entity cant be interpolated between two snapshots
+	
+	// NOTE: some centities might have both rEnt and rLight present
 	if(cent->currentState.eType == ET_LIGHT) {
 		CG_TransitionLight(cent);
 	} else {
+		// handle extra entity-light effect as well
+		if(cent->currentState.lightRadius > 0.f) {
+			if(cent->rLight == 0) {
+				// entity light has been enabled
+				cent->rLight = rf->allocLight();
+			}
+			CG_TransitionLight(cent);
+		} else {
+			if(cent->rLight) {	
+				// entity light has been disabled
+				rf->removeLight(cent->rLight);
+				cent->rLight = 0;
+			}
+		}
 		CG_TransitionModel(cent);
 	}
 
@@ -130,17 +146,17 @@ static void CG_TransitionEntity( centity_t *cent ) {
 
 static void CG_RemoveEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
-	if(cent->currentState.eType == ET_LIGHT) {
+//	if(cent->currentState.eType == ET_LIGHT) {
 		if(cent->rLight) {
 			rf->removeLight(cent->rLight);
 			cent->rLight = 0;
 		}
-	} else {
+///	} else {
 		if(cent->rEnt) {
 			rf->removeEntity(cent->rEnt);
 			cent->rEnt = 0;
 		}
-	}
+//	}
 }
 static void CG_NewEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];
@@ -166,6 +182,14 @@ static void CG_NewEntity(u32 entNum) {
 			rf->removeEntity(cent->rEnt);
 		}
 		cent->rEnt = rf->allocEntity();
+		if(cent->currentState.lightRadius >= 0) {
+			// new render light
+			if(cent->rLight) {
+				CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rLight assigned\n",entNum);
+				rf->removeLight(cent->rLight);
+			}
+			cent->rLight = rf->allocLight();
+		}
 	}
 }
 

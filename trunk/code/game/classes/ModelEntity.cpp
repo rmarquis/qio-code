@@ -56,6 +56,7 @@ ModelEntity::ModelEntity() {
 	bUseDynamicConvexForTrimeshCMod = false;
 	bPhysicsBodyKinematic = false;
 	bRigidBodyPhysicsEnabled = true;
+	linearVelocity.set(0,0,0);
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -437,18 +438,29 @@ void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 	this->body->activate(true);
 	this->body->applyCentralForce(forceToAdd.floatPtr());
 }
-void ModelEntity::applyCentralImpulse(const vec3_c &forceToAdd) {
+void ModelEntity::applyCentralImpulse(const vec3_c &impToAdd) {
 	if(this->body == 0)
 		return;
 	this->body->activate(true);
-	this->body->applyCentralImpulse(forceToAdd.floatPtr());
+	this->body->applyCentralImpulse(impToAdd.floatPtr());
+}
+void ModelEntity::applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs) {
+	if(this->body == 0)
+		return;
+	vec3_c pointLocal;
+	this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
+	this->body->activate(true);
+	this->body->applyImpulse((impToAdd*QIO_TO_BULLET).floatPtr(),(pointLocal*QIO_TO_BULLET).floatPtr());
 }
 const vec3_c ModelEntity::getLinearVelocity() const {
-	if(this->body == 0)
-		return vec3_c(0,0,0);
-	return body->getLinearVelocity();
+	if(this->body == 0) {
+		return linearVelocity;
+	}
+	linearVelocity = &body->getLinearVelocity().x();
+	return this->linearVelocity;
 }
 void ModelEntity::setLinearVelocity(const vec3_c &newVel) {
+	this->linearVelocity = newVel;
 	if(this->body == 0)
 		return;
 	return body->setLinearVelocity(btVector3(newVel));

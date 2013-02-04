@@ -21,50 +21,25 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Weapon.h
-
-#ifndef __WEAPON_H__
-#define __WEAPON_H__
+// Projectile.h
+#ifndef __PROJECTILE_H__
+#define __PROJECTILE_H__
 
 #include "ModelEntity.h"
 
-class Weapon : public ModelEntity {
-	// custom viewmodel for Doom3-style weapons
-	str model_view;
-	bool autoFire;
-	// those values are in msec
-	u32 delayBetweenShots;
-	u32 lastShotTime;
-protected:
-	safePtr_c<Player> owner;
-
-	void setDelayBetweenShorts(u32 newDelayInMsec) {
-		this->delayBetweenShots = newDelayInMsec;
-	}
+class Projectile : public ModelEntity {
+	// time to wait between collision and explosion
+	u32 explosionDelay;
+	// time of last collision
+	u32 collisionTime;
 public:
-	Weapon();
-	virtual ~Weapon();
+	Projectile();
 
-	DECLARE_CLASS( Weapon );
+	DECLARE_CLASS( Projectile );
 
-	virtual BaseEntity *getOwner() const;
-
-	void onFireKeyHeld();
-	void onFireKeyDown();
-	virtual void doWeaponAttack();
-	bool canFireAgain() const;
-
-	bool hasCustomViewModel() const {
-		if(model_view.length())
-			return true;
-		return false;
-	}
-	const char *getCustomViewModelName() const {
-		return model_view;
-	}
-
-	virtual void setKeyValue(const char *key, const char *value); 
-	virtual bool doUse(class Player *activator);
+	virtual void runFrame();
 };
 
-#endif // __WEAPON_H__
+#endif // __PROJECTILE_H__
+
+
