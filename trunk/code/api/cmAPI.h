@@ -73,12 +73,42 @@ public:
 		return getType() == CMOD_BBMINSMAXS;
 	}
 
-	virtual class cmBBExts_i *getBBExts() = 0;
-	virtual class cmCapsule_i *getCapsule() = 0;
-	virtual class cmHull_i *getHull() = 0;
-	virtual class cmCompound_i *getCompound() = 0;
-	virtual class cmTriMesh_i *getTriMesh() = 0;
-	virtual class cmSkelModel_i *getSkelModel() = 0;
+	virtual class cmBBExts_i *getBBExts() {
+		return 0;
+	}
+	virtual class cmCapsule_i *getCapsule() {
+		return 0;
+	}
+	virtual class cmHull_i *getHull() {
+		return 0;
+	}
+	virtual class cmCompound_i *getCompound() {
+		return 0;
+	}
+	virtual class cmTriMesh_i *getTriMesh() {
+		return 0;
+	}
+	virtual class cmSkelModel_i *getSkelModel() {
+		return 0;
+	}
+	virtual const class cmBBExts_i *getBBExts() const {
+		return 0;
+	}
+	virtual const class cmCapsule_i *getCapsule() const {
+		return 0;
+	}
+	virtual const class cmHull_i *getHull() const {
+		return 0;
+	}
+	virtual const class cmCompound_i *getCompound() const {
+		return 0;
+	}
+	virtual const class cmTriMesh_i *getTriMesh() const {
+		return 0;
+	}
+	virtual const class cmSkelModel_i *getSkelModel() const {
+		return 0;
+	}
 
 	virtual void getBounds(class aabb &out) = 0;
 

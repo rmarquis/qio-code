@@ -141,6 +141,7 @@ public:
 
 	virtual void hideSurface(u32 surfNum);
 
+	void updateAnimatedEntity();
 	void addDrawCalls();
 
 	virtual bool rayTraceLocal(class trace_c &tr) const;

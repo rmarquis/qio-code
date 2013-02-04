@@ -175,6 +175,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\cgame.def"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\cgamex86.pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\cgamex86.map"

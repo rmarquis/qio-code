@@ -124,7 +124,6 @@ const class aabb &G_GetInlineModelBounds(u32 inlineModelNum);
 class cMod_i *BT_GetSubModelCModel(u32 inlineModelNum);
 bool BT_IsInSolid(const class matrix_c &mat, const class aabb &bb);
 bool BT_TraceRay(class trace_c &tr);
-void BT_TestSpawnInternalRagDoll(const vec3_c &at);
 
 //
 // g_debugDraw.cpp

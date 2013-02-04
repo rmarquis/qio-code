@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <math/matrix.h>
 #include <shared/autoCvar.h>
+#include <shared/textureWrapMode.h>
 
 static aCvar_c mat_collapseMaterialStages("mat_collapseMaterialStages","1");
 
@@ -42,7 +43,7 @@ void skyBox_c::setBaseName(const char *newBaseName) {
 class textureAPI_i *skyBox_c::loadSubTexture(const char *sufix) {
 	str fullPath = baseName;
 	fullPath.append(sufix);
-	return MAT_RegisterTexture(fullPath,true);
+	return MAT_RegisterTexture(fullPath,TWM_CLAMP_TO_EDGE);
 }
 void skyBox_c::uploadTextures() {
 	if(baseName.length() == 0 || baseName[0] == '-')
@@ -123,7 +124,7 @@ mtrStage_c::~mtrStage_c() {
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
-	textureAPI_i *tex = MAT_RegisterTexture(newMapName);
+	textureAPI_i *tex = MAT_RegisterTexture(newMapName,TWM_REPEAT);
 	this->setTexture(tex);
 }
 int mtrStage_c::getImageWidth() const {
@@ -205,7 +206,7 @@ void mtrIMPL_c::clear() {
 }
 
 void mtrIMPL_c::createFromImage() {
-	textureAPI_i *tex = MAT_RegisterTexture(this->name);
+	textureAPI_i *tex = MAT_RegisterTexture(this->name,TWM_REPEAT);
 	// save the source file name
 	this->sourceFileName = tex->getName();
 	// create single material stage
@@ -489,6 +490,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						stage->getStageTexture().parseMap(p);
 						stage->getStageTexture().uploadTexture();
 					}		
+				} else if(p.atWord("clampmap")) {
+					stage->getStageTexture().setBClamp(true);
+					stage->getStageTexture().parseMap(p);
+					stage->getStageTexture().uploadTexture();
 				} else if(p.atWord("animmap")) {
 					stage->getStageTexture().parseAnimMap(p);
 					stage->getStageTexture().uploadTexture();

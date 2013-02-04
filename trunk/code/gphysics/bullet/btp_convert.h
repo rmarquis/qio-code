@@ -21,36 +21,15 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// textureAPI.h - texture class interface
-// Note that a single material (in Q3 called: shader) might use
-// multiple textures, even in the single stage.
+// btp_convert.h - conversion between Id Tech units and Bullet Physics units.
+#ifndef __BTP_CONVERT_H__
+#define __BTP_CONVERT_H__
 
-#ifndef __TEXTUREAPI_H__
-#define __TEXTUREAPI_H__
+#define QIO_TO_BULLET 0.01905
+#define BULLET_TO_QIO 52.4934383
 
-#include <shared/typedefs.h>
+#define CONVERT_QIO_TO_BULLET(x) ((x)*QIO_TO_BULLET)
+#define CONVERT_BULLET_TO_QIO(x) ((x)*BULLET_TO_QIO)
 
-class textureAPI_i {
-public:
-	virtual ~textureAPI_i() {
+#endif // __BTP_CONVERT_H__
 
-	}
-
-	// returns the path to the texture file (with extension)
-	virtual const char *getName() const = 0;
-
-	virtual u32 getWidth() const = 0;
-	virtual u32 getHeight() const = 0;
-	virtual void setWidth(u32 newWidth) = 0;
-	virtual void setHeight(u32 newHeight) = 0;
-
-	// bClampToEdge should be set to true for skybox textures
-	virtual enum textureWrapMode_e getWrapMode() const = 0;
-	
-	virtual void *getInternalHandleV() const = 0;
-	virtual void setInternalHandleV(void *newHandle) = 0;
-	virtual u32 getInternalHandleU32() const = 0;
-	virtual void setInternalHandleU32(u32 newHandle) = 0;
-};
-
-#endif // __TEXTUREAPI_H__

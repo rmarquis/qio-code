@@ -421,10 +421,10 @@ void ClientCommand( int clientNum ) {
 			e->initStaticBodyPhysics();
 		}
 	} else if(!stricmp(cmd,"spawntestbtragdoll")) {
-		vec3_c p = pl->getOrigin();
-		p.z += pl->getViewHeight();
-		p += pl->getForward() * 64.f;
-		BT_TestSpawnInternalRagDoll(p);
+		//vec3_c p = pl->getOrigin();
+		//p.z += pl->getViewHeight();
+		//p += pl->getForward() * 64.f;
+		//BT_TestSpawnInternalRagDoll(p);
 	} else if(!stricmp(cmd,"spawntestaf_old")) {
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();

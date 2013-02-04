@@ -51,6 +51,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/occlusionQueryAPI.h>
 
 #include <shared/byteRGB.h>
+#include <shared/textureWrapMode.h>
 
 static aCvar_c rb_showTris("rb_showTris","0");
 // use a special GLSL shader to show normal vectors as colors
@@ -1393,11 +1394,16 @@ public:
 		CHECK_GL_ERRORS;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		if(out->getBClampToEdge()) {
+		enum textureWrapMode_e wrapMode = out->getWrapMode();
+		if(wrapMode == TWM_CLAMP_TO_EDGE) {
 			// this is used for skyboxes 
 			// (without it they are shown with strange artifacts at texture edges)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		} else if(wrapMode == TWM_CLAMP) {
+			// this is used for sprites
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		} else {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 

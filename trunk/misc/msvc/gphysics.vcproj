@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="materialSystem"
-	ProjectGUID="{B93D05ED-C73C-4797-A47B-AC898ECF0459}"
-	RootNamespace="materialSystem"
+	Name="gphysics"
+	ProjectGUID="{7CADFBEB-B846-4BBA-856E-4F2D6E43FB9D}"
+	RootNamespace="gphysics"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -40,10 +40,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -58,8 +58,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\materialSystemx86.dll"
-				ModuleDefinitionFile="materialSystem.def"
+				OutputFile="..\..\game\system\gphysicsx86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				ModuleDefinitionFile="gphysics.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -112,8 +113,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\code\"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -129,8 +130,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\materialSystemx86.dll"
-				ModuleDefinitionFile="materialSystem.def"
+				OutputFile="..\..\game\system\gphysicsx86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				ModuleDefinitionFile="gphysics.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,35 +170,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_api.cpp"
+				RelativePath="..\..\code\gphysics\bullet\btp_api.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_impl.cpp"
+				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_main.cpp"
+				RelativePath="..\..\code\gphysics\bullet\btp_rigidBody.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_rgbGen.cpp"
+				RelativePath="..\..\code\gphysics\bullet\btp_shape.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_stageTexture.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\materialSystem\mat_stageTexture.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\materialSystem\mat_texMods.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\materialSystem\mat_textures.cpp"
+				RelativePath="..\..\code\gphysics\bullet\btp_world.cpp"
 				>
 			</File>
 		</Filter>
@@ -206,27 +196,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_impl.h"
+				RelativePath="..\..\code\gphysics\bullet\btp_convert.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_local.h"
+				RelativePath="..\..\code\gphysics\bullet\btp_headers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_public.h"
+				RelativePath="..\..\code\gphysics\bullet\btp_rigidBody.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_rgbGen.h"
+				RelativePath="..\..\code\gphysics\bullet\btp_shape.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\materialSystem\mat_texMods.h"
+				RelativePath="..\..\code\gphysics\bullet\btp_world.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\shared\textureWrapMode.h"
+				RelativePath="..\..\..\code\api\physAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\physObjectDef.h"
 				>
 			</File>
 		</Filter>
@@ -235,66 +229,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath=".\materialSystem.def"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="shared"
-			>
-			<File
-				RelativePath="..\..\code\shared\array.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCmd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCmd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCvar.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\autoCvar.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\hashTableTemplate.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\parser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\parser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\safePtr.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\waveForm.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\shared\waveForm.h"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

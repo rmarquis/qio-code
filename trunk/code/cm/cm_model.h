@@ -160,20 +160,8 @@ public:
 	virtual class cmBBExts_i *getBBExts() {
 		return this;
 	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
-	virtual class cmHull_i *getHull() {
-		return 0;
-	}
-	virtual class cmCompound_i *getCompound() {
-		return 0;
-	}
-	virtual class cmTriMesh_i *getTriMesh() {
-		return 0;
-	}
-	virtual class cmSkelModel_i *getSkelModel() {
-		return 0;
+	virtual const class cmBBExts_i *getBBExts() const {
+		return this;
 	}
 	virtual void getBounds(class aabb &out) {
 		out.fromHalfSizes(halfSizes);
@@ -216,24 +204,6 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_BBMINSMAXS;
 	}
-	virtual class cmBBExts_i *getBBExts() {
-		return 0;
-	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
-	virtual class cmHull_i *getHull() {
-		return 0;
-	}
-	virtual class cmCompound_i *getCompound() {
-		return 0;
-	}
-	virtual class cmTriMesh_i *getTriMesh() {
-		return 0;
-	}
-	virtual class cmSkelModel_i *getSkelModel() {
-		return 0;
-	}
 	virtual void getBounds(class aabb &out) {
 		out = this->bounds;
 	}
@@ -269,23 +239,11 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_HULL;
 	}
-	virtual class cmBBExts_i *getBBExts() {
-		return 0;
-	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
 	virtual class cmHull_i *getHull() {
 		return this;
 	}
-	virtual class cmCompound_i *getCompound() {
-		return 0;
-	}
-	virtual class cmTriMesh_i *getTriMesh() {
-		return 0;
-	}
-	virtual class cmSkelModel_i *getSkelModel() {
-		return 0;
+	virtual const class cmHull_i *getHull() const {
+		return this;
 	}
 	virtual void getBounds(class aabb &out) {
 		out = myBrush.getBounds();
@@ -354,23 +312,11 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_COMPOUND;
 	}
-	virtual class cmBBExts_i *getBBExts() {
-		return 0;
-	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
-	virtual class cmHull_i *getHull() {
-		return 0;
-	}
 	virtual class cmCompound_i *getCompound() {
 		return this;
 	}
-	virtual class cmTriMesh_i *getTriMesh() {
-		return 0;
-	}
-	virtual class cmSkelModel_i *getSkelModel() {
-		return 0;
+	virtual const class cmCompound_i *getCompound() const {
+		return this;
 	}
 	virtual void getBounds(class aabb &out) {
 		out.clear();
@@ -452,23 +398,11 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_TRIMESH;
 	}
-	virtual class cmBBExts_i *getBBExts() {
-		return 0;
-	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
-	virtual class cmHull_i *getHull() {
-		return 0;
-	}
-	virtual class cmCompound_i *getCompound() {
-		return 0;
-	}
 	virtual class cmTriMesh_i *getTriMesh() {
 		return this;
 	}
-	virtual class cmSkelModel_i *getSkelModel() {
-		return 0;
+	virtual const class cmTriMesh_i *getTriMesh() const {
+		return this;
 	}
 	virtual void getBounds(class aabb &out) {
 		out = sf->getAABB();
@@ -537,22 +471,10 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_SKELMODEL;
 	}
-	virtual class cmBBExts_i *getBBExts() {
-		return 0;
-	}
-	virtual class cmCapsule_i *getCapsule() {
-		return 0;
-	}
-	virtual class cmHull_i *getHull() {
-		return 0;
-	}
-	virtual class cmCompound_i *getCompound() {
-		return 0;
-	}
-	virtual class cmTriMesh_i *getTriMesh() {
-		return 0;
-	}
 	virtual class cmSkelModel_i *getSkelModel() {
+		return this;
+	}
+	virtual const class cmSkelModel_i *getSkelModel() const {
 		return this;
 	}
 	virtual void getBounds(class aabb &out) {

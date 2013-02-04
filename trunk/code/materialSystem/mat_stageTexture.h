@@ -47,6 +47,7 @@ class stageTexture_c {
 	// for single-texture stages
 	str mapName;
 	textureAPI_i *singleTexture;
+	bool bClamp; // use GL_CLAMP instead of GL_LINEAR. This is for "clampmap" keyword.
 	// for stages with animated textures
 	textureAnimation_c *animated;
 public:
@@ -67,6 +68,7 @@ public:
 	textureAPI_i *getTexture(float time = 0.f) const;
 	void fromTexturePointer(textureAPI_i *newTexturePtr);
 	bool isEmpty() const;
+	void setBClamp(bool newBClamp);
 };
 
 #endif // __MAT_STAGETEXTURE_H__

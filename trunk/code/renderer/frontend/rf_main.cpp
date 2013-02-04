@@ -85,9 +85,7 @@ void RF_AddGenericDrawCalls() {
 }
 void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	rf_bDrawOnlyOnDepthBuffer = true;
-	RF_AddWorldDrawCalls();
-	RFE_AddEntityDrawCalls();
-	RF_AddWorldDecalDrawCalls();
+	RF_AddGenericDrawCalls();
 	rf_bDrawOnlyOnDepthBuffer = false;
 }
 void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {

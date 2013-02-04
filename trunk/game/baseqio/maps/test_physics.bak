@@ -738,12 +738,6 @@
 }
 // entity 43
 {
-"light" "128"
-"origin" "136 464 104"
-"classname" "light"
-}
-// entity 44
-{
 "classname" "brushmodel"
 // brush 0
 {

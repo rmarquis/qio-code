@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/imgAPI.h>
 #include <shared/str.h>
 #include <shared/hashTableTemplate.h>
+#include <shared/textureWrapMode.h>
 
 class textureIMPL_c : public textureAPI_i {
 	str name;
@@ -35,14 +36,14 @@ class textureIMPL_c : public textureAPI_i {
 		void *handleV;
 	};
 	u32 w, h;
-	bool bClampToEdge;
+	textureWrapMode_e wrapMode;
 	textureIMPL_c *hashNext;
 public:
 	textureIMPL_c() {
 		hashNext = 0;
 		w = h = 0;
 		handleV = 0;
-		bClampToEdge = false; // use GL_REPEAT by default
+		wrapMode = TWM_REPEAT; // use GL_REPEAT by default
 	}
 	~textureIMPL_c() {
 		if(rb == 0)
@@ -57,8 +58,8 @@ public:
 	void setName(const char *newName) {
 		name = newName;
 	}
-	void setBClampToEdge(bool newBClampToEdge) {
-		bClampToEdge = newBClampToEdge;
+	void setWrapMode(textureWrapMode_e newWrapMode) {
+		wrapMode = newWrapMode;
 	}
 	virtual u32 getWidth() const {
 		return w;
@@ -72,9 +73,9 @@ public:
 	virtual void setHeight(u32 newHeight) {
 		h = newHeight;
 	}	
-	// bClampToEdge should be set to true for skybox textures
-	virtual bool getBClampToEdge() const {
-		return bClampToEdge;
+	// TWM_CLAMP_TO_EDGE should be set to true for skybox textures
+	virtual textureWrapMode_e getWrapMode() const {
+		return wrapMode;
 	}
 	virtual void *getInternalHandleV() const {
 		return handleV;
@@ -120,7 +121,7 @@ class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h, bool rgba
 }
 // texString can contain doom3-like modifiers
 // TODO: what if a texture is reused with different picmip setting?
-class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge) {
+class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapMode_e wrapMode) {
 	textureIMPL_c *ret = mat_textures.getEntry(texString);
 	if(ret) {
 		return ret;
@@ -136,7 +137,7 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge
 	}
 	ret = new textureIMPL_c;
 	ret->setName(fixedPath);
-	ret->setBClampToEdge(bClampToEdge);
+	ret->setWrapMode(wrapMode);
 	rb->uploadTextureRGBA(ret,data,w,h);
 	g_img->freeImageData(data);
 	mat_textures.addObject(ret);
@@ -145,7 +146,7 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, bool bClampToEdge
 class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h) {
 	textureIMPL_c *ret = new textureIMPL_c;
 	ret->setName(texName);
-	ret->setBClampToEdge(false);
+	ret->setWrapMode(TWM_REPEAT);
 	rb->uploadTextureRGBA(ret,picData,w,h);
 	mat_textures.addObject(ret);
 	return ret;

@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/coreAPI.h>
 #include <renderer/rModelAPI.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -33,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c cg_gunX("cg_gunX","0");
 static aCvar_c cg_gunY("cg_gunY","0");
 static aCvar_c cg_gunZ("cg_gunZ","0");
+static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -64,23 +66,31 @@ void CG_RunViewModel() {
 	if(cg_entities[viewModelEntity].rEnt) {
 		cg_entities[viewModelEntity].rEnt->hideModel();
 	}
+
+	// local weapons offset (affected by cg_gunX/Y/Z cvars)
+	vec3_c localOfs(0,0,0);
+
 	rModelAPI_i *viewModel;
 	if(cg.snap->ps.customViewRModelIndex) {
 		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
 	} else {
-		viewModel = 0;//cg_entities[viewModelEntity].rEnt->getModel();
+		viewModel = cg_entities[viewModelEntity].rEnt->getModel();
+		if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")) {
+			localOfs.set(5,-5,-10);
+		}
 	}
 	if(viewModel == 0) {
 		CG_FreeViewModelEntity();
 		return;
 	}
+	if(cg_printCurViewModelName.getInt()) {
+		g_core->Print("Current viewmodel name: %s\n",viewModel->getName());
+	}
+
 	CG_AllocViewModelEntity();
 
 	vec3_c origin = cg.refdefViewOrigin;
 	vec3_c angles = cg.refdefViewAngles;
-
-	// set local offset
-	vec3_c localOfs(0,0,0);
 
 	localOfs.x += cg_gunX.getFloat();
 	localOfs.y += cg_gunY.getFloat();

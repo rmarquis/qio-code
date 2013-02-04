@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,36 +21,27 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// textureAPI.h - texture class interface
-// Note that a single material (in Q3 called: shader) might use
-// multiple textures, even in the single stage.
+// physObjectDef.h
+#ifndef __PHYSOBJECTDEF_H__
+#define __PHYSOBJECTDEF_H__
 
-#ifndef __TEXTUREAPI_H__
-#define __TEXTUREAPI_H__
+#include <math/matrix.h>
 
-#include <shared/typedefs.h>
+struct physObjectDef_s {
+	// 0 mass means that object is non-moveable
+	float mass;
+	// physics object creation will fail if collisionModel pointer is NULL
+	const class cMod_i *collisionModel;
+	// model starting transform
+	matrix_c transform;
 
-class textureAPI_i {
-public:
-	virtual ~textureAPI_i() {
-
+	bool isStatic() const {
+		if(mass == 0.f) {
+			return true;
+		}
+		return false;
 	}
-
-	// returns the path to the texture file (with extension)
-	virtual const char *getName() const = 0;
-
-	virtual u32 getWidth() const = 0;
-	virtual u32 getHeight() const = 0;
-	virtual void setWidth(u32 newWidth) = 0;
-	virtual void setHeight(u32 newHeight) = 0;
-
-	// bClampToEdge should be set to true for skybox textures
-	virtual enum textureWrapMode_e getWrapMode() const = 0;
-	
-	virtual void *getInternalHandleV() const = 0;
-	virtual void setInternalHandleV(void *newHandle) = 0;
-	virtual u32 getInternalHandleU32() const = 0;
-	virtual void setInternalHandleU32(u32 newHandle) = 0;
 };
 
-#endif // __TEXTUREAPI_H__
+#endif // __PHYSOBJECTDEF_H__
+

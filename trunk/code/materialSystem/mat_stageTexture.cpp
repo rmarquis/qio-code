@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 #include <api/textureAPI.h>
+#include <shared/textureWrapMode.h>
 
 const char *imageOps [] = {
 	"addnormals",
@@ -57,7 +58,7 @@ void textureAnimation_c::uploadTextures() {
 	textures.resize(texNames.size());
 	for(u32 i = 0; i < texNames.size(); i++) {
 		const char *tName = texNames[i];
-		textureAPI_i *t = MAT_RegisterTexture(tName);
+		textureAPI_i *t = MAT_RegisterTexture(tName,TWM_REPEAT);
 		textures[i] = t;
 	}
 }
@@ -97,6 +98,7 @@ textureAPI_i *textureAnimation_c::getTextureForTime(float time) {
 stageTexture_c::stageTexture_c() {
 	singleTexture = 0;
 	animated = 0;
+	bClamp = false;
 }
 void stageTexture_c::uploadTexture() {
 	unloadTexture();
@@ -106,7 +108,11 @@ void stageTexture_c::uploadTexture() {
 	if(mapName.length() == 0 || !stricmp(mapName,"$lightmap")) {
 		return;
 	}
-	singleTexture = MAT_RegisterTexture(mapName);
+	if(this->bClamp) {
+		singleTexture = MAT_RegisterTexture(mapName,TWM_CLAMP);
+	} else {
+		singleTexture = MAT_RegisterTexture(mapName,TWM_REPEAT);
+	}
 }
 void stageTexture_c::unloadTexture() {
 	if(singleTexture) {
@@ -191,3 +197,7 @@ bool stageTexture_c::isEmpty() const {
 		return false;
 	return true; // nothing loaded
 }
+void stageTexture_c::setBClamp(bool newBClamp) {
+	bClamp = newBClamp;
+}
+

@@ -402,6 +402,75 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 		return;
 	(*ragOrs)[partIndex] = or;
 }
+void rEntityImpl_c::updateAnimatedEntity() {
+	// we have an instance of dynamic model.
+	// It might be an instance of skeletal model (.md5mesh, etc)
+	// or an instance of keyframed model (.md3, .mdc, .md2, etc...)
+	if(model->isSkeletal()) {
+		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
+		// ragdoll controlers ovverides all the animations
+		if(myRagdollDef) {
+			rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
+			const afPublicData_s *af = this->myRagdollDef->getData();
+			arraySTD_c<u32> refCounts;
+			boneOrArray_c bones;
+			refCounts.resize(skelModel->getNumBones());
+			refCounts.nullMemory();
+			bones.resize(skelModel->getNumBones());
+			for(u32 i = 0; i < af->bodies.size(); i++) {
+				const afBody_s &b = af->bodies[i];
+				const boneOrQP_c &partOr = (*ragOrs)[i];
+				matrix_c bodyMat;
+				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
+				arraySTD_c<u32> boneNumbers;
+				afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
+				for(u32 j = 0; j < boneNumbers.size(); j++) {
+					int boneNum = boneNumbers[j];
+					if(refCounts[boneNum]) {
+						// it should NEVER happen
+						g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
+						continue;
+					}
+					refCounts[boneNum] ++;
+					const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
+					bones[boneNum].mat = bodyMat * bpb2b;
+				}
+			}
+			instance->updateSkelModelInstance(skelModel,bones);	
+			instance->recalcModelNormals(); // this is slow
+		} else if(skelAnimCtrl) {
+			skelAnimCtrl->runAnimController(rf_curTimeMsec);
+			skelAnimCtrl->updateModelAnimation(skelModel);
+			instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+			instance->recalcModelNormals(); // this is slow
+		}
+	} else {
+		if(model->isKeyframed()) {
+			const kfModelAPI_i *kfModel = model->getKFModelAPI();
+			if(rf_forceKFModelsFrame.getInt() >= 0) {
+				u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
+				instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
+			} else {
+
+			}
+			instance->recalcModelNormals(); // this is slow
+		} else {
+			const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
+			if(rf_forceKFModelsFrame.getInt() >= 0) {
+				instance->updateQ3PlayerModelInstance(q3Player,rf_forceKFModelsFrame.getInt(),rf_forceKFModelsFrame.getInt());
+			} else {
+				if(q3AnimCtrl) {
+					q3AnimCtrl->runAnimController(rf_curTimeMsec);
+					instance->updateQ3PlayerModelInstance(q3Player,
+						q3AnimCtrl->getLegs().curLerp.from,
+						q3AnimCtrl->getTorso().curLerp.from);	
+				}
+			}
+			instance->recalcModelNormals(); // this is slow
+		}
+	}
+}
 void rEntityImpl_c::addDrawCalls() {
 	if(rf_noEntityDrawCalls.getInt())
 		return;
@@ -416,73 +485,7 @@ void rEntityImpl_c::addDrawCalls() {
 			staticDecals->addDrawCalls();
 		}
 	} else if(instance) {
-		// we have an instance of dynamic model.
-		// It might be an instance of skeletal model (.md5mesh, etc)
-		// or an instance of keyframed model (.md3, .mdc, .md2, etc...)
-		if(model->isSkeletal()) {
-			const skelModelAPI_i *skelModel = model->getSkelModelAPI();
-			const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
-			// ragdoll controlers ovverides all the animations
-			if(myRagdollDef) {
-				rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
-				const afPublicData_s *af = this->myRagdollDef->getData();
-				arraySTD_c<u32> refCounts;
-				boneOrArray_c bones;
-				refCounts.resize(skelModel->getNumBones());
-				refCounts.nullMemory();
-				bones.resize(skelModel->getNumBones());
-				for(u32 i = 0; i < af->bodies.size(); i++) {
-					const afBody_s &b = af->bodies[i];
-					const boneOrQP_c &partOr = (*ragOrs)[i];
-					matrix_c bodyMat;
-					bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
-					arraySTD_c<u32> boneNumbers;
-					afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
-					for(u32 j = 0; j < boneNumbers.size(); j++) {
-						int boneNum = boneNumbers[j];
-						if(refCounts[boneNum]) {
-							// it should NEVER happen
-							g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
-							continue;
-						}
-						refCounts[boneNum] ++;
-						const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
-						bones[boneNum].mat = bodyMat * bpb2b;
-					}
-				}
-				instance->updateSkelModelInstance(skelModel,bones);	
-				instance->recalcModelNormals(); // this is slow
-			} else if(skelAnimCtrl) {
-				skelAnimCtrl->runAnimController(rf_curTimeMsec);
-				skelAnimCtrl->updateModelAnimation(skelModel);
-				instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
-				instance->recalcModelNormals(); // this is slow
-			}
-		} else {
-			if(model->isKeyframed()) {
-				const kfModelAPI_i *kfModel = model->getKFModelAPI();
-				if(rf_forceKFModelsFrame.getInt() >= 0) {
-					u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
-					instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
-				} else {
-
-				}
-				instance->recalcModelNormals(); // this is slow
-			} else {
-				const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
-				if(rf_forceKFModelsFrame.getInt() >= 0) {
-					instance->updateQ3PlayerModelInstance(q3Player,rf_forceKFModelsFrame.getInt(),rf_forceKFModelsFrame.getInt());
-				} else {
-					if(q3AnimCtrl) {
-						q3AnimCtrl->runAnimController(rf_curTimeMsec);
-						instance->updateQ3PlayerModelInstance(q3Player,
-							q3AnimCtrl->getLegs().curLerp.from,
-							q3AnimCtrl->getTorso().curLerp.from);	
-					}
-				}
-				instance->recalcModelNormals(); // this is slow
-			}
-		}
+		this->updateAnimatedEntity();
 		instance->addDrawCalls(&surfaceFlags);
 	}
 
@@ -595,11 +598,18 @@ void RFE_AddEntity(rEntityImpl_c *ent) {
 	if(ent->isHidden())
 		return;
 	if(rf_camera.isThirdPerson()) {
-		if(ent->isFirstPersonOnly())
+		if(ent->isFirstPersonOnly()) {
 			return;
+		}
 	} else {
-		if(ent->isThirdPersonOnly())
+		if(ent->isThirdPersonOnly()) {
+			// if dynamic shadows are enabled we still need to keep 
+			// 3rd person-only models updated
+			if(RF_IsUsingShadowVolumes()) {
+				ent->updateAnimatedEntity();
+			}
 			return;
+		}
 	}
 	if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
 		c_entitiesCulledByABSBounds++;
