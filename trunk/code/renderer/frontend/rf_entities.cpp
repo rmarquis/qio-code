@@ -43,64 +43,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/animationController.h>
 #include <shared/quake3AnimationConfig.h>
+#include <shared/kfAnimCtrl.h>
 #include <renderer/rfSurfFlags.h>
 
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
 
-struct kfAnimCtrl_s {
-	int prevTimeMsec;
-	float curTime; // in seconds
-	const q3AnimDef_s *animDef;
-	singleAnimLerp_s curLerp;
 
-	kfAnimCtrl_s() {
-		curTime = 0;
-		animDef = 0;
-		prevTimeMsec = 0;
-	}
-	void setAnim(u32 animIndex, const rModelAPI_i *model) {
-		const q3PlayerModelAPI_i *q3model = model->getQ3PlayerModelAPI();
-		const q3AnimDef_s *newAnimDef = q3model->getAnimCFGForIndex(animIndex);
-		if(newAnimDef == animDef) {
-			return; // no change
-		}
-		animDef = newAnimDef;
-		curTime = 0;
-		//prevTimeMsec = curGlobalTimeMSec;
-	}
-	void runAnimController(int curGlobalTimeMSec) {
-		if(prevTimeMsec >= curGlobalTimeMSec)
-			return;
-		if(animDef == 0) {
-			prevTimeMsec = curGlobalTimeMSec;
-			return;
-		}
-		int deltaMsec = curGlobalTimeMSec - prevTimeMsec;
-		prevTimeMsec = curGlobalTimeMSec;
-		float deltaTimeSec = float(deltaMsec) * 0.001f;
-		curTime += deltaTimeSec;
-		float t = curTime;
-		u32 first = 0;
-		while(t > animDef->frameTime) {
-			t -= animDef->frameTime;
-			first ++;
-			if(first == animDef->numFrames) {
-				first = 0;
-				curTime -= animDef->totalTime;
-			}
-		}
-		u32 next = first + 1;
-		if(next >= animDef->numFrames) {
-			next = 0;
-		}
-		curLerp.from = animDef->firstFrame + first;
-		curLerp.to = animDef->firstFrame + next;
-		curLerp.frac = t / animDef->frameTime;
-		//g_core->Print("From %i, to %i, frac %f\n",curLerp.from,curLerp.to,curLerp.frac);
-	}
-};
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
 	kfAnimCtrl_s torso;
@@ -137,7 +87,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	myRagdollDef = 0;
 	ragOrs = 0;
 	q3AnimCtrl = 0;
-	skinMatList = 0;
+	//skinMatList = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	if(staticDecals) {
@@ -160,10 +110,10 @@ rEntityImpl_c::~rEntityImpl_c() {
 		delete ragOrs;
 		ragOrs = 0;
 	}
-	if(skinMatList) {
-		delete skinMatList;
-		skinMatList = 0;
-	}
+	//if(skinMatList) {
+	//	delete skinMatList;
+	//	skinMatList = 0;
+	//}
 }
 
 void rEntityImpl_c::recalcABSBounds() {
@@ -197,17 +147,17 @@ void rEntityImpl_c::setAngles(const vec3_c &newAngles) {
 }
 void rEntityImpl_c::updateModelSkin() {
 	if(model == 0) {
-		if(skinMatList) {
-			delete skinMatList;
-			skinMatList = 0;
-		}
+		//if(skinMatList) {
+		//	delete skinMatList;
+		//	skinMatList = 0;
+		//}
 		return;
 	}
 	if(skinName.length() == 0) {
-		if(skinMatList) {
-			delete skinMatList;
-			skinMatList = 0;
-		}
+		//if(skinMatList) {
+		//	delete skinMatList;
+		//	skinMatList = 0;
+		//}
 		return;
 	}
 	if(model->isQ3PlayerModel()) {
@@ -506,6 +456,12 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 	if(model == 0) {
 		out = this->matrix;
 		return true; // error 
+	}
+	if(model->isQ3PlayerModel() && this->q3AnimCtrl) {
+		matrix_c localMat;
+		model->getTagOrientation(localBoneIndex,this->q3AnimCtrl->getLegs().curLerp,this->q3AnimCtrl->getTorso().curLerp,localMat);
+		out = this->matrix * localMat;
+		return false; // OK
 	}
 	skelModelAPI_i *skel = model->getSkelModelAPI();
 	if(skel == 0) {

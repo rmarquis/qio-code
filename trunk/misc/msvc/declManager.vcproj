@@ -238,6 +238,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>
@@ -259,6 +267,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\quake3AnimationConfig.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\tagOr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\tagOr.h"
 				>
 			</File>
 		</Filter>

@@ -143,6 +143,11 @@ const q3PlayerModelAPI_i *model_c::getQ3PlayerModelAPI() const {
 	}
 	return 0;
 }
+void model_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
+	if(type == MOD_Q3PLAYERMODEL) {
+		return this->q3PlayerModel->getTagOrientation(tagNum,legs,torso,out);
+	}
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

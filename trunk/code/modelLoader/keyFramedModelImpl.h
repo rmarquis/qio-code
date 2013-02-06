@@ -95,6 +95,9 @@ public:
 	virtual u32 getNumSurfaces() const {
 		return surfs.size();
 	}
+	virtual u32 getNumTags() const {
+		return tagNames.size();
+	}
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const {
 		return &surfs[surfNum];
 	}

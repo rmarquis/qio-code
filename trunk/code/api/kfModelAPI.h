@@ -42,6 +42,7 @@ public:
 	virtual const char *getName() const = 0;
 	virtual u32 getNumFrames() const = 0;
 	virtual u32 getNumSurfaces() const = 0;
+	virtual u32 getNumTags() const = 0;
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const = 0;
 	virtual u32 fixFrameNum(u32 inFrameNum) const = 0;
 	virtual int getTagIndexForName(const char *tagName) const = 0;

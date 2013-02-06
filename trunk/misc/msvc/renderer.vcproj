@@ -507,6 +507,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\kfAnimCtrl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\mapBezierPatch.cpp"
 				>
 			</File>
@@ -576,6 +580,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\simpleVert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\singleAnimLerp.h"
 				>
 			</File>
 			<File

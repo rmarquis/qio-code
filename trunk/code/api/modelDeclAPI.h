@@ -40,6 +40,9 @@ public:
 
 	virtual u32 getNumSurfaces() = 0;
 
+	// bones / tags
+	virtual int getBoneNumForName(const char *boneName) const = 0;
+
 	//// animations list access
 	//virtual u32 getNumAnims() const = 0;
 	//virtual const char *animAliasForNum(u32 index) = 0;

@@ -192,6 +192,9 @@ public:
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
+		// check for empty file name
+		if(fname == 0 || fname[0] == 0)
+			return 0;
 		skelModelIMPL_c *skelModel = new skelModelIMPL_c;
 		if(skelModel->loadMD5Mesh(fname)) {
 			delete skelModel;

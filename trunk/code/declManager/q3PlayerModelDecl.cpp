@@ -28,6 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/kfModelAPI.h>
 #include <shared/parser.h>
 #include <shared/quake3AnimationConfig.h>
+#include <shared/singleAnimLerp.h>
+#include <shared/tagOr.h>
+#include <math/matrix.h>
 
 u32 q3PlayerModelDecl_c::getNumTotalSurfaces() const {
 	u32 ret = 0;
@@ -46,6 +49,41 @@ const struct q3AnimDef_s *q3PlayerModelDecl_c::getAnimCFGForIndex(u32 localAnimI
 	if(cfg == 0)
 		return 0;
 	return cfg->getAnimCFGForIndex(localAnimIndex);
+}
+int q3PlayerModelDecl_c::getTagNumForName(const char *boneName) const {
+	int localIndex = legsModel->getTagIndexForName(boneName);
+	if(localIndex != -1) {
+		return localIndex;
+	}
+	u32 numLegsTags = legsModel->getNumTags();
+	localIndex = torsoModel->getTagIndexForName(boneName);
+	if(localIndex != -1) {
+		return numLegsTags + localIndex;
+	}
+	return -1;
+}
+void q3PlayerModelDecl_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
+	if(this->isLegsTag(tagNum)) {
+
+	} else {
+		// we need to get torso orientation first, which is attached to legs tag	
+		// attach torso model to legs model tag
+		const tagOr_c *torsoTag = legsModel->getTagOrientation("tag_torso",legs.from);
+		matrix_c torsoTagMat;
+		torsoTag->toMatrix(torsoTagMat);
+		u32 localTagNum = tagNum - legsModel->getNumTags();
+		const tagOr_c *tag = torsoModel->getTagOrientation(localTagNum,torsoModel->fixFrameNum(torso.from));
+		matrix_c tagMatrix;
+		tag->toMatrix(tagMatrix);
+		out = torsoTagMat * tagMatrix;
+	}
+}
+bool q3PlayerModelDecl_c::isLegsTag(int tagNum) const {
+	if(tagNum < 0)
+		return false; // it's not a valid tag num
+	if(tagNum < legsModel->getNumTags())
+		return true;
+	return false;
 }
 bool q3PlayerModelDecl_c::loadQ3PlayerDecl() {
 	legsModelPath = "models/players/";

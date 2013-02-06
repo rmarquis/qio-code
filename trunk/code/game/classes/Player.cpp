@@ -531,7 +531,7 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		} else {
 			ps.customViewRModelIndex = 0;
 		}
-		curWeapon->setParent(this,getBoneNumForName("MG_ATTACHER"));
+		curWeapon->setParent(this,getBoneNumForName("tag_weapon"));
 	}
 #else
 

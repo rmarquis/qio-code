@@ -118,12 +118,17 @@ void ModelEntity::setSpriteModel(const char *newSpriteMaterial, float newSpriteR
 	this->setRenderModel(newRenderModelName);
 }
 int ModelEntity::getBoneNumForName(const char *boneName) {
+	if(this->modelDecl) {
+		// this is working for tags as well
+		return this->modelDecl->getBoneNumForName(boneName);
+	}
 	if(cmSkel == 0) {
 		cmSkel = cm->registerSkelModel(this->renderModelName);
 	}
-	if(cmSkel == 0)
-		return -1;
-	return cmSkel->getBoneNumForName(boneName);
+	if(cmSkel) {
+		return cmSkel->getBoneNumForName(boneName);
+	}
+	return -1;
 }
 void ModelEntity::setInternalAnimationIndex(int newAnimIndex) {
 	this->myEdict->s->animIndex = newAnimIndex;

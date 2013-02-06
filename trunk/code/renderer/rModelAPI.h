@@ -58,6 +58,10 @@ public:
 	virtual mtrAPI_i *getSpriteMaterial() const = 0;
 	// returns the number of surfaces in static/skeletal model
 	virtual unsigned int getNumSurfaces() const = 0;
+	// for keyframed models
+	//virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &state, class matrix_c &out) = 0;
+	// for q3 player models
+	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const = 0;
 };
 
 #endif // __RMODELAPI_H__

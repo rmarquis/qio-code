@@ -179,6 +179,8 @@ public:
 	virtual class kfModelAPI_i *getKFModelAPI() const;
 	virtual const q3PlayerModelAPI_i *getQ3PlayerModelAPI() const;
 
+	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
+
 	void clear();
 
 // model creation access for BSP class (bsp inline models)

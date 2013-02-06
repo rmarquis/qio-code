@@ -51,6 +51,8 @@ bool rgbGen_c::parse(class parser_c &p) {
 		type = RGBGEN_CONSTLIGHTING; // added for Call Of Duty??
 	} else if(p.atWord("lightingdiffuse")) {
 		type = RGBGEN_LIGHTINGDIFFUSE; // added for RTCW? 
+	} else if(p.atWord("entity")) {
+		// this is used by Quake3 railgun model to set shader color from cgame code
 	} else {
 		str tok = p.getToken();
 		g_core->RedWarning("rgbGen_c::parse: unknown rgbGen %s\n",tok.c_str());

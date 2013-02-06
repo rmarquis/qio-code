@@ -26,17 +26,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __SKELANIMAPI_H__
 
 #include "skelAnimPostProcessFuncs.h"
+#include <shared/singleAnimLerp.h>
 
 enum {
 	AF_LOOP_LAST_FRAME = 1, // stop the animation at the last frame instead of looping it
 };
 
-// used for single looping animations
-struct singleAnimLerp_s {
-	u16 from; // previous frame num
-	u16 to; // next frame num
-	float frac; // 0.0 - 1.0 lerp value
-};
 
 class skelAnimAPI_i : public skelAnimPostProcessFuncs_i {
 public:

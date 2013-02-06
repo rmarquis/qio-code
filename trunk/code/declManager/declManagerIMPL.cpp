@@ -99,17 +99,22 @@ class modelDecl_c : public modelDeclAPI_i, public declRefState_c {
 	arraySTD_c<animDef_c> anims;
 	modelDecl_c *hashNext;
 	bool cached;
+
+	class q3PlayerModelAPI_i *q3PlayerModel;
 	class skelModelAPI_i *skelModel;
 public:
 	modelDecl_c() {
 		cached = false;
 		skelModel = 0;
+		q3PlayerModel = 0;
 	}
 	void precache() {
 		if(cached)
 			return;
 		cached = true;
-		skelModel = g_modelLoader->loadSkelModelFile(meshName);
+		if(meshName.length()) {
+			skelModel = g_modelLoader->loadSkelModelFile(meshName);
+		}
 	}
 	bool parse(const char *text, const char *textBase, const char *fname) {
 		parser_c p;
@@ -154,9 +159,15 @@ public:
 		}
 		return false; // no error
 	}
+	void setQ3PlayerModel(q3PlayerModelAPI_i *newQ3PModel) {
+		this->q3PlayerModel = newQ3PModel;
+	}
 	bool isValid() const {
-		if(meshName.length() == 0)
-			return false;
+		if(meshName.length() == 0) {
+			if(this->q3PlayerModel == 0) {
+				return false;
+			}
+		}
 		return true;
 	}
 	void setDeclName(const char *newName) {
@@ -185,9 +196,23 @@ public:
 	}
 	u32 getNumSurfaces() {
 		precache();
-		if(skelModel == 0)
-			return 0;
-		return skelModel->getNumSurfs();
+		if(skelModel) {
+			return skelModel->getNumSurfs();
+		}
+		if(q3PlayerModel) {
+			return q3PlayerModel->getNumTotalSurfaces();
+		}
+		return 0;
+	}
+	virtual int getBoneNumForName(const char *boneName) const {
+		(((modelDecl_c*)this)->precache());
+		if(skelModel) {
+			return skelModel->getLocalBoneIndexForBoneName(boneName);
+		}
+		if(q3PlayerModel) {
+			return q3PlayerModel->getTagNumForName(boneName);
+		}
+		return -1;
 	}
 	const animDef_c *findAnimDef(const char *alias) const {
 		for(u32 i = 0; i < anims.size(); i++) {
@@ -363,10 +388,15 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 	ret = new modelDecl_c;
 	ret->setDeclName(name);
 	modelDecls.addObject(ret);
-	if(defFiles.findDeclText(name,"model",txt) == false) {
-		return 0;
+	if(name[0] == '$') {
+		q3PlayerModelAPI_i *q3PlayerModelDecl = this->_registerQ3PlayerDecl(name,userModule);
+		ret->setQ3PlayerModel(q3PlayerModelDecl);
+	} else {
+		if(defFiles.findDeclText(name,"model",txt) == false) {
+			return 0;
+		}
+		ret->parse(txt.p,txt.textBase,txt.sourceFile);
 	}
-	ret->parse(txt.p,txt.textBase,txt.sourceFile);
 	ret->setReferencedByModule(userModule);
 	if(ret->isValid()) {
 		return ret;
@@ -424,6 +454,10 @@ class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModul
 	return 0;
 }
 class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *name, qioModule_e userModule) {
+	// '$' is no longer needed here
+	if(name[0] == '$') {
+		name++;
+	}
 	q3PlayerModelDecl_c *ret = q3PlayerDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);

@@ -52,7 +52,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// the skin definition itself
 	//class rSkinRemap_c *skin; 
 	// model materials after applying the skin
-	class rSkinMatList_c *skinMatList;
+	//class rSkinMatList_c *skinMatList;
 	// used only for static (non-animated) model entities
 	class simpleDecalBatcher_c *staticDecals; 
 	// only for skeletal models; model geometry instanced at the current time of animation
