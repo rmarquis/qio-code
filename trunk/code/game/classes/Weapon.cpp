@@ -64,18 +64,19 @@ BaseEntity *Weapon::getOwner() const {
 void Weapon::onFireKeyHeld() {
 	if(autoFire) {
 		if(canFireAgain()) {
+			this->lastShotTime = level.time;
 			doWeaponAttack();
 		}
 	}
 }
 void Weapon::onFireKeyDown() {
 	if(canFireAgain()) {
+		this->lastShotTime = level.time;
 		doWeaponAttack();
 	}
 }
 
 void Weapon::doWeaponAttack() {
-	this->lastShotTime = level.time;
 	if(owner) {
 		G_BulletAttack(owner->getEyePos(),owner->getViewAngles().getForward(),owner);
 	} else {

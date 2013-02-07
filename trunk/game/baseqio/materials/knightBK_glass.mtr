@@ -18,7 +18,7 @@ textures/glass/blueglass
 {
 	surfaceparm nolightmap
 	surfaceparm nonsolid
-	cull twosided
+	//cull twosided
 	{
 		map textures/glass/blueglass.tga
 		tcGen environment
@@ -36,7 +36,7 @@ textures/glass/darkglass
                       surfaceparm trans
 		      surfaceparm solid
 
-                      cull disable
+                   //   cull disable
                       {
                       map textures/effects/tinfx.tga
                       tcgen environment
@@ -56,7 +56,7 @@ textures/glass/plainglass
 {
 	surfaceparm nolightmap
 	surfaceparm nonsolid
-	cull twosided
+	//cull twosided
 	{
 		map textures/glass/plainglass.tga
 		tcGen environment

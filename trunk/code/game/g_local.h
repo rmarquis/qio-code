@@ -150,11 +150,13 @@ void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
 // g_collision.cpp
 //
 bool G_TraceRay(class trace_c &tr, BaseEntity *baseSkip);
+u32 G_BoxEntities(const class aabb &bb, arraySTD_c<class BaseEntity*> &out);
 
 //
 // g_weapons.cpp
 //
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
+void G_Explosion(const vec3_c &pos, float radius, float force);
 
 //
 // g_ragdoll.cpp

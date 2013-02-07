@@ -32,10 +32,30 @@ class Projectile : public ModelEntity {
 	u32 explosionDelay;
 	// time of last collision
 	u32 collisionTime;
+	// true if object angles should be synced with projectile direction
+	// (used for projectiles with rocket models)
+	bool bSyncModelAngles;
+	// explosion parameters
+	// TODO: store them in separate struct?
+	float explosionRadius;
+	float explosionForce;
 public:
 	Projectile();
 
 	DECLARE_CLASS( Projectile );
+
+	void setProjectileSyncAngles(bool newBSyncModelAngles) {
+		this->bSyncModelAngles = newBSyncModelAngles;
+	}
+	void setExplosionDelay(u32 newExplosionDelay) {
+		this->explosionDelay = newExplosionDelay;
+	}
+	void setExplosionRadius(float newExplosionRadius) {
+		this->explosionRadius = newExplosionRadius;
+	}
+	void setExplosionForce(float newExplosionForce) {
+		this->explosionForce = newExplosionForce;
+	}
 
 	virtual void runFrame();
 };

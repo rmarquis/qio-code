@@ -49,6 +49,24 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	}
 }
 
-
+void G_Explosion(const vec3_c &pos, float radius, float force) {
+	aabb bb;
+	bb.fromPointAndRadius(pos,radius);
+	arraySTD_c<BaseEntity*> ents;
+	G_BoxEntities(bb,ents);
+	for(u32 i = 0; i < ents.size(); i++) {
+		BaseEntity *be = ents[i];
+		if(be->hasPhysicsObject() == false)
+			continue;
+		vec3_c dir = be->getOrigin() - pos;
+		float dist = dir.len();
+		if(dist > radius)
+			continue;
+		float frac = 1.f - dist / radius;
+		dir.normalize();
+		dir *= (force * frac);
+		be->applyCentralForce(dir);
+	}
+}
 
 

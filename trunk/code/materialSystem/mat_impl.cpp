@@ -383,7 +383,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		} else {
 			if(level == 1) {
 				if(p.atWord("cull")) {
-					if(p.atWord("none")) {
+					// "cull disable" is used eg. in Quake3 rocket fire model
+					if(p.atWord("none") || p.atWord("disable")) {
+						cullType = CT_TWO_SIDED;
+					} else if(p.atWord("twosided")) {
 						cullType = CT_TWO_SIDED;
 					} else {
 						u32 lineNum = p.getCurrentLineNumber();
