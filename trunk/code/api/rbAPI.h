@@ -105,6 +105,10 @@ public:
 	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
 
 	}
+	// -1 means that renderer material time will be used to get "animMap" frame
+	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+
+	}
 	// returns true if "texgen environment" q3 shader effect can be done on GPU
 	virtual bool gpuTexGensSupported() const {
 		return false;

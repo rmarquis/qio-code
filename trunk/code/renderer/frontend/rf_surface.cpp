@@ -286,21 +286,20 @@ void r_surface_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteR
 	// just to be safe - force a single update with identity camera axis
 	axis_c axisIdentity;
 	axisIdentity.identity();
-	updateSprite(axisIdentity,newSpriteRadius);
+	updateSprite(axisIdentity,vec3_c(0,0,0),newSpriteRadius);
 }
-void r_surface_c::updateSprite(const class axis_c &ax, float newSpriteRadius) {
-	vec3_c up = ax.getUp() * newSpriteRadius;
-	vec3_c left = ax.getLeft() * newSpriteRadius;
-	vec3_c origin(0,0,0);
+void r_surface_c::updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius) {
+	vec3_c up = viewAxis.getUp() * newSpriteRadius;
+	vec3_c left = viewAxis.getLeft() * newSpriteRadius;
 
-	verts[0].xyz = origin + left + up;
-	verts[1].xyz = origin - left + up;
-	verts[2].xyz = origin - left - up;
-	verts[3].xyz = origin + left - up;
-	verts[0].normal = ax.getForward();
-	verts[1].normal = ax.getForward();
-	verts[2].normal = ax.getForward();
-	verts[3].normal = ax.getForward();
+	verts[0].xyz = spritePos + left + up;
+	verts[1].xyz = spritePos - left + up;
+	verts[2].xyz = spritePos - left - up;
+	verts[3].xyz = spritePos + left - up;
+	verts[0].normal = viewAxis.getForward();
+	verts[1].normal = viewAxis.getForward();
+	verts[2].normal = viewAxis.getForward();
+	verts[3].normal = viewAxis.getForward();
 }
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
@@ -798,7 +797,7 @@ void r_model_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRad
 	surfs[0].initSprite(newSpriteMaterial, newSpriteRadius);
 }
 void r_model_c::updateSprite(const class axis_c &ax, float newSpriteRadius) {
-	surfs[0].updateSprite(ax,newSpriteRadius);
+	surfs[0].updateSprite(ax,vec3_c(0,0,0),newSpriteRadius);
 }
 mtrAPI_i *r_model_c::getMaterialForABSTriangleIndex(u32 absTriNum) const {
 	u32 firstTri = 0;

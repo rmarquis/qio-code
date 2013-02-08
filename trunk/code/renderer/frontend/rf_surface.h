@@ -169,7 +169,7 @@ public:
 	void updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame);
 	// single sprite surface
 	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius);
-	void updateSprite(const class axis_c &ax, float newSpriteRadius);
+	void updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius);
 
 	bool traceRay(class trace_c &tr);
 

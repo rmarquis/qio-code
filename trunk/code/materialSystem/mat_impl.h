@@ -107,6 +107,9 @@ public:
 	virtual textureAPI_i *getTexture(float curTimeSec) const {
 		return stageTexture.getTexture(curTimeSec);
 	}	
+	virtual class textureAPI_i *getTextureForFrameNum(u32 frameNum) const {
+		return stageTexture.getTextureForFrameNum(frameNum);
+	}
 	virtual alphaFunc_e getAlphaFunc() const {
 		return alphaFunc;
 	}
@@ -125,6 +128,7 @@ public:
 	virtual bool hasRGBGen() const;
 	virtual enum rgbGen_e getRGBGenType() const;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const;
+	virtual float getRGBGenWaveValue(float curTimeSec) const;
 	virtual bool getDepthWrite() const {
 		return depthWrite;
 	}
@@ -175,6 +179,7 @@ public:
 	void setTexture(const char *newMapName);
 	int getImageWidth() const;
 	int getImageHeight() const;
+	u32 getNumImageFrames() const;
 	void addTexMod(const class texMod_c &newTM);
 	class rgbGen_c *allocRGBGen();
 	class stageTexture_c &getStageTexture() {
@@ -314,6 +319,11 @@ public:
 		if(stages.size() == 0)
 			return 32;
 		return stages[0]->getImageHeight();
+	}
+	virtual u32 getColorMapImageFrameCount() const {
+		if(stages.size() == 0)
+			return 0;
+		return stages[0]->getNumImageFrames();
 	}
 	virtual float getPolygonOffset() const {
 		return polygonOffset;

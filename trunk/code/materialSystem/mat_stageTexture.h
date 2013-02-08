@@ -41,6 +41,9 @@ public:
 	bool parseAnimMap(class parser_c &p);
 	textureAPI_i *getTexture(u32 idx);
 	textureAPI_i *getTextureForTime(float time);
+	u32 getNumFrames() const {
+		return texNames.size();
+	}
 };
 
 class stageTexture_c {
@@ -66,9 +69,13 @@ public:
 	textureAPI_i *getAnyTexture() const;
 	// this function should be used by renderer backend so animated images works
 	textureAPI_i *getTexture(float time = 0.f) const;
+	textureAPI_i *getTextureForFrameNum(u32 frameNum) const;
 	void fromTexturePointer(textureAPI_i *newTexturePtr);
 	bool isEmpty() const;
 	void setBClamp(bool newBClamp);
+	// returns the number of texture frames
+	// (this is different than 1 for animMaps)
+	u32 getNumFrames() const;
 };
 
 #endif // __MAT_STAGETEXTURE_H__

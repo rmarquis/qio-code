@@ -60,6 +60,8 @@ static aCvar_c gl_callGLFinish("gl_callGLFinish","0");
 static aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
 static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBottleneck","0");
 static aCvar_c rb_gpuTexGens("rb_gpuTexGens","0");
+static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","0");
+static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 // always use GLSL shaders, even if they are not needed for any material effects
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 
@@ -114,6 +116,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool bindVertexColors;
 	bool bHasVertexColors;
 	drawCallSort_e curDrawCallSort;
+	int forcedMaterialFrameNum;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -153,6 +156,7 @@ public:
 		backendInitialized = false;
 		curLight = 0;
 		isMirror = false;
+		forcedMaterialFrameNum = -1;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -531,6 +535,9 @@ public:
 	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
 		this->curDrawCallSort = sort;
 	}
+	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+		this->forcedMaterialFrameNum = animMapFrame;
+	}
 	bool bBoundLightmapCoordsToFirstTextureSlot;
 	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
 		if(boundVBO == verts) {
@@ -725,6 +732,16 @@ public:
 	// temporary vertex buffer for stages that requires CPU 
 	// vertex calculations, eg. texgen enviromental, etc.
 	rVertexBuffer_c stageVerts;
+
+	textureAPI_i *getStageTextureInternal(const mtrStageAPI_i *stage) {
+		if(forcedMaterialFrameNum == -1) {
+			// use material time to get animated texture frame
+			return stage->getTexture(this->timeNowSeconds);
+		} else {
+			// use texture frame set by cgame
+			return stage->getTextureForFrameNum(forcedMaterialFrameNum);
+		}
+	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
@@ -821,7 +838,7 @@ public:
 					// draw multitextured surface with
 					// - colormap at slot 0
 					// - lightmap at slot 1
-					textureAPI_i *t = s->getTexture(this->timeNowSeconds);
+					textureAPI_i *t = getStageTextureInternal(s);
 					bindTex(0,t->getInternalHandleU32());
 					if(lastLightmap) {
 						bindTex(1,lastLightmap->getInternalHandleU32());
@@ -840,7 +857,7 @@ public:
 					unbindTex(1);
 				} else {
 					// draw colormap only
-					textureAPI_i *t = s->getTexture(this->timeNowSeconds);
+					textureAPI_i *t = getStageTextureInternal(s);
 					bindTex(0,t->getInternalHandleU32());
 					unbindTex(1);
 				}
@@ -880,7 +897,10 @@ public:
 						// just use vertex colors from VBO,
 						// nothing to calculate on CPU
 						bindVertexColors = true;
-					} else if(0) {
+					} else if(0 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
+						// NOTE: "rgbGen wave inversesawtooth 0 1 0 8" 
+						// and "rgbGen wave sawtooth 0 1 0 8"
+						// are used in Quake3 "rocketExplosion" material from gfx.shader
 						bindVertexColors = true;
 						// copy vertices data (first big CPU bottleneck)
 						// (but only if we havent done this already)
@@ -891,26 +911,56 @@ public:
 								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
 							}
 						}
-						// apply rgbGen effect (new rgb colors)
-						//bindStageColors = true; // FIXME, it's already set!!!
-						enum rgbGen_e rgbGenType = s->getRGBGenType();
-						if(rgbGenType == RGBGEN_CONST) {
-							byteRGB_s col;
-							vec3_c colFloats;
-							s->getRGBGenConstantColor3f(colFloats);
-							col.fromFloats(colFloats);
-							stageVerts.setVertexColorsToConstValues(col);
-							stageVerts.setVertexAlphaToConstValue(255);
-						} else if(rgbGenType == RGBGEN_WAVE) {
-							//float val = s->rgbGen.getWaveForm().evaluate();
-							//byte valAsByte = val * 255.f;
-							//stageVerts.setVertexColorsToConstValue(valAsByte);
-							//stageVerts.setVertexAlphaToConstValue(255);
-						} else if(rgbGenType == RGBGEN_VERTEX) {
-
-						} else {
-
+						//float val = s->rgbGen.getWaveForm().evaluate();
+						float val = s->getRGBGenWaveValue(this->timeNowSeconds*0.001f);
+						byte valAsByte = val * 255.f;
+						stageVerts.setVertexColorsToConstValue(valAsByte);
+						stageVerts.setVertexAlphaToConstValue(255);
+					} else if(1 && s->getRGBGenType() == RGBGEN_CONST && (rb_ignoreRGBGenConst.getInt() == 0)) {
+						bindVertexColors = true;
+						// copy vertices data (first big CPU bottleneck)
+						// (but only if we havent done this already)
+						if(selectedVertexBuffer == &verts) {
+							stageVerts = verts;
+							selectedVertexBuffer = &stageVerts;
+							if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
+								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+							}
 						}
+						// get the constant color
+						byteRGB_s col;
+						vec3_c colFloats;
+						s->getRGBGenConstantColor3f(colFloats);
+						col.fromFloats(colFloats);
+						stageVerts.setVertexColorsToConstValues(col);
+						stageVerts.setVertexAlphaToConstValue(255);
+					} else if(0) {
+						//bindVertexColors = true;
+						//// copy vertices data (first big CPU bottleneck)
+						//// (but only if we havent done this already)
+						//if(selectedVertexBuffer == &verts) {
+						//	stageVerts = verts;
+						//	selectedVertexBuffer = &stageVerts;
+						//	if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
+						//		g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+						//	}
+						//}
+						//// apply rgbGen effect (new rgb colors)
+						////bindStageColors = true; // FIXME, it's already set!!!
+						//enum rgbGen_e rgbGenType = s->getRGBGenType();
+						//if(rgbGenType == RGBGEN_CONST) {
+						//	byteRGB_s col;
+						//	vec3_c colFloats;
+						//	s->getRGBGenConstantColor3f(colFloats);
+						//	col.fromFloats(colFloats);
+						//	stageVerts.setVertexColorsToConstValues(col);
+						//	stageVerts.setVertexAlphaToConstValue(255);
+						////} else if(rgbGenType == RGBGEN_WAVE) {
+						////} else if(rgbGenType == RGBGEN_VERTEX) {
+
+						//} else {
+
+						//}
 					}
 				} else {
 					// if (rgbGen is not set) and (lightmap is not present) and (vertex colors are present)
@@ -1328,6 +1378,7 @@ public:
 		bDepthMask = true;
 		prevCullType = CT_NOT_SET;
 		stencilTestEnabled = 0;
+		forcedMaterialFrameNum = -1;
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

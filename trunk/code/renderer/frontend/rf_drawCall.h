@@ -32,6 +32,8 @@ void RF_AddDrawCall(const class rVertexBuffer_c *verts, const class rIndexBuffer
 		bool bindVertexColors);
 void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices);
 
+void RF_SetForceSpecificMaterialFrame(int newFrameNum);
+
 // NOTE: RF_SortAndIssueDrawCalls might be called more than once
 // in a single renderer frame when there are active mirrors/portals views
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls);

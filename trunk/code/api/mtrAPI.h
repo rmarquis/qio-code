@@ -49,6 +49,8 @@ public:
 
 	virtual int getImageWidth() const = 0;
 	virtual int getImageHeight() const = 0;
+	// for animated images ("animmap")
+	virtual u32 getColorMapImageFrameCount() const = 0;
 
 	virtual float getPolygonOffset() const = 0;
 };

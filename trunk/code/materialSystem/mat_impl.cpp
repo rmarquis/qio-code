@@ -133,6 +133,9 @@ int mtrStage_c::getImageWidth() const {
 int mtrStage_c::getImageHeight() const {
 	return stageTexture.getAnyTexture()->getHeight();
 }
+u32 mtrStage_c::getNumImageFrames() const {
+	return stageTexture.getNumFrames();
+}
 void mtrStage_c::addTexMod(const class texMod_c &newTM) {
 	if(this->texMods == 0) {
 		this->texMods = new texModArray_c;
@@ -175,6 +178,12 @@ bool mtrStage_c::getRGBGenConstantColor3f(float *out3Floats) const {
 	out3Floats[1] = in[1];
 	out3Floats[2] = in[2];
 	return false;
+}
+float mtrStage_c::getRGBGenWaveValue(float curTimeSec) const {
+	if(rgbGen == 0)
+		return 0; // error
+	float ret = rgbGen->getWaveForm().evaluate(curTimeSec);
+	return ret;
 }
 // material class
 mtrIMPL_c::mtrIMPL_c() {

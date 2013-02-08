@@ -82,6 +82,7 @@ void RF_AddGenericDrawCalls() {
 	RFE_AddEntityDrawCalls();
 	RF_AddWorldDecalDrawCalls();
 	RF_AddWaterDrawCalls();
+	RF_AddExplosionDrawCalls();
 }
 void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	rf_bDrawOnlyOnDepthBuffer = true;

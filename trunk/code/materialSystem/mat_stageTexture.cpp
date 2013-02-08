@@ -185,6 +185,15 @@ textureAPI_i *stageTexture_c::getTexture(float time) const {
 	//return 0;
 	return MAT_GetDefaultTexture();
 }
+textureAPI_i *stageTexture_c::getTextureForFrameNum(u32 frameNum) const {
+	if(singleTexture)
+		return singleTexture;
+	if(animated) {
+		return animated->getTexture(frameNum);
+	}
+	//return 0;
+	return MAT_GetDefaultTexture();
+}
 void stageTexture_c::fromTexturePointer(textureAPI_i *newTexturePtr) {
 	unloadTexture();
 	this->singleTexture = newTexturePtr;
@@ -200,4 +209,9 @@ bool stageTexture_c::isEmpty() const {
 void stageTexture_c::setBClamp(bool newBClamp) {
 	bClamp = newBClamp;
 }
-
+u32 stageTexture_c::getNumFrames() const {
+	if(animated) {
+		return animated->getNumFrames();
+	}
+	return 1;
+}

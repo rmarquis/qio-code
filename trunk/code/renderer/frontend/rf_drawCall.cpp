@@ -55,12 +55,20 @@ public:
 	class rEntityAPI_i *entity;
 	class rLightAPI_i *curLight;
 	const class rPointBuffer_c *points; // ONLY for shadow volumes
+	int forceSpecificMaterialFrame;
 //public:
 	
 };
 static arraySTD_c<drawCall_c> rf_drawCalls;
 static u32 rf_numDrawCalls = 0;
 bool rf_bDrawOnlyOnDepthBuffer = false;
+// used to force specific frame of "animMap" stage from cgame code
+int rf_forceSpecificMaterialFrame = -1;
+
+// -1 means that global material time will be used to select "animMap" frame
+void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
+	rf_forceSpecificMaterialFrame = newFrameNum;
+}
 
 void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
@@ -107,6 +115,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
+	n->forceSpecificMaterialFrame = rf_forceSpecificMaterialFrame;
 	if(rf_noLightmaps.getInt()) {
 		n->lightmap = 0;
 	} else {
@@ -264,6 +273,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 				}
 			}
 		}
+		rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
 		rb->setCurrentDrawCallSort(c->sort);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);

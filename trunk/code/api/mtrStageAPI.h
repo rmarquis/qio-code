@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class mtrStageAPI_i  { 
 public:
 	virtual class textureAPI_i *getTexture(float curTimeSec = 0.f) const = 0;
+	virtual class textureAPI_i *getTextureForFrameNum(u32 frameNum) const = 0;
 	virtual enum alphaFunc_e getAlphaFunc() const = 0;
 	virtual const struct blendDef_s &getBlendDef() const = 0;
 	virtual bool hasTexMods() const = 0;
@@ -39,6 +40,7 @@ public:
 	virtual bool hasRGBGen() const = 0;
 	virtual enum rgbGen_e getRGBGenType() const = 0;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
+	virtual float getRGBGenWaveValue(float curTimeSec) const = 0;
 	virtual bool getDepthWrite() const = 0;
 };
 

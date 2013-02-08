@@ -86,8 +86,13 @@ void RF_SetWaterLevel(const char *waterLevel);
 void RF_AddWaterDrawCalls();
 void RF_ShutdownWater();
 
+// rf_explosions.cpp
+u32 RF_AddExplosion(const class vec3_c &pos, float radius, class mtrAPI_i *material);
+void RF_AddExplosionDrawCalls();
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
+extern float rf_curTimeSeconds;
 extern class rLightAPI_i *rf_curLightAPI;
 // NULL == worldspawn
 extern class rEntityAPI_i *rf_currentEntity;

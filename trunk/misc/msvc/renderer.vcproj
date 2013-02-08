@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_explosions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_lights.cpp"
 				>
 			</File>
