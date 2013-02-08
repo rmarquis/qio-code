@@ -560,7 +560,7 @@ void ModelEntity::onDeath() {
 		delete this;
 	}
 }
-void ModelEntity::onBulletHit(const vec3_c &dirWorld, int damage) {
+void ModelEntity::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
 	// apply hit damage
 	if(bTakeDamage) {
 		int prevHealth = health;
@@ -570,4 +570,6 @@ void ModelEntity::onBulletHit(const vec3_c &dirWorld, int damage) {
 			this->onDeath();
 		}
 	}
+	// apply hit force
+	this->applyPointImpulse(dirWorld.getNormalized() * 250.f, hitPosWorld);
 }

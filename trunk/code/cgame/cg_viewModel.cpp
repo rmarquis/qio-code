@@ -64,7 +64,8 @@ void CG_RunViewModel() {
 		return;
 	}
 	if(cg_entities[viewModelEntity].rEnt) {
-		cg_entities[viewModelEntity].rEnt->hideModel();
+		//cg_entities[viewModelEntity].rEnt->hideModel();
+		cg_entities[viewModelEntity].rEnt->setThirdPersonOnly(true);
 	}
 
 	// local weapons offset (affected by cg_gunX/Y/Z cvars)
@@ -75,14 +76,14 @@ void CG_RunViewModel() {
 		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
 	} else {
 		viewModel = cg_entities[viewModelEntity].rEnt->getModel();
-		if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
-			|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
-			|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
-			|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
-			// it could be better for grenade launcher
-			|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
+		//if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+		//	|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+		//	|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+		//	|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+		//	// it could be better for grenade launcher
+		//	|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 			localOfs.set(5,-5,-10);
-		}
+		//}
 	}
 	if(viewModel == 0) {
 		CG_FreeViewModelEntity();
@@ -109,6 +110,7 @@ void CG_RunViewModel() {
 	// always update viewmodel position
 	cg_viewModelEntity->setOrigin(origin);
 	cg_viewModelEntity->setAngles(angles);
+	cg_viewModelEntity->setFirstPersonOnly(true);
 	// set viewmodel model
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);

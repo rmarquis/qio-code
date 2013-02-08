@@ -121,7 +121,7 @@ public:
 	virtual void getLocalBounds(aabb &out) const;
 
 	virtual void onDeath();
-	virtual void onBulletHit(const vec3_c &dirWorld, int damage);
+	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage);
 
 	virtual bool traceWorldRay(class trace_c &tr);
 	virtual bool traceLocalRay(class trace_c &tr);

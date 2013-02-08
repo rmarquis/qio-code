@@ -2,7 +2,9 @@
 qiotests/testdecalmaterial 
 {
   polygonoffset 1
-
+  {
+    map textures/qiotests/bulletHoleTest
+  }
 }
 
 qiotests/cpuWaterTest1

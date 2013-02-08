@@ -150,7 +150,7 @@ public:
 	virtual bool doUse(class Player *activator) {
 		return false;
 	}
-	virtual void onBulletHit(const vec3_c &dirWorld, int damage) {
+	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
 
 	}
 	virtual void debugDrawAbsBounds(class rDebugDrawer_i *dd);

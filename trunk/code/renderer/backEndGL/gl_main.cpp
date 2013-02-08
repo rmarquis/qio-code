@@ -61,6 +61,7 @@ static aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
 static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBottleneck","0");
 static aCvar_c rb_gpuTexGens("rb_gpuTexGens","0");
 static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","0");
+static aCvar_c rb_printRGBGenWaveMaterials("rb_printRGBGenWaveMaterials","0");
 static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 // always use GLSL shaders, even if they are not needed for any material effects
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
@@ -754,7 +755,12 @@ public:
 			bindVertexBuffer(&verts);
 			bindIBO(&indices);
 			turnOffAlphaFunc();
-			turnOffPolygonOffset();
+			//turnOffPolygonOffset();
+			if(lastMat->getPolygonOffset()) {
+				this->setPolygonOffset(-1,-2);
+			} else {
+				this->turnOffPolygonOffset();
+			}
 			turnOffTextureMatrices();
 			disableAllTextures();
 			drawCurIBO();
@@ -897,7 +903,7 @@ public:
 						// just use vertex colors from VBO,
 						// nothing to calculate on CPU
 						bindVertexColors = true;
-					} else if(0 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
+					} else if(1 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
 						// NOTE: "rgbGen wave inversesawtooth 0 1 0 8" 
 						// and "rgbGen wave sawtooth 0 1 0 8"
 						// are used in Quake3 "rocketExplosion" material from gfx.shader
@@ -916,6 +922,9 @@ public:
 						byte valAsByte = val * 255.f;
 						stageVerts.setVertexColorsToConstValue(valAsByte);
 						stageVerts.setVertexAlphaToConstValue(255);
+						if(rb_printRGBGenWaveMaterials.getInt()) {
+							g_core->Print("Material %s has rgbGen wave\n",lastMat->getName());
+						}
 					} else if(1 && s->getRGBGenType() == RGBGEN_CONST && (rb_ignoreRGBGenConst.getInt() == 0)) {
 						bindVertexColors = true;
 						// copy vertices data (first big CPU bottleneck)

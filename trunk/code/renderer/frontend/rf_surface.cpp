@@ -60,9 +60,13 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	indices.addIndex(verts.size());
 	indices.addIndex(verts.size()+1);
 	indices.addIndex(verts.size()+2);
+	// use plane_c class to calculate triangle normal
+	plane_c pl;
+	pl.fromThreePoints(v2.xyz,v1.xyz,v0.xyz);
 	rVert_c nv;
 	nv.xyz = v0.xyz;
 	nv.tc = v0.tc;
+	nv.normal = pl.norm;
 	verts.push_back(nv);
 	nv.xyz = v1.xyz;
 	nv.tc = v1.tc;
