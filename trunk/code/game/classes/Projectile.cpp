@@ -32,8 +32,6 @@ Projectile::Projectile() {
 	explosionDelay = 500;
 	collisionTime = 0;
 	bSyncModelAngles = false;
-	explosionRadius = 0;
-	explosionForce = 0;
 }
 
 void Projectile::runFrame() {
@@ -50,7 +48,7 @@ void Projectile::runFrame() {
 		if(tr.getHitEntity()) {
 			tr.getHitEntity()->applyPointImpulse(linearVelocity,tr.getHitPos());
 		}
-		G_Explosion(this->getOrigin(), this->explosionRadius, this->explosionForce);
+		G_Explosion(this->getOrigin(), this->explosionInfo);
 		collisionTime = level.time;
 		this->linearVelocity.clear();
 		return;

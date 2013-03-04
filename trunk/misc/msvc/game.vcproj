@@ -429,6 +429,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\explosionInfo.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_classes.h"
 				>
 			</File>

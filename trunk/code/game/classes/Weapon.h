@@ -63,6 +63,10 @@ public:
 		return model_view;
 	}
 
+	void setOwner(class Player *newOwner) {
+		owner = newOwner;
+	}
+
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual bool doUse(class Player *activator);
 };

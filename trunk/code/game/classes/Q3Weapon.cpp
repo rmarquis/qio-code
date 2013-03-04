@@ -72,6 +72,8 @@ void Q3Weapon::doWeaponAttack() {
 		rocket->setProjectileSyncAngles(true);
 		rocket->setExplosionDelay(0);
 		rocket->setExplosionRadius(128);
+		rocket->setExplosionSpriteRadius(64);
+		rocket->setExplosionSpriteMaterial("rocketExplosion");
 		rocket->setExplosionForce(2000);
 		rocket->setOrigin(owner->getEyePos()+forward*32);
 		rocket->setLinearVelocity(forward*500.f);

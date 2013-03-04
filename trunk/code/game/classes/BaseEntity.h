@@ -132,6 +132,11 @@ public:
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();
+	// update origin/angles/matrix fields of entity attached to another
+	void updateAttachmentOrigin();
+
+	// returns true on error
+	virtual bool getBoneWorldOrientation(u32 tagNum, class matrix_c &out);
 
 	void setEntityLightRadius(float newEntityLightRadius);
 
@@ -149,6 +154,9 @@ public:
 	}
 	virtual bool doUse(class Player *activator) {
 		return false;
+	}
+	virtual void damage(int damage) {
+
 	}
 	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
 

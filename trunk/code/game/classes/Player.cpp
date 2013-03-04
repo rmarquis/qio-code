@@ -134,6 +134,7 @@ Player::Player() {
 	vehicle = 0;
 	curWeapon = 0;
 	animHandler = 0;
+	bTakeDamage = true;
 }
 Player::~Player() {
 	if(characterController) {
@@ -257,139 +258,147 @@ void Player::runPlayer(usercmd_s *ucmd) {
 		msec = 200;
 	}
 
-
-	if(vehicle) {
-		this->setOrigin(vehicle->getOrigin()+vec3_c(0,0,64.f));
-		vehicle->steerUCmd(ucmd);
-		//this->setClientViewAngle(vehicle->getAngles());
-	} else {
-		bool bJumped = false;
-		bool bLanding = false;
-		// update the viewangles
-		PM_UpdateViewAngles( &this->ps, ucmd );
-		{
-			vec3_t f,r,u;
-			vec3_t v = { 0, this->ps.viewangles[1], 0 };
-			//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
-			AngleVectors(v,f,r,u);
-			VectorScale(f,level.frameTime*ucmd->forwardmove,f);
-			VectorScale(r,level.frameTime*ucmd->rightmove,r);
-			VectorScale(u,level.frameTime*ucmd->upmove,u);
-			vec3_c dir(0,0,0);
-			VectorAdd(dir,f,dir);
-			VectorAdd(dir,r,dir);
-			VectorAdd(dir,u,dir);
-			vec3_c newOrigin;
-			if(noclip) {
-				dir.scale(4.f);
-				VectorAdd(this->ps.origin,dir,newOrigin);
-				ModelEntity::setOrigin(newOrigin);
-				onGround = false;
-			} else {
-				dir[2] = 0;
-				VectorScale(dir,0.75f,dir);
-				G_RunCharacterController(dir,this->characterController, newOrigin);
-				bool isNowOnGround = BT_IsCharacterOnGround(this->characterController);
-				if(isNowOnGround) {
-					if(ucmd->upmove) {
-						bJumped = G_TryToJump(this->characterController);
-					}
-					if(onGround == false) {
-						bLanding = true;
-						g_core->Print("Player::runPlayer: LANDING\n");
-					}
-				}
-				onGround = isNowOnGround;
-				ModelEntity::setOrigin(newOrigin-characterControllerOffset);
+	if(health <= 0) {
+		// player must wait 1 second before respawning again
+		if(level.time - lastDeathTime > 1000) {
+			if(ucmd->buttons & BUTTON_ATTACK) {
+				ClientSpawn(this->myEdict);
 			}
-			ps.angles.set(0,ps.viewangles[1],0);
 		}
-		float groundDist = 0.f;
-		if(onGround == false) {
-			trace_c tr;
-			tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
-			BT_TraceRay(tr);
-			groundDist = tr.getTraveled();
-			//G_Printf("GroundDist: %f\n",groundDist);
-		}
-		//if(0) {
-			//this->setAnimation("models/player/shina/attack.md5anim");
-		//} else if(bLanding) {
-		//	this->setAnimation("models/player/shina/run.md5anim");
-		//} else
-		if(bJumped) {
-			animHandler->setAnimBoth(SGA_JUMP);
-			//this->setAnimation("models/player/shina/jump.md5anim");
-		} else if(groundDist > 32.f) {
-			animHandler->setAnimBoth(SGA_JUMP);
-			//this->setAnimation("models/player/shina/jump.md5anim");
-		} else if(ucmd->hasMovement()) {
-			if(ucmd->forwardmove < 82) {
-				if(ucmd->forwardmove < 0) {
-					if(ucmd->forwardmove < -82) {
-						animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
-						//this->setAnimation("models/player/shina/run_backwards.md5anim");
+	} else {
+		if(vehicle) {
+		this->setOrigin(vehicle->getOrigin()+vec3_c(0,0,64.f));
+			vehicle->steerUCmd(ucmd);
+			//this->setClientViewAngle(vehicle->getAngles());
+		} else {
+			bool bJumped = false;
+			bool bLanding = false;
+			// update the viewangles
+			PM_UpdateViewAngles( &this->ps, ucmd );
+			{
+				vec3_t f,r,u;
+				vec3_t v = { 0, this->ps.viewangles[1], 0 };
+				//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+				AngleVectors(v,f,r,u);
+				VectorScale(f,level.frameTime*ucmd->forwardmove,f);
+				VectorScale(r,level.frameTime*ucmd->rightmove,r);
+				VectorScale(u,level.frameTime*ucmd->upmove,u);
+				vec3_c dir(0,0,0);
+				VectorAdd(dir,f,dir);
+				VectorAdd(dir,r,dir);
+				VectorAdd(dir,u,dir);
+				vec3_c newOrigin;
+				if(noclip) {
+					dir.scale(4.f);
+					VectorAdd(this->ps.origin,dir,newOrigin);
+					ModelEntity::setOrigin(newOrigin);
+					onGround = false;
+				} else {
+					dir[2] = 0;
+					VectorScale(dir,0.75f,dir);
+					G_RunCharacterController(dir,this->characterController, newOrigin);
+					bool isNowOnGround = BT_IsCharacterOnGround(this->characterController);
+					if(isNowOnGround) {
+						if(ucmd->upmove) {
+							bJumped = G_TryToJump(this->characterController);
+						}
+						if(onGround == false) {
+							bLanding = true;
+							g_core->Print("Player::runPlayer: LANDING\n");
+						}
+					}
+					onGround = isNowOnGround;
+					ModelEntity::setOrigin(newOrigin-characterControllerOffset);
+				}
+				ps.angles.set(0,ps.viewangles[1],0);
+			}
+			float groundDist = 0.f;
+			if(onGround == false) {
+				trace_c tr;
+				tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
+				BT_TraceRay(tr);
+				groundDist = tr.getTraveled();
+				//G_Printf("GroundDist: %f\n",groundDist);
+			}
+			//if(0) {
+				//this->setAnimation("models/player/shina/attack.md5anim");
+			//} else if(bLanding) {
+			//	this->setAnimation("models/player/shina/run.md5anim");
+			//} else
+			if(bJumped) {
+				animHandler->setAnimBoth(SGA_JUMP);
+				//this->setAnimation("models/player/shina/jump.md5anim");
+			} else if(groundDist > 32.f) {
+				animHandler->setAnimBoth(SGA_JUMP);
+				//this->setAnimation("models/player/shina/jump.md5anim");
+			} else if(ucmd->hasMovement()) {
+				if(ucmd->forwardmove < 82) {
+					if(ucmd->forwardmove < 0) {
+						if(ucmd->forwardmove < -82) {
+							animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
+							//this->setAnimation("models/player/shina/run_backwards.md5anim");
+						} else {
+							animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
+							//this->setAnimation("models/player/shina/walk_backwards.md5anim");
+						}
 					} else {
-						animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
-						//this->setAnimation("models/player/shina/walk_backwards.md5anim");
+						animHandler->setAnimBoth(SGA_WALK);
+						//this->setAnimation("models/player/shina/walk.md5anim");
 					}
 				} else {
-					animHandler->setAnimBoth(SGA_WALK);
-					//this->setAnimation("models/player/shina/walk.md5anim");
+					animHandler->setAnimBoth(SGA_RUN);
+					//this->setAnimation("models/player/shina/run.md5anim");
 				}
 			} else {
-				animHandler->setAnimBoth(SGA_RUN);
-				//this->setAnimation("models/player/shina/run.md5anim");
+				animHandler->setAnimBoth(SGA_IDLE);
+				//this->setAnimation("models/player/shina/idle.md5anim");
+			}
+		}
+
+		if(carryingEntity) {
+			vec3_c pos = carryingEntity->getOrigin();
+			vec3_c neededPos = this->getEyePos() + this->getForward() * 60.f;
+			vec3_c delta = neededPos - pos;
+
+			carryingEntity->setLinearVelocity(carryingEntity->getLinearVelocity()*0.5f);
+			carryingEntity->setAngularVelocity(carryingEntity->getAngularVelocity()*0.5f);
+			carryingEntity->applyCentralImpulse(delta);
+			//carryingEntity->setOrigin(neededPos);
+		}
+
+		if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
+			if(useHeld) {
+				//G_Printf("Use held\n");
+			} else {
+				//G_Printf("Use pressed\n");
+				useHeld = true;
+				onUseKeyDown();
 			}
 		} else {
-			animHandler->setAnimBoth(SGA_IDLE);
-			//this->setAnimation("models/player/shina/idle.md5anim");
+			if(useHeld) {
+				//G_Printf("Use released\n");
+				useHeld = false;
+			}
 		}
-	}
 
-	if(carryingEntity) {
-		vec3_c pos = carryingEntity->getOrigin();
-		vec3_c neededPos = this->getEyePos() + this->getForward() * 60.f;
-		vec3_c delta = neededPos - pos;
-
-		carryingEntity->setLinearVelocity(carryingEntity->getLinearVelocity()*0.5f);
-		carryingEntity->setAngularVelocity(carryingEntity->getAngularVelocity()*0.5f);
-		carryingEntity->applyCentralImpulse(delta);
-		//carryingEntity->setOrigin(neededPos);
+		if(this->pers.cmd.buttons & BUTTON_ATTACK) {
+			if(fireHeld) {
+				G_Printf("Fire held\n");
+				onFireKeyHeld();
+			} else {
+				G_Printf("Fire pressed\n");
+				fireHeld = true;
+				onFireKeyDown();
+			}
+		} else {
+			if(fireHeld) {
+				G_Printf("Fire released\n");
+				fireHeld = false;
+			}
+		}
 	}
 
 	this->link();
-
-	if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
-		if(useHeld) {
-			//G_Printf("Use held\n");
-		} else {
-			//G_Printf("Use pressed\n");
-			useHeld = true;
-			onUseKeyDown();
-		}
-	} else {
-		if(useHeld) {
-			//G_Printf("Use released\n");
-			useHeld = false;
-		}
-	}
-
-	if(this->pers.cmd.buttons & BUTTON_ATTACK) {
-		if(fireHeld) {
-			G_Printf("Fire held\n");
-			onFireKeyHeld();
-		} else {
-			G_Printf("Fire pressed\n");
-			fireHeld = true;
-			onFireKeyDown();
-		}
-	} else {
-		if(fireHeld) {
-			G_Printf("Fire released\n");
-			fireHeld = false;
-		}
-	}
 
 	if(noclip == false) {
 		touchTriggers();
@@ -404,6 +413,9 @@ void Player::runPlayer(usercmd_s *ucmd) {
 
 	if(g_printPlayerPositions.getInt()) {
 		G_Printf("Player::runPlayer: client %i is at %f %f %f\n",myEdict->s->number,myEdict->s->origin[0],myEdict->s->origin[1],myEdict->s->origin[2]);
+	}
+	if(1) {
+		G_Printf("Player::runPlayer: client %i health is %i\n",myEdict->s->number,this->health);
 	}
 	//if (g_smoothClients.integer) {
 	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
@@ -518,7 +530,7 @@ struct playerState_s *Player::getPlayerState() {
 void Player::addWeapon(class Weapon *newWeapon) {
 #if 1
 	if(curWeapon) {
-		//dropCurWeapon();
+		dropCurrentWeapon();
 	}
 	curWeapon = newWeapon;
 	if(curWeapon == 0) {
@@ -536,4 +548,29 @@ void Player::addWeapon(class Weapon *newWeapon) {
 #else
 
 #endif
+}
+void Player::dropCurrentWeapon() {
+	if(curWeapon == 0) {
+		return;
+	}
+	//curWeapon->updateAttachmentOrigin();
+	curWeapon->detachFromParent();
+	vec3_c pos = this->getEyePos() + this->getForward() * 32.f;
+	curWeapon->setOrigin(pos);
+	curWeapon->setAngles(this->getAngles());
+	curWeapon->initRigidBodyPhysics();
+	curWeapon->setOwner(0);
+	curWeapon = 0;
+	ps.curWeaponEntNum = ENTITYNUM_NONE;
+	ps.customViewRModelIndex = 0;	
+}
+void Player::onDeath() {
+	if(health > 0) {
+		health = -1; // ensure that this entity is dead
+	}
+	lastDeathTime = level.time;
+	if(curWeapon) {
+		this->dropCurrentWeapon();
+	}
+	this->disableCharacterController();
 }

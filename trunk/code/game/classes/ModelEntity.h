@@ -119,8 +119,14 @@ public:
 	virtual void runFrame();
 
 	virtual void getLocalBounds(aabb &out) const;
+	virtual bool getBoneWorldOrientation(u32 tagNum, class matrix_c &out);
+
+	void setHealth(int newHealth) {
+		this->health = newHealth;
+	}
 
 	virtual void onDeath();
+	virtual void damage(int damage);
 	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage);
 
 	virtual bool traceWorldRay(class trace_c &tr);

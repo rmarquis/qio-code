@@ -3254,7 +3254,6 @@ void Brush_RemoveEmptyFaces ( brush_t *b )
 			f->next = b->brush_faces;
 			b->brush_faces = f;
 		}
-
 	}
 }
 
@@ -3290,425 +3289,425 @@ void Brush_Rotate(brush_t *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 
 void Brush_Center(brush_t *b, vec3_t vNewCenter)
 {
-  vec3_t vMid;
-  // get center of the brush
-  for (int j = 0; j < 3; j++)
-  {
-    vMid[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
-  }
-  // calc distance between centers
-  VectorSubtract(vNewCenter, vMid, vMid);
-  Brush_Move(b, vMid, true);
+	vec3_t vMid;
+	// get center of the brush
+	for (int j = 0; j < 3; j++)
+	{
+		vMid[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
+	}
+	// calc distance between centers
+	VectorSubtract(vNewCenter, vMid, vMid);
+	Brush_Move(b, vMid, true);
 
 }
 
 // only designed for fixed size entity brushes
 void Brush_Resize(brush_t *b, vec3_t vMin, vec3_t vMax)
 {
-  brush_t *b2 = Brush_Create(vMin, vMax, &b->brush_faces->texdef);
+	brush_t *b2 = Brush_Create(vMin, vMax, &b->brush_faces->texdef);
 
-  face_t *next;
+	face_t *next;
 	for (face_t *f=b->brush_faces ; f ; f=next)
 	{
 		next = f->next;
 		Face_Free( f );
 	}
 
-  b->brush_faces = b2->brush_faces;
+	b->brush_faces = b2->brush_faces;
 
 	// unlink from active/selected list
 	if (b2->next)
-  Brush_RemoveFromList (b2);
-  free(b2);
-  Brush_Build(b, true);
+		Brush_RemoveFromList (b2);
+	free(b2);
+	Brush_Build(b, true);
 }
 
 
 eclass_t* HasModel(brush_t *b)
 {
-  vec3_t vMin, vMax;
-  vMin[0] = vMin[1] = vMin[2] = 9999;
-  vMax[0] = vMax[1] = vMax[2] = -9999;
+	vec3_t vMin, vMax;
+	vMin[0] = vMin[1] = vMin[2] = 9999;
+	vMax[0] = vMax[1] = vMax[2] = -9999;
 
-  if (b->owner->md3Class != NULL)
-  {
-    return b->owner->md3Class;
-  }
+	if (b->owner->md3Class != NULL)
+	{
+		return b->owner->md3Class;
+	}
 
-  if (Eclass_hasModel(b->owner->eclass, vMin, vMax))
-  {
-    return b->owner->eclass;
-  }
+	if (Eclass_hasModel(b->owner->eclass, vMin, vMax))
+	{
+		return b->owner->eclass;
+	}
 
-  eclass_t *e = NULL;
-  // FIXME: entity needs to track whether a cache hit failed and not ask again
-  if (b->owner->eclass->nShowFlags & ECLASS_MISCMODEL)
-  {
-    char *pModel = ValueForKey(b->owner, "model");
-    if (pModel != NULL && strlen(pModel) > 0)
-    {
-      e = GetCachedModel(b->owner, pModel, vMin, vMax);
-      if (e != NULL)
-      {
-        // we need to scale the brush to the proper size based on the model load
-        // recreate brush just like in load/save
+	eclass_t *e = NULL;
+	// FIXME: entity needs to track whether a cache hit failed and not ask again
+	if (b->owner->eclass->nShowFlags & ECLASS_MISCMODEL)
+	{
+		char *pModel = ValueForKey(b->owner, "model");
+		if (pModel != NULL && strlen(pModel) > 0)
+		{
+			e = GetCachedModel(b->owner, pModel, vMin, vMax);
+			if (e != NULL)
+			{
+				// we need to scale the brush to the proper size based on the model load
+				// recreate brush just like in load/save
 
-		    VectorAdd (vMin, b->owner->origin, vMin);
-		    VectorAdd (vMax, b->owner->origin, vMax);
+				VectorAdd (vMin, b->owner->origin, vMin);
+				VectorAdd (vMax, b->owner->origin, vMax);
 
-        Brush_Resize(b, vMin, vMax);
+				Brush_Resize(b, vMin, vMax);
 
-/*
-        //
-        vec3_t vTemp, vTemp2;
-        VectorSubtract(b->maxs, b->mins, vTemp);
-        VectorSubtract(vMax, vMin, vTemp2);
-        for (int i = 0; i < 3; i++)
-        {
-          if (vTemp[i] != 0)
-          {
-            vTemp2[i] /= vTemp[i];
-          }
-        }
-        vec3_t vMid, vMid2;
-        vMid[0] = vMid[1] = vMid[2] = 0.0;
-        vMid2[0] = vMid2[1] = vMid2[2] = 0.0;
+	/*
+	//
+	vec3_t vTemp, vTemp2;
+	VectorSubtract(b->maxs, b->mins, vTemp);
+	VectorSubtract(vMax, vMin, vTemp2);
+	for (int i = 0; i < 3; i++)
+	{
+	if (vTemp[i] != 0)
+	{
+	vTemp2[i] /= vTemp[i];
+	}
+	}
+	vec3_t vMid, vMid2;
+	vMid[0] = vMid[1] = vMid[2] = 0.0;
+	vMid2[0] = vMid2[1] = vMid2[2] = 0.0;
 
-        for (int j = 0; j < 3; j++)
-        {
-          vMid2[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
-        }
+	for (int j = 0; j < 3; j++)
+	{
+	vMid2[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
+	}
 
-        //VectorSubtract(vMid2, vMid, vMid2);
+	//VectorSubtract(vMid2, vMid, vMid2);
 
-		    for (face_t* f=b->brush_faces ; f ; f=f->next)
-		    {
-			    for (int i=0 ; i<3 ; i++)
-			    {
+	for (face_t* f=b->brush_faces ; f ; f=f->next)
+	{
+	for (int i=0 ; i<3 ; i++)
+	{
 
-            // scale
-            VectorSubtract(f->planepts[i], vMid2, f->planepts[i]);
-            f->planepts[i][0] *= vTemp2[0];
-            f->planepts[i][1] *= vTemp2[1];
-            f->planepts[i][2] *= vTemp2[2];
-            VectorAdd(f->planepts[i], vMid2, f->planepts[i]);
-          }
-        }
+	// scale
+	VectorSubtract(f->planepts[i], vMid2, f->planepts[i]);
+	f->planepts[i][0] *= vTemp2[0];
+	f->planepts[i][1] *= vTemp2[1];
+	f->planepts[i][2] *= vTemp2[2];
+	VectorAdd(f->planepts[i], vMid2, f->planepts[i]);
+	}
+	}
 
-        //Brush_Center(b, b->owner->origin);
+	//Brush_Center(b, b->owner->origin);
 
-        //Brush_SnapToGrid(b);
-/*
-        float a = FloatForKey (b->owner, "angle");
-        if (a)
-        {
-          vec3_t vAngle;
-          vAngle[0] = vAngle[1] = 0;
-          vAngle[2] = a;
-          Brush_Rotate(b, vAngle, b->owner->origin);
-        }
-        else
-        {
-          Brush_Build(b, true);
-*/
-//        }
+	//Brush_SnapToGrid(b);
+	/*
+	float a = FloatForKey (b->owner, "angle");
+	if (a)
+	{
+	vec3_t vAngle;
+	vAngle[0] = vAngle[1] = 0;
+	vAngle[2] = a;
+	Brush_Rotate(b, vAngle, b->owner->origin);
+	}
+	else
+	{
+	Brush_Build(b, true);
+	*/
+	//        }
 
-        b->bModelFailed = false;
-      }
-      else
-      {
-        b->bModelFailed = true;
-      }
-    } 
-  }
-  return e;
+				b->bModelFailed = false;
+			}
+			else
+			{
+				b->bModelFailed = true;
+			}
+		} 
+	}
+	return e;
 }
 
 static bool g_bInPaintedModel = false;
 static bool g_bDoIt = false;
 bool PaintedModel(brush_t *b, bool bOkToTexture)
 {
-    if (g_bInPaintedModel)
-    { 
-      return true;
-    }
-    
-    if (g_PrefsDlg.m_nEntityShowState == ENTITY_BOX || b->bModelFailed)
-    {
-      return false;
-    }
-    else if (!IsBrushSelected(b) && (g_PrefsDlg.m_nEntityShowState & ENTITY_SELECTED_ONLY))
-    {
-	    return false;
-    }
+	if (g_bInPaintedModel)
+	{ 
+		return true;
+	}
 
-    g_bInPaintedModel = true;
-    bool bReturn = false;
+	if (g_PrefsDlg.m_nEntityShowState == ENTITY_BOX || b->bModelFailed)
+	{
+		return false;
+	}
+	else if (!IsBrushSelected(b) && (g_PrefsDlg.m_nEntityShowState & ENTITY_SELECTED_ONLY))
+	{
+		return false;
+	}
 
-    eclass_t *pEclass = HasModel(b);
+	g_bInPaintedModel = true;
+	bool bReturn = false;
 
-    if (pEclass)
-    {
-      qglPushAttrib(GL_ALL_ATTRIB_BITS);
-      entitymodel *model = pEclass->model;
+	eclass_t *pEclass = HasModel(b);
 
-
-      float a = FloatForKey (b->owner, "angle");
-      while (model != NULL)
-      {
-        if (bOkToTexture == false || g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME || model->nTextureBind == -1)	// skinned
-        {
-	        qglDisable( GL_CULL_FACE );
-	        qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	        qglDisable(GL_TEXTURE_2D);
-          qglColor3fv(pEclass->color);
-        }
-        else
-        {
-          qglColor3f(1, 1, 1);
-          qglEnable(GL_TEXTURE_2D);
-	        qglBindTexture( GL_TEXTURE_2D, model->nTextureBind );
-        }
-        vec3_t v;
-        
-        int i,j;
-        VectorAdd(b->maxs, b->mins, v);
-        VectorScale(v, 0.5, v);
-        VectorCopy(b->owner->origin, v);
-
-	      
-        //for (i = 0; i < 3; i++)
-        //{
-        //  v[i] -= (pEclass->mins[i] - b->mins[i]);
-        //}
-
-        //if (model->nModelPosition)
-        //{
-		      //v[2] = b->mins[2] - (pEclass->mins[2]);
-        //}
-
-        float s, c;
-	      if (a)
-        {
-		      s = sin (a/180*Q_PI);
-		      c = cos (a/180*Q_PI);
-        }
-
-        vec3_t vSin;
-        vec3_t vCos;
-        VectorClear(vSin);
-        VectorClear(vCos);
-        for ( j = 0; j < 3; j++)
-        {
-          if (b->owner->vRotation[j])
-          {
-            vSin[j] = sin(b->owner->vRotation[j]/180*Q_PI);
-            vCos[j] = cos(b->owner->vRotation[j]/180*Q_PI);
-          }
-        }
+	if (pEclass)
+	{
+	qglPushAttrib(GL_ALL_ATTRIB_BITS);
+	entitymodel *model = pEclass->model;
 
 
-	      qglBegin (GL_TRIANGLES);
+	float a = FloatForKey (b->owner, "angle");
+	while (model != NULL)
+	{
+		if (bOkToTexture == false || g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME || model->nTextureBind == -1)	// skinned
+		{
+			qglDisable( GL_CULL_FACE );
+			qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+			qglDisable(GL_TEXTURE_2D);
+			qglColor3fv(pEclass->color);
+		}
+		else
+		{
+			qglColor3f(1, 1, 1);
+			qglEnable(GL_TEXTURE_2D);
+			qglBindTexture( GL_TEXTURE_2D, model->nTextureBind );
+		}
+		vec3_t v;
 
-        vec5_t vTest[3];
-        for (i = 0; i < model->nTriCount; i++)
-        {
-          for (j = 0; j < 3; j++)
-          {
-#if 1
-            float x = model->pTriList[i].v[j][0] + v[0];
-            float y = model->pTriList[i].v[j][1] + v[1];
-            if (a)
-            {
-              float x2 = (((x - v[0]) * c) - ((y - v[1]) * s)) + v[0];
-              float y2 = (((x - v[0]) * s) + ((y - v[1]) * c)) + v[1];
-              x = x2;
-              y = y2;
-            }
-            //qglTexCoord2f (pEclass->pTriList[i].st[j][0] / pEclass->nSkinWidth, pEclass->pTriList[i].st[j][1] / pEclass->nSkinHeight);
-            qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
-            qglVertex3f(x, y, model->pTriList[i].v[j][2] + v[2]);
-#else
-            float x = model->pTriList[i].v[j][0] + v[0];
-            float y = model->pTriList[i].v[j][1] + v[1];
-            float z = model->pTriList[i].v[j][2] + v[2];
-
-            if (b->owner->vRotation[0])
-            {
-              float y2 = (((y - v[1]) * vCos[0]) - ((z - v[2]) * vSin[0])) + v[1];
-              float z2 = (((y - v[1]) * vSin[0]) + ((z - v[2]) * vCos[0])) + v[2];
-              y = y2;
-              z = z2;
-            }
-            if (b->owner->vRotation[1])
-            {
-              float z2 = (((z - v[2]) * vCos[1]) - ((x - v[0]) * vSin[1])) + v[2];
-              float x2 = (((z - v[2]) * vSin[1]) + ((x - v[0]) * vCos[1])) + v[0];
-              x = x2;
-              z = z2;
-            }
-            if (b->owner->vRotation[2])
-            {
-              float x2 = (((x - v[0]) * vCos[2]) - ((y - v[1]) * vSin[2])) + v[0];
-              float y2 = (((x - v[0]) * vSin[2]) + ((y - v[1]) * vCos[2])) + v[1];
-              x = x2;
-              y = y2;
-            }
-            qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
-            qglVertex3f(x, y, z);
-#endif
-            if (g_bDoIt)
-            {
-              vTest[j][0] = x;
-              vTest[j][1] = y;
-              vTest[j][2] = model->pTriList[i].v[j][2] + v[2];
-              vTest[j][3] = model->pTriList[i].st[j][0];
-              vTest[j][4] = model->pTriList[i].st[j][1];
-            }
-
-          }
-          if (g_bDoIt)
-          {
-            Patch_FromTriangle(vTest[0], vTest[1], vTest[2]);
-          }
-        }
-        qglEnd();
-        if (g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME)	// skinned
-        {
-          qglEnable(GL_CULL_FACE );
-          qglEnable(GL_TEXTURE_2D);
-	        qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-        }
-        else
-        {
-	        qglDisable(GL_TEXTURE_2D);
-        }
-        model = model->pNext;
-      }
-
-      if (g_bDoIt)
-      {
-        g_bDoIt = false;
-      }
-
-      vec3_t vColor;
-      VectorScale(pEclass->color, 0.50, vColor);
-
-      vec3_t vCenter, vMin, vMax;
-      VectorCopy(b->owner->origin, vCenter);
-
-		  qglColor3fv(vColor);
-      qglPointSize(4);
-
-      qglBegin(GL_POINTS);
-      qglVertex3fv(b->owner->origin);
-      qglEnd();
-
-      qglBegin(GL_LINES);
-      vCenter[0] -= 8;
-      qglVertex3fv(vCenter);
-      vCenter[0] += 16;
-      qglVertex3fv(vCenter);
-      vCenter[0] -= 8;
-      vCenter[1] -= 8;
-      qglVertex3fv(vCenter);
-      vCenter[1] += 16;
-      qglVertex3fv(vCenter);
-      vCenter[1] -= 8;
-      vCenter[2] -= 8;
-      qglVertex3fv(vCenter);
-      vCenter[2] += 16;
-      qglVertex3fv(vCenter);
-      vCenter[2] -= 8;
-      qglEnd();
-
-      VectorCopy(vCenter, vMin);
-      VectorCopy(vCenter, vMax);
-      vMin[0] -= 4;
-      vMin[1] -= 4;
-      vMin[2] -= 4;
-      vMax[0] += 4;
-      vMax[1] += 4;
-      vMax[2] += 4;
-
-		    qglBegin(GL_LINE_LOOP);
-          qglVertex3f(vMin[0],vMin[1],vMin[2]);
-          qglVertex3f(vMax[0],vMin[1],vMin[2]);
-          qglVertex3f(vMax[0],vMax[1],vMin[2]);
-          qglVertex3f(vMin[0],vMax[1],vMin[2]);
-		    qglEnd();
-		    
-		    qglBegin(GL_LINE_LOOP);
-	        qglVertex3f(vMin[0],vMin[1],vMax[2]);
-		      qglVertex3f(vMax[0],vMin[1],vMax[2]);
-		      qglVertex3f(vMax[0],vMax[1],vMax[2]);
-		      qglVertex3f(vMin[0],vMax[1],vMax[2]);
-		    qglEnd();
-
-		    qglBegin(GL_LINES);
-  		    qglVertex3f(vMin[0],vMin[1],vMin[2]);
-		      qglVertex3f(vMin[0],vMin[1],vMax[2]);
-		      qglVertex3f(vMin[0],vMax[1],vMax[2]);
-		      qglVertex3f(vMin[0],vMax[1],vMin[2]);
-		      qglVertex3f(vMax[0],vMin[1],vMin[2]);
-		      qglVertex3f(vMax[0],vMin[1],vMax[2]);
-		      qglVertex3f(vMax[0],vMax[1],vMax[2]);
-		      qglVertex3f(vMax[0],vMax[1],vMin[2]);
-		    qglEnd();
+		int i,j;
+		VectorAdd(b->maxs, b->mins, v);
+		VectorScale(v, 0.5, v);
+		VectorCopy(b->owner->origin, v);
 
 
-	    if (g_PrefsDlg.m_nEntityShowState & ENTITY_BOXED)
-	    {
-		    qglColor3fv(pEclass->color);
+		//for (i = 0; i < 3; i++)
+		//{
+		//  v[i] -= (pEclass->mins[i] - b->mins[i]);
+		//}
 
-        vec3_t mins, maxs;
-        VectorCopy(b->mins, mins);
-        VectorCopy(b->maxs, maxs);
-/*
-        if (a)
-        {
-          vec3_t vAngle;
-          vAngle[0] = vAngle[1] = 0;
-          vAngle[2] = a;
-          VectorRotate(mins, vAngle, b->owner->origin, mins);
-          VectorRotate(maxs, vAngle, b->owner->origin, maxs);
-        }
-*/
-		    qglBegin(GL_LINE_LOOP);
-          qglVertex3f(mins[0],mins[1],mins[2]);
-          qglVertex3f(maxs[0],mins[1],mins[2]);
-          qglVertex3f(maxs[0],maxs[1],mins[2]);
-          qglVertex3f(mins[0],maxs[1],mins[2]);
-		    qglEnd();
-		    
-		    qglBegin(GL_LINE_LOOP);
-	        qglVertex3f(mins[0],mins[1],maxs[2]);
-		      qglVertex3f(maxs[0],mins[1],maxs[2]);
-		      qglVertex3f(maxs[0],maxs[1],maxs[2]);
-		      qglVertex3f(mins[0],maxs[1],maxs[2]);
-		    qglEnd();
+		//if (model->nModelPosition)
+		//{
+		//v[2] = b->mins[2] - (pEclass->mins[2]);
+		//}
 
-		    qglBegin(GL_LINES);
-  		    qglVertex3f(mins[0],mins[1],mins[2]);
-		      qglVertex3f(mins[0],mins[1],maxs[2]);
-		      qglVertex3f(mins[0],maxs[1],maxs[2]);
-		      qglVertex3f(mins[0],maxs[1],mins[2]);
-		      qglVertex3f(maxs[0],mins[1],mins[2]);
-		      qglVertex3f(maxs[0],mins[1],maxs[2]);
-		      qglVertex3f(maxs[0],maxs[1],maxs[2]);
-		      qglVertex3f(maxs[0],maxs[1],mins[2]);
-		    qglEnd();
-      }
-	    qglPopAttrib();
-      bReturn = true;
-    }
-    else
-    {
-      b->bModelFailed = true;
-    }
+		float s, c;
+		if (a)
+		{
+			s = sin (a/180*Q_PI);
+			c = cos (a/180*Q_PI);
+		}
 
-  g_bInPaintedModel = false;
-  return bReturn;
+		vec3_t vSin;
+		vec3_t vCos;
+		VectorClear(vSin);
+		VectorClear(vCos);
+		for ( j = 0; j < 3; j++)
+		{
+			if (b->owner->vRotation[j])
+			{
+				vSin[j] = sin(b->owner->vRotation[j]/180*Q_PI);
+				vCos[j] = cos(b->owner->vRotation[j]/180*Q_PI);
+			}
+		}
+
+
+		qglBegin (GL_TRIANGLES);
+
+		vec5_t vTest[3];
+		for (i = 0; i < model->nTriCount; i++)
+		{
+			for (j = 0; j < 3; j++)
+			{
+				#if 1
+				float x = model->pTriList[i].v[j][0] + v[0];
+				float y = model->pTriList[i].v[j][1] + v[1];
+				if (a)
+				{
+					float x2 = (((x - v[0]) * c) - ((y - v[1]) * s)) + v[0];
+					float y2 = (((x - v[0]) * s) + ((y - v[1]) * c)) + v[1];
+					x = x2;
+					y = y2;
+				}
+				//qglTexCoord2f (pEclass->pTriList[i].st[j][0] / pEclass->nSkinWidth, pEclass->pTriList[i].st[j][1] / pEclass->nSkinHeight);
+				qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
+				qglVertex3f(x, y, model->pTriList[i].v[j][2] + v[2]);
+				#else
+				float x = model->pTriList[i].v[j][0] + v[0];
+				float y = model->pTriList[i].v[j][1] + v[1];
+				float z = model->pTriList[i].v[j][2] + v[2];
+
+				if (b->owner->vRotation[0])
+				{
+					float y2 = (((y - v[1]) * vCos[0]) - ((z - v[2]) * vSin[0])) + v[1];
+					float z2 = (((y - v[1]) * vSin[0]) + ((z - v[2]) * vCos[0])) + v[2];
+					y = y2;
+					z = z2;
+				}
+				if (b->owner->vRotation[1])
+				{
+					float z2 = (((z - v[2]) * vCos[1]) - ((x - v[0]) * vSin[1])) + v[2];
+					float x2 = (((z - v[2]) * vSin[1]) + ((x - v[0]) * vCos[1])) + v[0];
+					x = x2;
+					z = z2;
+				}
+				if (b->owner->vRotation[2])
+				{
+					float x2 = (((x - v[0]) * vCos[2]) - ((y - v[1]) * vSin[2])) + v[0];
+					float y2 = (((x - v[0]) * vSin[2]) + ((y - v[1]) * vCos[2])) + v[1];
+					x = x2;
+					y = y2;
+				}
+				qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
+				qglVertex3f(x, y, z);
+				#endif
+				if (g_bDoIt)
+				{
+					vTest[j][0] = x;
+					vTest[j][1] = y;
+					vTest[j][2] = model->pTriList[i].v[j][2] + v[2];
+					vTest[j][3] = model->pTriList[i].st[j][0];
+					vTest[j][4] = model->pTriList[i].st[j][1];
+				}
+
+				}
+				if (g_bDoIt)
+				{
+					Patch_FromTriangle(vTest[0], vTest[1], vTest[2]);
+				}
+			}
+			qglEnd();
+			if (g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME)	// skinned
+			{
+				qglEnable(GL_CULL_FACE );
+				qglEnable(GL_TEXTURE_2D);
+				qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+			}
+			else
+			{
+				qglDisable(GL_TEXTURE_2D);
+			}
+			model = model->pNext;
+		}
+
+		if (g_bDoIt)
+		{
+			g_bDoIt = false;
+		}
+
+		vec3_t vColor;
+		VectorScale(pEclass->color, 0.50, vColor);
+
+		vec3_t vCenter, vMin, vMax;
+		VectorCopy(b->owner->origin, vCenter);
+
+		qglColor3fv(vColor);
+		qglPointSize(4);
+
+		qglBegin(GL_POINTS);
+		qglVertex3fv(b->owner->origin);
+		qglEnd();
+
+		qglBegin(GL_LINES);
+		vCenter[0] -= 8;
+		qglVertex3fv(vCenter);
+		vCenter[0] += 16;
+		qglVertex3fv(vCenter);
+		vCenter[0] -= 8;
+		vCenter[1] -= 8;
+		qglVertex3fv(vCenter);
+		vCenter[1] += 16;
+		qglVertex3fv(vCenter);
+		vCenter[1] -= 8;
+		vCenter[2] -= 8;
+		qglVertex3fv(vCenter);
+		vCenter[2] += 16;
+		qglVertex3fv(vCenter);
+		vCenter[2] -= 8;
+		qglEnd();
+
+		VectorCopy(vCenter, vMin);
+		VectorCopy(vCenter, vMax);
+		vMin[0] -= 4;
+		vMin[1] -= 4;
+		vMin[2] -= 4;
+		vMax[0] += 4;
+		vMax[1] += 4;
+		vMax[2] += 4;
+
+		qglBegin(GL_LINE_LOOP);
+		qglVertex3f(vMin[0],vMin[1],vMin[2]);
+		qglVertex3f(vMax[0],vMin[1],vMin[2]);
+		qglVertex3f(vMax[0],vMax[1],vMin[2]);
+		qglVertex3f(vMin[0],vMax[1],vMin[2]);
+		qglEnd();
+
+		qglBegin(GL_LINE_LOOP);
+		qglVertex3f(vMin[0],vMin[1],vMax[2]);
+		qglVertex3f(vMax[0],vMin[1],vMax[2]);
+		qglVertex3f(vMax[0],vMax[1],vMax[2]);
+		qglVertex3f(vMin[0],vMax[1],vMax[2]);
+		qglEnd();
+
+		qglBegin(GL_LINES);
+		qglVertex3f(vMin[0],vMin[1],vMin[2]);
+		qglVertex3f(vMin[0],vMin[1],vMax[2]);
+		qglVertex3f(vMin[0],vMax[1],vMax[2]);
+		qglVertex3f(vMin[0],vMax[1],vMin[2]);
+		qglVertex3f(vMax[0],vMin[1],vMin[2]);
+		qglVertex3f(vMax[0],vMin[1],vMax[2]);
+		qglVertex3f(vMax[0],vMax[1],vMax[2]);
+		qglVertex3f(vMax[0],vMax[1],vMin[2]);
+		qglEnd();
+
+
+		if (g_PrefsDlg.m_nEntityShowState & ENTITY_BOXED)
+		{
+			qglColor3fv(pEclass->color);
+
+			vec3_t mins, maxs;
+			VectorCopy(b->mins, mins);
+			VectorCopy(b->maxs, maxs);
+			/*
+			if (a)
+			{
+			vec3_t vAngle;
+			vAngle[0] = vAngle[1] = 0;
+			vAngle[2] = a;
+			VectorRotate(mins, vAngle, b->owner->origin, mins);
+			VectorRotate(maxs, vAngle, b->owner->origin, maxs);
+			}
+			*/
+			qglBegin(GL_LINE_LOOP);
+			qglVertex3f(mins[0],mins[1],mins[2]);
+			qglVertex3f(maxs[0],mins[1],mins[2]);
+			qglVertex3f(maxs[0],maxs[1],mins[2]);
+			qglVertex3f(mins[0],maxs[1],mins[2]);
+			qglEnd();
+
+			qglBegin(GL_LINE_LOOP);
+			qglVertex3f(mins[0],mins[1],maxs[2]);
+			qglVertex3f(maxs[0],mins[1],maxs[2]);
+			qglVertex3f(maxs[0],maxs[1],maxs[2]);
+			qglVertex3f(mins[0],maxs[1],maxs[2]);
+			qglEnd();
+
+			qglBegin(GL_LINES);
+			qglVertex3f(mins[0],mins[1],mins[2]);
+			qglVertex3f(mins[0],mins[1],maxs[2]);
+			qglVertex3f(mins[0],maxs[1],maxs[2]);
+			qglVertex3f(mins[0],maxs[1],mins[2]);
+			qglVertex3f(maxs[0],mins[1],mins[2]);
+			qglVertex3f(maxs[0],mins[1],maxs[2]);
+			qglVertex3f(maxs[0],maxs[1],maxs[2]);
+			qglVertex3f(maxs[0],maxs[1],mins[2]);
+			qglEnd();
+		}
+		qglPopAttrib();
+		bReturn = true;
+	}
+	else
+	{
+		b->bModelFailed = true;
+	}
+
+	g_bInPaintedModel = false;
+	return bReturn;
 }
 /*
 //++timo moved out to mahlib.h
@@ -3808,118 +3807,117 @@ void DrawLight(brush_t *b)
 	vec3_t vTriColor;
 	bool bTriPaint = false;
 
-  vTriColor[0] = vTriColor[2] = 1.0;
-  vTriColor[1]  = 1.0;
-  bTriPaint = true;
-  CString strColor = ValueForKey(b->owner, "_color");
-  if (strColor.GetLength() > 0)
-  {
-    float fR, fG, fB;
-	  int n = sscanf(strColor,"%f %f %f", &fR, &fG, &fB);
-    if (n == 3)
-    {
-      vTriColor[0] = fR;
-      vTriColor[1] = fG;
-      vTriColor[2] = fB;
-    }
-  }
-  qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
+	vTriColor[0] = vTriColor[2] = 1.0;
+	vTriColor[1]  = 1.0;
+	bTriPaint = true;
+	CString strColor = ValueForKey(b->owner, "_color");
+	if (strColor.GetLength() > 0)
+	{
+		float fR, fG, fB;
+		int n = sscanf(strColor,"%f %f %f", &fR, &fG, &fB);
+		if (n == 3)
+		{
+			vTriColor[0] = fR;
+			vTriColor[1] = fG;
+			vTriColor[2] = fB;
+		}
+	}
+	qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
 
-  vec3_t vCorners[4];
-  float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
+	vec3_t vCorners[4];
+	float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
 
-  vCorners[0][0] = b->mins[0];
-  vCorners[0][1] = b->mins[1];
-  vCorners[0][2] = fMid;
+	vCorners[0][0] = b->mins[0];
+	vCorners[0][1] = b->mins[1];
+	vCorners[0][2] = fMid;
 
-  vCorners[1][0] = b->mins[0];
-  vCorners[1][1] = b->maxs[1];
-  vCorners[1][2] = fMid;
+	vCorners[1][0] = b->mins[0];
+	vCorners[1][1] = b->maxs[1];
+	vCorners[1][2] = fMid;
 
-  vCorners[2][0] = b->maxs[0];
-  vCorners[2][1] = b->maxs[1];
-  vCorners[2][2] = fMid;
+	vCorners[2][0] = b->maxs[0];
+	vCorners[2][1] = b->maxs[1];
+	vCorners[2][2] = fMid;
 
-  vCorners[3][0] = b->maxs[0];
-  vCorners[3][1] = b->mins[1];
-  vCorners[3][2] = fMid;
+	vCorners[3][0] = b->maxs[0];
+	vCorners[3][1] = b->mins[1];
+	vCorners[3][2] = fMid;
 
-  vec3_t vTop, vBottom;
+	vec3_t vTop, vBottom;
 
-  vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
-  vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
-  vTop[2] = b->maxs[2];
+	vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
+	vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
+	vTop[2] = b->maxs[2];
 
-  VectorCopy(vTop, vBottom);
-  vBottom[2] = b->mins[2];
+	VectorCopy(vTop, vBottom);
+	vBottom[2] = b->mins[2];
 
-  vec3_t vSave;
-  VectorCopy(vTriColor, vSave);
-int i;
-  qglBegin(GL_TRIANGLE_FAN);
-  qglVertex3fv(vTop);
-  for ( i = 0; i <= 3; i++)
-  {
-    vTriColor[0] *= 0.95;
-    vTriColor[1] *= 0.95;
-    vTriColor[2] *= 0.95;
-    qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
-    qglVertex3fv(vCorners[i]);
-  }
-  qglVertex3fv(vCorners[0]);
-  qglEnd();
-  
-  VectorCopy(vSave, vTriColor);
-  vTriColor[0] *= 0.95;
-  vTriColor[1] *= 0.95;
-  vTriColor[2] *= 0.95;
+	vec3_t vSave;
+	VectorCopy(vTriColor, vSave);
+	int i;
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(vTop);
+	for ( i = 0; i <= 3; i++)
+	{
+		vTriColor[0] *= 0.95;
+		vTriColor[1] *= 0.95;
+		vTriColor[2] *= 0.95;
+		qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
+		qglVertex3fv(vCorners[i]);
+	}
+	qglVertex3fv(vCorners[0]);
+	qglEnd();
 
-  qglBegin(GL_TRIANGLE_FAN);
-  qglVertex3fv(vBottom);
-  qglVertex3fv(vCorners[0]);
-  for (i = 3; i >= 0; i--)
-  {
-    vTriColor[0] *= 0.95;
-    vTriColor[1] *= 0.95;
-    vTriColor[2] *= 0.95;
-    qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
-    qglVertex3fv(vCorners[i]);
-  }
-  qglEnd();
+	VectorCopy(vSave, vTriColor);
+	vTriColor[0] *= 0.95;
+	vTriColor[1] *= 0.95;
+	vTriColor[2] *= 0.95;
 
-  // check for DOOM lights
-  CString str = ValueForKey(b->owner, "light_right");
-  if (str.GetLength() > 0) {
-    vec3_t vRight, vUp, vTarget, vTemp;
-    GetVectorForKey (b->owner, "light_right", vRight);
-    GetVectorForKey (b->owner, "light_up", vUp);
-    GetVectorForKey (b->owner, "light_target", vTarget);
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(vBottom);
+	qglVertex3fv(vCorners[0]);
+	for (i = 3; i >= 0; i--)
+	{
+		vTriColor[0] *= 0.95;
+		vTriColor[1] *= 0.95;
+		vTriColor[2] *= 0.95;
+		qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
+		qglVertex3fv(vCorners[i]);
+	}
+	qglEnd();
 
-    qglColor3f(0, 1, 0);
+	// check for DOOM lights
+	CString str = ValueForKey(b->owner, "light_right");
+	if (str.GetLength() > 0) {
+		vec3_t vRight, vUp, vTarget, vTemp;
+		GetVectorForKey (b->owner, "light_right", vRight);
+		GetVectorForKey (b->owner, "light_up", vUp);
+		GetVectorForKey (b->owner, "light_target", vTarget);
+
+		qglColor3f(0, 1, 0);
 		qglBegin(GL_LINE_LOOP);
-    VectorAdd(vTarget, b->owner->origin, vTemp);
-    VectorAdd(vTemp, vRight, vTemp);
-    VectorAdd(vTemp, vUp, vTemp);
-    qglVertex3fv(b->owner->origin);
-    qglVertex3fv(vTemp);
-    VectorAdd(vTarget, b->owner->origin, vTemp);
-    VectorAdd(vTemp, vUp, vTemp);
-    VectorSubtract(vTemp, vRight, vTemp);
-    qglVertex3fv(b->owner->origin);
-    qglVertex3fv(vTemp);
-    VectorAdd(vTarget, b->owner->origin, vTemp);
-    VectorAdd(vTemp, vRight, vTemp);
-    VectorSubtract(vTemp, vUp, vTemp);
-    qglVertex3fv(b->owner->origin);
-    qglVertex3fv(vTemp);
-    VectorAdd(vTarget, b->owner->origin, vTemp);
-    VectorSubtract(vTemp, vUp, vTemp);
-    VectorSubtract(vTemp, vRight, vTemp);
-    qglVertex3fv(b->owner->origin);
-    qglVertex3fv(vTemp);
-    qglEnd();
-
-  }
+		VectorAdd(vTarget, b->owner->origin, vTemp);
+		VectorAdd(vTemp, vRight, vTemp);
+		VectorAdd(vTemp, vUp, vTemp);
+		qglVertex3fv(b->owner->origin);
+		qglVertex3fv(vTemp);
+		VectorAdd(vTarget, b->owner->origin, vTemp);
+		VectorAdd(vTemp, vUp, vTemp);
+		VectorSubtract(vTemp, vRight, vTemp);
+		qglVertex3fv(b->owner->origin);
+		qglVertex3fv(vTemp);
+		VectorAdd(vTarget, b->owner->origin, vTemp);
+		VectorAdd(vTemp, vRight, vTemp);
+		VectorSubtract(vTemp, vUp, vTemp);
+		qglVertex3fv(b->owner->origin);
+		qglVertex3fv(vTemp);
+		VectorAdd(vTarget, b->owner->origin, vTemp);
+		VectorSubtract(vTemp, vUp, vTemp);
+		VectorSubtract(vTemp, vRight, vTemp);
+		qglVertex3fv(b->owner->origin);
+		qglVertex3fv(vTemp);
+		qglEnd();
+	}
 
 }
 
@@ -4188,36 +4186,36 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 	for (face = b->brush_faces,order = 0 ; face ; face=face->next, order++)
 	{
 		// only draw polygons facing in a direction we care about
-    if (nViewType == XY)
-    {
-		  if (face->plane.normal[2] <= 0)
-			  continue;
-    }
-    else
-    {
-      if (nViewType == XZ)
-      {
-        if (face->plane.normal[1] <= 0)
-          continue;
-      }
-      else 
-      {
-        if (face->plane.normal[0] <= 0)
-          continue;
-      }
-    }
+		if (nViewType == XY)
+		{
+			  if (face->plane.normal[2] <= 0)
+				  continue;
+		}
+		else
+		{
+			if (nViewType == XZ)
+			{
+				if (face->plane.normal[1] <= 0)
+					continue;
+			}
+			else 
+			{
+				if (face->plane.normal[0] <= 0)
+					continue;
+			}
+		}
 
 		w = face->face_winding;
 		if (!w)
 			continue;
 
-    //if (b->alphaBrush && !(face->texdef.flags & SURF_ALPHA))
-    //  continue;
+		//if (b->alphaBrush && !(face->texdef.flags & SURF_ALPHA))
+		//  continue;
 
 		// draw the polygon
 		qglBegin(GL_LINE_LOOP);
-    for (i=0 ; i<w->numpoints ; i++)
-		  qglVertex3fv(w->points[i]);
+		for (i=0 ; i<w->numpoints ; i++)
+			qglVertex3fv(w->points[i]);
 		qglEnd();
 	}
 
@@ -4232,59 +4230,59 @@ Brush_Move
 */
 void Brush_Move (brush_t *b, const vec3_t move, bool bSnap)
 {
-  int i;
-  face_t *f;
-  if(b == 0)
-	  return;
+	int i;
+	face_t *f;
+	if(b == 0)
+		return;
 
-  for (f=b->brush_faces ; f ; f=f->next)
-  {
-    vec3_t vTemp;
-    VectorCopy(move, vTemp);
+	for (f=b->brush_faces ; f ; f=f->next)
+	{
+		vec3_t vTemp;
+		VectorCopy(move, vTemp);
 
-    if (g_PrefsDlg.m_bTextureLock)
-      Face_MoveTexture(f, vTemp);
-    
-    for (i=0 ; i<3 ; i++)
-      VectorAdd (f->planepts[i], move, f->planepts[i]);
-  }
-  Brush_Build( b, bSnap );
+		if (g_PrefsDlg.m_bTextureLock)
+			Face_MoveTexture(f, vTemp);
 
-
-  if (b->patchBrush)
-  {
-    //Patch_Move(b->nPatchID, move);
-    Patch_Move(b->pPatch, move);
-  }
-
-  if (b->terrainBrush)
-  {
-    Terrain_Move(b->pTerrain, move);
-  }
+		for (i=0 ; i<3 ; i++)
+			VectorAdd (f->planepts[i], move, f->planepts[i]);
+	}
+	Brush_Build( b, bSnap );
 
 
-  // PGM - keep the origin vector up to date on fixed size entities.
-  if(b->owner->eclass->fixedsize)
-  {
-    VectorAdd(b->owner->origin, move, b->owner->origin);
-	  //VectorAdd(b->maxs, b->mins, b->owner->origin);
-	  //VectorScale(b->owner->origin, 0.5, b->owner->origin);
-  }
+	if (b->patchBrush)
+	{
+		//Patch_Move(b->nPatchID, move);
+		Patch_Move(b->pPatch, move);
+	}
+
+	if (b->terrainBrush)
+	{
+		Terrain_Move(b->pTerrain, move);
+	}
+
+
+	// PGM - keep the origin vector up to date on fixed size entities.
+	if(b->owner->eclass->fixedsize)
+	{
+		VectorAdd(b->owner->origin, move, b->owner->origin);
+		//VectorAdd(b->maxs, b->mins, b->owner->origin);
+		//VectorScale(b->owner->origin, 0.5, b->owner->origin);
+	}
 }
 
 
 
 void Brush_Print(brush_t* b)
 {
-  int nFace = 0;
-  for (face_t* f = b->brush_faces ; f ; f=f->next)
-  {
-    Sys_Printf("Face %i\n", nFace++);
-    Sys_Printf("%f %f %f\n", f->planepts[0][0], f->planepts[0][1], f->planepts[0][2]);
-    Sys_Printf("%f %f %f\n", f->planepts[1][0], f->planepts[1][1], f->planepts[1][2]);
-    Sys_Printf("%f %f %f\n", f->planepts[2][0], f->planepts[2][1], f->planepts[2][2]);
-  }
- }
+	int nFace = 0;
+	for (face_t* f = b->brush_faces ; f ; f=f->next)
+	{
+		Sys_Printf("Face %i\n", nFace++);
+		Sys_Printf("%f %f %f\n", f->planepts[0][0], f->planepts[0][1], f->planepts[0][2]);
+		Sys_Printf("%f %f %f\n", f->planepts[1][0], f->planepts[1][1], f->planepts[1][2]);
+		Sys_Printf("%f %f %f\n", f->planepts[2][0], f->planepts[2][1], f->planepts[2][2]);
+	}
+}
 
 
 
@@ -4431,44 +4429,44 @@ void Brush_MakeSidedSphere(int sides)
 
 	float dt = float(2 * Q_PI / sides);
 	float dp = float(Q_PI / sides);
-  float t,p;
+	float t,p;
 	for(i=0; i <= sides-1; i++)
-  {
+	{
 		for(j=0;j <= sides-2; j++)
 		{
 			t = i * dt;
 			p = float(j * dp - Q_PI / 2);
 
-      f = Face_Alloc();
-	    f->texdef = *texdef;
-	    f->next = b->brush_faces;
-	    b->brush_faces = f;
+			f = Face_Alloc();
+			f->texdef = *texdef;
+			f->next = b->brush_faces;
+			b->brush_faces = f;
 
-      VectorPolar(f->planepts[0], radius, t, p);
-      VectorPolar(f->planepts[1], radius, t, p + dp);
-      VectorPolar(f->planepts[2], radius, t + dt, p + dp);
+			VectorPolar(f->planepts[0], radius, t, p);
+			VectorPolar(f->planepts[1], radius, t, p + dp);
+			VectorPolar(f->planepts[2], radius, t + dt, p + dp);
 
-      for (int k = 0; k < 3; k++)
-        VectorAdd(f->planepts[k], mid, f->planepts[k]);
+			for (int k = 0; k < 3; k++)
+				VectorAdd(f->planepts[k], mid, f->planepts[k]);
 		}
-  }
+	}
 
-  p = float((sides - 1) * dp - Q_PI / 2);
+	p = float((sides - 1) * dp - Q_PI / 2);
 	for(i = 0; i <= sides-1; i++)
 	{
 		t = i * dt;
 
-    f = Face_Alloc();
-	  f->texdef = *texdef;
-	  f->next = b->brush_faces;
-	  b->brush_faces = f;
+		f = Face_Alloc();
+		f->texdef = *texdef;
+		f->next = b->brush_faces;
+		b->brush_faces = f;
 
-    VectorPolar(f->planepts[0], radius, t, p);
-    VectorPolar(f->planepts[1], radius, t + dt, p + dp);
-    VectorPolar(f->planepts[2], radius, t + dt, p);
+		VectorPolar(f->planepts[0], radius, t, p);
+		VectorPolar(f->planepts[1], radius, t + dt, p + dp);
+		VectorPolar(f->planepts[2], radius, t + dt, p);
 
-    for (int k = 0; k < 3; k++)
-      VectorAdd(f->planepts[k], mid, f->planepts[k]);
+		for (int k = 0; k < 3; k++)
+			VectorAdd(f->planepts[k], mid, f->planepts[k]);
 	}
 
 	Brush_AddToList (b, &selected_brushes);
@@ -4482,42 +4480,42 @@ void Brush_MakeSidedSphere(int sides)
 
 void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 {
-  winding_t *w;
-  vec3_t   mins,maxs;
-  int i;
-  float width, height, temp;
-  float rot_width, rot_height;
-  float cosv,sinv,ang;
-  float min_t, min_s, max_t, max_s;
-  float s,t;
+	winding_t *w;
+	vec3_t   mins,maxs;
+	int i;
+	float width, height, temp;
+	float rot_width, rot_height;
+	float cosv,sinv,ang;
+	float min_t, min_s, max_t, max_s;
+	float s,t;
 	vec3_t	vecs[2];
-  vec3_t   coords[4];
+	vec3_t   coords[4];
 	texdef_t	*td;
 
-  if (nHeight < 1)
-  {
-    nHeight = 1;
-  }
-  if (nWidth < 1)
-  {
-    nWidth = 1;
-  }
+	if (nHeight < 1)
+	{
+		nHeight = 1;
+	}
+	if (nWidth < 1)
+	{
+		nWidth = 1;
+	}
 
-  ClearBounds (mins, maxs);
+	ClearBounds (mins, maxs);
 
 	td = &face->texdef;
 	w = face->face_winding;
 	if (!w)
 	{
-    return;
+		return;
 	}
-  for (i=0 ; i<w->numpoints ; i++)
-  {
-    AddPointToBounds( w->points[i], mins, maxs );
-  }
-   // 
-   // get the current angle
-   //
+	for (i=0 ; i<w->numpoints ; i++)
+	{
+		AddPointToBounds( w->points[i], mins, maxs );
+	}
+	// 
+	// get the current angle
+	//
 	ang = td->rotate / 180 * Q_PI;
 	sinv = sin(ang);
 	cosv = cos(ang);
@@ -4525,69 +4523,69 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 	// get natural texture axis
 	TextureAxisFromPlane(&face->plane, vecs[0], vecs[1]);
 
-  min_s = DotProduct( mins, vecs[0] );
-  min_t = DotProduct( mins, vecs[1] );
-  max_s = DotProduct( maxs, vecs[0] );
-  max_t = DotProduct( maxs, vecs[1] );
-  width = max_s - min_s;
-  height = max_t - min_t;
-  coords[0][0] = min_s;
-  coords[0][1] = min_t;
-  coords[1][0] = max_s;
-  coords[1][1] = min_t;
-  coords[2][0] = min_s;
-  coords[2][1] = max_t;
-  coords[3][0] = max_s;
-  coords[3][1] = max_t;
-  min_s = min_t = 99999;
-  max_s = max_t = -99999;
-  for (i=0; i<4; i++)
-  {
-    s = cosv * coords[i][0] - sinv * coords[i][1];
-	  t = sinv * coords[i][0] + cosv * coords[i][1];
-    if (i&1)
-    {
-      if (s > max_s) 
-      {
-        max_s = s;
-      }
-    }
-    else
-    {
-      if (s < min_s) 
-      {
-        min_s = s;
-      }
-      if (i<2)
-      {
-        if (t < min_t) 
-        {
-          min_t = t;
-        }
-      }
-      else
-      {
-        if (t > max_t) 
-        {
-          max_t = t;
-        }
-      }
-    }
-  }
-  rot_width =  (max_s - min_s);
-  rot_height = (max_t - min_t);
-  td->scale[0] = -(rot_width/((float)(face->d_texture->width*nWidth)));
-  td->scale[1] = -(rot_height/((float)(face->d_texture->height*nHeight)));
+	min_s = DotProduct( mins, vecs[0] );
+	min_t = DotProduct( mins, vecs[1] );
+	max_s = DotProduct( maxs, vecs[0] );
+	max_t = DotProduct( maxs, vecs[1] );
+	width = max_s - min_s;
+	height = max_t - min_t;
+	coords[0][0] = min_s;
+	coords[0][1] = min_t;
+	coords[1][0] = max_s;
+	coords[1][1] = min_t;
+	coords[2][0] = min_s;
+	coords[2][1] = max_t;
+	coords[3][0] = max_s;
+	coords[3][1] = max_t;
+	min_s = min_t = 99999;
+	max_s = max_t = -99999;
+	for (i=0; i<4; i++)
+	{
+		s = cosv * coords[i][0] - sinv * coords[i][1];
+		t = sinv * coords[i][0] + cosv * coords[i][1];
+		if (i&1)
+		{
+			if (s > max_s) 
+			{
+				max_s = s;
+			}
+		}
+		else
+		{
+			if (s < min_s) 
+			{
+				min_s = s;
+			}
+			if (i<2)
+			{
+				if (t < min_t) 
+				{
+					min_t = t;
+				}
+			}
+			else
+			{
+				if (t > max_t) 
+				{
+					max_t = t;
+				}
+			}
+		}
+	}
+	rot_width =  (max_s - min_s);
+	rot_height = (max_t - min_t);
+	td->scale[0] = -(rot_width/((float)(face->d_texture->width*nWidth)));
+	td->scale[1] = -(rot_height/((float)(face->d_texture->height*nHeight)));
 
-  td->shift[0] = min_s/td->scale[0];
-  temp = (int)(td->shift[0] / (face->d_texture->width*nWidth));
-  temp = (temp+1)*face->d_texture->width*nWidth;
-  td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->width*nWidth);
+	td->shift[0] = min_s/td->scale[0];
+	temp = (int)(td->shift[0] / (face->d_texture->width*nWidth));
+	temp = (temp+1)*face->d_texture->width*nWidth;
+	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->width*nWidth);
 
-  td->shift[1] = min_t/td->scale[1];
-  temp = (int)(td->shift[1] / (face->d_texture->height*nHeight));
-  temp = (temp+1)*(face->d_texture->height*nHeight);
-  td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->height*nHeight);
+	td->shift[1] = min_t/td->scale[1];
+	temp = (int)(td->shift[1] / (face->d_texture->height*nHeight));
+	temp = (temp+1)*(face->d_texture->height*nHeight);
+	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->height*nHeight);
 }
 
 void Brush_FitTexture( brush_t *b, int nHeight, int nWidth )
@@ -4595,9 +4593,9 @@ void Brush_FitTexture( brush_t *b, int nHeight, int nWidth )
 	face_t *face;
 
 	for (face = b->brush_faces ; face ; face=face->next)
-  {
-    Face_FitTexture( face, nHeight, nWidth );
-  }
+	{
+		Face_FitTexture( face, nHeight, nWidth );
+	}
 }
 
 

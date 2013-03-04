@@ -165,7 +165,6 @@ Initializes all non-persistant parts of playerState
 */
 void ClientSpawn(edict_s *ent) {
 	int		index;
-	vec3_c	spawn_origin, spawn_angles;
 	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
@@ -176,34 +175,25 @@ void ClientSpawn(edict_s *ent) {
 		return;
 	}
 	Player *pl = dynamic_cast<Player*>(ent->ent);
-
-	BaseEntity *spawnPoint = G_GetRandomEntityOfClass("InfoPlayerStart");
-
-	VectorClear(spawn_origin);
-	VectorClear(spawn_angles);
-	if(spawnPoint) {
-		spawn_origin = spawnPoint->getOrigin();
-		//spawn_origin.z += 128;
-	}
-	//	VectorSet(spawn_origin,1400,1340,470);
-
-	VectorClear(pl->ps.delta_angles);
-	VectorClear(pl->ps.velocity);
-
-
-	g_server->GetUserinfo( index, userinfo, sizeof(userinfo) );
-	// set max health
-	pl->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( pl->pers.maxHealth < 1 || pl->pers.maxHealth > 100 ) {
-		pl->pers.maxHealth = 100;
-	}
-
 	pl->ps.clientNum = index;
 
-	VectorCopy( spawn_origin, pl->ps.origin );
+	pl->setHealth(100);
 
+	vec3_c	spawnOrigin, spawnAngles;
+	spawnOrigin.zero();
+	spawnAngles.zero();
+
+	BaseEntity *spawnPoint = G_GetRandomEntityOfClass("InfoPlayerStart");
+	if(spawnPoint) {
+		spawnOrigin = spawnPoint->getOrigin();
+		spawnAngles = spawnPoint->getAngles();
+	}
+	pl->setOrigin(spawnOrigin);
+	pl->setAngles(spawnAngles);
 	g_server->GetUsercmd( index, &pl->pers.cmd );
-	pl->setClientViewAngle(spawn_angles );
+	pl->setClientViewAngle(spawnAngles);
+
+
 	// don't allow full run speed for a bit
 
 #if 0
@@ -455,6 +445,8 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"forcePlayerModelChange")) {
 		str newPlayerModel = g_core->Argv(1);
 		pl->setPlayerModel(newPlayerModel);
+	} else if(!stricmp(cmd,"kill")) {
+		pl->onDeath();
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

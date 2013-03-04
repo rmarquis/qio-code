@@ -526,6 +526,13 @@ void ModelEntity::getLocalBounds(aabb &out) const {
 		}
 	}
 }
+bool ModelEntity::getBoneWorldOrientation(u32 tagNum, class matrix_c &out) {
+	if(modelDecl) {
+		// TODO
+	}
+	out = this->getMatrix();
+	return true; // error
+}
 #include <shared/trace.h>
 bool ModelEntity::traceWorldRay(class trace_c &tr) {
 	trace_c transformedTrace;
@@ -560,16 +567,19 @@ void ModelEntity::onDeath() {
 		delete this;
 	}
 }
-void ModelEntity::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
-	// apply hit damage
+void ModelEntity::damage(int damageCount) {
 	if(bTakeDamage) {
 		int prevHealth = health;
-		health -= damage;
-		g_core->Print("ModelEntity::onBulletHit: prev health %i, health now %i\n",prevHealth,health);
+		health -= damageCount;
+		g_core->Print("ModelEntity::damage: prev health %i, health now %i\n",prevHealth,health);
 		if(prevHealth > 0 && health <= 0) {
 			this->onDeath();
 		}
 	}
+}
+void ModelEntity::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {
+	// apply hit damage
+	this->damage(damageCount);
 	// apply hit force
 	this->applyPointImpulse(dirWorld.getNormalized() * 250.f, hitPosWorld);
 }

@@ -172,6 +172,9 @@ public:
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 		return RF_AddWorldMapDecal(pos,normal,radius,material);
 	}
+	virtual u32 addExplosion(const vec3_c &pos, float radius, const char *matName) {
+		return RF_AddExplosion(pos,radius,matName);
+	}
 	virtual class mtrAPI_i *registerMaterial(const char *matName) {
 		if(g_ms == 0)
 			return 0;

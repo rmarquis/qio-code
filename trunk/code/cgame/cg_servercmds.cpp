@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/declManagerAPI.h>
+#include <shared/str.h>
 
 
 /*
@@ -166,6 +167,18 @@ static void CG_TestBulletAttack() {
 	}
 }
 
+static void CG_DoExplosionEffect() {
+	vec3_c p;
+	float radius;
+	str matName;
+	p.x = atof(CG_Argv(1));
+	p.y = atof(CG_Argv(2));
+	p.z = atof(CG_Argv(3));
+	radius = atof(CG_Argv(4));
+	matName = CG_Argv(5);
+
+	rf->addExplosion(p,radius,matName);
+}
 /*
 =================
 CG_ServerCommand
@@ -195,6 +208,9 @@ static void CG_ServerCommand( void ) {
 		return;
 	} else if ( !strcmp( cmd, "test_bulletAttack" ) ) {
 		CG_TestBulletAttack();
+		return;
+	} else if ( !strcmp( cmd, "doExplosionEffect" ) ) {
+		CG_DoExplosionEffect();
 		return;
 	}
 

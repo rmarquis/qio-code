@@ -88,6 +88,7 @@ void RF_ShutdownWater();
 
 // rf_explosions.cpp
 u32 RF_AddExplosion(const class vec3_c &pos, float radius, class mtrAPI_i *material);
+u32 RF_AddExplosion(const vec3_c &pos, float radius, const char *matName);
 void RF_AddExplosionDrawCalls();
 
 extern class cameraDef_c rf_camera;

@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __PROJECTILE_H__
 
 #include "ModelEntity.h"
+#include "../explosionInfo.h"
 
 class Projectile : public ModelEntity {
 	// time to wait between collision and explosion
@@ -36,9 +37,7 @@ class Projectile : public ModelEntity {
 	// (used for projectiles with rocket models)
 	bool bSyncModelAngles;
 	// explosion parameters
-	// TODO: store them in separate struct?
-	float explosionRadius;
-	float explosionForce;
+	explosionInfo_s explosionInfo;
 public:
 	Projectile();
 
@@ -48,13 +47,19 @@ public:
 		this->bSyncModelAngles = newBSyncModelAngles;
 	}
 	void setExplosionDelay(u32 newExplosionDelay) {
-		this->explosionDelay = newExplosionDelay;
+		this->explosionDelay= newExplosionDelay;
 	}
 	void setExplosionRadius(float newExplosionRadius) {
-		this->explosionRadius = newExplosionRadius;
+		this->explosionInfo.radius = newExplosionRadius;
+	}
+	void setExplosionSpriteRadius(float newExplosionSpriteRadius) {
+		this->explosionInfo.spriteRadius = newExplosionSpriteRadius;
+	}
+	void setExplosionSpriteMaterial(const char *matName) {
+		this->explosionInfo.materialName = matName;
 	}
 	void setExplosionForce(float newExplosionForce) {
-		this->explosionForce = newExplosionForce;
+		this->explosionInfo.force = newExplosionForce;
 	}
 
 	virtual void runFrame();

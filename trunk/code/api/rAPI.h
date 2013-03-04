@@ -45,6 +45,7 @@ public:
 	virtual void removeLight(class rLightAPI_i *light) = 0;
 
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) = 0;
+	virtual u32 addExplosion(const vec3_c &pos, float radius, const char *matName) = 0;
 
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
 	//virtual void draw3DView() = 0;

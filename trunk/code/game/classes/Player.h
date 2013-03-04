@@ -46,7 +46,7 @@ typedef struct {
 	clientConnected_t	connected;	
 	usercmd_s	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
-	int			maxHealth;			// for handicapping
+	//int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 } clientPersistant_t;
 
@@ -61,6 +61,7 @@ class Player : public ModelEntity {
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
 	class playerAnimControllerAPI_i *animHandler;
+	u32 lastDeathTime; // in msec
 public:
 	Player();
 	virtual ~Player();
@@ -117,9 +118,12 @@ public:
 
 	struct playerState_s *getPlayerState();
 
+	virtual void onDeath();
 
 	// called from Weapon::doUse
 	void addWeapon(class Weapon *newWeapon);
+
+	void dropCurrentWeapon();
 };
 
 #endif // __PLAYER_H__

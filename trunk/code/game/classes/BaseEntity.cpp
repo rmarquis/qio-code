@@ -223,6 +223,38 @@ void BaseEntity::detachFromParent() {
 	myEdict->s->parentNum = ENTITYNUM_NONE;
 	myEdict->s->parentTagNum = -1;
 }
+// BaseEntity has no model so we cant do much here.
+// This function is virtual and overriden in ModelEntity
+bool BaseEntity::getBoneWorldOrientation(u32 tagNum, class matrix_c &out) {
+	out = this->matrix;
+	return true; // error
+}
+// update origin/angles/matrix fields of entity attached to another
+void BaseEntity::updateAttachmentOrigin() {
+	if(parent == 0) {
+		return;
+	}
+	// recursively update orientation
+	parent->updateAttachmentOrigin();
+
+	matrix_c mat;
+	if(myEdict->s->parentTagNum == -1) { 
+		// parent matrix
+		mat = parent->getMatrix();
+	} else {
+		// get world space matrix of parent tag/bone
+		parent->getBoneWorldOrientation(myEdict->s->parentTagNum,mat);
+	}
+	this->setOrigin(mat.getOrigin());
+	this->setAngles(mat.getAngles());
+	//if(cent->currentState.parentOffset.isAlmostZero() == false) {
+	//	matrix_c matAngles = mat;
+	//	matAngles.setOrigin(vec3_origin);
+	//	vec3_c ofs;
+	//	matAngles.transformPoint(cent->currentState.parentOffset,ofs);
+	//	cent->lerpOrigin += ofs;
+	//}
+}
 void BaseEntity::setEntityLightRadius(float newEntityLightRadius) {
 	myEdict->s->lightRadius = newEntityLightRadius;
 }

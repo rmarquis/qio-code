@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // g_weapons.cpp - helper functions for Weapon class
 #include "g_local.h"
+#include "explosionInfo.h"
 #include "classes/BaseEntity.h"
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
@@ -49,24 +50,30 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	}
 }
 
-void G_Explosion(const vec3_c &pos, float radius, float force) {
+void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo) {
 	aabb bb;
-	bb.fromPointAndRadius(pos,radius);
+	bb.fromPointAndRadius(pos,explosionInfo.radius);
 	arraySTD_c<BaseEntity*> ents;
 	G_BoxEntities(bb,ents);
+	int damage = 200;
 	for(u32 i = 0; i < ents.size(); i++) {
 		BaseEntity *be = ents[i];
-		if(be->hasPhysicsObject() == false)
-			continue;
 		vec3_c dir = be->getOrigin() - pos;
 		float dist = dir.len();
-		if(dist > radius)
+		if(dist > explosionInfo.radius)
 			continue;
-		float frac = 1.f - dist / radius;
+		float frac = 1.f - dist / explosionInfo.radius;
+		int damageScaled = int(float(damage)*frac);
+		be->damage(damageScaled);
+		if(be->hasPhysicsObject() == false)
+			continue;
 		dir.normalize();
-		dir *= (force * frac);
+		dir *= (explosionInfo.force * frac);
 		be->applyCentralForce(dir);
 	}
+	// add clientside effect
+	g_server->SendServerCommand(-1,va("doExplosionEffect %f %f %f %f %s",pos.x,pos.y,pos.z,
+		explosionInfo.spriteRadius,explosionInfo.materialName.c_str()));
 }
 
 
