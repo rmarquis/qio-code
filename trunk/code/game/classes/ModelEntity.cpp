@@ -57,6 +57,7 @@ ModelEntity::ModelEntity() {
 	bPhysicsBodyKinematic = false;
 	bRigidBodyPhysicsEnabled = true;
 	linearVelocity.set(0,0,0);
+	pvsBoundsSkinWidth = 0.f;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -215,6 +216,8 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		if(value[0] == '*') {
 			this->setColModel(value);
 		}
+	} else if(!stricmp(key,"model2")) {
+		this->setRenderModel(value);
 	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
 		this->setColModel(value);
 	} else if(!stricmp(key,"size")) {
@@ -525,6 +528,7 @@ void ModelEntity::getLocalBounds(aabb &out) const {
 			out.fromRadius(64.f);
 		}
 	}
+	out.extend(pvsBoundsSkinWidth);
 }
 bool ModelEntity::getBoneWorldOrientation(u32 tagNum, class matrix_c &out) {
 	if(modelDecl) {

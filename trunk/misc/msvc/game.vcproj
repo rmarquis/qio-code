@@ -505,6 +505,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\FuncRotating.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncRotating.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\FuncStatic.cpp"
 				>
 			</File>

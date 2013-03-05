@@ -55,6 +55,7 @@ protected:
 	bool bRigidBodyPhysicsEnabled; // if false, this->initRigidBodyPhysics will always fail
 	str animName; // current animation name
 	mutable vec3_c linearVelocity;
+	float pvsBoundsSkinWidth;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
