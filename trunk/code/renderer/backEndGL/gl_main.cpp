@@ -206,6 +206,7 @@ public:
 		if(glCreateShader == 0) {
 			return false;
 		}
+		return true;
 	}
 	// returns true if "texgen environment" q3 shader effect can be done on GPU
 	virtual bool gpuTexGensSupported() const {

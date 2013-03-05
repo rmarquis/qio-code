@@ -127,9 +127,14 @@ void MAT_ScanForMaterialFiles() {
 	MAT_ScanForFiles("materials/",".mtr");
 }
 void MAT_LoadMaterial(class mtrIMPL_c *mat) {
+	if(mat == 0) {
+		// this should never happen
+		g_core->RedWarning("MAT_LoadMaterial: NULL material pointer\n");
+		return;
+	}
 	if(mat->getName() == 0 || mat->getName()[0] == 0) {
 		// this should never happen
-		g_core->RedWarning("MAT_LoadMaterial: material name not set! Cannot reload material.\n");
+		g_core->RedWarning("MAT_LoadMaterial: material name not set! Cannot load material.\n");
 		return;
 	}
 	// try to load from material text (.shader/.mtr files)

@@ -40,13 +40,36 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	if(rf && g_showBulletTraces.getInt()) {
 		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
 	}
-	g_server->SendServerCommand(-1,va("test_bulletAttack %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	g_server->SendServerCommand(-1,va("test_bulletAttack gfx/damage/bullet_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
 		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
 	if(tr.hasHit()) {
 		BaseEntity *h = tr.getHitEntity();
 		if(h) {
 			h->onBulletHit(tr.getHitPos(), dir, 100);
 		}
+	}
+} 
+float G_randomFloat(float min, float max) {
+    // this  function assumes max > min, you may want 
+    // more robust error checking for a non-debug build
+    float random = ((float) rand()) / (float) RAND_MAX;
+
+    // generate (in your case) a float between 0 and (4.5-.78)
+    // then add .78, giving you a float between .78 and 4.5
+    float range = max - min;  
+    return (random*range) + min;
+}
+void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, u32 numBullets, float maxSpread, float spreadDist) {
+	vec3_c u, r;
+	u = dir.getPerpendicular();
+	r.crossProduct(u,dir);
+	u.normalize();
+	r.normalize();
+	for(u32 i = 0; i < numBullets; i++) {
+		vec3_c end = muzzle + dir * spreadDist + u * G_randomFloat(-maxSpread,maxSpread) + r * G_randomFloat(-maxSpread,maxSpread);
+		vec3_c newDir = (end - muzzle);
+		newDir.normalize();
+		G_BulletAttack(muzzle,newDir,baseSkip);
 	}
 }
 
@@ -72,8 +95,10 @@ void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo)
 		be->applyCentralForce(dir);
 	}
 	// add clientside effect
-	g_server->SendServerCommand(-1,va("doExplosionEffect %f %f %f %f %s",pos.x,pos.y,pos.z,
-		explosionInfo.spriteRadius,explosionInfo.materialName.c_str()));
+	if(explosionInfo.materialName.length()) {
+		g_server->SendServerCommand(-1,va("doExplosionEffect %f %f %f %f %s",pos.x,pos.y,pos.z,
+			explosionInfo.spriteRadius,explosionInfo.materialName.c_str()));
+	}
 }
 
 

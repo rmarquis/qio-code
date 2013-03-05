@@ -135,13 +135,14 @@ static void CG_MapRestart( void ) {
 #include <api/rEntityAPI.h>
 static void CG_TestBulletAttack() {
 	vec3_c p, d;
-	p.x = atof(CG_Argv(1));
-	p.y = atof(CG_Argv(2));
-	p.z = atof(CG_Argv(3));
-	d.x = atof(CG_Argv(4));
-	d.y = atof(CG_Argv(5));
-	d.z = atof(CG_Argv(6));
-	int skipEntityNum = atoi(CG_Argv(7));
+	str decalMaterialName = CG_Argv(1);
+	p.x = atof(CG_Argv(2));
+	p.y = atof(CG_Argv(3));
+	p.z = atof(CG_Argv(4));
+	d.x = atof(CG_Argv(5));
+	d.y = atof(CG_Argv(6));
+	d.z = atof(CG_Argv(7));
+	int skipEntityNum = atoi(CG_Argv(8));
 	CG_Printf("CG_TestBulletAttack: from %f %f %f, dir %f %f %f\n",p.x,p.y,p.z,d.x,d.y,d.z);
 	trace_c tr;
 	tr.setupRay(p,d*100000.f);
@@ -149,7 +150,8 @@ static void CG_TestBulletAttack() {
 		CG_Printf("CG_TestBulletAttack: no hit\n");
 		return; // no hit
 	}
-	mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
+	//mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
+	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 8.f;
 	centity_s *hit = tr.getHitCGEntity();
 	if(hit == &cg_entities[ENTITYNUM_WORLD]) {

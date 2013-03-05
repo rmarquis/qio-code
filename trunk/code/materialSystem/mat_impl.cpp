@@ -332,6 +332,14 @@ mtrStage_c *mtrIMPL_c::getFirstStageOfType(enum stageType_e type) {
 	}
 	return 0;
 }
+const mtrStage_c *mtrIMPL_c::getFirstStageOfType(enum stageType_e type) const {
+	for(u32 i = 0; i < stages.size(); i++) {
+		if(stages[i]->getStageType() == type) {
+			return stages[i];
+		}
+	}
+	return 0;
+}
 void mtrIMPL_c::replaceStageType(enum stageType_e stageTypeToFind, enum stageType_e replaceWith) {
 	for(u32 i = 0; i < stages.size(); i++) {
 		if(stages[i]->getStageType() == stageTypeToFind) {

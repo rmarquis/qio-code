@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_surface.h"
 #include "rf_drawCall.h"
+#include <api/coreAPI.h>
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
@@ -110,6 +111,10 @@ u32 RF_AddExplosion(const vec3_c &pos, float radius, mtrAPI_i *material) {
 	return rf_explosions.size()-1;
 }
 u32 RF_AddExplosion(const vec3_c &pos, float radius, const char *matName) {
+	if(matName == 0 || matName[0] == 0) {
+		g_core->RedWarning("RF_AddExplosion: NULL material name, using default\n");
+		matName = "default";
+	}
 	mtrAPI_i *mat = g_ms->registerMaterial(matName);
 	return RF_AddExplosion(pos,radius,mat);
 }

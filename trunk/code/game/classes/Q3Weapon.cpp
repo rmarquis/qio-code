@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Q3Weapon.h"
 #include "Player.h"
 #include "Projectile.h"
+#include "../g_local.h"
 #include <api/coreAPI.h>
 
 DEFINE_CLASS(Q3Weapon, "Weapon");
@@ -33,6 +34,7 @@ enum quake3WeaponType_e {
 	EQ3WPN_BAD,
 	EQ3WPN_PLASMAGUN,
 	EQ3WPN_ROCKETLAUNCHER,
+	EQ3WPN_SHOTGUN,
 
 	EQ3WPN_NUM_KNOWN_WEAPONS,
 };
@@ -48,6 +50,9 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 			this->setDelayBetweenShorts(100);
 		} else if(!stricmp(value,"WP_ROCKET_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_ROCKETLAUNCHER;
+			this->setDelayBetweenShorts(1000);
+		}else if(!stricmp(value,"WP_SHOTGUN")) {
+			q3WeaponType = EQ3WPN_SHOTGUN;
 			this->setDelayBetweenShorts(1000);
 		}
 	} else {
@@ -77,5 +82,7 @@ void Q3Weapon::doWeaponAttack() {
 		rocket->setExplosionForce(2000);
 		rocket->setOrigin(owner->getEyePos()+forward*32);
 		rocket->setLinearVelocity(forward*500.f);
+	} else if(q3WeaponType == EQ3WPN_SHOTGUN) {
+		G_MultiBulletAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner, 12, 5, 100);
 	}
 }

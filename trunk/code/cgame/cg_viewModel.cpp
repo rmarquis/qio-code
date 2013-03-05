@@ -75,7 +75,11 @@ void CG_RunViewModel() {
 	if(cg.snap->ps.customViewRModelIndex) {
 		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
 	} else {
-		viewModel = cg_entities[viewModelEntity].rEnt->getModel();
+		if(cg_entities[viewModelEntity].rEnt) {
+			viewModel = cg_entities[viewModelEntity].rEnt->getModel();
+		} else {
+			viewModel = 0;
+		}
 		//if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
 		//	|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
 		//	|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")

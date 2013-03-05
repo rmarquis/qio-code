@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 
 static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
+static aCvar_c g_printPlayersHealth("g_printPlayersHealth","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -414,7 +415,7 @@ void Player::runPlayer(usercmd_s *ucmd) {
 	if(g_printPlayerPositions.getInt()) {
 		G_Printf("Player::runPlayer: client %i is at %f %f %f\n",myEdict->s->number,myEdict->s->origin[0],myEdict->s->origin[1],myEdict->s->origin[2]);
 	}
-	if(1) {
+	if(g_printPlayersHealth.getInt()) {
 		G_Printf("Player::runPlayer: client %i health is %i\n",myEdict->s->number,this->health);
 	}
 	//if (g_smoothClients.integer) {

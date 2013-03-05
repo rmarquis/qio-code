@@ -200,6 +200,7 @@ class mtrIMPL_c : public mtrAPI_i {
 
 	void removeAllStagesOfType(enum stageType_e type);
 	class mtrStage_c *getFirstStageOfType(enum stageType_e type);
+	const class mtrStage_c *getFirstStageOfType(enum stageType_e type) const;
 	void replaceStageType(enum stageType_e stageTypeToFind, enum stageType_e replaceWith);
 public:
 	mtrIMPL_c();
@@ -281,6 +282,14 @@ public:
 		}
 		return false;
 	}
+	bool hasStageWithDepthWriteEnabled() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->getDepthWrite()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	virtual const class skyParmsAPI_i *getSkyParms() const {
 		return skyParms;
 	}
@@ -305,7 +314,13 @@ public:
 				// Such materials are used on q3 glass panels and beams.
 				// They must be drawn last.
 				// (eg. see textures/sfx/beam from q3 shaders/sfx.shader)
-				return DCS_BLEND2; // 3 # priority 
+
+				// plasma projectiles must be drawn after q3dm0 world glass panels and decals
+				if(this->getFirstStageOfType(ST_LIGHTMAP) == 0) {
+					return DCS_BLEND3; // 3b # priority 
+				} else {
+					return DCS_BLEND2; // 3a # priority 
+				}
 			}
 		}
 		return DCS_OPAQUE; // 1 # priority
