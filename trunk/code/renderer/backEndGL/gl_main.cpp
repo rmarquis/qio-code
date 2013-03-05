@@ -60,6 +60,8 @@ static aCvar_c gl_callGLFinish("gl_callGLFinish","0");
 static aCvar_c gl_checkForGLErrors("gl_checkForGLErrors","1");
 static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBottleneck","0");
 static aCvar_c rb_gpuTexGens("rb_gpuTexGens","0");
+static aCvar_c rb_ignoreRGBGens("rb_ignoreRGBGens","1");
+static aCvar_c rb_ignoreRGBGenVertex("rb_ignoreRGBGenVertex","0");
 static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","0");
 static aCvar_c rb_printRGBGenWaveMaterials("rb_printRGBGenWaveMaterials","0");
 static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
@@ -897,14 +899,14 @@ public:
 				// by default dont use vertex colors...
 				// (right now it overrides the setting from frontend)
 				bindVertexColors = false;
-				if(s->hasRGBGen()) {
+				if(s->hasRGBGen() && (rb_ignoreRGBGens.getInt() != 0)) {
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
 						bindVertexColors = false;
-					} else if(s->getRGBGenType() == RGBGEN_VERTEX) {
+					} else if(s->getRGBGenType() == RGBGEN_VERTEX && (rb_ignoreRGBGenVertex.getInt() == 0)) {
 						// just use vertex colors from VBO,
 						// nothing to calculate on CPU
 						bindVertexColors = true;
-					} else if(1 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
+					} else if(0 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
 						// NOTE: "rgbGen wave inversesawtooth 0 1 0 8" 
 						// and "rgbGen wave sawtooth 0 1 0 8"
 						// are used in Quake3 "rocketExplosion" material from gfx.shader
@@ -973,12 +975,23 @@ public:
 						//}
 					}
 				} else {
+#if 1
+					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
+						bindVertexColors = false;
+					} else if(s->getRGBGenType() == RGBGEN_VERTEX && (rb_ignoreRGBGenVertex.getInt() == 0)) {
+						// just use vertex colors from VBO,
+						// nothing to calculate on CPU
+						bindVertexColors = true;
+					} else 
+#endif
+					{
 					// if (rgbGen is not set) and (lightmap is not present) and (vertex colors are present)
 					// -> enable drawing with vertex colors
 					if(bHasVertexColors && (lastLightmap == 0) && (curLight == 0)) {
 						// this is a fix for q3 static "md3" models 
 						// (those loaded directly from .bsp file and not from .md3 file)
 						bindVertexColors = true;
+					}
 					}
 				}
 	
