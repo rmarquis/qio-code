@@ -62,7 +62,7 @@ static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBot
 static aCvar_c rb_gpuTexGens("rb_gpuTexGens","0");
 static aCvar_c rb_ignoreRGBGens("rb_ignoreRGBGens","1");
 static aCvar_c rb_ignoreRGBGenVertex("rb_ignoreRGBGenVertex","0");
-static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","0");
+static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","1");
 static aCvar_c rb_printRGBGenWaveMaterials("rb_printRGBGenWaveMaterials","0");
 static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 // always use GLSL shaders, even if they are not needed for any material effects
@@ -525,12 +525,15 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 	}
+	virtual void setColor4f(float r, float g, float b, float a)  {
+		glColor4f(r,g,b,a);
+	}
 	virtual void setColor4(const float *rgba)  {
 		if(rgba == 0) {
-			float def[] = { 1, 1, 1, 1 };
-			rgba = def;
+			setColor4f(1, 1, 1, 1);
+			return;
 		}
-		glColor4fv(rgba);
+		setColor4f(rgba[0],rgba[1],rgba[2],rgba[3]);
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bHasVertexColors = bBindVertexColors;
@@ -906,10 +909,13 @@ public:
 						// just use vertex colors from VBO,
 						// nothing to calculate on CPU
 						bindVertexColors = true;
-					} else if(0 && s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
+					} else if(s->getRGBGenType() == RGBGEN_WAVE && (rb_ignoreRGBGenWave.getInt() == 0)) {
 						// NOTE: "rgbGen wave inversesawtooth 0 1 0 8" 
 						// and "rgbGen wave sawtooth 0 1 0 8"
 						// are used in Quake3 "rocketExplosion" material from gfx.shader
+						float val = s->getRGBGenWaveValue(this->timeNowSeconds*0.001f);
+						byte valAsByte = val * 255.f;
+#if 1
 						bindVertexColors = true;
 						// copy vertices data (first big CPU bottleneck)
 						// (but only if we havent done this already)
@@ -920,11 +926,11 @@ public:
 								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
 							}
 						}
-						//float val = s->rgbGen.getWaveForm().evaluate();
-						float val = s->getRGBGenWaveValue(this->timeNowSeconds*0.001f);
-						byte valAsByte = val * 255.f;
 						stageVerts.setVertexColorsToConstValue(valAsByte);
 						stageVerts.setVertexAlphaToConstValue(255);
+#else
+						this->setColor4f(val,val,val,1.f);
+#endif
 						if(rb_printRGBGenWaveMaterials.getInt()) {
 							g_core->Print("Material %s has rgbGen wave\n",lastMat->getName());
 						}

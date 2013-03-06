@@ -37,18 +37,13 @@ once for each server frame, which makes for smooth demo recording.
 ==============
 */
 void ClientThink_real( edict_s *ent ) {
-	usercmd_s	*ucmd;
-
 	Player *pl = dynamic_cast<Player*>(ent->ent);
 
 	// don't think if the client is not yet connected (and thus not yet spawned in)
 	if (pl->pers.connected != CON_CONNECTED) {
 		return;
 	}
-	// mark the time, so the connection sprite can be removed
-	ucmd = &pl->pers.cmd;
-
-	pl->runPlayer(ucmd);
+	pl->runPlayer();
 }
 
 /*
@@ -83,7 +78,7 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
 void ClientEndFrame( edict_s *ent ) {
-	Player *pl = dynamic_cast<Player*>(ent->ent);
+//	Player *pl = dynamic_cast<Player*>(ent->ent);
 	// now playerState_s inherts from entityState
 	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
 }

@@ -238,7 +238,9 @@ void Player::touchTriggers() {
 		t->onTriggerContact(this);
 	}
 }
-void Player::runPlayer(usercmd_s *ucmd) {
+void Player::runPlayer() {
+	usercmd_s *ucmd = &this->pers.cmd;
+
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {
 		ucmd->serverTime = level.time + 200;

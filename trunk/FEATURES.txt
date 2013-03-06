@@ -10,7 +10,9 @@ cgame
  
 renderer
  - written from scratch in C++
- - Quake3, RTCW, ET, MoHAA and CoD1 (partial) BSP support with PVS and lightmapping
+ - Quake3, RTCW, ET, MoHAA, HalfLife2 BSP support with PVS and lightmapping
+ - partial Quake2 and Quake BSP support
+ - partial COD bsp support
  - Doom3/Quake4 .proc support with portal rendering system
  - ET:QW .procb support (without portals)
  - direct .map files loading (both Q3 and Doom3 versions)
@@ -25,9 +27,12 @@ renderer
 modelLoader
  - written from scratch in C++
  - waveFront .obj support (with .mtl files)
- - .ASE models support
+ - .ASE static models support
  - usefull .mdpp (MoDelPreProcess) "scripts" system used to scale/rotate model after loading
  - Doom3 .md5mesh / .md5anim support
+ - .LWO static models support
+ - Quake3 .md3 and Quake2 .md2 keyframed meshes support
+ - unfinished Half Life2 .mdl loader (without animations)
  
 materialSystem
  - written from scratch in C++

@@ -91,7 +91,7 @@ public:
 	void setCharacterControllerZOffset(float ofs);
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void touchTriggers();
-	void runPlayer(struct usercmd_s *ucmd);
+	void runPlayer();
 	void onUseKeyDown();
 	void onFireKeyHeld();
 	void onFireKeyDown();
@@ -120,6 +120,9 @@ public:
 
 	virtual void onDeath();
 
+	virtual void runFrame() {
+		runPlayer();
+	}
 	// called from Weapon::doUse
 	void addWeapon(class Weapon *newWeapon);
 

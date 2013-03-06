@@ -447,6 +447,18 @@ void ClientCommand( int clientNum ) {
 		pl->setPlayerModel(newPlayerModel);
 	} else if(!stricmp(cmd,"kill")) {
 		pl->onDeath();
+	} else if(!stricmp(cmd,"addbot")) {
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+
+		edict_s *newEdict = G_Spawn();
+		BE_SetForcedEdict(newEdict);
+		Player *np = new Player;
+		np->setOrigin(p);
+		np->setPlayerModel("$sarge");
+		np->enableCharacterController();
+		np->setHealth(100);
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
