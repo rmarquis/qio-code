@@ -35,6 +35,7 @@ enum quake3WeaponType_e {
 	EQ3WPN_PLASMAGUN,
 	EQ3WPN_ROCKETLAUNCHER,
 	EQ3WPN_SHOTGUN,
+	EQ3WPN_RAILGUN,
 
 	EQ3WPN_NUM_KNOWN_WEAPONS,
 };
@@ -51,9 +52,12 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 		} else if(!stricmp(value,"WP_ROCKET_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_ROCKETLAUNCHER;
 			this->setDelayBetweenShorts(1000);
-		}else if(!stricmp(value,"WP_SHOTGUN")) {
+		} else if(!stricmp(value,"WP_SHOTGUN")) {
 			q3WeaponType = EQ3WPN_SHOTGUN;
 			this->setDelayBetweenShorts(1000);
+		} else if(!stricmp(value,"WP_RAILGUN")) {
+			q3WeaponType = EQ3WPN_RAILGUN;
+			this->setDelayBetweenShorts(2000);
 		}
 	} else {
 		Weapon::setKeyValue(key,value);
@@ -84,5 +88,7 @@ void Q3Weapon::doWeaponAttack() {
 		rocket->setLinearVelocity(forward*500.f);
 	} else if(q3WeaponType == EQ3WPN_SHOTGUN) {
 		G_MultiBulletAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner, 12, 5, 100);
+	} else if(q3WeaponType == EQ3WPN_RAILGUN) {
+		G_RailGunAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner);
 	}
 }

@@ -187,6 +187,47 @@ static void CG_DoExplosionEffect() {
 
 	rf->addExplosion(p,radius,matName);
 }
+static void CG_DoRailgunEffect() {
+//	va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	vec3_c p, d;
+	str coreMaterial = CG_Argv(1);
+	str discMaterial = CG_Argv(2);
+	str explosionMaterial = CG_Argv(3);
+	p.x = atof(CG_Argv(4));
+	p.y = atof(CG_Argv(5));
+	p.z = atof(CG_Argv(6));
+	d.x = atof(CG_Argv(7));
+	d.y = atof(CG_Argv(8));
+	d.z = atof(CG_Argv(9));
+	int skipEntityNum = atoi(CG_Argv(10));
+	CG_Printf("CG_DoRailgunEffect: from %f %f %f, dir %f %f %f\n",p.x,p.y,p.z,d.x,d.y,d.z);
+	trace_c tr;
+	tr.setupRay(p,d*100000.f);
+	if(CG_RayTrace(tr,skipEntityNum) == false) {
+		CG_Printf("CG_DoRailgunEffect: no hit\n");
+		return; // no hit
+	}
+	//mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
+	mtrAPI_i *decalMaterial = g_ms->registerMaterial("gfx/damage/plasma_mrk");
+	float radius = 32.f;
+	centity_s *hit = tr.getHitCGEntity();
+	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+		CG_Printf("CG_DoRailgunEffect: hit Worldspawn\n");
+		if(cg_debugDrawBulletAttack.getInt()) {
+			rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
+		}
+		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		return;
+	} else {
+		CG_Printf("CG_DoRailgunEffect: hit entity\n");
+		if(hit->rEnt) {
+			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		} else {
+			CG_Printf("CG_DoRailgunEffect: hit centity has NULL rEnt\n");
+		}
+	}
+}
+
 /*
 =================
 CG_ServerCommand
@@ -219,6 +260,9 @@ static void CG_ServerCommand( void ) {
 		return;
 	} else if ( !strcmp( cmd, "doExplosionEffect" ) ) {
 		CG_DoExplosionEffect();
+		return;
+	} else if ( !strcmp( cmd, "doRailgunEffect" ) ) {
+		CG_DoRailgunEffect();
 		return;
 	}
 

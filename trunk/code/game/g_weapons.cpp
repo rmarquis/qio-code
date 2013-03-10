@@ -49,6 +49,22 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 		}
 	}
 } 
+void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
+	trace_c tr;
+	tr.setupRay(muzzle,muzzle + dir * 10000.f);
+	BT_TraceRay(tr);
+	G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+
+	// TODO: clientside railgun effect?
+	g_server->SendServerCommand(-1,va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
+	if(tr.hasHit()) {
+		BaseEntity *h = tr.getHitEntity();
+		if(h) {
+			h->onBulletHit(tr.getHitPos(), dir, 100);
+		}
+	}
+}
 float G_randomFloat(float min, float max) {
     // this  function assumes max > min, you may want 
     // more robust error checking for a non-debug build
