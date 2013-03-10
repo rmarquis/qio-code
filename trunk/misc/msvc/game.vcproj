@@ -273,6 +273,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_bot.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_bullet.cpp"
 				>
 				<FileConfiguration

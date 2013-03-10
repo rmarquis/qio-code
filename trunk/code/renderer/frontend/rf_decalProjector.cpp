@@ -26,6 +26,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_decalProjector.h"
 #include "rf_decals.h"
 #include <api/coreAPI.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c decalProjector_debugDraw("decalProjector_debugDraw","0");
 
 decalProjector_c::decalProjector_c() {
 	mat = 0;
@@ -48,8 +51,11 @@ void decalProjector_c::init(const vec3_c &pos, const vec3_c &normal, float radiu
 	planes[1].fromPointAndNormal(pos+normal*radius,-normal);
 	perp = normal.getPerpendicular();
 	perp2.crossProduct(normal,perp);
-	RFDL_AddDebugLine(pos-normal,pos+perp*10.f-normal,vec3_c(0,0,1),5.f);
-	RFDL_AddDebugLine(pos-normal,pos+perp2*10.f-normal,vec3_c(0,1,0),5.f);
+
+	if(decalProjector_debugDraw.getInt()) {
+		RFDL_AddDebugLine(pos-normal,pos+perp*10.f-normal,vec3_c(0,0,1),5.f);
+		RFDL_AddDebugLine(pos-normal,pos+perp2*10.f-normal,vec3_c(0,1,0),5.f);
+	}
 	vec3_c points[4];
 	points[0] = pos + perp * radius + perp2 * radius - normal * radius;
 	points[1] = pos - perp * radius + perp2 * radius - normal * radius;

@@ -132,7 +132,11 @@ static void CG_MapRestart( void ) {
 }
 
 #include <shared/trace.h>
+#include <shared/autoCvar.h>
 #include <api/rEntityAPI.h>
+
+aCvar_c cg_debugDrawBulletAttack("cg_debugDrawBulletAttack","0");
+
 static void CG_TestBulletAttack() {
 	vec3_c p, d;
 	str decalMaterialName = CG_Argv(1);
@@ -156,7 +160,9 @@ static void CG_TestBulletAttack() {
 	centity_s *hit = tr.getHitCGEntity();
 	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_TestBulletAttack: hit Worldspawn\n");
-		rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
+		if(cg_debugDrawBulletAttack.getInt()) {
+			rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
+		}
 		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		return;
 	} else {

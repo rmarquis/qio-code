@@ -31,27 +31,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define STANDALONE
 
-#ifdef STANDALONE
-  #define PRODUCT_NAME			"iofoo3"
+//#ifdef STANDALONE
+  #define PRODUCT_NAME			"Qio"
   #define BASEGAME			"baseqio"
-  #define CLIENT_WINDOW_TITLE     	"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
-  #define HOMEPATH_NAME_UNIX		".foo"
-  #define HOMEPATH_NAME_WIN		"FooBar"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-  #define GAMENAME_FOR_MASTER		"foobar"	// must NOT contain whitespace
-//  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
-#else
-  #define PRODUCT_NAME			"ioq3"
-  #define BASEGAME			"baseq3"
-  #define CLIENT_WINDOW_TITLE     	"ioquake3"
-  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
-  #define HOMEPATH_NAME_UNIX		".q3a"
-  #define HOMEPATH_NAME_WIN		"Quake3"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-  #define GAMENAME_FOR_MASTER		"Quake3Arena"
-  #define LEGACY_PROTOCOL
-#endif
+  #define CLIENT_WINDOW_TITLE     	"Qio"
+  #define CLIENT_WINDOW_MIN_TITLE 	"Qio"
+ // #define HOMEPATH_NAME_UNIX		".foo"
+  //#define HOMEPATH_NAME_WIN		"FooBar"
+ // #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+  #define GAMENAME_FOR_MASTER		"QioTestGame"	// must NOT contain whitespace
+////  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
+//#else
+//  #define PRODUCT_NAME			"ioq3"
+//  #define BASEGAME			"baseq3"
+//  #define CLIENT_WINDOW_TITLE     	"ioquake3"
+//  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
+//  #define HOMEPATH_NAME_UNIX		".q3a"
+//  #define HOMEPATH_NAME_WIN		"Quake3"
+//  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+//  #define GAMENAME_FOR_MASTER		"Quake3Arena"
+//  #define LEGACY_PROTOCOL
+//#endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
 #define HEARTBEAT_FOR_MASTER		"DarkPlaces"
@@ -1239,35 +1239,6 @@ typedef enum {
 	CA_ACTIVE,			// game views should be displayed
 	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
 } connstate_t;
-
-// font support 
-
-#define GLYPH_START 0
-#define GLYPH_END 255
-#define GLYPH_CHARSTART 32
-#define GLYPH_CHAREND 127
-#define GLYPHS_PER_FONT GLYPH_END - GLYPH_START + 1
-typedef struct {
-  int height;       // number of scan lines
-  int top;          // top of glyph in buffer
-  int bottom;       // bottom of glyph in buffer
-  int pitch;        // width for copying
-  int xSkip;        // x adjustment
-  int imageWidth;   // width of actual image
-  int imageHeight;  // height of actual image
-  float s;          // x offset in image where glyph starts
-  float t;          // y offset in image where glyph starts
-  float s2;
-  float t2;
-  qhandle_t glyph;  // handle to the shader with the glyph
-  char shaderName[32];
-} glyphInfo_t;
-
-typedef struct {
-  glyphInfo_t glyphs [GLYPHS_PER_FONT];
-  float glyphScale;
-  char name[MAX_QPATH];
-} fontInfo_t;
 
 #define Square(x) ((x)*(x))
 
