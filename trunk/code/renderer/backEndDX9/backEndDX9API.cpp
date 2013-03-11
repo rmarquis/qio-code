@@ -488,7 +488,12 @@ public:
 			}
 		} else if(stageType == ST_LIGHTMAP) {
 			// bind lightmap to FIRST texture slot
-			pDev->SetTexture(0,(IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+			if(lastLightmap) {
+				pDev->SetTexture(0,(IDirect3DTexture9 *)lastLightmap->getInternalHandleV());
+			} else {
+				pDev->SetTexture(0,0);
+			}
+			// disable second slot lightmap
 			disableLightmap();
 
 #if 1
