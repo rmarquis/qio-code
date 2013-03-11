@@ -110,6 +110,7 @@ void G_RunPhysics();
 void G_LoadMap(const char *mapName);
 void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *ch, vec3_t newPos);
 class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
+void BT_SetCharacterEntity(class btKinematicCharacterController *ch, class ModelEntity *e);
 bool G_TryToJump(btKinematicCharacterController *ch);
 bool BT_IsCharacterOnGround(btKinematicCharacterController *ch);
 void BT_FreeCharacter(class btKinematicCharacterController *c);

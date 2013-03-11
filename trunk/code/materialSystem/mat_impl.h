@@ -260,6 +260,11 @@ public:
 	virtual bool isMirrorMaterial() const {
 		return this->bMirrorMaterial;
 	}
+	bool hasPolygonOffset() const {
+		if(polygonOffset == 0.f)
+			return false;
+		return true;
+	}
 	inline mtrIMPL_c *getHashNext() const {
 		return hashNext;
 	}
@@ -317,7 +322,12 @@ public:
 
 				// plasma projectiles must be drawn after q3dm0 world glass panels and decals
 				if(this->getFirstStageOfType(ST_LIGHTMAP) == 0) {
-					return DCS_BLEND3; // 3b # priority 
+					// plasma projectiles must be drawn after plasma decals...
+					if(this->hasPolygonOffset()) {
+						return DCS_BLEND3; // 3b # priority 
+					} else {
+						return DCS_BLEND4; // 3c # priority 
+					}
 				} else {
 					return DCS_BLEND2; // 3a # priority 
 				}

@@ -9,11 +9,14 @@ struct explosionInfo_s {
 	// clientside explosion effect def
 	float spriteRadius; // this is the radius of explosion sprite
 	str materialName;
+	str explosionMark;
+	float markRadius;
 
 	explosionInfo_s() {
 		radius = 0.f;
 		force = 0.f;
 		spriteRadius = 0.f;
+		markRadius = 0.f;
 	}
 };
 

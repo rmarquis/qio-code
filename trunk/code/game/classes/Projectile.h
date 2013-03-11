@@ -61,6 +61,12 @@ public:
 	void setExplosionForce(float newExplosionForce) {
 		this->explosionInfo.force = newExplosionForce;
 	}
+	void setExplosionMarkMaterial(const char *matName) {
+		this->explosionInfo.explosionMark = matName;
+	}
+	void setExplosionMarkRadius(float newExplosionMarkRadius) {
+		this->explosionInfo.markRadius = newExplosionMarkRadius;
+	}
 
 	virtual void runFrame();
 };

@@ -73,6 +73,8 @@ void Q3Weapon::doWeaponAttack() {
 		plasma->setExplosionDelay(500);
 		plasma->setOrigin(owner->getEyePos()+forward*32);
 		plasma->setLinearVelocity(forward*500.f);
+		plasma->setExplosionMarkMaterial("gfx/damage/plasma_mrk");
+		plasma->setExplosionMarkRadius(16.f);
 	} else if(q3WeaponType == EQ3WPN_ROCKETLAUNCHER) {
 		Projectile *rocket = new Projectile;
 		rocket->setRenderModel("models/ammo/rocket/rocket.md3");
@@ -84,6 +86,8 @@ void Q3Weapon::doWeaponAttack() {
 		rocket->setExplosionSpriteRadius(64);
 		rocket->setExplosionSpriteMaterial("rocketExplosion");
 		rocket->setExplosionForce(2000);
+		rocket->setExplosionMarkMaterial("gfx/damage/burn_med_mrk");
+		rocket->setExplosionMarkRadius(32.f);
 		rocket->setOrigin(owner->getEyePos()+forward*32);
 		rocket->setLinearVelocity(forward*500.f);
 	} else if(q3WeaponType == EQ3WPN_SHOTGUN) {

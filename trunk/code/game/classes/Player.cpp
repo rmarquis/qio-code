@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
+#include <api/serverAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 
@@ -44,6 +45,7 @@ enum sharedGameAnim_e {
 	SGA_WALK_BACKWARDS,
 	SGA_RUN_BACKWARDS,
 	SGA_JUMP,
+	SGA_DEATH,
 };
 const char *sharedGameAnimNames[] = {
 	"bad",
@@ -53,6 +55,7 @@ const char *sharedGameAnimNames[] = {
 	"walk_backwards",
 	"run_backwards",
 	"jump",
+	"death", // FIXME
 };
 class playerAnimControllerAPI_i {
 public:
@@ -91,6 +94,8 @@ public:
 			ctrlEnt->setInternalAnimationIndex(LEGS_RUN);
 		} else if(anim == SGA_WALK_BACKWARDS) {
 			ctrlEnt->setInternalAnimationIndex(LEGS_WALK);
+		} else if(anim == SGA_DEATH) {
+			ctrlEnt->setInternalAnimationIndex(BOTH_DEATH1);
 		}
 	}
 
@@ -221,6 +226,7 @@ void Player::enableCharacterController() {
 	float r = c->getRadius();
 	BT_FreeCharacter(this->characterController);
 	this->characterController = BT_CreateCharacter(20.f, this->ps.origin+characterControllerOffset, h, r);
+	BT_SetCharacterEntity(this->characterController,this);
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
@@ -567,6 +573,16 @@ void Player::dropCurrentWeapon() {
 	ps.curWeaponEntNum = ENTITYNUM_NONE;
 	ps.customViewRModelIndex = 0;	
 }
+
+void Player::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {
+	// apply hit damage
+	this->damage(damageCount);
+	// add clientside effect		
+	g_server->SendServerCommand(
+		-1,va("doExplosionEffect %f %f %f %f %s",hitPosWorld.x,hitPosWorld.y,hitPosWorld.z,
+		32.f,"bloodExplosion"));
+}
+
 void Player::onDeath() {
 	if(health > 0) {
 		health = -1; // ensure that this entity is dead
@@ -576,4 +592,5 @@ void Player::onDeath() {
 		this->dropCurrentWeapon();
 	}
 	this->disableCharacterController();
+	animHandler->setAnimBoth(SGA_DEATH);
 }

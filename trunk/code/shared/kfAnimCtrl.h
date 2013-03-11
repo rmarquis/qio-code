@@ -34,11 +34,13 @@ struct kfAnimCtrl_s {
 	float curTime; // in seconds
 	const q3AnimDef_s *animDef;
 	singleAnimLerp_s curLerp;
+	u32 absFrame;
 
 	kfAnimCtrl_s() {
 		curTime = 0;
 		animDef = 0;
 		prevTimeMsec = 0;
+		absFrame = 0;
 	}
 	void setAnim(u32 animIndex, const class rModelAPI_i *model) {
 		const q3PlayerModelAPI_i *q3model = model->getQ3PlayerModelAPI();
@@ -48,6 +50,7 @@ struct kfAnimCtrl_s {
 		}
 		animDef = newAnimDef;
 		curTime = 0;
+		absFrame = 0;
 		//prevTimeMsec = curGlobalTimeMSec;
 	}
 	void runAnimController(int curGlobalTimeMSec) {
@@ -61,23 +64,43 @@ struct kfAnimCtrl_s {
 		prevTimeMsec = curGlobalTimeMSec;
 		float deltaTimeSec = float(deltaMsec) * 0.001f;
 		curTime += deltaTimeSec;
-		float t = curTime;
-		u32 first = 0;
-		while(t > animDef->frameTime) {
-			t -= animDef->frameTime;
-			first ++;
-			if(first == animDef->numFrames) {
-				first = 0;
-				curTime -= animDef->totalTime;
+		// set absFrame
+		while(curTime > animDef->frameTime) {
+			curTime -= animDef->frameTime;
+			absFrame++;
+		}
+		// set frame and nextFrame
+		u32 frame, nextFrame;
+		if(absFrame < animDef->numFrames) {
+			frame = absFrame;
+			nextFrame = frame + 1;
+			if(nextFrame >= animDef->numFrames) {
+				if(animDef->loopingFrames) {
+					nextFrame = 0; // FIXME! use loopingFrames value
+				} else {
+					nextFrame = frame;
+				}
+			}
+		} else {
+			if(animDef->loopingFrames) {
+				absFrame %= animDef->numFrames;
+				frame = absFrame;
+				nextFrame = frame + 1;
+				if(nextFrame >= animDef->numFrames) {
+					if(animDef->loopingFrames) {
+						nextFrame = 0; // FIXME! use loopingFrames value
+					} else {
+						nextFrame = frame;
+					}
+				}
+			} else {
+				frame = animDef->numFrames-1;
+				nextFrame = animDef->numFrames-1;
 			}
 		}
-		u32 next = first + 1;
-		if(next >= animDef->numFrames) {
-			next = 0;
-		}
-		curLerp.from = animDef->firstFrame + first;
-		curLerp.to = animDef->firstFrame + next;
-		curLerp.frac = t / animDef->frameTime;
+		curLerp.from = animDef->firstFrame + frame;
+		curLerp.to = animDef->firstFrame + nextFrame;
+		curLerp.frac = curTime / animDef->frameTime;
 		//g_core->Print("From %i, to %i, frac %f\n",curLerp.from,curLerp.to,curLerp.frac);
 	}
 };

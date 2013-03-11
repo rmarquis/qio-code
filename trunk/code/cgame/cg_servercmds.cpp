@@ -227,6 +227,41 @@ static void CG_DoRailgunEffect() {
 		}
 	}
 }
+void CG_CreateDecal(const vec3_c &p, const vec3_c &dir, float radius, const char *matName) {
+	trace_c tr;
+	tr.setupRay(p,dir*100000.f);
+	if(CG_RayTrace(tr,-1) == false) {
+		CG_Printf("CG_DoRailgunEffect: no hit\n");
+		return; // no hit
+	}
+	mtrAPI_i *decalMaterial = g_ms->registerMaterial(matName);
+	centity_s *hit = tr.getHitCGEntity();
+	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+		CG_Printf("CG_CreateDecal: creating world decal\n");
+		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		return;
+	} else {
+		CG_Printf("CG_CreateDecal: creating entity decal\n");
+		if(hit->rEnt) {
+			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		} else {
+			CG_Printf("CG_CreateDecal: hit centity has NULL rEnt\n");
+		}
+	}
+}
+static void CG_CreateDecalCommand() {
+	vec3_c p, d;
+	p.x = atof(CG_Argv(1));
+	p.y = atof(CG_Argv(2));
+	p.z = atof(CG_Argv(3));
+	d.x = atof(CG_Argv(4));
+	d.y = atof(CG_Argv(5));
+	d.z = atof(CG_Argv(6));
+	float radius = atof(CG_Argv(7));
+	const char *matName = CG_Argv(8);
+	CG_CreateDecal(p,d,radius,matName);
+}
+
 
 /*
 =================
@@ -263,6 +298,9 @@ static void CG_ServerCommand( void ) {
 		return;
 	} else if ( !strcmp( cmd, "doRailgunEffect" ) ) {
 		CG_DoRailgunEffect();
+		return;
+	} else if ( !strcmp( cmd, "createDecal" ) ) {
+		CG_CreateDecalCommand();
 		return;
 	}
 

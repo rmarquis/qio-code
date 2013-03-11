@@ -631,6 +631,9 @@ btKinematicCharacterController* BT_CreateCharacter(float stepHeight,
 	dynamicsWorld->addCharacter(character);
 	return character;
 }
+void BT_SetCharacterEntity(class btKinematicCharacterController *ch, class ModelEntity *e) {
+	ch->getGhostObject()->setUserPointer(e);
+}
 #include <shared/bspPhysicsDataLoader.h>
 bspPhysicsDataLoader_c *g_bspPhysicsLoader;
 cmSurface_c g_worldSurface;

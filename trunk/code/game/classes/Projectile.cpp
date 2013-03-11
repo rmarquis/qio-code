@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Projectile.cpp
 #include "Projectile.h"
 #include "../g_local.h"
+#include <api/serverAPI.h>
 #include <shared/trace.h>
 
 DEFINE_CLASS(Projectile, "ModelEntity");
@@ -49,6 +50,13 @@ void Projectile::runFrame() {
 			tr.getHitEntity()->applyPointImpulse(linearVelocity,tr.getHitPos());
 		}
 		G_Explosion(this->getOrigin(), this->explosionInfo);
+		// add clientside mark (decal)
+		if(explosionInfo.explosionMark.length()) {
+			vec3_c pos = tr.getHitPos();
+			vec3_c dir = linearVelocity.getNormalized();
+			g_server->SendServerCommand(-1,va("createDecal %f %f %f %f %f %f %f %s",pos.x,pos.y,pos.z,dir.x,dir.y,dir.z,
+				explosionInfo.markRadius,explosionInfo.explosionMark.c_str()));
+		}
 		collisionTime = level.time;
 		this->linearVelocity.clear();
 		return;

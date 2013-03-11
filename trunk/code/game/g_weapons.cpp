@@ -45,7 +45,7 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	if(tr.hasHit()) {
 		BaseEntity *h = tr.getHitEntity();
 		if(h) {
-			h->onBulletHit(tr.getHitPos(), dir, 100);
+			h->onBulletHit(tr.getHitPos(), dir, 10);		
 		}
 	}
 } 

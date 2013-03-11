@@ -160,6 +160,10 @@ public:
 		return true;
 	}
 	void initDX9State() {
+		if(pDev == 0) {
+			g_core->RedWarning("rbDX9_c::initDX9State: pDev is NULL\n");
+			return;
+		}
 		pDev->SetRenderState(D3DRS_ZENABLE, true);
 		pDev->SetRenderState(D3DRS_AMBIENT,RGB(255,255,255));
 		pDev->SetRenderState(D3DRS_LIGHTING,false);
@@ -1053,6 +1057,11 @@ public:
 
 		// create Dx9 device
 		pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+		if(pD3D == 0) {
+			g_core->RedWarning("rbDX9_c::initDX9State: Direct3DCreate9 failed\n");
+			// TODO: return error code
+			return;
+		}
 
 		D3DPRESENT_PARAMETERS d3dpp;
 		ZeroMemory(&d3dpp, sizeof(d3dpp));
@@ -1074,6 +1083,11 @@ public:
 
 		pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
 			D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDev);
+		if(pDev == 0) {
+			g_core->RedWarning("rbDX9_c::initDX9State: pD3D->CreateDevice failed\n");
+			// TODO: return error code
+			return;
+		}
 
 		// get caps
 		ZeroMemory( &devCaps, sizeof(devCaps) );
@@ -1081,6 +1095,7 @@ public:
 		if(FAILED(getCapsResult)) {
 			g_core->RedWarning("rbDX9_c::init: pDev->GetDeviceCaps FAILED\n");
 		} else {
+
 		}
 		ShowWindow(hWnd,SW_SHOW);
 		SetForegroundWindow(hWnd);
@@ -1094,11 +1109,14 @@ public:
 		boundShader = 0;
 		bHasVertexColors = false;
 		 
-
 		initDX9State();
 
-		// This depends on SDL_INIT_VIDEO, hence having it here
-		g_inputSystem->IN_Init();
+		if(g_inputSystem == 0) {
+			g_core->RedWarning("rbDX9_c::initDX9State: g_inputSystem is NULL\n");
+		} else {
+			// This depends on SDL_INIT_VIDEO, hence having it here
+			g_inputSystem->IN_Init();
+		}
 	}
 	virtual void shutdown(bool destroyWindow) {
 		AUTOCVAR_UnregisterAutoCvars();

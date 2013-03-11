@@ -136,8 +136,14 @@ static void RF_TestExplosion_f() {
 	str matName;
 	float radius;
 
-	// Quake3 rocket explosion material
-	matName = "rocketExplosion";
+	if(g_core->Argc() == 0) {
+		// Quake3 rocket explosion material
+		matName = "rocketExplosion";
+		// Quake3 flesh hit blood explosion
+		//matName = "bloodExplosion";
+	} else {
+		matName = g_core->Argv(1);
+	}
 	radius = 32.f;
 
 	vec3_c p = rf_camera.getOrigin() + rf_camera.getForward() * 128.f;
