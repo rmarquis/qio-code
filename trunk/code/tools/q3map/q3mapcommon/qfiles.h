@@ -304,17 +304,19 @@ typedef struct {
 /*
 ==============================================================================
 
-  .BSP file format
+  Qio internal .BSP file format
 
 ==============================================================================
 */
 
+#define BSP_IDENT	(('!'<<24)+('O'<<16)+('I'<<8)+'Q')
+		// little-endian "QIO!"
 
-#define BSP_IDENT	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
-		// little-endian "IBSP"
+// Vodin: Qio bsp version
+#define BSP_VERSION			1
 
-#define BSP_VERSION			46
-
+// Revision log:
+// rev 1: added POINTS lump and AREAPORTALS lump
 
 // there shouldn't be any problem with increasing these values at the
 // expense of more memory allocation in the utilities
@@ -325,6 +327,10 @@ typedef struct {
 #define	MAX_MAP_SHADERS		0x400
 
 #define	MAX_MAP_AREAS		0x100	// MAX_MAP_AREA_BYTES in q_shared must match!
+// assume three portals per area (there can be much more)
+#define MAX_MAP_AREAPORTALS MAX_MAP_AREAS*3
+// assume 4 points per portal
+#define MAX_MAP_POINTS		MAX_MAP_AREAPORTALS*4
 #define	MAX_MAP_FOGS		0x100
 #define	MAX_MAP_PLANES		0x20000
 #define	MAX_MAP_NODES		0x20000
@@ -381,7 +387,10 @@ typedef struct {
 #define	LUMP_LIGHTMAPS		14
 #define	LUMP_LIGHTGRID		15
 #define	LUMP_VISIBILITY		16
-#define	HEADER_LUMPS		17
+// Vodin: added for Qio .bsp version 1
+#define	LUMP_POINTS			17
+#define	LUMP_AREAPORTALS	18
+#define	HEADER_LUMPS		19
 
 typedef struct {
 	int			ident;
@@ -485,5 +494,13 @@ typedef struct {
 	int			patchHeight;
 } dsurface_t;
 
+// Vodin: areaPortal struct for QioBSP version 1
+typedef struct {
+	vec3_t bounds[2];
+	int areas[2];
+	int planeNum;
+	int firstPoint;
+	int numPoints;
+} dareaPortal_t;
 
 #endif

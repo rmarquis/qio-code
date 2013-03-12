@@ -78,6 +78,12 @@ extern	dsurface_t	drawSurfaces[MAX_MAP_DRAW_SURFS];
 extern	int			numFogs;
 extern	dfog_t		dfogs[MAX_MAP_FOGS];
 
+extern	int				numAreaPortals;
+extern	dareaPortal_t	dareaPortals[MAX_MAP_AREAPORTALS];
+
+extern	int			numDPoints;
+extern	vec3_t		dpoints[MAX_MAP_POINTS];
+
 void	LoadBSPFile( const char *filename );
 void	WriteBSPFile( const char *filename );
 void	PrintBSPFileSizes( void );

@@ -307,6 +307,7 @@ void SetBrushContents( bspbrush_t *b ) {
 		c2 = s->contents;
 		if (c2 != contents) {
 			mixed = qtrue;
+			contents |= s->contents;
 		}
 
 		allFlags |= s->surfaceFlags;
@@ -343,7 +344,7 @@ void SetBrushContents( bspbrush_t *b ) {
 		b->detail = qfalse;
 	}
 
-	if ( contents & CONTENTS_TRANSLUCENT ) {
+	if ( (contents & CONTENTS_TRANSLUCENT) || (contents & CONTENTS_AREAPORTAL)) {
 		b->opaque = qfalse;
 	} else {
 		b->opaque = qtrue;

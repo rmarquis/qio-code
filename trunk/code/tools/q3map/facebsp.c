@@ -76,6 +76,7 @@ int SelectSplitPlaneNum( node_t *node, bspface_t *list ) {
 
 	hintsplit = qfalse;
 	// if it is crossing a 1k block boundary, force a split
+#if 0
 	for ( i = 0 ; i < 2 ; i++ ) {
 		dist = BLOCK_SIZE * ( floor( node->mins[i] / BLOCK_SIZE ) + 1 );	
 		if ( node->maxs[i] > dist ) {
@@ -85,6 +86,7 @@ int SelectSplitPlaneNum( node_t *node, bspface_t *list ) {
 			return planenum;
 		}
 	}
+#endif
 
 	// pick one of the face planes
 	bestValue = -99999;
@@ -104,7 +106,7 @@ int SelectSplitPlaneNum( node_t *node, bspface_t *list ) {
 		front = 0;
 		back = 0;
 		for ( check = list ; check ; check = check->next ) {
-			if ( check->planenum == split->planenum ) {
+			if ( check->planenum == split->planenum && check->priority == split->priority ) {
 				facing++;
 				check->checked = qtrue;	// won't need to test this plane again
 				continue;
@@ -331,6 +333,14 @@ bspface_t	*MakeStructuralBspFaceList( bspbrush_t *list ) {
 			if (s->surfaceFlags & SURF_HINT) {
 				//f->priority = HINT_PRIORITY;
 				f->hint = qtrue;
+			}	
+			if(s->contents & CONTENTS_AREAPORTAL) {
+				f->priority = 99999;
+			} else {
+				// ignore non-areaPortal sides of areaPortal brushes
+				//if(b->contents & CONTENTS_AREAPORTAL) {
+				//	continue;
+				//}
 			}
 			flist = f;
 		}
@@ -369,6 +379,14 @@ bspface_t	*MakeVisibleBspFaceList( bspbrush_t *list ) {
 			if (s->surfaceFlags & SURF_HINT) {
 				//f->priority = HINT_PRIORITY;
 				f->hint = qtrue;
+			}	
+			if(s->contents & CONTENTS_AREAPORTAL) {
+				f->priority = 99999;
+			} else {
+				// ignore non-areaPortal sides of areaPortal brushes
+				//if(b->contents & CONTENTS_AREAPORTAL) {
+				//	continue;
+				//}
 			}
 			flist = f;
 		}

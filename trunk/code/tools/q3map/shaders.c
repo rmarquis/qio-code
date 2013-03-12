@@ -317,6 +317,13 @@ shaderInfo_t	*ShaderInfoForShader( const char *shaderName ) {
 	si = AllocShaderInfo();
 	strcpy( si->shader, shader );
 
+	// build in materials
+	// (in case that .shader/.mtr files are missing)
+	if(!stricmp(shader,"textures/common/areaportal")) {
+		si->contents = CONTENTS_AREAPORTAL;
+	} else if(!stricmp(shader,"textures/common/caulk")) {
+		si->surfaceFlags |= SURF_NODRAW;
+	}
 	LoadShaderImage( si );
 
 	return si;

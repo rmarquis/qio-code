@@ -80,6 +80,12 @@ dsurface_t	drawSurfaces[MAX_MAP_DRAW_SURFS];
 int			numFogs;
 dfog_t		dfogs[MAX_MAP_FOGS];
 
+int				numAreaPortals;
+dareaPortal_t	dareaPortals[MAX_MAP_AREAPORTALS];
+
+int			numDPoints;
+vec3_t		dpoints[MAX_MAP_POINTS];
+
 //=============================================================================
 
 /*
@@ -232,6 +238,8 @@ void	LoadBSPFile( const char *filename ) {
 
 	numGridPoints = CopyLump( header, LUMP_LIGHTGRID, gridData, 8 );
 
+	numAreaPortals = CopyLump( header, LUMP_AREAPORTALS, dareaPortals, sizeof(dareaPortal_t) );
+	numDPoints = CopyLump( header, LUMP_POINTS, dpoints, sizeof(vec3_t) );
 
 	free( header );		// everything has been copied out
 		
@@ -296,6 +304,8 @@ void	WriteBSPFile( const char *filename ) {
 	AddLump( bspfile, header, LUMP_ENTITIES, dentdata, entdatasize );
 	AddLump( bspfile, header, LUMP_FOGS, dfogs, numFogs * sizeof(dfog_t) );
 	AddLump( bspfile, header, LUMP_DRAWINDEXES, drawIndexes, numDrawIndexes * sizeof(drawIndexes[0]) );
+	AddLump( bspfile, header, LUMP_POINTS, dpoints, numDPoints * sizeof(vec3_t) );
+	AddLump( bspfile, header, LUMP_AREAPORTALS, dareaPortals, numAreaPortals * sizeof(dareaPortal_t) );
 	
 	fseek (bspfile, 0, SEEK_SET);
 	SafeWrite (bspfile, header, sizeof(dheader_t));

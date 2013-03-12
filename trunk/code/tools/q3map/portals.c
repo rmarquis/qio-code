@@ -708,6 +708,21 @@ void FloodAreas_r (node_t *node)
 	}
 }
 
+//qboolean Node_HasAnyPassablePortal(node_t *node) {
+//	portal_t *p;
+//	int s;
+//
+//	for (p=node->portals ; p ; p = p->next[s])
+//	{
+//		s = (p->nodes[1] == node);
+//
+//		if ( !Portal_Passable(p) )
+//			continue;
+//
+//		return qtrue;
+//	}
+//	return qfalse;
+//}
 
 /*
 =============
@@ -734,6 +749,11 @@ void FindAreas_r (node_t *node)
 
 	if (node->area != -1)
 		return;		// allready got it
+
+	// if node is cut off from world...
+	// FIXME: this should be fixed before FindAreas_r
+	//if(Node_HasAnyPassablePortal(node) == qfalse)
+	//	return; // dont create "ghost" areas
 
 	FloodAreas_r (node);
 	c_areas++;

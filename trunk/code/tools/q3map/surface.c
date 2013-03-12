@@ -407,6 +407,10 @@ void ClipSidesIntoTree( entity_t *e, tree_t *tree ) {
 			if ( si->surfaceFlags & SURF_NODRAW ) {
 				continue;
 			}
+			// don't create faces for areaportals
+			if ( si->contents & CONTENTS_AREAPORTAL ) {
+				continue;
+			}
 
 			// always use the original quad winding for auto sprites
 			if ( side->shaderInfo->autosprite ) {

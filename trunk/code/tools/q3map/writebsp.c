@@ -321,6 +321,12 @@ void EmitBrushes ( bspbrush_t *brushes ) {
 		if ( numbrushes == MAX_MAP_BRUSHES ) {
 			Error( "MAX_MAP_BRUSHES" );
 		}
+		// never write areaPortal brushes to bsp;
+		// they are always non-solid
+		if(b->contents & CONTENTS_AREAPORTAL) {
+			continue;
+		}
+
 		b->outputNumber = numbrushes;
 		db = &dbrushes[numbrushes];
 		numbrushes++;
@@ -395,8 +401,133 @@ void BeginModel( void ) {
 	EmitBrushes( e->brushes );
 }
 
+void EmitPortals_r(node_t * node, node_t *headnode)
+{
+	bspbrush_t        *b;
+	int i,s;
+	portal_t *p;
+	portal_t *ap;
+	winding_t *pw;
+	vec3_t checkPoint;
+	plane_t *apPlane;
 
+	if(node->planenum != PLANENUM_LEAF)
+	{
+		EmitPortals_r(node->children[0],headnode);
+		EmitPortals_r(node->children[1],headnode);
+		return;
+	}
 
+	if(node->opaque)
+		return;
+
+	if(node->cluster != -1)
+		if(node->area == -1)
+			printf("EmitPortals_r: cluster %d has area set to -1\n", node->cluster);
+	if(node->areaportal)
+	{
+		b = node->brushlist->original;
+
+		// check if the areaportal touches two areas
+		if(b->portalareas[0] == -1 || b->portalareas[1] == -1) {
+			printf("EmitPortals_r: areaportal brush %i doesn't touch two areas\n", b->brushnum);
+			return;
+		}
+
+#if 0
+		// it doesnt work, the ap winding does not match with real portal winding
+		ap = 0;
+		for(p = node->portals; p; p = p->next[s]) {
+			s = (p->nodes[1] == node);
+
+			if(p->onnode == node->parent) {
+				if(ap) {
+					// this should never happen,
+					// there cant be two different portals on single node?
+					printf("Areaportal already found!\n");
+				}
+				ap = p;
+			}
+		}
+		if(ap) {
+			pw = ap->winding;
+			apPlane = &ap->plane;
+#else
+		pw = 0;
+		apPlane = 0;
+		// let's assume that areaPortal brushes has only one areaPortal side
+		for(i = 0; i < b->numsides; i++) {
+			side_t *s = &b->sides[i];
+			if((s->contents & CONTENTS_AREAPORTAL) == qfalse) {
+				continue;
+			}
+			pw = s->winding;
+			apPlane = &mapplanes[s->planenum];
+			if(pw == 0) {
+				pw = s->visibleHull;
+			}
+		}
+		{
+#endif
+			if(pw == 0) {
+				printf("EmitPortals_r: areaPortal %i has null winding\n",0);
+				return;
+			}
+			if(numDPoints + pw->numpoints >= MAX_MAP_POINTS) {
+				Error("MAX_MAP_POINTS (increase this macro and recompile or remove some areaportals\n");
+				return;
+			}
+			if(numAreaPortals + 1 >= MAX_MAP_AREAPORTALS) {
+				Error("MAX_MAP_AREAPORTALS (increase this macro and recompile or remove some areaportals\n");
+				return;
+			}
+			printf("EmitPortals_r: emiting portal %i\n",0);
+			ClearBounds(dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
+			for(i = 0; i < pw->numpoints; i++) {
+				VectorCopy(pw->p[i],dpoints[numDPoints+i]);
+				AddPointToBounds(pw->p[i],dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
+			}		
+			// extend areaPortal bounds a little, 
+			// otherwise there might be some diseapperaing 
+			// areas while camera eye is inside portal winding
+			for(i = 0; i < 3; i++) {
+				const float pEps = 1.f;
+				dareaPortals[numAreaPortals].bounds[0][i] += pEps;
+				dareaPortals[numAreaPortals].bounds[1][i] -= pEps;
+			}
+#if 1
+			WindingCenter(pw,checkPoint);
+			VectorMA(checkPoint,1,apPlane->normal,checkPoint);
+			node = NodeForPoint(headnode,checkPoint);
+#else
+			
+#endif
+			if(node->area == b->portalareas[0]){
+				dareaPortals[numAreaPortals].areas[0] = b->portalareas[0];
+				dareaPortals[numAreaPortals].areas[1] = b->portalareas[1];
+			} else if(node->area = b->portalareas[1]) {
+				dareaPortals[numAreaPortals].areas[0] = b->portalareas[1];
+				dareaPortals[numAreaPortals].areas[1] = b->portalareas[0];
+			} else {
+				Error("Node area mismatch\n");
+			}
+			dareaPortals[numAreaPortals].planeNum = FindFloatPlane(apPlane->normal,apPlane->dist);
+			dareaPortals[numAreaPortals].firstPoint = numDPoints;
+			dareaPortals[numAreaPortals].numPoints = pw->numpoints;
+			numAreaPortals ++;
+			numDPoints += pw->numpoints;
+			return;
+		}
+		printf("EmitPortals: no matching portal found!\n");
+	}
+}
+
+static void EmitPortals (node_t *headnode) {
+	if (nummodels)
+		return;		// only for world model
+
+	EmitPortals_r(headnode,headnode);
+}
 
 /*
 ==================
@@ -410,6 +541,9 @@ void EndModel( node_t *headnode ) {
 
 	mod = &dmodels[nummodels];
 	EmitDrawNode_r (headnode);
+	// Vodin: areaPortal points, areas and planes (Doom3 style)
+	EmitPortals(headnode);
+
 	mod->numSurfaces = numDrawSurfaces - mod->firstSurface;
 	mod->numBrushes = numbrushes - mod->firstBrush;
 
