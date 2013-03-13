@@ -1225,6 +1225,7 @@ bool rBspTree_c::loadQioAreaPortals(u32 lumpNum) {
 	}
 	u32 numAreaPortals = vl.fileLen / sizeof(dareaPortal_t);
 	areaPortals.resize(numAreaPortals);
+	areaPortalFrustums.resize(numAreaPortals);
 	memcpy(areaPortals.getArray(),h->getLumpData(lumpNum),vl.fileLen);
 	for(u32 i = 0; i < areaPortals.size(); i++) {
 		const dareaPortal_t &p = areaPortals[i];
@@ -1558,7 +1559,7 @@ void rBspTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) c
 			nodeNum = n.children[1];
 		} else {
 			nodeNum = n.children[0];
-			boxSurfaces_r(bb,out,n.children[1]);
+			boxAreas_r(bb,out,n.children[1]);
 		}
 	}
 	int leafNum = -nodeNum - 1;
@@ -1577,9 +1578,11 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 		return;
 	bspArea_c *ar = &areas[areaNum];
 	frustumAreaBits.set(areaNum,true);
+	ar->portalVisCount = this->portalVisCount;
 
 	for(u32 i = 0; i < ar->portalNumbers.size(); i++) {
-		dareaPortal_t *p = &areaPortals[ar->portalNumbers[i]];
+		u32 portalNumber = ar->portalNumbers[i];
+		dareaPortal_t *p = &areaPortals[portalNumber];
 		if(p == prevPortal) {
 			continue;
 		}
@@ -1610,17 +1613,19 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 			adjusted.adjustFrustum(fr,rf_camera.getOrigin(),points.getArray()+p->firstPoint,p->numPoints,pl);
 		}
 
-		//if(p->visCount != this->visCount) {
-		//	p->visCount = this->visCount;
-		//	p->visitCount = 0;
-		//} else {
-		//	if(p->visitCount == MAX_PORTAL_VISIT_COUNT) {
-		//		g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
-		//		continue;
-		//	}
-		//}
-	//	p->lastFrustum[p->visitCount] = adjusted;
-		//p->visitCount++;
+		bspPortalData_c &pb = areaPortalFrustums[portalNumber];
+		if(pb.portalVisCount != this->portalVisCount) {
+			pb.portalVisCount = this->portalVisCount;
+			pb.visitCount = 0;
+		} else {
+			if(pb.visitCount == MAX_PORTAL_VISIT_COUNT) {
+				g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
+				continue;
+			}
+		}
+		// save the frustum for latter culling
+		pb.lastFrustum[pb.visitCount] = adjusted;
+		pb.visitCount++;
 
 		if(p->areas[0] == areaNum) {
 			markAreas_r(p->areas[1],adjusted,p);
@@ -1632,6 +1637,7 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 void rBspTree_c::markAreas() {
 	if(areaPortals.size() == 0)
 		return;
+	this->portalVisCount++;
 	int camLeaf = pointInLeaf(rf_camera.getPVSOrigin());
 	if(camLeaf < 0) {
 		return;
@@ -1646,11 +1652,12 @@ void rBspTree_c::updateVisibility() {
 	int camCluster, camArea;
 	if(camLeaf < 0) {
 		camCluster = -1;
-		camLeaf = -1;
+		camArea = -1;
 	} else {
 		camCluster = leaves[camLeaf].cluster;
 		camArea = leaves[camLeaf].area;
 	}
+	lastArea = camArea;
 	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
 		if(rf_bsp_rebuildBatchesOnAPVisChange.getInt()) {
 			if(prevFrustumAreaBits.compare(frustumAreaBits) == false) {
@@ -1953,6 +1960,46 @@ int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 	}
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
 	return 0; // TODO: return valid decal handle?
+}
+bool rBspTree_c::cullBoundsByPortals(const aabb &absBB) {
+	arraySTD_c<u32> areaNums;
+	boxAreas(absBB,areaNums);
+	for(u32 i = 0; i < areaNums.size(); i++) {
+		u32 areaNum = areaNums[i];
+		if(areaNum == lastArea) {
+			return false; // didnt cull
+		}
+	}
+	for(u32 i = 0; i < areaNums.size(); i++) {
+		u32 areaNum = areaNums[i];
+		if(areaNum == lastArea) {
+			continue;
+		}
+		if(areaNum >= areas.size()) {
+			g_core->RedWarning("rBspTree_c::cullBoundsByPortals: areaNum >= areas.size() - ignored.\n");
+			continue;
+		}
+		bspArea_c *ar = &areas[areaNum];
+		if(ar->portalVisCount == this->portalVisCount) {
+			//printf("Checking area %i with %i portals\n",areaNum,ar->portals.size());
+			for(u32 j = 0; j < ar->portalNumbers.size(); j++) {
+				u32 portalNum = ar->portalNumbers[j];
+				bspPortalData_c &p = this->areaPortalFrustums[portalNum];
+				if(p.portalVisCount == this->portalVisCount) 
+				{
+					//printf("Portal visicount %i\n",p->visitCount);
+					for(u32 k = 0; k < p.visitCount; k++) {
+						if(p.lastFrustum[k].cull(absBB) != CULL_OUT) {
+							//printf("Area %i ent visible\n",areaNum);
+							return false; // didnt cull
+						}
+					}
+				}
+			}
+		}
+	}
+	// entity is not visible by player (culled by portals)
+	return true;
 }
 void rBspTree_c::setWorldAreaBits(const byte *bytes, u32 numBytes) {
 	if(areaBits.getSizeInBytes() == numBytes && !memcmp(areaBits.getArray(),bytes,numBytes)) {

@@ -198,6 +198,13 @@ bool RF_CullBoundsByPortals(const aabb &absBB) {
 	if(r_procTree) {
 		return r_procTree->cullBoundsByPortals(absBB);
 	}
+	if(r_bspTree) {
+		// our own Qio BSP format has areaportals data
+		// NOTE: it seems that areaPortals data is stored 
+		// in Call Of Duty BSPs as well, but I havent fully 
+		// reverse-enginered it yet...
+		return r_bspTree->cullBoundsByPortals(absBB);
+	}
 	return false;
 }
 void RF_WorldDebugDrawing() {

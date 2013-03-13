@@ -28,6 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../cameraDef.h"
 #include <shared/array.h>
 
+// for Doom3 .proc and QioBSP areaPortals
+#define MAX_PORTAL_VISIT_COUNT 4
+
 // rf_main.cpp
 void RF_InitMain();
 void RF_Draw3DView();

@@ -31,8 +31,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/cmWinding.h>
 #include <math/frustumExt.h>
 
-#define MAX_PORTAL_VISIT_COUNT 4
-
 class procPortal_c {
 friend class procTree_c;
 	int areas[2];

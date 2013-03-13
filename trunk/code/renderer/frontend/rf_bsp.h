@@ -27,10 +27,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/typedefs.h>
 #include <math/aabb.h>
+#include <math/frustumExt.h> // for new BSP-areaPortals system (QioBSP)
 #include "../rVertexBuffer.h"
 #include "../rIndexBuffer.h"
 #include <fileFormats/bspFileFormat.h>
 #include <shared/bitSet.h>
+#include "rf_local.h" // MAX_PORTAL_VISIT_COUNT
 
 enum bspSurfaceType_e {
 	BSPSF_PLANAR,
@@ -133,6 +135,15 @@ struct bspPlane_s {
 class bspArea_c {
 friend class rBspTree_c;
 	arraySTD_c<u16> portalNumbers;
+	int portalVisCount;
+};
+class bspPortalData_c {
+friend class rBspTree_c;
+	int portalVisCount;
+	// how many times portal was traversed in current portalVis frame
+	u32 visitCount;
+	// frustum for each traverse
+	frustumExt_c lastFrustum[MAX_PORTAL_VISIT_COUNT];
 };
 
 class rBspTree_c {
@@ -161,7 +172,10 @@ class rBspTree_c {
 	arraySTD_c<u32> leafSurfaces;
 	// Qio bsp data
 	arraySTD_c<vec3_c> points;
+	// areaPortals data loaded directly from Qio BSP (LUMP_AREAPORTALS)
 	arraySTD_c<dareaPortal_t> areaPortals;
+	// view frustums stored for each traversed portal
+	arraySTD_c<bspPortalData_c> areaPortalFrustums;
 	arraySTD_c<bspArea_c> areas;
 
 	// total number of surface indexes in batches (this->batches)
@@ -170,7 +184,11 @@ class rBspTree_c {
 	// incremented every time a new vis cluster is entered
 	int visCounter;
 	int lastCluster;
+	int lastArea;
 	int prevNoVis; // last value of rf_bsp_noVis cvar
+	// for Qio BSPs with extra areaPortals data.
+	// incremented every markAreas() call
+	int portalVisCount;
 
 	void getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out);
 
@@ -234,6 +252,8 @@ public:
 	void doDebugDrawing();
 
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
+
+	bool cullBoundsByPortals(const aabb &absBB);
 
 	void setWorldAreaBits(const byte *bytes, u32 numBytes);
 
