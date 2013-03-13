@@ -46,6 +46,12 @@ struct bspBoxDesc_s {
 		clusters.clear();
 		areas.clear();
 	}
+	u32 getNumAreas() const {
+		return areas.size();
+	}
+	int getArea(u32 idx) const {
+		return areas[idx];
+	}
 };
 
 #endif // __SHARED_BSPBOXDESC_H__

@@ -23,10 +23,27 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Door.cpp
 #include "Door.h"
+#include <api/serverAPI.h>
 
 DEFINE_CLASS(Door, "ModelEntity");
 DEFINE_CLASS_ALIAS(Door, func_door);
+// RTCW rotating door
+DEFINE_CLASS_ALIAS(Door, func_door_rotating);
+// MoHAA/FAKK rotating door
+DEFINE_CLASS_ALIAS(Door, func_rotatingdoor);
 
 Door::Door() {
 	bPhysicsBodyKinematic = true;
 }
+
+void Door::postSpawn() {
+	// close touched areaportal (but only if we're using new areaPortals system)
+	//u32 touchingAreas = getNumTouchingAreas();
+	//if(touchingAreas > 1) {
+	//	int area0 = this->getTouchingArea(0);
+	//	int area1 = this->getTouchingArea(1);
+	//	// mark portal as closed (by this doors)
+	//	g_server->adjustAreaPortalState(area0,area1,false);
+	//}
+}
+

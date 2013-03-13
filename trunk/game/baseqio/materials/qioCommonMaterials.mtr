@@ -1,0 +1,14 @@
+
+
+textures/common/areaportal
+{
+	qer_editorimage	textures/common/areaportal.png
+	qer_trans 0.50
+	
+	nonsolid
+	noshadows
+	nomarks
+	nolightmap
+	structural
+	areaportal
+}

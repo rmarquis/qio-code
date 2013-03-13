@@ -106,9 +106,11 @@ int SelectSplitPlaneNum( node_t *node, bspface_t *list ) {
 		front = 0;
 		back = 0;
 		for ( check = list ; check ; check = check->next ) {
-			if ( check->planenum == split->planenum && check->priority == split->priority ) {
+			if ( check->planenum == split->planenum ) {
 				facing++;
-				check->checked = qtrue;	// won't need to test this plane again
+				if(check->priority == split->priority) {
+					check->checked = qtrue;	// won't need to test this plane again
+				}
 				continue;
 			}
 			side = WindingOnPlaneSide( check->w, plane->normal, plane->dist );

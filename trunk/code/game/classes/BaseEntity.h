@@ -143,6 +143,10 @@ public:
 	virtual void getLocalBounds(aabb &out) const;
 	const class aabb &getAbsBounds() const;
 
+	// returns the count of BSP areas touching this entity
+	u32 getNumTouchingAreas() const;
+	u32 getTouchingArea(u32 localIdx) const;
+
 	virtual bool traceWorldRay(class trace_c &tr) {
 		return false;
 	}	

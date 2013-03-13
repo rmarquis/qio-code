@@ -68,6 +68,11 @@ public:
 			memset(data,0,numBytes);
 		}
 	}
+	void operator =(const bitSet_c &other) {
+		ensureAllocatedBytes(other.numBytes);
+		numBits = other.numBits;
+		memcpy(data,other.data,numBytes);
+	}
 	void set(u32 bitNum, bool bValue) {
 		if(bitNum >= numBits) {
 			numBits = bitNum + 1;
@@ -106,6 +111,15 @@ public:
 		ensureAllocatedBytes(numNewBytes);
 		numBits = numNewBytes * 8;
 		memcpy(data,np,numNewBytes);
+	}
+	bool compare(const bitSet_c &other) const {
+		if(numBits != other.numBits)
+			return false;
+		for(u32 i = 0; i < numBits; i++) {
+			if(get(i) != other.get(i))
+				return false;
+		}
+		return true;
 	}
 	const byte *getArray() const {
 		return data;

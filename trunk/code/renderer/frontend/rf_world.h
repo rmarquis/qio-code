@@ -36,6 +36,7 @@ void RF_DrawSingleBSPSurface(u32 sfNum);
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume);
 bool RF_IsWorldAreaVisible(int areaNum);
 bool RF_CullBoundsByPortals(const aabb &absBB);
+void RF_WorldDebugDrawing();
 
 #endif // __RF_BSP_H__
 

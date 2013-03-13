@@ -261,7 +261,14 @@ void BaseEntity::setEntityLightRadius(float newEntityLightRadius) {
 const aabb &BaseEntity::getAbsBounds() const {
 	return this->myEdict->absBounds;
 }
-
+#include <shared/bspBoxDesc.h>
+// returns the count of BSP areas touching this entity
+u32 BaseEntity::getNumTouchingAreas() const {
+	return this->myEdict->bspBoxDesc->getNumAreas();
+}
+u32 BaseEntity::getTouchingArea(u32 localIdx) const {
+	return this->myEdict->bspBoxDesc->getArea(localIdx);
+}
 #include <api/ddAPI.h>
 
 void BaseEntity::debugDrawAbsBounds(class rDebugDrawer_i *dd) {

@@ -57,17 +57,24 @@ struct svBSPArea_s {
 // (leaves, nodes, planes, areas and vis)
 class svBSP_c {
 	const struct q3Header_s *h; // used only while loading
+	// BSP data
 	arraySTD_c<svBSPLeaf_s> leaves;
 	arraySTD_c<svBSPNode_s> nodes;
 	arraySTD_c<q3Plane_s> planes;
 	arraySTD_c<svBSPArea_s> areas;
 	struct visHeader_s *vis;
+	// Qio BSP data (extra areaportals data)
+	arraySTD_c<vec3_c> points;
+	arraySTD_c<dareaPortal_t> areaPortals;
+
 	int floodValid;
 	int *areaPortalStates;
 
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
 	bool loadVisibility(u32 visLump);
+	bool loadQioPortals(u32 lumpNum);
+	bool loadQioPoints(u32 lumpNum);
 
 	void filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nodeNum) const;
 

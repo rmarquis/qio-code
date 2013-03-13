@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_debugDrawing.cpp
 #include "rf_local.h"
+#include "rf_world.h"
 #include <qcommon/q_shared.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
@@ -74,19 +75,25 @@ void RF_GameDebugDrawing() {
 	g_game->DebugDrawFrame(rf);
 }
 void RF_DoDebugDrawing() {
+	rb->unbindMaterial();
+	// game module debug drawing (only for local servers)
 	if(g_game) {
 		RF_GameDebugDrawing();
 	}
-	rb->unbindMaterial();
+	// show crossair surface info (material name, etc)
 	if(r_showSurfaceInfo.getInt()) {
 		RF_ShowCrossairSurfaceInfo();
 	}
+	// draw debug lines
 	RFDL_DrawDebugLines();
+	// draw renderEntities abs bboxes
 	if(rf_showEntityABSBounds.getInt()) {
 		float redColor [4] = { 1, 0, 0, 1 };
 		rb->setColor4(redColor);
 		RFE_DrawEntityAbsBounds();
 	}
+	// do world map debug drawing
+	RF_WorldDebugDrawing();
 }
 
 //

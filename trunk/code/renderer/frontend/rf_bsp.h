@@ -67,6 +67,7 @@ struct bspSurfBatch_s {
 	// we can only merge surfaces with the same material and lightmap....
 	class mtrAPI_i *mat;
 	class textureAPI_i *lightmap;
+	arraySTD_c<u32> areas;
 	// surfaces to merge
 	arraySTD_c<bspSurf_s*> sfs;
 	// surface bit flags (1 if surfaces indexes are included in current IBO)
@@ -125,7 +126,15 @@ struct bspPlane_s {
 			return SIDE_BACK;
 		//assert(0);
 	}
+	const float *floatPtr() const {
+		return (const float*)this;
+	}
 };
+class bspArea_c {
+friend class rBspTree_c;
+	arraySTD_c<u16> portalNumbers;
+};
+
 class rBspTree_c {
 	byte *fileData;
 	union {
@@ -134,7 +143,11 @@ class rBspTree_c {
 	};
 	u32 c_bezierPatches;
 	u32 c_flares;
+	// areaBits received from server
 	bitSet_c areaBits;
+	// areaBits set by updateAreas (for QIO bsps)
+	bitSet_c frustumAreaBits;
+	bitSet_c prevFrustumAreaBits;
 	visHeader_s *vis;
 
 	rVertexBuffer_c verts;
@@ -146,6 +159,10 @@ class rBspTree_c {
 	arraySTD_c<q3Node_s> nodes;
 	arraySTD_c<q3Leaf_s> leaves;
 	arraySTD_c<u32> leafSurfaces;
+	// Qio bsp data
+	arraySTD_c<vec3_c> points;
+	arraySTD_c<dareaPortal_t> areaPortals;
+	arraySTD_c<bspArea_c> areas;
 
 	// total number of surface indexes in batches (this->batches)
 	u32 numBatchSurfIndexes;
@@ -154,6 +171,8 @@ class rBspTree_c {
 	int visCounter;
 	int lastCluster;
 	int prevNoVis; // last value of rf_bsp_noVis cvar
+
+	void getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out);
 
 	void addSurfToBatches(u32 surfNum);
 	void createBatches();
@@ -180,6 +199,9 @@ class rBspTree_c {
 	bool loadLeafIndexes(u32 leafSurfsLump);
 	bool loadLeafIndexes16Bit(u32 leafSurfsLump); // for QuakeII
 	bool loadVisibility(u32 visLump);
+	void addPortalToArea(u32 areaNum, u32 portalNum);
+	bool loadQioAreaPortals(u32 lumpNum);
+	bool loadQioPoints(u32 lumpNum);
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);
@@ -188,6 +210,8 @@ class rBspTree_c {
 	int pointInCluster(const vec3_c &pos) const;
 	bool isClusterVisible(int visCluster, int testCluster) const;
 	u32 boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const;
+	void boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
+	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
 	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;		
 	
@@ -200,11 +224,15 @@ public:
 	void clear();
 
 	void updateVisibility();
+	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);
+	void markAreas();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
 	void addBSPSurfaceDrawCall(u32 sfNum);
 	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume);
 	
+	void doDebugDrawing();
+
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	void setWorldAreaBits(const byte *bytes, u32 numBytes);

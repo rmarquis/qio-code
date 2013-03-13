@@ -78,6 +78,10 @@ public:
 	vec3_c *getArray() {
 		return points.getArray();
 	}
+	void fromArray(const vec3_c *p, u32 numPoints) {
+		points.resize(numPoints);
+		memcpy(points.getArray(),p,points.getSizeInBytes());
+	}
 	u32 size() const {
 		return points.size();
 	}

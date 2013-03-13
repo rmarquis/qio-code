@@ -33,6 +33,7 @@ public:
 
 	DECLARE_CLASS( Door );
 
+	virtual void postSpawn();
 };
 
 #endif // __DOOR_H__

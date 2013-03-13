@@ -88,6 +88,11 @@ void frustumExt_c::adjustFrustum(const frustumExt_c &other, const vec3_c &eye, c
 	}
 	this->planes.push_back(cap);
 }
+void frustumExt_c::adjustFrustum(const frustumExt_c &other, const vec3_c &eye, const class vec3_c *points, u32 numPoints, const plane_c &plane) {
+	cmWinding_c w;
+	w.fromArray(points,numPoints);
+	adjustFrustum(other,eye,w,plane);
+}
 void frustumExt_c::fromPointAndWinding(const vec3_c &eye, const class cmWinding_c &points, const plane_c &plane) {
 	cmWinding_c copy;
 	plane_c cap;

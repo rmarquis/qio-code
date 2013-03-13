@@ -45,6 +45,9 @@ struct svAPI_s : public iFaceBase_i {
 
 	void (*linkEntity)(edict_s *ed);
 	void (*unlinkEntity)(edict_s *ed);
+
+	// Quake3-style areaPortals access
+	void (*adjustAreaPortalState)(int area0, int area1, bool open);
 };
 
 extern svAPI_s *g_server;

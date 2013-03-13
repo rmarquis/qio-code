@@ -41,6 +41,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define BSP_IDENT_2015	(('5'<<24)+('1'<<16)+('0'<<8)+'2')
 // MoHBT/MoHSH bsp ident
 #define BSP_IDENT_EALA	(('A'<<24)+('L'<<16)+('A'<<8)+'E')
+// our own bsp format
+#define BSP_IDENT_QIOBSP (('!'<<24)+('O'<<16)+('I'<<8)+'Q')
+#define BSP_VERSION_QIOBSP	1
 
 #define BSP_VERSION_Q3		46
 #define BSP_VERSION_RTCW	47
@@ -70,6 +73,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define	Q3_LIGHTGRID		15
 #define	Q3_VISIBILITY		16
 #define	Q3_LUMPS		17
+// QioBSP is an extension of Quake3 bsp
+#define	QIO_POINTS		17
+#define	QIO_AREAPORTALS	18
+// struct added for QioBSP
+typedef struct {
+	vec3_t bounds[2];
+	int areas[2];
+	int planeNum;
+	int firstPoint;
+	int numPoints;
+} dareaPortal_t;
 
 // MoHAA/MoHSH/MoHBT/MoHPA lumps
 #define MOH_SHADERS			0
@@ -400,6 +414,10 @@ struct q3Header_s {
 			return true;
 		} else if(this->ident == BSP_VERSION_QUAKE1) {
 			return true;
+		} else if(this->ident == BSP_IDENT_QIOBSP) {
+			// out own bsp format
+			if(this->version == BSP_VERSION_QIOBSP)
+				return true;
 		}
 		return false; // this bsp file format is not supported
 	}

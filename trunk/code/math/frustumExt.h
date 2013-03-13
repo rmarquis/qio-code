@@ -40,6 +40,7 @@ public:
 
 	enum cullResult_e cull(const class aabb &bb) const;
 	void adjustFrustum(const frustumExt_c &other, const vec3_c &eye, const class cmWinding_c &points, const plane_c &plane);
+	void adjustFrustum(const frustumExt_c &other, const vec3_c &eye, const class vec3_c *points, u32 numPoints, const plane_c &plane);
 	void fromPointAndWinding(const vec3_c &p, const class cmWinding_c &points, const plane_c &plane);
 
 	inline const plane_c&	operator [] (const int index) const {

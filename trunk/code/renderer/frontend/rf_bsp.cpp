@@ -51,6 +51,12 @@ aCvar_c rf_bsp_doAllSurfaceBatchesOnCPU("rf_bsp_doAllSurfaceBatchesOnCPU","0");
 aCvar_c rf_bsp_printCPUSurfVertsCount("rf_bsp_printCPUSurfVertsCount","0");
 aCvar_c rf_bsp_skipGPUSurfaces("rf_bsp_skipGPUSurfaces","0");
 aCvar_c rf_bsp_printCamClusterNum("rf_bsp_printCamClusterNum","0");
+aCvar_c rf_bsp_printCamAreaNum("rf_bsp_printCamAreaNum","0");
+// rf_bsp_rebuildBatchesOnAreaPortalsVisiblityChange
+aCvar_c rf_bsp_rebuildBatchesOnAPVisChange("rf_bsp_rebuildBatchesOnAPVisChange","1");
+aCvar_c rf_bsp_noFrustumAdjust("rf_bsp_noFrustumAdjust","0");
+aCvar_c rf_bsp_showAreaPortals("rf_bsp_showAreaPortals","0");
+aCvar_c rf_bsp_cullBackFacingAreaPortals("rf_bsp_cullBackFacingAreaPortals","1");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -69,6 +75,20 @@ rBspTree_c::rBspTree_c() {
 rBspTree_c::~rBspTree_c() {
 	clear();
 }
+void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
+	for(u32 i = 0; i < leaves.size(); i++) {
+		const q3Leaf_s &l = leaves[i];
+		if(l.area < 0)
+			continue;
+		for(u32 j = 0; j < l.numLeafSurfaces; j++) {
+			u32 absIdx = l.firstLeafSurface + j;
+			u32 sfIndex = leafSurfaces[absIdx];
+			if(sfIndex == surfNum) {
+				out.add_unique(l.area);
+			}
+		}
+	}
+}
 void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
@@ -80,6 +100,12 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	// ignore surfaces with 'sky' material; sky is drawn other way
 	if(bs->sf->mat->getSkyParms() != 0)
 		return;
+
+bool bMergeMutlipleAreaSurfaces = false;
+	arraySTD_c<u32> areas;
+	getSurfaceAreas(surfNum,areas);
+	g_core->Print("Surface %i is referenced by %i areas\n",surfNum,areas.size());
+
 	numBatchSurfIndexes += bs->sf->absIndexes.getNumIndices();
 	bspTriSurf_s *sf = bs->sf;
 	// see if we can add this surface to existing batch
@@ -91,6 +117,11 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 		if(b->lightmap != sf->lightmap) {
 			continue;
 		}
+		if(bMergeMutlipleAreaSurfaces == false) {
+			if(b->areas != areas) {
+				continue;
+			}
+		}
 		// TODO: merge only surfaces in the same cluster/area ? 
 		b->addSurface(bs);
 		return;
@@ -98,6 +129,7 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	// create a new batch
 	bspSurfBatch_s *nb = new bspSurfBatch_s;
 	nb->initFromSurface(bs);
+	nb->areas = areas;
 	batches.push_back(nb);
 }
 void rBspTree_c::createBatches() {
@@ -1178,6 +1210,40 @@ bool rBspTree_c::loadVisibility(u32 visLump) {
 	memcpy(vis,h->getLumpData(visLump),vl.fileLen);
 	return false; // no error
 }
+void rBspTree_c::addPortalToArea(u32 areaNum, u32 portalNum) {
+	if(areaNum >= areas.size()) {
+		areas.resize(areaNum+1);
+	}
+	bspArea_c &a = areas[areaNum];
+	a.portalNumbers.push_back(portalNum);
+}
+bool rBspTree_c::loadQioAreaPortals(u32 lumpNum) {
+	const lump_s &vl = h->getLumps()[lumpNum];
+	if(vl.fileLen == 0) {
+	//	g_core->Print(S_COLOR_YELLOW "rBspTree_c::loadQioAreaPortals: areaportals lump is emtpy\n");
+		return false; // dont do the error
+	}
+	u32 numAreaPortals = vl.fileLen / sizeof(dareaPortal_t);
+	areaPortals.resize(numAreaPortals);
+	memcpy(areaPortals.getArray(),h->getLumpData(lumpNum),vl.fileLen);
+	for(u32 i = 0; i < areaPortals.size(); i++) {
+		const dareaPortal_t &p = areaPortals[i];
+		addPortalToArea(p.areas[0],i);
+		addPortalToArea(p.areas[1],i);
+	}
+	return false; // no error
+}
+bool rBspTree_c::loadQioPoints(u32 lumpNum) {
+	const lump_s &vl = h->getLumps()[lumpNum];
+	if(vl.fileLen == 0) {
+	//	g_core->Print(S_COLOR_YELLOW "rBspTree_c::loadQioPoints: points lump is emtpy\n");
+		return false; // dont do the error
+	}
+	u32 numPoints = vl.fileLen / sizeof(vec3_t);
+	points.resize(numPoints);
+	memcpy(points.getArray(),h->getLumpData(lumpNum),vl.fileLen);
+	return false; // no error
+}
 bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
@@ -1348,6 +1414,49 @@ bool rBspTree_c::load(const char *fname) {
 		if(loadSurfsSE()) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
+		}	
+	} else if(h->ident == BSP_IDENT_QIOBSP) {
+		if(h->version == BSP_VERSION_QIOBSP) {
+			if(loadLightmaps(Q3_LIGHTMAPS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadModels(Q3_MODELS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafIndexes(Q3_LEAFSURFACES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadPlanes(Q3_PLANES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadVisibility(Q3_VISIBILITY)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadQioPoints(QIO_POINTS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadQioAreaPortals(QIO_AREAPORTALS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else {
+			g_core->RedWarning("rBspTree_c::load: QIO has unknown version %i\n",h->version);
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
 		}
 	} else {
 		g_core->RedWarning("rBspTree_c::load: unknown bsp type; cannot load %s\n",fname);
@@ -1394,6 +1503,8 @@ int rBspTree_c::pointInLeaf(const vec3_c &pos) const {
 }
 int rBspTree_c::pointInCluster(const vec3_c &pos) const {
 	int leaf = pointInLeaf(pos);
+	if(leaf < 0)
+		return -1;
 	return leaves[leaf].cluster;
 }
 // checks if one cluster is visible from another
@@ -1436,13 +1547,126 @@ u32 rBspTree_c::boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const {
 	boxSurfaces_r(bb,out,0);
 	return out.size();
 }
-void rBspTree_c::updateVisibility() {
-	int camCluster = pointInCluster(rf_camera.getPVSOrigin());
-	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
+void rBspTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const {
+	while(nodeNum >= 0) {
+		const q3Node_s &n = nodes[nodeNum];
+		const bspPlane_s &pl = planes[n.planeNum];
+		planeSide_e ps = pl.onSide(bb);
+		if(ps == SIDE_FRONT) {
+			nodeNum = n.children[0];
+		} else if(ps == SIDE_BACK) {
+			nodeNum = n.children[1];
+		} else {
+			nodeNum = n.children[0];
+			boxSurfaces_r(bb,out,n.children[1]);
+		}
+	}
+	int leafNum = -nodeNum - 1;
+	const q3Leaf_s &l = leaves[leafNum];
+	if(l.area >= 0) {
+		out.add_unique(l.area);
+	}
+}
+u32 rBspTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) const {
+	boxAreas_r(bb,out,0);
+	return out.size();
+}
+#include <math/frustumExt.h>
+void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t *prevPortal) {
+	if(areaNum >= areas.size() || areaNum < 0)
 		return;
+	bspArea_c *ar = &areas[areaNum];
+	frustumAreaBits.set(areaNum,true);
+
+	for(u32 i = 0; i < ar->portalNumbers.size(); i++) {
+		dareaPortal_t *p = &areaPortals[ar->portalNumbers[i]];
+		if(p == prevPortal) {
+			continue;
+		}
+		// first check if the portal is in the frustum
+		if(fr.cull(*(const aabb*)p->bounds) == CULL_OUT)
+			continue;
+		// then check if the portal side facing camera
+		// belong to current area. If not, portal is occluded
+		// by the wall and is not really visible
+		if(rf_bsp_cullBackFacingAreaPortals.getInt()) {
+			float d = this->planes[p->planeNum].distance(rf_camera.getOrigin());
+			if(p->areas[1] == areaNum) {
+				if(d > 0)
+					continue;
+			} else {
+				if(d < 0)
+					continue;
+			}
+		}
+		// adjust the frustum, so addAreaDrawCalls_r will never loop and cause a stack overflow...
+		frustumExt_c adjusted;
+		if(rf_bsp_noFrustumAdjust.getInt()) {
+			adjusted = fr;
+		} else {
+			plane_c pl;
+			pl.norm = -this->planes[p->planeNum].normal;
+			pl.dist = this->planes[p->planeNum].dist;
+			adjusted.adjustFrustum(fr,rf_camera.getOrigin(),points.getArray()+p->firstPoint,p->numPoints,pl);
+		}
+
+		//if(p->visCount != this->visCount) {
+		//	p->visCount = this->visCount;
+		//	p->visitCount = 0;
+		//} else {
+		//	if(p->visitCount == MAX_PORTAL_VISIT_COUNT) {
+		//		g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
+		//		continue;
+		//	}
+		//}
+	//	p->lastFrustum[p->visitCount] = adjusted;
+		//p->visitCount++;
+
+		if(p->areas[0] == areaNum) {
+			markAreas_r(p->areas[1],adjusted,p);
+		} else {
+			markAreas_r(p->areas[0],adjusted,p);
+		}
+	}
+}
+void rBspTree_c::markAreas() {
+	if(areaPortals.size() == 0)
+		return;
+	int camLeaf = pointInLeaf(rf_camera.getPVSOrigin());
+	if(camLeaf < 0) {
+		return;
+	}
+	int camArea = leaves[camLeaf].area;
+	frustumAreaBits.init(areas.size(),false);
+	frustumExt_c baseFrustum(rf_camera.getFrustum());
+	markAreas_r(camArea,baseFrustum,0);
+}
+void rBspTree_c::updateVisibility() {
+	int camLeaf = pointInLeaf(rf_camera.getPVSOrigin());
+	int camCluster, camArea;
+	if(camLeaf < 0) {
+		camCluster = -1;
+		camLeaf = -1;
+	} else {
+		camCluster = leaves[camLeaf].cluster;
+		camArea = leaves[camLeaf].area;
+	}
+	if(camCluster == lastCluster && prevNoVis == rf_bsp_noVis.getInt()) {
+		if(rf_bsp_rebuildBatchesOnAPVisChange.getInt()) {
+			if(prevFrustumAreaBits.compare(frustumAreaBits) == false) {
+				prevFrustumAreaBits = frustumAreaBits;
+			} else {
+				return;
+			}
+		} else {
+			return;
+		}
 	}
 	if(rf_bsp_printCamClusterNum.getInt()) {
 		g_core->Print("rBspTree_c::updateVisibility(): cluster: %i\n",camCluster);
+	}
+	if(rf_bsp_printCamAreaNum.getInt()) {
+		g_core->Print("rBspTree_c::updateVisibility(): area: %i\n",camArea);
 	}
 	prevNoVis = rf_bsp_noVis.getInt();
 	lastCluster = camCluster;
@@ -1471,6 +1695,11 @@ void rBspTree_c::updateVisibility() {
 			if(areaBits.get(l->area)) {
 				c_leavesCulledByAreaBits++;
 				continue;
+			}
+			if(areaPortals.size() && rf_bsp_rebuildBatchesOnAPVisChange.getInt()) {
+				if(frustumAreaBits.get(l->area)==false) {
+					continue;
+				}
 			}
 			for(u32 j = 0; j < l->numLeafSurfaces; j++) {
 				u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
@@ -1541,6 +1770,9 @@ void rBspTree_c::addDrawCalls() {
 	if(rf_bsp_drawBSPWorld.getInt() == 0)
 		return;
 
+	// use QioBSP areaPortals to mark which areas are intersecting player view frustum
+	markAreas();
+	// use Q3 BSP PVS to cull clusters and rebuild batches
 	updateVisibility();
 
 	u32 c_culledBatches = 0;
@@ -1552,6 +1784,17 @@ void rBspTree_c::addDrawCalls() {
 		if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(b->bounds) == CULL_OUT) {
 			c_culledBatches++;
 			continue;
+		}
+		if(areaPortals.size() && (rf_bsp_rebuildBatchesOnAPVisChange.getInt() == false)) {
+			bool visible = false;
+			for(u32 j = 0; j < b->areas.size(); j++) {
+				if(frustumAreaBits.get(b->areas[j])==true) {
+					visible = true;
+					break;
+				}
+			}
+			if(visible == false)
+				continue;
 		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
 			if(RF_MaterialNeedsCPU(b->mat) || rf_bsp_doAllSurfaceBatchesOnCPU.getInt()) {
@@ -1663,6 +1906,19 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 	bspModel_s &m = models[inlineModelNum];
 	for(u32 i = 0; i < m.numSurfs; i++) {
 		addBSPSurfaceDrawCall(m.firstSurf+i);
+	}
+}
+void rBspTree_c::doDebugDrawing() {
+	if(rf_bsp_showAreaPortals.getInt()) {
+		for(u32 i = 0; i < areaPortals.size(); i++) {
+			const dareaPortal_t &ap = areaPortals[i];
+			u32 prev = ap.firstPoint + ap.numPoints - 1;
+			for(u32 j = 0; j < ap.numPoints; j++) {
+				u32 now = ap.firstPoint + j;
+				rb->drawLineFromTo(this->points[now],this->points[prev],vec3_c(1,0,0));
+				prev = now;
+			}
+		}
 	}
 }
 

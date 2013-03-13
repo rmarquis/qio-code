@@ -95,12 +95,36 @@ bool svBSP_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) 
 bool svBSP_c::loadVisibility(u32 visLump) {
 	const lump_s &vl = h->getLumps()[visLump];
 	if(vl.fileLen == 0) {
-		g_core->Print(S_COLOR_YELLOW "svBSP_c::loadVis: visibility lump is emtpy\n");
+		g_core->Print(S_COLOR_YELLOW "svBSP_c::loadVis: visibility lump is empty\n");
 		vis = 0;
 		return false; // dont do the error
 	}
 	vis = (visHeader_s*)malloc(vl.fileLen);
 	memcpy(vis,h->getLumpData(visLump),vl.fileLen);
+	return false; // no error
+}
+bool svBSP_c::loadQioPortals(u32 lumpNum) {
+	const lump_s &vl = h->getLumps()[lumpNum];
+	if(vl.fileLen == 0) {
+		//g_core->Print(S_COLOR_YELLOW "svBSP_c::loadQioPortals: areaPortals lump is empty\n");
+		vis = 0;
+		return false; // dont do the error
+	}
+	u32 numAreaPortals = vl.fileLen / sizeof(dareaPortal_t);
+	areaPortals.resize(numAreaPortals);
+	memcpy(areaPortals.getArray(),h->getLumpData(lumpNum),vl.fileLen);
+	return false; // no error
+}
+bool svBSP_c::loadQioPoints(u32 lumpNum) {
+	const lump_s &vl = h->getLumps()[lumpNum];
+	if(vl.fileLen == 0) {
+		//g_core->Print(S_COLOR_YELLOW "svBSP_c::loadQioPoints: points lump is empty\n");
+		vis = 0;
+		return false; // dont do the error
+	}
+	u32 numPoints = vl.fileLen / sizeof(vec3_t);
+	points.resize(numPoints);
+	memcpy(points.getArray(),h->getLumpData(lumpNum),vl.fileLen);
 	return false; // no error
 }
 bool svBSP_c::load(const char *fname) {
@@ -136,6 +160,33 @@ bool svBSP_c::load(const char *fname) {
 		if(loadVisibility(MOH_VISIBILITY)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
+		}
+	} else if(h->ident == BSP_IDENT_QIOBSP && h->version == BSP_VERSION_QIOBSP) {
+		// our own, internal BSP file format
+		if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadPlanes(Q3_PLANES)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadVisibility(Q3_VISIBILITY)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadQioPoints(QIO_POINTS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		if(loadQioPortals(QIO_AREAPORTALS)) {
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+		// portals on Qio BSPs are open by default
+		for(u32 i = 0; i < areaPortals.size(); i++) {
+			const dareaPortal_t &p = areaPortals[i];
+			this->adjustAreaPortalState(p.areas[0],p.areas[1],true);
 		}
 	} else {
 		g_vfs->FS_FreeFile(fileData);

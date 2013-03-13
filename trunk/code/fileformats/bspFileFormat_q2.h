@@ -149,17 +149,17 @@ struct q2Vis_s
 // each area has a list of portals that lead into other areas
 // when portals are closed, other areas may not be visible or
 // hearable even if the vis info says that it should be
-typedef struct
+struct q2AreaPortal_s
 {
 	int		portalnum;
 	int		otherarea;
-} dareaportal_t;
+};
 
-typedef struct
+struct q2Area_s
 {
 	int		numareaportals;
 	int		firstareaportal;
-} darea_t;
+};
 
 
 #endif // __BSPFILEFORMAT_Q2_H__

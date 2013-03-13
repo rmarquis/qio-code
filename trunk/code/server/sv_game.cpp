@@ -122,7 +122,11 @@ void SV_UnlinkEntity(edict_s *ed) {
 		ed->bspBoxDesc = 0;
 	}	
 }
-
+void SV_AdjustAreaPortalState(int area0, int area1, bool open) {
+	if(sv_bsp) {
+		sv_bsp->adjustAreaPortalState(area0,area1,open);
+	}
+}
 /*
 ===============
 SV_GetServerinfo

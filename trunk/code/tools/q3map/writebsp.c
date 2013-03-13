@@ -400,7 +400,38 @@ void BeginModel( void ) {
 
 	EmitBrushes( e->brushes );
 }
+// see if the given winding is between two areas
+qboolean IsValidAreaPortalWinding(winding_t *w, node_t *headnode) {
+	vec3_t center;
+	vec3_t normal;
+	float dist;
+	vec3_t front;
+	vec3_t back;
+	node_t *backNode;
+	node_t *frontNode;
 
+	if(w == 0)
+		return qfalse;
+
+	WindingCenter(w,center);
+
+	WindingPlane(w,normal,&dist);
+	VectorMA(center,1,normal,front);
+	VectorMA(center,-1,normal,back);
+
+	backNode = NodeForPoint(headnode,back);
+	frontNode = NodeForPoint(headnode,front);
+
+	if(backNode == 0 || backNode->opaque)
+		return qfalse;
+	if(frontNode == 0 || frontNode->opaque)
+		return qfalse;
+
+	if(backNode->area != frontNode->area)
+		return qtrue;
+
+	return qfalse;
+}
 void EmitPortals_r(node_t * node, node_t *headnode)
 {
 	bspbrush_t        *b;
@@ -433,10 +464,10 @@ void EmitPortals_r(node_t * node, node_t *headnode)
 			printf("EmitPortals_r: areaportal brush %i doesn't touch two areas\n", b->brushnum);
 			return;
 		}
-
-#if 0
-		// it doesnt work, the ap winding does not match with real portal winding
 		ap = 0;
+		pw = 0;
+
+		// first try this method
 		for(p = node->portals; p; p = p->next[s]) {
 			s = (p->nodes[1] == node);
 
@@ -447,78 +478,78 @@ void EmitPortals_r(node_t * node, node_t *headnode)
 					printf("Areaportal already found!\n");
 				}
 				ap = p;
+				pw = ap->winding;
+				apPlane = &ap->plane;
 			}
 		}
-		if(ap) {
-			pw = ap->winding;
-			apPlane = &ap->plane;
-#else
-		pw = 0;
-		apPlane = 0;
-		// let's assume that areaPortal brushes has only one areaPortal side
-		for(i = 0; i < b->numsides; i++) {
-			side_t *s = &b->sides[i];
-			if((s->contents & CONTENTS_AREAPORTAL) == qfalse) {
-				continue;
-			}
-			pw = s->winding;
-			apPlane = &mapplanes[s->planenum];
-			if(pw == 0) {
-				pw = s->visibleHull;
+		// if we havent found areaportal, or if areaportal winding is invalid
+		if(ap == 0 || IsValidAreaPortalWinding(pw,headnode) == qfalse) {
+			// this method should be better, but for some (unknown to me) reasons
+			// it fails sometimes as well - unmatching portal winding is returned
+			pw = 0;
+			apPlane = 0;
+			// let's assume that areaPortal brushes has only one areaPortal side
+			for(i = 0; i < b->numsides; i++) {
+				side_t *s = &b->sides[i];
+				if((s->contents & CONTENTS_AREAPORTAL) == qfalse) {
+					continue;
+				}
+				pw = s->winding;
+				apPlane = &mapplanes[s->planenum];
+				if(pw == 0) {
+					pw = s->visibleHull;
+				}
 			}
 		}
-		{
-#endif
-			if(pw == 0) {
-				printf("EmitPortals_r: areaPortal %i has null winding\n",0);
-				return;
-			}
-			if(numDPoints + pw->numpoints >= MAX_MAP_POINTS) {
-				Error("MAX_MAP_POINTS (increase this macro and recompile or remove some areaportals\n");
-				return;
-			}
-			if(numAreaPortals + 1 >= MAX_MAP_AREAPORTALS) {
-				Error("MAX_MAP_AREAPORTALS (increase this macro and recompile or remove some areaportals\n");
-				return;
-			}
-			printf("EmitPortals_r: emiting portal %i\n",0);
-			ClearBounds(dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
-			for(i = 0; i < pw->numpoints; i++) {
-				VectorCopy(pw->p[i],dpoints[numDPoints+i]);
-				AddPointToBounds(pw->p[i],dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
-			}		
-			// extend areaPortal bounds a little, 
-			// otherwise there might be some diseapperaing 
-			// areas while camera eye is inside portal winding
-			for(i = 0; i < 3; i++) {
-				const float pEps = 1.f;
-				dareaPortals[numAreaPortals].bounds[0][i] += pEps;
-				dareaPortals[numAreaPortals].bounds[1][i] -= pEps;
-			}
-#if 1
-			WindingCenter(pw,checkPoint);
-			VectorMA(checkPoint,1,apPlane->normal,checkPoint);
-			node = NodeForPoint(headnode,checkPoint);
-#else
-			
-#endif
-			if(node->area == b->portalareas[0]){
-				dareaPortals[numAreaPortals].areas[0] = b->portalareas[0];
-				dareaPortals[numAreaPortals].areas[1] = b->portalareas[1];
-			} else if(node->area = b->portalareas[1]) {
-				dareaPortals[numAreaPortals].areas[0] = b->portalareas[1];
-				dareaPortals[numAreaPortals].areas[1] = b->portalareas[0];
-			} else {
-				Error("Node area mismatch\n");
-			}
-			dareaPortals[numAreaPortals].planeNum = FindFloatPlane(apPlane->normal,apPlane->dist);
-			dareaPortals[numAreaPortals].firstPoint = numDPoints;
-			dareaPortals[numAreaPortals].numPoints = pw->numpoints;
-			numAreaPortals ++;
-			numDPoints += pw->numpoints;
+		if(pw == 0) {
+			printf("EmitPortals_r: areaPortal %i has null winding\n",0);
 			return;
 		}
-		printf("EmitPortals: no matching portal found!\n");
+		if(numDPoints + pw->numpoints >= MAX_MAP_POINTS) {
+			Error("MAX_MAP_POINTS (increase this macro and recompile or remove some areaportals\n");
+			return;
+		}
+		if(numAreaPortals + 1 >= MAX_MAP_AREAPORTALS) {
+			Error("MAX_MAP_AREAPORTALS (increase this macro and recompile or remove some areaportals\n");
+			return;
+		}
+		printf("EmitPortals_r: emiting portal %i\n",numAreaPortals);
+		ClearBounds(dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
+		for(i = 0; i < pw->numpoints; i++) {
+			VectorCopy(pw->p[i],dpoints[numDPoints+i]);
+			AddPointToBounds(pw->p[i],dareaPortals[numAreaPortals].bounds[1],dareaPortals[numAreaPortals].bounds[0]);
+		}		
+		// extend areaPortal bounds a little, 
+		// otherwise there might be some diseapperaing 
+		// areas while camera eye is inside portal winding
+		for(i = 0; i < 3; i++) {
+			const float pEps = 1.f;
+			dareaPortals[numAreaPortals].bounds[0][i] += pEps;
+			dareaPortals[numAreaPortals].bounds[1][i] -= pEps;
+		}
+#if 1
+		WindingCenter(pw,checkPoint);
+		VectorMA(checkPoint,1,apPlane->normal,checkPoint);
+		node = NodeForPoint(headnode,checkPoint);
+#else
+		
+#endif
+		if(node->area == b->portalareas[0]){
+			dareaPortals[numAreaPortals].areas[0] = b->portalareas[0];
+			dareaPortals[numAreaPortals].areas[1] = b->portalareas[1];
+		} else if(node->area = b->portalareas[1]) {
+			dareaPortals[numAreaPortals].areas[0] = b->portalareas[1];
+			dareaPortals[numAreaPortals].areas[1] = b->portalareas[0];
+		} else {
+			Error("Node area mismatch\n");
+		}
+		dareaPortals[numAreaPortals].planeNum = FindFloatPlane(apPlane->normal,apPlane->dist);
+		dareaPortals[numAreaPortals].firstPoint = numDPoints;
+		dareaPortals[numAreaPortals].numPoints = pw->numpoints;
+		numAreaPortals ++;
+		numDPoints += pw->numpoints;
+		return;
+
 	}
 }
 

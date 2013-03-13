@@ -200,6 +200,11 @@ bool RF_CullBoundsByPortals(const aabb &absBB) {
 	}
 	return false;
 }
+void RF_WorldDebugDrawing() {
+	if(r_bspTree) {
+		r_bspTree->doDebugDrawing();
+	}
+}
 static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);
 static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
 
