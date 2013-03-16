@@ -67,6 +67,10 @@ public:
 		owner = newOwner;
 	}
 
+	virtual void onWeaponPickedUp() {
+
+	}
+
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual bool doUse(class Player *activator);
 };

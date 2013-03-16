@@ -34,6 +34,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c cg_gunX("cg_gunX","0");
 static aCvar_c cg_gunY("cg_gunY","0");
 static aCvar_c cg_gunZ("cg_gunZ","0");
+static aCvar_c cg_gunRotX("cg_gunRotX","0");
+static aCvar_c cg_gunRotY("cg_gunRotY","0");
+static aCvar_c cg_gunRotZ("cg_gunRotZ","0");
 static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
@@ -70,6 +73,8 @@ void CG_RunViewModel() {
 
 	// local weapons offset (affected by cg_gunX/Y/Z cvars)
 	vec3_c localOfs(0,0,0);
+	// local weapon rotation (affected by cg_gunRotX/Y/Z cvars)
+	vec3_c localRot(0,0,0);
 
 	rModelAPI_i *viewModel;
 	if(cg.snap->ps.customViewRModelIndex) {
@@ -88,6 +93,11 @@ void CG_RunViewModel() {
 		//	|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 			localOfs.set(5,-5,-10);
 		//}
+		// Half Life2 physgun (for weapon_physgun)
+		if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
+			// set 90 yaw rotation (around Z axis)
+			localRot.set(0,0,90);
+		}
 	}
 	if(viewModel == 0) {
 		CG_FreeViewModelEntity();
@@ -102,9 +112,24 @@ void CG_RunViewModel() {
 	vec3_c origin = cg.refdefViewOrigin;
 	vec3_c angles = cg.refdefViewAngles;
 
+	// apply extra gun offset
 	localOfs.x += cg_gunX.getFloat();
 	localOfs.y += cg_gunY.getFloat();
 	localOfs.z += cg_gunZ.getFloat();
+
+	// apply extra gun rotation
+	localRot.x += cg_gunRotX.getFloat();
+	localRot.y += cg_gunRotY.getFloat();
+	localRot.z += cg_gunRotZ.getFloat();
+
+	if(localRot.isNull()==false) {
+		matrix_c m;
+		m.fromAngles(angles);
+		m.rotateX(localRot.x);
+		m.rotateY(localRot.y);
+		m.rotateZ(localRot.z);
+		angles = m.getAngles();
+	}
 
 	// add local offset to hand origin
 	origin.vectorMA(origin,cg.refdefViewAxis[0],localOfs.x);

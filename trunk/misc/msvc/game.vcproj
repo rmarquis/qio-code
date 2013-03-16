@@ -597,6 +597,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Weapon_PhysGun.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Weapon_PhysGun.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\World.cpp"
 				>
 			</File>

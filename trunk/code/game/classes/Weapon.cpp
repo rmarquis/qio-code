@@ -55,6 +55,8 @@ bool Weapon::doUse(class Player *activator) {
 	activator->addWeapon(this);
 	this->destroyPhysicsObject();
 	this->unlink();
+	// run callback (so Weapon child classes know they were picked up)
+	this->onWeaponPickedUp();
 	return true; // this item cannot be carried
 }
 

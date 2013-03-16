@@ -1137,6 +1137,7 @@ struct entityState_s {
 	int parentNum; // ENTITYNUM_NONE = not attached
 	int parentTagNum;
 	vec3_c parentOffset; // in local space
+	vec3_c localAttachmentAngles;
 
 	//int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
 

@@ -454,6 +454,9 @@ btRigidBody* BT_CreateRigidBodyInternal(float mass, const btTransform& startTran
 
 	dynamicsWorld->addRigidBody(body);
 
+	body->setCcdMotionThreshold(32.f*QIO_TO_BULLET);
+	body->setCcdSweptSphereRadius(6.f*QIO_TO_BULLET);
+
 	return body;
 }
 void G_RunCharacterController(vec3_t dir, btKinematicCharacterController *ch, vec3_t newPos) {

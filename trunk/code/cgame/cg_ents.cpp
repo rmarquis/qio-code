@@ -151,6 +151,9 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 			matAngles.transformPoint(cent->currentState.parentOffset,ofs);
 			cent->lerpOrigin += ofs;
 		}
+		if(cent->currentState.localAttachmentAngles.isAlmostZero() == false) {
+			cent->lerpAngles += cent->currentState.localAttachmentAngles;
+		}
 		// NOTE: some centities might have both rEnt and rLight present
 		if(cent->rEnt) {
 			cent->rEnt->setOrigin(cent->lerpOrigin);

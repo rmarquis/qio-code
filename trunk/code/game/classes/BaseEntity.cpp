@@ -223,6 +223,9 @@ void BaseEntity::detachFromParent() {
 	myEdict->s->parentNum = ENTITYNUM_NONE;
 	myEdict->s->parentTagNum = -1;
 }
+void BaseEntity::setLocalAttachmentAngles(const vec3_c &newAngles) {
+	myEdict->s->localAttachmentAngles = newAngles;
+}
 // BaseEntity has no model so we cant do much here.
 // This function is virtual and overriden in ModelEntity
 bool BaseEntity::getBoneWorldOrientation(u32 tagNum, class matrix_c &out) {

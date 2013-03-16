@@ -108,6 +108,11 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->recalcABSBounds();
 	this->link();
 }
+bool ModelEntity::hasRenderModel(const char *checkRModelName) const {
+	if(!stricmp(this->renderModelName,checkRModelName))
+		return true;
+	return false;
+}
 void ModelEntity::setRenderModelSkin(const char *newSkinName) {
 	this->myEdict->s->rSkinIndex = G_RenderSkinIndex(newSkinName);
 }
