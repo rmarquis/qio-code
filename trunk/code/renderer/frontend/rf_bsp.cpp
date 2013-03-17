@@ -82,6 +82,11 @@ void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
 			continue;
 		for(u32 j = 0; j < l.numLeafSurfaces; j++) {
 			u32 absIdx = l.firstLeafSurface + j;
+			if(absIdx >= leafSurfaces.size()) {
+				g_core->RedWarning("rBspTree_c::getSurfaceAreas: absIndex >= leafSurfaces.size() (%i >= %i)\n",
+					absIdx,leafSurfaces.size());
+				continue;
+			}
 			u32 sfIndex = leafSurfaces[absIdx];
 			if(sfIndex == surfNum) {
 				out.add_unique(l.area);
@@ -101,10 +106,18 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	if(bs->sf->mat->getSkyParms() != 0)
 		return;
 
-bool bMergeMutlipleAreaSurfaces = false;
+	bool bMergeMutlipleAreaSurfaces ;
+	if(this->areaPortals.size()) {
+		// areaPortals data is available for Qio BSPs
+		bMergeMutlipleAreaSurfaces = false;
+	} else {
+		bMergeMutlipleAreaSurfaces = true;
+	}
 	arraySTD_c<u32> areas;
-	getSurfaceAreas(surfNum,areas);
-	g_core->Print("Surface %i is referenced by %i areas\n",surfNum,areas.size());
+	if(bMergeMutlipleAreaSurfaces == false) {
+		getSurfaceAreas(surfNum,areas);
+		g_core->Print("Surface %i is referenced by %i areas\n",surfNum,areas.size());
+	}
 
 	numBatchSurfIndexes += bs->sf->absIndexes.getNumIndices();
 	bspTriSurf_s *sf = bs->sf;
@@ -364,31 +377,57 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 		on->mins[2] = in->mins[2];
 		on->planeNum = in->planeNum;
 	}
-	const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
-	if(ll.fileLen % sizeof(srcLeaf_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
-		return true; // error
-	}
-	u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
-	leaves.resize(numLeaves);
-	q3Leaf_s *l = leaves.getArray();
-	const srcLeaf_s *il = (const srcLeaf_s*)srcH->getLumpData(SRC_LEAFS);
-	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
-		l->area = il->area;
-		l->cluster = il->cluster;
+	if(srcH->version == 19) {
+		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
+		if(ll.fileLen % sizeof(srcLeaf_s)) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+			return true; // error
+		}
+		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
+		leaves.resize(numLeaves);
+		q3Leaf_s *l = leaves.getArray();
+		const srcLeaf_s *il = (const srcLeaf_s*)srcH->getLumpData(SRC_LEAFS);
+		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+			l->area = il->area;
+			l->cluster = il->cluster;
 
-		l->maxs[0] = il->maxs[0];
-		l->maxs[1] = il->maxs[1];
-		l->maxs[2] = il->maxs[2];
-		l->mins[0] = il->mins[0];
-		l->mins[1] = il->mins[1];
-		l->mins[2] = il->mins[2];
-		l->firstLeafSurface = il->firstLeafSurface;
-		l->numLeafSurfaces = il->numLeafSurfaces;
-		l->firstLeafBrush = il->firstLeafBrush;
-		l->numLeafBrushes = il->numLeafBrushes;
+			l->maxs[0] = il->maxs[0];
+			l->maxs[1] = il->maxs[1];
+			l->maxs[2] = il->maxs[2];
+			l->mins[0] = il->mins[0];
+			l->mins[1] = il->mins[1];
+			l->mins[2] = il->mins[2];
+			l->firstLeafSurface = il->firstLeafSurface;
+			l->numLeafSurfaces = il->numLeafSurfaces;
+			l->firstLeafBrush = il->firstLeafBrush;
+			l->numLeafBrushes = il->numLeafBrushes;
+		}
+	} else {		
+		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
+		if(ll.fileLen % sizeof(srcLeaf_noLightCube_s)) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+			return true; // error
+		}
+		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_noLightCube_s);
+		leaves.resize(numLeaves);
+		q3Leaf_s *l = leaves.getArray();
+		const srcLeaf_noLightCube_s *il = (const srcLeaf_noLightCube_s*)srcH->getLumpData(SRC_LEAFS);
+		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
+			l->area = il->area;
+			l->cluster = il->cluster;
+
+			l->maxs[0] = il->maxs[0];
+			l->maxs[1] = il->maxs[1];
+			l->maxs[2] = il->maxs[2];
+			l->mins[0] = il->mins[0];
+			l->mins[1] = il->mins[1];
+			l->mins[2] = il->mins[2];
+			l->firstLeafSurface = il->firstLeafSurface;
+			l->numLeafSurfaces = il->numLeafSurfaces;
+			l->firstLeafBrush = il->firstLeafBrush;
+			l->numLeafBrushes = il->numLeafBrushes;
+		}
 	}
-	
 	return false; // OK
 }
 bool rBspTree_c::loadVerts(u32 lumpVerts) {
@@ -1558,6 +1597,7 @@ void rBspTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) c
 		} else if(ps == SIDE_BACK) {
 			nodeNum = n.children[1];
 		} else {
+
 			nodeNum = n.children[0];
 			boxAreas_r(bb,out,n.children[1]);
 		}
@@ -1962,6 +2002,9 @@ int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 	return 0; // TODO: return valid decal handle?
 }
 bool rBspTree_c::cullBoundsByPortals(const aabb &absBB) {
+	if(areaPortals.size() == 0)
+		return false; // always visible, no areaportals on map
+
 	arraySTD_c<u32> areaNums;
 	boxAreas(absBB,areaNums);
 	for(u32 i = 0; i < areaNums.size(); i++) {

@@ -409,6 +409,10 @@ struct q3Header_s {
 			if(this->version == BSP_VERSION_HL2_19) {
 				return true;
 			}
+			// Portal1 BSPs
+			if(this->version == BSP_VERSION_HL2_20) {
+				return true;
+			}
 		// older bsp versions don't have "ident" field, only version
 		} else if(this->ident == BSP_VERSION_HL) {
 			return true;

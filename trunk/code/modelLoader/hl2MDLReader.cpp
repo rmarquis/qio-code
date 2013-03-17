@@ -259,7 +259,10 @@ hl2MDLReader_c::hl2MDLReader_c() {
 	vvd = 0;
 }
 hl2MDLReader_c::~hl2MDLReader_c() {
-
+	if(vvd) {
+		g_vfs->FS_FreeFile(vvd);
+		vvd = 0;
+	}
 }
 bool hl2MDLReader_c::beginReading(const char *fname) {
 	if(data.loadFromFile(fname)) {

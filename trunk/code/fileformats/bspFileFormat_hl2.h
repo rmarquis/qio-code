@@ -27,7 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BSPFILEFORMAT_HL2__
 
 #define BSP_IDENT_VBSP	(('P'<<24)+('S'<<16)+('B'<<8)+'V')
+// HalfLife2
 #define BSP_VERSION_HL2_19	19
+// Portal1
+#define BSP_VERSION_HL2_20	20
 
 #define SRC_ENTITIES 0
 #define SRC_PLANES 1
@@ -102,6 +105,7 @@ struct srcLeaf_noLightCube_s
 	unsigned short		firstLeafBrush;		// index into leafbrushes
 	unsigned short		numLeafBrushes;
 	short			leafWaterDataID;	// -1 for not in water
+	short padding; // to 32 boundary
 };
 
 // for bsp version == 19

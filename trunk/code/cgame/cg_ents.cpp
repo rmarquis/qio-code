@@ -201,6 +201,10 @@ static void CG_AddCEntity( centity_t *cent ) {
 	default:
 		g_core->RedWarning( "Bad entity type: %i\n", cent->currentState.eType );
 		break;
+	case ET_TRIGGER:
+		// they should be never sent to client...
+		// TODO: print warning?
+		break;
 
 	case ET_PORTAL:
 

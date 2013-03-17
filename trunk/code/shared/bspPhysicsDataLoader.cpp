@@ -93,10 +93,18 @@ void bspPhysicsDataLoader_c::nodeBrushes_r(int nodeNum, arraySTD_c<u32> &out) co
 			nodeBrushes_r(node.children[1],out);
 		}
 		const u16 *leafBrushNums = (const u16*)h->getLumpData(SRC_LEAFBRUSHES);
-		const srcLeaf_s *l = (const srcLeaf_s *)h->getLumpData(SRC_LEAFS)+(-nodeNum+1);
-		for(u32 i = 0; i < l->numLeafBrushes; i++) {
-			u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
-			out.add_unique(brushNum);
+		if(h->version == 19) {
+			const srcLeaf_s *l19 = (const srcLeaf_s *)h->getLumpData(SRC_LEAFS)+(-nodeNum+1);
+			for(u32 i = 0; i < l19->numLeafBrushes; i++) {
+				u32 brushNum = leafBrushNums[l19->firstLeafBrush+i];
+				out.add_unique(brushNum);
+			}
+		} else {
+			const srcLeaf_noLightCube_s *l = (const srcLeaf_noLightCube_s *)h->getLumpData(SRC_LEAFS)+(-nodeNum+1);
+			for(u32 i = 0; i < l->numLeafBrushes; i++) {
+				u32 brushNum = leafBrushNums[l->firstLeafBrush+i];
+				out.add_unique(brushNum);
+			}
 		}
 	}
 }
