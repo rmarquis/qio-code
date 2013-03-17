@@ -85,24 +85,36 @@ void CG_RunViewModel() {
 		} else {
 			viewModel = 0;
 		}
-		//if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
-		//	|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
-		//	|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
-		//	|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
-		//	// it could be better for grenade launcher
-		//	|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
-			localOfs.set(5,-5,-10);
-		//}
-		// Half Life2 physgun (for weapon_physgun)
-		if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
-			// set 90 yaw rotation (around Z axis)
-			localRot.set(0,0,90);
-		}
 	}
 	if(viewModel == 0) {
 		CG_FreeViewModelEntity();
 		return;
 	}
+	// add hardcoded gun offset
+	//if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+	//	|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+	//	|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+	//	|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+	//	// it could be better for grenade launcher
+	//	|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
+		localOfs.set(5,-5,-10);
+	//}
+	// Half Life2 physgun (for weapon_physgun)
+	if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
+		// "w_*" is a worldmodel
+		// set 90 yaw rotation (around Z axis)
+		localRot.set(0,0,90);
+	} else if(!stricmp(viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
+		// "v_*" is a viewmodel
+#if 0
+		localRot.set(0,15,90);
+		localOfs.set(-35,0,-50);
+#else
+		localRot.set(0,0,90);
+		localOfs.set(-15,0,-65);
+#endif
+	}
+
 	if(cg_printCurViewModelName.getInt()) {
 		g_core->Print("Current viewmodel name: %s\n",viewModel->getName());
 	}

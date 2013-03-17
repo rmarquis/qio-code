@@ -81,6 +81,7 @@ public:
 	
 	bool useHeld; // we might use latchedButtons instead of it
 	bool fireHeld;
+	bool secondaryFireHeld;
 
 	class VehicleCar *vehicle;
 	// Half Life2 - style entity carrying
@@ -95,6 +96,9 @@ public:
 	void onUseKeyDown();
 	void onFireKeyHeld();
 	void onFireKeyDown();
+	void onSecondaryFireKeyHeld();
+	void onSecondaryFireKeyDown();
+	void onSecondaryFireKeyUp();
 	void pickupPhysicsProp(class ModelEntity *ent);
 	bool isCarryingEntity() const;
 	void dropCarryingEntity();

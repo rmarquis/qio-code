@@ -371,7 +371,7 @@ void Player::runPlayer() {
 
 			carryingEntity->setLinearVelocity(carryingEntity->getLinearVelocity()*0.5f);
 			carryingEntity->setAngularVelocity(carryingEntity->getAngularVelocity()*0.5f);
-			carryingEntity->applyCentralImpulse(delta);
+			carryingEntity->applyCentralImpulse(delta*50.f);
 			//carryingEntity->setOrigin(neededPos);
 		}
 
@@ -403,6 +403,22 @@ void Player::runPlayer() {
 			if(fireHeld) {
 				G_Printf("Fire released\n");
 				fireHeld = false;
+			}
+		}
+		if(this->pers.cmd.buttons & BUTTON_ATTACK_SECONDARY) {
+			if(secondaryFireHeld) {
+				G_Printf("Secondary fire held\n");
+				onSecondaryFireKeyHeld();
+			} else {
+				G_Printf("Secondary fire pressed\n");
+				secondaryFireHeld = true;
+				onSecondaryFireKeyDown();
+			}
+		} else {
+			if(secondaryFireHeld) {
+				G_Printf("Secondary fire released\n");
+				secondaryFireHeld = false;
+				onSecondaryFireKeyUp();
 			}
 		}
 	}
@@ -487,7 +503,33 @@ void Player::onFireKeyDown() {
 		curWeapon->onFireKeyDown();
 		return;
 	}
-	//G_BulletAttack(this->getEyePos(),this->ps.viewangles.getForward());
+}
+void Player::onSecondaryFireKeyHeld() {
+	if(vehicle) {
+		return;
+	}
+	if(curWeapon) {
+		curWeapon->onSecondaryFireKeyHeld();
+		return;
+	}
+}
+void Player::onSecondaryFireKeyDown() {
+	if(vehicle) {
+		return;
+	}
+	if(curWeapon) {
+		curWeapon->onSecondaryFireKeyDown();
+		return;
+	}
+}
+void Player::onSecondaryFireKeyUp() {
+	if(vehicle) {
+		return;
+	}
+	if(curWeapon) {
+		curWeapon->onSecondaryFireKeyUp();
+		return;
+	}
 }
 void Player::pickupPhysicsProp(class ModelEntity *ent) {
 	if(carryingEntity) {

@@ -37,7 +37,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 										// only generate a small move value for that frame
 										// walking will use different animations and
 										// won't generate footsteps
-//#define BUTTON_AFFIRMATIVE	32
+#define BUTTON_ATTACK_SECONDARY	32 // was: BUTTON_AFFIRMATIVE
 //#define	BUTTON_NEGATIVE		64
 //
 //#define BUTTON_GETFLAG		128

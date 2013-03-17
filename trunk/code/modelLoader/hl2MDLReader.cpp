@@ -28,6 +28,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileFormats/vvdFileFormat.h>
 #include <api/staticModelCreatorAPI.h>
 
+// limits used to validate MDL data
+// (they can be freely increased, they dont affect memory allocation at all)
+#define MAX_MDL_MATERIALS 1024
+#define MAX_MDL_BODYPARTS 512
+
 #pragma pack(1)
 
 struct mdlHeader_s {
@@ -45,6 +50,21 @@ struct mdlBodyParts_s {
 		return ((char *)this) + ofsName;
 	}
 };
+struct mdlV37BoneWeight_s {
+	float weight[4];
+	short bone[4]; 
+	short numBones;
+	short material;
+	short firstRef;
+	short lastRef;
+};
+struct mdlV37Vertex_s {
+	mdlV37BoneWeight_s m_BoneWeights;
+	vec3_t	pos;
+	vec3_t	normal;
+	vec2_t	tc;
+};
+
 struct mdlModelHeader_s {
 	char name[64];
 	int type;
@@ -61,6 +81,14 @@ struct mdlMeshHeader_s {
 	int ofsModel; // negative
 	int	numVertices;
 	int	ofsVertices;
+
+	const mdlV37Vertex_s *getVertices37() const {
+		const byte *modelData = ((const byte*)this) + ofsModel;
+		int ofsModelVertices = *((int*)(modelData+84));
+		const byte *verticesData = modelData + ofsModelVertices;
+		const mdlV37Vertex_s *vertices = (const mdlV37Vertex_s*)verticesData;
+		return vertices + ofsVertices;
+	}
 };
 struct mdlV44BoneWeights_s {
 	float	weight[3];
@@ -90,6 +118,12 @@ struct vtx7Vertex_s {
 	short origMeshVertID;
 	char boneID[3];
 };
+struct vtx6Vertex_s {
+	unsigned char boneWeightIndex[4];
+	short boneID[4];
+	short origMeshVertID;
+	unsigned char numBones;
+};
 struct vtxStripGroupHeader_s {
 	int numVerts;
 	int ofsVerts;
@@ -107,6 +141,9 @@ struct vtxStripGroupHeader_s {
 	};
 	inline const vtx7Vertex_s *pVertexV7(int i) const  { 
 		return (const vtx7Vertex_s *)(((const byte *)this) + ofsVerts) + i; 
+	};
+	inline const vtx6Vertex_s *pVertexV6(int i) const  { 
+		return (const vtx6Vertex_s *)(((const byte *)this) + ofsVerts) + i; 
 	};
 };
 struct vtxMeshHeader_s {
@@ -200,9 +237,15 @@ public:
 					u32 i1 = sIndices[strip->ofsIndices+k+1];
 					u32 i2 = sIndices[strip->ofsIndices+k+2];
 #if 1
-					i0 = stripGroup->pVertexV7(i0)->origMeshVertID;
-					i1 = stripGroup->pVertexV7(i1)->origMeshVertID;
-					i2 = stripGroup->pVertexV7(i2)->origMeshVertID;
+					if(this->h->version == 7) {
+						i0 = stripGroup->pVertexV7(i0)->origMeshVertID;
+						i1 = stripGroup->pVertexV7(i1)->origMeshVertID;
+						i2 = stripGroup->pVertexV7(i2)->origMeshVertID;
+					} else {
+						i0 = stripGroup->pVertexV6(i0)->origMeshVertID;
+						i1 = stripGroup->pVertexV6(i1)->origMeshVertID;
+						i2 = stripGroup->pVertexV6(i2)->origMeshVertID;
+					}
 #endif
 					out.push_back(i0);
 					out.push_back(i1);
@@ -224,28 +267,55 @@ bool hl2MDLReader_c::beginReading(const char *fname) {
 		return true; // error
 	}
 	this->name = fname;
+	this->fileLen = data.getTotalLen();
 	const mdlHeader_s *h = (const mdlHeader_s*)data.getDataPtr();
 	this->version = h->version;
 	if(readMatNames()) {
 		return true;
 	}	
 	
-	str vvdFileName = fname;
-	vvdFileName.setExtension("vvd");
-	vvdFileLen = g_vfs->FS_ReadFile(vvdFileName,(void**)&vvd);
-	if(vvd == 0) {
-		g_core->RedWarning("hl2MDLReader_c::beginReading: cannot open %s\n",vvdFileName.c_str());
-		return true; // error
+	if(version >= 44) {
+		// .vvd is not present in older .mdl formats
+		str vvdFileName = fname;
+		vvdFileName.setExtension("vvd");
+		vvdFileLen = g_vfs->FS_ReadFile(vvdFileName,(void**)&vvd);
+		if(vvd == 0) {
+			g_core->RedWarning("hl2MDLReader_c::beginReading: cannot open %s\n",vvdFileName.c_str());
+			return true; // error
+		}
 	}
 
 	return false; // no error
 }
-
 bool hl2MDLReader_c::readMatNames() {
-	data.setPos(204);
+	if(version == 44) {
+		data.setPos(204);
+	} else if(version == 37) {
+		data.setPos(224);
+	} else {
+		data.setPos(208);
+	}
 	u32 numMaterials = data.readU32();
+	// do the sanity check
+	if(numMaterials > MAX_MDL_MATERIALS) {
+		g_core->RedWarning("hl2MDLReader_c::readMatNames: numMaterials is higher than MAX_MDL_MATERIALS (%i, %i). Mdl file is not valid.\n",
+			numMaterials,MAX_MDL_MATERIALS);
+		return true; // error
+	}
 	u32 ofsMaterials = data.readU32();
+	// do the sanity check
+	if(ofsMaterials > this->fileLen) {
+		g_core->RedWarning("hl2MDLReader_c::readMatNames: materials data offset is higher than mdl file length (%i>%i)\n",
+			ofsMaterials,this->fileLen);
+		return true; // error
+	}
 	u32 numMaterialPaths = data.readU32();
+	// do the sanity check
+	if(numMaterialPaths > MAX_MDL_MATERIALS) {
+		g_core->RedWarning("hl2MDLReader_c::readMatNames: numMaterialPaths is higher than MAX_MDL_MATERIALS (%i, %i). Mdl file is not valid.\n",
+			numMaterialPaths,MAX_MDL_MATERIALS);
+		return true; // error
+	}
 	u32 ofsMaterialPaths = data.readU32();
 	data.setPos(ofsMaterialPaths);
 	u32 ofsPathString = data.readU32();
@@ -260,20 +330,42 @@ bool hl2MDLReader_c::readMatNames() {
 		matNames[i] = materialPath;
 		matNames[i].append(matName);
 		matNames[i].backSlashesToSlashes();
-		data.setPos(saved + 64);
+		if(this->version == 44) {
+			data.setPos(saved + 64);
+		} else {
+			data.setPos(saved + 32);
+		}
 	}
 	return false; // no error
 }
 bool hl2MDLReader_c::getStaticModelData(class staticModelCreatorAPI_i *out) {
-	data.setPos(232);
+	if(version == 44) {
+		data.setPos(232);
+	} else if(version == 37) {
+		data.setPos(252);
+	} else {
+		data.setPos(236);
+	}
 
 	u32 numBodyParts = data.readU32();
+	if(numBodyParts > MAX_MDL_BODYPARTS) {
+		g_core->RedWarning("hl2MDLReader_c::getStaticModelData: bodyParts count %i is higher than MAX_MDL_BODYPARTS (%i). Mdl file is not valid\n",
+			numBodyParts,MAX_MDL_BODYPARTS);
+		return true; // error
+	}
+
 	u32 bodyPartsOfs = data.readU32();
+	if(bodyPartsOfs >= this->fileLen) {
+		g_core->RedWarning("hl2MDLReader_c::getStaticModelData: bodyPartsOfs %i is higher than mdl file lenght (%i). Mdl file is not valid\n",
+			bodyPartsOfs,this->fileLen);
+		return true; // error
+	}
 
 	vtxFile_c vtx;
 	str vtxName = this->name;
 	vtxName.setExtension("vtx");
 	if(vtx.preload(vtxName)) {
+		g_core->RedWarning("hl2MDLReader_c::getStaticModelData: couldn't load VTX file for mdl %s\n",this->name.c_str());
 		return true; // error
 	}
 
@@ -301,30 +393,62 @@ bool hl2MDLReader_c::getStaticModelData(class staticModelCreatorAPI_i *out) {
 				const char *meshMaterial = this->getMatName(mesh->matIndex);
 				str fullMatName = meshMaterial;
 				fullMatName.setExtension("vmt");
-				
-				const mdlV44Vertex_s *baseVertices = (const mdlV44Vertex_s*)vvd->getVertexData();
-				const mdlV44Vertex_s *meshVertices = baseVertices + mesh->ofsVertices;
-				const mdlV44Vertex_s *v = meshVertices;
 
 				arraySTD_c<u16> indices;
 				vtx.getMeshIndices(indices,i,j,k);
-				for(u32 l = 0; l < indices.size(); l+= 3) {
-					u32 i0 = indices[l+0];
-					u32 i1 = indices[l+1];
-					u32 i2 = indices[l+2];
-					simpleVert_s v0,v1,v2;
-					v0.setXYZ(meshVertices[i0].pos);
-					v0.setUV(meshVertices[i0].tc);
-					v1.setXYZ(meshVertices[i1].pos);
-					v1.setUV(meshVertices[i1].tc);
-					v2.setXYZ(meshVertices[i2].pos);
-					v2.setUV(meshVertices[i2].tc);
-					out->addTriangle(fullMatName,v0,v1,v2);
-				}
+				if(this->version == 44) {
+					// MDL V44 (retail Half Life2, Episodes, Portal) path
+					// Vertices data is stored in vvd file
+					const mdlV44Vertex_s *baseVertices44 = (const mdlV44Vertex_s*)vvd->getVertexData();
+					const mdlV44Vertex_s *meshVertices44 = baseVertices44 + mesh->ofsVertices;
 
-				data.setPos(meshHeaderAt + 116);
+					for(u32 l = 0; l < indices.size(); l+= 3) {
+						u32 i0 = indices[l+0];
+						u32 i1 = indices[l+1];
+						u32 i2 = indices[l+2];
+						simpleVert_s v0,v1,v2;
+						v0.setXYZ(meshVertices44[i0].pos);
+						v0.setUV(meshVertices44[i0].tc);
+						v1.setXYZ(meshVertices44[i1].pos);
+						v1.setUV(meshVertices44[i1].tc);
+						v2.setXYZ(meshVertices44[i2].pos);
+						v2.setUV(meshVertices44[i2].tc);
+						out->addTriangle(fullMatName,v0,v1,v2);
+					}
+				} else {
+					// older mdl format paths (without vvd file)
+					// vertices data is stored in mdl file
+					const mdlV37Vertex_s *meshVertices37 = mesh->getVertices37();
+					//g_core->Print("verize %i\n",sizeof(mdlV37Vertex_s));
+					//for(u32 l = 0; l < mesh->numVertices; l++) {
+					//	g_core->Print("V %i - %f %f %f\n",l,meshVertices37[l].pos[0],meshVertices37[l].pos[1],meshVertices37[l].pos[2]);
+					//}
+					for(u32 l = 0; l < indices.size(); l+= 3) {
+						u32 i0 = indices[l+0];
+						u32 i1 = indices[l+1];
+						u32 i2 = indices[l+2];
+						simpleVert_s v0,v1,v2;
+						v0.setXYZ(meshVertices37[i0].pos);
+						v0.setUV(meshVertices37[i0].tc);
+						v1.setXYZ(meshVertices37[i1].pos);
+						v1.setUV(meshVertices37[i1].tc);
+						v2.setXYZ(meshVertices37[i2].pos);
+						v2.setUV(meshVertices37[i2].tc);
+						out->addTriangle(fullMatName,v0,v1,v2);
+					}
+				}
+		
+				if(this->version == 44) {
+					data.setPos(meshHeaderAt + 116);
+				} else {
+					data.setPos(meshHeaderAt + 68);
+				}
 			}
-			data.setPos(modelHeaderAt + 148);
+			if(this->version == 44) {
+				data.setPos(modelHeaderAt + 148);
+			} else {
+				data.setPos(modelHeaderAt + 140);
+			}
 		}
 	}
 	return false; // no error

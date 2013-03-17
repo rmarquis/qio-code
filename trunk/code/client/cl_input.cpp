@@ -985,6 +985,8 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-button4", IN_Button4Up);
 	Cmd_AddCommand ("+button5", IN_Button5Down);
 	Cmd_AddCommand ("-button5", IN_Button5Up);
+	Cmd_AddCommand ("+attacksecondary", IN_Button5Down);
+	Cmd_AddCommand ("-attacksecondary", IN_Button5Up);
 	Cmd_AddCommand ("+button6", IN_Button6Down);
 	Cmd_AddCommand ("-button6", IN_Button6Up);
 	Cmd_AddCommand ("+button7", IN_Button7Down);

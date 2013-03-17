@@ -166,6 +166,10 @@ public:
 		this->len = stringLen;
 	}
 	void append(const char *addToString) {
+		if(addToString == 0)
+			return;
+		if(*addToString == 0)
+			return;
 		u32 addLen = strlen(addToString);
 		this->ensureAllocated(this->len + addLen + 1);
 		this->len += addLen;

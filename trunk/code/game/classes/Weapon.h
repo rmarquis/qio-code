@@ -51,7 +51,12 @@ public:
 
 	void onFireKeyHeld();
 	void onFireKeyDown();
+	virtual void onSecondaryFireKeyHeld();
+	virtual void onSecondaryFireKeyDown();
+	virtual void onSecondaryFireKeyUp();
+
 	virtual void doWeaponAttack();
+	virtual void doWeaponAttackSecondary();
 	bool canFireAgain() const;
 
 	bool hasCustomViewModel() const {
@@ -70,6 +75,8 @@ public:
 	virtual void onWeaponPickedUp() {
 
 	}
+
+	void setViewModel(const char *newViewModelName);
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual bool doUse(class Player *activator);

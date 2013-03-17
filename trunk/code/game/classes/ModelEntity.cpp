@@ -455,7 +455,8 @@ void ModelEntity::applyCentralImpulse(const vec3_c &impToAdd) {
 	if(this->body == 0)
 		return;
 	this->body->activate(true);
-	this->body->applyCentralImpulse(impToAdd.floatPtr());
+	//this->body->applyCentralImpulse(impToAdd.floatPtr());
+	this->body->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
 }
 void ModelEntity::applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs) {
 	if(this->body == 0)

@@ -30,6 +30,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Weapon_PhysGun : public Weapon {
 	safePtr_c<ModelEntity> holdingEntity;
+	bool bDropped;
+	float phMaxDist;
+	float phPickupDist;
+	float phDragForce;
+	float phImpulseForce;
+	float phHoldDist;
 public:
 	Weapon_PhysGun();
 
@@ -42,6 +48,8 @@ public:
 	void shootPickedUpEntity();
 	// dropping picked up entity - right mouse button
 	void dropPickedUpEntity();
+	// add gravity impulse to crossair entity
+	void addGravityImpulse();
 
 	// update picked up entity orientation
 	virtual void runFrame();
@@ -51,6 +59,9 @@ public:
 	virtual void onWeaponPickedUp();
 
 	virtual void doWeaponAttack();
+	virtual void onSecondaryFireKeyHeld();
+	virtual void onSecondaryFireKeyDown();
+	virtual void onSecondaryFireKeyUp();
 
 	virtual void setKeyValue(const char *key, const char *value);
 };

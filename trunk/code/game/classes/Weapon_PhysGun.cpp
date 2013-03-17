@@ -35,7 +35,11 @@ DEFINE_CLASS(Weapon_PhysGun, "Weapon");
 aCvar_c physgun_impulseForce_mult("physgun_impulseForce_mult","1.0");
 
 Weapon_PhysGun::Weapon_PhysGun() {
-
+	phMaxDist = 300.f;
+	phPickupDist = 96.f;
+	phDragForce = 250.f;
+	phImpulseForce = 15000.f;
+	phHoldDist = 60.f;
 }
 void Weapon_PhysGun::postSpawn() {
 	// see if we can use Half Life 2 physgun model
@@ -43,6 +47,9 @@ void Weapon_PhysGun::postSpawn() {
 		this->setRenderModel("models/weapons/w_physics.mdl");
 		bUseDynamicConvexForTrimeshCMod = true;
 		this->setColModel("models/weapons/w_physics.mdl");
+		// "v_*" is a viewmodel, we should use it instead of worldmodel,
+		// but it has a lot of dangling edges and breaks stencil shadows
+		//this->setViewModel("models/weapons/v_physcannon.mdl");
 	} else {
 
 	}
@@ -65,12 +72,12 @@ void Weapon_PhysGun::setKeyValue(const char *key, const char *value) {
 void Weapon_PhysGun::runFrame() {
 	if(holdingEntity) {
 		vec3_c pos = holdingEntity->getOrigin();
-		vec3_c neededPos = owner->getEyePos() + owner->getViewAngles().getForward() * 60.f;
+		vec3_c neededPos = owner->getEyePos() + owner->getViewAngles().getForward() * phHoldDist;
 		vec3_c delta = neededPos - pos;
 
 		holdingEntity->setLinearVelocity(holdingEntity->getLinearVelocity()*0.5f);
 		holdingEntity->setAngularVelocity(holdingEntity->getAngularVelocity()*0.5f);
-		holdingEntity->applyCentralImpulse(delta);
+		holdingEntity->applyCentralImpulse(delta*50.f);
 		//carryingEntity->setOrigin(neededPos);
 	}
 	ModelEntity::runFrame();
@@ -80,9 +87,10 @@ void Weapon_PhysGun::tryToPickUpEntity() {
 		g_core->RedWarning("Weapon_PhysGun::tryToPickUpEntity(): already holding an entity\n");
 		return;
 	}
+
 	vec3_c muzzle = owner->getEyePos();
 	trace_c tr;
-	tr.setupRay(muzzle,muzzle + owner->getViewAngles().getForward() * 96.f);
+	tr.setupRay(muzzle,muzzle + owner->getViewAngles().getForward() * phPickupDist);
 	if(G_TraceRay(tr,owner)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
@@ -94,6 +102,50 @@ void Weapon_PhysGun::tryToPickUpEntity() {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->holdingEntity = me;
 		}
+	} else {
+		tr.setupRay(muzzle,muzzle + owner->getViewAngles().getForward() * phMaxDist);
+		if(G_TraceRay(tr,owner)) {
+			BaseEntity *hit = tr.getHitEntity();
+			if(hit == 0) {
+				G_Printf("Weapon_PhysGun::tryToPickUpEntity: WARNING: null hit entity\n");
+				return;
+			}
+			float dist = tr.getHitPos().dist(muzzle);
+			G_Printf("Weapon_PhysGun::tryToPickUpEntity: Use trace hit\n");
+			if(hit->isDynamic()) {
+				ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
+				float frac;
+				if(dist > phMaxDist) {
+					frac = 0.f;
+				} else if(dist < phPickupDist) {
+					frac = 1.f;
+				} else {
+					frac = 1.f-((phMaxDist-dist)/(phMaxDist-phPickupDist));
+				}
+				vec3_c dir = (muzzle-tr.getHitPos());
+				dir.normalize();
+				vec3_c force = dir * frac * phDragForce;
+				me->applyPointImpulse(force,tr.getHitPos());
+			}
+		}
+	}
+}
+void Weapon_PhysGun::addGravityImpulse() {
+	vec3_c muzzle = owner->getEyePos();
+	trace_c tr;
+	tr.setupRay(muzzle,muzzle + owner->getViewAngles().getForward() * phPickupDist);
+	if(G_TraceRay(tr,owner)) {
+		BaseEntity *hit = tr.getHitEntity();
+		if(hit == 0) {
+			G_Printf("Weapon_PhysGun::addGravityImpulse: WARNING: null hit entity\n");
+			return;
+		}
+		G_Printf("Weapon_PhysGun::addGravityImpulse: Use trace hit\n");
+		vec3_c dir = (tr.getHitPos()-muzzle);
+		dir.normalize();
+		ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
+		vec3_c force = dir * phImpulseForce;
+		me->applyPointImpulse(force,tr.getHitPos());
 	}
 }
 // shooting entity - left mouse button
@@ -103,7 +155,7 @@ void Weapon_PhysGun::shootPickedUpEntity() {
 		return;
 	}
 	vec3_c dir = owner->getViewAngles().getForward();
-	this->holdingEntity->applyCentralImpulse(dir*300.f*physgun_impulseForce_mult.getFloat());
+	this->holdingEntity->applyCentralImpulse(dir*phImpulseForce*physgun_impulseForce_mult.getFloat());
 	this->holdingEntity = 0;
 }
 // dropping picked up entity - right mouse button
@@ -115,6 +167,26 @@ void Weapon_PhysGun::doWeaponAttack() {
 	if(holdingEntity) {
 		shootPickedUpEntity();
 	} else {
+		addGravityImpulse();
+	}
+}
+void Weapon_PhysGun::onSecondaryFireKeyHeld() {
+	if(bDropped)
+		return;
+	if(holdingEntity) {
+		return;
+	} else {
 		tryToPickUpEntity();
 	}
+}
+void Weapon_PhysGun::onSecondaryFireKeyDown() {
+	if(holdingEntity) {
+		dropPickedUpEntity();
+		bDropped = true;
+	} else {
+		tryToPickUpEntity();
+	}
+}
+void Weapon_PhysGun::onSecondaryFireKeyUp() {
+	bDropped = false;
 }

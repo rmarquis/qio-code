@@ -39,9 +39,13 @@ Weapon::Weapon() {
 Weapon::~Weapon() {
 
 }
+void Weapon::setViewModel(const char *newViewModelName) {
+	model_view = newViewModelName;
+}
 void Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model_view")) {
-		model_view = value;
+		// use this model for first person view
+		this->setViewModel(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -77,6 +81,15 @@ void Weapon::onFireKeyDown() {
 		doWeaponAttack();
 	}
 }
+void Weapon::onSecondaryFireKeyHeld() {
+
+}
+void Weapon::onSecondaryFireKeyDown() {
+
+}
+void Weapon::onSecondaryFireKeyUp() {
+
+}
 
 void Weapon::doWeaponAttack() {
 	if(owner) {
@@ -85,7 +98,9 @@ void Weapon::doWeaponAttack() {
 		G_BulletAttack(this->getOrigin(),this->getForward(),this);
 	}
 }
+void Weapon::doWeaponAttackSecondary() {
 
+}
 bool Weapon::canFireAgain() const {
 	u32 timeElapsed = level.time - this->lastShotTime;
 	if(timeElapsed < this->delayBetweenShots) {
