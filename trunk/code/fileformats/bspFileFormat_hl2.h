@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BSPFILEFORMAT_HL2__
 
 #define BSP_IDENT_VBSP	(('P'<<24)+('S'<<16)+('B'<<8)+'V')
+// older hl2 bsps
+#define BSP_VERSION_HL2_18	18
 // HalfLife2
 #define BSP_VERSION_HL2_19	19
 // Portal1
@@ -156,6 +158,10 @@ struct srcSurface_s {
 	unsigned short	numPrims;		// primitives
 	unsigned short	firstPrimID;
 	unsigned int	smoothingGroups;	// lightmap smoothing group
+};
+struct srcSurfaceV18_s {
+	byte dummy[4][4]; // looks like color (for 4 lightmaps)
+	srcSurface_s s;
 };
 
 struct srcTexInfo_s

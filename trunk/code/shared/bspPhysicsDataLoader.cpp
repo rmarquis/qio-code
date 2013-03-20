@@ -114,8 +114,13 @@ void bspPhysicsDataLoader_c::iterateModelBrushes(u32 modelNum, void (*perBrushCa
 		const q2Model_s *q2Mod = h->getQ2Models();
 		arraySTD_c<u32> brushes;
 		nodeBrushes_r(q2Mod->headnode,brushes);
+		u32 totalBrushCount = h->getNumBrushes();
 		for(u32 i = 0; i < brushes.size(); i++) {
 			u32 brushNum = brushes[i];
+			if(brushNum >= totalBrushCount) {
+				g_core->RedWarning("bspPhysicsDataLoader_c::iterateModelBrushes: brush index %i out of range <0,%i)\n",brushNum,totalBrushCount);
+				continue;
+			}
 			const q2Brush_s *q2Brush = h->getQ2Brushes()+brushNum;
 			perBrushCallback(brushNum,q2Brush->contents);
 		}

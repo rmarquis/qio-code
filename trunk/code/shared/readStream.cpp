@@ -27,7 +27,28 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <shared/str.h>
 
+readStream_c::readStream_c() {
+	fileData = 0;
+	streamLen = 0;
+	data = 0;
+	ofs = 0;
+}
+readStream_c::~readStream_c() {
+	freeMemory();
+}
+void readStream_c::freeMemory() {
+	if(fileData) {
+		g_vfs->FS_FreeFile(fileData);
+		fileData = 0;
+		streamLen = 0;
+		ofs = 0;
+		data = 0;
+	}
+}
 bool readStream_c::loadFromFile(const char *fname) {
+	// free previous file data
+	freeMemory();
+	// load new file data
 	streamLen = g_vfs->FS_ReadFile(fname,&fileData);
 	if(fileData == 0) {
 		return true; // failed to open file

@@ -934,9 +934,16 @@ public:
 
 bool rBspTree_c::loadSurfsSE() {
 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
-	if(sl.fileLen % sizeof(srcSurface_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
-		return true; // error
+	if(h->version == 18) {
+		if(sl.fileLen % sizeof(srcSurfaceV18_s)) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+			return true; // error
+		}
+	} else {
+		if(sl.fileLen % sizeof(srcSurface_s)) {
+			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+			return true; // error
+		}
 	}
 	const srcLump_s &el = srcH->getLumps()[SRC_EDGES];
 	if(el.fileLen % sizeof(srcEdge_s)) {
@@ -958,9 +965,13 @@ bool rBspTree_c::loadSurfsSE() {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
 		return true; // error
 	}
-	u32 numSurfaces = sl.fileLen / sizeof(srcSurface_s);
+	u32 numSurfaces;
+	if(h->version == 18) {
+		numSurfaces = sl.fileLen / sizeof(srcSurfaceV18_s);
+	} else {
+		numSurfaces = sl.fileLen / sizeof(srcSurface_s);
+	}
 	u32 numVerts = vl.fileLen / sizeof(srcVert_s);
-	const srcSurface_s *isf = (const srcSurface_s *)srcH->getLumpData(SRC_FACES);
 	const srcVert_s *iv = (const srcVert_s *)srcH->getLumpData(SRC_VERTEXES);
 	const srcEdge_s *ie = (const srcEdge_s *)srcH->getLumpData(SRC_EDGES);
 	const srcTexInfo_s *it = (const srcTexInfo_s *)srcH->getLumpData(SRC_TEXINFO);
@@ -970,6 +981,16 @@ bool rBspTree_c::loadSurfsSE() {
 	const char *texDataStr = (const char*)srcH->getLumpData(SRC_TEXDATA_STRING_DATA);
 	const byte *lightmaps = (const byte*)srcH->getLumpData(SRC_LIGHTING);
 		
+	const srcSurface_s *isf;
+	const srcSurfaceV18_s *isf18;
+	if(srcH->version == 18) {
+		isf = 0;
+		isf18 = (const srcSurfaceV18_s *)srcH->getLumpData(SRC_FACES);
+	} else {
+		isf = (const srcSurface_s *)srcH->getLumpData(SRC_FACES);
+		isf18 = 0;
+	}
+
 	// used while converting SE lightmaps to our format
 	arraySTD_c<byte> rgbs;
 
@@ -978,15 +999,25 @@ bool rBspTree_c::loadSurfsSE() {
 
 	surfs.resize(numSurfaces);
 	bspSurf_s *oSF = surfs.getArray();
-	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
+	for(u32 i = 0; i < numSurfaces; i++, oSF++) {
+		if(isf18) {
+			isf = &isf18->s;
+		}
 		oSF->type = BSPSF_PLANAR;
 		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
 		// get vmt file name
 		const srcTexInfo_s *sfTexInfo = it + isf->texInfo;
-		const srcTexData_s *sfTexData = texData + sfTexInfo->texData;
-		u32 ofs = texDataIndexes[sfTexData->nameStringTableID];
-		str matName = texDataStr + ofs;
-		matName.defaultExtension("vmt");
+		
+		str matName;
+		if(sfTexInfo->texData < 0) {
+			// sfTexInfo->texData might be -1
+			matName = "nomaterial";
+		} else {
+			const srcTexData_s *sfTexData = texData + sfTexInfo->texData;
+			u32 ofs = texDataIndexes[sfTexData->nameStringTableID];
+			matName = texDataStr + ofs;
+			matName.defaultExtension("vmt");
+		}
 		ts->mat = g_ms->registerMaterial(matName);
 		u32 w = isf->lightmapTextureSizeInLuxels[0] + 1;
 		u32 h = isf->lightmapTextureSizeInLuxels[1] + 1;
@@ -1084,8 +1115,16 @@ bool rBspTree_c::loadSurfsSE() {
 		polyBuilder.calcTriIndexes();
 		polyBuilder.addVertsToBounds(ts->bounds);
 		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
+		u16 *localIndicesU16 = ts->localIndexes.initU16(polyBuilder.getNumIndices());
 		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
-			indicesU32[j] = ts->firstVert+polyBuilder.getIndex(j);
+			u32 idx = polyBuilder.getIndex(j);;
+			localIndicesU16[j] = idx;
+			indicesU32[j] = ts->firstVert+idx;
+		}
+		if(isf18) {
+			isf18++;
+		} else {
+			isf++;
 		}
 	}
 	la.finalize();
@@ -1234,6 +1273,7 @@ bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
 	u32 numLeafSurfaces = sl.fileLen / sizeof(u16);
 	const u16 *inLeafSurfaces = (const u16*)h->getLumpData(leafSurfsLump);
 	leafSurfaces.resize(numLeafSurfaces);
+
 	for(u32 i = 0; i < numLeafSurfaces; i++) {
 		leafSurfaces[i] = inLeafSurfaces[i];
 	}
@@ -1494,7 +1534,7 @@ bool rBspTree_c::load(const char *fname) {
 				return true; // error
 			}
 		} else {
-			g_core->RedWarning("rBspTree_c::load: QIO has unknown version %i\n",h->version);
+			g_core->RedWarning("rBspTree_c::load: QIO bsp has unknown version %i\n",h->version);
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
@@ -1729,7 +1769,7 @@ void rBspTree_c::updateVisibility() {
 	q3Leaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
 	int c_leavesCulledByAreaBits = 0;
-	if(rf_bsp_forceEverythingVisible.getInt()) {
+	if(rf_bsp_forceEverythingVisible.getInt() || (this->leafSurfaces.size()==0)) {
 		for(u32 i = 0; i < surfs.size(); i++) {
 			this->surfs[i].lastVisCount = this->visCounter;
 		}
@@ -2116,6 +2156,11 @@ void rBspTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	}
 }	
 bool rBspTree_c::traceRay(class trace_c &out) {
+	if(leafSurfaces.size() == 0) {
+		// we can't use BSP tree for raycasting if there is no leafSurface indexes
+		return false;
+	}
+
 	float prevFrac = out.getFraction();
 	traceNodeRay_r(0,out);
 	if(out.getFraction() < prevFrac)

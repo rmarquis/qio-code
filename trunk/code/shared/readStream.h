@@ -32,7 +32,11 @@ class readStream_c : public readStreamAPI_i {
 	void *fileData;
 	byte *data;
 	u32 ofs;
+
+	void freeMemory();
 public:
+	readStream_c();
+	~readStream_c();
 	bool loadFromFile(const char *fname);
 
 	virtual bool isAtEOF() const;

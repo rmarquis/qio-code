@@ -256,6 +256,42 @@ void IMG_LoadTGA(const char *name, byte **pic, byte *buffer, u32 *width, u32 *he
 	}
 }
 
+#if 1
+#define IMAGE_USE_VTF_LIB
+#endif 
+
+#ifdef IMAGE_USE_VTF_LIB
+#include <VTFLib.h>
+#pragma comment( lib, "VTFLib.lib" )
+
+static bool vl_ready = false;
+bool IMG_LoadVTF(const char *fname, const byte *buffer, const u32 bufferLen, byte **pic, u32 *width, u32 *height) {
+	if(vl_ready==false) {
+		vlInitialize();
+		vl_ready = true;
+	}
+	vlUInt img = 1;
+	vlCreateImage(&img);
+	vlBindImage(img);
+	bool res = vlImageLoadLump(buffer,bufferLen,false);
+	bool loaded = vlImageIsLoaded();
+	vlUInt w = vlImageGetWidth();
+	vlUInt h = vlImageGetHeight();
+	vlUInt d = vlImageGetDepth();
+	vlUInt faceCount = vlImageGetFaceCount();
+	vlBool hasThumbnail = vlImageGetHasThumbnail();
+	vlUInt frameCount = vlImageGetFrameCount();
+	*width = w;
+	*height = h;
+	VTFImageFormat format = vlImageGetFormat();
+	vlByte *data = vlImageGetData(0, 0, 0, 0);
+	byte *out = *pic = (byte*)malloc(w*h*4);
+	vlImageConvertToRGBA8888(data,out,w,h,format);
+	vlDeleteImage(img);
+	return false; // ok
+}
+
+#endif // IMAGE_USE_VTF_LIB
 
 #include <IL/il.h>
 
@@ -344,7 +380,17 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 		strcpy(lastValidFName,s.c_str());
 		return lastValidFName;
 	}
-
+#ifdef IMAGE_USE_VTF_LIB
+	if(1 && !stricmp(ext,"vtf")) {
+		// we have a better loader for vtf...
+		// Devil VTF loader cant load SOME OF vtf types
+		IMG_LoadVTF(s,buf,len,imageData,width,height);
+		g_vfs->FS_FreeFile(buf);
+		strcpy(lastValidFName,s.c_str());
+		return lastValidFName;
+	}
+#endif // IMAGE_USE_VTF_LIB
+	
     ILuint ilTexture;
     ilGenImages(1, &ilTexture);
     ilBindImage(ilTexture);

@@ -405,6 +405,10 @@ struct q3Header_s {
 				return true;
 			}
 		} else if(this->ident == BSP_IDENT_VBSP) {
+			// old HL2 bsps
+			if(this->version == BSP_VERSION_HL2_18) {
+				return true;
+			}
 			// Source Engine (Half Life 2, etc) bsp
 			if(this->version == BSP_VERSION_HL2_19) {
 				return true;
