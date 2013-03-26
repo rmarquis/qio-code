@@ -21,37 +21,17 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physObjectDef.h
-#ifndef __PHYSOBJECTDEF_H__
-#define __PHYSOBJECTDEF_H__
+// Prop_Physics.cpp
+#include "Prop_Physics.h"
 
-#include <math/matrix.h>
+DEFINE_CLASS(PropPhysics, "ModelEntity");
+DEFINE_CLASS_ALIAS(PropPhysics, prop_physics);
+DEFINE_CLASS_ALIAS(PropPhysics, prop_dynamic);
+DEFINE_CLASS_ALIAS(PropPhysics, physics_prop);
 
-struct physObjectDef_s {
-	// 0 mass means that object is non-moveable
-	float mass;
-	// physics object creation will fail if collisionModel pointer is NULL
-	const class cMod_i *collisionModel;
-	// model starting transform
-	matrix_c transform;
+PropPhysics::PropPhysics() {
+	bUseRModelToCreateDynamicCVXShape = true;
+	bUseDynamicConvexForTrimeshCMod = true;
+}
 
-	physObjectDef_s() {
-		mass = 0.f;
-		collisionModel = 0;
-	}
-	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const class cMod_i *newCMod,
-		float newMass, bool newBUseDynamicConvexForTrimeshCMod) {
-		transform.fromAnglesAndOrigin(newAngles,newXYZ);
-		collisionModel = newCMod;
-		mass = newMass;
-	}
-	bool isStatic() const {
-		if(mass == 0.f) {
-			return true;
-		}
-		return false;
-	}
-};
-
-#endif // __PHYSOBJECTDEF_H__
 

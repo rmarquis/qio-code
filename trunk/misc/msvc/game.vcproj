@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
+				AdditionalIncludeDirectories="..\..\code\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -145,7 +145,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
+				AdditionalIncludeDirectories="..\..\code\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -281,6 +281,7 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -299,6 +300,14 @@
 			<File
 				RelativePath="..\..\code\game\g_bullet_debugDraw.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_classes.cpp"
@@ -361,6 +370,10 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\game\g_physDLL.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_playerModels.cpp"
@@ -562,6 +575,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\Projectile.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Prop_Physics.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Prop_Physics.h"
 				>
 			</File>
 			<File

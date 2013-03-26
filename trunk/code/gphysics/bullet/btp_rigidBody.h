@@ -26,18 +26,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BTP_RIGIDBODY_H__
 
 #include <api/physAPI.h> 
+#include <api/physObjectAPI.h> 
+
 
 class bulletRigidBody_c : public physObjectAPI_i {
 	class bulletColShape_c *shape;
 	class btRigidBody *bulletRigidBody;
-
+	class BaseEntity *myEntity;
 public:
 	bulletRigidBody_c();
 	~bulletRigidBody_c();
 
 	void init(class bulletColShape_c *newShape, const struct physObjectDef_s &def); 
 
-	virtual void getCurrentMatrix(const class matrix_c &out) const;
+	virtual void setOrigin(const class vec3_c &newPos);
+	virtual const class vec3_c &getRealOrigin() const;
+	virtual void getCurrentMatrix(class matrix_c &out) const;
 	virtual void applyCentralForce(const class vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const class vec3_c &impToAdd);
 	// linear velocity access (in Quake units)
@@ -46,8 +50,16 @@ public:
 	// angular velocity access
 	virtual const vec3_c getAngularVelocity() const;
 	virtual void setAngularVelocity(const class vec3_c &newAVel);
+	// misc
+	virtual bool isDynamic() const;
+	virtual void setEntityPointer(class BaseEntity *ent);
+	virtual BaseEntity *getEntityPointer() const;
 	// water physics
 	virtual void runWaterPhysics(float curWaterLevel);
+
+	class btRigidBody *getBulletRigidBody() {
+		return bulletRigidBody;
+	}
 };
 
 #endif // __BTP_RIGIDBODY_H__

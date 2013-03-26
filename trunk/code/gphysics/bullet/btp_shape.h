@@ -26,13 +26,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BTP_SHAPE_H__
 
 #include <shared/str.h>
+#include <math/matrix.h>
 
 #include "btp_headers.h"
 
 // NOTE: single bulletColShape_c can be used by several Bullet rigid bodies
 class bulletColShape_c {
 	str name;
-	btTransform centerOfMassTransform;
+	matrix_c centerOfMassTransform;
+	bool bHasCenterOfMassTransform;
 	// Bullet BHV shape can be used only for static objects,
 	// so we have to distinguish between moveable
 	// and non-moveable bodies.
@@ -61,8 +63,11 @@ public:
 	btCollisionShape *getBulletCollisionShape() const {
 		return bulletShape;
 	}
-	const btTransform &getCenterOfMassTransform() const {
+	const matrix_c &getCenterOfMassTransform() const {
 		return centerOfMassTransform;
+	}
+	bool hasCenterOfMassTransform() const {
+		return bHasCenterOfMassTransform;
 	}
 	bulletColShape_c *getHashNext() const {
 		return hashNext;

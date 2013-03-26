@@ -43,7 +43,7 @@
 				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -60,6 +60,8 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\gphysicsx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="libcmt.lib"
 				ModuleDefinitionFile="gphysics.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -174,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_characterController.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.cpp"
 				>
 			</File>
@@ -186,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_staticMapLoader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_world.cpp"
 				>
 			</File>
@@ -195,6 +205,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_characterController.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_convert.h"
 				>
@@ -212,11 +230,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_staticMapLoader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_world.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\code\api\physAPI.h"
+				RelativePath="..\..\code\api\physAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\physCharacterControllerAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\physObjectAPI.h"
 				>
 			</File>
 			<File
@@ -225,10 +255,26 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Resource Files"
+			Name="shared"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\bspPhysicsDataLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmBezierPatch.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

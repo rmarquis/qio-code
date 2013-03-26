@@ -33,37 +33,37 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c g_showBulletTraces("g_showBulletTraces","0");
 
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
-	trace_c tr;
-	tr.setupRay(muzzle,muzzle + dir * 10000.f);
-	BT_TraceRay(tr);
-	G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
-	if(rf && g_showBulletTraces.getInt()) {
-		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
-	}
-	g_server->SendServerCommand(-1,va("test_bulletAttack gfx/damage/bullet_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
-		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
-	if(tr.hasHit()) {
-		BaseEntity *h = tr.getHitEntity();
-		if(h) {
-			h->onBulletHit(tr.getHitPos(), dir, 10);		
-		}
-	}
+	//trace_c tr;
+	//tr.setupRay(muzzle,muzzle + dir * 10000.f);
+	//BT_TraceRay(tr);
+	//G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	//if(rf && g_showBulletTraces.getInt()) {
+	//	rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
+	//}
+	//g_server->SendServerCommand(-1,va("test_bulletAttack gfx/damage/bullet_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	//	dir.x,dir.y,dir.z,baseSkip->getEntNum()));
+	//if(tr.hasHit()) {
+	//	BaseEntity *h = tr.getHitEntity();
+	//	if(h) {
+	//		h->onBulletHit(tr.getHitPos(), dir, 10);		
+	//	}
+	//}
 } 
 void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
-	trace_c tr;
-	tr.setupRay(muzzle,muzzle + dir * 10000.f);
-	BT_TraceRay(tr);
-	G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	//trace_c tr;
+	//tr.setupRay(muzzle,muzzle + dir * 10000.f);
+	//BT_TraceRay(tr);
+	//G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
 
-	// TODO: clientside railgun effect?
-	g_server->SendServerCommand(-1,va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
-		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
-	if(tr.hasHit()) {
-		BaseEntity *h = tr.getHitEntity();
-		if(h) {
-			h->onBulletHit(tr.getHitPos(), dir, 100);
-		}
-	}
+	//// TODO: clientside railgun effect?
+	//g_server->SendServerCommand(-1,va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	//	dir.x,dir.y,dir.z,baseSkip->getEntNum()));
+	//if(tr.hasHit()) {
+	//	BaseEntity *h = tr.getHitEntity();
+	//	if(h) {
+	//		h->onBulletHit(tr.getHitPos(), dir, 100);
+	//	}
+	//}
 }
 float G_randomFloat(float min, float max) {
     // this  function assumes max > min, you may want 

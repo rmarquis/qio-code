@@ -146,9 +146,10 @@ public:
 				delete m;
 				continue;
 			}
-#if 1
+#if 0
 			// center of mass of model must be at 0 0 0 for Bullet...
 			// let's do this the simplest way
+			///THIS IS NO LONGER NEEDED
 			vec3_c center = m->getBounds().getCenter();
 			m->translateXYZ(-center);
 #endif

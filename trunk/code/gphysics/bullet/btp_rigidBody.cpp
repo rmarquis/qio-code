@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_rigidBody.h"
 #include "btp_shape.h"
 #include "btp_headers.h"
+#include "btp_convert.h"
 #include <shared/physObjectDef.h>
 
 bulletRigidBody_c::bulletRigidBody_c() {
@@ -42,32 +43,67 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 		btShape->calculateLocalInertia(def.mass,localInertia);
 	}
 	btTransform startTransform;
-	startTransform.setFromOpenGLMatrix(def.transform);
-	btDefaultMotionState *myMotionState = new btDefaultMotionState(startTransform,shape->getCenterOfMassTransform());
-	btRigidBody::btRigidBodyConstructionInfo cInfo(def.mass,myMotionState,btShape,localInertia);
+	const matrix_c &com = shape->getCenterOfMassTransform();
+	matrix_c bulletMat = def.transform;
+	bulletMat.scaleOriginXYZ(QIO_TO_BULLET);	
+	bulletMat = com * bulletMat;
+	startTransform.setFromOpenGLMatrix(bulletMat);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(def.mass,0,btShape,localInertia);
 	bulletRigidBody = new btRigidBody(cInfo);
+	bulletRigidBody->setWorldTransform(startTransform);
 }
+void bulletRigidBody_c::setOrigin(const class vec3_c &newPos) {
 
-void bulletRigidBody_c::getCurrentMatrix(const class matrix_c &out) const {
-
+}
+const class vec3_c &bulletRigidBody_c::getRealOrigin() const {
+	btTransform trans;
+	trans = bulletRigidBody->getWorldTransform();
+	class matrix_c mat;
+	trans.getOpenGLMatrix(mat);
+	mat.scaleOriginXYZ(BULLET_TO_QIO);
+	return mat.getOrigin();
+}
+void bulletRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
+	btTransform trans;
+	trans = bulletRigidBody->getWorldTransform();
+	trans.getOpenGLMatrix(out);
+	if(this->shape->hasCenterOfMassTransform()) {
+		out = out * this->shape->getCenterOfMassTransform().getInversed();
+	}
+	out.scaleOriginXYZ(BULLET_TO_QIO);
 }
 void bulletRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {
+	bulletRigidBody->activate(true);
+	bulletRigidBody->applyCentralForce((velToAdd*QIO_TO_BULLET).floatPtr());
 }
 void bulletRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
-
+	bulletRigidBody->activate(true);
+	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
 }
 // linear velocity access (in Quake units)
 const class vec3_c bulletRigidBody_c::getLinearVelocity() const {
-	return vec3_c(0,0,0);
+	return vec3_c(bulletRigidBody->getLinearVelocity())*BULLET_TO_QIO;
 }
 void bulletRigidBody_c::setLinearVelocity(const class vec3_c &newVel) {
-
+	bulletRigidBody->setLinearVelocity((newVel*QIO_TO_BULLET).floatPtr());
 }
 // angular velocity access
 const vec3_c bulletRigidBody_c::getAngularVelocity() const {
-	return vec3_c(0,0,0);
+	return bulletRigidBody->getAngularVelocity();
 }
 void bulletRigidBody_c::setAngularVelocity(const class vec3_c &newAVel) {
+	bulletRigidBody->setAngularVelocity(newAVel.floatPtr());
+}
+bool bulletRigidBody_c::isDynamic() const {
+	if(bulletRigidBody->isStaticObject())
+		return false;
+	return true;
+}
+void bulletRigidBody_c::setEntityPointer(class BaseEntity *ent) {
+	myEntity = ent;
+}
+BaseEntity *bulletRigidBody_c::getEntityPointer() const {
+	return myEntity;
 }
 // water physics
 void bulletRigidBody_c::runWaterPhysics(float curWaterLevel) {

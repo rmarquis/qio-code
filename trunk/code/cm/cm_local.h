@@ -23,4 +23,8 @@ void CM_RemoveConsoleCommands();
 // load any inline model from any bsp file
 class cMod_i *CM_LoadBSPFileSubModel(const char *bspFileName, u32 subModelNumber);
 
+// cm_world.cpp
+bool CM_LoadWorldMap(const char *mapName);
+cMod_i *CM_GetWorldSubModel(unsigned int subModelIndex);
+
 #endif // __CM_LOCAL_H__

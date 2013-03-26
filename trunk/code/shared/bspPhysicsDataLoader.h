@@ -29,9 +29,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "typedefs.h"
 #include "array.h"
+#include "str.h"
 
 class bspPhysicsDataLoader_c {
 	struct q3Header_s *h;
+	str fileName;
 
 	u32 getMaterialContentFlags(u32 matNum) const;
 public:
@@ -41,13 +43,19 @@ public:
 	void clear();
 	bool loadBSPFile(const char *fname);
 
+	const char *getFileName() const {
+		return fileName;
+	}
+
 	void nodeBrushes_r(int nodeNum, arraySTD_c<u32> &out) const;
 	void iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags));
 	void iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags));
 	void iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 contentFlags));
 
-	void iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4]));
-	void iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack);
+	void iterateModelBrushes2(u32 modelNum, class brushCreatorAPI_i *callback);
+
+	void iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) const;
+	void iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack) const;
 	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out);
 	void getTriangleSurface(u32 surfNum, class cmSurface_c &out);
 

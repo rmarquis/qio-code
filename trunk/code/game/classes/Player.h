@@ -55,7 +55,7 @@ typedef struct {
 // except for 'client->pers' and 'client->sess'
 
 class Player : public ModelEntity {
-	class btKinematicCharacterController *characterController;
+	class physCharacterControllerAPI_i *characterController;
 	str netName;
 	safePtr_c<Weapon> curWeapon;
 	vec3_c characterControllerOffset;

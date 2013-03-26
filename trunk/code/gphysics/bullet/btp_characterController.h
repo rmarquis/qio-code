@@ -21,37 +21,25 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physObjectDef.h
-#ifndef __PHYSOBJECTDEF_H__
-#define __PHYSOBJECTDEF_H__
+// btp_characterController.h
+#ifndef __BTP_CHARACTERCONTROLLER_H__
+#define __BTP_CHARACTERCONTROLLER_H__
 
-#include <math/matrix.h>
+#include <api/physCharacterControllerAPI.h>
 
-struct physObjectDef_s {
-	// 0 mass means that object is non-moveable
-	float mass;
-	// physics object creation will fail if collisionModel pointer is NULL
-	const class cMod_i *collisionModel;
-	// model starting transform
-	matrix_c transform;
+class btpCharacterController_c : public physCharacterControllerAPI_i {
+	class btKinematicCharacterController *ch;
+	class bulletPhysicsWorld_c *myWorld;
+public:
+	virtual void setCharacterVelocity(const class vec3_c &newVel);
+	virtual void setCharacterEntity(class BaseEntity *ent);
+	virtual void update(const class vec3_c &dir);
+	virtual class vec3_c &getPos() const;
+	virtual bool isOnGround() const;
+	virtual bool tryToJump();
 
-	physObjectDef_s() {
-		mass = 0.f;
-		collisionModel = 0;
-	}
-	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const class cMod_i *newCMod,
-		float newMass, bool newBUseDynamicConvexForTrimeshCMod) {
-		transform.fromAnglesAndOrigin(newAngles,newXYZ);
-		collisionModel = newCMod;
-		mass = newMass;
-	}
-	bool isStatic() const {
-		if(mass == 0.f) {
-			return true;
-		}
-		return false;
-	}
+	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
+	void destroyCharacter();
 };
 
-#endif // __PHYSOBJECTDEF_H__
-
+#endif // __BTP_CHARACTERCONTROLLER_H__

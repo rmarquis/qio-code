@@ -27,6 +27,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/bspPhysicsDataLoader.h>
 #include <api/coreAPI.h>
 
+cMod_i *CM_LoadBSPFileSubModel(const bspPhysicsDataLoader_c *bsp, u32 subModelNumber) {
+	if(subModelNumber >= bsp->getNumInlineModels()) {
+		g_core->RedWarning("CM_LoadBSPFileSubModel: subModel index %i out of range <0,%i) - check bsp file %s\n",
+			subModelNumber,bsp->getNumInlineModels(),bsp->getFileName());
+		return 0;
+	}
+	str inlineModelName = va("*%i",subModelNumber);
+	u32 numBrushes = bsp->getInlineModelBrushCount(subModelNumber);
+	if(numBrushes == 1) {
+		// single convex hull
+		cmHull_c *retSingleBrush = new cmHull_c(inlineModelName);
+		cmBrush_c &b = retSingleBrush->getMyBrush();
+		u32 subModelBrushIndex = bsp->getInlineModelGlobalBrushIndex(subModelNumber,0);
+		bsp->iterateBrushPlanes(subModelBrushIndex,&b);
+		b.negatePlaneDistances();
+		retSingleBrush->recalcBounds();
+		CM_AddCObjectBaseToHashTable(retSingleBrush);
+		return retSingleBrush;
+	}
+	return 0;
+	cmCompound_c *retCompound = new cmCompound_c(inlineModelName);
+	
+	CM_AddCObjectBaseToHashTable(retCompound);
+	return retCompound;
+}
 cMod_i *CM_LoadBSPFileSubModel(const char *bspFileName, u32 subModelNumber) {
 #if 0
 	return 0;
@@ -45,27 +70,6 @@ cMod_i *CM_LoadBSPFileSubModel(const char *bspFileName, u32 subModelNumber) {
 			}
 		}
 	}
-	if(subModelNumber >= l.getNumInlineModels()) {
-		g_core->RedWarning("CM_LoadBSPFileSubModel: subModel index %i out of range <0,%i) - check bsp file %s\n",
-			subModelNumber,l.getNumInlineModels(),bspFileName);
-		return 0;
-	}
-	str inlineModelName = va("*%i",subModelNumber);
-	u32 numBrushes = l.getInlineModelBrushCount(subModelNumber);
-	if(numBrushes == 1) {
-		// single convex hull
-		cmHull_c *retSingleBrush = new cmHull_c(inlineModelName);
-		cmBrush_c &b = retSingleBrush->getMyBrush();
-		u32 subModelBrushIndex = l.getInlineModelGlobalBrushIndex(subModelNumber,0);
-		l.iterateBrushPlanes(subModelBrushIndex,&b);
-		b.negatePlaneDistances();
-		retSingleBrush->recalcBounds();
-		CM_AddCObjectBaseToHashTable(retSingleBrush);
-		return retSingleBrush;
-	}
-	return 0;
-	cmCompound_c *retCompound = new cmCompound_c(inlineModelName);
-	
-	CM_AddCObjectBaseToHashTable(retCompound);
-	return retCompound;
+	cMod_i *ret = CM_LoadBSPFileSubModel(&l,subModelNumber);
+	return ret;
 }

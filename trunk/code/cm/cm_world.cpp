@@ -21,37 +21,40 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physObjectDef.h
-#ifndef __PHYSOBJECTDEF_H__
-#define __PHYSOBJECTDEF_H__
+// cm_world.cpp
+#include "cm_local.h"
+#include <api/cmAPI.h>
+#include <api/vfsAPI.h>
+#include <shared/str.h>
 
-#include <math/matrix.h>
+cMod_i *cm_worldModel = 0;
 
-struct physObjectDef_s {
-	// 0 mass means that object is non-moveable
-	float mass;
-	// physics object creation will fail if collisionModel pointer is NULL
-	const class cMod_i *collisionModel;
-	// model starting transform
-	matrix_c transform;
+bool CM_LoadWorldMap(const char *mapName) {
+	cm_worldModel = 0;
 
-	physObjectDef_s() {
-		mass = 0.f;
-		collisionModel = 0;
-	}
-	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const class cMod_i *newCMod,
-		float newMass, bool newBUseDynamicConvexForTrimeshCMod) {
-		transform.fromAnglesAndOrigin(newAngles,newXYZ);
-		collisionModel = newCMod;
-		mass = newMass;
-	}
-	bool isStatic() const {
-		if(mass == 0.f) {
-			return true;
-		}
+	str path = "maps/";
+	path.append(mapName);
+	path.setExtension("bsp");
+	if(g_vfs->FS_FileExists(path)) {
+		// not needed now
 		return false;
 	}
-};
+	path.setExtension("proc");
+	if(g_vfs->FS_FileExists(path)) {
+		// not needed now
+		return false;
+	}
+	path.setExtension("map");
+	if(g_vfs->FS_FileExists(path)) {
+		cm_worldModel = CM_RegisterModel(path);
+		return false;
+	}
+	return true; // error
+}
 
-#endif // __PHYSOBJECTDEF_H__
+cMod_i *CM_GetWorldSubModel(unsigned int subModelIndex) {
+	if(cm_worldModel == 0)
+		return 0;
+	return cm_worldModel->getSubModel(subModelIndex);
+}
 

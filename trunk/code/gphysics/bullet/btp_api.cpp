@@ -68,7 +68,7 @@ static physDLLBullet_c g_staticPhysDLLImpl;
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
-	g_iFaceMan->registerInterface(&g_staticPhysDLLImpl,GPHYSICS_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i*)(void*)&g_staticPhysDLLImpl,GPHYSICS_API_IDENTSTR);
 
 	// imports
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);

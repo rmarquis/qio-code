@@ -35,7 +35,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelDeclAPI.h>
 #include <api/afDeclAPI.h>
 #include <api/coreAPI.h>
-#include "../physics_scale.h"
+#include <api/physObjectAPI.h>
+#include <api/physAPI.h>
+#include <shared/physObjectDef.h>
 #include <shared/keyValuesListener.h>
 #include <shared/boneOrQP.h>
 
@@ -74,12 +76,7 @@ void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 	BaseEntity::setOrigin(newXYZ);
 	if(body) {
 #if 1
-		btTransform transform;
-		transform.setFromOpenGLMatrix(this->getMatrix());
-		transform.scaleOrigin(QIO_TO_BULLET);
-		body->setWorldTransform(transform);
-		//body->getMotionState()->setWorldTransform(transform);
-		body->activate(true);
+		body->setOrigin(newXYZ);
 #else
 		this->destroyPhysicsObject();
 		this->initRigidBodyPhysics();
@@ -154,11 +151,7 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 	animName = newAnimName;
 }
 bool ModelEntity::setColModel(const char *newCModelName) {
-	if(newCModelName[0] == '*' && BT_GetSubModelCModel(atoi(newCModelName+1))) {
-		this->cmod = BT_GetSubModelCModel(atoi(newCModelName+1));
-	} else {
-		this->cmod = cm->registerModel(newCModelName);
-	}
+	this->cmod = cm->registerModel(newCModelName);
 	if(this->cmod == 0)
 		return true; // error
 #if 1 
@@ -209,11 +202,7 @@ bool ModelEntity::hasCollisionModel() const {
 bool ModelEntity::isDynamic() const {
 	if(body == 0)
 		return false;
-	if(body->getCollisionFlags() & btCollisionObject::CF_STATIC_OBJECT)
-		return false;
-	if(body->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
-		return false;
-	return true;
+	return body->isDynamic();
 }
 void ModelEntity::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model")) {
@@ -336,22 +325,9 @@ void ModelEntity::setRigidBodyPhysicsEnabled(bool bRBPhysEnable) {
 #include <math/matrix.h>
 void ModelEntity::runPhysicsObject() {
 	if(body) {
-		btTransform trans;
-		body->getMotionState()->getWorldTransform(trans);
-	#if 0
-		VectorSet(myEdict->s->origin,trans.getOrigin().x(),trans.getOrigin().y(),trans.getOrigin().z());
-		//G_Printf("G_UpdatePhysicsObject: at %f %f %f\n",ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
-		btQuaternion q = trans.getRotation();
-		// quaterion->angles conversion doesnt work correctly here!
-		// You can debug it with "btd_drawWireFrame 1" on local server
-		quat_c q2(q.x(),q.y(),q.z(),q.w());
-		q2.toAngles(myEdict->s->angles);
-	#else
 		matrix_c mat;
-		trans.getOpenGLMatrix(mat);
-		mat.scaleOriginXYZ(BULLET_TO_QIO);
+		body->getCurrentMatrix(mat);
 		this->setMatrix(mat);
-#endif
 	} else if(ragdoll) {
 		ragdoll->updateWorldTransforms();
 		// copy current bodies transforms to entityState
@@ -390,32 +366,33 @@ void ModelEntity::initRigidBodyPhysics() {
 	if(this->bRigidBodyPhysicsEnabled == false) {
 		return; // rigid body physics was disabled for this entity
 	}
-	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),
-		0,this->cmod,10.f,bUseDynamicConvexForTrimeshCMod);
+	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
+		this->cmod,10.f,bUseDynamicConvexForTrimeshCMod));
 	if(this->body == 0) {
 		g_core->RedWarning("ModelEntity::initRigidBodyPhysics: BT_CreateRigidBodyWithCModel failed for cModel %s\n",this->cmod->getName());
 		return;
 	}
-	this->body->setUserPointer(this);
-	if(bPhysicsBodyKinematic) {
-#if 1
-		// FIXME!!! For some resons my kinematic/static entities (func_door) don't collide with items/boxes (BUT they do collide with player controller)
-		//this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-		this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
-		this->body->setActivationState(DISABLE_DEACTIVATION);
-#else
-		this->destroyPhysicsObject();
-		return;
-#endif
-	}
+	this->body->setEntityPointer(this);
+//	if(bPhysicsBodyKinematic) {
+//#if 1
+//		// FIXME!!! For some resons my kinematic/static entities (func_door) don't collide with items/boxes (BUT they do collide with player controller)
+//		//this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+//		this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
+//		this->body->setActivationState(DISABLE_DEACTIVATION);
+//#else
+//		this->destroyPhysicsObject();
+//		return;
+//#endif
+//	}
 }
 void ModelEntity::initStaticBodyPhysics() {
 	if(this->cmod == 0) {
 		return;
 	}
 	// static physics bodies have NULL mass
-	this->body = BT_CreateRigidBodyWithCModel(this->getOrigin(),this->getAngles(),0,this->cmod,0);
-	this->body->setUserPointer(this);
+	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
+		this->cmod,0,false));
+	this->body->setEntityPointer(this);
 }
 void ModelEntity::initRagdollPhysics() {
 	destroyPhysicsObject();
@@ -448,36 +425,32 @@ void ModelEntity::postSpawn() {
 void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 	if(this->body == 0)
 		return;
-	this->body->activate(true);
 	this->body->applyCentralForce(forceToAdd.floatPtr());
 }
 void ModelEntity::applyCentralImpulse(const vec3_c &impToAdd) {
 	if(this->body == 0)
 		return;
-	this->body->activate(true);
-	//this->body->applyCentralImpulse(impToAdd.floatPtr());
-	this->body->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
+	this->body->applyCentralImpulse(impToAdd);
 }
 void ModelEntity::applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs) {
-	if(this->body == 0)
-		return;
-	vec3_c pointLocal;
-	this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
-	this->body->activate(true);
-	this->body->applyImpulse((impToAdd*QIO_TO_BULLET).floatPtr(),(pointLocal*QIO_TO_BULLET).floatPtr());
+	///if(this->body == 0)
+	///	return;
+//	vec3_c pointLocal;
+	//this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
+//	this->body->applyPointImpulse(impToAdd,pointLocal);
 }
 const vec3_c ModelEntity::getLinearVelocity() const {
 	if(this->body == 0) {
 		return linearVelocity;
 	}
-	linearVelocity = &body->getLinearVelocity().x();
+	linearVelocity = body->getLinearVelocity();
 	return this->linearVelocity;
 }
 void ModelEntity::setLinearVelocity(const vec3_c &newVel) {
 	this->linearVelocity = newVel;
 	if(this->body == 0)
 		return;
-	return body->setLinearVelocity(btVector3(newVel));
+	return body->setLinearVelocity(newVel);
 }
 const vec3_c ModelEntity::getAngularVelocity() const {
 	if(this->body == 0)
@@ -487,7 +460,7 @@ const vec3_c ModelEntity::getAngularVelocity() const {
 void ModelEntity::setAngularVelocity(const vec3_c &newAVel) {
 	if(this->body == 0)
 		return;
-	return body->setAngularVelocity(btVector3(newAVel));
+	return body->setAngularVelocity(newAVel);
 }
 void ModelEntity::runWaterPhysics(float curWaterLevel) {
 	if(this->body == 0)
@@ -507,7 +480,7 @@ void ModelEntity::runWaterPhysics(float curWaterLevel) {
 }
 void ModelEntity::destroyPhysicsObject() {
 	if(body) {
-		BT_RemoveRigidBody(body);
+		g_physWorld->destroyPhysicsObject(body);
 		body = 0;
 	}
 	if(ragdoll) {
@@ -524,15 +497,10 @@ void ModelEntity::getLocalBounds(aabb &out) const {
 		BaseEntity::getLocalBounds(out);
 		return;
 	}
-	if(renderModelName[0] == '*') {
-		out = G_GetInlineModelBounds(atoi(renderModelName.c_str()+1));
-		out.extend(0.5f);
+	if(cmod) {
+		cmod->getBounds(out);
 	} else {
-		if(cmod) {
-			cmod->getBounds(out);
-		} else {
-			out.fromRadius(64.f);
-		}
+		out.fromRadius(64.f);
 	}
 	out.extend(pvsBoundsSkinWidth);
 }

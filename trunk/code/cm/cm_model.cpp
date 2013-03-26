@@ -272,16 +272,10 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 			if(e->brushes.size()) {
 				// if subentity has geometry, create a compound group for helper
 				cmCompound_c *subEntityCompoundGroup = helper->registerCompound();
+				subEntityCompoundGroup->setName(va("%s::%i",fname,i));
 				for(u32 j = 0; j < e->brushes.size(); j++) {
 					cmHull_c *hull = new cmHull_c(va("%s::subBrush%i",fname,j),*e->brushes[j]);
 					subEntityCompoundGroup->addShape(hull);
-				}
-				aabb bb;
-				subEntityCompoundGroup->getBounds(bb);
-				vec3_c center = bb.getCenter();
-				if(center.lenSQ()) {
-					subEntityCompoundGroup->translateXYZ(-center);
-					subEntityCompoundGroup->setCenterOfMassOffset(center);
 				}
 			}
 			compound->addHelper(helper);
@@ -313,6 +307,13 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	cMod_i *existing = CM_FindModelInternal(modName);
 	if(existing) {
 		return existing;
+	}
+	// check for submodels override (this is dirty...)
+	if(modName[0] == '*') {
+		unsigned int subModelIndex = atoi(modName+1)-1;
+		existing = CM_GetWorldSubModel(subModelIndex);
+		if(existing)
+			return existing;
 	}
 	// check for primitive models (procedurally generated)
 	if(modName[0] == '_') {

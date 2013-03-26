@@ -134,7 +134,7 @@ void G_InitBullet() {
 
 	// The actual physics solver
 	solver = new btSequentialImpulseConstraintSolver;
-
+	
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0,0,-10));
@@ -143,6 +143,7 @@ void G_InitBullet() {
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 
 	//dynamicsWorld->getSolverInfo().m_splitImpulse = true;
+	//dynamicsWorld->getSolverInfo().m_numIterations *= 10;
 
 #ifdef TRYTOFIX_INTERNAL_EDGES
 	// enable internal edges fix

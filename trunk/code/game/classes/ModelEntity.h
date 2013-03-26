@@ -36,7 +36,7 @@ class ModelEntity : public BaseEntity {
 	str renderModelName;
 protected:
 	// bullet physics object
-	class btRigidBody *body;
+	class physObjectAPI_i *body;
 	// simplified model for collision detection
 	class cMod_i *cmod;
 	// cmSkeleton for serverside bones access and animation
@@ -111,7 +111,7 @@ public:
 	virtual bool hasPhysicsObject() const;
 	virtual bool hasCollisionModel() const;
 	virtual bool isDynamic() const;
-	virtual class btRigidBody *getRigidBody() const {
+	virtual class physObjectAPI_i *getRigidBody() const {
 		return body;
 	}
 

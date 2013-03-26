@@ -34,7 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cmSurface_c : public colMeshBuilderAPI_i, public staticModelCreatorAPI_i {
 	arraySTD_c<u32> indices;
 	arraySTD_c<vec3_c> verts;
-	arraySTD_c<vec3_c> *scaledVerts; // scaled vertices for Bullet
+	mutable arraySTD_c<vec3_c> *scaledVerts; // scaled vertices for Bullet
 	aabb bb;
 public:
 	cmSurface_c() {
@@ -45,7 +45,7 @@ public:
 			delete scaledVerts;
 		}
 	}
-	void prepareScaledVerts(float scaledVertsScale) {
+	void prepareScaledVerts(float scaledVertsScale) const {
 		if(scaledVerts == 0) {
 			scaledVerts = new arraySTD_c<vec3_c>;
 		}
@@ -138,6 +138,11 @@ public:
 	}
 	const byte *getIndicesBase() const {
 		return (const byte*)indices.getArray();
+	}
+	const vec3_c *getScaledVerts() const {
+		if(scaledVerts == 0)
+			return 0;
+		return scaledVerts->getArray();
 	}
 	const byte *getScaledVerticesBase() const {
 		if(scaledVerts == 0)

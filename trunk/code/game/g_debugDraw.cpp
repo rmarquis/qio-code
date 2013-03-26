@@ -54,5 +54,5 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 	}
 
 	
-	G_DoBulletDebugDrawing(dd);
+	//G_DoBulletDebugDrawing(dd);
 }

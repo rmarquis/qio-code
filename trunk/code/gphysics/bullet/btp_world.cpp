@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_shape.h"
 #include "btp_headers.h"
 #include "btp_rigidBody.h"
+#include "btp_characterController.h"
+#include "btp_convert.h"
 #include <shared/physObjectDef.h>
 #include <api/cmAPI.h>
 
@@ -47,6 +49,9 @@ bulletPhysicsWorld_c::bulletPhysicsWorld_c(const char *newDebugName) {
 	solver = 0;
 	dynamicsWorld = 0;
 }
+bulletPhysicsWorld_c::~bulletPhysicsWorld_c() {
+	this->shutdown();
+}
 
 void bulletPhysicsWorld_c::init(const vec3_c &newGravity) {
 	this->gravity = newGravity;
@@ -63,27 +68,44 @@ void bulletPhysicsWorld_c::init(const vec3_c &newGravity) {
 
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0,0,-10));
+	dynamicsWorld->setGravity((newGravity*QIO_TO_BULLET).floatPtr());
 
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 }
+bool bulletPhysicsWorld_c::loadMap(const char *mapName) {
+	return staticWorld.loadMap(mapName,this);
+}
 void bulletPhysicsWorld_c::runFrame(float frameTime) {
+	if(dynamicsWorld == 0)
+		return;
 	//runVehicles();
 	dynamicsWorld->stepSimulation(frameTime,2);
 }
 void bulletPhysicsWorld_c::shutdown() {
+	// free static world data
+	staticWorld.freeMemory();
 	// free physics data allocated in bulletPhysicsWorld_c::init()
-    delete dynamicsWorld;
-	dynamicsWorld = 0;
-    delete solver;
-	solver = 0;
-    delete dispatcher;
-	dispatcher = 0;
-    delete collisionConfiguration;
-	collisionConfiguration = 0;
-    delete broadphase;
-	broadphase = 0;
+	if(dynamicsWorld) {
+		delete dynamicsWorld;
+		dynamicsWorld = 0;
+	}
+	if(solver) {
+		delete solver;
+		solver = 0;
+	}
+	if(dispatcher) {
+		delete dispatcher;
+		dispatcher = 0;
+	}
+	if(collisionConfiguration) {
+		delete collisionConfiguration;
+		collisionConfiguration = 0;
+	}
+	if(broadphase) {
+		delete broadphase;
+		broadphase = 0;
+	}
 }
 bulletColShape_c *bulletPhysicsWorld_c::registerShape(const cMod_i *cmodel, bool isStatic) {
 	str shapeName;
@@ -116,9 +138,39 @@ physObjectAPI_i *bulletPhysicsWorld_c::createPhysicsObject(const struct physObje
 
 		return 0;
 	}
+	if(colShape->getBulletCollisionShape() == 0) {
+
+		return 0;
+	}
 	bulletRigidBody_c *body = new bulletRigidBody_c;
 	body->init(colShape,def);
+	this->dynamicsWorld->addRigidBody(body->getBulletRigidBody());
 	return body;
+}
+void bulletPhysicsWorld_c::destroyPhysicsObject(class physObjectAPI_i *p) {
+	if(p == 0)
+		return;
+	delete p;
+}
+class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0, physObjectAPI_i *b1) {
+	return 0;
+}
+class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintHinge(const vec3_c &pos, const vec3_c &axis, physObjectAPI_i *b0, physObjectAPI_i *b1) {
+	return 0;
+}
+void bulletPhysicsWorld_c::destroyPhysicsConstraint(physConstraintAPI_i *p) {
+
+}
+class physCharacterControllerAPI_i *bulletPhysicsWorld_c::createCharacter(const class vec3_c &pos, float characterHeight, float characterWidth) {
+	btpCharacterController_c *newChar = new btpCharacterController_c;
+	newChar->init(this,pos,characterHeight,characterWidth);
+	this->characters.push_back(newChar);
+	return newChar;
+}
+void bulletPhysicsWorld_c::freeCharacter(class physCharacterControllerAPI_i *p) {
+	btpCharacterController_c *pChar = dynamic_cast<btpCharacterController_c*>(p);
+	this->characters.remove(pChar);
+	delete pChar;
 }
 void bulletPhysicsWorld_c::setGravity(const vec3_c &newGravity) {
 	gravity = newGravity;

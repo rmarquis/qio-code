@@ -53,6 +53,9 @@ class cmAPIImpl_c : public cmAPI_i {
 		return CM_RegisterSkelModel(skelModelName);
 	}
 
+	virtual void loadMap(const char *mapName) {
+		CM_LoadWorldMap(mapName);
+	}
 };
 
 // interface manager (import)

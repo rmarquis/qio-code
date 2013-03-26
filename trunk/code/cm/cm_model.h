@@ -53,17 +53,9 @@ protected:
 	str name;
 	aabb bounds;
 	cmHelpersList_c helpers;
-	vec3_c centerOfMassOffset;
-	bool bHasCenterOfMassOffset;
 public:
 	cmObjectBase_c() {
-		centerOfMassOffset.set(0,0,0);
-		bHasCenterOfMassOffset = false;
 		bounds.clear();
-	}
-	void setCenterOfMassOffset(const vec3_c &newOfs) {
-		centerOfMassOffset = newOfs;
-		bHasCenterOfMassOffset = true;
 	}
 	cmObjectBase_c *getHashNext() const {
 		return hashNext;
@@ -73,6 +65,9 @@ public:
 	}
 	const char *getName() const {
 		return name;
+	}
+	void setName(const char *newName) {
+		name = newName;
 	}
 	void addHelper(class cmHelper_c *newHelper) {
 		helpers.push_back(newHelper);
@@ -112,7 +107,7 @@ public:
 	virtual class cmSkelModel_i *getSkelModel() {
 		return 0;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out.fromCapsuleZ(height,radius);
 	}
 	virtual bool traceRay(class trace_c &tr) {
@@ -163,7 +158,7 @@ public:
 	virtual const class cmBBExts_i *getBBExts() const {
 		return this;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out.fromHalfSizes(halfSizes);
 	}
 	virtual bool traceRay(class trace_c &tr) {
@@ -204,7 +199,7 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_BBMINSMAXS;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out = this->bounds;
 	}
 	virtual bool traceRay(class trace_c &tr) {
@@ -245,7 +240,7 @@ public:
 	virtual const class cmHull_i *getHull() const {
 		return this;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out = myBrush.getBounds();
 	}
 	virtual bool traceRay(class trace_c &tr) {
@@ -318,7 +313,7 @@ public:
 	virtual const class cmCompound_i *getCompound() const {
 		return this;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out.clear();
 		for(u32 i = 0; i < shapes.size(); i++) {
 			aabb bb;
@@ -335,17 +330,11 @@ public:
 		}
 		return hit;
 	}
-	virtual bool hasCenterOfMassOffset() const {
-		return bHasCenterOfMassOffset;
-	}
-	virtual const vec3_c &getCenterOfMassOffset() const {
-		return centerOfMassOffset;
-	}
 	// cmCompound_i access
-	virtual u32 getNumSubShapes() {
+	virtual u32 getNumSubShapes() const {
 		return shapes.size();
 	}
-	virtual cMod_i *getSubShapeN(u32 subShapeNum) {
+	virtual const cMod_i *getSubShapeN(u32 subShapeNum) const {
 		return shapes[subShapeNum];
 	}
 	// helpers api
@@ -404,7 +393,7 @@ public:
 	virtual const class cmTriMesh_i *getTriMesh() const {
 		return this;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		out = sf->getAABB();
 	}
 	virtual bool traceRay(class trace_c &tr) {
@@ -422,6 +411,9 @@ public:
 	virtual const vec3_c *getVerts() const {
 		return sf->getVerts();
 	}
+	virtual const vec3_c *getScaledVerts() const {
+		return sf->getScaledVerts();
+	}
 	virtual const u32 *getIndices() const  {
 		return sf->getIndices();
 	}
@@ -434,7 +426,7 @@ public:
 	virtual const class cmSurface_c *getCMSurface() const {
 		return sf;
 	}
-	virtual void precacheScaledVerts(float scaledVertsScale) {
+	virtual void precacheScaledVerts(float scaledVertsScale) const {
 		if(sf->getScaledVerticesBase() == 0) {
 			sf->prepareScaledVerts(scaledVertsScale);
 		}
@@ -477,7 +469,7 @@ public:
 	virtual const class cmSkelModel_i *getSkelModel() const {
 		return this;
 	}
-	virtual void getBounds(class aabb &out) {
+	virtual void getBounds(class aabb &out) const {
 		//out = sf->getAABB();
 	}
 	virtual bool traceRay(class trace_c &tr) {

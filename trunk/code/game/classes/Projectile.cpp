@@ -36,37 +36,37 @@ Projectile::Projectile() {
 }
 
 void Projectile::runFrame() {
-	if(collisionTime) {
-		if(collisionTime + explosionDelay < level.time) {
-			delete this;
-		}
-		return;
-	}
-	vec3_c newPos = this->getOrigin() + linearVelocity * level.frameTime;
-	trace_c tr;
-	tr.setupRay(this->getOrigin(),newPos);
-	if(BT_TraceRay(tr)) {
-		if(tr.getHitEntity()) {
-			tr.getHitEntity()->applyPointImpulse(linearVelocity,tr.getHitPos());
-		}
-		G_Explosion(this->getOrigin(), this->explosionInfo);
-		// add clientside mark (decal)
-		if(explosionInfo.explosionMark.length()) {
-			vec3_c pos = tr.getHitPos();
-			vec3_c dir = linearVelocity.getNormalized();
-			g_server->SendServerCommand(-1,va("createDecal %f %f %f %f %f %f %f %s",pos.x,pos.y,pos.z,dir.x,dir.y,dir.z,
-				explosionInfo.markRadius,explosionInfo.explosionMark.c_str()));
-		}
-		collisionTime = level.time;
-		this->linearVelocity.clear();
-		return;
-	}
-	this->setOrigin(newPos);
-	if(bSyncModelAngles) {
-		vec3_c dir = this->linearVelocity.getNormalized();
-		vec3_c na(dir.getPitch(),dir.getYaw(),0);
-		this->setAngles(na);
-	}
+	//if(collisionTime) {
+	//	if(collisionTime + explosionDelay < level.time) {
+	//		delete this;
+	//	}
+	//	return;
+	//}
+	//vec3_c newPos = this->getOrigin() + linearVelocity * level.frameTime;
+	//trace_c tr;
+	//tr.setupRay(this->getOrigin(),newPos);
+	//if(BT_TraceRay(tr)) {
+	//	if(tr.getHitEntity()) {
+	//		tr.getHitEntity()->applyPointImpulse(linearVelocity,tr.getHitPos());
+	//	}
+	//	G_Explosion(this->getOrigin(), this->explosionInfo);
+	//	// add clientside mark (decal)
+	//	if(explosionInfo.explosionMark.length()) {
+	//		vec3_c pos = tr.getHitPos();
+	//		vec3_c dir = linearVelocity.getNormalized();
+	//		g_server->SendServerCommand(-1,va("createDecal %f %f %f %f %f %f %f %s",pos.x,pos.y,pos.z,dir.x,dir.y,dir.z,
+	//			explosionInfo.markRadius,explosionInfo.explosionMark.c_str()));
+	//	}
+	//	collisionTime = level.time;
+	//	this->linearVelocity.clear();
+	//	return;
+	//}
+	//this->setOrigin(newPos);
+	//if(bSyncModelAngles) {
+	//	vec3_c dir = this->linearVelocity.getNormalized();
+	//	vec3_c na(dir.getPitch(),dir.getYaw(),0);
+	//	this->setAngles(na);
+	//}
 }
 
 

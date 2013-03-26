@@ -110,7 +110,7 @@ public:
 		return 0;
 	}
 
-	virtual void getBounds(class aabb &out) = 0;
+	virtual void getBounds(class aabb &out) const = 0;
 
 	// helpers
 	virtual u32 getNumHelpers() const = 0;
@@ -161,20 +161,24 @@ public:
 // compound shape - cm object made of multiple cm primitives
 class cmCompound_i : public cMod_i {
 public:
-	virtual u32 getNumSubShapes() = 0;
-	virtual cMod_i *getSubShapeN(u32 subShapeNum) = 0;
+	virtual u32 getNumSubShapes() const = 0;
+	virtual const cMod_i *getSubShapeN(u32 subShapeNum) const = 0;
 };
 
 // trimesh object for static physics object
 class cmTriMesh_i : public cMod_i {
 public:
 	virtual const vec3_c *getVerts() const = 0;
+	virtual const vec3_c *getScaledVerts() const = 0;
 	virtual const u32 *getIndices() const = 0;
 	virtual u32 getNumIndices() const = 0;
 	virtual u32 getNumVerts() const = 0;
+	u32 getNumTris() const {
+		return this->getNumIndices() / 3;
+	}
 	virtual const class cmSurface_c *getCMSurface() const = 0;
 
-	virtual void precacheScaledVerts(float scaledVertsScale) = 0;
+	virtual void precacheScaledVerts(float scaledVertsScale) const = 0;
 };
 
 // skeletal model
@@ -206,7 +210,7 @@ public:
 	virtual class cMod_i *registerModel(const char *modName) = 0;
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) = 0;
 
-	//virtual void loadMap(const char *mapName) = 0;
+	virtual void loadMap(const char *mapName) = 0;
 };
 
 extern cmAPI_i *cm;

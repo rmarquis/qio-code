@@ -21,37 +21,18 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physObjectDef.h
-#ifndef __PHYSOBJECTDEF_H__
-#define __PHYSOBJECTDEF_H__
+// physCharacterControllerAPI.h
+#ifndef __PHYSCHARACTERCONTROLLER_API_H__
+#define __PHYSCHARACTERCONTROLLER_API_H__
 
-#include <math/matrix.h>
-
-struct physObjectDef_s {
-	// 0 mass means that object is non-moveable
-	float mass;
-	// physics object creation will fail if collisionModel pointer is NULL
-	const class cMod_i *collisionModel;
-	// model starting transform
-	matrix_c transform;
-
-	physObjectDef_s() {
-		mass = 0.f;
-		collisionModel = 0;
-	}
-	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const class cMod_i *newCMod,
-		float newMass, bool newBUseDynamicConvexForTrimeshCMod) {
-		transform.fromAnglesAndOrigin(newAngles,newXYZ);
-		collisionModel = newCMod;
-		mass = newMass;
-	}
-	bool isStatic() const {
-		if(mass == 0.f) {
-			return true;
-		}
-		return false;
-	}
+class physCharacterControllerAPI_i {
+public:
+	virtual void setCharacterVelocity(const class vec3_c &newVel) = 0;
+	virtual void setCharacterEntity(class BaseEntity *ent) = 0;
+	virtual void update(const class vec3_c &dir) = 0;
+	virtual class vec3_c &getPos() const = 0;
+	virtual bool isOnGround() const = 0;
+	virtual bool tryToJump() = 0;
 };
 
-#endif // __PHYSOBJECTDEF_H__
-
+#endif // __PHYS_API_H__

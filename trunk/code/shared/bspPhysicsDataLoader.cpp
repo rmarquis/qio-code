@@ -45,6 +45,8 @@ void bspPhysicsDataLoader_c::clear() {
 	}
 }
 bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
+	this->clear();
+
 	fileHandle_t f;
 	int len = g_vfs->FS_FOpenFile(fname,&f,FS_READ);
 	if(len < 0) {
@@ -56,6 +58,9 @@ bool bspPhysicsDataLoader_c::loadBSPFile(const char *fname) {
 		if(len < 0) {
 			return true; // error
 		}
+		this->fileName = buf;
+	} else {
+		this->fileName = fname;
 	}
 	byte *data = (byte*)malloc(len);
 	g_vfs->FS_Read(data,len,f);
@@ -191,7 +196,7 @@ struct codBrushSides_s {
 	codBrushSideAxial_s axialSides[6]; // always 6
 	codBrushSideNonAxial_s nonAxialSides[32]; // variable-sized
 };
-void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) {
+void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) const {
 	if(h->isBSPQ2() || h->isBSPSource()) {
 		const q2Plane_s *q2Planes = h->getQ2Planes();
 		const q2Brush_s *q2Brush = h->getQ2Brushes()+brushNum;
@@ -261,7 +266,7 @@ void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, void (*sideCallbac
 		}
 	}
 }
-void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack) {
+void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack) const {
 	const q3Plane_s *planes = h->getPlanes();
 	if(h->isBSPCoD1()) {	
 		// TODO

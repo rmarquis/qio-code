@@ -27,28 +27,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "iFaceBase.h"
 
-class physObjectAPI_i {
-public:
-	virtual void getCurrentMatrix(const class matrix_c &out) const = 0;
-	virtual void applyCentralForce(const class vec3_c &velToAdd) = 0;
-	virtual void applyCentralImpulse(const class vec3_c &impToAdd) = 0;
-	// linear velocity access (in Quake units)
-	virtual const class vec3_c getLinearVelocity() const = 0;
-	virtual void setLinearVelocity(const class vec3_c &newVel) = 0;
-	// angular velocity access
-	virtual const vec3_c getAngularVelocity() const = 0;
-	virtual void setAngularVelocity(const class vec3_c &newAVel) = 0;
-	// water physics
-	virtual void runWaterPhysics(float curWaterLevel) = 0;
-};
 class physWorldAPI_i {
 public:
-	virtual void init(const vec3_c &newGravity) = 0;
+	virtual void init(const class vec3_c &newGravity) = 0;
+	virtual bool loadMap(const char *mapName) = 0;
 	virtual void runFrame(float frameTime) = 0;
 	virtual void shutdown() = 0;
 
+	//
+	//	RIGID BODIES
+	//
 	// mass 0 means that object is static (non moveable)
-	virtual physObjectAPI_i *createPhysicsObject(const struct physObjectDef_s &def) = 0;
+	virtual class physObjectAPI_i *createPhysicsObject(const struct physObjectDef_s &def) = 0;
+	virtual void destroyPhysicsObject(class physObjectAPI_i *p) = 0;
+	//
+	//	CONSTRAINTS
+	//
+	virtual class physConstraintAPI_i *createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0, physObjectAPI_i *b1) = 0;
+	virtual class physConstraintAPI_i *createConstraintHinge(const vec3_c &pos, const vec3_c &axis, physObjectAPI_i *b0, physObjectAPI_i *b1) = 0;
+	virtual void destroyPhysicsConstraint(physConstraintAPI_i *p) = 0;
+	//
+	//
+	//	CHARACTER CONTROLLER
+	//
+	virtual class physCharacterControllerAPI_i *createCharacter(const class vec3_c &pos, float characterHeight,  float characterWidth) = 0;
+	virtual void freeCharacter(class physCharacterControllerAPI_i *p) = 0;
 
 	virtual void setGravity(const vec3_c &newGravity) = 0;
 	virtual const vec3_c &getGravity() const = 0;
@@ -61,5 +64,7 @@ public:
 	virtual physWorldAPI_i *allocWorld(const char *debugName) = 0;
 	virtual void freeWorld(physWorldAPI_i *w) = 0;
 };
+
+extern class physWorldAPI_i *g_physWorld;
 
 #endif // __PHYS_API_H__

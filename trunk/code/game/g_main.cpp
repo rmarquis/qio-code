@@ -110,7 +110,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_InitScriptedClasses();
 
 	// init bullet physics library
-	G_InitBullet();
+	G_InitPhysicsEngine();
 	// load map for Bullet
 	G_LoadMap(mapName);
 	// load map entities and spawn them
@@ -132,7 +132,7 @@ void G_ShutdownGame( int restart ) {
 			continue;
 		delete e->ent;
 	}
-	G_ShudownBullet();
+	G_ShutdownPhysicsEngine();
 	G_ShutdownScriptedClasses();
 	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();

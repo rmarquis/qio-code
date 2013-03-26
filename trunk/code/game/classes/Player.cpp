@@ -29,6 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
 #include <api/serverAPI.h>
+#include <api/physAPI.h>
+#include <api/physObjectAPI.h>
+#include <api/physCharacterControllerAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 
@@ -144,7 +147,7 @@ Player::Player() {
 }
 Player::~Player() {
 	if(characterController) {
-		BT_FreeCharacter(this->characterController);
+		g_physWorld->freeCharacter(this->characterController);
 		characterController = 0;
 	}
 	if(curWeapon) {
@@ -167,7 +170,7 @@ void Player::setOrigin(const vec3_c &newXYZ) {
 }
 void Player::setLinearVelocity(const vec3_c &newVel) {
 	if(characterController) {
-		BT_SetCharacterVelocity(characterController,newVel);
+		characterController->setCharacterVelocity(newVel);
 	}
 }
 void Player::setVehicle(class VehicleCar *newVeh) {
@@ -210,7 +213,7 @@ void Player::toggleNoclip() {
 }
 void Player::disableCharacterController() {
 	if(characterController) {
-		BT_FreeCharacter(this->characterController);
+		g_physWorld->freeCharacter(this->characterController);
 		characterController = 0;
 	}
 }
@@ -224,9 +227,11 @@ void Player::enableCharacterController() {
 	cmCapsule_i *c = this->cmod->getCapsule();
 	float h = c->getHeight();
 	float r = c->getRadius();
-	BT_FreeCharacter(this->characterController);
-	this->characterController = BT_CreateCharacter(20.f, this->ps.origin+characterControllerOffset, h, r);
-	BT_SetCharacterEntity(this->characterController,this);
+	g_physWorld->freeCharacter(this->characterController);
+	this->characterController = g_physWorld->createCharacter(this->ps.origin+characterControllerOffset, h, r);
+	if(this->characterController) {
+		this->characterController->setCharacterEntity(this);
+	}
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
@@ -297,7 +302,7 @@ void Player::runPlayer() {
 				VectorAdd(dir,r,dir);
 				VectorAdd(dir,u,dir);
 				vec3_c newOrigin;
-				if(noclip) {
+				if(noclip || (characterController==0)) {
 					dir.scale(4.f);
 					VectorAdd(this->ps.origin,dir,newOrigin);
 					ModelEntity::setOrigin(newOrigin);
@@ -305,11 +310,12 @@ void Player::runPlayer() {
 				} else {
 					dir[2] = 0;
 					VectorScale(dir,0.75f,dir);
-					G_RunCharacterController(dir,this->characterController, newOrigin);
-					bool isNowOnGround = BT_IsCharacterOnGround(this->characterController);
+					this->characterController->update(dir);
+					newOrigin = this->characterController->getPos();
+					bool isNowOnGround = this->characterController->isOnGround();
 					if(isNowOnGround) {
 						if(ucmd->upmove) {
-							bJumped = G_TryToJump(this->characterController);
+							bJumped = this->characterController->tryToJump();
 						}
 						if(onGround == false) {
 							bLanding = true;
@@ -325,7 +331,7 @@ void Player::runPlayer() {
 			if(onGround == false) {
 				trace_c tr;
 				tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
-				BT_TraceRay(tr);
+//				BT_TraceRay(tr);
 				groundDist = tr.getTraveled();
 				//G_Printf("GroundDist: %f\n",groundDist);
 			}
@@ -365,7 +371,7 @@ void Player::runPlayer() {
 		}
 
 		if(carryingEntity) {
-			vec3_c pos = carryingEntity->getOrigin();
+			vec3_c pos = carryingEntity->getRigidBody()->getRealOrigin();
 			vec3_c neededPos = this->getEyePos() + this->getForward() * 60.f;
 			vec3_c delta = neededPos - pos;
 

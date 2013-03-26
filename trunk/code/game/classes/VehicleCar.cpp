@@ -41,7 +41,7 @@ void VehicleCar::spawnPhysicsVehicle() {
 	if(physVehicle) {
 		destroyPhysicsVehicle();
 	}
-	physVehicle = BT_CreateVehicle(this->getOrigin(),this->getAngles(),this->cmod);
+//	physVehicle = BT_CreateVehicle(this->getOrigin(),this->getAngles(),this->cmod);
 }
 void VehicleCar::postSpawn() {
 	spawnPhysicsVehicle();
@@ -49,7 +49,7 @@ void VehicleCar::postSpawn() {
 void VehicleCar::destroyPhysicsVehicle() {
 	if(physVehicle == 0)
 		return;
-	BT_RemoveVehicle(physVehicle);
+//	BT_RemoveVehicle(physVehicle);
 	physVehicle = 0;
 }
 bool VehicleCar::doUse(class Player *activator) {

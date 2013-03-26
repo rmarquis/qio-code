@@ -28,17 +28,37 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/cmSurface.h>
 #include "btp_convert.h"
+#include "btp_cMod2BulletShape.h"
 
 bulletColShape_c::bulletColShape_c() {
 	bulletShape = 0;
+	centerOfMassTransform.identity();
 }
 bulletColShape_c::~bulletColShape_c() {
 	delete bulletShape;
-}
+}		
+
 bool bulletColShape_c::init(const class cMod_i *newCModel, bool newBIStatic) {
 	this->cModel = newCModel;
 
-
+	vec3_c centerOfMass;
+	if(newBIStatic) {
+		// static models dont need to have center of mass fixed
+		bHasCenterOfMassTransform = false;
+		centerOfMass.zero();
+	} else {
+		aabb bb;
+		newCModel->getBounds(bb);
+		centerOfMass = bb.getCenter();
+		this->centerOfMassTransform.identity();
+		if(centerOfMass.isAlmostZero()) {
+			bHasCenterOfMassTransform = false;
+		} else {
+			bHasCenterOfMassTransform = true;
+			this->centerOfMassTransform.setOrigin((centerOfMass*QIO_TO_BULLET).floatPtr());
+		}
+	}
+	bulletShape = BT_CModelToBulletCollisionShape(newCModel,newBIStatic,&centerOfMass);
 	return false; // no error
 }
 

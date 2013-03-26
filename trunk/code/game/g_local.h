@@ -104,27 +104,35 @@ void G_RunClient( edict_s *ent );
 //
 // g_bullet.cpp
 //
-void G_InitBullet();
-void G_ShudownBullet();
-void G_RunPhysics();
+//void G_InitBullet();
+//void G_ShudownBullet();
+//void G_RunPhysics();
+//void G_LoadMap(const char *mapName);
+//void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *ch, vec3_t newPos);
+//class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
+//void BT_SetCharacterEntity(class btKinematicCharacterController *ch, class ModelEntity *e);
+//bool G_TryToJump(btKinematicCharacterController *ch);
+//bool BT_IsCharacterOnGround(btKinematicCharacterController *ch);
+//void BT_FreeCharacter(class btKinematicCharacterController *c);
+//void BT_SetCharacterPos(class btKinematicCharacterController *c, const vec3_c &p);
+//void BT_SetCharacterVelocity(class btKinematicCharacterController *c, const vec3_c &newVel);
+//void G_UpdatePhysicsObject(edict_s *ent);
+//class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel);
+//void BT_RemoveVehicle(class physVehicleAPI_i *pv);
+//void BT_RunVehicles();
+//void BT_ShutdownVehicles();
+//const class aabb &G_GetInlineModelBounds(u32 inlineModelNum);
+//class cMod_i *BT_GetSubModelCModel(u32 inlineModelNum);
+//bool BT_IsInSolid(const class matrix_c &mat, const class aabb &bb);
+//bool BT_TraceRay(class trace_c &tr);
+
+//
+// g_physDLL.cpp
+//
+void G_InitPhysicsEngine();
 void G_LoadMap(const char *mapName);
-void G_RunCharacterController(vec3_t dir, class btKinematicCharacterController *ch, vec3_t newPos);
-class btKinematicCharacterController* BT_CreateCharacter(float stepHeight, vec3_t pos, float characterHeight,  float characterWidth);
-void BT_SetCharacterEntity(class btKinematicCharacterController *ch, class ModelEntity *e);
-bool G_TryToJump(btKinematicCharacterController *ch);
-bool BT_IsCharacterOnGround(btKinematicCharacterController *ch);
-void BT_FreeCharacter(class btKinematicCharacterController *c);
-void BT_SetCharacterPos(class btKinematicCharacterController *c, const vec3_c &p);
-void BT_SetCharacterVelocity(class btKinematicCharacterController *c, const vec3_c &newVel);
-void G_UpdatePhysicsObject(edict_s *ent);
-class physVehicleAPI_i *BT_CreateVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cmodel);
-void BT_RemoveVehicle(class physVehicleAPI_i *pv);
-void BT_RunVehicles();
-void BT_ShutdownVehicles();
-const class aabb &G_GetInlineModelBounds(u32 inlineModelNum);
-class cMod_i *BT_GetSubModelCModel(u32 inlineModelNum);
-bool BT_IsInSolid(const class matrix_c &mat, const class aabb &bb);
-bool BT_TraceRay(class trace_c &tr);
+void G_ShutdownPhysicsEngine();
+void G_RunPhysics();
 
 //
 // g_debugDraw.cpp

@@ -104,7 +104,7 @@ public:
 	virtual bool isDynamic() const {
 		return false;
 	}
-	virtual class btRigidBody *getRigidBody() const {
+	virtual class physObjectAPI_i *getRigidBody() const {
 		return 0;
 	}
 
