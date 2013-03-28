@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Player.h"
 #include <api/serverAPI.h>
 #include <shared/keyValuesListener.h>
+#include <shared/eventSystem.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 // Quake3 "misc_teleporter_dest" for q3dm0 teleporter 
@@ -68,6 +69,7 @@ BaseEntity::BaseEntity() {
 	myEdict->s->number = myEdict - g_entities;
 	myEdict->ent = this;
 	parent = 0;
+	eventList = 0;
 	matrix.identity();
 }
 BaseEntity::~BaseEntity() {
@@ -78,6 +80,9 @@ BaseEntity::~BaseEntity() {
 		assert(_myEntityState == myEdict->s);
 		delete _myEntityState;
 		_myEntityState = 0;
+	}
+	if(eventList) {
+		delete eventList;
 	}
 	//G_FreeEntity(myEdict);
 	memset (myEdict, 0, sizeof(*myEdict));
@@ -123,6 +128,15 @@ void BaseEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
 	if(this->hasTarget()) {
 		listener->addKeyValue("target",getTarget());
 	}
+}
+void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
+
+}	
+void BaseEntity::postEvent(int execTime, const char *eventName, const char *arg0, const char *arg1, const char *arg2, const char *arg3) {
+	if(eventList == 0) {
+		eventList = new eventList_c;
+	}
+	eventList->addEvent(execTime,eventName,arg0,arg1,arg2,arg3);
 }
 // maybe I should put those functions in ModelEntity...
 void BaseEntity::link() {
@@ -190,6 +204,12 @@ bool BaseEntity::hasTarget() const {
 	if(target.length())
 		return true;
 	return false;
+}
+u32 BaseEntity::processPendingEvents() {
+	if(eventList == 0)
+		return 0;
+	u32 c_executed = eventList->executeEvents(level.time,this);
+	return c_executed;
 }
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {
 	if(parent) {

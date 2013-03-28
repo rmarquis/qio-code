@@ -28,10 +28,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_rigidBody.h"
 #include "btp_characterController.h"
 #include "btp_convert.h"
+#include "btp_constraint.h"
 #include <shared/physObjectDef.h>
 #include <api/cmAPI.h>
+#include <api/coreAPI.h>
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #pragma comment( lib, "BulletCollision_debug.lib" )
 #pragma comment( lib, "BulletDynamics_debug.lib" )
 #pragma comment( lib, "LinearMath_debug.lib" )
@@ -83,6 +85,25 @@ void bulletPhysicsWorld_c::runFrame(float frameTime) {
 	dynamicsWorld->stepSimulation(frameTime,2);
 }
 void bulletPhysicsWorld_c::shutdown() {
+	// see if we forgot to free some rigid bodies or constraings
+	if(bodies.size()) {
+		g_core->RedWarning("bulletPhysicsWorld_c::shutdown: forgot to free %i bodies\n",bodies.size());
+		while(bodies.size()) {
+			this->destroyPhysicsObject(bodies[0]);
+		}	
+	}
+	if(constraints.size()) {
+		g_core->RedWarning("bulletPhysicsWorld_c::shutdown: forgot to free %i constraints\n",constraints.size());
+		while(constraints.size()) {
+			this->destroyPhysicsConstraint(constraints[0]);
+		}
+	}
+	if(characters.size()) {
+		g_core->RedWarning("bulletPhysicsWorld_c::shutdown: forgot to free %i characters\n",characters.size());
+		while(characters.size()) {
+			this->freeCharacter(characters[0]);
+		}
+	}
 	// free static world data
 	staticWorld.freeMemory();
 	// free physics data allocated in bulletPhysicsWorld_c::init()
@@ -152,14 +173,49 @@ void bulletPhysicsWorld_c::destroyPhysicsObject(class physObjectAPI_i *p) {
 		return;
 	delete p;
 }
-class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0, physObjectAPI_i *b1) {
-	return 0;
+class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0API, physObjectAPI_i *b1API) {
+	bulletRigidBody_c *b0 = dynamic_cast<bulletRigidBody_c*>(b0API);
+	bulletRigidBody_c *b1 = dynamic_cast<bulletRigidBody_c*>(b1API);
+	if(b0 == 0) {
+		if(b1) {
+			b0 = b1;
+			b1 = 0;
+		} else {
+			g_core->RedWarning("bulletPhysicsWorld_c::createConstraintBall: failed to create constraint because both bodies are NULL\n");
+			return 0;
+		}
+	}
+	btpConstraintBall_c *ballConstraint = new btpConstraintBall_c;
+	ballConstraint->init(pos,b0,b1,this);
+	this->constraints.push_back(ballConstraint);
+	return ballConstraint;
 }
-class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintHinge(const vec3_c &pos, const vec3_c &axis, physObjectAPI_i *b0, physObjectAPI_i *b1) {
-	return 0;
+class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintHinge(const vec3_c &pos, const vec3_c &axis, physObjectAPI_i *b0API, physObjectAPI_i *b1API) {
+	bulletRigidBody_c *b0 = dynamic_cast<bulletRigidBody_c*>(b0API);
+	bulletRigidBody_c *b1 = dynamic_cast<bulletRigidBody_c*>(b1API);
+	if(b0 == 0) {
+		if(b1) {
+			b0 = b1;
+			b1 = 0;
+		} else {
+			g_core->RedWarning("bulletPhysicsWorld_c::createConstraintBall: failed to create constraint because both bodies are NULL\n");
+			return 0;
+		}
+	}
+	btpConstraintHinge_c *hingeConstraint = new btpConstraintHinge_c;
+	hingeConstraint->init(pos,axis,b0,b1,this);
+	this->constraints.push_back(hingeConstraint);
+	return hingeConstraint;
 }
 void bulletPhysicsWorld_c::destroyPhysicsConstraint(physConstraintAPI_i *p) {
-
+	btpConstraintBase_c *base = dynamic_cast<btpConstraintBase_c*>(p);
+	if(base == 0) {
+		g_core->RedWarning("bulletPhysicsWorld_c::destroyPhysicsConstraint: dynamic cast to constraintBase failed. This should never happen!\n");
+		return;
+	}
+	this->constraints.remove(base);
+	base->destroyConstraint();
+	delete base;
 }
 class physCharacterControllerAPI_i *bulletPhysicsWorld_c::createCharacter(const class vec3_c &pos, float characterHeight, float characterWidth) {
 	btpCharacterController_c *newChar = new btpCharacterController_c;
@@ -178,6 +234,57 @@ void bulletPhysicsWorld_c::setGravity(const vec3_c &newGravity) {
 const vec3_c &bulletPhysicsWorld_c::getGravity() const {
 	return gravity;
 }
+#include <shared/trace.h>
+class btRayCallback_c : public btCollisionWorld::RayResultCallback {
+public:
+	btRayCallback_c(const btVector3&	rayFromWorld,const btVector3&	rayToWorld)
+	:m_rayFromWorld(rayFromWorld),
+	m_rayToWorld(rayToWorld)
+	{
+	}
 
+	btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
+	btVector3	m_rayToWorld;
+
+	btVector3	m_hitNormalWorld;
+	btVector3	m_hitPointWorld;
+		
+	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
+	{
+		//caller already does the filter on the m_closestHitFraction
+		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
+		
+		m_closestHitFraction = rayResult.m_hitFraction;
+		m_collisionObject = rayResult.m_collisionObject;
+		if (normalInWorldSpace)
+		{
+			m_hitNormalWorld = rayResult.m_hitNormalLocal;
+		} else
+		{
+			///need to transform normal into worldspace
+			m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis()*rayResult.m_hitNormalLocal;
+		}
+		m_hitPointWorld.setInterpolate3(m_rayFromWorld,m_rayToWorld,rayResult.m_hitFraction);
+		return rayResult.m_hitFraction;
+	}
+};
+bool bulletPhysicsWorld_c::traceRay(class trace_c &tr) {
+	btVector3 rayFrom;
+	rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_BULLET,tr.getStartPos().y*QIO_TO_BULLET,tr.getStartPos().z*QIO_TO_BULLET));
+	btVector3 rayTo;
+	rayTo = (btVector3(tr.getTo().x*QIO_TO_BULLET,tr.getTo().y*QIO_TO_BULLET,tr.getTo().z*QIO_TO_BULLET));
+	btRayCallback_c rayCallback(rayFrom,rayTo);
+	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
+	if(rayCallback.hasHit()) {
+		tr.setHitPos(vec3_c(rayCallback.m_hitPointWorld.m_floats)*BULLET_TO_QIO);
+	}
+	if(rayCallback.m_collisionObject) {
+		void *uPtr = rayCallback.m_collisionObject->getUserPointer();
+		if(uPtr) {
+			tr.setHitEntity((BaseEntity*)uPtr);
+		}
+	}
+	return rayCallback.hasHit();
+}
 
 

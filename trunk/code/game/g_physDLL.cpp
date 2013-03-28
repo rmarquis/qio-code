@@ -66,6 +66,9 @@ public:
 	virtual const vec3_c &getGravity() const {
 		return g;
 	}
+	virtual bool traceRay(class trace_c &tr) {
+		return false;
+	}
 };
 static physWorldStub_c g_physWorldStub;
 class physWorldAPI_i *g_physWorld = &g_physWorldStub;

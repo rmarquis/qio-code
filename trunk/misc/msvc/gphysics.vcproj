@@ -61,7 +61,7 @@
 				OutputFile="..\..\game\system\gphysicsx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="libcmt.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib"
 				ModuleDefinitionFile="gphysics.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -134,6 +134,7 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\gphysicsx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				IgnoreDefaultLibraryNames="MSVCRT.lib"
 				ModuleDefinitionFile="gphysics.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -184,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_constraint.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_rigidBody.cpp"
 				>
 			</File>
@@ -211,6 +216,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\gphysics\bullet\btp_constraint.h"
 				>
 			</File>
 			<File
@@ -246,6 +255,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\physConstraintAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\physObjectAPI.h"
 				>
 			</File>
@@ -273,6 +286,22 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\cmBezierPatch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\collisionUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.h"
 				>
 			</File>
 		</Filter>

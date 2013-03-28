@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/physObjectDef.h>
 
 bulletRigidBody_c::bulletRigidBody_c() {
-
+	
 }
 bulletRigidBody_c::~bulletRigidBody_c() {
 
@@ -55,7 +55,7 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 void bulletRigidBody_c::setOrigin(const class vec3_c &newPos) {
 
 }
-const class vec3_c &bulletRigidBody_c::getRealOrigin() const {
+const class vec3_c bulletRigidBody_c::getRealOrigin() const {
 	btTransform trans;
 	trans = bulletRigidBody->getWorldTransform();
 	class matrix_c mat;
@@ -70,6 +70,13 @@ void bulletRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
 	if(this->shape->hasCenterOfMassTransform()) {
 		out = out * this->shape->getCenterOfMassTransform().getInversed();
 	}
+	out.scaleOriginXYZ(BULLET_TO_QIO);
+}
+void bulletRigidBody_c::getPhysicsMatrix(class matrix_c &out) const {
+	btTransform trans;
+	trans = bulletRigidBody->getWorldTransform();
+	trans.getOpenGLMatrix(out);
+	// dont add center of mass transform
 	out.scaleOriginXYZ(BULLET_TO_QIO);
 }
 void bulletRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {

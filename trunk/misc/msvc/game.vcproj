@@ -78,6 +78,7 @@
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile=".\game.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\qagamex86.pdb"
@@ -755,6 +756,22 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\eventBaseAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\eventReceiverAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\eventSystem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\eventSystem.h"
 				>
 			</File>
 			<File

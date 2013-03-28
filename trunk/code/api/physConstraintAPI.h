@@ -21,18 +21,15 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physCharacterControllerAPI.h
-#ifndef __PHYSCHARACTERCONTROLLER_API_H__
-#define __PHYSCHARACTERCONTROLLER_API_H__
+// physConstraintAPI.h
+#ifndef __PHYSCONSTRAINTAPI_H__
+#define __PHYSCONSTRAINTAPI_H__
 
-class physCharacterControllerAPI_i {
+class physConstraintAPI_i {
 public:
-	virtual void setCharacterVelocity(const class vec3_c &newVel) = 0;
-	virtual void setCharacterEntity(class BaseEntity *ent) = 0;
-	virtual void update(const class vec3_c &dir) = 0;
-	virtual const class vec3_c &getPos() const = 0;
-	virtual bool isOnGround() const = 0;
-	virtual bool tryToJump() = 0;
+	
+	virtual class physObjectAPI_i *getBody0() const = 0;
+	virtual class physObjectAPI_i *getBody1() const = 0;
 };
 
-#endif // __PHYS_API_H__
+#endif // __PHYSCONSTRAINTAPI_H__

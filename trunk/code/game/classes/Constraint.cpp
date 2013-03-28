@@ -24,68 +24,67 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Constraint.cpp
 #include "Constraint.h"
 #include "../g_local.h"
+#include <shared/eventBaseAPI.h>
 #include <api/physAPI.h>
+#include <api/coreAPI.h>
 
 DEFINE_CLASS(Constraint, "BaseEntity");
 DEFINE_CLASS_ALIAS(Constraint, func_constraint);
 
 Constraint::Constraint() {
 	type = PCT_BALL;
+	physConstraint = 0;
+	this->postEvent(0,"finishSpawningConstraint");
 }
-void Constraint::postSpawn2() {
-	//e0 = G_FindFirstEntityWithTargetName(e0TargetName);
-	//e1 = G_FindFirstEntityWithTargetName(e1TargetName);
-	//if(e0 == 0) {
-	//	if(e1 == 0) {
-	//		return;
-	//	}
-	//	e0 = e1;
-	//	e1 = 0;
-	//}
-	//if(e0->getRigidBody() == 0)
-	//	return;
-	//vec3_c anchor = this->getOrigin();
-	//matrix_c cMat;
-	//cMat.setupOrigin(anchor.x,anchor.y,anchor.z);
-	//matrix_c b0Mat = e0->getMatrix().getInversed()*cMat;
-	//btTransform frameA;
-	//frameA.setFromOpenGLMatrix(b0Mat);
-	//frameA.scaleOrigin(QIO_TO_BULLET);
-	//if(type == PCT_BALL) {
-	//	btGeneric6DofConstraint *bc;
-	//	if(e1 && e0) {
-	//		matrix_c b1Mat = e1->getMatrix().getInversed()*cMat;
-	//		btTransform frameB;
-	//		frameB.setFromOpenGLMatrix(b1Mat);
-	//		frameB.scaleOrigin(QIO_TO_BULLET);
-	//		bc = new btGeneric6DofConstraint(*e0->getRigidBody(),*e1->getRigidBody(),frameA,frameB,false);
-	//	} else {
-	//		bc = new btGeneric6DofConstraint(*e0->getRigidBody(),frameA,false);
-	//	}
-	//	// lock linear transforms
-	//	bc->setLimit(0,0,0);
-	//	bc->setLimit(1,0,0);
-	//	bc->setLimit(2,0,0);
-	//	// free the angular axes
-	//	bc->setLimit(3,-1,0);
-	//	bc->setLimit(4,-1,0);
-	//	bc->setLimit(5,-1,0);
-	//	dynamicsWorld->addConstraint(bc);
-	//} else if(type == PCT_HINGE) {
-	//	btHingeConstraint *hinge;
-	//	if(e1 && e0) {
-	//		matrix_c b1Mat = e1->getMatrix().getInversed()*cMat;
-	//		btTransform frameB;
-	//		frameB.setFromOpenGLMatrix(b1Mat);
-	//		frameB.scaleOrigin(QIO_TO_BULLET);
-	//		hinge = new btHingeConstraint(*e0->getRigidBody(),*e1->getRigidBody(),frameA,frameB,false);
-	//	} else {
-	//		hinge = new btHingeConstraint(*e0->getRigidBody(),frameA,false);
-	//	}
-	//	btVector3 ax(0,0,1);
-	//	hinge->setAxis(ax);
-	//	dynamicsWorld->addConstraint(hinge);
-	//}
+Constraint::~Constraint() {
+	destroyConstraint();
+}
+void Constraint::destroyConstraint() {
+	if(this->physConstraint) {
+		g_physWorld->destroyPhysicsConstraint(physConstraint);
+		physConstraint = 0;
+	}
+}
+void Constraint::finishSpawningConstraint() {
+	destroyConstraint();
+
+	e0 = G_FindFirstEntityWithTargetName(e0TargetName);
+	e1 = G_FindFirstEntityWithTargetName(e1TargetName);
+	if(e0 == 0) {
+		if(e1 == 0) {
+			return;
+		}
+		e0 = e1;
+		e1 = 0;
+	}
+	physObjectAPI_i *body0 = e0->getRigidBody();
+	physObjectAPI_i *body1;
+	if(e1) {
+		body1 = e1->getRigidBody();
+	} else {
+		body1 = 0;
+	}
+	if(body0 == 0) {
+		if(body1) {
+			body0 = body1;
+			body1 = 0;
+		}
+		g_core->RedWarning("Constraint::finishSpawningConstraint(): constraint entities has no physics objects\n");
+		return;
+	}
+	// body0 must be not-NULL here
+	// if body1 is null, static world is used instead of it
+	if(this->type == PCT_BALL) {
+		this->physConstraint = g_physWorld->createConstraintBall(this->getOrigin(),body0,body1);
+	} else if(this->type == PCT_HINGE) {
+		vec3_c axis(0,0,1);
+		this->physConstraint = g_physWorld->createConstraintHinge(this->getOrigin(),axis,body0,body1);
+	}
+}
+void Constraint::processEvent(class eventBaseAPI_i *ev) {
+	if(!stricmp(ev->getEventName(),"finishSpawningConstraint")) {
+		finishSpawningConstraint();
+	}
 }
 void Constraint::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"body0")) {

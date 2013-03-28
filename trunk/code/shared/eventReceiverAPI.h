@@ -21,18 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// physCharacterControllerAPI.h
-#ifndef __PHYSCHARACTERCONTROLLER_API_H__
-#define __PHYSCHARACTERCONTROLLER_API_H__
+// eventReceiverAPI.h
+#ifndef __SHARED_EVENTRECEIVERAPI_H__
+#define __SHARED_EVENTRECEIVERAPI_H__
 
-class physCharacterControllerAPI_i {
+class eventReceiverBaseAPI_i {
 public:
-	virtual void setCharacterVelocity(const class vec3_c &newVel) = 0;
-	virtual void setCharacterEntity(class BaseEntity *ent) = 0;
-	virtual void update(const class vec3_c &dir) = 0;
-	virtual const class vec3_c &getPos() const = 0;
-	virtual bool isOnGround() const = 0;
-	virtual bool tryToJump() = 0;
+	virtual void processEvent(class eventBaseAPI_i *ev) = 0;
 };
 
-#endif // __PHYS_API_H__
+#endif // __SHARED_EVENTRECEIVERAPI_H__

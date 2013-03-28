@@ -210,6 +210,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="shaders"
+			>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx10\default.fx"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

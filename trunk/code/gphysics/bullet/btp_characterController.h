@@ -26,15 +26,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __BTP_CHARACTERCONTROLLER_H__
 
 #include <api/physCharacterControllerAPI.h>
+#include <math/vec3.h>
 
 class btpCharacterController_c : public physCharacterControllerAPI_i {
 	class btKinematicCharacterController *ch;
+	class btConvexShape *characterShape;
 	class bulletPhysicsWorld_c *myWorld;
+	mutable vec3_c lastPos;
 public:
+	btpCharacterController_c();
+
 	virtual void setCharacterVelocity(const class vec3_c &newVel);
 	virtual void setCharacterEntity(class BaseEntity *ent);
 	virtual void update(const class vec3_c &dir);
-	virtual class vec3_c &getPos() const;
+	virtual const class vec3_c &getPos() const;
 	virtual bool isOnGround() const;
 	virtual bool tryToJump();
 

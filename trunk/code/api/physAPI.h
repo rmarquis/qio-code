@@ -53,8 +53,10 @@ public:
 	virtual class physCharacterControllerAPI_i *createCharacter(const class vec3_c &pos, float characterHeight,  float characterWidth) = 0;
 	virtual void freeCharacter(class physCharacterControllerAPI_i *p) = 0;
 
+	// world
 	virtual void setGravity(const vec3_c &newGravity) = 0;
 	virtual const vec3_c &getGravity() const = 0;
+	virtual bool traceRay(class trace_c &tr) = 0;
 };
 
 #define GPHYSICS_API_IDENTSTR "GamePhysicsAPI0001"

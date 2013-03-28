@@ -39,12 +39,16 @@ class Constraint : public BaseEntity {
 	safePtr_c<BaseEntity> e1;
 	str e1TargetName;
 	constraintType_e type;
+	class physConstraintAPI_i *physConstraint;
 public:
 	Constraint();
+	~Constraint();
 
 	DECLARE_CLASS( Constraint );
 
-	virtual void postSpawn2();
+	void finishSpawningConstraint();
+	void destroyConstraint();
+	virtual void processEvent(class eventBaseAPI_i *ev);
 
 	virtual void setKeyValue(const char *key, const char *value); 
 };

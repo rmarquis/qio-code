@@ -30,9 +30,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <shared/safePtr.h>
 #include <shared/str.h>
+#include <shared/eventReceiverAPI.h>
 #include <math/matrix.h>
 
-class BaseEntity : public safePtrObject_c {
+class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 	matrix_c matrix;
 	// for entity attaching
@@ -40,6 +41,10 @@ class BaseEntity : public safePtrObject_c {
 	BaseEntity *parent; // for children
 	str targetName; // name of this entity; set in radiant or trough script
 	str target; // entity's target - FIXME: use safePtr<BaseEntity> here instead of string?
+	class eventList_c *eventList;
+
+	// called through eventReceiverBaseAPI_i
+	virtual void processEvent(class eventBaseAPI_i *ev);
 protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
@@ -51,6 +56,7 @@ public:
 
 	virtual void setKeyValue(const char *key, const char *value);
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
+	void postEvent(int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
 
 	// maybe I should put those functions in ModelEntity...
 	void link();
@@ -128,6 +134,8 @@ public:
 	virtual void postSpawn2() {
 	
 	}
+
+	u32 processPendingEvents();
 
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);

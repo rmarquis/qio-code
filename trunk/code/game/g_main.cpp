@@ -206,15 +206,29 @@ void G_TestSafePtrs() {
 		}
 	}
 }
+
+void G_ProcessEntityEvents() {
+	u32 c_numProcessedEvents = 0;
+	edict_s	*ed = &g_entities[0];
+	for(u32 i = 0; i < level.num_entities; i++, ed++) {
+		if(ed->s == 0) {
+			// edict is not active
+			continue;
+		}
+		if(ed->ent == 0) {
+			continue;
+		}
+		c_numProcessedEvents += ed->ent->processPendingEvents();
+	}
+}
+
 /*
 ================
 G_RunFrame
-
-Advances the non-player objects in the world
 ================
 */
 void G_RunFrame( int levelTime ) {
-	int			i;
+	u32 i;
 	edict_s	*ed;
 
 	level.framenum++;
@@ -225,6 +239,7 @@ void G_RunFrame( int levelTime ) {
 	//G_TestSafePtrs();
 
 	G_RunPhysics();
+	G_ProcessEntityEvents();
 
 	g_world.runWorldFrame();
 
@@ -232,12 +247,13 @@ void G_RunFrame( int levelTime ) {
 	// go through all allocated objects
 	//
 	ed = &g_entities[0];
-	for (i=0 ; i<level.num_entities ; i++, ed++) {
-		if ( ed->s == 0 ) {
+	for (i = 0; i < level.num_entities; i++, ed++) {
+		if (ed->s == 0) {
+			// edict is not active
 			continue;
 		}
 
-		if ( i < MAX_CLIENTS ) {
+		if (i < MAX_CLIENTS) {
 			G_RunClient( ed );
 			continue;
 		}
@@ -248,10 +264,12 @@ void G_RunFrame( int levelTime ) {
 
 	// perform final fixups on the players
 	ed = &g_entities[0];
-	for (i=0 ; i < MAX_CLIENTS; i++, ed++ ) {
-		if ( ed->s ) {
-			ClientEndFrame( ed );
+	for (i = 0; i < MAX_CLIENTS; i++, ed++ ) {
+		if (ed->s == 0) {
+			// edict is not active
+			continue;
 		}
+		ClientEndFrame( ed );
 	}
 
 }

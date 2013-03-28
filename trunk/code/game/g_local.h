@@ -79,6 +79,7 @@ void ClientSpawn( edict_s *ent );
 //
 void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
+void G_ProcessEntityEvents();
 void G_ShutdownGame( int restart );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));

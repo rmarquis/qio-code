@@ -27,6 +27,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_world.h"
 #include "btp_convert.h"
 
+btpCharacterController_c::btpCharacterController_c() {
+	this->ch = 0;
+	this->characterShape = 0;
+	this->myWorld = 0;
+}
 void btpCharacterController_c::setCharacterVelocity(const class vec3_c &newVel) {
 
 }
@@ -38,9 +43,8 @@ void btpCharacterController_c::update(const class vec3_c &dir) {
 	btVector3 walkDir(dir[0]*QIO_TO_BULLET,dir[1]*QIO_TO_BULLET,dir[2]*QIO_TO_BULLET);
 	ch->setWalkDirection(walkDir);
 }
-class vec3_c &btpCharacterController_c::getPos() const {
+const class vec3_c &btpCharacterController_c::getPos() const {
 	btVector3 c = ch->getGhostObject()->getWorldTransform().getOrigin();
-	vec3_c lastPos;
 	lastPos[0] = c.x()*BULLET_TO_QIO;
 	lastPos[1] = c.y()*BULLET_TO_QIO;
 	lastPos[2] = c.z()*BULLET_TO_QIO;
@@ -61,7 +65,7 @@ void btpCharacterController_c::init(class bulletPhysicsWorld_c *pWorld, const cl
 	this->myWorld = pWorld;
 
 	btPairCachingGhostObject* ghostObject = new btPairCachingGhostObject();
-	btConvexShape* characterShape = new btCapsuleShapeZ(characterWidth*QIO_TO_BULLET,characterHeight*QIO_TO_BULLET);
+	characterShape = new btCapsuleShapeZ(characterWidth*QIO_TO_BULLET,characterHeight*QIO_TO_BULLET);
 	btTransform trans;
 	trans.setIdentity();
 	btVector3 vPos(pos[0]*QIO_TO_BULLET,pos[1]*QIO_TO_BULLET,pos[2]*QIO_TO_BULLET);
@@ -87,5 +91,6 @@ void btpCharacterController_c::destroyCharacter() {
 	myWorld->getBTDynamicsWorld()->removeCollisionObject(ch->getGhostObject());
 	delete ch->getGhostObject();
 	delete ch;
+	delete characterShape;
 }
 

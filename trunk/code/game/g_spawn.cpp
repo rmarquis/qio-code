@@ -144,6 +144,9 @@ void G_SpawnMapEntities(const char *mapName) {
 		entDef_c *entDef = g_entDefs[i];
 		G_SpawnEntDef(entDef);
 	}
+	// perform a final fixups on entities
+	// (spawn constraints, etc)
+	G_ProcessEntityEvents();
 	// FIXME: do this other way
 	for(u32 i = 0; i < level.num_entities; i++) {
 		if(g_entities[i].ent) {

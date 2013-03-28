@@ -33,6 +33,7 @@ class bulletRigidBody_c : public physObjectAPI_i {
 	class bulletColShape_c *shape;
 	class btRigidBody *bulletRigidBody;
 	class BaseEntity *myEntity;
+	//arraySTD_c<btpConstraintBase_c*> constraints;
 public:
 	bulletRigidBody_c();
 	~bulletRigidBody_c();
@@ -40,8 +41,9 @@ public:
 	void init(class bulletColShape_c *newShape, const struct physObjectDef_s &def); 
 
 	virtual void setOrigin(const class vec3_c &newPos);
-	virtual const class vec3_c &getRealOrigin() const;
+	virtual const class vec3_c getRealOrigin() const;
 	virtual void getCurrentMatrix(class matrix_c &out) const;
+	virtual void getPhysicsMatrix(class matrix_c &out) const;
 	virtual void applyCentralForce(const class vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const class vec3_c &impToAdd);
 	// linear velocity access (in Quake units)

@@ -41,10 +41,12 @@ class bulletPhysicsWorld_c : public physWorldAPI_i {
 	arraySTD_c<class bulletRigidBody_c*> bodies;
 	// character controllers
 	arraySTD_c<class btpCharacterController_c*> characters;
+	// constraints
+	arraySTD_c<class btpConstraintBase_c*> constraints;
 	// ragdolls
-	arraySTD_c<class bulletRagdoll_c*> ragdolls;
+	//arraySTD_c<class bulletRagdoll_c*> ragdolls;
 	// vehicles 
-	arraySTD_c<class bulletVehicle_c*> vehicles;
+	//arraySTD_c<class bulletVehicle_c*> vehicles;
 	// BulletPhysics variables
 	class btBroadphaseInterface *broadphase;
 	class btDefaultCollisionConfiguration *collisionConfiguration;
@@ -76,6 +78,7 @@ public:
 
 	virtual void setGravity(const vec3_c &newGravity);
 	virtual const vec3_c &getGravity() const;
+	virtual bool traceRay(class trace_c &tr);
 
 	class btDynamicsWorld *getBTDynamicsWorld() {
 		return dynamicsWorld;
