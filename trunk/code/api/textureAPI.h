@@ -51,6 +51,10 @@ public:
 	virtual void setInternalHandleV(void *newHandle) = 0;
 	virtual u32 getInternalHandleU32() const = 0;
 	virtual void setInternalHandleU32(u32 newHandle) = 0;
+
+	// second extra pointer for DX10 backend
+	virtual void *getExtraUserPointer() const = 0;
+	virtual void setExtraUserPointer(void *newHandle) = 0;
 };
 
 #endif // __TEXTUREAPI_H__

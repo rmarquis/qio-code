@@ -35,6 +35,8 @@ class textureIMPL_c : public textureAPI_i {
 		u32 handleU32;
 		void *handleV;
 	};
+	// second handle for DX10 backend
+	void *extraHandle;
 	u32 w, h;
 	textureWrapMode_e wrapMode;
 	textureIMPL_c *hashNext;
@@ -43,6 +45,7 @@ public:
 		hashNext = 0;
 		w = h = 0;
 		handleV = 0;
+		extraHandle = 0;
 		wrapMode = TWM_REPEAT; // use GL_REPEAT by default
 	}
 	~textureIMPL_c() {
@@ -88,6 +91,14 @@ public:
 	}
 	virtual void setInternalHandleU32(u32 newHandle) {
 		handleU32 = newHandle;
+	}
+
+	// second extra pointer for DX10 backend
+	virtual void *getExtraUserPointer() const {
+		return extraHandle;
+	}
+	virtual void setExtraUserPointer(void *newHandle) {
+		extraHandle = newHandle;
 	}
 
 	textureIMPL_c *getHashNext() {

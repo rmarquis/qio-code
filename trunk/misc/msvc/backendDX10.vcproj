@@ -217,6 +217,10 @@
 				RelativePath="..\..\game\baseqio\hlsl\dx10\default.fx"
 				>
 			</File>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx10\default_2d.fx"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

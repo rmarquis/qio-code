@@ -136,6 +136,13 @@ public:
 		return entModels[0];
 	}
 	void registerSubModels() {
+		if(entModels.size() == 0) {
+			return; // nothing to do, no models at all
+		}
+
+		// upload world data to GPU
+		entModels[0]->createVBOsAndIBOs();
+
 		u32 modelNum = 1;
 		for(u32 i = 1; i < entModels.size(); i++) {
 			r_model_c *m = entModels[i];
@@ -155,6 +162,8 @@ public:
 #endif
 			str modName = va("*%i",modelNum);
 			model_c *mod = RF_AllocModel(modName);
+			// upload model data to GPU
+			m->createVBOsAndIBOs();
 			// precalculate data for stencil shadow volumes generation
 			m->precalculateStencilShadowCaster();
 			mod->initStaticModel(m);

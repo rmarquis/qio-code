@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2012-2013 V.
 
 This file is part of Qio source code.
 
@@ -51,9 +51,187 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <d3d10.h>
 #include <d3dx10.h>
 
-//
+// dx10 libraries
 #pragma comment (lib, "d3d10.lib")
 #pragma comment (lib, "d3dx10.lib")
+
+class dx10Shader_c {
+public:
+	ID3D10Effect *m_effect;
+	ID3D10EffectTechnique *m_technique;
+	ID3D10InputLayout *m_layout;
+
+	ID3D10EffectMatrixVariable *m_worldMatrixPtr;
+	ID3D10EffectMatrixVariable *m_viewMatrixPtr;
+	ID3D10EffectMatrixVariable *m_projectionMatrixPtr;
+	ID3D10EffectShaderResourceVariable *m_texturePtr;
+
+	// init rVert_c format layout
+	void init3DVertexFormat(D3D10_INPUT_ELEMENT_DESC polygonLayout[], u32 &numElements) {
+		polygonLayout[0].SemanticName = "POSITION";
+		polygonLayout[0].SemanticIndex = 0;
+		polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		polygonLayout[0].InputSlot = 0;
+		polygonLayout[0].AlignedByteOffset = 0;
+		polygonLayout[0].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[0].InstanceDataStepRate = 0;
+
+		polygonLayout[1].SemanticName = "NORMAL";
+		polygonLayout[1].SemanticIndex = 0;
+		polygonLayout[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		polygonLayout[1].InputSlot = 0;
+		polygonLayout[1].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
+		polygonLayout[1].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[1].InstanceDataStepRate = 0;
+
+		polygonLayout[2].SemanticName = "COLOR";
+		polygonLayout[2].SemanticIndex = 0;
+		polygonLayout[2].Format = DXGI_FORMAT_R32_UINT;
+		polygonLayout[2].InputSlot = 0;
+		polygonLayout[2].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
+		polygonLayout[2].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[2].InstanceDataStepRate = 0;
+
+		polygonLayout[3].SemanticName = "TEXCOORD";
+		polygonLayout[3].SemanticIndex = 0;
+		polygonLayout[3].Format = DXGI_FORMAT_R32G32_FLOAT;
+		polygonLayout[3].InputSlot = 0;
+		polygonLayout[3].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
+		polygonLayout[3].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[3].InstanceDataStepRate = 0;
+
+		numElements = 4;
+	}
+	// init r2dVert_s vertex format (used for gui graphics, console background and fonts)
+	void init2DVertexFormat(D3D10_INPUT_ELEMENT_DESC polygonLayout[], u32 &numElements) {
+		// this is still a vec3 (but we're using only X and Y)
+		polygonLayout[0].SemanticName = "POSITION";
+		polygonLayout[0].SemanticIndex = 0;
+		polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		polygonLayout[0].InputSlot = 0;
+		polygonLayout[0].AlignedByteOffset = 0;
+		polygonLayout[0].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[0].InstanceDataStepRate = 0;
+
+		// vec2, texcoord
+		polygonLayout[1].SemanticName = "TEXCOORD";
+		polygonLayout[1].SemanticIndex = 0;
+		polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+		polygonLayout[1].InputSlot = 0;
+		polygonLayout[1].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
+		polygonLayout[1].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[1].InstanceDataStepRate = 0;
+
+		numElements = 2;
+	}
+
+	bool loadHLSLShader(ID3D10Device* device, const char *fname, bool is3DShader = true) {		
+		char *buf;
+		u32 fileLen;
+		fileLen = g_vfs->FS_ReadFile(fname,(void**)&buf);
+		if(buf == 0) {
+			g_core->RedWarning("dx10Shader_c:: cannot open %s for reading\n",fname);
+			return true; // error
+		}
+		// Load the shader in from the file.
+		ID3D10Blob* errorMessage = 0;
+		HRESULT result = D3DX10CreateEffectFromMemory(buf,fileLen,fname, NULL, NULL, "fx_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, 
+											device, NULL, NULL, &m_effect, &errorMessage, NULL);
+		if(FAILED(result)) {
+			g_core->RedWarning("dx10Shader_c:: D3DX10CreateEffectFromMemory failed for %s\n",fname);
+			return true; // error
+		}
+
+		// Get a pointer to the technique inside the shader.
+		m_technique = m_effect->GetTechniqueByName("DefaultTechnique");
+		if(!m_technique) {
+			g_core->RedWarning("dx10Shader_c:: coudlnt find \"DefaultTechnique\" in %s\n",fname);
+			return true; // error
+		}
+
+		// Now setup the layout of the data that goes into the shader.
+		// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
+		D3D10_INPUT_ELEMENT_DESC polygonLayout[8];
+		u32 numElements;
+		if(is3DShader) {
+			init3DVertexFormat(polygonLayout,numElements);
+		} else {
+			init2DVertexFormat(polygonLayout,numElements);
+		}
+
+		// Get the description of the first pass described in the shader technique.
+		D3D10_PASS_DESC passDesc;
+		m_technique->GetPassByIndex(0)->GetDesc(&passDesc);
+
+		// Create the input layout.
+		result = device->CreateInputLayout(polygonLayout, numElements, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, 
+										   &m_layout);
+		if(FAILED(result)) {
+			g_core->RedWarning("dx10Shader_c:: CreateInputLayout failed for %s\n",fname);
+			return true; // error;
+		}
+
+		// Get pointers to the three matrices inside the shader so we can update them from this class.
+		m_worldMatrixPtr = m_effect->GetVariableByName("worldMatrix")->AsMatrix();
+		m_viewMatrixPtr = m_effect->GetVariableByName("viewMatrix")->AsMatrix();
+		m_projectionMatrixPtr = m_effect->GetVariableByName("projectionMatrix")->AsMatrix();
+
+		// Get pointer to the texture resource inside the shader.
+		m_texturePtr = m_effect->GetVariableByName("shaderTexture")->AsShaderResource();
+
+		return false; // no error
+	}
+};
+
+class dx10TempBuffer_c {
+	ID3D10Buffer *buf;
+	ID3D10Device *pMyDev;
+public:
+	dx10TempBuffer_c() {
+		buf = 0;
+		pMyDev = 0;
+	}
+	~dx10TempBuffer_c() {
+		destroy();
+	}
+	bool create(ID3D10Device *pD3DDevice, const void *data, u32 sizeInBytes, bool isVertexBuffer) {
+		pMyDev = pD3DDevice;
+
+		this->destroy();
+
+		D3D10_BUFFER_DESC bufferDesc;
+		memset(&bufferDesc,0,sizeof(bufferDesc));
+		bufferDesc.Usage = D3D10_USAGE_DEFAULT;
+		bufferDesc.ByteWidth = sizeInBytes;
+		if(isVertexBuffer) {
+			bufferDesc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+		} else {
+			bufferDesc.BindFlags = D3D10_BIND_INDEX_BUFFER;
+		}
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+
+		D3D10_SUBRESOURCE_DATA bufferData;
+		memset(&bufferData,0,sizeof(bufferData));
+		bufferData.pSysMem = data;
+
+		HRESULT result = pD3DDevice->CreateBuffer(&bufferDesc, &bufferData, &buf);
+		if(FAILED(result)) {
+			return true;
+		}	
+		return false;
+	}
+	bool destroy() {
+		if(buf) {
+			buf->Release();
+			buf = 0;
+		}
+		return false;
+	}
+	ID3D10Buffer *getDX10Buffer() {
+		return buf;
+	}
+};
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -66,14 +244,28 @@ inputSystemAPI_i * g_inputSystem = 0;
 sdlSharedAPI_i *g_sharedSDLAPI = 0;
 
 class rbDX10_c : public rbAPI_i {
+	// windows handle
+	HWND hWnd;
+	// DirectX10 pointers
 	ID3D10Device *pD3DDevice;
 	IDXGISwapChain *pSwapChain;
 	ID3D10RenderTargetView *pRenderTargetView;
+	ID3D10Texture2D* m_depthStencilBuffer;
+	ID3D10DepthStencilState* m_depthStencilState;
+	ID3D10DepthStencilView* m_depthStencilView;
+	ID3D10RasterizerState* m_rasterState;
+	ID3D10DepthStencilState* m_depthDisabledStencilState;
+	// viewport def
 	D3D10_VIEWPORT viewPort;
-	D3DXMATRIX viewMatrix;
-	D3DXMATRIX projectionMatrix;
+	// our classes
+	dx10Shader_c dx10DefaultShader3D;
+	dx10Shader_c dx10DefaultShader2D;
 
-	HWND hWnd;
+	// matrices, they will be send to HLSL shaders
+	matrix_c viewMatrix;
+	matrix_c worldMatrix;
+	matrix_c projectionMatrix;
+	// material and lightmap
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
 public:
@@ -103,6 +295,7 @@ public:
 			return;
 		if(lastMat->getNumStages() == 0)
 			return;
+#if 0
 		//
 		//	just display the current texture on the entire screen to test DX10 driver
 		//
@@ -113,7 +306,7 @@ public:
 		if(hr != S_OK)
 		{
 			return;
-		}
+		}\
 		//D3D10_BOX sourceRegion;
 		//sourceRegion.left = 0;
 		//sourceRegion.right = 640;
@@ -131,6 +324,56 @@ public:
 		//&sourceRegion);
 		pD3DDevice->CopySubresourceRegion(pBackBuffer, 0, 0, 0, 0, srcTexture, 0,
 			0);
+#else
+		tempGPUVerts.create(this->pD3DDevice,verts,numVerts*sizeof(r2dVert_s),true);
+		ID3D10Buffer *pNewVertexBuffer = tempGPUVerts.getDX10Buffer();
+
+		tempGPUIndices.create(this->pD3DDevice,indices,numIndices*sizeof(u16),false);
+		ID3D10Buffer *pNewIndexBuffer = tempGPUIndices.getDX10Buffer();
+
+		unsigned int stride;
+		unsigned int offset;
+
+		// store vertex props
+		stride = sizeof(r2dVert_s); 
+		offset = 0;
+	    
+		// set vertex buffer data
+		pD3DDevice->IASetVertexBuffers(0, 1, &pNewVertexBuffer, &stride, &offset);
+
+		// set index type (u16/u32)
+		pD3DDevice->IASetIndexBuffer(pNewIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+		// set primitives type (we're always using triangles)
+		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
+
+		// set the world matrix (model pos)
+		dx10DefaultShader2D.m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+
+		// set the view matrix (camera pos)
+		dx10DefaultShader2D.m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+
+		// set the projection matrix (camera lens)
+		dx10DefaultShader2D.m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+
+		// bind the texture.
+		const mtrStageAPI_i *s = lastMat->getStage(0);
+		ID3D10ShaderResourceView *resourceView = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+		dx10DefaultShader2D.m_texturePtr->SetResource(resourceView);
+
+		// set the input layout.
+		pD3DDevice->IASetInputLayout(dx10DefaultShader2D.m_layout);
+
+		// get the description structure of the technique from inside the shader so it can be used for rendering.
+		D3D10_TECHNIQUE_DESC techniqueDesc;
+		dx10DefaultShader2D.m_technique->GetDesc(&techniqueDesc);
+
+		// go through each pass in the technique and render the triangles.
+		for(u32 i = 0; i < techniqueDesc.Passes; i++) {
+			dx10DefaultShader2D.m_technique->GetPassByIndex(i)->Apply(0);
+			pD3DDevice->DrawIndexed(numIndices, 0, 0);
+		}
+#endif
 	}
 	void disableLightmap() {
 	}
@@ -200,43 +443,119 @@ public:
 	void disableBlendFunc() {
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 	}
+	dx10TempBuffer_c tempGPUVerts;
+	dx10TempBuffer_c tempGPUIndices;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
-		
+		if(verts.size() == 0)
+			return;
+		if(indices.getNumIndices() == 0)
+			return;
+
+		ID3D10Buffer *pNewVertexBuffer;
+		if(verts.getInternalHandleVoid() == 0) {
+			tempGPUVerts.create(this->pD3DDevice,verts.getArray(),verts.getSizeInBytes(),true);
+			pNewVertexBuffer = tempGPUVerts.getDX10Buffer();
+		} else {
+			pNewVertexBuffer = (ID3D10Buffer *)verts.getInternalHandleVoid();
+		}
+		ID3D10Buffer *pNewIndexBuffer;
+		if(indices.getInternalHandleVoid() == 0) {
+			tempGPUIndices.create(this->pD3DDevice,indices.getArray(),indices.getSizeInBytes(),false);
+			pNewIndexBuffer = tempGPUIndices.getDX10Buffer();
+		} else {
+			pNewIndexBuffer = (ID3D10Buffer *)indices.getInternalHandleVoid();
+		}
+
+		unsigned int stride;
+		unsigned int offset;
+
+		// store vertex props
+		stride = sizeof(rVert_c); 
+		offset = 0;
+	    
+		// set vertex buffer data
+		pD3DDevice->IASetVertexBuffers(0, 1, &pNewVertexBuffer, &stride, &offset);
+
+		// set index type (u16/u32)
+		if(indices.is32Bit()) {
+			pD3DDevice->IASetIndexBuffer(pNewIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		} else {
+			pD3DDevice->IASetIndexBuffer(pNewIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		}
+
+		// set primitives type (we're always using triangles)
+		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
+
+		// set the world matrix (model pos)
+		dx10DefaultShader3D.m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+
+		// set the view matrix (camera pos)
+		dx10DefaultShader3D.m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+
+		// set the projection matrix (camera lens)
+		dx10DefaultShader3D.m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+
+		// bind the texture.
+		const mtrStageAPI_i *s = lastMat->getStage(0);
+		ID3D10ShaderResourceView *resourceView = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+		dx10DefaultShader3D.m_texturePtr->SetResource(resourceView);
+
+		// set the input layout.
+		pD3DDevice->IASetInputLayout(dx10DefaultShader3D.m_layout);
+
+		// get the description structure of the technique from inside the shader so it can be used for rendering.
+		D3D10_TECHNIQUE_DESC techniqueDesc;
+		dx10DefaultShader3D.m_technique->GetDesc(&techniqueDesc);
+
+		// go through each pass in the technique and render the triangles.
+		for(u32 i = 0; i < techniqueDesc.Passes; i++) {
+			dx10DefaultShader3D.m_technique->GetPassByIndex(i)->Apply(0);
+			pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
+		}
 	}	
 	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
 
 	}
 	virtual void beginFrame() {
-		//clear scene
+		// clear scene
 		pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0) );
+    
+		// clear the depth buffer.
+		pD3DDevice->ClearDepthStencilView(m_depthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0);
 	}
 	virtual void endFrame() {
-	
 		//flip buffers
 		pSwapChain->Present(0,0);
 	}
 	virtual void clearDepthBuffer() {
-	
+		// clear the depth buffer.
+		pD3DDevice->ClearDepthStencilView(m_depthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0);
+	}
+	void enableZBuffer() {
+		pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
+	}
+	void disableZBuffer() {
+		pD3DDevice->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
 	}
 	virtual void setup2DView() {
-		
+		D3DXMatrixOrthoOffCenterLH((D3DXMATRIX *)&projectionMatrix,0,this->getWinWidth(),this->getWinHeight(),0,0,1);
+		worldMatrix.identity();
+		viewMatrix.identity();
+
+		disableZBuffer();
 	}
-	//matrix_c viewMatrix;
-	//matrix_c worldMatrix;
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) {
 		// transform by the camera placement and view axis
-	//	viewMatrix.invFromAxisAndVector(camAxis,newCamPos);
+		viewMatrix.invFromAxisAndVector(camAxis,newCamPos);
 		// convert to gl coord system
-	//	viewMatrix.toGL();
-
-//		pDev->SetTransform(D3DTS_VIEW, (const D3DMATRIX *)&viewMatrix);
+		viewMatrix.toGL();
 
 		setupWorldSpace();
+
+		enableZBuffer();
 	}
 	virtual void setupProjection3D(const struct projDef_s *pd) {
-	///	matrix_c proj;
-	//	proj.setupProjection(pd->fovX,pd->fovY,pd->zNear,pd->zFar);
-//		pDev->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)&proj);
+		projectionMatrix.setupProjection(pd->fovX,pd->fovY,pd->zNear,pd->zFar);
 	}
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
 	}
@@ -248,18 +567,15 @@ public:
 	}
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() {
-	//	worldMatrix.identity();
-
-	//	pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&worldMatrix);
+		worldMatrix.identity();
 	}
 	// used while drawing entities
 	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
-	//	worldMatrix.fromAxisAndOrigin(axis,origin);
-
-	//	pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&worldMatrix);
+		worldMatrix.fromAxisAndOrigin(axis,origin);
 	}
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
+		worldMatrix.fromAnglesAndOrigin(angles,origin);
 	}
 
 	virtual u32 getWinWidth() const  {
@@ -271,7 +587,7 @@ public:
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		ID3D10Texture2D *tex = 0;
-#if 1
+		// create ID3D10Texture2D
 		D3D10_TEXTURE2D_DESC desc; 
 		ZeroMemory( &desc, sizeof(desc)); 
 		desc.Width = w; 
@@ -284,22 +600,6 @@ public:
 		desc.BindFlags = D3D10_BIND_SHADER_RESOURCE; 
 		desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE; 
 		HRESULT hr = pD3DDevice->CreateTexture2D( &desc, NULL, &tex ); 
-#else
-		D3D10_TEXTURE2D_DESC desc;
-		memset(&desc,0,sizeof(desc));
-		desc.Width = w;
-		desc.Height = h;
-		desc.MipLevels = 0; // 0 = autogenerate mipmaps
-		desc.ArraySize = 1; // create a single texture
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D10_USAGE_DEFAULT;
-		desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-		desc.MiscFlags = D3D10_RESOURCE_MISC_GENERATE_MIPS;  
-		desc.CPUAccessFlags = 0;
-		HRESULT hr = this->pD3DDevice->CreateTexture2D(&desc,0,&tex);
-#endif
 		if (FAILED(hr)) {
 			out->setInternalHandleV(0);
 			printf("rbDX10_c::uploadTexture: pD3DDevice->CreateTexture2D failed\n");
@@ -316,36 +616,109 @@ public:
 		byte *outPTexels = (UCHAR*)mappedTex.pData;
 		memcpy(outPTexels,data,w*h*4);
 		tex->Unmap( D3D10CalcSubresource(0, 0, 1) ); // NOTE: unmap "returns" void
+
+		// create ID3D10ShaderResourceView
+    	D3D10_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+		resourceViewDesc.Format = desc.Format;
+		resourceViewDesc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
+		resourceViewDesc.Texture2D.MipLevels = desc.MipLevels;
+    	resourceViewDesc.Texture2D.MostDetailedMip = 0;
+    
+		ID3D10ShaderResourceView *resourceView = 0;
+		pD3DDevice->CreateShaderResourceView(tex, &resourceViewDesc, &resourceView);
+
+		// store ID3D10Texture2D pointer
 		out->setInternalHandleV(tex);
+		// store ID3D10ShaderResourceView pointer
+		out->setExtraUserPointer(resourceView);
 	}
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 		
 	}
 	virtual void freeTextureData(class textureAPI_i *ptr) {
 		ID3D10Texture2D *tex = (ID3D10Texture2D *)ptr->getInternalHandleV();
-		if(tex == 0)
-			return;
-		tex->Release();
-		ptr->setInternalHandleV(0);
+		if(tex) {
+			tex->Release();
+			ptr->setInternalHandleV(0);
+		}
+		ID3D10ShaderResourceView *resourceView = (ID3D10ShaderResourceView *)ptr->getExtraUserPointer();
+		if(resourceView) {
+			resourceView->Release();
+			ptr->setExtraUserPointer(0);
+		}
 	}
 
 	// vertex buffers (VBOs)
 	virtual bool createVBO(class rVertexBuffer_c *ptr) {
-		
+		D3D10_BUFFER_DESC vertexBufferDesc;
+		memset(&vertexBufferDesc,0,sizeof(vertexBufferDesc));
+		D3D10_SUBRESOURCE_DATA vertexData;
+		memset(&vertexData,0,sizeof(vertexData));
+		// Set up the description of the vertex buffer.
+		vertexBufferDesc.Usage = D3D10_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = ptr->getSizeInBytes();
+		vertexBufferDesc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+
+		// Give the subresource structure a pointer to the vertex data.
+		vertexData.pSysMem = ptr->getArray();
+
+		// Now finally create the vertex buffer.
+		ID3D10Buffer *pNewVertexBuffer = 0;
+		HRESULT result = pD3DDevice->CreateBuffer(&vertexBufferDesc, &vertexData, &pNewVertexBuffer);
+		if(FAILED(result))
+		{
+			return true;
+		}	
+		ptr->setInternalHandleVoid(pNewVertexBuffer);
 		return false;
 	}
 	virtual bool destroyVBO(class rVertexBuffer_c *ptr) {
-
+		if(ptr == 0)
+			return false;
+		ID3D10Buffer *pVertexBuffer = (ID3D10Buffer *)ptr->getInternalHandleVoid();
+		if(pVertexBuffer) {
+			pVertexBuffer->Release();
+			ptr->setInternalHandleVoid(0);
+		}
 		return false;
 	}
 
 	// index buffers (IBOs)
 	virtual bool createIBO(class rIndexBuffer_c *ptr) {	
-	
+		D3D10_BUFFER_DESC indexBufferDesc;
+		memset(&indexBufferDesc,0,sizeof(indexBufferDesc));
+		D3D10_SUBRESOURCE_DATA indexData;
+		memset(&indexData,0,sizeof(indexData));
+		// Set up the description of the index buffer.
+		indexBufferDesc.Usage = D3D10_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = ptr->getSizeInBytes();
+		indexBufferDesc.BindFlags = D3D10_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+
+		// Give the subresource structure a pointer to the index data.
+		indexData.pSysMem = ptr->getArray();
+
+		// Create the index buffer.
+		ID3D10Buffer *pNewIndexBuffer = 0;
+		HRESULT result = pD3DDevice->CreateBuffer(&indexBufferDesc, &indexData, &pNewIndexBuffer);
+		if(FAILED(result))
+		{
+			return true;
+		}
+		ptr->setInternalHandleVoid(pNewIndexBuffer);	
 		return false;
 	}
 	virtual bool destroyIBO(class rIndexBuffer_c *ibo) {
-		
+		if(ibo == 0)
+			return false;
+		ID3D10Buffer *pIndexBuffer = (ID3D10Buffer *)ibo->getInternalHandleVoid();
+		if(pIndexBuffer) {
+			pIndexBuffer->Release();
+			ibo->setInternalHandleVoid(0);
+		}
 		return false;
 	}
 
@@ -359,90 +732,234 @@ public:
 
 		ShowWindow(hWnd, 5);
 
-		//Set up DX swap chain
-		//--------------------------------------------------------------
+		// Initialize the swap chain description.
 		DXGI_SWAP_CHAIN_DESC swapChainDesc;
 		ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-		
-		//set buffer dimensions and format
-		swapChainDesc.BufferCount = 2;
-		swapChainDesc.BufferDesc.Width = g_sharedSDLAPI->getWinWidth();
-		swapChainDesc.BufferDesc.Height = g_sharedSDLAPI->getWinHeigth();
+
+		// Set to a single back buffer.
+		swapChainDesc.BufferCount = 1;
+
+		// Set the width and height of the back buffer.
+		swapChainDesc.BufferDesc.Width = g_sharedSDLAPI->getWinWidth();;
+		swapChainDesc.BufferDesc.Height = g_sharedSDLAPI->getWinHeigth();;
+
+		// Set regular 32-bit surface for the back buffer.
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		// Set the refresh rate of the back buffer.
+		//if(vsync)
+		//{
+		//	swapChainDesc.BufferDesc.RefreshRate.Numerator = 1;
+		//	swapChainDesc.BufferDesc.RefreshRate.Denominator = 60;
+		//}
+		//else
+		{
+			swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+			swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		}
+
+		// Set the usage of the back buffer.
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;;
-		
-		//set refresh rate
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-		
-		//sampling settings
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.SampleDesc.Count = 1;
 
-		//output window handle
+		// Set the handle for the window to render to.
 		swapChainDesc.OutputWindow = hWnd;
-		swapChainDesc.Windowed = true;    
 
-		//Create the D3D device
-		//--------------------------------------------------------------
-		if ( FAILED( D3D10CreateDeviceAndSwapChain(		NULL, 
-														D3D10_DRIVER_TYPE_HARDWARE, 
-														NULL, 
-														0, 
-														D3D10_SDK_VERSION, 
-														&swapChainDesc, 
-														&pSwapChain, 
-														&pD3DDevice ) ) ) {
-			g_core->RedWarning("D3D device creation failed");
-			return; // ERROR
+		// Turn multisampling off.
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+
+		// Set to full screen or windowed mode.
+		//if(fullscreen)
+		//{
+		//	swapChainDesc.Windowed = false;
+		//}
+		//else
+		{
+			swapChainDesc.Windowed = true;
 		}
 
-		//Create render target view
-		//--------------------------------------------------------------
-		
-		//try to get the back buffer
-		ID3D10Texture2D* pBackBuffer;	
-		if ( FAILED( pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID*) &pBackBuffer) ) ) {
-			g_core->RedWarning("Could not get back buffer");			
-			return; // ERROR
+		// Set the scan line ordering and scaling to unspecified.
+		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+		// Discard the back buffer contents after presenting.
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+		// Don't set the advanced flags.
+		swapChainDesc.Flags = 0;
+
+		// Create the swap chain and the Direct3D device.
+		HRESULT result = D3D10CreateDeviceAndSwapChain(NULL, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_SDK_VERSION, 
+											   &swapChainDesc, &pSwapChain, &pD3DDevice);
+		if(FAILED(result))
+		{
+			return;//  true;
 		}
 
-		//try to create render target view
-		if ( FAILED( pD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &pRenderTargetView) ) ) {
-			g_core->RedWarning("Could not create render target view");			
-			return; // ERROR
+		// Get the pointer to the back buffer.
+		ID3D10Texture2D* backBufferPtr;
+		result = pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID*)&backBufferPtr);
+		if(FAILED(result))
+		{
+			return;// true;
 		}
 
-		//release the back buffer
-		pBackBuffer->Release();
+		// Create the render target view with the back buffer pointer.
+		result = pD3DDevice->CreateRenderTargetView(backBufferPtr, NULL, &pRenderTargetView);
+		if(FAILED(result))
+		{
+			return;//  true;
+		}
 
-		//set the render target
-		pD3DDevice->OMSetRenderTargets(1, &pRenderTargetView, NULL);
-		
-		//Create viewport
-		//--------------------------------------------------------------
-		
-		//create viewport structure	
-		viewPort.Width = g_sharedSDLAPI->getWinWidth();
-		viewPort.Height = g_sharedSDLAPI->getWinHeigth();
-		viewPort.MinDepth = 0.0f;
-		viewPort.MaxDepth = 1.0f;
-		viewPort.TopLeftX = 0;
-		viewPort.TopLeftY = 0;
+		// Release pointer to the back buffer as we no longer need it.
+		backBufferPtr->Release();
+		backBufferPtr = 0;
 
-		//set the viewport
-		pD3DDevice->RSSetViewports(1, &viewPort);
+		// Initialize the description of the depth buffer.
+		D3D10_TEXTURE2D_DESC depthBufferDesc;
+		ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
 
-		// Set up the view matrix
-		//--------------------------------------------------------------
-		D3DXVECTOR3 camera[3] = {	D3DXVECTOR3(0.0f, 0.0f, -5.0f),
-									D3DXVECTOR3(0.0f, 0.0f, 1.0f),
-									D3DXVECTOR3(0.0f, 1.0f, 0.0f) };
-		D3DXMatrixLookAtLH(&viewMatrix, &camera[0], &camera[1], &camera[2]);
-			
-		//Set up projection matrix
-		//--------------------------------------------------------------
-		D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)D3DX_PI * 0.5f, (float)g_sharedSDLAPI->getWinWidth()/(float)g_sharedSDLAPI->getWinHeigth(), 0.1f, 100.0f);
+		// Set up the description of the depth buffer.
+		depthBufferDesc.Width = g_sharedSDLAPI->getWinWidth();;
+		depthBufferDesc.Height = g_sharedSDLAPI->getWinHeigth();;
+		depthBufferDesc.MipLevels = 1;
+		depthBufferDesc.ArraySize = 1;
+		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthBufferDesc.SampleDesc.Count = 1;
+		depthBufferDesc.SampleDesc.Quality = 0;
+		depthBufferDesc.Usage = D3D10_USAGE_DEFAULT;
+		depthBufferDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
+		depthBufferDesc.CPUAccessFlags = 0;
+		depthBufferDesc.MiscFlags = 0;
+
+		// Create the texture for the depth buffer using the filled out description.
+		result = pD3DDevice->CreateTexture2D(&depthBufferDesc, NULL, &m_depthStencilBuffer);
+		if(FAILED(result))
+		{
+			return; //true; // error
+		}
+
+		// Initialize the description of the stencil state.
+		D3D10_DEPTH_STENCIL_DESC depthStencilDesc;
+		ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+
+		// Set up the description of the stencil state.
+		depthStencilDesc.DepthEnable = true;
+		depthStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+		depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+
+		depthStencilDesc.StencilEnable = true;
+		depthStencilDesc.StencilReadMask = 0xFF;
+		depthStencilDesc.StencilWriteMask = 0xFF;
+
+		// Stencil operations if pixel is front-facing.
+		depthStencilDesc.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+		depthStencilDesc.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+		depthStencilDesc.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+		depthStencilDesc.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+
+		// Stencil operations if pixel is back-facing.
+		depthStencilDesc.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+		depthStencilDesc.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
+		depthStencilDesc.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+		depthStencilDesc.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+
+		// Create the depth stencil state.
+		result = pD3DDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
+		if(FAILED(result))
+		{
+			return; //true; // error
+		}
+
+		// Set the depth stencil state on the D3D device.
+		pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
+
+		// Initailze the depth stencil view.
+		D3D10_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+		ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
+
+		// Set up the depth stencil view description.
+		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthStencilViewDesc.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
+		depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+		// Create the depth stencil view.
+		result = pD3DDevice->CreateDepthStencilView(m_depthStencilBuffer, &depthStencilViewDesc, &m_depthStencilView);
+		if(FAILED(result))
+		{
+			return; //true; // error
+		}
+
+		// Bind the render target view and depth stencil buffer to the output render pipeline.
+		pD3DDevice->OMSetRenderTargets(1, &pRenderTargetView, m_depthStencilView);
+
+		D3D10_RASTERIZER_DESC rasterDesc;
+		// Setup the raster description which will determine how and what polygons will be drawn.
+		rasterDesc.AntialiasedLineEnable = false;
+		rasterDesc.CullMode = D3D10_CULL_BACK;
+		rasterDesc.DepthBias = 0;
+		rasterDesc.DepthBiasClamp = 0.0f;
+		rasterDesc.DepthClipEnable = true;
+		rasterDesc.FillMode = D3D10_FILL_SOLID;
+		rasterDesc.FrontCounterClockwise = false;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.ScissorEnable = false;
+		rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+		// Create the rasterizer state from the description we just filled out.
+		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState);
+		if(FAILED(result))
+		{
+			return; //true; // error
+		}
+
+		// Now set the rasterizer state.
+		pD3DDevice->RSSetState(m_rasterState);
+
+		// Setup the viewport for rendering.
+		D3D10_VIEWPORT viewport;
+		viewport.Width = g_sharedSDLAPI->getWinWidth();;
+		viewport.Height = g_sharedSDLAPI->getWinHeigth();;
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+
+		// Create the viewport.
+		pD3DDevice->RSSetViewports(1, &viewport);
+
+		// Clear the second depth stencil state before setting the parameters.
+		D3D10_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+		ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+
+		// Now create a second depth stencil state which turns off the Z buffer for 2D rendering.  The only difference is 
+		// that DepthEnable is set to false, all other parameters are the same as the other depth stencil state.
+		depthDisabledStencilDesc.DepthEnable = false;
+		depthDisabledStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+		depthDisabledStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+		depthDisabledStencilDesc.StencilEnable = true;
+		depthDisabledStencilDesc.StencilReadMask = 0xFF;
+		depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+		depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+		depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+		depthDisabledStencilDesc.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
+		depthDisabledStencilDesc.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+
+		// Create the state using the device.
+		result = pD3DDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &m_depthDisabledStencilState);
+		if(FAILED(result))
+		{
+			return; //true; // error
+		}
+	
+		// load default 3D shader
+		dx10DefaultShader3D.loadHLSLShader(pD3DDevice,"hlsl/dx10/default.fx",true);
+		// load default 2D shader
+		dx10DefaultShader2D.loadHLSLShader(pD3DDevice,"hlsl/dx10/default_2d.fx",false);
 
 		// This depends on SDL_INIT_VIDEO, hence having it here
 		g_inputSystem->IN_Init();
@@ -452,6 +969,14 @@ public:
 		lastLightmap = 0;
 
 		hWnd = 0;
+		if(m_depthStencilState) {
+			m_depthStencilState->Release();
+			m_depthStencilState = 0;
+		}
+		if(m_rasterState) {
+			m_rasterState->Release();
+			m_rasterState = 0;
+		}
 		if(pRenderTargetView) {
 			pRenderTargetView->Release();
 			pRenderTargetView = 0;
