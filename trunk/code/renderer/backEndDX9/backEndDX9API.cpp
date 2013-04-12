@@ -85,8 +85,8 @@ static aCvar_c rb_gpuTexGens("rb_gpuTexGens","1");
 static aCvar_c dx9_alwaysUseHLSLShaders("dx9_alwaysUseHLSLShaders","0");
 
 // I need them in dx9_shader.cpp
-IDirect3D9 *pD3D;
-IDirect3DDevice9 *pDev;
+IDirect3D9 *pD3D = 0;
+IDirect3DDevice9 *pDev = 0;
 
 // these are the vertex declarations for HLSL shaders ONLY
 D3DVERTEXELEMENT9 dx_rVertexDecl[] =
@@ -127,6 +127,9 @@ class rbDX9_c : public rbAPI_i {
 	// cgame time for shader effects (texmods, deforms)
 	float timeNowSeconds;
 	bool bIsMirror;
+	bool bRendererMirrorThisFrame;
+	bool bClipPlaneEnabled;
+	plane_c clipPlane;
 	// matrices
 	D3DXMATRIX dxView, dxWorld, dxProj;
 	// queried on startup
@@ -144,6 +147,11 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		rVertDecl = 0;
+		bClipPlaneEnabled = false;
+		bHasVertexColors = false;
+		bRendererMirrorThisFrame = false;
+		timeNowSeconds = 0.f;
+		bIsMirror = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX9;
@@ -442,13 +450,24 @@ public:
 		worldViewProjectionMatrix = dxWorld * dxView * dxProj;
 		newShader->effect->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
 		// set colorMap and lightMap textures
-		IDirect3DTexture9 *colorMapDX9 = (IDirect3DTexture9 *)stage->getTexture(this->timeNowSeconds)->getInternalHandleV();
-		newShader->effect->SetTexture("colorMapTexture", colorMapDX9);
+		if(stage) {
+			IDirect3DTexture9 *colorMapDX9 = (IDirect3DTexture9 *)stage->getTexture(this->timeNowSeconds)->getInternalHandleV();
+			newShader->effect->SetTexture("colorMapTexture", colorMapDX9);
+		} else {
+			newShader->effect->SetTexture("colorMapTexture", 0);
+		}
 		if(lastLightmap) {
 			IDirect3DTexture9 *lightMapDX9 = (IDirect3DTexture9 *)lastLightmap->getInternalHandleV();
 			newShader->effect->SetTexture("lightMapTexture", lightMapDX9);
 		} else {
 			newShader->effect->SetTexture("lightMapTexture", 0);
+		}
+		if(bClipPlaneEnabled) {
+			newShader->effect->SetBool("bHasClipPlane",true);
+			newShader->effect->SetValue("clipPlaneNormal", clipPlane.norm, sizeof(vec3_c));
+			newShader->effect->SetFloat("clipPlaneDist", clipPlane.dist);
+		} else {
+			newShader->effect->SetBool("bHasClipPlane",false);
 		}
 		// if we're drawing a lighting pass, send light paramters to shader
 		if(curLight) {
@@ -575,10 +594,29 @@ public:
 
 		if(bDrawOnlyOnDepthBuffer) {
 			turnOffAlphaFunc();
-
-			// set the color mask
-			pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
-			drawIndexedTrimesh(verts,indices);
+			if(bRendererMirrorThisFrame) {
+				if(lastMat->isMirrorMaterial()) {
+					pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
+					bindHLSLShader(0,0);
+				} else {
+					// non-mirrored view should never be blended with mirror view,
+					// so draw all non-mirrored surfaces in draw color
+					pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
+						D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);				
+					hlslShader_c *blackFillShader = DX9_RegisterShader("blackFill",0);
+					bindHLSLShader(blackFillShader,0);
+				}
+			} else {
+				// set the color mask
+				pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
+				bindHLSLShader(0,0);
+			}
+			setDX9DepthMask(true);
+			if(boundShader) {
+				drawStageWithHLSLShader(verts,indices,0);
+			} else {
+				drawIndexedTrimesh(verts,indices);
+			}
 			return;
 		}
 		// set the color mask
@@ -757,6 +795,7 @@ public:
 		pDev->BeginScene();
 	}
 	virtual void endFrame() {
+		bRendererMirrorThisFrame = false;
 		pDev->EndScene();
 		//g_sharedSDLAPI->endFrame();
 		pDev->Present(0, 0, 0, 0);
@@ -823,6 +862,8 @@ public:
 	virtual void setIsMirror(bool newBIsMirror) {
 		if(newBIsMirror == this->bIsMirror)
 			return;
+		if(this->bIsMirror == true) 
+			bRendererMirrorThisFrame = true;
 		this->bIsMirror = newBIsMirror;
 		// force cullType reset, because mirror views
 		// must have CT_BACK with CT_FRONT swapped
@@ -831,14 +872,20 @@ public:
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
 		plane_c plInversed = pl.getOpposite();
 		pDev->SetClipPlane(0,plInversed.norm);
+		// store plane equation for HLSL shaders
+		this->clipPlane = plInversed;
+		// set D3D render state for fixed pipeline rendering
 		if(bEnabled) {
 			pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,true);
+			bClipPlaneEnabled = true;
 		} else {
 			pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,false);
+			bClipPlaneEnabled = false;
 		}
 	}
 	virtual void disablePortalClipPlane() {
 		pDev->SetRenderState(D3DRS_CLIPPLANEENABLE,false);
+		bClipPlaneEnabled = false;
 	}
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() {
@@ -865,6 +912,9 @@ public:
 	}
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
+		axis_c ax;
+		ax.fromAngles(angles);
+		setupEntitySpace(ax,origin);
 	}
 
 	virtual u32 getWinWidth() const  {
@@ -974,10 +1024,15 @@ public:
 		tex->setInternalHandleV(0);
 	}
 
-	void initRVertDecl() {
+	bool initRVertDecl() {
 		if(rVertDecl)
-			return;
+			return false;
 		HRESULT hr = pDev->CreateVertexDeclaration(dx_rVertexDecl, &rVertDecl);
+		if (FAILED(hr)) {
+			g_core->RedWarning("refApiDX9_c::initRVertDecl: pDev->CreateVertexDeclaration failed\n");
+			return true;
+		}
+		return false;
 	}
 
 	// vertex buffers (VBOs)
@@ -1129,16 +1184,20 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 
-		pDev->Release();
-		pD3D->Release();
+		if(pDev) {
+			pDev->Release();
+			pDev = 0;
+		}
+		if(pD3D) {
+			pD3D->Release();
+			pD3D = 0;
+		}
 		if(rVertDecl) {
 			rVertDecl->Release();
 			rVertDecl = 0;
 		}	
 		DX9_ShutdownHLSLShaders();
 		hWnd = 0;
-		pDev = 0;
-		pD3D = 0;
 		if(destroyWindow) {
 			g_sharedSDLAPI->shutdown();
 		}

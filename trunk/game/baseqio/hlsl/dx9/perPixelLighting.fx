@@ -26,6 +26,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 float4x4 worldViewProjectionMatrix;
 float3 lightOrigin;
 float lightRadius;
+// clip plane - for mirrors only
+float3 clipPlaneNormal;
+float clipPlaneDist;
+bool bHasClipPlane;
 
 texture colorMapTexture;
 
@@ -69,6 +73,13 @@ VS_OUTPUT VS_PerPixelLighting(VS_INPUT IN)
 
 float4 PS_PerPixelLighting(VS_OUTPUT IN) : COLOR
 {
+    // mirrors-only clip plane
+    if(bHasClipPlane) {
+		float distToClipPlane = dot(IN.positionRAW,clipPlaneNormal) + clipPlaneDist;
+		// clip will discard current pixel if distToClipPlane < 0
+		clip(distToClipPlane);
+    }
+    
 #if 0
 	return tex2D(colorMap, IN.texCoord);
 	//return tex2D(colorMap, IN.texCoord*2);

@@ -51,13 +51,9 @@ float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 	float4 textureColor;
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
 	
-	if(textureColor.r == 0.0f)
+	if(textureColor.a < 0.5f)
 	{
-		textureColor.a = 0.0f;
-	}
-	else
-	{
-		textureColor.a = 1.0f;
+		discard;
 	}
     return textureColor;
 }

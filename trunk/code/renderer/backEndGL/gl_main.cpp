@@ -67,6 +67,7 @@ static aCvar_c rb_printRGBGenWaveMaterials("rb_printRGBGenWaveMaterials","0");
 static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 // always use GLSL shaders, even if they are not needed for any material effects
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
+static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -142,6 +143,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	float timeNowSeconds;
 	bool isMirror;
+	bool bRendererMirrorThisFrame;
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
@@ -160,6 +162,7 @@ public:
 		curLight = 0;
 		isMirror = false;
 		forcedMaterialFrameNum = -1;
+		bRendererMirrorThisFrame = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -756,7 +759,24 @@ public:
 		stopDrawingShadowVolumes();
 
 		if(bDrawOnlyOnDepthBuffer) {
-			glColorMask(false, false, false, false);
+			if(bRendererMirrorThisFrame) {
+				if(lastMat->isMirrorMaterial()) {
+					glColorMask(false, false, false, false);
+				} else {
+					// non-mirrored view should never be blended with mirror view,
+					// so draw all non-mirrored surfaces in draw color
+					glColorMask(true, true, true, true);
+					this->setColor4f(0,0,0,0);
+				}
+			} else {
+				glColorMask(false, false, false, false);
+			}
+			//if(lastMat->isMirrorMaterial()) {
+			//	setGLDepthMask(false);
+			//} else {
+			//	setGLDepthMask(true);
+			//}
+			setGLDepthMask(true);
 			bindShader(0);
 			bindVertexBuffer(&verts);
 			bindIBO(&indices);
@@ -769,9 +789,19 @@ public:
 			}
 			turnOffTextureMatrices();
 			disableAllTextures();
+			if(lastMat) {
+				glCull(lastMat->getCullType());
+			} else {
+				glCull(CT_FRONT_SIDED);
+			}
+		///	setDepthRange(0.f,1.f);
+		//	glEnable(GL_DEPTH_TEST);
+
+			setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 			drawCurIBO();
 			return;
 		}
+		this->setColor4f(1.f,1.f,1.f,1.f);
 		glColorMask(true, true, true, true);
 
 		if(curDrawCallSort == DCS_BLEND_AFTER_LIGHTING) {
@@ -1129,19 +1159,30 @@ public:
 	virtual void beginFrame() {
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
 		if(1) {
-		    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		} else {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
 		}
+		clearDepthBuffer();
 		glClearColor(0,0,0,0);
 
 		// reset counters
 		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}
 	virtual void endFrame() {
+		if(rb_showDepthBuffer.getInt()) {
+			static arraySTD_c<float> pPixels;
+			pPixels.resize(this->getWinWidth()*this->getWinHeight()*4);
+			glReadPixels( 0, 0, this->getWinWidth(), this->getWinHeight(), GL_DEPTH_COMPONENT, GL_FLOAT, (void*)pPixels );
+			glRasterPos2f(0,0);
+			bindShader(0);
+			setup2DView();
+			glDrawPixels( this->getWinWidth(), this->getWinHeight(), GL_DEPTH_COMPONENT, GL_FLOAT, pPixels );
+		}
 		if(gl_callGLFinish.getInt()) {
 			glFinish();
 		}
+		bRendererMirrorThisFrame = false;
 		g_sharedSDLAPI->endFrame();
 	}	
 	virtual void clearDepthBuffer() {
@@ -1343,6 +1384,8 @@ public:
 	virtual void setIsMirror(bool newBIsMirror) {
 		if(newBIsMirror == this->isMirror)
 			return;
+		if(this->isMirror == true) 
+			bRendererMirrorThisFrame = true;
 		this->isMirror = newBIsMirror;
 		// force cullType reset, because mirror views
 		// must have CT_BACK with CT_FRONT swapped
@@ -1443,6 +1486,7 @@ public:
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::shutdown: already shutdown\n");
 			return;		
 		}
+		GL_ShutdownGLSLShaders();
 		AUTOCVAR_UnregisterAutoCvars();
 		lastMat = 0;
 		lastLightmap = 0;

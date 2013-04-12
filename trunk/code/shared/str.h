@@ -537,6 +537,8 @@ public:
 		this->data[this->len] = 0;
 	}
 	void stripTrailing(const char *charSet) {
+		if(this->len == 0)
+			return;
 		u32 at = this->len-1;
 		u32 setLen = strlen(charSet);
 		while(1) {

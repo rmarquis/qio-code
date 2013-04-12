@@ -617,15 +617,20 @@ public:
 		memcpy(outPTexels,data,w*h*4);
 		tex->Unmap( D3D10CalcSubresource(0, 0, 1) ); // NOTE: unmap "returns" void
 
+		out->setWidth(w);
+		out->setHeight(h);
+
 		// create ID3D10ShaderResourceView
     	D3D10_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
 		resourceViewDesc.Format = desc.Format;
 		resourceViewDesc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
 		resourceViewDesc.Texture2D.MipLevels = desc.MipLevels;
     	resourceViewDesc.Texture2D.MostDetailedMip = 0;
-    
+
 		ID3D10ShaderResourceView *resourceView = 0;
 		pD3DDevice->CreateShaderResourceView(tex, &resourceViewDesc, &resourceView);
+
+		//pD3DDevice->GenerateMips(resourceView);
 
 		// store ID3D10Texture2D pointer
 		out->setInternalHandleV(tex);
@@ -671,6 +676,7 @@ public:
 		{
 			return true;
 		}	
+
 		ptr->setInternalHandleVoid(pNewVertexBuffer);
 		return false;
 	}

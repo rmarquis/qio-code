@@ -102,7 +102,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	// if we're drawing only on depth buffer
 	if(rf_bDrawOnlyOnDepthBuffer) {
-		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
+		if((mat->hasBlendFunc() || mat->hasAlphaTest()) && mat->isMirrorMaterial() == false) {
 			sort = DCS_BLEND_AFTER_LIGHTING;
 			n->drawOnlyOnDepthBuffer = false;
 			//return;

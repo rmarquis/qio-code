@@ -29,6 +29,10 @@ texture colorMapTexture;
 #ifdef HAS_LIGHTMAP
 texture lightMapTexture;
 #endif
+// clip plane - for mirrors only
+float3 clipPlaneNormal;
+float clipPlaneDist;
+bool bHasClipPlane;
 
 #ifndef ONLY_LIGHTMAP
 sampler2D colorMap = sampler_state
@@ -106,6 +110,13 @@ VS_OUTPUT VS_GeneringShader(VS_INPUT IN)
 
 float4 PS_GeneringShader(VS_OUTPUT IN) : COLOR
 {
+    // mirrors-only clip plane
+    if(bHasClipPlane) {
+		float distToClipPlane = dot(IN.positionRAW,clipPlaneNormal) + clipPlaneDist;
+		// clip will discard current pixel if distToClipPlane < 0
+		clip(distToClipPlane);
+    }
+    
 	float4 ret;
 #ifdef ONLY_LIGHTMAP
 	ret = tex2D(lightMap, IN.lmCoord);

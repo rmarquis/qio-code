@@ -169,7 +169,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
 	return ret;
 }
-void GL_ShutdownHLSLShaders() {
+void GL_ShutdownGLSLShaders() {
 	for(u32 i = 0; i < gl_shaders.size(); i++) {
 		delete gl_shaders[i];
 	}

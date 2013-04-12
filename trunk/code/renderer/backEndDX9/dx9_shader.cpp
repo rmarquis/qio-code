@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "dx9_local.h"
 #include "dx9_shader.h"
+#include <shared/autoCvar.h>
 
 
 arraySTD_c<hlslShader_c*> dx9_shaders;
@@ -39,9 +40,13 @@ static hlslShader_c *DX9_FindShader(const char *baseName, const hlslPermutationF
 	return 0;
 }
 static hlslPermutationFlags_s dx9_defaultPermutations;
+static aCvar_c dx9_verboseRegisterShader("dx9_verboseRegisterShader",0);
 hlslShader_c *DX9_RegisterShader(const char *baseName, const hlslPermutationFlags_s *p) {
 	if(p == 0) {
 		p = &dx9_defaultPermutations;
+	}
+	if(dx9_verboseRegisterShader.getInt()) {
+		g_core->Print("DX9_RegisterShader: name %s, bTexGenEnvironment %i\n",baseName,p->hasTexGenEnvironment);
 	}
 	// see if the shader is already loaded
 	hlslShader_c *ret = DX9_FindShader(baseName,*p);
