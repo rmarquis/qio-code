@@ -378,3 +378,9 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	}
 	return 0;
 }
+void CM_FreeAllModels() {
+	for(u32 i = 0; i < cm_models.size(); i++) {
+		delete cm_models[i];
+	}
+	cm_models.clear();
+}

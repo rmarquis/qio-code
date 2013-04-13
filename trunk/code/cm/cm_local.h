@@ -11,6 +11,7 @@ class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb);
 class cMod_i *CM_RegisterModel(const char *modName);
 class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName);
 void CM_AddCObjectBaseToHashTable(class cmObjectBase_c *newCMObject);
+void CM_FreeAllModels();
 
 // cm_modelLoaderWrapper.cpp
 bool CM_LoadRenderModelToSingleSurface(const char *rModelName, class cmSurface_c &out); // returns true if model loading fails

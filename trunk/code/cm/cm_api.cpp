@@ -52,6 +52,9 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) {
 		return CM_RegisterSkelModel(skelModelName);
 	}
+	virtual void freeAllModels() {
+		CM_FreeAllModels();
+	}
 
 	virtual void loadMap(const char *mapName) {
 		CM_LoadWorldMap(mapName);

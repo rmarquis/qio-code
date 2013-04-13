@@ -125,12 +125,6 @@ public:
 	virtual void translateXYZ(const class vec3_c &ofs) {
 
 	}
-	virtual bool hasCenterOfMassOffset() const {
-		return false;
-	}
-	virtual const vec3_c &getCenterOfMassOffset() const {
-		return vec3_c(0,0,0);
-	}
 };
 
 // cm primitives
@@ -209,6 +203,7 @@ public:
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) = 0;
+	virtual void freeAllModels() = 0;
 
 	virtual void loadMap(const char *mapName) = 0;
 };

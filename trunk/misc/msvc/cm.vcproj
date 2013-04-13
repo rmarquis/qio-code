@@ -131,6 +131,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\cmx86.dll"
+				IgnoreDefaultLibraryNames="libcmt.lib"
 				ModuleDefinitionFile="cm.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
