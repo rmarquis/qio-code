@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <math/vec3.h>
 #include <math/aabb.h>
+#include <math/matrix.h>
 #include <api/rLightAPI.h>
 #include <shared/array.h>
 
@@ -63,7 +64,7 @@ struct entityInteraction_s {
 class rLightImpl_c : public rLightAPI_i {
 	vec3_c pos;
 	float radius;
-
+	
 	aabb absBounds;
 
 	arraySTD_c<staticSurfInteraction_s> staticInteractions;
@@ -77,6 +78,12 @@ class rLightImpl_c : public rLightAPI_i {
 	class occlusionQueryAPI_i *oq;
 	bool bCameraInside; // true if camera eye is inside light sphere
 
+	// for shadow mapping
+	int shadowMapW;
+	int shadowMapH;
+	matrix_c lightProj;
+	matrix_c sideViews[6];
+	frustum_c sideFrustums[6];
 public:
 	rLightImpl_c();
 	~rLightImpl_c();
@@ -97,6 +104,16 @@ public:
 		return bCameraInside;
 	}
 
+	virtual const matrix_c &getSMLightProj() const {
+		return lightProj;
+	}
+	virtual const matrix_c &getSMSideView(u32 sideNum) const {
+		return sideViews[sideNum];
+	}
+	virtual const frustum_c &getSMSideFrustum(u32 sideNum) const {
+		return sideFrustums[sideNum];
+	}
+
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();
 	void recalcShadowVolumeOfStaticInteractions();
@@ -104,8 +121,17 @@ public:
 	void recalcLightInteractionsWithDynamicEntities();
 	void recalcLightInteractions();
 
+	float getShadowMapW() const;
+	float getShadowMapH() const;
+
+	// forward rendering
+	void addStaticSurfInteractionDrawCall(struct staticSurfInteraction_s &in);
 	void addLightInteractionDrawCalls();
+	// only for stencil shadows
 	void addLightShadowVolumesDrawCalls();
+	// only for shadow mapping
+	void recalcShadowMappingMatrices();
+	void addShadowMapRenderingDrawCalls();
 
 	staticSurfInteraction_s &getNextStaticInteraction() {	
 		numCurrentStaticInteractions++;

@@ -556,7 +556,7 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 }
 static u32 c_entitiesCulledByABSBounds;
 static u32 c_entitiesCulledByPortals;
-void RFE_AddEntity(rEntityImpl_c *ent) {
+void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
 	model_c *model = (model_c*)ent->getModel();
 	if(model == 0) {
 		return;
@@ -577,13 +577,20 @@ void RFE_AddEntity(rEntityImpl_c *ent) {
 			return;
 		}
 	}
-	if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
-		c_entitiesCulledByABSBounds++;
-		return;
-	}
-	if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
-		c_entitiesCulledByPortals++;		
-		return;
+	if(customFrustum) {
+		if(customFrustum->cull(ent->getBoundsABS()) == CULL_OUT) {
+			c_entitiesCulledByABSBounds++;
+			return;
+		}
+	} else {
+		if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
+			c_entitiesCulledByABSBounds++;
+			return;
+		}
+		if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
+			c_entitiesCulledByPortals++;		
+			return;
+		}
 	}
 	ent->addDrawCalls();
 }

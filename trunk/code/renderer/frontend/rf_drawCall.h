@@ -43,5 +43,8 @@ void RF_DrawCallsEndFrame(); // sets the current drawCalls count to 0
 u32 RF_GetCurrentDrawcallsCount();
 
 extern bool rf_bDrawOnlyOnDepthBuffer;
+extern int rf_currentShadowMapCubeSide;
+extern int rf_currentShadowMapW;
+extern int rf_currentShadowMapH;
 
 #endif // __RF_DRAWCALL_H__

@@ -243,6 +243,46 @@ public:
 		}
 		*this = vWork;
 	}
+	vec3_c toAngles() {
+		float	forward;
+		float	yaw, pitch;
+		
+		if ( y == 0 && x == 0 ) {
+			yaw = 0;
+			if ( z > 0 ) {
+				pitch = 90;
+			}
+			else {
+				pitch = 270;
+			}
+		}
+		else {
+			if ( x ) {
+				yaw = ( atan2 ( y, x ) * 180 / M_PI );
+			}
+			else if ( y > 0 ) {
+				yaw = 90;
+			}
+			else {
+				yaw = 270;
+			}
+			if ( yaw < 0 ) {
+				yaw += 360;
+			}
+
+			forward = sqrt ( x*x + y*y );
+			pitch = ( atan2(z, forward) * 180 / M_PI );
+			if ( pitch < 0 ) {
+				pitch += 360;
+			}
+		}
+
+		vec3_c angles;
+		angles[PITCH] = -pitch;
+		angles[YAW] = yaw;
+		angles[ROLL] = 0;
+		return angles;
+	}
 	// converts vector values to RGB color bytes (0-255 range)
 	void colorToBytes( byte *outColorRGB ) const {
 		vec3_c sample = *this;

@@ -31,6 +31,75 @@ uniform float u_lightRadius;
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
 
+#ifdef SHADOW_MAPPING_POINT_LIGHT
+varying vec4 shadowCoord0;
+varying vec4 shadowCoord1;
+varying vec4 shadowCoord2;
+varying vec4 shadowCoord3;
+varying vec4 shadowCoord4;
+varying vec4 shadowCoord5;
+uniform sampler2DShadow shadowMap0;
+uniform sampler2DShadow shadowMap1;
+uniform sampler2DShadow shadowMap2;
+uniform sampler2DShadow shadowMap3;
+uniform sampler2DShadow shadowMap4;
+uniform sampler2DShadow shadowMap5;
+
+float calcShadow0() {
+   return shadow2DProj(shadowMap0, shadowCoord0).s;
+}
+float calcShadow1() {
+   return shadow2DProj(shadowMap1, shadowCoord1).s;
+}
+float calcShadow2() {
+   return shadow2DProj(shadowMap2, shadowCoord2).s;
+}
+float calcShadow3() {
+   return shadow2DProj(shadowMap3, shadowCoord3).s;
+}
+float calcShadow4() {
+   return shadow2DProj(shadowMap4, shadowCoord4).s;
+}
+float calcShadow5() {
+   return shadow2DProj(shadowMap5, shadowCoord5).s;
+}
+int cubeSide(vec3 v) {
+	vec3 normals[] = { vec3(1,0,0), vec3(-1,0,0),
+						vec3(0,1,0), vec3(0,-1,-0),
+						vec3(0,0,1), vec3(0,0,-1)};	
+	float max = 0;
+	int ret;
+	for(int i = 0; i < 6; i++) {
+		float d = dot(normals[i],v);
+		if(d < max) {
+			max = d;
+			ret = i;
+		}
+	}
+	return ret;
+}
+float computeShadow(vec3 lightToVertDirection) {
+	float shadow = 0.0;
+  	int side = cubeSide(lightToVertDirection);
+	if (side == 0) {
+		shadow += calcShadow0();
+	} else if(side == 1) {
+		shadow += calcShadow1();
+	} else if(side == 2) {
+		shadow += calcShadow2();
+	} else if(side == 3) {
+		shadow += calcShadow3();
+	} else if(side == 4) {
+		shadow += calcShadow4();
+	} else if(side == 5) {
+		shadow += calcShadow5();
+	} else {
+		// never gets here
+	}
+	return shadow;
+}
+#endif // SHADOW_MAPPING_POINT_LIGHT
+
 void main() {
 #if 0
 	gl_FragColor.rgb = v_vertNormal;
@@ -52,6 +121,11 @@ void main() {
     }
 	//  apply distnace scale
   	float distanceFactor = 1 - distance / u_lightRadius;
+#ifdef SHADOW_MAPPING_POINT_LIGHT
+	float shadow = computeShadow(lightToVert);
+#else
+	float shadow = 1.f;
+#endif
 	// calculate the final color
-	gl_FragColor = texture2D (colorMap, gl_TexCoord[0].st) * angleFactor * distanceFactor;
+	gl_FragColor = texture2D (colorMap, gl_TexCoord[0].st) * angleFactor * distanceFactor * shadow;
 }

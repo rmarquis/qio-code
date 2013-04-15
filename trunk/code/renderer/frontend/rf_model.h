@@ -95,6 +95,11 @@ public:
 			return false;
 		return true;
 	}
+	virtual bool isInlineBSPModel() const {
+		if(type == MOD_BSP)
+			return true;
+		return false;
+	}
 	virtual bool isDeclModel() const {
 		if(type == MOD_DECL)
 			return true;

@@ -34,6 +34,7 @@ struct glslPermutationFlags_s {
 	bool hasLightmap; // #define HAS_LIGHTMAP
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -53,6 +54,9 @@ friend class rbSDLOpenGL_c;
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
 	int sLightMap; // Quake3 bsp lightmap
+
+	// shadow mapping
+	int u_shadowMap[6];
 
 	glslPermutationFlags_s permutations;
 

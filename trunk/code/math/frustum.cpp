@@ -114,3 +114,8 @@ void frustum_c::setup(float fovX, float fovY, float zFar, const axis_c &axis, co
 
 #endif
 }
+void frustum_c::setupExt(float fovX, float viewWidth, float viewHeight, float zFar, const class axis_c &axis, const class vec3_c &origin) {
+	float x = viewWidth / tan( fovX / 360 * M_PI );
+	float fovY = atan2( viewHeight, x ) * 360 / M_PI;
+	setup(fovX,fovY,zFar,axis,origin);
+}

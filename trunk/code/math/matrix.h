@@ -244,6 +244,11 @@ public:
 		_v[11] = -1;
 		_v[15] = 0;
 	}
+	void setupProjectionExt(float fovX, float viewWidth, float viewHeight, float zNear, float zFar) {
+		float x = viewWidth / tan( fovX / 360 * M_PI );
+		float fovY = atan2( viewHeight, x ) * 360 / M_PI;
+		setupProjection(fovX,fovY,zNear,zFar);
+	}
 	// http://www.opengl.org/sdk/docs/man/xhtml/glOrtho.xml
 	void setupProjectionOrtho(float left, float right,
 		float bottom, float top, float zNear, float zFar) {
@@ -268,6 +273,21 @@ public:
 		_v[11] = 0;
 		_v[15] = 1.f;
 	}
+	void setupLookAtRH(const vec3_c &eye, const vec3_c &dir, const vec3_c &up) {
+		vec3_c sideN = dir.crossProduct(up);
+		sideN.normalize();
+
+		vec3_c upN = sideN.crossProduct(dir);
+		upN.normalize();
+
+		vec3_c dirN = dir.getNormalized();
+
+		_v[ 0] = sideN[0];	_v[ 4] = sideN[1];		_v[ 8] = sideN[2];		_v[12] = -sideN.dotProduct(eye);
+		_v[ 1] = upN[0];	_v[ 5] = upN[1];		_v[ 9] = upN[2];		_v[13] = -upN.dotProduct(eye);
+		_v[ 2] = -dirN[0];	_v[ 6] = -dirN[1];		_v[10] = -dirN[2];		_v[14] = dirN.dotProduct(eye);
+		_v[ 3] = 0;			_v[ 7] = 0;				_v[11] = 0;				_v[15] = 1;
+	}
+
 	float det() const {
 		return ((this->_v[0] * this->_v[5] * this->_v[10]) +
 				(this->_v[4] * this->_v[9] * this->_v[2])  +

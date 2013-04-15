@@ -37,6 +37,8 @@ void RF_Draw3DView();
 void RF_AddGenericDrawCalls();
 bool RF_IsUsingDynamicLights();
 bool RF_IsUsingShadowVolumes();
+bool RF_IsUsingShadowMapping();
+int RF_GetShadowingMode();
 bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat);
 enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);
 
@@ -53,7 +55,7 @@ void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
-void RFE_AddEntity(class rEntityImpl_c *ent);
+void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0);
 
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();

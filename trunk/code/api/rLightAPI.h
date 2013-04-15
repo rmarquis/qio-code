@@ -36,6 +36,9 @@ public:
 	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
 	virtual bool getBCameraInside() const = 0;
 
+	virtual const class matrix_c &getSMLightProj() const = 0;
+	virtual const class matrix_c &getSMSideView(u32 sideNum) const = 0;
+	virtual const class frustum_c &getSMSideFrustum(u32 sideNum) const = 0;
 	
 	virtual void calcPosInEntitySpace(const class rEntityAPI_i *ent, class vec3_c &out) const = 0;
 };

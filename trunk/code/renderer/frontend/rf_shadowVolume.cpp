@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/planeArray.h>
 #include <api/coreAPI.h>
+#include "../rModelAPI.h"
 
 static aCvar_c rf_printShadowVolumesStats("rf_printShadowVolumesStats","0");
 static aCvar_c rf_dontUsePrecomputedSSVCasters("rf_dontUsePrecomputedSSVCasters","0");
@@ -148,7 +149,12 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 	if(m) {
 		fromRModel(m,light);
 	} else {
-		
+		rModelAPI_i *modAPI = ent->getModel();
+		if(modAPI) {
+			if(modAPI->isInlineBSPModel()) {
+
+			}
+		}
 	}
 	if(rf_printShadowVolumesStats.getInt()) {
 		g_core->Print("rIndexedShadowVolume_c::createShadowVolumeForEntity: (time %i) %i points, %i tris for model %s (%i edge quads, %i cap pairs)\n",

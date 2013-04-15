@@ -56,6 +56,9 @@ public:
 	class rLightAPI_i *curLight;
 	const class rPointBuffer_c *points; // ONLY for shadow volumes
 	int forceSpecificMaterialFrame;
+	int cubeMapSide;
+	int shadowMapW;
+	int shadowMapH;
 //public:
 	
 };
@@ -64,6 +67,9 @@ static u32 rf_numDrawCalls = 0;
 bool rf_bDrawOnlyOnDepthBuffer = false;
 // used to force specific frame of "animMap" stage from cgame code
 int rf_forceSpecificMaterialFrame = -1;
+int rf_currentShadowMapCubeSide = -1;
+int rf_currentShadowMapW;
+int rf_currentShadowMapH;
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
@@ -112,6 +118,9 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	} else {
 		n->drawOnlyOnDepthBuffer = false;
 	}
+	n->cubeMapSide = rf_currentShadowMapCubeSide;
+	n->shadowMapW = rf_currentShadowMapW;
+	n->shadowMapH = rf_currentShadowMapH;
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
@@ -192,6 +201,22 @@ int compareDrawCall(const void *v0, const void *v1) {
 		} else if(c1->sort == DCS_SPECIAL_SHADOWVOLUME) {
 			return 1; // c1 first
 		}
+		// shadow volume cubemaps must be created before drawing light interactions
+		if(c0->cubeMapSide != -1) {
+			if(c1->cubeMapSide != -1) {
+				// both of them are depthmap drawcalls
+				if(c0->cubeMapSide == c1->cubeMapSide)
+					return 0; // equal
+				if(c0->cubeMapSide < c1->cubeMapSide)
+					return -1; // c0 first
+				return 1; // c1 first
+			} else {
+				// c1 is not a depth map call
+				return -1; // c0 first
+			}
+		} else if(c1->cubeMapSide != -1) {
+			return 1; // c1 first
+		}
 	} else if(c1->curLight) {
 		return -1; // c0 first
 	}
@@ -230,19 +255,14 @@ void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 void RF_Generate3DSubView();
 static aCvar_c light_printLightsCulledByGPUOcclusionQueries("light_printLightsCulledByGPUOcclusionQueries","0");
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
+	rb->setRShadows(RF_GetShadowingMode());
+
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
+	int prevCubeMapSide = -1;
 	rLightAPI_i *prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
-		if(prevEntity != c->entity) {
-			if(c->entity == 0) {
-				rb->setupWorldSpace();
-			} else {
-				rb->setupEntitySpace(c->entity->getAxis(),c->entity->getOrigin());
-			}
-			prevEntity = c->entity;
-		}
 		if(prevLight != c->curLight) {
 			if(prevLight == 0) {
 				// depth pass finished
@@ -272,6 +292,19 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 					continue;
 				}
 			}
+		}
+		// set cubemap properties before changing model view matrix
+		// but after curLight is set
+		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
+		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
+		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide) {
+			if(c->entity == 0) {
+				rb->setupWorldSpace();
+			} else {
+				rb->setupEntitySpace(c->entity->getAxis(),c->entity->getOrigin());
+			}
+			prevEntity = c->entity;
+			prevCubeMapSide = c->cubeMapSide;
 		}
 		rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
 		rb->setCurrentDrawCallSort(c->sort);

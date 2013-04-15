@@ -68,6 +68,7 @@ static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 // always use GLSL shaders, even if they are not needed for any material effects
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
+static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -93,7 +94,42 @@ public:
 	virtual u32 getPreviousResult() const;
 	virtual u32 waitForLatestResult() const;
 };
+class fboDepth_c {
+	u32 textureHandle;
+	u32 fboHandle;
+	u32 w,h;
+public:
+	fboDepth_c();
+	~fboDepth_c();
 
+	bool create(u32 newW, u32 newH);
+	void destroy();
+
+	u32 getFBOHandle() {
+		return fboHandle;
+	}
+	u32 getTextureHandle() {
+		return textureHandle;
+	}
+};
+// six texture2D FBOs composed into cubemap
+class cubeFBOs_c {
+	fboDepth_c sides[6];
+	u32 w, h;
+public:
+	cubeFBOs_c();
+	~cubeFBOs_c();
+
+	bool create(u32 newW, u32 newH);
+	void destroy();
+
+	u32 getSideFBOHandle(u32 sideNum) {
+		return sides[sideNum].getFBOHandle();
+	}
+	u32 getSideTextureHandle(u32 sideNum) {
+		return sides[sideNum].getTextureHandle();
+	}
+};
 struct texState_s {
 	bool enabledTexture2D;
 	bool texCoordArrayEnabled;
@@ -121,9 +157,14 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool bHasVertexColors;
 	drawCallSort_e curDrawCallSort;
 	int forcedMaterialFrameNum;
+	int curCubeMapSide;
+	int curShadowMapW;
+	int curShadowMapH;
+	cubeFBOs_c cubeFBO;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
+	matrix_c projectionMatrix;
 	axis_c viewAxis; // viewer's camera axis
 	vec3_c camOriginWorldSpace;
 	vec3_c camOriginEntitySpace;
@@ -132,18 +173,23 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	vec3_c entityOrigin;
 	matrix_c entityMatrix;
 	matrix_c entityMatrixInverse;
+
+	matrix_c savedCameraProjection;
+	matrix_c savedCameraView;
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
 
 	const class rIndexBuffer_c *boundIBO;
 	u32 boundGPUIBO;
+	u32 boundFBO;
 
 	bool backendInitialized;
 
 	float timeNowSeconds;
 	bool isMirror;
 	bool bRendererMirrorThisFrame;
+	int r_shadows;
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
@@ -163,6 +209,8 @@ public:
 		isMirror = false;
 		forcedMaterialFrameNum = -1;
 		bRendererMirrorThisFrame = false;
+		boundFBO = 0;
+		r_shadows = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -545,6 +593,73 @@ public:
 	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
 		this->curDrawCallSort = sort;
 	}
+	virtual void setRShadows(int newRShadows) {
+		this->r_shadows = newRShadows;
+	}
+	void bindFBO(u32 glHandle) {
+		if(boundFBO == glHandle)
+			return;
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glHandle);
+		CHECK_GL_ERRORS;
+		boundFBO = glHandle;
+	}
+	virtual void setCurrentDrawCallCubeMapSide(int iCubeSide) {
+		if(iCubeSide == this->curCubeMapSide) {
+			return; // no change
+		}
+		if(iCubeSide == -1) {
+			// unbind the FBO
+			bindFBO(0);
+			// restore viewport
+			glViewport(0,0,getWinWidth(),getWinHeight());
+
+			// restore camera view and projection matrices
+			projectionMatrix = savedCameraProjection;
+
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glLoadMatrixf(projectionMatrix);
+
+			worldModelMatrix = savedCameraView;
+			//setupWorldSpace();
+
+			this->curCubeMapSide = -1;
+
+			CHECK_GL_ERRORS;
+			return;
+		}
+		// ensure that FBO is ready
+		cubeFBO.create(curShadowMapW,curShadowMapH);
+		// bind the FBO
+		bindFBO(cubeFBO.getSideFBOHandle(iCubeSide));
+		// set viewport
+		glViewport(0,0,curShadowMapW,curShadowMapH);
+		// clear buffers
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		if(this->curCubeMapSide == -1) {
+			// save camera matrices
+			savedCameraProjection = projectionMatrix;
+			savedCameraView = worldModelMatrix;
+		}
+
+		// set the light view matrices
+		const class matrix_c &lightView = curLight->getSMSideView(iCubeSide);
+		worldModelMatrix = lightView;
+	//	worldModelMatrix.toGL();
+
+		const class matrix_c &lightProj = curLight->getSMLightProj();
+		projectionMatrix = lightProj;
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glLoadMatrixf(projectionMatrix);
+
+		this->curCubeMapSide = iCubeSide;
+		CHECK_GL_ERRORS;
+	}
+	virtual void setCurLightShadowMapSize(int newW, int newH) {
+		curShadowMapW = newW;
+		curShadowMapH = newH;
+	}
 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
 		this->forcedMaterialFrameNum = animMapFrame;
 	}
@@ -721,14 +836,40 @@ public:
 					if(usingWorldSpace) {
 						glUniform3f(newShader->uLightOrigin,xyz.x,xyz.y,xyz.z);
 					} else {
-						matrix_c entityMatrixInv = entityMatrix.getInversed();
 						vec3_c xyzLocal;
-						entityMatrixInv.transformPoint(xyz,xyzLocal);
+						entityMatrixInverse.transformPoint(xyz,xyzLocal);
 						glUniform3f(newShader->uLightOrigin,xyzLocal.x,xyzLocal.y,xyzLocal.z);
 					}
 				}
 				if(newShader->uLightRadius != -1) {
 					glUniform1f(newShader->uLightRadius,curLight->getRadius());
+				}
+				if(r_shadows == 2) {
+					matrix_c bias(0.5, 0.0, 0.0, 0.0, 
+						0.0, 0.5, 0.0, 0.0,
+						0.0, 0.0, 0.5, 0.0,
+						0.5, 0.5, 0.5, 1.0);
+					
+					for(u32 i = 0; i < 6; i++) {
+						
+		//if(i != 5)
+		//	continue;
+
+						matrix_c lProj = curLight->getSMLightProj();;
+						matrix_c lView = curLight->getSMSideView(i);
+
+						// FIXME: the entity offset calculated here is wrong... 
+						// shadows are not displayed correctly on entities
+						matrix_c res = bias * lProj * lView * entityMatrix;
+
+
+						u32 texSlot = 1 + i;
+						setTextureMatrixCustom(texSlot,res);
+
+						u32 slot = 3+i;
+						bindTex(slot,cubeFBO.getSideTextureHandle(i));
+						glUniform1i(newShader->u_shadowMap[i],slot);
+					}
 				}
 			}
 			if(newShader->uViewOrigin != -1) {
@@ -758,6 +899,10 @@ public:
 
 		stopDrawingShadowVolumes();
 
+		if(rb_verboseDrawElements.getInt()) {
+			g_core->Print("rbSDLOpenGL_c::drawElements: bDrawOnlyOnDepthBuffer %i, curCubeMapSide %i\n",bDrawOnlyOnDepthBuffer,curCubeMapSide);
+		}
+		
 		if(bDrawOnlyOnDepthBuffer) {
 			if(bRendererMirrorThisFrame) {
 				if(lastMat->isMirrorMaterial()) {
@@ -789,10 +934,16 @@ public:
 			}
 			turnOffTextureMatrices();
 			disableAllTextures();
-			if(lastMat) {
-				glCull(lastMat->getCullType());
+			if(curCubeMapSide >= 0) {
+				// invert culling for shadow mapping 
+				// (because we want to get the depth of backfaces to avoid epsilon issues)
+				glCull(CT_BACK_SIDED);
 			} else {
-				glCull(CT_FRONT_SIDED);
+				if(lastMat) {
+					glCull(lastMat->getCullType());
+				} else {
+					glCull(CT_FRONT_SIDED);
+				}
 			}
 		///	setDepthRange(0.f,1.f);
 		//	glEnable(GL_DEPTH_TEST);
@@ -1037,7 +1188,11 @@ public:
 				glShader_c *selectedShader = 0;
 				if(curLight) {
 					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
-					selectedShader = GL_RegisterShader("perPixelLighting");
+					glslPermutationFlags_s pf;
+					if(r_shadows == 2) {
+						pf.pointLightShadowMapping = true;
+					}
+					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);
 				} else if(lastMat->isPortalMaterial() == false &&
 					(
@@ -1232,6 +1387,10 @@ public:
 		this->loadModelViewMatrix(this->resultMatrix);
 
 		camOriginEntitySpace = this->camOriginWorldSpace;
+		entityAxis.identity();
+		entityOrigin.zero();
+		entityMatrix.identity();
+		entityMatrixInverse.identity();
 
 		usingWorldSpace = true;
 	}
@@ -1278,13 +1437,12 @@ public:
 		glEnable(GL_DEPTH_TEST);
 	}
 	virtual void setupProjection3D(const projDef_s *pd) {
-		matrix_c proj;
 		//frustum.setup(fovX, fovY, zFar, axis, origin);
-		proj.setupProjection(pd->fovX,pd->fovY,pd->zNear,pd->zFar);
+		projectionMatrix.setupProjection(pd->fovX,pd->fovY,pd->zNear,pd->zFar);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glLoadMatrixf(proj);
+		glLoadMatrixf(projectionMatrix);
 	}
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
 		this->bindIBO(0);
@@ -1486,6 +1644,7 @@ public:
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::shutdown: already shutdown\n");
 			return;		
 		}
+		cubeFBO.destroy();
 		GL_ShutdownGLSLShaders();
 		AUTOCVAR_UnregisterAutoCvars();
 		lastMat = 0;
@@ -1675,6 +1834,96 @@ u32 glOcclusionQuery_c::getPreviousResult() const {
 	return lastResult;
 }
 
+fboDepth_c::fboDepth_c() {
+	textureHandle = 0;
+	fboHandle = 0;
+	w = h = 0;
+}
+fboDepth_c::~fboDepth_c() {
+	destroy();
+}
+bool fboDepth_c::create(u32 newW, u32 newH) {
+	if(fboHandle && newW == w && newH == h)
+		return false;
+	// destroy previously created FBO
+	destroy();
+
+	w = newW;
+	h = newH;
+
+	// create a depth texture
+	glGenTextures(1, &textureHandle);
+	glBindTexture(GL_TEXTURE_2D, textureHandle);
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+
+	// normally filtering on depth texture is done bia GL_NEAREST, but Nvidia has a built-in support for Hardware filtering: use GL_LINEAR
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	// two next lines are necessary if we wan to use the convenient shadow2DProj function in the shader.
+	// otherwise we have to rely on texture2DProj
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY); 
+
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+	// create a framebuffer object
+	glGenFramebuffersEXT(1, &fboHandle);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboHandle);
+
+	// attach the texture to FBO color attachment point
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, textureHandle, 0);
+
+	// check FBO status
+	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	if(status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		printf("fboDepth_c::create: failed to create FBO\n");
+		destroy();
+		return true;
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	// switch back to window-system-provided framebuffer
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	return false;
+}
+void fboDepth_c::destroy() {
+	if(textureHandle) {
+		glDeleteTextures(1,&textureHandle);
+		textureHandle = 0;
+	}
+	if(fboHandle) {
+		glDeleteFramebuffers(1,&fboHandle);
+		fboHandle = 0;
+	}
+}
+cubeFBOs_c::cubeFBOs_c() {
+	h = w = 0;
+}
+cubeFBOs_c::~cubeFBOs_c() {
+	destroy();
+}
+void cubeFBOs_c::destroy() {
+	for(u32 i = 0; i < 6; i++) {
+		sides[i].destroy();
+	}
+}
+bool cubeFBOs_c::create(u32 newW, u32 newH) {
+	if(newW == w && newH == h)
+		return false; // ok
+	destroy();
+	bool bError = false;
+	for(u32 i = 0; i < 6; i++) {
+		if(sides[i].create(newW,newH)) {
+			bError = true;
+		}
+	}
+	w = newW;
+	h = newH;
+	return bError;
+}
 
 void SDLOpenGL_RegisterBackEnd() {
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_staticSDLOpenGLBackend,RENDERER_BACKEND_API_IDENTSTR);

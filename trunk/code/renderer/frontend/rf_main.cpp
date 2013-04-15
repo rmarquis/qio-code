@@ -51,6 +51,16 @@ bool RF_IsUsingShadowVolumes() {
 	}
 	return false;
 }
+bool RF_IsUsingShadowMapping() {
+	if(rf_shadows.getInt() == 2) {
+		return true;
+	}
+	return false;
+}
+int RF_GetShadowingMode() {
+	int ret = rf_shadows.getInt();
+	return ret;
+}
 bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
 	if(mat->hasTexGen()) {
 		// see if the texGen effect is supported by renderer backend GPU shaders

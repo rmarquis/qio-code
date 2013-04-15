@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_entities.h"
 #include "rf_world.h"
 #include "rf_shadowVolume.h"
+#include "rf_drawCall.h"
 #include <shared/autoCvar.h>
 #include "rf_bsp.h"
 #include <api/coreAPI.h>
@@ -36,6 +37,7 @@ static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCa
 static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
 static aCvar_c rf_cullLights("rf_cullLights","1");
 static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
+static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
@@ -43,6 +45,8 @@ rLightImpl_c::rLightImpl_c() {
 	numCurrentEntityInteractions = 0;
 	staticShadowVolume = 0;
 	oq = 0;
+	shadowMapH = 2048;
+	shadowMapW = 2048;
 }
 rLightImpl_c::~rLightImpl_c() {
 	clearInteractions();
@@ -60,12 +64,19 @@ rLightImpl_c::~rLightImpl_c() {
 		delete oq;
 	}
 }
+float rLightImpl_c::getShadowMapW() const {
+	return this->shadowMapW * light_shadowMapScale.getFloat();
+}
+float rLightImpl_c::getShadowMapH() const {
+	return this->shadowMapH * light_shadowMapScale.getFloat();
+}
 void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	if(pos.compare(newXYZ)) {
 		return; // no change
 	}
 	pos = newXYZ;
 	absBounds.fromPointAndRadius(pos,radius);
+	recalcShadowMappingMatrices();
 	recalcLightInteractions();
 }
 void rLightImpl_c::setRadius(float newRadius) {
@@ -75,6 +86,7 @@ void rLightImpl_c::setRadius(float newRadius) {
 	}
 	radius = newRadius;
 	absBounds.fromPointAndRadius(pos,radius);
+	recalcShadowMappingMatrices();
 	recalcLightInteractions();
 }
 occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
@@ -177,25 +189,28 @@ void rLightImpl_c::recalcLightInteractions() {
 	recalcLightInteractionsWithStaticWorld();
 }
 static aCvar_c rf_proc_printLitSurfsCull("rf_proc_printLitSurfsCull","0");
+void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in) {
+	if(in.type == SIT_BSP) {
+		RF_DrawSingleBSPSurface(in.bspSurfaceNumber);
+	} else if(in.type == SIT_STATIC) {
+		in.sf->addDrawCall();
+	} else if(in.type == SIT_PROC) {
+		if(RF_IsWorldAreaVisible(in.areaNum)) {
+			if(rf_proc_printLitSurfsCull.getInt()) {
+				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
+			}
+			in.sf->addDrawCall();
+		} else {
+			if(rf_proc_printLitSurfsCull.getInt()) {
+				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
+			}
+		}
+	}
+}
 void rLightImpl_c::addLightInteractionDrawCalls() {
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
-		if(in.type == SIT_BSP) {
-			RF_DrawSingleBSPSurface(in.bspSurfaceNumber);
-		} else if(in.type == SIT_STATIC) {
-			in.sf->addDrawCall();
-		} else if(in.type == SIT_PROC) {
-			if(RF_IsWorldAreaVisible(in.areaNum)) {
-				if(rf_proc_printLitSurfsCull.getInt()) {
-					g_core->Print("rLightImpl_c::addLightInteractionDrawCalls: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
-				}
-				in.sf->addDrawCall();
-			} else {
-				if(rf_proc_printLitSurfsCull.getInt()) {
-					g_core->Print("rLightImpl_c::addLightInteractionDrawCalls: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
-				}
-			}
-		}
+		addStaticSurfInteractionDrawCall(in);
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
 		entityInteraction_s &in = this->entityInteractions[i];
@@ -232,6 +247,58 @@ void rLightImpl_c::addLightShadowVolumesDrawCalls() {
 		in.shadowVolume->addDrawCall();
 	}
 	rf_currentEntity = 0;
+}
+
+enum {
+	CUBE_SIDE_COUNT = 6,
+};
+void rLightImpl_c::recalcShadowMappingMatrices() {
+	// projection matrix is the same for all of cubemap sides
+	lightProj.setupProjectionExt(90.f, getShadowMapW(), getShadowMapH(), 1.f, this->radius);
+	vec3_c cubeNormals[] = { vec3_c(1,0,0), vec3_c(-1,0,0),
+						vec3_c(0,1,0), vec3_c(0,-1,0),
+						vec3_c(0,0,1), vec3_c(0,0,-1)};
+	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {
+		// view matrix is different for each cubemap side
+		vec3_c upVector;
+		// upvector cant be the same as normal (cube direction)
+		// otherwise shadow will not show up
+		if(side < 2) {
+			upVector.set(0,1,0);
+		} else if(side < 4) {
+			upVector.set(0,0,1);
+		} else {
+			upVector.set(1,0,0);
+		}
+		sideViews[side].setupLookAtRH(this->pos,cubeNormals[side],upVector);
+
+		axis_c ax;
+		ax.mat[0] = cubeNormals[side];
+		ax.mat[1] = upVector;
+		ax.mat[2] = ax.mat[1].crossProduct(ax.mat[0]);
+		sideFrustums[side].setupExt(90.f, getShadowMapW(), getShadowMapH(), radius, ax, this->pos);
+	}
+}
+void rLightImpl_c::addShadowMapRenderingDrawCalls() {
+	rf_currentShadowMapW = getShadowMapW();
+	rf_currentShadowMapH = getShadowMapH();
+	rf_bDrawOnlyOnDepthBuffer = true;
+	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {	
+		rf_currentShadowMapCubeSide = side;
+		const frustum_c &sideFrustum = sideFrustums[side];
+		for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
+			staticSurfInteraction_s &sIn = this->staticInteractions[j];
+			addStaticSurfInteractionDrawCall(sIn);
+		}
+		for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
+			entityInteraction_s &eIn = this->entityInteractions[j];
+			RFE_AddEntity(eIn.ent,&sideFrustum);
+		}
+	}
+	rf_bDrawOnlyOnDepthBuffer = false;
+	rf_currentShadowMapCubeSide = -1;
+	rf_currentShadowMapW = -1;
+	rf_currentShadowMapH = -1;
 }
 
 static arraySTD_c<rLightImpl_c*> rf_lights;
@@ -298,7 +365,10 @@ void RFL_AddLightInteractionsDrawCalls() {
 
 		if(RF_IsUsingShadowVolumes()) {
 			light->addLightShadowVolumesDrawCalls();
+		} else if(RF_IsUsingShadowMapping()) {
+			light->addShadowMapRenderingDrawCalls();
 		}
+
 		if(rf_redrawEntireSceneForEachLight.getInt()) {
 			RF_AddGenericDrawCalls();
 		} else {

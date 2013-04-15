@@ -26,9 +26,31 @@ or simply visit <http://www.gnu.org/licenses/>.
 // shader varying variables
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
+#ifdef SHADOW_MAPPING_POINT_LIGHT
+// used for shadow lookup
+varying vec4 shadowCoord0;
+varying vec4 shadowCoord1;
+varying vec4 shadowCoord2;
+varying vec4 shadowCoord3;
+varying vec4 shadowCoord4;
+varying vec4 shadowCoord5;
+#endif // SHADOW_MAPPING_POINT_LIGHT
 
 void main() {
+#ifdef SHADOW_MAPPING_POINT_LIGHT
+	// this is the only shadow part in the Vertex Shader
+	shadowCoord0 = gl_TextureMatrix[1] * gl_Vertex;
+	shadowCoord1 = gl_TextureMatrix[2] * gl_Vertex;
+	shadowCoord2 = gl_TextureMatrix[3] * gl_Vertex;
+	shadowCoord3 = gl_TextureMatrix[4] * gl_Vertex;
+	shadowCoord4 = gl_TextureMatrix[5] * gl_Vertex;
+	shadowCoord5 = gl_TextureMatrix[6] * gl_Vertex;
+#endif
 	gl_Position = ftransform();
+	// this is needed here for GL_CLIP_PLANE0 to work.
+	// clipping planes are used by mirrors
+	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
+	
 	v_vertXYZ = gl_Vertex.xyz;
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 	v_vertNormal = normalize(gl_Normal);

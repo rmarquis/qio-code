@@ -78,6 +78,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasTexGenEnvironment) {
 		out.append("#define HAS_TEXGEN_ENVIROMENT\n");
 	}
+	if(p.pointLightShadowMapping) {
+		out.append("#define SHADOW_MAPPING_POINT_LIGHT\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -167,6 +170,12 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
+	ret->u_shadowMap[0] = glGetUniformLocation(shader,"shadowMap0");
+	ret->u_shadowMap[1] = glGetUniformLocation(shader,"shadowMap1");
+	ret->u_shadowMap[2] = glGetUniformLocation(shader,"shadowMap2");
+	ret->u_shadowMap[3] = glGetUniformLocation(shader,"shadowMap3");
+	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
+	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	return ret;
 }
 void GL_ShutdownGLSLShaders() {
