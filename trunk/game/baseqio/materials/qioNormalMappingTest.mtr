@@ -1,0 +1,9 @@
+
+textures/qiotests/rockwall 
+{
+  colormap textures/qiotests/rockwall_d.png
+  // bumpmap (aka normalmap)
+  bumpmap textures/qiotests/rockwall_local.png
+  heightmap textures/qiotests/rockwall_h.png
+}
+

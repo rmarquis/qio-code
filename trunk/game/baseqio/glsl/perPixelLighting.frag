@@ -31,6 +31,13 @@ uniform float u_lightRadius;
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
 
+#ifdef HAS_BUMP_MAP
+attribute vec3 atrTangents;
+attribute vec3 atrBinormals;
+varying mat3 tbnMat;
+uniform sampler2D bumpMap;
+#endif
+
 #ifdef SHADOW_MAPPING_POINT_LIGHT
 varying vec4 shadowCoord0;
 varying vec4 shadowCoord1;
@@ -113,6 +120,12 @@ void main() {
 		return;
 	}
     vec3 lightDirection = normalize(lightToVert);
+    
+#ifdef HAS_BUMP_MAP
+	vec3 bumpMapNormal = texture2D (bumpMap, gl_TexCoord[0].st);
+	bumpMapNormal = (bumpMapNormal - 0.5) * 2.0;
+	v_vertNormal = tbnMat * bumpMapNormal;
+#endif    
     // calculate the diffuse value based on light angle	
     float angleFactor = dot(v_vertNormal, lightDirection);
     if(angleFactor < 0) {

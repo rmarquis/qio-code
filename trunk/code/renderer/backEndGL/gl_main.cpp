@@ -69,6 +69,7 @@ static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
 static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
+static aCvar_c rb_ignoreBumpMaps("rb_ignoreBumpMaps","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -184,6 +185,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	u32 boundGPUIBO;
 	u32 boundFBO;
 
+	bool bBoundLightmapCoordsToFirstTextureSlot;
+	bool bVertexAttribLocationsEnabled[16];
+
 	bool backendInitialized;
 
 	float timeNowSeconds;
@@ -211,6 +215,8 @@ public:
 		bRendererMirrorThisFrame = false;
 		boundFBO = 0;
 		r_shadows = 0;
+		bBoundLightmapCoordsToFirstTextureSlot = false;
+		memset(bVertexAttribLocationsEnabled,0,sizeof(bVertexAttribLocationsEnabled));
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -663,7 +669,22 @@ public:
 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
 		this->forcedMaterialFrameNum = animMapFrame;
 	}
-	bool bBoundLightmapCoordsToFirstTextureSlot;
+	void disableAllVertexAttribs() {
+		for(int loc = 0; loc < 16; loc++) {
+			if(bVertexAttribLocationsEnabled[loc] == true) {
+				bVertexAttribLocationsEnabled[loc] = false;
+				glDisableVertexAttribArray(loc);
+			}
+		}
+	}
+	void enableVertexAttrib(int loc) {
+		if(loc < 0)
+			return;
+		if(bVertexAttribLocationsEnabled[loc] == false) {
+			bVertexAttribLocationsEnabled[loc] = true;
+			glEnableVertexAttribArray(loc);
+		}
+	}
 	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
 		if(boundVBO == verts) {
 			if(boundVBOVertexColors == bindVertexColors) {
@@ -675,6 +696,9 @@ public:
 
 			}
 		}
+		
+		disableAllVertexAttribs();
+
 		u32 h = verts->getInternalHandleU32();
 		glBindBuffer(GL_ARRAY_BUFFER,h);
 		if(h == 0) {
@@ -699,6 +723,19 @@ public:
 			}
 			enableNormalArray();
 			glNormalPointer(GL_FLOAT,sizeof(rVert_c),&verts->getArray()->normal.x);
+			// bind tangents and binormals for bump/paralax mapping effects
+			if(curShader) {
+				int tangentsLocation = curShader->getAtrTangentsLocation();
+				int binormalsLocation = curShader->getAtrBinormalsLocation();
+				if(tangentsLocation >= 0) {
+					enableVertexAttrib(tangentsLocation);
+					glVertexAttribPointer(tangentsLocation, 3, GL_FLOAT, true, sizeof(rVert_c), &verts->getArray()->tan.x);
+				}
+				if(binormalsLocation >= 0) {
+					enableVertexAttrib(binormalsLocation);
+					glVertexAttribPointer(binormalsLocation, 3, GL_FLOAT, true, sizeof(rVert_c), &verts->getArray()->bin.x);
+				}
+			}
 		} else {
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
 			selectTex(0);
@@ -720,6 +757,19 @@ public:
 			}
 			enableNormalArray();
 			glNormalPointer(GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,normal));
+			// bind tangents and binormals for bump/paralax mapping effects
+			if(curShader) {
+				int tangentsLocation = curShader->getAtrTangentsLocation();
+				int binormalsLocation = curShader->getAtrBinormalsLocation();
+				if(tangentsLocation >= 0) {
+					enableVertexAttrib(tangentsLocation);
+					glVertexAttribPointer(tangentsLocation, 3, GL_FLOAT, true, sizeof(rVert_c), (void*)offsetof(rVert_c,tan));
+				}
+				if(binormalsLocation >= 0) {
+					enableVertexAttrib(binormalsLocation);
+					glVertexAttribPointer(binormalsLocation, 3, GL_FLOAT, true, sizeof(rVert_c), (void*)offsetof(rVert_c,bin));
+				}
+			}
 		}
 		boundVBOVertexColors = bindVertexColors;
 		bBoundLightmapCoordsToFirstTextureSlot = bindLightmapCoordsToFirstTextureSlot;
@@ -811,6 +861,7 @@ public:
 		}
 	}
 	const rLightAPI_i *curLight;
+	class glShader_c *curShader;
 	bool bDrawOnlyOnDepthBuffer;
 	bool bDrawingShadowVolumes;
 	virtual void setCurLight(const class rLightAPI_i *light) {
@@ -820,8 +871,10 @@ public:
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
 	}
 	void bindShader(class glShader_c *newShader) {
+		curShader = newShader;
 		if(newShader == 0) {
 			glUseProgram(0);
+			disableAllVertexAttribs();
 		} else {
 			glUseProgram(newShader->getGLHandle());
 			if(newShader->sColorMap != -1) {
@@ -829,6 +882,9 @@ public:
 			}
 			if(newShader->sLightMap != -1) {
 				glUniform1i(newShader->sLightMap,1);
+			}
+			if(newShader->sBumpMap != -1) {
+				glUniform1i(newShader->sBumpMap,2);
 			}
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
@@ -992,8 +1048,19 @@ public:
 			}
 			u32 numMatStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numMatStages; i++) {
+				// get the material stage
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				// get material stage type
 				enum stageType_e stageType = s->getStageType();
+				// get the bumpmap substage of current stage
+				const mtrStageAPI_i *bumpMap;
+				if(rb_ignoreBumpMaps.getInt()) {
+					bumpMap = 0;
+				} else {
+					bumpMap = s->getBumpMap();
+				}
+
+				// set the alphafunc
 				setAlphaFunc(s->getAlphaFunc());	
 				if(curLight == 0) {
 					const blendDef_s &bd = s->getBlendDef();
@@ -1002,6 +1069,7 @@ public:
 					// light interactions are appended with addictive blending
 					setBlendFunc(BM_ONE,BM_ONE);
 				}
+
 #if 1
 				// test; it seems beam shader should be drawn with depthmask off..
 				//if(!stricmp(lastMat->getName(),"textures/sfx/beam")) {
@@ -1053,6 +1121,12 @@ public:
 					textureAPI_i *t = getStageTextureInternal(s);
 					bindTex(0,t->getInternalHandleU32());
 					unbindTex(1);
+				}
+				if(bumpMap && curLight) {
+					textureAPI_i *bumpMapTexture = bumpMap->getTexture(this->timeNowSeconds);
+					bindTex(2,bumpMapTexture->getInternalHandleU32());
+				} else {
+					unbindTex(2);
 				}
 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
@@ -1191,6 +1265,9 @@ public:
 					glslPermutationFlags_s pf;
 					if(r_shadows == 2) {
 						pf.pointLightShadowMapping = true;
+					}
+					if(bumpMap) {
+						pf.hasBumpMap = true;
 					}
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);
@@ -1609,6 +1686,7 @@ public:
 		prevCullType = CT_NOT_SET;
 		stencilTestEnabled = 0;
 		forcedMaterialFrameNum = -1;
+		curShader = 0;
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

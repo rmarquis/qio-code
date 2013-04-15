@@ -114,6 +114,7 @@ mtrStage_c::mtrStage_c() {
 	type = ST_NOT_SET;
 	depthWrite = true;
 	bMarkedForDelete = false;
+	subStageBumpMap = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -121,6 +122,9 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(rgbGen) {
 		delete rgbGen;
+	}
+	if(subStageBumpMap) {
+		delete subStageBumpMap;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -429,14 +433,17 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
 					}
-				} else if(p.atWord("diffusemap")) {
+				} else if(p.atWord("diffusemap") || p.atWord("colormap")) {
 					// "diffusemap" keyword is a shortcut for a material stage with single image
 					// it was introduced in Doom3
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
 					newDiffuseMapStage->setTexture(p.getToken());
 					stages.push_back(newDiffuseMapStage);
-				} else if(p.atWord("bumpmap")) {
-					p.skipLine();	
+				} else if(p.atWord("bumpmap") || p.atWord("normalmap") ) {
+					mtrStage_c *newBumpMapStage = new mtrStage_c;
+					newBumpMapStage->setStageType(ST_BUMPMAP);
+					newBumpMapStage->setTexture(p.getToken());
+					stages.push_back(newBumpMapStage);
 				} else if(p.atWord("specularmap")) {
 					p.skipLine();	
 				} else if(p.atWord("lightFalloffImage")) {
@@ -683,22 +690,37 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				i--;
 			}
 		}
+		// link bumpmaps to their colormaps
+		mtrStage_c *colorMapStage = this->getFirstStageOfType(ST_COLORMAP);
+		if(colorMapStage == 0) {
+			colorMapStage = this->getFirstStageOfType(ST_NOT_SET);
+		}
+		if(colorMapStage) {
+			mtrStage_c *bumpMapStage = this->getFirstStageOfType(ST_BUMPMAP);
+			if(bumpMapStage) {
+				colorMapStage->setSubStageBumpMap(bumpMapStage);
+				this->stages.removeObject(bumpMapStage);
+			}
+
+		//	mtrStage_c *specularMapStage = this->getFirstStageOfType(ST_SPECULARMAP);
+		}
 		this->removeAllStagesOfType(ST_BUMPMAP);
 		this->removeAllStagesOfType(ST_SPECULARMAP);
+
 		if(mat_collapseMaterialStages.getInt()) {
-		mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
-		if(lightmapped) {
-			// if we have a non-lightmap stage without blendfunc, we can collapse...
-			for(int i = 0; i < stages.size(); i++) {
-				mtrStage_c *s = stages[i];
-				if(s->isLightmapStage() == false && s->hasBlendFunc() == false) {
-					this->removeAllStagesOfType(ST_LIGHTMAP);
-					this->replaceStageType(ST_NOT_SET,ST_COLORMAP_LIGHTMAPPED);
-					this->replaceStageType(ST_COLORMAP,ST_COLORMAP_LIGHTMAPPED);
-					break;
+			mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
+			if(lightmapped) {
+				// if we have a non-lightmap stage without blendfunc, we can collapse...
+				for(int i = 0; i < stages.size(); i++) {
+					mtrStage_c *s = stages[i];
+					if(s->isLightmapStage() == false && s->hasBlendFunc() == false) {
+						this->removeAllStagesOfType(ST_LIGHTMAP);
+						this->replaceStageType(ST_NOT_SET,ST_COLORMAP_LIGHTMAPPED);
+						this->replaceStageType(ST_COLORMAP,ST_COLORMAP_LIGHTMAPPED);
+						break;
+					}
 				}
 			}
-		}
 		}
 	}
 

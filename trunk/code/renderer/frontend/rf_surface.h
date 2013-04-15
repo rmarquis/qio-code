@@ -193,6 +193,9 @@ public:
 	}
 
 	void recalcNormals();
+#ifdef RVERT_STORE_TANGENTS
+	void recalcTBN();
+#endif // RVERT_STORE_TANGENTS
 
 	const aabb &getBB() const {
 		return bounds;
@@ -306,6 +309,11 @@ public:
 	void recalcModelNormals() {
 		for(u32 i = 0; i < surfs.size(); i++) {
 			surfs[i].recalcNormals();
+		}
+	}
+	void recalcModelTBNs() {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			surfs[i].recalcTBN();
 		}
 	}
 	void precalculateStencilShadowCaster();

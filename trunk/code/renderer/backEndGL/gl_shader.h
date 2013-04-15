@@ -35,6 +35,7 @@ struct glslPermutationFlags_s {
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
+	bool hasBumpMap; // #define HAS_BUMP_MAP
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -54,15 +55,21 @@ friend class rbSDLOpenGL_c;
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
 	int sLightMap; // Quake3 bsp lightmap
+	int sBumpMap; // bumpmap (normalmap)
 
 	// shadow mapping
 	int u_shadowMap[6];
+
+	int atrTangents;
+	int atrBinormals;
 
 	glslPermutationFlags_s permutations;
 
 public:
 	glShader_c() {
 		handle = 0;
+		atrTangents = 0;
+		atrBinormals = 0;
 	}
 	~glShader_c() {
 		if(handle) {
@@ -74,6 +81,12 @@ public:
 	}
 	GLuint getGLHandle() const {
 		return handle;
+	}
+	int getAtrTangentsLocation() const {
+		return atrTangents;
+	}
+	int getAtrBinormalsLocation() const {
+		return atrBinormals;
 	}
 	const glslPermutationFlags_s &getPermutations() const {
 		return permutations;

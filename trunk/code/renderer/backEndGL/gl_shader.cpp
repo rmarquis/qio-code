@@ -81,6 +81,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.pointLightShadowMapping) {
 		out.append("#define SHADOW_MAPPING_POINT_LIGHT\n");
 	}
+	if(p.hasBumpMap) {
+		out.append("#define HAS_BUMP_MAP\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -167,6 +170,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	// precache uniform locations
 	ret->sColorMap = glGetUniformLocation(shader,"colorMap");
 	ret->sLightMap = glGetUniformLocation(shader,"lightMap");
+	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
@@ -176,6 +180,9 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[3] = glGetUniformLocation(shader,"shadowMap3");
 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
+	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
+	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
+
 	return ret;
 }
 void GL_ShutdownGLSLShaders() {

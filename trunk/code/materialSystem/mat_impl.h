@@ -100,6 +100,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	class rgbGen_c *rgbGen;
 	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
 	bool bMarkedForDelete;
+	// only if this->type == ST_COLORMAP
+	mtrStage_c *subStageBumpMap;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -115,6 +117,9 @@ public:
 	}
 	virtual const struct blendDef_s &getBlendDef() const {
 		return blend;
+	}
+	virtual mtrStageAPI_i *getBumpMap() const {
+		return subStageBumpMap;
 	}
 	virtual bool hasTexMods() const {
 		if(texMods)
@@ -140,6 +145,9 @@ public:
 	}
 	void setTexture(class textureAPI_i *nt) {
 		stageTexture.fromTexturePointer(nt);
+	}
+	void setSubStageBumpMap(class mtrStage_c *s) {
+		this->subStageBumpMap = s;
 	}
 	void setAlphaFunc(alphaFunc_e newAF) {
 		alphaFunc = newAF;

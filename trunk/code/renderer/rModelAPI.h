@@ -49,6 +49,7 @@ public:
 	virtual class kfModelAPI_i *getKFModelAPI() const = 0;
 	virtual const class q3PlayerModelAPI_i *getQ3PlayerModelAPI() const = 0;
 	virtual bool isValid() const = 0;
+	virtual bool isInlineBSPModel() const = 0;
 	virtual bool isDeclModel() const = 0;
 	virtual bool isSkeletal() const = 0;
 	virtual bool isKeyframed() const = 0;

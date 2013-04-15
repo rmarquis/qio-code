@@ -35,6 +35,11 @@ varying vec4 shadowCoord3;
 varying vec4 shadowCoord4;
 varying vec4 shadowCoord5;
 #endif // SHADOW_MAPPING_POINT_LIGHT
+#ifdef HAS_BUMP_MAP
+attribute vec3 atrTangents;
+attribute vec3 atrBinormals;
+varying mat3 tbnMat;
+#endif
 
 void main() {
 #ifdef SHADOW_MAPPING_POINT_LIGHT
@@ -50,6 +55,9 @@ void main() {
 	// this is needed here for GL_CLIP_PLANE0 to work.
 	// clipping planes are used by mirrors
 	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
+#ifdef HAS_BUMP_MAP
+	tbnMat = mat3(atrTangents,atrBinormals,gl_Normal);
+#endif
 	
 	v_vertXYZ = gl_Vertex.xyz;
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;

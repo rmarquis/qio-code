@@ -31,6 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <api/rbAPI.h>
 
+#if 1
+#define RVERT_STORE_TANGENTS
+#endif
+
 class rVert_c {
 public:
 	vec3_c xyz;
@@ -38,9 +42,9 @@ public:
 	byte color[4];
 	vec2_c tc;
 	vec2_c lc;
-#ifdef STORE_TANGENTS
-	vec2_c tan;
-	vec2_c bin;
+#ifdef RVERT_STORE_TANGENTS
+	vec3_c tan;
+	vec3_c bin;
 #endif
 
 	rVert_c() {
@@ -73,7 +77,7 @@ public:
 		tc = a.tc + f * ( b.tc - a.tc );
 		lc = a.lc + f * ( b.lc - a.lc );
 		normal = a.normal + f * ( b.normal - a.normal );
-#ifdef STORE_TANGENTS
+#ifdef RVERT_STORE_TANGENTS
 		tan = a.tan + f * ( b.tan - a.tan );
 		bin = a.bin + f * ( b.bin - a.bin );
 #endif
@@ -187,6 +191,24 @@ public:
 			v->normal.normalize();
 		}
 	}
+#ifdef RVERT_STORE_TANGENTS
+	inline void nullTBN() {
+		rVert_c *v = this->getArray();
+		for(u32 i = 0; i < numVerts; i++, v++) {
+			v->normal.clear();
+			v->tan.clear();
+			v->bin.clear();
+		}
+	}
+	inline void normalizeTBN() {
+		rVert_c *v = this->getArray();
+		for(u32 i = 0; i < numVerts; i++, v++) {
+			v->normal.normalize();
+			v->tan.normalize();
+			v->bin.normalize();
+		}
+	}
+#endif // RVERT_STORE_TANGENTS
 
 	u32 getInternalHandleU32() const {
 		return handleU32;
