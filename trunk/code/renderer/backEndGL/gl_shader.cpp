@@ -84,6 +84,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasBumpMap) {
 		out.append("#define HAS_BUMP_MAP\n");
 	}
+	if(p.hasHeightMap) {
+		out.append("#define HAS_HEIGHT_MAP\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -171,6 +174,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->sColorMap = glGetUniformLocation(shader,"colorMap");
 	ret->sLightMap = glGetUniformLocation(shader,"lightMap");
 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
+	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");

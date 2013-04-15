@@ -36,6 +36,7 @@ struct glslPermutationFlags_s {
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 	bool hasBumpMap; // #define HAS_BUMP_MAP
+	bool hasHeightMap; // #define HAS_HEIGHT_MAP
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -55,7 +56,8 @@ friend class rbSDLOpenGL_c;
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
 	int sLightMap; // Quake3 bsp lightmap
-	int sBumpMap; // bumpmap (normalmap)
+	int sBumpMap; // Doom3-style bumpmap (normalmap)
+	int sHeightMap; // heightmap (not used directly in Doom3)
 
 	// shadow mapping
 	int u_shadowMap[6];

@@ -115,6 +115,7 @@ mtrStage_c::mtrStage_c() {
 	depthWrite = true;
 	bMarkedForDelete = false;
 	subStageBumpMap = 0;
+	subStageHeightMap = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -125,6 +126,9 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(subStageBumpMap) {
 		delete subStageBumpMap;
+	}
+	if(subStageHeightMap) {
+		delete subStageHeightMap;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -446,6 +450,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					stages.push_back(newBumpMapStage);
 				} else if(p.atWord("specularmap")) {
 					p.skipLine();	
+				} else if(p.atWord("heightmap")) {
+					mtrStage_c *newHeightMapStage = new mtrStage_c;
+					newHeightMapStage->setStageType(ST_HEIGHTMAP);
+					newHeightMapStage->setTexture(p.getToken());
+					stages.push_back(newHeightMapStage);
 				} else if(p.atWord("lightFalloffImage")) {
 					p.skipLine();			
 				} else if(p.atWord("deform")) {
@@ -701,11 +710,17 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				colorMapStage->setSubStageBumpMap(bumpMapStage);
 				this->stages.removeObject(bumpMapStage);
 			}
+			mtrStage_c *heightMapStage = this->getFirstStageOfType(ST_HEIGHTMAP);
+			if(heightMapStage) {
+				colorMapStage->setSubStageHeightMap(heightMapStage);
+				this->stages.removeObject(heightMapStage);
+			}
 
 		//	mtrStage_c *specularMapStage = this->getFirstStageOfType(ST_SPECULARMAP);
 		}
 		this->removeAllStagesOfType(ST_BUMPMAP);
 		this->removeAllStagesOfType(ST_SPECULARMAP);
+		this->removeAllStagesOfType(ST_HEIGHTMAP);
 
 		if(mat_collapseMaterialStages.getInt()) {
 			mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);

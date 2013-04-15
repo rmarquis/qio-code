@@ -23,7 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // glsl/genericShader.vert
 
-#ifdef HAS_TEXGEN_ENVIROMENT
+#if defined(HAS_TEXGEN_ENVIROMENT) || defined(HAS_HEIGHT_MAP)
 uniform vec3 u_viewOrigin;
 #endif // HAS_TEXGEN_ENVIROMENT
 
@@ -31,9 +31,26 @@ uniform vec3 u_viewOrigin;
 varying vec4 v_color4;
 #endif // HAS_VERTEXCOLORS
 
+#ifdef HAS_HEIGHT_MAP
+attribute vec3 atrTangents;
+attribute vec3 atrBinormals;
+varying vec3 v_tbnEyeDir;
+#endif
 
 void main() {
 	gl_Position = ftransform();
+	
+#ifdef HAS_HEIGHT_MAP
+    // calculate the direction of the viewOrigin from the vertex;
+    vec3 dirEye = u_viewOrigin  - gl_Vertex;
+        
+    // transform eyeDirection into tangent space
+    v_tbnEyeDir.x = dot(atrTangents , dirEye);
+    v_tbnEyeDir.y = dot(atrBinormals , dirEye);
+    v_tbnEyeDir.z = dot(gl_Normal.xyz , dirEye);
+#endif
+    
+    
 #ifdef HAS_TEXGEN_ENVIROMENT
 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;
 	dir = normalize(dir);

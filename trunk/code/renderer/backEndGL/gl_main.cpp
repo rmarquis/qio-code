@@ -70,6 +70,8 @@ static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
 static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
 static aCvar_c rb_ignoreBumpMaps("rb_ignoreBumpMaps","0");
+static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
+
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -886,6 +888,9 @@ public:
 			if(newShader->sBumpMap != -1) {
 				glUniform1i(newShader->sBumpMap,2);
 			}
+			if(newShader->sHeightMap != -1) {
+				glUniform1i(newShader->sHeightMap,3);
+			}
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
 					const vec3_c &xyz = curLight->getOrigin();
@@ -1059,6 +1064,13 @@ public:
 				} else {
 					bumpMap = s->getBumpMap();
 				}
+				// get the heightmap substage of current stage
+				const mtrStageAPI_i *heightMap;
+				if(rb_ignoreHeightMaps.getInt()) {
+					heightMap = 0;
+				} else {
+					heightMap = s->getHeightMap();
+				}
 
 				// set the alphafunc
 				setAlphaFunc(s->getAlphaFunc());	
@@ -1127,6 +1139,12 @@ public:
 					bindTex(2,bumpMapTexture->getInternalHandleU32());
 				} else {
 					unbindTex(2);
+				}
+				if(heightMap) {
+					textureAPI_i *heightMapTexture = heightMap->getTexture(this->timeNowSeconds);
+					bindTex(3,heightMapTexture->getInternalHandleU32());
+				} else {
+					unbindTex(3);
 				}
 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
@@ -1275,6 +1293,8 @@ public:
 					(
 					gl_alwaysUseGLSLShaders.getInt() ||
 					(modifiedVertexArrayOnCPU == false && (s->hasTexGen() && this->gpuTexGensSupported()))
+					||
+					(heightMap != 0)
 					)
 					) {
 					glslPermutationFlags_s glslShaderDesc;
@@ -1286,6 +1306,9 @@ public:
 					}
 					if(s->hasTexGen()) {
 						glslShaderDesc.hasTexGenEnvironment = true;
+					}
+					if(heightMap) {
+						glslShaderDesc.hasHeightMap = true;
 					}
 
 					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);

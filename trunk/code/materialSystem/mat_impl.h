@@ -102,6 +102,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	bool bMarkedForDelete;
 	// only if this->type == ST_COLORMAP
 	mtrStage_c *subStageBumpMap;
+	mtrStage_c *subStageHeightMap;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -120,6 +121,9 @@ public:
 	}
 	virtual mtrStageAPI_i *getBumpMap() const {
 		return subStageBumpMap;
+	}
+	virtual mtrStageAPI_i *getHeightMap() const {
+		return subStageHeightMap;
 	}
 	virtual bool hasTexMods() const {
 		if(texMods)
@@ -148,6 +152,9 @@ public:
 	}
 	void setSubStageBumpMap(class mtrStage_c *s) {
 		this->subStageBumpMap = s;
+	}
+	void setSubStageHeightMap(class mtrStage_c *s) {
+		this->subStageHeightMap = s;
 	}
 	void setAlphaFunc(alphaFunc_e newAF) {
 		alphaFunc = newAF;
