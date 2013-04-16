@@ -35,6 +35,17 @@ class parser_c {
 	char *fileData; // alloced by filesystem in parser_c::openFile
 	str debugFileName;
 	str lastToken;
+
+	static bool isCharInCharset(const char *set, char c) {
+		if(set == 0)
+			return false;
+		while(*set) {
+			if(*set == c)
+				return true;
+			set++;
+		}
+		return false;
+	}
 public:
 	parser_c();
 	~parser_c();
@@ -46,9 +57,9 @@ public:
 	// returns true if eof is reached
 	bool skipToNextToken();
 
-	const char *getToken(str &out);
-	const char *getToken() {
-		return getToken(this->lastToken);
+	const char *getToken(str &out, const char *stopSet = 0);
+	const char *getToken(const char *stopSet = 0) {
+		return getToken(this->lastToken, stopSet);
 	}	
 	const char *getLine(str &out);
 	const char *getLine() {

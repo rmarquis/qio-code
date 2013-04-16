@@ -441,19 +441,19 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// "diffusemap" keyword is a shortcut for a material stage with single image
 					// it was introduced in Doom3
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
-					newDiffuseMapStage->setTexture(p.getToken());
+					newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newDiffuseMapStage);
 				} else if(p.atWord("bumpmap") || p.atWord("normalmap") ) {
 					mtrStage_c *newBumpMapStage = new mtrStage_c;
 					newBumpMapStage->setStageType(ST_BUMPMAP);
-					newBumpMapStage->setTexture(p.getToken());
+					newBumpMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newBumpMapStage);
 				} else if(p.atWord("specularmap")) {
 					p.skipLine();	
 				} else if(p.atWord("heightmap")) {
 					mtrStage_c *newHeightMapStage = new mtrStage_c;
 					newHeightMapStage->setStageType(ST_HEIGHTMAP);
-					newHeightMapStage->setTexture(p.getToken());
+					newHeightMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newHeightMapStage);
 				} else if(p.atWord("lightFalloffImage")) {
 					p.skipLine();			

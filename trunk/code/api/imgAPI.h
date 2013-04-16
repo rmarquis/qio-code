@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __IMGAPI_H__
 
 #include "iFaceBase.h"
+#include <shared/typedefs.h>
 
 #define IMG_API_IDENTSTR "ImagesAPI0001"
 

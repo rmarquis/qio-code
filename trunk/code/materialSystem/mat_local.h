@@ -62,4 +62,7 @@ void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();
 
+// mat_texturesScript.cpp
+class textureAPI_i *MAT_ParseImageScript(class parser_c &p);
+
 #endif // __MAT_LOCAL_H__

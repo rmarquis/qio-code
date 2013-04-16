@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/loadingScreenMgrAPI.h>
 #include <api/cmAPI.h>
 #include <math/vec3.h>
+#include <shared/autoCvar.h>
 #include "g_local.h"
 
 class physWorldStub_c : public physWorldAPI_i {
@@ -75,6 +76,8 @@ class physWorldAPI_i *g_physWorld = &g_physWorldStub;
 class physDLLAPI_i *physAPI = 0;
 static class moduleAPI_i *g_physDLL = 0;
 
+static aCvar_c g_runPhysics("g_runPhysics","1");
+
 void G_InitPhysicsEngine() {
 	g_physDLL = g_moduleMgr->load("gphysics");
 	if(g_physDLL == 0) {
@@ -103,6 +106,7 @@ void G_ShutdownPhysicsEngine() {
 	}
 }
 void G_RunPhysics() {
-	//return;
+	if(g_runPhysics.getInt() == 0)
+		return;
 	g_physWorld->runFrame(level.frameTime);
 }

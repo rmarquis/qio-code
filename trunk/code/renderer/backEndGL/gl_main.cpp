@@ -74,6 +74,9 @@ static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
 // use relief mapping raycast function to handle heightMaps
 // (if disabled, a simple bad-looking trick is used instead)
 static aCvar_c rb_useReliefMapping("rb_useReliefMapping","1");
+static aCvar_c rb_showBumpMaps("rb_showBumpMaps","0");
+static aCvar_c rb_showHeightMaps("rb_showHeightMaps","0");
+
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1072,6 +1075,19 @@ public:
 					heightMap = 0;
 				} else {
 					heightMap = s->getHeightMap();
+				}	
+				if(rb_showBumpMaps.getInt()) {
+					if(bumpMap) {
+						s = bumpMap;
+						bumpMap = 0;
+					}
+					heightMap = 0;
+				} else if(rb_showHeightMaps.getInt()) {
+					if(heightMap) {
+						s = heightMap;
+						heightMap = 0;
+					}
+					bumpMap = 0;
 				}
 
 				// set the alphafunc

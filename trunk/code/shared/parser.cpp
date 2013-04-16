@@ -101,7 +101,7 @@ bool parser_c::skipToNextToken() {
 	return false;
 }
 
-const char *parser_c::getToken(str &out) {
+const char *parser_c::getToken(str &out, const char *stopSet) {
 	if(skipToNextToken()) {
 		printf("parser_c::getToken: EOF reached\n");
 		out.clear();
@@ -124,7 +124,7 @@ const char *parser_c::getToken(str &out) {
 		}
 	} else {
 		start = p;
-		while((G_isWS(*p) == false) && (*p != 0)) {
+		while((G_isWS(*p) == false) && (*p != 0) && isCharInCharset(stopSet,*p)==false) {
 			p++;
 		}
 		end = p;
