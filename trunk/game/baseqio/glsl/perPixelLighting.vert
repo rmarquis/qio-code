@@ -35,13 +35,31 @@ varying vec4 shadowCoord3;
 varying vec4 shadowCoord4;
 varying vec4 shadowCoord5;
 #endif // SHADOW_MAPPING_POINT_LIGHT
-#ifdef HAS_BUMP_MAP
+#if defined(HAS_BUMP_MAP) || defined(HAS_HEIGHT_MAP)
 attribute vec3 atrTangents;
 attribute vec3 atrBinormals;
 varying mat3 tbnMat;
 #endif
+#ifdef HAS_BUMP_MAP
+uniform sampler2D bumpMap;
+#endif
+#ifdef HAS_HEIGHT_MAP
+uniform sampler2D heightMap;
+varying vec3 v_tbnEyeDir;
+uniform vec3 u_viewOrigin;
+#endif
 
-void main() {
+void main() {	
+#ifdef HAS_HEIGHT_MAP
+    // calculate the direction of the viewOrigin from the vertex;
+    vec3 dirEye = u_viewOrigin  - gl_Vertex;
+        
+    // transform eyeDirection into tangent space
+    v_tbnEyeDir.x = dot(atrTangents , dirEye);
+    v_tbnEyeDir.y = dot(atrBinormals , dirEye);
+    v_tbnEyeDir.z = dot(gl_Normal.xyz , dirEye);
+#endif
+    
 #ifdef SHADOW_MAPPING_POINT_LIGHT
 	// this is the only shadow part in the Vertex Shader
 	shadowCoord0 = gl_TextureMatrix[1] * gl_Vertex;
@@ -55,7 +73,7 @@ void main() {
 	// this is needed here for GL_CLIP_PLANE0 to work.
 	// clipping planes are used by mirrors
 	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
-#ifdef HAS_BUMP_MAP
+#if defined(HAS_BUMP_MAP) || defined(HAS_HEIGHT_MAP)
 	tbnMat = mat3(atrTangents,atrBinormals,gl_Normal);
 #endif
 	

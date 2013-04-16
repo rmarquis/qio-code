@@ -386,6 +386,12 @@ void r_surface_c::recalcNormals() {
 void R_CalcTBN(const vec3_c &v0, const vec3_c &v1, const vec3_c &v2,
 	const vec2_c &st0, const vec2_c &st1, const vec2_c &st2,
 	vec3_c &outNorm, vec3_c &outTan, vec3_c &outBin) {
+
+	vec3_c edge0 = v2 - v0;
+	vec3_c edge1 = v1 - v0;
+	outNorm.crossProduct(edge0,edge1);
+	outNorm.normalize();
+
 	vec3_c e0(v1[0] - v0[0], st1[0] - st0[0], st1[1] - st0[1]);
 	vec3_c e1(v2[0] - v0[0], st2[0] - st0[0], st2[1] - st0[1]);
 
@@ -427,8 +433,8 @@ void R_CalcTBN(const vec3_c &v0, const vec3_c &v1, const vec3_c &v2,
 	// binormal...
 	binormal.normalize();
 	
-	// normal...
-	// compute the cross product TxB
+	//// normal...
+	//// compute the cross product TxB
 	normal.crossProduct(tangent, binormal);
 	//normal.crossProduct(tangent, binormal);
 
@@ -442,7 +448,7 @@ void R_CalcTBN(const vec3_c &v0, const vec3_c &v1, const vec3_c &v2,
 
 	outTan = tangent;
 	outBin = binormal;
-	outNorm = normal;
+//	outNorm = normal;
 }
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
@@ -454,14 +460,8 @@ void r_surface_c::recalcTBN() {
 		rVert_c &v0 = verts[i0];
 		rVert_c &v1 = verts[i1];
 		rVert_c &v2 = verts[i2];
-		vec3_c skip, newTan, newBin;
-		R_CalcTBN(v0.xyz,v1.xyz,v2.xyz,v0.tc,v1.tc,v2.tc,skip,newTan,newBin);
-		vec3_c e0 = v2.xyz - v0.xyz;
-		vec3_c e1 = v1.xyz - v0.xyz;
-		vec3_c newNorm;
-		newNorm.crossProduct(e0,e1);
-		newNorm.normalize();
-
+		vec3_c newNorm, newTan, newBin;
+		R_CalcTBN(v0.xyz,v1.xyz,v2.xyz,v0.tc,v1.tc,v2.tc,newNorm,newTan,newBin);
 		v0.normal += newNorm;
 		v0.tan += newTan;
 		v0.bin += newBin;

@@ -327,7 +327,8 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			// that have normals precompued and stored on disk
 			if(ret->staticModel->getTotalTriangleCount() < 10000) {
 				// don't do this for experimental terrain models on test_heightmap....
-				ret->staticModel->recalcModelNormals();
+				//ret->staticModel->recalcModelNormals();
+				ret->staticModel->recalcModelTBNs();
 				ret->staticModel->precalculateStencilShadowCaster();
 			}
 			ret->staticModel->createVBOsAndIBOs();

@@ -71,7 +71,9 @@ static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
 static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
 static aCvar_c rb_ignoreBumpMaps("rb_ignoreBumpMaps","0");
 static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
-
+// use relief mapping raycast function to handle heightMaps
+// (if disabled, a simple bad-looking trick is used instead)
+static aCvar_c rb_useReliefMapping("rb_useReliefMapping","1");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1287,6 +1289,11 @@ public:
 					if(bumpMap) {
 						pf.hasBumpMap = true;
 					}
+					if(heightMap) {
+						pf.hasHeightMap = true;
+					}
+					pf.useReliefMapping = rb_useReliefMapping.getInt();
+
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);
 				} else if(lastMat->isPortalMaterial() == false &&
@@ -1310,6 +1317,7 @@ public:
 					if(heightMap) {
 						glslShaderDesc.hasHeightMap = true;
 					}
+					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 
 					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);
 					if(selectedShader) {
@@ -1362,6 +1370,7 @@ public:
 	void startDrawingShadowVolumes() {
 		if(bDrawingShadowVolumes == true)
 			return;
+		bindShader(0);
 		disableAllTextures();
 		disableNormalArray();
 		disableTexCoordArrayForTexSlot(1);

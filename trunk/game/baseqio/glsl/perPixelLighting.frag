@@ -31,11 +31,59 @@ uniform float u_lightRadius;
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
 
-#ifdef HAS_BUMP_MAP
+#if defined(HAS_BUMP_MAP) || defined(HAS_HEIGHT_MAP)
 attribute vec3 atrTangents;
 attribute vec3 atrBinormals;
 varying mat3 tbnMat;
+#endif
+#ifdef HAS_BUMP_MAP
 uniform sampler2D bumpMap;
+#endif
+#ifdef HAS_HEIGHT_MAP
+uniform sampler2D heightMap;
+varying vec3 v_tbnEyeDir;
+#endif
+#if defined(HAS_HEIGHT_MAP) && defined(USE_RELIEF_MAPPING)
+#define RELIEF_STEP_COUNT 10
+#define RELIEF_SUBSTEP_COUNT 5
+#define RELIEF_STEP_DELTA 0.05
+vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
+{
+    const int numsteps = RELIEF_STEP_COUNT;
+    const int substeps = RELIEF_SUBSTEP_COUNT;   
+ 
+    float height = 1.0;
+    float step = 1.0/float(numsteps);
+    int currStep;
+    vec4 tHeight= texture2D(heightMap,tc);
+    vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA/ (ray.z);
+    
+    for(int i=1; i<=numsteps;i++)
+    {      
+        if(tHeight.x <= height)     
+        {
+            height = 1.0 - step*(i);
+            currStep=i;
+            tHeight= texture2D(heightMap,tc-delta*height);
+        }
+    }
+
+    currStep-=1;
+    height +=step; 
+
+    for(int i=0; i<substeps;i++)
+    {     
+        step*=0.5;        
+        height-=step; 
+        tHeight= texture2D(heightMap,tc-delta*height); 
+    
+        if(tHeight.x >= height)
+        {   
+            height+=step;              
+        }
+    }
+    return tc-delta*height;    
+}
 #endif
 
 #ifdef SHADOW_MAPPING_POINT_LIGHT
@@ -112,6 +160,21 @@ void main() {
 	gl_FragColor.rgb = v_vertNormal;
 	return;
 #endif
+	// calculate texcoord
+#ifdef HAS_HEIGHT_MAP
+    vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
+#ifdef USE_RELIEF_MAPPING
+	// relief mapping
+	vec2 texCoord = ReliefMappingRayCast(gl_TexCoord[0].xy,eyeDirNormalized);
+#else
+	// simple height mapping
+    vec4 offset = texture2D(heightMap, gl_TexCoord[0].xy);
+	offset = offset * 0.05 - 0.02;
+	vec2 texCoord = offset.xy * eyeDirNormalized.xy +  gl_TexCoord[0].xy;   
+#endif
+#else
+	vec2 texCoord = gl_TexCoord[0].st;
+#endif 
 	// calculate light direction and distance to current pixel
 	vec3 lightToVert = u_lightOrigin - v_vertXYZ;
 	float distance = length(lightToVert);
@@ -122,7 +185,7 @@ void main() {
     vec3 lightDirection = normalize(lightToVert);
     
 #ifdef HAS_BUMP_MAP
-	vec3 bumpMapNormal = texture2D (bumpMap, gl_TexCoord[0].st);
+	vec3 bumpMapNormal = texture2D (bumpMap, texCoord);
 	bumpMapNormal = (bumpMapNormal - 0.5) * 2.0;
 	v_vertNormal = tbnMat * bumpMapNormal;
 #endif    
@@ -140,5 +203,5 @@ void main() {
 	float shadow = 1.f;
 #endif
 	// calculate the final color
-	gl_FragColor = texture2D (colorMap, gl_TexCoord[0].st) * angleFactor * distanceFactor * shadow;
+	gl_FragColor = texture2D (colorMap, texCoord) * angleFactor * distanceFactor * shadow;
 }

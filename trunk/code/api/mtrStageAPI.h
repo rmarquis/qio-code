@@ -33,6 +33,7 @@ public:
 	virtual enum alphaFunc_e getAlphaFunc() const = 0;
 	virtual const struct blendDef_s &getBlendDef() const = 0;
 	virtual class mtrStageAPI_i *getBumpMap() const = 0;
+	virtual class mtrStageAPI_i *getHeightMap() const = 0;
 	virtual bool hasTexMods() const = 0;
 	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
 	virtual bool hasTexGen() const = 0;

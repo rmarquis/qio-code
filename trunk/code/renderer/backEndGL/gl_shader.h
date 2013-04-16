@@ -37,6 +37,7 @@ struct glslPermutationFlags_s {
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 	bool hasBumpMap; // #define HAS_BUMP_MAP
 	bool hasHeightMap; // #define HAS_HEIGHT_MAP
+	int useReliefMapping; // #define USE_RELIEF_MAPPING
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));

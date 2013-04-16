@@ -41,7 +41,7 @@ void main() {
 #ifdef HAS_HEIGHT_MAP
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
     vec4 offset = texture2D(heightMap, gl_TexCoord[0].xy);
-	offset = offset * 0.1 - 0.02;
+	offset = offset * 0.05 - 0.02;
 	vec2 texCoord = offset.xy * eyeDirNormalized.xy +  gl_TexCoord[0].xy;   
 #else
 	vec2 texCoord = gl_TexCoord[0].st;

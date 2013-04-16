@@ -87,6 +87,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasHeightMap) {
 		out.append("#define HAS_HEIGHT_MAP\n");
 	}
+	if(p.useReliefMapping) {
+		out.append("#define USE_RELIEF_MAPPING\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
