@@ -154,6 +154,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	}
 	if(p.useReliefMapping) {
 		out.append("#define USE_RELIEF_MAPPING\n");
+	}	
+	if(p.hasDeluxeMap) {
+		out.append("#define HAS_DELUXEMAP\n");
 	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
@@ -243,6 +246,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->sLightMap = glGetUniformLocation(shader,"lightMap");
 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
 	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
+	ret->sDeluxeMap = glGetUniformLocation(shader,"deluxeMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");

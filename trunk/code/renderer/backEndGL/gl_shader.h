@@ -38,6 +38,7 @@ struct glslPermutationFlags_s {
 	bool hasBumpMap; // #define HAS_BUMP_MAP
 	bool hasHeightMap; // #define HAS_HEIGHT_MAP
 	int useReliefMapping; // #define USE_RELIEF_MAPPING
+	bool hasDeluxeMap; // #define HAS_DELUXEMAP
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -59,6 +60,7 @@ friend class rbSDLOpenGL_c;
 	int sLightMap; // Quake3 bsp lightmap
 	int sBumpMap; // Doom3-style bumpmap (normalmap)
 	int sHeightMap; // heightmap (not used directly in Doom3)
+	int sDeluxeMap; // deluxemap (lightmap with light directions - not colors)
 
 	// shadow mapping
 	int u_shadowMap[6];

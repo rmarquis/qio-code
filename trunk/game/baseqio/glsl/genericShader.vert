@@ -31,12 +31,18 @@ uniform vec3 u_viewOrigin;
 varying vec4 v_color4;
 #endif // HAS_VERTEXCOLORS
 
-#ifdef HAS_HEIGHT_MAP
+#if (defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)) || defined(HAS_HEIGHT_MAP)
 attribute vec3 atrTangents;
 attribute vec3 atrBinormals;
+#endif
+#ifdef HAS_HEIGHT_MAP
 varying vec3 v_tbnEyeDir;
 #endif
 
+#if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)
+varying mat3 tbnMat;
+#endif    
+    
 void main() {
 	gl_Position = ftransform();
 	
@@ -49,7 +55,10 @@ void main() {
     v_tbnEyeDir.y = dot(atrBinormals , dirEye);
     v_tbnEyeDir.z = dot(gl_Normal.xyz , dirEye);
 #endif
-    
+
+#if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)
+	tbnMat = mat3(atrTangents,atrBinormals,gl_Normal);
+#endif    
     
 #ifdef HAS_TEXGEN_ENVIROMENT
 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;

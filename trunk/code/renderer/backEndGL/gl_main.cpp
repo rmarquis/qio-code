@@ -71,6 +71,7 @@ static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
 static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
 static aCvar_c rb_ignoreBumpMaps("rb_ignoreBumpMaps","0");
 static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
+static aCvar_c rb_ignoreDeluxeMaps("rb_ignoreDeluxeMaps","0");
 // use relief mapping raycast function to handle heightMaps
 // (if disabled, a simple bad-looking trick is used instead)
 static aCvar_c rb_useReliefMapping("rb_useReliefMapping","1");
@@ -902,6 +903,9 @@ public:
 			if(newShader->sHeightMap != -1) {
 				glUniform1i(newShader->sHeightMap,3);
 			}
+			if(newShader->sDeluxeMap != -1) {
+				glUniform1i(newShader->sDeluxeMap,4);
+			}
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
 					const vec3_c &xyz = curLight->getOrigin();
@@ -1082,6 +1086,13 @@ public:
 				} else {
 					heightMap = s->getHeightMap();
 				}	
+				// get the deluxeMap
+				const textureAPI_i *deluxeMap;
+				if(rb_ignoreDeluxeMaps.getInt()) {
+					deluxeMap = 0;
+				} else {
+					deluxeMap = lastDeluxemap;
+				}
 				if(rb_showBumpMaps.getInt()) {
 					if(bumpMap) {
 						s = bumpMap;
@@ -1171,7 +1182,7 @@ drawOnlyLightmap:
 					bindTex(0,t->getInternalHandleU32());
 					unbindTex(1);
 				}
-				if(bumpMap && curLight) {
+				if(bumpMap/* && curLight*/) {
 					textureAPI_i *bumpMapTexture = bumpMap->getTexture(this->timeNowSeconds);
 					bindTex(2,bumpMapTexture->getInternalHandleU32());
 				} else {
@@ -1182,6 +1193,11 @@ drawOnlyLightmap:
 					bindTex(3,heightMapTexture->getInternalHandleU32());
 				} else {
 					unbindTex(3);
+				}
+				if(deluxeMap) {
+					bindTex(4,deluxeMap->getInternalHandleU32());
+				} else {
+					unbindTex(4);
 				}
 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
@@ -1337,6 +1353,8 @@ drawOnlyLightmap:
 					(modifiedVertexArrayOnCPU == false && (s->hasTexGen() && this->gpuTexGensSupported()))
 					||
 					(heightMap != 0)
+					||
+					((bumpMap != 0) && (lastDeluxemap != 0))
 					)
 					) {
 					glslPermutationFlags_s glslShaderDesc;
@@ -1351,6 +1369,12 @@ drawOnlyLightmap:
 					}
 					if(heightMap) {
 						glslShaderDesc.hasHeightMap = true;
+					}
+					if(bumpMap) {
+						glslShaderDesc.hasBumpMap = true;
+					}
+					if(deluxeMap) {
+						glslShaderDesc.hasDeluxeMap = true;
 					}
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 

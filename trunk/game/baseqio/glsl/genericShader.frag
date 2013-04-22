@@ -35,10 +35,22 @@ varying vec3 v_tbnEyeDir;
 #if defined(HAS_HEIGHT_MAP) && defined(USE_RELIEF_MAPPING)
 #include "reliefMappingRaycast.inc"
 #endif
+#ifdef HAS_DELUXEMAP
+uniform sampler2D deluxeMap;
+#endif
+#ifdef HAS_BUMP_MAP
+uniform sampler2D bumpMap;
+#endif
 
 #ifdef HAS_VERTEXCOLORS
 varying vec4 v_color4;
 #endif // HAS_VERTEXCOLORS
+
+#if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)
+attribute vec3 atrTangents;
+attribute vec3 atrBinormals;
+varying mat3 tbnMat;
+#endif
 
 void main() {
 #ifdef HAS_HEIGHT_MAP
@@ -56,6 +68,28 @@ void main() {
 #else
 	vec2 texCoord = gl_TexCoord[0].st;
 #endif 
+
+#if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
+	// decode light direction from deluxeMap
+	vec3 deluxeLightDir = texture2D(deluxeMap, gl_TexCoord[1].xy);
+	deluxeLightDir = (deluxeLightDir - 0.5) * 2.0;
+	// decode bumpmap normal
+	vec3 bumpMapNormal = texture2D (bumpMap, texCoord);
+	bumpMapNormal = (bumpMapNormal - 0.5) * 2.0;
+	vec3 vertNormal = -tbnMat * bumpMapNormal;  
+	
+    // calculate the diffuse value based on light angle	
+    float angleFactor = dot(vertNormal, deluxeLightDir);
+    if(angleFactor < 0) {
+		// light is behind the surface
+		return;
+    }
+	gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st)*angleFactor;
+	//gl_FragColor = texture2D(deluxeMap, gl_TexCoord[1].xy);
+	//gl_FragColor = texture2D (colorMap, gl_TexCoord[0].xy);
+	//gl_FragColor = vec4(1,0,1,1);
+    return;
+#else
     
   // calculate the final color
 #ifdef HAS_LIGHTMAP
@@ -69,6 +103,7 @@ void main() {
   gl_FragColor = texture2D (colorMap, texCoord)*v_color4;
 #else
   gl_FragColor = texture2D (colorMap, texCoord);
+#endif
 #endif
 #endif
 }
