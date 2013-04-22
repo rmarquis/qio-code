@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 
 aCvar_c rf_noLightmaps("rf_noLightmaps","0");
+aCvar_c rf_noDeluxemaps("rf_noDeluxemaps","0");
 aCvar_c rf_noVertexColors("rf_noVertexColors","0");
 aCvar_c rf_ignoreSpecificMaterial("rf_ignoreSpecificMaterial","");
 aCvar_c rf_ignoreSpecificMaterial2("rf_ignoreSpecificMaterial2","");
@@ -49,6 +50,7 @@ public:
 	bool drawOnlyOnDepthBuffer;
 	class mtrAPI_i *material;
 	class textureAPI_i *lightmap; // for bsp surfaces
+	class textureAPI_i *deluxemap; // for bsp surfaces
 	const class rVertexBuffer_c *verts;
 	const class rIndexBuffer_c *indices;
 	enum drawCallSort_e sort;
@@ -78,7 +80,7 @@ void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
 
 void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
-		bool bindVertexColors) {
+		bool bindVertexColors, class textureAPI_i *deluxemap) {
 	// developers can supress manually some materials for debugging purposes
 	if(rf_ignoreSpecificMaterial.strLen() && rf_ignoreSpecificMaterial.getStr()[0] != '0') {
 		if(!stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {
@@ -130,6 +132,11 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	} else {
 		n->lightmap = lightmap;
 	}
+	if(rf_noDeluxemaps.getInt()) {
+		n->deluxemap = 0;
+	} else {
+		n->deluxemap = deluxemap;
+	}
 	n->sort = sort;
 	if(rf_noVertexColors.getInt()) {
 		n->bindVertexColors = false;
@@ -160,6 +167,10 @@ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class 
 	n->indices = indices;
 	n->material = 0;
 	n->lightmap = 0;
+	n->deluxemap = 0;
+	n->cubeMapSide = -1;
+	n->shadowMapW = 0;
+	n->shadowMapH = 0;
 	n->sort = DCS_SPECIAL_SHADOWVOLUME;
 	n->bindVertexColors = false;
 	n->drawOnlyOnDepthBuffer = false;
@@ -310,7 +321,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		rb->setCurrentDrawCallSort(c->sort);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
-		rb->setMaterial(c->material,c->lightmap);
+		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
 		if(c->verts) {
 			// draw surface
 			rb->drawElements(*c->verts,*c->indices);

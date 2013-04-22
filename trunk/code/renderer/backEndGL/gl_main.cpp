@@ -76,6 +76,8 @@ static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
 static aCvar_c rb_useReliefMapping("rb_useReliefMapping","1");
 static aCvar_c rb_showBumpMaps("rb_showBumpMaps","0");
 static aCvar_c rb_showHeightMaps("rb_showHeightMaps","0");
+static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
+static aCvar_c rb_showDeluxeMaps("rb_showDeluxeMaps","0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -161,6 +163,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	//safePtr_c<mtrAPI_i> lastMat;
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
+	textureAPI_i *lastDeluxemap;
 	bool bindVertexColors;
 	bool bHasVertexColors;
 	drawCallSort_e curDrawCallSort;
@@ -209,6 +212,7 @@ public:
 	rbSDLOpenGL_c() {
 		lastMat = 0;
 		lastLightmap = 0;
+		lastDeluxemap = 0;
 		bindVertexColors = 0;
 		curTexSlot = 0;
 		highestTCSlotUsed = 0;
@@ -575,9 +579,10 @@ public:
 			glDisable(GL_STENCIL_TEST);
 		}
 	}
-	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap, class textureAPI_i *deluxemap) {
 		lastMat = mat;
 		lastLightmap = lightmap;
+		lastDeluxemap = deluxemap;
 	}
 	virtual void unbindMaterial() {
 		disableAllTextures();
@@ -588,6 +593,7 @@ public:
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 		lastMat = 0;
 		lastLightmap = 0;
+		lastDeluxemap = 0;
 	}
 	virtual void setColor4f(float r, float g, float b, float a)  {
 		glColor4f(r,g,b,a);
@@ -696,8 +702,8 @@ public:
 		if(boundVBO == verts) {
 			if(boundVBOVertexColors == bindVertexColors) {
 				if(bBoundLightmapCoordsToFirstTextureSlot == bindLightmapCoordsToFirstTextureSlot) {
-					c_frame_vbsReusedByDifferentDrawCall++;
-					return; // already bound
+					//c_frame_vbsReusedByDifferentDrawCall++;
+					//return; // already bound
 				}
 			} else {
 
@@ -1125,7 +1131,19 @@ public:
 					this->setTextureMatrixIdentity(0);
 				}
 				bool bindLightmapCoordinatesToFirstTextureSlot = false;
-				if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+				if(rb_showLightMaps.getInt() && lastLightmap) {
+					goto drawOnlyLightmap;
+				} else if(rb_showDeluxeMaps.getInt() && lastDeluxemap) {
+					// bind lightmap to first texture slot.
+					// draw ONLY DELUXEMAP
+					if(lastDeluxemap) {
+						bindTex(0,lastDeluxemap->getInternalHandleU32());
+					} else {
+						bindTex(0,0);
+					}
+					bindLightmapCoordinatesToFirstTextureSlot = true;
+					unbindTex(1);
+				} else if(stageType == ST_COLORMAP_LIGHTMAPPED) {
 					// draw multitextured surface with
 					// - colormap at slot 0
 					// - lightmap at slot 1
@@ -1137,6 +1155,7 @@ public:
 						bindTex(1,0);
 					}
 				} else if(stageType == ST_LIGHTMAP) {
+drawOnlyLightmap:
 					// bind lightmap to first texture slot.
 					// draw ONLY lightmap
 					if(lastLightmap) {
@@ -1720,6 +1739,7 @@ public:
 		// materials
 		lastMat = 0;
 		lastLightmap = 0;
+		lastDeluxemap = 0;
 		bindVertexColors = 0;
 		boundVBO = 0;
 		boundIBO = 0;
@@ -1775,6 +1795,7 @@ public:
 		AUTOCVAR_UnregisterAutoCvars();
 		lastMat = 0;
 		lastLightmap = 0;
+		lastDeluxemap = 0;
 		if(destroyWindow) {
 			g_sharedSDLAPI->shutdown();
 		}

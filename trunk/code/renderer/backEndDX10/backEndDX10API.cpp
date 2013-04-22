@@ -277,7 +277,7 @@ public:
 	virtual backEndType_e getType() const {
 		return BET_DX10;
 	}
-	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap, class textureAPI_i *deluxemap) {
 		lastMat = mat;
 		lastLightmap = lightmap;
 	}

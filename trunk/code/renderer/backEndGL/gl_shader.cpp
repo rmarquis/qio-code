@@ -46,7 +46,7 @@ bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 	return false;
 }
 
-bool GL_AppendFileTextToString(str &out, const char *fname) {
+bool P_AppendFileTextToString(str &out, const char *fname) {
 	char *fileData;
 	int len = g_vfs->FS_ReadFile(fname,(void**)&fileData);
 	if(fileData == 0) {
@@ -56,6 +56,71 @@ bool GL_AppendFileTextToString(str &out, const char *fname) {
 	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
+const char *P_SkipWhiteSpaces(const char *in) {
+	while(iswspace(*in)) {
+		in++;
+	}
+	return in;
+}
+const char *P_GetToken(str &out, const char *in) {
+	in = P_SkipWhiteSpaces(in);
+	if(*in == '"') {
+		in++;
+		const char *start = in;
+		while(*in != '"') {
+			in++;
+		}
+		out.setFromTo(start,in);
+		in++;
+	} else {
+		const char *start = in;
+		while(iswspace(*in)==false) {
+			in++;
+		}
+		out.setFromTo(start,in);
+	}
+	return in;
+}
+bool P_LoadAndPreprocessFileIncludes(str &out, const char *fname) {
+	str rawFile;
+	if(P_AppendFileTextToString(rawFile,fname)) {
+		return true;
+	}
+	const char *p = rawFile.c_str();
+	const char *start = p;
+	const char *stop = 0;
+	int includeStringLen = strlen("#include");
+	while(*p) {
+		if(!strnicmp(p,"#include",includeStringLen)) {
+			stop = p;
+			p += includeStringLen;
+			// get the name of file that must be included
+			str includedFileName;
+			p = P_GetToken(includedFileName,p);
+			// load incldued file text
+			str includeFileText;
+			if(P_LoadAndPreprocessFileIncludes(includeFileText,includedFileName)) {
+				str fullPath = fname;
+				fullPath.toDir();
+				fullPath.append(includedFileName);
+				if(P_LoadAndPreprocessFileIncludes(includeFileText,fullPath)) {
+					g_core->RedWarning("LoadAndPreprocessFileIncludes: couldn't load file %s\n",includedFileName.c_str());
+				}
+			}
+			out.append(start,stop);
+			// add included file text
+			out.append("\n");
+			out.append(includeFileText);
+			out.append("\n");
+			start = p;
+		}
+		p++;
+	}
+	out.append(start);
+
+	return false;
+}
+
 arraySTD_c<glShader_c*> gl_shaders;
 static glShader_c *GL_FindShader(const char *baseName, const glslPermutationFlags_s &permutations) {
 	for(u32 i = 0; i < gl_shaders.size(); i++) {
@@ -125,14 +190,14 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	str vertexSource;
 	// append system #defines
 	GL_AppendPermutationDefinesToString(vertexSource,*permutations);
-	if(GL_AppendFileTextToString(vertexSource,vertFile)) {
+	if(P_LoadAndPreprocessFileIncludes(vertexSource,vertFile)) {
 		g_core->RedWarning("GL_RegisterShader: cannot open %s for reading\n",vertFile.c_str());
 		return 0;
 	}
 	str fragmentSource;
 	// append system #defines
 	GL_AppendPermutationDefinesToString(fragmentSource,*permutations);
-	if(GL_AppendFileTextToString(fragmentSource,fragFile)) {
+	if(P_LoadAndPreprocessFileIncludes(fragmentSource,fragFile)) {
 		g_core->RedWarning("GL_RegisterShader: cannot open %s for reading\n",fragFile.c_str());
 		return 0;
 	}

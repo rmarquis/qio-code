@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 void RF_AddDrawCall(const class rVertexBuffer_c *verts, const class rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, enum drawCallSort_e sort,
-		bool bindVertexColors);
+		bool bindVertexColors, class textureAPI_i *deluxemap = 0);
 void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices);
 
 void RF_SetForceSpecificMaterialFrame(int newFrameNum);

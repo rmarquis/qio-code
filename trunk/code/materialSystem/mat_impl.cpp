@@ -442,6 +442,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// it was introduced in Doom3
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
 					newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
+					//newDiffuseMapStage->setStageType(ST_COLORMAP);
+					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 					stages.push_back(newDiffuseMapStage);
 				} else if(p.atWord("bumpmap") || p.atWord("normalmap") ) {
 					mtrStage_c *newBumpMapStage = new mtrStage_c;
@@ -701,8 +703,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		}
 		// link bumpmaps to their colormaps
 		mtrStage_c *colorMapStage = this->getFirstStageOfType(ST_COLORMAP);
-		if(colorMapStage == 0) {
-			colorMapStage = this->getFirstStageOfType(ST_NOT_SET);
+		if(colorMapStage==0) {
+			colorMapStage = this->getFirstStageOfType(ST_COLORMAP_LIGHTMAPPED);
 		}
 		if(colorMapStage) {
 			mtrStage_c *bumpMapStage = this->getFirstStageOfType(ST_BUMPMAP);

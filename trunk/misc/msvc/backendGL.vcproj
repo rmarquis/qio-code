@@ -214,6 +214,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\calcTBN.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\calcTBN.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cullType.h"
 				>
 			</File>
@@ -259,6 +267,10 @@
 			</File>
 			<File
 				RelativePath="..\..\game\baseqio\glsl\perPixelLighting.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\reliefMappingRayCast.inc"
 				>
 			</File>
 			<File

@@ -194,7 +194,7 @@ public:
 		//pDev->SetRenderState( D3DRS_CCW_STENCILPASS,  D3DSTENCILOP_DECR );
 	}
 
-	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap) {
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap, class textureAPI_i *deluxemap) {
 		lastMat = mat;
 		lastLightmap = lightmap;
 	}

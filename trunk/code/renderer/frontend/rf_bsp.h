@@ -44,6 +44,7 @@ struct bspTriSurf_s {
 	aabb bounds;
 	class mtrAPI_i *mat;
 	class textureAPI_i *lightmap;
+	class textureAPI_i *deluxemap;
 	// indexes to rBspTree_c::verts array (global vertices), for batching
 	rIndexBuffer_c absIndexes;
 	rIndexBuffer_c localIndexes;
@@ -69,6 +70,7 @@ struct bspSurfBatch_s {
 	// we can only merge surfaces with the same material and lightmap....
 	class mtrAPI_i *mat;
 	class textureAPI_i *lightmap;
+	class textureAPI_i *deluxemap;
 	arraySTD_c<u32> areas;
 	// surfaces to merge
 	arraySTD_c<bspSurf_s*> sfs;
@@ -88,6 +90,7 @@ struct bspSurfBatch_s {
 	void initFromSurface(bspSurf_s *nSF) {
 		mat = nSF->sf->mat;
 		lightmap = nSF->sf->lightmap;
+		deluxemap = nSF->sf->deluxemap;
 		addSurface(nSF);
 	}
 };
@@ -163,6 +166,7 @@ class rBspTree_c {
 
 	rVertexBuffer_c verts;
 	arraySTD_c<textureAPI_i*> lightmaps;
+	arraySTD_c<textureAPI_i*> deluxemaps;
 	arraySTD_c<bspSurf_s> surfs;
 	arraySTD_c<bspSurfBatch_s*> batches;
 	arraySTD_c<bspModel_s> models;
@@ -193,12 +197,14 @@ class rBspTree_c {
 	void getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out);
 
 	void addSurfToBatches(u32 surfNum);
+	void calcTangentVectors();
 	void createBatches();
 	void deleteBatches();
 	void createVBOandIBOs();
 	void createRenderModelsForBSPInlineModels();
 
-	bool loadLightmaps(u32 lumpNum);
+	bool loadLightmaps(u32 lumpNum, u32 lightmapSize = 128);
+	bool loadExternalLightmaps(const char *path);
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadPlanesQ2(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);

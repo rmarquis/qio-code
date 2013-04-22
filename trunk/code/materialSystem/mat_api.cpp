@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
 #include <shared/waveForm.h>
+#include <shared/textureWrapMode.h>
 
 class msIMPL_c : public materialSystemAPI_i {
 public:
@@ -58,6 +59,9 @@ public:
 	}
 	virtual bool isMaterialOrImagePresent(const char *matName) {
 		return MAT_IsMaterialOrImagePresent(matName);
+	}
+	virtual class textureAPI_i *loadTexture(const char *fname) {
+		return MAT_RegisterTexture(fname,TWM_REPEAT);
 	}
 	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h, bool rgba) {
 		return MAT_CreateLightmap(data,w,h,rgba);

@@ -479,6 +479,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\calcTBN.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\calcTBN.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cmTriSoupOctTree.cpp"
 				>
 			</File>

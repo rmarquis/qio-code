@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include <api/cmAPI.h>
+#include <api/coreAPI.h>
 #include <math/vec3.h>
 #include <shared/autoCvar.h>
 #include "g_local.h"
@@ -81,7 +82,7 @@ static aCvar_c g_runPhysics("g_runPhysics","1");
 void G_InitPhysicsEngine() {
 	g_physDLL = g_moduleMgr->load("gphysics");
 	if(g_physDLL == 0) {
-
+		g_core->RedWarning("G_InitPhysicsEngine: physics module not avaible\n");
 	} else {
 		g_iFaceMan->registerIFaceUser(&physAPI,GPHYSICS_API_IDENTSTR);	
 		g_physWorld = physAPI->allocWorld("mainPhysicsWorld");

@@ -111,11 +111,11 @@ VS_OUTPUT VS_GeneringShader(VS_INPUT IN)
 float4 PS_GeneringShader(VS_OUTPUT IN) : COLOR
 {
     // mirrors-only clip plane
-    if(bHasClipPlane) {
+    /*if(bHasClipPlane) {
 		float distToClipPlane = dot(IN.positionRAW,clipPlaneNormal) + clipPlaneDist;
 		// clip will discard current pixel if distToClipPlane < 0
 		clip(distToClipPlane);
-    }
+    }*/
     
 	float4 ret;
 #ifdef ONLY_LIGHTMAP

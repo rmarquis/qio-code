@@ -199,6 +199,10 @@
 				RelativePath="..\..\code\materialSystem\mat_textures.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_texturesScript.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

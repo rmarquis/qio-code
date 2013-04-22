@@ -32,6 +32,9 @@ uniform sampler2D lightMap;
 uniform sampler2D heightMap;
 varying vec3 v_tbnEyeDir;
 #endif
+#if defined(HAS_HEIGHT_MAP) && defined(USE_RELIEF_MAPPING)
+#include "reliefMappingRaycast.inc"
+#endif
 
 #ifdef HAS_VERTEXCOLORS
 varying vec4 v_color4;
@@ -39,10 +42,17 @@ varying vec4 v_color4;
 
 void main() {
 #ifdef HAS_HEIGHT_MAP
+#ifdef HAS_HEIGHT_MAP
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
+#ifdef USE_RELIEF_MAPPING
+	// relief mapping
+	vec2 texCoord = ReliefMappingRayCast(gl_TexCoord[0].xy,eyeDirNormalized);
+#else
+	// simple height mapping
     vec4 offset = texture2D(heightMap, gl_TexCoord[0].xy);
 	offset = offset * 0.05 - 0.02;
 	vec2 texCoord = offset.xy * eyeDirNormalized.xy +  gl_TexCoord[0].xy;   
+#endif
 #else
 	vec2 texCoord = gl_TexCoord[0].st;
 #endif 

@@ -206,6 +206,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\calcTBN.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\calcTBN.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\matrix.cpp"
 				>
 			</File>
@@ -233,6 +241,10 @@
 		<Filter
 			Name="shaders"
 			>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx9\blackFill.fx"
+				>
+			</File>
 			<File
 				RelativePath="..\..\game\baseqio\hlsl\dx9\genericShader.fx"
 				>

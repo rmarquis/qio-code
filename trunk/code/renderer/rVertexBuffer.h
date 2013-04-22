@@ -200,6 +200,7 @@ public:
 			v->bin.clear();
 		}
 	}
+	void calcTBNForIndices(const class rIndexBuffer_c &indices);
 	inline void normalizeTBN() {
 		rVert_c *v = this->getArray();
 		for(u32 i = 0; i < numVerts; i++, v++) {

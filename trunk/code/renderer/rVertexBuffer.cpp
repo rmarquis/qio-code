@@ -174,3 +174,27 @@ void rVertexBuffer_c::getReferencedPoints(rVertexBuffer_c &out, const class rInd
 		}
 	}
 }
+#include <shared/calcTBN.h>
+void rVertexBuffer_c::calcTBNForIndices(const class rIndexBuffer_c &indices) {
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		u32 i0 = indices[i+0];
+		u32 i1 = indices[i+1];
+		u32 i2 = indices[i+2];
+		rVert_c &v0 = this->data[i0];
+		rVert_c &v1 = this->data[i1];
+		rVert_c &v2 = this->data[i2];
+		vec3_c newNorm, newTan, newBin;
+		R_CalcTBN(v0.xyz,v1.xyz,v2.xyz,v0.tc,v1.tc,v2.tc,newNorm,newTan,newBin);
+		v0.normal += newNorm;
+		v0.tan += newTan;
+		v0.bin += newBin;
+		v1.normal += newNorm;
+		v1.tan += newTan;
+		v1.bin += newBin;
+		v2.normal += newNorm;
+		v2.tan += newTan;
+		v2.bin += newBin;
+	}
+}
+
+

@@ -130,6 +130,11 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 		if(b->lightmap != sf->lightmap) {
 			continue;
 		}
+		// NOTE: we don't really have to check it because surfaces
+		// with the same lightmap always should have the same deluxemap...
+		if(b->deluxemap != sf->deluxemap) {
+			continue;
+		}
 		if(bMergeMutlipleAreaSurfaces == false) {
 			if(b->areas != areas) {
 				continue;
@@ -166,6 +171,16 @@ void rBspTree_c::deleteBatches() {
 	}
 	batches.clear();
 }
+void rBspTree_c::calcTangentVectors() {
+	this->verts.nullTBN();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		bspSurf_s &sf = surfs[i];
+		if(sf.sf) {
+			this->verts.calcTBNForIndices(sf.sf->absIndexes);
+		}
+	}
+	this->verts.normalizeTBN();
+}
 void rBspTree_c::createVBOandIBOs() {
 	verts.uploadToGPU();
 	for(u32 i = 0; i < batches.size(); i++) {
@@ -180,20 +195,50 @@ void rBspTree_c::createRenderModelsForBSPInlineModels() {
 		m->setBounds(models[i].bb);
 	}
 }
-bool rBspTree_c::loadLightmaps(u32 lumpNum) {
+bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
+	// NOTE: default lightmap size is 128
 	const lump_s &l = h->getLumps()[lumpNum];
-	if(l.fileLen % (128*128*3)) {
+	if(l.fileLen % (lightmapSize*lightmapSize*3)) {
 		g_core->Print(S_COLOR_RED "rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
 		return true; // error
 	}
-	u32 numLightmaps = l.fileLen / (128*128*3);
+	u32 numLightmaps = l.fileLen / (lightmapSize*lightmapSize*3);
 	lightmaps.resize(numLightmaps);
 	const byte *p = h->getLumpData(lumpNum);
 	for(u32 i = 0; i < numLightmaps; i++) {
-		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(p,128,128);
-		p += (128*128*3);
+		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(p,lightmapSize,lightmapSize);
+		p += (lightmapSize*lightmapSize*3);
 	}
 	return false; // OK
+}
+bool rBspTree_c::loadExternalLightmaps(const char *path) {
+	str fixedPath = path;
+	fixedPath.stripExtension();
+	fixedPath.appendChar('/');
+	str lightmapPath = fixedPath;
+	lightmapPath.append("lightmap0.png");
+	if(g_vfs->FS_FileExists(lightmapPath) == false)
+		return true; // error
+	u32 counter = 0;
+	while(1) {
+		lightmapPath = fixedPath;
+		lightmapPath.append(va("lightmap%i.png",counter));
+		if(g_vfs->FS_FileExists(lightmapPath)==false)
+			break;
+		textureAPI_i *lm = g_ms->loadTexture(lightmapPath);
+		if(lm == 0)
+			break;
+		lightmaps.push_back(lm);
+
+		str deluxemapPath = fixedPath;
+		deluxemapPath.append(va("deluxemap%i.png",counter));
+		if(g_vfs->FS_FileExists(deluxemapPath)) {
+			textureAPI_i *dm = g_ms->loadTexture(deluxemapPath);
+			if(dm)
+				deluxemaps.push_back(dm);
+		}
+		counter++;
+	}
 }
 bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	const lump_s &pll = h->getLumps()[lumpPlanes];
@@ -499,13 +544,20 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		const q3BSPMaterial_s *bspMaterial = (const q3BSPMaterial_s *)(materials + sizeofMat * sf->materialNum);
 		mtrAPI_i *mat = g_ms->registerMaterial(bspMaterial->shader);
 		textureAPI_i *lightmap;
+		textureAPI_i *deluxemap;
 		if(sf->lightmapNum < 0) {
 			lightmap = 0;
+			deluxemap = 0;
 		} else {
 			if(sf->lightmapNum >= lightmaps.size()) {
 				lightmap = 0;
 			} else {
 				lightmap = lightmaps[sf->lightmapNum];
+			}
+			if(sf->lightmapNum >= deluxemaps.size()) {
+				deluxemap = 0;
+			} else {
+				deluxemap = deluxemaps[sf->lightmapNum];
 			}
 		}
 		if(mat->getSkyParms()) {
@@ -517,6 +569,7 @@ parsePlanarSurf:;
 			bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 			ts->mat = mat;
 			ts->lightmap = lightmap;
+			ts->deluxemap = deluxemap;
 			ts->firstVert = sf->firstVert;
 			ts->numVerts = sf->numVerts;
 			if(sf->numVerts > 2) {
@@ -1019,6 +1072,7 @@ bool rBspTree_c::loadSurfsSE() {
 			matName.defaultExtension("vmt");
 		}
 		ts->mat = g_ms->registerMaterial(matName);
+		ts->deluxemap = 0;
 		u32 w = isf->lightmapTextureSizeInLuxels[0] + 1;
 		u32 h = isf->lightmapTextureSizeInLuxels[1] + 1;
 		u32 numSamples = w * h;
@@ -1167,6 +1221,7 @@ bool rBspTree_c::loadSurfsCoD() {
 		bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 		ts->mat = mat;
 		ts->lightmap = lightmap;
+		ts->deluxemap = 0;
 		ts->firstVert = sf->firstVert;
 		ts->numVerts = sf->numVerts;
 		const u16 *firstIndex = indices + sf->firstIndex;
@@ -1336,9 +1391,11 @@ bool rBspTree_c::load(const char *fname) {
 	if(h->ident == BSP_IDENT_IBSP) {
 		if((h->version == BSP_VERSION_Q3 || h->version == BSP_VERSION_ET)) {
 			// Quake3 / ET / RTCW bsp
-			if(loadLightmaps(Q3_LIGHTMAPS)) {
-				g_vfs->FS_FreeFile(fileData);
-				return true; // error
+			if(loadExternalLightmaps(fname)) {
+				if(loadLightmaps(Q3_LIGHTMAPS)) {
+					g_vfs->FS_FreeFile(fileData);
+					return true; // error
+				}
 			}
 			if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
 				g_vfs->FS_FreeFile(fileData);
@@ -1547,6 +1604,7 @@ bool rBspTree_c::load(const char *fname) {
 	h = 0;
 	fileData = 0;
 
+	calcTangentVectors();
 	createBatches();
 	createVBOandIBOs();
 	createRenderModelsForBSPInlineModels();
@@ -1554,10 +1612,10 @@ bool rBspTree_c::load(const char *fname) {
 	return false;
 }
 void rBspTree_c::clear() {
-	for(u32 i = 0; i < lightmaps.size(); i++) {
-		delete lightmaps[i];
-		lightmaps[i] = 0;
-	}
+	//for(u32 i = 0; i < lightmaps.size(); i++) {
+	//	delete lightmaps[i];
+	//	lightmaps[i] = 0;
+	//}
 	if(vis) {
 		free(vis);
 		vis = 0;
@@ -1913,11 +1971,11 @@ void rBspTree_c::addDrawCalls() {
 						g_core->Print("rBspTree_c::addDrawCalls()[%i]: %i verts, %i indices - mat %s, type %i\n",
 							rf_curTimeMsec,stSF->localVerts.size(),stSF->localIndexes.getNumIndices(),b->mat->getName(),subSF->type);
 					}
-					RF_AddDrawCall(&stSF->localVerts,&stSF->localIndexes,b->mat,b->lightmap,b->mat->getSort(),true);
+					RF_AddDrawCall(&stSF->localVerts,&stSF->localIndexes,b->mat,b->lightmap,b->mat->getSort(),true,b->deluxemap);
 				}
 			} else {
 				if(rf_bsp_skipGPUSurfaces.getInt() == 0) {
-					RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true);
+					RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true,b->deluxemap);
 				}
 			}
 		}

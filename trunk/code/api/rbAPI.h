@@ -42,7 +42,7 @@ enum backEndType_e {
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual backEndType_e getType() const = 0;
-	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap = 0) = 0;
+	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap = 0, class textureAPI_i *deluxemap = 0) = 0;
 	virtual void unbindMaterial() = 0;
 	virtual void setColor4(const float *rgba) = 0;
 	virtual void setBindVertexColors(bool bBindVertexColors) = 0;
