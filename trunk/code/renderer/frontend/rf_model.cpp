@@ -325,12 +325,12 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 		} else {
 			// FIXME: dont do this here, it might be not needed for some models
 			// that have normals precompued and stored on disk
-			if(ret->staticModel->getTotalTriangleCount() < 10000) {
+		///	if(ret->staticModel->getTotalTriangleCount() < 10000) {
 				// don't do this for experimental terrain models on test_heightmap....
 				//ret->staticModel->recalcModelNormals();
 				ret->staticModel->recalcModelTBNs();
 				ret->staticModel->precalculateStencilShadowCaster();
-			}
+			//}
 			ret->staticModel->createVBOsAndIBOs();
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model

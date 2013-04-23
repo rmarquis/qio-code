@@ -47,6 +47,13 @@ class rWorldMapLoader_c : public staticModelCreatorAPI_i {
 			}
 		}
 	}
+	virtual void swapIndexes() {
+		for(u32 i = 0; i < entModels.size(); i++) {
+			if(entModels[i]) {
+				entModels[i]->swapIndexes();
+			}
+		}
+	}
 	virtual void translateY(float ofs) {
 		for(u32 i = 0; i < entModels.size(); i++) {
 			if(entModels[i]) {
@@ -141,7 +148,9 @@ public:
 		}
 
 		// upload world data to GPU
-		entModels[0]->createVBOsAndIBOs();
+		if(entModels[0]) {
+			entModels[0]->createVBOsAndIBOs();
+		}
 
 		u32 modelNum = 1;
 		for(u32 i = 1; i < entModels.size(); i++) {

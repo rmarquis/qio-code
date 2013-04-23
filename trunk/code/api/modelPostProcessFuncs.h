@@ -32,6 +32,7 @@ class modelPostProcessFuncs_i {
 public:
 	virtual void scaleXYZ(float scale) = 0;
 	virtual void swapYZ() = 0;
+	virtual void swapIndexes() = 0;
 	virtual void translateY(float ofs) = 0;
 	virtual void multTexCoordsY(float f) = 0;
 	virtual void multTexCoordsXY(float f) = 0;

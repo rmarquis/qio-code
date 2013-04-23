@@ -54,7 +54,6 @@ varying mat3 tbnMat;
 
 void main() {
 #ifdef HAS_HEIGHT_MAP
-#ifdef HAS_HEIGHT_MAP
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
 #ifdef USE_RELIEF_MAPPING
 	// relief mapping
@@ -97,13 +96,13 @@ void main() {
   gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st)*v_color4;
 #else
   gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st);
-#endif
+#endif // HAS_VERTEXCOLORS
 #else
 #ifdef HAS_VERTEXCOLORS
   gl_FragColor = texture2D (colorMap, texCoord)*v_color4;
 #else
   gl_FragColor = texture2D (colorMap, texCoord);
-#endif
-#endif
-#endif
+#endif // HAS_VERTEXCOLORS
+#endif // HAS_LIGHTMAP
+#endif // defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
 }

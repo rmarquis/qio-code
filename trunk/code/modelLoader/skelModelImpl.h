@@ -75,6 +75,14 @@ friend class skelModelIMPL_c;
 			w->ofs.scale(scale);
 		}
 	}
+	void swapIndexes() {
+		u16 *indices16 = indices.getArray();
+		for(u32 i = 0; i < indices.size(); i+=3) {
+			u16 tmp16 = indices16[i];
+			indices16[i] = indices16[i+3];
+			indices16[i+3] = tmp16;
+		}
+	}
 	void setMaterial(const char *newMatName) {
 		matName = newMatName;
 	}
@@ -121,6 +129,7 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	// modelPostProcessFuncs_i impl
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();
+	virtual void swapIndexes();
 	virtual void translateY(float ofs);
 	virtual void multTexCoordsY(float f);
 	virtual void multTexCoordsXY(float f);

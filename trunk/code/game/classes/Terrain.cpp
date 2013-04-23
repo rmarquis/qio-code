@@ -30,6 +30,9 @@ DEFINE_CLASS(Terrain, "ModelEntity");
 
 DEFINE_CLASS_ALIAS(Terrain, func_heightmap);
 
+Terrain::Terrain() {
+	mass = 0.f;
+}
 void Terrain::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"heightmap")) {
 		this->setRenderModel(value);

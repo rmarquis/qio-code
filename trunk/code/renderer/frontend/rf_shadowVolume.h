@@ -83,6 +83,12 @@ public:
 	void addFrontCapAndBackCapForIndexedVertsList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light);
 	void addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light);
 
+	u32 getNumVerts() const {
+		return points.size();
+	}
+	u32 getNumTris() const {
+		return indices.getNumTriangles();
+	}
 	const vec3_c &getLightPos() const {
 		return lightPos;
 	}

@@ -239,6 +239,7 @@ bool rBspTree_c::loadExternalLightmaps(const char *path) {
 		}
 		counter++;
 	}
+	return false;
 }
 bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	const lump_s &pll = h->getLumps()[lumpPlanes];

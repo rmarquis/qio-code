@@ -129,6 +129,12 @@ void skelModelIMPL_c::swapYZ() {
 		//sf->swapYZ();
 	}
 }
+void skelModelIMPL_c::swapIndexes() {
+	skelSurfIMPL_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->swapIndexes();
+	}
+}
 void skelModelIMPL_c::translateY(float ofs) {
 
 }

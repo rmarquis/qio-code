@@ -173,12 +173,13 @@ public:
 
 	bool traceRay(class trace_c &tr);
 
-	void scaleXYZ(float scale);
-	void swapYZ();
-	void translateY(float ofs);
-	void multTexCoordsY(float f);
-	void multTexCoordsXY(float f);
-	void translateXYZ(const vec3_c &ofs);
+	virtual void scaleXYZ(float scale);
+	virtual void swapYZ();
+	virtual void swapIndexes();
+	virtual void translateY(float ofs);
+	virtual void multTexCoordsY(float f);
+	virtual void multTexCoordsXY(float f);
+	virtual void translateXYZ(const vec3_c &ofs);
 	void addPointsToBounds(aabb &out);
 
 	bool parseProcSurface(class parser_c &p);
@@ -252,6 +253,7 @@ public:
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();
+	virtual void swapIndexes();
 	virtual void translateY(float ofs);
 	virtual void multTexCoordsY(float f);
 	virtual void multTexCoordsXY(float f);

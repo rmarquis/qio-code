@@ -38,6 +38,7 @@ static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
 static aCvar_c rf_cullLights("rf_cullLights","1");
 static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
 static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
+static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
@@ -177,6 +178,11 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 					}
 				}
 				in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
+
+				if(rf_printEntityShadowVolumesPrimCounts.getInt()) {
+					g_core->Print("Model %s shadow volume - %i tris, %i verts\n",
+						ent->getModelName(),in.shadowVolume->getNumTris(),in.shadowVolume->getNumVerts());
+				}
 			}
 		}
 	}

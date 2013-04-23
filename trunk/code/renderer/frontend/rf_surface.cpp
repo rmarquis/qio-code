@@ -321,6 +321,9 @@ void r_surface_c::swapYZ() {
 	}
 	bounds.swapYZ();
 }
+void r_surface_c::swapIndexes() {
+	indices.swapIndices();
+}
 void r_surface_c::translateY(float ofs) {
 	rVert_c *v = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -600,6 +603,12 @@ void r_model_c::swapYZ() {
 		sf->swapYZ();
 	}
 	bounds.swapYZ();
+}
+void r_model_c::swapIndexes() {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->swapIndexes();
+	}
 }
 void r_model_c::translateY(float ofs) {
 	r_surface_c *sf = surfs.getArray();

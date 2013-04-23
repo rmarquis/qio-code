@@ -79,6 +79,7 @@ static aCvar_c rb_showBumpMaps("rb_showBumpMaps","0");
 static aCvar_c rb_showHeightMaps("rb_showHeightMaps","0");
 static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
 static aCvar_c rb_showDeluxeMaps("rb_showDeluxeMaps","0");
+static aCvar_c rb_verboseBindShader("rb_verboseBindShader","0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -887,9 +888,15 @@ public:
 	void bindShader(class glShader_c *newShader) {
 		curShader = newShader;
 		if(newShader == 0) {
+			if(rb_verboseBindShader.getInt()) {
+				g_core->Print("Unbinding shader..\n");
+			}
 			glUseProgram(0);
 			disableAllVertexAttribs();
 		} else {
+			if(rb_verboseBindShader.getInt()) {
+				g_core->Print("Vinding shader %s..\n",newShader->getName());
+			}
 			glUseProgram(newShader->getGLHandle());
 			if(newShader->sColorMap != -1) {
 				glUniform1i(newShader->sColorMap,0);
@@ -1358,7 +1365,7 @@ drawOnlyLightmap:
 					)
 					) {
 					glslPermutationFlags_s glslShaderDesc;
-					if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+					if(stageType == ST_COLORMAP_LIGHTMAPPED && lastLightmap) {
 						glslShaderDesc.hasLightmap = true;
 					}
 					if(bindVertexColors) {

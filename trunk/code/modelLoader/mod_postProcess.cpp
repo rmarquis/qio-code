@@ -60,6 +60,8 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 		} else if(p.atWord("setallsurfsmaterial")) {
 			str matName = p.getToken();
 			inout->setAllSurfsMaterial(matName);
+		} else if(p.atWord("swapIndices") || p.atWord("swapTriangles") || p.atWord("swapTris")) {
+			inout->swapIndexes();
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

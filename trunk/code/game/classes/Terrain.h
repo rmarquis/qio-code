@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Terrain : public ModelEntity {
 public:
+	Terrain();
 
 	DECLARE_CLASS( Terrain );
 

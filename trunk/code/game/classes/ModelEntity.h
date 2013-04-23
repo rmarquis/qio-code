@@ -48,6 +48,7 @@ protected:
 	class ragdollAPI_i *ragdoll;
 	class boneOrQPArray_t *initialRagdolPose; // if this is non-zero, spawned ragdoll bodies will use positions/quaternions from here
 	int health;
+	float mass;
 	bool bTakeDamage;
 	bool bUseRModelToCreateDynamicCVXShape;
 	bool bUseDynamicConvexForTrimeshCMod;

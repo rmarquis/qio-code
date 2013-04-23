@@ -11,7 +11,7 @@
 }
 // entity 2
 {
-"classname" "ModelEntity"
+"classname" "func_static"
 "model" "_quadZ32768x32768|scaletexST100|materialtextures\qiotests\simpleground"
 "cmodel" "_quadZ32768x32768"
 "origin" "0 0 5"

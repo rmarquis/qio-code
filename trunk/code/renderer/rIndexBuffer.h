@@ -321,6 +321,30 @@ public:
 		addIndex(i3);
 		addIndex(i2);
 	}
+	void swapIndices() {
+		bool bWasLoadedToGPU = this->handleU32 != 0;
+		if(bWasLoadedToGPU) {
+			unloadFromGPU();
+		}
+		if(type == IBO_U16) {
+			u16 *indices16 = (u16*)data.getArray();
+			for(u32 i = 0; i < numIndices; i+=3) {
+				u16 tmp16 = indices16[i];
+				indices16[i] = indices16[i+2];
+				indices16[i+2] = tmp16;
+			}
+		} else if(type == IBO_U32) {
+			u32 *indices32 = (u32*)data.getArray();
+			for(u32 i = 0; i < numIndices; i+=3) {
+				u32 tmp32 = indices32[i];
+				indices32[i] = indices32[i+2];
+				indices32[i+2] = tmp32;
+			}
+		}
+		if(bWasLoadedToGPU) {
+			uploadToGPU();
+		}
+	}
 	u32 getSingleIndexSize() const {
 		if(type == IBO_U16) {
 			return 2;

@@ -29,6 +29,7 @@ DEFINE_CLASS_ALIAS(FuncStatic, func_static);
 
 // func_static entities are inmovable
 FuncStatic::FuncStatic() {
-	bPhysicsBodyKinematic = true;
+	//bPhysicsBodyKinematic = true;
+	mass = 0.f;
 }
 

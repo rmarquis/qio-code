@@ -60,6 +60,7 @@ ModelEntity::ModelEntity() {
 	bRigidBodyPhysicsEnabled = true;
 	linearVelocity.set(0,0,0);
 	pvsBoundsSkinWidth = 0.f;
+	mass = 10.f;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -359,7 +360,7 @@ void ModelEntity::initRigidBodyPhysics() {
 		return; // rigid body physics was disabled for this entity
 	}
 	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
-		this->cmod,10.f,bUseDynamicConvexForTrimeshCMod));
+		this->cmod,this->mass,bUseDynamicConvexForTrimeshCMod));
 	if(this->body == 0) {
 		g_core->RedWarning("ModelEntity::initRigidBodyPhysics: BT_CreateRigidBodyWithCModel failed for cModel %s\n",this->cmod->getName());
 		return;
