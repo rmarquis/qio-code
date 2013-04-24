@@ -253,7 +253,7 @@ public:
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
 	void addBSPSurfaceDrawCall(u32 sfNum);
-	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume);
+	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 	
 	void doDebugDrawing();
 

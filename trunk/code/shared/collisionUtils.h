@@ -45,4 +45,6 @@ int CU_RayTraceTriangle(const vec3_c &rayStart, const vec3_c &rayEnd,
 //Note:     If no collision occurs, OUT param is not reassigned and is not considered useable
 bool CU_IntersectLineAABB(const vec3_c& s, const vec3_c& e, const class aabb &bb, vec3_c& hitPoint);
 
+bool CU_IntersectSphereTriangle(const vec3_c &center, float radius, const vec3_c &v0, const vec3_c &v1,  const vec3_c &v2);
+
 #endif // __COLLISIONUTILS_H__

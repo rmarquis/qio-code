@@ -87,9 +87,11 @@ rEntityImpl_c::rEntityImpl_c() {
 	myRagdollDef = 0;
 	ragOrs = 0;
 	q3AnimCtrl = 0;
+	absSilChangeCount = 0;
 	//skinMatList = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
+	RFL_RemoveAllReferencesToEntity(this);
 	if(staticDecals) {
 		delete staticDecals;
 		staticDecals = 0;
@@ -130,6 +132,7 @@ void rEntityImpl_c::recalcABSBounds() {
 		const aabb &bb = model->getBounds();
 		matrix.transformAABB(bb,this->absBB);
 	}
+	absSilChangeCount++;
 }
 void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles
@@ -137,10 +140,14 @@ void rEntityImpl_c::recalcMatrix() {
 	recalcABSBounds();
 }
 void rEntityImpl_c::setOrigin(const vec3_c &newXYZ) {
+	if(origin.compare(newXYZ))
+		return;
 	origin = newXYZ;
 	recalcMatrix();
 }
 void rEntityImpl_c::setAngles(const vec3_c &newAngles) { 
+	if(angles.compare(newAngles))
+		return;
 	angles = newAngles;
 	axis.fromAngles(angles);
 	recalcMatrix();
@@ -363,6 +370,7 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 	(*ragOrs)[partIndex] = or;
 }
 void rEntityImpl_c::updateAnimatedEntity() {
+	absSilChangeCount++;
 	// we have an instance of dynamic model.
 	// It might be an instance of skeletal model (.md5mesh, etc)
 	// or an instance of keyframed model (.md3, .mdc, .md2, etc...)
@@ -557,6 +565,10 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 static u32 c_entitiesCulledByABSBounds;
 static u32 c_entitiesCulledByPortals;
 void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
+	if(ent == 0) {
+		g_core->RedWarning("RFE_AddEntity: NULL entity pointer passed\n");
+		return;
+	}
 	model_c *model = (model_c*)ent->getModel();
 	if(model == 0) {
 		return;

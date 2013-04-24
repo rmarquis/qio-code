@@ -71,11 +71,11 @@ public:
 	void addDrawCall();
 
 	// shadow volume creation
-	void createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light);
-	void addIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray = 0);
+	void createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light, float lightRadius);
+	void addIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius);
 	void addIndexedVertexListWithEdges(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray, const struct extraSurfEdgesData_s *edges);
-	void addRSurface(const class r_surface_c *sf, const vec3_c &light, const struct extraSurfEdgesData_s *edges);
-	void fromRModel(const class r_model_c *m, const vec3_c &light);
+	void addRSurface(const class r_surface_c *sf, const vec3_c &light, const struct extraSurfEdgesData_s *edges, float lightRadius);
+	void fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius);
 	void fromPrecalculatedStencilShadowCaster(const class r_stencilShadowCaster_c *ssvCaster, const vec3_c &light);
 	void addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light);
 

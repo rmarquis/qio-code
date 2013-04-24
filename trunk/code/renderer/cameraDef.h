@@ -90,6 +90,9 @@ public:
 	const projDef_s &getProjDef() const {
 		return proj;
 	}
+	float getZFar() const {
+		return proj.getZFar();
+	}
 	const plane_c &getPortalPlane() const {
 		return portalPlane;
 	}

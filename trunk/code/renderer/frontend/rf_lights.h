@@ -54,10 +54,23 @@ struct staticSurfInteraction_s {
 struct entityInteraction_s {
 	class rEntityImpl_c *ent;
 	class rIndexedShadowVolume_c *shadowVolume; // only for stencil shadows
+	u32 lastSilChangeTime;
 
 	entityInteraction_s() {
 		ent = 0;
 		shadowVolume = 0;
+		lastSilChangeTime = 0;
+	}
+	void clear() {
+		ent = 0;
+		if(shadowVolume) {
+			delete shadowVolume;
+			shadowVolume = 0;
+		}
+		lastSilChangeTime = 0;
+	}
+	void zero() {
+		memset(this,0,sizeof(*this));
 	}
 };
 
@@ -118,8 +131,10 @@ public:
 	void clearInteractionsWithDynamicEntities();
 	void recalcShadowVolumeOfStaticInteractions();
 	void recalcLightInteractionsWithStaticWorld();
+	void refreshIntersection(entityInteraction_s &in);
 	void recalcLightInteractionsWithDynamicEntities();
 	void recalcLightInteractions();
+	void removeEntityFromInteractionsList(class rEntityImpl_c *ent);
 
 	float getShadowMapW() const;
 	float getShadowMapH() const;

@@ -154,6 +154,9 @@ struct projDef_s {
 		zFar = 8192.f;
 		zNear = 1.f;
 	}
+	float getZFar() const {
+		return zFar;
+	}
 };
 
 #endif // __RB_API_H__

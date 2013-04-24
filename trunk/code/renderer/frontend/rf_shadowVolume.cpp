@@ -31,15 +31,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 #include <shared/autoCvar.h>
 #include <shared/planeArray.h>
+#include <shared/collisionUtils.h>
 #include <api/coreAPI.h>
+#include <api/rLightAPI.h>
 #include "../rModelAPI.h"
 
 static aCvar_c rf_printShadowVolumesStats("rf_printShadowVolumesStats","0");
 static aCvar_c rf_dontUsePrecomputedSSVCasters("rf_dontUsePrecomputedSSVCasters","0");
 static aCvar_c rf_dontUseExtraEdgeArrays("rf_dontUseExtraEdgeArrays","0");
 static aCvar_c rf_skipAnimatedObjectsShadows("rf_skipAnimatedObjectsShadows","0");
+static aCvar_c rf_ssv_cullTrianglesOutSideLightSpheres("rf_ssv_cullTrianglesOutSideLightSpheres","1");
 
-const float shadowVolumeInf = 4096.f;
+inline float getShadowVolumeInf() {
+//	return 4096.f;
+	return rf_camera.getZFar()*0.5f;
+}
 
 void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	plane_c triPlane;
@@ -49,15 +55,15 @@ void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, con
 		return;
 	vec3_c p0Projected = p0 - light;
 	p0Projected.normalize();
-	p0Projected *= shadowVolumeInf;
+	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
 	p1Projected.normalize();
-	p1Projected *= shadowVolumeInf;
+	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 	vec3_c p2Projected = p2 - light;
 	p2Projected.normalize();
-	p2Projected *= shadowVolumeInf;
+	p2Projected *= getShadowVolumeInf();
 	p2Projected += p2;
 
 	u32 i0 = this->registerPoint(p0);
@@ -80,15 +86,15 @@ void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, con
 void rIndexedShadowVolume_c::addFrontCapAndBackCapForTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	vec3_c p0Projected = p0 - light;
 	p0Projected.normalize();
-	p0Projected *= shadowVolumeInf;
+	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
 	p1Projected.normalize();
-	p1Projected *= shadowVolumeInf;
+	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 	vec3_c p2Projected = p2 - light;
 	p2Projected.normalize();
-	p2Projected *= shadowVolumeInf;
+	p2Projected *= getShadowVolumeInf();
 	p2Projected += p2;
 
 	u32 i0 = this->registerPoint(p0);
@@ -117,11 +123,11 @@ void rIndexedShadowVolume_c::addFrontCapAndBackCapForIndexedVertsList(const rInd
 void rIndexedShadowVolume_c::addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light) {
 	vec3_c p0Projected = p0 - light;
 	p0Projected.normalize();
-	p0Projected *= shadowVolumeInf;
+	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
 	p1Projected.normalize();
-	p1Projected *= shadowVolumeInf;
+	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 
 	u32 i0 = this->registerPoint(p0);
@@ -136,7 +142,7 @@ void rIndexedShadowVolume_c::addEdge(const vec3_c &p0, const vec3_c &p1, const v
 void rIndexedShadowVolume_c::addDrawCall() {
 	RF_AddShadowVolumeDrawCall(&this->points,&this->indices);
 }
-void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light) {
+void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light, float lightRadius) {
 	clear();
 	// save the last light position
 	//this->lightPos = light;
@@ -147,7 +153,7 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 		return;
 	const r_model_c *m = ent->getCurrentRModelInstance();
 	if(m) {
-		fromRModel(m,light);
+		fromRModel(m,light,lightRadius);
 	} else {
 		rModelAPI_i *modAPI = ent->getModel();
 		if(modAPI) {
@@ -163,7 +169,7 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 }
 static aCvar_c rf_ssv_algorithm("rf_ssv_algorithm","1");
 
-void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices, const rVertexBuffer_c &oVerts, const vec3_c &light, const class planeArray_c *extraPlanesArray) {
+void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices, const rVertexBuffer_c &oVerts, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius) {
 #if 1
 	// for a single triangle, in worst case we might need to create:
 	// front cap + end cap + 3 edge quads
@@ -198,6 +204,13 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 		const vec3_c &p1 = oVerts[vi1].xyz;
 		const vec3_c &p2 = oVerts[vi2].xyz;
 
+		// cull triangles that are outside light radius
+		// This is a good optimisation for very large models intersecting very small lights
+		if(rf_ssv_cullTrianglesOutSideLightSpheres.getInt()) {
+			if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
+				continue;
+			}
+		}
 		float d;
 		if(extraPlanesArray == 0) {
 			plane_c triPlane;
@@ -214,7 +227,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			bPointTransformed[vi0] = 1;
 			p0Projected = p0 - light;
 			p0Projected.normalize();
-			p0Projected *= shadowVolumeInf;
+			p0Projected *= getShadowVolumeInf();
 			p0Projected += p0;
 		}
 		vec3_c &p1Projected = pointsTransformed[vi1];
@@ -222,7 +235,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			bPointTransformed[vi1] = 1;
 			p1Projected = p1 - light;
 			p1Projected.normalize();
-			p1Projected *= shadowVolumeInf;
+			p1Projected *= getShadowVolumeInf();
 			p1Projected += p1;
 		}
 		vec3_c &p2Projected = pointsTransformed[vi2];
@@ -230,7 +243,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			bPointTransformed[vi2] = 1;
 			p2Projected = p2 - light;
 			p2Projected.normalize();
-			p2Projected *= shadowVolumeInf;
+			p2Projected *= getShadowVolumeInf();
 			p2Projected += p2;
 		}
 		u32 i0 = this->registerPoint(p0);
@@ -340,7 +353,7 @@ void rIndexedShadowVolume_c::addIndexedVertexListWithEdges(const rIndexBuffer_c 
 		}
 	}	
 }
-void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3_c &light, const struct extraSurfEdgesData_s *edges) {
+void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3_c &light, const struct extraSurfEdgesData_s *edges, float lightRadius) {
 	const rVertexBuffer_c &verts = sf->getVerts();
 	const rIndexBuffer_c &indices = sf->getIndices();
 	const planeArray_c &triPlanes = sf->getTriPlanes();
@@ -350,13 +363,13 @@ void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3
 		if(edges && (rf_dontUseExtraEdgeArrays.getInt() == 0)) {
 			addIndexedVertexListWithEdges(indices,verts,light,&triPlanes,edges);
 		} else {
-			addIndexedVertexList(indices,verts,light,&triPlanes);
+			addIndexedVertexList(indices,verts,light,&triPlanes, lightRadius);
 		}
 	} else {
-		addIndexedVertexList(indices,verts,light,0);
+		addIndexedVertexList(indices,verts,light,0, lightRadius);
 	}
 }
-void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light) {
+void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius) {
 	clear();
 	this->points.setEqualVertexEpsilon(0.f);
 #if 0
@@ -368,7 +381,7 @@ void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &
 	}
 	for(u32 i = 0; i < m->getNumSurfs(); i++) {
 		const r_surface_c *sf = m->getSurf(i);
-		addRSurface(sf,light,sf->getExtraSurfEdgesData());
+		addRSurface(sf,light,sf->getExtraSurfEdgesData(), lightRadius);
 	}
 }
 void rIndexedShadowVolume_c::fromPrecalculatedStencilShadowCaster(const class r_stencilShadowCaster_c *ssvCaster, const vec3_c &light) {

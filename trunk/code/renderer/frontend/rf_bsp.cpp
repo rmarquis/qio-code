@@ -175,7 +175,7 @@ void rBspTree_c::calcTangentVectors() {
 	this->verts.nullTBN();
 	for(u32 i = 0; i < surfs.size(); i++) {
 		bspSurf_s &sf = surfs[i];
-		if(sf.sf) {
+		if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES) {
 			this->verts.calcTBNForIndices(sf.sf->absIndexes);
 		}
 	}
@@ -2026,7 +2026,7 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 	}
 }
 #include "rf_shadowVolume.h"
-void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume) {
+void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	bspSurf_s &sf = this->surfs[sfNum];
 	if(sf.type == BSPSF_BEZIER) {
 
@@ -2045,7 +2045,7 @@ void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, cla
 	//	staticShadowVolume->addFrontCapAndBackCapForIndexedVertsList(ts->absIndexes,this->verts,light);
 	} else {
 		bspTriSurf_s *ts = sf.sf;
-		staticShadowVolume->addIndexedVertexList(ts->absIndexes,this->verts,light);
+		staticShadowVolume->addIndexedVertexList(ts->absIndexes,this->verts,light,0,lightRadius);
 	}
 }
 void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {

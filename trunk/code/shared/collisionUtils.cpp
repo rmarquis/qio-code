@@ -230,3 +230,78 @@ bool CU_IntersectLineAABB(const vec3_c& s, const vec3_c& e, const aabb &bb, vec3
 
 #endif
 }
+
+// The next two functions are
+// from Real-Time Collision Detection by Christer Ericson, published
+// by Morgan Kaufmann Publishers, Copyright 2005 Elsevier Inc
+vec3_c CU_ClosestPointTriangle(const vec3_c &p, const vec3_c &a, const vec3_c &b, const vec3_c &c)
+{
+	vec3_c ab = b - a;
+	vec3_c ac = c - a;
+	vec3_c bc = c - b;
+
+	// Compute parametric position s for projection P' of P on AB,
+	// P' = A + s*AB, s = snom/(snom+sdenom)
+	float snom = (p - a).dotProduct(ab);
+	float sdenom = (p - b).dotProduct(a - b);
+
+	// Compute parametric position t for projection P' of P on AC,
+	// P' = A + t*AC, s = tnom/(tnom+tdenom)
+	float tnom = (p - a).dotProduct(ac);
+	float tdenom = (p - c).dotProduct(a - c);
+
+	if (snom <= 0.0f && tnom <= 0.0f)
+		return a; // Vertex region early out
+
+	// Compute parametric position u for projection P' of P on BC,
+	// P' = B + u*BC, u = unom/(unom+udenom)
+	float unom = (p - b).dotProduct(bc);
+	float udenom = (p - c).dotProduct(b - c);
+
+	if (sdenom <= 0.0f && unom <= 0.0f) 
+		return b; // Vertex region early out
+	if (tdenom <= 0.0f && udenom <= 0.0f)
+		return c; // Vertex region early out
+
+
+	// P is outside (or on) AB if the triple scalar product [N PA PB] <= 0
+	vec3_c n = (b - a).crossProduct(c - a);
+	float vc = n.dotProduct((a - p).crossProduct(b - p));
+	// If P outside AB and within feature region of AB,
+	// return projection of P onto AB
+	if (vc <= 0.0f && snom >= 0.0f && sdenom >= 0.0f)
+		return a + snom / (snom + sdenom) * ab;
+
+	// P is outside (or on) BC if the triple scalar product [N PB PC] <= 0
+	float va = n.dotProduct((b - p).crossProduct(c - p));
+	// If P outside BC and within feature region of BC,
+	// return projection of P onto BC
+	if (va <= 0.0f && unom >= 0.0f && udenom >= 0.0f)
+		return b + unom / (unom + udenom) * bc;
+
+	// P is outside (or on) CA if the triple scalar product [N PC PA] <= 0
+	float vb = n.dotProduct((c - p).crossProduct(a - p));
+	// If P outside CA and within feature region of CA,
+	// return projection of P onto CA
+	if (vb <= 0.0f && tnom >= 0.0f && tdenom >= 0.0f)
+		return a + tnom / (tnom + tdenom) * ac;
+
+	// P must project inside face region. Compute Q using barycentric coordinates
+	float u = va / (va + vb + vc);
+	float v = vb / (va + vb + vc);
+	float w = 1.0f - u - v; // = vc / (va + vb + vc)
+	return u * a + v * b + w * c;
+}
+
+bool CU_IntersectSphereTriangle(const vec3_c &center, float radius, const vec3_c &v0, const vec3_c &v1,  const vec3_c &v2) {
+	vec3_c closest = CU_ClosestPointTriangle(center, v0, v1, v2);
+	float distSQ = closest.distSQ(center);
+	float radiusSQ = radius * radius;
+	if(distSQ < radiusSQ)
+		return true;
+	return false;
+}
+
+
+
+

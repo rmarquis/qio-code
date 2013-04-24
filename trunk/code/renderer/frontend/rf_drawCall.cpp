@@ -81,6 +81,10 @@ void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
 void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
 		bool bindVertexColors, class textureAPI_i *deluxemap) {
+	if(mat == 0) {
+		g_core->RedWarning("RF_AddDrawCall: NULL material\n");
+		mat = g_ms->registerMaterial("nullMaterialPassedToAddDrawCall");
+	}
 	// developers can supress manually some materials for debugging purposes
 	if(rf_ignoreSpecificMaterial.strLen() && rf_ignoreSpecificMaterial.getStr()[0] != '0') {
 		if(!stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {

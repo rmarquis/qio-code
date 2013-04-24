@@ -514,7 +514,7 @@ void CL_AdjustTimeDelta( void ) {
 
 	newDelta = cl.snap.serverTime - cls.realtime;
 	deltaDelta = abs( newDelta - cl.serverTimeDelta );
-
+	//Com_Printf("CL_AdjustTimeDelta: newDelta %i, deltaDelta %i\n",newDelta,deltaDelta);
 	if ( deltaDelta > RESET_TIME ) {
 		cl.serverTimeDelta = newDelta;
 		cl.oldServerTime = cl.snap.serverTime;	// FIXME: is this a problem for cgame?

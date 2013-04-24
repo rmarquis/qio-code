@@ -39,6 +39,7 @@ static aCvar_c rf_cullLights("rf_cullLights","1");
 static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
 static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
 static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
+static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInteractionsUpdate","0");
 
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
@@ -139,15 +140,114 @@ void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.type == SIT_BSP) {
-			RF_AddBSPSurfaceToShadowVolume(in.bspSurfaceNumber,pos,staticShadowVolume);
+			RF_AddBSPSurfaceToShadowVolume(in.bspSurfaceNumber,pos,staticShadowVolume,this->radius);
 		} else if(in.type == SIT_PROC) {
-			staticShadowVolume->addRSurface(in.sf,pos,0);
+			staticShadowVolume->addRSurface(in.sf,pos,0,this->radius);
 		} else if(in.type == SIT_STATIC) {
-			staticShadowVolume->addRSurface(in.sf,pos,0);
+			staticShadowVolume->addRSurface(in.sf,pos,0,this->radius);
 		}
 	}
+}		
+
+void rLightImpl_c::refreshIntersection(entityInteraction_s &in) {
+	if(RF_IsUsingShadowVolumes()) {
+		if(in.ent->isSprite()) {
+			printf("skipping sprite..\n");
+			if(in.shadowVolume) {
+				in.shadowVolume = 0;
+				delete in.shadowVolume;
+			}
+		} else {
+			vec3_c lightInEntitySpace;
+			this->calcPosInEntitySpace(in.ent,lightInEntitySpace);
+			if(in.shadowVolume == 0) {
+				in.shadowVolume = new rIndexedShadowVolume_c;
+			} else {
+				//if(lightInEntitySpace.compare(in.shadowVolume->getLightPos())) {
+				//	return; // dont have to recalculate shadow volume
+				//}
+			}
+			in.shadowVolume->createShadowVolumeForEntity(in.ent,lightInEntitySpace,this->radius);
+
+			if(rf_printEntityShadowVolumesPrimCounts.getInt()) {
+				g_core->Print("Model %s shadow volume - %i tris, %i verts\n",
+					in.ent->getModelName(),in.shadowVolume->getNumTris(),in.shadowVolume->getNumVerts());
+			}
+		}
+	}
+	in.lastSilChangeTime = in.ent->getSilChangeCount();
+}
+void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
+	u32 from = 0;
+	u32 to = 0;
+	while(from < numCurrentEntityInteractions) {
+		entityInteraction_s &in = this->entityInteractions[from];
+		if(in.ent == ent) {
+			in.clear();
+		} else {
+			if(from != to) {
+				this->entityInteractions[to] = this->entityInteractions[from];
+			}
+			to++;
+		}
+		from++;
+	}
+	numCurrentEntityInteractions = to;
 }
 void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
+#if 1
+	arraySTD_c<rEntityImpl_c*> ents;
+	RFE_BoxEntities(this->absBounds,ents);
+	if(entityInteractions.size() < ents.size()) {
+		entityInteractions.resize(ents.size());
+	}
+	u32 from = 0;
+	u32 to = 0;
+	while(from < numCurrentEntityInteractions) {
+		entityInteraction_s &in = this->entityInteractions[from];
+		if(ents.isOnList(in.ent)==false) {
+			// remove this interaction, it's no longer intersecting light
+			if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
+				printf("Removing entity %s from light interactions...\n",in.ent->getModelName());
+			}
+			in.clear();
+		} else {
+			ents.remove(in.ent);
+			if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
+				printf("Updating light interaction entity %s... (last %i, now %i)",in.ent->getModelName(),in.lastSilChangeTime,in.ent->getSilChangeCount());
+			}
+			// update this interaction (if needed)
+			if(in.lastSilChangeTime != in.ent->getSilChangeCount()) {
+				refreshIntersection(in);
+				if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
+					printf("(changed)\n");
+				}
+			} else {	
+				if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
+					printf("(no change)\n");
+				}
+			}
+			if(from != to) {
+				this->entityInteractions[to] = this->entityInteractions[from];
+				this->entityInteractions[from].zero();
+			}
+			to++;
+		}
+		from++;
+	}
+	// add new interactions
+	for(u32 i = 0; i < ents.size(); i++) {
+		entityInteraction_s &newIn = this->entityInteractions[to];
+		newIn.clear();
+		newIn.ent = ents[i];
+		refreshIntersection(newIn);
+		if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
+			printf("Adding new light interaction entity...");
+		}
+		to++;
+	}
+	numCurrentEntityInteractions = to;
+#else
 	clearInteractionsWithDynamicEntities();
 	arraySTD_c<rEntityImpl_c*> ents;
 	RFE_BoxEntities(this->absBounds,ents);
@@ -177,7 +277,7 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 						continue; // dont have to recalculate shadow volume
 					}
 				}
-				in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace);
+				in.shadowVolume->createShadowVolumeForEntity(ent,lightInEntitySpace,this->radius);
 
 				if(rf_printEntityShadowVolumesPrimCounts.getInt()) {
 					g_core->Print("Model %s shadow volume - %i tris, %i verts\n",
@@ -186,11 +286,15 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 			}
 		}
 	}
+#endif
 }
 void rLightImpl_c::recalcLightInteractions() {
 	if(RF_IsUsingDynamicLights() == false) {
 		return; // we dont need light interactions
 	}
+	// clear interactions with dynamic entities
+	this->clearInteractionsWithDynamicEntities();
+	// recalculate all of them
 	recalcLightInteractionsWithDynamicEntities();
 	recalcLightInteractionsWithStaticWorld();
 }
@@ -324,6 +428,11 @@ void RFL_FreeAllLights() {
 		delete rf_lights[i];
 	}
 	rf_lights.clear();
+}
+void RFL_RemoveAllReferencesToEntity(class rEntityImpl_c *ent) {
+	for(u32 i = 0; i < rf_lights.size(); i++) {
+		rf_lights[i]->removeEntityFromInteractionsList(ent);
+	}
 }
 
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");

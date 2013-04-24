@@ -63,6 +63,10 @@ class rEntityImpl_c : public rEntityAPI_i {
 	const class afDeclAPI_i *myRagdollDef;
 	class boneOrQPArray_t *ragOrs;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
+	// incremented every time absolute entity silhuette is changed
+	// used for shadow volumes creation
+	// (shadow volumes are rebuild only when it's changed)
+	u32 absSilChangeCount;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -118,7 +122,9 @@ public:
 	virtual bool isAnimated() const;
 	virtual bool isSprite() const;
 
-
+	u32 getSilChangeCount() const {
+		return absSilChangeCount;
+	}
 
 	virtual rModelAPI_i *getModel() const;
 	virtual const char *getModelName() const;

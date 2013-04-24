@@ -63,6 +63,7 @@ void RFL_RemoveLight(class rLightAPI_i *ent);
 void RFL_AddLightInteractionsDrawCalls();
 void RFL_RecalculateLightsInteractions();
 void RFL_FreeAllLights();
+void RFL_RemoveAllReferencesToEntity(class rEntityImpl_c *ent);
  // called when depth pass if done
 void RFL_AssignLightOcclusionQueries();
 bool RFL_GPUOcclusionQueriesForLightsEnabled();

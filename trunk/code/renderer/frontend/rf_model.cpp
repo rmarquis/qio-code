@@ -78,6 +78,9 @@ u32 model_c::getNumSurfaces() const {
 	return 0;
 }
 void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
+	if(0) {
+		g_core->Print("model_c::addModelDrawCalls: model %s (%i), sfFlags ptr %i\n",this->getName(),this,extraSfFlags);
+	}
 	if(type == MOD_BSP) {
 		myBSP->addModelDrawCalls(bspModelNum);
 	} else if(type == MOD_STATIC) {
@@ -329,8 +332,10 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 				// don't do this for experimental terrain models on test_heightmap....
 				//ret->staticModel->recalcModelNormals();
 				ret->staticModel->recalcModelTBNs();
+
+			if(ret->staticModel->getTotalTriangleCount() < 10000) {
 				ret->staticModel->precalculateStencilShadowCaster();
-			//}
+			}
 			ret->staticModel->createVBOsAndIBOs();
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model

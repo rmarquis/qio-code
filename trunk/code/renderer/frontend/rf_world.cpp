@@ -167,8 +167,8 @@ void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
 void RF_DrawSingleBSPSurface(u32 sfNum) {
 	r_bspTree->addBSPSurfaceDrawCall(sfNum);
 }
-void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume) {
-	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume);
+void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
+	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume, lightRadius);
 }
 
 void RF_PrintWorldMapMaterials_f() {
