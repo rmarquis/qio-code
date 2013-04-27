@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_proc.h"
 #include "rf_local.h"
+#include "rf_lightGrid.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <shared/autoCmd.h>
@@ -38,6 +39,7 @@ static class procTree_c *r_procTree = 0; // for .proc files
 
 static aCvar_c rf_printWorldRayCasts("rf_printWorldRayCasts","0");
 static aCvar_c rf_printWorldUpdates("rf_printWorldUpdates","0");
+static aCvar_c rf_world_dontAddDecals("rf_world_dontAddDecals","0");
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
@@ -141,6 +143,8 @@ void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes) {
 	}
 }
 int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
+	if(rf_world_dontAddDecals.getInt())
+		return -1;
 	if(r_bspTree) {
 		return r_bspTree->addWorldMapDecal(pos,normal,radius,material);
 	}
@@ -211,6 +215,19 @@ void RF_WorldDebugDrawing() {
 	if(r_bspTree) {
 		r_bspTree->doDebugDrawing();
 	}
+}
+const class lightGridAPI_i *RF_GetWorldLightGridAPI() {
+	if(r_bspTree) {
+		return r_bspTree->getLightGridAPI();
+	}
+	return 0;
+}
+bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out) {
+	const lightGridAPI_i *grid = RF_GetWorldLightGridAPI();
+	if(grid == 0)
+		return true;
+	grid->setupPointLighting(point,out);
+	return false; // ok
 }
 static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);
 static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);

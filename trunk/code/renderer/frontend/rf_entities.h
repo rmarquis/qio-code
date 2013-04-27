@@ -34,7 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/aabb.h>
 #include <api/rEntityAPI.h>
 #include <renderer/rfSurfsFlagsArray.h>
-
+#include "../pointLightSample.h"
 
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
@@ -67,6 +67,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// used for shadow volumes creation
 	// (shadow volumes are rebuild only when it's changed)
 	u32 absSilChangeCount;
+	// lightgrid lighting sample at entity abs bounds center
+	pointLightSample_s centerLightSample;
+	bool bCenterLightSampleValid;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();

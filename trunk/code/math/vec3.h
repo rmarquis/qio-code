@@ -113,6 +113,8 @@ public:
 
 	friend vec3_c operator*(const vec3_c& a, const float f );
 	friend vec3_c operator*(const float f, const vec3_c& b );
+	friend vec3_c operator/(const vec3_c& a, const float f );
+	friend vec3_c operator/(const float f, const vec3_c& b );
 	friend vec3_c operator+(const vec3_c& a, const vec3_c& b );
 	friend vec3_c operator-(const vec3_c& a, const vec3_c& b );
 
@@ -520,6 +522,20 @@ inline vec3_c operator*(const float f, const vec3_c& b ) {
 	o.x = b.x * f;
 	o.y = b.y * f;
 	o.z = b.z * f;
+	return o;
+}
+inline vec3_c operator/(const vec3_c& a, const float f ) {
+	vec3_c o;
+	o.x = a.x / f;
+	o.y = a.y / f;
+	o.z = a.z / f;
+	return o;
+}
+inline vec3_c operator/(const float f, const vec3_c& b ) {
+	vec3_c o;
+	o.x = f / b.x;
+	o.y = f / b.y;
+	o.z = f / b.z;
 	return o;
 }
 inline vec3_c operator+(const vec3_c& a, const vec3_c& b ) {

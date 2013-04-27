@@ -93,6 +93,8 @@ void RF_AddGenericDrawCalls() {
 	RF_AddWorldDecalDrawCalls();
 	RF_AddWaterDrawCalls();
 	RF_AddExplosionDrawCalls();
+	// this will add a drawcall only if lightgrid debuging is enabled
+	RF_AddLightGridDebugModelDrawCalls();
 }
 void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 	rf_bDrawOnlyOnDepthBuffer = true;

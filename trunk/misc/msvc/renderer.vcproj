@@ -219,6 +219,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_lightGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_lightGrid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\frontend\rf_lightGrid_debug.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_lights.cpp"
 				>
 			</File>
@@ -282,6 +294,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\drawCallSort.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\renderer\pointLightSample.h"
 				>
 			</File>
 			<File

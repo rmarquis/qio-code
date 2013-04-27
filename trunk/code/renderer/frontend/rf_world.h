@@ -37,6 +37,8 @@ void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexe
 bool RF_IsWorldAreaVisible(int areaNum);
 bool RF_CullBoundsByPortals(const aabb &absBB);
 void RF_WorldDebugDrawing();
+const class lightGridAPI_i *RF_GetWorldLightGridAPI();
+bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out);
 
 #endif // __RF_BSP_H__
 

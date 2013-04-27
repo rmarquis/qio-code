@@ -89,6 +89,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	q3AnimCtrl = 0;
 	absSilChangeCount = 0;
 	//skinMatList = 0;
+	bCenterLightSampleValid = false;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -132,6 +133,7 @@ void rEntityImpl_c::recalcABSBounds() {
 		const aabb &bb = model->getBounds();
 		matrix.transformAABB(bb,this->absBB);
 	}
+	this->bCenterLightSampleValid = (RF_SampleWorldLightGrid(this->absBB.getCenter(),this->centerLightSample)==false);
 	absSilChangeCount++;
 }
 void rEntityImpl_c::recalcMatrix() {
@@ -438,6 +440,15 @@ void rEntityImpl_c::updateAnimatedEntity() {
 	} else if(model->isSprite()) {
 		instance->updateSprite(rf_camera.getAxis(),model->getSpriteRadius());
 	}
+	recalcABSBounds();
+
+	if(this->bCenterLightSampleValid) {
+		if(model->isSprite() == false) {
+			// it's faster to do this here
+		//	instance->calcVertexLightingABS(this->matrix,this->centerLightSample);
+			instance->setAmbientLightingVec3_255(this->centerLightSample.ambientLight);
+		}
+	}
 }
 void rEntityImpl_c::addDrawCalls() {
 	if(rf_noEntityDrawCalls.getInt())
@@ -454,7 +465,7 @@ void rEntityImpl_c::addDrawCalls() {
 		}
 	} else if(instance) {
 		this->updateAnimatedEntity();
-		instance->addDrawCalls(&surfaceFlags);
+		instance->addDrawCalls(&surfaceFlags,bCenterLightSampleValid);
 	}
 
 	// done.

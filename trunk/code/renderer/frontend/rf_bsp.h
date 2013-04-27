@@ -163,6 +163,7 @@ class rBspTree_c {
 	bitSet_c frustumAreaBits;
 	bitSet_c prevFrustumAreaBits;
 	visHeader_s *vis;
+	class lightGridAPI_i *lightGrid;
 
 	rVertexBuffer_c verts;
 	arraySTD_c<textureAPI_i*> lightmaps;
@@ -223,6 +224,7 @@ class rBspTree_c {
 	bool loadLeafIndexes(u32 leafSurfsLump);
 	bool loadLeafIndexes16Bit(u32 leafSurfsLump); // for QuakeII
 	bool loadVisibility(u32 visLump);
+	bool loadQ3LightGrid(u32 lightGridLump);
 	void addPortalToArea(u32 areaNum, u32 portalNum);
 	bool loadQioAreaPortals(u32 lumpNum);
 	bool loadQioPoints(u32 lumpNum);
@@ -269,6 +271,10 @@ public:
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 	
 	void cacheLightWorldInteractions(class rLightImpl_c *l);
+
+	const class lightGridAPI_i *getLightGridAPI() const {
+		return lightGrid;
+	}
 };
 
 rBspTree_c *RF_LoadBSP(const char *fname);

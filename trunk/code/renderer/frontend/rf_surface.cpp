@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_decalProjector.h"
 #include <shared/simpleTexturedPoly.h>
 #include <api/colMeshBuilderAPI.h>
+#include "../pointLightSample.h"
 
 //
 //	r_surface_c class
@@ -149,15 +150,15 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 	rb->drawElementsWithSingleTexture(this->verts,this->indices,tex);
 }
 
-void r_surface_c::addDrawCall() {
+void r_surface_c::addDrawCall(bool bUseVertexColors) {
 	if(this->mat == 0)
 		return;
 	if(this->mat->getNumStages() == 0)
 		return;
 	if(refIndices) {
-		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),false);
+		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors);
 	} else {
-		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),false);
+		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors);
 	}
 }
 void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
@@ -394,6 +395,15 @@ void r_surface_c::recalcTBN() {
 }
 #endif // RVERT_STORE_TANGENTS
 
+void CalcVertexGridLighting(rVertexBuffer_c &verts, const struct pointLightSample_s &in);
+
+void r_surface_c::calcVertexLighting(const struct pointLightSample_s &sample) {
+	CalcVertexGridLighting(verts,sample);
+}
+void r_surface_c::setAmbientLightingVec3_255(const vec3_c &color) {
+	verts.setVertexAlphaToConstValue(255);
+	verts.setVertexColorsToConstValuesVec3255(color);
+}
 bool r_surface_c::parseProcSurface(class parser_c &p) {
 	int sky = -1;
 	if(p.atWord("{")==false) {
@@ -525,6 +535,69 @@ void r_surface_c::createFlatGrid(float size, int rows) {
 #endif
 		}
 	}
+}
+void r_surface_c::addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3) {
+	u32 i0 = verts.size();
+	verts.push_back(v0);
+	u32 i1 = verts.size();
+	verts.push_back(v1);
+	u32 i2 = verts.size();
+	verts.push_back(v2);
+	u32 i3 = verts.size();
+	verts.push_back(v3);
+
+	bounds.addPoint(v0.xyz);
+	bounds.addPoint(v1.xyz);
+	bounds.addPoint(v2.xyz);
+	bounds.addPoint(v3.xyz);
+	
+	indices.addTriangleINV(i0,i1,i2);
+	indices.addTriangleINV(i2,i3,i0);
+}
+void r_surface_c::createBox(float halfSize) {
+    // front face
+	addQuad(
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c(-halfSize, -halfSize,  halfSize)),
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c( halfSize, -halfSize,  halfSize)),
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c( halfSize,  halfSize,  halfSize)),
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c(-halfSize,  halfSize,  halfSize))
+	);
+    // back face
+	addQuad(
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c(-halfSize, -halfSize, -halfSize)), 
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c(-halfSize,  halfSize, -halfSize)),
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c( halfSize,  halfSize, -halfSize)),
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c( halfSize, -halfSize, -halfSize))
+	);
+    // top face
+	addQuad(
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c(-halfSize,  halfSize, -halfSize)),
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c(-halfSize,  halfSize,  halfSize)),
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c( halfSize,  halfSize,  halfSize)),
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c( halfSize,  halfSize, -halfSize))
+	);
+    // bottom face
+	addQuad(
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c(-halfSize, -halfSize, -halfSize)),
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c( halfSize, -halfSize, -halfSize)), 
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c( halfSize, -halfSize,  halfSize)), 
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c(-halfSize, -halfSize,  halfSize))
+	);
+    // right face
+	addQuad(
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c( halfSize, -halfSize, -halfSize)),
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c( halfSize,  halfSize, -halfSize)),
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c( halfSize,  halfSize,  halfSize)),
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c( halfSize, -halfSize,  halfSize))
+	); 
+    // left face
+	addQuad(
+		rVert_c(vec2_c(0.0f, 0.0f), vec3_c(-halfSize, -halfSize, -halfSize)),
+		rVert_c(vec2_c(1.0f, 0.0f), vec3_c(-halfSize, -halfSize,  halfSize)),
+		rVert_c(vec2_c(1.0f, 1.0f), vec3_c(-halfSize,  halfSize,  halfSize)), 
+		rVert_c(vec2_c(0.0f, 1.0f), vec3_c(-halfSize,  halfSize, -halfSize))
+	);
+	this->recalcTBN();
 }
 //
 //	r_model_c class
@@ -925,7 +998,7 @@ r_surface_c *r_model_c::registerSurf(const char *matName) {
 }
 #include <renderer/rfSurfsFlagsArray.h>
 #include <renderer/rfSurfFlags.h>
-void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
+void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool useVertexColors) {
 	if(extraSfFlags) {
 		r_surface_c *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -938,12 +1011,12 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
 					continue;
 				}
 			}
-			sf->addDrawCall();
+			sf->addDrawCall(useVertexColors);
 		}
 	} else {
 		r_surface_c *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
-			sf->addDrawCall();
+			sf->addDrawCall(useVertexColors);
 		}
 	}
 	for(u32 i = 0; i < bezierPatches.size(); i++) {
@@ -975,6 +1048,25 @@ void r_model_c::boxSurfaces(const class aabb &bb, arraySTD_c<const r_surface_c*>
 		}
 	}
 }
+void r_model_c::calcVertexLightingLocal(const struct pointLightSample_s &sample) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->calcVertexLighting(sample);
+	}
+}
+void r_model_c::calcVertexLightingABS(const class matrix_c &mat, const struct pointLightSample_s &sample) {
+	pointLightSample_s localSample = sample;
+	matrix_c inv = mat.getInversed();
+	inv.transformNormal(localSample.lightDir);
+	calcVertexLightingLocal(sample);
+}	
+void r_model_c::setAmbientLightingVec3_255(const vec3_c &color) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->setAmbientLightingVec3_255(color);
+	}
+}
+
 #include "rf_lights.h"
 void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 	// TODO: handle models with non-identity orientations

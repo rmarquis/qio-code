@@ -120,6 +120,7 @@ public:
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 	void getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const;
 	void addPoly(const struct simplePoly_s &poly);
+	void addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3);
 
 	void resizeVerts(u32 newNumVerts);
 	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
@@ -157,7 +158,7 @@ public:
 		}
 	}
 	void drawSurfaceWithSingleTexture(class textureAPI_i *tex);
-	void addDrawCall();
+	void addDrawCall(bool bUseVertexColors = false);
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	bool createDecalInternal(class decalProjector_c &proj);
@@ -186,6 +187,11 @@ public:
 
 	// procedural mesh generation
 	void createFlatGrid(float size, int rows);
+	void createBox(float halfSize);
+	void createBox(float halfSize, const vec3_c &center) {
+		createBox(halfSize);
+		translateXYZ(center);
+	}
 	void scaleTexCoords(float tcScale) {
 		rVert_c *v = verts.getArray();
 		for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -197,6 +203,9 @@ public:
 #ifdef RVERT_STORE_TANGENTS
 	void recalcTBN();
 #endif // RVERT_STORE_TANGENTS
+
+	void calcVertexLighting(const struct pointLightSample_s &sample);
+	void setAmbientLightingVec3_255(const vec3_c &color);
 
 	const aabb &getBB() const {
 		return bounds;
@@ -300,11 +309,15 @@ public:
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	r_surface_c *registerSurf(const char *matName);
-	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0);
+	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0, bool useVertexColors = false);
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
 	void setSurfMaterial(const char *surfName, const char *matName);
 	void appendSkinRemap(const class rSkinRemap_c *skin);
 	void boxSurfaces(const class aabb &bb, arraySTD_c<const class r_surface_c*> &out) const;
+
+	void calcVertexLightingLocal(const struct pointLightSample_s &sample);
+	void calcVertexLightingABS(const class matrix_c &mat, const struct pointLightSample_s &sample);
+	void setAmbientLightingVec3_255(const vec3_c &color);
 
 	bool parseProcModel(class parser_c &p);
 

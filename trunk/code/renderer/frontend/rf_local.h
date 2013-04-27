@@ -97,6 +97,9 @@ u32 RF_AddExplosion(const class vec3_c &pos, float radius, class mtrAPI_i *mater
 u32 RF_AddExplosion(const vec3_c &pos, float radius, const char *matName);
 void RF_AddExplosionDrawCalls();
 
+// rf_lightGrid_debug.cpp
+void RF_AddLightGridDebugModelDrawCalls();
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;

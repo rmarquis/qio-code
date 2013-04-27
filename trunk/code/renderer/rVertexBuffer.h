@@ -54,6 +54,11 @@ public:
 		this->xyz = newXYZ;
 		memset(color,0xff,sizeof(color));
 	}
+	rVert_c(const vec2_c &newTC, const vec3_c &newXYZ) {
+		this->xyz = newXYZ;
+		this->tc = newTC;
+		memset(color,0xff,sizeof(color));
+	}
 	// returns the result of quadratic interpolation between this vertex and two other vertices
 	rVert_c getInterpolated_quadratic(rVert_c &a, rVert_c &b, float s) {
 		rVert_c out;
@@ -229,6 +234,13 @@ public:
 	void calcEnvironmentTexCoordsForReferencedVertices(const class rIndexBuffer_c &ibo, const class vec3_c &viewerOrigin);
 	void setVertexColorsToConstValue(byte val);
 	void setVertexColorsToConstValues(byte *rgbVals);
+	void setVertexColorsToConstValuesVec3255(const float *vec3_255) {
+		byte rgbVals[3];
+		rgbVals[0] = vec3_255[0];
+		rgbVals[1] = vec3_255[1];
+		rgbVals[2] = vec3_255[2];
+		setVertexColorsToConstValues(rgbVals);
+	}
 	void setVertexAlphaToConstValue(byte val);
 
 	void transform(const class matrix_c &mat);

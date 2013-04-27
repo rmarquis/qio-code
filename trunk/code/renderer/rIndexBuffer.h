@@ -313,6 +313,9 @@ public:
 		addIndex(i1);
 		addIndex(i2);
 	}
+	void addTriangleINV(u32 i0, u32 i1, u32 i2) {
+		addTriangle(i2,i1,i0);
+	}
 	void addQuad(u32 i0, u32 i1, u32 i2, u32 i3) {
 		addIndex(i0);
 		addIndex(i1);

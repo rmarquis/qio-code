@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 #include <api/mtrAPI.h>
+#include "rf_lightGrid.h"
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
@@ -71,6 +72,7 @@ rBspTree_c::rBspTree_c() {
 	h = 0;
 	visCounter = 1;
 	c_flares = 0;
+	lightGrid = 0;
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
@@ -1345,6 +1347,24 @@ bool rBspTree_c::loadVisibility(u32 visLump) {
 	memcpy(vis,h->getLumpData(visLump),vl.fileLen);
 	return false; // no error
 }
+bool rBspTree_c::loadQ3LightGrid(u32 lightGridLump) {
+	const lump_s &gridLump = h->getLumps()[lightGridLump];
+	if(gridLump.fileLen == 0) {
+		// map was compiled without grid lighting
+		return false; // dont do the error
+	}
+	vec3_c lightGridSize(64,64,128);
+	aabb worldBounds = this->models[0].bb;
+	const byte *lightGridData = h->getLumpData(lightGridLump);
+	q3BSPLightGrid_c *q3LightGrid = new q3BSPLightGrid_c;
+	if(q3LightGrid->init(lightGridData,gridLump.fileLen,worldBounds,lightGridSize)) {
+		g_core->Print(S_COLOR_YELLOW "rBspTree_c::loadQ3LightGrid: q3LightGrid->init error\n");
+		delete q3LightGrid;
+		return true; // error ?
+	}
+	this->lightGrid = q3LightGrid;
+	return false;
+}
 void rBspTree_c::addPortalToArea(u32 areaNum, u32 portalNum) {
 	if(areaNum >= areas.size()) {
 		areas.resize(areaNum+1);
@@ -1419,6 +1439,10 @@ bool rBspTree_c::load(const char *fname) {
 				return true; // error
 			}
 			if(loadVisibility(Q3_VISIBILITY)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadQ3LightGrid(Q3_LIGHTGRID)) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
@@ -1591,6 +1615,10 @@ bool rBspTree_c::load(const char *fname) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
+			if(loadQ3LightGrid(Q3_LIGHTGRID)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
 		} else {
 			g_core->RedWarning("rBspTree_c::load: QIO bsp has unknown version %i\n",h->version);
 			g_vfs->FS_FreeFile(fileData);
@@ -1620,6 +1648,10 @@ void rBspTree_c::clear() {
 	if(vis) {
 		free(vis);
 		vis = 0;
+	}
+	if(lightGrid) {
+		delete lightGrid;
+		lightGrid = 0;
 	}
 }
 int rBspTree_c::pointInLeaf(const vec3_c &pos) const {

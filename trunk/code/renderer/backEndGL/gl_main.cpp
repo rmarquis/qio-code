@@ -54,6 +54,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/textureWrapMode.h>
 
 static aCvar_c rb_showTris("rb_showTris","0");
+static aCvar_c rb_showNormals("rb_showNormals","0");
 // use a special GLSL shader to show normal vectors as colors
 static aCvar_c rb_showNormalColors("rb_showNormalColors","0");
 static aCvar_c gl_callGLFinish("gl_callGLFinish","0");
@@ -1415,6 +1416,25 @@ drawOnlyLightmap:
 				setDepthRange( 0, 0 ); 
 			drawCurIBO();	
 			if(rb_showTris.getInt()==1)
+				setDepthRange( 0, 1 ); 
+			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+		}
+		if(rb_showNormals.getInt()) {
+			this->unbindMaterial();
+			this->bindShader(0);
+			unbindIBO();
+			unbindVertexBuffer();
+			if(rb_showNormals.getInt()==2)
+				setDepthRange( 0, 0 ); 
+			glBegin(GL_LINES);
+			for(u32 i = 0; i < verts.size(); i++) {
+				const rVert_c &v = verts[i];
+				vec3_c to = v.xyz + v.normal * 10.f;
+				glVertex3fv(v.xyz);
+				glVertex3fv(to);
+			}
+			glEnd();
+			if(rb_showNormals.getInt()==2)
 				setDepthRange( 0, 1 ); 
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 		}
