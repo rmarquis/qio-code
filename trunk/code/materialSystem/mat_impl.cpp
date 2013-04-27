@@ -116,6 +116,7 @@ mtrStage_c::mtrStage_c() {
 	bMarkedForDelete = false;
 	subStageBumpMap = 0;
 	subStageHeightMap = 0;
+	nextBundle = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -129,6 +130,9 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(subStageHeightMap) {
 		delete subStageHeightMap;
+	}
+	if(nextBundle) {
+		delete nextBundle;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -228,6 +232,29 @@ void mtrIMPL_c::createFromImage() {
 	this->sourceFileName = tex->getName();
 	// create single material stage
 	this->createFromTexturePointer(tex);
+
+	// automatically set alphatest for Call Of Duty images
+	// (they are missing a definition is .shader file)
+	if(
+		// foliage_masked is used in truckride.bsp
+		this->name.findToken("foliage_masked@",0,false)
+		||
+		// metal_fence_nonsolid is used in training.bsp
+		this->name.findToken("metal_fence_nonsolid@",0,false)
+		||
+		// metal_masked is used in training.bsp
+		this->name.findToken("metal_masked@",0,false)
+		||
+		// metal_fence is used in pathfinder.bsp
+		this->name.findToken("metal_fence@",0,false)
+		) {
+		this->stages[0]->setAlphaFunc(AF_GE128);
+	}	
+	if(	// decal is used in training.bsp
+		this->name.findToken("decal@",0,false)) {
+		this->polygonOffset = 0.1f;
+		this->stages[0]->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
+	}
 }
 // Source Engine .vmt support (Valve MaTerials)
 bool mtrIMPL_c::loadFromVMTFile() {
@@ -381,6 +408,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	mtrStage_c *stage = 0;
 	int level = 1;
 	bool depthWriteSetInMaterial = false;
+	// incremented every "nextbundle" keyword
+	// not present in Q3
+	// used in MoHAA and CoD
+	u32 bundleCount = 0;
 	while(level) {
 		if(p.atEOF()) {
 			g_core->RedWarning("mtrIMPL_c::loadFromText: unexpected end of file hit while parsing material %s in file %s\n",
@@ -391,19 +422,21 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			level++;
 			if(level == 2) {
 				stage = new mtrStage_c;
+				stages.push_back(stage);
 				depthWriteSetInMaterial = false;
 			}
+			bundleCount = 0;
 		} else if(p.atChar('}')) {
 			if(level == 2) {
 				if(stage) {
-					if(stage->getTexture(0) == 0) {
-						delete stage;
-					} else {
-						stages.push_back(stage);
-					}
+					//if(stage->getTexture(0) == 0) {
+					//	delete stage;
+					//} else {
+					//}
 					stage = 0;
 				}
 			}
+			bundleCount = 0;
 			level--;
 		} else {
 			if(level == 1) {
@@ -525,6 +558,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							stage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 						}
 					} else {
+						if(p.atWord("clamp")) {
+							// extra CoD "clamp" keyword
+							// used eg. in truckride.shader
+							// map clamp textures/austria/background/foliage_clamp@truck_single.tga
+
+						}
 						stage->getStageTexture().parseMap(p);
 						stage->getStageTexture().uploadTexture();
 					}		
@@ -535,6 +574,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("animmap")) {
 					stage->getStageTexture().parseAnimMap(p);
 					stage->getStageTexture().uploadTexture();
+				} else if(p.atWord("nextbundle")) {
+					mtrStage_c *nextBundle = new mtrStage_c;
+					stage->setNextBundle(nextBundle);
+					stage = nextBundle;
+					bundleCount++;
 				} else if(p.atWord("alphaFunc")) {
 					if(p.atWord("GT0")) {
 						stage->setAlphaFunc(AF_GT0);

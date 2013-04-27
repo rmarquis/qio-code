@@ -58,6 +58,7 @@ aCvar_c rf_bsp_rebuildBatchesOnAPVisChange("rf_bsp_rebuildBatchesOnAPVisChange",
 aCvar_c rf_bsp_noFrustumAdjust("rf_bsp_noFrustumAdjust","0");
 aCvar_c rf_bsp_showAreaPortals("rf_bsp_showAreaPortals","0");
 aCvar_c rf_bsp_cullBackFacingAreaPortals("rf_bsp_cullBackFacingAreaPortals","1");
+aCvar_c rf_bsp_useBSPForTracing("rf_bsp_useBSPForTracing","1");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -197,6 +198,8 @@ void rBspTree_c::createRenderModelsForBSPInlineModels() {
 		m->setBounds(models[i].bb);
 	}
 }
+// Quake3, RTCW, ET, FAKK, MoH lightmap size = 128
+// Call Of Duty lightmap size = 512
 bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
 	// NOTE: default lightmap size is 128
 	const lump_s &l = h->getLumps()[lumpNum];
@@ -1202,6 +1205,7 @@ bool rBspTree_c::loadSurfsCoD() {
 	u32 numSurfs = h->getLumpStructNum(COD1_SURFACES,sizeof(cod1Surface_s));
 	surfs.resize(numSurfs);
 	bspSurf_s *out = surfs.getArray();
+	int highestLightmapNumReferenced = -1;
 	// NOTE: CoD drawIndexes are 16 bit (not 32 bit like in Q3)
 	const u16 *indices = (const u16 *) h->getLumpData(COD1_DRAWINDEXES);
 	for(u32 i = 0; i < numSurfs; i++, sf++, out++) {
@@ -1216,6 +1220,9 @@ bool rBspTree_c::loadSurfsCoD() {
 			} else {
 				lightmap = lightmaps[sf->lightmapNum];
 			}
+		}
+		if(sf->lightmapNum > highestLightmapNumReferenced) {
+			highestLightmapNumReferenced = sf->lightmapNum;
 		}
 		if(mat->getSkyParms()) {
 			RF_SetSkyMaterial(mat);
@@ -1256,6 +1263,7 @@ bool rBspTree_c::loadSurfsCoD() {
 			}
 		}
 	}
+	g_core->Print("rBspTree_c::loadSurfsCoD: highestLightmapNumReferenced: %i, numLightmaps %i\n",highestLightmapNumReferenced,lightmaps.size());
 	return false; // ok
 }
 bool rBspTree_c::loadModels(u32 modelsLump) {
@@ -1468,6 +1476,37 @@ bool rBspTree_c::load(const char *fname) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
+		} else if(h->version == BSP_VERSION_COD1) {
+			// Call Of Duty .bsp file
+			((q3Header_s*)h)->swapCoDLumpLenOfsValues();
+			if(loadModels(COD1_MODELS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			// load CoD lightmaps
+			if(loadLightmaps(COD1_LIGHTMAPS,512)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadSurfsCoD()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadNodesAndLeaves(COD1_NODES,COD1_LEAFS,sizeof(cod1Leaf_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafIndexes(COD1_LEAFSURFACES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadPlanes(COD1_PLANES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			// temporary fix for Call of Duty bsp's.
+			// (there is something wrong with leafSurfaces)
+			rf_bsp_forceEverythingVisible.setString("1");
 		} else {
 			g_core->RedWarning("rBspTree_c::load: IBSP has unknown version %i\n",h->version);
 			g_vfs->FS_FreeFile(fileData);
@@ -1503,32 +1542,6 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
-	} else if(h->ident == BSP_IDENT_IBSP && h->version == BSP_VERSION_COD1) {
-		// Call Of Duty .bsp file
-		((q3Header_s*)h)->swapCoDLumpLenOfsValues();
-		if(loadModels(COD1_MODELS)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadSurfsCoD()) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadNodesAndLeaves(COD1_NODES,COD1_LEAFS,sizeof(cod1Leaf_s))) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadLeafIndexes(COD1_LEAFSURFACES)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		if(loadPlanes(COD1_PLANES)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
-		}
-		// temporary fix for Call of Duty bsp's.
-		// (there is something wrong with leafSurfaces)
-		rf_bsp_forceEverythingVisible.setString("1");
 	} else if(h->ident == BSP_VERSION_HL || h->ident == BSP_VERSION_QUAKE1) {
 		// Half Life and Counter Strike 1.6 bsps (de_dust2, etc)
 		// older bsp versions dont have "ident" field
@@ -2247,9 +2260,14 @@ void rBspTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	}
 }	
 bool rBspTree_c::traceRay(class trace_c &out) {
-	if(leafSurfaces.size() == 0) {
-		// we can't use BSP tree for raycasting if there is no leafSurface indexes
-		return false;
+	if(leafSurfaces.size() == 0 || (rf_bsp_useBSPForTracing.getInt()==0)) {
+		bool bCollided = false;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			if(traceSurfaceRay(i,out)) {
+				bCollided = true;
+			}
+		}
+		return bCollided;
 	}
 
 	float prevFrac = out.getFraction();

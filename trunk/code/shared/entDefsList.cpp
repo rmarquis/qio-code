@@ -107,8 +107,15 @@ bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 	const char *text;
 
 	q3Header_s *h = (q3Header_s*)data;
+	h->swapCoDLumpLenOfsValues();
+
 	if(h->ident == BSP_IDENT_IBSP) {
-		text = (const char*)h->getLumpData(Q3_ENTITIES);
+		if(h->version == BSP_VERSION_COD1) {
+			// NOTE: call of duty bsps has IBSP ident
+			text = (const char*)h->getLumpData(COD1_ENTITIES);
+		} else {
+			text = (const char*)h->getLumpData(Q3_ENTITIES);
+		}
 	} else if(h->ident == BSP_IDENT_2015 || h->ident == BSP_IDENT_EALA) {
 		text = (const char*)h->getLumpData(MOH_ENTITIES);
 	} else if(h->ident == BSP_VERSION_HL) {

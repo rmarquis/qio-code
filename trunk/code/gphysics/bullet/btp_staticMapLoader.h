@@ -34,6 +34,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "btp_headers.h"
 #include <shared/array.h>
+#include <shared/cmSurface.h>
+
 
 class btpStaticMapLoader_c {
 	class bulletPhysicsWorld_c *myPhysWorld;
@@ -41,6 +43,10 @@ class btpStaticMapLoader_c {
 	arraySTD_c<class btRigidBody*> bodies;
 	btCollisionShape *mainWorldShape;
 	btRigidBody *mainWorldBody;
+	arraySTD_c<class cmSurface_c*> surfs;
+	cmSurface_c mainWorldSurface;
+	btCollisionShape *mainWorldSurface_shape;
+	btRigidBody *mainWorldSurface_body;
 
 	bool loadFromBSPFile(const char *fname);
 	bool loadFromPROCFile(const char *fname);
@@ -53,6 +59,10 @@ public:
 
 	// creates a static convex hull object used for world collision detection
 	void createWorldBrush(const btAlignedObjectArray<btVector3> &vertices);
+	// creates a static trisurf object used for world collision detection
+	void createWorldSurface(class cmSurface_c *sf);
+	// adds a trisurf to main world mesh
+	void addWorldSurface(class cmSurface_c &sf);
 };
 
 #endif // __BTP_STATICMAPLOADER_H__

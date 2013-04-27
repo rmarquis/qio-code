@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <shared/bspPhysicsDataLoader.h>
 #include <shared/str.h>
+#include <shared/cmSurface.h>
 
 static class bspPhysicsDataLoader_c *g_bspPhysicsLoader = 0;
 static class btpStaticMapLoader_c *g_staticMap = 0;
@@ -54,9 +55,25 @@ void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
 	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	g_staticMap->createWorldBrush(vertices);
 }
+void BT_ConvertWorldPoly(u32 surfNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+#if 0
+	cmSurface_c *newSF = new cmSurface_c;
+	g_bspPhysicsLoader->getTriangleSurface(surfNum,*newSF);
+	g_staticMap->createWorldSurface(newSF);
+#else
+	cmSurface_c newSF;
+	g_bspPhysicsLoader->getTriangleSurface(surfNum,newSF);
+	g_staticMap->addWorldSurface(newSF);
+#endif
+}
+btBvhTriangleMeshShape *BT_CMSurfaceToBHV(const class cmSurface_c *sf);
 btpStaticMapLoader_c::btpStaticMapLoader_c() {
 	mainWorldShape = 0;
 	mainWorldBody = 0;
+	mainWorldSurface_shape = 0;
+	mainWorldSurface_body = 0;
 }
 bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	bspPhysicsDataLoader_c l;		
@@ -69,10 +86,15 @@ bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	if(l.isCoD1BSP() || l.isHLBSP()) {
 		// HL bsps dont have brush data
 		// COD bsps have brush data, but we havent reverse engineered it fully yet
-		//l.iterateModelTriSurfs(0,BT_ConvertWorldPoly);
+		l.iterateModelTriSurfs(0,BT_ConvertWorldPoly);
 	} else {
 		l.iterateModelBrushes(0,BT_ConvertWorldBrush);
 		//l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+	}
+	if(mainWorldSurface.getNumIndices()) {
+		mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);
+		mainWorldSurface_body = new btRigidBody(0,0,mainWorldSurface_shape,btVector3(0,0,0));	
+		myPhysWorld->getBTDynamicsWorld()->addRigidBody(mainWorldSurface_body);
 	}
 	return false;
 }
@@ -97,6 +119,19 @@ void btpStaticMapLoader_c::createWorldBrush(const btAlignedObjectArray<btVector3
 	myPhysWorld->getBTDynamicsWorld()->addRigidBody(body);
 	this->bodies.push_back(body);
 }
+void btpStaticMapLoader_c::createWorldSurface(class cmSurface_c *sf) {
+	surfs.push_back(sf);
+	// create trimesh shape
+	class btBvhTriangleMeshShape *shape = BT_CMSurfaceToBHV(sf);
+	this->shapes.push_back(shape);
+	// create static body
+	btRigidBody* body = new btRigidBody(0,0,shape,btVector3(0,0,0));	
+	myPhysWorld->getBTDynamicsWorld()->addRigidBody(body);
+	this->bodies.push_back(body);
+}
+void btpStaticMapLoader_c::addWorldSurface(class cmSurface_c &sf) {
+	mainWorldSurface.addSurface(sf);
+}
 bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld_c *pWorld) {
 	this->myPhysWorld = pWorld;
 	str path = "maps/";
@@ -120,6 +155,10 @@ void btpStaticMapLoader_c::freeMemory() {
 		delete shapes[i];
 	}
 	shapes.clear();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		delete surfs[i];
+	}
+	surfs.clear();
 	for(u32 i = 0; i < bodies.size(); i++) {
 		myPhysWorld->getBTDynamicsWorld()->removeRigidBody(bodies[i]);
 		delete bodies[i];
@@ -133,5 +172,14 @@ void btpStaticMapLoader_c::freeMemory() {
 		myPhysWorld->getBTDynamicsWorld()->removeRigidBody(mainWorldBody);
 		delete mainWorldBody;
 		mainWorldBody = 0;
+	}
+	if(mainWorldSurface_shape) {
+		delete mainWorldSurface_shape;
+		mainWorldSurface_shape = 0;
+	}
+	if(mainWorldSurface_body) {
+		myPhysWorld->getBTDynamicsWorld()->removeRigidBody(mainWorldSurface_body);
+		delete mainWorldSurface_body;
+		mainWorldSurface_body = 0;
 	}
 }

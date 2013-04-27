@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_convert.h"
 #include <api/coreAPI.h>
 #include <api/cmAPI.h>
+#include <shared/cmSurface.h>
 
 // brush converting
 static btAlignedObjectArray<btVector3> planeEquations;
@@ -78,6 +79,42 @@ btConvexHullShape *BT_CModelTriMeshToConvex(const class cmTriMesh_i *triMesh, co
 		vertices[i] = (p*QIO_TO_BULLET).floatPtr();
 	}
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+	return shape;
+}
+btBvhTriangleMeshShape *BT_CMSurfaceToBHV(const class cmSurface_c *sf) {
+	if(sf->getNumIndices() == 0 || sf->getNumVerts() == 0) {
+		g_core->RedWarning("BT_CMSurfaceToBHV: ignoring empty mesh\n");
+		return 0;
+	}
+	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
+
+	sf->prepareScaledVerts(QIO_TO_BULLET);
+
+	btIndexedMesh subMesh;
+	subMesh.m_numTriangles = sf->getNumTris();
+	subMesh.m_numVertices = sf->getNumVerts();
+	subMesh.m_vertexStride = sizeof(vec3_c);
+	subMesh.m_vertexType = PHY_FLOAT;
+	subMesh.m_vertexBase = (const byte*)sf->getScaledVerts();
+	subMesh.m_indexType = PHY_INTEGER;
+	subMesh.m_triangleIndexBase = (const byte*)sf->getIndices();
+	subMesh.m_triangleIndexStride = sizeof(int)*3;
+	mesh->addIndexedMesh(subMesh);
+
+	btBvhTriangleMeshShape* shape;
+	if(sf->getNumTris() < 13) {
+		// dont build BHV for really small meshes
+		shape = new btBvhTriangleMeshShape(mesh,false,false);
+	} else {
+		// this function is slow, so tell user what we're doing
+		if(sf->getNumTris() > 1024) {
+			g_core->Print("BT_CMSurfaceToBHV: building BVH for cmSurface with %i tris and %i vertices...\n",sf->getNumTris(),sf->getNumVerts());
+		}
+		shape = new btBvhTriangleMeshShape(mesh,true);
+		if(sf->getNumTris() > 1024) {
+			g_core->Print("... done!\n");
+		}
+	}
 	return shape;
 }
 btBvhTriangleMeshShape *BT_CModelTriMeshToBHV(const class cmTriMesh_i *triMesh) {

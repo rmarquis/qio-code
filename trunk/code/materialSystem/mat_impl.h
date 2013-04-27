@@ -103,6 +103,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	// only if this->type == ST_COLORMAP
 	mtrStage_c *subStageBumpMap;
 	mtrStage_c *subStageHeightMap;
+	mtrStage_c *nextBundle;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -155,6 +156,9 @@ public:
 	}
 	void setSubStageHeightMap(class mtrStage_c *s) {
 		this->subStageHeightMap = s;
+	}
+	void setNextBundle(class mtrStage_c *s) {
+		this->nextBundle = s;
 	}
 	void setAlphaFunc(alphaFunc_e newAF) {
 		alphaFunc = newAF;
