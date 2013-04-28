@@ -489,12 +489,12 @@ public:
 		*p = this->getToken(tmp,*p);
 		return tmp;
 	}
-	const char *findToken(const char *token, const char *start = 0) const {
+	const char *findToken(const char *token, const char *start = 0, bool needWS = true) const {
 		u32 tokenLen = strlen(token);
 		if(start == 0)
 			start = this->data;
 		while(*start) {
-			if(!Q_stricmpn(start, token, tokenLen) && G_isWS(start[tokenLen])) {
+			if(!Q_stricmpn(start, token, tokenLen) && (needWS==false || G_isWS(start[tokenLen]))) {
 				return start;
 			}
 			start++;

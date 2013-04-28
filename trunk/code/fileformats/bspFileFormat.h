@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 #include <math/aabb.h>
 
+#include <api/coreAPI.h>
+
 #include "bspFileFormat_q2.h"
 #include "bspFileFormat_hl.h"
 #include "bspFileFormat_hl2.h"
@@ -142,6 +144,7 @@ typedef struct {
 #define	COD1_NODES			20
 #define	COD1_LEAFS			21
 #define	COD1_LEAFBRUSHES	22
+// FIXME: it seems that COD1_LEAFSURFACES indexes points into PATH_COLLISIONs lump
 #define	COD1_LEAFSURFACES	23
 // Lump[24] - Patch Collision - 16 bytes per entry
 // Lump[25] - Collision Verts - 12 bytes per entry. 
@@ -267,23 +270,26 @@ struct q3Leaf_s {
 };
 
 struct cod1Leaf_s {
-	int			cluster;			// -1 = opaque cluster (do I still store these?)
-	int			area;
+	int			cluster; // ofs 0
+	int			area; // ofs 4
 /*
 	// they are not present here in Call Of Duty 1
 	int			mins[3];			// for frustum culling
 	int			maxs[3];
 */
-	int			firstLeafSurface;
-	int			numLeafSurfaces;
+	int			firstLeafSurface; // ofs 8
+	int			numLeafSurfaces; // ofs 12
 
-	int			firstLeafBrush;
-	int			numLeafBrushes;
+	int			firstLeafBrush; // ofs 16
+	int			numLeafBrushes; // ofs 20
 
+	// ofs 24
 	int			cellNum; // may be -1
+	// ofs 28
 	int			dummy1;
+	// ofs 32
 	int			dummy2;
-};
+}; // sizeof(cod1Leaf_s) == 36
 
 
 struct q3BrushSide_s {
@@ -676,6 +682,46 @@ struct q3Header_s {
 	}
 	u32 getLumpStructCount(u32 lumpNum, u32 elemSize) const {
 		return getLumpSize(lumpNum) / elemSize;
+	}
+
+	// used for reverse engineering
+	void printLargestU32IndexOfEachLump(u32 numLumps) const {
+		for(u32 i = 0; i < numLumps; i++) {
+			const u32 *indices = (const u32*)this->getLumpData(i);
+			u32 lumpSize = this->getLumpSize(i);
+			if(lumpSize % 4) {
+				g_core->Print("Lump %i size is not a multiply of 4\n",i);
+				continue;
+			}
+			u32 numIndices = lumpSize/4;
+			u32 max = 0;
+			for(u32 j = 0; j < numIndices; j++) {
+				u32 idx = indices[j];
+				if(idx > max) {
+					max = idx;
+				}
+			}
+			g_core->Print("Lump %i max u32 val %i\n",i,max);
+		}
+	}
+	void printLargestU16IndexOfEachLump(u32 numLumps) const {
+		for(u32 i = 0; i < numLumps; i++) {
+			const u16 *indices = (const u16*)this->getLumpData(i);
+			u32 lumpSize = this->getLumpSize(i);
+			if(lumpSize % 2) {
+				g_core->Print("Lump %i size is not a multiply of 2\n",i);
+				continue;
+			}
+			u32 numIndices = lumpSize/2;
+			u32 max = 0;
+			for(u32 j = 0; j < numIndices; j++) {
+				u32 idx = indices[j];
+				if(idx > max) {
+					max = idx;
+				}
+			}
+			g_core->Print("Lump %i max u16 val %i\n",i,max);
+		}
 	}
 };
 

@@ -246,6 +246,8 @@ public:
 	rBspTree_c();
 	~rBspTree_c();
 
+	bool checkIsBSPValid();
+
 	bool load(const char *fname);
 	void clear();
 

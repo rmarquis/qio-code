@@ -1504,6 +1504,11 @@ bool rBspTree_c::load(const char *fname) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
+			g_core->Print("%i cells\n",h->getLumpStructCount(17,52));
+			g_core->Print("%i cull groups\n",h->getLumpStructCount(9,32));
+			g_core->Print("%i portals\n",h->getLumpStructCount(18,16));
+			g_core->Print("%i brushes\n",h->getLumpStructCount(4,4));
+			g_core->Print("%i patchColls at %i\n",h->getLumpStructCount(24,16),h->getLumps()[24].fileOfs);
 			// temporary fix for Call of Duty bsp's.
 			// (there is something wrong with leafSurfaces)
 			rf_bsp_forceEverythingVisible.setString("1");
@@ -1646,12 +1651,41 @@ bool rBspTree_c::load(const char *fname) {
 	h = 0;
 	fileData = 0;
 
+	checkIsBSPValid();
+
 	calcTangentVectors();
 	createBatches();
 	createVBOandIBOs();
 	createRenderModelsForBSPInlineModels();
 
 	return false;
+}
+bool rBspTree_c::checkIsBSPValid() {
+	bool bIsOk = true;
+	u32 highestSurfaceIndexInLeafSurfaces = 0;
+	for(u32 i = 0; i < leafSurfaces.size(); i++) {
+		u32 idx = leafSurfaces[i];
+		if(idx > highestSurfaceIndexInLeafSurfaces) {
+			highestSurfaceIndexInLeafSurfaces = idx;
+		}
+	}
+	if(highestSurfaceIndexInLeafSurfaces+1 != surfs.size()) {
+		g_core->RedWarning("rBspTree_c::checkIsBSPValid: surfs.size() mismatch\n");
+		bIsOk = false;
+	}
+	u32 highestLeafSurfaceIndex = 0;
+	for(u32 i = 0; i < leaves.size(); i++) {
+		u32 idx = leaves[i].firstLeafSurface + leaves[i].numLeafSurfaces;
+		if(idx > highestLeafSurfaceIndex) {
+			highestLeafSurfaceIndex = idx;
+		}
+	}
+	if(highestLeafSurfaceIndex != leafSurfaces.size()) {
+		g_core->RedWarning("rBspTree_c::checkIsBSPValid: leafSurfaces mismatch\n");
+		bIsOk = false;
+	}
+
+	return bIsOk; // ok
 }
 void rBspTree_c::clear() {
 	//for(u32 i = 0; i < lightmaps.size(); i++) {
@@ -1894,7 +1928,11 @@ void rBspTree_c::updateVisibility() {
 			}
 			for(u32 j = 0; j < l->numLeafSurfaces; j++) {
 				u32 sfNum = this->leafSurfaces[l->firstLeafSurface + j];
-				this->surfs[sfNum].lastVisCount = this->visCounter;
+				if(sfNum >= this->surfs.size()) {
+					g_core->RedWarning("rBspTree_c::updateVisibility: Surface index %i out of range <0,%i)\n",sfNum,this->surfs.size());
+				} else {
+					this->surfs[sfNum].lastVisCount = this->visCounter;
+				}
 			}
 		}
 	}
