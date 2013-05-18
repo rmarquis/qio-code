@@ -41,6 +41,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
+#include <shared/str.h>
+#include <shared/autoCvar.h>
 
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
@@ -55,7 +57,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 #pragma comment (lib, "d3d10.lib")
 #pragma comment (lib, "d3dx10.lib")
 
+static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
+static aCvar_c rb_showNormalColors("rb_showNormalColors","0");
+
+// HLSL shaders can be compiled with various 
+// options and defines
+struct dx10ShaderPermutationFlags_s {
+	// draw colormap with lightmap
+	bool hasLightmap; // #define HAS_LIGHTMAP 
+	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+
+	dx10ShaderPermutationFlags_s() {
+		memset(this,0,sizeof(*this));
+	}
+};
+
+
+
 class dx10Shader_c {
+	str name;
+	dx10ShaderPermutationFlags_s flags;
 public:
 	ID3D10Effect *m_effect;
 	ID3D10EffectTechnique *m_technique;
@@ -65,6 +86,35 @@ public:
 	ID3D10EffectMatrixVariable *m_viewMatrixPtr;
 	ID3D10EffectMatrixVariable *m_projectionMatrixPtr;
 	ID3D10EffectShaderResourceVariable *m_texturePtr;
+	ID3D10EffectShaderResourceVariable *m_lightmapPtr;
+	ID3D10EffectVectorVariable *m_viewOrigin;
+
+
+
+	dx10Shader_c() {
+		m_effect = 0;
+		m_technique = 0;
+		m_layout = 0;
+		m_worldMatrixPtr = 0;
+		m_viewMatrixPtr = 0;
+		m_projectionMatrixPtr = 0;
+		m_texturePtr = 0;
+		m_lightmapPtr = 0;
+		m_viewOrigin = 0;
+	}
+
+	const char *getName() const {
+		return name;
+	}
+	const dx10ShaderPermutationFlags_s &getPermutations() const {
+		return flags;
+	}
+	bool isValid() const {
+		if(m_effect)
+			return true;
+		return false;
+	}
+
 
 	// init rVert_c format layout
 	void init3DVertexFormat(D3D10_INPUT_ELEMENT_DESC polygonLayout[], u32 &numElements) {
@@ -100,7 +150,15 @@ public:
 		polygonLayout[3].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
 		polygonLayout[3].InstanceDataStepRate = 0;
 
-		numElements = 4;
+		polygonLayout[4].SemanticName = "TEXCOORD";
+		polygonLayout[4].SemanticIndex = 1;
+		polygonLayout[4].Format = DXGI_FORMAT_R32G32_FLOAT;
+		polygonLayout[4].InputSlot = 0;
+		polygonLayout[4].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
+		polygonLayout[4].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+		polygonLayout[4].InstanceDataStepRate = 0;
+
+		numElements = 5;
 	}
 	// init r2dVert_s vertex format (used for gui graphics, console background and fonts)
 	void init2DVertexFormat(D3D10_INPUT_ELEMENT_DESC polygonLayout[], u32 &numElements) {
@@ -125,7 +183,9 @@ public:
 		numElements = 2;
 	}
 
-	bool loadHLSLShader(ID3D10Device* device, const char *fname, bool is3DShader = true) {		
+	bool loadHLSLShader(ID3D10Device* device, const char *fname, bool is3DShader, const dx10ShaderPermutationFlags_s *pFlags) {
+		this->flags = *pFlags;
+		this->name = fname;
 		char *buf;
 		u32 fileLen;
 		fileLen = g_vfs->FS_ReadFile(fname,(void**)&buf);
@@ -133,12 +193,30 @@ public:
 			g_core->RedWarning("dx10Shader_c:: cannot open %s for reading\n",fname);
 			return true; // error
 		}
-		// Load the shader in from the file.
+		// generate final shader text
+		str finalEffectDef = "\n";
+		// first append #defines
+		if(pFlags->hasLightmap) {
+			finalEffectDef.append("#define HAS_LIGHTMAP\n");
+		}
+		if(pFlags->hasTexGenEnvironment) {
+			finalEffectDef.append("#define HAS_TEXGEN_ENVIROMENT\n");
+		}
+		// then add main shader code
+		finalEffectDef.append(buf);
+
+		finalEffectDef.append("\n");
+
+		// load the shader from the memory
 		ID3D10Blob* errorMessage = 0;
-		HRESULT result = D3DX10CreateEffectFromMemory(buf,fileLen,fname, NULL, NULL, "fx_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, 
+		HRESULT result = D3DX10CreateEffectFromMemory(finalEffectDef,finalEffectDef.length(),fname, NULL, NULL, "fx_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, 
 											device, NULL, NULL, &m_effect, &errorMessage, NULL);
 		if(FAILED(result)) {
 			g_core->RedWarning("dx10Shader_c:: D3DX10CreateEffectFromMemory failed for %s\n",fname);
+			if(errorMessage) {
+				g_core->RedWarning("%s",errorMessage->GetBufferPointer());
+				errorMessage->Release();
+			}
 			return true; // error
 		}
 
@@ -178,8 +256,17 @@ public:
 
 		// Get pointer to the texture resource inside the shader.
 		m_texturePtr = m_effect->GetVariableByName("shaderTexture")->AsShaderResource();
+		m_lightmapPtr = m_effect->GetVariableByName("shaderLightmap")->AsShaderResource();
+
+		m_viewOrigin = m_effect->GetVariableByName("viewOrigin")->AsVector();
 
 		return false; // no error
+	}
+	void destroyShader() {
+		if(m_effect) {
+			m_effect->Release();
+			m_effect = 0;
+		}
 	}
 };
 
@@ -233,6 +320,59 @@ public:
 	}
 };
 
+
+class dx10ShadersSystem_c {
+	ID3D10Device *pD3DDevice;
+	arraySTD_c<dx10Shader_c*> shaders;
+
+	dx10Shader_c *findShader(const char *baseName, const dx10ShaderPermutationFlags_s &p) {
+		for(u32 i = 0; i < shaders.size(); i++) {
+			dx10Shader_c *s = shaders[i];
+			if(!stricmp(baseName,s->getName())
+				&& !memcmp(&s->getPermutations(),&p,sizeof(dx10ShaderPermutationFlags_s))) {
+				return s;
+			}
+		}
+		return 0;
+	}
+public:
+	dx10ShadersSystem_c() {
+		pD3DDevice = 0;
+	}
+	~dx10ShadersSystem_c() {
+		shutdownShadersSystem();
+	}
+	void initShadersSystem(ID3D10Device *pNewDevice) {
+		this->pD3DDevice = pNewDevice;
+	}
+	void shutdownShadersSystem() {
+		for(u32 i = 0; i < shaders.size(); i++) {
+			delete shaders[i];
+		}
+		shaders.clear();
+	}
+	dx10Shader_c *registerShader(const char *shaderName, const dx10ShaderPermutationFlags_s *flags, bool is3D = true) {
+		str fullPath = "hlsl/dx10/";
+		fullPath.append(shaderName);
+		fullPath.append(".fx");
+		dx10ShaderPermutationFlags_s defaultFlags;
+		if(flags == 0) {
+			flags = &defaultFlags;
+		}
+		dx10Shader_c *existing = findShader(fullPath,*flags);
+		if(existing) {
+			if(existing->isValid())
+				return existing;
+			return 0;
+		}
+		dx10Shader_c *newShader = new dx10Shader_c;
+		newShader->loadHLSLShader(pD3DDevice,fullPath,is3D,flags);
+		shaders.push_back(newShader);
+		if(newShader->isValid() == false)
+			return 0;
+		return newShader;
+	}
+};
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
 // imports
@@ -258,13 +398,17 @@ class rbDX10_c : public rbAPI_i {
 	// viewport def
 	D3D10_VIEWPORT viewPort;
 	// our classes
-	dx10Shader_c dx10DefaultShader3D;
-	dx10Shader_c dx10DefaultShader2D;
+	dx10ShadersSystem_c *shadersSystem;
 
 	// matrices, they will be send to HLSL shaders
 	matrix_c viewMatrix;
 	matrix_c worldMatrix;
+	matrix_c worldMatrixInverse;
+	axis_c viewAxis;
+	vec3_c camOriginWorldSpace;
+	vec3_c camOriginEntitySpace;
 	matrix_c projectionMatrix;
+
 	// material and lightmap
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
@@ -273,6 +417,7 @@ public:
 		hWnd = 0;
 		lastMat = 0;
 		lastLightmap = 0;
+		shadersSystem = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX10;
@@ -325,6 +470,16 @@ public:
 		pD3DDevice->CopySubresourceRegion(pBackBuffer, 0, 0, 0, 0, srcTexture, 0,
 			0);
 #else
+		if(shadersSystem == 0) {
+			g_core->RedWarning("rbDX10_c::draw2D: shadersSystem is not ready\n");
+			return;
+		}
+		dx10Shader_c *shader2D = shadersSystem->registerShader("default_2d",0,false);
+		if(shader2D == 0) {
+			g_core->RedWarning("rbDX10_c::draw2D: cannot find default 2D shader\n");
+			return;
+		}
+
 		tempGPUVerts.create(this->pD3DDevice,verts,numVerts*sizeof(r2dVert_s),true);
 		ID3D10Buffer *pNewVertexBuffer = tempGPUVerts.getDX10Buffer();
 
@@ -348,29 +503,30 @@ public:
 		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
 
 		// set the world matrix (model pos)
-		dx10DefaultShader2D.m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+		shader2D->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
 
 		// set the view matrix (camera pos)
-		dx10DefaultShader2D.m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+		shader2D->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
 
 		// set the projection matrix (camera lens)
-		dx10DefaultShader2D.m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+		shader2D->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
 
 		// bind the texture.
 		const mtrStageAPI_i *s = lastMat->getStage(0);
-		ID3D10ShaderResourceView *resourceView = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
-		dx10DefaultShader2D.m_texturePtr->SetResource(resourceView);
+		ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+
+		shader2D->m_texturePtr->SetResource(colorMapResource);
 
 		// set the input layout.
-		pD3DDevice->IASetInputLayout(dx10DefaultShader2D.m_layout);
+		pD3DDevice->IASetInputLayout(shader2D->m_layout);
 
 		// get the description structure of the technique from inside the shader so it can be used for rendering.
 		D3D10_TECHNIQUE_DESC techniqueDesc;
-		dx10DefaultShader2D.m_technique->GetDesc(&techniqueDesc);
+		shader2D->m_technique->GetDesc(&techniqueDesc);
 
 		// go through each pass in the technique and render the triangles.
 		for(u32 i = 0; i < techniqueDesc.Passes; i++) {
-			dx10DefaultShader2D.m_technique->GetPassByIndex(i)->Apply(0);
+			shader2D->m_technique->GetPassByIndex(i)->Apply(0);
 			pD3DDevice->DrawIndexed(numIndices, 0, 0);
 		}
 #endif
@@ -424,21 +580,53 @@ public:
 	//}
 	short blendSrc;
 	short blendDst;
+	void initBlendDesc(D3D10_BLEND_DESC &blendDesc, short src, short dst) {
+		blendDesc.AlphaToCoverageEnable = false;
+		blendDesc.BlendEnable[0] = true;
+		if(src == BM_ONE) {
+			blendDesc.SrcBlend       = D3D10_BLEND_ONE;
+			blendDesc.SrcBlendAlpha  = D3D10_BLEND_ONE;
+		} else if(src == BM_ONE_MINUS_SRC_ALPHA) {
+			blendDesc.SrcBlend       = D3D10_BLEND_INV_SRC_ALPHA;
+			blendDesc.SrcBlendAlpha  = D3D10_BLEND_INV_SRC_ALPHA;
+		} else if(src == BM_SRC_ALPHA) {
+			blendDesc.SrcBlend      = D3D10_BLEND_SRC_ALPHA;
+			blendDesc.SrcBlendAlpha		= D3D10_BLEND_SRC_ALPHA;
+		} else {
+
+		}
+		if(dst == BM_ONE) {
+			blendDesc.DestBlend      = D3D10_BLEND_ONE;
+			blendDesc.DestBlendAlpha = D3D10_BLEND_ONE;
+		} else if(dst == BM_SRC_ALPHA) {
+			blendDesc.DestBlend      = D3D10_BLEND_SRC_ALPHA;
+			blendDesc.DestBlendAlpha = D3D10_BLEND_SRC_ALPHA;
+		} else if(dst == BM_ONE_MINUS_SRC_ALPHA) {
+			blendDesc.DestBlend       = D3D10_BLEND_INV_SRC_COLOR;
+			blendDesc.DestBlendAlpha  = D3D10_BLEND_INV_SRC_ALPHA;
+		} else {
+
+		}
+		blendDesc.BlendOp        = D3D10_BLEND_OP_ADD;
+		blendDesc.BlendOpAlpha   = D3D10_BLEND_OP_ADD;
+		blendDesc.RenderTargetWriteMask[0] = D3D10_COLOR_WRITE_ENABLE_ALL;
+	}
+	ID3D10BlendState *blendStates[BM_NUM_BLEND_TYPES][BM_NUM_BLEND_TYPES];
 	void setBlendFunc( short src, short dst ) {
-		//if( blendSrc != src || blendDst != dst ) {
-		//	blendSrc = src;
-		//	blendDst = dst;
-		//	if(src == BM_NOT_SET && dst == BM_NOT_SET) {
-		//		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-		//		//pDev->SetRenderState(D3DRS_ZENABLE, true);
-		//	} else {
-		//		pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-		//		//pDev->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
-		//		//pDev->SetRenderState(D3DRS_ZENABLE, false);
-		//		pDev->SetRenderState(D3DRS_SRCBLEND, blendModeEnumToDX10Blend(src));
-		//		pDev->SetRenderState(D3DRS_DESTBLEND, blendModeEnumToDX10Blend(dst));
-		//	}
-		//}
+		if( blendSrc != src || blendDst != dst ) {
+			blendSrc = src;
+			blendDst = dst;
+			if(src == BM_NOT_SET && dst == BM_NOT_SET) {
+				pD3DDevice->OMSetBlendState(0, 0, 0xffffffff);
+			} else {
+				if(blendStates[src][dst] == 0) {
+					D3D10_BLEND_DESC blendDesc = {0};
+					initBlendDesc(blendDesc,src,dst);
+					pD3DDevice->CreateBlendState(&blendDesc, &blendStates[src][dst]);
+				}
+				pD3DDevice->OMSetBlendState(blendStates[src][dst], 0, 0xffffffff);
+			}
+		}
 	}
 	void disableBlendFunc() {
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
@@ -450,6 +638,21 @@ public:
 			return;
 		if(indices.getNumIndices() == 0)
 			return;
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::drawElements: pD3DDevice is NULL\n");
+			return;
+		}
+
+		const mtrStageAPI_i *s = lastMat->getStage(0);
+		ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+
+		ID3D10ShaderResourceView *lightmapResource;
+		if(lastLightmap) {
+			lightmapResource =  (ID3D10ShaderResourceView *)lastLightmap->getExtraUserPointer();
+		} else {
+			lightmapResource = 0;
+		}
+
 
 		ID3D10Buffer *pNewVertexBuffer;
 		if(verts.getInternalHandleVoid() == 0) {
@@ -486,30 +689,65 @@ public:
 		// set primitives type (we're always using triangles)
 		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
 
+		dx10ShaderPermutationFlags_s flags;
+		if(lastLightmap) {
+			flags.hasLightmap = true;
+		}
+		if(s->hasTexGen() && s->getTexGen() == TCG_ENVIRONMENT) {
+			flags.hasTexGenEnvironment = true;
+		}
+		const blendDef_s &blendDef = s->getBlendDef();
+		setBlendFunc(blendDef.src,blendDef.dst);
+
+		dx10Shader_c *shader;
+		if(rb_showNormalColors.getInt()) {
+			shader = shadersSystem->registerShader("showNormalColors",0,true);
+		} else {
+			shader = shadersSystem->registerShader("default",&flags,true);
+		}
+		if(shader == 0) {
+			if(shader == 0) {
+				g_core->RedWarning("rbDX10_c::drawElements: cannot load selected shader, trying to select default...\n");
+			}
+			shader = shadersSystem->registerShader("default",0,true);
+			if(shader == 0) {
+				g_core->RedWarning("rbDX10_c::drawElements: cannot load default shader\n");
+				return;
+			}
+		}
 		// set the world matrix (model pos)
-		dx10DefaultShader3D.m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
-
+		if(shader->m_worldMatrixPtr) {
+			shader->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+		}
 		// set the view matrix (camera pos)
-		dx10DefaultShader3D.m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
-
+		if(shader->m_viewMatrixPtr) {
+			shader->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+		}
 		// set the projection matrix (camera lens)
-		dx10DefaultShader3D.m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+		if(shader->m_projectionMatrixPtr) {
+			shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+		}
+		if(shader->m_viewOrigin) {
+			shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
+		}
 
-		// bind the texture.
-		const mtrStageAPI_i *s = lastMat->getStage(0);
-		ID3D10ShaderResourceView *resourceView = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
-		dx10DefaultShader3D.m_texturePtr->SetResource(resourceView);
+		if(shader->m_lightmapPtr) {
+			shader->m_lightmapPtr->SetResource(lightmapResource);
+		}
+		if(shader->m_texturePtr) {
+			shader->m_texturePtr->SetResource(colorMapResource);
+		}
 
 		// set the input layout.
-		pD3DDevice->IASetInputLayout(dx10DefaultShader3D.m_layout);
+		pD3DDevice->IASetInputLayout(shader->m_layout);
 
 		// get the description structure of the technique from inside the shader so it can be used for rendering.
 		D3D10_TECHNIQUE_DESC techniqueDesc;
-		dx10DefaultShader3D.m_technique->GetDesc(&techniqueDesc);
+		shader->m_technique->GetDesc(&techniqueDesc);
 
 		// go through each pass in the technique and render the triangles.
 		for(u32 i = 0; i < techniqueDesc.Passes; i++) {
-			dx10DefaultShader3D.m_technique->GetPassByIndex(i)->Apply(0);
+			shader->m_technique->GetPassByIndex(i)->Apply(0);
 			pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
 		}
 	}	
@@ -517,6 +755,10 @@ public:
 
 	}
 	virtual void beginFrame() {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::beginFrame: pD3DDevice is NULL\n");
+			return;
+		}
 		// clear scene
 		pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0) );
     
@@ -524,17 +766,33 @@ public:
 		pD3DDevice->ClearDepthStencilView(m_depthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0);
 	}
 	virtual void endFrame() {
+		if(pSwapChain == 0) {
+			g_core->RedWarning("rbDX10_c::endFrame: pSwapChain is NULL\n");
+			return;
+		}
 		//flip buffers
 		pSwapChain->Present(0,0);
 	}
 	virtual void clearDepthBuffer() {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::clearDepthBuffer: pD3DDevice is NULL\n");
+			return;
+		}
 		// clear the depth buffer.
 		pD3DDevice->ClearDepthStencilView(m_depthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0);
 	}
 	void enableZBuffer() {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::enableZBuffer: pD3DDevice is NULL\n");
+			return;
+		}
 		pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
 	}
 	void disableZBuffer() {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("disableZBuffer::enableZBuffer: pD3DDevice is NULL\n");
+			return;
+		}
 		pD3DDevice->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
 	}
 	virtual void setup2DView() {
@@ -544,9 +802,12 @@ public:
 
 		disableZBuffer();
 	}
-	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &camAxis) {
+	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
+		camOriginWorldSpace = newCamPos;
+		viewAxis = newCamAxis;
+
 		// transform by the camera placement and view axis
-		viewMatrix.invFromAxisAndVector(camAxis,newCamPos);
+		viewMatrix.invFromAxisAndVector(newCamAxis,newCamPos);
 		// convert to gl coord system
 		viewMatrix.toGL();
 
@@ -568,14 +829,20 @@ public:
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() {
 		worldMatrix.identity();
+		worldMatrixInverse = worldMatrix.getInversed();
+		camOriginEntitySpace = this->camOriginWorldSpace;
 	}
 	// used while drawing entities
 	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
 		worldMatrix.fromAxisAndOrigin(axis,origin);
+		worldMatrixInverse = worldMatrix.getInversed();
+		worldMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
 	}
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
 		worldMatrix.fromAnglesAndOrigin(angles,origin);
+		worldMatrixInverse = worldMatrix.getInversed();
+		worldMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
 	}
 
 	virtual u32 getWinWidth() const  {
@@ -586,6 +853,10 @@ public:
 	}
 
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::uploadTextureRGBA: device is NULL\n");
+			return;
+		}
 		ID3D10Texture2D *tex = 0;
 		// create ID3D10Texture2D
 		D3D10_TEXTURE2D_DESC desc; 
@@ -602,7 +873,7 @@ public:
 		HRESULT hr = pD3DDevice->CreateTexture2D( &desc, NULL, &tex ); 
 		if (FAILED(hr)) {
 			out->setInternalHandleV(0);
-			printf("rbDX10_c::uploadTexture: pD3DDevice->CreateTexture2D failed\n");
+			g_core->RedWarning("rbDX10_c::uploadTexture: pD3DDevice->CreateTexture2D failed\n");
 			return;
 		}
 		// copy image data to dx10 texture
@@ -610,7 +881,7 @@ public:
 		hr = tex->Map( D3D10CalcSubresource(0, 0, 1), D3D10_MAP_WRITE_DISCARD, 0, &mappedTex );
 		if (FAILED(hr)) {
 			out->setInternalHandleV(0);
-			printf("rbDX10_c::uploadTexture: tex->Map( .. ) failed\n");
+			g_core->RedWarning("rbDX10_c::uploadTexture: tex->Map( .. ) failed\n");
 			return;
 		}
 		byte *outPTexels = (UCHAR*)mappedTex.pData;
@@ -622,6 +893,7 @@ public:
 
 		// create ID3D10ShaderResourceView
     	D3D10_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+		ZeroMemory( &resourceViewDesc, sizeof(resourceViewDesc)); 
 		resourceViewDesc.Format = desc.Format;
 		resourceViewDesc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
 		resourceViewDesc.Texture2D.MipLevels = desc.MipLevels;
@@ -638,7 +910,24 @@ public:
 		out->setExtraUserPointer(resourceView);
 	}
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
-		
+		if(rgba) {
+			uploadTextureRGBA(out,data,w,h);
+		} else {
+			arraySTD_c<byte> tmp;
+			u32 numPixels = w * h;
+			tmp.resize(numPixels * 4);
+			const byte *in = data;
+			byte *outB = tmp.getArray();
+			for(u32 i = 0; i < numPixels; i++) {
+				outB[0] = in[0];
+				outB[1] = in[1];
+				outB[2] = in[2];
+				outB[3] = 255;
+				outB+=4;
+				in+=3;
+			}
+			uploadTextureRGBA(out,tmp.getArray(),w,h);
+		}
 	}
 	virtual void freeTextureData(class textureAPI_i *ptr) {
 		ID3D10Texture2D *tex = (ID3D10Texture2D *)ptr->getInternalHandleV();
@@ -729,6 +1018,8 @@ public:
 	}
 
 	virtual void init() {
+		// cvars
+		AUTOCVAR_RegisterAutoCvars();
 		// init SDL window
 		g_sharedSDLAPI->init();
 
@@ -961,20 +1252,24 @@ public:
 		{
 			return; //true; // error
 		}
-	
-		// load default 3D shader
-		dx10DefaultShader3D.loadHLSLShader(pD3DDevice,"hlsl/dx10/default.fx",true);
-		// load default 2D shader
-		dx10DefaultShader2D.loadHLSLShader(pD3DDevice,"hlsl/dx10/default_2d.fx",false);
+
+		shadersSystem = new dx10ShadersSystem_c;
+		shadersSystem->initShadersSystem(this->pD3DDevice);
 
 		// This depends on SDL_INIT_VIDEO, hence having it here
 		g_inputSystem->IN_Init();
 	}
 	virtual void shutdown(bool destroyWindow) {
+		AUTOCVAR_UnregisterAutoCvars();
+
 		lastMat = 0;
 		lastLightmap = 0;
 
 		hWnd = 0;
+		if(shadersSystem) {
+			delete shadersSystem;
+			shadersSystem = 0;
+		}
 		if(m_depthStencilState) {
 			m_depthStencilState->Release();
 			m_depthStencilState = 0;

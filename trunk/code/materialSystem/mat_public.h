@@ -66,6 +66,8 @@ enum blendMode_e {
 	BM_SRC_COLOR,
 	BM_SRC_ALPHA,
 	BM_SRC_ALPHA_SATURATE,
+
+	BM_NUM_BLEND_TYPES,
 };
 
 struct blendDef_s {

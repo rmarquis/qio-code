@@ -238,7 +238,8 @@ public:
 		pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE );
 		pDev->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
 
-		pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE4X );
+		//pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE4X );
+		pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
 		//pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_ADDSIGNED );
 		pDev->SetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 		pDev->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );

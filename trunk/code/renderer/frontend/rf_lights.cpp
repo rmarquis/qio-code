@@ -195,7 +195,7 @@ void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
 	numCurrentEntityInteractions = to;
 }
 void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
-#if 1
+#if 0
 	arraySTD_c<rEntityImpl_c*> ents;
 	RFE_BoxEntities(this->absBounds,ents);
 	if(entityInteractions.size() < ents.size()) {
