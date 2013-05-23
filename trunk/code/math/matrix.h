@@ -52,6 +52,9 @@ public:
 		this->_v[2] = m2; this->_v[6] = m6; this->_v[10] = m10; this->_v[14] = m14;
 		this->_v[3] = m3; this->_v[7] = m7; this->_v[11] = m11; this->_v[15] = m15;
 	}
+	void setFromOpenGLMatrix(const float *pMat) {
+		memcpy(_v,pMat,sizeof(_v));
+	}
 	void setX(const float newX) {
 		_v[12] = newX;
 	}
@@ -86,6 +89,11 @@ public:
 	}
 	float *getUp() {
 		return &_v[8];
+	}
+	void scaleOrigin(float f) {
+		_v[12] *= f;
+		_v[13] *= f;
+		_v[14] *= f;
 	}
 	class axis_c getAxis() const;
 	vec3_c getAngles() const {

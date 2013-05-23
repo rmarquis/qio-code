@@ -72,6 +72,11 @@ public:
 	bool isBBMinsMaxs() const {
 		return getType() == CMOD_BBMINSMAXS;
 	}
+	// returns true if this->type == CMOD_HULL
+	// but a hull shape can be respresented with bbox
+	virtual bool isHullBoxShaped() const {
+		return false;
+	}
 
 	virtual class cmBBExts_i *getBBExts() {
 		return 0;
@@ -117,6 +122,11 @@ public:
 	virtual cmHelper_i *getHelper(u32 helperNum) = 0;
 	virtual cmCompound_i *getSubModel(u32 subModelNum) = 0;
 	///virtual cmHelper_i *getNextHelperOfClass(const char *className, cmHelper_i *cur = 0) = 0;
+
+	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const
+	{
+
+	}
 
 	virtual bool traceRay(class trace_c &tr) = 0;
 

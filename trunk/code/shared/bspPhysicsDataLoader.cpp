@@ -355,7 +355,18 @@ void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &
 			out.setIndex(i,val);
 		}
 	} else {
-
+		const q3Surface_s *q3SF = h->getSurface(surfNum);
+		const q3Vert_s *v = h->getVerts() + q3SF->firstVert;
+		const u32 *indices = h->getIndices();;
+		out.setNumVerts(q3SF->numVerts);
+		for(u32 i = 0; i < q3SF->numVerts; i++, v++) {
+			out.setVertex(i,v->xyz);
+		}
+		out.setNumIndices(q3SF->numIndexes);
+		for(u32 i = 0; i < q3SF->numIndexes; i++) {
+			u16 val = indices[q3SF->firstIndex+i];
+			out.setIndex(i,val);
+		}
 	}
 }
 u32 bspPhysicsDataLoader_c::getMaterialContentFlags(u32 matNum) const {

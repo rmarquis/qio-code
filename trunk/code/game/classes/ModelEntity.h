@@ -63,6 +63,8 @@ public:
 
 	DECLARE_CLASS( ModelEntity );
 
+	virtual const class vec3_c &getPhysicsOrigin() const;
+
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
 

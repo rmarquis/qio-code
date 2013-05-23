@@ -277,6 +277,17 @@ public:
 		}
 	}
 
+	void addToColMeshBuilder(colMeshBuilderAPI_i *out) const {
+		for(u32 i = 0; i < indices.size(); i+= 3) {
+			u32 i0 = indices[i+0];
+			u32 i1 = indices[i+1];
+			u32 i2 = indices[i+2];
+			const vec3_c &v0 = verts[i0];
+			const vec3_c &v1 = verts[i1];
+			const vec3_c &v2 = verts[i2];
+			out->addXYZTri(v0,v1,v2);
+		}
+	}
 	// load vertices/triangles data directly from Doom3 .proc file
 	bool loadDoom3ProcFileWorldModel(const char *fname);
 

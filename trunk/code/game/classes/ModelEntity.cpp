@@ -73,6 +73,9 @@ ModelEntity::~ModelEntity() {
 		delete initialRagdolPose;
 	}
 }
+const class vec3_c &ModelEntity::getPhysicsOrigin() const {
+	return body->getRealOrigin();
+}
 void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 	BaseEntity::setOrigin(newXYZ);
 	if(body) {

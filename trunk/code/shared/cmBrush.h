@@ -95,6 +95,13 @@ public:
 			callback(&sides[i].pl.norm.x);
 		}
 	}
+	bool isBoxShaped() const {
+		for(u32 i = 0; i < sides.size(); i++) {
+			if(sides[i].pl.norm.isAxial()==false)
+				return false;
+		}
+		return true;
+	}
 	void negatePlaneDistances() {
 		for(u32 i = 0; i < sides.size(); i++) {
 			sides[i].pl.dist *= -1;
@@ -102,6 +109,9 @@ public:
 	}
 	bool hasSideWithMaterial(const char *matName) const;
 	void translateXYZ(const class vec3_c &ofs);
+	void getRawTriSoupData(class colMeshBuilderAPI_i *out) const;
+
+	void calcSideWinding(unsigned int sideNum, class cmWinding_c &out) const;
 
 	// returns true if brush is invalid
 	bool calcBounds();

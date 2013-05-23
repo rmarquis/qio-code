@@ -517,6 +517,15 @@ struct q3Header_s {
 			return (const q3Vert_s*)(((const byte*)this)+getLumps()[Q3_DRAWVERTS].fileOfs);
 		}
 	}
+	const u32 *getIndices() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const u32*)(((const byte*)this)+getLumps()[MOH_DRAWINDEXES].fileOfs);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return (const u32*)(((const byte*)this)+getLumps()[COD1_DRAWINDEXES].fileOfs);
+		} else {
+			return (const u32*)(((const byte*)this)+getLumps()[Q3_DRAWINDEXES].fileOfs);
+		}
+	}
 	const q3Surface_s *getSurfaces() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs);

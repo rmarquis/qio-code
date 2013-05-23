@@ -80,7 +80,7 @@ static class moduleAPI_i *g_physDLL = 0;
 static aCvar_c g_runPhysics("g_runPhysics","1");
 
 void G_InitPhysicsEngine() {
-	g_physDLL = g_moduleMgr->load("gphysics");
+	g_physDLL = g_moduleMgr->load("gphysics_ode");
 	if(g_physDLL == 0) {
 		g_core->RedWarning("G_InitPhysicsEngine: physics module not avaible\n");
 	} else {

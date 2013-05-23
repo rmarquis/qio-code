@@ -51,7 +51,9 @@ void Weapon_PhysGun::postSpawn() {
 		// but it has a lot of dangling edges and breaks stencil shadows
 		//this->setViewModel("models/weapons/v_physcannon.mdl");
 	} else {
-
+		this->setRenderModel("models/testweapons/smallGun.obj");
+		bUseDynamicConvexForTrimeshCMod = true;
+		this->setColModel("models/testweapons/smallGun.map");
 	}
 	ModelEntity::postSpawn();
 }
@@ -71,7 +73,7 @@ void Weapon_PhysGun::setKeyValue(const char *key, const char *value) {
 // update picked up entity orientation
 void Weapon_PhysGun::runFrame() {
 	if(holdingEntity) {
-		vec3_c pos = holdingEntity->getOrigin();
+		vec3_c pos = holdingEntity->getPhysicsOrigin();
 		vec3_c neededPos = owner->getEyePos() + owner->getViewAngles().getForward() * phHoldDist;
 		vec3_c delta = neededPos - pos;
 

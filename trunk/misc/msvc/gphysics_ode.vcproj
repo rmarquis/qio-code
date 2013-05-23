@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="gphysics"
-	ProjectGUID="{7CADFBEB-B846-4BBA-856E-4F2D6E43FB9D}"
-	RootNamespace="gphysics"
+	Name="gphysics_ode"
+	ProjectGUID="{1C76F821-4830-4C55-931A-0802361CD332}"
+	RootNamespace="gphysics_ode"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\ode-r1939\include&quot;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -58,11 +58,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\gphysicsx86.dll"
-				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
+				OutputFile="..\..\game\system\gphysics_odex86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\ode-r1939\lib\DebugSingleLib\&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="libcmtd.lib"
-				ModuleDefinitionFile="gphysics.def"
+				ModuleDefinitionFile="gphysics_ode.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\bullet-2.80-rev2531\src&quot;"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\ode-r1939\include&quot;"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
@@ -132,10 +132,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\gphysicsx86.dll"
-				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
-				IgnoreDefaultLibraryNames="MSVCRT.lib"
-				ModuleDefinitionFile="gphysics.def"
+				OutputFile="..\..\game\system\gphysics_odex86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\ode-r1939\lib\ReleaseSingleLib\&quot;"
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+				ModuleDefinitionFile="gphysics_ode.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -173,35 +173,51 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_api.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_api.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_characterController.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_characterController.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\gphysics\ode\ode_cMod2ODEGeom.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_constraint.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\gphysics\ode\ode_rigidBody.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_constraint.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_shape.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_rigidBody.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_staticMapLoader.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_shape.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_staticMapLoader.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_world.cpp"
+				RelativePath="..\..\code\gphysics\ode\ode_world.cpp"
 				>
 			</File>
 		</Filter>
@@ -211,39 +227,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_characterController.h"
+				RelativePath="..\..\code\gphysics\ode\ode_characterController.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_cMod2BulletShape.h"
+				RelativePath="..\..\code\gphysics\ode\ode_cMod2ODEGeom.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_constraint.h"
+				RelativePath="..\..\code\gphysics\ode\ode_constraint.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_convert.h"
+				RelativePath="..\..\code\gphysics\ode\ode_convert.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_headers.h"
+				RelativePath="..\..\code\gphysics\ode\ode_headers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_rigidBody.h"
+				RelativePath="..\..\code\gphysics\ode\ode_rigidBody.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_shape.h"
+				RelativePath="..\..\code\gphysics\ode\ode_shape.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_staticMapLoader.h"
+				RelativePath="..\..\code\gphysics\ode\ode_staticMapLoader.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\gphysics\bullet\btp_world.h"
+				RelativePath="..\..\code\gphysics\ode\ode_world.h"
 				>
 			</File>
 			<File
@@ -294,6 +310,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\matrix.h"
 				>
 			</File>
 			<File

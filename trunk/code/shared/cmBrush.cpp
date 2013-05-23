@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // cmBrush.cpp
 #include "cmBrush.h"
+#include "cmWinding.h"
 #include <math/aabb.h>
 #include <api/coreAPI.h>
 
@@ -43,7 +44,6 @@ void cmBrush_c::fromBounds(const class aabb &bb) {
 		this->sides[3+i].pl.set(normal, -bb.mins[i]);
 	}
 }
-#include "cmWinding.h"
 void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 	cmWinding_c w;
 	w.addPointsUnique(points,numPoints);
@@ -78,6 +78,17 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 				}
 			}
 		}
+	}
+}
+void cmBrush_c::calcSideWinding(unsigned int sideNum, class cmWinding_c &out) const {
+	const cmBrushSide_c &side = sides[sideNum];
+	out.createBaseWindingFromPlane(side.pl);
+	for(unsigned int i = 0; i < sides.size(); i++)
+	{
+		if(i == sideNum)
+			continue;
+		const cmBrushSide_c &otherSide = sides[i];
+		out.clipWindingByPlane(otherSide.pl.getOpposite());
 	}
 }
 #include <shared/trace.h>
@@ -152,6 +163,13 @@ void cmBrush_c::translateXYZ(const class vec3_c &ofs) {
 		sides[i].pl.translate(ofs);
 	}
 	bounds.translate(ofs);
+}
+void cmBrush_c::getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
+	for(u32 i = 0; i < sides.size(); i++) {
+		cmWinding_c w;
+		calcSideWinding(i,w);
+		w.iterateTriangles(out);
+	}
 }
 #include <shared/cmWinding.h>
 bool cmBrush_c::calcBounds() {

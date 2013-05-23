@@ -249,6 +249,9 @@ public:
 	virtual void translateXYZ(const class vec3_c &ofs) {
 		myBrush.translateXYZ(ofs);
 	}
+	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
+		myBrush.getRawTriSoupData(out);
+	}
 	// cmHull_i access
 	virtual u32 getNumSides() const {
 		return myBrush.getNumSides();
@@ -258,6 +261,9 @@ public:
 	}
 	virtual void iterateSidePlanes(void (*callback)(const float planeEq[4])) const {
 		myBrush.iterateSidePlanes(callback);
+	}
+	virtual bool isHullBoxShaped() const {
+		return myBrush.isBoxShaped();
 	}
 	// helpers api
 	virtual u32 getNumHelpers() const {
@@ -329,6 +335,11 @@ public:
 			}
 		}
 		return hit;
+	}
+	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
+		for(u32 i = 0; i < shapes.size(); i++) {
+			shapes[i]->getRawTriSoupData(out);
+		}
 	}
 	// cmCompound_i access
 	virtual u32 getNumSubShapes() const {
@@ -406,6 +417,11 @@ public:
 #else
 		return this->extraCMTree->traceRay(tr);
 #endif
+	}
+	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
+		if(sf) {
+			sf->addToColMeshBuilder(out);
+		}
 	}
 	// cmTriMesh_i access
 	virtual const vec3_c *getVerts() const {

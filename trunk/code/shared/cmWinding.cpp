@@ -249,15 +249,21 @@ vec3_c cmWinding_c::getCenter() const {
 	v[2] /= double(points.size());
 	return vec3_c(v);
 }
-void cmWinding_c::iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) {
+void cmWinding_c::iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) const {
 	for(u32 i = 2; i < points.size(); i++) {
 		triCallback(points[0],points[i-1],points[i]);
 	}
 }
 #include <api/staticModelCreatorAPI.h>
-void cmWinding_c::iterateTriangles(class staticModelCreatorAPI_i *smc) {
+#include <api/colMeshBuilderAPI.h>
+void cmWinding_c::iterateTriangles(class staticModelCreatorAPI_i *smc) const {
 	for(u32 i = 2; i < points.size(); i++) {
 		smc->addTriangleOnlyXYZ("nomaterial",points[0],points[i-1],points[i]);
+	}
+}
+void cmWinding_c::iterateTriangles(class colMeshBuilderAPI_i *out) const {
+	for(u32 i = 2; i < points.size(); i++) {
+		out->addXYZTri(points[0],points[i-1],points[i]);
 	}
 }
 

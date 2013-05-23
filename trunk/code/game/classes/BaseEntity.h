@@ -67,6 +67,9 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles);
 	virtual void setMatrix(const class matrix_c &newMat);
 	const class vec3_c &getOrigin() const;
+	virtual const class vec3_c &getPhysicsOrigin() const {
+		return getOrigin();
+	}
 	virtual vec3_c getCModelOrigin() const {
 		return getOrigin(); // overriden in Player class
 	}

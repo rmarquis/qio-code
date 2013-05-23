@@ -396,6 +396,29 @@ public:
 		}
 		down = left.crossProduct( *this );
 	}
+	bool isAxial() const {
+		const float eps = 0.000001f;
+		float f0 = abs(x);
+		float f1 = abs(y);
+		float f2 = abs(z);
+		if(f0 < eps) {
+			if(f1 < eps) {
+				// 0, 0, x 
+				return true;
+			} else {
+				if(f2 < eps) {
+					// 0, x, 0
+					return true;
+				}
+			}
+		} else {
+			if(f1 < eps && f2 < eps) {
+				// x, 0, 0
+				return true;
+			}
+		}
+		return false;
+	}
 	// 	assumes that *this == to - from
 	float getYaw() const {
 		return (atan2(y, x) * 180 / M_PI);
