@@ -60,6 +60,22 @@ public:
 	float len() const {
 		return sqrt(x*x + y*y);
 	}
+	void normalize() {
+		float lengthSQ = x*x + y*y;
+		if ( lengthSQ ) {
+			float iLength = G_rsqrt(lengthSQ);
+			x *= iLength;
+			y *= iLength;
+		}
+	}
+	void setLen(const float newLen) {
+		normalize();
+		this->scale(newLen);
+	}
+	void scale(float scale) {
+		x *= scale;
+		y *= scale;
+	}
 
 	friend vec2_c operator*(const vec2_c& a, const float f );
 	friend vec2_c operator*(const float f, const vec2_c& b );

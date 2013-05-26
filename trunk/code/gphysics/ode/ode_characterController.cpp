@@ -40,18 +40,27 @@ void odeCharacterController_c::setCharacterEntity(class BaseEntity *ent) {
 
 }
 void odeCharacterController_c::update(const class vec3_c &dir) {
+	lastDir = dir;
+
 	vec3_c scaled = dir*5;
 	g_core->Print("dir : %f %f %f\n",dir.x,dir.y,dir.z);
 	//dBodySetLinearVel(body,scaled.x,scaled.y,scaled.z);
-	dBodyAddForce(body,scaled.x,scaled.y,scaled.z);
+	//dBodyAddForce(body,scaled.x,scaled.y,scaled.z);
 	vec3_c curVel = dBodyGetLinearVel(body);
-	if(curVel.x > dir.x)	{	
-		curVel.x = dir.x;
+	//vec2_c dir2d = dir;
+	//vec2_c vel2d = curVel;
+	//float len = dir2d.len();
+	//if(vel2d.len() > len) {
+	//	vel2d.setLen(len);
+	//}
+	//curVel.x = vel2d.x;
+	//curVel.y = vel2d.y;
+	curVel.x = dir.x;
+	curVel.y = dir.y;
+	if(curVel.z < 0.f) { 
+		curVel.z -= 1.f;
 	}
-	if(curVel.y > dir.y) {
-		curVel.y = dir.y;
-	}
-	dBodySetLinearVel(body,curVel.x,curVel.y,curVel.z-0.1);
+	dBodySetLinearVel(body,curVel.x,curVel.y,curVel.z);
 
 	dQuaternion q;
 	dQSetIdentity(q);

@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class odeCharacterController_c : public physCharacterControllerAPI_i {
 	dGeomID geom;
 	dBodyID body;
+	vec3_c lastDir;
 	class odePhysicsWorld_c *myWorld;
 	mutable vec3_c lastPos;
 	float characterHeight;
