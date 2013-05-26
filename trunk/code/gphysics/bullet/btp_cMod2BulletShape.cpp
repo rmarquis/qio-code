@@ -181,6 +181,8 @@ btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bo
 		} else {
 			return BT_CModelTriMeshToConvex(cModel->getTriMesh(),extraCenterOfMassOffset);
 		}
+	} else {
+		g_core->RedWarning("BT_CModelToBulletCollisionShape: cModel %s has unsupported type\n",cModel->getName());
 	}
 	return 0;
 }

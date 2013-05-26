@@ -80,7 +80,9 @@ bool odeColShape_c::init(dSpaceID space, const class cMod_i *newCModel, bool new
 		if(sf.getNumTris()) {
 			sf.translateXYZ(-centerOfMass);
 			sf.scaleXYZ(QIO_TO_BULLET);
-			sf.swapIndexes();
+			// getRawTriSoupData returns swapped triangles for non-trimesh objects
+			if(cModel->isTriMesh() == false)
+				sf.swapIndexes();
 			dTriMeshDataID triMeshData = dGeomTriMeshDataCreate();
 			dGeomTriMeshDataBuildSingle(triMeshData, sf.getVerts(), 3 * sizeof(float),
 				sf.getNumVerts(), sf.getIndices(), sf.getNumIndices(), 3 * sizeof(dTriIndex));

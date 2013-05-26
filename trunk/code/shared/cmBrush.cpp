@@ -49,8 +49,10 @@ void cmBrush_c::fromPoints(const vec3_c *points, u32 numPoints) {
 	w.addPointsUnique(points,numPoints);
 	points = w.getPoints().getArray();
 	numPoints = w.size();
+	bounds.clear();
 	// simple bruce method (slow)
 	for(u32 i = 0; i < numPoints; i++) {
+		bounds.addPoint(points[i]);
 		for(u32 j = 0; j < numPoints; j++) {
 			for(u32 k = 0; k < numPoints; k++) {
 				const vec3_c &p0 = points[i];

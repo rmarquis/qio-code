@@ -148,6 +148,10 @@ public:
 		ret.dist = -dist;
 		return ret;
 	}
+	void makeOpposite() {
+		norm = -norm;
+		dist = -dist;
+	}
 	bool compare2(const vec3_c &oNorm, const float oDist, const float normalEps = PL_NORM_EPS, const float distEps = PL_DIST_EPS) const {
 		if(abs(this->dist - oDist) > distEps)
 			return false;

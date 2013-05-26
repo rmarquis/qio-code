@@ -107,6 +107,11 @@ public:
 			sides[i].pl.dist *= -1;
 		}
 	}
+	void swapSidePlanes() {
+		for(u32 i = 0; i < sides.size(); i++) {
+			sides[i].pl.makeOpposite();
+		}
+	}
 	bool hasSideWithMaterial(const char *matName) const;
 	void translateXYZ(const class vec3_c &ofs);
 	void getRawTriSoupData(class colMeshBuilderAPI_i *out) const;

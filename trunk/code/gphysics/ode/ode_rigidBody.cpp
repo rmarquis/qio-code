@@ -36,6 +36,24 @@ odeRigidBody_c::odeRigidBody_c() {
 odeRigidBody_c::~odeRigidBody_c() {
 
 }
+static void ODE_SetMatrix4x4(dReal *_dvR, dReal *_dvPos, const float *mat4x4) {
+	_dvR[0] = mat4x4[0];
+	_dvR[4] = mat4x4[1];
+	_dvR[8] = mat4x4[2];
+	//mat4x4[3]=  0;
+	_dvR[1] = mat4x4[4];
+	_dvR[5] = mat4x4[5];
+	_dvR[9] = mat4x4[6];
+	//mat4x4[7]=  0;
+	_dvR[2] = mat4x4[8];
+	_dvR[6] = mat4x4[9];
+	_dvR[10] = mat4x4[10];
+	//mat4x4[11]= 0;
+	_dvPos[0] = mat4x4[12];
+	_dvPos[1] = mat4x4[13];
+	_dvPos[2] = mat4x4[14];
+	//mat4x4[15]= 1;
+}
 void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *newShape, const struct physObjectDef_s &def) {
 	shape = newShape;
 
@@ -72,15 +90,13 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 	odeMat.scaleOriginXYZ(QIO_TO_BULLET);	
 	odeMat = com * odeMat;
 
+	dMatrix3 odeRot;
+	dReal odePos[3];
+	ODE_SetMatrix4x4(odeRot,odePos,odeMat);
+
     // set initial position
-    dBodySetPosition (body,odeMat.getOrigin()[0],odeMat.getOrigin()[1],odeMat.getOrigin()[2]);
-	dQuaternion q;
-	const quat_c &iq = odeMat.getQuat();
-	q[0] = iq.x;
-	q[1] = iq.y;
-	q[2] = iq.z;
-	q[3] = iq.w;
-	dBodySetQuaternion(body,q);
+    dBodySetPosition (body,odeMat.getOrigin()[0],odeMat.getOrigin()[1],odeMat.getOrigin()[2]);	
+	dBodySetRotation(body,odeRot);
 }
 void odeRigidBody_c::setOrigin(const class vec3_c &newPos) {
 

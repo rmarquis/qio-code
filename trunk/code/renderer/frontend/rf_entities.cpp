@@ -408,12 +408,28 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				}
 			}
 			instance->updateSkelModelInstance(skelModel,bones);	
-			instance->recalcModelNormals(); // this is slow
+			// if model needs normals
+			if(1) {
+				// if model needs TBN
+				if(1) {
+					instance->recalcModelTBNs(); // this is slow
+				} else {
+					instance->recalcModelNormals(); // this is slow
+				}
+			}
 		} else if(skelAnimCtrl) {
 			skelAnimCtrl->runAnimController(rf_curTimeMsec);
 			skelAnimCtrl->updateModelAnimation(skelModel);
 			instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
-			instance->recalcModelNormals(); // this is slow
+			// if model needs normals
+			if(1) {
+				// if model needs TBN
+				if(1) {
+					instance->recalcModelTBNs(); // this is slow
+				} else {
+					instance->recalcModelNormals(); // this is slow
+				}
+			}
 		}
 	} else if(model->isKeyframed()) {
 		const kfModelAPI_i *kfModel = model->getKFModelAPI();
@@ -423,7 +439,15 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		} else {
 
 		}
-		instance->recalcModelNormals(); // this is slow
+		// if model needs normals
+		if(1) {
+			// if model needs TBN
+			if(1) {
+				instance->recalcModelTBNs(); // this is slow
+			} else {
+				instance->recalcModelNormals(); // this is slow
+			}
+		}
 	} else if(model->isQ3PlayerModel()) {
 		const q3PlayerModelAPI_i *q3Player = model->getQ3PlayerModelAPI();
 		if(rf_forceKFModelsFrame.getInt() >= 0) {
@@ -436,7 +460,15 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					q3AnimCtrl->getTorso().curLerp.from);	
 			}
 		}
-		instance->recalcModelNormals(); // this is slow
+		// if model needs normals
+		if(1) {
+			// if model needs TBN
+			if(1) {
+				instance->recalcModelTBNs(); // this is slow
+			} else {
+				instance->recalcModelNormals(); // this is slow
+			}
+		}
 	} else if(model->isSprite()) {
 		instance->updateSprite(rf_camera.getAxis(),model->getSpriteRadius());
 	}

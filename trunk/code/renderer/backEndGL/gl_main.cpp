@@ -81,7 +81,7 @@ static aCvar_c rb_showHeightMaps("rb_showHeightMaps","0");
 static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
 static aCvar_c rb_showDeluxeMaps("rb_showDeluxeMaps","0");
 static aCvar_c rb_verboseBindShader("rb_verboseBindShader","0");
-
+static aCvar_c rb_ignoreLightmaps("rb_ignoreLightmaps","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -584,7 +584,11 @@ public:
 	}
 	virtual void setMaterial(class mtrAPI_i *mat, class textureAPI_i *lightmap, class textureAPI_i *deluxemap) {
 		lastMat = mat;
-		lastLightmap = lightmap;
+		if(rb_ignoreLightmaps.getInt()) {
+			lastLightmap = 0;
+		} else {
+			lastLightmap = lightmap;
+		}
 		lastDeluxemap = deluxemap;
 	}
 	virtual void unbindMaterial() {
@@ -1190,7 +1194,8 @@ drawOnlyLightmap:
 					bindTex(0,t->getInternalHandleU32());
 					unbindTex(1);
 				}
-				if(bumpMap/* && curLight*/) {
+				//if(bumpMap/* && curLight*/) {
+				if(bumpMap && (curLight || deluxeMap)) {
 					textureAPI_i *bumpMapTexture = bumpMap->getTexture(this->timeNowSeconds);
 					bindTex(2,bumpMapTexture->getInternalHandleU32());
 				} else {

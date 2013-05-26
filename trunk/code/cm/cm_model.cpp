@@ -79,6 +79,16 @@ class cmBBExts_i *CM_RegisterBoxExts(float halfSizeX, float halfSizeY, float hal
 	cm_models.addObject(n);
 	return n;
 }
+class cmHull_i *CM_RegisterHull(const char *modName, const vec3_c *points, u32 numPoints) {
+	cMod_i *ex = CM_FindModelInternal(modName);
+	if(ex)
+		return dynamic_cast<cmHull_i*>(ex);
+	cmHull_c *newModel = new cmHull_c;
+	newModel->setName(modName);
+	newModel->createFromPoints(points,numPoints);
+	cm_models.addObject(newModel);
+	return newModel;
+}
 class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb) {
 	str modName;
 	CM_FormatBBMinsMaxsModelName(modName,bb);

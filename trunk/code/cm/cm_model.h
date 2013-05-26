@@ -293,6 +293,11 @@ public:
 		this->bounds = myBrush.getBounds();
 		return false;
 	}
+	void createFromPoints(const vec3_c *points, u32 numPoints) {
+		this->myBrush.fromPoints(points,numPoints);
+		this->bounds = myBrush.getBounds();
+		this->myBrush.swapSidePlanes();
+	}
 
 	cmHull_c(const char *newName, const class cmBrush_c &br) {
 		this->name = newName;
@@ -300,6 +305,9 @@ public:
 	}
 	cmHull_c(const char *newName) {
 		this->name = newName;
+	}
+	cmHull_c() {
+
 	}
 };
 

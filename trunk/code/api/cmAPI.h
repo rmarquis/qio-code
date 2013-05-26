@@ -209,11 +209,15 @@ public:
 	}
 	// aabb defined by mins and maxs
 	virtual class cmBBMinsMaxs_i *registerAABB(const class aabb &bb) = 0;
+	// convex hull (single brush) defined by an array of points
+	virtual class cmHull_i *registerHull(const char *modName, const vec3_c *points, u32 numPoints) = 0;
 
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) = 0;
 	virtual void freeAllModels() = 0;
+
+	virtual class cMod_i *findModel(const char *modName) = 0;
 
 	virtual void loadMap(const char *mapName) = 0;
 };

@@ -44,13 +44,18 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual class cmBBMinsMaxs_i *registerAABB(const class aabb &bb) {
 		return CM_RegisterAABB(bb);
 	}
-
+	virtual class cmHull_i *registerHull(const char *modName, const vec3_c *points, u32 numPoints) {
+		return CM_RegisterHull(modName,points,numPoints);
+	}
 	
 	virtual class cMod_i *registerModel(const char *modName) {
 		return CM_RegisterModel(modName);
 	}
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) {
 		return CM_RegisterSkelModel(skelModelName);
+	}
+	virtual class cMod_i *findModel(const char *modName) {
+		return CM_FindModelInternal(modName);
 	}
 	virtual void freeAllModels() {
 		CM_FreeAllModels();

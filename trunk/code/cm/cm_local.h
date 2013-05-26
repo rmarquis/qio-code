@@ -7,6 +7,7 @@
 class cMod_i *CM_FindModelInternal(const char *name);
 class cmCapsule_i *CM_RegisterCapsule(float height, float radius);
 class cmBBExts_i *CM_RegisterBoxExts(float halfSizeX, float halfSizeY, float halfSizeZ);
+class cmHull_i *CM_RegisterHull(const char *modName, const class vec3_c *points, u32 numPoints);
 class cmBBMinsMaxs_i *CM_RegisterAABB(const class aabb &bb);
 class cMod_i *CM_RegisterModel(const char *modName);
 class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName);
