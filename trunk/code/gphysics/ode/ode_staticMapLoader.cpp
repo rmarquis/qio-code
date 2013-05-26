@@ -75,6 +75,9 @@ bool odeStaticMapLoader_c::loadFromMAPFile(const char *fname) {
 void odeStaticMapLoader_c::buildODEWorldTriMesh() {	
 	g_core->Print("odeStaticMapLoader_c::buildODEWorldTriMesh: %i indices, %i verts\n",mainWorldSurface.getNumIndices(),mainWorldSurface.getNumVerts());  
 	
+	if(mainWorldSurface.getNumTris() == 0)
+		return;
+
 	mainWorldSurface.swapIndexes();
 	mainWorldSurface.prepareScaledVerts(QIO_TO_BULLET);
 
