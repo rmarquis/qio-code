@@ -27,12 +27,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <api/physCharacterControllerAPI.h>
 #include <math/vec3.h>
+#include "ode_headers.h"
 
 class odeCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
+	dGeomID geom;
+	dBodyID body;
 	class odePhysicsWorld_c *myWorld;
 	mutable vec3_c lastPos;
+	float characterHeight;
+	float characterWidth;
 public:
 	odeCharacterController_c();
 

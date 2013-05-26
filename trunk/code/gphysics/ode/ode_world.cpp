@@ -277,16 +277,15 @@ void odePhysicsWorld_c::destroyPhysicsConstraint(physConstraintAPI_i *p) {
 	delete base;
 }
 class physCharacterControllerAPI_i *odePhysicsWorld_c::createCharacter(const class vec3_c &pos, float characterHeight, float characterWidth) {
-	//odeCharacterController_c *newChar = new odeCharacterController_c;
-	//newChar->init(this,pos,characterHeight,characterWidth);
-	//this->characters.push_back(newChar);
-	//return newChar;
-	return 0;
+	odeCharacterController_c *newChar = new odeCharacterController_c;
+	newChar->init(this,pos,characterHeight,characterWidth);
+	this->characters.push_back(newChar);
+	return newChar;
 }
 void odePhysicsWorld_c::freeCharacter(class physCharacterControllerAPI_i *p) {
-	/*odeCharacterController_c *pChar = dynamic_cast<odeCharacterController_c*>(p);
+	odeCharacterController_c *pChar = dynamic_cast<odeCharacterController_c*>(p);
 	this->characters.remove(pChar);
-	delete pChar;*/
+	delete pChar;
 }
 void odePhysicsWorld_c::setGravity(const vec3_c &newGravity) {
 	gravity = newGravity;

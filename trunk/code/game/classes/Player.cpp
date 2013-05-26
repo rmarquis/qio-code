@@ -281,7 +281,7 @@ void Player::runPlayer() {
 		}
 	} else {
 		if(vehicle) {
-		this->setOrigin(vehicle->getOrigin()+vec3_c(0,0,64.f));
+			this->setOrigin(vehicle->getOrigin()+vec3_c(0,0,64.f));
 			vehicle->steerUCmd(ucmd);
 			//this->setClientViewAngle(vehicle->getAngles());
 		} else {
