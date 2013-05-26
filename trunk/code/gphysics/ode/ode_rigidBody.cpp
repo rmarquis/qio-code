@@ -40,8 +40,15 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 	shape = newShape;
 
 
+	geom = newShape->getODEGeom();
+
+	if(def.isStatic())
+	{
+		body = 0;
+		return;
+	}
+
     body = dBodyCreate (world->getODEWorld());
-	dGeomID geom = newShape->getODEGeom();
 
 	dMass m;
 	if(newShape->isBox()) {
@@ -78,19 +85,7 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 void odeRigidBody_c::setOrigin(const class vec3_c &newPos) {
 
 }
-const class vec3_c odeRigidBody_c::getRealOrigin() const {
-	class matrix_c mat;
-	vec3_c pos = dBodyGetPosition(body);
-	quat_c q = dBodyGetQuaternion(body);
-	mat.fromQuatAndOrigin(q,pos);
-	mat.scaleOriginXYZ(BULLET_TO_QIO);
-	return mat.getOrigin();
-}
-
-
-static void ODE_GetMatrix4x4(dBodyID ode_body, float *mat4x4) {
-	const dReal *_dvR = dBodyGetRotation(ode_body);
-	const dReal *_dvPos = dBodyGetPosition(ode_body);
+static void ODE_GetMatrix4x4(const dReal *_dvR, const dReal *_dvPos, float *mat4x4) {
 	mat4x4[0]=  _dvR[0];
 	mat4x4[1]=  _dvR[4];
 	mat4x4[2]=  _dvR[8];
@@ -108,19 +103,51 @@ static void ODE_GetMatrix4x4(dBodyID ode_body, float *mat4x4) {
 	mat4x4[14]= _dvPos[2];
 	mat4x4[15]= 1;
 }
+static void ODE_GetMatrix4x4(dBodyID ode_body, float *mat4x4) {
+	const dReal *_dvR = dBodyGetRotation(ode_body);
+	const dReal *_dvPos = dBodyGetPosition(ode_body);
+	ODE_GetMatrix4x4(_dvR,_dvPos,mat4x4);
+}
+static void ODE_GetMatrix4x4(dGeomID ode_geom, float *mat4x4) {
+	const dReal *_dvR = dGeomGetRotation(ode_geom);
+	const dReal *_dvPos = dGeomGetPosition(ode_geom);
+	ODE_GetMatrix4x4(_dvR,_dvPos,mat4x4);
+}
+const class vec3_c odeRigidBody_c::getRealOrigin() const {
+	class matrix_c mat;
+	if(body) {
+		ODE_GetMatrix4x4(body,mat);
+	} else {
+		ODE_GetMatrix4x4(geom,mat);
+	}
+	mat.scaleOriginXYZ(BULLET_TO_QIO);
+	return mat.getOrigin();
+}
+
+
 void odeRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
-	ODE_GetMatrix4x4(body,out);
+	if(body) {
+		ODE_GetMatrix4x4(body,out);
+	} else {
+		ODE_GetMatrix4x4(geom,out);
+	}
 	if(this->shape->hasCenterOfMassTransform()) {
 		out = out * this->shape->getCenterOfMassTransform().getInversed();
 	}
 	out.scaleOriginXYZ(BULLET_TO_QIO);
 }
 void odeRigidBody_c::getPhysicsMatrix(class matrix_c &out) const {
-	ODE_GetMatrix4x4(body,out);
+	if(body) {
+		ODE_GetMatrix4x4(body,out);
+	} else {
+		ODE_GetMatrix4x4(geom,out);
+	}
 	// dont add center of mass transform
 	out.scaleOriginXYZ(BULLET_TO_QIO);
 }
 void odeRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {
+	if(body == 0)
+		return;
 	vec3_c scaled = velToAdd * QIO_TO_BULLET;
 	dBodyEnable(body);
 	dBodyAddForce(body,scaled.x,scaled.y,scaled.z);
@@ -128,6 +155,8 @@ void odeRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {
 //	bulletRigidBody->applyCentralForce((velToAdd*QIO_TO_BULLET).floatPtr());
 }
 void odeRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
+	if(body == 0)
+		return;
 	vec3_c scaled = impToAdd * QIO_TO_BULLET;
 	// HACK
 	scaled *= 5.f;
@@ -138,15 +167,21 @@ void odeRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 }
 // linear velocity access (in Quake units)
 const class vec3_c odeRigidBody_c::getLinearVelocity() const {
+	if(body == 0)
+		return vec3_c(0,0,0);
 	vec3_c ret = dBodyGetLinearVel(body);
 	return ret*BULLET_TO_QIO;
 }
 void odeRigidBody_c::setLinearVelocity(const class vec3_c &newVel) {
+	if(body == 0)
+		return;
 	vec3_c scaled = newVel * QIO_TO_BULLET;
 	dBodySetLinearVel(body,scaled.x,scaled.y,scaled.z);
 }
 // angular velocity access
 const vec3_c odeRigidBody_c::getAngularVelocity() const {
+	if(body == 0)
+		return vec3_c(0,0,0);
 	vec3_c ret = dBodyGetAngularVel(body);
 	return ret;
 }
@@ -154,6 +189,8 @@ void odeRigidBody_c::setAngularVelocity(const class vec3_c &newAVel) {
 	dBodySetAngularVel(body,newAVel.x,newAVel.y,newAVel.z);
 }
 bool odeRigidBody_c::isDynamic() const {
+	if(body == 0)
+		return false;
 	//if(bulletRigidBody->isStaticObject())
 	//	return false;
 	return true;

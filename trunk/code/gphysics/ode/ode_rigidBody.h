@@ -32,8 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 class odeRigidBody_c : public physObjectAPI_i {
 	class odeColShape_c *shape;
 	dBodyID body;
+	dGeomID geom;
 	class BaseEntity *myEntity;
 	//arraySTD_c<odeConstraintBase_c*> constraints;
+
 public:
 	odeRigidBody_c();
 	~odeRigidBody_c();
