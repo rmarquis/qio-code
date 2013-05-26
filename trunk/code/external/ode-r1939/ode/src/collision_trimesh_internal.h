@@ -391,10 +391,14 @@ inline unsigned FetchTriangleCount(dxTriMesh* TriMesh)
     return TriMesh->Data->Mesh.GetNbTriangles();
 }
 
-inline void FetchTriangle(dxTriMesh* TriMesh, int Index, const dVector3 Position, const dMatrix3 Rotation, dVector3 Out[3]){
+inline bool FetchTriangle(dxTriMesh* TriMesh, int Index, const dVector3 Position, const dMatrix3 Rotation, dVector3 Out[3]){
     VertexPointers VP;
     ConversionArea VC;
     TriMesh->Data->Mesh.GetTriangle(VP, Index, VC);
+	if(VP.Vertex[0] == 0)
+	{
+		return true; // error
+	}
     for (int i = 0; i < 3; i++){
         dVector3 v;
         v[0] = VP.Vertex[i]->x;
@@ -408,12 +412,13 @@ inline void FetchTriangle(dxTriMesh* TriMesh, int Index, const dVector3 Position
         Out[i][2] += Position[2];
         Out[i][3] = 0;
     }
+	return false; // ok
 }
 
-inline void FetchTransformedTriangle(dxTriMesh* TriMesh, int Index, dVector3 Out[3]){
+inline bool FetchTransformedTriangle(dxTriMesh* TriMesh, int Index, dVector3 Out[3]){
     const dVector3& Position = *(const dVector3*)dGeomGetPosition(TriMesh);
     const dMatrix3& Rotation = *(const dMatrix3*)dGeomGetRotation(TriMesh);
-    FetchTriangle(TriMesh, Index, Position, Rotation, Out);
+    return FetchTriangle(TriMesh, Index, Position, Rotation, Out);
 }
 
 inline Matrix4x4& MakeMatrix(const dVector3 Position, const dMatrix3 Rotation, Matrix4x4& Out){

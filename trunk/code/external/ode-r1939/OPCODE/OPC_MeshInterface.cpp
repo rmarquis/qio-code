@@ -280,9 +280,23 @@ bool MeshInterface::SetStrides(udword tri_stride, udword vertex_stride)
 #ifdef OPC_USE_STRIDE
 void MeshInterface::FetchTriangleFromSingles(VertexPointers& vp, udword index, ConversionArea vc) const
 {	
+	if(mTris == 0)
+	{
+		vp.Vertex[0] = 0;
+		vp.Vertex[1] = 0;
+		vp.Vertex[2] = 0;
+		return;
+	}
 	const IndexedTriangle* T = (const IndexedTriangle*)(((ubyte*)mTris) + index * mTriStride);
 
 	const Point* Verts = GetVerts();
+	if(Verts == 0)
+	{
+		vp.Vertex[0] = 0;
+		vp.Vertex[1] = 0;
+		vp.Vertex[2] = 0;
+		return;
+	}
 	udword VertexStride = GetVertexStride();
 	vp.Vertex[0] = (const Point*)(((ubyte*)Verts) + T->mVRef[0] * VertexStride);
 	vp.Vertex[1] = (const Point*)(((ubyte*)Verts) + T->mVRef[1] * VertexStride);

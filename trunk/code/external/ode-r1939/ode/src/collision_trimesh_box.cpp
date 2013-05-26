@@ -1259,7 +1259,11 @@ int dCollideBTL(dxGeom* g1, dxGeom* BoxGeom, int Flags, dContactGeom* Contacts, 
             if (!Callback(TriMesh, BoxGeom, Triint)) continue;
 
             dVector3 dv[3];
-            FetchTriangle(TriMesh, Triint, vPosMesh, mRotMesh, dv);
+            if(FetchTriangle(TriMesh, Triint, vPosMesh, mRotMesh, dv))
+			{
+				// somehow triangles data pointer was NULL
+				continue;
+			}
 
             bool bFinishSearching;
             ctContacts0 = cData.TestCollisionForSingleTriangle(ctContacts0, Triint, dv, bFinishSearching);

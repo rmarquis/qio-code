@@ -1,0 +1,81 @@
+Index: ode/src/collision_trimesh_box.cpp
+===================================================================
+--- ode/src/collision_trimesh_box.cpp	(revision 347)
++++ ode/src/collision_trimesh_box.cpp	(working copy)
+@@ -1259,7 +1259,11 @@
+             if (!Callback(TriMesh, BoxGeom, Triint)) continue;
+ 
+             dVector3 dv[3];
+-            FetchTriangle(TriMesh, Triint, vPosMesh, mRotMesh, dv);
++            if(FetchTriangle(TriMesh, Triint, vPosMesh, mRotMesh, dv))
++			{
++				// somehow triangles data pointer was NULL
++				continue;
++			}
+ 
+             bool bFinishSearching;
+             ctContacts0 = cData.TestCollisionForSingleTriangle(ctContacts0, Triint, dv, bFinishSearching);
+Index: ode/src/collision_trimesh_internal.h
+===================================================================
+--- ode/src/collision_trimesh_internal.h	(revision 347)
++++ ode/src/collision_trimesh_internal.h	(working copy)
+@@ -391,10 +391,14 @@
+     return TriMesh->Data->Mesh.GetNbTriangles();
+ }
+ 
+-inline void FetchTriangle(dxTriMesh* TriMesh, int Index, const dVector3 Position, const dMatrix3 Rotation, dVector3 Out[3]){
++inline bool FetchTriangle(dxTriMesh* TriMesh, int Index, const dVector3 Position, const dMatrix3 Rotation, dVector3 Out[3]){
+     VertexPointers VP;
+     ConversionArea VC;
+     TriMesh->Data->Mesh.GetTriangle(VP, Index, VC);
++	if(VP.Vertex[0] == 0)
++	{
++		return true; // error
++	}
+     for (int i = 0; i < 3; i++){
+         dVector3 v;
+         v[0] = VP.Vertex[i]->x;
+@@ -408,12 +412,13 @@
+         Out[i][2] += Position[2];
+         Out[i][3] = 0;
+     }
++	return false; // ok
+ }
+ 
+-inline void FetchTransformedTriangle(dxTriMesh* TriMesh, int Index, dVector3 Out[3]){
++inline bool FetchTransformedTriangle(dxTriMesh* TriMesh, int Index, dVector3 Out[3]){
+     const dVector3& Position = *(const dVector3*)dGeomGetPosition(TriMesh);
+     const dMatrix3& Rotation = *(const dMatrix3*)dGeomGetRotation(TriMesh);
+-    FetchTriangle(TriMesh, Index, Position, Rotation, Out);
++    return FetchTriangle(TriMesh, Index, Position, Rotation, Out);
+ }
+ 
+ inline Matrix4x4& MakeMatrix(const dVector3 Position, const dMatrix3 Rotation, Matrix4x4& Out){
+Index: OPCODE/OPC_MeshInterface.cpp
+===================================================================
+--- OPCODE/OPC_MeshInterface.cpp	(revision 347)
++++ OPCODE/OPC_MeshInterface.cpp	(working copy)
+@@ -280,9 +280,23 @@
+ #ifdef OPC_USE_STRIDE
+ void MeshInterface::FetchTriangleFromSingles(VertexPointers& vp, udword index, ConversionArea vc) const
+ {	
++	if(mTris == 0)
++	{
++		vp.Vertex[0] = 0;
++		vp.Vertex[1] = 0;
++		vp.Vertex[2] = 0;
++		return;
++	}
+ 	const IndexedTriangle* T = (const IndexedTriangle*)(((ubyte*)mTris) + index * mTriStride);
+ 
+ 	const Point* Verts = GetVerts();
++	if(Verts == 0)
++	{
++		vp.Vertex[0] = 0;
++		vp.Vertex[1] = 0;
++		vp.Vertex[2] = 0;
++		return;
++	}
+ 	udword VertexStride = GetVertexStride();
+ 	vp.Vertex[0] = (const Point*)(((ubyte*)Verts) + T->mVRef[0] * VertexStride);
+ 	vp.Vertex[1] = (const Point*)(((ubyte*)Verts) + T->mVRef[1] * VertexStride);
