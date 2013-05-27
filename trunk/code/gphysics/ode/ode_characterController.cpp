@@ -40,6 +40,9 @@ void odeCharacterController_c::setCharacterEntity(class BaseEntity *ent) {
 
 }
 void odeCharacterController_c::update(const class vec3_c &dir) {
+	if(isOnGround() == false)
+		return;
+
 	lastDir = dir;
 
 	vec3_c scaled = dir*5;
@@ -70,16 +73,20 @@ void odeCharacterController_c::update(const class vec3_c &dir) {
 const class vec3_c &odeCharacterController_c::getPos() const {
 	lastPos = dBodyGetPosition(body);
 	//lastPos.z -= (characterHeight);
-	lastPos *= BULLET_TO_QIO;
+	lastPos *= ODE_TO_QIO;
 	return lastPos;
 }
 bool odeCharacterController_c::isOnGround() const {
+	// FIXME
+	//vec3_c curVel = dBodyGetLinearVel(body);
+	//if(curVel.z < 0) 
+	//	return false; // falling
 	return true;
 }
 bool odeCharacterController_c::tryToJump() {
-	///if(ch->onGround() == false)
+	//if(isOnGround() == false)
 		return false; // didnt jump
-	//ch->jump(); // jumped
+	//dBodyAddForce(body,0,0,100.f);
 	//return true;
 }
 
@@ -89,10 +96,10 @@ void odeCharacterController_c::init(class odePhysicsWorld_c *pWorld, const class
 
 	_characterHeight += _characterWidth*2;
 
-	characterHeight = _characterHeight * QIO_TO_BULLET;;
-	characterWidth = _characterWidth * QIO_TO_BULLET;;
+	characterHeight = _characterHeight * QIO_TO_ODE;;
+	characterWidth = _characterWidth * QIO_TO_ODE;;
 
-	vec3_c posScaled = pos * QIO_TO_BULLET;
+	vec3_c posScaled = pos * QIO_TO_ODE;
 //	posScaled.z += (characterHeight);
 
 	vec3_c sizes(characterWidth,characterWidth,characterHeight);

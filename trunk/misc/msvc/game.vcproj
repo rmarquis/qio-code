@@ -475,10 +475,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\game\physics_scale.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>

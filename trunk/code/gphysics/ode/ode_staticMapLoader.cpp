@@ -79,7 +79,7 @@ void odeStaticMapLoader_c::buildODEWorldTriMesh() {
 		return;
 
 	mainWorldSurface.swapIndexes();
-	mainWorldSurface.prepareScaledVerts(QIO_TO_BULLET);
+	mainWorldSurface.prepareScaledVerts(QIO_TO_ODE);
 
 	worldTriMeshData = dGeomTriMeshDataCreate();
 	dGeomTriMeshDataBuildSingle(worldTriMeshData, mainWorldSurface.getScaledVerticesBase(), 3 * sizeof(float),

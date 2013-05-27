@@ -390,7 +390,8 @@ void r_surface_c::recalcNormals() {
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
 	verts.nullTBN();
-	verts.calcTBNForIndices(this->indices);
+	const rIndexBuffer_c &pIndices = getIndices2();
+	verts.calcTBNForIndices(pIndices);
 	verts.normalizeTBN();
 }
 #endif // RVERT_STORE_TANGENTS

@@ -38,7 +38,7 @@
 ////}
 ////void BT_ConvertVerticesArrayFromQioToBullet(btAlignedObjectArray<btVector3> &vertices) {
 ////	for(u32 i = 0; i < vertices.size(); i++) {
-////		vertices[i] *= QIO_TO_BULLET;
+////		vertices[i] *= QIO_TO_ODE;
 ////	}
 ////}
 ////btConvexHullShape *BT_ConvexHullShapeFromVerticesArray(const btAlignedObjectArray<btVector3> &vertices) {
@@ -76,7 +76,7 @@
 ////		if(ofs) {
 ////			p -= *ofs;
 ////		}	
-////		vertices[i] = (p*QIO_TO_BULLET).floatPtr();
+////		vertices[i] = (p*QIO_TO_ODE).floatPtr();
 ////	}
 ////	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
 ////	return shape;
@@ -88,7 +88,7 @@
 ////	}
 ////	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
 ////
-////	sf->prepareScaledVerts(QIO_TO_BULLET);
+////	sf->prepareScaledVerts(QIO_TO_ODE);
 ////
 ////	btIndexedMesh subMesh;
 ////	subMesh.m_numTriangles = sf->getNumTris();
@@ -124,7 +124,7 @@
 ////	}
 ////	btTriangleIndexVertexArray *mesh = new btTriangleIndexVertexArray;
 ////
-////	triMesh->precacheScaledVerts(QIO_TO_BULLET);
+////	triMesh->precacheScaledVerts(QIO_TO_ODE);
 ////
 ////	btIndexedMesh subMesh;
 ////	subMesh.m_numTriangles = triMesh->getNumTris();
@@ -177,7 +177,7 @@
 //		//cModel->getRawTriSoupData(&sf);
 //		//g_core->Print("%i indices, %i verts\n",sf.getNumIndices(),sf.getNumVerts());  
 //		//
-//		//sf.prepareScaledVerts(QIO_TO_BULLET);
+//		//sf.prepareScaledVerts(QIO_TO_ODE);
 //
 //		//dTriMeshDataID triMeshData = dGeomTriMeshDataCreate();
 //		//dGeomTriMeshDataBuildSingle(triMeshData, sf.getScaledVerticesBase(), 3 * sizeof(float), sf.getNumVerts(), sf.getIndices(), sf.getNumIndices(), 3 * sizeof(dTriIndex));
@@ -188,7 +188,7 @@
 //		aabb bb;
 //		cModel->getBounds(bb);
 //		bb.translate(-*extraCenterOfMassOffset);
-//		dGeomID geom = ODE_CreateBoxGeom(space,bb.maxs*QIO_TO_BULLET*2.f);
+//		dGeomID geom = ODE_CreateBoxGeom(space,bb.maxs*QIO_TO_ODE*2.f);
 //		return geom;
 //	}
 //	return ODE_CreateSphereGeom(space,0.5);

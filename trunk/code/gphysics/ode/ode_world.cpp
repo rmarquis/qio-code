@@ -58,7 +58,7 @@ void odePhysicsWorld_c::init(const vec3_c &newGravity) {
 	space = dSimpleSpaceCreate(0);
 	contactGroup = dJointGroupCreate(0);
 	dWorldSetGravity(world, 0,0,-5);
-	//dWorldSetGravity(world, gravity.x*QIO_TO_BULLET,gravity.y*QIO_TO_BULLET,gravity.z*QIO_TO_BULLET);
+	//dWorldSetGravity(world, gravity.x*QIO_TO_ODE,gravity.y*QIO_TO_ODE,gravity.z*QIO_TO_ODE);
 	//dWorldSetERP(world, 0.2);
 	//dWorldSetCFM(world, 1e-5);
 	//dWorldSetContactMaxCorrectingVel(world, 0.9);
@@ -296,13 +296,13 @@ const vec3_c &odePhysicsWorld_c::getGravity() const {
 #include <shared/trace.h>
 bool odePhysicsWorld_c::traceRay(class trace_c &tr) {
 	//btVector3 rayFrom;
-	//rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_BULLET,tr.getStartPos().y*QIO_TO_BULLET,tr.getStartPos().z*QIO_TO_BULLET));
+	//rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_ODE,tr.getStartPos().y*QIO_TO_ODE,tr.getStartPos().z*QIO_TO_ODE));
 	//btVector3 rayTo;
-	//rayTo = (btVector3(tr.getTo().x*QIO_TO_BULLET,tr.getTo().y*QIO_TO_BULLET,tr.getTo().z*QIO_TO_BULLET));
+	//rayTo = (btVector3(tr.getTo().x*QIO_TO_ODE,tr.getTo().y*QIO_TO_ODE,tr.getTo().z*QIO_TO_ODE));
 	//btRayCallback_c rayCallback(rayFrom,rayTo);
 	//dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
 	//if(rayCallback.hasHit()) {
-	//	tr.setHitPos(vec3_c(rayCallback.m_hitPointWorld.m_floats)*BULLET_TO_QIO);
+	//	tr.setHitPos(vec3_c(rayCallback.m_hitPointWorld.m_floats)*ODE_TO_QIO);
 	//}
 	//if(rayCallback.m_collisionObject) {
 	//	void *uPtr = rayCallback.m_collisionObject->getUserPointer();

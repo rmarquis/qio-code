@@ -55,7 +55,7 @@ bool odeColShape_c::init(dSpaceID space, const class cMod_i *newCModel, bool new
 			bHasCenterOfMassTransform = false;
 		} else {
 			bHasCenterOfMassTransform = true;
-			this->centerOfMassTransform.setOrigin((centerOfMass*QIO_TO_BULLET).floatPtr());
+			this->centerOfMassTransform.setOrigin((centerOfMass*QIO_TO_ODE).floatPtr());
 		}
 	}
 	if(cModel->isCompound() && cModel->getCompound()->getNumSubShapes() == 1) {
@@ -68,7 +68,7 @@ bool odeColShape_c::init(dSpaceID space, const class cMod_i *newCModel, bool new
 		aabb bb;
 		cModel->getBounds(bb);
 		bb.translate(-centerOfMass);
-		boxSizes = bb.maxs*QIO_TO_BULLET*2.f;
+		boxSizes = bb.maxs*QIO_TO_ODE*2.f;
 		geom = dCreateBox(space,boxSizes.x,boxSizes.y,boxSizes.z);
 		return false;
 	} else {
@@ -79,7 +79,7 @@ bool odeColShape_c::init(dSpaceID space, const class cMod_i *newCModel, bool new
 		cModel->getRawTriSoupData(&sf);
 		if(sf.getNumTris()) {
 			sf.translateXYZ(-centerOfMass);
-			sf.scaleXYZ(QIO_TO_BULLET);
+			sf.scaleXYZ(QIO_TO_ODE);
 			// getRawTriSoupData returns swapped triangles for non-trimesh objects
 			if(cModel->isTriMesh() == false)
 				sf.swapIndexes();

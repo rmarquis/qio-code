@@ -87,7 +87,7 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 
 	const matrix_c &com = shape->getCenterOfMassTransform();
 	matrix_c odeMat = def.transform;
-	odeMat.scaleOriginXYZ(QIO_TO_BULLET);	
+	odeMat.scaleOriginXYZ(QIO_TO_ODE);	
 	odeMat = com * odeMat;
 
 	dMatrix3 odeRot;
@@ -136,7 +136,7 @@ const class vec3_c odeRigidBody_c::getRealOrigin() const {
 	} else {
 		ODE_GetMatrix4x4(geom,mat);
 	}
-	mat.scaleOriginXYZ(BULLET_TO_QIO);
+	mat.scaleOriginXYZ(ODE_TO_QIO);
 	return mat.getOrigin();
 }
 
@@ -150,7 +150,7 @@ void odeRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
 	if(this->shape->hasCenterOfMassTransform()) {
 		out = out * this->shape->getCenterOfMassTransform().getInversed();
 	}
-	out.scaleOriginXYZ(BULLET_TO_QIO);
+	out.scaleOriginXYZ(ODE_TO_QIO);
 }
 void odeRigidBody_c::getPhysicsMatrix(class matrix_c &out) const {
 	if(body) {
@@ -159,39 +159,39 @@ void odeRigidBody_c::getPhysicsMatrix(class matrix_c &out) const {
 		ODE_GetMatrix4x4(geom,out);
 	}
 	// dont add center of mass transform
-	out.scaleOriginXYZ(BULLET_TO_QIO);
+	out.scaleOriginXYZ(ODE_TO_QIO);
 }
 void odeRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {
 	if(body == 0)
 		return;
-	vec3_c scaled = velToAdd * QIO_TO_BULLET;
+	vec3_c scaled = velToAdd * QIO_TO_ODE;
 	dBodyEnable(body);
 	dBodyAddForce(body,scaled.x,scaled.y,scaled.z);
 ///	bulletRigidBody->activate(true);
-//	bulletRigidBody->applyCentralForce((velToAdd*QIO_TO_BULLET).floatPtr());
+//	bulletRigidBody->applyCentralForce((velToAdd*QIO_TO_ODE).floatPtr());
 }
 void odeRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 	if(body == 0)
 		return;
-	vec3_c scaled = impToAdd * QIO_TO_BULLET;
+	vec3_c scaled = impToAdd * QIO_TO_ODE;
 	// HACK
 	scaled *= 5.f;
 	dBodyEnable(body);
 	dBodyAddForce(body,scaled.x,scaled.y,scaled.z);
 ///	bulletRigidBody->activate(true);
-//	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
+//	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_ODE).floatPtr());
 }
 // linear velocity access (in Quake units)
 const class vec3_c odeRigidBody_c::getLinearVelocity() const {
 	if(body == 0)
 		return vec3_c(0,0,0);
 	vec3_c ret = dBodyGetLinearVel(body);
-	return ret*BULLET_TO_QIO;
+	return ret*ODE_TO_QIO;
 }
 void odeRigidBody_c::setLinearVelocity(const class vec3_c &newVel) {
 	if(body == 0)
 		return;
-	vec3_c scaled = newVel * QIO_TO_BULLET;
+	vec3_c scaled = newVel * QIO_TO_ODE;
 	dBodySetLinearVel(body,scaled.x,scaled.y,scaled.z);
 }
 // angular velocity access

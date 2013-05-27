@@ -53,14 +53,14 @@ void odeConstraintBase_c::calcLocalOffsets(const vec3_c &pos, class odeRigidBody
 	b0->getPhysicsMatrix(e0Mat);
 	matrix_c b0Mat = e0Mat.getInversed()*cMat;
 	frameA.setFromOpenGLMatrix(b0Mat);
-	frameA.scaleOrigin(QIO_TO_BULLET);
+	frameA.scaleOrigin(QIO_TO_ODE);
 
 	if(b1) {
 		matrix_c e1Mat;
 		b1->getPhysicsMatrix(e1Mat);
 		matrix_c b1Mat = e1Mat.getInversed()*cMat;
 		frameB.setFromOpenGLMatrix(b1Mat);
-		frameB.scaleOrigin(QIO_TO_BULLET);
+		frameB.scaleOrigin(QIO_TO_ODE);
 	}
 }
 class physObjectAPI_i *odeConstraintBase_c::getBody0() const {
@@ -86,7 +86,7 @@ void odeConstraintBall_c::init(const vec3_c &pos, class odeRigidBody_c *b0, clas
 	} else {
 		dJointAttach(odeJoint,b0->getODEBodyID(),0);
 	}
-	vec3_c posScaled = pos * QIO_TO_BULLET;
+	vec3_c posScaled = pos * QIO_TO_ODE;
 	dJointSetBallAnchor(odeJoint,posScaled.x,posScaled.y,posScaled.z);
 }
 void odeConstraintBall_c::destroyConstraint() {
@@ -113,7 +113,7 @@ void odeConstraintHinge_c::init(const class vec3_c &pos, const class vec3_c &axi
 	} else {
 		dJointAttach(odeJoint,b0->getODEBodyID(),0);
 	}
-	vec3_c posScaled = pos * QIO_TO_BULLET;
+	vec3_c posScaled = pos * QIO_TO_ODE;
 	dJointSetHingeAnchor(odeJoint,posScaled.x,posScaled.y,posScaled.z);
 	dJointSetHingeAxis(odeJoint,axis.x,axis.y,axis.z);
 }

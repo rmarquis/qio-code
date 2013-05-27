@@ -25,11 +25,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __ODE_CONVERT_H__
 #define __ODE_CONVERT_H__
 
-#define QIO_TO_BULLET 0.01905
-#define BULLET_TO_QIO 52.4934383
+#define QIO_TO_ODE 0.01905
+#define ODE_TO_QIO 52.4934383
 
-#define CONVERT_QIO_TO_BULLET(x) ((x)*QIO_TO_BULLET)
-#define CONVERT_BULLET_TO_QIO(x) ((x)*BULLET_TO_QIO)
+#define CONVERT_QIO_TO_ODE(x) ((x)*QIO_TO_ODE)
+#define CONVERT_ODE_TO_QIO(x) ((x)*ODE_TO_QIO)
 
 #endif // __ODE_CONVERT_H__
 

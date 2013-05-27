@@ -39,7 +39,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/boneOrQP.h>
 #include <shared/physObjectDef.h>
 #include <math/axis.h>
-#include "physics_scale.h"
 
 class ragdoll_c : public ragdollAPI_i {
 friend class afRagdollSpawner_c;
