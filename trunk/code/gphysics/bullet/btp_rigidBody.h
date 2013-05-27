@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 
 class bulletRigidBody_c : public physObjectAPI_i {
+	class bulletPhysicsWorld_c *myWorld;
 	class bulletColShape_c *shape;
 	class btRigidBody *bulletRigidBody;
 	class BaseEntity *myEntity;
@@ -38,7 +39,7 @@ public:
 	bulletRigidBody_c();
 	~bulletRigidBody_c();
 
-	void init(class bulletColShape_c *newShape, const struct physObjectDef_s &def); 
+	void init(class bulletColShape_c *newShape, const struct physObjectDef_s &def, class bulletPhysicsWorld_c *pWorld); 
 
 	virtual void setOrigin(const class vec3_c &newPos);
 	virtual const class vec3_c getRealOrigin() const;

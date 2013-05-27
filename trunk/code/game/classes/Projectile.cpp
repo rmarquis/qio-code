@@ -34,15 +34,36 @@ Projectile::Projectile() {
 	explosionDelay = 500;
 	collisionTime = 0;
 	bSyncModelAngles = false;
+	lifeTime = -1;
+	projLaunchTime = level.time;
 }
 
+void Projectile::explodeProjectile() {
+	G_Explosion(this->getOrigin(), this->explosionInfo);
+	destroyPhysicsObject();
+	delete this;
+}
 void Projectile::runFrame() {
+	if(this->lifeTime > 0) {
+		int passedTime = level.time - projLaunchTime;
+		if(passedTime > this->lifeTime) {
+			explodeProjectile();
+			return;
+		}
+	}
+	// if projectile has physics body
+	if(this->body) {
+		// update rigid body physics and we're done
+		ModelEntity::runPhysicsObject();
+		return;
+	}
 	if(collisionTime) {
 		if(collisionTime + explosionDelay < level.time) {
 			delete this;
 		}
 		return;
 	}
+	// run the physics manually
 	vec3_c newPos = this->getOrigin() + linearVelocity * level.frameTime;
 	trace_c tr;
 	tr.setupRay(this->getOrigin(),newPos);

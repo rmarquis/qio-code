@@ -95,6 +95,28 @@ static void ODE_NearCallback (void *data, dGeomID o1, dGeomID o2)
 	// Get the dynamics body for each geom
 	dBodyID b1 = dGeomGetBody(o1);
 	dBodyID b2 = dGeomGetBody(o2);
+	
+	class odeRigidBody_c *ob1;
+	class odeRigidBody_c *ob2;
+
+	float extraBounciness = 0.f;
+	if(b1) {
+		ob1 = (class odeRigidBody_c *)dBodyGetData(b1);
+		if(ob1) {
+			extraBounciness += ob1->getBounciness();
+		}
+	} else {
+		ob1 = 0;
+	}
+	if(b2) {
+		ob2 = (class odeRigidBody_c *)dBodyGetData(b2);
+		if(ob2) {
+			extraBounciness += ob2->getBounciness();
+		}
+	} else {
+		ob2 = 0;
+	}
+
 
 	// Create an array of dContact objects to hold the contact joints
 	dContact contact[ODE_MAX_CONTACTS];
@@ -109,7 +131,7 @@ static void ODE_NearCallback (void *data, dGeomID o1, dGeomID o2)
 		// dInfinity here results with two high friction for trimeshes vs trimesh contacts
 		contact[i].surface.mu = 10.f;//dInfinity;
 		contact[i].surface.mu2 = 0;
-		contact[i].surface.bounce = 0.01;
+		contact[i].surface.bounce = 0.01+extraBounciness;
 		contact[i].surface.bounce_vel = 0.1;
 		contact[i].surface.soft_cfm = 0.01;
 	}
@@ -225,12 +247,15 @@ physObjectAPI_i *odePhysicsWorld_c::createPhysicsObject(const struct physObjectD
 	}
 	odeRigidBody_c *body = new odeRigidBody_c;
 	body->init(this,colShape,def);
+	bodies.push_back(body);
 	return body;
 }
 void odePhysicsWorld_c::destroyPhysicsObject(class physObjectAPI_i *p) {
 	if(p == 0)
 		return;
-	delete p;
+	odeRigidBody_c *pBody = dynamic_cast<odeRigidBody_c*>(p);
+	this->bodies.remove(pBody);
+	delete pBody;
 }
 class physConstraintAPI_i *odePhysicsWorld_c::createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0API, physObjectAPI_i *b1API) {
 	odeRigidBody_c *b0 = dynamic_cast<odeRigidBody_c*>(b0API);

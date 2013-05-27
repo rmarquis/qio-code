@@ -38,6 +38,10 @@ class Projectile : public ModelEntity {
 	bool bSyncModelAngles;
 	// explosion parameters
 	explosionInfo_s explosionInfo;
+	// time when projectile was spawned
+	int projLaunchTime;
+	// time until automatic projectile explesion
+	int lifeTime; // in msec
 public:
 	Projectile();
 
@@ -67,7 +71,12 @@ public:
 	void setExplosionMarkRadius(float newExplosionMarkRadius) {
 		this->explosionInfo.markRadius = newExplosionMarkRadius;
 	}
+	// projectile with automatically explode when a lifetime expire
+	void setLifeTime(int newLifeTimeMsec) {
+		this->lifeTime = newLifeTimeMsec;
+	}
 
+	void explodeProjectile();
 	virtual void runFrame();
 };
 

@@ -61,6 +61,7 @@ ModelEntity::ModelEntity() {
 	linearVelocity.set(0,0,0);
 	pvsBoundsSkinWidth = 0.f;
 	mass = 10.f;
+	physBounciness = 0.f;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -317,6 +318,10 @@ void ModelEntity::setRigidBodyPhysicsEnabled(bool bRBPhysEnable) {
 	//	destroyPhysicsObject();
 	//}
 }
+void ModelEntity::setPhysBounciness(float newBounciness) {
+	physBounciness = newBounciness;
+	// TODO: update rigid body
+}
 #include "../bt_include.h"
 #include <math/matrix.h>
 void ModelEntity::runPhysicsObject() {
@@ -363,7 +368,7 @@ void ModelEntity::initRigidBodyPhysics() {
 		return; // rigid body physics was disabled for this entity
 	}
 	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
-		this->cmod,this->mass,bUseDynamicConvexForTrimeshCMod));
+		this->cmod,this->mass,bUseDynamicConvexForTrimeshCMod,physBounciness));
 	if(this->body == 0) {
 		g_core->RedWarning("ModelEntity::initRigidBodyPhysics: BT_CreateRigidBodyWithCModel failed for cModel %s\n",this->cmod->getName());
 		return;

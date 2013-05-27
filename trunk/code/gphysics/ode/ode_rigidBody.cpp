@@ -31,10 +31,19 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/quat.h>
 
 odeRigidBody_c::odeRigidBody_c() {
-	
+	body = 0;
+	geom = 0;
+	bounciness = 0.f;
 }
 odeRigidBody_c::~odeRigidBody_c() {
-
+	if(body) {
+		dBodyDestroy(body);
+		body = 0;
+	}
+	if(geom) {
+		dGeomDestroy(geom);
+		geom = 0;
+	}
 }
 static void ODE_SetMatrix4x4(dReal *_dvR, dReal *_dvPos, const float *mat4x4) {
 	_dvR[0] = mat4x4[0];
@@ -57,6 +66,7 @@ static void ODE_SetMatrix4x4(dReal *_dvR, dReal *_dvPos, const float *mat4x4) {
 void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *newShape, const struct physObjectDef_s &def) {
 	shape = newShape;
 
+	bounciness = def.bounciness;
 
 	geom = newShape->getODEGeom();
 
@@ -67,23 +77,24 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 	}
 
     body = dBodyCreate (world->getODEWorld());
+	dBodySetData(body,this);
 
+	//float odeDensity;
+	float odeDensity = def.mass*0.5f;
 	dMass m;
 	if(newShape->isBox()) {
 		const float *sizes = newShape->getBoxSizes();
-		dMassSetBox (&m,5.0,sizes[0],sizes[1],sizes[2]);
+		dMassSetBox (&m,odeDensity,sizes[0],sizes[1],sizes[2]);
 	} else if(newShape->isTriMesh()) {
-		dMassSetTrimesh( &m, 5, geom );
+		dMassSetTrimesh( &m, odeDensity, geom );
 		m.c[0] = 0;
 		m.c[1] = 0;
 		m.c[2] = 0;
 	} else{
-		dMassSetSphere (&m,1,0.5);
+		dMassSetSphere (&m,odeDensity,0.5);
 	}
     dBodySetMass (body,&m);
     dGeomSetBody (geom,body);
-
-
 
 	const matrix_c &com = shape->getCenterOfMassTransform();
 	matrix_c odeMat = def.transform;
@@ -99,7 +110,12 @@ void odeRigidBody_c::init(class odePhysicsWorld_c *world, class odeColShape_c *n
 	dBodySetRotation(body,odeRot);
 }
 void odeRigidBody_c::setOrigin(const class vec3_c &newPos) {
-
+	vec3_c scaled = newPos * QIO_TO_ODE;
+	if(body == 0) {
+		dGeomSetPosition(geom,scaled.x,scaled.y,scaled.z);
+		return;
+	}
+	dBodySetPosition(body,scaled.x,scaled.y,scaled.z);
 }
 static void ODE_GetMatrix4x4(const dReal *_dvR, const dReal *_dvPos, float *mat4x4) {
 	mat4x4[0]=  _dvR[0];

@@ -36,6 +36,7 @@ enum quake3WeaponType_e {
 	EQ3WPN_ROCKETLAUNCHER,
 	EQ3WPN_SHOTGUN,
 	EQ3WPN_RAILGUN,
+	EQ3WPN_GRENADE_LAUNCHER,
 
 	EQ3WPN_NUM_KNOWN_WEAPONS,
 };
@@ -58,7 +59,10 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 		} else if(!stricmp(value,"WP_RAILGUN")) {
 			q3WeaponType = EQ3WPN_RAILGUN;
 			this->setDelayBetweenShorts(2000);
-		}
+		} else if(!stricmp(value,"WP_GRENADE_LAUNCHER")) {
+			q3WeaponType = EQ3WPN_GRENADE_LAUNCHER;
+			this->setDelayBetweenShorts(1000);
+		}	
 	} else {
 		Weapon::setKeyValue(key,value);
 	}
@@ -94,5 +98,23 @@ void Q3Weapon::doWeaponAttack() {
 		G_MultiBulletAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner, 12, 5, 100);
 	} else if(q3WeaponType == EQ3WPN_RAILGUN) {
 		G_RailGunAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner);
+	} else if(q3WeaponType == EQ3WPN_GRENADE_LAUNCHER) {
+		Projectile *rocket = new Projectile;
+		rocket->setRenderModel("models/ammo/grenade1.md3");
+		rocket->setColModel("models/ammo/grenade1.md3");
+		rocket->setPhysBounciness(0.5f);
+		rocket->initRigidBodyPhysics();
+		vec3_c forward = owner->getViewAngles().getForward();
+		rocket->setEntityLightRadius(128.f);
+		rocket->setExplosionDelay(0);
+		rocket->setExplosionRadius(128);
+		rocket->setExplosionSpriteRadius(64);
+		rocket->setExplosionSpriteMaterial("rocketExplosion");
+		rocket->setExplosionForce(2000);
+		rocket->setExplosionMarkMaterial("gfx/damage/burn_med_mrk");
+		rocket->setExplosionMarkRadius(32.f);
+		rocket->setLifeTime(3000);
+		rocket->setOrigin(owner->getEyePos()+forward*32);
+		rocket->setLinearVelocity(forward*1000.f);
 	}
 }

@@ -57,6 +57,7 @@ protected:
 	str animName; // current animation name
 	mutable vec3_c linearVelocity;
 	float pvsBoundsSkinWidth;
+	float physBounciness;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -85,6 +86,7 @@ public:
 
 	void setPhysicsObjectKinematic(bool newBKinematic);
 	void setRigidBodyPhysicsEnabled(bool bRBPhysEnable);
+	void setPhysBounciness(float newBounciness);
 
 	// returns true on error
 	bool initRagdollRenderAndPhysicsObject(const char *afName);

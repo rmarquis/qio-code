@@ -34,22 +34,31 @@ struct physObjectDef_s {
 	const class cMod_i *collisionModel;
 	// model starting transform
 	matrix_c transform;
+	// extra bounciness
+	// used for Q3 grenade launcher projectiles
+	float bounciness;
 
 	physObjectDef_s() {
 		mass = 0.f;
 		collisionModel = 0;
+		bounciness = 0.f;
 	}
 	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const class cMod_i *newCMod,
-		float newMass, bool newBUseDynamicConvexForTrimeshCMod) {
+		float newMass, bool newBUseDynamicConvexForTrimeshCMod, float newBounciness = 0.f) {
 		transform.fromAnglesAndOrigin(newAngles,newXYZ);
 		collisionModel = newCMod;
 		mass = newMass;
+		bounciness = newBounciness;
 	}
 	bool isStatic() const {
 		if(mass == 0.f) {
 			return true;
 		}
 		return false;
+	}
+
+	inline void setBounciness(float newBounciness) {
+		bounciness = newBounciness;
 	}
 };
 

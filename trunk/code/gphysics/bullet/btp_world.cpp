@@ -164,14 +164,17 @@ physObjectAPI_i *bulletPhysicsWorld_c::createPhysicsObject(const struct physObje
 		return 0;
 	}
 	bulletRigidBody_c *body = new bulletRigidBody_c;
-	body->init(colShape,def);
+	body->init(colShape,def,this);
 	this->dynamicsWorld->addRigidBody(body->getBulletRigidBody());
+	this->bodies.push_back(body);
 	return body;
 }
 void bulletPhysicsWorld_c::destroyPhysicsObject(class physObjectAPI_i *p) {
 	if(p == 0)
 		return;
-	delete p;
+	bulletRigidBody_c *pBody = dynamic_cast<bulletRigidBody_c*>(p);
+	this->bodies.remove(pBody);
+	delete pBody;
 }
 class physConstraintAPI_i *bulletPhysicsWorld_c::createConstraintBall(const vec3_c &pos, physObjectAPI_i *b0API, physObjectAPI_i *b1API) {
 	bulletRigidBody_c *b0 = dynamic_cast<bulletRigidBody_c*>(b0API);

@@ -36,6 +36,7 @@ class odeRigidBody_c : public physObjectAPI_i {
 	class BaseEntity *myEntity;
 	//arraySTD_c<odeConstraintBase_c*> constraints;
 
+	float bounciness;
 public:
 	odeRigidBody_c();
 	~odeRigidBody_c();
@@ -63,6 +64,9 @@ public:
 
 	dBodyID getODEBodyID() {
 		return body;
+	}
+	inline float getBounciness() const {
+		return bounciness;
 	}
 };
 

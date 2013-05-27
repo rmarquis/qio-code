@@ -26,15 +26,24 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_shape.h"
 #include "btp_headers.h"
 #include "btp_convert.h"
+#include "btp_world.h"
 #include <shared/physObjectDef.h>
 
 bulletRigidBody_c::bulletRigidBody_c() {
-	
+	myWorld = 0;
+	shape = 0;
+	bulletRigidBody = 0;
+	myEntity = 0;
 }
 bulletRigidBody_c::~bulletRigidBody_c() {
-
+	if(bulletRigidBody == 0)
+		return;
+	myWorld->getBTDynamicsWorld()->removeRigidBody(bulletRigidBody);
+	delete bulletRigidBody;
+	bulletRigidBody = 0;
 }
-void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct physObjectDef_s &def) {
+void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct physObjectDef_s &def, class bulletPhysicsWorld_c *pWorld) {
+	myWorld = pWorld;
 	shape = newShape;
 	btCollisionShape *btShape = shape->getBulletCollisionShape();
 	bool isStatic = def.isStatic();
@@ -51,9 +60,14 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 	btRigidBody::btRigidBodyConstructionInfo cInfo(def.mass,0,btShape,localInertia);
 	bulletRigidBody = new btRigidBody(cInfo);
 	bulletRigidBody->setWorldTransform(startTransform);
+	bulletRigidBody->setRestitution(def.bounciness);
 }
 void bulletRigidBody_c::setOrigin(const class vec3_c &newPos) {
-
+	btTransform trans;
+	trans = bulletRigidBody->getWorldTransform();
+	btVector3 posScaled(newPos.x*QIO_TO_BULLET,newPos.y*QIO_TO_BULLET,newPos.z*QIO_TO_BULLET);
+	trans.setOrigin(posScaled);
+	bulletRigidBody->setWorldTransform(trans);
 }
 const class vec3_c bulletRigidBody_c::getRealOrigin() const {
 	btTransform trans;
