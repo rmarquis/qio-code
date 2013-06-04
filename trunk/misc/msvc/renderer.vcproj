@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_custom.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_debugDrawIMPL.cpp"
 				>
 			</File>
@@ -664,6 +668,10 @@
 			>
 			<File
 				RelativePath="..\..\code\api\boxTrianglesCallback.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\customRenderObjectAPI.h"
 				>
 			</File>
 			<File

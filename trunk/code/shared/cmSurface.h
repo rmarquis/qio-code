@@ -246,6 +246,15 @@ public:
 	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) {
 		
 	}
+	virtual void clear() {
+		verts.clear();
+		indices.clear();
+		if(scaledVerts) {
+			delete scaledVerts;
+			scaledVerts = 0;
+		}
+		bb.clear();
+	}
 
 	// quake polygon generation
 	void addPolyEdge(const vec3_c &v0, const vec3_c &v1, u32 localNum) {

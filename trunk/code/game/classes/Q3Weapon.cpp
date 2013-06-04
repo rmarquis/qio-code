@@ -114,6 +114,10 @@ void Q3Weapon::doWeaponAttack() {
 		rocket->setExplosionMarkMaterial("gfx/damage/burn_med_mrk");
 		rocket->setExplosionMarkRadius(32.f);
 		rocket->setLifeTime(3000);
+		rocket->setTrailEmitterMaterial("smokePuff");
+		rocket->setTrailEmitterSpriteRadius(8.f);
+		rocket->setTrailEmitterInterval(50);
+
 		rocket->setOrigin(owner->getEyePos()+forward*32);
 		rocket->setLinearVelocity(forward*1000.f);
 	}

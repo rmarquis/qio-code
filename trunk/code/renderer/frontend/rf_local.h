@@ -100,6 +100,11 @@ void RF_AddExplosionDrawCalls();
 // rf_lightGrid_debug.cpp
 void RF_AddLightGridDebugModelDrawCalls();
 
+// rf_custom.cpp - custom drawable objects
+void RF_AddCustomDrawCalls();
+void RF_AddCustomRenderObject(class customRenderObjectAPI_i *api);
+void RF_RemoveCustomRenderObject(class customRenderObjectAPI_i *api);
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;

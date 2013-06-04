@@ -281,6 +281,15 @@ void BaseEntity::updateAttachmentOrigin() {
 void BaseEntity::setEntityLightRadius(float newEntityLightRadius) {
 	myEdict->s->lightRadius = newEntityLightRadius;
 }
+void BaseEntity::setTrailEmitterMaterial(const char *matName) {
+	myEdict->s->trailEmitterMaterial = G_RenderMaterialIndex(matName);
+}
+void BaseEntity::setTrailEmitterSpriteRadius(float newRadius) {
+	myEdict->s->trailEmitterSpriteRadius = newRadius;
+}
+void BaseEntity::setTrailEmitterInterval(int newInterval) {
+	myEdict->s->trailEmitterInterval = newInterval;
+}
 const aabb &BaseEntity::getAbsBounds() const {
 	return this->myEdict->absBounds;
 }

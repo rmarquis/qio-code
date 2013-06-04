@@ -76,11 +76,9 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 int G_RenderModelIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, qtrue);
 }
-
 int G_CollisionModelIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_COLLMODELS, MAX_MODELS, qtrue);
 }
-
 int G_SoundIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
@@ -92,6 +90,9 @@ int G_RagdollDefIndex( const char *name ) {
 }
 int G_RenderSkinIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_SKINS, MAX_SKINS, qtrue);
+}
+int G_RenderMaterialIndex( const char *name ) {
+	return G_FindConfigstringIndex (name, CS_MATERIALS, MAX_MATERIALS, qtrue);
 }
 
 //=====================================================================

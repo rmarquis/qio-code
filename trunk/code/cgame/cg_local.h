@@ -65,6 +65,7 @@ typedef struct centity_s {
 
 	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
 	class rLightAPI_i *rLight; // for ET_LIGHT and for all entities with entityState_t::lightRadius != 0.f
+	class emitter_c *emitter; // for all entities with entity emitter enabled
 } centity_t;
 
 
@@ -177,7 +178,7 @@ typedef struct {
 	const class skelAnimAPI_i	*gameAnims[MAX_ANIMATIONS];
 //	str gameAnimNames[MAX_ANIMATIONS];
 	const class afDeclAPI_i	*gameAFs[MAX_RAGDOLLDEFS];
-
+	class mtrAPI_i *gameMaterials[MAX_MATERIALS];
 	// media
 	cgMedia_t		media;
 

@@ -317,6 +317,18 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" %i cmModels\n",c_collisionModelsLoaded);
+		g_loadingScreen->addLoadingString("CG_Init: registering materials...");
+	}
+	u32 c_renderMaterialsLoaded = 0;
+	for(u32 i = 0; i < MAX_MATERIALS; i++) {
+		const char *str = CG_ConfigString(CS_MATERIALS+i);
+		if(str && str[0]) {
+			cgs.gameMaterials[i] = rf->registerMaterial(str);
+			c_renderMaterialsLoaded++;
+		}
+	}
+	if(g_loadingScreen) { // update loading screen (if its present)
+		g_loadingScreen->addLoadingString(" %i materials\n",c_renderMaterialsLoaded);
 		g_loadingScreen->addLoadingString("CG_Init: registering sounds...");
 	}
 	u32 c_soundsLoaded = 0;

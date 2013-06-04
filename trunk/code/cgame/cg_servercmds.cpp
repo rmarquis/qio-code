@@ -108,6 +108,8 @@ static void CG_ConfigStringModified( void ) {
 		cgs.gameSounds[ num-CS_SOUNDS] = 0;//trap_S_RegisterSound( str, qfalse );
 	} else if ( num >= CS_SKINS && num < CS_SKINS+MAX_SKINS ) {
 		//cgs.gameSkins[ num-CS_SKINS] = rf->registerSkin(str);
+	} else if ( num >= CS_MATERIALS && num < CS_MATERIALS+MAX_MATERIALS ) {
+		cgs.gameMaterials[ num-CS_MATERIALS] = rf->registerMaterial(str);
 	}
 }
 

@@ -56,6 +56,16 @@ public:
 	virtual void resizeIndices(u32 newNumIndices) = 0;
 	virtual void setIndex(u32 indexNum, u32 value) = 0;
 
+	virtual void clear() = 0;
+
+	virtual void setAllVertexColors(byte r, byte g, byte b, byte a) {
+
+	}
+
+	virtual void addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const class axis_c &viewerAxis, byte alpha = 255) {
+
+	}
+
 	// only for .map -> trimesh converter
 	virtual void onNewMapEntity(u32 entityNum) {
 

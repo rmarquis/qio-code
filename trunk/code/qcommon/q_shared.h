@@ -1087,6 +1087,9 @@ typedef enum {
 #define SKINNUM_BITS	8
 #define MAX_SKINS		(1<<SKINNUM_BITS)
 
+#define MATERIALNUM_BITS	8
+#define MAX_MATERIALS		(1<<MATERIALNUM_BITS)
+
 #define	MAX_CONFIGSTRINGS	4096 // 2048
 
 // these are the only configstrings that the system reserves, all the
@@ -1147,6 +1150,11 @@ struct entityState_s {
 
 	float lightRadius; // only for ET_LIGHT 
 
+	// trail emitter data for all entity types (including BaseEntity)
+	int trailEmitterMaterial; 
+	float trailEmitterSpriteRadius;
+	int trailEmitterInterval; // in msec
+
 	// for networked ragdolls (and bone controllers?)
 	netBoneOr_s boneOrs[MAX_NETWORKED_BONES];
 
@@ -1169,6 +1177,13 @@ struct entityState_s {
 	}
 	entityState_s() {
 		setDefaults();
+	}
+	inline bool isEmitterActive() const {
+		if(trailEmitterMaterial == 0)
+			return false;
+		if(trailEmitterSpriteRadius <= 0)
+			return false;
+		return true;
 	}
 };
 

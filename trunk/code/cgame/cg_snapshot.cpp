@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // not necessarily every single rendered frame
 
 #include "cg_local.h"
+#include "cg_emitter.h"
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
@@ -157,6 +158,10 @@ static void CG_RemoveEntity(u32 entNum) {
 			cent->rEnt = 0;
 		}
 //	}
+	if(cent->emitter) {
+		delete cent->emitter;
+		cent->emitter = 0;
+	}
 }
 static void CG_NewEntity(u32 entNum) {
 	centity_t *cent = &cg_entities[entNum];

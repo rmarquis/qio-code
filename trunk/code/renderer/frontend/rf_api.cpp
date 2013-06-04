@@ -191,6 +191,12 @@ public:
 	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) {
 		return RF_RegisterAnimation_GetAPI(animName);
 	}
+	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) {
+		return RF_AddCustomRenderObject(api);
+	}
+	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) {
+		return RF_RemoveCustomRenderObject(api);
+	}
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;
 	}

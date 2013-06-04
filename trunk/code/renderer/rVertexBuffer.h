@@ -153,7 +153,7 @@ public:
 		rb->destroyVBO(this);
 	}
 	void resize(u32 newSize) {
-		data.resize(newSize);
+		ensureAllocated(newSize);
 		numVerts = newSize;
 	}
 	void push_back(const rVert_c &nv) {

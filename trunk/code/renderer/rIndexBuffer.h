@@ -236,6 +236,9 @@ public:
 	bool is32Bit() const {
 		return (type == IBO_U32);
 	}
+	bool isNotSet() const {
+		return (type == IBO_NOT_SET);
+	}
 	const void *getArray() const {
 		return data.getArray();
 	}

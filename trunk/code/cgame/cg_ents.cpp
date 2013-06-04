@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_ents.c -- present snapshot entities, happens every single frame
 
 #include "cg_local.h"
+#include "cg_emitter.h"
 #include <api/rEntityAPI.h>
 #include <api/rLightAPI.h>
 #include <api/coreAPI.h>
@@ -132,6 +133,8 @@ CG_CalcEntityLerpPositions
 
 ===============
 */
+#include <api/rAPI.h>
+#include <api/mtrAPI.h>
 static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	if(cent->currentState.parentNum != ENTITYNUM_NONE) {
 		centity_t *parent = &cg_entities[cent->currentState.parentNum];
@@ -183,6 +186,26 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	//}
 }
 
+static void CG_UpdateEntityEmitter( centity_t *cent ) {
+	if(cent->currentState.isEmitterActive()) {
+		class mtrAPI_i *mat = cgs.gameMaterials[cent->currentState.trailEmitterMaterial];
+		if(cent->emitter == 0) {
+			cent->emitter = new emitter_c(cg.time);
+			rf->addCustomRenderObject(cent->emitter);
+		}
+		cent->emitter->setOrigin(cent->lerpOrigin);
+		cent->emitter->setMaterial(mat);
+		cent->emitter->setRadius(cent->currentState.trailEmitterSpriteRadius);
+		cent->emitter->setInterval(cent->currentState.trailEmitterInterval);
+
+		cent->emitter->updateEmitter(cg.time);
+	} else {
+		if(cent->emitter) {
+			delete cent->emitter;
+			cent->emitter = 0;
+		}
+	}
+}
 /*
 ===============
 CG_AddCEntity
@@ -196,6 +219,8 @@ static void CG_AddCEntity( centity_t *cent ) {
 
 	// calculate the current origin
 	CG_CalcEntityLerpPositions( cent );
+	// update entity emitter
+	CG_UpdateEntityEmitter( cent );
 
 	switch ( cent->currentState.eType ) {
 	default:

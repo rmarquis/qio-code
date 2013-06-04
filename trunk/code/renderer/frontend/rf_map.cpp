@@ -92,6 +92,9 @@ class rWorldMapLoader_c : public staticModelCreatorAPI_i {
 	}
 	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) {
 	}
+	virtual void clear() {
+
+	}
 public:	
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2) {

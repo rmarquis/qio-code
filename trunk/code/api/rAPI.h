@@ -69,6 +69,9 @@ public:
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
 	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) = 0;
 
+	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
+	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
+
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
 

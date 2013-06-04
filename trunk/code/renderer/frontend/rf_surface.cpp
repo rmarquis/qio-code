@@ -260,51 +260,68 @@ void r_surface_c::initKeyframedSurfaceInstance(const kfSurfAPI_i *sfApi) {
 void r_surface_c::updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame) {
 	sfApi->instanceSingleFrame(verts[0].xyz,sizeof(rVert_c),singleFrame);
 }
-void r_surface_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius) {
+void r_surface_c::initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius, u32 subSpriteNumber) {
 	// set material
 	this->setMaterial(newSpriteMaterial);
 
+	u32 firstVertex = subSpriteNumber * 4;
+	u32 numRequiredVertices = firstVertex + 4;
+	u32 firstIndex = subSpriteNumber * 6;
+	u32 numRequiredIndices = firstIndex + 6;
+
 	// init indices
-	u16 *iPtr = indices.initU16(6);
-	iPtr[0] = 0;
-	iPtr[1] = 1;
-	iPtr[2] = 2;
-	iPtr[3] = 2;
-	iPtr[4] = 3;
-	iPtr[5] = 0;
+	if(indices.isNotSet()) {
+		indices.initU16(numRequiredIndices);
+	}
+	indices.ensureAllocated_indices(numRequiredIndices);
+	indices.forceSetIndexCount(numRequiredIndices);
+
+	indices.setIndex(firstIndex+0,firstVertex+0);
+	indices.setIndex(firstIndex+1,firstVertex+1);
+	indices.setIndex(firstIndex+2,firstVertex+2);
+	indices.setIndex(firstIndex+3,firstVertex+2);
+	indices.setIndex(firstIndex+4,firstVertex+3);
+	indices.setIndex(firstIndex+5,firstVertex+0);
 
 	// init vertices
-	verts.resize(4);
+	verts.resize(numRequiredVertices);
 
-	verts[0].tc[0] = 0.f;
-	verts[0].tc[1] = 0.f;
+	verts[firstVertex+0].tc[0] = 0.f;
+	verts[firstVertex+0].tc[1] = 0.f;
 
-	verts[1].tc[0] = 1.f;
-	verts[1].tc[1] = 0.f;
+	verts[firstVertex+1].tc[0] = 1.f;
+	verts[firstVertex+1].tc[1] = 0.f;
 
-	verts[2].tc[0] = 1.f;
-	verts[2].tc[1] = 1.f;
+	verts[firstVertex+2].tc[0] = 1.f;
+	verts[firstVertex+2].tc[1] = 1.f;
 
-	verts[3].tc[0] = 0.f;
-	verts[3].tc[1] = 1.f;
+	verts[firstVertex+3].tc[0] = 0.f;
+	verts[firstVertex+3].tc[1] = 1.f;
 
 	// just to be safe - force a single update with identity camera axis
 	axis_c axisIdentity;
 	axisIdentity.identity();
-	updateSprite(axisIdentity,vec3_c(0,0,0),newSpriteRadius);
+	updateSprite(axisIdentity,vec3_c(0,0,0),newSpriteRadius,subSpriteNumber);
 }
-void r_surface_c::updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius) {
+void r_surface_c::updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius, u32 subSpriteNumber, byte alpha) {
 	vec3_c up = viewAxis.getUp() * newSpriteRadius;
 	vec3_c left = viewAxis.getLeft() * newSpriteRadius;
 
-	verts[0].xyz = spritePos + left + up;
-	verts[1].xyz = spritePos - left + up;
-	verts[2].xyz = spritePos - left - up;
-	verts[3].xyz = spritePos + left - up;
-	verts[0].normal = viewAxis.getForward();
-	verts[1].normal = viewAxis.getForward();
-	verts[2].normal = viewAxis.getForward();
-	verts[3].normal = viewAxis.getForward();
+	u32 firstVertex = subSpriteNumber * 4;
+	u32 numRequiredVertices = firstVertex + 4;
+
+	verts[firstVertex+0].xyz = spritePos + left + up;
+	verts[firstVertex+1].xyz = spritePos - left + up;
+	verts[firstVertex+2].xyz = spritePos - left - up;
+	verts[firstVertex+3].xyz = spritePos + left - up;
+	verts[firstVertex+0].normal = viewAxis.getForward();
+	verts[firstVertex+1].normal = viewAxis.getForward();
+	verts[firstVertex+2].normal = viewAxis.getForward();
+	verts[firstVertex+3].normal = viewAxis.getForward();
+	verts[firstVertex+0].color[3] = alpha;
+	verts[firstVertex+1].color[3] = alpha;
+	verts[firstVertex+2].color[3] = alpha;
+	verts[firstVertex+3].color[3] = alpha;
 }
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
@@ -404,6 +421,10 @@ void r_surface_c::calcVertexLighting(const struct pointLightSample_s &sample) {
 void r_surface_c::setAmbientLightingVec3_255(const vec3_c &color) {
 	verts.setVertexAlphaToConstValue(255);
 	verts.setVertexColorsToConstValuesVec3255(color);
+}
+void r_surface_c::setAllVertexColors(byte r, byte g, byte b, byte a) {
+	verts.setVertexAlphaToConstValue(a);
+	verts.setVertexColorsToConstValuesVec3255(vec3_c(r,g,b));
 }
 bool r_surface_c::parseProcSurface(class parser_c &p) {
 	int sky = -1;
@@ -612,17 +633,7 @@ r_model_c::r_model_c() {
 }
 #include "rf_stencilShadowCaster.h"
 r_model_c::~r_model_c() {
-	if(extraCollOctTree) {
-		CMU_FreeTriSoupOctTree(extraCollOctTree);
-		extraCollOctTree = 0;
-	}
-	if(ssvCaster) {
-		delete ssvCaster;
-		ssvCaster = 0;
-	}
-	for(u32 i = 0; i < bezierPatches.size(); i++) {
-		delete bezierPatches[i];
-	}
+	clear();
 }
 void r_model_c::precalculateStencilShadowCaster() {
 	if(ssvCaster) {
@@ -663,6 +674,33 @@ void r_model_c::setIndex(u32 indexNum, u32 value) {
 	if(surfs.size() == 0)
 		surfs.resize(1);
 	surfs[0].setIndex(indexNum,value);
+}
+void r_model_c::addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const axis_c &viewerAxis, byte alpha) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	u32 spriteNum = surfs[0].getNumTris()/2;
+	surfs[0].initSprite(mat,radius,spriteNum);
+	surfs[0].updateSprite(viewerAxis,origin,radius,spriteNum, alpha);
+}
+void r_model_c::setAllVertexColors(byte r, byte g, byte b, byte a) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		sf->setAllVertexColors(r,g,b,a);
+	}
+}
+void r_model_c::clear() {
+	if(extraCollOctTree) {
+		CMU_FreeTriSoupOctTree(extraCollOctTree);
+		extraCollOctTree = 0;
+	}
+	if(ssvCaster) {
+		delete ssvCaster;
+		ssvCaster = 0;
+	}
+	for(u32 i = 0; i < bezierPatches.size(); i++) {
+		delete bezierPatches[i];
+	}
+	surfs.clear();
 }
 void r_model_c::scaleXYZ(float scale) {
 	r_surface_c *sf = surfs.getArray();

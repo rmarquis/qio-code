@@ -169,8 +169,8 @@ public:
 	void initKeyframedSurfaceInstance(const class kfSurfAPI_i *sfApi);
 	void updateKeyframedSurfInstance(const class kfSurfAPI_i *sfApi, u32 singleFrame);
 	// single sprite surface
-	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius);
-	void updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius);
+	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius, u32 subSpriteNumber = 0);
+	void updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius, u32 subSpriteNumber = 0, byte alpha = 255);
 
 	bool traceRay(class trace_c &tr);
 
@@ -206,6 +206,7 @@ public:
 
 	void calcVertexLighting(const struct pointLightSample_s &sample);
 	void setAmbientLightingVec3_255(const vec3_c &color);
+	void setAllVertexColors(byte r, byte g, byte b, byte a);
 
 	const aabb &getBB() const {
 		return bounds;
@@ -259,6 +260,9 @@ public:
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);
 	virtual void resizeIndices(u32 newNumIndices);
 	virtual void setIndex(u32 indexNum, u32 value);
+	virtual void clear();	
+	virtual void addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const axis_c &viewerAxis, byte alpha);
+	virtual void setAllVertexColors(byte r, byte g, byte b, byte a);
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();

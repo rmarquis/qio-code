@@ -151,7 +151,12 @@ public:
 	// returns true on error
 	virtual bool getBoneWorldOrientation(u32 tagNum, class matrix_c &out);
 
+	// entity light
 	void setEntityLightRadius(float newEntityLightRadius);
+	// entity emitter
+	void setTrailEmitterMaterial(const char *matName);
+	void setTrailEmitterSpriteRadius(float newRadius);
+	void setTrailEmitterInterval(int newInterval);
 
 	virtual void getLocalBounds(aabb &out) const;
 	const class aabb &getAbsBounds() const;
