@@ -192,9 +192,9 @@ static void CG_DoExplosionEffect() {
 static void CG_DoRailgunEffect() {
 //	va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
 	vec3_c p, d;
-	str coreMaterial = CG_Argv(1);
-	str discMaterial = CG_Argv(2);
-	str explosionMaterial = CG_Argv(3);
+	str coreMaterialName = CG_Argv(1);
+	str discMaterialName = CG_Argv(2);
+	str explosionMaterialName = CG_Argv(3);
 	p.x = atof(CG_Argv(4));
 	p.y = atof(CG_Argv(5));
 	p.z = atof(CG_Argv(6));
@@ -209,7 +209,11 @@ static void CG_DoRailgunEffect() {
 		CG_Printf("CG_DoRailgunEffect: no hit\n");
 		return; // no hit
 	}
-	//mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
+	mtrAPI_i *coreMaterial = g_ms->registerMaterial(coreMaterialName);
+	mtrAPI_i *diskMaterial = g_ms->registerMaterial(discMaterialName);
+
+	CG_AddBulletTracer(tr.getStartPos()-vec3_c(0,0,12),tr.getHitPos(),32.f,coreMaterial,1000);
+
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial("gfx/damage/plasma_mrk");
 	float radius = 32.f;
 	centity_s *hit = tr.getHitCGEntity();

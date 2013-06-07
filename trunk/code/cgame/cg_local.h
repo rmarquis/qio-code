@@ -288,6 +288,12 @@ void CG_RunTestModel();
 //
 void CG_RunViewModel();
 
+//
+// cg_tracer.cpp
+//
+void CG_AddBulletTracer(const vec3_c &from, const vec3_c &to, float width, class mtrAPI_i *mat, int life);
+void CG_UpdateBulletTracers();
+
 //===============================================
 
 //

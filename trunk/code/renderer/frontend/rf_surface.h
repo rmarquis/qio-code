@@ -122,10 +122,11 @@ public:
 	void addPoly(const struct simplePoly_s &poly);
 	void addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3);
 
-	void resizeVerts(u32 newNumVerts);
-	void setVert(u32 vertexIndex, const struct simpleVert_s &v);
-	void resizeIndices(u32 newNumIndices);
-	void setIndex(u32 indexNum, u32 value);
+	virtual void resizeVerts(u32 newNumVerts);
+	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);
+	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos);
+	virtual void resizeIndices(u32 newNumIndices);
+	virtual void setIndex(u32 indexNum, u32 value);
 	
 	void transform(const class matrix_c &mat);
 
@@ -258,6 +259,7 @@ public:
 	// for default, first surface
 	virtual void resizeVerts(u32 newNumVerts);
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);
+	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos);
 	virtual void resizeIndices(u32 newNumIndices);
 	virtual void setIndex(u32 indexNum, u32 value);
 	virtual void clear();	

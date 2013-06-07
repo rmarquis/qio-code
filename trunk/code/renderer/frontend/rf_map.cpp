@@ -110,6 +110,7 @@ public:
 	}
 	virtual void resizeVerts(u32 newNumVerts) { }
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) { }
+	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos) { }
 	virtual void resizeIndices(u32 newNumIndices) { }
 	virtual void setIndex(u32 indexNum, u32 value) { }
 	virtual void recalcBoundingBoxes() {

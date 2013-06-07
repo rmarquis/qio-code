@@ -179,6 +179,9 @@ public:
 		verts[vertexIndex] = v.xyz;
 		bb.addPoint(v.xyz);
 	}
+	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos) {
+		verts[vertexIndex] = newPos;
+	}
 	virtual void resizeIndices(u32 newNumIndices) {
 		indices.resize(newNumIndices);
 	}

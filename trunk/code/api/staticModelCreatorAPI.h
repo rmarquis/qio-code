@@ -53,6 +53,7 @@ public:
 
 	virtual void resizeVerts(u32 newNumVerts) = 0;
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) = 0;
+	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos) = 0;
 	virtual void resizeIndices(u32 newNumIndices) = 0;
 	virtual void setIndex(u32 indexNum, u32 value) = 0;
 

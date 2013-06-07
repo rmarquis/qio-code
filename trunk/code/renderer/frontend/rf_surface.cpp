@@ -104,6 +104,9 @@ void r_surface_c::setVert(u32 vertexIndex, const struct simpleVert_s &v) {
 	rv.xyz = v.xyz;
 	rv.tc = v.tc;
 }
+void r_surface_c::setVertexPos(u32 vertexIndex, const vec3_c &newPos) {
+	verts[vertexIndex].xyz = newPos;
+}
 void r_surface_c::resizeIndices(u32 newNumIndices) {
 	// TODO: see if we can use u16 buffer here
 	indices.initU32(newNumIndices);
@@ -664,6 +667,11 @@ void r_model_c::setVert(u32 vertexIndex, const struct simpleVert_s &v) {
 	if(surfs.size() == 0)
 		surfs.resize(1);
 	surfs[0].setVert(vertexIndex,v);
+}
+void r_model_c::setVertexPos(u32 vertexIndex, const vec3_c &newPos) {
+	if(surfs.size() == 0)
+		surfs.resize(1);
+	surfs[0].setVertexPos(vertexIndex,newPos);
 }
 void r_model_c::resizeIndices(u32 newNumIndices) {
 	if(surfs.size() == 0)

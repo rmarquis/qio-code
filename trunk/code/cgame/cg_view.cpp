@@ -327,6 +327,9 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	// update view model
 	CG_RunViewModel();
 
+	// timout bullet tracers
+	CG_UpdateBulletTracers();
+
 	// build the render lists
 	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 

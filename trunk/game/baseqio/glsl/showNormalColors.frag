@@ -29,6 +29,7 @@ varying vec3 v_vertNormal;
 void main() {
 	// TODO: transform normals from entity space to world space?
 	// (for entities only)
-	gl_FragColor.rgb = v_vertNormal;
+	//gl_FragColor.rgb = v_vertNormal;
+	gl_FragColor.rgb = vec3(0.5,0.5,0.5) + normalize(v_vertNormal) * 0.5f;
 	gl_FragColor.a = 1.f;
 }

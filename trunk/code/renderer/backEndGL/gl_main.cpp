@@ -317,6 +317,10 @@ public:
 		}
 	}
 	void bindTex(int slot, u32 tex) {
+		if(slot > MAX_TEXTURE_SLOTS) {
+			g_core->RedWarning("rbSDLOpenGL_c::bindTex: bad slot %i\n",slot);
+			return;
+		}
 		texState_s *s = &texStates[slot];
 		if(s->enabledTexture2D == true && s->index == tex)
 			return;

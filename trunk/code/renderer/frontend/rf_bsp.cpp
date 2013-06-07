@@ -746,6 +746,7 @@ bool rBspTree_c::loadSurfsQ2() {
 		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
 		ts->mat = g_ms->registerMaterial(matName);
 		ts->lightmap = 0;
+		ts->deluxemap = 0;
 		q2PolyBuilder_c polyBuilder;
 		for(int j = 0; j < isf->numEdges-1; j++) {
 			int ei = surfEdges[isf->firstEdge + j];
@@ -822,6 +823,7 @@ bool rBspTree_c::loadSurfsHL() {
 		//matName.append(".wal");
 		oSF->type = BSPSF_PLANAR;
 		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
+		ts->deluxemap = 0;
 		// get texture image data
 		if(sfTexInfo->miptex < 0 || sfTexInfo->miptex >= mipTexLump->numMipTex) {
 			g_core->RedWarning("rBspTree_c::loadSurfsHL(): miptex index %i out of range <0,%i) for surface %i\n",

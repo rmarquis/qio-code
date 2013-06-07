@@ -63,6 +63,8 @@ void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSk
 		BaseEntity *h = tr.getHitEntity();
 		if(h) {
 			h->onBulletHit(tr.getHitPos(), dir, 100);
+			// apply extra impulse
+			h->applyPointImpulse(dir*500.f,tr.getHitPos());
 		}
 	}
 }

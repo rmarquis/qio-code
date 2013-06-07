@@ -61,6 +61,7 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 	bulletRigidBody = new btRigidBody(cInfo);
 	bulletRigidBody->setWorldTransform(startTransform);
 	bulletRigidBody->setRestitution(def.bounciness);
+	bulletRigidBody->setUserPointer(myEntity);
 }
 void bulletRigidBody_c::setOrigin(const class vec3_c &newPos) {
 	btTransform trans;
@@ -122,6 +123,9 @@ bool bulletRigidBody_c::isDynamic() const {
 }
 void bulletRigidBody_c::setEntityPointer(class BaseEntity *ent) {
 	myEntity = ent;
+	if(bulletRigidBody) {
+		bulletRigidBody->setUserPointer(myEntity);
+	}
 }
 BaseEntity *bulletRigidBody_c::getEntityPointer() const {
 	return myEntity;
