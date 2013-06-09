@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rLightAPI.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
+#include <shared/fcolor4.h>
 
 aCvar_c rf_noLightmaps("rf_noLightmaps","0");
 aCvar_c rf_noDeluxemaps("rf_noDeluxemaps","0");
@@ -61,6 +62,7 @@ public:
 	int cubeMapSide;
 	int shadowMapW;
 	int shadowMapH;
+	fcolor4_c surfaceColor;
 //public:
 	
 };
@@ -80,7 +82,7 @@ void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
 
 void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, drawCallSort_e sort,
-		bool bindVertexColors, class textureAPI_i *deluxemap) {
+		bool bindVertexColors, class textureAPI_i *deluxemap, const vec3_c *extraRGB) {
 	if(mat == 0) {
 		g_core->RedWarning("RF_AddDrawCall: NULL material\n");
 		mat = g_ms->registerMaterial("nullMaterialPassedToAddDrawCall");
@@ -149,6 +151,10 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	n->entity = rf_currentEntity;
 	n->curLight = rf_curLightAPI;
+	n->surfaceColor.fromColor3f((const float*)extraRGB);
+	if(extraRGB) {
+		n->surfaceColor.scaleRGB(1.f/255.f);
+	}
 	rf_numDrawCalls++;
 }
 void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
@@ -325,6 +331,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		rb->setCurrentDrawCallSort(c->sort);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
+		rb->setColor4(c->surfaceColor.toPointer());
 		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
 		if(c->verts) {
 			// draw surface

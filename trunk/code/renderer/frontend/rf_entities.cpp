@@ -474,11 +474,13 @@ void rEntityImpl_c::updateAnimatedEntity() {
 	}
 	recalcABSBounds();
 
-	if(this->bCenterLightSampleValid) {
-		if(model->isSprite() == false) {
-			// it's faster to do this here
-		//	instance->calcVertexLightingABS(this->matrix,this->centerLightSample);
-			instance->setAmbientLightingVec3_255(this->centerLightSample.ambientLight);
+	if(instance) {
+		if(this->bCenterLightSampleValid) {
+			if(model->isSprite() == false) {
+				// it's faster to do this here
+			//	instance->calcVertexLightingABS(this->matrix,this->centerLightSample);
+				instance->setAmbientLightingVec3_255(this->centerLightSample.ambientLight);
+			}
 		}
 	}
 }
@@ -491,7 +493,13 @@ void rEntityImpl_c::addDrawCalls() {
 	rf_currentEntity = this;
 
 	if(model->isStatic()) {
-		((model_c*)model)->addModelDrawCalls(&surfaceFlags);
+		vec3_c *extraRGB;
+		if(bCenterLightSampleValid && (RF_IsUsingDynamicLights() == false)) {
+			extraRGB = &this->centerLightSample.ambientLight;
+		} else {
+			extraRGB = 0;
+		}
+		((model_c*)model)->addModelDrawCalls(&surfaceFlags,extraRGB);
 		if(staticDecals) {
 			staticDecals->addDrawCalls();
 		}

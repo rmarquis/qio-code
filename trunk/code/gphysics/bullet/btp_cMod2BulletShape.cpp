@@ -46,7 +46,7 @@ btConvexHullShape *BT_ConvexHullShapeFromVerticesArray(const btAlignedObjectArra
 		return 0;
 	// this create an internal copy of the vertices
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
-#if 1
+#if 0
 	// This is not needed by physics code itself, but its needed by bt debug drawing.
 	// (without it convex shapes edges are messed up)
 	shape->initializePolyhedralFeatures();
@@ -66,6 +66,8 @@ btConvexHullShape *BT_CModelHullToConvex(const cmHull_i *h, const vec3_c *ofs = 
 	}
 	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	btConvexHullShape *shape = BT_ConvexHullShapeFromVerticesArray(vertices);
+	// the default margin is too high...
+	shape->setMargin(0.f);
 	return shape;
 }
 btConvexHullShape *BT_CModelTriMeshToConvex(const class cmTriMesh_i *triMesh, const vec3_c *ofs) {

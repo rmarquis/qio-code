@@ -159,7 +159,7 @@ public:
 		}
 	}
 	void drawSurfaceWithSingleTexture(class textureAPI_i *tex);
-	void addDrawCall(bool bUseVertexColors = false);
+	void addDrawCall(bool bUseVertexColors = false, const vec3_c *extraRGB = 0);
 
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	bool createDecalInternal(class decalProjector_c &proj);
@@ -193,6 +193,12 @@ public:
 		createBox(halfSize);
 		translateXYZ(center);
 	}
+	void createSphere(f32 radius, u32 polyCountX, u32 polyCountY);
+	void createSphere(const vec3_c &center, f32 radius, u32 polyCountX, u32 polyCountY) {
+		createSphere(radius,polyCountX,polyCountY);
+		translateXYZ(center);
+	}
+
 	void scaleTexCoords(float tcScale) {
 		rVert_c *v = verts.getArray();
 		for(u32 i = 0; i < verts.size(); i++, v++) {
@@ -315,7 +321,7 @@ public:
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
 	r_surface_c *registerSurf(const char *matName);
-	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0, bool useVertexColors = false);
+	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0, bool useVertexColors = false, const vec3_c *extraRGB = 0);
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
 	void setSurfMaterial(const char *surfName, const char *matName);
 	void appendSkinRemap(const class rSkinRemap_c *skin);

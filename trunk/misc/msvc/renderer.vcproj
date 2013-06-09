@@ -415,6 +415,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\fcolor4.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\frustum.cpp"
 				>
 			</File>

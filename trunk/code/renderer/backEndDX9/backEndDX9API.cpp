@@ -48,6 +48,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/cullType.h>
 #include <shared/autoCvar.h>
+#include <shared/fColor4.h>
 
 #include "dx9_local.h"
 #include "dx9_shader.h"
@@ -93,7 +94,7 @@ D3DVERTEXELEMENT9 dx_rVertexDecl[] =
 {
     {0,  0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
     {0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0},
-	{0, 24, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   0},
+	{0, 24, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   0},
     {0, 28, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
     {0, 36, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
     D3DDECL_END()
@@ -134,6 +135,8 @@ class rbDX9_c : public rbAPI_i {
 	D3DXMATRIX dxView, dxWorld, dxProj;
 	// queried on startup
 	D3DCAPS9 devCaps;
+	// per-surface color
+	fcolor4_c lastSurfaceColor;
 
 	matrix_c viewMatrix;
 	matrix_c entityMatrix;
@@ -205,6 +208,7 @@ public:
 		turnOffTextureMatrices();
 	}
 	virtual void setColor4(const float *rgba) {
+		lastSurfaceColor.fromColor4f(rgba);
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		bHasVertexColors = bBindVertexColors;
@@ -470,6 +474,7 @@ public:
 		} else {
 			newShader->effect->SetBool("bHasClipPlane",false);
 		}
+		newShader->effect->SetValue("materialColor",lastSurfaceColor.toPointer(),sizeof(lastSurfaceColor));
 		// if we're drawing a lighting pass, send light paramters to shader
 		if(curLight) {
 			const vec3_c &xyz = curLight->getOrigin();
@@ -692,9 +697,13 @@ public:
 				}
 				if(bindVertexColors) {
 					pDev->SetRenderState(D3DRS_COLORVERTEX,true);
+					pDev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
 					shaderDef.hasVertexColors = true;
 				} else {
 					pDev->SetRenderState(D3DRS_COLORVERTEX,false);
+				}
+				if(lastSurfaceColor.isFullBright() == false) {
+					shaderDef.hasMaterialColor = true;
 				}
 				if(curLight) {
 					selectedShader = DX9_RegisterShader("perPixelLighting",&shaderDef);

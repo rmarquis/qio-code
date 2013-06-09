@@ -29,7 +29,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/parser.h>
 #include <shared/cmWinding.h>
+#include <shared/autoCvar.h>
 #include <math/frustumExt.h>
+
+static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -469,7 +472,9 @@ void procTree_c::addDrawCalls() {
 		return;
 	}
 	camArea = pointArea(rf_camera.getPVSOrigin());
-	printf("camera is in area %i of %i\n",camArea,areas.size());
+	if(rf_proc_printCamArea.getInt()) {
+		g_core->Print("camera is in area %i of %i\n",camArea,areas.size());
+	}
 	if(camArea == -1) {
 		for(u32 i = 0; i < areas.size(); i++) {
 			procArea_c *ar = areas[i];

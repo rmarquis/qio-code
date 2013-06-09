@@ -52,6 +52,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/byteRGB.h>
 #include <shared/textureWrapMode.h>
+#include <shared/fColor4.h>
 
 static aCvar_c rb_showTris("rb_showTris","0");
 static aCvar_c rb_showNormals("rb_showNormals","0");
@@ -193,6 +194,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
+	// per-surface color
+	fcolor4_c lastSurfaceColor;
 
 	const class rIndexBuffer_c *boundIBO;
 	u32 boundGPUIBO;
@@ -608,8 +611,10 @@ public:
 	}
 	virtual void setColor4f(float r, float g, float b, float a)  {
 		glColor4f(r,g,b,a);
+		lastSurfaceColor.set(r,g,b,a);
 	}
 	virtual void setColor4(const float *rgba)  {
+		lastSurfaceColor.fromColor4f(rgba);
 		if(rgba == 0) {
 			setColor4f(1, 1, 1, 1);
 			return;
@@ -970,6 +975,9 @@ public:
 					this->camOriginEntitySpace.y,
 					this->camOriginEntitySpace.z);
 			}
+			if(newShader->u_materialColor) {
+				glUniform4fv(newShader->u_materialColor,1,lastSurfaceColor.toPointer());
+			}
 		}
 	}
 	// temporary vertex buffer for stages that requires CPU 
@@ -1044,7 +1052,8 @@ public:
 			drawCurIBO();
 			return;
 		}
-		this->setColor4f(1.f,1.f,1.f,1.f);
+		// now it's done by frontend, and the color is not always 1 1 1 1
+		//this->setColor4f(1.f,1.f,1.f,1.f);
 		glColorMask(true, true, true, true);
 
 		if(curDrawCallSort == DCS_BLEND_AFTER_LIGHTING) {
@@ -1392,6 +1401,9 @@ drawOnlyLightmap:
 					}
 					if(deluxeMap) {
 						glslShaderDesc.hasDeluxeMap = true;
+					}
+					if(lastSurfaceColor.isFullBright() == false) {
+						glslShaderDesc.hasMaterialColor = true;
 					}
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 
@@ -1815,6 +1827,7 @@ drawOnlyLightmap:
 		stencilTestEnabled = 0;
 		forcedMaterialFrameNum = -1;
 		curShader = 0;
+		lastSurfaceColor.setFullBright();
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

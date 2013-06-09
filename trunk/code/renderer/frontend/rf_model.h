@@ -155,7 +155,7 @@ public:
 		bb.maxs = newMaxs;
 	}
 
-	void addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags);
+	void addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, const vec3_c *extraRGB);
 
 	// for bsp inline models
 	void initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum);

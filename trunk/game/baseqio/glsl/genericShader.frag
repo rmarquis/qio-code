@@ -41,6 +41,10 @@ uniform sampler2D deluxeMap;
 #ifdef HAS_BUMP_MAP
 uniform sampler2D bumpMap;
 #endif
+// extra per-surface material color
+#ifdef HAS_MATERIAL_COLOR
+uniform vec4 u_materialColor;
+#endif
 
 #ifdef HAS_VERTEXCOLORS
 varying vec4 v_color4;
@@ -104,5 +108,8 @@ void main() {
   gl_FragColor = texture2D (colorMap, texCoord);
 #endif // HAS_VERTEXCOLORS
 #endif // HAS_LIGHTMAP
+#ifdef HAS_MATERIAL_COLOR
+	gl_FragColor *= u_materialColor;
+#endif
 #endif // defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
 }

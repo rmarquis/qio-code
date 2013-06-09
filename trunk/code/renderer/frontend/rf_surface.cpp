@@ -153,15 +153,15 @@ void r_surface_c::drawSurfaceWithSingleTexture(class textureAPI_i *tex) {
 	rb->drawElementsWithSingleTexture(this->verts,this->indices,tex);
 }
 
-void r_surface_c::addDrawCall(bool bUseVertexColors) {
+void r_surface_c::addDrawCall(bool bUseVertexColors, const vec3_c *extraRGB) {
 	if(this->mat == 0)
 		return;
 	if(this->mat->getNumStages() == 0)
 		return;
 	if(refIndices) {
-		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors);
+		RF_AddDrawCall(&this->verts,refIndices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors,0,extraRGB);
 	} else {
-		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors);
+		RF_AddDrawCall(&this->verts,&this->indices,this->mat,this->lightmap,this->mat->getSort(),bUseVertexColors,0,extraRGB);
 	}
 }
 void r_surface_c::addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out) {
@@ -624,6 +624,150 @@ void r_surface_c::createBox(float halfSize) {
 	);
 	this->recalcTBN();
 }
+void r_surface_c::createSphere(f32 radius, u32 polyCountX, u32 polyCountY) {
+	if (polyCountX < 2)
+		polyCountX = 2;
+	if (polyCountY < 2)
+		polyCountY = 2;
+	while (polyCountX * polyCountY > 32767) // prevent u16 overflow
+	{
+		polyCountX /= 2;
+		polyCountY /= 2;
+	}
+
+	const u32 polyCountXPitch = polyCountX+1; // get to same vertex on next level
+
+	indices.setTypeU16();
+	indices.reserve((polyCountX * polyCountY) * 6);
+
+	u32 level = 0;
+
+	for (u32 p1 = 0; p1 < polyCountY-1; ++p1)
+	{
+		//main quads, top to bottom
+		for (u32 p2 = 0; p2 < polyCountX - 1; ++p2)
+		{
+			const u32 curr = level + p2;
+			this->indices.push_back(curr + 1);
+			this->indices.push_back(curr);
+			this->indices.push_back(curr + polyCountXPitch);
+			this->indices.push_back(curr + 1 + polyCountXPitch);
+			this->indices.push_back(curr+1);
+			this->indices.push_back(curr + polyCountXPitch);
+		}
+
+		// the connectors from front to end
+		this->indices.push_back(level + polyCountX);
+		this->indices.push_back(level + polyCountX - 1);
+		this->indices.push_back(level + polyCountX - 1 + polyCountXPitch);
+
+		this->indices.push_back(level + polyCountX + polyCountXPitch);
+		this->indices.push_back(level + polyCountX);
+		this->indices.push_back(level + polyCountX - 1 + polyCountXPitch);
+		level += polyCountXPitch;
+	}
+
+	const u32 polyCountSq = polyCountXPitch * polyCountY; // top point
+	const u32 polyCountSq1 = polyCountSq + 1; // bottom point
+	const u32 polyCountSqM1 = (polyCountY - 1) * polyCountXPitch; // last row's first vertex
+
+	for (u32 p2 = 0; p2 < polyCountX - 1; ++p2)
+	{
+		// create triangles which are at the top of the sphere
+		this->indices.push_back(p2);
+		this->indices.push_back(p2 + 1);
+		this->indices.push_back(polyCountSq);
+
+
+		// create triangles which are at the bottom of the sphere
+
+		this->indices.push_back(polyCountSq1);
+		this->indices.push_back(polyCountSqM1 + p2 + 1);
+		this->indices.push_back(polyCountSqM1 + p2);
+	}
+
+	// create final triangle which is at the top of the sphere
+
+	this->indices.push_back(polyCountX-1);
+	this->indices.push_back(polyCountX);
+	this->indices.push_back(polyCountSq);
+
+	// create final triangle which is at the bottom of the sphere
+
+	this->indices.push_back(polyCountSq1);
+	this->indices.push_back(polyCountSqM1);
+	this->indices.push_back(polyCountSqM1 + polyCountX - 1);
+
+	// calculate the angle which separates all points in a circle
+	const f64 angleX = 2 * M_PI / polyCountX;
+	const f64 angleY = M_PI / polyCountY;
+
+	u32 i=0;
+	f64 axz;
+
+	// we don't start at 0.
+
+	f64 ay = 0;//angleY / 2;
+
+	this->verts.resize((polyCountXPitch * polyCountY) + 2);
+	for (u32 y = 0; y < polyCountY; ++y)
+	{
+		ay += angleY;
+		const f64 sinay = sin(ay);
+		axz = 0;
+
+		// calculate the necessary vertices without the doubled one
+		for (u32 xz = 0;xz < polyCountX; ++xz)
+		{
+			// calculate points position
+
+			const vec3_c pos(static_cast<f32>(radius * cos(axz) * sinay),
+						static_cast<f32>(radius * cos(ay)),
+						static_cast<f32>(radius * sin(axz) * sinay));
+			// for spheres the normal is the position
+			vec3_c normal(pos);
+			normal.normalize();
+
+			// calculate texture coordinates via sphere mapping
+			// tu is the same on each level, so only calculate once
+			f32 tu = 0.5f;
+			if (y==0)
+			{
+				if (normal.y != -1.0f && normal.y != 1.0f)
+					tu = static_cast<f32>(acos(Q_clamp(normal.x/sinay, -1.0, 1.0)) * 0.5 *M_ONEDIVPI64);
+				if (normal.z < 0.0f)
+					tu=1-tu;
+			}
+			else
+				tu = this->verts[i-polyCountXPitch].tc.x;
+			this->verts[i] = rVert_c(pos.x, pos.y, pos.z,
+						normal.x, normal.y, normal.z,
+						tu,	static_cast<f32>(ay*M_ONEDIVPI64));
+			++i;
+			axz += angleX;
+		}
+		// This is the doubled vertex on the initial position
+		this->verts[i] = this->verts[i-polyCountX];
+		this->verts[i].tc.x=1.0f;
+		++i;
+	}
+
+	// the vertex at the top of the sphere
+	this->verts[i] = rVert_c(0.0f,radius,0.0f, 0.0f,1.0f,0.0f, 0.5f, 0.0f);
+
+	// the vertex at the bottom of the sphere
+	++i;
+	this->verts[i] = rVert_c(0.0f,-radius,0.0f, 0.0f,-1.0f,0.0f, 0.5f, 1.0f);
+
+	// recalculate bounding box
+
+	this->bounds.reset(this->verts[i].xyz);
+	this->bounds.addPoint(this->verts[i-1].xyz);
+	this->bounds.addPoint(radius,0.0f,0.0f);
+	this->bounds.addPoint(-radius,0.0f,0.0f);
+	this->bounds.addPoint(0.0f,0.0f,radius);
+	this->bounds.addPoint(0.0f,0.0f,-radius);
+}
 //
 //	r_model_c class
 //
@@ -1045,7 +1189,7 @@ r_surface_c *r_model_c::registerSurf(const char *matName) {
 }
 #include <renderer/rfSurfsFlagsArray.h>
 #include <renderer/rfSurfFlags.h>
-void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool useVertexColors) {
+void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool useVertexColors, const vec3_c *extraRGB) {
 	if(extraSfFlags) {
 		r_surface_c *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -1058,12 +1202,12 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool
 					continue;
 				}
 			}
-			sf->addDrawCall(useVertexColors);
+			sf->addDrawCall(useVertexColors,extraRGB);
 		}
 	} else {
 		r_surface_c *sf = surfs.getArray();
 		for(u32 i = 0; i < surfs.size(); i++, sf++) {
-			sf->addDrawCall(useVertexColors);
+			sf->addDrawCall(useVertexColors,extraRGB);
 		}
 	}
 	for(u32 i = 0; i < bezierPatches.size(); i++) {

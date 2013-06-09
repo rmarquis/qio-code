@@ -35,6 +35,7 @@ struct hlslPermutationFlags_s {
 	bool onlyLightmap; // draw ONLY lightmap
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 
 	hlslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));

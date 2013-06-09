@@ -83,6 +83,10 @@ hlslShader_c *DX9_RegisterShader(const char *baseName, const hlslPermutationFlag
 	if(p->hasVertexColors) {
 		finalEffectDef.append("#define HAS_VERTEXCOLORS\n");
 	}
+	if(p->hasMaterialColor) {
+		finalEffectDef.append("#define HAS_MATERIAL_COLOR\n");
+	}
+
 	finalEffectDef.append(fileData);
 	HRESULT hr = D3DXCreateEffect(pDev,finalEffectDef.c_str(),finalEffectDef.length(),0,0,dwShaderFlags,0,&ret->effect,&pCompilationErrors);
 	g_vfs->FS_FreeFile(fileData);

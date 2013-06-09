@@ -31,14 +31,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 // GLSL shaders can be compiled with various 
 // options and defines
 struct glslPermutationFlags_s {
+	// Quake3 lightmaps
 	bool hasLightmap; // #define HAS_LIGHTMAP
+	// Quake3 vertex colors
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
+	// Quake3 texgen (eg. for glass surfaces)
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 	bool hasBumpMap; // #define HAS_BUMP_MAP
 	bool hasHeightMap; // #define HAS_HEIGHT_MAP
 	int useReliefMapping; // #define USE_RELIEF_MAPPING
+	// deluxemap is a "lightmap" with light direction normals encoded as colors
 	bool hasDeluxeMap; // #define HAS_DELUXEMAP
+	// extra per-surface material colo
+	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -54,6 +60,8 @@ friend class rbSDLOpenGL_c;
 	int uLightOrigin;
 	int uLightRadius;
 	int uViewOrigin;
+	// per-surface material color
+	int u_materialColor;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

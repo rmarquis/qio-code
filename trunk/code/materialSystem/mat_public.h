@@ -95,6 +95,8 @@ public:
 	virtual class textureAPI_i *getLeft() const = 0;
 	virtual class textureAPI_i *getFront() const = 0;
 	virtual class textureAPI_i *getBack() const = 0;
+
+	virtual bool isValid() const = 0;
 };
 
 class skyParmsAPI_i {

@@ -464,12 +464,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						}
 					}
 					printf("skyparms: %s %s %s\n",farBox.c_str(),cloudHeight.c_str(),nearBox.c_str());
-					if((farBox.length() == 0 || farBox[0] == '-') && (nearBox.length() == 0 || nearBox[0] == '-')) {
-						// ignore "empty" skyparms (without sky cube names)
-						// NOTE: there is an "empty" skypams in 20kdm2.pk3 shaders
-					} else {
+					//if((farBox.length() == 0 || farBox[0] == '-') && (nearBox.length() == 0 || nearBox[0] == '-')) {
+					//	// ignore "empty" skyparms (without sky cube names)
+					//	// NOTE: there is an "empty" skypams in 20kdm2.pk3 shaders
+					//} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
-					}
+				//	}
 				} else if(p.atWord("diffusemap") || p.atWord("colormap")) {
 					// "diffusemap" keyword is a shortcut for a material stage with single image
 					// it was introduced in Doom3

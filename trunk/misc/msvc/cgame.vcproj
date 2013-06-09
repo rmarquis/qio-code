@@ -478,6 +478,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_tracer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_view.cpp"
 				>
 				<FileConfiguration

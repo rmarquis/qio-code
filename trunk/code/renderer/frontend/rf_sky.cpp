@@ -39,14 +39,7 @@ bool RF_HasSky() {
 		return false;
 	return true;
 }
-void RF_DrawSky() {
-	if(rf_skyMaterial == 0)
-		return;
-	const skyParmsAPI_i *skyParms = rf_skyMaterial->getSkyParms();
-	if(skyParms == 0) {
-		return; // invalid sky material (missing skyparms keyword in .mtr/.shader file)
-	}
-	const skyBoxAPI_i *skyBox = skyParms->getNearBox();
+void RF_DrawSingleSkyBox(const skyBoxAPI_i *skyBox) {
 	const vec3_c &eye = rf_camera.getOrigin();
 	r_surface_c tmp; 
 	tmp.add3Indices(0,1,2);
@@ -89,6 +82,30 @@ void RF_DrawSky() {
 	tmp.setVertXYZTC(3,eye+vec3_c(10.f,-10.f,10.f),0,0);
 	tmp.drawSurfaceWithSingleTexture(skyBox->getFront());
 	rb->clearDepthBuffer();
+}
+void RF_DrawSingleSkyDome(mtrAPI_i *mat) {
+	const vec3_c &eye = rf_camera.getOrigin();
+	r_surface_c tmp; 
+	tmp.createSphere(eye,16.f,16,16);
+	tmp.swapIndexes();
+	rb->setMaterial(mat);
+	rb->drawElements(tmp.getVerts(),tmp.getIndices());
+	rb->clearDepthBuffer();
+}
+void RF_DrawSky() {
+	if(rf_skyMaterial == 0)
+		return;
+	const skyParmsAPI_i *skyParms = rf_skyMaterial->getSkyParms();
+	if(skyParms == 0) {
+		RF_DrawSingleSkyDome(rf_skyMaterial);
+		return; // invalid sky material (missing skyparms keyword in .mtr/.shader file)
+	}
+	const skyBoxAPI_i *skyBox = skyParms->getNearBox();
+	if(skyBox && skyBox->isValid()) {
+		RF_DrawSingleSkyBox(skyBox);
+		return;
+	}
+	RF_DrawSingleSkyDome(rf_skyMaterial);
 }
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial) {
 	rf_skyMaterial = newSkyMaterial;

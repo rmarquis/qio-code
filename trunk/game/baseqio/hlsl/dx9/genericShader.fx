@@ -33,6 +33,10 @@ texture lightMapTexture;
 float3 clipPlaneNormal;
 float clipPlaneDist;
 bool bHasClipPlane;
+// extra per-surface material color
+#ifdef HAS_MATERIAL_COLOR
+float4 materialColor;
+#endif
 
 #ifndef ONLY_LIGHTMAP
 sampler2D colorMap = sampler_state
@@ -60,7 +64,7 @@ struct VS_INPUT
 {
 	float3 position : POSITION;
 	float3 normal : NORMAL;
-	int color : COLOR;
+	float4 color : COLOR;
 	float2 texCoord : TEXCOORD0;
 	float2 lmCoord : TEXCOORD1;
 };
@@ -103,7 +107,7 @@ VS_OUTPUT VS_GeneringShader(VS_INPUT IN)
 	OUT.lmCoord = IN.lmCoord;
 #endif       
 #ifdef HAS_VERTEXCOLORS
-	OUT.vertexColor = IN.normal;
+	OUT.vertexColor = IN.color;
 #endif
     return OUT;
 }
@@ -130,7 +134,10 @@ float4 PS_GeneringShader(VS_OUTPUT IN) : COLOR
 
 // append vertex colors (if needed)
 #ifdef HAS_VERTEXCOLORS
-	ret = IN.vertexColor;
+	ret *= IN.vertexColor;
+#endif
+#ifdef HAS_MATERIAL_COLOR
+	ret *= materialColor;
 #endif
 	return ret;
 }

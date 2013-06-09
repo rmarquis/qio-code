@@ -158,6 +158,10 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasDeluxeMap) {
 		out.append("#define HAS_DELUXEMAP\n");
 	}
+	if(p.hasMaterialColor) {
+		// extra per-surface material color
+		out.append("#define HAS_MATERIAL_COLOR\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -256,6 +260,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[3] = glGetUniformLocation(shader,"shadowMap3");
 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
+	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
 

@@ -66,6 +66,30 @@ public:
 		numIndices = newCount;
 		return (u32*)data.getArray();
 	}
+	void setTypeU16() {
+		destroy();
+		type = IBO_U16;
+	}
+	u32 getIndexSize() const {
+		if(type == IBO_U16)
+			return 2;
+		if(type == IBO_U32)
+			return 4;
+		return 0;
+	}
+	void reserve(u32 newNumIndices) {
+		data.resize(newNumIndices*getIndexSize());
+	}
+	void push_back(u32 nextIndex) {
+		ensureAllocated_indices(numIndices+1);
+		if(type == IBO_U16) {
+			((u16*)data.getArray())[numIndices] = nextIndex;
+			numIndices++;
+		} else if(type == IBO_U32) {
+			((u32*)data.getArray())[numIndices] = nextIndex;
+			numIndices++;
+		}
+	}
 	void fromU32Array(u32 numNewIndices, const u32 *newIndices) {
 		// see if we need to 32 bit indices
 		bool needU32 = false;

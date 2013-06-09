@@ -38,6 +38,35 @@ typedef vec_t vec5_t[5];
 #define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
 #endif
 
+#ifndef M_PI_64
+#define M_PI_64		3.1415926535897932384626433832795028841971693993751
+#endif
+
+#ifndef M_TWOPI
+#define M_TWOPI			6.28318530717958647692
+#endif
+
+#ifndef M_SQRT1_2
+#define M_SQRT1_2		0.7071067811865475244008443621048490
+#endif
+
+#ifndef M_ONEDIVPI
+#define M_ONEDIVPI		1.f/M_PI
+#endif
+
+#ifndef M_ONEDIVPI64
+#define M_ONEDIVPI64		1.f/M_PI_64
+#endif
+
+
+#ifndef M_PIDIV180
+#define M_PIDIV180			0.01745329251994329576923690768488f		// M_PI / 180.f
+#endif
+
+#ifndef M_180DIVPI
+#define M_180DIVPI			57.295779513082320876798154814105f		// 180.f / M_PI
+#endif
+
 #define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
 #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
 
@@ -45,6 +74,9 @@ typedef vec_t vec5_t[5];
 #define	PITCH				0		// up / down
 #define	YAW					1		// left / right
 #define	ROLL				2		// fall over
+
+// returns a clamped value in the range [min, max].
+#define Q_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 inline float G_rsqrt(float x) {
     float xhalf = 0.5f*x;

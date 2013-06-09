@@ -68,6 +68,13 @@ public:
 	virtual textureAPI_i *getBack() const {
 		return back;
 	}
+	virtual bool isValid() const {
+		if(baseName.length() == 0)
+			return false;
+		if(baseName[0] == '-')
+			return false;
+		return true;
+	}
 };
 class skyParms_c : public skyParmsAPI_i {
 	skyBox_c farBox;

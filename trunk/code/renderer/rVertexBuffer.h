@@ -59,6 +59,13 @@ public:
 		this->tc = newTC;
 		memset(color,0xff,sizeof(color));
 	}
+	rVert_c(float nPX, float nPY, float nPZ,
+		float nNX, float nNY, float nNZ,
+		float nTCS, float nTCT) {
+		xyz.set(nPX,nPY,nPZ);
+		normal.set(nNX,nNY,nNZ);
+		tc.set(nTCS,nTCT);
+	}
 	// returns the result of quadratic interpolation between this vertex and two other vertices
 	rVert_c getInterpolated_quadratic(rVert_c &a, rVert_c &b, float s) {
 		rVert_c out;

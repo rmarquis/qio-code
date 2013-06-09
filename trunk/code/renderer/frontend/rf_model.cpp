@@ -77,16 +77,16 @@ u32 model_c::getNumSurfaces() const {
 	}
 	return 0;
 }
-void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags) {
+void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, const vec3_c *extraRGB) {
 	if(0) {
 		g_core->Print("model_c::addModelDrawCalls: model %s (%i), sfFlags ptr %i\n",this->getName(),this,extraSfFlags);
 	}
 	if(type == MOD_BSP) {
 		myBSP->addModelDrawCalls(bspModelNum);
 	} else if(type == MOD_STATIC) {
-		staticModel->addDrawCalls(extraSfFlags);
+		staticModel->addDrawCalls(extraSfFlags,false,extraRGB);
 	} else if(type == MOD_PROC) {
-		staticModel->addDrawCalls(extraSfFlags);
+		staticModel->addDrawCalls(extraSfFlags,false,extraRGB);
 	}
 }
 bool model_c::rayTrace(class trace_c &tr) const {
