@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/frustumExt.h>
 
 static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
+static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -443,6 +444,10 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		// adjust the frustum, so addAreaDrawCalls_r will never loop and cause a stack overflow...
 		frustumExt_c adjusted;
 		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
+		if(adjusted.size() == 0) {
+			g_core->RedWarning("procTree_c::addAreaDrawCalls_r: frustum chopped away\n");
+			continue;
+		}
 
 		if(p->visCount != this->visCount) {
 			p->visCount = this->visCount;
@@ -685,6 +690,15 @@ void procTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 		cacheLightWorldInteractions_r(l, otherArea, fr, portal);
 	}
 #endif
+}
+void procTree_c::doDebugDrawing() {
+	if(rf_proc_showAreaPortals.getInt()) {
+		for(u32 i = 0; i < portals.size(); i++) {
+			procPortal_c *p = portals[i];
+			const cmWinding_c &w = p->points;
+			rb->drawWinding(w.getArray(),w.size());
+		}
+	}
 }
 procTree_c *RF_LoadPROC(const char *fname) {
 	procTree_c *ret = new procTree_c;

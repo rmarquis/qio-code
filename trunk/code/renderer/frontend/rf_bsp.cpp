@@ -1832,6 +1832,10 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 			pl.dist = this->planes[p->planeNum].dist;
 			adjusted.adjustFrustum(fr,rf_camera.getOrigin(),points.getArray()+p->firstPoint,p->numPoints,pl);
 		}
+		if(adjusted.size() == 0) {
+			g_core->RedWarning("rBspTree_c::markAreas_r: frustum chopped away\n");
+			continue;
+		}
 
 		bspPortalData_c &pb = areaPortalFrustums[portalNumber];
 		if(pb.portalVisCount != this->portalVisCount) {

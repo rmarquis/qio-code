@@ -59,6 +59,7 @@ public:
 	virtual void drawBoxHalfSizes(const float *halfSizes) = 0;
 	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) = 0;
 	virtual void drawBBLines(const class aabb &bb) = 0;
+	virtual void drawWinding(const class vec3_c *p, u32 numPoints, u32 stride = 12) { };
 
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() = 0;

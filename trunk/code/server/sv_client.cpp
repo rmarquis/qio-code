@@ -705,6 +705,12 @@ static void SV_SendClientGameState( client_t *client ) {
 
 	MSG_Init( &msg, msgBuffer, sizeof( msgBuffer ) );
 
+	msg.oob = qtrue;
+	// write compression byte; we will fill it later
+	// compression byte is the first byte in all server->client messages
+	MSG_WriteByte(&msg,0);
+	msg.oob = qfalse;
+
 	// NOTE, MRE: all server->client messages now acknowledge
 	// let the client know which reliable clientCommands we have received
 	MSG_WriteLong( &msg, client->lastClientCommand );

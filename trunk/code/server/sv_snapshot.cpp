@@ -574,6 +574,11 @@ void SV_SendClientSnapshot( client_t *client ) {
 	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
 	msg.allowoverflow = qtrue;
 
+	// compression byte is the first byte in all server->client messages
+	msg.oob = qtrue;
+	MSG_WriteByte(&msg,0);
+	msg.oob = qfalse;
+
 	// NOTE, MRE: all server->client messages now acknowledge
 	// let the client know which reliable clientCommands we have received
 	MSG_WriteLong( &msg, client->lastClientCommand );

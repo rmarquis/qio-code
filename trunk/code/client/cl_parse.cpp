@@ -869,6 +869,7 @@ void CL_ParseCommandString( msg_t *msg ) {
 CL_ParseServerMessage
 =====================
 */
+#include <zlib.h>
 void CL_ParseServerMessage( msg_t *msg ) {
 	int			cmd;
 
@@ -878,7 +879,25 @@ void CL_ParseServerMessage( msg_t *msg ) {
 		Com_Printf ("------------------\n");
 	}
 
-	MSG_Bitstream(msg);
+	msg->oob = qtrue;
+	byte compressionMarker = MSG_ReadByte( msg );
+	if(compressionMarker == 1) {
+		static char dst[MAX_MSGLEN];
+		uLongf dstLen = sizeof(dst);
+		int result = uncompress((Bytef*)dst,&dstLen,msg->data+msg->readcount,msg->cursize);
+		printf("%i\n",result);
+		if(result == 0) {
+			memcpy(msg->data,dst,dstLen);
+			msg->readcount = 0;
+			msg->bit = 0;
+			msg->oob = qfalse;
+			msg->cursize = dstLen;
+		} else {
+			Com_Printf("Decompression of zlib packet failed\n");
+		}
+	} else {
+		MSG_Bitstream(msg);
+	}
 
 	// get the reliable sequence acknowledge number
 	clc.reliableAcknowledge = MSG_ReadLong( msg );

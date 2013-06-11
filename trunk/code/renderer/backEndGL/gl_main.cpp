@@ -1737,6 +1737,15 @@ drawOnlyLightmap:
 		glVertex3fv(verts[7]);
 		glEnd();
 	}        
+	virtual void drawWinding(const class vec3_c *p, u32 numPoints, u32 stride) {
+		glCull(CT_TWO_SIDED);
+		glBegin(GL_TRIANGLE_FAN);
+		for(u32 i = 0; i < numPoints; i++) {
+			glVertex3fv(p->floatPtr());
+			p = (const vec3_c*)(((const byte*)p)+stride);
+		}
+		glEnd();
+	}
 	virtual bool areGPUOcclusionQueriesSupported() const {
 		int bitsSupported = 0;
         glGetQueryiv(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &bitsSupported);

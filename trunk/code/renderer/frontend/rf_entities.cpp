@@ -49,7 +49,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
-
+static aCvar_c rf_cullEntities("rf_cullEntities","1");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -640,19 +640,21 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
 			return;
 		}
 	}
-	if(customFrustum) {
-		if(customFrustum->cull(ent->getBoundsABS()) == CULL_OUT) {
-			c_entitiesCulledByABSBounds++;
-			return;
-		}
-	} else {
-		if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
-			c_entitiesCulledByABSBounds++;
-			return;
-		}
-		if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
-			c_entitiesCulledByPortals++;		
-			return;
+	if(rf_cullEntities.getInt()) {
+		if(customFrustum) {
+			if(customFrustum->cull(ent->getBoundsABS()) == CULL_OUT) {
+				c_entitiesCulledByABSBounds++;
+				return;
+			}
+		} else {
+			if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
+				c_entitiesCulledByABSBounds++;
+				return;
+			}
+			if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
+				c_entitiesCulledByPortals++;		
+				return;
+			}
 		}
 	}
 	ent->addDrawCalls();

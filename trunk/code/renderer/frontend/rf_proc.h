@@ -132,6 +132,9 @@ public:
 	void addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l);
 	void cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal);
 	void cacheLightWorldInteractions(class rLightImpl_c *l);
+
+	
+	void doDebugDrawing();
 };
 
 procTree_c *RF_LoadPROC(const char *fname);

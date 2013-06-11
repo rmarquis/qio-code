@@ -215,6 +215,9 @@ void RF_WorldDebugDrawing() {
 	if(r_bspTree) {
 		r_bspTree->doDebugDrawing();
 	}
+	if(r_procTree) {
+		r_procTree->doDebugDrawing();
+	}
 }
 const class lightGridAPI_i *RF_GetWorldLightGridAPI() {
 	if(r_bspTree) {

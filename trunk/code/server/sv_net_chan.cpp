@@ -220,10 +220,38 @@ and the gamestate are fragmenting, and collide on send for instance)
 then buffer them and make sure they get sent in correct order
 ================
 */
+#include <zlib.h>
+#include <shared/autoCvar.h>
+
+aCvar_c sv_compressPackets("sv_compressPackets","1");
+aCvar_c sv_printCompressedPacketSize("sv_printCompressedPacketSize","0");
 
 void SV_Netchan_Transmit( client_t *client, msg_t *msg)
 {
 	MSG_WriteByte( msg, svc_EOF );
+
+	// try to compress message with zlib
+	// it's only usefull while sending a very large gamestate message
+	if(sv_compressPackets.getInt()) {
+		byte buff[MAX_MSGLEN];
+		uLongf destLen = sizeof(buff);
+		int res = compress(buff,&destLen,msg->data+1,msg->cursize-1);
+		if(sv_printCompressedPacketSize.getInt()) {
+			Com_Printf("SV_Netchan_Transmit: zlib compressed %i to %i\n",msg->cursize,destLen);
+		}
+		// if the compressed message is smaller than original one, send compressed data instead.
+		// very small messages like snapshots usually have even bigger size after compression !!
+		if(destLen < msg->cursize) {
+			MSG_Init(msg,msg->data,msg->maxsize);
+			msg->oob = qtrue;
+			// write compression marker (1 is 'zlib')
+			MSG_WriteByte(msg,1);
+			// write message data compressed with zlib
+			MSG_WriteData(msg,buff,destLen);
+			// done.
+			msg->oob = qfalse;
+		}
+	}
 
 	if(client->netchan.unsentFragments || client->netchan_start_queue)
 	{

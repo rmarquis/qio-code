@@ -1821,7 +1821,47 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\zlib\compress.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\zlib\crc32.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\crc32.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\deflate.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\deflate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\gzclose.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\gzguts.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\gzlib.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\gzread.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\gzwrite.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\infback.c"
 				>
 			</File>
 			<File
@@ -1829,7 +1869,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\zlib\inffast.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\inffixed.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\zlib\inflate.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\inflate.h"
 				>
 			</File>
 			<File
@@ -1837,7 +1889,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\zlib\inftrees.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\trees.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\trees.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\uncompr.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\zconf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\zlib.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\zlib\zutil.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\zlib\zutil.h"
 				>
 			</File>
 		</Filter>
