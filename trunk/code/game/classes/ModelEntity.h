@@ -69,7 +69,7 @@ public:
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setAngles(const class vec3_c &newAngles);
 
-	void setRenderModel(const char *newRModelName);
+	virtual void setRenderModel(const char *newRModelName);
 	bool hasRenderModel(const char *checkRModelName) const;
 	bool setColModel(const char *newCModelName);
 	bool setColModel(class cMod_i *newCModel);

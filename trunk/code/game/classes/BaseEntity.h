@@ -104,6 +104,9 @@ public:
 	void setTarget(const char *newTarget);
 	bool hasTarget() const;
 
+	virtual void setRenderModel(const char *newRModelName) {
+
+	}
 	virtual bool hasPhysicsObject() const {
 		return false;
 	}

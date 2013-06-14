@@ -116,6 +116,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_LoadMap(mapName);
 	// load map entities and spawn them
 	G_SpawnMapEntities(mapName);
+	
+	G_InitLua();
 
 	G_Printf ("-----------------------------------\n");
 }
@@ -131,8 +133,11 @@ void G_ShutdownGame( int restart ) {
 		edict_s *e = &g_entities[i];
 		if(e->s == 0)
 			continue;
+		//g_core->Print("G_ShutdownGame: freeing entity %i (phys %i)\n",i,e->ent->getRigidBody());
 		delete e->ent;
+		e->ent = 0;
 	}
+	G_ShutdownLua();
 	G_ShutdownPhysicsEngine();
 	G_ShutdownScriptedClasses();
 	cm->freeAllModels();

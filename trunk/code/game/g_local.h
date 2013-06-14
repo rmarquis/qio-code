@@ -189,5 +189,14 @@ void G_ShutdownScriptedClasses();
 const class scriptedClass_c *G_FindScriptedClassDef(const char *className);
 u32 G_GetNumKnownScriptedClassDefs();
 
+//
+// g_lua.cpp
+//
+void            G_InitLua();
+void            G_ShutdownLua();
+void            G_LoadLuaScript(struct edict_s * ent, const char *filename);
+void            G_RunLuaFunction(const char *func, const char *sig, ...);
+void            G_DumpLuaStack();
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
