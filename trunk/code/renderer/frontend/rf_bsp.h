@@ -60,6 +60,7 @@ struct bspSurf_s {
 		class r_bezierPatch_c *patch; // only if type == BSPSF_BEZIER
 	};
 	int lastVisCount; // if sf->lastVisCount == bsp->visCounter then a surface is potentialy visible (in PVS)
+	int bspMaterialIndex;
 
 	const aabb &getBounds() const;
 	bool isFlare() const {
@@ -148,7 +149,9 @@ friend class rBspTree_c;
 	// frustum for each traverse
 	frustumExt_c lastFrustum[MAX_PORTAL_VISIT_COUNT];
 };
-
+struct bspMaterial_s {
+	u32 contentFlags;
+};
 class rBspTree_c {
 	byte *fileData;
 	union {
@@ -175,6 +178,7 @@ class rBspTree_c {
 	arraySTD_c<q3Node_s> nodes;
 	arraySTD_c<q3Leaf_s> leaves;
 	arraySTD_c<u32> leafSurfaces;
+	arraySTD_c<bspMaterial_s> bspMaterials;
 	// Qio bsp data
 	arraySTD_c<vec3_c> points;
 	// areaPortals data loaded directly from Qio BSP (LUMP_AREAPORTALS)
@@ -196,6 +200,7 @@ class rBspTree_c {
 	int portalVisCount;
 
 	void getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out);
+	u32 getSurfaceContentFlags(u32 surfNum) const;
 
 	void addSurfToBatches(u32 surfNum);
 	void calcTangentVectors();

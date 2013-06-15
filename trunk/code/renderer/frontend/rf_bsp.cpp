@@ -97,6 +97,15 @@ void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
 		}
 	}
 }
+u32 rBspTree_c::getSurfaceContentFlags(u32 surfNum) const {
+	if(surfNum >= surfs.size())
+		return 1;
+	int bspMaterialNum = surfs[surfNum].bspMaterialIndex;
+	if(bspMaterialNum < 0 || bspMaterialNum >= bspMaterials.size()) {
+		return 1;
+	}
+	return bspMaterials[bspMaterialNum].contentFlags;
+}
 void rBspTree_c::addSurfToBatches(u32 surfNum) {
 	bspSurf_s *bs = &surfs[surfNum];
 	if(bs->type != BSPSF_PLANAR && bs->type != BSPSF_TRIANGLES)
@@ -543,7 +552,13 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 	const u32 *indices = (const u32 *) h->getLumpData(lumpIndexes);
 	// load vertices
 	loadVerts(lumpVerts);
-
+	// load bspMaterials contentFlags
+	u32 numBSPMaterials = h->getNumMaterials();
+	bspMaterials.resize(numBSPMaterials);
+	for(u32 i = 0; i < numBSPMaterials; i++) {
+		// TODO: convert content flags
+		bspMaterials[i].contentFlags = h->getMat(i)->contentFlags;
+	}
 	c_bezierPatches = 0;
 	c_flares = 0;
 	for(u32 i = 0; i < numSurfs; i++, out++) {
@@ -566,6 +581,7 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 				deluxemap = deluxemaps[sf->lightmapNum];
 			}
 		}
+		out->bspMaterialIndex = sf->materialNum;
 		if(mat->getSkyParms()) {
 			RF_SetSkyMaterial(mat);
 		}
@@ -742,6 +758,7 @@ bool rBspTree_c::loadSurfsQ2() {
 		str matName = "textures/";
 		matName.append(sfTexInfo->texture);
 		matName.append(".wal");
+		oSF->bspMaterialIndex = isf->texinfo;
 		oSF->type = BSPSF_PLANAR;
 		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
 		ts->mat = g_ms->registerMaterial(matName);
@@ -824,6 +841,7 @@ bool rBspTree_c::loadSurfsHL() {
 		oSF->type = BSPSF_PLANAR;
 		bspTriSurf_s *ts = oSF->sf = new bspTriSurf_s;
 		ts->deluxemap = 0;
+		oSF->bspMaterialIndex = isf->texInfo;
 		// get texture image data
 		if(sfTexInfo->miptex < 0 || sfTexInfo->miptex >= mipTexLump->numMipTex) {
 			g_core->RedWarning("rBspTree_c::loadSurfsHL(): miptex index %i out of range <0,%i) for surface %i\n",
@@ -1079,6 +1097,7 @@ bool rBspTree_c::loadSurfsSE() {
 			matName = texDataStr + ofs;
 			matName.defaultExtension("vmt");
 		}
+		oSF->bspMaterialIndex = isf->texInfo;
 		ts->mat = g_ms->registerMaterial(matName);
 		ts->deluxemap = 0;
 		u32 w = isf->lightmapTextureSizeInLuxels[0] + 1;
@@ -1208,6 +1227,13 @@ bool rBspTree_c::loadSurfsCoD() {
 	surfs.resize(numSurfs);
 	bspSurf_s *out = surfs.getArray();
 	int highestLightmapNumReferenced = -1;
+	// load bspMaterials contentFlags
+	u32 numBSPMaterials = h->getNumMaterials();
+	bspMaterials.resize(numBSPMaterials);
+	for(u32 i = 0; i < numBSPMaterials; i++) {
+		// TODO: convert content flags
+		bspMaterials[i].contentFlags = h->getMat(i)->contentFlags;
+	}
 	// NOTE: CoD drawIndexes are 16 bit (not 32 bit like in Q3)
 	const u16 *indices = (const u16 *) h->getLumpData(COD1_DRAWINDEXES);
 	for(u32 i = 0; i < numSurfs; i++, sf++, out++) {
@@ -1229,6 +1255,7 @@ bool rBspTree_c::loadSurfsCoD() {
 		if(mat->getSkyParms()) {
 			RF_SetSkyMaterial(mat);
 		}
+		out->bspMaterialIndex = sf->materialNum;
 		out->type = BSPSF_PLANAR; // is this really always a planar surface??
 		bspTriSurf_s *ts = out->sf = new bspTriSurf_s;
 		ts->mat = mat;
@@ -2245,6 +2272,9 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 		g_core->RedWarning("rBspTree_c::traceSurfaceRay: surface index %i out of range %i\n",surfNum,surfs.size());
 		return false;
 	}
+	int contents = getSurfaceContentFlags(surfNum);
+	if((contents & 1) == false)
+		return false;
 	bspSurf_s &sf = surfs[surfNum];
 	if(sf.type == BSPSF_BEZIER) {
 		r_bezierPatch_c *bp = sf.patch;

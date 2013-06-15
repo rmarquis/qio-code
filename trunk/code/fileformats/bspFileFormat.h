@@ -612,6 +612,15 @@ struct q3Header_s {
 		}
 		return (const q3BSPMaterial_s*)(p + matSize * matNum);
 	}
+	u32 getNumMaterials() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return getLumps()[MOH_SHADERS].fileLen / (sizeof(q3BSPMaterial_s) + 64 + 4);
+		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
+			return getLumps()[COD1_SHADERS].fileLen / sizeof(q3BSPMaterial_s);
+		} else {
+			return getLumps()[Q3_SHADERS].fileLen / sizeof(q3BSPMaterial_s);
+		}
+	}
 	const q3BrushSide_s *getBrushSide(u32 bsNum) const {
 		u32 sideSize;
 		const byte *p;
