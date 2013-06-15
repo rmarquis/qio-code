@@ -35,7 +35,13 @@ DEFINE_CLASS_ALIAS(Door, func_rotatingdoor);
 Door::Door() {
 	bPhysicsBodyKinematic = true;
 }
-
+void Door::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"angle")) {
+		// that's door opening angle and not the ModelEntity orientation angle
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
+}
 void Door::postSpawn() {
 	// close touched areaportal (but only if we're using new areaPortals system)
 	//u32 touchingAreas = getNumTouchingAreas();

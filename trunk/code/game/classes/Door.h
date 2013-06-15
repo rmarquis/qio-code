@@ -34,6 +34,8 @@ public:
 	DECLARE_CLASS( Door );
 
 	virtual void postSpawn();
+
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
 #endif // __DOOR_H__
