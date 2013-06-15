@@ -176,6 +176,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curShadowMapW;
 	int curShadowMapH;
 	cubeFBOs_c cubeFBO;
+	bool bDrawingSky;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -234,6 +235,7 @@ public:
 		r_shadows = 0;
 		bBoundLightmapCoordsToFirstTextureSlot = false;
 		memset(bVertexAttribLocationsEnabled,0,sizeof(bVertexAttribLocationsEnabled));
+		bDrawingSky = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -608,6 +610,12 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		lastDeluxemap = 0;
+	}
+	virtual void beginDrawingSky() {
+		bDrawingSky = true;
+	}
+	virtual void endDrawingSky() {
+		bDrawingSky = false;
 	}
 	virtual void setColor4f(float r, float g, float b, float a)  {
 		glColor4f(r,g,b,a);
@@ -1055,6 +1063,13 @@ public:
 		// now it's done by frontend, and the color is not always 1 1 1 1
 		//this->setColor4f(1.f,1.f,1.f,1.f);
 		glColorMask(true, true, true, true);
+		if(bDrawingSky) {
+			// fathest depth range
+			setDepthRange(1.f,1.f);
+		} else {
+			// default depth range
+			setDepthRange(0.f,1.f);
+		}
 
 		if(curDrawCallSort == DCS_BLEND_AFTER_LIGHTING) {
 			// disable stencil buffer
@@ -1432,6 +1447,7 @@ drawOnlyLightmap:
 		if(rb_showTris.getInt()) {
 			this->unbindMaterial();
 			this->bindShader(0);
+			this->setColor4f(1,1,1,1);
 			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 			if(rb_showTris.getInt()==1)
 				setDepthRange( 0, 0 ); 
@@ -1443,6 +1459,7 @@ drawOnlyLightmap:
 		if(rb_showNormals.getInt()) {
 			this->unbindMaterial();
 			this->bindShader(0);
+			this->setColor4f(1,1,1,1);
 			unbindIBO();
 			unbindVertexBuffer();
 			if(rb_showNormals.getInt()==2)
@@ -1472,6 +1489,13 @@ drawOnlyLightmap:
 		bindVertexBuffer(&verts);
 		bindIBO(&indices);			
 		bindTex(0,tex->getInternalHandleU32());
+		if(bDrawingSky) {
+			// fathest depth range
+			setDepthRange(1.f,1.f);
+		} else {
+			// default depth range
+			setDepthRange(0.f,1.f);
+		}
 		drawCurIBO();
 	}
 	void startDrawingShadowVolumes() {

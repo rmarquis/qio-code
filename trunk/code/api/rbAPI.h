@@ -127,6 +127,12 @@ public:
 	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
 		return 0;
 	}
+	virtual void beginDrawingSky() {
+
+	}
+	virtual void endDrawingSky() {
+
+	}
 
 	virtual void init() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;

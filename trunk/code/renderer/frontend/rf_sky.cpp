@@ -25,10 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
 #include <materialSystem/mat_public.h>
+#include <shared/autoCvar.h>
 #include "rf_local.h"
 #include "rf_surface.h"
 
-class mtrAPI_i *rf_skyMaterial = 0;
+static class mtrAPI_i *rf_skyMaterial = 0;
+static aCvar_c rf_skipSky("rf_skipSky","0");
 
 void RF_InitSky() {
 	rf_skyMaterial = 0;
@@ -41,6 +43,7 @@ bool RF_HasSky() {
 }
 void RF_DrawSingleSkyBox(const skyBoxAPI_i *skyBox) {
 	const vec3_c &eye = rf_camera.getOrigin();
+	rb->beginDrawingSky();
 	r_surface_c tmp; 
 	tmp.add3Indices(0,1,2);
 	tmp.add3Indices(2,0,3);
@@ -81,19 +84,26 @@ void RF_DrawSingleSkyBox(const skyBoxAPI_i *skyBox) {
 	tmp.setVertXYZTC(2,eye+vec3_c(10.f,-10.f,-10.f),0,1);
 	tmp.setVertXYZTC(3,eye+vec3_c(10.f,-10.f,10.f),0,0);
 	tmp.drawSurfaceWithSingleTexture(skyBox->getFront());
-	rb->clearDepthBuffer();
+	// this breaks mirrors, we need to use farthest depth range
+	//rb->clearDepthBuffer();
+	rb->endDrawingSky();
 }
 void RF_DrawSingleSkyDome(mtrAPI_i *mat) {
 	const vec3_c &eye = rf_camera.getOrigin();
 	r_surface_c tmp; 
 	tmp.createSphere(eye,16.f,16,16);
 	tmp.swapIndexes();
+	rb->beginDrawingSky();
 	rb->setMaterial(mat);
 	rb->drawElements(tmp.getVerts(),tmp.getIndices());
-	rb->clearDepthBuffer();
+	// this breaks mirrors, we need to use farthest depth range
+//	rb->clearDepthBuffer();
+	rb->endDrawingSky();
 }
 void RF_DrawSky() {
 	if(rf_skyMaterial == 0)
+		return;
+	if(rf_skipSky.getInt())
 		return;
 	const skyParmsAPI_i *skyParms = rf_skyMaterial->getSkyParms();
 	if(skyParms == 0) {

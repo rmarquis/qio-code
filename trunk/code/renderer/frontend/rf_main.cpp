@@ -108,10 +108,6 @@ void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
 	rb->setup3DView(rf_camera.getOrigin(), rf_camera.getAxis());
 	rb->setIsMirror(rf_camera.isMirror());
 	rb->setPortalClipPlane(rf_camera.getPortalPlane(),rf_camera.isPortal());
-	// first draw sky (without writing to the depth buffer)
-	if(RF_HasSky()) {
-		RF_DrawSky();
-	}
 	// issue drawcalls to the renderer backend
 	RF_IssueDrawCalls(firstDrawCall,numDrawCalls);
 	// do a debug drawing on top of everything

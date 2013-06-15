@@ -276,6 +276,8 @@ void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 void RF_Generate3DSubView();
 static aCvar_c light_printLightsCulledByGPUOcclusionQueries("light_printLightsCulledByGPUOcclusionQueries","0");
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
+	bool bNeedsSky = RF_HasSky();
+
 	rb->setRShadows(RF_GetShadowingMode());
 
 	// issue the drawcalls
@@ -284,6 +286,12 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	int prevCubeMapSide = -1;
 	rLightAPI_i *prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
+		// draw sky after mirror/portal materials
+		// this is a quick fix for maps with mirrors AND skies like q3dm0
+		if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
+			RF_DrawSky();
+			bNeedsSky = false;
+		}
 		if(prevLight != c->curLight) {
 			if(prevLight == 0) {
 				// depth pass finished
