@@ -26,22 +26,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <lua.h>
 #include <math/math.h>
+#include "../g_local.h"
 
 //
 // g_lua.c
 //
-void            G_InitLua();
-void            G_ShutdownLua();
-void            G_LoadLuaScript(struct edict_s * ent, const char *filename);
-void            G_RunLuaFunction(const char *func, const char *sig, ...);
-void            G_DumpLuaStack();
+void            G_RunLuaFunction(struct lua_State *L, const char *func, const char *sig, ...);
 
 //
 // lua_entity.c
 //
 typedef struct
 {
-	edict_s      *e;
+	struct edict_s      *e;
 } lua_Entity;
 
 int             luaopen_entity(lua_State * L);

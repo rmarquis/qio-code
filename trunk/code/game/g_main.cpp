@@ -267,6 +267,7 @@ void G_RunFrame( int levelTime ) {
 		BaseEntity *e = ed->ent;
 
 		e->runFrame();
+		e->runLuaFrameHandlers();
 	}
 
 	// perform final fixups on the players

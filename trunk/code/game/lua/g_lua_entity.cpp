@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../classes/BaseEntity.h"
 #include <api/coreAPI.h>
 #include <api/serverAPI.h>
-
+#include <shared/array.h>
 static int entity_Target(lua_State * L)
 {
 	/*lua_Entity     *lent;
@@ -378,6 +378,65 @@ static int entity_SetRenderModel(lua_State * L)
 
 	return 1;
 }
+// Custom Lua stack argument->reference function
+// This function should always be called last! (Since it pops the lua stack)
+static int luaM_toref (lua_State *L, int i) 
+{
+    int ref = -1;
+
+    // convert the function pointer to a string so we can use it as index
+    char buf[10] = {0};
+    char * index = itoa ( (int)lua_topointer ( L, i ), buf, 16 );
+
+    // get the callback table we made in CLuaMain::InitVM (at location 1)
+    lua_getref ( L, 1 );
+    lua_getfield ( L, -1, index );
+    ref = lua_tonumber ( L, -1 );
+    lua_pop ( L, 1 );
+    lua_pop ( L, 1 );
+
+    // if it wasn't added yet, add it to the callback table and the registry
+    // else, get the reference from the table
+    if ( !ref ) {
+        // add a new reference (and get the id)
+        lua_settop ( L, i );
+        ref = lua_ref ( L, 1 );
+
+        // and add it to the callback table
+        lua_getref ( L, 1 );
+        lua_pushstring ( L, index );
+        lua_pushnumber ( L, ref );
+        lua_settable ( L, -3 );
+        lua_pop ( L, 1 );
+    }
+    return ref;
+}
+void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...);
+static int entity_AddEventHandler(lua_State * L)
+{
+	lua_Entity     *lent;
+
+	lent = lua_getentity(L, 1);
+	const char *eventName = (char *)luaL_checkstring(L, 2);
+	int checkArgType = lua_type ( L, 3 );
+    if ( checkArgType != LUA_TFUNCTION ) {
+		g_core->RedWarning("entity_AddEventHandler: event handler must be a function pointer\n");
+		return 0;
+    }
+	int func = luaM_toref(L,3);
+
+	if(lent->e->ent->addLuaEventHandler(L,eventName,func)) {
+
+		return 0;
+	}
+
+
+	return 1;
+}
+
+
+
+
 static int entity_SetOrigin(lua_State * L)
 {
 	lua_Entity     *lent;
@@ -418,6 +477,7 @@ static const luaL_reg entity_meta[] = {
 
 	{"SetOrigin", entity_SetOrigin},
 	{"SetRenderModel", entity_SetRenderModel},
+	{"AddEventHandler", entity_AddEventHandler},
 
 	{NULL, NULL}
 };

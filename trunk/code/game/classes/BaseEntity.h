@@ -32,6 +32,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/eventReceiverAPI.h>
 #include <math/matrix.h>
+// LUA event callbacks
+#include "../lua/g_lua_eventHandler.h"
 
 class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
@@ -41,7 +43,10 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	BaseEntity *parent; // for children
 	str targetName; // name of this entity; set in radiant or trough script
 	str target; // entity's target - FIXME: use safePtr<BaseEntity> here instead of string?
+	// our own internal event system 
 	class eventList_c *eventList;
+	// LUA event callbacks
+	luaEventHandlerList_c lua_runFrameHandlers;
 
 	// called through eventReceiverBaseAPI_i
 	virtual void processEvent(class eventBaseAPI_i *ev);
@@ -167,6 +172,13 @@ public:
 	// returns the count of BSP areas touching this entity
 	u32 getNumTouchingAreas() const;
 	u32 getTouchingArea(u32 localIdx) const;
+
+	// for lua wrapper
+	virtual bool addLuaEventHandler(struct lua_State *L, const char *eventName, int func);
+
+	void runLuaFrameHandlers() {
+		lua_runFrameHandlers.runCallbacks("e",this->getEdict());
+	}
 
 	virtual bool traceWorldRay(class trace_c &tr) {
 		return false;

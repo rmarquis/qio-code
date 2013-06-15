@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 //
 // g_local.h -- local definitions for game module
+#ifndef __G_LOCAL_H__
+#define __G_LOCAL_H__
 
 #include "../qcommon/q_shared.h"
 #include "bg_public.h"
@@ -194,9 +196,10 @@ u32 G_GetNumKnownScriptedClassDefs();
 //
 void            G_InitLua();
 void            G_ShutdownLua();
-void            G_LoadLuaScript(struct edict_s * ent, const char *filename);
-void            G_RunLuaFunction(const char *func, const char *sig, ...);
+void            G_LoadLuaScript(const char *filename);
 void            G_DumpLuaStack();
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
+
+#endif // __G_LOCAL_H__

@@ -29,7 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 #include "Player.h"
 #include <api/serverAPI.h>
+#include <api/coreAPI.h>
 #include <shared/keyValuesListener.h>
+// our internal event system
 #include <shared/eventSystem.h>
 
 DEFINE_CLASS(BaseEntity, "None");
@@ -300,6 +302,15 @@ u32 BaseEntity::getNumTouchingAreas() const {
 }
 u32 BaseEntity::getTouchingArea(u32 localIdx) const {
 	return this->myEdict->bspBoxDesc->getArea(localIdx);
+}
+// for lua wrapper
+bool BaseEntity::addLuaEventHandler(struct lua_State *L, const char *eventName, int func) {
+	if(!stricmp(eventName,"runFrame")) {
+		lua_runFrameHandlers.addEventHandler(L,func);
+		return false;
+	} 
+	g_core->RedWarning("BaseEntity::addLuaEventHandler: unknown event name %s\n",eventName);
+	return true;
 }
 #include <api/ddAPI.h>
 

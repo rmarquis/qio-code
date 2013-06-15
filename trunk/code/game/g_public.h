@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 // g_public.h -- game module information visible to server
+#ifndef __G_PUBLIC_H__
+#define __G_PUBLIC_H__
+
 #include <math/vec3.h>
 #include <math/aabb.h>
 
@@ -164,3 +167,4 @@ struct edict_s {
 //
 //} gameExport_t;
 //
+#endif // __G_PUBLIC_H__

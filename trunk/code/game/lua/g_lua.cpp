@@ -69,7 +69,7 @@ void G_InitLua_Global()
 		numFiles++;
 
 		// load the file
-		G_LoadLuaScript(NULL, filename);
+		G_LoadLuaScript(filename);
 
 	}
 
@@ -108,7 +108,7 @@ void G_InitLua_Local(char mapname[MAX_STRING_CHARS])
 		numFiles++;
 
 		// load the file
-		G_LoadLuaScript(NULL, filename);
+		G_LoadLuaScript(filename);
 
 	}
 
@@ -140,6 +140,11 @@ void G_InitLua()
 	luaopen_qmath(g_luaState);
 	luaopen_vector(g_luaState);
 
+	// Create the callback table (at location 1 in the registry)
+    lua_pushnumber ( g_luaState, 1 );
+    lua_newtable ( g_luaState );
+    lua_settable ( g_luaState, LUA_REGISTRYINDEX );
+
 	// load global scripts
 	G_Printf("global lua scripts:\n");
 	G_InitLua_Global();
@@ -148,10 +153,11 @@ void G_InitLua()
 	G_Printf("map specific lua scripts:\n");
 	g_cvars->Cvar_VariableStringBuffer("mapname", buf, sizeof(buf));
 	G_InitLua_Local(buf);
-	G_LoadLuaScript(NULL, va("maps/%s.lua",buf));
+	G_LoadLuaScript(va("maps/%s.lua",buf));
 
 	G_Printf("-----------------------------------\n");
 
+	G_RunLuaFunction(g_luaState,"G_InitGame","");
 
 }
 
@@ -181,7 +187,7 @@ void G_ShutdownLua()
 G_LoadLuaScript
 =================
 */
-void G_LoadLuaScript(edict_s * ent, const char *filename)
+void G_LoadLuaScript(const char *filename)
 {
 	int             len;
 	fileHandle_t    f;
@@ -219,11 +225,10 @@ void G_LoadLuaScript(edict_s * ent, const char *filename)
 G_RunLuaFunction
 =================
 */
-void G_RunLuaFunction(const char *func, const char *sig, ...)
+void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 {
 	va_list         vl;
 	int             narg, nres;	// number of arguments and results
-	lua_State      *L = g_luaState;
 
 	if(!func || !func[0])
 		return;
@@ -280,6 +285,104 @@ void G_RunLuaFunction(const char *func, const char *sig, ...)
 	nres = strlen(sig);			// number of expected results
 	if(lua_pcall(L, narg, nres, 0) != 0)	// do the call
 		G_Printf("G_RunLuaFunction: error running function `%s': %s\n", func, lua_tostring(L, -1));
+
+	// retrieve results
+	nres = -nres;				// stack index of first result
+	while(*sig)
+	{							// get results
+		switch (*sig++)
+		{
+
+			case 'f':
+				// float result
+				if(!lua_isnumber(L, nres))
+					G_Printf("G_RunLuaFunction: wrong result type\n");
+				*va_arg(vl, float *) = lua_tonumber(L, nres);
+
+				break;
+
+			case 'i':
+				// int result
+				if(!lua_isnumber(L, nres))
+					G_Printf("G_RunLuaFunction: wrong result type\n");
+				*va_arg(vl, int *) = (int)lua_tonumber(L, nres);
+
+				break;
+
+			case 's':
+				// string result
+				if(!lua_isstring(L, nres))
+					G_Printf("G_RunLuaFunction: wrong result type\n");
+				*va_arg(vl, const char **) = lua_tostring(L, nres);
+
+				break;
+
+			default:
+				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+		}
+		nres++;
+	}
+	va_end(vl);
+}
+
+void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
+{
+	va_list         vl;
+	int             narg, nres;	// number of arguments and results
+
+	va_start(vl, sig);
+
+	lua_getref ( L, ref );
+
+	// push arguments
+	narg = 0;
+	while(*sig)
+	{
+		switch (*sig++)
+		{
+			case 'f':
+				// float argument
+				lua_pushnumber(L, va_arg(vl, float));
+
+				break;
+
+			case 'i':
+				// int argument
+				lua_pushnumber(L, va_arg(vl, int));
+
+				break;
+
+			case 's':
+				// string argument
+				lua_pushstring(L, va_arg(vl, char *));
+
+				break;
+
+			case 'e':
+				// entity argument
+				lua_pushentity(L, va_arg(vl, edict_s *));
+				break;
+
+			case 'v':
+				// vector argument
+				lua_pushvector(L, va_arg(vl, vec_t *));
+				break;
+
+			case '>':
+				goto endwhile;
+
+			default:
+				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+		}
+		narg++;
+		luaL_checkstack(L, 1, "too many arguments");
+	}
+  endwhile:
+
+	// do the call
+	nres = strlen(sig);			// number of expected results
+	if(lua_pcall(L, narg, nres, 0) != 0)	// do the call
+		G_Printf("G_RunLuaFunction: error running function `%i': %s\n", ref, lua_tostring(L, -1));
 
 	// retrieve results
 	nres = -nres;				// stack index of first result

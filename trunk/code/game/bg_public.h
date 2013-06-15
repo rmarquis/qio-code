@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 //
 // bg_public.h -- definitions shared by both the server game and client game modules
-
+#ifndef __BG_PUBLIC_H__
+#define __BG_PUBLIC_H__
 // because games can change separately from the main system version, we need a
 // second version that must match between game and cgame
 
@@ -87,3 +88,5 @@ typedef enum {
 
 
 void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean snap );
+
+#endif // __BG_PUBLIC_H__
