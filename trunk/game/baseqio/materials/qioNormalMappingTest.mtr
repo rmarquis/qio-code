@@ -7,3 +7,28 @@ textures/qiotests/rockwall
   heightmap textures/qiotests/rockwall_h.png
 }
 
+
+textures/qiotests/rockwall2 
+{
+  colormap textures/qiotests/rockwall2_d.png
+  // bumpmap (aka normalmap)
+  bumpmap textures/qiotests/rockwall2_local.png
+  
+  // NO HEIGHTMAP IMAGE
+}
+
+
+
+textures/qiotests/tile1
+{
+  colormap textures/qiotests/tile1_d.png
+  // bumpmap (aka normalmap)
+  bumpmap textures/qiotests/tile1_local.png
+  
+  // NO HEIGHTMAP IMAGE
+}
+
+
+
+
+
