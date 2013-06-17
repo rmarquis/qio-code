@@ -62,7 +62,10 @@ void CG_ParseServerinfo( void ) {
 				// and finally, if there is no .proc file fall back to .map
 				// (NOTE: .bsp files are a compiled .map files with some extra info
 				// like lightmaps, lightgrid, PVS, etc...)
-				Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );
+				Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );		
+				if(g_vfs->FS_FileExists(cgs.mapname) == false) {
+					strcpy(cgs.mapname,mapname);
+				}
 			}
 		}
 	}

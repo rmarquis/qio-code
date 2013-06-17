@@ -254,7 +254,9 @@ void CL_ParseSnapshot( msg_t *msg ) {
 			// is too old, so we can't reconstruct it properly.
 			Com_Printf ("Delta frame too old.\n");
 		} else if ( cl.parseEntitiesNum - old->parseEntitiesNum > MAX_PARSE_ENTITIES-128 ) {
-			Com_Printf ("Delta parseEntitiesNum too old.\n");
+			Com_Printf ("Delta parseEntitiesNum too old (%i - %i = %i).\n",
+				cl.parseEntitiesNum, old->parseEntitiesNum,
+				cl.parseEntitiesNum - old->parseEntitiesNum);
 		} else {
 			newSnap.valid = qtrue;	// valid delta parse
 		}

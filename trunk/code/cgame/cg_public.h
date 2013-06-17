@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // needs to be larger than PACKET_BACKUP
 
 
-#define	MAX_ENTITIES_IN_SNAPSHOT	1024
+#define	MAX_ENTITIES_IN_SNAPSHOT	MAX_GENTITIES
 
 // snapshots are a view of the server at a given time
 

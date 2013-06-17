@@ -56,11 +56,33 @@ void RF_ClearWorldMap() {
 	}
 	RFL_FreeAllLights();
 }
+void RF_CreateEmptyMap() {
+	// create flat ground plane
+	r_worldModel = new r_model_c;
+	r_worldModel->setNumSurfs(1);
+	const float maxSize = 1048576.f;
+	const float texWorldSize = 64.f;
+	r_worldModel->getSurf(0)->addQuad(
+		rVert_c(vec2_c(0,1),vec3_c(-maxSize,maxSize,0)),
+		rVert_c(vec2_c(0,0),vec3_c(-maxSize,-maxSize,0)),
+		rVert_c(vec2_c(1,0),vec3_c(maxSize,-maxSize,0)),
+		rVert_c(vec2_c(1,1),vec3_c(maxSize,maxSize,0))
+		);
+	r_worldModel->multTexCoordsXY(maxSize/texWorldSize);
+	r_worldModel->recalcModelTBNs();
+	r_worldModel->recalcBoundingBoxes();
+}
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();
+	if(!stricmp(name,"_empty")) {
+		RF_CreateEmptyMap();
+		return false;
+	}
 	const char *ext = G_strgetExt(name);
 	if(ext == 0) {
 		g_core->RedWarning("RF_LoadWorldMap: %s has no extension\n",name);
+		// create default empty map
+		RF_CreateEmptyMap();
 		return true;
 	}
 	if(!stricmp(ext,"bsp")) {
@@ -99,6 +121,8 @@ bool RF_LoadWorldMap(const char *name) {
 		return false; // ok
 	}
 	g_core->RedWarning("Cannot load worldmap %s\n",name);
+	// create default empty map
+	RF_CreateEmptyMap();
 	return true; // error
 }
 void RF_AddWorldDrawCalls() {

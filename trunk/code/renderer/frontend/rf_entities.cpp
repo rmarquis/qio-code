@@ -661,6 +661,7 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
 }
 static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
 static aCvar_c rf_printAddedEntityModelNames("rf_printAddedEntityModelNames","0");
+static aCvar_c rf_printTotalREntitiesCount("rf_printTotalREntitiesCount","0");
 void RFE_AddEntityDrawCalls() {
 	if(rf_skipEntities.getInt())
 		return;
@@ -676,6 +677,9 @@ void RFE_AddEntityDrawCalls() {
 	}
 	if(rf_printAddEntityDrawCallsCullStats.getInt()) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i culled by frustum, %i by portals (total entiy count %i)\n",c_entitiesCulledByABSBounds,c_entitiesCulledByPortals,rf_entities.size());
+	}
+	if(rf_printTotalREntitiesCount.getInt()) {
+		g_core->Print("RFE_AddEntityDrawCalls: %i entities\n",rf_entities.size());
 	}
 	rf_currentEntity = 0;
 }

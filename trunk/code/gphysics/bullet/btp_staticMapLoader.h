@@ -54,6 +54,7 @@ class btpStaticMapLoader_c {
 public:
 	btpStaticMapLoader_c();
 
+	void createEmptyMap();
 	bool loadMap(const char *mapName, class bulletPhysicsWorld_c *pWorld);
 	void freeMemory();
 

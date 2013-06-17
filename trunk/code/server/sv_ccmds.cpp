@@ -176,8 +176,12 @@ static void SV_Map_f( void ) {
 				// are always present with .map files)
 				Com_sprintf (expanded, sizeof(expanded), "maps/%s.procb", map);
 				if ( FS_ReadFile (expanded, NULL) == -1 ) {
-					Com_Printf ("SV_Map_f: Can't find map %s\n", map);
-					return;
+					// check for lua-only maps (world is created in lua script from static models)
+					Com_sprintf (expanded, sizeof(expanded), "maps/%s.lua", map);
+					if ( FS_ReadFile (expanded, NULL) == -1 ) {
+						Com_Printf ("SV_Map_f: Can't find map %s\n", map);
+						return;
+					}
 				}
 			}
 		}

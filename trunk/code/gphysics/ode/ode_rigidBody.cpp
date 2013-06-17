@@ -220,6 +220,9 @@ const vec3_c odeRigidBody_c::getAngularVelocity() const {
 void odeRigidBody_c::setAngularVelocity(const class vec3_c &newAVel) {
 	dBodySetAngularVel(body,newAVel.x,newAVel.y,newAVel.z);
 }
+void odeRigidBody_c::setKinematic() {
+	dBodySetKinematic(body);
+}
 bool odeRigidBody_c::isDynamic() const {
 	if(body == 0)
 		return false;

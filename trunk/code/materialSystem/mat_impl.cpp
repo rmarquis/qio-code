@@ -662,7 +662,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// example: "alphaTest ( time + parm4 ) * 0.5 - 0.2"
 					// TODO: handle Doom3 math expressions for alphaTest?
 					float val = p.getFloat();
-					if(val == 0.5) {
+					if(val >= 0.5) {
 						stage->setAlphaFunc(AF_GE128);
 					}
 				} else if(p.atWord("red")) {

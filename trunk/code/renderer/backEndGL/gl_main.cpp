@@ -83,6 +83,8 @@ static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
 static aCvar_c rb_showDeluxeMaps("rb_showDeluxeMaps","0");
 static aCvar_c rb_verboseBindShader("rb_verboseBindShader","0");
 static aCvar_c rb_ignoreLightmaps("rb_ignoreLightmaps","0");
+static aCvar_c rb_printFrameTriCounts("rb_printFrameTriCounts","0");
+static aCvar_c rb_printFrameVertCounts("rb_printFrameVertCounts","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -158,6 +160,26 @@ struct texState_s {
 };
 #define CHECK_GL_ERRORS checkForGLErrorsInternal(__FUNCTION__,__LINE__);
 
+struct rbCounters_s {
+	u32 c_materialDrawCalls;
+	// vert/index counts at drawElements entry
+	u32 c_inputVerts;
+	u32 c_inputTris;
+	// total draw counts (drawElements sometimes needs to draw the same surface several times)
+	u32 c_totalVerts;
+	u32 c_totalTris;
+	//u32 c_singleStageMaterials;
+	//u32 c_multiStageMaterials;
+	//u32 c_gpuVertexBuffers;
+	//u32 c_cpuVertexBuffers;
+	//u32 c_gpuIndexBuffers;
+	//u32 c_cpuIndexBuffers;
+
+	void clear() {
+		memset(this,0,sizeof(*this));
+	}
+};
+
 class rbSDLOpenGL_c : public rbAPI_i {
 	// gl state
 	texState_s texStates[MAX_TEXTURE_SLOTS];
@@ -214,6 +236,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
+	rbCounters_s counters;
 
 public:
 	rbSDLOpenGL_c() {
@@ -862,6 +885,8 @@ public:
 		if(gl_callGLFinish.getInt()==2) {
 			glFinish();
 		}
+		counters.c_totalVerts += boundVBO->size();
+		counters.c_totalTris += boundIBO->getNumTriangles();
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {
 		stopDrawingShadowVolumes();
@@ -1004,6 +1029,10 @@ public:
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
+
+		counters.c_materialDrawCalls++;
+		counters.c_inputVerts += verts.size();
+		counters.c_inputTris += indices.getNumTriangles();
 
 		stopDrawingShadowVolumes();
 
@@ -1579,6 +1608,13 @@ drawOnlyLightmap:
 		}
 		bRendererMirrorThisFrame = false;
 		g_sharedSDLAPI->endFrame();
+		if(rb_printFrameTriCounts.getInt()) {
+			g_core->Print("%i input tris / %i total tris\n",counters.c_inputTris,counters.c_totalTris);
+		}
+		if(rb_printFrameVertCounts.getInt()) {
+			g_core->Print("%i input verts / %i total verts\n",counters.c_inputVerts,counters.c_totalVerts);
+		}
+		counters.clear();
 	}	
 	virtual void clearDepthBuffer() {
 		if(bDepthMask == false) {
@@ -1861,6 +1897,7 @@ drawOnlyLightmap:
 		forcedMaterialFrameNum = -1;
 		curShader = 0;
 		lastSurfaceColor.setFullBright();
+		counters.clear();
 		//glShadeModel( GL_SMOOTH );
 		glDepthFunc( GL_LEQUAL );
 		glEnableClientState(GL_VERTEX_ARRAY);

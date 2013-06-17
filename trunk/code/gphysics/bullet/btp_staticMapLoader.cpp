@@ -132,8 +132,18 @@ void btpStaticMapLoader_c::createWorldSurface(class cmSurface_c *sf) {
 void btpStaticMapLoader_c::addWorldSurface(class cmSurface_c &sf) {
 	mainWorldSurface.addSurface(sf);
 }
+void btpStaticMapLoader_c::createEmptyMap() {
+	// add only single ground plane
+	mainWorldShape = new btStaticPlaneShape(btVector3(0,0,1),0);
+	mainWorldBody = new btRigidBody(0,0,mainWorldShape,btVector3(0,0,0));	
+	myPhysWorld->getBTDynamicsWorld()->addRigidBody(mainWorldBody);
+}
 bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld_c *pWorld) {
 	this->myPhysWorld = pWorld;
+	if(!stricmp(mapName,"_empty")) {
+		createEmptyMap();
+		return false;
+	}
 	str path = "maps/";
 	path.append(mapName);
 	path.setExtension("bsp");
@@ -148,6 +158,8 @@ bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld
 	if(g_vfs->FS_FileExists(path)) {
 		return loadFromMAPFile(path);
 	}
+	// create default empty map
+	createEmptyMap();
 	return false; // no error
 }
 void btpStaticMapLoader_c::freeMemory() {

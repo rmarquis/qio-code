@@ -34,6 +34,7 @@ DEFINE_CLASS_ALIAS(Door, func_rotatingdoor);
 
 Door::Door() {
 	bPhysicsBodyKinematic = true;
+	bRigidBodyPhysicsEnabled = true;
 }
 void Door::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"angle")) {
@@ -51,5 +52,6 @@ void Door::postSpawn() {
 	//	// mark portal as closed (by this doors)
 	//	g_server->adjustAreaPortalState(area0,area1,false);
 	//}
+	ModelEntity::postSpawn();
 }
 

@@ -374,7 +374,8 @@ void ModelEntity::initRigidBodyPhysics() {
 		return;
 	}
 	this->body->setEntityPointer(this);
-//	if(bPhysicsBodyKinematic) {
+	if(bPhysicsBodyKinematic) {
+		this->body->setKinematic();
 //#if 1
 //		// FIXME!!! For some resons my kinematic/static entities (func_door) don't collide with items/boxes (BUT they do collide with player controller)
 //		//this->body->setCollisionFlags(this->body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
@@ -384,7 +385,7 @@ void ModelEntity::initRigidBodyPhysics() {
 //		this->destroyPhysicsObject();
 //		return;
 //#endif
-//	}
+	}
 }
 void ModelEntity::initStaticBodyPhysics() {
 	if(this->cmod == 0) {

@@ -116,6 +116,13 @@ const vec3_c bulletRigidBody_c::getAngularVelocity() const {
 void bulletRigidBody_c::setAngularVelocity(const class vec3_c &newAVel) {
 	bulletRigidBody->setAngularVelocity(newAVel.floatPtr());
 }
+void bulletRigidBody_c::setKinematic() {
+	myWorld->getBTDynamicsWorld()->removeRigidBody(bulletRigidBody);
+	bulletRigidBody->setCollisionFlags(bulletRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+	bulletRigidBody->setActivationState(DISABLE_DEACTIVATION);
+	bulletRigidBody->activate();
+	myWorld->getBTDynamicsWorld()->addRigidBody(bulletRigidBody);
+}
 bool bulletRigidBody_c::isDynamic() const {
 	if(bulletRigidBody->isStaticObject())
 		return false;
