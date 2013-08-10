@@ -2029,26 +2029,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="minilzo"
-			>
-			<File
-				RelativePath="..\..\code\external\minilzo-2.06\lzoconf.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\external\minilzo-2.06\lzodefs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\external\minilzo-2.06\minilzo.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\external\minilzo-2.06\minilzo.h"
-				>
-			</File>
-		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
