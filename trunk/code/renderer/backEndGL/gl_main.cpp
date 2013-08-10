@@ -885,7 +885,9 @@ public:
 		if(gl_callGLFinish.getInt()==2) {
 			glFinish();
 		}
-		counters.c_totalVerts += boundVBO->size();
+		if(boundVBO) {
+			counters.c_totalVerts += boundVBO->size();
+		}
 		counters.c_totalTris += boundIBO->getNumTriangles();
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices)  {

@@ -135,7 +135,8 @@ bool procTree_c::parseAreaPortals(class parser_c &p, const char *fname) {
 		procPortal_c *portal = this->portals[i] = new procPortal_c;
 		u32 numPoints = p.getInteger();
 		if(numPoints <= 2) {
-			g_core->RedWarning("procTree_c::parseAreaPortals: WARNING: portal %i has less than three points! (%s at line %i)\n",i,fname,p.getCurrentLineNumber());
+			g_core->RedWarning("procTree_c::parseAreaPortals: ERROR: portal %i has less than three points! (%s at line %i)\n",i,fname,p.getCurrentLineNumber());
+			return true;
 		}
 		portal->areas[0] = p.getInteger();
 		portal->areas[1] = p.getInteger();
@@ -345,6 +346,10 @@ int procTree_c::pointArea(const vec3_c &xyz) {
 
 	int nodeNum = 0;
 	do {
+		if(nodeNum >= this->nodes.size()) {
+			g_core->RedWarning("procTree_c::pointArea: node index %i out of range <0,%i)\n",nodeNum,this->nodes.size());
+			return -1;
+		}
 		const procNode_c &node = this->nodes[nodeNum];
 		float d = node.plane.distance(xyz);
 		if(d > 0) {
@@ -696,6 +701,12 @@ void procTree_c::doDebugDrawing() {
 		for(u32 i = 0; i < portals.size(); i++) {
 			procPortal_c *p = portals[i];
 			const cmWinding_c &w = p->points;
+			float col[4];
+			col[0] = (i % 39)/39.f;
+			col[1] = ((i+10) % 47) / 47.f;
+			col[2] = (i % 33)/33.f;
+			col[3] = 1.f;
+			rb->setColor4(col);
 			rb->drawWinding(w.getArray(),w.size());
 		}
 	}

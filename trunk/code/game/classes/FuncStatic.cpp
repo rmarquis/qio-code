@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(FuncStatic, "ModelEntity");
 DEFINE_CLASS_ALIAS(FuncStatic, func_static);
+//DEFINE_CLASS_ALIAS(FuncStatic, func_group);
 
 // func_static entities are inmovable
 FuncStatic::FuncStatic() {

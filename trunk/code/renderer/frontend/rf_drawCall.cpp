@@ -291,6 +291,9 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
 			RF_DrawSky();
 			bNeedsSky = false;
+			prevCubeMapSide = -1;
+			prevEntity = 0;
+			prevLight = 0;
 		}
 		if(prevLight != c->curLight) {
 			if(prevLight == 0) {

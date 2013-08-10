@@ -44,6 +44,7 @@ bool RF_IsUsingDynamicLights() {
 		return true;
 	return false;
 }
+
 bool RF_IsUsingShadowVolumes() {
 	// TODO: see if the stencil buffer is supported
 	if(rf_shadows.getInt() == 1) {

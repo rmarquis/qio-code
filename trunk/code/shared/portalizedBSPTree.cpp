@@ -37,6 +37,10 @@ int portalizedBSPTree_c::pointAreaNum(const vec3_c &p) const {
 
 	int nodeNum = 0;
 	do {
+		if(nodeNum >= this->nodes.size()) {
+			g_core->RedWarning("portalizedBSPTree_c::pointAreaNum: node index %i out of range <0,%i)\n",nodeNum,this->nodes.size());
+			return -1;
+		}
 		const pbspNode_c &node = this->nodes[nodeNum];
 		float d = node.plane.distance(p);
 		if(d > 0) {
@@ -68,6 +72,12 @@ void portalizedBSPTree_c::boxAreaNums_r(int nodeNum) const {
 				}
 			}
 			return; // done.
+		} else if(nodeNum == 0) {
+			return;
+		}
+		if(nodeNum >= nodes.size()) {
+			g_core->RedWarning("portalizedBSPTree_c::pointAreaNum: node index %i out of range <0,%i)\n",nodeNum,this->nodes.size());
+			return;
 		}
 		const pbspNode_c &n = nodes[nodeNum];
 		planeSide_e ps = n.plane.onSide(boxArea.bb);
@@ -171,7 +181,7 @@ bool portalizedBSPTree_c::parseNodes(class parser_c &p, const char *fname) {
 }
 bool portalizedBSPTree_c::parseAreaPortals(class parser_c &p, const char *fname) {
 	if(p.atWord("{")==false) {
-		g_core->RedWarning("procTree_c::parseAreaPortals: expected '{' to follow \"interAreaPortals\" in file %s at line %i, found %s\n",
+		g_core->RedWarning("portalizedBSPTree_c::parseAreaPortals: expected '{' to follow \"interAreaPortals\" in file %s at line %i, found %s\n",
 			fname,p.getCurrentLineNumber(),p.getToken());
 		return true; // error
 	}
@@ -182,7 +192,8 @@ bool portalizedBSPTree_c::parseAreaPortals(class parser_c &p, const char *fname)
 		pbspPortal_c *portal = &this->portals[i];
 		u32 numPoints = p.getInteger();
 		if(numPoints <= 2) {
-			g_core->RedWarning("procTree_c::parseAreaPortals: WARNING: portal %i has less than three points! (%s at line %i)\n",i,fname,p.getCurrentLineNumber());
+			g_core->RedWarning("portalizedBSPTree_c::parseAreaPortals: ERROR: portal %i has less than three points! (%s at line %i)\n",i,fname,p.getCurrentLineNumber());
+			return true; // error
 		}
 		portal->areas[0] = p.getInteger();
 		portal->areas[1] = p.getInteger();
@@ -197,7 +208,7 @@ bool portalizedBSPTree_c::parseAreaPortals(class parser_c &p, const char *fname)
 		this->addPortalToAreas(portal);
 	}
 	if(p.atWord("}")==false) {
-		g_core->RedWarning("procTree_c::parseAreaPortals: expected closing '}' for \"interAreaPortals\" block in file %s at line %i, found %s\n",
+		g_core->RedWarning("portalizedBSPTree_c::parseAreaPortals: expected closing '}' for \"interAreaPortals\" block in file %s at line %i, found %s\n",
 			fname,p.getCurrentLineNumber(),p.getToken());
 		return true; // error
 	}
