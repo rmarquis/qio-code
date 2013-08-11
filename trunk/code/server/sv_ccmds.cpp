@@ -179,8 +179,12 @@ static void SV_Map_f( void ) {
 					// check for lua-only maps (world is created in lua script from static models)
 					Com_sprintf (expanded, sizeof(expanded), "maps/%s.lua", map);
 					if ( FS_ReadFile (expanded, NULL) == -1 ) {
-						Com_Printf ("SV_Map_f: Can't find map %s\n", map);
-						return;
+						// .ent files are similiar to .map files but they don't contain map geometry
+						Com_sprintf (expanded, sizeof(expanded), "maps/%s.ent", map);
+						if ( FS_ReadFile (expanded, NULL) == -1 ) {
+							Com_Printf ("SV_Map_f: Can't find map %s\n", map);
+							return;
+						}
 					}
 				}
 			}

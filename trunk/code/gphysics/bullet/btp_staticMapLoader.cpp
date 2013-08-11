@@ -98,6 +98,18 @@ bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	}
 	return false;
 }
+bool btpStaticMapLoader_c::loadFromPROCFile(const char *fname) {
+	if(mainWorldSurface.loadDoom3ProcFileWorldModel(fname))
+	{
+		return true;
+	}
+	if(mainWorldSurface.getNumIndices()) {
+		mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);
+		mainWorldSurface_body = new btRigidBody(0,0,mainWorldSurface_shape,btVector3(0,0,0));	
+		myPhysWorld->getBTDynamicsWorld()->addRigidBody(mainWorldSurface_body);
+	}
+	return false;
+}
 bool btpStaticMapLoader_c::loadFromMAPFile(const char *fname) {
 	cMod_i *m = cm->registerModel(fname);
 	if(m == 0)
@@ -152,7 +164,7 @@ bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld
 	}
 	path.setExtension("proc");
 	if(g_vfs->FS_FileExists(path)) {
-		//return loadPROCFile(path);
+		return loadFromPROCFile(path);
 	}
 	path.setExtension("map");
 	if(g_vfs->FS_FileExists(path)) {

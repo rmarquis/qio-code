@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
 static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
+static aCvar_c rf_proc_showAllAreas("rf_proc_showAllAreas","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -473,6 +474,15 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		}
 	}
 }
+void procTree_c::addDrawCallsForAllAreas() {
+	for(u32 i = 0; i < areas.size(); i++) {
+		procArea_c *ar = areas[i];
+		if(rf_camera.getFrustum().cull(ar->areaModel->getBounds()) != CULL_OUT) {
+			ar->areaModel->addDrawCalls();
+			ar->visCount = this->visCount;
+		}
+	}
+}
 void procTree_c::addDrawCalls() {
 	visCount++;
 	if(nodes.size() == 0) {
@@ -485,14 +495,9 @@ void procTree_c::addDrawCalls() {
 	if(rf_proc_printCamArea.getInt()) {
 		g_core->Print("camera is in area %i of %i\n",camArea,areas.size());
 	}
-	if(camArea == -1) {
-		for(u32 i = 0; i < areas.size(); i++) {
-			procArea_c *ar = areas[i];
-			if(rf_camera.getFrustum().cull(ar->areaModel->getBounds()) != CULL_OUT) {
-				ar->areaModel->addDrawCalls();
-				ar->visCount = this->visCount;
-			}
-		}
+	// if camera is outside world or if we're debug-drawing all areas
+	if(camArea == -1 || rf_proc_showAllAreas.getInt()) {
+		addDrawCallsForAllAreas();
 		return;
 	}
 	frustumExt_c baseFrustum(rf_camera.getFrustum());

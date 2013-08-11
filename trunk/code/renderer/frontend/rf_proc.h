@@ -123,6 +123,7 @@ public:
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out);
 	u32 boxAreaSurfaces(const aabb &bb, arraySTD_c<const class r_surface_c*> &out);
 
+	void addDrawCallsForAllAreas();
 	void addDrawCalls();
 	bool traceRay(class trace_c &tr);
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);

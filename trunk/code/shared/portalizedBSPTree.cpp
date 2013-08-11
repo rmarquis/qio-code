@@ -72,9 +72,10 @@ void portalizedBSPTree_c::boxAreaNums_r(int nodeNum) const {
 				}
 			}
 			return; // done.
-		} else if(nodeNum == 0) {
-			return;
-		}
+		} 
+		//else if(nodeNum == 0) {
+		//	return;
+		//}
 		if(nodeNum >= nodes.size()) {
 			g_core->RedWarning("portalizedBSPTree_c::pointAreaNum: node index %i out of range <0,%i)\n",nodeNum,this->nodes.size());
 			return;

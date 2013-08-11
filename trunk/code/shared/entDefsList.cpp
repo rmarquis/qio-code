@@ -157,7 +157,12 @@ bool entDefsList_c::loadEntitiesFromEntitiesFile(const char *mapName) {
 	strcat(buf,".entities");
 	parser_c p;
 	if(p.openFile(buf)) {
-		return true;
+		strcpy(buf,"maps/");
+		strcat(buf,mapName);
+		strcat(buf,".ent");
+		if(p.openFile(buf)) {
+			return true;
+		}
 	}
 	if(p.atWord("Version")) {
 		p.getInteger();
