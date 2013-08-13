@@ -37,8 +37,16 @@ enum staticSurfInteractionType_e {
 	SIT_BSP,
 	SIT_PROC,
 };
+
+enum staticSurfInteractionFilterType {
+	SIFT_NONE,
+	SIFT_ONLY_SHADOW,
+	SIFT_ONLY_LIGHTING,
+};
+
 struct staticSurfInteraction_s {
 	staticSurfInteractionType_e type;
+	staticSurfInteractionFilterType filter;
 	class r_surface_c *sf;
 	union {
 		u32 bspSurfaceNumber; // for SIT_BSP
@@ -47,8 +55,19 @@ struct staticSurfInteraction_s {
 
 	staticSurfInteraction_s() {
 		type = SIT_BAD;
+		filter = SIFT_NONE;
 		sf = 0;
 		bspSurfaceNumber = 0;
+	}
+	bool isNeededForLighting() const {
+		if(type == SIFT_ONLY_SHADOW)
+			return false;
+		return true;
+	}
+	bool isNeededForShadows() const {
+		if(type == SIFT_ONLY_LIGHTING)
+			return false;
+		return true;
 	}
 };
 struct entityInteraction_s {
@@ -148,6 +167,8 @@ public:
 	void recalcShadowMappingMatrices();
 	void addShadowMapRenderingDrawCalls();
 
+	bool isCulledByAreas() const;
+
 	staticSurfInteraction_s &getNextStaticInteraction() {	
 		numCurrentStaticInteractions++;
 		if(staticInteractions.size() < numCurrentStaticInteractions) {
@@ -160,18 +181,21 @@ public:
 		n.type = SIT_STATIC;
 		n.sf = sf;
 		n.bspSurfaceNumber = 0;
+		n.filter = SIFT_NONE;
 	}
 	void addBSPSurfaceInteraction(u32 bspSurfaceNum) {
 		staticSurfInteraction_s &n = getNextStaticInteraction();
 		n.type = SIT_BSP;
 		n.sf = 0;
 		n.bspSurfaceNumber = bspSurfaceNum;
+		n.filter = SIFT_NONE;
 	}
-	void addProcAreaSurfaceInteraction(int areaNum, class r_surface_c *sf) {
+	void addProcAreaSurfaceInteraction(int areaNum, class r_surface_c *sf, staticSurfInteractionFilterType filter = SIFT_NONE) {
 		staticSurfInteraction_s &n = getNextStaticInteraction();
 		n.type = SIT_PROC;
 		n.sf = sf;
 		n.areaNum = areaNum;
+		n.filter = filter;
 	}
 
 	virtual void setOrigin(const class vec3_c &newXYZ);

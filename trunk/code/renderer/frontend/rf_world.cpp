@@ -216,6 +216,11 @@ void RF_PrintWorldMapInfo_f() {
 		g_core->RedWarning("No world map...\n");
 	}
 }
+bool RF_IsWorldTypeProc()  {
+	if(r_procTree)
+		return true;
+	return false;
+}
 bool RF_IsWorldAreaVisible(int areaNum) {
 	if(r_procTree) {
 		return r_procTree->isAreaVisibleByPlayer(areaNum);

@@ -289,11 +289,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmSurface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\collisionUtils.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
 			<File

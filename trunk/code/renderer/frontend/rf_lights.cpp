@@ -139,6 +139,10 @@ void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
 	}
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
+		if(in.isNeededForShadows() == false) {
+			// if interaction is not needed for shadowing, skip it
+			continue;
+		}
 		if(in.type == SIT_BSP) {
 			RF_AddBSPSurfaceToShadowVolume(in.bspSurfaceNumber,pos,staticShadowVolume,this->radius);
 		} else if(in.type == SIT_PROC) {
@@ -195,7 +199,7 @@ void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
 	numCurrentEntityInteractions = to;
 }
 void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
-#if 0
+#if 1
 	arraySTD_c<rEntityImpl_c*> ents;
 	RFE_BoxEntities(this->absBounds,ents);
 	if(entityInteractions.size() < ents.size()) {
@@ -305,21 +309,28 @@ void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in)
 	} else if(in.type == SIT_STATIC) {
 		in.sf->addDrawCall();
 	} else if(in.type == SIT_PROC) {
-		if(RF_IsWorldAreaVisible(in.areaNum)) {
+		// this check causes some troubles now
+		//if(RF_IsWorldAreaVisible(in.areaNum))
+		{
 			if(rf_proc_printLitSurfsCull.getInt()) {
 				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
 			}
 			in.sf->addDrawCall();
-		} else {
-			if(rf_proc_printLitSurfsCull.getInt()) {
-				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
-			}
-		}
+		} 
+	///else {
+	///		if(rf_proc_printLitSurfsCull.getInt()) {
+	///			g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
+	///		}
+	///	}
 	}
 }
 void rLightImpl_c::addLightInteractionDrawCalls() {
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
+		if(in.isNeededForLighting() == false) {
+			// if interaction is not needed for lighting, skip it
+			continue;
+		}
 		addStaticSurfInteractionDrawCall(in);
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
@@ -410,7 +421,21 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 	rf_currentShadowMapW = -1;
 	rf_currentShadowMapH = -1;
 }
-
+bool rLightImpl_c::isCulledByAreas() const {
+	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
+		const staticSurfInteraction_s &in = this->staticInteractions[i];
+		if(in.isNeededForLighting() == false)
+			continue;
+		if(in.type == SIT_PROC) {
+			if(RF_IsWorldAreaVisible(in.areaNum)) {
+				// light intersects at least one visible area, so we can't cull it
+				return false;
+			}
+		}
+	}
+	// none of lit areas are visible for player, so light is culled
+	return true;
+}
 static arraySTD_c<rLightImpl_c*> rf_lights;
 
 class rLightAPI_i *RFL_AllocLight() {
@@ -450,6 +475,7 @@ void RFL_AddLightInteractionsDrawCalls() {
 	u32 c_lightsCulled = 0;
 	u32 c_lightsCulledByAABBTest = 0;
 	u32 c_lightsCulledBySphereTest = 0;
+	u32 c_lightsCulledByAreas = 0;
 	
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];
@@ -472,6 +498,18 @@ void RFL_AddLightInteractionsDrawCalls() {
 				light->setCulled(true);
 				continue;
 			}
+			// extra .proc tree lights culling
+			if(RF_IsWorldTypeProc()) {
+				// light is culled if all areas "visible" by light are not visible by player
+				if(light->isCulledByAreas()) {
+					c_lightsCulled++;
+					c_lightsCulledByAreas++;
+					light->setCulled(true);
+					// NOTE: not much light will be culled this way, because most of the lights
+					// are already culled by PVS on the serverside (before sending them to clients)
+					continue;
+				}	
+			}
 		}
 		light->setCulled(false);
 
@@ -493,8 +531,8 @@ void RFL_AddLightInteractionsDrawCalls() {
 	}
 	rf_curLightAPI = 0;
 	if(light_printCullStats.getInt()) {
-		g_core->Print("RFL_AddLightInteractionsDrawCalls: %i lights, %i culled (%i by aabb, %i by sphere\n",
-			rf_lights.size(),c_lightsCulled,c_lightsCulledByAABBTest,c_lightsCulledBySphereTest);
+		g_core->Print("RFL_AddLightInteractionsDrawCalls: %i lights, %i culled (%i by aabb, %i by sphere, %i by areas)\n",
+			rf_lights.size(),c_lightsCulled,c_lightsCulledByAABBTest,c_lightsCulledBySphereTest,c_lightsCulledByAreas);
 	}
 }
 #include <api/occlusionQueryAPI.h>

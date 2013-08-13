@@ -34,7 +34,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
 static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
-static aCvar_c rf_proc_showAllAreas("rf_proc_showAllAreas","0");
+static aCvar_c rf_proc_ignorePortals("rf_proc_ignorePortals","0");
+static aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
 
 class procPortal_c {
 friend class procTree_c;
@@ -183,6 +184,7 @@ bool procTree_c::loadProcFile(const char *fname) {
 			if(newModel->parseProcModel(p)) {
 				return true; // error occured during model parsing
 			}
+			newModel->recalcModelTBNs();
 			model_c *m = RF_AllocModel(newModel->getName());
 			m->initProcModel(this,newModel);	
 
@@ -496,7 +498,7 @@ void procTree_c::addDrawCalls() {
 		g_core->Print("camera is in area %i of %i\n",camArea,areas.size());
 	}
 	// if camera is outside world or if we're debug-drawing all areas
-	if(camArea == -1 || rf_proc_showAllAreas.getInt()) {
+	if(camArea == -1 || rf_proc_ignorePortals.getInt()) {
 		addDrawCallsForAllAreas();
 		return;
 	}
@@ -620,7 +622,7 @@ void procTree_c::addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl
 		if(sf->getBB().intersect(l->getABSBounds()) == false) {
 			continue;
 		}
-		l->addProcAreaSurfaceInteraction(areaNum,sf);
+		l->addProcAreaSurfaceInteraction(areaNum,sf,SIFT_ONLY_LIGHTING);
 	}
 }
 void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal) {
@@ -660,46 +662,63 @@ void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNu
 	}
 }
 void procTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
-#if 0
-	arraySTD_c<const r_surface_c*> sfs;
-	getAreasVisibleByLight(l->getOrigin(),l->getRadius(),
-	boxAreaSurfaces(l->getABSBounds(),sfs);
-	for(u32 i = 0; i < sfs.size(); i++) {
-		l->addStaticModelSurfaceInteraction((r_surface_c*)sfs[i]);
-	}
-#else
-	litCount++;
-	int lightArea = this->pointArea(l->getOrigin());
-	if(lightArea < 0)
-		return;
-	const procArea_c *ar = areas[lightArea];
-	addSingleAreaSurfacesInteractions(lightArea,l);
-	for(u32 i = 0; i < ar->portals.size(); i++) {
-		procPortal_c *portal = ar->portals[i];
-		frustumExt_c fr;
-		// create light->portal frustum
-		fr.fromPointAndWinding(l->getOrigin(),portal->points, portal->plane);
-		// add far plane
-		vec3_c center = portal->points.getCenter();
-		vec3_c normal = center - l->getOrigin();
-		normal.normalize();
-		plane_c farPlane;
-		farPlane.fromPointAndNormal(center,normal);
-		fr.addPlane(farPlane);
-
-	/*	if(fr.cull(portal->points.getCenter() != CULL_IN) {
-			g_core->RedWarning("bad frustum for portal %i\n",i);
-		}*/
-		//g_core->Print("procTree_c::cacheLightWorldInteractions: area %i to portal %i frustum has %i planes\n",lightArea,i,fr.size());
-		int otherArea;
-		if(lightArea == portal->areas[0]) {
-			otherArea = portal->areas[1];
-		} else {
-			otherArea = portal->areas[0];
+	if(rf_proc_useProcDataToOptimizeLighting.getInt() == 0) {
+		// get all .proc surfaces withing light bounds and cache'em
+		arraySTD_c<const r_surface_c*> sfs;
+		boxAreaSurfaces(l->getABSBounds(),sfs);
+		for(u32 i = 0; i < sfs.size(); i++) {
+			l->addStaticModelSurfaceInteraction((r_surface_c*)sfs[i]);
 		}
-		cacheLightWorldInteractions_r(l, otherArea, fr, portal);
+	} else {
+		// get shadow-only interactions
+		// It seems we need to render all the surfaces within light bounds,
+		// even if they are not visible for light trough portals
+		arraySTD_c<u32> list;
+		boxAreas(l->getABSBounds(),list);
+		for(u32 i = 0; i < list.size(); i++)
+		{
+			int areaNum = list[i];
+			procArea_c *a = areas[areaNum];
+			r_model_c *m = a->areaModel;
+			for(u32 j = 0; j < m->getNumSurfs(); j++)
+			{
+				l->addProcAreaSurfaceInteraction(areaNum,m->getSurf(j),SIFT_ONLY_SHADOW);
+			}
+		}
+		// flood through portals (for lighting interactions)
+		// draw only surfaces that are inside light "view" (affected by portals)
+		litCount++;
+		int lightArea = this->pointArea(l->getOrigin());
+		if(lightArea < 0)
+			return;
+		const procArea_c *ar = areas[lightArea];
+		addSingleAreaSurfacesInteractions(lightArea,l);
+		for(u32 i = 0; i < ar->portals.size(); i++) {
+			procPortal_c *portal = ar->portals[i];
+			frustumExt_c fr;
+			// create light->portal frustum
+			fr.fromPointAndWinding(l->getOrigin(),portal->points, portal->plane);
+			// add far plane
+			vec3_c center = portal->points.getCenter();
+			vec3_c normal = center - l->getOrigin();
+			normal.normalize();
+			plane_c farPlane;
+			farPlane.fromPointAndNormal(center,normal);
+			fr.addPlane(farPlane);
+
+		/*	if(fr.cull(portal->points.getCenter() != CULL_IN) {
+				g_core->RedWarning("bad frustum for portal %i\n",i);
+			}*/
+			//g_core->Print("procTree_c::cacheLightWorldInteractions: area %i to portal %i frustum has %i planes\n",lightArea,i,fr.size());
+			int otherArea;
+			if(lightArea == portal->areas[0]) {
+				otherArea = portal->areas[1];
+			} else {
+				otherArea = portal->areas[0];
+			}
+			cacheLightWorldInteractions_r(l, otherArea, fr, portal);
+		}
 	}
-#endif
 }
 void procTree_c::doDebugDrawing() {
 	if(rf_proc_showAreaPortals.getInt()) {
