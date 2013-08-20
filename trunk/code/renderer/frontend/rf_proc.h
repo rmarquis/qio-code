@@ -31,7 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class procNode_c {
 friend class procTree_c;
-	plane_c plane;
+	cachedPlane_c plane;
 	// positive child numbers are nodes
 	// a child number of 0 is an opaque, solid area
 	// negative child numbers are areas: (-1-child)
@@ -128,6 +128,7 @@ public:
 	bool traceRay(class trace_c &tr);
 	int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 
+	bool cullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areas);
 	bool cullBoundsByPortals(const aabb &absBB);
 
 	void addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l);

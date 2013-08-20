@@ -96,6 +96,7 @@ struct entityInteraction_s {
 class rLightImpl_c : public rLightAPI_i {
 	vec3_c pos;
 	float radius;
+	bool bNoShadows;
 	
 	aabb absBounds;
 
@@ -200,6 +201,7 @@ public:
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setRadius(float newRadius);
+	virtual void setBNoShadows(bool newBNoShadows);
 
 	virtual void calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) const;
 
@@ -211,6 +213,9 @@ public:
 	}
 	const aabb &getABSBounds() const {
 		return absBounds;
+	}
+	bool getBNoShadows() const {
+		return bNoShadows;
 	}
 };
 

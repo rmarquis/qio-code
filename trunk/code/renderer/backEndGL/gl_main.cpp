@@ -85,6 +85,7 @@ static aCvar_c rb_verboseBindShader("rb_verboseBindShader","0");
 static aCvar_c rb_ignoreLightmaps("rb_ignoreLightmaps","0");
 static aCvar_c rb_printFrameTriCounts("rb_printFrameTriCounts","0");
 static aCvar_c rb_printFrameVertCounts("rb_printFrameVertCounts","0");
+static aCvar_c rb_ignoreDrawCalls3D("rb_ignoreDrawCalls3D","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -168,6 +169,8 @@ struct rbCounters_s {
 	// total draw counts (drawElements sometimes needs to draw the same surface several times)
 	u32 c_totalVerts;
 	u32 c_totalTris;
+	u32 c_totalVertsVBO;
+	u32 c_totalTrisVBO;
 	//u32 c_singleStageMaterials;
 	//u32 c_multiStageMaterials;
 	//u32 c_gpuVertexBuffers;
@@ -876,6 +879,8 @@ public:
 		boundIBO = indices;
 	}
 	void drawCurIBO() {
+		if(rb_ignoreDrawCalls3D.getInt())
+			return;
 		if(boundGPUIBO == 0) {
 			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), boundIBO->getVoidPtr());
 		} else {
@@ -886,7 +891,13 @@ public:
 			glFinish();
 		}
 		if(boundVBO) {
+			if(boundVBO->getInternalHandleU32()) {
+				counters.c_totalVertsVBO += boundVBO->size();
+			}
 			counters.c_totalVerts += boundVBO->size();
+		}
+		if(boundGPUIBO) {
+			counters.c_totalTrisVBO += boundIBO->getNumTriangles();
 		}
 		counters.c_totalTris += boundIBO->getNumTriangles();
 	}
@@ -1611,10 +1622,10 @@ drawOnlyLightmap:
 		bRendererMirrorThisFrame = false;
 		g_sharedSDLAPI->endFrame();
 		if(rb_printFrameTriCounts.getInt()) {
-			g_core->Print("%i input tris / %i total tris\n",counters.c_inputTris,counters.c_totalTris);
+			g_core->Print("%i input tris / %i total tris (%i in IBOs)\n",counters.c_inputTris,counters.c_totalTris,counters.c_totalTrisVBO);
 		}
 		if(rb_printFrameVertCounts.getInt()) {
-			g_core->Print("%i input verts / %i total verts\n",counters.c_inputVerts,counters.c_totalVerts);
+			g_core->Print("%i input verts / %i total verts (%i in VBOs)\n",counters.c_inputVerts,counters.c_totalVerts,counters.c_totalVertsVBO);
 		}
 		counters.clear();
 	}	

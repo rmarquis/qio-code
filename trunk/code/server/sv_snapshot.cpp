@@ -370,7 +370,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			if(sv_bsp && sv_bsp->checkVisibility(eyeDesc,*visEnt->bspBoxDesc) == false) {
 				continue; // culled by .bsp PVS
 			}
-			if(sv_procVis && sv_procVis->InCurrentPVS(procVisHandle,visEnt->absBounds) == false) {
+			if(sv_procVis && sv_procVis->InCurrentPVS(procVisHandle,visEnt->bspBoxDesc->areas.getArray(),visEnt->bspBoxDesc->areas.size()) == false) {
 				continue; // culled by Doom3 .proc vis
 			}
 		}

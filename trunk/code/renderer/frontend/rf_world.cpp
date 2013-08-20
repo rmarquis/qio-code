@@ -227,6 +227,12 @@ bool RF_IsWorldAreaVisible(int areaNum) {
 	}
 	return true;
 }
+u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out) {
+	if(r_procTree) {
+		return r_procTree->boxAreas(absBB,out);
+	}
+	return 0;
+}
 bool RF_CullBoundsByPortals(const aabb &absBB) {
 	if(r_procTree) {
 		return r_procTree->cullBoundsByPortals(absBB);
@@ -240,6 +246,17 @@ bool RF_CullBoundsByPortals(const aabb &absBB) {
 	}
 	return false;
 }
+bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums) {
+	if(r_procTree) {
+		return r_procTree->cullBoundsByPortals(absBB,areaNums);
+	}
+	if(r_bspTree) {
+		// TODO: use "areaNums" here
+		return r_bspTree->cullBoundsByPortals(absBB);
+	}
+	return false;
+}
+
 void RF_WorldDebugDrawing() {
 	if(r_bspTree) {
 		r_bspTree->doDebugDrawing();

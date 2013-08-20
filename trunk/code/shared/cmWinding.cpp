@@ -137,6 +137,7 @@ planeSide_e cmWinding_c::clipWindingByPlane(const class plane_c &pl, float epsil
 		return SIDE_FRONT;
 	}
 	arraySTD_c<vec3_c> f;
+	f.reserve(points.size()*2);
 	for ( i = 0; i < points.size(); i++) {
 		vec3_c p1 = points[i];
 
@@ -175,11 +176,7 @@ planeSide_e cmWinding_c::clipWindingByPlane(const class plane_c &pl, float epsil
 
 		f.push_back(mid);
 	}
-	points.clear();
-	for(u32 i = 0; i < f.size(); i++) {
-		points.push_back(f[i]);
-	}
-	f.clear();
+	points = f;
 	return SIDE_CROSS;
 }
 void cmWinding_c::getBounds(aabb &out) const {

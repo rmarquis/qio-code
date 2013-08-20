@@ -69,3 +69,35 @@ enum planeSide_e plane_c::onSide(const class vec3_c &center, float radius) const
 		return SIDE_BACK;
 	return SIDE_FRONT;
 }
+
+planeSide_e cachedPlane_c::onSide(const aabb &bb) const {
+	// fast axial cases
+	if (type < 3) {
+		if (-dist <= bb.mins[type])
+			return SIDE_FRONT;
+		if (-dist >= bb.maxs[type])
+			return SIDE_BACK;
+		return SIDE_CROSS;
+	}
+
+	// general case
+	float dists[2];
+	dists[0] = dists[1] = 0;
+	if (signBits < 8) {
+		for (u32 i = 0; i < 3; i++) {
+			int b = (signBits >> i) & 1;
+			dists[ b] += norm[i]*bb.maxs[i];
+			dists[!b] += norm[i]*bb.mins[i];
+		}
+	}
+
+	bool front = (dists[0] >= -dist);
+	bool back = (dists[1] < -dist);
+	if(front && back)
+		return SIDE_CROSS;
+	if(front)
+		return SIDE_FRONT;
+	return SIDE_BACK;
+}
+
+

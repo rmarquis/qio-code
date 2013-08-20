@@ -1296,6 +1296,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\lightFlags.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\puff.h"
 				>
 			</File>

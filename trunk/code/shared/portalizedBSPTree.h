@@ -68,7 +68,7 @@ friend class portalizedBSPTree_c;
 };
 class pbspNode_c {
 friend class portalizedBSPTree_c;
-	plane_c plane;
+	cachedPlane_c plane;
 	// positive child numbers are nodes
 	// a child number of 0 is an opaque, solid area
 	// negative child numbers are areas: (-1-child)
@@ -113,6 +113,8 @@ class portalizedBSPTree_c : public portalizedWorldAPI_i {
 public:
 	bool load(const char *fname);
 	bool loadProcFile(const char *fname);
+
+	void boxAreaNums(const aabb &bb, arraySTD_c<int> &out) const;
 
 	virtual u32 getNumAreas() const {
 		return areas.size();

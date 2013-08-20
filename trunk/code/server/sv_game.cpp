@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/gameAPI.h>
+#include <shared/portalizedBSPTree.h>
 
 static moduleAPI_i *sv_gameDLL = 0;
 gameAPI_s *g_game = 0;
@@ -113,6 +114,8 @@ void SV_LinkEntity(edict_s *ed) {
 	}
 	if(sv_bsp) {
 		sv_bsp->filterBB(ed->absBounds,*ed->bspBoxDesc);
+	} else if(sv_procTree) {
+		sv_procTree->boxAreaNums(ed->absBounds,ed->bspBoxDesc->areas);
 	}
 }
 void SV_UnlinkEntity(edict_s *ed) {

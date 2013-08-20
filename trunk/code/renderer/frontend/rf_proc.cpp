@@ -36,6 +36,7 @@ static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
 static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
 static aCvar_c rf_proc_ignorePortals("rf_proc_ignorePortals","0");
 static aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
+static aCvar_c rf_proc_ignoreCullBounds("rf_proc_ignoreCullBounds","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -109,6 +110,7 @@ bool procTree_c::parseNodes(class parser_c &p, const char *fname) {
 		}
 		p.getFloatMat(n->plane.norm,3);
 		n->plane.dist = p.getFloat();
+		n->plane.setSignBitsAndType();
 		if(p.atWord(")")==false) {
 			g_core->RedWarning("procTree_c::parseNodes: expected '(' after node's %i plane equation in file %s at line %i, found %s\n",
 				i,fname,p.getCurrentLineNumber(),p.getToken());
@@ -403,6 +405,8 @@ void procTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) {
 }
 u32 procTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) {
 	checkCount++;
+	// preallocate memory (areas.size() should be always enough)
+	out.reserve(areas.size());
 	if(nodes.size() == 0) {
 		out.push_back(0);
 		return 1;
@@ -412,6 +416,8 @@ u32 procTree_c::boxAreas(const aabb &bb, arraySTD_c<u32> &out) {
 }
 u32 procTree_c::boxAreaSurfaces(const aabb &bb, arraySTD_c<const r_surface_c*> &out) {
 	arraySTD_c<u32> areaNums;
+	// preallocate memory
+	out.reserve(areas.size()*4);
 	boxAreas(bb,areaNums);
 	for(u32 i = 0; i < areaNums.size(); i++) {
 		procArea_c *area = areas[areaNums[i]];
@@ -575,9 +581,7 @@ int procTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
 	return 0; // TODO: return valid decal handle?
 }
-bool procTree_c::cullBoundsByPortals(const aabb &absBB) {
-	arraySTD_c<u32> areaNums;
-	boxAreas(absBB,areaNums);
+bool procTree_c::cullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums) {
 	for(u32 i = 0; i < areaNums.size(); i++) {
 		u32 areaNum = areaNums[i];
 		if(areaNum == camArea) {
@@ -609,6 +613,13 @@ bool procTree_c::cullBoundsByPortals(const aabb &absBB) {
 	}
 	// entity is not visible by player (culled by portals)
 	return true;
+}
+bool procTree_c::cullBoundsByPortals(const aabb &absBB) {
+	if(rf_proc_ignoreCullBounds.getInt())
+		return false; // didnt cull
+	arraySTD_c<u32> areaNums;
+	boxAreas(absBB,areaNums);
+	return cullBoundsByPortals(absBB,areaNums);
 }
 #include "rf_lights.h"
 void procTree_c::addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l) {

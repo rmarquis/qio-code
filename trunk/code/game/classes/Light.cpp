@@ -46,6 +46,13 @@ void Light::setKeyValue(const char *key, const char *value) {
 		vec3_c sizes(value);
 		// FIXME: 
 		this->setRadius((sizes.x+sizes.y+sizes.z)/3.f);
+	} else if(!stricmp(key,"noshadows")) {
+		int bNoShadows = atoi(value);
+		if(bNoShadows) {
+			this->myEdict->s->lightFlags |= LF_NOSHADOWS;
+		} else {
+			this->myEdict->s->lightFlags &= ~LF_NOSHADOWS;
+		}
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

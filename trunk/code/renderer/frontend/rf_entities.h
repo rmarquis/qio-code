@@ -70,6 +70,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// lightgrid lighting sample at entity abs bounds center
 	pointLightSample_s centerLightSample;
 	bool bCenterLightSampleValid;
+	// areas touching entity absBounds
+	arraySTD_c<u32> touchingAreas;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -127,6 +129,9 @@ public:
 
 	u32 getSilChangeCount() const {
 		return absSilChangeCount;
+	}
+	const arraySTD_c<u32> &getTouchingAreas() const {
+		return touchingAreas;
 	}
 
 	virtual rModelAPI_i *getModel() const;

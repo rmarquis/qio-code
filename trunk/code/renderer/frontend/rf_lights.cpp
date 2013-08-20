@@ -91,6 +91,14 @@ void rLightImpl_c::setRadius(float newRadius) {
 	recalcShadowMappingMatrices();
 	recalcLightInteractions();
 }
+void rLightImpl_c::setBNoShadows(bool newBNoShadows) {
+	if(this->bNoShadows == newBNoShadows) {
+		return; // no change
+	}
+	this->bNoShadows = newBNoShadows;
+	recalcShadowMappingMatrices();
+	recalcLightInteractions();
+}
 occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
 	if(oq) {
 		return oq;
@@ -182,6 +190,11 @@ void rLightImpl_c::refreshIntersection(entityInteraction_s &in) {
 	in.lastSilChangeTime = in.ent->getSilChangeCount();
 }
 void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
+	if(this == 0) {
+		// sanity check, this should never happen
+		g_core->RedWarning("rLightImpl_c::removeEntityFromInteractionsList: 'this' is NULL\n");
+		return;
+	}
 	u32 from = 0;
 	u32 to = 0;
 	while(from < numCurrentEntityInteractions) {
@@ -191,6 +204,7 @@ void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
 		} else {
 			if(from != to) {
 				this->entityInteractions[to] = this->entityInteractions[from];
+				this->entityInteractions[from].shadowVolume = 0;
 			}
 			to++;
 		}
@@ -309,19 +323,17 @@ void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in)
 	} else if(in.type == SIT_STATIC) {
 		in.sf->addDrawCall();
 	} else if(in.type == SIT_PROC) {
-		// this check causes some troubles now
-		//if(RF_IsWorldAreaVisible(in.areaNum))
-		{
-			if(rf_proc_printLitSurfsCull.getInt()) {
+		// this check used to cause some problems...
+		if(RF_IsWorldAreaVisible(in.areaNum)) {
+			if(rf_proc_printLitSurfsCull.getInt()==2) {
 				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
 			}
 			in.sf->addDrawCall();
-		} 
-	///else {
-	///		if(rf_proc_printLitSurfsCull.getInt()) {
-	///			g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
-	///		}
-	///	}
+		} else {
+			if(rf_proc_printLitSurfsCull.getInt()) {
+				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: skipping surf %i because area %i was NOT visible\n",in.sf,in.areaNum);
+			}
+		}
 	}
 }
 void rLightImpl_c::addLightInteractionDrawCalls() {
@@ -516,10 +528,15 @@ void RFL_AddLightInteractionsDrawCalls() {
 		// TODO: dont do this every frame
 		light->recalcLightInteractionsWithDynamicEntities();
 
-		if(RF_IsUsingShadowVolumes()) {
-			light->addLightShadowVolumesDrawCalls();
-		} else if(RF_IsUsingShadowMapping()) {
-			light->addShadowMapRenderingDrawCalls();
+		// FIXME: right now it's causing strange shadows flickering
+	//	if(light->getBNoShadows() == false) 
+		{
+			// add shadow drawcalls (but only if shadow casting is enabled for this light)
+			if(RF_IsUsingShadowVolumes()) {
+				light->addLightShadowVolumesDrawCalls();
+			} else if(RF_IsUsingShadowMapping()) {
+				light->addShadowMapRenderingDrawCalls();
+			}
 		}
 
 		if(rf_redrawEntireSceneForEachLight.getInt()) {

@@ -1110,6 +1110,9 @@ typedef struct {
 
 #include "../math/vec3.h" // needed by entityState_s and playerState_s
 
+// flags for light objects - LF_NOSHADOWS, etc
+#include "../shared/lightFlags.h"
+
 // compressed bone orientation
 struct netBoneOr_s {
 	vec3_c xyz;
@@ -1148,6 +1151,7 @@ struct entityState_s {
 
 	int animIndex;
 
+	int lightFlags;
 	float lightRadius; // only for ET_LIGHT 
 
 	// trail emitter data for all entity types (including BaseEntity)

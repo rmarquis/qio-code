@@ -115,6 +115,13 @@ u32 portalizedBSPTree_c::boxAreaNums(const aabb &bb, int *areaNums, int maxAreaN
 	boxAreaNums_r(0);
 	return boxArea.curAreaNums;
 }
+void portalizedBSPTree_c::boxAreaNums(const aabb &bb, arraySTD_c<int> &out) const
+{
+	static int buffer[128];
+	u32 i = boxAreaNums(bb,buffer,sizeof(buffer)/sizeof(buffer[0]));
+	out.resize(i);
+	memcpy(out.getArray(),buffer,out.getSizeInBytes());
+}
 void portalizedBSPTree_c::addPortalToArea(pbspPortal_c *portal, int areaNum) {
 	if(areas.size() <= areaNum) {
 		areas.resize(areaNum+1);
@@ -153,6 +160,7 @@ bool portalizedBSPTree_c::parseNodes(class parser_c &p, const char *fname) {
 		}
 		p.getFloatMat(n->plane.norm,3);
 		n->plane.dist = p.getFloat();
+		n->plane.setSignBitsAndType();
 		if(p.atWord(")")==false) {
 			g_core->RedWarning("procTree_c::parseNodes: expected '(' after node's %i plane equation in file %s at line %i, found %s\n",
 				i,fname,p.getCurrentLineNumber(),p.getToken());

@@ -164,4 +164,40 @@ public:
 	}
 };
 
+// extended plane class with same extra information (signbits and planeType) 
+// used to speed up box/plane tests.
+// Needed to optimize proc tree boxAreas call (both serverside and clientside)
+// clientside .proc code is in rf_proc.cpp
+// serverside .proc code is in portalizedBSPTree.cpp
+class cachedPlane_c {
+public:
+	vec3_c norm;
+	float dist;
+	u16 signBits;
+	u16 type;
+
+	void setSignBitsAndType() {
+		// for fast box on planeside test
+		signBits = 0;
+		for (u32 i = 0; i < 3; i++) {
+			if(norm[i] < 0) {
+				signBits |= 1 << i;
+			}
+		}
+		// set plane type
+		for(u32 i = 0; i < 3; i++) {
+			if(abs(norm[i]) == 1.f) {
+				type = i;
+				return;
+			}
+		}
+		type = 3; // non axial
+	}
+	float distance(const vec3_c &point) const {
+		float d = norm.dotProduct(point) + dist;
+		return d;
+	}
+	planeSide_e onSide(const aabb &bb) const;
+};
+
 #endif // __MATH_PLANE_H__

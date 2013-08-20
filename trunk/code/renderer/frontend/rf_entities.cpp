@@ -124,6 +124,7 @@ void rEntityImpl_c::recalcABSBounds() {
 		absBB.clear();
 		return;
 	}
+	// update abs bounds
 	if(myRagdollDef) {
 		this->absBB.fromHalfSize(999999.f); // TODO
 	} else if(instance) {
@@ -133,8 +134,12 @@ void rEntityImpl_c::recalcABSBounds() {
 		const aabb &bb = model->getBounds();
 		matrix.transformAABB(bb,this->absBB);
 	}
+	// update grid lighting (for Q3 bsps)
 	this->bCenterLightSampleValid = (RF_SampleWorldLightGrid(this->absBB.getCenter(),this->centerLightSample)==false);
+	// increase shape change counter
 	absSilChangeCount++;
+	// get areas touching abs bounds (for portal culling)
+	RF_BoxAreas(absBB,touchingAreas);
 }
 void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles
@@ -651,7 +656,7 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
 				c_entitiesCulledByABSBounds++;
 				return;
 			}
-			if(RF_CullBoundsByPortals(ent->getBoundsABS())) {
+			if(RF_CullBoundsByPortals(ent->getBoundsABS(),ent->getTouchingAreas())) {
 				c_entitiesCulledByPortals++;		
 				return;
 			}

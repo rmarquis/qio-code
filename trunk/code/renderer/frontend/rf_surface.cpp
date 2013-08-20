@@ -1263,8 +1263,7 @@ void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 	// TODO: handle models with non-identity orientations
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
-		//if(sf->getBB().intersect(light->getABSBounds())) 
-		{
+		if(sf->getBB().intersect(light->getABSBounds())) {
 			if(sf->getMat()->hasBlendFunc())
 				continue;
 			light->addStaticModelSurfaceInteraction(/*this,*/sf);

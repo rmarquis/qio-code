@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,28 +21,17 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rLightAPI.h - renderer light class interface
-#ifndef __RLIGHTAPI_H__
-#define __RLIGHTAPI_H__
+// shared/lightFlags.h - flags for light entities
 
-class rLightAPI_i {
-public:
-	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
-	virtual void setRadius(float newRadius) = 0;
-	virtual void setBNoShadows(bool newBNoShadows) = 0;
+#ifndef __SHARED_LIGHTFLAGS_H__
+#define __SHARED_LIGHTFLAGS_H__
 
-	virtual const vec3_c &getOrigin() const = 0;
-	virtual float getRadius() const = 0;
+// light flags
+enum {
+	// set by "noshadows" keyword in .map keyvalues
+	LF_NOSHADOWS = 1,
 
-	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
-	virtual bool getBCameraInside() const = 0;
-
-	virtual const class matrix_c &getSMLightProj() const = 0;
-	virtual const class matrix_c &getSMSideView(u32 sideNum) const = 0;
-	virtual const class frustum_c &getSMSideFrustum(u32 sideNum) const = 0;
-	
-	virtual void calcPosInEntitySpace(const class rEntityAPI_i *ent, class vec3_c &out) const = 0;
+	LIGHTFLAGS_BITS = 1,
 };
 
-#endif // __RLIGHTAPI_H__
-
+#endif // __SHARED_LIGHTFLAGS_H__

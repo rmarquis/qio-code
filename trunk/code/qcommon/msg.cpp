@@ -867,6 +867,7 @@ netField_t	entityStateFields[] =
 { NETF(parentTagNum), TAGNUM_BITS },
 { NETF(animIndex), ANIMNUM_BITS },
 { NETF(lightRadius), 0 },
+{ NETF(lightFlags), LIGHTFLAGS_BITS },
 { NETF(activeRagdollDefNameIndex), RAGDOLLDEFNUM_BITS },
 { NETF(parentOffset[0]), 0 },
 { NETF(parentOffset[1]), 0 },

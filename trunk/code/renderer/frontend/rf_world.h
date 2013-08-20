@@ -36,7 +36,10 @@ void RF_DrawSingleBSPSurface(u32 sfNum);
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 bool RF_IsWorldTypeProc();
 bool RF_IsWorldAreaVisible(int areaNum);
+u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out);
 bool RF_CullBoundsByPortals(const aabb &absBB);
+// it will work faster if you have touching areas precached
+bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums);
 void RF_WorldDebugDrawing();
 const class lightGridAPI_i *RF_GetWorldLightGridAPI();
 bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out);
