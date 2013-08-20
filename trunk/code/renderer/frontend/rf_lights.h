@@ -60,12 +60,12 @@ struct staticSurfInteraction_s {
 		bspSurfaceNumber = 0;
 	}
 	bool isNeededForLighting() const {
-		if(type == SIFT_ONLY_SHADOW)
+		if(filter == SIFT_ONLY_SHADOW)
 			return false;
 		return true;
 	}
 	bool isNeededForShadows() const {
-		if(type == SIFT_ONLY_LIGHTING)
+		if(filter == SIFT_ONLY_LIGHTING)
 			return false;
 		return true;
 	}
