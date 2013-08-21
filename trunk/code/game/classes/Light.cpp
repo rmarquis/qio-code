@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(Light, "BaseEntity");
 DEFINE_CLASS_ALIAS(Light, light_dynamic);
+// "HumanHead" light for Prey
+DEFINE_CLASS_ALIAS(Light, hhLight);
 
 Light::Light() {
 	this->myEdict->s->eType = ET_LIGHT;
