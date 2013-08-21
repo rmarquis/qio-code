@@ -1270,6 +1270,16 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
           filename[nLen-2] = 'p';
           filename[nLen-1] = 'g';
 				  LoadImage(filename, &pPixels, &nWidth, &nHeight);
+			if (pPixels == NULL)
+			{
+			  // try PNG
+			  // blatant assumption of .tga should be fine since we sprintf'd it above
+			  int nLen = strlen(filename);
+			  filename[nLen-3] = 'p';
+			  filename[nLen-2] = 'n';
+			  filename[nLen-1] = 'g';
+					  LoadImage(filename, &pPixels, &nWidth, &nHeight);
+			}
         }
 				if (pPixels)
 				{

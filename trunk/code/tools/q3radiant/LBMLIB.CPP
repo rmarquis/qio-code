@@ -1286,6 +1286,90 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
   free(fbuffer);
 }
 
+// DevIL library for png / dds
+#define USE_DEVIL_LIBRARY
+#ifdef USE_DEVIL_LIBRARY
+
+#include <IL/il.h>
+
+bool b_devilReady = false;
+void IMG_InitDevil() {
+	if(b_devilReady)
+		return;
+	//initialize devIL
+	ilInit();
+	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+	ilEnable(IL_ORIGIN_SET);
+	ilEnable(IL_TYPE_SET);
+	ilTypeFunc(IL_UNSIGNED_BYTE);
+
+	b_devilReady = true;
+}
+
+void LoadBuff_IL(unsigned char *fbuffer, int len, unsigned char **pic, int *width, int *height, int type) 
+{
+	// ensure that image loading library is ready
+	IMG_InitDevil();
+
+	// load texture
+	ILuint ilTexture;
+    ilGenImages(1, &ilTexture);
+    ilBindImage(ilTexture);
+
+	ILboolean done = 0;
+	done = ilLoadL(type,fbuffer,len);
+	if(!done) {
+		ilBindImage(0);
+		ilDeleteImages(1, &ilTexture);
+		*pic = 0;
+		*width = 0;
+		*height = 0;
+		return;
+	}
+	*width = ilGetInteger(IL_IMAGE_WIDTH);
+	*height = ilGetInteger(IL_IMAGE_HEIGHT);
+	int d = ilGetInteger(IL_IMAGE_BPP);
+	if(d!=4) {
+		d = 4;
+		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	}
+	*pic = (unsigned char*)malloc((*width) * (*height) * (d));
+	memcpy(*pic, ilGetData(), (*width) * (*height) * (d));
+    ilBindImage(0);
+    ilDeleteImages(1, &ilTexture);
+}
+void LoadImagePNG(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_PNG);
+	free(fbuffer);
+}
+
+void LoadImageDDS(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_DDS);
+	free(fbuffer);
+}
+#endif
 //===================================================================
 
 /*
@@ -1305,25 +1389,35 @@ void LoadImage( const char *name, byte **pic, int *width, int *height )
 
 	len = strlen(name);
 	if (len<5) 
-  {
+	{
 		return;
 	}
 
 	if ( !stricmp( name+len-4, ".tga" ) ) 
-  {
-	  LoadTGA( name, pic, width, height );
+	{
+		LoadTGA( name, pic, width, height );
 	}
-  else if ( !stricmp(name+len-4, ".pcx") ) 
-  {
-    LoadPCX32( name, pic, width, height );
+	else if ( !stricmp(name+len-4, ".pcx") ) 
+	{
+		LoadPCX32( name, pic, width, height );
 	} 
-  else if ( !stricmp( name+len-4, ".bmp" ) ) 
-  {
+	else if ( !stricmp( name+len-4, ".bmp" ) ) 
+	{
 		LoadBMP( name, pic, width, height );
 	} 
-  else if ( !stricmp( name+len-4, ".jpg" ) ) 
-  {
+	else if ( !stricmp( name+len-4, ".jpg" ) ) 
+	{
 		LoadJPG( name, pic, width, height ); 
 	}
+#ifdef USE_DEVIL_LIBRARY
+	else if ( !stricmp( name+len-4, ".png" ) ) 
+	{
+		LoadImagePNG( name, pic, width, height ); 
+	}
+	else if ( !stricmp( name+len-4, ".dds" ) ) 
+	{
+		LoadImageDDS( name, pic, width, height ); 
+	}
+#endif
 }
 
