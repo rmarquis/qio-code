@@ -28,11 +28,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class FuncRotating : public ModelEntity {
+	int rotationAxis;
 public:
 	FuncRotating();
 
 	DECLARE_CLASS( FuncRotating );
 
+	virtual void setKeyValue(const char *key, const char *value);
 	virtual void runFrame();
 };
 

@@ -33,13 +33,28 @@ FuncRotating::FuncRotating() {
 	bRigidBodyPhysicsEnabled = false;
 	// HACK for q3dm0 rotating skeleton models!
 	pvsBoundsSkinWidth = 32.f;
+	// default rotation axis
+	rotationAxis = 1; // rotate around Z axis - yaw 
+}
+
+void FuncRotating::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"y_axis")) {
+		// "y_axis" "1" is used on Prey's maps/game/shuttlea.map
+		int bYAxis = atoi(value);
+		if(bYAxis) {
+			rotationAxis = 0; // rotate around Y
+		}
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
 }
 void FuncRotating::runFrame() {
 	float rotateSpeed = 10;
 	float delta = rotateSpeed * level.frameTime;
 	vec3_c a = this->getAngles();
-	// by default, rotate around Z axis
-	a.y += delta;
+	// rotationAxis == 1 -> rotate around Z axis
+	// rotationAxis == 0 -> rotate around Y axis
+	a[rotationAxis] += delta;
 	this->setAngles(a);
 }
 
