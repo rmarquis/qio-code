@@ -44,6 +44,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
+DEFINE_CLASS_ALIAS(ModelEntity, func_moveable);
 
 ModelEntity::ModelEntity() {
 	body = 0;

@@ -212,5 +212,35 @@ class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName) {
 	}
 	return 0;
 }
+void G_HideEntitiesWithTargetName(const char *targetName) {
+	if(targetName == 0 || targetName[0] == 0) {
+		return;
+	}
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		const char *beTargetName = be->getTargetName();
+		if(!stricmp(beTargetName,targetName)) {
+			be->hideEntity();
+		}
+	}
+}
+void G_ShowEntitiesWithTargetName(const char *targetName) {
+	if(targetName == 0 || targetName[0] == 0) {
+		return;
+	}
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		const char *beTargetName = be->getTargetName();
+		if(!stricmp(beTargetName,targetName)) {
+			be->showEntity();
+		}
+	}
+}
 
 //==============================================================================

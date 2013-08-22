@@ -878,6 +878,7 @@ netField_t	entityStateFields[] =
 { NETF(trailEmitterMaterial), MATERIALNUM_BITS, },
 { NETF(trailEmitterSpriteRadius), 0 },
 { NETF(trailEmitterInterval), 0 },
+{ NETF(eFlags), EF_NUM_FLAG_BITS },
 { NETF(boneOrs[0].xyz.x), 0 },
 { NETF(boneOrs[0].xyz.y), 0 },
 { NETF(boneOrs[0].xyz.z), 0 },

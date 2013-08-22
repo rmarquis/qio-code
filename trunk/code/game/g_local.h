@@ -70,6 +70,8 @@ qboolean G_EntitiesFree( void );
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
 class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
 class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
+void G_HideEntitiesWithTargetName(const char *targetName);
+void G_ShowEntitiesWithTargetName(const char *targetName);
 
 //
 // g_client.c

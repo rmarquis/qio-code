@@ -100,6 +100,7 @@ void btpConstraintBall_c::destroyConstraint() {
 	}
 	this->world->getBTDynamicsWorld()->removeConstraint(this->bulletConstraint);
 	delete this->bulletConstraint;
+	this->bulletConstraint = 0;
 	this->removeConstraintReferences();
 }
 

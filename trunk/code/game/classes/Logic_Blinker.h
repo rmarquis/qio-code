@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,17 +21,26 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// FuncStatic.cpp
-#include "FuncStatic.h"
+// Logic_Blinker.h
 
-DEFINE_CLASS(FuncStatic, "ModelEntity");
-DEFINE_CLASS_ALIAS(FuncStatic, func_static);
-//DEFINE_CLASS_ALIAS(FuncStatic, func_group);
-DEFINE_CLASS_ALIAS(FuncStatic, func_mover);
+#ifndef __LOGIC_BLINKER_H__
+#define __LOGIC_BLINKER_H__
 
-// func_static entities are inmovable
-FuncStatic::FuncStatic() {
-	//bPhysicsBodyKinematic = true;
-	mass = 0.f;
-}
+#include "BaseEntity.h"
 
+class Logic_Blinker : public BaseEntity {
+	bool bBlinkerState;
+	u32 wait_enabled;
+	u32 wait_disabled;
+	int lastSwitchTime;
+public:
+	Logic_Blinker();
+
+	DECLARE_CLASS( Logic_Blinker );
+
+	virtual void runFrame();
+
+	virtual void setKeyValue(const char *key, const char *value); 
+};
+
+#endif // __CONSTRAINT_H__

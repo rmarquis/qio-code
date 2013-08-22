@@ -213,6 +213,12 @@ u32 BaseEntity::processPendingEvents() {
 	u32 c_executed = eventList->executeEvents(level.time,this);
 	return c_executed;
 }
+void BaseEntity::hideEntity() {
+	_myEntityState->hideEntity();
+}
+void BaseEntity::showEntity() {
+	_myEntityState->showEntity();
+}
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {
 	if(parent) {
 		detachFromParent();

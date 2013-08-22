@@ -351,6 +351,11 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			ent->s->number = e;
 		}
 
+		// never send entities that aren't visible
+		if(ent->s->isHidden()) {
+			continue;
+		}
+
 		edict_s *visEnt = ent;
 		while(visEnt->s->parentNum != ENTITYNUM_NONE) {
 			visEnt = SV_GentityNum(visEnt->s->parentNum);

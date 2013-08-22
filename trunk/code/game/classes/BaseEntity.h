@@ -148,6 +148,11 @@ public:
 
 	u32 processPendingEvents();
 
+	// hides entity from clients (entity will not be send to clients)
+	void hideEntity();
+	// shows hidden entity (entity will be send to clients again)
+	void showEntity();
+
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();

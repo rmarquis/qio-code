@@ -1110,6 +1110,12 @@ typedef struct {
 
 #include "../math/vec3.h" // needed by entityState_s and playerState_s
 
+// entity flags
+enum entityFlags_e {
+	EF_HIDDEN = 1,
+	EF_NUM_FLAG_BITS = 1
+};
+
 // flags for light objects - LF_NOSHADOWS, etc
 #include "../shared/lightFlags.h"
 
@@ -1130,6 +1136,7 @@ struct netBoneOr_s {
 struct entityState_s {
 	int		number;			// entity index
 	int		eType;			// entityType_t
+	int		eFlags;			// entityFlags_e
 
 	class vec3_c	origin;
 	class vec3_c	angles;
@@ -1178,6 +1185,7 @@ struct entityState_s {
 		animIndex = 0;
 		activeRagdollDefNameIndex = 0;
 		rSkinIndex = 0;
+		eFlags = 0;
 	}
 	entityState_s() {
 		setDefaults();
@@ -1188,6 +1196,15 @@ struct entityState_s {
 		if(trailEmitterSpriteRadius <= 0)
 			return false;
 		return true;
+	}
+	inline bool isHidden() const {
+		return (eFlags & EF_HIDDEN);
+	}
+	inline void hideEntity() {
+		eFlags |= EF_HIDDEN;
+	}
+	inline void showEntity() {
+		eFlags &= ~EF_HIDDEN;
 	}
 };
 
