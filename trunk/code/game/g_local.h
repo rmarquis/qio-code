@@ -72,6 +72,7 @@ class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
 class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
 void G_HideEntitiesWithTargetName(const char *targetName);
 void G_ShowEntitiesWithTargetName(const char *targetName);
+void G_PostEvent(const char *targetName, int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
 
 //
 // g_client.c

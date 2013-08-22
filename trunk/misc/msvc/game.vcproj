@@ -503,6 +503,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Button.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Button.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Constraint.cpp"
 				>
 			</File>

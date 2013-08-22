@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,25 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Light.h - dynamic light entity
+// Button.h - q3 func_button
+#ifndef __FUNC_BUTTON_H__
+#define __FUNC_BUTTON_H__
 
-#ifndef __LIGHT_H__
-#define __LIGHT_H__
+#include "ModelEntity.h"
 
-#include "BaseEntity.h"
-
-class Light : public BaseEntity {
-	float radius;
-public:
-	Light();
-
-	DECLARE_CLASS( Light );
-
-	void setRadius(float newRadius);
-
-	virtual void setKeyValue(const char *key, const char *value); 
-	virtual void getLocalBounds(aabb &out) const;
-	virtual void processEvent(class eventBaseAPI_i *ev);
+enum moverState_e {
+	MOVER_POS1,
+	MOVER_POS2,
+	MOVER_1TO2,
+	MOVER_2TO1,
 };
 
-#endif // __LIGHT_H__
+class Button : public ModelEntity {
+	float lip;
+	moverState_e state;
+	vec3_c moverAngles;
+	vec3_c pos1, pos2;
+	vec3_c moveDir;
+	float speed;
+public:
+	Button();
+
+	DECLARE_CLASS( Button );
+
+	virtual void setKeyValue(const char *key, const char *value);
+	virtual void postSpawn();
+	virtual bool doUse(class Player *activator);
+	virtual void runFrame();
+
+	void onMoverReachPos1();
+	void onMoverReachPos2();
+};
+
+#endif // __FUNC_BUTTON_H__
+

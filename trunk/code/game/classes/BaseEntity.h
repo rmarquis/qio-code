@@ -48,9 +48,9 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	// LUA event callbacks
 	luaEventHandlerList_c lua_runFrameHandlers;
 
+protected:
 	// called through eventReceiverBaseAPI_i
 	virtual void processEvent(class eventBaseAPI_i *ev);
-protected:
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
 public:
@@ -152,6 +152,7 @@ public:
 	void hideEntity();
 	// shows hidden entity (entity will be send to clients again)
 	void showEntity();
+	void toggleEntityVisibility();
 
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);

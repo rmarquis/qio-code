@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Light.cpp
 #include "Light.h"
 #include "../g_local.h"
+#include <shared/eventBaseAPI.h>
 
 DEFINE_CLASS(Light, "BaseEntity");
 DEFINE_CLASS_ALIAS(Light, light_dynamic);
@@ -65,6 +66,15 @@ void Light::setKeyValue(const char *key, const char *value) {
 // is outside player PVS
 void Light::getLocalBounds(aabb &out) const {
 	out.fromHalfSize(radius);
+}
+void Light::processEvent(class eventBaseAPI_i *ev) {
+	if(!stricmp(ev->getEventName(),"onMoverReachPos1")
+		||
+		!stricmp(ev->getEventName(),"onMoverReachPos2")) {
+		toggleEntityVisibility();
+	} else {
+		BaseEntity::processEvent(ev);
+	}
 }
 
 

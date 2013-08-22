@@ -327,6 +327,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Physics constraint, used to connect two bodies together.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("func_button") == 0) {
+		EClass_CreateNewFromText("/*QUAKED func_button (0 0.5 0)\n"
+				"Button brush.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

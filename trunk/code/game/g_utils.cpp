@@ -242,5 +242,20 @@ void G_ShowEntitiesWithTargetName(const char *targetName) {
 		}
 	}
 }
+void G_PostEvent(const char *targetName, int execTime, const char *eventName, const char *arg0, const char *arg1, const char *arg2, const char *arg3) {
+	if(targetName == 0 || targetName[0] == 0) {
+		return;
+	}
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		const char *beTargetName = be->getTargetName();
+		if(!stricmp(beTargetName,targetName)) {
+			be->postEvent(execTime,eventName,arg0,arg1,arg2,arg3);
+		}
+	}
+}
 
 //==============================================================================

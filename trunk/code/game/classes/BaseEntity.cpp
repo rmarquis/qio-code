@@ -219,6 +219,13 @@ void BaseEntity::hideEntity() {
 void BaseEntity::showEntity() {
 	_myEntityState->showEntity();
 }
+void BaseEntity::toggleEntityVisibility() {
+	if(_myEntityState->isHidden()) {
+		_myEntityState->showEntity();
+	} else {
+		_myEntityState->hideEntity();
+	}
+}
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {
 	if(parent) {
 		detachFromParent();
