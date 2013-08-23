@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_headers.h"
 #include "btp_convert.h"
 #include "btp_world.h"
+#include "btp_constraint.h"
 #include <shared/physObjectDef.h>
 
 bulletRigidBody_c::bulletRigidBody_c() {
@@ -38,6 +39,10 @@ bulletRigidBody_c::bulletRigidBody_c() {
 bulletRigidBody_c::~bulletRigidBody_c() {
 	if(bulletRigidBody == 0)
 		return;
+	arraySTD_c<btpConstraintBase_c*> copy = constraints;
+	for(u32 i = 0; i < copy.size(); i++) {
+		copy[i]->destroyConstraint();
+	}
 	myWorld->getBTDynamicsWorld()->removeRigidBody(bulletRigidBody);
 	delete bulletRigidBody;
 	bulletRigidBody = 0;

@@ -40,10 +40,10 @@ void btpConstraintBase_c::removeConstraintReferences() {
 		//world->removeConstraintRef(this);
 	}
 	if(bodies[0]) {
-	//	bodies[0]->removeConstraintRef(this);
+		bodies[0]->removeConstraintRef(this);
 	}
 	if(bodies[1]) {
-	//	bodies[1]->removeConstraintRef(this);
+		bodies[1]->removeConstraintRef(this);
 	}
 }
 void btpConstraintBase_c::calcLocalOffsets(const vec3_c &pos, class bulletRigidBody_c *b0, class bulletRigidBody_c *b1, btTransform &frameA, btTransform &frameB) {
@@ -93,6 +93,11 @@ void btpConstraintBall_c::init(const vec3_c &pos, class bulletRigidBody_c *b0, c
 	this->bulletConstraint->setLimit(4,-1,0);
 	this->bulletConstraint->setLimit(5,-1,0);
 	worldPointer->getBTDynamicsWorld()->addConstraint(this->bulletConstraint);
+
+	// add constraint refs to bulletRigidBody_c's
+	b0->addConstraintRef(this);
+	if(b1)
+		b1->addConstraintRef(this);
 }
 void btpConstraintBall_c::destroyConstraint() {
 	if(bulletConstraint == 0) {
@@ -120,6 +125,11 @@ void btpConstraintHinge_c::init(const class vec3_c &pos, const class vec3_c &axi
 		this->bulletConstraintHinge = new btHingeConstraint(*b0->getBulletRigidBody(),frameA,false);
 	}
 	worldPointer->getBTDynamicsWorld()->addConstraint(this->bulletConstraintHinge);
+
+	// add constraint refs to bulletRigidBody_c's
+	b0->addConstraintRef(this);
+	if(b1)
+		b1->addConstraintRef(this);
 }
 void btpConstraintHinge_c::destroyConstraint() {
 	if(bulletConstraintHinge == 0) {
@@ -127,6 +137,7 @@ void btpConstraintHinge_c::destroyConstraint() {
 	}
 	this->world->getBTDynamicsWorld()->removeConstraint(this->bulletConstraintHinge);
 	delete this->bulletConstraintHinge;
+	this->bulletConstraintHinge = 0;
 	this->removeConstraintReferences();
 }
 

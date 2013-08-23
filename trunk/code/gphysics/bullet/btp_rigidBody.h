@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <api/physAPI.h> 
 #include <api/physObjectAPI.h> 
+#include <shared/array.h>
 
 
 class bulletRigidBody_c : public physObjectAPI_i {
@@ -34,7 +35,7 @@ class bulletRigidBody_c : public physObjectAPI_i {
 	class bulletColShape_c *shape;
 	class btRigidBody *bulletRigidBody;
 	class BaseEntity *myEntity;
-	//arraySTD_c<btpConstraintBase_c*> constraints;
+	arraySTD_c<class btpConstraintBase_c*> constraints;
 public:
 	bulletRigidBody_c();
 	~bulletRigidBody_c();
@@ -61,6 +62,12 @@ public:
 	// water physics
 	virtual void runWaterPhysics(float curWaterLevel);
 
+	void addConstraintRef(btpConstraintBase_c *c) {
+		constraints.push_back(c);
+	}
+	void removeConstraintRef(btpConstraintBase_c *c) {
+		constraints.remove(c);
+	}
 	class btRigidBody *getBulletRigidBody() {
 		return bulletRigidBody;
 	}
