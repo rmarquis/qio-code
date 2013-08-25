@@ -47,6 +47,9 @@ class rIndexedShadowVolume_c {
 		return points.registerVec3(p);
 	}
 public:
+	rIndexedShadowVolume_c();
+	~rIndexedShadowVolume_c();
+
 	const rIndexBuffer_c &getIndices() const {
 		return indices;
 	}

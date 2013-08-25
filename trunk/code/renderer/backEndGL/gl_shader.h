@@ -45,6 +45,9 @@ struct glslPermutationFlags_s {
 	bool hasDeluxeMap; // #define HAS_DELUXEMAP
 	// extra per-surface material colo
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
+	// lighting debug tools
+	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
+	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));

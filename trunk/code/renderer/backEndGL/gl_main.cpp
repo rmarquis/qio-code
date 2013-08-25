@@ -86,6 +86,10 @@ static aCvar_c rb_ignoreLightmaps("rb_ignoreLightmaps","0");
 static aCvar_c rb_printFrameTriCounts("rb_printFrameTriCounts","0");
 static aCvar_c rb_printFrameVertCounts("rb_printFrameVertCounts","0");
 static aCvar_c rb_ignoreDrawCalls3D("rb_ignoreDrawCalls3D","0");
+// enables DEBUG_IGNOREANGLEFACTOR macro for all shaders
+static aCvar_c rb_dynamicLighting_ignoreAngleFactor("rb_dynamicLighting_ignoreAngleFactor","0");
+// enables DEBUG_IGNOREDISTANCEFACTOR macro for all shaders
+static aCvar_c rb_dynamicLighting_ignoreDistanceFactor("rb_dynamicLighting_ignoreDistanceFactor","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -149,15 +153,19 @@ public:
 };
 struct texState_s {
 	bool enabledTexture2D;
-	bool texCoordArrayEnabled;
 	u32 index;
 	matrixExt_c mat;
 
 	texState_s() {
 		enabledTexture2D = false;
-		texCoordArrayEnabled = false;
 		index = 0;
 	}
+};
+struct texCoordSlotState_s {	
+	texCoordSlotState_s() {
+		texCoordArrayEnabled = false;
+	}
+	bool texCoordArrayEnabled;
 };
 #define CHECK_GL_ERRORS checkForGLErrorsInternal(__FUNCTION__,__LINE__);
 
@@ -184,10 +192,15 @@ struct rbCounters_s {
 };
 
 class rbSDLOpenGL_c : public rbAPI_i {
+	// gl limits
+	int maxActiveTextureSlots;
+	int maxActiveTextureCoords;
 	// gl state
 	texState_s texStates[MAX_TEXTURE_SLOTS];
+	texCoordSlotState_s texCoordStates[MAX_TEXTURE_SLOTS];
 	int curTexSlot;
 	int highestTCSlotUsed;
+	int curTexCoordsSlot;
 	// materials
 	//safePtr_c<mtrAPI_i> lastMat;
 	mtrAPI_i *lastMat;
@@ -248,6 +261,7 @@ public:
 		lastDeluxemap = 0;
 		bindVertexColors = 0;
 		curTexSlot = 0;
+		curTexCoordsSlot = 0;
 		highestTCSlotUsed = 0;
 		boundVBO = 0;
 		boundGPUIBO = 0;
@@ -343,9 +357,17 @@ public:
 		}
 		if(curTexSlot != slot) {
 			glActiveTexture(GL_TEXTURE0 + slot);
-			glClientActiveTexture(GL_TEXTURE0 + slot);
 			curTexSlot = slot;
 		}
+		CHECK_GL_ERRORS;
+	}
+	// this is used for texture coordinates
+	void selectTexCoordSlot(int slot) {
+		if(curTexCoordsSlot != slot) {
+			glClientActiveTexture(GL_TEXTURE0 + slot);
+			curTexCoordsSlot = slot;
+		}
+		CHECK_GL_ERRORS;
 	}
 	void bindTex(int slot, u32 tex) {
 		if(slot > MAX_TEXTURE_SLOTS) {
@@ -365,6 +387,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D,tex);
 			s->index = tex;
 		}
+		CHECK_GL_ERRORS;
 	}
 	void unbindTex(int slot) {
 		texState_s *s = &texStates[slot];
@@ -380,6 +403,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D,0);
 			s->index = 0;
 		}
+		CHECK_GL_ERRORS;
 	}
 	void disableAllTextures() {
 		texState_s *s = &texStates[0];
@@ -397,6 +421,7 @@ public:
 			}
 		}
 		highestTCSlotUsed = -1;
+		CHECK_GL_ERRORS;
 	}
 	//
 	// depthRange changes
@@ -502,28 +527,29 @@ public:
 				//setGLDepthMask(false);
 			}
 		}
+		CHECK_GL_ERRORS;
 	}
 	// tex coords arrays
-	void enableTexCoordArrayForCurrentTexSlot() {
-		texState_s *s = &texStates[curTexSlot];
+	void enableTexCoordArrayForCurrentTexCoordSlot() {
+		texCoordSlotState_s *s = &texCoordStates[curTexCoordsSlot];
 		if(s->texCoordArrayEnabled==true)
 			return;
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		s->texCoordArrayEnabled = true;
 	}
-	void disableTexCoordArrayForCurrentTexSlot() {
-		texState_s *s = &texStates[curTexSlot];
+	void disableTexCoordArrayForCurrentTexCoordSlot() {
+		texCoordSlotState_s *s = &texCoordStates[curTexCoordsSlot];
 		if(s->texCoordArrayEnabled==false)
 			return;
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		s->texCoordArrayEnabled = false;
 	}
 	void disableTexCoordArrayForTexSlot(u32 slotNum) {
-		texState_s *s = &texStates[slotNum];
+		texCoordSlotState_s *s = &texCoordStates[slotNum];
 		if(s->texCoordArrayEnabled==false)
 			return;
-		selectTex(slotNum);
-		disableTexCoordArrayForCurrentTexSlot();
+		selectTexCoordSlot(slotNum);
+		disableTexCoordArrayForCurrentTexCoordSlot();
 	}
 	// texture matrices
 	void turnOffTextureMatrices() {
@@ -577,6 +603,7 @@ public:
 		}
 		bDepthMask = bOn;
 		glDepthMask(bDepthMask);
+		CHECK_GL_ERRORS;
 	}
 	// GL_CULL
 	cullType_e prevCullType;
@@ -604,6 +631,7 @@ public:
 				}
 			}
 		}
+		CHECK_GL_ERRORS;
 	}
 	// GL_STENCIL_TEST
 	bool stencilTestEnabled;
@@ -767,15 +795,15 @@ public:
 		if(h == 0) {
 			// buffer wasnt uploaded to GPU
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts->getArray());
-			selectTex(0);
-			enableTexCoordArrayForCurrentTexSlot();
+			selectTexCoordSlot(0);
+			enableTexCoordArrayForCurrentTexCoordSlot();
 			if(bindLightmapCoordsToFirstTextureSlot) {
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
 				disableTexCoordArrayForTexSlot(1);
 			} else {
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->tc.x);
-				selectTex(1);
-				enableTexCoordArrayForCurrentTexSlot();
+				selectTexCoordSlot(1);
+				enableTexCoordArrayForCurrentTexCoordSlot();
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),&verts->getArray()->lc.x);
 			}
 			if(bindVertexColors) {
@@ -801,15 +829,15 @@ public:
 			}
 		} else {
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
-			selectTex(0);
-			enableTexCoordArrayForCurrentTexSlot();
+			selectTexCoordSlot(0);
+			enableTexCoordArrayForCurrentTexCoordSlot();
 			if(bindLightmapCoordsToFirstTextureSlot) {
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
 				disableTexCoordArrayForTexSlot(1);
 			} else {
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,tc));
-				selectTex(1);
-				enableTexCoordArrayForCurrentTexSlot();
+				selectTexCoordSlot(1);
+				enableTexCoordArrayForCurrentTexCoordSlot();
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
 			}
 			if(bindVertexColors) {
@@ -846,11 +874,11 @@ public:
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 		}
 		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
-		selectTex(0);
-		disableTexCoordArrayForCurrentTexSlot();
+		selectTexCoordSlot(0);
+		disableTexCoordArrayForCurrentTexCoordSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),0);
-		selectTex(1);
-		disableTexCoordArrayForCurrentTexSlot();
+		selectTexCoordSlot(1);
+		disableTexCoordArrayForCurrentTexCoordSlot();
 		glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),0);
 		glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),0);
 		disableColorArray();
@@ -907,8 +935,8 @@ public:
 		CHECK_GL_ERRORS;
 
 		glVertexPointer(2,GL_FLOAT,sizeof(r2dVert_s),verts);
-		selectTex(0);
-		enableTexCoordArrayForCurrentTexSlot();
+		selectTexCoordSlot(0);
+		enableTexCoordArrayForCurrentTexCoordSlot();
 		CHECK_GL_ERRORS;
 		glTexCoordPointer(2,GL_FLOAT,sizeof(r2dVert_s),&verts->texCoords.x);
 		disableNormalArray();
@@ -955,7 +983,7 @@ public:
 			disableAllVertexAttribs();
 		} else {
 			if(rb_verboseBindShader.getInt()) {
-				g_core->Print("Vinding shader %s..\n",newShader->getName());
+				g_core->Print("Binding shader %s..\n",newShader->getName());
 			}
 			glUseProgram(newShader->getGLHandle());
 			if(newShader->sColorMap != -1) {
@@ -1427,6 +1455,8 @@ drawOnlyLightmap:
 						pf.hasHeightMap = true;
 					}
 					pf.useReliefMapping = rb_useReliefMapping.getInt();
+					pf.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
+					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);
@@ -1463,6 +1493,8 @@ drawOnlyLightmap:
 						glslShaderDesc.hasMaterialColor = true;
 					}
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
+					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
+					glslShaderDesc.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 
 					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);
 					if(selectedShader) {
@@ -1471,6 +1503,8 @@ drawOnlyLightmap:
 				} else {
 					bindShader(0);
 				}
+				CHECK_GL_ERRORS;
+
 				// draw the current material stage using selected vertex buffer.
 				bindVertexBuffer(selectedVertexBuffer,bindLightmapCoordinatesToFirstTextureSlot);
 
@@ -1886,6 +1920,9 @@ drawOnlyLightmap:
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: glewInit() failed. Cannot init openGL renderer\n");
 			return;
 		}
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,&maxActiveTextureSlots);
+		glGetIntegerv(GL_MAX_TEXTURE_COORDS,&maxActiveTextureCoords);
+
 		// ensure that all the states are reset after vid_restart
 		memset(texStates,0,sizeof(texStates));
 		curTexSlot = -1;

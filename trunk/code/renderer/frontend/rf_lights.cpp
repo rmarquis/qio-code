@@ -41,6 +41,16 @@ static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
 static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
 static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInteractionsUpdate","0");
 
+
+void entityInteraction_s::clear() {
+	ent = 0;
+	if(shadowVolume) {
+		delete shadowVolume;
+		shadowVolume = 0;
+	}
+	lastSilChangeTime = 0;
+}
+
 rLightImpl_c::rLightImpl_c() {
 	radius = 512.f;	
 	numCurrentStaticInteractions = 0;
@@ -76,6 +86,7 @@ void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
 	if(pos.compare(newXYZ)) {
 		return; // no change
 	}
+	///printf("Changing light origin from %f %f %f to %f %f %f\n",pos.x,pos.y,pos.z,newXYZ.x,newXYZ.y,newXYZ.z);
 	pos = newXYZ;
 	absBounds.fromPointAndRadius(pos,radius);
 	recalcShadowMappingMatrices();
@@ -226,13 +237,13 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 		if(ents.isOnList(in.ent)==false) {
 			// remove this interaction, it's no longer intersecting light
 			if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
-				printf("Removing entity %s from light interactions...\n",in.ent->getModelName());
+				printf("(light %i): Removing entity %s from light interactions...\n",this,in.ent->getModelName());
 			}
 			in.clear();
 		} else {
 			ents.remove(in.ent);
 			if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
-				printf("Updating light interaction entity %s... (last %i, now %i)",in.ent->getModelName(),in.lastSilChangeTime,in.ent->getSilChangeCount());
+				printf("(light %i): Updating light interaction entity %s... (last %i, now %i)",this,in.ent->getModelName(),in.lastSilChangeTime,in.ent->getSilChangeCount());
 			}
 			// update this interaction (if needed)
 			if(in.lastSilChangeTime != in.ent->getSilChangeCount()) {
@@ -260,7 +271,7 @@ void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 		newIn.ent = ents[i];
 		refreshIntersection(newIn);
 		if(rf_verboseDeltaLightInteractionsUpdate.getInt()) {
-			printf("Adding new light interaction entity...");
+			printf("(light %i): Adding new light interaction entity... (%s)\n",this,newIn.ent->getModelName());
 		}
 		to++;
 	}
@@ -311,7 +322,13 @@ void rLightImpl_c::recalcLightInteractions() {
 		return; // we dont need light interactions
 	}
 	// clear interactions with dynamic entities
+#if 0
 	this->clearInteractionsWithDynamicEntities();
+#else
+	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
+		entityInteractions[i].lastSilChangeTime = 0;
+	}
+#endif
 	// recalculate all of them
 	recalcLightInteractionsWithDynamicEntities();
 	recalcLightInteractionsWithStaticWorld();

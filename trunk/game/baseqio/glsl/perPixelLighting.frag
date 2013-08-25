@@ -156,8 +156,16 @@ void main() {
 		// light is behind the surface
 		return;
     }
+#ifdef DEBUG_IGNOREANGLEFACTOR
+    angleFactor = 1;
+#endif // DEBUG_IGNOREANGLEFACTOR  
 	//  apply distnace scale
   	float distanceFactor = 1 - distance / u_lightRadius;
+  	
+#ifdef DEBUG_IGNOREDISTANCEFACTOR
+  	distanceFactor = 1;
+#endif // DEBUG_IGNOREDISTANCEFACTOR
+
 #ifdef SHADOW_MAPPING_POINT_LIGHT
 	float shadow = computeShadow(lightToVert);
 #else

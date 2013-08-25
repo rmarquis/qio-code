@@ -36,6 +36,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rLightAPI.h>
 #include "../rModelAPI.h"
 
+static int c_allocatedShadowVolumes = 0;
+
 static aCvar_c rf_printShadowVolumesStats("rf_printShadowVolumesStats","0");
 static aCvar_c rf_dontUsePrecomputedSSVCasters("rf_dontUsePrecomputedSSVCasters","0");
 static aCvar_c rf_dontUseExtraEdgeArrays("rf_dontUseExtraEdgeArrays","0");
@@ -47,6 +49,13 @@ inline float getShadowVolumeInf() {
 	return rf_camera.getZFar()*0.5f;
 }
 
+rIndexedShadowVolume_c::rIndexedShadowVolume_c() {
+	c_allocatedShadowVolumes++;
+}
+rIndexedShadowVolume_c::~rIndexedShadowVolume_c() {
+	c_allocatedShadowVolumes--;
+	printf("%i active shadow volumes\n",c_allocatedShadowVolumes);
+}
 void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	plane_c triPlane;
 	triPlane.fromThreePoints(p0,p1,p2);

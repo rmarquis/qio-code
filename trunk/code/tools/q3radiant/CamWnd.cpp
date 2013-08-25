@@ -472,6 +472,7 @@ void CCamWnd::Cam_MouseControl (float dtime)
 	else
 #endif
 	{
+#if 0
 		xf *= 1.0 - fabs(yf);
 		if (xf < 0)
 		{
@@ -485,9 +486,16 @@ void CCamWnd::Cam_MouseControl (float dtime)
 			if (xf < 0)
 				xf = 0;
 		}
-		
+
 		VectorMA (m_Camera.origin, yf*dtime*g_nMoveSpeed, m_Camera.forward, m_Camera.origin);
 		m_Camera.angles[YAW] += xf*-dtime*g_nAngleSpeed;
+#else
+		m_Camera.angles[YAW] -= xf;
+		m_Camera.angles[PITCH] += yf;
+
+		
+   //// SetCursorPos(m_Camera.width/2,  m_Camera.height/2);
+#endif
 	}
 
 #if 0

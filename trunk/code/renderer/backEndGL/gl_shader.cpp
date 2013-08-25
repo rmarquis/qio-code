@@ -162,6 +162,12 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 		// extra per-surface material color
 		out.append("#define HAS_MATERIAL_COLOR\n");
 	}
+	if(p.debug_ignoreAngleFactor) {
+		out.append("#define DEBUG_IGNOREANGLEFACTOR\n");
+	}
+	if(p.debug_ignoreDistanceFactor) {
+		out.append("#define DEBUG_IGNOREDISTANCEFACTOR\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {

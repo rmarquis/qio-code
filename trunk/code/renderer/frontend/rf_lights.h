@@ -80,14 +80,7 @@ struct entityInteraction_s {
 		shadowVolume = 0;
 		lastSilChangeTime = 0;
 	}
-	void clear() {
-		ent = 0;
-		if(shadowVolume) {
-			delete shadowVolume;
-			shadowVolume = 0;
-		}
-		lastSilChangeTime = 0;
-	}
+	void clear();
 	void zero() {
 		memset(this,0,sizeof(*this));
 	}
