@@ -44,7 +44,7 @@ public:
 	virtual int getBoneNumForName(const char *boneName) const = 0;
 
 	//// animations list access
-	//virtual u32 getNumAnims() const = 0;
+	virtual u32 getNumAnims() const = 0;
 	//virtual const char *animAliasForNum(u32 index) = 0;
 	//virtual const char *animFileNameForNum(u32 index) = 0;
 	//virtual const class animDefAPI_i *animDefForNum(u32 index) = 0;

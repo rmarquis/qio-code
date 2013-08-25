@@ -326,6 +326,18 @@ void Player::runPlayer() {
 					ModelEntity::setOrigin(newOrigin-characterControllerOffset);
 				}
 				ps.angles.set(0,ps.viewangles[1],0);
+				// add strafe correction to player model angles
+				if(ucmd->forwardmove < 0) {
+					if(ucmd->rightmove > 0)
+						ps.angles.y += 45;
+					else if(ucmd->rightmove < 0)
+						ps.angles.y -= 45;
+				} else {
+					if(ucmd->rightmove > 0)
+						ps.angles.y -= 45;
+					else if(ucmd->rightmove < 0)
+						ps.angles.y += 45;
+				}
 			}
 			float groundDist = 0.f;
 			if(onGround == false) {

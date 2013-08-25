@@ -141,6 +141,7 @@ public:
 		return spriteMaterial;
 	}
 	virtual u32 getNumSurfaces() const;
+	virtual u32 getNumAnims() const;
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}

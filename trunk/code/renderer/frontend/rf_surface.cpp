@@ -244,8 +244,12 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 		v->xyz.clear();
 		for(u32 j = 0; j < inV->numWeights; j++, w++) {
 			vec3_c p;
-			bones[w->boneIndex].mat.transformPoint(w->ofs,p);
-			v->xyz += p * w->weight;
+			if(w->boneIndex >= bones.size()) {
+				g_core->RedWarning("r_surface_c::updateSkelSurfInstance: bone index %i out of range <0,%i)\n",w->boneIndex,bones.size());
+			} else {
+				bones[w->boneIndex].mat.transformPoint(w->ofs,p);
+				v->xyz += p * w->weight;
+			}
 		}
 		bounds.addPoint(v->xyz);
 	}	

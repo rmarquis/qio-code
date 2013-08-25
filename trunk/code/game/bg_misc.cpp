@@ -48,13 +48,9 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 
 	VectorCopy( ps->origin, s->origin );
 
-	// set the trDelta for flag direction and linear prediction
-#if 0
+	// copy angles (NOT viewangles)
 	VectorCopy( ps->angles, s->angles );
-#else
-	// use yaw (only) from viewangles
-	s->angles.set(0,ps->viewangles.y,0);
-#endif
+
 	s->animIndex = ps->animIndex;
 	s->parentNum = ps->parentNum;
 	s->parentTagNum = ps->parentTagNum;

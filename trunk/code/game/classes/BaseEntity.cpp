@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/keyValuesListener.h>
 // our internal event system
 #include <shared/eventSystem.h>
+#include <api/entDefAPI.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 // Quake3 "misc_teleporter_dest" for q3dm0 teleporter 
@@ -86,7 +87,6 @@ BaseEntity::~BaseEntity() {
 	if(eventList) {
 		delete eventList;
 	}
-	//G_FreeEntity(myEdict);
 	memset (myEdict, 0, sizeof(*myEdict));
 	myEdict->freetime = level.time;
 	myEdict->s = 0;
@@ -129,6 +129,13 @@ void BaseEntity::iterateKeyValues(class keyValuesListener_i *listener) const {
 	}
 	if(this->hasTarget()) {
 		listener->addKeyValue("target",getTarget());
+	}
+}
+void BaseEntity::applyKeyValues(const entDefAPI_i *list) {
+	for(u32 i = 0; i < list->getNumKeyValues(); i++) {
+		const char *k, *v;
+		list->getKeyValue(i, &k, &v);
+		setKeyValue(k,v);
 	}
 }
 void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
@@ -184,6 +191,10 @@ void BaseEntity::getLocalBounds(aabb &out) const {
 }
 u32 BaseEntity::getEntNum() const {
 	return myEdict->s->number;
+}
+bool BaseEntity::hasClassName(const char *className) const {
+	const char *cn = getClassName();
+	return !stricmp(cn,className);
 }
 const char *BaseEntity::getTargetName() const {
 	return targetName;

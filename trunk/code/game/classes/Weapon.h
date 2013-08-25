@@ -35,6 +35,7 @@ class Weapon : public ModelEntity {
 	// those values are in msec
 	u32 delayBetweenShots;
 	u32 lastShotTime;
+	class entityDeclAPI_i *invWeaponDecl;
 protected:
 	safePtr_c<Player> owner;
 

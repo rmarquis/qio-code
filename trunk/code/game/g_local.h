@@ -65,7 +65,6 @@ int G_RenderMaterialIndex( const char *name );
 
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
 edict_s	*G_Spawn (void);
-void G_FreeEntity( edict_s *e );
 qboolean G_EntitiesFree( void );
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
 class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
@@ -73,6 +72,7 @@ class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
 void G_HideEntitiesWithTargetName(const char *targetName);
 void G_ShowEntitiesWithTargetName(const char *targetName);
 void G_PostEvent(const char *targetName, int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
+u32 G_RemoveEntitiesOfClass(const char *className);
 
 //
 // g_client.c

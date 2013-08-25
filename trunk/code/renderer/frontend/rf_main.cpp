@@ -38,6 +38,7 @@ static aCvar_c rf_debugMaterialNeedsCPUCheck("rf_debugMaterialNeedsCPUCheck","0"
 // draw only mirrored/visible trough portal view
 static aCvar_c rf_portalOnly("rf_portalOnly","0");
 static aCvar_c rf_skipMirrorAndPortalSubViews("rf_skipMirrorAndPortalSubViews","0");
+static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipassRendering","0");
 
 bool RF_IsUsingDynamicLights() {
 	if(rf_enableMultipassRendering.getInt())
@@ -119,7 +120,7 @@ void RF_Generate3DSubView() {
 	if(rf_enableMultipassRendering.getInt() == 0) { 
 		RF_AddGenericDrawCalls();
 	} else {
-		if(0) {
+		if(rf_useLightmapsWithMultipassRendering.getInt()) {
 			// generate prelit world drawcalls
 			RF_AddGenericDrawCalls();
 		} else {

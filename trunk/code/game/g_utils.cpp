@@ -257,5 +257,22 @@ void G_PostEvent(const char *targetName, int execTime, const char *eventName, co
 		}
 	}
 }
+u32 G_RemoveEntitiesOfClass(const char *className) {
+	if(className == 0 || className[0] == 0) {
+		return 0;
+	}
+	u32 c_removed = 0;
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		if(be->hasClassName(className)) {
+			delete be;
+			c_removed++;
+		}
+	}
+	return c_removed;
+}
 
 //==============================================================================

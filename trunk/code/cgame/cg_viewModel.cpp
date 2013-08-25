@@ -38,6 +38,8 @@ static aCvar_c cg_gunRotX("cg_gunRotX","0");
 static aCvar_c cg_gunRotY("cg_gunRotY","0");
 static aCvar_c cg_gunRotZ("cg_gunRotZ","0");
 static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
+static aCvar_c cg_printCurViewModelAnimationCount("cg_printCurViewModelAnimationCount","0");
+static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex","none");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -91,19 +93,20 @@ void CG_RunViewModel() {
 		return;
 	}
 	// add hardcoded gun offset
-	//if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
-	//	|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
-	//	|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
-	//	|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
-	//	// it could be better for grenade launcher
-	//	|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
+	if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+		|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+		|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+		|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+		// it could be better for grenade launcher
+		|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 		localOfs.set(5,-5,-10);
-	//}
+	}
 	// Half Life2 physgun (for weapon_physgun)
 	if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
 		// "w_*" is a worldmodel
 		// set 90 yaw rotation (around Z axis)
 		localRot.set(0,0,90);
+		localOfs.set(5,-5,-10);
 	} else if(!stricmp(viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
 		// "v_*" is a viewmodel
 #if 0
@@ -117,6 +120,9 @@ void CG_RunViewModel() {
 
 	if(cg_printCurViewModelName.getInt()) {
 		g_core->Print("Current viewmodel name: %s\n",viewModel->getName());
+	}
+	if(cg_printCurViewModelAnimationCount.getInt()) {
+		g_core->Print("Current viewmodel animation count: %i\n",viewModel->getNumAnims());
 	}
 
 	CG_AllocViewModelEntity();
@@ -155,5 +161,9 @@ void CG_RunViewModel() {
 	// set viewmodel model
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);
+	if(stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
+		int index = cg_forceViewModelAnimationIndex.getInt();
+		cg_viewModelEntity->setDeclModelAnimLocalIndex(index);
+	}
 }
 

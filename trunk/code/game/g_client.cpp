@@ -196,7 +196,7 @@ void ClientSpawn(edict_s *ent) {
 
 	// don't allow full run speed for a bit
 
-#if 0
+#if 1
 	pl->setPlayerModel("models/player/shina/body.md5mesh");
 #else
 	// load q3 player model (three .md3's)
@@ -459,6 +459,9 @@ void ClientCommand( int clientNum ) {
 		np->setPlayerModel("$sarge");
 		np->enableCharacterController();
 		np->setHealth(100);
+	} else if(!stricmp(cmd,"removentitiesofclass")) {
+		str className = g_core->Argv(1);
+		G_RemoveEntitiesOfClass(className);
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);

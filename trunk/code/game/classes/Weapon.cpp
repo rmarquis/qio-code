@@ -26,15 +26,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Weapon.h"
 #include "Player.h"
 #include <api/coreAPI.h>
+#include <api/declManagerAPI.h>
+#include <api/entityDeclAPI.h>
 
 DEFINE_CLASS(Weapon, "ModelEntity");
 DEFINE_CLASS_ALIAS(Weapon, idItem);
+// for Prey weapons (HumanHead items)
+DEFINE_CLASS_ALIAS(Weapon, hhItem);
+DEFINE_CLASS_ALIAS(Weapon, hhWeaponRifle);
 
 Weapon::Weapon() {
 	owner = 0;
 	autoFire = true;
 	delayBetweenShots = 250;
 	lastShotTime = 0;
+	invWeaponDecl = 0;
 }
 Weapon::~Weapon() {
 
@@ -46,6 +52,17 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model_view")) {
 		// use this model for first person view
 		this->setViewModel(value);
+	} else if(invWeaponDecl && !stricmp(key,"model")) {
+		// "model" keyword inside a "inv_weapon" entdefs sets the weapons viewModel
+		this->setViewModel(value);
+	} else if(!stricmp(key,"inv_weapon")) {	
+		if(invWeaponDecl)
+			return;
+		invWeaponDecl = g_declMgr->registerEntityDecl(value);
+		if(invWeaponDecl) {
+			applyKeyValues(invWeaponDecl->getEntDefAPI());
+			invWeaponDecl = 0;
+		}
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}

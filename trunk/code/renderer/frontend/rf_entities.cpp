@@ -538,7 +538,9 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 	}
 	const boneOrArray_c &curBones = skelAnimCtrl->getCurBones();
 	if(localBoneIndex < 0 || localBoneIndex >= curBones.size()) {
-		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());
+		if(localBoneIndex != 255) {
+			g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());
+		}
 		return true;
 	}
 	const matrix_c &localMat = curBones[localBoneIndex].mat;

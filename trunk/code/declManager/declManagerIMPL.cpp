@@ -214,6 +214,9 @@ public:
 		}
 		return -1;
 	}
+	virtual u32 getNumAnims() const {
+		return anims.size();
+	}
 	const animDef_c *findAnimDef(const char *alias) const {
 		for(u32 i = 0; i < anims.size(); i++) {
 			if(!stricmp(anims[i].animAlias,alias)) 

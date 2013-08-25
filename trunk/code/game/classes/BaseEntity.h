@@ -61,6 +61,7 @@ public:
 
 	virtual void setKeyValue(const char *key, const char *value);
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
+	void applyKeyValues(const class entDefAPI_i *list);
 	void postEvent(int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
 
 	// maybe I should put those functions in ModelEntity...
@@ -99,6 +100,8 @@ public:
 	virtual BaseEntity *getOwner() const {
 		return 0;
 	}
+
+	bool hasClassName(const char *className) const;
 
 	// "targetname" field (unique name of this entity)
 	const char *getTargetName() const;
