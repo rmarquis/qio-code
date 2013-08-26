@@ -40,6 +40,7 @@ static aCvar_c cg_gunRotZ("cg_gunRotZ","0");
 static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
 static aCvar_c cg_printCurViewModelAnimationCount("cg_printCurViewModelAnimationCount","0");
 static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex","none");
+static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","none");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -164,6 +165,11 @@ void CG_RunViewModel() {
 	if(stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
 		int index = cg_forceViewModelAnimationIndex.getInt();
 		cg_viewModelEntity->setDeclModelAnimLocalIndex(index);
+	} else if(stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
+		const char *animName = cg_forceViewModelAnimationName.getStr();
+		cg_viewModelEntity->setAnim(animName);
+	} else {
+		cg_viewModelEntity->setAnim("idle");
 	}
 }
 

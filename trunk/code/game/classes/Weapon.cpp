@@ -41,6 +41,8 @@ Weapon::Weapon() {
 	delayBetweenShots = 250;
 	lastShotTime = 0;
 	invWeaponDecl = 0;
+	clipSize = 1;
+	curClipSize = 1;
 }
 Weapon::~Weapon() {
 
@@ -52,9 +54,14 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model_view")) {
 		// use this model for first person view
 		this->setViewModel(value);
-	} else if(invWeaponDecl && !stricmp(key,"model")) {
+	} else if(invWeaponDecl && !stricmp(key,"model") && model_view.length()==0) {
 		// "model" keyword inside a "inv_weapon" entdefs sets the weapons viewModel
 		this->setViewModel(value);
+#if 1
+	} else if(!stricmp(key,"model")) {
+		this->setRenderModel(value);
+		this->setColModel(value);
+#endif
 	} else if(!stricmp(key,"inv_weapon")) {	
 		if(invWeaponDecl)
 			return;
@@ -63,6 +70,12 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 			applyKeyValues(invWeaponDecl->getEntDefAPI());
 			invWeaponDecl = 0;
 		}
+	} else if(!stricmp(key,"clipSize")) {
+		clipSize = atoi(value);
+	} else if(!stricmp(key,"continuousFire")) {
+	} else if(!stricmp(key,"ammoRequired")) {
+	} else if(!stricmp(key,"ammoType")) {
+
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}

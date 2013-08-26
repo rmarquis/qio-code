@@ -31,6 +31,7 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles) = 0;
 	virtual void setModel(class rModelAPI_i *mod) = 0;
 	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
+	virtual void setAnim(const char *animName) = 0;
 	virtual void setThirdPersonOnly(bool bOn) = 0;
 	virtual void setFirstPersonOnly(bool bOn) = 0;
 	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;

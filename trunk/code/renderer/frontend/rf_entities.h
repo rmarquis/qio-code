@@ -85,6 +85,7 @@ public:
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setModel(class rModelAPI_i *newModel);
 	virtual void setAnim(const class skelAnimAPI_i *anim);
+	virtual void setAnim(const char *animName);
 	virtual void setThirdPersonOnly(bool bOn) {
 		bThirdPersonOnly = bOn;
 	}

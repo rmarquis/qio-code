@@ -183,6 +183,18 @@ btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bo
 		} else {
 			return BT_CModelTriMeshToConvex(cModel->getTriMesh(),extraCenterOfMassOffset);
 		}
+	} else if(cModel->isBBExts()) {
+		aabb bb;
+		cModel->getBounds(bb);
+		vec3_c sizes = bb.getSizes();
+		btBoxShape *box = new btBoxShape(btVector3(sizes.x*QIO_TO_BULLET*0.5f,sizes.y*QIO_TO_BULLET*0.5f,sizes.z*QIO_TO_BULLET*0.5f));
+		return box;
+	} else if(cModel->isBBMinsMaxs()) {
+		aabb bb;
+		cModel->getBounds(bb);
+		vec3_c sizes = bb.getSizes();
+		btBoxShape *box = new btBoxShape(btVector3(sizes.x*QIO_TO_BULLET*0.5f,sizes.y*QIO_TO_BULLET*0.5f,sizes.z*QIO_TO_BULLET*0.5f));
+		return box;
 	} else {
 		g_core->RedWarning("BT_CModelToBulletCollisionShape: cModel %s has unsupported type\n",cModel->getName());
 	}

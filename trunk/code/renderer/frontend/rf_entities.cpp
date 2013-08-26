@@ -214,6 +214,10 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		delete instance;
 		instance = 0;
 	}
+	if(skelAnimCtrl) {
+		delete skelAnimCtrl;
+		skelAnimCtrl = 0;
+	}
 	surfaceFlags.resize(newModel->getNumSurfaces());
 	surfaceFlags.nullMemory();
 	if(newModel->isStatic() == false && newModel->isValid()) {
@@ -255,6 +259,17 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 		// TODO
 		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
 	}
+}
+void rEntityImpl_c::setAnim(const char *animName) {
+	if(this->model == 0)
+		return; // ignore
+	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
+	if(dm == 0)
+		return;
+	int animIndex = dm->getAnimIndexForAnimAlias(animName);
+	if(animIndex < 0)
+		return;
+	this->setDeclModelAnimLocalIndex(animIndex);
 }
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
 	if(model->isDeclModel() == false) {
