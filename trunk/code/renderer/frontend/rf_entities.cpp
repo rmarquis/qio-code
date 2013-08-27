@@ -206,6 +206,16 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	if(model == newModel) {
 		return;
 	}
+#if 1
+	// hack to get static decl models work
+	if(newModel->isDeclModel() && newModel->getSkelModelAPI() == 0) {
+		rModelAPI_i *staticModel = RF_RegisterModel(newModel->getDeclModelAPI()->getMeshName());
+		if(staticModel && staticModel->isValid()) {
+			setModel(staticModel);
+			return;
+		}
+	}
+#endif
 	if(staticDecals) {
 		delete staticDecals;
 		staticDecals = 0;

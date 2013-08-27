@@ -1,0 +1,16 @@
+//====================================
+// QUAKE 2 WEAPONS - Kiltron
+//====================================
+
+//==================
+// VIEWMODEL ARMS
+//==================
+
+models/testweapons/xreal_arms/arm2
+{
+	clamp
+	diffusemap		textures/models/xreal_arms/arm2_d.tga
+	specularmap		textures/models/xreal_arms/arm2_s.tga
+	normalMap		addnormals(textures/models/xreal_arms/arm2_local.tga, heightmap(textures/models/xreal_arms/arm2_h.tga, 5 ))
+}
+

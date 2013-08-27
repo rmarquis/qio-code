@@ -1,0 +1,86 @@
+//==================
+// SUPER SHOTGUN
+//==================
+
+models/weapons/shotgun/shotgun
+{
+	diffusemap		models/testweapons/xrealshotgun/shotgun_d
+	specularmap	 	models/testweapons/xrealshotgun/shotgun_s
+	bumpmap			displaceMap(addnormals(models/testweapons/xrealshotgun/shotgun_local, heightMap(textures/odin/details/metaldetail_1, 0.25)), models/testweapons/shotgun/shotgun_disp)
+}
+
+models/weapons/shotgun/q2_w_supershotgun01
+{
+	parallax
+	diffusemap		models/testweapons/xrealshotgun/shotgun_d
+	specularmap	 	models/testweapons/xrealshotgun/shotgun_s
+	bumpmap			displaceMap(addnormals(models/testweapons/xrealshotgun/shotgun_local, heightMap(textures/odin/details/metaldetail_1, 0.25)), models/weapons/shotgun/shotgun_disp)
+}
+
+
+models/weapons/shotgun/shotgun_muzzflash
+{
+	sort			nearest
+	deform			sprite
+	{
+		forceHighQuality
+		if 		( time + parm4 ) * 6.4 < 1.0
+		blend 		add
+		map 		models/testweapons/xrealshotgun/shotgun_muzzflash_strip
+		scale 		1 / 32 , 1
+		scroll 		q2table32[ (time + parm4) * 6.4] , 0
+		rotate		q2rotate90[ parm5 ]
+		clamp
+	}
+}
+
+models/weapons/shotgun/shotgun_muzzflash2
+{
+	sort			nearest
+	{
+		forceHighQuality
+		if		( time + parm4 ) * 5 < 1.0
+		blend 		add
+		map 		models/testweapons/xrealshotgun/shotgun_muzzflash2_strip
+		scale 		1 / 8 , 1
+		scroll 		q2table8[ (time + parm4) * 5] , 0
+		clamp
+	}
+}
+
+models/weapons/shotgun/shotgun_muzzflashb
+{
+	sort			nearest
+	deform			sprite
+	{
+		forceHighQuality
+		if 		( time + parm4 ) * 7 < 1.0
+		blend 		add
+		map 		models/testweapons/xrealshotgun/shotgun_muzzflash_strip
+		scale 		1 / 32 , 1
+		scroll 		q2table32[ (time + parm4) * 7] , 0
+		rotate		q2rotate90[ parm5 ]
+		clamp
+	}
+}
+
+models/weapons/shotgun/shotgun_muzzflash2b
+{
+	sort			nearest
+	{
+		forceHighQuality
+		if 		( time + parm4 ) * 5 < 1.0
+		blend 		add
+		map 		models/testweapons/xrealshotgun/shotgun_muzzflash2_strip
+		scale 		1 / 8 , 1
+		scroll 		q2table8[ (time + parm4) * 5] , 0
+		clamp
+	}
+}
+
+models/weapons/shotgun/shell
+{
+	diffuseMap		models/weapons/shells/shell_d
+	specularMap		models/weapons/shells/shell_s
+	normalMap		models/weapons/shells/shell_n
+}

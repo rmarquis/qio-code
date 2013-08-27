@@ -204,7 +204,7 @@ bool ModelEntity::isDynamic() const {
 	return body->isDynamic();
 }
 void ModelEntity::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model")) {
+	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model") || !stricmp(key,"model_world")) {
 		this->setRenderModel(value);
 		if(value[0] == '*') {
 			this->setColModel(value);

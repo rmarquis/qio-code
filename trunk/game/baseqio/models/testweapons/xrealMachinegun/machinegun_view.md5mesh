@@ -2630,7 +2630,7 @@ mesh {
 }
 
 mesh {
-	shader "models/weapons/arms/arm2"
+	shader "models/testweapons/xreal_arms/arm2"
 
 	numverts 370
 	vert 0 ( 0.4259790897 0.8866302490 ) 0 1

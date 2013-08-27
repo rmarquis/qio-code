@@ -1,0 +1,33 @@
+
+// Vodin: Doom3 style .def file for Xreal Shotgun weapon
+
+model weapon_xreal_shotgun_world
+{
+	mesh models/testweapons/xrealShotgun/shotgun.md3
+}
+
+model weapon_xreal_shotgun_view
+{
+	mesh						models/testweapons/xrealShotgun/shotgun_view.md5mesh
+	
+	anim idle 					models/testweapons/xrealShotgun/shotgun_view_idle.md5anim	
+	anim fire 					models/testweapons/xrealShotgun/shotgun_view_fire.md5anim	
+	anim reload 				models/testweapons/xrealShotgun/shotgun_view_reload.md5anim	
+	anim raise					models/testweapons/xrealShotgun/shotgun_view_raise.md5anim
+	anim putaway				models/testweapons/xrealShotgun/shotgun_view_lower.md5anim
+
+}
+entityDef weapon_xreal_shotgun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"spawnclass"				"Weapon"
+
+	"model_world"				"weapon_xreal_shotgun_world"
+	"model_view"				"weapon_xreal_shotgun_view"
+	
+	"weaponname"				"Xreal Shotgun"
+	"clipSize"					"1"
+
+}
