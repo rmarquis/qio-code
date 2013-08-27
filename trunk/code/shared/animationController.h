@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 class skelAnimController_c {
 	float time; // in seconds
 	const class skelAnimAPI_i *anim;
+	int flags;
+	int nextFlags;
 	int lastUpdateTime;
 	// extra variables for blending between new and old animation
 	//singleAnimLerp_s oldState;
@@ -43,8 +45,9 @@ class skelAnimController_c {
 
 	static void getSingleLoopAnimLerpValuesForTime(struct singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time);
 public:
-	void resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec);
-	void setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec);
+	skelAnimController_c();
+	void resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec, int newFlags);
+	void setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec, int newFlags);
 	void runAnimController(int curGlobalTimeMSec);
 	void updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones);
 	void updateModelAnimation(const class skelModelAPI_i *skelModel);

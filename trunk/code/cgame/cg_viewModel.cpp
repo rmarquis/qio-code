@@ -41,6 +41,8 @@ static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
 static aCvar_c cg_printCurViewModelAnimationCount("cg_printCurViewModelAnimationCount","0");
 static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex","none");
 static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","none");
+static aCvar_c cg_forceViewModelAnimationFlags("cg_forceViewModelAnimationFlags","none");
+static aCvar_c cg_printViewModelAnimName("cg_printViewModelAnimName","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -162,14 +164,24 @@ void CG_RunViewModel() {
 	// set viewmodel model
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);
+	int viewModelAnimFlags;
+	if(stricmp(cg_forceViewModelAnimationFlags.getStr(),"none")) {
+		viewModelAnimFlags = cg_forceViewModelAnimationFlags.getInt();
+	} else {
+		viewModelAnimFlags = cg.snap->ps.viewModelAnimFlags;
+	}
 	if(stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
 		int index = cg_forceViewModelAnimationIndex.getInt();
-		cg_viewModelEntity->setDeclModelAnimLocalIndex(index);
+		cg_viewModelEntity->setDeclModelAnimLocalIndex(index,viewModelAnimFlags);
 	} else if(stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
 		const char *animName = cg_forceViewModelAnimationName.getStr();
-		cg_viewModelEntity->setAnim(animName);
+		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
 	} else {
-		cg_viewModelEntity->setAnim("idle");
+		const char *animName = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModelAnim);
+		if(cg_printViewModelAnimName.getInt()) {
+			g_core->Print("ViewModelAnim: %s, flags %i\n",animName,viewModelAnimFlags);
+		}
+		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
 	}
 }
 

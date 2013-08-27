@@ -28,13 +28,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "ModelEntity.h"
 
-enum weaponState_e {
-	WP_RAISE,
-	WP_PULLOUT,
-	WP_IDLE,
-	WP_RELOADING,
-};
-
 class Weapon : public ModelEntity {
 	// custom viewmodel for Doom3-style weapons
 	str model_view;
@@ -45,6 +38,12 @@ class Weapon : public ModelEntity {
 	class entityDeclAPI_i *invWeaponDecl;
 	int clipSize;
 	int curClipSize;
+	// time needed to raise weapon (from raise animation)
+	u32 raiseTime;
+	// time needed to lower weapon (from lower animation)
+	u32 lowerTime;
+	str weaponName;
+	str ddaName;
 protected:
 	safePtr_c<Player> owner;
 
@@ -56,6 +55,16 @@ public:
 	virtual ~Weapon();
 
 	DECLARE_CLASS( Weapon );
+
+	u32 getRaiseTime() const {
+		return raiseTime;
+	}
+	u32 getPutawayTime() const {
+		return lowerTime;
+	}
+	u32 getDelayBetweenShots() const {
+		return delayBetweenShots;
+	}
 
 	virtual BaseEntity *getOwner() const;
 

@@ -80,6 +80,12 @@ public:
 		anim = g_modelLoader->loadSkelAnimFile(animFile);
 	}
 
+	int getTotalTimeMSec() const {
+		if(anim == 0)
+			return 0;
+		return anim->getTotalTimeSec() * 1000.f;
+	}
+
 	// animDefAPI_i impl
 	virtual const char *getAlias() const {
 		return animAlias;
@@ -113,7 +119,13 @@ public:
 			return;
 		cached = true;
 		if(meshName.length()) {
-			skelModel = g_modelLoader->loadSkelModelFile(meshName);
+			if(g_modelLoader->isSkelModelFile(meshName)) {
+				// that's a .md5mesh skeletal model
+				skelModel = g_modelLoader->loadSkelModelFile(meshName);
+			} else if(g_modelLoader->isStaticModelFile(meshName)) {
+				// that's a .lwo / .ase static model
+				// TODO
+			}
 		}
 	}
 	bool parse(const char *text, const char *textBase, const char *fname) {
@@ -243,6 +255,13 @@ public:
 		if(localIndex >= anims.size())
 			return 0;
 		return anims[localIndex].getAnim();
+	}
+	virtual int getAnimationTimeMSec(const char *alias) const {
+		const animDef_c *ad = findAnimDef(alias);
+		if(ad == 0)
+			return 0;
+		((animDef_c *)ad)->precacheAnim();
+		return ad->getTotalTimeMSec();
 	}
 };
 class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {

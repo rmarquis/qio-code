@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/entityDeclAPI.h>
+#include <api/modelDeclAPI.h>
 
 DEFINE_CLASS(Weapon, "ModelEntity");
 DEFINE_CLASS_ALIAS(Weapon, idItem);
@@ -43,12 +44,21 @@ Weapon::Weapon() {
 	invWeaponDecl = 0;
 	clipSize = 1;
 	curClipSize = 1;
+	raiseTime = 0;
+	lowerTime = 0;
 }
 Weapon::~Weapon() {
 
 }
 void Weapon::setViewModel(const char *newViewModelName) {
 	model_view = newViewModelName;
+
+	modelDeclAPI_i *decl = g_declMgr->registerModelDecl(model_view);
+	if(decl) {
+		raiseTime = decl->getAnimationTimeMSec("raise");
+		lowerTime = decl->getAnimationTimeMSec("putaway");
+		delayBetweenShots = decl->getAnimationTimeMSec("fire");
+	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model_view")) {
@@ -57,7 +67,7 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	} else if(invWeaponDecl && !stricmp(key,"model") && model_view.length()==0) {
 		// "model" keyword inside a "inv_weapon" entdefs sets the weapons viewModel
 		this->setViewModel(value);
-#if 1
+#if 0
 	} else if(!stricmp(key,"model")) {
 		this->setRenderModel(value);
 		this->setColModel(value);
@@ -72,6 +82,10 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		}
 	} else if(!stricmp(key,"clipSize")) {
 		clipSize = atoi(value);
+	} else if(!stricmp(key,"ddaName")) {
+		ddaName = value;
+	} else if(!stricmp(key,"weaponName")) {
+		weaponName = value;
 	} else if(!stricmp(key,"continuousFire")) {
 	} else if(!stricmp(key,"ammoRequired")) {
 	} else if(!stricmp(key,"ammoType")) {
@@ -85,6 +99,8 @@ bool Weapon::doUse(class Player *activator) {
 		g_core->RedWarning("Weapon::doUse: weapon is already in use\n");
 		return true; // this item cannot be carried
 	}
+	if(activator->canPickUpWeapon(this)==false)
+		return true;
 	owner = activator;
 	activator->addWeapon(this);
 	this->destroyPhysicsObject();

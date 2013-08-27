@@ -286,6 +286,21 @@ void P_ProcessFileNameWithParameters(const char *nameWithParameters, str &outRaw
 	} while(*p);
 }
 
+r_model_c *RF_LoadStaticModel(const char *modelName) {
+	r_model_c *ret = new r_model_c;
+	if(g_modelLoader->loadStaticModelFile(modelName,ret)) {
+		g_core->RedWarning("Loading of static model %s failed\n",modelName);
+		delete ret;
+		return 0;
+	} 
+	ret->recalcModelTBNs();
+	if(ret->getTotalTriangleCount() < 10000) {
+		ret->precalculateStencilShadowCaster();
+	}
+	ret->createVBOsAndIBOs();
+	return ret;
+}
+
 rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 	// see if the model is already loaded
 	rModelAPI_i *existing = rf_models.getEntry(modNameWithParameters);
@@ -326,23 +341,8 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			ret->type = MOD_KEYFRAMED; // that's a valid model
 		}
 	} else if(g_modelLoader->isStaticModelFile(modName)) {
-		ret->staticModel = new r_model_c;
-		if(g_modelLoader->loadStaticModelFile(modName,ret->staticModel)) {
-			g_core->Print(S_COLOR_RED"Loading of static model %s failed\n",modName);
-			delete ret->staticModel;
-			ret->staticModel = 0;
-		} else {
-			// FIXME: dont do this here, it might be not needed for some models
-			// that have normals precompued and stored on disk
-		///	if(ret->staticModel->getTotalTriangleCount() < 10000) {
-				// don't do this for experimental terrain models on test_heightmap....
-				//ret->staticModel->recalcModelNormals();
-				ret->staticModel->recalcModelTBNs();
-
-			if(ret->staticModel->getTotalTriangleCount() < 10000) {
-				ret->staticModel->precalculateStencilShadowCaster();
-			}
-			ret->staticModel->createVBOsAndIBOs();
+		ret->staticModel = RF_LoadStaticModel(modName);
+		if(ret->staticModel) {
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model
 		}
@@ -353,7 +353,7 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 //			ret->bb = ret->skelModel->getEstimatedBounds();
 			ret->bb.fromRadius(96.f);
 		} else {
-			g_core->Print(S_COLOR_RED"Loading of skeletal model %s failed\n",modName);
+			g_core->RedWarning("Loading of skeletal model %s failed\n",modName);
 		}
 	} else {
 		ret->declModel = g_declMgr->registerModelDecl(modName);

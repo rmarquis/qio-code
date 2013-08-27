@@ -84,8 +84,8 @@ public:
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setModel(class rModelAPI_i *newModel);
-	virtual void setAnim(const class skelAnimAPI_i *anim);
-	virtual void setAnim(const char *animName);
+	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags);
+	virtual void setAnim(const char *animName, int newFlags);
 	virtual void setThirdPersonOnly(bool bOn) {
 		bThirdPersonOnly = bOn;
 	}
@@ -100,7 +100,7 @@ public:
 	}
 	virtual void setRagdoll(const class afDeclAPI_i *af);
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
-	virtual void setDeclModelAnimLocalIndex(int localAnimIndex);
+	virtual void setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags);
 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
 	virtual void setSkin(const char *skinName);

@@ -50,6 +50,20 @@ typedef struct {
 	int			enterTime;			// level.time the client entered the game
 } clientPersistant_t;
 
+enum weaponState_e {
+	// player has no weapon
+	WP_NONE,
+	// player is raising a new weapon (curWeapon pointer is valid, nextWeapon pointer is NULL)
+	WP_RAISE,
+	// player is holstering old weapon (curWeapon pointer is valid, nextWeapon is not-null while switching weapons)
+	WP_PUTAWAY,
+	// player weapon is ready to fire (curWeapon pointer is valid, nextWeapon is NULL)
+	WP_IDLE,
+	// player is reloading his weapon
+	WP_RELOADING,
+	// weapon is firing
+	WP_FIRING,
+};
 
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
@@ -58,10 +72,15 @@ class Player : public ModelEntity {
 	class physCharacterControllerAPI_i *characterController;
 	str netName;
 	safePtr_c<Weapon> curWeapon;
+	safePtr_c<Weapon> nextWeapon;
+	weaponState_e weaponState;
+	u32 weaponTime;
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
 	class playerAnimControllerAPI_i *animHandler;
 	u32 lastDeathTime; // in msec
+
+	void updateCurWeaponAttachment();
 public:
 	Player();
 	virtual ~Player();
@@ -92,6 +111,7 @@ public:
 	void setCharacterControllerZOffset(float ofs);
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void touchTriggers();
+	void updatePlayerWeapon();
 	void runPlayer();
 	void onUseKeyDown();
 	void onFireKeyHeld();
@@ -117,7 +137,11 @@ public:
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	void setVehicle(class VehicleCar *newVeh);
 	void setPlayerModel(const char *newPlayerModelName);
-
+	bool hasActiveWeapon() const {
+		if(curWeapon.getPtr())
+			return true;
+		return false;
+	}
 	void toggleNoclip();
 
 	struct playerState_s *getPlayerState();
@@ -130,6 +154,7 @@ public:
 	}
 	// called from Weapon::doUse
 	void addWeapon(class Weapon *newWeapon);
+	bool canPickUpWeapon(class Weapon *newWeapon);
 
 	void dropCurrentWeapon();
 };

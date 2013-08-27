@@ -1208,11 +1208,18 @@ struct entityState_s {
 	}
 };
 
+enum animFlags_e {
+	// don't restart animation when it's finished, 
+	// just stop at the last frame
+	ANIMFLAG_STOPATLASTFRAME = 1,
+	ANIMFLAG_BITS = 1,
+};
+
 // bit field limits
-#define	MAX_STATS				16
-#define	MAX_PERSISTANT			16
-#define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				16		
+//#define	MAX_STATS				16
+//#define	MAX_PERSISTANT			16
+//#define	MAX_POWERUPS			16
+//#define	MAX_WEAPONS				16		
 
 // playerState_s is the information needed by both the client and server
 // to predict player motion and actions
@@ -1239,6 +1246,9 @@ struct playerState_s : public entityState_s {
 
 	// index in CS_MODELS
 	int			customViewRModelIndex; // 0 means that there is no custom view render model
+	// index in CS_ANIMATIONS
+	int			viewModelAnim;
+	int			viewModelAnimFlags;
 
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 

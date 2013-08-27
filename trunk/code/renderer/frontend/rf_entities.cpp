@@ -224,6 +224,10 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		// init skelmodel / keyframed model instance
 		if(newModel->isSkeletal()) {
 			const skelModelAPI_i *skelModel = newModel->getSkelModelAPI();
+			if(skelModel == 0) {
+				g_core->RedWarning("rEntityImpl_c::setModel: valid model has NULL skelModel pointer (%s)\n",newModel->getName());
+				return;
+			}
 			instance = new r_model_c;
 			instance->initSkelModelInstance(skelModel);
 			instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
@@ -246,7 +250,7 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	recalcABSBounds();
 	updateModelSkin();
 }
-void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
+void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim, int newFlags) {
 	if(anim == 0 && skelAnimCtrl == 0)
 		return; // ignore
 	if(this->model == 0)
@@ -254,13 +258,13 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim) {
 	const class skelModelAPI_i *skelModel = this->model->getSkelModelAPI();
 	if(skelAnimCtrl == 0) {
 		skelAnimCtrl = new skelAnimController_c;
-		skelAnimCtrl->resetToAnim(anim,rf_curTimeMsec);
+		skelAnimCtrl->resetToAnim(anim,rf_curTimeMsec,newFlags);
 	} else {
 		// TODO
-		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
+		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec,newFlags);
 	}
 }
-void rEntityImpl_c::setAnim(const char *animName) {
+void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	if(this->model == 0)
 		return; // ignore
 	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
@@ -269,15 +273,15 @@ void rEntityImpl_c::setAnim(const char *animName) {
 	int animIndex = dm->getAnimIndexForAnimAlias(animName);
 	if(animIndex < 0)
 		return;
-	this->setDeclModelAnimLocalIndex(animIndex);
+	this->setDeclModelAnimLocalIndex(animIndex, newFlags);
 }
-void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
+void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags) {
 	if(model->isDeclModel() == false) {
 		g_core->Print("rEntityImpl_c::setDeclModelAnimLocalIndex: called on non-decl model %s\n",model->getName());
 		return;
 	}
 	const class skelAnimAPI_i *a = model->getDeclModelAPI()->getSkelAnimAPIForLocalIndex(localAnimIndex);
-	this->setAnim(a);
+	this->setAnim(a,newFlags);
 }
 void rEntityImpl_c::setQ3LegsAnimLocalIndex(int localAnimIndex) {
 	if(model->isQ3PlayerModel() == false) {
