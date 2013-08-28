@@ -1234,6 +1234,8 @@ enum animFlags_e {
 struct playerState_s : public entityState_s {
 	int			commandTime;	// cmd->serverTime of last executed command
 
+	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
+
 	vec3_t		velocity;
 
 	int			delta_angles[3];	// add to command angles to get view direction
@@ -1248,12 +1250,16 @@ struct playerState_s : public entityState_s {
 	int			customViewRModelIndex; // 0 means that there is no custom view render model
 	// index in CS_ANIMATIONS
 	int			viewModelAnim;
+	// animation flags
 	int			viewModelAnimFlags;
-
-	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 
 	vec3_c		viewangles;		// for fixed views
 	int			viewheight;
+	// viewmodel (weapon) offset/angles,
+	// relative to player eye
+	// (this is set through "def_viewStyle" key in weapon .def)
+	vec3_c		viewModelAngles;
+	vec3_c		viewModelOffset;
 
 	// not communicated over the net at all
 	int			ping;			// server to game info for scoreboard

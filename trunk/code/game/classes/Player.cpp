@@ -507,19 +507,33 @@ void Player::onUseKeyDown() {
 		}
 	}
 }
+void Player::setViewModelAnim(const char *animName, int animFlags) {
+	ps.viewModelAnim = G_AnimationIndex(animName);
+	ps.viewModelAnimFlags = animFlags;
+}
 void Player::onFireKeyHeld() {
 	if(vehicle) {
 		return;
 	}
 	if(curWeapon) {
 		if(weaponState == WP_IDLE) {
-			curWeapon->onFireKeyHeld();
+			// reload weapon if clip is empty
+			if(curWeapon->hasEmptyClip()) {
+				if(curWeapon->getDelayBetweenShots()) {
+					weaponTime = level.time;
+					weaponState = WP_RELOADING;
+					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);
+				} else {
+					curWeapon->fillClip(curWeapon->getClipSize());
+				}
+			} else {
+				curWeapon->onFireKeyHeld();
 
-			if(curWeapon->getDelayBetweenShots()) {
-				weaponTime = level.time;
-				weaponState = WP_FIRING;
-				ps.viewModelAnim = G_AnimationIndex("fire");
-				ps.viewModelAnimFlags = 0;
+				if(curWeapon->getDelayBetweenShots()) {
+					weaponTime = level.time;
+					weaponState = WP_FIRING;
+					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
+				}
 			}
 		}
 		return;
@@ -531,13 +545,23 @@ void Player::onFireKeyDown() {
 	}
 	if(curWeapon) {
 		if(weaponState == WP_IDLE) {
-			curWeapon->onFireKeyDown();
+			// reload weapon if clip is empty
+			if(curWeapon->hasEmptyClip()) {
+				if(curWeapon->getDelayBetweenShots()) {
+					weaponTime = level.time;
+					weaponState = WP_RELOADING;
+					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);
+				} else {
+					curWeapon->fillClip(curWeapon->getClipSize());
+				}
+			} else {
+				curWeapon->onFireKeyDown();
 
-			if(curWeapon->getDelayBetweenShots()) {
-				weaponTime = level.time;
-				weaponState = WP_FIRING;
-				ps.viewModelAnim = G_AnimationIndex("fire");
-				ps.viewModelAnimFlags = 0;
+				if(curWeapon->getDelayBetweenShots()) {
+					weaponTime = level.time;
+					weaponState = WP_FIRING;
+					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
+				}
 			}
 		}
 		return;
@@ -628,6 +652,8 @@ void Player::updateCurWeaponAttachment() {
 	if(curWeapon == 0) {
 		ps.curWeaponEntNum = ENTITYNUM_NONE;
 		ps.customViewRModelIndex = 0;
+		ps.viewModelAngles.zero();
+		ps.viewModelOffset.zero();
 	} else {
 		ps.curWeaponEntNum = curWeapon->getEntNum();
 		if(curWeapon->hasCustomViewModel()) {
@@ -636,6 +662,8 @@ void Player::updateCurWeaponAttachment() {
 			ps.customViewRModelIndex = 0;
 		}
 		curWeapon->setParent(this,getBoneNumForName("tag_weapon"));
+		ps.viewModelAngles = -curWeapon->getViewModelAngles();
+		ps.viewModelOffset = curWeapon->getViewModelOffset();
 	}
 }
 void Player::addWeapon(class Weapon *newWeapon) {
@@ -663,8 +691,7 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		}
 		// immediatelly raise up new weapon
 		weaponState = WP_RAISE;
-		ps.viewModelAnim = G_AnimationIndex("raise");
-		ps.viewModelAnimFlags = ANIMFLAG_STOPATLASTFRAME;
+		setViewModelAnim("raise",ANIMFLAG_STOPATLASTFRAME);
 		curWeapon = newWeapon;
 		updateCurWeaponAttachment();
 		weaponTime = level.time;
@@ -674,8 +701,7 @@ void Player::addWeapon(class Weapon *newWeapon) {
 			g_core->RedWarning("Player::addWeapon: ERROR: weapon state is IDLE but weapon pointer is NULL\n");
 		}
 		weaponState = WP_PUTAWAY;
-		ps.viewModelAnim = G_AnimationIndex("putaway");
-		ps.viewModelAnimFlags = ANIMFLAG_STOPATLASTFRAME;
+		setViewModelAnim("putaway",ANIMFLAG_STOPATLASTFRAME);
 		// we will bring new weapon up after putting this one away
 		nextWeapon = newWeapon;
 		weaponTime = level.time;
@@ -690,8 +716,7 @@ void Player::updatePlayerWeapon() {
 		}
 		if(elapsed > curWeapon->getRaiseTime()) {
 			weaponState = WP_IDLE;
-			ps.viewModelAnim = G_AnimationIndex("idle");
-			ps.viewModelAnimFlags = 0;
+			setViewModelAnim("idle",0);
 		}
 	} else if(weaponState == WP_PUTAWAY) {
 		u32 elapsed = level.time - weaponTime;
@@ -703,15 +728,13 @@ void Player::updatePlayerWeapon() {
 			// if we have next weapon waiting in queue, start raising it
 			if(nextWeapon.getPtr()) {
 				weaponState = WP_RAISE;
-				ps.viewModelAnim = G_AnimationIndex("raise");
-				ps.viewModelAnimFlags = ANIMFLAG_STOPATLASTFRAME;
+				setViewModelAnim("raise",ANIMFLAG_STOPATLASTFRAME);
 				curWeapon = nextWeapon;
 				updateCurWeaponAttachment();
 				nextWeapon.nullPtr();
 				weaponTime = level.time;
 			} else {
-				ps.viewModelAnim = G_AnimationIndex("none");
-				ps.viewModelAnimFlags = 0;
+				setViewModelAnim("none",0);
 			}
 		}
 	} else if(weaponState == WP_FIRING) {
@@ -721,8 +744,17 @@ void Player::updatePlayerWeapon() {
 		}
 		if(elapsed > curWeapon->getDelayBetweenShots()) {
 			weaponState = WP_IDLE;
-			ps.viewModelAnim = G_AnimationIndex("idle");
-			ps.viewModelAnimFlags = ANIMFLAG_STOPATLASTFRAME;
+			setViewModelAnim("idle",ANIMFLAG_STOPATLASTFRAME);
+		}
+	} else if(weaponState == WP_RELOADING) {
+		u32 elapsed = level.time - weaponTime;
+		if(g_printPlayerWeaponState.getInt()) {
+			g_core->Print("Player::updatePlayerWeapon: RELOADING weapon (elapsed %i, needed %i)\n",elapsed,curWeapon->getPutawayTime());
+		}
+		if(elapsed > curWeapon->getReloadTime()) {
+			weaponState = WP_IDLE;
+			curWeapon->fillClip(curWeapon->getClipSize());
+			setViewModelAnim("idle",ANIMFLAG_STOPATLASTFRAME);
 		}
 	} else {
 	}

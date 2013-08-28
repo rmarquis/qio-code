@@ -42,8 +42,11 @@ class Weapon : public ModelEntity {
 	u32 raiseTime;
 	// time needed to lower weapon (from lower animation)
 	u32 lowerTime;
+	// time needed to reload weapon (from reload animation)
+	u32 reloadTime;
 	str weaponName;
 	str ddaName;
+	vec3_c viewOffset, viewAngles;
 protected:
 	safePtr_c<Player> owner;
 
@@ -64,6 +67,26 @@ public:
 	}
 	u32 getDelayBetweenShots() const {
 		return delayBetweenShots;
+	}
+	u32 getReloadTime() const {
+		return reloadTime;
+	}
+	u32 getClipSize() const {
+		return clipSize;
+	}
+	void fillClip(u32 newCurClipSize) {
+		curClipSize = newCurClipSize;
+	}
+	bool hasEmptyClip() const {
+		if(curClipSize == 0)
+			return true;
+		return false;
+	}
+	const vec3_c &getViewModelAngles() const {
+		return viewAngles;
+	}
+	const vec3_c &getViewModelOffset() const {
+		return viewOffset;
 	}
 
 	virtual BaseEntity *getOwner() const;

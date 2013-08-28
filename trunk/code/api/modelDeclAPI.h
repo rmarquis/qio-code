@@ -34,9 +34,10 @@ public:
 
 class modelDeclAPI_i {
 public:
-	virtual const char *getModelDeclName() = 0;
-	virtual const char *getMeshName() = 0;
+	virtual const char *getModelDeclName() const = 0;
+	virtual const char *getMeshName() const = 0;
 	virtual class skelModelAPI_i *getSkelModel() = 0;
+	virtual const vec3_c &getOffset() const = 0;
 
 	virtual u32 getNumSurfaces() = 0;
 

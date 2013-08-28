@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/declManagerAPI.h>
 #include <api/entityDeclAPI.h>
 #include <api/modelDeclAPI.h>
+#include <api/entDefAPI.h>
 
 DEFINE_CLASS(Weapon, "ModelEntity");
 DEFINE_CLASS_ALIAS(Weapon, idItem);
@@ -46,6 +47,7 @@ Weapon::Weapon() {
 	curClipSize = 1;
 	raiseTime = 0;
 	lowerTime = 0;
+	reloadTime = 0;
 }
 Weapon::~Weapon() {
 
@@ -58,6 +60,7 @@ void Weapon::setViewModel(const char *newViewModelName) {
 		raiseTime = decl->getAnimationTimeMSec("raise");
 		lowerTime = decl->getAnimationTimeMSec("putaway");
 		delayBetweenShots = decl->getAnimationTimeMSec("fire");
+		reloadTime = decl->getAnimationTimeMSec("reload");
 	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
@@ -82,6 +85,7 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		}
 	} else if(!stricmp(key,"clipSize")) {
 		clipSize = atoi(value);
+		curClipSize = clipSize;
 	} else if(!stricmp(key,"ddaName")) {
 		ddaName = value;
 	} else if(!stricmp(key,"weaponName")) {
@@ -90,6 +94,20 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"ammoRequired")) {
 	} else if(!stricmp(key,"ammoType")) {
 
+	} else if(!stricmp(key,"fireRate")) {
+
+	} else if(!stricmp(key,"def_viewStyle")) {
+		// Quake4 (???) viewStyle dict
+		entityDeclAPI_i *viewStyleDef = g_declMgr->registerEntityDecl(value);
+		if(viewStyleDef) {
+			applyKeyValues(viewStyleDef->getEntDefAPI());
+		}
+	} else if(!stricmp(key,"viewoffset")) {
+		// set from "def_viewStyle" entityDef
+		viewOffset.fromString(value);
+	} else if(!stricmp(key,"viewangles")) {
+		// set from "def_viewStyle" entityDef
+		viewAngles.fromString(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -139,6 +157,7 @@ void Weapon::onSecondaryFireKeyUp() {
 
 void Weapon::doWeaponAttack() {
 	if(owner) {
+		curClipSize--;
 		G_BulletAttack(owner->getEyePos(),owner->getViewAngles().getForward(),owner);
 	} else {
 		G_BulletAttack(this->getOrigin(),this->getForward(),this);

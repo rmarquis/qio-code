@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
 #include <api/coreAPI.h>
+#include <api/modelDeclAPI.h>
 #include <renderer/rModelAPI.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -119,6 +120,13 @@ void CG_RunViewModel() {
 		localRot.set(0,0,90);
 		localOfs.set(-15,0,-65);
 #endif
+	} else {
+		localRot = cg.snap->ps.viewModelAngles;
+		localOfs = cg.snap->ps.viewModelOffset;
+
+		if(viewModel->isDeclModel()) {
+			localOfs += viewModel->getDeclModelAPI()->getOffset();
+		}
 	}
 
 	if(cg_printCurViewModelName.getInt()) {

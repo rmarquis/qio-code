@@ -1558,7 +1558,13 @@ netField_t	playerStateFields[] =
 { PSF(customViewRModelIndex), MODELNUM_BITS },
 { PSF(activeRagdollDefNameIndex), RAGDOLLDEFNUM_BITS },
 { PSF(viewModelAnim), ANIMNUM_BITS },
-{ PSF(viewModelAnimFlags), ANIMFLAG_BITS },
+{ PSF(viewModelAnimFlags), ANIMFLAG_BITS },		
+{ PSF(viewModelAngles[0]), 0 },
+{ PSF(viewModelAngles[1]), 0 },
+{ PSF(viewModelAngles[2]), 0 },
+{ PSF(viewModelOffset[0]), 0 },
+{ PSF(viewModelOffset[1]), 0 },
+{ PSF(viewModelOffset[2]), 0 },
 };
 
 /*

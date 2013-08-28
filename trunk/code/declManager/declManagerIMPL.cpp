@@ -196,17 +196,20 @@ public:
 	}
 
 	// modelDeclAPI_i impl
-	const char *getModelDeclName() {
+	virtual const char *getModelDeclName() const {
 		return declName;
 	}
-	const char *getMeshName() {
+	virtual const char *getMeshName() const {
 		return meshName;
 	}
-	class skelModelAPI_i *getSkelModel() {
+	virtual class skelModelAPI_i *getSkelModel() {
 		precache();
 		return skelModel;
 	}
-	u32 getNumSurfaces() {
+	virtual const vec3_c &getOffset() const {
+		return offset;
+	}
+	virtual u32 getNumSurfaces() {
 		precache();
 		if(skelModel) {
 			return skelModel->getNumSurfs();
@@ -338,7 +341,9 @@ const char *fileTextDataCache_c::findDeclInText(const char *declName, const char
 	u32 declTypeLen = strlen(declType);
 	const char *p = text;
 	while(*p) {
-		if(!Q_stricmpn(p,declName,declNameLen) && G_isWS(p[declNameLen])) {
+		// the opening brace might be directly after decl name (without any whitespaces)
+		// eg: "entityDef viewStyle_pistol{"  ...
+		if(!Q_stricmpn(p,declName,declNameLen) && (G_isWS(p[declNameLen]) || p[declNameLen] == '{')) {
 			// check the decl type
 			const char *declTypeStringEnd = p;
 			while(G_isWS(*declTypeStringEnd)) {

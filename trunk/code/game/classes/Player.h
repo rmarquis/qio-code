@@ -81,6 +81,7 @@ class Player : public ModelEntity {
 	u32 lastDeathTime; // in msec
 
 	void updateCurWeaponAttachment();
+	void setViewModelAnim(const char *animName, int animFlags);
 public:
 	Player();
 	virtual ~Player();
