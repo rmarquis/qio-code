@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/imgAPI.h>
 #include <shared/hashTableTemplate.h>
 #include <shared/autoCmd.h>
+#include <shared/tableList.h>
 
 struct matFile_s {
 	str fname;
@@ -77,7 +78,6 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 			}
 			const char *brace = p;
 			p++;
-			G_SkipToNextToken(p);
 			// now we're sure that 'p' is at valid material text,
 			// so we can start parsing
 			return brace;
@@ -86,7 +86,6 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 	}
 	return 0;
 }
-
 bool MAT_FindMaterialText(const char *matName, matTextDef_s &out) {
 	for(u32 i = 0; i < matFiles.size(); i++) {
 		matFile_s *mf = matFiles[i];
@@ -100,7 +99,60 @@ bool MAT_FindMaterialText(const char *matName, matTextDef_s &out) {
 	}
 	return false;
 }
+const char *MAT_FindTableDefInText(const char *tableName, const char *text) {
+	u32 tableNameLen = strlen(tableName);
+	const char *p = text;
+	while(*p) {
+		if(!Q_stricmpn(p,"table",5) && G_isWS(p[5])) {
+			p += 5;
+			p = G_SkipToNextToken(p);
+			if(!Q_stricmpn(p,tableName,tableNameLen) && G_isWS(p[tableNameLen])) {
+				const char *tableNameStart = p;
+				p += tableNameLen;
+				p = G_SkipToNextToken(p);
+				if(*p != '{') {
+					continue;
+				}
+				const char *brace = p;
+				p++;
+				// now we're sure that 'p' is at valid material text,
+				// so we can start parsing
+				return brace;
+			}
+		}
+		p++;
+	}
+	return 0;
+}
+bool MAT_FindTableText(const char *tableName, matTextDef_s &out) {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		matFile_s *mf = matFiles[i];
+		const char *p = MAT_FindTableDefInText(tableName,mf->text);
+		if(p) {
+			out.p = p;
+			out.textBase = mf->text;
+			out.sourceFile = mf->fname;
+			return true;
+		}
+	}
+	return false;
+}
+bool MAT_FindTableText(const char *tableName, const char **p, const char **textBase, const char **sourceFileName) {
+	matTextDef_s tmp;
+	if(MAT_FindTableText(tableName,tmp)) {
+		*p = tmp.p;
+		*textBase = tmp.textBase;
+		*sourceFileName = tmp.sourceFile;
+		return true;
+	}
+	return false;
+}
+// tables list for Doom3/Quake4 material tables
+static tableList_c mat_tableList(MAT_FindTableText);
 
+const class tableListAPI_i *MAT_GetTablesAPI() {
+	return &mat_tableList;
+}
 matFile_s *MAT_FindMatFileForName(const char *fname) {
 	for(u32 i = 0; i < matFiles.size(); i++) {
 		matFile_s *mf = matFiles[i];

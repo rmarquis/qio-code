@@ -221,6 +221,17 @@ public:
 		_v[ 2] *= scaleX;     _v[ 6] *= scaleY;        _v[10] *= scaleZ;
 		_v[ 3] *= scaleX;     _v[ 7] *= scaleY;        _v[11] *= scaleZ;
 	}
+	void shear(vec_t x, vec_t y) {
+		matrix_c shear;
+		shear.setupShear(x, y);
+		*this = *this * shear;
+	}
+	void setupShear(vec_t x, vec_t y) {
+		_v[ 0] = 1;      _v[ 4] = x;      _v[ 8] = 0;      _v[12] = 0;
+		_v[ 1] = y;      _v[ 5] = 1;      _v[ 9] = 0;      _v[13] = 0;
+		_v[ 2] = 0;      _v[ 6] = 0;      _v[10] = 1;      _v[14] = 0;
+		_v[ 3] = 0;      _v[ 7] = 0;      _v[11] = 0;      _v[15] = 1;
+	}
 	void setupProjection(float fovX, float fovY, float zNear, float zFar) {
 		float ymax = zNear * tan( fovY * M_PI / 360.0f );
 		float ymin = -ymax;

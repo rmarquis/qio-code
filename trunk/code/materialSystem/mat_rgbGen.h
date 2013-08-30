@@ -33,12 +33,18 @@ class rgbGen_c {
 	union {
 		waveForm_c wave;
 		float constValue[3];
+		class astAPI_i *ast;
 	};
 public:
 	rgbGen_c() {
 		type = RGBGEN_NONE;
 	}
+	~rgbGen_c();
+
 	bool parse(class parser_c &p);
+	void setRGBGenAST(class astAPI_i *newAST);
+	void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
+
 	bool isNone() const {
 		return (type == RGBGEN_NONE);
 	}

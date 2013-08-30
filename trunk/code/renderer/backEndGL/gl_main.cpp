@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/sdlSharedAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -53,6 +54,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/byteRGB.h>
 #include <shared/textureWrapMode.h>
 #include <shared/fColor4.h>
+#include <shared/ast_input.h>
 
 static aCvar_c rb_showTris("rb_showTris","0");
 static aCvar_c rb_showNormals("rb_showNormals","0");
@@ -67,6 +69,7 @@ static aCvar_c rb_ignoreRGBGenVertex("rb_ignoreRGBGenVertex","0");
 static aCvar_c rb_ignoreRGBGenWave("rb_ignoreRGBGenWave","1");
 static aCvar_c rb_printRGBGenWaveMaterials("rb_printRGBGenWaveMaterials","0");
 static aCvar_c rb_ignoreRGBGenConst("rb_ignoreRGBGenConst","0");
+static aCvar_c rb_ignoreRGBGenAST("rb_ignoreRGBGenAST","0");
 // always use GLSL shaders, even if they are not needed for any material effects
 static aCvar_c gl_alwaysUseGLSLShaders("gl_alwaysUseGLSLShaders","0");
 static aCvar_c rb_showDepthBuffer("rb_showDepthBuffer","0");
@@ -90,6 +93,7 @@ static aCvar_c rb_ignoreDrawCalls3D("rb_ignoreDrawCalls3D","0");
 static aCvar_c rb_dynamicLighting_ignoreAngleFactor("rb_dynamicLighting_ignoreAngleFactor","0");
 // enables DEBUG_IGNOREDISTANCEFACTOR macro for all shaders
 static aCvar_c rb_dynamicLighting_ignoreDistanceFactor("rb_dynamicLighting_ignoreDistanceFactor","0");
+static aCvar_c rb_debugStageConditions("rb_debugStageConditions","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -249,6 +253,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool isMirror;
 	bool bRendererMirrorThisFrame;
 	int r_shadows;
+
+	// for Doom3 material expressions
+	astInput_c materialVarList;
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
@@ -1180,6 +1187,18 @@ public:
 			for(u32 i = 0; i < numMatStages; i++) {
 				// get the material stage
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				// see if stage condition is met (Doom3 'if' materials)
+				if(s->hasIFCondition()) {
+					if(s->conditionMet(&materialVarList) == false) {
+						if(rb_debugStageConditions.getInt()) {
+							g_core->Print("Skipping stage %i of material %s because condition is NOT met\n",i,lastMat->getName());
+						}
+						continue; // skip this stage
+					}
+					if(rb_debugStageConditions.getInt()) {
+						g_core->Print("Drawing stage %i of material %s because condition is met\n",i,lastMat->getName());
+					}
+				}
 				// get material stage type
 				enum stageType_e stageType = s->getStageType();
 				// get the bumpmap substage of current stage
@@ -1246,7 +1265,7 @@ public:
 #endif
 				if(s->hasTexMods()) {
 					matrix_c mat;
-					s->applyTexMods(mat,this->timeNowSeconds);
+					s->applyTexMods(mat,this->timeNowSeconds,&materialVarList);
 					this->setTextureMatrixCustom(0,mat);
 				} else {
 					this->setTextureMatrixIdentity(0);
@@ -1386,6 +1405,25 @@ drawOnlyLightmap:
 						byteRGB_s col;
 						vec3_c colFloats;
 						s->getRGBGenConstantColor3f(colFloats);
+						col.fromFloats(colFloats);
+						stageVerts.setVertexColorsToConstValues(col);
+						stageVerts.setVertexAlphaToConstValue(255);				
+					} else if(1 && s->getRGBGenType() == RGBGEN_AST && (rb_ignoreRGBGenAST.getInt() == 0)) {
+						bindVertexColors = true;
+						// copy vertices data (first big CPU bottleneck)
+						// (but only if we havent done this already)
+						if(selectedVertexBuffer == &verts) {
+							stageVerts = verts;
+							selectedVertexBuffer = &stageVerts;
+							if(rb_printMemcpyVertexArrayBottleneck.getInt()) {
+								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
+							}
+						}
+						// get the constant color
+						byteRGB_s col;
+						vec3_c colFloats;
+						// evaluate RGB expression of Doom3 material
+						s->evaluateRGBGen(&materialVarList,colFloats);
 						col.fromFloats(colFloats);
 						stageVerts.setVertexColorsToConstValues(col);
 						stageVerts.setVertexAlphaToConstValue(255);
@@ -1636,6 +1674,9 @@ drawOnlyLightmap:
 		}
 		clearDepthBuffer();
 		glClearColor(0,0,0,0);
+
+		materialVarList.setTableList(g_ms->getTablesAPI());
+		materialVarList.setVariable("time",timeNowSeconds);
 
 		// reset counters
 		c_frame_vbsReusedByDifferentDrawCall = 0;

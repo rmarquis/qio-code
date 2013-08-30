@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/inputSystemAPI.h>
 #include <api/sdlSharedAPI.h>
 #include <api/rbAPI.h>
+// it's needed here only for Doom3 .mtr tables access
+#include <api/materialSystemAPI.h>
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
@@ -40,6 +42,7 @@ coreAPI_s *g_core = 0;
 inputSystemAPI_i * g_inputSystem = 0;
 sdlSharedAPI_i *g_sharedSDLAPI = 0;
 class rbAPI_i *rb = 0;
+materialSystemAPI_i *g_ms = 0;
 
 void SDLOpenGL_RegisterBackEnd();
 
@@ -56,6 +59,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_inputSystem,INPUT_SYSTEM_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_sharedSDLAPI,SHARED_SDL_API_IDENTSTRING);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

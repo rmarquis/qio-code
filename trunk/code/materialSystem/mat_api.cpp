@@ -79,6 +79,10 @@ public:
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
 		return MAT_CreateHLBSPTexture(newMatName,pixels,width,height,palette);
 	}
+	// Doom3 material tables interface
+	virtual const class tableListAPI_i *getTablesAPI() const {
+		return MAT_GetTablesAPI();
+	}
 };
 
 // interface manager (import)

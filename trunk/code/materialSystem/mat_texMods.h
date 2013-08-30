@@ -36,6 +36,11 @@ enum texModType_e {
 	TCMOD_STRETCH,
 	TCMOD_TURBULENT,
 	TCMOD_ROTATE,
+	// Doom3 ast texmods
+	TCMOD_D3_ROTATE,
+	TCMOD_D3_SCALE,
+	TCMOD_D3_SHEAR,
+	TCMOD_D3_SCROLL,
 	TCMOD_NUM_TEXMODS,
 };
 
@@ -50,17 +55,54 @@ class texMod_c {
 		};
 		float scale[2];
 		float rotationSpeed;
+		class astAPI_i *astRotation;
+		class astAPI_i *astScale[2];
+		class astAPI_i *astShear[2];
+		class astAPI_i *astScroll[2];
 		waveForm_c wave;
 	};
+	static void applyRotationToMatrix(class matrix_c &mat, float rot);
+
+	void clear();
 public:
+	texMod_c();
+	texMod_c(const texMod_c &other);
+	texMod_c &operator =(const texMod_c &other);
+	~texMod_c();
+
 	bool parse(class parser_c &p);
 	// appends a tcmod transform to given matrix
-	void appendTransform(class matrix_c &mat, float timeNowSeconds);
+	void appendTransform(class matrix_c &mat, float timeNowSeconds, const class astInputAPI_i *in);
+	// D3 scriptable texmods
+	void setD3TexModRotate(class astAPI_i *ast) {
+		type = TCMOD_D3_ROTATE;
+		astRotation = ast;
+	}
+	void setD3TexModScale(class astAPI_i *val0, class astAPI_i *val1) {
+		type = TCMOD_D3_SCALE;
+		astScale[0] = val0;
+		astScale[1] = val1;
+	}
+	void setD3TexModShear(class astAPI_i *val0, class astAPI_i *val1) {
+		type = TCMOD_D3_SHEAR;
+		astShear[0] = val0;
+		astShear[1] = val1;
+	}
+	void setD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1) {
+		type = TCMOD_D3_SCROLL;
+		astScroll[0] = val0;
+		astScroll[1] = val1;
+	}
 };
 
 class texModArray_c : public arraySTD_c<texMod_c> {
 public:
-	void calcTexMatrix(class matrix_c &out, float timeNowSeconds);
+	void calcTexMatrix(class matrix_c &out, float timeNowSeconds, const class astInputAPI_i *in);
+	// D3 scriptable texmods
+	void addD3TexModRotate(class astAPI_i *value);
+	void addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1);
 };
 
 

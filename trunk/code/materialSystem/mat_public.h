@@ -49,6 +49,8 @@ enum rgbGen_e {
 	RGBGEN_EXACTVERTEX,
 	RGBGEN_CONSTLIGHTING,
 	RGBGEN_LIGHTINGDIFFUSE,
+	// now D3 rgbgens:
+	RGBGEN_AST, // one D3 material script expression for r,g,b
 };
 
 // blend modes; abstracted so they can apply to both opengl and dx

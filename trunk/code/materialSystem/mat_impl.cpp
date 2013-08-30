@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <shared/autoCvar.h>
 #include <shared/textureWrapMode.h>
+#include <shared/ast.h>
 
 static aCvar_c mat_collapseMaterialStages("mat_collapseMaterialStages","1");
 
@@ -117,6 +118,7 @@ mtrStage_c::mtrStage_c() {
 	subStageBumpMap = 0;
 	subStageHeightMap = 0;
 	nextBundle = 0;
+	condition = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -133,6 +135,10 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(nextBundle) {
 		delete nextBundle;
+	}
+	if(condition) {
+		condition->destroyAST();
+		condition = 0;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -154,12 +160,41 @@ void mtrStage_c::addTexMod(const class texMod_c &newTM) {
 	}
 	this->texMods->push_back(newTM);
 }
-void mtrStage_c::applyTexMods(class matrix_c &out, float curTimeSec) const {
+void mtrStage_c::addD3TexModRotate(class astAPI_i *value) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->addD3TexModRotate(value);
+}
+void mtrStage_c::addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->addD3TexModScale(val0,val1);
+}
+void mtrStage_c::addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->addD3TexModShear(val0,val1);
+}
+void mtrStage_c::addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->addD3TexModScroll(val0,val1);
+}
+void mtrStage_c::setRGBGenAST(class astAPI_i *ast) {
+	if(rgbGen == 0)
+		rgbGen = new rgbGen_c;
+	rgbGen->setRGBGenAST(ast);
+}
+void mtrStage_c::applyTexMods(class matrix_c &out, float curTimeSec, const class astInputAPI_i *in) const {
 	if(texMods == 0) {
 		out.identity();
 		return;
 	}
-	texMods->calcTexMatrix(out,curTimeSec);
+	texMods->calcTexMatrix(out,curTimeSec,in);
 }
 bool mtrStage_c::hasRGBGen() const {
 	if(rgbGen == 0)
@@ -197,6 +232,25 @@ float mtrStage_c::getRGBGenWaveValue(float curTimeSec) const {
 	float ret = rgbGen->getWaveForm().evaluate(curTimeSec);
 	return ret;
 }
+void mtrStage_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const {
+	if(rgbGen == 0)
+		return; // errorr
+	rgbGen->evaluateRGBGen(in,out3Floats);
+}
+// return true if stage is conditional (has Doom3 'if' condition)
+bool mtrStage_c::hasIFCondition() const {
+	if(condition)
+		return true;
+	return false;
+}
+// return true if drawing condition is met for given input variables
+bool mtrStage_c::conditionMet(const class astInputAPI_i *in) const {
+	float result = condition->execute(in);
+	if(result == 0.f)
+		return false;
+	return true;
+}
+
 // material class
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
@@ -391,6 +445,15 @@ void mtrIMPL_c::removeAllStagesOfType(enum stageType_e type) {
 		}
 	}
 }
+
+class astAPI_i *MAT_ParseExpression(parser_c &p) {
+	str s = p.getLine(",");
+	astAPI_i *ret = AST_ParseExpression(s);
+	if(p.atWord_dontNeedWS(",")) {
+		// skip it
+	}
+	return ret;
+}
 bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
 	p.setup(txt.textBase,txt.p);
@@ -542,6 +605,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// Doom3 mirror
 					// used eg. in Prey's game/roadhouse.proc
 					this->bMirrorMaterial = true;
+				} else if(p.atWord("qer_editorimage")) {
+					this->editorImage = p.getToken();
 				} else {
 					p.getToken();
 				}
@@ -679,7 +744,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("colored")) {
 					// no arguments
 				} else if(p.atWord("rgb")) {
-					p.skipLine();
+					// usage: "rgb <expression>"
+					// example: "rgb		sosTable[ time * 0.25 ]"
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setRGBGenAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'rgb' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("nomips")) {
 
 				} else if(p.atWord("highquality")) {
@@ -703,10 +776,21 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							tok.c_str(),this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
 				} else if(p.atWord("if")) {
+					// NOTE: this is the condition for entire material stage
 					// example: "if ( parm5 == 0 )"
+					// example: "if ( ( time * 4 ) % 3 == 0 )"
+#if 0
 					// TODO: evaluate Doom3 conditional expressions?
 					stage->setMarkedForDelete(true);
-
+#else
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setStageCondition(ast);
+					} else {
+						g_core->RedWarning("Failed to parse stage condition ('if') AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+#endif
 				} else if(p.atWord("glowStage")) {
 
 				} else if(p.atWord("vertexcolor")) {
@@ -714,13 +798,61 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("inversevertexcolor")) {
 
 				} else if(p.atWord("rotate")) {
-					// example: rotate time / -700
-
+					// example: "rotate time / -700"
+					// example:	"rotate .65 + bfg_flare1_rotate[time*.5]" 
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->addD3TexModRotate(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'rotate' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("scroll") || p.atWord("translate")) {
 					// NOTE: "scroll" and "translate" are handled in one 'if' block in Doom3 as well
 					// example: "scroll time / 1000, time / 1000"
+					astAPI_i *scrollVal0 = MAT_ParseExpression(p);
+					if(scrollVal0 == 0) {
+						g_core->RedWarning("Failed to parse 'scroll' first value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *scrollVal1 = MAT_ParseExpression(p);
+					if(scrollVal1 == 0) {
+						g_core->RedWarning("Failed to parse 'scroll' second value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					if(scrollVal0 && scrollVal1) {
+						stage->addD3TexModScroll(scrollVal0,scrollVal1);
+					}
 				} else if(p.atWord("scale")) {
 					// example: "scale	0.5 - parm4, 0.5 - parm4"
+					astAPI_i *scaleVal0 = MAT_ParseExpression(p);
+					if(scaleVal0 == 0) {
+						g_core->RedWarning("Failed to parse 'scale' first value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *scaleVal1 = MAT_ParseExpression(p);
+					if(scaleVal1 == 0) {
+						g_core->RedWarning("Failed to parse 'scale' second value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					if(scaleVal0 && scaleVal1) {
+						stage->addD3TexModScale(scaleVal0,scaleVal1);
+					}
+				} else if(p.atWord("shear")) {
+					// example: "shear	scaleTable[time * 0.1] , 0"
+					astAPI_i *shearVal0 = MAT_ParseExpression(p);
+					if(shearVal0 == 0) {
+						g_core->RedWarning("Failed to parse 'shear' first value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *shearVal1 = MAT_ParseExpression(p);
+					if(shearVal1 == 0) {
+						g_core->RedWarning("Failed to parse 'shear' second value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					if(shearVal0 && shearVal1) {
+						stage->addD3TexModShear(shearVal0,shearVal1);
+					}
 				} else {
 					p.getToken();
 				}
@@ -735,6 +867,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	if(stages.size() == 0) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		//this->createFromImage();
+		if(editorImage.length()) {
+			mtrStage_c *s = new mtrStage_c;
+			s->setStageType(ST_COLORMAP);
+			s->setTexture(editorImage);
+			stages.push_back(s);
+		}
 	} else {
 		// delete unwanted stages
 		for(int i = 0; i < stages.size(); i++) {

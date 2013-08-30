@@ -132,7 +132,7 @@ const char *parser_c::getToken(str &out, const char *stopSet) {
 	out.setFromTo(start,end);
 	return out;
 }
-const char *parser_c::getLine(str &out) {
+const char *parser_c::getLine(str &out, const char *stopSet) {
 	if(skipToNextToken()) {
 		printf("parser_c::getLine: EOF reached\n");
 		out.clear();
@@ -143,6 +143,9 @@ const char *parser_c::getLine(str &out) {
 	while(1) {
 		if(*p == '\n')
 			break;
+		if(stopSet && isCharInCharset(stopSet,*p)) {
+			break;
+		}
 		if(*p == 0) {
 			break;
 		}

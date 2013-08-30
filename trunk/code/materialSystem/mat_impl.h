@@ -111,6 +111,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	mtrStage_c *subStageBumpMap;
 	mtrStage_c *subStageHeightMap;
 	mtrStage_c *nextBundle;
+	// "if" condition for Doom3 materials
+	class astAPI_i *condition;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -138,7 +140,7 @@ public:
 			return true;
 		return false;
 	}
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const;
+	virtual void applyTexMods(class matrix_c &out, float curTimeSec, const class astInputAPI_i *in) const;
 	virtual stageType_e getStageType() const {
 		return type;
 	}
@@ -146,6 +148,7 @@ public:
 	virtual enum rgbGen_e getRGBGenType() const;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const;
 	virtual float getRGBGenWaveValue(float curTimeSec) const;
+	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
 	virtual bool getDepthWrite() const {
 		return depthWrite;
 	}
@@ -207,10 +210,22 @@ public:
 	int getImageHeight() const;
 	u32 getNumImageFrames() const;
 	void addTexMod(const class texMod_c &newTM);
+	void addD3TexModRotate(class astAPI_i *value);
+	void addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1);
+	void setRGBGenAST(class astAPI_i *ast);
 	class rgbGen_c *allocRGBGen();
 	class stageTexture_c &getStageTexture() {
 		return stageTexture;
 	}
+	void setStageCondition(class astAPI_i *newCondition) {
+		condition = newCondition;
+	}
+	// return true if stage is conditional (has Doom3 'if' condition)
+	virtual bool hasIFCondition() const;
+	// return true if drawing condition is met for given input variables
+	virtual bool conditionMet(const class astInputAPI_i *in) const;
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
@@ -223,6 +238,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	enum cullType_e cullType;
 	bool bPortalMaterial; // set to true by "portal" global material keyword
 	bool bMirrorMaterial; // set to true by "mirror" global material keyword
+	str editorImage; // set by "qer_editorimage" keyword (Q3/D3)
 
 	void removeAllStagesOfType(enum stageType_e type);
 	class mtrStage_c *getFirstStageOfType(enum stageType_e type);

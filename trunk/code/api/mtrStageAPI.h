@@ -35,7 +35,7 @@ public:
 	virtual class mtrStageAPI_i *getBumpMap() const = 0;
 	virtual class mtrStageAPI_i *getHeightMap() const = 0;
 	virtual bool hasTexMods() const = 0;
-	virtual void applyTexMods(class matrix_c &out, float curTimeSec) const = 0;
+	virtual void applyTexMods(class matrix_c &out, float curTimeSec, const class astInputAPI_i *in) const = 0;
 	virtual bool hasTexGen() const = 0;
 	virtual enum texCoordGen_e getTexGen() const = 0;
 	virtual enum stageType_e getStageType() const = 0;
@@ -44,6 +44,11 @@ public:
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
 	virtual float getRGBGenWaveValue(float curTimeSec) const = 0;
 	virtual bool getDepthWrite() const = 0;
+	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const = 0;
+	// return true if stage is conditional (has Doom3 'if' condition)
+	virtual bool hasIFCondition() const = 0;
+	// return true if drawing condition is met for given input variables
+	virtual bool conditionMet(const class astInputAPI_i *in) const = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

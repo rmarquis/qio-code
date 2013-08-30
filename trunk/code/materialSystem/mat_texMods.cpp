@@ -24,9 +24,60 @@ or simply visit <http://www.gnu.org/licenses/>.
 // mat_texmods.cpp
 #include "mat_texMods.h"
 #include <shared/parser.h>
+#include <shared/ast.h>
 #include <api/coreAPI.h>
 #include <math/matrix.h>
 
+texMod_c::texMod_c() {
+	type = TCMOD_BAD;
+}
+texMod_c::texMod_c(const texMod_c &other) {
+	type = other.type;
+	if(type == TCMOD_TURBULENT) {
+		wave = other.wave;
+	} else if(type == TCMOD_SCROLL) {
+		scroll[0] = other.scroll[0];
+		scroll[1] = other.scroll[1];
+	} else if(type == TCMOD_ROTATE) {
+		rotationSpeed = other.rotationSpeed;
+	} else if(type == TCMOD_SCALE) {
+		scale[0] = other.scale[0];
+		scale[1] = other.scale[1];
+	} else if(type == TCMOD_TRANSFORM) {
+		translate[0] = other.translate[0];
+		translate[1] = other.translate[1];
+		matrix[0][0] = other.matrix[0][0];
+		matrix[0][1] = other.matrix[0][1];
+		matrix[1][0] = other.matrix[1][0];
+		matrix[1][1] = other.matrix[1][0];
+	} else if(type == TCMOD_D3_ROTATE) {
+		astRotation = other.astRotation->duplicateAST();
+	} else if(type == TCMOD_D3_SCALE) {
+		astScale[0] = other.astScale[0]->duplicateAST();
+		astScale[1] = other.astScale[1]->duplicateAST();
+	} else if(type == TCMOD_D3_SHEAR) {
+		astShear[0] = other.astShear[0]->duplicateAST();
+		astShear[1] = other.astShear[1]->duplicateAST();
+	} else if(type == TCMOD_D3_SCROLL) {
+		astScroll[0] = other.astScroll[0]->duplicateAST();
+		astScroll[1] = other.astScroll[1]->duplicateAST();
+	}
+}
+texMod_c &texMod_c::operator =(const texMod_c &other) {
+	clear();
+	texMod_c::texMod_c(other);
+	return *this;
+}
+texMod_c::~texMod_c() {
+	clear();
+}	
+void texMod_c::clear() {
+	if(type == TCMOD_D3_ROTATE) {
+		astRotation->destroyAST();
+		astRotation = 0;
+	}
+	type = TCMOD_BAD;
+}
 bool texMod_c::parse(class parser_c &p) {
 	if(p.atWord("scroll")) {
 		type = TCMOD_SCROLL;
@@ -64,7 +115,12 @@ bool texMod_c::parse(class parser_c &p) {
 	return false; // ok
 }
 
-void texMod_c::appendTransform(class matrix_c &mat, float timeNowSeconds) {
+void texMod_c::applyRotationToMatrix(class matrix_c &mat, float rot) {
+	mat.translate(0.5f, 0.5f, 0);
+	mat.rotateZ(rot);
+	mat.translate(-0.5f, -0.5f, 0);
+}
+void texMod_c::appendTransform(class matrix_c &mat, float timeNowSeconds, const class astInputAPI_i *in) {
 	if(type == TCMOD_SCROLL) {
 		float s = timeNowSeconds * this->scroll[0];
 		float t = timeNowSeconds * this->scroll[1];
@@ -105,18 +161,51 @@ void texMod_c::appendTransform(class matrix_c &mat, float timeNowSeconds) {
 	} else if(type == TCMOD_ROTATE) {
 		float rot = this->rotationSpeed * timeNowSeconds;
 		rot = -rot;
+		applyRotationToMatrix(mat,rot);
+	} else if(type == TCMOD_D3_ROTATE) {
+		float rot = astRotation->execute(in);
+		rot *= 360.f;
+		applyRotationToMatrix(mat,rot);
+	} else if(type == TCMOD_D3_SCALE) {
+		float scaleVal0 = astScale[0]->execute(in);
+		float scaleVal1 = astScale[1]->execute(in);
+		mat.scale(scaleVal0,scaleVal1,0);
+	} else if(type == TCMOD_D3_SHEAR) {
+		float shearVal0 = astShear[0]->execute(in);
+		float shearVal1 = astShear[1]->execute(in);
 		mat.translate(0.5f, 0.5f, 0);
-		mat.rotateZ(rot);
+		mat.shear(shearVal0,shearVal1);
 		mat.translate(-0.5f, -0.5f, 0);
+	} else if(type == TCMOD_D3_SCROLL) {
+		float s = astScroll[0]->execute(in);
+		float t = astScroll[1]->execute(in);
+		// normalize coordinates
+		s = s - floor(s);
+		t = t - floor(t);
+		// append transform
+		mat.translate(s,t,0);
 	} else {
 		g_core->RedWarning("texMod_c::appendTransform: type %i not handled\n",this->type);
 	}
 }
 
-void texModArray_c::calcTexMatrix(matrix_c &out, float timeNowSeconds) {
+void texModArray_c::calcTexMatrix(matrix_c &out, float timeNowSeconds, const class astInputAPI_i *in) {
 	out.identity();
 	for(u32 i = 0; i < size(); i++) {
-		(*this)[i].appendTransform(out, timeNowSeconds);
+		(*this)[i].appendTransform(out, timeNowSeconds, in);
 	}
 }
+void texModArray_c::addD3TexModRotate(class astAPI_i *value) {
+	this->pushBack().setD3TexModRotate(value);
+}
+void texModArray_c::addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1) {
+	this->pushBack().setD3TexModScale(val0,val1);
+}
+void texModArray_c::addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1) {
+	this->pushBack().setD3TexModShear(val0,val1);
+}
+void texModArray_c::addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1) {
+	this->pushBack().setD3TexModScroll(val0,val1);
+}
+
 

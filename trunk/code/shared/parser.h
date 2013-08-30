@@ -61,9 +61,9 @@ public:
 	const char *getToken(const char *stopSet = 0) {
 		return getToken(this->lastToken, stopSet);
 	}	
-	const char *getLine(str &out);
-	const char *getLine() {
-		return getLine(this->lastToken);
+	const char *getLine(str &out, const char *stopSet = 0);
+	const char *getLine(const char *stopSet = 0) {
+		return getLine(this->lastToken,stopSet);
 	}
 	const char *getLastStoredToken() const {
 		return lastToken;

@@ -24,7 +24,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 // mat_rgbGen.cpp
 #include "mat_rgbGen.h"
 #include <shared/parser.h>
+#include <shared/ast.h>
 
+rgbGen_c::~rgbGen_c() {
+	if(type == RGBGEN_AST) {
+		ast->destroyAST();
+	}
+}
 bool rgbGen_c::parse(class parser_c &p) {
 	if(p.atWord("wave")) {
 		type = RGBGEN_WAVE;
@@ -60,5 +66,18 @@ bool rgbGen_c::parse(class parser_c &p) {
 	}
 	return false;
 }
+void rgbGen_c::setRGBGenAST(class astAPI_i *newAST) {
+	type = RGBGEN_AST;
+	ast = newAST;
+}
+void rgbGen_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const {
+	if(type == RGBGEN_AST) {
+		float result = ast->execute(in);
+		out3Floats[0] = result;
+		out3Floats[1] = result;
+		out3Floats[2] = result;
+	}
+}
+
 
 
