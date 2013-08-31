@@ -128,6 +128,9 @@ public:
 			}
 		}
 	}
+	void setMeshName(const char *newMeshName) {
+		meshName = newMeshName;
+	}
 	bool parse(const char *text, const char *textBase, const char *fname) {
 		parser_c p;
 		p.setup(textBase, text);
@@ -162,6 +165,17 @@ public:
 							p.skipLine();
 						}
 					}
+				}
+			} else if(p.atWord("inherit")) {
+				const char *s = p.getToken();
+				class modelDeclAPI_i *inheritAPI = g_declMgr->registerModelDecl(s);
+				if(inheritAPI) {
+					this->setMeshName(inheritAPI->getMeshName());
+					// hack, we need to append animations
+					modelDecl_c *inherit = dynamic_cast<modelDecl_c*>(inheritAPI);
+					this->anims.addArray(inherit->anims);
+				} else {
+		
 				}
 			} else {
 				int line = p.getCurrentLineNumber();
