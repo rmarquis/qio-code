@@ -19,10 +19,14 @@ enum stageType_e {
 
 // hardcoded alpha func test values (for non-blended transparency)
 enum alphaFunc_e {
+	// Quake3 alphaFuncs
 	AF_NONE,
 	AF_GT0,
 	AF_LT128,
 	AF_GE128,
+	// Doom3 "alphaTest" <expression>
+	// (The expression is evaluated at runtime)
+	AF_D3_ALPHATEST,
 };
 
 // texCoordGens automatically

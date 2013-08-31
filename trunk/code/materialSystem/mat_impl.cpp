@@ -119,6 +119,7 @@ mtrStage_c::mtrStage_c() {
 	subStageHeightMap = 0;
 	nextBundle = 0;
 	condition = 0;
+	alphaTestAST = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -139,6 +140,10 @@ mtrStage_c::~mtrStage_c() {
 	if(condition) {
 		condition->destroyAST();
 		condition = 0;
+	}
+	if(alphaTestAST) {
+		alphaTestAST->destroyAST();
+		alphaTestAST = 0;
 	}
 }
 void mtrStage_c::setTexture(const char *newMapName) {
@@ -183,6 +188,12 @@ void mtrStage_c::addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1) {
 		this->texMods = new texModArray_c;
 	}
 	this->texMods->addD3TexModScroll(val0,val1);
+}
+void mtrStage_c::addD3TexModCenterScale(class astAPI_i *val0, class astAPI_i *val1) {
+	if(this->texMods == 0) {
+		this->texMods = new texModArray_c;
+	}
+	this->texMods->addD3TexModCenterScale(val0,val1);
 }
 void mtrStage_c::setRGBGenAST(class astAPI_i *ast) {
 	if(rgbGen == 0)
@@ -250,7 +261,67 @@ bool mtrStage_c::conditionMet(const class astInputAPI_i *in) const {
 		return false;
 	return true;
 }
-
+bool mtrStage_c::getColorMaskRed() const {
+	return colorMask.getMaskRed();
+}
+bool mtrStage_c::getColorMaskGreen() const {
+	return colorMask.getMaskGreen();
+}
+bool mtrStage_c::getColorMaskBlue() const {
+	return colorMask.getMaskBlue();
+}
+bool mtrStage_c::getColorMaskAlpha() const {
+	return colorMask.getMaskAlpha();
+}
+// Doom3 glColorMask(...) settings
+void mtrStage_c::setMaskRed(bool bMask) {
+	colorMask.setMaskRed(bMask);
+}
+void mtrStage_c::setMaskGreen(bool bMask) {
+	colorMask.setMaskGreen(bMask);
+}
+void mtrStage_c::setMaskBlue(bool bMask) {
+	colorMask.setMaskBlue(bMask);
+}
+void mtrStage_c::setMaskAlpha(bool bMask) {
+	colorMask.setMaskAlpha(bMask);
+}
+void mtrStage_c::setMaskColor(bool bMask) {
+	colorMask.setMaskColor(bMask);
+}
+void mtrStage_c::setAlphaTestAST(class astAPI_i *ast) {
+	if(alphaTestAST) {
+		alphaTestAST->destroyAST();
+	}
+	alphaFunc = AF_D3_ALPHATEST;
+	alphaTestAST = ast;
+}
+float mtrStage_c::evaluateAlphaTestValue(const class astInputAPI_i *in) const {
+	if(alphaFunc != AF_D3_ALPHATEST) {
+		g_core->RedWarning("mtrStage_c::evaluateAlphaTestValue: called on non-alphatest stage\n");
+		return 0.f;
+	}
+	if(alphaTestAST == 0) {
+		g_core->RedWarning("mtrStage_c::evaluateAlphaTestValue: alphatest stage had NULL alphaTestAST\n");
+		return 0.f;
+	}
+	return alphaTestAST->execute(in);
+}
+void mtrStage_c::setRedAST(class astAPI_i *ast) {
+	if(rgbGen == 0)
+		rgbGen = new rgbGen_c;
+	rgbGen->setRedAST(ast);
+}
+void mtrStage_c::setGreenAST(class astAPI_i *ast) {
+	if(rgbGen == 0)
+		rgbGen = new rgbGen_c;
+	rgbGen->setGreenAST(ast);
+}
+void mtrStage_c::setBlueAST(class astAPI_i *ast) {
+	if(rgbGen == 0)
+		rgbGen = new rgbGen_c;
+	rgbGen->setBlueAST(ast);
+}
 // material class
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
@@ -725,18 +796,46 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 				} else if(p.atWord("alphatest")) {
 					// example: "alphaTest ( time + parm4 ) * 0.5 - 0.2"
+#if 0
 					// TODO: handle Doom3 math expressions for alphaTest?
 					float val = p.getFloat();
 					if(val >= 0.5) {
 						stage->setAlphaFunc(AF_GE128);
 					}
+#else
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setAlphaTestAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'alphaTest' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}		
+#endif
 				} else if(p.atWord("red")) {
 					// example: "red 0.68"
-					p.skipLine();
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setRedAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'red' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("green")) {
-					p.skipLine();
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setGreenAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'green' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("blue")) {
-					p.skipLine();
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setBlueAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'blue' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("alpha")) {
 					p.skipLine();
 				} else if(p.atWord("zeroClamp")) {
@@ -853,6 +952,32 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					if(shearVal0 && shearVal1) {
 						stage->addD3TexModShear(shearVal0,shearVal1);
 					}
+				} else if(p.atWord("centerScale")) {
+					// example: "centerScale	0.5 - parm4, 0.5 - parm4"
+					astAPI_i *centerScaleVal0 = MAT_ParseExpression(p);
+					if(centerScaleVal0 == 0) {
+						g_core->RedWarning("Failed to parse 'centerScale' first value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *centerScaleVal1 = MAT_ParseExpression(p);
+					if(centerScaleVal1 == 0) {
+						g_core->RedWarning("Failed to parse 'centerScale' second value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					if(centerScaleVal0 && centerScaleVal1) {
+						stage->addD3TexModCenterScale(centerScaleVal0,centerScaleVal1);
+					}
+				} else if(p.atWord("maskRed")) {
+					stage->setMaskRed(true);
+				} else if(p.atWord("maskGreen")) {
+					stage->setMaskGreen(true);
+				} else if(p.atWord("maskBlue")) {
+					stage->setMaskBlue(true);
+				} else if(p.atWord("maskAlpha")) {
+					stage->setMaskAlpha(true);
+				} else if(p.atWord("maskColor")) {
+					// maskRGB
+					stage->setMaskColor(true);
 				} else {
 					p.getToken();
 				}

@@ -106,6 +106,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	enum stageType_e type;
 	class rgbGen_c *rgbGen;
 	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
+	// custom per-stage RGBA masking for Doom3 materials
+	maskState_s colorMask;
 	bool bMarkedForDelete;
 	// only if this->type == ST_COLORMAP
 	mtrStage_c *subStageBumpMap;
@@ -113,6 +115,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	mtrStage_c *nextBundle;
 	// "if" condition for Doom3 materials
 	class astAPI_i *condition;
+	// Doom3 replacements for alphaFunc_e 
+	class astAPI_i *alphaTestAST;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -214,6 +218,7 @@ public:
 	void addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1);
 	void addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1);
 	void addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModCenterScale(class astAPI_i *val0, class astAPI_i *val1);
 	void setRGBGenAST(class astAPI_i *ast);
 	class rgbGen_c *allocRGBGen();
 	class stageTexture_c &getStageTexture() {
@@ -226,6 +231,21 @@ public:
 	virtual bool hasIFCondition() const;
 	// return true if drawing condition is met for given input variables
 	virtual bool conditionMet(const class astInputAPI_i *in) const;
+	// Doom3 glColorMask(...) settings
+	void setMaskRed(bool bMask);
+	void setMaskGreen(bool bMask);
+	void setMaskBlue(bool bMask);
+	void setMaskAlpha(bool bMask);
+	void setMaskColor(bool bMask);
+	virtual bool getColorMaskRed() const;
+	virtual bool getColorMaskGreen() const;
+	virtual bool getColorMaskBlue() const;
+	virtual bool getColorMaskAlpha() const;
+	void setAlphaTestAST(class astAPI_i *ast);
+	virtual float evaluateAlphaTestValue(const class astInputAPI_i *in) const;
+	void setRedAST(class astAPI_i *ast);
+	void setGreenAST(class astAPI_i *ast);
+	void setBlueAST(class astAPI_i *ast);
 };
 
 class mtrIMPL_c : public mtrAPI_i { 

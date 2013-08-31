@@ -26,6 +26,66 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __MTRSTAGE_API_H__
 #define __MTRSTAGE_API_H__
 
+// r,g,b,a masking for Doom3 materials
+// set by "maskRed", "maskGreen", 
+// "maskBlue", "maskColor", "maskAlpha"
+// stage commands.
+
+enum {
+	MASKFLAG_RED = 1,
+	MASKFLAG_GREEN = 2,
+	MASKFLAG_BLUE = 4,
+	MASKFLAG_ALPHA = 8
+};
+
+struct maskState_s {
+	short flags;
+
+	void toggleFlag(int flag, bool state) {
+		if(state) {
+			flags |= flag;
+		} else {
+			flags &= ~flag;
+		}
+	}
+	bool getFlag(int flag) const {
+		return (flags & flag);
+	}
+public:
+	maskState_s() {
+		flags = 0;
+	}
+	void setMaskRed(bool bMask) {
+		toggleFlag(MASKFLAG_RED,bMask);
+	}
+	void setMaskGreen(bool bMask) {
+		toggleFlag(MASKFLAG_GREEN,bMask);
+	}
+	void setMaskBlue(bool bMask) {
+		toggleFlag(MASKFLAG_BLUE,bMask);
+	}
+	void setMaskAlpha(bool bMask) {
+		toggleFlag(MASKFLAG_ALPHA,bMask);
+	}
+	void setMaskColor(bool bMask) {
+		toggleFlag(MASKFLAG_RED,bMask);
+		toggleFlag(MASKFLAG_GREEN,bMask);
+		toggleFlag(MASKFLAG_BLUE,bMask);
+	}
+	bool getMaskRed() const {
+		return getFlag(MASKFLAG_RED);
+	}
+	bool getMaskGreen() const {
+		return getFlag(MASKFLAG_GREEN);
+	}
+	bool getMaskBlue() const {
+		return getFlag(MASKFLAG_BLUE);
+	}
+	bool getMaskAlpha() const {
+		return getFlag(MASKFLAG_ALPHA);
+	}
+};
+
 class mtrStageAPI_i  { 
 public:
 	virtual class textureAPI_i *getTexture(float curTimeSec = 0.f) const = 0;
@@ -49,6 +109,13 @@ public:
 	virtual bool hasIFCondition() const = 0;
 	// return true if drawing condition is met for given input variables
 	virtual bool conditionMet(const class astInputAPI_i *in) const = 0;
+	// glColorMask parameters for Doom3 materials
+	virtual bool getColorMaskRed() const = 0;
+	virtual bool getColorMaskGreen() const = 0;
+	virtual bool getColorMaskBlue() const = 0;
+	virtual bool getColorMaskAlpha() const = 0;
+	// doom3 alphaTest AST evaluation
+	virtual float evaluateAlphaTestValue(const class astInputAPI_i *in) const = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

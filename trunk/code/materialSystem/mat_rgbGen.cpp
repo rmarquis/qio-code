@@ -26,9 +26,25 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <shared/ast.h>
 
+rgbGen_c::rgbGen_c() {
+	type = RGBGEN_NONE;
+	asts[0] = 0;
+	asts[1] = 0;
+	asts[2] = 0;
+}
 rgbGen_c::~rgbGen_c() {
 	if(type == RGBGEN_AST) {
-		ast->destroyAST();
+		if(asts[0] == asts[1] && asts[1] == asts[2]) {
+			// single AST for RGB (free it once)
+			asts[0]->destroyAST();
+		} else {
+			// separate ATSs
+			for(u32 i = 0; i < 3; i++) {
+				if(asts[i]) {
+					asts[i]->destroyAST();
+				}
+			}
+		}
 	}
 }
 bool rgbGen_c::parse(class parser_c &p) {
@@ -68,14 +84,38 @@ bool rgbGen_c::parse(class parser_c &p) {
 }
 void rgbGen_c::setRGBGenAST(class astAPI_i *newAST) {
 	type = RGBGEN_AST;
-	ast = newAST;
+	asts[0] = asts[1] = asts[2] = newAST;
+}
+void rgbGen_c::setRedAST(class astAPI_i *newAST) {
+	type = RGBGEN_AST;
+	asts[0] = newAST;
+}
+void rgbGen_c::setGreenAST(class astAPI_i *newAST) {
+	type = RGBGEN_AST;
+	asts[1] = newAST;
+}
+void rgbGen_c::setBlueAST(class astAPI_i *newAST) {
+	type = RGBGEN_AST;
+	asts[2] = newAST;
 }
 void rgbGen_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const {
 	if(type == RGBGEN_AST) {
-		float result = ast->execute(in);
-		out3Floats[0] = result;
-		out3Floats[1] = result;
-		out3Floats[2] = result;
+		if(asts[0] == asts[1] && asts[1] == asts[2]) {
+			// single AST for rgb
+			float result = asts[0]->execute(in);
+			out3Floats[0] = result;
+			out3Floats[1] = result;
+			out3Floats[2] = result;
+		} else {
+			// separate ASTs for each color
+			for(u32 i = 0; i < 3; i++) {
+				if(asts[i] == 0) {
+					out3Floats[i] = 1.f;
+				} else {
+					out3Floats[i] = asts[i]->execute(in);
+				}
+			}
+		}
 	}
 }
 

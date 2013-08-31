@@ -24,6 +24,24 @@ or simply visit <http://www.gnu.org/licenses/>.
 // shared/ast_input.h - varlist for ASTs
 #include "ast_input.h"
 #include <api/tableListAPI.h>
+#include <shared/autoCvar.h>
+
+// used to force a specific value of AST parameters
+static aCvar_c ast_forceParm0Value("ast_forceParm0Value","-");
+static aCvar_c ast_forceParm1Value("ast_forceParm1Value","-");
+static aCvar_c ast_forceParm2Value("ast_forceParm2Value","-");
+static aCvar_c ast_forceParm3Value("ast_forceParm3Value","-");
+static aCvar_c ast_forceParm4Value("ast_forceParm4Value","-");
+static aCvar_c ast_forceParm5Value("ast_forceParm5Value","-");
+
+inline bool AST_ForceValueEnabled(const char *s) {
+	if(s[0] == '-' && s[1] == 0) {
+		return false;
+	}
+	if(!stricmp(s,"none"))
+		return false;
+	return true;
+}	
 
 int astInput_c::findVariable(const char *varName) const {
 	for(u32 i = 0; i < variables.size(); i++) {
@@ -38,6 +56,37 @@ float astInput_c::getTableValue(const char *tableName, float index) const {
 	return tableList->getTableValue(tableName,index);
 }
 float astInput_c::getVariableValue(const char *varName) const {
+	// allow developers to force value of Doom3 material parms
+	if(AST_ForceValueEnabled(ast_forceParm0Value.getStr())) {
+		if(!stricmp(varName,"parm0")) {
+			return ast_forceParm0Value.getFloat();
+		}
+	}
+	if(AST_ForceValueEnabled(ast_forceParm1Value.getStr())) {
+		if(!stricmp(varName,"parm1")) {
+			return ast_forceParm1Value.getFloat();
+		}
+	}
+	if(AST_ForceValueEnabled(ast_forceParm2Value.getStr())) {
+		if(!stricmp(varName,"parm2")) {
+			return ast_forceParm2Value.getFloat();
+		}
+	}
+	if(AST_ForceValueEnabled(ast_forceParm3Value.getStr())) {
+		if(!stricmp(varName,"parm3")) {
+			return ast_forceParm3Value.getFloat();
+		}
+	}
+	if(AST_ForceValueEnabled(ast_forceParm4Value.getStr())) {
+		if(!stricmp(varName,"parm4")) {
+			return ast_forceParm4Value.getFloat();
+		}
+	}
+	if(AST_ForceValueEnabled(ast_forceParm5Value.getStr())) {
+		if(!stricmp(varName,"parm5")) {
+			return ast_forceParm5Value.getFloat();
+		}
+	}
 	int i = findVariable(varName);
 	if(i<0)
 		return 0.f;

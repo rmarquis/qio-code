@@ -50,9 +50,11 @@ enum operator_e {
 	OP_DIV, // '/'
 	OP_MOD, // '%'
 	OP_EQUAL, // "=="
+	OP_LESS, // "<"
+	OP_GREATER, // ">"
 };
 u32 OP_GetPriority(operator_e op) {
-	if(op == OP_EQUAL)
+	if(op == OP_EQUAL || op == OP_LESS || op == OP_GREATER)
 		return 5;
 	if(op == OP_MOD)
 		return 7;
@@ -146,6 +148,16 @@ operator_e OperatorForString(const char *s, const char **p) {
 			*p = s + 1;
 		}
 		return OP_MOD;
+	} else if(*s == '>') {
+		if(p) {
+			*p = s + 1;
+		}
+		return OP_GREATER;
+	} else if(*s == '<') {
+		if(p) {
+			*p = s + 1;
+		}
+		return OP_LESS;
 	} else if(s[0] == '=') {
 		if(s[1] == '=') {
 			if(p) {
@@ -183,6 +195,11 @@ public:
 		children[0] = children[1] = 0;
 	}
 	float execute_r(const class astInputAPI_i *in) const {
+		if(this == 0) {
+			// this should never happen unless AST is invalid
+			g_core->RedWarning("astNode_c::execute_r: called on NULL node\n");
+			return 0.f;
+		}
 		if(type == ANT_NUMBER) {
 			return value;
 		}
@@ -209,6 +226,10 @@ public:
 				ret = a == b;
 			} else if(opType == OP_MOD) {
 				ret = int(a) % int(b);
+			} else if(opType == OP_GREATER) {
+				ret = a > b;
+			} else if(opType == OP_LESS) {
+				ret = a < b;
 			}
 			return ret;
 		}
@@ -272,6 +293,7 @@ class astParser_c {
 		return false;
 	}
 	arraySTD_c<astLexem_s> lexems;
+	bool bError;
 	void addNumberLexem(const char *s) {
 		lexems.pushBack().setNumberLexem(s);
 	}
@@ -338,6 +360,10 @@ class astParser_c {
 		return 0;
 	}
 	class astNode_c *buildNode_r(u32 start, u32 stop) {
+		if(stop < start) {
+			bError = true;
+			return 0;
+		}
 		// see if we're creating node or a leaf
 		if(start+1 == stop) {
 			// create leaf
@@ -473,6 +499,7 @@ public:
 		return false; // no error
 	}
 	ast_c *buildAST() {
+		bError = false;
 		astNode_c *root = buildNode_r(0,lexems.size());
 		if(root == 0) {
 			return 0;

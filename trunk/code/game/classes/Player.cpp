@@ -744,7 +744,7 @@ void Player::updatePlayerWeapon() {
 		}
 		if(elapsed > curWeapon->getDelayBetweenShots()) {
 			weaponState = WP_IDLE;
-			setViewModelAnim("idle",ANIMFLAG_STOPATLASTFRAME);
+			setViewModelAnim("idle",0);
 		}
 	} else if(weaponState == WP_RELOADING) {
 		u32 elapsed = level.time - weaponTime;
@@ -754,7 +754,7 @@ void Player::updatePlayerWeapon() {
 		if(elapsed > curWeapon->getReloadTime()) {
 			weaponState = WP_IDLE;
 			curWeapon->fillClip(curWeapon->getClipSize());
-			setViewModelAnim("idle",ANIMFLAG_STOPATLASTFRAME);
+			setViewModelAnim("idle",0);
 		}
 	} else {
 	}

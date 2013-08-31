@@ -254,6 +254,10 @@ bool afRagdollHelper_c::setupRagdollHelper(const char *afName) {
 	return false;
 }
 void afRagdollHelper_c::containedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim, const char *afName) {
+	if(anim == 0) {
+		g_core->RedWarning("afRagdollHelper_c::containedJointNamesArrayToJointIndexes: NULL anim pointer\n");
+		return;
+	}
 	for(u32 j = 0; j < containedJoints.size(); j++) {
 		const char *boneNameStr = containedJoints[j];
 		if(boneNameStr[0] == '*') {

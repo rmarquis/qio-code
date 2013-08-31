@@ -134,6 +134,9 @@ void skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
 }
 void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones) {
 	//g_core->Print("flags %i, nextFlags %i\n",flags,nextFlags);
+	if(anim == 0) {
+		return;
+	}
 	if(anim == nextAnim) {
 		outLocalBones.resize(anim->getNumBones());
 		if((anim->getBLoopLastFrame() || flags & ANIMFLAG_STOPATLASTFRAME) && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
@@ -150,6 +153,11 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		//		lastUpdateTime,anim->getName(),lerp.from,lerp.to);
 		}
 	} else {
+		if(nextAnim == 0) {
+			anim = 0;
+			outLocalBones = oldBonesState;
+			return;
+		}
 		// build old skeleton first
 		// ( TODO: we might do it once and just store the bones here...)
 		//boneOrArray_c previous;
@@ -169,6 +177,8 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 	}
 }
 void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel) {
+	if(anim == 0)
+		return;
 	// create bone matrices (relative to their parents)
 	updateModelAnimationLocal(skelModel,currentBonesArray);
 	// convert relative bones matrices to absolute bone matrices

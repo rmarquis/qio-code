@@ -41,6 +41,7 @@ enum texModType_e {
 	TCMOD_D3_SCALE,
 	TCMOD_D3_SHEAR,
 	TCMOD_D3_SCROLL,
+	TCMOD_D3_CENTERSCALE,
 	TCMOD_NUM_TEXMODS,
 };
 
@@ -93,6 +94,11 @@ public:
 		astScroll[0] = val0;
 		astScroll[1] = val1;
 	}
+	void setD3TexModCenterScale(class astAPI_i *val0, class astAPI_i *val1) {
+		type = TCMOD_D3_CENTERSCALE;
+		astScale[0] = val0;
+		astScale[1] = val1;
+	}
 };
 
 class texModArray_c : public arraySTD_c<texMod_c> {
@@ -103,6 +109,7 @@ public:
 	void addD3TexModScale(class astAPI_i *val0, class astAPI_i *val1);
 	void addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1);
 	void addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1);
+	void addD3TexModCenterScale(class astAPI_i *val0, class astAPI_i *val1);
 };
 
 

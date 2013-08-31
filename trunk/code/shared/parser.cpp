@@ -149,6 +149,16 @@ const char *parser_c::getLine(str &out, const char *stopSet) {
 		if(*p == 0) {
 			break;
 		}
+		if(p[0] == '/' && p[1] == '/') {
+			// the rest of line is a comment, so ignore it
+			out.setFromTo(start,p);
+			while(*p != '\n') {
+				if(*p == 0)
+					break;
+				p++;
+			}
+			return out;
+		}
 		p++;
 	}
 	end = p;

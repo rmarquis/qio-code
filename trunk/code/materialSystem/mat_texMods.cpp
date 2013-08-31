@@ -61,6 +61,9 @@ texMod_c::texMod_c(const texMod_c &other) {
 	} else if(type == TCMOD_D3_SCROLL) {
 		astScroll[0] = other.astScroll[0]->duplicateAST();
 		astScroll[1] = other.astScroll[1]->duplicateAST();
+	} else if(type == TCMOD_D3_CENTERSCALE) {
+		astScale[0] = other.astScale[0]->duplicateAST();
+		astScale[1] = other.astScale[1]->duplicateAST();
 	}
 }
 texMod_c &texMod_c::operator =(const texMod_c &other) {
@@ -75,6 +78,21 @@ void texMod_c::clear() {
 	if(type == TCMOD_D3_ROTATE) {
 		astRotation->destroyAST();
 		astRotation = 0;
+	} else if(type == TCMOD_D3_SCROLL) {
+		astScroll[0]->destroyAST();
+		astScroll[0] = 0;
+		astScroll[1]->destroyAST();
+		astScroll[1] = 0;
+	} else if(type == TCMOD_D3_SCALE || type == TCMOD_D3_CENTERSCALE) {
+		astScale[0]->destroyAST();
+		astScale[0] = 0;
+		astScale[1]->destroyAST();
+		astScale[1] = 0;
+	} else if(type == TCMOD_D3_SHEAR) {
+		astShear[0]->destroyAST();
+		astShear[0] = 0;
+		astShear[1]->destroyAST();
+		astShear[1] = 0;
 	}
 	type = TCMOD_BAD;
 }
@@ -184,6 +202,12 @@ void texMod_c::appendTransform(class matrix_c &mat, float timeNowSeconds, const 
 		t = t - floor(t);
 		// append transform
 		mat.translate(s,t,0);
+	} else if(type == TCMOD_D3_CENTERSCALE) {
+		//float scaleVal0 = astScale[0]->execute(in);
+		//float scaleVal1 = astScale[1]->execute(in);
+		//mat.translate(0.5f, 0.5f, 0);
+		//mat.translate(-0.5f, -0.5f, 0);
+		//mat.scale(scaleVal0,scaleVal1,0);
 	} else {
 		g_core->RedWarning("texMod_c::appendTransform: type %i not handled\n",this->type);
 	}
@@ -206,6 +230,9 @@ void texModArray_c::addD3TexModShear(class astAPI_i *val0, class astAPI_i *val1)
 }
 void texModArray_c::addD3TexModScroll(class astAPI_i *val0, class astAPI_i *val1) {
 	this->pushBack().setD3TexModScroll(val0,val1);
+}
+void texModArray_c::addD3TexModCenterScale(class astAPI_i *val0, class astAPI_i *val1) {
+	this->pushBack().setD3TexModCenterScale(val0,val1);
 }
 
 

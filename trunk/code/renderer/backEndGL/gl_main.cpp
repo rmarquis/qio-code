@@ -253,6 +253,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool isMirror;
 	bool bRendererMirrorThisFrame;
 	int r_shadows;
+	// for glColorMask changes
+	bool colorMaskState[4];
 
 	// for Doom3 material expressions
 	astInput_c materialVarList;
@@ -283,6 +285,7 @@ public:
 		bBoundLightmapCoordsToFirstTextureSlot = false;
 		memset(bVertexAttribLocationsEnabled,0,sizeof(bVertexAttribLocationsEnabled));
 		bDrawingSky = false;
+		colorMaskState[0] = colorMaskState[1] = colorMaskState[2] = colorMaskState[3] = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -446,9 +449,14 @@ public:
 	// alphaFunc changes
 	//
 	alphaFunc_e prevAlphaFunc;
-	void setAlphaFunc(alphaFunc_e newAlphaFunc) {
+	float alphaFuncCustomValue;
+	void setAlphaFunc(alphaFunc_e newAlphaFunc, float customVal = 0.f) {
 		if(prevAlphaFunc == newAlphaFunc) {
-			return; // no change
+			if(newAlphaFunc != AF_D3_ALPHATEST)
+				return; // no change
+			// see if D3 alphaTest value has changed
+			if(alphaFuncCustomValue == customVal)
+				return; // no change
 		}
 		if(newAlphaFunc == AF_NONE) {
 			glDisable(GL_ALPHA_TEST);
@@ -461,6 +469,11 @@ public:
 		} else if(newAlphaFunc == AF_LT128) {
 			glEnable(GL_ALPHA_TEST);
 			glAlphaFunc( GL_LESS, 0.5f ); 
+		} else if(newAlphaFunc == AF_D3_ALPHATEST) {
+			// set the custom alphaTest value provided by Doom3 material
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc( GL_GREATER, customVal ); 
+			alphaFuncCustomValue = customVal;
 		}
 		prevAlphaFunc = newAlphaFunc;
 	}
@@ -611,6 +624,17 @@ public:
 		bDepthMask = bOn;
 		glDepthMask(bDepthMask);
 		CHECK_GL_ERRORS;
+	}
+	// glColorMask
+	void setColorMask(bool r, bool g, bool b, bool a) {
+		if(r != colorMaskState[0] || g != colorMaskState[1] ||
+			b != colorMaskState[2] || a != colorMaskState[3]) {
+			colorMaskState[0] = r;
+			colorMaskState[1] = g;
+			colorMaskState[2] = b;
+			colorMaskState[3] = a;
+			glColorMask(r,g,b,a);
+		}
 	}
 	// GL_CULL
 	cullType_e prevCullType;
@@ -1091,15 +1115,15 @@ public:
 		if(bDrawOnlyOnDepthBuffer) {
 			if(bRendererMirrorThisFrame) {
 				if(lastMat->isMirrorMaterial()) {
-					glColorMask(false, false, false, false);
+					setColorMask(false, false, false, false);
 				} else {
 					// non-mirrored view should never be blended with mirror view,
 					// so draw all non-mirrored surfaces in draw color
-					glColorMask(true, true, true, true);
+					setColorMask(true, true, true, true);
 					this->setColor4f(0,0,0,0);
 				}
 			} else {
-				glColorMask(false, false, false, false);
+				setColorMask(false, false, false, false);
 			}
 			//if(lastMat->isMirrorMaterial()) {
 			//	setGLDepthMask(false);
@@ -1139,7 +1163,7 @@ public:
 		}
 		// now it's done by frontend, and the color is not always 1 1 1 1
 		//this->setColor4f(1.f,1.f,1.f,1.f);
-		glColorMask(true, true, true, true);
+		setColorMask(true, true, true, true);
 		if(bDrawingSky) {
 			// fathest depth range
 			setDepthRange(1.f,1.f);
@@ -1237,7 +1261,18 @@ public:
 				}
 
 				// set the alphafunc
-				setAlphaFunc(s->getAlphaFunc());	
+				alphaFunc_e newAlphaFunc = s->getAlphaFunc();
+				if(newAlphaFunc == AF_D3_ALPHATEST) {
+					// evaluate Doom3 alpha value expression at runtime (AST)
+					float alphaValue = s->evaluateAlphaTestValue(&materialVarList);
+					// and then set it
+					setAlphaFunc(AF_D3_ALPHATEST,alphaValue);
+				} else {
+					// set the classic Quake3 GT0 / LT128 / GT128 alphaFunc
+					setAlphaFunc(s->getAlphaFunc());
+				}
+
+				// set the blendfunc
 				if(curLight == 0) {
 					const blendDef_s &bd = s->getBlendDef();
 					setBlendFunc(bd.src,bd.dst);
@@ -1246,6 +1281,7 @@ public:
 					setBlendFunc(BM_ONE,BM_ONE);
 				}
 
+				// set depthmask
 #if 1
 				// test; it seems beam shader should be drawn with depthmask off..
 				//if(!stricmp(lastMat->getName(),"textures/sfx/beam")) {
@@ -1263,6 +1299,11 @@ public:
 					setGLDepthMask(false);
 				}
 #endif
+				// set colormask (it might be set in Doom3 materials)
+				// this is used in eg. Doom3 BFG blast material (models/md5/weapons/bfg_view/viewbfg.md5mesh)
+				setColorMask(!s->getColorMaskRed(),!s->getColorMaskGreen(),
+					!s->getColorMaskBlue(),!s->getColorMaskAlpha());
+
 				if(s->hasTexMods()) {
 					matrix_c mat;
 					s->applyTexMods(mat,this->timeNowSeconds,&materialVarList);
@@ -1624,7 +1665,7 @@ drawOnlyLightmap:
 		unbindMaterial();
         glClear(GL_STENCIL_BUFFER_BIT); // We clear the stencil buffer
         glDepthFunc(GL_LESS); // We change the z-testing function to LESS, to avoid little bugs in shadow
-        glColorMask(false, false, false, false); // We dont draw it to the screen
+        setColorMask(false, false, false, false); // We dont draw it to the screen
         glStencilFunc(GL_ALWAYS, 0, 0); // We always draw whatever we have in the stencil buffer
 		setGLDepthMask(false);
 		setGLStencilTest(true);
@@ -1638,7 +1679,7 @@ drawOnlyLightmap:
 		// We draw our lighting now that we created the shadows area in the stencil buffer
         glDepthFunc(GL_LEQUAL); // we put it again to LESS or EQUAL (or else you will get some z-fighting)
 		glCull(CT_FRONT_SIDED);// glCullFace(GL_FRONT);//BACK); // we draw the front face
-        glColorMask(true, true, true, true); // We enable color buffer
+        setColorMask(true, true, true, true); // We enable color buffer
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Drawing will not affect the stencil buffer
         glStencilFunc(GL_EQUAL, 0x0, 0xff); // And the most important thing, the stencil function. Drawing if equal to 0
 
@@ -2173,7 +2214,7 @@ void glOcclusionQuery_c::generateOcclusionQuery() {
 void glOcclusionQuery_c::assignSphereQuery(const vec3_c &p, float radius) {
 	// stop drawing shadow volumes
 	g_staticSDLOpenGLBackend.stopDrawingShadowVolumes();
-	glColorMask(false,false,false,false);
+	g_staticSDLOpenGLBackend.setColorMask(false,false,false,false);
 	g_staticSDLOpenGLBackend.setGLDepthMask(false);
 	g_staticSDLOpenGLBackend.glCull(CT_TWO_SIDED);
 	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, oqHandle);
@@ -2182,7 +2223,7 @@ void glOcclusionQuery_c::assignSphereQuery(const vec3_c &p, float radius) {
 	glTranslatef(-p.x,-p.y,-p.z);
 	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 	g_staticSDLOpenGLBackend.setGLDepthMask(true);
-	glColorMask(true,true,true,true);
+	g_staticSDLOpenGLBackend.setColorMask(true,true,true,true);
 	waitingForResult = true;
 }
 u32 glOcclusionQuery_c::getNumSamplesPassed() const {

@@ -252,6 +252,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\ast.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\ast.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\autoCmd.cpp"
 				>
 			</File>
@@ -289,6 +297,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\safePtr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\tableList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\tableList.h"
 				>
 			</File>
 			<File
