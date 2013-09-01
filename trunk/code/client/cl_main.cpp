@@ -983,7 +983,7 @@ static void CL_CompleteDemoName( char *args, int argNum )
 		char demoExt[ 16 ];
 
 		Com_sprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, com_protocol->integer);
-		Field_CompleteFilename( "demos", demoExt, qtrue, qtrue );
+		Field_CompleteFilename( "demos", demoExt, 0, 0, qtrue, qtrue );
 	}
 }
 

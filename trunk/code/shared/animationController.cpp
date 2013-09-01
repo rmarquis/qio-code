@@ -181,6 +181,8 @@ void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skel
 		return;
 	// create bone matrices (relative to their parents)
 	updateModelAnimationLocal(skelModel,currentBonesArray);
+	if(anim == 0)
+		return;
 	// convert relative bones matrices to absolute bone matrices
 	currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
 	if(skelModel->hasCustomScaling()) {

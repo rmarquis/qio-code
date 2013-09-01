@@ -3506,21 +3506,70 @@ void Field_CompleteKeyname( void )
 }
 #endif
 
+#include <shared/array.h>
+#include <shared/str.h>
+static arraySTD_c<str> field_matches;
+void AddMatch_Unique(const char *m) {
+	field_matches.add_unique(m);
+}
+
 /*
 ===============
 Field_CompleteFilename
 ===============
 */
+// V: allow multiple extensions,
+// this is needed for eg. map files
+// (we're supporting direct loading of .bsp, .map, and .proc files)
 void Field_CompleteFilename( const char *dir,
-		const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk )
+		const char *ext, const char *ext2, const char *ext3, 
+		qboolean stripExt, qboolean allowNonPureFilesOnDisk )
 {
 	matchCount = 0;
 	shortestMatch[ 0 ] = 0;
 
 	FS_FilenameCompletion( dir, ext, stripExt, FindMatches, allowNonPureFilesOnDisk );
+	if(ext2) {
+		FS_FilenameCompletion( dir, ext2, stripExt, FindMatches, allowNonPureFilesOnDisk );
+	}
+	if(ext3) {
+		FS_FilenameCompletion( dir, ext3, stripExt, FindMatches, allowNonPureFilesOnDisk );
+	}
 
-	if( !Field_Complete( ) )
-		FS_FilenameCompletion( dir, ext, stripExt, PrintMatches, allowNonPureFilesOnDisk );
+	if( !Field_Complete( ) ) {
+		FS_FilenameCompletion( dir, ext, stripExt, AddMatch_Unique, allowNonPureFilesOnDisk );
+		if(ext2) {
+			FS_FilenameCompletion( dir, ext2, stripExt, AddMatch_Unique, allowNonPureFilesOnDisk );
+		}
+		if(ext3) {
+			FS_FilenameCompletion( dir, ext3, stripExt, AddMatch_Unique, allowNonPureFilesOnDisk );
+		}
+
+		for(u32 i = 0; i < field_matches.size(); i++) {
+			PrintMatches(field_matches[i]);
+		}
+		field_matches.clear();
+	}
+}
+
+#include <api/declManagerAPI.h>
+/*
+===============
+Field_CompleteCommand
+===============
+*/
+// V: for "spawn" command, 
+// autocompletion of entityDef names from Doom3 .def files
+void Field_CompleteEntityDefName()
+{
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	g_declMgr->iterateEntityDefNames(FindMatches);
+
+	if( !Field_Complete( ) ) {
+		g_declMgr->iterateEntityDefNames(PrintMatches);
+	}
 }
 
 /*

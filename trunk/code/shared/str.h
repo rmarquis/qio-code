@@ -610,6 +610,9 @@ public:
 		ensureAllocated(this->len+1);
 		strcpy(data,otherString);
 	}
+	bool operator ==(const char *otherString) const {
+		return !strcmp(c_str(),otherString);
+	}
 	void set(const char *otherStr) {
 		(*this) = otherStr;
 	}

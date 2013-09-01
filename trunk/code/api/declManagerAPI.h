@@ -61,6 +61,8 @@ public:
 	// clear up unused decls
 	virtual void onGameShutdown() = 0;
 	virtual void onRendererShutdown() = 0;
+	// used for console command autocompletion
+	virtual void iterateEntityDefNames(void (*callback)(const char *s)) = 0;
 };
 
 extern declManagerAPI_i *g_declMgr;

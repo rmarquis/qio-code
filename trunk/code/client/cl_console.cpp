@@ -29,7 +29,8 @@ int g_console_field_width = 78;
 
 #define	NUM_CON_TIMES 4
 
-#define		CON_TEXTSIZE	32768
+//#define		CON_TEXTSIZE	32768
+#define		CON_TEXTSIZE	524288
 typedef struct {
 	qboolean	initialized;
 
@@ -275,7 +276,29 @@ Cmd_CompleteTxtName
 */
 void Cmd_CompleteTxtName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "", "txt", qfalse, qtrue );
+		Field_CompleteFilename( "", "txt", 0, 0, qfalse, qtrue );
+	}
+}
+
+/*
+==================
+CL_AutocompleteSpawnCommand
+==================
+*/
+void CL_AutocompleteSpawnCommand( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteEntityDefName();
+	}
+}
+
+/*
+==================
+Cmd_CompleteModelName
+==================
+*/
+void Cmd_CompleteModelName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "md3", "md5mesh", "obj", qfalse, qfalse );
 	}
 }
 
@@ -305,6 +328,11 @@ void Con_Init (void) {
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
+	// preadd spawn command for autocompletion
+	Cmd_AddCommand ("spawn", 0);
+	Cmd_SetCommandCompletionFunc( "spawn", CL_AutocompleteSpawnCommand );
+	Cmd_AddCommand ("model_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "model_spawn", Cmd_CompleteModelName );
 }
 
 /*

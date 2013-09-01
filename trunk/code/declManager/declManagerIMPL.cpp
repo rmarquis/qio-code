@@ -171,11 +171,13 @@ public:
 				class modelDeclAPI_i *inheritAPI = g_declMgr->registerModelDecl(s);
 				if(inheritAPI) {
 					this->setMeshName(inheritAPI->getMeshName());
+					this->offset = inheritAPI->getOffset();
 					// hack, we need to append animations
 					modelDecl_c *inherit = dynamic_cast<modelDecl_c*>(inheritAPI);
 					this->anims.addArray(inherit->anims);
 				} else {
-		
+					int line = p.getCurrentLineNumber();
+					g_core->RedWarning("modelDecl_c::parse: failed to inherit from %s, check line %i of %s\n",s,line,fname);
 				}
 			} else {
 				int line = p.getCurrentLineNumber();
@@ -581,6 +583,10 @@ void declManagerIMPL_c::onRendererShutdown() {
 	}
 	removeUnrefrencedDecls();
 }
+void declManagerIMPL_c::iterateEntityDefNames(void (*callback)(const char *s)) {
+	cacheEntDefNamesList();
+	entDefNamesList.iterateEntityDefNames(callback);
+}
 void fileTextDataCache_c::cacheDefFileText(const char *fname) {
 	char *data;
 	u32 len = g_vfs->FS_ReadFile(fname,(void**)&data);
@@ -608,7 +614,46 @@ u32 fileTextDataCache_c::cacheFileList(const char *path, const char *ext) {
 	g_vfs->FS_FreeFileList(fnames);
 	return numFiles;
 }
+void fileTextDataCache_c::listDeclNames(class stringList_c &out, const char *declType) const {
+	u32 typeLen = strlen(declType);
+	for(u32 i = 0; i < defFiles.size(); i++) {
+		const defFile_s *f = defFiles[i];
+		const char *fileText = f->text.c_str();
+		const char *p = fileText;
+		while(*p) {
+			if(!strnicmp(p,declType,typeLen) && G_isWS(p[typeLen])) {
+				if(p != fileText && G_isWS(p[-1]) == false) {
+					p ++;
+					continue;
+				}
+				p += typeLen;
+				while(G_isWS(*p)) {
+					p++;
+				}
+				const char *nameStart = p;
+				while(G_isWS(*p) == false) {
+					p++;
+				}
+				str name;
+				name.setFromTo(nameStart,p);
+				out.addString(name);
+			}
+			p++;
+		}
+	}
+	out.sortStrings();
+}
+
+void declManagerIMPL_c::cacheEntDefNamesList() {
+	if(entDefNamesListReady)
+		return;
+	defFiles.listDeclNames(entDefNamesList,"entityDef");
+	entDefNamesListReady = true;
+}
+
 void declManagerIMPL_c::init() {
+	entDefNamesListReady = false;
+
 	g_core->Print("----- Initializing Decls -----\n");
 	defFiles.cacheFileList("def/",".def");
 	afFiles.cacheFileList("af/",".af");

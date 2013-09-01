@@ -2137,7 +2137,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 
 					zpathLen = FS_ReturnPath(name, zpath, &depth);
 
-					if ( (depth-pathDepth)>2 || pathLength > zpathLen || Q_stricmpn( name, path, pathLength ) ) {
+					if ( (depth-pathDepth)>5 || pathLength > zpathLen || Q_stricmpn( name, path, pathLength ) ) {
 						continue;
 					}
 
@@ -3073,9 +3073,19 @@ static void FS_Startup( const char *gameName )
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
 	// temporary hack
-	FS_AddGameDirectory("E:/MoHAA","main");
-	//FS_AddGameDirectory("E:/Call of Duty","main");
+	//FS_AddGameDirectory("E:/MoHAA","main");
+	FS_AddGameDirectory("E:/quake3/Quake3","baseq3");
+	//FS_AddGameDirectory("L:","Q4ZB");
 
+	//FS_AddGameDirectory("E:/Call of Duty","main");
+	//FS_AddGameDirectory("E:/RTCW","main");
+	//FS_AddGameDirectory("E:/Half-Life 2","hl2");
+	//FS_AddGameDirectory("E:/Portal 2","portal2");
+	//FS_AddGameDirectory("E:/GAMES/Prey","base");
+	FS_AddGameDirectory("E:/GAMES/Doom 3","base");
+
+
+	
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {
 		FS_AddGameDirectory( fs_basepath->string, gameName );

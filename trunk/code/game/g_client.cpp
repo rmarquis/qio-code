@@ -274,6 +274,43 @@ ModelEntity *G_SpawnRandomBoxAt(const vec3_c &pos, const vec3_c &rot) {
 	e->initRigidBodyPhysics();
 	return e;
 }
+bool FixRenderModelPath(str &s) {
+	if(g_vfs->FS_FileExists(s))
+		return true; // path was valid
+	for(u32 i = 0; i < 2; i++) {
+		str tmp;
+		if(i == 0) {
+			tmp = s;
+		} else {
+			tmp = "models/";
+			tmp.append(s);
+		}
+		if(g_vfs->FS_FileExists(tmp)) {
+			s = tmp;
+			return true; // path fixed
+		}
+		// known render model extensions
+		static const char *extensions[] = {
+			"md3",
+			"md5mesh",
+			"lwo",
+			"ase",
+			"obj",
+			"map",
+		};
+		static u32 numExtensions = sizeof(extensions)/sizeof(extensions[0]);
+		for(u32 j = 0; j < numExtensions; j++) {
+			const char *ext = extensions[i];
+			tmp.setExtension(ext);
+			if(g_vfs->FS_FileExists(tmp)) {
+				s = tmp;
+				return true; // path fixed
+			}
+		}
+	}
+	// invalid path
+	return false;
+}
 void ClientCommand( int clientNum ) {
 	Player *pl = (Player*)g_entities[clientNum].ent;
 	if(pl == 0) {
@@ -462,6 +499,21 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
+	} else if(!stricmp(cmd,"model_spawn")) {
+		str model = g_core->Argv(1);
+		if(model.length()) {
+			if(FixRenderModelPath(model)) {
+				vec3_c p = pl->getOrigin();
+				p.z += pl->getViewHeight();
+				p += pl->getForward() * 64.f;
+				ModelEntity *e = new ModelEntity;
+				e->setRenderModel(model);
+				//e->setColModel(model);
+				e->setOrigin(p);
+			} else {
+				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
+			}
+		}
 	} else {
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
