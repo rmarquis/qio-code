@@ -535,6 +535,8 @@ void Player::onFireKeyHeld() {
 					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
 				}
 			}
+			// update playerState_s clip state info (for networking)
+			updateCurWeaponClipSize();
 		}
 		return;
 	}
@@ -563,6 +565,8 @@ void Player::onFireKeyDown() {
 					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
 				}
 			}
+			// update playerState_s clip state info (for networking)
+			updateCurWeaponClipSize();
 		}
 		return;
 	}
@@ -665,6 +669,16 @@ void Player::updateCurWeaponAttachment() {
 		ps.viewModelAngles = -curWeapon->getViewModelAngles();
 		ps.viewModelOffset = curWeapon->getViewModelOffset();
 	}
+	updateCurWeaponClipSize();
+}
+void Player::updateCurWeaponClipSize() {
+	if(curWeapon == 0) {
+		ps.viewWeaponCurClipSize = 0; 
+		ps.viewWeaponMaxClipSize = 0; 
+	} else {
+		ps.viewWeaponCurClipSize = curWeapon->getCurrentClipSize(); 
+		ps.viewWeaponMaxClipSize = curWeapon->getClipSize(); 
+	}
 }
 void Player::addWeapon(class Weapon *newWeapon) {
 #if 0
@@ -755,6 +769,8 @@ void Player::updatePlayerWeapon() {
 			weaponState = WP_IDLE;
 			curWeapon->fillClip(curWeapon->getClipSize());
 			setViewModelAnim("idle",0);
+			// update playerState_s clip state info (for networking)
+			updateCurWeaponClipSize();
 		}
 	} else {
 	}

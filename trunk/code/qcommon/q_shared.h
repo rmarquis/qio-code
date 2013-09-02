@@ -1260,6 +1260,10 @@ struct playerState_s : public entityState_s {
 	// (this is set through "def_viewStyle" key in weapon .def)
 	vec3_c		viewModelAngles;
 	vec3_c		viewModelOffset;
+	//  view weapon ammo data (only for display)
+	int			viewWeaponMaxClipSize;
+	int			viewWeaponCurClipSize;
+	// int		viewWeaponAmmoTypeIndex;
 
 	// not communicated over the net at all
 	int			ping;			// server to game info for scoreboard
@@ -1270,6 +1274,10 @@ struct playerState_s : public entityState_s {
 		viewangles.set(0,0,0);
 		viewheight = 0;
 		ping = 0;
+		viewWeaponMaxClipSize = 0;
+		viewWeaponCurClipSize = 0;
+		viewModelAngles.set(0,0,0);
+		viewModelOffset.set(0,0,0);
 	}
 };
 

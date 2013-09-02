@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/BaseEntity.h"
 #include "classes/World.h"
 #include <shared/autoCvar.h>
+#include <shared/autoCmd.h>
 
 level_locals_t	level;
 
@@ -75,6 +76,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	// init autoCvars
 	AUTOCVAR_RegisterAutoCvars();
+	// init autoCmds
+	AUTOCMD_RegisterAutoConsoleCommands();
 
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
@@ -112,6 +115,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	// init bullet physics library
 	G_InitPhysicsEngine();
+	// load ammoTypes list from .def files	
+	G_InitAmmoTypes();
 	// load map for Bullet
 	G_LoadMap(mapName);
 	// load map entities and spawn them
@@ -143,6 +148,7 @@ void G_ShutdownGame( int restart ) {
 	cm->freeAllModels();
 	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();
+	AUTOCMD_UnregisterAutoConsoleCommands();
 }
 
 

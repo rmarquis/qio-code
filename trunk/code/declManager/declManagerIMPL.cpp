@@ -37,6 +37,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/ePairsList.h>
 #include <shared/entDef.h>
 #include "q3PlayerModelDecl.h"
+#include "articulatedFigure.h"
+#include "particleDecl.h"
 
 struct declTextDef_s {
 	const char *sourceFile; // name of the source .def file
@@ -519,6 +521,29 @@ class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *n
 	}
 	return 0;
 }
+class particleDeclAPI_i *declManagerIMPL_c::_registerParticleDecl(const char *name, qioModule_e userModule) {
+	particleDecl_c *ret = prtDecls.getEntry(name);
+	if(ret) {
+		ret->setReferencedByModule(userModule);
+		if(ret->isValid()) {
+			return ret;
+		}
+		return 0;
+	}
+	declTextDef_s txt;
+	ret = new particleDecl_c;
+	ret->setDeclName(name);
+	prtDecls.addObject(ret);
+	if(prtFiles.findDeclText(name,"particle",txt) == false) {
+		return 0;
+	}
+	ret->parse(txt.p,txt.textBase,txt.sourceFile);
+	ret->setReferencedByModule(userModule);
+	if(ret->isValid()) {
+		return ret;
+	}
+	return 0;
+}
 void declManagerIMPL_c::removeUnrefrencedDecls() {
 	for(int i = 0; i < entityDecls.size(); i++) {
 		entityDecl_c *ed = entityDecls[i];
@@ -657,14 +682,16 @@ void declManagerIMPL_c::init() {
 	g_core->Print("----- Initializing Decls -----\n");
 	defFiles.cacheFileList("def/",".def");
 	afFiles.cacheFileList("af/",".af");
-	g_core->Print("----- Total %i decl bytes in %i def and %i af files -----\n",
-		defFiles.getTotalTextSizeInBytes()+afFiles.getTotalTextSizeInBytes(),
-		defFiles.getNumFiles(),afFiles.getNumFiles());
+	prtFiles.cacheFileList("particles/",".prt");
+	g_core->Print("----- Total %i decl bytes in %i def, %i af and %i prt files -----\n",
+		defFiles.getTotalTextSizeInBytes()+afFiles.getTotalTextSizeInBytes()+prtFiles.getTotalTextSizeInBytes(),
+		defFiles.getNumFiles(),afFiles.getNumFiles(),prtFiles.getNumFiles());
 
 #if 0
 	//registerModelDecl("monster_qwizard");
 	registerAFDecl("monster_qwizard");
 #endif
+	_registerParticleDecl("rocketmuzzle",QMD_DECL_MANAGER);
 }
 
 // interface manager (import)

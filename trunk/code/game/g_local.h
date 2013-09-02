@@ -202,6 +202,11 @@ void            G_ShutdownLua();
 void            G_LoadLuaScript(const char *filename);
 void            G_DumpLuaStack();
 
+//
+// g_ammo.cpp
+//
+void G_InitAmmoTypes();
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
 

@@ -270,6 +270,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_ammo.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_api.cpp"
 				>
 			</File>
@@ -700,6 +704,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\afRagdollHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.h"
 				>
 			</File>
 			<File

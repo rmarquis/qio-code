@@ -1565,6 +1565,8 @@ netField_t	playerStateFields[] =
 { PSF(viewModelOffset[0]), 0 },
 { PSF(viewModelOffset[1]), 0 },
 { PSF(viewModelOffset[2]), 0 },
+{ PSF(viewWeaponMaxClipSize), 0 },
+{ PSF(viewWeaponCurClipSize), 0 },
 };
 
 /*

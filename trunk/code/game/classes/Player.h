@@ -82,6 +82,7 @@ class Player : public ModelEntity {
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
+	void updateCurWeaponClipSize();
 public:
 	Player();
 	virtual ~Player();

@@ -44,6 +44,7 @@ static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex"
 static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","none");
 static aCvar_c cg_forceViewModelAnimationFlags("cg_forceViewModelAnimationFlags","none");
 static aCvar_c cg_printViewModelAnimName("cg_printViewModelAnimName","0");
+static aCvar_c cg_printViewWeaponClipSize("cg_printViewWeaponClipSize","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -60,6 +61,12 @@ void CG_AllocViewModelEntity() {
 }
 
 void CG_RunViewModel() {
+	if(cg_printViewWeaponClipSize.getInt()) {
+		if(cg.snap) {
+			g_core->Print("ViewWeapon clip %i/%i\n",cg.snap->ps.viewWeaponCurClipSize,cg.snap->ps.viewWeaponMaxClipSize);
+		}
+	}
+
 	int viewModelEntity = cg.snap->ps.curWeaponEntNum;
 	if(cg_thirdPerson.integer) {
 		CG_FreeViewModelEntity();

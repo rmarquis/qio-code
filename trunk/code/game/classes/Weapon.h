@@ -74,6 +74,9 @@ public:
 	u32 getClipSize() const {
 		return clipSize;
 	}
+	u32 getCurrentClipSize() const {
+		return curClipSize;
+	}
 	void fillClip(u32 newCurClipSize) {
 		curClipSize = newCurClipSize;
 	}
