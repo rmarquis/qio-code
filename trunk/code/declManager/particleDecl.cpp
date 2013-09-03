@@ -49,6 +49,9 @@ bool particleDistribution_c::parseParticleDistribution(class parser_c &p, const 
 			g_core->RedWarning("particleDistribution_c::parse: failed to parse 'cylinder' sizes at line %i of %s\n",line,fname);
 			return true;
 		}
+		if(p.isAtEOL() == false) {
+			frac = p.getFloat();
+		}
 		type = PDIST_CYLINDER;
 	} else if(p.atWord("rect")) {
 		if(p.getFloatMat(size,3)) {
@@ -176,7 +179,7 @@ void particleDirection_c::calcParticleDirection(particleInstanceData_s &in, cons
 //
 bool particleParm_c::parseParticleParm(class parser_c &p, const char *fname) {
 	const char *s = p.getToken();
-	if(isdigit(s[0])) {
+	if(isdigit(s[0]) || s[0] == '-') {
 		from = atof(s);
 		if(p.atWord("to")) {
 			to = p.getFloat();
@@ -245,6 +248,9 @@ void particleStage_c::setDefaults() {
 	color[0] = color[1] = color[2] = color[3] = 1.f;
 	fadeColor[0] = fadeColor[1] = fadeColor[2] = fadeColor[3] = 0.f;
 	aspect.set(1.f);
+	numAnimationFrames = 0;
+	animationRate = 0.f;
+	bEntityColor = false;
 }
 u32 particleStage_c::instanceParticle(particleInstanceData_s &in, struct simpleVert_s *verts) const {
 	// start with calculating color.
@@ -315,21 +321,20 @@ void particleStage_c::calcParticleOrigin(particleInstanceData_s &in, vec3_c &out
 }
 void particleStage_c::calcParticleTexCoords(particleInstanceData_s &in, struct simpleVert_s *verts) const {
 	float s, width;
-	//if (animationFrames > 1) {
-	//	width = 1.0f / animationFrames;
-	//	float	floatFrame;
-	//	if (animationRate) {
-	//		// explicit, cycling animation
-	//		floatFrame = in.age * animationRate;
-	//	} else {
-	//		// single animation cycle over the life of the particle
-	//		floatFrame = in.lifeFrac * animationFrames;
-	//	}
-	//	int	intFrame = (int)floatFrame;
+	if (numAnimationFrames > 1) {
+		width = 1.0f / numAnimationFrames;
+		float	floatFrame;
+		if (animationRate) {
+			// explicit, cycling animation
+			floatFrame = in.lifeFrac * this->time * animationRate;
+		} else {
+			// single animation cycle over the life of the particle
+			floatFrame = in.lifeFrac * numAnimationFrames;
+		}
+		int	intFrame = (int)floatFrame;
 	//	in.animationFrameFrac = floatFrame - intFrame;
-	//	s = width * intFrame;
-	//} else 
-	{
+		s = width * intFrame;
+	} else  {
 		s = 0.0f;
 		width = 1.0f;
 	}
@@ -488,6 +493,12 @@ bool particleStage_c::parseParticleStage(class parser_c &p, const char *fname) {
 				bWorldGravity = true;
 			}	
 			gravity = p.getFloat();
+		} else if(p.atWord("animationRate")) {
+			animationRate = p.getFloat();
+		} else if(p.atWord("animationFrames")) {
+			numAnimationFrames = p.getFloat();
+		} else if(p.atWord("entityColor")) {
+			bEntityColor = p.getInteger();
 		} else {
 			int line = p.getCurrentLineNumber();
 			const char *unk = p.getToken();

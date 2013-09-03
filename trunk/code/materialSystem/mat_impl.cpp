@@ -793,6 +793,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						u16 src = readBlendEnum(p);
 						u16 dst = readBlendEnum(p);
 						stage->setBlendDef(src,dst);
+					}			
+					// disable writing to depth buffer for translucent surfaces
+					// (unless otherwise specified)
+					if(depthWriteSetInMaterial == false) {
+						stage->setDepthWrite(false);
 					}
 				} else if(p.atWord("alphatest")) {
 					// example: "alphaTest ( time + parm4 ) * 0.5 - 0.2"

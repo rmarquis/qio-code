@@ -139,6 +139,9 @@ class particleStage_c : public particleStageAPI_i {
 	float color[4];
 	float fadeColor[4];
 	vec3_c offset;
+	u32 numAnimationFrames;
+	float animationRate;
+	bool bEntityColor;
 	// derived values
 	u32 cycleMsec; // ( time + deadTime ) * 1000;
 
