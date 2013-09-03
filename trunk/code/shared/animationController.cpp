@@ -67,6 +67,10 @@ void skelAnimController_c::resetToAnim(const class skelAnimAPI_i *newAnim, int c
 	lastUpdateTime = curGlobalTimeMSec;
 }
 void skelAnimController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec, int newFlags) {
+	if(anim == 0) {
+		resetToAnim(newAnim,curGlobalTimeMSec,newFlags);
+		return;
+	}
 	if(anim == newAnim)
 		return;
 	if(nextAnim == newAnim)

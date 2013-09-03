@@ -66,6 +66,9 @@ public:
 	virtual void addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const class axis_c &viewerAxis, byte alpha = 255) {
 
 	}
+	virtual void addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+
+	}
 
 	// only for .map -> trimesh converter
 	virtual void onNewMapEntity(u32 entityNum) {

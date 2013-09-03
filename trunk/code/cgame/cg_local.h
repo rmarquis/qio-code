@@ -65,7 +65,7 @@ typedef struct centity_s {
 
 	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
 	class rLightAPI_i *rLight; // for ET_LIGHT and for all entities with entityState_t::lightRadius != 0.f
-	class emitter_c *emitter; // for all entities with entity emitter enabled
+	class emitterBase_c *emitter; // for all entities with entity emitter enabled
 } centity_t;
 
 
@@ -293,6 +293,11 @@ void CG_RunViewModel();
 //
 void CG_AddBulletTracer(const vec3_c &from, const vec3_c &to, float width, class mtrAPI_i *mat, int life);
 void CG_UpdateBulletTracers();
+
+//
+// cg_testEmitter.cpp
+//
+void CG_RunTestEmitter();
 
 //===============================================
 

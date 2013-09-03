@@ -26,6 +26,10 @@ struct simpleVert_s {
 		tc[0] = f[0];
 		tc[1] = f[1];
 	}
+	void setUV(float u, float v) {
+		tc[0] = u;
+		tc[1] = v;
+	}
 };
 
 #endif // __SIMPLEVERT_H__

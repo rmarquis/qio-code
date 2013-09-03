@@ -329,6 +329,17 @@ void r_surface_c::updateSprite(const class axis_c &viewAxis, const vec3_c &sprit
 	verts[firstVertex+1].color[3] = alpha;
 	verts[firstVertex+2].color[3] = alpha;
 	verts[firstVertex+3].color[3] = alpha;
+}	
+void r_surface_c::setSurface(const char *matName, const struct simpleVert_s *pVerts, u32 numVerts, const u16 *pIndices, u32 numIndices) {
+	setMaterial(matName);
+	verts.destroy();
+	indices.destroy();
+	indices.addU16Array(pIndices,numIndices);
+	verts.resize(numVerts);
+	for(u32 i = 0; i < numVerts; i++) {
+		verts[i].xyz = pVerts[i].xyz;
+		verts[i].tc = pVerts[i].tc;
+	}
 }
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
@@ -837,6 +848,10 @@ void r_model_c::addSprite(const class vec3_c &origin, float radius, class mtrAPI
 	u32 spriteNum = surfs[0].getNumTris()/2;
 	surfs[0].initSprite(mat,radius,spriteNum);
 	surfs[0].updateSprite(viewerAxis,origin,radius,spriteNum, alpha);
+}
+void r_model_c::addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+	r_surface_c &newSF = surfs.pushBack();
+	newSF.setSurface(matName,verts,numVerts,indices,numIndices);
 }
 void r_model_c::setAllVertexColors(byte r, byte g, byte b, byte a) {
 	r_surface_c *sf = surfs.getArray();

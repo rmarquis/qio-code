@@ -519,7 +519,7 @@ void Player::onFireKeyHeld() {
 		if(weaponState == WP_IDLE) {
 			// reload weapon if clip is empty
 			if(curWeapon->hasEmptyClip()) {
-				if(curWeapon->getDelayBetweenShots()) {
+				if(curWeapon->getReloadTime()) {
 					weaponTime = level.time;
 					weaponState = WP_RELOADING;
 					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);
@@ -549,7 +549,7 @@ void Player::onFireKeyDown() {
 		if(weaponState == WP_IDLE) {
 			// reload weapon if clip is empty
 			if(curWeapon->hasEmptyClip()) {
-				if(curWeapon->getDelayBetweenShots()) {
+				if(curWeapon->getReloadTime()) {
 					weaponTime = level.time;
 					weaponState = WP_RELOADING;
 					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);

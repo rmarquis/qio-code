@@ -569,6 +569,14 @@ void declManagerIMPL_c::removeUnrefrencedDecls() {
 			delete af;
 		}
 	}
+	for(int i = 0; i < prtDecls.size(); i++) {
+		particleDecl_c *prt = prtDecls[i];
+		if(prt->isReferenced() == false) {
+			prtDecls.removeEntry(prt);
+			i--;
+			delete prt;
+		}
+	}
 }
 void declManagerIMPL_c::onGameShutdown() {
 	for(u32 i = 0; i < entityDecls.size(); i++) {
@@ -586,6 +594,10 @@ void declManagerIMPL_c::onGameShutdown() {
 	for(u32 i = 0; i < q3PlayerDecls.size(); i++) {
 		q3PlayerModelDecl_c *pd = q3PlayerDecls[i];
 		pd->clearServerRef();
+	}
+	for(u32 i = 0; i < prtDecls.size(); i++) {
+		particleDecl_c *prt = prtDecls[i];
+		prt->clearServerRef();
 	}
 	removeUnrefrencedDecls();
 }
@@ -605,6 +617,10 @@ void declManagerIMPL_c::onRendererShutdown() {
 	for(u32 i = 0; i < q3PlayerDecls.size(); i++) {
 		q3PlayerModelDecl_c *pd = q3PlayerDecls[i];
 		pd->clearClientRef();
+	}
+	for(u32 i = 0; i < prtDecls.size(); i++) {
+		particleDecl_c *prt = prtDecls[i];
+		prt->clearClientRef();
 	}
 	removeUnrefrencedDecls();
 }

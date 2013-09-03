@@ -21,46 +21,25 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// cg_emitter.h - default emitter object
-#ifndef __CG_EMITTER_H__
-#define __CG_EMITTER_H__
+// cg_emitter_d3.h - Doom3 particles (prt) emitter
+#ifndef __CG_EMITTER_D3_H__
+#define __CG_EMITTER_D3_H__
 
 #include "cg_emitter_base.h"
-#include <shared/array.h>
 #include <math/vec3.h>
 
-struct emitterParticle_s {
+// Doom3 particle emitter (requires Doom3 .prt particles decl to function)
+class emitterD3_c : public emitterBase_c {
 	vec3_c origin;
-	int spawnTime;
-};
-
-// default emitter, requires only material to function
-class emitterDefault_c : public emitterBase_c {
-	arraySTD_c<emitterParticle_s> particles;
-
-	class mtrAPI_i *mat;
-	float spriteRadius;
-	int spawnInterval;
-	int particleLife;
-
-	vec3_c origin;
-	int lastSpawnTime;
-	int lastUpdateTime;
-
-	void spawnSingleParticle(int curTime);
+	class particleDeclAPI_i *decl;
 
 	// customRenderObjectAPI_i impl
 	virtual void instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis);
 public:
-	emitterDefault_c(int timeNow);
-	~emitterDefault_c();
-
-	virtual void updateEmitter(int newTime);
-
+	
 	virtual void setOrigin(const vec3_c &newOrigin);
-	virtual void setRadius(float newSpriteRadius);
-	virtual void setInterval(int newSpawnInterval);
-	virtual void setMaterial(class mtrAPI_i *newMat);
+	virtual void setParticleDecl(class particleDeclAPI_i *newDecl);
 };
 
-#endif // __CG_EMITTER_H__
+#endif // __CG_EMITTER_D3_H__
+

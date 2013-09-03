@@ -27,17 +27,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/staticModelCreatorAPI.h>
 
-emitter_c::emitter_c(int timeNow) {
+emitterDefault_c::emitterDefault_c(int timeNow) {
 	lastSpawnTime = timeNow;
 
 	particleLife = 500;
 }
-emitter_c::~emitter_c() {
+emitterDefault_c::~emitterDefault_c() {
 	rf->removeCustomRenderObject(this);
 }
 
-void emitter_c::instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis) {
-	g_core->Print("emitter_c::instanceModel: at %f %f %f\n",origin.x,origin.y,origin.z);
+void emitterDefault_c::instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis) {
+	g_core->Print("emitterDefault_c::instanceModel: at %f %f %f\n",origin.x,origin.y,origin.z);
 
 	out->clear();
 	for(int i = particles.size()-1; i >= 0; i--) {
@@ -50,13 +50,13 @@ void emitter_c::instanceModel(class staticModelCreatorAPI_i *out, const class ax
 		out->addSprite(p.origin,radius,this->mat,viewerAxis,alpha);
 	}
 }
-void emitter_c::spawnSingleParticle(int curTime) {
+void emitterDefault_c::spawnSingleParticle(int curTime) {
 	emitterParticle_s np;
 	np.spawnTime = curTime;
 	np.origin = origin;
 	particles.push_back(np);
 }
-void emitter_c::updateEmitter(int newTime) {
+void emitterDefault_c::updateEmitter(int newTime) {
 	lastUpdateTime = newTime;
 	// spawn new particles
 	while(newTime - lastSpawnTime > spawnInterval) {
@@ -71,16 +71,16 @@ void emitter_c::updateEmitter(int newTime) {
 		}
 	}
 }
-void emitter_c::setOrigin(const vec3_c &newOrigin) {
+void emitterDefault_c::setOrigin(const vec3_c &newOrigin) {
 	origin = newOrigin;
 }
-void emitter_c::setRadius(float newSpriteRadius) {
+void emitterDefault_c::setRadius(float newSpriteRadius) {
 	spriteRadius = newSpriteRadius;
 }
-void emitter_c::setInterval(int newSpawnInterval) {
+void emitterDefault_c::setInterval(int newSpawnInterval) {
 	spawnInterval = newSpawnInterval;
 }
-void emitter_c::setMaterial(class mtrAPI_i *newMat) {
+void emitterDefault_c::setMaterial(class mtrAPI_i *newMat) {
 	mat = newMat;
 }
 

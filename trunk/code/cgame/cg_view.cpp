@@ -324,6 +324,9 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	// update test model
 	CG_RunTestModel();
 
+	// update test emitter
+	CG_RunTestEmitter();
+
 	// update view model
 	CG_RunViewModel();
 

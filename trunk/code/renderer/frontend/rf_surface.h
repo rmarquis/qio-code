@@ -172,6 +172,8 @@ public:
 	// single sprite surface
 	void initSprite(class mtrAPI_i *newSpriteMaterial, float newSpriteRadius, u32 subSpriteNumber = 0);
 	void updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius, u32 subSpriteNumber = 0, byte alpha = 255);
+	// resets the surface data
+	void setSurface(const char *matName, const struct simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices);
 
 	bool traceRay(class trace_c &tr);
 
@@ -270,6 +272,7 @@ public:
 	virtual void setIndex(u32 indexNum, u32 value);
 	virtual void clear();	
 	virtual void addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const axis_c &viewerAxis, byte alpha);
+	virtual void addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices);
 	virtual void setAllVertexColors(byte r, byte g, byte b, byte a);
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);

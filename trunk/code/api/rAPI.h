@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __RF_API_H__
 
 #include "iFaceBase.h"
+#include <shared/typedefs.h>
 
 #define RENDERER_API_IDENTSTR "RendererAPI0001"
 

@@ -299,6 +299,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_emitter_d3.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_ents.cpp"
 				>
 				<FileConfiguration
@@ -474,6 +478,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_testEmitter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_testModel.cpp"
 				>
 			</File>
@@ -532,6 +540,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_emitter_base.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\cgame\cg_emitter_d3.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_local.h"
 				>
 			</File>
@@ -577,6 +593,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\random.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\random.h"
 				>
 			</File>
 			<File
