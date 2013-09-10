@@ -1,0 +1,52 @@
+// entity 0
+{
+	"classname" "worldspawn"
+}
+// entity 1
+{
+	"classname" "info_player_start"
+	"origin" "-1.332654 -15.871529 -65.791824"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 2
+{
+	"classname" "light"
+	"origin" "52.019867 -5.189965 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 3
+{
+	"classname" "light"
+	"origin" "612.019897 -165.189972 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 4
+{
+	"classname" "light"
+	"origin" "388.019897 -1141.189941 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 5
+{
+	"classname" "light"
+	"origin" "36.019867 -725.189941 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 6
+{
+	"classname" "light"
+	"origin" "52.019867 -949.189941 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 7
+{
+	"classname" "light"
+	"origin" "516.019897 -5.189941 -11.266884"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 8
+{
+	"classname" "light"
+	"origin" "516.019897 -965.189941 -11.266884"
+	"angles" "0.000000 0.000000 0.000000"
+}

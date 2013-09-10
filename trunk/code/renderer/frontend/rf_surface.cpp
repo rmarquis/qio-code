@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/simpleTexturedPoly.h>
 #include <api/colMeshBuilderAPI.h>
 #include "../pointLightSample.h"
+#include <shared/perStringCallback.h>
 
 //
 //	r_surface_c class
@@ -443,7 +444,11 @@ void r_surface_c::setAmbientLightingVec3_255(const vec3_c &color) {
 void r_surface_c::setAllVertexColors(byte r, byte g, byte b, byte a) {
 	verts.setVertexAlphaToConstValue(a);
 	verts.setVertexColorsToConstValuesVec3255(vec3_c(r,g,b));
+}	
+void r_surface_c::getReferencedMatNames(class perStringCallbackListener_i *callback) const {
+	callback->perStringCallback(getMatName());
 }
+	
 bool r_surface_c::parseProcSurface(class parser_c &p) {
 	int sky = -1;
 	if(p.atWord("{")==false) {

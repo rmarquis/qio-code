@@ -26,41 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/array.h>
 #include <shared/hashTableTemplate.h>
+#include <shared/stringList.h>
 
-// simple string list.
-// performs much faster than arraySTD_c<str>.
-class stringList_c {
-	arraySTD_c<char*> list;
-public:
-	~stringList_c() {
-		freeMemory();
-	}
-	void freeMemory() {
-		for(u32 i = 0; i < list.size(); i++) {
-			free(list[i]);
-		}
-		list.clear();
-	}
-	void iterateEntityDefNames(void (*callback)(const char *s)) {
-		for(u32 i = 0; i < list.size(); i++) {
-			callback(list[i]);
-		}
-	}
-	void addString(const char *s) {
-		u32 l = strlen(s);
-		char *n = (char*)malloc(l+1);
-		strcpy(n,s);
-		list.push_back(n);
-	}
-	static int CompareStringQSort(const void *v0, const void *v1) {
-		const char *s0 = *((const char **)v0);
-		const char *s1 = *((const char **)v1);
-		return stricmp(s0,s1);
-	}
-	void sortStrings() {
-		qsort(list.getArray(),list.size(),list.getElementSize(),CompareStringQSort);
-	}
-};
 
 struct defFile_s {
 	str fname;
@@ -109,8 +76,15 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	// used for console command autocompletion
 	bool entDefNamesListReady;
 	stringList_c entDefNamesList;
+	// precached list of particle decl names
+	bool particleDefNamesListReady;
+	stringList_c particleDefNamesList;
 
+	// only for console command autocompletion
+	// create a list of all available entDef names
 	void cacheEntDefNamesList();
+	// create a list of all available particle names
+	void cacheParticleDefNamesList();
 
 	virtual void init();
 	virtual class modelDeclAPI_i *_registerModelDecl(const char *name, qioModule_e userModule);
@@ -123,5 +97,6 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	virtual void onGameShutdown();
 	virtual void onRendererShutdown();
 	virtual void iterateEntityDefNames(void (*callback)(const char *s));
+	virtual void iterateParticleDefNames(void (*callback)(const char *s));
 };
 

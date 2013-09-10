@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/mtrAPI.h>
 #include "rf_lightGrid.h"
+#include <shared/perStringCallback.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
@@ -2170,6 +2171,15 @@ void rBspTree_c::addModelDrawCalls(u32 inlineModelNum) {
 		addBSPSurfaceDrawCall(m.firstSurf+i);
 	}
 }
+class mtrAPI_i *rBspTree_c::getSurfaceMaterial(u32 surfNum) const {
+	const bspSurf_s &sf = surfs[surfNum];
+	if(sf.type == BSPSF_BEZIER) {
+		return sf.patch->getMat();
+	}
+	if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES)
+		return sf.sf->mat;
+	return 0;
+}
 void rBspTree_c::doDebugDrawing() {
 	if(rf_bsp_showAreaPortals.getInt()) {
 		for(u32 i = 0; i < areaPortals.size(); i++) {
@@ -2203,7 +2213,7 @@ u32 rBspTree_c::createSurfDecals(u32 surfNum, class decalProjector_c &proj) cons
 		
 	}
 	return added;
-}
+}	
 int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 	decalProjector_c proj;
 	proj.init(pos,normal,radius);
@@ -2388,6 +2398,14 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 	boxSurfaces(l->getABSBounds(),sfNums);
 	for(u32 i = 0; i < sfNums.size(); i++) {
 		l->addBSPSurfaceInteraction(sfNums[i]);
+	}
+}
+void rBspTree_c::getReferencedMatNames(class perStringCallbackListener_i *callback) const {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		class mtrAPI_i *mat = getSurfaceMaterial(i);
+		if(mat == 0)
+			continue;
+		callback->perStringCallback(mat->getName());
 	}
 }
 rBspTree_c *RF_LoadBSP(const char *fname) {

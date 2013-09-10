@@ -299,6 +299,11 @@ void CG_UpdateBulletTracers();
 //
 void CG_RunTestEmitter();
 
+//
+// cg_testMaterial.cpp
+//
+void CG_RunTestMaterial();
+
 //===============================================
 
 //

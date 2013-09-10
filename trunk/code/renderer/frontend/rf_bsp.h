@@ -245,7 +245,8 @@ class rBspTree_c {
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
 	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;		
-	
+	class mtrAPI_i *getSurfaceMaterial(u32 surfNum) const;
+
 	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
 public:
 	rBspTree_c();
@@ -278,6 +279,8 @@ public:
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 	
 	void cacheLightWorldInteractions(class rLightImpl_c *l);
+
+	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
 
 	const class lightGridAPI_i *getLightGridAPI() const {
 		return lightGrid;

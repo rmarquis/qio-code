@@ -69,6 +69,12 @@ public:
 	virtual void addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 
 	}
+	virtual void recalcTBNs() { 
+
+	}
+	virtual void scaleTexCoords(float f) {
+
+	}
 
 	// only for .map -> trimesh converter
 	virtual void onNewMapEntity(u32 entityNum) {

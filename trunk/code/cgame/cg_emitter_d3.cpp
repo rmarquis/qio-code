@@ -99,6 +99,7 @@ void emitterD3_c::instanceModel(class staticModelCreatorAPI_i *out, const class 
 		}
 		out->addSurface(s->getMatName(),verts,numVerts,indices,numIndices);
 	}
+	out->translateXYZ(this->origin);
 }
 
 void emitterD3_c::setOrigin(const vec3_c &newOrigin) {

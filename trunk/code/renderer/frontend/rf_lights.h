@@ -153,7 +153,7 @@ public:
 	float getShadowMapH() const;
 
 	// forward rendering
-	void addStaticSurfInteractionDrawCall(struct staticSurfInteraction_s &in);
+	void addStaticSurfInteractionDrawCall(struct staticSurfInteraction_s &in, bool addingForShadowMapping);
 	void addLightInteractionDrawCalls();
 	// only for stencil shadows
 	void addLightShadowVolumesDrawCalls();

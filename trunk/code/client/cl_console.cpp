@@ -302,6 +302,17 @@ void Cmd_CompleteModelName( char *args, int argNum ) {
 	}
 }
 
+/*
+==================
+Cmd_CompleteEmitterName
+==================
+*/
+void Cmd_CompleteEmitterName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteEmitterName();
+	}
+}
+
 
 /*
 ================
@@ -333,6 +344,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "spawn", CL_AutocompleteSpawnCommand );
 	Cmd_AddCommand ("model_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "model_spawn", Cmd_CompleteModelName );
+	Cmd_AddCommand ("cg_testEmitter", 0);
+	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
 }
 
 /*

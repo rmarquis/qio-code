@@ -334,14 +334,16 @@ void rLightImpl_c::recalcLightInteractions() {
 	recalcLightInteractionsWithStaticWorld();
 }
 static aCvar_c rf_proc_printLitSurfsCull("rf_proc_printLitSurfsCull","0");
-void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in) {
+void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in, bool addingForShadowMapping) {
 	if(in.type == SIT_BSP) {
 		RF_DrawSingleBSPSurface(in.bspSurfaceNumber);
 	} else if(in.type == SIT_STATIC) {
 		in.sf->addDrawCall();
 	} else if(in.type == SIT_PROC) {
-		// this check used to cause some problems...
-		if(RF_IsWorldAreaVisible(in.areaNum)) {
+		// don't add lighting interactions if interaction area was not visible by player.
+		// NOTE: if we're adding interaction for shadow mapping, we still need
+		// to add it even if interaction area was NOT visible by player.
+		if(addingForShadowMapping == true || RF_IsWorldAreaVisible(in.areaNum)) {
 			if(rf_proc_printLitSurfsCull.getInt()==2) {
 				g_core->Print("rLightImpl_c::addStaticSurfInteractionDrawCall: adding surf %i because area %i was visible\n",in.sf,in.areaNum);
 			}
@@ -360,7 +362,8 @@ void rLightImpl_c::addLightInteractionDrawCalls() {
 			// if interaction is not needed for lighting, skip it
 			continue;
 		}
-		addStaticSurfInteractionDrawCall(in);
+		// add static surf interaction for lighting
+		addStaticSurfInteractionDrawCall(in,false);
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
 		entityInteraction_s &in = this->entityInteractions[i];
@@ -438,7 +441,8 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 		const frustum_c &sideFrustum = sideFrustums[side];
 		for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
 			staticSurfInteraction_s &sIn = this->staticInteractions[j];
-			addStaticSurfInteractionDrawCall(sIn);
+			// add static surf interaction for shadow mapping
+			addStaticSurfInteractionDrawCall(sIn,true);
 		}
 		for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
 			entityInteraction_s &eIn = this->entityInteractions[j];
@@ -450,7 +454,12 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 	rf_currentShadowMapW = -1;
 	rf_currentShadowMapH = -1;
 }
+extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
+
 bool rLightImpl_c::isCulledByAreas() const {
+	if(rf_proc_useProcDataToOptimizeLighting.getInt() == 0)
+		return false;
+
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		const staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.isNeededForLighting() == false)

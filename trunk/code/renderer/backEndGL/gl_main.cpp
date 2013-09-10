@@ -94,6 +94,7 @@ static aCvar_c rb_dynamicLighting_ignoreAngleFactor("rb_dynamicLighting_ignoreAn
 // enables DEBUG_IGNOREDISTANCEFACTOR macro for all shaders
 static aCvar_c rb_dynamicLighting_ignoreDistanceFactor("rb_dynamicLighting_ignoreDistanceFactor","0");
 static aCvar_c rb_debugStageConditions("rb_debugStageConditions","0");
+static aCvar_c rb_showShadowVolumes("rb_showShadowVolumes","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1664,17 +1665,30 @@ drawOnlyLightmap:
 		unbindVertexBuffer();
 		unbindMaterial();
         glClear(GL_STENCIL_BUFFER_BIT); // We clear the stencil buffer
-        glDepthFunc(GL_LESS); // We change the z-testing function to LESS, to avoid little bugs in shadow
-        setColorMask(false, false, false, false); // We dont draw it to the screen
-        glStencilFunc(GL_ALWAYS, 0, 0); // We always draw whatever we have in the stencil buffer
-		setGLDepthMask(false);
-		setGLStencilTest(true);
+		if(rb_showShadowVolumes.getInt()) {
+			setColor4f(1,1,0,0.5f);
+			setBlendFunc(BM_ONE,BM_ONE);
+			glDepthFunc(GL_LEQUAL); 
+			glCull(CT_FRONT_SIDED);
+			setColorMask(true, true, true, true); 
+			if(rb_showShadowVolumes.getInt() == 2)	
+				glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+		} else {
+			glDepthFunc(GL_LESS); // We change the z-testing function to LESS, to avoid little bugs in shadow
+			setColorMask(false, false, false, false); // We dont draw it to the screen
+			glStencilFunc(GL_ALWAYS, 0, 0); // We always draw whatever we have in the stencil buffer
+			setGLDepthMask(false);
+			setGLStencilTest(true);
+		}
 
 		bDrawingShadowVolumes = true;
 	}
 	void stopDrawingShadowVolumes() {
 		if(bDrawingShadowVolumes == false)
 			return;
+
+		if(rb_showShadowVolumes.getInt() == 2)	
+			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
 		// We draw our lighting now that we created the shadows area in the stencil buffer
         glDepthFunc(GL_LEQUAL); // we put it again to LESS or EQUAL (or else you will get some z-fighting)
@@ -1693,6 +1707,11 @@ drawOnlyLightmap:
 		bindIBO(indices);
 		glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),points->getArray());
 		
+		if(rb_showShadowVolumes.getInt()) {
+			// draw once and we're done
+			drawCurIBO(); // draw the shadow volume
+			return;
+		}
 		glCull(CT_BACK_SIDED);
 		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP); // increment if the depth test fails
 

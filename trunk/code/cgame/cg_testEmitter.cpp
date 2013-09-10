@@ -33,6 +33,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 
 static aCvar_c cg_testEmitter("cg_testEmitter","");
+static aCvar_c cg_testEmitter_attachToCamera("cg_testEmitter_attachToCamera","0");
+static aCvar_c cg_testEmitter_cameraDistance("cg_testEmitter_cameraDistance","64");
 
 static class emitterBase_c *cg_testEmitterInstance = 0;
 
@@ -56,7 +58,11 @@ void CG_RunTestEmitter() {
 	if(cg_testEmitterInstance == 0) {
 		cg_testEmitterInstance = new emitterD3_c;
 		rf->addCustomRenderObject(cg_testEmitterInstance);
-		cg_testEmitterInstance->setOrigin(cg.refdefViewOrigin);
+		cg_testEmitterInstance->setOrigin(cg.refdefViewOrigin+cg.refdefViewAxis.getForward()*cg_testEmitter_cameraDistance.getFloat());
+	} else {
+		if(cg_testEmitter_attachToCamera.getInt()) {
+			cg_testEmitterInstance->setOrigin(cg.refdefViewOrigin+cg.refdefViewAxis.getForward()*cg_testEmitter_cameraDistance.getFloat());
+		}
 	}
 	cg_testEmitterInstance->setParticleDecl(pDecl);
 

@@ -39,6 +39,8 @@ static aCvar_c rf_debugMaterialNeedsCPUCheck("rf_debugMaterialNeedsCPUCheck","0"
 static aCvar_c rf_portalOnly("rf_portalOnly","0");
 static aCvar_c rf_skipMirrorAndPortalSubViews("rf_skipMirrorAndPortalSubViews","0");
 static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipassRendering","0");
+// it's in rf_proc.cpp
+extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
 
 bool RF_IsUsingDynamicLights() {
 	if(rf_enableMultipassRendering.getInt())
@@ -185,8 +187,12 @@ void RF_OnRFEnableMultipassRenderingCvarModified(const class aCvar_c *cv) {
 		RFL_RecalculateLightsInteractions();
 	}
 }
+void RF_OnRFUseProcDataToOptimizeLightingCvarModified(const class aCvar_c *cv) {
+	RFL_RecalculateLightsInteractions();
+}
 void RF_InitMain() {
 	rf_shadows.setExtraModificationCallback(RF_OnRFShadowsCvarModified);
 	rf_enableMultipassRendering.setExtraModificationCallback(RF_OnRFEnableMultipassRenderingCvarModified);
+	rf_proc_useProcDataToOptimizeLighting.setExtraModificationCallback(RF_OnRFUseProcDataToOptimizeLightingCvarModified);
 }
 

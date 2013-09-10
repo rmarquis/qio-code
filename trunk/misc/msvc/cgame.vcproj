@@ -482,6 +482,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_testMaterial.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_testModel.cpp"
 				>
 			</File>

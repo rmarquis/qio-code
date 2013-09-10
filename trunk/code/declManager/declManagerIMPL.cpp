@@ -626,7 +626,11 @@ void declManagerIMPL_c::onRendererShutdown() {
 }
 void declManagerIMPL_c::iterateEntityDefNames(void (*callback)(const char *s)) {
 	cacheEntDefNamesList();
-	entDefNamesList.iterateEntityDefNames(callback);
+	entDefNamesList.iterateStringList(callback);
+}
+void declManagerIMPL_c::iterateParticleDefNames(void (*callback)(const char *s)) {
+	cacheParticleDefNamesList();
+	particleDefNamesList.iterateStringList(callback);
 }
 void fileTextDataCache_c::cacheDefFileText(const char *fname) {
 	char *data;
@@ -691,9 +695,16 @@ void declManagerIMPL_c::cacheEntDefNamesList() {
 	defFiles.listDeclNames(entDefNamesList,"entityDef");
 	entDefNamesListReady = true;
 }
+void declManagerIMPL_c::cacheParticleDefNamesList() {
+	if(particleDefNamesListReady)
+		return;
+	prtFiles.listDeclNames(particleDefNamesList,"particle");
+	particleDefNamesListReady = true;
+}
 
 void declManagerIMPL_c::init() {
 	entDefNamesListReady = false;
+	particleDefNamesListReady = false;
 
 	g_core->Print("----- Initializing Decls -----\n");
 	defFiles.cacheFileList("def/",".def");

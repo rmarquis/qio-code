@@ -1,0 +1,22 @@
+// entity 0
+{
+	"classname" "worldspawn"
+}
+// entity 1
+{
+	"classname" "info_player_start"
+	"origin" "-1.332654 -15.871529 -65.791824"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 2
+{
+	"classname" "light"
+	"origin" "52.019867 -5.189965 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}
+// entity 3
+{
+	"classname" "light"
+	"origin" "468.019867 10.810036 100.733116"
+	"angles" "0.000000 0.000000 0.000000"
+}

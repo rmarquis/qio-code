@@ -699,6 +699,7 @@ void Field_CompleteCommand( char *cmd,
 		qboolean doCommands, qboolean doCvars );
 
 void Field_CompleteEntityDefName();
+void Field_CompleteEmitterName();
 
 /*
 ==============================================================

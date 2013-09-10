@@ -28,6 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(Light, "BaseEntity");
 DEFINE_CLASS_ALIAS(Light, light_dynamic);
+// Doom3 light classname
+DEFINE_CLASS_ALIAS(Light, idLight);
 // "HumanHead" light for Prey
 DEFINE_CLASS_ALIAS(Light, hhLight);
 

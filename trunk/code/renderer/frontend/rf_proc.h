@@ -135,7 +135,8 @@ public:
 	void cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal);
 	void cacheLightWorldInteractions(class rLightImpl_c *l);
 
-	
+	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
+
 	void doDebugDrawing();
 };
 

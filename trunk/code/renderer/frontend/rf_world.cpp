@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCmd.h>
 #include <shared/autoCvar.h>
 #include <shared/trace.h>
+#include <shared/stringList.h>
 
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
 static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
@@ -200,10 +201,17 @@ void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexe
 }
 
 void RF_PrintWorldMapMaterials_f() {
+	stringList_c matNames;
+	matNames.setIgnoreDuplicates(true);
 	if(r_bspTree) {
-		//r_bspTree->printMaterialsList();
+		r_bspTree->getReferencedMatNames(&matNames);
+	} else if(r_procTree) {
+		r_procTree->getReferencedMatNames(&matNames);
 	}
-	g_core->RedWarning("RF_PrintWorldMapMaterials_f: TODO\n");
+	for(u32 i = 0; i < matNames.size(); i++) {
+		g_core->Print("%i/%i : %s\n",i,matNames.size(),matNames.getString(i));
+	}
+	g_core->Print("Total %i materials referenced by world surfaces\n",matNames.size());
 }
 void RF_PrintWorldMapInfo_f() {
 	if(r_bspTree) {

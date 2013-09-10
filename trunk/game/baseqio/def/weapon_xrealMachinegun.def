@@ -3,6 +3,7 @@
 
 model weapon_xreal_machinegun_world
 {
+	// we're supporing .obj format as well
 	mesh models/testweapons/xrealMachinegun/machinegun.obj
 }
 

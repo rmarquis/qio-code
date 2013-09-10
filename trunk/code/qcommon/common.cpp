@@ -3555,7 +3555,7 @@ void Field_CompleteFilename( const char *dir,
 #include <api/declManagerAPI.h>
 /*
 ===============
-Field_CompleteCommand
+Field_CompleteEntityDefName
 ===============
 */
 // V: for "spawn" command, 
@@ -3569,6 +3569,25 @@ void Field_CompleteEntityDefName()
 
 	if( !Field_Complete( ) ) {
 		g_declMgr->iterateEntityDefNames(PrintMatches);
+	}
+}
+
+/*
+===============
+Field_CompleteEmitterName
+===============
+*/
+// V: for "cg_testEmitter" command, 
+// autocompletion of particle decl names from Doom3 .prt files
+void Field_CompleteEmitterName()
+{
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	g_declMgr->iterateParticleDefNames(FindMatches);
+
+	if( !Field_Complete( ) ) {
+		g_declMgr->iterateParticleDefNames(PrintMatches);
 	}
 }
 

@@ -35,8 +35,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_proc_printCamArea("rf_proc_printCamArea","0");
 static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
 static aCvar_c rf_proc_ignorePortals("rf_proc_ignorePortals","0");
-static aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
 static aCvar_c rf_proc_ignoreCullBounds("rf_proc_ignoreCullBounds","0");
+// use this to see if lights are being properly culled by .proc areaportals
+aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
 
 class procPortal_c {
 friend class procTree_c;
@@ -459,7 +460,7 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		frustumExt_c adjusted;
 		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
 		if(adjusted.size() == 0) {
-			g_core->RedWarning("procTree_c::addAreaDrawCalls_r: frustum chopped away\n");
+			g_core->RedWarning("procTree_c::addAreaDrawCalls_r: frustum chopped away (dist %f)\n",d);
 			continue;
 		}
 
@@ -648,13 +649,15 @@ void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNu
 		if(p == prevPortal) {
 			continue;
 		}
+		if(l->getABSBounds().intersect(p->bounds) == false)
+			continue;
 		// first check if the portal is in the frustum
 		if(fr.cull(p->bounds) == CULL_OUT)
 			continue;
-		// then check if the portal side facing camera
+		// then check if the portal side facing light
 		// belong to current area. If not, portal is occluded
 		// by the wall and is not really visible
-		float d = p->plane.distance(rf_camera.getOrigin());
+		float d = p->plane.distance(l->getOrigin());
 		if(p->areas[0] == areaNum) {
 			if(d > 0)
 				continue;
@@ -664,7 +667,7 @@ void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNu
 		}
 		// adjust the frustum, so cacheLightWorldInteractions_r will never loop and cause a stack overflow...
 		frustumExt_c adjusted;
-		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
+		adjusted.adjustFrustum(fr,l->getOrigin(),p->points,p->plane);
 		if(p->areas[0] == areaNum) {
 			cacheLightWorldInteractions_r(l,p->areas[1],adjusted,p);
 		} else {
@@ -710,12 +713,12 @@ void procTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 			// create light->portal frustum
 			fr.fromPointAndWinding(l->getOrigin(),portal->points, portal->plane);
 			// add far plane
-			vec3_c center = portal->points.getCenter();
-			vec3_c normal = center - l->getOrigin();
-			normal.normalize();
-			plane_c farPlane;
-			farPlane.fromPointAndNormal(center,normal);
-			fr.addPlane(farPlane);
+			//vec3_c center = portal->points.getCenter();
+			//vec3_c normal = center - l->getOrigin();
+			//normal.normalize();
+			//plane_c farPlane;
+			//farPlane.fromPointAndNormal(center,normal);
+			//fr.addPlane(farPlane);
 
 		/*	if(fr.cull(portal->points.getCenter() != CULL_IN) {
 				g_core->RedWarning("bad frustum for portal %i\n",i);
@@ -731,6 +734,15 @@ void procTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 		}
 	}
 }
+void procTree_c::getReferencedMatNames(class perStringCallbackListener_i *callback) const {
+	for(u32 i = 0; i < areas.size(); i++) {
+		const procArea_c *ar = areas[i];
+		if(ar == 0)
+			continue;
+		ar->areaModel->getReferencedMatNames(callback);
+	}
+}
+
 void procTree_c::doDebugDrawing() {
 	if(rf_proc_showAreaPortals.getInt()) {
 		for(u32 i = 0; i < portals.size(); i++) {

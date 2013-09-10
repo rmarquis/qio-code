@@ -217,6 +217,8 @@ public:
 	void setAmbientLightingVec3_255(const vec3_c &color);
 	void setAllVertexColors(byte r, byte g, byte b, byte a);
 
+	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
+
 	const aabb &getBB() const {
 		return bounds;
 	}
@@ -297,6 +299,14 @@ public:
 	virtual bool hasPerSurfaceFunctionsImplemented() const {
 		return true;
 	}
+	virtual void recalcTBNs() { 
+		recalcModelTBNs();
+	}
+	virtual void scaleTexCoords(float f) {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			surfs[i].scaleTexCoords(f);
+		}
+	}
 
 	void addPatch(class r_bezierPatch_c *newPatch);
 
@@ -336,6 +346,11 @@ public:
 
 	bool parseProcModel(class parser_c &p);
 
+	void getReferencedMatNames(class perStringCallbackListener_i *callback) const {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			surfs[i].getReferencedMatNames(callback);
+		}
+	}
 	void recalcModelNormals() {
 		for(u32 i = 0; i < surfs.size(); i++) {
 			surfs[i].recalcNormals();

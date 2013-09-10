@@ -290,6 +290,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\stringList.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\tagOr.cpp"
 				>
 			</File>
