@@ -59,6 +59,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
 static aCvar_c rb_showNormalColors("rb_showNormalColors","0");
+static aCvar_c rb_skipStagesOfType_colorMapLightMapped("rb_skipStagesOfType_colorMapLightMapped","0");
+static aCvar_c rb_skipStagesOfType_colorMap("rb_skipStagesOfType_colorMap","0");
+static aCvar_c rb_skipStagesOfType_lightmap("rb_skipStagesOfType_lightmap","0");
 
 // HLSL shaders can be compiled with various 
 // options and defines
@@ -66,6 +69,8 @@ struct dx10ShaderPermutationFlags_s {
 	// draw colormap with lightmap
 	bool hasLightmap; // #define HAS_LIGHTMAP 
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
+	bool onlyLightmap; // #define ONLY_USE_LIGHTMAP
+	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 
 	dx10ShaderPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -136,7 +141,7 @@ public:
 
 		polygonLayout[2].SemanticName = "COLOR";
 		polygonLayout[2].SemanticIndex = 0;
-		polygonLayout[2].Format = DXGI_FORMAT_R32_UINT;
+		polygonLayout[2].Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		polygonLayout[2].InputSlot = 0;
 		polygonLayout[2].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
 		polygonLayout[2].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
@@ -201,6 +206,12 @@ public:
 		}
 		if(pFlags->hasTexGenEnvironment) {
 			finalEffectDef.append("#define HAS_TEXGEN_ENVIROMENT\n");
+		}
+		if(pFlags->onlyLightmap) {
+			finalEffectDef.append("#define ONLY_USE_LIGHTMAP\n");
+		}
+		if(pFlags->hasVertexColors) {
+			finalEffectDef.append("#define HAS_VERTEXCOLORS\n");
 		}
 		// then add main shader code
 		finalEffectDef.append(buf);
@@ -409,6 +420,9 @@ class rbDX10_c : public rbAPI_i {
 	vec3_c camOriginEntitySpace;
 	matrix_c projectionMatrix;
 
+	bool bHasVertexColors;
+	bool bDrawingSky;
+
 	// material and lightmap
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
@@ -418,6 +432,8 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		shadersSystem = 0;
+		bHasVertexColors = false;
+		bDrawingSky = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX10;
@@ -434,6 +450,7 @@ public:
 	virtual void setColor4(const float *rgba) {
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
+		this->bHasVertexColors = bBindVertexColors;
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 		if(lastMat == 0)
@@ -529,6 +546,9 @@ public:
 			shader2D->m_technique->GetPassByIndex(i)->Apply(0);
 			pD3DDevice->DrawIndexed(numIndices, 0, 0);
 		}
+
+		tempGPUIndices.destroy();
+		tempGPUVerts.destroy();
 #endif
 	}
 	void disableLightmap() {
@@ -580,33 +600,38 @@ public:
 	//}
 	short blendSrc;
 	short blendDst;
+	D3D10_BLEND getDX10BlendEnumValue(short val) {
+		if(val == BM_ONE) {
+			return D3D10_BLEND_ONE;
+		} else if(val == BM_ONE_MINUS_SRC_ALPHA) {
+			return D3D10_BLEND_INV_SRC_ALPHA;
+		} else if(val == BM_SRC_ALPHA) {
+			return D3D10_BLEND_SRC_ALPHA;
+		} else if(val == BM_ONE_MINUS_DST_ALPHA) {
+			return D3D10_BLEND_INV_DEST_ALPHA;
+		} else if(val == BM_DST_ALPHA) {
+			return D3D10_BLEND_DEST_ALPHA;
+		} else if(val == BM_DST_COLOR) {
+			return D3D10_BLEND_DEST_COLOR;
+		} else if(val == BM_ONE_MINUS_DST_COLOR) {
+			return D3D10_BLEND_INV_DEST_COLOR;
+		} else if(val == BM_ZERO) {
+			return D3D10_BLEND_ZERO;
+		} else {
+			g_core->RedWarning("rbDX10_c::getDX10BlendEnumValue: Unsupported blend type\n");
+			return D3D10_BLEND_ONE;
+		}
+	}
 	void initBlendDesc(D3D10_BLEND_DESC &blendDesc, short src, short dst) {
 		blendDesc.AlphaToCoverageEnable = false;
 		blendDesc.BlendEnable[0] = true;
-		if(src == BM_ONE) {
-			blendDesc.SrcBlend       = D3D10_BLEND_ONE;
-			blendDesc.SrcBlendAlpha  = D3D10_BLEND_ONE;
-		} else if(src == BM_ONE_MINUS_SRC_ALPHA) {
-			blendDesc.SrcBlend       = D3D10_BLEND_INV_SRC_ALPHA;
-			blendDesc.SrcBlendAlpha  = D3D10_BLEND_INV_SRC_ALPHA;
-		} else if(src == BM_SRC_ALPHA) {
-			blendDesc.SrcBlend      = D3D10_BLEND_SRC_ALPHA;
-			blendDesc.SrcBlendAlpha		= D3D10_BLEND_SRC_ALPHA;
-		} else {
 
-		}
-		if(dst == BM_ONE) {
-			blendDesc.DestBlend      = D3D10_BLEND_ONE;
-			blendDesc.DestBlendAlpha = D3D10_BLEND_ONE;
-		} else if(dst == BM_SRC_ALPHA) {
-			blendDesc.DestBlend      = D3D10_BLEND_SRC_ALPHA;
-			blendDesc.DestBlendAlpha = D3D10_BLEND_SRC_ALPHA;
-		} else if(dst == BM_ONE_MINUS_SRC_ALPHA) {
-			blendDesc.DestBlend       = D3D10_BLEND_INV_SRC_COLOR;
-			blendDesc.DestBlendAlpha  = D3D10_BLEND_INV_SRC_ALPHA;
-		} else {
+		blendDesc.SrcBlend = getDX10BlendEnumValue(src);
+		blendDesc.SrcBlendAlpha = D3D10_BLEND_ONE;//getDX10BlendEnumValueAlpha(src);
+	
+		blendDesc.DestBlend = getDX10BlendEnumValue(dst);
+		blendDesc.DestBlendAlpha = D3D10_BLEND_ZERO; //getDX10BlendEnumValueAlpha(dst);
 
-		}
 		blendDesc.BlendOp        = D3D10_BLEND_OP_ADD;
 		blendDesc.BlendOpAlpha   = D3D10_BLEND_OP_ADD;
 		blendDesc.RenderTargetWriteMask[0] = D3D10_COLOR_WRITE_ENABLE_ALL;
@@ -622,14 +647,36 @@ public:
 				if(blendStates[src][dst] == 0) {
 					D3D10_BLEND_DESC blendDesc = {0};
 					initBlendDesc(blendDesc,src,dst);
-					pD3DDevice->CreateBlendState(&blendDesc, &blendStates[src][dst]);
+					HRESULT res = pD3DDevice->CreateBlendState(&blendDesc, &blendStates[src][dst]);
+					if(res != S_OK) {
+						g_core->RedWarning("CreateBlendState failed\n");
+					}
 				}
 				pD3DDevice->OMSetBlendState(blendStates[src][dst], 0, 0xffffffff);
 			}
 		}
 	}
+	virtual void beginDrawingSky() {
+		bDrawingSky = true;
+	}
+	virtual void endDrawingSky() {
+		bDrawingSky = false;
+	}
 	void disableBlendFunc() {
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
+	}
+	// glDepthRange equivalent
+	void setDepthRange(float min, float max) {
+		D3D10_VIEWPORT viewport;
+		viewport.Width = g_sharedSDLAPI->getWinWidth();;
+		viewport.Height = g_sharedSDLAPI->getWinHeigth();
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.MinDepth = min;
+		viewport.MaxDepth = max;
+
+		// Create the viewport.
+		pD3DDevice->RSSetViewports(1, &viewport);
 	}
 	dx10TempBuffer_c tempGPUVerts;
 	dx10TempBuffer_c tempGPUIndices;
@@ -642,18 +689,7 @@ public:
 			g_core->RedWarning("rbDX10_c::drawElements: pD3DDevice is NULL\n");
 			return;
 		}
-
-		const mtrStageAPI_i *s = lastMat->getStage(0);
-		ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
-
-		ID3D10ShaderResourceView *lightmapResource;
-		if(lastLightmap) {
-			lightmapResource =  (ID3D10ShaderResourceView *)lastLightmap->getExtraUserPointer();
-		} else {
-			lightmapResource = 0;
-		}
-
-
+		// setup geometry buffers (they are shared by all stages)
 		ID3D10Buffer *pNewVertexBuffer;
 		if(verts.getInternalHandleVoid() == 0) {
 			tempGPUVerts.create(this->pD3DDevice,verts.getArray(),verts.getSizeInBytes(),true);
@@ -687,69 +723,114 @@ public:
 		}
 
 		// set primitives type (we're always using triangles)
-		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
+		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		dx10ShaderPermutationFlags_s flags;
-		if(lastLightmap) {
-			flags.hasLightmap = true;
-		}
-		if(s->hasTexGen() && s->getTexGen() == TCG_ENVIRONMENT) {
-			flags.hasTexGenEnvironment = true;
-		}
-		const blendDef_s &blendDef = s->getBlendDef();
-		setBlendFunc(blendDef.src,blendDef.dst);
-
-		dx10Shader_c *shader;
-		if(rb_showNormalColors.getInt()) {
-			shader = shadersSystem->registerShader("showNormalColors",0,true);
+		// adjust the depth range for sky
+		if(bDrawingSky) {
+			this->setDepthRange(1,1);
 		} else {
-			shader = shadersSystem->registerShader("default",&flags,true);
+			this->setDepthRange(0,1);
 		}
-		if(shader == 0) {
-			if(shader == 0) {
-				g_core->RedWarning("rbDX10_c::drawElements: cannot load selected shader, trying to select default...\n");
+
+		// for each stage...
+		for(u32 stageNum = 0; stageNum < lastMat->getNumStages(); stageNum++) {
+			const mtrStageAPI_i *s = lastMat->getStage(stageNum);
+			enum stageType_e stageType = s->getStageType();
+
+			ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+
+			ID3D10ShaderResourceView *lightmapResource;
+			if(lastLightmap) {
+				lightmapResource =  (ID3D10ShaderResourceView *)lastLightmap->getExtraUserPointer();
+			} else {
+				lightmapResource = 0;
 			}
-			shader = shadersSystem->registerShader("default",0,true);
+
+			// setup shader
+			dx10ShaderPermutationFlags_s flags;
+			if(stageType == ST_COLORMAP_LIGHTMAPPED) {
+				if(rb_skipStagesOfType_colorMapLightMapped.getInt())
+					continue; // allow developers to skip rendering certain type of stage
+				if(lastLightmap) {
+					flags.hasLightmap = true;
+				}
+			} else if(stageType == ST_LIGHTMAP) {
+				if(rb_skipStagesOfType_lightmap.getInt())
+					continue; // allow developers to skip rendering certain type of stage
+				if(lastLightmap) {
+					flags.hasLightmap = true;
+					flags.onlyLightmap = true;
+				}
+			} else if(stageType == ST_COLORMAP) {
+				if(rb_skipStagesOfType_colorMap.getInt())
+					continue; // allow developers to skip rendering certain type of stage
+			}
+			if(s->hasRGBGen() && s->getRGBGenType() == RGBGEN_VERTEX) {
+				flags.hasVertexColors = true;
+			} else if(bHasVertexColors && lastLightmap == 0) {
+				flags.hasVertexColors = true;
+			}
+
+			if(s->hasTexGen() && s->getTexGen() == TCG_ENVIRONMENT) {
+				flags.hasTexGenEnvironment = true;
+			}
+			const blendDef_s &blendDef = s->getBlendDef();
+			setBlendFunc(blendDef.src,blendDef.dst);
+
+			dx10Shader_c *shader;
+			if(rb_showNormalColors.getInt()) {
+				shader = shadersSystem->registerShader("showNormalColors",0,true);
+			} else {
+				shader = shadersSystem->registerShader("default",&flags,true);
+			}
 			if(shader == 0) {
-				g_core->RedWarning("rbDX10_c::drawElements: cannot load default shader\n");
-				return;
+				if(shader == 0) {
+					g_core->RedWarning("rbDX10_c::drawElements: cannot load selected shader, trying to select default...\n");
+				}
+				shader = shadersSystem->registerShader("default",0,true);
+				if(shader == 0) {
+					g_core->RedWarning("rbDX10_c::drawElements: cannot load default shader\n");
+					return;
+				}
+			}
+			// set the world matrix (model pos)
+			if(shader->m_worldMatrixPtr) {
+				shader->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+			}
+			// set the view matrix (camera pos)
+			if(shader->m_viewMatrixPtr) {
+				shader->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+			}
+			// set the projection matrix (camera lens)
+			if(shader->m_projectionMatrixPtr) {
+				shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+			}
+			if(shader->m_viewOrigin) {
+				shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
+			}
+
+			if(shader->m_lightmapPtr) {
+				shader->m_lightmapPtr->SetResource(lightmapResource);
+			}
+			if(shader->m_texturePtr) {
+				shader->m_texturePtr->SetResource(colorMapResource);
+			}
+
+			// set the input layout.
+			pD3DDevice->IASetInputLayout(shader->m_layout);
+
+			// get the description structure of the technique from inside the shader so it can be used for rendering.
+			D3D10_TECHNIQUE_DESC techniqueDesc;
+			shader->m_technique->GetDesc(&techniqueDesc);
+
+			// go through each pass in the technique and render the triangles.
+			for(u32 i = 0; i < techniqueDesc.Passes; i++) {
+				shader->m_technique->GetPassByIndex(i)->Apply(0);
+				pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
 			}
 		}
-		// set the world matrix (model pos)
-		if(shader->m_worldMatrixPtr) {
-			shader->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
-		}
-		// set the view matrix (camera pos)
-		if(shader->m_viewMatrixPtr) {
-			shader->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
-		}
-		// set the projection matrix (camera lens)
-		if(shader->m_projectionMatrixPtr) {
-			shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
-		}
-		if(shader->m_viewOrigin) {
-			shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
-		}
-
-		if(shader->m_lightmapPtr) {
-			shader->m_lightmapPtr->SetResource(lightmapResource);
-		}
-		if(shader->m_texturePtr) {
-			shader->m_texturePtr->SetResource(colorMapResource);
-		}
-
-		// set the input layout.
-		pD3DDevice->IASetInputLayout(shader->m_layout);
-
-		// get the description structure of the technique from inside the shader so it can be used for rendering.
-		D3D10_TECHNIQUE_DESC techniqueDesc;
-		shader->m_technique->GetDesc(&techniqueDesc);
-
-		// go through each pass in the technique and render the triangles.
-		for(u32 i = 0; i < techniqueDesc.Passes; i++) {
-			shader->m_technique->GetPassByIndex(i)->Apply(0);
-			pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
-		}
+		tempGPUVerts.destroy();
+		tempGPUIndices.destroy();
 	}	
 	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
 
@@ -944,6 +1025,10 @@ public:
 
 	// vertex buffers (VBOs)
 	virtual bool createVBO(class rVertexBuffer_c *ptr) {
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::createVBO: device is NULL\n");
+			return true;
+		}
 		D3D10_BUFFER_DESC vertexBufferDesc;
 		memset(&vertexBufferDesc,0,sizeof(vertexBufferDesc));
 		D3D10_SUBRESOURCE_DATA vertexData;
@@ -982,6 +1067,10 @@ public:
 
 	// index buffers (IBOs)
 	virtual bool createIBO(class rIndexBuffer_c *ptr) {	
+		if(pD3DDevice == 0) {
+			g_core->RedWarning("rbDX10_c::createVBO: device is NULL\n");
+			return true;
+		}
 		D3D10_BUFFER_DESC indexBufferDesc;
 		memset(&indexBufferDesc,0,sizeof(indexBufferDesc));
 		D3D10_SUBRESOURCE_DATA indexData;
@@ -1143,7 +1232,8 @@ public:
 		// Set up the description of the stencil state.
 		depthStencilDesc.DepthEnable = true;
 		depthStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
-		depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+		///depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+		depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS_EQUAL;
 
 		depthStencilDesc.StencilEnable = true;
 		depthStencilDesc.StencilReadMask = 0xFF;

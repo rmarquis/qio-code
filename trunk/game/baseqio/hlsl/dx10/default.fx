@@ -27,6 +27,9 @@ struct VertexInputType
 #ifdef HAS_TEXGEN_ENVIROMENT
 	float3 normal : NORMAL;
 #endif
+#ifdef HAS_VERTEXCOLORS
+    float4 color : COLOR;
+#endif
 };
 
 struct PixelInputType
@@ -35,6 +38,9 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
 #ifdef HAS_LIGHTMAP
     float2 lm : TEXCOORD1;
+#endif
+#ifdef HAS_VERTEXCOLORS
+    float4 color : COLOR;
 #endif
 };
 
@@ -69,15 +75,26 @@ PixelInputType VS_SimpleTexturing(VertexInputType input)
     output.lm = input.lm;
 #endif
 
+#ifdef HAS_VERTEXCOLORS
+    output.color = input.color;
+#endif
 	return output;
 }
 
 float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 {
 	float4 textureColor;
+#ifdef ONLY_USE_LIGHTMAP
+	textureColor = shaderLightmap.Sample(SampleType, input.lm);
+#else // if not ONLY_USE_LIGHTMAP
+
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
 #ifdef HAS_LIGHTMAP
 	textureColor *= shaderLightmap.Sample(SampleType, input.lm);
+#endif
+#endif // ONLY_USE_LIGHTMAP
+#ifdef HAS_VERTEXCOLORS
+	textureColor *= input.color;
 #endif
 	//textureColor = float4(1,1,0,1);
     return textureColor;

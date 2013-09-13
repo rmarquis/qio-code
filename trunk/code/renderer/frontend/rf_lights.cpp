@@ -501,9 +501,25 @@ void RFL_RemoveAllReferencesToEntity(class rEntityImpl_c *ent) {
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
 static aCvar_c light_printCullStats("light_printCullStats","0");
 static aCvar_c light_useGPUOcclusionQueries("light_useGPUOcclusionQueries","0");
+// used for debuging scene with single light
+static aCvar_c light_useOnlyNearestLight("light_useOnlyNearestLight","0");
 
 bool RFL_GPUOcclusionQueriesForLightsEnabled() {
 	return light_useGPUOcclusionQueries.getInt();
+}
+rLightImpl_c *RFL_GetNearestLightToPoint(const vec3_c &p) {
+	if(rf_lights.size() == 0)
+		return 0;
+	float bestDist = rf_lights[0]->getOrigin().dist(p);
+	rLightImpl_c *best = rf_lights[0];
+	for(u32 i = 1; i < rf_lights.size(); i++) {
+		float d = rf_lights[i]->getOrigin().dist(p);
+		if(d < bestDist) {
+			bestDist = d;
+			best = rf_lights[i];
+		}
+	}
+	return best;
 }
 
 rLightAPI_i *rf_curLightAPI = 0;
@@ -518,6 +534,14 @@ void RFL_AddLightInteractionsDrawCalls() {
 	for(u32 i = 0; i < rf_lights.size(); i++) {
 		rLightImpl_c *light = rf_lights[i];
 		rf_curLightAPI = light;
+
+		if(light_useOnlyNearestLight.getInt()) {
+			rLightImpl_c *nearest = RFL_GetNearestLightToPoint(rf_camera.getOrigin());
+			if(nearest != light) {
+				light->setCulled(true);
+				continue;
+			}
+		}
 
 		const aabb &bb = light->getABSBounds();
 		// try to cull the entire light (culling light

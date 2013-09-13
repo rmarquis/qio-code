@@ -1316,7 +1316,7 @@ public:
 				if(rb_showLightMaps.getInt() && lastLightmap) {
 					goto drawOnlyLightmap;
 				} else if(rb_showDeluxeMaps.getInt() && lastDeluxemap) {
-					// bind lightmap to first texture slot.
+					// bind lightmap coordinates to first texture slot.
 					// draw ONLY DELUXEMAP
 					if(lastDeluxemap) {
 						bindTex(0,lastDeluxemap->getInternalHandleU32());

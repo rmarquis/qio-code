@@ -50,6 +50,8 @@ texMod_c::texMod_c(const texMod_c &other) {
 		matrix[0][1] = other.matrix[0][1];
 		matrix[1][0] = other.matrix[1][0];
 		matrix[1][1] = other.matrix[1][0];
+	} else if(type == TCMOD_STRETCH) {
+		wave = other.wave;
 	} else if(type == TCMOD_D3_ROTATE) {
 		astRotation = other.astRotation->duplicateAST();
 	} else if(type == TCMOD_D3_SCALE) {

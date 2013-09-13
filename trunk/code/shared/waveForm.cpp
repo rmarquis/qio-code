@@ -103,6 +103,8 @@ const float *waveForm_c::getTable() const {
 }
 float waveForm_c::evaluate(float curTimeSeconds, float extraPhase) const {
 	const float *table = getTable();
+	if(table == 0)
+		return 0;
 	float val = table[ int( ( ( phase + extraPhase + curTimeSeconds * frequency ) * BASETABLE_SIZE ) ) & BASETABLE_MASK ];
 	val *= amplitude;
 	val += base;

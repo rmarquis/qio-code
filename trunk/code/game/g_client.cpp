@@ -493,7 +493,12 @@ void ClientCommand( int clientNum ) {
 		BE_SetForcedEdict(newEdict);
 		Player *np = new Player;
 		np->setOrigin(p);
-		np->setPlayerModel("$sarge");
+		// see if we can use sarge player model from Quake3
+		if(g_vfs->FS_FileExists("models/players/sarge/animation.cfg")) {
+			np->setPlayerModel("$sarge");
+		} else {
+			np->setPlayerModel("models/player/shina/body.md5mesh");
+		}
 		np->enableCharacterController();
 		np->setHealth(100);
 	} else if(!stricmp(cmd,"removentitiesofclass")) {

@@ -111,9 +111,8 @@ void CG_RunViewModel() {
 		// it could be better for grenade launcher
 		|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 		localOfs.set(5,-5,-10);
-	}
-	// Half Life2 physgun (for weapon_physgun)
-	if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
+	} else if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
+		// Half Life2 physgun (for weapon_physgun)
 		// "w_*" is a worldmodel
 		// set 90 yaw rotation (around Z axis)
 		localRot.set(0,0,90);

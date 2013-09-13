@@ -389,12 +389,19 @@ public:
 	}
 	const rLightAPI_i *curLight;
 	bool bDrawOnlyOnDepthBuffer;
+	bool bDrawingSky;
 	virtual void setCurLight(const class rLightAPI_i *light) {
 		this->curLight = light;
 	}
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
 	}	
+	virtual void beginDrawingSky() {
+		bDrawingSky = true;
+	}
+	virtual void endDrawingSky() {
+		bDrawingSky = false;
+	}
 	inline void drawIndexedTrimeshInternal(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(verts.getInternalHandleVoid() && indices.getInternalHandleVoid()) {
 			pDev->SetIndices((IDirect3DIndexBuffer9 *)indices.getInternalHandleVoid());
@@ -587,6 +594,13 @@ public:
 		}
 		boundShader->effect->End();
 	}
+	void setDepthRange(float min, float max) {
+		D3DVIEWPORT9 v;
+		pDev->GetViewport(&v);
+		v.MinZ = min;
+		v.MaxZ = max;
+		pDev->SetViewport(&v);
+	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		pDev->SetFVF(RVERT_FVF);
 
@@ -629,6 +643,13 @@ public:
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
 			D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);
 
+		// adjust the depth range for sky
+		if(bDrawingSky) {
+			this->setDepthRange(1,1);
+		} else {
+			this->setDepthRange(0,1);
+		}
+
 		if(lastMat) {
 			u32 numStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numStages; i++) {
@@ -656,7 +677,7 @@ public:
 
 				if(s->hasTexMods()) {
 					matrix_c mat;
-					s->applyTexMods(mat,this->timeNowSeconds);
+					s->applyTexMods(mat,this->timeNowSeconds,0);
 					this->setTextureMatrixCustom(0,mat);
 				} else {
 					this->setTextureMatrixIdentity(0);
@@ -1178,6 +1199,7 @@ public:
 		prevCullType = CT_NOT_SET;
 		boundShader = 0;
 		bHasVertexColors = false;
+		bDrawingSky = false;
 		 
 		initDX9State();
 

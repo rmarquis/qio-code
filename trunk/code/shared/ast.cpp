@@ -204,9 +204,15 @@ public:
 			return value;
 		}
 		if(type == ANT_VARIABLE) {
+			if(in == 0) {
+				return 0.f;
+			}
 			return in->getVariableValue(varName);
 		}
 		if(type == ANT_GETARRAYELEMENT) {
+			if(in == 0) {
+				return 0.f;
+			}
 			float idx = children[0]->execute_r(in);
 			return in->getTableValue(varName,idx);
 		}
