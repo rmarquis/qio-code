@@ -48,6 +48,7 @@ varying vec3 v_tbnEyeDir;
 #endif
 
 #ifdef SHADOW_MAPPING_POINT_LIGHT
+uniform mat4 u_entityMatrix;
 varying vec4 shadowCoord0;
 varying vec4 shadowCoord1;
 varying vec4 shadowCoord2;
@@ -167,7 +168,10 @@ void main() {
 #endif // DEBUG_IGNOREDISTANCEFACTOR
 
 #ifdef SHADOW_MAPPING_POINT_LIGHT
-	float shadow = computeShadow(lightToVert);
+	vec4 lightWorld = (u_entityMatrix) * vec4(u_lightOrigin,1);
+	vec4 vertWorld = (u_entityMatrix) * vec4(v_vertXYZ,1);
+	vec4 lightToVert_world = lightWorld - vertWorld;
+	float shadow = computeShadow(lightToVert_world.xyz);
 #else
 	float shadow = 1.f;
 #endif

@@ -1,10 +1,6 @@
-
 matrix worldMatrix;
 matrix viewMatrix;
 matrix projectionMatrix;
-Texture2D shaderTexture;
-float4 materialColor;
-
 
 SamplerState SampleType
 {
@@ -17,19 +13,14 @@ struct VertexInputType
 {
     float4 position : POSITION;
     float2 tex : TEXCOORD0;
+    float3 normal : NORMAL;
 };
 
 struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
-};
-
-BlendState AlphaBlendingState
-{
-	BlendEnable[0] = TRUE;
-	DestBlend = INV_SRC_ALPHA;
-	SrcBlend = SRC_ALPHA;
+    float3 normal : NORMAL;
 };
 
 PixelInputType VS_SimpleTexturing(VertexInputType input)
@@ -37,27 +28,20 @@ PixelInputType VS_SimpleTexturing(VertexInputType input)
     PixelInputType output;
     
     input.position.w = 1.0f;
-    
+
     output.position = mul(input.position, worldMatrix);
     output.position = mul(output.position, viewMatrix);
     output.position = mul(output.position, projectionMatrix);
     
-    output.tex = input.tex;
+    output.normal = mul(input.normal, worldMatrix);
+
 
 	return output;
 }
 
 float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 {
-	float4 textureColor;
-	textureColor = shaderTexture.Sample(SampleType, input.tex);
-	
-	textureColor *= materialColor;
-	
-//	if(textureColor.a < 0.5f)
-//	{
-//		discard;
-//	}
+	float4 textureColor = float4(normalize(input.normal)+float3(0.5,0.5,0.5)*0.5f,1); 
     return textureColor;
 }
 
@@ -65,7 +49,6 @@ technique10 DefaultTechnique
 {
     pass pass0
     {
-   		SetBlendState(AlphaBlendingState, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
         SetVertexShader(CompileShader(vs_4_0, VS_SimpleTexturing()));
         SetPixelShader(CompileShader(ps_4_0, PS_SimpleTexturing()));
         SetGeometryShader(NULL);

@@ -90,10 +90,12 @@ textureAPI_i *textureAnimation_c::getTexture(u32 idx) {
 	return textures[idx];
 }
 textureAPI_i *textureAnimation_c::getTextureForTime(float time) {
-	time *= frequency;
-	float t = time - floor(time);
-	t *= textures.size();
-	return textures[t];
+	int idx = int(time * frequency * 1024);
+	idx >>= 10;
+	if(idx<0)
+		idx = 0;
+	idx %= textures.size();
+	return textures[idx];
 }
 stageTexture_c::stageTexture_c() {
 	singleTexture = 0;

@@ -57,6 +57,9 @@ public:
 	cmObjectBase_c() {
 		bounds.clear();
 	}
+	virtual ~cmObjectBase_c() {
+
+	}
 	cmObjectBase_c *getHashNext() const {
 		return hashNext;
 	}

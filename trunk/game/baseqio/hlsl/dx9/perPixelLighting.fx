@@ -30,6 +30,9 @@ float lightRadius;
 float3 clipPlaneNormal;
 float clipPlaneDist;
 bool bHasClipPlane;
+#ifdef HAS_TEXGEN_ENVIROMENT
+float3 viewOrigin;
+#endif
 
 texture colorMapTexture;
 
@@ -65,7 +68,22 @@ VS_OUTPUT VS_PerPixelLighting(VS_INPUT IN)
     
     OUT.position = mul(float4(IN.position, 1.0f), worldViewProjectionMatrix);    
     OUT.positionRAW = IN.position;
+#ifdef HAS_TEXGEN_ENVIROMENT
+	float3 dir = viewOrigin - IN.position;
+	dir = normalize(dir);
+	float dotValue = dot(IN.normal,dir);
+	float twoDot = 2.f * dotValue;
+
+	float3 reflected;
+	reflected.x = IN.normal.x * twoDot - dir.x;
+	reflected.y = IN.normal.y * twoDot - dir.y;
+	reflected.z = IN.normal.z * twoDot - dir.z;
+
+	OUT.texCoord.x = 0.5f + reflected.y * 0.5f;
+	OUT.texCoord.y = 0.5f - reflected.z * 0.5f;
+#else
 	OUT.texCoord = IN.texCoord;
+#endif
 	OUT.normal = IN.normal;
        
     return OUT;

@@ -267,6 +267,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
+	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
 

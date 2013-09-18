@@ -739,10 +739,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						u16 dst = readBlendEnum(p);
 						stage->setBlendDef(src,dst);
 					}
-					// disable writing to depth buffer for translucent surfaces
-					// (unless otherwise specified)
-					if(depthWriteSetInMaterial == false) {
-						stage->setDepthWrite(false);
+					// blendfunc GL_ONE GL_ZERO disables blending (see Q3 source)
+					// without this check Quake3 ammo boxes (plasma, rockets, etc) will be drawn transparent
+					if(stage->getBlendSrc() == BM_ONE && stage->getBlendDst() == BM_ZERO) {
+						stage->disableBlending();
+					} else {
+						// disable writing to depth buffer for translucent surfaces
+						// (unless otherwise specified)
+						if(depthWriteSetInMaterial == false) {
+							stage->setDepthWrite(false);
+						}
 					}
 				} else if(p.atWord("depthWrite")) {
 					depthWriteSetInMaterial = true;

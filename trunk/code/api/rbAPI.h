@@ -123,7 +123,9 @@ public:
 	virtual bool gpuTexGensSupported() const {
 		return false;
 	}
-
+	virtual bool areTangentsNeededForMaterial(const class mtrAPI_i *mat) const {
+		return true;
+	}
 	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
 		return 0;
 	}

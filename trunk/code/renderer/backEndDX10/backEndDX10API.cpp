@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/sdlSharedAPI.h>
 
 #include <shared/r2dVert.h>
+#include <shared/fcolor4.h>
 #include <math/matrix.h>
 #include <math/axis.h>
 #include <renderer/rVertexBuffer.h>
@@ -71,6 +72,8 @@ struct dx10ShaderPermutationFlags_s {
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 	bool onlyLightmap; // #define ONLY_USE_LIGHTMAP
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
+	bool hasAlphaFunc; // #define HAS_ALPHAFUNC
+	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 
 	dx10ShaderPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -93,8 +96,10 @@ public:
 	ID3D10EffectShaderResourceVariable *m_texturePtr;
 	ID3D10EffectShaderResourceVariable *m_lightmapPtr;
 	ID3D10EffectVectorVariable *m_viewOrigin;
+	ID3D10EffectVectorVariable *m_materialColor;
 
-
+	ID3D10EffectScalarVariable *m_alphaFuncType;
+	ID3D10EffectScalarVariable *m_alphaFuncValue;
 
 	dx10Shader_c() {
 		m_effect = 0;
@@ -106,6 +111,9 @@ public:
 		m_texturePtr = 0;
 		m_lightmapPtr = 0;
 		m_viewOrigin = 0;
+		m_alphaFuncType = 0;
+		m_alphaFuncValue = 0;
+		m_materialColor = 0;
 	}
 
 	const char *getName() const {
@@ -213,6 +221,18 @@ public:
 		if(pFlags->hasVertexColors) {
 			finalEffectDef.append("#define HAS_VERTEXCOLORS\n");
 		}
+		if(pFlags->hasAlphaFunc) {
+			finalEffectDef.append("#define HAS_ALPHAFUNC\n");
+			finalEffectDef.append(va("#define AF_NONE %i\n",AF_NONE));
+			finalEffectDef.append(va("#define AF_GT0 %i\n",AF_GT0));
+			finalEffectDef.append(va("#define AF_LT128 %i\n",AF_LT128));
+			finalEffectDef.append(va("#define AF_GE128 %i\n",AF_GE128));
+			finalEffectDef.append(va("#define AF_D3_ALPHATEST %i\n",AF_D3_ALPHATEST));
+		}
+		if(pFlags->hasMaterialColor) {
+			finalEffectDef.append("#define HAS_MATERIAL_COLOR\n");
+		}
+
 		// then add main shader code
 		finalEffectDef.append(buf);
 
@@ -270,6 +290,10 @@ public:
 		m_lightmapPtr = m_effect->GetVariableByName("shaderLightmap")->AsShaderResource();
 
 		m_viewOrigin = m_effect->GetVariableByName("viewOrigin")->AsVector();
+		m_materialColor = m_effect->GetVariableByName("materialColor")->AsVector();
+
+		m_alphaFuncValue = m_effect->GetVariableByName("alphaFuncValue")->AsScalar();
+		m_alphaFuncType = m_effect->GetVariableByName("alphaFuncType")->AsScalar();
 
 		return false; // no error
 	}
@@ -406,6 +430,7 @@ class rbDX10_c : public rbAPI_i {
 	ID3D10DepthStencilView* m_depthStencilView;
 	ID3D10RasterizerState* m_rasterState;
 	ID3D10DepthStencilState* m_depthDisabledStencilState;
+	ID3D10DepthStencilState* m_depthStencilState_noWrite;
 	// viewport def
 	D3D10_VIEWPORT viewPort;
 	// our classes
@@ -422,6 +447,9 @@ class rbDX10_c : public rbAPI_i {
 
 	bool bHasVertexColors;
 	bool bDrawingSky;
+	fcolor4_c curColor;
+	int forcedMaterialFrameNum;
+	float timeNowSeconds;
 
 	// material and lightmap
 	mtrAPI_i *lastMat;
@@ -434,6 +462,8 @@ public:
 		shadersSystem = 0;
 		bHasVertexColors = false;
 		bDrawingSky = false;
+		forcedMaterialFrameNum = -1;
+		timeNowSeconds = 0.f;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX10;
@@ -448,9 +478,28 @@ public:
 		disableBlendFunc();
 	}
 	virtual void setColor4(const float *rgba) {
+		curColor.fromColor4f(rgba);
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bHasVertexColors = bBindVertexColors;
+	}
+	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
+
+	}
+	virtual void setRShadows(int newRShadows) {
+
+	}
+	virtual void setCurrentDrawCallCubeMapSide(int iCubeSide) {
+
+	}
+	virtual void setCurLightShadowMapSize(int newW, int newH) {
+
+	}
+	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+		this->forcedMaterialFrameNum = animMapFrame;
+	}
+	virtual void setRenderTimeSeconds(float newCurTime) {
+		this->timeNowSeconds = newCurTime;
 	}
 	virtual void draw2D(const struct r2dVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 		if(lastMat == 0)
@@ -510,6 +559,9 @@ public:
 		stride = sizeof(r2dVert_s); 
 		offset = 0;
 	    
+		// set blending state
+		//setBlendFunc(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
+
 		// set vertex buffer data
 		pD3DDevice->IASetVertexBuffers(0, 1, &pNewVertexBuffer, &stride, &offset);
 
@@ -527,6 +579,11 @@ public:
 
 		// set the projection matrix (camera lens)
 		shader2D->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+
+		// set current color
+		if(shader2D->m_materialColor) {
+			shader2D->m_materialColor->SetFloatVector((float*)curColor.toPointer());
+		}
 
 		// bind the texture.
 		const mtrStageAPI_i *s = lastMat->getStage(0);
@@ -678,6 +735,15 @@ public:
 		// Create the viewport.
 		pD3DDevice->RSSetViewports(1, &viewport);
 	}
+	textureAPI_i *getStageTextureInternal(const mtrStageAPI_i *stage) {
+		if(forcedMaterialFrameNum == -1) {
+			// use material time to get animated texture frame
+			return stage->getTexture(this->timeNowSeconds);
+		} else {
+			// use texture frame set by cgame
+			return stage->getTextureForFrameNum(forcedMaterialFrameNum);
+		}
+	}
 	dx10TempBuffer_c tempGPUVerts;
 	dx10TempBuffer_c tempGPUIndices;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
@@ -737,7 +803,8 @@ public:
 			const mtrStageAPI_i *s = lastMat->getStage(stageNum);
 			enum stageType_e stageType = s->getStageType();
 
-			ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)s->getTexture(0)->getExtraUserPointer();
+			textureAPI_i *colorMap = getStageTextureInternal(s);
+			ID3D10ShaderResourceView *colorMapResource = (ID3D10ShaderResourceView *)colorMap->getExtraUserPointer();
 
 			ID3D10ShaderResourceView *lightmapResource;
 			if(lastLightmap) {
@@ -746,7 +813,7 @@ public:
 				lightmapResource = 0;
 			}
 
-			// setup shader
+			// find and setup the appropriate DirectX10 shader for current material stage
 			dx10ShaderPermutationFlags_s flags;
 			if(stageType == ST_COLORMAP_LIGHTMAPPED) {
 				if(rb_skipStagesOfType_colorMapLightMapped.getInt())
@@ -768,12 +835,22 @@ public:
 			if(s->hasRGBGen() && s->getRGBGenType() == RGBGEN_VERTEX) {
 				flags.hasVertexColors = true;
 			} else if(bHasVertexColors && lastLightmap == 0) {
+				// enable vertex lighting on bsp inline md3 models (for Quake3 maps)
 				flags.hasVertexColors = true;
+			}
+			if(curColor.isFullBright() == false) {
+				flags.hasMaterialColor = true;
 			}
 
 			if(s->hasTexGen() && s->getTexGen() == TCG_ENVIRONMENT) {
 				flags.hasTexGenEnvironment = true;
 			}
+			// get the alpha func
+			alphaFunc_e alphaFunc = s->getAlphaFunc();
+			if(alphaFunc != AF_NONE) {
+				flags.hasAlphaFunc = true;
+			}
+
 			const blendDef_s &blendDef = s->getBlendDef();
 			setBlendFunc(blendDef.src,blendDef.dst);
 
@@ -805,6 +882,8 @@ public:
 			if(shader->m_projectionMatrixPtr) {
 				shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
 			}
+			// set camera origin (in model space)
+			// this is needed eg. for texgen enviromental
 			if(shader->m_viewOrigin) {
 				shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
 			}
@@ -814,6 +893,26 @@ public:
 			}
 			if(shader->m_texturePtr) {
 				shader->m_texturePtr->SetResource(colorMapResource);
+			}
+			// set the alphafunc params
+			if(shader->m_alphaFuncType) {
+				shader->m_alphaFuncType->SetInt(alphaFunc);
+			}
+			if(shader->m_alphaFuncValue && alphaFunc == AF_D3_ALPHATEST) {
+				float alphaFuncValue = s->evaluateAlphaTestValue(0);
+				shader->m_alphaFuncValue->SetFloat(alphaFuncValue);
+			}
+			// set current color
+			if(shader->m_materialColor) {
+				shader->m_materialColor->SetFloatVector((float*)curColor.toPointer());
+			}
+
+			if(s->getDepthWrite()) {
+				// we're writing to depth buffer (opaque surfaces)
+				pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
+			} else {
+				// don't write to depth buffer (used for blended surfaces)
+				pD3DDevice->OMSetDepthStencilState(m_depthStencilState_noWrite, 1);
 			}
 
 			// set the input layout.
@@ -1179,6 +1278,7 @@ public:
 											   &swapChainDesc, &pSwapChain, &pD3DDevice);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: D3D10CreateDeviceAndSwapChain failed\n");
 			return;//  true;
 		}
 
@@ -1187,6 +1287,7 @@ public:
 		result = pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID*)&backBufferPtr);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: pSwapChain->GetBuffer failed\n");
 			return;// true;
 		}
 
@@ -1194,6 +1295,7 @@ public:
 		result = pD3DDevice->CreateRenderTargetView(backBufferPtr, NULL, &pRenderTargetView);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateRenderTargetView failed\n");
 			return;//  true;
 		}
 
@@ -1222,6 +1324,7 @@ public:
 		result = pD3DDevice->CreateTexture2D(&depthBufferDesc, NULL, &m_depthStencilBuffer);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateTexture2D failed\n");
 			return; //true; // error
 		}
 
@@ -1255,6 +1358,16 @@ public:
 		result = pD3DDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateDepthStencilState failed\n");
+			return; //true; // error
+		}
+
+		// create second depth stencil state that will not be writing to depth buffer
+		depthStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ZERO;
+		result = pD3DDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState_noWrite);
+		if(FAILED(result))
+		{
+			g_core->RedWarning("rbDX10_c::init: CreateDepthStencilState failed\n");
 			return; //true; // error
 		}
 
@@ -1274,6 +1387,7 @@ public:
 		result = pD3DDevice->CreateDepthStencilView(m_depthStencilBuffer, &depthStencilViewDesc, &m_depthStencilView);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateDepthStencilView failed\n");
 			return; //true; // error
 		}
 
@@ -1292,11 +1406,12 @@ public:
 		rasterDesc.MultisampleEnable = false;
 		rasterDesc.ScissorEnable = false;
 		rasterDesc.SlopeScaledDepthBias = 0.0f;
-
+		
 		// Create the rasterizer state from the description we just filled out.
 		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
 			return; //true; // error
 		}
 
@@ -1340,6 +1455,7 @@ public:
 		result = pD3DDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &m_depthDisabledStencilState);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateDepthStencilState failed\n");
 			return; //true; // error
 		}
 

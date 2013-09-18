@@ -498,19 +498,19 @@ bool rBspTree_c::loadVerts(u32 lumpVerts) {
 	rVert_c *ov = verts.getArray();
 	// convert vertices
 	// swap colors for DX9 backend
-	if(rb->getType() == BET_DX9) {
-		for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
-			ov->xyz = iv->xyz;
-			ov->tc = iv->st;
-			ov->lc = iv->lightmap;
-			ov->normal = iv->normal;
-			// dx expects ARGB ....
-			ov->color[0] = iv->color[3];
-			ov->color[1] = iv->color[0];
-			ov->color[2] = iv->color[1];
-			ov->color[3] = iv->color[2];
-		}
-	} else {
+	//if(rb->getType() == BET_DX9) {
+	//	for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
+	//		ov->xyz = iv->xyz;
+	//		ov->tc = iv->st;
+	//		ov->lc = iv->lightmap;
+	//		ov->normal = iv->normal;
+	//		// dx expects ARGB ....
+	//		ov->color[0] = iv->color[3];
+	//		ov->color[1] = iv->color[0];
+	//		ov->color[2] = iv->color[1];
+	//		ov->color[3] = iv->color[2];
+	//	}
+	//} else {
 		for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
 			ov->xyz = iv->xyz;
 			ov->tc = iv->st;
@@ -521,7 +521,7 @@ bool rBspTree_c::loadVerts(u32 lumpVerts) {
 			ov->color[2] = iv->color[2];
 			ov->color[3] = iv->color[3];
 		}
-	}
+//	}
 	return false; // no error
 }
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {

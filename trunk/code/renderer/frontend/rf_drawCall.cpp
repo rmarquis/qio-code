@@ -69,6 +69,7 @@ public:
 static arraySTD_c<drawCall_c> rf_drawCalls;
 static u32 rf_numDrawCalls = 0;
 bool rf_bDrawOnlyOnDepthBuffer = false;
+bool rf_bDrawingPrelitPath = false;
 // used to force specific frame of "animMap" stage from cgame code
 int rf_forceSpecificMaterialFrame = -1;
 int rf_currentShadowMapCubeSide = -1;
@@ -104,8 +105,13 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	// ignore blendfunc surfaces if we're using dynamic lights
 	if(rf_curLightAPI) {
-		if(mat->hasBlendFunc() || mat->hasAlphaTest()) {
+		if((mat->hasStageWithoutBlendFunc()==false) || mat->hasAlphaTest()) {
 			return;
+		}
+		// temporary fix for shadow mapping bug
+		if(rf_currentShadowMapCubeSide != -1) {
+			if(mat->hasBlendFunc())
+				return; 
 		}
 	}
 	drawCall_c *n;

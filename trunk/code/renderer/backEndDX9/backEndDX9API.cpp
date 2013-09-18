@@ -83,7 +83,7 @@ static aCvar_c rb_printMemcpyVertexArrayBottleneck("rb_printMemcpyVertexArrayBot
 static aCvar_c rb_showTris("rb_showTris","0");
 static aCvar_c rb_gpuTexGens("rb_gpuTexGens","1");
 // always use HLSL shaders, even if they are not needed for any material effects
-static aCvar_c dx9_alwaysUseHLSLShaders("dx9_alwaysUseHLSLShaders","0");
+static aCvar_c dx9_alwaysUseHLSLShaders("dx9_alwaysUseHLSLShaders","1");
 
 // I need them in dx9_shader.cpp
 IDirect3D9 *pD3D = 0;

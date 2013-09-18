@@ -65,6 +65,11 @@ int RF_GetShadowingMode() {
 	int ret = rf_shadows.getInt();
 	return ret;
 }
+bool RF_IsDrawingPrelitGeometry() {
+	if(rf_bDrawingPrelitPath)
+		return true;
+	return false;
+}
 bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
 	if(mat->hasTexGen()) {
 		// see if the texGen effect is supported by renderer backend GPU shaders
@@ -124,7 +129,9 @@ void RF_Generate3DSubView() {
 	} else {
 		if(rf_useLightmapsWithMultipassRendering.getInt()) {
 			// generate prelit world drawcalls
+			rf_bDrawingPrelitPath = true;
 			RF_AddGenericDrawCalls();
+			rf_bDrawingPrelitPath = false;
 		} else {
 			// draw on depth buffer
 			RF_GenerateDepthBufferOnlySceneDrawCalls();

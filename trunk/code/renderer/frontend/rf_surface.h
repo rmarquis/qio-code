@@ -208,6 +208,9 @@ public:
 		}
 	}
 
+	// returns true if surfaces material requires tangent/binormal vectors to be drawn
+	bool needsTBN() const;
+
 	void recalcNormals();
 #ifdef RVERT_STORE_TANGENTS
 	void recalcTBN();
@@ -356,8 +359,15 @@ public:
 			surfs[i].recalcNormals();
 		}
 	}
-	void recalcModelTBNs() {
+	void recalcModelTBNs(bool forceTBNRecalculation = true) {
 		for(u32 i = 0; i < surfs.size(); i++) {
+			if(forceTBNRecalculation == false) {
+				// if surface dont needs tangents and binormals, just recalculate normals
+				if(surfs[i].needsTBN() == false) {
+					surfs[i].recalcNormals();
+					continue;
+				}
+			}
 			surfs[i].recalcTBN();
 		}
 	}

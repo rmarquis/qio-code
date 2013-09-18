@@ -139,6 +139,9 @@ public:
 	virtual mtrStageAPI_i *getHeightMap() const {
 		return subStageHeightMap;
 	}
+	virtual mtrStageAPI_i *getSpecularMap() const {
+		return 0;
+	}
 	virtual bool hasTexMods() const {
 		if(texMods)
 			return true;
@@ -180,6 +183,16 @@ public:
 	void setBlendDef(u16 srcEnum, u16 dstEnum) {
 		blend.src = srcEnum;
 		blend.dst = dstEnum;
+	}
+	void disableBlending() {
+		blend.src = 0;
+		blend.dst = 0;
+	}
+	u16 getBlendSrc() const {
+		return blend.src;
+	}
+	u16 getBlendDst() const {
+		return blend.dst;
 	}
 	bool hasBlendFunc() const {
 		if(blend.src || blend.dst)
@@ -309,6 +322,13 @@ public:
 		}
 		return false;
 	}
+	virtual bool hasStageWithoutBlendFunc() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasBlendFunc() == false)
+				return true;
+		}
+		return false;
+	}
 	virtual bool hasAlphaTest() const {
 		for(u32 i = 0; i < stages.size(); i++) {
 			if(stages[i]->hasAlphaTest())
@@ -321,6 +341,26 @@ public:
 	}
 	virtual bool isMirrorMaterial() const {
 		return this->bMirrorMaterial;
+	}
+	virtual bool hasStageOfType(stageType_e type) const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			const mtrStage_c *s = stages[i];
+			if(s->getStageType() == type)
+				return true;
+			if(type == ST_BUMPMAP) {
+				if(s->getBumpMap())
+					return true;
+			}
+			if(type == ST_HEIGHTMAP) { 
+				if(s->getHeightMap())
+					return true;
+			}
+			if(type == ST_SPECULARMAP) {
+				if(s->getSpecularMap())
+					return true;
+			}
+		}
+		return false;
 	}
 	bool hasPolygonOffset() const {
 		if(polygonOffset == 0.f)
@@ -336,14 +376,6 @@ public:
 	bool hasStageWithBlendFunc() const {
 		for(u32 i = 0; i < stages.size(); i++) {
 			if(stages[i]->hasBlendFunc()) {
-				return true;
-			}
-		}
-		return false;
-	}
-	bool hasStageWithoutBlendFunc() const {
-		for(u32 i = 0; i < stages.size(); i++) {
-			if(stages[i]->hasBlendFunc() == false) {
 				return true;
 			}
 		}

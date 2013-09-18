@@ -38,6 +38,7 @@ void RF_AddGenericDrawCalls();
 bool RF_IsUsingDynamicLights();
 bool RF_IsUsingShadowVolumes();
 bool RF_IsUsingShadowMapping();
+bool RF_IsDrawingPrelitGeometry();
 int RF_GetShadowingMode();
 bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat);
 enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);

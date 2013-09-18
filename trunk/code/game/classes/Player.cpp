@@ -723,6 +723,16 @@ void Player::addWeapon(class Weapon *newWeapon) {
 #endif
 }
 void Player::updatePlayerWeapon() {
+	if(weaponState == WP_NONE) {
+		if(curWeapon.getPtr()) {
+			g_core->RedWarning("Player::updatePlayerWeapon: weapon state is WP_NONE but weapon pointer is not 0\n");
+		}
+		return;
+	}
+	if(curWeapon.getPtr() == 0 && nextWeapon.getPtr() == 0) {
+		g_core->RedWarning("Player::updatePlayerWeapon: weapon state is not WP_NONE but weapon pointer is NULL\n");
+		return;
+	}
 	if(weaponState == WP_RAISE) {
 		u32 elapsed = level.time - weaponTime;
 		if(g_printPlayerWeaponState.getInt()) {
@@ -789,6 +799,7 @@ void Player::dropCurrentWeapon() {
 	curWeapon = 0;
 	ps.curWeaponEntNum = ENTITYNUM_NONE;
 	ps.customViewRModelIndex = 0;	
+	weaponState = WP_NONE;
 }
 
 void Player::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {

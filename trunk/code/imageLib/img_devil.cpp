@@ -72,21 +72,21 @@ void IMG_LoadTGA(const char *name, byte **pic, byte *buffer, u32 *width, u32 *he
 		&& targa_header.image_type!=10
 		&& targa_header.image_type != 3 ) 
 	{
-		g_core->Print("IMG_LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RGB) TGA images supported\n");
+		g_core->RedWarning("IMG_LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RGB) TGA images supported\n");
 		*pic = 0;
 		return;
 	}
 
 	if ( targa_header.colormap_type != 0 )
 	{
-		g_core->Print("IMG_LoadTGA: colormaps not supported\n" );
+		g_core->RedWarning("IMG_LoadTGA: colormaps not supported\n" );
 		*pic = 0;
 		return;
 	}
 
 	if ( ( targa_header.pixel_size != 32 && targa_header.pixel_size != 24 ) && targa_header.image_type != 3 )
 	{
-		g_core->Print("IMG_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
+		g_core->RedWarning("IMG_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
 		*pic = 0;
 		return;
 	}
@@ -101,6 +101,12 @@ void IMG_LoadTGA(const char *name, byte **pic, byte *buffer, u32 *width, u32 *he
 		*height = rows;
 
 	targa_rgba = (byte *)malloc (numPixels*4); 
+	if(targa_rgba == 0) {
+		g_core->RedWarning("IMG_LoadTGA: malloc failed for %i bytes\n",numPixels*4);
+		*pic = 0;
+		return;
+	}
+
 	*pic = targa_rgba;
 
 	if (targa_header.id_length != 0)
@@ -405,7 +411,7 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 	if(!done) {
 		ilBindImage(0);
 		ilDeleteImages(1, &ilTexture);
-		g_core->Print("IMG_LoadImageInternal: error while reading image file %s\n",s.c_str());
+		g_core->RedWarning("IMG_LoadImageInternal: error while reading image file %s\n",s.c_str());
 		return 0;
 	}
 	strcpy(lastValidFName,s.c_str());
@@ -416,8 +422,15 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 		d = 4;
 		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 	}
-	*imageData = (unsigned char*)malloc((*width) * (*height) * (d));
-	memcpy(*imageData, ilGetData(), (*width) * (*height) * (d));
+	u32 numImageBytes = (*width) * (*height) * (d);
+	*imageData = (unsigned char*)malloc(numImageBytes);
+	if(*imageData == 0) {
+		g_core->RedWarning("IMG_LoadImageInternal: malloc failed for %i bytes (image %s)\n",lastValidFName);
+		*width = 0;
+		*height = 0;
+	} else {
+		memcpy(*imageData, ilGetData(), numImageBytes);
+	}
     ilBindImage(0);
     ilDeleteImages(1, &ilTexture);
 	return lastValidFName;

@@ -65,6 +65,9 @@ friend class rbSDLOpenGL_c;
 	int uViewOrigin;
 	// per-surface material color
 	int u_materialColor;
+	// current entity matrix
+	// (identity for world)
+	int u_entityMatrix;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

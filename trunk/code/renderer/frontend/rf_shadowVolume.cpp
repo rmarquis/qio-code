@@ -189,91 +189,95 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 	points.ensureAllocated(points.size() + oVerts.size()*2);
 #endif
 	if(rf_ssv_algorithm.getInt() == 0) {
-	for(u32 i = 0; i < oIndices.getNumIndices(); i+=3){
-		u32 i0 = oIndices[i+0];
-		u32 i1 = oIndices[i+1];
-		u32 i2 = oIndices[i+2];
-		const vec3_c &v0 = oVerts[i0].xyz;
-		const vec3_c &v1 = oVerts[i1].xyz;
-		const vec3_c &v2 = oVerts[i2].xyz;
-		addTriangle(v0,v1,v2,light);
-	}
+		for(u32 i = 0; i < oIndices.getNumIndices(); i+=3){
+			u32 i0 = oIndices[i+0];
+			u32 i1 = oIndices[i+1];
+			u32 i2 = oIndices[i+2];
+			const vec3_c &v0 = oVerts[i0].xyz;
+			const vec3_c &v1 = oVerts[i1].xyz;
+			const vec3_c &v2 = oVerts[i2].xyz;
+			addTriangle(v0,v1,v2,light);
+		}
 	} else {
-	// do the same thing as above, but a little faster way
-	arraySTD_c<byte> bPointTransformed;
-	bPointTransformed.resize(oVerts.size());
-	bPointTransformed.nullMemory();
-	arraySTD_c<vec3_c> pointsTransformed;
-	pointsTransformed.resize(oVerts.size());
+		// do the same thing as above, but a little faster way
+		static arraySTD_c<byte> bPointTransformed;
+		if(bPointTransformed.size() < oVerts.size()) {
+			bPointTransformed.resize(oVerts.size());
+		}
+		bPointTransformed.nullMemory();
+		static arraySTD_c<vec3_c> pointsTransformed;
+		if(pointsTransformed.size() < oVerts.size()) {
+			pointsTransformed.resize(oVerts.size());
+		}
 
-	u32 tri = 0;
-	for(u32 i = 0; i < oIndices.getNumIndices(); i+=3, tri++){
-		u32 vi0 = oIndices[i+0];
-		u32 vi1 = oIndices[i+1];
-		u32 vi2 = oIndices[i+2];
-		const vec3_c &p0 = oVerts[vi0].xyz;
-		const vec3_c &p1 = oVerts[vi1].xyz;
-		const vec3_c &p2 = oVerts[vi2].xyz;
+		u32 tri = 0;
+		for(u32 i = 0; i < oIndices.getNumIndices(); i+=3, tri++){
+			u32 vi0 = oIndices[i+0];
+			u32 vi1 = oIndices[i+1];
+			u32 vi2 = oIndices[i+2];
+			const vec3_c &p0 = oVerts[vi0].xyz;
+			const vec3_c &p1 = oVerts[vi1].xyz;
+			const vec3_c &p2 = oVerts[vi2].xyz;
 
-		// cull triangles that are outside light radius
-		// This is a good optimisation for very large models intersecting very small lights
-		if(rf_ssv_cullTrianglesOutSideLightSpheres.getInt()) {
-			if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
+			// cull triangles that are outside light radius
+			// This is a good optimisation for very large models intersecting very small lights
+			if(rf_ssv_cullTrianglesOutSideLightSpheres.getInt()) {
+				if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
+					continue;
+				}
+			}
+			float d;
+			if(extraPlanesArray == 0) {
+				plane_c triPlane;
+				triPlane.fromThreePoints(p2,p1,p0);
+				d = triPlane.distance(light);
+			} else {
+				d = extraPlanesArray->getArray()[tri].distance(light);
+			}
+			if(d > 0) {
 				continue;
 			}
-		}
-		float d;
-		if(extraPlanesArray == 0) {
-			plane_c triPlane;
-			triPlane.fromThreePoints(p2,p1,p0);
-			d = triPlane.distance(light);
-		} else {
-			d = extraPlanesArray->getArray()[tri].distance(light);
-		}
-		if(d > 0) {
-			continue;
-		}
-		vec3_c &p0Projected = pointsTransformed[vi0];
-		if(bPointTransformed[vi0] == 0) {
-			bPointTransformed[vi0] = 1;
-			p0Projected = p0 - light;
-			p0Projected.normalize();
-			p0Projected *= getShadowVolumeInf();
-			p0Projected += p0;
-		}
-		vec3_c &p1Projected = pointsTransformed[vi1];
-		if(bPointTransformed[vi1] == 0) {
-			bPointTransformed[vi1] = 1;
-			p1Projected = p1 - light;
-			p1Projected.normalize();
-			p1Projected *= getShadowVolumeInf();
-			p1Projected += p1;
-		}
-		vec3_c &p2Projected = pointsTransformed[vi2];
-		if(bPointTransformed[vi2] == 0) {
-			bPointTransformed[vi2] = 1;
-			p2Projected = p2 - light;
-			p2Projected.normalize();
-			p2Projected *= getShadowVolumeInf();
-			p2Projected += p2;
-		}
-		u32 i0 = this->registerPoint(p0);
-		u32 i1 = this->registerPoint(p1);
-		u32 i2 = this->registerPoint(p2);
-		u32 pi0 = this->registerPoint(p0Projected);
-		u32 pi1 = this->registerPoint(p1Projected);
-		u32 pi2 = this->registerPoint(p2Projected);
+			vec3_c &p0Projected = pointsTransformed[vi0];
+			if(bPointTransformed[vi0] == 0) {
+				bPointTransformed[vi0] = 1;
+				p0Projected = p0 - light;
+				p0Projected.normalize();
+				p0Projected *= getShadowVolumeInf();
+				p0Projected += p0;
+			}
+			vec3_c &p1Projected = pointsTransformed[vi1];
+			if(bPointTransformed[vi1] == 0) {
+				bPointTransformed[vi1] = 1;
+				p1Projected = p1 - light;
+				p1Projected.normalize();
+				p1Projected *= getShadowVolumeInf();
+				p1Projected += p1;
+			}
+			vec3_c &p2Projected = pointsTransformed[vi2];
+			if(bPointTransformed[vi2] == 0) {
+				bPointTransformed[vi2] = 1;
+				p2Projected = p2 - light;
+				p2Projected.normalize();
+				p2Projected *= getShadowVolumeInf();
+				p2Projected += p2;
+			}
+			u32 i0 = this->registerPoint(p0);
+			u32 i1 = this->registerPoint(p1);
+			u32 i2 = this->registerPoint(p2);
+			u32 pi0 = this->registerPoint(p0Projected);
+			u32 pi1 = this->registerPoint(p1Projected);
+			u32 pi2 = this->registerPoint(p2Projected);
 
-		indices.addTriangle(i2,i1,i0);
-		indices.addTriangle(pi0,pi1,pi2);
-		c_capTriPairsAdded++;
-		indices.addQuad(i0,i1,pi0,pi1);
-		c_edgeQuadsAdded++;
-		indices.addQuad(i1,i2,pi1,pi2);
-		c_edgeQuadsAdded++;
-		indices.addQuad(i2,i0,pi2,pi0);
-		c_edgeQuadsAdded++;
-	}
+			indices.addTriangle(i2,i1,i0);
+			indices.addTriangle(pi0,pi1,pi2);
+			c_capTriPairsAdded++;
+			indices.addQuad(i0,i1,pi0,pi1);
+			c_edgeQuadsAdded++;
+			indices.addQuad(i1,i2,pi1,pi2);
+			c_edgeQuadsAdded++;
+			indices.addQuad(i2,i0,pi2,pi0);
+			c_edgeQuadsAdded++;
+		}
 	}
 }
 #include <shared/extraSurfEdgesData.h>

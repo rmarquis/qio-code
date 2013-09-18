@@ -40,7 +40,7 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	matrix_c matrix;
 	// for entity attaching
 	arraySTD_c<BaseEntity*> attachments; // for parents
-	BaseEntity *parent; // for children
+	safePtr_c<BaseEntity> parent; // for children
 	str targetName; // name of this entity; set in radiant or trough script
 	str target; // entity's target - FIXME: use safePtr<BaseEntity> here instead of string?
 	// our own internal event system 

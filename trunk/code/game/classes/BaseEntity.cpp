@@ -76,6 +76,14 @@ BaseEntity::BaseEntity() {
 	matrix.identity();
 }
 BaseEntity::~BaseEntity() {
+	if(attachments.size()) {
+		for(u32 i = 0; i < attachments.size(); i++) {
+			BaseEntity *e = attachments[i];
+			e->parent = 0;
+			e->myEdict->s->parentNum = ENTITYNUM_NONE;
+		}
+		attachments.clear();
+	}
 	detachFromParent();
 	unlink(); // fries edict_s::bspBoxDesc
 	if(_myEntityState) {

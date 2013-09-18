@@ -8,7 +8,13 @@ Texture2D shaderLightmap;
 #ifdef HAS_TEXGEN_ENVIROMENT
 float3 viewOrigin;
 #endif
-
+#ifdef HAS_ALPHAFUNC
+int alphaFuncType;
+float alphaFuncValue;
+#endif
+#ifdef HAS_MATERIAL_COLOR
+float4 materialColor;
+#endif
 
 SamplerState SampleType
 {
@@ -89,12 +95,38 @@ float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 #else // if not ONLY_USE_LIGHTMAP
 
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
+
+#ifdef HAS_ALPHAFUNC
+	if(alphaFuncType == AF_GT0) {
+		if(textureColor[3] == 0) {
+			discard;
+		}
+	} else if(alphaFuncType == AF_LT128) {
+		if(textureColor[3] > 0.5f) {
+			discard;
+		}
+	} else if(alphaFuncType == AF_GE128) {
+		if(textureColor[3] <= 0.5f) {
+			discard;
+		}
+	} else if(alphaFuncType == AF_D3_ALPHATEST) {
+		if(textureColor[3] < alphaFuncValue) {
+			discard;
+		}
+	}
+#endif
+	
 #ifdef HAS_LIGHTMAP
 	textureColor *= shaderLightmap.Sample(SampleType, input.lm);
 #endif
 #endif // ONLY_USE_LIGHTMAP
+// append per-vertex color (if needed)
 #ifdef HAS_VERTEXCOLORS
 	textureColor *= input.color;
+#endif
+// append per-surface color (if needed)
+#ifdef HAS_MATERIAL_COLOR
+	textureColor *= materialColor;
 #endif
 	//textureColor = float4(1,1,0,1);
     return textureColor;

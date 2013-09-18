@@ -393,6 +393,11 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 		out.addPoint(v->xyz);
 	}
 }
+bool r_surface_c::needsTBN() const {
+	if(mat == 0)
+		return false;
+	return rb->areTangentsNeededForMaterial(mat);
+}
 void r_surface_c::recalcNormals() {
 	verts.nullNormals();
 	const rIndexBuffer_c &pIndices = getIndices2();
@@ -425,10 +430,87 @@ void r_surface_c::recalcNormals() {
 }
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
+#if 1
 	verts.nullTBN();
 	const rIndexBuffer_c &pIndices = getIndices2();
 	verts.calcTBNForIndices(pIndices);
 	verts.normalizeTBN();
+#else
+	const rIndexBuffer_c &pIndices = getIndices2();
+	trianglePlanes.resize(pIndices.getNumTriangles());
+	plane_c *op = trianglePlanes.getArray();
+	verts.nullTBN();
+	for(u32 i = 0; i < pIndices.getNumIndices(); i+=3) {
+		u32 i0 = pIndices[i];
+		u32 i1 = pIndices[i+1];
+		u32 i2 = pIndices[i+2];
+
+		rVert_c &v0 = verts[i0];
+		rVert_c &v1 = verts[i1];
+		rVert_c &v2 = verts[i2];
+
+		// calc normal
+		op->fromThreePoints(v2.xyz,v1.xyz,v0.xyz);
+		v0.normal += op->norm;
+		v1.normal += op->norm;
+		v2.normal += op->norm;
+
+		// calc tangent
+		const vec3_c &p0 = v0.xyz;
+		const vec3_c &p1 = v1.xyz;
+		const vec3_c &p2 = v2.xyz;
+
+		const vec2_c &tc0 = v0.tc;
+		const vec2_c &tc1 = v1.tc;
+		const vec2_c &tc2 = v2.tc;
+
+		float x1 = p1.x - p0.x;
+		float x2 = p2.x - p0.x;
+		float y1 = p1.y - p0.y;
+		float y2 = p2.y - p0.y;
+		float z1 = p1.z - p0.z;
+		float z2 = p2.z - p0.z;
+
+		float s1 = tc1.x - tc0.x;
+		float s2 = tc2.x - tc0.x;
+		float t1 = tc1.y - tc0.y;
+		float t2 = tc2.y - tc0.y;
+
+		float r = 1.0F / (s1 * t2 - s2 * t1);
+		vec3_c sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+			(t2 * z1 - t1 * z2) * r);
+		vec3_c tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+			(s1 * z2 - s2 * z1) * r);
+
+		v0.tan += sdir;
+		v1.tan += sdir;
+		v2.tan += sdir;
+
+		v0.bin += tdir;
+		v1.bin += tdir;
+		v2.bin += tdir;
+	}
+	for (u32 i = 0; i < verts.size(); i++) {
+		rVert_c &v = verts[i];
+
+		v.normal.normalize();
+
+		const vec3_c &n = v.normal;
+		vec3_c t = v.tan;
+
+		// Gram-Schmidt orthogonalize
+		v.tan = (t - n * n.dotProduct(t));
+		v.tan.normalize();
+
+		v.bin.normalize();
+
+		// calculate handedness
+		float w = (n.crossProduct(t).dotProduct(v.bin) < 0.0F) ? -1.0F : 1.0F;
+
+		//v.bin = v.tan.crossProduct(v.normal);
+		//v.bin *= w;
+	}
+#endif
 }
 #endif // RVERT_STORE_TANGENTS
 

@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // img_convert.cpp - image converting functions
 #include "img_local.h"
+#include <api/coreAPI.h>
 #include <stdlib.h> // malloc
 
 static const byte g_quake1DefaultPalette[256][3] = {
@@ -118,6 +119,13 @@ void IMG_Convert8BitImageToRGBA32(byte **out, u32 *poutWidth, u32 *poutHeight, c
 		outHeight = 256;
 
 	tex = (byte *)malloc( outWidth * outHeight * 4);
+	if(tex == 0) {
+		*out = 0;
+		*poutWidth = 0;
+		*poutHeight = 0;
+		g_core->RedWarning("IMG_Convert8BitImageToRGBA32: malloc failed for %i bytes\n",outWidth * outHeight * 4);
+		return;
+	}
 
 	for (i = 0; i < outWidth; i++)
 	{

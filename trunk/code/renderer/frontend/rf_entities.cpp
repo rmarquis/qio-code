@@ -446,7 +446,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			if(1) {
 				// if model needs TBN
 				if(1) {
-					instance->recalcModelTBNs(); // this is slow
+					instance->recalcModelTBNs(false); // this is slow
 				} else {
 					instance->recalcModelNormals(); // this is slow
 				}
@@ -459,7 +459,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			if(1) {
 				// if model needs TBN
 				if(1) {
-					instance->recalcModelTBNs(); // this is slow
+					instance->recalcModelTBNs(false); // this is slow
 				} else {
 					instance->recalcModelNormals(); // this is slow
 				}
@@ -477,7 +477,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		if(1) {
 			// if model needs TBN
 			if(1) {
-				instance->recalcModelTBNs(); // this is slow
+				instance->recalcModelTBNs(false); // this is slow
 			} else {
 				instance->recalcModelNormals(); // this is slow
 			}
@@ -498,7 +498,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		if(1) {
 			// if model needs TBN
 			if(1) {
-				instance->recalcModelTBNs(); // this is slow
+				instance->recalcModelTBNs(false); // this is slow
 			} else {
 				instance->recalcModelNormals(); // this is slow
 			}
@@ -528,7 +528,7 @@ void rEntityImpl_c::addDrawCalls() {
 
 	if(model->isStatic()) {
 		vec3_c *extraRGB;
-		if(bCenterLightSampleValid && (RF_IsUsingDynamicLights() == false)) {
+		if(bCenterLightSampleValid && (RF_IsUsingDynamicLights() == false || RF_IsDrawingPrelitGeometry())) {
 			extraRGB = &this->centerLightSample.ambientLight;
 		} else {
 			extraRGB = 0;

@@ -95,6 +95,9 @@ static aCvar_c rb_dynamicLighting_ignoreAngleFactor("rb_dynamicLighting_ignoreAn
 static aCvar_c rb_dynamicLighting_ignoreDistanceFactor("rb_dynamicLighting_ignoreDistanceFactor","0");
 static aCvar_c rb_debugStageConditions("rb_debugStageConditions","0");
 static aCvar_c rb_showShadowVolumes("rb_showShadowVolumes","0");
+// used to see which surfaces has a material with blendfunc
+static aCvar_c rb_skipStagesWithoutBlendFunc("rb_skipStagesWithoutBlendFunc","0");
+static aCvar_c rb_skipStagesWithBlendFunc("rb_skipStagesWithBlendFunc","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -344,6 +347,15 @@ public:
 		if(isGLSLSupportAvaible() == false)
 			return false;
 		return true;
+	}
+	virtual bool areTangentsNeededForMaterial(const class mtrAPI_i *mat) const {
+		if(mat->hasStageOfType(ST_SPECULARMAP))
+			return true;
+		if(mat->hasStageOfType(ST_BUMPMAP))
+			return true;
+		if(mat->hasStageOfType(ST_HEIGHTMAP))
+			return true;
+		return false;
 	}
 	// GL_COLOR_ARRAY changes
 	bool colorArrayActive;
@@ -1084,6 +1096,9 @@ public:
 			if(newShader->u_materialColor) {
 				glUniform4fv(newShader->u_materialColor,1,lastSurfaceColor.toPointer());
 			}
+			if(newShader->u_entityMatrix) {
+				glUniformMatrix4fv(newShader->u_entityMatrix,1,false,entityMatrix);
+			}
 		}
 	}
 	// temporary vertex buffer for stages that requires CPU 
@@ -1102,6 +1117,8 @@ public:
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
+		if(verts.size() == 0)
+			return;
 
 		counters.c_materialDrawCalls++;
 		counters.c_inputVerts += verts.size();
@@ -1109,8 +1126,8 @@ public:
 
 		stopDrawingShadowVolumes();
 
-		if(rb_verboseDrawElements.getInt()) {
-			g_core->Print("rbSDLOpenGL_c::drawElements: bDrawOnlyOnDepthBuffer %i, curCubeMapSide %i\n",bDrawOnlyOnDepthBuffer,curCubeMapSide);
+		if(rb_verboseDrawElements.getInt()) { 
+			g_core->Print("rbSDLOpenGL_c::drawElements: %s - bDrawOnlyOnDepthBuffer %i, curCubeMapSide %i\n",lastMat->getName(),bDrawOnlyOnDepthBuffer,curCubeMapSide);
 		}
 		
 		if(bDrawOnlyOnDepthBuffer) {
@@ -1223,6 +1240,20 @@ public:
 					if(rb_debugStageConditions.getInt()) {
 						g_core->Print("Drawing stage %i of material %s because condition is met\n",i,lastMat->getName());
 					}
+				}
+				if(rb_skipStagesWithoutBlendFunc.getInt()) {
+					if(s->getBlendDef().isNonZero() == false)
+						continue;
+				}
+				if(rb_skipStagesWithBlendFunc.getInt()) {
+					if(s->getBlendDef().isNonZero())
+						continue;
+				}
+				// skip blendend stages while drawing a light pass
+				// (some of Q3 materials has mixed blended stages with non-blended ones)
+				if(lastMat->hasBlendFunc() && lastMat->hasStageWithoutBlendFunc() && curLight) {
+					if(numMatStages - 1 != i) 
+						continue;
 				}
 				// get material stage type
 				enum stageType_e stageType = s->getStageType();
@@ -1702,6 +1733,9 @@ drawOnlyLightmap:
 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
 		if(indices->getNumIndices() == 0)
 			return;
+		if(points->size() == 0)
+			return;
+
 		startDrawingShadowVolumes();
 
 		bindIBO(indices);
