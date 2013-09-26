@@ -227,8 +227,11 @@ class physCharacterControllerAPI_i *bulletPhysicsWorld_c::createCharacter(const 
 	return newChar;
 }
 void bulletPhysicsWorld_c::freeCharacter(class physCharacterControllerAPI_i *p) {
+	if(p == 0)
+		return;
 	btpCharacterController_c *pChar = dynamic_cast<btpCharacterController_c*>(p);
 	this->characters.remove(pChar);
+	pChar->destroyCharacter();
 	delete pChar;
 }
 void bulletPhysicsWorld_c::setGravity(const vec3_c &newGravity) {
@@ -290,4 +293,52 @@ bool bulletPhysicsWorld_c::traceRay(class trace_c &tr) {
 	return rayCallback.hasHit();
 }
 
+#include <api/ddAPI.h>
+#include <shared/autoCvar.h>
+
+aCvar_c btd_drawWireFrame("btd_drawWireFrame","0");
+aCvar_c btd_drawAABB("btd_drawAABB","0");
+aCvar_c btd_disableDebugDraw("btd_disableDebugDraw","0");
+
+static class rDebugDrawer_i *g_dd = 0;
+
+class qioBulletDebugDraw_c : public btIDebugDraw {
+	virtual void drawLine(const btVector3& from,const btVector3& to,const btVector3& color) {
+		g_dd->drawLineFromTo(from*BULLET_TO_QIO,to*BULLET_TO_QIO,color);
+	}
+	virtual void	drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color)  {
+
+	}
+	virtual void	reportErrorWarning(const char* warningString) {
+
+	}
+	virtual void	draw3dText(const btVector3& location,const char* textString) {
+
+	}
+	virtual void	setDebugMode(int debugMode) {
+
+	}
+	virtual int		getDebugMode() const {
+		int flags = 0;
+		if(btd_drawWireFrame.getInt()) {
+			flags |= DBG_DrawWireframe;
+		}
+		if(btd_drawAABB.getInt()) {
+			flags |= DBG_DrawAabb;
+		}
+		return flags;
+	}
+
+};
+
+qioBulletDebugDraw_c g_bulletDebugDrawer;
+
+void bulletPhysicsWorld_c::doDebugDrawing(class rDebugDrawer_i *dd) {
+	if(btd_disableDebugDraw.getInt()) {
+		return; // no debug drawing at all
+	}
+	g_dd = dd;
+	dynamicsWorld->setDebugDrawer(&g_bulletDebugDrawer);
+	dynamicsWorld->debugDrawWorld();
+}
 

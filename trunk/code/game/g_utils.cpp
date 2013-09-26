@@ -275,4 +275,12 @@ u32 G_RemoveEntitiesOfClass(const char *className) {
 	return c_removed;
 }
 
+const vec3_c &G_GetPlayerOrigin(u32 playerNum) {
+	edict_s *ed = &g_entities[playerNum];
+	if(ed->s == 0 || ed->ent == 0) {
+		static vec3_c dummy(0,0,0);
+		return dummy;
+	}
+	return ed->ent->getOrigin();
+}
 //==============================================================================

@@ -332,6 +332,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Button brush.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("info_pathnode") == 0) {
+		EClass_CreateNewFromText("/*QUAKED info_pathnode (1 0 1) (-16 -16 0) (16 16 32)\n"
+				"Path node for AI navigation.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

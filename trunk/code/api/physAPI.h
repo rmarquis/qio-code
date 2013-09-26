@@ -63,10 +63,14 @@ public:
 
 class physDLLAPI_i : public iFaceBase_i {
 public:
+	virtual void initPhysicsSystem() = 0;
+	virtual void shutdownPhysicsSystem() = 0;
 	virtual physWorldAPI_i *allocWorld(const char *debugName) = 0;
 	virtual void freeWorld(physWorldAPI_i *w) = 0;
+	virtual void doDebugDrawing(class rDebugDrawer_i *dd) { };
 };
 
+extern class physDLLAPI_i *g_physAPI;
 extern class physWorldAPI_i *g_physWorld;
 
 #endif // __PHYS_API_H__

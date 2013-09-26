@@ -148,6 +148,8 @@ public:
 
 	struct playerState_s *getPlayerState();
 
+	virtual void postSpawn();
+
 	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount);
 	virtual void onDeath();
 

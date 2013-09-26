@@ -51,6 +51,24 @@ bool CM_LoadWorldMap(const char *mapName) {
 	}
 	return true; // error
 }
+bool CM_TraceWorldRay(class trace_c &tr) {
+	if(cm_worldModel)
+		return cm_worldModel->traceRay(tr);
+	return false; // no hit
+}
+bool CM_TraceWorldSphere(class trace_c &tr) {
+	if(cm_worldModel)
+		return cm_worldModel->traceSphere(tr);
+	return false; // no hit
+}
+bool CM_TraceWorldAABB(class trace_c &tr) {
+	if(cm_worldModel)
+		return cm_worldModel->traceAABB(tr);
+	return false; // no hit
+}
+cMod_i *CM_GetWorldModel() {
+	return cm_worldModel;
+}
 
 cMod_i *CM_GetWorldSubModel(unsigned int subModelIndex) {
 	if(cm_worldModel == 0)

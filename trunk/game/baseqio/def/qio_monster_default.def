@@ -1,7 +1,7 @@
 
 
 entityDef monster_default {
-	"classname" "ModelEntity"
+	"classname" "FakePlayer"
 	"anim" "idle"
   "takeDamage" "1"
 }

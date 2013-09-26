@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <math/vec3.h>
 #include "classes/ModelEntity.h"
-#include "classes/Player.h"
+#include "classes/FakePlayer.h"
 #include "classes/VehicleCar.h"
 
 // g_client.c -- client functions that don't happen every frame
@@ -388,7 +388,7 @@ void ClientCommand( int clientNum ) {
 						BaseEntity *be = G_SpawnEntityFromEntDecl(model);
 						if(be) {
 							be->setOrigin(spawnPos);
-							be->postSpawn();
+						//	be->postSpawn();
 						} else {
 							g_core->Print("Failed to spawn %s\n",model.c_str());
 						}
@@ -491,7 +491,7 @@ void ClientCommand( int clientNum ) {
 
 		edict_s *newEdict = G_Spawn();
 		BE_SetForcedEdict(newEdict);
-		Player *np = new Player;
+		FakePlayer *np = new FakePlayer;
 		np->setOrigin(p);
 		// see if we can use sarge player model from Quake3
 		if(g_vfs->FS_FileExists("models/players/sarge/animation.cfg")) {
@@ -501,6 +501,7 @@ void ClientCommand( int clientNum ) {
 		}
 		np->enableCharacterController();
 		np->setHealth(100);
+		np->setLeader(pl);
 	} else if(!stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);

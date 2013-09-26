@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __G_CLASSES_H__
 #define __G_CLASSES_H__
 
+#include <shared/str.h>
+
 typedef void *(*allocNewInstanceFunc_t)();
 
 class gClassDef_c {
@@ -41,6 +43,9 @@ public:
 	}
 	const char *getClassName() const {
 		return className;
+	}
+	bool hasClassName(const char *c) const {
+		return !stricmp(className,c);
 	}
 	gClassDef_c *getNext() {
 		return nextDef;

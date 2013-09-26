@@ -64,6 +64,15 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual void loadMap(const char *mapName) {
 		CM_LoadWorldMap(mapName);
 	}
+	virtual bool traceWorldRay(class trace_c &tr) {
+		return CM_TraceWorldRay(tr);
+	}
+	virtual bool traceWorldSphere(class trace_c &tr) {
+		return CM_TraceWorldSphere(tr);
+	}
+	virtual bool traceWorldAABB(class trace_c &tr) {
+		return CM_TraceWorldAABB(tr);
+	}
 };
 
 // interface manager (import)

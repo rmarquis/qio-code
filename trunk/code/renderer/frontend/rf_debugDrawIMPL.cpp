@@ -28,6 +28,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class rDebugDrawerIMPL_c : public rDebugDrawer_i {
 public:
+	virtual void setColor(float r, float g, float b, float a) {
+		float rgba[] = { r, g, b, a };
+		rb->setColor4(rgba);
+	}
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) {
 		rb->unbindMaterial();
 		rb->drawCapsuleZ(xyz,h,w);
@@ -36,9 +40,9 @@ public:
 		rb->setupEntitySpace2(angles,xyz);
 		rb->drawBoxHalfSizes(halfSizes);
 	}
-	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) {
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB, float lineWidth) {
 		rb->setupWorldSpace();
-		rb->drawLineFromTo(from,to,colorRGB);
+		rb->drawLineFromTo(from,to,colorRGB, lineWidth);
 	}
 	virtual void drawBBLines(const class aabb &bb) {
 		rb->setupWorldSpace();

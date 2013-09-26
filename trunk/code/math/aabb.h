@@ -35,6 +35,9 @@ public:
 		maxs.set(-AABB_INFINITE, -AABB_INFINITE, -AABB_INFINITE);
 		mins.set(AABB_INFINITE, AABB_INFINITE, AABB_INFINITE);
 	}
+	aabb(const vec3_c &p) {
+		mins = maxs = p;
+	}
 	void clear() {
 		maxs.set(-AABB_INFINITE, -AABB_INFINITE, -AABB_INFINITE);
 		mins.set(AABB_INFINITE, AABB_INFINITE, AABB_INFINITE);

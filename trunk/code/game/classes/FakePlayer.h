@@ -21,31 +21,26 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// btp_characterController.h
-#ifndef __BTP_CHARACTERCONTROLLER_H__
-#define __BTP_CHARACTERCONTROLLER_H__
+// FakePlayer.h
 
-#include <api/physCharacterControllerAPI.h>
-#include <math/vec3.h>
+#ifndef __FAKEPLAYER_H__
+#define __FAKEPLAYER_H__
 
-class btpCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
-	class bulletPhysicsWorld_c *myWorld;
-	mutable vec3_c lastPos;
+#include "Player.h"
+
+class FakePlayer : public Player {
+	safePtr_c<Player> leader;
+	// navigation component
+	class navigator_c *nav;
 public:
-	btpCharacterController_c();
-	~btpCharacterController_c();
+	FakePlayer();
+	~FakePlayer();
 
-	virtual void setCharacterVelocity(const class vec3_c &newVel);
-	virtual void setCharacterEntity(class BaseEntity *ent);
-	virtual void update(const class vec3_c &dir);
-	virtual const class vec3_c &getPos() const;
-	virtual bool isOnGround() const;
-	virtual bool tryToJump();
+	DECLARE_CLASS( FakePlayer );
 
-	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
-	void destroyCharacter();
+	virtual void runFrame();
+
+	void setLeader(class Player *newLeader);
 };
 
-#endif // __BTP_CHARACTERCONTROLLER_H__
+#endif // __FAKEPLAYER_H__

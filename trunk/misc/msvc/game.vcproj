@@ -377,6 +377,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_pathNodes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_physDLL.cpp"
 				>
 			</File>
@@ -463,6 +467,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_pathNodes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_physVehicleAPI.h"
 				>
 			</File>
@@ -483,6 +491,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\simplePathAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\qcommon\surfaceflags.h"
 				>
 			</File>
@@ -498,6 +510,14 @@
 		<Filter
 			Name="classes"
 			>
+			<File
+				RelativePath="..\..\code\game\classes\Actor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Actor.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\game\classes\BaseEntity.cpp"
 				>
@@ -531,6 +551,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\FakePlayer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FakePlayer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\FuncRotating.cpp"
 				>
 			</File>
@@ -544,6 +572,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\FuncStatic.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\InfoPathNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\InfoPathNode.h"
 				>
 			</File>
 			<File

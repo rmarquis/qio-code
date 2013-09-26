@@ -1,0 +1,268 @@
+{
+"classname" "worldspawn"
+// brush 0
+{
+( 1216 192 -64 ) ( 640 192 -64 ) ( 640 -192 -64 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+( 640 -128 448 ) ( 640 256 448 ) ( 1216 256 448 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+( 1472 0 512 ) ( 1472 384 512 ) ( 1472 384 256 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 2112 192 128 ) ( 1536 192 128 ) ( 1536 192 -128 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+( 64 64 192 ) ( 64 -320 192 ) ( 64 -320 -64 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+( -448 128 448 ) ( 1664 128 448 ) ( -448 128 384 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+}
+// brush 1
+{
+( 576 256 -64 ) ( 128 256 -64 ) ( 128 -64 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 128 -64 0 ) ( 128 256 0 ) ( 576 256 0 ) development/floor01 0 0 0 0.125000 0.125000 0 0 0
+( 1408 -64 0 ) ( 1408 256 0 ) ( 1408 256 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 1344 640 0 ) ( 896 640 0 ) ( 896 640 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 128 256 0 ) ( 128 -64 0 ) ( 128 -64 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 320 192 448 ) ( 2432 192 448 ) ( 320 192 384 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+}
+// brush 2
+{
+( 1216 256 -64 ) ( 640 256 -64 ) ( 640 -128 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 640 -64 384 ) ( 640 320 384 ) ( 1216 320 384 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 1472 64 512 ) ( 1472 448 512 ) ( 1472 448 256 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 1344 640 192 ) ( 768 640 192 ) ( 768 640 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 1408 128 192 ) ( 1408 -256 192 ) ( 1408 -256 -64 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+( -448 192 448 ) ( 1664 192 448 ) ( -448 192 384 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+}
+// brush 3
+{
+( 704 512 384 ) ( 64 512 384 ) ( 64 192 384 ) development/ceiling01 0 0 0 0.125000 0.125000 0 0 0
+( 64 192 448 ) ( 64 512 448 ) ( 704 512 448 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 1472 192 448 ) ( 1472 512 448 ) ( 1472 512 384 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+( 1472 640 448 ) ( 832 640 448 ) ( 832 640 384 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+( 64 512 448 ) ( 64 192 448 ) ( 64 192 384 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+( 320 192 448 ) ( 2432 192 448 ) ( 320 192 384 ) common/caulk 0 -60 0 0.125000 0.125000 0 0 0
+}
+// brush 4
+{
+( 704 704 -64 ) ( 64 704 -64 ) ( 64 640 -64 ) common/caulk 0 0 0 0.500000 0.500000 0 0 0
+( 64 640 448 ) ( 64 704 448 ) ( 704 704 448 ) common/caulk 0 0 0 0.500000 0.500000 0 0 0
+( 832 640 64 ) ( 1472 640 64 ) ( 1472 640 0 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+( 1472 640 64 ) ( 1472 704 64 ) ( 1472 704 0 ) common/caulk 0 0 0 0.500000 0.500000 0 0 0
+( 704 704 64 ) ( 64 704 64 ) ( 64 704 0 ) common/caulk 0 0 0 0.500000 0.500000 0 0 0
+( 64 704 64 ) ( 64 640 64 ) ( 64 640 0 ) common/caulk 0 0 0 0.500000 0.500000 0 0 0
+}
+// brush 5
+{
+( 128 320 -64 ) ( 64 320 -64 ) ( 64 192 -64 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 64 192 384 ) ( 64 320 384 ) ( 128 320 384 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 64 192 384 ) ( 128 192 384 ) ( 128 192 320 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 128 192 576 ) ( 128 320 576 ) ( 128 320 512 ) development/wall01 0 0 0 0.125000 0.125000 0 0 0
+( 128 640 576 ) ( 64 640 576 ) ( 64 640 512 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+( 64 320 576 ) ( 64 192 576 ) ( 64 192 512 ) common/caulk 0 4 0 0.125000 0.125000 0 0 0
+}
+}
+// entity 1
+{
+"origin" "176 592 16"
+"classname" "info_pathnode"
+}
+// entity 2
+{
+"origin" "384 432 328"
+"light" "800"
+"classname" "light"
+}
+// entity 3
+{
+"origin" "200 392 72"
+"classname" "info_player_start"
+}
+// entity 4
+{
+"classname" "info_pathnode"
+"origin" "176 240 16"
+}
+// entity 5
+{
+"origin" "176 352 16"
+"classname" "info_pathnode"
+}
+// entity 6
+{
+"classname" "info_pathnode"
+"origin" "176 480 16"
+}
+// entity 7
+{
+"classname" "info_pathnode"
+"origin" "304 592 16"
+}
+// entity 8
+{
+"origin" "304 240 16"
+"classname" "info_pathnode"
+}
+// entity 9
+{
+"classname" "info_pathnode"
+"origin" "304 352 16"
+}
+// entity 10
+{
+"origin" "304 480 16"
+"classname" "info_pathnode"
+}
+// entity 11
+{
+"origin" "432 592 16"
+"classname" "info_pathnode"
+}
+// entity 12
+{
+"classname" "info_pathnode"
+"origin" "432 240 16"
+}
+// entity 13
+{
+"origin" "432 352 16"
+"classname" "info_pathnode"
+}
+// entity 14
+{
+"classname" "info_pathnode"
+"origin" "432 480 16"
+}
+// entity 15
+{
+"classname" "info_pathnode"
+"origin" "560 592 16"
+}
+// entity 16
+{
+"origin" "560 240 16"
+"classname" "info_pathnode"
+}
+// entity 17
+{
+"classname" "info_pathnode"
+"origin" "560 352 16"
+}
+// entity 18
+{
+"origin" "560 480 16"
+"classname" "info_pathnode"
+}
+// entity 19
+{
+"origin" "688 592 16"
+"classname" "info_pathnode"
+}
+// entity 20
+{
+"classname" "info_pathnode"
+"origin" "688 240 16"
+}
+// entity 21
+{
+"origin" "688 352 16"
+"classname" "info_pathnode"
+}
+// entity 22
+{
+"classname" "info_pathnode"
+"origin" "688 480 16"
+}
+// entity 23
+{
+"classname" "info_pathnode"
+"origin" "816 592 16"
+}
+// entity 24
+{
+"origin" "816 240 16"
+"classname" "info_pathnode"
+}
+// entity 25
+{
+"classname" "info_pathnode"
+"origin" "816 352 16"
+}
+// entity 26
+{
+"origin" "816 480 16"
+"classname" "info_pathnode"
+}
+// entity 27
+{
+"origin" "944 592 16"
+"classname" "info_pathnode"
+}
+// entity 28
+{
+"classname" "info_pathnode"
+"origin" "944 240 16"
+}
+// entity 29
+{
+"origin" "944 352 16"
+"classname" "info_pathnode"
+}
+// entity 30
+{
+"classname" "info_pathnode"
+"origin" "944 480 16"
+}
+// entity 31
+{
+"classname" "info_pathnode"
+"origin" "1072 592 16"
+}
+// entity 32
+{
+"origin" "1072 240 16"
+"classname" "info_pathnode"
+}
+// entity 33
+{
+"classname" "info_pathnode"
+"origin" "1072 352 16"
+}
+// entity 34
+{
+"origin" "1072 480 16"
+"classname" "info_pathnode"
+}
+// entity 35
+{
+"origin" "1200 592 16"
+"classname" "info_pathnode"
+}
+// entity 36
+{
+"classname" "info_pathnode"
+"origin" "1200 240 16"
+}
+// entity 37
+{
+"origin" "1200 352 16"
+"classname" "info_pathnode"
+}
+// entity 38
+{
+"classname" "info_pathnode"
+"origin" "1200 480 16"
+}
+// entity 39
+{
+"classname" "info_pathnode"
+"origin" "1328 592 16"
+}
+// entity 40
+{
+"origin" "1328 240 16"
+"classname" "info_pathnode"
+}
+// entity 41
+{
+"classname" "info_pathnode"
+"origin" "1328 352 16"
+}
+// entity 42
+{
+"origin" "1328 480 16"
+"classname" "info_pathnode"
+}

@@ -67,6 +67,9 @@ struct usercmd_s {
 			return true;
 		return false;
 	}
+	void clear() {
+		memset(this,0,sizeof(*this));
+	}
 };
 
 #endif // __USERCMD_H__

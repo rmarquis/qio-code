@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // btp_api.cpp - Bullet Physics interface
 #include <shared/array.h>
 #include <shared/str.h>
+#include <shared/autoCvar.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/physAPI.h>
 #include <api/vfsAPI.h>
@@ -40,6 +41,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 class physDLLBullet_c : public physDLLAPI_i {
 	arraySTD_c<bulletPhysicsWorld_c*> worlds;
 public:
+	virtual void initPhysicsSystem() {
+		AUTOCVAR_RegisterAutoCvars();
+	}
+	virtual void shutdownPhysicsSystem() {
+		AUTOCVAR_UnregisterAutoCvars();
+	}
 	virtual physWorldAPI_i *allocWorld(const char *debugName) {
 		bulletPhysicsWorld_c *ret = new bulletPhysicsWorld_c(debugName);
 		worlds.push_back(ret);
@@ -49,6 +56,11 @@ public:
 		bulletPhysicsWorld_c *btw = dynamic_cast<bulletPhysicsWorld_c*>(w);
 		worlds.remove(btw);
 		delete btw;
+	}
+	virtual void doDebugDrawing(class rDebugDrawer_i *dd) { 
+		for(u32 i = 0; i < worlds.size(); i++) {
+			worlds[i]->doDebugDrawing(dd);
+		}
 	}
 };
 

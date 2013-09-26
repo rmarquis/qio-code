@@ -103,8 +103,11 @@ bool cmBrush_c::traceRay(class trace_c &tr) {
 	const plane_c *clipPlane = 0;
     for (int i = 0; i < sides.size(); i++) {
 		const plane_c *pl = &sides[i].pl;
-		float startDistance = pl->distance(tr.getFrom());
-		float endDistance = pl->distance(tr.getTo());
+		// subtract sphere radius from plane distances.
+		// This is not a problem for pure-ray traces,
+		// because their sphereRadius is 0.f
+		float startDistance = pl->distance(tr.getFrom()) - tr.getSphereRadius();
+		float endDistance = pl->distance(tr.getTo()) - tr.getSphereRadius();
 
         if (startDistance > 0)
             startsOut = true;
@@ -153,6 +156,10 @@ bool cmBrush_c::traceRay(class trace_c &tr) {
     }
 	return false; // no hit
 }	
+bool cmBrush_c::traceAABB(class trace_c &tr) {
+
+	return false; // no hit
+}
 bool cmBrush_c::hasSideWithMaterial(const char *matName) const {
 	for(u32 i = 0; i < sides.size(); i++) {
 		if(!Q_stricmp(sides[i].matName,matName))

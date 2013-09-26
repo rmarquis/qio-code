@@ -37,6 +37,7 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	calcFromToDelta();
 	this->fraction = 1.f;
 	this->traveled = this->len;
+	this->sphereRadius = 0.f;
 	recalcRayTraceBounds();
 }
 void trace_c::setHitPos(const vec3_c &newHitPos) {
@@ -52,6 +53,8 @@ void trace_c::recalcRayTraceBounds() {
 	traceBounds.reset(from);
 	traceBounds.addPoint(hitPos);
 	traceBounds.extend(0.25f);
+	// sphereRadius is 0.f for ray traces
+	traceBounds.extend(sphereRadius);
 }
 void trace_c::updateForNewHitPos() {
 	this->traveled = (hitPos - from).len();

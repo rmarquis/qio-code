@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // g_classes.cpp - game classes system
 #include "g_local.h"
 #include "g_classes.h"
+#include "classes/BaseEntity.h"
 
 // class definitions
 static gClassDef_c *g_classList = 0;
@@ -76,5 +77,10 @@ void *G_SpawnClassDef(const char *className) {
 	gClassDef_c *cd = G_FindClassDefBasic(className);
 	if(cd == 0)
 		return 0;
+	// hack
+	if(cd->hasClassName("Player") || cd->hasClassName("FakePlayer")) {	
+		edict_s *newEdict = G_Spawn();
+		BE_SetForcedEdict(newEdict);
+	}
 	return cd->allocNewInstance();
 }

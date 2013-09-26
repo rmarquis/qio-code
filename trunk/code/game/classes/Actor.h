@@ -21,31 +21,21 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// btp_characterController.h
-#ifndef __BTP_CHARACTERCONTROLLER_H__
-#define __BTP_CHARACTERCONTROLLER_H__
+// Actor.h
+#ifndef __ACTOR_H__
+#define __ACTOR_H__
 
-#include <api/physCharacterControllerAPI.h>
-#include <math/vec3.h>
+#include "ModelEntity.h"
 
-class btpCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
-	class bulletPhysicsWorld_c *myWorld;
-	mutable vec3_c lastPos;
+class Actor : public ModelEntity {
 public:
-	btpCharacterController_c();
-	~btpCharacterController_c();
+	Actor();
 
-	virtual void setCharacterVelocity(const class vec3_c &newVel);
-	virtual void setCharacterEntity(class BaseEntity *ent);
-	virtual void update(const class vec3_c &dir);
-	virtual const class vec3_c &getPos() const;
-	virtual bool isOnGround() const;
-	virtual bool tryToJump();
+	DECLARE_CLASS( Actor );
 
-	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
-	void destroyCharacter();
+	virtual void postSpawn();
+
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-#endif // __BTP_CHARACTERCONTROLLER_H__
+#endif // __ACTOR_H__

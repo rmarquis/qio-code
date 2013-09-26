@@ -27,6 +27,10 @@ class cMod_i *CM_LoadBSPFileSubModel(const char *bspFileName, u32 subModelNumber
 
 // cm_world.cpp
 bool CM_LoadWorldMap(const char *mapName);
+cMod_i *CM_GetWorldModel();
 cMod_i *CM_GetWorldSubModel(unsigned int subModelIndex);
+bool CM_TraceWorldRay(class trace_c &tr);
+bool CM_TraceWorldSphere(class trace_c &tr);
+bool CM_TraceWorldAABB(class trace_c &tr);
 
 #endif // __CM_LOCAL_H__

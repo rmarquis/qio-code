@@ -123,12 +123,17 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) = 0;
 	///virtual cmHelper_i *getNextHelperOfClass(const char *className, cmHelper_i *cur = 0) = 0;
 
-	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const
-	{
+	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
 
 	}
 
 	virtual bool traceRay(class trace_c &tr) = 0;
+	virtual bool traceAABB(class trace_c &tr) { 
+		return false; // no hit
+	};
+	virtual bool traceSphere(class trace_c &tr) { 
+		return false; // no hit
+	};
 
 	// NEW testing functions
 	// collision shapes postprocessing
@@ -214,12 +219,17 @@ public:
 
 	// works with any model type
 	virtual class cMod_i *registerModel(const char *modName) = 0;
+	// for skeletal (animated) models
 	virtual class cmSkelModel_i *registerSkelModel(const char *skelModelName) = 0;
 	virtual void freeAllModels() = 0;
 
 	virtual class cMod_i *findModel(const char *modName) = 0;
 
 	virtual void loadMap(const char *mapName) = 0;
+	// colision detection with world map model
+	virtual bool traceWorldRay(class trace_c &tr) = 0;
+	virtual bool traceWorldSphere(class trace_c &tr) = 0;
+	virtual bool traceWorldAABB(class trace_c &tr) = 0;
 };
 
 extern cmAPI_i *cm;

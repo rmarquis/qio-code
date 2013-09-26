@@ -141,6 +141,9 @@ int ModelEntity::getBoneNumForName(const char *boneName) {
 	return -1;
 }
 void ModelEntity::setInternalAnimationIndex(int newAnimIndex) {
+	if(this->myEdict->s->animIndex == newAnimIndex) {
+		return;
+	}
 	this->myEdict->s->animIndex = newAnimIndex;
 	animName = va("_internalAnim%i",newAnimIndex);
 }
@@ -215,7 +218,7 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
 		this->setColModel(value);
 	} else if(!stricmp(key,"size")) {
-		vec3_c sizes(value);
+		sizes = vec3_c(value);
 #if 0
 		cmBBExts_i *cmBB = cm->registerBoxExts(sizes);
 #else
@@ -369,6 +372,9 @@ void ModelEntity::initRigidBodyPhysics() {
 	}
 	if(this->bRigidBodyPhysicsEnabled == false) {
 		return; // rigid body physics was disabled for this entity
+	}
+	if(body) {
+		destroyPhysicsObject();
 	}
 	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
 		this->cmod,this->mass,bUseDynamicConvexForTrimeshCMod,physBounciness));

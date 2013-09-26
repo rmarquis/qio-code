@@ -25,11 +25,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "classes/BaseEntity.h"
 #include <api/rAPI.h>
+#include <api/physAPI.h>
 #include <shared/autoCvar.h>
 
 static aCvar_c g_enableDebugDrawing("g_enableDebugDrawing","1");
 static aCvar_c gdd_drawEntityAbsBounds("gdd_drawEntityAbsBounds","0");
 static aCvar_c gdd_drawEntityCollisionModels("gdd_drawEntityCollisionModels","0");
+
+// classes/InfoPathNode.cpp
+void G_DebugDrawPathNodes(class rDebugDrawer_i *dd);
 
 void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 	if(g_enableDebugDrawing.getInt() == 0)
@@ -52,7 +56,8 @@ void G_DebugDrawFrame(class rAPI_i *pRFAPI) {
 			ent->ent->debugDrawCollisionModel(dd);
 		}
 	}
-
-	
-	//G_DoBulletDebugDrawing(dd);
+	if(g_physAPI) {
+		g_physAPI->doDebugDrawing(dd);
+	}
+	G_DebugDrawPathNodes(dd);
 }

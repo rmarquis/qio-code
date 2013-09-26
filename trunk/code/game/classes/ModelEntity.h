@@ -58,6 +58,7 @@ protected:
 	mutable vec3_c linearVelocity;
 	float pvsBoundsSkinWidth;
 	float physBounciness;
+	vec3_c sizes; // this is set only by "sizes" keyvalue
 public:
 	ModelEntity();
 	virtual ~ModelEntity();

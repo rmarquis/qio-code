@@ -32,9 +32,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class rDebugDrawer_i : public iFaceBase_i {
 public:
+	virtual void setColor(float r, float g, float b, float a) = 0;
 	virtual void drawCapsuleZ(const float *xyz, float h, float w) = 0;
 	virtual void drawBBExts(const float *xyz, const float *angles, const float *halfSizes) = 0;	
-	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) = 0;
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB, float lineWidth = 1.f) = 0;
 	virtual void drawBBLines(const class aabb &bb) = 0;
 };
 

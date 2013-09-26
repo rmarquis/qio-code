@@ -21,31 +21,16 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// btp_characterController.h
-#ifndef __BTP_CHARACTERCONTROLLER_H__
-#define __BTP_CHARACTERCONTROLLER_H__
+// simplePathAPI.h
+#ifndef __SIMPLEPATHAPI_H__
+#define __SIMPLEPATHAPI_H__
 
-#include <api/physCharacterControllerAPI.h>
-#include <math/vec3.h>
-
-class btpCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
-	class bulletPhysicsWorld_c *myWorld;
-	mutable vec3_c lastPos;
+class simplePathAPI_i {
 public:
-	btpCharacterController_c();
-	~btpCharacterController_c();
+	virtual ~simplePathAPI_i() { }
 
-	virtual void setCharacterVelocity(const class vec3_c &newVel);
-	virtual void setCharacterEntity(class BaseEntity *ent);
-	virtual void update(const class vec3_c &dir);
-	virtual const class vec3_c &getPos() const;
-	virtual bool isOnGround() const;
-	virtual bool tryToJump();
-
-	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
-	void destroyCharacter();
+	virtual u32 getNumPathPoints() const = 0;
+	virtual const class vec3_c &getPointOrigin(u32 idx) const = 0;
 };
 
-#endif // __BTP_CHARACTERCONTROLLER_H__
+#endif // __SIMPLEPATHAPI_H__

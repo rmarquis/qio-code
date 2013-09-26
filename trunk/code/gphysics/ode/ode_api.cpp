@@ -40,6 +40,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 class physDLLODE_c : public physDLLAPI_i {
 	arraySTD_c<odePhysicsWorld_c*> worlds;
 public:
+	virtual void initPhysicsSystem() {
+
+	}
+	virtual void shutdownPhysicsSystem() {
+
+	}
 	virtual physWorldAPI_i *allocWorld(const char *debugName) {
 		odePhysicsWorld_c *ret = new odePhysicsWorld_c(debugName);
 		worlds.push_back(ret);

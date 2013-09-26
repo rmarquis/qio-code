@@ -74,7 +74,7 @@ public:
 };
 static physWorldStub_c g_physWorldStub;
 class physWorldAPI_i *g_physWorld = &g_physWorldStub;
-class physDLLAPI_i *physAPI = 0;
+class physDLLAPI_i *g_physAPI = 0;
 static class moduleAPI_i *g_physDLL = 0;
 
 static aCvar_c g_runPhysics("g_runPhysics","1");
@@ -85,8 +85,9 @@ void G_InitPhysicsEngine() {
 	if(g_physDLL == 0) {
 		g_core->RedWarning("G_InitPhysicsEngine: physics module not avaible\n");
 	} else {
-		g_iFaceMan->registerIFaceUser(&physAPI,GPHYSICS_API_IDENTSTR);	
-		g_physWorld = physAPI->allocWorld("mainPhysicsWorld");
+		g_iFaceMan->registerIFaceUser(&g_physAPI,GPHYSICS_API_IDENTSTR);	
+		g_physAPI->initPhysicsSystem();
+		g_physWorld = g_physAPI->allocWorld("mainPhysicsWorld");
 		g_physWorld->init(vec3_c(0,0,-800.f));
 	}
 }
@@ -103,7 +104,8 @@ void G_LoadMap(const char *mapName) {
 void G_ShutdownPhysicsEngine() {
 	if(g_physDLL) {
 		g_physWorld->shutdown();
-		physAPI->freeWorld(g_physWorld);
+		g_physAPI->freeWorld(g_physWorld);
+		g_physAPI->shutdownPhysicsSystem();
 		g_moduleMgr->unload(&g_physDLL);
 	}
 }

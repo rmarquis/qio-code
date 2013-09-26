@@ -21,31 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// btp_characterController.h
-#ifndef __BTP_CHARACTERCONTROLLER_H__
-#define __BTP_CHARACTERCONTROLLER_H__
+// g_pathNodes.h - node based pathfinding
+#ifndef __G_PATHNODES_H__
+#define __G_PATHNODES_H__
 
-#include <api/physCharacterControllerAPI.h>
-#include <math/vec3.h>
+// called from G_Init()
+void G_InitPathnodesSystem();
+// called from G_Shutdown
+void G_ShutdownPathnodesSystem();
+// returned path must be fried with 'delete'
+class simplePathAPI_i *G_FindPath(const vec3_c &from, const vec3_c &to);
+// used to display nodes and their links on local client
+void G_DebugDrawPathNodes(class rDebugDrawer_i *dd);
+// this is called from InfoPathNode::postSpawn()
+class pathNode_c *G_AddPathNode(class InfoPathNode *nodeEntity);
+// this is called from InfoPathNode destructor
+void G_RemovePathNode(class pathNode_c *pathNode);
 
-class btpCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
-	class bulletPhysicsWorld_c *myWorld;
-	mutable vec3_c lastPos;
-public:
-	btpCharacterController_c();
-	~btpCharacterController_c();
+#endif // __G_PATHNODES_H__
 
-	virtual void setCharacterVelocity(const class vec3_c &newVel);
-	virtual void setCharacterEntity(class BaseEntity *ent);
-	virtual void update(const class vec3_c &dir);
-	virtual const class vec3_c &getPos() const;
-	virtual bool isOnGround() const;
-	virtual bool tryToJump();
 
-	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
-	void destroyCharacter();
-};
-
-#endif // __BTP_CHARACTERCONTROLLER_H__

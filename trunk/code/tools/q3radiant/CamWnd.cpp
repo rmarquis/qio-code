@@ -493,7 +493,6 @@ void CCamWnd::Cam_MouseControl (float dtime)
 		m_Camera.angles[YAW] -= xf;
 		m_Camera.angles[PITCH] += yf;
 
-		
    //// SetCursorPos(m_Camera.width/2,  m_Camera.height/2);
 #endif
 	}

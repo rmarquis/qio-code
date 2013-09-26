@@ -1929,20 +1929,23 @@ drawOnlyLightmap:
 	virtual void drawBoxHalfSizes(const float *halfSizes) {
 		this->bindIBO(0);
 		this->unbindVertexBuffer();
+		this->glCull(CT_TWO_SIDED);
 
 		glutSolidCube(halfSizes[0]*2);
 	}
-	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) {
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB, float lineWidth) {
 		this->bindIBO(0);
 		this->unbindVertexBuffer();
 		this->unbindMaterial();
 
+		glLineWidth(lineWidth);
 		glBegin(GL_LINES);
 		glColor3fv(colorRGB);
 		glVertex3fv(from);
 		glColor3fv(colorRGB);
 		glVertex3fv(to);
 		glEnd();
+		glLineWidth(1.f);
 	}	
 	virtual void drawBBLines(const class aabb &bb) {
 		vec3_c verts[8];

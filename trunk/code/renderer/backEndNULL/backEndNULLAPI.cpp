@@ -75,7 +75,7 @@ public:
 	}
 	virtual void drawBoxHalfSizes(const float *halfSizes) {
 	}
-	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB) {
+	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB, float lineWidth) {
 	}
 	virtual void drawBBLines(const class aabb &bb) {
 	}

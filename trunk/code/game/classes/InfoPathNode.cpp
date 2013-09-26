@@ -21,31 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// btp_characterController.h
-#ifndef __BTP_CHARACTERCONTROLLER_H__
-#define __BTP_CHARACTERCONTROLLER_H__
+// InfoPathNode.cpp - waypoint for AI navigation
+#include "InfoPathNode.h"
+#include <math/aabb.h>
+#include <shared/trace.h>
+#include <api/coreAPI.h>
+#include <api/ddAPI.h>
+#include <api/rAPI.h>
+#include <api/cmAPI.h>
+#include <api/simplePathAPI.h>
+#include "../g_local.h"
+#include "../g_pathNodes.h"
 
-#include <api/physCharacterControllerAPI.h>
-#include <math/vec3.h>
+DEFINE_CLASS(InfoPathNode, "BaseEntity");
+DEFINE_CLASS_ALIAS(InfoPathNode, info_pathnode);
 
-class btpCharacterController_c : public physCharacterControllerAPI_i {
-	class btKinematicCharacterController *ch;
-	class btConvexShape *characterShape;
-	class bulletPhysicsWorld_c *myWorld;
-	mutable vec3_c lastPos;
-public:
-	btpCharacterController_c();
-	~btpCharacterController_c();
+InfoPathNode::InfoPathNode() {
+	pathNode = 0;
+}
+InfoPathNode::~InfoPathNode() {
+	if(pathNode) {
+		G_RemovePathNode(pathNode);
+	}
+}
 
-	virtual void setCharacterVelocity(const class vec3_c &newVel);
-	virtual void setCharacterEntity(class BaseEntity *ent);
-	virtual void update(const class vec3_c &dir);
-	virtual const class vec3_c &getPos() const;
-	virtual bool isOnGround() const;
-	virtual bool tryToJump();
+void InfoPathNode::postSpawn() {
+	pathNode = G_AddPathNode(this);
+}
 
-	void init(class bulletPhysicsWorld_c *pWorld, const class vec3_c &pos, float characterHeight, float characterWidth);
-	void destroyCharacter();
-};
-
-#endif // __BTP_CHARACTERCONTROLLER_H__

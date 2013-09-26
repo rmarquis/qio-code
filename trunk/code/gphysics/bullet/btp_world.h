@@ -80,6 +80,8 @@ public:
 	virtual const vec3_c &getGravity() const;
 	virtual bool traceRay(class trace_c &tr);
 
+	void doDebugDrawing(class rDebugDrawer_i *dd);
+
 	class btDynamicsWorld *getBTDynamicsWorld() {
 		return dynamicsWorld;
 	}

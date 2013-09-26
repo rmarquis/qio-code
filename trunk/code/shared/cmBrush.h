@@ -121,7 +121,8 @@ public:
 	// returns true if brush is invalid
 	bool calcBounds();
 
-	bool traceRay(class trace_c &tr);
+	bool traceRay(class trace_c &tr);	
+	bool traceAABB(class trace_c &tr);
 	
 	bool parseBrushQ3(class parser_c &p);
 	bool parseBrushD3(class parser_c &p);

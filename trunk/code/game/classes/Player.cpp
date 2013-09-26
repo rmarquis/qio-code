@@ -194,13 +194,13 @@ void Player::setPlayerModel(const char *newPlayerModelName) {
 		float h = 30;
 		this->createCharacterControllerCapsule(h,15);
 		this->setCharacterControllerZOffset(h-24);
-		this->ps.viewheight = 26;
+		this->ps.viewheight = 26; // so eye is 24+26 = 50 units above ground
 	} else {
 		animHandler = new qioPlayerAnimController_c;
 		// NOTE: shina models origin is on the ground, between its feet
 		this->createCharacterControllerCapsule(48,19);
 		this->setCharacterControllerZOffset(48);
-		this->ps.viewheight = 82;
+		this->ps.viewheight = 82; // so eye is 82 units above ground
 	}
 	animHandler->setGameEntity(this);
 	animHandler->setModelName(newPlayerModelName);
@@ -226,9 +226,21 @@ void Player::enableCharacterController() {
 	if(this->cmod == 0) {
 		return;
 	}
-	cmCapsule_i *c = this->cmod->getCapsule();
-	float h = c->getHeight();
-	float r = c->getRadius();
+	float h, r;
+	if(this->cmod->isCapsule()) {
+		cmCapsule_i *c = this->cmod->getCapsule();
+		h = c->getHeight();
+		r = c->getRadius();
+	} else if(this->cmod->isBBMinsMaxs()) {
+		aabb cb;
+		cmod->getBounds(cb);
+		vec3_c cbSizes = cb.getSizes();
+		h = cbSizes.z;
+		//r = sqrt(Square(cbSizes.x)+Square(cbSizes.y));
+		r = cbSizes.x*0.5f;
+		h -= r;
+		characterControllerOffset.set(0,0,h*0.5f+r);
+	}
 	g_physWorld->freeCharacter(this->characterController);
 	this->characterController = g_physWorld->createCharacter(this->ps.origin+characterControllerOffset, h, r);
 	if(this->characterController) {
@@ -349,38 +361,41 @@ void Player::runPlayer() {
 				groundDist = tr.getTraveled();
 				//G_Printf("GroundDist: %f\n",groundDist);
 			}
-			//if(0) {
-				//this->setAnimation("models/player/shina/attack.md5anim");
-			//} else if(bLanding) {
-			//	this->setAnimation("models/player/shina/run.md5anim");
-			//} else
-			if(bJumped) {
-				animHandler->setAnimBoth(SGA_JUMP);
-				//this->setAnimation("models/player/shina/jump.md5anim");
-			} else if(groundDist > 32.f) {
-				animHandler->setAnimBoth(SGA_JUMP);
-				//this->setAnimation("models/player/shina/jump.md5anim");
-			} else if(ucmd->hasMovement()) {
-				if(ucmd->forwardmove < 82) {
-					if(ucmd->forwardmove < 0) {
-						if(ucmd->forwardmove < -82) {
-							animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
-							//this->setAnimation("models/player/shina/run_backwards.md5anim");
+			// update animation
+			if(animHandler) {
+				//if(0) {
+					//this->setAnimation("models/player/shina/attack.md5anim");
+				//} else if(bLanding) {
+				//	this->setAnimation("models/player/shina/run.md5anim");
+				//} else
+				if(bJumped) {
+					animHandler->setAnimBoth(SGA_JUMP);
+					//this->setAnimation("models/player/shina/jump.md5anim");
+				} else if(groundDist > 32.f) {
+					animHandler->setAnimBoth(SGA_JUMP);
+					//this->setAnimation("models/player/shina/jump.md5anim");
+				} else if(ucmd->hasMovement()) {
+					if(ucmd->forwardmove < 82) {
+						if(ucmd->forwardmove < 0) {
+							if(ucmd->forwardmove < -82) {
+								animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
+								//this->setAnimation("models/player/shina/run_backwards.md5anim");
+							} else {
+								animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
+								//this->setAnimation("models/player/shina/walk_backwards.md5anim");
+							}
 						} else {
-							animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
-							//this->setAnimation("models/player/shina/walk_backwards.md5anim");
+							animHandler->setAnimBoth(SGA_WALK);
+							//this->setAnimation("models/player/shina/walk.md5anim");
 						}
 					} else {
-						animHandler->setAnimBoth(SGA_WALK);
-						//this->setAnimation("models/player/shina/walk.md5anim");
+						animHandler->setAnimBoth(SGA_RUN);
+						//this->setAnimation("models/player/shina/run.md5anim");
 					}
 				} else {
-					animHandler->setAnimBoth(SGA_RUN);
-					//this->setAnimation("models/player/shina/run.md5anim");
+					animHandler->setAnimBoth(SGA_IDLE);
+					//this->setAnimation("models/player/shina/idle.md5anim");
 				}
-			} else {
-				animHandler->setAnimBoth(SGA_IDLE);
-				//this->setAnimation("models/player/shina/idle.md5anim");
 			}
 		}
 
@@ -441,6 +456,11 @@ void Player::runPlayer() {
 				onSecondaryFireKeyUp();
 			}
 		}
+	}
+
+	if(ragdoll) {
+		// update ragdoll (ModelEntity class)
+		runPhysicsObject();
 	}
 
 	this->link();
@@ -801,7 +821,9 @@ void Player::dropCurrentWeapon() {
 	ps.customViewRModelIndex = 0;	
 	weaponState = WP_NONE;
 }
-
+void Player::postSpawn() {
+	this->enableCharacterController();
+}
 void Player::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {
 	// apply hit damage
 	this->damage(damageCount);
@@ -820,5 +842,15 @@ void Player::onDeath() {
 		this->dropCurrentWeapon();
 	}
 	this->disableCharacterController();
-	animHandler->setAnimBoth(SGA_DEATH);
+
+	// see if we can ragdol the player
+	// TODO: make ragdoll stay after player respawn?
+	if(ragdollDefName.length() && (ragdoll == 0)) {
+		this->initRagdollPhysics();
+	} else {
+		// just play death animation
+		if(animHandler) {
+			animHandler->setAnimBoth(SGA_DEATH);
+		}
+	}
 }

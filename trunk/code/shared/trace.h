@@ -33,6 +33,8 @@ class trace_c {
 	// input
 	vec3_c from;
 	vec3_c to;
+	// only for sphere traces
+	float sphereRadius;
 	// derived from input
 	aabb traceBounds;
 	vec3_c delta;
@@ -63,6 +65,12 @@ public:
 
 	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);
+	void setSphereRadius(float newRad) {
+		this->sphereRadius = newRad;
+	}
+	float getSphereRadius() const {
+		return this->sphereRadius;
+	}
 	void setHitPos(const vec3_c &newHitPos);
 	void setHitTriangleIndex(u32 newHitTriIndex) {
 		hitTriangleIndex = newHitTriIndex;

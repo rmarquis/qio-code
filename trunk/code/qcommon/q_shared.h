@@ -1269,6 +1269,7 @@ struct playerState_s : public entityState_s {
 	int			ping;			// server to game info for scoreboard
 
 	playerState_s() {
+		delta_angles[0] = delta_angles[1] = delta_angles[2] = 0;
 		curWeaponEntNum = ENTITYNUM_NONE;
 		customViewRModelIndex = 0;
 		viewangles.set(0,0,0);

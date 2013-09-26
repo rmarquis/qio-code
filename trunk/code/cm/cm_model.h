@@ -249,6 +249,13 @@ public:
 	virtual bool traceRay(class trace_c &tr) {
 		return myBrush.traceRay(tr);
 	}	
+	virtual bool traceAABB(class trace_c &tr) { 
+		return myBrush.traceAABB(tr);
+	}
+	virtual bool traceSphere(class trace_c &tr) {
+		// traceRay will handle sphere radius offset correctly
+		return myBrush.traceRay(tr);
+	}
 	virtual void translateXYZ(const class vec3_c &ofs) {
 		myBrush.translateXYZ(ofs);
 	}
@@ -342,6 +349,24 @@ public:
 		bool hit = false;
 		for(u32 i = 0; i < shapes.size(); i++) {
 			if(shapes[i]->traceRay(tr)) {
+				hit = true;
+			}
+		}
+		return hit;
+	}
+	virtual bool traceAABB(class trace_c &tr) { 
+		bool hit = false;
+		for(u32 i = 0; i < shapes.size(); i++) {
+			if(shapes[i]->traceAABB(tr)) {
+				hit = true;
+			}
+		}
+		return hit;
+	}
+	virtual bool traceSphere(class trace_c &tr) { 
+		bool hit = false;
+		for(u32 i = 0; i < shapes.size(); i++) {
+			if(shapes[i]->traceSphere(tr)) {
 				hit = true;
 			}
 		}

@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/World.h"
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include "g_pathNodes.h"
 
 level_locals_t	level;
 
@@ -121,6 +122,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_LoadMap(mapName);
 	// load map entities and spawn them
 	G_SpawnMapEntities(mapName);
+	// init pathnodes
+	G_InitPathnodesSystem();
 	
 	G_InitLua();
 
@@ -145,6 +148,7 @@ void G_ShutdownGame( int restart ) {
 	G_ShutdownLua();
 	G_ShutdownPhysicsEngine();
 	G_ShutdownScriptedClasses();
+	G_ShutdownPathnodesSystem();
 	cm->freeAllModels();
 	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();

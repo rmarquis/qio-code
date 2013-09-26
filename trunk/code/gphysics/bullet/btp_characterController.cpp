@@ -32,11 +32,15 @@ btpCharacterController_c::btpCharacterController_c() {
 	this->characterShape = 0;
 	this->myWorld = 0;
 }
+btpCharacterController_c::~btpCharacterController_c() {
+	destroyCharacter();
+}
 void btpCharacterController_c::setCharacterVelocity(const class vec3_c &newVel) {
 
 }
 void btpCharacterController_c::setCharacterEntity(class BaseEntity *ent) {
-
+	//characterShape->setUserPointer(ent);
+	ch->getGhostObject()->setUserPointer(ent);
 }
 void btpCharacterController_c::update(const class vec3_c &dir) {
 	// set the forward direction of the character controller
@@ -92,5 +96,7 @@ void btpCharacterController_c::destroyCharacter() {
 	delete ch->getGhostObject();
 	delete ch;
 	delete characterShape;
+	ch = 0;
+	characterShape = 0;
 }
 
