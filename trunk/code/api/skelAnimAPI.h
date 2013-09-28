@@ -46,6 +46,7 @@ public:
 	// returns true if animation should stop after reaching the last frame (instead of starting again)
 	virtual bool getBLoopLastFrame() const = 0;
 	virtual int getLocalBoneIndexForBoneName(const char *boneName) const = 0;
+	virtual int getBoneParentLocalIndex(int boneNum) const = 0;
 	virtual void addChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const = 0;
 	virtual void removeChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const = 0;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;

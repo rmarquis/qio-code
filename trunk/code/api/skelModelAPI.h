@@ -70,6 +70,7 @@ public:
 	virtual bool hasCustomScaling() const = 0;
 	virtual const vec3_c& getScaleXYZ() const = 0;
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const = 0;
+	virtual const char *getBoneName(u32 boneIndex) const = 0;
 	//virtual const aabb &getEstimatedBounds() const = 0;
 };
 

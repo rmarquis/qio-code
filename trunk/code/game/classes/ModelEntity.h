@@ -34,6 +34,8 @@ class Player;
 
 class ModelEntity : public BaseEntity {
 	str renderModelName;
+	
+	void setDamageZone(const char *zoneName, const char *value);
 protected:
 	// bullet physics object
 	class physObjectAPI_i *body;
@@ -59,6 +61,15 @@ protected:
 	float pvsBoundsSkinWidth;
 	float physBounciness;
 	vec3_c sizes; // this is set only by "sizes" keyvalue
+	// damage zones (head/torso/arms/legs, etc)
+	// they are set through key values from Doom3 entity defs
+	// Also used to choose the proper pain animation.
+	class damageZonesList_c *damageZones;
+
+	bool hasDamageZones() const;
+	int findBoneDamageZone(int boneNum) const;
+	const char *getDamageZoneName(int zoneNum) const;
+	void printDamageZones() const;
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
@@ -78,10 +89,17 @@ public:
 	void setRenderModelSkin(const char *newSkinName);
 	void setSpriteModel(const char *newSpriteMaterial, float newSpriteRadius);
 
+	// for skeletal models
 	int getBoneNumForName(const char *boneName);
 
 	void setAnimation(const char *animName);
 	void setInternalAnimationIndex(int newAnimIndex);
+
+	// this is just an approximation, the model shape
+	// might be slighty different on a client due
+	// to lags and interpolation
+	void getCurrentBonesArray(class boneOrArray_c &out);
+
 
 	virtual void runPhysicsObject();
 

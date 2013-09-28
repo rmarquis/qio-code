@@ -413,10 +413,17 @@ public:
 		out[ 1] = _v[ 1] * in[ 0] + _v[ 5] * in[ 1] + _v[ 9] * in[ 2] + _v[13];
 		out[ 2] = _v[ 2] * in[ 0] + _v[ 6] * in[ 1] + _v[10] * in[ 2] + _v[14];
 	}
+	// transforms given point
 	void transformPoint(vec3_c &inout) const {
 		vec3_c out;
 		transformPoint(inout,out);
 		inout = out;
+	}
+	// returns the transformed point
+	vec3_c transformPoint2(const vec3_c &in) const {
+		vec3_c out;
+		transformPoint(in,out);
+		return out;
 	}
 	void transformNormal(const vec3_c &in, vec3_c &out) const {
 		out[ 0] = _v[ 0] * in[ 0] + _v[ 4] * in[ 1] + _v[ 8] * in[ 2]; // + _v[12];

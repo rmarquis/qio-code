@@ -61,6 +61,22 @@ void boneOrArray_c::setBlendResult(const boneOrArray_c &from, const boneOrArray_
 		or->boneName = orTo->boneName;
 	}
 }
+u32 boneOrArray_c::findNearestBone(const vec3_c &pos, float *outDist) const {
+	u32 best = 0;
+	float bestDist = getBonePos(0).distSQ(pos);
+	for(u32 i = 1; i < size(); i++) {
+		const vec3_c &other = getBonePos(i);
+		float newDist = other.distSQ(pos);
+		if(newDist < bestDist) {
+			bestDist = newDist;
+			best = i;
+		}
+	}
+	if(outDist) {
+		*outDist = bestDist;
+	}
+	return best;
+}
 void boneOrArray_c::scale(float scale) {
 	boneOr_s *or = this->getArray();
 	for(u32 i = 0; i < size(); i++, or++) {

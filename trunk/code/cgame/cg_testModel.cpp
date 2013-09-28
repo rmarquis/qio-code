@@ -62,7 +62,7 @@ void CG_RunTestModel() {
 		cg_testModelEntity->setOrigin(cg.refdefViewOrigin);
 	}
 	cg_testModelEntity->setModel(mod);
-	cg_testModelEntity->setAnim(rf->registerAnimation_getAPI(cg_testAnim.getStr()));
+	cg_testModelEntity->setAnim(cg_testAnim.getStr());
 	if(cg_testModelParentEntity.strLen() && stricmp(cg_testModelParentEntity.getStr(),"none")) {
 		int entNum = atoi(cg_testModelParentEntity.getStr());
 		centity_s *cent = &cg_entities[entNum];

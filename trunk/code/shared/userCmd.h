@@ -70,6 +70,14 @@ struct usercmd_s {
 	void clear() {
 		memset(this,0,sizeof(*this));
 	}
+	void setAngles(const float *newAngles) {
+		angles[0] = ANGLE2SHORT(newAngles[0]);
+		angles[1] = ANGLE2SHORT(newAngles[1]);
+		angles[2] = ANGLE2SHORT(newAngles[2]);
+	}
+	void deltaYaw(float delta) {
+		angles[1] = ANGLE2SHORT( (SHORT2ANGLE(angles[1]) + delta) );
+	}
 };
 
 #endif // __USERCMD_H__

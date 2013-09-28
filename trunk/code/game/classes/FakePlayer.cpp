@@ -24,10 +24,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 // FakePlayer.cpp
 #include "FakePlayer.h"
 #include <api/simplePathAPI.h>
+#include <api/coreAPI.h>
 #include <shared/userCmd.h>
+#include <shared/skelUtils.h>
 #include "../g_pathNodes.h"
+#include "../g_local.h"
 
 DEFINE_CLASS(FakePlayer, "Player");
+
+struct steering_s {
+	vec3_c angles;
+	float forwardMove;
+
+	void clear() {
+		memset(this,0,sizeof(*this));
+	}
+};
 
 // component class used for AI navigation (pathfinding)
 class navigator_c {
@@ -54,8 +66,8 @@ public:
 		path = 0;
 		cur = 0;
 	}
-	void update(usercmd_s &out) {
-		// reset the userCmd
+	void update(steering_s &out) {
+		// reset steering output
 		out.clear();
 		// see if we have already reached the target
 		if(entity->getOrigin().distSQ(target->getOrigin()) < Square(128.f)) {
@@ -99,11 +111,8 @@ public:
 			return;
 		}
 		vec3_c dir = targetPos - at;
-		vec3_c angles = dir.toAngles();
-		out.angles[0] = 0;
-		out.angles[1] = ANGLE2SHORT(angles.y);
-		out.angles[2] = 0;
-		out.forwardmove = 127;
+		out.angles = dir.toAngles();
+		out.forwardMove = 127;
 	}
 	void setEntity(BaseEntity *newEnt) {
 		entity = newEnt;
@@ -116,15 +125,42 @@ public:
 FakePlayer::FakePlayer() {
 	leader = 0;
 	nav = 0;
+
+	setLeader(G_GetPlayer(0));
 }
 FakePlayer::~FakePlayer() {
 	if(nav)
 		delete nav;
 }
-
+float G_GetSign(float in) {
+	if(in < 0.f)
+		return -1.f;
+	return 1.f;
+}	
 void FakePlayer::runFrame() {
+	//printDamageZones();
+	const float botYawRotationSpeed = 10.f;
 	if(nav) {
-		nav->update(pers.cmd);
+		pers.cmd.clear();
+		pers.cmd.setAngles(this->ps.viewangles);
+
+		steering_s s;
+		// get the current steering
+		nav->update(s);
+		if(s.forwardMove) {
+			// update viewangles
+			float neededYaw = AngleNormalize360(s.angles.y);
+			float yawDelta = neededYaw - AngleNormalize360(ps.viewangles.y);
+			//g_core->Print("Needed %f, actual %f, delta %f\n",AngleNormalize360(s.angles.y),AngleNormalize360(ps.viewangles.y),yawDelta);
+			if(abs(yawDelta) < botYawRotationSpeed) {
+				// rotation finished this frame, start moving forward
+				pers.cmd.setAngles(s.angles);
+				pers.cmd.forwardmove = s.forwardMove;
+			} else {
+				// just rotate, don't move forward
+				pers.cmd.deltaYaw(botYawRotationSpeed*G_GetSign(yawDelta));
+			}
+		}
 	}
 	Player::runFrame();
 }
@@ -139,3 +175,26 @@ void FakePlayer::setLeader(class Player *newLeader) {
 	nav->setEntity(this);
 	nav->setTarget(leader);
 }
+void FakePlayer::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {
+	if(hasDamageZones()) {
+		boneOrArray_c bones;
+		getCurrentBonesArray(bones);
+		vec3_c hitPosLocal = transformWorldPointToEntityCoordinates(hitPosWorld);
+		u32 nearest = bones.findNearestBone(hitPosLocal,0);
+		int zone;
+		const char *zoneName;
+		if(damageZones) {
+			zone = findBoneDamageZone(nearest);
+			zoneName = getDamageZoneName(zone);
+		} else {
+			zone = -1;
+		}
+		str animName = "pain_";
+		animName.append(zoneName);
+		playPainAnimation(animName);
+	} else {
+		playPainAnimation("pain");
+	}
+	Player::onBulletHit(hitPosWorld,dirWorld,damageCount);
+}
+

@@ -92,6 +92,9 @@ public:
 	vec3_c getUp() const {
 		return matrix.getUp();
 	}
+	vec3_c transformWorldPointToEntityCoordinates(const vec3_c &in) const {
+		return matrix.getInversed().transformPoint2(in);
+	}
 
 	edict_s *getEdict() {
 		return this->myEdict;

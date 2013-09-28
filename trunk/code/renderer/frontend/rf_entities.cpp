@@ -428,7 +428,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				matrix_c bodyMat;
 				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
 				arraySTD_c<u32> boneNumbers;
-				afRagdollHelper_c::containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,af->name);
+				UTIL_ContainedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim);
 				for(u32 j = 0; j < boneNumbers.size(); j++) {
 					int boneNum = boneNumbers[j];
 					if(refCounts[boneNum]) {

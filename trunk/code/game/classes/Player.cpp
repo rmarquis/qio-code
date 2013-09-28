@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physAPI.h>
 #include <api/physObjectAPI.h>
 #include <api/physCharacterControllerAPI.h>
+#include <api/modelDeclAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 
@@ -50,17 +51,40 @@ enum sharedGameAnim_e {
 	SGA_RUN_BACKWARDS,
 	SGA_JUMP,
 	SGA_DEATH,
+	SGA_PAIN,
+	SGA_PAIN_CHEST,
+	SGA_PAIN_HEAD,
+	SGA_PAIN_RIGHT_ARM,
+	SGA_PAIN_LEFT_ARM,
 };
 const char *sharedGameAnimNames[] = {
-	"bad",
-	"idle",
-	"walk",
-	"run",
-	"walk_backwards",
+	"bad", // SGA_BAD
+	"idle", // SGA_IDLE
+	"walk", // SGA_WALK
+	"run", // SGA_RUN
+	"walk_backwards", // etc...
 	"run_backwards",
 	"jump",
 	"death", // FIXME
+	"pain", // FIXME
+	"pain_chest",
+	"pain_head",
+	"pain_right_arm",
+	"pain_left_arm",
 };
+
+static u32 g_numSharedAnimNames = sizeof(sharedGameAnimNames) / sizeof(sharedGameAnimNames[0]);
+
+static sharedGameAnim_e G_FindSharedAnim(const char *name) {
+	for(u32 i = 0; i < g_numSharedAnimNames; i++) {
+		const char *iName = sharedGameAnimNames[i];
+		if(!stricmp(iName,name)) {
+			return (sharedGameAnim_e)i;
+		}
+	}
+	return SGA_BAD;
+}
+
 class playerAnimControllerAPI_i {
 public:
 	virtual ~playerAnimControllerAPI_i() {
@@ -146,6 +170,7 @@ Player::Player() {
 	animHandler = 0;
 	bTakeDamage = true;
 	weaponState = WP_NONE;
+	lastPainTime = 0;
 }
 Player::~Player() {
 	if(characterController) {
@@ -240,6 +265,8 @@ void Player::enableCharacterController() {
 		r = cbSizes.x*0.5f;
 		h -= r;
 		characterControllerOffset.set(0,0,h*0.5f+r);
+	} else {
+		return;
 	}
 	g_physWorld->freeCharacter(this->characterController);
 	this->characterController = g_physWorld->createCharacter(this->ps.origin+characterControllerOffset, h, r);
@@ -262,6 +289,41 @@ void Player::touchTriggers() {
 		Trigger *t = triggers[i];
 		t->onTriggerContact(this);
 	}
+}
+void Player::setPlayerAnimBoth(enum sharedGameAnim_e type) {
+	if(animHandler) {
+		animHandler->setAnimBoth(type);
+	} else {
+		if(type == SGA_RUN) {
+			setAnimation("walk");
+		} else if(type == SGA_PAIN) {
+			setAnimation("pain");
+		} else if(type == SGA_PAIN_CHEST) {
+			setAnimation("pain_chest");
+		} else if(type == SGA_PAIN_HEAD) {
+			setAnimation("pain_head");
+		} else if(type == SGA_PAIN_RIGHT_ARM) {
+			setAnimation("pain_right_arm");
+		} else if(type == SGA_PAIN_LEFT_ARM) {
+			setAnimation("pain_left_arm");
+		} else {
+			setAnimation("idle");
+		}
+	}
+}
+void Player::playPainAnimation(const char *newPainAnimationName, u32 animTime) {
+	lastPainTime = level.time;
+	curPainAnimationName = newPainAnimationName;
+	if(modelDecl) {
+		curPainAnimationTime = modelDecl->getAnimationTimeMSec(newPainAnimationName);
+	}
+}
+bool Player::isPainAnimActive() const {
+	if(level.time - lastPainTime > curPainAnimationTime)
+		return false;
+	if(curPainAnimationName.length() == 0)
+		return false;
+	return true;
 }
 void Player::runPlayer() {
 	usercmd_s *ucmd = &this->pers.cmd;
@@ -304,17 +366,21 @@ void Player::runPlayer() {
 			// update the viewangles
 			PM_UpdateViewAngles( &this->ps, ucmd );
 			{
-				vec3_t f,r,u;
 				vec3_t v = { 0, this->ps.viewangles[1], 0 };
-				//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
-				AngleVectors(v,f,r,u);
-				VectorScale(f,level.frameTime*ucmd->forwardmove,f);
-				VectorScale(r,level.frameTime*ucmd->rightmove,r);
-				VectorScale(u,level.frameTime*ucmd->upmove,u);
-				vec3_c dir(0,0,0);
-				VectorAdd(dir,f,dir);
-				VectorAdd(dir,r,dir);
-				VectorAdd(dir,u,dir);
+				vec3_c dir;;
+				if(isPainAnimActive()) {
+					dir.clear();
+				} else {
+					vec3_t f,r,u;
+					//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+					AngleVectors(v,f,r,u);
+					VectorScale(f,level.frameTime*ucmd->forwardmove,f);
+					VectorScale(r,level.frameTime*ucmd->rightmove,r);
+					VectorScale(u,level.frameTime*ucmd->upmove,u);
+					VectorAdd(dir,f,dir);
+					VectorAdd(dir,r,dir);
+					VectorAdd(dir,u,dir);
+				}
 				vec3_c newOrigin;
 				if(noclip || (characterController==0)) {
 					dir.scale(4.f);
@@ -362,40 +428,41 @@ void Player::runPlayer() {
 				//G_Printf("GroundDist: %f\n",groundDist);
 			}
 			// update animation
-			if(animHandler) {
-				//if(0) {
-					//this->setAnimation("models/player/shina/attack.md5anim");
-				//} else if(bLanding) {
-				//	this->setAnimation("models/player/shina/run.md5anim");
-				//} else
-				if(bJumped) {
-					animHandler->setAnimBoth(SGA_JUMP);
-					//this->setAnimation("models/player/shina/jump.md5anim");
-				} else if(groundDist > 32.f) {
-					animHandler->setAnimBoth(SGA_JUMP);
-					//this->setAnimation("models/player/shina/jump.md5anim");
-				} else if(ucmd->hasMovement()) {
-					if(ucmd->forwardmove < 82) {
-						if(ucmd->forwardmove < 0) {
-							if(ucmd->forwardmove < -82) {
-								animHandler->setAnimBoth(SGA_RUN_BACKWARDS);
-								//this->setAnimation("models/player/shina/run_backwards.md5anim");
-							} else {
-								animHandler->setAnimBoth(SGA_WALK_BACKWARDS);
-								//this->setAnimation("models/player/shina/walk_backwards.md5anim");
-							}
+			//if(0) {
+				//this->setAnimation("models/player/shina/attack.md5anim");
+			//} else if(bLanding) {
+			//	this->setAnimation("models/player/shina/run.md5anim");
+			//} else
+			if(isPainAnimActive()) {
+				setPlayerAnimBoth(G_FindSharedAnim(curPainAnimationName.c_str()));
+			} else 
+			if(bJumped) {
+				setPlayerAnimBoth(SGA_JUMP);
+				//this->setAnimation("models/player/shina/jump.md5anim");
+			} else if(groundDist > 32.f) {
+				setPlayerAnimBoth(SGA_JUMP);
+				//this->setAnimation("models/player/shina/jump.md5anim");
+			} else if(ucmd->hasMovement()) {
+				if(ucmd->forwardmove < 82) {
+					if(ucmd->forwardmove < 0) {
+						if(ucmd->forwardmove < -82) {
+							setPlayerAnimBoth(SGA_RUN_BACKWARDS);
+							//this->setAnimation("models/player/shina/run_backwards.md5anim");
 						} else {
-							animHandler->setAnimBoth(SGA_WALK);
-							//this->setAnimation("models/player/shina/walk.md5anim");
+							setPlayerAnimBoth(SGA_WALK_BACKWARDS);
+							//this->setAnimation("models/player/shina/walk_backwards.md5anim");
 						}
 					} else {
-						animHandler->setAnimBoth(SGA_RUN);
-						//this->setAnimation("models/player/shina/run.md5anim");
+						setPlayerAnimBoth(SGA_WALK);
+						//this->setAnimation("models/player/shina/walk.md5anim");
 					}
 				} else {
-					animHandler->setAnimBoth(SGA_IDLE);
-					//this->setAnimation("models/player/shina/idle.md5anim");
+					setPlayerAnimBoth(SGA_RUN);
+					//this->setAnimation("models/player/shina/run.md5anim");
 				}
+			} else {
+				setPlayerAnimBoth(SGA_IDLE);
+				//this->setAnimation("models/player/shina/idle.md5anim");
 			}
 		}
 

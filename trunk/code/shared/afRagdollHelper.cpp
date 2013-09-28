@@ -253,11 +253,12 @@ bool afRagdollHelper_c::setupRagdollHelper(const char *afName) {
 	anim->buildFrameBonesABS(0,bones);
 	return false;
 }
-void afRagdollHelper_c::containedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim, const char *afName) {
+void UTIL_ContainedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim) {
 	if(anim == 0) {
-		g_core->RedWarning("afRagdollHelper_c::containedJointNamesArrayToJointIndexes: NULL anim pointer\n");
+		g_core->RedWarning("UTIL_ContainedJointNamesArrayToJointIndexes: NULL anim pointer\n");
 		return;
 	}
+	boneNumbers.reserve(anim->getNumBones()*2);
 	for(u32 j = 0; j < containedJoints.size(); j++) {
 		const char *boneNameStr = containedJoints[j];
 		if(boneNameStr[0] == '*') {
@@ -269,7 +270,7 @@ void afRagdollHelper_c::containedJointNamesArrayToJointIndexes(const arraySTD_c<
 		} else {
 			int boneNum = anim->getLocalBoneIndexForBoneName(boneNameStr);
 			if(boneNum == -1) {
-				g_core->RedWarning("Cant find bone %s for af %s\n",boneNameStr,afName);
+				g_core->RedWarning("Cant find bone %s in %s\n",boneNameStr,anim->getName());
 				continue;
 			}
 			boneNumbers.push_back(boneNum);
@@ -293,7 +294,7 @@ bool afRagdollHelper_c::calcBoneParentBody2BoneOfsets(const char *afName, arrayS
 		matrix_c bodyMatInv = bodyMat.getInversed();
 		arraySTD_c<u32> boneNumbers;
 		boneNumbers.reserve(anim->getNumBones()*2);
-		containedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim,afName);
+		UTIL_ContainedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim);
 		for(u32 j = 0; j < boneNumbers.size(); j++) {
 			u32 boneNum = boneNumbers[j];
 			if(refCounts[boneNum]) {

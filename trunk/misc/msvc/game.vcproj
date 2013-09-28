@@ -867,6 +867,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\skelUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\skelUtils.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\trace.cpp"
 				>
 			</File>

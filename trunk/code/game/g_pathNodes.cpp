@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c g_debugDraw_pathNodes("g_debugDraw_pathNodes","0");
 static aCvar_c g_debugDraw_pathLinks("g_debugDraw_pathLinks","0");
+static aCvar_c g_debugDraw_activePaths("g_debugDraw_activePaths","0");
 
 class pathNode_c {
 	u32 index; // node index in "nodes" array
@@ -87,6 +88,7 @@ public:
 	}
 };
 
+static arraySTD_c<class navPath_c*> g_activePaths;
 
 class navPath_c : public simplePathAPI_i {
 	arraySTD_c<pathNode_c*> path;
@@ -99,8 +101,11 @@ class navPath_c : public simplePathAPI_i {
 		return path[idx]->getOrigin();
 	}
 public:
+	navPath_c() {
+		g_activePaths.push_back(this);
+	}
 	virtual ~navPath_c() {
-
+		g_activePaths.remove(this);
 	}
 	void addNode(class pathNode_c *n) {
 		path.push_back(n);
@@ -373,18 +378,29 @@ class pathNode_c *G_AddPathNode(class InfoPathNode *nodeEntity) {
 }
 // this is called from InfoPathNode destructor
 void G_RemovePathNode(class pathNode_c *pathNode) {
+	if(g_pathMap == 0)
+		return;
 	g_pathMap->freePathNode(pathNode);
 }
 
 // returned path must be fried with 'delete'
 class simplePathAPI_i *G_FindPath(const vec3_c &from, const vec3_c &to) {
+	if(g_pathMap == 0)
+		return 0;
 	return g_pathMap->findPath(from,to);
 }
 
 void G_DebugDrawPathNodes(class rDebugDrawer_i *dd) {
 	if(g_pathMap == 0)
 		return;
+	// draw map nodes
 	g_pathMap->debugDrawNodes(dd);
+	// draw active (allocated) paths
+	if(g_debugDraw_activePaths.getInt()) {
+		for(u32 i = 0; i < g_activePaths.size(); i++) {
+			g_activePaths[i]->debugDrawPath(dd);
+		}
+	}
 }
 
 

@@ -36,16 +36,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 struct boneOr_s {
 	matrix_c mat;
 	u32 boneName;
+
+	const vec3_c &getOrigin() const {
+		return mat.getOrigin();
+	}
 }; // 68 bytes
+
 // array of bone orientations
 class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:
 	// concat bone transforms
 	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac);	
+	u32 findNearestBone(const vec3_c &pos, float *outDist) const;
 
 	void scale(float scale);
 	void scaleXYZ(const vec3_c &scaleXYZ);
+
+	const vec3_c &getBonePos(u32 idx) const {
+		return (*this)[idx].getOrigin();
+	}
 };
 
 struct boneDef_s {

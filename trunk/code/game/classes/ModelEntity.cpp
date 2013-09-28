@@ -37,15 +37,91 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/physObjectAPI.h>
 #include <api/physAPI.h>
+#include <api/skelAnimAPI.h>
 #include <shared/physObjectDef.h>
 #include <shared/keyValuesListener.h>
 #include <shared/boneOrQP.h>
-
+#include <shared/autoCvar.h>
+#include <shared/afRagdollHelper.h>
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
 DEFINE_CLASS_ALIAS(ModelEntity, func_moveable);
 DEFINE_CLASS_ALIAS(ModelEntity, idMoveable);
+
+static aCvar_c g_verboseSetAnimationCalls("g_verboseSetAnimationCalls","0");
+
+class damageZonesList_c {
+	class dmgZone_c {
+		str name;
+		arraySTD_c<u32> boneNumbers;
+		float multipler;
+	public:
+		dmgZone_c(const char *newName = "unnamedZone") {
+			name = newName;
+			multipler = 1.f;
+		}
+		bool hasName(const char *s) const {
+			return !stricmp(name.c_str(),s);
+		}
+		void setBoneIndices(const arraySTD_c<u32> &newIndices) {
+			boneNumbers = newIndices;
+		}
+		bool isBoneReferenced(u32 boneNumber) const {
+			if(boneNumbers.isOnList(boneNumber))
+				return true;
+			return false;
+		}
+		void removeBone(u32 boneNum) {
+			boneNumbers.remove(boneNum);
+		}
+		const char *getName() const {
+			return name.c_str();
+		}
+	};
+	arraySTD_c<dmgZone_c> zones;
+public:
+	int findBoneZone(u32 boneNumber) const {
+		for(u32 i = 0; i < zones.size(); i++) {
+			if(zones[i].isBoneReferenced(boneNumber)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	int findZone(const char *zoneName) const {
+		for(u32 i = 0; i < zones.size(); i++) {
+			if(zones[i].hasName(zoneName))
+				return i;
+		}
+		return -1; // not found
+	}
+	const char *getZoneName(int idx) const {
+		if(idx < 0)
+			return "defaultZone";
+		if(idx >= zones.size())
+			return "zone_index_out_of_range";
+		return zones[idx].getName();
+	}
+	void setZone(const char *zoneName, const arraySTD_c<u32> &boneIndices) {
+		int idx = findZone(zoneName);
+		if(idx < 0) {
+			idx = zones.size();
+			zones.push_back(dmgZone_c(zoneName));
+		}
+		for(u32 i = 0; i < boneIndices.size(); i++) {
+			u32 boneIndex = boneIndices[i];
+			int boneZone = findBoneZone(boneIndex);
+			if(boneZone >= 0) {
+				g_core->Print("damageZonesList_c::setZone: bone %i is already referenced\n",boneIndex);
+				// simulate Doom3 behaviour - overwrite joint group
+				zones[boneZone].removeBone(boneIndex);
+			}
+		}
+		zones[idx].setBoneIndices(boneIndices);
+		g_core->Print("damageZonesList_c::setZone: %s\n",zoneName);
+	}
+};
 
 ModelEntity::ModelEntity() {
 	body = 0;
@@ -64,6 +140,7 @@ ModelEntity::ModelEntity() {
 	pvsBoundsSkinWidth = 0.f;
 	mass = 10.f;
 	physBounciness = 0.f;
+	damageZones = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -74,6 +151,9 @@ ModelEntity::~ModelEntity() {
 	}
 	if(initialRagdolPose) {
 		delete initialRagdolPose;
+	}
+	if(damageZones) {
+		delete damageZones;
 	}
 }
 const class vec3_c &ModelEntity::getPhysicsOrigin() const {
@@ -148,6 +228,9 @@ void ModelEntity::setInternalAnimationIndex(int newAnimIndex) {
 	animName = va("_internalAnim%i",newAnimIndex);
 }
 void ModelEntity::setAnimation(const char *newAnimName) {
+	if(g_verboseSetAnimationCalls.getInt()) {
+		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
+	}
 	// get the animation index (for networking)
 	int newAnimIndex;
 	if(this->modelDecl) {
@@ -159,6 +242,20 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 	this->myEdict->s->animIndex = newAnimIndex;
 	// save the animation string name
 	animName = newAnimName;
+}
+void ModelEntity::getCurrentBonesArray(class boneOrArray_c &out) {
+	if(modelDecl) {
+		const skelAnimAPI_i *anim = modelDecl->getSkelAnimAPIForLocalIndex(this->myEdict->s->animIndex);
+		out.resize(anim->getNumBones());
+		if(anim == 0) {
+			g_core->RedWarning("ModelEntity::getCurrentBonesArray: failed to get anim %i from decl %s\n",myEdict->s->animIndex,modelDecl->getModelDeclName());
+			return;
+		}
+		anim->buildFrameBonesABS(0,out);
+	} else {
+		// TODO
+		g_core->RedWarning("ModelEntity::getCurrentBonesArray: failed\n");
+	}
 }
 bool ModelEntity::setColModel(const char *newCModelName) {
 	this->cmod = cm->registerModel(newCModelName);
@@ -206,6 +303,48 @@ bool ModelEntity::isDynamic() const {
 	if(body == 0)
 		return false;
 	return body->isDynamic();
+}
+void ModelEntity::setDamageZone(const char *zoneName, const char *value) {
+	if(damageZones == 0)
+		damageZones = new damageZonesList_c;
+	if(modelDecl) {
+		arraySTD_c<str> names;
+		arraySTD_c<u32> numbers;
+		str(value).tokenize(names);
+		UTIL_ContainedJointNamesArrayToJointIndexes(names,numbers,modelDecl->getSkelAnimAPIForLocalIndex(0));
+		damageZones->setZone(zoneName,numbers);
+	} else {
+
+	}
+}
+bool ModelEntity::hasDamageZones() const {
+	if(damageZones == 0)
+		return false;
+	return true;
+}
+int ModelEntity::findBoneDamageZone(int boneNum) const {
+	if(damageZones == 0)
+		return -1;
+	return damageZones->findBoneZone(boneNum);
+}
+const char *ModelEntity::getDamageZoneName(int zoneNum) const {
+	if(damageZones == 0)
+		return "defaultZone";
+	return damageZones->getZoneName(zoneNum);
+}
+void ModelEntity::printDamageZones() const {
+	if(modelDecl == 0)
+		return;
+	if(damageZones == 0)
+		return;
+	for(u32 i = 0; i < modelDecl->getNumBones(); i++) {
+		int zone = damageZones->findBoneZone(i);
+		if(zone < 0) {
+			g_core->Print("Bone %i (%s) has no zone\n",i,modelDecl->getBoneName(i));
+		} else {
+			g_core->Print("Bone %i (%s) is in zone %i (%s)\n",i,modelDecl->getBoneName(i),zone,damageZones->getZoneName(zone));
+		}
+	}
 }
 void ModelEntity::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model") || !stricmp(key,"model_world")) {
@@ -271,6 +410,9 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"bUseRModelToCreateDynamicCVXShape")) {
 		this->bUseRModelToCreateDynamicCVXShape = atoi(value);
 		this->bUseDynamicConvexForTrimeshCMod = true;
+	} else if(!strnicmp(key,"damage_zone ",12)) {
+		const char *zoneName = key + 12;
+		setDamageZone(zoneName,value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

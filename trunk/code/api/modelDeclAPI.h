@@ -39,10 +39,12 @@ public:
 	virtual class skelModelAPI_i *getSkelModel() = 0;
 	virtual const vec3_c &getOffset() const = 0;
 
+	virtual u32 getNumBones() = 0;
 	virtual u32 getNumSurfaces() = 0;
 
 	// bones / tags
 	virtual int getBoneNumForName(const char *boneName) const = 0;
+	virtual const char *getBoneName(u32 boneIndex) const = 0;
 
 	//// animations list access
 	virtual u32 getNumAnims() const = 0;

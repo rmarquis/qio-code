@@ -42,9 +42,10 @@ protected:
 	bool createConvexPointSoupForAFModel(const struct afModel_s &m, arraySTD_c<vec3_c> &outPoints);
 	bool getBodyTransform(u32 bodyNum, matrix_c &out);
 public:
-	static void containedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim, const char *afName);
 	bool setupRagdollHelper(const char *afName);
 	bool calcBoneParentBody2BoneOfsets(const char *afName, arraySTD_c<matrix_c> &out);
 };
+
+void UTIL_ContainedJointNamesArrayToJointIndexes(const arraySTD_c<str> &containedJoints, arraySTD_c<u32> &boneNumbers, const class skelAnimAPI_i *anim);
 
 #endif // __AFRAGDOLLHELPER_H__

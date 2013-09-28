@@ -237,6 +237,16 @@ public:
 		}
 		return 0;
 	}
+	virtual u32 getNumBones() {
+		precache();
+		if(skelModel) {
+			return skelModel->getNumBones();
+		}
+		if(q3PlayerModel) {
+			return 0;//q3PlayerModel->get();
+		}
+		return 0;
+	}
 	virtual int getBoneNumForName(const char *boneName) const {
 		(((modelDecl_c*)this)->precache());
 		if(skelModel) {
@@ -246,6 +256,11 @@ public:
 			return q3PlayerModel->getTagNumForName(boneName);
 		}
 		return -1;
+	}
+	virtual const char *getBoneName(u32 boneIndex) const {
+		if(skelModel == 0)
+			return "bad_bone_index";
+		return skelModel->getBoneName(boneIndex);
 	}
 	virtual u32 getNumAnims() const {
 		return anims.size();

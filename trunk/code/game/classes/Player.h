@@ -79,10 +79,20 @@ class Player : public ModelEntity {
 	bool onGround; // this is always false if player is using "noclip"
 	class playerAnimControllerAPI_i *animHandler;
 	u32 lastDeathTime; // in msec
+	u32 lastPainTime;
+	u32 curPainAnimationTime;
+	str curPainAnimationName;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
 	void updateCurWeaponClipSize();
+
+	void setPlayerAnimBoth(enum sharedGameAnim_e type);
+
+	bool isPainAnimActive() const;
+
+protected:
+	void playPainAnimation(const char *newPainAnimationName, u32 animTime = 0);
 public:
 	Player();
 	virtual ~Player();

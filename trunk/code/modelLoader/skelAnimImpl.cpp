@@ -176,6 +176,12 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 			g_core->RedWarning("Unknown token %s in md5anim file %s\n",p.getToken(),fname);
 		}
 	}
+	int originBoneIndex = this->getLocalBoneIndexForBoneName("origin");
+	if(originBoneIndex >= 0) {
+		md5AnimBones[originBoneIndex].componentFlags = 0;
+		baseFrame[originBoneIndex].clearPosition();
+	}
+
 	frameTime = 1.f / frameRate;
 	totalTime = frameTime * float(frames.size());
 	return false; // no error

@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 #include "g_classes.h"
 #include "classes/BaseEntity.h"
+#include "classes/Player.h"
 #include <api/serverAPI.h>
 
 /*
@@ -283,4 +284,15 @@ const vec3_c &G_GetPlayerOrigin(u32 playerNum) {
 	}
 	return ed->ent->getOrigin();
 }
+class Player *G_GetPlayer(u32 playerNum) {
+	if(playerNum >= MAX_CLIENTS)
+		return 0;
+	edict_s *ed = &g_entities[playerNum];
+	if(ed->s == 0 || ed->ent == 0) {
+		return 0;
+	}
+	Player *ret = dynamic_cast<Player*>(ed->ent);
+	return ret;
+}
+
 //==============================================================================

@@ -34,6 +34,10 @@ static stringRegister_c sk_boneNames;
 u32 SK_RegisterString(const char *s) {
 	return sk_boneNames.registerString(s);
 }
+const char *SK_GetString(u32 idx) {
+	return sk_boneNames.getString(idx);
+}
+
 skelSurfIMPL_c::skelSurfIMPL_c() {
 	edgesData = 0;
 }

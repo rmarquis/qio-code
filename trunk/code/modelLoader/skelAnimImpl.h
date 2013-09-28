@@ -34,6 +34,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 struct md5BoneVal_s {
 	float pos[4];
 	float quat[4]; // W component will be calculated
+
+	void clearPosition() {
+		pos[0] = pos[1] = pos[2] = pos[3] = 0.f;
+	}
 };
 struct md5AnimBone_s {
 	short firstComponent;
@@ -105,6 +109,9 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const {
 		u16 nameIndex = SK_RegisterString(nameStr);
 		return bones.getLocalBoneIndexForBoneName(nameIndex);
+	}
+	virtual int getBoneParentLocalIndex(int boneNum) const {
+		return bones[boneNum].parentIndex;
 	}
 	virtual void addChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const {
 		int baseBoneIndex = getLocalBoneIndexForBoneName(baseBoneName);

@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <string.h> // strcpy, strcat
 #include <ctype.h> // isdigit
 #include "../qcommon/q_shared.h"
+#include "array.h"
 
 // returns true if a given char is whitespace
 inline bool G_isWS(char c) {
@@ -595,6 +596,12 @@ public:
 		str temp = stop+1;
 		this->set(temp);
 		return false;
+	}
+	void tokenize(class arraySTD_c<str> &out) {
+		const char *p = this->c_str();
+		while(p && *p) {
+			out.push_back(getToken(&p));
+		}
 	}
 	void operator = (const str &other) {
 		this->len = other.len;

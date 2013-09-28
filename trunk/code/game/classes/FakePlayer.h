@@ -41,6 +41,8 @@ public:
 	virtual void runFrame();
 
 	void setLeader(class Player *newLeader);
+
+	void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount);
 };
 
 #endif // __FAKEPLAYER_H__
