@@ -45,6 +45,7 @@ static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","
 static aCvar_c cg_forceViewModelAnimationFlags("cg_forceViewModelAnimationFlags","none");
 static aCvar_c cg_printViewModelAnimName("cg_printViewModelAnimName","0");
 static aCvar_c cg_printViewWeaponClipSize("cg_printViewWeaponClipSize","0");
+static aCvar_c cg_printViewModelBobbingOffset("cg_printViewModelBobbingOffset","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
 
@@ -59,6 +60,113 @@ void CG_AllocViewModelEntity() {
 		return;
 	cg_viewModelEntity = rf->allocEntity();
 }
+
+// viewmodel animation parameters
+struct viewModelAnimationConfig_s {
+	float offsetMax; // offset limit
+	float offsetSpeed;
+	vec3_c sway;
+	vec3_c offsetAir; // front, side, up
+	float offetVelBase;
+	vec3_c offsetVel; // front, side, up
+	float offsetUpVel;
+
+	viewModelAnimationConfig_s() {
+		sway.set(0.7,0.17,0.1);
+		offsetAir.set(-3,1.5,-6);
+		offsetVel.set(-2,1.5,-4);
+		offsetMax = 8.f;
+		offsetSpeed = 6.f;
+		offetVelBase = 100.f;
+		offsetUpVel = 0.0025;
+	}
+};
+// helper class for viewmodel bobbing animation
+class viewModelAnimator_c {
+	float currentAmplitude;
+	float currentPhase;
+	vec3_c currentPosOffset;
+	vec3_c currentMovement;
+	viewModelAnimationConfig_s cfg;
+
+	void calcMovementInternal(const vec3_c &playerVelocity, bool isOnGround, float frameTimeSeconds) {
+		currentMovement[0] = sin(currentPhase + M_PI) * currentAmplitude * cfg.sway.x;
+		currentMovement[1] = sin(currentPhase + M_PI) * currentAmplitude * cfg.sway.y;
+		currentMovement[2] = currentAmplitude * (sin(2.f*currentPhase - M_PI*0.4f) + 0.125*sin(4.f*currentPhase + M_PI*0.7f)) * cfg.sway.z;
+
+		vec3_c vmOfs;
+		if(isOnGround == false) {
+			// player is in air
+			vmOfs = cfg.offsetAir;
+			// append offset depending on Z velocity
+			if(playerVelocity[2] != 0.f) {
+				vmOfs[2] -= playerVelocity[2] * cfg.offsetUpVel;
+			}
+		} else {
+			// calculate offset based on movement velocity
+			vmOfs.zero();
+
+			float tmp = playerVelocity.len() - cfg.offetVelBase;
+
+			if(tmp > 0) {
+				float tmp2 = 250.0 - cfg.offetVelBase;
+				if( tmp > tmp2 )
+					tmp = tmp2;
+				float frac = tmp / tmp2;	
+				vmOfs += frac * cfg.offsetVel;
+			}
+		}
+		// for each coordinate
+		for(u32 i = 0; i < 3; i++) {
+			float ofsDelta = vmOfs[i] - currentPosOffset[i];
+			currentPosOffset[i] += frameTimeSeconds * ofsDelta * cfg.offsetSpeed;
+		}
+
+		currentMovement += currentPosOffset;
+
+		// clamp the gun offset to the offset limit
+		vec3_c vMovementNormalized;
+		float vMovementLen = VectorNormalize2(currentMovement, vMovementNormalized);
+		if(cfg.offsetMax < vMovementLen) {
+			currentMovement = cfg.offsetMax * vMovementNormalized;
+		}
+	}
+public:
+	viewModelAnimator_c() {
+		currentAmplitude = 0.f;
+		currentPhase = 0.f;
+		currentPosOffset.set(0,0,0);
+		currentMovement.set(0,0,0);
+	}
+	void setConfig(const viewModelAnimationConfig_s &newCFG) {
+		cfg = newCFG;
+	}
+	void calcViewModelOffset(bool isOnGround, const vec3_c &velocity, const vec3_c &viewAngles, float frameTimeSeconds) {
+		if (isOnGround) {
+			float vel = velocity.len();
+			currentPhase = frameTimeSeconds * M_PI * (vel * 0.0015 + 0.9) + currentPhase;
+			if(currentAmplitude != 0.0)
+				vel = vel * 0.5;
+			currentAmplitude = vel;
+
+			currentAmplitude = (1.0 - fabs(viewAngles[PITCH]) * 0.01111111138015985 * 0.5) * 0.5 * currentAmplitude;
+		} else {
+			if(currentAmplitude > 0.0) {
+				currentAmplitude -= (2.f * frameTimeSeconds * currentAmplitude);
+			}
+		}
+		if(currentAmplitude == 0.f)
+			currentPhase = 0.f;
+		//g_core->Print("Phase: %f, Amplitude: %f\n",currentPhase,currentAmplitude);
+		calcMovementInternal(velocity,isOnGround,frameTimeSeconds);
+	}
+	const vec3_c &getCurrentMovement() const {
+		return currentMovement;
+	}
+};
+
+static viewModelAnimator_c viewModelMovement;
+static viewModelAnimationConfig_s viewModelMovementConfig;
 
 void CG_RunViewModel() {
 	if(cg_printViewWeaponClipSize.getInt()) {
@@ -133,6 +241,16 @@ void CG_RunViewModel() {
 		if(viewModel->isDeclModel()) {
 			localOfs += viewModel->getDeclModelAPI()->getOffset();
 		}
+	}
+	//g_core->Print("Player velocity: %f %f %f\n",cg.snap->ps.velocity.x,cg.snap->ps.velocity.y,cg.snap->ps.velocity.z);
+
+	// calculate viewmodel bobbing offset based on player velocity
+	viewModelMovement.setConfig(viewModelMovementConfig);
+	viewModelMovement.calcViewModelOffset(cg.snap->ps.isOnGround(),cg.snap->ps.velocity,cg.refdefViewAngles,cg.frametime*0.001f);
+	const vec3_c &currentMovement = viewModelMovement.getCurrentMovement();
+	localOfs += currentMovement;
+	if(cg_printViewModelBobbingOffset.getInt()) {
+		g_core->Print("Viewmodel bobbing movement: %f %f %f\n",currentMovement.x,currentMovement.y,currentMovement.z);
 	}
 
 	if(cg_printCurViewModelName.getInt()) {

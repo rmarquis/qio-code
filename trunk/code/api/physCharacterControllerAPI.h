@@ -30,6 +30,7 @@ public:
 	virtual void setCharacterVelocity(const class vec3_c &newVel) = 0;
 	virtual void setCharacterEntity(class BaseEntity *ent) = 0;
 	virtual void update(const class vec3_c &dir) = 0;
+	//virtual const class vec3_c &getVelocity() const = 0;
 	virtual const class vec3_c &getPos() const = 0;
 	virtual bool isOnGround() const = 0;
 	virtual bool tryToJump() = 0;

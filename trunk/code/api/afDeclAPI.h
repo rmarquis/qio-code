@@ -121,7 +121,10 @@ public:
 	virtual const char *getName() const = 0;
 	virtual const afPublicData_s *getData() const = 0;
 	virtual const char *getDefaultRenderModelName() const = 0;
+	// returns the total count of physics bodies used by ragdoll (<=numJoints)
 	virtual u32 getNumBodies() const = 0;
+	// returns the name of the render model joint to which given physics body is attached
+	virtual const char *getBodyParentJointName(u32 bodyNum) const = 0;
 };
 
 #endif // __AFDECLAPI_H__

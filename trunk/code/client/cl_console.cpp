@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 #include <api/rAPI.h>
+#include <api/declManagerAPI.h>
+#include <api/coreAPI.h>
 
 int g_console_field_width = 78;
 
@@ -313,6 +315,18 @@ void Cmd_CompleteEmitterName( char *args, int argNum ) {
 	}
 }
 
+/*
+==================
+Cmd_CacheDeclModel_f
+==================
+*/
+void Cmd_CacheDeclModel_f() {
+	if(g_declMgr == 0) {
+		g_core->RedWarning("Cmd_CacheDeclModel_f: decl manager not ready\n");
+		return;
+	}
+
+}
 
 /*
 ================
@@ -346,6 +360,7 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "model_spawn", Cmd_CompleteModelName );
 	Cmd_AddCommand ("cg_testEmitter", 0);
 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
+	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);
 }
 
 /*
@@ -362,6 +377,11 @@ void Con_Shutdown(void)
 	Cmd_RemoveCommand("messagemode4");
 	Cmd_RemoveCommand("clear");
 	Cmd_RemoveCommand("condump");
+	Cmd_RemoveCommand("spawn");
+	Cmd_RemoveCommand("model_spawn");
+	Cmd_RemoveCommand("cg_testEmitter");
+	Cmd_RemoveCommand("cg_testEmitter");
+	Cmd_RemoveCommand("decl_cacheModel");
 }
 
 /*

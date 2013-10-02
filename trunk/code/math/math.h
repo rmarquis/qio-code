@@ -67,6 +67,11 @@ typedef vec_t vec5_t[5];
 #define M_180DIVPI			57.295779513082320876798154814105f		// 180.f / M_PI
 #endif
 
+// half of pi, 1.570796326794897
+#ifndef M_PIDIV2
+#define M_PIDIV2		(M_PI*0.5f)
+#endif
+
 #define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
 #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
 

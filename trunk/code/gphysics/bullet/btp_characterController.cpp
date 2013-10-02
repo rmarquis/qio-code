@@ -47,6 +47,9 @@ void btpCharacterController_c::update(const class vec3_c &dir) {
 	btVector3 walkDir(dir[0]*QIO_TO_BULLET,dir[1]*QIO_TO_BULLET,dir[2]*QIO_TO_BULLET);
 	ch->setWalkDirection(walkDir);
 }
+//const class vec3_c &btpCharacterController_c::getVelocity() const {
+//	
+//}
 const class vec3_c &btpCharacterController_c::getPos() const {
 	btVector3 c = ch->getGhostObject()->getWorldTransform().getOrigin();
 	lastPos[0] = c.x()*BULLET_TO_QIO;

@@ -48,6 +48,9 @@ public:
 	virtual u32 getNumBodies() const {
 		return data.bodies.size();
 	}
+	virtual const char *getBodyParentJointName(u32 bodyNum) const {
+		return data.bodies[bodyNum].jointName;
+	}
 	void setHashNext(afDecl_c *newHashNext) {
 		hashNext = newHashNext;
 	}

@@ -29,37 +29,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define C_ONLY
 
-#define STANDALONE
+#define STANDALONE 1
 
-//#ifdef STANDALONE
-  #define PRODUCT_NAME			"Qio"
-  #define BASEGAME			"baseqio"
-  #define CLIENT_WINDOW_TITLE     	"Qio"
-  #define CLIENT_WINDOW_MIN_TITLE 	"Qio"
- // #define HOMEPATH_NAME_UNIX		".foo"
-  //#define HOMEPATH_NAME_WIN		"FooBar"
- // #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-  #define GAMENAME_FOR_MASTER		"QioTestGame"	// must NOT contain whitespace
-////  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
-//#else
-//  #define PRODUCT_NAME			"ioq3"
-//  #define BASEGAME			"baseq3"
-//  #define CLIENT_WINDOW_TITLE     	"ioquake3"
-//  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
-//  #define HOMEPATH_NAME_UNIX		".q3a"
-//  #define HOMEPATH_NAME_WIN		"Quake3"
-//  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-//  #define GAMENAME_FOR_MASTER		"Quake3Arena"
-//  #define LEGACY_PROTOCOL
-//#endif
+#define PRODUCT_NAME			"Qio"
+#define BASEGAME			"baseqio"
+#define CLIENT_WINDOW_TITLE     	"Qio"
+#define CLIENT_WINDOW_MIN_TITLE 	"Qio"
+#define GAMENAME_FOR_MASTER		"QioTestGame"	// must NOT contain whitespace
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
 #define HEARTBEAT_FOR_MASTER		"DarkPlaces"
 
-#define BASETA				"missionpack"
-
 #ifndef PRODUCT_VERSION
-  #define PRODUCT_VERSION "1.36"
+  #define PRODUCT_VERSION "0.1"
 #endif
 
 #define Q3_VERSION PRODUCT_NAME " " PRODUCT_VERSION
@@ -1236,7 +1218,7 @@ struct playerState_s : public entityState_s {
 
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 
-	vec3_t		velocity;
+	vec3_c		velocity;
 
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
@@ -1279,6 +1261,9 @@ struct playerState_s : public entityState_s {
 		viewWeaponCurClipSize = 0;
 		viewModelAngles.set(0,0,0);
 		viewModelOffset.set(0,0,0);
+	}
+	bool isOnGround() const {
+		return (groundEntityNum != ENTITYNUM_NONE);
 	}
 };
 

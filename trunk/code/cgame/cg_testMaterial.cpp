@@ -28,14 +28,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/rAPI.h>
 #include <api/mtrAPI.h>
+#include <api/coreAPI.h>
 #include <math/vec3.h>
 #include <shared/autoCvar.h>
 #include <shared/simpleVert.h>
 
+static aCvar_c cg_testMaterial("cg_testMaterial","0");
 static aCvar_c cg_testMaterial_shapeType("cg_testMaterial_shapeType","0");
 static aCvar_c cg_testMaterial_shapeSize("cg_testMaterial_shapeSize","64");
 static aCvar_c cg_testMaterial_shapeTexCoordScale("cg_testMaterial_shapeTexCoordScale","1.0");
-static aCvar_c cg_testMaterial("cg_testMaterial","0");
+static aCvar_c cg_testMaterial_printSourceFileName("cg_testMaterial_printSourceFileName","0");
 
 // material tester class
 class cgMaterialTester_c : public customRenderObjectAPI_i {
@@ -108,6 +110,9 @@ void CG_RunTestMaterial() {
 		return;
 	}
 	class mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(cg_testMaterial_printSourceFileName.getInt()) {
+		g_core->Print("Test material was loaded from %s\n",mat->getSourceFileName());
+	}
 	if(cg_materialTester == 0) {
 		cg_materialTester = new cgMaterialTester_c;
 		rf->addCustomRenderObject(cg_materialTester);

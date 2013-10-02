@@ -43,6 +43,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/boneOrQP.h>
 #include <shared/autoCvar.h>
 #include <shared/afRagdollHelper.h>
+#include <shared/skelUtils.h>
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
@@ -227,6 +228,13 @@ void ModelEntity::setInternalAnimationIndex(int newAnimIndex) {
 	this->myEdict->s->animIndex = newAnimIndex;
 	animName = va("_internalAnim%i",newAnimIndex);
 }
+bool ModelEntity::hasDeclAnimation(const char *animName) const {
+	if(modelDecl == 0)
+		return false; // model is not a decl
+	if(modelDecl->getSkelAnimAPIForAlias(animName))
+		return true; // animation is present
+	return false; // animation not found
+}
 void ModelEntity::setAnimation(const char *newAnimName) {
 	if(g_verboseSetAnimationCalls.getInt()) {
 		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
@@ -246,11 +254,11 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 void ModelEntity::getCurrentBonesArray(class boneOrArray_c &out) {
 	if(modelDecl) {
 		const skelAnimAPI_i *anim = modelDecl->getSkelAnimAPIForLocalIndex(this->myEdict->s->animIndex);
-		out.resize(anim->getNumBones());
 		if(anim == 0) {
 			g_core->RedWarning("ModelEntity::getCurrentBonesArray: failed to get anim %i from decl %s\n",myEdict->s->animIndex,modelDecl->getModelDeclName());
 			return;
 		}
+		out.resize(anim->getNumBones());
 		anim->buildFrameBonesABS(0,out);
 	} else {
 		// TODO
@@ -561,6 +569,14 @@ void ModelEntity::initRagdollPhysics() {
 		// we no longer need it
 		delete this->initialRagdolPose;
 		this->initialRagdolPose = 0;
+	} else {
+		boneOrArray_c currentBones;
+		getCurrentBonesArray(currentBones);
+		if(currentBones.size() && modelDecl) {
+			// transform bones from entity space to world space
+			currentBones.transform(this->getMatrix());
+			ragdoll->setPoseFromRenderModelBonesArray(currentBones,modelDecl->getSkelAnimAPIForLocalIndex(0));
+		}
 	}
 }
 void ModelEntity::postSpawn() {

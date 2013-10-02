@@ -84,6 +84,9 @@ typedef enum {
 	ET_PORTAL, // classname: misc_portal_surface
 	// server-only entity for triggers
 	ET_TRIGGER, 
+	// path node for AI navigation (server-only)
+	// the classname is: "info_pathnode"
+	ET_PATHNODE,
 } entityType_t;
 
 

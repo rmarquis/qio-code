@@ -104,6 +104,8 @@ void skelAnimController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const
 	nextFlags = newFlags;
 }
 void skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
+	if(anim == 0)
+		return;
 	int deltaTime = curGlobalTimeMSec - lastUpdateTime;
 	if(deltaTime == 0)
 		return;

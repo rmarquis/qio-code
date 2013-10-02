@@ -295,7 +295,11 @@ void Player::setPlayerAnimBoth(enum sharedGameAnim_e type) {
 		animHandler->setAnimBoth(type);
 	} else {
 		if(type == SGA_RUN) {
-			setAnimation("walk");
+			if(hasDeclAnimation("run")) {
+				setAnimation("run");
+			} else {
+				setAnimation("walk");
+			}
 		} else if(type == SGA_PAIN) {
 			setAnimation("pain");
 		} else if(type == SGA_PAIN_CHEST) {
@@ -386,12 +390,14 @@ void Player::runPlayer() {
 					dir.scale(4.f);
 					VectorAdd(this->ps.origin,dir,newOrigin);
 					ModelEntity::setOrigin(newOrigin);
+					ps.velocity = dir;
 					onGround = false;
 				} else {
 					dir[2] = 0;
 					VectorScale(dir,0.75f,dir);
 					this->characterController->update(dir);
 					newOrigin = this->characterController->getPos();
+					ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
 					bool isNowOnGround = this->characterController->isOnGround();
 					if(isNowOnGround) {
 						if(ucmd->upmove) {
@@ -426,6 +432,9 @@ void Player::runPlayer() {
 //				BT_TraceRay(tr);
 				groundDist = tr.getTraveled();
 				//G_Printf("GroundDist: %f\n",groundDist);
+				ps.groundEntityNum = ENTITYNUM_NONE;
+			} else {
+				ps.groundEntityNum = ENTITYNUM_WORLD; // fixme
 			}
 			// update animation
 			//if(0) {
@@ -752,7 +761,7 @@ void Player::updateCurWeaponAttachment() {
 		} else {
 			ps.customViewRModelIndex = 0;
 		}
-		curWeapon->setParent(this,getBoneNumForName("tag_weapon"));
+		curWeapon->setParent(this,getBoneNumForName("MG_ATTACHER"));
 		ps.viewModelAngles = -curWeapon->getViewModelAngles();
 		ps.viewModelOffset = curWeapon->getViewModelOffset();
 	}

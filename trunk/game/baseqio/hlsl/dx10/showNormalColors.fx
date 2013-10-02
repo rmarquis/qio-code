@@ -41,7 +41,7 @@ PixelInputType VS_SimpleTexturing(VertexInputType input)
 
 float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 {
-	float4 textureColor = float4(normalize(input.normal)+float3(0.5,0.5,0.5)*0.5f,1); 
+	float4 textureColor = float4(normalize(input.normal)*0.5f+float3(0.5,0.5,0.5),1); 
     return textureColor;
 }
 

@@ -35,11 +35,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/trace.h>
 #include <shared/parser.h> // for Doom3 .proc surfaces parsing
+#include <shared/autoCvar.h>
 #include "rf_decalProjector.h"
 #include <shared/simpleTexturedPoly.h>
 #include <api/colMeshBuilderAPI.h>
 #include "../pointLightSample.h"
 #include <shared/perStringCallback.h>
+
+static aCvar_c rf_dontRecalcNormals("rf_dontRecalcNormals","0");
 
 //
 //	r_surface_c class
@@ -399,6 +402,8 @@ bool r_surface_c::needsTBN() const {
 	return rb->areTangentsNeededForMaterial(mat);
 }
 void r_surface_c::recalcNormals() {
+	if(rf_dontRecalcNormals.getInt())
+		return;
 	verts.nullNormals();
 	const rIndexBuffer_c &pIndices = getIndices2();
 	trianglePlanes.resize(pIndices.getNumTriangles());

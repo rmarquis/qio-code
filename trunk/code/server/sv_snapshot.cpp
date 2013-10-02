@@ -356,6 +356,11 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+		// never send ai waypoints (pathnodes)
+		if(ent->s->eType == ET_PATHNODE) {
+			continue;
+		}
+
 		edict_s *visEnt = ent;
 		while(visEnt->s->parentNum != ENTITYNUM_NONE) {
 			visEnt = SV_GentityNum(visEnt->s->parentNum);

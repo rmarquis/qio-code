@@ -38,6 +38,7 @@ DEFINE_CLASS_ALIAS(InfoPathNode, info_pathnode);
 
 InfoPathNode::InfoPathNode() {
 	pathNode = 0;
+	this->myEdict->s->eType = ET_PATHNODE;
 }
 InfoPathNode::~InfoPathNode() {
 	if(pathNode) {

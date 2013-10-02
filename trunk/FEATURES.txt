@@ -17,7 +17,7 @@ renderer
  - ET:QW .procb support (without portals)
  - direct .map files loading (both Q3 and Doom3 versions)
  - openGL backend totally separated from frontend
- - basic DirectX 9 backend
+ - basic DirectX 9 and 10 backends
  - VBO/IBO based (several times faster than Q3 renderer)
  - deltaRefEntities system
  - GLSL shaders support in backendGL
@@ -42,6 +42,7 @@ declManager
  - Doom3 model decls support (.def files)
  - Doom3 entity decls support (.def files)
  - Doom3 Articulated Figures (.af files - ragdoll definitions) support
+ - Doom3 particle emitters support
  
 common
  - interfaces system similiar to one in SourceEngine

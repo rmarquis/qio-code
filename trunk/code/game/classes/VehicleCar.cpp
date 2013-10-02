@@ -61,6 +61,8 @@ bool VehicleCar::doUse(class Player *activator) {
 	return true; // cannot pickup entity
 }
 void VehicleCar::steerUCmd(const struct usercmd_s *ucmd) {
+	if(physVehicle == 0)
+		return;
 	float rightMove = float(ucmd->rightmove)/480.f;
 	float engineForce = float(ucmd->forwardmove) * 5.f;
 	physVehicle->setSteering(engineForce,-rightMove);

@@ -95,6 +95,8 @@ public:
 	void setAnimation(const char *animName);
 	void setInternalAnimationIndex(int newAnimIndex);
 
+	bool hasDeclAnimation(const char *animName) const;
+
 	// this is just an approximation, the model shape
 	// might be slighty different on a client due
 	// to lags and interpolation

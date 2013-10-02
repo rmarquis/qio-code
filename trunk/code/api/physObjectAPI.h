@@ -29,6 +29,7 @@ class physObjectAPI_i {
 public:
 	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
 	virtual const class vec3_c getRealOrigin() const = 0;
+	virtual void setMatrix(const class matrix_c &newMatrix) = 0;
 	virtual void getCurrentMatrix(class matrix_c &out) const = 0;
 	virtual void applyCentralForce(const class vec3_c &velToAdd) = 0;
 	virtual void applyCentralImpulse(const class vec3_c &impToAdd) = 0;

@@ -44,6 +44,7 @@ public:
 
 	virtual void setOrigin(const class vec3_c &newPos);
 	virtual const class vec3_c getRealOrigin() const;
+	virtual void setMatrix(const class matrix_c &newMatrix);
 	virtual void getCurrentMatrix(class matrix_c &out) const;
 	virtual void getPhysicsMatrix(class matrix_c &out) const;
 	virtual void applyCentralForce(const class vec3_c &velToAdd);

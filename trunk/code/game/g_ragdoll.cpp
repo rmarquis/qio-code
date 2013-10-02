@@ -45,7 +45,6 @@ friend class afRagdollSpawner_c;
 	// ragdoll definition
 	const afDeclAPI_i *af;
 	const afPublicData_s *afd;
-	arraySTD_c<matrix_c> afPose;
 	// Game Physics ragdoll representation
 	arraySTD_c<physObjectAPI_i*> bodies;
 	arraySTD_c<physConstraintAPI_i*> constraints;
@@ -90,7 +89,34 @@ public:
 			matrix_c mat;
 			mat.fromQuatAndOrigin(bor.getQuat(),bor.getPos());
 			printf("todo");
-		//	b->setMatrix(mat);
+			b->setMatrix(mat);
+		}
+		return false;
+	}
+	virtual bool setPoseFromRenderModelBonesArray(const class boneOrArray_c &boneOrs, const class skelAnimAPI_i *anim) {
+		// first get bone indexes
+		arraySTD_c<int> boneIndexes;
+		boneIndexes.resize(bodies.size());
+		for(u32 i = 0; i < bodies.size(); i++) {
+			const char *jointName = af->getBodyParentJointName(i);
+			int boneIndex = anim->getLocalBoneIndexForBoneName(jointName);
+			if(boneIndex < 0) {
+				g_core->RedWarning("ragdoll_c::setPoseFromRenderModelBonesArray: bone %s not found. Failed to set pose.\n",jointName);
+				return true;
+			}
+			boneIndexes[i] = boneIndex;
+		}
+		// then calculate new body matrices
+		arraySTD_c<matrix_c> boneParentBody2Bone;
+		afRagdollHelper_c rh;
+		rh.calcBoneParentBody2BoneOfsets(af->getName(),boneParentBody2Bone);
+		for(u32 i = 0; i < bodies.size(); i++) {
+			physObjectAPI_i *b = bodies[i];
+			int boneIndex = boneIndexes[i];
+			const matrix_c &offset = boneParentBody2Bone[boneIndex];
+			const matrix_c &worldBone = boneOrs[boneIndex].mat;
+			matrix_c worldBody = worldBone * offset.getInversed();
+			b->setMatrix(worldBody);
 		}
 		return false;
 	}

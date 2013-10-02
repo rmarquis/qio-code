@@ -33,6 +33,7 @@ class btpCharacterController_c : public physCharacterControllerAPI_i {
 	class btConvexShape *characterShape;
 	class bulletPhysicsWorld_c *myWorld;
 	mutable vec3_c lastPos;
+	//vec3_c velocity;
 public:
 	btpCharacterController_c();
 	~btpCharacterController_c();
@@ -40,6 +41,7 @@ public:
 	virtual void setCharacterVelocity(const class vec3_c &newVel);
 	virtual void setCharacterEntity(class BaseEntity *ent);
 	virtual void update(const class vec3_c &dir);
+	//virtual const class vec3_c &getVelocity() const;
 	virtual const class vec3_c &getPos() const;
 	virtual bool isOnGround() const;
 	virtual bool tryToJump();

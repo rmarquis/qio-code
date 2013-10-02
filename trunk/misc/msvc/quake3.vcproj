@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="quake3"
+	Name="core"
 	ProjectGUID="{81CB51C4-B434-4E12-B69B-BAEE102F2852}"
 	RootNamespace="quake3"
 	TargetFrameworkVersion="131072"

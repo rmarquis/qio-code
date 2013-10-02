@@ -168,6 +168,14 @@ void odeRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
 	}
 	out.scaleOriginXYZ(ODE_TO_QIO);
 }
+void odeRigidBody_c::setMatrix(const class matrix_c &newMatrix) {
+	dMatrix3 odeRot;
+	dReal odePos[3];
+	ODE_SetMatrix4x4(odeRot,odePos,newMatrix);
+	VectorScale(odePos,QIO_TO_ODE,odePos);
+    dBodySetPosition (body,odePos[0],odePos[1],odePos[2]);	
+	dBodySetRotation(body,odeRot);
+}
 void odeRigidBody_c::getPhysicsMatrix(class matrix_c &out) const {
 	if(body) {
 		ODE_GetMatrix4x4(body,out);

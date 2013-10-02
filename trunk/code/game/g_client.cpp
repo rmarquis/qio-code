@@ -508,7 +508,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"model_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
-			if(FixRenderModelPath(model)) {
+			if(g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
 				vec3_c p = pl->getOrigin();
 				p.z += pl->getViewHeight();
 				p += pl->getForward() * 64.f;

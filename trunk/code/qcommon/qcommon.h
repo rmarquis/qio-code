@@ -228,10 +228,6 @@ typedef struct {
 	int			challenge;
 	int		lastSentTime;
 	int		lastSentSize;
-
-#ifdef LEGACY_PROTOCOL
-	qboolean	compat;
-#endif
 } netchan_t;
 
 void Netchan_Init( int qport );
@@ -251,9 +247,7 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	71
-#define PROTOCOL_LEGACY_VERSION	68
-// 1.31 - 67
+#define	PROTOCOL_VERSION	1
 
 // maintain a list of compatible protocols for demo playing
 // NOTE: that stuff only works with two digits protocols
@@ -658,7 +652,6 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames );
 // sole exception of .cfg files.
 
 qboolean FS_CheckDirTraversal(const char *checkdir);
-qboolean FS_idPak(char *pak, char *base, int numPaks);
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 
 void FS_Rename( const char *from, const char *to );
@@ -811,9 +804,6 @@ extern	cvar_s	*sv_packetdelay;
 
 extern	cvar_s	*com_gamename;
 extern	cvar_s	*com_protocol;
-#ifdef LEGACY_PROTOCOL
-extern	cvar_s	*com_legacyprotocol;
-#endif
 
 // com_speeds times
 extern	int		time_game;

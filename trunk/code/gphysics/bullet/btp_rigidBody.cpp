@@ -83,6 +83,16 @@ const class vec3_c bulletRigidBody_c::getRealOrigin() const {
 	mat.scaleOriginXYZ(BULLET_TO_QIO);
 	return mat.getOrigin();
 }
+void bulletRigidBody_c::setMatrix(const class matrix_c &newMatrix) {
+	matrix_c m = newMatrix;
+	m.scaleOrigin(QIO_TO_BULLET);
+	if(this->shape->hasCenterOfMassTransform()) {
+		m = m * this->shape->getCenterOfMassTransform();
+	}
+	btTransform trans;
+	trans.setFromOpenGLMatrix(m);
+	bulletRigidBody->setWorldTransform(trans);
+}
 void bulletRigidBody_c::getCurrentMatrix(class matrix_c &out) const {
 	btTransform trans;
 	trans = bulletRigidBody->getWorldTransform();

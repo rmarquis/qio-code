@@ -77,6 +77,12 @@ u32 boneOrArray_c::findNearestBone(const vec3_c &pos, float *outDist) const {
 	}
 	return best;
 }
+void boneOrArray_c::transform(const matrix_c &ofs) {
+	boneOr_s *or = this->getArray();
+	for(u32 i = 0; i < size(); i++, or++) {
+		or->mat = ofs * or->mat;
+	}
+}
 void boneOrArray_c::scale(float scale) {
 	boneOr_s *or = this->getArray();
 	for(u32 i = 0; i < size(); i++, or++) {
