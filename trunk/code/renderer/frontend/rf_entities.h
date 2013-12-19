@@ -58,10 +58,12 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// only for skeletal models; model geometry instanced at the current time of animation
 	class r_model_c *instance;
 	class skelAnimController_c *skelAnimCtrl;
+	class skelAnimController_c *skelAnimCtrlTorso;
 	class q3AnimCtrl_c *q3AnimCtrl;
 	// for ragdolls
 	const class afDeclAPI_i *myRagdollDef;
 	class boneOrQPArray_t *ragOrs;
+	class boneOrArray_c *finalBones;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
 	// incremented every time absolute entity silhuette is changed
 	// used for shadow volumes creation
@@ -72,6 +74,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	bool bCenterLightSampleValid;
 	// areas touching entity absBounds
 	arraySTD_c<u32> touchingAreas;
+	// used to avoid updating animated entity several times in single frame
+	u32 animatedEntityUpdateFrame;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -86,6 +90,7 @@ public:
 	virtual void setModel(class rModelAPI_i *newModel);
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setAnim(const char *animName, int newFlags);
+	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setThirdPersonOnly(bool bOn) {
 		bThirdPersonOnly = bOn;
 	}

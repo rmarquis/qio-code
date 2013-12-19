@@ -166,7 +166,7 @@ public:
 			}
 			physObjectDef_s def;
 			def.collisionModel = cMod;
-			def.mass = 5.f;
+			def.mass = 50.f;
 			def.transform = mat;
 			bodies[i] = g_physWorld->createPhysicsObject(def);
 		}

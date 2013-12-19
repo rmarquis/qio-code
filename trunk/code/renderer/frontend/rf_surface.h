@@ -49,6 +49,8 @@ class r_surface_c {
 	planeArray_c trianglePlanes; // arraySTD_c of plane_c
 	// this is not NULL only for skeletal model instances
 	const class skelSurfaceAPI_i *mySkelSF;
+
+	u32 registerVert(const struct simpleVert_s &v);
 public:
 	r_surface_c();
 	~r_surface_c();
@@ -174,6 +176,7 @@ public:
 	void updateSprite(const class axis_c &viewAxis, const vec3_c &spritePos, float newSpriteRadius, u32 subSpriteNumber = 0, byte alpha = 255);
 	// resets the surface data
 	void setSurface(const char *matName, const struct simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices);
+	void setSurface(const char *matName, const class rVert_c *verts, u32 numVerts, const u16 *indices, u32 numIndices);
 
 	bool traceRay(class trace_c &tr);
 
@@ -278,6 +281,7 @@ public:
 	virtual void clear();	
 	virtual void addSprite(const class vec3_c &origin, float radius, class mtrAPI_i *mat, const axis_c &viewerAxis, byte alpha);
 	virtual void addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices);
+	virtual void addSurface(const char *matName, const rVert_c *verts, u32 numVerts, const u16 *indices, u32 numIndices);
 	virtual void setAllVertexColors(byte r, byte g, byte b, byte a);
 	// modelPostProcessFuncs_i implementation
 	virtual void scaleXYZ(float scale);
@@ -310,6 +314,7 @@ public:
 			surfs[i].scaleTexCoords(f);
 		}
 	}
+	void transform(const class matrix_c &mat);
 
 	void addPatch(class r_bezierPatch_c *newPatch);
 

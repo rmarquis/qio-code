@@ -3,7 +3,7 @@
 // MACHINEGUN
 //==================
 
-models/weapons/machinegun/machinegun
+models/xrealweapons/machinegun/machinegun
 {
 	diffusemap		models/testweapons/xrealMachinegun/machinegun_d
 	specularmap		models/testweapons/xrealMachinegun/machinegun_s
@@ -17,14 +17,14 @@ models/weapons/machinegun/machinegun
 	}
 }
 
-models/weapons/machinegun/w_machinegun
+models/xrealweapons/machinegun/w_machinegun
 {
 	diffusemap		models/testweapons/xrealMachinegun/machinegun_d
 	specularmap		models/testweapons/xrealMachinegun/machinegun_s
 	bumpmap			addnormals(models/testweapons/xrealMachinegun/machinegun_local, heightmap(models/testweapons/xrealMachinegun/machinegun_h, 6 ) )
 }
 
-models/weapons/machinegun/machinegun_muzzflash
+models/xrealweapons/machinegun/machinegun_muzzflash
 {
 	twoSided
 	deform sprite
@@ -41,7 +41,7 @@ models/weapons/machinegun/machinegun_muzzflash
 	}
 }
 
-models/weapons/machinegun/machinegun_muzzflashb
+models/xrealweapons/machinegun/machinegun_muzzflashb
 {
 	twoSided
 	deform sprite
@@ -58,7 +58,7 @@ models/weapons/machinegun/machinegun_muzzflashb
 	}
 }
 
-models/weapons/machinegun/machinegun_muzzflash2
+models/xrealweapons/machinegun/machinegun_muzzflash2
 {
 	twoSided
 	sort nearest
@@ -73,7 +73,7 @@ models/weapons/machinegun/machinegun_muzzflash2
 	}
 }
 
-models/weapons/machinegun/machinegun_muzzflash2b
+models/xrealweapons/machinegun/machinegun_muzzflash2b
 {
 	twoSided
 	sort nearest
@@ -88,7 +88,7 @@ models/weapons/machinegun/machinegun_muzzflash2b
 	}
 }
 
-models/weapons/machinegun/f_machinegun
+models/xrealweapons/machinegun/f_machinegun
 {
 	twoSided
 	sort additive

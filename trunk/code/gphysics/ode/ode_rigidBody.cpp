@@ -205,6 +205,9 @@ void odeRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 ///	bulletRigidBody->activate(true);
 //	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_ODE).floatPtr());
 }
+void odeRigidBody_c::applyTorque(const class vec3_c torqueToAdd) {
+	
+}
 // linear velocity access (in Quake units)
 const class vec3_c odeRigidBody_c::getLinearVelocity() const {
 	if(body == 0)

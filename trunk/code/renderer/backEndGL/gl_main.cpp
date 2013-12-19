@@ -98,6 +98,10 @@ static aCvar_c rb_showShadowVolumes("rb_showShadowVolumes","0");
 // used to see which surfaces has a material with blendfunc
 static aCvar_c rb_skipStagesWithoutBlendFunc("rb_skipStagesWithoutBlendFunc","0");
 static aCvar_c rb_skipStagesWithBlendFunc("rb_skipStagesWithBlendFunc","0");
+static aCvar_c rb_ignoreDoom3AlphaTest("rb_ignoreDoom3AlphaTest","0");
+static aCvar_c rb_printMaterialDepthWrite("rb_printMaterialDepthWrite","0");
+static aCvar_c rb_forceTwoSided("rb_forceTwoSided","0");
+static aCvar_c rb_printLightingPassDrawCalls("rb_printLightingPassDrawCalls","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -230,6 +234,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	axis_c viewAxis; // viewer's camera axis
 	vec3_c camOriginWorldSpace;
 	vec3_c camOriginEntitySpace;
+	matrix_c camMatrixInEntitySpace;
 	bool usingWorldSpace;
 	axis_c entityAxis;
 	vec3_c entityOrigin;
@@ -1114,11 +1119,43 @@ public:
 			return stage->getTextureForFrameNum(forcedMaterialFrameNum);
 		}
 	}
+	bool bDeformsDone;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
 		if(verts.size() == 0)
 			return;
+
+		// first apply deforms
+		if(bDeformsDone == false && lastMat && lastMat->hasDeforms()) {
+			// right now we're only supporting the autoSprite deform
+			if(lastMat->hasDeformOfType(DEFORM_AUTOSPRITE)) {
+				rVertexBuffer_c vertsCopy;
+				rIndexBuffer_c indicesCopy;
+				vertsCopy = verts;
+				vec3_c left = camMatrixInEntitySpace.getLeft();
+				vec3_c up = camMatrixInEntitySpace.getUp();
+				// see if we can apply the autosprite deform
+				if(vertsCopy.applyDeformAutoSprite(left,up)==false) {
+					// reorder indices, this is necessary in some cases
+					u16 *pIndices = indicesCopy.initU16((verts.size()/4)*6);
+					for(u32 i = 0; i < verts.size(); i += 4) {
+						pIndices[6*(i>>2)+0] = i;
+						pIndices[6*(i>>2)+1] = i+1;
+						pIndices[6*(i>>2)+2] = i+2;
+
+						pIndices[6*(i>>2)+3] = i;
+						pIndices[6*(i>>2)+4] = i+2;
+						pIndices[6*(i>>2)+5] = i+3;
+					}
+					bDeformsDone = true;
+					// use new vertex/index buffers to render elements
+					drawElements(vertsCopy,indicesCopy);
+					return;
+				}
+			}
+		}
+		bDeformsDone = false;
 
 		counters.c_materialDrawCalls++;
 		counters.c_inputVerts += verts.size();
@@ -1131,6 +1168,8 @@ public:
 		}
 		
 		if(bDrawOnlyOnDepthBuffer) {
+			if(lastMat->hasStageWithoutCustomProgram() == false)
+				return;
 			if(bRendererMirrorThisFrame) {
 				if(lastMat->isMirrorMaterial()) {
 					setColorMask(false, false, false, false);
@@ -1167,7 +1206,11 @@ public:
 				glCull(CT_BACK_SIDED);
 			} else {
 				if(lastMat) {
-					glCull(lastMat->getCullType());
+					if(rb_forceTwoSided.getInt()) {
+						glCull(CT_FRONT_SIDED);
+					} else {
+						glCull(lastMat->getCullType());
+					}
 				} else {
 					glCull(CT_FRONT_SIDED);
 				}
@@ -1178,6 +1221,11 @@ public:
 			setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 			drawCurIBO();
 			return;
+		}
+		if(rb_printLightingPassDrawCalls.getInt()) {
+			if(curLight) {
+				g_core->Print("LightingPass: %s (%i tris, %i verts)\n",lastMat->getName(),indices.getNumTriangles(),verts.size());
+			}
 		}
 		// now it's done by frontend, and the color is not always 1 1 1 1
 		//this->setColor4f(1.f,1.f,1.f,1.f);
@@ -1211,7 +1259,11 @@ public:
 		}
 
 		if(lastMat) {
-			glCull(lastMat->getCullType());
+			if(rb_forceTwoSided.getInt()) {
+				glCull(CT_TWO_SIDED);
+			} else {
+				glCull(lastMat->getCullType());
+			}
 		} else {
 			glCull(CT_FRONT_SIDED);
 		}
@@ -1255,6 +1307,9 @@ public:
 					if(numMatStages - 1 != i) 
 						continue;
 				}
+				// skip stages that are usind custom Doom3 gpu programs
+				if(s->isUsingCustomProgram())
+					continue;
 				// get material stage type
 				enum stageType_e stageType = s->getStageType();
 				// get the bumpmap substage of current stage
@@ -1298,7 +1353,11 @@ public:
 					// evaluate Doom3 alpha value expression at runtime (AST)
 					float alphaValue = s->evaluateAlphaTestValue(&materialVarList);
 					// and then set it
-					setAlphaFunc(AF_D3_ALPHATEST,alphaValue);
+					if(rb_ignoreDoom3AlphaTest.getInt()) {
+						setAlphaFunc(AF_NONE);
+					} else {
+						setAlphaFunc(AF_D3_ALPHATEST,alphaValue);
+					}
 				} else {
 					// set the classic Quake3 GT0 / LT128 / GT128 alphaFunc
 					setAlphaFunc(s->getAlphaFunc());
@@ -1320,6 +1379,9 @@ public:
 				//if(s->getBlendDef().isNonZero()) {
 				// (only if not doing multipass lighting)
 				if(curLight == 0) {
+					if(rb_printMaterialDepthWrite.getInt()) {
+						g_core->Print("Material: %s, depthWrite: %i\n",lastMat->getName(),s->getDepthWrite());
+					}
 					if(s->getDepthWrite()==false) {
 						setGLDepthMask(false);
 					} else {
@@ -1844,6 +1906,7 @@ drawOnlyLightmap:
 
 		this->loadModelViewMatrix(this->resultMatrix);
 
+		camMatrixInEntitySpace.fromAxisAndOrigin(viewAxis,camOriginWorldSpace);
 		camOriginEntitySpace = this->camOriginWorldSpace;
 		entityAxis.identity();
 		entityOrigin.zero();
@@ -1858,6 +1921,8 @@ drawOnlyLightmap:
 
 		entityMatrix.fromAxisAndOrigin(axis,origin);
 		entityMatrixInverse = entityMatrix.getInversed();
+		camMatrixInEntitySpace.fromAxisAndOrigin(viewAxis,camOriginWorldSpace);
+		camMatrixInEntitySpace = entityMatrixInverse * camMatrixInEntitySpace;
 
 		entityMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
 

@@ -133,6 +133,7 @@ public:
 		r_model_c *mod = entModels[currentEntityNum];
 		r_bezierPatch_c *bezierPatch = new r_bezierPatch_c;
 		if(bezierPatch->fromString(patchDefStart,patchDefEnd)) {
+			g_core->RedWarning("rWorldMapLoader_c::onBezierPatch: failed to parse bezier patch text def\n");
 			delete bezierPatch;
 		} else {
 			mod->addPatch(bezierPatch);
@@ -200,6 +201,8 @@ public:
 	}
 };
 
+// used to load entire world scene directly from .map file
+// (without using .bsp / .proc data)
 class r_model_c *RF_LoadMAPFile(const char *fname) {
 	rWorldMapLoader_c loader;
 	if(g_modelLoader->loadStaticModelFile(fname,&loader)) {
@@ -209,3 +212,5 @@ class r_model_c *RF_LoadMAPFile(const char *fname) {
 	loader.registerSubModels();
 	return loader.getWorldModel();
 }
+
+

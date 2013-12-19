@@ -56,7 +56,8 @@ void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
-void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0);
+// "forceThirdPerson" is true while generating shadow map drawcalls
+void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);
 
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();
@@ -109,6 +110,7 @@ void RF_RemoveCustomRenderObject(class customRenderObjectAPI_i *api);
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;
+extern u32 rf_draw3DViewCount;
 extern class rLightAPI_i *rf_curLightAPI;
 // NULL == worldspawn
 extern class rEntityAPI_i *rf_currentEntity;

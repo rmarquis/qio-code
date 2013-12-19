@@ -25,9 +25,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "cg_emitter_d3.h"
 #include "cg_local.h"
 #include <shared/random.h>
-#include <shared/simpleVert.h>
+#include <renderer/rVertex.h>
 #include <api/particleDeclAPI.h>
 #include <api/staticModelCreatorAPI.h>
+#include <api/rAPI.h>
+
+emitterD3_c::emitterD3_c() {
+	decl = 0;
+}
+emitterD3_c::~emitterD3_c() {
+	rf->removeCustomRenderObject(this);
+}
 
 // customRenderObjectAPI_i impl
 void emitterD3_c::instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis) {
@@ -47,7 +55,7 @@ void emitterD3_c::instanceModel(class staticModelCreatorAPI_i *out, const class 
 		particleInstanceData_s in;
 		in.viewAxis = viewerAxis;
 
-		simpleVert_s verts[1024];
+		rVert_c verts[1024];
 
 		u32 numVerts = 0;
 		// for each particle in stage

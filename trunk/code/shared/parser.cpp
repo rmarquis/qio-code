@@ -170,6 +170,13 @@ const char *parser_c::getD3Token() {
 		printf("parser_c::getD3Token: EOF reached\n");
 		return 0;
 	}
+	if(*p == ',') {
+		p++;
+		if(skipToNextToken()) {
+			printf("parser_c::getD3Token: EOF reached\n");
+			return 0;
+		}
+	}
 	if(*p == '"') {
 		p++;
 		const char *start = p;

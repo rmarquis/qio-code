@@ -28,6 +28,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/safePtr.h>
 
+enum deformType_e {
+	DEFORM_BAD,
+	// Doom3 "sprite" deform
+	DEFORM_AUTOSPRITE,
+};
+
+class deformArrayAPI_i {
+public:
+	virtual u32 getNumDeforms() const = 0;
+	virtual deformType_e getDeformType(u32 idx) const = 0;
+};
+
 class mtrAPI_i //: public safePtrObject_c 
 { 
 public:
@@ -48,11 +60,16 @@ public:
 	virtual bool hasAlphaTest() const = 0;
 	virtual bool isPortalMaterial() const = 0; // returns true if material definition had "portal" keyword
 	virtual bool isMirrorMaterial() const = 0; // returns true if material definition had "mirror" keyword
+	virtual bool hasDeforms() const = 0;
+	virtual class deformArrayAPI_i *getDeformsArray() const = 0;
+	virtual bool hasDeformOfType(enum deformType_e type) const = 0;
 
 	virtual int getImageWidth() const = 0;
 	virtual int getImageHeight() const = 0;
 	// for animated images ("animmap")
 	virtual u32 getColorMapImageFrameCount() const = 0;
+	// returns false if all material stages are using "program" (or "vertexProgram"/"fragmentProgram") keyword
+	virtual bool hasStageWithoutCustomProgram() const = 0;
 
 	virtual float getPolygonOffset() const = 0;
 };

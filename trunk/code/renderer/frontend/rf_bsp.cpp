@@ -1861,7 +1861,8 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 			adjusted.adjustFrustum(fr,rf_camera.getOrigin(),points.getArray()+p->firstPoint,p->numPoints,pl);
 		}
 		if(adjusted.size() == 0) {
-			g_core->RedWarning("rBspTree_c::markAreas_r: frustum chopped away\n");
+			// happens very often
+			//g_core->RedWarning("rBspTree_c::markAreas_r: frustum chopped away\n");
 			continue;
 		}
 
@@ -2407,6 +2408,21 @@ void rBspTree_c::getReferencedMatNames(class perStringCallbackListener_i *callba
 			continue;
 		callback->perStringCallback(mat->getName());
 	}
+}
+bool rBspTree_c::getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const {
+	if(modelNum >= models.size())
+		return true;
+	const bspModel_s &m = models[modelNum];
+	for(u32 i = 0; i < m.numSurfs; i++) {
+		const bspSurf_s &sf = surfs[m.firstSurf+i];
+		if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES) {
+			const bspTriSurf_s *ts = sf.sf;
+			out->addSurface(ts->mat->getName(),this->verts.getArray()+ts->firstVert,ts->numVerts,ts->localIndexes.getU16Ptr(),ts->localIndexes.getNumIndices());
+		} else {
+
+		}
+	}
+	return false;
 }
 rBspTree_c *RF_LoadBSP(const char *fname) {
 	rBspTree_c *bsp = new rBspTree_c;

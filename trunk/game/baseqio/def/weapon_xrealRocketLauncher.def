@@ -1,0 +1,40 @@
+
+// Vodin: Doom3 style .def file for Xreal Rocket Launcher weapon
+
+model weapon_xreal_rocketlauncher_world
+{
+	mesh models/testweapons/xrealRocketLauncher/rocketl.md3
+}
+
+model weapon_xreal_rocketlauncher_view
+{
+	mesh						models/testweapons/xrealRocketLauncher/rocketl_view.md5mesh
+	
+	anim idle 					models/testweapons/xrealRocketLauncher/rocketl_view_idle.md5anim	
+	anim fire 					models/testweapons/xrealRocketLauncher/rocketl_view_fire.md5anim	
+	anim reload 				models/testweapons/xrealRocketLauncher/rocketl_view_reload.md5anim	
+	anim raise					models/testweapons/xrealRocketLauncher/rocketl_view_raise.md5anim
+	anim putaway				models/testweapons/xrealRocketLauncher/rocketl_view_lower.md5anim
+
+}
+entityDef projectile_xreal_rocket
+{
+	mesh						models/testweapons/xrealRocketLauncher/rocketl.md3
+	"spawnclass"				"Projectile"
+}
+entityDef weapon_xreal_rocketlauncher
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"spawnclass"				"Weapon"
+
+	"model_world"				"weapon_xreal_rocketlauncher_world"
+	"model_view"				"weapon_xreal_rocketlauncher_view"
+	
+	"weaponname"				"Xreal Rocket Launcher"
+	"clipSize"					"1"
+	
+	"def_projectile"			"projectile_xreal_rocket"
+
+}

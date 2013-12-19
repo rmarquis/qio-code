@@ -36,7 +36,7 @@ cMod_i *CM_LoadBSPFileSubModel(const bspPhysicsDataLoader_c *bsp, u32 subModelNu
 	str inlineModelName = va("*%i",subModelNumber);
 	u32 numBrushes = bsp->getInlineModelBrushCount(subModelNumber);
 	if(numBrushes == 1) {
-		// single convex hull
+		// create single convex hull
 		cmHull_c *retSingleBrush = new cmHull_c(inlineModelName);
 		cmBrush_c &b = retSingleBrush->getMyBrush();
 		u32 subModelBrushIndex = bsp->getInlineModelGlobalBrushIndex(subModelNumber,0);
@@ -46,9 +46,17 @@ cMod_i *CM_LoadBSPFileSubModel(const bspPhysicsDataLoader_c *bsp, u32 subModelNu
 		CM_AddCObjectBaseToHashTable(retSingleBrush);
 		return retSingleBrush;
 	}
-	return 0;
+	// create a compound object made of multiple convex hull (brushes)
 	cmCompound_c *retCompound = new cmCompound_c(inlineModelName);
-	
+	for(u32 i = 0; i < numBrushes; i++) {
+		cmHull_c *brush = new cmHull_c(inlineModelName);
+		cmBrush_c &b = brush->getMyBrush();
+		u32 subModelBrushIndex = bsp->getInlineModelGlobalBrushIndex(subModelNumber,i);
+		bsp->iterateBrushPlanes(subModelBrushIndex,&b);
+		b.negatePlaneDistances();
+		brush->recalcBounds();
+		retCompound->addShape(brush);
+	}
 	CM_AddCObjectBaseToHashTable(retCompound);
 	return retCompound;
 }

@@ -418,6 +418,36 @@ static qboolean strgtr(const char *s0, const char *s1)
 	return qfalse;
 }
 
+void ListFilesIn(const char *dir, const char *ext, int &nfiles, char *list[MAX_FOUND_FILES], int baseDirLen) {
+	char		search[MAX_OSPATH];
+	struct _finddata_t findinfo;
+	intptr_t		findhandle;
+
+	Com_sprintf( search, sizeof(search), "%s\\*%s", dir, ext );
+
+	// search
+	findhandle = _findfirst (search, &findinfo);
+	if (findhandle == -1) {
+		return;
+	}
+
+	do {
+		if ( nfiles == MAX_FOUND_FILES - 1 ) {
+			break;
+		}
+		if(baseDirLen) {
+			char fullPath[MAX_OSPATH];
+			Com_sprintf( fullPath, sizeof(fullPath), "%s\\%s", dir, findinfo.name );
+			list[ nfiles ] = CopyString( fullPath+baseDirLen+1 );
+		} else {
+			list[ nfiles ] = CopyString( findinfo.name );
+		}
+		nfiles++;
+	} while ( _findnext (findhandle, &findinfo) != -1 );
+
+	_findclose (findhandle);
+
+}
 /*
 ==============
 Sys_ListFiles
@@ -458,38 +488,30 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 		extension = "";
 	}
 
-	// passing a slash as extension will find directories
-	if ( extension[0] == '/' && extension[1] == 0 ) {
-		extension = "";
-		flag = 0;
-	} else {
-		flag = _A_SUBDIR;
-	}
-
-	Com_sprintf( search, sizeof(search), "%s\\*%s", directory, extension );
-
-	// search
 	nfiles = 0;
+	ListFilesIn(directory,extension,nfiles,list,0);
 
+
+	// check subdirs
+	Com_sprintf( search, sizeof(search), "%s\\*", directory );
 	findhandle = _findfirst (search, &findinfo);
-	if (findhandle == -1) {
-		*numfiles = 0;
-		return NULL;
+	if (findhandle != -1) {
+		do {
+			if(findinfo.attrib & _A_SUBDIR) {
+				if(findinfo.name[0] != '.') {
+					printf("subdir: %s\n",findinfo.name);
+					char newDir[MAX_OSPATH];
+					strcpy(newDir,directory);
+					strcat(newDir,"\\");
+					strcat(newDir,findinfo.name);
+					ListFilesIn(newDir,extension,nfiles,list,strlen(directory));
+				}
+			}
+		} while ( _findnext (findhandle, &findinfo) != -1 );
+		_findclose (findhandle);
 	}
 
-	do {
-		if ( (!wantsubs && flag ^ ( findinfo.attrib & _A_SUBDIR )) || (wantsubs && findinfo.attrib & _A_SUBDIR) ) {
-			if ( nfiles == MAX_FOUND_FILES - 1 ) {
-				break;
-			}
-			list[ nfiles ] = CopyString( findinfo.name );
-			nfiles++;
-		}
-	} while ( _findnext (findhandle, &findinfo) != -1 );
 
-	list[ nfiles ] = 0;
-
-	_findclose (findhandle);
 
 	// return a copy of the list
 	*numfiles = nfiles;

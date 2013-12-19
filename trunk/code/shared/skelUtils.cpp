@@ -26,6 +26,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "skelUtils.h"
 #include <math/quat.h>
 
+void boneOr_s::setBlendResult(const boneOr_s &from, const boneOr_s &to, float frac) {
+	quat_c qFrom, qTo;
+	vec3_c pFrom, pTo;
+	qFrom = from.mat.getQuat();
+	qTo = to.mat.getQuat();
+	pFrom = from.mat.getOrigin();
+	pTo = to.mat.getOrigin();
+	vec3_c p;
+	p.lerp(pFrom,pTo,frac);
+	quat_c q;
+	q.slerp(qFrom,qTo,frac);
+	this->mat.fromQuatAndOrigin(q,p);
+	this->boneName = to.boneName;
+}
+
 void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 	// TODO: validate the bones order and their names?
 
@@ -47,18 +62,21 @@ void boneOrArray_c::setBlendResult(const boneOrArray_c &from, const boneOrArray_
 	const boneOr_s *orFrom = from.getArray();
 	const boneOr_s *orTo = to.getArray();
 	for(u32 i = 0; i < size(); i++, or++, orFrom++, orTo++) {
-		quat_c qFrom, qTo;
-		vec3_c pFrom, pTo;
-		qFrom = orFrom->mat.getQuat();
-		qTo = orTo->mat.getQuat();
-		pFrom = orFrom->mat.getOrigin();
-		pTo = orTo->mat.getOrigin();
-		vec3_c p;
-		p.lerp(pFrom,pTo,frac);
-		quat_c q;
-		q.slerp(qFrom,qTo,frac);
-		or->mat.fromQuatAndOrigin(q,p);
-		or->boneName = orTo->boneName;
+		or->setBlendResult(*orFrom,*orTo,frac);
+	}
+}
+void boneOrArray_c::setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac, const arraySTD_c<u32> &bonesToBlend) {
+	// this works only if bones count and order in "from" is the same as in "to"
+	this->resize(from.size());
+	for(u32 i = 0; i < bonesToBlend.size(); i++) {
+		u32 boneIndex = bonesToBlend[i];
+		(*this)[boneIndex].setBlendResult(from[boneIndex],to[boneIndex],frac);
+	}
+}
+void boneOrArray_c::setBones(const boneOrArray_c &from, const arraySTD_c<u32> &bonesToSet) {
+	for(u32 i = 0; i < bonesToSet.size(); i++) {
+		u32 boneIndex = bonesToSet[i];
+		(*this)[boneIndex] = from[boneIndex];
 	}
 }
 u32 boneOrArray_c::findNearestBone(const vec3_c &pos, float *outDist) const {

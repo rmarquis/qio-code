@@ -207,6 +207,10 @@ public:
 	virtual void damage(int damage) {
 
 	}
+	// used to inflict damage specified by Doom3 damage def
+	virtual void applyDamageFromDef(const char *defName, const class trace_c *tr) {
+
+	}
 	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
 
 	}

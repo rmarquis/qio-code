@@ -264,7 +264,27 @@ winding_t *BaseWindingForPlane (vec3_t normal, vec_t dist)
 	VectorSubtract (w->p[3], vup, w->p[3]);
 	
 	w->numpoints = 4;
-	
+
+	// V: move points closer to a plane (to prevent epsilon issues)
+	//
+	for(i = 0; i < 4; i++)
+	{
+		for(x = 0; x < 2; x++)
+		{
+			// get the current point distance to source plane
+			v = DotProduct(normal,w->p[i]) - dist;
+			if(v != 0.f)
+			{
+				// copy the plane normal, scale it by current point distance to plane
+				VectorCopy(normal,vup);
+				VectorScale(vup,-v,vup);
+				// move point closer to a plane
+				w->p[i][0] += vup[0];
+				w->p[i][1] += vup[1];
+				w->p[i][2] += vup[2];
+			}
+		}
+	}
 	return w;	
 }
 

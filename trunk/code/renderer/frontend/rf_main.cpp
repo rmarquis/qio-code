@@ -42,6 +42,8 @@ static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipa
 // it's in rf_proc.cpp
 extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
 
+u32 rf_draw3DViewCount = 0;
+
 bool RF_IsUsingDynamicLights() {
 	if(rf_enableMultipassRendering.getInt())
 		return true;
@@ -160,6 +162,7 @@ void RF_Generate3DSubView() {
 	}
 }
 void RF_Draw3DView() {
+	rf_draw3DViewCount++;
 	RF_Generate3DSubView();
 	RF_DrawCallsEndFrame();
 }

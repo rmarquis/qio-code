@@ -29,6 +29,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 
 DEFINE_CLASS(Projectile, "ModelEntity");
+DEFINE_CLASS_ALIAS(Projectile, idProjectile);
+DEFINE_CLASS_ALIAS(Projectile, idBFGProjectile);
 
 Projectile::Projectile() {
 	explosionDelay = 500;
@@ -36,10 +38,38 @@ Projectile::Projectile() {
 	bSyncModelAngles = false;
 	lifeTime = -1;
 	projLaunchTime = level.time;
+	bHasStartVelocitySet = false;
 }
+void Projectile::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"model_detonate")) {
 
+	} else if(!stricmp(key,"mtr_detonate")) {
+		// decal material?
+		this->setExplosionMarkMaterial(value);
+	} else if(!stricmp(key,"decal_size")) {
+		// decal radius
+		this->setExplosionMarkRadius(atof(value));
+	} else if(!stricmp(key,"smoke_fly")) {
+#if 1
+		this->setTrailEmitterMaterial(value);
+		// this will be overriden by Doom3 particle def settings
+		this->setTrailEmitterSpriteRadius(1.f);
+#endif
+	} else if(!stricmp(key,"velocity")) {
+		startVelocity = vec3_c(value);
+		bHasStartVelocitySet = true;
+	} else if(!stricmp(key,"def_damage")) {
+		// direct hit damage def
+		def_damage = value;
+	} else if(!stricmp(key,"def_splash_damage")) {
+		// explosion (radius) damage def
+		def_splash_damage = value;
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
+}
 void Projectile::explodeProjectile() {
-	G_Explosion(this->getOrigin(), this->explosionInfo);
+	G_Explosion(this->getOrigin(), this->explosionInfo, def_damage.c_str());
 	destroyPhysicsObject();
 	delete this;
 }
@@ -69,9 +99,17 @@ void Projectile::runFrame() {
 	tr.setupRay(this->getOrigin(),newPos);
 	if(g_physWorld->traceRay(tr)) {
 		if(tr.getHitEntity()) {
-			tr.getHitEntity()->applyPointImpulse(linearVelocity,tr.getHitPos());
+			BaseEntity *hit = tr.getHitEntity();
+			if(def_damage.length()){
+				// apply direct hit damage
+				hit->applyDamageFromDef(def_damage,&tr);
+			} else {
+				hit->applyPointImpulse(linearVelocity,tr.getHitPos());
+			}
 		}
-		G_Explosion(this->getOrigin(), this->explosionInfo);
+		if(explosionInfo.radius) {
+			G_Explosion(this->getOrigin(), this->explosionInfo);
+		}
 		// add clientside mark (decal)
 		if(explosionInfo.explosionMark.length()) {
 			vec3_c pos = tr.getHitPos();

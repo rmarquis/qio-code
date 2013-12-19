@@ -269,7 +269,11 @@ void G_RunFrame( int levelTime ) {
 			// edict is not active
 			continue;
 		}
-
+		// see if the entity number is correctly set (it should always be)
+		if(ed->s->number != i) {
+			g_core->RedWarning("G_RunFrame: fixing entity %i number\n",i);
+			ed->s->number = i;
+		}
 		if (i < MAX_CLIENTS) {
 			G_RunClient( ed );
 			continue;
@@ -277,6 +281,8 @@ void G_RunFrame( int levelTime ) {
 		BaseEntity *e = ed->ent;
 
 		e->runFrame();
+		if(ed->ent == 0)
+			continue; // fried during runFrame
 		e->runLuaFrameHandlers();
 	}
 

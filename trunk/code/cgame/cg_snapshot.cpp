@@ -54,7 +54,11 @@ static void CG_ResetEntity( centity_t *cent ) {
 static void CG_TransitionLight(centity_t *cent) {
 	if(cent->rLight == 0) {
 		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",cent->currentState.number);
+#if 0
 		return;
+#else
+		cent->rLight = rf->allocLight();
+#endif
 	}
 	cent->rLight->setOrigin(cent->currentState.origin);
 	cent->rLight->setRadius(cent->currentState.lightRadius);
@@ -74,6 +78,7 @@ static void CG_TransitionModel(centity_t *cent) {
 		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
 	} else {
 		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
+		cent->rEnt->setTorsoAnim(cgs.gameAnims[cent->currentState.torsoAnim]);
 	}
 	if(cent->currentState.rSkinIndex) {
 		// if we have a custom skin...

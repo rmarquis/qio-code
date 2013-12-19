@@ -24,9 +24,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 // FuncRotating.cpp
 #include "FuncRotating.h"
 #include "../g_local.h"
+#include <shared/autoCvar.h>
+#include <api/coreAPI.h>
 
 DEFINE_CLASS(FuncRotating, "ModelEntity");
 DEFINE_CLASS_ALIAS(FuncRotating, func_rotating);
+
+static aCvar_c g_funcRotating_printOrientation("g_funcRotating_printOrientation","0");
 
 FuncRotating::FuncRotating() {
 	//bPhysicsBodyKinematic = true;
@@ -56,5 +60,9 @@ void FuncRotating::runFrame() {
 	// rotationAxis == 0 -> rotate around Y axis
 	a[rotationAxis] += delta;
 	this->setAngles(a);
+
+	if(g_funcRotating_printOrientation.getInt()) {
+		g_core->Print("FuncRotating::runFrame(): pos %f %f %f rot %f %f %f\n",getOrigin().x,getOrigin().y,getOrigin().z,a.x,a.y,a.z);
+	}
 }
 

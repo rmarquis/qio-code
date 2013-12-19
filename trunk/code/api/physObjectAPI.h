@@ -33,6 +33,7 @@ public:
 	virtual void getCurrentMatrix(class matrix_c &out) const = 0;
 	virtual void applyCentralForce(const class vec3_c &velToAdd) = 0;
 	virtual void applyCentralImpulse(const class vec3_c &impToAdd) = 0;
+	virtual void applyTorque(const class vec3_c torqueToAdd) = 0;
 	// linear velocity access (in Quake units)
 	virtual const class vec3_c getLinearVelocity() const = 0;
 	virtual void setLinearVelocity(const class vec3_c &newVel) = 0;

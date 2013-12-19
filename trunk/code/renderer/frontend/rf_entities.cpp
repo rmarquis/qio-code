@@ -78,6 +78,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	staticDecals = 0;
 	instance = 0;
 	skelAnimCtrl = 0;
+	skelAnimCtrlTorso = 0;
 	axis.identity();
 	matrix.identity();
 	bFirstPersonOnly = false;
@@ -90,6 +91,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	absSilChangeCount = 0;
 	//skinMatList = 0;
 	bCenterLightSampleValid = false;
+	finalBones = 0;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -105,6 +107,10 @@ rEntityImpl_c::~rEntityImpl_c() {
 		delete skelAnimCtrl;
 		skelAnimCtrl = 0;
 	}
+	if(skelAnimCtrlTorso) {
+		delete skelAnimCtrlTorso;
+		skelAnimCtrlTorso = 0;
+	}
 	if(q3AnimCtrl) {
 		delete q3AnimCtrl;
 		q3AnimCtrl = 0;
@@ -112,6 +118,10 @@ rEntityImpl_c::~rEntityImpl_c() {
 	if(ragOrs) {
 		delete ragOrs;
 		ragOrs = 0;
+	}
+	if(finalBones) {
+		delete finalBones;
+		finalBones = 0;
 	}
 	//if(skinMatList) {
 	//	delete skinMatList;
@@ -228,6 +238,10 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		delete skelAnimCtrl;
 		skelAnimCtrl = 0;
 	}
+	if(skelAnimCtrlTorso) {
+		delete skelAnimCtrlTorso;
+		skelAnimCtrlTorso = 0;
+	}
 	surfaceFlags.resize(newModel->getNumSurfaces());
 	surfaceFlags.nullMemory();
 	if(newModel->isStatic() == false && newModel->isValid()) {
@@ -284,6 +298,20 @@ void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	if(animIndex < 0)
 		return;
 	this->setDeclModelAnimLocalIndex(animIndex, newFlags);
+}
+void rEntityImpl_c::setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags) {
+	if(anim == 0 && skelAnimCtrlTorso == 0)
+		return; // ignore
+	if(this->model == 0)
+		return; // ignore
+	const class skelModelAPI_i *skelModel = this->model->getSkelModelAPI();
+	if(skelAnimCtrlTorso == 0) {
+		skelAnimCtrlTorso = new skelAnimController_c;
+		skelAnimCtrlTorso->resetToAnim(anim,rf_curTimeMsec,newFlags);
+	} else {
+		// TODO
+		skelAnimCtrlTorso->setNextAnim(anim,skelModel,rf_curTimeMsec,newFlags);
+	}
 }
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags) {
 	if(model->isDeclModel() == false) {
@@ -454,7 +482,32 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		} else if(skelAnimCtrl) {
 			skelAnimCtrl->runAnimController(rf_curTimeMsec);
 			skelAnimCtrl->updateModelAnimation(skelModel);
-			instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+			if(skelAnimCtrlTorso && skelAnimCtrlTorso->getAnim()) {
+				skelAnimCtrlTorso->runAnimController(rf_curTimeMsec);
+				skelAnimCtrlTorso->updateModelAnimation(skelModel);
+				if(skelAnimCtrlTorso->getAnim()) {
+					arraySTD_c<u32> torsoBones;
+					skelAnimCtrlTorso->getAnim()->addChildrenOf(torsoBones,"hip");
+					if(finalBones == 0) {
+						finalBones = new boneOrArray_c;
+					}
+					*finalBones = skelAnimCtrl->getCurBones();
+					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
+					instance->updateSkelModelInstance(skelModel,*finalBones);
+				} else {
+					if(finalBones) {
+						delete finalBones;
+						finalBones = 0;
+					}
+					instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+				}
+			} else {
+				if(finalBones) {
+					delete finalBones;
+					finalBones = 0;
+				}
+				instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+			}
 			// if model needs normals
 			if(1) {
 				// if model needs TBN
@@ -538,7 +591,12 @@ void rEntityImpl_c::addDrawCalls() {
 			staticDecals->addDrawCalls();
 		}
 	} else if(instance) {
-		this->updateAnimatedEntity();
+		// update animated entity (only once per frame)
+		if(rf_draw3DViewCount != this->animatedEntityUpdateFrame) {
+			this->animatedEntityUpdateFrame = rf_draw3DViewCount;
+			this->updateAnimatedEntity();
+		}
+		// instance->addDrawCalls is called for depth pass and each light pass
 		instance->addDrawCalls(&surfaceFlags,bCenterLightSampleValid);
 	}
 
@@ -565,14 +623,19 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 		out = this->matrix;
 		return true; // error 
 	}
-	const boneOrArray_c &curBones = skelAnimCtrl->getCurBones();
-	if(localBoneIndex < 0 || localBoneIndex >= curBones.size()) {
+	const boneOrArray_c *curBones;
+	if(finalBones) {
+		curBones = finalBones;
+	} else {
+		curBones = &skelAnimCtrl->getCurBones();
+	}
+	if(localBoneIndex < 0 || localBoneIndex >= curBones->size()) {
 		if(localBoneIndex != 255) {
-			g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones.size());
+			g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones->size());
 		}
 		return true;
 	}
-	const matrix_c &localMat = curBones[localBoneIndex].mat;
+	const matrix_c &localMat = curBones->getBoneMat(localBoneIndex);
 	out = this->matrix * localMat;
 	return false;
 }
@@ -651,7 +714,7 @@ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 }
 static u32 c_entitiesCulledByABSBounds;
 static u32 c_entitiesCulledByPortals;
-void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
+void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, bool forceThirdPerson) {
 	if(ent == 0) {
 		g_core->RedWarning("RFE_AddEntity: NULL entity pointer passed\n");
 		return;
@@ -662,7 +725,7 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum) {
 	}
 	if(ent->isHidden())
 		return;
-	if(rf_camera.isThirdPerson()) {
+	if(rf_camera.isThirdPerson() || forceThirdPerson) {
 		if(ent->isFirstPersonOnly()) {
 			return;
 		}

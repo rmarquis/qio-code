@@ -81,6 +81,7 @@ class particleParm_c {
 	float from;
 	float to;
 public:
+	particleParm_c();
 	bool parseParticleParm(class parser_c &p, const char *fname);
 	float integrate(float frac) const;
 	float evaluate(float frac) const;
@@ -161,14 +162,14 @@ class particleStage_c : public particleStageAPI_i {
 	virtual float getSpawnBunching() const { 
 		return bunching;
 	}
-	virtual u32 instanceParticle(particleInstanceData_s &in, struct simpleVert_s *verts) const;
+	virtual u32 instanceParticle(particleInstanceData_s &in, class rVert_c *verts) const;
 	// particle generation helpers
 	void calcParticleColor(particleInstanceData_s &in, byte *outRGBA) const;
 	void calcParticleOrigin(particleInstanceData_s &in, class vec3_c &out) const;
-	void calcParticleTexCoords(particleInstanceData_s &in, struct simpleVert_s *verts) const;
-	u32 calcParticleVerts(particleInstanceData_s &in, const vec3_c &origin, struct simpleVert_s *verts) const;
+	void calcParticleTexCoords(particleInstanceData_s &in, class rVert_c *verts) const;
+	u32 calcParticleVerts(particleInstanceData_s &in, const vec3_c &origin, class rVert_c *verts) const;
 	// separate function for "orientation aimed" particles
-	u32 calcParticleVerts_aimed(particleInstanceData_s &in, const vec3_c &origin, struct simpleVert_s *verts) const;
+	u32 calcParticleVerts_aimed(particleInstanceData_s &in, const vec3_c &origin, class rVert_c *verts) const;
 
 	void setDefaults();
 public:

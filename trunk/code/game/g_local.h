@@ -175,8 +175,11 @@ u32 G_BoxEntities(const class aabb &bb, arraySTD_c<class BaseEntity*> &out);
 //
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
 void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, u32 numBullets, float maxSpread, float spreadDist);
-void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo);
+void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo, const char *extraDamageDefName = 0);
 void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
+// projectileDefName is the name of Doom3 projectile entity def
+// (for example: "projectile_bfg")
+void G_FireProjectile(const char *projectileDefName, const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip);
 
 //
 // g_ragdoll.cpp

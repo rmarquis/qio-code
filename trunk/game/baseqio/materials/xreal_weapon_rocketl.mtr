@@ -1,0 +1,105 @@
+// feuer
+
+models/testweapons/xrealrocketlauncher/f_rocketl
+{
+	twoSided
+	sort additive
+	{
+		map models/testweapons/xrealrocketlauncher/f_rocketl
+		blend add
+	}
+}
+models/testweapons/xrealrocketlauncher/flame_small
+{
+	twoSided
+	sort additive
+	{
+		map models/testweapons/xrealrocketlauncher/f_small
+		blend add
+	}
+}
+
+
+// rocketlauncher
+
+
+models/testweapons/xrealrocketlauncher/rocketl_uvw_frame_exp_d // rahmen ums rohr
+{
+	twoSided
+	diffuseMap		models/testweapons/xrealrocketlauncher/rocketl_uvw_frame_exp_d
+	specularMap		models/testweapons/xrealrocketlauncher/frame_s
+	normalMap		models/testweapons/xrealrocketlauncher/frame_n
+}
+models/testweapons/xrealrocketlauncher/tube_d //schl�uche 
+{
+	parallax
+	twoSided
+	diffuseMap		models/testweapons/xrealrocketlauncher/tube_d
+	specularMap		models/testweapons/xrealrocketlauncher/tube_d
+	normalMap		displaceMap(models/testweapons/xrealrocketlauncher/tube_n, models/testweapons/xrealrocketlauncher/tube_disp)
+}
+models/testweapons/xrealrocketlauncher/rocketl_uvw_exp //inneres rohr
+{
+	parallax
+	twoSided
+	diffuseMap		models/testweapons/xrealrocketlauncher/rocketl_uvw_exp
+	specularMap		models/testweapons/xrealrocketlauncher/roor_s
+	normalMap		models/testweapons/xrealrocketlauncher/roor_n
+	normalMap		displaceMap(models/testweapons/xrealrocketlauncher/roor_n, models/testweapons/xrealrocketlauncher/roor_disp)
+}
+
+models/testweapons/xrealrocketlauncher/rocketl_uvw_rtop_exp_d //platte vorne/oben, griff, abzug, schale
+{
+	twoSided
+	diffuseMap		models/testweapons/xrealrocketlauncher/rocketl_uvw_rtop_exp_d
+	specularMap		models/testweapons/xrealrocketlauncher/rocketl_uvw_rtop_exp_d
+	normalMap		models/testweapons/xrealrocketlauncher/front_n
+}
+models/testweapons/xrealrocketlauncher/rocketl_body_d // hinterteil -.-
+{
+	twoSided
+	diffuseMap		models/testweapons/xrealrocketlauncher/rocketl_body_d
+	specularMap		models/testweapons/xrealrocketlauncher/rocketl_body_d
+	normalMap		models/testweapons/xrealrocketlauncher/body_n2
+}
+
+// missile
+
+models/testprojectiles/xrealmissile/missile
+{
+	diffuseMap	models/testprojectiles/xrealmissile/missile
+	specularMap	models/testprojectiles/xrealmissile/missile_spec
+	normalMap	heightmap(models/testprojectiles/xrealmissile/missile_bump, 3)
+	{
+		map	models/testprojectiles/xrealmissile/missile_glow
+		blend	add
+	}
+}
+
+models/testprojectiles/xrealmissile/missileflar
+{
+	twoSided
+	{
+		map	models/testprojectiles/xrealmissile/missileflar
+		blend	add
+		scroll	time * 10.0, 0
+	}
+}
+
+models/testprojectiles/xrealmissile/missilefls1
+{
+	twoSided
+	{
+		map	models/testprojectiles/xrealmissile/missilefls1
+		blend	add
+	}
+}
+
+models/testprojectiles/xrealmissile/missilefls2
+{
+	twoSided
+	{
+		map	models/testprojectiles/xrealmissile/missilefls2
+		blend	add
+	}
+}

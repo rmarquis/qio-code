@@ -40,6 +40,7 @@ static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
 static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
 static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
 static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInteractionsUpdate","0");
+static aCvar_c rf_verboseAddLightInteractionsDrawCalls("rf_verboseAddLightInteractionsDrawCalls","0");
 
 
 void entityInteraction_s::clear() {
@@ -367,6 +368,9 @@ void rLightImpl_c::addLightInteractionDrawCalls() {
 	}
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
 		entityInteraction_s &in = this->entityInteractions[i];
+		if(rf_verboseAddLightInteractionsDrawCalls.getInt()) {
+			g_core->Print("rLightImpl_c::addLightInteractionDrawCalls(): (light %i): adding %s\n",this,in.ent->getModelName());
+		}
 #if 0
 		in.ent->addDrawCalls();
 #else
@@ -446,7 +450,7 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 		}
 		for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
 			entityInteraction_s &eIn = this->entityInteractions[j];
-			RFE_AddEntity(eIn.ent,&sideFrustum);
+			RFE_AddEntity(eIn.ent,&sideFrustum,true);
 		}
 	}
 	rf_bDrawOnlyOnDepthBuffer = false;

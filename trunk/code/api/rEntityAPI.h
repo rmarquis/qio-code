@@ -32,6 +32,7 @@ public:
 	virtual void setModel(class rModelAPI_i *mod) = 0;
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
 	virtual void setAnim(const char *animName, int newFlags = 0) = 0;
+	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
 	virtual void setThirdPersonOnly(bool bOn) = 0;
 	virtual void setFirstPersonOnly(bool bOn) = 0;
 	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;

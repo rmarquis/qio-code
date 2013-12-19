@@ -385,6 +385,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\rVertex.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\rVertexBuffer.h"
 				>
 			</File>

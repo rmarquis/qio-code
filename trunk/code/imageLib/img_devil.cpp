@@ -425,7 +425,7 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 	u32 numImageBytes = (*width) * (*height) * (d);
 	*imageData = (unsigned char*)malloc(numImageBytes);
 	if(*imageData == 0) {
-		g_core->RedWarning("IMG_LoadImageInternal: malloc failed for %i bytes (image %s)\n",lastValidFName);
+		g_core->RedWarning("IMG_LoadImageInternal: malloc failed for %i bytes (image %s)\n",numImageBytes,lastValidFName);
 		*width = 0;
 		*height = 0;
 	} else {

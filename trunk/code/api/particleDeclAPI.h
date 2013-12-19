@@ -47,7 +47,7 @@ public:
 	virtual float getTime() const = 0;
 	virtual float getSpawnBunching() const = 0;
 	// returns the number of created vertices
-	virtual u32 instanceParticle(particleInstanceData_s &in, struct simpleVert_s *verts) const = 0;
+	virtual u32 instanceParticle(particleInstanceData_s &in, class rVert_c *verts) const = 0;
 };
 
 class particleDeclAPI_i {

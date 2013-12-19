@@ -42,6 +42,13 @@ class Projectile : public ModelEntity {
 	int projLaunchTime;
 	// time until automatic projectile explesion
 	int lifeTime; // in msec
+	// start velocity (set from doom3 .def files)
+	bool bHasStartVelocitySet;
+	vec3_c startVelocity;
+	// Doom3 direct damage (for direct hit) def
+	str def_damage;
+	// Doom3 explosion damage def
+	str def_splash_damage;
 public:
 	Projectile();
 
@@ -75,6 +82,15 @@ public:
 	void setLifeTime(int newLifeTimeMsec) {
 		this->lifeTime = newLifeTimeMsec;
 	}
+
+	bool hasStartVelocitySet() const {
+		return bHasStartVelocitySet;
+	}	
+	const vec3_c &getStartVelocity() const {
+		return startVelocity;
+	}
+
+	virtual void setKeyValue(const char *key, const char *value);
 
 	void explodeProjectile();
 	virtual void runFrame();

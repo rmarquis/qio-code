@@ -122,6 +122,8 @@ bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 		text = (const char*)h->getLumpData(HL_ENTITIES);
 	} else if(h->ident == BSP_IDENT_VBSP) {
 		text = (const char*)h->getLumpData(SRC_ENTITIES);
+	} else if(h->ident == BSP_IDENT_QIOBSP) {
+		text = (const char*)h->getLumpData(Q3_ENTITIES);
 	} else {
 		g_core->Print(S_COLOR_RED"entDefsList_c::load: unknown bsp type\n");
 		text = 0;

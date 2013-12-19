@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <libc.h>
 #endif
 
-#define	BASEDIRNAME	"quake"		// assumed to have a 2 or 3 following
+#define	BASEDIRNAME	"qio"		// assumed to have a 2 or 3 following
 #define PATHSEPERATOR   '/'
 
 // set these before calling CheckParm

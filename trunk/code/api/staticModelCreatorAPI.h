@@ -69,6 +69,9 @@ public:
 	virtual void addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
 
 	}
+	virtual void addSurface(const char *matName, const class rVert_c *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+
+	}
 	virtual void recalcTBNs() { 
 
 	}
@@ -80,6 +83,7 @@ public:
 	virtual void onNewMapEntity(u32 entityNum) {
 
 	}
+	// only for .map -> trimesh converter, called by parser code
 	virtual bool onBezierPatch(const char *patchDefStart, const char *patchDefEnd) {
 		return false;
 	}

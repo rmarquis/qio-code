@@ -52,6 +52,9 @@ public:
 	void updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones);
 	void updateModelAnimation(const class skelModelAPI_i *skelModel);
 	const boneOrArray_c &getCurBones() const;
+	const skelAnimAPI_i *getAnim() const {
+		return anim;
+	}
 };
 
 #endif // __ANIMATION_CONTROLLER_H__

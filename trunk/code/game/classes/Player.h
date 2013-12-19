@@ -88,6 +88,7 @@ class Player : public ModelEntity {
 	void updateCurWeaponClipSize();
 
 	void setPlayerAnimBoth(enum sharedGameAnim_e type);
+	void setPlayerAnimTorso(enum sharedGameAnim_e type);
 
 	bool isPainAnimActive() const;
 

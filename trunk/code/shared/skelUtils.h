@@ -37,6 +37,7 @@ struct boneOr_s {
 	matrix_c mat;
 	u32 boneName;
 
+	void setBlendResult(const boneOr_s &from, const boneOr_s &to, float frac);
 	const vec3_c &getOrigin() const {
 		return mat.getOrigin();
 	}
@@ -48,6 +49,8 @@ public:
 	// concat bone transforms
 	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac);	
+	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac, const arraySTD_c<u32> &bonesToBlend);	
+	void setBones(const boneOrArray_c &from, const arraySTD_c<u32> &bonesToSet);	
 	u32 findNearestBone(const vec3_c &pos, float *outDist) const;
 
 	void transform(const matrix_c &ofs);
@@ -56,6 +59,9 @@ public:
 
 	const vec3_c &getBonePos(u32 idx) const {
 		return (*this)[idx].getOrigin();
+	}
+	const matrix_c &getBoneMat(u32 idx) const {
+		return (*this)[idx].mat;
 	}
 };
 

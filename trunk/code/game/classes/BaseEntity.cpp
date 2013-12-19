@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/keyValuesListener.h>
 // our internal event system
 #include <shared/eventSystem.h>
+#include <shared/eventBaseAPI.h>
 #include <api/entDefAPI.h>
 
 DEFINE_CLASS(BaseEntity, "None");
@@ -118,7 +119,8 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"target")) {
 		this->setTarget(value);
 	} else if(!stricmp(key,"parent")) {
-		this->setParent(value,-1,true);
+		this->postEvent(0,"setparent",value,"-1","1");
+		//this->setParent(value,-1,true);
 	} else {
 
 	}
@@ -147,7 +149,12 @@ void BaseEntity::applyKeyValues(const entDefAPI_i *list) {
 	}
 }
 void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
-
+	if(!stricmp(ev->getEventName(),"setparent")) {
+		const char *targetName = ev->getArg(0);
+		const char *tag = ev->getArg(1);
+		const char *enableLocalOffset = ev->getArg(2);
+		this->setParent(targetName,atoi(tag),atoi(enableLocalOffset));
+	}
 }	
 void BaseEntity::postEvent(int execTime, const char *eventName, const char *arg0, const char *arg1, const char *arg2, const char *arg3) {
 	if(eventList == 0) {

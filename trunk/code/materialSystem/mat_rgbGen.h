@@ -45,6 +45,7 @@ public:
 	void setGreenAST(class astAPI_i *newAST);
 	void setBlueAST(class astAPI_i *newAST);
 	void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
+	void setVertex();
 
 	bool isNone() const {
 		return (type == RGBGEN_NONE);

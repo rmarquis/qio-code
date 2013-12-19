@@ -282,6 +282,8 @@ public:
 
 	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
 
+	bool getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const;
+	
 	const class lightGridAPI_i *getLightGridAPI() const {
 		return lightGrid;
 	}

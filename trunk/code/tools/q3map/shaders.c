@@ -320,10 +320,16 @@ shaderInfo_t	*ShaderInfoForShader( const char *shaderName ) {
 	// build in materials
 	// (in case that .shader/.mtr files are missing)
 	if(!stricmp(shader,"textures/common/areaportal")) {
+		printf("Returning build-in areaportal material...\n");
 		si->contents = CONTENTS_AREAPORTAL;
 	} else if(!stricmp(shader,"textures/common/caulk")) {
+		printf("Returning build-in caulk material...\n");
 		si->surfaceFlags |= SURF_NODRAW;
+	} else if(!stricmp(shader,"textures/common/origin")) {
+		printf("Returning build-in origin material...\n");
+		si->contents |= CONTENTS_ORIGIN;
 	}
+
 	LoadShaderImage( si );
 
 	return si;

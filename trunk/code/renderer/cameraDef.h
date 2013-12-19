@@ -34,7 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cameraDef_c {
 	projDef_s proj;
 	vec3_c origin;
-	// pvsOrigin is different than this->origin for potals
+	// pvsOrigin is different than this->origin for mirrors and portals
 	// (it's the real, non-reflected origin)
 	vec3_c pvsOrigin;
 	//vec3_c angles;

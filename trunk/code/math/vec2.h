@@ -48,6 +48,13 @@ public:
 		x = newX;
 		y = newY;
 	}
+	bool operator == (const vec2_c &other) const {
+		if(x != other.x)
+			return false;
+		if(y != other.y)
+			return false;
+		return true;
+	}
 	void operator *= ( const float f ) {
 		this->x *= f;
 		this->y *= f;

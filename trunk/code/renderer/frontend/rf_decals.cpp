@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c rf_maxDecals("rf_maxDecals","512");
 // 512 * 2~~ triangles = 1024 tris
+static aCvar_c rf_skipDecals("rf_skipDecals","0");
 
 struct simpleDecal_s {
 	simplePoly_s poly;
@@ -140,6 +141,8 @@ void RF_ShutdownDecals() {
 }
 void RF_AddWorldDecalDrawCalls() {
 	if(rf_worldDecalsBatcher == 0)
+		return;
+	if(rf_skipDecals.getInt())
 		return;
 	rf_currentEntity = 0;
 	rf_worldDecalsBatcher->addDrawCalls();

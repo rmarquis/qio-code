@@ -157,6 +157,16 @@ void model_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs,
 		return this->q3PlayerModel->getTagOrientation(tagNum,legs,torso,out);
 	}
 }
+bool model_c::getModelData(class staticModelCreatorAPI_i *out) const {
+	if(type == MOD_BSP) {
+		this->myBSP->getModelData(bspModelNum,out);
+		return false;
+	} else if(type == MOD_STATIC) {
+	//	this->staticModel->getModelData(out);
+	//	return false;
+	}
+	return true;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

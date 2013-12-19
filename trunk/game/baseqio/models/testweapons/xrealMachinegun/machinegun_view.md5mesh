@@ -35,7 +35,7 @@ joints {
 }
 
 mesh {
-	shader "models/weapons/machinegun/machinegun"
+	shader "models/xrealweapons/machinegun/machinegun"
 
 	numverts 845
 	vert 0 ( 0.5553519725 0.9197970390 ) 0 1

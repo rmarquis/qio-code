@@ -25,11 +25,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "explosionInfo.h"
 #include "classes/BaseEntity.h"
+#include "classes/Projectile.h"
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 #include <api/rApi.h>
 #include <api/serverApi.h>
 #include <api/physAPI.h>
+#include <api/declManagerAPI.h>
+#include <api/coreAPI.h>
 
 static aCvar_c g_showBulletTraces("g_showBulletTraces","0");
 
@@ -68,6 +71,25 @@ void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSk
 		}
 	}
 }
+void G_FireProjectile(const char *projectileDefName, const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
+	BaseEntity *e = G_SpawnClass(projectileDefName);
+	Projectile *p = dynamic_cast<Projectile*>(e);
+	if(p == 0) {
+		g_core->RedWarning("G_FireProjectile: spawned entity was not a subclass of projectile\n");
+		delete e;
+		return;
+	}
+	p->setOrigin(muzzle+dir*32);
+	p->setAngles(dir.toAngles());
+	if(p->hasStartVelocitySet()) {
+		vec3_c left, down;
+		dir.makeNormalVectors(left,down);
+		vec3_c startVel = p->getStartVelocity();
+		p->setLinearVelocity(dir * startVel.x - left * startVel.y - down * startVel.z);
+	} else {
+		p->setLinearVelocity(dir*1000.f);
+	}
+}
 float G_randomFloat(float min, float max) {
     // this  function assumes max > min, you may want 
     // more robust error checking for a non-debug build
@@ -92,7 +114,11 @@ void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *ba
 	}
 }
 
-void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo) {
+void G_Explosion(const vec3_c &pos, const struct explosionInfo_s &explosionInfo, const char *extraDamageDefName) {
+	if(explosionInfo.radius <= 0.f) {
+		g_core->RedWarning("G_Explosion: radius is %f\n",explosionInfo.radius);
+		return;
+	}
 	aabb bb;
 	bb.fromPointAndRadius(pos,explosionInfo.radius);
 	arraySTD_c<BaseEntity*> ents;

@@ -69,6 +69,8 @@ public:
 	void update(steering_s &out) {
 		// reset steering output
 		out.clear();
+		if(target.getPtr() == 0)
+			return; // no target
 		// see if we have already reached the target
 		if(entity->getOrigin().distSQ(target->getOrigin()) < Square(128.f)) {
 			if(path) {

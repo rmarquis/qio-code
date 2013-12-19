@@ -62,6 +62,8 @@ r_surface_c::~r_surface_c() {
 	this->clear();
 }
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
+#if 0
+	// add a new triangle
 	indices.addIndex(verts.size());
 	indices.addIndex(verts.size()+1);
 	indices.addIndex(verts.size()+2);
@@ -79,10 +81,35 @@ void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simple
 	nv.xyz = v2.xyz;
 	nv.tc = v2.tc;
 	verts.push_back(nv);
+	// update bounds
 	bounds.addPoint(v0.xyz);
 	bounds.addPoint(v1.xyz);
 	bounds.addPoint(v2.xyz);
+#else
+	// see if we can reuse some vertices
+	u32 i0 = registerVert(v0);
+	u32 i1 = registerVert(v1);
+	u32 i2 = registerVert(v2);
+	// add a new triangle
+	indices.addIndex(i0);
+	indices.addIndex(i1);
+	indices.addIndex(i2);
+	// update bounds
+	bounds.addPoint(v0.xyz);
+	bounds.addPoint(v1.xyz);
+	bounds.addPoint(v2.xyz);
+#endif
 }	
+u32 r_surface_c::registerVert(const struct simpleVert_s &in) {
+	for(u32 i = 0; i < verts.size(); i++) {
+		const rVert_c &v = verts[i];
+		if(v.tc == in.tc && v.xyz == in.xyz) {
+			return i;
+		}
+	}
+	verts.push_back(rVert_c(in.tc,in.xyz));
+	return verts.size()-1;
+}
 void r_surface_c::getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const {
 	u32 i = triNum * 3;
 	u32 i0 = indices[i+0];
@@ -344,6 +371,13 @@ void r_surface_c::setSurface(const char *matName, const struct simpleVert_s *pVe
 		verts[i].xyz = pVerts[i].xyz;
 		verts[i].tc = pVerts[i].tc;
 	}
+}
+void r_surface_c::setSurface(const char *matName, const class rVert_c *pVerts, u32 numVerts, const u16 *pIndices, u32 numIndices) {
+	setMaterial(matName);
+	verts.destroy();
+	indices.destroy();
+	indices.addU16Array(pIndices,numIndices);
+	verts.setVertexArray(pVerts,numVerts);
 }
 void r_surface_c::scaleXYZ(float scale) {
 	rVert_c *v = verts.getArray();
@@ -941,7 +975,19 @@ void r_model_c::addSprite(const class vec3_c &origin, float radius, class mtrAPI
 	surfs[0].initSprite(mat,radius,spriteNum);
 	surfs[0].updateSprite(viewerAxis,origin,radius,spriteNum, alpha);
 }
-void r_model_c::addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+void r_model_c::addSurface(const char *matName, const simpleVert_s *verts, u32 numVerts, const u16 *indices, u32 numIndices) {	
+	if(indices == 0) {
+		g_core->RedWarning("r_model_c::addSurface: NULL indices16 pointer passed\n");
+		return;
+	}
+	r_surface_c &newSF = surfs.pushBack();
+	newSF.setSurface(matName,verts,numVerts,indices,numIndices);
+}
+void r_model_c::addSurface(const char *matName, const rVert_c *verts, u32 numVerts, const u16 *indices, u32 numIndices) {
+	if(indices == 0) {
+		g_core->RedWarning("r_model_c::addSurface: NULL indices16 pointer passed\n");
+		return;
+	}
 	r_surface_c &newSF = surfs.pushBack();
 	newSF.setSurface(matName,verts,numVerts,indices,numIndices);
 }
@@ -1062,6 +1108,11 @@ void r_model_c::recalcBoundingBoxes() {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		surfs[i].recalcBB();
 		bounds.addBox(surfs[i].getBB());
+	}
+}
+void r_model_c::transform(const class matrix_c &mat) {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		surfs[i].transform(mat);
 	}
 }
 void r_model_c::addPatch(class r_bezierPatch_c *newPatch) {

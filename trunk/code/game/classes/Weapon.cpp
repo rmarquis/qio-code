@@ -108,6 +108,10 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"viewangles")) {
 		// set from "def_viewStyle" entityDef
 		viewAngles.fromString(value);
+	} else if(!stricmp(key,"def_projectile")) {
+		def_projectile = value;
+	} else if(!stricmp(key,"smoke_muzzle")) {
+		smoke_muzzle = value;
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -156,11 +160,22 @@ void Weapon::onSecondaryFireKeyUp() {
 }
 
 void Weapon::doWeaponAttack() {
+	vec3_c muzzlePos, muzzleDir;
+	BaseEntity *skip;
 	if(owner) {
+		skip = owner;
 		curClipSize--;
-		G_BulletAttack(owner->getEyePos(),owner->getViewAngles().getForward(),owner);
+		muzzlePos = owner->getEyePos();
+		muzzleDir = owner->getViewAngles().getForward();
 	} else {
-		G_BulletAttack(this->getOrigin(),this->getForward(),this);
+		skip = this;
+		muzzlePos = this->getOrigin();
+		muzzleDir = this->getForward();
+	}
+	if(def_projectile.size()) {
+		G_FireProjectile(def_projectile.c_str(),muzzlePos,muzzleDir,skip);
+	} else {
+		G_BulletAttack(muzzlePos,muzzleDir,skip);
 	}
 }
 void Weapon::doWeaponAttackSecondary() {

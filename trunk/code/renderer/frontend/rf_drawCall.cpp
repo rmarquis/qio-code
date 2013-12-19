@@ -43,6 +43,7 @@ aCvar_c rf_ignoreSpecificMaterial("rf_ignoreSpecificMaterial","");
 aCvar_c rf_ignoreSpecificMaterial2("rf_ignoreSpecificMaterial2","");
 aCvar_c rf_forceSpecificMaterial("rf_forceSpecificMaterial","");
 aCvar_c rf_ignoreShadowVolumeDrawCalls("rf_ignoreShadowVolumeDrawCalls","0");
+aCvar_c rf_drawCalls_dontAddBlendOnlyMaterials("rf_drawCalls_dontAddBlendOnlyMaterials","0");
 
 class drawCall_c {
 public:
@@ -103,16 +104,18 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	if(rf_forceSpecificMaterial.strLen() && rf_forceSpecificMaterial.getStr()[0] != '0') {
 		mat = g_ms->registerMaterial(rf_forceSpecificMaterial.getStr());
 	}
+	if(rf_drawCalls_dontAddBlendOnlyMaterials.getInt() && mat->hasStageWithoutBlendFunc()==false)
+		return;
 	// ignore blendfunc surfaces if we're using dynamic lights
 	if(rf_curLightAPI) {
-		if((mat->hasStageWithoutBlendFunc()==false) || mat->hasAlphaTest()) {
+		if((mat->hasStageWithoutBlendFunc()==false) /*|| mat->hasAlphaTest()*/) {
 			return;
 		}
 		// temporary fix for shadow mapping bug
-		if(rf_currentShadowMapCubeSide != -1) {
-			if(mat->hasBlendFunc())
-				return; 
-		}
+		//if(rf_currentShadowMapCubeSide != -1) {
+		//	if(mat->hasBlendFunc())
+		//		return; 
+		//}
 	}
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {
@@ -122,7 +125,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	// if we're drawing only on depth buffer
 	if(rf_bDrawOnlyOnDepthBuffer) {
-		if((mat->hasBlendFunc() || mat->hasAlphaTest()) && mat->isMirrorMaterial() == false) {
+		if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
 			sort = DCS_BLEND_AFTER_LIGHTING;
 			n->drawOnlyOnDepthBuffer = false;
 			//return;

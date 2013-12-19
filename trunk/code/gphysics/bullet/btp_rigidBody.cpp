@@ -64,6 +64,10 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 	startTransform.setFromOpenGLMatrix(bulletMat);
 	btRigidBody::btRigidBodyConstructionInfo cInfo(def.mass,0,btShape,localInertia);
 	bulletRigidBody = new btRigidBody(cInfo);
+	bulletRigidBody->setDamping(0.05, 0.85);
+	bulletRigidBody->setDeactivationTime(0.8);
+	bulletRigidBody->setSleepingThresholds(1.6, 2.5);
+	//btShape->setMargin(0.f);
 	bulletRigidBody->setWorldTransform(startTransform);
 	bulletRigidBody->setRestitution(def.bounciness);
 	bulletRigidBody->setUserPointer(myEntity);
@@ -116,6 +120,10 @@ void bulletRigidBody_c::applyCentralForce(const class vec3_c &velToAdd) {
 void bulletRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 	bulletRigidBody->activate(true);
 	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
+}
+void bulletRigidBody_c::applyTorque(const class vec3_c torqueToAdd) {
+	bulletRigidBody->activate(true);
+	bulletRigidBody->applyTorque((torqueToAdd).floatPtr());
 }
 // linear velocity access (in Quake units)
 const class vec3_c bulletRigidBody_c::getLinearVelocity() const {

@@ -169,7 +169,10 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 		rModelAPI_i *modAPI = ent->getModel();
 		if(modAPI) {
 			if(modAPI->isInlineBSPModel()) {
-
+				r_model_c tmp;
+				modAPI->getModelData(&tmp);
+				//tmp.transform(ent->getMatrix());
+				fromRModel(&tmp,light,lightRadius);
 			}
 		}
 	}

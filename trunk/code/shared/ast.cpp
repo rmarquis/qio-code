@@ -52,9 +52,11 @@ enum operator_e {
 	OP_EQUAL, // "=="
 	OP_LESS, // "<"
 	OP_GREATER, // ">"
+	OP_LESS_OR_EQUAL, // "<="
+	OP_GREATER_OR_EQUAL, // ">="
 };
 u32 OP_GetPriority(operator_e op) {
-	if(op == OP_EQUAL || op == OP_LESS || op == OP_GREATER)
+	if(op == OP_EQUAL || op == OP_LESS || op == OP_GREATER || op == OP_LESS_OR_EQUAL || op == OP_GREATER_OR_EQUAL)
 		return 5;
 	if(op == OP_MOD)
 		return 7;
@@ -149,11 +151,23 @@ operator_e OperatorForString(const char *s, const char **p) {
 		}
 		return OP_MOD;
 	} else if(*s == '>') {
+		if(s[1] == '=') {
+			if(p) {
+				*p = s + 2;
+			}
+			return OP_GREATER_OR_EQUAL;
+		}
 		if(p) {
 			*p = s + 1;
 		}
 		return OP_GREATER;
 	} else if(*s == '<') {
+		if(s[1] == '=') {
+			if(p) {
+				*p = s + 2;
+			}
+			return OP_LESS_OR_EQUAL;
+		}
 		if(p) {
 			*p = s + 1;
 		}
@@ -236,6 +250,13 @@ public:
 				ret = a > b;
 			} else if(opType == OP_LESS) {
 				ret = a < b;
+			} else if(opType == OP_GREATER_OR_EQUAL) {
+				ret = a >= b;
+			} else if(opType == OP_LESS_OR_EQUAL) {
+				ret = a <= b;
+			} else {
+				g_core->RedWarning("astNode_c::execute_r: unknown operator type %i\n",opType);
+				return 0.f;
 			}
 			return ret;
 		}

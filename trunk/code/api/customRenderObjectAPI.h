@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class customRenderObjectAPI_i {
 public:
+	virtual ~customRenderObjectAPI_i() { }
 	virtual void instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis) = 0;
 };
 

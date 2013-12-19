@@ -41,6 +41,7 @@ static class procTree_c *r_procTree = 0; // for .proc files
 static aCvar_c rf_printWorldRayCasts("rf_printWorldRayCasts","0");
 static aCvar_c rf_printWorldUpdates("rf_printWorldUpdates","0");
 static aCvar_c rf_world_dontAddDecals("rf_world_dontAddDecals","0");
+static aCvar_c rf_skipWorld("rf_skipWorld","0");
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
@@ -127,6 +128,8 @@ bool RF_LoadWorldMap(const char *name) {
 	return true; // error
 }
 void RF_AddWorldDrawCalls() {
+	if(rf_skipWorld.getInt())
+		return;
 	if(r_bspTree) {
 		if(rf_printWorldUpdates.getInt()) {
 			g_core->Print("RF_AddWorldDrawCalls: adding r_bspTree drawCalls\n");

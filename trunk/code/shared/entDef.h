@@ -63,6 +63,9 @@ public:
 	virtual void getKeyValue(u32 idx, const char **key, const char **value) const {
 		return ePairs.getKeyValue(idx,key,value);
 	}
+	virtual bool getKeyValue(const char *key, int &out) const {
+		return ePairs.getKeyValue(key,out);
+	}
 	virtual bool hasKey(const char *key) const {
 		return ePairs.hasKey(key);
 	}

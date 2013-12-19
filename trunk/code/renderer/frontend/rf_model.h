@@ -186,6 +186,7 @@ public:
 	virtual const q3PlayerModelAPI_i *getQ3PlayerModelAPI() const;
 
 	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
+	virtual bool getModelData(class staticModelCreatorAPI_i *out) const;
 
 	void clear();
 

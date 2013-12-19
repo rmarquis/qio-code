@@ -75,6 +75,39 @@ void rVertexBuffer_c::transform(const class matrix_c &mat) {
 		mat.transformNormal(v->normal);
 	}
 }
+bool rVertexBuffer_c::applyDeformAutoSprite(const vec3_c &leftDir, const vec3_c &upDir) {
+	if(numVerts % 4)
+		return true; // error
+	for(u32 i = 0; i < numVerts; i+=4) {
+		// find the midpoint
+		rVert_c *v = &data[i];
+
+		vec3_c mid;
+		mid[0] = 0.25 * (v->xyz[0] + (v+1)->xyz[0] + (v+2)->xyz[0] + (v+3)->xyz[0]);
+		mid[1] = 0.25 * (v->xyz[1] + (v+1)->xyz[1] + (v+2)->xyz[1] + (v+3)->xyz[1]);
+		mid[2] = 0.25 * (v->xyz[2] + (v+1)->xyz[2] + (v+2)->xyz[2] + (v+3)->xyz[2]);
+
+		vec3_c delta = v->xyz - mid;
+		float radius = delta.len() * 0.707;		// / sqrt(2)
+
+		vec3_c left = leftDir * radius;
+		vec3_c up = upDir * radius;
+
+		v[0].xyz = mid + left + up;
+		v[0].tc[0] = 0;
+		v[0].tc[1] = 0;
+		v[1].xyz = mid - left + up;
+		v[1].tc[0] = 1;
+		v[1].tc[1] = 0;
+		v[2].xyz = mid - left - up;
+		v[2].tc[0] = 1;
+		v[2].tc[1] = 1;
+		v[3].xyz = mid + left - up;
+		v[3].tc[0] = 0;
+		v[3].tc[1] = 1;
+	}
+	return false; // no error
+}
 bool rVertexBuffer_c::getPlane(class plane_c &pl) const {
 	if(size() < 3)
 		return true; // error

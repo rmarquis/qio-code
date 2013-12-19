@@ -322,6 +322,10 @@ void mtrStage_c::setBlueAST(class astAPI_i *ast) {
 		rgbGen = new rgbGen_c;
 	rgbGen->setBlueAST(ast);
 }
+void mtrStage_c::setRGBAGenVertex() {
+	allocRGBGen();
+	rgbGen->setVertex();
+}
 // material class
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
@@ -330,6 +334,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	cullType = CT_FRONT_SIDED;
 	bPortalMaterial = false;
 	bMirrorMaterial = false;
+	deforms = 0;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -343,6 +348,9 @@ void mtrIMPL_c::clear() {
 	if(skyParms) {
 		delete skyParms;
 		skyParms = 0;
+	}
+	if(deforms) {
+		delete deforms;
 	}
 	// reset variables to their default values
 	polygonOffset = 0;
@@ -525,6 +533,12 @@ class astAPI_i *MAT_ParseExpression(parser_c &p) {
 	}
 	return ret;
 }
+void mtrIMPL_c::addDeformSprite() {
+	if(deforms == 0) {
+		deforms = new deformArray_c;
+	}
+	deforms->addDeformSprite();
+}
 bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
 	p.setup(txt.textBase,txt.p);
@@ -625,9 +639,19 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					newHeightMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newHeightMapStage);
 				} else if(p.atWord("lightFalloffImage")) {
-					p.skipLine();			
+					p.skipLine();	
+				} else if(p.atWord("deformVertexes")) {
+					// Quake3 vertex deform
+					p.skipLine();
 				} else if(p.atWord("deform")) {
-					p.skipLine();			
+					// Doom3/Quake4 vertex deform
+					if(p.atWord("sprite")) {
+						// deform sprite is used for Plasma/BFG projectiles in Doom3.
+						// See material "models/weapons/plasmagun/plasmashot2" from senetmp.mtr
+						this->addDeformSprite();
+					} else {
+						p.skipLine();
+					}
 				} else if(p.atWord("unsmoothedtangents")) {
 
 				} else if(p.atWord("polygonOffset")) {
@@ -678,8 +702,72 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					this->bMirrorMaterial = true;
 				} else if(p.atWord("qer_editorimage")) {
 					this->editorImage = p.getToken();
-				} else {
+				} else if(p.atWord("qer_trans")) {
+					// 0.5 means 50% transparency
+					p.getFloat();
+				} else if(p.atWord("qer_nocarve")) {
+
+				} else if(p.atWord("nopicmip")) {
+
+				} else if(p.atWord("nomipmaps")) {
+
+				} else if(p.atWord("q3map_surfacelight")) {
+					p.getFloat();
+				} else if(p.atWord("q3map_sun")) {
+					p.skipLine();
+				} else if(p.atWord("sort")) {
 					p.getToken();
+				} else if(p.atWord("guisurf")) {
+					p.getToken();
+				} else if(p.atWord("clamp")) {
+					// NOTE: clamp is also used as per-stage keyword
+				} else if(p.atWord("zeroclamp")) {
+
+				} else if(p.atWord("alphazeroclamp")) {
+
+				} else if(p.atWord("discrete")) {
+
+				} else if(p.atWord("decalInfo")) {
+					p.skipLine();
+				} else if(p.atWord("description")) {
+					p.getToken();
+				} else if(p.atWord("playerclip")) {
+
+				} else if(p.atWord("glass")) {
+
+				} else if(p.atWord("forceOverlays")) {
+
+				} else if(p.atWord("blood")) {
+
+				} else if(p.atWord("monsterclip")) {
+
+				} else if(p.atWord("noFragment")) {
+
+				} else if(p.atWord("forceOpaque")) {
+
+				} else if(p.atWord("stone")) {
+
+				} else if(p.atWord("ricochet")) {
+
+				} else if(p.atWord("metal")) {
+
+				} else if(p.atWord("flesh")) {
+
+				} else if(p.atWord("forceshadows")) {
+
+				} else if(p.atWord("cardboard")) {
+
+				} else if(p.atWord("plastic")) {
+
+				} else if(p.atWord("nooverlays")) {
+
+				} else if(p.atWord("wood")) {
+
+				} else {
+					u32 line = p.getCurrentLineNumber();
+					str token  = p.getToken();
+					g_core->RedWarning("mtrIMPL_c::loadFromText: unknown material token '%s' at line %i of %s in material %s\n",
+						token.c_str(),line,txt.sourceFile,this->getName());
 				}
 			} else if(level == 2) {
 				// parse stage
@@ -700,8 +788,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							// map clamp textures/austria/background/foliage_clamp@truck_single.tga
 
 						}
+#if 0
 						stage->getStageTexture().parseMap(p);
 						stage->getStageTexture().uploadTexture();
+#else
+						class textureAPI_i *tex = MAT_ParseImageScript(p);
+						stage->setTexture(tex);
+#endif
 					}		
 				} else if(p.atWord("clampmap")) {
 					stage->getStageTexture().setBClamp(true);
@@ -769,8 +862,18 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						stage->addTexMod(tm);
 					}
+				} else if(p.atWord("stage")) {
+					if(p.atWord("diffuseMap") || p.atWord("colorMap")) {
+						stage->setStageType(ST_COLORMAP);
+					} else {
+						u32 line = p.getCurrentLineNumber();
+						str token = p.getToken();
+						g_core->RedWarning("Unknown stage type %s in material %s in file %s at line %i\n",
+							token.c_str(),this->name.c_str(),p.getDebugFileName(),line);
+					}
 				// Id Tech 4 keywords
 				} else if(p.atWord("blend")) {
+					bool bDontDisableDepthWrite = false;
 					if(p.atWord("add")) {
 						// needed by Xreal machinegun model
 						stage->setBlendDef(BM_ONE,BM_ONE);
@@ -778,21 +881,27 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						stage->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
 					} else if(p.atWord("bumpmap")) {
 						stage->setStageType(ST_BUMPMAP);
+						bDontDisableDepthWrite = true;
 					} else if(p.atWord("specularMap")) {
 						stage->setStageType(ST_SPECULARMAP);
+						bDontDisableDepthWrite = true;
 					} else if(p.atWord("diffusemap")) {
 						// ST_COLORMAP is a default stage type, but set it anyway
 						stage->setStageType(ST_COLORMAP);
+						bDontDisableDepthWrite = true;
 					} else if(p.atWord("filter")) {
 						stage->setBlendDef(BM_DST_COLOR,BM_ZERO);
 					} else if(p.atWord("shader")) {
 						// seen in Prey textures/dreamworld/la_floor, etc (dreamworld.mtr)
 						// for stages with custom shader? (.vfp files)
+						bDontDisableDepthWrite = true; // ??
 
 					} else if(p.atWord("none")) {
 
+						bDontDisableDepthWrite = true; // ??
 					} else if(p.atWord("map")) {
 
+						bDontDisableDepthWrite = true; // ??
 					} else {
 						// NOTE: for some reasons blend types are separated
 						// with ',' in Doom3
@@ -802,7 +911,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}			
 					// disable writing to depth buffer for translucent surfaces
 					// (unless otherwise specified)
-					if(depthWriteSetInMaterial == false) {
+					if(depthWriteSetInMaterial == false && bDontDisableDepthWrite == false) {
 						stage->setDepthWrite(false);
 					}
 				} else if(p.atWord("alphatest")) {
@@ -880,12 +989,42 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("screen")) {
 						// Prey's keyword?
 						//stage->setTCGen(TCG_SCREEN);
+					} else if(p.atWord("wobbleSky")) {
+						class astAPI_i *exp0 = MAT_ParseExpression(p);
+						if(exp0 == 0) {
+							g_core->RedWarning("mtrIMPL_c::loadFromText: failed to parse exp0 of 'wobbleSke' of material %s in file %s at line %i\n",
+								this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+							continue;
+						}
+						class astAPI_i *exp1 = MAT_ParseExpression(p);
+						if(exp1 == 0) {
+							delete exp0;
+							g_core->RedWarning("mtrIMPL_c::loadFromText: failed to parse exp1 of 'wobbleSke' of material %s in file %s at line %i\n",
+								this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+							continue;
+						}
+						class astAPI_i *exp2 = MAT_ParseExpression(p);
+						if(exp2 == 0) {
+							delete exp0;
+							delete exp1;
+							g_core->RedWarning("mtrIMPL_c::loadFromText: failed to parse exp2 of 'wobbleSke' of material %s in file %s at line %i\n",
+								this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+							continue;
+						}
+
+#if 1
+						delete exp0;
+						delete exp1;
+						delete exp2;
+#else
+
+#endif
 					} else {
 						str tok = p.getToken();
 						g_core->RedWarning("mtrIMPL_c::loadFromText: unknown texgen type %s in definition of material %s in file %s at line %i\n",
 							tok.c_str(),this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
-				} else if(p.atWord("if")) {
+				} else if(p.atWord_dontNeedWS("if")) {
 					// NOTE: this is the condition for entire material stage
 					// example: "if ( parm5 == 0 )"
 					// example: "if ( ( time * 4 ) % 3 == 0 )"
@@ -904,7 +1043,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("glowStage")) {
 
 				} else if(p.atWord("vertexcolor")) {
-
+					stage->setRGBAGenVertex();
 				} else if(p.atWord("inversevertexcolor")) {
 
 				} else if(p.atWord("rotate")) {
@@ -989,8 +1128,37 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("maskColor")) {
 					// maskRGB
 					stage->setMaskColor(true);
-				} else {
+				} else if(p.atWord("program")) {
+					// custom gpu program for this stage. Used in Doom3. 
+					stage->setProgramName(p.getToken());
+				} else if(p.atWord("fragmentProgram")) {
+					// FIXME
+					stage->setProgramName(p.getToken());
+				} else if(p.atWord("vertexProgram")) {
+					// FIXME
+					stage->setProgramName(p.getToken());
+				} else if(p.atWord("clamp")) {
+
+				} else if(p.atWord("forceHighQuality")) {
+
+				} else if(p.atWord("vertexParm")) {
+					p.skipLine();
+				} else if(p.atWord("fragmentMap")) {
+					p.skipLine();
+				} else if(p.atWord("ignoreAlphaTest")) {
+				} else if(p.atWord("cameraCubeMap")) {
 					p.getToken();
+				} else if(p.atWord("privatePolygonOffset")) {
+					if(p.isAtEOL()) {
+
+					} else {
+						float val = p.getFloat();
+					}
+				} else {
+					u32 line = p.getCurrentLineNumber();
+					str token  = p.getToken();
+					g_core->RedWarning("mtrIMPL_c::loadFromText: unknown stage token '%s' at line %i of %s in material %s\n",
+						token.c_str(),line,txt.sourceFile,this->getName());
 				}
 			} else {
 				p.getToken();

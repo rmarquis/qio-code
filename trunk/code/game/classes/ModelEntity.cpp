@@ -38,6 +38,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physObjectAPI.h>
 #include <api/physAPI.h>
 #include <api/skelAnimAPI.h>
+#include <api/entityDeclAPI.h>
+#include <api/entDefAPI.h>
 #include <shared/physObjectDef.h>
 #include <shared/keyValuesListener.h>
 #include <shared/boneOrQP.h>
@@ -173,6 +175,10 @@ void ModelEntity::setOrigin(const vec3_c &newXYZ) {
 }
 void ModelEntity::setAngles(const class vec3_c &newAngles) {
 	BaseEntity::setAngles(newAngles);
+	if(body) {
+		//body->setAngles(newAngles);
+		body->setMatrix(this->getMatrix());
+	}
 }
 void ModelEntity::setRenderModel(const char *newRModelName) {
 	// NOTE: render model pointer isnt stored in game module.
@@ -235,11 +241,8 @@ bool ModelEntity::hasDeclAnimation(const char *animName) const {
 		return true; // animation is present
 	return false; // animation not found
 }
-void ModelEntity::setAnimation(const char *newAnimName) {
-	if(g_verboseSetAnimationCalls.getInt()) {
-		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
-	}
-	// get the animation index (for networking)
+// returns the animation index (for networking)
+int ModelEntity::findAnimationIndex(const char *newAnimName) {
 	int newAnimIndex;
 	if(this->modelDecl) {
 		newAnimIndex = this->modelDecl->getAnimIndexForAnimAlias(newAnimName);
@@ -247,9 +250,25 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 		newAnimIndex = G_AnimationIndex(newAnimName);
 		// nothing else to do right now...
 	}
-	this->myEdict->s->animIndex = newAnimIndex;
+	return newAnimIndex;
+}
+void ModelEntity::setAnimation(const char *newAnimName) {
+	if(g_verboseSetAnimationCalls.getInt()) {
+		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
+	}
+	// get the animation index (for networking)
+	this->myEdict->s->animIndex = findAnimationIndex(newAnimName);
 	// save the animation string name
 	animName = newAnimName;
+}
+void ModelEntity::setTorsoAnimation(const char *newAnimName) {
+	if(g_verboseSetAnimationCalls.getInt()) {
+		g_core->Print("ModelEntity::setTorsoAnimation: %s\n",newAnimName);
+	}
+	// get the animation index (for networking)
+	this->myEdict->s->torsoAnim = findAnimationIndex(newAnimName);
+	// save the animation string name
+	torsoAnimName = newAnimName;
 }
 void ModelEntity::getCurrentBonesArray(class boneOrArray_c &out) {
 	if(modelDecl) {
@@ -608,6 +627,11 @@ void ModelEntity::applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointA
 	//this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
 //	this->body->applyPointImpulse(impToAdd,pointLocal);
 }
+void ModelEntity::applyTorque(const vec3_c &torqueToAdd) {
+	if(this->body == 0)
+		return;
+	this->body->applyTorque(torqueToAdd);
+}
 const vec3_c ModelEntity::getLinearVelocity() const {
 	if(this->body == 0) {
 		return linearVelocity;
@@ -722,6 +746,24 @@ void ModelEntity::damage(int damageCount) {
 		if(prevHealth > 0 && health <= 0) {
 			this->onDeath();
 		}
+	}
+}
+void ModelEntity::applyDamageFromDef(const char *defName, const class trace_c *tr) {
+	entityDeclAPI_i *damageDef = g_declMgr->registerEntityDecl(defName);
+	if(damageDef == 0) {
+		g_core->RedWarning("ModelEntity::applyDamageFromDef: couldn't register damage def %s\n",defName);
+		return;
+	}
+	const entDefAPI_i *e = damageDef->getEntDefAPI();
+	int damageValue;
+	if(e->getKeyValue("damage",damageValue)) {
+		g_core->RedWarning("ModelEntity::applyDamageFromDef: no 'damage' key set in %s\n",defName);
+		damageValue = 0;
+	}
+	if(tr) {
+		this->onBulletHit(tr->getHitPos(),tr->getHitPlaneNormal(),damageValue);
+	} else {
+		this->damage(damageValue);
 	}
 }
 void ModelEntity::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damageCount) {

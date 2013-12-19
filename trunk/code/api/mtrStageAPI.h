@@ -116,6 +116,7 @@ public:
 	virtual bool getColorMaskAlpha() const = 0;
 	// doom3 alphaTest AST evaluation
 	virtual float evaluateAlphaTestValue(const class astInputAPI_i *in) const = 0;
+	virtual bool isUsingCustomProgram() const = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

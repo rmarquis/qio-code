@@ -134,7 +134,7 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\gphysics_bulletx86.dll"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
-				IgnoreDefaultLibraryNames="MSVCRT.lib"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="gphysics_bullet.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

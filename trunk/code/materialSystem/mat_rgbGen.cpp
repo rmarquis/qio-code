@@ -118,6 +118,9 @@ void rgbGen_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) 
 		}
 	}
 }
+void rgbGen_c::setVertex() {
+	type = RGBGEN_VERTEX;
+}
 
 
 

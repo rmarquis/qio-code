@@ -26,6 +26,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "collisionUtils.h"
 #include <math/matrix.h>
 
+trace_c::trace_c() {
+	this->sphereRadius = 0.f;
+}
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->hitEntity = 0;
 	this->clEntity = 0;

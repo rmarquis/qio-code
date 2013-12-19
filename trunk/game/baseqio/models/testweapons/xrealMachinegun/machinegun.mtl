@@ -1,5 +1,5 @@
 
-newmtl models/weapons/machinegun/w_machinegun
-map_d models/weapons/machinegun/machinegun
-map_Kd models/weapons/machinegun/machinegun
+newmtl models/xrealweapons/machinegun/w_machinegun
+map_d models/xrealweapons/machinegun/machinegun
+map_Kd models/xrealweapons/machinegun/machinegun
 

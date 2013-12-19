@@ -3877,8 +3877,8 @@ vn -0.998312 0.000000 0.000000
 vn 0.998309 0.000000 0.000000
 vn 0.486360 -0.009038 0.873306
 vn 0.000000 0.000000 0.998874
-g models/weapons/machinegun/w_machinegun
-usemtl models/weapons/machinegun/w_machinegun
+g models/xrealweapons/machinegun/w_machinegun
+usemtl models/xrealweapons/machinegun/w_machinegun
 f 2/2/2 3/3/3 1/1/1
 f 5/5/5 6/6/6 4/4/4
 f 8/8/8 9/9/9 7/7/7

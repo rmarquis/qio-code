@@ -126,6 +126,15 @@ public:
 		}
 		return 0;
 	}
+	virtual bool getKeyValue(const char *key, int &out) const {
+		const ePair_c *p = find(key);
+		if(p == 0) {
+			out = 0;
+			return true; // not found
+		}
+		out = atoi(p->getValue());
+		return false; // OK
+	}
 };
 
 

@@ -52,6 +52,7 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 	VectorCopy( ps->angles, s->angles );
 
 	s->animIndex = ps->animIndex;
+	s->torsoAnim = ps->torsoAnim;
 	s->parentNum = ps->parentNum;
 	s->parentTagNum = ps->parentTagNum;
 

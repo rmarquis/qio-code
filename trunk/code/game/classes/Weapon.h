@@ -47,6 +47,8 @@ class Weapon : public ModelEntity {
 	str weaponName;
 	str ddaName;
 	vec3_c viewOffset, viewAngles;
+	str def_projectile;
+	str smoke_muzzle;
 protected:
 	safePtr_c<Player> owner;
 

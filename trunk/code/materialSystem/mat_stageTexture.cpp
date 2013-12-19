@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 const char *imageOps [] = {
 	"addnormals",
 	"heightmap",
+	"makealpha",
 };
 
 u32 numImageOps = sizeof(imageOps)/sizeof(imageOps[0]);

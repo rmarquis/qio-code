@@ -110,6 +110,15 @@ public:
 			return false;
 		return true;
 	}
+	bool operator == (const vec3_c &other) const {
+		if(x != other.x)
+			return false;
+		if(y != other.y)
+			return false;
+		if(z != other.z)
+			return false;
+		return true;
+	}
 
 	friend vec3_c operator*(const vec3_c& a, const float f );
 	friend vec3_c operator*(const float f, const vec3_c& b );
@@ -245,7 +254,7 @@ public:
 		}
 		*this = vWork;
 	}
-	vec3_c toAngles() {
+	vec3_c toAngles() const {
 		float	forward;
 		float	yaw, pitch;
 		
@@ -496,6 +505,7 @@ public:
 		z *= scale;
 	}
 	// for angles
+	// returns the forward vector for pitch/yaw/roll angles
 	vec3_c getForward() const {
 		float angle = (*this)[YAW] * (M_PI*2 / 360);
 		float sy = sin(angle);

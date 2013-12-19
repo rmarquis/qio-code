@@ -1138,7 +1138,12 @@ struct entityState_s {
 
 //	int		solid;			// for client side prediction, trap_linkentity sets this properly
 
+	// base animation index
+	// (full body animation)
 	int animIndex;
+	// torso animation index
+	// (overrides the full body animation)
+	int torsoAnim;
 
 	int lightFlags;
 	float lightRadius; // only for ET_LIGHT 

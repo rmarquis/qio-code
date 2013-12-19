@@ -68,6 +68,14 @@ void BT_ConvertWorldPoly(u32 surfNum, u32 contentFlags) {
 	g_staticMap->addWorldSurface(newSF);
 #endif
 }
+void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
+	if((contentFlags & 1) == 0)
+		return;
+	cmSurface_c newSF;
+	// convert bezier patches to trimesh data
+	g_bspPhysicsLoader->convertBezierPatchToTriSurface(surfNum,3,newSF);
+	g_staticMap->addWorldSurface(newSF);
+}
 btBvhTriangleMeshShape *BT_CMSurfaceToBHV(const class cmSurface_c *sf);
 btpStaticMapLoader_c::btpStaticMapLoader_c() {
 	mainWorldShape = 0;
@@ -89,7 +97,7 @@ bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 		l.iterateModelTriSurfs(0,BT_ConvertWorldPoly);
 	} else {
 		l.iterateModelBrushes(0,BT_ConvertWorldBrush);
-		//l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+		l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
 	}
 	if(mainWorldSurface.getNumIndices()) {
 		mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);

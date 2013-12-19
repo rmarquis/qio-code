@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <math/math.h>
 #include <shared/simpleVert.h>
+#include <renderer/rVertex.h>
 
 //
 // particleDistribution_c
@@ -177,6 +178,9 @@ void particleDirection_c::calcParticleDirection(particleInstanceData_s &in, cons
 //
 // particleParm_c
 //
+particleParm_c::particleParm_c() {
+	from = to = 0.f;
+}
 bool particleParm_c::parseParticleParm(class parser_c &p, const char *fname) {
 	const char *s = p.getToken();
 	if(isdigit(s[0]) || s[0] == '-') {
@@ -251,8 +255,10 @@ void particleStage_c::setDefaults() {
 	numAnimationFrames = 0;
 	animationRate = 0.f;
 	bEntityColor = false;
+	rotSpeed.set(0.f);
+	speed.set(150.f);
 }
-u32 particleStage_c::instanceParticle(particleInstanceData_s &in, struct simpleVert_s *verts) const {
+u32 particleStage_c::instanceParticle(particleInstanceData_s &in, class rVert_c *verts) const {
 	// start with calculating color.
 	union {
 		byte curColor[4];
@@ -272,6 +278,9 @@ u32 particleStage_c::instanceParticle(particleInstanceData_s &in, struct simpleV
 	// calculate positions of particle vertices
 	u32	numVerts = calcParticleVerts(in, origin, verts);
 
+	for(u32 i = 0; i < numVerts; i++) {
+		verts[i].setColor(colorAsInt);
+	}
 
 	return numVerts;
 }
@@ -319,7 +328,7 @@ void particleStage_c::calcParticleOrigin(particleInstanceData_s &in, vec3_c &out
 	// add gravity
 
 }
-void particleStage_c::calcParticleTexCoords(particleInstanceData_s &in, struct simpleVert_s *verts) const {
+void particleStage_c::calcParticleTexCoords(particleInstanceData_s &in, class rVert_c *verts) const {
 	float s, width;
 	if (numAnimationFrames > 1) {
 		width = 1.0f / numAnimationFrames;
@@ -350,7 +359,7 @@ void particleStage_c::calcParticleTexCoords(particleInstanceData_s &in, struct s
 
 	verts[3].setUV(s+width,t+height);
 }
-u32 particleStage_c::calcParticleVerts(particleInstanceData_s &in, const vec3_c &origin, struct simpleVert_s *verts) const {
+u32 particleStage_c::calcParticleVerts(particleInstanceData_s &in, const vec3_c &origin, class rVert_c *verts) const {
 	if(orientation.isOrientationTypeAimed()) {
 		return calcParticleVerts_aimed(in,origin,verts);
 	}
@@ -420,7 +429,7 @@ u32 particleStage_c::calcParticleVerts(particleInstanceData_s &in, const vec3_c 
 
 	return 4;
 }
-u32 particleStage_c::calcParticleVerts_aimed(particleInstanceData_s &in, const vec3_c &origin, struct simpleVert_s *verts) const {
+u32 particleStage_c::calcParticleVerts_aimed(particleInstanceData_s &in, const vec3_c &origin, class rVert_c *verts) const {
 
 	return 0;
 }

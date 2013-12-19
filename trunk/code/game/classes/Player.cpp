@@ -56,6 +56,7 @@ enum sharedGameAnim_e {
 	SGA_PAIN_HEAD,
 	SGA_PAIN_RIGHT_ARM,
 	SGA_PAIN_LEFT_ARM,
+	SGA_ATTACK,
 };
 const char *sharedGameAnimNames[] = {
 	"bad", // SGA_BAD
@@ -71,6 +72,7 @@ const char *sharedGameAnimNames[] = {
 	"pain_head",
 	"pain_right_arm",
 	"pain_left_arm",
+	"attack", // SGA_ATTACK
 };
 
 static u32 g_numSharedAnimNames = sizeof(sharedGameAnimNames) / sizeof(sharedGameAnimNames[0]);
@@ -93,7 +95,7 @@ public:
 	virtual void setGameEntity(class ModelEntity *ent) = 0;
 	virtual void setAnimBoth(enum sharedGameAnim_e anim) = 0;
 	virtual void setModelName(const char *newModelName) = 0;
-	//virtual void setTorsoAnim(enum sharedGameAnim_e anim) = 0;
+	virtual void setAnimTorso(enum sharedGameAnim_e anim) = 0;
 };
 #include <shared/quake3Anims.h>
 class q3PlayerAnimController_c : public playerAnimControllerAPI_i {
@@ -126,6 +128,9 @@ public:
 			ctrlEnt->setInternalAnimationIndex(BOTH_DEATH1);
 		}
 	}
+	virtual void setAnimTorso(enum sharedGameAnim_e anim) {
+
+	}
 
 };
 
@@ -152,6 +157,13 @@ public:
 		newAnimPath.append(animName);
 		newAnimPath.append(".md5anim");
 		ctrlEnt->setAnimation(newAnimPath);
+	}
+	virtual void setAnimTorso(enum sharedGameAnim_e anim) {
+		str newAnimPath = animsDir;
+		const char *animName = sharedGameAnimNames[anim];
+		newAnimPath.append(animName);
+		newAnimPath.append(".md5anim");
+		ctrlEnt->setTorsoAnimation(newAnimPath);
 	}
 };
 
@@ -315,6 +327,13 @@ void Player::setPlayerAnimBoth(enum sharedGameAnim_e type) {
 		}
 	}
 }
+void Player::setPlayerAnimTorso(enum sharedGameAnim_e type) {
+	if(animHandler) {
+		animHandler->setAnimTorso(type);
+	} else {
+
+	}
+}
 void Player::playPainAnimation(const char *newPainAnimationName, u32 animTime) {
 	lastPainTime = level.time;
 	curPainAnimationName = newPainAnimationName;
@@ -474,6 +493,11 @@ void Player::runPlayer() {
 				//this->setAnimation("models/player/shina/idle.md5anim");
 			}
 		}
+		if(fireHeld) {
+			setPlayerAnimTorso(SGA_ATTACK);
+		} else {
+			setPlayerAnimTorso(SGA_BAD);
+		}
 
 		if(carryingEntity) {
 			vec3_c pos = carryingEntity->getRigidBody()->getRealOrigin();
@@ -483,7 +507,12 @@ void Player::runPlayer() {
 			carryingEntity->setLinearVelocity(carryingEntity->getLinearVelocity()*0.5f);
 			carryingEntity->setAngularVelocity(carryingEntity->getAngularVelocity()*0.5f);
 			carryingEntity->applyCentralImpulse(delta*50.f);
+
+			//vec3_c anglesDelta = prevAngles - this->getViewAngles();
+			//carryingEntity->applyTorque(
+			//prevAngles = this->getViewAngles();
 			//carryingEntity->setOrigin(neededPos);
+			//carryingEntity->setAngles(this->getAngles() - carryingEntityRelAngles);
 		}
 
 		if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
@@ -700,6 +729,7 @@ void Player::pickupPhysicsProp(class ModelEntity *ent) {
 	}
 	g_core->Print("Picked up %s\n",ent->getClassName());
 	carryingEntity = ent;
+	//carryingEntityRelAngles = this->getAngles() - carryingEntity->getAngles();
 }
 bool Player::isCarryingEntity() const {
 	if(carryingEntity.getPtr()) {
@@ -762,6 +792,7 @@ void Player::updateCurWeaponAttachment() {
 			ps.customViewRModelIndex = 0;
 		}
 		curWeapon->setParent(this,getBoneNumForName("MG_ATTACHER"));
+		curWeapon->setLocalAttachmentAngles(vec3_c(0,-90,-90));
 		ps.viewModelAngles = -curWeapon->getViewModelAngles();
 		ps.viewModelOffset = curWeapon->getViewModelOffset();
 	}

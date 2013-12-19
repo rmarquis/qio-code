@@ -97,6 +97,46 @@ public:
 	}
 };
 
+class deform_c {
+	deformType_e type;
+public:
+	deform_c(deformType_e newType) {
+		type = newType;
+	}
+	deformType_e getType() const {
+		return type;
+	}
+};
+
+class deformArray_c : public deformArrayAPI_i {
+	arraySTD_c<deform_c*> deforms;
+
+	// deformArrayAPI_i impl
+	virtual u32 getNumDeforms() const {
+		return deforms.size();
+	}
+	virtual deformType_e getDeformType(u32 idx) const {
+		return deforms[idx]->getType();
+	}
+public:
+	void addDeformSprite() {
+		deforms.push_back(new deform_c(DEFORM_AUTOSPRITE));
+	}
+	bool hasDeformOfType(enum deformType_e type) const {
+		for(u32 i = 0; i < deforms.size(); i++) {
+			if(deforms[i]->getType() == type)
+				return true;
+		}
+		return false;
+	}
+	~deformArray_c() {
+		for(u32 i = 0; i < deforms.size(); i++) {
+			delete deforms[i];
+		}
+		deforms.clear();
+	}
+};
+
 class mtrStage_c : public mtrStageAPI_i {
 	stageTexture_c stageTexture;
 	alphaFunc_e alphaFunc;
@@ -117,6 +157,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	class astAPI_i *condition;
 	// Doom3 replacements for alphaFunc_e 
 	class astAPI_i *alphaTestAST;
+	// custom gpu shader name (not used yet)
+	str programName;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -158,6 +200,11 @@ public:
 	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
 	virtual bool getDepthWrite() const {
 		return depthWrite;
+	}
+	virtual bool isUsingCustomProgram() const {
+		if(programName.length())
+			return true;
+		return false;
 	}
 	bool isLightmapStage() const {
 		return (type == ST_LIGHTMAP);
@@ -259,6 +306,12 @@ public:
 	void setRedAST(class astAPI_i *ast);
 	void setGreenAST(class astAPI_i *ast);
 	void setBlueAST(class astAPI_i *ast);
+	// custom GPU shader for stage
+	void setProgramName(const char *newProgram) {
+		programName = newProgram;
+	}
+	// 'vertexColor' keyword
+	void setRGBAGenVertex();
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
@@ -272,6 +325,10 @@ class mtrIMPL_c : public mtrAPI_i {
 	bool bPortalMaterial; // set to true by "portal" global material keyword
 	bool bMirrorMaterial; // set to true by "mirror" global material keyword
 	str editorImage; // set by "qer_editorimage" keyword (Q3/D3)
+	// vertex deforms array (they are per-material, not per-stage)
+	deformArray_c *deforms;
+
+	void addDeformSprite();
 
 	void removeAllStagesOfType(enum stageType_e type);
 	class mtrStage_c *getFirstStageOfType(enum stageType_e type);
@@ -341,6 +398,19 @@ public:
 	}
 	virtual bool isMirrorMaterial() const {
 		return this->bMirrorMaterial;
+	}
+	virtual bool hasDeforms() const {
+		if(deforms)
+			return true;
+		return false;
+	}
+	virtual class deformArrayAPI_i *getDeformsArray() const {
+		return deforms;
+	}
+	virtual bool hasDeformOfType(enum deformType_e type) const {
+		if(deforms == 0)
+			return false;
+		return deforms->hasDeformOfType(type);
 	}
 	virtual bool hasStageOfType(stageType_e type) const {
 		for(u32 i = 0; i < stages.size(); i++) {
@@ -443,6 +513,14 @@ public:
 		if(stages.size() == 0)
 			return 0;
 		return stages[0]->getNumImageFrames();
+	}
+	virtual bool hasStageWithoutCustomProgram() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->isUsingCustomProgram()==false)
+				return true; 
+		}
+		// all stages are using custom programs
+		return false;
 	}
 	virtual float getPolygonOffset() const {
 		return polygonOffset;

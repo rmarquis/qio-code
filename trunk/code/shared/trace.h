@@ -62,6 +62,7 @@ class trace_c {
 		this->len = this->delta.len();
 	}
 public:
+	trace_c();
 
 	void recalcRayTraceBounds();
 	void setupRay(const vec3_c &newFrom, const vec3_c &newTo);

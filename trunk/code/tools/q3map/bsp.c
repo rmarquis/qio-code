@@ -348,6 +348,19 @@ void OnlyTextures( void ) {		// FIXME!!!
 	WriteBSPFile (out);
 }
 
+#define VectorSet(v, x, y, z)		v[0] = x;v[1] = y;v[2] = z;
+
+void doBaseWindingForPlaneTest()
+{
+	vec3_t normal;
+	float dist;
+	winding_t *w;
+
+	dist = 123.4567f/76.f;
+	VectorSet(normal,1,2,3);
+	VectorNormalize(normal,normal);
+	w = BaseWindingForPlane(normal,dist);
+}
 
 /*
 ============
@@ -366,7 +379,9 @@ int main (int argc, char **argv) {
 qboolean basePathSetManually;
 
 	_printf ("Q3Map v1.0s (c) 1999 Id Software Inc.\n");
-  
+
+  doBaseWindingForPlaneTest();
+
 	if ( argc < 2 ) {
 		Error ("usage: q3map [options] mapfile");
 	}

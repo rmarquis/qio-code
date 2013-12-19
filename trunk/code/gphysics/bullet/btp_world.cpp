@@ -74,6 +74,9 @@ void bulletPhysicsWorld_c::init(const vec3_c &newGravity) {
 
 	// add ghostPairCallback for character controller collision detection
 	dynamicsWorld->getPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
+	
+	btContactSolverInfo &solverInfo = dynamicsWorld->getSolverInfo();
+	solverInfo.m_splitImpulse = true;
 }
 bool bulletPhysicsWorld_c::loadMap(const char *mapName) {
 	return staticWorld.loadMap(mapName,this);

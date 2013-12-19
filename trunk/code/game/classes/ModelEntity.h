@@ -57,6 +57,7 @@ protected:
 	bool bPhysicsBodyKinematic;
 	bool bRigidBodyPhysicsEnabled; // if false, this->initRigidBodyPhysics will always fail
 	str animName; // current animation name
+	str torsoAnimName; // torso animation override (for players and monsters)
 	mutable vec3_c linearVelocity;
 	float pvsBoundsSkinWidth;
 	float physBounciness;
@@ -92,8 +93,11 @@ public:
 	// for skeletal models
 	int getBoneNumForName(const char *boneName);
 
+	int findAnimationIndex(const char *animName);
+
 	void setAnimation(const char *animName);
 	void setInternalAnimationIndex(int newAnimIndex);
+	void setTorsoAnimation(const char *animName);
 
 	bool hasDeclAnimation(const char *animName) const;
 
@@ -126,6 +130,7 @@ public:
 	virtual void applyCentralForce(const vec3_c &velToAdd);
 	virtual void applyCentralImpulse(const vec3_c &impToAdd);
 	virtual void applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs);
+	virtual void applyTorque(const vec3_c &torqueToAdd);
 	virtual const vec3_c getLinearVelocity() const;
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	virtual const vec3_c getAngularVelocity() const;
@@ -155,6 +160,8 @@ public:
 
 	virtual void onDeath();
 	virtual void damage(int damage);
+	// used to inflict damage specified by Doom3 damage def
+	virtual void applyDamageFromDef(const char *defName, const class trace_c *tr);
 	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage);
 
 	virtual bool traceWorldRay(class trace_c &tr);

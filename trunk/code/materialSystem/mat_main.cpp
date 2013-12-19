@@ -69,6 +69,7 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 	u32 matNameLen = strlen(matName);
 	const char *p = text;
 	while(*p) {
+#if 0
 		if(!Q_stricmpn(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
 			const char *matNameStart = p;
 			p += matNameLen;
@@ -83,6 +84,67 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 			return brace;
 		}
 		p++;
+#else
+		// parse the material file
+
+		// skip comments
+		if(p[0] == '/') {
+			if(p[1] == '/') {
+				p += 2; // skip "//"
+				// skip single line comment
+				while(*p != '\n') {
+					if(*p == 0)
+						return 0; // EOF hit
+					p++;
+				}
+				p++; // skip '\n'
+				continue;
+			} else if(p[1] == '*') {
+				p += 2; // skip "/*"
+				// multiline
+				while(!(p[0] == '*' && p[1] == '/')) {
+					if(*p == 0)
+						return 0; // EOF hit
+					p++;
+				}
+				p += 2; // skip "*/"
+				continue;
+			}
+			p++; // skip '/'
+			continue;
+		} else if(*p == '{') {
+			p++; // skip '{'
+			// skip braced section
+			u32 level = 1;
+			while(level) {
+				if(*p == '{') 
+					level++;
+				else if(*p == '}')
+					level--;
+				else if(*p == 0)
+					return 0; // EOF hit
+				p++;
+			}
+			continue;
+		} else if(G_isWS(*p)) {
+			p++; // skip single whitespace
+			continue;
+		} else if(!Q_stricmpn(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
+			const char *matNameStart = p;
+			p += matNameLen;
+			p = G_SkipToNextToken(p);
+			if(*p != '{') {
+				continue;
+			}
+			const char *brace = p;
+			p++;
+			// now we're sure that 'p' is at valid material text,
+			// so we can start parsing
+			return brace;
+		} else {
+			p++; // skip single character
+		}
+#endif
 	}
 	return 0;
 }

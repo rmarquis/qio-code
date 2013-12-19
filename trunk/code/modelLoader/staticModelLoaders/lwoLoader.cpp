@@ -93,10 +93,11 @@ struct lwoVMad_s {
 	int polyNum;
 	float tc[2];
 };
+#define LWO_MAX_POLYGON_VERTICES 16
 struct lwoPoly_s {
 	u32 flags;
 	u32 numVerts;
-	u32 vertices[6];
+	u32 vertices[LWO_MAX_POLYGON_VERTICES];
 };
 
 void LWO_VerbosePrintf(const char *fmt, ...) {
@@ -144,6 +145,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 				str tagName;
 				LWO_ReadLWOName(r,tagName);
 				LWO_VerbosePrintf("LWO tagName: %s\n",tagName.c_str());
+				tagName.backSlashesToSlashes();
 				matNames.push_back(tagName);
 			}
 		} else if(secIdent == LWO_LAYR) {
@@ -186,6 +188,11 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 				u32 numVerts = r.swReadU16();
 				u32 flags = (0xFC00 & numVerts) >> 10;
 				numVerts =  0x03FF & numVerts;
+				if(numVerts >= LWO_MAX_POLYGON_VERTICES) {	
+					g_core->Print("MOD_LoadLWO: LWO_MAX_POLYGON_VERTICES (%i) exceeded (%i) in model %s\n",
+						LWO_MAX_POLYGON_VERTICES,numVerts,fname);
+					return true;
+				}
 				lwoPoly_s newPoly;
 				newPoly.numVerts = numVerts;
 				newPoly.flags = flags;
@@ -267,6 +274,11 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 		simpleVert_s verts[6];
 		for(u32 j = 0; j < p.numVerts; j++) {
 			u32 vertNum = p.vertices[j];
+			if(vertNum >= points.size()) {
+				g_core->RedWarning("MOD_LoadLWO: point index %i out of range <0,%i) (vertex %i, model %s)\n",vertNum,points.size(),j,fname);
+				verts[j].setXYZ(0,0,0);
+				return true; // error
+			}
 			// assign position
 			verts[j].setXYZ(points[vertNum]);
 			// assign texCoord

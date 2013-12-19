@@ -22,6 +22,11 @@ struct simpleVert_s {
 		xyz[1] = f[1];
 		xyz[2] = f[2];
 	}
+	void setXYZ(float nX, float nY, float nZ) {
+		xyz[0] = nX;
+		xyz[1] = nY;
+		xyz[2] = nZ;
+	}
 	void setUV(const float *f) {
 		tc[0] = f[0];
 		tc[1] = f[1];

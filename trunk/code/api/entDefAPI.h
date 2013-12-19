@@ -33,6 +33,8 @@ public:
 	virtual u32 getNumKeyValues() const = 0;
 	virtual bool hasClassName() const = 0;
 	virtual void getKeyValue(u32 idx, const char **key, const char **value) const = 0;
+	// returns true if key was not found
+	virtual bool getKeyValue(const char *key, int &out) const = 0;
 	virtual bool hasKey(const char *key) const = 0;
 	virtual const char *getKeyValue(const char *key) const = 0;
 };

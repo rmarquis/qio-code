@@ -70,6 +70,20 @@ public:
 	animDef_c() {
 		anim = 0;
 	}
+	animDef_c(const animDef_c &other) {
+		this->animAlias = other.animAlias;
+		this->animFile = other.animFile;
+		this->events = other.events;
+		this->anim = 0;
+	}
+	animDef_c &operator =(const animDef_c &other) {
+		this->animAlias = other.animAlias;
+		this->animFile = other.animFile;
+		this->events = other.events;
+		this->anim = 0;
+		return *this;
+	}
+
 	~animDef_c() {
 		if(anim) {
 			delete anim;
@@ -537,6 +551,11 @@ class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *n
 	return 0;
 }
 class particleDeclAPI_i *declManagerIMPL_c::_registerParticleDecl(const char *name, qioModule_e userModule) {
+	// strip .prt extension
+	str fixedName = name;
+	fixedName.stripExtension();
+	name = fixedName;
+
 	particleDecl_c *ret = prtDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);

@@ -36,7 +36,9 @@ class emitterD3_c : public emitterBase_c {
 	// customRenderObjectAPI_i impl
 	virtual void instanceModel(class staticModelCreatorAPI_i *out, const class axis_c &viewerAxis);
 public:
-	
+	emitterD3_c();
+	virtual ~emitterD3_c();
+
 	virtual void setOrigin(const vec3_c &newOrigin);
 	virtual void setParticleDecl(class particleDeclAPI_i *newDecl);
 };
