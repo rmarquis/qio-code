@@ -62,7 +62,7 @@ class ePairList_c {
 	const ePair_c *find(const char *key) const {
 		for(u32 i = 0; i < pairs.size(); i++) {
 			const ePair_c *ep = pairs[i];
-			if(!stricmp(key,ep->key)) {
+			if(!stricmp(key,ep->key.c_str())) {
 				return ep;
 			}
 		}
@@ -78,10 +78,15 @@ public:
 			this->set(p->getKey(),p->getValue());
 		}
 	}
-	~ePairList_c() {
-		for(u32 i = 0; i < pairs.size(); i++) {
-			delete pairs[i];
+	void operator =(const ePairList_c &other) {
+		this->clear();
+		for(u32 i = 0; i < other.pairs.size(); i++) {
+			const ePair_c *p = other.pairs[i];
+			this->set(p->getKey(),p->getValue());
 		}
+	}
+	~ePairList_c() {
+		this->clear();
 	}
 	void clear() {
 		for(u32 i = 0; i < pairs.size(); i++) {
@@ -119,6 +124,13 @@ public:
 		}
 		return false;
 	}
+	bool hasKeyValue(const char *key, const char *value) const {
+		const ePair_c *p = find(key);
+		if(p) {
+			return !stricmp(p->getValue(),value);
+		}
+		return false;
+	}
 	const char *getKeyValue(const char *key) const {
 		const ePair_c *p = find(key);
 		if(p) {
@@ -126,6 +138,8 @@ public:
 		}
 		return 0;
 	}
+	bool getKeyVec3(const char *key, class vec3_c &out) const;
+
 	virtual bool getKeyValue(const char *key, int &out) const {
 		const ePair_c *p = find(key);
 		if(p == 0) {

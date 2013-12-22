@@ -75,6 +75,7 @@ BaseEntity::BaseEntity() {
 	parent = 0;
 	eventList = 0;
 	matrix.identity();
+	bMarkedForDelete = false;
 }
 BaseEntity::~BaseEntity() {
 	if(attachments.size()) {
@@ -154,6 +155,8 @@ void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
 		const char *tag = ev->getArg(1);
 		const char *enableLocalOffset = ev->getArg(2);
 		this->setParent(targetName,atoi(tag),atoi(enableLocalOffset));
+	} else if(!stricmp(ev->getEventName(),"remove")) {
+		bMarkedForDelete = true;
 	}
 }	
 void BaseEntity::postEvent(int execTime, const char *eventName, const char *arg0, const char *arg1, const char *arg2, const char *arg3) {
@@ -161,6 +164,9 @@ void BaseEntity::postEvent(int execTime, const char *eventName, const char *arg0
 		eventList = new eventList_c;
 	}
 	eventList->addEvent(execTime,eventName,arg0,arg1,arg2,arg3);
+}	
+void BaseEntity::removeAfterDelay(int delay) {
+	postEvent(level.time+delay,"remove");
 }
 // maybe I should put those functions in ModelEntity...
 void BaseEntity::link() {
@@ -237,19 +243,22 @@ u32 BaseEntity::processPendingEvents() {
 	if(eventList == 0)
 		return 0;
 	u32 c_executed = eventList->executeEvents(level.time,this);
+	if(bMarkedForDelete) {
+		delete this;
+	}
 	return c_executed;
 }
 void BaseEntity::hideEntity() {
-	_myEntityState->hideEntity();
+	myEdict->s->hideEntity();
 }
 void BaseEntity::showEntity() {
-	_myEntityState->showEntity();
+	myEdict->s->showEntity();
 }
 void BaseEntity::toggleEntityVisibility() {
-	if(_myEntityState->isHidden()) {
-		_myEntityState->showEntity();
+	if(myEdict->s->isHidden()) {
+		myEdict->s->showEntity();
 	} else {
-		_myEntityState->hideEntity();
+		myEdict->s->hideEntity();
 	}
 }
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {

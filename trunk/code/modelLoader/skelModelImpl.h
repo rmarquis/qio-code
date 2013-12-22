@@ -129,6 +129,7 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual const char *getBoneName(u32 boneIndex) const {
 		return SK_GetString(bones[boneIndex].nameIndex);
 	}
+	virtual void printBoneNames() const;
 	// modelPostProcessFuncs_i impl
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();

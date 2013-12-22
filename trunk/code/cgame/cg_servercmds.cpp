@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2013 V.
 
 This file is part of Quake III Arena source code.
 
@@ -271,6 +272,16 @@ static void CG_CreateDecalCommand() {
 	CG_CreateDecal(p,d,radius,matName);
 }
 
+static void CG_DoMuzzleFlashCommand() {
+	vec3_c p;
+	// weapon_xreal_machinegun has "barrel" bone
+	if(CG_GetViewModelBonePos("flash",p)) {
+
+	}
+	float radius = atof(CG_Argv(1));
+	CG_CreateTempLight(p,radius,100);
+}
+
 
 /*
 =================
@@ -310,6 +321,9 @@ static void CG_ServerCommand( void ) {
 		return;
 	} else if ( !strcmp( cmd, "createDecal" ) ) {
 		CG_CreateDecalCommand();
+		return;
+	} else if ( !strcmp( cmd, "doLocalMuzzleFlash" ) ) {
+		CG_DoMuzzleFlashCommand();
 		return;
 	}
 

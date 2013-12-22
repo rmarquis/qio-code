@@ -25,11 +25,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include "Weapon.h"
 #include "Player.h"
+#include "Light.h"
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/entityDeclAPI.h>
 #include <api/modelDeclAPI.h>
 #include <api/entDefAPI.h>
+#include <api/serverAPI.h>
 
 DEFINE_CLASS(Weapon, "ModelEntity");
 DEFINE_CLASS_ALIAS(Weapon, idItem);
@@ -48,6 +50,8 @@ Weapon::Weapon() {
 	raiseTime = 0;
 	lowerTime = 0;
 	reloadTime = 0;
+	flashColor.set(1,1,1);
+	flashRadius = 100.f;
 }
 Weapon::~Weapon() {
 
@@ -60,7 +64,13 @@ void Weapon::setViewModel(const char *newViewModelName) {
 		raiseTime = decl->getAnimationTimeMSec("raise");
 		lowerTime = decl->getAnimationTimeMSec("putaway");
 		delayBetweenShots = decl->getAnimationTimeMSec("fire");
+		if(delayBetweenShots == 0) {
+			delayBetweenShots = 10;
+		}
 		reloadTime = decl->getAnimationTimeMSec("reload");
+		if(reloadTime == 0) {
+			reloadTime = 10;
+		}
 	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
@@ -112,6 +122,12 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		def_projectile = value;
 	} else if(!stricmp(key,"smoke_muzzle")) {
 		smoke_muzzle = value;
+	} else if(!stricmp(key,"flashColor")) {
+		// example usage: "flashColor"	"1 0.8 0.4"
+		flashColor.fromString(value);
+	} else if(!stricmp(key,"flashRadius")) {
+		// example usage: "flashRadius"	"120"
+		flashRadius = atof(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -171,6 +187,16 @@ void Weapon::doWeaponAttack() {
 		skip = this;
 		muzzlePos = this->getOrigin();
 		muzzleDir = this->getForward();
+	}
+	if(flashRadius > 0.f) {
+#if 0
+		Light *l = new Light;
+		l->setOrigin(muzzlePos+muzzleDir*20.f);
+		l->setRadius(flashRadius);
+		l->removeAfterDelay(100);
+#else
+		g_server->SendServerCommand(-1,va("doLocalMuzzleFlash %f",flashRadius));
+#endif
 	}
 	if(def_projectile.size()) {
 		G_FireProjectile(def_projectile.c_str(),muzzlePos,muzzleDir,skip);

@@ -41,6 +41,7 @@ public:
 	void spawnPhysicsVehicle();
 	void destroyPhysicsVehicle();
 
+	virtual void setOrigin(const class vec3_c &newPos);
 	// calls "spawnPhysicsVehicle"
 	virtual void postSpawn();
 

@@ -52,6 +52,11 @@ public:
 	//
 	virtual class physCharacterControllerAPI_i *createCharacter(const class vec3_c &pos, float characterHeight,  float characterWidth) = 0;
 	virtual void freeCharacter(class physCharacterControllerAPI_i *p) = 0;
+	//
+	//	VEHICLES
+	//
+	virtual class physVehicleAPI_i *createVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cm) = 0;
+	virtual void removeVehicle(class physVehicleAPI_i *v) = 0;
 
 	// world
 	virtual void setGravity(const vec3_c &newGravity) = 0;

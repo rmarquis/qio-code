@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
+static aCvar_c cg_ignoreBakedLights("cg_ignoreBakedLights","0");
 
 /*
 ==================
@@ -52,6 +53,16 @@ static void CG_ResetEntity( centity_t *cent ) {
 }
 
 static void CG_TransitionLight(centity_t *cent) {
+	if(cg_ignoreBakedLights.getInt()) {
+		// ignore (don't add to renderer) lights that have lightmaps baked into BSP file
+		if(cent->currentState.lightFlags & LF_HASBSPLIGHTING) {
+			if(cent->rLight) {
+				rf->removeLight(cent->rLight);
+				cent->rLight = 0;
+			}
+			return;
+		}
+	}
 	if(cent->rLight == 0) {
 		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",cent->currentState.number);
 #if 0
@@ -89,6 +100,11 @@ static void CG_TransitionModel(centity_t *cent) {
 		cent->rEnt->setThirdPersonOnly(true);
 	} else {
 		cent->rEnt->setThirdPersonOnly(false);
+	}
+	if(cent->currentState.eFlags & EF_HIDDEN) {
+		cent->rEnt->hideModel();
+	} else {
+		cent->rEnt->showModel();
 	}
 	if(cent->currentState.activeRagdollDefNameIndex) {
 		const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];

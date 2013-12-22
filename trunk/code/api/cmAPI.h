@@ -46,6 +46,7 @@ class cmHelper_i {
 public:
 	virtual u32 getNumKeyPairs() const = 0;
 	virtual const char *getKeyValue(const char *key) const = 0;
+	virtual bool getKeyVec3(const char *key, class vec3_c &out) const = 0;
 };
 
 // cm object base
@@ -121,7 +122,7 @@ public:
 	virtual u32 getNumHelpers() const = 0;
 	virtual cmHelper_i *getHelper(u32 helperNum) = 0;
 	virtual cmCompound_i *getSubModel(u32 subModelNum) = 0;
-	///virtual cmHelper_i *getNextHelperOfClass(const char *className, cmHelper_i *cur = 0) = 0;
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const = 0;
 
 	virtual void getRawTriSoupData(class colMeshBuilderAPI_i *out) const {
 

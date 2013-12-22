@@ -47,6 +47,7 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	class eventList_c *eventList;
 	// LUA event callbacks
 	luaEventHandlerList_c lua_runFrameHandlers;
+	bool bMarkedForDelete;
 
 protected:
 	// called through eventReceiverBaseAPI_i
@@ -63,6 +64,7 @@ public:
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;
 	void applyKeyValues(const class entDefAPI_i *list);
 	void postEvent(int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
+	void removeAfterDelay(int delay);
 
 	// maybe I should put those functions in ModelEntity...
 	void link();

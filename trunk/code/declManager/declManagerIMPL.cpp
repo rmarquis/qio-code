@@ -313,6 +313,12 @@ public:
 		((animDef_c *)ad)->precacheAnim();
 		return ad->getTotalTimeMSec();
 	}
+	// debug output
+	virtual void printBoneNames() const {
+		if(skelModel) {
+			return skelModel->printBoneNames();
+		}
+	}
 };
 class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	str declName;

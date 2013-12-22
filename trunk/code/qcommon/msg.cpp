@@ -1530,7 +1530,7 @@ plyer_state_t communication
 
 netField_t	playerStateFields[] = 
 {
-{ PSF(commandTime), 32 },				
+{ PSF(commandTime), 32 },			
 { PSF(origin[0]), 0 },
 { PSF(origin[1]), 0 },
 { PSF(origin[2]), 0 },
@@ -1569,6 +1569,7 @@ netField_t	playerStateFields[] =
 { PSF(viewModelOffset[2]), 0 },
 { PSF(viewWeaponMaxClipSize), 0 },
 { PSF(viewWeaponCurClipSize), 0 },
+{ PSF(eFlags), EF_NUM_FLAG_BITS },	
 };
 
 /*

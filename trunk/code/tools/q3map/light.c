@@ -479,9 +479,13 @@ void CreateEntityLights (void)
 	for ( i = 0 ; i < num_entities ; i++ ) {
 		e = &entities[i];
 		name = ValueForKey (e, "classname");
-		if (strncmp (name, "light", 5))
+		if (strnicmp (name, "light", 5))
 			continue;
 
+		// tells the game that this light has been baked into lightmaps
+		SetKeyValue(e,"bBSPLightingCalculated","1");
+
+		// alloc q3map light1
 		numPointLights++;
 		dl = malloc(sizeof(*dl));
 		memset (dl, 0, sizeof(*dl));
@@ -2019,6 +2023,8 @@ int LightMain (int argc, char **argv) {
 	int			i;
 	double		start, end;
 	const char	*value;
+	char tmp[512];
+qboolean basePathSetManually;
 
 	_printf ("----- Lighting ----\n");
 
@@ -2074,6 +2080,10 @@ int LightMain (int argc, char **argv) {
 		} else if (!strcmp(argv[i],"-dump")) {
 			dump = qtrue;
 			_printf ("Dumping occlusion maps\n");
+		} else if (!strcmp(argv[i], "-gamedir")) {
+			SetQDir(argv[i+1]);
+			i++;
+			basePathSetManually = qtrue;
 		} else {
 			break;
 		}
@@ -2100,13 +2110,26 @@ int LightMain (int argc, char **argv) {
 
 	start = I_FloatTime ();
 
-	SetQdirFromPath (argv[i]);	
+	if(basePathSetManually) {
+		// do nothing, it's already set...
+	} else {
+		SetQdirFromPath (argv[i]);
+	}
 
 #ifdef _WIN32
 	InitPakFile(gamedir, NULL);
 #endif
+#if 1
+	strcpy (tmp, ExpandArg (argv[i]));
+	if(FileExists(tmp) == qfalse) {
+		strcpy(tmp,gamedir);
+		strcat(tmp,argv[i]);
+	}
 
+	strcpy(source,tmp);
+#else
 	strcpy (source, ExpandArg(argv[i]));
+#endif
 	StripExtension (source);
 	DefaultExtension (source, ".bsp");
 

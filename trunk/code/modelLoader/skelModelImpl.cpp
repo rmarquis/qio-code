@@ -119,6 +119,11 @@ skelModelIMPL_c::~skelModelIMPL_c() {
 	baseFrameABS.clear();
 	surfs.clear();
 }
+void skelModelIMPL_c::printBoneNames() const {
+	for(u32 i = 0; i < bones.size(); i++) {
+		g_core->Print("%i/%i: %s (%i)\n",i,bones.size(),SK_GetString(bones[i].nameIndex),bones[i].nameIndex);
+	}
+}
 void skelModelIMPL_c::scaleXYZ(float scale) {
 	baseFrameABS.scale(scale);
 	skelSurfIMPL_c *sf = surfs.getArray();

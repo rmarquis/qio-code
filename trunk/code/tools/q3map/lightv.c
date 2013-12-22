@@ -5595,6 +5595,8 @@ int VLightMain (int argc, char **argv) {
 	int			i;
 	double		start, end;
 	const char	*value;
+	char tmp[512];
+qboolean basePathSetManually;
 
 	_printf ("----- VLighting ----\n");
 
@@ -5643,6 +5645,10 @@ int VLightMain (int argc, char **argv) {
 			radiosity = atoi(argv[i+1]);
 			_printf("radiosity = %d\n", radiosity);
 			i++;
+		} else if (!strcmp(argv[i], "-gamedir")) {
+			SetQDir(argv[i+1]);
+			i++;
+			basePathSetManually = qtrue;
 		} else {
 			break;
 		}
@@ -5668,13 +5674,27 @@ int VLightMain (int argc, char **argv) {
 		exit(0);
 	}
 
-	SetQdirFromPath (argv[i]);	
+	if(basePathSetManually) {
+		// do nothing, it's already set...
+	} else {
+		SetQdirFromPath (argv[i]);
+	}
 
 #ifdef _WIN32
 	InitPakFile(gamedir, NULL);
 #endif
 
+#if 1
+	strcpy (tmp, ExpandArg (argv[i]));
+	if(FileExists(tmp) == qfalse) {
+		strcpy(tmp,gamedir);
+		strcat(tmp,argv[i]);
+	}
+
+	strcpy(source,tmp);
+#else
 	strcpy (source, ExpandArg(argv[i]));
+#endif
 	StripExtension (source);
 	DefaultExtension (source, ".bsp");
 

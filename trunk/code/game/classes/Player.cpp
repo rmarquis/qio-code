@@ -214,6 +214,7 @@ void Player::setLinearVelocity(const vec3_c &newVel) {
 }
 void Player::setVehicle(class VehicleCar *newVeh) {
 	vehicle = newVeh;
+	this->hideEntity();
 	disableCharacterController();
 }
 void Player::setPlayerModel(const char *newPlayerModelName) {
@@ -612,6 +613,7 @@ void Player::onUseKeyDown() {
 		this->setOrigin(this->getOrigin()+vec3_c(0,0,64));
 		this->vehicle = 0;
 		this->enableCharacterController();
+		this->showEntity();
 		return;
 	}
 	vec3_c eye = this->getEyePos();

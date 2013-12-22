@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Player.h"
 #include "../g_local.h"
 #include "../g_physVehicleAPI.h"
+#include <api/physAPI.h>
 
 DEFINE_CLASS(VehicleCar, "ModelEntity");
 
@@ -41,7 +42,12 @@ void VehicleCar::spawnPhysicsVehicle() {
 	if(physVehicle) {
 		destroyPhysicsVehicle();
 	}
-//	physVehicle = BT_CreateVehicle(this->getOrigin(),this->getAngles(),this->cmod);
+	physVehicle = g_physWorld->createVehicle(this->getOrigin(),this->getAngles(),this->cmod);
+}
+void VehicleCar::setOrigin(const class vec3_c &newPos) {
+	if(physVehicle == 0)
+		return;
+	physVehicle->setOrigin(newPos);
 }
 void VehicleCar::postSpawn() {
 	spawnPhysicsVehicle();
@@ -49,7 +55,7 @@ void VehicleCar::postSpawn() {
 void VehicleCar::destroyPhysicsVehicle() {
 	if(physVehicle == 0)
 		return;
-//	BT_RemoveVehicle(physVehicle);
+	g_physWorld->removeVehicle(physVehicle);
 	physVehicle = 0;
 }
 bool VehicleCar::doUse(class Player *activator) {

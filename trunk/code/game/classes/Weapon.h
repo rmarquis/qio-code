@@ -49,6 +49,9 @@ class Weapon : public ModelEntity {
 	vec3_c viewOffset, viewAngles;
 	str def_projectile;
 	str smoke_muzzle;
+	// D3 muzzle flash lighting effect
+	vec3_c flashColor;
+	float flashRadius;
 protected:
 	safePtr_c<Player> owner;
 

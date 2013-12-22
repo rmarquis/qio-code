@@ -287,6 +287,7 @@ void CG_RunTestModel();
 // cg_viewModel.cpp
 //
 void CG_RunViewModel();
+bool CG_GetViewModelBonePos(const char *boneName, class vec3_c &out);
 
 //
 // cg_tracer.cpp
@@ -303,6 +304,12 @@ void CG_RunTestEmitter();
 // cg_testMaterial.cpp
 //
 void CG_RunTestMaterial();
+
+//
+// cg_tempLighs.cpp
+//
+void CG_CreateTempLight(const class vec3_c &pos, float radius, int totalLife);
+void CG_RunTempLights();
 
 //===============================================
 

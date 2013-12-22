@@ -478,6 +478,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_tempLights.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_testEmitter.cpp"
 				>
 			</File>

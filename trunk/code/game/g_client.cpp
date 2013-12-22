@@ -409,7 +409,11 @@ void ClientCommand( int clientNum ) {
 			const char *ext = G_strgetExt(model);
 			if(ext && !stricmp(ext,"entDef")) {
 				BaseEntity *be = G_SpawnFirstEntDefFromFile(model);
-				be->setOrigin(spawnPos);
+				if(be == 0) {
+					g_core->Print("Failed to spawn %s\n",model.c_str());
+				} else {
+					be->setOrigin(spawnPos);
+				}
 			} else {
 				str collisionModelName = model;
 				collisionModelName.setExtension("map");

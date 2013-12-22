@@ -72,6 +72,7 @@ public:
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const = 0;
 	virtual const char *getBoneName(u32 boneIndex) const = 0;
 	//virtual const aabb &getEstimatedBounds() const = 0;
+	virtual void printBoneNames() const = 0;
 };
 
 #endif // __SKELMODELAPI_H__

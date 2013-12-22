@@ -499,7 +499,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 		do {
 			if(findinfo.attrib & _A_SUBDIR) {
 				if(findinfo.name[0] != '.') {
-					printf("subdir: %s\n",findinfo.name);
+					//printf("subdir: %s\n",findinfo.name);
 					char newDir[MAX_OSPATH];
 					strcpy(newDir,directory);
 					strcat(newDir,"\\");

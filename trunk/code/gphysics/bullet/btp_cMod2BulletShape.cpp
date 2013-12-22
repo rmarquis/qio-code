@@ -156,7 +156,19 @@ btBvhTriangleMeshShape *BT_CModelTriMeshToBHV(const class cmTriMesh_i *triMesh) 
 	return shape;
 }
 
-
+void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans, const class cMod_i *cmodel) {
+	if(cmodel->isHull()) {
+		const cmHull_i *h = cmodel->getHull();
+		btConvexHullShape *shape = BT_CModelHullToConvex(h);
+		compound->addChildShape(localTrans,shape);
+	} else if(cmodel->isCompound()) {
+		const cmCompound_i *cmCompound = cmodel->getCompound();
+		for(u32 i = 0; i < cmCompound->getNumSubShapes(); i++) {
+			const cMod_i *sub = cmCompound->getSubShapeN(i);
+			BT_AddCModelToCompoundShape(compound,localTrans,sub);
+		}
+	}
+}
 btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bool bIsStatic, class vec3_c *extraCenterOfMassOffset) {
 	if(cModel->isCompound()) {
 		const cmCompound_i *cmCompound = cModel->getCompound();

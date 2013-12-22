@@ -333,6 +333,9 @@ void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
 	// update view model
 	CG_RunViewModel();
 
+	// update client-only temporary lights
+	CG_RunTempLights();
+
 	// timout bullet tracers
 	CG_UpdateBulletTracers();
 

@@ -67,6 +67,8 @@ public:
 	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const = 0;
 	// used to get raw model data of staticmodels
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const = 0;
+	// debug output (this should work for tags as well)
+	virtual void printBoneNames() const = 0;
 };
 
 #endif // __RMODELAPI_H__

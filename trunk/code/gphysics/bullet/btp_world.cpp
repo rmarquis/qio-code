@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "btp_characterController.h"
 #include "btp_convert.h"
 #include "btp_constraint.h"
+#include "btp_vehicle.h"
 #include <shared/physObjectDef.h>
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
@@ -84,7 +85,9 @@ bool bulletPhysicsWorld_c::loadMap(const char *mapName) {
 void bulletPhysicsWorld_c::runFrame(float frameTime) {
 	if(dynamicsWorld == 0)
 		return;
-	//runVehicles();
+	for(u32 i = 0; i < vehicles.size(); i++) {
+		vehicles[i]->runFrame();
+	}
 	dynamicsWorld->stepSimulation(frameTime,2);
 }
 void bulletPhysicsWorld_c::shutdown() {
@@ -236,6 +239,21 @@ void bulletPhysicsWorld_c::freeCharacter(class physCharacterControllerAPI_i *p) 
 	this->characters.remove(pChar);
 	pChar->destroyCharacter();
 	delete pChar;
+}
+class physVehicleAPI_i *bulletPhysicsWorld_c::createVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cm) {
+	btVehicle_c *nv = new btVehicle_c;
+	nv->init(this, pos, angles, cm);
+	vehicles.push_back(nv);
+	return nv;
+}
+void bulletPhysicsWorld_c::removeVehicle(class physVehicleAPI_i *pv) {
+	btVehicle_c *v = dynamic_cast<btVehicle_c*>(pv);
+	if(v == 0) {
+		return;
+	}
+	vehicles.removeObject(v);
+	v->destroyVehicle();
+	delete v;
 }
 void bulletPhysicsWorld_c::setGravity(const vec3_c &newGravity) {
 	gravity = newGravity;

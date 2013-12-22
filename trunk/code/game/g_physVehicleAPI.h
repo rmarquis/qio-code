@@ -29,6 +29,7 @@ class physVehicleAPI_i {
 public:
 	virtual void getMatrix(class matrix_c &out) = 0;
 	virtual void setSteering(float engineForce, float steerRot) = 0;
+	virtual void setOrigin(const class vec3_c &newPos) = 0;
 };
 
 #endif // __G_PHYSVEHICLEAPI_H__

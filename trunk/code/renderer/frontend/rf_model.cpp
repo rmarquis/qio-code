@@ -167,6 +167,15 @@ bool model_c::getModelData(class staticModelCreatorAPI_i *out) const {
 	}
 	return true;
 }
+void model_c::printBoneNames() const {
+	if(type == MOD_DECL) {
+		this->declModel->printBoneNames();
+	} else if(type == MOD_SKELETAL) {
+		this->skelModel->printBoneNames();
+	} else {
+
+	}
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

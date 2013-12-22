@@ -46,6 +46,20 @@ public:
 		}
 		return 0;
 	}
+	const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		bool bPastCur = (cur == 0);
+		for(u32 i = 0; i < this->size(); i++) {
+			const cmHelper_c *h = (*this)[i];
+			if(h->hasClassName(className)) {
+				if(h == cur) {
+					bPastCur = true;
+				} else if (bPastCur) {
+					return h;
+				}
+			}
+		}
+		return 0;
+	}
 };
 class cmObjectBase_c {
 	cmObjectBase_c *hashNext;
@@ -135,6 +149,9 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
 	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
+	}
 
 	cmCapsule_c(const char *newName, float newHeight, float newRadius) {
 		this->name = newName;
@@ -183,6 +200,9 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
 	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
+	}
 
 	cmBBExts_c(const char *newName, const vec3_c &newHalfSizes) {
 		this->name = newName;
@@ -219,6 +239,9 @@ public:
 	}
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
+	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
 	}
 
 	cmBBMinsMaxs_c(const char *newName, const aabb &newBounds) {
@@ -284,6 +307,9 @@ public:
 	}
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
+	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
 	}
 
 	void setSingleBrush(const class cmBrush_c &br) {
@@ -394,6 +420,9 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
 	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
+	}
 
 	void addShape(class cMod_i *m) {
 		shapes.push_back(m);
@@ -493,6 +522,9 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
 	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
+	}
 
 	cmTriMesh_c(const char *newName, cmSurface_c *newSFPtr) {
 		this->name = newName;
@@ -537,6 +569,10 @@ public:
 	virtual cmCompound_i *getSubModel(u32 subModelNum) {
 		return helpers.findSubModel(subModelNum);
 	}
+	virtual const cmHelper_i *getNextHelperOfClass(const char *className, const cmHelper_i *cur = 0) const {
+		return helpers.getNextHelperOfClass(className,cur);
+	}
+
 	// cmSkelModel_i access
 	virtual const class skelModelAPI_i *getSkelModelAPI() const {
 		return skel;

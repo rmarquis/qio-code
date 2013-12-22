@@ -58,6 +58,14 @@ void Light::setKeyValue(const char *key, const char *value) {
 		} else {
 			this->myEdict->s->lightFlags &= ~LF_NOSHADOWS;
 		}
+	} else if(!stricmp(key,"bBSPLightingCalculated")) {
+		// set by our BSP compiler	
+		int bBSPLightingCalculated = atoi(value);
+		if(bBSPLightingCalculated) {
+			this->myEdict->s->lightFlags |= LF_HASBSPLIGHTING;
+		} else {
+			this->myEdict->s->lightFlags &= ~LF_HASBSPLIGHTING;
+		}
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

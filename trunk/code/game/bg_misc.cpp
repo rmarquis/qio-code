@@ -55,6 +55,7 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 	s->torsoAnim = ps->torsoAnim;
 	s->parentNum = ps->parentNum;
 	s->parentTagNum = ps->parentTagNum;
+	s->eFlags = ps->eFlags;
 
 	// set the trDelta for flag direction
 	//VectorCopy( ps->velocity, s->pos.trDelta );

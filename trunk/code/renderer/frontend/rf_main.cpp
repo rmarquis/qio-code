@@ -124,18 +124,31 @@ void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
 	// do a debug drawing on top of everything
 	RF_DoDebugDrawing();
 }
+bool RF_ShouldUseMultipassRendering() {
+	if(rf_enableMultipassRendering.getInt())
+		return true; // use multipass rendering
+	return false; // don't use it
+}
+bool RF_ShouldUseLightmapsWithMultipassRendering() {
+	if(rf_useLightmapsWithMultipassRendering.getInt()) {
+		return true;
+	}
+	return false;
+}
 void RF_Generate3DSubView() {
 	u32 firstDrawCall = RF_GetCurrentDrawcallsCount();
-	if(rf_enableMultipassRendering.getInt() == 0) { 
+	if(RF_ShouldUseMultipassRendering() == false) { 
 		RF_AddGenericDrawCalls();
 	} else {
-		if(rf_useLightmapsWithMultipassRendering.getInt()) {
+		if(RF_ShouldUseLightmapsWithMultipassRendering()) {
 			// generate prelit world drawcalls
+			// (using lightmaps + dynamic lights)
 			rf_bDrawingPrelitPath = true;
 			RF_AddGenericDrawCalls();
 			rf_bDrawingPrelitPath = false;
 		} else {
 			// draw on depth buffer
+			// (100% dynamic lighting)
 			RF_GenerateDepthBufferOnlySceneDrawCalls();
 		}
 		// add drawcalls of light interactions

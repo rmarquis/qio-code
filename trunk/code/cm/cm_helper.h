@@ -47,11 +47,18 @@ public:
 	class cmCompound_c *getCompound() const;
 	class cmCompound_i *getCompoundAPI() const;
 
+	bool hasClassName(const char *classNameToCheck) const {
+		return this->keyValues.hasKeyValue("classname",classNameToCheck);
+	}
+
 	virtual u32 getNumKeyPairs() const {
 		return keyValues.size();
 	}
 	virtual const char *getKeyValue(const char *key) const {
 		return keyValues.getKeyValue(key);
+	}
+	virtual bool getKeyVec3(const char *key, class vec3_c &out) const {
+		return keyValues.getKeyVec3(key,out);
 	}
 };
 

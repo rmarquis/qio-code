@@ -40,6 +40,7 @@ static aCvar_c cg_gunRotY("cg_gunRotY","0");
 static aCvar_c cg_gunRotZ("cg_gunRotZ","0");
 static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
 static aCvar_c cg_printCurViewModelAnimationCount("cg_printCurViewModelAnimationCount","0");
+static aCvar_c cg_printCurViewModelBoneNames("cg_printCurViewModelBoneNames","0");
 static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex","none");
 static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","none");
 static aCvar_c cg_forceViewModelAnimationFlags("cg_forceViewModelAnimationFlags","none");
@@ -259,6 +260,10 @@ void CG_RunViewModel() {
 	if(cg_printCurViewModelAnimationCount.getInt()) {
 		g_core->Print("Current viewmodel animation count: %i\n",viewModel->getNumAnims());
 	}
+	if(cg_printCurViewModelBoneNames.getInt()) {
+		g_core->Print("Current viewmodel %s bonenames:\n",viewModel->getName());
+		viewModel->printBoneNames();
+	}
 
 	CG_AllocViewModelEntity();
 
@@ -315,5 +320,14 @@ void CG_RunViewModel() {
 		}
 		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
 	}
+}
+
+bool CG_GetViewModelBonePos(const char *boneName, class vec3_c &out) {
+	if(cg_viewModelEntity == 0)
+		return true;
+	matrix_c mat;
+	cg_viewModelEntity->getBoneWorldOrientation(boneName,mat);
+	out = mat.getOrigin();
+	return false; // ok
 }
 

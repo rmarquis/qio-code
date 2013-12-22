@@ -1,0 +1,95 @@
+{
+"classname" "worldspawn"
+// brush 0
+{
+( -41 -152 -16 ) ( -41 104 -16 ) ( -41 104 32 ) debug/vehiclebrush 8 -16 -180 1 -1 0 0 0
+( 73 136 -16 ) ( 73 -120 -16 ) ( 73 -120 32 ) debug/vehiclebrush 8 -16 -180 1 -1 0 0 0
+( 73 48 32 ) ( 73 48 0 ) ( -33 48 0 ) debug/vehiclebrush 16 -16 -180 1 -1 0 0 0
+( 65 128 0 ) ( 65 128 32 ) ( -41 128 32 ) debug/vehiclebrush 16 -16 -180 1 -1 0 0 0
+( 65 48 0 ) ( 65 128 0 ) ( -41 128 0 ) debug/vehiclebrush 16 -8 -180 1 1 0 0 0
+( -41 48 32 ) ( -41 128 16 ) ( 73 88 24 ) debug/vehiclebrush 16 -8 -180 1 1 0 0 0
+}
+// brush 1
+{
+( -41 -128 -16 ) ( -41 128 -16 ) ( -41 128 32 ) debug/vehiclebrush 8 -16 -180 1 -1 0 0 0
+( 73 128 -16 ) ( 73 -128 -16 ) ( 73 -128 32 ) debug/vehiclebrush 8 -16 -180 1 -1 0 0 0
+( 73 48 32 ) ( 73 48 -16 ) ( -41 48 -16 ) debug/vehiclebrush 16 -16 -180 1 -1 0 0 0
+( -41 128 32 ) ( -41 128 -16 ) ( 73 128 -16 ) debug/vehiclebrush 16 -16 -180 1 -1 0 0 0
+( -41 128 0 ) ( 73 128 0 ) ( 73 -128 0 ) debug/vehiclebrush 16 -8 -180 1 1 0 0 0
+( -41 -128 -16 ) ( 73 -128 -16 ) ( 73 128 -16 ) debug/vehiclebrush 16 -8 -180 1 1 0 0 0
+}
+// brush 2
+{
+( 73 160 -16 ) ( 73 -96 -16 ) ( 73 -96 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -128 -16 ) ( -41 128 -16 ) ( -41 128 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -112 32 ) ( -41 -112 0 ) ( 65 -112 0 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( -33 -120 0 ) ( -33 -120 32 ) ( 73 -120 32 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( -33 -120 32 ) ( -33 -40 32 ) ( 73 -40 32 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( -33 -40 0 ) ( -33 -120 0 ) ( 73 -120 0 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+// brush 3
+{
+( 73 160 -16 ) ( 73 -96 -16 ) ( 73 -96 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( 63 -120 -16 ) ( 63 136 -16 ) ( 63 136 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( 73 -40 0 ) ( 73 -40 32 ) ( -41 -40 32 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -112 32 ) ( 73 -112 0 ) ( -41 -112 0 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -40 32 ) ( 73 -120 32 ) ( -41 -120 32 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( 73 -120 0 ) ( 73 -40 0 ) ( -41 -40 0 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+// brush 4
+{
+( -31 144 -16 ) ( -31 -112 -16 ) ( -31 -112 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -120 -16 ) ( -41 136 -16 ) ( -41 136 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -40 32 ) ( -41 -40 -16 ) ( 73 -40 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -112 32 ) ( 73 -112 -16 ) ( -41 -112 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -120 32 ) ( -41 -120 32 ) ( -41 136 32 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( 73 136 0 ) ( -41 136 0 ) ( -41 -120 0 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+// brush 5
+{
+( 73 136 -16 ) ( 73 -120 -16 ) ( 73 -120 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -120 -16 ) ( -41 136 -16 ) ( -41 136 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 48 32 ) ( -41 48 -16 ) ( 73 48 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -40 32 ) ( 73 -40 -16 ) ( -41 -40 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -120 32 ) ( -41 -120 32 ) ( -41 136 32 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( 73 136 -16 ) ( -41 136 -16 ) ( -41 -120 -16 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+// brush 6
+{
+( 73 136 -16 ) ( 73 -120 -16 ) ( 73 -120 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -120 -16 ) ( -41 136 -16 ) ( -41 136 32 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -40 32 ) ( -41 -40 -16 ) ( 73 -40 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -120 32 ) ( 73 -120 -16 ) ( -41 -120 -16 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -120 0 ) ( -41 -120 0 ) ( -41 136 0 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( 73 136 -16 ) ( -41 136 -16 ) ( -41 -120 -16 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+// brush 7
+{
+( 73 48 32 ) ( 73 -40 32 ) ( 73 -40 49 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 -40 32 ) ( -41 48 32 ) ( -41 48 49 ) debug/vehiclebrush 0 -16 0 1 1 0 0 0
+( -41 48 49 ) ( -41 48 32 ) ( 73 48 32 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -40 49 ) ( 73 -40 32 ) ( -41 -40 32 ) debug/vehiclebrush -16 -16 0 1 1 0 0 0
+( 73 -40 49 ) ( -41 -40 49 ) ( -41 48 49 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+( 73 48 32 ) ( -41 48 32 ) ( -41 -40 32 ) debug/vehiclebrush -16 0 0 1 1 0 0 0
+}
+}
+// entity 1
+{
+"classname" "car_wheel"
+"origin" "56 104 -24"
+}
+// entity 2
+{
+"classname" "car_wheel"
+"origin" "56 -104 -24"
+}
+// entity 3
+{
+"classname" "car_wheel"
+"origin" "-24 104 -24"
+}
+// entity 4
+{
+"classname" "car_wheel"
+"origin" "-24 -104 -24"
+}

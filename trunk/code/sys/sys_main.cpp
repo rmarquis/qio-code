@@ -541,6 +541,12 @@ void Sys_SigHandler( int signal )
 		Sys_Exit( 2 );
 }
 
+#define QIO_USE_CRT_DEBUGGING
+
+#ifdef QIO_USE_CRT_DEBUGGING
+#include <crtdbg.h>
+#endif
+
 /*
 =================
 main
@@ -558,6 +564,15 @@ int main( int argc, char **argv )
 #	if !SDL_VERSION_ATLEAST(MINSDL_MAJOR,MINSDL_MINOR,MINSDL_PATCH)
 #		error A more recent version of SDL is required
 #	endif
+
+#ifdef QIO_USE_CRT_DEBUGGING
+	// its very slow
+#if 0
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_LEAK_CHECK_DF);
+#else
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+#endif
+#endif // QIO_USE_CRT_DEBUGGING
 
 	AllocConsole();
 	freopen( "CON", "w", stdout );
