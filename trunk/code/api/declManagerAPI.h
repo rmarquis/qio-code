@@ -38,6 +38,8 @@ class declManagerAPI_i : public iFaceBase_i {
 	virtual class particleDeclAPI_i *_registerParticleDecl(const char *name, qioModule_e userModule) = 0;
 public:
 	virtual void init() = 0;
+	virtual void shutdown() = 0;
+
 	// NOTE: those functions must be inlined, otherwise IFM_GetCurModule() trick wouldnt work
 	inline class modelDeclAPI_i *registerModelDecl(const char *name) {
 		// NOTE: IFM_GetCurModule must be implemented in each and every Qio module!

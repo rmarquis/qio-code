@@ -39,6 +39,9 @@ class fileTextDataCache_c {
 	arraySTD_c<defFile_s*> defFiles;
 	u32 totalDefBytes;
 public:
+	fileTextDataCache_c();
+	~fileTextDataCache_c();
+
 	void cacheDefFileText(const char *fname);
 	const char *findDeclInText(const char *declName, const char *declType, const char *text);
 	bool findDeclText(const char *declName, const char *declType, struct declTextDef_s &out);
@@ -87,6 +90,7 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	void cacheParticleDefNamesList();
 
 	virtual void init();
+	virtual void shutdown();
 	virtual class modelDeclAPI_i *_registerModelDecl(const char *name, qioModule_e userModule);
 	virtual class entityDeclAPI_i *_registerEntityDecl(const char *name, qioModule_e userModule);
 	virtual class afDeclAPI_i *_registerAFDecl(const char *name, qioModule_e userModule);

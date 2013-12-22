@@ -73,6 +73,13 @@ class cmAPIImpl_c : public cmAPI_i {
 	virtual bool traceWorldAABB(class trace_c &tr) {
 		return CM_TraceWorldAABB(tr);
 	}
+public:
+	cmAPIImpl_c() {
+
+	}
+	~cmAPIImpl_c() {
+		this->freeAllModels();
+	}
 };
 
 // interface manager (import)

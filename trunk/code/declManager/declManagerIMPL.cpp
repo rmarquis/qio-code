@@ -672,6 +672,15 @@ void declManagerIMPL_c::iterateParticleDefNames(void (*callback)(const char *s))
 	cacheParticleDefNamesList();
 	particleDefNamesList.iterateStringList(callback);
 }
+fileTextDataCache_c::fileTextDataCache_c() {
+	totalDefBytes = 0;
+}
+fileTextDataCache_c::~fileTextDataCache_c() {
+	for(u32 i = 0; i < defFiles.size(); i++) {
+		delete defFiles[i];
+	}
+	defFiles.clear();
+}
 void fileTextDataCache_c::cacheDefFileText(const char *fname) {
 	char *data;
 	u32 len = g_vfs->FS_ReadFile(fname,(void**)&data);
@@ -759,6 +768,36 @@ void declManagerIMPL_c::init() {
 	registerAFDecl("monster_qwizard");
 #endif
 	_registerParticleDecl("rocketmuzzle",QMD_DECL_MANAGER);
+}
+void declManagerIMPL_c::shutdown() {
+	for(int i = 0; i < entityDecls.size(); i++) {
+		entityDecl_c *ed = entityDecls[i];
+		if(ed->isReferenced()) {
+			g_core->RedWarning("declManagerIMPL_c::shutdown: freeing %s which is still referenced\n",ed->getName());
+		}
+		delete ed;
+	}
+	for(int i = 0; i < modelDecls.size(); i++) {
+		modelDecl_c *md = modelDecls[i];
+		if(md->isReferenced()) {
+			g_core->RedWarning("declManagerIMPL_c::shutdown: freeing %s which is still referenced\n",md->getName());
+		}
+		delete md;
+	}
+	for(int i = 0; i < afDecls.size(); i++) {
+		afDecl_c *af = afDecls[i];
+		if(af->isReferenced()) {
+			g_core->RedWarning("declManagerIMPL_c::shutdown: freeing %s which is still referenced\n",af->getName());
+		}
+		delete af;
+	}
+	for(int i = 0; i < prtDecls.size(); i++) {
+		particleDecl_c *prt = prtDecls[i];
+		if(prt->isReferenced()) {
+			g_core->RedWarning("declManagerIMPL_c::shutdown: freeing %s which is still referenced\n",prt->getName());
+		}
+		delete prt;
+	}
 }
 
 // interface manager (import)

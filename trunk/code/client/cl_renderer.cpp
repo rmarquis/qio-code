@@ -123,8 +123,10 @@ void CL_ShutdownRef( void ) {
 		return;
 	}
 	rf->shutdown( qtrue );
-	g_moduleMgr->unload(&cl_rendererBackEndDLL);
+	// first unload frontend
 	g_moduleMgr->unload(&cl_rendererDLL);
+	// and then backend
+	g_moduleMgr->unload(&cl_rendererBackEndDLL);
 }
 
 /*
