@@ -1646,6 +1646,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\vec3.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\code\math\vec3.h"
 				>
 			</File>

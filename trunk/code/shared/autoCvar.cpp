@@ -39,6 +39,10 @@ aCvar_c::aCvar_c(const char *newName, const char *newDefaultStr, int newCvarFlag
 	this->nextModuleCvar = module_autoCvars;
 	module_autoCvars = this;
 }
+aCvar_c::~aCvar_c() {
+
+}
+
 void aCvar_c::setExtraModificationCallback(autoCvarModificationCallback_t newModCallback) {
 	this->extraModificationCallback = newModCallback;
 }

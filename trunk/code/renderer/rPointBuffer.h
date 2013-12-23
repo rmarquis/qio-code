@@ -54,6 +54,9 @@ public:
 	u32 registerVec3(const vec3_c &v) {
 		return data.registerVec3(v);
 	}
+	u32 addPoint(const vec3_c &v) {
+		return data.addVec3(v);
+	}
 	u32 getSizeInBytes() const {
 		return data.getSizeInBytes();
 	}

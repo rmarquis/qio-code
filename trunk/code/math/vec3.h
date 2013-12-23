@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "math.h"
 #include <stdio.h> // sscanf
+#include <string.h> // memcmp
 
 class vec3_c {
 public:
@@ -101,7 +102,8 @@ public:
 			return false;
 		return true;
 	}
-	bool compare(const vec3_c &other, const float eps = 0.01f) const {
+	inline bool compare(const vec3_c &other, const float eps = 0.01f) const {
+#if 0
 		if(abs(this->x - other.x) > eps)
 			return false;
 		if(abs(this->y - other.y) > eps)
@@ -109,6 +111,9 @@ public:
 		if(abs(this->z - other.z) > eps)
 			return false;
 		return true;
+#else
+		return !memcmp(this,&other,sizeof(vec3_c));
+#endif
 	}
 	bool operator == (const vec3_c &other) const {
 		if(x != other.x)
@@ -158,15 +163,8 @@ public:
 		r.z = fabs(this->z);
 		return r;
 	}
-	void normalize() {
-		float lengthSQ = x*x + y*y + z*z;
-		if ( lengthSQ ) {
-			float iLength = G_rsqrt(lengthSQ);
-			x *= iLength;
-			y *= iLength;
-			z *= iLength;
-		}
-	}
+	void normalize();
+
 	// returns previous vector lenght value
 	float normalize2() {
 		float length = x*x + y*y + z*z;

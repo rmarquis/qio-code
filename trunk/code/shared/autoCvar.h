@@ -47,6 +47,7 @@ class aCvar_c : public cvarModifyCallback_i {
 	void onCvarModified(const char *newText);
 public:
 	aCvar_c(const char *newName, const char *newDefaultStr, int newCvarFlags = 0);
+	~aCvar_c();
 
 	void setExtraModificationCallback(autoCvarModificationCallback_t newModCallback);
 	void setString(const char *newStr);

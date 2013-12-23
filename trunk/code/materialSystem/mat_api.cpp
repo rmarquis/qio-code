@@ -50,6 +50,7 @@ public:
 		AUTOCMD_UnregisterAutoConsoleCommands();
 		MAT_FreeAllMaterials();
 		MAT_FreeAllTextures();
+		MAT_FreeCachedMaterialsTest();
 	}
 	virtual mtrAPI_i *registerMaterial(const char *matName) {
 		return MAT_RegisterMaterialAPI(matName);

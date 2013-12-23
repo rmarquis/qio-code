@@ -385,6 +385,15 @@ void MAT_FreeAllMaterials() {
 		delete m;
 		materials[i] = 0;
 	}
+	materials.clear();
+}
+void MAT_FreeCachedMaterialsTest() {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		matFile_s *mf = matFiles[i];
+		delete mf;
+		matFiles[i] = 0;
+	}
+	matFiles.clear();
 }
 
 static void MAT_RefreshSingleMaterial_f() {

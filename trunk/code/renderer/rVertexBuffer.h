@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/array.h>
 #include <api/rbAPI.h>
+#include <api/coreAPI.h>
 
 #include "rVertex.h"
 
@@ -69,10 +70,20 @@ public:
 		numVerts += ar.size();
 	}
 	void uploadToGPU() {
-		rb->createVBO(this);
+		if(rb == 0) {
+			g_core->RedWarning("rVertexBuffer_c::uploadToGPU: rb is NULL, cannot upload VBO\n");
+		} else {
+			rb->createVBO(this);
+		}
 	}
 	void unloadFromGPU() {
-		rb->destroyVBO(this);
+		if(rb == 0) {
+			if(handleU32) {
+				g_core->RedWarning("rVertexBuffer_c::unloadFromGPU: rb is NULL, cannot free VBO data (GPU memory leak).\n");
+			}
+		} else {
+			rb->destroyVBO(this);
+		}
 	}
 	void resize(u32 newSize) {
 		ensureAllocated(newSize);

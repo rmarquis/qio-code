@@ -362,6 +362,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\..\code\math\vec3.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

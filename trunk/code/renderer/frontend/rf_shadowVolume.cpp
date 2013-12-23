@@ -43,6 +43,10 @@ static aCvar_c rf_dontUsePrecomputedSSVCasters("rf_dontUsePrecomputedSSVCasters"
 static aCvar_c rf_dontUseExtraEdgeArrays("rf_dontUseExtraEdgeArrays","0");
 static aCvar_c rf_skipAnimatedObjectsShadows("rf_skipAnimatedObjectsShadows","0");
 static aCvar_c rf_ssv_cullTrianglesOutSideLightSpheres("rf_ssv_cullTrianglesOutSideLightSpheres","1");
+// looks like hashing shadow volume vertices actually slows down everything for models that has shadow volume updated every frame
+// (the benefit from sending the smaller count of vertices to GPU is lower than slowdown caused by hashing)
+static aCvar_c rf_ssv_hashVertices("rf_ssv_hashVertices","0");
+static aCvar_c rf_ssv_algorithm("rf_ssv_algorithm","1");
 
 inline float getShadowVolumeInf() {
 //	return 4096.f;
@@ -55,6 +59,13 @@ rIndexedShadowVolume_c::rIndexedShadowVolume_c() {
 rIndexedShadowVolume_c::~rIndexedShadowVolume_c() {
 	c_allocatedShadowVolumes--;
 	printf("%i active shadow volumes\n",c_allocatedShadowVolumes);
+}
+u32 rIndexedShadowVolume_c::registerPoint(const vec3_c &p) {
+	bounds.addPoint(p);
+	if(rf_ssv_hashVertices.getInt()) {
+		return points.registerVec3(p);
+	}
+	return points.addPoint(p);
 }
 void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	plane_c triPlane;
@@ -181,9 +192,23 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 			rf_curTimeMsec,points.size(),indices.getNumIndices()/3,ent->getModelName(),this->c_edgeQuadsAdded,this->c_capTriPairsAdded);
 	}
 }
-static aCvar_c rf_ssv_algorithm("rf_ssv_algorithm","1");
+bool IsAABBInsideSphere(const aabb &bb, const vec3_c &sphereCenter, float sphereRadius) {
+	float radSq = Square(sphereRadius);
+	for(u32 i = 0; i < 8; i++) {
+		vec3_c p = bb.getPoint(i);
+		if(p.distSQ(sphereCenter) > radSq)
+			return false;
+	}
+	return true;
+}
+#if 1
+#define OPTIMIZE_SLOW_ADDTRIANGLE
+#endif
 
-void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices, const rVertexBuffer_c &oVerts, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius) {
+#define ADD_TRIANGLE(ptr, i0, i1, i2) *ptr = i0; ptr++; *ptr = i1; ptr++; *ptr = i2; ptr++;
+#define ADD_QUAD(ptr, i0, i1, i2, i3) ADD_TRIANGLE(ptr,i0,i1,i2); ADD_TRIANGLE(ptr,i1,i3,i2);
+
+void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices, const rVertexBuffer_c &oVerts, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius, const class aabb *bounds) {
 #if 1
 	// for a single triangle, in worst case we might need to create:
 	// front cap + end cap + 3 edge quads
@@ -191,6 +216,13 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 	indices.ensureAllocated_indices(indices.getNumIndices() + oIndices.getNumTriangles() * 8 * 3);
 	points.ensureAllocated(points.size() + oVerts.size()*2);
 #endif
+#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
+	if(indices.getU16Ptr() == 0)
+		return;
+	u16 *pFirstIndex = ((u16*)indices.getU16Ptr()) + indices.getNumIndices();
+	u16 *pNextIndex = pFirstIndex;
+#endif
+
 	if(rf_ssv_algorithm.getInt() == 0) {
 		for(u32 i = 0; i < oIndices.getNumIndices(); i+=3){
 			u32 i0 = oIndices[i+0];
@@ -202,6 +234,12 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			addTriangle(v0,v1,v2,light);
 		}
 	} else {
+		bool bMeshFullyInsideLight;
+		if(bounds) {
+			bMeshFullyInsideLight = IsAABBInsideSphere(*bounds,light,lightRadius);
+		} else {
+			bMeshFullyInsideLight = false;
+		}
 		// do the same thing as above, but a little faster way
 		static arraySTD_c<byte> bPointTransformed;
 		if(bPointTransformed.size() < oVerts.size()) {
@@ -225,8 +263,11 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			// cull triangles that are outside light radius
 			// This is a good optimisation for very large models intersecting very small lights
 			if(rf_ssv_cullTrianglesOutSideLightSpheres.getInt()) {
-				if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
-					continue;
+				// we can't cull that way any triangles if mesh bounds are entirely inside light sphere
+				if(bMeshFullyInsideLight == false) {
+					if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
+						continue;
+					}
 				}
 			}
 			float d;
@@ -270,7 +311,13 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			u32 pi0 = this->registerPoint(p0Projected);
 			u32 pi1 = this->registerPoint(p1Projected);
 			u32 pi2 = this->registerPoint(p2Projected);
-
+#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
+			ADD_TRIANGLE(pNextIndex,i2,i1,i0);
+			ADD_TRIANGLE(pNextIndex,pi0,pi1,pi2);
+			ADD_QUAD(pNextIndex,i0,i1,pi0,pi1);
+			ADD_QUAD(pNextIndex,i1,i2,pi1,pi2);
+			ADD_QUAD(pNextIndex,i2,i0,pi2,pi0);
+#else
 			indices.addTriangle(i2,i1,i0);
 			indices.addTriangle(pi0,pi1,pi2);
 			c_capTriPairsAdded++;
@@ -280,8 +327,13 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			c_edgeQuadsAdded++;
 			indices.addQuad(i2,i0,pi2,pi0);
 			c_edgeQuadsAdded++;
+#endif
 		}
 	}
+#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
+	u32 numAddedIndices = pNextIndex - pFirstIndex;
+	indices.forceSetIndexCount(indices.getNumIndices()+numAddedIndices);
+#endif
 }
 #include <shared/extraSurfEdgesData.h>
 // NOTE: this method works faster for meshes that dont have much unmatched edges
@@ -381,10 +433,10 @@ void rIndexedShadowVolume_c::addRSurface(const class r_surface_c *sf, const vec3
 		if(edges && (rf_dontUseExtraEdgeArrays.getInt() == 0)) {
 			addIndexedVertexListWithEdges(indices,verts,light,&triPlanes,edges);
 		} else {
-			addIndexedVertexList(indices,verts,light,&triPlanes, lightRadius);
+			addIndexedVertexList(indices,verts,light,&triPlanes, lightRadius,&sf->getBB());
 		}
 	} else {
-		addIndexedVertexList(indices,verts,light,0, lightRadius);
+		addIndexedVertexList(indices,verts,light,0, lightRadius,&sf->getBB());
 	}
 }
 void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius) {

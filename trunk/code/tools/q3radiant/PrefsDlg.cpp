@@ -246,6 +246,8 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_UNDOLEVELS, m_nUndoLevels);
 	DDV_MinMaxInt(pDX, m_nUndoLevels, 1, 64);
 	//}}AFX_DATA_MAP
+// im getting breakpoint here:
+	// "Error: failed to load AfxFormatString string 0xf112."
 }
 
 

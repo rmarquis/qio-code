@@ -51,6 +51,10 @@ DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
 DEFINE_CLASS_ALIAS(ModelEntity, func_moveable);
 DEFINE_CLASS_ALIAS(ModelEntity, idMoveable);
+DEFINE_CLASS_ALIAS(ModelEntity, idAnimated);
+// load Doom3 game/pdas map to test it
+DEFINE_CLASS_ALIAS(ModelEntity, idMoveablePDAItem);
+DEFINE_CLASS_ALIAS(ModelEntity, idPDAItem);
 
 static aCvar_c g_verboseSetAnimationCalls("g_verboseSetAnimationCalls","0");
 

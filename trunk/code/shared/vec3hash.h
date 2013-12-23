@@ -50,8 +50,11 @@ class vec3Hash_c {
 	int numVecs;
 	float equalVertexEpsilon;
 
-	u32 hashForVec3(const vec3_c &v) {
+	inline u32 hashForVec3(const vec3_c &v) {
 		return ((u32(v.x) + u32(v.y) + u32(v.z)) % 1024);
+		//return ((
+		//	*((u32*)(&v.x)) + *((u32*)(&v.y)) +	*((u32*)(&v.z))
+		//	) % 1024);
 	}
 public:
 	vec3Hash_c() {
@@ -92,6 +95,15 @@ public:
 		nv.next = table[hash];
 		table[hash] = ret;
 		nv.v = v;
+		return ret;
+	}
+	u32 addVec3(const vec3_c &v) {
+		u32 ret = numVecs;
+		if(numVecs+1 > data.size()) {
+			data.resize(numVecs+1);
+		}
+		data[numVecs].v = v;
+		numVecs++;
 		return ret;
 	}
 	void ensureAllocated(u32 neededVertCount) {

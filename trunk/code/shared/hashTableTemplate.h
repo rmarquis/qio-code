@@ -145,6 +145,9 @@ public:
 		return table.getEntry(entryName);
 	}
 	void addObject(TYPE *obj) {
+		if(getEntry(obj->getName())) {
+			return; // already on list
+		}
 		table.addObject(obj);
 //		G_assert(ar.indexOf(obj)==-1);
 		ar.push_back(obj);

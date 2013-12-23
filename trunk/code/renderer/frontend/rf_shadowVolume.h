@@ -42,10 +42,7 @@ class rIndexedShadowVolume_c {
 	u32 numIndicesNoCaps;
 	vec3_c lightPos;
 
-	u32 registerPoint(const vec3_c &p) {
-		bounds.addPoint(p);
-		return points.registerVec3(p);
-	}
+	u32 registerPoint(const vec3_c &p);
 public:
 	rIndexedShadowVolume_c();
 	~rIndexedShadowVolume_c();
@@ -75,7 +72,7 @@ public:
 
 	// shadow volume creation
 	void createShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &light, float lightRadius);
-	void addIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius);
+	void addIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray, float lightRadius, const class aabb *bounds = 0);
 	void addIndexedVertexListWithEdges(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light, const class planeArray_c *extraPlanesArray, const struct extraSurfEdgesData_s *edges);
 	void addRSurface(const class r_surface_c *sf, const vec3_c &light, const struct extraSurfEdgesData_s *edges, float lightRadius);
 	void fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius);

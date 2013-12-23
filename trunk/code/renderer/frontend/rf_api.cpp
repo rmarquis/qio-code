@@ -85,6 +85,9 @@ public:
 		materialSystemDLL = 0;
 		initialized = false;
 	}
+	~rAPIImpl_c() {
+
+	}
 	// functions called every frame
 	virtual void beginFrame() {
 		rb->beginFrame();

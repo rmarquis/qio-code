@@ -63,6 +63,7 @@ class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, 
 void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();
+void MAT_FreeCachedMaterialsTest();
 
 // mat_texturesScript.cpp
 class textureAPI_i *MAT_ParseImageScript(class parser_c &p);

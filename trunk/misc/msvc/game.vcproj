@@ -903,6 +903,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\math\vec3.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\vec3.h"
 				>
 			</File>

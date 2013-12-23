@@ -46,14 +46,26 @@ class stringRegister_c {
 	hashTableTemplateExt_c<strEntry_s> table;
 
 public:
+	stringRegister_c() {
+
+	}
+	stringRegister_c(const stringRegister_c &other);
+	void operator = (const stringRegister_c &other);
+
+	~stringRegister_c() {
+		for(u32 i = 0; i < table.size(); i++) {
+			delete table[i];
+		}
+		table.clear();
+	}
 	u32 registerString(const char *str) {
 		strEntry_s *e = table.getEntry(str);
 		if(e == 0) {
 			e = new strEntry_s;
 			e->name = str;
 			e->index = table.size();
+			table.addObject(e);
 		}
-		table.addObject(e);
 		return e->index;
 	}
 	bool findString(const char *str, u32 &outIndex) const {

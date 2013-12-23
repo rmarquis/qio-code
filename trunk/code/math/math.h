@@ -99,6 +99,38 @@ inline float G_sqrt2(float n) {
     return r;
 }	
 
+inline float __declspec(naked) __fastcall G_rsqrt3(float x) {
+    __asm {
+        mov	eax, 0be6eb508h
+        mov	dword ptr [esp-12], 03fc00000h
+        sub	eax,	dword ptr [esp+4]
+        sub	dword ptr [esp+4], 800000h
+        shr	eax,	1
+        mov	dword ptr [esp-8], eax
+        fld	dword ptr [esp-8]
+        fmul	st,	st
+        fld	dword ptr [esp-8]
+        fxch	st(1)
+        fmul	dword ptr [esp+4]
+        fld	dword ptr [esp-12]
+        fld	st(0)
+        fsub	st,	st(2)
+        fld	st(1)
+        fxch	st(1)
+        fmul	st(3),	st
+        fmul	st(3),	st
+        fmulp	st(4),	st
+        fsub	st,	st(2)
+        fmul	st(2),	st
+        fmul	st(3),	st
+        fmulp	st(2),	st
+        fxch	st(1)
+        fsubp	st(1),	st
+        fmulp	st(1),	st
+        ret 4
+    }
+}
+
 // quadratic interpolation for n-dimensional vector
 inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)
 {

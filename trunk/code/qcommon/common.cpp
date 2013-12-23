@@ -2456,6 +2456,74 @@ void Com_GameRestart_f(void)
 	Com_GameRestart(0, qtrue);
 }
 
+__int64 GetMachineCycleCount()
+{      
+	__int64 cycles;
+	_asm rdtsc
+	_asm lea ebx,cycles
+	_asm mov [ebx],eax
+	_asm mov [ebx+4],edx
+	return cycles;
+}
+
+void Com_BenchRSQRTFunctions_f() {
+	int iterations;
+	float f;
+	float data[1000];
+	int total_sqrt;
+	int total_rsqrt;
+	int total_rsqrt3;
+	__int64 start;
+	int start_msec;
+	int total_sqrt_msec;
+	int total_rsqrt_msec;
+	int total_rsqrt3_msec;
+
+	if(Cmd_Argc()>1) {
+		iterations = atoi(Cmd_Argv(1));
+	} else {
+		iterations = 100000000;
+	}
+
+	for(int i = 0; i < 1000; i++) {
+		data[i] = 0.01f * i;
+	}
+	start_msec = Sys_Milliseconds();
+	start = GetMachineCycleCount();
+	for(int i = 0; i < iterations; i++) {
+		f = 1.f/sqrt(data[i%1000]);
+	}
+	total_sqrt = GetMachineCycleCount() - start;
+	total_sqrt_msec = Sys_Milliseconds() - start_msec;
+
+	start_msec = Sys_Milliseconds();
+	start = GetMachineCycleCount();
+	for(int i = 0; i < iterations; i++) {
+		f = G_rsqrt(data[i%1000]);
+	}
+	total_rsqrt = GetMachineCycleCount() - start;
+	total_rsqrt_msec = Sys_Milliseconds() - start_msec;
+
+	start_msec = Sys_Milliseconds();
+	start = GetMachineCycleCount();
+	for(int i = 0; i < iterations; i++) {
+		f = G_rsqrt3(data[i%1000]);
+	}
+	total_rsqrt3 = GetMachineCycleCount() - start;
+	total_rsqrt3_msec = Sys_Milliseconds() - start_msec;
+
+	Com_Printf("Total Cycles: sqrt: %i, rsqrt %i, rsqrt3 %i\n",total_sqrt,total_rsqrt,total_rsqrt3);
+	Com_Printf("Total MSec: sqrt: %i, rsqrt %i, rsqrt3 %i\n",total_sqrt_msec,total_rsqrt_msec,total_rsqrt3_msec);
+	float single_sqrt = total_sqrt / float(iterations);
+	float single_rsqrt = total_rsqrt / float(iterations);
+	float single_rsqrt3 = total_rsqrt3 / float(iterations);
+	float single_sqrt_msec = total_sqrt_msec / float(iterations);
+	float single_rsqrt_msec = total_rsqrt_msec / float(iterations);
+	float single_rsqrt3_msec = total_rsqrt3_msec / float(iterations);
+	Com_Printf("AVG Cycles: sqrt: %f, rsqrt %f, rsqrt3 %f\n",single_sqrt,single_rsqrt,single_rsqrt3);
+	Com_Printf("AVG MSec: sqrt: %f, rsqrt %f, rsqrt3 %f\n",single_sqrt_msec,single_rsqrt_msec,single_rsqrt3_msec);
+}
+
 static void Com_DetectAltivec(void)
 {
 	// Only detect if user hasn't forcibly disabled it.
@@ -2600,6 +2668,33 @@ void Com_InitDeclManagerDLL() {
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 	g_declMgr->init();
 }
+void Com_ShutdownDeclManagerDLL() {
+	if(com_declMgrLib == 0) {
+		return;
+	}
+	if(g_declMgr) {
+		g_declMgr->shutdown();
+	}
+	g_moduleMgr->unload(&com_declMgrLib);
+}
+void Com_ShutdownModelLoaderDLL() {
+	if(com_modelLoaderDLL == 0) {
+		return;
+	}
+	//if(g_declMgr) {
+	//	g_declMgr->shutdown();
+	//}
+	g_moduleMgr->unload(&com_modelLoaderDLL);
+}
+void Com_ShutdownCMDLL() {
+	if(com_cmLib == 0) {
+		return;
+	}
+	//if(g_declMgr) {
+	//	g_declMgr->shutdown();
+	//}
+	g_moduleMgr->unload(&com_cmLib);
+}
 /*
 =================
 Com_Init
@@ -2683,6 +2778,7 @@ void Com_Init( char *commandLine ) {
 	Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 	Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
 	Cmd_AddCommand("game_restart", Com_GameRestart_f);
+	Cmd_AddCommand("bench_sqrt", Com_BenchRSQRTFunctions_f);
 
 	Com_ExecuteCfg();
 
@@ -3192,6 +3288,13 @@ Com_Shutdown
 =================
 */
 void Com_Shutdown (void) {
+	// shutdown Doom3 decls manager
+	Com_ShutdownDeclManagerDLL();
+	// shutdown CollisionModel library
+	Com_ShutdownCMDLL();
+	// shutdown model loader DLL
+	Com_ShutdownModelLoaderDLL();
+
 	if (logfile) {
 		FS_FCloseFile (logfile);
 		logfile = 0;
