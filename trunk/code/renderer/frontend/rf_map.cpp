@@ -83,6 +83,8 @@ class rWorldMapLoader_c : public staticModelCreatorAPI_i {
 		}
 	}
 	// well I dont think those functions are needed for .map files
+	virtual void transform(const class matrix_c &mat) {
+	}
 	virtual void getCurrentBounds(class aabb &out) {
 	}
 	virtual void setAllSurfsMaterial(const char *newMatName) {

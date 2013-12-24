@@ -32,8 +32,10 @@ enum {
 	LF_NOSHADOWS = 1,
 	// set automatically by .bsp compiler when lightmaps are baked
 	LF_HASBSPLIGHTING = 2,
+	// q3map style spotlight ("target" field must be set)
+	LF_SPOTLIGHT = 4,
 
-	LIGHTFLAGS_BITS = 2,
+	LIGHTFLAGS_BITS = 3,
 };
 
 #endif // __SHARED_LIGHTFLAGS_H__

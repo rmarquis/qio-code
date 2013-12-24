@@ -129,8 +129,7 @@ public:
 	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos);
 	virtual void resizeIndices(u32 newNumIndices);
 	virtual void setIndex(u32 indexNum, u32 value);
-	
-	void transform(const class matrix_c &mat);
+	virtual void transform(const class matrix_c &mat);
 
 	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
 
@@ -314,7 +313,7 @@ public:
 			surfs[i].scaleTexCoords(f);
 		}
 	}
-	void transform(const class matrix_c &mat);
+	virtual void transform(const class matrix_c &mat);
 
 	void addPatch(class r_bezierPatch_c *newPatch);
 

@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/parser.h>
 #include <math/aabb.h>
+#include <math/matrix.h>
 #include <api/coreAPI.h>
 #include <api/modelPostProcessFuncs.h>
 
@@ -62,6 +63,21 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			inout->setAllSurfsMaterial(matName);
 		} else if(p.atWord("swapIndices") || p.atWord("swapTriangles") || p.atWord("swapTris")) {
 			inout->swapIndexes();
+		} else if(p.atWord("rotateX")) {
+			float angle = p.getFloat();
+			matrix_c m;
+			m.setupXRotation(angle);
+			inout->transform(m);
+		} else if(p.atWord("rotateY")) {
+			float angle = p.getFloat();
+			matrix_c m;
+			m.setupYRotation(angle);
+			inout->transform(m);
+		} else if(p.atWord("rotateZ")) {
+			float angle = p.getFloat();
+			matrix_c m;
+			m.setupZRotation(angle);
+			inout->transform(m);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

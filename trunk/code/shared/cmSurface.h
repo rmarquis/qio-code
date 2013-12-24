@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include <math/vec3.h>
 #include <math/aabb.h>
+#include <math/matrix.h>
 #include <api/colMeshBuilderAPI.h>
 #include <api/staticModelCreatorAPI.h>
 
@@ -236,6 +237,12 @@ public:
 		}
 		bb.mins += ofs;
 		bb.maxs += ofs;
+	}
+	virtual void transform(const class matrix_c &mat) {
+		vec3_c *v = verts.getArray();
+		for(u32 i = 0; i < verts.size(); i++, v++) {
+			mat.transformPoint(*v);
+		}
 	}
 	virtual void getCurrentBounds(class aabb &out) {
 		out = bb;

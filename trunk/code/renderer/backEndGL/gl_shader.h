@@ -45,6 +45,7 @@ struct glslPermutationFlags_s {
 	bool hasDeluxeMap; // #define HAS_DELUXEMAP
 	// extra per-surface material colo
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
+	bool isSpotLight; // #define LIGHT_IS_SPOTLIGHT
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
@@ -78,6 +79,9 @@ friend class rbSDLOpenGL_c;
 
 	// shadow mapping
 	int u_shadowMap[6];
+	// for spotlights
+	int u_lightDir;
+	int u_spotLightMaxCos;
 
 	int atrTangents;
 	int atrBinormals;

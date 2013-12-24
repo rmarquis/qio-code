@@ -740,19 +740,23 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, boo
 		}
 	}
 	if(rf_cullEntities.getInt()) {
-		if(customFrustum) {
-			if(customFrustum->cull(ent->getBoundsABS()) == CULL_OUT) {
-				c_entitiesCulledByABSBounds++;
-				return;
-			}
-		} else {
-			if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
-				c_entitiesCulledByABSBounds++;
-				return;
-			}
-			if(RF_CullBoundsByPortals(ent->getBoundsABS(),ent->getTouchingAreas())) {
-				c_entitiesCulledByPortals++;		
-				return;
+		// don't even try to cull first person only entities
+		// (player hands and gun viewmodel)
+		if(ent->isFirstPersonOnly()==false) {
+			if(customFrustum) {
+				if(customFrustum->cull(ent->getBoundsABS()) == CULL_OUT) {
+					c_entitiesCulledByABSBounds++;
+					return;
+				}
+			} else {
+				if(rf_camera.getFrustum().cull(ent->getBoundsABS()) == CULL_OUT) {
+					c_entitiesCulledByABSBounds++;
+					return;
+				}
+				if(RF_CullBoundsByPortals(ent->getBoundsABS(),ent->getTouchingAreas())) {
+					c_entitiesCulledByPortals++;		
+					return;
+				}
 			}
 		}
 	}

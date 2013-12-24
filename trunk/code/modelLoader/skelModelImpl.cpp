@@ -156,6 +156,9 @@ void skelModelIMPL_c::multTexCoordsXY(float f) {
 void skelModelIMPL_c::translateXYZ(const class vec3_c &ofs) {
 
 }
+void skelModelIMPL_c::transform(const class matrix_c &mat) {
+
+}
 void skelModelIMPL_c::getCurrentBounds(class aabb &out) {
 
 }

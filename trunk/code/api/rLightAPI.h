@@ -25,14 +25,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RLIGHTAPI_H__
 #define __RLIGHTAPI_H__
 
+enum rLightType_e {
+	LT_POINT,
+	LT_SPOTLIGHT,
+};
+
 class rLightAPI_i {
 public:
 	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
 	virtual void setRadius(float newRadius) = 0;
 	virtual void setBNoShadows(bool newBNoShadows) = 0;
+	virtual void setLightType(rLightType_e newLightType) = 0;
+	virtual void setSpotLightTarget(const class vec3_c &newTargetPos) = 0;
+	virtual void setSpotRadius(float newSpotRadius) = 0;
 
 	virtual const vec3_c &getOrigin() const = 0;
 	virtual float getRadius() const = 0;
+	virtual enum rLightType_e getLightType() const = 0;
+	virtual const class vec3_c &getSpotLightDir() const = 0;
+	virtual float getSpotRadius() const = 0;
+	virtual float getSpotLightMaxCos() const = 0;
 
 	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
 	virtual bool getBCameraInside() const = 0;

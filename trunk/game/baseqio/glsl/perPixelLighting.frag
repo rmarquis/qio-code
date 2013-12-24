@@ -117,6 +117,12 @@ float computeShadow(vec3 lightToVertDirection) {
 }
 #endif // SHADOW_MAPPING_POINT_LIGHT
 
+#ifdef LIGHT_IS_SPOTLIGHT
+uniform vec3 u_lightDir;
+uniform float u_spotLightMaxCos;
+#endif
+
+
 void main() {
 #if 0
 	gl_FragColor.rgb = v_vertNormal;
@@ -146,6 +152,13 @@ void main() {
 	}
     vec3 lightDirection = normalize(lightToVert);
     
+#ifdef LIGHT_IS_SPOTLIGHT
+	float spotDOT = dot(lightDirection,u_lightDir);
+	if(-spotDOT < u_spotLightMaxCos) {
+		return;
+	}
+#endif
+
 #ifdef HAS_BUMP_MAP
 	vec3 bumpMapNormal = texture2D (bumpMap, texCoord);
 	bumpMapNormal = (bumpMapNormal - 0.5) * 2.0;

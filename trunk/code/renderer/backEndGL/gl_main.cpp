@@ -1064,6 +1064,13 @@ public:
 				if(newShader->uLightRadius != -1) {
 					glUniform1f(newShader->uLightRadius,curLight->getRadius());
 				}
+				if(newShader->u_lightDir != -1) {
+					const vec3_c &xyz = curLight->getSpotLightDir();
+					glUniform3f(newShader->u_lightDir,xyz.x,xyz.y,xyz.z);
+				}
+				if(newShader->u_spotLightMaxCos != -1) {
+					glUniform1f(newShader->u_spotLightMaxCos,curLight->getSpotLightMaxCos());
+				}
 				if(r_shadows == 2) {
 					matrix_c bias(0.5, 0.0, 0.0, 0.0, 
 						0.0, 0.5, 0.0, 0.0,
@@ -1630,6 +1637,7 @@ drawOnlyLightmap:
 					pf.useReliefMapping = rb_useReliefMapping.getInt();
 					pf.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
+					pf.isSpotLight = (curLight->getLightType() == LT_SPOTLIGHT);
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);

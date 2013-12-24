@@ -162,6 +162,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 		// extra per-surface material color
 		out.append("#define HAS_MATERIAL_COLOR\n");
 	}
+	if(p.isSpotLight) {
+		out.append("#define LIGHT_IS_SPOTLIGHT\n");
+	}
 	if(p.debug_ignoreAngleFactor) {
 		out.append("#define DEBUG_IGNOREANGLEFACTOR\n");
 	}
@@ -268,6 +271,8 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
+	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
+	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
 

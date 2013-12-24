@@ -869,6 +869,8 @@ netField_t	entityStateFields[] =
 { NETF(torsoAnim), ANIMNUM_BITS },
 { NETF(lightRadius), 0 },
 { NETF(lightFlags), LIGHTFLAGS_BITS },
+{ NETF(lightTarget), GENTITYNUM_BITS },
+{ NETF(spotLightRadius), 0 },
 { NETF(activeRagdollDefNameIndex), RAGDOLLDEFNUM_BITS },
 { NETF(parentOffset[0]), 0 },
 { NETF(parentOffset[1]), 0 },

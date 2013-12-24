@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Light.h"
 #include "../g_local.h"
 #include <shared/eventBaseAPI.h>
+#include <api/coreAPI.h>
 
 DEFINE_CLASS(Light, "BaseEntity");
 DEFINE_CLASS_ALIAS(Light, light_dynamic);
@@ -41,11 +42,18 @@ void Light::setRadius(float newRadius) {
 	this->radius = newRadius;
 	this->myEdict->s->lightRadius = newRadius;
 }
+void Light::setSpotLightRadius(float newSpotLightRadius) {
+	this->spotLightRadius = newSpotLightRadius;
+	this->myEdict->s->spotLightRadius = newSpotLightRadius;
+}
 void Light::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"light")) {
 		// Q3 light value
 		float lightKeyValue = atof(value);
 		this->setRadius(lightKeyValue);
+	} else if(!stricmp(key,"radius")) {
+		// Q3 spot light radius (at target)
+		this->setSpotLightRadius(atof(value));
 	} else if(!stricmp(key,"light_radius")) {
 		// Doom3 light value? 3 values
 		vec3_c sizes(value);
@@ -66,6 +74,9 @@ void Light::setKeyValue(const char *key, const char *value) {
 		} else {
 			this->myEdict->s->lightFlags &= ~LF_HASBSPLIGHTING;
 		}
+	} else if(!stricmp(key,"target")) {
+		postEvent(0,"light_updateTarget");
+		BaseEntity::setKeyValue(key,value);
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}
@@ -82,6 +93,17 @@ void Light::processEvent(class eventBaseAPI_i *ev) {
 		||
 		!stricmp(ev->getEventName(),"onMoverReachPos2")) {
 		toggleEntityVisibility();
+	} else if(!stricmp(ev->getEventName(),"light_updateTarget")) { 
+		class BaseEntity *be = G_FindFirstEntityWithTargetName(this->getTarget());
+		if(be == 0) {
+			g_core->RedWarning("Light at %i %i %i couldn't find it's target %s\n",
+				int(getOrigin().x),int(getOrigin().y),int(getOrigin().z),this->getTarget());
+			this->myEdict->s->lightFlags &= ~LF_SPOTLIGHT;
+			this->myEdict->s->lightTarget = 0;
+		} else {
+			this->myEdict->s->lightFlags |= LF_SPOTLIGHT;
+			this->myEdict->s->lightTarget = be->getEntNum();
+		}
 	} else {
 		BaseEntity::processEvent(ev);
 	}

@@ -1147,6 +1147,8 @@ struct entityState_s {
 
 	int lightFlags;
 	float lightRadius; // only for ET_LIGHT 
+	int lightTarget; // for spotlights (light target's entity number)
+	float spotLightRadius; // for spotlights
 
 	// trail emitter data for all entity types (including BaseEntity)
 	int trailEmitterMaterial; 

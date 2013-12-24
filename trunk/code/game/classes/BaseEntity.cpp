@@ -41,6 +41,8 @@ DEFINE_CLASS(BaseEntity, "None");
 DEFINE_CLASS_ALIAS(BaseEntity, misc_teleporter_dest);
 // Q3 "target_position" for q3dm11 teleporter (yes, "misc_teleporter_dest" is not used on that map!)
 DEFINE_CLASS_ALIAS(BaseEntity, target_position);
+// for light targets
+DEFINE_CLASS_ALIAS(BaseEntity, info_notnull);
 
 // use this to force BaseEntity::ctor() to use a specific edict instead of allocating a new one
 static edict_s *be_forcedEdict = 0;

@@ -71,6 +71,19 @@ static void CG_TransitionLight(centity_t *cent) {
 		cent->rLight = rf->allocLight();
 #endif
 	}
+	if(cent->currentState.lightFlags & LF_SPOTLIGHT) {
+		// see if the spotlight can find it's target
+		const centity_t *target = &cg_entities[cent->currentState.lightTarget];
+		cent->rLight->setSpotRadius(cent->currentState.spotLightRadius);
+		if(target->currentValid == false) {
+			cent->rLight->setLightType(LT_POINT);
+		} else {
+			cent->rLight->setLightType(LT_SPOTLIGHT);
+			cent->rLight->setSpotLightTarget(target->lerpOrigin);
+		}
+	} else {
+		cent->rLight->setLightType(LT_POINT);
+	}
 	cent->rLight->setOrigin(cent->currentState.origin);
 	cent->rLight->setRadius(cent->currentState.lightRadius);
 }

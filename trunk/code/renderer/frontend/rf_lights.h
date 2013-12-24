@@ -87,9 +87,15 @@ struct entityInteraction_s {
 };
 
 class rLightImpl_c : public rLightAPI_i {
+	rLightType_e lightType;
 	vec3_c pos;
 	float radius;
 	bool bNoShadows;
+	// only for spotlights (this->lightType == LT_SPOTLIGHT)
+	vec3_c spotLightTarget;
+	float spotRadius;
+	vec3_c spotLightDir; // calculated from spotLightTarget
+	float spotLightCos;
 	
 	aabb absBounds;
 
@@ -110,6 +116,8 @@ class rLightImpl_c : public rLightAPI_i {
 	matrix_c lightProj;
 	matrix_c sideViews[6];
 	frustum_c sideFrustums[6];
+
+	void recalcSpotLightCos();
 public:
 	rLightImpl_c();
 	~rLightImpl_c();
@@ -195,6 +203,9 @@ public:
 	virtual void setOrigin(const class vec3_c &newXYZ);
 	virtual void setRadius(float newRadius);
 	virtual void setBNoShadows(bool newBNoShadows);
+	virtual void setLightType(rLightType_e newLightType);
+	virtual void setSpotLightTarget(const class vec3_c &newTargetPos);
+	virtual void setSpotRadius(float newSpotRadius);
 
 	virtual void calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) const;
 
@@ -203,6 +214,18 @@ public:
 	}
 	virtual float getRadius() const {
 		return radius;
+	}
+	virtual rLightType_e getLightType() const {
+		return lightType;
+	}
+	virtual const vec3_c &getSpotLightDir() const {
+		return spotLightDir;
+	}
+	virtual float getSpotRadius() const {
+		return spotRadius;
+	}
+	virtual float getSpotLightMaxCos() const {
+		return spotLightCos;
 	}
 	const aabb &getABSBounds() const {
 		return absBounds;

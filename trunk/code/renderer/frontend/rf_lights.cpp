@@ -38,6 +38,7 @@ static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
 static aCvar_c rf_cullLights("rf_cullLights","1");
 static aCvar_c rf_lightRadiusMult("rf_lightRadiusMult","1.0");
 static aCvar_c light_shadowMapScale("light_shadowMapScale","1.0");
+static aCvar_c light_printLightTypes("light_printLightTypes","0");
 static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
 static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInteractionsUpdate","0");
 static aCvar_c rf_verboseAddLightInteractionsDrawCalls("rf_verboseAddLightInteractionsDrawCalls","0");
@@ -53,6 +54,7 @@ void entityInteraction_s::clear() {
 }
 
 rLightImpl_c::rLightImpl_c() {
+	lightType = LT_POINT;
 	radius = 512.f;	
 	numCurrentStaticInteractions = 0;
 	numCurrentEntityInteractions = 0;
@@ -110,6 +112,22 @@ void rLightImpl_c::setBNoShadows(bool newBNoShadows) {
 	this->bNoShadows = newBNoShadows;
 	recalcShadowMappingMatrices();
 	recalcLightInteractions();
+}
+void rLightImpl_c::setLightType(rLightType_e newLightType) {
+	lightType = newLightType;
+}
+void rLightImpl_c::setSpotLightTarget(const class vec3_c &newTargetPos) {
+	spotLightTarget = newTargetPos;
+	this->recalcSpotLightCos();
+}
+void rLightImpl_c::setSpotRadius(float newSpotRadius) {
+	spotRadius = newSpotRadius;
+	this->recalcSpotLightCos();
+}
+void rLightImpl_c::recalcSpotLightCos() {
+	spotLightDir = this->spotLightTarget - this->pos;
+	float d = spotLightDir.normalize2();
+	this->spotLightCos = d / sqrt(Square(d)+Square(this->spotRadius));
 }
 occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
 	if(oq) {
@@ -539,6 +557,9 @@ void RFL_AddLightInteractionsDrawCalls() {
 		rLightImpl_c *light = rf_lights[i];
 		rf_curLightAPI = light;
 
+		if(light_printLightTypes.getInt()) {
+			g_core->Print("Light %i of %i: type %i\n",i,rf_lights.size(),light->getLightType());
+		}
 		if(light_useOnlyNearestLight.getInt()) {
 			rLightImpl_c *nearest = RFL_GetNearestLightToPoint(rf_camera.getOrigin());
 			if(nearest != light) {

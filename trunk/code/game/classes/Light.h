@@ -30,12 +30,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Light : public BaseEntity {
 	float radius;
+	float spotLightRadius;
 public:
 	Light();
 
 	DECLARE_CLASS( Light );
 
 	void setRadius(float newRadius);
+	void setSpotLightRadius(float newSpotLightRadius);
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual void getLocalBounds(aabb &out) const;
