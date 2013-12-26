@@ -616,6 +616,12 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 	}
 	skelModelAPI_i *skel = model->getSkelModelAPI();
 	if(skel == 0) {
+		matrix_c localMat;
+		// try to get static tag orientation
+		if(model->getTagOrientation(localBoneIndex,localMat)==false) {
+			out = this->matrix * localMat;	
+			return false; // ok
+		}
 		out = this->matrix;
 		return true; // error 
 	}

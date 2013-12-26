@@ -230,11 +230,34 @@ public:
 
 };
 
+// tags (bones) for static models.
+class r_tag_c {
+	str name;
+	vec3_c origin;
+	vec3_c angles;
+	//matrix_c mat;
+public:
+	void setupTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles) { 
+		name = newTagName;
+		origin = newPos;
+		angles = newAngles;
+		//mat.fromAnglesAndOrigin(angles,origin);
+	}
+	const class vec3_c &getAngles() const {
+		return angles;
+	}
+	const class vec3_c &getOrigin() const {
+		return origin;
+	}
+};
+
 class r_model_c : public staticModelCreatorAPI_i {
 	// non-animated render model surfaces
 	arraySTD_c<r_surface_c> surfs;
-	// extra bezier patches data
+	// extra bezier patches data (for bsp inline models)
 	arraySTD_c<class r_bezierPatch_c*> bezierPatches;
+	// extra tags data
+	arraySTD_c<r_tag_c> tags;
 	aabb bounds;
 	str name;
 	// used to speed up raycasting / decal creation
@@ -302,6 +325,7 @@ public:
 	virtual void setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices);
 	virtual void setSurfaceMaterial(u32 surfNum, const char *matName);
 	virtual void recalcBoundingBoxes();
+	virtual void addAbsTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles); 
 	virtual bool hasPerSurfaceFunctionsImplemented() const {
 		return true;
 	}
@@ -314,6 +338,8 @@ public:
 		}
 	}
 	virtual void transform(const class matrix_c &mat);
+	
+	bool getTagOrientation(int tagNum, class matrix_c &out) const;
 
 	void addPatch(class r_bezierPatch_c *newPatch);
 

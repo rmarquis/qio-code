@@ -58,7 +58,7 @@ rIndexedShadowVolume_c::rIndexedShadowVolume_c() {
 }
 rIndexedShadowVolume_c::~rIndexedShadowVolume_c() {
 	c_allocatedShadowVolumes--;
-	printf("%i active shadow volumes\n",c_allocatedShadowVolumes);
+	//printf("%i active shadow volumes\n",c_allocatedShadowVolumes);
 }
 u32 rIndexedShadowVolume_c::registerPoint(const vec3_c &p) {
 	bounds.addPoint(p);

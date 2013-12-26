@@ -152,10 +152,17 @@ const q3PlayerModelAPI_i *model_c::getQ3PlayerModelAPI() const {
 	}
 	return 0;
 }
-void model_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
+bool model_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
 	if(type == MOD_Q3PLAYERMODEL) {
 		return this->q3PlayerModel->getTagOrientation(tagNum,legs,torso,out);
 	}
+	return true; // error
+}	
+bool model_c::getTagOrientation(int tagNum, class matrix_c &out) const {
+	if(type == MOD_STATIC) {
+		return this->staticModel->getTagOrientation(tagNum,out);
+	}
+	return true; // error
 }
 bool model_c::getModelData(class staticModelCreatorAPI_i *out) const {
 	if(type == MOD_BSP) {

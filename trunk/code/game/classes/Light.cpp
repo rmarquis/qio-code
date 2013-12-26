@@ -45,8 +45,14 @@ void Light::setRadius(float newRadius) {
 void Light::setSpotLightRadius(float newSpotLightRadius) {
 	this->spotLightRadius = newSpotLightRadius;
 	this->myEdict->s->spotLightRadius = newSpotLightRadius;
+	if(newSpotLightRadius != 0.f) {
+		this->myEdict->s->lightFlags |= LF_SPOTLIGHT;
+	} else {
+		this->myEdict->s->lightFlags &= ~LF_SPOTLIGHT;
+	}
 }
 void Light::setKeyValue(const char *key, const char *value) {
+	g_core->Print("Light::setKeyValue: %s %s\n",key,value);
 	if(!stricmp(key,"light")) {
 		// Q3 light value
 		float lightKeyValue = atof(value);
@@ -77,6 +83,14 @@ void Light::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"target")) {
 		postEvent(0,"light_updateTarget");
 		BaseEntity::setKeyValue(key,value);
+	//} else if(!stricmp(key,"forcespotlight")) {
+	//	int bForceSpotLight = atoi(value);
+	//	if(bForceSpotLight) {
+	//		this->myEdict->s->lightFlags |= LF_SPOTLIGHT;
+	//	} else {
+	//		this->myEdict->s->lightFlags &= ~LF_SPOTLIGHT;
+	//	}
+	//	this->myEdict->s->lightTarget = ENTITYNUM_NONE;
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

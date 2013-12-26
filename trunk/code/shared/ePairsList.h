@@ -95,10 +95,13 @@ public:
 		pairs.clear();
 	}
 	void set(const char *key, const char *val) {
-		ePair_c *ep = find(key);
-		if(ep) {
-			ep->set(val);
-			return;
+		if(key[0] != '@') {
+			// see if we have already entry for this key
+			ePair_c *ep = find(key);
+			if(ep) {
+				ep->set(val);
+				return;
+			}
 		}
 		ePair_c *np = new ePair_c(key,val);
 		pairs.push_back(np);

@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __WEAPON_H__
 
 #include "ModelEntity.h"
+#include "Player.h"
 
 class Weapon : public ModelEntity {
 	// custom viewmodel for Doom3-style weapons
@@ -55,7 +56,7 @@ class Weapon : public ModelEntity {
 protected:
 	safePtr_c<Player> owner;
 
-	void setDelayBetweenShorts(u32 newDelayInMsec) {
+	void setDelayBetweenShots(u32 newDelayInMsec) {
 		this->delayBetweenShots = newDelayInMsec;
 	}
 public:
@@ -85,7 +86,7 @@ public:
 	void fillClip(u32 newCurClipSize) {
 		curClipSize = newCurClipSize;
 	}
-	bool hasEmptyClip() const {
+	virtual bool hasEmptyClip() const {
 		if(curClipSize == 0)
 			return true;
 		return false;
@@ -99,8 +100,8 @@ public:
 
 	virtual BaseEntity *getOwner() const;
 
-	void onFireKeyHeld();
-	void onFireKeyDown();
+	virtual void onFireKeyHeld();
+	virtual void onFireKeyDown();
 	virtual void onSecondaryFireKeyHeld();
 	virtual void onSecondaryFireKeyDown();
 	virtual void onSecondaryFireKeyUp();

@@ -189,7 +189,7 @@ void rBspTree_c::calcTangentVectors() {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		bspSurf_s &sf = surfs[i];
 		if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES) {
-			this->verts.calcTBNForIndices(sf.sf->absIndexes);
+			this->verts.calcTBNForIndices(sf.sf->absIndexes,0);
 		}
 	}
 	this->verts.normalizeTBN();

@@ -208,16 +208,28 @@ void rVertexBuffer_c::getReferencedPoints(rVertexBuffer_c &out, const class rInd
 	}
 }
 #include <shared/calcTBN.h>
-void rVertexBuffer_c::calcTBNForIndices(const class rIndexBuffer_c &indices) {
+void rVertexBuffer_c::calcTBNForIndices(const class rIndexBuffer_c &indices, arraySTD_c<plane_c> *trianglePlanes) {
+	plane_c *pl;
+	if(trianglePlanes) {
+		trianglePlanes->resize(indices.getNumTriangles());
+		pl = trianglePlanes->getArray();
+	} else {
+		pl = 0;
+	}
+	vec3_c newNorm, newTan, newBin;
+	rVert_c *rVerts = this->data.getArray();
 	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
 		u32 i0 = indices[i+0];
 		u32 i1 = indices[i+1];
 		u32 i2 = indices[i+2];
-		rVert_c &v0 = this->data[i0];
-		rVert_c &v1 = this->data[i1];
-		rVert_c &v2 = this->data[i2];
-		vec3_c newNorm, newTan, newBin;
+		rVert_c &v0 = rVerts[i0];
+		rVert_c &v1 = rVerts[i1];
+		rVert_c &v2 = rVerts[i2];
 		R_CalcTBN(v0.xyz,v1.xyz,v2.xyz,v0.tc,v1.tc,v2.tc,newNorm,newTan,newBin);
+		if(pl) {
+			pl->fromPointAndNormal(v0.xyz,newNorm);
+			pl++;
+		}
 		v0.normal += newNorm;
 		v0.tan += newTan;
 		v0.bin += newBin;

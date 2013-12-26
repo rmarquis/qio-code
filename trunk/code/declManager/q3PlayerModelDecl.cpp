@@ -62,21 +62,27 @@ int q3PlayerModelDecl_c::getTagNumForName(const char *boneName) const {
 	}
 	return -1;
 }
-void q3PlayerModelDecl_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
+bool q3PlayerModelDecl_c::getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const {
 	if(this->isLegsTag(tagNum)) {
-
+		return true; // error, TODO
 	} else {
 		// we need to get torso orientation first, which is attached to legs tag	
 		// attach torso model to legs model tag
 		const tagOr_c *torsoTag = legsModel->getTagOrientation("tag_torso",legs.from);
+		if(torsoTag == 0)
+			return true; // torso tag not found? error
 		matrix_c torsoTagMat;
 		torsoTag->toMatrix(torsoTagMat);
 		u32 localTagNum = tagNum - legsModel->getNumTags();
 		const tagOr_c *tag = torsoModel->getTagOrientation(localTagNum,torsoModel->fixFrameNum(torso.from));
+		if(tag == 0) {
+			return true; // tag not found? error
+		}
 		matrix_c tagMatrix;
 		tag->toMatrix(tagMatrix);
 		out = torsoTagMat * tagMatrix;
 	}
+	return false; // ok
 }
 bool q3PlayerModelDecl_c::isLegsTag(int tagNum) const {
 	if(tagNum < 0)

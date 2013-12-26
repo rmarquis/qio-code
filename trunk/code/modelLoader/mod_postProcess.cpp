@@ -78,6 +78,13 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			matrix_c m;
 			m.setupZRotation(angle);
 			inout->transform(m);
+		} else if(p.atWord("addAbsTag")) {
+			str tagName = p.getToken();
+			vec3_c tagPos;
+			vec3_c tagAngles;
+			p.getFloatMat(tagPos,3);
+			p.getFloatMat(tagAngles,3);
+			inout->addAbsTag(tagName,tagPos,tagAngles);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();

@@ -33,6 +33,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
 #include "classes/World.h"
+#include <shared/autoCvar.h>
+
+static aCvar_c g_debugSpawn("g_debugSpawn","0");
 
 static entDefsList_c g_entDefs;
 
@@ -63,6 +66,9 @@ BaseEntity *G_SpawnClass(const char *className) {
 		for(u32 i = 0; i < epairs.size(); i++) {		
 			const char *key, *value;
 			epairs.getKeyValue(i,&key,&value);
+			if(g_debugSpawn.getInt()) {
+				g_core->Print("G_SpawnClass: kv %i of %i: %s %s\n",i,epairs.size(),key,value);
+			}
 			ent->setKeyValue(key,value);
 		}
 		return ent;
@@ -101,6 +107,9 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	for(u32 j = 0; j < entDef->getNumKeyValues(); j++) {
 		const char *key, *value;
 		entDef->getKeyValue(j,&key,&value);
+		if(g_debugSpawn.getInt()) {
+			g_core->Print("G_SpawnEntDef: kv %i of %i: %s %s\n",j,entDef->getNumKeyValues(),key,value);
+		}
 		ent->setKeyValue(key,value);
 	}
 	

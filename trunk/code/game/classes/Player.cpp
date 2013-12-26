@@ -494,7 +494,8 @@ void Player::runPlayer() {
 				//this->setAnimation("models/player/shina/idle.md5anim");
 			}
 		}
-		if(fireHeld) {
+		//if(fireHeld) {
+		if(weaponState == WP_FIRING) {
 			setPlayerAnimTorso(SGA_ATTACK);
 		} else {
 			setPlayerAnimTorso(SGA_BAD);

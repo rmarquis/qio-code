@@ -49,19 +49,19 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 		g_core->Print("Q3Weapon::setKeyValue: giTag: %s\n",value);
 		if(!stricmp(value,"WP_PLASMAGUN")) {
 			q3WeaponType = EQ3WPN_PLASMAGUN;
-			this->setDelayBetweenShorts(100);
+			this->setDelayBetweenShots(100);
 		} else if(!stricmp(value,"WP_ROCKET_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_ROCKETLAUNCHER;
-			this->setDelayBetweenShorts(1000);
+			this->setDelayBetweenShots(1000);
 		} else if(!stricmp(value,"WP_SHOTGUN")) {
 			q3WeaponType = EQ3WPN_SHOTGUN;
-			this->setDelayBetweenShorts(1000);
+			this->setDelayBetweenShots(1000);
 		} else if(!stricmp(value,"WP_RAILGUN")) {
 			q3WeaponType = EQ3WPN_RAILGUN;
-			this->setDelayBetweenShorts(2000);
+			this->setDelayBetweenShots(2000);
 		} else if(!stricmp(value,"WP_GRENADE_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_GRENADE_LAUNCHER;
-			this->setDelayBetweenShorts(1000);
+			this->setDelayBetweenShots(1000);
 		}	
 	} else {
 		Weapon::setKeyValue(key,value);

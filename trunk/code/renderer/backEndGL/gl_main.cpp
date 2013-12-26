@@ -1066,7 +1066,9 @@ public:
 				}
 				if(newShader->u_lightDir != -1) {
 					const vec3_c &xyz = curLight->getSpotLightDir();
-					glUniform3f(newShader->u_lightDir,xyz.x,xyz.y,xyz.z);
+					vec3_c xyzLocal;
+					entityMatrixInverse.transformNormal(xyz,xyzLocal);
+					glUniform3f(newShader->u_lightDir,xyzLocal.x,xyzLocal.y,xyzLocal.z);
 				}
 				if(newShader->u_spotLightMaxCos != -1) {
 					glUniform1f(newShader->u_spotLightMaxCos,curLight->getSpotLightMaxCos());

@@ -64,7 +64,9 @@ public:
 	// for keyframed models
 	//virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &state, class matrix_c &out) = 0;
 	// for q3 player models
-	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const = 0;
+	virtual bool getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const = 0;
+	// for static models / keyframed models
+	virtual bool getTagOrientation(int tagNum, class matrix_c &out) const = 0;
 	// used to get raw model data of staticmodels
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const = 0;
 	// debug output (this should work for tags as well)

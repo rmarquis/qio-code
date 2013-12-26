@@ -44,6 +44,9 @@ public:
 	virtual void setSurfsMaterial(const u32 *surfIndexes, u32 numSurfIndexes, const char *newMatName) = 0;
 	virtual void recalcBoundingBoxes() = 0;
 
+	// md3 style tags (used for attaching objects/emitters to model)
+	virtual void addAbsTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles) { };
+
 	// optional, per-surface functions
 	virtual bool hasPerSurfaceFunctionsImplemented() const {
 		return false;

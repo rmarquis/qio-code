@@ -101,7 +101,7 @@ public:
 	}
 	virtual const struct q3AnimDef_s *getAnimCFGForIndex(u32 localAnimIndex) const;
 	virtual int getTagNumForName(const char *boneName) const;
-	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
+	virtual bool getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
 	virtual bool isLegsTag(int tagNum) const;
 
 	bool loadQ3PlayerDecl();

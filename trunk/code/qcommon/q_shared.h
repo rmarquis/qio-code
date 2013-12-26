@@ -1175,6 +1175,10 @@ struct entityState_s {
 		activeRagdollDefNameIndex = 0;
 		rSkinIndex = 0;
 		eFlags = 0;
+		lightFlags = 0;
+		lightRadius = 0.f;
+		lightTarget = ENTITYNUM_NONE;
+		spotLightRadius = 0.f;
 	}
 	entityState_s() {
 		setDefaults();

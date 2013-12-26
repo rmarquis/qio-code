@@ -185,7 +185,8 @@ public:
 	virtual class kfModelAPI_i *getKFModelAPI() const;
 	virtual const q3PlayerModelAPI_i *getQ3PlayerModelAPI() const;
 
-	virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
+	virtual bool getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const;
+	virtual bool getTagOrientation(int tagNum, class matrix_c &out) const;
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const;
 	virtual void printBoneNames() const;
 

@@ -472,7 +472,7 @@ void r_surface_c::recalcTBN() {
 #if 1
 	verts.nullTBN();
 	const rIndexBuffer_c &pIndices = getIndices2();
-	verts.calcTBNForIndices(pIndices);
+	verts.calcTBNForIndices(pIndices,&this->trianglePlanes);
 	verts.normalizeTBN();
 #else
 	const rIndexBuffer_c &pIndices = getIndices2();
@@ -1110,10 +1110,20 @@ void r_model_c::recalcBoundingBoxes() {
 		bounds.addBox(surfs[i].getBB());
 	}
 }
+void r_model_c::addAbsTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles) { 
+	tags.pushBack().setupTag(newTagName,newPos,newAngles);
+}
 void r_model_c::transform(const class matrix_c &mat) {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		surfs[i].transform(mat);
 	}
+}
+bool r_model_c::getTagOrientation(int tagNum, class matrix_c &out) const {
+	if(tagNum < 0 || tagNum >= tags.size())
+		return true;
+	const r_tag_c &tag = tags[tagNum];
+	out.fromAnglesAndOrigin(tag.getAngles(),tag.getOrigin());
+	return false; // ok
 }
 void r_model_c::addPatch(class r_bezierPatch_c *newPatch) {
 	// pretesselate the patch so we can get the valid bounding box

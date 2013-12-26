@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2013 V.
 
 This file is part of Qio source code.
 
@@ -21,23 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// q3PlayerModelDeclAPI.h
-#ifndef __Q3PLAYERMODELDECLAPI_H__
-#define __Q3PLAYERMODELDECLAPI_H__
+// Weapon_QioFlashLight.h - Qio FlashLight weapon
+#include "Weapon_QioFlashLight.h"
 
-class q3PlayerModelAPI_i {
-public:
-	virtual u32 getNumTotalSurfaces() const = 0;
-	virtual const class kfModelAPI_i *getLegsModel() const = 0;
-	virtual const class kfModelAPI_i *getTorsoModel() const = 0;
-	virtual const class kfModelAPI_i *getHeadModel() const = 0;
-	virtual const char *getLegsModelName() const = 0;
-	virtual const char *getTorsoModelName() const = 0;
-	virtual const char *getHeadModelName() const = 0;
-	virtual const struct q3AnimDef_s *getAnimCFGForIndex(u32 localAnimIndex) const = 0;
-	virtual int getTagNumForName(const char *boneName) const = 0;
-	virtual bool getTagOrientation(int tagNum, const struct singleAnimLerp_s &legs, const struct singleAnimLerp_s &torso, class matrix_c &out) const = 0;
-};
+DEFINE_CLASS(Weapon_QioFlashLight, "Weapon");
 
-#endif // __Q3PLAYERMODELDECLAPI_H__
+Weapon_QioFlashLight::Weapon_QioFlashLight() {
+	this->setDelayBetweenShots(0);
+	this->fillClip(0);
+}
+Weapon_QioFlashLight::~Weapon_QioFlashLight() {
+	disableFlashLight();
+}
 
+void Weapon_QioFlashLight::disableFlashLight() {
+	delete myLight.getPtr();
+}
+void Weapon_QioFlashLight::enableFlashLight() {
+	if(myLight.getPtr())
+		return;
+	Light *l = new Light;
+	l->setSpotLightRadius(32.f);
+	l->setRadius(400.f);
+	l->setParent(this,0);
+	myLight = l;
+}
+
+void Weapon_QioFlashLight::onFireKeyDown() {
+	// toggle the light
+	if(myLight.getPtr()) {
+		disableFlashLight();
+		this->fillClip(0);
+	} else {
+		enableFlashLight();
+		this->fillClip(1);
+	}
+}

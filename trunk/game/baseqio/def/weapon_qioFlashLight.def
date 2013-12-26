@@ -1,0 +1,27 @@
+
+// Vodin: my flashlight model
+
+entityDef weapon_qio_flashlight
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"9 -7 -7"
+	
+	///"spawnclass"				"Weapon"
+	"spawnclass"				"Weapon_QioFlashLight"
+
+	"model_world"	"models/testweapons/qioflashlight/qioflashlight.obj"
+	"model_view"				"models/testweapons/qioflashlight/qioflashlight.obj"
+	
+	"weaponname"				"Qio flashlight"
+	
+	// old test code, in case we don't want to use Weapon_QioFlashLight class
+	//	 addAttachment <className/modelName> <tagName>
+	////"addAttachment"			"Light flash 1"
+	// set the spot radius of attached light
+	///"@setLastAttachmentKeyValue" "radius 32"
+	// ensure that attached light is a spotlight
+	///"@setLastAttachmentKeyValue" "forcespotlight 1"
+}
+

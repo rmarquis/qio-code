@@ -30,6 +30,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <math/matrix.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c cg_printLightFlags("cg_printLightFlags","0");
+static aCvar_c cg_printAttachedEntities("cg_printAttachedEntities","0");
 
 /*
 ==========================================================================
@@ -76,6 +80,37 @@ CG_General
 //	
 //}
 
+
+static void CG_OnEntityOrientationChange(centity_t *cent) {
+	// NOTE: some centities might have both rEnt and rLight present
+	if(cent->rEnt) {
+		cent->rEnt->setOrigin(cent->lerpOrigin);
+		cent->rEnt->setAngles(cent->lerpAngles);
+	} 
+	if(cent->rLight) {
+		if(cg_printLightFlags.getInt()) {
+			g_core->Print("Light entity %i lightFlags %i\n",cent->currentState.number,cent->currentState.lightFlags);
+		}
+		cent->rLight->setOrigin(cent->lerpOrigin);
+		// TODO: lerp light radius?
+		cent->rLight->setRadius(cent->currentState.lightRadius);
+		cent->rLight->setBNoShadows(cent->currentState.lightFlags & LF_NOSHADOWS);
+		if(cent->currentState.lightFlags & LF_SPOTLIGHT) {
+			// see if the spotlight can find it's target
+			const centity_t *target = &cg_entities[cent->currentState.lightTarget];
+			cent->rLight->setSpotRadius(cent->currentState.spotLightRadius);
+			cent->rLight->setLightType(LT_SPOTLIGHT);
+			if(target->currentValid == false) {
+				vec3_c targetPos = cent->lerpOrigin + cent->lerpAngles.getForward() * 64.f;
+				cent->rLight->setSpotLightTarget(targetPos);
+			} else {
+				cent->rLight->setSpotLightTarget(target->lerpOrigin);
+			}
+		} else {
+			cent->rLight->setLightType(LT_POINT);
+		}
+	}
+}
 /*
 =============================
 CG_InterpolateEntityPosition
@@ -114,18 +149,8 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	cent->lerpAngles[1] = LerpAngle( current[1], next[1], f );
 	cent->lerpAngles[2] = LerpAngle( current[2], next[2], f );
 
-	
-	// NOTE: some centities might have both rEnt and rLight present
-	if(cent->rEnt) {
-		cent->rEnt->setOrigin(cent->lerpOrigin);
-		cent->rEnt->setAngles(cent->lerpAngles);
-	} 
-	if(cent->rLight) {
-		cent->rLight->setOrigin(cent->lerpOrigin);
-		// TODO: lerp light radius?
-		cent->rLight->setRadius(cent->currentState.lightRadius);
-		cent->rLight->setBNoShadows(cent->currentState.lightFlags & LF_NOSHADOWS);
-	}
+	// update render entity and/or render light
+	CG_OnEntityOrientationChange(cent);
 }
 
 
@@ -143,6 +168,9 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		centity_t *parent = &cg_entities[cent->currentState.parentNum];
 		if(parent->rEnt == 0)
 			return;
+		if(cg_printAttachedEntities.getInt()) {
+			g_core->Print("Entity %i is attached to %i\n",cent->currentState.number,cent->currentState.parentNum);
+		}
 		// first we have to update parent orientation (pos + rot),
 		// then we can attach current entity to it
 		CG_AddCEntity(parent);
@@ -161,13 +189,8 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 			cent->lerpAngles += cent->currentState.localAttachmentAngles;
 		}
 		// NOTE: some centities might have both rEnt and rLight present
-		if(cent->rEnt) {
-			cent->rEnt->setOrigin(cent->lerpOrigin);
-			cent->rEnt->setAngles(cent->lerpAngles);
-		} 
-		if(cent->rLight) {
-			cent->rLight->setOrigin(cent->lerpOrigin);
-		}
+		// update render entity and/or render light
+		CG_OnEntityOrientationChange(cent);
 		return;
 	}
 

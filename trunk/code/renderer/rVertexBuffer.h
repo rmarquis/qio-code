@@ -143,7 +143,7 @@ public:
 			v->bin.clear();
 		}
 	}
-	void calcTBNForIndices(const class rIndexBuffer_c &indices);
+	void calcTBNForIndices(const class rIndexBuffer_c &indices, arraySTD_c<plane_c> *trianglePlanes);
 	inline void normalizeTBN() {
 		rVert_c *v = this->getArray();
 		for(u32 i = 0; i < numVerts; i++, v++) {

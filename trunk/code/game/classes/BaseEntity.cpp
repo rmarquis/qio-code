@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // our internal event system
 #include <shared/eventSystem.h>
 #include <shared/eventBaseAPI.h>
+#include <shared/autoCvar.h>
 #include <api/entDefAPI.h>
 
 DEFINE_CLASS(BaseEntity, "None");
@@ -43,6 +44,9 @@ DEFINE_CLASS_ALIAS(BaseEntity, misc_teleporter_dest);
 DEFINE_CLASS_ALIAS(BaseEntity, target_position);
 // for light targets
 DEFINE_CLASS_ALIAS(BaseEntity, info_notnull);
+
+// used to debug setting BaseEntity keyValues
+static aCvar_c g_baseEntity_debugSetKeyValue("g_baseEntity_debugSetKeyValue","0");
 
 // use this to force BaseEntity::ctor() to use a specific edict instead of allocating a new one
 static edict_s *be_forcedEdict = 0;
@@ -104,6 +108,12 @@ BaseEntity::~BaseEntity() {
 	myEdict->s = 0;
 }
 void BaseEntity::setKeyValue(const char *key, const char *value) {
+	if(key[0] == '@')
+		key++;
+
+	if(g_baseEntity_debugSetKeyValue.getInt()) {
+		g_core->Print("BaseEntity::setKeyValue: <%s> <%s>\n",key,value);
+	}
 	if(!stricmp(key,"origin")) {
 		this->setOrigin(value);
 	} else if(!stricmp(key,"angles")) {
@@ -124,6 +134,32 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"parent")) {
 		this->postEvent(0,"setparent",value,"-1","1");
 		//this->setParent(value,-1,true);
+	} else if(!stricmp(key,"addAttachment")) {
+		// spawn new entity and attach it to this one
+		char objName[256];
+		char tagName[256];
+		int bRemoveWithParent = 1;
+		sscanf(value,"%s %s",objName,tagName,&bRemoveWithParent);
+		g_core->Print("BaseEntity::addAttachment: %s %s (%i)\n",objName,tagName,bRemoveWithParent);
+		BaseEntity *child = G_SpawnClass(objName);
+		if(child) {
+			child->setParent(this,0);
+		} else {
+
+		}
+	} else if(!stricmp(key,"setLastAttachmentKeyValue")) {
+		// cast a key-value on the last spawned attachment
+		if(attachments.size() == 0) {
+			g_core->RedWarning("setLastAttachmentKeyValue: entity has no attachments\n");
+		} else {
+			// get last attachment
+			BaseEntity *be = attachments[attachments.size()-1];
+			str txt = value;
+			str newKey;
+			const char *newValue = txt.getToken(newKey);
+			g_core->Print("Passing \"%s %s\" keyvalue to attachemnt\n",newKey.c_str(),newValue);
+			be->setKeyValue(newKey.c_str(),newValue);
+		}
 	} else {
 
 	}

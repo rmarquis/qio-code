@@ -78,6 +78,12 @@ bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out) {
 	} else {
 		for(u32 i = 0; i < h->numSurfaces; i++) {
 			const md3Surface_s *sf = h->pSurf(i);
+			if(sf->ident != MD3_IDENT) {
+				g_core->RedWarning("MOD_LoadStaticMD3: %s has bad surface %i ident %i (should be %i)\n",fname,i,sf->ident,MD3_IDENT);
+				// free loaded file data
+				g_vfs->FS_FreeFile(fileData);
+				return true;
+			}
 			out->resizeSurfaceVerts(i,sf->numVerts);
 			const md3Shader_s *sh = sf->getShader(0);
 			const md3XyzNormal_s *xyz = sf->getXYZNormal(0);
