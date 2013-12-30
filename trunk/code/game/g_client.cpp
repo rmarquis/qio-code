@@ -524,7 +524,12 @@ void ClientCommand( int clientNum ) {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
 			}
 		}
+	} else if(!stricmp(cmd,"say")) {
+		char buff[8192];
+		g_core->Args(buff,sizeof(buff));
+		pl->cmdSay(buff);
 	} else {
+		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);
 		//////BT_CreateVehicle(tmp);
 		////BT_CreateBoxEntity(tmp + vec3_c(0,0,128),vec3_c(16,16,16),0);

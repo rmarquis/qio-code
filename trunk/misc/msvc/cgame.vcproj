@@ -246,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_chat.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_collision.cpp"
 				>
 			</File>

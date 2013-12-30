@@ -49,8 +49,9 @@ public:
 	}
 	void add_unique(_Ty add) {
 		int sizeNow = size();
+		const _Ty *pData = getArray();
 		for(int i = 0; i < sizeNow; i++) {
-			if((*this)[i] == add) {
+			if(pData[i] == add) {
 				return;
 			}
 		}

@@ -168,6 +168,10 @@ public:
 			// TODO: read the number of md2 frame?
 			return true;
 		}
+		if(!stricmp(ext,"mdc")) {
+			// TODO: read the number of mdc frame?
+			return true;
+		}
 		return false;
 	}
 	virtual class kfModelAPI_i *loadKeyFramedModelFile(const char *fname) {

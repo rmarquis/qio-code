@@ -2161,6 +2161,8 @@ qboolean basePathSetManually;
 
 	LightWorld();
 
+	UnparseEntities();
+
 	_printf ("writing %s\n", source);
 	WriteBSPFile (source);
 

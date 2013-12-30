@@ -60,6 +60,7 @@ aCvar_c rf_bsp_noFrustumAdjust("rf_bsp_noFrustumAdjust","0");
 aCvar_c rf_bsp_showAreaPortals("rf_bsp_showAreaPortals","0");
 aCvar_c rf_bsp_cullBackFacingAreaPortals("rf_bsp_cullBackFacingAreaPortals","1");
 aCvar_c rf_bsp_useBSPForTracing("rf_bsp_useBSPForTracing","1");
+aCvar_c rf_bsp_skipAreaPortals("rf_bsp_skipAreaPortals","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -1890,6 +1891,10 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 void rBspTree_c::markAreas() {
 	if(areaPortals.size() == 0)
 		return;
+	if(rf_bsp_skipAreaPortals.getInt()) {
+		frustumAreaBits.setAll(true);
+		return;
+	}
 	this->portalVisCount++;
 	int camLeaf = pointInLeaf(rf_camera.getPVSOrigin());
 	if(camLeaf < 0) {
@@ -2147,7 +2152,8 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	bspSurf_s &sf = this->surfs[sfNum];
 	if(sf.type == BSPSF_BEZIER) {
-
+		const r_surface_c *triSurf = sf.patch->getInstancePtr();
+		staticShadowVolume->addRSurface(triSurf,light,0,lightRadius);
 	//} else if(sf.type == BSPSF_PLANAR) {
 	//	bspTriSurf_s *ts = sf.sf;
 	//	float d = ts->plane.distance(light);
@@ -2230,6 +2236,8 @@ int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float 
 bool rBspTree_c::cullBoundsByPortals(const aabb &absBB) {
 	if(areaPortals.size() == 0)
 		return false; // always visible, no areaportals on map
+	if(rf_bsp_skipAreaPortals.getInt())
+		return false; // ignoring areaportals
 
 	arraySTD_c<u32> areaNums;
 	boxAreas(absBB,areaNums);

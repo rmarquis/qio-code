@@ -211,6 +211,7 @@ void RF_OnRFEnableMultipassRenderingCvarModified(const class aCvar_c *cv) {
 	}
 }
 void RF_OnRFUseProcDataToOptimizeLightingCvarModified(const class aCvar_c *cv) {
+	g_core->RedWarning("Running full light interactions rebuild...\n");
 	RFL_RecalculateLightsInteractions();
 }
 void RF_InitMain() {

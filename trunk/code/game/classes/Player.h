@@ -157,6 +157,8 @@ public:
 	}
 	void toggleNoclip();
 
+	void cmdSay(const char *msg);
+
 	struct playerState_s *getPlayerState();
 
 	virtual void postSpawn();

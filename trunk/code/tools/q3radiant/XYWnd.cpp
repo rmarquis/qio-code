@@ -1648,7 +1648,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 	dir[0] = 0; dir[1] = 0; dir[2] = 0;
   if (m_nViewType == XY)
   {
-	  origin[2] = 8192;
+	  origin[2] = 131072; // max world coord
     dir[2] = -1;
   	right[0] = 1 / m_fScale; 
     right[1] = 0; 
@@ -1659,7 +1659,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
   }
   else if (m_nViewType == YZ)
   {
-    origin[0] = 8192;
+    origin[0] = 131072; // max world coord
     dir[0] = -1;
   	right[1] = 1 / m_fScale; 
     right[2] = 0; 
@@ -1670,7 +1670,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
   }
   else
   {
-    origin[1] = 8192;
+    origin[1] = 131072; // max world coord
     dir[1] = -1;
   	right[0] = 1 / m_fScale;
     right[2] = 0; 
@@ -2789,7 +2789,7 @@ void CXYWnd::XY_Draw()
 	maxs[1] = m_vOrigin[nDim2] + h;
 
 
-	qglOrtho (mins[0], maxs[0], mins[1], maxs[1], -8192, 8192);
+	qglOrtho (mins[0], maxs[0], mins[1], maxs[1], -18192, 18192);
   //glRotatef
 	//
 	// now draw the grid
@@ -2815,7 +2815,7 @@ void CXYWnd::XY_Draw()
     qglPushMatrix();
     if (m_nViewType == YZ)
       qglRotatef (-90,  0, 1, 0);	    // put Z going up
-    //else
+   //else
       qglRotatef (-90,  1, 0, 0);	    // put Z going up
   }
 

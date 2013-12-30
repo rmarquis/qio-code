@@ -43,6 +43,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/perStringCallback.h>
 
 static aCvar_c rf_dontRecalcNormals("rf_dontRecalcNormals","0");
+static aCvar_c rf_dontRecalcTB("rf_dontRecalcTB","0");
 
 //
 //	r_surface_c class
@@ -432,6 +433,8 @@ void r_surface_c::addPointsToBounds(aabb &out) {
 }
 bool r_surface_c::needsTBN() const {
 	if(mat == 0)
+		return false;
+	if(rf_dontRecalcTB.getInt())
 		return false;
 	return rb->areTangentsNeededForMaterial(mat);
 }

@@ -2752,7 +2752,7 @@ face_t *Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist)
 
 	VectorCopy (origin, p1);
 	for (i=0 ; i<3 ; i++)
-		p2[i] = p1[i] + dir[i]*16384;
+		p2[i] = p1[i] + dir[i] * 131072*2; // max world coord
 
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
@@ -3130,7 +3130,7 @@ if(b == 0)
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
 		VectorCopy (origin, p1);
-		VectorMA (origin, 16384, dir, p2);
+		VectorMA (origin, 131072*2, dir, p2);
 
 		for (f2=b->brush_faces ; f2 ; f2=f2->next)
 		{
@@ -4186,22 +4186,25 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 	for (face = b->brush_faces,order = 0 ; face ; face=face->next, order++)
 	{
 		// only draw polygons facing in a direction we care about
-		if (nViewType == XY)
+		if(1)
 		{
-			  if (face->plane.normal[2] <= 0)
-				  continue;
-		}
-		else
-		{
-			if (nViewType == XZ)
+			if (nViewType == XY)
 			{
-				if (face->plane.normal[1] <= 0)
-					continue;
+				  if (face->plane.normal[2] <= 0)
+					  continue;
 			}
-			else 
+			else
 			{
-				if (face->plane.normal[0] <= 0)
-					continue;
+				if (nViewType == XZ)
+				{
+					if (face->plane.normal[1] <= 0)
+						continue;
+				}
+				else 
+				{
+					if (face->plane.normal[0] <= 0)
+						continue;
+				}
 			}
 		}
 

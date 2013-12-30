@@ -325,6 +325,8 @@ static void CG_Draw2D()
 
 	CG_DrawUpperRight();
 
+	CG_DrawChat();
+
 	if(cg.snap) {
 		const char *s = va("%i/%i", cg.snap->ps.viewWeaponCurClipSize, cg.snap->ps.viewWeaponMaxClipSize);
 		float w = CG_DrawStrlen(s) * BIGCHAR_WIDTH;

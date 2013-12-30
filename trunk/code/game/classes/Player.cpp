@@ -774,6 +774,31 @@ vec3_c Player::getEyePos() const {
 struct playerState_s *Player::getPlayerState() {
 	return &this->ps;
 }
+#include <ctime>
+void UTIL_GetCurrentTimeHM(char *out) {
+	char tmp[16];
+	// current date/time based on current system
+	time_t now = time(0);
+	tm *ltm = localtime(&now);
+	if(ltm->tm_hour < 10) {
+		sprintf(out,"0%i:",ltm->tm_hour);
+	} else {
+		sprintf(out,"%i:",ltm->tm_hour);
+	}
+	if(ltm->tm_min < 10) {
+		sprintf(tmp,"0%i",ltm->tm_min);
+	} else {
+		sprintf(tmp,"%i",ltm->tm_min);
+	}
+	strcat(out,tmp);
+}
+void Player::cmdSay(const char *msg) {
+	char buffer[8192];
+	char timeBuff[64];
+	UTIL_GetCurrentTimeHM(timeBuff);
+	sprintf(buffer,"chat %s: %s: %s",timeBuff,this->getNetName(),msg);
+	g_server->SendServerCommand(-1,buffer);
+}
 bool Player::canPickUpWeapon(class Weapon *newWeapon) {
 	if(weaponState == WP_NONE)
 		return true;

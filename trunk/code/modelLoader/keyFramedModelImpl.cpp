@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "keyFramedModelImpl.h"
 #include "../fileFormats/md3_file_format.h"
 #include "../fileFormats/md2_file_format.h"
+#include "../fileFormats/mdc_file_format.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -88,6 +89,8 @@ bool kfModelImpl_c::load(const char *fname) {
 	const char *ext = G_strgetExt(fname);
 	if(!stricmp(ext,"md3")) {
 		return loadMD3(fname);
+	} else if(!stricmp(ext,"mdc")) {
+		return loadMDC(fname);
 	} else if(!stricmp(ext,"md2")) {
 		return loadMD2(fname);
 	} else {
@@ -259,6 +262,116 @@ bool kfModelImpl_c::loadMD2(const byte *buf, const u32 fileLen, const char *fnam
 		}
 	}
 
+	return false; // no error
+}
+bool kfModelImpl_c::loadMDC(const char *fname) {
+	byte *buf;
+	u32 len = g_vfs->FS_ReadFile(fname,(void**)&buf);
+	if(buf == 0)
+		return true;
+	bool res = loadMDC(buf,len,fname);
+	g_vfs->FS_FreeFile(buf);
+	return res;
+}
+bool kfModelImpl_c::loadMDC(const byte *buf, const u32 fileLen, const char *fname) {
+	const mdcHeader_s *h = (const mdcHeader_s *) buf;
+	if(h->ident != MDC_IDENT) {
+		g_core->RedWarning("kfModel_c::loadMDC: %s has bad ident %i, should be \"IDPC\"\n",fname,h->ident);
+		return true; // error
+	}
+	if(h->version != MDC_VERSION) {
+		g_core->RedWarning("kfModel_c::loadMDC: %s has bad version %i, should be %i\n",fname,h->version,MDC_VERSION);
+		return true; // error
+	}
+	surfs.resize(h->numSurfaces);
+	kfSurf_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		const mdcSurface_s *is = h->pSurf(i);
+		//if(is->ident != MD3_SURF_IDENT)
+		u32 numIndices = is->numTriangles*3;
+		u16 *indices = sf->indices.initU16(numIndices);
+		const u32 *firstIndex = is->getFirstIndex();
+		for(u32 j = 0; j < numIndices; j++) {
+			indices[j] = firstIndex[j];
+		}
+		sf->texCoords.resize(is->numVerts);
+		vec2_c *tc = sf->texCoords.getArray();
+		for(u32 j = 0; j < is->numVerts; j++, tc++) {
+			const md3St_s *st = is->getSt(j);
+			tc->x = st->st[0];
+			tc->y = st->st[1];
+		}
+		// read baseframe verts
+		arraySTD_c<kfSurfFrame_c> baseFrames;
+		baseFrames.resize(h->numFrames);
+		kfSurfFrame_c *f = baseFrames.getArray();
+		const md3XyzNormal_s *xyzNormal = is->getXYZNormal(0);
+		for(u32 j = 0; j < is->numBaseFrames; j++, f++) {
+			f->verts.resize(is->numVerts);
+			kfVert_c *v = f->verts.getArray();
+			for(u32 k = 0; k < is->numVerts; k++, v++) {
+				v->xyz = xyzNormal->getPos();
+				xyzNormal++;
+			}
+		}
+		// read compressed verts
+		//arraySTD_c<kfSurfFrame_c> compFrames;
+		//baseFrames.resize(h->numFrames);
+		//kfSurfFrame_c *f = baseFrames.getArray();
+		//const mdcXyzCompressed_s *xyzComp = is->getXYZCompressed(0);
+		//for(u32 j = 0; j < is->numBaseFrames; j++, f++) {
+		//	f->verts.resize(is->numVerts);
+		//	kfVert_c *v = f->verts.getArray();
+		//	for(u32 k = 0; k < is->numVerts; k++, v++) {
+		//		v->xyz = xyzNormal->getPos();
+		//		xyzNormal++;
+		//	}
+		//}
+		// read frames (finally)
+		const short *frameBaseFrames = is->getFrameBaseFrames();
+		const short *frameCompFrames = is->getFrameCompFrames();
+		sf->xyzFrames.resize(h->numFrames);
+		u32 compVertOfs = 0;
+		for(u32 j = 0; j < h->numFrames; j++) {
+			short base = frameBaseFrames[j];
+			short comp = frameCompFrames[j];
+			sf->xyzFrames[j] = baseFrames[base];
+			// check for no compression
+			if(comp == -1) {
+				continue;
+			}
+			// add compressed vertex offsets
+			for(u32 l = 0; l < is->numVerts; l++) {
+				const mdcXyzCompressed_s *cv = is->getXYZCompressed(compVertOfs);
+				vec3_c ofs;
+				R_MDC_DecodeXyzCompressed(cv->ofsVec,ofs);
+				sf->xyzFrames[j].verts[l].xyz += ofs;
+				compVertOfs++;
+			}
+
+		}
+		for(u32 j = 0; j < is->numShaders; j++) {
+			const md3Shader_s *shi = is->getShader(j);
+			if(j == 0) {
+				sf->matName = shi->name;
+			}			
+		}
+	}
+	frames.resize(h->numFrames);
+	kfFrame_c *of = frames.getArray();
+	for(u32 i = 0; i < h->numFrames; i++, of++) {
+		const md3Frame_s *f = h->pFrame(i);
+		of->name = f->name;
+		of->bounds.fromTwoPoints(f->bounds[0],f->bounds[1]);
+		of->localOrigin = f->localOrigin;
+		of->radius = f->radius;
+	}
+	// load tags
+	for(u32 i = 0; i < h->numFrames; i++) {
+		for(u32 j = 0; j < h->numTags; j++) {
+			
+		}
+	}
 	return false; // no error
 }
 kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname) {

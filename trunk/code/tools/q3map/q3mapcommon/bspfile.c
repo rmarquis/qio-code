@@ -287,8 +287,6 @@ void	WriteBSPFile( const char *filename ) {
 	bspfile = SafeOpenWrite( filename );
 	SafeWrite( bspfile, header, sizeof(dheader_t) );	// overwritten later
 
-	UnparseEntities();
-
 	AddLump( bspfile, header, LUMP_SHADERS, dshaders, numShaders*sizeof(dshader_t) );
 	AddLump( bspfile, header, LUMP_PLANES, dplanes, numplanes*sizeof(dplane_t) );
 	AddLump( bspfile, header, LUMP_LEAFS, dleafs, numleafs*sizeof(dleaf_t) );

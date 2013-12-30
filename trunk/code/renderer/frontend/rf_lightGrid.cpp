@@ -78,8 +78,13 @@ void q3BSPLightGrid_c::setupPointLighting(const vec3_c &origin, struct pointLigh
 	gridStep[0] = 8;
 	gridStep[1] = 8 * this->lightGridBounds[0];
 	gridStep[2] = 8 * this->lightGridBounds[0] * this->lightGridBounds[1];
-	const byte *pointData = this->lightGridData.getArray() + pos[0] * gridStep[0]
-		+ pos[1] * gridStep[1] + pos[2] * gridStep[2];
+	u32 pointDataOffset = pos[0] * gridStep[0] + pos[1] * gridStep[1] + pos[2] * gridStep[2];
+	if(pointDataOffset >= this->lightGridData.size()) {
+		g_core->RedWarning("q3BSPLightGrid_c::setupPointLighting: bad pointDataOffset %i (grid data size is %i)\n",
+			pointDataOffset,this->lightGridData.size());
+		return;
+	}
+	const byte *pointData = this->lightGridData.getArray() + pointDataOffset;
 
 	float totalFactor = 0;
 	for (u32 i = 0; i < 8; i++ ) {

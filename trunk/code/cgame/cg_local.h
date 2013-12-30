@@ -264,6 +264,8 @@ void CG_PredictPlayerState();
 void CG_DrawBigString( int x, int y, const char *s, float alpha );
 int CG_DrawStrlen( const char *str );
 void CG_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader );
+void CG_DrawSmallString( int x, int y, const char *s, float alpha );
+void CG_DrawSmallStringColor( int x, int y, const char *s, float color[4] );
 
 //
 // cg_draw.c
@@ -310,6 +312,12 @@ void CG_RunTestMaterial();
 //
 void CG_CreateTempLight(const class vec3_c &pos, float radius, int totalLife);
 void CG_RunTempLights();
+
+//
+// cg_chat.cpp
+//
+void CG_DrawChat();
+void CG_AddChatMessage(const char *msg);
 
 //===============================================
 

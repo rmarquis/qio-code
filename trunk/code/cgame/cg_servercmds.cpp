@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/declManagerAPI.h>
+#include <api/coreAPI.h>
 #include <shared/str.h>
 
 
@@ -324,6 +325,11 @@ static void CG_ServerCommand( void ) {
 		return;
 	} else if ( !strcmp( cmd, "doLocalMuzzleFlash" ) ) {
 		CG_DoMuzzleFlashCommand();
+		return;
+	} else if( !strcmp( cmd, "chat" ) ) {
+		char buff[8192];
+		g_core->Args(buff,sizeof(buff));
+		CG_AddChatMessage(buff);
 		return;
 	}
 

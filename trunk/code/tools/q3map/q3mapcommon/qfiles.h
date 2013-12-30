@@ -340,7 +340,9 @@ typedef struct {
 #define	MAX_MAP_LEAFBRUSHES 0x40000
 #define	MAX_MAP_PORTALS		0x20000
 #define	MAX_MAP_LIGHTING	0x800000
-#define	MAX_MAP_LIGHTGRID	0x800000
+//#define	MAX_MAP_LIGHTGRID	0x800000
+// V: increased for test_bspAreaPortals_extended2
+#define	MAX_MAP_LIGHTGRID	0x1000000
 #define	MAX_MAP_VISIBILITY	0x200000
 
 #define	MAX_MAP_DRAW_SURFS	0x20000
