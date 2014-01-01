@@ -153,17 +153,17 @@ static char *Sys_PIDFileName( void )
 =================
 Sys_WritePIDFile
 
-Return qtrue if there is an existing stale PID file
+Return true if there is an existing stale PID file
 =================
 */
-qboolean Sys_WritePIDFile( void )
+bool Sys_WritePIDFile( void )
 {
 	char      *pidFile = Sys_PIDFileName( );
 	FILE      *f;
-	qboolean  stale = qfalse;
+	bool  stale = false;
 
 	if( pidFile == NULL )
-		return qfalse;
+		return false;
 
 	// First, check if the pid file is already there
 	if( ( f = fopen( pidFile, "r" ) ) != NULL )
@@ -178,10 +178,10 @@ qboolean Sys_WritePIDFile( void )
 		{
 			pid = atoi( pidBuffer );
 			if( !Sys_PIDIsRunning( pid ) )
-				stale = qtrue;
+				stale = true;
 		}
 		else
-			stale = qtrue;
+			stale = true;
 	}
 
 	if( ( f = fopen( pidFile, "w" ) ) != NULL )
@@ -518,7 +518,7 @@ Sys_SigHandler
 */
 void Sys_SigHandler( int signal )
 {
-	static qboolean signalcaught = qfalse;
+	static bool signalcaught = false;
 
 	if( signalcaught )
 	{
@@ -527,10 +527,10 @@ void Sys_SigHandler( int signal )
 	}
 	else
 	{
-		signalcaught = qtrue;
+		signalcaught = true;
 		//VM_Forced_Unload_Start();
 #ifndef DEDICATED
-		CL_Shutdown(va("Received signal %d", signal), qtrue, qtrue);
+		CL_Shutdown(va("Received signal %d", signal), true, true);
 #endif
 		SV_Shutdown(va("Received signal %d", signal) );
 		//VM_Forced_Unload_Done();
@@ -610,7 +610,7 @@ int main( int argc, char **argv )
 	// Concatenate the command line for passing to Com_Init
 	for( i = 1; i < argc; i++ )
 	{
-		const qboolean containsSpaces = strchr(argv[i], ' ') != NULL;
+		const bool containsSpaces = strchr(argv[i], ' ') != NULL;
 		if (containsSpaces)
 			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
 

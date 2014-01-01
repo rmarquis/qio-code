@@ -71,7 +71,7 @@ static void *GPA(char *str)
 	if(!rv)
 	{
 		Com_Printf("Can't load symbol %s\n", str);
-		clc.cURLEnabled = qfalse;
+		clc.cURLEnabled = false;
 		return NULL;
 	}
 	else
@@ -87,11 +87,11 @@ static void *GPA(char *str)
 CL_cURL_Init
 =================
 */
-qboolean CL_cURL_Init()
+bool CL_cURL_Init()
 {
 #ifdef USE_CURL_DLOPEN
 	if(cURLLib)
-		return qtrue;
+		return true;
 
 
 	Com_Printf("Loading \"%s\"...", cl_cURLLib->string);
@@ -101,10 +101,10 @@ qboolean CL_cURL_Init()
 		// On some linux distributions there is no libcurl.so.3, but only libcurl.so.4. That one works too.
 		if(!(cURLLib = Sys_LoadDll(ALTERNATE_CURL_LIB)))
 #endif
-			return qfalse;
+			return false;
 	}
 
-	clc.cURLEnabled = qtrue;
+	clc.cURLEnabled = true;
 
 	qcurl_version = (char *(__cdecl *)(void))GPA("curl_version");
 
@@ -130,14 +130,14 @@ qboolean CL_cURL_Init()
 	{
 		CL_cURL_Shutdown();
 		Com_Printf("FAIL One or more symbols not found\n");
-		return qfalse;
+		return false;
 	}
 	Com_Printf("OK\n");
 
-	return qtrue;
+	return true;
 #else
-	clc.cURLEnabled = qtrue;
-	return qtrue;
+	clc.cURLEnabled = true;
+	return true;
 #endif /* USE_CURL_DLOPEN */
 }
 
@@ -211,7 +211,7 @@ static size_t CL_cURL_CallbackWrite(void *buffer, size_t size, size_t nmemb,
 
 void CL_cURL_BeginDownload( const char *localName, const char *remoteURL )
 {
-	clc.cURLUsed = qtrue;
+	clc.cURLUsed = true;
 	Com_Printf("URL: %s\n", remoteURL);
 	Com_DPrintf("***** CL_cURL_BeginDownload *****\n"
 		"Localname: %s\n"
@@ -276,11 +276,11 @@ void CL_cURL_BeginDownload( const char *localName, const char *remoteURL )
 	if(!(clc.sv_allowDownload & DLF_NO_DISCONNECT) &&
 		!clc.cURLDisconnected) {
 
-		CL_AddReliableCommand("disconnect", qtrue);
+		CL_AddReliableCommand("disconnect", true);
 		CL_WritePacket();
 		CL_WritePacket();
 		CL_WritePacket();
-		clc.cURLDisconnected = qtrue;
+		clc.cURLDisconnected = true;
 	}
 }
 
@@ -305,7 +305,7 @@ void CL_cURL_PerformDownload(void)
 	FS_FCloseFile(clc.download);
 	if(msg->msg == CURLMSG_DONE && msg->data.result == CURLE_OK) {
 		FS_SV_Rename(clc.downloadTempName, clc.downloadName);
-		clc.downloadRestart = qtrue;
+		clc.downloadRestart = true;
 	}
 	else {
 		long code;

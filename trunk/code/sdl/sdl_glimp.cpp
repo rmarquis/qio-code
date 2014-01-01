@@ -115,15 +115,15 @@ vidmode_t r_vidModes[] =
 };
 static int	s_numVidModes = ARRAY_LEN( r_vidModes );
 
-qboolean R_GetModeInfo( int *width, int *height, float *windowAspect, int mode ) {
+bool R_GetModeInfo( int *width, int *height, float *windowAspect, int mode ) {
 	vidmode_t	*vm;
 	float			pixelAspect;
 
 	if ( mode < -1 ) {
-		return qfalse;
+		return false;
 	}
 	if ( mode >= s_numVidModes ) {
-		return qfalse;
+		return false;
 	}
 
 	if ( mode == -1 ) {
@@ -145,7 +145,7 @@ qboolean R_GetModeInfo( int *width, int *height, float *windowAspect, int mode )
 
 	*windowAspect = (float)*width / ( *height * pixelAspect );
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -321,7 +321,7 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 GLimp_SetMode
 ===============
 */
-static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
+static int GLimp_SetMode(int mode, bool fullscreen, bool noborder)
 {
 	int sdlcolorbits;
 	int colorbits, depthbits, stencilbits;
@@ -397,14 +397,14 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	if (fullscreen)
 	{
 		flags |= SDL_FULLSCREEN;
-		glConfig.isFullscreen = qtrue;
+		glConfig.isFullscreen = true;
 	}
 	else
 	{
 		if (noborder)
 			flags |= SDL_NOFRAME;
 
-		glConfig.isFullscreen = qfalse;
+		glConfig.isFullscreen = false;
 	}
 
 	colorbits = 32; // r_colorbits->value;
@@ -498,12 +498,12 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 		//if(r_stereoEnabled->integer)
 		//{
-		//	glConfig.stereoEnabled = qtrue;
+		//	glConfig.stereoEnabled = true;
 		//	SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
 		//}
 		//else
 		//{
-		//	glConfig.stereoEnabled = qfalse;
+		//	glConfig.stereoEnabled = false;
 			SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
 		//}
 		
@@ -585,7 +585,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 GLimp_StartDriverAndSetMode
 ===============
 */
-static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qboolean noborder)
+static bool GLimp_StartDriverAndSetMode(int mode, bool fullscreen, bool noborder)
 {
 	int err;
 
@@ -597,7 +597,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		{
 			g_core->Print( "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n",
 					SDL_GetError());
-			return qfalse;
+			return false;
 		}
 
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
@@ -609,8 +609,8 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 	{
 		g_core->Print( "Fullscreen not allowed with in_nograb 1\n");
 		g_cvars->Cvar_Set( "r_fullscreen", "0" );
-		r_fullscreen->modified = qfalse;
-		fullscreen = qfalse;
+		r_fullscreen->modified = false;
+		fullscreen = false;
 	}
 	
 	err = GLimp_SetMode(mode, fullscreen, noborder);
@@ -619,22 +619,22 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 	{
 		case RSERR_INVALID_FULLSCREEN:
 			g_core->Print( "...WARNING: fullscreen unavailable in this mode\n" );
-			return qfalse;
+			return false;
 		case RSERR_INVALID_MODE:
 			g_core->Print( "...WARNING: could not set the given mode (%d)\n", mode );
-			return qfalse;
+			return false;
 		default:
 			break;
 	}
 
-	return qtrue;
+	return true;
 }
 
-static qboolean GLimp_HaveExtension(const char *ext)
+static bool GLimp_HaveExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
 	if (ptr == NULL)
-		return qfalse;
+		return false;
 	ptr += strlen(ext);
 	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
 }
@@ -679,7 +679,7 @@ void GLimp_Init( void )
 	// Try again, this time in a platform specific "safe mode"
 	//Sys_GLimpSafeInit( ); // TODO
 
-	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, qfalse))
+	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, false))
 		goto success;
 
 	// Finally, try the default screen resolution
@@ -688,7 +688,7 @@ void GLimp_Init( void )
 		g_core->Print( "Setting r_mode %d failed, falling back on r_mode %d\n",
 				r_mode->integer, R_MODE_FALLBACK );
 
-		if(GLimp_StartDriverAndSetMode(R_MODE_FALLBACK, qfalse, qfalse))
+		if(GLimp_StartDriverAndSetMode(R_MODE_FALLBACK, false, false))
 			goto success;
 	}
 
@@ -737,9 +737,9 @@ void GLimp_EndFrame( void )
 
 	if( r_fullscreen->modified )
 	{
-		qboolean    fullscreen;
-		qboolean    needToToggle = qtrue;
-		qboolean    sdlToggled = qfalse;
+		bool    fullscreen;
+		bool    needToToggle = true;
+		bool    sdlToggled = false;
 		SDL_Surface *s = SDL_GetVideoSurface( );
 
 		if( s )
@@ -751,7 +751,7 @@ void GLimp_EndFrame( void )
 			{
 				g_core->Print( "Fullscreen not allowed with in_nograb 1\n");
 				g_cvars->Cvar_Set( "r_fullscreen", "0" );
-				r_fullscreen->modified = qfalse;
+				r_fullscreen->modified = false;
 			}
 
 			// Is the state we want different from the current state?
@@ -770,7 +770,7 @@ void GLimp_EndFrame( void )
 			g_inputSystem->IN_Restart( );
 		}
 
-		r_fullscreen->modified = qfalse;
+		r_fullscreen->modified = false;
 	}
 }
 #include <api/sdlSharedAPI.h>

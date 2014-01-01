@@ -213,7 +213,7 @@ void CG_ZoomDown_f( void ) {
 	if ( cg.zoomed ) {
 		return;
 	}
-	cg.zoomed = qtrue;
+	cg.zoomed = true;
 	cg.zoomTime = cg.time;
 }
 
@@ -221,7 +221,7 @@ void CG_ZoomUp_f( void ) {
 	if ( !cg.zoomed ) {
 		return;
 	}
-	cg.zoomed = qfalse;
+	cg.zoomed = false;
 	cg.zoomTime = cg.time;
 }
 
@@ -289,7 +289,7 @@ CG_DrawActiveFrame
 Generates and draws a game scene and status information at the given time.
 =================
 */
-void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback ) {
+void CG_DrawActiveFrame( int serverTime, bool demoPlayback ) {
 	int		inwater;
 
 	cg.time = serverTime;

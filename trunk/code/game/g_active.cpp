@@ -80,7 +80,7 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 void ClientEndFrame( edict_s *ent ) {
 //	Player *pl = dynamic_cast<Player*>(ent->ent);
 	// now playerState_s inherts from entityState
-	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
+	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, true );
 }
 
 

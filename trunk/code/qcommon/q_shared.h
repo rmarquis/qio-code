@@ -164,10 +164,6 @@ typedef int intptr_t;
 
 #include "../shared/typedefs.h"
 
-typedef int	qboolean;
-#define qtrue 1 
-#define qfalse 0
-
 typedef union {
 	float f;
 	int i;
@@ -351,13 +347,13 @@ float Com_Clamp( float min, float max, float value );
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
 void	COM_StripExtension(const char *in, char *out, int destsize);
-qboolean COM_CompareExtension(const char *in, const char *ext);
+bool COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 void	COM_BeginParseSession( const char *name );
 int		COM_GetCurrentParseLine( void );
 char	*COM_Parse( char **data_p );
-char	*COM_ParseExt( char **data_p, qboolean allowLineBreak );
+char	*COM_ParseExt( char **data_p, bool allowLineBreak );
 int		COM_Compress( char *data_p );
 void	COM_ParseError( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
 void	COM_ParseWarning( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
@@ -386,8 +382,8 @@ int Q_isprint( int c );
 int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
+bool Q_isanumber( const char *s );
+bool Q_isintegral( float f );
 
 // portable case insensitive compare
 int		Q_stricmp (const char *s1, const char *s2);
@@ -441,7 +437,7 @@ void Info_RemoveKey( char *s, const char *key );
 void Info_RemoveKey_big( char *s, const char *key );
 void Info_SetValueForKey( char *s, const char *key, const char *value );
 void Info_SetValueForKey_Big( char *s, const char *key, const char *value );
-qboolean Info_Validate( const char *s );
+bool Info_Validate( const char *s );
 void Info_NextPair( const char **s, char *key, char *value );
 
 /*
@@ -490,12 +486,12 @@ struct cvar_s {
 	char			*resetString;		// cvar_restart will reset to this value
 	char			*latchedString;		// for CVAR_LATCH vars
 	int				flags;
-	qboolean	modified;			// set each time the cvar is changed
+	bool	modified;			// set each time the cvar is changed
 	int				modificationCount;	// incremented each time the cvar is changed
 	float			value;				// atof( string )
 	int				integer;			// atoi( string )
-	qboolean	validate;
-	qboolean	integral;
+	bool	validate;
+	bool	integral;
 	float			min;
 	float			max;
 

@@ -43,7 +43,7 @@ struct cgameAPI_s : public iFaceBase_i {
 	void (*Shutdown)( void );
 	// Generates and draws a game scene and status information at the given time.
 	// If demoPlayback is set, local movement prediction will not be enabled
-	void (*DrawActiveFrame)( int serverTime, qboolean demoPlayback );
+	void (*DrawActiveFrame)( int serverTime, bool demoPlayback );
 };
 
 extern cgameAPI_s *g_cgame;

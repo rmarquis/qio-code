@@ -181,7 +181,7 @@ void SV_ShutdownGameProgs( void ) {
 	if ( !sv_gameDLL ) {
 		return;
 	}
-	g_game->ShutdownGame(qfalse);
+	g_game->ShutdownGame(false);
 	g_moduleMgr->unload(&sv_gameDLL);
 }
 
@@ -192,7 +192,7 @@ SV_InitGameVM
 Called for both a full init and a restart
 ==================
 */
-static void SV_InitGameVM( qboolean restart ) {
+static void SV_InitGameVM( bool restart ) {
 	int		i;
 
 	// clear all gentity pointers that might still be set from
@@ -221,15 +221,15 @@ void SV_RestartGameProgs( void ) {
 	if ( !sv_gameDLL ) {
 		return;
 	}
-	g_game->ShutdownGame(qtrue);
+	g_game->ShutdownGame(true);
 
 	// do a restart instead of a free
-	sv_gameDLL = g_moduleMgr->restart(sv_gameDLL, qtrue);
+	sv_gameDLL = g_moduleMgr->restart(sv_gameDLL, true);
 	if ( !sv_gameDLL ) {
 		Com_Error( ERR_FATAL, "VM_Restart on game failed" );
 	}
 
-	SV_InitGameVM( qtrue );
+	SV_InitGameVM( true );
 }
 
 /*
@@ -253,7 +253,7 @@ void SV_InitGameProgs( void ) {
 	if(!g_gameClients) {
 		Com_Error( ERR_DROP, "GameClients module has wrong interface version (%s required)", GAMECLIENTS_API_IDENTSTR );
 	}
-	SV_InitGameVM( qfalse );
+	SV_InitGameVM( false );
 }
 
 
@@ -264,9 +264,9 @@ SV_GameCommand
 See if the current console command is claimed by the game
 ====================
 */
-qboolean SV_GameCommand( void ) {
+bool SV_GameCommand( void ) {
 	//if ( sv.state != SS_GAME ) {
-		return qfalse;
+		return false;
 	//}
 	// TODO
 	//return VM_Call( gvm, GAME_CONSOLE_COMMAND );

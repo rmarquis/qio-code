@@ -33,7 +33,7 @@ This is done after each set of usercmd_s on the server,
 and after local prediction on the client
 ========================
 */
-void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean snap ) {
+void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, bool snap ) {
 
 	//if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) {
 	//	s->eType = ET_INVISIBLE;

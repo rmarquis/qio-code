@@ -133,15 +133,15 @@ static void CL_Netchan_Decode( msg_t *msg ) {
 CL_Netchan_TransmitNextFragment
 =================
 */
-qboolean CL_Netchan_TransmitNextFragment(netchan_t *chan)
+bool CL_Netchan_TransmitNextFragment(netchan_t *chan)
 {
 	if(chan->unsentFragments)
 	{
 		Netchan_TransmitNextFragment(chan);
-		return qtrue;
+		return true;
 	}
 	
-	return qfalse;
+	return false;
 }
 
 /*
@@ -171,17 +171,17 @@ void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg ) {
 CL_Netchan_Process
 =================
 */
-qboolean CL_Netchan_Process( netchan_t *chan, msg_t *msg ) {
+bool CL_Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	int ret;
 
 	ret = Netchan_Process( chan, msg );
 	if (!ret)
-		return qfalse;
+		return false;
 
 #ifdef LEGACY_PROTOCOL
 	if(chan->compat)
 		CL_Netchan_Decode(msg);
 #endif
 
-	return qtrue;
+	return true;
 }

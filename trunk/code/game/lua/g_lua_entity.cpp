@@ -150,12 +150,12 @@ static int entity_Teleport(lua_State * L)
 static int entity_IsRocket(lua_State * L)
 {
 	lua_Entity     *lent;
-	qboolean        rocket = qfalse;
+	bool        rocket = false;
 
 	lent = lua_getentity(L, 1);
 
 //	if(lent->e->classname == "rocket")
-//		rocket = qtrue;
+//		rocket = true;
 
 	lua_pushboolean(L, rocket);
 
@@ -164,12 +164,12 @@ static int entity_IsRocket(lua_State * L)
 static int entity_IsGrenade(lua_State * L)
 {
 	lua_Entity     *lent;
-	qboolean        grenade = qfalse;
+	bool        grenade = false;
 
 	lent = lua_getentity(L, 1);
 
 //	if(lent->e->classname == "grenade")
-//		grenade = qtrue;
+//		grenade = true;
 
 	lua_pushboolean(L, grenade);
 

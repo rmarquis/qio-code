@@ -51,13 +51,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct centity_s {
 	entityState_s	currentState;	// from cg.frame
 	entityState_s	nextState;		// from cg.nextFrame, if available
-	qboolean		interpolate;	// true if next is valid to interpolate to
-	qboolean		currentValid;	// true if cg.frame holds this entity
+	bool		interpolate;	// true if next is valid to interpolate to
+	bool		currentValid;	// true if cg.frame holds this entity
 
 	int				snapShotTime;	// last time this entity was found in a snapshot
 	int				lastUpdateFrame; // cg.frameNum when entity was updated
 
-	qboolean		extrapolated;	// false if origin / angles is an interpolation
+	bool		extrapolated;	// false if origin / angles is an interpolation
 
 	// exact interpolated position of entity on this frame
 	vec3_c			lerpOrigin;
@@ -82,7 +82,7 @@ typedef struct {
 
 	int			clientNum;
 
-	qboolean	demoPlayback;
+	bool	demoPlayback;
 
 	// there are only one or two snapshot_t that are relevent at a time
 	int			latestSnapshotNum;	// the number of snapshots the client system has received
@@ -105,7 +105,7 @@ typedef struct {
 	// prediction state
 	playerState_s	predictedPlayerState;
 	centity_t		predictedPlayerEntity;
-	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
+	bool	validPPS;				// clear until the first call to CG_PredictPlayerState
 
 	float		stepChange;				// for stair up smoothing
 	int			stepTime;
@@ -126,7 +126,7 @@ typedef struct {
 	axis_c		refdefViewAxis;
 
 	// zoom key
-	qboolean	zoomed;
+	bool	zoomed;
 	int			zoomTime;
 	float		zoomSensitivity;
 
@@ -160,7 +160,7 @@ typedef struct {
 	int				serverCommandSequence;	// reliable command stream counter
 	int				processedSnapshotNum;// the number of snapshots cgame has requested
 
-	qboolean		localServer;		// detected on startup by checking sv_running
+	bool		localServer;		// detected on startup by checking sv_running
 
 	int				maxclients;
 	char			mapname[MAX_QPATH];
@@ -217,7 +217,7 @@ void CG_UpdateCvars( void );
 //
 // cg_view.c
 //
-void CG_DrawActiveFrame( int serverTime, qboolean demoPlayback );
+void CG_DrawActiveFrame( int serverTime, bool demoPlayback );
 
 
 //
@@ -239,7 +239,7 @@ void CG_ProcessSnapshots( void );
 //
 // cg_consolecmds.c
 //
-qboolean CG_ConsoleCommand( void );
+bool CG_ConsoleCommand( void );
 void CG_InitConsoleCommands( void );
 
 //

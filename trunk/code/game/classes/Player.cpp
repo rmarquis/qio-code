@@ -591,10 +591,10 @@ void Player::runPlayer() {
 		G_Printf("Player::runPlayer: client %i health is %i\n",myEdict->s->number,this->health);
 	}
 	//if (g_smoothClients.integer) {
-	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
+	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, true );
 	//}
 	//else {
-	//	BG_PlayerStateToEntityState( &this->ps, &myEdict->s, qtrue );
+	//	BG_PlayerStateToEntityState( &this->ps, &myEdict->s, true );
 	//}
 
 	this->ps.commandTime = ucmd->serverTime;

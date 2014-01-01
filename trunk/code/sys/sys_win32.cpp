@@ -140,11 +140,11 @@ int sys_timeBase;
 int Sys_Milliseconds (void)
 {
 	int             sys_curtime;
-	static qboolean initialized = qfalse;
+	static bool initialized = false;
 
 	if (!initialized) {
 		sys_timeBase = timeGetTime();
-		initialized = qtrue;
+		initialized = true;
 	}
 	sys_curtime = timeGetTime() - sys_timeBase;
 
@@ -156,22 +156,22 @@ int Sys_Milliseconds (void)
 Sys_RandomBytes
 ================
 */
-qboolean Sys_RandomBytes( byte *string, int len )
+bool Sys_RandomBytes( byte *string, int len )
 {
 	HCRYPTPROV  prov;
 
 	if( !CryptAcquireContext( &prov, NULL, NULL,
 		PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) )  {
 
-		return qfalse;
+		return false;
 	}
 
 	if( !CryptGenRandom( prov, len, (BYTE *)string ) )  {
 		CryptReleaseContext( prov, 0 );
-		return qfalse;
+		return false;
 	}
 	CryptReleaseContext( prov, 0 );
-	return qtrue;
+	return true;
 }
 
 /*
@@ -229,11 +229,11 @@ char *Sys_GetClipboardData( void )
 Sys_LowPhysicalMemory
 ==================
 */
-qboolean Sys_LowPhysicalMemory( void )
+bool Sys_LowPhysicalMemory( void )
 {
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus (&stat);
-	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
+	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? true : false;
 }
 
 /*
@@ -292,15 +292,15 @@ const char *Sys_Dirname( char *path )
 Sys_Mkdir
 ==============
 */
-qboolean Sys_Mkdir( const char *path )
+bool Sys_Mkdir( const char *path )
 {
 	if( !CreateDirectory( path, NULL ) )
 	{
 		if( GetLastError( ) != ERROR_ALREADY_EXISTS )
-			return qfalse;
+			return false;
 	}
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -382,7 +382,7 @@ void Sys_ListFilteredFiles( const char *basedir, char *subdirs, const char *filt
 			break;
 		}
 		Com_sprintf( filename, sizeof(filename), "%s\\%s", subdirs, findinfo.name );
-		if (!Com_FilterPath( filter, filename, qfalse ))
+		if (!Com_FilterPath( filter, filename, false ))
 			continue;
 		list[ *numfiles ] = CopyString( filename );
 		(*numfiles)++;
@@ -396,7 +396,7 @@ void Sys_ListFilteredFiles( const char *basedir, char *subdirs, const char *filt
 strgtr
 ==============
 */
-static qboolean strgtr(const char *s0, const char *s1)
+static bool strgtr(const char *s0, const char *s1)
 {
 	int l0, l1, i;
 
@@ -409,13 +409,13 @@ static qboolean strgtr(const char *s0, const char *s1)
 
 	for(i=0;i<l0;i++) {
 		if (s1[i] > s0[i]) {
-			return qtrue;
+			return true;
 		}
 		if (s1[i] < s0[i]) {
-			return qfalse;
+			return false;
 		}
 	}
-	return qfalse;
+	return false;
 }
 
 void ListFilesIn(const char *dir, const char *ext, int &nfiles, char *list[MAX_FOUND_FILES], int baseDirLen) {
@@ -453,7 +453,7 @@ void ListFilesIn(const char *dir, const char *ext, int &nfiles, char *list[MAX_F
 Sys_ListFiles
 ==============
 */
-char **Sys_ListFiles( const char *directory, const char *extension, const char *filter, int *numfiles, qboolean wantsubs )
+char **Sys_ListFiles( const char *directory, const char *extension, const char *filter, int *numfiles, bool wantsubs )
 {
 	char		search[MAX_OSPATH];
 	int			nfiles;
@@ -661,7 +661,7 @@ dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *t
 }
 
 #ifndef DEDICATED
-static qboolean SDL_VIDEODRIVER_externallySet = qfalse;
+static bool SDL_VIDEODRIVER_externallySet = false;
 #endif
 
 /*
@@ -734,10 +734,10 @@ void Sys_PlatformInit( void )
 	{
 		Com_Printf( "SDL_VIDEODRIVER is externally set to \"%s\", "
 				"in_mouse -1 will have no effect\n", SDL_VIDEODRIVER );
-		SDL_VIDEODRIVER_externallySet = qtrue;
+		SDL_VIDEODRIVER_externallySet = true;
 	}
 	else
-		SDL_VIDEODRIVER_externallySet = qfalse;
+		SDL_VIDEODRIVER_externallySet = false;
 
 	if(timeGetDevCaps(&ptc, sizeof(ptc)) == MMSYSERR_NOERROR)
 	{
@@ -801,14 +801,14 @@ int Sys_PID( void )
 Sys_PIDIsRunning
 ==============
 */
-qboolean Sys_PIDIsRunning( int pid )
+bool Sys_PIDIsRunning( int pid )
 {
 	DWORD processes[ 1024 ];
 	DWORD numBytes, numProcesses;
 	int i;
 
 	if( !EnumProcesses( processes, sizeof( processes ), &numBytes ) )
-		return qfalse; // Assume it's not running
+		return false; // Assume it's not running
 
 	numProcesses = numBytes / sizeof( DWORD );
 
@@ -816,8 +816,8 @@ qboolean Sys_PIDIsRunning( int pid )
 	for( i = 0; i < numProcesses; i++ )
 	{
 		if( processes[ i ] == pid )
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }

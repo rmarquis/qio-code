@@ -133,7 +133,7 @@ cent->nextState is moved to cent->currentState and events are fired
 static void CG_TransitionEntity( centity_t *cent ) {
 	entityState_s previousState = cent->currentState;
 	cent->currentState = cent->nextState;
-	cent->currentValid = qtrue;
+	cent->currentValid = true;
 
 	// reset if the entity wasn't in the last frame or was teleported
 	if ( !cent->interpolate ) {
@@ -164,7 +164,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap
-	cent->interpolate = qfalse;
+	cent->interpolate = false;
 }
 
 static void CG_RemoveEntity(u32 entNum) {
@@ -238,7 +238,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 	cg.snap = snap;
 
-	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, qfalse );
+	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, false );
 	CG_NewEntity(snap->ps.clientNum);
 
 	// sort out solid entities
@@ -256,8 +256,8 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 		memcpy(&cent->currentState, state, sizeof(entityState_s));
 		//cent->currentState = *state;
-		cent->interpolate = qfalse;
-		cent->currentValid = qtrue;
+		cent->interpolate = false;
+		cent->currentValid = true;
 
 		CG_ResetEntity( cent );
 		CG_NewEntity( state->number );
@@ -293,15 +293,15 @@ static void CG_TransitionSnapshot( void ) {
 	// clear the currentValid flag for all entities in the existing snapshot
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		cent = &cg_entities[ cg.snap->entities[ i ].number ];
-		cent->currentValid = qfalse;
+		cent->currentValid = false;
 	}
 
 	// move nextSnap to snap and do the transitions
 	oldFrame = cg.snap;
 	cg.snap = cg.nextSnap;
 
-	BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, qfalse );
-	cg_entities[ cg.snap->ps.clientNum ].interpolate = qfalse;
+	BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, false );
+	cg_entities[ cg.snap->ps.clientNum ].interpolate = false;
 
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		cent = &cg_entities[ cg.snap->entities[ i ].number ];
@@ -349,7 +349,7 @@ static void CG_TransitionSnapshot( void ) {
 			CG_RemoveEntity(i);
 			cent->currentValid = false;
 		} else if(cent->rEnt) {
-			CG_Error("CG_TransitionSnapshot: found entity with currentValid == qfalse and renderEntity present\n");
+			CG_Error("CG_TransitionSnapshot: found entity with currentValid == false and renderEntity present\n");
 		}
 	}
 	if(snapEnt != cg.snap->numEntities) {
@@ -360,11 +360,11 @@ static void CG_TransitionSnapshot( void ) {
 	cg.snap = cg.nextSnap;
 
 	if(oldFrame == 0) {
-		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, qfalse );
+		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, false );
 	} else {
-		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].nextState, qfalse );
+		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].nextState, false );
 	}
-	cg_entities[ cg.snap->ps.clientNum ].interpolate = qfalse;
+	cg_entities[ cg.snap->ps.clientNum ].interpolate = false;
 	if(cg_entities[cg.snap->ps.clientNum].rEnt) {
 		// set the playerModel flag as soon as its possible
 		cg_entities[cg.snap->ps.clientNum].rEnt->setIsPlayerModel(true);
@@ -405,8 +405,8 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 
 	cg.nextSnap = snap;
 
-	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].nextState, qfalse );
-	cg_entities[ cg.snap->ps.clientNum ].interpolate = qtrue;
+	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].nextState, false );
+	cg_entities[ cg.snap->ps.clientNum ].interpolate = true;
 
 	// check for extrapolation errors
 	for ( num = 0 ; num < snap->numEntities ; num++ ) {
@@ -419,9 +419,9 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 		// if this frame is a teleport, or the entity wasn't in the
 		// previous frame, don't interpolate
 		if ( !cent->currentValid ) {//|| ( ( cent->currentState.eFlags ^ es->eFlags ) & EF_TELEPORT_BIT )  ) {
-			cent->interpolate = qfalse;
+			cent->interpolate = false;
 		} else {
-			cent->interpolate = qtrue;
+			cent->interpolate = true;
 		}
 	}
 
@@ -441,7 +441,7 @@ valid snapshot.
 ========================
 */
 static snapshot_t *CG_ReadNextSnapshot( void ) {
-	qboolean	r;
+	bool	r;
 	snapshot_t	*dest;
 
 	if ( cg.latestSnapshotNum > cgs.processedSnapshotNum + 1000 ) {

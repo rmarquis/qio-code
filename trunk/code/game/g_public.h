@@ -143,7 +143,7 @@ struct edict_s {
 //
 //	GAME_SHUTDOWN,	// (void);
 //
-//	GAME_CLIENT_CONNECT,	// ( int clientNum, qboolean firstTime, qboolean isBot );
+//	GAME_CLIENT_CONNECT,	// ( int clientNum, bool firstTime, bool isBot );
 //	// return NULL if the client is allowed to connect, otherwise return
 //	// a text string with the reason for denial
 //
@@ -163,7 +163,7 @@ struct edict_s {
 //	// ConsoleCommand will be called when a command has been issued
 //	// that is not recognized as a builtin function.
 //	// The game can issue trap_argc() / trap_argv() commands to get the command
-//	// and parameters.  Return qfalse if the game doesn't recognize it as a command.
+//	// and parameters.  Return false if the game doesn't recognize it as a command.
 //
 //} gameExport_t;
 //

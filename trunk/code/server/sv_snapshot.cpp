@@ -92,9 +92,9 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 				//	oldnum,from->ps.number);
 			}
 			// delta update from old position
-			// because the force parm is qfalse, this will not result
+			// because the force parm is false, this will not result
 			// in any bytes being emited if the entity has not changed at all
-			MSG_WriteDeltaEntity (msg, oldent, newent, qfalse );
+			MSG_WriteDeltaEntity (msg, oldent, newent, false );
 			oldindex++;
 			newindex++;
 			continue;
@@ -106,7 +106,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 					newnum,to->ps.number);
 			}
 			// this is a new entity, send it from the baseline
-			MSG_WriteDeltaEntity (msg, &sv.svEntities[newnum].baseline, newent, qtrue );
+			MSG_WriteDeltaEntity (msg, &sv.svEntities[newnum].baseline, newent, true );
 			newindex++;
 			continue;
 		}
@@ -117,7 +117,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 					oldnum,to->ps.number);
 			}
 			// the old entity isn't present in the new message
-			MSG_WriteDeltaEntity (msg, oldent, NULL, qtrue );
+			MSG_WriteDeltaEntity (msg, oldent, NULL, true );
 			oldindex++;
 			continue;
 		}
@@ -315,7 +315,7 @@ which entities are potentialy visible by player.
 #include <shared/autoCvar.h> 
 static aCvar_c sv_cullEntities("sv_cullEntities","1");
 static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
-									snapshotEntityNumbers_t *eNums, qboolean portal, bitSet_c &areaBits ) {
+									snapshotEntityNumbers_t *eNums, bool portal, bitSet_c &areaBits ) {
 	int		e;//, i;
 	edict_s *ent;
 	svEntity_t	*svEnt;
@@ -459,7 +459,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	if(sv_bsp) {
 		areaBits.init(sv_bsp->getNumAreas(),false);
 	}
-	SV_AddEntitiesVisibleFromPoint( org, frame, &entityNumbers, qfalse, areaBits );
+	SV_AddEntitiesVisibleFromPoint( org, frame, &entityNumbers, false, areaBits );
 
 	memcpy(frame->areabits,areaBits.getArray(),areaBits.getSizeInBytes());
 	frame->areabytes = areaBits.getSizeInBytes();
@@ -582,12 +582,12 @@ void SV_SendClientSnapshot( client_t *client ) {
 	//}
 
 	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
-	msg.allowoverflow = qtrue;
+	msg.allowoverflow = true;
 
 	// compression byte is the first byte in all server->client messages
-	msg.oob = qtrue;
+	msg.oob = true;
 	MSG_WriteByte(&msg,0);
-	msg.oob = qfalse;
+	msg.oob = false;
 
 	// NOTE, MRE: all server->client messages now acknowledge
 	// let the client know which reliable clientCommands we have received
@@ -637,7 +637,7 @@ void SV_SendClientMessages(void)
 
 		if(c->netchan.unsentFragments || c->netchan_start_queue)
 		{
-			c->rateDelayed = qtrue;
+			c->rateDelayed = true;
 			continue;		// Drop this snapshot if the packet queue is still full or delta compression will break
 		}
 
@@ -652,7 +652,7 @@ void SV_SendClientMessages(void)
 			if(SV_RateMsec(c) > 0)
 			{
 				// Not enough time since last packet passed through the line
-				c->rateDelayed = qtrue;
+				c->rateDelayed = true;
 				continue;
 			}
 		}
@@ -660,6 +660,6 @@ void SV_SendClientMessages(void)
 		// generate and send a new message
 		SV_SendClientSnapshot(c);
 		c->lastSnapshotTime = svs.time;
-		c->rateDelayed = qfalse;
+		c->rateDelayed = false;
 	}
 }

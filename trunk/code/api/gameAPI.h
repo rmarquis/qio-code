@@ -41,7 +41,7 @@ struct gameAPI_s : public iFaceBase_i {
 #define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"
 
 struct gameClientAPI_s : public iFaceBase_i {
-	const char *(*ClientConnect)( int clientNum, qboolean firstTime, qboolean isBot );
+	const char *(*ClientConnect)( int clientNum, bool firstTime, bool isBot );
 	void (*ClientUserinfoChanged)( int clientNum );
 	void (*ClientDisconnect)( int clientNum );
 	void (*ClientBegin)( int clientNum );

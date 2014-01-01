@@ -87,12 +87,12 @@ a string with the reason for denial.
 Otherwise, the client will be sent the current gamestate
 and will eventually get to ClientBegin.
 
-firstTime will be qtrue the very first time a client connects
-to the server machine, but qfalse on map changes and tournement
+firstTime will be true the very first time a client connects
+to the server machine, but false on map changes and tournement
 restarts.
 ============
 */
-const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
+const char *ClientConnect( int clientNum, bool firstTime, bool isBot ) {
 	Player *pl;
 	edict_s	*ent;
 
@@ -213,7 +213,7 @@ void ClientSpawn(edict_s *ent) {
 	ClientEndFrame( ent );
 
 	// clear entity state values
-	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, qtrue );
+	//BG_PlayerStateToEntityState( &pl->ps, &ent->s, true );
 }
 
 

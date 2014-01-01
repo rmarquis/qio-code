@@ -63,7 +63,7 @@ A player just came into view or teleported, so reset all animation info
 ===============
 */
 void CG_ResetPlayerEntity( centity_t *cent ) {
-	cent->extrapolated = qfalse;	
+	cent->extrapolated = false;	
 
 //	BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
 //	BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
@@ -325,7 +325,7 @@ void CG_AddPacketEntities( void ) {
 
 	// generate and add the entity from the playerstate
 	//ps = &cg.predictedPlayerState;
-	//BG_PlayerStateToEntityState( ps, &cg.predictedPlayerEntity.currentState, qfalse );
+	//BG_PlayerStateToEntityState( ps, &cg.predictedPlayerEntity.currentState, false );
 	//CG_AddCEntity( &cg.predictedPlayerEntity );
 
 	// lerp the non-predicted value for lightning gun origins

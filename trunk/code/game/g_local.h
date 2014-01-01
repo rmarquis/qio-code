@@ -65,7 +65,7 @@ int G_RenderMaterialIndex( const char *name );
 
 edict_s *G_Find (edict_s *from, int fieldofs, const char *match);
 edict_s	*G_Spawn (void);
-qboolean G_EntitiesFree( void );
+bool G_EntitiesFree( void );
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
 class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
 class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
@@ -95,7 +95,7 @@ void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (pri
 //
 // g_client.c
 //
-const char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot );
+const char *ClientConnect( int clientNum, bool firstTime, bool isBot );
 void ClientUserinfoChanged( int clientNum );
 void ClientDisconnect( int clientNum );
 void ClientBegin( int clientNum );

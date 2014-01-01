@@ -42,7 +42,7 @@ G_FindConfigstringIndex
 
 ================
 */
-int G_FindConfigstringIndex( const char *name, int start, int max, qboolean create ) {
+int G_FindConfigstringIndex( const char *name, int start, int max, bool create ) {
 	int		i;
 	char	s[MAX_STRING_CHARS];
 
@@ -75,25 +75,25 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 
 
 int G_RenderModelIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, qtrue);
+	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, true);
 }
 int G_CollisionModelIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_COLLMODELS, MAX_MODELS, qtrue);
+	return G_FindConfigstringIndex (name, CS_COLLMODELS, MAX_MODELS, true);
 }
 int G_SoundIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_SOUNDS, MAX_SOUNDS, qtrue);
+	return G_FindConfigstringIndex (name, CS_SOUNDS, MAX_SOUNDS, true);
 }
 int G_AnimationIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_ANIMATIONS, MAX_ANIMATIONS, qtrue);
+	return G_FindConfigstringIndex (name, CS_ANIMATIONS, MAX_ANIMATIONS, true);
 }
 int G_RagdollDefIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_RAGDOLLDEFSS, MAX_RAGDOLLDEFS, qtrue);
+	return G_FindConfigstringIndex (name, CS_RAGDOLLDEFSS, MAX_RAGDOLLDEFS, true);
 }
 int G_RenderSkinIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_SKINS, MAX_SKINS, qtrue);
+	return G_FindConfigstringIndex (name, CS_SKINS, MAX_SKINS, true);
 }
 int G_RenderMaterialIndex( const char *name ) {
-	return G_FindConfigstringIndex (name, CS_MATERIALS, MAX_MATERIALS, qtrue);
+	return G_FindConfigstringIndex (name, CS_MATERIALS, MAX_MATERIALS, true);
 }
 
 //=====================================================================
@@ -162,16 +162,16 @@ edict_s *G_Spawn( void ) {
 G_EntitiesFree
 =================
 */
-qboolean G_EntitiesFree( void ) {
+bool G_EntitiesFree( void ) {
 	edict_s	*e = &g_entities[MAX_CLIENTS];
 	for ( u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
 		if ( e->s != 0 ) {
 			continue;
 		}
 		// slot available
-		return qtrue;
+		return true;
 	}
-	return qfalse;
+	return false;
 }
 
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<BaseEntity*> &out) {

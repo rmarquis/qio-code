@@ -36,7 +36,7 @@ Generates cg.predictedPlayerState by interpolating between
 cg.snap->player_state and cg.nextFrame->player_state
 ========================
 */
-static void CG_InterpolatePlayerState( qboolean grabAngles ) {
+static void CG_InterpolatePlayerState( bool grabAngles ) {
 	float			f;
 	int				i;
 	playerState_s	*out;
@@ -115,19 +115,19 @@ void CG_PredictPlayerState( void ) {
 	// predictedPlayerState is valid even if there is some
 	// other error condition
 	if ( !cg.validPPS ) {
-		cg.validPPS = qtrue;
+		cg.validPPS = true;
 		cg.predictedPlayerState = cg.snap->ps;
 	}
 
 
 	// demo playback just copies the moves
 	if ( cg.demoPlayback ) {
-		CG_InterpolatePlayerState( qfalse );
+		CG_InterpolatePlayerState( false );
 		return;
 	}
 
 	// V: prediction removed.
-	CG_InterpolatePlayerState( qtrue );
+	CG_InterpolatePlayerState( true );
 }
 
 

@@ -90,6 +90,6 @@ typedef enum {
 } entityType_t;
 
 
-void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean snap );
+void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, bool snap );
 
 #endif // __BG_PUBLIC_H__

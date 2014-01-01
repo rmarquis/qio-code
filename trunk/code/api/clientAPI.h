@@ -41,18 +41,18 @@ struct clAPI_s : public iFaceBase_i {
 	void (*GetCurrentSnapshotNumber)( int *snapshotNumber, int *serverTime );
 	// a snapshot get can fail if the snapshot (or the entties it holds) is so
 	// old that it has fallen out of the client system queue
-	qboolean (*GetSnapshot)( int snapshotNumber, snapshot_t *snapshot );
+	bool (*GetSnapshot)( int snapshotNumber, snapshot_t *snapshot );
 	// retrieve a text command from the server stream
 	// the current snapshot will hold the number of the most recent command
-	// qfalse can be returned if the client system handled the command
+	// false can be returned if the client system handled the command
 	// argc() / argv() can be used to examine the parameters of the command
-	qboolean (*GetServerCommand)( int serverCommandNumber );
+	bool (*GetServerCommand)( int serverCommandNumber );
 	// returns the most recent command number that can be passed to GetUserCmd
 	// this will always be at least one higher than the number in the current
 	// snapshot, and it may be quite a few higher if it is a fast computer on
 	// a lagged connection
 	int (*GetCurrentCmdNumber)( void );	
-	qboolean (*GetUserCmd)( int cmdNumber, usercmd_s *ucmd );
+	bool (*GetUserCmd)( int cmdNumber, usercmd_s *ucmd );
 };
 
 extern clAPI_s *g_client;

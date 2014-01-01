@@ -122,7 +122,7 @@ void CL_ShutdownRef( void ) {
 	if ( !cl_rendererDLL ) {
 		return;
 	}
-	rf->shutdown( qtrue );
+	rf->shutdown( true );
 	// first unload frontend
 	g_moduleMgr->unload(&cl_rendererDLL);
 	// and then backend

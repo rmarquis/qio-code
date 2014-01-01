@@ -63,15 +63,15 @@ kbutton_t	in_voiprecord;
 kbutton_t	in_buttons[16];
 
 
-qboolean	in_mlooking;
+bool	in_mlooking;
 
 
 void IN_MLookDown( void ) {
-	in_mlooking = qtrue;
+	in_mlooking = true;
 }
 
 void IN_MLookUp( void ) {
-	in_mlooking = qfalse;
+	in_mlooking = false;
 	if ( !cl_freelook->integer ) {
 		IN_CenterView ();
 	}
@@ -109,8 +109,8 @@ void IN_KeyDown( kbutton_t *b ) {
 	c = Cmd_Argv(2);
 	b->downtime = atoi(c);
 
-	b->active = qtrue;
-	b->wasPressed = qtrue;
+	b->active = true;
+	b->wasPressed = true;
 }
 
 void IN_KeyUp( kbutton_t *b ) {
@@ -124,7 +124,7 @@ void IN_KeyUp( kbutton_t *b ) {
 	} else {
 		// typed manually at the console, assume for unsticking, so clear all
 		b->down[0] = b->down[1] = 0;
-		b->active = qfalse;
+		b->active = false;
 		return;
 	}
 
@@ -139,7 +139,7 @@ void IN_KeyUp( kbutton_t *b ) {
 		return;		// some other key is still holding it down
 	}
 
-	b->active = qfalse;
+	b->active = false;
 
 	// save timestamp for partial frame summing
 	c = Cmd_Argv(2);
@@ -150,7 +150,7 @@ void IN_KeyUp( kbutton_t *b ) {
 		b->msec += frame_msec / 2;
 	}
 
-	b->active = qfalse;
+	b->active = false;
 }
 
 
@@ -558,7 +558,7 @@ void CL_CmdButtons( usercmd_s *cmd ) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
 		}
-		in_buttons[i].wasPressed = qfalse;
+		in_buttons[i].wasPressed = false;
 	}
 
 	if ( Key_GetCatcher( ) ) {
@@ -683,26 +683,26 @@ void CL_CreateNewCommands( void ) {
 =================
 CL_ReadyToSendPacket
 
-Returns qfalse if we are over the maxpackets limit
+Returns false if we are over the maxpackets limit
 and should choke back the bandwidth a bit by not sending
 a packet this frame.  All the commands will still get
 delivered in the next packet, but saving a header and
 getting more delta compression will reduce total bandwidth.
 =================
 */
-qboolean CL_ReadyToSendPacket( void ) {
+bool CL_ReadyToSendPacket( void ) {
 	int		oldPacketNum;
 	int		delta;
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying || clc.state == CA_CINEMATIC ) {
-		return qfalse;
+		return false;
 	}
 
 	// If we are downloading, we send no less than 50ms between packets
 	if ( *clc.downloadTempName &&
 		cls.realtime - clc.lastPacketSentTime < 50 ) {
-		return qfalse;
+		return false;
 	}
 
 	// if we don't have a valid gamestate yet, only send
@@ -711,17 +711,17 @@ qboolean CL_ReadyToSendPacket( void ) {
 		clc.state != CA_PRIMED && 
 		!*clc.downloadTempName &&
 		cls.realtime - clc.lastPacketSentTime < 1000 ) {
-		return qfalse;
+		return false;
 	}
 
 	// send every frame for loopbacks
 	if ( clc.netchan.remoteAddress.type == NA_LOOPBACK ) {
-		return qtrue;
+		return true;
 	}
 
 	// send every frame for LAN
 	if ( cl_lanForcePackets->integer && Sys_IsLANAddress( clc.netchan.remoteAddress ) ) {
-		return qtrue;
+		return true;
 	}
 
 	// check for exceeding cl_maxpackets
@@ -734,10 +734,10 @@ qboolean CL_ReadyToSendPacket( void ) {
 	delta = cls.realtime -  cl.outPackets[ oldPacketNum ].p_realtime;
 	if ( delta < 1000 / cl_maxpackets->integer ) {
 		// the accumulated commands will go out in the next packet
-		return qfalse;
+		return false;
 	}
 
-	return qtrue;
+	return true;
 }
 
 /*

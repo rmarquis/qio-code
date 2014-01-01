@@ -343,7 +343,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 		g_loadingScreen->addLoadingString(" %i sounds\n",c_soundsLoaded);
 	}
 
-//	cg.loading = qfalse;	// future players will be deferred
+//	cg.loading = false;	// future players will be deferred
 }
 
 /*

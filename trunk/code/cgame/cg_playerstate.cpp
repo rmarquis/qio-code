@@ -36,7 +36,7 @@ A respawn happened this snapshot
 */
 void CG_Respawn( void ) {
 	// no error decay on player movement
-//	cg.thisFrameTeleport = qtrue;
+//	cg.thisFrameTeleport = true;
 
 
 }
@@ -52,14 +52,14 @@ CG_TransitionPlayerState
 void CG_TransitionPlayerState( playerState_s *ps, playerState_s *ops ) {
 	// check for changing follow mode
 	if ( ps->clientNum != ops->clientNum ) {
-//		cg.thisFrameTeleport = qtrue;
+//		cg.thisFrameTeleport = true;
 		// make sure we don't get any unwanted transition effects
 		*ops = *ps;
 	}
 
 //	if ( cg.mapRestart ) {
 ///		CG_Respawn();
-///		cg.mapRestart = qfalse;
+///		cg.mapRestart = false;
 //	}
 
 	// smooth the ducking viewheight change
