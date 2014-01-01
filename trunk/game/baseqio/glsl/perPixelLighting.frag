@@ -166,18 +166,18 @@ void main() {
 #endif    
     // calculate the diffuse value based on light angle	
     float angleFactor = dot(v_vertNormal, lightDirection);
-    if(angleFactor < 0) {
+    if(angleFactor < 0.0) {
 		// light is behind the surface
 		return;
     }
 #ifdef DEBUG_IGNOREANGLEFACTOR
-    angleFactor = 1;
+    angleFactor = 1.0;
 #endif // DEBUG_IGNOREANGLEFACTOR  
 	//  apply distnace scale
-  	float distanceFactor = 1 - distance / u_lightRadius;
+  	float distanceFactor = 1.0 - distance / u_lightRadius;
   	
 #ifdef DEBUG_IGNOREDISTANCEFACTOR
-  	distanceFactor = 1;
+  	distanceFactor = 1.0;
 #endif // DEBUG_IGNOREDISTANCEFACTOR
 
 #ifdef SHADOW_MAPPING_POINT_LIGHT
@@ -186,7 +186,7 @@ void main() {
 	vec4 lightToVert_world = lightWorld - vertWorld;
 	float shadow = computeShadow(lightToVert_world.xyz);
 #else
-	float shadow = 1.f;
+	float shadow = 1.0;
 #endif
 	// calculate the final color
 	gl_FragColor = texture2D (colorMap, texCoord) * angleFactor * distanceFactor * shadow;
