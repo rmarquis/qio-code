@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 #include <api/rAPI.h>
+#include <shared/colorTable.h>
 
 #define INDEX_FILE_EXTENSION ".index.dat"
 
@@ -92,7 +93,7 @@ WRITE_STRING
 */
 static ID_INLINE void WRITE_STRING( const char *s )
 {
-  Com_Memcpy( &buffer[ bufIndex ], s, strlen( s ) );
+  memcpy( &buffer[ bufIndex ], s, strlen( s ) );
   bufIndex += strlen( s );
 }
 
@@ -337,7 +338,7 @@ qboolean CL_OpenAVIForWriting( const char *fileName )
   if( afd.fileOpen )
     return qfalse;
 
-  Com_Memset( &afd, 0, sizeof( aviFileData_t ) );
+  memset( &afd, 0, sizeof( aviFileData_t ) );
 
   // Don't start if a framerate has not been chosen
   if( cl_aviFrameRate->integer <= 0 )
@@ -537,7 +538,7 @@ void CL_WriteAVIAudioFrame( const byte *pcmBuffer, int size )
     size = PCM_BUFFER_SIZE - bytesInBuffer;
   }
 
-  Com_Memcpy( &pcmCaptureBuffer[ bytesInBuffer ], pcmBuffer, size );
+  memcpy( &pcmCaptureBuffer[ bytesInBuffer ], pcmBuffer, size );
   bytesInBuffer += size;
 
   // Only write if we have a frame's worth of audio

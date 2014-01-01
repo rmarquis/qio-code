@@ -370,31 +370,30 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 }
 
 // from Q3 SDK, code for mirrors
-void R_MirrorPoint(vec3_t in, vec3_t surfaceOrigin, vec3_t cameraOrigin, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
+void R_MirrorPoint(const vec3_c &in, const vec3_c &surfaceOrigin, const vec3_c &cameraOrigin, const axis_c &surfaceAxis, const axis_c &cameraAxis, vec3_c &out) {
 	int             i;
-	vec3_t          local;
-	vec3_t          transformed;
+	vec3_c          local;
+	vec3_c         transformed;
 	float           d;
 
-	VectorSubtract(in, surfaceOrigin, local);
+	local = in - surfaceOrigin;
 
-	VectorClear(transformed);
+	transformed.clear();
 	for(i = 0; i < 3; i++)
 	{
-		d = DotProduct(local, surfaceAxis[i]);
-		VectorMA(transformed, d, cameraAxis[i], transformed);
+		d = local.dotProduct(surfaceAxis[i]);
+		transformed.vectorMA(transformed, cameraAxis[i], d);
 	}
-
-	VectorAdd(transformed, cameraOrigin, out);
+	out = transformed + cameraOrigin;
 }
-void R_MirrorVector(vec3_t in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
-	VectorClear(out);
+void R_MirrorVector(const vec3_c &in, const axis_c &surfaceAxis, const axis_c &cameraAxis, vec3_c &out) {
+	out.clear();
 	for(u32 i = 0; i < 3; i++) {
-		float d = DotProduct(in, surfaceAxis[i]);
-		VectorMA(out, d, cameraAxis[i], out);
+		float d = in.dotProduct(surfaceAxis[i]);
+		out.vectorMA(out, cameraAxis[i], d);
 	}
 }
-void R_MirrorAxis(const axis_c &in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], axis_c &out) {
+void R_MirrorAxis(const axis_c &in, const axis_c &surfaceAxis, const axis_c &cameraAxis, axis_c &out) {
 	for(u32 i = 0; i < 3; i++) {
 		R_MirrorVector(in[i],surfaceAxis,cameraAxis,out[i]);
 	}

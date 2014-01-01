@@ -44,6 +44,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/axis.h>
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include <shared/colorTable.h>
 
 #include "rf_2d.h"
 #include "rf_world.h"

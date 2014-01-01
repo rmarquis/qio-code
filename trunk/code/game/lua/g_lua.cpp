@@ -198,13 +198,13 @@ void G_LoadLuaScript(const char *filename)
 	len = g_vfs->FS_FOpenFile(filename, &f, FS_READ);
 	if(!f)
 	{
-		g_core->Print(va(S_COLOR_RED "file not found: %s\n", filename));
+		g_core->RedWarning("file not found: %s\n", filename);
 		return;
 	}
 
 	if(len >= MAX_LUAFILE)
 	{
-		g_core->Print(va(S_COLOR_RED "file too large: %s is %i, max allowed is %i\n", filename, len, MAX_LUAFILE));
+		g_core->RedWarning("file too large: %s is %i, max allowed is %i\n", filename, len, MAX_LUAFILE);
 		g_vfs->FS_FCloseFile(f);
 		return;
 	}

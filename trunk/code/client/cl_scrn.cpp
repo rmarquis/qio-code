@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include <shared/str.h>
+#include <shared/colorTable.h>
 
 qboolean	scr_initialized;		// ready to draw
 
@@ -229,7 +230,7 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 	while ( *s ) {
 		if ( !noColorEscape && Q_IsColorString( s ) ) {
 			if ( !forceColor ) {
-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
 				rf->set2DColor( color );
 			}
@@ -278,7 +279,7 @@ void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 	while ( *s ) {
 		if ( Q_IsColorString( s ) ) {
 			if ( !forceColor ) {
-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
 				rf->set2DColor( color );
 			}

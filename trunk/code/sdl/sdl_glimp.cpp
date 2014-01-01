@@ -175,8 +175,8 @@ void GLimp_Shutdown( void )
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 	screen = NULL;
 
-	//Com_Memset( &glConfig, 0, sizeof( glConfig ) );
-	//Com_Memset( &glState, 0, sizeof( glState ) );
+	//memset( &glConfig, 0, sizeof( glConfig ) );
+	//memset( &glState, 0, sizeof( glState ) );
 }
 
 /*
@@ -341,9 +341,9 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		videoInfo = SDL_GetVideoInfo( );
 
 		// Take a copy of the videoInfo
-		Com_Memcpy( &sPixelFormat, videoInfo->vfmt, sizeof( SDL_PixelFormat ) );
+		memcpy( &sPixelFormat, videoInfo->vfmt, sizeof( SDL_PixelFormat ) );
 		sPixelFormat.palette = NULL; // Should already be the case
-		Com_Memcpy( &sVideoInfo, videoInfo, sizeof( SDL_VideoInfo ) );
+		memcpy( &sVideoInfo, videoInfo, sizeof( SDL_VideoInfo ) );
 		sVideoInfo.vfmt = &sPixelFormat;
 		videoInfo = &sVideoInfo;
 

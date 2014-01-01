@@ -28,57 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 #include <api/clientAPI.h>
 
-static	int			cg_numSolidEntities;
-static	centity_t	*cg_solidEntities[MAX_ENTITIES_IN_SNAPSHOT];
-static	int			cg_numTriggerEntities;
-static	centity_t	*cg_triggerEntities[MAX_ENTITIES_IN_SNAPSHOT];
-
-/*
-====================
-CG_BuildSolidList
-
-When a new cg.snap has been set, this function builds a sublist
-of the entities that are actually solid, to make for more
-efficient collision detection
-====================
-*/
-void CG_BuildSolidList( void ) {
-	
-}
-
-/*
-====================
-CG_ClipMoveToEntities
-
-====================
-*/
-static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
-							int skipNumber, int mask, trace_t *tr ) {
-
-}
-
-/*
-================
-CG_Trace
-================
-*/
-void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-					 int skipNumber, int mask ) {
-
-}
-
-/*
-================
-CG_PointContents
-================
-*/
-int		CG_PointContents( const vec3_t point, int passEntityNum ) {
-
-
-	return 0;
-}
-
-
 /*
 ========================
 CG_InterpolatePlayerState

@@ -318,6 +318,16 @@ void CL_AdjustAngles( void ) {
 	cl.viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_lookdown);
 }
 
+static signed char ClampChar( int i ) {
+	if ( i < -128 ) {
+		return -128;
+	}
+	if ( i > 127 ) {
+		return 127;
+	}
+	return i;
+}
+
 /*
 ================
 CL_KeyMove
@@ -591,14 +601,13 @@ CL_CreateCmd
 */
 usercmd_s CL_CreateCmd( void ) {
 	usercmd_s	cmd;
-	vec3_t		oldAngles;
 
-	VectorCopy( cl.viewangles, oldAngles );
+	vec3_c		oldAngles = cl.viewangles;
 
 	// keyboard angle adjustment
 	CL_AdjustAngles ();
 	
-	Com_Memset( &cmd, 0, sizeof( cmd ) );
+	memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
 
@@ -767,7 +776,7 @@ void CL_WritePacket( void ) {
 		return;
 	}
 
-	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
+	memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;
 
 	MSG_Init( &buf, data, sizeof(data) );

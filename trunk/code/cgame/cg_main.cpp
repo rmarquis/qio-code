@@ -335,7 +335,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	for(u32 i = 0; i < MAX_SOUNDS; i++) {
 		const char *str = CG_ConfigString(CS_SOUNDS+i);
 		if(str && str[0]) {
-			cgs.gameSounds[i] = 0;//snd->registerSound(str);
+//			cgs.gameSounds[i] = 0;//snd->registerSound(str);
 			c_soundsLoaded++;
 		}
 	}

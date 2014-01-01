@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "keys.h"
 #include "../cgame/cg_public.h"
 #include "../game/bg_public.h"
+#include <api/vfsAPI.h>
 
 #ifdef USE_CURL
 #include "cl_curl.h"
@@ -41,6 +42,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define QKEY_SIZE 2048
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
+
+// client module connection state
+typedef enum {
+	CA_UNINITIALIZED,
+	CA_DISCONNECTED, 	// not talking to a server
+	CA_AUTHORIZING,		// not used any more, was checking cd key 
+	CA_CONNECTING,		// sending request packets to the server
+	CA_CHALLENGING,		// sending challenge packets to the server
+	CA_CONNECTED,		// netchan_t established, getting gamestate
+	CA_LOADING,			// only during cgame initialization, never during main loop
+	CA_PRIMED,			// got gamestate, waiting for first frame
+	CA_ACTIVE,			// game views should be displayed
+	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
+} connstate_t;
 
 // snapshots are a view of the server at a given time
 typedef struct {
@@ -299,8 +314,6 @@ typedef struct {
 } serverInfo_t;
 
 typedef struct {
-	qboolean	cddialog;			// bring up the cd needed dialog next frame
-
 	// when the server clears the hunk, all of these must be restarted
 	qboolean	rendererStarted;
 	qboolean	soundStarted;

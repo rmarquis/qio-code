@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/ModelEntity.h"
 #include "classes/FakePlayer.h"
 #include "classes/VehicleCar.h"
+#include <shared/colorTable.h>
 
 // g_client.c -- client functions that don't happen every frame
 

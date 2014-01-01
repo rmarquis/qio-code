@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <shared/shared.h>
 #include <math/plane.h>
+#include <shared/colorTable.h>
 
 svBSP_c::svBSP_c() {
 	h = 0;
@@ -51,7 +52,7 @@ void svBSP_c::clear() {
 bool svBSP_c::loadPlanes(u32 lumpPlanes) {
 	const lump_s &pll = h->getLumps()[lumpPlanes];
 	if(pll.fileLen % sizeof(q3Plane_s)) {
-		g_core->Print(S_COLOR_RED "svBSP_c::loadPlanes: invalid planes lump size\n");
+		g_core->RedWarning("svBSP_c::loadPlanes: invalid planes lump size\n");
 		return true; // error
 	}
 	u32 numPlanes = pll.fileLen / sizeof(q3Plane_s);
@@ -62,12 +63,12 @@ bool svBSP_c::loadPlanes(u32 lumpPlanes) {
 bool svBSP_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
 	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(q3Node_s)) {
-		g_core->Print(S_COLOR_RED "svBSP_c::loadNodesAndLeaves: invalid nodes lump size\n");
+		g_core->RedWarning("svBSP_c::loadNodesAndLeaves: invalid nodes lump size\n");
 		return true; // error
 	}
 	const lump_s &ll = h->getLumps()[lumpLeaves];
 	if(ll.fileLen % sizeOfLeaf) {
-		g_core->Print(S_COLOR_RED "svBSP_c::loadNodesAndLeaves: invalid leaves lump size\n");
+		g_core->RedWarning("svBSP_c::loadNodesAndLeaves: invalid leaves lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
@@ -131,7 +132,7 @@ bool svBSP_c::load(const char *fname) {
 	byte *fileData = 0;
 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
 	if(fileData == 0) {
-		g_core->Print(S_COLOR_RED "svBSP_c::load: cannot open %s\n",fname);
+		g_core->RedWarning("svBSP_c::load: cannot open %s\n",fname);
 		return true;
 	}
 	h = (const q3Header_s*) fileData;

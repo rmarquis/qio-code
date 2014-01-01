@@ -56,18 +56,18 @@ CG_OffsetThirdPersonView
 */
 #define	FOCUS_DISTANCE	512
 static void CG_OffsetThirdPersonView( void ) {
-	vec3_t		forward, right, up;
+	vec3_c		forward, right, up;
 	vec3_c		view;
-	vec3_t		focusAngles;
+	vec3_c		focusAngles;
 	static vec3_t	mins = { -4, -4, -4 };
 	static vec3_t	maxs = { 4, 4, 4 };
-	vec3_t		focusPoint;
+	vec3_c		focusPoint;
 	float		focusDist;
 	float		forwardScale, sideScale;
 
 	cg.refdefViewOrigin[2] += cg.predictedPlayerState.viewheight;
 
-	VectorCopy( cg.refdefViewAngles, focusAngles );
+	focusAngles = cg.refdefViewAngles;
 
 	// if dead, look at killer
 	//if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
@@ -78,22 +78,22 @@ static void CG_OffsetThirdPersonView( void ) {
 	if ( focusAngles[PITCH] > 45 ) {
 		focusAngles[PITCH] = 45;		// don't go too far overhead
 	}
-	AngleVectors( focusAngles, forward, NULL, NULL );
+	forward = focusAngles.getForward();
 
-	VectorMA( cg.refdefViewOrigin, FOCUS_DISTANCE, forward, focusPoint );
+	focusPoint.vectorMA(cg.refdefViewOrigin, forward, FOCUS_DISTANCE);
 
-	VectorCopy( cg.refdefViewOrigin, view );
+	view = cg.refdefViewOrigin;
 
 	view[2] += 8;
 
 	cg.refdefViewAngles[PITCH] *= 0.5;
 
-	AngleVectors( cg.refdefViewAngles, forward, right, up );
+	cg.refdefViewAngles.angleVectors( forward, right, up );
 float thirdPersonRange = 128.f;
 	forwardScale = cos( cg_thirdPersonAngle.value / 180 * M_PI );
 	sideScale = sin( cg_thirdPersonAngle.value / 180 * M_PI );
-	VectorMA( view, -thirdPersonRange * forwardScale, forward, view );
-	VectorMA( view, -thirdPersonRange * sideScale, right, view );
+	view.vectorMA(view,forward,-thirdPersonRange * forwardScale);
+	view.vectorMA(view,right,-thirdPersonRange * sideScale);
 
 	// trace a ray from the origin to the viewpoint to make sure the view isn't
 	// in a solid block.  Use an 8 by 8 block to prevent the view from near clipping anything
@@ -119,10 +119,10 @@ float thirdPersonRange = 128.f;
 		}
 	}
 
-	VectorCopy( view, cg.refdefViewOrigin );
+	cg.refdefViewOrigin = view;
 
 	// select pitch to look at focus point from vieword
-	VectorSubtract( focusPoint, cg.refdefViewOrigin, focusPoint );
+	focusPoint -= cg.refdefViewOrigin;
 	focusDist = sqrt( focusPoint[0] * focusPoint[0] + focusPoint[1] * focusPoint[1] );
 	if ( focusDist < 1 ) {
 		focusDist = 1;	// should never happen
@@ -156,14 +156,14 @@ static void CG_OffsetFirstPersonView( void ) {
 	float			delta;
 	float			speed;
 	float			f;
-	vec3_t			predictedVelocity;
+	vec3_c			predictedVelocity;
 	int				timeDelta;
 
 	origin = cg.refdefViewOrigin;
 	angles = cg.refdefViewAngles;
 
 	// add angles based on velocity
-	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
+	predictedVelocity = cg.predictedPlayerState.velocity;;
 
 	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
 	//angles[PITCH] += delta * cg_runpitch.value;

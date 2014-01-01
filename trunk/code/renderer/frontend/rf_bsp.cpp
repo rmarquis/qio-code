@@ -40,6 +40,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include "rf_lightGrid.h"
 #include <shared/perStringCallback.h>
+#include <shared/colorTable.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
@@ -215,7 +216,7 @@ bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
 	// NOTE: default lightmap size is 128
 	const lump_s &l = h->getLumps()[lumpNum];
 	if(l.fileLen % (lightmapSize*lightmapSize*3)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
+		g_core->RedWarning("rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
 		return true; // error
 	}
 	u32 numLightmaps = l.fileLen / (lightmapSize*lightmapSize*3);
@@ -260,7 +261,7 @@ bool rBspTree_c::loadExternalLightmaps(const char *path) {
 bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 	const lump_s &pll = h->getLumps()[lumpPlanes];
 	if(pll.fileLen % sizeof(q3Plane_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanes: invalid planes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadPlanes: invalid planes lump size\n");
 		return true; // error
 	}
 	if(sizeof(bspPlane_s) != sizeof(q3Plane_s)) {
@@ -275,7 +276,7 @@ bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
 bool rBspTree_c::loadPlanesQ2(u32 lumpPlanes) {
 	u32 planesLumpLen = h->getLumpSize(lumpPlanes);
 	if(planesLumpLen % sizeof(q2Plane_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
 		return true; // error
 	}
 	u32 numPlanes = planesLumpLen / sizeof(q2Plane_s);
@@ -291,7 +292,7 @@ bool rBspTree_c::loadPlanesQ2(u32 lumpPlanes) {
 bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
 	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(q3Node_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
@@ -301,7 +302,7 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 	if(h->isBSPCoD1()) {
 		const lump_s &ll = h->getLumps()[COD1_LEAFS];
 		if(ll.fileLen % sizeof(cod1Leaf_s)) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+			g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
 			return true; // error
 		}
 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
@@ -319,7 +320,7 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 	} else {
 		const lump_s &ll = h->getLumps()[lumpLeaves];
 		if(ll.fileLen % sizeOfLeaf) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+			g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
 			return true; // error
 		}
 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
@@ -331,7 +332,7 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(q2Node_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid nodes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesQ2: invalid nodes lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(q2Node_s);
@@ -345,7 +346,7 @@ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 	}
 	const lump_s &ll = h->getLumps()[lumpLeaves];
 	if(ll.fileLen % sizeof(q2Leaf_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid leaves lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesQ2: invalid leaves lump size\n");
 		return true; // error
 	}
 	u32 numLeaves = ll.fileLen / sizeof(q2Leaf_s);
@@ -372,7 +373,7 @@ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 	const lump_s &nl = h->getLumps()[lumpNodes];
 	if(nl.fileLen % sizeof(hlNode_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid nodes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesHL: invalid nodes lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(hlNode_s);
@@ -388,7 +389,7 @@ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 	}
 	const lump_s &ll = h->getLumps()[lumpLeaves];
 	if(ll.fileLen % sizeof(hlLeaf_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid leaves lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesHL: invalid leaves lump size\n");
 		return true; // error
 	}
 	u32 numLeaves = ll.fileLen / sizeof(hlLeaf_s);
@@ -421,7 +422,7 @@ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 bool rBspTree_c::loadNodesAndLeavesSE() {
 	const srcLump_s &nl = srcH->getLumps()[SRC_NODES];
 	if(nl.fileLen % sizeof(srcNode_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid nodes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid nodes lump size\n");
 		return true; // error
 	}
 	u32 numNodes = nl.fileLen / sizeof(srcNode_s);
@@ -442,7 +443,7 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 	if(srcH->version == 19) {
 		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
 		if(ll.fileLen % sizeof(srcLeaf_s)) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+			g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
 			return true; // error
 		}
 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
@@ -467,7 +468,7 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 	} else {		
 		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
 		if(ll.fileLen % sizeof(srcLeaf_noLightCube_s)) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+			g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
 			return true; // error
 		}
 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_noLightCube_s);
@@ -528,22 +529,22 @@ bool rBspTree_c::loadVerts(u32 lumpVerts) {
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
 	const lump_s &sl = h->getLumps()[lumpSurfs];
 	if(sl.fileLen % sizeofSurf) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid surfs lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfs: invalid surfs lump size\n");
 		return true; // error
 	}
 	const lump_s &il = h->getLumps()[lumpIndexes];
 	if(il.fileLen % sizeof(int)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfs: invalid indexes lump size\n");
 		return true; // error
 	}
 	const lump_s &vl = h->getLumps()[lumpVerts];
 	if(vl.fileLen % sizeof(q3Vert_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfs: invalid indexes lump size\n");
 		return true; // error
 	}
 	const lump_s &ml = h->getLumps()[lumpMats];
 	if(ml.fileLen % sizeofMat) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid material lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfs: invalid material lump size\n");
 		return true; // error
 	}
 	const byte *materials = h->getLumpData(lumpMats);
@@ -723,27 +724,27 @@ public:
 bool rBspTree_c::loadSurfsQ2() {
 	const lump_s &sl = h->getLumps()[Q2_FACES];
 	if(sl.fileLen % sizeof(q2Surface_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfs lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid surfs lump size\n");
 		return true; // error
 	}
 	const lump_s &el = h->getLumps()[Q2_EDGES];
 	if(el.fileLen % sizeof(q2Edge_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid edges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid edges lump size\n");
 		return true; // error
 	}
 	const lump_s &tl = h->getLumps()[Q2_TEXINFO];
 	if(tl.fileLen % sizeof(q2TexInfo_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid texinfo lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid texinfo lump size\n");
 		return true; // error
 	}
 	const lump_s &vl = h->getLumps()[Q2_VERTEXES];
 	if(vl.fileLen % sizeof(q2Vert_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid vertexes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid vertexes lump size\n");
 		return true; // error
 	}
 	const lump_s &sel = h->getLumps()[Q2_SURFEDGES];
 	if(sel.fileLen % sizeof(int)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfEdges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid surfEdges lump size\n");
 		return true; // error
 	}
 	u32 numSurfaces = sl.fileLen / sizeof(q2Surface_s);
@@ -797,27 +798,27 @@ bool rBspTree_c::loadSurfsQ2() {
 bool rBspTree_c::loadSurfsHL() {
 	const lump_s &sl = h->getLumps()[HL_FACES];
 	if(sl.fileLen % sizeof(hlSurface_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfs lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid surfs lump size\n");
 		return true; // error
 	}
 	const lump_s &el = h->getLumps()[HL_EDGES];
 	if(el.fileLen % sizeof(hlEdge_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid edges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid edges lump size\n");
 		return true; // error
 	}
 	const lump_s &tl = h->getLumps()[HL_TEXINFO];
 	if(tl.fileLen % sizeof(hlTexInfo_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid texinfo lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid texinfo lump size\n");
 		return true; // error
 	}
 	const lump_s &vl = h->getLumps()[HL_VERTEXES];
 	if(vl.fileLen % sizeof(hlVert_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid vertexes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid vertexes lump size\n");
 		return true; // error
 	}
 	const lump_s &sel = h->getLumps()[HL_SURFEDGES];
 	if(sel.fileLen % sizeof(int)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfEdges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid surfEdges lump size\n");
 		return true; // error
 	}
 	u32 numSurfaces = sl.fileLen / sizeof(hlSurface_s);
@@ -1017,33 +1018,33 @@ bool rBspTree_c::loadSurfsSE() {
 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
 	if(h->version == 18) {
 		if(sl.fileLen % sizeof(srcSurfaceV18_s)) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+			g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
 			return true; // error
 		}
 	} else {
 		if(sl.fileLen % sizeof(srcSurface_s)) {
-			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+			g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
 			return true; // error
 		}
 	}
 	const srcLump_s &el = srcH->getLumps()[SRC_EDGES];
 	if(el.fileLen % sizeof(srcEdge_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid edges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid edges lump size\n");
 		return true; // error
 	}
 	const srcLump_s &tl = srcH->getLumps()[SRC_TEXINFO];
 	if(tl.fileLen % sizeof(srcTexInfo_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid texinfo lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid texinfo lump size\n");
 		return true; // error
 	}
 	const srcLump_s &vl = srcH->getLumps()[SRC_VERTEXES];
 	if(vl.fileLen % sizeof(srcVert_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid vertexes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid vertexes lump size\n");
 		return true; // error
 	}
 	const srcLump_s &sel = srcH->getLumps()[SRC_SURFEDGES];
 	if(sel.fileLen % sizeof(int)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
+		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
 		return true; // error
 	}
 	u32 numSurfaces;
@@ -1300,7 +1301,7 @@ bool rBspTree_c::loadSurfsCoD() {
 bool rBspTree_c::loadModels(u32 modelsLump) {
 	const lump_s &ml = h->getLumps()[modelsLump];
 	if(ml.fileLen % h->getModelStructSize()) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModels: invalid models lump size\n");
+		g_core->RedWarning("rBspTree_c::loadModels: invalid models lump size\n");
 		return true; // error
 	}
 	u32 numModels = ml.fileLen / sizeof(q3Model_s);
@@ -1319,7 +1320,7 @@ bool rBspTree_c::loadModels(u32 modelsLump) {
 bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
 	u32 lumpLen = h->getLumpSize(modelsLump);
 	if(lumpLen % sizeof(q2Model_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsQ2: invalid models lump size\n");
+		g_core->RedWarning("rBspTree_c::loadModelsQ2: invalid models lump size\n");
 		return true; // error
 	}
 	u32 numModels = lumpLen / sizeof(q2Model_s);
@@ -1336,7 +1337,7 @@ bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
 bool rBspTree_c::loadModelsHL(u32 modelsLump) {
 	const lump_s &ml = h->getLumps()[modelsLump];
 	if(ml.fileLen % sizeof(hlModel_s)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsHL: invalid models lump size\n");
+		g_core->RedWarning("rBspTree_c::loadModelsHL: invalid models lump size\n");
 		return true; // error
 	}
 	u32 numModels = ml.fileLen / sizeof(hlModel_s);
@@ -1353,7 +1354,7 @@ bool rBspTree_c::loadModelsHL(u32 modelsLump) {
 bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	const lump_s &sl = h->getLumps()[leafSurfsLump];
 	if(sl.fileLen % sizeof(u32)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
+		g_core->RedWarning("rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
 		return true; // error
 	}	
 	u32 numLeafSurfaces = sl.fileLen / sizeof(u32);
@@ -1364,7 +1365,7 @@ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
 	const lump_s &sl = h->getLumps()[leafSurfsLump];
 	if(sl.fileLen % sizeof(u16)) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
+		g_core->RedWarning("rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
 		return true; // error
 	}	
 	u32 numLeafSurfaces = sl.fileLen / sizeof(u16);
@@ -1443,7 +1444,7 @@ bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
 	if(fileData == 0) {
-		g_core->Print(S_COLOR_RED "rBspTree_c::load: cannot open %s\n",fname);
+		g_core->RedWarning("rBspTree_c::load: cannot open %s\n",fname);
 		return true;
 	}
 	rf_bsp_forceEverythingVisible.setString("0");

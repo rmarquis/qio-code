@@ -452,6 +452,10 @@ bool fileTextDataCache_c::findDeclText(const char *declName, const char *declTyp
 }
 
 class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qioModule_e userModule) {
+	if(name == 0 || name[0] == 0) {
+		g_core->RedWarning("declManagerIMPL_c::_registerModelDecl: NULL name\n");
+		return 0;
+	}
 	if(name[0] == '*') {
 		g_core->RedWarning("declManagerIMPL_c::_registerModelDecl: ignoring inline model \"%s\" request.\n",name);
 		return 0;
@@ -484,7 +488,8 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 	return 0;
 }
 class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, qioModule_e userModule) {
-	if(name == 0) {
+	if(name == 0 || name[0] == 0) {
+		g_core->RedWarning("declManagerIMPL_c::_registerEntityDecl: NULL name\n");
 		return 0;
 	}
 	g_core->Print("declManagerIMPL_c::_registerEntityDecl: registering %s\n",name);
@@ -511,6 +516,10 @@ class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, 
 	return 0;
 }
 class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModule_e userModule) {
+	if(name == 0 || name[0] == 0) {
+		g_core->RedWarning("declManagerIMPL_c::_registerAFDecl: NULL name\n");
+		return 0;
+	}
 	afDecl_c *ret = afDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);
@@ -534,6 +543,10 @@ class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModul
 	return 0;
 }
 class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *name, qioModule_e userModule) {
+	if(name == 0 || name[0] == 0) {
+		g_core->RedWarning("declManagerIMPL_c::_registerQ3PlayerDecl: NULL name\n");
+		return 0;
+	}
 	// '$' is no longer needed here
 	if(name[0] == '$') {
 		name++;
@@ -557,6 +570,11 @@ class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *n
 	return 0;
 }
 class particleDeclAPI_i *declManagerIMPL_c::_registerParticleDecl(const char *name, qioModule_e userModule) {
+	if(name == 0 || name[0] == 0) {
+		g_core->RedWarning("declManagerIMPL_c::_registerParticleDecl: NULL name\n");
+		return 0;
+	}
+
 	// strip .prt extension
 	str fixedName = name;
 	fixedName.stripExtension();

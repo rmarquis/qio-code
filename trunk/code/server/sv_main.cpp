@@ -457,14 +457,14 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 				bucket->next->prev = bucket->prev;
 			}
 
-			Com_Memset( bucket, 0, sizeof( leakyBucket_t ) );
+			memset( bucket, 0, sizeof( leakyBucket_t ) );
 		}
 
 		if ( bucket->type == NA_BAD ) {
 			bucket->type = address.type;
 			switch ( address.type ) {
-				case NA_IP:  Com_Memcpy( bucket->ipv._4, address.ip, 4 );   break;
-				case NA_IP6: Com_Memcpy( bucket->ipv._6, address.ip6, 16 ); break;
+				case NA_IP:  memcpy( bucket->ipv._4, address.ip, 4 );   break;
+				case NA_IP6: memcpy( bucket->ipv._6, address.ip6, 16 ); break;
 				default: break;
 			}
 

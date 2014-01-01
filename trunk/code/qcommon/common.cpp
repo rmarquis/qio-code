@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/moduleManagerAPI.h>
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
+#include <shared/colorTable.h>
 
 int demo_protocols[] =
 { 67, 66, 0 };
@@ -308,7 +309,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
 	va_end (argptr);
 
-	if (code != ERR_DISCONNECT && code != ERR_NEED_CD)
+	if (code != ERR_DISCONNECT)
 		Cvar_Set("com_errorMessage", com_errorMessage);
 
 	if (code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT) {
@@ -329,23 +330,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		CL_FlushMemory( );
 //		VM_Forced_Unload_Done();
 		FS_PureServerSetLoadedPaks("", "");
-		com_errorEntered = qfalse;
-		longjmp (abortframe, -1);
-	} else if ( code == ERR_NEED_CD ) {
-//		VM_Forced_Unload_Start();
-		SV_Shutdown( "Server didn't have CD" );
-		if ( com_cl_running && com_cl_running->integer ) {
-			CL_Disconnect( qtrue );
-			CL_FlushMemory( );
-//			VM_Forced_Unload_Done();
-			CL_CDDialog();
-		} else {
-			Com_Printf("Server didn't have CD\n" );
-//			VM_Forced_Unload_Done();
-		}
-
-		FS_PureServerSetLoadedPaks("", "");
-
 		com_errorEntered = qfalse;
 		longjmp (abortframe, -1);
 	} else {
@@ -563,7 +547,7 @@ void Info_Print( const char *s ) {
 		l = o - key;
 		if (l < 20)
 		{
-			Com_Memset (o, ' ', 20-l);
+			memset (o, ' ', 20-l);
 			key[20] = 0;
 		}
 		else
@@ -890,7 +874,7 @@ void Z_Free( void *ptr ) {
 	zone->used -= block->size;
 	// set the block to something that should cause problems
 	// if it is referenced...
-	Com_Memset( ptr, 0xaa, block->size - sizeof( *block ) );
+	memset( ptr, 0xaa, block->size - sizeof( *block ) );
 
 	block->tag = 0;		// mark as free
 	
@@ -1068,7 +1052,7 @@ void *Z_Malloc( int size ) {
 #else
 	buf = Z_TagMalloc( size, TAG_GENERAL );
 #endif
-	Com_Memset( buf, 0, size );
+	memset( buf, 0, size );
 
 	return buf;
 }
@@ -1772,7 +1756,7 @@ void *Hunk_Alloc( int size, ha_pref preference ) {
 
 	hunk_permanent->temp = hunk_permanent->permanent;
 
-	Com_Memset( buf, 0, size );
+	memset( buf, 0, size );
 
 #ifdef HUNK_DEBUG
 	{
@@ -2714,7 +2698,7 @@ void Com_Init( char *commandLine ) {
 	Com_InitCoreAPI();
 
 	// Clear queues
-	Com_Memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
+	memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
 
 	// initialize the weak pseudo-random number generator for use later.
 	Com_InitRand();

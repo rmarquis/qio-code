@@ -46,10 +46,10 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, qboolean 
 
 	s->number = ps->clientNum;
 
-	VectorCopy( ps->origin, s->origin );
+	s->origin = ps->origin;
 
 	// copy angles (NOT viewangles)
-	VectorCopy( ps->angles, s->angles );
+	s->angles = ps->angles;
 
 	s->animIndex = ps->animIndex;
 	s->torsoAnim = ps->torsoAnim;

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.c -- stateless support routines that are included in each code dll
 #include "q_shared.h"
 #include <api/coreAPI.h>
+#include <shared/colorTable.h>
 
 float Com_Clamp( float min, float max, float value ) {
 	if ( value < min ) {

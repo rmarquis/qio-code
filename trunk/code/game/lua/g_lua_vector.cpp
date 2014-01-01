@@ -39,7 +39,7 @@ static int vector_New(lua_State * L)
 	luaL_getmetatable(L, "vector");
 	lua_setmetatable(L, -2);
 
-	VectorClear(v);
+//	VectorClear(v);
 
 	return 1;
 }
@@ -79,7 +79,7 @@ static int vector_Clear(lua_State * L)
 
 	a = lua_getvector(L, 1);
 
-	VectorClear(a);
+//	VectorClear(a);
 
 	return 1;
 }
@@ -92,7 +92,7 @@ static int vector_Add(lua_State * L)
 	b = lua_getvector(L, 2);
 	c = lua_getvector(L, 3);
 
-	VectorAdd(a, b, c);
+//	VectorAdd(a, b, c);
 
 	return 1;
 }
@@ -105,7 +105,7 @@ static int vector_Subtract(lua_State * L)
 	b = lua_getvector(L, 2);
 	c = lua_getvector(L, 3);
 
-	VectorSubtract(a, b, c);
+//	VectorSubtract(a, b, c);
 
 	return 1;
 }
@@ -118,7 +118,7 @@ static int vector_Scale(lua_State * L)
 	b = luaL_checknumber(L, 2);
 	c = lua_getvector(L, 3);
 
-	VectorScale(a, b, c);
+//	VectorScale(a, b, c);
 
 	return 1;
 }
@@ -130,7 +130,7 @@ static int vector_Length(lua_State * L)
 
 	a = lua_getvector(L, 1);
 
-	len = VectorLength(a);
+//	len = VectorLength(a);
 	lua_pushnumber(L, len);
 
 	return 1;
@@ -143,7 +143,7 @@ static int vector_Normalize(lua_State * L)
 
 	a = lua_getvector(L, 1);
 
-	len = VectorNormalize(a);
+	//len = VectorNormalize(a);
 	lua_pushnumber(L, len);
 
 	return 1;
@@ -155,7 +155,7 @@ static int vector_NormalizeFast(lua_State * L)
 
 	a = lua_getvector(L, 1);
 
-	VectorNormalizeFast(a);
+//	VectorNormalizeFast(a);
 
 	return 1;
 }
@@ -172,7 +172,7 @@ static int vector_RotatePointAround(lua_State * L)
 	point = lua_getvector(L, 3);
 	degrees = luaL_checknumber(L, 4);
 
-	RotatePointAroundVector(dst, dir, point, degrees);
+	//RotatePointAroundVector(dst, dir, point, degrees);
 
 	return 1;
 }
@@ -185,7 +185,7 @@ static int vector_Perpendicular(lua_State * L)
 	dst = lua_getvector(L, 1);
 	src = lua_getvector(L, 2);
 
-	PerpendicularVector(dst, src);
+	//PerpendicularVector(dst, src);
 
 	return 1;
 }
@@ -275,7 +275,7 @@ static int vector_AddOperator(lua_State * L)
 	a = lua_getvector(L, 1);
 	b = lua_getvector(L, 2);
 
-	VectorAdd(a, b, c);
+//	VectorAdd(a, b, c);
 
 	lua_pushvector(L, c);
 
@@ -290,7 +290,7 @@ static int vector_SubOperator(lua_State * L)
 	a = lua_getvector(L, 1);
 	b = lua_getvector(L, 2);
 
-	VectorSubtract(a, b, c);
+//	VectorSubtract(a, b, c);
 
 	lua_pushvector(L, c);
 
@@ -304,7 +304,7 @@ static int vector_DotOperator(lua_State * L)
 	a = lua_getvector(L, 1);
 	b = lua_getvector(L, 2);
 
-	lua_pushnumber(L, DotProduct(a, b));
+//	lua_pushnumber(L, DotProduct(a, b));
 
 	return 1;
 }
@@ -316,7 +316,7 @@ static int vector_NegateOperator(lua_State * L)
 
 	a = lua_getvector(L, 1);
 
-	VectorNegate(a, b);
+//	VectorNegate(a, b);
 
 	lua_pushvector(L, b);
 
@@ -400,7 +400,7 @@ void lua_pushvector(lua_State * L, vec3_t v)
 	luaL_getmetatable(L, "vector");
 	lua_setmetatable(L, -2);
 
-	VectorCopy(v, vec);
+//	VectorCopy(v, vec);
 }
 
 vec_t          *lua_getvector(lua_State * L, int argNum)

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
+#include <shared/colorTable.h>
 
 /*
 ==================

@@ -175,7 +175,7 @@ static void LAN_RemoveServer(int source, const char *addr) {
 			if (NET_CompareAdr( comp, servers[i].adr)) {
 				int j = i;
 				while (j < *count - 1) {
-					Com_Memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
+					memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
 					j++;
 				}
 				(*count)--;
@@ -536,50 +536,6 @@ static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 
 /*
 ====================
-CLUI_GetCDKey
-====================
-*/
-static void CLUI_GetCDKey( char *buf, int buflen ) {
-#ifndef STANDALONE
-	cvar_s	*fs;
-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
-		Com_Memcpy( buf, &cl_cdkey[16], 16);
-		buf[16] = 0;
-	} else {
-		Com_Memcpy( buf, cl_cdkey, 16);
-		buf[16] = 0;
-	}
-#else
-	*buf = 0;
-#endif
-}
-
-
-/*
-====================
-CLUI_SetCDKey
-====================
-*/
-#ifndef STANDALONE
-static void CLUI_SetCDKey( char *buf ) {
-	cvar_s	*fs;
-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
-		Com_Memcpy( &cl_cdkey[16], buf, 16 );
-		cl_cdkey[32] = 0;
-		// set the flag so the fle will be written at the next opportunity
-		cvar_modifiedFlags |= CVAR_ARCHIVE;
-	} else {
-		Com_Memcpy( cl_cdkey, buf, 16 );
-		// set the flag so the fle will be written at the next opportunity
-		cvar_modifiedFlags |= CVAR_ARCHIVE;
-	}
-}
-#endif
-
-/*
-====================
 GetConfigString
 ====================
 */
@@ -601,30 +557,6 @@ static int GetConfigString(int index, char *buf, int size)
 	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
  
 	return qtrue;
-}
-
-/*
-====================
-FloatAsInt
-====================
-*/
-static int FloatAsInt( float f ) {
-	floatint_t fi;
-	fi.f = f;
-	return fi.i;
-}
-
-/*
-====================
-CL_UISystemCalls
-
-The ui module is making a system call
-====================
-*/
-intptr_t CL_UISystemCalls( intptr_t *args ) {
-
-
-	return 0;
 }
 
 /*

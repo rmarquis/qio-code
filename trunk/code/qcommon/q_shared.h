@@ -174,11 +174,6 @@ typedef union {
 	unsigned int ui;
 } floatint_t;
 
-typedef int		qhandle_t;
-typedef int		sfxHandle_t;
-typedef int		fileHandle_t;
-typedef int		clipHandle_t;
-
 #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
@@ -198,9 +193,6 @@ typedef int		clipHandle_t;
 // expand constants before stringifying them
 #define XSTRING(s)			STRING(s)
 
-#define	MAX_QINT			0x7fffffff
-#define	MIN_QINT			(-MAX_QINT-1)
-
 #define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
 #define STRARRAY_LEN(x)			(ARRAY_LEN(x) - 1)
 
@@ -219,7 +211,7 @@ typedef int		clipHandle_t;
 #define	BIG_INFO_VALUE		8192
 
 
-#define	MAX_QPATH			64		// max length of a quake game pathname
+#define	MAX_QPATH			256		// max length of a quake game pathname
 #ifdef PATH_MAX
 #define MAX_OSPATH			PATH_MAX
 #else
@@ -227,8 +219,6 @@ typedef int		clipHandle_t;
 #endif
 
 #define	MAX_NAME_LENGTH		32		// max length of a client name
-
-#define	MAX_SAY_TEXT	150
 
 // paramters for command buffer stuffing
 typedef enum {
@@ -254,31 +244,8 @@ typedef enum {
 	ERR_DROP,					// print to console and disconnect from game
 	ERR_SERVERDISCONNECT,		// don't kill server
 	ERR_DISCONNECT,				// client disconnected from the server
-	ERR_NEED_CD					// pop up the need-cd dialog
 } errorParm_t;
 
-
-// font rendering values used by ui and cgame
-
-#define PROP_GAP_WIDTH			3
-#define PROP_SPACE_WIDTH		8
-#define PROP_HEIGHT				27
-#define PROP_SMALL_SIZE_SCALE	0.75
-
-#define BLINK_DIVISOR			200
-#define PULSE_DIVISOR			75
-
-#define UI_LEFT			0x00000000	// default
-#define UI_CENTER		0x00000001
-#define UI_RIGHT		0x00000002
-#define UI_FORMATMASK	0x00000007
-#define UI_SMALLFONT	0x00000010
-#define UI_BIGFONT		0x00000020	// default
-#define UI_GIANTFONT	0x00000040
-#define UI_DROPSHADOW	0x00000800
-#define UI_BLINK		0x00001000
-#define UI_INVERSE		0x00002000
-#define UI_PULSE		0x00004000
 
 #if !defined(NDEBUG) && !defined(BSPC)
 	#define HUNK_DEBUG
@@ -297,9 +264,6 @@ void *Hunk_AllocDebug( int size, ha_pref preference, char *label, char *file, in
 void *Hunk_Alloc( int size, ha_pref preference );
 #endif
 
-#define Com_Memset memset
-#define Com_Memcpy memcpy
-
 #define CIN_system	1
 #define CIN_loop	2
 #define	CIN_hold	4
@@ -315,13 +279,6 @@ MATHLIB
 */
 
 #include "../math/math.h"
-
-typedef	int	fixed4_t;
-typedef	int	fixed8_t;
-typedef	int	fixed16_t;
-
-#define NUMVERTEXNORMALS	162
-extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 
 // all drawing is done to a 640*480 virtual screen size
 // and will be automatically scaled to the real resolution
@@ -340,139 +297,17 @@ extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 #define	GIANTCHAR_WIDTH		32
 #define	GIANTCHAR_HEIGHT	48
 
-extern	vec4_t		colorBlack;
-extern	vec4_t		colorRed;
-extern	vec4_t		colorGreen;
-extern	vec4_t		colorBlue;
-extern	vec4_t		colorYellow;
-extern	vec4_t		colorMagenta;
-extern	vec4_t		colorCyan;
-extern	vec4_t		colorWhite;
-extern	vec4_t		colorLtGrey;
-extern	vec4_t		colorMdGrey;
-extern	vec4_t		colorDkGrey;
-
-#define Q_COLOR_ESCAPE	'^'
-#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1))) // ^[0-9a-zA-Z]
-
-#define COLOR_BLACK	'0'
-#define COLOR_RED	'1'
-#define COLOR_GREEN	'2'
-#define COLOR_YELLOW	'3'
-#define COLOR_BLUE	'4'
-#define COLOR_CYAN	'5'
-#define COLOR_MAGENTA	'6'
-#define COLOR_WHITE	'7'
-#define ColorIndex(c)	(((c) - '0') & 0x07)
-
-#define S_COLOR_BLACK	"^0"
-#define S_COLOR_RED	"^1"
-#define S_COLOR_GREEN	"^2"
-#define S_COLOR_YELLOW	"^3"
-#define S_COLOR_BLUE	"^4"
-#define S_COLOR_CYAN	"^5"
-#define S_COLOR_MAGENTA	"^6"
-#define S_COLOR_WHITE	"^7"
-
-extern vec4_t	g_color_table[8];
 
 #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
 #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
-
-struct cplane_s;
-
-extern	vec3_t	vec3_origin;
-extern	vec3_t	axisDefault[3];
 
 #define	nanmask (255<<23)
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
-int Q_isnan(float x);
-
-#if idx64
-  extern long qftolsse(float f);
-  extern int qvmftolsse(void);
-  extern void qsnapvectorsse(vec3_t vec);
-
-  #define Q_ftol qftolsse
-  #define Q_SnapVector qsnapvectorsse
-
-  extern int (*Q_VMftol)(void);
-#elif id386
-  extern long QDECL qftolx87(float f);
-  extern long QDECL qftolsse(float f);
-  extern int QDECL qvmftolx87(void);
-  extern int QDECL qvmftolsse(void);
-  extern void QDECL qsnapvectorx87(vec3_t vec);
-  extern void QDECL qsnapvectorsse(vec3_t vec);
-
-  extern long (QDECL *Q_ftol)(float f);
-  extern int (QDECL *Q_VMftol)(void);
-  extern void (QDECL *Q_SnapVector)(vec3_t vec);
-#else
-  // Q_ftol must expand to a function name so the pluggable renderer can take
-  // its address
-  //#define Q_ftol lrintf
-
-inline long Q_ftol(float f) {
-	return (long)f;
-}
-
-  #define Q_round(v) do { if((v) < 0) (v) -= 0.5f; else (v) += 0.5f; (v) = Q_ftol((v)); } while(0)
-
-  #define Q_SnapVector(vec)\
-		(vec)[0] = (int)((vec)[0]);\
-		(vec)[1] = (int)((vec)[1]);\
-		(vec)[2] = (int)((vec)[2]);
-#endif
-/*
-// if your system does not have lrintf() and round() you can try this block. Please also open a bug report at bugzilla.icculus.org
-// or write a mail to the ioq3 mailing list.
-#else
-  #define Q_ftol(v) ((long) (v))
-  #define Q_SnapVector(vec) \
-	do\
-	{\
-		vec3_t *temp = (vec);\
-		\
-		Q_round((*temp)[0]);\
-		Q_round((*temp)[1]);\
-		Q_round((*temp)[2]);\
-	} while(0)
-#endif
-*/
-
-#if idppc
-
-static ID_INLINE float Q_rsqrt( float number ) {
-		float x = 0.5f * number;
-                float y;
-#ifdef __GNUC__            
-                asm("frsqrte %0,%1" : "=f" (y) : "f" (number));
-#else
-		y = __frsqrte( number );
-#endif
-		return y * (1.5f - (x * y * y));
-	}
-
-#ifdef __GNUC__            
-static ID_INLINE float Q_fabs(float x) {
-    float abs_x;
-    
-    asm("fabs %0,%1" : "=f" (abs_x) : "f" (x));
-    return abs_x;
-}
-#else
-#define Q_fabs __fabsf
-#endif
-
-#else
-float Q_fabs( float f );
 float Q_rsqrt( float f );		// reciprocal square root
-#endif
 
-#define SQRTFAST( x ) ( (x) * Q_rsqrt( x ) )
+#define Square(x) ((x)*(x))
 
 #ifndef M_PI
 #define M_PI       3.14159265358979323846
@@ -487,172 +322,9 @@ float Q_rsqrt( float f );		// reciprocal square root
 #endif
 
 signed char ClampChar( int i );
-signed short ClampShort( int i );
-
-// this isn't a real cheap function to call!
-int DirToByte( vec3_t dir );
-void ByteToDir( int b, vec3_t dir );
-
-#if	1
-
-#define DotProduct(x,y)			((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
-#define VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
-#define VectorAdd(a,b,c)		((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
-#define VectorCopy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
-#define	VectorScale(v, s, o)	((o)[0]=(v)[0]*(s),(o)[1]=(v)[1]*(s),(o)[2]=(v)[2]*(s))
-#define	VectorMA(v, s, b, o)	((o)[0]=(v)[0]+(b)[0]*(s),(o)[1]=(v)[1]+(b)[1]*(s),(o)[2]=(v)[2]+(b)[2]*(s))
-
-#else
-
-#define DotProduct(x,y)			_DotProduct(x,y)
-#define VectorSubtract(a,b,c)	_VectorSubtract(a,b,c)
-#define VectorAdd(a,b,c)		_VectorAdd(a,b,c)
-#define VectorCopy(a,b)			_VectorCopy(a,b)
-#define	VectorScale(v, s, o)	_VectorScale(v,s,o)
-#define	VectorMA(v, s, b, o)	_VectorMA(v,s,b,o)
-
-#endif
-
-#ifdef Q3_VM
-#ifdef VectorCopy
-#undef VectorCopy
-// this is a little hack to get more efficient copies in our interpreter
-typedef struct {
-	float	v[3];
-} vec3struct_t;
-#define VectorCopy(a,b)	(*(vec3struct_t *)b=*(vec3struct_t *)a)
-#endif
-#endif
-
-#define VectorClear(a)			((a)[0]=(a)[1]=(a)[2]=0)
-#define VectorNegate(a,b)		((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
-#define VectorSet(v, x, y, z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
-#define Vector4Copy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
-
-#define Byte4Copy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
-
-#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-// just in case you do't want to use the macros
-vec_t _DotProduct( const vec3_t v1, const vec3_t v2 );
-void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out );
-void _VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t out );
-void _VectorCopy( const vec3_t in, vec3_t out );
-void _VectorScale( const vec3_t in, float scale, vec3_t out );
-void _VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc );
-
-unsigned ColorBytes3 (float r, float g, float b);
-unsigned ColorBytes4 (float r, float g, float b, float a);
-
-float NormalizeColor( const vec3_t in, vec3_t out );
-
-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
-void ClearBounds( vec3_t mins, vec3_t maxs );
-void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
-
-#if !defined( Q3_VM ) || ( defined( Q3_VM ) && defined( __Q3_VM_MATH ) )
-static ID_INLINE int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
-	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
-		return 0;
-	}			
-	return 1;
-}
-
-static ID_INLINE vec_t VectorLength( const vec3_t v ) {
-	return (vec_t)sqrt (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-static ID_INLINE vec_t VectorLengthSquared( const vec3_t v ) {
-	return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-static ID_INLINE vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return VectorLength( v );
-}
-
-static ID_INLINE vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-}
-
-// fast vector normalize routine that does not check to make sure
-// that length != 0, nor does it return length, uses rsqrt approximation
-static ID_INLINE void VectorNormalizeFast( vec3_t v )
-{
-	float ilength;
-
-	ilength = Q_rsqrt( DotProduct( v, v ) );
-
-	v[0] *= ilength;
-	v[1] *= ilength;
-	v[2] *= ilength;
-}
-
-static ID_INLINE void VectorInverse( vec3_t v ){
-	v[0] = -v[0];
-	v[1] = -v[1];
-	v[2] = -v[2];
-}
-
-static ID_INLINE void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
-	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
-	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
-	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
-}
-
-#else
-int VectorCompare( const vec3_t v1, const vec3_t v2 );
-
-vec_t VectorLength( const vec3_t v );
-
-vec_t VectorLengthSquared( const vec3_t v );
-
-vec_t Distance( const vec3_t p1, const vec3_t p2 );
-
-vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 );
-
-void VectorNormalizeFast( vec3_t v );
-
-void VectorInverse( vec3_t v );
-
-void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross );
-
-#endif
-
-vec_t VectorNormalize (vec3_t v);		// returns vector length
-vec_t VectorNormalize2( const vec3_t v, vec3_t out );
-void Vector4Scale( const vec4_t in, vec_t scale, vec4_t out );
-void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out );
-int Q_log2(int val);
-
-float Q_acos(float c);
-
-int		Q_rand( int *seed );
-float	Q_random( int *seed );
-float	Q_crandom( int *seed );
 
 #define random()	((rand () & 0x7fff) / ((float)0x7fff))
 #define crandom()	(2.0 * (random() - 0.5))
-
-void vectoangles( const vec3_t value1, vec3_t angles);
-void AnglesToAxis( const vec3_t angles, vec3_t axis[3] );
-
-void AxisClear( vec3_t axis[3] );
-void AxisCopy( vec3_t in[3], vec3_t out[3] );
-
-void SetPlaneSignbits( struct cplane_s *out );
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-
-qboolean BoundsIntersect(const vec3_t mins, const vec3_t maxs,
-		const vec3_t mins2, const vec3_t maxs2);
-qboolean BoundsIntersectSphere(const vec3_t mins, const vec3_t maxs,
-		const vec3_t origin, vec_t radius);
-qboolean BoundsIntersectPoint(const vec3_t mins, const vec3_t maxs,
-		const vec3_t origin);
 
 float	AngleMod(float a);
 float	LerpAngle (float from, float to, float frac);
@@ -663,26 +335,14 @@ float AngleNormalize360 ( float angle );
 float AngleNormalize180 ( float angle );
 float AngleDelta ( float angle1, float angle2 );
 
-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
-void RotateAroundDirection( vec3_t axis[3], float yaw );
-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
-// perpendicular vector could be replaced by this
 
-//int	PlaneTypeForNormal (vec3_t normal);
-
-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]);
-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-void PerpendicularVector( vec3_t dst, const vec3_t src );
-
-#ifndef MAX
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#endif
-
-#ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#endif
+//#ifndef MAX
+//#define MAX(x,y) ((x)>(y)?(x):(y))
+//#endif
+//
+//#ifndef MIN
+//#define MIN(x,y) ((x)<(y)?(x):(y))
+//#endif
 
 //=============================================
 
@@ -703,28 +363,6 @@ void	COM_ParseError( char *format, ... ) __attribute__ ((format (printf, 1, 2)))
 void	COM_ParseWarning( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
 //int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
 
-#define MAX_TOKENLENGTH		1024
-
-#ifndef TT_STRING
-//token types
-#define TT_STRING					1			// string
-#define TT_LITERAL					2			// literal
-#define TT_NUMBER					3			// number
-#define TT_NAME						4			// name
-#define TT_PUNCTUATION				5			// punctuation
-#endif
-
-typedef struct pc_token_s
-{
-	int type;
-	int subtype;
-	int intvalue;
-	float floatvalue;
-	char string[MAX_TOKENLENGTH];
-} pc_token_t;
-
-// data is an in/out parm, returns a parsed out token
-
 void	COM_MatchToken( char**buf_p, char *match );
 
 void SkipBracedSection (char **program);
@@ -741,20 +379,6 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep );
 char *Com_SkipCharset( char *s, char *sep );
 
 void Com_RandomBytes( byte *string, int len );
-
-// mode parm for FS_FOpenFile
-typedef enum {
-	FS_READ,
-	FS_WRITE,
-	FS_APPEND,
-	FS_APPEND_SYNC
-} fsMode_t;
-
-typedef enum {
-	FS_SEEK_CUR,
-	FS_SEEK_END,
-	FS_SEEK_SET
-} fsOrigin_t;
 
 //=============================================
 
@@ -801,18 +425,7 @@ typedef struct
 } qint64;
 
 //=============================================
-/*
-short	BigShort(short l);
-short	LittleShort(short l);
-int		BigLong (int l);
-int		LittleLong (int l);
-qint64  BigLong64 (qint64 l);
-qint64  LittleLong64 (qint64 l);
-float	BigFloat (const float *l);
-float	LittleFloat (const float *l);
 
-void	Swap_Init (void);
-*/
 char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
 #define TRUNCATE_LENGTH	64
@@ -926,72 +539,6 @@ VoIP
 // change this.
 #define VOIP_FLAGCNT		2
 
-/*
-==============================================================
-
-COLLISION DETECTION
-
-==============================================================
-*/
-
-#include "surfaceflags.h"			// shared with the q3map utility
-
-// plane types are used to speed some tests
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
-#define	PLANE_NON_AXIAL	3
-
-
-/*
-=================
-PlaneTypeForNormal
-=================
-*/
-
-#define PlaneTypeForNormal(x) (x[0] == 1.0 ? PLANE_X : (x[1] == 1.0 ? PLANE_Y : (x[2] == 1.0 ? PLANE_Z : PLANE_NON_AXIAL) ) )
-
-// plane_t structure
-// !!! if this is changed, it must be changed in asm code too !!!
-typedef struct cplane_s {
-	vec3_t	normal;
-	float	dist;
-	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
-	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
-	byte	pad[2];
-} cplane_t;
-
-
-// a trace is returned when a box is swept through the world
-typedef struct {
-	qboolean	allsolid;	// if true, plane is not valid
-	qboolean	startsolid;	// if true, the initial point was in a solid area
-	float		fraction;	// time completed, 1.0 = didn't hit anything
-	vec3_t		endpos;		// final position
-	cplane_t	plane;		// surface normal at impact, transformed to world space
-	int			surfaceFlags;	// surface hit
-	int			contents;	// contents on other side of surface hit
-	int			entityNum;	// entity the contacted sirface is a part of
-} trace_t;
-
-// trace->entityNum can also be 0 to (MAX_GENTITIES-1)
-// or ENTITYNUM_NONE, ENTITYNUM_WORLD
-
-
-// markfragments are returned by CM_MarkFragments()
-typedef struct {
-	int		firstPoint;
-	int		numPoints;
-} markFragment_t;
-
-
-
-typedef struct {
-	vec3_t		origin;
-	vec3_t		axis[3];
-} orientation_t;
-
 //=====================================================================
 
 
@@ -1001,22 +548,6 @@ typedef struct {
 #define	KEYCATCH_UI					0x0002
 #define	KEYCATCH_MESSAGE		0x0004
 #define	KEYCATCH_CGAME			0x0008
-
-
-// sound channels
-// channel 0 never willingly overrides
-// other channels will allways override a playing sound on that channel
-typedef enum {
-	CHAN_AUTO,
-	CHAN_LOCAL,		// menu sounds, etc
-	CHAN_WEAPON,
-	CHAN_VOICE,
-	CHAN_ITEM,
-	CHAN_BODY,
-	CHAN_LOCAL_SOUND,	// chat messages, etc
-	CHAN_ANNOUNCER		// announcer voices, etc
-} soundChannel_t;
-
 
 /*
 ========================================================================
@@ -1179,6 +710,9 @@ struct entityState_s {
 		lightRadius = 0.f;
 		lightTarget = ENTITYNUM_NONE;
 		spotLightRadius = 0.f;
+		trailEmitterMaterial = 0;
+		trailEmitterSpriteRadius = 0.f;
+		trailEmitterInterval = 0;
 	}
 	entityState_s() {
 		setDefaults();
@@ -1283,23 +817,6 @@ struct playerState_s : public entityState_s {
 
 #include "../shared/usercmd.h"
 
-//===================================================================
-
-typedef enum {
-	CA_UNINITIALIZED,
-	CA_DISCONNECTED, 	// not talking to a server
-	CA_AUTHORIZING,		// not used any more, was checking cd key 
-	CA_CONNECTING,		// sending request packets to the server
-	CA_CHALLENGING,		// sending challenge packets to the server
-	CA_CONNECTED,		// netchan_t established, getting gamestate
-	CA_LOADING,			// only during cgame initialization, never during main loop
-	CA_PRIMED,			// got gamestate, waiting for first frame
-	CA_ACTIVE,			// game views should be displayed
-	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
-} connstate_t;
-
-#define Square(x) ((x)*(x))
-
 // real time
 //=============================================
 
@@ -1344,9 +861,9 @@ typedef enum {
 #define SAY_ALL		0
 #define SAY_TEAM	1
 #define SAY_TELL	2
-
-#define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
-#define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
+//
+//#define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
+//#define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
 
 
 

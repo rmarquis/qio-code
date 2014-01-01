@@ -390,31 +390,31 @@ void Player::runPlayer() {
 			// update the viewangles
 			PM_UpdateViewAngles( &this->ps, ucmd );
 			{
-				vec3_t v = { 0, this->ps.viewangles[1], 0 };
+				vec3_c v( 0, this->ps.viewangles[1], 0 );
 				vec3_c dir;;
 				if(isPainAnimActive()) {
 					dir.clear();
 				} else {
-					vec3_t f,r,u;
+					vec3_c f,r,u;
 					//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
-					AngleVectors(v,f,r,u);
-					VectorScale(f,level.frameTime*ucmd->forwardmove,f);
-					VectorScale(r,level.frameTime*ucmd->rightmove,r);
-					VectorScale(u,level.frameTime*ucmd->upmove,u);
-					VectorAdd(dir,f,dir);
-					VectorAdd(dir,r,dir);
-					VectorAdd(dir,u,dir);
+					v.angleVectors(f,r,u);
+					f *= level.frameTime*ucmd->forwardmove;
+					r *= level.frameTime*ucmd->rightmove;
+					u *= level.frameTime*ucmd->upmove;
+					dir += f;
+					dir += r;
+					dir += u;
 				}
 				vec3_c newOrigin;
 				if(noclip || (characterController==0)) {
 					dir.scale(4.f);
-					VectorAdd(this->ps.origin,dir,newOrigin);
+					newOrigin = ps.origin + dir;
 					ModelEntity::setOrigin(newOrigin);
 					ps.velocity = dir;
 					onGround = false;
 				} else {
 					dir[2] = 0;
-					VectorScale(dir,0.75f,dir);
+					dir *= 0.75f;
 					this->characterController->update(dir);
 					newOrigin = this->characterController->getPos();
 					ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
@@ -619,8 +619,7 @@ void Player::onUseKeyDown() {
 	}
 	vec3_c eye = this->getEyePos();
 	trace_c tr;
-	vec3_c dir;
-	AngleVectors(this->ps.viewangles,dir,0,0);
+	vec3_c dir = ps.viewangles.getForward();
 	tr.setupRay(eye,eye + dir * 96.f);
 	if(G_TraceRay(tr,this)) {
 		BaseEntity *hit = tr.getHitEntity();
@@ -746,16 +745,16 @@ void Player::dropCarryingEntity() {
 	g_core->Print("Player::dropCarryingEntity: dropping %s\n",carryingEntity->getClassName());
 	carryingEntity = 0;
 }
-void Player::setClientViewAngle(const vec3_c &angle) {
+void Player::setClientViewAngle(const vec3_c &newAngles) {
 	// set the delta angle
 	for(u32 i = 0; i < 3; i++) {
-		int cmdAngle = ANGLE2SHORT(angle[i]);
+		int cmdAngle = ANGLE2SHORT(newAngles[i]);
 		this->ps.delta_angles[i] = cmdAngle - this->pers.cmd.angles[i];
 	}
 	// set the pitch/yaw view angles
-	VectorCopy(angle, this->ps.viewangles);
+	this->ps.viewangles = newAngles;
 	// set the model angle - only yaw (turning left/right)
-	VectorSet(this->ps.angles,0,angle[YAW],0);
+	this->ps.angles.set(0,newAngles[YAW],0);
 }
 void Player::setNetName(const char *newNetName) {
 	netName = newNetName;

@@ -484,7 +484,7 @@ u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
 	ADDOPTION("GL_SRC_ALPHA",BM_SRC_ALPHA)
 	ADDOPTION("GL_SRC_ALPHA_SATURATE",BM_SRC_ALPHA_SATURATE)
 #undef ADDOPTION
-	g_core->Print(S_COLOR_RED"Unknown blendFunc src/dst %s in file %s at line %i, setting to BM_ONE \n",token.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+	g_core->RedWarning("Unknown blendFunc src/dst %s in file %s at line %i, setting to BM_ONE \n",token.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 	return BM_ZERO;
 }
 void mtrIMPL_c::setSkyParms(const char *farBox, const char *cloudHeightStr, const char *nearBox) {

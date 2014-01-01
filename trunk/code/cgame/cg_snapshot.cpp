@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/quake3Anims.h>
+#include <shared/colorTable.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
@@ -45,8 +46,8 @@ CG_ResetEntity
 ==================
 */
 static void CG_ResetEntity( centity_t *cent ) {
-	VectorCopy (cent->currentState.origin, cent->lerpOrigin);
-	VectorCopy (cent->currentState.angles, cent->lerpAngles);
+	cent->lerpOrigin = cent->currentState.origin;
+	cent->lerpAngles = cent->currentState.angles;
 	if ( cent->currentState.eType == ET_PLAYER ) {
 //		CG_ResetPlayerEntity( cent );
 	}

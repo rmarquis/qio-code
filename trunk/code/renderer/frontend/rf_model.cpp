@@ -202,7 +202,7 @@ static hashTableTemplateExt_c<model_c> rf_models;
 model_c *RF_AllocModel(const char *modName) {
 	model_c *check = (model_c*)RF_FindModel(modName);
 	if(check) {
-		g_core->Print(S_COLOR_RED,"RF_AllocModel: model %s already exist. Overwriting.\n",modName);
+		g_core->RedWarning("RF_AllocModel: model %s already exist. Overwriting.\n",modName);
 		check->clear();
 		return check;
 	}

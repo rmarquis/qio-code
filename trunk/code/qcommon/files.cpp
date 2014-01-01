@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "unzip.h"
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
+#include <shared/colorTable.h>
 
 /*
 =============================================================================
@@ -806,7 +807,7 @@ void FS_FCloseFile( fileHandle_t f ) {
 		if ( fsh[f].handleFiles.unique ) {
 			unzClose( fsh[f].handleFiles.file.z );
 		}
-		Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
+		memset( &fsh[f], 0, sizeof( fsh[f] ) );
 		return;
 	}
 
@@ -814,7 +815,7 @@ void FS_FCloseFile( fileHandle_t f ) {
 	if (fsh[f].handleFiles.file.o) {
 		fclose (fsh[f].handleFiles.file.o);
 	}
-	Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
+	memset( &fsh[f], 0, sizeof( fsh[f] ) );
 }
 
 /*
@@ -2378,7 +2379,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 				if ( nDescLen > 0 && descHandle) {
 					FILE *file;
 					file = FS_FileForHandle(descHandle);
-					Com_Memset( descPath, 0, sizeof( descPath ) );
+					memset( descPath, 0, sizeof( descPath ) );
 					nDescLen = fread(descPath, 1, 48, file);
 					if (nDescLen >= 0) {
 						descPath[nDescLen] = '\0';
@@ -2526,7 +2527,7 @@ void FS_SortFileList(char **filelist, int numfiles) {
 		sortedlist[j] = filelist[i];
 		numsortedfiles++;
 	}
-	Com_Memcpy(filelist, sortedlist, numfiles * sizeof( *filelist ) );
+	memcpy(filelist, sortedlist, numfiles * sizeof( *filelist ) );
 	Z_Free(sortedlist);
 }
 
@@ -3018,15 +3019,17 @@ static void FS_Startup( const char *gameName )
 
 	// temporary hack
 	FS_AddGameDirectory("E:/GAMES/quake3/Quake3","baseq3");
+	// Xonotic is using Q3 bsp format
+	//FS_AddGameDirectory("E:/GAMES/xonotic-0.7.0/Xonotic","data");
+	//FS_AddGameDirectory("E:/GAMES/RTCW","main");
 	//FS_AddGameDirectory("E:/MoHAA","main");
 	//FS_AddGameDirectory("L:","Q4ZB");
-
 	//FS_AddGameDirectory("E:/Call of Duty","main");
 	//FS_AddGameDirectory("E:/RTCW","main");
 	//FS_AddGameDirectory("E:/Half-Life 2","hl2");
 	//FS_AddGameDirectory("E:/Portal 2","portal2");
 	//FS_AddGameDirectory("E:/GAMES/Prey","base");
-	FS_AddGameDirectory("E:/GAMES/Doom 3","base");
+	//FS_AddGameDirectory("E:/GAMES/Doom 3","base");
 
 
 	

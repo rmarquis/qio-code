@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/coreAPI.h>
+#include <shared/colorTable.h>
 
 int g_console_field_width = 78;
 
@@ -248,7 +249,7 @@ void Con_CheckResize (void)
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
 
-		Com_Memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(short));
+		memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(short));
 		for(i=0; i<CON_TEXTSIZE; i++)
 
 			con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';

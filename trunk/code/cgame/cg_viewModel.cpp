@@ -126,8 +126,8 @@ class viewModelAnimator_c {
 		currentMovement += currentPosOffset;
 
 		// clamp the gun offset to the offset limit
-		vec3_c vMovementNormalized;
-		float vMovementLen = VectorNormalize2(currentMovement, vMovementNormalized);
+		vec3_c vMovementNormalized = currentMovement;
+		float vMovementLen = vMovementNormalized.normalize2();
 		if(cfg.offsetMax < vMovementLen) {
 			currentMovement = cfg.offsetMax * vMovementNormalized;
 		}

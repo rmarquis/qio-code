@@ -608,6 +608,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\colorTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\colorTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\random.cpp"
 				>
 			</File>

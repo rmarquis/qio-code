@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "server.h"
 #include <api/gameAPI.h>
+#include <shared/colorTable.h>
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -224,7 +225,7 @@ void SV_GetChallenge(netadr_t from)
 //		// they are a demo client trying to connect to a real server
 //		NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\nServer is not a demo server\n" );
 //		// clear the challenge record so it won't timeout and let them through
-//		Com_Memset( challengeptr, 0, sizeof( *challengeptr ) );
+//		memset( challengeptr, 0, sizeof( *challengeptr ) );
 //		return;
 //	}
 //	if ( !Q_stricmp( s, "accept" ) ) {
@@ -239,7 +240,7 @@ void SV_GetChallenge(netadr_t from)
 //			NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\n%s\n", r);
 //		}
 //		// clear the challenge record so it won't timeout and let them through
-//		Com_Memset( challengeptr, 0, sizeof( *challengeptr ) );
+//		memset( challengeptr, 0, sizeof( *challengeptr ) );
 //		return;
 //	}
 //
@@ -251,7 +252,7 @@ void SV_GetChallenge(netadr_t from)
 //	}
 //
 //	// clear the challenge record so it won't timeout and let them through
-//	Com_Memset( challengeptr, 0, sizeof(*challengeptr) );
+//	memset( challengeptr, 0, sizeof(*challengeptr) );
 //}
 //#endif
 
@@ -419,7 +420,7 @@ void SV_DirectConnect( netadr_t from ) {
 	}
 
 	newcl = &temp;
-	Com_Memset (newcl, 0, sizeof(client_t));
+	memset (newcl, 0, sizeof(client_t));
 
 	// if there is already a slot for this ip, reuse it
 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
@@ -611,7 +612,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		{
 			if(NET_CompareAdr(drop->netchan.remoteAddress, challenge->adr))
 			{
-				Com_Memset(challenge, 0, sizeof(*challenge));
+				memset(challenge, 0, sizeof(*challenge));
 				break;
 			}
 		}
@@ -715,7 +716,7 @@ static void SV_SendClientGameState( client_t *client ) {
 	}
 
 	// write the baselines
-	Com_Memset( &nullstate, 0, sizeof( nullstate ) );
+	memset( &nullstate, 0, sizeof( nullstate ) );
 	for ( start = 0 ; start < MAX_GENTITIES; start++ ) {
 		base = &sv.svEntities[start].baseline;
 		if ( !base->number ) {
@@ -1657,7 +1658,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	// also use the last acknowledged server command in the key
 	key ^= MSG_HashKey(cl->reliableCommands[ cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
 
-	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
+	memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;
 	for ( i = 0 ; i < cmdCount ; i++ ) {
 		cmd = &cmds[i];

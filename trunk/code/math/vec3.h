@@ -292,6 +292,36 @@ public:
 		angles[ROLL] = 0;
 		return angles;
 	}
+	void angleVectors(vec3_t forward, vec3_t right, vec3_t up) const {
+		// pitch
+		float angle = DEG2RAD(this->x);
+		float sp = sin(angle);
+		float cp = cos(angle);
+		// yaw
+		angle = DEG2RAD(this->y);
+		float sy = sin(angle);
+		float cy = cos(angle);
+		// roll
+		angle = DEG2RAD(this->z);
+		float sr = sin(angle);
+		float cr = cos(angle);
+
+		if (forward) {
+			forward[0] = cp*cy;
+			forward[1] = cp*sy;
+			forward[2] = -sp;
+		}
+		if (right) {
+			right[0] = (-1*sr*sp*cy+-1*cr*-sy);
+			right[1] = (-1*sr*sp*sy+-1*cr*cy);
+			right[2] = -1*sr*cp;
+		}
+		if (up) {
+			up[0] = (cr*sp*cy+-sr*-sy);
+			up[1] = (cr*sp*sy+-sr*cy);
+			up[2] = cr*cp;
+		}
+	}
 	// converts vector values to RGB color bytes (0-255 range)
 	void colorToBytes( byte *outColorRGB ) const {
 		vec3_c sample = *this;

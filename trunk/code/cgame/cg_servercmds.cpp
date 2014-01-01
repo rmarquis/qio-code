@@ -110,7 +110,7 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num >= CS_COLLMODELS && num < CS_MODELS+MAX_MODELS ) {
 		cgs.gameCollModels[ num-CS_COLLMODELS ] = cm->registerModel( str );
 	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
-		cgs.gameSounds[ num-CS_SOUNDS] = 0;//trap_S_RegisterSound( str, qfalse );
+	//	cgs.gameSounds[ num-CS_SOUNDS] = 0;//trap_S_RegisterSound( str, qfalse );
 	} else if ( num >= CS_SKINS && num < CS_SKINS+MAX_SKINS ) {
 		//cgs.gameSkins[ num-CS_SKINS] = rf->registerSkin(str);
 	} else if ( num >= CS_MATERIALS && num < CS_MATERIALS+MAX_MATERIALS ) {

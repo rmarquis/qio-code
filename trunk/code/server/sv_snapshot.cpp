@@ -406,7 +406,7 @@ For viewing through other player's eyes, clent can be something other than clien
 =============
 */
 static void SV_BuildClientSnapshot( client_t *client ) {
-	vec3_t						org;
+	vec3_c						org;
 	clientSnapshot_t			*frame;
 	snapshotEntityNumbers_t		entityNumbers;
 	int							i;
@@ -425,7 +425,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 	// clear everything in this snapshot
 	entityNumbers.numSnapshotEntities = 0;
-	Com_Memset( frame->areabits, 0, sizeof( frame->areabits ) );
+	memset( frame->areabits, 0, sizeof( frame->areabits ) );
 
   // https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=62
 	frame->num_entities = 0;
@@ -450,7 +450,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	svEnt->snapshotCounter = sv.snapshotCounter;
 
 	// find the client's viewpoint
-	VectorCopy( ps->origin, org );
+	org = ps->origin;
 	org[2] += ps->viewheight;
 
 	// add all the entities directly visible to the eye, which

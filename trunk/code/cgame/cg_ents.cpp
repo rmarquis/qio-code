@@ -180,7 +180,7 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		cent->lerpOrigin = mat.getOrigin();
 		if(cent->currentState.parentOffset.isAlmostZero() == false) {
 			matrix_c matAngles = mat;
-			matAngles.setOrigin(vec3_origin);
+			matAngles.setOrigin(vec3_c(0,0,0));
 			vec3_c ofs;
 			matAngles.transformPoint(cent->currentState.parentOffset,ofs);
 			cent->lerpOrigin += ofs;
@@ -216,29 +216,37 @@ static void CG_UpdateEntityEmitter( centity_t *cent ) {
 	if(cent->currentState.isEmitterActive()) {
 		// get emitter name (it might be a material name or Doom3 particleDecl name)
 		const char *emitterName = CG_ConfigString(CS_MATERIALS+cent->currentState.trailEmitterMaterial);
-		// see if we have a Doom3 .prt decl for it
-		class particleDeclAPI_i *prtDecl = g_declMgr->registerParticleDecl(emitterName);
-		// if particle decl was not present, fall back to default simple emitter
-		if(prtDecl == 0) {
-			class mtrAPI_i *mat = cgs.gameMaterials[cent->currentState.trailEmitterMaterial];
-			if(cent->emitter == 0) {
-				cent->emitter = new emitterDefault_c(cg.time);
-				rf->addCustomRenderObject(cent->emitter);
-			}
-			cent->emitter->setMaterial(mat);
+		if(emitterName[0] == 0) {
+			g_core->RedWarning("CG_UpdateEntityEmitter: NULL entity emitter name\n");
 		} else {
-			// create a Doom3 particle system emitter
-			if(cent->emitter == 0) {
-				cent->emitter = new emitterD3_c;;
-				rf->addCustomRenderObject(cent->emitter);
-			}	
-			cent->emitter->setParticleDecl(prtDecl);
-		}
-		cent->emitter->setOrigin(cent->lerpOrigin);
-		cent->emitter->setRadius(cent->currentState.trailEmitterSpriteRadius);
-		cent->emitter->setInterval(cent->currentState.trailEmitterInterval);
+			// see if we have a Doom3 .prt decl for it
+			class particleDeclAPI_i *prtDecl = g_declMgr->registerParticleDecl(emitterName);
+			// if particle decl was not present, fall back to default simple emitter
+			if(prtDecl == 0) {
+				class mtrAPI_i *mat = cgs.gameMaterials[cent->currentState.trailEmitterMaterial];
+				// if we have a valid material
+				if(mat) {
+					// create a simple material-based emitter
+					if(cent->emitter == 0) {
+						cent->emitter = new emitterDefault_c(cg.time);
+						rf->addCustomRenderObject(cent->emitter);
+					}
+					cent->emitter->setMaterial(mat);
+				}
+			} else {
+				// create a Doom3 particle system emitter
+				if(cent->emitter == 0) {
+					cent->emitter = new emitterD3_c;;
+					rf->addCustomRenderObject(cent->emitter);
+				}	
+				cent->emitter->setParticleDecl(prtDecl);
+			}
+			cent->emitter->setOrigin(cent->lerpOrigin);
+			cent->emitter->setRadius(cent->currentState.trailEmitterSpriteRadius);
+			cent->emitter->setInterval(cent->currentState.trailEmitterInterval);
 
-		cent->emitter->updateEmitter(cg.time);
+			cent->emitter->updateEmitter(cg.time);
+		}
 	} else {
 		if(cent->emitter) {
 			delete cent->emitter;
