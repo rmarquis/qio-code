@@ -529,6 +529,13 @@ void ClientCommand( int clientNum ) {
 		char buff[8192];
 		g_core->Args(buff,sizeof(buff));
 		pl->cmdSay(buff);
+	} else if(!stricmp(cmd,"net_setWorldSurfaceMaterial")) {
+		// command used to debug (display) various materials on world surfaces
+		int areaNum = atoi(g_core->Argv(1));
+		int surfaceNum = atoi(g_core->Argv(2));
+		const char *matName = g_core->Argv(3);
+		// broadcast world material change to all the clients
+		g_server->SendServerCommand(-1,va("stufftext rf_setWorldSurfaceMaterial %i %i %s",areaNum,surfaceNum,matName));
 	} else {
 		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);

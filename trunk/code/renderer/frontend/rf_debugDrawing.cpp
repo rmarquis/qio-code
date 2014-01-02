@@ -42,9 +42,7 @@ static aCvar_c r_showSurfaceInfo("r_showSurfaceInfo","0");
 
 void RF_ShowCrossairSurfaceInfo() {
 	trace_c tr;
-	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
-	tr.setupRay(rf_camera.getOrigin(),to);
-	RF_TraceSceneRay(tr,true);
+	RF_DoCameraTrace(tr,true);
 	if(tr.hasHit() == false)
 		return;
 	mtrAPI_i *rMat = tr.getHitRMaterial();

@@ -290,6 +290,7 @@ public:
 	bool getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const;
 	
 	void setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material);
+	void setSurfaceMaterial(u32 surfaceNum, const char *matName);
 
 	const class lightGridAPI_i *getLightGridAPI() const {
 		return lightGrid;

@@ -201,6 +201,13 @@ public:
 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) {
 		return RF_RemoveCustomRenderObject(api);
 	}
+	// this will use the current camera settings
+	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) {
+		RF_GetLookatSurfaceInfo(out);
+	}
+	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum) {
+		RF_SetWorldSurfaceMaterial(areaNum,surfNum,matName);
+	}
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;
 	}

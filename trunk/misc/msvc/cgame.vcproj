@@ -254,6 +254,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cgame\cg_consoleCmds.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cgame\cg_draw.cpp"
 				>
 				<FileConfiguration
@@ -407,7 +411,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\cgame\cg_servercmds.cpp"
+				RelativePath="..\..\code\cgame\cg_serverCmds.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -587,6 +591,14 @@
 		<Filter
 			Name="shared"
 			>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\shared\autoCvar.cpp"
 				>

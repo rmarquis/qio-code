@@ -209,6 +209,7 @@ static void CG_NewEntity(u32 entNum) {
 			rf->removeEntity(cent->rEnt);
 		}
 		cent->rEnt = rf->allocEntity();
+		cent->rEnt->setNetworkingEntityNumber(entNum);
 		if(cent->currentState.lightRadius >= 0) {
 			// new render light
 			if(cent->rLight) {

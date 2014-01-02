@@ -55,6 +55,7 @@ void RFE_AddEntityDrawCalls();
 void RFE_ClearEntities();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
+bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels);
 u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
 // "forceThirdPerson" is true while generating shadow map drawcalls
 void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);

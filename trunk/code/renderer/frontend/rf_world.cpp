@@ -30,10 +30,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/rEntityAPI.h>
 #include <shared/autoCmd.h>
 #include <shared/autoCvar.h>
 #include <shared/trace.h>
 #include <shared/stringList.h>
+#include <shared/rendererSurfaceRef.h>
 
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
 static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
@@ -235,6 +237,48 @@ void RF_BSP_RebuildBatches_f() {
 		g_core->RedWarning("Map type is not BSP\n");
 	}
 }
+void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName) {
+	if(r_bspTree) {
+		r_bspTree->setSurfaceMaterial(surfaceNum,matName);
+	} else if(r_worldModel) {
+		r_worldModel->setSurfaceMaterial(surfaceNum,matName);
+	} else if(r_procTree) {
+		r_procTree->setSurfaceMaterial(areaNum,surfaceNum,matName);
+	}
+}
+
+void RF_SetWorldSurfaceMaterial_f() {
+	if(g_core->Argc() < 4) {
+		g_core->Print("Usage: RF_SetWorldSurfaceMaterial_f <areaNum> <surfaceNum> <material_name>\n");
+		return;
+	}
+	// areaNum is needed only for .proc world maps
+	int areaNum = atoi(g_core->Argv(1));
+	int surfaceNum = atoi(g_core->Argv(2));
+	const char *matName = g_core->Argv(3);
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(mat == 0) {
+		g_core->Print("NULL material\n");
+		return;
+	}
+	RF_SetWorldSurfaceMaterial(areaNum,surfaceNum,matName);
+}
+void RF_GetLookatSurfaceInfo(rendererSurfaceRef_s &out) {
+	trace_c tr;
+	RF_DoCameraTrace(tr,true);
+	if(tr.hasHit() == false) {
+		out.clear();
+		return;
+	}
+	out.areaNum = tr.getHitAreaNum();
+	out.surfaceNum = tr.getHitSurfaceNum();
+	class rEntityAPI_i *e = tr.getHitREntity();
+	if(e) {
+		out.entityNum = e->getNetworkingEntityNumber();
+	} else {
+		out.entityNum = -1;
+	}
+}
 void RF_SetCrosshairSurfaceMaterial_f() {
 	if(g_core->Argc() < 2) {
 		g_core->Print("Usage: rf_setCrosshairSurfaceMaterial <material_name>\n");
@@ -246,19 +290,9 @@ void RF_SetCrosshairSurfaceMaterial_f() {
 		g_core->Print("NULL material\n");
 		return;
 	}
-	trace_c tr;
-	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
-	tr.setupRay(rf_camera.getOrigin(),to);
-	RF_TraceSceneRay(tr,true);
-	if(tr.hasHit() == false)
-		return;
-	if(r_bspTree) {
-		r_bspTree->setSurfaceMaterial(tr.getHitSurfaceNum(),mat);
-	} else if(r_worldModel) {
-		r_worldModel->setSurfaceMaterial(tr.getHitSurfaceNum(),matName);
-	} else if(r_procTree) {
-		r_procTree->setSurfaceMaterial(tr.getHitAreaNum(),tr.getHitSurfaceNum(),matName);
-	}
+	rendererSurfaceRef_s tmp;
+	RF_GetLookatSurfaceInfo(tmp);
+	RF_SetWorldSurfaceMaterial(tmp.areaNum,tmp.surfaceNum,matName);
 }
 bool RF_IsWorldTypeProc()  {
 	if(r_procTree)
@@ -326,5 +360,6 @@ static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMa
 static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
 static aCmd_c rf_bsp_rebuildBatches("rebuildBSPWorldBatches",RF_BSP_RebuildBatches_f);
 static aCmd_c rf_setCrosshairSurfaceMaterial("rf_setCrosshairSurfaceMaterial",RF_SetCrosshairSurfaceMaterial_f);
+static aCmd_c rf_setWorldSurfaceMaterial("rf_setWorldSurfaceMaterial",RF_SetWorldSurfaceMaterial_f);
 
 

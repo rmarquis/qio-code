@@ -745,6 +745,10 @@ void procTree_c::getReferencedMatNames(class perStringCallbackListener_i *callba
 	}
 }
 void procTree_c::setSurfaceMaterial(u32 areaNum, u32 surfaceNum, const char *matName) {
+	if(areaNum >= areas.size()) {
+		g_core->RedWarning("procTree_c::setSurfaceMaterial: bad areaNum %i\n",areaNum);
+		return;
+	}
 	areas[areaNum]->areaModel->setSurfaceMaterial(surfaceNum,matName);
 }
 

@@ -42,6 +42,7 @@ public:
 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex) = 0;
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex) = 0;
 	virtual void setSkin(const char *skinName) = 0;
+	virtual void setNetworkingEntityNumber(int newNetEntNum) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const char *getModelName() const = 0;
@@ -49,6 +50,7 @@ public:
 	virtual const class vec3_c &getOrigin() const = 0;
 	virtual const class matrix_c &getMatrix() const = 0;
 	virtual const class aabb &getBoundsABS() const = 0;
+	virtual int getNetworkingEntityNumber() const = 0;
 
 	virtual void hideModel() = 0;
 	virtual void showModel() = 0;

@@ -92,6 +92,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	//skinMatList = 0;
 	bCenterLightSampleValid = false;
 	finalBones = 0;
+	networkingEntityNumber = -1;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -831,4 +832,9 @@ bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels) {
 		}
 	}
 	return bHit;
+}
+bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels) {
+	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
+	tr.setupRay(rf_camera.getOrigin(),to);
+	return RF_TraceSceneRay(tr,bSkipPlayerModels);
 }

@@ -331,6 +331,12 @@ static void CG_ServerCommand( void ) {
 		g_core->Args(buff,sizeof(buff));
 		CG_AddChatMessage(buff);
 		return;
+	} else if( !strcmp( cmd, "stufftext" ) ) {
+		char buff[8192];
+		g_core->Args(buff,sizeof(buff));
+		// MoHAA-style "stufftext" command - passes command text to console
+		g_core->Cbuf_ExecuteText(EXEC_APPEND,buff);
+		return;
 	}
 
 	CG_Printf( "Unknown client game command: %s\n", cmd );

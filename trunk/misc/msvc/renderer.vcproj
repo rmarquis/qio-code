@@ -306,6 +306,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\rendererSurfaceRef.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
 				>
 			</File>

@@ -43,6 +43,8 @@ bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums);
 void RF_WorldDebugDrawing();
 const class lightGridAPI_i *RF_GetWorldLightGridAPI();
 bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out);
+void RF_GetLookatSurfaceInfo(struct rendererSurfaceRef_s &out);
+void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName);
 
 #endif // __RF_BSP_H__
 

@@ -76,6 +76,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	arraySTD_c<u32> touchingAreas;
 	// used to avoid updating animated entity several times in single frame
 	u32 animatedEntityUpdateFrame;
+	// corresponding serverside entity index
+	int networkingEntityNumber;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -109,6 +111,10 @@ public:
 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
 	virtual void setSkin(const char *skinName);
+	virtual void setNetworkingEntityNumber(int newNetEntNum) {
+		networkingEntityNumber = newNetEntNum;
+	}
+
 	virtual void hideModel();
 	virtual void showModel();
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
@@ -153,6 +159,9 @@ public:
 	}
 	virtual const class aabb &getBoundsABS() const {
 		return absBB;
+	}
+	virtual int getNetworkingEntityNumber() const {
+		return networkingEntityNumber;
 	}
 	class simpleDecalBatcher_c *getStaticDecalsBatch() {
 		return staticDecals;

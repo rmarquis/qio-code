@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/loadingScreenMgrAPI.h>
 #include <api/declManagerAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/autoCmd.h>
 
 cg_t				cg;
 cgs_t				cgs;
@@ -214,6 +215,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// init cgame console variables
 	AUTOCVAR_RegisterAutoCvars();
 	CG_RegisterCvars();
+	// init console commands
+	AUTOCMD_RegisterAutoConsoleCommands();
 
 	// get the rendering configuration from the client system
 	cgs.screenXScale = rf->getWinWidth() / 640.0;
@@ -358,6 +361,8 @@ void CG_Shutdown( void ) {
 	// like closing files or archiving session data
 	// unlink autocvars
 	AUTOCVAR_UnregisterAutoCvars();
+	// unlink autoCmds
+	AUTOCMD_UnregisterAutoConsoleCommands();
 }
 
 

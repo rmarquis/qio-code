@@ -73,6 +73,11 @@ public:
 	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 
+	// this will use the current camera settings
+	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) = 0;
+	// areaNum is needed only for .proc world maps
+	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum = 0) = 0;
+
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
 
