@@ -211,6 +211,12 @@ void btCompoundCollisionAlgorithm::processCollision (btCollisionObject* body0,bt
 
 
 	btDbvt* tree = compoundShape->getDynamicAabbTree();
+
+	// why is it 0 on test_heightmap?
+	if(m_childCollisionAlgorithms.size() == 0) {
+		return; // temporary crash fix
+	}
+
 	//use a dynamic aabb tree to cull potential child-overlaps
 	btCompoundLeafCallback  callback(colObj,otherObj,m_dispatcher,dispatchInfo,resultOut,&m_childCollisionAlgorithms[0],m_sharedManifold);
 
