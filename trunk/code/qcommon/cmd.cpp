@@ -639,12 +639,17 @@ Cmd_AddCommand
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	cmd_function_t	*cmd;
 	
+	cmd = Cmd_FindCommand( cmd_name );
 	// fail if the command already exists
-	if( Cmd_FindCommand( cmd_name ) )
-	{
-		// allow completion-only commands to be silently doubled
-		if( function != NULL )
-			Com_Printf( "Cmd_AddCommand: %s already defined\n", cmd_name );
+	if( cmd ) {
+		if(cmd->function == 0) {
+			// add the missing function pointer
+			cmd->function = function;
+		} else {
+			// allow completion-only commands to be silently doubled
+			if( function != NULL )
+				Com_Printf( "Cmd_AddCommand: %s already defined\n", cmd_name );
+		}
 		return;
 	}
 
@@ -688,12 +693,16 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 			return;
 		}
 		if ( !strcmp( cmd_name, cmd->name ) ) {
-			*back = cmd->next;
-			if (cmd->name) {
-				Z_Free(cmd->name);
+			if(cmd->complete == 0) {		
+				*back = cmd->next;
+				if (cmd->name) {
+					Z_Free(cmd->name);
+				}
+				Z_Free (cmd);
+				return;
+			} else {
+				cmd->function = 0;
 			}
-			Z_Free (cmd);
-			return;
 		}
 		back = &cmd->next;
 	}

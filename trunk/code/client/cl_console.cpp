@@ -318,6 +318,18 @@ void Cmd_CompleteEmitterName( char *args, int argNum ) {
 
 /*
 ==================
+Cmd_CompleteEmitterName
+==================
+*/
+void Cmd_CompleteMaterialName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteMaterialName();
+	}
+}
+
+
+/*
+==================
 Cmd_CacheDeclModel_f
 ==================
 */
@@ -362,6 +374,10 @@ void Con_Init (void) {
 	Cmd_AddCommand ("cg_testEmitter", 0);
 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
 	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);
+	Cmd_AddCommand ("cg_testMaterial", 0);
+	Cmd_SetCommandCompletionFunc( "cg_testMaterial", Cmd_CompleteMaterialName );
+	Cmd_AddCommand ("rf_setCrosshairSurfaceMaterial", 0);
+	Cmd_SetCommandCompletionFunc( "rf_setCrosshairSurfaceMaterial", Cmd_CompleteMaterialName );
 }
 
 /*

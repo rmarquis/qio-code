@@ -51,6 +51,7 @@ bool MAT_IsMaterialOrImagePresent(const char *matName);
 bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
 void MAT_ReloadSingleMaterial(const char *matName);
 void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName);
+void MAT_IterateAllAvailableMaterialNames(void (*callback)(const char *s));
 class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette);
 // Doom3 material tables interface
 const class tableListAPI_i *MAT_GetTablesAPI();

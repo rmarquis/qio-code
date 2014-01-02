@@ -26,6 +26,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c gl_saveGLSLErrorLogToFile("gl_saveGLSLErrorLogToFile","1");
+
 
 bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 	glShaderSourceARB(handle, 1,(const GLcharARB**) &source, 0);
@@ -39,6 +43,14 @@ bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 			char *tmp = (char*)malloc(logLen+1);
 			glGetInfoLogARB(handle, logLen, 0, tmp);
 			g_core->RedWarning(tmp);
+			if(gl_saveGLSLErrorLogToFile.getInt()) {
+				fileHandle_t handle = 0;
+				g_vfs->FS_FOpenFile("glslShaderError.txt",&handle,FS_WRITE);
+				if(handle) {
+					g_vfs->FS_Write(tmp,strlen(tmp),handle);
+					g_vfs->FS_FCloseFile(handle);
+				}
+			}
 			free(tmp);
 		}
 		return true; // error
@@ -246,6 +258,14 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 			char *tmp = (char*)malloc(logLen+1);
 			glGetInfoLogARB(shader, logLen, 0, tmp);
 			g_core->RedWarning(tmp);
+			if(gl_saveGLSLErrorLogToFile.getInt()) {
+				fileHandle_t handle = 0;
+				g_vfs->FS_FOpenFile("glslShaderError.txt",&handle,FS_WRITE);
+				if(handle) {
+					g_vfs->FS_Write(tmp,strlen(tmp),handle);
+					g_vfs->FS_FCloseFile(handle);
+				}
+			}
 			free(tmp);
 		}
 		glDeleteShader(vertexProgram);

@@ -518,7 +518,9 @@ void procTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 		int areaNum = (-nodeNum-1);
 		procArea_c *ar = areas[areaNum];
 		if(ar->checkCount != this->checkCount) {
-			ar->areaModel->traceRay(out);
+			if(ar->areaModel->traceRay(out)) {
+				out.setHitAreaNum(areaNum);
+			}
 			ar->checkCount = this->checkCount;
 		}
 		return; // done.
@@ -741,6 +743,9 @@ void procTree_c::getReferencedMatNames(class perStringCallbackListener_i *callba
 			continue;
 		ar->areaModel->getReferencedMatNames(callback);
 	}
+}
+void procTree_c::setSurfaceMaterial(u32 areaNum, u32 surfaceNum, const char *matName) {
+	areas[areaNum]->areaModel->setSurfaceMaterial(surfaceNum,matName);
 }
 
 void procTree_c::doDebugDrawing() {

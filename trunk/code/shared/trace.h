@@ -54,6 +54,10 @@ class trace_c {
 		class mtrAPI_i *hitRMaterial; // for cgame and renderer
 	//};
 	u32 hitTriangleIndex;
+	// -1 if not set
+	int hitSurfaceNum;
+	// -1 if not set
+	int hitAreaNum;
 
 	void updateForNewHitPos();
 	void updateForNewFraction();
@@ -78,6 +82,24 @@ public:
 	}
 	u32 getHitTriangleIndex() const {
 		return hitTriangleIndex;
+	}
+	void setHitSurfaceNum(int newSurfaceNum) {
+		hitSurfaceNum = newSurfaceNum;
+	}
+	int getHitSurfaceNum() const {
+		return hitSurfaceNum;
+	}
+	bool hasHitSurfaceIndexStored() const {
+		return (hitSurfaceNum != -1);
+	}
+	void setHitAreaNum(int newAreaNum) {
+		hitAreaNum = newAreaNum;
+	}
+	int getHitAreaNum() const {
+		return hitAreaNum;
+	}
+	bool hasHitAreaIndexStored() const {
+		return (hitAreaNum != -1);
 	}
 
 	bool clipByTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, bool twoSided = false);

@@ -2298,7 +2298,11 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 	bspSurf_s &sf = surfs[surfNum];
 	if(sf.type == BSPSF_BEZIER) {
 		r_bezierPatch_c *bp = sf.patch;
-		return bp->traceRay(out);
+		if(bp->traceRay(out)) {
+			out.setHitSurfaceNum(surfNum);
+			return true; // collided with patch
+		}
+		return false; // didn't collide
 	} else if(sf.type == BSPSF_FLARE) {
 		return false; // never collide with flares
 	} else {
@@ -2318,6 +2322,7 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 			}
 		}
 		if(hasHit) {
+			out.setHitSurfaceNum(surfNum);
 			out.setHitRMaterial(t->mat);
 		}
 		return hasHit;
@@ -2432,6 +2437,16 @@ bool rBspTree_c::getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) 
 		}
 	}
 	return false;
+}
+void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material) {
+	if(surfaceNum >= surfs.size())
+		return;
+	bspSurf_s &sf = surfs[surfaceNum];
+	//sf.bspMaterialIndex = this->registerMaterial(material);
+	if(sf.sf) {
+		sf.sf->mat = material;
+	}
+	rebuildBatches();
 }
 rBspTree_c *RF_LoadBSP(const char *fname) {
 	rBspTree_c *bsp = new rBspTree_c;

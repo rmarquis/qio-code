@@ -257,6 +257,11 @@ public:
 	bool load(const char *fname);
 	void clear();
 
+	void rebuildBatches() {
+		deleteBatches();
+		createBatches();
+	}
+
 	void updateVisibility();
 	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);
 	void markAreas();
@@ -284,6 +289,8 @@ public:
 
 	bool getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const;
 	
+	void setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material);
+
 	const class lightGridAPI_i *getLightGridAPI() const {
 		return lightGrid;
 	}

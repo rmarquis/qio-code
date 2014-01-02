@@ -76,6 +76,9 @@ public:
 	virtual void reloadMaterialFileSource(const char *mtrSourceFileName) {
 		MAT_ReloadMaterialFileSource(mtrSourceFileName);
 	}
+	virtual void iterateAllAvailableMaterialNames(void (*callback)(const char *s)) const {
+		MAT_IterateAllAvailableMaterialNames(callback);
+	}
 	// for Quake1 / HalfLife .wad / .bsp textures
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
 		return MAT_CreateHLBSPTexture(newMatName,pixels,width,height,palette);

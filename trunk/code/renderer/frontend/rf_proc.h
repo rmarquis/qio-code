@@ -137,6 +137,8 @@ public:
 
 	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
 
+	void setSurfaceMaterial(u32 areaNum, u32 surfaceNum, const char *matName);
+
 	void doDebugDrawing();
 };
 

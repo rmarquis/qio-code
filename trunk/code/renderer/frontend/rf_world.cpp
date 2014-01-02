@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_lightGrid.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
 #include <shared/autoCvar.h>
 #include <shared/trace.h>
@@ -227,6 +228,38 @@ void RF_PrintWorldMapInfo_f() {
 		g_core->RedWarning("No world map...\n");
 	}
 }
+void RF_BSP_RebuildBatches_f() {
+	if(r_bspTree) {
+		r_bspTree->rebuildBatches();
+	} else {
+		g_core->RedWarning("Map type is not BSP\n");
+	}
+}
+void RF_SetCrosshairSurfaceMaterial_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: rf_setCrosshairSurfaceMaterial <material_name>\n");
+		return;
+	}
+	const char *matName = g_core->Argv(1);
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(mat == 0) {
+		g_core->Print("NULL material\n");
+		return;
+	}
+	trace_c tr;
+	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
+	tr.setupRay(rf_camera.getOrigin(),to);
+	RF_TraceSceneRay(tr,true);
+	if(tr.hasHit() == false)
+		return;
+	if(r_bspTree) {
+		r_bspTree->setSurfaceMaterial(tr.getHitSurfaceNum(),mat);
+	} else if(r_worldModel) {
+		r_worldModel->setSurfaceMaterial(tr.getHitSurfaceNum(),matName);
+	} else if(r_procTree) {
+		r_procTree->setSurfaceMaterial(tr.getHitAreaNum(),tr.getHitSurfaceNum(),matName);
+	}
+}
 bool RF_IsWorldTypeProc()  {
 	if(r_procTree)
 		return true;
@@ -291,4 +324,7 @@ bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out
 }
 static aCmd_c rf_printWorldMapMaterials("printWorldMapMaterials",RF_PrintWorldMapMaterials_f);
 static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
+static aCmd_c rf_bsp_rebuildBatches("rebuildBSPWorldBatches",RF_BSP_RebuildBatches_f);
+static aCmd_c rf_setCrosshairSurfaceMaterial("rf_setCrosshairSurfaceMaterial",RF_SetCrosshairSurfaceMaterial_f);
+
 

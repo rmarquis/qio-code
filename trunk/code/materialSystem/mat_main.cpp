@@ -33,6 +33,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCmd.h>
 #include <shared/tableList.h>
 
+const char *STR_SkipCurlyBracedSection(const char *p) {
+	u32 level = 1;
+	while(level) {
+		p = G_SkipToNextToken(p);
+		if(p == 0 || *p == 0)
+			return 0; // EOF hit
+		if(*p == '{') 
+			level++;
+		else if(*p == '}')
+			level--;
+		p++;
+	}
+	return p;
+}
+
 struct matFile_s {
 	str fname;
 	str text;
@@ -48,6 +63,46 @@ struct matFile_s {
 		this->text = tmpFileData;
 		g_vfs->FS_FreeFile(tmpFileData);
 		return false;
+	}
+	void iterateAllAvailableMaterialNames(void (*callback)(const char *s)) {
+		const char *p = this->text.c_str();
+		while(*p) {
+			// skip comments and whitespaces
+			p = G_SkipToNextToken(p);
+			if(p == 0 || *p == 0)
+				break;
+			// skip tables
+			if(!Q_stricmpn(p,"table",5) && G_isWS(p[5])) {
+				p += 5; // skip 'table' token
+				p = G_SkipToNextToken(p);
+				// skip table name
+				while(iswspace(*p) == false && *p)
+					p++;
+				p = G_SkipToNextToken(p);
+				if(*p != '{') {
+					g_core->RedWarning("Expected '{' after table\n");
+					return;
+				}
+				p++;
+				p = STR_SkipCurlyBracedSection(p);
+			} else {
+				// that's a material
+				const char *nameStart = p;
+				while(iswspace(*p) == false && *p)
+					p++;
+				str matName;
+				matName.setFromTo(nameStart,p);
+				//g_core->Print("Material: %s\n",matName.c_str());
+				p = G_SkipToNextToken(p);
+				if(*p != '{') {
+					g_core->RedWarning("Expected '{' after material name %s\n",matName.c_str());
+					return;
+				}
+				p++;
+				p = STR_SkipCurlyBracedSection(p);
+				callback(matName);
+			}
+		}	
 	}
 };
 
@@ -114,17 +169,9 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 			continue;
 		} else if(*p == '{') {
 			p++; // skip '{'
-			// skip braced section
-			u32 level = 1;
-			while(level) {
-				if(*p == '{') 
-					level++;
-				else if(*p == '}')
-					level--;
-				else if(*p == 0)
-					return 0; // EOF hit
-				p++;
-			}
+			p = STR_SkipCurlyBracedSection(p);
+			if(p == 0 || *p == 0)
+				return 0; // EOF hit
 			continue;
 		} else if(G_isWS(*p)) {
 			p++; // skip single whitespace
@@ -339,6 +386,11 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName) {
 	} else {
 		g_core->RedWarning("MAT_ReloadMaterialFileSource: %s does not exist\n",mtrSourceFileName);
 		return;
+	}
+}
+void MAT_IterateAllAvailableMaterialNames(void (*callback)(const char *s)) {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		matFiles[i]->iterateAllAvailableMaterialNames(callback);
 	}
 }
 class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {

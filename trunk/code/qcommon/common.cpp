@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/moduleManagerAPI.h>
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/colorTable.h>
 
 int demo_protocols[] =
@@ -123,6 +124,9 @@ bool	com_fullyInitialized = false;
 bool	com_gameRestarting = false;
 
 char	com_errorMessage[MAXPRINTMSG];
+
+// this is NULL if client module is not running
+class materialSystemAPI_i *g_ms = 0;
 
 void Com_WriteConfig_f( void );
 void CIN_CloseAllVideos( void );
@@ -2612,6 +2616,7 @@ void Com_InitCoreAPI() {
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 
 	IN_InitInputSystemAPI();
 	Com_InitSysEventCasterAPI();
@@ -3526,6 +3531,28 @@ void Field_CompleteEmitterName()
 
 	if( !Field_Complete( ) ) {
 		g_declMgr->iterateParticleDefNames(PrintMatches);
+	}
+}
+
+/*
+===============
+Field_CompleteMaterialName
+===============
+*/
+// V: for "cg_testMaterial", "rf_setCrosshairSurfaceMaterial" commands
+// autocompletion of material names from .mtr / .shader files
+void Field_CompleteMaterialName()
+{
+	if(g_ms == 0)
+		return;
+
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	g_ms->iterateAllAvailableMaterialNames(FindMatches);
+
+	if( !Field_Complete( ) ) {
+		g_ms->iterateAllAvailableMaterialNames(PrintMatches);
 	}
 }
 

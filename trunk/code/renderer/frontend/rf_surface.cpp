@@ -1095,15 +1095,31 @@ void r_model_c::setNumSurfs(u32 newSurfsCount) {
 	surfs.resize(newSurfsCount);
 }
 void r_model_c::resizeSurfaceVerts(u32 surfNum, u32 numVerts) {
+	if(surfNum >= surfs.size()) {
+		g_core->RedWarning("r_model_c::resizeSurfaceVerts: bad surface index %i\n",surfNum);
+		return;
+	}
 	surfs[surfNum].resizeVerts(numVerts);
 }
 void r_model_c::setSurfaceVert(u32 surfNum, u32 vertIndex, const float *xyz, const float *st) {
+	if(surfNum >= surfs.size()) {
+		g_core->RedWarning("r_model_c::setSurfaceVert: bad surface index %i\n",surfNum);
+		return;
+	}
 	surfs[surfNum].setVertXYZTC(vertIndex,xyz,st[0],st[1]);
 }
 void r_model_c::setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices) {
+	if(surfNum >= surfs.size()) {
+		g_core->RedWarning("r_model_c::setSurfaceIndicesU32: bad surface index %i\n",surfNum);
+		return;
+	}
 	surfs[surfNum].setIndicesU32(numIndices,indices);
 }
 void r_model_c::setSurfaceMaterial(u32 surfNum, const char *matName) {
+	if(surfNum >= surfs.size()) {
+		g_core->RedWarning("r_model_c::setSurfaceMaterial: bad surface index %i\n",surfNum);
+		return;
+	}
 	surfs[surfNum].setMaterial(matName);
 }	
 void r_model_c::recalcBoundingBoxes() {
@@ -1270,6 +1286,17 @@ mtrAPI_i *r_model_c::getMaterialForABSTriangleIndex(u32 absTriNum) const {
 	}
 	return 0;
 }
+int r_model_c::getSurfaceIndexForABSTriangleIndex(u32 absTriNum) const {
+	u32 firstTri = 0;
+	const r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		u32 lastTri = firstTri + sf->getNumTris();
+		if(firstTri <= absTriNum && absTriNum < lastTri)
+			return i;
+		firstTri += sf->getNumTris();
+	}
+	return -1;
+}
 #include <shared/cmSurface.h>
 #include <shared/autoCvar.h>
 
@@ -1297,7 +1324,9 @@ bool r_model_c::traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation) {
 			if(extraCollOctTree->traceRay(tr)) {
 				u32 absTriNum = tr.getHitTriangleIndex();
 				mtrAPI_i *hitMat = this->getMaterialForABSTriangleIndex(absTriNum);
+				int hitSurface = this->getSurfaceIndexForABSTriangleIndex(absTriNum);
 				tr.setHitRMaterial(hitMat);
+				tr.setHitSurfaceNum(hitSurface);
 				return true;
 			}
 			return false;
@@ -1311,6 +1340,7 @@ bool r_model_c::traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation) {
 		}
 		if(sf->traceRay(tr)) {
 			hit = true;
+			tr.setHitSurfaceNum(i);
 		}
 	}
 	return hit;

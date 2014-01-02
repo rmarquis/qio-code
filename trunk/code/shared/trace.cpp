@@ -28,6 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 trace_c::trace_c() {
 	this->sphereRadius = 0.f;
+	this->hitSurfaceNum = -1;
+	this->hitAreaNum = -1;
 }
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->hitEntity = 0;

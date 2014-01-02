@@ -360,6 +360,7 @@ public:
 	void updateSprite(const class axis_c &ax, float newSpriteRadius);
 
 	mtrAPI_i *getMaterialForABSTriangleIndex(u32 absTriNum) const;
+	int getSurfaceIndexForABSTriangleIndex(u32 absTriNum) const;
 
 	bool traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation = true);
 	bool createDecalInternal(class decalProjector_c &proj);
