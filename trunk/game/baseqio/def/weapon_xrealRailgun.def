@@ -1,0 +1,34 @@
+
+// Vodin: Doom3 style .def file for Xreal Railgun weapon
+
+model weapon_xreal_railgun_world
+{
+	mesh models/testweapons/xrealRailgun/railgun.md5mesh
+}
+
+model weapon_xreal_railgun_view
+{
+	mesh						models/testweapons/xrealRailgun/railgun_view.md5mesh
+	
+	anim idle 					models/testweapons/xrealRailgun/railgun_view_idle.md5anim	
+	anim fire 					models/testweapons/xrealRailgun/railgun_view_fire.md5anim	
+	anim reload 				models/testweapons/xrealRailgun/railgun_view_reload.md5anim	
+	anim raise					models/testweapons/xrealRailgun/railgun_view_raise.md5anim
+	anim putaway				models/testweapons/xrealRailgun/railgun_view_lower.md5anim
+
+}
+entityDef weapon_xreal_railgun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"					"WP_RAILGUN"
+
+	"model_world"				"weapon_xreal_railgun_world"
+	"model_view"				"weapon_xreal_railgun_view"
+	
+	"weaponname"				"Xreal Railgun"
+	"clipSize"					"1"
+
+}

@@ -64,6 +64,12 @@ void Projectile::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"def_splash_damage")) {
 		// explosion (radius) damage def
 		def_splash_damage = value;
+	} else if(!stricmp(key,"explosionRadius")) {
+		setExplosionRadius(atof(value));
+	} else if(!stricmp(key,"explosionSpriteRadius")) {
+		setExplosionSpriteRadius(atof(value));
+	} else if(!stricmp(key,"explosionSpriteMaterial")) {
+		setExplosionSpriteMaterial(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}

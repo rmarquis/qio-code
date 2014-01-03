@@ -625,11 +625,11 @@ void ModelEntity::applyCentralImpulse(const vec3_c &impToAdd) {
 	this->body->applyCentralImpulse(impToAdd);
 }
 void ModelEntity::applyPointImpulse(const vec3_c &impToAdd, const vec3_c &pointAbs) {
-	///if(this->body == 0)
-	///	return;
-//	vec3_c pointLocal;
-	//this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
-//	this->body->applyPointImpulse(impToAdd,pointLocal);
+	if(this->body == 0)
+		return;
+	vec3_c pointLocal;
+	this->getMatrix().getInversed().transformPoint(pointAbs,pointLocal);
+	this->body->applyPointImpulse(impToAdd,pointLocal);
 }
 void ModelEntity::applyTorque(const vec3_c &torqueToAdd) {
 	if(this->body == 0)

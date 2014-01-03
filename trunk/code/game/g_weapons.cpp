@@ -36,7 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c g_showBulletTraces("g_showBulletTraces","0");
 
-void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
+void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, const char *markMaterial) {
 	trace_c tr;
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
@@ -44,7 +44,16 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	if(rf && g_showBulletTraces.getInt()) {
 		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
 	}
-	g_server->SendServerCommand(-1,va("test_bulletAttack gfx/damage/bullet_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	if(markMaterial == 0) {
+#if 0
+		// default Q3 mark material
+		markMaterial = "gfx/damage/bullet_mrk"
+#else
+		// default our mark material
+		markMaterial = "xrealBulletMark";
+#endif
+	}
+	g_server->SendServerCommand(-1,va("test_bulletAttack %s %f %f %f %f %f %f %i",markMaterial,muzzle.x,muzzle.y,muzzle.z,
 		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
 	if(tr.hasHit()) {
 		BaseEntity *h = tr.getHitEntity();
@@ -53,14 +62,20 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 		}
 	}
 } 
-void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
+void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, const railgunAttackMaterials_s *mats) {
 	trace_c tr;
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
 	G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
 
-	// TODO: clientside railgun effect?
-	g_server->SendServerCommand(-1,va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	railgunAttackMaterials_s defaultMats;
+	if(mats == 0) {
+		mats = &defaultMats;
+	}
+
+	//g_server->SendServerCommand(-1,va("doRailgunEffect railCore railDisc railExplosion gfx/damage/plasma_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+	g_server->SendServerCommand(-1,va("doRailgunEffect %s %s %s %s %f %f %f %f %f %f %i",
+		mats->railCore.c_str(),mats->railDisc.c_str(),mats->railExplosion.c_str(),mats->markMaterial.c_str(),muzzle.x,muzzle.y,muzzle.z,	
 		dir.x,dir.y,dir.z,baseSkip->getEntNum()));
 	if(tr.hasHit()) {
 		BaseEntity *h = tr.getHitEntity();
@@ -100,7 +115,7 @@ float G_randomFloat(float min, float max) {
     float range = max - min;  
     return (random*range) + min;
 }
-void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, u32 numBullets, float maxSpread, float spreadDist) {
+void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, u32 numBullets, float maxSpread, float spreadDist, const char *markMaterial) {
 	vec3_c u, r;
 	u = dir.getPerpendicular();
 	r.crossProduct(u,dir);
@@ -110,7 +125,7 @@ void G_MultiBulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *ba
 		vec3_c end = muzzle + dir * spreadDist + u * G_randomFloat(-maxSpread,maxSpread) + r * G_randomFloat(-maxSpread,maxSpread);
 		vec3_c newDir = (end - muzzle);
 		newDir.normalize();
-		G_BulletAttack(muzzle,newDir,baseSkip);
+		G_BulletAttack(muzzle,newDir,baseSkip,markMaterial);
 	}
 }
 

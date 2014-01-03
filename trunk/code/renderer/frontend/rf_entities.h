@@ -138,6 +138,7 @@ public:
 	virtual bool isQ3PlayerModel() const;
 	virtual bool isAnimated() const;
 	virtual bool isSprite() const;
+	virtual bool hasAnim(const char *animName) const;
 
 	u32 getSilChangeCount() const {
 		return absSilChangeCount;

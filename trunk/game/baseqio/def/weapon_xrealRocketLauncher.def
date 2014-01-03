@@ -19,8 +19,15 @@ model weapon_xreal_rocketlauncher_view
 }
 entityDef projectile_xreal_rocket
 {
-	mesh						models/testweapons/xrealRocketLauncher/rocketl.md3
+	"model"						models/testprojectiles/xrealMissile/missile.md3
 	"spawnclass"				"Projectile"
+	
+	"mtr_detonate"				"xrealBurnMark"
+	"decal_size"				"64"
+	"explosionRadius"			"64"
+	"explosionSpriteRadius"		"64"
+	"explosionSpriteMaterial"	"xrealRocketExplosion2"
+	
 }
 entityDef weapon_xreal_rocketlauncher
 {

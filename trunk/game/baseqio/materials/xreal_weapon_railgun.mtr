@@ -1,0 +1,23 @@
+models\testweapons\xrealrailgun\body
+{
+	diffuseMap		models\testweapons\xrealrailgun\body_diffuse
+	specularMap 		models\testweapons\xrealrailgun\body_spec
+	{
+		forceHighQuality
+		stage		normalMap
+		map		models\testweapons\xrealrailgun\body_NRM
+	}
+	{
+		blend 		add
+		map		models\testweapons\xrealrailgun\body_glo
+		colored
+	}
+}
+
+models\testweapons\xrealrailgun\bgf
+{
+	twosided
+	diffusemap		models\testweapons\xrealrailgun\bgf_diffuse
+	specularmap		models\testweapons\xrealrailgun\bgf_spec
+	normalmap		models\testweapons\xrealrailgun\bgf_NRM
+}

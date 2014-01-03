@@ -61,6 +61,8 @@ public:
 	virtual unsigned int getNumSurfaces() const = 0;
 	// returns the number of model animations (eg. for decl models)
 	virtual unsigned int getNumAnims() const = 0;
+	// check if the animation with given name is present
+	virtual bool hasAnim(const char *animName) const = 0;
 	// for keyframed models
 	//virtual void getTagOrientation(int tagNum, const struct singleAnimLerp_s &state, class matrix_c &out) = 0;
 	// for q3 player models

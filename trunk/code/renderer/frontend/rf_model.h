@@ -142,6 +142,8 @@ public:
 	}
 	virtual u32 getNumSurfaces() const;
 	virtual u32 getNumAnims() const;
+	virtual bool hasAnim(const char *animName) const;
+
 	inline void setHashNext(model_c *hn) {
 		this->hashNext = hn;
 	}

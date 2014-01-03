@@ -53,6 +53,10 @@ class Weapon : public ModelEntity {
 	// D3 muzzle flash lighting effect
 	vec3_c flashColor;
 	float flashRadius;
+	// per shot bullet count 
+	u32 shotBulletCount;
+	float maxSpread;
+	float spreadDist;
 protected:
 	safePtr_c<Player> owner;
 

@@ -42,6 +42,11 @@ enum quake3WeaponType_e {
 };
 Q3Weapon::Q3Weapon() {
 	q3WeaponType = EQ3WPN_BAD;
+	railMats = 0;
+}
+Q3Weapon::~Q3Weapon() {
+	if(railMats)
+		delete railMats;
 }
 void Q3Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"giTag")) {
@@ -59,6 +64,11 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 		} else if(!stricmp(value,"WP_RAILGUN")) {
 			q3WeaponType = EQ3WPN_RAILGUN;
 			this->setDelayBetweenShots(2000);
+			// use Quake3 railgun materials
+			//if(railMats == 0) {
+			//	railMats = new railgunAttackMaterials_s;
+			//}
+			//railMats->setupQuake3();
 		} else if(!stricmp(value,"WP_GRENADE_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_GRENADE_LAUNCHER;
 			this->setDelayBetweenShots(1000);
@@ -97,7 +107,7 @@ void Q3Weapon::doWeaponAttack() {
 	} else if(q3WeaponType == EQ3WPN_SHOTGUN) {
 		G_MultiBulletAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner, 12, 5, 100);
 	} else if(q3WeaponType == EQ3WPN_RAILGUN) {
-		G_RailGunAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner);
+		G_RailGunAttack(owner->getEyePos(), owner->getViewAngles().getForward(), owner, railMats);
 	} else if(q3WeaponType == EQ3WPN_GRENADE_LAUNCHER) {
 		Projectile *rocket = new Projectile;
 		rocket->setRenderModel("models/ammo/grenade1.md3");

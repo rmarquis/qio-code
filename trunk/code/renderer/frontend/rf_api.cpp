@@ -246,6 +246,7 @@ public:
 		RF_ClearModels();
 		RF_ShutdownDecals();
 		RF_ShutdownWater();
+		RF_ShutdownExplosions();
 		unloadMaterialSystem();
 		g_declMgr->onRendererShutdown();
 		AUTOCVAR_UnregisterAutoCvars();

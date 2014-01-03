@@ -1,0 +1,37 @@
+
+xrealBurnMark
+{
+	polygonOffset
+	sort decal
+	{
+		stage colorMap
+		map textures/xrealdecals/explo_burn01.tga
+		blendFunc GL_ZERO GL_ONE_MINUS_SRC_COLOR
+		vertexColor
+	}
+}
+
+xrealPlasmaMark
+{
+	polygonOffset
+	{
+		map textures/xrealdecals/particle_burn01.png
+		blendFunc GL_ZERO GL_ONE_MINUS_SRC_COLOR
+		vertexColor
+	}
+}
+
+
+
+xrealBulletMark
+{
+	polygonOffset
+	sort decal
+
+	{
+		stage colorMap
+		map gfx/xreal/damage/bullet_mrk.png
+		blendFunc GL_ZERO GL_ONE_MINUS_SRC_COLOR
+		vertexColor
+	}
+}

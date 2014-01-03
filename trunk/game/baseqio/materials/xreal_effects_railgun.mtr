@@ -1,0 +1,23 @@
+
+xrealRailDisc
+{
+// TODO: port it
+}
+
+xrealRailRing
+{
+// TODO: port it
+}
+
+xrealRailCore
+{
+	sort nearest
+	twoSided
+	{
+		map gfx/xreal/misc/railcorethin_mono.tga
+		blend add
+		//vertexColor
+		colored
+		scroll time * -2,  0
+	}
+}

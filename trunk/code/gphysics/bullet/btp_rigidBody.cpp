@@ -121,9 +121,13 @@ void bulletRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 	bulletRigidBody->activate(true);
 	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_BULLET).floatPtr());
 }
-void bulletRigidBody_c::applyTorque(const class vec3_c torqueToAdd) {
+void bulletRigidBody_c::applyTorque(const class vec3_c &torqueToAdd) {
 	bulletRigidBody->activate(true);
 	bulletRigidBody->applyTorque((torqueToAdd).floatPtr());
+}
+void bulletRigidBody_c::applyPointImpulse(const class vec3_c &val, const class vec3_c &point) {
+	bulletRigidBody->activate(true);
+	bulletRigidBody->applyImpulse((val*QIO_TO_BULLET).floatPtr(),(point*QIO_TO_BULLET).floatPtr());
 }
 // linear velocity access (in Quake units)
 const class vec3_c bulletRigidBody_c::getLinearVelocity() const {

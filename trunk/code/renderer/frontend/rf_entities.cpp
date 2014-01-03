@@ -37,6 +37,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelDeclAPI.h>
 #include <api/kfModelAPI.h>
 #include <api/q3PlayerModelDeclAPI.h>
+#include <api/vfsAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
@@ -381,6 +382,17 @@ bool rEntityImpl_c::isSprite() const {
 		return false;
 	if(model->isSprite())
 		return true;
+	return false;
+}
+bool rEntityImpl_c::hasAnim(const char *animName) const {
+	if(model == 0)
+		return false;
+	if(model->hasAnim(animName))
+		return true;
+	if(strchr(animName,'.')) {
+		// FIXME: this might be slow
+		return g_vfs->FS_FileExists(animName);
+	}
 	return false;
 }
 rModelAPI_i *rEntityImpl_c::getModel() const {

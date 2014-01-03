@@ -42,18 +42,21 @@ Weapon_PhysGun::Weapon_PhysGun() {
 	phHoldDist = 60.f;
 }
 void Weapon_PhysGun::postSpawn() {
-	// see if we can use Half Life 2 physgun model
-	if(g_vfs->FS_FileExists("models/weapons/w_physics.mdl")) {
-		this->setRenderModel("models/weapons/w_physics.mdl");
-		bUseDynamicConvexForTrimeshCMod = true;
-		this->setColModel("models/weapons/w_physics.mdl");
-		// "v_*" is a viewmodel, we should use it instead of worldmodel,
-		// but it has a lot of dangling edges and breaks stencil shadows
-		//this->setViewModel("models/weapons/v_physcannon.mdl");
-	} else {
-		this->setRenderModel("models/testweapons/smallGun.obj");
-		bUseDynamicConvexForTrimeshCMod = true;
-		this->setColModel("models/testweapons/smallGun.map");
+	// old hardcoded fix
+	if(this->getRenderModelName()[0] == 0) {
+		// see if we can use Half Life 2 physgun model
+		if(g_vfs->FS_FileExists("models/weapons/w_physics.mdl")) {
+			this->setRenderModel("models/weapons/w_physics.mdl");
+			bUseDynamicConvexForTrimeshCMod = true;
+			this->setColModel("models/weapons/w_physics.mdl");
+			// "v_*" is a viewmodel, we should use it instead of worldmodel,
+			// but it has a lot of dangling edges and breaks stencil shadows
+			//this->setViewModel("models/weapons/v_physcannon.mdl");
+		} else {
+			this->setRenderModel("models/testweapons/smallGun.obj");
+			bUseDynamicConvexForTrimeshCMod = true;
+			this->setColModel("models/testweapons/smallGun.map");
+		}
 	}
 	ModelEntity::postSpawn();
 }

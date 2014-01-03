@@ -96,6 +96,8 @@ int			entitySurface[ MAX_MAP_DRAW_SURFS ];
 vec3_t		sunDirection = { 0.45, 0.3, 0.9 };
 vec3_t		sunLight = { 100, 100, 50 };
 
+// V: "light" field multiplier
+float g_lightScale = 1.f;
 
 
 typedef struct {
@@ -509,6 +511,10 @@ void CreateEntityLights (void)
 			intensity = FloatForKey (e, "_light");
 		if (!intensity)
 			intensity = 300;
+		// V: apply global light scale
+		// (used to tune map lighting without changing each light value separately)
+		intensity *= g_lightScale;
+
 		_color = ValueForKey (e, "_color");
 		if (_color && _color[0])
 		{
@@ -2144,9 +2150,13 @@ qboolean basePathSetManually;
 	ParseEntities();
 
 	value = ValueForKey( &entities[0], "gridsize" );
-	if (strlen(value)) {
+	if (value && value[0]) {
 		sscanf( value, "%f %f %f", &gridSize[0], &gridSize[1], &gridSize[2] );
 		_printf("grid size = {%1.1f, %1.1f, %1.1f}\n", gridSize[0], gridSize[1], gridSize[2]);
+	}
+	value = ValueForKey( &entities[0], "qiomap_lightScale" );
+	if(value && value[0]) {
+		g_lightScale = atof(value);
 	}
 
 	CreateFilters();

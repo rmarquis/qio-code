@@ -1,0 +1,83 @@
+
+
+// this material is using conditional stages instead of "animMap"
+xrealRocketExplosion
+{
+	twoSided
+	
+	{
+		if((time * 13) % 13 == 0)
+		map textures/xrealweaphits/rlboom_0.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 1)
+		map textures/xrealweaphits/rlboom_1.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 2)
+		map textures/xrealweaphits/rlboom_2.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 3)
+		map textures/xrealweaphits/rlboom_3.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 4)
+		map textures/xrealweaphits/rlboom_4.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 5)
+		map textures/xrealweaphits/rlboom_5.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 6)
+		map textures/xrealweaphits/rlboom_6.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 7)
+		map textures/xrealweaphits/rlboom_7.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 8)
+		map textures/xrealweaphits/rlboom_8.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 9)
+		map textures/xrealweaphits/rlboom_9.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 10)
+		map textures/xrealweaphits/rlboom_10.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 11)
+		map textures/xrealweaphits/rlboom_11.png
+		blend add
+	}
+	{
+		if((time * 13) % 13 == 12)
+		map textures/xrealweaphits/rlboom_12.png
+		blend add
+	}
+}
+
+// the same material as above but using "animMap"
+xrealRocketExplosion2
+{
+	twoSided
+	{
+		blend add
+		animmap 5 textures/xrealweaphits/rlboom_0.png textures/xrealweaphits/rlboom_1.png textures/xrealweaphits/rlboom_2.png textures/xrealweaphits/rlboom_3.png textures/xrealweaphits/rlboom_4.png textures/xrealweaphits/rlboom_5.png textures/xrealweaphits/rlboom_6.png textures/xrealweaphits/rlboom_7.png textures/xrealweaphits/rlboom_8.png textures/xrealweaphits/rlboom_9.png textures/xrealweaphits/rlboom_10.png textures/xrealweaphits/rlboom_11.png textures/xrealweaphits/rlboom_12.png
+	}
+}

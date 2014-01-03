@@ -30,8 +30,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Q3Weapon : public Weapon {
 	enum quake3WeaponType_e q3WeaponType;
+	struct railgunAttackMaterials_s *railMats;
 public:
 	Q3Weapon();
+	~Q3Weapon();
 
 	DECLARE_CLASS( Q3Weapon );
 

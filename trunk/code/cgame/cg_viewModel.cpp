@@ -318,7 +318,11 @@ void CG_RunViewModel() {
 		if(cg_printViewModelAnimName.getInt()) {
 			g_core->Print("ViewModelAnim: %s, flags %i\n",animName,viewModelAnimFlags);
 		}
-		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
+		if(cg_viewModelEntity->hasAnim(animName)) {
+			cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
+		} else {
+			g_core->RedWarning("ViewModel has no animation %s\n",animName);
+		}
 	}
 }
 

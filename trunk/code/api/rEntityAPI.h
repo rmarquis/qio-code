@@ -60,6 +60,8 @@ public:
 	virtual bool isQ3PlayerModel() const = 0;
 	virtual bool isSprite() const = 0;
 
+	virtual bool hasAnim(const char *animName) const = 0;
+
 	// trace must be transformed into entity coordinates before calling this function.
 	// Returns true if a collision occured
 	virtual bool rayTraceLocal(class trace_c &tr) const = 0;

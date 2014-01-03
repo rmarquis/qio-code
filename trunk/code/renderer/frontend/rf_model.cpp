@@ -83,6 +83,12 @@ u32 model_c::getNumAnims() const {
 	}
 	return 0;
 }
+bool model_c::hasAnim(const char *animName) const {
+	if(type == MOD_DECL) {
+		return declModel->hasAnim(animName);
+	}
+	return 0;	
+}
 void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, const vec3_c *extraRGB) {
 	if(0) {
 		g_core->Print("model_c::addModelDrawCalls: model %s (%i), sfFlags ptr %i\n",this->getName(),this,extraSfFlags);

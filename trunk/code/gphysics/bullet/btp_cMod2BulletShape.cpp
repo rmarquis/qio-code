@@ -49,6 +49,7 @@ btConvexHullShape *BT_ConvexHullShapeFromVerticesArray(const btAlignedObjectArra
 #if 1
 	// This is not needed by physics code itself, but its needed by bt debug drawing.
 	// (without it convex shapes edges are messed up)
+	// This is causing a Bullet assert hit (related to edges) on 20kdm2.bsp
 	shape->initializePolyhedralFeatures();
 #endif
 	return shape;

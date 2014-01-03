@@ -306,6 +306,11 @@ public:
 			return 0;
 		return anims[localIndex].getAnim();
 	}
+	virtual bool hasAnim(const char *animName) const {
+		if(getSkelAnimAPIForAlias(animName))
+			return true;
+		return false;
+	}
 	virtual int getAnimationTimeMSec(const char *alias) const {
 		const animDef_c *ad = findAnimDef(alias);
 		if(ad == 0)

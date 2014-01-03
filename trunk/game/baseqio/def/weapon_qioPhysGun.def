@@ -1,0 +1,18 @@
+
+// Vodin: for testing physics
+entityDef weapon_qio_physGun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"9 -7 -7"
+	
+	"spawnclass"				"weapon_physgun"
+
+	"model_world"	"models/testweapons/qioflashlight/qioflashlight.obj"
+	"model_view"				"models/testweapons/qioflashlight/qioflashlight.obj"
+	
+	"weaponname"				"Qio physgun"
+
+}
+

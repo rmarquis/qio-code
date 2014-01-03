@@ -54,6 +54,7 @@ public:
 	virtual int getAnimIndexForAnimAlias(const char *alias) const = 0;
 	virtual const class skelAnimAPI_i *getSkelAnimAPIForAlias(const char *alias) const = 0;
 	virtual const class skelAnimAPI_i *getSkelAnimAPIForLocalIndex(int localIndex) const = 0;
+	virtual bool hasAnim(const char *animName) const = 0;
 	virtual int getAnimationTimeMSec(const char *alias) const = 0;
 	// debug output
 	virtual void printBoneNames() const = 0;

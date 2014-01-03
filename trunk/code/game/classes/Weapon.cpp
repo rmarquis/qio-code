@@ -52,6 +52,9 @@ Weapon::Weapon() {
 	reloadTime = 0;
 	flashColor.set(1,1,1);
 	flashRadius = 100.f;
+	shotBulletCount = 1;
+	spreadDist = 1000.f;
+	maxSpread = 1.f;
 }
 Weapon::~Weapon() {
 
@@ -128,6 +131,12 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"flashRadius")) {
 		// example usage: "flashRadius"	"120"
 		flashRadius = atof(value);
+	} else if(!stricmp(key,"shotBulletCount")) {
+		shotBulletCount = atoi(value);
+	} else if(!stricmp(key,"maxSpread")) {
+		maxSpread = atof(value);
+	} else if(!stricmp(key,"spreadDist")) {
+		spreadDist = atof(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -201,7 +210,8 @@ void Weapon::doWeaponAttack() {
 	if(def_projectile.size()) {
 		G_FireProjectile(def_projectile.c_str(),muzzlePos,muzzleDir,skip);
 	} else {
-		G_BulletAttack(muzzlePos,muzzleDir,skip);
+		//G_BulletAttack(muzzlePos,muzzleDir,skip);
+		G_MultiBulletAttack(muzzlePos,muzzleDir,skip,shotBulletCount,maxSpread,spreadDist);
 	}
 }
 void Weapon::doWeaponAttackSecondary() {

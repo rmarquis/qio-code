@@ -29,5 +29,8 @@ entityDef weapon_xreal_shotgun
 	
 	"weaponname"				"Xreal Shotgun"
 	"clipSize"					"1"
+	"spreadDist"				"100"
+	"maxSpread"					"5"
+	"shotBulletCount"			"4"
 
 }

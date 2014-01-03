@@ -195,18 +195,19 @@ static void CG_DoExplosionEffect() {
 	rf->addExplosion(p,radius,matName);
 }
 static void CG_DoRailgunEffect() {
-//	va("doRailgunEffect railCore railDisc railExplosion %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
+//	va("doRailgunEffect railCore railDisc railExplosion gfx/damage/plasma_mrk %f %f %f %f %f %f %i",muzzle.x,muzzle.y,muzzle.z,
 	vec3_c p, d;
 	str coreMaterialName = CG_Argv(1);
 	str discMaterialName = CG_Argv(2);
 	str explosionMaterialName = CG_Argv(3);
-	p.x = atof(CG_Argv(4));
-	p.y = atof(CG_Argv(5));
-	p.z = atof(CG_Argv(6));
-	d.x = atof(CG_Argv(7));
-	d.y = atof(CG_Argv(8));
-	d.z = atof(CG_Argv(9));
-	int skipEntityNum = atoi(CG_Argv(10));
+	str decalMaterialName = CG_Argv(4);
+	p.x = atof(CG_Argv(5));
+	p.y = atof(CG_Argv(6));
+	p.z = atof(CG_Argv(7));
+	d.x = atof(CG_Argv(8));
+	d.y = atof(CG_Argv(9));
+	d.z = atof(CG_Argv(10));
+	int skipEntityNum = atoi(CG_Argv(11));
 	CG_Printf("CG_DoRailgunEffect: from %f %f %f, dir %f %f %f\n",p.x,p.y,p.z,d.x,d.y,d.z);
 	trace_c tr;
 	tr.setupRay(p,d*100000.f);
@@ -219,7 +220,7 @@ static void CG_DoRailgunEffect() {
 
 	CG_AddBulletTracer(tr.getStartPos()-vec3_c(0,0,12),tr.getHitPos(),32.f,coreMaterial,1000);
 
-	mtrAPI_i *decalMaterial = g_ms->registerMaterial("gfx/damage/plasma_mrk");
+	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 32.f;
 	centity_s *hit = tr.getHitCGEntity();
 	if(hit == &cg_entities[ENTITYNUM_WORLD]) {

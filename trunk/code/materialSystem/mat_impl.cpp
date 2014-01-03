@@ -865,6 +865,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("stage")) {
 					if(p.atWord("diffuseMap") || p.atWord("colorMap")) {
 						stage->setStageType(ST_COLORMAP);
+					} else if(p.atWord("normalMap")) {
+						// It's used in Xreal railgun
+						stage->setStageType(ST_BUMPMAP);
 					} else {
 						u32 line = p.getCurrentLineNumber();
 						str token = p.getToken();

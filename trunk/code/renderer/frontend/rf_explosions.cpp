@@ -131,6 +131,10 @@ void RF_AddExplosionDrawCalls() {
 	}
 }
 
+void RF_ShutdownExplosions() {
+	rf_explosions.clear();
+}
+
 // console command for testing explosion effect
 static void RF_TestExplosion_f() {
 	str matName;

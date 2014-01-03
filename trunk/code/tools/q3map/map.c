@@ -1057,6 +1057,11 @@ ParseMapEntity
 */
 qboolean	ParseMapEntity (void) {
 	epair_t		*e;
+	bspbrush_t *b;
+	vec3_t mins;
+	vec3_t maxs;
+	vec3_t origin;
+	char string[256];
 
 	if (!GetToken (qtrue))
 		return qfalse;
@@ -1125,6 +1130,28 @@ qboolean	ParseMapEntity (void) {
 	// for all the brushes in the entity
 	if (mapent->origin[0] || mapent->origin[1] || mapent->origin[2]) {
 		AdjustBrushesForOrigin( mapent );
+	} else {
+		// automatically centerize all the brushmodels
+		if(mapent->brushes && num_entities > 1) {
+			b = mapent->brushes;
+			VectorCopy(b->mins,mins);
+			VectorCopy(b->maxs,maxs);
+			while(b) {
+				AddPointToBounds(b->mins,mins,maxs);
+				AddPointToBounds(b->maxs,mins,maxs);
+
+				b = b->next;
+			}
+			VectorAdd (mins, maxs, origin);
+			VectorScale (origin, 0.5, origin);
+
+			sprintf (string, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+			SetKeyValue (&entities[num_entities - 1], "origin", string);
+
+			VectorCopy (origin, entities[num_entities - 1].origin);
+
+			AdjustBrushesForOrigin( mapent );
+		}
 	}
 
   // group_info entities are just for editor grouping
