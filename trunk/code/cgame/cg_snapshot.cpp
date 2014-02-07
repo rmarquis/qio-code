@@ -66,6 +66,7 @@ static void CG_TransitionLight(centity_t *cent) {
 	}
 	if(cent->rLight == 0) {
 		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",cent->currentState.number);
+		// it still happens sometimes, let's fix it here for now.
 #if 0
 		return;
 #else
@@ -78,7 +79,12 @@ static void CG_TransitionLight(centity_t *cent) {
 static void CG_TransitionModel(centity_t *cent) {
 	if(cent->rEnt == 0) {
 		g_core->RedWarning("CG_TransitionModel: found entity without rEntity (entity %i)\n",cent->currentState.number);
+		// it still happens sometimes, let's fix it here for now.
+#if 0
 		return;
+#else
+		cent->rEnt = rf->allocEntity();
+#endif
 	}
 	cent->rEnt->setOrigin(cent->currentState.origin);
 	cent->rEnt->setAngles(cent->currentState.angles);
