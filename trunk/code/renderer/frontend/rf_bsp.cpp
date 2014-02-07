@@ -62,6 +62,7 @@ aCvar_c rf_bsp_showAreaPortals("rf_bsp_showAreaPortals","0");
 aCvar_c rf_bsp_cullBackFacingAreaPortals("rf_bsp_cullBackFacingAreaPortals","1");
 aCvar_c rf_bsp_useBSPForTracing("rf_bsp_useBSPForTracing","1");
 aCvar_c rf_bsp_skipAreaPortals("rf_bsp_skipAreaPortals","0");
+aCvar_c rf_bsp_printCamera2PortalDist("rf_bsp_printCamera2PortalDist","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -1851,6 +1852,9 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 				if(d < 0)
 					continue;
 			}
+			if(rf_bsp_printCamera2PortalDist.getInt()) {
+				g_core->Print("Area %i - portal %i - dist %f\n",areaNum,portalNumber,d);
+			}
 		}
 		// adjust the frustum, so addAreaDrawCalls_r will never loop and cause a stack overflow...
 		frustumExt_c adjusted;
@@ -1873,6 +1877,7 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 			pb.portalVisCount = this->portalVisCount;
 			pb.visitCount = 0;
 		} else {
+			// avoid endless loops (that would cause stack overflow)
 			if(pb.visitCount == MAX_PORTAL_VISIT_COUNT) {
 				g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
 				continue;
