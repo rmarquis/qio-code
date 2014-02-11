@@ -284,6 +284,7 @@ void MAT_ScanForFiles(const char *path, const char *ext) {
 	g_vfs->FS_FreeFileList(fnames);
 }
 void MAT_ScanForMaterialFiles() {
+	g_core->Print("Magic sizeof(mtrIMPL_c) number: %i\n",sizeof(mtrIMPL_c));
 	MAT_ScanForFiles("scripts/",".shader");
 	MAT_ScanForFiles("materials/",".mtr");
 }

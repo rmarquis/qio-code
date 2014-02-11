@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <api/rbAPI.h>
 #include <api/imgAPI.h>
+#include <api/coreAPI.h>
 #include <shared/str.h>
 #include <shared/hashTableTemplate.h>
 #include <shared/textureWrapMode.h>
@@ -114,6 +115,7 @@ static textureIMPL_c *mat_defaultTexture = 0;
 
 class textureAPI_i *MAT_GetDefaultTexture() {
 	if(mat_defaultTexture == 0) {
+		g_core->Print("Magic sizeof(textureIMPL_c) number: %i\n",sizeof(textureIMPL_c));
 		mat_defaultTexture = new textureIMPL_c;
 		mat_defaultTexture->setName("default");
 		byte *data;
@@ -178,5 +180,11 @@ void MAT_FreeAllTextures() {
 		textureIMPL_c *t = mat_textures[i];
 		delete t;
 		mat_textures[i] = 0;
+	}
+	mat_textures.clear();
+	// free the default, build-in image as well
+	if(mat_defaultTexture) {
+		delete mat_defaultTexture;
+		mat_defaultTexture = 0;
 	}
 }

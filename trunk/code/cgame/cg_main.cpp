@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
+#include "cg_emitter_base.h"
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
 #include <api/cvarAPI.h>
@@ -357,6 +358,21 @@ Called before every level change or subsystem restart
 =================
 */
 void CG_Shutdown( void ) {
+	for(u32 i = 0; i < MAX_GENTITIES; i++) {
+		centity_s *cent = &cg_entities[i];
+		if(cent->rEnt) {
+			rf->removeEntity(cent->rEnt);
+			cent->rEnt = 0;
+		}
+		if(cent->rLight) {
+			rf->removeLight(cent->rLight);
+			cent->rLight = 0;
+		}
+		if(cent->emitter) {
+			delete cent->emitter;
+			cent->emitter = 0;
+		}
+	}
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
 	// unlink autocvars
