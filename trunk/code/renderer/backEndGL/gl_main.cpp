@@ -102,6 +102,7 @@ static aCvar_c rb_ignoreDoom3AlphaTest("rb_ignoreDoom3AlphaTest","0");
 static aCvar_c rb_printMaterialDepthWrite("rb_printMaterialDepthWrite","0");
 static aCvar_c rb_forceTwoSided("rb_forceTwoSided","0");
 static aCvar_c rb_printLightingPassDrawCalls("rb_printLightingPassDrawCalls","0");
+static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1645,6 +1646,7 @@ drawOnlyLightmap:
 					pf.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 					pf.isSpotLight = (curLight->getLightType() == LT_SPOTLIGHT);
+					pf.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);

@@ -46,6 +46,7 @@ struct glslPermutationFlags_s {
 	// extra per-surface material colo
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 	bool isSpotLight; // #define LIGHT_IS_SPOTLIGHT
+	bool enableShadowMappingBlur; // #define ENABLE_SHADOW_MAPPING_BLUR
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR

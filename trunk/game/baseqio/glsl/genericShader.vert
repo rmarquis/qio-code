@@ -64,7 +64,7 @@ void main() {
 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;
 	dir = normalize(dir);
 	float dotValue = dot(gl_Normal,dir);
-	float twoDot = 2.f * dotValue;
+	float twoDot = 2.0 * dotValue;
 
 	vec3 reflected;
 	reflected.x = gl_Normal.x * twoDot - dir.x;
@@ -73,8 +73,8 @@ void main() {
 
 	vec4 calcTexCoord;
 
-	calcTexCoord.x = 0.5f + reflected.y * 0.5f;
-	calcTexCoord.y = 0.5f - reflected.z * 0.5f;
+	calcTexCoord.x = 0.5 + reflected.y * 0.5;
+	calcTexCoord.y = 0.5 - reflected.z * 0.5;
 	
 	gl_TexCoord[0] = gl_TextureMatrix[0] * calcTexCoord;
 #else

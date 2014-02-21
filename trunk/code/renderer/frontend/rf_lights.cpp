@@ -604,7 +604,7 @@ void RFL_AddLightInteractionsDrawCalls() {
 		light->recalcLightInteractionsWithDynamicEntities();
 
 		// FIXME: right now it's causing strange shadows flickering
-	//	if(light->getBNoShadows() == false) 
+		if(light->getBNoShadows() == false) 
 		{
 			// add shadow drawcalls (but only if shadow casting is enabled for this light)
 			if(RF_IsUsingShadowVolumes()) {

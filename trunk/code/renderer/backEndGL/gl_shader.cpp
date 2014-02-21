@@ -177,6 +177,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.isSpotLight) {
 		out.append("#define LIGHT_IS_SPOTLIGHT\n");
 	}
+	if(p.enableShadowMappingBlur) {
+		out.append("#define ENABLE_SHADOW_MAPPING_BLUR\n");
+	}
 	if(p.debug_ignoreAngleFactor) {
 		out.append("#define DEBUG_IGNOREANGLEFACTOR\n");
 	}

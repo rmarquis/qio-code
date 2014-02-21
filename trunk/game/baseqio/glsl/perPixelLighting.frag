@@ -62,24 +62,6 @@ uniform sampler2DShadow shadowMap3;
 uniform sampler2DShadow shadowMap4;
 uniform sampler2DShadow shadowMap5;
 
-float calcShadow0() {
-   return shadow2DProj(shadowMap0, shadowCoord0).s;
-}
-float calcShadow1() {
-   return shadow2DProj(shadowMap1, shadowCoord1).s;
-}
-float calcShadow2() {
-   return shadow2DProj(shadowMap2, shadowCoord2).s;
-}
-float calcShadow3() {
-   return shadow2DProj(shadowMap3, shadowCoord3).s;
-}
-float calcShadow4() {
-   return shadow2DProj(shadowMap4, shadowCoord4).s;
-}
-float calcShadow5() {
-   return shadow2DProj(shadowMap5, shadowCoord5).s;
-}
 int cubeSide(vec3 v) {
 	vec3 normals[] = { vec3(1,0,0), vec3(-1,0,0),
 						vec3(0,1,0), vec3(0,-1,-0),
@@ -95,24 +77,70 @@ int cubeSide(vec3 v) {
 	}
 	return ret;
 }
+#ifdef ENABLE_SHADOW_MAPPING_BLUR
+float doShadowBlurSample(sampler2DShadow map, vec4 coord)
+{
+	float shadow = 0.0;
+	
+	float pixelOffset = 1.0/2048.0;
+	//float samples = 0;
+	// avoid counter shadow
+	if (coord.w > 1.0)
+	{
+		float x,y;
+		for (y = -1.5; y <=1.5; y+=1.0)
+	    {
+			for (x = -1.5; x <=1.5; x+=1.0)
+		    {
+				//if(
+				//continue;
+				vec4 c = coord + vec4(x * pixelOffset * coord.w, y * pixelOffset * coord.w, 0, 0.0);
+				shadow += shadow2DProj(map, c ).w;
+				//samples += 1.0;
+			}
+		}	
+		//shadow /= samples;
+		shadow /= 16;
+	}
+	return shadow;
+}
+#endif
 float computeShadow(vec3 lightToVertDirection) {
 	float shadow = 0.0;
   	int side = cubeSide(lightToVertDirection);
+#ifndef ENABLE_SHADOW_MAPPING_BLUR
 	if (side == 0) {
-		shadow += calcShadow0();
+		shadow += shadow2DProj(shadowMap0, shadowCoord0).s;
 	} else if(side == 1) {
-		shadow += calcShadow1();
+		shadow += shadow2DProj(shadowMap1, shadowCoord1).s;
 	} else if(side == 2) {
-		shadow += calcShadow2();
+		shadow += shadow2DProj(shadowMap2, shadowCoord2).s;
 	} else if(side == 3) {
-		shadow += calcShadow3();
+		shadow += shadow2DProj(shadowMap3, shadowCoord3).s;
 	} else if(side == 4) {
-		shadow += calcShadow4();
+		shadow += shadow2DProj(shadowMap4, shadowCoord4).s;
 	} else if(side == 5) {
-		shadow += calcShadow5();
+		shadow += shadow2DProj(shadowMap5, shadowCoord5).s;
 	} else {
 		// never gets here
 	}
+#else
+	if (side == 0) {
+		shadow += doShadowBlurSample(shadowMap0, shadowCoord0);
+	} else if(side == 1) {
+		shadow += doShadowBlurSample(shadowMap1, shadowCoord1);
+	} else if(side == 2) {
+		shadow += doShadowBlurSample(shadowMap2, shadowCoord2);
+	} else if(side == 3) {
+		shadow += doShadowBlurSample(shadowMap3, shadowCoord3);
+	} else if(side == 4) {
+		shadow += doShadowBlurSample(shadowMap4, shadowCoord4);
+	} else if(side == 5) {
+		shadow += doShadowBlurSample(shadowMap5, shadowCoord5);
+	} else {
+		// never gets here
+	}
+#endif
 	return shadow;
 }
 #endif // SHADOW_MAPPING_POINT_LIGHT
