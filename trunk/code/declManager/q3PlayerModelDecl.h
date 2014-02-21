@@ -81,6 +81,7 @@ public:
 	}
 
 	virtual u32 getNumTotalSurfaces() const;
+	virtual u32 getTotalTriangleCount() const;
 	virtual const class kfModelAPI_i *getLegsModel() const {
 		return legsModel;
 	}

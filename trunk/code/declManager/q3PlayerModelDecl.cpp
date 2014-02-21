@@ -45,6 +45,19 @@ u32 q3PlayerModelDecl_c::getNumTotalSurfaces() const {
 	}
 	return ret;
 }
+u32 q3PlayerModelDecl_c::getTotalTriangleCount() const {
+	u32 ret = 0;
+	if(legsModel) {
+		ret += legsModel->getTotalTriangleCount();
+	}
+	if(torsoModel) {
+		ret += torsoModel->getTotalTriangleCount();
+	}
+	if(headModel) {
+		ret += headModel->getTotalTriangleCount();
+	}
+	return ret;
+}
 const struct q3AnimDef_s *q3PlayerModelDecl_c::getAnimCFGForIndex(u32 localAnimIndex) const {
 	if(cfg == 0)
 		return 0;

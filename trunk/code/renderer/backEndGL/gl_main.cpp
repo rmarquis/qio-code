@@ -1017,7 +1017,12 @@ public:
 	bool bDrawOnlyOnDepthBuffer;
 	bool bDrawingShadowVolumes;
 	virtual void setCurLight(const class rLightAPI_i *light) {
+		if(this->curLight == light)
+			return;
 		this->curLight = light;
+		// clear stencil buffer after changing the light
+		// FIXME: do it only if rf_shadows==1?
+		glClear(GL_STENCIL_BUFFER_BIT);
 	}
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
@@ -1704,6 +1709,10 @@ drawOnlyLightmap:
 			drawCurIBO();
 		}
 		if(rb_showTris.getInt()) {
+			// temporary disable stencil test for drawing triangle outlines
+			if(stencilTestEnabled) {
+				glDisable(GL_STENCIL_TEST);
+			}
 			this->unbindMaterial();
 			this->bindShader(0);
 			this->setColor4f(1,1,1,1);
@@ -1714,8 +1723,16 @@ drawOnlyLightmap:
 			if(rb_showTris.getInt()==1)
 				setDepthRange( 0, 1 ); 
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+			// restore it back
+			if(stencilTestEnabled) {
+				glEnable(GL_STENCIL_TEST);
+			}
 		}
 		if(rb_showNormals.getInt()) {
+			// temporary disable stencil test for drawing normal vectors
+			if(stencilTestEnabled) {
+				glDisable(GL_STENCIL_TEST);
+			}
 			this->unbindMaterial();
 			this->bindShader(0);
 			this->setColor4f(1,1,1,1);
@@ -1734,6 +1751,10 @@ drawOnlyLightmap:
 			if(rb_showNormals.getInt()==2)
 				setDepthRange( 0, 1 ); 
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+			// restore it back
+			if(stencilTestEnabled) {
+				glEnable(GL_STENCIL_TEST);
+			}
 		}
 	}
 	virtual void drawElementsWithSingleTexture(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices, class textureAPI_i *tex) {
@@ -1767,7 +1788,9 @@ drawOnlyLightmap:
 		disableTexCoordArrayForTexSlot(0);
 		unbindVertexBuffer();
 		unbindMaterial();
-        glClear(GL_STENCIL_BUFFER_BIT); // We clear the stencil buffer
+		// stencil buffer is now cleared when a current light is changed
+		// (that's because there might be some light that has no shadows)
+        //glClear(GL_STENCIL_BUFFER_BIT);
 		if(rb_showShadowVolumes.getInt()) {
 			setColor4f(1,1,0,0.5f);
 			setBlendFunc(BM_ONE,BM_ONE);

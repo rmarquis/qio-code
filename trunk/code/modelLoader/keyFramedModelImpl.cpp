@@ -45,6 +45,9 @@ const rIndexBuffer_c *kfSurf_c::getIBO() const {
 u32 kfSurf_c::getNumVertices() const {
 	return texCoords.size();
 }
+u32 kfSurf_c::getNumTriangles() const {
+	return indices.getNumTriangles();
+}
 void kfSurf_c::copyTexCoords(void *outTC, u32 outStride) const {
 	byte *p = (byte*)outTC;
 	u32 numTexCoords = texCoords.size();

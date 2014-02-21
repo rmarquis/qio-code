@@ -191,6 +191,7 @@ public:
 	virtual bool getTagOrientation(int tagNum, class matrix_c &out) const;
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const;
 	virtual void printBoneNames() const;
+	virtual u32 getTotalTriangleCount() const;
 
 	void clear();
 

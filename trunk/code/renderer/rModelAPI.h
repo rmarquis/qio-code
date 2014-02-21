@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RMODELAPI_H__
 #define __RMODELAPI_H__
 
+#include <shared/typedefs.h>
+
 class rModelAPI_i {
 public:
 	virtual const char *getName() const = 0;
@@ -73,6 +75,8 @@ public:
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const = 0;
 	// debug output (this should work for tags as well)
 	virtual void printBoneNames() const = 0;
+	// returns the total number of triangles in model
+	virtual u32 getTotalTriangleCount() const = 0;
 };
 
 #endif // __RMODELAPI_H__

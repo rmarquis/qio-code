@@ -55,6 +55,9 @@ friend class skelModelIMPL_c;
 	virtual u32 getNumIndices() const {
 		return indices.size();
 	}
+	virtual u32 getNumTriangles() const {
+		return indices.size()/3;
+	}
 	// raw data access
 	virtual const skelVert_s *getVerts() const {
 		return verts.getArray();
@@ -107,6 +110,13 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	}
 	virtual u32 getNumBones() const {
 		return bones.size();
+	}
+	virtual u32 getTotalTriangleCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumTriangles();
+		}
+		return ret;
 	}
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const {
 		return &surfs[surfNum];

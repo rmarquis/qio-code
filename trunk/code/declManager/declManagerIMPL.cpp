@@ -251,6 +251,16 @@ public:
 		}
 		return 0;
 	}
+	virtual u32 getTotalTriangleCount() {
+		precache();
+		if(skelModel) {
+			return skelModel->getTotalTriangleCount();
+		}
+		if(q3PlayerModel) {
+			return q3PlayerModel->getTotalTriangleCount();
+		}
+		return 0;
+	}
 	virtual u32 getNumBones() {
 		precache();
 		if(skelModel) {

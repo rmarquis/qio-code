@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class q3PlayerModelAPI_i {
 public:
 	virtual u32 getNumTotalSurfaces() const = 0;
+	virtual u32 getTotalTriangleCount() const = 0;
 	virtual const class kfModelAPI_i *getLegsModel() const = 0;
 	virtual const class kfModelAPI_i *getTorsoModel() const = 0;
 	virtual const class kfModelAPI_i *getHeadModel() const = 0;

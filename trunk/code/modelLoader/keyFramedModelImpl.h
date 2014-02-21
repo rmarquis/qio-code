@@ -63,6 +63,7 @@ public:
 	//virtual class mtrAPI_i *getMaterial() const;
 	virtual const rIndexBuffer_c *getIBO() const;
 	virtual u32 getNumVertices() const;
+	virtual u32 getNumTriangles() const;
 	virtual void copyTexCoords(void *outTC, u32 outStride) const;
 	virtual void instanceSingleFrame(void *outXYZ, u32 outStride, u32 frameNum) const;
 	virtual void instance(void *outXYZ, u32 outStride, u32 from, u32 to, float lerp) const;
@@ -97,6 +98,13 @@ public:
 	}
 	virtual u32 getNumTags() const {
 		return tagNames.size();
+	}
+	virtual u32 getTotalTriangleCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumTriangles();
+		}
+		return ret;
 	}
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const {
 		return &surfs[surfNum];

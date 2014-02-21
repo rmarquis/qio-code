@@ -468,7 +468,7 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 			p->visCount = this->visCount;
 			p->visitCount = 0;
 		} else {
-			if(p->visitCount == MAX_PORTAL_VISIT_COUNT) {
+			if(p->visitCount >= MAX_PORTAL_VISIT_COUNT) {
 				g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
 				continue;
 			}

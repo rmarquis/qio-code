@@ -189,6 +189,18 @@ void model_c::printBoneNames() const {
 
 	}
 }
+u32 model_c::getTotalTriangleCount() const {
+	if(type == MOD_DECL) {
+		return this->declModel->getTotalTriangleCount();
+	} else if(type == MOD_SKELETAL) {
+		return this->skelModel->getTotalTriangleCount();
+	} else if(type == MOD_STATIC) {
+		return this->staticModel->getTotalTriangleCount();
+	} else {
+
+	}
+	return 0;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

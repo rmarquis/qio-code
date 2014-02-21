@@ -32,6 +32,7 @@ public:
 	//virtual class mtrAPI_i *getMaterial() const = 0;
 	virtual const class rIndexBuffer_c *getIBO() const = 0;
 	virtual u32 getNumVertices() const = 0;
+	virtual u32 getNumTriangles() const = 0;
 	virtual void copyTexCoords(void *outTC, u32 outStride) const = 0;
 	virtual void instanceSingleFrame(void *outXYZ, u32 outStride, u32 frameNum) const = 0;
 	virtual void instance(void *outXYZ, u32 outStride, u32 from, u32 to, float lerp) const = 0;
@@ -43,6 +44,7 @@ public:
 	virtual u32 getNumFrames() const = 0;
 	virtual u32 getNumSurfaces() const = 0;
 	virtual u32 getNumTags() const = 0;
+	virtual u32 getTotalTriangleCount() const = 0;
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const = 0;
 	virtual u32 fixFrameNum(u32 inFrameNum) const = 0;
 	virtual int getTagIndexForName(const char *tagName) const = 0;

@@ -1019,23 +1019,15 @@ public:
 			return;
 		}
 		byte *outPicData = (byte*)rect.pBits;
-		//memcpy(rect.pBits,pic,w*h*4);
-		for(u32 i = 0; i < w; i++) {
-			for(u32 j = 0; j < h; j++) {
-				const byte *inPixel = data + (i * h + j)*3;
-				byte *outPixel = outPicData + (i * h + j)*4;
-#if 1
-				outPixel[0] = inPixel[0];
-				outPixel[1] = inPixel[1];
-				outPixel[2] = inPixel[2];
-				outPixel[3] = 255;
-#else
-				outPixel[0] = 255;
-				outPixel[1] = inPixel[0];
-				outPixel[2] = inPixel[1];
-				outPixel[3] = inPixel[2];
-#endif
-			}
+		const byte *inPixel = data;
+		byte *outPixel = outPicData;
+		for(u32 i = 0; i < w*h; i++) {
+			outPixel[0] = inPixel[2];
+			outPixel[1] = inPixel[1];
+			outPixel[2] = inPixel[0];
+			outPixel[3] = 255;
+			outPixel += 4;
+			inPixel += 3;
 		}
 		hr = tex->UnlockRect(0);
 		if (FAILED(hr)) {

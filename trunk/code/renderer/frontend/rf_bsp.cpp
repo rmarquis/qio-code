@@ -1878,7 +1878,7 @@ void rBspTree_c::markAreas_r(int areaNum, const frustumExt_c &fr, dareaPortal_t 
 			pb.visitCount = 0;
 		} else {
 			// avoid endless loops (that would cause stack overflow)
-			if(pb.visitCount == MAX_PORTAL_VISIT_COUNT) {
+			if(pb.visitCount >= MAX_PORTAL_VISIT_COUNT) {
 				g_core->RedWarning("MAX_PORTAL_VISIT_COUNT!!!\n");
 				continue;
 			}

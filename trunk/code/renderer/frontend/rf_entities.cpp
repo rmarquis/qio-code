@@ -51,6 +51,7 @@ static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
 static aCvar_c rf_cullEntities("rf_cullEntities","1");
+static aCvar_c rf_printEntityTriangleCounts("rf_printEntityTriangleCounts","0");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -584,9 +585,20 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		}
 	}
 }
+u32 rEntityImpl_c::getEntityTriangleCount() const {
+	if(instance)
+		return instance->getTotalTriangleCount();
+	if(model)
+		return model->getTotalTriangleCount();
+	return 0;
+}
 void rEntityImpl_c::addDrawCalls() {
 	if(rf_noEntityDrawCalls.getInt())
 		return;
+	if(rf_printEntityTriangleCounts.getInt()) {
+		u32 triangleCount = getEntityTriangleCount();
+		g_core->Print("Entity %i (%s) has %i triangles\n",this->networkingEntityNumber,this->getModelName(),triangleCount);
+	}
 	// this is needed here so rf_drawCalls.cpp know
 	// which orientation should be used 
 	// (world identity matrix vs. entity pos/angles matrix)
