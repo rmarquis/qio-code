@@ -42,6 +42,62 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 int		Q_stricmpn (const char *s1, const char *s2, int n);
 
+void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int rings, unsigned int sectors) {
+	float const R = 1./(float)(rings-1);
+	float const S = 1./(float)(sectors-1);
+	int r, s;
+
+	out->setNumSurfs(1);
+
+	u32 numVeritces =  (rings * sectors * 3);
+	out->resizeSurfaceVerts(0,numVeritces);
+	u32 vertexIndex = 0;
+	for(r = 0; r < rings; r++) {
+		for(s = 0; s < sectors; s++) {
+			float const y = sin( -M_PI_2 + M_PI * r * R );
+			float const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
+			float const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
+
+			float st[2];
+			st[0] = s*S;
+			st[1] = r*R;
+
+			float xyz[3];
+			xyz[0] = x * radius;
+			xyz[1] = y * radius;
+			xyz[2] = z * radius;
+
+			
+			out->setSurfaceVert(0,vertexIndex,xyz,st);
+
+			vertexIndex++;
+		}
+	}
+	u32 numIndices = (rings * sectors * 6);
+	out->resizeIndices(numIndices);
+	u32 index = 0;
+	for(r = 0; r < rings; r++) 	{
+		for(s = 0; s < sectors; s++) {
+			u32 i0 = r * sectors + s;
+			u32 i1 = r * sectors + (s+1);
+			u32 i2 = (r+1) * sectors + (s+1);
+			u32 i3 = (r+1) * sectors + s;
+
+			out->setIndex(index,i0);
+			index++;
+			out->setIndex(index,i1);
+			index++;
+			out->setIndex(index,i2);
+			index++;
+			out->setIndex(index,i2);
+			index++;
+			out->setIndex(index,i3);
+			index++;
+			out->setIndex(index,i0);
+			index++;
+		}
+	}
+}
 bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
 public:
@@ -105,6 +161,14 @@ public:
 				points[3].tc.set(0,0);
 				out->addTriangle("nomaterial",points[0],points[1],points[2]);
 				out->addTriangle("nomaterial",points[2],points[3],points[0]);
+				if(inlinePostProcessCommandMarker) {
+					MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
+				}
+				return false; // no error
+			} else if(!Q_stricmpn(fname+1,"sphere",6)) {
+				float radius;
+				sscanf(fname+1+6,"%f",&radius);
+				MOD_CreateSphere(out,radius,16,16);
 				if(inlinePostProcessCommandMarker) {
 					MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
 				}

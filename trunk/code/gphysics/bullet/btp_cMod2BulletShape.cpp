@@ -81,6 +81,10 @@ btConvexHullShape *BT_CModelTriMeshToConvex(const class cmTriMesh_i *triMesh, co
 		}	
 		vertices[i] = (p*QIO_TO_BULLET).floatPtr();
 	}
+	if(vertices.size() == 0) {
+		g_core->RedWarning("BT_CModelTriMeshToConvex: mesh %s has 0 vertices\n",triMesh->getName());
+		return 0;
+	}
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
 	return shape;
 }

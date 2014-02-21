@@ -513,13 +513,29 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"model_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
-			if(g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
+			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
 				vec3_c p = pl->getOrigin();
 				p.z += pl->getViewHeight();
 				p += pl->getForward() * 64.f;
 				ModelEntity *e = new ModelEntity;
 				e->setRenderModel(model);
 				//e->setColModel(model);
+				e->setOrigin(p);
+			} else {
+				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
+			}
+		}
+	} else if(!stricmp(cmd,"physics_spawn")) {
+		str model = g_core->Argv(1);
+		if(model.length()) {
+			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
+				vec3_c p = pl->getOrigin();
+				p.z += pl->getViewHeight();
+				p += pl->getForward() * 64.f;
+				ModelEntity *e = new ModelEntity;
+				e->setRenderModel(model);
+				e->setColModel(model);
+				e->initRigidBodyPhysics();
 				e->setOrigin(p);
 			} else {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());

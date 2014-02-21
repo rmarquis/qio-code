@@ -385,7 +385,7 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			ret->type = MOD_KEYFRAMED; // that's a valid model
 		}
 	} else if(g_modelLoader->isStaticModelFile(modName)) {
-		ret->staticModel = RF_LoadStaticModel(modName);
+		ret->staticModel = RF_LoadStaticModel(modNameWithParameters);
 		if(ret->staticModel) {
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model

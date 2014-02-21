@@ -180,6 +180,16 @@ public:
 		verts[vertexIndex] = v.xyz;
 		bb.addPoint(v.xyz);
 	}
+	virtual void setSurfaceVert(u32 surfNum, u32 vertIndex, const float *xyz, const float *st) {
+		if(surfNum != 0)
+			return;
+		verts[vertIndex] = xyz;
+	}
+	virtual void resizeSurfaceVerts(u32 surfNum, u32 numVerts) {
+		if(surfNum != 0)
+			return;
+		verts.resize(numVerts);
+	}
 	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos) {
 		verts[vertexIndex] = newPos;
 	}
@@ -285,9 +295,21 @@ public:
 		u32 i0 = indices[triNum*3+0];
 		u32 i1 = indices[triNum*3+1];
 		u32 i2 = indices[triNum*3+2];
-		out.addPoint(verts[i0]);
-		out.addPoint(verts[i1]);
-		out.addPoint(verts[i2]);
+		if(i0 >= verts.size()) {
+
+		} else {
+			out.addPoint(verts[i0]);
+		}
+		if(i1 >= verts.size()) {
+
+		} else {
+			out.addPoint(verts[i1]);
+		}
+		if(i2 >= verts.size()) {
+
+		} else {
+			out.addPoint(verts[i2]);
+		}
 	}
 	void calcTriListBounds(const arraySTD_c<u32> &triNums, class aabb &out) const {
 		for(u32 i = 0; i < triNums.size(); i++) {

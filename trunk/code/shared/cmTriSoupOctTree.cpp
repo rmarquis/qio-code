@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "trace.h"
 #include "autoCvar.h"
 #include <api/boxTrianglesCallback.h>
+#include <api/coreAPI.h>
 
 // check all of the triangles in octTree instead of using node/leaves data (default false)
 static aCvar_c cms_tsOctTree_checkAllTris("cms_tsOctTree_checkAllTris","0");
@@ -262,6 +263,10 @@ u16 CMU_BuildNode(const arraySTD_c<u32> &triNums, const aabb &prevBB, u32 depth)
 	return nodeNum;
 }
 tsOctTreeHeader_s *CMU_BuildTriSoupOctTree(const class cmSurface_c &in) {
+	if(in.getNumVerts() == 0) {
+		g_core->RedWarning("CMU_BuildTriSoupOctTree: input surface has 0 vertices\n");
+		return 0;
+	}
 	ts_sourceSurf = &in;
 
 	aabb baseBounds = in.getAABB();

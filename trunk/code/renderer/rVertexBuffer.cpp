@@ -209,6 +209,8 @@ void rVertexBuffer_c::getReferencedPoints(rVertexBuffer_c &out, const class rInd
 }
 #include <shared/calcTBN.h>
 void rVertexBuffer_c::calcTBNForIndices(const class rIndexBuffer_c &indices, arraySTD_c<plane_c> *trianglePlanes) {
+	if(indices.getNumIndices() == 0)
+		return;
 	plane_c *pl;
 	if(trianglePlanes) {
 		trianglePlanes->resize(indices.getNumTriangles());
@@ -218,6 +220,10 @@ void rVertexBuffer_c::calcTBNForIndices(const class rIndexBuffer_c &indices, arr
 	}
 	vec3_c newNorm, newTan, newBin;
 	rVert_c *rVerts = this->data.getArray();
+	if(rVerts == 0) {
+		g_core->RedWarning("rVertexBuffer_c::calcTBNForIndices: NULL vertices\n");
+		return;
+	}
 	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
 		u32 i0 = indices[i+0];
 		u32 i1 = indices[i+1];
