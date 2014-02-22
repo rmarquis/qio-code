@@ -47,7 +47,7 @@ public:
 	void addWindingPointsUnique(const cmWinding_c &other) {
 		addWindingPointsUnique(other.points.getArray(),other.points.size());
 	}
-	enum planeSide_e clipWindingByPlane(const class plane_c &pl, float epsilon = 0.1f);
+	enum planeSide_e clipWindingByPlane(const class plane_c &pl, float epsilon = 0.00001f);
 	void getBounds(class aabb &out) const;
 	void getPlane(class plane_c &out) const;
 	void addPointsToBounds(class aabb &out) const;

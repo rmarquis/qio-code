@@ -120,6 +120,7 @@ mtrStage_c::mtrStage_c() {
 	nextBundle = 0;
 	condition = 0;
 	alphaTestAST = 0;
+	cubeMap = 0;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -577,6 +578,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		} else if(p.atChar('}')) {
 			if(level == 2) {
 				if(stage) {
+					//if(stage->getStageType() == ST_NOT_SET) {
+					//	stage->setStageType(ST_COLORMAP);
+					//}
 					//if(stage->getTexture(0) == 0) {
 					//	delete stage;
 					//} else {
@@ -868,6 +872,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("normalMap")) {
 						// It's used in Xreal railgun
 						stage->setStageType(ST_BUMPMAP);
+					} else if(p.atWord("skyboxMap")) {
+						// it's used in material textures/mawi/mawi_sky from test_tree.pk3
+						// It's a modern replacement for old Q3 "skyparms" keyword
+						stage->setStageType(ST_CUBEMAP_SKYBOX);
+					} else if(p.atWord("reflectionMap")) {
+						// usefull for Doom3-style glass reflections
+						stage->setStageType(ST_CUBEMAP_REFLECTION);
 					} else {
 						u32 line = p.getCurrentLineNumber();
 						str token = p.getToken();
@@ -979,16 +990,28 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("highquality")) {
 					
-				} else if(p.atWord("cubemap")) {
-					p.skipLine();
+				} else if(p.atWord("cubemap") || p.atWord("cameraCubeMap")) {
+					// FIXME: what's the difference between these two?
+					//p.skipLine();
+					const char *cubeMapName = p.getToken();
+					cubeMapAPI_i *cubeMap = MAT_RegisterCubeMap(cubeMapName);
+					if(cubeMap) {
+						stage->setCubeMap(cubeMap);
+					} else {
+
+					}
 				} else if(p.atWord("texgen") || p.atWord("tcgen")) {
 					if(p.atWord("environment")) {
 						stage->setTCGen(TCG_ENVIRONMENT);
 					} else if(p.atWord("skybox")) {
 						// used eg. in Prey's (Id Tech 4) dave.mtr -> textures/skybox/dchtest
 						//stage->setTCGen(TCG_SKYBOX);
+						// This is used along with cubemap for Doom3 skyboxes.
+						stage->setStageType(ST_CUBEMAP_SKYBOX);
 					} else if(p.atWord("reflect")) {
+						// This is used along with cubemap for Doom3 glass materials.
 						//stage->setTCGen(TCG_REFLECT);
+						stage->setStageType(ST_CUBEMAP_REFLECTION);
 					} else if(p.atWord("screen")) {
 						// Prey's keyword?
 						//stage->setTCGen(TCG_SCREEN);
@@ -1149,8 +1172,6 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("fragmentMap")) {
 					p.skipLine();
 				} else if(p.atWord("ignoreAlphaTest")) {
-				} else if(p.atWord("cameraCubeMap")) {
-					p.getToken();
 				} else if(p.atWord("privatePolygonOffset")) {
 					if(p.isAtEOL()) {
 

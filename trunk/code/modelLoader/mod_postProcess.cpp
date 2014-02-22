@@ -31,8 +31,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/matrix.h>
 #include <api/coreAPI.h>
 #include <api/modelPostProcessFuncs.h>
+#include <api/modelLoaderDLLAPI.h>
+#include <api/staticModelCreatorAPI.h>
+#include <api/vfsAPI.h>
 
 int		Q_stricmpn (const char *s1, const char *s2, int n);
+
+class simpleModel_c : public staticModelCreatorAPI_i {
+
+};
 
 bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout) {
 	str mdlppName = modName;
@@ -85,6 +92,25 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 			p.getFloatMat(tagPos,3);
 			p.getFloatMat(tagAngles,3);
 			inout->addAbsTag(tagName,tagPos,tagAngles);
+		} else if(p.atWord("appendModel")) {
+			str appendModelName = p.getToken();
+			str fullPath;
+			if(g_vfs->FS_FileExists(appendModelName)) {
+				fullPath = appendModelName;
+			} else {
+				fullPath = modName;
+				fullPath.toDir();
+				fullPath.append(appendModelName);
+			}
+			class staticModelCreatorAPI_i *sc = dynamic_cast<staticModelCreatorAPI_i*>(inout);
+			if(g_modelLoader->loadStaticModelFile(fullPath.c_str(),sc)) {
+				int line = p.getCurrentLineNumber();
+				g_core->RedWarning("MOD_ApplyPostProcess: failed to append model %s at line %i of file %s\n",
+					fullPath.c_str(),line,mdlppName.c_str());
+			}
+		} else if(p.atWord("scaleTexST")) {
+			float stScale = p.getFloat();
+			inout->multTexCoordsXY(stScale);
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();
@@ -94,6 +120,10 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 	}
 	return false;
 }
+bool MOD_CreateModelFromMDLPPScript(const char *fname, class staticModelCreatorAPI_i *out) {
+	return MOD_ApplyPostProcess(fname,out);
+}
+
 const char *G_getFirstOf(const char *s, const char *charSet) {
 	const char *p = s;
 	u32 charSetLen = strlen(charSet);

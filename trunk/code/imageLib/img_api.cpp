@@ -41,8 +41,17 @@ class imgAPIImpl_c : public imgAPI_i {
 	virtual void freeImageData(byte *data) {
 		free(data);
 	}
-	void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) {
+	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) {
 		return IMG_Convert8BitImageToRGBA32(converted, outWidth, outHeight, pixels,width,height,palette);
+	}	
+	virtual void rotatePic(byte *pic, u32 w) {
+		IMG_RotatePic(pic,w);
+	}
+	virtual void horizontalFlip(byte *pic, u32 w, u32 h) {
+		IMG_HorizontalFlip(pic,w,h);
+	}
+	virtual void verticalFlip(byte *pic, u32 w, u32 h) {
+		IMG_VerticalFlip(pic,w,h);
 	}
 };
 

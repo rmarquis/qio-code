@@ -73,11 +73,11 @@ void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int r
 			vertexIndex++;
 		}
 	}
-	u32 numIndices = (rings * sectors * 6);
+	u32 numIndices = ((rings-1) * (sectors-1) * 6);
 	out->resizeIndices(numIndices);
 	u32 index = 0;
-	for(r = 0; r < rings; r++) 	{
-		for(s = 0; s < sectors; s++) {
+	for(r = 0; r < rings-1; r++) 	{
+		for(s = 0; s < sectors-1; s++) {
 			u32 i0 = r * sectors + s;
 			u32 i1 = r * sectors + (s+1);
 			u32 i2 = (r+1) * sectors + (s+1);
@@ -97,6 +97,7 @@ void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int r
 			index++;
 		}
 	}
+	out->countDuplicatedTriangles();
 }
 bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
@@ -130,6 +131,9 @@ public:
 			return true;
 		// HL2 (Source Engine) .mdl (without animations)
 		if(!stricmp(ext,"mdl"))
+			return true;
+		// models can be created by mdlpp script
+		if(!stricmp(ext,"mdlpp"))
 			return true;
 		return false;
 	}
@@ -201,14 +205,17 @@ public:
 			} else {
 				error = true;
 			}
-
+		} else if(!stricmp(ext,"mdlpp")) {
+			error = MOD_CreateModelFromMDLPPScript(fname,out);
 		} else {
 			error = true;
 		}
 		if(error == false) {
 			// apply model postprocess steps (scaling, rotating, etc)
 			// defined in optional .mdlpp file
-			MOD_ApplyPostProcess(fname,out);
+			if(stricmp(ext,"mdlpp")) {
+				MOD_ApplyPostProcess(fname,out);
+			}
 			if(inlinePostProcessCommandMarker) {
 				MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
 			}

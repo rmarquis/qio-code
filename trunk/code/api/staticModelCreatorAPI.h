@@ -87,6 +87,14 @@ public:
 	virtual bool onBezierPatch(const char *patchDefStart, const char *patchDefEnd) {
 		return false;
 	}
+
+	// for debugging
+	virtual u32 countDuplicatedTriangles() const { 
+		return 0;
+	}
+	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const {
+		return false;
+	}
 };
 
 #endif // __STATICMODELCREATORAPI_H__

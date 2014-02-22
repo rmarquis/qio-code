@@ -298,6 +298,7 @@ bool FixRenderModelPath(str &s) {
 			"ase",
 			"obj",
 			"map",
+			"mdlpp",
 		};
 		static u32 numExtensions = sizeof(extensions)/sizeof(extensions[0]);
 		for(u32 j = 0; j < numExtensions; j++) {
@@ -510,7 +511,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!stricmp(cmd,"model_spawn")) {
+	} else if(!stricmp(cmd,"model_spawn") || !stricmp(cmd,"mdlpp_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {

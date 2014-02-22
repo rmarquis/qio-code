@@ -15,6 +15,17 @@ enum stageType_e {
 	// added by me, heightmaps are not used directly in Doom3
 	// (they are converted to bump maps)
 	ST_HEIGHTMAP,
+	// skybox stage (with a cubemap texture)
+	// Set by "stage skyboxmap" in material,
+	// also set by Doom3 "texgen skybox" command.
+	// Used in Doom3 sky materials.
+	// Also used for sky in test_tree.pk3.
+	ST_CUBEMAP_SKYBOX,
+	// glass reflection stage (with a cubemap texture)
+	// Set by "stage reflectionMap" in material,
+	// also set by Doom3 "texgen reflect" command.
+	// Used in Doom3 glass materials.
+	ST_CUBEMAP_REFLECTION
 };
 
 // hardcoded alpha func test values (for non-blended transparency)

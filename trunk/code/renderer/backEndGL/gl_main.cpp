@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/textureAPI.h>
+#include <api/cubeMapAPI.h>
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/sdlSharedAPI.h>
@@ -240,6 +241,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	axis_c entityAxis;
 	vec3_c entityOrigin;
 	matrix_c entityMatrix;
+	matrix_c entityRotationMatrix;
 	matrix_c entityMatrixInverse;
 
 	matrix_c savedCameraProjection;
@@ -1056,6 +1058,9 @@ public:
 			if(newShader->sDeluxeMap != -1) {
 				glUniform1i(newShader->sDeluxeMap,4);
 			}
+			if(newShader->sCubeMap != -1) {
+				glUniform1i(newShader->sCubeMap,0);
+			}
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
 					const vec3_c &xyz = curLight->getOrigin();
@@ -1118,6 +1123,9 @@ public:
 			}
 			if(newShader->u_entityMatrix) {
 				glUniformMatrix4fv(newShader->u_entityMatrix,1,false,entityMatrix);
+			}
+			if(newShader->u_entityRotationMatrix) {
+				glUniformMatrix4fv(newShader->u_entityRotationMatrix,1,false,entityRotationMatrix);
 			}
 		}
 	}
@@ -1361,6 +1369,7 @@ public:
 					}
 					bumpMap = 0;
 				}
+				class cubeMapAPI_i *cubeMap = s->getCubeMap();
 
 				// set the alphafunc
 				alphaFunc_e newAlphaFunc = s->getAlphaFunc();
@@ -1478,6 +1487,13 @@ drawOnlyLightmap:
 					bindTex(4,deluxeMap->getInternalHandleU32());
 				} else {
 					unbindTex(4);
+				}
+				if(cubeMap) {
+					selectTex(0);
+					glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->getInternalHandleU32());
+				} else {
+					selectTex(0);
+					glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 				}
 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
@@ -1630,7 +1646,19 @@ drawOnlyLightmap:
 
 				// see if we have to bind a GLSL shader
 				glShader_c *selectedShader = 0;
-				if(curLight) {
+				if(stageType == ST_CUBEMAP_SKYBOX) {
+					glslPermutationFlags_s glslShaderDesc;
+					selectedShader = GL_RegisterShader("skyboxCubeMap",&glslShaderDesc);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					}
+				} else if(stageType == ST_CUBEMAP_REFLECTION) {
+					glslPermutationFlags_s glslShaderDesc;
+					selectedShader = GL_RegisterShader("reflectionCubeMap",&glslShaderDesc);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					}		
+				} else if(curLight) {
 					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
 					glslPermutationFlags_s pf;
 					if(r_shadows == 2) {
@@ -1687,6 +1715,12 @@ drawOnlyLightmap:
 					glslShaderDesc.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 
 					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					}
+				} else if(cubeMap) {
+					glslPermutationFlags_s glslShaderDesc;
+					selectedShader = GL_RegisterShader("cubeMapShader",&glslShaderDesc);
 					if(selectedShader) {
 						bindShader(selectedShader);
 					}
@@ -1946,6 +1980,7 @@ drawOnlyLightmap:
 		entityAxis.identity();
 		entityOrigin.zero();
 		entityMatrix.identity();
+		entityRotationMatrix.identity();
 		entityMatrixInverse.identity();
 
 		usingWorldSpace = true;
@@ -1955,6 +1990,7 @@ drawOnlyLightmap:
 		entityOrigin = origin;
 
 		entityMatrix.fromAxisAndOrigin(axis,origin);
+		entityRotationMatrix.fromAxisAndOrigin(axis,vec3_c(0,0,0));
 		entityMatrixInverse = entityMatrix.getInversed();
 		camMatrixInEntitySpace.fromAxisAndOrigin(viewAxis,camOriginWorldSpace);
 		camMatrixInEntitySpace = entityMatrixInverse * camMatrixInEntitySpace;
@@ -2299,6 +2335,31 @@ drawOnlyLightmap:
 		CHECK_GL_ERRORS;
 		glBindTexture(GL_TEXTURE_2D, 0);
 		out->setInternalHandleU32(texID);	
+	}
+	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) {
+		u32 cubemap;
+		glGenTextures(1, &cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// set textures
+		for (u32 i = 0; i < 6; ++i)
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, in[i].w, in[i].h, 0, GL_RGBA, GL_UNSIGNED_BYTE, in[i].pic);
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		out->setInternalHandleU32(cubemap);
+	}
+	virtual void freeCubeMap(class cubeMapAPI_i *cm) {
+		u32 cubemap = cm->getInternalHandleU32();
+		if(cubemap == 0)
+			return;
+		glDeleteTextures(1,&cubemap);
+		cm->setInternalHandleU32(0);
 	}
 	virtual bool createVBO(class rVertexBuffer_c *vbo) {
 		if(vbo->getInternalHandleU32()) {

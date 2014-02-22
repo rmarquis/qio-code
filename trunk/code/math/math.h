@@ -83,22 +83,43 @@ typedef vec_t vec5_t[5];
 // returns a clamped value in the range [min, max].
 #define Q_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
+#define DISABLE_ALL_FAST_SQRTS
+
 inline float G_rsqrt(float x) {
+#ifdef DISABLE_ALL_FAST_SQRTS
+	float tmp = sqrt(x);
+	//if(tmp == 0.f)
+	//	return 0.f;
+	return 1.f/tmp;
+#else
     float xhalf = 0.5f*x;
     int i = *(int*)&x;
     i = 0x5f3759df - (i >> 1);
     x = *(float*)&i;
     x = x*(1.5f - xhalf*x*x);
     return x;
+#endif
 }
 
 inline float G_sqrt2(float n) {
+#ifdef DISABLE_ALL_FAST_SQRTS
+	return sqrt(n);
+#else
     float r = 0.f;
     float i = 1.f;
     while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
     return r;
+#endif
 }	
 
+#ifdef DISABLE_ALL_FAST_SQRTS
+inline float G_rsqrt3(float x) {
+	float tmp = sqrt(x);
+	//if(tmp == 0.f)
+	//	return 0.f;
+	return 1.f/tmp;
+}
+#else
 inline float __declspec(naked) __fastcall G_rsqrt3(float x) {
     __asm {
         mov	eax, 0be6eb508h
@@ -130,6 +151,7 @@ inline float __declspec(naked) __fastcall G_rsqrt3(float x) {
         ret 4
     }
 }
+#endif
 
 // quadratic interpolation for n-dimensional vector
 inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)

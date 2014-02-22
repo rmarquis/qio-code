@@ -692,6 +692,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\cubeMapAPI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\api\customRenderObjectAPI.h"
 				>
 			</File>

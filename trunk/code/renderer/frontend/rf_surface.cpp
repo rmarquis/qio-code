@@ -153,6 +153,12 @@ void r_surface_c::transform(const class matrix_c &mat) {
 		mat.transformNormal(v->normal);
 	}
 }
+u32 r_surface_c::countDuplicatedTriangles() const {
+	return indices.countDuplicatedTriangles();
+}
+bool r_surface_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
+	return indices.hasTriangle(i0,i1,i2);
+}
 const struct extraSurfEdgesData_s *r_surface_c::getExtraSurfEdgesData() const {
 	if(mySkelSF == 0)
 		return 0;
@@ -1136,6 +1142,18 @@ void r_model_c::transform(const class matrix_c &mat) {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		surfs[i].transform(mat);
 	}
+}
+u32 r_model_c::countDuplicatedTriangles() const {
+	u32 ret = 0;
+	for(u32 i = 0; i < surfs.size(); i++) {
+		ret += surfs[i].countDuplicatedTriangles();
+	}
+	return ret;
+}
+bool r_model_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
+	if(surfs.size() == 0)
+		return false;
+	return surfs[0].hasTriangle(i0,i1,i2);
 }
 bool r_model_c::getTagOrientation(int tagNum, class matrix_c &out) const {
 	if(tagNum < 0 || tagNum >= tags.size())

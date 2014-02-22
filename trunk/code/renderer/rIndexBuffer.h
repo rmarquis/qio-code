@@ -335,6 +335,36 @@ public:
 		}
 		this->numIndices++;
 	}
+	int findTriangle(u32 a, u32 b, u32 c, int skip = -1) const {
+		for(u32 i = 0; i < numIndices; i+=3) {
+			if(skip >= 0 && i/3 == skip)
+				continue;
+			u32 i0 = getIndex(i+0);
+			u32 i1 = getIndex(i+1);
+			u32 i2 = getIndex(i+2);
+			if(i0 == a && i1 == b && i2 == c)
+				return i/3;
+		}
+		return -1;
+	}
+	bool hasTriangle(u32 i0, u32 i1, u32 i2) const {
+		if(findTriangle(i0,i1,i2) >= 0)
+			return true;
+		return false;
+	}
+	u32 countDuplicatedTriangles() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < numIndices; i+=3) {
+			u32 triNum = i / 3;
+			u32 i0 = getIndex(i+0);
+			u32 i1 = getIndex(i+1);
+			u32 i2 = getIndex(i+2);
+			int triIndex = findTriangle(i0,i1,i2,triNum);
+			if(triIndex >= 0)
+				ret++;
+		}
+		return ret;
+	}
 	void addTriangle(u32 i0, u32 i1, u32 i2) {
 		addIndex(i0);
 		addIndex(i1);
@@ -395,7 +425,7 @@ public:
 			p32[number] = value;
 		}
 	}
-	u32 operator [] (u32 idx) const {
+	u32 getIndex(u32 idx) const {
 		if(type == IBO_U16) {
 			const u16 *p16 = (const u16*)data.getArray();
 			return p16[idx];
@@ -405,6 +435,9 @@ public:
 		} else {
 			return 0;
 		}
+	}
+	inline u32 operator [] (u32 idx) const {
+		return getIndex(idx);
 	}
 };
 

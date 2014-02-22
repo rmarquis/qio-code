@@ -70,6 +70,7 @@ friend class rbSDLOpenGL_c;
 	// current entity matrix
 	// (identity for world)
 	int u_entityMatrix;
+	int u_entityRotationMatrix;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
@@ -77,6 +78,8 @@ friend class rbSDLOpenGL_c;
 	int sBumpMap; // Doom3-style bumpmap (normalmap)
 	int sHeightMap; // heightmap (not used directly in Doom3)
 	int sDeluxeMap; // deluxemap (lightmap with light directions - not colors)
+	// samplerCube locations
+	int sCubeMap;
 
 	// shadow mapping
 	int u_shadowMap[6];

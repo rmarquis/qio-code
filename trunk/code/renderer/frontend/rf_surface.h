@@ -130,6 +130,8 @@ public:
 	virtual void resizeIndices(u32 newNumIndices);
 	virtual void setIndex(u32 indexNum, u32 value);
 	virtual void transform(const class matrix_c &mat);
+	virtual u32 countDuplicatedTriangles() const;
+	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
 
 	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
 
@@ -338,7 +340,9 @@ public:
 		}
 	}
 	virtual void transform(const class matrix_c &mat);
-	
+	virtual u32 countDuplicatedTriangles() const;
+	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
+
 	bool getTagOrientation(int tagNum, class matrix_c &out) const;
 
 	void addPatch(class r_bezierPatch_c *newPatch);

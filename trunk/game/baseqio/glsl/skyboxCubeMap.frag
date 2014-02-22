@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2013 V.
+Copyright (C) 2014 V.
 
 This file is part of Qio source code.
 
@@ -21,46 +21,22 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-#include "vec3.h"
+// glsl/skyboxCubeMap.frag
+// Used for Doom3 skyboxes.
+// Handles "texgen skybox" material command.
 
-void vec3_c::normalize() {
-#if 1
-	float lengthSQ = x*x + y*y + z*z;
-	if ( lengthSQ ) {
-		float iLength = 1.f / sqrt(lengthSQ);
-		x *= iLength;
-		y *= iLength;
-		z *= iLength;
-	}
-#elif 0
-	float lengthSQ = x*x + y*y + z*z;
-	if ( lengthSQ ) {
-		//float iLength = G_rsqrt(lengthSQ);
-		float iLength = G_rsqrt3(lengthSQ);		
-		x *= iLength;
-		y *= iLength;
-		z *= iLength;
-	}
-#else
-	float data[4] = { x, y, z, 0 };
-	__asm {
-		movups xmm0, data
-		movaps xmm2, xmm0
-		mulps xmm0, xmm0
-		movaps xmm1, xmm0
-		shufps xmm0, xmm1, 0x4e
-		addps xmm0, xmm1
-		movaps xmm1, xmm0
-		shufps xmm1, xmm1, 0x11
-		addps xmm0, xmm1
-		rsqrtps xmm0, xmm0 
-		mulps xmm2, xmm0
-		movups data, xmm2
-	}
-	x = data[0];
-	y = data[1];
-	z = data[2];
-#endif
+// shader input
+uniform samplerCube cubeMap;
+
+varying vec3 v_vertXYZ;
+
+uniform vec3 u_viewOrigin;
+uniform mat4 u_entityMatrix;
+
+void main() {
+	vec4 absVert = (u_entityMatrix) * vec4(v_vertXYZ,1);
+	vec4 absViewer = (u_entityMatrix) * vec4(u_viewOrigin,1);
+    vec3 eyeRay = normalize(absVert.xyz-absViewer.xyz);
+    gl_FragColor = textureCube(cubeMap, eyeRay);
 }
-
 

@@ -92,6 +92,7 @@ public:
 	virtual class textureAPI_i *getTextureForFrameNum(u32 frameNum) const = 0;
 	virtual enum alphaFunc_e getAlphaFunc() const = 0;
 	virtual const struct blendDef_s &getBlendDef() const = 0;
+	virtual class cubeMapAPI_i *getCubeMap() const = 0;
 	virtual class mtrStageAPI_i *getBumpMap() const = 0;
 	virtual class mtrStageAPI_i *getHeightMap() const = 0;
 	virtual bool hasTexMods() const = 0;

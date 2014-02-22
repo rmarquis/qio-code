@@ -187,6 +187,10 @@
 				RelativePath="..\..\code\imageLib\img_main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\imageLib\img_utils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

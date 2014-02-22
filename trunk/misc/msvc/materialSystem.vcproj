@@ -172,6 +172,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\materialSystem\mat_cubeMap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\materialSystem\mat_impl.cpp"
 				>
 			</File>
@@ -209,6 +213,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\code\materialSystem\mat_cubeMap.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\materialSystem\mat_impl.h"
 				>

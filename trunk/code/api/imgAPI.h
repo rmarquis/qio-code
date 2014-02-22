@@ -42,6 +42,9 @@ public:
 
 	// image processing
 	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
+	virtual void rotatePic(byte *pic, u32 w) = 0;
+	virtual void horizontalFlip(byte *pic, u32 w, u32 h) = 0;
+	virtual void verticalFlip(byte *pic, u32 w, u32 h) = 0;
 };
 
 extern imgAPI_i *g_img;

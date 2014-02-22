@@ -283,6 +283,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
 	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
 	ret->sDeluxeMap = glGetUniformLocation(shader,"deluxeMap");
+	ret->sCubeMap = glGetUniformLocation(shader,"cubeMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
@@ -294,6 +295,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
+	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");
 	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
 	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");

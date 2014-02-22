@@ -16,6 +16,7 @@
 
 textures/glass/blueglass
 {
+	qer_keyword testglass
 	surfaceparm nolightmap
 	surfaceparm nonsolid
 	//cull twosided
@@ -25,35 +26,37 @@ textures/glass/blueglass
 		tcMod turb 0 0.01 0 0.01	        
 		tcmod scroll .0 .0
 		blendfunc GL_ONE GL_ONE
-                }
+	}
 }
 
 //	Foggy, stained glass with a cool chrome like finish when you walk by. 
 
 textures/glass/darkglass
-                      {
-                      qer_trans .5
-                      surfaceparm trans
-		      surfaceparm solid
+{
+	qer_keyword testglass
+	qer_trans .5
+	surfaceparm trans
+	surfaceparm solid
 
-                   //   cull disable
-                      {
-                      map textures/effects/tinfx.tga
-                      tcgen environment
-                      blendfunc gl_one gl_one
-                      rgbGen identity
-                      }
-                      {
-                      map $lightmap
-                      blendFunc gl_dst_color gl_zero
-                      rgbgen identity
-                      }
-                      }
+	//   cull disable
+	{
+		map textures/effects/tinfx.tga
+		tcgen environment
+		blendfunc gl_one gl_one
+		rgbGen identity
+	}
+	{
+		map $lightmap
+		blendFunc gl_dst_color gl_zero
+		rgbgen identity
+	}
+}
 
 // 	Plain glass.
 
 textures/glass/plainglass
 {
+	qer_keyword testglass
 	surfaceparm nolightmap
 	surfaceparm nonsolid
 	//cull twosided
@@ -61,7 +64,7 @@ textures/glass/plainglass
 		map textures/glass/plainglass.tga
 		tcGen environment
 		blendfunc GL_ONE GL_ONE
-                }
+	}
 }
 
 //Created by Louie "KnightBK" Doulias for Black Knights Productions, Prisoners of War Q3 Mod.  

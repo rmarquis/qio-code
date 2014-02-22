@@ -159,6 +159,8 @@ class mtrStage_c : public mtrStageAPI_i {
 	class astAPI_i *alphaTestAST;
 	// custom gpu shader name (not used yet)
 	str programName;
+	// cubemap
+	class cubeMapAPI_i *cubeMap;
 public:
 	mtrStage_c();
 	~mtrStage_c();
@@ -174,6 +176,9 @@ public:
 	}
 	virtual const struct blendDef_s &getBlendDef() const {
 		return blend;
+	}
+	virtual cubeMapAPI_i *getCubeMap() const {
+		return cubeMap;
 	}
 	virtual mtrStageAPI_i *getBumpMap() const {
 		return subStageBumpMap;
@@ -214,6 +219,9 @@ public:
 	}
 	void setTexture(class textureAPI_i *nt) {
 		stageTexture.fromTexturePointer(nt);
+	}
+	void setCubeMap(class cubeMapAPI_i *n) {
+		cubeMap = n;
 	}
 	void setSubStageBumpMap(class mtrStage_c *s) {
 		this->subStageBumpMap = s;

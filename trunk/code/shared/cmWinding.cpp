@@ -81,6 +81,18 @@ bool cmWinding_c::createBaseWindingFromPlane(const class plane_c &pl, float maxC
 	points.push_back(p[2]);
 	points.push_back(p[3]);
 
+	for (u32 i = 0; i < points.size(); i++) {
+		float d = pl.distance(points[i]);
+		if(d != 0.f) {
+			vec3_c delta = -d * pl.norm;
+			vec3_c fixed = points[i] + delta;
+			float fixedDist = pl.distance(fixed);
+			if(abs(fixedDist) < abs(d)) {
+				points[i] = fixed;
+			}
+		}
+	}
+
 	//if(areAllPointsOnPlane(pl,1.f) == false) {
 	//	__asm int 3
 	//}

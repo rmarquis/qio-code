@@ -262,6 +262,14 @@
 			Name="shaders"
 			>
 			<File
+				RelativePath="..\..\game\baseqio\glsl\cubeMapShader.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\cubeMapShader.vert"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\glsl\genericShader.frag"
 				>
 			</File>
@@ -278,6 +286,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\game\baseqio\glsl\reflectionCubeMap.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\reflectionCubeMap.vert"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\glsl\reliefMappingRayCast.inc"
 				>
 			</File>
@@ -287,6 +303,14 @@
 			</File>
 			<File
 				RelativePath="..\..\game\baseqio\glsl\showNormalColors.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\skyboxCubeMap.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\skyboxCubeMap.vert"
 				>
 			</File>
 		</Filter>

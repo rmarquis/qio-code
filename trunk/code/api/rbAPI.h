@@ -39,6 +39,11 @@ enum backEndType_e {
 	BET_DX10
 };
 
+struct imageData_s {
+	u32 w, h;
+	byte *pic;
+};
+
 class rbAPI_i : public iFaceBase_i {
 public:
 	virtual backEndType_e getType() const = 0;
@@ -71,9 +76,13 @@ public:
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;
 
+	// 2D textures
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
+	// cubemap textures
+	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) { }
+	virtual void freeCubeMap(class cubeMapAPI_i *cm) { }
 
 	// vertex buffers (VBOs)
 	virtual bool createVBO(class rVertexBuffer_c *vbo) = 0;

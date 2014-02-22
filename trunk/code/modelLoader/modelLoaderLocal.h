@@ -49,6 +49,8 @@ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *in
 bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFuncs_i *inout);
 // skel_animPostProcess.cpp
 bool SK_ApplyAnimPostProcess(const char *modName, class skelAnimPostProcessFuncs_i *inout);
+// used to create model 
+bool MOD_CreateModelFromMDLPPScript(const char *fname, staticModelCreatorAPI_i *out);
 
 // keyFramedModelIMPL.cpp
 class kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname);

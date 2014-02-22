@@ -69,4 +69,7 @@ void MAT_FreeCachedMaterialsTest();
 // mat_texturesScript.cpp
 class textureAPI_i *MAT_ParseImageScript(class parser_c &p);
 
+// mat_cubeMap.cpp
+class cubeMapAPI_i *MAT_RegisterCubeMap(const char *texName);
+
 #endif // __MAT_LOCAL_H__
