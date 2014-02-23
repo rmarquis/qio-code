@@ -1487,7 +1487,7 @@ void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		if(sf->getBB().intersect(light->getABSBounds())) {
-			if(sf->getMat()->hasBlendFunc())
+			if(sf->getMat()->isNeededForLightPass()==false)
 				continue;
 			light->addStaticModelSurfaceInteraction(/*this,*/sf);
 		}
@@ -1495,7 +1495,7 @@ void r_model_c::cacheLightStaticModelInteractions(class rLightImpl_c *light) {
 	for(u32 i = 0; i < bezierPatches.size(); i++) {
 		class r_bezierPatch_c *bp = bezierPatches[i];
 		if(bp->getBB().intersect(light->getABSBounds())) {
-			if(bp->getMat()->hasBlendFunc())
+			if(bp->getMat()->isNeededForLightPass()==false)
 				continue;
 			//light->addBezierPatchInteraction(/*this,*/bp);
 			light->addStaticModelSurfaceInteraction((r_surface_c*)bp->getInstancePtr());

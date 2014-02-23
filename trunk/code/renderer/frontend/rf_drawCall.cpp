@@ -129,6 +129,9 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 			sort = DCS_BLEND_AFTER_LIGHTING;
 			n->drawOnlyOnDepthBuffer = false;
 			//return;
+		} else if(mat->hasStageWithCubeMap()) {
+			sort = DCS_BLEND_AFTER_LIGHTING;
+			n->drawOnlyOnDepthBuffer = false;
 		} else {
 			n->drawOnlyOnDepthBuffer = true;
 		}

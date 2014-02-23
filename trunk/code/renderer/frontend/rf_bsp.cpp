@@ -175,7 +175,8 @@ void rBspTree_c::createBatches() {
 	}
 	for(u32 i = 0; i < batches.size(); i++) {
 		bspSurfBatch_s *b = batches[i];
-		b->lastVisSet.init(b->sfs.size(),true);
+		// batch indices and bounds will be recalculated when at least one of its surface become visible
+		b->lastVisSet.init(b->sfs.size(),false);
 	}
 	u32 numMergableSurfs = surfs.size() - c_flares - c_bezierPatches;
 	g_core->Print(S_COLOR_GREEN "rBspTree_c::createBatches: %i surfaces merged into %i batches\n",
@@ -2417,7 +2418,11 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 	arraySTD_c<u32> sfNums;
 	boxSurfaces(l->getABSBounds(),sfNums);
 	for(u32 i = 0; i < sfNums.size(); i++) {
-		l->addBSPSurfaceInteraction(sfNums[i]);
+		u32 surfaceIndex = sfNums[i];
+		class mtrAPI_i *mat = getSurfaceMaterial(surfaceIndex);
+		if(mat->isNeededForLightPass() == false)
+			continue;
+		l->addBSPSurfaceInteraction(surfaceIndex);;
 	}
 }
 void rBspTree_c::getReferencedMatNames(class perStringCallbackListener_i *callback) const {
@@ -2452,6 +2457,7 @@ void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material) {
 		sf.sf->mat = material;
 	}
 	rebuildBatches();
+	RF_CacheLightWorldInteractions
 }
 void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, const char *matName) {
 	setSurfaceMaterial(surfaceNum,g_ms->registerMaterial(matName));

@@ -104,6 +104,7 @@ static aCvar_c rb_printMaterialDepthWrite("rb_printMaterialDepthWrite","0");
 static aCvar_c rb_forceTwoSided("rb_forceTwoSided","0");
 static aCvar_c rb_printLightingPassDrawCalls("rb_printLightingPassDrawCalls","0");
 static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
+static aCvar_c rb_printBlendAfterLightingDrawCalls("rb_printBlendAfterLightingDrawCalls","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1264,6 +1265,9 @@ public:
 		if(curDrawCallSort == DCS_BLEND_AFTER_LIGHTING) {
 			// disable stencil buffer
 			setGLStencilTest(false);
+			if(rb_printBlendAfterLightingDrawCalls.getInt()) {
+				g_core->Print("rbSDLOpenGL_c::drawElements: blendAfterLighting surface with material %s\n",lastMat->getName());
+			}	
 		}
 
 		if(rb_showNormalColors.getInt()) {

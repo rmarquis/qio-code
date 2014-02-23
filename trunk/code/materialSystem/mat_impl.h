@@ -420,6 +420,21 @@ public:
 			return false;
 		return deforms->hasDeformOfType(type);
 	}
+	virtual bool hasStageWithCubeMap() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			const mtrStage_c *s = stages[i];
+			if(s->getCubeMap())
+				return true;
+		}
+		return false;
+	}	
+	virtual bool isNeededForLightPass() const {
+		if(hasStageWithoutBlendFunc() == false)
+			return false;
+		if(hasStageWithCubeMap())
+			return false;
+		return true;
+	}
 	virtual bool hasStageOfType(stageType_e type) const {
 		for(u32 i = 0; i < stages.size(); i++) {
 			const mtrStage_c *s = stages[i];
