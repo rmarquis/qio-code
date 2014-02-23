@@ -44,6 +44,7 @@ aCvar_c rf_ignoreSpecificMaterial2("rf_ignoreSpecificMaterial2","");
 aCvar_c rf_forceSpecificMaterial("rf_forceSpecificMaterial","");
 aCvar_c rf_ignoreShadowVolumeDrawCalls("rf_ignoreShadowVolumeDrawCalls","0");
 aCvar_c rf_drawCalls_dontAddBlendOnlyMaterials("rf_drawCalls_dontAddBlendOnlyMaterials","0");
+aCvar_c rf_drawCalls_printShadowMappingCubeMapDrawCalls("rf_drawCalls_printShadowMappingCubeMapDrawCalls","0");
 
 class drawCall_c {
 public:
@@ -116,6 +117,11 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 		//	if(mat->hasBlendFunc())
 		//		return; 
 		//}
+	}
+	if(rf_drawCalls_printShadowMappingCubeMapDrawCalls.getInt()) {
+		if(rf_curLightAPI && rf_currentShadowMapCubeSide >= 0) {
+			g_core->Print("Adding DepthShadowMap drawcall (%i) with material: %s\n",rf_numDrawCalls,mat->getName());
+		}
 	}
 	drawCall_c *n;
 	if(rf_numDrawCalls == rf_drawCalls.size()) {

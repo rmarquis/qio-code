@@ -47,6 +47,8 @@ struct glslPermutationFlags_s {
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 	bool isSpotLight; // #define LIGHT_IS_SPOTLIGHT
 	bool enableShadowMappingBlur; // #define ENABLE_SHADOW_MAPPING_BLUR
+	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
+	//float alphaTestValue;
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
@@ -69,8 +71,9 @@ friend class rbSDLOpenGL_c;
 	int u_materialColor;
 	// current entity matrix
 	// (identity for world)
-	int u_entityMatrix;
-	int u_entityRotationMatrix;
+	int u_entityMatrix; // mat4x4
+	int u_entityRotationMatrix; // mat4x4
+	//int u_alphaTestValue; // float
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

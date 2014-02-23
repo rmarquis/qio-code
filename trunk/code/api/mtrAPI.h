@@ -58,6 +58,7 @@ public:
 	virtual bool hasStageWithoutBlendFunc() const = 0;
 	virtual bool hasStageOfType(enum stageType_e type) const = 0;
 	virtual bool hasAlphaTest() const = 0;
+	virtual const class mtrStageAPI_i *getFirstStageWithAlphaFunc() const = 0;
 	virtual bool isPortalMaterial() const = 0; // returns true if material definition had "portal" keyword
 	virtual bool isMirrorMaterial() const = 0; // returns true if material definition had "mirror" keyword
 	virtual bool hasDeforms() const = 0;

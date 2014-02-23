@@ -105,6 +105,7 @@ static aCvar_c rb_forceTwoSided("rb_forceTwoSided","0");
 static aCvar_c rb_printLightingPassDrawCalls("rb_printLightingPassDrawCalls","0");
 static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
 static aCvar_c rb_printBlendAfterLightingDrawCalls("rb_printBlendAfterLightingDrawCalls","0");
+static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -198,8 +199,8 @@ struct rbCounters_s {
 	//u32 c_multiStageMaterials;
 	//u32 c_gpuVertexBuffers;
 	//u32 c_cpuVertexBuffers;
-	//u32 c_gpuIndexBuffers;
-	//u32 c_cpuIndexBuffers;
+	u32 c_gpuIndexBuffers;
+	u32 c_cpuIndexBuffers;
 
 	void clear() {
 		memset(this,0,sizeof(*this));
@@ -964,8 +965,10 @@ public:
 			return;
 		if(boundGPUIBO == 0) {
 			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), boundIBO->getVoidPtr());
+			counters.c_cpuIndexBuffers++;
 		} else {
 			glDrawElements(GL_TRIANGLES, boundIBO->getNumIndices(), boundIBO->getGLIndexType(), 0);
+			counters.c_gpuIndexBuffers++;
 		}
 		CHECK_GL_ERRORS;
 		if(gl_callGLFinish.getInt()==2) {
@@ -1143,6 +1146,22 @@ public:
 			return stage->getTextureForFrameNum(forcedMaterialFrameNum);
 		}
 	}
+	void setupStageAlphaFunc(const mtrStageAPI_i *s) {
+		alphaFunc_e newAlphaFunc = s->getAlphaFunc();
+		if(newAlphaFunc == AF_D3_ALPHATEST) {
+			// evaluate Doom3 alpha value expression at runtime (AST)
+			float alphaValue = s->evaluateAlphaTestValue(&materialVarList);
+			// and then set it
+			if(rb_ignoreDoom3AlphaTest.getInt()) {
+				setAlphaFunc(AF_NONE);
+			} else {
+				setAlphaFunc(AF_D3_ALPHATEST,alphaValue);
+			}
+		} else {
+			// set the classic Quake3 GT0 / LT128 / GT128 alphaFunc
+			setAlphaFunc(s->getAlphaFunc());
+		}
+	}
 	bool bDeformsDone;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
@@ -1215,7 +1234,6 @@ public:
 			bindShader(0);
 			bindVertexBuffer(&verts);
 			bindIBO(&indices);
-			turnOffAlphaFunc();
 			//turnOffPolygonOffset();
 			if(lastMat->getPolygonOffset()) {
 				this->setPolygonOffset(-1,-2);
@@ -1223,11 +1241,35 @@ public:
 				this->turnOffPolygonOffset();
 			}
 			turnOffTextureMatrices();
-			disableAllTextures();
+
+			// check if material has an alpha test stage
+			// TODO: draw all of them, not only the first one?
+			const mtrStageAPI_i *alphaStage = lastMat->getFirstStageWithAlphaFunc();
+			if(alphaStage == 0) {
+				// material has no alpha test stages, we can draw without textures
+				turnOffAlphaFunc();
+				disableAllTextures();
+			} else {
+				// material has alpha test stage, we need to bind its texture
+				// and draw surface with alpha test enabled.
+				setupStageAlphaFunc(alphaStage);
+				disableAllTextures();
+				bindTex(0,alphaStage->getTexture(0)->getInternalHandleU32());
+			}
+
 			if(curCubeMapSide >= 0) {
 				// invert culling for shadow mapping 
 				// (because we want to get the depth of backfaces to avoid epsilon issues)
-				glCull(CT_BACK_SIDED);
+				if(lastMat) {
+					if(lastMat->getCullType() == CT_TWO_SIDED) {
+						// this is needed for eg. tree leaves/branches
+						glCull(CT_TWO_SIDED);
+					} else {
+						glCull(CT_BACK_SIDED);
+					}
+				} else {
+					glCull(CT_BACK_SIDED);
+				}
 			} else {
 				if(lastMat) {
 					if(rb_forceTwoSided.getInt()) {
@@ -1376,20 +1418,7 @@ public:
 				class cubeMapAPI_i *cubeMap = s->getCubeMap();
 
 				// set the alphafunc
-				alphaFunc_e newAlphaFunc = s->getAlphaFunc();
-				if(newAlphaFunc == AF_D3_ALPHATEST) {
-					// evaluate Doom3 alpha value expression at runtime (AST)
-					float alphaValue = s->evaluateAlphaTestValue(&materialVarList);
-					// and then set it
-					if(rb_ignoreDoom3AlphaTest.getInt()) {
-						setAlphaFunc(AF_NONE);
-					} else {
-						setAlphaFunc(AF_D3_ALPHATEST,alphaValue);
-					}
-				} else {
-					// set the classic Quake3 GT0 / LT128 / GT128 alphaFunc
-					setAlphaFunc(s->getAlphaFunc());
-				}
+				setupStageAlphaFunc(s);
 
 				// set the blendfunc
 				if(curLight == 0) {
@@ -1679,6 +1708,10 @@ drawOnlyLightmap:
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 					pf.isSpotLight = (curLight->getLightType() == LT_SPOTLIGHT);
 					pf.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
+					/*if(prevAlphaFunc == AF_D3_ALPHATEST) {
+						pf.hasDoom3AlphaTest = true;
+						pf.alphaTestValue = alphaFuncCustomValue;
+					}*/
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					bindShader(selectedShader);
@@ -1930,6 +1963,9 @@ drawOnlyLightmap:
 		}
 		if(rb_printFrameVertCounts.getInt()) {
 			g_core->Print("%i input verts / %i total verts (%i in VBOs)\n",counters.c_inputVerts,counters.c_totalVerts,counters.c_totalVertsVBO);
+		}
+		if(rb_printIBOStats.getInt()) {
+			g_core->Print("%i GPU ibos, %i CPU ibos\n",counters.c_gpuIndexBuffers,counters.c_cpuIndexBuffers);
 		}
 		counters.clear();
 	}	

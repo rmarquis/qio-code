@@ -2457,7 +2457,6 @@ void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material) {
 		sf.sf->mat = material;
 	}
 	rebuildBatches();
-	RF_CacheLightWorldInteractions
 }
 void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, const char *matName) {
 	setSurfaceMaterial(surfaceNum,g_ms->registerMaterial(matName));

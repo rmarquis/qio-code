@@ -401,6 +401,13 @@ public:
 		}
 		return false;
 	}
+	virtual const class mtrStageAPI_i *getFirstStageWithAlphaFunc() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->hasAlphaTest())
+				return stages[i];
+		}
+		return 0;
+	}
 	virtual bool isPortalMaterial() const {
 		return this->bPortalMaterial;
 	}

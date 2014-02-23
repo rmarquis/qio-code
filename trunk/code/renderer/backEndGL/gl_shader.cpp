@@ -180,6 +180,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.enableShadowMappingBlur) {
 		out.append("#define ENABLE_SHADOW_MAPPING_BLUR\n");
 	}
+	//if(p.hasDoom3AlphaTest) {
+	//	out.append("#define HAS_DOOM3_ALPHATEST\n");
+	//}
 	if(p.debug_ignoreAngleFactor) {
 		out.append("#define DEBUG_IGNOREANGLEFACTOR\n");
 	}
@@ -298,6 +301,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");
 	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
 	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
+	//ret->u_alphaTestValue = glGetUniformLocation(shader,"u_alphaTestValue");
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
 
