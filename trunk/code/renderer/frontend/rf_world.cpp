@@ -200,7 +200,24 @@ void RF_CacheLightWorldInteractions(class rLightImpl_c *l) {
 	}
 }
 void RF_DrawSingleBSPSurface(u32 sfNum) {
+	if(r_bspTree == 0)
+		return;
 	r_bspTree->addBSPSurfaceDrawCall(sfNum);
+}
+const rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum) {
+	if(r_bspTree == 0)
+		return 0;
+	return r_bspTree->getSingleBSPSurfaceABSIndices(sfNum);
+}
+class mtrAPI_i *RF_GetSingleBSPSurfaceMaterial(u32 sfNum) {
+	if(r_bspTree == 0)
+		return 0;
+	return r_bspTree->getSurfaceMaterial(sfNum);
+}
+const rVertexBuffer_c *RF_GetBSPVertices() {
+	if(r_bspTree == 0)
+		return 0;
+	return r_bspTree->getVertices();
 }
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume, lightRadius);

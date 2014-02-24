@@ -52,12 +52,14 @@ struct staticSurfInteraction_s {
 		u32 bspSurfaceNumber; // for SIT_BSP
 		int areaNum; // for SIT_PROC
 	};
+	int batchIndex;
 
 	staticSurfInteraction_s() {
 		type = SIT_BAD;
 		filter = SIFT_NONE;
 		sf = 0;
 		bspSurfaceNumber = 0;
+		batchIndex = -1;
 	}
 	bool isNeededForLighting() const {
 		if(filter == SIFT_ONLY_SHADOW)
@@ -86,6 +88,65 @@ struct entityInteraction_s {
 	}
 };
 
+#include <renderer/rIndexBuffer.h>
+class staticInteractionBatch_c {
+friend class staticInteractionBatcher_c;
+	rIndexBuffer_c indices;
+	mtrAPI_i *material;
+public:
+	mtrAPI_i *getMaterial() const {
+		return material;
+	}
+	const rIndexBuffer_c &getIndices() const {
+		return indices;
+	}
+};
+class staticInteractionBatcher_c {
+	arraySTD_c<staticInteractionBatch_c*> batches;
+
+	int findMaterialBatch(class mtrAPI_i *m) const {
+		for(u32 i = 0; i < batches.size(); i++) {
+			if(batches[i]->material == m)
+				return i;
+		}
+		return -1;
+	}
+	staticInteractionBatch_c *registerBatch(class mtrAPI_i *m, int &index) {
+		index = findMaterialBatch(m);
+		if(index >= 0)
+			return batches[index];
+		staticInteractionBatch_c *n = new staticInteractionBatch_c;
+		n->material = m;
+		index = batches.size();
+		batches.push_back(n);
+		return n;
+	}
+public:
+	int addSurface(class mtrAPI_i *mat, const rIndexBuffer_c *indices) {
+		int index;
+		staticInteractionBatch_c *b = registerBatch(mat,index);
+		b->indices.addIndexBuffer(*indices);
+		return index;
+	}
+	void uploadIBOs() {
+		for(u32 i = 0; i < batches.size(); i++) {
+			batches[i]->indices.uploadToGPU();
+		}
+	}
+	void clear() {
+		for(u32 i = 0; i < batches.size(); i++) {
+			delete batches[i];
+		}
+		batches.clear();
+	}
+	const staticInteractionBatch_c *getBatch(u32 index) const {
+		return batches[index];
+	}
+	u32 getNumBatches() const {
+		return batches.size();
+	}
+};
+
 class rLightImpl_c : public rLightAPI_i {
 	rLightType_e lightType;
 	vec3_c pos;
@@ -102,6 +163,7 @@ class rLightImpl_c : public rLightAPI_i {
 	arraySTD_c<staticSurfInteraction_s> staticInteractions;
 	int numCurrentStaticInteractions;
 	rIndexedShadowVolume_c *staticShadowVolume; 
+	staticInteractionBatcher_c staticBatcher;
 
 	arraySTD_c<entityInteraction_s> entityInteractions;
 	int numCurrentEntityInteractions;
@@ -150,6 +212,7 @@ public:
 
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();
+	void recalcStaticInteractionBatches();
 	void recalcShadowVolumeOfStaticInteractions();
 	void recalcLightInteractionsWithStaticWorld();
 	void refreshIntersection(entityInteraction_s &in);
@@ -163,6 +226,7 @@ public:
 	// forward rendering
 	void addStaticSurfInteractionDrawCall(struct staticSurfInteraction_s &in, bool addingForShadowMapping);
 	void addLightInteractionDrawCalls();
+	void addBatchedStaticInteractionDrawCalls();
 	// only for stencil shadows
 	void addLightShadowVolumesDrawCalls();
 	// only for shadow mapping

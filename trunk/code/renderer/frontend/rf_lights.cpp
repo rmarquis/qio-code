@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include "rf_bsp.h"
 #include <api/coreAPI.h>
+#include <api/mtrAPI.h>
 
 static aCvar_c rf_skipLightInteractionsDrawCalls("rf_skipLightInteractionsDrawCalls","0");
 static aCvar_c rf_cullShadowVolumes("rf_cullShadowVolumes","1");
@@ -42,6 +43,8 @@ static aCvar_c light_printLightTypes("light_printLightTypes","0");
 static aCvar_c rf_printEntityShadowVolumesPrimCounts("rf_printEntityShadowVolumesPrimCounts","0");
 static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInteractionsUpdate","0");
 static aCvar_c rf_verboseAddLightInteractionsDrawCalls("rf_verboseAddLightInteractionsDrawCalls","0");
+static aCvar_c light_batchBSPInteractions("light_batchBSPInteractions","1");
+static aCvar_c light_printBSPBatchingStats("light_printBSPBatchingStats","0");
 
 
 void entityInteraction_s::clear() {
@@ -167,6 +170,36 @@ void rLightImpl_c::recalcLightInteractionsWithStaticWorld() {
 	RF_CacheLightWorldInteractions(this);
 	if(RF_IsUsingShadowVolumes()) {
 		recalcShadowVolumeOfStaticInteractions();
+	}
+	if(light_batchBSPInteractions.getInt()) {
+		recalcStaticInteractionBatches();
+	}
+}
+// create batches for interactions with bsp polygons.
+void rLightImpl_c::recalcStaticInteractionBatches() {
+	staticBatcher.clear();
+	u32 c_addedSurfaces = 0;
+	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
+		staticSurfInteraction_s &in = this->staticInteractions[i];
+		int batchIndex;
+		if(in.type == SIT_BSP) {
+			const rIndexBuffer_c *indices = RF_GetSingleBSPSurfaceABSIndices(in.bspSurfaceNumber);
+			if(indices == 0) {
+				batchIndex = -1;
+			} else {
+				mtrAPI_i *mat = RF_GetSingleBSPSurfaceMaterial(in.bspSurfaceNumber);
+				batchIndex = staticBatcher.addSurface(mat,indices);
+				c_addedSurfaces++;
+			}
+		} else {
+			batchIndex = -1;
+		}
+		in.batchIndex = batchIndex;
+	}
+	staticBatcher.uploadIBOs();
+	// for test_tree.pk3 light there are 1563 surfaces and (!) 3 batches.
+	if(light_printBSPBatchingStats.getInt()) {
+		g_core->Print("%i surfaces, %i batches\n",c_addedSurfaces,staticBatcher.getNumBatches());
 	}
 }
 void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
@@ -374,16 +407,33 @@ void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in,
 		}
 	}
 }
+void rLightImpl_c::addBatchedStaticInteractionDrawCalls() {
+	// add static batches
+	const rVertexBuffer_c *verts = RF_GetBSPVertices();
+	for(u32 i = 0; i < staticBatcher.getNumBatches(); i++) {
+		const staticInteractionBatch_c *b = staticBatcher.getBatch(i);
+		RF_AddDrawCall(verts,&b->getIndices(),b->getMaterial(),0,b->getMaterial()->getSort(),false);
+	}
+}
 void rLightImpl_c::addLightInteractionDrawCalls() {
+	bool bUseBatches = light_batchBSPInteractions.getInt();
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.isNeededForLighting() == false) {
 			// if interaction is not needed for lighting, skip it
 			continue;
 		}
+		// check if interaction is batched
+		if(bUseBatches && in.batchIndex != -1)
+			continue;
 		// add static surf interaction for lighting
 		addStaticSurfInteractionDrawCall(in,false);
 	}
+	if(bUseBatches) {
+		// add static batches
+		addBatchedStaticInteractionDrawCalls();
+	}
+
 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
 		entityInteraction_s &in = this->entityInteractions[i];
 		if(rf_verboseAddLightInteractionsDrawCalls.getInt()) {
@@ -458,13 +508,20 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 	rf_currentShadowMapW = getShadowMapW();
 	rf_currentShadowMapH = getShadowMapH();
 	rf_bDrawOnlyOnDepthBuffer = true;
+	bool bUseBatches = light_batchBSPInteractions.getInt();
 	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {	
 		rf_currentShadowMapCubeSide = side;
 		const frustum_c &sideFrustum = sideFrustums[side];
 		for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
 			staticSurfInteraction_s &sIn = this->staticInteractions[j];
+			if(bUseBatches && sIn.batchIndex != -1)
+				continue;
 			// add static surf interaction for shadow mapping
 			addStaticSurfInteractionDrawCall(sIn,true);
+		}		
+		// add static batches
+		if(bUseBatches) {
+			addBatchedStaticInteractionDrawCalls();
 		}
 		for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
 			entityInteraction_s &eIn = this->entityInteractions[j];

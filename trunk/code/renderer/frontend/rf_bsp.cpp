@@ -2155,6 +2155,13 @@ void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {
 		}
 	}
 }
+const rIndexBuffer_c *rBspTree_c::getSingleBSPSurfaceABSIndices(u32 sfNum) const {
+	const bspSurf_s &sf = this->surfs[sfNum];
+	if(sf.type == BSPSF_PLANAR) {
+		return &sf.sf->absIndexes;
+	}
+	return 0;
+}
 #include "rf_shadowVolume.h"
 void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	bspSurf_s &sf = this->surfs[sfNum];

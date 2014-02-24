@@ -484,17 +484,25 @@ public:
 		if(newAlphaFunc == AF_NONE) {
 			glDisable(GL_ALPHA_TEST);
 		} else if(newAlphaFunc == AF_GT0) {
-			glEnable(GL_ALPHA_TEST);
+			if(prevAlphaFunc == AF_NONE) {
+				glEnable(GL_ALPHA_TEST);
+			}
 			glAlphaFunc( GL_GREATER, 0.0f ); 
 		} else if(newAlphaFunc == AF_GE128) {
-			glEnable(GL_ALPHA_TEST);
+			if(prevAlphaFunc == AF_NONE) {
+				glEnable(GL_ALPHA_TEST);
+			}
 			glAlphaFunc( GL_GREATER, 0.5f ); 
 		} else if(newAlphaFunc == AF_LT128) {
-			glEnable(GL_ALPHA_TEST);
+			if(prevAlphaFunc == AF_NONE) {
+				glEnable(GL_ALPHA_TEST);
+			}
 			glAlphaFunc( GL_LESS, 0.5f ); 
 		} else if(newAlphaFunc == AF_D3_ALPHATEST) {
 			// set the custom alphaTest value provided by Doom3 material
-			glEnable(GL_ALPHA_TEST);
+			if(prevAlphaFunc == AF_NONE) {
+				glEnable(GL_ALPHA_TEST);
+			}
 			glAlphaFunc( GL_GREATER, customVal ); 
 			alphaFuncCustomValue = customVal;
 		}
@@ -665,11 +673,12 @@ public:
 		if(prevCullType == cullType) {
 			return;
 		}
-		prevCullType = cullType;
 		if(cullType == CT_TWO_SIDED) {
 			glDisable(GL_CULL_FACE);
 		} else {
-			glEnable( GL_CULL_FACE );
+			if(prevCullType == CT_TWO_SIDED) {
+				glEnable(GL_CULL_FACE);
+			}
 			if(isMirror) {
 				// swap CT_FRONT with CT_BACK for mirror views
 				if(cullType == CT_BACK_SIDED) {
@@ -685,6 +694,7 @@ public:
 				}
 			}
 		}
+		prevCullType = cullType;
 		CHECK_GL_ERRORS;
 	}
 	// GL_STENCIL_TEST
@@ -726,6 +736,8 @@ public:
 		bDrawingSky = false;
 	}
 	virtual void setColor4f(float r, float g, float b, float a)  {
+		//if(lastSurfaceColor[0] == r && lastSurfaceColor[1] == g && lastSurfaceColor[2] == b && lastSurfaceColor[3] == a)
+		//	return;
 		glColor4f(r,g,b,a);
 		lastSurfaceColor.set(r,g,b,a);
 	}
@@ -834,8 +846,8 @@ public:
 		if(boundVBO == verts) {
 			if(boundVBOVertexColors == bindVertexColors) {
 				if(bBoundLightmapCoordsToFirstTextureSlot == bindLightmapCoordsToFirstTextureSlot) {
-					//c_frame_vbsReusedByDifferentDrawCall++;
-					//return; // already bound
+					c_frame_vbsReusedByDifferentDrawCall++;
+					return; // already bound
 				}
 			} else {
 
@@ -2114,11 +2126,10 @@ drawOnlyLightmap:
 		this->unbindVertexBuffer();
 		this->unbindMaterial();
 
+		setColor4f(colorRGB[0],colorRGB[1],colorRGB[2],1.f);
 		glLineWidth(lineWidth);
 		glBegin(GL_LINES);
-		glColor3fv(colorRGB);
 		glVertex3fv(from);
-		glColor3fv(colorRGB);
 		glVertex3fv(to);
 		glEnd();
 		glLineWidth(1.f);

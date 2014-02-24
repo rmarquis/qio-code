@@ -245,7 +245,6 @@ class rBspTree_c {
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
 	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;		
-	class mtrAPI_i *getSurfaceMaterial(u32 surfNum) const;
 
 	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
 public:
@@ -262,12 +261,18 @@ public:
 		createBatches();
 	}
 
+	const rVertexBuffer_c *getVertices() const {
+		return &verts;
+	}
+
 	void updateVisibility();
 	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);
 	void markAreas();
 	void addDrawCalls();
 	void addModelDrawCalls(u32 inlineModelNum);
 	void addBSPSurfaceDrawCall(u32 sfNum);
+	const rIndexBuffer_c *getSingleBSPSurfaceABSIndices(u32 sfNum) const;
+	class mtrAPI_i *getSurfaceMaterial(u32 surfNum) const;
 	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 	
 	void doDebugDrawing();

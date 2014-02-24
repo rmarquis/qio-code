@@ -150,6 +150,9 @@ uniform vec3 u_lightDir;
 uniform float u_spotLightMaxCos;
 #endif
 
+// #ifdef HAS_DOOM3_ALPHATEST
+// uniform float u_alphaTestValue;
+// #endif
 
 void main() {
 #if 0
@@ -216,6 +219,13 @@ void main() {
 #else
 	float shadow = 1.0;
 #endif
+	vec4 textureColor = texture2D (colorMap, texCoord);
+// #ifdef HAS_DOOM3_ALPHATEST
+// 	if(textureColor.a < u_alphaTestValue)
+// 	{
+// 		discard;
+// 	}
+// #endif
 	// calculate the final color
-	gl_FragColor = texture2D (colorMap, texCoord) * angleFactor * distanceFactor * shadow;
+	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
 }

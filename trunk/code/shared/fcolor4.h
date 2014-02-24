@@ -79,6 +79,9 @@ public:
 		b *= f;
 		a *= f;
 	}
+	float operator[](u32 index) const {
+		return (&r)[index];
+	}
 	const float *toPointer() const {
 		return &r;
 	}
