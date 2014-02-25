@@ -18,5 +18,8 @@ void IMG_HorizontalFlip(byte *data, u32 width, u32 height);
 void IMG_VerticalFlip(byte *data, u32 width, u32 height) ;
 void IMG_RotatePic(byte *data, u32 width);
 
+// img_write.cpp
+void IMG_WriteTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp);
+
 #endif // __IMG_LOCAL_H__
 

@@ -2327,6 +2327,25 @@ drawOnlyLightmap:
 		//return glConfig.vidHeight;
 		return g_sharedSDLAPI->getWinHeigth();
 	}
+	virtual byte *getScreenShotRGB(u32 *w, u32 *h) const {
+		glFinish();
+
+		u32 width = getWinWidth();
+		u32 height = getWinHeight();
+		byte *pixels = new byte[3 * width * height];
+		if(w) {
+			*w = width;
+		}		
+		if(h) {
+			*h = height;
+		}		
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		return pixels;
+	}
+	virtual void freeScreenShotData(byte *b) {
+		delete [] b;
+	};
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		out->setWidth(w);
 		out->setHeight(h);

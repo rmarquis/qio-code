@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
 #include <api/ddAPI.h>
+#include <api/imgAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/gameAPI.h> // only for debug drawing
@@ -274,6 +275,7 @@ modelLoaderDLLAPI_i *g_modelLoader = 0;
 // game module api - only for debug drawing on non-dedicated server
 gameAPI_s *g_game = 0;
 declManagerAPI_i *g_declMgr = 0;
+imgAPI_i *g_img = 0;
 
 // exports
 static rAPIImpl_c g_staticRFAPI;
@@ -295,6 +297,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

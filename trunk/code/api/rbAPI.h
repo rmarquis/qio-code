@@ -73,8 +73,13 @@ public:
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) = 0;
 
+	// window size
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;
+
+	// screen buffer access
+	virtual byte *getScreenShotRGB(u32 *w, u32 *h) const { return 0; }
+	virtual void freeScreenShotData(byte *b) { };
 
 	// 2D textures
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;

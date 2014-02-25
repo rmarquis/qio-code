@@ -52,6 +52,7 @@ struct vfsAPI_s : public iFaceBase_i {
 	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
 	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void (*FS_FCloseFile)( fileHandle_t f );
+	void (*FS_WriteFile)( const char *qpath, const void *buffer, int size );
 	int (*FS_GetFileList)( const char *path, const char *extension, char *listbuf, int bufsize );
 	int (*FS_Seek)( fileHandle_t f, long offset, int origin ); // fsOrigin_t
 	char **	(*FS_ListFiles)( const char *name, const char *extension, int *numfilesfound );
