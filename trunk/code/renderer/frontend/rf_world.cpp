@@ -37,6 +37,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/stringList.h>
 #include <shared/rendererSurfaceRef.h>
 
+static str r_worldMapName;
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
 static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
 static class procTree_c *r_procTree = 0; // for .proc files
@@ -61,6 +62,15 @@ void RF_ClearWorldMap() {
 	}
 	RFL_FreeAllLights();
 }
+bool RF_IsAnyMapLoaded() {
+	if(r_bspTree)
+		return true;
+	if(r_worldModel)
+		return true;
+	if(r_procTree)
+		return true;
+	return false;
+}
 void RF_CreateEmptyMap() {
 	// create flat ground plane
 	r_worldModel = new r_model_c;
@@ -76,6 +86,11 @@ void RF_CreateEmptyMap() {
 	r_worldModel->multTexCoordsXY(maxSize/texWorldSize);
 	r_worldModel->recalcModelTBNs();
 	r_worldModel->recalcBoundingBoxes();
+
+	r_worldMapName = "_empty";
+}
+const char *RF_GetWorldMapName() {
+	return r_worldMapName.c_str();
 }
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();
@@ -90,29 +105,38 @@ bool RF_LoadWorldMap(const char *name) {
 		RF_CreateEmptyMap();
 		return true;
 	}
+	r_worldMapName = "_nomap";
 	if(!stricmp(ext,"bsp")) {
 		// Q3/RTCW/ET/MoH/CoD .bsp file
 		r_bspTree = RF_LoadBSP(name);
-		if(r_bspTree)
+		if(r_bspTree) {
+			r_worldMapName = name;
 			return false; // ok
+		}
 		return true; // error
 	} else if(!stricmp(ext,"proc")) {
 		// Doom3 / Quake4 .proc
 		r_procTree = RF_LoadPROC(name);
-		if(r_procTree)
+		if(r_procTree) {
+			r_worldMapName = name;
 			return false; // ok
+		}
 		return true; // error
 	} else if(!stricmp(ext,"procb")) {
 		// ETQW binary .proc
 		r_procTree = RF_LoadPROCB(name);
-		if(r_procTree)
+		if(r_procTree) {
+			r_worldMapName = name;
 			return false; // ok
+		}
 		return true; // error
 	} else if(!stricmp(ext,"map")) {
 		// load .map file directly
 		r_worldModel = RF_LoadMAPFile(name);
-		if(r_worldModel)
+		if(r_worldModel) {
+			r_worldMapName = name;
 			return false; // ok
+		}
 		return true; // error
 	} else if(g_modelLoader->isStaticModelFile(name)) {
 		// any other static model format
@@ -121,6 +145,7 @@ bool RF_LoadWorldMap(const char *name) {
 			delete m;
 			return true; // error
 		}
+		r_worldMapName = name;
 		m->createVBOsAndIBOs();
 		r_worldModel = m;
 		return false; // ok

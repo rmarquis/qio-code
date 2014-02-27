@@ -148,7 +148,9 @@ public:
 	}
 	virtual void loadWorldMap(const char *mapName)  {
 		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
-		RF_LoadWorldMap(mapName);
+		if(RF_LoadWorldMap(mapName) == false) {
+			RF_LoadWorldMapCubeMaps(mapName);
+		}
 	}
 	virtual bool rayTraceWorldMap(class trace_c &tr) {
 		return RF_RayTraceWorld(tr);
@@ -201,6 +203,9 @@ public:
 	}
 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) {
 		return RF_RemoveCustomRenderObject(api);
+	}
+	virtual class cubeMapAPI_i *getNearestEnvCubeMapImage(const class vec3_c &p) {
+		return RF_FindNearestEnvCubeMap_Image(p);
 	}
 	// this will use the current camera settings
 	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) {

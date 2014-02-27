@@ -556,6 +556,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\entDefsList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\entDefsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\ePairsList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\flags32.h"
 				>
 			</File>

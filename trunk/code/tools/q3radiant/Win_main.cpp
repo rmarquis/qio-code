@@ -120,8 +120,8 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
 			out += strlen ("-gamedir ");
 			strcpy(out,basePath);
 			out += strlen(basePath);
-			strcpy(out,modDir);
-			out += strlen(modDir);
+			//strcpy(out,modDir);
+			//out += strlen(modDir);
 			
 			*out = ' ';
 			out++;

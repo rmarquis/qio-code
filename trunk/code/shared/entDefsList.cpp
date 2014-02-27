@@ -92,13 +92,17 @@ bool entDefsList_c::fromString(const char *text) {
 }
 bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 	char buf[512];
-	strcpy(buf,"maps/");
-	strcat(buf,mapName);
-	strcat(buf,".bsp");
+	strcpy(buf,mapName);
 	fileHandle_t f;
 	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
 	if(f == 0) {
-		return true;
+		strcpy(buf,"maps/");
+		strcat(buf,mapName);
+		strcat(buf,".bsp");
+		len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+		if(f == 0) {
+			return true;
+		}
 	}
 	byte *data = (byte*)malloc(len);
 	g_vfs->FS_Read(data,len,f);
@@ -136,13 +140,17 @@ bool entDefsList_c::loadEntitiesFromBSPFile(const char *mapName) {
 }
 bool entDefsList_c::loadEntitiesFromMapFile(const char *mapName) {
 	char buf[512];
-	strcpy(buf,"maps/");
-	strcat(buf,mapName);
-	strcat(buf,".map");
+	strcpy(buf,mapName);
 	fileHandle_t f;
 	int len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
 	if(f == 0) {
-		return true;
+		strcpy(buf,"maps/");
+		strcat(buf,mapName);
+		strcat(buf,".map");
+		len = g_vfs->FS_FOpenFile(buf,&f,FS_READ);
+		if(f == 0) {
+			return true;
+		}
 	}
 	byte *data = (byte*)malloc(len);
 	g_vfs->FS_Read(data,len,f);

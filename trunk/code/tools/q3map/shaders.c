@@ -187,7 +187,7 @@ static void LoadShaderImage( shaderInfo_t *si ) {
 
 	// look for the editorimage if it is specified
 	if ( si->editorimage[0] ) {
-		sprintf( filename, "%s%s", gamedir, si->editorimage );
+		sprintf( filename, "%s/%s", gamedir, si->editorimage );
 		DefaultExtension( filename, ".tga" );
     buffer = LoadImageFile(filename, &bTGA);
     if ( buffer != NULL) {
@@ -217,7 +217,7 @@ static void LoadShaderImage( shaderInfo_t *si ) {
 	//}
 
 	// couldn't load anything
-	_printf("WARNING: Couldn't find image for shader %s\n", si->shader );
+  _printf("WARNING: Couldn't find image for shader %s (editorImage name %s)\n", si->shader, si->editorimage );
 
 	si->color[0] = 1;
 	si->color[1] = 1;
@@ -603,35 +603,29 @@ static void ParseShaderFile( const char *filename ) {
 LoadShaderInfo
 ===============
 */
-#define	MAX_SHADER_FILES	64
+#include <io.h>
 void LoadShaderInfo( void ) {
-	char			filename[1024];
-	int				i;
-	char			*shaderFiles[MAX_SHADER_FILES];
-	int				numShaderFiles;
+	char	dirstring[1024];
+	struct _finddata_t fileinfo;
+	int		handle;
 
-	sprintf( filename, "%sscripts/shaderlist.txt", gamedir );
-	if(FileExists(filename) == qfalse) {
-		printf("cannot open scripts/shaderlist.txt\n");
-		return;
-	}
-	LoadScriptFile( filename );
+	sprintf (dirstring, "%s/materials/*.mtr", gamedir);
 
-	numShaderFiles = 0;
-	while ( 1 ) {
-		if ( !GetToken( qtrue ) ) {
-			break;
-		}
-    shaderFiles[numShaderFiles] = malloc(MAX_OS_PATH);
-		strcpy( shaderFiles[ numShaderFiles ], token );
-		numShaderFiles++;
-	}
+	//qprintf(dirstring);
+  handle = _findfirst (dirstring, &fileinfo);
+  if (handle != -1)
+  {
+    do
+    {
+      if ((fileinfo.attrib & _A_SUBDIR))
+        continue;
+      sprintf(dirstring, "%s/materials/%s", gamedir, fileinfo.name);
+	qprintf("Trying to load %s\n",dirstring);
+      ParseShaderFile(dirstring);
+	  } while (_findnext( handle, &fileinfo ) != -1);
 
-	for ( i = 0 ; i < numShaderFiles ; i++ ) {
-		sprintf( filename, "%sscripts/%s.shader", gamedir, shaderFiles[i] );
-		ParseShaderFile( filename );
-    free(shaderFiles[i]);
-	}
+	  _findclose (handle);
+  }
 
 	qprintf( "%5i shaderInfo\n", numShaderInfo);
 }

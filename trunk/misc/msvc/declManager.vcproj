@@ -250,6 +250,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\ePairsList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\matrix.cpp"
 				>
 			</File>

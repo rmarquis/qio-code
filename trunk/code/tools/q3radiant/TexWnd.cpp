@@ -1196,6 +1196,12 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
   if (!bShader && name[0] != '(')
   {
     CShaderInfo* pShader = hasShader(name);
+	if(pShader == 0) {
+		char fix[512];
+		strcpy(fix,"textures/");
+		strcat(fix,name);
+		pShader = hasShader(fix);
+	}
     if (pShader)
     {
       if (pShader->m_pQTexture == NULL)
@@ -1919,34 +1925,34 @@ void	Texture_ShowInuse (void)
 	Sys_Status("Selecting active textures\n", 0);
 
 	for (b=active_brushes.next ; b != NULL && b != &active_brushes ; b=b->next)
-  {
-    if (b->patchBrush)
-    {
-      Texture_ForName(b->pPatch->d_texture->name);
-    }
-    else
-    {
-		  for (f=b->brush_faces ; f ; f=f->next)
-      {
-			  Texture_ForName (f->texdef.name);
-      }
-    }
-  }
+	{
+		if (b->patchBrush)
+		{
+			Texture_ForName(b->pPatch->d_texture->name);
+		}
+		else
+		{
+			for (f=b->brush_faces ; f ; f=f->next)
+			{
+				Texture_ForName (f->texdef.name);
+			}
+		}
+	}
 
 	for (b=selected_brushes.next ; b != NULL && b != &selected_brushes ; b=b->next)
-  {
-    if (b->patchBrush)
-    {
-      Texture_ForName(b->pPatch->d_texture->name);
-    }
-    else
-    {
-		  for (f=b->brush_faces ; f ; f=f->next)
-      {
-			  Texture_ForName (f->texdef.name);
-      }
-    }
-  }
+	{
+		if (b->patchBrush)
+		{
+			Texture_ForName(b->pPatch->d_texture->name);
+		}
+		else
+		{
+			for (f=b->brush_faces ; f ; f=f->next)
+			{
+				Texture_ForName (f->texdef.name);
+			}
+		}
+	}
 
 	SortTextures();
 	//SetInspectorMode(W_TEXTURE);
@@ -1957,9 +1963,9 @@ void	Texture_ShowInuse (void)
 
 	// select the first texture in the list
 	if (!g_qeglobals.d_texturewin.texdef.name[0])
-  {
+	{
 		SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
-  }
+	}
 }
 
 /*
@@ -1991,35 +1997,35 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 		if (q->name[0] == '(')	// fake color texture
 			continue;
 
-    if (g_bFilterEnabled)
-    {
-      CString strName = q->name;
-      int nPos = strName.Find('\\');
-      if (nPos == -1)
-        nPos = strName.Find('/');
-      if (nPos >= 0)
-        strName = strName.Right(strName.GetLength() - nPos - 1);
-      if (strnicmp(g_strFilter.GetBuffer(0), strName, g_strFilter.GetLength()) == 0)
-        break;
-      else
-        continue;
-    }
+		if (g_bFilterEnabled)
+		{
+			CString strName = q->name;
+			int nPos = strName.Find('\\');
+			if (nPos == -1)
+				nPos = strName.Find('/');
+			if (nPos >= 0)
+				strName = strName.Right(strName.GetLength() - nPos - 1);
+			if (strnicmp(g_strFilter.GetBuffer(0), strName, g_strFilter.GetLength()) == 0)
+				break;
+			else
+				continue;
+		}
 
-    if (q->bFromShader && g_PrefsDlg.m_bShowShaders == FALSE)
-    {
-      continue;
-    }
+		if (q->bFromShader && g_PrefsDlg.m_bShowShaders == FALSE)
+		{
+			continue;
+		}
 
 		if (q->inuse)
 			break;			// always show in use
-    
-    if (!texture_showinuse && !strnicmp (q->name, texture_directory, strlen(texture_directory)))
+
+		if (!texture_showinuse && !strnicmp (q->name, texture_directory, strlen(texture_directory)))
 			break;
 		continue;
 	}
 
-  int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-  int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+	int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
+	int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
 	if (current_x + nWidth > g_qeglobals.d_texturewin.width-8 && current_row)
 	{	// go to the next row unless the texture is the first on the row
 		current_x = 8;
@@ -2033,8 +2039,8 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 	// Is our texture larger than the row? If so, grow the 
 	// row height to match it
 
-    if (current_row < nHeight)
-		  current_row = nHeight;
+	if (current_row < nHeight)
+		current_row = nHeight;
 
 	// never go less than 64, or the names get all crunched up
 	current_x += nWidth < 64 ? 64 : nWidth;
@@ -2376,11 +2382,8 @@ void Texture_Draw2 (int width, int height)
 	int			x, y;
 	char		*name;
 
-	qglClearColor (
-		g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][0],
-		g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][1],
-		g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][2],
-		0);
+	qglClearColor (g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][0], g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][1],
+		g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][2],0);
 	qglViewport (0,0,width,height);
 	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity ();
@@ -2402,11 +2405,10 @@ void Texture_Draw2 (int width, int height)
 		if (!q)
 			break;
 
-    int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-    int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+		int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
+		int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
 		// Is this texture visible?
-		if ( (y-nHeight-FONT_HEIGHT < g_qeglobals.d_texturewin.originy)
-			&& (y > g_qeglobals.d_texturewin.originy - height) )
+		if ( (y-nHeight-FONT_HEIGHT < g_qeglobals.d_texturewin.originy) && (y > g_qeglobals.d_texturewin.originy - height) )
 		{
 
 			// if in use, draw a background
@@ -2414,14 +2416,14 @@ void Texture_Draw2 (int width, int height)
 			{
 				qglLineWidth (1);
 
-        if (q->bFromShader)
-        {
-				  qglColor3f (1,1,1);
-        }
-        else
-        {
-				  qglColor3f (0.5,1,0.5);
-        }
+				if (q->bFromShader)
+				{
+					qglColor3f (1,1,1);
+				}
+				else
+				{
+					qglColor3f (0.5,1,0.5);
+				}
 				qglDisable (GL_TEXTURE_2D);
 
 				qglBegin (GL_LINE_LOOP);
@@ -2435,10 +2437,10 @@ void Texture_Draw2 (int width, int height)
 			}
 
 			// Draw the texture
-      float fScale = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? ((float)g_PrefsDlg.m_nTextureScale / 100) : 1.0;
+			float fScale = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? ((float)g_PrefsDlg.m_nTextureScale / 100) : 1.0;
 
 			qglBindTexture( GL_TEXTURE_2D, q->texture_number );
-      QE_CheckOpenGLForErrors();
+			QE_CheckOpenGLForErrors();
 			qglColor3f (1,1,1);
 			qglBegin (GL_QUADS);
 			qglTexCoord2f (0,0);
@@ -2470,30 +2472,30 @@ void Texture_Draw2 (int width, int height)
 			}
 
 			// draw the texture name
-  	  qglColor3f (0,0,0);
-			
-      qglRasterPos2f (x, y-FONT_HEIGHT+2);
+			qglColor3f (0,0,0);
+
+			qglRasterPos2f (x, y-FONT_HEIGHT+2);
 
 			// don't draw the directory name
 			for (name = q->name ; *name && *name != '/' && *name != '\\' ; name++)
-				;
+			;
 			if (!*name)
 				name = q->name;
 			else
 				name++;
 
-      if (g_PrefsDlg.m_bHiColorTextures && q->shadername[0] != 0)
-      {
-        // slow as shit
-        CString s = "[";
-        s += name;
-        s += "]";
-			  qglCallLists (s.GetLength(), GL_UNSIGNED_BYTE, s.GetBuffer(0));
-      }
-      else
-      {
-			  qglCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
-      }
+			if (g_PrefsDlg.m_bHiColorTextures && q->shadername[0] != 0)
+			{
+				// slow as shit
+				CString s = "[";
+				s += name;
+				s += "]";
+				qglCallLists (s.GetLength(), GL_UNSIGNED_BYTE, s.GetBuffer(0));
+			}
+			else
+			{
+				qglCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
+			}
 		}
 	}
 
@@ -3039,9 +3041,10 @@ void LoadShaders()
 {
 	char	dirstring[1024];
 	char	*path;
-	//struct _finddata_t fileinfo;
-	//int		handle;
+	struct _finddata_t fileinfo;
+	int		handle;
   path = ValueForKey (g_qeglobals.d_project_entity, "basepath");
+#if 0
   sprintf (dirstring, "%s/scripts/shaderlist.txt", path);
   char *pBuff = NULL;
   
@@ -3075,7 +3078,22 @@ void LoadShaders()
     Sys_Printf("Unable to load shaderlist.txt, shaders not loaded!");
   }
 
-/*
+#else
+  char last = path[strlen(path)-1];
+ // if(last == '/' || last == '\\') {
+	//sprintf (dirstring, "%sscripts/*.shader", path);
+ // } else {
+	//sprintf (dirstring, "%s/scripts/*.shader", path);
+ // } 
+  if(last == '/' || last == '\\') {
+	sprintf (dirstring, "%smaterials/*.mtr", path);
+  } else {
+	sprintf (dirstring, "%s/materials/*.mtr", path);
+  }
+  for(int i = 0; i < strlen(dirstring); i++) {
+		if(dirstring[i] == '\\')
+			dirstring[i] = '/';
+  }
   handle = _findfirst (dirstring, &fileinfo);
   if (handle != -1)
   {
@@ -3083,13 +3101,14 @@ void LoadShaders()
     {
       if ((fileinfo.attrib & _A_SUBDIR))
         continue;
-      sprintf(dirstring, "%s/scripts/%s", path, fileinfo.name);
+     // sprintf(dirstring, "%s/scripts/%s", path, fileinfo.name);
+      sprintf(dirstring, "%s/materials/%s", path, fileinfo.name);
       LoadShader(dirstring, NULL);
 	  } while (_findnext( handle, &fileinfo ) != -1);
 
 	  _findclose (handle);
   }
-*/
+#endif
 }
 
 void FreeShaders()

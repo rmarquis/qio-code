@@ -994,11 +994,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// FIXME: what's the difference between these two?
 					//p.skipLine();
 					const char *cubeMapName = p.getToken();
-					cubeMapAPI_i *cubeMap = MAT_RegisterCubeMap(cubeMapName);
-					if(cubeMap) {
-						stage->setCubeMap(cubeMap);
+					if(!stricmp(cubeMapName,"nearest_env_cubemap")) {
+						// support 'env_cubemap' system similiar to one in Source Engine.
+						stage->setStageType(ST_ENV_CUBEMAP);
 					} else {
+						cubeMapAPI_i *cubeMap = MAT_RegisterCubeMap(cubeMapName);
+						if(cubeMap) {
+							stage->setCubeMap(cubeMap);
+						} else {
 
+						}
 					}
 				} else if(p.atWord("texgen") || p.atWord("tcgen")) {
 					if(p.atWord("environment")) {

@@ -49,6 +49,8 @@ public:
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
 	// Doom3 material tables interface
 	virtual const class tableListAPI_i *getTablesAPI() const = 0;
+	// cubemap loader access (for "env_cubemap" handling in renderer)
+	virtual class cubeMapAPI_i *registerCubeMap(const char *cubeMapName, bool forceReload = false) = 0;
 };
 
 extern materialSystemAPI_i *g_ms;

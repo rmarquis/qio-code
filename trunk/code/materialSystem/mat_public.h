@@ -25,7 +25,9 @@ enum stageType_e {
 	// Set by "stage reflectionMap" in material,
 	// also set by Doom3 "texgen reflect" command.
 	// Used in Doom3 glass materials.
-	ST_CUBEMAP_REFLECTION
+	ST_CUBEMAP_REFLECTION,
+	// this will automatically use nearest 'env_cubemap' for reflections
+	ST_ENV_CUBEMAP,
 };
 
 // hardcoded alpha func test values (for non-blended transparency)

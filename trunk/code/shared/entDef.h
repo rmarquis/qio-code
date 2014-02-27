@@ -60,11 +60,19 @@ public:
 			return true;
 		return false;
 	}
+	virtual bool hasClassName(const char *s) const {
+		if(!stricmp(className.c_str(),s))
+			return true;
+		return false;
+	}
 	virtual void getKeyValue(u32 idx, const char **key, const char **value) const {
 		return ePairs.getKeyValue(idx,key,value);
 	}
 	virtual bool getKeyValue(const char *key, int &out) const {
 		return ePairs.getKeyValue(key,out);
+	}
+	virtual bool getKeyValue(const char *key, class vec3_c &out) const {
+		return ePairs.getKeyVec3(key,out);
 	}
 	virtual bool hasKey(const char *key) const {
 		return ePairs.hasKey(key);

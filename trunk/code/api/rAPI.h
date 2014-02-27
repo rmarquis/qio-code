@@ -73,6 +73,9 @@ public:
 	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 
+	// env_cubemap system
+	virtual class cubeMapAPI_i *getNearestEnvCubeMapImage(const class vec3_c &p) = 0;
+
 	// this will use the current camera settings
 	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) = 0;
 	// areaNum is needed only for .proc world maps

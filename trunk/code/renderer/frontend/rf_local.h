@@ -109,6 +109,11 @@ void RF_AddCustomDrawCalls();
 void RF_AddCustomRenderObject(class customRenderObjectAPI_i *api);
 void RF_RemoveCustomRenderObject(class customRenderObjectAPI_i *api);
 
+// rf_cubeMap.cpp - env_cubemap support, "buildCubeMaps" command.
+bool RF_LoadWorldMapCubeMaps(const char *mapName);
+class rCubeMap_c *RF_FindNearestEnvCubeMap(const class vec3_c &p);
+class cubeMapAPI_i *RF_FindNearestEnvCubeMap_Image(const class vec3_c &p);
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;

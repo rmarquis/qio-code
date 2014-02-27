@@ -462,6 +462,14 @@ public:
 		}
 		return false;
 	}
+	virtual bool hasOnlyStagesOfType(enum stageType_e type) const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			const mtrStage_c *s = stages[i];
+			if(s->getStageType() != type)
+				return false;
+		}
+		return true;
+	}
 	bool hasPolygonOffset() const {
 		if(polygonOffset == 0.f)
 			return false;

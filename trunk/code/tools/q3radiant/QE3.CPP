@@ -337,6 +337,11 @@ qboolean QE_LoadProject (char *projectfile)
 				"Path node for AI navigation.\n"
 				"******************************************************************************/\n");
 	}
+	if(Eclass_FindExisting("env_cubemap") == 0) {
+		EClass_CreateNewFromText("/*QUAKED env_cubemap (1 0.64 0) (-8 -8 -8) (8 8 8)\n"
+				"Static cubemap sample. Must be calculated with 'buildCubeMaps' commands.\n"
+				"******************************************************************************/\n");
+	}
 	FillClassList();		// list in entity window
 	
 	Map_New();

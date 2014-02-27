@@ -144,17 +144,17 @@ typedef struct qtexture_s
 {
 	struct	qtexture_s *next;
 	char	name[64];		// includes partial directory and extension
-  int		width,  height;
+	int		width,  height;
 	int		contents;
 	int		flags;
 	int		value;
 	int		texture_number;	// gl bind number
-  
+
 	// name of the .shader file
-  char  shadername[1024]; // old shader stuff
-  qboolean bFromShader;   // created from a shader
-  float fTrans;           // amount of transparency
-  int   nShaderFlags;     // qer_ shader flags
+	char  shadername[1024]; // old shader stuff
+	qboolean bFromShader;   // created from a shader
+	float fTrans;           // amount of transparency
+	int   nShaderFlags;     // qer_ shader flags
 	vec3_t	color;			    // for flat shade mode
 	qboolean	inuse;		    // true = is present on the level
 
@@ -273,20 +273,20 @@ struct brush_s;
 typedef struct brush_s brush_t;
 
 typedef struct {
-  int	width, height;		// in control points, not patches
-  int   contents, flags, value, type;
-  qtexture_t *d_texture;
-  drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
-  brush_t *pSymbiot;
-  qboolean bSelected;
-  qboolean bOverlay;
-  qboolean bDirty;
-  int  nListID;
+	int	width, height;		// in control points, not patches
+	int   contents, flags, value, type;
+	qtexture_t *d_texture;
+	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
+	brush_t *pSymbiot;
+	qboolean bSelected;
+	qboolean bOverlay;
+	qboolean bDirty;
+	int  nListID;
 	epair_t *epairs;
-  // cast this one to an IPluginTexdef if you are using it
-  // NOTE: casting can be done with a GETPLUGINTEXDEF defined in isurfaceplugin.h
-  // TODO: if the __ISURFACEPLUGIN_H_ header is used, use a union { void *pData; IPluginTexdef *pPluginTexdef } kind of thing ?
-  void					*pData;
+	// cast this one to an IPluginTexdef if you are using it
+	// NOTE: casting can be done with a GETPLUGINTEXDEF defined in isurfaceplugin.h
+	// TODO: if the __ISURFACEPLUGIN_H_ header is used, use a union { void *pData; IPluginTexdef *pPluginTexdef } kind of thing ?
+	void					*pData;
 } patchMesh_t;
 
 typedef struct {

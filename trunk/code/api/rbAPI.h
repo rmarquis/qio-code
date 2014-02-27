@@ -81,6 +81,10 @@ public:
 	virtual byte *getScreenShotRGB(u32 *w, u32 *h) const { return 0; }
 	virtual void freeScreenShotData(byte *b) { };
 
+	virtual void setViewPort(u32 newWidth, u32 newHeight) { }
+
+	virtual void setBSkipStaticEnvCubeMapStages(bool newBSkipStaticEnvCubeMapStages) { }
+
 	// 2D textures
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;

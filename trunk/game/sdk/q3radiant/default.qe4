@@ -1,6 +1,6 @@
 {
 "brush_primit" "0"
-"basepath" "..\..\"
+"basepath" "..\..\baseqio"
 "rshcmd" ""
 "autosave" "..\..\baseqio\maps\autosave\autosave.map"
 "mapspath" "..\..\baseqio\maps"

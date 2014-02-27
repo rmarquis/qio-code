@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 bool RF_LoadWorldMap(const char *name);
 void RF_ClearWorldMap();
+bool RF_IsAnyMapLoaded();
+const char *RF_GetWorldMapName();
 void RF_AddWorldDrawCalls();
 bool RF_RayTraceWorld(class trace_c &tr);
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes);

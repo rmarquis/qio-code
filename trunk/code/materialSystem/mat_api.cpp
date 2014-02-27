@@ -87,6 +87,10 @@ public:
 	virtual const class tableListAPI_i *getTablesAPI() const {
 		return MAT_GetTablesAPI();
 	}
+	// cubemap loader access (for "env_cubemap" handling in renderer)
+	virtual class cubeMapAPI_i *registerCubeMap(const char *cubeMapName, bool forceReload) {
+		return MAT_RegisterCubeMap(cubeMapName,forceReload);
+	}
 };
 
 // interface manager (import)

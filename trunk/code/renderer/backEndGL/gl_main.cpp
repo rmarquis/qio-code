@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <api/sdlSharedAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/rAPI.h>
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -231,6 +232,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curShadowMapH;
 	cubeFBOs_c cubeFBO;
 	bool bDrawingSky;
+	u32 viewPortWidth;
+	u32 viewPortHeight;
+	bool bSkipStaticEnvCubeMapStages;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -300,6 +304,7 @@ public:
 		memset(bVertexAttribLocationsEnabled,0,sizeof(bVertexAttribLocationsEnabled));
 		bDrawingSky = false;
 		colorMaskState[0] = colorMaskState[1] = colorMaskState[2] = colorMaskState[3] = false;
+		bSkipStaticEnvCubeMapStages = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -366,6 +371,12 @@ public:
 		if(mat->hasStageOfType(ST_HEIGHTMAP))
 			return true;
 		return false;
+	}
+	// glViewPort changes
+	void setGLViewPort(u32 newWidth, u32 newHeight) {
+		viewPortWidth = newWidth;
+		viewPortHeight = newHeight;
+		glViewport(0,0,newWidth,newHeight);
 	}
 	// GL_COLOR_ARRAY changes
 	bool colorArrayActive;
@@ -774,7 +785,7 @@ public:
 			// unbind the FBO
 			bindFBO(0);
 			// restore viewport
-			glViewport(0,0,getWinWidth(),getWinHeight());
+			setGLViewPort(getWinWidth(),getWinHeight());
 
 			// restore camera view and projection matrices
 			projectionMatrix = savedCameraProjection;
@@ -796,7 +807,7 @@ public:
 		// bind the FBO
 		bindFBO(cubeFBO.getSideFBOHandle(iCubeSide));
 		// set viewport
-		glViewport(0,0,curShadowMapW,curShadowMapH);
+		setGLViewPort(curShadowMapW,curShadowMapH);
 		// clear buffers
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		if(this->curCubeMapSide == -1) {
@@ -1225,6 +1236,12 @@ public:
 		if(bDrawOnlyOnDepthBuffer) {
 			if(lastMat->hasStageWithoutCustomProgram() == false)
 				return;
+			if(bSkipStaticEnvCubeMapStages) {
+				if(lastMat->hasOnlyStagesOfType(ST_ENV_CUBEMAP)) {
+					return;
+				}
+			}
+
 			if(bRendererMirrorThisFrame) {
 				if(lastMat->isMirrorMaterial()) {
 					setColorMask(false, false, false, false);
@@ -1427,7 +1444,19 @@ public:
 					}
 					bumpMap = 0;
 				}
-				class cubeMapAPI_i *cubeMap = s->getCubeMap();
+				class cubeMapAPI_i *cubeMap;
+				if(stageType == ST_ENV_CUBEMAP) {
+					// this is set while rebuilding the cubemaps
+					if(bSkipStaticEnvCubeMapStages)
+						continue;
+					vec3_c p;
+					verts.getCenter(indices,p);
+					cubeMap = rf->getNearestEnvCubeMapImage(p);
+					// fall back to reflection stage type
+					stageType = ST_CUBEMAP_REFLECTION;
+				} else {
+					cubeMap = s->getCubeMap();
+				}
 
 				// set the alphafunc
 				setupStageAlphaFunc(s);
@@ -1997,7 +2026,7 @@ drawOnlyLightmap:
 		disablePortalClipPlane();
 		setIsMirror(false);
 
-		glViewport(0,0,getWinWidth(),getWinHeight());
+		setGLViewPort(getWinWidth(),getWinHeight());
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
@@ -2330,8 +2359,8 @@ drawOnlyLightmap:
 	virtual byte *getScreenShotRGB(u32 *w, u32 *h) const {
 		glFinish();
 
-		u32 width = getWinWidth();
-		u32 height = getWinHeight();
+		u32 width = this->viewPortWidth;
+		u32 height = this->viewPortHeight;
 		byte *pixels = new byte[3 * width * height];
 		if(w) {
 			*w = width;
@@ -2346,6 +2375,12 @@ drawOnlyLightmap:
 	virtual void freeScreenShotData(byte *b) {
 		delete [] b;
 	};
+	virtual void setViewPort(u32 newWidth, u32 newHeight) { 
+		setGLViewPort(newWidth,newHeight);
+	}
+	virtual void setBSkipStaticEnvCubeMapStages(bool newBSkipStaticEnvCubeMapStages) {
+		bSkipStaticEnvCubeMapStages = newBSkipStaticEnvCubeMapStages;
+	}
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		out->setWidth(w);
 		out->setHeight(h);
