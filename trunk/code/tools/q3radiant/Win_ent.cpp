@@ -771,30 +771,6 @@ void AddProp()
 
 	// refresh the prop listbox
 	SetKeyValuePairs();	
-
-	// if it's a plugin entity, perhaps we need to update some drawing parameters
-	// NOTE: perhaps moving this code to a seperate func would help if we need it in other places
-	// TODO: we need to call some update func in the IPluginEntity in case model name changes etc.
-	// ( for the moment only bounding brush is updated ), see UpdateModelBrush in Ritual's Q3Radiant
-	if (edit_entity->eclass->nShowFlags & ECLASS_PLUGINENTITY)
-	{
-		vec3_t	mins, maxs;
-		edit_entity->pPlugEnt->GetBounds( mins, maxs );
-		// replace old bounding brush by newly computed one
-		// NOTE: this part is similar to Entity_BuildModelBrush in Ritual's Q3Radiant, it can be
-		// usefull moved into a seperate func
-		brush_t *b,*oldbrush;
-		if (edit_entity->brushes.onext != &edit_entity->brushes)
-			oldbrush = edit_entity->brushes.onext;
-		b = Brush_Create (mins, maxs, &edit_entity->eclass->texdef);
-		Entity_LinkBrush (edit_entity, b);
-		Brush_Build( b, true );
-		Select_Deselect();
-		Brush_AddToList (edit_entity->brushes.onext, &selected_brushes);
-		if (oldbrush)
-			Brush_Free( oldbrush );
-	}
-
 }
 
 /*

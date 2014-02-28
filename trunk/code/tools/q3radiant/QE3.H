@@ -205,7 +205,6 @@ typedef struct
 	brush_t		*d_select_order[2];
 	vec3_t       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
-	idPointListInterface *selectObject;	// 
 	
 	int		     d_font_list;
 	
@@ -584,36 +583,6 @@ void WINAPI Patch_Rebuild(patchMesh_t *p);
 extern _QERPlugSurfaceTable g_SurfaceTable;
 
 //
-// OpenGL interface
-//
-#include "igl.h"
-HGLRC WINAPI QERApp_GetQeglobalsHGLRC();
-void WINAPI QERApp_HookXYGLWindow(IGLWindow* pGLW);
-void WINAPI QERApp_UnHookGLWindow(IGLWindow* pGLW);
-void DrawPluginEntities( VIEWTYPE vt );
-
-//
-// ISelectedFace interface
-//
-#include "ISelectedFace.h"
-int WINAPI QERApp_ISelectedFace_GetTextureNumber();
-int WINAPI QERApp_GetFaceInfo(_QERFaceData *pFaceData, winding_t *pWinding);
-int WINAPI QERApp_SetFaceInfo(_QERFaceData *pFaceData);
-void WINAPI QERApp_GetTextureSize( int Size[2] );
-
-//
-// IEpairs interface
-//
-#include "IEpairs.h"
-#include "EpairsWrapper.h"
-
-//
-// IPluginEntities interface
-//
-#include "IPluginEntities.h"
-int WINAPI QERApp_EClassScanDir( char *dir, HMODULE plugID );
-
-//
 // ShaderInfo.cpp
 //
 #include "ShaderInfo.h"
@@ -641,27 +610,10 @@ void WINAPI QERApp_GetTwoSelectedPatch( patchMesh_t **p1, patchMesh_t **p2 );
 #include "IBSPFrontend.h"
 extern _QERPlugBSPFrontendTable g_BSPFrontendTable;
 extern CStringArray g_BSPFrontendCommands;
-
-//
-// IMessaging interface
-#include "IMessaging.h"
-#include "Messaging.h"
-void WINAPI QERApp_HookWindow(IWindowListener* pListen);
-void WINAPI QERApp_UnHookWindow(IWindowListener* pListen);
-IXYWndWrapper* WINAPI QERApp_GetXYWndWrapper();
-void WINAPI QERApp_HookListener(IListener* pListen, int Msg);
-int  WINAPI QERApp_UnHookListener(IListener* pListen);
-void DispatchRadiantMsg( int Msg );
-// dispatch for IWindowListener entities
-void DispatchOnMouseMove(UINT nFlags, int x, int y);
-bool DispatchOnLButtonDown(UINT nFlags, int x, int y);
-bool DispatchOnLButtonUp(UINT nFlags, int x, int y);
-
 //
 // IShaders interface
 CShaderInfo* SetNameShaderInfo(qtexture_t* q, const char* pPath, const char* pName);
 qtexture_t* Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
-#include "IShaders.h"
 qtexture_t* WINAPI QERApp_TryTextureForName(const char* name);
 
 

@@ -780,20 +780,20 @@ BOOL CSurfaceDlg::OnInitDialog()
   m_wndWidth.SetRange(1, 32);
   m_wndHeight.SetRange(1, 32);
 
-  LPVOID lpv = g_pParentWnd->GetPlugInMgr().GetSurfaceFlags();
-  if (lpv != NULL)
-  {
-    int i = 0;
-    char* p = reinterpret_cast<char*>(lpv);
-    char* pBuff = new char[strlen(p)+1];
-    strcpy(pBuff, p);
-    char* pToken = strtok(pBuff, ";\0");
-    while (pToken != NULL)
-    {
-      GetDlgItem(g_checkboxes[i++])->SetWindowText(pToken);
-      pToken = strtok(NULL, ";\0");
-    }
-  }
+  //LPVOID lpv = g_pParentWnd->GetPlugInMgr().GetSurfaceFlags();
+  //if (lpv != NULL)
+  //{
+  //  int i = 0;
+  //  char* p = reinterpret_cast<char*>(lpv);
+  //  char* pBuff = new char[strlen(p)+1];
+  //  strcpy(pBuff, p);
+  //  char* pToken = strtok(pBuff, ";\0");
+  //  while (pToken != NULL)
+  //  {
+  //    GetDlgItem(g_checkboxes[i++])->SetWindowText(pToken);
+  //    pToken = strtok(NULL, ";\0");
+  //  }
+  //}
 
   if (strstr(g_PrefsDlg.m_strWhatGame, "Quake3") != NULL) {
     for (int i=0 ; i < 64 ; i++) {

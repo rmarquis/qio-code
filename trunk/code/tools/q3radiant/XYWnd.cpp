@@ -477,10 +477,6 @@ void CXYWnd::OnLButtonDown(UINT nFlags, CPoint point)
   g_pParentWnd->SetActiveXY(this);
   UndoCopy();
 
-	// plugin entities
-	if (DispatchOnLButtonDown(nFlags, point.x, point.y ))
-		return;
-
   if (ClipMode() && !RogueClipMode())
   {
     DropClipPoint(nFlags, point);
@@ -682,9 +678,6 @@ void CXYWnd::OnRButtonDown(UINT nFlags, CPoint point)
 
 void CXYWnd::OnLButtonUp(UINT nFlags, CPoint point) 
 {
-	// plugin entities
-	if (DispatchOnLButtonUp(nFlags, point.x, point.y ))
-		return;
 
 	if (ClipMode())
   {
@@ -755,10 +748,6 @@ float fDiff(float f1, float f2)
 vec3_t tdp;
 void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) 
 {
-	// plugin entities
-	//++timo TODO: handle return code
-	DispatchOnMouseMove( nFlags, point.x, point.y );
-
   m_ptDown.x = 0;
   m_ptDown.y = 0;
 
@@ -1693,13 +1682,6 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 		|| (buttons == (MK_LBUTTON | MK_CONTROL))
 		|| (buttons == (MK_LBUTTON | MK_CONTROL | MK_SHIFT)) )
 	{	
-		if (g_qeglobals.d_select_mode == sel_addpoint) {
-			XY_ToGridPoint(x, y, point);
-			if (g_qeglobals.selectObject) {
-				g_qeglobals.selectObject->addPoint(point[0], point[1], point[2]);
-			}
-			return;
-		}
     Patch_SetView( (m_nViewType == XY) ? W_XY : (m_nViewType == YZ) ? W_YZ : W_XZ);
 		Drag_Begin (x, y, buttons, right, up,	origin, dir);
 		return;
@@ -2976,9 +2958,6 @@ void CXYWnd::XY_Draw()
 		qglPointSize (1);
 	}
 
-
-	g_splineList->draw(static_cast<qboolean>(g_qeglobals.d_select_mode == sel_editpoint || g_qeglobals.d_select_mode == sel_addpoint));
-
   qglPopMatrix();
 
 	qglTranslatef (-g_qeglobals.d_select_translate[0], -g_qeglobals.d_select_translate[1], -g_qeglobals.d_select_translate[2]);
@@ -3008,10 +2987,6 @@ void CXYWnd::XY_Draw()
   {
     DrawRotateIcon();
   }
-
-  // plugin entities
-  //++timo TODO: use an object for the 2D view
-  DrawPluginEntities( (VIEWTYPE)m_nViewType );
 
   qglFinish();
 	//QE_CheckOpenGLForErrors();

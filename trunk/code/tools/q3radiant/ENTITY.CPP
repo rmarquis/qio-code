@@ -223,13 +223,6 @@ The entity is removed from the global entities list.
 */
 void Entity_Free (entity_t *e)
 {
-	// do we have a plugin entity ?
-	if ( e->pPlugEnt )
-	{
-		e->pPlugEnt->DecRef();
-		e->pPlugEnt = NULL;
-	}
-
 	while (e->brushes.onext != &e->brushes)
 		Brush_Free (e->brushes.onext);
 
@@ -364,37 +357,8 @@ entity_t	*Entity_Parse (qboolean onlypairs, brush_t* pList)
 	
 	e = Eclass_ForName (ValueForKey (ent, "classname"), has_brushes);
 	ent->eclass = e;
-	if ( e->nShowFlags & ECLASS_PLUGINENTITY )
-	{
-		// locate the plugin
-		CPlugIn * pPlug = g_pParentWnd->GetPlugInMgr().PluginForModule( e->hPlug );
-		if (pPlug)
-		{
-			// create the plugin entity
-			IPluginEntity* pPlugEnt = pPlug->CreatePluginEntity( ent );
-			if (pPlugEnt)
-			{
-				ent->pPlugEnt = pPlugEnt;
-				// the brush is used to select and move
-				pPlugEnt->GetBounds( mins, maxs );
-			}
-			else
-			{
-				// give it a default bounding box
-				SetKeyValue (ent, "model", "");
-				mins[0] = -4; mins[1] = -4; mins[2] = -4;
-				maxs[0] = 4; maxs[1] = 4; maxs[2] = 4;
-				VectorAdd( mins, ent->origin, mins );
-				VectorAdd( maxs, ent->origin, maxs );
-			}
-			b = Brush_Create (mins, maxs, &ent->eclass->texdef);
-			Entity_LinkBrush (ent, b);
-			Brush_Build( b, true );
-		}
-		else
-			Sys_Printf("WARNING: plugin lookup failed for plugin entities\n");
-	}
-	else if (e->fixedsize)
+
+	if (e->fixedsize)
 	{	// fixed size entity
 		if (ent->brushes.onext != &ent->brushes)
 		{
@@ -726,49 +690,8 @@ entity_t	*Entity_Create (eclass_t *c)
 	// add the entity to the entity list
   Entity_AddToList(e, &entities);
 
-	// plugin entity ?
-	if (c->nShowFlags & ECLASS_PLUGINENTITY)
-	{
-		// locate the plugin
-		CPlugIn * pPlug = g_pParentWnd->GetPlugInMgr().PluginForModule( c->hPlug );
-		if (pPlug)
-		{
-			//
-			// just use the selection for positioning
-			//
-			b = selected_brushes.next;
-			for (i=0 ; i<3 ; i++)
-				e->origin[i] = b->mins[i] - c->mins[i];
 
-			// create the plugin entity
-			IPluginEntity* pPlugEnt = pPlug->CreatePluginEntity( e );
-			
-			if (pPlugEnt)
-			{
-				e->pPlugEnt = pPlugEnt;
-				// the brush is used to select and move
-				pPlugEnt->GetBounds( mins, maxs );
-				b = Brush_Create (mins, maxs, &c->texdef);
-				
-				Entity_LinkBrush (e, b);
-				
-				// delete the current selection
-				Select_Delete ();
-				
-				// select the new brush
-				b->next = b->prev = &selected_brushes;
-				selected_brushes.next = selected_brushes.prev = b;
-				
-				Brush_Build( b );
-			}
-		}
-		else
-		{
-			Sys_Printf( "WARNING: plugin lookup failed while creating a plugin entitiy in Entity_Create\n" );
-			return NULL;
-		}
-	}
-	else if (c->fixedsize)
+	if (c->fixedsize)
 	{
 		//
 		// just use the selection for positioning

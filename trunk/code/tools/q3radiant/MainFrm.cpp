@@ -35,7 +35,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "MainFrm.h"
 #include "RotateDlg.h"
 #include "EntityListDlg.h"
-#include "ScriptDlg.h"
 #include "NewProjDlg.h"
 #include "CommandsDlg.h"
 #include "ScaleDialog.h"
@@ -50,7 +49,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "NameDlg.h"
 #include "libs/pakstuff.h"
 #include "splines/splines.h"
-#include "dlgcamera.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -564,7 +562,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_ENTITIESAS_SKINNED, OnViewEntitiesasSkinned)
 	ON_COMMAND(ID_VIEW_ENTITIESAS_SKINNEDANDBOXED, OnViewEntitiesasSkinnedandboxed)
 	ON_COMMAND(ID_VIEW_ENTITIESAS_WIREFRAME, OnViewEntitiesasWireframe)
-	ON_COMMAND(ID_PLUGINS_REFRESH, OnPluginsRefresh)
 	ON_COMMAND(ID_VIEW_SHOWHINT, OnViewShowhint)
 	ON_UPDATE_COMMAND_UI(ID_TEXTURES_SHOWINUSE, OnUpdateTexturesShowinuse)
 	ON_COMMAND(ID_TEXTURES_SHOWALL, OnTexturesShowall)
@@ -591,21 +588,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_DROP_GROUP_NAME, OnDropGroupName)
 	ON_COMMAND(ID_DROP_GROUP_NEWGROUP, OnDropGroupNewgroup)
 	ON_COMMAND(ID_DROP_GROUP_REMOVE, OnDropGroupRemove)
-	ON_COMMAND(ID_SPLINES_MODE, OnSplinesMode)
-	ON_COMMAND(ID_SPLINES_LOAD, OnSplinesLoad)
-	ON_COMMAND(ID_SPLINES_SAVE, OnSplinesSave)
-	ON_COMMAND(ID_SPLINES_EDIT, OnSplinesEdit)
-	ON_COMMAND(ID_SPLINE_TEST, OnSplineTest)
-	ON_COMMAND(ID_POPUP_NEWCAMERA_INTERPOLATED, OnPopupNewcameraInterpolated)
-	ON_COMMAND(ID_POPUP_NEWCAMERA_SPLINE, OnPopupNewcameraSpline)
-	ON_COMMAND(ID_POPUP_NEWCAMERA_FIXED, OnPopupNewcameraFixed)
 	//}}AFX_MSG_MAP
   ON_COMMAND_RANGE(CMD_TEXTUREWAD, CMD_TEXTUREWAD_END, OnTextureWad)
   ON_COMMAND_RANGE(CMD_BSPCOMMAND, CMD_BSPCOMMAND_END, OnBspCommand)
   ON_COMMAND_RANGE(IDMRU, IDMRU_END, OnMru)
   ON_COMMAND_RANGE(ID_VIEW_NEAREST, ID_TEXTURES_FLATSHADE, OnViewNearest)
   ON_COMMAND_RANGE(ID_GRID_1, ID_GRID_64, OnGrid1)
-  ON_COMMAND_RANGE(ID_PLUGIN_START, ID_PLUGIN_END, OnPlugIn)
   ON_REGISTERED_MESSAGE(g_msgBSPDone, OnBSPDone)
   ON_REGISTERED_MESSAGE(g_msgBSPStatus, OnBSPStatus)
   ON_MESSAGE(WM_DISPLAYCHANGE, OnDisplayChange)
@@ -1001,7 +989,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   pFont->CreatePointFont(g_PrefsDlg.m_nStatusSize * 10, "Arial");
   m_wndStatusBar.SetFont(pFont);
 
-	OnPluginsRefresh();
 
   if (g_PrefsDlg.m_bRunBefore == FALSE)
   {
@@ -3115,8 +3102,8 @@ void CMainFrame::OnEditEntityinfo()
 
 void CMainFrame::OnBrushScripts() 
 {
-  CScriptDlg dlg;
-  dlg.DoModal();
+  //CScriptDlg dlg;
+ // dlg.DoModal();
 }
 
 void CMainFrame::OnViewNextview() 
@@ -4826,69 +4813,6 @@ void CMainFrame::OnViewEntitiesasWireframe()
 
 
 
-void CMainFrame::OnPluginsRefresh() 
-{
-  CleanPlugInMenu();
-  CString str(g_strAppPath);
-  AddSlash(str);
-  str += "plugins\\";
-  m_PlugInMgr.Init(str);
-}
-
-void CMainFrame::CleanPlugInMenu()
-{
-	m_nNextPlugInID = ID_PLUGIN_START;
-	CMenu* pMenu = GetMenu();
-	//--pMenu->RemoveMenu(MENU_PLUGIN, MF_BYPOSITION);
-	//--pMenu->InsertMenu(MENU_PLUGIN, MF_BYPOSITION, 0, "Plugins");
-	//--DrawMenuBar();
-	CMenu* pSub = pMenu->GetSubMenu(MENU_PLUGIN);
-	if (pSub)
-	{
-		int n = pSub->GetMenuItemCount();
-		for (int i = n; i > 1 ; i--)
-		{
-			pSub->RemoveMenu(i, MF_BYPOSITION);
-		}
-	}
-}
-
-void CMainFrame::AddPlugInMenuItem(CPlugIn* pPlugIn)
-{
-	const char	*menuText;		//PGM
-	CMenu* pMenu = GetMenu();
-	CMenu* pSub = pMenu->GetSubMenu(MENU_PLUGIN);
-	if (pSub)
-	{
-		CMenu* pChild = new CMenu();
-		pChild->CreateMenu();
-		int nCount = pPlugIn->getCommandCount();
-    if (nCount > 0)
-    {
-		  while (nCount > 0)
-		  {
-			  menuText = pPlugIn->getCommand(--nCount);
-        if (menuText != NULL && strlen(menuText) > 0)
-        {
-			    if(!strcmp(menuText, "-"))
-				    pChild->AppendMenu(MF_SEPARATOR, NULL);
-			    else
-				    pChild->AppendMenu(MF_STRING, m_nNextPlugInID, menuText);
-			    pPlugIn->addMenuID(m_nNextPlugInID++);
-        }
-		  }
-		  pSub->AppendMenu(MF_POPUP, reinterpret_cast<unsigned int>(pChild->GetSafeHmenu()), pPlugIn->getMenuName());
-    }
-	}
-}
-
-void CMainFrame::OnPlugIn(unsigned int nID) 
-{
-  CMenu* pMenu = GetMenu();
-  CString str;
-  pMenu->GetMenuString(nID, str, MF_BYCOMMAND);
-  m_PlugInMgr.Dispatch(nID, str);
-}
 
 void CMainFrame::OnViewShowhint() 
 {
@@ -5130,84 +5054,3 @@ void CMainFrame::OnDropGroupRemove()
   Sys_UpdateWindows (W_ALL);
 }
 
-void CMainFrame::OnSplinesMode() 
-{
-	g_qeglobals.d_select_mode = sel_addpoint;
-	g_qeglobals.selectObject = g_splineList->getPositionObj();
-	g_splineList->clear();
-	g_splineList->startEdit(true);
-	showCameraInspector();
-	Sys_UpdateWindows(W_ALL);
-}
-
-void CMainFrame::OnSplinesLoad() 
-{
-	g_splineList->load("maps/test.camera");
-	g_splineList->buildCamera();
-}
-
-void CMainFrame::OnSplinesSave() 
-{
-	g_splineList->save("maps/test.camera");
-}
-
-void CMainFrame::OnSplinesEdit() 
-{
-	showCameraInspector();
-	Sys_UpdateWindows(W_ALL);
-}
-
-extern void testCamSpeed();
-void CMainFrame::OnSplineTest() 
-{
-	long start = GetTickCount();
-	g_splineList->startCamera(start);
-	float cycle = g_splineList->getTotalTime();
-	long msecs = cycle * 1000;
-	long current = start;
-	vec3_t lookat;
-	VectorClear(lookat);
-	vec3_t dir;
-	while (current < start + msecs) {
-		float fov;
-		g_splineList->getCameraInfo(current, &g_pParentWnd->GetCamera()->Camera().origin[0], &dir[0], &fov);
-		g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
-		g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
-	    g_pParentWnd->UpdateWindows(W_XY | W_CAMERA);
-		current = GetTickCount();
-	}
-	g_splineList->setRunning(false);
-}
-
-void CMainFrame::OnSplinesTarget() 
-{
-}
-
-void CMainFrame::OnSplinesTargetPoints() 
-{
-}
-
-void CMainFrame::OnSplinesCameraPoints() 
-{
-}
-
-void CMainFrame::OnPopupNewcameraInterpolated() 
-{
-	g_qeglobals.d_select_mode = sel_addpoint;
-	g_qeglobals.selectObject = g_splineList->startNewCamera(idCameraPosition::INTERPOLATED);
-	OnSplinesEdit();
-}
-
-void CMainFrame::OnPopupNewcameraSpline() 
-{
-	g_qeglobals.d_select_mode = sel_addpoint;
-	g_qeglobals.selectObject = g_splineList->startNewCamera(idCameraPosition::SPLINE);
-	OnSplinesEdit();
-}
-
-void CMainFrame::OnPopupNewcameraFixed() 
-{
-	g_qeglobals.d_select_mode = sel_addpoint;
-	g_qeglobals.selectObject = g_splineList->startNewCamera(idCameraPosition::FIXED);
-	OnSplinesEdit();
-}

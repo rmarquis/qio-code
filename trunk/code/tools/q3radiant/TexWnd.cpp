@@ -153,9 +153,7 @@ const char* GetTextureExtension(int nIndex)
 {
   if ( nIndex == 0)
   {
-    _QERTextureInfo *pInfo = g_pParentWnd->GetPlugInMgr().GetTextureInfo();
-    const char *pTex = (pInfo != NULL) ? pInfo->m_TextureExtension : NULL;
-    return (pTex == NULL) ? (g_PrefsDlg.m_bHiColorTextures == FALSE) ? "wal" : "tga" : pTex;
+	  "tga" ;
   }
   // return jpg for 2nd extension
   return "jpg";
@@ -423,117 +421,6 @@ void R_MipMap (byte *in, int &width, int &height)
 	}
 }
 
-/*
-=================
-Texture_LoadTexture
-=================
-*/
-//++timo NOTE: miptex_t is used only for .WAL format .. a bit outdated
-qtexture_t *Texture_LoadTexture (miptex_t *qtex)
-{
-  byte		*source;
-  unsigned	char *dest;
-  int			width, height, i, count;
-	int			total[3];
-  qtexture_t	*q;
-      
-  width = LittleLong(qtex->width);
-  height = LittleLong(qtex->height);
-
-  q = (qtexture_t*)qmalloc(sizeof(*q));
-
-  q->width = width;
-  q->height = height;
-
-	q->flags = qtex->flags;
-	q->value = qtex->value;
-	q->contents = qtex->contents;
-
-	dest = (unsigned char*)qmalloc (width*height*4);
-
-  count = width*height;
-  source = (byte *)qtex + LittleLong(qtex->offsets[0]);
-
-	// The dib is upside down so we want to copy it into 
-	// the buffer bottom up.
-
-	total[0] = total[1] = total[2] = 0;
-  for (i=0 ; i<count ; i++)
-	{
-		dest[i] = tex_palette[source[i]];
-
-		total[0] += ((byte *)(dest+i))[0];
-		total[1] += ((byte *)(dest+i))[1];
-		total[2] += ((byte *)(dest+i))[2];
-	}
-
-	q->color[0] = (float)total[0]/(count*255);
-	q->color[1] = (float)total[1]/(count*255);
-	q->color[2] = (float)total[2]/(count*255);
-
-  q->texture_number = texture_extension_number++;
-
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  // Timo
-	  // Surface properties plugins can store their own data in an IPluginQTexture
-	  q->pData = g_SurfaceTable.m_pfnQTextureAlloc( q );
-	  GETPLUGINTEXDEF(q)->InitForMiptex( qtex );
-  }
-
-  //++timo is the m_bSGIOpenGL parameter still taken into account?
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-    //if (!qwglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
-    if (!qwglMakeCurrent(s_hdcTexture, s_hglrcTexture))
-		  Error ("wglMakeCurrent in LoadTexture failed");
-  }
-
-  qglBindTexture( GL_TEXTURE_2D, q->texture_number );
-
-  //Handle3DfxTexturing(q, width, height, dest);
-
-  SetTexParameters ();
-
-  int nCount = MAX_TEXTURE_QUALITY - g_PrefsDlg.m_nTextureQuality;
-  while (nCount-- > 0)
-  {
-    if (width > 16 && height > 16)
-    {
-      R_MipMap(dest, width, height);
-    }
-    else
-    {
-      break;
-    }
-  }
-
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-	  if (nomips)
-    {
-		  qglTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dest);
-    }
-	  else
-		  qgluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height,GL_RGBA, GL_UNSIGNED_BYTE, dest);
-  }
-  else
-  {
-	  if (nomips)
-		  qglTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dest);
-	  else
-		  qgluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height,GL_RGBA, GL_UNSIGNED_BYTE, dest);
-  }
-
-	free (dest);
-
-	qglBindTexture( GL_TEXTURE_2D, 0 );
-
-  return q;
-}
-
-
-
 
 /*
 =================
@@ -674,24 +561,7 @@ qtexture_t *Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHei
 
 void Texture_LoadFromPlugIn(LPVOID vp)
 {
-  g_pluginTexture = notexture;
-  _QERTextureLoad *pLoad = reinterpret_cast<_QERTextureLoad*>(vp);
-  if (pLoad != NULL)
-  {
-	  qtexture_t	*q;
-    q = Texture_LoadTGATexture(pLoad->m_pRGBA, pLoad->m_nWidth, pLoad->m_nHeight, NULL, pLoad->m_nFlags, pLoad->m_nContents, pLoad->m_nValue);
-    if (q != NULL)
-    {
-		// to save duplicate code (since one always ends up getting forgotten and out of sync) this is now done later by caller
-//		  strcpy (q->name, pLoad->m_pName);
-//		  StripExtension (q->name);
-//		  if (!g_dontuse)
-//			q->inuse = true;
-//	    q->next = g_qeglobals.d_qtextures;
-//	    g_qeglobals.d_qtextures = q;
-      g_pluginTexture = q;
-    }
-  }
+
 }
 
 
@@ -1234,27 +1104,27 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 		// }
 		// else
 		// 
-		if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
-		{
-			// rad: 12/19/98
-			// if the plugin is not a wad style then we need to treat it normally
-			// otherwise return without trying to explicitly load the texture
-			// as it should have been loaded by the wad style plugin at init time
-			CString strTex = GetTextureExtension(0);
-			sprintf (filename, "%s\\%s.%s", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), name, strTex);
-			if (!g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
-      {   
-				g_pParentWnd->GetPlugInMgr().LoadTexture(filename);        
-				if (g_pluginTexture)
-					q = g_pluginTexture;
-			}
-			else
-			{
-				return notexture;
-				// wadstyle.. if we get here then we do not have it
-			}
-		}
-		else
+		//if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
+		//{
+		//	// rad: 12/19/98
+		//	// if the plugin is not a wad style then we need to treat it normally
+		//	// otherwise return without trying to explicitly load the texture
+		//	// as it should have been loaded by the wad style plugin at init time
+		//	CString strTex = GetTextureExtension(0);
+		//	sprintf (filename, "%s\\%s.%s", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), name, strTex);
+		//	if (!g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
+  //    {   
+		//		g_pParentWnd->GetPlugInMgr().LoadTexture(filename);        
+		//		if (g_pluginTexture)
+		//			q = g_pluginTexture;
+		//	}
+		//	else
+		//	{
+		//		return notexture;
+		//		// wadstyle.. if we get here then we do not have it
+		//	}
+		//}
+		//else
       // we need to try several formats here, or would it be better if we are given a complete name
 			if (g_PrefsDlg.m_bHiColorTextures == TRUE)
 			{
@@ -1321,24 +1191,10 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 			}
 			else
 			{
-				// load the file
-				sprintf (filename, "%s/%s.wal", ValueForKey (g_qeglobals.d_project_entity, "texturepath"),	name);
-				Sys_Printf ("Loading %s...", name);
-				if (LoadFile (filename, (void**)&lump) == -1)
-				{
-					sprintf (filename, "%s.wal", name);
-					Sys_Printf("failed.. trying pak0.pak..");
-					if(!PakLoadFile(filename, (void**)&lump))
-					{
+
 						Sys_Printf (" load failed!\n");
 						return notexture;
-					}
-				}
-				Sys_Printf("successful.\n");
-				q = Texture_LoadTexture ((miptex_t *)lump);
-				free (lump);
-				strncpy (q->name, name, sizeof(q->name)-1);
-				StripExtension (q->name);
+
 			}
 			
  			if (g_PrefsDlg.m_bSGIOpenGL)
@@ -1462,16 +1318,8 @@ qtexture_t *Texture_ForNamePath(char* name, char* pFullPath)
     }
     else
     {
-      sprintf(filename, "%s%s", pFullPath, ".wal");
-		  Sys_Printf ("Loading %s...", name);
-		  if (LoadFile (filename, (void**)&lump) == -1)
-      {
 			  Sys_Printf (" load failed!\n");
 			  return notexture;
-      }
-      Sys_Printf("successful.\n");
-		  q = Texture_LoadTexture ((miptex_t *)lump);
-		  free (lump);
     }
     if (g_PrefsDlg.m_bSGIOpenGL)
     {
@@ -1507,12 +1355,6 @@ void FillTextureMenu (CStringArray* pArray)
 	char	dirstring[1024];
 	char	*path;
 	DIRLIST	*list = NULL, *temp;
-
-  if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
-  {
-    if (g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
-      return;
-  }
 
 	hmenu = GetSubMenu (GetMenu(g_qeglobals.d_hwndMain), MENU_TEXTURE);
 
@@ -1646,11 +1488,11 @@ void	Texture_ShowDirectory (int menunum, bool bLinked)
 	texture_showinuse = false;
 	strcpy (texture_directory, texture_menunames[menunum-CMD_TEXTUREWAD]);
 
-  if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
-  {
-    if (g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
-      return;
-  }
+  //if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
+  //{
+  //  if (g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
+  //    return;
+  //}
 
   // new
 /*
@@ -2110,9 +1952,6 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_tex
     Select_SetTexture(texdef,brushprimit_texdef,bFitScale);
   }
 
-
-	//plugins: send a message telling that the selected texture may have changed
-	DispatchRadiantMsg( RADIANT_TEXTURE );
 
 	// scroll origin so the texture is completely on screen
 	Texture_StartPos ();

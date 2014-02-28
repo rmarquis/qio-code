@@ -182,95 +182,15 @@ typedef struct
   glst_t  GlSt;
 } gl_t;
 
-/*
-========================================================================
-
-.SP2 sprite file format
-
-========================================================================
-*/
-
-#define IDSPRITEHEADER	(('2'<<24)+('S'<<16)+('D'<<8)+'I')
-		// little-endian "IDS2"
-#define SPRITE_VERSION	2
-
-typedef struct
-{
-	int		width, height;
-	int		origin_x, origin_y;		// raster coordinates inside pic
-	char	name[MAX_SKINNAME];		// name of pcx file
-} dsprframe_t;
-
-typedef struct {
-	int			ident;
-	int			version;
-	int			numframes;
-	dsprframe_t	frames[1];			// variable sized
-} dsprite_t;
-
-/*
-==============================================================================
-
-  .WAL texture file format
-
-==============================================================================
-*/
-
-
-#define	MIPLEVELS	4
-typedef struct miptex_s
-{
-	char		name[32];
-	unsigned	width, height;
-	unsigned	offsets[MIPLEVELS];		// four mip maps stored
-	char		animname[32];			// next frame in animation chain
-	int			flags;
-	int			contents;
-	int			value;
-} miptex_t;
-
-
-
-/*
-==============================================================================
-
-  .BSP file format
-
-==============================================================================
-*/
-
-#define IDBSPHEADER	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
-		// little-endian "IBSP"
-
-#define BSPVERSION	36
-
-
-// upper design bounds
-// leaffaces, leafbrushes, planes, and verts are still bounded by
-// 16 bit short limits
-#define	MAX_MAP_MODELS		1024
-#define	MAX_MAP_BRUSHES		8192
-#define	MAX_MAP_ENTITIES	2048
-#define	MAX_MAP_ENTSTRING	0x20000
-#define	MAX_MAP_TEXINFO		8192
-
-#define	MAX_MAP_PLANES		65536
-#define	MAX_MAP_NODES		65536
-#define	MAX_MAP_BRUSHSIDES	65536
-#define	MAX_MAP_LEAFS		65536
-#define	MAX_MAP_VERTS		65536
-#define	MAX_MAP_FACES		65536
-#define	MAX_MAP_LEAFFACES	65536
-#define	MAX_MAP_LEAFBRUSHES 65536
-#define	MAX_MAP_PORTALS		65536
-#define	MAX_MAP_EDGES		128000
-#define	MAX_MAP_SURFEDGES	256000
-#define	MAX_MAP_LIGHTING	0x200000
-#define	MAX_MAP_VISIBILITY	0x100000
-
 #define MAX_WORLD_COORD		( 128*1024 )
 #define MIN_WORLD_COORD		( -128*1024 )
 #define WORLD_SIZE			( MAX_WORLD_COORD - MIN_WORLD_COORD )
+
+#define	MAX_MAP_ENTITIES	2048
+
+
+
+#define	MAX_MAP_BRUSHES		8192
 
 #define MAX_BRUSH_SIZE		( WORLD_SIZE )
 
@@ -280,47 +200,6 @@ typedef struct miptex_s
 #define	MAX_VALUE	1024
 
 //=============================================================================
-
-typedef struct
-{
-	int		fileofs, filelen;
-} lump_t;
-
-#define	LUMP_ENTITIES		0
-#define	LUMP_PLANES			1
-#define	LUMP_VERTEXES		2
-#define	LUMP_VISIBILITY		3
-#define	LUMP_NODES			4
-#define	LUMP_TEXINFO		5
-#define	LUMP_FACES			6
-#define	LUMP_LIGHTING		7
-#define	LUMP_LEAFS			8
-#define	LUMP_LEAFFACES		9
-#define	LUMP_LEAFBRUSHES	10
-#define	LUMP_EDGES			11
-#define	LUMP_SURFEDGES		12
-#define	LUMP_MODELS			13
-#define	LUMP_BRUSHES		14
-#define	LUMP_BRUSHSIDES		15
-#define	LUMP_POP			16
-
-#define	HEADER_LUMPS		17
-
-typedef struct
-{
-	int			ident;
-	int			version;	
-	lump_t		lumps[HEADER_LUMPS];
-} dheader_t;
-
-typedef struct
-{
-	float		mins[3], maxs[3];
-	float		origin[3];		// for sounds or lights
-	int			headnode;
-	int			firstface, numfaces;	// submodels just draw faces
-										// without walking the bsp tree
-} dmodel_t;
 
 
 typedef struct
@@ -387,16 +266,6 @@ typedef struct
 #define	CONTENTS_KEEP	(CONTENTS_DETAIL | CONTENTS_NEGATIVE_CURVE)
 
 
-typedef struct
-{
-	int			planenum;
-	int			children[2];	// negative numbers are -(leafs+1), not nodes
-	short		mins[3];		// for frustom culling
-	short		maxs[3];
-	unsigned short	firstface;
-	unsigned short	numfaces;	// counting both sides
-} dnode_t;
-
 
 typedef struct texinfo_s
 {
@@ -423,58 +292,6 @@ typedef struct texinfo_s
 #define	SURF_CURVE_FAKE		0x40000000
 #define	SURF_CURVE		    0x80000000
 #define	SURF_KEEP		(SURF_CURVE | SURF_CURVE_FAKE | SURF_PATCH)
-
-// note that edge 0 is never used, because negative edge nums are used for
-// counterclockwise use of the edge in a face
-typedef struct
-{
-	unsigned short	v[2];		// vertex numbers
-} dedge_t;
-
-#define	MAXLIGHTMAPS	4
-typedef struct
-{
-	unsigned short	planenum;
-	short		side;
-
-	int			firstedge;		// we must support > 64k edges
-	short		numedges;	
-	short		texinfo;
-
-// lighting info
-	byte		styles[MAXLIGHTMAPS];
-	int			lightofs;		// start of [numstyles*surfsize] samples
-} dface_t;
-
-typedef struct
-{
-	int			contents;			// OR of all brushes (not needed?)
-
-	int			pvsofs;				// -1 = no info
-	int			phsofs;				// -1 = no info
-
-	short		mins[3];			// for frustum culling
-	short		maxs[3];
-
-	unsigned short		firstleafface;
-	unsigned short		numleaffaces;
-
-	unsigned short		firstleafbrush;
-	unsigned short		numleafbrushes;
-} dleaf_t;
-
-typedef struct
-{
-	unsigned short	planenum;		// facing out of the leaf
-	short	texinfo;
-} dbrushside_t;
-
-typedef struct
-{
-	int			firstside;
-	int			numsides;
-	int			contents;
-} dbrush_t;
 
 #define	ANGLE_UP	-1
 #define	ANGLE_DOWN	-2

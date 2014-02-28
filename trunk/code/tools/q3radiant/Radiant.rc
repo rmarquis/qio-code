@@ -738,11 +738,6 @@ BEGIN
         MENUITEM "Raise/Lower Terrain",         ID_TERRAIN_RAISELOWERTERRAIN
         , CHECKED
     END
-    POPUP "&Plugins"
-    BEGIN
-        MENUITEM "Refresh",                     ID_PLUGINS_REFRESH
-        MENUITEM SEPARATOR
-    END
     POPUP "&Help"
     BEGIN
         MENUITEM "Help\tF1",                    ID_HELP
@@ -1128,24 +1123,6 @@ BEGIN
         MENUITEM "XY (Top)",                    ID_VIEW_XY
         MENUITEM "XZ",                          ID_VIEW_SIDE
         MENUITEM "YZ",                          ID_VIEW_FRONT
-    END
-END
-
-IDR_POPUP_SPLINE MENU DISCARDABLE 
-BEGIN
-    POPUP "Popup"
-    BEGIN
-        POPUP "New Camera"
-        BEGIN
-            MENUITEM "Fixed",                       ID_POPUP_NEWCAMERA_FIXED
-            MENUITEM "Interpolated",                ID_POPUP_NEWCAMERA_INTERPOLATED
-
-            MENUITEM "Spline",                      ID_POPUP_NEWCAMERA_SPLINE
-
-        END
-        MENUITEM "Camera Inspector...",         ID_SPLINES_EDIT
-        MENUITEM SEPARATOR
-        MENUITEM "Test Camera",                 ID_SPLINE_TEST
     END
 END
 

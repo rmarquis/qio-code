@@ -32,8 +32,7 @@ typedef enum
 	sel_area,
 	sel_terrainpoint,
 	sel_terraintexture,
-	sel_addpoint,			// for dropping points
-	sel_editpoint			// for editing points
+
 
 } select_t;
 

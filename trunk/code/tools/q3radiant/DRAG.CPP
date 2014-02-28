@@ -103,30 +103,6 @@ void Drag_Setup (int x, int y, int buttons,
 	VectorCopy (yaxis, drag_yvec);
 	AxializeVector (drag_yvec);
 
-	if (g_qeglobals.d_select_mode == sel_addpoint) {
-		if (g_qeglobals.selectObject) {
-			g_qeglobals.selectObject->addPoint(origin[0], origin[1], origin[2]);
-		} else {
-			clearSelection();
-		}
-		return;
-	}
-
-	if (g_qeglobals.d_select_mode == sel_editpoint) {
-	 
-		if (g_qeglobals.selectObject) {
-			if (g_qeglobals.selectObject->selectPointByRay(origin[0], origin[1], origin[2], dir[0], dir[1], dir[2], !(buttons == MK_SHIFT)) >= 0) {
-				drag_ok = true;
-			} 
-			return;
-		} else {
-			clearSelection();
-		}
-		Sys_UpdateWindows(W_ALL);
-		Undo_Start("drag object point");
-
-		return;
-	}
 
 
 	extern void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons);
@@ -618,13 +594,6 @@ void MoveSelection (vec3_t move)
 	//
 	// dragging only a part of the selection
 	//
-	//point object selection
-	if (g_qeglobals.d_select_mode == sel_editpoint) {
-		if (g_qeglobals.selectObject) {
-			g_qeglobals.selectObject->updateSelection(move[0], move[1], move[2]);
-		}
-		return;
-	}
 
 
 	// this is fairly crappy way to deal with curvepoint and area selection

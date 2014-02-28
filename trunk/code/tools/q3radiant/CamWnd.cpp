@@ -1014,12 +1014,6 @@ void CCamWnd::Cam_Draw()
 		qglPointSize (1);
 	}
 	
-	
-	g_splineList->draw(static_cast<qboolean>(g_qeglobals.d_select_mode == sel_addpoint || g_qeglobals.d_select_mode == sel_editpoint));
-	if (g_qeglobals.selectObject && (g_qeglobals.d_select_mode == sel_addpoint || g_qeglobals.d_select_mode == sel_editpoint)) {
-		g_qeglobals.selectObject->drawSelection();
-	}
-
 	//
 	// draw pointfile
 	//

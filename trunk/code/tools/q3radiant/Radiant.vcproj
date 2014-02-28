@@ -223,57 +223,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="BrushScript.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="BSInput.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="cameratargetdlg.cpp"
+				RelativePath="brush_primit.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -337,33 +287,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="cbrushstub.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -451,31 +374,6 @@
 			</File>
 			<File
 				RelativePath="DialogThick.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="dlgcamera.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -800,58 +698,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PlugIn.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="PlugInManager.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="PMESH.CPP"
 				>
 				<FileConfiguration
@@ -1034,31 +880,6 @@
 			</File>
 			<File
 				RelativePath="ScaleDialog.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ScriptDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1918,87 +1739,8 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="Brush Primitives"
-				>
-				<File
-					RelativePath="brush_primit.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
 				Name="interfaces"
 				>
-				<File
-					RelativePath="GLInterface.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="IEpairs.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
 				<File
 					RelativePath="IShaders.cpp"
 					>
@@ -2025,57 +1767,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="Messaging.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="PluginEntities.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="SelectedFace.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2131,14 +1823,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="BSInput.h"
-				>
-			</File>
-			<File
-				RelativePath="cameratargetdlg.h"
-				>
-			</File>
-			<File
 				RelativePath="CamWnd.h"
 				>
 			</File>
@@ -2164,10 +1848,6 @@
 			</File>
 			<File
 				RelativePath="DialogThick.h"
-				>
-			</File>
-			<File
-				RelativePath="dlgcamera.h"
 				>
 			</File>
 			<File
@@ -2223,14 +1903,6 @@
 				>
 			</File>
 			<File
-				RelativePath="PlugIn.h"
-				>
-			</File>
-			<File
-				RelativePath="PlugInManager.h"
-				>
-			</File>
-			<File
 				RelativePath="PrefsDlg.h"
 				>
 			</File>
@@ -2283,10 +1955,6 @@
 				>
 			</File>
 			<File
-				RelativePath="ScriptDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="SELECT.H"
 				>
 			</File>
@@ -2334,43 +2002,7 @@
 				Name="interface headers"
 				>
 				<File
-					RelativePath="IEpairs.h"
-					>
-				</File>
-				<File
-					RelativePath="igl.h"
-					>
-				</File>
-				<File
-					RelativePath="IMessaging.h"
-					>
-				</File>
-				<File
-					RelativePath="IPluginEntities.h"
-					>
-				</File>
-				<File
-					RelativePath="ISelectedFace.h"
-					>
-				</File>
-				<File
-					RelativePath="IShaders.h"
-					>
-				</File>
-				<File
 					RelativePath="isurfaceplugin.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="internal interface headers"
-				>
-				<File
-					RelativePath="EpairsWrapper.h"
-					>
-				</File>
-				<File
-					RelativePath="Messaging.h"
 					>
 				</File>
 			</Filter>
@@ -2420,11 +2052,11 @@
 				>
 			</File>
 			<File
-				RelativePath="q.bmp"
+				RelativePath="res\q.bmp"
 				>
 			</File>
 			<File
-				RelativePath="res\q.bmp"
+				RelativePath="q.bmp"
 				>
 			</File>
 			<File
@@ -2456,11 +2088,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\toolbar1.bmp"
+				RelativePath="toolbar1.bmp"
 				>
 			</File>
 			<File
-				RelativePath="toolbar1.bmp"
+				RelativePath="res\toolbar1.bmp"
 				>
 			</File>
 			<File

@@ -2828,9 +2828,6 @@ void	Brush_AddToList (brush_t *b, brush_t *list)
 	list->next->prev = b;
 	list->next = b;
 	b->prev = list;
-	
-	// TTimo messaging
-	DispatchRadiantMsg( RADIANT_SELECTION );	
 }
 
 void	Brush_RemoveFromList (brush_t *b)
@@ -3928,12 +3925,6 @@ void Brush_Draw( brush_t *b )
 	qtexture_t		*prev = 0;
 	winding_t *w;
 
-	if ( b->owner && ( b->owner->eclass->nShowFlags & ECLASS_PLUGINENTITY ) )
-	{
-		b->owner->pPlugEnt->CamRender();
-		return;
-	}
-	
 	// (TTimo) NOTE: added by build 173, I check after pPlugEnt so it doesn't interfere ?
 	if (b->hiddenBrush)
 	{

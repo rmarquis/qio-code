@@ -37,8 +37,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "CamWnd.h"
 #include "RADEditWnd.h"
 #include "TextureBar.h"
-#include "PlugInManager.h"
-#include "PlugIn.h"
 #include "groupdlg.h"
 
 
@@ -153,8 +151,6 @@ protected:  // control bar embedded members
   CString m_strStatus[15];
   CXYWnd* m_pActiveXY;
   bool m_bCamPreview;
-  CPlugInManager m_PlugInMgr;
-  int m_nNextPlugInID;
 
 // Generated message map functions
 protected:
@@ -169,9 +165,6 @@ protected:
 public:
 	void Nudge(int nDim, float fNudge);
 
-  	CPlugInManager &GetPlugInMgr() {return m_PlugInMgr;};
-  	void AddPlugInMenuItem(CPlugIn* pPlugIn);
-	void CleanPlugInMenu();
 
   // these are public so i can easily reflect messages
   // from child windows..
@@ -445,7 +438,6 @@ public:
 	afx_msg void OnViewEntitiesasSkinned();
 	afx_msg void OnViewEntitiesasSkinnedandboxed();
 	afx_msg void OnViewEntitiesasWireframe();
-	afx_msg void OnPluginsRefresh();
 	afx_msg void OnViewShowhint();
 	afx_msg void OnUpdateTexturesShowinuse(CCmdUI* pCmdUI);
 	afx_msg void OnTexturesShowall();
@@ -472,17 +464,6 @@ public:
 	afx_msg void OnDropGroupName();
 	afx_msg void OnDropGroupNewgroup();
 	afx_msg void OnDropGroupRemove();
-	afx_msg void OnSplinesMode();
-	afx_msg void OnSplinesLoad();
-	afx_msg void OnSplinesSave();
-	afx_msg void OnSplinesEdit();
-	afx_msg void OnSplineTest();
-	afx_msg void OnSplinesTarget();
-	afx_msg void OnSplinesTargetPoints();
-	afx_msg void OnSplinesCameraPoints();
-	afx_msg void OnPopupNewcameraInterpolated();
-	afx_msg void OnPopupNewcameraSpline();
-	afx_msg void OnPopupNewcameraFixed();
 	//}}AFX_MSG
   afx_msg void OnMru(unsigned int nID);
   afx_msg void OnViewNearest(unsigned int nID);
@@ -491,7 +472,6 @@ public:
   afx_msg void OnGrid1(unsigned int nID);
   afx_msg LRESULT OnDisplayChange(WPARAM wp, LPARAM lp);
   void CheckTextureScale(int id);
-  afx_msg void OnPlugIn(unsigned int nID);
 
 	DECLARE_MESSAGE_MAP()
 };

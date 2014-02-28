@@ -140,9 +140,6 @@ public:
 	virtual void Hook( face_t* ) = 0;
 	// ------------------------------------------
 	// refers to a qtexture_t -------------------
-	// Init for a miptex_t
-	//++timo NOTE: miptex_t is used only for .WAL format .. a bit outdated
-	virtual void InitForMiptex( miptex_t* ) = 0;
 	// set default texdef
 	virtual void SetDefaultTexdef() = 0;
 	// ------------------------------------------

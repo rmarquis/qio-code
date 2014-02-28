@@ -33,7 +33,6 @@ CPtrArray& g_ptrSelectedFaceBrushes = g_SelectedFaceBrushes;
 
 void clearSelection() {
 	g_qeglobals.d_select_mode = sel_brush;
-	g_qeglobals.selectObject = NULL;
 }
 
 /*
