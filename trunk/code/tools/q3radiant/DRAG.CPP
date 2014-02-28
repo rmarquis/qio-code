@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-qboolean	drag_ok;
+bool	drag_ok;
 vec3_t	drag_xvec;
 vec3_t	drag_yvec;
 
@@ -45,7 +45,7 @@ static	int	buttonx, buttony;
 
 int		lastx, lasty;
 
-qboolean	drag_first;
+bool	drag_first;
 
 
 void	AxializeVector (vec3_t v)
@@ -392,7 +392,7 @@ void Drag_Begin (int x, int y, int buttons,
 			// use a local brushprimit_texdef fitted to a default 2x2 texture
 			brushprimit_texdef_t bp_local;
 			ConvertTexMatWithQTexture( &t.face->brushprimit_texdef, t.face->d_texture, &bp_local, NULL );
-			Texture_SetTexture ( &t.face->texdef, &bp_local, false, GETPLUGINTEXDEF(t.face));
+			Texture_SetTexture ( &t.face->texdef, &bp_local, false);
 			UpdateSurfaceDialog();
 			UpdatePatchInspector();
 		}
@@ -411,7 +411,7 @@ void Drag_Begin (int x, int y, int buttons,
 				Sys_Printf ("Can't change an entity texture\n");
 			else
 			{
-				Brush_SetTexture (t.brush, &g_qeglobals.d_texturewin.texdef, &g_qeglobals.d_texturewin.brushprimit_texdef, false, static_cast<IPluginTexdef *>( g_qeglobals.d_texturewin.pTexdef ) );
+				Brush_SetTexture (t.brush, &g_qeglobals.d_texturewin.texdef, &g_qeglobals.d_texturewin.brushprimit_texdef, false );
 				Sys_UpdateWindows (W_ALL);
 			}
 		}

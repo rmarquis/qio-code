@@ -43,10 +43,6 @@ void _Write3DMatrix (CMemFile *f, int y, int x, int z, float *m);
 patchMesh_t* MakeNewPatch()
 {
   patchMesh_t *pm = reinterpret_cast<patchMesh_t*>(qmalloc(sizeof(patchMesh_t)));
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  pm->pData = static_cast<void *>( g_SurfaceTable.m_pfnPatchAlloc( pm ) );
-  }
   return pm;
 }
 
@@ -258,8 +254,8 @@ void Patch_MeshNormals(patchMesh_t *in )
 	int		x, y;
 	drawVert_t	*dv;
 	vec3_t		around[8], temp;
-	qboolean	good[8];
-	qboolean	wrapWidth, wrapHeight;
+	bool	good[8];
+	bool	wrapWidth, wrapHeight;
 	float		len;
 
 	wrapWidth = false;
@@ -2879,18 +2875,7 @@ void Patch_Delete(patchMesh_t *p)
 {
   p->pSymbiot->pPatch = NULL;
   p->pSymbiot->patchBrush = false;
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-#ifdef _DEBUG
-		if (!p->pData)
-			Sys_Printf("WARNING: unexpected IPluginTexdef* is NULL in Patch_Delete\n");
-		else
-#endif
-		{
-			GETPLUGINTEXDEF(p)->DecRef();
-			p->pData = NULL;
-		}
-  }
+
   free(p);
   p = NULL;
 
@@ -2971,25 +2956,6 @@ Patch_SetTexture
 void Patch_SetTexture(patchMesh_t *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef)
 {
   p->d_texture = Texture_ForName(tex_def->name);
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-#ifdef _DEBUG
-	  if (!p->pData)
-		  Sys_Printf("WARNING: unexpected p->pData is NULL in Patch_SetTexture\n");
-	  else
-#endif
-		  GETPLUGINTEXDEF(p)->DecRef();
-	  if (pPlugTexdef)
-	  {
-		p->pData = pPlugTexdef->Copy();
-		GETPLUGINTEXDEF(p)->Hook(p);
-	  }
-	  else
-	  {
-		  g_SurfaceTable.m_pfnPatchAlloc( p );
-		  GETPLUGINTEXDEF(p)->SetDefaultTexdef();
-	  }	  
-  }
   UpdatePatchInspector();
 }
 
@@ -3579,11 +3545,7 @@ brush_t* Patch_Parse(bool bOld)
 
 	patchMesh_t *pm = MakeNewPatch();
 
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		GETPLUGINTEXDEF(pm)->ParsePatchTexdef();
-	}
-	else
+
 	{
 		// texture def
 		GetToken(true);
@@ -3680,10 +3642,6 @@ Patch_Write
 */
 void Patch_Write (patchMesh_t *p, CMemFile *file)
 {
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		Sys_Printf("WARNING: Patch_Write to a CMemFile and Surface Properties plugin not done\n");
-	}
   //--MemFile_fprintf(file, " {\n  patchDef3\n  {\n");
   MemFile_fprintf(file, " {\n  patchDef2\n  {\n");
 
@@ -3726,16 +3684,7 @@ void Patch_Write (patchMesh_t *p, CMemFile *file)
 void Patch_Write (patchMesh_t *p, FILE *file)
 {
 	fprintf(file, " {\n  patchDef2\n  {\n");
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-#ifdef _DEBUG
-		if ( !p->pData )
-			Sys_Printf("ERROR: no IPluginTexdef in patch\n");
-#endif
-		g_File = file;
-		GETPLUGINTEXDEF(p)->WritePatchTexdef( QERApp_MapPrintf_FILE );
-	}
-	else
+	
 	{
 		fprintf(file, "   %s\n",p->d_texture->name);
 		fprintf(file, "   ( %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value);
@@ -4605,15 +4554,7 @@ patchMesh_t* Patch_Duplicate(patchMesh_t *pFrom)
   p->bOverlay = false;
   p->nListID = -1;
   // surface plugin
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-#ifdef _DEBUG
-	if (!pFrom->pData)
-		Sys_Printf("WARNING: unexpected pFrom->pData is NULL in Patch_Duplicate\n");
-	else
-#endif
-		p->pData = GETPLUGINTEXDEF(pFrom)->Copy();
-  }
+  
   AddBrushForPatch(p);
   return p;
 }

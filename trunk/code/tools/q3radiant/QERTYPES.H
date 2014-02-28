@@ -27,19 +27,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef _QERTYPE_H
 #define _QERTYPE_H
 
-#ifndef __BYTEBOOL__
-#define __BYTEBOOL__
-typedef boolean qboolean;
-//typedef unsigned char byte;
-#endif
-
-#define	MAXPOINTS	16
-
 typedef float vec_t;
 typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
-
-#include "splines/math_vector.h"
+typedef vec_t vec4_t[4];
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
@@ -132,8 +123,6 @@ public:
 	// add brushprimit_texdef_t for brush primitive coordinates storage
 	brushprimit_texdef_t	brushprimit_texdef;
 	int m_nTotalHeight;
-	// surface plugin, must be casted to a IPluginTexdef*
-	void* pTexdef;
 	texdef_t	texdef;
 };
 
@@ -152,17 +141,13 @@ typedef struct qtexture_s
 
 	// name of the .shader file
 	char  shadername[1024]; // old shader stuff
-	qboolean bFromShader;   // created from a shader
+	bool bFromShader;   // created from a shader
 	float fTrans;           // amount of transparency
 	int   nShaderFlags;     // qer_ shader flags
 	vec3_t	color;			    // for flat shade mode
-	qboolean	inuse;		    // true = is present on the level
+	bool	inuse;		    // true = is present on the level
 
-	// cast this one to an IPluginQTexture if you are using it
-	// NOTE: casting can be done with a GETPLUGINQTEXTURE defined in isurfaceplugin.h
-	// TODO: if the __ISURFACEPLUGIN_H_ header is used, use a union { void *pData; IPluginQTexture *pPluginQTexture } kind of thing ?
-	void					*pData;
-
+	
 	//++timo FIXME: this is the actual filename of the texture
 	// this will be removed after shader code cleanup
 	char filename[64];
@@ -204,11 +189,6 @@ typedef struct face_s
 
 	// Timo new brush primit texdef
 	brushprimit_texdef_t	brushprimit_texdef;
-
-	// cast this one to an IPluginTexdef if you are using it
-	// NOTE: casting can be done with a GETPLUGINTEXDEF defined in isurfaceplugin.h
-	// TODO: if the __ISURFACEPLUGIN_H_ header is used, use a union { void *pData; IPluginTexdef *pPluginTexdef } kind of thing ?
-	void					*pData;
 } face_t;
 
 typedef struct {
@@ -278,15 +258,11 @@ typedef struct {
 	qtexture_t *d_texture;
 	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
 	brush_t *pSymbiot;
-	qboolean bSelected;
-	qboolean bOverlay;
-	qboolean bDirty;
+	bool bSelected;
+	bool bOverlay;
+	bool bDirty;
 	int  nListID;
 	epair_t *epairs;
-	// cast this one to an IPluginTexdef if you are using it
-	// NOTE: casting can be done with a GETPLUGINTEXDEF defined in isurfaceplugin.h
-	// TODO: if the __ISURFACEPLUGIN_H_ header is used, use a union { void *pData; IPluginTexdef *pPluginTexdef } kind of thing ?
-	void					*pData;
 } patchMesh_t;
 
 typedef struct {
@@ -334,13 +310,13 @@ typedef struct brush_s
 	vec3_t	mins, maxs;
 	face_t     *brush_faces;
 
-	qboolean bModelFailed;
+	bool bModelFailed;
 	//
 	// curve brush extensions
 	// all are derived from brush_faces
-	qboolean	patchBrush;
-	qboolean	hiddenBrush;
-	qboolean	terrainBrush;
+	bool	patchBrush;
+	bool	hiddenBrush;
+	bool	terrainBrush;
   
   //int nPatchID;
 
@@ -401,8 +377,8 @@ typedef struct eclass_s
 {
 	struct eclass_s *next;
 	char	*name;
-	qboolean	fixedsize;
-	qboolean	unknown;		// wasn't found in source
+	bool	fixedsize;
+	bool	unknown;		// wasn't found in source
 	vec3_t	mins, maxs;
 	vec3_t	color;
 	texdef_t	texdef;
@@ -420,8 +396,6 @@ typedef struct eclass_s
   char	*skinpath;
   int   nFrame;
   unsigned int nShowFlags;
-
-  HMODULE	hPlug;
 } eclass_t;
 
 extern	eclass_t	*eclass;

@@ -41,7 +41,7 @@ float VectorLength(vec3_t v)
 	return length;
 }
 
-qboolean VectorCompare (vec3_t v1, vec3_t v2)
+bool VectorCompare (vec3_t v1, vec3_t v2)
 {
 	int		i;
 	
@@ -270,42 +270,4 @@ void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 		up[1] = cr*sp*sy-sr*cy;
 		up[2] = cr*cp;
 	}
-}
-
-void VectorToAngles( vec3_t vec, vec3_t angles )
-{
-	float forward;
-	float yaw, pitch;
-	
-	if ( ( vec[ 0 ] == 0 ) && ( vec[ 1 ] == 0 ) )
-	{
-		yaw = 0;
-		if ( vec[ 2 ] > 0 )
-		{
-			pitch = 90;
-		}
-		else
-		{
-			pitch = 270;
-		}
-	}
-	else
-	{
-		yaw = atan2( vec[ 1 ], vec[ 0 ] ) * 180 / M_PI;
-		if ( yaw < 0 )
-		{
-			yaw += 360;
-		}
-		
-		forward = ( float )sqrt( vec[ 0 ] * vec[ 0 ] + vec[ 1 ] * vec[ 1 ] );
-		pitch = atan2( vec[ 2 ], forward ) * 180 / M_PI;
-		if ( pitch < 0 )
-		{
-			pitch += 360;
-		}
-	}
-	
-	angles[ 0 ] = pitch;
-	angles[ 1 ] = yaw;
-	angles[ 2 ] = 0;
 }

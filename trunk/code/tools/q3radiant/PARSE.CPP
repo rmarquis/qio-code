@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 
 char	token[MAXTOKEN];
-qboolean	unget;
+bool	unget;
 char	*script_p;
 int		scriptline;
 
@@ -34,7 +34,7 @@ void	StartTokenParsing (char *data)
 	unget = false;
 }
 
-qboolean WINAPI GetToken (qboolean crossline)
+bool WINAPI GetToken (bool crossline)
 {
 	char    *token_p;
 
@@ -125,7 +125,7 @@ TokenAvailable
 Returns true if there is another token on the line
 ==============
 */
-qboolean TokenAvailable (void)
+bool TokenAvailable (void)
 {
 	char    *search_p;
 

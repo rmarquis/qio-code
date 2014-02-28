@@ -61,7 +61,7 @@ public:
 	virtual ~CCamWnd();
   camera_t& Camera(){return m_Camera;};
   void Cam_MouseControl(float dtime);
-  void Cam_ChangeFloor(qboolean up);
+  void Cam_ChangeFloor(bool up);
 
 protected:
   void Cam_Init();
@@ -71,7 +71,7 @@ protected:
   void Cam_MouseUp (int x, int y, int buttons);
   void Cam_MouseMoved (int x, int y, int buttons);
   void InitCull();
-  qboolean CullBrush (brush_t *b);
+  bool CullBrush (brush_t *b);
   void Cam_Draw();
 
 

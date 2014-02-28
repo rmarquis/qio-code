@@ -308,7 +308,7 @@ void Select_Ray (vec3_t origin, vec3_t dir, int flags)
 		// Texture_SetTexture requires a brushprimit_texdef fitted to the default width=2 height=2 texture
 		brushprimit_texdef_t brushprimit_texdef;
 		ConvertTexMatWithQTexture ( &t.face->brushprimit_texdef, t.face->d_texture, &brushprimit_texdef, NULL );
-		Texture_SetTexture ( &t.face->texdef, &brushprimit_texdef, false, GETPLUGINTEXDEF(t.face), false );
+		Texture_SetTexture ( &t.face->texdef, &brushprimit_texdef, false, false );
 		UpdateSurfaceDialog();
 		return;
 	}
@@ -640,7 +640,7 @@ void Select_GetMid (vec3_t mid)
 
 vec3_t	select_origin;
 vec3_t	select_matrix[3];
-qboolean	select_fliporder;
+bool	select_fliporder;
 
 void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 {

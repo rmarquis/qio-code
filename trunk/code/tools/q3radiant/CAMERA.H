@@ -35,7 +35,7 @@ typedef struct
 {
 	int		width, height;
 
-	qboolean	timing;
+	bool	timing;
 
 	vec3_t	origin;
 	vec3_t	angles;

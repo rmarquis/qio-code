@@ -557,7 +557,7 @@ void EClass_CreateNewFromText(const char *text) {
 		Eclass_InsertAlphabetized(cl);
 	}
 }
-qboolean Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
+bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
 {
 	int i;
   if (e->modelpath != NULL)
@@ -739,8 +739,8 @@ Eclass_ScanFile
 =================
 */
 
-qboolean parsing_single = false;
-qboolean eclass_found;
+bool parsing_single = false;
+bool eclass_found;
 eclass_t *eclass_e;
 //#ifdef BUILD_LIST
 extern bool g_bBuildList;
@@ -864,7 +864,7 @@ eclass_t *Eclass_FindExisting (const char *name) {
 
 	return 0;
 }
-eclass_t *Eclass_ForName (char *name, qboolean has_brushes)
+eclass_t *Eclass_ForName (char *name, bool has_brushes)
 {
 	eclass_t	*e;
 	char		init[1024];

@@ -26,7 +26,7 @@ typedef struct
 {
 	int		width, height;
 
-	qboolean	timing;
+	bool	timing;
 
 	vec3_t	origin;			// at center of window
 	float	scale;

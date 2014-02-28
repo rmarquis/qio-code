@@ -70,7 +70,7 @@ CTabCtrl g_wndTabs;
 
 int		inspector_mode;		// W_TEXTURE, W_ENTITY, or W_CONSOLE
 
-qboolean	multiple_entities;
+bool	multiple_entities;
 
 entity_t	*edit_entity;
 

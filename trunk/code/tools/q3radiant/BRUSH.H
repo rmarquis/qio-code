@@ -65,12 +65,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //--	vec3_t	mins, maxs;
 //--	face_t     *brush_faces;
 //--
-//--	qboolean bModelFailed;
+//--	bool bModelFailed;
 //--	//
 //--	// curve brush extensions
 //--	// all are derived from brush_faces
-//--	qboolean	curveBrush;
-//--	qboolean	patchBrush;
+//--	bool	curveBrush;
+//--	bool	patchBrush;
 //--    int nPatchID;
 //--} brush_t;
 
@@ -94,9 +94,9 @@ brush_t*	Brush_Parse (void);
 face_t*		Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist);
 void		Brush_RemoveFromList (brush_t *b);
 void		Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back);
-void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, qboolean shear);
+void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear);
 void		Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale = false, IPluginTexdef* pPlugTexdef=NULL );
-void		Brush_SideSelect (brush_t *b, vec3_t origin, vec3_t dir, qboolean shear);
+void		Brush_SideSelect (brush_t *b, vec3_t origin, vec3_t dir, bool shear);
 void		Brush_SnapToGrid(brush_t *pb);
 void		Brush_Rotate(brush_t *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 void		Brush_MakeSidedSphere(int sides);

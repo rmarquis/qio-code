@@ -169,9 +169,6 @@ Face_Alloc
 face_t *Face_Alloc( void )
 {
 	face_t *f = (face_t*)qmalloc( sizeof( *f ) );
-	
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-		f->pData = static_cast<void *>( g_SurfaceTable.m_pfnTexdefAlloc( f ) );
 
 	return f;
 }
@@ -191,17 +188,7 @@ void Face_Free( face_t *f )
 		f->face_winding = 0;
 	}
 
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-#ifdef _DEBUG
-		if ( !f->pData )
-		{
-			Sys_Printf("WARNING: unexpected IPluginTexdef is NULL in Face_Free\n");
-		}
-		else
-#endif
-		GETPLUGINTEXDEF(f)->DecRef();
-	}
+
 
 	f->texdef.~texdef_t();;
 
@@ -566,7 +553,7 @@ winding_t *Brush_MakeFaceWinding (brush_t *b, face_t *face)
 	winding_t	*w;
 	face_t		*clip;
 	plane_t			plane;
-	qboolean		past;
+	bool		past;
 
 	// get a poly that covers an effectively infinite area
 	w = Winding_BaseForPlane (&face->plane);
@@ -1796,13 +1783,7 @@ brush_t *Brush_Parse (void)
 			}
 		}
 
-		// Timo
-		// if we have a surface plugin, we'll call the plugin parsing
-		if (g_qeglobals.bSurfacePropertiesPlugin)
-		{
-			GETPLUGINTEXDEF(f)->ParseTexdef();
-		}
-		else
+
 		{
 			
 			// read the texturedef
@@ -1844,28 +1825,6 @@ brush_t *Brush_Parse (void)
 	
 	return b;
 }
-
-/*
-=================
-QERApp_MapPrintf_FILE
-callback for surface properties plugin
-must fit a PFN_QERAPP_MAPPRINTF ( see isurfaceplugin.h )
-=================
-*/
-// carefully initialize !
-FILE * g_File;
-void WINAPI QERApp_MapPrintf_FILE( char *text, ... )
-{
-	va_list argptr;
-	char	buf[32768];
-
-	va_start (argptr,text);
-	vsprintf (buf, text,argptr);
-	va_end (argptr);
-
-	fprintf( g_File, buf );
-}
-
 
 /*
 ==============
@@ -1984,9 +1943,6 @@ void Brush_Write (brush_t *b, FILE *f)
 					fprintf(f,"%f ",fa->brushprimit_texdef.coords[1][i]);
 			fprintf(f,") ) ");
 			// save texture attribs
-			//++timo surface properties plugin not implemented for brush primitives
-			if (g_qeglobals.bSurfacePropertiesPlugin)
-				Sys_Printf("WARNING: surface properties plugin not supported with brush primitives (yet)\n");
 
       char *pName = strlen(fa->texdef.name) > 0 ? fa->texdef.name : "unnamed";
 			fprintf(f, "%s ", pName );
@@ -2012,17 +1968,7 @@ void Brush_Write (brush_t *b, FILE *f)
 				fprintf(f, ") ");
 			}
 			
-			if (g_qeglobals.bSurfacePropertiesPlugin)
-			{
-				g_File = f;
-#ifdef _DEBUG
-				if (!fa->pData)
-					Sys_Printf("ERROR: unexpected IPluginTexdef* is NULL in Brush_Write\n");
-				else
-#endif
-				GETPLUGINTEXDEF(fa)->WriteTexdef( QERApp_MapPrintf_FILE );
-			}
-			else
+	
 			{
 				pname = fa->texdef.name;
 				if (pname[0] == 0)
@@ -2093,12 +2039,7 @@ void Brush_Write (brush_t *b, CMemFile *pMemFile)
 		Terrain_Write(b->pTerrain, pMemFile);
 		return;
 	}
-	//++timo NOTE: it's not very difficult to add since the surface properties plugin
-	// writes throught a printf-style function prototype
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		Sys_Printf("WARNING: Brush_Write to a CMemFile and Surface Properties plugin not done\n");
-	}
+
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
 		// brush primitive format
@@ -2160,18 +2101,7 @@ void Brush_Write (brush_t *b, CMemFile *pMemFile)
 				}
 				MemFile_fprintf(pMemFile, ") ");
 			}
-			
-			if (g_qeglobals.bSurfacePropertiesPlugin)
-			{
-				g_pMemFile = pMemFile;
-#ifdef _DEBUG
-				if (!fa->pData)
-					Sys_Printf("ERROR: unexpected IPluginTexdef* is NULL in Brush_Write\n");
-				else
-#endif
-				GETPLUGINTEXDEF(fa)->WriteTexdef( QERApp_MapPrintf_MEMFILE );
-			}
-			else
+	
 			{
 				pname = fa->texdef.name;
 				if (pname[0] == 0)
@@ -2905,25 +2835,6 @@ void SetFaceTexdef (brush_t *b, face_t *f, texdef_t *texdef, brushprimit_texdef_
 	f->texdef.flags = (f->texdef.flags & ~SURF_KEEP) | (oldFlags & SURF_KEEP);
 	f->texdef.contents = (f->texdef.contents & ~CONTENTS_KEEP) | (oldContents & CONTENTS_KEEP);
 
-	// surface plugin
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-#ifdef _DEBUG
-		if (!f->pData)
-			Sys_Printf("ERROR: unexpected IPluginTexdef* is NULL in SetFaceTexdef\n");
-		else
-#endif
-			GETPLUGINTEXDEF(f)->DecRef();
-		IPluginTexdef *pTexdef = NULL;
-		if ( pPlugTexdef )
-		{
-			pTexdef = pPlugTexdef->Copy();
-			pTexdef->Hook( f );
-		}
-		else
-			pTexdef = g_SurfaceTable.m_pfnTexdefAlloc( f );
-		f->pData = pTexdef;
-	}
 
 	// if this is a curve face, set all other curve faces to the same texdef
 	if (f->texdef.flags & SURF_CURVE) 
@@ -2958,7 +2869,7 @@ void Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brush
 }
 
 
-qboolean ClipLineToFace (vec3_t p1, vec3_t p2, face_t *f)
+bool ClipLineToFace (vec3_t p1, vec3_t p2, face_t *f)
 {
 	float	d1, d2, fr;
 	int		i;
@@ -3005,7 +2916,7 @@ Adds the faces planepts to move_points, and
 rotates and adds the planepts of adjacent face if shear is set
 ==============
 */
-void Brush_SelectFaceForDragging (brush_t *b, face_t *f, qboolean shear)
+void Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear)
 {
 	int		i;
 	face_t	*f2;
@@ -3115,7 +3026,7 @@ planes for dragging
 ==============
 */
 void Brush_SideSelect (brush_t *b, vec3_t origin, vec3_t dir
-					   , qboolean shear)
+					   , bool shear)
 {
 	face_t	*f, *f2;
 	vec3_t	p1, p2;

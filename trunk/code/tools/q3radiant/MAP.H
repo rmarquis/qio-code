@@ -38,13 +38,13 @@ extern	entity_t	entities;
 extern	entity_t	*world_entity;	// the world entity is NOT included in
 									// the entities chain
 
-extern	qboolean	modified;		// for quit confirmations
+extern	bool	modified;		// for quit confirmations
 
 extern	vec3_t	region_mins, region_maxs;
-extern	qboolean	region_active;
+extern	bool	region_active;
 
 void 	Map_LoadFile (char *filename);
-void 	Map_SaveFile (char *filename, qboolean use_region);
+void 	Map_SaveFile (char *filename, bool use_region);
 void	Map_New (void);
 void	Map_BuildBrushData(void);
 
@@ -53,7 +53,7 @@ void	Map_RegionXY (void);
 void	Map_RegionTallBrush (void);
 void	Map_RegionBrush (void);
 void	Map_RegionSelectedBrushes (void);
-qboolean Map_IsBrushFiltered (brush_t *b);
+bool Map_IsBrushFiltered (brush_t *b);
 
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile = NULL);
 void Map_ImportBuffer (char* buf);

@@ -1314,14 +1314,14 @@ terrainMesh_t *SingleTerrainSelected( void ) {
 }
 
 void Terrain_Edit( void ) {
-	//brush_t *pb;
-	//terrainMesh_t *p;
-	//int i;
-	//int j;
+	brush_t *pb;
+	terrainMesh_t *p;
+	int i;
+	int j;
 
-//	g_qeglobals.d_numpoints = 0;
+	g_qeglobals.d_numpoints = 0;
 	g_qeglobals.d_numterrapoints = 0;
-#if 0	
+#if 1	
 	for( pb = selected_brushes.next; pb != &selected_brushes ; pb = pb->next ) {
 		if ( pb->terrainBrush ) {
 			p = pb->pTerrain;

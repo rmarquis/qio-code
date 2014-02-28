@@ -23,13 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     void Eclass_InitForSourceDirectory (char *path);
 	// this will create a new eclass_t if one is not present
-    eclass_t *Eclass_ForName (char *name, qboolean has_brushes);
+    eclass_t *Eclass_ForName (char *name, bool has_brushes);
 	// this will return 0 if class with given name is not present
 	eclass_t *Eclass_FindExisting (const char *name);
 	void EClass_CreateNewFromText(const char *text);
     
-    // forward declare this one
-    class IPluginEntity;
     
     typedef struct entity_s
     {
@@ -40,7 +38,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     	eclass_t	*eclass;
     	epair_t		*epairs;
     	eclass_t  *md3Class;
-    	IPluginEntity *pPlugEnt;
       vec3_t vRotation;   // valid for misc_models only
       vec3_t vScale;      // valid for misc_models only
     } entity_t;
@@ -57,8 +54,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     void		Entity_Free (entity_t *e);
     void		Entity_FreeEpairs(entity_t *e);
     int			Entity_MemorySize(entity_t *e);
-    entity_t	*Entity_Parse (qboolean onlypairs, brush_t* pList = NULL);
-    void		Entity_Write (entity_t *e, FILE *f, qboolean use_region);
+    entity_t	*Entity_Parse (bool onlypairs, brush_t* pList = NULL);
+    void		Entity_Write (entity_t *e, FILE *f, bool use_region);
     void		Entity_WriteSelected(entity_t *e, FILE *f);
     void		Entity_WriteSelected(entity_t *e, CMemFile*);
     entity_t	*Entity_Create (eclass_t *c);
@@ -72,7 +69,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     entity_t	*FindEntityInt(char *pszKey, int iValue);
     
     int GetUniqueTargetId(int iHint);
-    qboolean Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax);
+    bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax);
     eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec3_t &vMax);
     
     //Timo : used for parsing epairs in brush primitive

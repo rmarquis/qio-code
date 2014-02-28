@@ -371,7 +371,7 @@ If keepon is true, an exactly on-plane winding will be saved, otherwise
 it will be clipped away.
 ==================
 */
-winding_t *Winding_Clip (winding_t *in, plane_t *split, qboolean keepon)
+winding_t *Winding_Clip (winding_t *in, plane_t *split, bool keepon)
 {
 	vec_t	dists[MAX_POINTS_ON_WINDING];
 	int		sides[MAX_POINTS_ON_WINDING];
@@ -603,7 +603,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	int			i, j, k, l;
 	vec3_t		normal, delta;
 	vec_t		dot;
-	qboolean	keep1, keep2;
+	bool	keep1, keep2;
 	
 
 	//
@@ -651,7 +651,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
-	keep1 = (qboolean)(dot < -CONTINUOUS_EPSILON);
+	keep1 = (bool)(dot < -CONTINUOUS_EPSILON);
 	
 	back = f1->points[(i+2)%f1->numpoints];
 	VectorSubtract (back, p2, delta);
@@ -663,7 +663,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
-	keep2 = (qboolean)(dot < -CONTINUOUS_EPSILON);
+	keep2 = (bool)(dot < -CONTINUOUS_EPSILON);
 
 	//
 	// build the new polygon

@@ -109,7 +109,7 @@ public:
   void XY_DrawGrid();
   void XY_MouseMoved (int x, int y, int buttons);
   void NewBrushDrag (int x, int y);
-  qboolean DragDelta (int x, int y, vec3_t move);
+  bool DragDelta (int x, int y, vec3_t move);
   void XY_MouseUp(int x, int y, int buttons);
   void XY_MouseDown (int x, int y, int buttons);
   void XY_ToGridPoint (int x, int y, vec3_t point);

@@ -35,10 +35,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// surface properties plugin
-// global flag for surface properties plugin is g_qeglobals.bSurfacePropertiesPlugin
-_QERPlugSurfaceTable g_SurfaceTable;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSurfaceDlg dialog
@@ -117,7 +113,7 @@ END_MESSAGE_MAP()
 texdef_t	g_old_texdef;
 texdef_t	g_patch_texdef;
 HWND		g_surfwin = NULL;
-qboolean	g_changed_surface;
+bool	g_changed_surface;
 
 int	g_checkboxes[64] = { 
 	IDC_CHECK1, IDC_CHECK2, IDC_CHECK3, IDC_CHECK4, 
@@ -686,11 +682,7 @@ void CSurfaceDlg::UpdateSpinners(int nScrollCode, int nPos, CScrollBar* pBar)
 
 void UpdateSurfaceDialog()
 {
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		g_SurfaceTable.m_pfnUpdateSurfaceDialog();
-	}
-	else
+
 	{
 		if (g_surfwin)
 			g_dlgSurface.SetTexMods();
@@ -702,12 +694,7 @@ bool ByeByeSurfaceDialog();
 
 void DoSurface (void)
 {
-	// surface properties plugin ?
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		g_SurfaceTable.m_pfnDoSurface();
-		return;
-	}
+
 
   g_bNewFace = g_PrefsDlg.m_bFace;
   g_bNewApplyHandling = g_PrefsDlg.m_bNewApplyHandling;
@@ -743,11 +730,6 @@ void DoSurface (void)
 
 bool ByeByeSurfaceDialog()
 {
-	// surface properties plugin ?
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		return g_SurfaceTable.m_pfnByeByeSurfaceDialog();
-	}
 
   if (g_surfwin)
   {

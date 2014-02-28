@@ -52,7 +52,7 @@ int			Winding_IsTiny(winding_t *w);
 //returns true if the winding is huge
 int			Winding_IsHuge(winding_t *w);
 //clip the winding with the plane
-winding_t*	Winding_Clip(winding_t *in, plane_t *split, qboolean keepon);
+winding_t*	Winding_Clip(winding_t *in, plane_t *split, bool keepon);
 //split the winding with the plane
 void		Winding_SplitEpsilon(winding_t *in, vec3_t normal, double dist, 
 								vec_t epsilon, winding_t **front, winding_t **back);

@@ -218,7 +218,7 @@ const int g_nPathFixupCount = sizeof(g_pPathFixups) / sizeof(const char*);
 QE_LoadProject
 ===========
 */
-qboolean QE_LoadProject (char *projectfile)
+bool QE_LoadProject (char *projectfile)
 {
 	char	*data;
 
@@ -339,7 +339,7 @@ qboolean QE_LoadProject (char *projectfile)
 	}
 	if(Eclass_FindExisting("env_cubemap") == 0) {
 		EClass_CreateNewFromText("/*QUAKED env_cubemap (1 0.64 0) (-8 -8 -8) (8 8 8)\n"
-				"Static cubemap sample. Must be calculated with 'buildCubeMaps' commands.\n"
+				"Static cubemap sample. Must be calculated with 'buildCubeMaps' command.\n"
 				"******************************************************************************/\n");
 	}
 	FillClassList();		// list in entity window
@@ -360,7 +360,7 @@ QE_SaveProject
 */
 //extern char	*bsp_commands[256];
 
-qboolean QE_SaveProject (const char* pProjectFile)
+bool QE_SaveProject (const char* pProjectFile)
 {
 	//char	filename[1024];
 	FILE	*fp;
@@ -465,7 +465,7 @@ void ConnectEntities (void)
 	Select_Brush (g_qeglobals.d_select_order[1]);
 }
 
-qboolean QE_SingleBrush (bool bQuiet)
+bool QE_SingleBrush (bool bQuiet)
 {
 	if ( (selected_brushes.next == &selected_brushes)
 		|| (selected_brushes.next->next != &selected_brushes) )
@@ -524,7 +524,7 @@ int g_numbrushes, g_numentities;
 void QE_CountBrushesAndUpdateStatusBar( void )
 {
 	static int      s_lastbrushcount, s_lastentitycount;
-	static qboolean s_didonce;
+	static bool s_didonce;
 	
 	//entity_t   *e;
 	brush_t	   *b, *next;
@@ -566,7 +566,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 }
 
 char		com_token[1024];
-qboolean	com_eof;
+bool	com_eof;
 
 /*
 ================

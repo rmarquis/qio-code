@@ -59,7 +59,6 @@ extern "C"
 #include "entity.h"
 #include "map.h"
 #include "select.h"
-#include "splines/splines.h"
 
 #include "camera.h"
 #include "xy.h"
@@ -92,12 +91,13 @@ int 	ParseNum (char *str);
 char *COM_Parse (char *data);
 
 extern	char		com_token[1024];
-extern	qboolean	com_eof;
+extern	bool	com_eof;
 
 #define	MAX_NUM_ARGVS	32
 extern	int		argc;
 extern	char	*argv[MAX_NUM_ARGVS];
 
+typedef int fileHandle_t;
 
 typedef struct
 {
@@ -112,8 +112,8 @@ typedef struct
 	float	  fGamma;			// gamma for textures
 	char	  szProject[256];	// last project loaded
 	vec3_t	colors[COLOR_LAST];
-	qboolean  show_names;
-  qboolean  show_coordinates;
+	bool  show_names;
+  bool  show_coordinates;
 	int       exclude;
   int     m_nTextureTweak;
 } SavedInfo_t;
@@ -140,7 +140,7 @@ void    Sys_Status(const char *psz, int part);
 */
 typedef struct
 {
-	qboolean d_showgrid;
+	bool d_showgrid;
 	int      d_gridsize;
 	
 	int      d_num_entities;
@@ -210,7 +210,7 @@ typedef struct
 	
 	int          d_parsed_brushes;
 	
-	qboolean	show_blocks;
+	bool	show_blocks;
 	
 	// Timo
 	// tells if we are internally using brush primitive (texture coordinates and map format)
@@ -220,25 +220,23 @@ typedef struct
 
 	// used while importing brush data from file or memory buffer
 	// tells if conversion between map format and internal preferences ( m_bBrushPrimitMode ) is needed
-	qboolean	bNeedConvert;
-	qboolean	bOldBrushes;
-	qboolean	bPrimitBrushes;
+	bool	bNeedConvert;
+	bool	bOldBrushes;
+	bool	bPrimitBrushes;
 	
 	vec3_t  d_vAreaTL;
 	vec3_t  d_vAreaBR;
 	
 	// tells if we are using .INI files for prefs instead of registry
-	qboolean	use_ini;
+	bool	use_ini;
 	// even in .INI mode we use the registry for all void* prefs
 	char		use_ini_registry[64];
 	
 	//Timo
-	// tells we have surface properties plugin
-	qboolean	bSurfacePropertiesPlugin;
 	// tells we are using a BSP frontend plugin
-	qboolean	bBSPFrontendPlugin;
+	bool	bBSPFrontendPlugin;
 
-	qboolean dontDrawSelectedOutlines;
+	bool dontDrawSelectedOutlines;
 	
 } QEGlobals_t;
 
@@ -369,9 +367,9 @@ void     QE_CountBrushesAndUpdateStatusBar( void );
 void     WINAPI QE_CheckOpenGLForErrors(void);
 void     QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps);
 void     QE_Init (void);
-qboolean QE_KeyDown (int key, int nFlags = 0);
-qboolean QE_LoadProject (char *projectfile);
-qboolean QE_SingleBrush (bool bQuiet = false);
+bool QE_KeyDown (int key, int nFlags = 0);
+bool QE_LoadProject (char *projectfile);
+bool QE_SingleBrush (bool bQuiet = false);
 
 
 // sys stuff
@@ -380,7 +378,7 @@ void Sys_MarkMapModified (void);
 /*
 ** QE Win32 function declarations
 */
-int  WINAPI QEW_SetupPixelFormat(HDC hDC, qboolean zbuffer );
+int  WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer );
 void QEW_StopGL( HWND hWnd, HGLRC hGLRC, HDC hDC );
 
 /*
@@ -390,12 +388,12 @@ extern QEGlobals_t   g_qeglobals;
 
 //++timo clean (moved into qertypes.h)
 //enum VIEWTYPE {YZ, XZ, XY};
-qboolean IsBrushSelected(brush_t* bSel);
+bool IsBrushSelected(brush_t* bSel);
 
 // curve brushes
 
-void Curve_MakeCurvedBrush (qboolean negative, qboolean top, qboolean bottom, 
-					qboolean s1, qboolean s2, qboolean s3, qboolean s4);
+void Curve_MakeCurvedBrush (bool negative, bool top, bool bottom, 
+					bool s1, bool s2, bool s3, bool s4);
 
 void Curve_Invert (void);
 
@@ -566,21 +564,17 @@ void ComputeBest2DVector( vec3_t v, vec3_t X, vec3_t Y, int &x, int &y );
 //
 // eclass.cpp
 //
-extern qboolean parsing_single;
-extern qboolean eclass_found;
+extern bool parsing_single;
+extern bool eclass_found;
 extern eclass_t *eclass_e;
 void Eclass_ScanFile( char *filename );
-
-// for interfaces, we require main plugin header included
-#include "qerplugin.h"
 
 //
 // SurfaceDlg.cpp and surface properties plugin
 //
 //++timo some patch in/out stuff is in there, needs to be moved out in a dedicated interface
 void WINAPI Patch_Rebuild(patchMesh_t *p);
-#include "isurfaceplugin.h"
-extern _QERPlugSurfaceTable g_SurfaceTable;
+
 
 //
 // ShaderInfo.cpp
@@ -591,18 +585,6 @@ extern _QERPlugSurfaceTable g_SurfaceTable;
 // TexWnd.cpp
 //
 CShaderInfo* hasShader(const char *pName);
-
-//
-// IScripLib interface
-// GetToken, UnGetToken, etc.
-#include "IScriplib.h"
-extern FILE *g_File;
-void WINAPI QERApp_MapPrintf_FILE( char *text, ... );
-
-//
-// ISurfacePlugin interface
-//
-void WINAPI QERApp_GetTwoSelectedPatch( patchMesh_t **p1, patchMesh_t **p2 );
 
 //
 // IBSPFrontend interface

@@ -49,7 +49,7 @@ static unsigned	tex_palette[256];
 qtexture_t	*notexture = NULL;
 qtexture_t	*g_pluginTexture = NULL;
 
-static qboolean	nomips = false;
+static bool	nomips = false;
 
 #define	FONT_HEIGHT	10
 
@@ -71,7 +71,7 @@ int g_nTextureOffset = 0;
 
 // current active texture directory.  if empty, show textures in use
 char		texture_directory[128];	// use if texture_showinuse is false
-qboolean	texture_showinuse;
+bool	texture_showinuse;
 
 bool g_bFilterEnabled = false;
 CString g_strFilter;
@@ -84,7 +84,7 @@ int			texture_nummenus;
 #define		MAX_TEXTUREDIRS	128
 char		texture_menunames[MAX_TEXTUREDIRS][128];
 
-qboolean	g_dontuse = true;		// set to true to load the texture but not flag as used
+bool	g_dontuse = true;		// set to true to load the texture but not flag as used
 
 // void SelectTexture (int mx, int my, bool bShift = false);
 void SelectTexture (int mx, int my, bool bShift, bool bFitScale=false);
@@ -292,7 +292,7 @@ void Texture_SetMode(int iMenu)
 {
 	int	i, iMode;
 	HMENU hMenu;
-	qboolean texturing = true;
+	bool texturing = true;
 
 	hMenu = GetMenu(g_qeglobals.d_hwndMain);
 
@@ -484,13 +484,7 @@ qtexture_t *Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHei
 
   q->texture_number = texture_extension_number++;
 
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  // Timo
-	  // Surface properties plugins can store their own data in an IPluginQTexture
-	  q->pData = g_SurfaceTable.m_pfnQTextureAlloc( q );
-	  GETPLUGINTEXDEF(q)->SetDefaultTexdef();
-  }
+
 
   if (g_PrefsDlg.m_bSGIOpenGL)
   {
@@ -579,13 +573,7 @@ qtexture_t *Texture_CreateSolid (const char *name)
 
   q = (qtexture_t*)qmalloc(sizeof(*q));
 
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  // Timo
-	  // Surface properties plugins can store their own data in an IPluginQTexture
-	  q->pData = g_SurfaceTable.m_pfnQTextureAlloc( q );
-	  GETPLUGINTEXDEF(q)->SetDefaultTexdef();
-  }
+
 	
 	sscanf (name, "(%f %f %f)", &q->color[0], &q->color[1], &q->color[2]);
 
@@ -673,13 +661,7 @@ Texture_MakeNotexture
 void Texture_MakeNotexture (void)
 {
   notexture = Texture_MakeDefault();
-  // Timo
-  // Surface properties plugins can store their own data in an IPluginQTexture
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  notexture->pData = g_SurfaceTable.m_pfnQTextureAlloc( notexture );
-	  GETPLUGINTEXDEF(notexture)->SetDefaultTexdef();
-  }
+
 }
 
 
@@ -953,17 +935,7 @@ void Texture_Remove(qtexture_t *q)
   }
   qglDeleteTextures(1, reinterpret_cast<const unsigned int*>(&q->texture_number));
 
-  if (g_qeglobals.bSurfacePropertiesPlugin)
-  {
-	  // Timo
-	  // Surface properties plugin
-#ifdef _DEBUG
-	  if ( !q->pData )
-		  Sys_Printf("WARNING: found a qtexture_t* with no IPluginQTexture\n");
-#endif
-	  if ( q->pData )
-		  GETPLUGINTEXDEF(q)->DecRef();
-  }
+ 
 
   free(q);
 
@@ -1503,9 +1475,7 @@ void	Texture_ShowDirectory (int menunum, bool bLinked)
     g_dontuse = false;
   }
 */
-  if (g_PrefsDlg.m_bHiColorTextures == FALSE)
-  {
-  }
+
 
 	g_qeglobals.d_texturewin.originy = 0;
 
@@ -1623,9 +1593,7 @@ void	Texture_ShowDirectory (char* pPath, bool bLinked)
 	Texture_ClearInuse();
 	strcpy (texture_directory, pPath);
 
-  if (g_PrefsDlg.m_bHiColorTextures == FALSE)
-  {
-  }
+
 
 	g_qeglobals.d_texturewin.originy = 0;
 	Sys_Status("loading all textures\n", 0);
@@ -1909,7 +1877,7 @@ Texture_SetTexture
 brushprimit_texdef must be understood as a qtexture_t with width=2 height=2 ( the default one )
 ============
 */
-void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale, IPluginTexdef *pTexdef, bool bSetSelection )
+void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale, bool bSetSelection )
 {
 	qtexture_t	*q;
 	int			x,y;
@@ -1928,20 +1896,7 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_tex
 	{
 		g_qeglobals.d_texturewin.brushprimit_texdef = *brushprimit_texdef;
 	}
-	// surface properties plugin
-	if (g_qeglobals.bSurfacePropertiesPlugin)
-	{
-		if (g_qeglobals.d_texturewin.pTexdef)
-		{
-			// decrement reference count
-			static_cast<IPluginTexdef *>(g_qeglobals.d_texturewin.pTexdef)->DecRef();
-			g_qeglobals.d_texturewin.pTexdef = NULL;
-		}
-		if (pTexdef)
-		{
-			g_qeglobals.d_texturewin.pTexdef = pTexdef->Copy();
-		}
-	}
+
 
 	Sys_UpdateWindows (W_TEXTURE);
 
@@ -2043,7 +1998,7 @@ void ViewShader(const char *pFile, const char *pName)
     }
   }
 
-  CString s= "editpad ";
+  CString s= "notepad ";
   s += pFile;
   WinExec(s, SW_SHOWNORMAL);
 
@@ -2120,7 +2075,7 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 			tex.contents = q->contents;
 			//strcpy (tex.name, q->name);
 			tex.SetName(q->name);
-			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, GETPLUGINTEXDEF(q));
+			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, 0);
 			CString strTex;
 			CString strName = q->name;
 			//int nPos = strName.Find('\\');
@@ -2350,29 +2305,6 @@ void Texture_Init (bool bHardInit)
 	char	name[1024];
 	byte	*pal = NULL;
 
-  if (g_PrefsDlg.m_bHiColorTextures == FALSE)
-  {
-	  // load the palette
-	  sprintf (name, "%s/pics/colormap.pcx", ValueForKey (g_qeglobals.d_project_entity, "basepath"));
-
-	  Load256Image (name, NULL, &pal, NULL, NULL);
-	  if (!pal)
-    {
-      // before dropping out, try to load it from the QERadiant directory
-      CString strFile = g_strAppPath;
-      AddSlash(strFile);
-      strFile += "colormap.pcx";
-	    Load256Image (strFile.GetBuffer(0), NULL, &pal, NULL, NULL);
-	    if (!pal)
-		    Sys_Printf ("Couldn't load %s or %s", name, strFile);
-    }
-    else
-    {
-	    Texture_InitPalette (pal);
-	    free (pal);
-    }
-  }
-
 	// create the fallback texture
 
   if (bHardInit)
@@ -2395,17 +2327,6 @@ void Texture_FlushUnused()
     while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
     {
       qtexture_t* pNextTex = pTex->next;
-  	  if (g_qeglobals.bSurfacePropertiesPlugin)
-	    {
-		    // Timo
-		    // Surface properties plugin
-#ifdef _DEBUG
-  		  if ( !pTex->pData )
-	  		  Sys_Printf("WARNING: found a qtexture_t* with no IPluginQTexture\n");
-#endif
-  		  if ( pTex->pData && pTex->inuse )
-	  		  GETPLUGINTEXDEF(pTex)->DecRef();
-  	  }
 
       if (!pTex->inuse)
       {
@@ -2439,17 +2360,7 @@ void Texture_Cleanup(CStringList *pList)
         }
       }
 
-  	  if (g_qeglobals.bSurfacePropertiesPlugin)
-	    {
-		    // Timo
-		    // Surface properties plugin
-#ifdef _DEBUG
-  		  if ( !pTex->pData )
-	  		  Sys_Printf("WARNING: found a qtexture_t* with no IPluginQTexture\n");
-#endif
-  		  if ( pTex->pData )
-	  		  GETPLUGINTEXDEF(pTex)->DecRef();
-  	  }
+  
 	    free(pTex);
       pTex = pNextTex;
     }

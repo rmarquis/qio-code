@@ -287,14 +287,14 @@ be looked up, and the entity will not be added
 to the global list.  Used for parsing the project.
 ================
 */
-entity_t	*Entity_Parse (qboolean onlypairs, brush_t* pList)
+entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 {
 	entity_t	*ent;
 	eclass_t	*e;
 	brush_t		*b;
 	vec3_t		mins, maxs;
 	epair_t		*ep;
-	qboolean	has_brushes;
+	bool	has_brushes;
 	
 	if (!GetToken (true))
 		return NULL;
@@ -444,7 +444,7 @@ void VectorMidpoint(vec3_t va, vec3_t vb, vec3_t& out)
 Entity_Write
 ============
 */
-void Entity_Write (entity_t *e, FILE *f, qboolean use_region)
+void Entity_Write (entity_t *e, FILE *f, bool use_region)
 {
 	epair_t		*ep;
 	brush_t		*b;
@@ -522,7 +522,7 @@ void Entity_Write (entity_t *e, FILE *f, qboolean use_region)
 
 
 
-qboolean IsBrushSelected(brush_t* bSel)
+bool IsBrushSelected(brush_t* bSel)
 {
 	for (brush_t* b = selected_brushes.next ;b != NULL && b != &selected_brushes; b = b->next)
   {

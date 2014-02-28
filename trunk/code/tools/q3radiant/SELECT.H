@@ -42,7 +42,7 @@ typedef struct
 	face_t		*face;
 	terrainFace_t	*terraface;
 	float		dist;
-	qboolean	selected;
+	bool	selected;
 } trace_t;
 
 

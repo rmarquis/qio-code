@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "PrefsDlg.h"
 
-qboolean	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
+bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
 
 char		currentmap[1024];
@@ -416,7 +416,7 @@ void Map_LoadFile (char *filename)
 Map_SaveFile
 ===========
 */
-void Map_SaveFile (char *filename, qboolean use_region )
+void Map_SaveFile (char *filename, bool use_region )
 {
 	entity_t	*e, *next;
 	FILE		*f;
@@ -558,7 +558,7 @@ void Map_New (void)
 ===========================================================
 */
 
-qboolean	region_active;
+bool	region_active;
 vec3_t	region_mins = {MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD};
 vec3_t	region_maxs = {MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD};
 
@@ -624,7 +624,7 @@ void RemoveRegionBrushes (void)
 }
 
 
-qboolean Map_IsBrushFiltered (brush_t *b)
+bool Map_IsBrushFiltered (brush_t *b)
 {
 	int		i;
 

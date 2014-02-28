@@ -48,7 +48,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Undo.h"
 #include "NameDlg.h"
 #include "libs/pakstuff.h"
-#include "splines/splines.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1448,14 +1447,6 @@ void CMainFrame::OnDestroy()
 
   if (notexture)
   {
-  // Timo
-  // Surface properties plugin
-#ifdef _DEBUG
-  if ( !notexture->pData )
-	  Sys_Printf("WARNING: found a qtexture_t* with no IPluginQTexture\n");
-#endif
-  if ( notexture->pData )
-	GETPLUGINTEXDEF(notexture)->DecRef();
 
     free(notexture);
   }
@@ -2313,7 +2304,7 @@ void CMainFrame::OnTexturesShowinuse()
 }
 
 //from TexWnd.cpp
-extern qboolean	texture_showinuse;
+extern bool	texture_showinuse;
 void CMainFrame::OnUpdateTexturesShowinuse(CCmdUI* pCmdUI) 
 {
   pCmdUI->SetCheck(texture_showinuse);
@@ -2757,7 +2748,7 @@ void CMainFrame::OnSelectionDragvertecies()
 	  //--if (QE_SingleBrush() && selected_brushes.next->patchBrush)
 	if ( OnlyTerrainSelected() )
 	{
-		//Terrain_Edit();
+		Terrain_Edit();
 	}
     else if (OnlyPatchesSelected())
     {

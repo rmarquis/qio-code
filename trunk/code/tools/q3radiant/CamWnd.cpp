@@ -27,7 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "XYWnd.h"
 #include "CamWnd.h"
 #include "qe3.h"
-#include "splines/splines.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -385,7 +384,7 @@ void CCamWnd::Cam_BuildMatrix()
 
 
 
-void CCamWnd::Cam_ChangeFloor (qboolean up)
+void CCamWnd::Cam_ChangeFloor (bool up)
 {
 	brush_t	*b;
 	float	d, bestd, current;
@@ -652,7 +651,7 @@ void CCamWnd::InitCull()
 	}
 }
 
-qboolean CCamWnd::CullBrush (brush_t *b)
+bool CCamWnd::CullBrush (brush_t *b)
 {
 	int		i;
 	vec3_t	point;

@@ -46,7 +46,7 @@ extern void WXY_Print( void );
 
 void OpenDialog (void);
 void SaveAsDialog (bool bRegion);
-qboolean ConfirmModified (void);
+bool ConfirmModified (void);
 void  Select_Ungroup (void);
 
 void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps)
@@ -161,24 +161,6 @@ void FindReplace(CString& strContents, const char* pTag, const char* pValue)
 HWND g_hWnd = NULL;
 HANDLE g_hToolThread = NULL;
 CString g_strParams;
-
-UINT ToolThread(LPVOID pParam)
-{
-  char* p = reinterpret_cast<char*>(pParam);
-  if (g_PrefsDlg.m_bPAK)
-    RunTools(p, g_hWnd, g_PrefsDlg.m_strPAKFile);
-  else
-    RunTools(p, g_hWnd, "");
-  g_hToolThread = NULL;
-  delete []p;
-  return 0;
-}
-
-void ThreadTools(char* p)
-{
-  CWinThread* pThread = AfxBeginThread(ToolThread, reinterpret_cast<LPVOID>(p));
-  g_hToolThread = pThread->m_hThread;
-}
 
 HWND g_hwndFoundIt = NULL;
 
@@ -322,16 +304,7 @@ void RunBsp (char *command)
   strcpy(sys, strSys);
   strcat(sys, outputpath);
 
-  if (g_PrefsDlg.m_bInternalBSP)
-  {
-    g_tBegin = CTime::GetCurrentTime();
-    strSys.MakeLower();
-    char* p = new char[strSys.GetLength()+1];
-    strcpy(p, strSys.GetBuffer(0));
-    ThreadTools(p);
-  }
-  else
-  {
+
 	  Sys_ClearPrintf ();
 	  Sys_Printf ("==================\nRunning bsp command...\n");
 	  Sys_Printf ("\n%s\n", sys);
@@ -433,7 +406,7 @@ void RunBsp (char *command)
 	  //BringWindowToTop( g_qeglobals.d_hwndMain );	// pop us back on top
 	  //SetFocus (g_qeglobals.d_hwndCamera);
 #endif
-  }
+  
 }
 
 void DLLBuildDone()
@@ -613,7 +586,7 @@ void DoNewColor(int* i1, int* i2, int* i3)
 }
 
 
-qboolean DoColor(int iIndex)
+bool DoColor(int iIndex)
 {
 
 	COLORREF cr = (int)(g_qeglobals.d_savedinfo.colors[iIndex][0]*255) +

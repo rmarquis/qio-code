@@ -31,8 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "PrefsDlg.h"
 #include "DialogInfo.h"
-#include "splines/splines.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -1761,7 +1759,7 @@ void CXYWnd::XY_MouseUp(int x, int y, int buttons)
     ;
 }
 
-qboolean CXYWnd::DragDelta (int x, int y, vec3_t move)
+bool CXYWnd::DragDelta (int x, int y, vec3_t move)
 {
 	vec3_t	xvec, yvec, delta;
 	int		i;

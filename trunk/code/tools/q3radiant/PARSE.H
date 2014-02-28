@@ -28,7 +28,7 @@ extern	int		scriptline;
 
 // NOTE: added WINAPI call syntax to export these for plugins in _QERScripLibTable
 void	StartTokenParsing (char *data);
-qboolean WINAPI GetToken (qboolean crossline);
+bool WINAPI GetToken (bool crossline);
 void WINAPI UngetToken (void);
-qboolean TokenAvailable (void);
+bool TokenAvailable (void);
 

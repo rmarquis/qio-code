@@ -34,7 +34,7 @@ extern CEdit* g_pEdit;
 
 int	screen_width;
 int	screen_height;
-qboolean	have_quit;
+bool	have_quit;
 
 int	update_bits;
 
@@ -209,7 +209,7 @@ void QEW_StopGL( HWND hWnd, HGLRC hGLRC, HDC hDC )
 	ReleaseDC( hWnd, hDC );
 }
 		
-int WINAPI QEW_SetupPixelFormat(HDC hDC, qboolean zbuffer )
+int WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer )
 {
     static PIXELFORMATDESCRIPTOR pfd = {
 		sizeof(PIXELFORMATDESCRIPTOR),	// size of this pfd
@@ -321,7 +321,7 @@ FILE DIALOGS
 ======================================================================
 */
  
-qboolean ConfirmModified (void)
+bool ConfirmModified (void)
 {
 	if (!modified)
 		return true;
