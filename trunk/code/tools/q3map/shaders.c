@@ -26,28 +26,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q3mapcommon/mathlib.h"
 #include "q3mapcommon/imagelib.h"
 #include "q3mapcommon/scriplib.h"
-
-#ifdef _TTIMOBUILD
-#include "../common/qfiles.h"
-#include "../common/surfaceflags.h"
-#else
 #include "q3mapcommon/qfiles.h"
 #include "q3mapcommon/surfaceflags.h"
-#endif
 
 #include "shaders.h"
-#ifdef _WIN32
-
-#ifdef _TTIMOBUILD
-#include "pakstuff.h"
-#include "jpeglib.h"
-#else
 #include "../q3radiant/libs/pakstuff.h"
-#include "../q3radiant/libs/jpeglib.h"
-#endif
-
-#endif
-
 
 // 5% backsplash by default
 #define	DEFAULT_BACKSPLASH_FRACTION		0.05
@@ -118,50 +101,141 @@ infoParm_t	infoParms[] = {
 };
 
 
-/*
-===============
-LoadShaderImage
-===============
-*/
 
-byte* LoadImageFile(char *filename, qboolean *bTGA)
-{
-  byte *buffer = NULL;
-  int nLen = 0;
-  *bTGA = qtrue;
-  if (FileExists(filename))
-  {
-    LoadFileBlock(filename, &buffer);
-  }
-#ifdef _WIN32
-  else
-  {
-    PakLoadAnyFile(filename, &buffer);
-  }
-#endif
-  if ( buffer == NULL)
-  {
-    nLen = strlen(filename);
-    filename[nLen-3] = 'j';
-    filename[nLen-2] = 'p';
-    filename[nLen-1] = 'g';
-    if (FileExists(filename))
-    {
-      LoadFileBlock(filename, &buffer);
-    }
-#ifdef _WIN32
-    else
-    {
-      PakLoadAnyFile(filename, &buffer);
-    }
-#endif
-    if ( buffer )
-    {
-      *bTGA = qfalse;
-    }
-  }
-  return buffer;
+
+// DevIL library for png / dds
+#define USE_DEVIL_LIBRARY
+#ifdef USE_DEVIL_LIBRARY
+
+#include <IL/il.h>
+
+int b_devilReady = 0;
+void IMG_InitDevil() {
+	if(b_devilReady)
+		return;
+	//initialize devIL
+	ilInit();
+	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+	ilEnable(IL_ORIGIN_SET);
+	ilEnable(IL_TYPE_SET);
+	ilTypeFunc(IL_UNSIGNED_BYTE);
+
+	b_devilReady = 1;
 }
+
+void LoadBuff_IL(unsigned char *fbuffer, int len, unsigned char **pic, int *width, int *height, int type) 
+{
+	ILuint ilTexture;
+	ILboolean done = 0;
+	int d;
+
+	// ensure that image loading library is ready
+	IMG_InitDevil();
+
+	// load texture
+    ilGenImages(1, &ilTexture);
+    ilBindImage(ilTexture);
+
+	done = ilLoadL(type,fbuffer,len);
+	if(!done) {
+		ilBindImage(0);
+		ilDeleteImages(1, &ilTexture);
+		*pic = 0;
+		*width = 0;
+		*height = 0;
+		return;
+	}
+	*width = ilGetInteger(IL_IMAGE_WIDTH);
+	*height = ilGetInteger(IL_IMAGE_HEIGHT);
+	d = ilGetInteger(IL_IMAGE_BPP);
+	if(d!=4) {
+		d = 4;
+		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	}
+	*pic = (unsigned char*)malloc((*width) * (*height) * (d));
+	memcpy(*pic, ilGetData(), (*width) * (*height) * (d));
+    ilBindImage(0);
+    ilDeleteImages(1, &ilTexture);
+}
+void LoadImagePNG(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = TryLoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_PNG);
+	free(fbuffer);
+}
+
+void LoadImageDDS(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = TryLoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_DDS);
+	free(fbuffer);
+}
+void LoadImageJPG(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = TryLoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_JPG);
+	free(fbuffer);
+}
+#endif
+//==============
+
+void LoadImageData(const char *name, byte **pic, int *w, int *h)
+{
+	char fixed[512];
+	int len;
+	int i;
+
+	*pic = 0;
+
+	strcpy(fixed,name);
+	len = strlen(fixed);
+	strcpy(fixed+len-3,"png");
+	LoadImagePNG(fixed,pic,w,h);
+	if(*pic)
+		return;
+	strcpy(fixed+len-3,"jpg");
+	LoadImageJPG(fixed,pic,w,h);
+	if(*pic)
+		return;
+	strcpy(fixed+len-3,"dds");
+	LoadImageDDS(fixed,pic,w,h);
+	if(*pic)
+		return;
+	strcpy(fixed+len-3,"tga");
+	LoadTGA(fixed,pic,w,h);
+	if(*pic)
+		return;
+
+}
+
+
 
 /*
 ===============
@@ -170,76 +244,43 @@ LoadShaderImage
 */
 static void LoadShaderImage( shaderInfo_t *si ) {
 	char			filename[1024];
-	int				i, count;
-	float			color[4];
-  byte      *buffer;
-  qboolean  bTGA = qtrue;
-
-	// look for the lightimage if it is specified
-	if ( si->lightimage[0] ) {
-		sprintf( filename, "%s%s", gamedir, si->lightimage );
-		DefaultExtension( filename, ".tga" );
-    buffer = LoadImageFile(filename, &bTGA);
-    if ( buffer != NULL) {
-      goto loadTga;
-    }
-  }
-
-	// look for the editorimage if it is specified
+	int count;
+	float color[4];
+	int i;
+	
+	si->pixels = 0;
+	// look for	 the editorimage if it is specified
 	if ( si->editorimage[0] ) {
 		sprintf( filename, "%s/%s", gamedir, si->editorimage );
 		DefaultExtension( filename, ".tga" );
-    buffer = LoadImageFile(filename, &bTGA);
-    if ( buffer != NULL) {
-      goto loadTga;
-    }
-  }
+		LoadImageData(filename,&si->pixels,&si->width,&si->height);
 
-  // just try the shader name with a .tga
-	// on unix, we have case sensitivity problems...
-	strcpy(filename, gamedir);
-	i = strlen(filename)-1;
-	if(filename[i] != '\\' && filename[i] != '/') {
+	}
+	if ( si->pixels == NULL) {
+		// just try the shader name with a .tga
+		// on unix, we have case sensitivity problems...
+		strcpy(filename, gamedir);
 		strcat(filename,"/");
-	}
-	strcat(filename,si->shader);
-	strcat(filename,".tga");
- /// sprintf( filename, "%s%s.tga", gamedir, si->shader );
-  buffer = LoadImageFile(filename, &bTGA);
-  if ( buffer != NULL) {
-		goto loadTga;
+		strcat(filename,si->shader);
+		strcat(filename,".tga");
+		/// sprintf( filename, "%s%s.tga", gamedir, si->shader );
+		LoadImageData(filename,&si->pixels,&si->width,&si->height);
 	}
 
- // sprintf( filename, "%s%s.TGA", gamedir, si->shader );
- // buffer = LoadImageFile(filename, &bTGA);
- // if ( buffer != NULL) {
-	//	goto loadTga;
-	//}
 
-	// couldn't load anything
-  _printf("WARNING: Couldn't find image for shader %s (editorImage name %s)\n", si->shader, si->editorimage );
+	if ( si->pixels == NULL) {
+		// couldn't load anything
+	  _printf("WARNING: Couldn't find image for shader %s (editorImage name %s)\n", si->shader, si->editorimage );
 
-	si->color[0] = 1;
-	si->color[1] = 1;
-	si->color[2] = 1;
-	si->width = 64;
-	si->height = 64;
-	si->pixels = malloc( si->width * si->height * 4 );
-	memset ( si->pixels, 255, si->width * si->height * 4 );
-	return;
-
-	// load the image to get dimensions and color
-loadTga:
-  if ( bTGA) {
-	  LoadTGABuffer( buffer, &si->pixels, &si->width, &si->height );
-  }
-  else {
-#ifdef _WIN32
-    LoadJPGBuff(buffer, &si->pixels, &si->width, &si->height );
-#endif
-  }
-
-  free(buffer);
+		si->color[0] = 1;
+		si->color[1] = 1;
+		si->color[2] = 1;
+		si->width = 64;
+		si->height = 64;
+		si->pixels = malloc( si->width * si->height * 4 );
+		memset ( si->pixels, 255, si->width * si->height * 4 );
+		return;
+	}
 
 	count = si->width * si->height;
 

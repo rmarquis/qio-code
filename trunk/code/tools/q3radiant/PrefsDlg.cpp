@@ -60,14 +60,12 @@ static char THIS_FILE[] = __FILE__;
 #define TINYBRUSH_KEY     "CleanTinyBrushes"
 #define TINYSIZE_KEY      "CleanTinyBrusheSize"
 #define SNAPSHOT_KEY      "Snapshots"
-#define PAKFILE_KEY       "PAKFile"
 #define STATUS_KEY        "StatusPointSize"
 #define MOVESPEED_KEY     "MoveSpeed"
 #define ANGLESPEED_KEY    "AngleSpeed"
 #define SETGAME_KEY       "UseSetGame"
 #define CAMXYUPDATE_KEY   "CamXYUpdate"
 #define LIGHTDRAW_KEY     "NewLightStyle"
-#define WHATGAME_KEY      "WhichGame"
 #define CUBICCLIP_KEY     "CubicClipping"
 #define CUBICSCALE_KEY    "CubicScale"
 #define ALTEDGE_KEY       "ALTEdgeDrag"
@@ -108,9 +106,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define MOUSE_DEF 1
 #define WINDOW_DEF 0
-#define Q2_DEF "c:\\quake2\\quake2.exe"
 #define Q3_DEF "c:\\Program Files\\Quake III Arena\\quake3.exe"
-#define PAKFILE_DEF "c:\\quake2\\baseq2\\pak0.pak"
 #define RUNQ2_DEF 0
 #define TLOCK_DEF 1
 #define LOADLAST_DEF 1
@@ -124,7 +120,6 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CPrefsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CPrefsDlg)
-	m_strQuake2 = _T("c:\\quake3\\");
 	m_nMouse = 1;
 	m_nView = 0;
 	m_bLoadLast = FALSE;
@@ -143,13 +138,10 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
 	m_bSnapShots = FALSE;
   m_fTinySize = 0.5;
   m_bCleanTiny = FALSE;
-	m_strPAKFile = _T("c:\\quake2\\baseq2\\pak0.pak");
 	m_nStatusSize = 10;
 	m_bCamXYUpdate = FALSE;
 	m_bNewLightDraw = FALSE;
 	m_strPrefabPath = _T("");
-	m_nWhatGame = 0;
-	m_strWhatGame = _T("Quake3");
 	m_bALTEdge = FALSE;
 	m_bTextureBar = FALSE;
 	m_bFaceColors = FALSE;
@@ -166,7 +158,6 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
 	m_nRotation = 0;
 	m_bSGIOpenGL = FALSE;
 	m_bBuggyICD = FALSE;
-	m_bHiColorTextures = TRUE;
 	m_bChaseMouse = FALSE;
 	m_bTextureScrollbar = TRUE;
 	m_bDisplayLists = TRUE;
@@ -198,15 +189,12 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_UNDO, m_wndUndoSpin);
 	DDX_Control(pDX, IDC_SPIN_POINTSIZE, m_wndFontSpin);
 	DDX_Control(pDX, IDC_SLIDER_TEXTUREQUALITY, m_wndTexturequality);
-	DDX_Control(pDX, IDC_COMBO_WHATGAME, m_wndWhatGame);
 	DDX_Control(pDX, IDC_SLIDER_CAMSPEED, m_wndCamSpeed);
 	DDX_Control(pDX, IDC_SPIN_AUTOSAVE, m_wndSpin);
-	DDX_Text(pDX, IDC_EDIT_QUAKE2, m_strQuake2);
 	DDX_Radio(pDX, IDC_RADIO_MOUSE, m_nMouse);
 	DDX_Radio(pDX, IDC_RADIO_VIEWTYPE, m_nView);
 	DDX_Check(pDX, IDC_CHECK_LOADLAST, m_bLoadLast);
 	DDX_Check(pDX, IDC_CHECK_FACE, m_bFace);
-	DDX_Check(pDX, IDC_CHECK_INTERNALBSP, m_bInternalBSP);
 	DDX_Check(pDX, IDC_CHECK_RIGHTCLICK, m_bRightClick);
 	DDX_Check(pDX, IDC_CHECK_RUNQUAKE, m_bRunQuake);
 	DDX_Check(pDX, IDC_CHECK_SETGAME, m_bSetGame);
@@ -217,13 +205,11 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LOADLASTMAP, m_bLoadLastMap);
 	DDX_Check(pDX, IDC_CHECK_TEXTUREWINDOW, m_bTextureWindow);
 	DDX_Check(pDX, IDC_CHECK_SNAPSHOTS, m_bSnapShots);
-	DDX_Text(pDX, IDC_EDIT_PAKFILE, m_strPAKFile);
 	DDX_Text(pDX, IDC_EDIT_STATUSPOINTSIZE, m_nStatusSize);
 	DDV_MinMaxInt(pDX, m_nStatusSize, 2, 14);
 	DDX_Check(pDX, IDC_CHECK_CAMXYUPDATE, m_bCamXYUpdate);
 	DDX_Check(pDX, IDC_CHECK_LIGHTDRAW, m_bNewLightDraw);
 	DDX_Text(pDX, IDC_EDIT_PREFABPATH, m_strPrefabPath);
-	DDX_CBString(pDX, IDC_COMBO_WHATGAME, m_strWhatGame);
 	DDX_Check(pDX, IDC_CHECK_ALTDRAG, m_bALTEdge);
 	DDX_Check(pDX, IDC_CHECK_TEXTURETOOLBAR, m_bTextureBar);
 	DDX_Check(pDX, IDC_CHECK_FACECOLOR, m_bFaceColors);
@@ -237,7 +223,6 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_ROTATION, m_nRotation);
 	DDX_Check(pDX, IDC_CHECK_SGIOPENGL, m_bSGIOpenGL);
 	DDX_Check(pDX, IDC_CHECK_BUGGYICD, m_bBuggyICD);
-	DDX_Check(pDX, IDC_CHECK_HICOLOR, m_bHiColorTextures);
 	DDX_Check(pDX, IDC_CHECK_MOUSECHASE, m_bChaseMouse);
 	DDX_Check(pDX, IDC_CHECK_TEXTURESCROLLBAR, m_bTextureScrollbar);
 	DDX_Check(pDX, IDC_CHECK_DISPLAYLISTS, m_bDisplayLists);
@@ -254,10 +239,8 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPrefsDlg, CDialog)
 	//{{AFX_MSG_MAP(CPrefsDlg)
 	ON_BN_CLICKED(IDC_BTN_BROWSE, OnBtnBrowse)
-	ON_BN_CLICKED(IDC_BTN_BROWSEPAK, OnBtnBrowsepak)
 	ON_BN_CLICKED(IDC_BTN_BROWSEPREFAB, OnBtnBrowseprefab)
 	ON_BN_CLICKED(IDC_BTN_BROWSEUSERINI, OnBtnBrowseuserini)
-	ON_CBN_SELCHANGE(IDC_COMBO_WHATGAME, OnSelchangeComboWhatgame)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -270,7 +253,7 @@ void CPrefsDlg::OnBtnBrowse()
   CFileDialog dlg(true, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "Executables (*.exe)|*.exe||", this);
   if (dlg.DoModal() == IDOK)
   {
-    m_strQuake2 = dlg.GetPathName();
+//    m_strQuake2 = dlg.GetPathName();
     UpdateData(FALSE);
   }
 }
@@ -288,27 +271,9 @@ BOOL CPrefsDlg::OnInitDialog()
   m_wndFontSpin.SetRange(4,24);
   m_wndUndoSpin.SetRange(1,64);
 
-  m_wndWhatGame.AddString("Quake2"); 
-  m_wndWhatGame.AddString("Quake3"); 
-
-  GetDlgItem(IDC_CHECK_HICOLOR)->EnableWindow(TRUE);
   GetDlgItem(IDC_CHECK_NOCLAMP)->EnableWindow(TRUE);
 
   //GetDlgItem(IDC_CHECK_NOCLAMP)->EnableWindow(FALSE);
-
-  m_wndWhatGame.SelectString(-1,m_strWhatGame);
-  if (strstr(m_strWhatGame, "Quake3") != NULL)
-  {
-    GetDlgItem(IDC_EDIT_PAKFILE)->EnableWindow(FALSE);
-    GetDlgItem(IDC_BTN_BROWSEPAK)->EnableWindow(FALSE);
-    GetDlgItem(IDC_CHECK_INTERNALBSP)->EnableWindow(FALSE);
-  }
-  else
-  {
-    GetDlgItem(IDC_EDIT_PAKFILE)->EnableWindow(TRUE);
-    GetDlgItem(IDC_BTN_BROWSEPAK)->EnableWindow(TRUE);
-    GetDlgItem(IDC_CHECK_INTERNALBSP)->EnableWindow(TRUE);
-  }
 
   return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -342,7 +307,6 @@ void CPrefsDlg::LoadPrefs()
     m_nMouseButtons = 3;
 
   m_nView = AfxGetApp()->GetProfileInt(PREF_SECTION, WINDOW_KEY, WINDOW_DEF);
-  m_strQuake2 = AfxGetApp()->GetProfileString(PREF_SECTION, Q2_KEY, Q2_DEF);
   m_bRunQuake = AfxGetApp()->GetProfileInt(PREF_SECTION, RUNQ2_KEY, RUNQ2_DEF);
   m_bTextureLock = AfxGetApp()->GetProfileInt(PREF_SECTION, TLOCK_KEY, TLOCK_DEF);
   m_bRotateLock = AfxGetApp()->GetProfileInt(PREF_SECTION, RLOCK_KEY, TLOCK_DEF);
@@ -367,7 +331,6 @@ void CPrefsDlg::LoadPrefs()
   m_nAutoSave = AfxGetApp()->GetProfileInt(PREF_SECTION, AUTOSAVETIME_KEY, 5);
   m_strAutoSave.Format("%i", m_nAutoSave);
   m_bSnapShots = AfxGetApp()->GetProfileInt(PREF_SECTION, SNAPSHOT_KEY, 0);
-  m_strPAKFile = AfxGetApp()->GetProfileString(PREF_SECTION, PAKFILE_KEY, PAKFILE_DEF);
   m_nStatusSize = AfxGetApp()->GetProfileInt(PREF_SECTION, STATUS_KEY, 10);
   m_nMoveSpeed = AfxGetApp()->GetProfileInt(PREF_SECTION, MOVESPEED_KEY, 400);
   m_nAngleSpeed = AfxGetApp()->GetProfileInt(PREF_SECTION, ANGLESPEED_KEY, 300);
@@ -378,7 +341,6 @@ void CPrefsDlg::LoadPrefs()
   m_nCubicScale = AfxGetApp()->GetProfileInt(PREF_SECTION, CUBICSCALE_KEY, 13);
   m_bALTEdge = AfxGetApp()->GetProfileInt(PREF_SECTION, ALTEDGE_KEY, 0);
   m_bTextureBar = AfxGetApp()->GetProfileInt(PREF_SECTION, TEXTUREBAR_KEY, 0);
-  m_strWhatGame = AfxGetApp()->GetProfileString(PREF_SECTION, WHATGAME_KEY, "Quake3");
   m_bFaceColors = AfxGetApp()->GetProfileInt(PREF_SECTION, FACECOLORS_KEY, 0);
   m_bQE4Painting = AfxGetApp()->GetProfileInt(PREF_SECTION, QE4PAINT_KEY, 1);
   m_bSnapTToGrid = AfxGetApp()->GetProfileInt(PREF_SECTION, SNAPT_KEY, 0);
@@ -394,7 +356,6 @@ void CPrefsDlg::LoadPrefs()
   m_nRotation = AfxGetApp()->GetProfileInt(PREF_SECTION, ROTATION_KEY, 45);
   m_bSGIOpenGL = AfxGetApp()->GetProfileInt(PREF_SECTION, SGIOPENGL_KEY, 0);
   m_bBuggyICD = AfxGetApp()->GetProfileInt(PREF_SECTION, BUGGYICD_KEY, 0);
-  m_bHiColorTextures = AfxGetApp()->GetProfileInt(PREF_SECTION, HICOLOR_KEY, 1);
   m_bChaseMouse = AfxGetApp()->GetProfileInt(PREF_SECTION, CHASEMOUSE_KEY, 1);
   m_nEntityShowState = AfxGetApp()->GetProfileInt(PREF_SECTION, ENTITYSHOW_KEY, 0);
   m_nTextureScale = AfxGetApp()->GetProfileInt(PREF_SECTION, TEXTURESCALE_KEY, 50);
@@ -426,7 +387,7 @@ void CPrefsDlg::SavePrefs()
   else
     m_nMouseButtons = 3;
   AfxGetApp()->WriteProfileInt(PREF_SECTION, WINDOW_KEY, m_nView);
-  AfxGetApp()->WriteProfileString(PREF_SECTION, Q2_KEY, m_strQuake2);
+//  AfxGetApp()->WriteProfileString(PREF_SECTION, Q2_KEY, m_strQuake2);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, RUNQ2_KEY, m_bRunQuake);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, TLOCK_KEY, m_bTextureLock);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, RLOCK_KEY, m_bRotateLock);
@@ -446,7 +407,6 @@ void CPrefsDlg::SavePrefs()
   m_nAutoSave = atoi(m_strAutoSave);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, AUTOSAVETIME_KEY, m_nAutoSave);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SNAPSHOT_KEY, m_bSnapShots);
-  AfxGetApp()->WriteProfileString(PREF_SECTION, PAKFILE_KEY, m_strPAKFile);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, STATUS_KEY, m_nStatusSize);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SETGAME_KEY, m_bSetGame);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, CAMXYUPDATE_KEY, m_bCamXYUpdate);
@@ -458,7 +418,6 @@ void CPrefsDlg::SavePrefs()
   AfxGetApp()->WriteProfileInt(PREF_SECTION, ALTEDGE_KEY, m_bALTEdge);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, TEXTUREBAR_KEY, m_bTextureBar);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, FACECOLORS_KEY, m_bFaceColors);
-  AfxGetApp()->WriteProfileString(PREF_SECTION, WHATGAME_KEY, m_strWhatGame);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, QE4PAINT_KEY, m_bQE4Painting);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SNAPT_KEY, m_bSnapTToGrid);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, XZVIS_KEY, m_bXZVis);
@@ -473,7 +432,6 @@ void CPrefsDlg::SavePrefs()
   AfxGetApp()->WriteProfileInt(PREF_SECTION, ROTATION_KEY, m_nRotation);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SGIOPENGL_KEY, m_bSGIOpenGL);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, BUGGYICD_KEY, m_bBuggyICD);
-  AfxGetApp()->WriteProfileInt(PREF_SECTION, HICOLOR_KEY, m_bHiColorTextures);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, CHASEMOUSE_KEY, m_bChaseMouse);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, ENTITYSHOW_KEY, m_nEntityShowState);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, TEXTURESCALE_KEY, m_nTextureScale);
@@ -490,18 +448,6 @@ void CPrefsDlg::SavePrefs()
 }
 
                         
-
-void CPrefsDlg::OnBtnBrowsepak() 
-{
-  UpdateData(TRUE);
-  CFileDialog dlg(true, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "PAK files (*.pak)|*.pak||", this);
-  if (dlg.DoModal() == IDOK)
-  {
-    m_strPAKFile = dlg.GetPathName();
-    UpdateData(FALSE);
-  }
-}
-
 void CPrefsDlg::OnBtnBrowseprefab() 
 {
   UpdateData(TRUE);
@@ -539,42 +485,9 @@ void CPrefsDlg::OnBtnBrowseuserini()
   }
 }
 
-void CPrefsDlg::OnSelchangeComboWhatgame() 
-{
-  int n = m_wndWhatGame.GetCurSel();
-  if (n >= 0)
-  {
-    m_wndWhatGame.GetLBText(n, m_strWhatGame);
-  }
-  SetGamePrefs();
-}
-
 void CPrefsDlg::SetGamePrefs()
 {
-  if (strstr(m_strWhatGame, "Quake3") != NULL)
-  {
-    m_bHiColorTextures = TRUE;
   	m_bWideToolbar = TRUE;
-    m_strPAKFile = "PK3 files are loaded from the baseq3 path";
-  	m_bInternalBSP = FALSE;
-    if (GetSafeHwnd())
-    {
-      GetDlgItem(IDC_EDIT_PAKFILE)->EnableWindow(FALSE);
-      GetDlgItem(IDC_BTN_BROWSEPAK)->EnableWindow(FALSE);
-      GetDlgItem(IDC_CHECK_INTERNALBSP)->EnableWindow(FALSE);
-    }
-  }
-  else
-  {
-    m_bHiColorTextures = FALSE;
-  	m_bWideToolbar = FALSE;
-    m_strPAKFile = PAKFILE_DEF;
-    if (GetSafeHwnd())
-    {
-      GetDlgItem(IDC_EDIT_PAKFILE)->EnableWindow(TRUE);
-      GetDlgItem(IDC_BTN_BROWSEPAK)->EnableWindow(TRUE);
-      GetDlgItem(IDC_CHECK_INTERNALBSP)->EnableWindow(TRUE);
-    }
-  }
+
   SavePrefs();
 }

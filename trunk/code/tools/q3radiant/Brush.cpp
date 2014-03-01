@@ -352,9 +352,9 @@ void Face_TextureVectors (face_t *f, float STfromXYZ[2][4])
 	memset (STfromXYZ, 0, 8*sizeof(float));
 
 	if (!td->scale[0])
-		td->scale[0] = (g_PrefsDlg.m_bHiColorTextures) ? 0.5 : 1;
+		td->scale[0] =  0.5 ;
 	if (!td->scale[1])
-		td->scale[1] = (g_PrefsDlg.m_bHiColorTextures) ? 0.5 : 1;
+		td->scale[1] = 0.5 ;
 
 	// get natural texture axis
 	TextureAxisFromPlane(&f->plane, pvecs[0], pvecs[1]);

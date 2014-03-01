@@ -125,9 +125,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_LIST_ENTITIES               1009
 #define IDC_RADIO_VIEWTYPE4             1009
 #define IDC_EDIT_TOTALBRUSHES           1010
-#define IDC_EDIT_PAKFILE                1010
 #define IDC_RADIO_RUNQUAKE              1011
-#define IDC_BTN_BROWSEPAK               1011
+//#define IDC_BTN_BROWSEPAK               1011
 #define IDC_RADIO_RUNQUAKE2             1012
 #define IDC_EDIT_PREFABPATH             1012
 #define IDC_RADIO_RUNQUAKE3             1013
@@ -167,7 +166,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_CHECK_3DFX                  1030
 #define IDC_CHECK_TEXTURESCROLLBAR      1030
 #define IDC_CHECK6                      1031
-#define IDC_CHECK_INTERNALBSP           1031
 #define IDC_CHECK7                      1032
 #define IDC_CHECK_RUNQUAKE              1032
 #define IDC_CHECK8                      1033
@@ -383,7 +381,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_CHECK_SGIOPENGL             1126
 #define IDC_REMCMD                      1127
 #define IDC_PRJINTERVAL                 1128
-#define IDC_CHECK_HICOLOR               1128
+//#define IDC_CHECK_HICOLOR               1128
 #define IDC_PRJMAPSPATH                 1129
 #define IDC_CHECK_SHADERTEST            1129
 #define IDC_EDITCMD                     1130

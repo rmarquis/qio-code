@@ -663,8 +663,8 @@ dist( this control point to first control point ) / dist ( last control pt to fi
 */
 void Patch_Naturalize(patchMesh_t *p)
 {
-  int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? p->d_texture->width * 0.5 : p->d_texture->width;
-  int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? p->d_texture->height * 0.5 : p->d_texture->height;
+  int nWidth = p->d_texture->width * 0.5;
+  int nHeight = p->d_texture->height * 0.5 ;
   float fPWidth = Patch_Width(p);
   float fPHeight = Patch_Height(p);
   float xAccum = 0;

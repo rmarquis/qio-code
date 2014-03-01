@@ -5,8 +5,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Radiant", "q3radiant\Radian
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cmdlib", "q3radiant\libs\cmdlib\cmdlib.vcproj", "{EFB1E65A-E86F-4E0D-845A-E5C7A3DF016F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jpeg6", "q3radiant\libs\jpeg6\jpeg6.vcproj", "{A862AD26-94DD-4618-A814-F6AACA0B2FE3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pak", "q3radiant\libs\pak\pak.vcproj", "{F2ACC9D7-D628-4624-864F-87FE58787625}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "q3map", "q3map\q3map.vcproj", "{F1162C55-66E7-4486-B1F3-071CFAA78332}"
@@ -25,10 +23,6 @@ Global
 		{EFB1E65A-E86F-4E0D-845A-E5C7A3DF016F}.Debug|Win32.Build.0 = Debug|Win32
 		{EFB1E65A-E86F-4E0D-845A-E5C7A3DF016F}.Release|Win32.ActiveCfg = Release|Win32
 		{EFB1E65A-E86F-4E0D-845A-E5C7A3DF016F}.Release|Win32.Build.0 = Release|Win32
-		{A862AD26-94DD-4618-A814-F6AACA0B2FE3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{A862AD26-94DD-4618-A814-F6AACA0B2FE3}.Debug|Win32.Build.0 = Debug|Win32
-		{A862AD26-94DD-4618-A814-F6AACA0B2FE3}.Release|Win32.ActiveCfg = Release|Win32
-		{A862AD26-94DD-4618-A814-F6AACA0B2FE3}.Release|Win32.Build.0 = Release|Win32
 		{F2ACC9D7-D628-4624-864F-87FE58787625}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F2ACC9D7-D628-4624-864F-87FE58787625}.Debug|Win32.Build.0 = Debug|Win32
 		{F2ACC9D7-D628-4624-864F-87FE58787625}.Release|Win32.ActiveCfg = Release|Win32

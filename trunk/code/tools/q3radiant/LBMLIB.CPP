@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "lbmlib.h"
 #include "bmp.h"
 #include "pakstuff.h"
-#include "jpeglib.h"
 
 
 /*
@@ -1200,24 +1199,6 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 }
 
 
-
-
-void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height ) 
-{
-  byte	*fbuffer = NULL;
-  int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
-  if (nLen == -1) 
-  {
-    nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
-    if (nLen == -1)
-    {
-		  return;
-    }
-  }
-  LoadJPGBuff(fbuffer, pic, width, height);
-  free(fbuffer);
-}
-
 // DevIL library for png / dds
 #define USE_DEVIL_LIBRARY
 #ifdef USE_DEVIL_LIBRARY
@@ -1301,6 +1282,21 @@ void LoadImageDDS(const char *filename, unsigned char **pic, int *width, int *he
 	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_DDS);
 	free(fbuffer);
 }
+void LoadImageJPG(const char *filename, unsigned char **pic, int *width, int *height) 
+{
+	byte	*fbuffer = NULL;
+	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
+	if (nLen == -1) 
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_JPG);
+	free(fbuffer);
+}
 #endif
 //===================================================================
 
@@ -1337,11 +1333,11 @@ void LoadImage( const char *name, byte **pic, int *width, int *height )
 	{
 		LoadBMP( name, pic, width, height );
 	} 
+#ifdef USE_DEVIL_LIBRARY
 	else if ( !stricmp( name+len-4, ".jpg" ) ) 
 	{
-		LoadJPG( name, pic, width, height ); 
+		LoadImageJPG( name, pic, width, height ); 
 	}
-#ifdef USE_DEVIL_LIBRARY
 	else if ( !stricmp( name+len-4, ".png" ) ) 
 	{
 		LoadImagePNG( name, pic, width, height ); 

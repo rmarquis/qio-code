@@ -24,12 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "mru.h"
 #include "PrefsDlg.h"
 
-////////////////////////////////////////////////////////////////////////////
-// BSP frontend plugin
-// global flag for BSP frontend plugin is g_qeglobals.bBSPFrontendPlugin
-_QERPlugBSPFrontendTable g_BSPFrontendTable;
-CStringArray g_BSPFrontendCommands;
-
 extern CEdit* g_pEdit;
 
 int	screen_width;
@@ -512,47 +506,18 @@ void FillBSPMenu (void)
 		DeleteMenu (hmenu, CMD_BSPCOMMAND+i, MF_BYCOMMAND);
 	count = 0;
 
-	if ( g_qeglobals.bBSPFrontendPlugin )
+	i = 0;
+	for (ep = g_qeglobals.d_project_entity->epairs ; ep ; ep=ep->next)
 	{
-		CString str = g_BSPFrontendTable.m_pfnGetBSPMenu();
-		char cTemp[1024];
-		strcpy(cTemp, str);
-		char* token = strtok(cTemp, ",;");
-		if (token && *token == ' ')
+		if (ep->key[0] == 'b' && ep->key[1] == 's' && ep->key[2] == 'p')
 		{
-			while (*token == ' ')
-				token++;
-		}
-		i = 0;
-		// first token is menu name
-		ModifyMenu( GetMenu(g_qeglobals.d_hwndMain), MENU_BSP, MF_BYPOSITION, MENU_BSP, (LPCTSTR)token );
-		// redraw the menu bar
-		DrawMenuBar( g_qeglobals.d_hwndMain );
-		token = strtok(NULL, ",;");
-		while (token != NULL)
-		{
-			g_BSPFrontendCommands.Add(token);
-			AppendMenu (hmenu, MF_ENABLED|MF_STRING, CMD_BSPCOMMAND+i, (LPCTSTR)token );
-			token = strtok(NULL, ",;");
+			bsp_commands[i] = ep->key;
+			AppendMenu (hmenu, MF_ENABLED|MF_STRING,
+				CMD_BSPCOMMAND+i, (LPCTSTR)ep->key);
 			i++;
 		}
-		count = i;
 	}
-	else
-	{
-		i = 0;
-		for (ep = g_qeglobals.d_project_entity->epairs ; ep ; ep=ep->next)
-		{
-			if (ep->key[0] == 'b' && ep->key[1] == 's' && ep->key[2] == 'p')
-			{
-				bsp_commands[i] = ep->key;
-				AppendMenu (hmenu, MF_ENABLED|MF_STRING,
-					CMD_BSPCOMMAND+i, (LPCTSTR)ep->key);
-				i++;
-			}
-		}
-		count = i;
-	}
+	count = i;
 }
 
 //==============================================
@@ -632,7 +597,8 @@ void CheckBspProcess (void)
 	{
 		char cCurDir[1024];
 		GetCurrentDirectory(1024, cCurDir);
-		CString strExePath = g_PrefsDlg.m_strQuake2;
+		CString strExePath = "../../qio.exe";
+		//= g_PrefsDlg.m_strQuake2;
 		CString strOrgPath;
 		CString strOrgFile;
 		ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);

@@ -409,63 +409,6 @@ void RunBsp (char *command)
   
 }
 
-void DLLBuildDone()
-{
-  g_hToolThread = NULL;
-  CTime tEnd = CTime::GetCurrentTime();
-  CTimeSpan tElapsed = tEnd - g_tBegin;
-  CString strElapsed;
-  strElapsed.Format("Run time was %i hours, %i minutes and %i seconds", tElapsed.GetHours(), tElapsed.GetMinutes(), tElapsed.GetSeconds());
-	Sys_Printf(strElapsed.GetBuffer(0));
-	Pointfile_Check();
-
-  if (g_PrefsDlg.m_bRunQuake == TRUE)
-  {
-    char cCurDir[1024];
-    GetCurrentDirectory(1024, cCurDir);
-    CString strExePath = g_PrefsDlg.m_strQuake2;
-    CString strOrgPath;
-    CString strOrgFile;
-    ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
-    if (g_PrefsDlg.m_bSetGame == TRUE) // run in place with set game.. don't copy map
-    {
-	    CString strBasePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
-      strExePath += " +set game ";
-      strExePath += strBasePath;
-      WinExec(strExePath, SW_SHOW);
-    }
-    else
-    {
-      CString strCopyPath = strExePath;
-      char* pBuffer = strCopyPath.GetBufferSetLength(_MAX_PATH + 1);
-      pBuffer[strCopyPath.ReverseFind('\\') + 1] = '\0';
-      strCopyPath.ReleaseBuffer();
-      SetCurrentDirectory(strCopyPath);
-      CString strOrgPath;
-      CString strOrgFile;
-      ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
-      AddSlash(strCopyPath);
-      FindReplace(strOrgFile, ".map", ".bsp");
-      strCopyPath += "\\baseq2\\maps\\";
-      strCopyPath += strOrgFile;
-      AddSlash(strOrgPath);
-      strOrgPath += strOrgFile;
-      bool bRun = (strOrgPath.CompareNoCase(strCopyPath) == 0);
-      if (!bRun)
-        bRun = (CopyFile(strOrgPath, strCopyPath, FALSE) == TRUE);
-      if (bRun)
-      {
-        FindReplace(strOrgFile, ".bsp", "");
-        strExePath += " +map ";
-        strExePath += strOrgFile;
-        WinExec(strExePath, SW_SHOW);
-      }
-    }
-    SetCurrentDirectory(cCurDir);
-  }
-
-}
-
 /*
 =============
 DoColor

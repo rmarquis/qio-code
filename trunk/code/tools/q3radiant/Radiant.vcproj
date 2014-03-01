@@ -80,7 +80,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib libs\jpeg6.lib libs\pak.lib libs\cmdlib.lib devil.lib"
+				AdditionalDependencies="winmm.lib libs\pak.lib libs\cmdlib.lib devil.lib"
 				OutputFile="..\..\..\game\sdk\q3radiant\qioRadiant.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -177,7 +177,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib libs\jpeg6d.lib libs\pakd.lib libs\cmdlibd.lib devil.lib"
+				AdditionalDependencies="winmm.lib libs\pakd.lib libs\cmdlibd.lib devil.lib"
 				OutputFile="..\..\..\game\sdk\q3radiant\qioRadiant.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1183,31 +1183,6 @@
 			<Filter
 				Name="QE4 Files"
 				>
-				<File
-					RelativePath="Bmp.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
 				<File
 					RelativePath="brush.cpp"
 					>

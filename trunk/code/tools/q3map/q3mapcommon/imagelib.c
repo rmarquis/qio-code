@@ -1060,21 +1060,20 @@ void LoadTGABuffer ( byte *buffer, byte **pic, int *width, int *height)
 LoadTGA
 =============
 */
-void LoadTGA (const char *name, byte **pixels, int *width, int *height)
+void LoadTGA (const char *filename, byte **pixels, int *width, int *height)
 {
-	byte			*buffer;
-  int nLen;
-	//
-	// load the file
-	//
-	nLen = LoadFile ( ( char * ) name, (void **)&buffer);
+	byte	*fbuffer = NULL;
+	int nLen = TryLoadFile( ( char * ) filename, (void **)&fbuffer);
 	if (nLen == -1) 
-  {
-		Error ("Couldn't read %s", name);
-  }
-
-  LoadTGABuffer(buffer, pixels, width, height);
-
+	{
+		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
+		if (nLen == -1)
+		{
+			return;
+		}
+	}
+  LoadTGABuffer(fbuffer, pixels, width, height);
+	free(fbuffer);
 }
 
 

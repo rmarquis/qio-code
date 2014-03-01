@@ -232,9 +232,9 @@ bool QE_LoadProject (char *projectfile)
 	CString strData = data;
 	free(data);
 	
-	CString strQ2Path = g_PrefsDlg.m_strQuake2;
+	CString strQ2Path;// = g_PrefsDlg.m_strQuake2;
 	CString strQ2File;
-	ExtractPath_and_Filename(g_PrefsDlg.m_strQuake2, strQ2Path, strQ2File);
+//	ExtractPath_and_Filename(g_PrefsDlg.m_strQuake2, strQ2Path, strQ2File);
 	AddSlash(strQ2Path);
 	
 	

@@ -777,12 +777,10 @@ BOOL CSurfaceDlg::OnInitDialog()
   //  }
   //}
 
-  if (strstr(g_PrefsDlg.m_strWhatGame, "Quake3") != NULL) {
     for (int i=0 ; i < 64 ; i++) {
       ::EnableWindow(GetDlgItem(g_checkboxes[i])->GetSafeHwnd(), FALSE);
     }
 
-  }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

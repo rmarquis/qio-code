@@ -1098,8 +1098,6 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 		//}
 		//else
       // we need to try several formats here, or would it be better if we are given a complete name
-			if (g_PrefsDlg.m_bHiColorTextures == TRUE)
-			{
 		    char cWork[1024];
 		  	sprintf (filename, "%s/%s.tga", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), name);
     		QE_ConvertDOSToUnixName( cWork, filename );
@@ -1160,14 +1158,7 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 					Sys_Printf ("done.\n", name);
 					free(pPixels);
 				}
-			}
-			else
-			{
 
-						Sys_Printf (" load failed!\n");
-						return notexture;
-
-			}
 			
  			if (g_PrefsDlg.m_bSGIOpenGL)
 			{
@@ -1247,9 +1238,7 @@ qtexture_t *Texture_ForNamePath(char* name, char* pFullPath)
 	}
 	else
 	{
-		// load the file
-    if (g_PrefsDlg.m_bHiColorTextures == TRUE)
-    {
+
       char cWork[1024];
       if (strstr(pFullPath, ".tga") == NULL) {
         sprintf(filename, "%s%s", pFullPath, ".tga");
@@ -1287,12 +1276,7 @@ qtexture_t *Texture_ForNamePath(char* name, char* pFullPath)
         return notexture;
       }
       free(pPixels);
-    }
-    else
-    {
-			  Sys_Printf (" load failed!\n");
-			  return notexture;
-    }
+
     if (g_PrefsDlg.m_bSGIOpenGL)
     {
 		  if(!q)
@@ -1834,8 +1818,8 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 		continue;
 	}
 
-	int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-	int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+	int nWidth = q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+	int nHeight =q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 	if (current_x + nWidth > g_qeglobals.d_texturewin.width-8 && current_row)
 	{	// go to the next row unless the texture is the first on the row
 		current_x = 8;
@@ -1916,8 +1900,8 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_tex
 		if (!q)
 			break;
 
-    int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-    int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+    int nWidth =q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+    int nHeight = q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		if (!strcmpi(texdef->name, q->name))
 		{
 			if (y > g_qeglobals.d_texturewin.originy)
@@ -2040,14 +2024,14 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 		q = Texture_NextPos (&x, &y);
 		if (!q)
 			break;
-		int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-		int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+		int nWidth =  q->width * ((float)g_PrefsDlg.m_nTextureScale / 100);
+		int nHeight = q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		if (mx > x && mx - x < nWidth
 			&& my < y && y - my < nHeight + FONT_HEIGHT)
 		{
 			if (bShift)
 			{
-				if (g_PrefsDlg.m_bHiColorTextures && q->shadername[0] != 0)
+				if (q->shadername[0] != 0)
 				{
 					//CString s = "notepad ";
 					//s += q->shadername;
@@ -2067,8 +2051,8 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 			}
 			else
 			{
-				tex.scale[0] = (g_PrefsDlg.m_bHiColorTextures) ? 0.5 : 1;
-				tex.scale[1] = (g_PrefsDlg.m_bHiColorTextures) ? 0.5 : 1;
+				tex.scale[0] =0.5;
+				tex.scale[1] = 0.5;
 			}
 			tex.flags = q->flags;
 			tex.value = q->value;
@@ -2199,8 +2183,8 @@ void Texture_Draw2 (int width, int height)
 		if (!q)
 			break;
 
-		int nWidth = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->width;
-		int nHeight = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) : q->height;
+		int nWidth =q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+		int nHeight =  q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		// Is this texture visible?
 		if ( (y-nHeight-FONT_HEIGHT < g_qeglobals.d_texturewin.originy) && (y > g_qeglobals.d_texturewin.originy - height) )
 		{
@@ -2231,7 +2215,7 @@ void Texture_Draw2 (int width, int height)
 			}
 
 			// Draw the texture
-			float fScale = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? ((float)g_PrefsDlg.m_nTextureScale / 100) : 1.0;
+			float fScale =  ((float)g_PrefsDlg.m_nTextureScale / 100);
 
 			qglBindTexture( GL_TEXTURE_2D, q->texture_number );
 			QE_CheckOpenGLForErrors();
@@ -2278,7 +2262,7 @@ void Texture_Draw2 (int width, int height)
 			else
 				name++;
 
-			if (g_PrefsDlg.m_bHiColorTextures && q->shadername[0] != 0)
+			if ( q->shadername[0] != 0)
 			{
 				// slow as shit
 				CString s = "[";

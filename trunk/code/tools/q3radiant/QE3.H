@@ -231,10 +231,6 @@ typedef struct
 	bool	use_ini;
 	// even in .INI mode we use the registry for all void* prefs
 	char		use_ini_registry[64];
-	
-	//Timo
-	// tells we are using a BSP frontend plugin
-	bool	bBSPFrontendPlugin;
 
 	bool dontDrawSelectedOutlines;
 	
@@ -586,11 +582,6 @@ void WINAPI Patch_Rebuild(patchMesh_t *p);
 //
 CShaderInfo* hasShader(const char *pName);
 
-//
-// IBSPFrontend interface
-//
-#include "IBSPFrontend.h"
-extern _QERPlugBSPFrontendTable g_BSPFrontendTable;
 extern CStringArray g_BSPFrontendCommands;
 //
 // IShaders interface

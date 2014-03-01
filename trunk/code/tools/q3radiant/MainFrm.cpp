@@ -623,7 +623,6 @@ LRESULT CMainFrame::OnBSPStatus(UINT wParam, long lParam)
 
 LRESULT CMainFrame::OnBSPDone(UINT wParam, long lParam)
 {
-  DLLBuildDone();
   return 0;
 }
 
@@ -2049,15 +2048,7 @@ void CMainFrame::OnBspCommand(unsigned int nID)
   if (g_PrefsDlg.m_bSnapShots && stricmp(currentmap, "unnamed.map") != 0)
     Map_Snapshot();
 
-  if (g_qeglobals.bBSPFrontendPlugin)
-  {
-	  CString foo = g_BSPFrontendCommands.GetAt(nID-CMD_BSPCOMMAND);
-	  g_BSPFrontendTable.m_pfnDispatchBSPCommand( foo.GetBuffer(0) );
-  }
-  else
-  {
-	  RunBsp (bsp_commands[LOWORD(nID-CMD_BSPCOMMAND)]);
-  }
+ RunBsp (bsp_commands[LOWORD(nID-CMD_BSPCOMMAND)]);
 }
 
 
@@ -3130,6 +3121,8 @@ void CMainFrame::OnHelpCommandlist()
 
 void CMainFrame::OnFileNewproject() 
 {
+// TODO
+#if 0
   CNewProjDlg dlg;
   if (dlg.DoModal() == IDOK && dlg.m_strName.GetLength() > 0)
   {
@@ -3211,6 +3204,7 @@ void CMainFrame::OnFileNewproject()
     }
 
   }
+#endif
 }
 
 void CMainFrame::UpdateStatusText()

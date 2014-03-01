@@ -52,10 +52,8 @@ public:
 	CSpinButtonCtrl	m_wndUndoSpin;
 	CSpinButtonCtrl	m_wndFontSpin;
 	CSliderCtrl	m_wndTexturequality;
-	CComboBox	m_wndWhatGame;
 	CSliderCtrl	m_wndCamSpeed;
 	CSpinButtonCtrl	m_wndSpin;
-	CString	m_strQuake2;
 	int		m_nMouse;
 	int		m_nView;
   BOOL   m_bTextureLock;
@@ -79,13 +77,10 @@ public:
 	BOOL	m_bSnapShots;
   float m_fTinySize;
   BOOL  m_bCleanTiny;
-	CString	m_strPAKFile;
 	int		m_nStatusSize;
 	BOOL	m_bCamXYUpdate;
 	BOOL	m_bNewLightDraw;
 	CString	m_strPrefabPath;
-	int		m_nWhatGame;
-	CString	m_strWhatGame;
 	BOOL	m_bALTEdge;
 	BOOL	m_bTextureBar;
 	BOOL	m_bFaceColors;
@@ -103,7 +98,6 @@ public:
 	int		m_nRotation;
 	BOOL	m_bSGIOpenGL;
 	BOOL	m_bBuggyICD;
-	BOOL	m_bHiColorTextures;
 	BOOL	m_bChaseMouse;
 	BOOL	m_bTextureScrollbar;
 	BOOL	m_bDisplayLists;
@@ -147,10 +141,8 @@ protected:
 	afx_msg void OnBtnBrowse();
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
-	afx_msg void OnBtnBrowsepak();
 	afx_msg void OnBtnBrowseprefab();
 	afx_msg void OnBtnBrowseuserini();
-	afx_msg void OnSelchangeComboWhatgame();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
