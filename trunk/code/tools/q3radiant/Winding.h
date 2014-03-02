@@ -23,10 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 //returns true if the planes are equal
-int			Plane_Equal(plane_t *a, plane_t *b, int flip);
-//returns false if the points are colinear
-int			Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane);
-//returns true if the points are equal
+//int			Plane_Equal(plane_t *a, plane_t *b, int flip);
+////returns false if the points are colinear
+//int			Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane);
+////returns true if the points are equal
 int			Point_Equal(vec3_t p1, vec3_t p2, float epsilon);
 
 //allocate a winding
@@ -34,7 +34,7 @@ winding_t*	Winding_Alloc(int points);
 //free the winding
 void		Winding_Free(winding_t *w);
 //create a base winding for the plane
-winding_t*	Winding_BaseForPlane (plane_t *p);
+winding_t*	Winding_BaseForPlane (const class edPlane_c &p);
 //make a winding clone
 winding_t*	Winding_Clone(winding_t *w );
 //creates the reversed winding
@@ -52,7 +52,7 @@ int			Winding_IsTiny(winding_t *w);
 //returns true if the winding is huge
 int			Winding_IsHuge(winding_t *w);
 //clip the winding with the plane
-winding_t*	Winding_Clip(winding_t *in, plane_t *split, bool keepon);
+winding_t*	Winding_Clip(winding_t *in, const class edPlane_c &split, bool keepon);
 //split the winding with the plane
 void		Winding_SplitEpsilon(winding_t *in, vec3_t normal, double dist, 
 								vec_t epsilon, winding_t **front, winding_t **back);
@@ -65,6 +65,6 @@ float		Winding_Area(winding_t *w);
 //returns the bounds of the winding
 void		Winding_Bounds(winding_t *w, vec3_t mins, vec3_t maxs);
 //returns true if the point is inside the winding
-int			Winding_PointInside(winding_t *w, plane_t *plane, vec3_t point, float epsilon);
+int			Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point, float epsilon);
 //returns true if the vector intersects with the winding
-int			Winding_VectorIntersect(winding_t *w, plane_t *plane, vec3_t p1, vec3_t p2, float epsilon);
+int			Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, vec3_t p1, vec3_t p2, float epsilon);

@@ -57,12 +57,12 @@ void _VectorCopy (vec3_t in, vec3_t out);
 
 float VectorLength(vec3_t v);
 
-void VectorMA (vec3_t va, float scale, vec3_t vb, vec3_t vc);
+void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc);
 
-void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
+void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross);
 vec_t VectorNormalize (vec3_t v);
 void VectorInverse (vec3_t v);
-void VectorScale (vec3_t v, vec_t scale, vec3_t out);
+void VectorScale (const vec3_t v, vec_t scale, vec3_t out);
 void VectorPolar(vec3_t v, float radius, float theta, float phi);
 void VectorSnap(vec3_t v);
 

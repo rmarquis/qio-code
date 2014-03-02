@@ -62,10 +62,10 @@ void PrintWinding (winding_t *w)
 		, w->points[i][1], w->points[i][2]);
 }
 
-void PrintPlane (plane_t *p)
+void PrintPlane (const class edPlane_c &p)
 {
-  printf ("(%5.2f, %5.2f, %5.2f) : %5.2f\n",  p->normal[0],  p->normal[1], 
-  p->normal[2],  p->dist);
+  printf ("(%5.2f, %5.2f, %5.2f) : %5.2f\n",  p.normal[0],  p.normal[1], 
+  p.normal[2],  p.dist);
 }
 
 void PrintVector (vec3_t v)
@@ -98,7 +98,7 @@ vec3_t	baseaxis[18] =
 {0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
 };
 
-void TextureAxisFromPlane(plane_t *pln, vec3_t xv, vec3_t yv)
+void TextureAxisFromPlane(const edPlane_c &pln, vec3_t xv, vec3_t yv)
 {
 	int		bestaxis;
 	float	dot,best;
@@ -109,7 +109,7 @@ void TextureAxisFromPlane(plane_t *pln, vec3_t xv, vec3_t yv)
 	
 	for (i=0 ; i<6 ; i++)
 	{
-		dot = DotProduct (pln->normal, baseaxis[i*3]);
+		dot = DotProduct (pln.normal, baseaxis[i*3]);
 		if (dot > best)
 		{
 			best = dot;
@@ -132,14 +132,14 @@ Light different planes differently to
 improve recognition
 ================
 */
-float SetShadeForPlane (plane_t *p)
+float SetShadeForPlane (const class edPlane_c &p)
 {
 	int		i;
 	float	f;
 
 	// axial plane
 	for (i=0 ; i<3 ; i++)
-		if (fabs(p->normal[i]) > 0.9)
+		if (fabs(p.normal[i]) > 0.9)
 		{
 			f = lightaxis[i];
 			return f;
@@ -147,7 +147,7 @@ float SetShadeForPlane (plane_t *p)
 
 	// between two axial planes
 	for (i=0 ; i<3 ; i++)
-		if (fabs(p->normal[i]) < 0.1)
+		if (fabs(p.normal[i]) < 0.1)
 		{
 			f = (lightaxis[(i+1)%3] + lightaxis[(i+2)%3])/2;
 			return f;
@@ -227,7 +227,7 @@ face_t	*Face_FullClone (face_t *f)
 	n = Face_Alloc();
 	n->texdef = f->texdef;
 	memcpy(n->planepts, f->planepts, sizeof(n->planepts));
-	memcpy(&n->plane, &f->plane, sizeof(plane_t));
+	n->plane = f->plane;
 	if (f->face_winding)
 		n->face_winding = Winding_Clone(f->face_winding);
 	else
@@ -266,7 +266,7 @@ void Face_MoveTexture(face_t *f, vec3_t delta)
 		Face_MoveTexture_BrushPrimit( f, delta );
 	else
 	{
-		TextureAxisFromPlane(&f->plane, vX, vY);
+		TextureAxisFromPlane(f->plane, vX, vY);
 
 		vec3_t vDP, vShift;
 		vDP[0] = DotProduct(delta, vX);
@@ -306,7 +306,7 @@ void Face_SetColor (brush_t *b, face_t *f, float fCurveColor)
 	q = f->d_texture;
 
 	// set shading for face
-	shade = SetShadeForPlane (&f->plane);
+	shade = SetShadeForPlane (f->plane);
 	if (g_pParentWnd->GetCamera()->Camera().draw_mode == cd_texture && !b->owner->eclass->fixedsize)
 	{
 		//if (b->curveBrush)
@@ -357,7 +357,7 @@ void Face_TextureVectors (face_t *f, float STfromXYZ[2][4])
 		td->scale[1] = 0.5 ;
 
 	// get natural texture axis
-	TextureAxisFromPlane(&f->plane, pvecs[0], pvecs[1]);
+	TextureAxisFromPlane(f->plane, pvecs[0], pvecs[1]);
 
 	// rotate axis
 	if (td->rotate == 0)
@@ -552,11 +552,11 @@ winding_t *Brush_MakeFaceWinding (brush_t *b, face_t *face)
 {
 	winding_t	*w;
 	face_t		*clip;
-	plane_t			plane;
+	edPlane_c			plane;
 	bool		past;
 
 	// get a poly that covers an effectively infinite area
-	w = Winding_BaseForPlane (&face->plane);
+	w = Winding_BaseForPlane (face->plane);
 
 	// chop the poly by all of the other faces
 	past = false;
@@ -582,7 +582,7 @@ winding_t *Brush_MakeFaceWinding (brush_t *b, face_t *face)
 		VectorSubtract (vec3_origin,clip->plane.normal, plane.normal);
 		plane.dist = -clip->plane.dist;
 		
-		w = Winding_Clip (w, &plane, false);
+		w = Winding_Clip (w, plane, false);
 		if (!w)
 			return w;
 	}
@@ -976,7 +976,7 @@ int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 	int l;
 	vec3_t p1, p2;
 	winding_t *w2;
-	plane_t plane;
+	edPlane_c plane;
 
 	face = NULL;
 	VectorCopy(vertex, tmpw.points[1]);
@@ -991,13 +991,13 @@ int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 		if (i < nummovefaces)
 			continue;
 		//the delta vector may not intersect with any of the not move faces
-		if (Winding_VectorIntersect(face->face_winding, &face->plane, vertex, end, INTERSECT_EPSILON))
+		if (Winding_VectorIntersect(face->face_winding, face->plane, vertex, end, INTERSECT_EPSILON))
 			break;
 		//if the end point of the to be moved vertex is near this not move face
 		if (abs(DotProduct(face->plane.normal, end) - face->plane.dist) < 0.5)
 		{
 			//the end point may not be inside or very close to the not move face winding
-			if (Winding_PointInside(face->face_winding, &face->plane, end, 0.5))
+			if (Winding_PointInside(face->face_winding, face->plane, end, 0.5))
 				break;
 		}
 		for (i = 0; i < nummovefaces; i++)
@@ -1008,7 +1008,7 @@ int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 			{
 				//check if the new edge will not intersect with the not move face
 				VectorCopy(w->points[(j + k + w->numpoints) % w->numpoints], tmpw.points[0]);
-				if (Winding_VectorIntersect(face->face_winding, &face->plane, tmpw.points[0], end, INTERSECT_EPSILON))
+				if (Winding_VectorIntersect(face->face_winding, face->plane, tmpw.points[0], end, INTERSECT_EPSILON))
 				{
 					//ok the new edge instersects with the not move face
 					//we can't perform the vertex movement
@@ -1023,7 +1023,7 @@ int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 					if (Point_Equal(p1, tmpw.points[0], POINT_EPSILON)) continue;
 					VectorCopy(w2->points[(l+1) % w2->numpoints], p2);
 					if (Point_Equal(p2, tmpw.points[0], POINT_EPSILON)) continue;
-					if (Winding_VectorIntersect(&tmpw, &plane, p1, p2, INTERSECT_EPSILON))
+					if (Winding_VectorIntersect(&tmpw, plane, p1, p2, INTERSECT_EPSILON))
 						break;
 				}
 				if (l < w2->numpoints)
@@ -1072,7 +1072,7 @@ int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 			lastface = face;
 			continue;
 		}
-		if (!Plane_Equal(&face->plane, &face->original->plane, false))
+		if (!face->plane.isPlaneEqual(face->original->plane, false))
 		{
 			lastface = face;
 			continue;
@@ -1266,7 +1266,7 @@ int Brush_MoveVertex_old2(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, b
 			lastface = face;
 			continue;
 		}
-		if (!Plane_Equal(&face->plane, &face->original->plane, false))
+		if (!face->plane.isPlaneEqual(face->original->plane, false))
 		{
 			lastface = face;
 			continue;
@@ -1311,7 +1311,7 @@ int Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool b
 	int movefacepoints[MAX_MOVE_FACES];
 	winding_t *w, tmpw;
 	vec3_t start, mid;
-	plane_t plane;
+	edPlane_c plane;
 	int i, j, k, nummovefaces, result, done;
 	float dot, front, back, frac, smallestfrac;
 
@@ -1456,7 +1456,7 @@ int Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool b
 			//if the original is not a move face itself
 			if (j >= nummovefaces)
 			{
-				memcpy(&plane, &movefaces[i]->original->plane, sizeof(plane_t));
+				memcpy(&plane, &movefaces[i]->original->plane, sizeof(edPlane_c));
 			}
 			else
 			{
@@ -1468,10 +1468,10 @@ int Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool b
 				k = movefacepoints[i];
 				w = movefaces[i]->face_winding;
 				VectorCopy(w->points[(k+1)%w->numpoints], tmpw.points[2]);
-				if (!Plane_FromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2], &plane))
+				if (!plane.fromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2]))
 				{
 					VectorCopy(w->points[(k+2)%w->numpoints], tmpw.points[2]);
-					if (!Plane_FromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2], &plane))
+					if (!plane.fromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2]))
 						//this should never happen otherwise the face merge did a crappy job a previous pass
 						continue;
 				}
@@ -1551,7 +1551,7 @@ int Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool b
 				lastface = face;
 				continue;
 			}
-			if (!Plane_Equal(&face->plane, &face->original->plane, false))
+			if (!face->plane.isPlaneEqual(face->original->plane, false))
 			{
 				lastface = face;
 				continue;
@@ -4426,7 +4426,7 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 	cosv = cos(ang);
 
 	// get natural texture axis
-	TextureAxisFromPlane(&face->plane, vecs[0], vecs[1]);
+	TextureAxisFromPlane(face->plane, vecs[0], vecs[1]);
 
 	min_s = DotProduct( mins, vecs[0] );
 	min_t = DotProduct( mins, vecs[1] );

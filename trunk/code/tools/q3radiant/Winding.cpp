@@ -27,64 +27,59 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "winding.h"
 
 #define	BOGUS_RANGE	18000
+//
+///*
+//=============
+//Plane_Equal
+//=============
+//*/
+//#define	NORMAL_EPSILON	0.0001
+//#define	DIST_EPSILON	0.02
+//
+//int Plane_Equal(plane_t *a, plane_t *b, int flip)
+//{
+//	vec3_t normal;
+//	float dist;
+//
+//	if (flip) {
+//		normal[0] = - b->normal[0];
+//		normal[1] = - b->normal[1];
+//		normal[2] = - b->normal[2];
+//		dist = - b->dist;
+//	}
+//	else {
+//		normal[0] = b->normal[0];
+//		normal[1] = b->normal[1];
+//		normal[2] = b->normal[2];
+//		dist = b->dist;
+//	}
+//	if (
+//	   fabs(a->normal[0] - normal[0]) < NORMAL_EPSILON
+//	&& fabs(a->normal[1] - normal[1]) < NORMAL_EPSILON
+//	&& fabs(a->normal[2] - normal[2]) < NORMAL_EPSILON
+//	&& fabs(a->dist - dist) < DIST_EPSILON )
+//		return true;
+//	return false;
+//}
+//
+///*
+//============
+//Plane_FromPoints
+//============
+//*/
+//int Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane)
+//{
+//	vec3_t v1, v2;
+//
+//	VectorSubtract(p2, p1, v1);
+//	VectorSubtract(p3, p1, v2);
+//	//CrossProduct(v2, v1, plane->normal);
+//	CrossProduct(v1, v2, plane->normal);
+//	if (VectorNormalize(plane->normal) < 0.1) return false;
+//	plane->dist = DotProduct(p1, plane->normal);
+//	return true;
+//}
 
-/*
-=============
-Plane_Equal
-=============
-*/
-#define	NORMAL_EPSILON	0.0001
-#define	DIST_EPSILON	0.02
-
-int Plane_Equal(plane_t *a, plane_t *b, int flip)
-{
-	vec3_t normal;
-	float dist;
-
-	if (flip) {
-		normal[0] = - b->normal[0];
-		normal[1] = - b->normal[1];
-		normal[2] = - b->normal[2];
-		dist = - b->dist;
-	}
-	else {
-		normal[0] = b->normal[0];
-		normal[1] = b->normal[1];
-		normal[2] = b->normal[2];
-		dist = b->dist;
-	}
-	if (
-	   fabs(a->normal[0] - normal[0]) < NORMAL_EPSILON
-	&& fabs(a->normal[1] - normal[1]) < NORMAL_EPSILON
-	&& fabs(a->normal[2] - normal[2]) < NORMAL_EPSILON
-	&& fabs(a->dist - dist) < DIST_EPSILON )
-		return true;
-	return false;
-}
-
-/*
-============
-Plane_FromPoints
-============
-*/
-int Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane)
-{
-	vec3_t v1, v2;
-
-	VectorSubtract(p2, p1, v1);
-	VectorSubtract(p3, p1, v2);
-	//CrossProduct(v2, v1, plane->normal);
-	CrossProduct(v1, v2, plane->normal);
-	if (VectorNormalize(plane->normal) < 0.1) return false;
-	plane->dist = DotProduct(p1, plane->normal);
-	return true;
-}
-
-/*
-=================
-Point_Equal
-=================
-*/
 int Point_Equal(vec3_t p1, vec3_t p2, float epsilon)
 {
 	int i;
@@ -102,7 +97,7 @@ int Point_Equal(vec3_t p1, vec3_t p2, float epsilon)
 Winding_BaseForPlane
 =================
 */
-winding_t *Winding_BaseForPlane (plane_t *p)
+winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 {
 	int		i, x;
 	vec_t	max, v;
@@ -115,7 +110,7 @@ winding_t *Winding_BaseForPlane (plane_t *p)
 	x = -1;
 	for (i=0 ; i<3; i++)
 	{
-		v = fabs(p->normal[i]);
+		v = fabs(p.normal[i]);
 		if (v > max)
 		{
 			x = i;
@@ -138,13 +133,13 @@ winding_t *Winding_BaseForPlane (plane_t *p)
 	}
 
 
-	v = DotProduct (vup, p->normal);
-	VectorMA (vup, -v, p->normal, vup);
+	v = DotProduct (vup, p.normal);
+	VectorMA (vup, -v, p.normal, vup);
 	VectorNormalize (vup);
 		
-	VectorScale (p->normal, p->dist, org);
+	VectorScale (p.normal, p.dist, org);
 	
-	CrossProduct (vup, p->normal, vright);
+	CrossProduct (vup, p.normal, vright);
 	
 	VectorScale (vup, BOGUS_RANGE, vup);
 	VectorScale (vright, BOGUS_RANGE, vright);
@@ -371,7 +366,7 @@ If keepon is true, an exactly on-plane winding will be saved, otherwise
 it will be clipped away.
 ==================
 */
-winding_t *Winding_Clip (winding_t *in, plane_t *split, bool keepon)
+winding_t *Winding_Clip (winding_t *in, const edPlane_c &split, bool keepon)
 {
 	vec_t	dists[MAX_POINTS_ON_WINDING];
 	int		sides[MAX_POINTS_ON_WINDING];
@@ -388,8 +383,8 @@ winding_t *Winding_Clip (winding_t *in, plane_t *split, bool keepon)
 	// determine sides for each point
 	for (i=0 ; i<in->numpoints ; i++)
 	{
-		dot = DotProduct (in->points[i], split->normal);
-		dot -= split->dist;
+		dot = DotProduct (in->points[i], split.normal);
+		dot -= split.dist;
 		dists[i] = dot;
 		if (dot > ON_EPSILON)
 			sides[i] = SIDE_FRONT;
@@ -445,10 +440,10 @@ winding_t *Winding_Clip (winding_t *in, plane_t *split, bool keepon)
 		dot = dists[i] / (dists[i]-dists[i+1]);
 		for (j=0 ; j<3 ; j++)
 		{	// avoid round off error when possible
-			if (split->normal[j] == 1)
-				mid[j] = split->dist;
-			else if (split->normal[j] == -1)
-				mid[j] = -split->dist;
+			if (split.normal[j] == 1)
+				mid[j] = split.dist;
+			else if (split.normal[j] == -1)
+				mid[j] = -split.dist;
 			else
 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);
 		}
@@ -768,7 +763,7 @@ void Winding_Bounds (winding_t *w, vec3_t mins, vec3_t maxs)
 Winding_PointInside
 =================
 */
-int Winding_PointInside(winding_t *w, plane_t *plane, vec3_t point, float epsilon)
+int Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point, float epsilon)
 {
 	int i;
 	vec3_t dir, normal, pointvec;
@@ -778,7 +773,7 @@ int Winding_PointInside(winding_t *w, plane_t *plane, vec3_t point, float epsilo
 		VectorSubtract(w->points[(i+1) % w->numpoints], w->points[i], dir);
 		VectorSubtract(point, w->points[i], pointvec);
 		//
-		CrossProduct(dir, plane->normal, normal);
+		CrossProduct(dir, plane.normal, normal);
 		//
 		if (DotProduct(pointvec, normal) < -epsilon) return false;
 	}
@@ -790,13 +785,13 @@ int Winding_PointInside(winding_t *w, plane_t *plane, vec3_t point, float epsilo
 Winding_VectorIntersect
 =================
 */
-int Winding_VectorIntersect(winding_t *w, plane_t *plane, vec3_t p1, vec3_t p2, float epsilon)
+int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, vec3_t p1, vec3_t p2, float epsilon)
 {
 	float front, back, frac;
 	vec3_t mid;
 
-	front = DotProduct(p1, plane->normal) - plane->dist;
-	back = DotProduct(p2, plane->normal) - plane->dist;
+	front = DotProduct(p1, plane.normal) - plane.dist;
+	back = DotProduct(p2, plane.normal) - plane.dist;
 	//if both points at the same side of the plane
 	if (front < -epsilon && back < -epsilon) return false;
 	if (front > epsilon && back > epsilon) return false;

@@ -60,14 +60,14 @@ vec_t Q_rint (vec_t in)
 	  return (float)floor (in + 0.5);
 }
 
-void VectorMA (vec3_t va, float scale, vec3_t vb, vec3_t vc)
+void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc)
 {
 	vc[0] = va[0] + scale*vb[0];
 	vc[1] = va[1] + scale*vb[1];
 	vc[2] = va[2] + scale*vb[2];
 }
 
-void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
+void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross)
 {
 	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
@@ -125,7 +125,7 @@ void VectorInverse (vec3_t v)
 	v[2] = -v[2];
 }
 
-void VectorScale (vec3_t v, vec_t scale, vec3_t out)
+void VectorScale (const vec3_t v, vec_t scale, vec3_t out)
 {
 	out[0] = v[0] * scale;
 	out[1] = v[1] * scale;

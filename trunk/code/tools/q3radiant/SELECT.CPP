@@ -738,7 +738,7 @@ void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
 #endif
 
   // compute first local axis base
-  TextureAxisFromPlane(&f->plane, ex, ey);
+  TextureAxisFromPlane(f->plane, ex, ey);
   CrossProduct(ex, ey, ez);
 	    
 	vec3_t aux;
@@ -777,7 +777,7 @@ void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
 };
 
 
-void AbsoluteToLocal(plane_t normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
+void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
 {
 	vec3_t ex,ey,ez;
 
@@ -787,7 +787,7 @@ void AbsoluteToLocal(plane_t normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t&
 #endif
 
 	// computing new local axis base
-  TextureAxisFromPlane(&normal2, ex, ey);
+  TextureAxisFromPlane(normal2, ex, ey);
   CrossProduct(ex, ey, ez);
 
   // projecting back on (ex,ey)
@@ -863,7 +863,7 @@ void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
 	VectorRotate(p2, rota, select_origin, p2);
 	VectorRotate(p3, rota, select_origin, p3);
 
-	plane_t normal2;
+	edPlane_c normal2;
 	vec3_t vNormal;
 	vNormal[0] = f->plane.normal[0];
 	vNormal[1] = f->plane.normal[1];

@@ -165,12 +165,52 @@ typedef struct
 	float 	points[8][5];			// variable sized
 } winding_t;
 
-typedef struct
-{
+#define	NORMAL_EPSILON	0.0001
+#define	DIST_EPSILON	0.02
+
+#include "mathlib.h"
+class edPlane_c {
+public:
     vec3_t	normal;
     double	dist;
-    int		type;
-} plane_t;
+public:
+	int isPlaneEqual(const edPlane_c &b, int flip) const {
+		vec3_t tempNormal;
+		double tempDist;
+
+		if (flip) {
+			tempNormal[0] = - b.normal[0];
+			tempNormal[1] = - b.normal[1];
+			tempNormal[2] = - b.normal[2];
+			tempDist = - b.dist;
+		} else {
+			tempNormal[0] = b.normal[0];
+			tempNormal[1] = b.normal[1];
+			tempNormal[2] = b.normal[2];
+			tempDist = b.dist;
+		}
+		if (
+		   fabs(this->normal[0] - tempNormal[0]) < NORMAL_EPSILON
+		&& fabs(this->normal[1] - tempNormal[1]) < NORMAL_EPSILON
+		&& fabs(this->normal[2] - tempNormal[2]) < NORMAL_EPSILON
+		&& fabs(this->dist - tempDist) < DIST_EPSILON )
+			return true;
+		return false;
+	}
+	int fromPoints(vec3_t p1, vec3_t p2, vec3_t p3)
+	{
+		vec3_t v1, v2;
+
+		VectorSubtract(p2, p1, v1);
+		VectorSubtract(p3, p1, v2);
+		//CrossProduct(v2, v1, plane->normal);
+		CrossProduct(v1, v2, this->normal);
+		if (VectorNormalize(this->normal) < 0.1) 
+			return false;
+		this->dist = DotProduct(p1, this->normal);
+		return true;
+	}
+};
 
 //++timo texdef and brushprimit_texdef are static
 // TODO : do dynamic ?
@@ -180,7 +220,7 @@ typedef struct face_s
 	struct face_s			*original;		//used for vertex movement
 	vec3_t					planepts[3];
 	texdef_t				texdef;
-	plane_t					plane;
+	edPlane_c				plane;
 
 	winding_t				*face_winding;
 

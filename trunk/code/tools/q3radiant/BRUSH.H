@@ -106,7 +106,7 @@ void		Brush_RemoveEmptyFaces ( brush_t *b );
 winding_t*	Brush_MakeFaceWinding (brush_t *b, face_t *face);
 
 int			AddPlanept (float *f);
-float		SetShadeForPlane (plane_t *p);
+float		SetShadeForPlane (const class edPlane_c &p);
 
 face_t*		Face_Alloc( void );
 void		Face_Free( face_t *f );
