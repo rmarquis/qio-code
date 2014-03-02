@@ -107,6 +107,7 @@ static aCvar_c rb_printLightingPassDrawCalls("rb_printLightingPassDrawCalls","0"
 static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
 static aCvar_c rb_printBlendAfterLightingDrawCalls("rb_printBlendAfterLightingDrawCalls","0");
 static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
+static aCvar_c rb_forceBlur("rb_forceBlur","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -132,6 +133,27 @@ public:
 	virtual u32 getPreviousResult() const;
 	virtual u32 waitForLatestResult() const;
 };
+// fbo-replacement for screen buffer
+class fboScreen_c {
+	u32 textureHandle;
+	u32 fboHandle;
+	u32 depthBufferHandle;
+	u32 w,h;
+public:
+	fboScreen_c();
+	~fboScreen_c();
+
+	bool create(u32 newW, u32 newH);
+	void destroy();
+
+	u32 getFBOHandle() {
+		return fboHandle;
+	}
+	u32 getTextureHandle() {
+		return textureHandle;
+	}
+};
+// depth-only FBO
 class fboDepth_c {
 	u32 textureHandle;
 	u32 fboHandle;
@@ -231,6 +253,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curShadowMapW;
 	int curShadowMapH;
 	cubeFBOs_c cubeFBO;
+	fboScreen_c screenFBO;
 	bool bDrawingSky;
 	u32 viewPortWidth;
 	u32 viewPortHeight;
@@ -1968,7 +1991,25 @@ drawOnlyLightmap:
 		//glVertexPointer(3,GL_FLOAT,sizeof(hashVec3_c),0);
 		//bindIBO(0);
 	}
+	bool isUsingBlur() const {
+		if(rb_forceBlur.getInt())
+			return true;
+		return false;
+	}
+	bool shouldDrawToScreenFBO() {
+		if(isUsingBlur()) {
+			return true;
+		}
+		return false;
+	}
 	virtual void beginFrame() {
+		if(shouldDrawToScreenFBO()) {
+			screenFBO.create(this->viewPortWidth,this->viewPortHeight);
+			bindFBO(screenFBO.getFBOHandle());
+		} else {
+			bindFBO(0);
+		}
+
 		// NOTE: for stencil shadows, stencil buffer should be cleared here as well.
 		if(1) {
 		    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -2020,7 +2061,9 @@ drawOnlyLightmap:
 			glDepthMask(false);
 		}
 	}
-	virtual void setup2DView() {
+	virtual void setup2DView() {		
+		stopDrawingShadowVolumes();
+		bindShader(0);
 		setGLDepthMask(true);
 		setGLStencilTest(false);
 		disablePortalClipPlane();
@@ -2042,6 +2085,28 @@ drawOnlyLightmap:
 		// rVertexBuffers are used only for 3d
 		unbindVertexBuffer();
 		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics
+
+		if(isUsingBlur() && boundFBO) {
+			bindFBO(0);
+			//glslPermutationFlags_s p;
+			//p.bHorizontalPass = true;
+			// TODO: do a second, horizontal pass
+			glShader_c *sh = GL_RegisterShader("blur");
+			if(sh) {
+				bindShader(sh);
+			}
+			bindTex(0,screenFBO.getTextureHandle());
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2f(0, 0);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2f(0, getWinHeight());
+				glTexCoord2f(1.0f, 0.0f);	
+				glVertex2f(getWinWidth(), getWinHeight());
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2f(getWinWidth(), 0);
+			glEnd();
+		}
 	}
 	matrix_c currentModelViewMatrix;
 	void loadModelViewMatrix(const matrix_c &newMat) {
@@ -2338,6 +2403,7 @@ drawOnlyLightmap:
 			return;		
 		}
 		cubeFBO.destroy();
+		screenFBO.destroy();
 		GL_ShutdownGLSLShaders();
 		AUTOCVAR_UnregisterAutoCvars();
 		lastMat = 0;
@@ -2641,6 +2707,81 @@ void fboDepth_c::destroy() {
 	if(fboHandle) {
 		glDeleteFramebuffers(1,&fboHandle);
 		fboHandle = 0;
+	}
+}
+fboScreen_c::fboScreen_c() {
+	textureHandle = 0;
+	fboHandle = 0;
+	depthBufferHandle = 0;
+	w = h = 0;
+}
+fboScreen_c::~fboScreen_c() {
+	destroy();
+}
+bool fboScreen_c::create(u32 newW, u32 newH) {
+	if(fboHandle && newW == w && newH == h)
+		return false;
+	// destroy previously created FBO
+	destroy();
+
+	w = newW;
+	h = newH;
+
+	// create target texture
+	glGenTextures(1, &textureHandle);
+	glBindTexture(GL_TEXTURE_2D, textureHandle);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// NULL means reserve texture memory, but texels are undefined
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+	//-------------------------
+	glGenFramebuffersEXT(1, &fboHandle);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboHandle);
+	//Attach 2D texture to this FBO
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textureHandle, 0);
+	//-------------------------
+	glGenRenderbuffersEXT(1, &depthBufferHandle);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthBufferHandle);
+	bool bNeedsStencilBuffer = true;
+	if(bNeedsStencilBuffer == false) {
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, w, h);
+		//-------------------------
+		//Attach depth buffer to FBO
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthBufferHandle);
+	} else {
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8, w, h);
+		//-------------------------
+		//Attach depth-stencil buffer to FBO
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthBufferHandle);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER_EXT, depthBufferHandle);
+	}
+
+	// check FBO status
+	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	if(status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		printf("fboScreen_c::create: failed to create FBO\n");
+		destroy();
+		return true;
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	// switch back to window-system-provided framebuffer
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	return false;
+}
+void fboScreen_c::destroy() {
+	if(textureHandle) {
+		glDeleteTextures(1,&textureHandle);
+		textureHandle = 0;
+	}
+	if(fboHandle) {
+		glDeleteFramebuffers(1,&fboHandle);
+		fboHandle = 0;
+	}
+	if(depthBufferHandle) {
+		glDeleteRenderbuffers(1,&depthBufferHandle);
+		depthBufferHandle = 0;
 	}
 }
 cubeFBOs_c::cubeFBOs_c() {
