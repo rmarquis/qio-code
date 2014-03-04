@@ -638,7 +638,7 @@ void Select_GetMid (vec3_t mid)
 
 }
 
-vec3_t	select_origin;
+edVec3_c	select_origin;
 vec3_t	select_matrix[3];
 bool	select_fliporder;
 
@@ -647,7 +647,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 	brush_t	*b;
 	face_t	*f;
 	int		i, j;
-	vec3_t	temp;
+	edVec3_c	temp;
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
@@ -655,15 +655,16 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 		{
 			for (i=0 ; i<3 ; i++)
 			{
-				VectorSubtract (f->planepts[i], select_origin, temp);
+				temp = f->planepts[i] - select_origin;
 				for (j=0 ; j<3 ; j++)
-					f->planepts[i][j] = DotProduct(temp, select_matrix[j]) + select_origin[j];
+					f->planepts[i][j] = temp.dotProduct(select_matrix[j]) + select_origin[j];
 			}
 			if (select_fliporder)
 			{
-				VectorCopy (f->planepts[0], temp);
-				VectorCopy (f->planepts[2], f->planepts[0]);
-				VectorCopy (temp, f->planepts[2]);
+				// swap the points
+				temp = f->planepts[0];
+				f->planepts[0] = f->planepts[2];
+				f->planepts[2] = temp;
 			}
 		}
 
@@ -691,17 +692,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 	}
 }
 
-void ProjectOnPlane(vec3_t& normal,float dist,vec3_t& ez, vec3_t& p)
-{
-	if (fabs(ez[0]) == 1)
-		p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
-	else if (fabs(ez[1]) == 1)
-		p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
-	else
-		p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
-}
-
-void Back(vec3_t& dir, vec3_t& p)
+void Back(const edVec3_c &dir, edVec3_c &p)
 {
 	if (fabs(dir[0]) == 1)
 		p[0] = 0;
@@ -713,24 +704,23 @@ void Back(vec3_t& dir, vec3_t& p)
 
 
 // using scale[0] and scale[1]
-void ComputeScale(vec3_t& rex, vec3_t& rey, vec3_t& p, face_t* f)
+void ComputeScale(const edVec3_c &rex, const edVec3_c &rey, edVec3_c &p, const face_t *f)
 {
-	float px = DotProduct(rex, p);
-	float py = DotProduct(rey, p);
+	float px = rex.dotProduct(p);
+	float py = rey.dotProduct(p);
 	px *= f->texdef.scale[0];
 	py *= f->texdef.scale[1];
-  vec3_t aux;
-  VectorCopy(rex, aux);
-  VectorScale(aux, px, aux);
-  VectorCopy(aux, p);
-  VectorCopy(rey, aux);
-  VectorScale(aux, py, aux);
-  VectorAdd(p, aux, p);
+	edVec3_c aux = rex;
+	aux *= px;
+	p = aux;
+	aux = rey;
+	aux *= py;
+	p += aux;
 }
 
-void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
+void ComputeAbsolute(face_t* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
 {
-	vec3_t ex,ey,ez;	        // local axis base
+	edVec3_c ex,ey,ez;	        // local axis base
 
 #ifdef _DEBUG
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -739,21 +729,18 @@ void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
 
   // compute first local axis base
   TextureAxisFromPlane(f->plane, ex, ey);
-  CrossProduct(ex, ey, ez);
+  ez.crossProduct(ex,ey);
 	    
-	vec3_t aux;
-  VectorCopy(ex, aux);
-  VectorScale(aux, -f->texdef.shift[0], aux);
+  edVec3_c aux = ex * -f->texdef.shift[0];
   VectorCopy(aux, p1);
-  VectorCopy(ey, aux);
-  VectorScale(aux, -f->texdef.shift[1], aux);
+  aux = ey * -f->texdef.shift[1];
   VectorAdd(p1, aux, p1);
   VectorCopy(p1, p2);
   VectorAdd(p2, ex, p2);
   VectorCopy(p1, p3);
   VectorAdd(p3, ey, p3);
   VectorCopy(ez, aux);
-  VectorScale(aux, -f->texdef.rotate, aux);
+  aux *= -f->texdef.rotate;
   VectorRotate(p1, aux, p1);
   VectorRotate(p2, aux, p2);
   VectorRotate(p3, aux, p3);
@@ -771,15 +758,15 @@ void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
 	// project on normal plane
 	// along ez 
 	// assumes plane normal is normalized
-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p1);
-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p2);
-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p3);
+	f->plane.projectOnPlane(ez,p1);
+	f->plane.projectOnPlane(ez,p2);
+	f->plane.projectOnPlane(ez,p3);
 };
 
 
-void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
+void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3)
 {
-	vec3_t ex,ey,ez;
+	edVec3_c ex,ey,ez;
 
 #ifdef _DEBUG
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -788,56 +775,48 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3
 
 	// computing new local axis base
   TextureAxisFromPlane(normal2, ex, ey);
-  CrossProduct(ex, ey, ez);
+  ez.crossProduct(ex,ey);
 
   // projecting back on (ex,ey)
 	Back(ez,p1);
 	Back(ez,p2);
 	Back(ez,p3);
 
-	vec3_t aux;
-	// rotation
-  VectorCopy(p2, aux);
-  VectorSubtract(aux, p1,aux);
+	edVec3_c aux = p2 - p1;
 	
-	float x = DotProduct(aux,ex);
-	float y = DotProduct(aux,ey);
-  f->texdef.rotate = 180 * atan2(y,x) / Q_PI;
+	float x = aux.dotProduct(ex);
+	float y = aux.dotProduct(ey);
+  f->texdef.rotate = RAD2DEG(atan2(y,x));
 
-	vec3_t rex,rey;
 	// computing rotated local axis base
-  VectorCopy(ez, aux);
-  VectorScale(aux, f->texdef.rotate, aux);
-  VectorCopy(ex, rex);
+  aux = ez;
+  aux *= f->texdef.rotate;
+  edVec3_c rex = ex;
   VectorRotate(rex, aux, rex);
-  VectorCopy(ey, rey);
+  edVec3_c rey = ey;
   VectorRotate(rey, aux, rey);
 
 	// scale
-  VectorCopy(p2, aux);
-  VectorSubtract(aux, p1, aux);
-  f->texdef.scale[0] = DotProduct(aux, rex);
-  VectorCopy(p3, aux);
-  VectorSubtract(aux, p1, aux);
-  f->texdef.scale[1] = DotProduct(aux, rey);
+  aux = p2 - p1;
+  f->texdef.scale[0] = aux.dotProduct(rex);
+  aux = p3 - p1;
+  f->texdef.scale[1] = aux.dotProduct(rey);
 
 	// shift
 	// only using p1
-	x = DotProduct(rex,p1);
-	y = DotProduct(rey,p1);                 
+	x = rex.dotProduct(p1);
+	y = rey.dotProduct(p1);                 
 	x /= f->texdef.scale[0];
 	y /= f->texdef.scale[1];
 
-  VectorCopy(rex, p1);
-  VectorScale(p1, x, p1);
-  VectorCopy(rey, aux);
-  VectorScale(aux, y, aux);
-  VectorAdd(p1, aux, p1);
-  VectorCopy(ez, aux);
-  VectorScale(aux, -f->texdef.rotate, aux);
+	p1 = rex * x;
+	aux = rey * y;
+  aux *= y;
+  p1 += aux;
+  aux = ez * -f->texdef.rotate;
   VectorRotate(p1, aux, p1);
-	f->texdef.shift[0] = -DotProduct(p1, ex);
-	f->texdef.shift[1] = -DotProduct(p1, ey);
+	f->texdef.shift[0] = -p1.dotProduct(ex);
+	f->texdef.shift[1] = -p1.dotProduct(ey);
 
 	// stored rot is good considering local axis base
 	// change it if necessary
@@ -851,7 +830,7 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3
 
 void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
 {
-	vec3_t p1,p2,p3, rota;   
+	edVec3_c p1,p2,p3, rota;   
 	p1[0] = p1[1] = p1[2] = 0;
 	VectorCopy(p1, p2);
 	VectorCopy(p1, p3);
@@ -1010,8 +989,8 @@ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 		}
 		else
 		{
-			c = cos(deg * Q_PI / 180.0);
-			s = sin(deg * Q_PI / 180.0);
+			c = cos(DEG2RAD(deg));
+			s = sin(DEG2RAD(deg));
 		}
 
 		for (i=0 ; i<3 ; i++)

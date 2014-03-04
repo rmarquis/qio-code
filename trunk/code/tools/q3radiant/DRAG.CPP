@@ -105,7 +105,7 @@ void Drag_Setup (int x, int y, int buttons,
 
 
 
-	extern void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons);
+	extern void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons);
 	if (g_qeglobals.d_select_mode == sel_curvepoint)
 	{
 		//if ((buttons == MK_LBUTTON))
@@ -512,7 +512,7 @@ void MoveSelection (vec3_t move)
 	int		i, success;
 	brush_t	*b;
 	CString strStatus;
-	vec3_t vTemp, vTemp2, end;
+	edVec3_c vTemp, vTemp2, end;
 
 	if (!move[0] && !move[1] && !move[2])
 		return;

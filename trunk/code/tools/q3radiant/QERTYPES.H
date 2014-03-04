@@ -154,6 +154,32 @@ typedef struct qtexture_s
 
 } qtexture_t;
 
+#include "mathlib.h"
+class texturedVertex_c {
+public:
+	edVec3_c xyz;
+	float st[2];
+
+
+	void setXYZ(const float *newXYZ) {
+		xyz = newXYZ;
+	}
+	const edVec3_c &getXYZ() const {
+		return xyz;
+	}
+	float dotProduct(const float *pVec3) const {
+		return xyz.dotProduct(pVec3);
+	}
+	const float operator [] (int index) const {
+		return (&xyz.x)[index];
+	}
+	float &operator [] (int index) {
+		return (&xyz.x)[index];
+	}
+	operator float *() {
+		return &xyz.x;
+	}
+};
 // NOTE: don't trust this definition!
 // you should read float points[..][5]
 // see NewWinding definition
@@ -162,31 +188,26 @@ typedef struct
 {
 	int		numpoints;
 	int		maxpoints;
-	float 	points[8][5];			// variable sized
+	texturedVertex_c 	points[8];			// variable sized
 } winding_t;
 
 #define	NORMAL_EPSILON	0.0001
 #define	DIST_EPSILON	0.02
 
-#include "mathlib.h"
 class edPlane_c {
 public:
-    vec3_t	normal;
-    double	dist;
+    edVec3_c normal;
+    double dist;
 public:
 	int isPlaneEqual(const edPlane_c &b, int flip) const {
-		vec3_t tempNormal;
+		edVec3_c tempNormal;
 		double tempDist;
 
 		if (flip) {
-			tempNormal[0] = - b.normal[0];
-			tempNormal[1] = - b.normal[1];
-			tempNormal[2] = - b.normal[2];
-			tempDist = - b.dist;
+			tempNormal = -b.normal;
+			tempDist = -b.dist;
 		} else {
-			tempNormal[0] = b.normal[0];
-			tempNormal[1] = b.normal[1];
-			tempNormal[2] = b.normal[2];
+			tempNormal = b.normal;
 			tempDist = b.dist;
 		}
 		if (
@@ -197,19 +218,28 @@ public:
 			return true;
 		return false;
 	}
-	int fromPoints(vec3_t p1, vec3_t p2, vec3_t p3)
+	int fromPoints(const edVec3_c &p1, const edVec3_c &p2, const edVec3_c &p3)
 	{
-		vec3_t v1, v2;
-
-		VectorSubtract(p2, p1, v1);
-		VectorSubtract(p3, p1, v2);
-		//CrossProduct(v2, v1, plane->normal);
-		CrossProduct(v1, v2, this->normal);
-		if (VectorNormalize(this->normal) < 0.1) 
+		edVec3_c v1 = p2 - p1;
+		edVec3_c v2 = p3 - p1;
+		this->normal.crossProduct(v1,v2);
+		if (this->normal.normalize() < 0.1) 
 			return false;
-		this->dist = DotProduct(p1, this->normal);
+		this->dist = this->normal.dotProduct(p1);
 		return true;
 	}
+	// project on normal plane
+	// along ez 
+	// assumes plane normal is normalized
+	void projectOnPlane(const edVec3_c &ez, edVec3_c &p) {
+		if (fabs(ez[0]) == 1)
+			p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
+		else if (fabs(ez[1]) == 1)
+			p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
+		else
+			p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
+	}
+
 };
 
 //++timo texdef and brushprimit_texdef are static
@@ -218,7 +248,7 @@ typedef struct face_s
 {
 	struct face_s			*next;
 	struct face_s			*original;		//used for vertex movement
-	vec3_t					planepts[3];
+	edVec3_c				planepts[3];
 	texdef_t				texdef;
 	edPlane_c				plane;
 
@@ -232,7 +262,7 @@ typedef struct face_s
 } face_t;
 
 typedef struct {
-	vec3_t	xyz;
+	edVec3_c xyz;
 	float	sideST[2];
 	float	capST[2];
 } curveVertex_t;
@@ -275,10 +305,14 @@ typedef struct {
 #define PATCH_STYLEMASK    0xffff0000    // 
 
 typedef struct {
-	vec3_t		xyz;
+	edVec3_c	xyz;
 	float		st[2];
 	float		lightmap[2];
-	vec3_t		normal;
+	vec3_t		normal;	
+	
+	texturedVertex_c &asWindingPoint() {
+		return *((texturedVertex_c*)(this));
+	}
 } drawVert_t;
 
 // used in brush primitive AND entities

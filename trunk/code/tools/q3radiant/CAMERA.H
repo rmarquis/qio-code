@@ -22,16 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // window system independent camera view code
 
-typedef enum
+enum camera_draw_mode
 {
 	cd_wire,
 	cd_solid,
 	cd_texture,
   cd_light,
 	cd_blend
-} camera_draw_mode;
+};
 
-typedef struct
+struct camera_t
 {
 	int		width, height;
 
@@ -46,6 +46,6 @@ typedef struct
 
 	vec3_t	forward, right, up;	// move matrix
 
-	vec3_t	vup, vpn, vright;	// view matrix
-} camera_t;
+	edVec3_c	vup, vpn, vright;	// view matrix
+};
 

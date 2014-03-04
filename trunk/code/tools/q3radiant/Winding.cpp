@@ -101,7 +101,7 @@ winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 {
 	int		i, x;
 	vec_t	max, v;
-	vec3_t	org, vright, vup;
+	edVec3_c	org, vright, vup;
 	winding_t	*w;
 	
 	// find the major axis
@@ -133,31 +133,24 @@ winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 	}
 
 
-	v = DotProduct (vup, p.normal);
+	v = vup.dotProduct(p.normal);
 	VectorMA (vup, -v, p.normal, vup);
-	VectorNormalize (vup);
+	vup.normalize();
 		
-	VectorScale (p.normal, p.dist, org);
+	org = p.normal * p.dist;
+
+	vright.crossProduct (vup, p.normal);
 	
-	CrossProduct (vup, p.normal, vright);
-	
-	VectorScale (vup, BOGUS_RANGE, vup);
-	VectorScale (vright, BOGUS_RANGE, vright);
+	vup *= BOGUS_RANGE;
+	vright *= BOGUS_RANGE;
 
 	// project a really big	axis aligned box onto the plane
 	w = Winding_Alloc (4);
 	
-	VectorSubtract (org, vright, w->points[0]);
-	VectorAdd (w->points[0], vup, w->points[0]);
-	
-	VectorAdd (org, vright, w->points[1]);
-	VectorAdd (w->points[1], vup, w->points[1]);
-	
-	VectorAdd (org, vright, w->points[2]);
-	VectorSubtract (w->points[2], vup, w->points[2]);
-	
-	VectorSubtract (org, vright, w->points[3]);
-	VectorSubtract (w->points[3], vup, w->points[3]);
+	w->points[0].setXYZ(org - vright + vup);
+	w->points[1].setXYZ(org + vright + vup);
+	w->points[2].setXYZ(org + vright - vup);
+	w->points[3].setXYZ(org - vright - vup);
 	
 	w->numpoints = 4;
 	
@@ -177,7 +170,7 @@ winding_t *Winding_Alloc (int points)
 	if (points > MAX_POINTS_ON_WINDING)
 		Error ("Winding_Alloc: %i points", points);
 	
-	size = (int)((winding_t *)0)->points[points];
+	size = (int)&((winding_t *)0)->points[points];
 	w = (winding_t*) malloc (size);
 	memset (w, 0, size);
 	w->maxpoints = points;
@@ -202,7 +195,7 @@ winding_t *Winding_Clone(winding_t *w)
 	int			size;
 	winding_t	*c;
 	
-	size = (int)((winding_t *)0)->points[w->numpoints];
+	size = (int)&((winding_t *)0)->points[w->numpoints];
 	c = (winding_t*)qmalloc (size);
 	memcpy (c, w, size);
 	return c;
@@ -240,7 +233,7 @@ void Winding_RemovePoint(winding_t *w, int point)
 
 	if (point < w->numpoints-1)
 	{
-		memmove(&w->points[point], &w->points[point+1], (int)((winding_t *)0)->points[w->numpoints - point - 1]);
+		memmove(&w->points[point], &w->points[point+1], (int)&((winding_t *)0)->points[w->numpoints - point - 1]);
 	}
 	w->numpoints--;
 }
@@ -291,7 +284,7 @@ int Winding_IsTiny (winding_t *w)
 {
 	int		i, j;
 	vec_t	len;
-	vec3_t	delta;
+	edVec3_c delta;
 	int		edges;
 
 	edges = 0;
@@ -299,7 +292,7 @@ int Winding_IsTiny (winding_t *w)
 	{
 		j = i == w->numpoints - 1 ? 0 : i+1;
 		VectorSubtract (w->points[j], w->points[i], delta);
-		len = VectorLength (delta);
+		len = delta.vectorLength();
 		if (len > EDGE_LENGTH)
 		{
 			if (++edges == 3)
@@ -335,7 +328,7 @@ Winding_PlanesConcave
 #define WCONVEX_EPSILON		0.2
 
 int Winding_PlanesConcave(winding_t *w1, winding_t *w2,
-							 vec3_t normal1, vec3_t normal2,
+							 const edVec3_c &normal1, const edVec3_c &normal2,
 							 float dist1, float dist2)
 {
 	int i;
@@ -345,12 +338,14 @@ int Winding_PlanesConcave(winding_t *w1, winding_t *w2,
 	// check if one of the points of winding 1 is at the back of the plane of winding 2
 	for (i = 0; i < w1->numpoints; i++)
 	{
-		if (DotProduct(normal2, w1->points[i]) - dist2 > WCONVEX_EPSILON) return true;
+		if (normal2.dotProduct(w1->points[i]) - dist2 > WCONVEX_EPSILON)
+			return true;
 	}
 	// check if one of the points of winding 2 is at the back of the plane of winding 1
 	for (i = 0; i < w2->numpoints; i++)
 	{
-		if (DotProduct(normal1, w2->points[i]) - dist1 > WCONVEX_EPSILON) return true;
+		if (normal1.dotProduct(w2->points[i]) - dist1 > WCONVEX_EPSILON)
+			return true;
 	}
 
 	return false;
@@ -383,7 +378,7 @@ winding_t *Winding_Clip (winding_t *in, const edPlane_c &split, bool keepon)
 	// determine sides for each point
 	for (i=0 ; i<in->numpoints ; i++)
 	{
-		dot = DotProduct (in->points[i], split.normal);
+		dot = in->points[i].dotProduct(split.normal);
 		dot -= split.dist;
 		dists[i] = dot;
 		if (dot > ON_EPSILON)
@@ -487,7 +482,7 @@ void Winding_SplitEpsilon (winding_t *in, vec3_t normal, double dist,
 	// determine sides for each point
 	for (i = 0; i < in->numpoints; i++)
 	{
-		dot = DotProduct (in->points[i], normal);
+		dot = in->points[i].dotProduct(normal);
 		dot -= dist;
 		dists[i] = dot;
 		if (dot > epsilon)
@@ -596,7 +591,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	vec_t		*p1, *p2, *p3, *p4, *back;
 	winding_t	*newf;
 	int			i, j, k, l;
-	vec3_t		normal, delta;
+	edVec3_c		normal, delta;
 	vec_t		dot;
 	bool	keep1, keep2;
 	
@@ -638,24 +633,24 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	//
 	back = f1->points[(i+f1->numpoints-1)%f1->numpoints];
 	VectorSubtract (p1, back, delta);
-	CrossProduct (planenormal, delta, normal);
-	VectorNormalize (normal);
-	
+	normal.crossProduct (planenormal, delta);
+	normal.normalize();
+
 	back = f2->points[(j+2)%f2->numpoints];
 	VectorSubtract (back, p1, delta);
-	dot = DotProduct (delta, normal);
+	dot = delta.dotProduct(normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
 	keep1 = (bool)(dot < -CONTINUOUS_EPSILON);
 	
 	back = f1->points[(i+2)%f1->numpoints];
 	VectorSubtract (back, p2, delta);
-	CrossProduct (planenormal, delta, normal);
-	VectorNormalize (normal);
+	normal.crossProduct (planenormal, delta);
+	normal.normalize();
 
 	back = f2->points[(j+f2->numpoints-1)%f2->numpoints];
 	VectorSubtract (back, p2, delta);
-	dot = DotProduct (delta, normal);
+	dot = delta.dotProduct(normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
 	keep2 = (bool)(dot < -CONTINUOUS_EPSILON);
@@ -692,21 +687,22 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 Winding_Plane
 ============
 */
-void Winding_Plane (winding_t *w, vec3_t normal, double *dist)
+void Winding_Plane (winding_t *w, class edVec3_c &normal, double *dist)
 {
-	vec3_t v1, v2;
+	edVec3_c v1, v2;
 	int i;
 
 	//find two vectors each longer than 0.5 units
 	for (i = 0; i < w->numpoints; i++)
 	{
-		VectorSubtract(w->points[(i+1) % w->numpoints], w->points[i], v1);
-		VectorSubtract(w->points[(i+2) % w->numpoints], w->points[i], v2);
-		if (VectorLength(v1) > 0.5 && VectorLength(v2) > 0.5) break;
+		v1 = w->points[(i+1) % w->numpoints].xyz - w->points[i].xyz;
+		v2 = w->points[(i+2) % w->numpoints].xyz - w->points[i].xyz;
+		if (v1.vectorLength() > 0.5 && v2.vectorLength() > 0.5)
+			break;
 	}
-	CrossProduct(v2, v1, normal);
-	VectorNormalize(normal);
-	*dist = DotProduct(w->points[0], normal);
+	normal.crossProduct(v2, v1);
+	normal.normalize();
+	*dist = normal.dotProduct(w->points[0]);
 }
 
 /*
@@ -717,16 +713,16 @@ Winding_Area
 float Winding_Area (winding_t *w)
 {
 	int		i;
-	vec3_t	d1, d2, cross;
+	edVec3_c	d1, d2, cross;
 	float	total;
 
 	total = 0;
 	for (i=2 ; i<w->numpoints ; i++)
 	{
-		VectorSubtract (w->points[i-1], w->points[0], d1);
-		VectorSubtract (w->points[i], w->points[0], d2);
-		CrossProduct (d1, d2, cross);
-		total += 0.5 * VectorLength ( cross );
+		d1 = w->points[i-1].xyz -w->points[0].xyz;
+		d2 = w->points[i].xyz - w->points[0].xyz;
+		cross.crossProduct (d1, d2);
+		total += 0.5 * cross.vectorLength();
 	}
 	return total;
 }
@@ -763,19 +759,20 @@ void Winding_Bounds (winding_t *w, vec3_t mins, vec3_t maxs)
 Winding_PointInside
 =================
 */
-int Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point, float epsilon)
+int Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3_c &point, float epsilon)
 {
 	int i;
-	vec3_t dir, normal, pointvec;
+	edVec3_c dir, normal, pointvec;
 
 	for (i = 0; i < w->numpoints; i++)
 	{
-		VectorSubtract(w->points[(i+1) % w->numpoints], w->points[i], dir);
-		VectorSubtract(point, w->points[i], pointvec);
+		dir = w->points[(i+1) % w->numpoints].getXYZ() - w->points[i].getXYZ();
+		pointvec = point - w->points[i].getXYZ();
 		//
-		CrossProduct(dir, plane.normal, normal);
+		normal.crossProduct(dir, plane.normal);
 		//
-		if (DotProduct(pointvec, normal) < -epsilon) return false;
+		if (pointvec.dotProduct(normal) < -epsilon)
+			return false;
 	}
 	return true;
 }
@@ -785,13 +782,13 @@ int Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point
 Winding_VectorIntersect
 =================
 */
-int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, vec3_t p1, vec3_t p2, float epsilon)
+int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon)
 {
 	float front, back, frac;
 	vec3_t mid;
 
-	front = DotProduct(p1, plane.normal) - plane.dist;
-	back = DotProduct(p2, plane.normal) - plane.dist;
+	front = p1.dotProduct(plane.normal) - plane.dist;
+	back = p2.dotProduct(plane.normal) - plane.dist;
 	//if both points at the same side of the plane
 	if (front < -epsilon && back < -epsilon) return false;
 	if (front > epsilon && back > epsilon) return false;

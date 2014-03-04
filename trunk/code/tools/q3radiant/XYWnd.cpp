@@ -463,7 +463,7 @@ void CXYWnd::AddPointPoint(UINT nFlags, vec3_t* pVec)
 {
   g_PointPoints[g_nPointCount].Set(true);
   //g_PointPoints[g_nPointCount].m_ptScreen = point;
-  _VectorCopy(*pVec, g_PointPoints[g_nPointCount]);
+  g_PointPoints[g_nPointCount] = *pVec;
   g_PointPoints[g_nPointCount].SetPointPtr(pVec);
   g_nPointCount++;
   Sys_UpdateWindows(XY | W_CAMERA_IFON);
@@ -1705,7 +1705,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
     int nAngle = (m_nViewType == XY) ? YAW : PITCH;
     if (point[n1] || point[n2])
     {
-		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = 180/Q_PI*atan2 (point[n1], point[n2]);
+		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG(atan2 (point[n1], point[n2]));
 		  Sys_UpdateWindows (W_CAMERA_IFON|W_XY_OVERLAY);
     }
 	}
@@ -1944,7 +1944,7 @@ void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
     int nAngle = (m_nViewType == XY) ? YAW : PITCH;
     if (point[n1] || point[n2])
     {
-		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = 180/Q_PI*atan2 (point[n1], point[n2]);
+		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG(atan2 (point[n1], point[n2]));
 		  Sys_UpdateWindows (W_CAMERA_IFON|W_XY_OVERLAY);
     }
 		return;
@@ -2276,19 +2276,19 @@ void CXYWnd::DrawCameraIcon()
   {
     x = g_pParentWnd->GetCamera()->Camera().origin[0];
 		y = g_pParentWnd->GetCamera()->Camera().origin[1];
-	  a = g_pParentWnd->GetCamera()->Camera().angles[YAW]/180*Q_PI;
+	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[YAW]);;
   }
   else if (m_nViewType == YZ)
   {
 	  x = g_pParentWnd->GetCamera()->Camera().origin[1];
 		y = g_pParentWnd->GetCamera()->Camera().origin[2];
-	  a = g_pParentWnd->GetCamera()->Camera().angles[PITCH]/180*Q_PI;
+	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
   }
   else
   {
 	  x = g_pParentWnd->GetCamera()->Camera().origin[0];
 		y = g_pParentWnd->GetCamera()->Camera().origin[2];
-	  a = g_pParentWnd->GetCamera()->Camera().angles[PITCH]/180*Q_PI;
+	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
   }
 
 	qglColor3f (0.0, 0.0, 1.0);
@@ -2302,9 +2302,9 @@ void CXYWnd::DrawCameraIcon()
 	qglEnd ();
 	
 	qglBegin(GL_LINE_STRIP);
-	qglVertex3f (x+48*cos(a+Q_PI/4), y+48*sin(a+Q_PI/4), 0);
+	qglVertex3f (x+48*cos(a+M_PI/4), y+48*sin(a+M_PI/4), 0);
 	qglVertex3f (x, y, 0);
-	qglVertex3f (x+48*cos(a-Q_PI/4), y+48*sin(a-Q_PI/4), 0);
+	qglVertex3f (x+48*cos(a-M_PI/4), y+48*sin(a-M_PI/4), 0);
 	qglEnd ();
 
 #if 0
@@ -2501,7 +2501,7 @@ void DrawPathLines (void)
 	entity_t *se, *te;
 	brush_t	*sb, *tb;
 	char	*psz;
-	vec3_t	dir, s1, s2;
+	edVec3_c	dir, s1, s2;
 	vec_t	len, f;
 	int		arrows;
 	int			num_entities;
@@ -2550,7 +2550,7 @@ void DrawPathLines (void)
 				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
 
 			VectorSubtract (mid1, mid, dir);
-			len = VectorNormalize (dir);
+			len = dir.normalize();
 			s1[0] = -dir[1]*8 + dir[0]*8;
 			s2[0] = dir[1]*8 + dir[0]*8;
 			s1[1] = dir[0]*8 + dir[1]*8;

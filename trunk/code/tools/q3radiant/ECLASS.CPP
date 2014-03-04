@@ -629,9 +629,9 @@ bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
       vMax[2] += 1;
     }
 
-    vec3_t vTemp;
+    edVec3_c vTemp;
     VectorAdd(vMin, vMax, vTemp);
-    VectorScale(vTemp, 0.5, vTemp);
+    vTemp *= 0.5;
     model = e->model;
     while (model != NULL)
     {

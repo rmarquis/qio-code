@@ -240,11 +240,11 @@ void SelectVertex (int p1)
 #endif
 }
 
-void SelectEdgeByRay (vec3_t org, vec3_t dir)
+void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
 {
 	int		i, j, besti;
 	float	d, bestd;
-	vec3_t	mid, temp;
+	edVec3_c	mid, temp;
 	pedge_t	*e;
 
 	// find the edge closest to the ray
@@ -256,11 +256,11 @@ void SelectEdgeByRay (vec3_t org, vec3_t dir)
 		for (j=0 ; j<3 ; j++)
 			mid[j] = 0.5*(g_qeglobals.d_points[g_qeglobals.d_edges[i].p1][j] + g_qeglobals.d_points[g_qeglobals.d_edges[i].p2][j]);
 
-		VectorSubtract (mid, org, temp);
-		d = DotProduct (temp, dir);
+		temp = mid - org;
+		d = temp.dotProduct(dir);
 		VectorMA (org, d, dir, temp);
-		VectorSubtract (mid, temp, temp);
-		d = VectorLength (temp);
+		temp = mid - temp;
+		d = temp.vectorLength();
 		if (d < bestd)
 		{
 			bestd = d;
@@ -293,11 +293,11 @@ void SelectEdgeByRay (vec3_t org, vec3_t dir)
 
 }
 
-void SelectVertexByRay (vec3_t org, vec3_t dir)
+void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
 {
 	int		i, besti;
 	float	d, bestd;
-	vec3_t	temp;
+	edVec3_c	temp;
 
 	// find the point closest to the ray
 	besti = -1;
@@ -305,11 +305,11 @@ void SelectVertexByRay (vec3_t org, vec3_t dir)
 
 	for (i=0 ; i<g_qeglobals.d_numpoints ; i++)
 	{
-		VectorSubtract (g_qeglobals.d_points[i], org, temp);
-		d = DotProduct (temp, dir);
+		temp = g_qeglobals.d_points[i] - org;
+		d = temp.dotProduct(dir);
 		VectorMA (org, d, dir, temp);
-		VectorSubtract (g_qeglobals.d_points[i], temp, temp);
-		d = VectorLength (temp);
+		temp = g_qeglobals.d_points[i] - temp;
+		d = temp.vectorLength();
 		if (d < bestd)
 		{
 			bestd = d;
@@ -330,11 +330,11 @@ void SelectVertexByRay (vec3_t org, vec3_t dir)
 
 
 extern void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull);
-void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons)
+void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
 {
 	int		i, besti;
 	float	d, bestd;
-	vec3_t	temp;
+	edVec3_c	temp;
 
 	// find the point closest to the ray
 	besti = -1;
@@ -342,11 +342,11 @@ void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons)
 
 	for (i=0 ; i<g_qeglobals.d_numpoints ; i++)
 	{
-		VectorSubtract (g_qeglobals.d_points[i], org, temp);
-		d = DotProduct (temp, dir);
+		temp = g_qeglobals.d_points[i] - org;
+		d = temp.dotProduct(dir);
 		VectorMA (org, d, dir, temp);
-		VectorSubtract (g_qeglobals.d_points[i], temp, temp);
-		d = VectorLength (temp);
+		temp = g_qeglobals.d_points[i] - temp;
+		d = temp.vectorLength();
 		if (d <= bestd)
 		{
 			bestd = d;

@@ -63,7 +63,7 @@ int				Terrain_PointInMoveList( terrainVert_t *pf );
 void			Terrain_AddPoint( terrainMesh_t *p, terrainVert_t *v );
 void			Terrain_RemovePointFromMoveList( terrainVert_t *v );
 void			Terrain_SelectAreaPoints( void );
-bool			RayTriangleIntersect( vec3_t orig, vec3_t dir, vec3_t vert1, vec3_t vert2, vec3_t vert3, float *t );
+bool			RayTriangleIntersect(const edVec3_c &orig, const edVec3_c &dir, const edVec3_c &vert1, const edVec3_c &vert2, const edVec3_c &vert3, float *t );
 terrainFace_t	*Terrain_Ray( vec3_t origin, vec3_t dir, brush_t *b, float *dist );
 void			Select_TerrainFacesFromBrush( brush_t *brush );
 void			SetTerrainTexdef( brush_t *brush, terrainFace_t *vert, texdef_t *texdef );

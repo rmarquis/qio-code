@@ -83,8 +83,8 @@ protected:
   CPoint m_ptCursor;
   CPoint m_ptLastCursor;
   face_t* m_pSide_select;
-  vec3_t m_vCull1;
-  vec3_t m_vCull2;
+  edVec3_c m_vCull1;
+  edVec3_c m_vCull2;
   int m_nCullv1[3];
   int m_nCullv2[3];
   bool m_bClipMode;

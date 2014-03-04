@@ -246,11 +246,11 @@ int	neighbors[8][2] = {
 void Patch_MeshNormals(patchMesh_t *in ) 
 {
 	int		i, j, k, dist;
-	vec3_t	normal;
+	edVec3_c	normal;
 	vec3_t	sum;
 	int		count;
 	vec3_t	base;
-	vec3_t	delta;
+	edVec3_c	delta;
 	int		x, y;
 	drawVert_t	*dv;
 	vec3_t		around[8], temp;
@@ -262,9 +262,8 @@ void Patch_MeshNormals(patchMesh_t *in )
 	for ( i = 0 ; i < in->height ; i++ ) 
   {
 
-		VectorSubtract( in->ctrl[0][i].xyz, 
-			              in->ctrl[in->width-1][i].xyz, delta );
-		len = VectorLength( delta );
+		delta = in->ctrl[0][i].xyz - in->ctrl[in->width-1][i].xyz;
+		len = delta.vectorLength();
 		if ( len > 1.0 ) 
     {
 			break;
@@ -278,9 +277,8 @@ void Patch_MeshNormals(patchMesh_t *in )
 	wrapHeight = false;
 	for ( i = 0 ; i < in->width ; i++ ) 
   {
-		VectorSubtract( in->ctrl[i][0].xyz, 
-			              in->ctrl[i][in->height-1].xyz, delta );
-		len = VectorLength( delta );
+		delta = in->ctrl[i][0].xyz - in->ctrl[i][in->height-1].xyz;
+		len = delta.vectorLength();
 		if ( len > 1.0 ) 
     {
 			break;
@@ -358,7 +356,7 @@ void Patch_MeshNormals(patchMesh_t *in )
         {
 					continue;	// didn't get two points
 				}
-				CrossProduct( around[(k+1)&7], around[k], normal );
+				normal.crossProduct( around[(k+1)&7], around[k] );
 				if ( __VectorNormalize( normal, normal ) == 0 ) 
         {
 					continue;
@@ -385,7 +383,7 @@ void Patch_MeshNormals(patchMesh_t *in )
 Patch_CalcBounds
 ==================
 */
-void Patch_CalcBounds(patchMesh_t *p, vec3_t& vMin, vec3_t& vMax)
+void Patch_CalcBounds(patchMesh_t *p, edVec3_c& vMin, edVec3_c& vMax)
 {
   vMin[0] = vMin[1] = vMin[2] = 99999;
   vMax[0] = vMax[1] = vMax[2] = -99999;
@@ -523,7 +521,7 @@ void Brush_RebuildBrush(brush_t *b, vec3_t vMins, vec3_t vMaxs)
 
 void WINAPI Patch_Rebuild(patchMesh_t *p)
 {
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
   Patch_CalcBounds(p, vMin, vMax);
   Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
   p->bDirty = true;
@@ -538,7 +536,7 @@ AddBrushForPatch
 brush_t* AddBrushForPatch(patchMesh_t *pm, bool bLinkToWorld )
 {
   // find the farthest points in x,y,z
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
   Patch_CalcBounds(pm, vMin, vMax);
 
   for (int j = 0; j < 3; j++)
@@ -601,9 +599,9 @@ float Patch_Width(patchMesh_t *p)
   float f = 0;
   for (int i = 0; i < p->width-1; i++)
   {
-    vec3_t vTemp;
-    VectorSubtract(p->ctrl[i][0].xyz, p->ctrl[i+1][0].xyz, vTemp);
-    f += VectorLength(vTemp);
+    edVec3_c vTemp;
+    vTemp = p->ctrl[i][0].xyz - p->ctrl[i+1][0].xyz;
+    f += vTemp.vectorLength();
   }
   return f;
 }
@@ -613,9 +611,9 @@ float Patch_WidthDistanceTo(patchMesh_t *p, int j)
   float f = 0;
   for (int i = 0; i < j; i++)
   {
-    vec3_t vTemp;
-    VectorSubtract(p->ctrl[i][0].xyz, p->ctrl[i+1][0].xyz, vTemp);
-    f += VectorLength(vTemp);
+    edVec3_c vTemp;
+    vTemp = p->ctrl[i][0].xyz - p->ctrl[i+1][0].xyz;
+    f += vTemp.vectorLength();
   }
   return f;
 }
@@ -632,9 +630,9 @@ float Patch_Height(patchMesh_t *p)
   float f = 0;
   for (int i = 0; i < p->height-1; i++)
   {
-    vec3_t vTemp;
-    VectorSubtract(p->ctrl[0][i].xyz, p->ctrl[0][i+1].xyz, vTemp);
-    f += VectorLength(vTemp);
+    edVec3_c vTemp;
+    vTemp = p->ctrl[0][i].xyz - p->ctrl[0][i+1].xyz;
+    f += vTemp.vectorLength();
   }
   return f;
 }
@@ -644,9 +642,9 @@ float Patch_HeightDistanceTo(patchMesh_t *p, int j)
   float f = 0;
   for (int i = 0; i < j; i++)
   {
-    vec3_t vTemp;
-    VectorSubtract(p->ctrl[0][i].xyz, p->ctrl[0][i+1].xyz, vTemp);
-    f += VectorLength(vTemp);
+    edVec3_c vTemp;
+    vTemp = p->ctrl[0][i].xyz - p->ctrl[0][i+1].xyz;
+    f += vTemp.vectorLength();
   }
   return f;
 }
@@ -817,7 +815,8 @@ face_t* nextFace(patchMesh_t *p)
 }
 
 
-extern void EmitTextureCoordinates ( float *xyzst, qtexture_t *q, face_t *f);
+///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, qtexture_t *q, face_t *f);
+
 void Patch_CapTexture(patchMesh_t *p, bool bFaceCycle = false)
 {
   Patch_MeshNormals(p);
@@ -846,7 +845,7 @@ void Patch_CapTexture(patchMesh_t *p, bool bFaceCycle = false)
       {
         VectorCopy(p->ctrl[i][j].normal, f->plane.normal);
       }
-		  EmitTextureCoordinates( p->ctrl[i][j].xyz, f->d_texture, f);
+		  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
     }
   }
   VectorCopy(vSave, f->plane.normal);
@@ -984,7 +983,7 @@ brush_t* CapSpecial(patchMesh_t *pParent, int nType, bool bFirst)
 {
   brush_t *b;
   patchMesh_t *p;
-  vec3_t vMin, vMax, vTemp;
+  edVec3_c vMin, vMax, vTemp;
   int i, j;
 
   if (nType == CCapDialog::IENDCAP)
@@ -1029,23 +1028,23 @@ brush_t* CapSpecial(patchMesh_t *pParent, int nType, bool bFirst)
   }
   else if (nType == CCapDialog::BEVEL)
   {
-    vec3_t p1, p2, p3, p4, temp, dir;
+    edVec3_c p1, p2, p3, p4, temp, dir;
 
     VectorCopy(pParent->ctrl[0][nIndex].xyz, p3);
     VectorCopy(pParent->ctrl[1][nIndex].xyz, p1);
     VectorCopy(pParent->ctrl[2][nIndex].xyz, p2);
 
     VectorSubtract(p3, p2, dir);
-    VectorNormalize(dir);
+    dir.normalize();
     VectorSubtract(p1, p2, temp);
-    vec_t dist = _DotProduct(temp, dir);
+    vec_t dist = temp.dotProduct(dir);
 
-    VectorScale(dir, dist, temp);
+	temp = dir * dist;
 
-    VectorAdd(p2, temp, temp);
+	temp += p2;
 
     VectorSubtract(temp, p1, temp);
-    VectorScale(temp, 2, temp);
+	temp *= 2.0;
     VectorAdd(p1, temp, p4);
 
     VectorCopy(p4, p->ctrl[0][0].xyz);
@@ -1062,7 +1061,7 @@ brush_t* CapSpecial(patchMesh_t *pParent, int nType, bool bFirst)
   else if (nType == CCapDialog::ENDCAP)
   {
     VectorAdd(pParent->ctrl[4][nIndex].xyz, pParent->ctrl[0][nIndex].xyz, vTemp);
-    VectorScale(vTemp, 0.5, vTemp);
+    vTemp *= 0.5;
     VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
                        VectorCopy(vTemp, p->ctrl[1][0].xyz);
     VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[2][0].xyz);
@@ -1219,7 +1218,7 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
 {
   brush_t *b, *b2;
   patchMesh_t *p, *p2, *pParent;
-  vec3_t vTemp, vMin, vMax;
+  edVec3_c vTemp, vMin, vMax;
   int i, j;
 
   pParent = brushParent->pPatch;
@@ -2055,7 +2054,7 @@ void Patch_UpdateSelected(vec3_t vMove)
 		    }
       }
 	    
-      vec3_t vMin, vMax;
+      edVec3_c vMin, vMax;
       Patch_CalcBounds(p, vMin, vMax);
       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
     }
@@ -2737,7 +2736,7 @@ void Patch_Move(patchMesh_t *pm, const vec3_t vMove, bool bRebuild)
   }
   if (bRebuild)
   {
-    vec3_t vMin, vMax;
+    edVec3_c vMin, vMax;
     Patch_CalcBounds(pm, vMin, vMax);
     //Brush_RebuildBrush(patchMeshes[n].pSymbiot, vMin, vMax);
   }
@@ -2752,7 +2751,7 @@ Patch_ApplyMatrix
 */
 void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap)
 {
-  vec3_t vTemp;
+  edVec3_c vTemp;
 
   for (int w = 0; w < p->width; w++)
   {
@@ -2764,7 +2763,7 @@ void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatri
 			VectorSubtract (p->ctrl[w][h].xyz, vOrigin, vTemp);
 			for (int j = 0; j < 3; j++)
       {
-        p->ctrl[w][h].xyz[j] = DotProduct(vTemp, vMatrix[j]) + vOrigin[j];
+        p->ctrl[w][h].xyz[j] = vTemp.dotProduct(vMatrix[j]) + vOrigin[j];
         if (bSnap)
         {
           p->ctrl[w][h].xyz[j] = floor(p->ctrl[w][h].xyz[j] + 0.5);
@@ -2772,7 +2771,7 @@ void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatri
       }
     }
   }
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
   Patch_CalcBounds(p, vMin, vMax);
   Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
 }
@@ -2914,7 +2913,7 @@ void Patch_Scale(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vAmt, bool b
   }
   if (bRebuild)
   {
-    vec3_t vMin, vMax;
+    edVec3_c vMin, vMax;
     Patch_CalcBounds(p, vMin, vMax);
     Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
   }
@@ -2967,7 +2966,7 @@ Patch_DragScale
 */
 bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
 {
-  vec3_t vMin, vMax, vScale, vTemp, vMid;
+  edVec3_c vMin, vMax, vScale, vTemp, vMid;
   int i;
 
   Patch_CalcBounds(p, vMin, vMax);
@@ -3007,9 +3006,9 @@ bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
   
   VectorSubtract(vMax, vMin, vMid);
 
-  VectorSubtract(vMid, vTemp, vTemp);
+  vTemp = vMid - vTemp;
 
-  VectorScale(vTemp, 0.5, vTemp);
+  vTemp *= 0.5;
 
   // abs of both should always be equal
   if (!VectorCompare(vMove, vAmt))
@@ -3033,7 +3032,7 @@ Patch_AddRow
 */
 void Patch_AddRow(patchMesh_t *p)
 {
-  vec3_t vMin, vMax, vTemp;
+  edVec3_c vMin, vMax, vTemp;
   int i, j;
 
 
@@ -3458,7 +3457,7 @@ void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag)
         }
       }
       bUpdate = true;
-      vec3_t vMin, vMax;
+      edVec3_c vMin, vMax;
       patchMesh_t *p = pb->pPatch;
       Patch_CalcBounds(p, vMin, vMax);
       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
@@ -3729,7 +3728,7 @@ Patch_RotateTexture
 */
 void Patch_RotateTexture(patchMesh_t *p, float fAngle)
 {
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
   Patch_CalcBounds(p, vMin, vMax);
   p->bDirty = true;
   for (int w = 0; w < p->width; w++)
@@ -3741,8 +3740,8 @@ void Patch_RotateTexture(patchMesh_t *p, float fAngle)
 
       float x = p->ctrl[w][h].st[0];
       float y = p->ctrl[w][h].st[1];
-      p->ctrl[w][h].st[0] = x * cos(fAngle * Q_PI / 180) - y * sin(fAngle * Q_PI / 180);
-      p->ctrl[w][h].st[1] = y * cos(fAngle * Q_PI / 180) + x * sin(fAngle * Q_PI / 180);
+      p->ctrl[w][h].st[0] = x * cos(DEG2RAD(fAngle)) - y * sin(DEG2RAD(fAngle));
+      p->ctrl[w][h].st[1] = y * cos(DEG2RAD(fAngle)) + x * sin(DEG2RAD(fAngle));
     }
   }
 }
@@ -4565,7 +4564,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
   int i, j, h, w;
   brush_t *b;
   patchMesh_t *pSeam;
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
   CPtrArray brushes;
 
   nAmount = -nAmount;
@@ -4611,7 +4610,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             VectorCopy(p->ctrl[0][i].xyz, pSeam->ctrl[0][i].xyz);
             VectorCopy(pNew->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz);
             VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
-            VectorScale(pSeam->ctrl[1][i].xyz, 0.5, pSeam->ctrl[1][i].xyz);
+            pSeam->ctrl[1][i].xyz *= 0.5;
           }
 
 
@@ -4631,7 +4630,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             VectorCopy(p->ctrl[w][i].xyz, pSeam->ctrl[0][i].xyz);
             VectorCopy(pNew->ctrl[w][i].xyz, pSeam->ctrl[2][i].xyz);
             VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
-            VectorScale(pSeam->ctrl[1][i].xyz, 0.5, pSeam->ctrl[1][i].xyz);
+            pSeam->ctrl[1][i].xyz *= 0.5;
           }
           Patch_CalcBounds(pSeam, vMin, vMax);
           Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
@@ -4650,7 +4649,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             VectorCopy(p->ctrl[i][0].xyz, pSeam->ctrl[i][0].xyz);
             VectorCopy(pNew->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz);
             VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
-            VectorScale(pSeam->ctrl[i][1].xyz, 0.5, pSeam->ctrl[i][1].xyz);
+            pSeam->ctrl[i][1].xyz *= 0.5;
           }
 
 
@@ -4670,7 +4669,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             VectorCopy(p->ctrl[i][h].xyz, pSeam->ctrl[i][0].xyz);
             VectorCopy(pNew->ctrl[i][h].xyz, pSeam->ctrl[i][2].xyz);
             VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
-            VectorScale(pSeam->ctrl[i][1].xyz, 0.5, pSeam->ctrl[i][1].xyz);
+            pSeam->ctrl[i][1].xyz *= 0.5;
           }
           Patch_CalcBounds(pSeam, vMin, vMax);
           Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
@@ -4884,7 +4883,7 @@ void Select_SnapToGrid()
         }
       }
 #endif
-      vec3_t vMin, vMax;
+      edVec3_c vMin, vMax;
       Patch_CalcBounds(p, vMin, vMax);
       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
     }

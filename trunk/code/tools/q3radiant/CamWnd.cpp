@@ -358,8 +358,8 @@ void CCamWnd::Cam_BuildMatrix()
 	float	matrix[4][4];
 	int		i;
 
-	xa = m_Camera.angles[0]/180*Q_PI;
-	ya = m_Camera.angles[1]/180*Q_PI;
+	xa = m_Camera.angles[0]/180*M_PI;
+	ya = m_Camera.angles[1]/180*M_PI;
 
 	// the movement matrix is kept 2d
 
@@ -377,9 +377,9 @@ void CCamWnd::Cam_BuildMatrix()
 		m_Camera.vpn[i] = matrix[i][2];
 	}
 
-	VectorNormalize (m_Camera.vright);
-	VectorNormalize (m_Camera.vup);
-	VectorNormalize (m_Camera.vpn);
+	m_Camera.vright.normalize();
+	m_Camera.vup.normalize();
+	m_Camera.vpn.normalize();
 }
 
 
@@ -518,7 +518,7 @@ void CCamWnd::Cam_MouseControl (float dtime)
 
 void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
 {
-	vec3_t		dir;
+	edVec3_c		dir;
 	float		f, r, u;
 	int			i;
 
@@ -531,7 +531,7 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
 
 	for (i=0 ; i<3 ; i++)
 		dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
-	VectorNormalize (dir);
+	dir.normalize();
 
 	GetCursorPos(&m_ptCursor);
 
@@ -586,7 +586,7 @@ void CCamWnd::Cam_MouseMoved (int x, int y, int buttons)
 	m_nCambuttonstate = buttons;
 	if (!buttons) {
 		if ( ( g_qeglobals.d_select_mode == sel_terrainpoint ) || ( g_qeglobals.d_select_mode == sel_terraintexture ) ) {
-			vec3_t		dir;
+			edVec3_c		dir;
 			float		f, r, u;
 			int			i;
 
@@ -599,7 +599,7 @@ void CCamWnd::Cam_MouseMoved (int x, int y, int buttons)
 
 			for (i=0 ; i<3 ; i++)
 				dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
-			VectorNormalize (dir);
+			dir.normalize();
 
 			m_ptButton.x = x;
 			m_ptButton.y = y;
@@ -635,8 +635,8 @@ void CCamWnd::InitCull()
 {
 	int		i;
 
-	VectorSubtract (m_Camera.vpn, m_Camera.vright, m_vCull1);
-	VectorAdd (m_Camera.vpn, m_Camera.vright, m_vCull2);
+	m_vCull1 = m_Camera.vpn - m_Camera.vright;
+	m_vCull2 = m_Camera.vpn + m_Camera.vright;
 
 	for (i=0 ; i<3 ; i++)
 	{
@@ -654,7 +654,7 @@ void CCamWnd::InitCull()
 bool CCamWnd::CullBrush (brush_t *b)
 {
 	int		i;
-	vec3_t	point;
+	edVec3_c	point;
 	float	d;
 
 	if (g_PrefsDlg.m_bCubicClipping)
@@ -682,14 +682,14 @@ bool CCamWnd::CullBrush (brush_t *b)
 	for (i=0 ; i<3 ; i++)
 		point[i] = b->mins[m_nCullv1[i]] - m_Camera.origin[i];
 
-	d = DotProduct (point, m_vCull1);
+	d = point.dotProduct(m_vCull1);
 	if (d < -1)
 		return true;
 
 	for (i=0 ; i<3 ; i++)
 		point[i] = b->mins[m_nCullv2[i]] - m_Camera.origin[i];
 
-	d = DotProduct (point, m_vCull2);
+	d = point.dotProduct(m_vCull2);
 	if (d < -1)
 		return true;
 
@@ -787,7 +787,7 @@ void CCamWnd::Cam_Draw()
 	qglLoadIdentity ();
 	
 	screenaspect = (float)m_Camera.width / m_Camera.height;
-	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/Q_PI;
+	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/M_PI;
 	qgluPerspective (yfov,  screenaspect,  2,  8192);
 	
 	qglRotatef (-90,  1, 0, 0);	    // put Z going up
@@ -1128,8 +1128,8 @@ void CCamWnd::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 // brush primitive texture shifting, using camera view to select translations :
 void CCamWnd::ShiftTexture_BrushPrimit(face_t *f, int x, int y)
 {
-	vec3_t texS,texT;
-	vec3_t viewX,viewY;
+	edVec3_c texS,texT;
+	edVec3_c viewX,viewY;
 	int XS,XT,YS,YT;
 	int outS,outT;
 #ifdef _DEBUG
@@ -1142,8 +1142,8 @@ void CCamWnd::ShiftTexture_BrushPrimit(face_t *f, int x, int y)
 	// compute face axis base
 	ComputeAxisBase( f->plane.normal, texS, texT );
 	// compute camera view vectors
-	VectorCopy( m_Camera.vup, viewY );
-	VectorCopy( m_Camera.vright, viewX );
+	viewY = m_Camera.vup;
+	viewX = m_Camera.vright;
 	// compute best vectors
 	ComputeBest2DVector( viewX, texS, texT, XS, XT );
 	ComputeBest2DVector( viewY, texS, texT, YS, YT );

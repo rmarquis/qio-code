@@ -133,7 +133,7 @@ extern void HandlePopup(CWnd* pWindow, unsigned int uId);
 extern z_t z;
 extern void Select_Scale(float x, float y, float z);
 extern CString g_strProject;
-extern void TextureAxisFromPlane(const class edPlane_c &pln, vec3_t xv, vec3_t yv);
+extern void TextureAxisFromPlane(const class edPlane_c &pln, edVec3_c &xv, edVec3_c &yv);
 extern void VectorRotate (vec3_t va, vec3_t vb, vec3_t out);
 extern void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t vOrigin, vec3_t out);
 extern bool QE_SaveProject (const char* pProjectFile);

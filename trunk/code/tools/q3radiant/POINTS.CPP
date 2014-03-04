@@ -42,7 +42,7 @@ void Pointfile_Delete (void)
 // advance camera to next point
 void Pointfile_Next (void)
 {
-	vec3_t	dir;
+	edVec3_c	dir;
 
 	if (s_check_point >= s_num_points-2)
 	{
@@ -53,7 +53,7 @@ void Pointfile_Next (void)
 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
 	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
-	VectorNormalize (dir);
+	dir.normalize();
 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
 
@@ -63,7 +63,7 @@ void Pointfile_Next (void)
 // advance camera to previous point
 void Pointfile_Prev (void)
 {
-	vec3_t	dir;
+	edVec3_c	dir;
 
 	if ( s_check_point == 0)
 	{
@@ -74,7 +74,7 @@ void Pointfile_Prev (void)
 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
 	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
-	VectorNormalize (dir);
+	dir.normalize();
 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
 

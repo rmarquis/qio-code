@@ -49,7 +49,13 @@ public:
   void Reset(){ m_ptClip[0] = m_ptClip[1] = m_ptClip[2] = 0.0; m_bSet = false; m_pVec3 = NULL;};
   bool Set(){ return m_bSet; };
   void Set(bool b) { m_bSet = b; };
-  void UpdatePointPtr() { if (m_pVec3) VectorCopy(m_ptClip, *m_pVec3); };
+  void UpdatePointPtr() { 
+	  if (m_pVec3) {
+		  (*m_pVec3)[0] = m_ptClip[0];
+		  (*m_pVec3)[1] = m_ptClip[1];
+		  (*m_pVec3)[2] = m_ptClip[2];
+	  }
+  }
   void SetPointPtr(vec3_t* p) { m_pVec3 = p; };
   vec3_t m_ptClip;      // the 3d point
   vec3_t* m_pVec3;      // optional ptr for 3rd party updates
@@ -57,6 +63,11 @@ public:
   bool m_bSet;
   operator vec3_t&() {return m_ptClip;};
   operator vec3_t*() {return &m_ptClip;};
+  void operator = (const float *xyz) {
+	m_ptClip[0] = xyz[0];
+	m_ptClip[1] = xyz[1];
+	m_ptClip[2] = xyz[2];
+  }
 };
 
 class CXYWnd : public CWnd

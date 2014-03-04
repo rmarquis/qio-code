@@ -166,7 +166,7 @@ typedef struct
 	HWND      d_hwndGroup;
 	HWND      d_hwndMedia;
 	
-	vec3_t    d_points[MAX_POINTS];
+	edVec3_c  d_points[MAX_POINTS];
 	int       d_numpoints;
 	pedge_t   d_edges[MAX_EDGES];
 	int       d_numedges;
@@ -269,8 +269,8 @@ void CSG_Merge (void);
 //
 
 void SetupVertexSelection (void);
-void SelectEdgeByRay (vec3_t org, vec3_t dir);
-void SelectVertexByRay (vec3_t org, vec3_t dir);
+void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir);
+void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir);
 
 void ConnectEntities (void);
 
@@ -539,22 +539,22 @@ group_t* Group_ForName(const char *name);
 
 // Timo
 // new brush primitive stuff
-void ComputeAxisBase(vec3_t normal,vec3_t texS,vec3_t texT );
+void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT);
 void FaceToBrushPrimitFace(face_t *f);
 void EmitBrushPrimitTextureCoordinates(face_t *, winding_t *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
-void EmitTextureCoordinates ( float *xyzst, qtexture_t *q, face_t *f);
+void EmitTextureCoordinates ( class texturedVertex_c &out, qtexture_t *q, face_t *f);
 void BrushPrimit_Parse(brush_t *);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
 void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, qtexture_t *qtex1, brushprimit_texdef_t *texMat2, qtexture_t *qtex2 );
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_t *f, vec3_t delta);
+void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta);
 void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y );
 void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, vec3_t vOrigin );
 // used in CCamWnd::ShiftTexture_BrushPrimit
-void ComputeBest2DVector( vec3_t v, vec3_t X, vec3_t Y, int &x, int &y );
+void ComputeBest2DVector( const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y );
 
 
 //

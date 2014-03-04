@@ -30,12 +30,107 @@ typedef float vec_t;
 typedef vec_t vec3_t[3];
 typedef vec_t vec5_t[5];
 
+class edVec3_c {
+public:
+	union {
+		vec_t _v[3];
+		struct {
+			float x, y, z;
+		};
+	};
+public:
+	edVec3_c() {
+
+	}
+	edVec3_c(float a, float b, float c) {
+		_v[0] = a;
+		_v[1] = b;
+		_v[2] = c;
+	}
+	edVec3_c(const float *p) {
+		_v[0] = p[0];
+		_v[1] = p[1];
+		_v[2] = p[2];
+	}
+	void clear() {
+		x = y = z = 0.0f;
+	}
+	float vectorLength() const {
+		float length = 0.0f;
+		for (int i = 0; i < 3; i++)
+			length += _v[i]*_v[i];
+		length = sqrt (length);
+		return length;
+	}
+	float normalize() {
+		float length = 0.0f;
+		for (int i = 0; i < 3; i++)
+			length += _v[i]*_v[i];
+		length = sqrt (length);
+		if (length == 0)
+			return 0.0;
+		for (int i = 0; i < 3; i++)
+			_v[i] /= length;	
+		return length;
+	}
+	void crossProduct (const float *v1, const float *v2) {
+		_v[0] = v1[1]*v2[2] - v1[2]*v2[1];
+		_v[1] = v1[2]*v2[0] - v1[0]*v2[2];
+		_v[2] = v1[0]*v2[1] - v1[1]*v2[0];
+	}
+	float dotProduct(const float *x) const {
+		return (x[0]*_v[0]+x[1]*_v[1]+x[2]*_v[2]);
+	}
+	void operator *=(float f) {
+		x *= f;
+		y *= f;
+		z *= f;
+	}
+	void operator +=(const edVec3_c &other) {
+		x += other.x;
+		y += other.y;
+		z += other.z;
+	}
+	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
+		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
+	}
+	friend edVec3_c operator *(const edVec3_c &a, float b) {
+		return edVec3_c(a.x*b,a.y*b,a.z*b);
+	}
+	edVec3_c operator -(const edVec3_c &other) const {
+		return edVec3_c(x-other.x,y-other.y,z-other.z);
+	}
+	edVec3_c operator -() const {
+		return edVec3_c(-x,-y,-z);
+	}
+	void setupPolar(float radius, float theta, float phi)
+	{
+ 		_v[0]=float(radius * cos(theta) * cos(phi));
+		_v[1]=float(radius * sin(theta) * cos(phi));
+		_v[2]=float(radius * sin(phi));
+	}
+	inline float operator[](int index) const {
+		return _v[index];
+	}
+	inline float &operator[](int index) {
+		return _v[index];
+	}
+	inline operator const float *() const {
+		return _v;
+	}
+	inline operator float *() {
+		return _v;
+	}
+};
+
 #define	SIDE_FRONT		0
 #define	SIDE_ON			2
 #define	SIDE_BACK		1
 #define	SIDE_CROSS		-2
 
-#define	Q_PI	3.14159265358979323846
+#ifdef M_PI
+#define	M_PI	3.14159265358979323846
+#endif 
 
 extern vec3_t vec3_origin;
 
@@ -43,27 +138,17 @@ extern vec3_t vec3_origin;
 
 bool VectorCompare (vec3_t v1, vec3_t v2);
 
-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
+//#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
 #define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
 #define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
 #define VectorSet(v, a, b, c) {v[0]=a;v[1]=b;v[2]=c;}
 
 vec_t Q_rint (vec_t in);
-vec_t _DotProduct (vec3_t v1, vec3_t v2);
-void _VectorSubtract (vec3_t va, vec3_t vb, vec3_t out);
-void _VectorAdd (vec3_t va, vec3_t vb, vec3_t out);
-void _VectorCopy (vec3_t in, vec3_t out);
 
-float VectorLength(vec3_t v);
 
 void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc);
 
-void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross);
-vec_t VectorNormalize (vec3_t v);
-void VectorInverse (vec3_t v);
-void VectorScale (const vec3_t v, vec_t scale, vec3_t out);
-void VectorPolar(vec3_t v, float radius, float theta, float phi);
 void VectorSnap(vec3_t v);
 
 void _Vector53Copy (vec5_t in, vec3_t out);
@@ -79,8 +164,8 @@ void VectorToAngles( vec3_t vec, vec3_t angles );
 #define VectorClear(x) {x[0] = x[1] = x[2] = 0;}
 
 #define ZERO_EPSILON 1.0E-6
-#define RAD2DEG( a ) ( ( (a) * 180.0f ) / Q_PI )
-#define DEG2RAD( a ) ( ( (a) * Q_PI ) / 180.0f )
+#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0f )
 
 
 #endif

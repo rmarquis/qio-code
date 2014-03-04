@@ -613,17 +613,18 @@ void Terrain_CalcBounds( terrainMesh_t *p, vec3_t &vMin, vec3_t &vMax ) {
 }
 
 void CalcTriNormal( const vec3_t a, const vec3_t b, const vec3_t c, vec3_t o ) {
-	vec3_t a1;
-	vec3_t b1;
+	assert(0); // todo
+	//vec3_t a1;
+	//vec3_t b1;
 
-	VectorSubtract( b, a, a1 );
-	VectorNormalize( a1 );
+	//VectorSubtract( b, a, a1 );
+	//VectorNormalize( a1 );
 
-	VectorSubtract( c, a, b1 );
-	VectorNormalize( b1 );
+	//VectorSubtract( c, a, b1 );
+	//VectorNormalize( b1 );
 
-	CrossProduct( a1, b1, o );
-	VectorNormalize( o );
+	//CrossProduct( a1, b1, o );
+	//VectorNormalize( o );
 }
 
 inline void Terrain_CalcVertPos( terrainMesh_t *p, int x, int y, vec3_t vert ) {
@@ -638,61 +639,62 @@ inline void Terrain_CalcVertPos( terrainMesh_t *p, int x, int y, vec3_t vert ) {
 }
    
 void Terrain_CalcNormals( terrainMesh_t *p ) {
-	int				x;
-	int				y;
-	int				width;
-	int				num;
-	terrainVert_t	*vert;
-	vec3_t			norm;
-	terravert_t		a0;
-	terravert_t		a1;
-	terravert_t		a2;
-	terravert_t		b0;
-	terravert_t		b1;
-	terravert_t		b2;
-
-	p->bDirty = true;
-
-	num = p->height * p->width;
-	vert = p->heightmap;
-	//for( x = 0; x < num; x++, vert++ ) {
-	for( y = 0; y < p->height - 1; y++ ) {
-		for( x = 0; x < p->width - 1; x++, vert++ ) {
-			VectorClear( vert->normal );
-			Terrain_CalcVertPos( p, x, y, norm );
-		}
-	}
-
-	width = p->width;
-	vert = p->heightmap;
-   
-	for( y = 0; y < p->height - 1; y++ ) {
-		for( x = 0; x < width - 1; x++ ) {
-			Terrain_GetTriangles( p, x, y, &a0, &a1, &a2, &b0, &b1, &b2, NULL );
-
-			CalcTriNormal( a0.xyz, a2.xyz, a1.xyz, norm );
-
-			VectorAdd( vert[ a0.index ].normal, norm, vert[ a0.index ].normal );
-			VectorAdd( vert[ a1.index ].normal, norm, vert[ a1.index ].normal );
-			VectorAdd( vert[ a2.index ].normal, norm, vert[ a2.index ].normal );
-
-			CalcTriNormal( b0.xyz, b2.xyz, b1.xyz, norm );
-
-			VectorAdd( vert[ b0.index ].normal, norm, vert[ b0.index ].normal );
-			VectorAdd( vert[ b1.index ].normal, norm, vert[ b1.index ].normal );
-			VectorAdd( vert[ b2.index ].normal, norm, vert[ b2.index ].normal );
-		}
-	}
-   
-	for( x = 0; x < num; x++, vert++ ) {
-		VectorNormalize( vert->normal );
-		//FIXME
-		vert->normal[ 2 ] += 0.5;
-		VectorNormalize( vert->normal );
-		assert( vert->normal[ 2 ] > 0 );
-		VectorSet( vert->rgba, vert->normal[ 2 ], vert->normal[ 2 ], vert->normal[ 2 ] );
-		vert->rgba[ 3 ] = 1.0f;
-	}
+	assert(0); // todo
+//	int				x;
+//	int				y;
+//	int				width;
+//	int				num;
+//	terrainVert_t	*vert;
+//	vec3_t			norm;
+//	terravert_t		a0;
+//	terravert_t		a1;
+//	terravert_t		a2;
+//	terravert_t		b0;
+//	terravert_t		b1;
+//	terravert_t		b2;
+//
+//	p->bDirty = true;
+//
+//	num = p->height * p->width;
+//	vert = p->heightmap;
+//	//for( x = 0; x < num; x++, vert++ ) {
+//	for( y = 0; y < p->height - 1; y++ ) {
+//		for( x = 0; x < p->width - 1; x++, vert++ ) {
+//			VectorClear( vert->normal );
+//			Terrain_CalcVertPos( p, x, y, norm );
+//		}
+//	}
+//
+//	width = p->width;
+//	vert = p->heightmap;
+//   
+//	for( y = 0; y < p->height - 1; y++ ) {
+//		for( x = 0; x < width - 1; x++ ) {
+//			Terrain_GetTriangles( p, x, y, &a0, &a1, &a2, &b0, &b1, &b2, NULL );
+//
+//			CalcTriNormal( a0.xyz, a2.xyz, a1.xyz, norm );
+//
+//			VectorAdd( vert[ a0.index ].normal, norm, vert[ a0.index ].normal );
+//			VectorAdd( vert[ a1.index ].normal, norm, vert[ a1.index ].normal );
+//			VectorAdd( vert[ a2.index ].normal, norm, vert[ a2.index ].normal );
+//
+//			CalcTriNormal( b0.xyz, b2.xyz, b1.xyz, norm );
+//
+//			VectorAdd( vert[ b0.index ].normal, norm, vert[ b0.index ].normal );
+//			VectorAdd( vert[ b1.index ].normal, norm, vert[ b1.index ].normal );
+//			VectorAdd( vert[ b2.index ].normal, norm, vert[ b2.index ].normal );
+//		}
+//	}
+//   
+//	for( x = 0; x < num; x++, vert++ ) {
+//		VectorNormalize( vert->normal );
+//		//FIXME
+//		vert->normal[ 2 ] += 0.5;
+//		VectorNormalize( vert->normal );
+//		assert( vert->normal[ 2 ] > 0 );
+//		VectorSet( vert->rgba, vert->normal[ 2 ], vert->normal[ 2 ], vert->normal[ 2 ] );
+//		vert->rgba[ 3 ] = 1.0f;
+//	}
 }
 
 void Terrain_FindReplaceTexture( terrainMesh_t *p, const char *pFind, const char *pReplace, bool bForce ) {
@@ -833,7 +835,7 @@ bool Terrain_DragScale( terrainMesh_t *p, vec3_t vAmt, vec3_t vMove ) {
 	vec3_t	vMin;
 	vec3_t	vMax;
 	vec3_t	vScale;
-	vec3_t	vTemp;
+	edVec3_c	vTemp;
 	vec3_t	vMid;
 	int		i;
 
@@ -865,7 +867,7 @@ bool Terrain_DragScale( terrainMesh_t *p, vec3_t vAmt, vec3_t vMove ) {
 	Terrain_CalcBounds( p, vMin, vMax );
   	VectorSubtract( vMax, vMin, vMid );
 	VectorSubtract( vMid, vTemp, vTemp );
-	VectorScale( vTemp, 0.5f, vTemp );
+	vTemp *= 0.5f;
 
 	// abs of both should always be equal
 	if ( !VectorCompare( vMove, vAmt ) ) {
@@ -1549,49 +1551,47 @@ void Terrain_SelectAreaPoints( void ) {
 }
 
 #define EPSILON 0.0001
-
-bool RayTriangleIntersect( vec3_t orig, vec3_t dir, vec3_t vert1, vec3_t vert2, vec3_t vert3, float *t ) {
+bool RayTriangleIntersect(const edVec3_c &orig, const edVec3_c &dir, 
+						  const edVec3_c &vert1, const edVec3_c &vert2, const edVec3_c &vert3, float *t ) {
 	float   u;
 	float   v;
-	vec3_t  edge1;
-	vec3_t  edge2;
-	vec3_t  tvec;
-	vec3_t	pvec;
-	vec3_t	qvec;
+	edVec3_c  tvec;
+	edVec3_c	pvec;
+	edVec3_c	qvec;
 	float	det;
 
-	VectorSubtract( vert2, vert1, edge1 );
-	VectorSubtract( vert3, vert1, edge2 );
+	edVec3_c edge1 = vert2 - vert1;
+	edVec3_c edge2 = vert3 - vert1;
 
 	// begin calculating determinant - also used to calculate U parameter
-	CrossProduct( dir, edge2, pvec );
+	pvec.crossProduct( dir, edge2 );
 
 	// if determinant is near zero, ray lies in plane of triangle
-	det = DotProduct( edge1, pvec );
+	det = edge1.dotProduct(pvec );
 	if ( det < EPSILON ) {
 		return false;
 	}
 
 	// calculate distance from vert1 to ray origin
-	VectorSubtract( orig, vert1, tvec );
+	tvec = orig - vert1;
 
 	// calculate U parameter and test bounds
-	u = DotProduct( tvec, pvec );
+	u = tvec.dotProduct(pvec );
 	if ( ( u < 0.0f ) || ( u > det ) ) {
 		return false;
 	}
 
 	// prepare to test V parameter
-	CrossProduct( tvec, edge1, qvec );
+	qvec.crossProduct( tvec, edge1 );
 
 	// calculate V parameter and test bounds
-	v = DotProduct( dir, qvec );
+	v = dir.dotProduct( qvec );
 	if ( ( v < 0.0f ) || ( u + v > det ) ) {
 		return false;
 	}
 
 	// calculate t, scale parameters, ray intersects triangle
-	*t = DotProduct( edge2, qvec ) / det;
+	*t = edge2.dotProduct( qvec ) / det;
 
 	return true;
 }

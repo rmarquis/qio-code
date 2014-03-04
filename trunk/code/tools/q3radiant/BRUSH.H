@@ -88,7 +88,7 @@ int			Brush_MemorySize(brush_t *b);
 void		Brush_MakeSided (int sides);
 void		Brush_MakeSidedCone (int sides);
 void		Brush_Move (brush_t *b, const vec3_t move, bool bSnap = true);
-int			Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap = true);
+int			Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap = true);
 void		Brush_ResetFaceOriginals(brush_t *b);
 brush_t*	Brush_Parse (void);
 face_t*		Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist);

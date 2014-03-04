@@ -37,7 +37,7 @@ void Brush_Scale(brush_t* b)
   {
 	  for (int i=0 ; i<3 ; i++)
     {
-      VectorScale (f->planepts[i], g_qeglobals.d_gridsize, f->planepts[i]);
+      f->planepts[i] *= g_qeglobals.d_gridsize;
     }
   }
 }
@@ -47,7 +47,7 @@ void CSG_MakeHollow (void)
 	brush_t		*b, *front, *back, *next;
 	face_t		*f;
 	face_t		split;
-	vec3_t		move;
+	edVec3_c		move;
 	int			i;
 
 	for (b = selected_brushes.next ; b != &selected_brushes ; b=next)
@@ -60,7 +60,7 @@ void CSG_MakeHollow (void)
 		for (f = b->brush_faces ; f ; f=f->next)
 		{
 			split = *f;
-			VectorScale (f->plane.normal, g_qeglobals.d_gridsize, move);
+			move = f->plane.normal * g_qeglobals.d_gridsize;
 			for (i=0 ; i<3 ; i++)
 				VectorSubtract (split.planepts[i], move, split.planepts[i]);
 
