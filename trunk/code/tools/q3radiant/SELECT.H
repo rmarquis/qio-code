@@ -57,7 +57,7 @@ typedef struct
 
 trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags);
 
-void Select_GetBounds (vec3_t mins, vec3_t maxs);
+void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs);
 void Select_Brush (brush_t *b, bool bComplete = true, bool bStatus = true);
 void Select_Ray (vec3_t origin, vec3_t dir, int flags);
 void Select_Delete (void);

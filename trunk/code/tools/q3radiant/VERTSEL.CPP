@@ -40,7 +40,7 @@ int	FindPoint (vec3_t point)
 			return i;
 	}
 
-	VectorCopy (point, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
+	g_qeglobals.d_points[g_qeglobals.d_numpoints] = point;
   if (g_qeglobals.d_numpoints < MAX_POINTS-1)
   {
 	  g_qeglobals.d_numpoints++;
@@ -146,9 +146,9 @@ void SelectFaceEdge (face_t *f, int p1, int p2)
   for (i=0 ; i<w->numpoints ; i++)
 		if (pnum[i] == p1 && pnum[(i+1)%w->numpoints] == p2)
 		{
-			VectorCopy (g_qeglobals.d_points[pnum[i]], f->planepts[0]);
-			VectorCopy (g_qeglobals.d_points[pnum[(i+1)%w->numpoints]], f->planepts[1]);
-			VectorCopy (g_qeglobals.d_points[pnum[(i+2)%w->numpoints]], f->planepts[2]);
+			f->planepts[0] = g_qeglobals.d_points[pnum[i]];
+			f->planepts[1] = g_qeglobals.d_points[pnum[(i+1)%w->numpoints]];
+			f->planepts[2] = g_qeglobals.d_points[pnum[(i+2)%w->numpoints]];
 			for (j=0 ; j<3 ; j++)
 			{
 				for (k=0 ; k<3 ; k++)
@@ -187,9 +187,9 @@ void SelectVertex (int p1)
 		  {
 			  if (FindPoint (w->points[i]) == p1)
 			  {
-				  VectorCopy (w->points[(i+w->numpoints-1)%w->numpoints], f->planepts[0]);
-				  VectorCopy (w->points[i], f->planepts[1]);
-				  VectorCopy (w->points[(i+1)%w->numpoints], f->planepts[2]);
+				  f->planepts[0] = w->points[(i+w->numpoints-1)%w->numpoints].getXYZ();
+				  f->planepts[1] = w->points[i].getXYZ();
+				  f->planepts[2] = w->points[(i+1)%w->numpoints].getXYZ();
 			    for (j=0 ; j<3 ; j++)
           {
 				    for (k=0 ; k<3 ; k++)
@@ -258,7 +258,7 @@ void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
 
 		temp = mid - org;
 		d = temp.dotProduct(dir);
-		VectorMA (org, d, dir, temp);
+		temp.vectorMA (org, d, dir);
 		temp = mid - temp;
 		d = temp.vectorLength();
 		if (d < bestd)
@@ -307,7 +307,7 @@ void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
 	{
 		temp = g_qeglobals.d_points[i] - org;
 		d = temp.dotProduct(dir);
-		VectorMA (org, d, dir, temp);
+		temp.vectorMA (org, d, dir);
 		temp = g_qeglobals.d_points[i] - temp;
 		d = temp.vectorLength();
 		if (d < bestd)
@@ -329,7 +329,7 @@ void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
 
 
 
-extern void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull);
+extern void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull);
 void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
 {
 	int		i, besti;
@@ -344,7 +344,7 @@ void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
 	{
 		temp = g_qeglobals.d_points[i] - org;
 		d = temp.dotProduct(dir);
-		VectorMA (org, d, dir, temp);
+		temp.vectorMA (org, d, dir);
 		temp = g_qeglobals.d_points[i] - temp;
 		d = temp.vectorLength();
 		if (d <= bestd)
@@ -359,8 +359,8 @@ void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
     if (g_pParentWnd->ActiveXY()->AreaSelectOK())
     {
       g_qeglobals.d_select_mode = sel_area;
-      VectorCopy(org, g_qeglobals.d_vAreaTL);
-      VectorCopy(org, g_qeglobals.d_vAreaBR);
+      g_qeglobals.d_vAreaTL = org;
+      g_qeglobals.d_vAreaBR = org;
     }
 		return;
 	}

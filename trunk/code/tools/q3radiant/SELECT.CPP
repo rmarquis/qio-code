@@ -257,9 +257,9 @@ singleselect:
 	}
   if (bStatus)
   {
-    vec3_t vMin, vMax, vSize;
+    edVec3_c vMin, vMax, vSize;
 	  Select_GetBounds (vMin, vMax);
-    VectorSubtract(vMax, vMin, vSize);
+    vSize = vMax - vMin;
     CString strStatus;
     strStatus.Format("Selection X:: %.1f  Y:: %.1f  Z:: %.1f", vSize[0], vSize[1], vSize[2]);
     g_pParentWnd->SetStatusText(2, strStatus);
@@ -429,7 +429,7 @@ void Select_Move (vec3_t delta, bool bSnap)
 	for (b = selected_brushes.next ; b != &selected_brushes ; b=b->next)
 		Brush_Move (b, delta, bSnap);
 
-  vec3_t vMin, vMax;
+  edVec3_c vMin, vMax;
 	Select_GetBounds (vMin, vMax);
   CString strStatus;
   strStatus.Format("Origin X:: %.1f  Y:: %.1f  Z:: %.1f", vMin[0], vMax[1], vMax[2]);
@@ -588,7 +588,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprim
 ================================================================
 */
 
-void Select_GetBounds (vec3_t mins, vec3_t maxs)
+void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs)
 {
 	brush_t	*b;
 	int		i;
@@ -612,7 +612,7 @@ void Select_GetBounds (vec3_t mins, vec3_t maxs)
 
 void Select_GetTrueMid (vec3_t mid)
 {
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 	Select_GetBounds (mins, maxs);
 
   for (int i=0 ; i<3 ; i++)
@@ -622,7 +622,7 @@ void Select_GetTrueMid (vec3_t mid)
 
 void Select_GetMid (vec3_t mid)
 {
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 	int		i;
 
   if (g_PrefsDlg.m_bNoClamp)
@@ -639,7 +639,7 @@ void Select_GetMid (vec3_t mid)
 }
 
 edVec3_c	select_origin;
-vec3_t	select_matrix[3];
+edVec3_c	select_matrix[3];
 bool	select_fliporder;
 
 void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
@@ -684,10 +684,10 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 			Patch_ApplyMatrix(b->pPatch, select_origin, select_matrix, bSnap);
 		}
 
-		if (b->terrainBrush)
-		{
-		  Terrain_ApplyMatrix(b->pTerrain, select_origin, select_matrix, bSnap);
-		}
+		//if (b->terrainBrush)
+		//{
+		//  Terrain_ApplyMatrix(b->pTerrain, select_origin, select_matrix, bSnap);
+		//}
 
 	}
 }
@@ -732,23 +732,22 @@ void ComputeAbsolute(face_t* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
   ez.crossProduct(ex,ey);
 	    
   edVec3_c aux = ex * -f->texdef.shift[0];
-  VectorCopy(aux, p1);
+  p1 = aux;
   aux = ey * -f->texdef.shift[1];
-  VectorAdd(p1, aux, p1);
-  VectorCopy(p1, p2);
-  VectorAdd(p2, ex, p2);
-  VectorCopy(p1, p3);
-  VectorAdd(p3, ey, p3);
-  VectorCopy(ez, aux);
+  p1 += aux;
+  p2 = p1;
+  p2 += ex;
+  p3 = p1;
+  p3 += ey;
+  aux = ez;
   aux *= -f->texdef.rotate;
   VectorRotate(p1, aux, p1);
   VectorRotate(p2, aux, p2);
   VectorRotate(p3, aux, p3);
 	// computing rotated local axis base
-	vec3_t rex,rey;
-  VectorCopy(ex, rex);
+	edVec3_c rex = ex;
   VectorRotate(rex, aux, rex);
-  VectorCopy(ey, rey);
+  edVec3_c rey = ey;
   VectorRotate(rey, aux, rey);
 
   ComputeScale(rex,rey,p1,f);
@@ -831,10 +830,10 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, edVec3_c& p1, ed
 void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
 {
 	edVec3_c p1,p2,p3, rota;   
-	p1[0] = p1[1] = p1[2] = 0;
-	VectorCopy(p1, p2);
-	VectorCopy(p1, p3);
-	VectorCopy(p1, rota);
+	p1.clear();
+	p2.clear();
+	p3.clear();
+	rota.clear();
 	ComputeAbsolute(f, p1, p2, p3);
   
 	rota[nAxis] = fDeg;
@@ -843,7 +842,7 @@ void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
 	VectorRotate(p3, rota, select_origin, p3);
 
 	edPlane_c normal2;
-	vec3_t vNormal;
+	edVec3_c vNormal;
 	vNormal[0] = f->plane.normal[0];
 	vNormal[1] = f->plane.normal[1];
 	vNormal[2] = f->plane.normal[2];
@@ -880,7 +879,7 @@ void Select_FlipAxis (int axis)
 	Select_GetMid (select_origin);
 	for (i=0 ; i<3 ; i++)
 	{
-		VectorCopy (vec3_origin, select_matrix[i]);
+		select_matrix[i].clear();
 		select_matrix[i][i] = 1;
 	}
 	select_matrix[axis][axis] = -1;
@@ -940,7 +939,7 @@ void Select_Scale(float x, float y, float z)
 
 void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 {
-	vec3_t	temp;
+	edVec3_c	temp;
 	int		i, j;
 	vec_t	c, s;
 
@@ -952,7 +951,7 @@ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 
   if (bMouse)
   {
-    VectorCopy(g_pParentWnd->ActiveXY()->RotateOrigin(), select_origin);
+    select_origin = g_pParentWnd->ActiveXY()->RotateOrigin();
   }
   else
   {
@@ -965,14 +964,14 @@ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 	{
 		for (i=0 ; i<3 ; i++)
 		{
-			VectorCopy (vec3_origin, select_matrix[i]);
+			select_matrix[i].clear();
 			select_matrix[i][i] = 1;
 		}
 		i = (axis+1)%3;
 		j = (axis+2)%3;
-		VectorCopy (select_matrix[i], temp);
-		VectorCopy (select_matrix[j], select_matrix[i]);
-		VectorSubtract (vec3_origin, temp, select_matrix[j]);
+		temp = select_matrix[i];
+		select_matrix[i] = select_matrix[j];
+		select_matrix[j] = -temp;
 	}
 	else
 	{
@@ -995,7 +994,7 @@ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 
 		for (i=0 ; i<3 ; i++)
 		{
-			VectorCopy (vec3_origin, select_matrix[i]);
+			select_matrix[i].clear();
 			select_matrix[i][i] = 1;
 		}
 
@@ -1042,15 +1041,15 @@ void Select_CompleteTall (void)
 {
 	brush_t	*b, *next;
 	//int		i;
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
 
 	clearSelection();
 
-	VectorCopy (selected_brushes.next->mins, mins);
-	VectorCopy (selected_brushes.next->maxs, maxs);
+	mins = selected_brushes.next->mins;
+	maxs = selected_brushes.next->maxs;
 	Select_Delete ();
 
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -1088,15 +1087,15 @@ void Select_PartialTall (void)
 {
 	brush_t	*b, *next;
 	//int		i;
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
 
 	clearSelection();
 
-	VectorCopy (selected_brushes.next->mins, mins);
-	VectorCopy (selected_brushes.next->maxs, maxs);
+	mins = selected_brushes.next->mins;
+	maxs = selected_brushes.next->maxs;
 	Select_Delete ();
 
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -1136,15 +1135,15 @@ void Select_Touching (void)
 {
 	brush_t	*b, *next;
 	int		i;
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
 
 	clearSelection();
 
-	VectorCopy (selected_brushes.next->mins, mins);
-	VectorCopy (selected_brushes.next->maxs, maxs);
+	 mins = selected_brushes.next->mins;
+	maxs = selected_brushes.next->maxs;
 
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
 	{
@@ -1170,15 +1169,15 @@ void Select_Inside (void)
 {
 	brush_t	*b, *next;
 	int		i;
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
 
 	clearSelection();
 
-	VectorCopy (selected_brushes.next->mins, mins);
-	VectorCopy (selected_brushes.next->maxs, maxs);
+	mins = selected_brushes.next->mins;
+	maxs = selected_brushes.next->maxs;
 	Select_Delete ();
 
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)

@@ -57,7 +57,7 @@ winding_t*	Winding_Clip(winding_t *in, const class edPlane_c &split, bool keepon
 void		Winding_SplitEpsilon(winding_t *in, vec3_t normal, double dist, 
 								vec_t epsilon, winding_t **front, winding_t **back);
 //try to merge the windings, returns the new merged winding or NULL
-winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, int keep);
+winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep);
 //create a plane for the winding
 void		Winding_Plane(winding_t *w, class edVec3_c &normal, double *dist);
 //returns the winding area

@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     	struct entity_s	*prev, *next;
     	brush_t		brushes;					// head/tail of list
      	int			undoId, redoId, entityId;	// used for undo/redo
-    	vec3_t		origin;
+    	edVec3_c		origin;
     	eclass_t	*eclass;
     	epair_t		*epairs;
     	eclass_t  *md3Class;
@@ -69,8 +69,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     entity_t	*FindEntityInt(char *pszKey, int iValue);
     
     int GetUniqueTargetId(int iHint);
-    bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax);
-    eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec3_t &vMax);
+    bool Eclass_hasModel(eclass_t *e, class edVec3_c &vMin, edVec3_c &vMax);
+    eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax);
     
     //Timo : used for parsing epairs in brush primitive
     epair_t* ParseEpair(void);

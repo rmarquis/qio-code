@@ -30,13 +30,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 bool	drag_ok;
-vec3_t	drag_xvec;
-vec3_t	drag_yvec;
+edVec3_c	drag_xvec;
+edVec3_c	drag_yvec;
 
 static	int	buttonstate;
 int	pressx, pressy;
-static	vec3_t pressdelta;
-static	vec3_t vPressStart;
+static	edVec3_c pressdelta;
+static	edVec3_c vPressStart;
 static	int	buttonx, buttony;
 
 
@@ -48,7 +48,7 @@ int		lastx, lasty;
 bool	drag_first;
 
 
-void	AxializeVector (vec3_t v)
+void	AxializeVector (edVec3_c& v)
 {
 	vec3_t	a;
 	float	o;
@@ -71,7 +71,7 @@ void	AxializeVector (vec3_t v)
 		i = 2;
 
 	o = v[i];
-	VectorCopy (vec3_origin, v);
+	v.clear();
 	if (o<0)
 		v[i] = -1;
 	else
@@ -94,13 +94,13 @@ void Drag_Setup (int x, int y, int buttons,
 
 	drag_first = true;
 	
-	VectorCopy (vec3_origin, pressdelta);
+	pressdelta.clear();
 	pressx = x;
 	pressy = y;
 
-	VectorCopy (xaxis, drag_xvec);
+	drag_xvec = xaxis;
 	AxializeVector (drag_xvec);
-	VectorCopy (yaxis, drag_yvec);
+	drag_yvec = yaxis;
 	AxializeVector (drag_yvec);
 
 
@@ -332,8 +332,8 @@ void Drag_Begin (int x, int y, int buttons,
 	bool altdown;
 
 	drag_ok = false;
-	VectorCopy (vec3_origin, pressdelta);
-	VectorCopy (vec3_origin, vPressStart);
+	pressdelta.clear();
+	vPressStart.clear();
 	drag_first = true;
 	peLink = NULL;
 
@@ -454,8 +454,7 @@ void Drag_Begin (int x, int y, int buttons,
           qtexture_t* pTex = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
           if (pTex)
           {
-            vec3_t vColor;
-            VectorCopy(pTex->color, vColor);
+            edVec3_c vColor = pTex->color;
 
             float fLargest = 0.0f;
             for (int i = 0; i < 3; i++)
@@ -586,8 +585,7 @@ void MoveSelection (vec3_t move)
 	}
 
 
-	vec3_t vDistance;
-	VectorSubtract(pressdelta, vPressStart, vDistance);
+	edVec3_c vDistance = pressdelta - vPressStart;
 	strStatus.Format("Distance x: %.1f  y: %.1f  z: %.1f", vDistance[0], vDistance[1], vDistance[2]);
 	g_pParentWnd->SetStatusText(3, strStatus);
 
@@ -604,7 +602,7 @@ void MoveSelection (vec3_t move)
 		//area selection
 		if (g_qeglobals.d_select_mode == sel_area)
 		{
-			VectorAdd(g_qeglobals.d_vAreaBR, move, g_qeglobals.d_vAreaBR);
+			g_qeglobals.d_vAreaBR += move;
 			return;
 		}
 		//curve point selection
@@ -629,19 +627,18 @@ void MoveSelection (vec3_t move)
 				success &= Brush_MoveVertex(b, g_qeglobals.d_move_points[0], move, end, true);
 			}
 			if (success)
-				VectorCopy(end, g_qeglobals.d_move_points[0]);
+				*((edVec3_c*)g_qeglobals.d_move_points[0]) = end;
 			return;
 		}
 		//all other selection types
 		for (i=0 ; i<g_qeglobals.d_num_move_points ; i++)
-			VectorAdd (g_qeglobals.d_move_points[i], move, g_qeglobals.d_move_points[i]);
+			*((edVec3_c*)g_qeglobals.d_move_points[i]) += move;
 		//VectorScale(move, .5, move);
 		//for (i=0 ; i<g_qeglobals.d_num_move_points2 ; i++)
 		//	VectorAdd (g_qeglobals.d_move_points2[i], move, g_qeglobals.d_move_points2[i]);
 		for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
 		{
-			VectorCopy(b->maxs, vTemp);
-			VectorSubtract(vTemp, b->mins, vTemp);
+			vTemp = b->maxs - b->mins;
 			Brush_Build( b );
 			for (i=0 ; i<3 ; i++)
 				if (b->mins[i] > b->maxs[i]
@@ -651,9 +648,9 @@ void MoveSelection (vec3_t move)
 				break;
 			if (b->patchBrush)
 			{
-				VectorCopy(b->maxs, vTemp2);
-				VectorSubtract(vTemp2, b->mins, vTemp2);
-				VectorSubtract(vTemp2, vTemp, vTemp2);
+				vTemp2 = b->maxs;
+				vTemp2 = vTemp2 - b->mins;
+				vTemp2 = vTemp2 - vTemp;
 				//if (!Patch_DragScale(b->nPatchID, vTemp2, move))
 				if (!Patch_DragScale(b->pPatch, vTemp2, move))
 				{
@@ -664,9 +661,8 @@ void MoveSelection (vec3_t move)
 
 			if (b->terrainBrush)
 			{
-				VectorCopy(b->maxs, vTemp2);
-				VectorSubtract(vTemp2, b->mins, vTemp2);
-				VectorSubtract(vTemp2, vTemp, vTemp2);
+				vTemp2 = b->maxs - b->mins;
+				vTemp2 -= vTemp;
 				if (!Terrain_DragScale(b->pTerrain, vTemp2, move))
 				{
 					b = NULL;
@@ -679,8 +675,9 @@ void MoveSelection (vec3_t move)
 		if (b != &selected_brushes)
 		{
 			Sys_Printf ("Brush dragged backwards, move canceled\n");
-			for (i=0 ; i<g_qeglobals.d_num_move_points ; i++)
-				VectorSubtract (g_qeglobals.d_move_points[i], move, g_qeglobals.d_move_points[i]);
+			for (i=0 ; i<g_qeglobals.d_num_move_points ; i++) {
+				*((edVec3_c*)g_qeglobals.d_move_points[i]) -= move;
+			}
 
 			for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 				Brush_Build( b );
@@ -719,7 +716,7 @@ Drag_MouseMoved
 */
 void Drag_MouseMoved (int x, int y, int buttons)
 {
-	vec3_t	move, delta;
+	edVec3_c	move, delta;
 	int		i;
 
 	if (!buttons)
@@ -750,8 +747,8 @@ void Drag_MouseMoved (int x, int y, int buttons)
     }
 	}
 
-	VectorSubtract (move, pressdelta, delta);
-	VectorCopy (move, pressdelta);
+	delta = move - pressdelta;
+	pressdelta = move;
 
   MoveSelection (delta);
 
@@ -785,7 +782,7 @@ void Drag_MouseUp (int nButtons)
 	if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])
 	{
 		Select_Move (g_qeglobals.d_select_translate);
-		VectorCopy (vec3_origin, g_qeglobals.d_select_translate);
+		g_qeglobals.d_select_translate.clear();
 		Sys_UpdateWindows (W_CAMERA);
 	}
   

@@ -37,8 +37,8 @@ struct camera_t
 
 	bool	timing;
 
-	vec3_t	origin;
-	vec3_t	angles;
+	edVec3_c	origin;
+	edVec3_c	angles;
 
 	camera_draw_mode	draw_mode;
 

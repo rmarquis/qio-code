@@ -88,13 +88,13 @@ void FaceToBrushPrimitFace(face_t *f)
 	// (1,0) in plane axis base is texX in world coordinates + projection on the affine plane
 	// (0,1) in plane axis base is texY in world coordinates + projection on the affine plane
 	// use old texture code to compute the ST coords of these points
-	VectorCopy(proj,ST[0]);
+	ST[0].setXYZ(proj);
 	EmitTextureCoordinates(ST[0], f->d_texture, f);
-	VectorCopy(texX,ST[1]);
-	VectorAdd(ST[1],proj,ST[1]);
+	ST[1].setXYZ(texX);
+	ST[1].xyz += proj;
 	EmitTextureCoordinates(ST[1], f->d_texture, f);
-	VectorCopy(texY,ST[2]);
-	VectorAdd(ST[2],proj,ST[2]);
+	ST[2].setXYZ(texY);
+	ST[2].xyz += proj;
 	EmitTextureCoordinates(ST[2], f->d_texture, f);
 	// compute texture matrix
 	f->brushprimit_texdef.coords[0][2]=ST[0][3];

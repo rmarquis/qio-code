@@ -25,20 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cmdlib.h"
 #include "mathlib.h"
 
-vec3_t vec3_origin = {0.0f,0.0f,0.0f};
-
-
-bool VectorCompare (vec3_t v1, vec3_t v2)
-{
-	int		i;
-	
-	for (i=0 ; i<3 ; i++)
-		if (fabs(v1[i]-v2[i]) > EQUAL_EPSILON)
-			return false;
-			
-	return true;
-}
-
 vec_t Q_rint (vec_t in)
 {
   if (g_PrefsDlg.m_bNoClamp)
@@ -47,21 +33,14 @@ vec_t Q_rint (vec_t in)
 	  return (float)floor (in + 0.5);
 }
 
-void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc)
+
+
+
+
+void VectorRotate (vec3_t vIn, const edVec3_c &vRotation, edVec3_c &out)
 {
-	vc[0] = va[0] + scale*vb[0];
-	vc[1] = va[1] + scale*vb[1];
-	vc[2] = va[2] + scale*vb[2];
-}
-
-
-
-
-void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t out)
-{
-  vec3_t vWork, va;
-  VectorCopy(vIn, va);
-  VectorCopy(va, vWork);
+  edVec3_c va = vIn;
+  edVec3_c vWork = va;
   int nIndex[3][2];
   nIndex[0][0] = 1; nIndex[0][1] = 2;
   nIndex[1][0] = 2; nIndex[1][1] = 0;
@@ -77,26 +56,19 @@ void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t out)
       vWork[nIndex[i][0]] = va[nIndex[i][0]] * c - va[nIndex[i][1]] * s;
       vWork[nIndex[i][1]] = va[nIndex[i][0]] * s + va[nIndex[i][1]] * c;
     }
-    VectorCopy(vWork, va);
+    va = vWork;
   }
-  VectorCopy(vWork, out);
+  out = vWork;
 }
 
-void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t vOrigin, vec3_t out)
+void VectorRotate(const edVec3_c &vIn, const edVec3_c &vRotation, const edVec3_c &vOrigin, edVec3_c &out)
 {
-  vec3_t vTemp, vTemp2;
-  VectorSubtract(vIn, vOrigin, vTemp);
-  VectorRotate(vTemp, vRotation, vTemp2);
-  VectorAdd(vTemp2, vOrigin, out);
+	edVec3_c vTemp = vIn - vOrigin;
+	edVec3_c vTemp2;
+	VectorRotate(vTemp, vRotation, vTemp2);
+	out = vTemp2 + vOrigin;
 }
 
-void VectorSnap(vec3_t v)
-{
-  for (int i = 0; i < 3; i++)
-  {
-    v[i] = floor (v[i] + 0.5);
-  }
-}
 
 
 void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out)
@@ -146,45 +118,4 @@ void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
 	}
 }
 
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
 
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
-{
-	float		angle;
-	static float		sr, sp, sy, cr, cp, cy;
-	// static to help MS compiler fp bugs
-	
-	angle = angles[YAW] * (M_PI*2 / 360);
-	sy = sin(angle);
-	cy = cos(angle);
-	angle = angles[PITCH] * (M_PI*2 / 360);
-	sp = sin(angle);
-	cp = cos(angle);
-	angle = angles[ROLL] * (M_PI*2 / 360);
-	sr = sin(angle);
-	cr = cos(angle);
-	
-	if (forward)
-	{
-		forward[0] = cp*cy;
-		forward[1] = cp*sy;
-		forward[2] = -sp;
-	}
-	if (right)
-	{
-		right[0] = -sr*sp*cy+cr*sy;
-		right[1] = -sr*sp*sy-cr*cy;
-		right[2] = -sr*cp;
-	}
-	if (up)
-	{
-		up[0] = cr*sp*cy+sr*sy;
-		up[1] = cr*sp*sy-sr*cy;
-		up[2] = cr*cp;
-	}
-}

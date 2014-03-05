@@ -292,7 +292,7 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 	entity_t	*ent;
 	eclass_t	*e;
 	brush_t		*b;
-	vec3_t		mins, maxs;
+	edVec3_c		mins, maxs;
 	epair_t		*ep;
 	bool	has_brushes;
 	
@@ -373,8 +373,8 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 		}
 		
 		// create a custom brush
-		VectorAdd (e->mins, ent->origin, mins);
-		VectorAdd (e->maxs, ent->origin, maxs);
+		mins = e->mins + ent->origin;
+		maxs = e->maxs + ent->origin;
 		
 		float a = 0;
 		if (e->nShowFlags & ECLASS_MISCMODEL)
@@ -382,13 +382,13 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 			char* p = ValueForKey(ent, "model");
 			if (p != NULL && strlen(p) > 0)
 			{
-				vec3_t vMin, vMax;
+				edVec3_c vMin, vMax;
 				a = FloatForKey (ent, "angle");
 				if (GetCachedModel(ent, p, vMin, vMax))
 				{
 					// create a custom brush
-					VectorAdd (ent->md3Class->mins, ent->origin, mins);
-					VectorAdd (ent->md3Class->maxs, ent->origin, maxs);
+					mins = ent->md3Class->mins + ent->origin;
+					maxs = ent->md3Class->maxs + ent->origin;
 				}
 			}
 		}
@@ -448,7 +448,7 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 {
 	epair_t		*ep;
 	brush_t		*b;
-	vec3_t		origin;
+	edVec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -479,7 +479,7 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 	if ( e->eclass->nShowFlags & ECLASS_PLUGINENTITY )
 	{
 		// NOTE: the whole brush placement / origin stuff is a mess
-		VectorCopy( e->origin, origin );
+		origin = e->origin;
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
 	}
@@ -489,12 +489,12 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 	{
 		if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
 		{
-			VectorCopy(e->origin, origin);
+			origin = e->origin;
 			//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
 		}
 		else
 		{
-			VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
+			origin = e->brushes.onext->mins - e->eclass->mins;
 		}
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -541,7 +541,7 @@ void Entity_WriteSelected(entity_t *e, FILE *f)
 {
 	epair_t		*ep;
 	brush_t		*b;
-	vec3_t		origin;
+	edVec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -558,12 +558,12 @@ void Entity_WriteSelected(entity_t *e, FILE *f)
 	{
     if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
     {
-      VectorCopy(e->origin, origin);
+      origin = e->origin;
 		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
     }
     else
     {
-		  VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
+		  origin = e->brushes.onext->mins - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -599,7 +599,7 @@ void Entity_WriteSelected(entity_t *e, CMemFile* pMemFile)
 {
 	epair_t		*ep;
 	brush_t		*b;
-	vec3_t		origin;
+	edVec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -617,11 +617,11 @@ void Entity_WriteSelected(entity_t *e, CMemFile* pMemFile)
     if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
     {
 		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
-      VectorCopy(e->origin, origin);
+      origin = e->origin;
     }
     else
     {
-		  VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
+		  origin =  e->brushes.onext->mins - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -664,7 +664,7 @@ entity_t	*Entity_Create (eclass_t *c)
 {
 	entity_t	*e;
 	brush_t		*b;
-	vec3_t		mins, maxs;
+	edVec3_c	mins, maxs;
 	int			i;
 
 	// check to make sure the brushes are ok
@@ -701,8 +701,8 @@ entity_t	*Entity_Create (eclass_t *c)
 			e->origin[i] = b->mins[i] - c->mins[i];
 
 		// create a custom brush
-		VectorAdd (c->mins, e->origin, mins);
-		VectorAdd (c->maxs, e->origin, maxs);
+		mins = c->mins + e->origin;
+		maxs = c->maxs + e->origin;
 
 	  b = Brush_Create (mins, maxs, &c->texdef);
 

@@ -75,7 +75,7 @@ bool g_bPatchBendMode = false;
 int  g_nPatchBendState = -1;
 int  g_nPatchInsertState = -1;
 int  g_nBendOriginIndex = 0;
-vec3_t g_vBendOrigin;
+edVec3_c g_vBendOrigin;
 
 bool g_bPatchAxisOnRow = true;
 int  g_nPatchAxisIndex = 0;
@@ -147,14 +147,14 @@ void _DecColor(float fColor[3])
 	qglColor3fv(fColor);
 }
 
-vec_t __VectorNormalize (vec3_t in, vec3_t out)
+vec_t __VectorNormalize (vec3_t in, edVec3_c &out)
 {
 	vec_t	length, ilength;
 
 	length = sqrt (in[0]*in[0] + in[1]*in[1] + in[2]*in[2]);
 	if (length == 0)
 	{
-		VectorClear (out);
+		out.clear();
 		return 0;
 	}
 
@@ -247,13 +247,13 @@ void Patch_MeshNormals(patchMesh_t *in )
 {
 	int		i, j, k, dist;
 	edVec3_c	normal;
-	vec3_t	sum;
+	edVec3_c	sum;
 	int		count;
-	vec3_t	base;
+	edVec3_c	base;
 	edVec3_c	delta;
 	int		x, y;
 	drawVert_t	*dv;
-	vec3_t		around[8], temp;
+	edVec3_c		around[8], temp;
 	bool	good[8];
 	bool	wrapWidth, wrapHeight;
 	float		len;
@@ -297,10 +297,10 @@ void Patch_MeshNormals(patchMesh_t *in )
 			count = 0;
 			//--dv = reinterpret_cast<drawVert_t*>(in.ctrl[j*in.width+i]);
 			dv = &in->ctrl[i][j];
-			VectorCopy( dv->xyz, base );
+			base = dv->xyz;
 			for ( k = 0 ; k < 8 ; k++ ) 
       {
-				VectorClear( around[k] );
+				around[k].clear();
 				good[k] = false;
 
 				for ( dist = 1 ; dist <= 3 ; dist++ ) 
@@ -335,7 +335,7 @@ void Patch_MeshNormals(patchMesh_t *in )
 						break;					// edge of patch
 					}
 					//--VectorSubtract( in.ctrl[y*in.width+x]->xyz, base, temp );
-					VectorSubtract( in->ctrl[x][y].xyz, base, temp );
+					temp = in->ctrl[x][y].xyz - base;
 					if ( __VectorNormalize( temp, temp ) == 0 ) 
           {
 						continue;				// degenerate edge, get more dist
@@ -343,13 +343,13 @@ void Patch_MeshNormals(patchMesh_t *in )
           else                 
           {
 						good[k] = true;
-						VectorCopy( temp, around[k] );
+						around[k] = temp;
 						break;					// good edge
 					}
 				}
 			}
 
-			VectorClear( sum );
+			sum.clear();
 			for ( k = 0 ; k < 8 ; k++ ) 
       {
 				if ( !good[k] || !good[(k+1)&7] ) 
@@ -361,7 +361,7 @@ void Patch_MeshNormals(patchMesh_t *in )
         {
 					continue;
 				}
-				VectorAdd( normal, sum, sum );
+				normal += sum;
 				count++;
 			}
 			if ( count == 0 ) 
@@ -481,9 +481,9 @@ void Brush_RebuildBrush(brush_t *b, vec3_t vMins, vec3_t vMaxs)
 		b->brush_faces = f;
 		j = (i+1)%4;
 
-		VectorCopy (pts[j][1], f->planepts[0]);
-		VectorCopy (pts[i][1], f->planepts[1]);
-		VectorCopy (pts[i][0], f->planepts[2]);
+		 f->planepts[0] = pts[j][1];
+		f->planepts[1] = pts[i][1];
+		f->planepts[2] = pts[i][0];
 	}
 	
 	f = Face_Alloc();
@@ -497,9 +497,9 @@ void Brush_RebuildBrush(brush_t *b, vec3_t vMins, vec3_t vMaxs)
 	f->next = b->brush_faces;
 	b->brush_faces = f;
 
-	VectorCopy (pts[0][1], f->planepts[0]);
-	VectorCopy (pts[1][1], f->planepts[1]);
-	VectorCopy (pts[2][1], f->planepts[2]);
+	f->planepts[0] = pts[0][1];
+	f->planepts[1] = pts[1][1];
+	f->planepts[2] = pts[2][1];
 
 	f = Face_Alloc();
 	f->texdef = texdef;
@@ -512,9 +512,9 @@ void Brush_RebuildBrush(brush_t *b, vec3_t vMins, vec3_t vMaxs)
 	f->next = b->brush_faces;
 	b->brush_faces = f;
 
-	VectorCopy (pts[2][0], f->planepts[0]);
-	VectorCopy (pts[1][0], f->planepts[1]);
-	VectorCopy (pts[0][0], f->planepts[2]);
+	f->planepts[0] = pts[2][0];
+	f->planepts[1] = pts[1][0];
+	f->planepts[2] = pts[0][0];
 
   Brush_Build(b);
 }
@@ -768,12 +768,12 @@ int Interior5ByCount = sizeof(Interior5By) / sizeof(int[2]);
 face_t* Patch_GetAxisFace(patchMesh_t *p)
 {
   face_t *f = NULL;
-  vec3_t vTemp;
+  edVec3_c vTemp;
   brush_t *b = p->pSymbiot;
 
 	for (f = b->brush_faces ; f ; f = f->next) 
   {
-    VectorSubtract(f->face_winding->points[1], f->face_winding->points[0], vTemp);
+    vTemp = f->face_winding->points[1].getXYZ() - f->face_winding->points[0].getXYZ();
     int nScore = 0;
 
     // default edge faces on caps are 8 high so
@@ -821,9 +821,7 @@ void Patch_CapTexture(patchMesh_t *p, bool bFaceCycle = false)
 {
   Patch_MeshNormals(p);
   face_t *f = (bFaceCycle) ? nextFace(p) : Patch_GetAxisFace(p);
-  vec3_t vSave;
-  VectorCopy(f->plane.normal, vSave);
-  
+  edVec3_c vSave = f->plane.normal;
   float fRotate = f->texdef.rotate;
   f->texdef.rotate = 0;
   float fScale[2];
@@ -843,12 +841,12 @@ void Patch_CapTexture(patchMesh_t *p, bool bFaceCycle = false)
     {
       if (!bFaceCycle)
       {
-        VectorCopy(p->ctrl[i][j].normal, f->plane.normal);
+        f->plane.normal = p->ctrl[i][j].normal;
       }
 		  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
     }
   }
-  VectorCopy(vSave, f->plane.normal);
+  f->plane.normal = vSave;
   f->texdef.rotate = fRotate;
   f->texdef.scale[0] = fScale[0];
   f->texdef.scale[1] = fScale[1];
@@ -863,7 +861,7 @@ void FillPatch(patchMesh_t *p, vec3_t v)
   {
     for (int j = 0; j < p->height; j++)
     {
-      VectorCopy(v, p->ctrl[i][j].xyz);
+     p->ctrl[i][j].xyz = v;
     }
   }
 }
@@ -912,22 +910,22 @@ brush_t* Cap(patchMesh_t *pParent, bool bByColumn, bool bFirst)
     {
       if (bSmall)
       {
-        VectorCopy(pParent->ctrl[i][nIndex].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
+        p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[i][nIndex].xyz;
       }
       else
       {
-        VectorCopy(pParent->ctrl[i][nIndex].xyz, p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz);
+        p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz = pParent->ctrl[i][nIndex].xyz;
       }
     }
     else
     {
       if (bSmall)
       {
-        VectorCopy(pParent->ctrl[nIndex][i].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
+        p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[nIndex][i].xyz;
       }
       else
       {
-        VectorCopy(pParent->ctrl[nIndex][i].xyz, p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz);
+        p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz = pParent->ctrl[nIndex][i].xyz;
       }
     }
   
@@ -952,11 +950,11 @@ brush_t* Cap(patchMesh_t *pParent, bool bByColumn, bool bFirst)
   {
     if (bSmall)
     {
-      VectorCopy(vTemp, p->ctrl[Interior3By[j][0]][Interior3By[j][1]].xyz);
+      p->ctrl[Interior3By[j][0]][Interior3By[j][1]].xyz = vTemp;
     }
     else
     {
-      VectorCopy(vTemp, p->ctrl[Interior5By[j][0]][Interior5By[j][1]].xyz);
+      p->ctrl[Interior5By[j][0]][Interior5By[j][1]].xyz = vTemp;
     }
   }
 
@@ -1016,83 +1014,83 @@ brush_t* CapSpecial(patchMesh_t *pParent, int nType, bool bFirst)
 
   if (nType == CCapDialog::IBEVEL)
   {
-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[0][2].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][2].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][0].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][1].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][2].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][0].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][1].xyz);
+    p->ctrl[0][0].xyz = pParent->ctrl[0][nIndex].xyz;
+    p->ctrl[0][2].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[2][2].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[1][0].xyz = pParent->ctrl[1][nIndex].xyz;
+   p->ctrl[1][1].xyz = pParent->ctrl[1][nIndex].xyz;
+   p->ctrl[1][2].xyz = pParent->ctrl[1][nIndex].xyz;
+   p->ctrl[2][0].xyz = pParent->ctrl[1][nIndex].xyz;
+   p->ctrl[2][1].xyz = pParent->ctrl[1][nIndex].xyz;
   }
   else if (nType == CCapDialog::BEVEL)
   {
     edVec3_c p1, p2, p3, p4, temp, dir;
 
-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p3);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p1);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p2);
+    p3 = pParent->ctrl[0][nIndex].xyz;
+    p1 = pParent->ctrl[1][nIndex].xyz;
+    p2 = pParent->ctrl[2][nIndex].xyz;
 
-    VectorSubtract(p3, p2, dir);
+    dir = p3 - p2;
     dir.normalize();
-    VectorSubtract(p1, p2, temp);
+    temp = p1 - p2;
     vec_t dist = temp.dotProduct(dir);
 
 	temp = dir * dist;
 
 	temp += p2;
 
-    VectorSubtract(temp, p1, temp);
+	temp -= p1;
 	temp *= 2.0;
-    VectorAdd(p1, temp, p4);
+	p4 = p1 + temp;
 
-    VectorCopy(p4, p->ctrl[0][0].xyz);
-    VectorCopy(p4, p->ctrl[1][0].xyz);
-    VectorCopy(p4, p->ctrl[0][1].xyz);
-    VectorCopy(p4, p->ctrl[1][1].xyz);
-    VectorCopy(p4, p->ctrl[0][2].xyz);
-    VectorCopy(p4, p->ctrl[1][2].xyz);
-    VectorCopy(p3, p->ctrl[2][0].xyz);
-    VectorCopy(p1, p->ctrl[2][1].xyz);
-    VectorCopy(p2, p->ctrl[2][2].xyz);
+    p->ctrl[0][0].xyz = p4;
+    p->ctrl[1][0].xyz = p4;
+    p->ctrl[0][1].xyz = p4;
+    p->ctrl[1][1].xyz = p4;
+    p->ctrl[0][2].xyz = p4;
+    p->ctrl[1][2].xyz = p4;
+    p->ctrl[2][0].xyz = p3;
+    p->ctrl[2][1].xyz = p1;
+    p->ctrl[2][2].xyz = p2;
 
   }
   else if (nType == CCapDialog::ENDCAP)
   {
-    VectorAdd(pParent->ctrl[4][nIndex].xyz, pParent->ctrl[0][nIndex].xyz, vTemp);
+    vTemp = pParent->ctrl[4][nIndex].xyz + pParent->ctrl[0][nIndex].xyz;
     vTemp *= 0.5;
-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
-                       VectorCopy(vTemp, p->ctrl[1][0].xyz);
-    VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[2][0].xyz);
+    p->ctrl[0][0].xyz =pParent->ctrl[0][nIndex].xyz;
+    p->ctrl[1][0].xyz = vTemp;
+    p->ctrl[2][0].xyz = pParent->ctrl[4][nIndex].xyz;
 
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[0][2].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[1][2].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][2].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[1][1].xyz);
+    p->ctrl[0][2].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[1][2].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[2][2].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[1][1].xyz = pParent->ctrl[2][nIndex].xyz;
     
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[2][1].xyz);
+    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[2][1].xyz = pParent->ctrl[3][nIndex].xyz;
   }
   else
   {
-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][0].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][0].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][0].xyz);
-    VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[4][0].xyz);
+    p->ctrl[0][0].xyz = pParent->ctrl[0][nIndex].xyz;
+    p->ctrl[1][0].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[2][0].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[3][0].xyz = pParent->ctrl[3][nIndex].xyz;
+    p->ctrl[4][0].xyz = pParent->ctrl[4][nIndex].xyz;
     
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][1].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][1].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][1].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[4][1].xyz);
+    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[1][1].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[2][1].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[3][1].xyz = pParent->ctrl[3][nIndex].xyz;
+    p->ctrl[4][1].xyz = pParent->ctrl[3][nIndex].xyz;
 
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][2].xyz);
-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][2].xyz);
-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][2].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][2].xyz);
-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[4][2].xyz);
+    p->ctrl[0][2].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[1][2].xyz = pParent->ctrl[1][nIndex].xyz;
+    p->ctrl[2][2].xyz = pParent->ctrl[2][nIndex].xyz;
+    p->ctrl[3][2].xyz = pParent->ctrl[3][nIndex].xyz;
+    p->ctrl[4][2].xyz = pParent->ctrl[3][nIndex].xyz;
   }
 
 
@@ -1143,7 +1141,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
       // if any of these compares hit, it is a closed patch and as such
       // the generic capping will work.. if we do not find a closed edge 
       // then we need to ask which kind of cap to add
-      if (VectorCompare(pParent->ctrl[0][0].xyz, pParent->ctrl[pParent->width-1][0].xyz))
+      if (pParent->ctrl[0][0].xyz.vectorCompare(pParent->ctrl[pParent->width-1][0].xyz))
       {
         pCap = Cap(pParent, true, false);
         if (pCap != NULL)
@@ -1151,7 +1149,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
           b[nIndex++] = pCap;
         }
       }
-      if (VectorCompare(pParent->ctrl[0][pParent->height-1].xyz, pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
+      if (pParent->ctrl[0][pParent->height-1].xyz.vectorCompare(pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
       {
         pCap = Cap(pParent, true, true);
         if (pCap != NULL)
@@ -1159,7 +1157,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
           b[nIndex++] = pCap;
         }
       }
-      if (VectorCompare(pParent->ctrl[0][0].xyz, pParent->ctrl[0][pParent->height-1].xyz))
+      if (pParent->ctrl[0][0].xyz.vectorCompare(pParent->ctrl[0][pParent->height-1].xyz))
       {
         pCap = Cap(pParent, false, false);
         if (pCap != NULL)
@@ -1167,7 +1165,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
           b[nIndex++] = pCap;
         }
       }
-      if (VectorCompare(pParent->ctrl[pParent->width-1][0].xyz, pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
+      if (pParent->ctrl[pParent->width-1][0].xyz.vectorCompare(pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
       {
         pCap = Cap(pParent, false, true);
         if (pCap != NULL)
@@ -1237,7 +1235,7 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
 
   for (i = 0; i < pParent->width; i++)
   {
-    VectorCopy(pParent->ctrl[i][0].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
+    p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[i][0].xyz;
     for (j = 0; j < 3; j++)
     {
       if (pParent->ctrl[i][0].xyz[j] < vMin[j])
@@ -1254,7 +1252,7 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
 
   for (i = 0; i < Interior3ByCount; i++)
   {
-    VectorCopy(vTemp, p->ctrl[Interior3By[i][0]][Interior3By[i][1]].xyz);
+    p->ctrl[Interior3By[i][0]][Interior3By[i][1]].xyz = vTemp;
   }
 
   Patch_CalcBounds(p, vMin, vMax);
@@ -1270,22 +1268,21 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
     {
       b = Patch_GenericMesh(3, 3, 2, false);
       p = b->pPatch;
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][2].xyz);
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[2][1].xyz);
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[0][1].xyz);
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][0].xyz);
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][1].xyz);
-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[0][0].xyz);
+      p->ctrl[1][2].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[2][1].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[0][1].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[1][0].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[1][1].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[0][0].xyz = p->ctrl[2][0].xyz;
 
       b2 = Patch_GenericMesh(3, 3, 2, false);
       p2 = b2->pPatch;
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][2].xyz);
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[2][1].xyz);
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[0][1].xyz);
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][0].xyz);
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][1].xyz);
-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[0][0].xyz);
-
+      p2->ctrl[1][2].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[2][1].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[0][1].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[1][0].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[1][1].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[0][0].xyz = p2->ctrl[2][0].xyz;
 
       bCreated = true;
 
@@ -1294,42 +1291,42 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
     {
       b = Patch_GenericMesh(5, 5, 2, false);
       p = b->pPatch;
-      VectorCopy(p->ctrl[4][4].xyz, p->ctrl[4][3].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[1][4].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[2][4].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[3][4].xyz);
+      p->ctrl[4][3].xyz = p->ctrl[4][4].xyz;
+      p->ctrl[1][4].xyz = p->ctrl[0][4].xyz;
+      p->ctrl[2][4].xyz = p->ctrl[0][4].xyz;
+      p->ctrl[3][4].xyz = p->ctrl[0][4].xyz;
 
-      VectorCopy(p->ctrl[4][0].xyz, p->ctrl[4][1].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[3][0].xyz);
+      p->ctrl[4][1].xyz = p->ctrl[4][0].xyz;
+      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[3][0].xyz = p->ctrl[0][0].xyz;
 
       for (i = 1; i < 4; i++)
       {
         for (j = 0; j < 4; j++)
         {
-          VectorCopy(p->ctrl[4][i].xyz, p->ctrl[j][i].xyz);
+          p->ctrl[j][i].xyz = p->ctrl[4][i].xyz;
         }
       }
 
 
       b2 = Patch_GenericMesh(5, 5, 2, false);
       p2 = b2->pPatch;
-      VectorCopy(p2->ctrl[4][4].xyz, p2->ctrl[4][3].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[1][4].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[2][4].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[3][4].xyz);
+      p2->ctrl[4][3].xyz = p2->ctrl[4][4].xyz;
+      p2->ctrl[1][4].xyz = p2->ctrl[0][4].xyz;
+      p2->ctrl[2][4].xyz = p2->ctrl[0][4].xyz;
+      p2->ctrl[3][4].xyz = p2->ctrl[0][4].xyz;
 
-      VectorCopy(p2->ctrl[4][0].xyz, p2->ctrl[4][1].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[3][0].xyz);
+      p2->ctrl[4][1].xyz = p2->ctrl[4][0].xyz;
+      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[3][0].xyz = p2->ctrl[0][0].xyz;
 
       for (i = 1; i < 4; i++)
       {
         for (j = 0; j < 4; j++)
         {
-          VectorCopy(p2->ctrl[4][i].xyz, p2->ctrl[j][i].xyz);
+          p2->ctrl[j][i].xyz = p2->ctrl[4][i].xyz;
         }
       }
 
@@ -1343,46 +1340,46 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
     {
       b = Patch_GenericMesh(3, 3, 2, false);
       p = b->pPatch;
-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[2][1].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
+      p->ctrl[2][1].xyz = p->ctrl[2][0].xyz;
+      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;
 
       b2 = Patch_GenericMesh(3, 3, 2, false);
       p2 = b2->pPatch;
-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[2][1].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
+      p2->ctrl[2][1].xyz = p2->ctrl[2][0].xyz;
+      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
       bCreated = true;
     }
     else if (bEndcap)
     {
       b = Patch_GenericMesh(5, 5, 2, false);
       p = b->pPatch;
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[3][0].xyz);
-      VectorCopy(p->ctrl[4][0].xyz, p->ctrl[4][1].xyz);
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[4][0].xyz);
+      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;;
+      p->ctrl[3][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[4][1].xyz = p->ctrl[4][0].xyz;
+      p->ctrl[4][0].xyz = p->ctrl[0][0].xyz;
 
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[1][4].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[2][4].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[3][4].xyz);
-      VectorCopy(p->ctrl[4][4].xyz, p->ctrl[4][3].xyz);
-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[4][4].xyz);
+      p->ctrl[1][4].xyz = p->ctrl[0][4].xyz;
+      p->ctrl[2][4].xyz = p->ctrl[0][4].xyz;
+      p->ctrl[3][4].xyz = p->ctrl[0][4].xyz;
+      p->ctrl[4][3].xyz = p->ctrl[4][4].xyz;
+      p->ctrl[4][4].xyz = p->ctrl[0][4].xyz;
 
       b2 = Patch_GenericMesh(5, 5, 2, false);
       p2 = b2->pPatch;
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[3][0].xyz);
-      VectorCopy(p2->ctrl[4][0].xyz, p2->ctrl[4][1].xyz);
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[4][0].xyz);
+      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[3][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[4][1].xyz = p2->ctrl[4][0].xyz;
+      p2->ctrl[4][0].xyz = p2->ctrl[0][0].xyz;
 
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[1][4].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[2][4].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[3][4].xyz);
-      VectorCopy(p2->ctrl[4][4].xyz, p2->ctrl[4][3].xyz);
-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[4][4].xyz);
+      p2->ctrl[1][4].xyz = p2->ctrl[0][4].xyz;
+      p2->ctrl[2][4].xyz = p2->ctrl[0][4].xyz;
+      p2->ctrl[3][4].xyz = p2->ctrl[0][4].xyz;
+      p2->ctrl[4][3].xyz = p2->ctrl[4][4].xyz;
+      p2->ctrl[4][4].xyz = p2->ctrl[0][4].xyz;
       bCreated = true;
     }
     else
@@ -1390,27 +1387,27 @@ void GenerateEndCaps(brush_t *brushParent, bool bBevel, bool bEndcap, bool bInve
       b = Patch_GenericMesh(3, 3, 2, false);
       p = b->pPatch;
       
-      VectorCopy(p->ctrl[0][1].xyz, vTemp);
-      VectorCopy(p->ctrl[0][2].xyz, p->ctrl[0][1].xyz)
-      VectorCopy(p->ctrl[1][2].xyz, p->ctrl[0][2].xyz)
-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][2].xyz)
-      VectorCopy(p->ctrl[2][1].xyz, p->ctrl[2][2].xyz)
-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[2][1].xyz)
-      VectorCopy(p->ctrl[1][0].xyz, p->ctrl[2][0].xyz)
-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz)
-      VectorCopy(vTemp, p->ctrl[0][0].xyz)
+      vTemp = p->ctrl[0][1].xyz;
+      p->ctrl[0][1].xyz = p->ctrl[0][2].xyz;
+      p->ctrl[0][2].xyz = p->ctrl[1][2].xyz;
+      p->ctrl[1][2].xyz = p->ctrl[2][2].xyz;
+      p->ctrl[2][2].xyz = p->ctrl[2][1].xyz;
+      p->ctrl[2][1].xyz = p->ctrl[2][0].xyz;
+      p->ctrl[2][0].xyz = p->ctrl[1][0].xyz;
+      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
+      p->ctrl[0][0].xyz = vTemp;
 
       b2 = Patch_GenericMesh(3, 3, 2, false);
       p2 = b2->pPatch;
-      VectorCopy(p2->ctrl[0][1].xyz, vTemp);
-      VectorCopy(p2->ctrl[0][2].xyz, p2->ctrl[0][1].xyz)
-      VectorCopy(p2->ctrl[1][2].xyz, p2->ctrl[0][2].xyz)
-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][2].xyz)
-      VectorCopy(p2->ctrl[2][1].xyz, p2->ctrl[2][2].xyz)
-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[2][1].xyz)
-      VectorCopy(p2->ctrl[1][0].xyz, p2->ctrl[2][0].xyz)
-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz)
-      VectorCopy(vTemp, p2->ctrl[0][0].xyz)
+      vTemp = p2->ctrl[0][1].xyz;
+      p2->ctrl[0][1].xyz = p2->ctrl[0][2].xyz;
+      p2->ctrl[0][2].xyz = p2->ctrl[1][2].xyz;
+      p2->ctrl[1][2].xyz = p2->ctrl[2][2].xyz;
+      p2->ctrl[2][2].xyz = p2->ctrl[2][1].xyz;
+      p2->ctrl[2][1].xyz = p2->ctrl[2][0].xyz;
+      p2->ctrl[2][0].xyz = p2->ctrl[1][0].xyz;
+      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
+      p2->ctrl[0][0].xyz = vTemp;
       bCreated = true;
     }
   }
@@ -1547,7 +1544,7 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
 
       p->ctrl[i][0].xyz[2] =  b->mins[2];
 
-		  VectorCopy( p->ctrl[i][0].xyz, p->ctrl[i][2].xyz );
+		  p->ctrl[i][2].xyz = p->ctrl[i][0].xyz;
 
 		  p->ctrl[i][2].xyz[2] =  b->maxs[2];
 
@@ -1565,18 +1562,18 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
         {
           for (i = 0; i < p->height; i++)
           {
-            VectorCopy(p->ctrl[1][i].xyz, p->ctrl[2][i].xyz);
-            VectorCopy(p->ctrl[7][i].xyz, p->ctrl[6][i].xyz);
+            p->ctrl[2][i].xyz = p->ctrl[1][i].xyz;
+            p->ctrl[6][i].xyz = p->ctrl[7][i].xyz;
           }
         }
         else
         {
           for (i = 0; i < p->height; i++)
           {
-            VectorCopy(p->ctrl[5][i].xyz, p->ctrl[4][i].xyz);
-            VectorCopy(p->ctrl[1][i].xyz, p->ctrl[2][i].xyz);
-            VectorCopy(p->ctrl[7][i].xyz, p->ctrl[6][i].xyz);
-            VectorCopy(p->ctrl[8][i].xyz, p->ctrl[7][i].xyz);
+            p->ctrl[4][i].xyz = p->ctrl[5][i].xyz;
+            p->ctrl[2][i].xyz = p->ctrl[1][i].xyz;
+            p->ctrl[6][i].xyz = p->ctrl[7][i].xyz;
+            p->ctrl[7][i].xyz = p->ctrl[8][i].xyz;
           }
         }
       }
@@ -1586,12 +1583,12 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
         {
           for (j = 0; j < p->height; j++)
           {
-            VectorCopy(p->ctrl[i+1][j].xyz, p->ctrl[i][j].xyz);
+            p->ctrl[i][j].xyz = p->ctrl[i+1][j].xyz;
           }
         }
         for (j = 0; j < p->height; j++)
         {
-          VectorCopy(p->ctrl[0][j].xyz, p->ctrl[8][j].xyz);
+          p->ctrl[8][j].xyz = p->ctrl[0][j].xyz;
         }
       }
     }
@@ -1777,11 +1774,11 @@ int PointInMoveList(float *pf)
 PointValueInMoveList
 ==================
 */
-int PointValueInMoveList(vec3_t v)
+int PointValueInMoveList(const edVec3_c &v)
 {
   for (int i = 0; i < g_qeglobals.d_num_move_points; i++)
   {
-    if (VectorCompare(v, g_qeglobals.d_move_points[i]))
+    if (v.vectorCompare(g_qeglobals.d_move_points[i]))
       return i;
   }
   return -1;
@@ -1793,7 +1790,7 @@ int PointValueInMoveList(vec3_t v)
 RemovePointFromMoveList
 ==================
 */
-void RemovePointFromMoveList(vec3_t v)
+void RemovePointFromMoveList(const edVec3_c &v)
 {
   int n;
   while ( (n = PointValueInMoveList(v)) >= 0)
@@ -1826,6 +1823,15 @@ bool ColumnSelected(patchMesh_t* p, int nCol)
 AddPoint
 ==================
 */
+static int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
+	int		i;
+	
+	for (i=0 ; i<3 ; i++)
+		if (fabs(v1[i]-v2[i]) > EQUAL_EPSILON)
+			return false;
+			
+	return true;
+}
 void AddPoint(patchMesh_t* p, vec3_t v, bool bWeldOrDrill = true)
 {
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -1839,7 +1845,7 @@ void AddPoint(patchMesh_t* p, vec3_t v, bool bWeldOrDrill = true)
       {
         if (g_bPatchWeld)
         {
-          if ( VectorCompare(v, p->ctrl[i][j].xyz)
+          if (VectorCompare(v,p->ctrl[i][j].xyz)
             && PointInMoveList(p->ctrl[i][j].xyz) == -1)
           {
             g_qeglobals.d_move_points[g_qeglobals.d_num_move_points++] = p->ctrl[i][j].xyz;
@@ -1955,7 +1961,7 @@ void SelectColumn(patchMesh_t* p, int nCol, bool bMulti)
 AddPatchMovePoint
 ==================
 */
-void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull)
+void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull)
 {
   if (!g_bSameView && !bMulti && !bFull)
   {
@@ -1972,7 +1978,7 @@ void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull)
       {
 		    for ( int j = 0 ; j < p->height ; j++ ) 
         {
-          if (VectorCompare(v, p->ctrl[i][j].xyz))
+          if (v.vectorCompare(p->ctrl[i][j].xyz))
           {
             if (PointInMoveList(p->ctrl[i][j].xyz) == -1)
             {
@@ -2027,7 +2033,7 @@ void Patch_UpdateSelected(vec3_t vMove)
   int i, j;
   for (i=0 ; i < g_qeglobals.d_num_move_points ; i++)
   {
-	  VectorAdd (g_qeglobals.d_move_points[i], vMove, g_qeglobals.d_move_points[i]);
+	*((edVec3_c*)g_qeglobals.d_move_points[i]) += vMove;
     if (g_qeglobals.d_num_move_points == 1)
     {
     }
@@ -2046,7 +2052,7 @@ void Patch_UpdateSelected(vec3_t vMove)
       {
 		    for ( j = 0 ; j < p->height ; j++ ) 
         {
-	        VectorCopy (p->ctrl[i][j].xyz, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
+	        g_qeglobals.d_points[g_qeglobals.d_numpoints] = p->ctrl[i][j].xyz;
           if (g_qeglobals.d_numpoints < MAX_POINTS-1)
           {
 	          g_qeglobals.d_numpoints++;
@@ -2731,7 +2737,7 @@ void Patch_Move(patchMesh_t *pm, const vec3_t vMove, bool bRebuild)
   {
     for (int h = 0; h < pm->height; h++)
     {
-      VectorAdd(pm->ctrl[w][h].xyz, vMove, pm->ctrl[w][h].xyz);
+      pm->ctrl[w][h].xyz += vMove;
     }
   }
   if (bRebuild)
@@ -2749,7 +2755,7 @@ void Patch_Move(patchMesh_t *pm, const vec3_t vMove, bool bRebuild)
 Patch_ApplyMatrix
 ==================
 */
-void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap)
+void Patch_ApplyMatrix(patchMesh_t *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap)
 {
   edVec3_c vTemp;
 
@@ -2760,7 +2766,7 @@ void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatri
       if ( (g_qeglobals.d_select_mode == sel_curvepoint || g_bPatchBendMode)
         && PointInMoveList(p->ctrl[w][h].xyz) == -1)
         continue;
-			VectorSubtract (p->ctrl[w][h].xyz, vOrigin, vTemp);
+			vTemp = p->ctrl[w][h].xyz - vOrigin;
 			for (int j = 0; j < 3; j++)
       {
         p->ctrl[w][h].xyz[j] = vTemp.dotProduct(vMatrix[j]) + vOrigin[j];
@@ -2796,7 +2802,7 @@ void Patch_EditPatch()
       {
 		    for ( int j = 0 ; j < p->height ; j++ ) 
         {
-	        VectorCopy (p->ctrl[i][j].xyz, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
+	        g_qeglobals.d_points[g_qeglobals.d_numpoints] = p->ctrl[i][j].xyz;
           if (g_qeglobals.d_numpoints < MAX_POINTS-1)
           {
 	          g_qeglobals.d_numpoints++;
@@ -2964,14 +2970,14 @@ void Patch_SetTexture(patchMesh_t *p, texdef_t *tex_def, IPluginTexdef* pPlugTex
 Patch_DragScale
 ==================
 */
-bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
+bool Patch_DragScale(patchMesh_t *p, const edVec3_c &vAmt, const edVec3_c &vMove)
 {
   edVec3_c vMin, vMax, vScale, vTemp, vMid;
   int i;
 
   Patch_CalcBounds(p, vMin, vMax);
 
-  VectorSubtract(vMax, vMin, vTemp);
+  vTemp = vMax - vMin;
 
   // if we are scaling in the same dimension the patch has no depth
   for (i = 0; i < 3; i ++)
@@ -3000,18 +3006,18 @@ bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
 
   Patch_Scale(p, vMid, vScale, false);
 
-  VectorSubtract(vMax, vMin, vTemp);
+  vTemp = vMax - vMin;
 
   Patch_CalcBounds(p, vMin, vMax);
   
-  VectorSubtract(vMax, vMin, vMid);
+  vMid = vMax - vMin;
 
   vTemp = vMid - vTemp;
 
   vTemp *= 0.5;
 
   // abs of both should always be equal
-  if (!VectorCompare(vMove, vAmt))
+  if (!vMove.vectorCompare(vAmt))
   {
     for (i = 0; i < 3; i++)
     {
@@ -3039,7 +3045,7 @@ void Patch_AddRow(patchMesh_t *p)
   if (p->height+2 < MAX_PATCH_HEIGHT)
   {
     Patch_CalcBounds(p, vMin, vMax);
-    VectorSubtract(vMax, vMin, vTemp);
+    vTemp = vMax - vMin;
     for (i = 0; i < 3; i++)
     {
       vTemp[i] /= p->height + 2;
@@ -3047,13 +3053,13 @@ void Patch_AddRow(patchMesh_t *p)
 
     for (j = 0; j < p->width; j++)
     {
-      VectorCopy(p->ctrl[j][p->height].xyz, p->ctrl[j][p->height+1].xyz);
-      VectorCopy(p->ctrl[j][p->height].xyz, p->ctrl[j][p->height+2].xyz);
+      p->ctrl[j][p->height+1].xyz = p->ctrl[j][p->height].xyz;
+      p->ctrl[j][p->height+2].xyz = p->ctrl[j][p->height].xyz;
       p->height += 2;
       i = 1;
       while (i < p->height)
       {
-        VectorAdd(p->ctrl[j][i].xyz, vTemp, p->ctrl[j][i].xyz);
+        p->ctrl[j][i].xyz += vTemp;
         i++;
       }
     }
@@ -3072,7 +3078,7 @@ Patch_InsertColumn
 void Patch_InsertColumn(patchMesh_t *p, bool bAdd)
 {
   int h, w, i, j;
-  vec3_t vTemp;
+  edVec3_c vTemp;
   
   if (p->width + 2 >= MAX_PATCH_WIDTH)
     return;
@@ -3082,16 +3088,16 @@ void Patch_InsertColumn(patchMesh_t *p, bool bAdd)
     for (h = 0; h < p->height; h++)
     {
       j = p->width-1;
-      VectorSubtract(p->ctrl[j][h].xyz, p->ctrl[j-1][h].xyz, vTemp);
+      vTemp = p->ctrl[j][h].xyz - p->ctrl[j-1][h].xyz;
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
 
       memcpy(&p->ctrl[j+2][h],&p->ctrl[j][h], sizeof(drawVert_t));
       memcpy(&p->ctrl[j][h],&p->ctrl[j-1][h], sizeof(drawVert_t));
 
-      VectorAdd(p->ctrl[j][h].xyz, vTemp, p->ctrl[j][h].xyz);
+      p->ctrl[j][h].xyz += vTemp;
       memcpy(&p->ctrl[j+1][h], &p->ctrl[j][h], sizeof(drawVert_t));
-      VectorAdd(p->ctrl[j+1][h].xyz, vTemp, p->ctrl[j+1][h].xyz);
+      p->ctrl[j+1][h].xyz += vTemp;
     }
   }
   else
@@ -3104,13 +3110,13 @@ void Patch_InsertColumn(patchMesh_t *p, bool bAdd)
         memcpy(&p->ctrl[w+2][h],&p->ctrl[w][h], sizeof(drawVert_t));
         w--;
       }
-      VectorSubtract(p->ctrl[1][h].xyz, p->ctrl[0][h].xyz, vTemp);
+      vTemp = p->ctrl[1][h].xyz - p->ctrl[0][h].xyz;
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
-      VectorCopy(p->ctrl[0][h].xyz, p->ctrl[1][h].xyz);
-      VectorAdd(p->ctrl[1][h].xyz, vTemp, p->ctrl[1][h].xyz);
-      VectorCopy(p->ctrl[1][h].xyz, p->ctrl[2][h].xyz);
-      VectorAdd(p->ctrl[2][h].xyz, vTemp, p->ctrl[2][h].xyz);
+      p->ctrl[1][h].xyz = p->ctrl[0][h].xyz;
+      p->ctrl[1][h].xyz += vTemp;
+      p->ctrl[2][h].xyz = p->ctrl[1][h].xyz;
+      p->ctrl[2][h].xyz+= vTemp;
     }
   }
   p->width += 2;
@@ -3126,7 +3132,7 @@ Patch_InsertRow
 void Patch_InsertRow(patchMesh_t *p, bool bAdd)
 {
   int h, w, i, j;
-  vec3_t vTemp;
+  edVec3_c vTemp;
   
   if (p->height + 2 >= MAX_PATCH_HEIGHT)
     return;
@@ -3136,16 +3142,16 @@ void Patch_InsertRow(patchMesh_t *p, bool bAdd)
     for (w = 0; w < p->width; w++)
     {
       j = p->height-1;
-      VectorSubtract(p->ctrl[w][j].xyz, p->ctrl[w][j-1].xyz, vTemp);
+      vTemp = p->ctrl[w][j].xyz - p->ctrl[w][j-1].xyz;
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
 
       memcpy(&p->ctrl[w][j+2],&p->ctrl[w][j], sizeof(drawVert_t));
       memcpy(&p->ctrl[w][j],&p->ctrl[w][j-1], sizeof(drawVert_t));
 
-      VectorAdd(p->ctrl[w][j].xyz, vTemp, p->ctrl[w][j].xyz);
+      p->ctrl[w][j].xyz += vTemp;
       memcpy(&p->ctrl[w][j+1], &p->ctrl[w][j], sizeof(drawVert_t));
-      VectorAdd(p->ctrl[w][j+1].xyz, vTemp, p->ctrl[w][j+1].xyz);
+      p->ctrl[w][j+1].xyz += vTemp;
     }
   }
   else
@@ -3158,13 +3164,13 @@ void Patch_InsertRow(patchMesh_t *p, bool bAdd)
         memcpy(&p->ctrl[w][h+2],&p->ctrl[w][h], sizeof(drawVert_t));
         h--;
       }
-      VectorSubtract(p->ctrl[w][1].xyz, p->ctrl[w][0].xyz, vTemp);
+      vTemp = p->ctrl[w][1].xyz - p->ctrl[w][0].xyz;
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
-      VectorCopy(p->ctrl[w][0].xyz, p->ctrl[w][1].xyz);
-      VectorAdd(p->ctrl[w][1].xyz, vTemp, p->ctrl[w][1].xyz);
-      VectorCopy(p->ctrl[w][1].xyz, p->ctrl[w][2].xyz);
-      VectorAdd(p->ctrl[w][2].xyz, vTemp, p->ctrl[w][2].xyz);
+      p->ctrl[w][1].xyz = p->ctrl[w][0].xyz;
+      p->ctrl[w][1].xyz += vTemp;
+      p->ctrl[w][2].xyz = p->ctrl[w][1].xyz;
+      p->ctrl[w][2].xyz += vTemp;
     }
   }
   p->height += 2;
@@ -3233,7 +3239,7 @@ Patch_AdjustColumns
 */
 void Patch_AdjustColumns(patchMesh_t *p, int nCols)
 {
-  vec3_t vTemp, vTemp2;
+  edVec3_c vTemp, vTemp2;
   int i, w, h;
 
   if (nCols & 0x01 || p->width + nCols < 3 || p->width + nCols > MAX_PATCH_WIDTH)
@@ -3248,7 +3254,7 @@ void Patch_AdjustColumns(patchMesh_t *p, int nCols)
     // of points across the old bounds
     
     // calc total distance to interpolate 
-    VectorSubtract(p->ctrl[p->width - 1 - nCols][h].xyz, p->ctrl[0][h].xyz, vTemp);
+    vTemp = p->ctrl[p->width - 1 - nCols][h].xyz - p->ctrl[0][h].xyz;
 
     // amount per cycle
     for (i = 0; i < 3; i ++)
@@ -3259,7 +3265,7 @@ void Patch_AdjustColumns(patchMesh_t *p, int nCols)
     // move along
     for (w = 0; w < p->width-1; w++)
     {
-      VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w+1][h].xyz);
+       p->ctrl[w+1][h].xyz = p->ctrl[w][h].xyz + vTemp2;
     }
 
   }
@@ -3282,7 +3288,7 @@ Patch_AdjustRows
 */
 void Patch_AdjustRows(patchMesh_t *p, int nRows)
 {
-  vec3_t vTemp, vTemp2;
+  edVec3_c vTemp, vTemp2;
   int i, w, h;
 
   if (nRows & 0x01 || p->height + nRows < 3 || p->height + nRows > MAX_PATCH_HEIGHT)
@@ -3297,7 +3303,7 @@ void Patch_AdjustRows(patchMesh_t *p, int nRows)
     // of points across the old bounds
 
     // calc total distance to interpolate 
-    VectorSubtract(p->ctrl[w][p->height - 1 - nRows].xyz, p->ctrl[w][0].xyz, vTemp);
+    vTemp = p->ctrl[w][p->height - 1 - nRows].xyz - p->ctrl[w][0].xyz;
     
     //vTemp[0] = vTemp[1] = vTemp[2] = 0;
     //for (h = 0; h < p->height - nRows; h ++)
@@ -3314,7 +3320,7 @@ void Patch_AdjustRows(patchMesh_t *p, int nRows)
     // move along
     for (h = 0; h < p->height-1; h++)
     {
-      VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w][h+1].xyz);
+      p->ctrl[w][h+1].xyz = p->ctrl[w][h].xyz + vTemp2;
     }
 
   }
@@ -3332,7 +3338,7 @@ void Patch_AdjustRows(patchMesh_t *p, int nRows)
 
 void Patch_DisperseRows()
 {
-  vec3_t vTemp, vTemp2;
+  edVec3_c vTemp, vTemp2;
   int i, w, h;
 
 
@@ -3348,7 +3354,7 @@ void Patch_DisperseRows()
         // of points across the old bounds
 
         // calc total distance to interpolate 
-        VectorSubtract(p->ctrl[w][p->height - 1].xyz, p->ctrl[w][0].xyz, vTemp);
+        vTemp = p->ctrl[w][p->height - 1].xyz - p->ctrl[w][0].xyz;
     
         //vTemp[0] = vTemp[1] = vTemp[2] = 0;
         //for (h = 0; h < p->height - nRows; h ++)
@@ -3365,7 +3371,7 @@ void Patch_DisperseRows()
         // move along
         for (h = 0; h < p->height-1; h++)
         {
-          VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w][h+1].xyz);
+          p->ctrl[w][h+1].xyz = p->ctrl[w][h].xyz + vTemp2;
         }
         Patch_Naturalize(p);
 
@@ -3383,7 +3389,7 @@ Patch_AdjustColumns
 */
 void Patch_DisperseColumns()
 {
-  vec3_t vTemp, vTemp2;
+  edVec3_c vTemp, vTemp2;
   int i, w, h;
 
 	for (brush_t *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
@@ -3399,7 +3405,7 @@ void Patch_DisperseColumns()
         // of points across the old bounds
     
         // calc total distance to interpolate 
-        VectorSubtract(p->ctrl[p->width - 1][h].xyz, p->ctrl[0][h].xyz, vTemp);
+        vTemp = p->ctrl[p->width - 1][h].xyz - p->ctrl[0][h].xyz;
 
         // amount per cycle
         for (i = 0; i < 3; i ++)
@@ -3410,7 +3416,7 @@ void Patch_DisperseColumns()
         // move along
         for (w = 0; w < p->width-1; w++)
         {
-          VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w+1][h].xyz);
+          p->ctrl[w+1][h].xyz = p->ctrl[w][h].xyz + vTemp2;
         }
 
       }
@@ -4118,7 +4124,7 @@ void Patch_BendHandleTAB()
         if (g_nBendOriginIndex > p->width-1)
           g_nBendOriginIndex = 0;
       }
-      VectorCopy(p->ctrl[g_nBendOriginIndex][g_nPatchAxisIndex].xyz, g_vBendOrigin);
+      g_vBendOrigin = p->ctrl[g_nBendOriginIndex][g_nPatchAxisIndex].xyz;
     }
     else
     {
@@ -4132,7 +4138,7 @@ void Patch_BendHandleTAB()
         if (g_nBendOriginIndex > p->height-1)
           g_nBendOriginIndex = 0;
       }
-      VectorCopy(p->ctrl[g_nPatchAxisIndex][g_nBendOriginIndex].xyz, g_vBendOrigin);
+      g_vBendOrigin = p->ctrl[g_nPatchAxisIndex][g_nBendOriginIndex].xyz;
     }
   }
   else
@@ -4203,7 +4209,7 @@ void Patch_SetBendRotateOrigin(patchMesh_t *p)
   int nDim3 = (nType == XY) ? 2 : (nType == YZ) ? 0 : 1;
 
   g_vBendOrigin[nDim3] = 0;
-  VectorCopy(g_vBendOrigin, g_pParentWnd->ActiveXY()->RotateOrigin());
+  g_pParentWnd->ActiveXY()->RotateOrigin() = g_vBendOrigin;
   return;
 #else
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -4587,7 +4593,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
       {
         for (j = 0; j < p->height; j++)
         {
-		      VectorMA (p->ctrl[i][j].xyz, nAmount, p->ctrl[i][j].normal, pNew->ctrl[i][j].xyz);
+		      pNew->ctrl[i][j].xyz.vectorMA (p->ctrl[i][j].xyz, nAmount, p->ctrl[i][j].normal);
         }
       }
 
@@ -4607,9 +4613,9 @@ void Patch_Thicken(int nAmount, bool bSeam)
           pSeam->type |= PATCH_SEAM;
           for (i = 0; i < p->height; i++)
           {
-            VectorCopy(p->ctrl[0][i].xyz, pSeam->ctrl[0][i].xyz);
-            VectorCopy(pNew->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz);
-            VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
+            pSeam->ctrl[0][i].xyz = p->ctrl[0][i].xyz;
+            pSeam->ctrl[2][i].xyz = pNew->ctrl[0][i].xyz;
+            pSeam->ctrl[1][i].xyz = pSeam->ctrl[0][i].xyz + pSeam->ctrl[2][i].xyz;
             pSeam->ctrl[1][i].xyz *= 0.5;
           }
 
@@ -4627,9 +4633,9 @@ void Patch_Thicken(int nAmount, bool bSeam)
           pSeam->type |= PATCH_SEAM;
           for (i = 0; i < p->height; i++)
           {
-            VectorCopy(p->ctrl[w][i].xyz, pSeam->ctrl[0][i].xyz);
-            VectorCopy(pNew->ctrl[w][i].xyz, pSeam->ctrl[2][i].xyz);
-            VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
+            pSeam->ctrl[0][i].xyz = p->ctrl[w][i].xyz;
+            pSeam->ctrl[2][i].xyz = pNew->ctrl[w][i].xyz;
+            pSeam->ctrl[1][i].xyz = pSeam->ctrl[0][i].xyz + pSeam->ctrl[2][i].xyz;
             pSeam->ctrl[1][i].xyz *= 0.5;
           }
           Patch_CalcBounds(pSeam, vMin, vMax);
@@ -4646,9 +4652,9 @@ void Patch_Thicken(int nAmount, bool bSeam)
           pSeam->type |= PATCH_SEAM;
           for (i = 0; i < p->width; i++)
           {
-            VectorCopy(p->ctrl[i][0].xyz, pSeam->ctrl[i][0].xyz);
-            VectorCopy(pNew->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz);
-            VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
+            pSeam->ctrl[i][0].xyz = p->ctrl[i][0].xyz;
+            pSeam->ctrl[i][2].xyz = pNew->ctrl[i][0].xyz;
+            pSeam->ctrl[i][1].xyz = pSeam->ctrl[i][0].xyz + pSeam->ctrl[i][2].xyz;
             pSeam->ctrl[i][1].xyz *= 0.5;
           }
 
@@ -4666,9 +4672,9 @@ void Patch_Thicken(int nAmount, bool bSeam)
           pSeam->type |= PATCH_SEAM;
           for (i = 0; i < p->width; i++)
           {
-            VectorCopy(p->ctrl[i][h].xyz, pSeam->ctrl[i][0].xyz);
-            VectorCopy(pNew->ctrl[i][h].xyz, pSeam->ctrl[i][2].xyz);
-            VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
+            pSeam->ctrl[i][0].xyz = p->ctrl[i][h].xyz;
+           pSeam->ctrl[i][2].xyz = pNew->ctrl[i][h].xyz;
+            pSeam->ctrl[i][1].xyz = pSeam->ctrl[i][0].xyz + pSeam->ctrl[i][2].xyz;
             pSeam->ctrl[i][1].xyz *= 0.5;
           }
           Patch_CalcBounds(pSeam, vMin, vMax);

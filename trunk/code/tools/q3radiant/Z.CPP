@@ -60,14 +60,14 @@ Z_MouseDown
 */
 void Z_MouseDown (int x, int y, int buttons)
 {
-	vec3_t	org, dir, vup, vright;
+	edVec3_c	org, dir, vup, vright;
 	brush_t	*b;
 
 	Sys_GetCursorPos (&cursorx, &cursory);
 
 	vup[0] = 0; vup[1] = 0; vup[2] = 1/z.scale;
 
-	VectorCopy (z.origin, org);
+	org = z.origin;
 	org[2] += (y - (z.height/2))/z.scale;
 	org[1] = -8192;
 
@@ -277,7 +277,7 @@ void Z_Draw (void)
 	double	start, end;
 	qtexture_t	*q;
 	float	top, bottom;
-	vec3_t	org_top, org_bottom, dir_up, dir_down;
+	edVec3_c	org_top, org_bottom, dir_up, dir_down;
 	int xCam = z.width/3;
 
 	if (!active_brushes.next)
@@ -340,9 +340,9 @@ void Z_Draw (void)
 	// draw filled interiors and edges
 	dir_up[0] = 0 ; dir_up[1] = 0; dir_up[2] = 1;
 	dir_down[0] = 0 ; dir_down[1] = 0; dir_down[2] = -1;
-	VectorCopy (z.origin, org_top);
+	org_top = z.origin;
 	org_top[2] = 4096;
-	VectorCopy (z.origin, org_bottom);
+	org_bottom = z.origin;
 	org_bottom[2] = -4096;
 
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)

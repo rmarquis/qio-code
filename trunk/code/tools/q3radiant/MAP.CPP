@@ -394,8 +394,8 @@ void Map_LoadFile (char *filename)
 	else
 	{
 		g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
-		VectorCopy (vec3_origin, g_pParentWnd->GetCamera()->Camera().origin);
-		VectorCopy (vec3_origin, g_pParentWnd->GetXYWnd()->GetOrigin());
+		g_pParentWnd->GetCamera()->Camera().origin.clear();
+		g_pParentWnd->GetXYWnd()->GetOrigin().clear();
 	}
 
 	Map_RegionOff ();
@@ -538,9 +538,9 @@ void Map_New (void)
 
 	g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
 	g_pParentWnd->GetCamera()->Camera().angles[PITCH] = 0;
-	VectorCopy (vec3_origin, g_pParentWnd->GetCamera()->Camera().origin);
+	g_pParentWnd->GetCamera()->Camera().origin.clear();
 	g_pParentWnd->GetCamera()->Camera().origin[2] = 48;
-	VectorCopy (vec3_origin, g_pParentWnd->GetXYWnd()->GetOrigin());
+	g_pParentWnd->GetXYWnd()->GetOrigin().clear();
 
 	Map_RestoreBetween ();
 
@@ -559,8 +559,8 @@ void Map_New (void)
 */
 
 bool	region_active;
-vec3_t	region_mins = {MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD};
-vec3_t	region_maxs = {MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD};
+edVec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
+edVec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
 
 brush_t	*region_sides[4];
 /*
@@ -762,8 +762,8 @@ void Map_RegionTallBrush (void)
 
 	Map_RegionOff ();
 
-	VectorCopy (b->mins, region_mins);
-	VectorCopy (b->maxs, region_maxs);
+	region_mins = b->mins;
+	region_maxs = b->maxs;
 	region_mins[2] = MIN_WORLD_COORD;
 	region_maxs[2] = MAX_WORLD_COORD;
 
@@ -787,8 +787,8 @@ void Map_RegionBrush (void)
 
 	Map_RegionOff ();
 
-	VectorCopy (b->mins, region_mins);
-	VectorCopy (b->maxs, region_maxs);
+	region_mins = b->mins;
+	region_maxs = b->maxs;
 
 	Select_Delete ();
 	Map_ApplyRegion ();

@@ -63,8 +63,8 @@ brush_t g_brClipboard;
 brush_t g_brUndo;
 entity_t	g_enClipboard;
 
-vec3_t g_vRotateOrigin;
-vec3_t g_vRotation;
+edVec3_c g_vRotateOrigin;
+edVec3_c g_vRotation;
 
 bool g_bPathMode;
 CClipPoint g_PathPoints[256];
@@ -509,9 +509,9 @@ void CXYWnd::ProduceSplits(brush_t** pFront, brush_t** pBack)
     if (g_Clip1.Set() && g_Clip2.Set())
     {
       face_t face;
-      VectorCopy(g_Clip1.m_ptClip,face.planepts[0]);
-      VectorCopy(g_Clip2.m_ptClip,face.planepts[1]);
-      VectorCopy(g_Clip3.m_ptClip,face.planepts[2]);
+      face.planepts[0] = g_Clip1.m_ptClip;
+      face.planepts[1] = g_Clip2.m_ptClip;
+      face.planepts[2] = g_Clip3.m_ptClip;
       if (selected_brushes.next && (selected_brushes.next->next == &selected_brushes))
       {
         if (g_Clip3.Set() == false)
@@ -598,9 +598,9 @@ void CXYWnd::ProduceSplitLists()
 			if (g_Clip1.Set() && g_Clip2.Set())
 			{
 				face_t face;
-				VectorCopy(g_Clip1.m_ptClip,face.planepts[0]);
-				VectorCopy(g_Clip2.m_ptClip,face.planepts[1]);
-				VectorCopy(g_Clip3.m_ptClip,face.planepts[2]);
+				face.planepts[0] = g_Clip1.m_ptClip;
+				face.planepts[1] = g_Clip2.m_ptClip;
+				face.planepts[2] = g_Clip3.m_ptClip;
 				if (g_Clip3.Set() == false)
 				{
 					if (g_pParentWnd->ActiveXY()->GetViewType() == XY)
@@ -1165,13 +1165,13 @@ void CreateEntityFromName(char* pName, brush_t* pBrush)
 			brush_t* b = selected_brushes.next;
 			if (b->owner != world_entity && b->owner->eclass->fixedsize && pecNew->fixedsize)
 			{
-				vec3_t mins, maxs;
-				vec3_t origin;
+				edVec3_c mins, maxs;
+				edVec3_c origin;
 				for (int i=0 ; i<3 ; i++)
 					origin[i] = b->mins[i] - pecNew->mins[i];
 				
-				VectorAdd (pecNew->mins, origin, mins);
-				VectorAdd (pecNew->maxs, origin, maxs);
+				mins = pecNew->mins + origin;
+				maxs = pecNew->maxs + origin;
 				brush_t* nb = Brush_Create (mins, maxs, &pecNew->texdef);
 				Entity_LinkBrush (b->owner, nb);
 				nb->owner->eclass = pecNew;
@@ -1620,17 +1620,17 @@ void CXYWnd::XY_ToGridPoint (int x, int y, vec3_t point)
 void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 {
 
-	vec3_t	point;
-	vec3_t	origin, dir, right, up;
+	edVec3_c	point;
+	edVec3_c	origin, dir, right, up;
 
 	m_nButtonstate = buttons;
   m_nPressx = x;
 	m_nPressy = y;
-	VectorCopy (vec3_origin, m_vPressdelta);
+	m_vPressdelta.clear();
 
 	XY_ToPoint (x, y, point);
 	
-  VectorCopy (point, origin);
+  origin = point;
 
 	dir[0] = 0; dir[1] = 0; dir[2] = 0;
   if (m_nViewType == XY)
@@ -1698,7 +1698,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 	if ((g_PrefsDlg.m_nMouseButtons == 3 && m_nButtonstate == MK_MBUTTON) ||
       (g_PrefsDlg.m_nMouseButtons == 2 && m_nButtonstate == (MK_SHIFT|MK_CONTROL|MK_RBUTTON)))
 	{	
-		VectorSubtract (point, g_pParentWnd->GetCamera()->Camera().origin, point);
+		point -= g_pParentWnd->GetCamera()->Camera().origin;
 
     int n1 = (m_nViewType == XY) ? 1 : 2;
     int n2 = (m_nViewType == YZ) ? 1 : 0;
@@ -1719,7 +1719,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 	    VectorCopyXY(point, g_vRotateOrigin);
       if (g_bPatchBendMode)
       {
-        VectorCopy(point, g_vBendOrigin);
+        g_vBendOrigin = point;
       }
 		  Sys_UpdateWindows (W_XY);
       return;
@@ -1761,7 +1761,7 @@ void CXYWnd::XY_MouseUp(int x, int y, int buttons)
 
 bool CXYWnd::DragDelta (int x, int y, vec3_t move)
 {
-	vec3_t	xvec, yvec, delta;
+	edVec3_c	xvec, yvec, delta;
 	int		i;
 
 	xvec[0] = 1 / m_fScale;
@@ -1777,8 +1777,8 @@ bool CXYWnd::DragDelta (int x, int y, vec3_t move)
 		  delta[i] = floor(delta[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
     }
 	}
-	VectorSubtract (delta, m_vPressdelta, move);
-	VectorCopy (delta, m_vPressdelta);
+	move = delta - m_vPressdelta;
+	m_vPressdelta = delta;
 
 	if (move[0] || move[1] || move[2])
 		return true;
@@ -1793,7 +1793,7 @@ NewBrushDrag
 */
 void CXYWnd::NewBrushDrag (int x, int y)
 {
-	vec3_t	mins, maxs, junk;
+	edVec3_c	mins, maxs, junk;
 	int		i;
 	float	temp;
 	brush_t	*n;
@@ -1831,8 +1831,7 @@ void CXYWnd::NewBrushDrag (int x, int y)
 	if (!n)
 		return;
 
-  vec3_t vSize;
-  VectorSubtract(maxs, mins, vSize);
+  edVec3_c vSize = maxs - mins;
   g_strStatus.Format("Size X:: %.1f  Y:: %.1f  Z:: %.1f", vSize[0], vSize[1], vSize[2]);
   g_pParentWnd->SetStatusText(2, g_strStatus);
 
@@ -1854,7 +1853,7 @@ XY_MouseMoved
 */
 void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
 {
-	vec3_t	point;
+	edVec3_c	point;
 
 
 	if (!m_nButtonstate)
@@ -1904,7 +1903,7 @@ void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
 	    VectorCopyXY(point, g_vRotateOrigin);
       if (g_bPatchBendMode)
       {
-        VectorCopy(point, g_vBendOrigin);
+        g_vBendOrigin = point;
       }
 		  Sys_UpdateWindows (W_XY);
       return;
@@ -1937,7 +1936,7 @@ void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
       (g_PrefsDlg.m_nMouseButtons == 2 && m_nButtonstate == (MK_SHIFT|MK_CONTROL|MK_RBUTTON)))
 	{	
 		SnapToPoint (x, y, point);
-		VectorSubtract (point, g_pParentWnd->GetCamera()->Camera().origin, point);
+		point -= g_pParentWnd->GetCamera()->Camera().origin;
 
     int n1 = (m_nViewType == XY) ? 1 : 2;
     int n2 = (m_nViewType == YZ) ? 1 : 0;
@@ -2497,7 +2496,7 @@ Called for both camera view and xy view.
 void DrawPathLines (void)
 {
 	int		i, j, k;
-	vec3_t	mid, mid1;
+	edVec3_c	mid, mid1;
 	entity_t *se, *te;
 	brush_t	*sb, *tb;
 	char	*psz;
@@ -2549,7 +2548,7 @@ void DrawPathLines (void)
 			for (i=0 ; i<3 ; i++)
 				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
 
-			VectorSubtract (mid1, mid, dir);
+			dir = mid1 - mid;
 			len = dir.normalize();
 			s1[0] = -dir[1]*8 + dir[0]*8;
 			s2[0] = dir[1]*8 + dir[0]*8;
@@ -2587,11 +2586,10 @@ void DrawPathLines (void)
 
 // can be greatly simplified but per usual i am in a hurry 
 // which is not an excuse, just a fact
-void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, vec3_t vMinBounds, vec3_t vMaxBounds)
+void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds)
 {
 
-  vec3_t vSize;
-  VectorSubtract(vMaxBounds, vMinBounds, vSize);
+  edVec3_c vSize = vMaxBounds - vMinBounds;
 
   qglColor3f(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][0] * .65, 
             g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][1] * .65,
@@ -3010,8 +3008,8 @@ void CXYWnd::XY_Overlay()
 {
 	int	w, h;
 	int	r[4];
-	static	vec3_t	lastz;
-	static	vec3_t	lastcamera;
+	static	edVec3_c	lastz;
+	static	edVec3_c	lastcamera;
 
 
 	qglViewport(0, 0, m_nWidth, m_nHeight);
@@ -3048,8 +3046,8 @@ void CXYWnd::XY_Overlay()
 	//
 	// save off underneath where we are about to draw
 	//
-	VectorCopy (z.origin, lastz);
-	VectorCopy (g_pParentWnd->GetCamera()->Camera().origin, lastcamera);
+	lastz = z.origin;
+	lastcamera = g_pParentWnd->GetCamera()->Camera().origin;
 
 	qglReadBuffer (GL_FRONT);
 	qglDrawBuffer (GL_BACK);
@@ -3082,7 +3080,7 @@ void CXYWnd::XY_Overlay()
 }
 
 
-vec3_t& CXYWnd::GetOrigin()
+edVec3_c& CXYWnd::GetOrigin()
 {
   return m_vOrigin;
 }
@@ -3555,12 +3553,12 @@ void CXYWnd::Paste()
 }
 
 
-vec3_t& CXYWnd::Rotation()
+edVec3_c& CXYWnd::Rotation()
 {
   return g_vRotation;
 }
 
-vec3_t& CXYWnd::RotateOrigin()
+edVec3_c& CXYWnd::RotateOrigin()
 {
   return g_vRotateOrigin;
 }

@@ -91,7 +91,7 @@ void		Brush_Move (brush_t *b, const vec3_t move, bool bSnap = true);
 int			Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap = true);
 void		Brush_ResetFaceOriginals(brush_t *b);
 brush_t*	Brush_Parse (void);
-face_t*		Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist);
+face_t*		Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_t *b, float *dist);
 void		Brush_RemoveFromList (brush_t *b);
 void		Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back);
 void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear);

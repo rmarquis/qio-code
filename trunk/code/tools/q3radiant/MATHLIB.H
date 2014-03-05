@@ -30,6 +30,15 @@ typedef float vec_t;
 typedef vec_t vec3_t[3];
 typedef vec_t vec5_t[5];
 
+#define	EQUAL_EPSILON	0.001
+#define	PITCH				0		// up / down
+#define	YAW					1		// left / right
+#define	ROLL				2		// fall over
+
+#ifndef M_PI
+#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
+
 class edVec3_c {
 public:
 	union {
@@ -48,12 +57,21 @@ public:
 		_v[2] = c;
 	}
 	edVec3_c(const float *p) {
+		if(p == 0) {
+			_v[0] = _v[1] = _v[2] = 0.f;
+			return;
+		}
 		_v[0] = p[0];
 		_v[1] = p[1];
 		_v[2] = p[2];
 	}
 	void clear() {
 		x = y = z = 0.0f;
+	}
+	void set(float a, float b, float c) {
+		_v[0] = a;
+		_v[1] = b;
+		_v[2] = c;
 	}
 	float vectorLength() const {
 		float length = 0.0f;
@@ -62,6 +80,12 @@ public:
 		length = sqrt (length);
 		return length;
 	}
+	void vectorSnap() {
+		for (int i = 0; i < 3; i++) {
+			_v[i] = floor (_v[i] + 0.5);
+		}
+	}
+
 	float normalize() {
 		float length = 0.0f;
 		for (int i = 0; i < 3; i++)
@@ -81,6 +105,47 @@ public:
 	float dotProduct(const float *x) const {
 		return (x[0]*_v[0]+x[1]*_v[1]+x[2]*_v[2]);
 	}
+	// sets this vector to a MA (multiply add) result of given arguments
+	void vectorMA (const edVec3_c &base, float scale, const edVec3_c &dir) {
+		_v[0] = base[0] + scale*dir[0];
+		_v[1] = base[1] + scale*dir[1];
+		_v[2] = base[2] + scale*dir[2];
+	}
+	void makeAngleVectors(vec3_t forward, vec3_t right, vec3_t up) {
+		float		angle;
+		static float		sr, sp, sy, cr, cp, cy;
+		// static to help MS compiler fp bugs
+		
+		angle = _v[YAW] * (M_PI*2 / 360);
+		sy = sin(angle);
+		cy = cos(angle);
+		angle = _v[PITCH] * (M_PI*2 / 360);
+		sp = sin(angle);
+		cp = cos(angle);
+		angle = _v[ROLL] * (M_PI*2 / 360);
+		sr = sin(angle);
+		cr = cos(angle);
+		
+		if (forward)
+		{
+			forward[0] = cp*cy;
+			forward[1] = cp*sy;
+			forward[2] = -sp;
+		}
+		if (right)
+		{
+			right[0] = -sr*sp*cy+cr*sy;
+			right[1] = -sr*sp*sy-cr*cy;
+			right[2] = -sr*cp;
+		}
+		if (up)
+		{
+			up[0] = cr*sp*cy+sr*sy;
+			up[1] = cr*sp*sy-sr*cy;
+			up[2] = cr*cp;
+		}
+	}
+
 	void operator *=(float f) {
 		x *= f;
 		y *= f;
@@ -90,6 +155,19 @@ public:
 		x += other.x;
 		y += other.y;
 		z += other.z;
+	}
+	void operator -=(const edVec3_c &other) {
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
+	}
+	bool vectorCompare(const edVec3_c &other, float epsilon = EQUAL_EPSILON) const {
+		for (int i = 0; i < 3; i++) {
+			if (fabs(_v[i]-other._v[i]) > epsilon) {
+				return false;
+			}
+		}			
+		return true;
 	}
 	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
 		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
@@ -103,8 +181,7 @@ public:
 	edVec3_c operator -() const {
 		return edVec3_c(-x,-y,-z);
 	}
-	void setupPolar(float radius, float theta, float phi)
-	{
+	void setupPolar(float radius, float theta, float phi) {
  		_v[0]=float(radius * cos(theta) * cos(phi));
 		_v[1]=float(radius * sin(theta) * cos(phi));
 		_v[2]=float(radius * sin(phi));
@@ -132,24 +209,7 @@ public:
 #define	M_PI	3.14159265358979323846
 #endif 
 
-extern vec3_t vec3_origin;
-
-#define	EQUAL_EPSILON	0.001
-
-bool VectorCompare (vec3_t v1, vec3_t v2);
-
-//#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
-#define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
-#define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
-#define VectorSet(v, a, b, c) {v[0]=a;v[1]=b;v[2]=c;}
-
 vec_t Q_rint (vec_t in);
-
-
-void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc);
-
-void VectorSnap(vec3_t v);
 
 void _Vector53Copy (vec5_t in, vec3_t out);
 void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out);
@@ -159,9 +219,8 @@ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
 void ClearBounds (vec3_t mins, vec3_t maxs);
 void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
 
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-void VectorToAngles( vec3_t vec, vec3_t angles );
-#define VectorClear(x) {x[0] = x[1] = x[2] = 0;}
+//void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+//void VectorToAngles( vec3_t vec, vec3_t angles );
 
 #define ZERO_EPSILON 1.0E-6
 #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )

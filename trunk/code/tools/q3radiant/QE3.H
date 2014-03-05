@@ -203,7 +203,7 @@ typedef struct
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
 	brush_t		*d_select_order[2];
-	vec3_t       d_select_translate;    // for dragging w/o making new display lists
+	edVec3_c       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	
 	int		     d_font_list;
@@ -224,8 +224,8 @@ typedef struct
 	bool	bOldBrushes;
 	bool	bPrimitBrushes;
 	
-	vec3_t  d_vAreaTL;
-	vec3_t  d_vAreaBR;
+	edVec3_c  d_vAreaTL;
+	edVec3_c  d_vAreaBR;
 	
 	// tells if we are using .INI files for prefs instead of registry
 	bool	use_ini;
@@ -416,8 +416,7 @@ void Patch_ReadFile (char *name);
 void Patch_WriteFile (char *name); 
 void Patch_BuildPoints (brush_t *b);
 void Patch_Move(patchMesh_t *p, const vec3_t vMove, bool bRebuild = false);
-//++timo had to add a default value for bSnap (see Patch_ApplyMatrix call from Select_ApplyMatrix in select.cpp)
-void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap = false);
+void Patch_ApplyMatrix(patchMesh_t *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap = false);
 void Patch_EditPatch();
 void Patch_Deselect();
 void Patch_Deselect(patchMesh_t *p);
@@ -429,7 +428,7 @@ void Patch_Cleanup();
 void Patch_SetView(int n);
 void Patch_SetTexture(patchMesh_t *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef = NULL);
 void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
-bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove);
+bool Patch_DragScale(patchMesh_t *p, const edVec3_c &vAmt, const edVec3_c &vMove);
 void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
 void Patch_WriteFile (CMemFile* pMemFile);
 void Patch_UpdateSelected(vec3_t vMove);
@@ -491,7 +490,7 @@ extern bool g_bPatchWeld;
 extern bool g_bPatchDrillDown;
 extern bool g_bPatchInsertMode;
 extern bool g_bPatchBendMode;
-extern vec3_t g_vBendOrigin;
+extern edVec3_c g_vBendOrigin;
 void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
 const char* Patch_GetKeyValue(patchMesh_t *p, const char *pKey);
 void Patch_SetEpair(patchMesh_t *p, const char *pKey, const char *pValue);

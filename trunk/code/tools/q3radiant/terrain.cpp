@@ -95,7 +95,7 @@ int Terrain_MemorySize( terrainMesh_t *p ) {
 }
 
 void Terrain_GetVert( terrainMesh_t *pm, int x, int y, float s, float t, terravert_t *v, qtexture_t *texture = NULL ) {
-	terrainVert_t *cell;
+	/*terrainVert_t *cell;
 
 	v->index = x + y * pm->width;
 
@@ -114,7 +114,7 @@ void Terrain_GetVert( terrainMesh_t *pm, int x, int y, float s, float t, terrave
 	}
 
 	v->tc[ 0 ] = s;
-	v->tc[ 1 ] = t;
+	v->tc[ 1 ] = t;*/
 }
 
 void Terrain_GetTriangles( terrainMesh_t *pm, int x, int y, terravert_t *a0, terravert_t *a1, terravert_t *a2, terravert_t *b0, terravert_t *b1, terravert_t *b2, qtexture_t *texture ) {
@@ -265,9 +265,11 @@ terrainMesh_t *MakeNewTerrain( int width, int height, qtexture_t *texture ) {
 
 			vert->height = 0;
 
-			VectorClear( vert->normal );
-			VectorSet( vert->rgba, 1.0f, 1.0f, 1.0f );
-			vert->rgba[ 3 ] = 1.0f;
+			vert->normal.clear();
+			vert->rgba[0] = 1.0f;
+			vert->rgba[1] = 1.0f;
+			vert->rgba[2] = 1.0f;
+			vert->rgba[3] = 1.0f;
 		}
 	}
    
@@ -319,14 +321,14 @@ brush_t *AddBrushForTerrain( terrainMesh_t *pm, bool bLinkToWorld ) {
 }
 
 terrainMesh_t *Terrain_Duplicate( terrainMesh_t *pFrom ) {
-	terrainMesh_t *p;
-	int w;
+	terrainMesh_t *p = 0;
+/*	int w;
 	int h;
 	int index;
 
 	p = MakeNewTerrain( pFrom->width, pFrom->height );
    
-	VectorCopy( pFrom->origin, p->origin );
+	p->origin = pFrom->origin,  );
 	VectorCopy( pFrom->mins, p->mins );
 	VectorCopy( pFrom->maxs, p->maxs );
 
@@ -349,7 +351,7 @@ terrainMesh_t *Terrain_Duplicate( terrainMesh_t *pFrom ) {
 	p->bDirty      = true;
 	p->nListID     = -1;
 
-	AddBrushForTerrain( p );
+	AddBrushForTerrain( p );*/
 
 	return p;
 }
@@ -376,7 +378,7 @@ void Terrain_BrushToMesh( void ) {
 	p->scale_x = ( b->maxs[ 0 ] - b->mins[ 0 ] ) / float( p->width - 1 );
 	p->scale_y = ( b->maxs[ 1 ] - b->mins[ 1 ] ) / float( p->height - 1 );
 
-	VectorCopy( b->mins, p->origin );
+	p->origin =  b->mins;
 
 	b = AddBrushForTerrain( p );
 	Select_Delete();
@@ -566,7 +568,7 @@ void Terrain_Deselect( terrainMesh_t *p ) {
 void Terrain_Move( terrainMesh_t *pm, const vec3_t vMove, bool bRebuild ) {
 	pm->bDirty = true;
 
-	VectorAdd( pm->origin, vMove, pm->origin );
+	pm->origin += vMove;
 
 	if ( bRebuild ) {
 		vec3_t vMin; 
@@ -628,14 +630,14 @@ void CalcTriNormal( const vec3_t a, const vec3_t b, const vec3_t c, vec3_t o ) {
 }
 
 inline void Terrain_CalcVertPos( terrainMesh_t *p, int x, int y, vec3_t vert ) {
-	int index;
+	//int index;
 
-	index = x + y * p->width;
-	vert[ 0 ] = p->origin[ 0 ] + x * p->scale_x;
-	vert[ 1 ] = p->origin[ 1 ] + y * p->scale_y;
-	vert[ 2 ] = p->origin[ 2 ] + p->heightmap[ index ].height;
-	
-	VectorCopy( vert, p->heightmap[ index ].xyz );
+	//index = x + y * p->width;
+	//vert[ 0 ] = p->origin[ 0 ] + x * p->scale_x;
+	//vert[ 1 ] = p->origin[ 1 ] + y * p->scale_y;
+	//vert[ 2 ] = p->origin[ 2 ] + p->heightmap[ index ].height;
+	//
+	//VectorCopy( vert, p->heightmap[ index ].xyz );
 }
    
 void Terrain_CalcNormals( terrainMesh_t *p ) {
@@ -832,54 +834,54 @@ void Terrain_Scale( terrainMesh_t *p, const vec3_t vOrigin, const vec3_t vAmt, b
 }
 
 bool Terrain_DragScale( terrainMesh_t *p, vec3_t vAmt, vec3_t vMove ) {
-	vec3_t	vMin;
-	vec3_t	vMax;
-	vec3_t	vScale;
-	edVec3_c	vTemp;
-	vec3_t	vMid;
-	int		i;
+	//vec3_t	vMin;
+	//vec3_t	vMax;
+	//vec3_t	vScale;
+	//edVec3_c	vTemp;
+	//vec3_t	vMid;
+	//int		i;
 
-	Terrain_CalcBounds( p, vMin, vMax );
+	//Terrain_CalcBounds( p, vMin, vMax );
 
-	VectorSubtract( vMax, vMin, vTemp );
+	//VectorSubtract( vMax, vMin, vTemp );
 
-	// if we are scaling in the same dimension the terrain has no depth
-	for( i = 0; i < 3; i++ ) {
-		if ( ( vTemp[ i ] == 0 ) && ( vMove[ i ] != 0 ) ) {
-			return false;
-		}
-	}
-  
-	for( i = 0; i < 3; i++ ) {
-		vMid[ i ] = ( vMin[ i ] + vMax[ i ] ) / 2;
-	}
+	//// if we are scaling in the same dimension the terrain has no depth
+	//for( i = 0; i < 3; i++ ) {
+	//	if ( ( vTemp[ i ] == 0 ) && ( vMove[ i ] != 0 ) ) {
+	//		return false;
+	//	}
+	//}
+ // 
+	//for( i = 0; i < 3; i++ ) {
+	//	vMid[ i ] = ( vMin[ i ] + vMax[ i ] ) / 2;
+	//}
 
-	for( i = 0; i < 3; i++ ) {
-		if ( vAmt[ i ] != 0 ) {
-			vScale[i] = 1.0 + vAmt[i] / vTemp[i];
-		} else {
-			vScale[i] = 1.0;
-		}
-	}
+	//for( i = 0; i < 3; i++ ) {
+	//	if ( vAmt[ i ] != 0 ) {
+	//		vScale[i] = 1.0 + vAmt[i] / vTemp[i];
+	//	} else {
+	//		vScale[i] = 1.0;
+	//	}
+	//}
 
-	Terrain_Scale( p, vMid, vScale, false );
-	VectorSubtract( vMax, vMin, vTemp );
-	Terrain_CalcBounds( p, vMin, vMax );
-  	VectorSubtract( vMax, vMin, vMid );
-	VectorSubtract( vMid, vTemp, vTemp );
-	vTemp *= 0.5f;
+	//Terrain_Scale( p, vMid, vScale, false );
+	//VectorSubtract( vMax, vMin, vTemp );
+	//Terrain_CalcBounds( p, vMin, vMax );
+ // 	VectorSubtract( vMax, vMin, vMid );
+	//VectorSubtract( vMid, vTemp, vTemp );
+	//vTemp *= 0.5f;
 
-	// abs of both should always be equal
-	if ( !VectorCompare( vMove, vAmt ) ) {
-		for( i = 0; i < 3; i++ ) {
-			if ( vMove[ i ] != vAmt[ i ] ) {
-				vTemp[ i ] = -vTemp[ i ];
-			}
-		}
-	}
+	//// abs of both should always be equal
+	//if ( !VectorCompare( vMove, vAmt ) ) {
+	//	for( i = 0; i < 3; i++ ) {
+	//		if ( vMove[ i ] != vAmt[ i ] ) {
+	//			vTemp[ i ] = -vTemp[ i ];
+	//		}
+	//	}
+	//}
 
-	Terrain_CalcNormals( p );
-	Terrain_Move( p, vTemp );
+	//Terrain_CalcNormals( p );
+	//Terrain_Move( p, vTemp );
 
 	return true;
 }
@@ -1351,7 +1353,7 @@ void Terrain_SelectPointByRay( vec3_t org, vec3_t dir, int buttons ) {
 	terrainFace_t	*bestface;
 	brush_t			*pb;
 	float			dist;
-	vec3_t			vec;
+	edVec3_c			vec;
 
 	// find the point closest to the ray
 	bestface = NULL;
@@ -1380,7 +1382,7 @@ void Terrain_SelectPointByRay( vec3_t org, vec3_t dir, int buttons ) {
 		return;
 	}
 	
-	VectorMA( org, bestd, dir, vec );
+	vec.vectorMA( org, bestd, dir );
 	Terrain_AddMovePoint( vec, buttons & MK_CONTROL, buttons & MK_SHIFT, buttons );
 }
 

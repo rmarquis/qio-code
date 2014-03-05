@@ -32,10 +32,6 @@ typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
-
 class texdef_t
 {
 public:
@@ -169,6 +165,9 @@ public:
 	}
 	float dotProduct(const float *pVec3) const {
 		return xyz.dotProduct(pVec3);
+	}
+	bool vectorCompare(const edVec3_c &other, float epsilon = EQUAL_EPSILON) const {
+		return xyz.vectorCompare(other,epsilon);
 	}
 	const float operator [] (int index) const {
 		return (&xyz.x)[index];
@@ -308,7 +307,7 @@ typedef struct {
 	edVec3_c	xyz;
 	float		st[2];
 	float		lightmap[2];
-	vec3_t		normal;	
+	edVec3_c	normal;	
 	
 	texturedVertex_c &asWindingPoint() {
 		return *((texturedVertex_c*)(this));
@@ -350,16 +349,16 @@ typedef struct {
 	float			scale;
 	terrainFace_t	tri;
 	vec4_t			rgba;
-	vec3_t			normal;
-	vec3_t			xyz;
+	edVec3_c			normal;
+	edVec3_c			xyz;
 } terrainVert_t;
 
 #define MAX_TERRAIN_TEXTURES 128
 typedef struct {
 	int				width, height;
 
-	vec3_t			mins, maxs;
-	vec3_t			origin;
+	edVec3_c			mins, maxs;
+	edVec3_c			origin;
 	float			scale_x;
 	float			scale_y;
 
@@ -381,7 +380,7 @@ typedef struct brush_s
 	struct brush_s	*prev, *next;	// links in active/selected
 	struct brush_s	*oprev, *onext;	// links in entity
 	struct entity_s	*owner;
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 	face_t     *brush_faces;
 
 	bool bModelFailed;
@@ -453,7 +452,7 @@ typedef struct eclass_s
 	char	*name;
 	bool	fixedsize;
 	bool	unknown;		// wasn't found in source
-	vec3_t	mins, maxs;
+	edVec3_c	mins, maxs;
 	vec3_t	color;
 	texdef_t	texdef;
 	char	*comments;

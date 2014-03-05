@@ -93,8 +93,8 @@ public:
 // Implementation
 public:
   bool AreaSelectOK();
-  vec3_t& RotateOrigin();
-  vec3_t& Rotation();
+  edVec3_c& RotateOrigin();
+  edVec3_c& Rotation();
   void UndoClear();
   bool UndoAvailable();
   void KillPathMode();
@@ -108,7 +108,7 @@ public:
 	void FlipClip();
 	void SplitClip();
 	void Clip();
-	vec3_t& GetOrigin();
+	edVec3_c& GetOrigin();
 	void SetOrigin(vec3_t org);		// PGM
 	void XY_Init();
   void XY_Overlay();
@@ -178,14 +178,14 @@ protected:
 	float	m_TopClip;
   float m_BottomClip;
   bool m_bDirty;
-	vec3_t m_vOrigin;
+	edVec3_c m_vOrigin;
 	CPoint m_ptCursor;
   bool m_bRButtonDown;
 
   int	m_nButtonstate;
   int m_nPressx;
   int m_nPressy;
-  vec3_t m_vPressdelta;
+  edVec3_c m_vPressdelta;
   bool m_bPress_selection;
 
   friend CCamWnd;
@@ -205,7 +205,7 @@ protected:
   void ProduceSplits(brush_t** pFront, brush_t** pBack);
   void ProduceSplitLists();
   void HandleDrop();
-  void PaintSizeInfo(int nDim1, int nDim2, vec3_t vMinBounds, vec3_t vMaxBounds);
+  void PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds);
 
   void OnEntityCreate(unsigned int nID);
   CPoint m_ptDown;

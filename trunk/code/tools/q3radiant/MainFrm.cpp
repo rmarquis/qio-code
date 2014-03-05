@@ -2902,7 +2902,7 @@ void CMainFrame::OnCameraAngleup()
 
 void CMainFrame::OnCameraBack() 
 {
-  VectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
+  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().forward);
   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
 	Sys_UpdateWindows (nUpdate);
 }
@@ -2916,7 +2916,7 @@ void CMainFrame::OnCameraDown()
 
 void CMainFrame::OnCameraForward() 
 {
-  VectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
+  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().forward);
   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
 	Sys_UpdateWindows (nUpdate);
 }
@@ -2937,14 +2937,14 @@ void CMainFrame::OnCameraRight()
 
 void CMainFrame::OnCameraStrafeleft() 
 {
-  VectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
+ m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().right);
   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
 	Sys_UpdateWindows (nUpdate);
 }
 
 void CMainFrame::OnCameraStraferight() 
 {
-  VectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
+  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().right);
   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
 	Sys_UpdateWindows (nUpdate);
 }

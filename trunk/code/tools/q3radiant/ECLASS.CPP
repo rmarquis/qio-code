@@ -107,7 +107,7 @@ void CleanUpEntities()
   }
 }
 
-void ExtendBounds(vec3_t v, vec3_t &vMin, vec3_t &vMax)
+void ExtendBounds(vec3_t v, edVec3_c &vMin, edVec3_c &vMax)
 {
 	for (int i = 0 ;i < 3 ;i++)
 	{
@@ -129,7 +129,7 @@ void ExtendBounds(vec3_t v, vec3_t &vMin, vec3_t &vMax)
 
 // FIXME: this code is a TOTAL clusterfuck
 //
-void LoadModel(const char *pLocation, eclass_t *e, vec3_t &vMin, vec3_t &vMax, entitymodel *&pModel, const char *pSkin)
+void LoadModel(const char *pLocation, eclass_t *e, edVec3_c &vMin, edVec3_c &vMax, entitymodel *&pModel, const char *pSkin)
 {
   // this assumes a path only and uses tris.md2
   // for the model and skin.pcx for the skin
@@ -557,7 +557,7 @@ void EClass_CreateNewFromText(const char *text) {
 		Eclass_InsertAlphabetized(cl);
 	}
 }
-bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
+bool Eclass_hasModel(eclass_t *e, edVec3_c &vMin, edVec3_c &vMax)
 {
 	int i;
   if (e->modelpath != NULL)
@@ -608,8 +608,8 @@ bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
     // at this poitn vMin and vMax contain the min max of the model
     // which needs to be centered at origin 0, 0, 0
 
-    VectorSnap(vMin);
-    VectorSnap(vMax);
+    vMin.vectorSnap();
+    vMax.vectorSnap();
 
     if (vMax[0] - vMin[0] < 2)
     {
@@ -629,9 +629,7 @@ bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
       vMax[2] += 1;
     }
 
-    edVec3_c vTemp;
-    VectorAdd(vMin, vMax, vTemp);
-    vTemp *= 0.5;
+    edVec3_c vTemp = (vMin + vMax) * 0.5f;
     model = e->model;
     while (model != NULL)
     {
@@ -900,7 +898,7 @@ eclass_t *Eclass_ForName (char *name, bool has_brushes)
 }
 
 
-eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec3_t &vMax)
+eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax)
 {
 
 	eclass_t *e = NULL;
@@ -914,8 +912,8 @@ eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec
 		if (!strcmp (pName, e->name))
     {
       pEntity->md3Class = e;
-      VectorCopy(e->mins, vMin);
-      VectorCopy(e->maxs, vMax);
+      vMin = e->mins;
+      vMax = e->maxs;
 			return e;
     }
   }
@@ -942,8 +940,8 @@ eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec
   if (Eclass_hasModel(e, vMin, vMax))
   {
     EClass_InsertSortedList(g_md3Cache, e);
-    VectorCopy(vMin, e->mins);
-    VectorCopy(vMax, e->maxs);
+    e->mins = vMin;
+    e->maxs = vMax;
     pEntity->md3Class = e;
     return e;
   }

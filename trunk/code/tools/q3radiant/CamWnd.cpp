@@ -429,7 +429,7 @@ void CCamWnd::Cam_PositionDrag()
 	if (x != m_ptCursor.x || y != m_ptCursor.y)
 	{
 		x -= m_ptCursor.x;
-		VectorMA (m_Camera.origin, x, m_Camera.vright, m_Camera.origin);
+		m_Camera.origin.vectorMA(m_Camera.origin, x, m_Camera.vright);
 		y -= m_ptCursor.y;
 		m_Camera.origin[2] -= y;
     SetCursorPos(m_ptCursor.x, m_ptCursor.y);

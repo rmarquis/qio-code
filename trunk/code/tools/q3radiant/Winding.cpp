@@ -27,70 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "winding.h"
 
 #define	BOGUS_RANGE	18000
-//
-///*
-//=============
-//Plane_Equal
-//=============
-//*/
-//#define	NORMAL_EPSILON	0.0001
-//#define	DIST_EPSILON	0.02
-//
-//int Plane_Equal(plane_t *a, plane_t *b, int flip)
-//{
-//	vec3_t normal;
-//	float dist;
-//
-//	if (flip) {
-//		normal[0] = - b->normal[0];
-//		normal[1] = - b->normal[1];
-//		normal[2] = - b->normal[2];
-//		dist = - b->dist;
-//	}
-//	else {
-//		normal[0] = b->normal[0];
-//		normal[1] = b->normal[1];
-//		normal[2] = b->normal[2];
-//		dist = b->dist;
-//	}
-//	if (
-//	   fabs(a->normal[0] - normal[0]) < NORMAL_EPSILON
-//	&& fabs(a->normal[1] - normal[1]) < NORMAL_EPSILON
-//	&& fabs(a->normal[2] - normal[2]) < NORMAL_EPSILON
-//	&& fabs(a->dist - dist) < DIST_EPSILON )
-//		return true;
-//	return false;
-//}
-//
-///*
-//============
-//Plane_FromPoints
-//============
-//*/
-//int Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane)
-//{
-//	vec3_t v1, v2;
-//
-//	VectorSubtract(p2, p1, v1);
-//	VectorSubtract(p3, p1, v2);
-//	//CrossProduct(v2, v1, plane->normal);
-//	CrossProduct(v1, v2, plane->normal);
-//	if (VectorNormalize(plane->normal) < 0.1) return false;
-//	plane->dist = DotProduct(p1, plane->normal);
-//	return true;
-//}
-
-int Point_Equal(vec3_t p1, vec3_t p2, float epsilon)
-{
-	int i;
-
-	for (i = 0; i < 3; i++)
-	{
-		if (fabs(p1[i] - p2[i]) > epsilon) return false;
-	}
-	return true;
-}
-
 
 /*
 =================
@@ -120,7 +56,7 @@ winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 	if (x==-1)
 		Error ("Winding_BaseForPlane: no axis found");
 		
-	VectorCopy (vec3_origin, vup);	
+	vup.clear();	
 	switch (x)
 	{
 	case 0:
@@ -134,7 +70,7 @@ winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 
 
 	v = vup.dotProduct(p.normal);
-	VectorMA (vup, -v, p.normal, vup);
+	vup.vectorMA (vup, -v, p.normal);
 	vup.normalize();
 		
 	org = p.normal * p.dist;
@@ -214,7 +150,7 @@ winding_t *Winding_Reverse(winding_t *w)
 	c = Winding_Alloc(w->numpoints);
 	for (i = 0; i < w->numpoints; i++)
 	{
-		VectorCopy (w->points[w->numpoints-1-i], c->points[i]);
+		c->points[i].setXYZ(w->points[w->numpoints-1-i].getXYZ());
 	}
 	c->numpoints = w->numpoints;
 	return c;
@@ -262,11 +198,11 @@ winding_t *Winding_InsertPoint(winding_t *w, vec3_t point, int spot)
 	{
 		if (i == spot)
 		{
-			VectorCopy(point, neww->points[i]);
+			neww->points[i].setXYZ(point);
 		}
 		else
 		{
-			VectorCopy(w->points[j], neww->points[i]);
+			neww->points[i] = w->points[j];
 			j++;
 		}
 	}
@@ -284,14 +220,13 @@ int Winding_IsTiny (winding_t *w)
 {
 	int		i, j;
 	vec_t	len;
-	edVec3_c delta;
 	int		edges;
 
 	edges = 0;
 	for (i=0 ; i<w->numpoints ; i++)
 	{
 		j = i == w->numpoints - 1 ? 0 : i+1;
-		VectorSubtract (w->points[j], w->points[i], delta);
+		edVec3_c delta = w->points[j].getXYZ() - w->points[i].getXYZ();
 		len = delta.vectorLength();
 		if (len > EDGE_LENGTH)
 		{
@@ -415,14 +350,14 @@ winding_t *Winding_Clip (winding_t *in, const edPlane_c &split, bool keepon)
 		
 		if (sides[i] == SIDE_ON)
 		{
-			VectorCopy (p1, neww->points[neww->numpoints]);
+			neww->points[neww->numpoints].setXYZ(p1);
 			neww->numpoints++;
 			continue;
 		}
 	
 		if (sides[i] == SIDE_FRONT)
 		{
-			VectorCopy (p1, neww->points[neww->numpoints]);
+			neww->points[neww->numpoints].setXYZ(p1);
 			neww->numpoints++;
 		}
 		
@@ -443,7 +378,7 @@ winding_t *Winding_Clip (winding_t *in, const edPlane_c &split, bool keepon)
 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);
 		}
 			
-		VectorCopy (mid, neww->points[neww->numpoints]);
+		neww->points[neww->numpoints].setXYZ(mid);
 		neww->numpoints++;
 	}
 	
@@ -523,21 +458,21 @@ void Winding_SplitEpsilon (winding_t *in, vec3_t normal, double dist,
 		
 		if (sides[i] == SIDE_ON)
 		{
-			VectorCopy (p1, f->points[f->numpoints]);
+			f->points[f->numpoints].setXYZ(p1);
 			f->numpoints++;
-			VectorCopy (p1, b->points[b->numpoints]);
+			b->points[b->numpoints].setXYZ(p1);
 			b->numpoints++;
 			continue;
 		}
 	
 		if (sides[i] == SIDE_FRONT)
 		{
-			VectorCopy (p1, f->points[f->numpoints]);
+			f->points[f->numpoints].setXYZ(p1);
 			f->numpoints++;
 		}
 		if (sides[i] == SIDE_BACK)
 		{
-			VectorCopy (p1, b->points[b->numpoints]);
+			b->points[b->numpoints].setXYZ(p1);
 			b->numpoints++;
 		}
 
@@ -559,9 +494,9 @@ void Winding_SplitEpsilon (winding_t *in, vec3_t normal, double dist,
 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);
 		}
 			
-		VectorCopy (mid, f->points[f->numpoints]);
+		f->points[f->numpoints].setXYZ(mid);
 		f->numpoints++;
-		VectorCopy (mid, b->points[b->numpoints]);
+		b->points[b->numpoints].setXYZ(mid);
 		b->numpoints++;
 	}
 	
@@ -586,9 +521,9 @@ if keep is true no points are ever removed
 */
 #define	CONTINUOUS_EPSILON	0.005
 
-winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, int keep)
+winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep)
 {
-	vec_t		*p1, *p2, *p3, *p4, *back;
+	edVec3_c p1, p2, p3, p4, back;
 	winding_t	*newf;
 	int			i, j, k, l;
 	edVec3_c		normal, delta;
@@ -604,12 +539,12 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	
 	for (i = 0; i < f1->numpoints; i++)
 	{
-		p1 = f1->points[i];
-		p2 = f1->points[(i+1) % f1->numpoints];
+		p1 = f1->points[i].getXYZ();
+		p2 = f1->points[(i+1) % f1->numpoints].getXYZ();
 		for (j = 0; j < f2->numpoints; j++)
 		{
-			p3 = f2->points[j];
-			p4 = f2->points[(j+1) % f2->numpoints];
+			p3 = f2->points[j].getXYZ();
+			p4 = f2->points[(j+1) % f2->numpoints].getXYZ();
 			for (k = 0; k < 3; k++)
 			{
 				if (fabs(p1[k] - p4[k]) > 0.1)//EQUAL_EPSILON) //ME
@@ -631,25 +566,25 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	// check slope of connected lines
 	// if the slopes are colinear, the point can be removed
 	//
-	back = f1->points[(i+f1->numpoints-1)%f1->numpoints];
-	VectorSubtract (p1, back, delta);
+	back = f1->points[(i+f1->numpoints-1)%f1->numpoints].getXYZ();
+	delta = p1 - back;
 	normal.crossProduct (planenormal, delta);
 	normal.normalize();
 
-	back = f2->points[(j+2)%f2->numpoints];
-	VectorSubtract (back, p1, delta);
+	back = f2->points[(j+2)%f2->numpoints].getXYZ();
+	delta = back - p1;
 	dot = delta.dotProduct(normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
 	keep1 = (bool)(dot < -CONTINUOUS_EPSILON);
 	
-	back = f1->points[(i+2)%f1->numpoints];
-	VectorSubtract (back, p2, delta);
+	back = f1->points[(i+2)%f1->numpoints].getXYZ();
+	delta = back - p2;
 	normal.crossProduct (planenormal, delta);
 	normal.normalize();
 
-	back = f2->points[(j+f2->numpoints-1)%f2->numpoints];
-	VectorSubtract (back, p2, delta);
+	back = f2->points[(j+f2->numpoints-1)%f2->numpoints].getXYZ();
+	delta = back - p2;
 	dot = delta.dotProduct(normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
@@ -666,7 +601,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 		if (!keep && k==(i+1)%f1->numpoints && !keep2)
 			continue;
 		
-		VectorCopy (f1->points[k], newf->points[newf->numpoints]);
+		newf->points[newf->numpoints] = f1->points[k];
 		newf->numpoints++;
 	}
 	
@@ -675,7 +610,7 @@ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, in
 	{
 		if (!keep && l==(j+1)%f2->numpoints && !keep1)
 			continue;
-		VectorCopy (f2->points[l], newf->points[newf->numpoints]);
+		newf->points[newf->numpoints] = f2->points[l];
 		newf->numpoints++;
 	}
 
@@ -785,7 +720,7 @@ Winding_VectorIntersect
 int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon)
 {
 	float front, back, frac;
-	vec3_t mid;
+	edVec3_c mid;
 
 	front = p1.dotProduct(plane.normal) - plane.dist;
 	back = p2.dotProduct(plane.normal) - plane.dist;
@@ -795,7 +730,7 @@ int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const ed
 	//get point of intersection with winding plane
 	if (fabs(front-back) < 0.001)
 	{
-		VectorCopy(p2, mid);
+		mid = p2;
 	}
 	else
 	{

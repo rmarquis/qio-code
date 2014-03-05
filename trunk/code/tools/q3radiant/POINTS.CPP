@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #define	MAX_POINTFILE	8192
-static vec3_t	s_pointvecs[MAX_POINTFILE];
+static edVec3_c	s_pointvecs[MAX_POINTFILE];
 static int		s_num_points, s_check_point;
 
 void Pointfile_Delete (void)
@@ -50,9 +50,9 @@ void Pointfile_Next (void)
 		return;
 	}
 	s_check_point++;
-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
-	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
+	g_pParentWnd->GetCamera()->Camera().origin = s_pointvecs[s_check_point];
+	g_pParentWnd->GetXYWnd()->GetOrigin() = s_pointvecs[s_check_point];
+	dir = s_pointvecs[s_check_point+1] - g_pParentWnd->GetCamera()->Camera().origin;
 	dir.normalize();
 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
@@ -71,9 +71,9 @@ void Pointfile_Prev (void)
 		return;
 	}
 	s_check_point--;
-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
-	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
+	g_pParentWnd->GetCamera()->Camera().origin = s_pointvecs[s_check_point];
+	g_pParentWnd->GetXYWnd()->GetOrigin() = s_pointvecs[s_check_point];
+	dir = s_pointvecs[s_check_point+1] - g_pParentWnd->GetCamera()->Camera().origin;
 	dir.normalize();
 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
@@ -113,7 +113,7 @@ void WINAPI Pointfile_Check (void)
 			break;
 		if (s_num_points < MAX_POINTFILE)
 		{
-			VectorCopy (v, s_pointvecs[s_num_points]);
+			s_pointvecs[s_num_points] = v;
 			s_num_points++;
 		}
 		qglVertex3fv (v);

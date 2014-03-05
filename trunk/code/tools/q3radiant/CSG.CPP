@@ -61,8 +61,9 @@ void CSG_MakeHollow (void)
 		{
 			split = *f;
 			move = f->plane.normal * g_qeglobals.d_gridsize;
-			for (i=0 ; i<3 ; i++)
-				VectorSubtract (split.planepts[i], move, split.planepts[i]);
+			for (i=0 ; i<3 ; i++) {
+				split.planepts[i] -= move;
+			}
 
 			Brush_SplitBrushByFace (b, &split, &front, &back);
 			if (back)
@@ -175,9 +176,9 @@ brush_t *Brush_Merge(brush_t *brush1, brush_t *brush2, int onlyshape)
 		//
 		newface = Face_Alloc();
 		newface->texdef = face1->texdef;
-		VectorCopy(face1->planepts[0], newface->planepts[0]);
-		VectorCopy(face1->planepts[1], newface->planepts[1]);
-		VectorCopy(face1->planepts[2], newface->planepts[2]);
+		newface->planepts[0] = face1->planepts[0];
+		newface->planepts[1] = face1->planepts[1];
+		newface->planepts[2] = face1->planepts[2];
 		newface->plane = face1->plane;
 		newface->next = newbrush->brush_faces;
 		newbrush->brush_faces = newface;
@@ -206,9 +207,9 @@ brush_t *Brush_Merge(brush_t *brush1, brush_t *brush2, int onlyshape)
 		//
 		newface = Face_Alloc();
 		newface->texdef = face2->texdef;
-		VectorCopy(face2->planepts[0], newface->planepts[0]);
-		VectorCopy(face2->planepts[1], newface->planepts[1]);
-		VectorCopy(face2->planepts[2], newface->planepts[2]);
+		newface->planepts[0] = face2->planepts[0];
+		newface->planepts[1] = face2->planepts[1];
+		newface->planepts[2] = face2->planepts[2];
 		newface->plane = face2->plane;
 		newface->next = newbrush->brush_faces;
 		newbrush->brush_faces = newface;
@@ -396,9 +397,9 @@ brush_t *Brush_MergeList(brush_t *brushlist, int onlyshape)
 			//
 			newface = Face_Alloc();
 			newface->texdef = face1->texdef;
-			VectorCopy(face1->planepts[0], newface->planepts[0]);
-			VectorCopy(face1->planepts[1], newface->planepts[1]);
-			VectorCopy(face1->planepts[2], newface->planepts[2]);
+			newface->planepts[0] = face1->planepts[0];
+			newface->planepts[1] = face1->planepts[1];
+			newface->planepts[2] = face1->planepts[2];
 			newface->plane = face1->plane;
 			newface->next = newbrush->brush_faces;
 			newbrush->brush_faces = newface;
