@@ -806,7 +806,11 @@ public:
 		}
 		if(iCubeSide == -1) {
 			// unbind the FBO
-			bindFBO(0);
+			if(shouldDrawToScreenFBO()) {
+				bindFBO(screenFBO.getFBOHandle());
+			} else {
+				bindFBO(0);
+			}
 			// restore viewport
 			setGLViewPort(getWinWidth(),getWinHeight());
 
@@ -2085,6 +2089,7 @@ drawOnlyLightmap:
 		// rVertexBuffers are used only for 3d
 		unbindVertexBuffer();
 		bindIBO(0); // we're not using rIndexBuffer_c system for 2d graphics
+		glCull(CT_TWO_SIDED);
 
 		if(isUsingBlur() && boundFBO) {
 			bindFBO(0);
