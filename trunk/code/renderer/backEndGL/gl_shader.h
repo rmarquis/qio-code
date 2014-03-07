@@ -47,6 +47,7 @@ struct glslPermutationFlags_s {
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
 	bool isSpotLight; // #define LIGHT_IS_SPOTLIGHT
 	bool enableShadowMappingBlur; // #define ENABLE_SHADOW_MAPPING_BLUR
+	bool useShadowCubeMap; // #define USE_SHADOW_CUBEMAP
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
 	// lighting debug tools
@@ -85,7 +86,8 @@ friend class rbSDLOpenGL_c;
 	int sCubeMap;
 
 	// shadow mapping
-	int u_shadowMap[6];
+	int u_shadowMap[6]; // if we have six different depth textures
+	int u_shadowCubeMap; // if we have a single depth cubemap
 	// for spotlights
 	int u_lightDir;
 	int u_spotLightMaxCos;

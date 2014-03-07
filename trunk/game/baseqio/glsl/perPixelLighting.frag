@@ -23,6 +23,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // glsl/perPixelLighting.frag - per pixel lighting shader for OpenGL backend
 
+#ifdef USE_SHADOW_CUBEMAP
+#version 130
+#extension GL_EXT_gpu_shader4 : enable
+#endif
 // shader input
 uniform sampler2D colorMap;
 uniform vec3 u_lightOrigin;
@@ -49,6 +53,9 @@ varying vec3 v_tbnEyeDir;
 
 #ifdef SHADOW_MAPPING_POINT_LIGHT
 uniform mat4 u_entityMatrix;
+#ifdef USE_SHADOW_CUBEMAP
+uniform samplerCubeShadow shadowCubeMap;
+#else
 varying vec4 shadowCoord0;
 varying vec4 shadowCoord1;
 varying vec4 shadowCoord2;
@@ -64,8 +71,8 @@ uniform sampler2DShadow shadowMap5;
 
 int cubeSide(vec3 v) {
 	vec3 normals[] = { vec3(1,0,0), vec3(-1,0,0),
-						vec3(0,1,0), vec3(0,-1,-0),
-						vec3(0,0,1), vec3(0,0,-1)};	
+						vec3(0,-1,0), vec3(0,1,0),
+						vec3(0,0,-1), vec3(0,0,1)};	
 	float max = 0;
 	int ret;
 	for(int i = 0; i < 6; i++) {
@@ -77,6 +84,7 @@ int cubeSide(vec3 v) {
 	}
 	return ret;
 }
+#endif
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 {
@@ -105,8 +113,28 @@ float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 	return shadow;
 }
 #endif
+uniform vec3 u_viewOrigin;
 float computeShadow(vec3 lightToVertDirection) {
 	float shadow = 0.0;
+#ifdef USE_SHADOW_CUBEMAP
+	//float depth = 1.0/gl_FragCoord.w;
+	// TODO: compute depth here, we need to compare it with shadowmap value
+#if 1
+	float depth = 1.0; 
+#else
+	//float z_far=gl_DepthRange.far;
+	//float z_near=gl_DepthRange.near;
+	
+	//vec3 abs_vec = abs(lightToVertDirection);
+	//float local_z_comp = max(abs_vec .x, max(abs_vec .y, abs_vec .z));
+	//float norm_z_comp = (z_far + z_near) /
+	//	(z_far - z_near) - (2 * z_far * z_near) / (z_far - z_near) / local_z_comp;
+	//float depth = (norm_z_comp + 1.0) * 0.5 + 0.2;
+#endif
+	vec4 res = shadowCube( shadowCubeMap, vec4(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z,depth) );
+	shadow = res.z;
+	//shadow = 0;
+#else
   	int side = cubeSide(lightToVertDirection);
 #ifndef ENABLE_SHADOW_MAPPING_BLUR
 	if (side == 0) {
@@ -140,6 +168,7 @@ float computeShadow(vec3 lightToVertDirection) {
 	} else {
 		// never gets here
 	}
+#endif
 #endif
 	return shadow;
 }
@@ -190,13 +219,16 @@ void main() {
 	}
 #endif
 
+
 #ifdef HAS_BUMP_MAP
-	vec3 bumpMapNormal = texture2D (bumpMap, texCoord);
+	vec3 bumpMapNormal = texture2D (bumpMap, texCoord).xyz;
 	bumpMapNormal = (bumpMapNormal - 0.5) * 2.0;
-	v_vertNormal = tbnMat * bumpMapNormal;
-#endif    
+	vec3 useNormal = tbnMat * bumpMapNormal;
+#else
+	vec3 useNormal = v_vertNormal;
+#endif
     // calculate the diffuse value based on light angle	
-    float angleFactor = dot(v_vertNormal, lightDirection);
+    float angleFactor = dot(useNormal, lightDirection);
     if(angleFactor < 0.0) {
 		// light is behind the surface
 		return;

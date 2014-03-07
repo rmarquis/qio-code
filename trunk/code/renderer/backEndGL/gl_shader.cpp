@@ -180,6 +180,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.enableShadowMappingBlur) {
 		out.append("#define ENABLE_SHADOW_MAPPING_BLUR\n");
 	}
+	if(p.useShadowCubeMap) {
+		out.append("#define USE_SHADOW_CUBEMAP\n");
+	}
 	//if(p.hasDoom3AlphaTest) {
 	//	out.append("#define HAS_DOOM3_ALPHATEST\n");
 	//}
@@ -296,6 +299,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[3] = glGetUniformLocation(shader,"shadowMap3");
 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
+	ret->u_shadowCubeMap = glGetUniformLocation(shader,"shadowCubeMap");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");

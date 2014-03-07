@@ -480,20 +480,24 @@ enum {
 void rLightImpl_c::recalcShadowMappingMatrices() {
 	// projection matrix is the same for all of cubemap sides
 	lightProj.setupProjectionExt(90.f, getShadowMapW(), getShadowMapH(), 1.f, this->radius);
+
+	// NOTE: the layout of those vectors has been changed by me for opengl depth cubemap format
 	vec3_c cubeNormals[] = { vec3_c(1,0,0), vec3_c(-1,0,0),
-						vec3_c(0,1,0), vec3_c(0,-1,0),
-						vec3_c(0,0,1), vec3_c(0,0,-1)};
+						vec3_c(0,-1,0), vec3_c(0,1,0),
+						vec3_c(0,0,-1), vec3_c(0,0,1)};
 	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {
 		// view matrix is different for each cubemap side
 		vec3_c upVector;
-		// upvector cant be the same as normal (cube direction)
-		// otherwise shadow will not show up
+		// upvector must be perpendicular to forward vector
 		if(side < 2) {
 			upVector.set(0,1,0);
 		} else if(side < 4) {
-			upVector.set(0,0,1);
+			if(side == 2)
+				upVector.set(0,0,-1);
+			else
+				upVector.set(0,0,1);
 		} else {
-			upVector.set(1,0,0);
+			upVector.set(0,1,0);
 		}
 		sideViews[side].setupLookAtRH(this->pos,cubeNormals[side],upVector);
 
@@ -503,6 +507,42 @@ void rLightImpl_c::recalcShadowMappingMatrices() {
 		ax.mat[2] = ax.mat[1].crossProduct(ax.mat[0]);
 		sideFrustums[side].setupExt(90.f, getShadowMapW(), getShadowMapH(), radius, ax, this->pos);
 	}
+//#elif 1			
+//	vec3_c vecs[] = {
+//		vec3_c(-1, +0, 0), vec3_c(0, -1, 0),
+//		vec3_c(+1, +0, 0), vec3_c(0, -1, 0),
+//		vec3_c(0, -1, 0), vec3_c(0, 0, -1),
+//		vec3_c(0, +1, 0), vec3_c(0, 0, -1),
+//		vec3_c(0, 0, -1), vec3_c(0, 1, 0),
+//		vec3_c(0, 0, +1), vec3_c(0, 1, 0),
+//	};
+//	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {
+//		// view matrix is different for each cubemap side
+//		vec3_c forward = vecs[side*2];
+//		vec3_c upVector = vecs[side*2+1];
+//
+//		axis_c ax;
+//		ax.mat[0] = forward;
+//		ax.mat[1] = upVector;
+//		ax.mat[2] = upVector.crossProduct(forward);
+//
+//		sideViews[side].setupLookAtRH(this->pos,forward,upVector);
+//		//sideViews[side].invFromAxisAndVector(ax,pos);
+//		sideFrustums[side].setupExt(90.f, getShadowMapW(), getShadowMapH(), radius, ax, this->pos);
+//	}
+//#else
+//	vec3_c lookAngles[] = { 
+//		vec3_c(0,0,0), vec3_c(0,90,0),
+//		vec3_c(0,180,0), vec3_c(0,270,0),
+//		vec3_c(-90,0,0), vec3_c(90,0,0)};
+//	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {
+//		axis_c ax;
+//		ax.fromAngles(lookAngles[side]);
+//		sideViews[side].setupLookAtRH(this->pos,ax.getForward(),ax.getUp());
+//		//sideViews[side].fromAxisAndOrigin(ax,this->pos);
+//		sideFrustums[side].setupExt(90.f, getShadowMapW(), getShadowMapH(), radius, ax, this->pos);
+//	}
+//#endif
 }
 void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 	rf_currentShadowMapW = getShadowMapW();

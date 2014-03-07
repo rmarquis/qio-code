@@ -108,6 +108,7 @@ static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
 static aCvar_c rb_printBlendAfterLightingDrawCalls("rb_printBlendAfterLightingDrawCalls","0");
 static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
 static aCvar_c rb_forceBlur("rb_forceBlur","0");
+static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","1");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -173,12 +174,12 @@ public:
 	}
 };
 // six texture2D FBOs composed into cubemap
-class cubeFBOs_c {
+class depthCubeFBOs_c {
 	fboDepth_c sides[6];
 	u32 w, h;
 public:
-	cubeFBOs_c();
-	~cubeFBOs_c();
+	depthCubeFBOs_c();
+	~depthCubeFBOs_c();
 
 	bool create(u32 newW, u32 newH);
 	void destroy();
@@ -188,6 +189,60 @@ public:
 	}
 	u32 getSideTextureHandle(u32 sideNum) {
 		return sides[sideNum].getTextureHandle();
+	}
+};
+
+class depthCubeMap_c {
+	u32 fboHandle;
+	u32 textureHandle;
+	u32 w, h;
+public:
+	depthCubeMap_c() {
+
+	}	
+	~depthCubeMap_c() {
+	}
+	u32 getTextureHandle() {
+		return textureHandle;
+	}
+	bool create(u32 newW, u32 newH) {
+		if(newW == w && newH == h)
+			return false;
+		w = newW;
+		h = newH;
+		// Create the FBO
+		glGenFramebuffers(1, &fboHandle);
+
+		// Create the depth buffer
+		glGenTextures(1, &textureHandle);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureHandle);
+	    
+		for (u32 i = 0 ; i < 6 ; i++) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+		for (u32 i = 0 ; i < 6 ; i++) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, textureHandle, 0);
+		}
+
+		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		if (Status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("FB error, status: 0x%x\n", Status);
+			return false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return false;
+	}
+	u32 getHandle() {
+		return fboHandle;
 	}
 };
 struct texState_s {
@@ -252,7 +307,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curCubeMapSide;
 	int curShadowMapW;
 	int curShadowMapH;
-	cubeFBOs_c cubeFBO;
+	depthCubeFBOs_c depthCubeFBOs;
+	depthCubeMap_c depthCubeMap;
 	fboScreen_c screenFBO;
 	bool bDrawingSky;
 	u32 viewPortWidth;
@@ -830,9 +886,18 @@ public:
 			return;
 		}
 		// ensure that FBO is ready
-		cubeFBO.create(curShadowMapW,curShadowMapH);
+		if(rb_useDepthCubeMap.getInt()) {
+			depthCubeMap.create(curShadowMapW,curShadowMapH);
+		} else {
+			depthCubeFBOs.create(curShadowMapW,curShadowMapH);
+		}
 		// bind the FBO
-		bindFBO(cubeFBO.getSideFBOHandle(iCubeSide));
+		if(rb_useDepthCubeMap.getInt()) {
+			bindFBO(depthCubeMap.getHandle());				
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+iCubeSide, depthCubeMap.getTextureHandle(), 0);
+		} else {
+			bindFBO(depthCubeFBOs.getSideFBOHandle(iCubeSide));	
+		}
 		// set viewport
 		setGLViewPort(curShadowMapW,curShadowMapH);
 		// clear buffers
@@ -1160,9 +1225,15 @@ public:
 						u32 texSlot = 1 + i;
 						setTextureMatrixCustom(texSlot,res);
 
-						u32 slot = 3+i;
-						bindTex(slot,cubeFBO.getSideTextureHandle(i));
-						glUniform1i(newShader->u_shadowMap[i],slot);
+						if(rb_useDepthCubeMap.getInt()) {
+							selectTex(3);
+							glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
+							glUniform1i(newShader->u_shadowCubeMap,3);
+						} else {
+							u32 slot = 3+i;
+							bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
+							glUniform1i(newShader->u_shadowMap[i],slot);
+						}
 					}
 				}
 			}
@@ -1776,6 +1847,7 @@ drawOnlyLightmap:
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
 					pf.isSpotLight = (curLight->getLightType() == LT_SPOTLIGHT);
 					pf.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
+					pf.useShadowCubeMap = rb_useDepthCubeMap.getInt();
 					/*if(prevAlphaFunc == AF_D3_ALPHATEST) {
 						pf.hasDoom3AlphaTest = true;
 						pf.alphaTestValue = alphaFuncCustomValue;
@@ -2407,7 +2479,7 @@ drawOnlyLightmap:
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::shutdown: already shutdown\n");
 			return;		
 		}
-		cubeFBO.destroy();
+		depthCubeFBOs.destroy();
 		screenFBO.destroy();
 		GL_ShutdownGLSLShaders();
 		AUTOCVAR_UnregisterAutoCvars();
@@ -2789,18 +2861,18 @@ void fboScreen_c::destroy() {
 		depthBufferHandle = 0;
 	}
 }
-cubeFBOs_c::cubeFBOs_c() {
+depthCubeFBOs_c::depthCubeFBOs_c() {
 	h = w = 0;
 }
-cubeFBOs_c::~cubeFBOs_c() {
+depthCubeFBOs_c::~depthCubeFBOs_c() {
 	destroy();
 }
-void cubeFBOs_c::destroy() {
+void depthCubeFBOs_c::destroy() {
 	for(u32 i = 0; i < 6; i++) {
 		sides[i].destroy();
 	}
 }
-bool cubeFBOs_c::create(u32 newW, u32 newH) {
+bool depthCubeFBOs_c::create(u32 newW, u32 newH) {
 	if(newW == w && newH == h)
 		return false; // ok
 	destroy();
