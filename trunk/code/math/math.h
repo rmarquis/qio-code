@@ -83,7 +83,7 @@ typedef vec_t vec5_t[5];
 // returns a clamped value in the range [min, max].
 #define Q_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
-#define DISABLE_ALL_FAST_SQRTS
+//#define DISABLE_ALL_FAST_SQRTS
 
 inline float G_rsqrt(float x) {
 #ifdef DISABLE_ALL_FAST_SQRTS

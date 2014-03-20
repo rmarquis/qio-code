@@ -108,7 +108,8 @@ static aCvar_c rb_shadowMapBlur("rb_shadowMapBlur","1");
 static aCvar_c rb_printBlendAfterLightingDrawCalls("rb_printBlendAfterLightingDrawCalls","0");
 static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
 static aCvar_c rb_forceBlur("rb_forceBlur","0");
-static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","1");
+static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","0");
+static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -201,6 +202,7 @@ public:
 
 	}	
 	~depthCubeMap_c() {
+		destroy();
 	}
 	u32 getTextureHandle() {
 		return textureHandle;
@@ -221,10 +223,11 @@ public:
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+			//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
@@ -235,11 +238,23 @@ public:
 		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		if (Status != GL_FRAMEBUFFER_COMPLETE) {
+			destroy();
 			printf("FB error, status: 0x%x\n", Status);
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		return false;
+	}
+	void destroy() {
+		w = 0; h = 0;
+		if(textureHandle) {
+			glDeleteTextures(1,&textureHandle);
+			textureHandle = 0;
+		}
+		if(fboHandle) {
+			glDeleteFramebuffers(1,&fboHandle);
+			fboHandle = 0;
+		}
 	}
 	u32 getHandle() {
 		return fboHandle;
@@ -310,6 +325,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	depthCubeFBOs_c depthCubeFBOs;
 	depthCubeMap_c depthCubeMap;
 	fboScreen_c screenFBO;
+	fboScreen_c screenFBO2;
 	bool bDrawingSky;
 	u32 viewPortWidth;
 	u32 viewPortHeight;
@@ -1358,7 +1374,12 @@ public:
 			//	setGLDepthMask(true);
 			//}
 			setGLDepthMask(true);
-			bindShader(0);
+			if(curCubeMapSide >= 0 && rb_useDepthCubeMap.getInt()) {
+				glShader_c *sh = GL_RegisterShader("drawToShadowMap");
+				bindShader(sh);
+			} else {
+				bindShader(0);
+			}
 			bindVertexBuffer(&verts);
 			bindIBO(&indices);
 			//turnOffPolygonOffset();
@@ -1848,6 +1869,7 @@ drawOnlyLightmap:
 					pf.isSpotLight = (curLight->getLightType() == LT_SPOTLIGHT);
 					pf.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
 					pf.useShadowCubeMap = rb_useDepthCubeMap.getInt();
+					pf.isTwoSided = this->prevCullType == CT_TWO_SIDED;
 					/*if(prevAlphaFunc == AF_D3_ALPHATEST) {
 						pf.hasDoom3AlphaTest = true;
 						pf.alphaTestValue = alphaFuncCustomValue;
@@ -2043,6 +2065,9 @@ drawOnlyLightmap:
 			return;
 		if(points->size() == 0)
 			return;
+		if(rb_printShadowVolumeDrawCalls.getInt()) {
+			g_core->Print("Indexed Shadow Volume: %i points, %i tris\n",points->size(),indices->getNumTriangles());
+		}
 
 		startDrawingShadowVolumes();
 
@@ -2137,6 +2162,18 @@ drawOnlyLightmap:
 			glDepthMask(false);
 		}
 	}
+	void drawFullScreenQuad() {
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f);
+			glVertex2f(0, 0);
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex2f(0, getWinHeight());
+			glTexCoord2f(1.0f, 0.0f);	
+			glVertex2f(getWinWidth(), getWinHeight());
+			glTexCoord2f(1.0f, 1.0f);
+			glVertex2f(getWinWidth(), 0);
+		glEnd();
+	}
 	virtual void setup2DView() {		
 		stopDrawingShadowVolumes();
 		bindShader(0);
@@ -2164,25 +2201,27 @@ drawOnlyLightmap:
 		glCull(CT_TWO_SIDED);
 
 		if(isUsingBlur() && boundFBO) {
-			bindFBO(0);
-			//glslPermutationFlags_s p;
-			//p.bHorizontalPass = true;
+			glslPermutationFlags_s p;
+			p.bHorizontalPass = true;
 			// TODO: do a second, horizontal pass
-			glShader_c *sh = GL_RegisterShader("blur");
+			glShader_c *sh = GL_RegisterShader("blur",&p);
 			if(sh) {
 				bindShader(sh);
 			}
+			screenFBO2.create(this->viewPortWidth,this->viewPortHeight);
+			bindFBO(screenFBO2.getFBOHandle());
+
 			bindTex(0,screenFBO.getTextureHandle());
-			glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 1.0f);
-				glVertex2f(0, 0);
-				glTexCoord2f(0.0f, 0.0f);
-				glVertex2f(0, getWinHeight());
-				glTexCoord2f(1.0f, 0.0f);	
-				glVertex2f(getWinWidth(), getWinHeight());
-				glTexCoord2f(1.0f, 1.0f);
-				glVertex2f(getWinWidth(), 0);
-			glEnd();
+			drawFullScreenQuad();
+
+			p.bHorizontalPass = false;
+			sh = GL_RegisterShader("blur",&p);
+			if(sh) {
+				bindShader(sh);
+			}
+			bindFBO(0);
+			bindTex(0,screenFBO2.getTextureHandle());
+			drawFullScreenQuad();
 		}
 	}
 	matrix_c currentModelViewMatrix;
@@ -2871,6 +2910,7 @@ void depthCubeFBOs_c::destroy() {
 	for(u32 i = 0; i < 6; i++) {
 		sides[i].destroy();
 	}
+	w = 0; h = 0;
 }
 bool depthCubeFBOs_c::create(u32 newW, u32 newH) {
 	if(newW == w && newH == h)

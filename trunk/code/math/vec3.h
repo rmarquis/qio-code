@@ -164,6 +164,7 @@ public:
 		return r;
 	}
 	void normalize();
+	void normalizeFast();
 
 	// returns previous vector lenght value
 	float normalize2() {

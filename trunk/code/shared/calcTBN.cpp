@@ -32,7 +32,7 @@ void R_CalcTBN(const vec3_c &v0, const vec3_c &v1, const vec3_c &v2,
 	vec3_c edge0 = v2 - v0;
 	vec3_c edge1 = v1 - v0;
 	outNorm.crossProduct(edge0,edge1);
-	outNorm.normalize();
+	outNorm.normalizeFast();
 
 	vec3_c e0(v1[0] - v0[0], st1[0] - st0[0], st1[1] - st0[1]);
 	vec3_c e1(v2[0] - v0[0], st2[0] - st0[0], st2[1] - st0[1]);
@@ -70,17 +70,17 @@ void R_CalcTBN(const vec3_c &v0, const vec3_c &v1, const vec3_c &v2,
 
 
 	// tangent...
-	tangent.normalize();
+	tangent.normalizeFast();
 		
 	// binormal...
-	binormal.normalize();
+	binormal.normalizeFast();
 	
 	//// normal...
 	//// compute the cross product TxB
 	normal.crossProduct(tangent, binormal);
 	//normal.crossProduct(tangent, binormal);
 
-	normal.normalize();
+	normal.normalizeFast();
 
 	
 	// Gram-Schmidt orthogonalization process for B

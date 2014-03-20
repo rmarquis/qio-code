@@ -278,6 +278,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\game\baseqio\glsl\drawToShadowMap.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\drawToShadowMap.vert"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\glsl\genericShader.frag"
 				>
 			</File>

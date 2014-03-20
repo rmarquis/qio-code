@@ -147,9 +147,9 @@ public:
 	inline void normalizeTBN() {
 		rVert_c *v = this->getArray();
 		for(u32 i = 0; i < numVerts; i++, v++) {
-			v->normal.normalize();
-			v->tan.normalize();
-			v->bin.normalize();
+			v->normal.normalizeFast();
+			v->tan.normalizeFast();
+			v->bin.normalizeFast();
 		}
 	}
 #endif // RVERT_STORE_TANGENTS

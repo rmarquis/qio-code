@@ -24,8 +24,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // glsl/perPixelLighting.frag - per pixel lighting shader for OpenGL backend
 
 #ifdef USE_SHADOW_CUBEMAP
+#ifdef USE_SHADOW_CUBESHADOWSAMPLER
 #version 130
 #extension GL_EXT_gpu_shader4 : enable
+#endif // USE_SHADOW_CUBESHADOWSAMPLER
 #endif
 // shader input
 uniform sampler2D colorMap;
@@ -54,7 +56,11 @@ varying vec3 v_tbnEyeDir;
 #ifdef SHADOW_MAPPING_POINT_LIGHT
 uniform mat4 u_entityMatrix;
 #ifdef USE_SHADOW_CUBEMAP
+#ifdef USE_SHADOW_CUBESHADOWSAMPLER
 uniform samplerCubeShadow shadowCubeMap;
+#else
+uniform samplerCube shadowCubeMap;
+#endif
 #else
 varying vec4 shadowCoord0;
 varying vec4 shadowCoord1;
@@ -117,6 +123,7 @@ uniform vec3 u_viewOrigin;
 float computeShadow(vec3 lightToVertDirection) {
 	float shadow = 0.0;
 #ifdef USE_SHADOW_CUBEMAP
+#ifdef USE_SHADOW_CUBESHADOWSAMPLER
 	//float depth = 1.0/gl_FragCoord.w;
 	// TODO: compute depth here, we need to compare it with shadowmap value
 #if 1
@@ -134,6 +141,24 @@ float computeShadow(vec3 lightToVertDirection) {
 	vec4 res = shadowCube( shadowCubeMap, vec4(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z,depth) );
 	shadow = res.z;
 	//shadow = 0;
+#else
+	float shadowMapDist = textureCube(shadowCubeMap,vec3(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z)).x;
+	float currentLenght = length(lightToVertDirection);
+	//if(currentLenght < 150)
+	//	return 0.0;
+	//	return 1;
+	shadowMapDist *= u_lightRadius;
+	
+	//if(shadowMapDist < 150)
+	//	return 0.0;
+	//	return 1;
+	float eps = 2.0;
+	if(shadowMapDist + eps < currentLenght) {
+		shadow = 0.0;
+	} else {
+		shadow = 1.0;
+	}
+#endif
 #else
   	int side = cubeSide(lightToVertDirection);
 #ifndef ENABLE_SHADOW_MAPPING_BLUR
@@ -169,6 +194,12 @@ float computeShadow(vec3 lightToVertDirection) {
 		// never gets here
 	}
 #endif
+#endif
+
+	// silly hack for twosided materials (like tree leaves)
+	// This should be fixed in a better way later.
+#ifdef MATERIAL_TWO_SIDED
+	shadow += 0.5f;
 #endif
 	return shadow;
 }
@@ -229,6 +260,9 @@ void main() {
 #endif
     // calculate the diffuse value based on light angle	
     float angleFactor = dot(useNormal, lightDirection);
+#ifdef MATERIAL_TWO_SIDED
+	angleFactor = abs(angleFactor);
+#endif
     if(angleFactor < 0.0) {
 		// light is behind the surface
 		return;
@@ -251,6 +285,12 @@ void main() {
 #else
 	float shadow = 1.0;
 #endif
+
+// testing
+//#ifdef MATERIAL_TWO_SIDED
+//angleFactor = 1.f;
+//distanceFactor = 1.f;
+//#endif
 	vec4 textureColor = texture2D (colorMap, texCoord);
 // #ifdef HAS_DOOM3_ALPHATEST
 // 	if(textureColor.a < u_alphaTestValue)
@@ -260,4 +300,5 @@ void main() {
 // #endif
 	// calculate the final color
 	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
+	//gl_FragColor = textureCube(shadowCubeMap,vec3(-lightToVert_world.x,lightToVert_world.y,lightToVert_world.z));
 }

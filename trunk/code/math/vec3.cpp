@@ -23,6 +23,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 #include "vec3.h"
 
+void vec3_c::normalizeFast() {
+	float lengthSQ = x*x + y*y + z*z;
+	if ( lengthSQ ) {
+		float iLength = G_rsqrt(lengthSQ);
+		x *= iLength;
+		y *= iLength;
+		z *= iLength;
+	}
+}
 void vec3_c::normalize() {
 #if 1
 	float lengthSQ = x*x + y*y + z*z;

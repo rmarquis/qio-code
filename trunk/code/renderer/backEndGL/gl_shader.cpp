@@ -183,6 +183,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.useShadowCubeMap) {
 		out.append("#define USE_SHADOW_CUBEMAP\n");
 	}
+	if(p.isTwoSided) {
+		out.append("#define MATERIAL_TWO_SIDED\n");
+	}
 	//if(p.hasDoom3AlphaTest) {
 	//	out.append("#define HAS_DOOM3_ALPHATEST\n");
 	//}
@@ -191,6 +194,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	}
 	if(p.debug_ignoreDistanceFactor) {
 		out.append("#define DEBUG_IGNOREDISTANCEFACTOR\n");
+	}
+	if(p.bHorizontalPass) {
+		out.append("#define HORIZONTAL_PASS\n");
 	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;

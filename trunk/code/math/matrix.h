@@ -363,6 +363,15 @@ public:
 		);
 		*this = matrix_flipToGL * *this;
 	}
+	void fromGL() {
+		const matrix_c matrix_flipToGL(
+			0, 0, -1, 0,
+			-1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 0, 1
+		);
+		*this = *this * matrix_flipToGL.getInversed();
+	}
 	matrix_c operator * (const matrix_c &_v) const {
 		matrix_c ret;
 		ret._v[ 0] = _v._v[ 0]*this->_v[ 0] + _v._v[ 1]*this->_v[ 4] + _v._v[ 2]*this->_v[ 8] + _v._v[ 3]*this->_v[12];

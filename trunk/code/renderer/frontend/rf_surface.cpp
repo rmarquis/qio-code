@@ -44,6 +44,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c rf_dontRecalcNormals("rf_dontRecalcNormals","0");
 static aCvar_c rf_dontRecalcTB("rf_dontRecalcTB","0");
+static aCvar_c rf_fastCalcTBN("rf_fastCalcTBN","1");
 
 //
 //	r_surface_c class
@@ -476,13 +477,143 @@ void r_surface_c::recalcNormals() {
 	}
 	verts.normalizeNormals();
 }
+
+void R_FastCalcTBNArray( plane_c *planes, rVert_c *verts, const int numVerts, const u16 *indexes, const int numIndexes ) {
+	typedef byte counter_t;
+	counter_t *counts = (counter_t *)alloca( numVerts * sizeof( counts[0] ) );
+	memset( counts, 0, numVerts * sizeof( counts[0] ) );
+
+	plane_c *planesPtr = planes;
+	for (u32 i = 0; i < numIndexes; i+=3) {
+		rVert_c *a, *b, *c;
+		unsigned long signBit;
+		float d0[5], d1[5], f, area;
+		vec3_c n, t0, t1;
+
+		int v0 = indexes[i + 0];
+		int v1 = indexes[i + 1];
+		int v2 = indexes[i + 2];
+
+		a = verts + v0;
+		b = verts + v1;
+		c = verts + v2;
+
+		d0[0] = b->xyz[0] - a->xyz[0];
+		d0[1] = b->xyz[1] - a->xyz[1];
+		d0[2] = b->xyz[2] - a->xyz[2];
+		d0[3] = b->tc[0] - a->tc[0];
+		d0[4] = b->tc[1] - a->tc[1];
+
+		d1[0] = c->xyz[0] - a->xyz[0];
+		d1[1] = c->xyz[1] - a->xyz[1];
+		d1[2] = c->xyz[2] - a->xyz[2];
+		d1[3] = c->tc[0] - a->tc[0];
+		d1[4] = c->tc[1] - a->tc[1];
+
+		// normal
+		n[0] = d1[1] * d0[2] - d1[2] * d0[1];
+		n[1] = d1[2] * d0[0] - d1[0] * d0[2];
+		n[2] = d1[0] * d0[1] - d1[1] * d0[0];
+
+		f = G_rsqrt( n.x * n.x + n.y * n.y + n.z * n.z );
+
+		n.x *= f;
+		n.y *= f;
+		n.z *= f;
+
+		planesPtr->fromPointAndNormal(a->xyz,n);
+		planesPtr++;
+
+		// area sign bit
+		area = d0[3] * d1[4] - d0[4] * d1[3];
+		signBit = ( *(unsigned long *)&area ) & ( 1 << 31 );
+
+		// first tangent
+		t0[0] = d0[0] * d1[4] - d0[4] * d1[0];
+		t0[1] = d0[1] * d1[4] - d0[4] * d1[1];
+		t0[2] = d0[2] * d1[4] - d0[4] * d1[2];
+
+		f = G_rsqrt( t0.x * t0.x + t0.y * t0.y + t0.z * t0.z );
+		*(unsigned long *)&f ^= signBit;
+
+		t0.x *= f;
+		t0.y *= f;
+		t0.z *= f;
+
+		// second tangent
+		t1[0] = d0[3] * d1[0] - d0[0] * d1[3];
+		t1[1] = d0[3] * d1[1] - d0[1] * d1[3];
+		t1[2] = d0[3] * d1[2] - d0[2] * d1[3];
+
+		f = G_rsqrt( t1.x * t1.x + t1.y * t1.y + t1.z * t1.z );
+		*(unsigned long *)&f ^= signBit;
+
+		t1.x *= f;
+		t1.y *= f;
+		t1.z *= f;
+
+		if ( counts[v0] ) {
+			a->normal += n;
+			a->tan += t0;
+			a->bin += t1;
+			counts[v0]++;
+		} else {
+			a->normal = n;
+			a->tan = t0;
+			a->bin = t1;
+			counts[v0] = 1;
+		}
+
+		if ( counts[v1] ) {
+			b->normal += n;
+			b->tan += t0;
+			b->bin += t1;
+			counts[v1]++;
+		} else {
+			b->normal = n;
+			b->tan = t0;
+			b->bin = t1;
+			counts[v1] = 1;
+		}
+
+		if ( counts[v2] ) {
+			c->normal += n;
+			c->tan += t0;
+			c->bin += t1;
+			counts[v2]++;
+		} else {
+			c->normal = n;
+			c->tan = t0;
+			c->bin = t1;
+			counts[v2] = 1;
+		}
+	}
+	// V: normalization pass
+	// this is not a perfect solution but gives acceptable results
+	for(u32 i = 0; i < numVerts; i++) {
+		if(counts[i] >= 2) {
+			rVert_c *v = verts + i;
+			float inv = 1.f / float(counts[i]);
+			v->normal *= inv;
+			v->bin *= inv;
+			v->tan *= inv;
+		}
+	}
+}
+
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
 #if 1
-	verts.nullTBN();
 	const rIndexBuffer_c &pIndices = getIndices2();
-	verts.calcTBNForIndices(pIndices,&this->trianglePlanes);
-	verts.normalizeTBN();
+	if(rf_fastCalcTBN.getInt()) {
+		if(trianglePlanes.size() != getNumTris())
+			trianglePlanes.resize(getNumTris());
+		R_FastCalcTBNArray(trianglePlanes.getArray(),verts.getArray(),verts.size(),pIndices.getU16Ptr(),indices.getNumIndices());
+	} else {
+		verts.nullTBN();
+		verts.calcTBNForIndices(pIndices,&this->trianglePlanes);
+		verts.normalizeTBN();
+	}
 #else
 	const rIndexBuffer_c &pIndices = getIndices2();
 	trianglePlanes.resize(pIndices.getNumTriangles());

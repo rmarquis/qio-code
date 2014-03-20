@@ -48,11 +48,14 @@ struct glslPermutationFlags_s {
 	bool isSpotLight; // #define LIGHT_IS_SPOTLIGHT
 	bool enableShadowMappingBlur; // #define ENABLE_SHADOW_MAPPING_BLUR
 	bool useShadowCubeMap; // #define USE_SHADOW_CUBEMAP
+	bool isTwoSided; // #define MATERIAL_TWO_SIDED
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
+	// for 2d blur effect
+	bool bHorizontalPass; // #define HORIZONTAL_PASS
 
 	glslPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
