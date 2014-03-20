@@ -1,0 +1,114 @@
+
+// ----------------------- Skys by hipshot
+
+textures/hipshot_sky/grimmnight
+{
+	qer_editorimage	cubemaps/hipshot/grimmnight/grimmnight_px.png
+	
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+	
+	xmap_sun 1 1 1 150 75 45
+
+	skyparms - 2048 -
+
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/grimmnight/grimmnight
+	}
+	{
+		forceHighQuality
+		blend	add
+		map	cubemaps/hipshot/grimmnight/clouds01
+		scroll	time * 0.02, time* 0.01
+	}
+}
+
+textures/hipshot_sky/interstellar
+{
+	qer_editorimage cubemaps/hipshot/interstellar/interstellar_pz.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	xmap_sun	0.0 1.0 0.7 125 315 45
+	xmap_skylight	150 3
+
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/interstellar/interstellar
+	}
+}
+
+textures/hipshot_sky/miramar
+{
+	qer_editorimage cubemaps/hipshot/miramar/miramar_ny.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	xmap_sun 1.0 1.0 0.7 125 315 90
+	xmap_skylight 125 3
+
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/miramar/miramar
+	}
+}
+
+textures/hipshot_sky/stormydays
+{
+	qer_editorimage cubemaps/hipshot/stormydays/stormydays_nz.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	xmap_sun 1.0 1.0 0.7 125 315 45
+	xmap_skylight 125 3
+
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/stormydays/stormydays
+	}
+}
+
+textures/hipshot_sky/violentdays
+{
+	qer_editorimage cubemaps/hipshot/violentdays/violentdays_ny.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+//	xmap_sun	todo
+//	xmap_skylight	todo
+
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/violentdays/violentdays
+	}
+}
