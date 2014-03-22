@@ -83,6 +83,12 @@ public:
 	void addFrontCapAndBackCapForIndexedVertsList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light);
 	void addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light);
 
+	// for directional lights
+	void addDirectionalRSurface(const class r_surface_c *sf, const vec3_c &direction, float lightInfinity);
+	void addDirectionalIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &lightDir, const class planeArray_c *extraPlanesArray, float lightInfinity, const class aabb *bounds = 0);
+	void createDirectionalShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &lightDirection, float lightInfinity);
+	void fromDirectionalRModel(const class r_model_c *m, const vec3_c &lightDirection, float lightInfinity);
+
 	u32 getNumVerts() const {
 		return points.size();
 	}

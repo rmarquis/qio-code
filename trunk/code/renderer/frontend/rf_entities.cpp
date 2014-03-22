@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_anims.h"
 #include "rf_world.h"
 #include "rf_skin.h"
+#include "rf_sunLight.h"
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
@@ -448,6 +449,8 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 	(*ragOrs)[partIndex] = or;
 }
 void rEntityImpl_c::updateAnimatedEntity() {
+	if(model == 0)
+		return;
 	absSilChangeCount++;
 	// we have an instance of dynamic model.
 	// It might be an instance of skeletal model (.md5mesh, etc)
@@ -736,11 +739,13 @@ rEntityAPI_i *rf_currentEntity = 0;
 class rEntityAPI_i *RFE_AllocEntity() {
 	rEntityImpl_c *ent = new rEntityImpl_c;
 	rf_entities.push_back(ent);
+	RF_AddSunLightInteractionEntity(ent);
 	return ent;
 }
 void RFE_RemoveEntity(class rEntityAPI_i *ent) {
 	rEntityImpl_c *rent = (rEntityImpl_c*)ent;
 	rf_entities.remove(rent);
+	RF_RemoveSunLightInteractionEntity(rent);
 	delete rent;
 }
 static u32 c_entitiesCulledByABSBounds;
@@ -792,6 +797,11 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, boo
 		}
 	}
 	ent->addDrawCalls();
+}
+void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent)) {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		callback(rf_entities[i]);
+	}
 }
 static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
 static aCvar_c rf_printAddedEntityModelNames("rf_printAddedEntityModelNames","0");

@@ -59,6 +59,7 @@ bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels);
 u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
 // "forceThirdPerson" is true while generating shadow map drawcalls
 void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);
+void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent));
 
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();
@@ -77,6 +78,10 @@ void RF_DrawSky();
 bool RF_HasSky();
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
 void RF_SetSkyMaterial(const char *skyMaterialName);
+void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial);
+bool RF_HasSunMaterial();
+const class mtrAPI_i *RF_GetSunMaterial();
+const class vec3_c &RF_GetSunDirection();
 
 // rf_decals.cpp
 void RF_InitDecals();

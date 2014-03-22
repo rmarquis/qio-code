@@ -25,6 +25,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __RF_WORLD_H__
 #define __RF_WORLD_H__
 
+#include <shared/typedefs.h>
+#include <shared/array.h>
+
 bool RF_LoadWorldMap(const char *name);
 void RF_ClearWorldMap();
 bool RF_IsAnyMapLoaded();
@@ -32,16 +35,17 @@ const char *RF_GetWorldMapName();
 void RF_AddWorldDrawCalls();
 bool RF_RayTraceWorld(class trace_c &tr);
 void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes);
-int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
+int RF_AddWorldMapDecal(const class vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
 void RF_CacheLightWorldInteractions(class rLightImpl_c *l);
 void RF_DrawSingleBSPSurface(u32 sfNum);
-const rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum);
+const class rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum);
 class mtrAPI_i *RF_GetSingleBSPSurfaceMaterial(u32 sfNum);
-const rVertexBuffer_c *RF_GetBSPVertices();
+const class rVertexBuffer_c *RF_GetBSPVertices();
+const class r_model_c *RF_GetWorldModel();
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 bool RF_IsWorldTypeProc();
 bool RF_IsWorldAreaVisible(int areaNum);
-u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out);
+u32 RF_BoxAreas(const class aabb &absBB, arraySTD_c<u32> &out);
 bool RF_CullBoundsByPortals(const aabb &absBB);
 // it will work faster if you have touching areas precached
 bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums);

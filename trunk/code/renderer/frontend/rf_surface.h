@@ -219,6 +219,7 @@ public:
 #ifdef RVERT_STORE_TANGENTS
 	void recalcTBN();
 #endif // RVERT_STORE_TANGENTS
+	class mtrAPI_i *findSunMaterial() const;
 
 	void calcVertexLighting(const struct pointLightSample_s &sample);
 	void setAmbientLightingVec3_255(const vec3_c &color);
@@ -405,6 +406,14 @@ public:
 			}
 			surfs[i].recalcTBN();
 		}
+	}
+	class mtrAPI_i *findSunMaterial() const {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			mtrAPI_i *r = surfs[i].findSunMaterial();
+			if(r)
+				return r;
+		}
+		return 0;
 	}
 	void precalculateStencilShadowCaster();
 	const class r_stencilShadowCaster_c *getStencilShadowCaster() const {

@@ -44,6 +44,7 @@ u32 RF_GetCurrentDrawcallsCount();
 
 extern bool rf_bDrawOnlyOnDepthBuffer;
 extern bool rf_bDrawingPrelitPath;
+extern bool rf_bDrawingSunLightPass;
 extern int rf_currentShadowMapCubeSide;
 extern int rf_currentShadowMapW;
 extern int rf_currentShadowMapH;

@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include "rf_world.h"
+#include "rf_sunLight.h"
 #include <api/coreAPI.h>
 #include <api/rEntityAPI.h>
 #include <api/mtrAPI.h>
@@ -135,12 +136,17 @@ bool RF_ShouldUseLightmapsWithMultipassRendering() {
 	}
 	return false;
 }
+bool RF_IsUsingDynamicSunLight() {
+	if(RF_HasSunMaterial())
+		return true;
+	return false;
+}
 void RF_Generate3DSubView() {
 	u32 firstDrawCall = RF_GetCurrentDrawcallsCount();
 	if(RF_ShouldUseMultipassRendering() == false) { 
 		RF_AddGenericDrawCalls();
 	} else {
-		if(RF_ShouldUseLightmapsWithMultipassRendering()) {
+		if(RF_ShouldUseLightmapsWithMultipassRendering() ) {
 			// generate prelit world drawcalls
 			// (using lightmaps + dynamic lights)
 			rf_bDrawingPrelitPath = true;
@@ -150,6 +156,17 @@ void RF_Generate3DSubView() {
 			// draw on depth buffer
 			// (100% dynamic lighting)
 			RF_GenerateDepthBufferOnlySceneDrawCalls();
+		}	
+		if(RF_IsUsingDynamicSunLight()) {
+			rf_bDrawingSunLightPass = true;
+			rSunLight_c *sl = RF_GetSunLight();
+			if(RF_IsUsingShadowVolumes()) {
+				sl->addSunLightShadowVolumes();
+			} else {
+				sl->freeSunLightShadowVolumes();
+			}
+			RF_AddGenericDrawCalls();
+			rf_bDrawingSunLightPass = false;
 		}
 		// add drawcalls of light interactions
 		RFL_AddLightInteractionsDrawCalls();

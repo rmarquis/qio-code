@@ -244,6 +244,9 @@ const rVertexBuffer_c *RF_GetBSPVertices() {
 		return 0;
 	return r_bspTree->getVertices();
 }
+const class r_model_c *RF_GetWorldModel() {
+	return r_worldModel;
+}
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume, lightRadius);
 }

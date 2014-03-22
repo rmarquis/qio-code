@@ -330,6 +330,7 @@ void mtrStage_c::setRGBAGenVertex() {
 // material class
 mtrIMPL_c::mtrIMPL_c() {
 	skyParms = 0;
+	sunParms = 0;
 	polygonOffset = 0;
 	hashNext = 0;
 	cullType = CT_FRONT_SIDED;
@@ -350,8 +351,13 @@ void mtrIMPL_c::clear() {
 		delete skyParms;
 		skyParms = 0;
 	}
+	if(sunParms) {
+		delete sunParms;
+		sunParms = 0;
+	}
 	if(deforms) {
 		delete deforms;
+		deforms = 0;
 	}
 	// reset variables to their default values
 	polygonOffset = 0;
@@ -767,6 +773,27 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("wood")) {
 
+				} else if(p.atWord("xmap_sun")) {
+					// Xreal sun params.
+					// In Xreal they are automatically applied to tr. globals when they are parsed.
+					// We're using a separate class to store them.
+					if(sunParms) {
+						u32 line = p.getCurrentLineNumber();
+						g_core->RedWarning("mtrIMPL_c::loadFromText: sunParms already defined - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());
+					} else {
+						sunParms = new sunParms_c;
+					}
+					vec3_c color;
+					if(p.getFloatMat(color,3)) {
+						u32 line = p.getCurrentLineNumber();
+						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
+					}
+					vec3_c angles;
+					if(p.getFloatMat(angles,3)) {
+						u32 line = p.getCurrentLineNumber();
+						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
+					}
+					sunParms->setFromColorAndAngles(color,angles);
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();

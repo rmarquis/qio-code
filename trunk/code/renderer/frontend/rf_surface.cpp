@@ -695,6 +695,14 @@ void r_surface_c::recalcTBN() {
 
 void CalcVertexGridLighting(rVertexBuffer_c &verts, const struct pointLightSample_s &in);
 
+
+class mtrAPI_i *r_surface_c::findSunMaterial() const {
+	if(mat == 0)
+		return 0;
+	if(mat->getSunParms())
+		return mat;
+	return 0;
+}
 void r_surface_c::calcVertexLighting(const struct pointLightSample_s &sample) {
 	CalcVertexGridLighting(verts,sample);
 }

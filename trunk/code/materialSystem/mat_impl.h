@@ -97,6 +97,39 @@ public:
 	}
 };
 
+// parsed from xmap_sun.
+// Xreal is parsing this keyword in tr_shader.c and automatically applies it to tr.globals.
+// xmap_sun syntax: colorR colorG colorB anglesPitch anglesYaw anglesRoll
+// NOTE: Xreal ignores the anglesPitch component.
+// NOTE: there is also "xmap_skylight" keyword which seem to be ignored in Xreal.
+class sunParms_c : public sunParmsAPI_i {
+	vec3_c sunColor; // usually 1 1 1
+	vec3_c sunAngles;
+	vec3_c sunDirection; // calculated from angles
+public:
+	void setFromColorAndAngles(const vec3_c &nColor, const vec3_c &nAngles) {
+		sunColor = nColor;
+		sunAngles = nAngles;
+#if 0
+		sunDirection = nAngles.getForward();
+#else
+		// let's stick to Xreal "xmap_sun" angles format.
+		// It's different than the one used in vec3_c::getForward()
+		float radiansA = DEG2RAD(sunAngles.y);
+		float radiansB = DEG2RAD(sunAngles.z);
+		sunDirection[0] = cos(radiansA) * cos(radiansB);
+		sunDirection[1] = sin(radiansA) * cos(radiansB);
+		sunDirection[2] = sin(radiansB);
+#endif
+	}
+	virtual const class vec3_c &getSunDir() const {
+		return sunDirection;
+	}
+	virtual const class vec3_c &getSunColor() const {
+		return sunColor;
+	}
+};
+
 class deform_c {
 	deformType_e type;
 public:
@@ -328,6 +361,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	mtrIMPL_c *hashNext;
 	arraySTD_c<mtrStage_c*> stages;
 	skyParms_c *skyParms;
+	sunParms_c *sunParms;
 	float polygonOffset;
 	enum cullType_e cullType;
 	bool bPortalMaterial; // set to true by "portal" global material keyword
@@ -499,6 +533,9 @@ public:
 	}
 	virtual const class skyParmsAPI_i *getSkyParms() const {
 		return skyParms;
+	}
+	virtual const class sunParmsAPI_i *getSunParms() const {
+		return sunParms;
 	}
 	// TODO: precalculate stage->sort once and just return the stored value here?
 	virtual enum drawCallSort_e getSort() const { 

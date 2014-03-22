@@ -201,6 +201,16 @@ public:
 			}
 		}
 	}
+	class mtrAPI_i *findSunMaterial() const {
+		for(u32 i = 0; i < entModels.size(); i++) {
+			if(entModels[i]) {
+				mtrAPI_i *r = entModels[i]->findSunMaterial();
+				if(r)
+					return r;
+			}
+		}
+		return 0;
+	} 
 };
 
 // used to load entire world scene directly from .map file
@@ -212,6 +222,7 @@ class r_model_c *RF_LoadMAPFile(const char *fname) {
 	}
 	loader.calcTBNs();
 	loader.registerSubModels();
+	RF_SetSunMaterial(loader.findSunMaterial());
 	return loader.getWorldModel();
 }
 

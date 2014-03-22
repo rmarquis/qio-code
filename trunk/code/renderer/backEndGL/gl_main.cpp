@@ -330,6 +330,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	u32 viewPortWidth;
 	u32 viewPortHeight;
 	bool bSkipStaticEnvCubeMapStages;
+	bool bHasSunLight;
+	class vec3_c sunColor;
+	class vec3_c sunDirection;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -400,6 +403,7 @@ public:
 		bDrawingSky = false;
 		colorMaskState[0] = colorMaskState[1] = colorMaskState[2] = colorMaskState[3] = false;
 		bSkipStaticEnvCubeMapStages = false;
+		bHasSunLight = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -901,11 +905,19 @@ public:
 			CHECK_GL_ERRORS;
 			return;
 		}
-		// ensure that FBO is ready
-		if(rb_useDepthCubeMap.getInt()) {
-			depthCubeMap.create(curShadowMapW,curShadowMapH);
-		} else {
-			depthCubeFBOs.create(curShadowMapW,curShadowMapH);
+		if(this->curCubeMapSide == -1) {
+			// ensure that FBO is ready
+			if(rb_useDepthCubeMap.getInt()) {
+				//if(1) {
+				//	depthCubeMap.destroy();
+				//}
+				depthCubeMap.create(curShadowMapW,curShadowMapH);
+			} else {
+				//if(1) {
+				//	depthCubeFBOs.destroy();
+				//}
+				depthCubeFBOs.create(curShadowMapW,curShadowMapH);
+			}
 		}
 		// bind the FBO
 		if(rb_useDepthCubeMap.getInt()) {
@@ -917,6 +929,11 @@ public:
 		// set viewport
 		setGLViewPort(curShadowMapW,curShadowMapH);
 		// clear buffers
+		// Depth mask must be set to true before calling glClear
+		// (otherwise GL_DEPTH_BUFFER_BIT would be ignored)
+		////if(!bDepthMask)
+		////	g_core->Print("Depth mask was off\n");
+		setGLDepthMask(true); // this is necessary here!
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		if(this->curCubeMapSide == -1) {
 			// save camera matrices
@@ -941,6 +958,11 @@ public:
 	virtual void setCurLightShadowMapSize(int newW, int newH) {
 		curShadowMapW = newW;
 		curShadowMapH = newH;
+	}
+	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection) {
+		bHasSunLight = newBHasSunLight;
+		sunColor = newSunColor;
+		sunDirection = newSunDirection;
 	}
 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
 		this->forcedMaterialFrameNum = animMapFrame;
@@ -1196,6 +1218,22 @@ public:
 			if(newShader->sCubeMap != -1) {
 				glUniform1i(newShader->sCubeMap,0);
 			}
+			// pass the sunlight (directional light) paremeters to shader
+			if(bHasSunLight) {
+				if(newShader->u_sunDirection != -1) {
+					if(usingWorldSpace) {
+						glUniform3f(newShader->u_sunDirection,sunDirection.x,sunDirection.y,sunDirection.z);
+					} else {
+						vec3_c dirLocal;
+						entityMatrixInverse.transformNormal(sunDirection,dirLocal);
+						glUniform3f(newShader->u_sunDirection,dirLocal.x,dirLocal.y,dirLocal.z);
+					}
+				}
+				if(newShader->u_sunColor != -1) {
+					glUniform3f(newShader->u_sunColor,sunColor.x,sunColor.y,sunColor.z);
+				}
+			}
+			// pass the point/spot light parameters to shader
 			if(curLight) {
 				if(newShader->uLightOrigin != -1) {
 					const vec3_c &xyz = curLight->getOrigin();
@@ -1885,6 +1923,8 @@ drawOnlyLightmap:
 					(heightMap != 0)
 					||
 					((bumpMap != 0) && (lastDeluxemap != 0))
+					||
+					bHasSunLight
 					)
 					) {
 					glslPermutationFlags_s glslShaderDesc;
@@ -1908,6 +1948,9 @@ drawOnlyLightmap:
 					}
 					if(lastSurfaceColor.isFullBright() == false) {
 						glslShaderDesc.hasMaterialColor = true;
+					}
+					if(bHasSunLight) {
+						glslShaderDesc.hasSunLight = true;
 					}
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();

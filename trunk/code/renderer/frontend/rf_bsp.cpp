@@ -590,6 +590,9 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		if(mat->getSkyParms()) {
 			RF_SetSkyMaterial(mat);
 		}
+		if(mat->getSunParms()) {
+			RF_SetSunMaterial(mat);
+		}
 		if(sf->surfaceType == Q3MST_PLANAR) {
 			out->type = BSPSF_PLANAR;
 parsePlanarSurf:;

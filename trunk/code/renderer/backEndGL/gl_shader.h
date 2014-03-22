@@ -51,6 +51,7 @@ struct glslPermutationFlags_s {
 	bool isTwoSided; // #define MATERIAL_TWO_SIDED
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
+	bool hasSunLight; // #define HAS_SUNLIGHT
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
@@ -78,6 +79,9 @@ friend class rbSDLOpenGL_c;
 	int u_entityMatrix; // mat4x4
 	int u_entityRotationMatrix; // mat4x4
 	//int u_alphaTestValue; // float
+	// sun (directional) lighting
+	int u_sunDirection;
+	int u_sunColor;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

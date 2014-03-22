@@ -30,10 +30,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 
 static class mtrAPI_i *rf_skyMaterial = 0;
+static class mtrAPI_i *rf_sunMaterial = 0;
 static aCvar_c rf_skipSky("rf_skipSky","0");
 
 void RF_InitSky() {
 	rf_skyMaterial = 0;
+	rf_sunMaterial = 0;
 }
 
 bool RF_HasSky() {
@@ -120,6 +122,23 @@ void RF_DrawSky() {
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial) {
 	rf_skyMaterial = newSkyMaterial;
 }
+void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial) {
+	rf_sunMaterial = newSunMaterial;
+}
 void RF_SetSkyMaterial(const char *skyMaterialName) {
 	rf_skyMaterial = g_ms->registerMaterial(skyMaterialName);
+}
+bool RF_HasSunMaterial() {
+	if(rf_sunMaterial)
+		return true;
+	return false;
+}
+const class mtrAPI_i *RF_GetSunMaterial() {
+	return rf_sunMaterial;
+}
+const class vec3_c &RF_GetSunDirection() {
+	static vec3_c dummy;
+	if(rf_sunMaterial)
+		return rf_sunMaterial->getSunParms()->getSunDir();
+	return dummy;
 }

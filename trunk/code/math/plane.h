@@ -127,9 +127,9 @@ public:
 	}
 	void fromPointAndNormal(const vec3_c &p, const vec3_c &_normal) {
 		this->norm = _normal;
-		this->norm.normalize();
+		this->norm.normalizeFast();
 		this->dist = -this->norm.dotProduct(p);
-#if 1
+#if 0
 		float check = this->distance(p);
 		assert(abs(check) < 0.01f);
 #endif

@@ -198,6 +198,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.bHorizontalPass) {
 		out.append("#define HORIZONTAL_PASS\n");
 	}
+	if(p.hasSunLight) {
+		out.append("#define HAS_SUNLIGHT\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -312,6 +315,9 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
 	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
 	//ret->u_alphaTestValue = glGetUniformLocation(shader,"u_alphaTestValue");
+	ret->u_sunDirection = glGetUniformLocation(shader,"u_sunDirection");
+	ret->u_sunColor = glGetUniformLocation(shader,"u_sunColor");
+
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
 

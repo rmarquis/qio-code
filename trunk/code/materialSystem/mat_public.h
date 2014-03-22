@@ -125,4 +125,10 @@ public:
 	virtual const skyBoxAPI_i *getNearBox() const = 0;
 };
 
+class sunParmsAPI_i {
+public:
+	virtual const class vec3_c &getSunDir() const = 0;
+	virtual const class vec3_c &getSunColor() const = 0;
+};
+
 #endif // __MAT_PUBLIC_H__
