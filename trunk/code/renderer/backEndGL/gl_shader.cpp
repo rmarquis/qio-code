@@ -201,6 +201,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasSunLight) {
 		out.append("#define HAS_SUNLIGHT\n");
 	}
+	if(p.hasDirectionalShadowMapping) {
+		out.append("#define HAS_DIRECTIONAL_SHADOW_MAPPING\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -309,6 +312,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	ret->u_shadowCubeMap = glGetUniformLocation(shader,"shadowCubeMap");
+	ret->u_directionalShadowMap = glGetUniformLocation(shader,"directionalShadowMap");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");

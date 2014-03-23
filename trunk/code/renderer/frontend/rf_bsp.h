@@ -264,6 +264,9 @@ public:
 	const rVertexBuffer_c *getVertices() const {
 		return &verts;
 	}
+	const aabb &getWorldBounds() const {
+		return models[0].bb;
+	}
 
 	void updateVisibility();
 	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);

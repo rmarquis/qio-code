@@ -291,6 +291,16 @@ void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName
 		r_procTree->setSurfaceMaterial(areaNum,surfaceNum,matName);
 	}
 }
+void RF_GetWorldBounds(class aabb &out) {
+	if(r_bspTree) {
+		out = r_bspTree->getWorldBounds();
+	} else if(r_worldModel) {
+		out = r_worldModel->getBounds();
+	} else if(r_procTree) {
+		//r_procTree->getBB();
+	}
+}
+
 
 void RF_SetWorldSurfaceMaterial_f() {
 	if(g_core->Argc() < 4) {

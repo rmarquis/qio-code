@@ -43,6 +43,15 @@ varying vec3 v_tbnEyeDir;
 varying mat3 tbnMat;
 #endif    
     
+#ifdef HAS_SUNLIGHT
+varying vec3 v_vertNormal;
+#endif
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+// used for shadow lookup
+varying vec4 shadowCoord;
+#endif
+
+
 void main() {
 	gl_Position = ftransform();
 	
@@ -59,7 +68,12 @@ void main() {
 #if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)
 	tbnMat = mat3(atrTangents,atrBinormals,gl_Normal);
 #endif    
-    
+        
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+	// this is the only shadow part in the Vertex Shader
+	shadowCoord = gl_TextureMatrix[1] * gl_Vertex;
+#endif
+
 #ifdef HAS_TEXGEN_ENVIROMENT
 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;
 	dir = normalize(dir);
@@ -86,5 +100,8 @@ void main() {
 #ifdef HAS_VERTEXCOLORS
 	v_color4 = gl_Color;
 #endif // HAS_VERTEXCOLORS
+#ifdef HAS_SUNLIGHT
+	v_vertNormal = gl_Normal;
+#endif
 }
 

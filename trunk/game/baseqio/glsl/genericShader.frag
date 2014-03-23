@@ -56,6 +56,17 @@ attribute vec3 atrBinormals;
 varying mat3 tbnMat;
 #endif
 
+#ifdef HAS_SUNLIGHT
+uniform vec3 u_sunDirection;
+uniform vec3 u_sunColor;
+varying vec3 v_vertNormal;
+#endif
+
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+uniform sampler2DShadow directionalShadowMap;
+varying vec4 shadowCoord;
+#endif 
+
 void main() {
 #ifdef HAS_HEIGHT_MAP
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
@@ -94,6 +105,18 @@ void main() {
     return;
 #else
     
+ 
+#ifdef HAS_SUNLIGHT
+    float angleFactor = dot(v_vertNormal, u_sunDirection);
+    if(angleFactor < 0) {
+		// light is behind the surface
+		return;
+    }
+#endif   
+
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+	float shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+#endif 
   // calculate the final color
 #ifdef HAS_LIGHTMAP
 #ifdef HAS_VERTEXCOLORS
@@ -112,4 +135,11 @@ void main() {
 	gl_FragColor *= u_materialColor;
 #endif
 #endif // defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
+ 
+#ifdef HAS_SUNLIGHT
+    gl_FragColor *= angleFactor;
+#endif   
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+    gl_FragColor *= shadow;
+#endif   
 }

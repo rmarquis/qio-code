@@ -108,6 +108,9 @@ public:
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 
 	}
+	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
+
+	}
 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
 
 	}

@@ -110,6 +110,7 @@ static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
 static aCvar_c rb_forceBlur("rb_forceBlur","0");
 static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","0");
 static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
+static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -300,6 +301,11 @@ struct rbCounters_s {
 	}
 };
 
+matrix_c rb_shadowMappingBias(0.5, 0.0, 0.0, 0.0, 
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 0.5, 0.0,
+	0.5, 0.5, 0.5, 1.0);
+
 class rbSDLOpenGL_c : public rbAPI_i {
 	// gl limits
 	int maxActiveTextureSlots;
@@ -324,6 +330,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curShadowMapH;
 	depthCubeFBOs_c depthCubeFBOs;
 	depthCubeMap_c depthCubeMap;
+	fboDepth_c depthFBO;
 	fboScreen_c screenFBO;
 	fboScreen_c screenFBO2;
 	bool bDrawingSky;
@@ -350,6 +357,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	matrix_c savedCameraProjection;
 	matrix_c savedCameraView;
+
+	matrix_c sunLightView;
+	matrix_c sunLightProjection;
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
@@ -876,30 +886,33 @@ public:
 		CHECK_GL_ERRORS;
 		boundFBO = glHandle;
 	}
+	void stopDrawingToFBOAndRestoreCameraMatrices() {
+		// unbind the FBO
+		if(shouldDrawToScreenFBO()) {
+			bindFBO(screenFBO.getFBOHandle());
+		} else {
+			bindFBO(0);
+		}
+		// restore viewport
+		setGLViewPort(getWinWidth(),getWinHeight());
+
+		// restore camera view and projection matrices
+		projectionMatrix = savedCameraProjection;
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glLoadMatrixf(projectionMatrix);
+
+		worldModelMatrix = savedCameraView;
+		//setupWorldSpace();
+	}
 	virtual void setCurrentDrawCallCubeMapSide(int iCubeSide) {
 		if(iCubeSide == this->curCubeMapSide) {
 			return; // no change
 		}
 		if(iCubeSide == -1) {
-			// unbind the FBO
-			if(shouldDrawToScreenFBO()) {
-				bindFBO(screenFBO.getFBOHandle());
-			} else {
-				bindFBO(0);
-			}
-			// restore viewport
-			setGLViewPort(getWinWidth(),getWinHeight());
-
-			// restore camera view and projection matrices
-			projectionMatrix = savedCameraProjection;
-
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glLoadMatrixf(projectionMatrix);
-
-			worldModelMatrix = savedCameraView;
-			//setupWorldSpace();
-
+			this->stopDrawingToFBOAndRestoreCameraMatrices();
+	
 			this->curCubeMapSide = -1;
 
 			CHECK_GL_ERRORS;
@@ -1176,6 +1189,7 @@ public:
 	class glShader_c *curShader;
 	bool bDrawOnlyOnDepthBuffer;
 	bool bDrawingShadowVolumes;
+	bool bDrawingSunShadowMapPass;
 	virtual void setCurLight(const class rLightAPI_i *light) {
 		if(this->curLight == light)
 			return;
@@ -1186,6 +1200,62 @@ public:
 	}
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
+	}
+	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
+		if(bDrawingSunShadowMapPass == bNewDrawingSunShadowMapPass)
+			return;
+		if(bNewDrawingSunShadowMapPass) {
+			u32 shadowMapSize = 512;
+			depthFBO.create(shadowMapSize,shadowMapSize);		
+
+			bindFBO(depthFBO.getFBOHandle());	
+			// set viewport
+			setGLViewPort(shadowMapSize,shadowMapSize);
+			// clear buffers
+			// Depth mask must be set to true before calling glClear
+			// (otherwise GL_DEPTH_BUFFER_BIT would be ignored)
+			////if(!bDepthMask)
+			////	g_core->Print("Depth mask was off\n");
+			setGLDepthMask(true); // this is necessary here!
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+			// save camera matrices
+			savedCameraProjection = projectionMatrix;
+			savedCameraView = worldModelMatrix;
+
+			float size = 1000.f;
+			float sizeZ = 1000.f;
+			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
+			vec3_c offset = sunDirection * sizeZ * 0.5f;
+			////sl->generateSunShadowMapDrawCalls();
+#if 0
+			axis_c ax;
+			ax.mat[0] = sunDirection;
+			ax.mat[1] = ax.mat[0].getPerpendicular();
+			ax.mat[2].crossProduct(ax.mat[0],ax.mat[1]);
+
+			sunLightView.fromAxisAndOrigin(ax,offset);
+#else
+			sunLightView.setupLookAtRH(offset,-sunDirection,sunDirection.getPerpendicular());
+#endif
+
+		//sunLightView.invFromAxisAndVector(ax,offset);
+		//// convert to gl coord system
+		//sunLightView.toGL();
+
+
+			// set the light view matrices
+			worldModelMatrix = sunLightView;
+		//	worldModelMatrix.toGL();
+
+			projectionMatrix = sunLightProjection;
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glLoadMatrixf(projectionMatrix);
+
+		} else {
+			this->stopDrawingToFBOAndRestoreCameraMatrices();
+		}
+		bDrawingSunShadowMapPass = bNewDrawingSunShadowMapPass;
 	}
 	void bindShader(class glShader_c *newShader) {
 		curShader = newShader;
@@ -1257,39 +1327,40 @@ public:
 				if(newShader->u_spotLightMaxCos != -1) {
 					glUniform1f(newShader->u_spotLightMaxCos,curLight->getSpotLightMaxCos());
 				}
-				if(r_shadows == 2) {
-					matrix_c bias(0.5, 0.0, 0.0, 0.0, 
-						0.0, 0.5, 0.0, 0.0,
-						0.0, 0.0, 0.5, 0.0,
-						0.5, 0.5, 0.5, 1.0);
-					
-					for(u32 i = 0; i < 6; i++) {
+				if(r_shadows == 2) {	
+					if(rb_useDepthCubeMap.getInt()) {
+						selectTex(3);
+						glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
+						glUniform1i(newShader->u_shadowCubeMap,3);
+					} else {
 						
-		//if(i != 5)
-		//	continue;
+						for(u32 i = 0; i < 6; i++) {
+							matrix_c lProj = curLight->getSMLightProj();;
+							matrix_c lView = curLight->getSMSideView(i);
 
-						matrix_c lProj = curLight->getSMLightProj();;
-						matrix_c lView = curLight->getSMSideView(i);
-
-						// FIXME: the entity offset calculated here is wrong... 
-						// shadows are not displayed correctly on entities
-						matrix_c res = bias * lProj * lView * entityMatrix;
+							// FIXME: the entity offset calculated here is wrong... 
+							// shadows are not displayed correctly on entities
+							matrix_c res = rb_shadowMappingBias * lProj * lView * entityMatrix;
 
 
-						u32 texSlot = 1 + i;
-						setTextureMatrixCustom(texSlot,res);
+							u32 texSlot = 1 + i;
+							setTextureMatrixCustom(texSlot,res);
 
-						if(rb_useDepthCubeMap.getInt()) {
-							selectTex(3);
-							glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
-							glUniform1i(newShader->u_shadowCubeMap,3);
-						} else {
 							u32 slot = 3+i;
 							bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
 							glUniform1i(newShader->u_shadowMap[i],slot);
 						}
 					}
 				}
+			} 
+			if(bHasSunLight && r_shadows == 2 && newShader->u_directionalShadowMap >= 0) {
+				matrix_c res = rb_shadowMappingBias * sunLightProjection * sunLightView * entityMatrix;
+				u32 texSlot = 1;
+				setTextureMatrixCustom(texSlot,res);
+
+				u32 slot = 3;
+				bindTex(slot,depthFBO.getTextureHandle());
+				glUniform1i(newShader->u_directionalShadowMap,slot);
 			}
 			if(newShader->uViewOrigin != -1) {
 				glUniform3f(newShader->uViewOrigin,
@@ -1344,6 +1415,10 @@ public:
 		if(verts.size() == 0)
 			return;
 
+		if(rb_skipMaterialsWithCubeMaps.getInt()) {
+			if(lastMat && lastMat->hasStageWithCubeMap())
+				return;
+		}
 		// first apply deforms
 		if(bDeformsDone == false && lastMat && lastMat->hasDeforms()) {
 			// right now we're only supporting the autoSprite deform
@@ -1443,7 +1518,7 @@ public:
 				bindTex(0,alphaStage->getTexture(0)->getInternalHandleU32());
 			}
 
-			if(curCubeMapSide >= 0) {
+			if(curCubeMapSide >= 0 || bDrawingSunShadowMapPass) {
 				// invert culling for shadow mapping 
 				// (because we want to get the depth of backfaces to avoid epsilon issues)
 				if(lastMat) {
@@ -1951,6 +2026,9 @@ drawOnlyLightmap:
 					}
 					if(bHasSunLight) {
 						glslShaderDesc.hasSunLight = true;
+						if(r_shadows == 2) {
+							glslShaderDesc.hasDirectionalShadowMapping = true;
+						}
 					}
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
@@ -2519,6 +2597,7 @@ drawOnlyLightmap:
 		curLight = 0;
 		bDrawOnlyOnDepthBuffer = false;
 		bDrawingShadowVolumes = false;
+		bDrawingSunShadowMapPass = false;
 		bDepthMask = true;
 		prevCullType = CT_NOT_SET;
 		stencilTestEnabled = 0;

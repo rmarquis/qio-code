@@ -131,7 +131,7 @@ public:
 	inline void normalizeNormals() {
 		rVert_c *v = this->getArray();
 		for(u32 i = 0; i < numVerts; i++, v++) {
-			v->normal.normalize();
+			v->normal.normalizeFast();
 		}
 	}
 #ifdef RVERT_STORE_TANGENTS

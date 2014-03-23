@@ -58,6 +58,12 @@ public:
 		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
 		thirdPersonRendering = bThirdPersonRendering;
 	}
+	void setup(const vec3_c &newOrigin, const axis_c &newAxis) {
+		origin = newOrigin;
+		pvsOrigin = newOrigin;
+		axis = newAxis;
+		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
+	}
 	void setPVSOrigin(const vec3_c &newPVSOrigin) {
 		pvsOrigin = newPVSOrigin;
 	}

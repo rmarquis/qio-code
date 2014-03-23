@@ -49,6 +49,7 @@ aCvar_c rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls("rf_drawCalls_print
 aCvar_c rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls("rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls","0");
 aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeDrawCalls","0");
 aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
+aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
 
 class drawCall_c {
 public:
@@ -74,6 +75,8 @@ public:
 	bool bHasSunLight;
 	vec3_c sunDirection;
 	vec3_c sunColor;
+	// for directional light shadow mapping
+	bool bDrawingSunShadowMapPass;
 //public:
 	
 	void clearDrawCall() {
@@ -85,11 +88,14 @@ static u32 rf_numDrawCalls = 0;
 bool rf_bDrawOnlyOnDepthBuffer = false;
 bool rf_bDrawingPrelitPath = false;
 bool rf_bDrawingSunLightPass = false;
+bool rf_bDrawingSunShadowMapPass = false;
 // used to force specific frame of "animMap" stage from cgame code
 int rf_forceSpecificMaterialFrame = -1;
 int rf_currentShadowMapCubeSide = -1;
 int rf_currentShadowMapW;
 int rf_currentShadowMapH;
+//class matrix_c rf_sunProjection;
+//class matrix_c rf_sunMatrix;
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
@@ -131,6 +137,9 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 		//		return; 
 		//}
 	}
+	// dont draw sky
+	if(rf_bDrawingSunShadowMapPass && mat->hasStageWithCubeMap())
+		return;
 	if(rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls.getInt()) {
 		if(rf_curLightAPI && rf_currentShadowMapCubeSide >= 0) {
 			g_core->Print("Adding DepthShadowMap drawcall (%i) with material: %s\n",rf_numDrawCalls,mat->getName());
@@ -145,7 +154,9 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	n->clearDrawCall();
 	// if we're drawing only on depth buffer
 	if(rf_bDrawOnlyOnDepthBuffer) {
-		if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
+		if(rf_bDrawingSunShadowMapPass) {
+			n->drawOnlyOnDepthBuffer = true;
+		} else if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
 			sort = DCS_BLEND_AFTER_LIGHTING;
 			n->drawOnlyOnDepthBuffer = false;
 			//return;
@@ -195,6 +206,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 			n->sunColor = sunMaterial->getSunParms()->getSunColor();
 		}
 	}
+	n->bDrawingSunShadowMapPass = rf_bDrawingSunShadowMapPass;
 	rf_numDrawCalls++;
 }
 void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
@@ -296,6 +308,11 @@ int compareDrawCall(const void *v0, const void *v1) {
 			return 1; // c1 first
 		return -1; // c0 first
 	} 
+	if(c1->bDrawingSunShadowMapPass != c0->bDrawingSunShadowMapPass) {
+		if(c1->bDrawingSunShadowMapPass)
+			return -1; // c0 first
+		return 1; // c1 first
+	} 
 #if 1
 	// c0->curLight == c1->curLight
 	// light shadow volumes are drawn before light interactions
@@ -350,6 +367,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
 	int prevCubeMapSide = -1;
+	bool prevBDrawingSunShadowMapPass = false;
 	rLightAPI_i *prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
 		if(rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls.getInt()) {
@@ -365,6 +383,11 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		if(rf_drawCalls_printDepthOnlyDrawCalls.getInt()) {
 			if(c->drawOnlyOnDepthBuffer) {
 				g_core->Print("Executing depth only drawcall %i: material %s, light %i\n",i,c->material->getName(),c->curLight);
+			}
+		}
+		if(rf_drawCalls_printSunShadowMapDrawCalls.getInt()) {
+			if(c->bDrawingSunShadowMapPass) {
+				g_core->Print("Executing sun shadow map drawcall %i: material %s\n",i,c->material->getName());
 			}
 		}
 		// draw sky after mirror/portal materials
@@ -408,9 +431,11 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		}
 		// set cubemap properties before changing model view matrix
 		// but after curLight is set
+		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection);
+		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass);
 		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
 		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
-		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide) {
+		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide || prevBDrawingSunShadowMapPass != c->bDrawingSunShadowMapPass) {
 			if(c->entity == 0) {
 				rb->setupWorldSpace();
 			} else {
@@ -418,13 +443,13 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			}
 			prevEntity = c->entity;
 			prevCubeMapSide = c->cubeMapSide;
+			prevBDrawingSunShadowMapPass = c->bDrawingSunShadowMapPass;
 		}
 		rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
 		rb->setCurrentDrawCallSort(c->sort);
 		rb->setBindVertexColors(c->bindVertexColors);
 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 		rb->setColor4(c->surfaceColor.toPointer());
-		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection);
 		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
 		if(c->verts) {
 			// draw surface
