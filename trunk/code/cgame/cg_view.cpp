@@ -272,6 +272,7 @@ static int CG_CalcViewValues( void ) {
 
 	projDef_s projDef;
 	projDef.setDefaults();
+	//projDef.zFar = 1024.f;
 	rf->setupProjection3D(&projDef);
 	rf->setup3DView(cg.refdefViewOrigin,cg.refdefViewAngles,cg_thirdPerson.integer);
 

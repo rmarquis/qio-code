@@ -86,7 +86,7 @@ bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out)
 			idx++;
 		}
 	}
-
+	out->recalcBoundingBoxes();
 	g_img->freeImageData(data);
 	return false;
 }

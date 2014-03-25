@@ -605,7 +605,7 @@ void R_FastCalcTBNArray( plane_c *planes, rVert_c *verts, const int numVerts, co
 void r_surface_c::recalcTBN() {
 #if 1
 	const rIndexBuffer_c &pIndices = getIndices2();
-	if(rf_fastCalcTBN.getInt()) {
+	if(rf_fastCalcTBN.getInt() && pIndices.is32Bit()==false) {
 		if(trianglePlanes.size() != getNumTris())
 			trianglePlanes.resize(getNumTris());
 		R_FastCalcTBNArray(trianglePlanes.getArray(),verts.getArray(),verts.size(),pIndices.getU16Ptr(),indices.getNumIndices());

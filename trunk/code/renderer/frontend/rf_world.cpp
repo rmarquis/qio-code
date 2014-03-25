@@ -300,6 +300,15 @@ void RF_GetWorldBounds(class aabb &out) {
 		//r_procTree->getBB();
 	}
 }
+void RF_GetSunWorldBounds(class aabb &out) {
+	if(r_bspTree) {
+		//out = r_bspTree->getWorldBounds();
+	} else if(r_worldModel) {
+		r_worldModel->getSunBounds(out);
+	} else if(r_procTree) {
+		//r_procTree->getBB();
+	}
+}
 
 
 void RF_SetWorldSurfaceMaterial_f() {

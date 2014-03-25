@@ -106,6 +106,9 @@ textures/hipshot_sky/violentdays
 //	xmap_sun	todo
 //	xmap_skylight	todo
 
+	xmap_sun 1.0 1.0 1.0 125 315 45
+	xmap_skylight 125 3
+	
 	{ 
 		stage skyboxMap
 		noPicMip

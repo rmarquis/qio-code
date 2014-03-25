@@ -340,6 +340,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool bHasSunLight;
 	class vec3_c sunColor;
 	class vec3_c sunDirection;
+	aabb sunLightBounds;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -972,10 +973,11 @@ public:
 		curShadowMapW = newW;
 		curShadowMapH = newH;
 	}
-	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection) {
+	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection, const class aabb &newSunBounds) {
 		bHasSunLight = newBHasSunLight;
 		sunColor = newSunColor;
 		sunDirection = newSunDirection;
+		sunLightBounds = newSunBounds;
 	}
 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
 		this->forcedMaterialFrameNum = animMapFrame;
@@ -1205,7 +1207,7 @@ public:
 		if(bDrawingSunShadowMapPass == bNewDrawingSunShadowMapPass)
 			return;
 		if(bNewDrawingSunShadowMapPass) {
-			u32 shadowMapSize = 512;
+			u32 shadowMapSize = 1024;
 			depthFBO.create(shadowMapSize,shadowMapSize);		
 
 			bindFBO(depthFBO.getFBOHandle());	
@@ -1222,10 +1224,8 @@ public:
 			savedCameraProjection = projectionMatrix;
 			savedCameraView = worldModelMatrix;
 
-			float size = 1000.f;
-			float sizeZ = 1000.f;
-			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
-			vec3_c offset = sunDirection * sizeZ * 0.5f;
+			////float size = 1000.f;
+			///float sizeZ = 1000.f;
 			////sl->generateSunShadowMapDrawCalls();
 #if 0
 			axis_c ax;
@@ -1235,9 +1235,33 @@ public:
 
 			sunLightView.fromAxisAndOrigin(ax,offset);
 #else
-			sunLightView.setupLookAtRH(offset,-sunDirection,sunDirection.getPerpendicular());
+			//vec3_c offset = 
+				//camOriginWorldSpace + 
+			///	sunDirection * sizeZ * 0.5f;
+			//sunLightView.setupLookAtRH(offset,-sunDirection,sunDirection.getPerpendicular());
+
+			sunLightView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
 #endif
 
+#if 0
+			
+			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
+#else
+			aabb bb = sunLightBounds;
+			aabb cropBounds;
+			for(u32 i = 0; i < 8; i++) {
+				vec3_c p = bb.getPoint(i);
+				float p2[4] = { p.x, p.y, p.z, 1.f };
+				float transf[4];
+				sunLightView.transformVec4(p2,transf);					
+				transf[0] /= transf[3];
+				transf[1] /= transf[3];
+				transf[2] /= transf[3];
+				cropBounds.addPoint(transf);
+			}							
+			sunLightProjection.setupOrthogonalProjectionRH(cropBounds.mins[0], cropBounds.maxs[0], cropBounds.mins[1], cropBounds.maxs[1], -cropBounds.maxs[2], -cropBounds.mins[2]);
+
+#endif
 		//sunLightView.invFromAxisAndVector(ax,offset);
 		//// convert to gl coord system
 		//sunLightView.toGL();
@@ -2030,6 +2054,7 @@ drawOnlyLightmap:
 							glslShaderDesc.hasDirectionalShadowMapping = true;
 						}
 					}
+					glslShaderDesc.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					glslShaderDesc.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();

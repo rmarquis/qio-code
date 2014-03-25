@@ -394,6 +394,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "rf_setCrosshairSurfaceMaterial", Cmd_CompleteMaterialName );
 	Cmd_AddCommand ("cg_setCrosshairSurfaceMaterial", 0);
 	Cmd_SetCommandCompletionFunc( "cg_setCrosshairSurfaceMaterial", Cmd_CompleteMaterialName );
+	Cmd_AddCommand ("rf_setSunMaterial", 0);
+	Cmd_SetCommandCompletionFunc( "rf_setSunMaterial", Cmd_CompleteMaterialName );
 }
 
 /*

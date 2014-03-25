@@ -136,7 +136,7 @@ public:
 	virtual void setCurLightShadowMapSize(int newW, int newH) {
 
 	}
-	virtual void setSunParms(bool bHasSunLight, const class vec3_c &sunColor, const class vec3_c &sunDirection) {
+	virtual void setSunParms(bool bHasSunLight, const class vec3_c &sunColor, const class vec3_c &sunDirection, const class aabb &newSunBounds) {
 
 	}
 	// -1 means that renderer material time will be used to get "animMap" frame

@@ -132,14 +132,15 @@ void rSunLight_c::addSunLightShadowVolumes() {
 	if(mainVolume == 0) {
 		mainVolume = new rIndexedShadowVolume_c;
 		const r_model_c *m = RF_GetWorldModel();
-		
-		for(u32 i = 0; i < m->getNumSurfs(); i++) {
-			if(m->getSurf(i)->findSunMaterial())
-				continue;
-			if(rf_usePointLightForSun.getInt()) {
-				mainVolume->addRSurface(m->getSurf(i),getFakePointLightPosition(),0,getFakePointLightRadius());
-			} else {
-				mainVolume->addDirectionalRSurface(m->getSurf(i),RF_GetSunDirection(),5000);
+		if(m) {
+			for(u32 i = 0; i < m->getNumSurfs(); i++) {
+				if(m->getSurf(i)->findSunMaterial())
+					continue;
+				if(rf_usePointLightForSun.getInt()) {
+					mainVolume->addRSurface(m->getSurf(i),getFakePointLightPosition(),0,getFakePointLightRadius());
+				} else {
+					mainVolume->addDirectionalRSurface(m->getSurf(i),RF_GetSunDirection(),5000);
+				}
 			}
 		}
 	}

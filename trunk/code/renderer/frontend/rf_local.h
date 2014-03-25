@@ -60,6 +60,7 @@ u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*
 // "forceThirdPerson" is true while generating shadow map drawcalls
 void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);
 void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent));
+void RF_GetEntitiesBounds(class aabb &out);
 
 // rf_lights.cpp
 class rLightAPI_i *RFL_AllocLight();

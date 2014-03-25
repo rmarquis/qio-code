@@ -55,6 +55,7 @@ bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out
 void RF_GetLookatSurfaceInfo(struct rendererSurfaceRef_s &out);
 void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName);
 void RF_GetWorldBounds(class aabb &out);
+void RF_GetSunWorldBounds(class aabb &out);
 
 #endif // __RF_BSP_H__
 

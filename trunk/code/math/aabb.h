@@ -162,6 +162,14 @@ public:
 			maxs[1] <= o.maxs[1] &&
 			maxs[2] <= o.maxs[2];
 	}
+	void capTo(const aabb &o) {
+		for(u32 i = 0; i < 3; i++) {
+			if(o.mins[i] > mins[i])
+				mins[i] = o.mins[i];
+			if(o.maxs[i] < maxs[i])
+				maxs[i] = o.maxs[i];
+		}
+	}
 	vec3_c getCenter() const {
 		return (mins + maxs) * 0.5;
 	}

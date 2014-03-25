@@ -415,6 +415,15 @@ public:
 		}
 		return 0;
 	}
+	void getSunBounds(aabb &bb) const {
+		bb.clear();
+		for(u32 i = 0; i < surfs.size(); i++) {
+			mtrAPI_i *r = surfs[i].findSunMaterial();
+			if(r)
+				continue;
+			bb.addBox(surfs[i].getBB());
+		}
+	}
 	void precalculateStencilShadowCaster();
 	const class r_stencilShadowCaster_c *getStencilShadowCaster() const {
 		return this->ssvCaster;

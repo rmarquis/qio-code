@@ -292,6 +292,15 @@ public:
 		_v[11] = 0;
 		_v[15] = 1.f;
 	}
+	// same as D3DXMatrixOrthoOffCenterRH
+	// http://msdn.microsoft.com/en-us/library/bb205348(VS.85).aspx
+	void setupOrthogonalProjectionRH(vec_t left, vec_t right, vec_t bottom, vec_t top, vec_t near, vec_t far)
+	{
+		_v[0] = 2 / (right - left);	_v[4] = 0;					_v[8] = 0;					_v[12] = (left + right) / (left - right);
+		_v[1] = 0;					_v[5] = 2 / (top - bottom);	_v[9] = 0;					_v[13] = (top + bottom) / (bottom - top);
+		_v[2] = 0;					_v[6] = 0;					_v[10] = 1 / (near - far);	_v[14] = near / (near - far);
+		_v[3] = 0;					_v[7] = 0;					_v[11] = 0;					_v[15] = 1;
+	}
 	void setupLookAtRH(const vec3_c &eye, const vec3_c &dir, const vec3_c &up) {
 		vec3_c sideN = dir.crossProduct(up);
 		sideN.normalize();
@@ -306,6 +315,7 @@ public:
 		_v[ 2] = -dirN[0];	_v[ 6] = -dirN[1];		_v[10] = -dirN[2];		_v[14] = dirN.dotProduct(eye);
 		_v[ 3] = 0;			_v[ 7] = 0;				_v[11] = 0;				_v[15] = 1;
 	}
+
 
 	float det() const {
 		return ((this->_v[0] * this->_v[5] * this->_v[10]) +
@@ -443,6 +453,12 @@ public:
 		vec3_c out;
 		transformNormal(inout,out);
 		inout = out;
+	}
+	void transformVec4(const vec4_t in, vec4_t out) {
+		out[ 0] = _v[ 0] * in[ 0] + _v[ 4] * in[ 1] + _v[ 8] * in[ 2] + _v[12] * in[ 3];
+		out[ 1] = _v[ 1] * in[ 0] + _v[ 5] * in[ 1] + _v[ 9] * in[ 2] + _v[13] * in[ 3];
+		out[ 2] = _v[ 2] * in[ 0] + _v[ 6] * in[ 1] + _v[10] * in[ 2] + _v[14] * in[ 3];
+		out[ 3] = _v[ 3] * in[ 0] + _v[ 7] * in[ 1] + _v[11] * in[ 2] + _v[15] * in[ 3];
 	}
 	void transformAABB(const class aabb &in, aabb &out) const;
 	void fromQuat(const class quat_c &q);

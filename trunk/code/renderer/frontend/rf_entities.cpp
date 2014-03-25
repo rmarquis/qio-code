@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_world.h"
 #include "rf_skin.h"
 #include "rf_sunLight.h"
+#include "rf_drawCall.h"
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>
@@ -775,7 +776,7 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, boo
 			return;
 		}
 	}
-	if(rf_cullEntities.getInt()) {
+	if(rf_cullEntities.getInt() && !rf_bDrawingSunShadowMapPass) {
 		// don't even try to cull first person only entities
 		// (player hands and gun viewmodel)
 		if(ent->isFirstPersonOnly()==false) {
@@ -801,6 +802,11 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, boo
 void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent)) {
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		callback(rf_entities[i]);
+	}
+}
+void RF_GetEntitiesBounds(class aabb &out) {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		out.addBox(rf_entities[i]->getBoundsABS());
 	}
 }
 static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");

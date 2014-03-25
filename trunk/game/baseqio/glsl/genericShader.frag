@@ -67,6 +67,35 @@ uniform sampler2DShadow directionalShadowMap;
 varying vec4 shadowCoord;
 #endif 
 
+
+#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+#ifdef ENABLE_SHADOW_MAPPING_BLUR
+float doShadowBlurSample(sampler2DShadow map, vec4 coord)
+{
+	float shadow = 0.0;
+	
+	vec2 poissonDisk[4] = vec2[](
+		vec2( -0.94201624, -0.39906216 ),
+		vec2( 0.94558609, -0.76890725 ),
+		vec2( -0.094184101, -0.92938870 ),
+		vec2( 0.34495938, 0.29387760 )
+	);
+
+	for (int i=0;i<4;i++)
+	{
+		vec4 c = coord + vec4(poissonDisk[i].x / 700.0, poissonDisk[i].y / 700.0, 0, 0.0);
+		shadow += shadow2DProj(map, c ).s;
+	}
+
+
+	shadow /= 4;
+	
+	return shadow;
+}
+#endif 
+#endif
+
+
 void main() {
 #ifdef HAS_HEIGHT_MAP
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
@@ -115,7 +144,11 @@ void main() {
 #endif   
 
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+#ifdef ENABLE_SHADOW_MAPPING_BLUR
+	float shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
+#else
 	float shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+#endif
 #endif 
   // calculate the final color
 #ifdef HAS_LIGHTMAP

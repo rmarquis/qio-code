@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <materialSystem/mat_public.h>
 #include <shared/autoCvar.h>
+#include <shared/autoCmd.h>
 #include "rf_local.h"
 #include "rf_surface.h"
 
@@ -142,3 +143,20 @@ const class vec3_c &RF_GetSunDirection() {
 		return rf_sunMaterial->getSunParms()->getSunDir();
 	return dummy;
 }
+
+void RF_SetSunMaterial_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: RF_SetSunMaterial_f <material_name>\n");
+		return;
+	}
+	const char *matName = g_core->Argv(1);
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(mat == 0) {
+		g_core->Print("NULL material\n");
+		return;
+	}
+	RF_SetSunMaterial(mat);
+}
+
+static aCmd_c rf_setSunMaterial("rf_setSunMaterial",RF_SetSunMaterial_f);
+
