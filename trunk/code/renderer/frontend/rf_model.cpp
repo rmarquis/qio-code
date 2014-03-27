@@ -175,8 +175,8 @@ bool model_c::getModelData(class staticModelCreatorAPI_i *out) const {
 		this->myBSP->getModelData(bspModelNum,out);
 		return false;
 	} else if(type == MOD_STATIC) {
-	//	this->staticModel->getModelData(out);
-	//	return false;
+		this->staticModel->getModelData(out);
+		return false;
 	}
 	return true;
 }

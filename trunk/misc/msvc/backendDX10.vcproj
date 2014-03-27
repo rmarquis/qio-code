@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx10\depthPass.fx"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\hlsl\dx10\showNormalColors.fx"
 				>
 			</File>

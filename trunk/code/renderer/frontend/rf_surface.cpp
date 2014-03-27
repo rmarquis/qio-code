@@ -1294,6 +1294,18 @@ bool r_model_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
 		return false;
 	return surfs[0].hasTriangle(i0,i1,i2);
 }
+bool r_model_c::getModelData(class staticModelCreatorAPI_i *out) const {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		const r_surface_c &sf = surfs[i];
+		if(sf.getIndices().is32Bit()) {
+			g_core->RedWarning("r_model_c::getModelData: not implement for 32 bit IBO\n");
+			continue;
+		}
+		const u16 *u16Indices = sf.getIndices().getU16Ptr();
+		out->addSurface(sf.getMatName(),sf.getVerts().getArray(),sf.getNumVerts(),u16Indices,sf.getIndices().getNumIndices());
+	}
+	return false;
+}
 bool r_model_c::getTagOrientation(int tagNum, class matrix_c &out) const {
 	if(tagNum < 0 || tagNum >= tags.size())
 		return true;

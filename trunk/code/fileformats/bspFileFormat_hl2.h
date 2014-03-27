@@ -50,6 +50,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define SRC_LEAFBRUSHES 17
 #define SRC_BRUSHES 18
 #define SRC_BRUSHSIDES 19
+#define SRC_DISPINFO 26
+#define SRC_DISP_VERTS 33
+#define SRC_GAME_LUMP 35
 #define SRC_TEXDATA_STRING_DATA 43
 #define SRC_TEXDATA_STRING_TABLE 44
 #define SRC_LUMPS 64
@@ -63,19 +66,6 @@ struct srcLump_s {
 	char fourCC[4];	// lump ident code
 };
 
-struct srcHeader_s {
-	int	ident;                // BSP file identifier
-	int	version;              // BSP file version
-	srcLump_s lumps[SRC_LUMPS];  // lump directory array
-	int	mapRevision;          // the map's revision (iteration, version) number'
-
-	const srcLump_s *getLumps() const {
-		return &lumps[0];
-	}
-	const byte *getLumpData(u32 lumpNum) const {
-		return (const byte*)(((const byte*)this)+lumps[lumpNum].fileOfs);
-	}
-};
 
 struct srcNode_s {
 	int		planeNum;	// index into plane array
@@ -185,6 +175,160 @@ struct srcVert_s {
 };
 
 #pragma pack(pop)
+
+struct srcDispSubNeigbour_s {
+	unsigned short neigbourIndex;	// -1 if none
+	unsigned char neighbourOrientation;
+	unsigned char span;
+	unsigned char neighbourSpan;
+};
+
+#define MAX_DISP_CORNER_NEIGHBORS	4
+
+class srcDispNeigbours_s {
+	srcDispSubNeigbour_s subNeighbors[2];
+};
+struct srcDispCornerNeigbours_s {
+	unsigned short neighbours[MAX_DISP_CORNER_NEIGHBORS];	// indices of neighbors.
+	unsigned char count;
+};
+struct srcDisplacement_s {
+	float startPosition[3];		// start position used for orientation
+	int dispVertStart;		// Index into LUMP_DISP_VERTS.
+	int dispTriStart;		// Index into LUMP_DISP_TRIS.
+	int power;			// power - indicates size of surface (2^power	1)
+	int minTess;		// minimum tesselation allowed
+	float smoothingAngle;		// lighting smoothing angle
+	int	contents;		// surface contents
+	unsigned short mapFace;		// Which map face this displacement comes from.
+	int	lightmapAlphaStart;	// Index into ddisplightmapalpha.
+	int	lightmapSamplePositionStart;	// Index into LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS.
+	srcDispNeigbours_s edgeNeighbors[4];	// Indexed by NEIGHBOREDGE_ defines.
+	srcDispCornerNeigbours_s cornerNeighbors[4];	// Indexed by CORNER_ defines.
+	unsigned int allowedVerts[10];	// active verticies
+};
+
+struct srcDispVert_s {
+	float vec[3];
+	float dist;
+	float alpha;
+};
+
+struct srcStaticProp_s {
+	// v4
+	float origin[3];
+	float angles[3];
+	unsigned short propType;	 // index into model name dictionary
+	unsigned short firstLeaf;	 // index into leaf array
+	unsigned short numLeafs;
+	unsigned char solid;		 // solidity type
+	unsigned char flags;
+	int skin;		 // model skin numbers
+	float fadeMinDist;
+	float fadeMaxDist;
+	float lightingOrigin[3];  // for lighting
+	// since v5
+	float forcedFadeScale; // fade distance scale
+	//// v6 and v7 only
+	//unsigned short minDXLevel;      // minimum DirectX version to be visible
+	//unsigned short maxDXLevel;      // maximum DirectX version to be visible
+ //       // since v8
+	//unsigned char minCPULevel;
+	//unsigned char maxCPULevel;
+	//unsigned char minGPULevel;
+	//unsigned char maxGPULevel;
+ //       // since v7
+ //       int diffuseModulation; // per instance color and alpha modulation
+ //       // since v10
+ //       float unknown; 
+ //       // since v9
+ //       bool disableX360;     // if true, don't show on XBox 360
+};
+struct srcStaticPropName_s {
+	char text[128];
+};
+struct srcStaticPropNames_s {
+	u32 count;
+	srcStaticPropName_s names[64]; // count times
+
+	const byte *getEnd() const {
+		return (((const byte*)this)+sizeof(srcStaticPropName_s)*count+4);
+	}
+};
+struct srcStaticPropLeafs_s {
+	u32 count;
+	short data[64];
+
+	const byte *getEnd() const {
+		return (((const byte*)this)+sizeof(short)*count+4);
+	}
+};
+struct srcStaticPropsList_s {
+	u32 count;
+	srcStaticProp_s props[64];
+
+	const byte *getFirstOffset() const {
+		return ((const byte*)this)+4;
+	}
+};
+struct srcGameLump_s {
+	union { int iIdent; char ident[4]; };
+	unsigned short flags;
+	unsigned short version;
+	int fileOfs;
+	int fileLen;
+};
+struct srcGameLumpsHeader_s {
+	int numSubLumps;	// number of game lumps
+	srcGameLump_s subLumps[64];
+};
+
+struct srcHeader_s {
+	int	ident;                // BSP file identifier
+	int	version;              // BSP file version
+	srcLump_s lumps[SRC_LUMPS];  // lump directory array
+	int	mapRevision;          // the map's revision (iteration, version) number'
+
+	const srcLump_s *getLumps() const {
+		return &lumps[0];
+	}
+	const byte *getLumpData(u32 lumpNum) const {
+		return (const byte*)(((const byte*)this)+lumps[lumpNum].fileOfs);
+	}
+
+	const srcDisplacement_s *getDisplacements() const {
+		const srcLump_s &dl = this->getLumps()[SRC_DISPINFO];
+		if(dl.fileLen == 0)
+			return 0;
+		//int dispInfoStructSize = sizeof(srcDisplacement_s);
+		//if(dl.fileLen % dispInfoStructSize) {
+		//	g_core->RedWarning("srcHeader_s::getDisplacements: invalid dispinfo lump size\n");
+		//	return 0; // error
+		//}
+		const srcDisplacement_s *d = (const srcDisplacement_s *)this->getLumpData(SRC_DISPINFO);
+		return d;
+	}
+	const srcDisplacement_s *getDisplacement(u32 index) const {
+		const srcDisplacement_s *d = getDisplacements();
+		if(d == 0)
+			return 0;
+		return d + index;
+	}
+	const srcDispVert_s *getDispVerts() const {
+		const srcLump_s &dl = this->getLumps()[SRC_DISP_VERTS];
+		if(dl.fileLen == 0)
+			return 0;
+		//int dispInfoStructSize = sizeof(srcDisplacement_s);
+		//if(dl.fileLen % dispInfoStructSize) {
+		//	g_core->RedWarning("srcHeader_s::getDisplacements: invalid dispinfo lump size\n");
+		//	return 0; // error
+		//}
+		const srcDispVert_s *d = (const srcDispVert_s *)this->getLumpData(SRC_DISP_VERTS);
+		return d;
+	}
+};
+
+
 
 #endif // __BSPFILEFORMAT_HL2__
 

@@ -61,6 +61,9 @@ public:
 	u32 getNumTris() const {
 		return indices.getNumIndices() / 3;
 	}
+	u32 getNumIndices() const {
+		return indices.getNumIndices();
+	}
 	const char *getName() const {
 		return name;
 	}
@@ -84,6 +87,9 @@ public:
 			return *refIndices;
 		}
 		return indices;
+	}
+	u32 getIndex(u32 i) const {
+		return indices.getIndex(i);
 	}
 	const planeArray_c &getTriPlanes() const {
 		return trianglePlanes;
@@ -115,6 +121,11 @@ public:
 		indices.addIndex(i0);
 		indices.addIndex(i1);
 		indices.addIndex(i2);
+	}
+	void add3Indices_swapped(u32 i0, u32 i1, u32 i2) {
+		indices.addIndex(i2);
+		indices.addIndex(i1);
+		indices.addIndex(i0);
 	}
 	void setIndicesU32(u32 newNumIndices, const u32 *newFirstIndex) {
 		indices.fromU32Array(newNumIndices,newFirstIndex);
@@ -343,6 +354,8 @@ public:
 	virtual void transform(const class matrix_c &mat);
 	virtual u32 countDuplicatedTriangles() const;
 	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
+
+	bool getModelData(class staticModelCreatorAPI_i *out) const;
 
 	bool getTagOrientation(int tagNum, class matrix_c &out) const;
 

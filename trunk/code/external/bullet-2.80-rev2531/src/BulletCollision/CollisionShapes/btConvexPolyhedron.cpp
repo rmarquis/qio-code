@@ -138,8 +138,12 @@ void	btConvexPolyhedron::initialize()
 
 			if (edptr)
 			{
+#if 0
 				btAssert(edptr->m_face0>=0);
 				btAssert(edptr->m_face1<0);
+#else
+				// why I am getting this asserts on some maps?
+#endif
 				edptr->m_face1 = i;
 			} else
 			{

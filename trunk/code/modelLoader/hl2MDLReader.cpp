@@ -76,6 +76,10 @@ struct mdlModelHeader_s {
 	int	ofsTangents;
 	// NOTE: there are more data fields after ofsTangents but they are version-dependent
 };
+struct mdlV44VertexData {
+	int dummy;
+	int numLODVertexes[8];
+};
 struct mdlMeshHeader_s {
 	int matIndex;
 	int ofsModel; // negative
@@ -88,6 +92,9 @@ struct mdlMeshHeader_s {
 		const byte *verticesData = modelData + ofsModelVertices;
 		const mdlV37Vertex_s *vertices = (const mdlV37Vertex_s*)verticesData;
 		return vertices + ofsVertices;
+	}
+	const mdlV44VertexData *getVertexData44() const {
+		return (const mdlV44VertexData*)(((const byte*)this) + 36 + 12);
 	}
 };
 struct mdlV44BoneWeights_s {
@@ -223,10 +230,17 @@ public:
 
 		return false;
 	}
-	void getMeshIndices(arraySTD_c<u16> &out, u32 bodyPartNum, u32 modelNum, u32 meshNum) const {
+	void getMeshIndices(arraySTD_c<u16> &out, u32 bodyPartNum, u32 modelNum, u32 meshNum/*, u32 prevVertexCount*/) const {
 		const vtxBodyPartHeader_s *bodyPart = h->pBodyPart(bodyPartNum);
 		const vtxModelHeader_s *model = bodyPart->pModel(modelNum);
 		const vtxMeshHeader_s *mesh = model->pLOD(0)->pMesh(meshNum);
+		//for(u32 i = 0; i < meshNum; i++) {
+		//	const vtxMeshHeader_s *pm = model->pLOD(0)->pMesh(i);
+		//	for(u32 j = 0; j < pm->numStripGroups; j++) {
+		//		const vtxStripGroupHeader_s *stripGroup = mesh->pStripGroup(j);			
+		//		prevVertexCount += stripGroup->numVerts;
+		//	}
+		//}
 		for(u32 i = 0; i < mesh->numStripGroups; i++) {
 			const vtxStripGroupHeader_s *stripGroup = mesh->pStripGroup(i);
 			const u16 *sIndices = stripGroup->pIndices();
@@ -238,9 +252,9 @@ public:
 					u32 i2 = sIndices[strip->ofsIndices+k+2];
 #if 1
 					if(this->h->version == 7) {
-						i0 = stripGroup->pVertexV7(i0)->origMeshVertID;
-						i1 = stripGroup->pVertexV7(i1)->origMeshVertID;
-						i2 = stripGroup->pVertexV7(i2)->origMeshVertID;
+						i0 = stripGroup->pVertexV7(i0)->origMeshVertID;//+prevVertexCount;
+						i1 = stripGroup->pVertexV7(i1)->origMeshVertID;//+prevVertexCount;
+						i2 = stripGroup->pVertexV7(i2)->origMeshVertID;//+prevVertexCount;
 					} else {
 						i0 = stripGroup->pVertexV6(i0)->origMeshVertID;
 						i1 = stripGroup->pVertexV6(i1)->origMeshVertID;
@@ -386,10 +400,11 @@ bool hl2MDLReader_c::getStaticModelData(class staticModelCreatorAPI_i *out) {
 		for(u32 j = 0; j < bp.numModels; j++) {
 			u32 modelHeaderAt = data.getPos();
 			const mdlModelHeader_s *mh = (const mdlModelHeader_s *)data.getCurDataPtr();
-			g_core->Print("ModelName: %s, numMeshes %i\n",mh->name,mh->numMeshes);
+			g_core->Print("Model %i of %i, name: %s, numMeshes %i\n",j,bp.numModels,mh->name,mh->numMeshes);
 			u32 firstMeshOfs = modelHeaderAt + mh->ofsMeshes;
 			data.setPos(firstMeshOfs);
 			// for each mesh
+			//u32 meshVertexOffset = 0;
 			for(u32 k = 0; k < mh->numMeshes; k++) {
 				u32 meshHeaderAt = data.getPos();
 				const mdlMeshHeader_s *mesh = (const mdlMeshHeader_s*)data.getCurDataPtr();
@@ -398,7 +413,12 @@ bool hl2MDLReader_c::getStaticModelData(class staticModelCreatorAPI_i *out) {
 				fullMatName.setExtension("vmt");
 
 				arraySTD_c<u16> indices;
-				vtx.getMeshIndices(indices,i,j,k);
+				vtx.getMeshIndices(indices,i,j,k/*,meshVertexOffset*/);
+				//if(this->version == 44) {
+				//	const mdlV44VertexData *v44VertexData = mesh->getVertexData44();
+				//	meshVertexOffset += v44VertexData->numLODVertexes[0];;
+				//}
+
 				if(this->version == 44) {
 					// MDL V44 (retail Half Life2, Episodes, Portal) path
 					// Vertices data is stored in vvd file

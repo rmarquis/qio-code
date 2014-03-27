@@ -63,6 +63,7 @@ aCvar_c rf_bsp_cullBackFacingAreaPortals("rf_bsp_cullBackFacingAreaPortals","1")
 aCvar_c rf_bsp_useBSPForTracing("rf_bsp_useBSPForTracing","1");
 aCvar_c rf_bsp_skipAreaPortals("rf_bsp_skipAreaPortals","0");
 aCvar_c rf_bsp_printCamera2PortalDist("rf_bsp_printCamera2PortalDist","0");
+aCvar_c rf_bsp_forceAllDisplacementsVisible("rf_bsp_forceAllDisplacementsVisible","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -118,6 +119,8 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 		g_core->RedWarning("rBspTree_c::addSurfToBatches: surface %i of type %i has NULL sf ptr\n",surfNum,bs->type);
 		return;
 	}
+	if(bs->sf->mat == 0)
+		return;
 	// ignore surfaces with 'sky' material; sky is drawn other way
 	if(bs->sf->mat->getSkyParms() != 0)
 		return;
@@ -664,6 +667,16 @@ parsePlanarSurf:;
 	}
 	return false; // OK
 }
+void Verts_CalcTextCoords(rVert_c *verts, u32 numVerts, const float vecs[2][4], float texDimX, float texDimY) {
+	rVert_c *v = verts;
+	for(u32 i = 0; i < numVerts; i++, v++) {
+		float tU = v->xyz[0]*vecs[0][0] + v->xyz[1]*vecs[0][1] + v->xyz[2]*vecs[0][2] + vecs[0][3];
+		float tV = v->xyz[0]*vecs[1][0] + v->xyz[1]*vecs[1][1] + v->xyz[2]*vecs[1][2] + vecs[1][3];
+		tU /= texDimX;
+		tV /= texDimY;
+		v->tc.set(tU,tV);
+	}
+}
 class q2PolyBuilder_c {
 	arraySTD_c<rVert_c> verts;
 	arraySTD_c<u16> indices;
@@ -682,14 +695,7 @@ public:
 		}
 	}
 	void calcTexCoords(const float vecs[2][4], float texDimX, float texDimY) {
-		rVert_c *v = verts.getArray();
-		for(u32 i = 0; i < verts.size(); i++, v++) {
-			float tU = v->xyz[0]*vecs[0][0] + v->xyz[1]*vecs[0][1] + v->xyz[2]*vecs[0][2] + vecs[0][3];
-			float tV = v->xyz[0]*vecs[1][0] + v->xyz[1]*vecs[1][1] + v->xyz[2]*vecs[1][2] + vecs[1][3];
-			tU /= texDimX;
-			tV /= texDimY;
-			v->tc.set(tU,tV);
-		}
+		Verts_CalcTextCoords(verts.getArray(),verts.size(),vecs,texDimX,texDimY);
 	}
 	void calcLightmapCoords(const float vecs[2][4], float texDimX, float texDimY) {
 		rVert_c *v = verts.getArray();
@@ -1015,10 +1021,75 @@ public:
 		return lightmapSize;
 	}
 	class textureAPI_i *getSurfLightmap(u32 sfIndex) const {
-		return lightmaps[surfLightmaps[sfIndex].mergeIndex];
+		if(surfLightmaps.size() <= sfIndex)
+			return 0;
+		u32 index = surfLightmaps[sfIndex].mergeIndex;
+		return lightmaps[index];
 	}
 };
+class displacementBuilder_c {
+	rVert_c baseVerts[4];
+	r_surface_c surf;
+public:
+	void setupBaseQuad(const rVert_c *v) {
+		baseVerts[0] = v[0];
+		baseVerts[1] = v[1];
+		baseVerts[2] = v[2];
+		baseVerts[3] = v[3];
+	}
+	void translateSurface(const vec3_c &v) {
+		surf.translateXYZ(v);
+	}
+	void buildDisplacementSurface(const srcDisplacement_s *disp, const srcDispVert_s *verts) {
+		while (baseVerts[0].xyz.compare(disp->startPosition,0.1f)==false) {
+			rVert_c temp = baseVerts[0];
+			baseVerts[0] = baseVerts[1];
+			baseVerts[1] = baseVerts[2];
+			baseVerts[2] = baseVerts[3];
+			baseVerts[3] = temp;
+		}
+		vec3_c leftEdge = baseVerts[1].xyz - baseVerts[0].xyz;
+		vec3_c rightEdge = baseVerts[2].xyz - baseVerts[3].xyz;
 
+		u32 numEdgeVerts = (1 << disp->power) + 1;
+		float subdivideScale = 1.f / (numEdgeVerts - 1);
+		vec3_c leftEdgeStep = leftEdge * subdivideScale;
+		vec3_c rightEdgeStep = rightEdge * subdivideScale;
+
+		for(u32 i = 0; i < numEdgeVerts; i++) {
+			vec3_c leftEnd = leftEdgeStep * i + baseVerts[0].xyz;
+			vec3_c rightEnd = rightEdgeStep * i + baseVerts[3].xyz;
+
+			vec3_c leftRightSeq = rightEnd - leftEnd;
+			vec3_c leftRightStep = leftRightSeq * subdivideScale;
+
+			for(u32 j = 0; j < numEdgeVerts; j++) {
+				u32 dVertIndex = disp->dispVertStart + i * numEdgeVerts + j;
+				const srcDispVert_s &dVert = verts[dVertIndex];
+				vec3_c newXYZ = dVert.vec;
+				newXYZ *= dVert.dist;
+				vec3_c basePos = leftEnd + (leftRightStep * j);
+				newXYZ += basePos;
+				surf.addVert(newXYZ);
+			}
+		}
+		for(u32 i = 0; i < numEdgeVerts-1; i++) {
+			for(u32 j = 0; j < numEdgeVerts-1; j++) {
+				u32 idx = i * numEdgeVerts + j;
+				if((idx % 2) == 1) {
+					surf.add3Indices_swapped(idx,idx + 1,idx + numEdgeVerts);
+					surf.add3Indices_swapped(idx + 1,idx + numEdgeVerts + 1,idx + numEdgeVerts);
+				} else {
+					surf.add3Indices_swapped(idx,idx + numEdgeVerts + 1,idx + numEdgeVerts);
+					surf.add3Indices_swapped(idx,idx + 1,idx + numEdgeVerts + 1);
+				}
+			}
+		}
+	}
+	const r_surface_c &getSurface() const {
+		return surf;
+	}
+};
 bool rBspTree_c::loadSurfsSE() {
 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
 	if(h->version == 18) {
@@ -1105,8 +1176,21 @@ bool rBspTree_c::loadSurfsSE() {
 			matName = texDataStr + ofs;
 			matName.defaultExtension("vmt");
 		}
+		//matName = "textures/development/wall01";
+		const srcDisplacement_s *disp;
+		oSF->displacementIndex = isf->dispInfo;
+		if(isf->dispInfo >= 0) {
+			disp = srcH->getDisplacement(isf->dispInfo);
+			//g_core->Print("Surface %i has disp %i, power %i, nmEdgeVerst %i\n",i,isf->dispInfo,disp->power,(1 << disp->power) + 1);
+		} else {
+			disp = 0;
+		}
+
 		oSF->bspMaterialIndex = isf->texInfo;
 		ts->mat = g_ms->registerMaterial(matName);
+		if(ts->mat->getNumStages() == 0) {
+			g_core->Print("VMT mat %s has 0 stages\n",matName);
+		}
 		ts->deluxemap = 0;
 		u32 w = isf->lightmapTextureSizeInLuxels[0] + 1;
 		u32 h = isf->lightmapTextureSizeInLuxels[1] + 1;
@@ -1170,7 +1254,46 @@ bool rBspTree_c::loadSurfsSE() {
 				polyBuilder.addEdge(iv[ed->v[0]].point,iv[ed->v[1]].point,j);
 			}
 		}
-		polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+		if(disp) {
+			if(polyBuilder.getNumVerts() != 4) {
+				g_core->RedWarning("Displacement surfcaces with %i vertices\n");
+			} else {
+				displacementBuilder_c db;
+				db.setupBaseQuad(polyBuilder.getVerts().getArray());
+				db.buildDisplacementSurface(disp,srcH->getDispVerts());
+				//db.translateSurface(vec3_c(...));
+
+				
+				
+				ts->firstVert = verts.size();
+				ts->numVerts = db.getSurface().getNumVerts();
+				verts.addArray(db.getSurface().getVerts().getArray2());
+				Verts_CalcTextCoords(verts.getArray()+ts->firstVert,ts->numVerts,sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+				u32 *indicesU32 = ts->absIndexes.initU32(db.getSurface().getNumIndices());
+				u16 *localIndicesU16 = ts->localIndexes.initU16(db.getSurface().getNumIndices());
+				for(u32 j = 0; j < db.getSurface().getNumIndices(); j++) {
+					u32 idx = db.getSurface().getIndex(j);;
+					localIndicesU16[j] = idx;
+					indicesU32[j] = ts->firstVert+idx;
+				}
+				db.getSurface().getVerts().addToBounds(ts->bounds);
+			}
+		} else {
+			polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
+
+			ts->firstVert = verts.size();
+			ts->numVerts = polyBuilder.getNumVerts();
+			verts.addArray(polyBuilder.getVerts());
+			polyBuilder.calcTriIndexes();
+			polyBuilder.addVertsToBounds(ts->bounds);
+			u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
+			u16 *localIndicesU16 = ts->localIndexes.initU16(polyBuilder.getNumIndices());
+			for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
+				u32 idx = polyBuilder.getIndex(j);;
+				localIndicesU16[j] = idx;
+				indicesU32[j] = ts->firstVert+idx;
+			}
+		}
 		if(ts->lightmap) {
 			const sfLightmapDef_s &lightmapDef = la.getLightmapDef((u32)(ts->lightmap)-1);
 
@@ -1183,9 +1306,9 @@ bool rBspTree_c::loadSurfsSE() {
 			float scaleV = float(h) * invSize;
 
 			// calculate lightmap coordinates
-			arraySTD_c<rVert_c> &pVerts = polyBuilder.getVerts();
-			rVert_c *v = pVerts.getArray();
-			for(u32 i = 0; i < pVerts.size(); i++, v++) {
+			rVert_c *pVerts = verts.getArray() + ts->firstVert;
+			rVert_c *v = pVerts;
+			for(u32 i = 0; i < ts->numVerts; i++, v++) {
 				float tU = v->xyz[0]*sfTexInfo->lightmapVecs[0][0] + v->xyz[1]*sfTexInfo->lightmapVecs[0][1] + v->xyz[2]*sfTexInfo->lightmapVecs[0][2] + sfTexInfo->lightmapVecs[0][3];
 				float tV = v->xyz[0]*sfTexInfo->lightmapVecs[1][0] + v->xyz[1]*sfTexInfo->lightmapVecs[1][1] + v->xyz[2]*sfTexInfo->lightmapVecs[1][2] + sfTexInfo->lightmapVecs[1][3];
 				tU -= isf->lightmapTextureMinsInLuxels[0];
@@ -1196,19 +1319,6 @@ bool rBspTree_c::loadSurfsSE() {
 				tV /= h;
 				v->lc.set(ofsU+tU*scaleU,ofsV+tV*scaleV);
 			}
-		}
-
-		ts->firstVert = verts.size();
-		ts->numVerts = polyBuilder.getNumVerts();
-		verts.addArray(polyBuilder.getVerts());
-		polyBuilder.calcTriIndexes();
-		polyBuilder.addVertsToBounds(ts->bounds);
-		u32 *indicesU32 = ts->absIndexes.initU32(polyBuilder.getNumIndices());
-		u16 *localIndicesU16 = ts->localIndexes.initU16(polyBuilder.getNumIndices());
-		for(u32 j = 0; j < polyBuilder.getNumIndices(); j++) {
-			u32 idx = polyBuilder.getIndex(j);;
-			localIndicesU16[j] = idx;
-			indicesU32[j] = ts->firstVert+idx;
 		}
 		if(isf18) {
 			isf18++;
@@ -1303,6 +1413,20 @@ bool rBspTree_c::loadSurfsCoD() {
 	g_core->Print("rBspTree_c::loadSurfsCoD: highestLightmapNumReferenced: %i, numLightmaps %i\n",highestLightmapNumReferenced,lightmaps.size());
 	return false; // ok
 }
+//bool rBspTree_c::loadSEDisplacements() {
+//	const lump_s &dl = h->getLumps()[SRC_DISPINFO];
+//	int dispInfoStructSize = sizeof(srcDisplacement_s);
+//	//if(dl.fileLen % dispInfoStructSize) {
+//	//	g_core->RedWarning("rBspTree_c::loadSEDisplacements: invalid dispinfo lump size\n");
+//	//	return true; // error
+//	//}
+//	u32 numDisps = dl.fileLen / sizeof(dispInfoStructSize);
+//	const srcDisplacement_s *id = (const srcDisplacement_s *)h->getLumpData(SRC_DISPINFO);
+//	for(u32 i = 0; i < numDisps; i++, id++) {
+//
+//	}
+//	return false;
+//}
 bool rBspTree_c::loadModels(u32 modelsLump) {
 	const lump_s &ml = h->getLumps()[modelsLump];
 	if(ml.fileLen % h->getModelStructSize()) {
@@ -1444,6 +1568,61 @@ bool rBspTree_c::loadQioPoints(u32 lumpNum) {
 	points.resize(numPoints);
 	memcpy(points.getArray(),h->getLumpData(lumpNum),vl.fileLen);
 	return false; // no error
+}
+
+bool rBspTree_c::loadSEStaticProps(const struct srcGameLump_s &gl) {
+	const byte *p = ((const byte*)h)+gl.fileOfs;
+	const srcStaticPropNames_s *names = (const srcStaticPropNames_s*)p;
+	p = names->getEnd();
+	const srcStaticPropLeafs_s *leafs = (const srcStaticPropLeafs_s*)p;
+	p = leafs->getEnd();
+	const srcStaticPropsList_s *props = (const srcStaticPropsList_s*)p;
+	u32 propSize = sizeof(srcStaticProp_s);
+	if(gl.version == 4) {
+		propSize -= 4;
+	} else if(gl.version == 6 || gl.version == 7) {
+		propSize += 4; // short minDXLevel, maxDXLevel
+	} 
+	if(gl.version >= 7) {
+		propSize += 4; // int diffuseModulation
+		if(gl.version > 8) {
+			propSize += 4; // byte minCPULevel, maxCPULevel, minGPULevel, maxGPULevel;
+		}
+	}
+	staticProps.resize(props->count);
+	for(u32 i = 0; i < props->count; i++) {
+		bspStaticProp_c &op = staticProps[i];
+		const srcStaticProp_s *prop = (const srcStaticProp_s *)(((const byte*)props->getFirstOffset())+i*propSize);
+		op.setOrientation(prop->origin,prop->angles);
+		rModelAPI_i *mod = RF_RegisterModel(names->names[prop->propType].text);
+		op.model = mod;
+		op.instance = new r_model_c;
+		mod->getModelData(op.instance);
+		op.instance->transform(op.mat);
+		op.instance->recalcBoundingBoxes();
+		op.instance->createVBOsAndIBOs();
+	}
+	return false;
+}
+
+
+bool rBspTree_c::loadSEGameLump(const struct srcGameLump_s &gl) {
+	//if(memcmp(gl.ident,"sprp",4) == 0) {
+	if(gl.iIdent == 1936749168) {
+		return loadSEStaticProps(gl);
+	}
+	return false;
+}
+bool rBspTree_c::loadSEGameLumps() {
+	const srcLump_s &gameLump = srcH->getLumps()[SRC_GAME_LUMP];
+	if(gameLump.fileLen == 0)
+		return false;
+	const srcGameLumpsHeader_s *gh = (const srcGameLumpsHeader_s *)srcH->getLumpData(SRC_GAME_LUMP);
+	for(u32 i = 0; i < gh->numSubLumps; i++) {
+		const srcGameLump_s &subLump = gh->subLumps[i];
+		loadSEGameLump(subLump);
+	}
+	return false;
 }
 bool rBspTree_c::load(const char *fname) {
 	fileData = 0;
@@ -1632,6 +1811,8 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}	
+		//loadSEDisplacements();
+		loadSEGameLumps();
 	} else if(h->ident == BSP_IDENT_QIOBSP) {
 		if(h->version == BSP_VERSION_QIOBSP) {
 			if(loadLightmaps(Q3_LIGHTMAPS)) {
@@ -1737,6 +1918,21 @@ void rBspTree_c::clear() {
 		delete lightGrid;
 		lightGrid = 0;
 	}
+	for(u32 i = 0; i < staticProps.size(); i++) {
+		if(staticProps[i].instance) {
+			delete staticProps[i].instance;
+		}
+	}
+	staticProps.clear();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		bspSurf_s &sf = surfs[i];
+		if(sf.type == BSPSF_BEZIER) {
+			delete sf.patch;
+		} else {
+			delete sf.sf;
+		}
+	}
+	surfs.clear();
 }
 int rBspTree_c::pointInLeaf(const vec3_c &pos) const {
 	// special case for empty bsp trees
@@ -1986,6 +2182,13 @@ void rBspTree_c::updateVisibility() {
 			}
 		}
 	}
+	if(rf_bsp_forceAllDisplacementsVisible.getInt() || 1) {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			if(surfs[i].displacementIndex >= 0) {
+				surfs[i].lastVisCount = this->visCounter;
+			}
+		}
+	}
 	u32 c_curBatchIndexesCount = 0;
 	for(u32 i = 0; i < batches.size(); i++) {
 		bspSurfBatch_s *b = batches[i];
@@ -2134,6 +2337,16 @@ void rBspTree_c::addDrawCalls() {
 	}
 	if(rf_bsp_printFrustumCull.getInt()) {
 		g_core->Print("%i patches and %i batches culled by frustum\n",c_culledBezierPatches,c_culledBatches);
+	}
+	for(u32 i = 0; i < staticProps.size(); i++) {
+		bspStaticProp_c &p = staticProps[i];
+		if(p.instance) {
+			if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(p.instance->getBounds()) == CULL_OUT) {
+				// we dont need this one
+				continue;
+			}
+			p.instance->addDrawCalls();
+		}
 	}
 }
 void rBspTree_c::addBSPSurfaceDrawCall(u32 sfNum) {

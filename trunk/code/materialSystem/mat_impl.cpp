@@ -468,6 +468,9 @@ bool mtrIMPL_c::loadFromVMTFile() {
 			stages[i]->setAlphaFunc(AF_GE128);
 		}
 	}
+	if(stages.size() == 0) {
+		createFromImage();
+	}
 	return false; // ok
 }
 void mtrIMPL_c::createFromTexturePointer(class textureAPI_i *tex) {

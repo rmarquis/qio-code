@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/typedefs.h>
 #include <math/aabb.h>
+#include <math/matrix.h>
 #include <math/frustumExt.h> // for new BSP-areaPortals system (QioBSP)
 #include "../rVertexBuffer.h"
 #include "../rIndexBuffer.h"
@@ -52,6 +53,14 @@ struct bspTriSurf_s {
 	plane_c plane; // this is valid only for planar surfaces
 	u32 firstVert;
 	u32 numVerts;
+	
+	bspTriSurf_s() {
+		mat = 0;
+		lightmap = 0;
+		deluxemap = 0;
+		firstVert = 0;
+		numVerts = 0;
+	}
 };
 struct bspSurf_s {
 	bspSurfaceType_e type;
@@ -61,10 +70,16 @@ struct bspSurf_s {
 	};
 	int lastVisCount; // if sf->lastVisCount == bsp->visCounter then a surface is potentialy visible (in PVS)
 	int bspMaterialIndex;
+	// for Source Engine displacements
+	int displacementIndex;
 
 	const aabb &getBounds() const;
 	bool isFlare() const {
 		return (type == BSPSF_FLARE);
+	}
+	bspSurf_s() {
+		sf = 0;
+		displacementIndex = -1;
 	}
 };
 struct bspSurfBatch_s {
@@ -152,6 +167,20 @@ friend class rBspTree_c;
 struct bspMaterial_s {
 	u32 contentFlags;
 };
+class bspStaticProp_c {
+friend class rBspTree_c;
+	class rModelAPI_i *model;
+	class r_model_c *instance;
+	matrix_c mat;
+	vec3_c origin;
+	vec3_c angles;
+
+	void setOrientation(const float *no, const float *na) {
+		origin = no;
+		angles = na;
+		mat.fromAnglesAndOrigin(angles,origin);
+	}
+};
 class rBspTree_c {
 	byte *fileData;
 	union {
@@ -186,6 +215,8 @@ class rBspTree_c {
 	// view frustums stored for each traversed portal
 	arraySTD_c<bspPortalData_c> areaPortalFrustums;
 	arraySTD_c<bspArea_c> areas;
+	// static props (models)
+	arraySTD_c<bspStaticProp_c> staticProps;
 
 	// total number of surface indexes in batches (this->batches)
 	u32 numBatchSurfIndexes;
@@ -221,6 +252,10 @@ class rBspTree_c {
 	bool loadSurfsQ2();
 	bool loadSurfsHL();
 	bool loadSurfsSE();
+	//bool loadSEDisplacements();
+	bool loadSEStaticProps(const struct srcGameLump_s &gl);
+	bool loadSEGameLump(const struct srcGameLump_s &gl);
+	bool loadSEGameLumps();
 	bool loadVerts(u32 lumpVerts); // called from loadSurfs / loadSurfsCoD
 	bool loadSurfsCoD();
 	bool loadModels(u32 modelsLump);

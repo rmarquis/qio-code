@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rIndexBuffer.h"
 #include <math/plane.h>
 #include <math/matrix.h>
+#include <math/aabb.h>
 
 void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
 	rVert_c *v = this->getArray();
@@ -73,6 +74,12 @@ void rVertexBuffer_c::transform(const class matrix_c &mat) {
 	for(u32 i = 0; i < this->numVerts; i++, v++) {
 		mat.transformPoint(v->xyz);
 		mat.transformNormal(v->normal);
+	}
+}
+void rVertexBuffer_c::addToBounds(class aabb &bb) const {
+	const rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		bb.addPoint(v->xyz);
 	}
 }
 bool rVertexBuffer_c::applyDeformAutoSprite(const vec3_c &leftDir, const vec3_c &upDir) {

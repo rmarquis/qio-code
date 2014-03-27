@@ -15,6 +15,9 @@ float alphaFuncValue;
 #ifdef HAS_MATERIAL_COLOR
 float4 materialColor;
 #endif
+#ifdef HAS_SUNLIGHT
+float3 sunDirection;
+#endif
 
 SamplerState SampleType
 {
@@ -30,7 +33,7 @@ struct VertexInputType
 #ifdef HAS_LIGHTMAP
     float2 lm : TEXCOORD1;
 #endif
-#ifdef HAS_TEXGEN_ENVIROMENT
+#if defined( HAS_TEXGEN_ENVIROMENT) || defined(HAS_SUNLIGHT)
 	float3 normal : NORMAL;
 #endif
 #ifdef HAS_VERTEXCOLORS
@@ -44,6 +47,9 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
 #ifdef HAS_LIGHTMAP
     float2 lm : TEXCOORD1;
+#endif
+#ifdef HAS_SUNLIGHT
+	float3 normal : TEXCOORD2;
 #endif
 #ifdef HAS_VERTEXCOLORS
     float4 color : COLOR;
@@ -81,6 +87,9 @@ PixelInputType VS_SimpleTexturing(VertexInputType input)
     output.lm = input.lm;
 #endif
 
+#ifdef HAS_SUNLIGHT
+	output.normal = input.normal;
+#endif
 #ifdef HAS_VERTEXCOLORS
     output.color = input.color;
 #endif
@@ -116,6 +125,15 @@ float4 PS_SimpleTexturing(PixelInputType input) : SV_Target
 	}
 #endif
 	
+#ifdef HAS_SUNLIGHT
+	float dotValue = dot(input.normal,sunDirection);
+	if(dotValue < 0)
+	{
+		return float4(0,0,0,0);
+	}
+	textureColor *= dotValue;
+#endif
+
 #ifdef HAS_LIGHTMAP
 	textureColor *= shaderLightmap.Sample(SampleType, input.lm);
 #endif

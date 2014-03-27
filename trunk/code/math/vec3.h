@@ -103,7 +103,7 @@ public:
 		return true;
 	}
 	inline bool compare(const vec3_c &other, const float eps = 0.01f) const {
-#if 0
+#if 1
 		if(abs(this->x - other.x) > eps)
 			return false;
 		if(abs(this->y - other.y) > eps)

@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/fcolor4.h>
 #include <math/matrix.h>
 #include <math/axis.h>
+#include <math/aabb.h>
 #include <renderer/rVertexBuffer.h>
 #include <renderer/rIndexBuffer.h>
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
@@ -74,6 +75,7 @@ struct dx10ShaderPermutationFlags_s {
 	bool hasVertexColors; // #define HAS_VERTEXCOLORS
 	bool hasAlphaFunc; // #define HAS_ALPHAFUNC
 	bool hasMaterialColor; // #define HAS_MATERIAL_COLOR
+	bool hasSunLight; // #define HAS_SUNLIGHT
 
 	dx10ShaderPermutationFlags_s() {
 		memset(this,0,sizeof(*this));
@@ -97,6 +99,7 @@ public:
 	ID3D10EffectShaderResourceVariable *m_lightmapPtr;
 	ID3D10EffectVectorVariable *m_viewOrigin;
 	ID3D10EffectVectorVariable *m_materialColor;
+	ID3D10EffectVectorVariable *m_sunDirection;
 
 	ID3D10EffectScalarVariable *m_alphaFuncType;
 	ID3D10EffectScalarVariable *m_alphaFuncValue;
@@ -232,6 +235,9 @@ public:
 		if(pFlags->hasMaterialColor) {
 			finalEffectDef.append("#define HAS_MATERIAL_COLOR\n");
 		}
+		if(pFlags->hasSunLight) {
+			finalEffectDef.append("#define HAS_SUNLIGHT\n");
+		}
 
 		// then add main shader code
 		finalEffectDef.append(buf);
@@ -294,6 +300,8 @@ public:
 
 		m_alphaFuncValue = m_effect->GetVariableByName("alphaFuncValue")->AsScalar();
 		m_alphaFuncType = m_effect->GetVariableByName("alphaFuncType")->AsScalar();
+
+		m_sunDirection = m_effect->GetVariableByName("sunDirection")->AsVector();
 
 		return false; // no error
 	}
@@ -450,6 +458,12 @@ class rbDX10_c : public rbAPI_i {
 	fcolor4_c curColor;
 	int forcedMaterialFrameNum;
 	float timeNowSeconds;
+	bool bHasSunLight;
+	class vec3_c sunColor;
+	class vec3_c sunDirection;
+	aabb sunLightBounds;
+	bool usingWorldSpace;
+	bool bDrawOnlyOnDepthBuffer;
 
 	// material and lightmap
 	mtrAPI_i *lastMat;
@@ -464,6 +478,9 @@ public:
 		bDrawingSky = false;
 		forcedMaterialFrameNum = -1;
 		timeNowSeconds = 0.f;
+		bHasSunLight = false;
+		usingWorldSpace = false;
+		bDrawOnlyOnDepthBuffer = false;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX10;
@@ -483,6 +500,9 @@ public:
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bHasVertexColors = bBindVertexColors;
 	}
+	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
+		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
+	}
 	virtual void setCurrentDrawCallSort(enum drawCallSort_e sort) {
 
 	}
@@ -494,6 +514,12 @@ public:
 	}
 	virtual void setCurLightShadowMapSize(int newW, int newH) {
 
+	}
+	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection, const class aabb &newSunBounds) {
+		bHasSunLight = newBHasSunLight;
+		sunColor = newSunColor;
+		sunDirection = newSunDirection;
+		sunLightBounds = newSunBounds;
 	}
 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
 		this->forcedMaterialFrameNum = animMapFrame;
@@ -744,6 +770,38 @@ public:
 			return stage->getTextureForFrameNum(forcedMaterialFrameNum);
 		}
 	}
+	void setShaderVariables(dx10Shader_c *shader) {
+		// set the world matrix (model pos)
+		if(shader->m_worldMatrixPtr) {
+			shader->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+		}
+		// set the view matrix (camera pos)
+		if(shader->m_viewMatrixPtr) {
+			shader->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+		}
+		// set the projection matrix (camera lens)
+		if(shader->m_projectionMatrixPtr) {
+			shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+		}
+		// set camera origin (in model space)
+		// this is needed eg. for texgen enviromental
+		if(shader->m_viewOrigin) {
+			shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
+		}
+		// set current color
+		if(shader->m_materialColor) {
+			shader->m_materialColor->SetFloatVector((float*)curColor.toPointer());
+		}
+		if(shader->m_sunDirection) {
+			if(usingWorldSpace) {
+				shader->m_sunDirection->SetFloatVector(sunDirection);
+			} else {
+				vec3_c dirLocal;
+				worldMatrixInverse.transformNormal(sunDirection,dirLocal);
+				shader->m_sunDirection->SetFloatVector(dirLocal);
+			}
+		}
+	}
 	dx10TempBuffer_c tempGPUVerts;
 	dx10TempBuffer_c tempGPUIndices;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
@@ -790,6 +848,33 @@ public:
 
 		// set primitives type (we're always using triangles)
 		pD3DDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		if(bDrawOnlyOnDepthBuffer) {	
+			dx10Shader_c *shader = shadersSystem->registerShader("depthPass",0,true);
+			if(shader == 0) {
+				g_core->RedWarning("rbDX10_c::drawElements: cannot load default shader\n");
+				return;
+			}
+			this->setShaderVariables(shader);
+
+			// we're writing to depth buffer (opaque surfaces)
+			pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
+
+			// set the input layout.
+			pD3DDevice->IASetInputLayout(shader->m_layout);
+
+			// get the description structure of the technique from inside the shader so it can be used for rendering.
+			D3D10_TECHNIQUE_DESC techniqueDesc;
+			shader->m_technique->GetDesc(&techniqueDesc);
+
+			// go through each pass in the technique and render the triangles.
+			for(u32 i = 0; i < techniqueDesc.Passes; i++) {
+				shader->m_technique->GetPassByIndex(i)->Apply(0);
+				pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
+			}
+			return;
+		}
 
 		// adjust the depth range for sky
 		if(bDrawingSky) {
@@ -841,6 +926,7 @@ public:
 			if(curColor.isFullBright() == false) {
 				flags.hasMaterialColor = true;
 			}
+			flags.hasSunLight = bHasSunLight;
 
 			if(s->hasTexGen() && s->getTexGen() == TCG_ENVIRONMENT) {
 				flags.hasTexGenEnvironment = true;
@@ -852,7 +938,7 @@ public:
 			}
 
 			const blendDef_s &blendDef = s->getBlendDef();
-			setBlendFunc(blendDef.src,blendDef.dst);
+			//setBlendFunc(blendDef.src,blendDef.dst);
 
 			dx10Shader_c *shader;
 			if(rb_showNormalColors.getInt()) {
@@ -870,24 +956,7 @@ public:
 					return;
 				}
 			}
-			// set the world matrix (model pos)
-			if(shader->m_worldMatrixPtr) {
-				shader->m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
-			}
-			// set the view matrix (camera pos)
-			if(shader->m_viewMatrixPtr) {
-				shader->m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
-			}
-			// set the projection matrix (camera lens)
-			if(shader->m_projectionMatrixPtr) {
-				shader->m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
-			}
-			// set camera origin (in model space)
-			// this is needed eg. for texgen enviromental
-			if(shader->m_viewOrigin) {
-				shader->m_viewOrigin->SetFloatVector(camOriginEntitySpace);
-			}
-
+			this->setShaderVariables(shader);
 			if(shader->m_lightmapPtr) {
 				shader->m_lightmapPtr->SetResource(lightmapResource);
 			}
@@ -902,11 +971,6 @@ public:
 				float alphaFuncValue = s->evaluateAlphaTestValue(0);
 				shader->m_alphaFuncValue->SetFloat(alphaFuncValue);
 			}
-			// set current color
-			if(shader->m_materialColor) {
-				shader->m_materialColor->SetFloatVector((float*)curColor.toPointer());
-			}
-
 			if(s->getDepthWrite()) {
 				// we're writing to depth buffer (opaque surfaces)
 				pD3DDevice->OMSetDepthStencilState(m_depthStencilState, 1);
@@ -1011,18 +1075,21 @@ public:
 		worldMatrix.identity();
 		worldMatrixInverse = worldMatrix.getInversed();
 		camOriginEntitySpace = this->camOriginWorldSpace;
+		usingWorldSpace = true;
 	}
 	// used while drawing entities
 	virtual void setupEntitySpace(const class axis_c &axis, const class vec3_c &origin) {
 		worldMatrix.fromAxisAndOrigin(axis,origin);
 		worldMatrixInverse = worldMatrix.getInversed();
 		worldMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
+		usingWorldSpace = false;
 	}
 	// same as above but with angles instead of axis
 	virtual void setupEntitySpace2(const class vec3_c &angles, const class vec3_c &origin) {
 		worldMatrix.fromAnglesAndOrigin(angles,origin);
 		worldMatrixInverse = worldMatrix.getInversed();
 		worldMatrixInverse.transformPoint(camOriginWorldSpace,camOriginEntitySpace);
+		usingWorldSpace = false;
 	}
 
 	virtual u32 getWinWidth() const  {

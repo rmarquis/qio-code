@@ -109,6 +109,9 @@ public:
 	const rVert_c *getArray() const {
 		return data.getArray();
 	}
+	const arraySTD_c<rVert_c> &getArray2() const {
+		return data;
+	}
 	rVert_c *getArray() {
 		return data.getArray();
 	}
@@ -182,6 +185,8 @@ public:
 	void setVertexAlphaToConstValue(byte val);
 
 	void transform(const class matrix_c &mat);
+
+	void addToBounds(class aabb &bb) const;
 
 	// deforms
 	bool applyDeformAutoSprite(const vec3_c &leftDir, const vec3_c &upDir);
