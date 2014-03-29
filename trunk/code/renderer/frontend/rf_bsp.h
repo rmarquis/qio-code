@@ -276,10 +276,12 @@ class rBspTree_c {
 	int pointInCluster(const vec3_c &pos) const;
 	bool isClusterVisible(int visCluster, int testCluster) const;
 	u32 boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const;
+	u32 boxStaticProps(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out) const;
 	void boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const;
-	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;		
+	u32 createSurfDecals(u32 surfNum, class decalProjector_c &out) const;	
+	u32 createStaticPropDecals(u32 staticPropNum, class decalProjector_c &out) const;			
 
 	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
 public:
@@ -323,6 +325,7 @@ public:
 
 	bool traceRay(class trace_c &out);
 	bool traceRayInlineModel(u32 inlineModelnum, class trace_c &out);
+	bool traceRayStaticProp(u32 staticPropNum, class trace_c &out);
 	bool createInlineModelDecal(u32 inlineModelNum, class simpleDecalBatcher_c *out, const class vec3_c &pos,
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 	

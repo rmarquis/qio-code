@@ -492,6 +492,10 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\math\aabb.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\afRagdollHelper.cpp"
 				>
 			</File>
@@ -561,6 +565,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\cullResult.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\displacementBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\displacementBuilder.h"
 				>
 			</File>
 			<File

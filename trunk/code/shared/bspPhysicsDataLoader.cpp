@@ -31,6 +31,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/cmBezierPatch.h>
 #include <shared/bspPhysicsDataLoader.h>
 #include <shared/perPlaneCallback.h>
+#include <shared/displacementBuilder.h>
+#include <api/modelLoaderDLLAPI.h>
 
 bspPhysicsDataLoader_c::bspPhysicsDataLoader_c() {
 	h = 0;
@@ -305,7 +307,34 @@ void bspPhysicsDataLoader_c::iterateModelBezierPatches(u32 modelNum, void (*perB
 		sf = h->getNextSurface(sf);
 	}
 }
-void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out) {
+void bspPhysicsDataLoader_c::iterateModelDisplacementSurfaces(u32 modelNum, void (*perDisplacementSurfaceCallback)(u32 surfNum, u32 contentFlags)) {
+	if(h->isBSPSource()==false) {
+		// displacements are SE-specific
+		return;
+	}	
+	const srcHeader_s *seHeader = h->getSourceBSPHeader();
+	const q2Model_s *q2Mod = h->getQ2Models();
+	for(u32 i = 0; i < q2Mod->numSurfaces; i++) {
+		u32 surfaceIndex = q2Mod->firstSurface + i;
+		const srcSurface_s *sf = seHeader->getSurface(surfaceIndex);
+		if(sf->dispInfo < 0)
+			continue; // this surface is not a displacement
+		const srcDisplacement_s *disp = seHeader->getDisplacement(sf->dispInfo);
+		perDisplacementSurfaceCallback(surfaceIndex,disp->contents);
+	}
+}
+void bspPhysicsDataLoader_c::iterateStaticProps(void (*perStaticPropCallback)(u32 propNum, u32 contentFlags)) {
+	if(h->isBSPSource()==false) {
+		// static props are SE-specific
+		return;
+	}	
+	const srcGameLump_s *gl = h->getSourceBSPHeader()->findStaticPropsLump();
+	srcStaticPropsParser_c pp(h->getSourceBSPHeader(),*gl);
+	for(u32 i = 0; i < pp.getNumStaticProps(); i++) {
+		perStaticPropCallback(i,1);
+	}
+}
+void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out) const {
 	const q3Surface_s *sf = h->getSurface(surfNum);
 	// convert bsp bezier surface to cmBezierPatch_c
 	cmBezierPatch_c bp;
@@ -317,6 +346,55 @@ void bspPhysicsDataLoader_c::convertBezierPatchToTriSurface(u32 surfNum, u32 tes
 	bp.setWidth(sf->patchWidth);
 	// convert cmBezierPatch_c to cmSurface_c
 	bp.tesselate(tesselationLevel,&out);
+}
+void bspPhysicsDataLoader_c::convertDisplacementToTriSurface(u32 surfNum, class cmSurface_c &out) const {
+	// bsp file format must be Source
+	if(h->isBSPSource() == false) {
+		return;
+	}
+	const srcHeader_s *seHeader = h->getSourceBSPHeader();
+	const srcSurface_s *sf = seHeader->getSurface(surfNum);
+	const srcDisplacement_s *disp = seHeader->getDisplacement(sf->dispInfo);
+	const srcVert_s *iv = (const srcVert_s *)seHeader->getLumpData(SRC_VERTEXES);
+	const srcEdge_s *ie = (const srcEdge_s *)seHeader->getLumpData(SRC_EDGES);
+	const srcTexInfo_s *it = (const srcTexInfo_s *)seHeader->getLumpData(SRC_TEXINFO);
+	const int *surfEdges = (const int *)seHeader->getLumpData(SRC_SURFEDGES);
+	const srcDispVert_s *dispVerts = seHeader->getDispVerts();
+
+	displacementBuilder_c db;
+	for(int j = 0; j < sf->numEdges; j++) {
+		int ei = surfEdges[sf->firstEdge + j];
+		u32 realEdgeIndex;
+		if(ei < 0) {
+			realEdgeIndex = -ei;
+			const srcEdge_s *ed = ie + realEdgeIndex;
+			// reverse vertex order
+			db.setPoint(j,iv[ed->v[1]].point);
+		} else {
+			realEdgeIndex = ei;
+			const srcEdge_s *ed = ie + realEdgeIndex;
+			db.setPoint(j,iv[ed->v[0]].point);
+		}
+	}
+	db.buildDisplacementSurface(disp,dispVerts);
+	out.setIndices(db.getIndices());
+	out.setVerts(db.getVerts());
+}
+void bspPhysicsDataLoader_c::convertStaticPropToSurface(u32 staticPropNum, class cmSurface_c &out) const {
+	// bsp file format must be Source
+	if(h->isBSPSource() == false) {
+		return;
+	}
+	const srcHeader_s *srcH = h->getSourceBSPHeader();
+	const srcGameLump_s *gl = h->getSourceBSPHeader()->findStaticPropsLump();
+	srcStaticPropsParser_c pp(h->getSourceBSPHeader(),*gl);
+	const srcStaticProp_s *prop = pp.getProp(staticPropNum);
+	const char *propName = pp.getPropModelName(prop->propType);
+	if(g_modelLoader->loadStaticModelFile(propName,&out)) {
+		// error
+	} else {
+		out.transform(prop->origin,prop->angles);
+	}
 }
 void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &out) {
 	if(h->isBSPHL()) {

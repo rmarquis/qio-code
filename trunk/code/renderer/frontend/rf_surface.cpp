@@ -1486,6 +1486,11 @@ void r_model_c::ensureExtraTrisoupOctTreeIsBuild() {
 bool r_model_c::traceRay(class trace_c &tr, bool bAllowExtraOctTreeCreation) {
 	if(tr.getTraceBounds().intersect(this->bounds) == false)
 		return false;
+	// do a fast ray-aabb check first
+	vec3_c unused;
+	if(this->bounds.intersect(tr.getStartPos(),tr.getHitPos(),unused)== false) {
+		return false;
+	}
 	// bAllowExtraOctTreeCreation is set to false for dynamic, skeletal models
 	if(r_useTriSoupOctTreesForRayTracing.getInt() && bAllowExtraOctTreeCreation) {
 		ensureExtraTrisoupOctTreeIsBuild();

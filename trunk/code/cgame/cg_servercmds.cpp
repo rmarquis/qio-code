@@ -223,13 +223,12 @@ static void CG_DoRailgunEffect() {
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 32.f;
 	centity_s *hit = tr.getHitCGEntity();
-	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+	if(hit == 0 || hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_DoRailgunEffect: hit Worldspawn\n");
 		if(cg_debugDrawBulletAttack.getInt()) {
 			rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);
 		}
 		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
-		return;
 	} else {
 		CG_Printf("CG_DoRailgunEffect: hit entity\n");
 		if(hit->rEnt) {
@@ -248,7 +247,7 @@ void CG_CreateDecal(const vec3_c &p, const vec3_c &dir, float radius, const char
 	}
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(matName);
 	centity_s *hit = tr.getHitCGEntity();
-	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+	if(hit == 0 || hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_CreateDecal: creating world decal\n");
 		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		return;

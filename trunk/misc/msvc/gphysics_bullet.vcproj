@@ -321,6 +321,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\displacementBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\displacementBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>

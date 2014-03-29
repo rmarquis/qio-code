@@ -277,12 +277,32 @@ struct srcGameLump_s {
 	unsigned short version;
 	int fileOfs;
 	int fileLen;
+
+	bool isStaticPropsLump() const {
+		if(this->iIdent == 1936749168)
+			return true;
+		return false;
+	}
 };
 struct srcGameLumpsHeader_s {
 	int numSubLumps;	// number of game lumps
 	srcGameLump_s subLumps[64];
-};
 
+	const srcGameLump_s *findStaticPropsLump() const {
+		for(u32 i = 0; i < numSubLumps; i++) {
+			if(subLumps[i].isStaticPropsLump())
+				return &subLumps[i];
+		}
+		return 0;
+	}
+};
+struct srcVisOffset_s {
+	int p[2];
+};
+struct srcVisHeader_s {
+	int	numClusters;
+	srcVisOffset_s offsets[64]; // variable-sized
+};
 struct srcHeader_s {
 	int	ident;                // BSP file identifier
 	int	version;              // BSP file version
@@ -325,10 +345,67 @@ struct srcHeader_s {
 		//}
 		const srcDispVert_s *d = (const srcDispVert_s *)this->getLumpData(SRC_DISP_VERTS);
 		return d;
+	}	
+	const srcSurface_s *getSurface(u32 index) const {
+		const byte *data = this->getLumpData(SRC_FACES);
+		const byte *at;
+		if(version == 18) {
+			at = data + sizeof(srcSurfaceV18_s) * index;
+		} else {
+			at = data + sizeof(srcSurface_s) * index;
+		}
+		return (const srcSurface_s *) at;
+	}
+	const srcGameLumpsHeader_s *findGameLumpsLump() const {
+		return (const srcGameLumpsHeader_s *)getLumpData(SRC_GAME_LUMP);
+	}
+	const srcGameLump_s *findStaticPropsLump() const {
+		const srcGameLumpsHeader_s *gameLumps = findGameLumpsLump();
+		if(gameLumps == 0)
+			return 0;
+		return gameLumps->findStaticPropsLump();
 	}
 };
 
 
+class srcStaticPropsParser_c {
+	const srcStaticPropNames_s *names;
+	const srcStaticPropLeafs_s *leafs;
+	const srcStaticPropsList_s *props;
+	u32 propSize;
+	u32 numProps;
+public:
+	srcStaticPropsParser_c(const srcHeader_s *h, const srcGameLump_s &gl) {
+		const byte *p = ((const byte*)h)+gl.fileOfs;
+		names = (const srcStaticPropNames_s*)p;
+		p = names->getEnd();
+		leafs = (const srcStaticPropLeafs_s*)p;
+		p = leafs->getEnd();
+		props = (const srcStaticPropsList_s*)p;
+		propSize = sizeof(srcStaticProp_s);
+		if(gl.version == 4) {
+			propSize -= 4;
+		} else if(gl.version == 6 || gl.version == 7) {
+			propSize += 4; // short minDXLevel, maxDXLevel
+		} 
+		if(gl.version >= 7) {
+			propSize += 4; // int diffuseModulation
+			if(gl.version > 8) {
+				propSize += 4; // byte minCPULevel, maxCPULevel, minGPULevel, maxGPULevel;
+			}
+		}
+		numProps = props->count;
+	}
+	const srcStaticProp_s *getProp(u32 i) const {
+		return (const srcStaticProp_s *)(((const byte*)props->getFirstOffset())+i*propSize);
+	}
+	const char *getPropModelName(u32 i) const {
+		return names->names[i].text;
+	}
+	u32 getNumStaticProps() const {
+		return numProps;
+	}
+};
 
 #endif // __BSPFILEFORMAT_HL2__
 

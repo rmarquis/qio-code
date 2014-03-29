@@ -76,6 +76,24 @@ void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
 	g_bspPhysicsLoader->convertBezierPatchToTriSurface(surfNum,3,newSF);
 	g_staticMap->addWorldSurface(newSF);
 }
+// for SourceEngine displacement surfaces
+void BT_ConvertWorldDisplacementSurface(u32 surfNum, u32 contentFlags) {
+	//if((contentFlags & 1) == 0)
+	//	return;
+	cmSurface_c newSF;
+	// convert bezier patches to trimesh data
+	g_bspPhysicsLoader->convertDisplacementToTriSurface(surfNum,newSF);
+	g_staticMap->addWorldSurface(newSF);
+}
+// for SourceEngine static props
+void BT_ConvertStaticProp(u32 staticPropNum, u32 contentFlags) {
+	//if((contentFlags & 1) == 0)
+	//	return;
+	cmSurface_c newSF;
+	// convert bezier patches to trimesh data
+	g_bspPhysicsLoader->convertStaticPropToSurface(staticPropNum,newSF);
+	g_staticMap->addWorldSurface(newSF);
+}
 btBvhTriangleMeshShape *BT_CMSurfaceToBHV(const class cmSurface_c *sf);
 btpStaticMapLoader_c::btpStaticMapLoader_c() {
 	mainWorldShape = 0;
@@ -98,7 +116,9 @@ bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	} else {
 		l.iterateModelBrushes(0,BT_ConvertWorldBrush);
 		l.iterateModelBezierPatches(0,BT_ConvertWorldBezierPatch);
+		l.iterateModelDisplacementSurfaces(0,BT_ConvertWorldDisplacementSurface);
 	}
+	l.iterateStaticProps(BT_ConvertStaticProp);
 	if(mainWorldSurface.getNumIndices()) {
 		mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);
 		mainWorldSurface_body = new btRigidBody(0,0,mainWorldSurface_shape,btVector3(0,0,0));	

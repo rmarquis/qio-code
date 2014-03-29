@@ -41,6 +41,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_lightGrid.h"
 #include <shared/perStringCallback.h>
 #include <shared/colorTable.h>
+#include <shared/displacementBuilder.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
@@ -1027,69 +1028,6 @@ public:
 		return lightmaps[index];
 	}
 };
-class displacementBuilder_c {
-	rVert_c baseVerts[4];
-	r_surface_c surf;
-public:
-	void setupBaseQuad(const rVert_c *v) {
-		baseVerts[0] = v[0];
-		baseVerts[1] = v[1];
-		baseVerts[2] = v[2];
-		baseVerts[3] = v[3];
-	}
-	void translateSurface(const vec3_c &v) {
-		surf.translateXYZ(v);
-	}
-	void buildDisplacementSurface(const srcDisplacement_s *disp, const srcDispVert_s *verts) {
-		while (baseVerts[0].xyz.compare(disp->startPosition,0.1f)==false) {
-			rVert_c temp = baseVerts[0];
-			baseVerts[0] = baseVerts[1];
-			baseVerts[1] = baseVerts[2];
-			baseVerts[2] = baseVerts[3];
-			baseVerts[3] = temp;
-		}
-		vec3_c leftEdge = baseVerts[1].xyz - baseVerts[0].xyz;
-		vec3_c rightEdge = baseVerts[2].xyz - baseVerts[3].xyz;
-
-		u32 numEdgeVerts = (1 << disp->power) + 1;
-		float subdivideScale = 1.f / (numEdgeVerts - 1);
-		vec3_c leftEdgeStep = leftEdge * subdivideScale;
-		vec3_c rightEdgeStep = rightEdge * subdivideScale;
-
-		for(u32 i = 0; i < numEdgeVerts; i++) {
-			vec3_c leftEnd = leftEdgeStep * i + baseVerts[0].xyz;
-			vec3_c rightEnd = rightEdgeStep * i + baseVerts[3].xyz;
-
-			vec3_c leftRightSeq = rightEnd - leftEnd;
-			vec3_c leftRightStep = leftRightSeq * subdivideScale;
-
-			for(u32 j = 0; j < numEdgeVerts; j++) {
-				u32 dVertIndex = disp->dispVertStart + i * numEdgeVerts + j;
-				const srcDispVert_s &dVert = verts[dVertIndex];
-				vec3_c newXYZ = dVert.vec;
-				newXYZ *= dVert.dist;
-				vec3_c basePos = leftEnd + (leftRightStep * j);
-				newXYZ += basePos;
-				surf.addVert(newXYZ);
-			}
-		}
-		for(u32 i = 0; i < numEdgeVerts-1; i++) {
-			for(u32 j = 0; j < numEdgeVerts-1; j++) {
-				u32 idx = i * numEdgeVerts + j;
-				if((idx % 2) == 1) {
-					surf.add3Indices_swapped(idx,idx + 1,idx + numEdgeVerts);
-					surf.add3Indices_swapped(idx + 1,idx + numEdgeVerts + 1,idx + numEdgeVerts);
-				} else {
-					surf.add3Indices_swapped(idx,idx + numEdgeVerts + 1,idx + numEdgeVerts);
-					surf.add3Indices_swapped(idx,idx + 1,idx + numEdgeVerts + 1);
-				}
-			}
-		}
-	}
-	const r_surface_c &getSurface() const {
-		return surf;
-	}
-};
 bool rBspTree_c::loadSurfsSE() {
 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
 	if(h->version == 18) {
@@ -1259,24 +1197,24 @@ bool rBspTree_c::loadSurfsSE() {
 				g_core->RedWarning("Displacement surfcaces with %i vertices\n");
 			} else {
 				displacementBuilder_c db;
-				db.setupBaseQuad(polyBuilder.getVerts().getArray());
+				db.setupBaseQuad(&polyBuilder.getVerts().getArray()->xyz,sizeof(rVert_c));
 				db.buildDisplacementSurface(disp,srcH->getDispVerts());
 				//db.translateSurface(vec3_c(...));
 
 				
 				
 				ts->firstVert = verts.size();
-				ts->numVerts = db.getSurface().getNumVerts();
-				verts.addArray(db.getSurface().getVerts().getArray2());
+				ts->numVerts = db.getNumVerts();
+				verts.addArray(db.getVerts());
 				Verts_CalcTextCoords(verts.getArray()+ts->firstVert,ts->numVerts,sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
-				u32 *indicesU32 = ts->absIndexes.initU32(db.getSurface().getNumIndices());
-				u16 *localIndicesU16 = ts->localIndexes.initU16(db.getSurface().getNumIndices());
-				for(u32 j = 0; j < db.getSurface().getNumIndices(); j++) {
-					u32 idx = db.getSurface().getIndex(j);;
+				u32 *indicesU32 = ts->absIndexes.initU32(db.getNumIndices());
+				u16 *localIndicesU16 = ts->localIndexes.initU16(db.getNumIndices());
+				for(u32 j = 0; j < db.getNumIndices(); j++) {
+					u32 idx = db.getIndex(j);;
 					localIndicesU16[j] = idx;
 					indicesU32[j] = ts->firstVert+idx;
 				}
-				db.getSurface().getVerts().addToBounds(ts->bounds);
+				ts->bounds.addArray(db.getVerts().getArray(),db.getVerts().size());
 			}
 		} else {
 			polyBuilder.calcTexCoords(sfTexInfo->textureVecs,ts->mat->getImageWidth(),ts->mat->getImageHeight());
@@ -1571,35 +1509,21 @@ bool rBspTree_c::loadQioPoints(u32 lumpNum) {
 }
 
 bool rBspTree_c::loadSEStaticProps(const struct srcGameLump_s &gl) {
-	const byte *p = ((const byte*)h)+gl.fileOfs;
-	const srcStaticPropNames_s *names = (const srcStaticPropNames_s*)p;
-	p = names->getEnd();
-	const srcStaticPropLeafs_s *leafs = (const srcStaticPropLeafs_s*)p;
-	p = leafs->getEnd();
-	const srcStaticPropsList_s *props = (const srcStaticPropsList_s*)p;
-	u32 propSize = sizeof(srcStaticProp_s);
-	if(gl.version == 4) {
-		propSize -= 4;
-	} else if(gl.version == 6 || gl.version == 7) {
-		propSize += 4; // short minDXLevel, maxDXLevel
-	} 
-	if(gl.version >= 7) {
-		propSize += 4; // int diffuseModulation
-		if(gl.version > 8) {
-			propSize += 4; // byte minCPULevel, maxCPULevel, minGPULevel, maxGPULevel;
-		}
-	}
-	staticProps.resize(props->count);
-	for(u32 i = 0; i < props->count; i++) {
+	srcStaticPropsParser_c propParser(srcH,gl);
+
+	staticProps.resize(propParser.getNumStaticProps());
+	for(u32 i = 0; i < propParser.getNumStaticProps(); i++) {
 		bspStaticProp_c &op = staticProps[i];
-		const srcStaticProp_s *prop = (const srcStaticProp_s *)(((const byte*)props->getFirstOffset())+i*propSize);
+		const srcStaticProp_s *prop = propParser.getProp(i);
+		const char *propModelName = propParser.getPropModelName(prop->propType);
 		op.setOrientation(prop->origin,prop->angles);
-		rModelAPI_i *mod = RF_RegisterModel(names->names[prop->propType].text);
+		rModelAPI_i *mod = RF_RegisterModel(propModelName);
 		op.model = mod;
 		op.instance = new r_model_c;
 		mod->getModelData(op.instance);
 		op.instance->transform(op.mat);
 		op.instance->recalcBoundingBoxes();
+		op.instance->recalcTBNs();
 		op.instance->createVBOsAndIBOs();
 	}
 	return false;
@@ -1608,7 +1532,7 @@ bool rBspTree_c::loadSEStaticProps(const struct srcGameLump_s &gl) {
 
 bool rBspTree_c::loadSEGameLump(const struct srcGameLump_s &gl) {
 	//if(memcmp(gl.ident,"sprp",4) == 0) {
-	if(gl.iIdent == 1936749168) {
+	if(gl.isStaticPropsLump()) {
 		return loadSEStaticProps(gl);
 	}
 	return false;
@@ -1998,6 +1922,21 @@ u32 rBspTree_c::boxSurfaces(const aabb &bb, arraySTD_c<u32> &out) const {
 	boxSurfaces_r(bb,out,0);
 	return out.size();
 }
+u32 rBspTree_c::boxStaticProps(const aabb &bb, arraySTD_c<u32> &out) const {
+#if 1
+	for(u32 i = 0; i < staticProps.size(); i++) {
+		const bspStaticProp_c &sp = staticProps[i];
+		if(sp.instance == 0)
+			continue;
+		if(sp.instance->getBounds().intersect(bb)) {
+			out.push_back(i);
+		}
+	}
+#else
+	// TODO
+#endif 
+	return out.size();
+}
 void rBspTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) const {
 	while(nodeNum >= 0) {
 		const q3Node_s &n = nodes[nodeNum];
@@ -2279,7 +2218,16 @@ void rBspTree_c::addDrawCalls() {
 				continue;
 		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
-			if(RF_MaterialNeedsCPU(b->mat) || rf_bsp_doAllSurfaceBatchesOnCPU.getInt()) {
+			mtrAPI_i *material;
+			if(b->mat->isGenericSky()) {
+				material = RF_GetSkyMaterial();
+				if(material == 0) {
+					material = b->mat;
+				}
+			} else {
+				material = b->mat;
+			}
+			if(RF_MaterialNeedsCPU(material) || rf_bsp_doAllSurfaceBatchesOnCPU.getInt()) {
 				// Quake3 .shader files effects performs faster on small vertex arrays.
 				// Don't use this->verts, use per-surface vertices instead
 				for(u32 j = 0; j < b->sfs.size(); j++) {
@@ -2306,13 +2254,13 @@ void rBspTree_c::addDrawCalls() {
 
 					if(rf_bsp_printCPUSurfVertsCount.getInt()) {
 						g_core->Print("rBspTree_c::addDrawCalls()[%i]: %i verts, %i indices - mat %s, type %i\n",
-							rf_curTimeMsec,stSF->localVerts.size(),stSF->localIndexes.getNumIndices(),b->mat->getName(),subSF->type);
+							rf_curTimeMsec,stSF->localVerts.size(),stSF->localIndexes.getNumIndices(),material->getName(),subSF->type);
 					}
-					RF_AddDrawCall(&stSF->localVerts,&stSF->localIndexes,b->mat,b->lightmap,b->mat->getSort(),true,b->deluxemap);
+					RF_AddDrawCall(&stSF->localVerts,&stSF->localIndexes,material,b->lightmap,material->getSort(),true,b->deluxemap);
 				}
 			} else {
 				if(rf_bsp_skipGPUSurfaces.getInt() == 0) {
-					RF_AddDrawCall(&this->verts,&b->indices,b->mat,b->lightmap,b->mat->getSort(),true,b->deluxemap);
+					RF_AddDrawCall(&this->verts,&b->indices,material,b->lightmap,material->getSort(),true,b->deluxemap);
 				}
 			}
 		}
@@ -2451,14 +2399,31 @@ u32 rBspTree_c::createSurfDecals(u32 surfNum, class decalProjector_c &proj) cons
 	}
 	return added;
 }	
+u32 rBspTree_c::createStaticPropDecals(u32 staticPropNum, class decalProjector_c &out) const {
+	const bspStaticProp_c &sp = staticProps[staticPropNum];
+	u32 prevCount = out.getNumCreatedWindings();
+	if(sp.instance == 0) {
+		
+	} else {
+		sp.instance->createDecalInternal(out);
+	}
+	return out.getNumCreatedWindings() - prevCount;
+}
 int rBspTree_c::addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 	decalProjector_c proj;
 	proj.init(pos,normal,radius);
 	proj.setMaterial(material);
+	// apply decals to world surfaces (made from brushes)
 	arraySTD_c<u32> sfNums;
 	boxSurfaces(proj.getBounds(),sfNums);
 	for(u32 i = 0; i < sfNums.size(); i++) {
 		createSurfDecals(sfNums[i],proj);
+	}
+	// apply decals to static props (for Source Engine maps)
+	arraySTD_c<u32> spNums;
+	boxStaticProps(proj.getBounds(),spNums);
+	for(u32 i = 0; i < spNums.size(); i++) {
+		createStaticPropDecals(spNums[i],proj);
 	}
 	proj.addResultsToDecalBatcher(RF_GetWorldDecalBatcher());
 	return 0; // TODO: return valid decal handle?
@@ -2597,6 +2562,16 @@ bool rBspTree_c::traceRay(class trace_c &out) {
 		}
 		return bCollided;
 	}
+#if 1
+	for(u32 i = 0; i < staticProps.size(); i++) {
+		const bspStaticProp_c &sp = staticProps[i];
+		if(sp.instance) {
+			if(out.getTraceBounds().intersect(sp.instance->getBounds())) {
+				traceRayStaticProp(i,out);
+			}
+		}
+	}
+#endif
 
 	float prevFrac = out.getFraction();
 	traceNodeRay_r(0,out);
@@ -2621,6 +2596,13 @@ bool rBspTree_c::traceRayInlineModel(u32 inlineModelNum, class trace_c &out) {
 	}
 	return hasHit;
 }	
+bool rBspTree_c::traceRayStaticProp(u32 staticPropNum, class trace_c &out) {
+	const bspStaticProp_c &sp = staticProps[staticPropNum];
+	if(sp.instance) {
+		return sp.instance->traceRay(out);
+	}
+	return false;
+}
 bool rBspTree_c::createInlineModelDecal(u32 inlineModelNum, class simpleDecalBatcher_c *out, const class vec3_c &pos,
 										const class vec3_c &normal, float radius, class mtrAPI_i *material) {
 	decalProjector_c proj;

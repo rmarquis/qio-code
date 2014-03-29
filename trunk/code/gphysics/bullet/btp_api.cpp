@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/declManagerAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include <api/rAPI.h>
+#include <api/modelLoaderDLLAPI.h>
 
 #include "btp_world.h"
 
@@ -74,6 +75,7 @@ cmAPI_i *cm = 0;
 loadingScreenMgrAPI_i *g_loadingScreen = 0;
 rAPI_i *rf = 0;
 declManagerAPI_i *g_declMgr = 0;
+modelLoaderDLLAPI_i *g_modelLoader = 0; // only for static props loader
 // exports
 static physDLLBullet_c g_staticPhysDLLImpl;
 
@@ -90,6 +92,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_loadingScreen,LOADINGSCREENMGR_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

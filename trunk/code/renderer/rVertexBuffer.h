@@ -69,6 +69,13 @@ public:
 		memcpy(data.getArray()+numVerts,ar.getArray(),ar.getSizeInBytes());
 		numVerts += ar.size();
 	}
+	void addArray(const arraySTD_c<vec3_c> &ar) {
+		ensureAllocated(numVerts+ar.size());
+		for(u32 i = 0; i < ar.size(); i++) {
+			data[numVerts+i].setXYZ(ar[i]);
+		}
+		numVerts += ar.size();
+	}
 	void uploadToGPU() {
 		if(rb == 0) {
 			g_core->RedWarning("rVertexBuffer_c::uploadToGPU: rb is NULL, cannot upload VBO\n");

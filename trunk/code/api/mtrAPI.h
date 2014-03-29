@@ -71,6 +71,10 @@ public:
 	// This should return false for glass materials and explosion sprites.
 	virtual bool isNeededForLightPass() const = 0;
 
+	// bGenericSky is set in .vmt files by $compilesky key
+	// (it's set to 1 in materials/tools/toolskybox.vmt)
+	virtual bool isGenericSky() const = 0;
+
 	virtual int getImageWidth() const = 0;
 	virtual int getImageHeight() const = 0;
 	// for animated images ("animmap")

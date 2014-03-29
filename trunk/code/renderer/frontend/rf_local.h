@@ -79,6 +79,7 @@ void RF_DrawSky();
 bool RF_HasSky();
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
 void RF_SetSkyMaterial(const char *skyMaterialName);
+class mtrAPI_i *RF_GetSkyMaterial();
 void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial);
 bool RF_HasSunMaterial();
 const class mtrAPI_i *RF_GetSunMaterial();

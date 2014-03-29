@@ -46,6 +46,15 @@ public:
 			delete scaledVerts;
 		}
 	}
+	void setVerts(const arraySTD_c<vec3_c> &pNewVerts) {
+		verts = pNewVerts;
+	}
+	void setIndices(const arraySTD_c<u16> &pIndices) {
+		indices.resize(pIndices.size());
+		for(u32 i = 0; i < indices.size(); i++) {
+			indices[i] = pIndices[i];
+		}
+	}
 	void prepareScaledVerts(float scaledVertsScale) const {
 		if(scaledVerts == 0) {
 			scaledVerts = new arraySTD_c<vec3_c>;
@@ -253,6 +262,11 @@ public:
 		for(u32 i = 0; i < verts.size(); i++, v++) {
 			mat.transformPoint(*v);
 		}
+	}
+	virtual void transform(const class vec3_c &origin, const class vec3_c &angles) {
+		matrix_c mat;
+		mat.fromAnglesAndOrigin(angles,origin);
+		this->transform(mat);
 	}
 	virtual void getCurrentBounds(class aabb &out) {
 		out = bb;

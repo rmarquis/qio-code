@@ -129,6 +129,9 @@ void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial) {
 void RF_SetSkyMaterial(const char *skyMaterialName) {
 	rf_skyMaterial = g_ms->registerMaterial(skyMaterialName);
 }
+class mtrAPI_i *RF_GetSkyMaterial() {
+	return rf_skyMaterial;
+}
 bool RF_HasSunMaterial() {
 	if(rf_sunMaterial)
 		return true;
@@ -158,5 +161,20 @@ void RF_SetSunMaterial_f() {
 	RF_SetSunMaterial(mat);
 }
 
+void RF_SetSkyMaterial_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: RF_SetSkyMaterial_f <material_name>\n");
+		return;
+	}
+	const char *matName = g_core->Argv(1);
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(mat == 0) {
+		g_core->Print("NULL material\n");
+		return;
+	}
+	RF_SetSkyMaterial(mat);
+}
+
 static aCmd_c rf_setSunMaterial("rf_setSunMaterial",RF_SetSunMaterial_f);
+static aCmd_c rf_setSkyMaterial("rf_setSkyMaterial",RF_SetSkyMaterial_f);
 

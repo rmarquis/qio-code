@@ -369,6 +369,8 @@ class mtrIMPL_c : public mtrAPI_i {
 	str editorImage; // set by "qer_editorimage" keyword (Q3/D3)
 	// vertex deforms array (they are per-material, not per-stage)
 	deformArray_c *deforms;
+	// for .vmt support, set by $compilesky key
+	bool bGenericSky;;
 
 	void addDeformSprite();
 
@@ -475,6 +477,9 @@ public:
 		if(hasStageWithCubeMap())
 			return false;
 		return true;
+	}
+	virtual bool isGenericSky() const {
+		return bGenericSky;
 	}
 	virtual bool hasStageOfType(stageType_e type) const {
 		for(u32 i = 0; i < stages.size(); i++) {

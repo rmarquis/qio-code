@@ -48,6 +48,7 @@ loadingScreenMgrAPI_i *g_loadingScreen = 0;
 rAPI_i *rf = 0;
 declManagerAPI_i *g_declMgr = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
+class modelLoaderDLLAPI_i *g_modelLoader = 0;
 // exports
 static gameAPI_s g_staticGameAPI;
 static gameClientAPI_s g_staticGameClientsAPI;

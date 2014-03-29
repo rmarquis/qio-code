@@ -51,12 +51,16 @@ public:
 	void iterateModelBrushes(u32 modelNum, void (*perBrushCallback)(u32 brushNum, u32 contentFlags));
 	void iterateModelTriSurfs(u32 modelNum, void (*perSurfCallback)(u32 surfNum, u32 contentFlags));
 	void iterateModelBezierPatches(u32 modelNum, void (*perBezierPatchCallback)(u32 surfNum, u32 contentFlags));
+	void iterateModelDisplacementSurfaces(u32 modelNum, void (*perDisplacementSurfaceCallback)(u32 surfNum, u32 contentFlags));
+	void iterateStaticProps(void (*perStaticPropCallback)(u32 propNum, u32 contentFlags));
 
 	void iterateModelBrushes2(u32 modelNum, class brushCreatorAPI_i *callback);
 
 	void iterateBrushPlanes(u32 brushNum, void (*sideCallback)(const float planeEq[4])) const;
 	void iterateBrushPlanes(u32 brushNum, class perPlaneCallbackListener_i *callBack) const;
-	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out);
+	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out) const;
+	void convertDisplacementToTriSurface(u32 surfNum, class cmSurface_c &out) const;
+	void convertStaticPropToSurface(u32 staticPropNum, class cmSurface_c &out) const;
 	void getTriangleSurface(u32 surfNum, class cmSurface_c &out);
 
 	u32 getNumInlineModels() const;

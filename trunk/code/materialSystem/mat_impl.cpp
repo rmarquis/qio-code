@@ -337,6 +337,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	bPortalMaterial = false;
 	bMirrorMaterial = false;
 	deforms = 0;
+	bGenericSky = false;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -363,6 +364,7 @@ void mtrIMPL_c::clear() {
 	polygonOffset = 0;
 	cullType = CT_FRONT_SIDED;
 	bPortalMaterial = false;
+	bGenericSky = false;
 	// but don't clear material name and this->hashNext pointer...
 }
 
@@ -459,6 +461,14 @@ bool mtrIMPL_c::loadFromVMTFile() {
 		} else if(p.atWord("$alphatest")) {
 			iAlphaTest = p.getInteger();
 			bAlphaTestSetInVMT = true;
+		} else if(p.atWord("%compilesky")) {
+			// this is used in tools/toolsskybox.vmt from hl2 gamedirectory
+			int iCompileSky = p.getInteger();
+			if(iCompileSky) {
+				this->bGenericSky = true;
+			} else {
+				this->bGenericSky = false;
+			}
 		} else {
 			const char *unkToken = p.getToken();
 		}

@@ -114,6 +114,11 @@ public:
 		if (z < mins.z)
 			mins.z = z;
 	}
+	void addArray(const vec3_c *ar, u32 count) {
+		for(u32 i = 0; i < count; i++) {
+			addPoint(ar[i]);
+		}
+	}
 	void reset(const vec3_c &v) {
 		this->mins = this->maxs = v;
 	}
