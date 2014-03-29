@@ -118,6 +118,7 @@ skelModelIMPL_c::~skelModelIMPL_c() {
 	bones.clear();
 	baseFrameABS.clear();
 	surfs.clear();
+	g_core->Print("Freeing skelModel %s\n",this->name.c_str());
 }
 void skelModelIMPL_c::printBoneNames() const {
 	for(u32 i = 0; i < bones.size(); i++) {

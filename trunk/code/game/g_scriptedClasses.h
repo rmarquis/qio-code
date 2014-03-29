@@ -35,6 +35,12 @@ class scriptedClass_c {
 
 	scriptedClass_c *hashNext;
 public:
+	scriptedClass_c() {
+		hashNext = 0;
+	}
+	~scriptedClass_c() {
+		
+	}
 	void setKeyValue(const char *key, const char *value) {
 		if(!stricmp(key,"classname")) {
 			this->className = value;

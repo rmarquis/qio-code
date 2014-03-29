@@ -35,12 +35,6 @@ const scriptedClass_c *G_FindScriptedClassDef(const char *className) {
 u32 G_GetNumKnownScriptedClassDefs() {
 	return g_scriptedClasses.size();
 }
-void G_ShutdownScriptedClasses() {
-	for(u32 i = 0; i < g_scriptedClasses.size(); i++) {
-		delete g_scriptedClasses[i];
-	}
-	g_scriptedClasses.clear();
-}
 
 //
 // experimental C-style structs syntax parser
@@ -241,6 +235,10 @@ public:
 			structDefs[i] = 0;
 		}
 		structDefs.size();
+		for(u32 i = 0; i < globalStructArrays.size(); i++) {
+			delete globalStructArrays[i];
+		}
+		globalStructArrays.clear();
 	}
 	u32 registerString(const char *str) {
 		return stringNames.registerString(str);
@@ -629,7 +627,10 @@ bool cStyleStructuresParser_c::parseText(const char *rawTextData) {
 void G_LoadQuake3ItemDefs() {
 	cStylePreprocessor_c pp;
 	pp.addDefine("MISSIONPACK");
-	pp.preprocessFile("srcItemDefs/quake3Items.c");
+	if(pp.preprocessFile("srcItemDefs/quake3Items.c")) {
+		g_core->Print("G_LoadQuake3ItemDefs: q3 item defs not present.\n");
+		return;	
+	}
 	cStyleStructuresParser_c cp;
 	cp.parseText(pp.getResultConstChar());
 
@@ -683,11 +684,20 @@ void G_LoadQuake3ItemDefs() {
 					}
 				}
 				newClass->setKeyValue("bUseRModelToCreateDynamicCVXShape","1");
-				g_scriptedClasses.addObject(newClass);
+				if(g_scriptedClasses.addObject(newClass)) {
+					g_core->RedWarning("G_LoadQuake3ItemDefs: %s was already on list, ignoring second definition\n",newClass->getName());
+					delete newClass;
+				}
 			}
 		}
 	}
 }
 void G_InitScriptedClasses() {
 	G_LoadQuake3ItemDefs();
+}
+void G_ShutdownScriptedClasses() {
+	for(u32 i = 0; i < g_scriptedClasses.size(); i++) {
+		delete g_scriptedClasses[i];
+	}
+	g_scriptedClasses.clear();
 }
