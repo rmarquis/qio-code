@@ -208,6 +208,12 @@ public:
 	astNode_c() {
 		children[0] = children[1] = 0;
 	}
+	~astNode_c() {
+		if(children[0])
+			delete children[0];
+		if(children[1])
+			delete children[1];
+	}
 	float execute_r(const class astInputAPI_i *in) const {
 		if(this == 0) {
 			// this should never happen unless AST is invalid
@@ -298,6 +304,12 @@ public:
 class ast_c : public astAPI_i {
 	astNode_c *root;
 public:
+	ast_c() {
+		root = 0;
+	}
+	~ast_c() {
+		delete root;
+	}
 	void setRootNode(astNode_c *newRoot) {
 		root = newRoot;
 	}

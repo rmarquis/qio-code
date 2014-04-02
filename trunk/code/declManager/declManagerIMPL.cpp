@@ -130,6 +130,11 @@ public:
 		skelModel = 0;
 		q3PlayerModel = 0;
 	}
+	~modelDecl_c() {
+		if(skelModel) {
+			delete skelModel;
+		}
+	}
 	void precache() {
 		if(cached)
 			return;

@@ -110,6 +110,13 @@ void bulletPhysicsWorld_c::shutdown() {
 			this->freeCharacter(characters[0]);
 		}
 	}
+	if(shapes.size()) {
+		//g_core->RedWarning("bulletPhysicsWorld_c::shutdown: forgot to free %i characters\n",characters.size());
+		for(int i = 0; i < shapes.size(); i++) {
+			delete shapes[i];
+		}
+		shapes.clear();
+	}
 	// free static world data
 	staticWorld.freeMemory();
 	// free physics data allocated in bulletPhysicsWorld_c::init()

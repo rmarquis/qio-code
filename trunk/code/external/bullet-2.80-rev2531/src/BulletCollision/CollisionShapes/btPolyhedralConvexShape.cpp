@@ -31,6 +31,9 @@ btPolyhedralConvexShape::~btPolyhedralConvexShape()
 {
 	if (m_polyhedron)
 	{
+		// Vodin: Bullet Physics memory leak fix:
+		m_polyhedron->~btConvexPolyhedron();
+		// the btAlignedFree is just like "free", it's not working like new.
 		btAlignedFree(m_polyhedron);
 	}
 }
@@ -39,8 +42,12 @@ btPolyhedralConvexShape::~btPolyhedralConvexShape()
 bool	btPolyhedralConvexShape::initializePolyhedralFeatures()
 {
 
-	if (m_polyhedron)
+	if (m_polyhedron) {
+		// Vodin: Bullet Physics memory leak fix:
+		m_polyhedron->~btConvexPolyhedron();
+		// the btAlignedFree is just like "free", it's not working like new.
 		btAlignedFree(m_polyhedron);
+	}
 	
 	void* mem = btAlignedAlloc(sizeof(btConvexPolyhedron),16);
 	m_polyhedron = new (mem) btConvexPolyhedron;

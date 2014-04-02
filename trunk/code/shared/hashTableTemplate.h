@@ -144,9 +144,11 @@ public:
 			return 0;
 		return table.getEntry(entryName);
 	}
-	bool addObject(TYPE *obj) {
+	bool addObject(TYPE *obj, bool forceAdd = false) {
 		if(getEntry(obj->getName())) {
-			return true; // already on list
+			if(forceAdd == false) {
+				return true; // already on list
+			}
 		}
 		table.addObject(obj);
 //		G_assert(ar.indexOf(obj)==-1);

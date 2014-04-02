@@ -35,7 +35,9 @@ bulletColShape_c::bulletColShape_c() {
 	centerOfMassTransform.identity();
 }
 bulletColShape_c::~bulletColShape_c() {
-	delete bulletShape;
+	if(bulletShape) {
+		delete bulletShape;
+	}
 }		
 
 bool bulletColShape_c::init(const class cMod_i *newCModel, bool newBIStatic) {

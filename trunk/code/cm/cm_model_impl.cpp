@@ -25,6 +25,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "cm_local.h"
 #include "cm_model.h"
 #include <api/skelModelAPI.h>
+#include <api/coreAPI.h>
+
+cmObjectBase_c::~cmObjectBase_c() {
+	g_core->Print("Freeing %s\n",getName());
+	if(parent) {
+		cmCompound_c *cmpd = dynamic_cast<cmCompound_c*>(parent);
+		cMod_i *cm = dynamic_cast<cMod_i*>(this);
+		//cmpd->onChildDestructor(this);
+	}
+}
 
 cmSkelModel_c::cmSkelModel_c() {
 	skel = 0;

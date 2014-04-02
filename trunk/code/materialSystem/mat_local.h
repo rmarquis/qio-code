@@ -58,7 +58,7 @@ const class tableListAPI_i *MAT_GetTablesAPI();
 
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();
-class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h, bool rgba); // for lightmaps
+class textureAPI_i *MAT_CreateLightmap(int index, const byte *data, u32 w, u32 h, bool rgba); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapMode_e wrapMode);
 class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h);
 void MAT_FreeTexture(class textureAPI_i **p);

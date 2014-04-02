@@ -289,6 +289,10 @@ void Player::enableCharacterController() {
 }
 #include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
+	if(cm == 0) {
+
+		return;
+	}
 	cmCapsule_i *m;
 	m = cm->registerCapsule(cHeight,cRadius);
 	this->setColModel(m);

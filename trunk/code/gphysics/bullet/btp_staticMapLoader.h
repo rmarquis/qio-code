@@ -53,6 +53,7 @@ class btpStaticMapLoader_c {
 	bool loadFromMAPFile(const char *fname);
 public:
 	btpStaticMapLoader_c();
+	~btpStaticMapLoader_c();
 
 	void createEmptyMap();
 	bool loadMap(const char *mapName, class bulletPhysicsWorld_c *pWorld);

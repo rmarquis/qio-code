@@ -52,6 +52,8 @@ public:
 // cm object base
 class cMod_i {
 public:
+	virtual ~cMod_i() { }
+
 	virtual const char *getName() const = 0;
 	virtual enum cModType_e getType() const = 0;
 
@@ -115,6 +117,9 @@ public:
 	virtual const class cmSkelModel_i *getSkelModel() const {
 		return 0;
 	}
+
+	virtual class cMod_i *getParent() = 0;
+	virtual void setParent(class cMod_i *newParent) = 0;
 
 	virtual void getBounds(class aabb &out) const = 0;
 

@@ -223,6 +223,9 @@ void svBSP_c::filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nod
 }
 void svBSP_c::filterBB(const class aabb &bb, struct bspBoxDesc_s &out) const {
 	out.clear();
+	if(h == 0) {
+		return;
+	}
 	filterBB_r(bb,out,0);
 }
 void svBSP_c::filterPoint(const class vec3_c &p, struct bspPointDesc_s &out) const {
@@ -355,7 +358,7 @@ u32 svBSP_c::getNumAreaBytes() const {
 }
 #include <shared/bitset.h>
 void svBSP_c::appendCurrentAreaBits(int area, class bitSet_c &bs) {
-	if(area == -1) {
+	if(area == -1 || area >= areas.size()) {
 		bs.setAll(true); // mark all areas as visible
 	} else {
 		u32 floodNum = areas[area].floodNum;

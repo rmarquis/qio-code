@@ -130,6 +130,10 @@ public:
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: failed to setup afRagdollHelper for AF \"%s\"\n",afName);
 			return 0;
 		}
+		if(cm == 0) {
+			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: can't spawn ragdoll %s because CM module is not prsent.\n",afName);
+			return 0;
+		}
 		matrix_c extraWorldTransform;
 		extraWorldTransform.fromAnglesAndOrigin(angles,pos);
 		ragdoll_c *ret = new ragdoll_c;

@@ -126,12 +126,15 @@ class textureAPI_i *MAT_GetDefaultTexture() {
 	}
 	return mat_defaultTexture;
 }
-class textureAPI_i *MAT_CreateLightmap(const byte *data, u32 w, u32 h, bool rgba) {
+class textureAPI_i *MAT_CreateLightmap(int index, const byte *data, u32 w, u32 h, bool rgba) {
 	// for lightmaps
 	textureIMPL_c *nl =  new textureIMPL_c;
 	rb->uploadLightmap(nl,data,w,h, rgba);
-	nl->setName("internalLightmap");
-	mat_textures.addObject(nl);
+	nl->setName(va("*lightmap%i",index));
+	if(mat_textures.addObject(nl)) {
+		g_core->Print("Warning: %s added more than once.\n",nl->getName());
+		mat_textures.addObject(nl,true);
+	}
 	return nl;
 }
 // texString can contain doom3-like modifiers
@@ -155,7 +158,10 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 	ret->setWrapMode(wrapMode);
 	rb->uploadTextureRGBA(ret,data,w,h);
 	g_img->freeImageData(data);
-	mat_textures.addObject(ret);
+	if(mat_textures.addObject(ret)) {
+		g_core->Print("Warning: %s added more than once.\n",texString);
+		mat_textures.addObject(ret,true);
+	}
 	return ret;
 }
 class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h) {
@@ -163,7 +169,10 @@ class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, 
 	ret->setName(texName);
 	ret->setWrapMode(TWM_REPEAT);
 	rb->uploadTextureRGBA(ret,picData,w,h);
-	mat_textures.addObject(ret);
+	if(mat_textures.addObject(ret)) {
+		g_core->Print("Warning: %s added more than once.\n",texName);
+		mat_textures.addObject(ret,true);
+	}
 	return ret;
 }
 //void MAT_FreeTexture(class textureAPI_i **p) {

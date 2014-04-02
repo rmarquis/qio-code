@@ -52,6 +52,9 @@ public:
 		numIndices = 0;
 		handleV = 0;
 	}
+	~rIndexBuffer_c() {
+		unloadFromGPU();
+	}
 	u16 *initU16(u32 newCount) {
 		destroy();
 		type = IBO_U16;

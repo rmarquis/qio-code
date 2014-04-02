@@ -100,7 +100,11 @@ void G_LoadMap(const char *mapName) {
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString("G_LoadMap: \"%s\"...",mapName);
 	}
-	cm->loadMap(mapName);
+	if(cm) {
+		cm->loadMap(mapName);
+	} else {
+		g_core->RedWarning("G_LoadMap: cm API not present.\n");
+	}
 	g_physWorld->loadMap(mapName);
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" done.\n");

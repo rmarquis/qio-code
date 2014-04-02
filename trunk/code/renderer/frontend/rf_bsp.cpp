@@ -229,7 +229,7 @@ bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
 	lightmaps.resize(numLightmaps);
 	const byte *p = h->getLumpData(lumpNum);
 	for(u32 i = 0; i < numLightmaps; i++) {
-		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(p,lightmapSize,lightmapSize);
+		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(i,p,lightmapSize,lightmapSize);
 		p += (lightmapSize*lightmapSize*3);
 	}
 	return false; // OK
@@ -943,7 +943,7 @@ public:
 	void prepareNextLightmap() {
 		g_core->Print("lightmapAllocator_c::prepareNextLightmap: %i sublightmaps merged into lightmap texture %i\n",numSubLightmaps,lightmaps.size());
 		allocated.nullMemory();
-		textureAPI_i *prev = g_ms->createLightmap(curData.getArray(),lightmapSize,lightmapSize);
+		textureAPI_i *prev = g_ms->createLightmap(lightmaps.size(),curData.getArray(),lightmapSize,lightmapSize);
 		lightmaps.push_back(prev);
 		curData.nullMemory();
 		numSubLightmaps = 0;
@@ -1830,6 +1830,7 @@ bool rBspTree_c::checkIsBSPValid() {
 	return bIsOk; // ok
 }
 void rBspTree_c::clear() {
+	deleteBatches();
 	//for(u32 i = 0; i < lightmaps.size(); i++) {
 	//	delete lightmaps[i];
 	//	lightmaps[i] = 0;

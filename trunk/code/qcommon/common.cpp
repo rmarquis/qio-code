@@ -2633,18 +2633,38 @@ void Com_InitImageLib() {
 		Com_Error(ERR_DROP,"Cannot load imageLib DLL");
 	}
 }
+bool Com_CanStartEngineWithoutCMModule() {
+	//return false;
+	return true; // TODO: a developer cvar?
+}
+bool Com_CanStartEngineWithoutModelLoaderModule() {
+	//return false;
+	return true; // TODO: a developer cvar?
+}
+bool Com_CanStartEngineWithoutDeclManagerModule() {
+	//return false;
+	return true; // TODO: a developer cvar?
+}
 static moduleAPI_i *com_cmLib = 0;
 void Com_InitCMDLL() {
 	com_cmLib = g_moduleMgr->load("cm");
 	if(com_cmLib == 0) {
-		Com_Error(ERR_DROP,"Cannot load CM DLL");
+		if(Com_CanStartEngineWithoutCMModule()) {
+			Com_Printf("WARNING: Cannot load CM DLL\n");
+		} else {
+			Com_Error(ERR_DROP,"Cannot load CM DLL");
+		}
 	}
 }
 static moduleAPI_i *com_modelLoaderDLL = 0;
 void Com_InitModelLoaderDLL() {
 	com_modelLoaderDLL = g_moduleMgr->load("modelLoader");
 	if(com_modelLoaderDLL == 0) {
-		Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
+		if(Com_CanStartEngineWithoutCMModule()) {
+			Com_Printf("WARNING: Cannot load modelLoader DLL\n");
+		} else {
+			Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
+		}
 	}
 }
 static moduleAPI_i *com_declMgrLib = 0;
@@ -2652,7 +2672,12 @@ declManagerAPI_i *g_declMgr;
 void Com_InitDeclManagerDLL() {
 	com_declMgrLib = g_moduleMgr->load("declManager");
 	if(com_declMgrLib == 0) {
-		Com_Error(ERR_DROP,"Cannot load declManager DLL");
+		if(Com_CanStartEngineWithoutDeclManagerModule()) {
+			Com_Printf("WARNING: Cannot load declManager DLL\n");
+			return;
+		} else {
+			Com_Error(ERR_DROP,"Cannot load declManager DLL");
+		}
 	}
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 	g_declMgr->init();

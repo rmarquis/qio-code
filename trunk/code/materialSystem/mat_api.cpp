@@ -64,8 +64,8 @@ public:
 	virtual class textureAPI_i *loadTexture(const char *fname) {
 		return MAT_RegisterTexture(fname,TWM_REPEAT);
 	}
-	virtual textureAPI_i *createLightmap(const byte *data, u32 w, u32 h, bool rgba) {
-		return MAT_CreateLightmap(data,w,h,rgba);
+	virtual textureAPI_i *createLightmap(int index, const byte *data, u32 w, u32 h, bool rgba) {
+		return MAT_CreateLightmap(index,data,w,h,rgba);
 	}
 	virtual mtrAPI_i *getDefaultMaterial() {
 		return MAT_RegisterMaterialAPI("default");

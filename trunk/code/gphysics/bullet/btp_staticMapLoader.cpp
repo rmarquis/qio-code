@@ -101,6 +101,9 @@ btpStaticMapLoader_c::btpStaticMapLoader_c() {
 	mainWorldSurface_shape = 0;
 	mainWorldSurface_body = 0;
 }
+btpStaticMapLoader_c::~btpStaticMapLoader_c() {
+
+}
 bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	bspPhysicsDataLoader_c l;		
 	if(l.loadBSPFile(fname)) {
@@ -139,6 +142,8 @@ bool btpStaticMapLoader_c::loadFromPROCFile(const char *fname) {
 	return false;
 }
 bool btpStaticMapLoader_c::loadFromMAPFile(const char *fname) {
+	if(cm == 0)
+		return true; // error, cm not present
 	cMod_i *m = cm->registerModel(fname);
 	if(m == 0)
 		return true; // error

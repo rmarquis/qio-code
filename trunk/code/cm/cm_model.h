@@ -34,6 +34,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 class cmHelpersList_c : public arraySTD_c<class cmHelper_c*> {
 
 public:
+	~cmHelpersList_c() {
+		for(u32 i = 0; i < size(); i++) {
+			delete (*this)[i];
+		}
+	}
 	class cmCompound_i *findSubModel(u32 subModelNum) {
 		u32 curModelNum = 0;
 		for(u32 i = 0; i < this->size(); i++) {
@@ -67,13 +72,14 @@ protected:
 	str name;
 	aabb bounds;
 	cmHelpersList_c helpers;
+	class cMod_i *parent;
 public:
 	cmObjectBase_c() {
 		bounds.clear();
+		parent = 0;
 	}
-	virtual ~cmObjectBase_c() {
+	virtual ~cmObjectBase_c();
 
-	}
 	cmObjectBase_c *getHashNext() const {
 		return hashNext;
 	}
@@ -106,6 +112,13 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_CAPSULE;
 	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
+	}
+
 	virtual class cmBBExts_i *getBBExts() {
 		return 0;
 	}
@@ -172,6 +185,12 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_BBEXTS;
 	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
+	}
 	virtual class cmBBExts_i *getBBExts() {
 		return this;
 	}
@@ -222,6 +241,12 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_BBMINSMAXS;
 	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
+	}
 	virtual void getBounds(class aabb &out) const {
 		out = this->bounds;
 	}
@@ -259,6 +284,12 @@ public:
 	}
 	virtual enum cModType_e getType() const {
 		return CMOD_HULL;
+	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
 	}
 	virtual class cmHull_i *getHull() {
 		return this;
@@ -357,6 +388,12 @@ public:
 	virtual enum cModType_e getType() const {
 		return CMOD_COMPOUND;
 	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
+	}
 	virtual class cmCompound_i *getCompound() {
 		return this;
 	}
@@ -425,6 +462,7 @@ public:
 	}
 
 	void addShape(class cMod_i *m) {
+		m->setParent(this);
 		shapes.push_back(m);
 	}
 	void translateXYZ(const vec3_c &ofs) {
@@ -435,6 +473,12 @@ public:
 
 	cmCompound_c(const char *newName) {
 		this->name = newName;
+	}
+	virtual ~cmCompound_c() {
+		for(u32 i = 0; i < shapes.size(); i++) {
+			shapes[i]->setParent(0);
+			delete shapes[i];
+		}
 	}
 };
 
@@ -462,6 +506,12 @@ public:
 	}
 	virtual enum cModType_e getType() const {
 		return CMOD_TRIMESH;
+	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
 	}
 	virtual class cmTriMesh_i *getTriMesh() {
 		return this;
@@ -546,6 +596,12 @@ public:
 	}
 	virtual enum cModType_e getType() const {
 		return CMOD_SKELMODEL;
+	}
+	virtual class cMod_i *getParent() {
+		return this->parent;
+	}
+	virtual void setParent(class cMod_i *newParent) {
+		this->parent = newParent;
 	}
 	virtual class cmSkelModel_i *getSkelModel() {
 		return this;

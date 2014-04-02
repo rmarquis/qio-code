@@ -224,7 +224,9 @@ int ModelEntity::getBoneNumForName(const char *boneName) {
 		return this->modelDecl->getBoneNumForName(boneName);
 	}
 	if(cmSkel == 0) {
-		cmSkel = cm->registerSkelModel(this->renderModelName);
+		if(cm) {
+			cmSkel = cm->registerSkelModel(this->renderModelName);
+		}
 	}
 	if(cmSkel) {
 		return cmSkel->getBoneNumForName(boneName);
@@ -289,6 +291,8 @@ void ModelEntity::getCurrentBonesArray(class boneOrArray_c &out) {
 	}
 }
 bool ModelEntity::setColModel(const char *newCModelName) {
+	if(cm == 0)
+		return true;
 	this->cmod = cm->registerModel(newCModelName);
 	if(this->cmod == 0)
 		return true; // error
@@ -388,20 +392,24 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
 		this->setColModel(value);
 	} else if(!stricmp(key,"size")) {
-		sizes = vec3_c(value);
+		if(cm) {
+			sizes = vec3_c(value);
 #if 0
-		cmBBExts_i *cmBB = cm->registerBoxExts(sizes);
+			cmBBExts_i *cmBB = cm->registerBoxExts(sizes);
 #else
-		aabb bb;
-		bb.maxs.x = sizes.x * 0.5f;
-		bb.maxs.y = sizes.y * 0.5f;
-		bb.maxs.z = sizes.z;
-		bb.mins.x = -bb.maxs.x;
-		bb.mins.y = -bb.maxs.y;
-		bb.mins.z = 0;
-		cMod_i *cmBB = cm->registerAABB(bb);
+			aabb bb;
+			bb.maxs.x = sizes.x * 0.5f;
+			bb.maxs.y = sizes.y * 0.5f;
+			bb.maxs.z = sizes.z;
+			bb.mins.x = -bb.maxs.x;
+			bb.mins.y = -bb.maxs.y;
+			bb.mins.z = 0;
+			cMod_i *cmBB = cm->registerAABB(bb);
 #endif
-		this->setColModel(cmBB);
+			this->setColModel(cmBB);
+		} else {
+
+		}
 	} else if(!stricmp(key,"ragdoll")) {
 		// Doom3 "ragdoll" keyword (name of ArticulatedFigure)
 		this->ragdollDefName = value;

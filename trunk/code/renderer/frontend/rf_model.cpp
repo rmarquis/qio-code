@@ -368,29 +368,33 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 		}
 		ret->initSprite(modName,radius);
 	} else if(modName[0] == '$') {
-		// check for "virtual" Quake3 player models
-		const char *playerModelName = modName+1;
-		// playerModelName is "sarge", "biker", etc...
-		ret->q3PlayerModel = g_declMgr->registerQ3PlayerDecl(playerModelName);
-		if(ret->q3PlayerModel == 0) {
-			g_core->RedWarning("Loading Q3 $player model %s failed\n",modName);
+		if(g_declMgr == 0) {
+			g_core->RedWarning("Cannot load Q3 $player model %s because declManager is not present.\n",modName);
 		} else {
-			ret->type = MOD_Q3PLAYERMODEL; // that's a valid model
+			// check for "virtual" Quake3 player models
+			const char *playerModelName = modName+1;
+			// playerModelName is "sarge", "biker", etc...
+			ret->q3PlayerModel = g_declMgr->registerQ3PlayerDecl(playerModelName);
+			if(ret->q3PlayerModel == 0) {
+				g_core->RedWarning("Loading Q3 $player model %s failed\n",modName);
+			} else {
+				ret->type = MOD_Q3PLAYERMODEL; // that's a valid model
+			}
 		}
-	} else if(g_modelLoader->isKeyFramedModelFile(modName)) {
+	} else if(g_modelLoader && g_modelLoader->isKeyFramedModelFile(modName)) {
 		ret->kfModel = g_modelLoader->loadKeyFramedModelFile(modName);
 		if(ret->kfModel == 0) {
 			g_core->RedWarning("Loading keyframed model %s failed\n",modName);
 		} else {
 			ret->type = MOD_KEYFRAMED; // that's a valid model
 		}
-	} else if(g_modelLoader->isStaticModelFile(modName)) {
+	} else if(g_modelLoader && g_modelLoader->isStaticModelFile(modName)) {
 		ret->staticModel = RF_LoadStaticModel(modNameWithParameters);
 		if(ret->staticModel) {
 			ret->bb = ret->staticModel->getBounds();
 			ret->type = MOD_STATIC; // that's a valid model
 		}
-	} else if(g_modelLoader->isSkelModelFile(modName)) {
+	} else if(g_modelLoader && g_modelLoader->isSkelModelFile(modName)) {
 		ret->skelModel = g_modelLoader->loadSkelModelFile(modName);
 		if(ret->skelModel) {
 			ret->type = MOD_SKELETAL; // that's a valid model
@@ -399,7 +403,7 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 		} else {
 			g_core->RedWarning("Loading of skeletal model %s failed\n",modName);
 		}
-	} else {
+	} else if(g_declMgr) {
 		ret->declModel = g_declMgr->registerModelDecl(modName);
 		if(ret->declModel) {
 			ret->type = MOD_DECL;

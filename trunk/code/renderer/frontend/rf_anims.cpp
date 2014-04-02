@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/hashTableTemplate.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/skelAnimAPI.h>
+#include <api/coreAPI.h>
 
 void rfAnimation_c::clear() {
 	if(api) {
@@ -42,7 +43,12 @@ rfAnimation_c *RF_RegisterAnimation(const char *animName) {
 		return ret;
 	}
 	ret = new rfAnimation_c;
-	ret->api = g_modelLoader->loadSkelAnimFile(animName);
+	if(g_modelLoader) {
+		ret->api = g_modelLoader->loadSkelAnimFile(animName);
+	} else {
+		ret->api = 0;
+		g_core->RedWarning("RF_RegisterAnimation: failed to load animation %s because g_modelLoader API is not present.\n",animName);
+	}
 	ret->name = animName;
 	rf_animations.addObject(ret);
 	return ret;

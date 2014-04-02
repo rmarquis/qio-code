@@ -152,6 +152,8 @@ class pathMap_c {
 		vec3_c zOfs(0,0,32);
 		tr.setupRay(n0->getOrigin()+zOfs,n1->getOrigin()+zOfs);
 		tr.setSphereRadius(32.f);
+		if(cm == 0)
+			return true;
 		if(cm->traceWorldSphere(tr))
 			return false;
 		return true;

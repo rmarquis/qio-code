@@ -46,10 +46,15 @@ btConvexHullShape *BT_ConvexHullShapeFromVerticesArray(const btAlignedObjectArra
 		return 0;
 	// this create an internal copy of the vertices
 	btConvexHullShape *shape = new btConvexHullShape(&(vertices[0].getX()),vertices.size());
+	
 #if 1
 	// This is not needed by physics code itself, but its needed by bt debug drawing.
 	// (without it convex shapes edges are messed up)
 	// This is causing a Bullet assert hit (related to edges) on 20kdm2.bsp
+
+	//
+	//	THIS METHOD is causing MEMORY LEAKS with unmodified Bullet code!
+	//
 	shape->initializePolyhedralFeatures();
 #endif
 	return shape;

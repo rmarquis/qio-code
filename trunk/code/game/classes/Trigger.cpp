@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Trigger.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
+#include <api/coreAPI.h>
 
 static arraySTD_c<Trigger*> g_triggers;
 
@@ -39,6 +40,10 @@ Trigger::~Trigger() {
 	g_triggers.remove(this);
 }
 void Trigger::setTriggerModel(const char *modName) {
+	if(cm == 0) {
+		g_core->RedWarning("Trigger::setTriggerModel: CM module not present\n");
+		return;
+	}
 	this->triggerModel = cm->registerModel(modName);
 	this->recalcABSBounds();
 }

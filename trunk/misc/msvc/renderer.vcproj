@@ -424,6 +424,10 @@
 			Name="math"
 			>
 			<File
+				RelativePath="..\..\code\math\aabb.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\math\aabb.h"
 				>
 			</File>
@@ -491,10 +495,6 @@
 		<Filter
 			Name="shared"
 			>
-			<File
-				RelativePath="..\..\code\math\aabb.cpp"
-				>
-			</File>
 			<File
 				RelativePath="..\..\code\shared\afRagdollHelper.cpp"
 				>

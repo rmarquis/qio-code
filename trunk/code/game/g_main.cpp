@@ -149,7 +149,9 @@ void G_ShutdownGame( int restart ) {
 	G_ShutdownPhysicsEngine();
 	G_ShutdownScriptedClasses();
 	G_ShutdownPathnodesSystem();
-	cm->freeAllModels();
+	if(cm) {
+		cm->freeAllModels();
+	}
 	g_declMgr->onGameShutdown();
 	AUTOCVAR_UnregisterAutoCvars();
 	AUTOCMD_UnregisterAutoConsoleCommands();

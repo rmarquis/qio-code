@@ -49,7 +49,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE;G_ENABLE_LUA_SCRIPTING"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)\game.pch"
 				AssemblerListingLocation="$(IntDir)\"
