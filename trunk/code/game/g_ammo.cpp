@@ -86,6 +86,10 @@ void G_SetAmmoTypePrintName(const char *name, const char *printName) {
 // Loads ammoTypes from Doom3 .def files
 // (New ammoTypes can be added at runtime as well)
 void G_InitAmmoTypes() {
+	if(g_declMgr == 0) {
+		g_core->RedWarning("G_InitAmmoTypes: cannot init ammo types because decl manager is not present.\n");
+		return;
+	}
 	entityDeclAPI_i *ammo_types = g_declMgr->registerEntityDecl("ammo_types");
 	entityDeclAPI_i *ammo_names = g_declMgr->registerEntityDecl("ammo_names");
 	if(ammo_types == 0) {

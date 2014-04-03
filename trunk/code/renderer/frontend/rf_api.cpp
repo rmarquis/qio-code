@@ -254,7 +254,10 @@ public:
 		RF_ShutdownWater();
 		RF_ShutdownExplosions();
 		unloadMaterialSystem();
-		g_declMgr->onRendererShutdown();
+		if(g_declMgr) {
+			// g_declMgr is not necessary for engine to start.
+			g_declMgr->onRendererShutdown();
+		}
 		AUTOCVAR_UnregisterAutoCvars();
 		AUTOCMD_UnregisterAutoConsoleCommands();
 		rb->shutdown(destroyWindow);

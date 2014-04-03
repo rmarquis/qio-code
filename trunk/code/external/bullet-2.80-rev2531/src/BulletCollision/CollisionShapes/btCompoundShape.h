@@ -74,6 +74,8 @@ public:
 
 	virtual ~btCompoundShape();
 
+	void freeChildrenShapes();
+
 	void	addChildShape(const btTransform& localTransform,btCollisionShape* shape);
 
 	/// Remove all children shapes that contain the specified shape

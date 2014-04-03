@@ -39,6 +39,7 @@ m_localScaling(btScalar(1.),btScalar(1.),btScalar(1.))
 
 btCompoundShape::~btCompoundShape()
 {
+	freeChildrenShapes();
 	if (m_dynamicAabbTree)
 	{
 		m_dynamicAabbTree->~btDbvt();
@@ -46,6 +47,17 @@ btCompoundShape::~btCompoundShape()
 	}
 }
 
+void btCompoundShape::freeChildrenShapes()
+{
+	// Vodin fix: free child shapes as well
+	while(m_children.size()) 
+	{
+		btCollisionShape *s = getChildShape(0);
+		removeChildShapeByIndex(0);
+		delete s;
+	}
+	m_children.clear();
+}
 void	btCompoundShape::addChildShape(const btTransform& localTransform,btCollisionShape* shape)
 {
 	m_updateRevision++;

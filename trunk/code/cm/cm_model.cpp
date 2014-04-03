@@ -124,9 +124,10 @@ struct cmMapFileEntity_s {
 		for(u32 i = 0; i < brushes.size(); i++) {
 			delete brushes[i];
 		}
-		// don't free cmSurface_c's, cmTriMesh_c uses them
 		for(u32 i = 0; i < bezierPatches.size(); i++) {
-			//delete bezierPatches[i];
+			if(bezierPatches[i]) {
+				delete bezierPatches[i];
+			}
 		}
 	}
 };
@@ -272,6 +273,7 @@ class cMod_i *CM_LoadModelFromMapFile(const char *fname) {
 		}
 		for(u32 j = 0; j < e->bezierPatches.size(); j++) {
 			cmTriMesh_c *triMesh = new cmTriMesh_c(va("%s::subBezierPatch%i",fname,j),e->bezierPatches[j]);
+			e->bezierPatches[j] = 0;
 			compound->addShape(triMesh);
 		}
 		// add helpers and their brushes

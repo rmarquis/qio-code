@@ -191,7 +191,11 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	renderModelName = newRModelName;
 	// decl models are present on both client and server
 	if(newRModelName[0] != '*') {
-		this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
+		if(g_declMgr) {
+			this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
+		} else {
+			this->modelDecl = 0;
+		}
 	} else {
 		this->modelDecl = 0;
 	}

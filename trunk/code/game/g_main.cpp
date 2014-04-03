@@ -152,7 +152,9 @@ void G_ShutdownGame( int restart ) {
 	if(cm) {
 		cm->freeAllModels();
 	}
-	g_declMgr->onGameShutdown();
+	if(g_declMgr) {
+		g_declMgr->onGameShutdown();
+	}
 	AUTOCVAR_UnregisterAutoCvars();
 	AUTOCMD_UnregisterAutoConsoleCommands();
 }
