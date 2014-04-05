@@ -122,6 +122,9 @@ class staticInteractionBatcher_c {
 		return n;
 	}
 public:
+	~staticInteractionBatcher_c() {
+		this->clear();
+	}
 	int addSurface(class mtrAPI_i *mat, const rIndexBuffer_c *indices) {
 		int index;
 		staticInteractionBatch_c *b = registerBatch(mat,index);

@@ -242,24 +242,6 @@ typedef enum {
 	ERR_DISCONNECT,				// client disconnected from the server
 } errorParm_t;
 
-
-#if !defined(NDEBUG) && !defined(BSPC)
-	#define HUNK_DEBUG
-#endif
-
-typedef enum {
-	h_high,
-	h_low,
-	h_dontcare
-} ha_pref;
-
-#ifdef HUNK_DEBUG
-#define Hunk_Alloc( size, preference )				Hunk_AllocDebug(size, preference, #size, __FILE__, __LINE__)
-void *Hunk_AllocDebug( int size, ha_pref preference, char *label, char *file, int line );
-#else
-void *Hunk_Alloc( int size, ha_pref preference );
-#endif
-
 #define CIN_system	1
 #define CIN_loop	2
 #define	CIN_hold	4

@@ -323,6 +323,15 @@ void mtrStage_c::setBlueAST(class astAPI_i *ast) {
 		rgbGen = new rgbGen_c;
 	rgbGen->setBlueAST(ast);
 }
+void mtrStage_c::setAlphaAST(class astAPI_i *ast) {
+#if 0
+	if(alphaGen == 0)
+		alphaGen = new alphaGen_c;
+	alphaGen->setAlphaAST(ast);
+#else
+	delete ast;
+#endif
+}
 void mtrStage_c::setRGBAGenVertex() {
 	allocRGBGen();
 	rgbGen->setVertex();
@@ -807,6 +816,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
 					}
 					sunParms->setFromColorAndAngles(color,angles);
+				} else if(p.atWord("matter_metal")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_flesh")) {
+					// Prey keyword?
+				} else if(p.atWord("wallwalk")) {
+					// Prey keyword?
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();
@@ -1011,7 +1026,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
 				} else if(p.atWord("alpha")) {
-					p.skipLine();
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setAlphaAST(ast);
+					} else {
+						g_core->RedWarning("Failed to parse 'alpha' AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("zeroClamp")) {
 					// no arguments
 				} else if(p.atWord("colored")) {
@@ -1142,6 +1163,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 					if(scrollVal0 && scrollVal1) {
 						stage->addD3TexModScroll(scrollVal0,scrollVal1);
+					} else {
+						if(scrollVal0)
+							delete scrollVal0;
+						if(scrollVal1)
+							delete scrollVal1;
 					}
 				} else if(p.atWord("scale")) {
 					// example: "scale	0.5 - parm4, 0.5 - parm4"
@@ -1157,6 +1183,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 					if(scaleVal0 && scaleVal1) {
 						stage->addD3TexModScale(scaleVal0,scaleVal1);
+					} else {
+						if(scaleVal0)
+							delete scaleVal0;
+						if(scaleVal1)
+							delete scaleVal1;
 					}
 				} else if(p.atWord("shear")) {
 					// example: "shear	scaleTable[time * 0.1] , 0"
@@ -1172,6 +1203,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 					if(shearVal0 && shearVal1) {
 						stage->addD3TexModShear(shearVal0,shearVal1);
+					} else {
+						if(shearVal0)
+							delete shearVal0;
+						if(shearVal1)
+							delete shearVal1;
 					}
 				} else if(p.atWord("centerScale")) {
 					// example: "centerScale	0.5 - parm4, 0.5 - parm4"
@@ -1187,6 +1223,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 					if(centerScaleVal0 && centerScaleVal1) {
 						stage->addD3TexModCenterScale(centerScaleVal0,centerScaleVal1);
+					} else {
+						if(centerScaleVal0)
+							delete centerScaleVal0;
+						if(centerScaleVal0)
+							delete centerScaleVal1;
 					}
 				} else if(p.atWord("maskRed")) {
 					stage->setMaskRed(true);
@@ -1223,6 +1264,32 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						float val = p.getFloat();
 					}
+				} else if(p.atWord("color")) {
+					// usage: "color <expR expG expB expA>"
+					astAPI_i *expRed = MAT_ParseExpression(p);
+					if(expRed == 0) {
+						g_core->RedWarning("Failed to parse 'color' red value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *expGreen= MAT_ParseExpression(p);
+					if(expGreen == 0) {
+						g_core->RedWarning("Failed to parse 'color' green value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *expBlue = MAT_ParseExpression(p);
+					if(expGreen == 0) {
+						g_core->RedWarning("Failed to parse 'color' blue value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					astAPI_i *expAlpha = MAT_ParseExpression(p);
+					if(expGreen == 0) {
+						g_core->RedWarning("Failed to parse 'color' alpha value AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
+					stage->setRedAST(expRed);
+					stage->setGreenAST(expGreen);
+					stage->setBlueAST(expBlue);
+					stage->setAlphaAST(expAlpha);
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();

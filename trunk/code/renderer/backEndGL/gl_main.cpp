@@ -2669,6 +2669,11 @@ drawOnlyLightmap:
 		screenFBO.destroy();
 		GL_ShutdownGLSLShaders();
 		AUTOCVAR_UnregisterAutoCvars();
+		for(int i = 8; i >= 0; i--) {
+			glActiveTexture(GL_TEXTURE0+i);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 		lastMat = 0;
 		lastLightmap = 0;
 		lastDeluxemap = 0;

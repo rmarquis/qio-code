@@ -1127,7 +1127,7 @@ void CL_ClearMemory(bool shutdownRef)
 	}
 	else {
 		// clear all the client data on the hunk
-		Hunk_ClearToMark();
+		//Hunk_ClearToMark();
 	}
 }
 
@@ -1775,7 +1775,7 @@ void CL_Vid_Restart_f( void ) {
 		if(com_sv_running->integer)
 		{
 			// clear all the client data on the hunk
-			Hunk_ClearToMark();
+//			Hunk_ClearToMark();
 		}
 		else
 		{

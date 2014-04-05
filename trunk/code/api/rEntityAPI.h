@@ -43,6 +43,7 @@ public:
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex) = 0;
 	virtual void setSkin(const char *skinName) = 0;
 	virtual void setNetworkingEntityNumber(int newNetEntNum) = 0;
+	virtual void setEntityType(int newEntityType) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const char *getModelName() const = 0;

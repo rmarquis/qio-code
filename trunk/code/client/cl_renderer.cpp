@@ -38,39 +38,6 @@ static moduleAPI_i *cl_rendererDLL = 0;
 static moduleAPI_i *cl_rendererBackEndDLL = 0;
 rAPI_i *rf;
 
-/*
-============
-CL_RefMalloc
-============
-*/
-void *CL_RefMalloc( int size ) {
-	return Z_TagMalloc( size, TAG_RENDERER );
-}
-
-///*
-//================
-//CL_RefPrintf
-//
-//DLL glue
-//================
-//*/
-//static __attribute__ ((format (printf, 2, 3))) void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
-//	va_list		argptr;
-//	char		msg[MAXPRINTMSG];
-//	
-//	va_start (argptr,fmt);
-//	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-//	va_end (argptr);
-//
-//	if ( print_level == PRINT_ALL ) {
-//		Com_Printf ("%s", msg);
-//	} else if ( print_level == PRINT_WARNING ) {
-//		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-//	} else if ( print_level == PRINT_DEVELOPER ) {
-//		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
-//	}
-//}
-
 int CL_ScaledMilliseconds(void) {
 	return Sys_Milliseconds()*com_timescale->value;
 }

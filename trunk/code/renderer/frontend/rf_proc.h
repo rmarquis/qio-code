@@ -132,7 +132,7 @@ public:
 	bool cullBoundsByPortals(const aabb &absBB);
 
 	void addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl_c *l);
-	void cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal);
+	void cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal, u32 recursionDepth = 0);
 	void cacheLightWorldInteractions(class rLightImpl_c *l);
 
 	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;

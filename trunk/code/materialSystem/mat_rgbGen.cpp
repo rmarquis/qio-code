@@ -26,6 +26,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <shared/ast.h>
 
+// NOTES:
+// it seems that "vertexColor" can be used along with "rgb <expression>" in Doom3.
+// See D3's "textures/decals/bfg_wallmark" from "senetemp.mtr"
+// example:
+/*
+textures/test/somaMaterial
+{
+	
+	{
+		blend		blend
+		map			textures/test/somaMaterial
+		rgb			0.5 + randomTable[time*0.5]
+		vertexColor
+	}
+}
+*/
 rgbGen_c::rgbGen_c() {
 	type = RGBGEN_NONE;
 	asts[0] = 0;
@@ -33,8 +49,11 @@ rgbGen_c::rgbGen_c() {
 	asts[2] = 0;
 }
 rgbGen_c::~rgbGen_c() {
+	this->clear();
+}
+void rgbGen_c::clear() {
 	if(type == RGBGEN_AST) {
-		if(asts[0] == asts[1] && asts[1] == asts[2]) {
+		if(asts[0] && asts[0] == asts[1] && asts[1] == asts[2]) {
 			// single AST for RGB (free it once)
 			asts[0]->destroyAST();
 		} else {
@@ -83,19 +102,29 @@ bool rgbGen_c::parse(class parser_c &p) {
 	return false;
 }
 void rgbGen_c::setRGBGenAST(class astAPI_i *newAST) {
+	this->clear();
 	type = RGBGEN_AST;
 	asts[0] = asts[1] = asts[2] = newAST;
 }
 void rgbGen_c::setRedAST(class astAPI_i *newAST) {
 	type = RGBGEN_AST;
+	// don't overwrite pointer to existing AST, free it.
+	if(asts[0])
+		delete asts[0];
 	asts[0] = newAST;
 }
 void rgbGen_c::setGreenAST(class astAPI_i *newAST) {
 	type = RGBGEN_AST;
+	// don't overwrite pointer to existing AST, free it.
+	if(asts[1])
+		delete asts[1];
 	asts[1] = newAST;
 }
 void rgbGen_c::setBlueAST(class astAPI_i *newAST) {
 	type = RGBGEN_AST;
+	// don't overwrite pointer to existing AST, free it.
+	if(asts[2])
+		delete asts[2];
 	asts[2] = newAST;
 }
 void rgbGen_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const {
@@ -119,6 +148,7 @@ void rgbGen_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) 
 	}
 }
 void rgbGen_c::setVertex() {
+	this->clear();
 	type = RGBGEN_VERTEX;
 }
 

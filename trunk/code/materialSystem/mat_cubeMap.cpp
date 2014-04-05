@@ -132,6 +132,12 @@ public:
 			}
 		}
 		rb->uploadCubeMap(this,imgs);
+		for(u32 i = 0; i < 6; i++) {
+			imageData_s &img = imgs[i];
+			if(img.pic) {
+				g_img->freeImageData(img.pic);
+			}
+		}
 	}
 	cubemapIMPL_c *getHashNext() {
 		return hashNext;
@@ -154,7 +160,9 @@ class cubeMapAPI_i *MAT_RegisterCubeMap(const char *texName, bool forceReload) {
 	ret = new cubemapIMPL_c;
 	ret->setName(texName);
 	ret->loadCubeMap();
-	mat_cubeMaps.addObject(ret);
+	if(mat_cubeMaps.addObject(ret)) {
+		mat_cubeMaps.addObject(ret,true);
+	}
 	return ret;
 }
 void MAT_FreeAllCubeMaps() {

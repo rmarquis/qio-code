@@ -748,7 +748,6 @@ void		Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int 
 int			Com_EventLoop( void );
 sysEvent_t	Com_GetSystemEvent( void );
 
-char		*CopyString( const char *in );
 void		Info_Print( const char *s );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
@@ -821,72 +820,13 @@ extern	bool	com_fullyInitialized;
 extern	fileHandle_t	com_journalFile;
 extern	fileHandle_t	com_journalDataFile;
 
-typedef enum {
-	TAG_FREE,
-	TAG_GENERAL,
-	TAG_BOTLIB,
-	TAG_RENDERER,
-	TAG_SMALL,
-	TAG_STATIC
-} memtag_t;
-
-/*
-
---- low memory ----
-server vm
-server clipmap
----mark---
-renderer initialization (shaders, etc)
-UI vm
-cgame vm
-renderer map
-renderer models
-
----free---
-
-temp file loading
---- high memory ---
-
-*/
-
-#if !defined(NDEBUG) && !defined(BSPC)
-	#define ZONE_DEBUG
-#endif
-
-#ifdef ZONE_DEBUG
-#define Z_TagMalloc(size, tag)			Z_TagMallocDebug(size, tag, #size, __FILE__, __LINE__)
-#define Z_Malloc(size)					Z_MallocDebug(size, #size, __FILE__, __LINE__)
-#define S_Malloc(size)					S_MallocDebug(size, #size, __FILE__, __LINE__)
-void *Z_TagMallocDebug( int size, int tag, char *label, char *file, int line );	// NOT 0 filled memory
-void *Z_MallocDebug( int size, char *label, char *file, int line );			// returns 0 filled memory
-void *S_MallocDebug( int size, char *label, char *file, int line );			// returns 0 filled memory
-#else
-void *Z_TagMalloc( int size, int tag );	// NOT 0 filled memory
-void *Z_Malloc( int size );			// returns 0 filled memory
-void *S_Malloc( int size );			// NOT 0 filled memory only for small allocations
-#endif
-void Z_Free( void *ptr );
-void Z_FreeTags( int tag );
-int Z_AvailableMemory( void );
-void Z_LogHeap( void );
-
-void Hunk_Clear( void );
-void Hunk_ClearToMark( void );
-void Hunk_SetMark( void );
-bool Hunk_CheckMark( void );
-void Hunk_ClearTempMemory( void );
-void *Hunk_AllocateTempMemory( int size );
-void Hunk_FreeTempMemory( void *buf );
-int	Hunk_MemoryRemaining( void );
-void Hunk_Log( void);
-
-void Com_TouchMemory( void );
 
 // commandLine should not include the executable name (argv[0])
 void Com_Init( char *commandLine );
 void Com_Frame( void );
 void Com_Shutdown( void );
 
+void Hunk_Clear( void );
 
 /*
 ==============================================================

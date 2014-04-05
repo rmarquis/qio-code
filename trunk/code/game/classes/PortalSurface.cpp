@@ -24,13 +24,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 // PortalSurface.cpp - Quake3 portal/mirror class
 
 #include "PortalSurface.h"
-#include "../g_local.h"
+#include <shared/entityType.h>
 
 DEFINE_CLASS(PortalSurface, "BaseEntity");
 DEFINE_CLASS_ALIAS(PortalSurface, misc_portal_surface);
 
 PortalSurface::PortalSurface() {
-	this->myEdict->s->eType = ET_PORTAL;
+	this->setEntityType(ET_PORTAL);
 }
 PortalSurface::~PortalSurface() {
 

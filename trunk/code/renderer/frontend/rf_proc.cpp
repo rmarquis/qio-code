@@ -639,12 +639,16 @@ void procTree_c::addSingleAreaSurfacesInteractions(int areaNum, class rLightImpl
 		l->addProcAreaSurfaceInteraction(areaNum,sf,SIFT_ONLY_LIGHTING);
 	}
 }
-void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal) {
+void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNum, const frustumExt_c &fr, procPortal_c *prevPortal, u32 recursionDepth) {
 	if(areaNum >= areas.size() || areaNum < 0)
 		return;
 	procArea_c *ar = areas[areaNum];
 	if(ar == 0)
 		return;
+	// current algorithm still causes stack overflow in some very rare cases
+	if(recursionDepth > 64) {
+		return;
+	}
 	addSingleAreaSurfacesInteractions(areaNum,l);
 	for(u32 i = 0; i < ar->portals.size(); i++) {
 		procPortal_c *p = ar->portals[i];
@@ -671,9 +675,9 @@ void procTree_c::cacheLightWorldInteractions_r(class rLightImpl_c *l, int areaNu
 		frustumExt_c adjusted;
 		adjusted.adjustFrustum(fr,l->getOrigin(),p->points,p->plane);
 		if(p->areas[0] == areaNum) {
-			cacheLightWorldInteractions_r(l,p->areas[1],adjusted,p);
+			cacheLightWorldInteractions_r(l,p->areas[1],adjusted,p,recursionDepth+1);
 		} else {
-			cacheLightWorldInteractions_r(l,p->areas[0],adjusted,p);
+			cacheLightWorldInteractions_r(l,p->areas[0],adjusted,p,recursionDepth+1);
 		}
 	}
 }

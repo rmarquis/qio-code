@@ -32,13 +32,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/simplePathAPI.h>
 #include "../g_local.h"
 #include "../g_pathNodes.h"
+#include <shared/entityType.h>
 
 DEFINE_CLASS(InfoPathNode, "BaseEntity");
 DEFINE_CLASS_ALIAS(InfoPathNode, info_pathnode);
 
 InfoPathNode::InfoPathNode() {
 	pathNode = 0;
-	this->myEdict->s->eType = ET_PATHNODE;
+	this->setEntityType(ET_PATHNODE);
 }
 InfoPathNode::~InfoPathNode() {
 	if(pathNode) {

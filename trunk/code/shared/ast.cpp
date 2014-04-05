@@ -28,6 +28,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ast.h"
 #include <api/coreAPI.h>
 
+
+#if 1
+#define AST_SAVE_SOURCE_STRING
+#endif
+#define MAX_AST_RECURSION_DEPTH 128
+
 enum parseState_e {
 	PS_WHITESPACES,
 	PS_NUMBER,
@@ -50,13 +56,14 @@ enum operator_e {
 	OP_DIV, // '/'
 	OP_MOD, // '%'
 	OP_EQUAL, // "=="
+	OP_NOT_EQUAL, // "!="
 	OP_LESS, // "<"
 	OP_GREATER, // ">"
 	OP_LESS_OR_EQUAL, // "<="
 	OP_GREATER_OR_EQUAL, // ">="
 };
 u32 OP_GetPriority(operator_e op) {
-	if(op == OP_EQUAL || op == OP_LESS || op == OP_GREATER || op == OP_LESS_OR_EQUAL || op == OP_GREATER_OR_EQUAL)
+	if(op == OP_NOT_EQUAL ||op == OP_EQUAL || op == OP_LESS || op == OP_GREATER || op == OP_LESS_OR_EQUAL || op == OP_GREATER_OR_EQUAL)
 		return 5;
 	if(op == OP_MOD)
 		return 7;
@@ -179,6 +186,13 @@ operator_e OperatorForString(const char *s, const char **p) {
 			}
 			return OP_EQUAL;
 		}
+	} else if(s[0] == '!') {
+		if(s[1] == '=') {
+			if(p) {
+				*p = s + 2;
+			}
+			return OP_NOT_EQUAL;
+		}
 	}
 	return OP_BAD;
 }
@@ -250,6 +264,8 @@ public:
 				ret = a / b;
 			} else if(opType == OP_EQUAL) {
 				ret = a == b;
+			} else if(opType == OP_NOT_EQUAL) {
+				ret = a != b;
 			} else if(opType == OP_MOD) {
 				ret = int(a) % int(b);
 			} else if(opType == OP_GREATER) {
@@ -303,6 +319,10 @@ public:
 };
 class ast_c : public astAPI_i {
 	astNode_c *root;
+#ifdef AST_SAVE_SOURCE_STRING
+	// char array, and not a string class because it's easier to debug memory leaks this way.
+	char sourceString[128];
+#endif
 public:
 	ast_c() {
 		root = 0;
@@ -310,6 +330,15 @@ public:
 	~ast_c() {
 		delete root;
 	}
+#ifdef AST_SAVE_SOURCE_STRING
+	void setSourceString(const char *s) {
+		u32 len = strlen(s);
+		if(len > sizeof(sourceString))
+			len = sizeof(sourceString)-1;
+		memcpy(sourceString,s,len);
+		sourceString[len] = 0;
+	}
+#endif
 	void setRootNode(astNode_c *newRoot) {
 		root = newRoot;
 	}
@@ -398,7 +427,13 @@ class astParser_c {
 		// error, closing bracket not found
 		return 0;
 	}
-	class astNode_c *buildNode_r(u32 start, u32 stop) {
+	class astNode_c *buildNode_r(u32 start, u32 stop, u32 recursionDepth) {
+		// check for stack overflow (it still might happen in some rare cases...)
+		if(recursionDepth > MAX_AST_RECURSION_DEPTH) {
+			g_core->RedWarning("astParser_c::buildNode_r: recursion depth higher than MAX_AST_RECURSION_DEPTH, interrupting.\n");
+			bError = true;
+			return 0;
+		}
 		if(stop < start) {
 			bError = true;
 			return 0;
@@ -417,8 +452,8 @@ class astParser_c {
 		u32 idx = findLexemWithLowestPriority(start,stop);;
 		const astLexem_s &lex = lexems[idx];
 		if(lex.isOperator()) {
-			astNode_c *left = buildNode_r(start,idx);
-			astNode_c *right = buildNode_r(idx+1,stop);
+			astNode_c *left = buildNode_r(start,idx,recursionDepth+1);
+			astNode_c *right = buildNode_r(idx+1,stop,recursionDepth+1);
 			astNode_c *ret = new astNode_c;
 			ret->setOperator(lex.opType);
 			ret->setChild(0,left);
@@ -430,7 +465,7 @@ class astParser_c {
 				return 0;
 			}
 			u32 right = findClosingBracket(left);
-			astNode_c *arrayIndex = buildNode_r(left+1,right);
+			astNode_c *arrayIndex = buildNode_r(left+1,right,recursionDepth+1);
 			astNode_c *ret = new astNode_c;
 			ret->setVariable(lex.value);
 			ret->setType(ANT_GETARRAYELEMENT);
@@ -539,7 +574,7 @@ public:
 	}
 	ast_c *buildAST() {
 		bError = false;
-		astNode_c *root = buildNode_r(0,lexems.size());
+		astNode_c *root = buildNode_r(0,lexems.size(),0);
 		if(root == 0) {
 			return 0;
 		}
@@ -556,5 +591,10 @@ class astAPI_i *AST_ParseExpression(const char *s) {
 		return 0;
 	}
 	ast_c *ret = ap.buildAST();
+#ifdef AST_SAVE_SOURCE_STRING
+	if(ret) {
+		ret->setSourceString(s);
+	}
+#endif
 	return ret;
 }

@@ -505,7 +505,7 @@ static void CL_GetClipboardData( char *buf, int buflen ) {
 
 	Q_strncpyz( buf, cbd, buflen );
 
-	Z_Free( cbd );
+	free( cbd );
 }
 
 /*
@@ -523,7 +523,7 @@ Key_GetBindingBuf
 ====================
 */
 static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
-	char	*value;
+	const char	*value;
 
 	value = Key_GetBinding( keynum );
 	if ( value ) {

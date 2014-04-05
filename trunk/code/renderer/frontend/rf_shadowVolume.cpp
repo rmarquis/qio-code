@@ -75,15 +75,15 @@ void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, con
 	if(d < 0)
 		return;
 	vec3_c p0Projected = p0 - light;
-	p0Projected.normalize();
+	p0Projected.normalizeFast();
 	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
-	p1Projected.normalize();
+	p1Projected.normalizeFast();
 	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 	vec3_c p2Projected = p2 - light;
-	p2Projected.normalize();
+	p2Projected.normalizeFast();
 	p2Projected *= getShadowVolumeInf();
 	p2Projected += p2;
 
@@ -106,15 +106,15 @@ void rIndexedShadowVolume_c::addTriangle(const vec3_c &p0, const vec3_c &p1, con
 }
 void rIndexedShadowVolume_c::addFrontCapAndBackCapForTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2, const vec3_c &light) {
 	vec3_c p0Projected = p0 - light;
-	p0Projected.normalize();
+	p0Projected.normalizeFast();
 	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
-	p1Projected.normalize();
+	p1Projected.normalizeFast();
 	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 	vec3_c p2Projected = p2 - light;
-	p2Projected.normalize();
+	p2Projected.normalizeFast();
 	p2Projected *= getShadowVolumeInf();
 	p2Projected += p2;
 
@@ -143,11 +143,11 @@ void rIndexedShadowVolume_c::addFrontCapAndBackCapForIndexedVertsList(const rInd
 }
 void rIndexedShadowVolume_c::addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light) {
 	vec3_c p0Projected = p0 - light;
-	p0Projected.normalize();
+	p0Projected.normalizeFast();
 	p0Projected *= getShadowVolumeInf();
 	p0Projected += p0;
 	vec3_c p1Projected = p1 - light;
-	p1Projected.normalize();
+	p1Projected.normalizeFast();
 	p1Projected *= getShadowVolumeInf();
 	p1Projected += p1;
 
@@ -329,7 +329,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			if(bPointTransformed[vi0] == 0) {
 				bPointTransformed[vi0] = 1;
 				p0Projected = p0 - light;
-				p0Projected.normalize();
+				p0Projected.normalizeFast();
 				p0Projected *= getShadowVolumeInf();
 				p0Projected += p0;
 			}
@@ -337,7 +337,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			if(bPointTransformed[vi1] == 0) {
 				bPointTransformed[vi1] = 1;
 				p1Projected = p1 - light;
-				p1Projected.normalize();
+				p1Projected.normalizeFast();
 				p1Projected *= getShadowVolumeInf();
 				p1Projected += p1;
 			}
@@ -345,7 +345,7 @@ void rIndexedShadowVolume_c::addIndexedVertexList(const rIndexBuffer_c &oIndices
 			if(bPointTransformed[vi2] == 0) {
 				bPointTransformed[vi2] = 1;
 				p2Projected = p2 - light;
-				p2Projected.normalize();
+				p2Projected.normalizeFast();
 				p2Projected *= getShadowVolumeInf();
 				p2Projected += p2;
 			}
@@ -615,6 +615,10 @@ void rIndexedShadowVolume_c::addDirectionalIndexedVertexList(const rIndexBuffer_
 
 void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius) {
 	clear();
+	if(m == 0) {
+		g_core->RedWarning("rIndexedShadowVolume_c::fromRModel: NULL model pointer.\n");
+		return;
+	}
 	this->points.setEqualVertexEpsilon(0.f);
 #if 0
 	((r_model_c*)m)->precalculateStencilShadowCaster();

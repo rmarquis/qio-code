@@ -71,25 +71,6 @@ void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd );
 
 //===================================================================================
 
-//---------------------------------------------------------
-//
-// entityState_s->eType
-//
-typedef enum {
-	ET_GENERAL,
-	ET_PLAYER,
-	// dynamic light entity
-	ET_LIGHT,
-	// camera view portal; used for example on q3dm0
-	ET_PORTAL, // classname: misc_portal_surface
-	// server-only entity for triggers
-	ET_TRIGGER, 
-	// path node for AI navigation (server-only)
-	// the classname is: "info_pathnode"
-	ET_PATHNODE,
-} entityType_t;
-
-
 void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, bool snap );
 
 #endif // __BG_PUBLIC_H__

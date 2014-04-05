@@ -26,13 +26,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
+#include <shared/entityType.h>
 
 static arraySTD_c<Trigger*> g_triggers;
 
 DEFINE_CLASS(Trigger, "BaseEntity");
 
 Trigger::Trigger() {
-	this->myEdict->s->eType = ET_TRIGGER;
+	this->setEntityType(ET_TRIGGER);
 	g_triggers.push_back(this);
 	this->triggerModel = 0;
 }

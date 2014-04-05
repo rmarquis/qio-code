@@ -56,9 +56,10 @@ public:
 
 class tableList_c : public tableListAPI_i {
 	TABLE_FindTableTextFunc_t findTextFunc;
-	mutable hashTableTemplate_c<table_c> tables;
+	mutable hashTableTemplateExt_c<table_c> tables;
 public:
 	tableList_c(TABLE_FindTableTextFunc_t newFindTextFunc);
+	~tableList_c();
 
 	virtual float getTableValue(const char *tableName, float index) const;
 };

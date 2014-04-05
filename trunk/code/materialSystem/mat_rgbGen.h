@@ -39,6 +39,8 @@ public:
 	rgbGen_c();
 	~rgbGen_c();
 
+	void clear();
+
 	bool parse(class parser_c &p);
 	void setRGBGenAST(class astAPI_i *newAST);
 	void setRedAST(class astAPI_i *newAST);

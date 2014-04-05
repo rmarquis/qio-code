@@ -373,9 +373,9 @@ bool CL_OpenAVIForWriting( const char *fileName )
   // Allocate a bit more space for the capture buffer to account for possible
   // padding at the end of pixel lines, and padding for alignment
   #define MAX_PACK_LEN 16
-  afd.cBuffer = (byte*)Z_Malloc((afd.width * 3 + MAX_PACK_LEN - 1) * afd.height + MAX_PACK_LEN - 1);
+  afd.cBuffer = (byte*)malloc((afd.width * 3 + MAX_PACK_LEN - 1) * afd.height + MAX_PACK_LEN - 1);
   // raw avi files have pixel lines start on 4-byte boundaries
-  afd.eBuffer = (byte*)Z_Malloc(PAD(afd.width * 3, AVI_LINE_PADDING) * afd.height);
+  afd.eBuffer = (byte*)malloc(PAD(afd.width * 3, AVI_LINE_PADDING) * afd.height);
 
   //afd.a.rate = dma.speed;
   //afd.a.format = WAV_FORMAT_PCM;
@@ -656,8 +656,8 @@ bool CL_CloseAVI( void )
 
   SafeFS_Write( buffer, bufIndex, afd.f );
 
-  Z_Free( afd.cBuffer );
-  Z_Free( afd.eBuffer );
+  free( afd.cBuffer );
+  free( afd.eBuffer );
   FS_FCloseFile( afd.f );
 
   Com_Printf( "Wrote %d:%d frames to %s\n", afd.numVideoFrames, afd.numAudioFrames, afd.fileName );

@@ -223,7 +223,10 @@ void svBSP_c::filterBB_r(const class aabb &bb, struct bspBoxDesc_s &out, int nod
 }
 void svBSP_c::filterBB(const class aabb &bb, struct bspBoxDesc_s &out) const {
 	out.clear();
-	if(h == 0) {
+	if(nodes.size() == 0) {
+		out.areas.push_back(0);
+		out.leaves.push_back(0);
+		out.clusters.push_back(0);
 		return;
 	}
 	filterBB_r(bb,out,0);

@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2013 V.
+Copyright (C) 2014 V.
 
 This file is part of Qio source code.
 
@@ -21,26 +21,28 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// shared/ast.h - Abstract Syntax Tree for Doom3 material expressions evaluation
-#ifndef __SHARED_AST_H__
-#define __SHARED_AST_H__
+// entityType.h
+#ifndef __SHARED_ENTITYTYPE_H__
+#define __SHARED_ENTITYTYPE_H__
 
-#include "typedefs.h"
-
-class astInputAPI_i {
-public:
-	virtual float getTableValue(const char *tableName, float index) const = 0;
-	virtual float getVariableValue(const char *varName) const = 0;
+//
+// entityState_s->eType
+//
+enum entityType_e {
+	ET_GENERAL,
+	ET_PLAYER,
+	// dynamic light entity
+	ET_LIGHT,
+	// camera view portal; used for example on q3dm0
+	ET_PORTAL, // classname: misc_portal_surface
+	// server-only entity for triggers
+	ET_TRIGGER, 
+	// path node for AI navigation (server-only)
+	// the classname is: "info_pathnode"
+	ET_PATHNODE,
+	// static object (used heavily on Doom3 maps)
+	ET_FUNC_STATIC,
 };
-class astAPI_i {
-public:
-	virtual ~astAPI_i() { }
 
-	virtual astAPI_i *duplicateAST() const = 0;
-	virtual void destroyAST() = 0;
-	virtual float execute(const class astInputAPI_i *in) const = 0;
-};
+#endif // __SHARED_ENTITYTYPE_H__
 
-class astAPI_i *AST_ParseExpression(const char *s);
-
-#endif // __SHARED_AST_H__

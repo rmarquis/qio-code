@@ -52,6 +52,8 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 protected:
 	// called through eventReceiverBaseAPI_i
 	virtual void processEvent(class eventBaseAPI_i *ev);
+	// sets the entity type
+	void setEntityType(int newEType);
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
 public:

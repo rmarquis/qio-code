@@ -35,10 +35,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/boneOrQP.h>
 #include <shared/quake3Anims.h>
 #include <shared/colorTable.h>
+#include <shared/entityType.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
 static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
 static aCvar_c cg_ignoreBakedLights("cg_ignoreBakedLights","0");
+static aCvar_c cg_printInitialSnapshots("cg_printInitialSnapshots","0");
 
 /*
 ==================
@@ -168,6 +170,9 @@ static void CG_TransitionEntity( centity_t *cent ) {
 		}
 		CG_TransitionModel(cent);
 	}
+	if(cent->rEnt) {
+		cent->rEnt->setEntityType(cent->currentState.eType);
+	}
 
 	// clear the next state.  if will be set by the next CG_SetNextSnap
 	cent->interpolate = false;
@@ -242,6 +247,10 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	int				i;
 	centity_t		*cent;
 	entityState_s	*state;
+
+	if(cg_printInitialSnapshots.getInt()) {
+		g_core->Print("CG_SetInitialSnapshot: snap sequence %i, serverTime %i.\n",snap->serverCommandSequence,snap->serverTime);
+	}
 
 	cg.snap = snap;
 

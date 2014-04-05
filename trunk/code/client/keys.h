@@ -21,11 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "keycodes.h"
 #include <api/vfsAPI.h>
+#include <shared/str.h>
 
 typedef struct {
 	bool	down;
 	int			repeats;		// if > 1, it is autorepeating
-	char		*binding;
+	str		binding;
 } qkey_t;
 
 extern	bool	key_overstrikeMode;
@@ -48,7 +49,7 @@ extern	int			chat_playerNum;
 
 void Key_WriteBindings( fileHandle_t f );
 void Key_SetBinding( int keynum, const char *binding );
-char *Key_GetBinding( int keynum );
+const char *Key_GetBinding( int keynum );
 bool Key_IsDown( int keynum );
 bool Key_GetOverstrikeMode( void );
 void Key_SetOverstrikeMode( bool state );

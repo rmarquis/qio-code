@@ -210,7 +210,7 @@ char *Sys_GetClipboardData( void )
 
 		if ( ( hClipboardData = GetClipboardData( CF_TEXT ) ) != 0 ) {
 			if ( ( cliptext = (char*)GlobalLock( hClipboardData ) ) != 0 ) {
-				data = (char*)Z_Malloc( GlobalSize( hClipboardData ) + 1 );
+				data = (char*)malloc( GlobalSize( hClipboardData ) + 1 );
 				Q_strncpyz( data, cliptext, GlobalSize( hClipboardData ) );
 				GlobalUnlock( hClipboardData );
 				
@@ -384,7 +384,7 @@ void Sys_ListFilteredFiles( const char *basedir, char *subdirs, const char *filt
 		Com_sprintf( filename, sizeof(filename), "%s\\%s", subdirs, findinfo.name );
 		if (!Com_FilterPath( filter, filename, false ))
 			continue;
-		list[ *numfiles ] = CopyString( filename );
+		list[ *numfiles ] = strdup( filename );
 		(*numfiles)++;
 	} while ( _findnext (findhandle, &findinfo) != -1 );
 
@@ -438,9 +438,9 @@ void ListFilesIn(const char *dir, const char *ext, int &nfiles, char *list[MAX_F
 		if(baseDirLen) {
 			char fullPath[MAX_OSPATH];
 			Com_sprintf( fullPath, sizeof(fullPath), "%s\\%s", dir, findinfo.name );
-			list[ nfiles ] = CopyString( fullPath+baseDirLen+1 );
+			list[ nfiles ] = strdup( fullPath+baseDirLen+1 );
 		} else {
-			list[ nfiles ] = CopyString( findinfo.name );
+			list[ nfiles ] = strdup( findinfo.name );
 		}
 		nfiles++;
 	} while ( _findnext (findhandle, &findinfo) != -1 );
@@ -475,7 +475,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 		if (!nfiles)
 			return NULL;
 
-		listCopy = (char**)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
+		listCopy = (char**)malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
 		for ( i = 0 ; i < nfiles ; i++ ) {
 			listCopy[i] = list[i];
 		}
@@ -520,7 +520,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 		return NULL;
 	}
 
-	listCopy = (char**)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
+	listCopy = (char**)malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
 	for ( i = 0 ; i < nfiles ; i++ ) {
 		listCopy[i] = list[i];
 	}
@@ -555,10 +555,10 @@ void Sys_FreeFileList( char **list )
 	}
 
 	for ( i = 0 ; list[i] ; i++ ) {
-		Z_Free( list[i] );
+		free( list[i] );
 	}
 
-	Z_Free( list );
+	free( list );
 }
 
 

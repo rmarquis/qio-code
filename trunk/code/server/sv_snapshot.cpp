@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "server.h"
 #include <shared/autoCvar.h>
+#include <shared/entityType.h>
 
 static aCvar_c sv_debugPlayerSnapshotEntities("sv_debugPlayerSnapshotEntities","-1");
 
@@ -531,7 +532,7 @@ static void SV_WriteVoipToClient(client_t *cl, msg_t *msg)
 	        		MSG_WriteData(msg, packet->data, packet->len);
                         }
 
-			Z_Free(packet);
+			free(packet);
 		}
 
 		cl->queuedVoipPackets -= i;

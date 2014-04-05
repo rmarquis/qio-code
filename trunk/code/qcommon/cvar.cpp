@@ -344,8 +344,8 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 		if(var->flags & CVAR_USER_CREATED)
 		{
 			var->flags &= ~CVAR_USER_CREATED;
-			Z_Free( var->resetString );
-			var->resetString = CopyString( var_value );
+			free( var->resetString );
+			var->resetString = strdup( var_value );
 
 			if(flags & CVAR_ROM)
 			{
@@ -353,9 +353,9 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 				// so force it to value given by the engine.
 
 				if(var->latchedString)
-					Z_Free(var->latchedString);
+					free(var->latchedString);
 				
-				var->latchedString = CopyString(var_value);
+				var->latchedString = strdup(var_value);
 			}
 		}
 		
@@ -388,8 +388,8 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 		// only allow one non-empty reset string without a warning
 		if ( !var->resetString[0] ) {
 			// we don't have a reset string yet
-			Z_Free( var->resetString );
-			var->resetString = CopyString( var_value );
+			free( var->resetString );
+			var->resetString = strdup( var_value );
 		} else if ( var_value[0] && strcmp( var->resetString, var_value ) ) {
 			Com_DPrintf( "Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n",
 				var_name, var->resetString, var_value );
@@ -401,7 +401,7 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 			s = var->latchedString;
 			var->latchedString = NULL;	// otherwise cvar_set2 would free it
 			Cvar_Set2( var_name, s, true );
-			Z_Free( s );
+			free( s );
 		}
 
 		// ZOID--needs to be set so that cvars the game sets as 
@@ -435,13 +435,13 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 	if(index >= cvar_numIndexes)
 		cvar_numIndexes = index + 1;
 		
-	var->name = CopyString (var_name);
-	var->string = CopyString (var_value);
+	var->name = strdup (var_name);
+	var->string = strdup (var_value);
 	var->modified = true;
 	var->modificationCount = 1;
 	var->value = atof (var->string);
 	var->integer = atoi(var->string);
-	var->resetString = CopyString( var_value );
+	var->resetString = strdup( var_value );
 	var->validate = false;
 
 	// link the variable in
@@ -541,7 +541,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 	{
 		if(!strcmp(value, var->string))
 		{
-			Z_Free(var->latchedString);
+			free(var->latchedString);
 			var->latchedString = NULL;
 			return var;
 		}
@@ -575,7 +575,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 			{
 				if (strcmp(value, var->latchedString) == 0)
 					return var;
-				Z_Free (var->latchedString);
+				free (var->latchedString);
 			}
 			else
 			{
@@ -584,7 +584,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 			}
 
 			Com_Printf ("%s will be changed upon restarting.\n", var_name);
-			var->latchedString = CopyString(value);
+			var->latchedString = strdup(value);
 			var->modified = true;
 			var->modificationCount++;
 			return var;
@@ -601,7 +601,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 	{
 		if (var->latchedString)
 		{
-			Z_Free (var->latchedString);
+			free (var->latchedString);
 			var->latchedString = NULL;
 		}
 	}
@@ -612,9 +612,9 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 	var->modified = true;
 	var->modificationCount++;
 	
-	Z_Free (var->string);	// free the old value string
+	free (var->string);	// free the old value string
 	
-	var->string = CopyString(value);
+	var->string = strdup(value);
 	var->value = atof (var->string);
 	var->integer = atoi (var->string);
 
@@ -740,7 +740,7 @@ void Cvar_SetCheatState(void)
 			// because of a different var->latchedString
 			if (var->latchedString)
 			{
-				Z_Free(var->latchedString);
+				free(var->latchedString);
 				var->latchedString = NULL;
 			}
 			if (strcmp(var->resetString,var->string))
@@ -1042,13 +1042,13 @@ cvar_s *Cvar_Unset(cvar_s *cv)
 	cvar_s *next = cv->next;
 
 	if(cv->name)
-		Z_Free(cv->name);
+		free(cv->name);
 	if(cv->string)
-		Z_Free(cv->string);
+		free(cv->string);
 	if(cv->latchedString)
-		Z_Free(cv->latchedString);
+		free(cv->latchedString);
 	if(cv->resetString)
-		Z_Free(cv->resetString);
+		free(cv->resetString);
 
 	if(cv->prev)
 		cv->prev->next = cv->next;

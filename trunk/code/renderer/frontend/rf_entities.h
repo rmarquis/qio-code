@@ -78,6 +78,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	u32 animatedEntityUpdateFrame;
 	// corresponding serverside entity index
 	int networkingEntityNumber;
+	// entityType_e
+	int entityType;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -116,6 +118,9 @@ public:
 	virtual void setNetworkingEntityNumber(int newNetEntNum) {
 		networkingEntityNumber = newNetEntNum;
 	}
+	virtual void setEntityType(int newEntityType) {
+		entityType = newEntityType;
+	}
 
 	virtual void hideModel();
 	virtual void showModel();
@@ -147,6 +152,9 @@ public:
 	}
 	const arraySTD_c<u32> &getTouchingAreas() const {
 		return touchingAreas;
+	}
+	int getEntityType() const {
+		return entityType;
 	}
 
 	virtual rModelAPI_i *getModel() const;

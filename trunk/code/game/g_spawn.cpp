@@ -135,6 +135,8 @@ BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName) {
 	return ret;
 }
 BaseEntity *G_SpawnEntityFromEntDecl(const char *declName) {
+	if(g_declMgr == 0)
+		return 0; // decl system was not present
 	entityDeclAPI_i *decl = g_declMgr->registerEntityDecl(declName);
 	if(decl == 0)
 		return 0;

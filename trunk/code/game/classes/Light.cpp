@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Light.h"
 #include "../g_local.h"
 #include <shared/eventBaseAPI.h>
+#include <shared/entityType.h>
 #include <api/coreAPI.h>
 
 DEFINE_CLASS(Light, "BaseEntity");
@@ -35,7 +36,7 @@ DEFINE_CLASS_ALIAS(Light, idLight);
 DEFINE_CLASS_ALIAS(Light, hhLight);
 
 Light::Light() {
-	this->myEdict->s->eType = ET_LIGHT;
+	this->setEntityType(ET_LIGHT);
 	setRadius(512.f);
 }
 void Light::setRadius(float newRadius) {

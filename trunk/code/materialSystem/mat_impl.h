@@ -347,6 +347,7 @@ public:
 	void setRedAST(class astAPI_i *ast);
 	void setGreenAST(class astAPI_i *ast);
 	void setBlueAST(class astAPI_i *ast);
+	void setAlphaAST(class astAPI_i *ast);
 	// custom GPU shader for stage
 	void setProgramName(const char *newProgram) {
 		programName = newProgram;

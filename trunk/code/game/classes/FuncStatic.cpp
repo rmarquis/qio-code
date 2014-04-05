@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // FuncStatic.cpp
 #include "FuncStatic.h"
+#include <shared/entityType.h>
 
 DEFINE_CLASS(FuncStatic, "ModelEntity");
 DEFINE_CLASS_ALIAS(FuncStatic, func_static);
@@ -33,5 +34,6 @@ DEFINE_CLASS_ALIAS(FuncStatic, func_mover);
 FuncStatic::FuncStatic() {
 	//bPhysicsBodyKinematic = true;
 	mass = 0.f;
+	this->setEntityType(ET_FUNC_STATIC);
 }
 

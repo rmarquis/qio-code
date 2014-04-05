@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/eventBaseAPI.h>
 #include <shared/autoCvar.h>
 #include <api/entDefAPI.h>
+#include <shared/entityType.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 // Quake3 "misc_teleporter_dest" for q3dm0 teleporter 
@@ -186,6 +187,9 @@ void BaseEntity::applyKeyValues(const entDefAPI_i *list) {
 		list->getKeyValue(i, &k, &v);
 		setKeyValue(k,v);
 	}
+}
+void BaseEntity::setEntityType(int newEType) {
+	_myEntityState->eType = newEType;
 }
 void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
 	if(!stricmp(ev->getEventName(),"setparent")) {

@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <math/matrix.h>
 #include <shared/autoCvar.h>
+//#include <shared/entityType.h>
 
 static aCvar_c cg_printLightFlags("cg_printLightFlags","0");
 static aCvar_c cg_printAttachedEntities("cg_printAttachedEntities","0");
@@ -270,28 +271,28 @@ static void CG_AddCEntity( centity_t *cent ) {
 	// update entity emitter
 	CG_UpdateEntityEmitter( cent );
 
-	switch ( cent->currentState.eType ) {
-	default:
-		g_core->RedWarning( "Bad entity type: %i\n", cent->currentState.eType );
-		break;
-	case ET_TRIGGER:
-		// they should be never sent to client...
-		// TODO: print warning?
-		break;
+	//switch ( cent->currentState.eType ) {
+	//default:
+	//	g_core->RedWarning( "Bad entity type: %i\n", cent->currentState.eType );
+	//	break;
+	//case ET_TRIGGER:
+	//	// they should be never sent to client...
+	//	// TODO: print warning?
+	//	break;
 
-	case ET_PORTAL:
+	//case ET_PORTAL:
 
-		break;
-	case ET_GENERAL:
-		//CG_General( cent );
-		break;
-	case ET_PLAYER:
-		//CG_Player( cent );
-		break;
-	case ET_LIGHT:
-		//CG_Light( cent );
-		break;
-	}
+	//	break;
+	//case ET_GENERAL:
+	//	//CG_General( cent );
+	//	break;
+	//case ET_PLAYER:
+	//	//CG_Player( cent );
+	//	break;
+	//case ET_LIGHT:
+	//	//CG_Light( cent );
+	//	break;
+	//}
 }
 
 /*

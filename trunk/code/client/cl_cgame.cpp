@@ -438,11 +438,6 @@ void CL_InitCGame( void ) {
 	// on the card even if the driver does deferred loading
 	rf->endRegistration();
 
-	// make sure everything is paged in
-	if (!Sys_LowPhysicalMemory()) {
-		Com_TouchMemory();
-	}
-
 	if(g_loadingScreen) {
 		g_loadingScreen->clear();
 	}

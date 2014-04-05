@@ -70,6 +70,12 @@ float table_c::getValue(float idx) const {
 tableList_c::tableList_c(TABLE_FindTableTextFunc_t newFindTextFunc) {
 	findTextFunc = newFindTextFunc;
 }
+tableList_c::~tableList_c() {
+	for(u32 i = 0; i < tables.size(); i++) {
+		delete tables[i];
+	}
+	tables.clear();
+}
 
 float tableList_c::getTableValue(const char *tableName, float index) const {
 	table_c *table = tables.getEntry(tableName);

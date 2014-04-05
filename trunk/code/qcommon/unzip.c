@@ -65,20 +65,11 @@ woven in by Terry Thorsen 1/2003.
 #define UNZ_MAXFILENAMEINZIP (256)
 #endif
 
-#if 0
-#ifndef ALLOC
-# define ALLOC(size) (Z_Malloc(size))
-#endif
-#ifndef TRYFREE
-# define TRYFREE(p) {if (p) Z_Free(p);}
-#endif
-#else
 #ifndef ALLOC
 # define ALLOC(size) (malloc(size))
 #endif
 #ifndef TRYFREE
 # define TRYFREE(p) {if (p) free(p);}
-#endif
 #endif
 
 #define SIZECENTRALDIRITEM (0x2e)

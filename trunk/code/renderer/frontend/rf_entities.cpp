@@ -48,12 +48,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/quake3AnimationConfig.h>
 #include <shared/kfAnimCtrl.h>
 #include <renderer/rfSurfFlags.h>
+#include <shared/entityType.h>
 
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
 static aCvar_c rf_cullEntities("rf_cullEntities","1");
 static aCvar_c rf_printEntityTriangleCounts("rf_printEntityTriangleCounts","0");
+static aCvar_c rfe_drawFuncStatic("rfe_drawFuncStatic","1");
+static aCvar_c rfe_drawPlayers("rfe_drawPlayers","1");
+static aCvar_c rfe_drawGeneral("rfe_drawGeneral","1");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -762,6 +766,16 @@ void RFE_AddEntity(rEntityImpl_c *ent, const class frustum_c *customFrustum, boo
 	}
 	if(ent->isHidden())
 		return;
+	// allow developer to hide certain kinds of entities
+	if(rfe_drawFuncStatic.getInt() == 0 && ent->getEntityType() == ET_FUNC_STATIC) {
+		return;
+	}
+	if(rfe_drawPlayers.getInt() == 0 && ent->getEntityType() == ET_PLAYER) {
+		return;
+	}
+	if(rfe_drawGeneral.getInt() == 0 && ent->getEntityType() == ET_GENERAL) {
+		return;
+	}
 	if(rf_camera.isThirdPerson() || forceThirdPerson) {
 		if(ent->isFirstPersonOnly()) {
 			return;

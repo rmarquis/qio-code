@@ -142,8 +142,8 @@ void SV_SetConfigstring (int index, const char *val) {
 	}
 
 	// change the string in sv
-	Z_Free( sv.configstrings[index] );
-	sv.configstrings[index] = CopyString( val );
+	free( sv.configstrings[index] );
+	sv.configstrings[index] = strdup( val );
 
 	// send it to all the clients if we aren't
 	// spawning a new server
@@ -286,7 +286,7 @@ static void SV_Startup( void ) {
 	}
 	SV_BoundMaxClients( 1 );
 
-	svs.clients = (client_t*)Z_Malloc (sizeof(client_t) * sv_maxclients->integer );
+	svs.clients = (client_t*)malloc (sizeof(client_t) * sv_maxclients->integer );
 	if ( com_dedicated->integer ) {
 		svs.numSnapshotEntities = sv_maxclients->integer * PACKET_BACKUP * 256;
 	} else {
@@ -336,7 +336,7 @@ void SV_ChangeMaxClients( void ) {
 		return;
 	}
 
-	oldClients = (client_t*)Hunk_AllocateTempMemory( count * sizeof(client_t) );
+	oldClients = (client_t*)malloc( count * sizeof(client_t) );
 	// copy the clients to hunk memory
 	for ( i = 0 ; i < count ; i++ ) {
 		if ( svs.clients[i].state >= CS_CONNECTED ) {
@@ -348,10 +348,10 @@ void SV_ChangeMaxClients( void ) {
 	}
 
 	// free old clients arrays
-	Z_Free( svs.clients );
+	free( svs.clients );
 
 	// allocate new clients
-	svs.clients = (client_t*)Z_Malloc ( sv_maxclients->integer * sizeof(client_t) );
+	svs.clients = (client_t*)malloc ( sv_maxclients->integer * sizeof(client_t) );
 	memset( svs.clients, 0, sv_maxclients->integer * sizeof(client_t) );
 
 	// copy the clients over
@@ -362,7 +362,7 @@ void SV_ChangeMaxClients( void ) {
 	}
 
 	// free the old clients on the hunk
-	Hunk_FreeTempMemory( oldClients );
+	free( oldClients );
 	
 	// allocate new snapshot entities
 	if ( com_dedicated->integer ) {
@@ -383,7 +383,7 @@ static void SV_ClearServer(void) {
 
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
 		if ( sv.configstrings[i] ) {
-			Z_Free( sv.configstrings[i] );
+			free( sv.configstrings[i] );
 		}
 	}
 	memset (&sv, 0, sizeof(sv));
@@ -512,7 +512,7 @@ void SV_SpawnServer( char *server, bool killBots ) {
 	FS_ClearPakReferences(0);
 
 	// allocate the snapshot entities on the hunk
-	svs.snapshotEntities = (entityState_s*)Hunk_Alloc( sizeof(entityState_s)*svs.numSnapshotEntities, h_high );
+	svs.snapshotEntities = (entityState_s*)malloc( sizeof(entityState_s)*svs.numSnapshotEntities );
 	svs.nextSnapshotEntities = 0;
 
 	// toggle the server bit so clients can detect that a
@@ -534,7 +534,7 @@ void SV_SpawnServer( char *server, bool killBots ) {
 	// wipe the entire per-level structure
 	SV_ClearServer();
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
-		sv.configstrings[i] = CopyString("");
+		sv.configstrings[i] = strdup("");
 	}
 
 	// make sure we are not paused
@@ -682,8 +682,6 @@ void SV_SpawnServer( char *server, bool killBots ) {
 
 	// send a heartbeat now so the master will get up to date info
 	SV_Heartbeat_f();
-
-	Hunk_SetMark();
 
 	// update new loading screen
 	if(g_loadingScreen) {
@@ -842,7 +840,7 @@ void SV_Shutdown( char *finalmsg ) {
 		for(index = 0; index < sv_maxclients->integer; index++)
 			SV_FreeClient(&svs.clients[index]);
 		
-		Z_Free(svs.clients);
+		free(svs.clients);
 	}
 	memset( &svs, 0, sizeof( svs ) );
 

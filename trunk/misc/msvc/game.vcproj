@@ -149,7 +149,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE;G_ENABLE_LUA_SCRIPTING"
 				StringPooling="true"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)\game.pch"

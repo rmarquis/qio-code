@@ -673,7 +673,7 @@ static void SV_RehashBans_f(void)
 			return;
 		}
 
-		curpos = textbuf = (char*)Z_Malloc(filelen);
+		curpos = textbuf = (char*)malloc(filelen);
 		
 		filelen = FS_Read(textbuf, filelen, readfrom);
 		FS_FCloseFile(readfrom);
@@ -721,7 +721,7 @@ static void SV_RehashBans_f(void)
 			
 		serverBansCount = index;
 		
-		Z_Free(textbuf);
+		free(textbuf);
 	}
 }
 

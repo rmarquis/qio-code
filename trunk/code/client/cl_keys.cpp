@@ -414,7 +414,7 @@ void Field_Paste( field_t *edit ) {
 		Field_CharEvent( edit, cbd[i] );
 	}
 
-	Z_Free( cbd );
+	free( cbd );
 }
 
 /*
@@ -881,13 +881,8 @@ void Key_SetBinding( int keynum, const char *binding ) {
 		return;
 	}
 
-	// free old bindings
-	if ( keys[ keynum ].binding ) {
-		Z_Free( keys[ keynum ].binding );
-	}
-		
 	// allocate memory for new binding
-	keys[keynum].binding = CopyString( binding );
+	keys[keynum].binding = binding;
 
 	// consider this like modifying an archived cvar, so the
 	// file write will be triggered at the next oportunity
@@ -900,7 +895,7 @@ void Key_SetBinding( int keynum, const char *binding ) {
 Key_GetBinding
 ===================
 */
-char *Key_GetBinding( int keynum ) {
+const char *Key_GetBinding( int keynum ) {
 	if ( keynum < 0 || keynum >= MAX_KEYS ) {
 		return "";
 	}
@@ -919,7 +914,7 @@ int Key_GetKey(const char *binding) {
 
   if (binding) {
   	for (i=0 ; i < MAX_KEYS ; i++) {
-      if (keys[i].binding && Q_stricmp(binding, keys[i].binding) == 0) {
+      if (keys[i].binding.length() && Q_stricmp(binding, keys[i].binding) == 0) {
         return i;
       }
     }
@@ -962,7 +957,7 @@ void Key_Unbindall_f (void)
 	int		i;
 	
 	for (i=0 ; i < MAX_KEYS; i++)
-		if (keys[i].binding)
+		if (keys[i].binding.length())
 			Key_SetBinding (i, "");
 }
 
@@ -993,7 +988,7 @@ void Key_Bind_f (void)
 
 	if (c == 2)
 	{
-		if (keys[b].binding)
+		if (keys[b].binding.length())
 			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), keys[b].binding );
 		else
 			Com_Printf ("\"%s\" is not bound\n", Cmd_Argv(1) );
@@ -1025,7 +1020,7 @@ void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf (f, "unbindall\n" );
 
 	for (i=0 ; i<MAX_KEYS ; i++) {
-		if (keys[i].binding && keys[i].binding[0] ) {
+		if (keys[i].binding.length()) {
 			FS_Printf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), keys[i].binding);
 
 		}
@@ -1044,7 +1039,7 @@ void Key_Bindlist_f( void ) {
 	int		i;
 
 	for ( i = 0 ; i < MAX_KEYS ; i++ ) {
-		if ( keys[i].binding && keys[i].binding[0] ) {
+		if ( keys[i].binding .length()) {
 			Com_Printf( "%s \"%s\"\n", Key_KeynumToString(i), keys[i].binding );
 		}
 	}
@@ -1132,7 +1127,7 @@ void CL_ParseBinding( int key, bool down, unsigned time )
 {
 	char buf[ MAX_STRING_CHARS ], *p = buf, *end;
 
-	if( !keys[key].binding || !keys[key].binding[0] )
+	if( !keys[key].binding.length() )
 		return;
 	Q_strncpyz( buf, keys[key].binding, sizeof( buf ) );
 
