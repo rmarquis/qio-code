@@ -537,7 +537,7 @@ void DrawBrushEntityName (brush_t *b)
 	if (g_qeglobals.d_savedinfo.show_names)
 	{
 		name = ValueForKey (b->owner, "classname");
-		qglRasterPos3f (b->mins[0]+4, b->mins[1]+4, b->mins[2]+4);
+		qglRasterPos3f (b->getMins()[0]+4, b->getMins()[1]+4, b->getMins()[2]+4);
 		qglCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
 	}
 }
@@ -2348,8 +2348,8 @@ void Brush_MakeSided (int sides)
 	}
 
 	b = selected_brushes.next;
-	mins = b->mins;
-	maxs = b->maxs;
+	mins = b->getMins();
+	maxs = b->getMaxs();
 	texdef = &g_qeglobals.d_texturewin.texdef;
 
 	Brush_Free (b);
@@ -2628,8 +2628,7 @@ brush_t *Brush_FullClone(brush_t *b)
   	n = Brush_Alloc();
    	n->numberId = g_nBrushId++;
 		n->owner = b->owner;
-		n->mins = b->mins;
-		n->maxs = b->maxs;
+		n->bounds = b->bounds;
 		//
 		for (f = b->brush_faces; f; f = f->next)
 		{
@@ -3074,8 +3073,7 @@ void Brush_BuildWindings( brush_t *b, bool bSnap )
 		Brush_SnapPlanepts( b );
 
 	// clear the mins/maxs bounds
-	b->mins[0] = b->mins[1] = b->mins[2] = 99999;
-	b->maxs[0] = b->maxs[1] = b->maxs[2] = -99999;
+	b->bounds.clear();
 
 	Brush_MakeFacePlanes (b);
 
@@ -3096,14 +3094,7 @@ void Brush_BuildWindings( brush_t *b, bool bSnap )
 		for (i=0 ; i<w->numpoints ; i++)
 		{
 			// add to bounding box
-			for (j=0 ; j<3 ; j++)
-			{
-				v = w->points[i][j];
-				if (v > b->maxs[j])
-					b->maxs[j] = v;
-				if (v < b->mins[j])
-					b->mins[j] = v;
-			}
+			b->bounds.addPoint(w->points[i].getXYZ());
 		}
 		// setup s and t vectors, and set color
 		//if (!g_PrefsDlg.m_bGLLighting)
@@ -3204,7 +3195,7 @@ void Brush_Center(brush_t *b, const edVec3_c &vNewCenter)
 	// get center of the brush
 	for (int j = 0; j < 3; j++)
 	{
-		vMid[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
+		vMid[j] = b->getMins()[j] + abs((b->getMaxs()[j] - b->getMins()[j]) * 0.5);
 	}
 	// calc distance between centers
 	vMid = vNewCenter - vMid;
@@ -3572,8 +3563,8 @@ bool PaintedModel(brush_t *b, bool bOkToTexture)
 		{
 			qglColor3fv(pEclass->color);
 
-			edVec3_c mins = b->mins;
-			edVec3_c maxs = b->maxs;
+			edVec3_c mins = b->getMins();
+			edVec3_c maxs = b->getMaxs();
 			/*
 			if (a)
 			{
@@ -3688,13 +3679,13 @@ void Brush_DrawFacingAngle (brush_t *b, entity_t *e)
 	edVec3_c	start;
 	float	dist;
 
-	start = (e->brushes.onext->mins + e->brushes.onext->maxs) * 0.5f;
-	dist = (b->maxs[0] - start[0]) * 2.5;
+	start = (e->brushes.onext->getMins() + e->brushes.onext->getMaxs()) * 0.5f;
+	dist = (b->getMaxs()[0] - start[0]) * 2.5;
 
 	FacingVectors (e, forward, right, up);
 	endpoint.vectorMA (start, dist, forward);
 
-	dist = (b->maxs[0] - start[0]) * 0.5;
+	dist = (b->getMaxs()[0] - start[0]) * 0.5;
 	tip1.vectorMA (endpoint, -dist, forward);
 	tip1.vectorMA (tip1, -dist, up);
 	tip2.vectorMA (tip1, 2*dist, up);
@@ -3735,32 +3726,32 @@ void DrawLight(brush_t *b)
 	qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
 
 	vec3_t vCorners[4];
-	float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
+	float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
 
-	vCorners[0][0] = b->mins[0];
-	vCorners[0][1] = b->mins[1];
+	vCorners[0][0] = b->getMins()[0];
+	vCorners[0][1] = b->getMins()[1];
 	vCorners[0][2] = fMid;
 
-	vCorners[1][0] = b->mins[0];
-	vCorners[1][1] = b->maxs[1];
+	vCorners[1][0] = b->getMins()[0];
+	vCorners[1][1] = b->getMaxs()[1];
 	vCorners[1][2] = fMid;
 
-	vCorners[2][0] = b->maxs[0];
-	vCorners[2][1] = b->maxs[1];
+	vCorners[2][0] = b->getMaxs()[0];
+	vCorners[2][1] = b->getMaxs()[1];
 	vCorners[2][2] = fMid;
 
-	vCorners[3][0] = b->maxs[0];
-	vCorners[3][1] = b->mins[1];
+	vCorners[3][0] = b->getMaxs()[0];
+	vCorners[3][1] = b->getMins()[1];
 	vCorners[3][2] = fMid;
 
 	edVec3_c vTop, vBottom;
 
-	vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
-	vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
-	vTop[2] = b->maxs[2];
+	vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
+	vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
+	vTop[2] = b->getMaxs()[2];
 
 	vBottom = vTop;
-	vBottom[2] = b->mins[2];
+	vBottom[2] = b->getMins()[2];
 
 	edVec3_c vSave = vTriColor;
 	int i;
@@ -4032,32 +4023,32 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->nShowFlags & ECLASS_LIGHT))
 		{
 			vec3_t vCorners[4];
-			float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
+			float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
 
-			vCorners[0][0] = b->mins[0];
-			vCorners[0][1] = b->mins[1];
+			vCorners[0][0] = b->getMins()[0];
+			vCorners[0][1] = b->getMins()[1];
 			vCorners[0][2] = fMid;
 
-			vCorners[1][0] = b->mins[0];
-			vCorners[1][1] = b->maxs[1];
+			vCorners[1][0] = b->getMins()[0];
+			vCorners[1][1] = b->getMaxs()[1];
 			vCorners[1][2] = fMid;
 
-			vCorners[2][0] = b->maxs[0];
-			vCorners[2][1] = b->maxs[1];
+			vCorners[2][0] = b->getMaxs()[0];
+			vCorners[2][1] = b->getMaxs()[1];
 			vCorners[2][2] = fMid;
 
-			vCorners[3][0] = b->maxs[0];
-			vCorners[3][1] = b->mins[1];
+			vCorners[3][0] = b->getMaxs()[0];
+			vCorners[3][1] = b->getMins()[1];
 			vCorners[3][2] = fMid;
 
 			edVec3_c vTop, vBottom;
 
-			vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
-			vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
-			vTop[2] = b->maxs[2];
+			vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
+			vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
+			vTop[2] = b->getMaxs()[2];
 
 			vBottom = vTop;
-			vBottom[2] = b->mins[2];
+			vBottom[2] = b->getMins()[2];
 
 			qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
 			qglBegin(GL_TRIANGLE_FAN);
@@ -4222,8 +4213,8 @@ void Brush_MakeSidedCone(int sides)
 	}
 
 	b = selected_brushes.next;
-	mins = b->mins;
-	maxs = b->maxs;
+	mins = b->getMins();
+	maxs = b->getMaxs();
 	texdef = &g_qeglobals.d_texturewin.texdef;
 
 	Brush_Free (b);
@@ -4314,8 +4305,8 @@ void Brush_MakeSidedSphere(int sides)
 	}
 
 	b = selected_brushes.next;
-	mins = b->mins;
-	maxs = b->maxs;
+	mins = b->getMins();
+	maxs = b->getMaxs();
 	texdef = &g_qeglobals.d_texturewin.texdef;
 
 	Brush_Free (b);
@@ -4386,7 +4377,7 @@ void Brush_MakeSidedSphere(int sides)
 void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 {
 	winding_t *w;
-	edVec3_c   mins,maxs;
+	edAABB_c bounds;
 	int i;
 	float width, height, temp;
 	float rot_width, rot_height;
@@ -4406,7 +4397,7 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 		nWidth = 1;
 	}
 
-	ClearBounds (mins, maxs);
+	bounds.clear();
 
 	td = &face->texdef;
 	w = face->face_winding;
@@ -4416,7 +4407,7 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 	}
 	for (i=0 ; i<w->numpoints ; i++)
 	{
-		AddPointToBounds( w->points[i], mins, maxs );
+		bounds.addPoint(w->points[i]);
 	}
 	// 
 	// get the current angle
@@ -4428,10 +4419,10 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 	// get natural texture axis
 	TextureAxisFromPlane(face->plane, vecs[0], vecs[1]);
 
-	min_s = mins.dotProduct(vecs[0]);
-	min_t = mins.dotProduct(vecs[1]);
-	max_s = maxs.dotProduct(vecs[0]);
-	max_t = maxs.dotProduct(vecs[1]);
+	min_s = bounds.getMins().dotProduct(vecs[0]);
+	min_t = bounds.getMins().dotProduct(vecs[1]);
+	max_s = bounds.getMaxs().dotProduct(vecs[0]);
+	max_t = bounds.getMaxs().dotProduct(vecs[1]);
 	width = max_s - min_s;
 	height = max_t - min_t;
 	coords[0][0] = min_s;

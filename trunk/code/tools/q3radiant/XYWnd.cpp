@@ -518,27 +518,27 @@ void CXYWnd::ProduceSplits(brush_t** pFront, brush_t** pBack)
         {
           if (m_nViewType == XY)
           {
-            face.planepts[0][2] = selected_brushes.next->mins[2];
-            face.planepts[1][2] = selected_brushes.next->mins[2];
+            face.planepts[0][2] = selected_brushes.next->getMins()[2];
+            face.planepts[1][2] = selected_brushes.next->getMins()[2];
             face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
             face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
-            face.planepts[2][2] = selected_brushes.next->maxs[2];
+            face.planepts[2][2] = selected_brushes.next->getMaxs()[2];
           }
           else if (m_nViewType == YZ)
           {
-            face.planepts[0][0] = selected_brushes.next->mins[0];
-            face.planepts[1][0] = selected_brushes.next->mins[0];
+            face.planepts[0][0] = selected_brushes.next->getMins()[0];
+            face.planepts[1][0] = selected_brushes.next->getMins()[0];
             face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
             face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
-            face.planepts[2][0] = selected_brushes.next->maxs[0];
+            face.planepts[2][0] = selected_brushes.next->getMaxs()[0];
           }
           else
           {
-            face.planepts[0][1] = selected_brushes.next->mins[1];
-            face.planepts[1][1] = selected_brushes.next->mins[1];
+            face.planepts[0][1] = selected_brushes.next->getMins()[1];
+            face.planepts[1][1] = selected_brushes.next->getMins()[1];
             face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
             face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
-            face.planepts[2][1] = selected_brushes.next->maxs[1];
+            face.planepts[2][1] = selected_brushes.next->getMaxs()[1];
           }
         }
 
@@ -605,27 +605,27 @@ void CXYWnd::ProduceSplitLists()
 				{
 					if (g_pParentWnd->ActiveXY()->GetViewType() == XY)
 					{
-						face.planepts[0][2] = pBrush->mins[2];
-						face.planepts[1][2] = pBrush->mins[2];
+						face.planepts[0][2] = pBrush->getMins()[2];
+						face.planepts[1][2] = pBrush->getMins()[2];
 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
-						face.planepts[2][2] = pBrush->maxs[2];
+						face.planepts[2][2] = pBrush->getMaxs()[2];
 					}
 					else if (g_pParentWnd->ActiveXY()->GetViewType() == YZ)
 					{
-						face.planepts[0][0] = pBrush->mins[0];
-						face.planepts[1][0] = pBrush->mins[0];
+						face.planepts[0][0] = pBrush->getMins()[0];
+						face.planepts[1][0] = pBrush->getMins()[0];
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
 						face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
-						face.planepts[2][0] = pBrush->maxs[0];
+						face.planepts[2][0] = pBrush->getMaxs()[0];
 					}
 					else
 					{
-						face.planepts[0][1] = pBrush->mins[1];
-						face.planepts[1][1] = pBrush->mins[1];
+						face.planepts[0][1] = pBrush->getMins()[1];
+						face.planepts[1][1] = pBrush->getMins()[1];
 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
 						face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
-						face.planepts[2][1] = pBrush->maxs[1];
+						face.planepts[2][1] = pBrush->getMaxs()[1];
 					}
 				}
 				Brush_SplitBrushByFace (pBrush, &face, &pFront, &pBack);
@@ -1168,7 +1168,7 @@ void CreateEntityFromName(char* pName, brush_t* pBrush)
 				edVec3_c mins, maxs;
 				edVec3_c origin;
 				for (int i=0 ; i<3 ; i++)
-					origin[i] = b->mins[i] - pecNew->mins[i];
+					origin[i] = b->getMins()[i] - pecNew->mins[i];
 				
 				mins = pecNew->mins + origin;
 				maxs = pecNew->maxs + origin;
@@ -2543,10 +2543,10 @@ void DrawPathLines (void)
 				continue;
 
 			for (i=0 ; i<3 ; i++)
-				mid[i] = (sb->mins[i] + sb->maxs[i])*0.5; 
+				mid[i] = (sb->getMins()[i] + sb->getMaxs()[i])*0.5; 
 
 			for (i=0 ; i<3 ; i++)
-				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
+				mid1[i] = (tb->getMins()[i] + tb->getMaxs()[i])*0.5; 
 
 			dir = mid1 - mid;
 			len = dir.normalize();
@@ -2586,10 +2586,10 @@ void DrawPathLines (void)
 
 // can be greatly simplified but per usual i am in a hurry 
 // which is not an excuse, just a fact
-void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds)
+void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds)
 {
 
-  edVec3_c vSize = vMaxBounds - vMinBounds;
+  edVec3_c vSize = bounds.getSizes();
 
   qglColor3f(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][0] * .65, 
             g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][1] * .65,
@@ -2599,37 +2599,37 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, con
   {
 		qglBegin (GL_LINES);
 
-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale, 0.0f);
-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale, 0.0f);
 
-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale, 0.0f);
-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale, 0.0f);
 
-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale, 0.0f);
-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale, 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale, 0.0f);
   
 
-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
 
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
   
-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
 
     qglEnd();
 
-    qglRasterPos3f (Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]),  vMinBounds[nDim2] - 20.0  / m_fScale, 0.0f);
+    qglRasterPos3f (Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]),  bounds.getMins()[nDim2] - 20.0  / m_fScale, 0.0f);
     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
     
-    qglRasterPos3f (vMaxBounds[nDim1] + 16.0  / m_fScale, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]), 0.0f);
+    qglRasterPos3f (bounds.getMaxs()[nDim1] + 16.0  / m_fScale, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]), 0.0f);
     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
-    qglRasterPos3f (vMinBounds[nDim1] + 4, vMaxBounds[nDim2] + 8 / m_fScale, 0.0f);
-    g_strDim.Format(g_pOrgStrings[0], vMinBounds[nDim1], vMaxBounds[nDim2]);
+    qglRasterPos3f (bounds.getMins()[nDim1] + 4, bounds.getMaxs()[nDim2] + 8 / m_fScale, 0.0f);
+    g_strDim.Format(g_pOrgStrings[0], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
   }
@@ -2638,37 +2638,37 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, con
   {
 		qglBegin (GL_LINES);
 
-    qglVertex3f(vMinBounds[nDim1], 0, vMinBounds[nDim2] - 6.0f  / m_fScale);
-    qglVertex3f(vMinBounds[nDim1], 0, vMinBounds[nDim2] - 10.0f / m_fScale);
+    qglVertex3f(bounds.getMins()[nDim1], 0, bounds.getMins()[nDim2] - 6.0f  / m_fScale);
+    qglVertex3f(bounds.getMins()[nDim1], 0, bounds.getMins()[nDim2] - 10.0f / m_fScale);
 
-    qglVertex3f(vMinBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f  / m_fScale);
-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f  / m_fScale);
+    qglVertex3f(bounds.getMins()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f  / m_fScale);
+    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f  / m_fScale);
 
-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 6.0f  / m_fScale);
-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f / m_fScale);
+    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 6.0f  / m_fScale);
+    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f / m_fScale);
   
 
-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, 0,vMinBounds[nDim2]);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMinBounds[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
 
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMinBounds[nDim2]);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMaxBounds[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
   
-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, 0,vMaxBounds[nDim2]);
-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMaxBounds[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
+    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
 
     qglEnd();
 
-    qglRasterPos3f (Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]), 0, vMinBounds[nDim2] - 20.0  / m_fScale);
+    qglRasterPos3f (Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]), 0, bounds.getMins()[nDim2] - 20.0  / m_fScale);
     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
     
-    qglRasterPos3f (vMaxBounds[nDim1] + 16.0  / m_fScale, 0, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]));
+    qglRasterPos3f (bounds.getMaxs()[nDim1] + 16.0  / m_fScale, 0, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]));
     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
-    qglRasterPos3f (vMinBounds[nDim1] + 4, 0, vMaxBounds[nDim2] + 8 / m_fScale);
-    g_strDim.Format(g_pOrgStrings[1], vMinBounds[nDim1], vMaxBounds[nDim2]);
+    qglRasterPos3f (bounds.getMins()[nDim1] + 4, 0, bounds.getMaxs()[nDim2] + 8 / m_fScale);
+    g_strDim.Format(g_pOrgStrings[1], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
   }
@@ -2676,37 +2676,37 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, con
   {
 		qglBegin (GL_LINES);
 
-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale);
-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale);
+    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale);
+    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale);
 
-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale);
-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale);
+    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale);
+    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale);
 
-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale);
-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale);
+    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale);
+    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale);
   
 
-    qglVertex3f(0, vMaxBounds[nDim1] + 6.0f  / m_fScale, vMinBounds[nDim2]);
-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMins()[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2]);
 
-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2]);
-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2]);
   
-    qglVertex3f(0, vMaxBounds[nDim1] + 6.0f  / m_fScale, vMaxBounds[nDim2]);
-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMaxs()[nDim2]);
+    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2]);
 
     qglEnd();
 
-    qglRasterPos3f (0, Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]),  vMinBounds[nDim2] - 20.0  / m_fScale);
+    qglRasterPos3f (0, Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]),  bounds.getMins()[nDim2] - 20.0  / m_fScale);
     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
     
-    qglRasterPos3f (0, vMaxBounds[nDim1] + 16.0  / m_fScale, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]));
+    qglRasterPos3f (0, bounds.getMaxs()[nDim1] + 16.0  / m_fScale, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]));
     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
-    qglRasterPos3f (0, vMinBounds[nDim1] + 4.0, vMaxBounds[nDim2] + 8 / m_fScale);
-    g_strDim.Format(g_pOrgStrings[2], vMinBounds[nDim1], vMaxBounds[nDim2]);
+    qglRasterPos3f (0, bounds.getMins()[nDim1] + 4.0, bounds.getMaxs()[nDim2] + 8 / m_fScale);
+    g_strDim.Format(g_pOrgStrings[2], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 
   }
@@ -2804,10 +2804,10 @@ void CXYWnd::XY_Draw()
 
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
 	{
-		if (brush->mins[nDim1] > maxs[0] || 
-        brush->mins[nDim2] > maxs[1] || 
-        brush->maxs[nDim1] < mins[0] || 
-        brush->maxs[nDim2] < mins[1])
+		if (brush->getMins()[nDim1] > maxs[0] || 
+        brush->getMins()[nDim2] > maxs[1] || 
+        brush->getMaxs()[nDim1] < mins[0] || 
+        brush->getMaxs()[nDim2] < mins[1])
 		{
 		  culled++;
 		  continue;		// off screen
@@ -2886,10 +2886,8 @@ void CXYWnd::XY_Draw()
   }
 	qglLineWidth (2);
 
-  vec3_t vMinBounds;
-  vec3_t vMaxBounds;
-  vMinBounds[0] = vMinBounds[1] = vMinBounds[2] = 9999.9f;
-  vMaxBounds[0] = vMaxBounds[1] = vMaxBounds[2] = -9999.9f;
+	edAABB_c bounds;
+  bounds.clear();
 
   int nSaveDrawn = drawn;
   bool bFixedSize = false;
@@ -2904,13 +2902,7 @@ void CXYWnd::XY_Draw()
         bFixedSize = true;
       if (g_PrefsDlg.m_bSizePaint)
       {
-        for (i = 0; i < 3; i ++)
-        {
-          if (brush->mins[i] < vMinBounds[i])
-            vMinBounds[i] = brush->mins[i];
-          if (brush->maxs[i] > vMaxBounds[i])
-            vMaxBounds[i] = brush->maxs[i];
-        }
+			bounds.addBox(brush->getBounds());
       }
     }
 	}
@@ -2922,7 +2914,7 @@ void CXYWnd::XY_Draw()
 	qglLineWidth (1);
 
   if (!bFixedSize && !RotateMode() && !ScaleMode() && drawn - nSaveDrawn > 0 && g_PrefsDlg.m_bSizePaint)
-    PaintSizeInfo(nDim1, nDim2, vMinBounds, vMaxBounds);
+    PaintSizeInfo(nDim1, nDim2, bounds);
 
 
 	// edge / vertex flags
@@ -3174,8 +3166,8 @@ void CXYWnd::PositionView()
   brush_t* b = selected_brushes.next;
   if (b && b->next != b)
   {
-	  m_vOrigin[nDim1] = b->mins[nDim1];
-	  m_vOrigin[nDim2] = b->mins[nDim2];
+	  m_vOrigin[nDim1] = b->getMins()[nDim1];
+	  m_vOrigin[nDim2] = b->getMins()[nDim2];
   }
   else
   {

@@ -166,7 +166,7 @@ bool CheckForTinyBrush(brush_t* b, int n, float fSize)
   bool bTiny = false;
 	for (int i=0 ; i<3 ; i++)
 	{
-    if (b->maxs[i] - b->mins[i] < fSize)
+    if (b->getMaxs()[i] - b->getMins()[i] < fSize)
       bTiny = true;
   }
   if (bTiny)
@@ -630,9 +630,9 @@ bool Map_IsBrushFiltered (brush_t *b)
 
 	for (i=0 ; i<3 ; i++)
 	{
-		if (b->mins[i] > region_maxs[i])
+		if (b->getMins()[i] > region_maxs[i])
 			return true;
-		if (b->maxs[i] < region_mins[i])
+		if (b->getMaxs()[i] < region_mins[i])
 			return true;
 	}
 	return false;
@@ -762,8 +762,8 @@ void Map_RegionTallBrush (void)
 
 	Map_RegionOff ();
 
-	region_mins = b->mins;
-	region_maxs = b->maxs;
+	region_mins = b->getMins();
+	region_maxs = b->getMaxs();
 	region_mins[2] = MIN_WORLD_COORD;
 	region_maxs[2] = MAX_WORLD_COORD;
 
@@ -787,8 +787,8 @@ void Map_RegionBrush (void)
 
 	Map_RegionOff ();
 
-	region_mins = b->mins;
-	region_maxs = b->maxs;
+	region_mins = b->getMins();
+	region_maxs = b->getMaxs();
 
 	Select_Delete ();
 	Map_ApplyRegion ();

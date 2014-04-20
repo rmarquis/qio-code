@@ -375,10 +375,10 @@ void Terrain_BrushToMesh( void ) {
 	}
 
 	p = MakeNewTerrain( g_qeglobals.d_terrainWidth + 1, g_qeglobals.d_terrainHeight + 1, b->brush_faces->d_texture );
-	p->scale_x = ( b->maxs[ 0 ] - b->mins[ 0 ] ) / float( p->width - 1 );
-	p->scale_y = ( b->maxs[ 1 ] - b->mins[ 1 ] ) / float( p->height - 1 );
+	p->scale_x = ( b->getMaxs()[ 0 ] - b->getMins()[ 0 ] ) / float( p->width - 1 );
+	p->scale_y = ( b->getMaxs()[ 1 ] - b->getMins()[ 1 ] ) / float( p->height - 1 );
 
-	p->origin =  b->mins;
+	p->origin =  b->getMins();
 
 	b = AddBrushForTerrain( p );
 	Select_Delete();

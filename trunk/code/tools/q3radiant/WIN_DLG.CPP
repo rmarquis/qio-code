@@ -340,13 +340,13 @@ void SelectBrush (int entitynum, int brushnum)
 	for (i=0 ; i<3 ; i++)
   {
     if (g_pParentWnd->GetXYWnd())
-      g_pParentWnd->GetXYWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
+      g_pParentWnd->GetXYWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
 
     if (g_pParentWnd->GetXZWnd())
-      g_pParentWnd->GetXZWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
+      g_pParentWnd->GetXZWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
     
     if (g_pParentWnd->GetYZWnd())
-      g_pParentWnd->GetYZWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
+      g_pParentWnd->GetYZWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
   }
 
 	Sys_Status ("Selected.", 0);

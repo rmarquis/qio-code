@@ -96,26 +96,5 @@ void _Vector53Copy (vec5_t in, vec3_t out)
 	out[2] = in[2];
 }
 
-// NOTE: added these from Ritual's Q3Radiant
-void ClearBounds (vec3_t mins, vec3_t maxs)
-{
-	mins[0] = mins[1] = mins[2] = 99999;
-	maxs[0] = maxs[1] = maxs[2] = -99999;
-}
-
-void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
-{
-	int		i;
-	vec_t	val;
-	
-	for (i=0 ; i<3 ; i++)
-	{
-		val = v[i];
-		if (val < mins[i])
-			mins[i] = val;
-		if (val > maxs[i])
-			maxs[i] = val;
-	}
-}
 
 

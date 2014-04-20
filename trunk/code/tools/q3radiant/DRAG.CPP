@@ -387,8 +387,8 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.face)
 		{
-			g_qeglobals.d_new_brush_bottom_z = t.brush->mins[2];
-			g_qeglobals.d_new_brush_top_z = t.brush->maxs[2];
+			g_qeglobals.d_new_brush_bottom_z = t.brush->getMins()[2];
+			g_qeglobals.d_new_brush_top_z = t.brush->getMaxs()[2];
 			// use a local brushprimit_texdef fitted to a default 2x2 texture
 			brushprimit_texdef_t bp_local;
 			ConvertTexMatWithQTexture( &t.face->brushprimit_texdef, t.face->d_texture, &bp_local, NULL );
@@ -638,18 +638,18 @@ void MoveSelection (vec3_t move)
 		//	VectorAdd (g_qeglobals.d_move_points2[i], move, g_qeglobals.d_move_points2[i]);
 		for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
 		{
-			vTemp = b->maxs - b->mins;
+			vTemp = b->getMaxs() - b->getMins();
 			Brush_Build( b );
 			for (i=0 ; i<3 ; i++)
-				if (b->mins[i] > b->maxs[i]
-				|| b->maxs[i] - b->mins[i] > MAX_BRUSH_SIZE)
+				if (b->getMins()[i] > b->getMaxs()[i]
+				|| b->getMaxs()[i] - b->getMins()[i] > MAX_BRUSH_SIZE)
 					break;	// dragged backwards or fucked up
 			if (i != 3)
 				break;
 			if (b->patchBrush)
 			{
-				vTemp2 = b->maxs;
-				vTemp2 = vTemp2 - b->mins;
+				vTemp2 = b->getMaxs();
+				vTemp2 = vTemp2 - b->getMins();
 				vTemp2 = vTemp2 - vTemp;
 				//if (!Patch_DragScale(b->nPatchID, vTemp2, move))
 				if (!Patch_DragScale(b->pPatch, vTemp2, move))
@@ -661,7 +661,7 @@ void MoveSelection (vec3_t move)
 
 			if (b->terrainBrush)
 			{
-				vTemp2 = b->maxs - b->mins;
+				vTemp2 = b->getMaxs() - b->getMins();
 				vTemp2 -= vTemp;
 				if (!Terrain_DragScale(b->pTerrain, vTemp2, move))
 				{

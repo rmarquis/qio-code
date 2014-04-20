@@ -380,7 +380,7 @@ typedef struct brush_s
 	struct brush_s	*prev, *next;	// links in active/selected
 	struct brush_s	*oprev, *onext;	// links in entity
 	struct entity_s	*owner;
-	edVec3_c	mins, maxs;
+	edAABB_c bounds;
 	face_t     *brush_faces;
 
 	bool bModelFailed;
@@ -414,6 +414,15 @@ typedef struct brush_s
 	// brush primitive only
 	epair_t *epairs;
 
+	const edAABB_c &getBounds() const {
+		return bounds;
+	}
+	const edVec3_c &getMins() const {
+		return bounds.getMins();
+	}
+	const edVec3_c &getMaxs() const {
+		return bounds.getMaxs();
+	}
 } brush_t;
 
 

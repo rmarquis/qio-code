@@ -98,8 +98,8 @@ brush_t *Brush_Merge(brush_t *brush1, brush_t *brush2, int onlyshape)
 	// check for bounding box overlapp
 	for (i = 0; i < 3; i++)
 	{
-		if (brush1->mins[i] > brush2->maxs[i] + ON_EPSILON
-				|| brush1->maxs[i] < brush2->mins[i] - ON_EPSILON)
+		if (brush1->getMins()[i] > brush2->getMaxs()[i] + ON_EPSILON
+				|| brush1->getMaxs()[i] < brush2->getMins()[i] - ON_EPSILON)
 		{
 			// never merge if the brushes overlap
 			return NULL;
@@ -496,8 +496,8 @@ void CSG_Subtract (void)
 			snext = s->next;
 
 			for (i=0 ; i<3 ; i++)
-				if (b->mins[i] >= s->maxs[i] - ON_EPSILON 
-				|| b->maxs[i] <= s->mins[i] + ON_EPSILON)
+				if (b->getMins()[i] >= s->getMaxs()[i] - ON_EPSILON 
+				|| b->getMaxs()[i] <= s->getMins()[i] + ON_EPSILON)
 					break;
 			if (i != 3)
 				continue;	// definately don't touch
@@ -534,8 +534,8 @@ void CSG_Subtract (void)
 			}
 
 			for (i=0 ; i<3 ; i++)
-				if (b->mins[i] >= s->maxs[i] - ON_EPSILON 
-				|| b->maxs[i] <= s->mins[i] + ON_EPSILON)
+				if (b->getMins()[i] >= s->getMaxs()[i] - ON_EPSILON 
+				|| b->getMaxs()[i] <= s->getMins()[i] + ON_EPSILON)
 					break;
 			if (i != 3)
 				continue;	// definately don't touch

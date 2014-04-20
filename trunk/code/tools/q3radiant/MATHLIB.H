@@ -73,6 +73,11 @@ public:
 		_v[1] = b;
 		_v[2] = c;
 	}
+	void set(float abc) {
+		_v[0] = abc;
+		_v[1] = abc;
+		_v[2] = abc;
+	}
 	float vectorLength() const {
 		float length = 0.0f;
 		for (int i = 0; i < 3; i++)
@@ -172,11 +177,11 @@ public:
 	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
 		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
 	}
+	friend edVec3_c operator -(const edVec3_c &a, const edVec3_c &b) {
+		return edVec3_c(a.x-b.x,a.y-b.y,a.z-b.z);
+	}
 	friend edVec3_c operator *(const edVec3_c &a, float b) {
 		return edVec3_c(a.x*b,a.y*b,a.z*b);
-	}
-	edVec3_c operator -(const edVec3_c &other) const {
-		return edVec3_c(x-other.x,y-other.y,z-other.z);
 	}
 	edVec3_c operator -() const {
 		return edVec3_c(-x,-y,-z);
@@ -205,22 +210,45 @@ public:
 #define	SIDE_BACK		1
 #define	SIDE_CROSS		-2
 
-#ifdef M_PI
-#define	M_PI	3.14159265358979323846
-#endif 
-
 vec_t Q_rint (vec_t in);
 
 void _Vector53Copy (vec5_t in, vec3_t out);
 void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out);
 void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
 
-// NOTE: added these from Ritual's Q3Radiant
-void ClearBounds (vec3_t mins, vec3_t maxs);
-void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
+#include <float.h>
 
-//void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-//void VectorToAngles( vec3_t vec, vec3_t angles );
+class edAABB_c {
+	edVec3_c mins;
+	edVec3_c maxs;
+public:
+	void clear(float inf = FLT_MAX) {
+		mins.set(inf);
+		maxs.set(-inf);
+	}
+	void addPoint(const float *p) {
+		for(int i = 0; i < 3; i++) {
+			float f = p[i];
+			if(f < mins[i])
+				mins[i] = f;
+			if(f > maxs[i])
+				maxs[i] = f;
+		}
+	}
+	edVec3_c getSizes() const {
+		return maxs - mins;
+	}
+	void addBox(const edAABB_c &bb) {
+		addPoint(bb.getMins());
+		addPoint(bb.getMaxs());
+	}
+	const edVec3_c &getMaxs() const {
+		return maxs;
+	}
+	const edVec3_c &getMins() const {
+		return mins;
+	}
+};
 
 #define ZERO_EPSILON 1.0E-6
 #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )

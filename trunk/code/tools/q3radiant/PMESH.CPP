@@ -1476,20 +1476,20 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
   {
     p->type = PATCH_BEVEL;
     p->width = 3;
-    int nStep = (b->maxs[2] - b->mins[2]) / (p->height-1);
-    int nStart = b->mins[2];
+    int nStep = (b->getMaxs()[2] - b->getMins()[2]) / (p->height-1);
+    int nStart = b->getMins()[2];
     for (i = 0; i < p->height; i++)
     {
-	    p->ctrl[0][i].xyz[0] =  b->mins[0];
-	    p->ctrl[0][i].xyz[1] =  b->mins[1];
+	    p->ctrl[0][i].xyz[0] =  b->getMins()[0];
+	    p->ctrl[0][i].xyz[1] =  b->getMins()[1];
       p->ctrl[0][i].xyz[2] = nStart;
 
-	    p->ctrl[1][i].xyz[0] =  b->maxs[0];
-	    p->ctrl[1][i].xyz[1] =  b->mins[1];
+	    p->ctrl[1][i].xyz[0] =  b->getMaxs()[0];
+	    p->ctrl[1][i].xyz[1] =  b->getMins()[1];
       p->ctrl[1][i].xyz[2] = nStart;
 
-	    p->ctrl[2][i].xyz[0] =  b->maxs[0];
-	    p->ctrl[2][i].xyz[1] =  b->maxs[1];
+	    p->ctrl[2][i].xyz[0] =  b->getMaxs()[0];
+	    p->ctrl[2][i].xyz[1] =  b->getMaxs()[1];
       p->ctrl[2][i].xyz[2] = nStart;
       nStart += nStep;
     }
@@ -1498,28 +1498,28 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
   {
     p->type = PATCH_ENDCAP;
     p->width = 5;
-    int nStep = (b->maxs[2] - b->mins[2]) / (p->height-1);
-    int nStart = b->mins[2];
+    int nStep = (b->getMaxs()[2] - b->getMins()[2]) / (p->height-1);
+    int nStart = b->getMins()[2];
     for (i = 0; i < p->height; i++)
     {
-	    p->ctrl[0][i].xyz[0] =  b->mins[0];
-	    p->ctrl[0][i].xyz[1] =  b->mins[1];
+	    p->ctrl[0][i].xyz[0] =  b->getMins()[0];
+	    p->ctrl[0][i].xyz[1] =  b->getMins()[1];
       p->ctrl[0][i].xyz[2] = nStart;
 
-	    p->ctrl[1][i].xyz[0] =  b->mins[0];
-	    p->ctrl[1][i].xyz[1] =  b->maxs[1];
+	    p->ctrl[1][i].xyz[0] =  b->getMins()[0];
+	    p->ctrl[1][i].xyz[1] =  b->getMaxs()[1];
       p->ctrl[1][i].xyz[2] = nStart;
 
-	    p->ctrl[2][i].xyz[0] =  b->mins[0] + ((b->maxs[0] - b->mins[0]) * 0.5);
-	    p->ctrl[2][i].xyz[1] =  b->maxs[1];
+	    p->ctrl[2][i].xyz[0] =  b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) * 0.5);
+	    p->ctrl[2][i].xyz[1] =  b->getMaxs()[1];
       p->ctrl[2][i].xyz[2] = nStart;
 	   
-      p->ctrl[3][i].xyz[0] =  b->maxs[0];
-	    p->ctrl[3][i].xyz[1] =  b->maxs[1];
+      p->ctrl[3][i].xyz[0] =  b->getMaxs()[0];
+	    p->ctrl[3][i].xyz[1] =  b->getMaxs()[1];
       p->ctrl[3][i].xyz[2] = nStart;
 
-	    p->ctrl[4][i].xyz[0] =  b->maxs[0];
-	    p->ctrl[4][i].xyz[1] =  b->mins[1];
+	    p->ctrl[4][i].xyz[0] =  b->getMaxs()[0];
+	    p->ctrl[4][i].xyz[1] =  b->getMins()[1];
       p->ctrl[4][i].xyz[2] = nStart;
       nStart += nStep;
     }
@@ -1527,26 +1527,26 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
   else
   {
     p->width = 9;
-	  p->ctrl[1][0].xyz[0] =  b->mins[0];
-	  p->ctrl[1][0].xyz[1] =  b->mins[1];
+	  p->ctrl[1][0].xyz[0] =  b->getMins()[0];
+	  p->ctrl[1][0].xyz[1] =  b->getMins()[1];
 
-	  p->ctrl[3][0].xyz[0] =  b->maxs[0];
-	  p->ctrl[3][0].xyz[1] =  b->mins[1];
+	  p->ctrl[3][0].xyz[0] =  b->getMaxs()[0];
+	  p->ctrl[3][0].xyz[1] =  b->getMins()[1];
 
-	  p->ctrl[5][0].xyz[0] =  b->maxs[0];
-	  p->ctrl[5][0].xyz[1] =  b->maxs[1];
+	  p->ctrl[5][0].xyz[0] =  b->getMaxs()[0];
+	  p->ctrl[5][0].xyz[1] =  b->getMaxs()[1];
 
-	  p->ctrl[7][0].xyz[0] =  b->mins[0];
-	  p->ctrl[7][0].xyz[1] =  b->maxs[1];
+	  p->ctrl[7][0].xyz[0] =  b->getMins()[0];
+	  p->ctrl[7][0].xyz[1] =  b->getMaxs()[1];
 
 	  for ( i = 1 ; i < p->width - 1 ; i += 2 ) 
     {
 
-      p->ctrl[i][0].xyz[2] =  b->mins[2];
+      p->ctrl[i][0].xyz[2] =  b->getMins()[2];
 
 		  p->ctrl[i][2].xyz = p->ctrl[i][0].xyz;
 
-		  p->ctrl[i][2].xyz[2] =  b->maxs[2];
+		  p->ctrl[i][2].xyz[2] =  b->getMaxs()[2];
 
 		  p->ctrl[i][1].xyz[0] = ( p->ctrl[i][0].xyz[0] + p->ctrl[i][2].xyz[0] ) * 0.5;
 		  p->ctrl[i][1].xyz[1] = ( p->ctrl[i][0].xyz[1] + p->ctrl[i][2].xyz[1] ) * 0.5;
@@ -1600,8 +1600,8 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
   if (bCone)
   {
     p->type = PATCH_CONE;
-    float xc = (b->maxs[0] + b->mins[0]) * 0.5; 
-    float yc = (b->maxs[1] + b->mins[1]) * 0.5; 
+    float xc = (b->getMaxs()[0] + b->getMins()[0]) * 0.5; 
+    float yc = (b->getMaxs()[1] + b->getMins()[1]) * 0.5; 
 
     for ( i = 0 ; i < p->width ; i ++)
     {
@@ -1724,13 +1724,13 @@ brush_t* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDele
 
 	brush_t *b = selected_brushes.next;
 
-  int xStep = b->mins[nFirst];
-  float xAdj = abs((b->maxs[nFirst] - b->mins[nFirst]) / (nWidth - 1));
-  float yAdj = abs((b->maxs[nSecond] - b->mins[nSecond]) / (nHeight - 1));
+  int xStep = b->getMins()[nFirst];
+  float xAdj = abs((b->getMaxs()[nFirst] - b->getMins()[nFirst]) / (nWidth - 1));
+  float yAdj = abs((b->getMaxs()[nSecond] - b->getMins()[nSecond]) / (nHeight - 1));
 
   for (i = 0; i < nWidth; i++)
   {
-    int yStep = b->mins[nSecond];
+    int yStep = b->getMins()[nSecond];
     for (j = 0; j < nHeight; j++)
     {
       p->ctrl[i][j].xyz[nFirst] = xStep;

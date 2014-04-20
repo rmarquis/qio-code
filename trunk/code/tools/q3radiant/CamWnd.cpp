@@ -666,7 +666,7 @@ bool CCamWnd::CullBrush (brush_t *b)
 		point[2] = m_Camera.origin[2] - fLevel;
 
 		for (i=0; i<3; i++)
-			if (b->mins[i] < point[i] && b->maxs[i] < point[i])
+			if (b->getMins()[i] < point[i] && b->getMaxs()[i] < point[i])
 				return true;
 
 		point[0] = m_Camera.origin[0] + fLevel;
@@ -674,20 +674,20 @@ bool CCamWnd::CullBrush (brush_t *b)
 		point[2] = m_Camera.origin[2] + fLevel;
 	
 		for (i=0; i<3; i++)
-			if (b->mins[i] > point[i] && b->maxs[i] > point[i])
+			if (b->getMins()[i] > point[i] && b->getMaxs()[i] > point[i])
 				return true;
 	}
 
 
 	for (i=0 ; i<3 ; i++)
-		point[i] = b->mins[m_nCullv1[i]] - m_Camera.origin[i];
+		point[i] = b->getMins()[m_nCullv1[i]] - m_Camera.origin[i];
 
 	d = point.dotProduct(m_vCull1);
 	if (d < -1)
 		return true;
 
 	for (i=0 ; i<3 ; i++)
-		point[i] = b->mins[m_nCullv2[i]] - m_Camera.origin[i];
+		point[i] = b->getMins()[m_nCullv2[i]] - m_Camera.origin[i];
 
 	d = point.dotProduct(m_vCull2);
 	if (d < -1)

@@ -74,7 +74,7 @@ void Z_MouseDown (int x, int y, int buttons)
 	b = selected_brushes.next;
 	if (b && b != &selected_brushes)
 	{
-		org[0] = (b->mins[0] + b->maxs[0])/2;
+		org[0] = (b->getMins()[0] + b->getMaxs()[0])/2;
 	}
 
 	dir[0] = 0; dir[1] = 1; dir[2] = 0;
@@ -347,10 +347,10 @@ void Z_Draw (void)
 
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
 	{
-		if (brush->mins[0] >= z.origin[0]
-			|| brush->maxs[0] <= z.origin[0]
-			|| brush->mins[1] >= z.origin[1]
-			|| brush->maxs[1] <= z.origin[1])
+		if (brush->getMins()[0] >= z.origin[0]
+			|| brush->getMaxs()[0] <= z.origin[0]
+			|| brush->getMins()[1] >= z.origin[1]
+			|| brush->getMaxs()[1] <= z.origin[1])
 			continue;
 
 		if (!Brush_Ray (org_top, dir_down, brush, &top))
@@ -383,10 +383,10 @@ void Z_Draw (void)
 	//
 	for (brush = selected_brushes.next ; brush != &selected_brushes ; brush=brush->next)
 	{
-		if ( !(brush->mins[0] >= z.origin[0]
-			|| brush->maxs[0] <= z.origin[0]
-			|| brush->mins[1] >= z.origin[1]
-			|| brush->maxs[1] <= z.origin[1]) )
+		if ( !(brush->getMins()[0] >= z.origin[0]
+			|| brush->getMaxs()[0] <= z.origin[0]
+			|| brush->getMins()[1] >= z.origin[1]
+			|| brush->getMaxs()[1] <= z.origin[1]) )
 		{
 			if (Brush_Ray (org_top, dir_down, brush, &top))
 			{
@@ -409,10 +409,10 @@ void Z_Draw (void)
 
 	  qglColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
 		qglBegin (GL_LINE_LOOP);
-		qglVertex2f (-xCam, brush->mins[2]);
-		qglVertex2f (xCam, brush->mins[2]);
-		qglVertex2f (xCam, brush->maxs[2]);
-		qglVertex2f (-xCam, brush->maxs[2]);
+		qglVertex2f (-xCam, brush->getMins()[2]);
+		qglVertex2f (xCam, brush->getMins()[2]);
+		qglVertex2f (xCam, brush->getMaxs()[2]);
+		qglVertex2f (-xCam, brush->getMaxs()[2]);
 		qglEnd ();
 	}
 

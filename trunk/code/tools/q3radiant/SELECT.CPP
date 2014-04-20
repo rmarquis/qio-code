@@ -400,10 +400,10 @@ void Select_Deselect (bool bDeselectFaces)
 	clearSelection();
 
 	// grab top / bottom height for new brushes
-	if (b->mins[2] < b->maxs[2])
+	if (b->getMins()[2] < b->getMaxs()[2])
 	{
-		g_qeglobals.d_new_brush_bottom_z = b->mins[2];
-		g_qeglobals.d_new_brush_top_z = b->maxs[2];
+		g_qeglobals.d_new_brush_bottom_z = b->getMins()[2];
+		g_qeglobals.d_new_brush_top_z = b->getMaxs()[2];
 	}
 
 	selected_brushes.next->prev = &active_brushes;
@@ -602,10 +602,10 @@ void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs)
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 		for (i=0 ; i<3 ; i++)
 		{
-			if (b->mins[i] < mins[i])
-				mins[i] = b->mins[i];
-			if (b->maxs[i] > maxs[i])
-				maxs[i] = b->maxs[i];
+			if (b->getMins()[i] < mins[i])
+				mins[i] = b->getMins()[i];
+			if (b->getMaxs()[i] > maxs[i])
+				maxs[i] = b->getMaxs()[i];
 		}
 }
 
@@ -1048,8 +1048,8 @@ void Select_CompleteTall (void)
 
 	clearSelection();
 
-	mins = selected_brushes.next->mins;
-	maxs = selected_brushes.next->maxs;
+	mins = selected_brushes.next->getMins();
+	maxs = selected_brushes.next->getMaxs();
 	Select_Delete ();
 
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -1059,8 +1059,8 @@ void Select_CompleteTall (void)
 	{
 		next = b->next;
 
-    if ( (b->maxs[nDim1] > maxs[nDim1] || b->mins[nDim1] < mins[nDim1]) 
-      || (b->maxs[nDim2] > maxs[nDim2] || b->mins[nDim2] < mins[nDim2]) )
+    if ( (b->getMaxs()[nDim1] > maxs[nDim1] || b->getMins()[nDim1] < mins[nDim1]) 
+      || (b->getMaxs()[nDim2] > maxs[nDim2] || b->getMins()[nDim2] < mins[nDim2]) )
       continue;
 
 	 	if (FilterBrush (b))
@@ -1094,8 +1094,8 @@ void Select_PartialTall (void)
 
 	clearSelection();
 
-	mins = selected_brushes.next->mins;
-	maxs = selected_brushes.next->maxs;
+	mins = selected_brushes.next->getMins();
+	maxs = selected_brushes.next->getMaxs();
 	Select_Delete ();
 
   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
@@ -1105,8 +1105,8 @@ void Select_PartialTall (void)
 	{
 		next = b->next;
 
-    if ( (b->mins[nDim1] > maxs[nDim1] || b->maxs[nDim1] < mins[nDim1]) 
-      || (b->mins[nDim2] > maxs[nDim2] || b->maxs[nDim2] < mins[nDim2]) )
+    if ( (b->getMins()[nDim1] > maxs[nDim1] || b->getMaxs()[nDim1] < mins[nDim1]) 
+      || (b->getMins()[nDim2] > maxs[nDim2] || b->getMaxs()[nDim2] < mins[nDim2]) )
       continue;
 
 	 	if (FilterBrush (b))
@@ -1142,8 +1142,8 @@ void Select_Touching (void)
 
 	clearSelection();
 
-	 mins = selected_brushes.next->mins;
-	maxs = selected_brushes.next->maxs;
+	 mins = selected_brushes.next->getMins();
+	maxs = selected_brushes.next->getMaxs();
 
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
 	{
@@ -1153,7 +1153,7 @@ void Select_Touching (void)
 	 		continue;
 
 		for (i=0 ; i<3 ; i++)
-			if (b->mins[i] > maxs[i]+1 || b->maxs[i] < mins[i]-1)
+			if (b->getMins()[i] > maxs[i]+1 || b->getMaxs()[i] < mins[i]-1)
 				break;
 
 		if (i == 3)
@@ -1176,8 +1176,8 @@ void Select_Inside (void)
 
 	clearSelection();
 
-	mins = selected_brushes.next->mins;
-	maxs = selected_brushes.next->maxs;
+	mins = selected_brushes.next->getMins();
+	maxs = selected_brushes.next->getMaxs();
 	Select_Delete ();
 
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
@@ -1188,7 +1188,7 @@ void Select_Inside (void)
 	 		continue;
 
 		for (i=0 ; i<3 ; i++)
-			if (b->maxs[i] > maxs[i] || b->mins[i] < mins[i])
+			if (b->getMaxs()[i] > maxs[i] || b->getMins()[i] < mins[i])
 				break;
 		if (i == 3)
 		{

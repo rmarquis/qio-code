@@ -494,7 +494,7 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 		}
 		else
 		{
-			origin = e->brushes.onext->mins - e->eclass->mins;
+			origin = e->brushes.onext->getMins() - e->eclass->mins;
 		}
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -563,7 +563,7 @@ void Entity_WriteSelected(entity_t *e, FILE *f)
     }
     else
     {
-		  origin = e->brushes.onext->mins - e->eclass->mins;
+		  origin = e->brushes.onext->getMins() - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -621,7 +621,7 @@ void Entity_WriteSelected(entity_t *e, CMemFile* pMemFile)
     }
     else
     {
-		  origin =  e->brushes.onext->mins - e->eclass->mins;
+		  origin =  e->brushes.onext->getMins() - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		SetKeyValue (e, "origin", text);
@@ -698,7 +698,7 @@ entity_t	*Entity_Create (eclass_t *c)
 		//
 		b = selected_brushes.next;
 		for (i=0 ; i<3 ; i++)
-			e->origin[i] = b->mins[i] - c->mins[i];
+			e->origin[i] = b->getMins()[i] - c->mins[i];
 
 		// create a custom brush
 		mins = c->mins + e->origin;
