@@ -503,7 +503,6 @@ void QE_Init (void)
 	//Cam_Init ();
 	//XY_Init ();
 	Z_Init ();
-	Terrain_Init();
 }
 
 void WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src )

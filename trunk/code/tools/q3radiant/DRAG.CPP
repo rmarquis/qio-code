@@ -125,36 +125,6 @@ void Drag_Setup (int x, int y, int buttons,
 
 		return;
 	}
-	else if (g_qeglobals.d_select_mode == sel_terrainpoint)
-	{
-		Terrain_SelectPointByRay( origin, dir, buttons );
-		
-		if (g_qeglobals.d_numterrapoints || g_qeglobals.d_select_mode == sel_area)
-		{
-			drag_ok = true;
-		}
-
-		Sys_UpdateWindows(W_ALL);
-		
-		Undo_Start("drag terrain point");
-		Undo_AddBrushList(&selected_brushes);
-		return;
-	}
-	else if (g_qeglobals.d_select_mode == sel_terraintexture)
-	{
-		Terrain_SelectPointByRay( origin, dir, buttons );
-		
-		if (g_qeglobals.d_numterrapoints || g_qeglobals.d_select_mode == sel_area)
-		{
-			drag_ok = true;
-		}
-
-		Sys_UpdateWindows(W_ALL);
-		
-		Undo_Start("drag terrain point");
-		Undo_AddBrushList(&selected_brushes);
-		return;
-	}
 	else
 	{
 		g_qeglobals.d_num_move_points = 0;
@@ -340,8 +310,7 @@ void Drag_Begin (int x, int y, int buttons,
 	altdown = static_cast<bool>(::GetAsyncKeyState(VK_MENU));
 
 	// shift-LBUTTON = select entire brush
-	if (buttons == (MK_LBUTTON | MK_SHIFT) && g_qeglobals.d_select_mode != sel_curvepoint &&
-		g_qeglobals.d_select_mode != sel_terrainpoint && g_qeglobals.d_select_mode != sel_terraintexture)
+	if (buttons == (MK_LBUTTON | MK_SHIFT) && g_qeglobals.d_select_mode != sel_curvepoint)
 	{
 		int nFlag = altdown ? SF_CYCLE : 0;
 		if (dir[0] == 0 || dir[1] == 0 || dir[2] == 0)  // extremely low chance of this happening from camera
@@ -352,8 +321,7 @@ void Drag_Begin (int x, int y, int buttons,
 	}
 
 	// ctrl-alt-LBUTTON = multiple brush select without selecting whole entities
-	if (buttons == (MK_LBUTTON | MK_CONTROL) && altdown && g_qeglobals.d_select_mode != sel_curvepoint &&
-		g_qeglobals.d_select_mode != sel_terrainpoint && g_qeglobals.d_select_mode != sel_terraintexture)
+	if (buttons == (MK_LBUTTON | MK_CONTROL) && altdown && g_qeglobals.d_select_mode != sel_curvepoint)
 	{
 		if (dir[0] == 0 || dir[1] == 0 || dir[2] == 0)  // extremely low chance of this happening from camera
 			Select_Ray (origin, dir, SF_ENTITIES_FIRST);	// hack for XY
@@ -363,8 +331,7 @@ void Drag_Begin (int x, int y, int buttons,
 	}
 
 	// ctrl-shift-LBUTTON = select single face
-	if (buttons == (MK_LBUTTON | MK_CONTROL | MK_SHIFT) && g_qeglobals.d_select_mode != sel_curvepoint &&
-		g_qeglobals.d_select_mode != sel_terrainpoint && g_qeglobals.d_select_mode != sel_terraintexture)
+	if (buttons == (MK_LBUTTON | MK_CONTROL | MK_SHIFT) && g_qeglobals.d_select_mode != sel_curvepoint)
 	{
 		Select_Deselect (!static_cast<bool>(::GetAsyncKeyState(VK_MENU)));
 		Select_Ray (origin, dir, SF_SINGLEFACE);
@@ -597,7 +564,7 @@ void MoveSelection (vec3_t move)
 	// this is fairly crappy way to deal with curvepoint and area selection
 	// but it touches the smallest amount of code this way
 	// 
-	if (g_qeglobals.d_num_move_points || g_qeglobals.d_numterrapoints || g_qeglobals.d_select_mode == sel_area)
+	if (g_qeglobals.d_num_move_points || g_qeglobals.d_select_mode == sel_area)
 	{
 		//area selection
 		if (g_qeglobals.d_select_mode == sel_area)
@@ -609,12 +576,6 @@ void MoveSelection (vec3_t move)
 		if (g_qeglobals.d_select_mode == sel_curvepoint)
 		{
 			Patch_UpdateSelected(move);
-			return;
-		}
-		//terrain point selection
-		if ( ( g_qeglobals.d_select_mode == sel_terrainpoint ) || ( g_qeglobals.d_select_mode == sel_terraintexture ) )
-		{
-			Terrain_UpdateSelected(move);
 			return;
 		}
 
@@ -653,17 +614,6 @@ void MoveSelection (vec3_t move)
 				vTemp2 = vTemp2 - vTemp;
 				//if (!Patch_DragScale(b->nPatchID, vTemp2, move))
 				if (!Patch_DragScale(b->pPatch, vTemp2, move))
-				{
-					b = NULL;
-					break;
-				}
-			}
-
-			if (b->terrainBrush)
-			{
-				vTemp2 = b->getMaxs() - b->getMins();
-				vTemp2 -= vTemp;
-				if (!Terrain_DragScale(b->pTerrain, vTemp2, move))
 				{
 					b = NULL;
 					break;
@@ -765,18 +715,9 @@ void Drag_MouseUp (int nButtons)
 
 	if (g_qeglobals.d_select_mode == sel_area)
 	{
-		if ( OnlyTerrainSelected() )
-			{
-			Terrain_SelectAreaPoints();
-			g_qeglobals.d_select_mode = sel_terrainpoint;
-			Sys_UpdateWindows (W_ALL);
-		}
-		else
-		{
 			Patch_SelectAreaPoints();
 			g_qeglobals.d_select_mode = sel_curvepoint;
 			Sys_UpdateWindows (W_ALL);
-		}
 	}
 	
 	if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])

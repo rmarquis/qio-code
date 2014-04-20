@@ -893,10 +893,6 @@ void ReplaceQTexture(qtexture_t *pOld, qtexture_t *pNew, brush_t *pList)
 		{
 			Patch_ReplaceQTexture(pBrush, pOld, pNew);
 		}
-		if (pBrush->terrainBrush)
-		{
-			Terrain_ReplaceQTexture(pBrush->pTerrain, pOld, pNew);
-		}
 
 		for (face_t* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
 		{

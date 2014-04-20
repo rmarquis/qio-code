@@ -30,8 +30,6 @@ typedef enum
 	sel_singlevertex,
 	sel_curvepoint,
 	sel_area,
-	sel_terrainpoint,
-	sel_terraintexture,
 
 
 } select_t;
@@ -40,7 +38,6 @@ typedef struct
 {
 	brush_t		*brush;
 	face_t		*face;
-	terrainFace_t	*terraface;
 	float		dist;
 	bool	selected;
 } trace_t;

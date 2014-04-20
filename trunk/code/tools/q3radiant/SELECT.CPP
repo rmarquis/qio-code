@@ -79,15 +79,6 @@ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 
 			if (face)
 			{
-				if ( brush->terrainBrush )
-				{
-					Terrain_Ray( origin, dir, brush, &dist );
-					if( dist == 0 )
-					{
-						// didn't actually hit the terrain
-						continue;
-					}
-				}
 				array.Add(brush);
 			}
 		}
@@ -115,10 +106,6 @@ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 		if (pToSelect)
 		{
 			face = Brush_Ray (origin, dir, pToSelect, &dist);
-			if ( pToSelect->terrainBrush )
-			{
-				t.terraface = Terrain_Ray( origin, dir, pToSelect, &dist );
-			}
 
 			t.dist = dist;
 			t.brush = pToSelect;
@@ -148,12 +135,6 @@ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 			//  continue;
 
 			face = Brush_Ray (origin, dir, brush, &dist);
-			if ( face ) {
-				if ( brush->terrainBrush )
-				{
-					t.terraface = Terrain_Ray( origin, dir, brush, &dist );
-				}
-			}
 			if (dist > 0 && dist < t.dist)
 			{
 				t.dist = dist;
@@ -180,12 +161,6 @@ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 			continue;
 
 		face = Brush_Ray (origin, dir, brush, &dist);
-		if ( face ) {
-			if ( brush->terrainBrush )
-			{
-				t.terraface = Terrain_Ray( origin, dir, brush, &dist );
-			}
-		}
 		if (dist > 0 && dist < t.dist)
 		{
 			t.dist = dist;
@@ -347,15 +322,11 @@ void Select_Delete (void)
 	while (selected_brushes.next != &selected_brushes)
 	{
 		brush = selected_brushes.next;
-    if (brush->patchBrush)
-    {
-      //Patch_Delete(brush->nPatchID);
-      Patch_Delete(brush->pPatch);
-    }
-	if (brush->terrainBrush)
-	{
-		Terrain_Delete(brush->pTerrain );
-	}
+		if (brush->patchBrush)
+		{
+		  //Patch_Delete(brush->nPatchID);
+		  Patch_Delete(brush->pPatch);
+		}
 
 		Brush_Free (brush);
 	}
@@ -925,14 +896,6 @@ void Select_Scale(float x, float y, float z)
 			v[2] = z;
 			//Patch_Scale(b->nPatchID, select_origin, v);
 			Patch_Scale(b->pPatch, select_origin, v);
-		}
-		if (b->terrainBrush)
-		{
-			vec3_t v;
-			v[0] = x;
-			v[1] = y;
-			v[2] = z;
-			Terrain_Scale(b->pTerrain, select_origin, v);
 		}
 	}
 }
@@ -1506,10 +1469,6 @@ void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected
 			Patch_FindReplaceTexture(pBrush, pFind, pReplace, bForce);
 		}
 
-		if (pBrush->terrainBrush)
-		{
-			Terrain_FindReplaceTexture(pBrush->pTerrain, pFind, pReplace, bForce);
-		}
 		for (face_t* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
 		{
 			if(bForce || strcmpi(pFace->texdef.name, pFind) == 0)

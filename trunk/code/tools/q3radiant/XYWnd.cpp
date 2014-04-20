@@ -575,12 +575,6 @@ void CXYWnd::ProduceSplitLists()
 				Brush_AddToList (pb, &active_brushes);
 				UpdatePatchInspector();
 			}
-			if (pb->terrainBrush)
-			{
-				Brush_RemoveFromList (pb);
-				Brush_AddToList (pb, &active_brushes);
-				UpdateTerrainInspector();
-			}
 		}
 	}
 

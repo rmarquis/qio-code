@@ -1700,21 +1700,6 @@ brush_t *Brush_Parse (void)
         		continue;
 			}
 		}
-		if ( strcmpi( token, "terrainDef" ) == 0 )
-		{
-			free (b);
-
-			b = Terrain_Parse();
-			if (b == NULL)
-			{
-				Warning ("parsing terrain/brush");
-				return NULL;
-			}
-			else
-			{
-				continue;
-			}
-		}
 		if (strcmpi(token, "patchDef2") == 0 || strcmpi(token, "patchDef3") == 0)
 		{
 			free (b);
@@ -1842,18 +1827,14 @@ void Brush_SetEpair(brush_t *b, const char *pKey, const char *pValue)
 {
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
-    if (b->patchBrush)
-    {
-      Patch_SetEpair(b->pPatch, pKey, pValue);
-    }
-    else if (b->terrainBrush)
-    {
-      Terrain_SetEpair(b->pTerrain, pKey, pValue);
-    }
-    else
-    {
-		  SetKeyValue(b->epairs, pKey, pValue);
-    }
+		if (b->patchBrush)
+		{
+		  Patch_SetEpair(b->pPatch, pKey, pValue);
+		}
+		else
+		{
+			  SetKeyValue(b->epairs, pKey, pValue);
+		}
 	}
 	else
 	{
@@ -1873,10 +1854,6 @@ const char* Brush_GetKeyValue(brush_t *b, const char *pKey)
     if (b->patchBrush)
     {
       return Patch_GetKeyValue(b->pPatch, pKey);
-    }
-    else if (b->terrainBrush)
-    {
-      return Terrain_GetKeyValue(b->pTerrain, pKey);
     }
     else
     {
@@ -1906,11 +1883,6 @@ void Brush_Write (brush_t *b, FILE *f)
 	if (b->patchBrush)
 	{
 		Patch_Write(b->pPatch, f);
-		return;
-	}
-	if ( b->pTerrain )
-	{
-		Terrain_Write(b->pTerrain, f);
 		return;
 	}
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -2038,11 +2010,6 @@ void Brush_Write (brush_t *b, CMemFile *pMemFile)
 	if (b->patchBrush)
 	{
 		Patch_Write(b->pPatch, pMemFile);
-		return;
-	}
-	if (b->terrainBrush)
-	{
-		Terrain_Write(b->pTerrain, pMemFile);
 		return;
 	}
 
@@ -2461,11 +2428,6 @@ void Brush_Free (brush_t *b, bool bRemoveNode)
 		Patch_Delete(b->pPatch);
 	}
 
-	if( b->terrainBrush )
-	{
-		Terrain_Delete( b->pTerrain );
-	}
-
 	// free faces
 	for (f=b->brush_faces ; f ; f=next)
 	{
@@ -2527,10 +2489,6 @@ int Brush_MemorySize(brush_t *b)
 	{
 		size += Patch_MemorySize(b->pPatch);
 	}
-	if (b->terrainBrush)
-	{
-		size += Terrain_MemorySize(b->pTerrain);
-	}
 	//
 	for (f = b->brush_faces; f; f = f->next)
 	{
@@ -2563,13 +2521,6 @@ brush_t *Brush_Clone (brush_t *b)
 	if (b->patchBrush)
 	{
 		patchMesh_t *p = Patch_Duplicate(b->pPatch);
-		Brush_RemoveFromList(p->pSymbiot);
-		Entity_UnlinkBrush(p->pSymbiot);
-		n = p->pSymbiot;
-	}
-	else if (b->terrainBrush)
-	{
-		terrainMesh_t *p = Terrain_Duplicate(b->pTerrain);
 		Brush_RemoveFromList(p->pSymbiot);
 		Entity_UnlinkBrush(p->pSymbiot);
 		n = p->pSymbiot;
@@ -2608,15 +2559,6 @@ brush_t *Brush_FullClone(brush_t *b)
 	if (b->patchBrush)
 	{
 		patchMesh_t *p = Patch_Duplicate(b->pPatch);
-		Brush_RemoveFromList(p->pSymbiot);
-		Entity_UnlinkBrush(p->pSymbiot);
-		n = p->pSymbiot;
-		n->owner = b->owner;
-		Brush_Build(n);
-	}
-	else if (b->terrainBrush)
-	{
-		terrainMesh_t *p = Terrain_Duplicate(b->pTerrain);
 		Brush_RemoveFromList(p->pSymbiot);
 		Entity_UnlinkBrush(p->pSymbiot);
 		n = p->pSymbiot;
@@ -2755,9 +2697,6 @@ void	Brush_AddToList (brush_t *b, brush_t *list)
 		{
 			Patch_Select(b->pPatch);
 		}
-		if (b->terrainBrush && list == &selected_brushes) {
-			Terrain_Select(b->pTerrain);
-		}
 	}
 	b->next = list->next;
 	list->next->prev = b;
@@ -2775,11 +2714,6 @@ void	Brush_RemoveFromList (brush_t *b)
 		Patch_Deselect(b->pPatch);
 		//Patch_Deselect(b->nPatchID);
 	}
-	if (b->terrainBrush)
-	{
-		Terrain_Deselect(b->pTerrain);
-	}
-
 	b->next->prev = b->prev;
 	b->prev->next = b->next;
 	b->next = b->prev = NULL;
@@ -2865,11 +2799,6 @@ void Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brush
 //		Sys_Printf("WARNING: Brush_SetTexture needs surface plugin code for patches\n");
 		Patch_SetTexture(b->pPatch, texdef, pTexdef );
 	}
-	if (b->terrainBrush)
-	{
-		Terrain_SetTexture(b->pTerrain, texdef);
-	}
-
 }
 
 
@@ -3842,12 +3771,6 @@ void Brush_Draw( brush_t *b )
 		return;
 	}
 	
-	if (b->terrainBrush)
-	{
-		Terrain_DrawCam(b->pTerrain);
-		return;
-	}
-
 	int nDrawMode = g_pParentWnd->GetCamera()->Camera().draw_mode;
 	
 	if (b->owner->eclass->fixedsize)
@@ -4011,12 +3934,7 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 		if (!g_bPatchShowBounds)
 			return;
 	}
-
-	if (b->terrainBrush)
-	{
-		Terrain_DrawXY(b->pTerrain, b->owner);
-	}
-                     
+        
 
 	if (b->owner->eclass->fixedsize)
 	{
@@ -4150,12 +4068,6 @@ void Brush_Move (brush_t *b, const vec3_t move, bool bSnap)
 		//Patch_Move(b->nPatchID, move);
 		Patch_Move(b->pPatch, move);
 	}
-
-	if (b->terrainBrush)
-	{
-		Terrain_Move(b->pTerrain, move);
-	}
-
 
 	// PGM - keep the origin vector up to date on fixed size entities.
 	if(b->owner->eclass->fixedsize)

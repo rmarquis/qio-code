@@ -229,7 +229,6 @@ void Map_Free (void)
 	strcpy (currentmap, "unnamed.map");
 	Sys_SetTitle (currentmap);
 	g_qeglobals.d_num_entities = 0;
-	g_qeglobals.d_numterrapoints = 0;
 
 	if (!active_brushes.next)
 	{	// first map

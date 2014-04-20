@@ -404,9 +404,7 @@ void CCamWnd::Cam_ChangeFloor (bool up)
 
 	for (b=active_brushes.next ; b != &active_brushes ; b=b->next)
 	{
-		if ( b->pTerrain && !Terrain_Ray( start, dir, b, &d ) )
-			continue;
-		if ( !b->pTerrain && !Brush_Ray (start, dir, b, &d) )
+		if ( !Brush_Ray (start, dir, b, &d) )
 			continue;
 		if (up && d < current && d > bestd)
 			bestd = d;
@@ -585,30 +583,6 @@ void CCamWnd::Cam_MouseMoved (int x, int y, int buttons)
 {
 	m_nCambuttonstate = buttons;
 	if (!buttons) {
-		if ( ( g_qeglobals.d_select_mode == sel_terrainpoint ) || ( g_qeglobals.d_select_mode == sel_terraintexture ) ) {
-			edVec3_c		dir;
-			float		f, r, u;
-			int			i;
-
-			//
-			// calc ray direction
-			//
-			u = (float)(y - m_Camera.height/2) / (m_Camera.width/2);
-			r = (float)(x - m_Camera.width/2) / (m_Camera.width/2);
-			f = 1;
-
-			for (i=0 ; i<3 ; i++)
-				dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
-			dir.normalize();
-
-			m_ptButton.x = x;
-			m_ptButton.y = y;
-
-			Terrain_SelectPointByRay( m_Camera.origin, dir, buttons );
-
-			Sys_UpdateWindows(W_CAMERA);
-		}
-
 		return;
 	}
 	m_ptButton.x = x;
@@ -948,8 +922,7 @@ void CCamWnd::Cam_Draw()
 	qglDisable (GL_TEXTURE_2D);
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{
-		if ( (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint) || 
-			(brush->terrainBrush && g_qeglobals.d_select_mode == sel_terrainpoint) )
+		if ( (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
 			continue;
 		
 		for (face=brush->brush_faces ; face ; face=face->next)
@@ -975,8 +948,7 @@ void CCamWnd::Cam_Draw()
 	qglColor3f (1, 1, 1);
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{
-		if (g_qeglobals.dontDrawSelectedOutlines || (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint) ||
-			(brush->terrainBrush && g_qeglobals.d_select_mode == sel_terrainpoint))
+		if (g_qeglobals.dontDrawSelectedOutlines || (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
 			continue;
 		
 		for (face=brush->brush_faces ; face ; face=face->next)

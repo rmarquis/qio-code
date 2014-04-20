@@ -159,7 +159,6 @@ SCommandInfo g_Commands[] =
   {"TogTexLock", 'T', 0x01, ID_TOGGLE_LOCK},
   {"TogTexRotLock", 'R', 0x01, ID_TOGGLE_ROTATELOCK},
   {"ToggleRealtime", 'R', 0x04, ID_VIEW_CAMERAUPDATE},
-  {"RaiseLowerTerrain", 'T', 0x06, ID_TERRAIN_RAISELOWERTERRAIN},
   {"EntityList", 'L', 0, ID_EDIT_ENTITYINFO},
   {"Preferences", 'P', 0, ID_PREFS},
   {"ToggleCamera", 'C', 0x05, ID_TOGGLECAMERA},
@@ -391,7 +390,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_POPUP_SELECTION, OnPopupSelection)
 	ON_COMMAND(ID_VIEW_CHANGE, OnViewChange)
 	ON_COMMAND(ID_VIEW_CAMERAUPDATE, OnViewCameraupdate)
-	ON_COMMAND(ID_TERRAIN_RAISELOWERTERRAIN, OnRaiseLowerTerrain)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAMERAUPDATE, OnUpdateViewCameraupdate)
 	ON_WM_SIZING()
 	ON_COMMAND(ID_HELP_ABOUT, OnHelpAbout)
@@ -541,7 +539,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_PATCH_NATURALIZE, OnPatchNaturalize)
 	ON_COMMAND(ID_SELECT_SNAPTOGRID, OnSnapToGrid)
 	ON_COMMAND(ID_CURVE_PATCHSQUARE, OnCurvePatchsquare)
-	ON_COMMAND(ID_TERRAIN_CREATETERRAINFROMBRUSH, OnTerrainCreateFromBrush)
 	ON_COMMAND(ID_TEXTURES_TEXTUREWINDOWSCALE_10, OnTexturesTexturewindowscale10)
 	ON_COMMAND(ID_TEXTURES_TEXTUREWINDOWSCALE_100, OnTexturesTexturewindowscale100)
 	ON_COMMAND(ID_TEXTURES_TEXTUREWINDOWSCALE_200, OnTexturesTexturewindowscale200)
@@ -2696,11 +2693,6 @@ void CMainFrame::OnSelectionDeselect()
 				g_qeglobals.d_num_move_points = 0;
 				Sys_UpdateWindows(W_ALL);
 			}
-			else if ( g_qeglobals.d_select_mode == sel_terrainpoint && g_qeglobals.d_numterrapoints > 0 )
-			{
-				g_qeglobals.d_numterrapoints = 0;
-				Sys_UpdateWindows( W_ALL );
-			}
 			else
 			{
 				Select_Deselect ();
@@ -2728,8 +2720,7 @@ void CMainFrame::OnSelectionDragedges()
 
 void CMainFrame::OnSelectionDragvertecies() 
 {
-	if (g_qeglobals.d_select_mode == sel_vertex || g_qeglobals.d_select_mode == sel_curvepoint ||
-      g_qeglobals.d_select_mode == sel_terrainpoint )
+	if (g_qeglobals.d_select_mode == sel_vertex || g_qeglobals.d_select_mode == sel_curvepoint )
 	{
 		clearSelection();
 		Sys_UpdateWindows (W_ALL);
@@ -2737,15 +2728,11 @@ void CMainFrame::OnSelectionDragvertecies()
 	else
 	{
 	  //--if (QE_SingleBrush() && selected_brushes.next->patchBrush)
-	if ( OnlyTerrainSelected() )
-	{
-		Terrain_Edit();
-	}
-    else if (OnlyPatchesSelected())
+	if (OnlyPatchesSelected())
     {
       Patch_EditPatch();
     }
-	else if ( !AnyPatchesSelected() && !AnyTerrainSelected() )
+	else if ( !AnyPatchesSelected() )
     {
 		  SetupVertexSelection ();
 		  if (g_qeglobals.d_numpoints)
@@ -2757,25 +2744,7 @@ void CMainFrame::OnSelectionDragvertecies()
 
 void CMainFrame::OnRaiseLowerTerrain() 
 {
-	//if ( !OnlyTerrainSelected() || ( g_qeglobals.d_select_mode == sel_terrainpoint ) )
-	//if ( ( g_qeglobals.d_select_mode == sel_terrainpoint ) || ( g_qeglobals.d_select_mode == sel_terraintexture ) )
-	if ( g_qeglobals.d_select_mode == sel_terrainpoint ) {
-		clearSelection();
-		Sys_UpdateWindows (W_ALL);
-	}
-	else if ( g_qeglobals.d_select_mode == sel_terraintexture ) {
-		clearSelection();
-		g_qeglobals.d_select_mode = sel_terrainpoint;
-		Sys_UpdateWindows (W_ALL);
-	}
-	else
-	{
-		//g_qeglobals.d_select_mode = sel_terrainpoint;
-		clearSelection();
-		g_qeglobals.d_select_mode = sel_terraintexture;
-		Sys_UpdateWindows (W_ALL);
-//		Terrain_Edit();
-	}
+
 }
 
 void CMainFrame::OnSelectionMakeDetail() 
@@ -4618,8 +4587,7 @@ void CMainFrame::OnCurvePatchsquare()
 
 void CMainFrame::OnTerrainCreateFromBrush()
 {
-	Terrain_BrushToMesh();
-	Sys_UpdateWindows (W_ALL);
+
 }
 
 void CMainFrame::CheckTextureScale(int id)

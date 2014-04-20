@@ -731,13 +731,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Thicken...",                  ID_CURVE_THICKEN
     END
-    POPUP "&Terrain"
-    BEGIN
-        MENUITEM "Create Terrain from &Brush",  ID_TERRAIN_CREATETERRAINFROMBRUSH
-
-        MENUITEM "Raise/Lower Terrain",         ID_TERRAIN_RAISELOWERTERRAIN
-        , CHECKED
-    END
     POPUP "&Help"
     BEGIN
         MENUITEM "Help\tF1",                    ID_HELP

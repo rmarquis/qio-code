@@ -338,42 +338,6 @@ typedef struct {
 	epair_t *epairs;
 } patchMesh_t;
 
-typedef struct {
-	int				index;
-	qtexture_t		*texture;
-	texdef_t		texdef;
-} terrainFace_t;
-
-typedef struct {
-	float			height;
-	float			scale;
-	terrainFace_t	tri;
-	vec4_t			rgba;
-	edVec3_c			normal;
-	edVec3_c			xyz;
-} terrainVert_t;
-
-#define MAX_TERRAIN_TEXTURES 128
-typedef struct {
-	int				width, height;
-
-	edVec3_c			mins, maxs;
-	edVec3_c			origin;
-	float			scale_x;
-	float			scale_y;
-
-	int				numtextures;
-	qtexture_t		*textures[ MAX_TERRAIN_TEXTURES ];
-
-	terrainVert_t	*heightmap;       // width * height
-
-	epair_t			*epairs;
-
-	brush_s			*pSymbiot;
-	bool			bSelected;
-	bool			bDirty;
-	int				nListID;
-} terrainMesh_t;
 
 typedef struct brush_s
 {
@@ -391,10 +355,7 @@ typedef struct brush_s
 	bool	hiddenBrush;
 	bool	terrainBrush;
   
-  //int nPatchID;
-
 	patchMesh_t *pPatch;
-	terrainMesh_t	*pTerrain;
 
 	struct entity_s *pUndoOwner;
 

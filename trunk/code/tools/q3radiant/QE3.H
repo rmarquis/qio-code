@@ -67,8 +67,6 @@ extern "C"
 
 #include "undo.h"
 
-#include "terrain.h"
-
 // the dec offsetof macro doesn't work very well...
 #define myoffsetof(type,identifier) ((size_t)&((type *)0)->identifier)
 
@@ -170,18 +168,6 @@ typedef struct
 	int       d_numpoints;
 	pedge_t   d_edges[MAX_EDGES];
 	int       d_numedges;
-
-	// terrain variables
-	float				d_terrainBrushSize;
-	terrainnoise_t		d_terrainNoiseType;
-	terrainfalloff_t	d_terrainFalloff;
-	terrainbrush_t		d_terrainBrush;
-	int					d_terrainWidth;
-	int					d_terrainHeight;
-
-	terrainVert_t	*d_terrapoints[MAX_TERRA_POINTS];
-	int				d_numterrapoints;
-
 	
 	int       d_num_move_points;
 	float    *d_move_points[4096];
