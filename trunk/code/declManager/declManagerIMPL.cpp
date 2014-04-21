@@ -36,9 +36,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
 #include <shared/entDef.h>
+#include <shared/autoCvar.h>
 #include "q3PlayerModelDecl.h"
 #include "articulatedFigure.h"
 #include "particleDecl.h"
+
+static aCvar_c decl_entity_printRegisterCalls("decl_entity_printRegisterCalls","0");
 
 struct declTextDef_s {
 	const char *sourceFile; // name of the source .def file
@@ -512,7 +515,9 @@ class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, 
 		g_core->RedWarning("declManagerIMPL_c::_registerEntityDecl: NULL name\n");
 		return 0;
 	}
-	g_core->Print("declManagerIMPL_c::_registerEntityDecl: registering %s\n",name);
+	if(decl_entity_printRegisterCalls.getInt()) {
+		g_core->Print("declManagerIMPL_c::_registerEntityDecl: registering %s\n",name);
+	}
 	entityDecl_c *ret = entityDecls.getEntry(name);
 	if(ret) {
 		ret->setReferencedByModule(userModule);

@@ -24,10 +24,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 // aseLoader.cpp
 #include <shared/parser.h>
 #include <shared/array.h>
+#include <shared/autoCvar.h>
 #include <math/vec3.h>
 #include <math/vec2.h>
 #include <api/coreAPI.h>
 #include <api/staticModelCreatorAPI.h>
+
+static aCvar_c ase_verboseLoading("ase_verboseLoading","0");
+static aCvar_c ase_printUnknownTokens("ase_printUnknownTokens","0");
 
 // bitmap names are stored with prefixes used by developers
 // we might need to convert them to paths relative to game directory
@@ -177,7 +181,9 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 									aseMat.bitmapName = p.getToken();
 									aseMat.bitmapName.backSlashesToSlashes();
 									aseMat.bitmapName.stripExtension();
-									g_core->RedWarning("Bitmap of material %i - %s\n",matNum,aseMat.bitmapName.c_str());
+									if(ase_verboseLoading.getInt()) {
+										g_core->RedWarning("Bitmap of material %i - %s\n",matNum,aseMat.bitmapName.c_str());
+									}
 								} else if(p.atWord("*MAP_TYPE")) {
 									str bitMapType = p.getToken();
 								} else if(p.atWord("*UVW_U_OFFSET")) {
@@ -207,26 +213,38 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 									str bitMapFilter = p.getToken();
 								} else if(p.atWord("{")) {
 									p.skipCurlyBracedBlock(false);
-									g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+									if(ase_printUnknownTokens.getInt()) {
+										g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+									}
 								} else {
 									const char *unknownToken = p.getToken();
-									g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+									if(ase_printUnknownTokens.getInt()) {
+										g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+									}
 								}
 							}
 						} else if(p.atWord("{")) {
 							p.skipCurlyBracedBlock(false);
-							g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							}
 						} else {
 							const char *unknownToken = p.getToken();
-							g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							}
 						}
 					}
 				} else if(p.atWord("{")) {
 					p.skipCurlyBracedBlock(false);
-					g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+					if(ase_printUnknownTokens.getInt()) {
+						g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+					}
 				} else {
-					const char *unknownToken = p.getToken();
-					g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+					const char *unknownToken = p.getToken();				
+					if(ase_printUnknownTokens.getInt()) {
+						g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+					}
 				}
 			}
 		} else if(p.atWord("*GROUP")) {
@@ -290,10 +308,14 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 							float scaleAxisAng = p.getFloat();
 						} else if(p.atWord("{")) {
 							p.skipCurlyBracedBlock(false);
-							g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							}
 						} else {
 							const char *unknownToken = p.getToken();
-							g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							}
 						}
 					}	
 				} else if(p.atWord("*MESH")) {
@@ -469,14 +491,20 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 							}						
 						} else if(p.atWord("{")) {
 							p.skipCurlyBracedBlock(false);
-							g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+							}
 						} else {
 							const char *unknownToken = p.getToken();
-							g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							if(ase_printUnknownTokens.getInt()) {
+								g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+							}
 						}
 					}	
-					g_core->Print("Mesh had %i verts, %i faces, %i texVerts, %i colorVerts, %i colorFaces, %i tvFaces\n",
-						meshVertCount,meshFaceCount,meshTVertCount,meshCVertCount,meshCFaceCount,meshTVFaceCount);
+					if(ase_verboseLoading.getInt()) {
+						g_core->Print("Mesh had %i verts, %i faces, %i texVerts, %i colorVerts, %i colorFaces, %i tvFaces\n",
+							meshVertCount,meshFaceCount,meshTVertCount,meshCVertCount,meshCFaceCount,meshTVFaceCount);
+					}
 					// compile mesh
 					if(meshVertCount == 0) {
 
@@ -524,7 +552,9 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 					if(refMatIndex >= 0 && refMatIndex < aseMaterials.size()) {
 						aseMaterial_s &aseMat = aseMaterials[refMatIndex];
 						const char *gameMatName = aseMat.getGameBitMatName();
-						g_core->Print("using aseMaterial_s with matname field \"%s\" and bitmap field \"%s\"\n",aseMat.matName.c_str(),aseMat.bitmapName.c_str());
+						if(ase_verboseLoading.getInt()) {
+							g_core->Print("using aseMaterial_s with matname field \"%s\" and bitmap field \"%s\"\n",aseMat.matName.c_str(),aseMat.bitmapName.c_str());
+						}
 						//if(MAT_IsMatNameDefinedInMaterialText(aseMat.matName)) 
 						if(0) {
 							out->setSurfsMaterial(surfacesToTexture.getArray(),surfacesToTexture.size(),aseMat.matName);
@@ -538,10 +568,14 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 					}
 				} else if(p.atWord("{")) {
 					p.skipCurlyBracedBlock(false);
-					g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+					if(ase_printUnknownTokens.getInt()) {
+						g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+					}
 				} else {
 					const char *unknownToken = p.getToken();
-					g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+					if(ase_printUnknownTokens.getInt()) {
+						g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+					}
 				}
 			}
 		} else if(p.atWord("}")) {
@@ -553,10 +587,14 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 		// skip unknown blocks of data and tokens
 		} else if(p.atWord("{")) {
 			p.skipCurlyBracedBlock(false);
-			g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+			if(ase_printUnknownTokens.getInt()) {
+				g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
+			}
 		} else {
 			const char *unknownToken = p.getToken();
-			g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+			if(ase_printUnknownTokens.getInt()) {
+				g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
+			}
 		}
 	}
 	return false; // no error

@@ -352,6 +352,7 @@ public:
 
 		btAssert(m_useQuantization);
 
+#if 0
 		btAssert(point.getX() <= m_bvhAabbMax.getX());
 		btAssert(point.getY() <= m_bvhAabbMax.getY());
 		btAssert(point.getZ() <= m_bvhAabbMax.getZ());
@@ -359,7 +360,32 @@ public:
 		btAssert(point.getX() >= m_bvhAabbMin.getX());
 		btAssert(point.getY() >= m_bvhAabbMin.getY());
 		btAssert(point.getZ() >= m_bvhAabbMin.getZ());
-
+#else
+		bool bPointInside = true;
+		if(point.getX() > m_bvhAabbMax.getX()) {
+			bPointInside = false;
+		}
+		if(point.getY() > m_bvhAabbMax.getY()) {
+			bPointInside = false;
+		}
+		if(point.getZ() > m_bvhAabbMax.getZ()) {
+			bPointInside = false;
+		}
+		if(point.getX() < m_bvhAabbMin.getX()) {
+			bPointInside = false;
+		}
+		if(point.getY() < m_bvhAabbMin.getY()) {
+			bPointInside = false;
+		}
+		if(point.getZ() < m_bvhAabbMin.getZ()) {
+			bPointInside = false;
+		}
+		if(bPointInside == false) {
+			//printf("btQuantizedBvh::quantize: point not fully inside, clamping to avoid asserts!\n");
+			quantizeWithClamp(out,point,isMax);
+			return;
+		}
+#endif
 		btVector3 v = (point - m_bvhAabbMin) * m_bvhQuantization;
 		///Make sure rounding is done in a way that unQuantize(quantizeWithClamp(...)) is conservative
 		///end-points always set the first bit, so that they are sorted properly (so that neighbouring AABBs overlap properly)

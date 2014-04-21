@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 
 static aCvar_c g_debugSpawn("g_debugSpawn","0");
+static aCvar_c g_printSpawnedClassNames("g_printSpawnedClassNames","0");
 
 static entDefsList_c g_entDefs;
 
@@ -103,7 +104,9 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 			return 0;
 		}
 	}
-	g_core->Print("G_SpawnEntDef: Spawning %s\n",className);
+	if(g_printSpawnedClassNames.getInt()) {
+		g_core->Print("G_SpawnEntDef: Spawning %s\n",className);
+	}
 	for(u32 j = 0; j < entDef->getNumKeyValues(); j++) {
 		const char *key, *value;
 		entDef->getKeyValue(j,&key,&value);

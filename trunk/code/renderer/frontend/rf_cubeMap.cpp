@@ -89,8 +89,11 @@ void RF_FormatStaticCubeMapName(const vec3_c &p, str &out) {
 bool RF_LoadWorldMapCubeMaps(const char *mapName) {
 	RF_ShutdownStaticCubeMaps();
 
+	str fixed = mapName;
+	if(fixed.hasExt("proc"))
+		fixed.setExtension("map");
 	entDefsList_c entities;
-	if(entities.load(mapName)) {
+	if(entities.load(fixed)) {
 		g_core->Print("RF_LoadMapCubeMaps: Failed to load map entities list.\n");
 		return true;
 	}

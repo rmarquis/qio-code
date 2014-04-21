@@ -53,7 +53,7 @@ void Light::setSpotLightRadius(float newSpotLightRadius) {
 	}
 }
 void Light::setKeyValue(const char *key, const char *value) {
-	g_core->Print("Light::setKeyValue: %s %s\n",key,value);
+	//g_core->Print("Light::setKeyValue: %s %s\n",key,value);
 	if(!stricmp(key,"light")) {
 		// Q3 light value
 		float lightKeyValue = atof(value);

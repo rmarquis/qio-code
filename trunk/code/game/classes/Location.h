@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2014 V.
 
 This file is part of Qio source code.
 
@@ -21,36 +21,22 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// readStream.h - binary file reader
-#ifndef __SHARED_READSTREAM_H__
-#define __SHARED_READSTREAM_H__
+// Location.h
+#ifndef __LOCATION_H__
+#define __LOCATION_H__
 
-#include <api/readStreamAPI.h>
+#include "BaseEntity.h"
+#include <shared/str.h>
 
-class readStream_c : public readStreamAPI_i {
-	long streamLen;
-	void *fileData;
-	byte *data;
-	u32 ofs;
-
-	void freeMemory();
+class Location : public BaseEntity {
+	str locationName;
 public:
-	readStream_c();
-	~readStream_c();
-	bool loadFromFile(const char *fname);
+	Location();
 
-	virtual bool isAtEOF() const;
-	virtual u32 readData(void *out, u32 numBytes);
-	virtual bool isAtData(const void *out, u32 numBytes);
-	virtual u32 skipBytes(u32 numBytesToSkip);
-	virtual const void *getCurDataPtr() const;
-	virtual const void *getDataPtr() const;
-	virtual u32 pointerToOfs(const void *p) const;
-	virtual u32 getPos() const;
-	virtual bool setPos(u32 newPosABS);
-	virtual u32 getTotalLen() const;	
-	virtual void readByteString(class str &out);
+	DECLARE_CLASS( Location );
+
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-#endif // __SHARED_READSTREAM_H__
+#endif // __LOCATION_H__
 

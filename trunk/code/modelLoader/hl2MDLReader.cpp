@@ -207,6 +207,7 @@ struct vtxFileHeader_s {
 };
 #pragma pack()
 class vtxFile_c {
+	str name;
 	readStream_c data;
 	u32 version;
 	const vtxFileHeader_s *h;
@@ -223,8 +224,14 @@ public:
 				if(data.loadFromFile(fixed)) {
 					g_core->RedWarning("vtxFile_c::preload: cannot open %s\n",fname);
 					return true; // error
+				} else {
+					name = fixed;
 				}
+			} else {
+				name = fixed;
 			}
+		} else {
+			name = fname;
 		}
 		h = (const vtxFileHeader_s*)data.getDataPtr();
 
@@ -250,6 +257,18 @@ public:
 					u32 i0 = sIndices[strip->ofsIndices+k];
 					u32 i1 = sIndices[strip->ofsIndices+k+1];
 					u32 i2 = sIndices[strip->ofsIndices+k+2];
+					if(i0 >= stripGroup->numVerts) {
+						g_core->RedWarning("vtxFile_c::getMeshIndices: vertex %i out of range <0,%i) - check file %s.\n",i0,stripGroup->numVerts,this->name.c_str());
+						continue;
+					}
+					if(i1 >= stripGroup->numVerts) {
+						g_core->RedWarning("vtxFile_c::getMeshIndices: vertex %i out of range <0,%i) - check file %s.\n",i1,stripGroup->numVerts,this->name.c_str());
+						continue;
+					}
+					if(i2 >= stripGroup->numVerts) {
+						g_core->RedWarning("vtxFile_c::getMeshIndices: vertex %i out of range <0,%i) - check file %s.\n",i2,stripGroup->numVerts,this->name.c_str());
+						continue;
+					}
 #if 1
 					if(this->h->version == 7) {
 						i0 = stripGroup->pVertexV7(i0)->origMeshVertID;//+prevVertexCount;
@@ -336,13 +355,33 @@ bool hl2MDLReader_c::readMatNames() {
 	u32 ofsMaterialPaths = data.readU32();
 	data.setPos(ofsMaterialPaths);
 	u32 ofsPathString = data.readU32();
-	const char *materialPath = ((const char*)data.getDataPtr()) + ofsPathString;
+	const char *materialPath;
+	if(ofsPathString >= this->fileLen) {
+		g_core->RedWarning("hl2MDLReader_c::readMatNames: ofsPathString (%i) is higher than entire file size (%i). Check %s.\n",
+			ofsPathString,this->fileLen,this->name.c_str());
+		materialPath = "invalidPath/";
+	} else {
+		materialPath = ((const char*)data.getDataPtr()) + ofsPathString;
+	}
 	data.setPos(ofsMaterials);
 	matNames.resize(numMaterials);
 	for(u32 i = 0; i < numMaterials; i++) {
 		u32 saved = data.getPos();
-		u32 localMatNameOfs = data.readU32();
-		data.setPos(saved + localMatNameOfs);
+		u32 localMatNameOfs = data.readU32();	
+		if(localMatNameOfs >= this->fileLen) {
+			g_core->RedWarning("hl2MDLReader_c::readMatNames: localMatNameOfs (%i) is higher than entire file size (%i). Check %s.\n",
+				localMatNameOfs,this->fileLen,this->name.c_str());
+			matNames[i] = "default";
+			continue;
+		} 
+		u32 absMatNameOfs = saved + localMatNameOfs;
+		if(localMatNameOfs >= this->fileLen) {
+			g_core->RedWarning("hl2MDLReader_c::readMatNames: absMatNameOfs (%i) is higher than entire file size (%i). Check %s.\n",
+				absMatNameOfs,this->fileLen,this->name.c_str());
+			matNames[i] = "default";
+			continue;
+		} 
+		data.setPos(absMatNameOfs);
 		const char *matName = (const char*)data.getCurDataPtr();
 		matNames[i] = materialPath;
 		matNames[i].append(matName);

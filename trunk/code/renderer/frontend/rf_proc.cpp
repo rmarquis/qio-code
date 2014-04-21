@@ -37,7 +37,8 @@ static aCvar_c rf_proc_showAreaPortals("rf_proc_showAreaPortals","0");
 static aCvar_c rf_proc_ignorePortals("rf_proc_ignorePortals","0");
 static aCvar_c rf_proc_ignoreCullBounds("rf_proc_ignoreCullBounds","0");
 // use this to see if lights are being properly culled by .proc areaportals
-aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
+/*static*/ aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
+static aCvar_c rf_proc_printChoppedFrustums("rf_proc_printChoppedFrustums","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -460,7 +461,10 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		frustumExt_c adjusted;
 		adjusted.adjustFrustum(fr,rf_camera.getOrigin(),p->points,p->plane);
 		if(adjusted.size() == 0) {
-			g_core->RedWarning("procTree_c::addAreaDrawCalls_r: frustum chopped away (dist %f)\n",d);
+			// it happend very often and doesn't seem to cause any visible errors
+			if(rf_proc_printChoppedFrustums.getInt()) {
+				g_core->RedWarning("procTree_c::addAreaDrawCalls_r: frustum chopped away (dist %f)\n",d);
+			}
 			continue;
 		}
 

@@ -42,6 +42,8 @@ enum entityType_e {
 	ET_PATHNODE,
 	// static object (used heavily on Doom3 maps)
 	ET_FUNC_STATIC,
+	// info_location entities
+	ET_INFO_LOCATION,
 };
 
 #endif // __SHARED_ENTITYTYPE_H__

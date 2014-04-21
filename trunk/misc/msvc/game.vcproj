@@ -591,6 +591,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Location.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Location.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Logic_Blinker.cpp"
 				>
 			</File>

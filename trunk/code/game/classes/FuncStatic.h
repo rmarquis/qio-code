@@ -33,6 +33,7 @@ public:
 
 	DECLARE_CLASS( FuncStatic );
 
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
 #endif // __FUNC_STATIC_H__

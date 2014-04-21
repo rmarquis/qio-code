@@ -262,7 +262,7 @@ void IMG_LoadTGA(const char *name, byte **pic, byte *buffer, u32 *width, u32 *he
 	}
 }
 
-#if 0
+#if 1
 #define IMAGE_USE_VTF_LIB
 #endif 
 

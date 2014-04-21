@@ -99,6 +99,35 @@ static void IMG_AddNormalMaps(byte *data1, int width1, int height1, byte *data2,
 		free( newMap );
 	}
 }
+static void IMG_AddImage( byte *data1, int width1, int height1, byte *data2, int width2, int height2 ) {
+	int		i, j;
+	int		c;
+	byte	*newMap;
+
+	// resample pic2 to the same size as pic1
+	if ( width2 != width1 || height2 != height1 ) {
+		newMap = IMG_Dropsample( data2, width2, height2, width1, height1 );
+		data2 = newMap;
+	} else {
+		newMap = NULL;
+	}
+
+
+	c = width1 * height1 * 4;
+
+	for ( i = 0 ; i < c ; i++ ) {
+		j = data1[i] + data2[i];
+		if ( j > 255 ) {
+			j = 255;
+		}
+		data1[i] = j;
+	}
+
+	if ( newMap ) {
+		free( newMap );
+	}
+}
+
 /*
 =================
 R_HeightmapToNormalMap
@@ -211,7 +240,9 @@ public:
 		}
 	}
 
-	//
+	void addImage(image_c *other) {
+		IMG_AddImage(data,w,h,other->data,other->w,other->h);
+	}
 	void addNormalsFrom(image_c *other) {
 		IMG_AddNormalMaps(data,w,h,other->data,other->w,other->h);
 	}
@@ -323,6 +354,38 @@ image_c *MAT_ParseImageScript_r(parser_c &p) {
 			return 0; // error
 		}
 		return intensityImage;	
+	} else if(p.atWord_dontNeedWS("add")) {
+		if(p.atChar('(') == false) {
+			g_core->RedWarning("Expected '(' after \"add\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		image_c *img0 = MAT_ParseImageScript_r(p);
+		if(p.atChar(',') == false) {
+			g_core->RedWarning("Expected ',' inside \"add\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		image_c *img1 = MAT_ParseImageScript_r(p);
+		image_c *ret = img0;
+		if(img0 && img1) {
+			img0->addImage(img1);
+			delete img1;
+			img1 = 0;
+		} else {
+			ret = 0;
+			if(img0) {
+				delete img0;
+				img0 = 0;
+			}
+			if(img1) {
+				delete img1;
+				img1 = 0;
+			}
+		}
+		if(p.atChar(')') == false) {
+			g_core->RedWarning("Expected ')' after \"add\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		return ret;
 	} else {
 		str texName = p.getToken(",)");
 		image_c *newImage = IMG_LoadImage(texName);

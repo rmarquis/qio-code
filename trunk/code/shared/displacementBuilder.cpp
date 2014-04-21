@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // https://developer.valvesoftware.com/wiki/Displacement
 #include "displacementBuilder.h"
 #include <fileformats/bspFileFormat_hl2.h>
+#include <api/coreAPI.h>
 
 void displacementBuilder_c::setupBaseQuad(const vec3_c *v, u32 stride) {
 	baseVerts[0] = *v;
@@ -37,12 +38,18 @@ void displacementBuilder_c::setupBaseQuad(const vec3_c *v, u32 stride) {
 	baseVerts[3] = *v;
 }
 void displacementBuilder_c::buildDisplacementSurface(const srcDisplacement_s *disp, const srcDispVert_s *verts) {
+	u32 count = 0;
 	while (baseVerts[0].compare(disp->startPosition,0.1f)==false) {
 		vec3_c temp = baseVerts[0];
 		baseVerts[0] = baseVerts[1];
 		baseVerts[1] = baseVerts[2];
 		baseVerts[2] = baseVerts[3];
 		baseVerts[3] = temp;
+		count++;
+		if(count > 4) {
+			g_core->RedWarning("displacementBuilder_c::buildDisplacementSurface: failed to realign displacement vertices.\n");
+			return;
+		}
 	}
 	vec3_c leftEdge = baseVerts[1] - baseVerts[0];
 	vec3_c rightEdge = baseVerts[2] - baseVerts[3];

@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2014 V.
 
 This file is part of Qio source code.
 
@@ -21,36 +21,22 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// readStream.h - binary file reader
-#ifndef __SHARED_READSTREAM_H__
-#define __SHARED_READSTREAM_H__
+// Location.cpp
+#include "Location.h"
+#include <shared/entityType.h>
 
-#include <api/readStreamAPI.h>
+// idLocationEntity (info_location)
+// Used to assign a string name to specific .proc area.
+DEFINE_CLASS(Location, "BaseEntity");
+DEFINE_CLASS_ALIAS(Location, idLocationEntity);
 
-class readStream_c : public readStreamAPI_i {
-	long streamLen;
-	void *fileData;
-	byte *data;
-	u32 ofs;
-
-	void freeMemory();
-public:
-	readStream_c();
-	~readStream_c();
-	bool loadFromFile(const char *fname);
-
-	virtual bool isAtEOF() const;
-	virtual u32 readData(void *out, u32 numBytes);
-	virtual bool isAtData(const void *out, u32 numBytes);
-	virtual u32 skipBytes(u32 numBytesToSkip);
-	virtual const void *getCurDataPtr() const;
-	virtual const void *getDataPtr() const;
-	virtual u32 pointerToOfs(const void *p) const;
-	virtual u32 getPos() const;
-	virtual bool setPos(u32 newPosABS);
-	virtual u32 getTotalLen() const;	
-	virtual void readByteString(class str &out);
-};
-
-#endif // __SHARED_READSTREAM_H__
-
+Location::Location() {
+	this->setEntityType(ET_INFO_LOCATION);
+}
+void Location::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"name")) {
+		locationName = value;
+	} else {
+		BaseEntity::setKeyValue(key,value);		
+	}
+}

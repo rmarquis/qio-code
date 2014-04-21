@@ -47,6 +47,14 @@ bool entDefsList_c::fromString(const char *text) {
 	parser_c p;
 	p.setup(text);
 
+	// Doom 3 / Quake 4 NOTE:
+	// There are no entities data in .proc files.
+	// Entities are loaded from .map files.
+	if(p.atWord("mapProcFile")) {
+		g_core->RedWarning("entDefsList_c::fromString: cannot load entities string from .proc files.\n");
+		return true;
+	}
+
 	int mapFileVersion = -1;
 
 	// only for Doom3/Quake4 .map files - skip version ident

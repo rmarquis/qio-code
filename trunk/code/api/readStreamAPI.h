@@ -37,7 +37,7 @@ public:
 	virtual const void *getDataPtr() const = 0;
 	virtual u32 pointerToOfs(const void *p) const = 0;
 	virtual u32 getPos() const = 0;
-	virtual void setPos(u32 newPosABS) = 0;
+	virtual bool setPos(u32 newPosABS) = 0;
 	virtual bool isAtEOF() const = 0;
 	virtual u32 getTotalLen() const = 0;
 

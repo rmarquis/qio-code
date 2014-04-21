@@ -109,8 +109,11 @@ u32 readStream_c::pointerToOfs(const void *p) const {
 u32 readStream_c::getPos() const {
 	return ofs;
 }
-void readStream_c::setPos(u32 newPosABS) {
+bool readStream_c::setPos(u32 newPosABS) {
 	ofs = newPosABS;
+	if(ofs > streamLen)
+		return true;
+	return false;
 }
 u32 readStream_c::getTotalLen() const {
 	return streamLen;

@@ -78,15 +78,12 @@ public:
 			numBits = bitNum + 1;
 			ensureAllocatedBits(numBits);
 		}
-		u32 byteNum = 0;
-		while (bitNum > 7) {
-			byteNum++;
-			bitNum -= 8;
-		}
+		u32 localBitNum = bitNum % 8;
+		u32 byteNum = (bitNum-localBitNum)/8;
 		if(bValue) {
-			data[byteNum] |= (1 << bitNum);
+			data[byteNum] |= (1 << localBitNum);
 		} else {
-			data[byteNum] &= ~(1 << bitNum);
+			data[byteNum] &= ~(1 << localBitNum);
 		}
 	}
 	void setAll(bool b) {
@@ -100,12 +97,9 @@ public:
 		if(bitNum >= numBits) {
 			return 0; // bit index out of range - should never happen
 		}
-		u32 byteNum = 0;
-		while(bitNum > 7) {
-			byteNum++;
-			bitNum -= 8;
-		}
-		return ((data[byteNum] & (1 << bitNum) ) != 0);
+		u32 localBitNum = bitNum % 8;
+		u32 byteNum = (bitNum-localBitNum)/8;
+		return ((data[byteNum] & (1 << localBitNum) ) != 0);
 	}
 	void fromBytes(const byte *np, u32 numNewBytes) {
 		ensureAllocatedBytes(numNewBytes);

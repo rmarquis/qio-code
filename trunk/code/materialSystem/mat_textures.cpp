@@ -165,7 +165,11 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 	return ret;
 }
 class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h) {
-	textureIMPL_c *ret = new textureIMPL_c;
+	textureIMPL_c *ret = mat_textures.getEntry(texName);
+	if(ret) {
+		return ret;
+	}
+	ret = new textureIMPL_c;
 	ret->setName(texName);
 	ret->setWrapMode(TWM_REPEAT);
 	rb->uploadTextureRGBA(ret,picData,w,h);

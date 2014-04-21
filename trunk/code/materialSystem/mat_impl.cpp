@@ -419,6 +419,8 @@ bool mtrIMPL_c::loadFromVMTFile() {
 		// vmtName = {data=0x05517738 "materials/maps/d1_town_01/tile/tileroof004b_503_632_-2999.vmt" buffer=0x0018e91c "面面面面面面面面=" len=61 ...}
 		// into this:
 		// "materials/tile/tileroof004b.vmt"
+		// NOTE: those are the cubemap references (it's the cubemap origin)
+		// They are used for reflection effects. "env_cubemap"
 		
 		str fixed = "";
 		const char *p = vmtName.c_str() + strlen("maps/");
@@ -468,6 +470,9 @@ bool mtrIMPL_c::loadFromVMTFile() {
 			newStage->setTexture(baseTexture);
 			stages.push_back(newStage);
 		} else if(p.atWord("$alphatest")) {
+			iAlphaTest = p.getInteger();
+			bAlphaTestSetInVMT = true;
+		} else if(p.atWord("$translucent")) {
 			iAlphaTest = p.getInteger();
 			bAlphaTestSetInVMT = true;
 		} else if(p.atWord("%compilesky")) {
@@ -555,7 +560,10 @@ void mtrIMPL_c::removeAllStagesOfType(enum stageType_e type) {
 }
 
 class astAPI_i *MAT_ParseExpression(parser_c &p) {
-	str s = p.getLine(",");
+	// get the expression - stop at line break, ',' or at '}'
+	// (quote from Prey's dreamworld.mtr: "		scale	1 + parm5, 1 + parm5	}")
+	str s = p.getLine(",}");
+	// convert expression text to AST
 	astAPI_i *ret = AST_ParseExpression(s);
 	if(p.atWord_dontNeedWS(",")) {
 		// skip it
@@ -816,11 +824,39 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
 					}
 					sunParms->setFromColorAndAngles(color,angles);
+				} else if(p.atWord("collision")) {
+					// Id Tech 4 token
 				} else if(p.atWord("matter_metal")) {
 					// Prey keyword?
 				} else if(p.atWord("matter_flesh")) {
 					// Prey keyword?
+				} else if(p.atWord("matter_glass")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_pipe")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_stone")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_wood")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_altmetal")) {
+					// Prey keyword?
+				} else if(p.atWord("matter_cardboard")) {
+					// Prey keyword?
 				} else if(p.atWord("wallwalk")) {
+					// Prey keyword?
+				} else if(p.atWord("nosteps")) {
+				} else if(p.atWord("skipClip")) {
+				} else if(p.atWord("lightWholeMesh")) {
+					// Prey keyword?
+				} else if(p.atWord("decal_alphatest_macro")) {
+					// Prey keyword?
+				} else if(p.atWord("forcefield")) {
+					// Prey keyword?
+				} else if(p.atWord("skybox_macro")) {
+					// Prey keyword?
+				} else if(p.atWord("skyboxportal")) {
+					// Prey keyword?
+				} else if(p.atWord("glass_macro")) {
 					// Prey keyword?
 				} else {
 					u32 line = p.getCurrentLineNumber();
@@ -1048,8 +1084,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
 				} else if(p.atWord("nomips")) {
+				} else if(p.atWord("nopicmip")) {
 
 				} else if(p.atWord("highquality")) {
+
+				} else if(p.atWord("highres")) {
 					
 				} else if(p.atWord("cubemap") || p.atWord("cameraCubeMap")) {
 					// FIXME: what's the difference between these two?
@@ -1255,6 +1294,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("vertexParm")) {
 					p.skipLine();
+				} else if(p.atWord("fragmentParm")) {
+					p.skipLine();
 				} else if(p.atWord("fragmentMap")) {
 					p.skipLine();
 				} else if(p.atWord("ignoreAlphaTest")) {
@@ -1290,6 +1331,17 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					stage->setGreenAST(expGreen);
 					stage->setBlueAST(expBlue);
 					stage->setAlphaAST(expAlpha);
+				} else if(p.atWord("linear")) {
+				} else if(p.atWord("spiritWalk")) {
+					// Prey keyword, used to affect gameplay?
+				} else if(p.atWord("shaderFallback2")) {
+					// related to D3 shaders handling?
+				} else if(p.atWord("shaderLevel2")) {
+					// related to D3 shaders handling?
+				} else if(p.atWord("scopeView")) {
+					// for sniper rifle?
+				} else if(p.atWord("specularExp")) {
+					p.skipLine();
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();

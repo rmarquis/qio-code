@@ -320,6 +320,10 @@ void bspPhysicsDataLoader_c::iterateModelDisplacementSurfaces(u32 modelNum, void
 		if(sf->dispInfo < 0)
 			continue; // this surface is not a displacement
 		const srcDisplacement_s *disp = seHeader->getDisplacement(sf->dispInfo);
+		if(disp == 0) {
+			g_core->RedWarning("bspPhysicsDataLoader_c::iterateModelDisplacementSurfaces: seHeader->getDisplacement returned NULL for disp %i\n",sf->dispInfo);
+			continue;
+		}	
 		perDisplacementSurfaceCallback(surfaceIndex,disp->contents);
 	}
 }

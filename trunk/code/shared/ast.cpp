@@ -26,8 +26,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "array.h"
 #include "str.h"
 #include "ast.h"
+#include "autoCvar.h"
 #include <api/coreAPI.h>
 
+static aCvar_c ast_printParsedExpressions("ast_printParsedExpressions","0");
 
 #if 1
 #define AST_SAVE_SOURCE_STRING
@@ -526,6 +528,10 @@ public:
 					} else if(*p == '(') {
 						addLexem(LEX_BRACKET_LEFT);
 						p++; // skip '('
+					} else if(*p == '{' || *p == '}') {
+						g_core->RedWarning("astParser_c::lexemizeExpression: unwanted curly bracket hit. Input string is invalid.\n");
+						bError = true;
+						return true; // error
 					} else {
 						// check for operators
 						operator_e op = OperatorForString(p,&p);
@@ -585,7 +591,9 @@ public:
 };
 
 class astAPI_i *AST_ParseExpression(const char *s) {
-	g_core->Print("AST_ParseExpression: %s\n",s);
+	if(ast_printParsedExpressions.getInt()) {
+		g_core->Print("AST_ParseExpression: %s\n",s);
+	}
 	astParser_c ap;
 	if(ap.lexemizeExpression(s)) {
 		return 0;

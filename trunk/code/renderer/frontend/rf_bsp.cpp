@@ -1430,12 +1430,12 @@ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	return false;
 }
 bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
-	const lump_s &sl = h->getLumps()[leafSurfsLump];
-	if(sl.fileLen % sizeof(u16)) {
+	u32 lumpLen = h->getLumpSize(leafSurfsLump);
+	if(lumpLen % sizeof(u16)) {
 		g_core->RedWarning("rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
 		return true; // error
 	}	
-	u32 numLeafSurfaces = sl.fileLen / sizeof(u16);
+	u32 numLeafSurfaces = lumpLen / sizeof(u16);
 	const u16 *inLeafSurfaces = (const u16*)h->getLumpData(leafSurfsLump);
 	leafSurfaces.resize(numLeafSurfaces);
 
