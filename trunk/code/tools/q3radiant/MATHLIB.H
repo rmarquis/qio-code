@@ -150,6 +150,32 @@ public:
 			up[2] = cr*cp;
 		}
 	}
+	void axializeVector() {
+		if (!_v[0] && !_v[1])
+			return;
+		if (!_v[1] && !_v[2])
+			return;
+		if (!_v[0] && !_v[2])
+			return;
+
+		int i;
+		float a[3];
+		for (i=0 ; i<3 ; i++)
+			a[i] = fabs(_v[i]);
+		if (a[0] > a[1] && a[0] > a[2])
+			i = 0;
+		else if (a[1] > a[0] && a[1] > a[2])
+			i = 1;
+		else
+			i = 2;
+
+		float o = _v[i];
+		this->clear();
+		if (o<0)
+			_v[i] = -1;
+		else
+			_v[i] = 1;
+	}
 
 	void operator *=(float f) {
 		x *= f;

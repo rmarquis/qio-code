@@ -25,162 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // This file must be identical in the quake and utils directories
 //
 
-/*
-========================================================================
-
-.MD2 triangle model file format
-
-========================================================================
-*/
-
-#define IDALIASHEADER		(('2'<<24)+('P'<<16)+('D'<<8)+'I')
-#define ALIAS_VERSION	8
-
-#define	MAX_TRIANGLES	4096
-#define MAX_VERTS		2048
-#define MAX_FRAMES		512
-#define MAX_MD2SKINS	32
-#define	MAX_SKINNAME	64
-
-typedef struct
-{
-	short	s;
-	short	t;
-} dstvert_t;
-
-typedef struct 
-{
-	short	index_xyz[3];
-	short	index_st[3];
-} dtriangle_t;
-
-typedef struct
-{
-	byte	v[3];			// scaled byte to fit in frame mins/maxs
-	byte	lightnormalindex;
-} dtrivertx_t;
-
-typedef struct
-{
-	float		scale[3];	// multiply byte verts by this
-	float		translate[3];	// then add this
-	char		name[16];	// frame name from grabbing
-	dtrivertx_t	verts[1];	// variable sized
-} daliasframe_t;
-
-
-// the glcmd format:
-// a positive integer starts a tristrip command, followed by that many
-// vertex structures.
-// a negative integer starts a trifan command, followed by -x vertexes
-// a zero indicates the end of the command list.
-// a vertex consists of a floating point s, a floating point t,
-// and an integer vertex index.
-
-
-typedef struct
-{
-	int			ident;
-	int			version;
-
-	int			skinwidth;
-	int			skinheight;
-	int			framesize;		// byte size of each frame
-
-	int			num_skins;
-	int			num_xyz;
-	int			num_st;			// greater than num_xyz for seams
-	int			num_tris;
-	int			num_glcmds;		// dwords in strip/fan command list
-	int			num_frames;
-
-	int			ofs_skins;		// each skin is a MAX_SKINNAME string
-	int			ofs_st;			// byte offset from start for stverts
-	int			ofs_tris;		// offset for dtriangles
-	int			ofs_frames;		// offset for first frame
-	int			ofs_glcmds;	
-	int			ofs_end;		// end of file
-
-} dmdl_t;
-
-#define MD3_IDENT			(('3'<<24)+('P'<<16)+('D'<<8)+'I')
-#define	MAX_QPATH			64		// max length of a quake game pathname
-#define	MD3_XYZ_SCALE		(1.0/64)
-
-typedef struct {
-	int			ident;
-	int			version;
-
-	char		name[MAX_QPATH];	// model name
-
-	int			flags;
-
-	int			numFrames;
-	int			numTags;			
-	int			numSurfaces;
-
-	int			numSkins;
-
-	int			ofsFrames;			// offset for first frame
-	int			ofsTags;			// numFrames * numTags
-	int			ofsSurfaces;		// first surface, others follow
-
-	int			ofsEnd;				// end of file
-} md3Header_t;
-
-typedef struct {
-	int		ident;				// 
-
-	char	name[MAX_QPATH];	// polyset name
-
-	int		flags;
-	int		numFrames;			// all surfaces in a model should have the same
-
-	int		numShaders;			// all surfaces in a model should have the same
-	int		numVerts;
-
-	int		numTriangles;
-	int		ofsTriangles;
-
-	int		ofsShaders;			// offset from start of md3Surface_t
-	int		ofsSt;				// texture coords are common for all frames
-	int		ofsXyzNormals;		// numVerts * numFrames
-
-	int		ofsEnd;				// next surface follows
-
-} md3Surface_t;
-
-typedef struct {
-	char			name[MAX_QPATH];
-	int				shaderIndex;	// for in-game use
-} md3Shader_t;
-
-typedef struct {
-	int			indexes[3];
-} md3Triangle_t;
-
-typedef struct {
-	float		st[2];
-} md3St_t;
-
-typedef struct {
-	short		xyz[3];
-	short		normal;
-} md3XyzNormal_t;
-
-
-typedef struct
-{
-  float st[2];
-  int   nVertIndex;
-} glst_t;
-
-typedef struct
-{
-  int     nCount;
-  int     ObjectIndex;
-  glst_t  GlSt;
-} gl_t;
 
 #define MAX_WORLD_COORD		( 128*1024 )
 #define MIN_WORLD_COORD		( -128*1024 )
@@ -189,8 +33,8 @@ typedef struct
 #define	MAX_MAP_ENTITIES	2048
 
 
-
 #define	MAX_MAP_BRUSHES		8192
+
 
 #define MAX_BRUSH_SIZE		( WORLD_SIZE )
 
@@ -202,30 +46,9 @@ typedef struct
 //=============================================================================
 
 
-typedef struct
-{
-	float	point[3];
-} dvertex_t;
 
-
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
-
-// 3-5 are non-axial planes snapped to the nearest
-#define	PLANE_ANYX		3
-#define	PLANE_ANYY		4
-#define	PLANE_ANYZ		5
 
 // planes (x&~1) and (x&~1)+1 are allways opposites
-
-typedef struct
-{
-	float	normal[3];
-	float	dist;
-	int		type;		// PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
-} dplane_t;
 
 
 // contents flags are seperate bits
@@ -246,13 +69,6 @@ typedef struct
 #define	CONTENTS_PLAYERCLIP		0x10000
 #define	CONTENTS_MONSTERCLIP	0x20000
 
-// currents can be added to any other contents, and may be mixed
-#define	CONTENTS_CURRENT_0		0x40000
-#define	CONTENTS_CURRENT_90		0x80000
-#define	CONTENTS_CURRENT_180	0x100000
-#define	CONTENTS_CURRENT_270	0x200000
-#define	CONTENTS_CURRENT_UP		0x400000
-#define	CONTENTS_CURRENT_DOWN	0x800000
 
 #define	CONTENTS_ORIGIN			    0x1000000	  // removed before bsping an entity
 
@@ -267,14 +83,6 @@ typedef struct
 
 
 
-typedef struct texinfo_s
-{
-	float		vecs[2][4];		// [s/t][xyz offset]
-	int			flags;			// miptex flags + overrides
-	int			value;			// light emission, etc
-	char		texture[32];	// texture name (textures/*.wal)
-	int			nexttexinfo;	// for animations, -1 = end of chain
-} texinfo_t;
 
 
 #define	SURF_LIGHT		0x1		// value will hold the light strength

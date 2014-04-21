@@ -37,7 +37,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "CamWnd.h"
 #include "RADEditWnd.h"
 #include "TextureBar.h"
-#include "groupdlg.h"
 
 
 const int RAD_SHIFT =   0x01;
@@ -291,7 +290,6 @@ public:
 	afx_msg void OnToggleLock();
 	afx_msg void OnEditMapinfo();
 	afx_msg void OnEditEntityinfo();
-	afx_msg void OnBrushScripts();
 	afx_msg void OnViewNextview();
 	afx_msg void OnHelpCommandlist();
 	afx_msg void OnFileNewproject();
@@ -442,7 +440,6 @@ public:
 	afx_msg void OnUpdateTexturesShowinuse(CCmdUI* pCmdUI);
 	afx_msg void OnTexturesShowall();
 	afx_msg void OnPatchInspector();
-	afx_msg void OnViewOpengllighting();
 	afx_msg void OnSelectAll();
 	afx_msg void OnViewShowcaulk();
   afx_msg void OnCurveFreeze();
@@ -459,11 +456,6 @@ public:
 	afx_msg void OnViewHideshowShowhidden();
 	afx_msg void OnTexturesShadersShow();
 	afx_msg void OnTexturesFlushUnused();
-	afx_msg void OnViewGroups();
-	afx_msg void OnDropGroupAddtoWorld();
-	afx_msg void OnDropGroupName();
-	afx_msg void OnDropGroupNewgroup();
-	afx_msg void OnDropGroupRemove();
 	//}}AFX_MSG
   afx_msg void OnMru(unsigned int nID);
   afx_msg void OnViewNearest(unsigned int nID);

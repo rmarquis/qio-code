@@ -46,7 +46,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DialogThick.h"
 #include "PatchDialog.h"
 #include "Undo.h"
-#include "NameDlg.h"
 #include "libs/pakstuff.h"
 
 #ifdef _DEBUG
@@ -69,7 +68,7 @@ bool g_bScreenUpdates = true;           // whether window painting is active, us
 
 //bool g_bSnapToGrid = true;              // early use, no longer in use, clamping pref will be used
 CString g_strProject;                   // holds the active project filename
-
+bool g_bClosingRadiant = false;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -413,7 +412,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TOGGLE_LOCK, OnToggleLock)
 	ON_COMMAND(ID_EDIT_MAPINFO, OnEditMapinfo)
 	ON_COMMAND(ID_EDIT_ENTITYINFO, OnEditEntityinfo)
-	ON_COMMAND(ID_BRUSH_SCRIPTS, OnBrushScripts)
 	ON_COMMAND(ID_VIEW_NEXTVIEW, OnViewNextview)
 	ON_COMMAND(ID_HELP_COMMANDLIST, OnHelpCommandlist)
 	ON_COMMAND(ID_FILE_NEWPROJECT, OnFileNewproject)
@@ -562,7 +560,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_TEXTURES_SHOWINUSE, OnUpdateTexturesShowinuse)
 	ON_COMMAND(ID_TEXTURES_SHOWALL, OnTexturesShowall)
 	ON_COMMAND(ID_PATCH_INSPECTOR, OnPatchInspector)
-	ON_COMMAND(ID_VIEW_OPENGLLIGHTING, OnViewOpengllighting)
 	ON_COMMAND(ID_SELECT_ALL, OnSelectAll)
 	ON_COMMAND(ID_VIEW_SHOWCAULK, OnViewShowcaulk)
 	ON_COMMAND(ID_CURVE_FREEZE, OnCurveFreeze)
@@ -579,11 +576,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_HIDESHOW_SHOWHIDDEN, OnViewHideshowShowhidden)
 	ON_COMMAND(ID_TEXTURES_SHADERS_SHOW, OnTexturesShadersShow)
 	ON_COMMAND(ID_TEXTURES_FLUSH_UNUSED, OnTexturesFlushUnused)
-	ON_COMMAND(ID_VIEW_GROUPS, OnViewGroups)
-	ON_COMMAND(ID_DROP_GROUP_ADDTO_WORLD, OnDropGroupAddtoWorld)
-	ON_COMMAND(ID_DROP_GROUP_NAME, OnDropGroupName)
-	ON_COMMAND(ID_DROP_GROUP_NEWGROUP, OnDropGroupNewgroup)
-	ON_COMMAND(ID_DROP_GROUP_REMOVE, OnDropGroupRemove)
 	//}}AFX_MSG_MAP
   ON_COMMAND_RANGE(CMD_TEXTUREWAD, CMD_TEXTUREWAD_END, OnTextureWad)
   ON_COMMAND_RANGE(CMD_BSPCOMMAND, CMD_BSPCOMMAND_END, OnBspCommand)
@@ -703,7 +695,6 @@ void CMainFrame::SetButtonMenuStates()
     pMenu->CheckMenuItem(ID_TOGGLE_LOCK, MF_BYCOMMAND | (g_PrefsDlg.m_bTextureLock) ? MF_CHECKED : MF_UNCHECKED);
     pMenu->CheckMenuItem(ID_TOGGLE_ROTATELOCK, MF_BYCOMMAND | (g_PrefsDlg.m_bRotateLock) ? MF_CHECKED : MF_UNCHECKED);
     pMenu->CheckMenuItem(ID_VIEW_CUBICCLIPPING, MF_BYCOMMAND | (g_PrefsDlg.m_bCubicClipping) ? MF_CHECKED : MF_UNCHECKED);
-    pMenu->CheckMenuItem (ID_VIEW_OPENGLLIGHTING, MF_BYCOMMAND | (g_PrefsDlg.m_bGLLighting) ? MF_CHECKED : MF_UNCHECKED );
     pMenu->CheckMenuItem (ID_SNAPTOGRID, MF_BYCOMMAND | (!g_PrefsDlg.m_bNoClamp) ? MF_CHECKED : MF_UNCHECKED );
     if (m_wndToolBar.GetSafeHwnd())
       m_wndToolBar.GetToolBarCtrl().CheckButton(ID_VIEW_CUBICCLIPPING, (g_PrefsDlg.m_bCubicClipping) ? TRUE : FALSE);
@@ -1005,7 +996,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       vec3_t vMin, vMax;
       vMin[0] = vMin[1] = vMin[2] = 0;
       vMax[0] = vMax[1] = vMax[2] = 8;
-      brush_t* pBrush = Brush_Create(vMin, vMax, &g_qeglobals.d_texturewin.texdef);
+      brush_s* pBrush = Brush_Create(vMin, vMax, &g_qeglobals.d_texturewin.texdef);
 	    Entity_LinkBrush (world_entity, pBrush);
       Brush_Build(pBrush);
 	    Brush_AddToList (pBrush, &active_brushes);
@@ -1418,20 +1409,20 @@ void CMainFrame::OnDestroy()
 	while (entities.next != &entities)
 		Entity_Free (entities.next);
 
-	epair_t* pEPair = g_qeglobals.d_project_entity->epairs;
+	epair_s* pEPair = g_qeglobals.d_project_entity->epairs;
   while (pEPair)
   {
-    epair_t* pNextEPair = pEPair->next;
+    epair_s* pNextEPair = pEPair->next;
     free (pEPair->key);
     free (pEPair->value);
     free (pEPair);
     pEPair = pNextEPair;
   }
 
-	entity_t* pEntity = g_qeglobals.d_project_entity->next;
+	entity_s* pEntity = g_qeglobals.d_project_entity->next;
   while (pEntity != NULL && pEntity != g_qeglobals.d_project_entity)
   {
-    entity_t* pNextEntity = pEntity->next;
+    entity_s* pNextEntity = pEntity->next;
     Entity_Free(pEntity);
     pEntity = pNextEntity;
   }
@@ -1460,6 +1451,7 @@ void CMainFrame::OnClose()
 {
 	if (ConfirmModified())
 	{
+		g_bClosingRadiant = true;
 		CFrameWnd::OnClose();
 	}
 }
@@ -1571,10 +1563,6 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
   
   CreateEntityWindow(AfxGetInstanceHandle());
 
-  g_pGroupDlg->Create( IDD_DLG_GROUP, this);
-  g_qeglobals.d_hwndGroup = g_pGroupDlg->GetSafeHwnd();
-  ::SetParent(g_qeglobals.d_hwndGroup, g_qeglobals.d_hwndEntity);
-  g_pGroupDlg->ShowWindow(SW_SHOW);
   
   if (!LoadWindowPlacement(GetSafeHwnd(), "Radiant::MainWindowPlace"))
   {
@@ -2476,7 +2464,7 @@ void CMainFrame::OnBrushFlipx()
 	Undo_AddBrushList(&selected_brushes);
 
 	Select_FlipAxis (0);
-	for (brush_t *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
 		if(b->owner->eclass->fixedsize)
 		{
@@ -2498,7 +2486,7 @@ void CMainFrame::OnBrushFlipy()
 	Undo_AddBrushList(&selected_brushes);
 
 	Select_FlipAxis (1);
-	for (brush_t *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
 		if(b->owner->eclass->fixedsize)
 		{
@@ -2655,7 +2643,7 @@ void CMainFrame::OnSelectionNoOutline()
 
 void CMainFrame::OnSelectionDelete() 
 {
-	brush_t *brush;
+	brush_s *brush;
 	//if (ActiveXY())
 	//	ActiveXY()->UndoCopy();
 	Undo_Start("delete");
@@ -3049,13 +3037,6 @@ void CMainFrame::OnEditEntityinfo()
   dlg.DoModal();
 }
 
-
-
-void CMainFrame::OnBrushScripts() 
-{
-  //CScriptDlg dlg;
- // dlg.DoModal();
-}
 
 void CMainFrame::OnViewNextview() 
 {
@@ -3890,7 +3871,7 @@ void CMainFrame::OnToolbarTexture()
 
 void CMainFrame::OnSelectionPrint() 
 {
-  for (brush_t* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+  for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
     Brush_Print(b);
 }
 
@@ -4174,11 +4155,11 @@ void CMainFrame::OnConvertcurves()
 {
 #if 0
   Select_Deselect();
-	for (brush_t* pb = active_brushes.next ; pb != &active_brushes ; pb = pb->next)
+	for (brush_s* pb = active_brushes.next ; pb != &active_brushes ; pb = pb->next)
 	{
     if (pb->curveBrush)
     {
-	    for (face_t* f = pb->brush_faces ; f ; f=f->next) 
+	    for (face_s* f = pb->brush_faces ; f ; f=f->next) 
       {
 		    if (f->texdef.contents & CONTENTS_LADDER)
         {
@@ -4467,15 +4448,15 @@ void CMainFrame::OnPatchTab()
     // check to see if the selected brush is part of a func group
     // if it is, deselect everything and reselect the next brush 
     // in the group
-	  brush_t *b = selected_brushes.next;
-    entity_t * e;
+	  brush_s *b = selected_brushes.next;
+    entity_s * e;
     if (b != &selected_brushes)
     {
 	    if (strcmpi(b->owner->eclass->name, "worldspawn") != 0)
       {
         e = b->owner;
         Select_Deselect();
-		brush_t * b2;
+		brush_s * b2;
 		    for (b2 = e->brushes.onext ; b2 != &e->brushes ; b2 = b2->onext)
 		    {
           if (b == b2)
@@ -4786,14 +4767,6 @@ void CMainFrame::OnPatchInspector()
   DoPatchInspector();
 }
 
-void CMainFrame::OnViewOpengllighting() 
-{
-  g_PrefsDlg.m_bGLLighting ^= 1;
-  g_PrefsDlg.SavePrefs();
-  CheckMenuItem ( ::GetMenu(g_qeglobals.d_hwndMain), ID_VIEW_OPENGLLIGHTING, MF_BYCOMMAND | (g_PrefsDlg.m_bGLLighting) ? MF_CHECKED : MF_UNCHECKED );
-	Sys_UpdateWindows (W_XY|W_CAMERA);
-}
-
 void CMainFrame::OnSelectAll()
 {
   Select_AllOfType();
@@ -4951,59 +4924,4 @@ void CMainFrame::OnSelectionInvert()
 }
 
 
-void CMainFrame::OnViewGroups()
-{
-  if (m_nCurrentStyle == 0 || m_nCurrentStyle == 3)
-  {
-    if (::IsWindowVisible(g_qeglobals.d_hwndEntity) && inspector_mode == W_GROUP)
-      ::ShowWindow(g_qeglobals.d_hwndEntity, SW_HIDE);
-    else
-    {
-      ::ShowWindow(g_qeglobals.d_hwndEntity, SW_NORMAL);
-      SetInspectorMode(W_GROUP);
-    }
-  }
-  else
-  {
-    if (inspector_mode == W_GROUP && m_nCurrentStyle != QR_QE4)
-    {
-      if (::IsWindowVisible(g_qeglobals.d_hwndEntity))
-        ::ShowWindow(g_qeglobals.d_hwndEntity, SW_HIDE);
-      else
-        ::ShowWindow(g_qeglobals.d_hwndEntity, SW_NORMAL);
-    }
-    else
-    {
-      ::ShowWindow(g_qeglobals.d_hwndEntity, SW_NORMAL);
-      SetInspectorMode(W_GROUP);
-    }
-  }
-}
-
-void CMainFrame::OnDropGroupAddtoWorld() 
-{
-  Select_AddToGroup("World");
-  Sys_UpdateWindows (W_ALL);
-}
-
-void CMainFrame::OnDropGroupName() 
-{
-  CNameDlg dlg("Name Selection", this);
-  if (dlg.DoModal() == IDOK)
-  {
-    Select_Name(dlg.m_strName);
-    Sys_UpdateWindows (W_ALL);
-  }
-}
-
-void CMainFrame::OnDropGroupNewgroup() 
-{
-
-}
-
-void CMainFrame::OnDropGroupRemove() 
-{
-  Select_AddToGroup("World");
-  Sys_UpdateWindows (W_ALL);
-}
 

@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 class CPatchDialog : public CDialog
 {
-  patchMesh_t *m_Patch;
+  patchMesh_c *m_Patch;
 // Construction
 public:
 	void UpdateInfo();

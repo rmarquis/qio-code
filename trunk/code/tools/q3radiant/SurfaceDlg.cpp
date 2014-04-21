@@ -153,9 +153,9 @@ void CSurfaceDlg::SetTexMods()
 {
 	char	sz[128];
 	texdef_t *pt;
-	brushprimit_texdef_t	*bpt;
+	brushprimit_texdef_s	*bpt;
 	// local copy if a width=2 height=2 qtetxture_t is needed
-	brushprimit_texdef_t	local_bp;
+	brushprimit_texdef_s	local_bp;
 	int		i;
 
 	if (!g_surfwin)
@@ -186,7 +186,7 @@ void CSurfaceDlg::SetTexMods()
 	{
 		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
 		{
-      face_t *selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
@@ -323,7 +323,7 @@ void CSurfaceDlg::GetTexMods()
 	{
 		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
     {
-      face_t *selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
     }
 		else
@@ -381,14 +381,14 @@ void CSurfaceDlg::GetTexMods()
 	g_changed_surface = true;
 
 	// a local copy of the texture matrix, given for a qtexture_t with width=2 height=2
-	brushprimit_texdef_t	local_bp;
-	brushprimit_texdef_t	*bpt;
+	brushprimit_texdef_s	local_bp;
+	brushprimit_texdef_s	*bpt;
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
-    face_t *selFace = NULL;
+    face_s *selFace = NULL;
 		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
     {
-      selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+      selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 			bpt = &selFace->brushprimit_texdef;
     }
 		else
@@ -480,7 +480,7 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 		GetTexMods ();
 		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
     {
-      face_t *selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
     }
 		else
@@ -578,14 +578,14 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 		}
 	}
 	// a local copy of the texture matrix, given for a qtexture_t with width=2 height=2
-	brushprimit_texdef_t	local_bp;
-	brushprimit_texdef_t	*bpt;
+	brushprimit_texdef_s	local_bp;
+	brushprimit_texdef_s	*bpt;
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
-    face_t *selFace = NULL;
+    face_s *selFace = NULL;
 		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
     {
-      selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+      selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 			bpt = &selFace->brushprimit_texdef;
     }
 		else
@@ -612,7 +612,7 @@ void CSurfaceDlg::UpdateSpinners(int nScrollCode, int nPos, CScrollBar* pBar)
 	GetTexMods ();
   if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
   {
-    face_t *selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(0));
+    face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
 		pt = &selFace->texdef;
   }
   else
@@ -946,10 +946,10 @@ void CSurfaceDlg::OnBtnFacefit()
   UpdateData(TRUE);
   if (g_ptrSelectedFaces.GetSize() == 0)
   {
-    brush_t *b;
+    brush_s *b;
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
     {
-      for (face_t* pFace = b->brush_faces; pFace; pFace = pFace->next)
+      for (face_s* pFace = b->brush_faces; pFace; pFace = pFace->next)
       {
         g_ptrSelectedFaces.Add(pFace);
         g_ptrSelectedFaceBrushes.Add(b);

@@ -53,7 +53,7 @@ public:
 
 // Implementation
 public:
-	void ShiftTexture_BrushPrimit(face_t *f, int x, int y);
+	void ShiftTexture_BrushPrimit(face_s *f, int x, int y);
 	void ReInitGL();
 	void BenchMark();
 	CXYWnd* m_pXYFriend;
@@ -71,18 +71,18 @@ protected:
   void Cam_MouseUp (int x, int y, int buttons);
   void Cam_MouseMoved (int x, int y, int buttons);
   void InitCull();
-  bool CullBrush (brush_t *b);
+  bool CullBrush (brush_s *b);
   void Cam_Draw();
 
 
-  brush_t* m_TransBrushes[MAX_MAP_BRUSHES];
+  brush_s* m_TransBrushes[MAX_MAP_BRUSHES];
   int m_nNumTransBrushes;
   camera_t m_Camera;
   int	m_nCambuttonstate;
   CPoint m_ptButton;
   CPoint m_ptCursor;
   CPoint m_ptLastCursor;
-  face_t* m_pSide_select;
+  face_s* m_pSide_select;
   edVec3_c m_vCull1;
   edVec3_c m_vCull2;
   int m_nCullv1[3];

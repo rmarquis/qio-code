@@ -120,7 +120,6 @@ public:
   BOOL m_bSwitchClip;
   BOOL m_bSelectWholeEntities;
   int m_nTextureQuality;
-	BOOL	m_bGLLighting;
 
 	// brush primitive mode
 	//++timo moved into g_qeglobals

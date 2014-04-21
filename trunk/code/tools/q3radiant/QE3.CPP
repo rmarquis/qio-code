@@ -364,7 +364,7 @@ bool QE_SaveProject (const char* pProjectFile)
 {
 	//char	filename[1024];
 	FILE	*fp;
-	epair_t	*ep;
+	epair_s	*ep;
 
 	//sprintf (filename, "%s\\%s.prj", g_projectdir, g_username);
 
@@ -402,7 +402,7 @@ from the first selected to the secon
 */
 void ConnectEntities (void)
 {
-	entity_t	*e1, *e2, *e;
+	entity_s	*e1, *e2, *e;
 	char		*target, *tn;
 	int			maxtarg, targetnum;
 	char		newtarg[32];
@@ -470,18 +470,18 @@ bool QE_SingleBrush (bool bQuiet)
 	if ( (selected_brushes.next == &selected_brushes)
 		|| (selected_brushes.next->next != &selected_brushes) )
 	{
-	  if (!bQuiet)
-    {
-	  	Sys_Printf ("Error: you must have a single brush selected\n");
-	  }
+		if (!bQuiet)
+		{
+			Sys_Printf ("Error: you must have a single brush selected\n");
+		}
 		return false;
 	}
 	if (selected_brushes.next->owner->eclass->fixedsize)
 	{
-	  if (!bQuiet)
-	  {
-		  Sys_Printf ("Error: you cannot manipulate fixed size entities\n");
-	  }
+		if (!bQuiet)
+		{
+			Sys_Printf ("Error: you cannot manipulate fixed size entities\n");
+		}
 		return false;
 	}
 
@@ -525,8 +525,8 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 	static int      s_lastbrushcount, s_lastentitycount;
 	static bool s_didonce;
 	
-	//entity_t   *e;
-	brush_t	   *b, *next;
+	//entity_s   *e;
+	brush_s	   *b, *next;
 
 	g_numbrushes = 0;
 	g_numentities = 0;

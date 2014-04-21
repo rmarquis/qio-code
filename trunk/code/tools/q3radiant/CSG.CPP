@@ -31,9 +31,9 @@ CSG_MakeHollow
 =============
 */
 
-void Brush_Scale(brush_t* b)
+void Brush_Scale(brush_s* b)
 {
-  for (face_t* f = b->brush_faces ; f ; f=f->next)
+  for (face_s* f = b->brush_faces ; f ; f=f->next)
   {
 	  for (int i=0 ; i<3 ; i++)
     {
@@ -44,9 +44,9 @@ void Brush_Scale(brush_t* b)
 
 void CSG_MakeHollow (void)
 {
-	brush_t		*b, *front, *back, *next;
-	face_t		*f;
-	face_t		split;
+	brush_s		*b, *front, *back, *next;
+	face_s		*f;
+	face_s		split;
 	edVec3_c		move;
 	int			i;
 
@@ -89,11 +89,11 @@ Brush_Merge
  be the same as well.
 =============
 */
-brush_t *Brush_Merge(brush_t *brush1, brush_t *brush2, int onlyshape)
+brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 {
 	int i, shared;
-	brush_t *newbrush;
-	face_t *face1, *face2, *newface, *f;
+	brush_s *newbrush;
+	face_s *face1, *face2, *newface, *f;
 
 	// check for bounding box overlapp
 	for (i = 0; i < 3; i++)
@@ -231,11 +231,11 @@ Brush_MergeListPairs
   Input and output should be a single linked list using .next
 =============
 */
-brush_t *Brush_MergeListPairs(brush_t *brushlist, int onlyshape)
+brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
 {
 	int nummerges, merged;
-	brush_t *b1, *b2, *tail, *newbrush, *newbrushlist;
-	brush_t *lastb2;
+	brush_s *b1, *b2, *tail, *newbrush, *newbrushlist;
+	brush_s *lastb2;
 
 	if (!brushlist) return NULL;
 
@@ -302,10 +302,10 @@ Brush_MergeList
  be the same as well.
 =============
 */
-brush_t *Brush_MergeList(brush_t *brushlist, int onlyshape)
+brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 {
-	brush_t *brush1, *brush2, *brush3, *newbrush;
-	face_t *face1, *face2, *face3, *newface, *f;
+	brush_s *brush1, *brush2, *brush3, *newbrush;
+	face_s *face1, *face2, *face3, *newface, *f;
 
 	if (!brushlist) return NULL;
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
@@ -421,12 +421,12 @@ Brush_Subtract
  The originals are undisturbed.
 =============
 */
-brush_t *Brush_Subtract(brush_t *a, brush_t *b)
+brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 {
 	// a - b = out (list)
-	brush_t *front, *back;
-	brush_t *in, *out, *next;
-	face_t *f;
+	brush_s *front, *back;
+	brush_s *in, *out, *next;
+	face_s *f;
 
 	in = a;
 	out = NULL;
@@ -466,8 +466,8 @@ CSG_Subtract
 */
 void CSG_Subtract (void)
 {
-	brush_t		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
-	brush_t		fragmentlist;
+	brush_s		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
+	brush_s		fragmentlist;
 	int			i, numfragments, numbrushes;
 
 	Sys_Printf ("Subtracting...\n");
@@ -527,7 +527,7 @@ void CSG_Subtract (void)
 			if (s->owner->eclass->fixedsize || s->patchBrush || s->terrainBrush || s->hiddenBrush)
 				continue;
 
-			//face_t *pFace = s->brush_faces;
+			//face_s *pFace = s->brush_faces;
 			if (s->brush_faces->d_texture->bFromShader && (s->brush_faces->d_texture->nShaderFlags & QER_NOCARVE))
 			{
 				continue;
@@ -591,7 +591,7 @@ CSG_Merge
 */
 void CSG_Merge(void)
 {
-	brush_t *b, *next, *newlist, *newbrush;
+	brush_s *b, *next, *newlist, *newbrush;
 	struct entity_s	*owner;
 
 	Sys_Printf ("Merging...\n");

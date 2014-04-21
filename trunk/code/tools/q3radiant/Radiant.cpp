@@ -26,10 +26,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Radiant.h"
 
 #include "MainFrm.h"
-#include "ChildFrm.h"
 #include "RadiantDoc.h"
 #include "RadiantView.h"
 #include "PrefsDlg.h"
+
+extern bool g_bClosingRadiant;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,11 +60,10 @@ CRadiantApp::CRadiantApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
+CRadiantApp::~CRadiantApp()
+{
 
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CRadiantApp object
-
-CRadiantApp theApp;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CRadiantApp initialization
@@ -255,7 +255,67 @@ BOOL CRadiantApp::OnIdle(LONG lCount)
 	return CWinApp::OnIdle(lCount);
 }
 
+void CRadiantApp::OnClose()
+{
+
+}
 void CRadiantApp::OnHelp() 
 {
   ShellExecute(m_pMainWnd->GetSafeHwnd(), "open", m_pszHelpFilePath, NULL, NULL, SW_SHOW);
+}
+
+int CRadiantApp::Run( void ) 
+{
+	BOOL bIdle = TRUE;
+	LONG lIdleCount = 0;
+
+
+//#if _MSC_VER >= 1300
+//	MSG *msg = AfxGetCurrentMessage();			// TODO Robert fix me!!
+//#else
+	MSG *msg = &m_msgCur;
+//#endif
+
+	// phase1: check to see if we can do idle work
+	while (bIdle &&	!::PeekMessage(msg, NULL, NULL, NULL, PM_NOREMOVE)) {
+		// call OnIdle while in bIdle state
+		if (!OnIdle(lIdleCount++)) {
+			bIdle = FALSE; // assume "no idle" state
+		}
+	}
+
+	// phase2: pump messages while available
+	do {
+		// pump message, but quit on WM_QUIT
+		if (!PumpMessage()) {
+			return ExitInstance();
+		}
+
+		// reset "no idle" state after pumping "normal" message
+		if (IsIdleMessage(msg)) {
+			bIdle = TRUE;
+			lIdleCount = 0;
+		}
+
+	} while (::PeekMessage(msg, NULL, NULL, NULL, PM_NOREMOVE));
+
+	return 0;
+}
+void main()
+{
+	CRadiantApp* app = new CRadiantApp();
+
+	AfxWinInit( GetModuleHandle(NULL), NULL, "", SW_SHOW );
+	AfxInitRichEdit();
+
+	app->InitApplication();
+    app->InitInstance();
+
+	while(g_bClosingRadiant==false) {
+		int iRunResult = app->Run();
+		//printf("iRunResult: %i\n",iRunResult);
+	}
+
+	app->ExitInstance();
+	delete app;
 }

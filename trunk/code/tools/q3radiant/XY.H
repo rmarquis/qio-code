@@ -36,4 +36,4 @@ typedef struct
 	bool d_dirty;
 } xy_t;
 
-BOOL FilterBrush(brush_t *pb);
+BOOL FilterBrush(brush_s *pb);

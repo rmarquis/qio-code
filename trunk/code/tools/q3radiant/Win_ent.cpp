@@ -72,7 +72,7 @@ int		inspector_mode;		// W_TEXTURE, W_ENTITY, or W_CONSOLE
 
 bool	multiple_entities;
 
-entity_t	*edit_entity;
+entity_s	*edit_entity;
 
 
 BOOL CALLBACK EntityWndProc(
@@ -318,7 +318,7 @@ ENTITY WINDOW
 
 void FillClassList (void)
 {
-	eclass_t	*pec;
+	eclass_s	*pec;
 	int			iIndex;
 
 	SendMessage(hwndEnt[EntList], LB_RESETCONTENT, 0 , 0);
@@ -505,7 +505,7 @@ void SetInspectorMode(int iType)
 
 void SetKeyValuePairs (bool bClearMD3)
 {
-	epair_t	*pep;
+	epair_s	*pep;
 	RECT	rc;
 	char	sz[4096];
 	
@@ -534,10 +534,10 @@ void SetKeyValuePairs (bool bClearMD3)
 	{
 		// if this is a misc_model
 		// cache the md3 for display later
-		if (bClearMD3)
-		{
-			edit_entity->md3Class = NULL;
-		}
+		//if (bClearMD3)
+		//{
+		//	edit_entity->md3Class = NULL;
+		//}
 		//char *pModel = ValueForKey(edit_entity, "model");
 		
 		/*
@@ -592,7 +592,7 @@ void GetSpawnFlags(void)
 
 	if (multiple_entities)
 	{
-		brush_t	*b;
+		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			SetKeyValue(b->owner, "spawnflags", sz);
@@ -606,10 +606,10 @@ void GetSpawnFlags(void)
 //
 // Update the listbox, checkboxes and k/v pairs to reflect the new selection
 //
-BOOL UpdateSel(int iIndex, eclass_t *pec)
+BOOL UpdateSel(int iIndex, eclass_s *pec)
 {
 	int		i;
-	brush_t	*b;
+	brush_s	*b;
 
 	if (selected_brushes.next == &selected_brushes)
 	{
@@ -660,7 +660,7 @@ BOOL UpdateSel(int iIndex, eclass_t *pec)
 	return TRUE;
 }
 
-BOOL UpdateEntitySel(eclass_t *pec)
+BOOL UpdateEntitySel(eclass_s *pec)
 {
 	int iIndex;
 
@@ -677,8 +677,8 @@ BOOL UpdateEntitySel(eclass_t *pec)
 
 void CreateEntity(void)
 {
-	eclass_t *pecNew;
-	entity_t *petNew;
+	eclass_s *pecNew;
+	entity_s *petNew;
 	int i;
 	HWND hwnd;
 	char sz[1024];
@@ -761,7 +761,7 @@ void AddProp()
 
 	if (multiple_entities)
 	{
-		brush_t	*b;
+		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			SetKeyValue(b->owner, key, value);
@@ -792,7 +792,7 @@ void DelProp(void)
 
 	if (multiple_entities)
 	{
-		brush_t	*b;
+		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			DeleteKey(b->owner, sz);
@@ -938,7 +938,6 @@ void SizeEntityDlg(int iWidth, int iHeight)
     col = iWidth;
   }
 
-  MOVE(g_qeglobals.d_hwndGroup,	DlgXBorder, DlgYBorder, iWidth - (2 * DlgXBorder), iHeight - (2 * DlgYBorder) );
 
 	//==========================================
 
@@ -1138,7 +1137,7 @@ void AssignModel()
 
 	  SendMessage(hwndEnt[EntValueField], WM_SETTEXT, 0, (LPARAM)str.GetBuffer(0));	
     AddProp();
-    edit_entity->md3Class = NULL;
+//    edit_entity->md3Class = NULL;
     edit_entity->brushes.onext->bModelFailed = false;
     g_pParentWnd->GetXYWnd()->SetFocus();
   }
@@ -1356,10 +1355,10 @@ BOOL CALLBACK EntityWndProc(
 			case LBN_SELCHANGE: 
 			{
 				int iIndex;
-				eclass_t *pec;
+				eclass_s *pec;
 				
 				iIndex = SendMessage(hwndEnt[EntList], LB_GETCURSEL, 0, 0);	
-				pec = (eclass_t *)SendMessage(hwndEnt[EntList], LB_GETITEMDATA, 
+				pec = (eclass_s *)SendMessage(hwndEnt[EntList], LB_GETITEMDATA, 
 						iIndex, 0); 
 			
 				UpdateSel(iIndex, pec);

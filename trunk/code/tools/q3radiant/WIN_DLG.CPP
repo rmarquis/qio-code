@@ -138,7 +138,7 @@ BOOL CALLBACK AddCommandDlgProc (
 void UpdateBSPCommandList (HWND hwndDlg)
 {
 	int			i;
-	epair_t		*ep;
+	epair_s		*ep;
 
 	SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_RESETCONTENT, 0 , 0);
 
@@ -296,8 +296,8 @@ void DoGamma(void)
 
 void SelectBrush (int entitynum, int brushnum)
 {
-	entity_t	*e;
-	brush_t		*b;
+	entity_s	*e;
+	brush_s		*b;
 	int			i;
 
 	if (entitynum == 0)
@@ -359,8 +359,8 @@ GetSelectionIndex
 */
 void GetSelectionIndex (int *ent, int *brush)
 {
-	brush_t		*b, *b2;
-	entity_t	*entity;
+	brush_s		*b, *b2;
+	entity_s	*entity;
 
 	*ent = *brush = 0;
 

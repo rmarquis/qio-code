@@ -31,17 +31,17 @@ bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 char		currentmap[1024];
 
 
-brush_t	active_brushes;		// brushes currently being displayed
-brush_t	selected_brushes;	// highlighted
+brush_s	active_brushes;		// brushes currently being displayed
+brush_s	selected_brushes;	// highlighted
 
-face_t	*selected_face;
-brush_t	*selected_face_brush;
+face_s	*selected_face;
+brush_s	*selected_face_brush;
 
-brush_t	filtered_brushes;	// brushes that have been filtered or regioned
+brush_s	filtered_brushes;	// brushes that have been filtered or regioned
 
-entity_t	entities;		// head/tail of doubly linked list
+entity_s	entities;		// head/tail of doubly linked list
 
-entity_t	*world_entity = NULL; // "classname" "worldspawn" !
+entity_s	*world_entity = NULL; // "classname" "worldspawn" !
 
 void AddRegionBrushes (void);
 void RemoveRegionBrushes (void);
@@ -62,8 +62,8 @@ void DupLists()
 =============================================================
 */
 
-brush_t		between_brushes;
-entity_t	between_entities;
+brush_s		between_brushes;
+entity_s	between_entities;
 
 bool g_bRestoreBetween = false;
 
@@ -79,8 +79,8 @@ void Map_SaveBetween (void)
 
 #if 0
 
-	brush_t		*b;
-	entity_t	*e, *e2;
+	brush_s		*b;
+	entity_s	*e, *e2;
 
 	between_brushes.next = selected_brushes.next;
 	between_brushes.prev = selected_brushes.prev;
@@ -120,8 +120,8 @@ void Map_RestoreBetween (void)
   return;
 
 #if 0  
-  entity_t	*head, *tail;
-	brush_t		*b;
+  entity_s	*head, *tail;
+	brush_s		*b;
 
 	if (!between_brushes.next)
 		return;
@@ -161,7 +161,7 @@ void Map_RestoreBetween (void)
 
 //============================================================================
 
-bool CheckForTinyBrush(brush_t* b, int n, float fSize)
+bool CheckForTinyBrush(brush_s* b, int n, float fSize)
 {
   bool bTiny = false;
 	for (int i=0 ; i<3 ; i++)
@@ -176,7 +176,7 @@ bool CheckForTinyBrush(brush_t* b, int n, float fSize)
 
 void Map_BuildBrushData(void)
 {
-	brush_t	*b, *next;
+	brush_s	*b, *next;
 
 	if (active_brushes.next == NULL)
 		return;
@@ -197,9 +197,9 @@ void Map_BuildBrushData(void)
 	Sys_EndWait();
 }
 
-entity_t *Map_FindClass (char *cname)
+entity_s *Map_FindClass (char *cname)
 {
-	entity_t	*ent;
+	entity_s	*ent;
 
 	for (ent = entities.next ; ent != &entities ; ent=ent->next)
 	{
@@ -256,9 +256,9 @@ void Map_Free (void)
 	world_entity = NULL;
 }
 
-entity_t *AngledEntity()
+entity_s *AngledEntity()
 {
-  entity_t *ent = Map_FindClass ("info_player_start");
+  entity_s *ent = Map_FindClass ("info_player_start");
 	if (!ent)
   {
 		ent = Map_FindClass ("info_player_deathmatch");
@@ -296,7 +296,7 @@ Map_LoadFile
 void Map_LoadFile (char *filename)
 {
     char		*buf;
-	entity_t	*ent;
+	entity_s	*ent;
 	char         temp[1024];
 
 	Sys_BeginWait ();
@@ -307,8 +307,6 @@ void Map_LoadFile (char *filename)
 	Sys_Printf ("Map_LoadFile: %s\n", temp );
 
 	Map_Free ();
-	//++timo FIXME: maybe even easier to have Group_Init called from Map_Free?
-	Group_Init();
 
 	g_qeglobals.d_parsed_brushes = 0;
 	strcpy (currentmap, filename);
@@ -336,13 +334,7 @@ void Map_LoadFile (char *filename)
 					Sys_Printf ("WARNING: multiple worldspawn\n");
 				world_entity = ent;
 			}
-			else if (!strcmp(ValueForKey (ent, "classname"), "group_info"))
-      {
-        // it's a group thing!
-        Group_Add(ent);
-        Entity_Free(ent);
-      }
-      else
+			 else
 			{
 				// add the entity to the end of the entity list
 				ent->next = &entities;
@@ -417,7 +409,7 @@ Map_SaveFile
 */
 void Map_SaveFile (char *filename, bool use_region )
 {
-	entity_t	*e, *next;
+	entity_s	*e, *next;
 	FILE		*f;
 	char         temp[1024];
 	int			count;
@@ -481,9 +473,6 @@ void Map_SaveFile (char *filename, bool use_region )
     }
 	}
 
-	// save the group info stuff
-	Group_Save(f);
-
 	fclose (f);
 
 	if (use_region)
@@ -543,8 +532,6 @@ void Map_New (void)
 
 	Map_RestoreBetween ();
 
-  Group_Init();
-
 	Sys_UpdateWindows (W_ALL);
 	modified = false;
 }
@@ -561,7 +548,7 @@ bool	region_active;
 edVec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
 edVec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
 
-brush_t	*region_sides[4];
+brush_s	*region_sides[4];
 /*
 ===========
 AddRegionBrushes
@@ -623,7 +610,7 @@ void RemoveRegionBrushes (void)
 }
 
 
-bool Map_IsBrushFiltered (brush_t *b)
+bool Map_IsBrushFiltered (brush_s *b)
 {
 	int		i;
 
@@ -646,7 +633,7 @@ Other filtering options may still be on
 */
 void Map_RegionOff (void)
 {
-	brush_t	*b, *next;
+	brush_s	*b, *next;
 	int			i;
 
 	region_active = false;
@@ -675,7 +662,7 @@ void Map_RegionOff (void)
 
 void Map_ApplyRegion (void)
 {
-	brush_t	*b, *next;
+	brush_s	*b, *next;
 
 	region_active = true;
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
@@ -752,7 +739,7 @@ Map_RegionTallBrush
 */
 void Map_RegionTallBrush (void)
 {
-	brush_t	*b;
+	brush_s	*b;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -777,7 +764,7 @@ Map_RegionBrush
 */
 void Map_RegionBrush (void)
 {
-	brush_t	*b;
+	brush_s	*b;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -799,7 +786,7 @@ void UniqueTargetName(CString& rStr)
 {
 	// make a unique target value
 	int maxtarg = 0;
-	for (entity_t* e=entities.next ; e != &entities ; e=e->next)
+	for (entity_s* e=entities.next ; e != &entities ; e=e->next)
 	{
 		char* tn = ValueForKey (e, "targetname");
 		if (tn && tn[0])
@@ -831,8 +818,8 @@ void UniqueTargetName(CString& rStr)
 //
 void Map_ImportBuffer (char* buf)
 {
-	entity_t* ent;
-	brush_t* b = NULL;
+	entity_s* ent;
+	brush_s* b = NULL;
 	CPtrArray ptrs;
 
 	Select_Deselect();
@@ -875,7 +862,7 @@ void Map_ImportBuffer (char* buf)
 				b=ent->brushes.onext;
 				while (b && b != &ent->brushes)
 				{
-					brush_t* bNext = b->onext;
+					brush_s* bNext = b->onext;
 					Entity_UnlinkBrush(b);
 					Entity_LinkBrush(world_entity, b);
 					ptrs.Add(b);
@@ -937,8 +924,8 @@ void Map_ImportBuffer (char* buf)
 	g_bScreenUpdates = false; 
 	for (int i = 0; i < ptrs.GetSize(); i++)
 	{
-		Brush_Build(reinterpret_cast<brush_t*>(ptrs[i]), true, false);
-		Select_Brush(reinterpret_cast<brush_t*>(ptrs[i]), true, false);
+		Brush_Build(reinterpret_cast<brush_s*>(ptrs[i]), true, false);
+		Select_Brush(reinterpret_cast<brush_s*>(ptrs[i]), true, false);
 	}
 	//::LockWindowUpdate(NULL);
 	g_bScreenUpdates = true; 
@@ -965,16 +952,16 @@ void Map_ImportBuffer (char* buf)
 //
 void Map_ImportFile (char *filename)
 {
-  char* buf;
+	char* buf;
 	char temp[1024];
 	Sys_BeginWait ();
 	QE_ConvertDOSToUnixName( temp, filename );
-  if (LoadFile (filename, (void **)&buf) != -1)
-  {
-    Map_ImportBuffer(buf);
-    free(buf);
-    Map_BuildBrushData();
-  }
+	if (LoadFile (filename, (void **)&buf) != -1)
+	{
+		Map_ImportBuffer(buf);
+		free(buf);
+		Map_BuildBrushData();
+	}
 	Sys_UpdateWindows (W_ALL);
 	modified = true;
 	Sys_EndWait();
@@ -989,7 +976,7 @@ void Map_ImportFile (char *filename)
 //
 void Map_SaveSelected(char* pFilename)
 {
-	entity_t	*e, *next;
+	entity_s	*e, *next;
 	FILE *f;
 	char temp[1024];
 	int count;
@@ -1028,7 +1015,7 @@ void Map_SaveSelected(char* pFilename)
 //
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile)
 {
-	entity_t	*e, *next;
+	entity_s	*e, *next;
 	int count;
 	CString strTemp;
   

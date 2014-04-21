@@ -100,7 +100,7 @@ typedef int fileHandle_t;
 typedef struct
 {
 	int		p1, p2;
-	face_t	*f1, *f2;
+	face_s	*f1, *f2;
 } pedge_t;
 
 typedef struct
@@ -143,7 +143,7 @@ typedef struct
 	
 	int      d_num_entities;
 	
-	entity_t *d_project_entity;
+	entity_s *d_project_entity;
 	
 	float     d_new_brush_bottom_z,
 		      d_new_brush_top_z;
@@ -161,7 +161,6 @@ typedef struct
 	HWND      d_hwndXY;
 	HWND      d_hwndZ;
 	HWND      d_hwndStatus;
-	HWND      d_hwndGroup;
 	HWND      d_hwndMedia;
 	
 	edVec3_c  d_points[MAX_POINTS];
@@ -188,7 +187,7 @@ typedef struct
 	
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
-	brush_t		*d_select_order[2];
+	brush_s		*d_select_order[2];
 	edVec3_c       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	
@@ -321,7 +320,7 @@ extern BOOL LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 //
 BOOL CreateEntityWindow(HINSTANCE hInstance);
 void FillClassList (void);
-BOOL UpdateEntitySel(eclass_t *pec);	
+BOOL UpdateEntitySel(eclass_s *pec);	
 void SetInspectorMode(int iType);
 int DrawTexControls(HWND hWnd);
 void SetSpawnFlags(void);
@@ -370,7 +369,7 @@ extern QEGlobals_t   g_qeglobals;
 
 //++timo clean (moved into qertypes.h)
 //enum VIEWTYPE {YZ, XZ, XY};
-bool IsBrushSelected(brush_t* bSel);
+bool IsBrushSelected(brush_s* bSel);
 
 // curve brushes
 
@@ -379,11 +378,11 @@ void Curve_MakeCurvedBrush (bool negative, bool top, bool bottom,
 
 void Curve_Invert (void);
 
-void Curve_AddFakePlanes( brush_t *B );
-void Curve_StripFakePlanes( brush_t *B );
-void Curve_BuildPoints (brush_t *b);
-void Curve_XYDraw (brush_t *b);
-void Curve_CameraDraw (brush_t *b);
+void Curve_AddFakePlanes( brush_s *B );
+void Curve_StripFakePlanes( brush_s *B );
+void Curve_BuildPoints (brush_s *b);
+void Curve_XYDraw (brush_s *b);
+void Curve_CameraDraw (brush_s *b);
 
 void Curve_WriteFile (char *name);
 
@@ -394,50 +393,48 @@ extern bool g_bSameView;
 extern int  g_nPatchClickedView;
 bool within(vec3_t vTest, vec3_t vTL, vec3_t vBR);
 
-void Brush_RebuildBrush(brush_t *b, vec3_t vMins, vec3_t vMaxs );
-patchMesh_t* MakeNewPatch();
-brush_t* AddBrushForPatch(patchMesh_t *pm, bool bLinkToWorld = true);
-brush_t* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
+void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs );
+patchMesh_c* MakeNewPatch();
+brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
+brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
 void Patch_ReadFile (char *name);
 void Patch_WriteFile (char *name); 
-void Patch_BuildPoints (brush_t *b);
-void Patch_Move(patchMesh_t *p, const vec3_t vMove, bool bRebuild = false);
-void Patch_ApplyMatrix(patchMesh_t *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap = false);
+void Patch_BuildPoints (brush_s *b);
+//void Patch_Move(patchMesh_c *p, const vec3_t vMove, bool bRebuild = false);
+void Patch_ApplyMatrix(patchMesh_c *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap = false);
 void Patch_EditPatch();
 void Patch_Deselect();
-void Patch_Deselect(patchMesh_t *p);
-void Patch_Delete(patchMesh_t *p);
-int  Patch_MemorySize(patchMesh_t *p);
-void Patch_Select(patchMesh_t *p);
-void Patch_Scale(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vAmt, bool bRebuilt = true);
+void Patch_Deselect(patchMesh_c *p);
+void Patch_Delete(patchMesh_c *p);
+int  Patch_MemorySize(patchMesh_c *p);
+void Patch_Select(patchMesh_c *p);
+void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool bRebuilt = true);
 void Patch_Cleanup();
 void Patch_SetView(int n);
-void Patch_SetTexture(patchMesh_t *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef = NULL);
+void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef = NULL);
 void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
-bool Patch_DragScale(patchMesh_t *p, const edVec3_c &vAmt, const edVec3_c &vMove);
+bool Patch_DragScale(patchMesh_c *p, const edVec3_c &vAmt, const edVec3_c &vMove);
 void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
 void Patch_WriteFile (CMemFile* pMemFile);
 void Patch_UpdateSelected(vec3_t vMove);
-void Patch_AddRow(patchMesh_t *p);
-brush_t* Patch_Parse(bool bOld);
-void Patch_Write (patchMesh_t *p, FILE *f);
-void Patch_Write (patchMesh_t *p, CMemFile *file);
-void Patch_AdjustColumns(patchMesh_t *p, int nCols);
-void Patch_AdjustRows(patchMesh_t *p, int nRows);
+void Patch_AddRow(patchMesh_c *p);
+brush_s* Patch_Parse(bool bOld);
+void Patch_Write (patchMesh_c *p, FILE *f);
+void Patch_Write (patchMesh_c *p, CMemFile *file);
+//void Patch_AdjustColumns(patchMesh_c *p, int nCols);
+//void Patch_AdjustRows(patchMesh_c *p, int nRows);
 void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag);
-patchMesh_t* Patch_Duplicate(patchMesh_t *pFrom);
-void Patch_RotateTexture(patchMesh_t *p, float fAngle);
-void Patch_ScaleTexture(patchMesh_t *p, float fx, float fy, bool bFixup = true);
-void Patch_ShiftTexture(patchMesh_t *p, float fx, float fy);
-void Patch_DrawCam(patchMesh_t *p);
-void Patch_DrawXY(patchMesh_t *p);
-void Patch_InsertColumn(patchMesh_t *p, bool bAdd);
-void Patch_InsertRow(patchMesh_t *p, bool bAdd);
-void Patch_RemoveRow(patchMesh_t *p, bool bFirst);
-void Patch_RemoveColumn(patchMesh_t *p, bool bFirst);
+patchMesh_c* Patch_Duplicate(patchMesh_c *pFrom);
+void Patch_RotateTexture(patchMesh_c *p, float fAngle);
+void Patch_ScaleTexture(patchMesh_c *p, float fx, float fy, bool bFixup = true);
+void Patch_ShiftTexture(patchMesh_c *p, float fx, float fy);
+//void Patch_DrawCam(patchMesh_c *p);
+//void Patch_InsertColumn(patchMesh_c *p, bool bAdd);
+//void Patch_InsertRow(patchMesh_c *p, bool bAdd);
+//void Patch_RemoveRow(patchMesh_c *p, bool bFirst);
 void Patch_ToggleInverted();
-void Patch_Restore(patchMesh_t *p);
-void Patch_Save(patchMesh_t *p);
+void Patch_Restore(patchMesh_c *p);
+void Patch_Save(patchMesh_c *p);
 void Patch_SetTextureInfo(texdef_t* pt);
 void Patch_NaturalTexturing();
 void Patch_ResetTexturing(float fx, float fy);
@@ -450,7 +447,7 @@ void Patch_SelectBendNormal();
 void Patch_SelectBendAxis();
 bool WINAPI OnlyPatchesSelected();
 bool WINAPI AnyPatchesSelected();
-patchMesh_t* SinglePatchSelected();
+patchMesh_c* SinglePatchSelected();
 void Patch_CapCurrent(bool bInvertedBevel = false, bool bInvertedEndcap = false);
 void Patch_DisperseRows();
 void Patch_DisperseColumns();
@@ -467,8 +464,8 @@ void Patch_Transpose();
 void Patch_Freeze();
 void Patch_UnFreeze(bool bAll);
 const char* Patch_GetTextureName();
-void Patch_FindReplaceTexture(brush_t *pb, const char *pFind, const char *pReplace, bool bForce);
-void Patch_ReplaceQTexture(brush_t *pb, qtexture_t *pOld, qtexture_t *pNew);
+void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pReplace, bool bForce);
+void Patch_ReplaceQTexture(brush_s *pb, qtexture_t *pOld, qtexture_t *pNew);
 void Select_SnapToGrid();
 extern bool g_bPatchShowBounds;
 extern bool g_bPatchWireFrame;
@@ -478,66 +475,23 @@ extern bool g_bPatchInsertMode;
 extern bool g_bPatchBendMode;
 extern edVec3_c g_vBendOrigin;
 void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
-const char* Patch_GetKeyValue(patchMesh_t *p, const char *pKey);
-void Patch_SetEpair(patchMesh_t *p, const char *pKey, const char *pValue);
-
-
-
-// group stuff
-// group_t are loaded / saved through "group_info" entities
-// they hold epairs for group settings and additionnal access info (tree nodes)
-typedef struct group_s
-{
-	struct group_s	*next;
-	epair_t *epairs;
-	HTREEITEM itemOwner;
-} group_t;
-
-// NOTES: grouping only enabled in brush primitives mode
-// grouping works by naming brushes and setting display properties
-// the group hierarchy is not related with the map hierarchy (entity list, brushes etc.)
-// brushes with no group are under the "world" node (default for all brushes)
-// void Group_GetListFromWorld(CStringArray *pArray);
-void Group_RemoveListFromWorld();
-// void Group_SetListToWorld(CStringArray *pArray);
-// void Group_BuildTree(CTreeCtrl *pTree);
-// void Group_DecomposeTree(CTreeCtrl *pTree);
-// save group_t as "classname" "group_info" things
-void Group_Save(FILE *f);
-// clean the brushes ownerItem, clean the treeview and rebuild everything
-// is usually called when loading a new map, but may be called anytime
-void Group_Init();
-void Group_Add(entity_t *e);
-
-// remove a brush from it's current group, will erase the "group" epair if any, and delete the tree control node
-void Group_RemoveBrush(brush_t *b);
-void Group_AddToWorld(brush_t *b);
-// will remove brush of it's current group if any, and will add it wherever needed according to it's "group" key
-void Group_AddToProperGroup(brush_t *b);
-void Group_AddToSelected(brush_t *b);
-// allocate a new group, set name
-group_t* Group_Alloc(const char *name);
-// we use entities to store information about the groups
-// these entities are not linked into the world, and they have no brushes
-// only loaded / saved in map file
-group_t* Group_ForName(const char *name);
 
 // Timo
 // new brush primitive stuff
 void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT);
-void FaceToBrushPrimitFace(face_t *f);
-void EmitBrushPrimitTextureCoordinates(face_t *, winding_t *);
+void FaceToBrushPrimitFace(face_s *f);
+void EmitBrushPrimitTextureCoordinates(face_s *, winding_t *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
-void EmitTextureCoordinates ( class texturedVertex_c &out, qtexture_t *q, face_t *f);
-void BrushPrimit_Parse(brush_t *);
+void EmitTextureCoordinates ( class texturedVertex_c &out, qtexture_t *q, face_s *f);
+void BrushPrimit_Parse(brush_s *);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
-void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, qtexture_t *qtex1, brushprimit_texdef_t *texMat2, qtexture_t *qtex2 );
+void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, qtexture_t *qtex1, brushprimit_texdef_s *texMat2, qtexture_t *qtex2 );
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta);
-void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y );
-void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, vec3_t vOrigin );
+void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta);
+void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y );
+void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOrigin );
 // used in CCamWnd::ShiftTexture_BrushPrimit
 void ComputeBest2DVector( const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y );
 
@@ -547,15 +501,8 @@ void ComputeBest2DVector( const edVec3_c &v, const edVec3_c &X, const edVec3_c &
 //
 extern bool parsing_single;
 extern bool eclass_found;
-extern eclass_t *eclass_e;
+extern eclass_s *eclass_e;
 void Eclass_ScanFile( char *filename );
-
-//
-// SurfaceDlg.cpp and surface properties plugin
-//
-//++timo some patch in/out stuff is in there, needs to be moved out in a dedicated interface
-void WINAPI Patch_Rebuild(patchMesh_t *p);
-
 
 //
 // ShaderInfo.cpp

@@ -41,7 +41,7 @@ void	Texture_Init (void);
 // added an optional IPluginTexdef when one is available
 // we need a forward declaration, this is crap
 class IPluginTexdef;
-void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
+void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
 void	Texture_SetMode(int iMenu);	// GL_TEXTURE_NEAREST, etc..
 void Texture_ResetPosition();

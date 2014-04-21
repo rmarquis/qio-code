@@ -496,7 +496,7 @@ char	*bsp_commands[256];
 void FillBSPMenu (void)
 {
 	HMENU	hmenu;
-	epair_t	*ep;
+	epair_s	*ep;
 	int		i;
 	static int count;
 

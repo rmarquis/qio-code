@@ -148,7 +148,7 @@ void CCamWnd::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 }
 
 
-brush_t* g_pSplitList = NULL;
+brush_s* g_pSplitList = NULL;
 
 void CCamWnd::OnPaint() 
 {
@@ -386,7 +386,7 @@ void CCamWnd::Cam_BuildMatrix()
 
 void CCamWnd::Cam_ChangeFloor (bool up)
 {
-	brush_t	*b;
+	brush_s	*b;
 	float	d, bestd, current;
 	vec3_t	start, dir;
 
@@ -625,7 +625,7 @@ void CCamWnd::InitCull()
 	}
 }
 
-bool CCamWnd::CullBrush (brush_t *b)
+bool CCamWnd::CullBrush (brush_s *b)
 {
 	int		i;
 	edVec3_c	point;
@@ -671,7 +671,7 @@ bool CCamWnd::CullBrush (brush_t *b)
 }
 
 #if 0
-void CCamWnd::DrawLightRadius(brush_t* pBrush)
+void CCamWnd::DrawLightRadius(brush_s* pBrush)
 {
   // if lighting
   int nRadius = Brush_LightRadius(pBrush);
@@ -698,8 +698,8 @@ Cam_Draw
 
 void CCamWnd::Cam_Draw()
 {
-	brush_t	*brush;
-	face_t	*face;
+	brush_s	*brush;
+	face_s	*face;
 	float	screenaspect;
 	float	yfov;
 	double	start, end;
@@ -738,24 +738,7 @@ void CCamWnd::Cam_Draw()
 	//
 	// set up viewpoint
 	//
-	vec5_t lightPos;
-	
-	if (g_PrefsDlg.m_bGLLighting)
-	{
-		qglEnable(GL_LIGHTING);
-		//qglEnable(GL_LIGHT0);
-		
-		lightPos[0] = lightPos[1] = lightPos[2] = 3.5;
-		lightPos[3] = 1.0;
-		qglLightModelfv(GL_LIGHT_MODEL_AMBIENT, lightPos);
-		//qglLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-		//lightPos[0] = lightPos[1] = lightPos[2] = 3.5;
-    //qglLightfv(GL_LIGHT0, GL_AMBIENT, lightPos);
-	}
-	else
-	{
-		qglDisable(GL_LIGHTING);
-	}
+	qglDisable(GL_LIGHTING);
 	
 	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity ();
@@ -771,17 +754,6 @@ void CCamWnd::Cam_Draw()
 	qglTranslatef (-m_Camera.origin[0],  -m_Camera.origin[1],  -m_Camera.origin[2]);
 	
 	Cam_BuildMatrix ();
-	
-	
-	//if (m_Camera.draw_mode == cd_light)
-	//{
-//	if (g_PrefsDlg.m_bGLLighting)
-//	{
-//		VectorCopy(m_Camera.origin, lightPos);
-//		lightPos[3] = 1;
-//		qglLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-//	}
-	//}
 	
 	InitCull ();
 	
@@ -867,15 +839,8 @@ void CCamWnd::Cam_Draw()
 			//--      else
 			Brush_Draw(brush);
 		}
-		
-		
 	}
-	
-	if (g_PrefsDlg.m_bGLLighting)
-	{
-		qglDisable (GL_LIGHTING);
-	}
-	
+
 	//
 	//qglDepthMask ( 0 ); // Don't write to depth buffer
 	qglEnable ( GL_BLEND );
@@ -891,15 +856,10 @@ void CCamWnd::Cam_Draw()
 	// now draw selected brushes
 	//
 	
-	if (g_PrefsDlg.m_bGLLighting)
-	{
-		qglEnable (GL_LIGHTING);
-	}
-	
 	qglTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
 	qglMatrixMode(GL_TEXTURE);
 	
-	brush_t* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
+	brush_s* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
 	// draw normally
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{
@@ -935,7 +895,7 @@ void CCamWnd::Cam_Draw()
   {
     for (int i = 0; i < nCount; i++)
     {
-      face_t *selFace = reinterpret_cast<face_t*>(g_ptrSelectedFaces.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
 		  Face_Draw(selFace);
     }
   }
@@ -1098,7 +1058,7 @@ void CCamWnd::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 // Timo
 // brush primitive texture shifting, using camera view to select translations :
-void CCamWnd::ShiftTexture_BrushPrimit(face_t *f, int x, int y)
+void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
 {
 	edVec3_c texS,texT;
 	edVec3_c viewX,viewY;

@@ -202,7 +202,7 @@ protected:
 
 	void OriginalButtonUp(UINT nFlags, CPoint point);
 	void OriginalButtonDown(UINT nFlags, CPoint point);
-  void ProduceSplits(brush_t** pFront, brush_t** pBack);
+  void ProduceSplits(brush_s** pFront, brush_s** pBack);
   void ProduceSplitLists();
   void HandleDrop();
   void PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds);

@@ -38,18 +38,15 @@ public:
 	CString m_strTextureName;
 	CStringList m_strEditorParams;
 	CStringList m_lstSurfaceParams;
-  float m_fTransValue;
-  int m_nFlags;
-  qtexture_t *m_pQTexture;
-	
-  
-  void Parse(const char *pName);
+	float m_fTransValue;
+	int m_nFlags;
+	qtexture_t *m_pQTexture;
+
+
 	CShaderInfo();
 	virtual ~CShaderInfo();
-  void setName(char *pName);
 
-  
-
+	void setName(char *pName);
 };
 
 #endif // !defined(AFX_SHADERINFO_H__93B64600_A208_11D2_803D_0020AFEB881A__INCLUDED_)

@@ -19,59 +19,56 @@ along with Foobar; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
-    // entity.h
+// entity.h
 
-    void Eclass_InitForSourceDirectory (char *path);
-	// this will create a new eclass_t if one is not present
-    eclass_t *Eclass_ForName (char *name, bool has_brushes);
-	// this will return 0 if class with given name is not present
-	eclass_t *Eclass_FindExisting (const char *name);
-	void EClass_CreateNewFromText(const char *text);
-    
-    
-    typedef struct entity_s
-    {
-    	struct entity_s	*prev, *next;
-    	brush_t		brushes;					// head/tail of list
-     	int			undoId, redoId, entityId;	// used for undo/redo
-    	edVec3_c		origin;
-    	eclass_t	*eclass;
-    	epair_t		*epairs;
-    	eclass_t  *md3Class;
-      vec3_t vRotation;   // valid for misc_models only
-      vec3_t vScale;      // valid for misc_models only
-    } entity_t;
-    
-    char 	*ValueForKey (entity_t *ent, const char *key);
-    void	SetKeyValue (entity_t *ent, const char *key, const char *value);
-    void 	SetKeyValue (epair_t *&e, const char *key, const char *value);
-    void 	DeleteKey (entity_t *ent, const char *key);
-    void 	DeleteKey (epair_t *&e, const char *key);
-    float	FloatForKey (entity_t *ent, const char *key);
-    int		IntForKey (entity_t *ent, const char *key);
-    void 	GetVectorForKey (entity_t *ent, const char *key, vec3_t vec);
-    
-    void		Entity_Free (entity_t *e);
-    void		Entity_FreeEpairs(entity_t *e);
-    int			Entity_MemorySize(entity_t *e);
-    entity_t	*Entity_Parse (bool onlypairs, brush_t* pList = NULL);
-    void		Entity_Write (entity_t *e, FILE *f, bool use_region);
-    void		Entity_WriteSelected(entity_t *e, FILE *f);
-    void		Entity_WriteSelected(entity_t *e, CMemFile*);
-    entity_t	*Entity_Create (eclass_t *c);
-    entity_t	*Entity_Clone (entity_t *e);
-    void		Entity_AddToList(entity_t *e, entity_t *list);
-    void		Entity_RemoveFromList(entity_t *e);
-    
-    void		Entity_LinkBrush (entity_t *e, brush_t *b);
-    void		Entity_UnlinkBrush (brush_t *b);
-    entity_t	*FindEntity(char *pszKey, char *pszValue);
-    entity_t	*FindEntityInt(char *pszKey, int iValue);
-    
-    int GetUniqueTargetId(int iHint);
-    bool Eclass_hasModel(eclass_t *e, class edVec3_c &vMin, edVec3_c &vMax);
-    eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax);
-    
-    //Timo : used for parsing epairs in brush primitive
-    epair_t* ParseEpair(void);
-    char *ValueForKey ( epair_t *&e, const char *key);
+void Eclass_InitForSourceDirectory (char *path);
+// this will create a new eclass_s if one is not present
+eclass_s *Eclass_ForName (char *name, bool has_brushes);
+// this will return 0 if class with given name is not present
+eclass_s *Eclass_FindExisting (const char *name);
+void EClass_CreateNewFromText(const char *text);
+
+
+struct entity_s
+{
+	struct entity_s	*prev, *next;
+	brush_s		brushes;					// head/tail of list
+	int			undoId, redoId, entityId;	// used for undo/redo
+	edVec3_c		origin;
+	eclass_s	*eclass;
+	epair_s		*epairs;
+	vec3_t vRotation;   // valid for misc_models only
+	vec3_t vScale;      // valid for misc_models only
+};
+
+char 	*ValueForKey (entity_s *ent, const char *key);
+void	SetKeyValue (entity_s *ent, const char *key, const char *value);
+void 	SetKeyValue (epair_s *&e, const char *key, const char *value);
+void 	DeleteKey (entity_s *ent, const char *key);
+void 	DeleteKey (epair_s *&e, const char *key);
+float	FloatForKey (entity_s *ent, const char *key);
+int		IntForKey (entity_s *ent, const char *key);
+void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec);
+
+void		Entity_Free (entity_s *e);
+void		Entity_FreeEpairs(entity_s *e);
+int			Entity_MemorySize(entity_s *e);
+entity_s	*Entity_Parse (bool onlypairs, brush_s* pList = NULL);
+void		Entity_Write (entity_s *e, FILE *f, bool use_region);
+void		Entity_WriteSelected(entity_s *e, FILE *f);
+void		Entity_WriteSelected(entity_s *e, CMemFile*);
+entity_s	*Entity_Create (eclass_s *c);
+entity_s	*Entity_Clone (entity_s *e);
+void		Entity_AddToList(entity_s *e, entity_s *list);
+void		Entity_RemoveFromList(entity_s *e);
+
+void		Entity_LinkBrush (entity_s *e, brush_s *b);
+void		Entity_UnlinkBrush (brush_s *b);
+entity_s	*FindEntity(char *pszKey, char *pszValue);
+entity_s	*FindEntityInt(char *pszKey, int iValue);
+
+int GetUniqueTargetId(int iHint);
+
+//Timo : used for parsing epairs in brush primitive
+epair_s* ParseEpair(void);
+char *ValueForKey ( epair_s *&e, const char *key);

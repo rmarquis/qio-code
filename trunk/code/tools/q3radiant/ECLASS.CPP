@@ -25,12 +25,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "pakstuff.h"
 //#include "qertypes.h"
 
-eclass_t	*eclass = NULL;
-eclass_t	*eclass_bad = NULL;
+eclass_s	*eclass = NULL;
+eclass_s	*eclass_bad = NULL;
 char		eclass_directory[1024];
 
 // md3 cache for misc_models
-eclass_t *g_md3Cache = NULL;
+eclass_s *g_md3Cache = NULL;
 
 /*
 
@@ -46,18 +46,11 @@ Flag names can follow the size description:
 
 */
 
-void CleanEntityList(eclass_t *&pList)
+void CleanEntityList(eclass_s *&pList)
 {
   while (pList)
   {
-    eclass_t* pTemp = pList->next;
-
-    entitymodel *model = pList->model;
-    while (model != NULL)
-    {
-      delete []model->pTriList;
-      model = model->pNext;
-    }
+    eclass_s* pTemp = pList->next;
     
     if (pList->modelpath)
       free(pList->modelpath);
@@ -82,7 +75,7 @@ void CleanUpEntities()
 /*
   while (eclass)
   {
-    eclass_t* pTemp = eclass->next;
+    eclass_s* pTemp = eclass->next;
     delete []eclass->pTriList;
     
     if (eclass->modelpath)
@@ -126,270 +119,7 @@ void ExtendBounds(vec3_t v, edVec3_c &vMin, edVec3_c &vMax)
 }
 
 
-
-// FIXME: this code is a TOTAL clusterfuck
-//
-void LoadModel(const char *pLocation, eclass_t *e, edVec3_c &vMin, edVec3_c &vMax, entitymodel *&pModel, const char *pSkin)
-{
-  // this assumes a path only and uses tris.md2
-  // for the model and skin.pcx for the skin
-  char cPath[1024];
-  char cSkin[1024];
-  char cFullLocation[1024];
-	//struct _finddata_t fileinfo;
-
-  vMin[0] = vMin[1] = vMin[2] = 99999;
-  vMax[0] = vMax[1] = vMax[2] = -99999;
-
-  bool bMD3 = false;
-  bool bASE = false;
-
-  strcpy( cFullLocation, pLocation );
-
-  if (strstr(pLocation, ".md3"))
-  {
-    bMD3 = true;
-  }
-  else if (strstr(pLocation, ".md2") != NULL)
-  {
-	  sprintf( cFullLocation, "%stris.md2", pLocation);
-  }
-  else if (strstr(pLocation, ".ase") != NULL)
-  {
-    bASE = true;
-  }
-
-  sprintf( cPath, "%s/%s", ValueForKey(g_qeglobals.d_project_entity, "basepath"), cFullLocation);
-
-  Sys_Printf("Loading model %s...", cPath);
-  unsigned char* p = NULL;
-  bool bOpen = (LoadFile(cPath, reinterpret_cast<void**>(&p)) > 0);
-  if (!bOpen)
-  {
-    Sys_Printf(" failed. Trying PAK file...");
-//    sprintf (cPath, "%stris.md2", pLocation);
-	  strcpy (cPath, cFullLocation);
-	  bOpen = (PakLoadAnyFile(cPath, reinterpret_cast<void**>(&p)) > 0);
-  }
-
-  if (bOpen)
-  {
-    Sys_Printf(" successful.\n");
-
-    if (bASE)
-    {
-/*
-      free(p);
-      CString strOut;
-      ::GetTempPath(1024, strOut.GetBuffer(1024));
-      strOut.ReleaseBuffer();
-      AddSlash(strOut);
-      strOut += "Temp.ase";
-      CopyFile(cPath, strOut, false);
-      CString strIn = strOut;
-      FindReplace(strOut, ".ase", ".md3");
-      strcpy(cPath, strIn);
-      strcpy(cSkin, strOut);
-      Q3Data_ProduceTempMD3(ValueForKey(g_qeglobals.d_project_entity, "basepath"), cPath, cSkin);
-      CString strModel = cPath;
-      if (LoadFile(strOut.GetBuffer(0), reinterpret_cast<void**>(&p)) == 0)
-      {
-        Sys_Printf(" Conversion from ASE failed.\n");
-        return;
-      }
-      bMD3 = true;
-*/
-    }
-
-    if (bMD3)
-    {
-	    md3Header_t header;
-	    md3Surface_t *pSurface;
-    	header = *(md3Header_t *)p;
-      if (pSkin != NULL)
-      {
-        strcpy(cSkin, pSkin);
-      }
-	    else
-      {
-		    cSkin[0] = '\0';
-      }
-      int n = header.numFrames;
-    	pSurface = (md3Surface_t *) (p + header.ofsSurfaces);
-    	for (int z = 0; z < header.numSurfaces; z++ )
-	    {
-        int nTris = pSurface->numTriangles;
-        
-        //unsigned char* pTris = reinterpret_cast<unsigned char*>(pSurface);
-        //pTris += pSurface->ofsTriangles;
-
-        if (nTris > 0)
-        {
-          int nStart = 0;
-          if (pModel->pTriList == NULL)
-          {
-		        pModel->nModelPosition = 0;
-            pModel->pTriList = new trimodel[nTris];
-            pModel->nTriCount = nTris;
-          }
-          else
-          {
-            // already have one so we need to reallocate
-            int nNewCount = pModel->nTriCount + nTris;
-            trimodel* pNewModels = new trimodel[nNewCount];
-            for (int i = 0; i < pModel->nTriCount; i++)
-            {
-              memcpy(&pNewModels[i], &pModel->pTriList[i], sizeof(trimodel));
-            }
-            nStart = pModel->nTriCount;
-            pModel->nTriCount = nNewCount;
-            //nTris = nNewCount;
-            delete [] pModel->pTriList;
-            pModel->pTriList = pNewModels;
-          }
-          
-          md3Triangle_t *pTris = reinterpret_cast<md3Triangle_t*>((reinterpret_cast<unsigned char*>(pSurface) + pSurface->ofsTriangles));
-          md3XyzNormal_t *pXyz = reinterpret_cast<md3XyzNormal_t*>((reinterpret_cast<unsigned char*>(pSurface) + pSurface->ofsXyzNormals));
-          if (e->nFrame < pSurface->numFrames)
-          {
-            pXyz += (e->nFrame * pSurface->numVerts);
-          }
-
-          md3St_t *pST = reinterpret_cast<md3St_t*>((reinterpret_cast<unsigned char*>(pSurface) + pSurface->ofsSt)); 
-
-          for (int i = 0; i < nTris; i++)
-          {
-            for (int k = 0; k < 3; k ++)
-            {
-              for (int j = 0; j < 3; j++)
-              {
-                //e->pTriList[i].v[k][j] = (f->verts[tri.index_xyz[k]].v[j] * f->scale[j] + f->translate[j]);
-                pModel->pTriList[nStart].v[k][j] = pXyz[pTris[i].indexes[k]].xyz[j] * MD3_XYZ_SCALE;
-              }
-		          pModel->pTriList[nStart].st[k][0] = pST[pTris[i].indexes[k]].st[0];
-		          pModel->pTriList[nStart].st[k][1] = pST[pTris[i].indexes[k]].st[1];
- 		          ExtendBounds (pModel->pTriList[nStart].v[k], vMin, vMax);
-		        }
-            nStart++;
-		      }
-
-        }
-
-        md3Shader_t *pShader = reinterpret_cast<md3Shader_t*>((reinterpret_cast<unsigned char*>(pSurface) + pSurface->ofsShaders)); 
-        sprintf (cPath, "%s/%s", ValueForKey(g_qeglobals.d_project_entity, "basepath"), pShader->name);
-        strlwr(cPath);
- 	      pModel->nTextureBind = Texture_LoadSkin(cPath, &pModel->nSkinWidth, &pModel->nSkinHeight);
-        if (pModel->nTextureBind == -1)
-        {
-          Sys_Printf("Model skin load failed on texture %s\n", cPath);
-        }
-		    pSurface = (md3Surface_t *) ((( char * ) pSurface) + pSurface->ofsEnd);
-        pModel->pNext = reinterpret_cast<entitymodel_t*>(qmalloc(sizeof(entitymodel_t)));
-        pModel = pModel->pNext;
-      }
-    }
-    else
-    {
-
-      dmdl_t model;
-      daliasframe_t *f;
-      unsigned char* pTris = p;
-      dstvert_t *pST = NULL;
-      int nTris = 0;
-
-      // grab model params
-      memcpy(&model, p, sizeof(dmdl_t));
-      f = (daliasframe_t*)(p + model.ofs_frames);
-      pTris += model.ofs_tris;
-      pST = reinterpret_cast<dstvert_t*>(p + model.ofs_st);
-      nTris = model.num_tris;
-
-	    if(pSkin)
-	    {
-		    strcpy (cSkin, pSkin);
-		    if ((cSkin[strlen(cSkin)-1] == '\\') || (cSkin[strlen(cSkin)-1] == '/'))
-			    strcat(cSkin, "skin.pcx\0");
-	    }
-	    else
-      {
-		    strcpy(cSkin, (char *)(p + model.ofs_skins));
-      }
-
-      sprintf (cPath, "%s/%s", ValueForKey(g_qeglobals.d_project_entity, "basepath"), cSkin);
-      strlwr(cPath);
-      pModel->nTextureBind = Texture_LoadSkin(cPath, &pModel->nSkinWidth, &pModel->nSkinHeight);
-      if (pModel->nTextureBind == -1)
-      {
-        Sys_Printf("Model skin load failed on texture %s\n", cPath);
-      }
-      int nStart = 0;
-      if (pModel->pTriList == NULL)
-      {
-		    pModel->nModelPosition = 0;
-        pModel->pTriList = new trimodel[nTris];
-        pModel->nTriCount = nTris;
-      }
-      else
-      {
-        // already have one so we need to reallocate
-        int nNewCount = pModel->nTriCount + nTris;
-        trimodel* pNewModels = new trimodel[nNewCount];
-        for (int i = 0; i < pModel->nTriCount; i++)
-        {
-          memcpy(&pNewModels[i], &pModel->pTriList[i], sizeof(trimodel));
-        }
-        nStart = pModel->nTriCount;
-        pModel->nTriCount = nNewCount;
-        nTris = nNewCount;
-        delete [] pModel->pTriList;
-        pModel->pTriList = pNewModels;
-      }
-      
-      for (int i = nStart; i < nTris; i++)
-      {
-        dtriangle_t tri;
-        memcpy(&tri, pTris, sizeof(dtriangle_t));
-        for (int k = 0; k < 3; k ++)
-        {
-          for (int j = 0; j < 3; j++)
-          {
-            pModel->pTriList[i].v[k][j] = (f->verts[tri.index_xyz[k]].v[j] * f->scale[j] + f->translate[j]);
-          }
-
-          pModel->pTriList[i].st[k][0] = pST[tri.index_st[k]].s / pModel->nSkinWidth;
-          pModel->pTriList[i].st[k][1] = pST[tri.index_st[k]].t / pModel->nSkinHeight;;
-          ExtendBounds (pModel->pTriList[i].v[k], vMin, vMax);
-		    }
-        pTris += sizeof(dtriangle_t);
-		  }
-    }
-    free(p);
-  }
-  else
-  {
-    Sys_Printf(" failed.\n");
-  }
-
-#if 0
-  if (pModel->pTriList != NULL && pModel->nTriCount > 0 && !bMD3)
-  {
-	  if(fabs(vMin[2]) < ((vMax[2]-vMin[2]) / 10.0))	// > 90% above 0 point.
-	    pModel->nModelPosition = 1;
-//	sprintf (cPath, "%s/%sskin.pcx", ValueForKey(g_qeglobals.d_project_entity, "basepath"), pLocation);
-    sprintf (cPath, "%s/%s", ValueForKey(g_qeglobals.d_project_entity, "basepath"), cSkin);
- 	  pModel->nTextureBind = Texture_LoadSkin(cPath, &pModel->nSkinWidth, &pModel->nSkinHeight);
-    if (pModel->nTextureBind == -1)
-    {
-//      sprintf (cPath, "%sskin.pcx", pLocation);
-		  strcpy (cPath, cSkin);
-      pModel->nTextureBind = Texture_LoadSkin(cPath, &pModel->nSkinWidth, &pModel->nSkinHeight);
-    }
-  }
-#endif
-
-}
-
-void setSpecialLoad(eclass_t *e, const char* pWhat, char*& p)
+void setSpecialLoad(eclass_s *e, const char* pWhat, char*& p)
 {
   CString str = e->comments;
   int n = str.Find(pWhat);
@@ -415,16 +145,16 @@ void setSpecialLoad(eclass_t *e, const char* pWhat, char*& p)
 
 char	*debugname;
 
-eclass_t *Eclass_InitFromText (const char *text)
+eclass_s *Eclass_InitFromText (const char *text)
 {
 	const char	*t;
 	int		len;
 	int		r, i;
 	char	parms[256], *p;
-	eclass_t	*e;
+	eclass_s	*e;
 	char	color[128];
 
-	e = (eclass_t*)qmalloc(sizeof(*e));
+	e = (eclass_s*)qmalloc(sizeof(*e));
 	memset (e, 0, sizeof(*e));
 	
 	text += strlen("/*QUAKED ");
@@ -550,118 +280,18 @@ eclass_t *Eclass_InitFromText (const char *text)
 
   return e;
 }
-void Eclass_InsertAlphabetized (eclass_t *e);
+void Eclass_InsertAlphabetized (eclass_s *e);
 void EClass_CreateNewFromText(const char *text) {
-	eclass_t *cl = Eclass_InitFromText(text);
+	eclass_s *cl = Eclass_InitFromText(text);
 	if(cl) {
 		Eclass_InsertAlphabetized(cl);
 	}
 }
-bool Eclass_hasModel(eclass_t *e, edVec3_c &vMin, edVec3_c &vMax)
+
+
+void EClass_InsertSortedList(eclass_s *&pList, eclass_s *e)
 {
-	int i;
-  if (e->modelpath != NULL)
-  {
-    if (e->model == NULL)
-    {
-      e->model = reinterpret_cast<entitymodel_t*>(qmalloc(sizeof(entitymodel_t)));
-    }
-    char *pModelBuff = strdup(e->modelpath);
-    char *pSkinBuff = NULL;
-    if (e->skinpath)
-    {
-      pSkinBuff = strdup(e->skinpath);
-    }
-
-    CStringList Models;
-    CStringList Skins;
-    char* pToken = strtok(pModelBuff, ";\0");
-    while (pToken != NULL)
-    {
-      Models.AddTail(pToken);
-      pToken = strtok(NULL, ";\0");
-    }
-
-    if (pSkinBuff != NULL)
-    {
-      pToken = strtok(pSkinBuff, ";\0");
-      while (pToken != NULL)
-      {
-        Skins.AddTail(pToken);
-        pToken = strtok(NULL, ";\0");
-      }
-    }
-
-    entitymodel *model = e->model;
-    for ( i = 0; i < Models.GetCount(); i++)
-    {
-      char *pSkin = NULL;
-      if (i < Skins.GetCount())
-      {
-        pSkin = Skins.GetAt(Skins.FindIndex(i)).GetBuffer(0);
-      }
-      LoadModel(Models.GetAt(Models.FindIndex(i)), e, vMin, vMax, model, pSkin);
-      model->pNext = reinterpret_cast<entitymodel_t*>(qmalloc(sizeof(entitymodel_t)));
-      model = model->pNext;
-    }
-
-    // at this poitn vMin and vMax contain the min max of the model
-    // which needs to be centered at origin 0, 0, 0
-
-    vMin.vectorSnap();
-    vMax.vectorSnap();
-
-    if (vMax[0] - vMin[0] < 2)
-    {
-      vMin[0] -= 1;
-      vMax[0] += 1;
-    }
-
-    if (vMin[1] - vMax[1] < 2)
-    {
-      vMin[1] -= 1;
-      vMax[1] += 1;
-    }
-
-    if (vMax[2] - vMin[2] < 2)
-    {
-      vMax[2] -= 1;
-      vMax[2] += 1;
-    }
-
-    edVec3_c vTemp = (vMin + vMax) * 0.5f;
-    model = e->model;
-    while (model != NULL)
-    {
-      for (i = 0; i < model->nTriCount; i++)
-      {
-        for (int j = 0; j < 3; j++)
-        {
-          ;//VectorSubtract(model->pTriList[i].v[j], vTemp, model->pTriList[i].v[j]);
-        }
-      }
-      model = model->pNext;
-    }
-
-    free(pModelBuff);
-    free(e->modelpath);
-    e->modelpath = NULL;
-	  
-    if(e->skinpath)
-	  {
-		  free(e->skinpath);
-		  e->skinpath = NULL;
-      free(pSkinBuff);
-	  }
-
-  }
-  return (e->model != NULL && e->model->nTriCount > 0);
-}
-
-
-void EClass_InsertSortedList(eclass_t *&pList, eclass_t *e)
-{
-	eclass_t	*s;
+	eclass_s	*s;
 	
 	if (!pList)
 	{
@@ -695,12 +325,12 @@ void EClass_InsertSortedList(eclass_t *&pList, eclass_t *e)
 Eclass_InsertAlphabetized
 =================
 */
-void Eclass_InsertAlphabetized (eclass_t *e)
+void Eclass_InsertAlphabetized (eclass_s *e)
 {
 #if 1
   EClass_InsertSortedList(eclass, e);
 #else
-	eclass_t	*s;
+	eclass_s	*s;
 	
 	if (!eclass)
 	{
@@ -739,7 +369,7 @@ Eclass_ScanFile
 
 bool parsing_single = false;
 bool eclass_found;
-eclass_t *eclass_e;
+eclass_s *eclass_e;
 //#ifdef BUILD_LIST
 extern bool g_bBuildList;
 CString strDefFile;
@@ -748,7 +378,7 @@ void Eclass_ScanFile (char *filename)
 {
 	int		size;
 	char	*data;
-	eclass_t	*e;
+	eclass_s	*e;
 	int		i;
 	char    temp[1024];
 	
@@ -849,8 +479,8 @@ void Eclass_InitForSourceDirectory (char *path)
 	eclass_bad = Eclass_InitFromText ("/*QUAKED UNKNOWN_CLASS (0 0.5 0) ?");
 }
 
-eclass_t *Eclass_FindExisting (const char *name) {
-	eclass_t	*e;
+eclass_s *Eclass_FindExisting (const char *name) {
+	eclass_s	*e;
 	char		init[1024];
 
 	if (!name)
@@ -862,9 +492,9 @@ eclass_t *Eclass_FindExisting (const char *name) {
 
 	return 0;
 }
-eclass_t *Eclass_ForName (char *name, bool has_brushes)
+eclass_s *Eclass_ForName (char *name, bool has_brushes)
 {
-	eclass_t	*e;
+	eclass_s	*e;
 	char		init[1024];
 
 #ifdef _DEBUG
@@ -897,54 +527,3 @@ eclass_t *Eclass_ForName (char *name, bool has_brushes)
 	return e;
 }
 
-
-eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax)
-{
-
-	eclass_t *e = NULL;
-  if (pName == NULL || strlen(pName) == 0)
-  {
-    return NULL;
-  }
-
-	for (e = g_md3Cache; e ; e = e->next)
-  {
-		if (!strcmp (pName, e->name))
-    {
-      pEntity->md3Class = e;
-      vMin = e->mins;
-      vMax = e->maxs;
-			return e;
-    }
-  }
-
-	e = (eclass_t*)qmalloc(sizeof(*e));
-	memset (e, 0, sizeof(*e));
-  e->name = strdup(pName);
-  e->modelpath = strdup(pName);
-  e->skinpath = strdup(pName);
-  char *p = strstr(e->skinpath, ".md3");
-  if (p != NULL)
-  {
-    p++;
-    strncpy(p, "tga", 3);
-  }
-  else
-  {
-    free(e->skinpath);
-    e->skinpath = NULL;
-  }
-
-  e->color[0] = e->color[2] = 0.85;
-
-  if (Eclass_hasModel(e, vMin, vMax))
-  {
-    EClass_InsertSortedList(g_md3Cache, e);
-    e->mins = vMin;
-    e->maxs = vMax;
-    pEntity->md3Class = e;
-    return e;
-  }
-
-  return NULL;
-}

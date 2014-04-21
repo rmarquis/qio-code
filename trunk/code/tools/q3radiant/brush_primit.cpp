@@ -57,7 +57,7 @@ void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT)
 	texT[2]=-cos(RotY);
 }
 
-void FaceToBrushPrimitFace(face_t *f)
+void FaceToBrushPrimitFace(face_s *f)
 {
 	edVec3_c texX,texY;
 	edVec3_c proj;
@@ -106,7 +106,7 @@ void FaceToBrushPrimitFace(face_t *f)
 }
 
 // compute texture coordinates for the winding points
-void EmitBrushPrimitTextureCoordinates(face_t * f, winding_t * w)
+void EmitBrushPrimitTextureCoordinates(face_s * f, winding_t * w)
 {
 	edVec3_c texX,texY;
 	vec_t x,y;
@@ -146,10 +146,9 @@ void EmitBrushPrimitTextureCoordinates(face_t * f, winding_t * w)
 }
 
 // parse a brush in brush primitive format
-void BrushPrimit_Parse(brush_t	*b)
+void BrushPrimit_Parse(brush_s	*b)
 {
-	epair_t		*ep;
-	face_t		*f;
+	face_s		*f;
 	int			i,j;
 	GetToken (true);
 	if (strcmp (token, "{"))
@@ -163,14 +162,14 @@ void BrushPrimit_Parse(brush_t	*b)
 			break;
 		if (!strcmp (token, "}") )
 			break;
-		// reading of b->epairs if any
-		if (strcmp (token, "(") )
-		{
-			ep = ParseEpair();
-			ep->next = b->epairs;
-			b->epairs = ep;
-		}
-		else
+		//// reading of b->epairs if any
+		//if (strcmp (token, "(") )
+		//{
+		//	ep = ParseEpair();
+		//	ep->next = b->epairs;
+		//	b->epairs = ep;
+		//}
+		//else
 		// it's a face
 		{
 			f = Face_Alloc();
@@ -179,7 +178,7 @@ void BrushPrimit_Parse(brush_t	*b)
 			  	b->brush_faces = f;
 		  	else
 			{
-				face_t *scan;
+				face_s *scan;
 				for (scan=b->brush_faces ; scan->next ; scan=scan->next)
 					;
 				scan->next = f;
@@ -320,7 +319,7 @@ void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t tex
 
 // convert a texture matrix between two qtexture_t
 // if NULL for qtexture_t, basic 2x2 texture is assumed ( straight mapping between s/t coordinates and geometric coordinates )
-void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, qtexture_t *qtex1, brushprimit_texdef_t *texMat2, qtexture_t *qtex2 )
+void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, qtexture_t *qtex1, brushprimit_texdef_s *texMat2, qtexture_t *qtex2 )
 {
 	float s1,s2;
 	s1 = ( qtex1 ? static_cast<float>( qtex1->width ) : 2.0f ) / ( qtex2 ? static_cast<float>( qtex2->width ) : 2.0f );
@@ -334,7 +333,7 @@ void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, qtexture_t *qtex1
 }
 
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta)
+void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta)
 {
 	edVec3_c texS,texT;
 	vec_t tx,ty;
@@ -367,7 +366,7 @@ void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta)
 }
 
 // call Face_MoveTexture_BrushPrimit after vec3_t computation
-void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y )
+void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y )
 {
 	edVec3_c texS,texT;
 	edVec3_c delta;
@@ -380,7 +379,7 @@ void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y )
 
 // texture locking
 // called before the points on the face are actually rotated
-void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, vec3_t vOrigin )
+void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOrigin )
 {
 	edVec3_c texS,texT;			// axis base of the initial plane
 	edVec3_c vRotate;				// rotation vector

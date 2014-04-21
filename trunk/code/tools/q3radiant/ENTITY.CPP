@@ -25,9 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 int g_entityId = 1;
 
-char *ValueForKey ( epair_t *&e, const char *key)
+char *ValueForKey ( epair_s *&e, const char *key)
 {
-  epair_t *ep;
+  epair_s *ep;
   for (ep=e ; ep ; ep=ep->next)
   {
 		if (!strcmp (ep->key, key) )
@@ -39,14 +39,14 @@ char *ValueForKey ( epair_t *&e, const char *key)
 }
 
 
-char *ValueForKey (entity_t *ent, const char *key)
+char *ValueForKey (entity_s *ent, const char *key)
 {
 	if(ent == 0)
 		return "";
   return ValueForKey(ent->epairs, key);
 }
 
-void TrackMD3Angles(entity_t *e, const char *key, const char *value)
+void TrackMD3Angles(entity_s *e, const char *key, const char *value)
 {
   if (strcmpi(key, "angle") != 0)
   {
@@ -69,9 +69,9 @@ void TrackMD3Angles(entity_t *e, const char *key, const char *value)
   }
 }
 
-void 	SetKeyValue (epair_t *&e, const char *key, const char *value)
+void 	SetKeyValue (epair_s *&e, const char *key, const char *value)
 {
-	epair_t	*ep;
+	epair_s	*ep;
   for (ep=e ; ep ; ep=ep->next)
   {
 		if (!strcmp (ep->key, key) )
@@ -82,7 +82,7 @@ void 	SetKeyValue (epair_t *&e, const char *key, const char *value)
 			return;
 		}
   }
-	ep = (epair_t*)qmalloc (sizeof(*ep));
+	ep = (epair_s*)qmalloc (sizeof(*ep));
 	ep->next = e;
 	e = ep;
 	ep->key = (char*)qmalloc(strlen(key)+1);
@@ -93,7 +93,7 @@ void 	SetKeyValue (epair_t *&e, const char *key, const char *value)
 }
 
 
-void 	SetKeyValue (entity_t *ent, const char *key, const char *value)
+void 	SetKeyValue (entity_s *ent, const char *key, const char *value)
 {
 
 	if (ent == NULL)
@@ -108,9 +108,9 @@ void 	SetKeyValue (entity_t *ent, const char *key, const char *value)
 
 }
 
-void 	DeleteKey (epair_t *&e, const char *key)
+void 	DeleteKey (epair_s *&e, const char *key)
 {
-	epair_t	**ep, *next;
+	epair_s	**ep, *next;
 	
 	ep = &e;
 	while (*ep)
@@ -129,7 +129,7 @@ void 	DeleteKey (epair_t *&e, const char *key)
 }
 
 
-void 	DeleteKey (entity_t *ent, const char *key)
+void 	DeleteKey (entity_s *ent, const char *key)
 {
   DeleteKey(ent->epairs, key);
 }
@@ -137,7 +137,7 @@ void 	DeleteKey (entity_t *ent, const char *key)
 
 
 
-float	FloatForKey (entity_t *ent, const char *key)
+float	FloatForKey (entity_s *ent, const char *key)
 {
 	char	*k;
 	
@@ -145,7 +145,7 @@ float	FloatForKey (entity_t *ent, const char *key)
 	return atof(k);
 }
 
-int IntForKey (entity_t *ent, const char *key)
+int IntForKey (entity_s *ent, const char *key)
 {
 	char	*k;
 	
@@ -153,7 +153,7 @@ int IntForKey (entity_t *ent, const char *key)
 	return atoi(k);
 }
 
-void 	GetVectorForKey (entity_t *ent, const char *key, vec3_t vec)
+void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec)
 {
 	char	*k;
 	
@@ -168,9 +168,9 @@ Entity_FreeEpairs
 Frees the entity epairs.
 ===============
 */
-void Entity_FreeEpairs(entity_t *e)
+void Entity_FreeEpairs(entity_s *e)
 {
-	epair_t	*ep, *next;
+	epair_s	*ep, *next;
 
 	for (ep = e->epairs; ep; ep = next)
 	{
@@ -187,7 +187,7 @@ void Entity_FreeEpairs(entity_t *e)
 Entity_AddToList
 ===========
 */
-void Entity_AddToList(entity_t *e, entity_t *list)
+void Entity_AddToList(entity_s *e, entity_s *list)
 {
 	if (e->next || e->prev)
 		Error ("Entity_AddToList: allready linked");
@@ -202,7 +202,7 @@ void Entity_AddToList(entity_t *e, entity_t *list)
 Entity_RemoveFromList
 ===========
 */
-void Entity_RemoveFromList (entity_t *e)
+void Entity_RemoveFromList (entity_s *e)
 {
 	if (!e->next || !e->prev)
 		Error ("Entity_RemoveFromList: not linked");
@@ -221,7 +221,7 @@ Frees the entity and any brushes is has.
 The entity is removed from the global entities list.
 ===============
 */
-void Entity_Free (entity_t *e)
+void Entity_Free (entity_s *e)
 {
 	while (e->brushes.onext != &e->brushes)
 		Brush_Free (e->brushes.onext);
@@ -242,9 +242,9 @@ void Entity_Free (entity_t *e)
 Entity_MemorySize
 =================
 */
-int Entity_MemorySize(entity_t *e)
+int Entity_MemorySize(entity_s *e)
 {
-	epair_t	*ep;
+	epair_s	*ep;
 	int size = 0;
 
 	for (ep = e->epairs; ep; ep = ep->next)
@@ -262,11 +262,11 @@ int Entity_MemorySize(entity_t *e)
 ParseEpair
 =================
 */
-epair_t *ParseEpair (void)
+epair_s *ParseEpair (void)
 {
-	epair_t	*e;
+	epair_s	*e;
 	
-	e = (epair_t*)qmalloc (sizeof(*e));
+	e = (epair_s*)qmalloc (sizeof(*e));
 	
 	e->key = (char*)qmalloc(strlen(token)+1);
 	strcpy (e->key, token);
@@ -287,13 +287,13 @@ be looked up, and the entity will not be added
 to the global list.  Used for parsing the project.
 ================
 */
-entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
+entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 {
-	entity_t	*ent;
-	eclass_t	*e;
-	brush_t		*b;
+	entity_s	*ent;
+	eclass_s	*e;
+	brush_s		*b;
 	edVec3_c		mins, maxs;
-	epair_t		*ep;
+	epair_s		*ep;
 	bool	has_brushes;
 	
 	if (!GetToken (true))
@@ -302,7 +302,7 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 	if (strcmp (token, "{") )
 		Error ("ParseEntity: { not found");
 	
-	ent = (entity_t*)qmalloc (sizeof(*ent));
+	ent = (entity_s*)qmalloc (sizeof(*ent));
 	ent->entityId = g_entityId++;
 	ent->brushes.onext = ent->brushes.oprev = &ent->brushes;
 
@@ -384,12 +384,12 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 			{
 				edVec3_c vMin, vMax;
 				a = FloatForKey (ent, "angle");
-				if (GetCachedModel(ent, p, vMin, vMax))
-				{
-					// create a custom brush
-					mins = ent->md3Class->mins + ent->origin;
-					maxs = ent->md3Class->maxs + ent->origin;
-				}
+				//if (GetCachedModel(ent, p, vMin, vMax))
+				//{
+				//	// create a custom brush
+				//	mins = ent->md3Class->mins + ent->origin;
+				//	maxs = ent->md3Class->maxs + ent->origin;
+				//}
 			}
 		}
 		
@@ -432,22 +432,15 @@ entity_t	*Entity_Parse (bool onlypairs, brush_t* pList)
 	return ent;
 }
 
-void VectorMidpoint(vec3_t va, vec3_t vb, vec3_t& out)
-{
-  for (int i = 0; i < 3; i++)
-    out[i] = va[i] + ((vb[i] - va[i]) / 2);
-}
-
-
 /*
 ============
 Entity_Write
 ============
 */
-void Entity_Write (entity_t *e, FILE *f, bool use_region)
+void Entity_Write (entity_s *e, FILE *f, bool use_region)
 {
-	epair_t		*ep;
-	brush_t		*b;
+	epair_s		*ep;
+	brush_s		*b;
 	edVec3_c		origin;
 	char		text[128];
 	int			count;
@@ -487,12 +480,12 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 	// brush position
 	else if (e->eclass->fixedsize)
 	{
-		if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
-		{
-			origin = e->origin;
-			//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
-		}
-		else
+		//if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+		//{
+		//	origin = e->origin;
+		//	//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+		//}
+		//else
 		{
 			origin = e->brushes.onext->getMins() - e->eclass->mins;
 		}
@@ -522,9 +515,9 @@ void Entity_Write (entity_t *e, FILE *f, bool use_region)
 
 
 
-bool IsBrushSelected(brush_t* bSel)
+bool IsBrushSelected(brush_s* bSel)
 {
-	for (brush_t* b = selected_brushes.next ;b != NULL && b != &selected_brushes; b = b->next)
+	for (brush_s* b = selected_brushes.next ;b != NULL && b != &selected_brushes; b = b->next)
   {
     if (b == bSel)
       return true;
@@ -537,10 +530,10 @@ bool IsBrushSelected(brush_t* bSel)
 //Entity_WriteSelected
 //============
 //
-void Entity_WriteSelected(entity_t *e, FILE *f)
+void Entity_WriteSelected(entity_s *e, FILE *f)
 {
-	epair_t		*ep;
-	brush_t		*b;
+	epair_s		*ep;
+	brush_s		*b;
 	edVec3_c		origin;
 	char		text[128];
 	int			count;
@@ -556,12 +549,12 @@ void Entity_WriteSelected(entity_t *e, FILE *f)
 	// brush position
 	if (e->eclass->fixedsize)
 	{
-    if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
-    {
-      origin = e->origin;
-		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
-    }
-    else
+    //if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+    //{
+    //  origin = e->origin;
+		  ////VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+    //}
+    //else
     {
 		  origin = e->brushes.onext->getMins() - e->eclass->mins;
     }
@@ -595,10 +588,10 @@ void Entity_WriteSelected(entity_t *e, FILE *f)
 //Entity_WriteSelected to a CMemFile
 //============
 //
-void Entity_WriteSelected(entity_t *e, CMemFile* pMemFile)
+void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 {
-	epair_t		*ep;
-	brush_t		*b;
+	epair_s		*ep;
+	brush_s		*b;
 	edVec3_c		origin;
 	char		text[128];
 	int			count;
@@ -614,12 +607,12 @@ void Entity_WriteSelected(entity_t *e, CMemFile* pMemFile)
 	// brush position
 	if (e->eclass->fixedsize)
 	{
-    if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
-    {
-		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
-      origin = e->origin;
-    }
-    else
+    //if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+    //{
+		  ////VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+    //  origin = e->origin;
+    //}
+    //else
     {
 		  origin =  e->brushes.onext->getMins() - e->eclass->mins;
     }
@@ -660,10 +653,10 @@ used to find a midpoint.  Otherwise, the brushes have
 their ownership transfered to the new entity.
 ============
 */
-entity_t	*Entity_Create (eclass_t *c)
+entity_s	*Entity_Create (eclass_s *c)
 {
-	entity_t	*e;
-	brush_t		*b;
+	entity_s	*e;
+	brush_s		*b;
 	edVec3_c	mins, maxs;
 	int			i;
 
@@ -681,7 +674,7 @@ entity_t	*Entity_Create (eclass_t *c)
 
 	// create it
 
-	e = (entity_t*)qmalloc(sizeof(*e));
+	e = (entity_s*)qmalloc(sizeof(*e));
 	e->entityId = g_entityId++;
 	e->brushes.onext = e->brushes.oprev = &e->brushes;
 	e->eclass = c;
@@ -740,7 +733,7 @@ entity_t	*Entity_Create (eclass_t *c)
 Entity_LinkBrush
 ===========
 */
-void Entity_LinkBrush (entity_t *e, brush_t *b)
+void Entity_LinkBrush (entity_s *e, brush_s *b)
 {
 	if (b->oprev || b->onext)
 		Error ("Entity_LinkBrush: Allready linked");
@@ -757,7 +750,7 @@ void Entity_LinkBrush (entity_t *e, brush_t *b)
 Entity_UnlinkBrush
 ===========
 */
-void Entity_UnlinkBrush (brush_t *b)
+void Entity_UnlinkBrush (brush_s *b)
 {
 	//if (!b->owner || !b->onext || !b->oprev)
 	if (!b->onext || !b->oprev)
@@ -774,12 +767,12 @@ void Entity_UnlinkBrush (brush_t *b)
 Entity_Clone
 ===========
 */
-entity_t	*Entity_Clone (entity_t *e)
+entity_s	*Entity_Clone (entity_s *e)
 {
-	entity_t	*n;
-	epair_t		*ep, *np;
+	entity_s	*n;
+	epair_s		*ep, *np;
 
-	n = (entity_t*)qmalloc(sizeof(*n));
+	n = (entity_s*)qmalloc(sizeof(*n));
 	n->entityId = g_entityId++;
 	n->brushes.onext = n->brushes.oprev = &n->brushes;
 	n->eclass = e->eclass;
@@ -789,7 +782,7 @@ entity_t	*Entity_Clone (entity_t *e)
 
 	for (ep = e->epairs ; ep ; ep=ep->next)
 	{
-		np = (epair_t*)qmalloc(sizeof(*np));
+		np = (epair_s*)qmalloc(sizeof(*np));
 		np->key = copystring(ep->key);
 		np->value = copystring(ep->value);
 		np->next = n->epairs;
@@ -802,7 +795,7 @@ int GetUniqueTargetId(int iHint)
 {
 	int iMin, iMax, i;
 	BOOL fFound;
-	entity_t *pe;
+	entity_s *pe;
 	
 	fFound = FALSE;
 	pe = entities.next;
@@ -827,9 +820,9 @@ int GetUniqueTargetId(int iHint)
 		return iHint;
 }
 
-entity_t *FindEntity(char *pszKey, char *pszValue)
+entity_s *FindEntity(char *pszKey, char *pszValue)
 {
-	entity_t *pe;
+	entity_s *pe;
 	
 	pe = entities.next;
 	
@@ -842,9 +835,9 @@ entity_t *FindEntity(char *pszKey, char *pszValue)
 	return NULL;
 }
 
-entity_t *FindEntityInt(char *pszKey, int iValue)
+entity_s *FindEntityInt(char *pszKey, int iValue)
 {
-	entity_t *pe;
+	entity_s *pe;
 	
 	pe = entities.next;
 	

@@ -36,20 +36,20 @@ int	FindPoint (vec3_t point)
 		for (j=0 ; j<3 ; j++)
 			if (fabs(point[j] - g_qeglobals.d_points[i][j]) > 0.1)
 				break;
-		if (j == 3)
-			return i;
+			if (j == 3)
+				return i;
 	}
 
 	g_qeglobals.d_points[g_qeglobals.d_numpoints] = point;
-  if (g_qeglobals.d_numpoints < MAX_POINTS-1)
-  {
-	  g_qeglobals.d_numpoints++;
-  }
+	if (g_qeglobals.d_numpoints < MAX_POINTS-1)
+	{
+		g_qeglobals.d_numpoints++;
+	}
 
 	return g_qeglobals.d_numpoints-1;
 }
 
-int FindEdge (int p1, int p2, face_t *f)
+int FindEdge (int p1, int p2, face_s *f)
 {
 	int		i;
 
@@ -64,18 +64,18 @@ int FindEdge (int p1, int p2, face_t *f)
 	g_qeglobals.d_edges[g_qeglobals.d_numedges].p2 = p2;
 	g_qeglobals.d_edges[g_qeglobals.d_numedges].f1 = f;
 
-  if (g_qeglobals.d_numedges < MAX_EDGES-1)
-  {
-	  g_qeglobals.d_numedges++;
-  }
+	if (g_qeglobals.d_numedges < MAX_EDGES-1)
+	{
+		g_qeglobals.d_numedges++;
+	}
 
 	return g_qeglobals.d_numedges-1;
 }
 
 #ifdef NEWEDGESEL
-void MakeFace (brush_t* b, face_t *f)
+void MakeFace (brush_s* b, face_s *f)
 #else
-void MakeFace (face_t *f)
+void MakeFace (face_s *f)
 #endif
 {
 	winding_t	*w;
@@ -99,8 +99,8 @@ void MakeFace (face_t *f)
 
 void SetupVertexSelection (void)
 {
-	face_t	*f;
-	brush_t *b;
+	face_s	*f;
+	brush_s *b;
 
 	g_qeglobals.d_numpoints = 0;
 	g_qeglobals.d_numedges = 0;
@@ -124,9 +124,9 @@ void SetupVertexSelection (void)
 
 
 #ifdef NEWEDGESEL
-void SelectFaceEdge (brush_t* b, face_t *f, int p1, int p2)
+void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
 #else
-void SelectFaceEdge (face_t *f, int p1, int p2)
+void SelectFaceEdge (face_s *f, int p1, int p2)
 #endif
 {
 	winding_t	*w;
@@ -170,10 +170,10 @@ void SelectFaceEdge (face_t *f, int p1, int p2)
 
 void SelectVertex (int p1)
 {
-	brush_t		*b;
+	brush_s		*b;
 	winding_t	*w;
 	int			i, j, k;
-	face_t		*f;
+	face_s		*f;
 
 #ifdef NEWEDGESEL
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
@@ -280,7 +280,7 @@ void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
 	g_qeglobals.d_num_move_points = 0;
 	e = &g_qeglobals.d_edges[besti];
 #ifdef NEWEDGESEL
-	for (brush_t* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
     SelectFaceEdge (b, e->f1, e->p1, e->p2);
 	  SelectFaceEdge (b, e->f2, e->p2, e->p1);
@@ -356,16 +356,16 @@ void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
 
 	if (besti == -1)
 	{
-    if (g_pParentWnd->ActiveXY()->AreaSelectOK())
-    {
-      g_qeglobals.d_select_mode = sel_area;
-      g_qeglobals.d_vAreaTL = org;
-      g_qeglobals.d_vAreaBR = org;
-    }
+		if (g_pParentWnd->ActiveXY()->AreaSelectOK())
+		{
+			g_qeglobals.d_select_mode = sel_area;
+			g_qeglobals.d_vAreaTL = org;
+			g_qeglobals.d_vAreaBR = org;
+		}
 		return;
 	}
 	//Sys_Printf ("hit vertex\n");
-  AddPatchMovePoint(g_qeglobals.d_points[besti], buttons & MK_CONTROL, buttons & MK_SHIFT);
+	AddPatchMovePoint(g_qeglobals.d_points[besti], buttons & MK_CONTROL, buttons & MK_SHIFT);
 }
 
 

@@ -61,7 +61,7 @@ Z_MouseDown
 void Z_MouseDown (int x, int y, int buttons)
 {
 	edVec3_c	org, dir, vup, vright;
-	brush_t	*b;
+	brush_s	*b;
 
 	Sys_GetCursorPos (&cursorx, &cursory);
 
@@ -272,7 +272,7 @@ Z_Draw
 */
 void Z_Draw (void)
 {
-    brush_t	*brush;
+    brush_s	*brush;
 	float	w, h;
 	double	start, end;
 	qtexture_t	*q;

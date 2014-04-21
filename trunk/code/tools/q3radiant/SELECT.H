@@ -36,8 +36,8 @@ typedef enum
 
 typedef struct
 {
-	brush_t		*brush;
-	face_t		*face;
+	brush_s		*brush;
+	face_s		*face;
 	float		dist;
 	bool	selected;
 } trace_t;
@@ -55,14 +55,14 @@ typedef struct
 trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags);
 
 void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs);
-void Select_Brush (brush_t *b, bool bComplete = true, bool bStatus = true);
+void Select_Brush (brush_s *b, bool bComplete = true, bool bStatus = true);
 void Select_Ray (vec3_t origin, vec3_t dir, int flags);
 void Select_Delete (void);
 void Select_Deselect (bool bDeselectFaces = true);
 void Select_Invert(void);
 void Select_Clone (void);
 void Select_Move (vec3_t delta, bool bSnap = true);
-void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale = false, void* pPlugTexdef = NULL);
+void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, void* pPlugTexdef = NULL);
 void Select_FlipAxis (int axis);
 void Select_RotateAxis (int axis, float deg, bool bPaint = true, bool bMouse = false);
 void Select_CompleteTall (void);
@@ -77,11 +77,8 @@ void Select_FitTexture(int nHeight = 1, int nWidth = 1);
 
 // absolute texture coordinates
 // TTimo NOTE: this is stuff for old brushes format and rotation texture lock .. sort of in-between with bush primitives
-void ComputeAbsolute(face_t* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3);
-void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3);
+void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3);
+void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3);
 void Select_Hide();
 void Select_ShowAllHidden();
-// add selected brushes to a group, update the tree
-void Select_AddToGroup(const char *pName);
-void Select_Name(const char *pName);
 void clearSelection();

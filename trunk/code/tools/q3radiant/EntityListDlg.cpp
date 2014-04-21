@@ -70,7 +70,7 @@ void CEntityListDlg::OnSelect()
   HTREEITEM hItem = m_treeEntity.GetSelectedItem();
   if (hItem)
   {
-    entity_t* pEntity = reinterpret_cast<entity_t*>(m_treeEntity.GetItemData(hItem));
+    entity_s* pEntity = reinterpret_cast<entity_s*>(m_treeEntity.GetItemData(hItem));
     if (pEntity)
     {
       Select_Deselect();
@@ -90,7 +90,7 @@ BOOL CEntityListDlg::OnInitDialog()
   HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->eclass->name, hParent);
   m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(world_entity));
 
-	for (entity_t* pEntity=entities.next ; pEntity != &entities ; pEntity=pEntity->next)
+	for (entity_s* pEntity=entities.next ; pEntity != &entities ; pEntity=pEntity->next)
 	{
     hParent = NULL;
     if (mapEntity.Lookup(pEntity->eclass->name, reinterpret_cast<void*&>(hParent)) == FALSE)
@@ -121,10 +121,10 @@ void CEntityListDlg::OnSelchangedTreeEntity(NMHDR* pNMHDR, LRESULT* pResult)
   if (hItem)
   {
     CString strList;
-    entity_t* pEntity = reinterpret_cast<entity_t*>(m_treeEntity.GetItemData(hItem));
+    entity_s* pEntity = reinterpret_cast<entity_s*>(m_treeEntity.GetItemData(hItem));
     if (pEntity)
     {
-	    for (epair_t* pEpair = pEntity->epairs ; pEpair ; pEpair = pEpair->next)
+	    for (epair_s* pEpair = pEntity->epairs ; pEpair ; pEpair = pEpair->next)
       {
 		    if (strlen(pEpair->key) > 8)
           strList.Format("%s\t%s", pEpair->key, pEpair->value);

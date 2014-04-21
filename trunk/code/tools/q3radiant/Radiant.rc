@@ -454,7 +454,6 @@ BEGIN
         MENUITEM "Cubic Clipping",              ID_VIEW_CUBICCLIPPING
         , CHECKED
         MENUITEM SEPARATOR
-        MENUITEM "OpenGL Lighting",             ID_VIEW_OPENGLLIGHTING
     END
     POPUP "&Selection"
     BEGIN
@@ -2763,10 +2762,6 @@ BEGIN
     IDR_SHADERTYPE          "\nUntitled\nSHADER Document\nShader Files (*.shader)\n.shader\nShaderFileType\nSHADER File Type\nSHADER\nShader Files\n"
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_VIEW_OPENGLLIGHTING  "Toggle OpenGL Lighting"
-END
 
 STRINGTABLE DISCARDABLE 
 BEGIN

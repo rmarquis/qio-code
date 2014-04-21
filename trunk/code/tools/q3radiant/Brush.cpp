@@ -31,21 +31,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 int g_nBrushId = 0;
 
-const char* Brush_Name(brush_t *b)
-{
-  static char cBuff[1024];
-	b->numberId = g_nBrushId++;
-	if (g_qeglobals.m_bBrushPrimitMode)
-  {
-    sprintf(cBuff, "Brush %i", b->numberId);
-    Brush_SetEpair(b, "Name", cBuff);
-  }
-  return cBuff;
-}
 
-brush_t *Brush_Alloc()
+
+brush_s *Brush_Alloc()
 {
-  brush_t *b = (brush_t*)qmalloc(sizeof(brush_t));
+  brush_s *b = (brush_s*)qmalloc(sizeof(brush_s));
   return b;
 }
 
@@ -166,9 +156,9 @@ float	shift[2];
 Face_Alloc
 ================
 */
-face_t *Face_Alloc( void )
+face_s *Face_Alloc( void )
 {
-	face_t *f = (face_t*)qmalloc( sizeof( *f ) );
+	face_s *f = (face_s*)qmalloc( sizeof( *f ) );
 
 	return f;
 }
@@ -178,7 +168,7 @@ face_t *Face_Alloc( void )
 Face_Free
 ================
 */
-void Face_Free( face_t *f )
+void Face_Free( face_s *f )
 {
 	assert( f != 0 );
 
@@ -200,9 +190,9 @@ void Face_Free( face_t *f )
 Face_Clone
 ================
 */
-face_t	*Face_Clone (face_t *f)
+face_s	*Face_Clone (face_s *f)
 {
-	face_t	*n;
+	face_s	*n;
 
 	n = Face_Alloc();
 	n->texdef = f->texdef;
@@ -220,9 +210,9 @@ Face_FullClone
 makes an exact copy of the face
 ================
 */
-face_t	*Face_FullClone (face_t *f)
+face_s	*Face_FullClone (face_s *f)
 {
-	face_t	*n;
+	face_s	*n;
 
 	n = Face_Alloc();
 	n->texdef = f->texdef;
@@ -253,7 +243,7 @@ void Clamp(float& f, int nClamp)
 Face_MoveTexture
 ================
 */
-void Face_MoveTexture(face_t *f, const edVec3_c &delta)
+void Face_MoveTexture(face_s *f, const edVec3_c &delta)
 {
 	edVec3_c vX, vY;
 /*
@@ -298,7 +288,7 @@ void Face_MoveTexture(face_t *f, const edVec3_c &delta)
 Face_SetColor
 ================
 */
-void Face_SetColor (brush_t *b, face_t *f, float fCurveColor) 
+void Face_SetColor (brush_s *b, face_s *f, float fCurveColor) 
 {
 	float	shade;
 	qtexture_t *q;
@@ -329,7 +319,7 @@ Face_TextureVectors
 TTimo: NOTE: this is never to get called while in brush primitives mode
 ================
 */
-void Face_TextureVectors (face_t *f, float STfromXYZ[2][4])
+void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 {
 	edVec3_c		pvecs[2];
 	int			sv, tv;
@@ -416,7 +406,7 @@ void Face_TextureVectors (face_t *f, float STfromXYZ[2][4])
 Face_MakePlane
 ================
 */
-void Face_MakePlane (face_t *f)
+void Face_MakePlane (face_s *f)
 {
 	int		j;
 	edVec3_c	t1, t2, t3;
@@ -441,7 +431,7 @@ void Face_MakePlane (face_t *f)
 EmitTextureCoordinates
 ================
 */
-void EmitTextureCoordinates (texturedVertex_c &out, qtexture_t *q, face_t *f)
+void EmitTextureCoordinates (texturedVertex_c &out, qtexture_t *q, face_s *f)
 {
 	float	STfromXYZ[2][4];
 
@@ -458,9 +448,9 @@ void EmitTextureCoordinates (texturedVertex_c &out, qtexture_t *q, face_t *f)
 Brush_MakeFacePlanes
 ================
 */
-void Brush_MakeFacePlanes (brush_t *b)
+void Brush_MakeFacePlanes (brush_s *b)
 {
-	face_t	*f;
+	face_s	*f;
 
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
@@ -473,7 +463,7 @@ void Brush_MakeFacePlanes (brush_t *b)
 DrawBrushEntityName
 ================
 */
-void DrawBrushEntityName (brush_t *b)
+void DrawBrushEntityName (brush_s *b)
 {
 	char	*name;
 	//float	a, s, c;
@@ -549,10 +539,10 @@ Brush_MakeFaceWinding
 returns the visible polygon on a face
 =================
 */
-winding_t *Brush_MakeFaceWinding (brush_t *b, face_t *face)
+winding_t *Brush_MakeFaceWinding (brush_s *b, face_s *face)
 {
 	winding_t	*w;
-	face_t		*clip;
+	face_s		*clip;
 	edPlane_c			plane;
 	bool		past;
 
@@ -605,10 +595,10 @@ winding_t *Brush_MakeFaceWinding (brush_t *b, face_t *face)
 Brush_SnapPlanepts
 =================
 */
-void Brush_SnapPlanepts (brush_t *b)
+void Brush_SnapPlanepts (brush_s *b)
 {
 	int		i, j;
-	face_t	*f;
+	face_s	*f;
 
   if (g_PrefsDlg.m_bNoClamp)
     return;
@@ -628,7 +618,7 @@ void Brush_SnapPlanepts (brush_t *b)
 // added a bConvert flag to convert between old and new brush texture formats
 // TTimo
 // brush grouping: update the group treeview if necessary
-void Brush_Build( brush_t *b, bool bSnap, bool bMarkMap, bool bConvert )
+void Brush_Build( brush_s *b, bool bSnap, bool bMarkMap, bool bConvert )
 {
 	bool		bLocalConvert;
 
@@ -657,9 +647,6 @@ void Brush_Build( brush_t *b, bool bSnap, bool bMarkMap, bool bConvert )
 	if (g_qeglobals.d_select_mode == sel_vertex || g_qeglobals.d_select_mode == sel_edge)
 		SetupVertexSelection ();
 
-    if (b->itemOwner == NULL)
-      Group_AddToProperGroup(b);
-
 	if (bMarkMap)
 	{
 		Sys_MarkMapModified();
@@ -684,10 +671,10 @@ The incoming brush is NOT freed.
 The incoming face is NOT left referenced.
 ==============
 */
-void Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back)
+void Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **back)
 {
-	brush_t	*b;
-	face_t	*nf;
+	brush_s	*b;
+	face_s	*nf;
 //	vec3_t	temp;
 
 	b = Brush_Clone (in);
@@ -741,9 +728,9 @@ returns the best face to split the brush with.
 return NULL if the brush is convex
 =================
 */
-face_t *Brush_BestSplitFace(brush_t *b)
+face_s *Brush_BestSplitFace(brush_s *b)
 {
-	face_t *face, *f, *bestface;
+	face_s *face, *f, *bestface;
 	winding_t *front, *back;
 	int splits, tinywindings, value, bestvalue;
 
@@ -799,10 +786,10 @@ Otherwise the input brush will be freed.
 NOTE: the input brush should have windings for the faces.
 =================
 */
-brush_t *Brush_MakeConvexBrushes(brush_t *b)
+brush_s *Brush_MakeConvexBrushes(brush_s *b)
 {
-	brush_t *front, *back, *end;
-	face_t *face;
+	brush_s *front, *back, *end;
+	face_s *face;
 
 	b->next = NULL;
 	face = Brush_BestSplitFace(b);
@@ -827,9 +814,9 @@ brush_t *Brush_MakeConvexBrushes(brush_t *b)
 Brush_Convex
 =================
 */
-int Brush_Convex(brush_t *b)
+int Brush_Convex(brush_s *b)
 {
-	face_t *face1, *face2;
+	face_s *face1, *face2;
 
 	for (face1 = b->brush_faces; face1; face1 = face1->next)
 	{
@@ -870,10 +857,10 @@ Brush_MoveVertexes_old1
 #define INTERSECT_EPSILON	0.1
 #define POINT_EPSILON		0.3
 //
-//int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
+//int Brush_MoveVertex_old1(brush_s *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
 //{
-//	face_t *f, *face, *newface, *lastface, *nextface;
-//	face_t *movefaces[MAX_MOVE_FACES];
+//	face_s *f, *face, *newface, *lastface, *nextface;
+//	face_s *movefaces[MAX_MOVE_FACES];
 //	int movefacepoints[MAX_MOVE_FACES];
 //	winding_t *w, tmpw;
 //	int i, j, k, nummovefaces, result;
@@ -1118,10 +1105,10 @@ Brush_MoveVertexes_old2
 #define INTERSECT_EPSILON	0.1
 #define POINT_EPSILON		0.3
 
-//int Brush_MoveVertex_old2(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
+//int Brush_MoveVertex_old2(brush_s *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
 //{
-//	face_t *f, *face, *newface, *lastface, *nextface;
-//	face_t *movefaces[MAX_MOVE_FACES];
+//	face_s *f, *face, *newface, *lastface, *nextface;
+//	face_s *movefaces[MAX_MOVE_FACES];
 //	int movefacepoints[MAX_MOVE_FACES];
 //	winding_t *w, tmpw;
 //	int i, j, k, nummovefaces, result;
@@ -1310,10 +1297,10 @@ Brush_MoveVertexes
 
 #define MAX_MOVE_FACES		64
 
-int Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap)
+int Brush_MoveVertex(brush_s *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap)
 {
-	face_t *f, *face, *newface, *lastface, *nextface;
-	face_t *movefaces[MAX_MOVE_FACES];
+	face_s *f, *face, *newface, *lastface, *nextface;
+	face_s *movefaces[MAX_MOVE_FACES];
 	int movefacepoints[MAX_MOVE_FACES];
 	winding_t *w, tmpw;
 	edVec3_c start, mid;
@@ -1588,9 +1575,9 @@ int Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, 
 Brush_InsertVertexBetween
 =================
 */
-int Brush_InsertVertexBetween(brush_t *b, const edVec3_c &p1, const edVec3_c &p2)
+int Brush_InsertVertexBetween(brush_s *b, const edVec3_c &p1, const edVec3_c &p2)
 {
-	face_t *face;
+	face_s *face;
 	winding_t *w, *neww;
 	edVec3_c point;
 	int i, insert;
@@ -1637,11 +1624,11 @@ int Brush_InsertVertexBetween(brush_t *b, const edVec3_c &p1, const edVec3_c &p2
 Brush_ResetFaceOriginals
 =================
 */
-void Brush_ResetFaceOriginals(brush_t *b)
+void Brush_ResetFaceOriginals(brush_s *b)
 {
 	if(b == 0)
 		return;
-	face_t *face;
+	face_s *face;
 
 	for (face = b->brush_faces; face; face = face->next)
 	{
@@ -1658,10 +1645,10 @@ The brush is NOT linked to any list
 */
 //++timo FIXME: when using old brush primitives, the test loop for "Brush" and "patchDef2" "patchDef3" is ran
 // before each face parsing. It works, but it's a performance hit
-brush_t *Brush_Parse (void)
+brush_s *Brush_Parse (void)
 {
-	brush_t		*b;
-	face_t		*f;
+	brush_s		*b;
+	face_s		*f;
 	int			i,j;
 	
 	g_qeglobals.d_parsed_brushes++;
@@ -1742,7 +1729,7 @@ brush_t *Brush_Parse (void)
 			}
 			else
 			{
-				face_t *scan;
+				face_s *scan;
 				for (scan=b->brush_faces ; scan->next ; scan=scan->next)
 					;
 				scan->next = f;
@@ -1817,55 +1804,8 @@ brush_t *Brush_Parse (void)
 	return b;
 }
 
-/*
-==============
-Brush_SetEpair
-sets an epair for the given brush
-==============
-*/
-void Brush_SetEpair(brush_t *b, const char *pKey, const char *pValue)
-{
-	if (g_qeglobals.m_bBrushPrimitMode)
-	{
-		if (b->patchBrush)
-		{
-		  Patch_SetEpair(b->pPatch, pKey, pValue);
-		}
-		else
-		{
-			  SetKeyValue(b->epairs, pKey, pValue);
-		}
-	}
-	else
-	{
-		Sys_Printf("Can only set key/values in Brush primitive mode\n");
-	}
-}
 
-/* 
-=================
-Brush_GetKeyValue
-=================
-*/
-const char* Brush_GetKeyValue(brush_t *b, const char *pKey)
-{
-	if (g_qeglobals.m_bBrushPrimitMode)
-	{
-    if (b->patchBrush)
-    {
-      return Patch_GetKeyValue(b->pPatch, pKey);
-    }
-    else
-    {
-		  return ValueForKey(b->epairs, pKey);
-    }
-	}
-	else
-	{
-		Sys_Printf("Can only set brush/patch key/values in Brush primitive mode\n");
-	}
-  return "";
-}
+
 
 /*
 =================
@@ -1873,10 +1813,9 @@ Brush_Write
 save all brushes as Brush primitive format
 =================
 */
-void Brush_Write (brush_t *b, FILE *f)
+void Brush_Write (brush_s *b, FILE *f)
 {
-	epair_t	*ep;
-	face_t	*fa;
+	face_s	*fa;
 	char	*pname;
 	int		i;
 	
@@ -1889,10 +1828,6 @@ void Brush_Write (brush_t *b, FILE *f)
 	{
 		// save brush primitive format
 		fprintf (f, "{\nbrushDef\n{\n");
-		// brush epairs
-		if (b->epairs)
-			for (ep = b->epairs ; ep ; ep=ep->next)
-				fprintf (f, "\"%s\" \"%s\"\n", ep->key, ep->value);
 		for (fa=b->brush_faces ; fa ; fa=fa->next)
 		{
 			// save planepts
@@ -2000,10 +1935,9 @@ Brush_Write to a CMemFile*
 save all brushes as Brush primitive format
 =================
 */
-void Brush_Write (brush_t *b, CMemFile *pMemFile)
+void Brush_Write (brush_s *b, CMemFile *pMemFile)
 {
-	epair_t *ep;
-	face_t	*fa;
+	face_s	*fa;
 	char *pname;
 	int		i;
 	
@@ -2017,10 +1951,6 @@ void Brush_Write (brush_t *b, CMemFile *pMemFile)
 	{
 		// brush primitive format
 		MemFile_fprintf (pMemFile, "{\nBrushDef\n{\n");
-		// brush epairs
-		if (b->epairs)
-			for( ep = b->epairs ; ep ; ep=ep->next )
-				MemFile_fprintf (pMemFile, "\"%s\" \"%s\"\n", ep->key, ep->value );
 		for (fa=b->brush_faces ; fa ; fa=fa->next)
 		{
 			// save planepts
@@ -2112,12 +2042,12 @@ Create non-textured blocks for entities
 The brush is NOT linked to any list
 =============
 */
-brush_t	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
+brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 {
 	int		i, j;
 	vec3_t	pts[4][2];
-	face_t	*f;
-	brush_t	*b;
+	face_s	*f;
+	brush_s	*b;
 
 	// brush primitive mode : convert texdef to brushprimit_texdef ?
 	// most of the time texdef is empty
@@ -2204,7 +2134,7 @@ Create non-textured pyramid for light entities
 The brush is NOT linked to any list
 =============
 */
-brush_t	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
+brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 {
 	int i;
 	//++timo handle new brush primitive ? return here ??
@@ -2214,7 +2144,7 @@ brush_t	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 		if (maxs[i] < mins[i])
 			Error ("Brush_InitSolid: backwards");
 
-	brush_t* b = Brush_Alloc();
+	brush_s* b = Brush_Alloc();
 
 	vec3_t corners[4];
 
@@ -2248,7 +2178,7 @@ brush_t	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 	// sides
 	for (i = 0; i < 4; i++)
 	{
-		face_t* f = Face_Alloc();
+		face_s* f = Face_Alloc();
 		f->texdef = *texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2289,9 +2219,9 @@ void Brush_MakeSided (int sides)
 {
 	int		i, axis;
 	edVec3_c	mins, maxs;
-	brush_t	*b;
+	brush_s	*b;
 	texdef_t	*texdef;
-	face_t	*f;
+	face_s	*f;
 	vec3_t	mid;
 	float	width;
 	float	sv, cv;
@@ -2413,14 +2343,9 @@ unless owner is the world.
 Removes from groups
 =============
 */
-void Brush_Free (brush_t *b, bool bRemoveNode)
+void Brush_Free (brush_s *b, bool bRemoveNode)
 {
-	face_t	*f, *next;
-	epair_t	*ep, *enext;
-
-	// remove from group
-	if (bRemoveNode)
-		Group_RemoveBrush(b);
+	face_s	*f, *next;
 
 	// free the patch if it's there
 	if (b->patchBrush)
@@ -2433,15 +2358,6 @@ void Brush_Free (brush_t *b, bool bRemoveNode)
 	{
 		next = f->next;
 		Face_Free( f );
-	}
-
-	//Timo : free brush epairs
-	for (ep = b->epairs ; ep ; ep=enext )
-	{
-		enext = ep->next;
-		free (ep->key);
-		free (ep->value);
-		free (ep);
 	}
 
 	// unlink from active/selected list
@@ -2460,7 +2376,7 @@ void Brush_Free (brush_t *b, bool bRemoveNode)
 Face_MemorySize
 =============
 */
-int Face_MemorySize(face_t *f )
+int Face_MemorySize(face_s *f )
 {
 	int size = 0;
 
@@ -2478,10 +2394,9 @@ int Face_MemorySize(face_t *f )
 Brush_MemorySize
 =============
 */
-int Brush_MemorySize(brush_t *b)
+int Brush_MemorySize(brush_s *b)
 {
-	face_t	*f;
-	epair_t	*ep;
+	face_s	*f;
 	int size = 0;
 
 	//
@@ -2493,13 +2408,6 @@ int Brush_MemorySize(brush_t *b)
 	for (f = b->brush_faces; f; f = f->next)
 	{
 		size += Face_MemorySize(f);
-	}
-	//
-	for (ep = b->epairs; ep; ep = ep->next )
-	{
-		size += _msize(ep->key);
-		size += _msize(ep->value);
-		size += _msize(ep);
 	}
 	size += _msize(b);
 	return size;
@@ -2513,14 +2421,14 @@ Brush_Clone
 Does NOT add the new brush to any lists
 ============
 */
-brush_t *Brush_Clone (brush_t *b)
+brush_s *Brush_Clone (brush_s *b)
 {
-	brush_t	*n = NULL;
-	face_t	*f, *nf;
+	brush_s	*n = NULL;
+	face_s	*f, *nf;
 
 	if (b->patchBrush)
 	{
-		patchMesh_t *p = Patch_Duplicate(b->pPatch);
+		patchMesh_c *p = Patch_Duplicate(b->pPatch);
 		Brush_RemoveFromList(p->pSymbiot);
 		Entity_UnlinkBrush(p->pSymbiot);
 		n = p->pSymbiot;
@@ -2528,7 +2436,6 @@ brush_t *Brush_Clone (brush_t *b)
 	else
 	{
   	n = Brush_Alloc();
-	  n->numberId = g_nBrushId++;
 		n->owner = b->owner;
 		for (f=b->brush_faces ; f ; f=f->next)
 		{
@@ -2550,15 +2457,15 @@ Brush_Clone
 Does NOT add the new brush to any lists
 ============
 */
-brush_t *Brush_FullClone(brush_t *b)
+brush_s *Brush_FullClone(brush_s *b)
 {
-	brush_t	*n = NULL;
-	face_t *f, *nf, *f2, *nf2;
+	brush_s	*n = NULL;
+	face_s *f, *nf, *f2, *nf2;
 	int j;
 
 	if (b->patchBrush)
 	{
-		patchMesh_t *p = Patch_Duplicate(b->pPatch);
+		patchMesh_c *p = Patch_Duplicate(b->pPatch);
 		Brush_RemoveFromList(p->pSymbiot);
 		Entity_UnlinkBrush(p->pSymbiot);
 		n = p->pSymbiot;
@@ -2568,7 +2475,6 @@ brush_t *Brush_FullClone(brush_t *b)
 	else
 	{
   	n = Brush_Alloc();
-   	n->numberId = g_nBrushId++;
 		n->owner = b->owner;
 		n->bounds = b->bounds;
 		//
@@ -2618,11 +2524,11 @@ Returns the face hit and the distance along the ray the intersection occured at
 Returns NULL and 0 if not hit at all
 ==============
 */
-face_t *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_t *b, float *dist)
+face_s *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_s *b, float *dist)
 {
 	if(b == 0)
 		return 0;
-	face_t	*f, *firstface;
+	face_s	*f, *firstface;
 	edVec3_c	p1, p2;
 	float	frac, d1, d2;
 	int		i;
@@ -2667,9 +2573,9 @@ face_t *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_t *b, floa
 }
 
 //PGM
-face_t *Brush_Point (const edVec3_c &origin, brush_t *b)
+face_s *Brush_Point (const edVec3_c &origin, brush_s *b)
 {
-	face_t	*f;
+	face_s	*f;
 	float	d1;
 
 	for (f=b->brush_faces ; f ; f=f->next)
@@ -2686,7 +2592,7 @@ face_t *Brush_Point (const edVec3_c &origin, brush_t *b)
 //PGM
 
 
-void	Brush_AddToList (brush_t *b, brush_t *list)
+void	Brush_AddToList (brush_s *b, brush_s *list)
 {
 	if (b->next || b->prev)
 		Error ("Brush_AddToList: allready linked");
@@ -2704,7 +2610,7 @@ void	Brush_AddToList (brush_t *b, brush_t *list)
 	b->prev = list;
 }
 
-void	Brush_RemoveFromList (brush_t *b)
+void	Brush_RemoveFromList (brush_s *b)
 {
 	if (!b->next || !b->prev)
 		Error ("Brush_RemoveFromList: not linked");
@@ -2735,10 +2641,10 @@ TTimo: surface plugin, added an IPluginTexdef* parameter
 		if NULL, ask for a default
 ===============
 */
-void SetFaceTexdef (brush_t *b, face_t *f, texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale, IPluginTexdef* pPlugTexdef) {
+void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, IPluginTexdef* pPlugTexdef) {
 	int		oldFlags;
 	int		oldContents;
-	face_t	*tf;
+	face_s	*tf;
 
 	oldFlags = f->texdef.flags;
 	oldContents = f->texdef.contents;
@@ -2786,9 +2692,9 @@ void SetFaceTexdef (brush_t *b, face_t *f, texdef_t *texdef, brushprimit_texdef_
 }
 
 
-void Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale, IPluginTexdef* pTexdef)
+void Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, IPluginTexdef* pTexdef)
 {
-	for (face_t* f = b->brush_faces ; f ; f = f->next) 
+	for (face_s* f = b->brush_faces ; f ; f = f->next) 
 	{
 		SetFaceTexdef (b, f, texdef, brushprimit_texdef, bFitScale, pTexdef);
 	}
@@ -2802,7 +2708,7 @@ void Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brush
 }
 
 
-bool ClipLineToFace (edVec3_c &p1, edVec3_c &p2, face_t *f)
+bool ClipLineToFace (edVec3_c &p1, edVec3_c &p2, face_s *f)
 {
 	float	d1, d2, fr;
 	int		i;
@@ -2849,13 +2755,13 @@ Adds the faces planepts to move_points, and
 rotates and adds the planepts of adjacent face if shear is set
 ==============
 */
-void Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear)
+void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 {
 	int		i;
-	face_t	*f2;
+	face_s	*f2;
 	winding_t	*w;
 	float	d;
-	brush_t	*b2;
+	brush_s	*b2;
 	int		c;
 
 	if (b->owner->eclass->fixedsize)
@@ -2956,10 +2862,10 @@ The mouse click did not hit the brush, so grab one or more side
 planes for dragging
 ==============
 */
-void Brush_SideSelect (brush_t *b, vec3_t origin, vec3_t dir
+void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
 					   , bool shear)
 {
-	face_t	*f, *f2;
+	face_s	*f, *f2;
 	edVec3_c	p1, p2;
 	if(b == 0)
 		return;
@@ -2992,11 +2898,10 @@ void Brush_SideSelect (brush_t *b, vec3_t origin, vec3_t dir
 	
 }
 
-void Brush_BuildWindings( brush_t *b, bool bSnap )
+void Brush_BuildWindings( brush_s *b, bool bSnap )
 {
 	winding_t *w;
-	face_t    *face;
-	vec_t      v;
+	face_s    *face;
 
 	if (bSnap)
 		Brush_SnapPlanepts( b );
@@ -3012,7 +2917,7 @@ void Brush_BuildWindings( brush_t *b, bool bSnap )
 
 	for ( ; face ; face=face->next)
 	{
-		int i, j;
+		int i;
 		free(face->face_winding);
 		w = face->face_winding = Brush_MakeFaceWinding (b, face);
 		face->d_texture = Texture_ForName( face->texdef.name );
@@ -3068,9 +2973,9 @@ Brush_RemoveEmptyFaces
 Frees any overconstraining faces
 ==================
 */
-void Brush_RemoveEmptyFaces ( brush_t *b )
+void Brush_RemoveEmptyFaces ( brush_s *b )
 {
-	face_t	*f, *next;
+	face_s	*f, *next;
 
 	f = b->brush_faces;
 	b->brush_faces = NULL;
@@ -3088,9 +2993,9 @@ void Brush_RemoveEmptyFaces ( brush_t *b )
 	}
 }
 
-void Brush_SnapToGrid(brush_t *pb)
+void Brush_SnapToGrid(brush_s *pb)
 {
-	for (face_t *f = pb->brush_faces ; f; f = f->next)
+	for (face_s *f = pb->brush_faces ; f; f = f->next)
 	{
 		for (int i = 0 ;i < 3 ;i++)
 		{
@@ -3103,9 +3008,9 @@ void Brush_SnapToGrid(brush_t *pb)
 	Brush_Build(pb);
 }
 
-void Brush_Rotate(brush_t *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild)
+void Brush_Rotate(brush_s *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 {
-	for (face_t* f=b->brush_faces ; f ; f=f->next)
+	for (face_s* f=b->brush_faces ; f ; f=f->next)
 	{
 		for (int i=0 ; i<3 ; i++)
 		{
@@ -3118,7 +3023,7 @@ void Brush_Rotate(brush_t *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 	}
 }
 
-void Brush_Center(brush_t *b, const edVec3_c &vNewCenter)
+void Brush_Center(brush_s *b, const edVec3_c &vNewCenter)
 {
 	edVec3_c vMid;
 	// get center of the brush
@@ -3133,12 +3038,12 @@ void Brush_Center(brush_t *b, const edVec3_c &vNewCenter)
 }
 
 // only designed for fixed size entity brushes
-void Brush_Resize(brush_t *b, vec3_t vMin, vec3_t vMax)
+void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
 {
-	brush_t *b2 = Brush_Create(vMin, vMax, &b->brush_faces->texdef);
+	brush_s *b2 = Brush_Create(vMin, vMax, &b->brush_faces->texdef);
 
-	face_t *next;
-	for (face_t *f=b->brush_faces ; f ; f=next)
+	face_s *next;
+	for (face_s *f=b->brush_faces ; f ; f=next)
 	{
 		next = f->next;
 		Face_Free( f );
@@ -3154,432 +3059,12 @@ void Brush_Resize(brush_t *b, vec3_t vMin, vec3_t vMax)
 }
 
 
-eclass_t* HasModel(brush_t *b)
+eclass_s* HasModel(brush_s *b)
 {
-	edVec3_c vMin, vMax;
-	vMin[0] = vMin[1] = vMin[2] = 9999;
-	vMax[0] = vMax[1] = vMax[2] = -9999;
-
-	if (b->owner->md3Class != NULL)
-	{
-		return b->owner->md3Class;
-	}
-
-	if (Eclass_hasModel(b->owner->eclass, vMin, vMax))
-	{
-		return b->owner->eclass;
-	}
-
-	eclass_t *e = NULL;
-	// FIXME: entity needs to track whether a cache hit failed and not ask again
-	if (b->owner->eclass->nShowFlags & ECLASS_MISCMODEL)
-	{
-		char *pModel = ValueForKey(b->owner, "model");
-		if (pModel != NULL && strlen(pModel) > 0)
-		{
-			e = GetCachedModel(b->owner, pModel, vMin, vMax);
-			if (e != NULL)
-			{
-				// we need to scale the brush to the proper size based on the model load
-				// recreate brush just like in load/save
-
-				vMin += b->owner->origin;
-				vMax += b->owner->origin;
-
-				Brush_Resize(b, vMin, vMax);
-
-	/*
-	//
-	vec3_t vTemp, vTemp2;
-	VectorSubtract(b->maxs, b->mins, vTemp);
-	VectorSubtract(vMax, vMin, vTemp2);
-	for (int i = 0; i < 3; i++)
-	{
-	if (vTemp[i] != 0)
-	{
-	vTemp2[i] /= vTemp[i];
-	}
-	}
-	vec3_t vMid, vMid2;
-	vMid[0] = vMid[1] = vMid[2] = 0.0;
-	vMid2[0] = vMid2[1] = vMid2[2] = 0.0;
-
-	for (int j = 0; j < 3; j++)
-	{
-	vMid2[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
-	}
-
-	//VectorSubtract(vMid2, vMid, vMid2);
-
-	for (face_t* f=b->brush_faces ; f ; f=f->next)
-	{
-	for (int i=0 ; i<3 ; i++)
-	{
-
-	// scale
-	VectorSubtract(f->planepts[i], vMid2, f->planepts[i]);
-	f->planepts[i][0] *= vTemp2[0];
-	f->planepts[i][1] *= vTemp2[1];
-	f->planepts[i][2] *= vTemp2[2];
-	VectorAdd(f->planepts[i], vMid2, f->planepts[i]);
-	}
-	}
-
-	//Brush_Center(b, b->owner->origin);
-
-	//Brush_SnapToGrid(b);
-	/*
-	float a = FloatForKey (b->owner, "angle");
-	if (a)
-	{
-	vec3_t vAngle;
-	vAngle[0] = vAngle[1] = 0;
-	vAngle[2] = a;
-	Brush_Rotate(b, vAngle, b->owner->origin);
-	}
-	else
-	{
-	Brush_Build(b, true);
-	*/
-	//        }
-
-				b->bModelFailed = false;
-			}
-			else
-			{
-				b->bModelFailed = true;
-			}
-		} 
-	}
-	return e;
+	return 0;
 }
 
-static bool g_bInPaintedModel = false;
-static bool g_bDoIt = false;
-bool PaintedModel(brush_t *b, bool bOkToTexture)
-{
-	if (g_bInPaintedModel)
-	{ 
-		return true;
-	}
-
-	if (g_PrefsDlg.m_nEntityShowState == ENTITY_BOX || b->bModelFailed)
-	{
-		return false;
-	}
-	else if (!IsBrushSelected(b) && (g_PrefsDlg.m_nEntityShowState & ENTITY_SELECTED_ONLY))
-	{
-		return false;
-	}
-
-	g_bInPaintedModel = true;
-	bool bReturn = false;
-
-	eclass_t *pEclass = HasModel(b);
-
-	if (pEclass)
-	{
-	qglPushAttrib(GL_ALL_ATTRIB_BITS);
-	entitymodel *model = pEclass->model;
-
-
-	float a = FloatForKey (b->owner, "angle");
-	while (model != NULL)
-	{
-		if (bOkToTexture == false || g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME || model->nTextureBind == -1)	// skinned
-		{
-			qglDisable( GL_CULL_FACE );
-			qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-			qglDisable(GL_TEXTURE_2D);
-			qglColor3fv(pEclass->color);
-		}
-		else
-		{
-			qglColor3f(1, 1, 1);
-			qglEnable(GL_TEXTURE_2D);
-			qglBindTexture( GL_TEXTURE_2D, model->nTextureBind );
-		}
-		edVec3_c v;
-
-		int i,j;
-#if 0
-		v = (b->maxs + b->mins) * 0.5f;
-#else
-		// who was writing this, that line overwrites the previous one...
-		// this radiant code REALLY needs a clearup!
-		v = b->owner->origin;
-#endif
-
-		//for (i = 0; i < 3; i++)
-		//{
-		//  v[i] -= (pEclass->mins[i] - b->mins[i]);
-		//}
-
-		//if (model->nModelPosition)
-		//{
-		//v[2] = b->mins[2] - (pEclass->mins[2]);
-		//}
-
-		float s, c;
-		//if (a)
-		{
-			s = sin (DEG2RAD(a));
-			c = cos (DEG2RAD(a));
-		}
-
-		edVec3_c vSin(0,0,0);
-		edVec3_c vCos(0,0,0);
-		for ( j = 0; j < 3; j++)
-		{
-			if (b->owner->vRotation[j])
-			{
-				vSin[j] = sin(DEG2RAD(b->owner->vRotation[j]));
-				vCos[j] = cos(DEG2RAD(b->owner->vRotation[j]));
-			}
-		}
-
-
-		qglBegin (GL_TRIANGLES);
-
-		vec5_t vTest[3];
-		for (i = 0; i < model->nTriCount; i++)
-		{
-			for (j = 0; j < 3; j++)
-			{
-				#if 1
-				float x = model->pTriList[i].v[j][0] + v[0];
-				float y = model->pTriList[i].v[j][1] + v[1];
-				if (a)
-				{
-					float x2 = (((x - v[0]) * c) - ((y - v[1]) * s)) + v[0];
-					float y2 = (((x - v[0]) * s) + ((y - v[1]) * c)) + v[1];
-					x = x2;
-					y = y2;
-				}
-				//qglTexCoord2f (pEclass->pTriList[i].st[j][0] / pEclass->nSkinWidth, pEclass->pTriList[i].st[j][1] / pEclass->nSkinHeight);
-				qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
-				qglVertex3f(x, y, model->pTriList[i].v[j][2] + v[2]);
-				#else
-				float x = model->pTriList[i].v[j][0] + v[0];
-				float y = model->pTriList[i].v[j][1] + v[1];
-				float z = model->pTriList[i].v[j][2] + v[2];
-
-				if (b->owner->vRotation[0])
-				{
-					float y2 = (((y - v[1]) * vCos[0]) - ((z - v[2]) * vSin[0])) + v[1];
-					float z2 = (((y - v[1]) * vSin[0]) + ((z - v[2]) * vCos[0])) + v[2];
-					y = y2;
-					z = z2;
-				}
-				if (b->owner->vRotation[1])
-				{
-					float z2 = (((z - v[2]) * vCos[1]) - ((x - v[0]) * vSin[1])) + v[2];
-					float x2 = (((z - v[2]) * vSin[1]) + ((x - v[0]) * vCos[1])) + v[0];
-					x = x2;
-					z = z2;
-				}
-				if (b->owner->vRotation[2])
-				{
-					float x2 = (((x - v[0]) * vCos[2]) - ((y - v[1]) * vSin[2])) + v[0];
-					float y2 = (((x - v[0]) * vSin[2]) + ((y - v[1]) * vCos[2])) + v[1];
-					x = x2;
-					y = y2;
-				}
-				qglTexCoord2f (model->pTriList[i].st[j][0], model->pTriList[i].st[j][1]);
-				qglVertex3f(x, y, z);
-				#endif
-				if (g_bDoIt)
-				{
-					vTest[j][0] = x;
-					vTest[j][1] = y;
-					vTest[j][2] = model->pTriList[i].v[j][2] + v[2];
-					vTest[j][3] = model->pTriList[i].st[j][0];
-					vTest[j][4] = model->pTriList[i].st[j][1];
-				}
-
-				}
-				if (g_bDoIt)
-				{
-					Patch_FromTriangle(vTest[0], vTest[1], vTest[2]);
-				}
-			}
-			qglEnd();
-			if (g_PrefsDlg.m_nEntityShowState & ENTITY_WIREFRAME)	// skinned
-			{
-				qglEnable(GL_CULL_FACE );
-				qglEnable(GL_TEXTURE_2D);
-				qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-			}
-			else
-			{
-				qglDisable(GL_TEXTURE_2D);
-			}
-			model = model->pNext;
-		}
-
-		if (g_bDoIt)
-		{
-			g_bDoIt = false;
-		}
-
-		edVec3_c  vColor = edVec3_c(pEclass->color) * 0.50;
-
-		edVec3_c vCenter, vMin, vMax;
-		vCenter = b->owner->origin;
-
-		qglColor3fv(vColor);
-		qglPointSize(4);
-
-		qglBegin(GL_POINTS);
-		qglVertex3fv(b->owner->origin);
-		qglEnd();
-
-		qglBegin(GL_LINES);
-		vCenter[0] -= 8;
-		qglVertex3fv(vCenter);
-		vCenter[0] += 16;
-		qglVertex3fv(vCenter);
-		vCenter[0] -= 8;
-		vCenter[1] -= 8;
-		qglVertex3fv(vCenter);
-		vCenter[1] += 16;
-		qglVertex3fv(vCenter);
-		vCenter[1] -= 8;
-		vCenter[2] -= 8;
-		qglVertex3fv(vCenter);
-		vCenter[2] += 16;
-		qglVertex3fv(vCenter);
-		vCenter[2] -= 8;
-		qglEnd();
-
-		vMin = vCenter;
-		vMax = vCenter;
-
-		vMin[0] -= 4;
-		vMin[1] -= 4;
-		vMin[2] -= 4;
-		vMax[0] += 4;
-		vMax[1] += 4;
-		vMax[2] += 4;
-
-		qglBegin(GL_LINE_LOOP);
-		qglVertex3f(vMin[0],vMin[1],vMin[2]);
-		qglVertex3f(vMax[0],vMin[1],vMin[2]);
-		qglVertex3f(vMax[0],vMax[1],vMin[2]);
-		qglVertex3f(vMin[0],vMax[1],vMin[2]);
-		qglEnd();
-
-		qglBegin(GL_LINE_LOOP);
-		qglVertex3f(vMin[0],vMin[1],vMax[2]);
-		qglVertex3f(vMax[0],vMin[1],vMax[2]);
-		qglVertex3f(vMax[0],vMax[1],vMax[2]);
-		qglVertex3f(vMin[0],vMax[1],vMax[2]);
-		qglEnd();
-
-		qglBegin(GL_LINES);
-		qglVertex3f(vMin[0],vMin[1],vMin[2]);
-		qglVertex3f(vMin[0],vMin[1],vMax[2]);
-		qglVertex3f(vMin[0],vMax[1],vMax[2]);
-		qglVertex3f(vMin[0],vMax[1],vMin[2]);
-		qglVertex3f(vMax[0],vMin[1],vMin[2]);
-		qglVertex3f(vMax[0],vMin[1],vMax[2]);
-		qglVertex3f(vMax[0],vMax[1],vMax[2]);
-		qglVertex3f(vMax[0],vMax[1],vMin[2]);
-		qglEnd();
-
-
-		if (g_PrefsDlg.m_nEntityShowState & ENTITY_BOXED)
-		{
-			qglColor3fv(pEclass->color);
-
-			edVec3_c mins = b->getMins();
-			edVec3_c maxs = b->getMaxs();
-			/*
-			if (a)
-			{
-			vec3_t vAngle;
-			vAngle[0] = vAngle[1] = 0;
-			vAngle[2] = a;
-			VectorRotate(mins, vAngle, b->owner->origin, mins);
-			VectorRotate(maxs, vAngle, b->owner->origin, maxs);
-			}
-			*/
-			qglBegin(GL_LINE_LOOP);
-			qglVertex3f(mins[0],mins[1],mins[2]);
-			qglVertex3f(maxs[0],mins[1],mins[2]);
-			qglVertex3f(maxs[0],maxs[1],mins[2]);
-			qglVertex3f(mins[0],maxs[1],mins[2]);
-			qglEnd();
-
-			qglBegin(GL_LINE_LOOP);
-			qglVertex3f(mins[0],mins[1],maxs[2]);
-			qglVertex3f(maxs[0],mins[1],maxs[2]);
-			qglVertex3f(maxs[0],maxs[1],maxs[2]);
-			qglVertex3f(mins[0],maxs[1],maxs[2]);
-			qglEnd();
-
-			qglBegin(GL_LINES);
-			qglVertex3f(mins[0],mins[1],mins[2]);
-			qglVertex3f(mins[0],mins[1],maxs[2]);
-			qglVertex3f(mins[0],maxs[1],maxs[2]);
-			qglVertex3f(mins[0],maxs[1],mins[2]);
-			qglVertex3f(maxs[0],mins[1],mins[2]);
-			qglVertex3f(maxs[0],mins[1],maxs[2]);
-			qglVertex3f(maxs[0],maxs[1],maxs[2]);
-			qglVertex3f(maxs[0],maxs[1],mins[2]);
-			qglEnd();
-		}
-		qglPopAttrib();
-		bReturn = true;
-	}
-	else
-	{
-		b->bModelFailed = true;
-	}
-
-	g_bInPaintedModel = false;
-	return bReturn;
-}
-/*
-//++timo moved out to mahlib.h
-//++timo remove
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
-{
-	float		angle;
-	static float		sr, sp, sy, cr, cp, cy;
-	// static to help MS compiler fp bugs
-
-	angle = angles[YAW] * Q_PI / 180;
-	sy = sin(angle);
-	cy = cos(angle);
-	angle = angles[PITCH] * Q_PI / 180;
-	sp = sin(angle);
-	cp = cos(angle);
-	angle = angles[ROLL] * Q_PI / 180;
-	sr = sin(angle);
-	cr = cos(angle);
-
-	if (forward)
-	{
-		forward[0] = cp*cy;
-		forward[1] = cp*sy;
-		forward[2] = -sp;
-	}
-	if (right)
-	{
-		right[0] = (-1*sr*sp*cy+-1*cr*-sy);
-		right[1] = (-1*sr*sp*sy+-1*cr*cy);
-		right[2] = -1*sr*cp;
-	}
-	if (up)
-	{
-		up[0] = (cr*sp*cy+-sr*-sy);
-		up[1] = (cr*sp*sy+-sr*cy);
-		up[2] = cr*cp;
-	}
-}
-*/
-void FacingVectors (entity_t *e, vec3_t forward, vec3_t right, vec3_t up)
+void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 {
 	int			angleVal;
 	edVec3_c		angles;
@@ -3601,7 +3086,7 @@ void FacingVectors (entity_t *e, vec3_t forward, vec3_t right, vec3_t up)
 	angles.makeAngleVectors(forward, right, up);
 }
 
-void Brush_DrawFacingAngle (brush_t *b, entity_t *e)
+void Brush_DrawFacingAngle (brush_s *b, entity_s *e)
 {
 	vec3_t	forward, right, up;
 	edVec3_c	endpoint, tip1, tip2;
@@ -3632,7 +3117,7 @@ void Brush_DrawFacingAngle (brush_t *b, entity_t *e)
 	qglLineWidth (1);
 }
 
-void DrawLight(brush_t *b)
+void DrawLight(brush_s *b)
 {
 	edVec3_c vTriColor;
 	bool bTriPaint = false;
@@ -3750,9 +3235,9 @@ void DrawLight(brush_t *b)
 
 }
 
-void Brush_Draw( brush_t *b )
+void Brush_Draw( brush_s *b )
 {
-	face_t			*face;
+	face_s			*face;
 	int				i, order;
 	qtexture_t		*prev = 0;
 	winding_t *w;
@@ -3765,9 +3250,7 @@ void Brush_Draw( brush_t *b )
 
 	if (b->patchBrush)
 	{
-		//Patch_DrawCam(b->nPatchID);
-		Patch_DrawCam(b->pPatch);
-		//if (!g_bPatchShowBounds)
+		b->pPatch->drawPatchCam();
 		return;
 	}
 	
@@ -3790,13 +3273,13 @@ void Brush_Draw( brush_t *b )
 			qglDisable (GL_TEXTURE_2D);
 		
 		// if we are wireframing models
-		bool bp = (b->bModelFailed) ? false : PaintedModel(b, true);
+		//bool bp = (b->bModelFailed) ? false : PaintedModel(b, true);
 		
 		if (nDrawMode == cd_texture || nDrawMode == cd_light)
 			qglEnable (GL_TEXTURE_2D);
-		
-		if (bp)
-			return;
+		//
+		//if (bp)
+		//	return;
 	}
 	
 	// guarantee the texture will be set first
@@ -3865,14 +3348,6 @@ void Brush_Draw( brush_t *b )
 		
 		// draw the polygon
 		
-		//if (nDrawMode == cd_light)
-		//{
-		if (g_PrefsDlg.m_bGLLighting)
-		{
-			qglNormal3fv(face->plane.normal);
-		}
-		//}
-		
 		qglBegin(GL_POLYGON);
 		//if (nDrawMode == cd_light)
 		
@@ -3903,7 +3378,7 @@ void Brush_Draw( brush_t *b )
 
 
 
-void Face_Draw( face_t *f )
+void Face_Draw( face_s *f )
 {
 	int i;
 
@@ -3915,9 +3390,9 @@ void Face_Draw( face_t *f )
 	qglEnd();
 }
 
-void Brush_DrawXY(brush_t *b, int nViewType)
+void Brush_DrawXY(brush_s *b, int nViewType)
 {
-	face_t *face;
+	face_s *face;
 	int     order;
 	winding_t *w;
 	int        i;
@@ -3929,8 +3404,7 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 
 	if (b->patchBrush)
 	{
-		//Patch_DrawXY(b->nPatchID);
-		Patch_DrawXY(b->pPatch);
+		b->pPatch->drawPatchXY();
 		if (!g_bPatchShowBounds)
 			return;
 	}
@@ -3990,8 +3464,8 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 		}
 		else if (b->owner->eclass->nShowFlags & ECLASS_MISCMODEL)
 		{
-			if (PaintedModel(b, false))
-			return;
+			//if (PaintedModel(b, false))
+			//return;
 		}
 	}
 
@@ -4043,10 +3517,10 @@ void Brush_DrawXY(brush_t *b, int nViewType)
 Brush_Move
 ============
 */
-void Brush_Move (brush_t *b, const vec3_t move, bool bSnap)
+void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 {
 	int i;
-	face_t *f;
+	face_s *f;
 	if(b == 0)
 		return;
 
@@ -4065,8 +3539,7 @@ void Brush_Move (brush_t *b, const vec3_t move, bool bSnap)
 
 	if (b->patchBrush)
 	{
-		//Patch_Move(b->nPatchID, move);
-		Patch_Move(b->pPatch, move);
+		b->pPatch->movePatch(move);
 	}
 
 	// PGM - keep the origin vector up to date on fixed size entities.
@@ -4080,10 +3553,10 @@ void Brush_Move (brush_t *b, const vec3_t move, bool bSnap)
 
 
 
-void Brush_Print(brush_t* b)
+void Brush_Print(brush_s* b)
 {
 	int nFace = 0;
-	for (face_t* f = b->brush_faces ; f ; f=f->next)
+	for (face_s* f = b->brush_faces ; f ; f=f->next)
 	{
 		Sys_Printf("Face %i\n", nFace++);
 		Sys_Printf("%f %f %f\n", f->planepts[0][0], f->planepts[0][1], f->planepts[0][2]);
@@ -4105,9 +3578,9 @@ void Brush_MakeSidedCone(int sides)
 {
 	int		i;
 	edVec3_c	mins, maxs;
-	brush_t	*b;
+	brush_s	*b;
 	texdef_t	*texdef;
-	face_t	*f;
+	face_s	*f;
 	vec3_t	mid;
 	float	width;
 	float	sv, cv;
@@ -4199,9 +3672,9 @@ void Brush_MakeSidedSphere(int sides)
 {
 	int		i,j;
 	edVec3_c	mins, maxs;
-	brush_t	*b;
+	brush_s	*b;
 	texdef_t	*texdef;
-	face_t	*f;
+	face_s	*f;
 	vec3_t	mid;
 
 	if (sides < 4)
@@ -4286,7 +3759,7 @@ void Brush_MakeSidedSphere(int sides)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Face_FitTexture( face_t * face, int nHeight, int nWidth )
+void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 {
 	winding_t *w;
 	edAABB_c bounds;
@@ -4396,9 +3869,9 @@ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
 	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->height*nHeight);
 }
 
-void Brush_FitTexture( brush_t *b, int nHeight, int nWidth )
+void Brush_FitTexture( brush_s *b, int nHeight, int nWidth )
 {
-	face_t *face;
+	face_s *face;
 
 	for (face = b->brush_faces ; face ; face=face->next)
 	{

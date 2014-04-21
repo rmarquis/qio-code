@@ -44,6 +44,7 @@ class CRadiantApp : public CWinApp
 {
 public:
 	CRadiantApp();
+	virtual ~CRadiantApp();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -54,9 +55,11 @@ public:
 	virtual BOOL OnIdle(LONG lCount);
 	//}}AFX_VIRTUAL
 
+	virtual int Run( void ) ;
 // Implementation
 
 	//{{AFX_MSG(CRadiantApp)
+	afx_msg void OnClose();
 	afx_msg void OnHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

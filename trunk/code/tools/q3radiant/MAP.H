@@ -24,18 +24,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 extern	char		currentmap[1024];
 
 // head/tail of doubly linked lists
-extern	brush_t	active_brushes;	// brushes currently being displayed
-extern	brush_t	selected_brushes;	// highlighted
+extern	brush_s	active_brushes;	// brushes currently being displayed
+extern	brush_s	selected_brushes;	// highlighted
 
 
 extern CPtrArray& g_ptrSelectedFaces;
 extern CPtrArray& g_ptrSelectedFaceBrushes;
-//extern	face_t	*selected_face;
-//extern	brush_t	*selected_face_brush;
-extern	brush_t	filtered_brushes;	// brushes that have been filtered or regioned
+//extern	face_s	*selected_face;
+//extern	brush_s	*selected_face_brush;
+extern	brush_s	filtered_brushes;	// brushes that have been filtered or regioned
 
-extern	entity_t	entities;
-extern	entity_t	*world_entity;	// the world entity is NOT included in
+extern	entity_s	entities;
+extern	entity_s	*world_entity;	// the world entity is NOT included in
 									// the entities chain
 
 extern	bool	modified;		// for quit confirmations
@@ -53,7 +53,7 @@ void	Map_RegionXY (void);
 void	Map_RegionTallBrush (void);
 void	Map_RegionBrush (void);
 void	Map_RegionSelectedBrushes (void);
-bool Map_IsBrushFiltered (brush_t *b);
+bool Map_IsBrushFiltered (brush_s *b);
 
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile = NULL);
 void Map_ImportBuffer (char* buf);

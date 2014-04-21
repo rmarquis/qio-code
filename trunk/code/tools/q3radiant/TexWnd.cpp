@@ -94,19 +94,6 @@ void	Texture_MouseUp (int x, int y, int buttons);
 void	Texture_MouseMoved (int x, int y, int buttons);
 
 CPtrArray g_lstShaders;
-CPtrArray g_lstSkinCache;
-
-struct SkinInfo
-{
-  CString m_strName;
-  int m_nTextureBind;
-  SkinInfo(const char *pName, int n)
-  {
-    m_strName = pName;
-    m_nTextureBind = n;
-  };
-  SkinInfo(){};
-};
 
 // checks wether a qtexture_t exists for a given name
 //++timo FIXME: is this really any use? redundant.
@@ -146,16 +133,19 @@ CShaderInfo* hasShader(const char *pName)
 //
 int GetTextureExtensionCount()
 {
-  return 2;
+  return 3;
 }
 
 const char* GetTextureExtension(int nIndex)
 {
   if ( nIndex == 0)
   {
-	  "tga" ;
+	 return "tga" ;
   }
-  // return jpg for 2nd extension
+  if ( nIndex == 1)
+  {
+	 return "png" ;
+  }
   return "jpg";
 }
 
@@ -885,16 +875,16 @@ CShaderInfo* SetNameShaderInfo(qtexture_t* q, const char* pPath, const char* pNa
   return pInfo;
 }
 
-void ReplaceQTexture(qtexture_t *pOld, qtexture_t *pNew, brush_t *pList)
+void ReplaceQTexture(qtexture_t *pOld, qtexture_t *pNew, brush_s *pList)
 { 
-	for (brush_t* pBrush = pList->next ; pBrush != pList; pBrush = pBrush->next)
+	for (brush_s* pBrush = pList->next ; pBrush != pList; pBrush = pBrush->next)
 	{
 		if (pBrush->patchBrush)
 		{
 			Patch_ReplaceQTexture(pBrush, pOld, pNew);
 		}
 
-		for (face_t* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
+		for (face_s* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
 		{
 			if (pFace->d_texture == pOld)
 			{
@@ -1702,8 +1692,8 @@ Texture_ShowInuse
 */
 void	Texture_ShowInuse (void)
 {
-	face_t	*f;
-	brush_t	*b;
+	face_s	*f;
+	brush_s	*b;
 	char	name[1024];
 
 	texture_showinuse = true;
@@ -1857,7 +1847,7 @@ Texture_SetTexture
 brushprimit_texdef must be understood as a qtexture_t with width=2 height=2 ( the default one )
 ============
 */
-void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale, bool bSetSelection )
+void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, bool bSetSelection )
 {
 	qtexture_t	*q;
 	int			x,y;
@@ -2010,7 +2000,7 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 	int		x, y;
 	qtexture_t	*q;
 	texdef_t	tex;
-	brushprimit_texdef_t brushprimit_tex;
+	brushprimit_texdef_s brushprimit_tex;
 
 	my += g_qeglobals.d_texturewin.originy-g_qeglobals.d_texturewin.height;
 	
@@ -2345,14 +2335,6 @@ void Texture_Cleanup(CStringList *pList)
       pTex = pNextTex;
     }
   }
-
-  int nSize = g_lstSkinCache.GetSize();
-  for (int i = 0; i < nSize; i++)
-  {
-    SkinInfo *pInfo = reinterpret_cast<SkinInfo*>(g_lstSkinCache.GetAt(i));
-    delete pInfo;
-  }
-
 }
 
 /*
@@ -2865,81 +2847,3 @@ void ReloadShaders()
   }
 
 }
-
-int WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight)
-{
-  byte *pic = NULL;
-  byte *pic32 = NULL;
-  int nTex = -1;
-
-  strlwr(pName);
-  QE_ConvertDOSToUnixName(pName, pName);
-
-  int nSize = g_lstSkinCache.GetSize();
-  for (int i = 0; i < nSize; i++)
-  {
-    SkinInfo *pInfo = reinterpret_cast<SkinInfo*>(g_lstSkinCache.GetAt(i));
-    if (pInfo)
-    {
-      if (stricmp(pName, pInfo->m_strName) == 0)
-      {
-        return pInfo->m_nTextureBind;
-      }
-    }
-  }
-
-  LoadImage( pName, &pic32, pnWidth, pnHeight);
-  if (pic32 != NULL)
-  {
-
-    nTex = texture_extension_number++;
-    if (g_PrefsDlg.m_bSGIOpenGL)
-    {
-      //if (!qwglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
-      if (!qwglMakeCurrent(s_hdcTexture, s_hglrcTexture))
-		    Error ("wglMakeCurrent in LoadTexture failed");
-    }
-
-    qglBindTexture( GL_TEXTURE_2D, nTex);
-    SetTexParameters ();
-
-	  int nCount = MAX_TEXTURE_QUALITY - g_PrefsDlg.m_nTextureQuality;
-	  while (nCount-- > 0)
-	  {
-	    if (*pnWidth > 16 && *pnHeight > 16)
-	    {
-	      R_MipMap(pic32, *pnWidth, *pnHeight);
-	    }
-	    else
-	    {
-	      break;
-	    }
-	  }
-
-    if (g_PrefsDlg.m_bSGIOpenGL)
-    {
-	    if (nomips)
-      {
-		    qglTexImage2D(GL_TEXTURE_2D, 0, 3, *pnWidth, *pnHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32);
-      }
-	    else
-		    qgluBuild2DMipmaps(GL_TEXTURE_2D, 3, *pnWidth, *pnHeight,GL_RGBA, GL_UNSIGNED_BYTE, pic32);
-    }
-    else
-    {
-	    if (nomips)
-		    qglTexImage2D(GL_TEXTURE_2D, 0, 3, *pnWidth, *pnHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32);
-	    else
-		    qgluBuild2DMipmaps(GL_TEXTURE_2D, 3, *pnWidth, *pnHeight,GL_RGBA, GL_UNSIGNED_BYTE, pic32);
-    }
-	  free (pic32);
-	  qglBindTexture( GL_TEXTURE_2D, 0 );
-  }
-
-  SkinInfo *pInfo = new SkinInfo(pName, nTex);
-  g_lstSkinCache.Add(pInfo);
-
-  return nTex;
-}
-
-

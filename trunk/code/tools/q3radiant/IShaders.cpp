@@ -39,9 +39,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "stdafx.h"
 
-//++timo NOTE: this whole part is evolving on a seperate branch on SourceForge
-// will eventually turn into a major rewrite of the shader / texture code
-
 // this is a modified version of Texture_ForName
 qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
 {

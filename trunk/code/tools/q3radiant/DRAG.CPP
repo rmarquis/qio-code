@@ -39,45 +39,12 @@ static	edVec3_c pressdelta;
 static	edVec3_c vPressStart;
 static	int	buttonx, buttony;
 
-
-//int		num_move_points;
-//float	*move_points[1024];
-
 int		lastx, lasty;
 
 bool	drag_first;
 
 
-void	AxializeVector (edVec3_c& v)
-{
-	vec3_t	a;
-	float	o;
-	int		i;
 
-	if (!v[0] && !v[1])
-		return;
-	if (!v[1] && !v[2])
-		return;
-	if (!v[0] && !v[2])
-		return;
-
-	for (i=0 ; i<3 ; i++)
-		a[i] = fabs(v[i]);
-	if (a[0] > a[1] && a[0] > a[2])
-		i = 0;
-	else if (a[1] > a[0] && a[1] > a[2])
-		i = 1;
-	else
-		i = 2;
-
-	o = v[i];
-	v.clear();
-	if (o<0)
-		v[i] = -1;
-	else
-		v[i] = 1;
-	
-}
 
 
 /*
@@ -90,7 +57,7 @@ void Drag_Setup (int x, int y, int buttons,
 		   vec3_t origin, vec3_t dir)
 {
 	trace_t	t;
-	face_t	*f;
+	face_s	*f;
 
 	drag_first = true;
 	
@@ -99,9 +66,9 @@ void Drag_Setup (int x, int y, int buttons,
 	pressy = y;
 
 	drag_xvec = xaxis;
-	AxializeVector (drag_xvec);
+	drag_xvec.axializeVector();
 	drag_yvec = yaxis;
-	AxializeVector (drag_yvec);
+	drag_yvec.axializeVector();
 
 
 
@@ -208,7 +175,7 @@ void Drag_Setup (int x, int y, int buttons,
 		bool bOK = (g_PrefsDlg.m_bALTEdge) ? (static_cast<bool>(::GetAsyncKeyState(VK_MENU))) : true;
 		if (bOK)
 		{
-			for (brush_t* pBrush = selected_brushes.next ; pBrush != &selected_brushes ; pBrush = pBrush->next)
+			for (brush_s* pBrush = selected_brushes.next ; pBrush != &selected_brushes ; pBrush = pBrush->next)
 			{
 				if (buttons & MK_CONTROL)
 					Brush_SideSelect (pBrush, origin, dir, true);
@@ -238,12 +205,12 @@ void Drag_Setup (int x, int y, int buttons,
 	Undo_AddBrushList(&selected_brushes);
 }
 
-entity_t *peLink;
+entity_s *peLink;
 
 void UpdateTarget(vec3_t origin, vec3_t dir)
 {
 	trace_t	t;
-	entity_t *pe;
+	entity_s *pe;
 	int i;
 	char sz[128];
 
@@ -357,7 +324,7 @@ void Drag_Begin (int x, int y, int buttons,
 			g_qeglobals.d_new_brush_bottom_z = t.brush->getMins()[2];
 			g_qeglobals.d_new_brush_top_z = t.brush->getMaxs()[2];
 			// use a local brushprimit_texdef fitted to a default 2x2 texture
-			brushprimit_texdef_t bp_local;
+			brushprimit_texdef_s bp_local;
 			ConvertTexMatWithQTexture( &t.face->brushprimit_texdef, t.face->d_texture, &bp_local, NULL );
 			Texture_SetTexture ( &t.face->texdef, &bp_local, false);
 			UpdateSurfaceDialog();
@@ -476,7 +443,7 @@ void Drag_Begin (int x, int y, int buttons,
 void MoveSelection (vec3_t move)
 {
 	int		i, success;
-	brush_t	*b;
+	brush_s	*b;
 	CString strStatus;
 	edVec3_c vTemp, vTemp2, end;
 
@@ -691,17 +658,16 @@ void Drag_MouseMoved (int x, int y, int buttons)
 	for (i=0 ; i<3 ; i++)
 	{
 		move[i] = drag_xvec[i]*(x - pressx)	+ drag_yvec[i]*(y - pressy);
-    if (!g_PrefsDlg.m_bNoClamp)
-    {
-		  move[i] = floor(move[i]/g_qeglobals.d_gridsize+0.5)*g_qeglobals.d_gridsize;
-    }
+		if (!g_PrefsDlg.m_bNoClamp)
+		{
+			  move[i] = floor(move[i]/g_qeglobals.d_gridsize+0.5)*g_qeglobals.d_gridsize;
+		}
 	}
 
 	delta = move - pressdelta;
 	pressdelta = move;
 
-  MoveSelection (delta);
-
+	MoveSelection (delta);
 }
 
 /*
@@ -715,9 +681,9 @@ void Drag_MouseUp (int nButtons)
 
 	if (g_qeglobals.d_select_mode == sel_area)
 	{
-			Patch_SelectAreaPoints();
-			g_qeglobals.d_select_mode = sel_curvepoint;
-			Sys_UpdateWindows (W_ALL);
+		Patch_SelectAreaPoints();
+		g_qeglobals.d_select_mode = sel_curvepoint;
+		Sys_UpdateWindows (W_ALL);
 	}
 	
 	if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])

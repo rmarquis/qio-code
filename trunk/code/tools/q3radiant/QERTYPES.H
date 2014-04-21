@@ -100,10 +100,10 @@ public:
 
 // Timo
 // new brush primitive texdef
-typedef struct brushprimit_texdef_s
+struct brushprimit_texdef_s
 {
 	vec_t	coords[2][3];
-} brushprimit_texdef_t;
+};
 
 class texturewin_t
 {
@@ -116,8 +116,8 @@ public:
   }
 	int			width, height;
 	int			originy;
-	// add brushprimit_texdef_t for brush primitive coordinates storage
-	brushprimit_texdef_t	brushprimit_texdef;
+	// add brushprimit_texdef_s for brush primitive coordinates storage
+	brushprimit_texdef_s	brushprimit_texdef;
 	int m_nTotalHeight;
 	texdef_t	texdef;
 };
@@ -183,12 +183,12 @@ public:
 // you should read float points[..][5]
 // see NewWinding definition
 #define MAX_POINTS_ON_WINDING 64
-typedef struct
+struct winding_t
 {
 	int		numpoints;
 	int		maxpoints;
 	texturedVertex_c 	points[8];			// variable sized
-} winding_t;
+};
 
 #define	NORMAL_EPSILON	0.0001
 #define	DIST_EPSILON	0.02
@@ -243,7 +243,7 @@ public:
 
 //++timo texdef and brushprimit_texdef are static
 // TODO : do dynamic ?
-typedef struct face_s
+struct face_s
 {
 	struct face_s			*next;
 	struct face_s			*original;		//used for vertex movement
@@ -257,18 +257,14 @@ typedef struct face_s
 	qtexture_t				*d_texture;
 
 	// Timo new brush primit texdef
-	brushprimit_texdef_t	brushprimit_texdef;
-} face_t;
+	brushprimit_texdef_s	brushprimit_texdef;
+};
 
-typedef struct {
+struct curveVertex_t {
 	edVec3_c xyz;
 	float	sideST[2];
 	float	capST[2];
-} curveVertex_t;
-
-typedef struct {
-	curveVertex_t	v[2];
-} sideVertex_t;
+};
 
 
 #define	MIN_PATCH_WIDTH		3
@@ -303,7 +299,7 @@ typedef struct {
 #define PATCH_BTYPEMASK    0x0000f000    // 
 #define PATCH_STYLEMASK    0xffff0000    // 
 
-typedef struct {
+struct drawVert_t {
 	edVec3_c	xyz;
 	float		st[2];
 	float		lightmap[2];
@@ -312,31 +308,66 @@ typedef struct {
 	texturedVertex_c &asWindingPoint() {
 		return *((texturedVertex_c*)(this));
 	}
-} drawVert_t;
+};
 
 // used in brush primitive AND entities
-typedef struct epair_s
+struct epair_s
 {
 	struct epair_s	*next;
 	char	*key;
 	char	*value;
-} epair_t;
+};
 
-struct brush_s;
-typedef struct brush_s brush_t;
-
-typedef struct {
+class patchMesh_c {
+	float calcPatchWidth();
+	float calcPatchWidthDistanceTo(int j);
+	float calcPatchHeight();
+	float calcPatchHeightDistanceTo(int j);
+public:
 	int	width, height;		// in control points, not patches
 	int   contents, flags, value, type;
 	qtexture_t *d_texture;
 	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
-	brush_t *pSymbiot;
+	struct brush_s *pSymbiot;
 	bool bSelected;
 	bool bOverlay;
 	bool bDirty;
 	int  nListID;
-	epair_t *epairs;
-} patchMesh_t;
+
+	patchMesh_c() {
+		width = height = 0;
+		contents = flags = value = type = 0;
+		d_texture = 0;
+		pSymbiot = 0;
+		bSelected = false;
+		bOverlay = false;
+		bDirty = false;
+		nListID = 0;
+	}
+	/*void setType(int nType)
+	{
+		this->type = (this->type & PATCH_STYLEMASK) | nType;
+	}
+	void setStyle(int nStyle)
+	{
+		this->type = (this->type & PATCH_TYPEMASK) | nStyle;
+	}*/
+	void fillPatch(vec3_t v);
+	void naturalizePatch();
+	void invertPatch();
+	void meshNormals();
+	void interpolateInteriorPoints();
+	void rebuildPatch();
+	void adjustPatchRows(int nRows);
+	void adjustPatchColumns(int nCols);
+	void movePatch(const vec3_t vMove, bool bRebuild = false);
+	void calcPatchBounds(edVec3_c& vMin, edVec3_c& vMax);
+	void drawPatchMesh(bool bPoints, bool bShade = false);
+	void drawPatchXY();
+	void removePatchColumn(bool bFirst);
+	void drawPatchCam();
+
+};
 
 
 typedef struct brush_s
@@ -345,7 +376,7 @@ typedef struct brush_s
 	struct brush_s	*oprev, *onext;	// links in entity
 	struct entity_s	*owner;
 	edAABB_c bounds;
-	face_t     *brush_faces;
+	face_s     *brush_faces;
 
 	bool bModelFailed;
 	//
@@ -355,25 +386,13 @@ typedef struct brush_s
 	bool	hiddenBrush;
 	bool	terrainBrush;
   
-	patchMesh_t *pPatch;
+	patchMesh_c *pPatch;
 
 	struct entity_s *pUndoOwner;
 
 	int undoId;						//undo ID
 	int redoId;						//redo ID
 	int ownerId;					//entityId of the owner entity for undo
-
-	// TTimo: HTREEITEM is MFC, some plugins really don't like it
-#ifdef QERTYPES_USE_MFC
-	int numberId;         // brush number
-	HTREEITEM itemOwner;  // owner for grouping
-#else
-	int numberId;
-	DWORD itemOwner;
-#endif
-
-	// brush primitive only
-	epair_t *epairs;
 
 	const edAABB_c &getBounds() const {
 		return bounds;
@@ -384,29 +403,11 @@ typedef struct brush_s
 	const edVec3_c &getMaxs() const {
 		return bounds.getMaxs();
 	}
-} brush_t;
+} brush_s;
 
 
-#define	MAX_FLAGS	8
-
-
-typedef struct trimodel_t
-{
-  vec3_t v[3];
-  float  st[3][2];
-} trimodel;
-
-typedef struct entitymodel_t
-{
-  struct entitymodel_t *pNext;
-  int nTriCount;
-  trimodel *pTriList;
-  int nTextureBind;
-  int nSkinWidth;
-  int nSkinHeight;
-  int	nModelPosition;
-} entitymodel;
-
+//#define	MAX_FLAGS	8
+//
 
 // eclass show flags
 
@@ -416,7 +417,7 @@ typedef struct entitymodel_t
 #define     ECLASS_MISCMODEL  0x00000008
 #define		ECLASS_PLUGINENTITY 0x00000010
 
-typedef struct eclass_s
+struct eclass_s
 {
 	struct eclass_s *next;
 	char	*name;
@@ -426,22 +427,16 @@ typedef struct eclass_s
 	vec3_t	color;
 	texdef_t	texdef;
 	char	*comments;
-	char	flagnames[MAX_FLAGS][32];
+	char	flagnames[8][32];
 
-/*
-  int nTriCount;
-  trimodel *pTriList;
-  int nTextureBind;
-  int nSkinWidth, nSkinHeight;
-*/
-  entitymodel *model;
-  char	*modelpath;
-  char	*skinpath;
-  int   nFrame;
-  unsigned int nShowFlags;
-} eclass_t;
 
-extern	eclass_t	*eclass;
+	char	*modelpath;
+	char	*skinpath;
+	int   nFrame;
+	unsigned int nShowFlags;
+};
+
+extern	eclass_s	*eclass;
 
 /*
 ** window bits
@@ -463,9 +458,5 @@ extern	eclass_t	*eclass;
 
 // used in some Drawing routines
 enum VIEWTYPE {YZ, XZ, XY};
-
-enum terrainnoise_t { NOISE_NONE, NOISE_PLUS, NOISE_PLUSMINUS };
-enum terrainbrush_t { TERRAIN_BRUSH_CIRCLE, TERRAIN_BRUSH_SQUARE };
-enum terrainfalloff_t { TERRAIN_FALLOFF_LINEAR, TERRAIN_FALLOFF_CURVED };
 
 #endif

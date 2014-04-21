@@ -174,7 +174,6 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
   m_bSelectWholeEntities = TRUE;
   m_nTextureQuality = 3;
   m_bShowShaders = TRUE;
-  m_bGLLighting = FALSE;
   m_nShader = 0;
   m_nUndoLevels = 64;
 }
@@ -365,7 +364,6 @@ void CPrefsDlg::LoadPrefs()
   m_bSelectWholeEntities = AfxGetApp()->GetProfileInt(PREF_SECTION, SELWHOLEENTS_KEY, TRUE);
   m_nTextureQuality = AfxGetApp()->GetProfileInt(PREF_SECTION, TEXTUREQUALITY_KEY, 6);
   m_bShowShaders = AfxGetApp()->GetProfileInt(PREF_SECTION, SHOWSHADERS_KEY, TRUE);
-  m_bGLLighting = AfxGetApp()->GetProfileInt(PREF_SECTION, GLLIGHTING_KEY, FALSE);
   m_nShader = AfxGetApp()->GetProfileInt(PREF_SECTION, LOADSHADERS_KEY, 0);
   m_bNoStipple = AfxGetApp()->GetProfileInt(PREF_SECTION, NOSTIPPLE_KEY, 0);
   m_nUndoLevels = AfxGetApp()->GetProfileInt(PREF_SECTION, UNDOLEVELS_KEY, 0);
@@ -441,7 +439,6 @@ void CPrefsDlg::SavePrefs()
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SELWHOLEENTS_KEY, m_bSelectWholeEntities);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, TEXTUREQUALITY_KEY, m_nTextureQuality);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, SHOWSHADERS_KEY, m_bShowShaders);
-  AfxGetApp()->WriteProfileInt(PREF_SECTION, GLLIGHTING_KEY, m_bGLLighting);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, LOADSHADERS_KEY, m_nShader);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, NOSTIPPLE_KEY, m_bNoStipple);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, UNDOLEVELS_KEY, m_nUndoLevels);

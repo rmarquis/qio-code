@@ -187,7 +187,7 @@
 				ProgramDatabaseFile=".\Debug/q3radiant.pdb"
 				GenerateMapFile="true"
 				MapFileName=".\Debug/q3radiant.map"
-				SubSystem="2"
+				SubSystem="0"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
@@ -602,31 +602,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="GroupDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="IShaders.cpp"
 				>
 				<FileConfiguration
@@ -802,54 +777,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mru.cpp"
+				RelativePath=".\MRU.CPP"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="NameDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="NewProjDlg.cpp"
@@ -1285,29 +1214,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="TexEdit.cpp"
+				RelativePath=".\TexEdit.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="TextureBar.cpp"
@@ -1673,10 +1581,6 @@
 				>
 			</File>
 			<File
-				RelativePath="ChildFrm.h"
-				>
-			</File>
-			<File
 				RelativePath="CommandsDlg.h"
 				>
 			</File>
@@ -1709,14 +1613,6 @@
 				>
 			</File>
 			<File
-				RelativePath="GroupBar.h"
-				>
-			</File>
-			<File
-				RelativePath="GroupDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="LstToolBar.h"
 				>
 			</File>
@@ -1726,10 +1622,6 @@
 			</File>
 			<File
 				RelativePath="MapInfo.h"
-				>
-			</File>
-			<File
-				RelativePath="NameDlg.h"
 				>
 			</File>
 			<File
@@ -1809,7 +1701,7 @@
 				>
 			</File>
 			<File
-				RelativePath="TexEdit.h"
+				RelativePath=".\TexEdit.h"
 				>
 			</File>
 			<File
@@ -1882,11 +1774,11 @@
 				>
 			</File>
 			<File
-				RelativePath="q.bmp"
+				RelativePath="res\q.bmp"
 				>
 			</File>
 			<File
-				RelativePath="res\q.bmp"
+				RelativePath="q.bmp"
 				>
 			</File>
 			<File
@@ -1918,11 +1810,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\toolbar1.bmp"
+				RelativePath="toolbar1.bmp"
 				>
 			</File>
 			<File
-				RelativePath="toolbar1.bmp"
+				RelativePath="res\toolbar1.bmp"
 				>
 			</File>
 			<File
