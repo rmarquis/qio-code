@@ -1282,6 +1282,12 @@ public:
 		bDrawingSunShadowMapPass = bNewDrawingSunShadowMapPass;
 	}
 	void bindShader(class glShader_c *newShader) {
+		if(glUseProgram == 0) {
+			if(newShader) {
+				g_core->RedWarning("Tried to bind a GLSL shader without having GLSL support (shader %s)\n",newShader->getName());
+			}
+			return;
+		}
 		curShader = newShader;
 		if(newShader == 0) {
 			if(rb_verboseBindShader.getInt()) {
