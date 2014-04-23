@@ -250,6 +250,14 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 		g_core->RedWarning("GL_RegisterShader: cannot open %s for reading\n",fragFile.c_str());
 		return 0;
 	}
+	if(glCreateShaderObjectARB == 0) {
+		g_core->RedWarning("GL_RegisterShader: glCreateShaderObjectARB not available, cannot create shader %s.\n",baseName);
+		return 0;
+	}
+	if(glLinkProgramARB == 0) {
+		g_core->RedWarning("GL_RegisterShader: glLinkProgramARB not available, cannot create shader %s.\n",baseName);
+		return 0;
+	}
 	// load separate programs
 	// vertex program (.vert file)
 	GLuint vertexProgram = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);

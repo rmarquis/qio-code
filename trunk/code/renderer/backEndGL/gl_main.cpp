@@ -1013,7 +1013,7 @@ public:
 		disableAllVertexAttribs();
 
 		u32 h = verts->getInternalHandleU32();
-		glBindBuffer(GL_ARRAY_BUFFER,h);
+		glBindBufferARB(GL_ARRAY_BUFFER,h);
 		if(h == 0) {
 			// buffer wasnt uploaded to GPU
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),verts->getArray());
@@ -1093,7 +1093,7 @@ public:
 		if(boundVBO == 0)
 			return;
 		if(boundVBO->getInternalHandleU32()) {
-			glBindBuffer(GL_ARRAY_BUFFER,0);
+			glBindBufferARB(GL_ARRAY_BUFFER,0);
 		}
 		glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
 		selectTexCoordSlot(0);
@@ -1109,7 +1109,7 @@ public:
 	}
 	void unbindIBO() {
 		if(boundGPUIBO) {
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER,0);
 			boundGPUIBO = 0;
 		}		
 		boundIBO = 0;
@@ -1123,7 +1123,7 @@ public:
 		}
 		u32 h = indices->getInternalHandleU32();
 		if(h != boundGPUIBO) {
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,h);
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER,h);
 			boundGPUIBO = h;
 		}
 		boundIBO = indices;
@@ -2810,25 +2810,25 @@ drawOnlyLightmap:
 		if(vbo->getInternalHandleU32()) {
 			destroyVBO(vbo);
 		}
-		if(glGenBuffers == 0)
+		if(glGenBuffersARB == 0)
 			return true; // VBO not supported
 		u32 h;
-		glGenBuffers(1,&h);
+		glGenBuffersARB(1,&h);
 		vbo->setInternalHandleU32(h);
-		glBindBuffer(GL_ARRAY_BUFFER, h);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(rVert_c)*vbo->size(), vbo->getArray(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ARRAY_BUFFER, h);
+		glBufferDataARB(GL_ARRAY_BUFFER, sizeof(rVert_c)*vbo->size(), vbo->getArray(), GL_STATIC_DRAW);
+		glBindBufferARB(GL_ARRAY_BUFFER, 0);
 		return false; // ok
 	}
 	virtual bool destroyVBO(class rVertexBuffer_c *vbo) {
 		if(vbo == 0)
 			return true; // NULL ptr
-		if(glDeleteBuffers == 0)
+		if(glDeleteBuffersARB == 0)
 			return true; // no VBO support
 		u32 h = vbo->getInternalHandleU32();
 		if(h == 0)
 			return true; // buffer wasnt uploaded to gpu
-		glDeleteBuffers(1,&h);
+		glDeleteBuffersARB(1,&h);
 		vbo->setInternalHandleU32(0);
 		return false; // ok
 	}
@@ -2836,25 +2836,25 @@ drawOnlyLightmap:
 		if(ibo->getInternalHandleU32()) {
 			destroyIBO(ibo);
 		}
-		if(glGenBuffers == 0)
+		if(glGenBuffersARB == 0)
 			return true; // VBO not supported
 		u32 h;
-		glGenBuffers(1,&h);
+		glGenBuffersARB(1,&h);
 		ibo->setInternalHandleU32(h);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, h);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibo->getSizeInBytes(), ibo->getArray(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, h);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, ibo->getSizeInBytes(), ibo->getArray(), GL_STATIC_DRAW);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 		return false; // ok		
 	}
 	virtual bool destroyIBO(class rIndexBuffer_c *ibo) {
 		if(ibo == 0)
 			return true; // NULL ptr
-		if(glDeleteBuffers == 0)
+		if(glDeleteBuffersARB == 0)
 			return true; // no VBO support
 		u32 h = ibo->getInternalHandleU32();
 		if(h == 0)
 			return true; // buffer wasnt uploaded to gpu
-		glDeleteBuffers(1,&h);
+		glDeleteBuffersARB(1,&h);
 		ibo->setInternalHandleU32(0);
 		return false; // ok
 	}
