@@ -1672,7 +1672,7 @@ long FS_ReadFileDir(const char *qpath, void *searchPath, bool unpure, void **buf
 				return len;
 			}
 
-			buf = (byte*)Hunk_AllocateTempMemory(len+1);
+			buf = (byte*)malloc(len+1);
 			*buffer = buf;
 
 			r = FS_Read( buf, len, com_journalDataFile );
@@ -1732,7 +1732,7 @@ long FS_ReadFileDir(const char *qpath, void *searchPath, bool unpure, void **buf
 	fs_loadCount++;
 	fs_loadStack++;
 
-	buf = (byte*)Hunk_AllocateTempMemory(len+1);
+	buf = (byte*)malloc(len+1);
 	*buffer = buf;
 
 	FS_Read (buf, len, h);
@@ -1778,12 +1778,7 @@ void FS_FreeFile( void *buffer ) {
 	}
 	fs_loadStack--;
 
-	Hunk_FreeTempMemory( buffer );
-
-	// if all of our temp files are free, clear all of our space
-	if ( fs_loadStack == 0 ) {
-		Hunk_ClearTempMemory();
-	}
+	free( buffer );
 }
 
 /*
@@ -1868,9 +1863,9 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 		unzGoToNextFile(uf);
 	}
 
-	buildBuffer = ( fileInPack_t*)Z_Malloc( (gi.number_entry * sizeof( fileInPack_t )) + len );
+	buildBuffer = ( fileInPack_t*)malloc( (gi.number_entry * sizeof( fileInPack_t )) + len );
 	namePtr = ((char *) buildBuffer) + gi.number_entry * sizeof( fileInPack_t );
-	fs_headerLongs = (int*)Z_Malloc( ( gi.number_entry + 1 ) * sizeof(int) );
+	fs_headerLongs = (int*)malloc( ( gi.number_entry + 1 ) * sizeof(int) );
 	fs_headerLongs[ fs_numHeaderLongs++ ] = LittleLong( fs_checksumFeed );
 
 	// get the hash table size from the number of files in the zip
@@ -1881,7 +1876,7 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 		}
 	}
 
-	pack = (pack_t*)Z_Malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *) );
+	pack = (pack_t*)malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *) );
 	pack->hashSize = i;
 	pack->hashTable = (fileInPack_t **) (((char *) pack) + sizeof( pack_t ));
 	for(i = 0; i < pack->hashSize; i++) {
@@ -1927,7 +1922,7 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 	pack->checksum = LittleLong( pack->checksum );
 	pack->pure_checksum = LittleLong( pack->pure_checksum );
 
-	Z_Free(fs_headerLongs);
+	free(fs_headerLongs);
 
 	pack->buildBuffer = buildBuffer;
 	return pack;
@@ -1944,8 +1939,8 @@ Frees a pak structure and releases all associated resources
 static void FS_FreePak(pack_t *thepak)
 {
 	unzClose(thepak->handle);
-	Z_Free(thepak->buildBuffer);
-	Z_Free(thepak);
+	free(thepak->buildBuffer);
+	free(thepak);
 }
 
 /*
@@ -2026,7 +2021,7 @@ static int FS_AddFileToList( char *name, char *list[MAX_FOUND_FILES], int nfiles
 			return nfiles;		// allready in list
 		}
 	}
-	list[nfiles] = CopyString( name );
+	list[nfiles] = strdup( name );
 	nfiles++;
 
 	return nfiles;
@@ -2158,7 +2153,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 		return NULL;
 	}
 
-	listCopy = (char**)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
+	listCopy = (char**)malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
 	for ( i = 0 ; i < nfiles ; i++ ) {
 		listCopy[i] = list[i];
 	}
@@ -2193,10 +2188,10 @@ void FS_FreeFileList( char **list ) {
 	}
 
 	for ( i = 0 ; list[i] ; i++ ) {
-		Z_Free( list[i] );
+		free( list[i] );
 	}
 
-	Z_Free( list );
+	free( list );
 }
 
 
@@ -2272,7 +2267,7 @@ static char** Sys_ConcatenateFileLists( char **list0, char **list1 )
 	totalLength += Sys_CountFileList(list1);
 
 	/* Create new list. */
-	dst = cat = (char**)Z_Malloc( ( totalLength + 1 ) * sizeof( char* ) );
+	dst = cat = (char**)malloc( ( totalLength + 1 ) * sizeof( char* ) );
 
 	/* Copy over lists. */
 	if (list0)
@@ -2291,8 +2286,8 @@ static char** Sys_ConcatenateFileLists( char **list0, char **list1 )
 
 	// Free our old lists.
 	// NOTE: not freeing their content, it's been merged in dst and still being used
-	if (list0) Z_Free( list0 );
-	if (list1) Z_Free( list1 );
+	if (list0) free( list0 );
+	if (list1) free( list1 );
 
 	return cat;
 }
@@ -2512,7 +2507,7 @@ void FS_SortFileList(char **filelist, int numfiles) {
 	int i, j, k, numsortedfiles;
 	char **sortedlist;
 
-	sortedlist = (char**)Z_Malloc( ( numfiles + 1 ) * sizeof( *sortedlist ) );
+	sortedlist = (char**)malloc( ( numfiles + 1 ) * sizeof( *sortedlist ) );
 	sortedlist[0] = NULL;
 	numsortedfiles = 0;
 	for (i = 0; i < numfiles; i++) {
@@ -2528,7 +2523,7 @@ void FS_SortFileList(char **filelist, int numfiles) {
 		numsortedfiles++;
 	}
 	memcpy(filelist, sortedlist, numfiles * sizeof( *filelist ) );
-	Z_Free(sortedlist);
+	free(sortedlist);
 }
 
 /*
@@ -2740,9 +2735,10 @@ void FS_AddGameDirectory( const char *path, const char *dir ) {
 		
 		fs_packFiles += pak->numfiles;
 
-		search = (searchpath_t*)Z_Malloc (sizeof(searchpath_t));
+		search = (searchpath_t*)malloc (sizeof(searchpath_t));
 		search->pack = pak;
 		search->next = fs_searchpaths;
+		search->dir = 0;
 		fs_searchpaths = search;
 	}
 
@@ -2752,8 +2748,9 @@ void FS_AddGameDirectory( const char *path, const char *dir ) {
 	//
 	// add the directory to the search path
 	//
-	search = (searchpath_t*)Z_Malloc (sizeof(searchpath_t));
-	search->dir = (directory_t*) Z_Malloc( sizeof( *search->dir ) );
+	search = (searchpath_t*)malloc (sizeof(searchpath_t));
+	search->pack = 0;
+	search->dir = (directory_t*) malloc( sizeof( *search->dir ) );
 
 	Q_strncpyz(search->dir->path, path, sizeof(search->dir->path));
 	Q_strncpyz(search->dir->fullpath, curpath, sizeof(search->dir->fullpath));
@@ -2933,9 +2930,9 @@ void FS_Shutdown( bool closemfp ) {
 		if(p->pack)
 			FS_FreePak(p->pack);
 		if (p->dir)
-			Z_Free(p->dir);
+			free(p->dir);
 
-		Z_Free(p);
+		free(p);
 	}
 
 	// any FS_ calls will now be an error until reinitialized
@@ -3017,22 +3014,6 @@ static void FS_Startup( const char *gameName )
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
-	// temporary hack
-	FS_AddGameDirectory("E:/GAMES/quake3/Quake3","baseq3");
-	// Xonotic is using Q3 bsp format
-	//FS_AddGameDirectory("E:/GAMES/xonotic-0.7.0/Xonotic","data");
-	//FS_AddGameDirectory("E:/GAMES/RTCW","main");
-	//FS_AddGameDirectory("E:/MoHAA","main");
-	//FS_AddGameDirectory("L:","Q4ZB");
-	//FS_AddGameDirectory("E:/Call of Duty","main");
-	//FS_AddGameDirectory("E:/RTCW","main");
-	//FS_AddGameDirectory("E:/Half-Life 2","hl2");
-	//FS_AddGameDirectory("E:/Portal 2","portal2");
-	//FS_AddGameDirectory("E:/GAMES/Prey","base");
-	//FS_AddGameDirectory("E:/GAMES/Doom 3","base");
-
-
-	
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {
 		FS_AddGameDirectory( fs_basepath->string, gameName );
@@ -3350,7 +3331,7 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 
 	for ( i = 0 ; i < c ; i++ ) {
 		if (fs_serverPakNames[i]) {
-			Z_Free(fs_serverPakNames[i]);
+			free(fs_serverPakNames[i]);
 		}
 		fs_serverPakNames[i] = NULL;
 	}
@@ -3363,7 +3344,7 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 		}
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverPakNames[i] = CopyString( Cmd_Argv( i ) );
+			fs_serverPakNames[i] = strdup( Cmd_Argv( i ) );
 		}
 	}
 }
@@ -3394,7 +3375,7 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 	for (i = 0 ; i < ARRAY_LEN(fs_serverReferencedPakNames); i++)
 	{
 		if(fs_serverReferencedPakNames[i])
-			Z_Free(fs_serverReferencedPakNames[i]);
+			free(fs_serverReferencedPakNames[i]);
 
 		fs_serverReferencedPakNames[i] = NULL;
 	}
@@ -3408,7 +3389,7 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 			d = c;
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverReferencedPakNames[i] = CopyString( Cmd_Argv( i ) );
+			fs_serverReferencedPakNames[i] = strdup( Cmd_Argv( i ) );
 		}
 	}
 	
@@ -3425,6 +3406,7 @@ void FS_InitAPI() {
 	g_staticVFSAPI.FS_FOpenFile = FS_FOpenFileByMode;
 	g_staticVFSAPI.FS_Read = FS_Read;
 	g_staticVFSAPI.FS_Write = FS_Write;
+	g_staticVFSAPI.FS_WriteFile = FS_WriteFile;
 	g_staticVFSAPI.FS_FCloseFile = FS_FCloseFile;
 	g_staticVFSAPI.FS_GetFileList = FS_GetFileList;
 	g_staticVFSAPI.FS_Seek = FS_Seek;
