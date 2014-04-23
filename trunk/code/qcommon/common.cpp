@@ -35,7 +35,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/editorAPI.h>
 #include <shared/colorTable.h>
+
+#pragma comment(lib,"winmm.lib") 
+#pragma comment(lib,"opengl32.lib") 
 
 int demo_protocols[] =
 { 67, 66, 0 };
@@ -1381,6 +1385,14 @@ void Com_BenchRSQRTFunctions_f() {
 	Com_Printf("AVG MSec: sqrt: %f, rsqrt %f, rsqrt3 %f\n",single_sqrt_msec,single_rsqrt_msec,single_rsqrt3_msec);
 }
 
+bool Com_InitEditorDLL();
+void Com_Editor_f() {
+	if(g_editor) {
+		Com_Printf("Editor already running.\n");
+		return;
+	}
+	Com_InitEditorDLL();
+}
 static void Com_DetectAltivec(void)
 {
 	// Only detect if user hasn't forcibly disabled it.
@@ -1578,6 +1590,29 @@ void Com_ShutdownCMDLL() {
 	//}
 	g_moduleMgr->unload(&com_cmLib);
 }
+static moduleAPI_i *com_editorLib = 0;
+editorAPI_i *g_editor = 0;
+	    HDC currentHDC;
+	    HGLRC currentHGLRC;
+bool Com_InitEditorDLL() {
+	    currentHDC = wglGetCurrentDC();
+	    currentHGLRC = wglGetCurrentContext();
+	com_editorLib = g_moduleMgr->load("editor");
+	if(com_editorLib == 0) {
+		return true; // error
+	}
+	g_iFaceMan->registerIFaceUser(&g_editor,EDITOR_API_IDENTSTR);
+	g_editor->initEditor();
+	return false;
+}
+void Com_ShutdownEditorDLL() {
+	if(com_editorLib == 0) {
+		return;
+	}
+	g_editor->shutdownEditor();
+	g_moduleMgr->unload(&com_editorLib);
+	g_editor = 0;
+}
 /*
 =================
 Com_Init
@@ -1660,6 +1695,7 @@ void Com_Init( char *commandLine ) {
 	Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
 	Cmd_AddCommand("game_restart", Com_GameRestart_f);
 	Cmd_AddCommand("bench_sqrt", Com_BenchRSQRTFunctions_f);
+	Cmd_AddCommand("editor", Com_Editor_f);
 
 	Com_ExecuteCfg();
 
@@ -2133,7 +2169,16 @@ void Com_Frame( void ) {
 		timeBeforeClient = timeAfter;
 	}
 #endif
-
+	//
+	// editor system
+	//	
+	if(g_editor) {
+		if(g_editor->runEditor()) {
+			Com_Printf("Editor closed by user...\n");
+			Com_ShutdownEditorDLL();
+		}
+		wglMakeCurrent(currentHDC,currentHGLRC);
+	}
 
 	NET_FlushPacketQueue();
 
@@ -2167,6 +2212,8 @@ Com_Shutdown
 =================
 */
 void Com_Shutdown (void) {
+	// shutdown editor dll
+	Com_ShutdownEditorDLL();
 	// shutdown Doom3 decls manager
 	Com_ShutdownDeclManagerDLL();
 	// shutdown CollisionModel library
