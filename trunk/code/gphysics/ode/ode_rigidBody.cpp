@@ -172,7 +172,9 @@ void odeRigidBody_c::setMatrix(const class matrix_c &newMatrix) {
 	dMatrix3 odeRot;
 	dReal odePos[3];
 	ODE_SetMatrix4x4(odeRot,odePos,newMatrix);
-	VectorScale(odePos,QIO_TO_ODE,odePos);
+	odePos[0] *= QIO_TO_ODE;
+	odePos[1] *= QIO_TO_ODE;
+	odePos[2] *= QIO_TO_ODE;
     dBodySetPosition (body,odePos[0],odePos[1],odePos[2]);	
 	dBodySetRotation(body,odeRot);
 }
@@ -205,8 +207,11 @@ void odeRigidBody_c::applyCentralImpulse(const class vec3_c &impToAdd) {
 ///	bulletRigidBody->activate(true);
 //	bulletRigidBody->applyCentralImpulse((impToAdd*QIO_TO_ODE).floatPtr());
 }
-void odeRigidBody_c::applyTorque(const class vec3_c torqueToAdd) {
+void odeRigidBody_c::applyTorque(const class vec3_c &torqueToAdd) {
 	
+}
+void odeRigidBody_c::applyPointImpulse(const class vec3_c &val, const class vec3_c &point) {
+
 }
 // linear velocity access (in Quake units)
 const class vec3_c odeRigidBody_c::getLinearVelocity() const {

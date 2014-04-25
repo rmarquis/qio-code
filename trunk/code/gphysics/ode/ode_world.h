@@ -75,6 +75,13 @@ public:
 	virtual class physCharacterControllerAPI_i *createCharacter(const class vec3_c &pos, float characterHeight,  float characterWidth);
 	virtual void freeCharacter(class physCharacterControllerAPI_i *p);
 
+	virtual class physVehicleAPI_i *createVehicle(const vec3_c &pos, const vec3_c &angles, class cMod_i *cm) {
+		return 0;
+	}
+	virtual void removeVehicle(class physVehicleAPI_i *v) {
+
+	}
+
 	virtual void setGravity(const vec3_c &newGravity);
 	virtual const vec3_c &getGravity() const;
 	virtual bool traceRay(class trace_c &tr);

@@ -1661,7 +1661,8 @@ void NET_Sleep(int msec)
 
 	if(msec < 0)
 		msec = 0;
-
+	if(msec > 100)
+		msec = 100;
 	FD_ZERO(&fdr);
 
 	if(ip_socket != INVALID_SOCKET)

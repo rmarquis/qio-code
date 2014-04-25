@@ -1813,18 +1813,21 @@ drawOnlyLightmap:
 				} else {
 					unbindTex(2);
 				}
-				if(heightMap) {
+				// using heightmap requires GLSL support
+				if(heightMap && glUseProgram) {
 					textureAPI_i *heightMapTexture = heightMap->getTexture(this->timeNowSeconds);
 					bindTex(3,heightMapTexture->getInternalHandleU32());
 				} else {
 					unbindTex(3);
 				}
-				if(deluxeMap) {
+				// using deluxeMap requires GLSL support
+				if(deluxeMap && glUseProgram) {
 					bindTex(4,deluxeMap->getInternalHandleU32());
 				} else {
 					unbindTex(4);
 				}
-				if(cubeMap) {
+				// using cubeMap requires GLSL support
+				if(cubeMap && glUseProgram) {
 					selectTex(0);
 					glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->getInternalHandleU32());
 				} else {
@@ -1987,13 +1990,19 @@ drawOnlyLightmap:
 					selectedShader = GL_RegisterShader("skyboxCubeMap",&glslShaderDesc);
 					if(selectedShader) {
 						bindShader(selectedShader);
+					} else {
+						g_core->RedWarning("Cannot render ST_CUBEMAP_SKYBOX because skyboxCubeMap shader is missing.\n");
+						continue;
 					}
 				} else if(stageType == ST_CUBEMAP_REFLECTION) {
 					glslPermutationFlags_s glslShaderDesc;
 					selectedShader = GL_RegisterShader("reflectionCubeMap",&glslShaderDesc);
 					if(selectedShader) {
 						bindShader(selectedShader);
-					}		
+					} else {
+						g_core->RedWarning("Cannot render ST_CUBEMAP_REFLECTION because reflectionCubeMap shader is missing.\n");
+						continue;
+					}	
 				} else if(curLight) {
 					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
 					glslPermutationFlags_s pf;
@@ -2019,7 +2028,11 @@ drawOnlyLightmap:
 					}*/
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
-					bindShader(selectedShader);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					} else {
+						g_core->RedWarning("Cannot render light interaction because perPixelLighting shader is missing.\n");
+					}
 				} else if(lastMat->isPortalMaterial() == false &&
 					(
 					gl_alwaysUseGLSLShaders.getInt() ||
@@ -2074,7 +2087,10 @@ drawOnlyLightmap:
 					selectedShader = GL_RegisterShader("cubeMapShader",&glslShaderDesc);
 					if(selectedShader) {
 						bindShader(selectedShader);
-					}
+					} else {
+						g_core->RedWarning("Cannot render stage with cubemap because cubeMapShader shader is missing.\n");
+						continue;
+					}	
 				} else {
 					bindShader(0);
 				}
