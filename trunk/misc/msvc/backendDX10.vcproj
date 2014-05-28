@@ -220,7 +220,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx10\lighting.fx"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\hlsl\dx10\showNormalColors.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx10\whiteShader.fx"
 				>
 			</File>
 		</Filter>

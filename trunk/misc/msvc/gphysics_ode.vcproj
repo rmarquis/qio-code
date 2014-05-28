@@ -179,13 +179,6 @@
 			<File
 				RelativePath="..\..\code\gphysics\ode\ode_characterController.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\gphysics\ode\ode_cMod2ODEGeom.cpp"
@@ -194,13 +187,6 @@
 			<File
 				RelativePath="..\..\code\gphysics\ode\ode_constraint.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\gphysics\ode\ode_rigidBody.cpp"
@@ -308,6 +294,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\displacementBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\displacementBuilder.h"
 				>
 			</File>
 			<File

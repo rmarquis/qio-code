@@ -29,10 +29,17 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/textureAPI.h>
 #include <shared/textureWrapMode.h>
 
+// http://wiki.splashdamage.com/index.php/Materials
 const char *imageOps [] = {
-	"addnormals",
+	"addNormals",
 	"heightmap",
 	"makealpha",
+	"add",
+	"scale",
+	"invertAlpha",
+	"invertColor",
+	"makeIntensity",
+	"makeAlpha",
 };
 
 u32 numImageOps = sizeof(imageOps)/sizeof(imageOps[0]);

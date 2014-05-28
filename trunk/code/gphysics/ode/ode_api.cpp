@@ -64,10 +64,11 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
-cmAPI_i *cm = 0;
-loadingScreenMgrAPI_i *g_loadingScreen = 0;
-rAPI_i *rf = 0;
-declManagerAPI_i *g_declMgr = 0;
+class cmAPI_i *cm = 0;
+class loadingScreenMgrAPI_i *g_loadingScreen = 0;
+class rAPI_i *rf = 0;
+class declManagerAPI_i *g_declMgr = 0;
+class modelLoaderDLLAPI_i *g_modelLoader = 0;
 // exports
 static physDLLODE_c g_staticPhysDLLImpl;
 

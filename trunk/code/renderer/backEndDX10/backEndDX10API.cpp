@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <api/mtrAPI.h>
 #include <api/sdlSharedAPI.h>
+#include <api/rLightAPI.h>
 
 #include <shared/r2dVert.h>
 #include <shared/fcolor4.h>
@@ -45,6 +46,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <materialSystem/mat_public.h> // alphaFunc_e etc
 #include <shared/str.h>
 #include <shared/autoCvar.h>
+#include <shared/cullType.h>
 
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
@@ -55,6 +57,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <d3d10.h>
 #include <d3dx10.h>
 
+#include <comdef.h>
+
 // dx10 libraries
 #pragma comment (lib, "d3d10.lib")
 #pragma comment (lib, "d3dx10.lib")
@@ -64,6 +68,7 @@ static aCvar_c rb_showNormalColors("rb_showNormalColors","0");
 static aCvar_c rb_skipStagesOfType_colorMapLightMapped("rb_skipStagesOfType_colorMapLightMapped","0");
 static aCvar_c rb_skipStagesOfType_colorMap("rb_skipStagesOfType_colorMap","0");
 static aCvar_c rb_skipStagesOfType_lightmap("rb_skipStagesOfType_lightmap","0");
+static aCvar_c rb_showTris("rb_showTris","0");
 
 // HLSL shaders can be compiled with various 
 // options and defines
@@ -104,6 +109,9 @@ public:
 	ID3D10EffectScalarVariable *m_alphaFuncType;
 	ID3D10EffectScalarVariable *m_alphaFuncValue;
 
+	ID3D10EffectVectorVariable *m_lightOrigin;
+	ID3D10EffectScalarVariable *m_lightRadius;
+
 	dx10Shader_c() {
 		m_effect = 0;
 		m_technique = 0;
@@ -117,6 +125,8 @@ public:
 		m_alphaFuncType = 0;
 		m_alphaFuncValue = 0;
 		m_materialColor = 0;
+		m_lightOrigin = 0;
+		m_lightRadius = 0;
 	}
 
 	const char *getName() const {
@@ -303,6 +313,9 @@ public:
 
 		m_sunDirection = m_effect->GetVariableByName("sunDirection")->AsVector();
 
+		m_lightOrigin = m_effect->GetVariableByName("lightOrigin")->AsVector();
+		m_lightRadius= m_effect->GetVariableByName("lightRadius")->AsScalar();
+
 		return false; // no error
 	}
 	void destroyShader() {
@@ -344,18 +357,25 @@ public:
 		D3D10_SUBRESOURCE_DATA bufferData;
 		memset(&bufferData,0,sizeof(bufferData));
 		bufferData.pSysMem = data;
-
-		HRESULT result = pD3DDevice->CreateBuffer(&bufferDesc, &bufferData, &buf);
-		if(FAILED(result)) {
-			return true;
-		}	
+		try {
+			HRESULT result = pD3DDevice->CreateBuffer(&bufferDesc, &bufferData, &buf);
+			if(FAILED(result)) {
+				return true;
+			}	
+		} catch(_com_error& ex) {
+			g_core->RedWarning("dx10TempBuffer_c::create: _com_error exception caught!\n");
+		}
 		return false;
 	}
 	bool destroy() {
 		if(buf) {
-			buf->Release();
-			buf = 0;
-		}
+			try {
+				buf->Release();
+				buf = 0;
+			} catch(_com_error& ex) {
+				g_core->RedWarning("dx10TempBuffer_c::destroy: _com_error exception caught!\n");
+			}
+		}	
 		return false;
 	}
 	ID3D10Buffer *getDX10Buffer() {
@@ -436,7 +456,9 @@ class rbDX10_c : public rbAPI_i {
 	ID3D10Texture2D* m_depthStencilBuffer;
 	ID3D10DepthStencilState* m_depthStencilState;
 	ID3D10DepthStencilView* m_depthStencilView;
-	ID3D10RasterizerState* m_rasterState;
+	ID3D10RasterizerState* m_rasterState_backFaceCulling;
+	ID3D10RasterizerState* m_rasterState_noFaceCulling;
+	ID3D10RasterizerState* m_rasterState_showTris;
 	ID3D10DepthStencilState* m_depthDisabledStencilState;
 	ID3D10DepthStencilState* m_depthStencilState_noWrite;
 	// viewport def
@@ -468,6 +490,7 @@ class rbDX10_c : public rbAPI_i {
 	// material and lightmap
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
+	const rLightAPI_i *curLight;
 public:
 	rbDX10_c() {
 		hWnd = 0;
@@ -481,6 +504,7 @@ public:
 		bHasSunLight = false;
 		usingWorldSpace = false;
 		bDrawOnlyOnDepthBuffer = false;
+		curLight = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_DX10;
@@ -514,6 +538,11 @@ public:
 	}
 	virtual void setCurLightShadowMapSize(int newW, int newH) {
 
+	}
+	virtual void setCurLight(const class rLightAPI_i *light) {
+		if(this->curLight == light)
+			return;
+		this->curLight = light;
 	}
 	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection, const class aabb &newSunBounds) {
 		bHasSunLight = newBHasSunLight;
@@ -587,6 +616,7 @@ public:
 	    
 		// set blending state
 		//setBlendFunc(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
+		disableBlendFunc();
 
 		// set vertex buffer data
 		pD3DDevice->IASetVertexBuffers(0, 1, &pNewVertexBuffer, &stride, &offset);
@@ -801,6 +831,22 @@ public:
 				shader->m_sunDirection->SetFloatVector(dirLocal);
 			}
 		}
+		if(shader->m_lightOrigin) {
+			if(curLight) {
+				if(usingWorldSpace) {
+					shader->m_lightOrigin->SetFloatVector(curLight->getOrigin());
+				} else {
+					vec3_c posLocal;
+					worldMatrixInverse.transformPoint(curLight->getOrigin(),posLocal);
+					shader->m_lightOrigin->SetFloatVector(posLocal);
+				}
+			}
+		}
+		if(shader->m_lightRadius) {
+			if(curLight) {
+				shader->m_lightRadius->SetFloat(curLight->getRadius());
+			}
+		}
 	}
 	dx10TempBuffer_c tempGPUVerts;
 	dx10TempBuffer_c tempGPUIndices;
@@ -883,6 +929,15 @@ public:
 			this->setDepthRange(0,1);
 		}
 
+		cullType_e cullType = lastMat->getCullType();
+		if(cullType == CT_BACK_SIDED) {
+			pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+		} else if(cullType == CT_TWO_SIDED) {
+			pD3DDevice->RSSetState(m_rasterState_noFaceCulling);;
+		} else {
+			pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+		}
+
 		// for each stage...
 		for(u32 stageNum = 0; stageNum < lastMat->getNumStages(); stageNum++) {
 			const mtrStageAPI_i *s = lastMat->getStage(stageNum);
@@ -937,12 +992,18 @@ public:
 				flags.hasAlphaFunc = true;
 			}
 
-			const blendDef_s &blendDef = s->getBlendDef();
-			//setBlendFunc(blendDef.src,blendDef.dst);
+			if(curLight) {
+				setBlendFunc(BM_ONE,BM_ONE);
+			} else {
+				const blendDef_s &blendDef = s->getBlendDef();
+				setBlendFunc(blendDef.src,blendDef.dst);
+			}
 
 			dx10Shader_c *shader;
 			if(rb_showNormalColors.getInt()) {
 				shader = shadersSystem->registerShader("showNormalColors",0,true);
+			} else if(curLight) {
+				shader = shadersSystem->registerShader("lighting",&flags,true);
 			} else {
 				shader = shadersSystem->registerShader("default",&flags,true);
 			}
@@ -990,6 +1051,24 @@ public:
 			for(u32 i = 0; i < techniqueDesc.Passes; i++) {
 				shader->m_technique->GetPassByIndex(i)->Apply(0);
 				pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
+			}
+		}
+		if(rb_showTris.getInt()) {
+			dx10Shader_c *	shader = shadersSystem->registerShader("whiteShader",0,true);
+			if(shader) {
+				disableZBuffer();
+				this->setShaderVariables(shader);
+				pD3DDevice->IASetInputLayout(shader->m_layout);
+				D3D10_TECHNIQUE_DESC techniqueDesc;
+				shader->m_technique->GetDesc(&techniqueDesc);
+				pD3DDevice->RSSetState(m_rasterState_showTris);
+				// go through each pass in the technique and render the triangles.
+				for(u32 i = 0; i < techniqueDesc.Passes; i++) {
+					shader->m_technique->GetPassByIndex(i)->Apply(0);
+					pD3DDevice->DrawIndexed(indices.getNumIndices(), 0, 0);
+				}
+				pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+				enableZBuffer();
 			}
 		}
 		tempGPUVerts.destroy();
@@ -1237,6 +1316,10 @@ public:
 			g_core->RedWarning("rbDX10_c::createVBO: device is NULL\n");
 			return true;
 		}
+		destroyIBO(ptr);
+		if(ptr->getNumIndices() == 0) {
+			return false;
+		}
 		D3D10_BUFFER_DESC indexBufferDesc;
 		memset(&indexBufferDesc,0,sizeof(indexBufferDesc));
 		D3D10_SUBRESOURCE_DATA indexData;
@@ -1475,7 +1558,47 @@ public:
 		rasterDesc.SlopeScaledDepthBias = 0.0f;
 		
 		// Create the rasterizer state from the description we just filled out.
-		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState);
+		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState_backFaceCulling);
+		if(FAILED(result))
+		{
+			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
+			return; //true; // error
+		}
+		// Setup the raster description which will determine how and what polygons will be drawn.
+		rasterDesc.AntialiasedLineEnable = false;
+		rasterDesc.CullMode = D3D10_CULL_NONE;
+		rasterDesc.DepthBias = 0;
+		rasterDesc.DepthBiasClamp = 0.0f;
+		rasterDesc.DepthClipEnable = true;
+		rasterDesc.FillMode = D3D10_FILL_SOLID;
+		rasterDesc.FrontCounterClockwise = false;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.ScissorEnable = false;
+		rasterDesc.SlopeScaledDepthBias = 0.0f;
+		
+		// Create the rasterizer state from the description we just filled out.
+		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState_noFaceCulling);
+		if(FAILED(result))
+		{
+			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
+			return; //true; // error
+		}
+
+
+		// Setup the raster description which will determine how and what polygons will be drawn.
+		rasterDesc.AntialiasedLineEnable = false;
+		rasterDesc.CullMode = D3D10_CULL_NONE;
+		rasterDesc.DepthBias = 0;
+		rasterDesc.DepthBiasClamp = 0.0f;
+		rasterDesc.DepthClipEnable = false;
+		rasterDesc.FillMode = D3D10_FILL_WIREFRAME;
+		rasterDesc.FrontCounterClockwise = false;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.ScissorEnable = false;
+		rasterDesc.SlopeScaledDepthBias = 0.0f;
+		
+		// Create the rasterizer state from the description we just filled out.
+		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState_showTris);
 		if(FAILED(result))
 		{
 			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
@@ -1483,7 +1606,7 @@ public:
 		}
 
 		// Now set the rasterizer state.
-		pD3DDevice->RSSetState(m_rasterState);
+		pD3DDevice->RSSetState(m_rasterState_backFaceCulling);
 
 		// Setup the viewport for rendering.
 		D3D10_VIEWPORT viewport;
@@ -1547,9 +1670,17 @@ public:
 			m_depthStencilState->Release();
 			m_depthStencilState = 0;
 		}
-		if(m_rasterState) {
-			m_rasterState->Release();
-			m_rasterState = 0;
+		if(m_rasterState_backFaceCulling) {
+			m_rasterState_backFaceCulling->Release();
+			m_rasterState_backFaceCulling = 0;
+		}
+		if(m_rasterState_noFaceCulling) {
+			m_rasterState_noFaceCulling->Release();
+			m_rasterState_noFaceCulling = 0;
+		}
+		if(m_rasterState_showTris) {
+			m_rasterState_showTris->Release();
+			m_rasterState_showTris = 0;
 		}
 		if(pRenderTargetView) {
 			pRenderTargetView->Release();

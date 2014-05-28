@@ -72,10 +72,10 @@ void tess2d_c::set2DColor(const float *rgba) {	// NULL = 1,1,1,1
 }
 void tess2d_c::ensureAlloced(u32 numNeedIndexes, u32 numNeedVerts) {
 	if(verts.size() <= numNeedVerts) {
-		verts.resize(numNeedVerts+1);
+		verts.resize(numNeedVerts*2);
 	}
 	if(indices.size() <= numNeedIndexes) {
-		indices.resize(numNeedIndexes+1);
+		indices.resize(numNeedIndexes*2);
 	}	
 }
 void tess2d_c::drawStretchPic(float x, float y, float w, float h,

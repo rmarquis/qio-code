@@ -589,7 +589,19 @@ public:
 		return ret;
 	}
 };
-
+// Doom3 expression usage examples:
+// "scroll		time, 0"
+// "rgb			sintable[time]"
+// "rgb			parm3 * .4"
+// "red			(fireballtable[ time * .2]) * parm0"
+// "translate 	time * 0.07, 0.1"		
+// "rgb			elevenstage [ time * Parm3 + Parm4 + 4.0 / 11 ]"	
+// "centerscale	s_lightningtable2[time*4], s_lightningtable2[time*4]"	
+// "rotate		( time * -.9 )"	
+// "scale		1 / 32 , 1"	
+// "if			( parm7 == 0 )"	
+// "if			( ( time * 38 ) % 16 == 11 )"	
+							
 class astAPI_i *AST_ParseExpression(const char *s) {
 	if(ast_printParsedExpressions.getInt()) {
 		g_core->Print("AST_ParseExpression: %s\n",s);

@@ -91,14 +91,14 @@ void RF_DrawSingleSkyBox(const skyBoxAPI_i *skyBox) {
 	//rb->clearDepthBuffer();
 	rb->endDrawingSky();
 }
+static r_surface_c r_skyDomeSurface; 
 void RF_DrawSingleSkyDome(mtrAPI_i *mat) {
 	const vec3_c &eye = rf_camera.getOrigin();
-	r_surface_c tmp; 
-	tmp.createSphere(eye,16.f,16,16);
-	tmp.swapIndexes();
+	r_skyDomeSurface.createSphere(eye,16.f,16,16);
+	r_skyDomeSurface.swapIndexes();
 	rb->beginDrawingSky();
 	rb->setMaterial(mat);
-	rb->drawElements(tmp.getVerts(),tmp.getIndices());
+	rb->drawElements(r_skyDomeSurface.getVerts(),r_skyDomeSurface.getIndices());
 	// this breaks mirrors, we need to use farthest depth range
 //	rb->clearDepthBuffer();
 	rb->endDrawingSky();

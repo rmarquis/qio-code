@@ -111,6 +111,7 @@ static aCvar_c rb_forceBlur("rb_forceBlur","0");
 static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","0");
 static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
 static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
+static aCvar_c rb_skipMirrorMaterials("rb_skipMirrorMaterials","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1445,6 +1446,10 @@ public:
 		if(verts.size() == 0)
 			return;
 
+		if(rb_skipMirrorMaterials.getInt()) {
+			if(lastMat->isMirrorMaterial())
+				return;
+		}
 		if(rb_skipMaterialsWithCubeMaps.getInt()) {
 			if(lastMat && lastMat->hasStageWithCubeMap())
 				return;

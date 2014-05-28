@@ -37,7 +37,8 @@ bool table_c::parse(const char *at, const char *textBase, const char *sourceFile
 		if(!stricmp(parm,"snap")) {
 			bSnap = true;
 		} else {
-
+			g_core->RedWarning("table_c::parse: table %s from file %s has unknown modifier '%s'.\n",
+				this->getName(),sourceFileName,parm);
 		}
 	}
 	while(p.atWord_dontNeedWS("}") == false) {
