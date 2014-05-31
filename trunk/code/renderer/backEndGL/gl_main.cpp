@@ -112,6 +112,8 @@ static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","0");
 static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
 static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
 static aCvar_c rb_skipMirrorMaterials("rb_skipMirrorMaterials","0");
+static aCvar_c gl_ignoreClipPlanes("gl_ignoreClipPlanes","0");
+static aCvar_c gl_clipPlaneEpsilon("gl_clipPlaneEpsilon","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -2589,6 +2591,7 @@ drawOnlyLightmap:
 		// must have CT_BACK with CT_FRONT swapped
 		this->prevCullType = CT_NOT_SET;
 	}
+	// used eg. for mirrors
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
 		double plane2[4];
 #if 0
@@ -2600,9 +2603,10 @@ drawOnlyLightmap:
 		plane2[0] = -pl.norm.x;
 		plane2[1] = -pl.norm.y;
 		plane2[2] = -pl.norm.z;
-		plane2[3] = -pl.dist;
+		// add epsilon value, this might fix "blinking" mirrors
+		plane2[3] = -pl.dist + gl_clipPlaneEpsilon.getFloat();
 #endif
-		if(bEnabled) {
+		if(bEnabled && (gl_ignoreClipPlanes.getInt()==0)) {
 			glClipPlane (GL_CLIP_PLANE0, plane2);
 			glEnable (GL_CLIP_PLANE0);
 		} else {

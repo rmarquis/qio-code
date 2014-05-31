@@ -723,6 +723,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// QuakeIII portal keyword.
 					// See q3 textures/sfx/portal_sfx from scripts/common.shader.
 					// It's the shader of q3dm0 portal (teleporter)
+					// It's also used for mirrors ("textures/common/mirror1","textures/common/mirror2")
 					this->bPortalMaterial = true;
 				} else if(p.atWord("decal_macro")) {
 					// Doom3 decal_macro
@@ -739,6 +740,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("mirror")) {
 					// Doom3 mirror
 					// used eg. in Prey's game/roadhouse.proc
+					// NOTE: this keyword is *not* used in Quake3 mirrors.
+					// They have only "portal" keyword used.
 					this->bMirrorMaterial = true;
 				} else if(p.atWord("qer_editorimage")) {
 					this->editorImage = p.getToken();

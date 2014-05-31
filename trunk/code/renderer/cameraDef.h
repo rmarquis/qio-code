@@ -69,6 +69,8 @@ public:
 	}
 	void setPortalPlane(const plane_c &pl) {
 		portalPlane = pl;
+		// add epsilon value so mirrors don't blink
+		portalPlane.addDist(0.1f);
 		bIsPortal = true;
 	}
 	void setIsMirror(bool newBIsMirror) {

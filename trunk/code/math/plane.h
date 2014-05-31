@@ -80,6 +80,9 @@ public:
 	void setDist(float newDist) {
 		dist = newDist;
 	}
+	void addDist(float delta) {
+		dist += delta;
+	}
 
 	float distance(const vec3_c &point) const {
 		float d = norm.dotProduct(point) + dist;

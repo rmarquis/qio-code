@@ -141,28 +141,31 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 
 	numBatchSurfIndexes += bs->sf->absIndexes.getNumIndices();
 	bspTriSurf_s *sf = bs->sf;
-	// see if we can add this surface to existing batch
-	for(u32 i = 0; i < batches.size(); i++) {
-		bspSurfBatch_s *b = batches[i];
-		if(b->mat != sf->mat) {
-			continue;
-		}
-		if(b->lightmap != sf->lightmap) {
-			continue;
-		}
-		// NOTE: we don't really have to check it because surfaces
-		// with the same lightmap always should have the same deluxemap...
-		if(b->deluxemap != sf->deluxemap) {
-			continue;
-		}
-		if(bMergeMutlipleAreaSurfaces == false) {
-			if(b->areas != areas) {
+	// can't merge mirror materials
+	if(sf->mat->isMirrorMaterial() == false && sf->mat->isPortalMaterial() == false) {
+		// see if we can add this surface to existing batch
+		for(u32 i = 0; i < batches.size(); i++) {
+			bspSurfBatch_s *b = batches[i];
+			if(b->mat != sf->mat) {
 				continue;
 			}
+			if(b->lightmap != sf->lightmap) {
+				continue;
+			}
+			// NOTE: we don't really have to check it because surfaces
+			// with the same lightmap always should have the same deluxemap...
+			if(b->deluxemap != sf->deluxemap) {
+				continue;
+			}
+			if(bMergeMutlipleAreaSurfaces == false) {
+				if(b->areas != areas) {
+					continue;
+				}
+			}
+			// TODO: merge only surfaces in the same cluster/area ? 
+			b->addSurface(bs);
+			return;
 		}
-		// TODO: merge only surfaces in the same cluster/area ? 
-		b->addSurface(bs);
-		return;
 	}
 	// create a new batch
 	bspSurfBatch_s *nb = new bspSurfBatch_s;
