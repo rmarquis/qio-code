@@ -97,6 +97,9 @@ void main() {
 #ifdef HAS_LIGHTMAP
 	gl_TexCoord[1] = gl_TextureMatrix[1] * gl_MultiTexCoord1;
 #endif // HAS_LIGHTMAP
+	// this is needed here for GL_CLIP_PLANE0 to work.
+	// clipping planes are used by mirrors
+	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 #ifdef HAS_VERTEXCOLORS
 	v_color4 = gl_Color;
 #endif // HAS_VERTEXCOLORS

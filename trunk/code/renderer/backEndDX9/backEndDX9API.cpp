@@ -128,6 +128,7 @@ class rbDX9_c : public rbAPI_i {
 	// cgame time for shader effects (texmods, deforms)
 	float timeNowSeconds;
 	bool bIsMirror;
+	u32 portalDepth;
 	bool bRendererMirrorThisFrame;
 	bool bClipPlaneEnabled;
 	plane_c clipPlane;
@@ -343,7 +344,8 @@ public:
 		if(cullType == CT_TWO_SIDED) {
 			pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_NONE);
 		} else {
-			if(bIsMirror) {
+			//if(isMirror) {
+			if(portalDepth % 2 == 1) {
 				// swap CT_FRONT with CT_BACK for mirror views
 				if(cullType == CT_BACK_SIDED) {
 					pDev->SetRenderState(D3DRS_CULLMODE,D3DCULL_CCW);
@@ -899,6 +901,9 @@ public:
 		// force cullType reset, because mirror views
 		// must have CT_BACK with CT_FRONT swapped
 		this->prevCullType = CT_NOT_SET;
+	}
+	virtual void setPortalDepth(u32 nPortalDepth) {
+		portalDepth = nPortalDepth;
 	}
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
 		plane_c plInversed = pl.getOpposite();

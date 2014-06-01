@@ -457,6 +457,7 @@ class rbDX10_c : public rbAPI_i {
 	ID3D10DepthStencilState* m_depthStencilState;
 	ID3D10DepthStencilView* m_depthStencilView;
 	ID3D10RasterizerState* m_rasterState_backFaceCulling;
+	ID3D10RasterizerState* m_rasterState_frontFaceCulling;
 	ID3D10RasterizerState* m_rasterState_noFaceCulling;
 	ID3D10RasterizerState* m_rasterState_showTris;
 	ID3D10DepthStencilState* m_depthDisabledStencilState;
@@ -486,6 +487,7 @@ class rbDX10_c : public rbAPI_i {
 	aabb sunLightBounds;
 	bool usingWorldSpace;
 	bool bDrawOnlyOnDepthBuffer;
+	u32 portalDepth;
 
 	// material and lightmap
 	mtrAPI_i *lastMat;
@@ -523,6 +525,9 @@ public:
 	}
 	virtual void setBindVertexColors(bool bBindVertexColors) {
 		this->bHasVertexColors = bBindVertexColors;
+	}
+	virtual void setPortalDepth(u32 nPortalDepth) {
+		portalDepth = nPortalDepth;
 	}
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
@@ -931,11 +936,19 @@ public:
 
 		cullType_e cullType = lastMat->getCullType();
 		if(cullType == CT_BACK_SIDED) {
-			pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+			if(portalDepth % 2 == 1) {
+				pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+			} else {
+				pD3DDevice->RSSetState(m_rasterState_frontFaceCulling);;
+			}
 		} else if(cullType == CT_TWO_SIDED) {
 			pD3DDevice->RSSetState(m_rasterState_noFaceCulling);;
 		} else {
-			pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+			if(portalDepth % 2 == 1) {
+				pD3DDevice->RSSetState(m_rasterState_frontFaceCulling);;
+			} else {
+				pD3DDevice->RSSetState(m_rasterState_backFaceCulling);;
+			}
 		}
 
 		// for each stage...
@@ -1124,6 +1137,7 @@ public:
 		viewMatrix.identity();
 
 		disableZBuffer();
+		pD3DDevice->RSSetState(m_rasterState_noFaceCulling);;
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
 		camOriginWorldSpace = newCamPos;
@@ -1488,22 +1502,6 @@ public:
 		///depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
 		depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS_EQUAL;
 
-		depthStencilDesc.StencilEnable = true;
-		depthStencilDesc.StencilReadMask = 0xFF;
-		depthStencilDesc.StencilWriteMask = 0xFF;
-
-		// Stencil operations if pixel is front-facing.
-		depthStencilDesc.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
-		depthStencilDesc.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
-
-		// Stencil operations if pixel is back-facing.
-		depthStencilDesc.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-		depthStencilDesc.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
-		depthStencilDesc.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-		depthStencilDesc.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
-
 		// Create the depth stencil state.
 		result = pD3DDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
 		if(FAILED(result))
@@ -1564,6 +1562,14 @@ public:
 			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
 			return; //true; // error
 		}
+		rasterDesc.CullMode = D3D10_CULL_FRONT;
+		// Create the rasterizer state from the description we just filled out.
+		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState_frontFaceCulling);
+		if(FAILED(result))
+		{
+			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
+			return; //true; // error
+		}
 		// Setup the raster description which will determine how and what polygons will be drawn.
 		rasterDesc.AntialiasedLineEnable = false;
 		rasterDesc.CullMode = D3D10_CULL_NONE;
@@ -1601,6 +1607,11 @@ public:
 		result = pD3DDevice->CreateRasterizerState(&rasterDesc, &m_rasterState_showTris);
 		if(FAILED(result))
 		{
+			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
+			return; //true; // error
+		}
+
+		if(initShadowVolumeDepthStencilStates()) {
 			g_core->RedWarning("rbDX10_c::init: CreateRasterizerState failed\n");
 			return; //true; // error
 		}
@@ -1655,6 +1666,31 @@ public:
 		// This depends on SDL_INIT_VIDEO, hence having it here
 		g_inputSystem->IN_Init();
 	}
+	bool initShadowVolumeDepthStencilStates() {
+		// Initialize the description of the stencil state.
+		//D3D10_DEPTH_STENCIL_DESC depthStencilDesc;
+		//ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+
+		//// Set up the description of the stencil state.
+		//depthStencilDesc.DepthEnable = true;
+		//depthStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+		//depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+
+		//depthStencilDesc.StencilEnable = true;
+		//depthStencilDesc.StencilReadMask = 0xFF;
+		//depthStencilDesc.StencilWriteMask = 0xFF;
+
+		//// Stencil operations if pixel is front-facing.
+		//depthStencilDesc.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+		//depthStencilDesc.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+		//depthStencilDesc.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+		//depthStencilDesc.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+
+
+		//// Create the depth stencil state.
+		//result = pD3DDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
+		return false;
+	}
 	virtual void shutdown(bool destroyWindow) {
 		AUTOCVAR_UnregisterAutoCvars();
 
@@ -1673,6 +1709,10 @@ public:
 		if(m_rasterState_backFaceCulling) {
 			m_rasterState_backFaceCulling->Release();
 			m_rasterState_backFaceCulling = 0;
+		}
+		if(m_rasterState_frontFaceCulling) {
+			m_rasterState_frontFaceCulling->Release();
+			m_rasterState_frontFaceCulling = 0;
 		}
 		if(m_rasterState_noFaceCulling) {
 			m_rasterState_noFaceCulling->Release();

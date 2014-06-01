@@ -2380,7 +2380,6 @@ drawOnlyLightmap:
 		if(isUsingBlur() && boundFBO) {
 			glslPermutationFlags_s p;
 			p.bHorizontalPass = true;
-			// TODO: do a second, horizontal pass
 			glShader_c *sh = GL_RegisterShader("blur",&p);
 			if(sh) {
 				bindShader(sh);
