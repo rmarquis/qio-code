@@ -329,6 +329,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	//ret->u_alphaTestValue = glGetUniformLocation(shader,"u_alphaTestValue");
 	ret->u_sunDirection = glGetUniformLocation(shader,"u_sunDirection");
 	ret->u_sunColor = glGetUniformLocation(shader,"u_sunColor");
+	ret->u_blurScale = glGetUniformLocation(shader,"u_blurScale");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

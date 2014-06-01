@@ -83,6 +83,8 @@ friend class rbSDLOpenGL_c;
 	// sun (directional) lighting
 	int u_sunDirection;
 	int u_sunColor;
+	// for 2D blur
+	int u_blurScale;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

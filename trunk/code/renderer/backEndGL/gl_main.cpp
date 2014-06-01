@@ -114,6 +114,7 @@ static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
 static aCvar_c rb_skipMirrorMaterials("rb_skipMirrorMaterials","0");
 static aCvar_c gl_ignoreClipPlanes("gl_ignoreClipPlanes","0");
 static aCvar_c gl_clipPlaneEpsilon("gl_clipPlaneEpsilon","0");
+static aCvar_c rb_blurScale("rb_blurScale","1.0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1403,14 +1404,17 @@ public:
 					this->camOriginEntitySpace.y,
 					this->camOriginEntitySpace.z);
 			}
-			if(newShader->u_materialColor) {
+			if(newShader->u_materialColor != -1) {
 				glUniform4fv(newShader->u_materialColor,1,lastSurfaceColor.toPointer());
 			}
-			if(newShader->u_entityMatrix) {
+			if(newShader->u_entityMatrix != -1) {
 				glUniformMatrix4fv(newShader->u_entityMatrix,1,false,entityMatrix);
 			}
-			if(newShader->u_entityRotationMatrix) {
+			if(newShader->u_entityRotationMatrix != -1) {
 				glUniformMatrix4fv(newShader->u_entityRotationMatrix,1,false,entityRotationMatrix);
+			}
+			if(newShader->u_blurScale != -1) {
+				glUniform1f(newShader->u_blurScale,getBlurScale());
 			}
 		}
 	}
@@ -2279,6 +2283,9 @@ drawOnlyLightmap:
 			return true;
 		}
 		return false;
+	}
+	float getBlurScale() const {
+		return rb_blurScale.getFloat();
 	}
 	virtual void beginFrame() {
 		if(shouldDrawToScreenFBO()) {
