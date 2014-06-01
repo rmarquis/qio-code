@@ -121,6 +121,9 @@ public:
 	virtual void setIsMirror(bool newBIsMirror) {
 
 	}
+	virtual void setPortalDepth(u32 portalDepth) {
+
+	}
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {
 
 	}

@@ -381,6 +381,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	float timeNowSeconds;
 	bool isMirror;
+	u32 portalDepth;
 	bool bRendererMirrorThisFrame;
 	int r_shadows;
 	// for glColorMask changes
@@ -803,7 +804,8 @@ public:
 			if(prevCullType == CT_TWO_SIDED) {
 				glEnable(GL_CULL_FACE);
 			}
-			if(isMirror) {
+			//if(isMirror) {
+			if(portalDepth % 2 == 1) {
 				// swap CT_FRONT with CT_BACK for mirror views
 				if(cullType == CT_BACK_SIDED) {
 					glCullFace(GL_FRONT);
@@ -2590,6 +2592,9 @@ drawOnlyLightmap:
 		// force cullType reset, because mirror views
 		// must have CT_BACK with CT_FRONT swapped
 		this->prevCullType = CT_NOT_SET;
+	}
+	virtual void setPortalDepth(u32 nPortalDepth) {
+		portalDepth = nPortalDepth;
 	}
 	// used eg. for mirrors
 	virtual void setPortalClipPlane(const class plane_c &pl, bool bEnabled) {

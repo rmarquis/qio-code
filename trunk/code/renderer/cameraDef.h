@@ -44,11 +44,13 @@ class cameraDef_c {
 	bool bIsPortal;
 	bool bIsMirror;
 	plane_c portalPlane;
+	u32 portalDepth;
 public:
 	cameraDef_c() {
 		thirdPersonRendering = false;
 		bIsPortal = false;
 		bIsMirror = false;
+		portalDepth = 0;
 	}
 	void setup(const vec3_c &newOrigin, const axis_c &newAxis, const projDef_s &pd, bool bThirdPersonRendering = false) {
 		origin = newOrigin;
@@ -72,9 +74,13 @@ public:
 		// add epsilon value so mirrors don't blink
 		portalPlane.addDist(0.1f);
 		bIsPortal = true;
+		portalDepth++;
 	}
 	void setIsMirror(bool newBIsMirror) {
 		bIsMirror = newBIsMirror;
+	}
+	u32 getPortalDepth() const {
+		return portalDepth;
 	}
 
 	bool isThirdPerson() const {

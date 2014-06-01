@@ -40,6 +40,8 @@ static aCvar_c rf_debugMaterialNeedsCPUCheck("rf_debugMaterialNeedsCPUCheck","0"
 static aCvar_c rf_portalOnly("rf_portalOnly","0");
 static aCvar_c rf_skipMirrorAndPortalSubViews("rf_skipMirrorAndPortalSubViews","0");
 static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipassRendering","0");
+static aCvar_c rf_maxPortalDepth("rf_maxPortalDepth","3");
+
 // it's in rf_proc.cpp
 extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
 
@@ -119,6 +121,8 @@ void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
 	rb->setupProjection3D(&rf_camera.getProjDef());
 	rb->setup3DView(rf_camera.getOrigin(), rf_camera.getAxis());
 	rb->setIsMirror(rf_camera.isMirror());
+	// for recursive mirror/portal views
+	rb->setPortalDepth(rf_camera.getPortalDepth());
 	rb->setPortalClipPlane(rf_camera.getPortalPlane(),rf_camera.isPortal());
 	// issue drawcalls to the renderer backend
 	RF_IssueDrawCalls(firstDrawCall,numDrawCalls);
@@ -200,7 +204,8 @@ void RF_Generate3DSubView() {
 	// check the drawcalls for mirror/portals surfaces.
 	// this might call another RF_Generate3DSubView
 	// instance recursively
-	if(rf_camera.isPortal() == false) {
+	//if(rf_camera.isPortal() == false) {
+	if(rf_camera.getPortalDepth() < rf_maxPortalDepth.getInt()) {
 		if(rf_skipMirrorAndPortalSubViews.getInt()==0) {
 			RF_CheckDrawCallsForMirrorsAndPortals(firstDrawCall,numDrawCalls);
 		}

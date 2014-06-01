@@ -520,7 +520,7 @@ void R_MirrorAxis(const axis_c &in, const axis_c &surfaceAxis, const axis_c &cam
 void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) {
 	// drawcalls are already sorted
 	// search for DCS_PORTAL
-	for(u32 i = firstDrawCall; i < numDrawCalls; i++) {
+	for(u32 i = firstDrawCall; i < firstDrawCall+numDrawCalls; i++) {
 		drawCall_c &dc = rf_drawCalls.getArray()[i];
 		if(dc.sort > DCS_PORTAL) {
 			return; // dont have to check any more
