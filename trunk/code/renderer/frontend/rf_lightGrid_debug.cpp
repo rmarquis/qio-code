@@ -44,6 +44,8 @@ r_surface_c rf_lightGridDebugSurface;
 //	}
 //}
 
+
+
 void CalcVertexDirLighting(rVertexBuffer_c &verts, const vec3_c &dir, const vec3_c &color) {
 	for(u32 i = 0; i < verts.size(); i++) {
 		rVert_c &v = verts[i];

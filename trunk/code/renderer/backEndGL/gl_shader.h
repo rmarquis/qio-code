@@ -85,9 +85,11 @@ friend class rbSDLOpenGL_c;
 	int u_sunColor;
 	// for 2D blur
 	int u_blurScale;
+	int u_averageScreenLuminance;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
+	int sColorMap2; // uses the same slot as lightmap
 	int sLightMap; // Quake3 bsp lightmap
 	int sBumpMap; // Doom3-style bumpmap (normalmap)
 	int sHeightMap; // heightmap (not used directly in Doom3)

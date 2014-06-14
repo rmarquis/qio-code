@@ -114,7 +114,8 @@ static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
 static aCvar_c rb_skipMirrorMaterials("rb_skipMirrorMaterials","0");
 static aCvar_c gl_ignoreClipPlanes("gl_ignoreClipPlanes","0");
 static aCvar_c gl_clipPlaneEpsilon("gl_clipPlaneEpsilon","0");
-static aCvar_c rb_blurScale("rb_blurScale","1.0");
+static aCvar_c rb_blurScale("rb_blurScale","0.2");
+static aCvar_c rb_forceBloom("rb_forceBloom","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -158,6 +159,12 @@ public:
 	}
 	u32 getTextureHandle() {
 		return textureHandle;
+	}
+	u32 getW() const {
+		return w;
+	}
+	u32 getH() const {
+		return h;
 	}
 };
 // depth-only FBO
@@ -337,6 +344,10 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	fboDepth_c depthFBO;
 	fboScreen_c screenFBO;
 	fboScreen_c screenFBO2;
+	// 1/4 size of the screen...
+	fboScreen_c screenFBO_quarter;
+	fboScreen_c screenFBO_64x64;
+	float averageScreenLuminance;
 	bool bDrawingSky;
 	u32 viewPortWidth;
 	u32 viewPortHeight;
@@ -1230,8 +1241,8 @@ public:
 			savedCameraProjection = projectionMatrix;
 			savedCameraView = worldModelMatrix;
 
-			////float size = 1000.f;
-			///float sizeZ = 1000.f;
+			float size = 1000.f;
+			float sizeZ = 1000.f;
 			////sl->generateSunShadowMapDrawCalls();
 #if 0
 			axis_c ax;
@@ -1249,7 +1260,7 @@ public:
 			sunLightView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
 #endif
 
-#if 0
+#if 1
 			
 			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
 #else
@@ -1308,6 +1319,9 @@ public:
 			glUseProgram(newShader->getGLHandle());
 			if(newShader->sColorMap != -1) {
 				glUniform1i(newShader->sColorMap,0);
+			}
+			if(newShader->sColorMap2 != -1) {
+				glUniform1i(newShader->sColorMap2,1);
 			}
 			if(newShader->sLightMap != -1) {
 				glUniform1i(newShader->sLightMap,1);
@@ -1415,6 +1429,9 @@ public:
 			}
 			if(newShader->u_blurScale != -1) {
 				glUniform1f(newShader->u_blurScale,getBlurScale());
+			}
+			if(newShader->u_averageScreenLuminance != -1) {
+				glUniform1f(newShader->u_averageScreenLuminance,getAverageScreenLuminance());
 			}
 		}
 	}
@@ -2287,6 +2304,9 @@ drawOnlyLightmap:
 	float getBlurScale() const {
 		return rb_blurScale.getFloat();
 	}
+	float getAverageScreenLuminance() const {
+		return averageScreenLuminance;
+	}
 	virtual void beginFrame() {
 		if(shouldDrawToScreenFBO()) {
 			screenFBO.create(this->viewPortWidth,this->viewPortHeight);
@@ -2358,6 +2378,58 @@ drawOnlyLightmap:
 			glVertex2f(getWinWidth(), 0);
 		glEnd();
 	}
+	void calculateLuminance(float &min, float &max, float &avg) {
+#if 1
+		static arraySTD_c<float> image;
+		u32 pixelCount = viewPortWidth * viewPortHeight;
+		u32 componentCount = pixelCount * 4;
+		if(componentCount > image.size()) {
+			image.resize(componentCount);
+		}
+		glReadPixels(0, 0, viewPortWidth, viewPortHeight, GL_RGBA, GL_FLOAT, image);
+
+		vec3_c lum(0.2125f, 0.7154f, 0.0721f);
+		min = 0.f;
+		float sum = 0.0f;
+		max = 0.0f;
+		for(u32 i = 0; i < componentCount; i += 4) {
+			const vec3_c *col = (const vec3_c*)(&image[i]);
+
+			float luminance = col->dotProduct(lum) + 0.0001f;
+			if(luminance > max)
+				max = luminance;
+
+			sum += log(luminance);
+		}
+		sum /= (pixelCount);
+		avg = exp(sum);
+#else
+		static arraySTD_c<byte> image;
+		u32 pixelCount = viewPortWidth * viewPortHeight;
+		u32 componentCount = pixelCount * 4;
+		if(componentCount > image.size()) {
+			image.resize(componentCount);
+		}
+		glReadPixels(0, 0, viewPortWidth, viewPortHeight, GL_RGBA, GL_BYTE, image);
+
+		vec3_c lum(0.2125f, 0.7154f, 0.0721f);
+		min = 0.f;
+		float sum = 0.0f;
+		max = 0.0f;
+		for(u32 i = 0; i < componentCount; i += 4) {
+			vec3_c col(image[i],image[i+1],image[i+2]);
+			col *= (1.f/255.f);
+
+			float luminance = col.dotProduct(lum) + 0.0001f;
+			if(luminance > max)
+				max = luminance;
+
+			sum += log(luminance);
+		}
+		sum /= (pixelCount);
+		avg = exp(sum);
+#endif
+	}
 	virtual void setup2DView() {		
 		stopDrawingShadowVolumes();
 		bindShader(0);
@@ -2366,6 +2438,31 @@ drawOnlyLightmap:
 		disablePortalClipPlane();
 		setIsMirror(false);
 
+#if 0
+		screenFBO_64x64.create(64,64);
+		
+		u32 curFBO = boundFBO;
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, curFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, screenFBO_64x64.getFBOHandle());
+		glBlitFramebufferEXT(0, 0, screenFBO.getW(),screenFBO.getH(),
+								0, 0, screenFBO_64x64.getW(),screenFBO_64x64.getH(),
+								GL_COLOR_BUFFER_BIT,
+								GL_LINEAR);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+
+		bindFBO(screenFBO_quarter.getFBOHandle());
+		setGLViewPort(screenFBO_64x64.getW(),screenFBO_64x64.getH());
+
+		float lMin, lMax, lAvg;
+		calculateLuminance(lMin,lMax,lAvg);
+
+		bindFBO(curFBO);
+	
+		g_core->Print("Max %f, avg %f\n",lMax,lAvg);
+
+		averageScreenLuminance = lAvg;
+#endif
 		setGLViewPort(getWinWidth(),getWinHeight());
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -2386,25 +2483,71 @@ drawOnlyLightmap:
 
 		if(isUsingBlur() && boundFBO) {
 			glslPermutationFlags_s p;
-			p.bHorizontalPass = true;
-			glShader_c *sh = GL_RegisterShader("blur",&p);
-			if(sh) {
-				bindShader(sh);
-			}
-			screenFBO2.create(this->viewPortWidth,this->viewPortHeight);
-			bindFBO(screenFBO2.getFBOHandle());
 
-			bindTex(0,screenFBO.getTextureHandle());
-			drawFullScreenQuad();
+			if(rb_forceBloom.getInt() == 0) {
+				p.bHorizontalPass = true;
+				glShader_c *sh = GL_RegisterShader("blur",&p);
+				if(sh) {
+					bindShader(sh);
+				}
+				screenFBO2.create(this->viewPortWidth,this->viewPortHeight);
+				bindFBO(screenFBO2.getFBOHandle());
 
-			p.bHorizontalPass = false;
-			sh = GL_RegisterShader("blur",&p);
-			if(sh) {
-				bindShader(sh);
+				bindTex(0,screenFBO.getTextureHandle());
+				drawFullScreenQuad();
+
+				p.bHorizontalPass = false;
+				sh = GL_RegisterShader("blur",&p);
+				if(sh) {
+					bindShader(sh);
+				}
+				bindFBO(0);
+				bindTex(0,screenFBO2.getTextureHandle());
+				drawFullScreenQuad();
+			} else {
+				screenFBO2.create(this->viewPortWidth,this->viewPortHeight);
+				screenFBO_quarter.create(this->viewPortWidth/4,this->viewPortHeight/4);
+				
+				glBindFramebufferEXT(GL_READ_FRAMEBUFFER, screenFBO.getFBOHandle());
+				glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, screenFBO_quarter.getFBOHandle());
+				glBlitFramebufferEXT(0, 0, screenFBO.getW(),screenFBO.getH(),
+										0, 0, screenFBO_quarter.getW(),screenFBO_quarter.getH(),
+										GL_COLOR_BUFFER_BIT,
+										GL_LINEAR);
+				glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
+				glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+
+				glShader_c *sh = GL_RegisterShader("bloom",&p);
+				if(sh) {
+					bindShader(sh);
+				}
+				bindFBO(screenFBO2.getFBOHandle());
+				bindTex(0,screenFBO.getTextureHandle());
+				bindTex(1,screenFBO_quarter.getTextureHandle());
+				drawFullScreenQuad();
+				bindTex(1,0);
+
+				
+				p.bHorizontalPass = true;
+				sh = GL_RegisterShader("blur",&p);
+				if(sh) {
+					bindShader(sh);
+				}
+				bindFBO(screenFBO.getFBOHandle());
+
+				bindTex(0,screenFBO2.getTextureHandle());
+				drawFullScreenQuad();
+
+				p.bHorizontalPass = false;
+				sh = GL_RegisterShader("blur",&p);
+				if(sh) {
+					bindShader(sh);
+				}
+				bindFBO(0);
+				bindTex(0,screenFBO.getTextureHandle());
+				drawFullScreenQuad();
 			}
-			bindFBO(0);
-			bindTex(0,screenFBO2.getTextureHandle());
-			drawFullScreenQuad();
+
 		}
 	}
 	matrix_c currentModelViewMatrix;
@@ -3079,7 +3222,8 @@ bool fboScreen_c::create(u32 newW, u32 newH) {
 	// switch back to window-system-provided framebuffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	return false;
-}
+}	
+
 void fboScreen_c::destroy() {
 	if(textureHandle) {
 		glDeleteTextures(1,&textureHandle);

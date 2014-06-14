@@ -305,6 +305,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->handle = shader;
 	// precache uniform locations
 	ret->sColorMap = glGetUniformLocation(shader,"colorMap");
+	ret->sColorMap2 = glGetUniformLocation(shader,"colorMap2");
 	ret->sLightMap = glGetUniformLocation(shader,"lightMap");
 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
 	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
@@ -330,6 +331,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_sunDirection = glGetUniformLocation(shader,"u_sunDirection");
 	ret->u_sunColor = glGetUniformLocation(shader,"u_sunColor");
 	ret->u_blurScale = glGetUniformLocation(shader,"u_blurScale");
+	ret->u_averageScreenLuminance = glGetUniformLocation(shader,"u_averageScreenLuminance");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

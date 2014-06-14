@@ -262,6 +262,14 @@
 			Name="shaders"
 			>
 			<File
+				RelativePath="..\..\game\baseqio\glsl\bloom.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\bloom.vert"
+				>
+			</File>
+			<File
 				RelativePath="..\..\game\baseqio\glsl\blur.frag"
 				>
 			</File>

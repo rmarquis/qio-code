@@ -82,6 +82,7 @@ void Light::setKeyValue(const char *key, const char *value) {
 			this->myEdict->s->lightFlags &= ~LF_HASBSPLIGHTING;
 		}
 	} else if(!stricmp(key,"target")) {
+		// Q3 spotlight target. Used to determine spot direction/range
 		postEvent(0,"light_updateTarget");
 		BaseEntity::setKeyValue(key,value);
 	//} else if(!stricmp(key,"forcespotlight")) {
