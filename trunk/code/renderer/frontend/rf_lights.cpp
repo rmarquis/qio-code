@@ -45,7 +45,7 @@ static aCvar_c rf_verboseDeltaLightInteractionsUpdate("rf_verboseDeltaLightInter
 static aCvar_c rf_verboseAddLightInteractionsDrawCalls("rf_verboseAddLightInteractionsDrawCalls","0");
 static aCvar_c light_batchBSPInteractions("light_batchBSPInteractions","1");
 static aCvar_c light_printBSPBatchingStats("light_printBSPBatchingStats","0");
-
+static aCvar_c light_spotLights_printCulledEntities("light_spotLights_printCulledEntities","0");
 
 void entityInteraction_s::clear() {
 	ent = 0;
@@ -131,6 +131,12 @@ void rLightImpl_c::recalcSpotLightCos() {
 	spotLightDir = this->spotLightTarget - this->pos;
 	float d = spotLightDir.normalize2();
 	this->spotLightCos = d / sqrt(Square(d)+Square(this->spotRadius));
+	// calculate spot light angle
+	float spotLightFOV = 2.0f * RAD2DEG(acos(this->spotLightCos));
+	axis_c ax;
+	ax[0] = spotLightDir;
+	spotLightDir.makeNormalVectors(ax[1],ax[2]);
+	spotLightFrustum.setup(spotLightFOV,spotLightFOV,radius,ax,this->getOrigin());
 }
 occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
 	if(oq) {
@@ -278,7 +284,29 @@ void rLightImpl_c::removeEntityFromInteractionsList(class rEntityImpl_c *ent) {
 void rLightImpl_c::recalcLightInteractionsWithDynamicEntities() {
 #if 1
 	arraySTD_c<rEntityImpl_c*> ents;
-	RFE_BoxEntities(this->absBounds,ents);
+	if(lightType == LT_SPOTLIGHT) {
+		u32 c_lightEntityInteractionsCulledBySpotLightFrustum = 0;
+		// for spot lights use box and then spot frustum
+		// First get box entities
+		arraySTD_c<rEntityImpl_c*> boxEnts;
+		RFE_BoxEntities(this->absBounds,boxEnts);
+		// then check them against frustum
+		for(u32 i = 0; i < boxEnts.size(); i++) {
+			rEntityImpl_c *e = boxEnts[i];
+			if(spotLightFrustum.cull(e->getBoundsABS()) == CULL_OUT) {
+				c_lightEntityInteractionsCulledBySpotLightFrustum++;
+				continue;
+			}
+			ents.push_back(e);
+		}
+		if(light_spotLights_printCulledEntities.getInt()) {
+			g_core->Print("rLightImpl_c::recalcLightInteractionsWithDynamicEntities: %i entities culled by spot light frustum\n",
+				c_lightEntityInteractionsCulledBySpotLightFrustum);
+		}
+	} else {
+		// for point lights just get all entities in box
+		RFE_BoxEntities(this->absBounds,ents);
+	}
 	if(entityInteractions.size() < ents.size()) {
 		entityInteractions.resize(ents.size());
 	}

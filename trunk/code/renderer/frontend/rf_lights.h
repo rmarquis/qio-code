@@ -175,6 +175,9 @@ class rLightImpl_c : public rLightAPI_i {
 	class occlusionQueryAPI_i *oq;
 	bool bCameraInside; // true if camera eye is inside light sphere
 
+	// for spot lights
+	frustum_c spotLightFrustum;
+
 	// for shadow mapping
 	int shadowMapW;
 	int shadowMapH;
