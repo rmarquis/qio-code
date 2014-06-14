@@ -137,6 +137,10 @@ void rLightImpl_c::recalcSpotLightCos() {
 	ax[0] = spotLightDir;
 	spotLightDir.makeNormalVectors(ax[1],ax[2]);
 	spotLightFrustum.setup(spotLightFOV,spotLightFOV,radius,ax,this->getOrigin());
+	// light view matrix
+	spotLightView.setupLookAtRH(this->pos,spotLightDir,ax.getUp());
+	// light projection matrix
+	lightProj.setupProjectionExt(90.f, getShadowMapW(), getShadowMapH(), 1.f, this->radius);
 }
 occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
 	if(oq) {
@@ -233,7 +237,7 @@ void rLightImpl_c::recalcShadowVolumeOfStaticInteractions() {
 void rLightImpl_c::refreshIntersection(entityInteraction_s &in) {
 	if(RF_IsUsingShadowVolumes()) {
 		if(in.ent->isSprite()) {
-			printf("skipping sprite..\n");
+			g_core->Print("skipping sprite..\n");
 			if(in.shadowVolume) {
 				in.shadowVolume = 0;
 				delete in.shadowVolume;
@@ -577,9 +581,10 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 	rf_currentShadowMapH = getShadowMapH();
 	rf_bDrawOnlyOnDepthBuffer = true;
 	bool bUseBatches = light_batchBSPInteractions.getInt();
-	for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {	
-		rf_currentShadowMapCubeSide = side;
-		const frustum_c &sideFrustum = sideFrustums[side];
+	if(isSpotLight()) {
+		// spotlights are not using shadow cube maps,
+		// they are using only single shadow map
+		rf_currentShadowMapCubeSide = 0;
 		for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
 			staticSurfInteraction_s &sIn = this->staticInteractions[j];
 			if(bUseBatches && sIn.batchIndex != -1)
@@ -593,7 +598,27 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 		}
 		for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
 			entityInteraction_s &eIn = this->entityInteractions[j];
-			RFE_AddEntity(eIn.ent,&sideFrustum,true);
+			RFE_AddEntity(eIn.ent,0,true);
+		}
+	} else {
+		for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {	
+			rf_currentShadowMapCubeSide = side;
+			const frustum_c &sideFrustum = sideFrustums[side];
+			for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
+				staticSurfInteraction_s &sIn = this->staticInteractions[j];
+				if(bUseBatches && sIn.batchIndex != -1)
+					continue;
+				// add static surf interaction for shadow mapping
+				addStaticSurfInteractionDrawCall(sIn,true);
+			}		
+			// add static batches
+			if(bUseBatches) {
+				addBatchedStaticInteractionDrawCalls();
+			}
+			for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
+				entityInteraction_s &eIn = this->entityInteractions[j];
+				RFE_AddEntity(eIn.ent,&sideFrustum,true);
+			}
 		}
 	}
 	rf_bDrawOnlyOnDepthBuffer = false;

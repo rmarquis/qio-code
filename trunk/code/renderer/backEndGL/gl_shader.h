@@ -49,6 +49,7 @@ struct glslPermutationFlags_s {
 	bool enableShadowMappingBlur; // #define ENABLE_SHADOW_MAPPING_BLUR
 	bool useShadowCubeMap; // #define USE_SHADOW_CUBEMAP
 	bool isTwoSided; // #define MATERIAL_TWO_SIDED
+	bool spotLightShadowMapping; // #define SHADOW_MAPPING_SPOTLIGHT
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
 	bool hasSunLight; // #define HAS_SUNLIGHT
@@ -103,6 +104,7 @@ friend class rbSDLOpenGL_c;
 	// for spotlights
 	int u_lightDir;
 	int u_spotLightMaxCos;
+	int u_spotLightShadowMap;
 	// for directional shadow mapping (sun)
 	int u_directionalShadowMap;
 

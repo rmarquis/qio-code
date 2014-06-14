@@ -2631,6 +2631,14 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 		class mtrAPI_i *mat = getSurfaceMaterial(surfaceIndex);
 		if(mat->isNeededForLightPass() == false)
 			continue;
+		if(l->isSpotLight()) {
+			const bspSurf_s &sf = surfs[surfaceIndex];
+			const aabb &sfBounds = sf.getBounds();
+			const frustum_c &fr = l->getSpotLightFrustum();
+			if(fr.cull(sfBounds) == CULL_OUT) {
+				continue;
+			}
+		}
 		l->addBSPSurfaceInteraction(surfaceIndex);;
 	}
 }

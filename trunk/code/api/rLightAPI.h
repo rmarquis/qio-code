@@ -45,6 +45,9 @@ public:
 	virtual const class vec3_c &getSpotLightDir() const = 0;
 	virtual float getSpotRadius() const = 0;
 	virtual float getSpotLightMaxCos() const = 0;
+	virtual bool isSpotLight() const = 0;
+	virtual const class frustum_c &getSpotLightFrustum() const = 0;
+	virtual const class matrix_c &getSpotLightView() const = 0;
 
 	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
 	virtual bool getBCameraInside() const = 0;

@@ -177,6 +177,7 @@ class rLightImpl_c : public rLightAPI_i {
 
 	// for spot lights
 	frustum_c spotLightFrustum;
+	matrix_c spotLightView;
 
 	// for shadow mapping
 	int shadowMapW;
@@ -215,7 +216,15 @@ public:
 	virtual const frustum_c &getSMSideFrustum(u32 sideNum) const {
 		return sideFrustums[sideNum];
 	}
-
+	virtual bool isSpotLight() const {
+		return (lightType == LT_SPOTLIGHT);
+	}
+	virtual const class frustum_c &getSpotLightFrustum() const {
+		return spotLightFrustum;
+	}
+	virtual const matrix_c &getSpotLightView() const {
+		return spotLightView;
+	}
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();
 	void recalcStaticInteractionBatches();

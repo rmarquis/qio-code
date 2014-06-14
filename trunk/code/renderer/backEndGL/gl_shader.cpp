@@ -186,6 +186,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.isTwoSided) {
 		out.append("#define MATERIAL_TWO_SIDED\n");
 	}
+	if(p.spotLightShadowMapping) {
+		out.append("#define SHADOW_MAPPING_SPOTLIGHT\n");
+	}
 	//if(p.hasDoom3AlphaTest) {
 	//	out.append("#define HAS_DOOM3_ALPHATEST\n");
 	//}
@@ -322,6 +325,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
 	ret->u_shadowCubeMap = glGetUniformLocation(shader,"shadowCubeMap");
 	ret->u_directionalShadowMap = glGetUniformLocation(shader,"directionalShadowMap");
+	ret->u_spotLightShadowMap = glGetUniformLocation(shader,"spotLightShadowMap");
 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");

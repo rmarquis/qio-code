@@ -339,8 +339,10 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int curCubeMapSide;
 	int curShadowMapW;
 	int curShadowMapH;
-	depthCubeFBOs_c depthCubeFBOs;
-	depthCubeMap_c depthCubeMap;
+	// for point light shadow maps
+	depthCubeFBOs_c depthCubeFBOs; //6x depth FBO
+	depthCubeMap_c depthCubeMap; // depth cubemap
+	// for spotlight or sunlight (directional light)
 	fboDepth_c depthFBO;
 	fboScreen_c screenFBO;
 	fboScreen_c screenFBO2;
@@ -938,24 +940,32 @@ public:
 		}
 		if(this->curCubeMapSide == -1) {
 			// ensure that FBO is ready
-			if(rb_useDepthCubeMap.getInt()) {
-				//if(1) {
-				//	depthCubeMap.destroy();
-				//}
-				depthCubeMap.create(curShadowMapW,curShadowMapH);
+			if(curLight->isSpotLight()) {
+				depthFBO.create(curShadowMapW,curShadowMapH);
 			} else {
-				//if(1) {
-				//	depthCubeFBOs.destroy();
-				//}
-				depthCubeFBOs.create(curShadowMapW,curShadowMapH);
+				if(rb_useDepthCubeMap.getInt()) {
+					//if(1) {
+					//	depthCubeMap.destroy();
+					//}
+					depthCubeMap.create(curShadowMapW,curShadowMapH);
+				} else {
+					//if(1) {
+					//	depthCubeFBOs.destroy();
+					//}
+					depthCubeFBOs.create(curShadowMapW,curShadowMapH);
+				}
 			}
 		}
 		// bind the FBO
-		if(rb_useDepthCubeMap.getInt()) {
-			bindFBO(depthCubeMap.getHandle());				
-			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+iCubeSide, depthCubeMap.getTextureHandle(), 0);
+		if(curLight->isSpotLight()) {
+			bindFBO(depthFBO.getFBOHandle());	
 		} else {
-			bindFBO(depthCubeFBOs.getSideFBOHandle(iCubeSide));	
+			if(rb_useDepthCubeMap.getInt()) {
+				bindFBO(depthCubeMap.getHandle());				
+				glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+iCubeSide, depthCubeMap.getTextureHandle(), 0);
+			} else {
+				bindFBO(depthCubeFBOs.getSideFBOHandle(iCubeSide));	
+			}
 		}
 		// set viewport
 		setGLViewPort(curShadowMapW,curShadowMapH);
@@ -973,12 +983,13 @@ public:
 		}
 
 		// set the light view matrices
-		const class matrix_c &lightView = curLight->getSMSideView(iCubeSide);
-		worldModelMatrix = lightView;
-	//	worldModelMatrix.toGL();
-
-		const class matrix_c &lightProj = curLight->getSMLightProj();
-		projectionMatrix = lightProj;
+		if(curLight->isSpotLight()) {
+			worldModelMatrix = curLight->getSpotLightView();
+			projectionMatrix = curLight->getSMLightProj();
+		} else {
+			worldModelMatrix = curLight->getSMSideView(iCubeSide);
+			projectionMatrix = curLight->getSMLightProj();
+		}
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glLoadMatrixf(projectionMatrix);
@@ -1378,27 +1389,37 @@ public:
 					glUniform1f(newShader->u_spotLightMaxCos,curLight->getSpotLightMaxCos());
 				}
 				if(r_shadows == 2) {	
-					if(rb_useDepthCubeMap.getInt()) {
-						selectTex(3);
-						glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
-						glUniform1i(newShader->u_shadowCubeMap,3);
+					if(curLight->isSpotLight()) {
+						matrix_c lProj = curLight->getSMLightProj();;
+						matrix_c lView = curLight->getSpotLightView();
+						matrix_c res = rb_shadowMappingBias * lProj * lView * entityMatrix;
+
+						u32 texSlot = 1;
+						setTextureMatrixCustom(texSlot,res);
+
+						u32 slot = 3;
+						bindTex(slot,depthFBO.getTextureHandle());
+						glUniform1i(newShader->u_spotLightShadowMap,slot);
 					} else {
-						
-						for(u32 i = 0; i < 6; i++) {
-							matrix_c lProj = curLight->getSMLightProj();;
-							matrix_c lView = curLight->getSMSideView(i);
+						if(rb_useDepthCubeMap.getInt()) {
+							selectTex(3);
+							glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
+							glUniform1i(newShader->u_shadowCubeMap,3);
+						} else {
+							for(u32 i = 0; i < 6; i++) {
+								matrix_c lProj = curLight->getSMLightProj();;
+								matrix_c lView = curLight->getSMSideView(i);
 
-							// FIXME: the entity offset calculated here is wrong... 
-							// shadows are not displayed correctly on entities
-							matrix_c res = rb_shadowMappingBias * lProj * lView * entityMatrix;
+								matrix_c res = rb_shadowMappingBias * lProj * lView * entityMatrix;
 
 
-							u32 texSlot = 1 + i;
-							setTextureMatrixCustom(texSlot,res);
+								u32 texSlot = 1 + i;
+								setTextureMatrixCustom(texSlot,res);
 
-							u32 slot = 3+i;
-							bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
-							glUniform1i(newShader->u_shadowMap[i],slot);
+								u32 slot = 3+i;
+								bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
+								glUniform1i(newShader->u_shadowMap[i],slot);
+							}
 						}
 					}
 				}
@@ -2037,7 +2058,11 @@ drawOnlyLightmap:
 					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
 					glslPermutationFlags_s pf;
 					if(r_shadows == 2) {
-						pf.pointLightShadowMapping = true;
+						if(curLight->isSpotLight()) {
+							pf.spotLightShadowMapping = true;
+						} else {
+							pf.pointLightShadowMapping = true;
+						}
 					}
 					if(bumpMap) {
 						pf.hasBumpMap = true;

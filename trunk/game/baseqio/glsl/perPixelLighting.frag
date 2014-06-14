@@ -53,44 +53,7 @@ varying vec3 v_tbnEyeDir;
 #include "reliefMappingRaycast.inc"
 #endif
 
-#ifdef SHADOW_MAPPING_POINT_LIGHT
-uniform mat4 u_entityMatrix;
-#ifdef USE_SHADOW_CUBEMAP
-#ifdef USE_SHADOW_CUBESHADOWSAMPLER
-uniform samplerCubeShadow shadowCubeMap;
-#else
-uniform samplerCube shadowCubeMap;
-#endif
-#else
-varying vec4 shadowCoord0;
-varying vec4 shadowCoord1;
-varying vec4 shadowCoord2;
-varying vec4 shadowCoord3;
-varying vec4 shadowCoord4;
-varying vec4 shadowCoord5;
-uniform sampler2DShadow shadowMap0;
-uniform sampler2DShadow shadowMap1;
-uniform sampler2DShadow shadowMap2;
-uniform sampler2DShadow shadowMap3;
-uniform sampler2DShadow shadowMap4;
-uniform sampler2DShadow shadowMap5;
 
-int cubeSide(vec3 v) {
-	vec3 normals[] = { vec3(1,0,0), vec3(-1,0,0),
-						vec3(0,-1,0), vec3(0,1,0),
-						vec3(0,0,-1), vec3(0,0,1)};	
-	float max = 0;
-	int ret;
-	for(int i = 0; i < 6; i++) {
-		float d = dot(normals[i],v);
-		if(d < max) {
-			max = d;
-			ret = i;
-		}
-	}
-	return ret;
-}
-#endif
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 {
@@ -119,39 +82,72 @@ float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 	return shadow;
 }
 #endif
+
+#ifdef SHADOW_MAPPING_SPOTLIGHT
+	uniform sampler2DShadow spotLightShadowMap;
+	varying vec4 spotShadowCoord;
+	
+	float computeSpotLightShadow() {
+		float shadow = 0;
+		#ifndef ENABLE_SHADOW_MAPPING_BLUR
+			shadow += shadow2DProj(spotLightShadowMap, spotShadowCoord).s;
+		#else
+			shadow += doShadowBlurSample(spotLightShadowMap, spotShadowCoord);
+		#endif
+		return shadow;
+	}
+
+
+#elif defined(SHADOW_MAPPING_POINT_LIGHT)
+uniform mat4 u_entityMatrix;
+#ifdef USE_SHADOW_CUBEMAP
+	#ifdef USE_SHADOW_CUBESHADOWSAMPLER
+		uniform samplerCubeShadow shadowCubeMap;
+	#else
+		uniform samplerCube shadowCubeMap;
+	#endif
+#else
+	varying vec4 shadowCoord0;
+	varying vec4 shadowCoord1;
+	varying vec4 shadowCoord2;
+	varying vec4 shadowCoord3;
+	varying vec4 shadowCoord4;
+	varying vec4 shadowCoord5;
+	uniform sampler2DShadow shadowMap0;
+	uniform sampler2DShadow shadowMap1;
+	uniform sampler2DShadow shadowMap2;
+	uniform sampler2DShadow shadowMap3;
+	uniform sampler2DShadow shadowMap4;
+	uniform sampler2DShadow shadowMap5;
+
+	int cubeSide(vec3 v) {
+		vec3 normals[] = { vec3(1,0,0), vec3(-1,0,0),
+							vec3(0,-1,0), vec3(0,1,0),
+							vec3(0,0,-1), vec3(0,0,1)};	
+		float max = 0;
+		int ret;
+		for(int i = 0; i < 6; i++) {
+			float d = dot(normals[i],v);
+			if(d < max) {
+				max = d;
+				ret = i;
+			}
+		}
+		return ret;
+	}
+#endif
 uniform vec3 u_viewOrigin;
 float computeShadow(vec3 lightToVertDirection) {
 	float shadow = 0.0;
 #ifdef USE_SHADOW_CUBEMAP
 #ifdef USE_SHADOW_CUBESHADOWSAMPLER
-	//float depth = 1.0/gl_FragCoord.w;
-	// TODO: compute depth here, we need to compare it with shadowmap value
-#if 1
-	float depth = 1.0; 
-#else
-	//float z_far=gl_DepthRange.far;
-	//float z_near=gl_DepthRange.near;
-	
-	//vec3 abs_vec = abs(lightToVertDirection);
-	//float local_z_comp = max(abs_vec .x, max(abs_vec .y, abs_vec .z));
-	//float norm_z_comp = (z_far + z_near) /
-	//	(z_far - z_near) - (2 * z_far * z_near) / (z_far - z_near) / local_z_comp;
-	//float depth = (norm_z_comp + 1.0) * 0.5 + 0.2;
-#endif
 	vec4 res = shadowCube( shadowCubeMap, vec4(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z,depth) );
 	shadow = res.z;
-	//shadow = 0;
 #else
 	float shadowMapDist = textureCube(shadowCubeMap,vec3(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z)).x;
 	float currentLenght = length(lightToVertDirection);
-	//if(currentLenght < 150)
-	//	return 0.0;
-	//	return 1;
 	shadowMapDist *= u_lightRadius;
-	
-	//if(shadowMapDist < 150)
-	//	return 0.0;
-	//	return 1;
+
 	float eps = 2.0;
 	if(shadowMapDist + eps < currentLenght) {
 		shadow = 0.0;
@@ -282,6 +278,8 @@ void main() {
 	vec4 vertWorld = (u_entityMatrix) * vec4(v_vertXYZ,1);
 	vec4 lightToVert_world = lightWorld - vertWorld;
 	float shadow = computeShadow(lightToVert_world.xyz);
+#elif defined(SHADOW_MAPPING_SPOTLIGHT)
+	float shadow = computeSpotLightShadow();
 #else
 	float shadow = 1.0;
 #endif

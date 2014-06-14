@@ -26,7 +26,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 // shader varying variables
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
-#ifdef SHADOW_MAPPING_POINT_LIGHT
+#ifdef SHADOW_MAPPING_SPOTLIGHT
+varying vec4 spotShadowCoord;
+#elif defined(SHADOW_MAPPING_POINT_LIGHT)
 // used for shadow lookup
 varying vec4 shadowCoord0;
 varying vec4 shadowCoord1;
@@ -68,6 +70,9 @@ void main() {
 	shadowCoord3 = gl_TextureMatrix[4] * gl_Vertex;
 	shadowCoord4 = gl_TextureMatrix[5] * gl_Vertex;
 	shadowCoord5 = gl_TextureMatrix[6] * gl_Vertex;
+#endif
+#ifdef SHADOW_MAPPING_SPOTLIGHT
+	spotShadowCoord = gl_TextureMatrix[1] * gl_Vertex;
 #endif
 	gl_Position = ftransform();
 	// this is needed here for GL_CLIP_PLANE0 to work.
