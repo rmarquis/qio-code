@@ -50,6 +50,8 @@ struct glslPermutationFlags_s {
 	bool useShadowCubeMap; // #define USE_SHADOW_CUBEMAP
 	bool isTwoSided; // #define MATERIAL_TWO_SIDED
 	bool spotLightShadowMapping; // #define SHADOW_MAPPING_SPOTLIGHT
+	bool debug_showSpotLightShadows; // #define DEBUG_SHOW_SPOTLIGHT_SHADOWS
+	bool debug_showPointLightShadows; // #define DEBUG_SHOW_POINTLIGHT_SHADOWS
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
 	bool hasSunLight; // #define HAS_SUNLIGHT

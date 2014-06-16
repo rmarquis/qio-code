@@ -296,7 +296,18 @@ void main() {
 // 		discard;
 // 	}
 // #endif
+
 	// calculate the final color
 	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
 	//gl_FragColor = textureCube(shadowCubeMap,vec3(-lightToVert_world.x,lightToVert_world.y,lightToVert_world.z));
+#if defined(DEBUG_SHOW_SPOTLIGHT_SHADOWS) && defined(SHADOW_MAPPING_SPOTLIGHT)
+	if(shadow < 0.5) {
+		gl_FragColor += vec4(1,0,0,1);
+	}
+#endif
+#if defined(DEBUG_SHOW_POINTLIGHT_SHADOWS) && defined(SHADOW_MAPPING_POINT_LIGHT)
+	if(shadow < 0.5) {
+		gl_FragColor += vec4(0,1,0,1);
+	}
+#endif
 }

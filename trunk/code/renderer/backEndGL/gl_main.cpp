@@ -116,6 +116,8 @@ static aCvar_c gl_ignoreClipPlanes("gl_ignoreClipPlanes","0");
 static aCvar_c gl_clipPlaneEpsilon("gl_clipPlaneEpsilon","0");
 static aCvar_c rb_blurScale("rb_blurScale","0.2");
 static aCvar_c rb_forceBloom("rb_forceBloom","0");
+static aCvar_c rb_showSpotLightShadows("rb_showSpotLightShadows","0");
+static aCvar_c rb_showPointLightShadows("rb_showPointLightShadows","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -2060,8 +2062,10 @@ drawOnlyLightmap:
 					if(r_shadows == 2) {
 						if(curLight->isSpotLight()) {
 							pf.spotLightShadowMapping = true;
+							pf.debug_showSpotLightShadows = rb_showSpotLightShadows.getInt();
 						} else {
 							pf.pointLightShadowMapping = true;
+							pf.debug_showPointLightShadows = rb_showPointLightShadows.getInt();
 						}
 					}
 					if(bumpMap) {

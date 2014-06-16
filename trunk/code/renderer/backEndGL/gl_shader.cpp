@@ -189,6 +189,12 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.spotLightShadowMapping) {
 		out.append("#define SHADOW_MAPPING_SPOTLIGHT\n");
 	}
+	if(p.debug_showSpotLightShadows) {
+		out.append("#define DEBUG_SHOW_SPOTLIGHT_SHADOWS\n");
+	}
+	if(p.debug_showPointLightShadows) {
+		out.append("#define DEBUG_SHOW_POINTLIGHT_SHADOWS\n");
+	}
 	//if(p.hasDoom3AlphaTest) {
 	//	out.append("#define HAS_DOOM3_ALPHATEST\n");
 	//}
