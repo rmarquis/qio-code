@@ -312,6 +312,8 @@ public:
 	void addModelDrawCalls(u32 inlineModelNum);
 	void addBSPSurfaceDrawCall(u32 sfNum);
 	const rIndexBuffer_c *getSingleBSPSurfaceABSIndices(u32 sfNum) const;
+	u32 getSingleBSPSurfaceTrianglesCount(u32 sfNum) const;
+	const class aabb &getSingleBSPSurfaceBounds(u32 sfNum) const;
 	class mtrAPI_i *getSurfaceMaterial(u32 surfNum) const;
 	void addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 	

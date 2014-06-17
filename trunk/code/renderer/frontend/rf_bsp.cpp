@@ -2330,6 +2330,23 @@ const rIndexBuffer_c *rBspTree_c::getSingleBSPSurfaceABSIndices(u32 sfNum) const
 	}
 	return 0;
 }
+u32 rBspTree_c::getSingleBSPSurfaceTrianglesCount(u32 sfNum) const {
+	const bspSurf_s &sf = this->surfs[sfNum];
+	if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES)
+		return sf.sf->absIndexes.getNumTriangles();
+	if(sf.type == BSPSF_BEZIER)
+		return sf.patch->getNumTris();
+	return 0;
+}
+const class aabb &rBspTree_c::getSingleBSPSurfaceBounds(u32 sfNum) const {
+	const bspSurf_s &sf = this->surfs[sfNum];
+	if(sf.type == BSPSF_PLANAR || sf.type == BSPSF_TRIANGLES) {
+		return sf.sf->bounds;
+	} else if(sf.type == BSPSF_BEZIER) {
+		return sf.patch->getBB();
+	}
+	return aabb();
+}
 #include "rf_shadowVolume.h"
 void rBspTree_c::addBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light, class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
 	bspSurf_s &sf = this->surfs[sfNum];

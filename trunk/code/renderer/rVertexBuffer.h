@@ -144,6 +144,9 @@ public:
 			v->normal.normalizeFast();
 		}
 	}
+	const vec3_c &getXYZ(u32 index) const {
+		return data[index].xyz;
+	}
 #ifdef RVERT_STORE_TANGENTS
 	inline void nullTBN() {
 		rVert_c *v = this->getArray();

@@ -234,6 +234,16 @@ const rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum) {
 		return 0;
 	return r_bspTree->getSingleBSPSurfaceABSIndices(sfNum);
 }
+u32 RF_GetSingleBSPSurfaceTrianglesCount(u32 sfNum) {
+	if(r_bspTree == 0)
+		return 0;
+	return r_bspTree->getSingleBSPSurfaceTrianglesCount(sfNum);
+}
+const class aabb &RF_GetSingleBSPSurfaceBounds(u32 sfNum) {
+	if(r_bspTree == 0)
+		return aabb();
+	return r_bspTree->getSingleBSPSurfaceBounds(sfNum);
+}
 class mtrAPI_i *RF_GetSingleBSPSurfaceMaterial(u32 sfNum) {
 	if(r_bspTree == 0)
 		return 0;

@@ -46,7 +46,16 @@ static aCvar_c rf_verboseAddLightInteractionsDrawCalls("rf_verboseAddLightIntera
 static aCvar_c light_batchBSPInteractions("light_batchBSPInteractions","1");
 static aCvar_c light_printBSPBatchingStats("light_printBSPBatchingStats","0");
 static aCvar_c light_spotLights_printCulledEntities("light_spotLights_printCulledEntities","0");
+static aCvar_c light_printCulledShadowMappingPointLightSides("light_printCulledShadowMappingPointLightSides","0");
+static aCvar_c light_printCulledShadowMappingPointLightSideInteractions("light_printCulledShadowMappingPointLightSideInteractions","0");
+static aCvar_c light_printShadowMappingPointLightSideCullingStats("light_printShadowMappingPointLightSideCullingStats","0");
 
+void staticInteractionBatch_c::recalcBounds() {
+	bounds.clear();
+	for(u32 i = 0; i < indices.getNumIndices(); i++) {
+		bounds.addPoint(vertices->getXYZ(indices.getIndex(i)));
+	}
+}
 void entityInteraction_s::clear() {
 	ent = 0;
 	if(shadowVolume) {
@@ -194,11 +203,12 @@ void rLightImpl_c::recalcStaticInteractionBatches() {
 		int batchIndex;
 		if(in.type == SIT_BSP) {
 			const rIndexBuffer_c *indices = RF_GetSingleBSPSurfaceABSIndices(in.bspSurfaceNumber);
+			const rVertexBuffer_c *vertices = RF_GetBSPVertices();
 			if(indices == 0) {
 				batchIndex = -1;
 			} else {
 				mtrAPI_i *mat = RF_GetSingleBSPSurfaceMaterial(in.bspSurfaceNumber);
-				batchIndex = staticBatcher.addSurface(mat,indices);
+				batchIndex = staticBatcher.addSurface(mat,indices,vertices);
 				c_addedSurfaces++;
 			}
 		} else {
@@ -207,6 +217,7 @@ void rLightImpl_c::recalcStaticInteractionBatches() {
 		in.batchIndex = batchIndex;
 	}
 	staticBatcher.uploadIBOs();
+	staticBatcher.recalcBounds();
 	// for test_tree.pk3 light there are 1563 surfaces and (!) 3 batches.
 	if(light_printBSPBatchingStats.getInt()) {
 		g_core->Print("%i surfaces, %i batches\n",c_addedSurfaces,staticBatcher.getNumBatches());
@@ -439,11 +450,29 @@ void rLightImpl_c::addStaticSurfInteractionDrawCall(staticSurfInteraction_s &in,
 		}
 	}
 }
-void rLightImpl_c::addBatchedStaticInteractionDrawCalls() {
+void rLightImpl_c::addBatchedStaticInteractionDrawCalls(const class aabb *sideBB, const class frustum_c *sideFrustum) {
 	// add static batches
 	const rVertexBuffer_c *verts = RF_GetBSPVertices();
 	for(u32 i = 0; i < staticBatcher.getNumBatches(); i++) {
 		const staticInteractionBatch_c *b = staticBatcher.getBatch(i);
+		if(sideBB) {
+			if(sideBB->intersect(b->getBounds())==false) {
+				if(0) {
+					g_core->Print("rLightImpl_c::addBatchedStaticInteractionDrawCalls: batch with %i tris culled by light cube side %i bounds\n",
+						b->getNumTris(),rf_currentShadowMapCubeSide);
+				}
+				continue;
+			}
+		}
+		if(sideFrustum) {
+			if(sideFrustum->cull(b->getBounds())==CULL_OUT) {
+				if(0) {
+					g_core->Print("rLightImpl_c::addBatchedStaticInteractionDrawCalls: batch with %i tris culled by light cube side %i frustum\n",
+						b->getNumTris(),rf_currentShadowMapCubeSide);
+				}
+				continue;
+			}
+		}
 		RF_AddDrawCall(verts,&b->getIndices(),b->getMaterial(),0,b->getMaterial()->getSort(),false);
 	}
 }
@@ -538,6 +567,7 @@ void rLightImpl_c::recalcShadowMappingMatrices() {
 		ax.mat[1] = upVector;
 		ax.mat[2] = ax.mat[1].crossProduct(ax.mat[0]);
 		sideFrustums[side].setupExt(90.f, getShadowMapW(), getShadowMapH(), radius, ax, this->pos);
+		sideFrustums[side].getBounds(sideBounds[side]);
 	}
 //#elif 1			
 //	vec3_c vecs[] = {
@@ -601,24 +631,62 @@ void rLightImpl_c::addShadowMapRenderingDrawCalls() {
 			RFE_AddEntity(eIn.ent,0,true);
 		}
 	} else {
+		u32 c_culledCubeSides = 0;
+		u32 c_staticInteractionsCulledBySideBounds = 0;
+		u32 c_staticInteractionsCulledBySideFrustums = 0;
 		for(u32 side = 0; side < CUBE_SIDE_COUNT; side++) {	
+			const aabb &sideBB = sideBounds[side];
+			// light side bounds VS view camera frustum
+			if(rf_camera.getFrustum().cull(sideBB) == CULL_OUT) {
+				if(light_printCulledShadowMappingPointLightSides.getInt()) {
+					g_core->Print("Side %i of light %i culled by camera frustum VS light side bounds\n",side,this);
+				}
+				c_culledCubeSides++;
+				continue;
+			}
+
 			rf_currentShadowMapCubeSide = side;
 			const frustum_c &sideFrustum = sideFrustums[side];
 			for(u32 j = 0; j < numCurrentStaticInteractions; j++) {
 				staticSurfInteraction_s &sIn = this->staticInteractions[j];
 				if(bUseBatches && sIn.batchIndex != -1)
 					continue;
+				if(sIn.type == SIT_BSP) {
+					// check light side bounds against single interaction bounds
+					const aabb &interactionBB = RF_GetSingleBSPSurfaceBounds(sIn.bspSurfaceNumber);
+					if(sideBB.intersect(interactionBB)==false) {
+						if(light_printCulledShadowMappingPointLightSideInteractions.getInt()) {
+							g_core->Print("rLightImpl_c::addShadowMapRenderingDrawCalls: interaction %i with %i tris culled by light cube side %i bounds\n",
+								j,RF_GetSingleBSPSurfaceTrianglesCount(sIn.bspSurfaceNumber),rf_currentShadowMapCubeSide);
+						}
+						c_staticInteractionsCulledBySideBounds++;
+						continue;
+					}
+					// check light frustum (more expensive) against single interaction bounds
+					if(sideFrustum.cull(interactionBB)==CULL_OUT) {
+						if(light_printCulledShadowMappingPointLightSideInteractions.getInt()) {
+							g_core->Print("rLightImpl_c::addShadowMapRenderingDrawCalls: interaction %i with %i tris culled by light cube side %i frustum\n",
+								j,RF_GetSingleBSPSurfaceTrianglesCount(sIn.bspSurfaceNumber),rf_currentShadowMapCubeSide);
+						}
+						c_staticInteractionsCulledBySideFrustums++;
+						continue;
+					}
+				}
 				// add static surf interaction for shadow mapping
 				addStaticSurfInteractionDrawCall(sIn,true);
 			}		
 			// add static batches
 			if(bUseBatches) {
-				addBatchedStaticInteractionDrawCalls();
+				addBatchedStaticInteractionDrawCalls(&sideBB,&sideFrustum);
 			}
 			for(u32 j = 0; j < numCurrentEntityInteractions; j++) {
 				entityInteraction_s &eIn = this->entityInteractions[j];
 				RFE_AddEntity(eIn.ent,&sideFrustum,true);
 			}
+		}
+		if(light_printShadowMappingPointLightSideCullingStats.getInt()) {
+			g_core->Print("rLightImpl_c::addShadowMapRenderingDrawCalls: [POINT LIGHT]: %i has %i sides culled, %i Sinteractions culled by sideBB, %i SInteractions culled by sideFrustum.\n",
+			this,c_culledCubeSides,c_staticInteractionsCulledBySideBounds,c_staticInteractionsCulledBySideFrustums);
 		}
 	}
 	rf_bDrawOnlyOnDepthBuffer = false;

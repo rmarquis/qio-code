@@ -64,6 +64,11 @@ public:
 	r_bezierPatch_c();
 	~r_bezierPatch_c();
 
+	u32 getNumTris() const {
+		if(sf == 0)
+			return 0;
+		return sf->getNumTris();
+	}
 	void setMaterial(const char *matName);
 
 	inline void setMaterial(class mtrAPI_i *newMat) {

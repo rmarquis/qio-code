@@ -39,6 +39,8 @@ int RF_AddWorldMapDecal(const class vec3_c &pos, const vec3_c &normal, float rad
 void RF_CacheLightWorldInteractions(class rLightImpl_c *l);
 void RF_DrawSingleBSPSurface(u32 sfNum);
 const class rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum);
+u32 RF_GetSingleBSPSurfaceTrianglesCount(u32 sfNum);
+const class aabb &RF_GetSingleBSPSurfaceBounds(u32 sfNum);
 class mtrAPI_i *RF_GetSingleBSPSurfaceMaterial(u32 sfNum);
 const class rVertexBuffer_c *RF_GetBSPVertices();
 const class r_model_c *RF_GetWorldModel();

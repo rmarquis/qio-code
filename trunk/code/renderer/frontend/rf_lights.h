@@ -93,30 +93,40 @@ class staticInteractionBatch_c {
 friend class staticInteractionBatcher_c;
 	rIndexBuffer_c indices;
 	mtrAPI_i *material;
+	const rVertexBuffer_c *vertices;
+	aabb bounds;
 public:
 	mtrAPI_i *getMaterial() const {
 		return material;
 	}
+	u32 getNumTris() const {
+		return indices.getNumTriangles();
+	}
 	const rIndexBuffer_c &getIndices() const {
 		return indices;
 	}
+	const aabb &getBounds() const {
+		return bounds;
+	}
+	void recalcBounds();
 };
 class staticInteractionBatcher_c {
 	arraySTD_c<staticInteractionBatch_c*> batches;
 
-	int findMaterialBatch(class mtrAPI_i *m) const {
+	int findMaterialBatch(class mtrAPI_i *m, const rVertexBuffer_c *vertices) const {
 		for(u32 i = 0; i < batches.size(); i++) {
-			if(batches[i]->material == m)
+			if(batches[i]->material == m && batches[i]->vertices == vertices)
 				return i;
 		}
 		return -1;
 	}
-	staticInteractionBatch_c *registerBatch(class mtrAPI_i *m, int &index) {
-		index = findMaterialBatch(m);
+	staticInteractionBatch_c *registerBatch(class mtrAPI_i *m, int &index, const rVertexBuffer_c *vertices) {
+		index = findMaterialBatch(m,vertices);
 		if(index >= 0)
 			return batches[index];
 		staticInteractionBatch_c *n = new staticInteractionBatch_c;
 		n->material = m;
+		n->vertices = vertices;
 		index = batches.size();
 		batches.push_back(n);
 		return n;
@@ -125,11 +135,16 @@ public:
 	~staticInteractionBatcher_c() {
 		this->clear();
 	}
-	int addSurface(class mtrAPI_i *mat, const rIndexBuffer_c *indices) {
+	int addSurface(class mtrAPI_i *mat, const rIndexBuffer_c *indices, const rVertexBuffer_c *vertices) {
 		int index;
-		staticInteractionBatch_c *b = registerBatch(mat,index);
+		staticInteractionBatch_c *b = registerBatch(mat,index,vertices);
 		b->indices.addIndexBuffer(*indices);
 		return index;
+	}
+	void recalcBounds() {
+		for(u32 i = 0; i < batches.size(); i++) {
+			batches[i]->recalcBounds();
+		}
 	}
 	void uploadIBOs() {
 		for(u32 i = 0; i < batches.size(); i++) {
@@ -185,6 +200,7 @@ class rLightImpl_c : public rLightAPI_i {
 	matrix_c lightProj;
 	matrix_c sideViews[6];
 	frustum_c sideFrustums[6];
+	aabb sideBounds[6];
 
 	void recalcSpotLightCos();
 public:
@@ -241,7 +257,7 @@ public:
 	// forward rendering
 	void addStaticSurfInteractionDrawCall(struct staticSurfInteraction_s &in, bool addingForShadowMapping);
 	void addLightInteractionDrawCalls();
-	void addBatchedStaticInteractionDrawCalls();
+	void addBatchedStaticInteractionDrawCalls(const class aabb *sideBB = 0, const class frustum_c *sideFrustum = 0);
 	// only for stencil shadows
 	void addLightShadowVolumesDrawCalls();
 	// only for shadow mapping
