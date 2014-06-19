@@ -50,8 +50,6 @@ aCvar_c rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls("rf_drawCalls_pr
 aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeDrawCalls","0");
 aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
 aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
-aCvar_c rf_sunShadowMap_boundXY("rf_sunShadowMap_boundXY","1024");
-aCvar_c rf_sunShadowMap_boundZ("rf_sunShadowMap_boundZ","256");
 
 class drawCall_c {
 public:
@@ -77,6 +75,8 @@ public:
 	bool bHasSunLight;
 	vec3_c sunDirection;
 	vec3_c sunColor;
+	// for sun shadow mapping
+	aabb sunBounds;
 	// for directional light shadow mapping
 	bool bDrawingSunShadowMapPass;
 //public:
@@ -98,6 +98,7 @@ int rf_currentShadowMapW;
 int rf_currentShadowMapH;
 //class matrix_c rf_sunProjection;
 //class matrix_c rf_sunMatrix;
+aabb rf_currentSunBounds;
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
@@ -174,6 +175,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	n->cubeMapSide = rf_currentShadowMapCubeSide;
 	n->shadowMapW = rf_currentShadowMapW;
 	n->shadowMapH = rf_currentShadowMapH;
+	n->sunBounds = rf_currentSunBounds;
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
@@ -365,25 +367,6 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 
 	rb->setRShadows(RF_GetShadowingMode());
 
-		aabb sunBounds;
-		aabb worldBounds;
-void RF_GetWorldBounds(class aabb &out);
-void RF_GetSunWorldBounds(class aabb &out);
-		//RF_GetWorldBounds(worldBounds);
-		//RF_GetEntitiesBounds(worldBounds);
-		RF_GetSunWorldBounds(worldBounds);
-		if(worldBounds.isValid() == false) {
-			RF_GetEntitiesBounds(worldBounds);
-		}
-
-		rf_camera.getFrustum().getBounds(sunBounds);
-sunBounds.capTo(worldBounds);
-
-aabb cap;
-vec3_c delta(rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundZ.getFloat());
-cap.fromTwoPoints(rf_camera.getOrigin() + delta,rf_camera.getOrigin()-delta);
-sunBounds.capTo(cap);
-
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
@@ -452,7 +435,7 @@ sunBounds.capTo(cap);
 		}
 		// set cubemap properties before changing model view matrix
 		// but after curLight is set
-		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection,sunBounds);
+		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection,c->sunBounds);
 		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass);
 		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
 		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);

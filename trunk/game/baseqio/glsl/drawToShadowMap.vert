@@ -23,10 +23,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // glsl/drawToShadowMap.vert
 
-uniform mat4 u_entityMatrix;
-varying vec3 v_vertexWorld;
+varying vec3 v_vertXYZ;
 
 void main() {	
 	gl_Position = ftransform();
-	v_vertexWorld = gl_Position.xyz;
+	v_vertXYZ = gl_Position.xyz;
 }

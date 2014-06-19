@@ -41,6 +41,8 @@ static aCvar_c rf_portalOnly("rf_portalOnly","0");
 static aCvar_c rf_skipMirrorAndPortalSubViews("rf_skipMirrorAndPortalSubViews","0");
 static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipassRendering","0");
 static aCvar_c rf_maxPortalDepth("rf_maxPortalDepth","3");
+static aCvar_c rf_sunShadowMap_boundXY("rf_sunShadowMap_boundXY","1024");
+static aCvar_c rf_sunShadowMap_boundZ("rf_sunShadowMap_boundZ","256");
 
 // it's in rf_proc.cpp
 extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
@@ -169,20 +171,26 @@ void RF_Generate3DSubView() {
 			} else {
 				sl->freeSunLightShadowVolumes();
 				if(RF_IsUsingShadowMapping()) {
-					//aabb bb;
-					//RF_GetWorldBounds(bb);
-					//float size = 256.f;
-					//float sizeZ = 1000.f;
-					//rf_sunProjection.setupProjectionOrtho(-size,size,-size,size,1.f,sizeZ);
-					////sl->generateSunShadowMapDrawCalls();
-					//axis_c ax;
-					//vec3_c dir = RF_GetSunDirection();
-					//ax.mat[0] = dir;
-					//ax.mat[1] = ax.mat[0].getPerpendicular();
-					//ax.mat[2].crossProduct(ax.mat[0],ax.mat[1]);
-					//vec3_c offset = dir * sizeZ * 0.5f;
-					//rf_sunMatrix.fromAxisAndOrigin(ax,rf_camera.getOrigin()+offset);
-					//rf_camera.setup(rf_sunMatrix.getOrigin(),ax);
+
+					aabb sunBounds;
+					aabb worldBounds;
+					//RF_GetWorldBounds(worldBounds);
+					//RF_GetEntitiesBounds(worldBounds);
+					RF_GetSunWorldBounds(worldBounds);
+					if(worldBounds.isValid() == false) {
+						RF_GetEntitiesBounds(worldBounds);
+					}
+
+					rf_camera.getFrustum().getBounds(sunBounds);
+					sunBounds.capTo(worldBounds);
+
+					aabb cap;
+					vec3_c delta(rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundZ.getFloat());
+					cap.fromTwoPoints(rf_camera.getOrigin() + delta,rf_camera.getOrigin()-delta);
+					sunBounds.capTo(cap);
+
+					rf_currentSunBounds = sunBounds;
+
 					rf_bDrawingSunShadowMapPass = true;
 					rf_bDrawOnlyOnDepthBuffer = true;
 					RF_AddGenericDrawCalls();

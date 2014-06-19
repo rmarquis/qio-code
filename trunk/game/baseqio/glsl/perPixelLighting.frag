@@ -147,8 +147,8 @@ float computeShadow(vec3 lightToVertDirection) {
 	float shadowMapDist = textureCube(shadowCubeMap,vec3(-lightToVertDirection.x,lightToVertDirection.y,lightToVertDirection.z)).x;
 	float currentLenght = length(lightToVertDirection);
 	shadowMapDist *= u_lightRadius;
-
-	float eps = 2.0;
+	
+	float eps = 0.0;
 	if(shadowMapDist + eps < currentLenght) {
 		shadow = 0.0;
 	} else {

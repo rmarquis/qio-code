@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __RF_DRAWCALL_H__
 
 #include "../drawCallSort.h"
+#include <math/aabb.h>
 
 void RF_AddDrawCall(const class rVertexBuffer_c *verts, const class rIndexBuffer_c *indices,
 	class mtrAPI_i *mat, class textureAPI_i *lightmap, enum drawCallSort_e sort,
@@ -56,5 +57,6 @@ extern bool rf_bDrawingSunLightPass;
 extern bool rf_bDrawingSunShadowMapPass;
 //extern class matrix_c rf_sunProjection;
 //extern class matrix_c rf_sunMatrix;
+extern aabb rf_currentSunBounds;
 
 #endif // __RF_DRAWCALL_H__

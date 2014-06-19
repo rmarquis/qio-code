@@ -25,12 +25,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 uniform vec3 u_lightOrigin;
 uniform float u_lightRadius;
-uniform mat4 u_entityMatrix;
-varying vec3 v_vertexWorld;
+varying vec3 v_vertXYZ;
 
 void main() {
-	vec4 lightWorld = u_entityMatrix * vec4(u_lightOrigin,1);
-	float dist = distance(lightWorld.xyz,v_vertexWorld.xyz);
+	float dist = distance(u_lightOrigin,v_vertXYZ);
 	float normalized = dist / u_lightRadius;
 	gl_FragDepth = normalized;
 }
