@@ -837,7 +837,12 @@ void RFE_AddEntityDrawCalls() {
 		if(rf_printAddedEntityModelNames.getInt()) {
 			g_core->Print("RFE_AddEntityDrawCalls: adding entity %i of %i with model %s\n",i,rf_entities.size(),ent->getModelName());
 		}
-		RFE_AddEntity(ent);
+		if(rf_bDrawingSunShadowMapPass) {
+			// force third person view while rendering sun shadows
+			RFE_AddEntity(ent,0,true);
+		} else {
+			RFE_AddEntity(ent);
+		}
 	}
 	if(rf_printAddEntityDrawCallsCullStats.getInt()) {
 		g_core->Print("RFE_AddEntityDrawCalls: %i culled by frustum, %i by portals (total entiy count %i)\n",c_entitiesCulledByABSBounds,c_entitiesCulledByPortals,rf_entities.size());
