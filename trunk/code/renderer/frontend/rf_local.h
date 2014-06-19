@@ -47,6 +47,8 @@ enum cullResult_e RF_CullEntitySpaceBounds(const class aabb &bb);
 void RF_DoDebugDrawing();
 void RFDL_DrawDebugLines();
 u32 RFDL_AddDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life);
+u32 RFDL_AddDebugBB(const aabb &bb, const vec3_c &color, float life);
+void RFDL_DrawDebugBBs();
 
 // rf_entities.cpp
 class rEntityAPI_i *RFE_AllocEntity();

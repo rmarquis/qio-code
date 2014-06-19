@@ -38,6 +38,10 @@ public:
 	aabb(const vec3_c &p) {
 		mins = maxs = p;
 	}
+	aabb(const vec3_c &p0, const vec3_c &p1) {
+		maxs = mins = p0;
+		addPoint(p1);
+	}
 	void clear() {
 		maxs.set(-AABB_INFINITE, -AABB_INFINITE, -AABB_INFINITE);
 		mins.set(AABB_INFINITE, AABB_INFINITE, AABB_INFINITE);

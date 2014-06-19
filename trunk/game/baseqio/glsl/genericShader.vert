@@ -50,11 +50,21 @@ varying vec3 v_vertNormal;
 // used for shadow lookup
 varying vec4 shadowCoord;
 #endif
+#ifdef HAS_SHADOWMAP_LOD1
+varying vec4 shadowCoord_lod1;
+#endif
+#ifdef HAS_SHADOWMAP_LOD1
+varying vec3 v_vertXYZ;
+uniform mat4 u_entityMatrix;
+#endif
 
 
 void main() {
 	gl_Position = ftransform();
-	
+#ifdef HAS_SHADOWMAP_LOD1
+	v_vertXYZ = (u_entityMatrix * gl_Vertex).xyz;
+#endif
+
 #ifdef HAS_HEIGHT_MAP
     // calculate the direction of the viewOrigin from the vertex;
     vec3 dirEye = u_viewOrigin  - gl_Vertex;
@@ -72,6 +82,10 @@ void main() {
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 	// this is the only shadow part in the Vertex Shader
 	shadowCoord = gl_TextureMatrix[1] * gl_Vertex;
+#endif
+
+#ifdef HAS_SHADOWMAP_LOD1
+	shadowCoord_lod1 = gl_TextureMatrix[2] * gl_Vertex;
 #endif
 
 #ifdef HAS_TEXGEN_ENVIROMENT

@@ -58,5 +58,9 @@ extern bool rf_bDrawingSunShadowMapPass;
 //extern class matrix_c rf_sunProjection;
 //extern class matrix_c rf_sunMatrix;
 extern aabb rf_currentSunBounds;
+extern int rf_currentShadowMapLOD;
+// this could be placed somewhere else... in sunLight_c class?
+// sun shadowing bounds for all LODs
+extern aabb rf_sunShadowBounds[2];
 
 #endif // __RF_DRAWCALL_H__

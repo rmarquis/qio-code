@@ -50,6 +50,7 @@ aCvar_c rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls("rf_drawCalls_pr
 aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeDrawCalls","0");
 aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
 aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
+aCvar_c rf_drawCalls_printShadowMapLOD("rf_drawCalls_printShadowMapLOD","0");
 
 class drawCall_c {
 public:
@@ -77,6 +78,7 @@ public:
 	vec3_c sunColor;
 	// for sun shadow mapping
 	aabb sunBounds;
+	int shadowMapLOD;
 	// for directional light shadow mapping
 	bool bDrawingSunShadowMapPass;
 //public:
@@ -94,11 +96,13 @@ bool rf_bDrawingSunShadowMapPass = false;
 // used to force specific frame of "animMap" stage from cgame code
 int rf_forceSpecificMaterialFrame = -1;
 int rf_currentShadowMapCubeSide = -1;
-int rf_currentShadowMapW;
-int rf_currentShadowMapH;
+int rf_currentShadowMapW = 0;
+int rf_currentShadowMapH = 0;
 //class matrix_c rf_sunProjection;
 //class matrix_c rf_sunMatrix;
 aabb rf_currentSunBounds;
+int rf_currentShadowMapLOD = -1;
+aabb rf_sunShadowBounds[2];
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
@@ -176,6 +180,7 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	n->shadowMapW = rf_currentShadowMapW;
 	n->shadowMapH = rf_currentShadowMapH;
 	n->sunBounds = rf_currentSunBounds;
+	n->shadowMapLOD = rf_currentShadowMapLOD;
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
@@ -288,7 +293,7 @@ int compareDrawCall(const void *v0, const void *v1) {
 		} else if(c1->sort == DCS_SPECIAL_SHADOWVOLUME) {
 			return 1; // c1 first
 		}
-		// shadow volume cubemaps must be created before drawing light interactions
+		// shadow map cubemaps must be created before drawing light interactions
 		if(c0->cubeMapSide != -1) {
 			if(c1->cubeMapSide != -1) {
 				// both of them are depthmap drawcalls
@@ -317,6 +322,24 @@ int compareDrawCall(const void *v0, const void *v1) {
 			return -1; // c0 first
 		return 1; // c1 first
 	} 
+	// then compare by shadowmap lod
+	if(c0->shadowMapLOD != c1->shadowMapLOD) {
+		if(c0->shadowMapLOD != -1) {
+			if(c1->shadowMapLOD != -1) {
+				// both of them are depthmap drawcalls
+				if(c0->shadowMapLOD == c1->shadowMapLOD)
+					return 0; // equal
+				if(c0->shadowMapLOD < c1->shadowMapLOD)
+					return -1; // c0 first
+				return 1; // c1 first
+			} else {
+				// c1 is not a depth map call
+				return -1; // c0 first
+			}
+		} else if(c1->shadowMapLOD != -1) {
+			return 1; // c1 first
+		}
+	}
 #if 1
 	// c0->curLight == c1->curLight
 	// light shadow volumes are drawn before light interactions
@@ -366,6 +389,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	bool bNeedsSky = RF_HasSky();
 
 	rb->setRShadows(RF_GetShadowingMode());
+	rb->setSunShadowBounds(rf_sunShadowBounds);
 
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
@@ -393,6 +417,9 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			if(c->bDrawingSunShadowMapPass) {
 				g_core->Print("Executing sun shadow map drawcall %i: material %s\n",i,c->material->getName());
 			}
+		}
+		if(rf_drawCalls_printShadowMapLOD.getInt()) {
+			g_core->Print("Drawcall %i: material %s: shadowMapLOD %i\n",i,c->material->getName(),c->shadowMapLOD);
 		}
 		// draw sky after mirror/portal materials
 		// this is a quick fix for maps with mirrors AND skies like q3dm0
@@ -436,7 +463,8 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		// set cubemap properties before changing model view matrix
 		// but after curLight is set
 		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection,c->sunBounds);
-		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass);
+		// 0 is always the highest LOD, -1 is the default value.
+		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass,c->shadowMapLOD);
 		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
 		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
 		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide || prevBDrawingSunShadowMapPass != c->bDrawingSunShadowMapPass) {

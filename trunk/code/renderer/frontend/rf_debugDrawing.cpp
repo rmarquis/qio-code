@@ -84,6 +84,8 @@ void RF_DoDebugDrawing() {
 	}
 	// draw debug lines
 	RFDL_DrawDebugLines();
+	// draw debug bboxes
+	RFDL_DrawDebugBBs();
 	// draw renderEntities abs bboxes
 	if(rf_showEntityABSBounds.getInt()) {
 		float redColor [4] = { 1, 0, 0, 1 };
@@ -128,6 +130,40 @@ void RFDL_DrawDebugLines() {
 		if(l->endTime < rf_curTimeMsec)
 			continue;
 		rb->drawLineFromTo(l->from,l->to,l->color);
+	}
+}
+// 
+//	debug bounds
+//
+struct rDebugBB_s {
+	aabb bb;
+	vec3_c color;
+	int endTime;
+};
+static arraySTD_c<rDebugBB_s> rf_debugBBs;
+
+u32 RFDL_AddDebugBB(const aabb &bb, const vec3_c &color, float life) {
+	u32 ret;
+	rDebugBB_s *next = rf_debugBBs.getArray();
+	for(ret = 0; ret < rf_debugBBs.size(); ret++, next++) {
+		if(next->endTime < rf_curTimeMsec) {
+			break;
+		}
+	}
+	if(ret == rf_debugBBs.size()) {
+		next = &rf_debugBBs.pushBack();
+	}
+	next->bb = bb;
+	next->color = color;
+	next->endTime = rf_curTimeMsec + (life*1000.f);
+	return ret;
+}
+void RFDL_DrawDebugBBs() {
+	const rDebugBB_s *l = rf_debugBBs.getArray();
+	for(u32 i = 0; i < rf_debugBBs.size(); i++, l++) {
+		if(l->endTime < rf_curTimeMsec)
+			continue;
+		rb->drawBBLines(l->bb);
 	}
 }
 

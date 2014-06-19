@@ -346,6 +346,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	depthCubeMap_c depthCubeMap; // depth cubemap
 	// for spotlight or sunlight (directional light)
 	fboDepth_c depthFBO;
+	fboDepth_c depthFBO_lod1;
+	bool bDepthFBODrawnThisFrame;
+	bool bDepthFBOLod1DrawnThisFrame;
 	fboScreen_c screenFBO;
 	fboScreen_c screenFBO2;
 	// 1/4 size of the screen...
@@ -360,6 +363,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	class vec3_c sunColor;
 	class vec3_c sunDirection;
 	aabb sunLightBounds;
+	int shadowMapLOD;
 	// matrices
 	matrix_c worldModelMatrix;
 	matrix_c resultMatrix;
@@ -380,6 +384,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 
 	matrix_c sunLightView;
 	matrix_c sunLightProjection;
+	matrix_c sunLightView_lod1;
+	matrix_c sunLightProjection_lod1;
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
@@ -400,6 +406,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	u32 portalDepth;
 	bool bRendererMirrorThisFrame;
 	int r_shadows;
+	aabb sunShadowBounds[2];
 	// for glColorMask changes
 	bool colorMaskState[4];
 
@@ -427,6 +434,8 @@ public:
 		isMirror = false;
 		forcedMaterialFrameNum = -1;
 		bRendererMirrorThisFrame = false;
+		bDepthFBODrawnThisFrame = false;
+		bDepthFBOLod1DrawnThisFrame = false;
 		boundFBO = 0;
 		r_shadows = 0;
 		bBoundLightmapCoordsToFirstTextureSlot = false;
@@ -901,6 +910,9 @@ public:
 	virtual void setRShadows(int newRShadows) {
 		this->r_shadows = newRShadows;
 	}
+	virtual void setSunShadowBounds(const class aabb bounds[]) {
+		memcpy(sunShadowBounds,bounds,sizeof(sunShadowBounds));
+	}
 	void bindFBO(u32 glHandle) {
 		if(boundFBO == glHandle)
 			return;
@@ -1236,14 +1248,22 @@ public:
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
 	}
-	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
-		if(bDrawingSunShadowMapPass == bNewDrawingSunShadowMapPass)
+	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass, int newSunShadowMapLOD) {
+		if(bDrawingSunShadowMapPass == bNewDrawingSunShadowMapPass
+			&& shadowMapLOD == newSunShadowMapLOD) {
 			return;
+		}
 		if(bNewDrawingSunShadowMapPass) {
 			u32 shadowMapSize = 1024;
-			depthFBO.create(shadowMapSize,shadowMapSize);		
-
-			bindFBO(depthFBO.getFBOHandle());	
+			if(newSunShadowMapLOD <= 0) {
+				depthFBO.create(shadowMapSize,shadowMapSize);		
+				bindFBO(depthFBO.getFBOHandle());
+				bDepthFBODrawnThisFrame = true;
+			} else if(newSunShadowMapLOD == 1) {
+				depthFBO_lod1.create(shadowMapSize,shadowMapSize);		
+				bindFBO(depthFBO_lod1.getFBOHandle());
+				bDepthFBOLod1DrawnThisFrame = true;
+			}
 			// set viewport
 			setGLViewPort(shadowMapSize,shadowMapSize);
 			// clear buffers
@@ -1254,65 +1274,49 @@ public:
 			setGLDepthMask(true); // this is necessary here!
 			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 			// save camera matrices
-			savedCameraProjection = projectionMatrix;
-			savedCameraView = worldModelMatrix;
+			if(bDrawingSunShadowMapPass == false) {
+				savedCameraProjection = projectionMatrix;
+				savedCameraView = worldModelMatrix;
+			}
 
-			//float size = 1000.f;
-			//float sizeZ = 1000.f;
-			////sl->generateSunShadowMapDrawCalls();
-#if 0
-			axis_c ax;
-			ax.mat[0] = sunDirection;
-			ax.mat[1] = ax.mat[0].getPerpendicular();
-			ax.mat[2].crossProduct(ax.mat[0],ax.mat[1]);
 
-			sunLightView.fromAxisAndOrigin(ax,offset);
-#else
-			//vec3_c offset = 
-				//camOriginWorldSpace + 
-			///	sunDirection * sizeZ * 0.5f;
-			//sunLightView.setupLookAtRH(offset,-sunDirection,sunDirection.getPerpendicular());
+			matrix_c tempView;
+			tempView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
 
-			sunLightView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
-#endif
-
-#if 0
-			
-			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
-#else
 			aabb bb = sunLightBounds;
 			aabb cropBounds;
 			for(u32 i = 0; i < 8; i++) {
 				vec3_c p = bb.getPoint(i);
 				float p2[4] = { p.x, p.y, p.z, 1.f };
 				float transf[4];
-				sunLightView.transformVec4(p2,transf);					
+				tempView.transformVec4(p2,transf);					
 				transf[0] /= transf[3];
 				transf[1] /= transf[3];
 				transf[2] /= transf[3];
 				cropBounds.addPoint(transf);
-			}							
-			sunLightProjection.setupOrthogonalProjectionRH(cropBounds.mins[0], cropBounds.maxs[0], cropBounds.mins[1], cropBounds.maxs[1], -cropBounds.maxs[2], -cropBounds.mins[2]);
+			}	
+			matrix_c tempProjection;
+			tempProjection.setupOrthogonalProjectionRH(cropBounds.mins[0], cropBounds.maxs[0], cropBounds.mins[1], cropBounds.maxs[1], -cropBounds.maxs[2], -cropBounds.mins[2]);
+			
+			if(newSunShadowMapLOD <= 0) {
+				sunLightProjection = tempProjection;
+				sunLightView = tempView;
+			} else if(newSunShadowMapLOD == 1) {
+				sunLightProjection_lod1 = tempProjection;
+				sunLightView_lod1 = tempView;
+			}
 
-#endif
-		//sunLightView.invFromAxisAndVector(ax,offset);
-		//// convert to gl coord system
-		//sunLightView.toGL();
+			worldModelMatrix = tempView;
+			projectionMatrix = tempProjection;
 
-
-			// set the light view matrices
-			worldModelMatrix = sunLightView;
-		//	worldModelMatrix.toGL();
-
-			projectionMatrix = sunLightProjection;
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glLoadMatrixf(projectionMatrix);
-
 		} else {
 			this->stopDrawingToFBOAndRestoreCameraMatrices();
 		}
 		bDrawingSunShadowMapPass = bNewDrawingSunShadowMapPass;
+		shadowMapLOD = newSunShadowMapLOD;
 	}
 	void bindShader(class glShader_c *newShader) {
 		if(glUseProgram == 0) {
@@ -1431,12 +1435,23 @@ public:
 			} 
 			if(bHasSunLight && r_shadows == 2 && newShader->u_directionalShadowMap >= 0) {
 				matrix_c res = rb_shadowMappingBias * sunLightProjection * sunLightView * entityMatrix;
-				u32 texSlot = 1;
-				setTextureMatrixCustom(texSlot,res);
+				setTextureMatrixCustom(1,res);
 
-				u32 slot = 3;
-				bindTex(slot,depthFBO.getTextureHandle());
-				glUniform1i(newShader->u_directionalShadowMap,slot);
+				bindTex(3,depthFBO.getTextureHandle());
+				glUniform1i(newShader->u_directionalShadowMap,3);
+
+				// also bind LOD 1 fbo
+				if(newShader->u_directionalShadowMap_lod1 >= 0) {
+					if(bDepthFBOLod1DrawnThisFrame == false) {
+						// should never happen
+						g_core->RedWarning("Required LOD 1 FBO was not drwan this frame\n");
+					} else {
+						matrix_c resLod1 = rb_shadowMappingBias * sunLightProjection_lod1 * sunLightView_lod1 * entityMatrix;
+						setTextureMatrixCustom(2,resLod1);
+						bindTex(4,depthFBO_lod1.getTextureHandle());
+						glUniform1i(newShader->u_directionalShadowMap_lod1,4);
+					}
+				}
 			}
 			if(newShader->uViewOrigin != -1) {
 				glUniform3f(newShader->uViewOrigin,
@@ -1458,6 +1473,12 @@ public:
 			}
 			if(newShader->u_averageScreenLuminance != -1) {
 				glUniform1f(newShader->u_averageScreenLuminance,getAverageScreenLuminance());
+			}
+			if(newShader->u_shadowMapLod0Maxs != -1) {
+				glUniform3fv(newShader->u_shadowMapLod0Maxs,1,sunShadowBounds[0].maxs);
+			}
+			if(newShader->u_shadowMapLod0Mins != -1) {
+				glUniform3fv(newShader->u_shadowMapLod0Mins,1,sunShadowBounds[0].mins);
 			}
 		}
 	}
@@ -2133,6 +2154,9 @@ drawOnlyLightmap:
 						glslShaderDesc.hasSunLight = true;
 						if(r_shadows == 2) {
 							glslShaderDesc.hasDirectionalShadowMapping = true;
+							if(bDepthFBOLod1DrawnThisFrame) {
+								glslShaderDesc.bHasShadowMapLod1 = true;
+							}
 						}
 					}
 					glslShaderDesc.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
@@ -2376,6 +2400,8 @@ drawOnlyLightmap:
 			glFinish();
 		}
 		bRendererMirrorThisFrame = false;
+		bDepthFBODrawnThisFrame = false;
+		bDepthFBOLod1DrawnThisFrame = false;
 		g_sharedSDLAPI->endFrame();
 		if(rb_printFrameTriCounts.getInt()) {
 			g_core->Print("%i input tris / %i total tris (%i in IBOs)\n",counters.c_inputTris,counters.c_totalTris,counters.c_totalTrisVBO);

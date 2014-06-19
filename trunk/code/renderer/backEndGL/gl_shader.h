@@ -56,6 +56,7 @@ struct glslPermutationFlags_s {
 	//float alphaTestValue;
 	bool hasSunLight; // #define HAS_SUNLIGHT
 	bool hasDirectionalShadowMapping; // #define HAS_DIRECTIONAL_SHADOW_MAPPING
+	bool bHasShadowMapLod1; // #define HAS_SHADOWMAP_LOD1
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
@@ -109,6 +110,9 @@ friend class rbSDLOpenGL_c;
 	int u_spotLightShadowMap;
 	// for directional shadow mapping (sun)
 	int u_directionalShadowMap;
+	int u_directionalShadowMap_lod1;
+	int u_shadowMapLod0Maxs;
+	int u_shadowMapLod0Mins;
 
 	int atrTangents;
 	int atrBinormals;

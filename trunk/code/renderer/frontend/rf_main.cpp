@@ -43,6 +43,8 @@ static aCvar_c rf_useLightmapsWithMultipassRendering("rf_useLightmapsWithMultipa
 static aCvar_c rf_maxPortalDepth("rf_maxPortalDepth","3");
 static aCvar_c rf_sunShadowMap_boundXY("rf_sunShadowMap_boundXY","1024");
 static aCvar_c rf_sunShadowMap_boundZ("rf_sunShadowMap_boundZ","256");
+static aCvar_c rf_sunShadowMap_allowSplits("rf_sunShadowMap_allowSplits","1");
+static aCvar_c rf_sunShadowMap_showFirstSplitBounds("rf_sunShadowMap_showFirstSplitBounds","0");
 
 // it's in rf_proc.cpp
 extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
@@ -171,31 +173,66 @@ void RF_Generate3DSubView() {
 			} else {
 				sl->freeSunLightShadowVolumes();
 				if(RF_IsUsingShadowMapping()) {
-
-					aabb sunBounds;
 					aabb worldBounds;
-					//RF_GetWorldBounds(worldBounds);
-					//RF_GetEntitiesBounds(worldBounds);
 					RF_GetSunWorldBounds(worldBounds);
 					if(worldBounds.isValid() == false) {
 						RF_GetEntitiesBounds(worldBounds);
 					}
 
-					rf_camera.getFrustum().getBounds(sunBounds);
-					sunBounds.capTo(worldBounds);
+					aabb baseSunBounds;
+					rf_camera.getFrustum().getBounds(baseSunBounds);
+					baseSunBounds.capTo(worldBounds);
 
-					aabb cap;
-					vec3_c delta(rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundZ.getFloat());
-					cap.fromTwoPoints(rf_camera.getOrigin() + delta,rf_camera.getOrigin()-delta);
-					sunBounds.capTo(cap);
+					if(rf_sunShadowMap_allowSplits.getInt()) {
+						// get the bounds for the shadowmap nearest to camera eye
+						aabb nearestSunBounds = baseSunBounds;
+						vec3_c nearestSunBoundsHalfSize(512,512,512);
+						nearestSunBounds.capTo(aabb(rf_camera.getOrigin() + nearestSunBoundsHalfSize,rf_camera.getOrigin()-nearestSunBoundsHalfSize));
 
-					rf_currentSunBounds = sunBounds;
+						// the the bounds for the far shadowmap 
+						// (largest one, very little LOD)
+						aabb farSunBounds = baseSunBounds;
+						vec3_c farSunBoundsHalfSize(4096,4096,4096);
+						farSunBounds.capTo(aabb(rf_camera.getOrigin() + farSunBoundsHalfSize,rf_camera.getOrigin()-farSunBoundsHalfSize));
 
-					rf_bDrawingSunShadowMapPass = true;
-					rf_bDrawOnlyOnDepthBuffer = true;
-					RF_AddGenericDrawCalls();
-					rf_bDrawingSunShadowMapPass = false;
-					rf_bDrawOnlyOnDepthBuffer = false;
+						if(rf_sunShadowMap_showFirstSplitBounds.getInt()) {
+							RFDL_AddDebugBB(nearestSunBounds,vec3_c(1,0,0),0.5);
+						}
+
+						rf_sunShadowBounds[0] = nearestSunBounds;
+						rf_sunShadowBounds[1] = farSunBounds;
+
+						// draw the smallest shadow map (the highest LOD)
+						rf_bDrawingSunShadowMapPass = true;
+						rf_bDrawOnlyOnDepthBuffer = true;
+
+						rf_currentSunBounds = nearestSunBounds;
+						rf_currentShadowMapLOD = 0;
+						RF_AddGenericDrawCalls(); // TODO: culling
+
+						rf_currentSunBounds = farSunBounds;
+						rf_currentShadowMapLOD = 1;
+						RF_AddGenericDrawCalls(); // TODO: culling
+
+						rf_bDrawingSunShadowMapPass = false;
+						rf_bDrawOnlyOnDepthBuffer = false;
+						rf_currentShadowMapLOD = -1;
+					} else {
+						aabb sunBounds = baseSunBounds;
+						aabb cap;
+						vec3_c delta(rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundXY.getFloat(),rf_sunShadowMap_boundZ.getFloat());
+						cap.fromTwoPoints(rf_camera.getOrigin() + delta,rf_camera.getOrigin()-delta);
+						sunBounds.capTo(cap);
+
+						rf_currentSunBounds = sunBounds;
+						rf_sunShadowBounds[0] = rf_currentSunBounds;
+
+						rf_bDrawingSunShadowMapPass = true;
+						rf_bDrawOnlyOnDepthBuffer = true;
+						RF_AddGenericDrawCalls();
+						rf_bDrawingSunShadowMapPass = false;
+						rf_bDrawOnlyOnDepthBuffer = false;
+					}
 				}
 			}
 			RF_AddGenericDrawCalls();

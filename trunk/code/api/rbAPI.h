@@ -108,7 +108,7 @@ public:
 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
 
 	}
-	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
+	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass, int newSunShadowMapLOD) {
 
 	}
 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
@@ -131,6 +131,10 @@ public:
 
 	}
 	virtual void setRShadows(int newRShadows) {
+
+	}
+	// for shadow mapping
+	virtual void setSunShadowBounds(const class aabb bounds[]) {
 
 	}
 	virtual void setCurrentDrawCallCubeMapSide(int iCubeSide) {

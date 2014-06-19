@@ -66,7 +66,16 @@ varying vec3 v_vertNormal;
 uniform sampler2DShadow directionalShadowMap;
 varying vec4 shadowCoord;
 #endif 
+#ifdef HAS_SHADOWMAP_LOD1
+uniform sampler2DShadow directionalShadowMap_lod1;
+varying vec4 shadowCoord_lod1;
+uniform vec3 u_shadowMapLod0Mins;
+uniform vec3 u_shadowMapLod0Maxs;
+#endif
 
+#ifdef HAS_SHADOWMAP_LOD1
+varying vec3 v_vertXYZ;
+#endif
 
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
@@ -146,10 +155,31 @@ void main() {
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 	float shadow;
+#ifdef HAS_SHADOWMAP_LOD1
+	// this check is silly, TODO: do a better one
+	if(v_vertXYZ.x < u_shadowMapLod0Maxs.x && v_vertXYZ.y < u_shadowMapLod0Maxs.y && v_vertXYZ.z < u_shadowMapLod0Maxs.z &&
+		v_vertXYZ.x > u_shadowMapLod0Mins.x && v_vertXYZ.y > u_shadowMapLod0Mins.y && v_vertXYZ.z > u_shadowMapLod0Mins.z) {
+		shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
+	} else {
+		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);
+	}
+#else
 	shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
+#endif
 #else
 	float shadow;
+#ifdef HAS_SHADOWMAP_LOD1
+	float shadow;	
+	// this check is silly, TODO: do a better one
+	if(v_vertXYZ.x < u_shadowMapLod0Maxs.x && v_vertXYZ.y < u_shadowMapLod0Maxs.y && v_vertXYZ.z < u_shadowMapLod0Maxs.z &&
+		v_vertXYZ.x > u_shadowMapLod0Mins.x && v_vertXYZ.y > u_shadowMapLod0Mins.y && v_vertXYZ.z > u_shadowMapLod0Mins.z) {
+		shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+	} else {
+		shadow = shadow2DProj(directionalShadowMap_lod1, shadowCoord_lod1).s;	
+	}
+#else
 	shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+#endif
 #endif
 #endif 
   // calculate the final color
