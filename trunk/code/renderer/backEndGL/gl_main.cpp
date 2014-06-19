@@ -2729,6 +2729,8 @@ drawOnlyLightmap:
 		glLineWidth(1.f);
 	}	
 	virtual void drawBBLines(const class aabb &bb) {
+		bindShader(0);
+
 		vec3_c verts[8];
 		for(u32 i = 0; i < 8; i++) {
 			verts[i] = bb.getPoint(i);

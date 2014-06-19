@@ -163,6 +163,8 @@ void RFDL_DrawDebugBBs() {
 	for(u32 i = 0; i < rf_debugBBs.size(); i++, l++) {
 		if(l->endTime < rf_curTimeMsec)
 			continue;
+		float boxColor [4] = { l->color.x, l->color.y, l->color.z, 1 };
+		rb->setColor4(boxColor);
 		rb->drawBBLines(l->bb);
 	}
 }

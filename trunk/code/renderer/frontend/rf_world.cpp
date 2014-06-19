@@ -319,6 +319,9 @@ void RF_GetSunWorldBounds(class aabb &out) {
 	} else if(r_procTree) {
 		//r_procTree->getBB();
 	}
+	// fix for flickering shadows on the lowest floor of
+	// "test_hipshot_sky_violentdays-4096x4096world" map.
+	out.extend(4.f);
 }
 
 
