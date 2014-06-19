@@ -55,6 +55,8 @@ cameraDef_c rf_camera;
 int rf_curTimeMsec;
 float rf_curTimeSeconds;
 
+static aCvar_c rf_forceZFar("rf_forceZFar","-1");
+
 class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
 	bool initialized;
@@ -100,6 +102,9 @@ public:
 			projDef.setDefaults();
 		} else {
 			projDef = *pd;
+		}
+		if(rf_forceZFar.getFloat() >= 0.f) {
+			projDef.zFar = rf_forceZFar.getFloat();
 		}
 	}
 	virtual void setRenderTimeMsec(int msec) {
