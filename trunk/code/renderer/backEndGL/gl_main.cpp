@@ -941,6 +941,9 @@ public:
 			return;
 		}
 		if(this->curCubeMapSide == -1) {
+			
+			selectTex(3);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 			// ensure that FBO is ready
 			if(curLight->isSpotLight()) {
 				depthFBO.create(curShadowMapW,curShadowMapH);
@@ -1254,8 +1257,8 @@ public:
 			savedCameraProjection = projectionMatrix;
 			savedCameraView = worldModelMatrix;
 
-			float size = 1000.f;
-			float sizeZ = 1000.f;
+			//float size = 1000.f;
+			//float sizeZ = 1000.f;
 			////sl->generateSunShadowMapDrawCalls();
 #if 0
 			axis_c ax;
@@ -1273,7 +1276,7 @@ public:
 			sunLightView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
 #endif
 
-#if 1
+#if 0
 			
 			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
 #else
@@ -3158,7 +3161,13 @@ bool fboDepth_c::create(u32 newW, u32 newH) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	//glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
-	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY); 
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+	
+	// stop the silly repating of shadowmap texture outside shadow bounds
+	GLfloat border[] = {1.0f,1.0f,1.0f,1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 

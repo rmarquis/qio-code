@@ -196,6 +196,7 @@ class rBspTree_c {
 	bitSet_c prevFrustumAreaBits;
 	visHeader_s *vis;
 	class lightGridAPI_i *lightGrid;
+	aabb worldBoundsWithoutSkyBox;
 
 	rVertexBuffer_c verts;
 	arraySTD_c<textureAPI_i*> lightmaps;
@@ -303,6 +304,9 @@ public:
 	}
 	const aabb &getWorldBounds() const {
 		return models[0].bb;
+	}
+	const aabb &getWorldBoundsWithoutSkyBox() const {
+		return worldBoundsWithoutSkyBox;
 	}
 
 	void updateVisibility();

@@ -145,9 +145,11 @@ void main() {
 
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
-	float shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
+	float shadow;
+	shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
 #else
-	float shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+	float shadow;
+	shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
 #endif
 #endif 
   // calculate the final color

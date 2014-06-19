@@ -1803,6 +1803,17 @@ bool rBspTree_c::load(const char *fname) {
 	createVBOandIBOs();
 	createRenderModelsForBSPInlineModels();
 
+	worldBoundsWithoutSkyBox.clear();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		mtrAPI_i *mat = getSurfaceMaterial(i);
+		if(mat->hasStageWithCubeMap())
+			continue;
+		const bspSurf_s &sf = surfs[i];
+		if(sf.type == BSPSF_PLANAR) {
+			worldBoundsWithoutSkyBox.addBox(sf.sf->bounds);
+		}
+	}
+
 	return false;
 }
 bool rBspTree_c::checkIsBSPValid() {

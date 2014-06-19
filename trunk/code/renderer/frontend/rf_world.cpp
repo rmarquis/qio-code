@@ -313,6 +313,7 @@ void RF_GetWorldBounds(class aabb &out) {
 void RF_GetSunWorldBounds(class aabb &out) {
 	if(r_bspTree) {
 		//out = r_bspTree->getWorldBounds();
+		out = r_bspTree->getWorldBoundsWithoutSkyBox();
 	} else if(r_worldModel) {
 		r_worldModel->getSunBounds(out);
 	} else if(r_procTree) {
