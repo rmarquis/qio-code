@@ -61,6 +61,6 @@ extern aabb rf_currentSunBounds;
 extern int rf_currentShadowMapLOD;
 // this could be placed somewhere else... in sunLight_c class?
 // sun shadowing bounds for all LODs
-extern aabb rf_sunShadowBounds[2];
+extern aabb rf_sunShadowBounds[3];
 
 #endif // __RF_DRAWCALL_H__

@@ -102,7 +102,7 @@ int rf_currentShadowMapH = 0;
 //class matrix_c rf_sunMatrix;
 aabb rf_currentSunBounds;
 int rf_currentShadowMapLOD = -1;
-aabb rf_sunShadowBounds[2];
+aabb rf_sunShadowBounds[3];
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {

@@ -72,6 +72,12 @@ varying vec4 shadowCoord_lod1;
 uniform vec3 u_shadowMapLod0Mins;
 uniform vec3 u_shadowMapLod0Maxs;
 #endif
+#ifdef HAS_SHADOWMAP_LOD2
+uniform sampler2DShadow directionalShadowMap_lod2;
+varying vec4 shadowCoord_lod2;
+uniform vec3 u_shadowMapLod1Mins;
+uniform vec3 u_shadowMapLod1Maxs;
+#endif
 
 #ifdef HAS_SHADOWMAP_LOD1
 varying vec3 v_vertXYZ;
@@ -104,6 +110,16 @@ float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 #endif 
 #endif
 
+
+#ifdef HAS_SHADOWMAP_LOD1
+bool IsCurrentFragmentInsideBounds(vec3 mins, vec3 maxs) {
+	if(v_vertXYZ.x < maxs.x && v_vertXYZ.y < maxs.y && v_vertXYZ.z < maxs.z &&
+		v_vertXYZ.x > mins.x && v_vertXYZ.y > mins.y && v_vertXYZ.z > mins.z) {
+		return true;
+	}
+	return false;
+}
+#endif
 
 void main() {
 #ifdef HAS_HEIGHT_MAP
@@ -157,12 +173,19 @@ void main() {
 	float shadow;
 #ifdef HAS_SHADOWMAP_LOD1
 	// this check is silly, TODO: do a better one
-	if(v_vertXYZ.x < u_shadowMapLod0Maxs.x && v_vertXYZ.y < u_shadowMapLod0Maxs.y && v_vertXYZ.z < u_shadowMapLod0Maxs.z &&
-		v_vertXYZ.x > u_shadowMapLod0Mins.x && v_vertXYZ.y > u_shadowMapLod0Mins.y && v_vertXYZ.z > u_shadowMapLod0Mins.z) {
-		shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
+	if(IsCurrentFragmentInsideBounds(u_shadowMapLod0Mins,u_shadowMapLod0Maxs)) {
+		shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);	
+#ifdef HAS_SHADOWMAP_LOD2
+	} else if(IsCurrentFragmentInsideBounds(u_shadowMapLod1Mins,u_shadowMapLod1Maxs)) {
+		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);
+	} else {
+		shadow = doShadowBlurSample(directionalShadowMap_lod2, shadowCoord_lod2);
+	}
+#else
 	} else {
 		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);
 	}
+#endif
 #else
 	shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);
 #endif
@@ -171,12 +194,19 @@ void main() {
 #ifdef HAS_SHADOWMAP_LOD1
 	float shadow;	
 	// this check is silly, TODO: do a better one
-	if(v_vertXYZ.x < u_shadowMapLod0Maxs.x && v_vertXYZ.y < u_shadowMapLod0Maxs.y && v_vertXYZ.z < u_shadowMapLod0Maxs.z &&
-		v_vertXYZ.x > u_shadowMapLod0Mins.x && v_vertXYZ.y > u_shadowMapLod0Mins.y && v_vertXYZ.z > u_shadowMapLod0Mins.z) {
+	if(IsCurrentFragmentInsideBounds(u_shadowMapLod0Mins,u_shadowMapLod0Maxs)) {
 		shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+#ifdef HAS_SHADOWMAP_LOD2
+	} else if(IsCurrentFragmentInsideBounds(u_shadowMapLod1Mins,u_shadowMapLod1Maxs)) {
+		shadow = shadow2DProj(directionalShadowMap_lod1, shadowCoord_lod1).s;
+	} else {
+		shadow = shadow2DProj(directionalShadowMap_lod2, shadowCoord_lod2).s;
+	}
+#else	
 	} else {
 		shadow = shadow2DProj(directionalShadowMap_lod1, shadowCoord_lod1).s;	
 	}
+#endif
 #else
 	shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
 #endif

@@ -347,8 +347,10 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	// for spotlight or sunlight (directional light)
 	fboDepth_c depthFBO;
 	fboDepth_c depthFBO_lod1;
+	fboDepth_c depthFBO_lod2;
 	bool bDepthFBODrawnThisFrame;
 	bool bDepthFBOLod1DrawnThisFrame;
+	bool bDepthFBOLod2DrawnThisFrame;
 	fboScreen_c screenFBO;
 	fboScreen_c screenFBO2;
 	// 1/4 size of the screen...
@@ -386,6 +388,8 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	matrix_c sunLightProjection;
 	matrix_c sunLightView_lod1;
 	matrix_c sunLightProjection_lod1;
+	matrix_c sunLightView_lod2;
+	matrix_c sunLightProjection_lod2;
 	
 	bool boundVBOVertexColors;
 	const rVertexBuffer_c *boundVBO;
@@ -406,7 +410,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	u32 portalDepth;
 	bool bRendererMirrorThisFrame;
 	int r_shadows;
-	aabb sunShadowBounds[2];
+	aabb sunShadowBounds[3];
 	// for glColorMask changes
 	bool colorMaskState[4];
 
@@ -436,6 +440,7 @@ public:
 		bRendererMirrorThisFrame = false;
 		bDepthFBODrawnThisFrame = false;
 		bDepthFBOLod1DrawnThisFrame = false;
+		bDepthFBOLod2DrawnThisFrame = false;
 		boundFBO = 0;
 		r_shadows = 0;
 		bBoundLightmapCoordsToFirstTextureSlot = false;
@@ -1263,6 +1268,12 @@ public:
 				depthFBO_lod1.create(shadowMapSize,shadowMapSize);		
 				bindFBO(depthFBO_lod1.getFBOHandle());
 				bDepthFBOLod1DrawnThisFrame = true;
+			} else if(newSunShadowMapLOD == 2) {
+				depthFBO_lod2.create(shadowMapSize,shadowMapSize);		
+				bindFBO(depthFBO_lod2.getFBOHandle());
+				bDepthFBOLod2DrawnThisFrame = true;
+			} else {
+				g_core->RedWarning("setBDrawingSunShadowMapPass: shadow map lod %i not handled by backend.\n",newSunShadowMapLOD);
 			}
 			// set viewport
 			setGLViewPort(shadowMapSize,shadowMapSize);
@@ -1304,6 +1315,11 @@ public:
 			} else if(newSunShadowMapLOD == 1) {
 				sunLightProjection_lod1 = tempProjection;
 				sunLightView_lod1 = tempView;
+			} else if(newSunShadowMapLOD == 2) {
+				sunLightProjection_lod2 = tempProjection;
+				sunLightView_lod2 = tempView;
+			} else {
+				g_core->RedWarning("setBDrawingSunShadowMapPass: shadow map lod %i not handled by backend.\n",newSunShadowMapLOD);
 			}
 
 			worldModelMatrix = tempView;
@@ -1452,6 +1468,18 @@ public:
 						glUniform1i(newShader->u_directionalShadowMap_lod1,4);
 					}
 				}
+				// also bind LOD 2 fbo
+				if(newShader->u_directionalShadowMap_lod2 >= 0) {
+					if(bDepthFBOLod2DrawnThisFrame == false) {
+						// should never happen
+						g_core->RedWarning("Required LOD 2 FBO was not drwan this frame\n");
+					} else {
+						matrix_c resLod2 = rb_shadowMappingBias * sunLightProjection_lod2 * sunLightView_lod2 * entityMatrix;
+						setTextureMatrixCustom(3,resLod2);
+						bindTex(5,depthFBO_lod2.getTextureHandle());
+						glUniform1i(newShader->u_directionalShadowMap_lod2,5);
+					}
+				}
 			}
 			if(newShader->uViewOrigin != -1) {
 				glUniform3f(newShader->uViewOrigin,
@@ -1479,6 +1507,12 @@ public:
 			}
 			if(newShader->u_shadowMapLod0Mins != -1) {
 				glUniform3fv(newShader->u_shadowMapLod0Mins,1,sunShadowBounds[0].mins);
+			}
+			if(newShader->u_shadowMapLod1Maxs != -1) {
+				glUniform3fv(newShader->u_shadowMapLod1Maxs,1,sunShadowBounds[1].maxs);
+			}
+			if(newShader->u_shadowMapLod1Mins != -1) {
+				glUniform3fv(newShader->u_shadowMapLod1Mins,1,sunShadowBounds[1].mins);
 			}
 		}
 	}
@@ -2157,6 +2191,9 @@ drawOnlyLightmap:
 							if(bDepthFBOLod1DrawnThisFrame) {
 								glslShaderDesc.bHasShadowMapLod1 = true;
 							}
+							if(bDepthFBOLod2DrawnThisFrame) {
+								glslShaderDesc.bHasShadowMapLod2 = true;
+							}
 						}
 					}
 					glslShaderDesc.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
@@ -2402,6 +2439,7 @@ drawOnlyLightmap:
 		bRendererMirrorThisFrame = false;
 		bDepthFBODrawnThisFrame = false;
 		bDepthFBOLod1DrawnThisFrame = false;
+		bDepthFBOLod2DrawnThisFrame = false;
 		g_sharedSDLAPI->endFrame();
 		if(rb_printFrameTriCounts.getInt()) {
 			g_core->Print("%i input tris / %i total tris (%i in IBOs)\n",counters.c_inputTris,counters.c_totalTris,counters.c_totalTrisVBO);

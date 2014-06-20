@@ -53,6 +53,9 @@ varying vec4 shadowCoord;
 #ifdef HAS_SHADOWMAP_LOD1
 varying vec4 shadowCoord_lod1;
 #endif
+#ifdef HAS_SHADOWMAP_LOD2
+varying vec4 shadowCoord_lod2;
+#endif
 #ifdef HAS_SHADOWMAP_LOD1
 varying vec3 v_vertXYZ;
 uniform mat4 u_entityMatrix;
@@ -87,6 +90,10 @@ void main() {
 #ifdef HAS_SHADOWMAP_LOD1
 	shadowCoord_lod1 = gl_TextureMatrix[2] * gl_Vertex;
 #endif
+#ifdef HAS_SHADOWMAP_LOD2
+	shadowCoord_lod2 = gl_TextureMatrix[3] * gl_Vertex;
+#endif
+
 
 #ifdef HAS_TEXGEN_ENVIROMENT
 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;

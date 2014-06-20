@@ -44,6 +44,7 @@ static aCvar_c rf_maxPortalDepth("rf_maxPortalDepth","3");
 static aCvar_c rf_sunShadowMap_boundXY("rf_sunShadowMap_boundXY","1024");
 static aCvar_c rf_sunShadowMap_boundZ("rf_sunShadowMap_boundZ","256");
 static aCvar_c rf_sunShadowMap_allowSplits("rf_sunShadowMap_allowSplits","1");
+static aCvar_c rf_sunShadowMap_splitCount("rf_sunShadowMap_splitCount","3");
 static aCvar_c rf_sunShadowMap_showFirstSplitBounds("rf_sunShadowMap_showFirstSplitBounds","0");
 
 // it's in rf_proc.cpp
@@ -149,6 +150,26 @@ bool RF_IsUsingDynamicSunLight() {
 		return true;
 	return false;
 }
+void RF_SetupAndDrawSunShadowMapSplit(const aabb &baseSunBounds, u32 splitNum, float ext) {
+	// get the bounds f
+	aabb sunBounds = baseSunBounds;
+	vec3_c halfSizes(ext,ext,ext);
+	sunBounds.capTo(
+		aabb(rf_camera.getOrigin() + halfSizes,rf_camera.getOrigin()-halfSizes
+		));
+
+	rf_sunShadowBounds[splitNum] = sunBounds;
+
+	if(splitNum == 0) {
+		if(rf_sunShadowMap_showFirstSplitBounds.getInt()) {
+			RFDL_AddDebugBB(sunBounds,vec3_c(1,0,0),0.5);
+		}
+	}
+
+	rf_currentSunBounds = sunBounds;
+	rf_currentShadowMapLOD = splitNum;
+	RF_AddGenericDrawCalls(); // TODO: culling
+}
 void RF_Generate3DSubView() {
 	u32 firstDrawCall = RF_GetCurrentDrawcallsCount();
 	if(RF_ShouldUseMultipassRendering() == false) { 
@@ -183,40 +204,24 @@ void RF_Generate3DSubView() {
 					rf_camera.getFrustum().getBounds(baseSunBounds);
 					baseSunBounds.capTo(worldBounds);
 
+					rf_bDrawingSunShadowMapPass = true;
+					rf_bDrawOnlyOnDepthBuffer = true;
 					if(rf_sunShadowMap_allowSplits.getInt()) {
-						// get the bounds for the shadowmap nearest to camera eye
-						aabb nearestSunBounds = baseSunBounds;
-						vec3_c nearestSunBoundsHalfSize(512,512,512);
-						nearestSunBounds.capTo(aabb(rf_camera.getOrigin() + nearestSunBoundsHalfSize,rf_camera.getOrigin()-nearestSunBoundsHalfSize));
+						if(rf_sunShadowMap_splitCount.getInt() == 2) {
+							float lod0Exts = 512;
+							float lod1Exts = 4096;
 
-						// the the bounds for the far shadowmap 
-						// (largest one, very little LOD)
-						aabb farSunBounds = baseSunBounds;
-						vec3_c farSunBoundsHalfSize(4096,4096,4096);
-						farSunBounds.capTo(aabb(rf_camera.getOrigin() + farSunBoundsHalfSize,rf_camera.getOrigin()-farSunBoundsHalfSize));
+							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,0,lod0Exts);
+							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,1,lod1Exts);
+						} else {
+							float lod0Exts = 512;
+							float lod1Exts = 4096;
+							float lod2Exts = 8192;
 
-						if(rf_sunShadowMap_showFirstSplitBounds.getInt()) {
-							RFDL_AddDebugBB(nearestSunBounds,vec3_c(1,0,0),0.5);
+							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,0,lod0Exts);
+							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,1,lod1Exts);
+							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,2,lod2Exts);
 						}
-
-						rf_sunShadowBounds[0] = nearestSunBounds;
-						rf_sunShadowBounds[1] = farSunBounds;
-
-						// draw the smallest shadow map (the highest LOD)
-						rf_bDrawingSunShadowMapPass = true;
-						rf_bDrawOnlyOnDepthBuffer = true;
-
-						rf_currentSunBounds = nearestSunBounds;
-						rf_currentShadowMapLOD = 0;
-						RF_AddGenericDrawCalls(); // TODO: culling
-
-						rf_currentSunBounds = farSunBounds;
-						rf_currentShadowMapLOD = 1;
-						RF_AddGenericDrawCalls(); // TODO: culling
-
-						rf_bDrawingSunShadowMapPass = false;
-						rf_bDrawOnlyOnDepthBuffer = false;
-						rf_currentShadowMapLOD = -1;
 					} else {
 						aabb sunBounds = baseSunBounds;
 						aabb cap;
@@ -227,12 +232,11 @@ void RF_Generate3DSubView() {
 						rf_currentSunBounds = sunBounds;
 						rf_sunShadowBounds[0] = rf_currentSunBounds;
 
-						rf_bDrawingSunShadowMapPass = true;
-						rf_bDrawOnlyOnDepthBuffer = true;
 						RF_AddGenericDrawCalls();
-						rf_bDrawingSunShadowMapPass = false;
-						rf_bDrawOnlyOnDepthBuffer = false;
 					}
+					rf_bDrawingSunShadowMapPass = false;
+					rf_bDrawOnlyOnDepthBuffer = false;
+					rf_currentShadowMapLOD = -1;
 				}
 			}
 			RF_AddGenericDrawCalls();
