@@ -61,6 +61,7 @@ struct glslPermutationFlags_s {
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
+	bool debug_showSplits; // #define DEBUG_SHADOWMAPPING_SHOW_SPLITS
 	// for 2d blur effect
 	bool bHorizontalPass; // #define HORIZONTAL_PASS
 

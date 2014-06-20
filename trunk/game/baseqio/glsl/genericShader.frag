@@ -168,6 +168,10 @@ void main() {
     }
 #endif   
 
+#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+	int usedSplitIndex = -1;
+#endif
+
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 	float shadow;
@@ -175,15 +179,27 @@ void main() {
 	// this check is silly, TODO: do a better one
 	if(IsCurrentFragmentInsideBounds(u_shadowMapLod0Mins,u_shadowMapLod0Maxs)) {
 		shadow = doShadowBlurSample(directionalShadowMap, shadowCoord);	
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 0;
+	#endif	
 #ifdef HAS_SHADOWMAP_LOD2
 	} else if(IsCurrentFragmentInsideBounds(u_shadowMapLod1Mins,u_shadowMapLod1Maxs)) {
-		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);
+		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);	
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 1;
+	#endif	
 	} else {
 		shadow = doShadowBlurSample(directionalShadowMap_lod2, shadowCoord_lod2);
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 2;
+	#endif	
 	}
 #else
 	} else {
 		shadow = doShadowBlurSample(directionalShadowMap_lod1, shadowCoord_lod1);
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 1;
+	#endif	
 	}
 #endif
 #else
@@ -192,19 +208,30 @@ void main() {
 #else
 	float shadow;
 #ifdef HAS_SHADOWMAP_LOD1
-	float shadow;	
 	// this check is silly, TODO: do a better one
 	if(IsCurrentFragmentInsideBounds(u_shadowMapLod0Mins,u_shadowMapLod0Maxs)) {
 		shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 0;
+	#endif	
 #ifdef HAS_SHADOWMAP_LOD2
 	} else if(IsCurrentFragmentInsideBounds(u_shadowMapLod1Mins,u_shadowMapLod1Maxs)) {
 		shadow = shadow2DProj(directionalShadowMap_lod1, shadowCoord_lod1).s;
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 1;
+	#endif	
 	} else {
 		shadow = shadow2DProj(directionalShadowMap_lod2, shadowCoord_lod2).s;
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 2;
+	#endif	
 	}
 #else	
 	} else {
 		shadow = shadow2DProj(directionalShadowMap_lod1, shadowCoord_lod1).s;	
+	#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+		usedSplitIndex = 1;
+	#endif	
 	}
 #endif
 #else
@@ -236,5 +263,16 @@ void main() {
 #endif   
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
     gl_FragColor *= shadow;
-#endif   
+#endif 
+#ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS
+	if(usedSplitIndex == 0) {
+		gl_FragColor.rgb *= vec3(1,0,0);
+	} else if(usedSplitIndex == 1) {
+		gl_FragColor.rgb *= vec3(0,1,0);
+	} else if(usedSplitIndex == 2) {
+		gl_FragColor.rgb *= vec3(0,0,1);
+	} else {
+		gl_FragColor.rgb *= vec3(1,0,1);
+	}
+#endif	  
 }

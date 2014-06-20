@@ -204,6 +204,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.debug_ignoreDistanceFactor) {
 		out.append("#define DEBUG_IGNOREDISTANCEFACTOR\n");
 	}
+	if(p.debug_showSplits) {
+		out.append("#define DEBUG_SHADOWMAPPING_SHOW_SPLITS\n");
+	}
 	if(p.bHorizontalPass) {
 		out.append("#define HORIZONTAL_PASS\n");
 	}

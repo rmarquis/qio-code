@@ -118,6 +118,7 @@ static aCvar_c rb_blurScale("rb_blurScale","0.2");
 static aCvar_c rb_forceBloom("rb_forceBloom","0");
 static aCvar_c rb_showSpotLightShadows("rb_showSpotLightShadows","0");
 static aCvar_c rb_showPointLightShadows("rb_showPointLightShadows","0");
+static aCvar_c rb_showSplits("rb_showSplits","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -2200,6 +2201,7 @@ drawOnlyLightmap:
 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					glslShaderDesc.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
+					glslShaderDesc.debug_showSplits = rb_showSplits.getInt();
 
 					selectedShader = GL_RegisterShader("genericShader",&glslShaderDesc);
 					if(selectedShader) {
