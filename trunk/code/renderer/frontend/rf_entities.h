@@ -147,6 +147,7 @@ public:
 	virtual bool isSprite() const;
 	virtual bool hasAnim(const char *animName) const;
 
+	bool hasStageWithoutBlendFunc() const;
 	u32 getSilChangeCount() const {
 		return absSilChangeCount;
 	}

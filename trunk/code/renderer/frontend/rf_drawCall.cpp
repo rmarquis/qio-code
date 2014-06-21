@@ -136,6 +136,13 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	if(rf_drawCalls_dontAddBlendOnlyMaterials.getInt() && mat->hasStageWithoutBlendFunc()==false)
 		return;
+
+	if(rf_bDrawingSunShadowMapPass) {
+		// so plasma missiles won't cast shadows
+		if(mat->hasStageWithoutBlendFunc() == false) {
+			return;
+		}
+	}
 	// ignore blendfunc surfaces if we're using dynamic lights
 	if(rf_curLightAPI) {
 		if((mat->hasStageWithoutBlendFunc()==false) /*|| mat->hasAlphaTest()*/) {

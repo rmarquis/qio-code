@@ -402,6 +402,15 @@ bool rEntityImpl_c::hasAnim(const char *animName) const {
 	}
 	return false;
 }
+bool rEntityImpl_c::hasStageWithoutBlendFunc() const {
+	if(instance) {
+		return instance->hasStageWithoutBlendFunc();
+	}
+	if(model) {
+		return model->hasStageWithoutBlendFunc();
+	}
+	return false;
+}
 rModelAPI_i *rEntityImpl_c::getModel() const {
 	return model;
 }

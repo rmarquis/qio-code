@@ -192,6 +192,7 @@ public:
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const;
 	virtual void printBoneNames() const;
 	virtual u32 getTotalTriangleCount() const;
+	virtual bool hasStageWithoutBlendFunc() const;
 
 	void clear();
 

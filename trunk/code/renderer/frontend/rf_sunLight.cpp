@@ -50,6 +50,13 @@ public:
 		delete shadowVolume;
 	}
 	void updateSunLightInteraction() {
+		if(ent->hasStageWithoutBlendFunc() == false) {
+			if(shadowVolume) {
+				delete shadowVolume;
+				shadowVolume = 0;
+			}
+			return;
+		}
 		if(shadowVolume == 0) {
 			shadowVolume = new rIndexedShadowVolume_c;
 		} else {

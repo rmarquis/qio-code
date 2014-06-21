@@ -119,6 +119,7 @@ static aCvar_c rb_forceBloom("rb_forceBloom","0");
 static aCvar_c rb_showSpotLightShadows("rb_showSpotLightShadows","0");
 static aCvar_c rb_showPointLightShadows("rb_showPointLightShadows","0");
 static aCvar_c rb_showSplits("rb_showSplits","0");
+static aCvar_c rb_forceSunShadowMapSize("rb_forceSunShadowMapSize","-1");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1260,24 +1261,27 @@ public:
 			return;
 		}
 		if(bNewDrawingSunShadowMapPass) {
-			u32 shadowMapSize = 1024;
+			u32 sunShadowMapSize = 1024;
+			if(rb_forceSunShadowMapSize.getInt() > 0) {
+				sunShadowMapSize = rb_forceSunShadowMapSize.getInt();
+			}
 			if(newSunShadowMapLOD <= 0) {
-				depthFBO.create(shadowMapSize,shadowMapSize);		
+				depthFBO.create(sunShadowMapSize,sunShadowMapSize);		
 				bindFBO(depthFBO.getFBOHandle());
 				bDepthFBODrawnThisFrame = true;
 			} else if(newSunShadowMapLOD == 1) {
-				depthFBO_lod1.create(shadowMapSize,shadowMapSize);		
+				depthFBO_lod1.create(sunShadowMapSize,sunShadowMapSize);		
 				bindFBO(depthFBO_lod1.getFBOHandle());
 				bDepthFBOLod1DrawnThisFrame = true;
 			} else if(newSunShadowMapLOD == 2) {
-				depthFBO_lod2.create(shadowMapSize,shadowMapSize);		
+				depthFBO_lod2.create(sunShadowMapSize,sunShadowMapSize);		
 				bindFBO(depthFBO_lod2.getFBOHandle());
 				bDepthFBOLod2DrawnThisFrame = true;
 			} else {
 				g_core->RedWarning("setBDrawingSunShadowMapPass: shadow map lod %i not handled by backend.\n",newSunShadowMapLOD);
 			}
 			// set viewport
-			setGLViewPort(shadowMapSize,shadowMapSize);
+			setGLViewPort(sunShadowMapSize,sunShadowMapSize);
 			// clear buffers
 			// Depth mask must be set to true before calling glClear
 			// (otherwise GL_DEPTH_BUFFER_BIT would be ignored)

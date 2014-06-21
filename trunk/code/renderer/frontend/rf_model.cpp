@@ -201,6 +201,14 @@ u32 model_c::getTotalTriangleCount() const {
 	}
 	return 0;
 }
+bool model_c::hasStageWithoutBlendFunc() const {
+	if(type == MOD_STATIC) {
+		return this->staticModel->hasStageWithoutBlendFunc();
+	} else {
+		// TODO?
+	}
+	return false;
+}
 void model_c::clear() {
 	if(type == MOD_BSP) {
 		// bsp inline models are fried in rf_bsp.cpp

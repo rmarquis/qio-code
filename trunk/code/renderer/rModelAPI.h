@@ -77,6 +77,7 @@ public:
 	virtual void printBoneNames() const = 0;
 	// returns the total number of triangles in model
 	virtual u32 getTotalTriangleCount() const = 0;
+	virtual bool hasStageWithoutBlendFunc() const = 0;
 };
 
 #endif // __RMODELAPI_H__

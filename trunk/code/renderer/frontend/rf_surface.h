@@ -148,6 +148,7 @@ public:
 	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
 
 	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
+	bool hasStageWithoutBlendFunc() const;
 
 	void clear() {
 		indices.destroy();
@@ -358,6 +359,7 @@ public:
 	virtual u32 countDuplicatedTriangles() const;
 	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
 
+	bool hasStageWithoutBlendFunc() const;
 	bool getModelData(class staticModelCreatorAPI_i *out) const;
 
 	bool getTagOrientation(int tagNum, class matrix_c &out) const;

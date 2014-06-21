@@ -165,6 +165,11 @@ const struct extraSurfEdgesData_s *r_surface_c::getExtraSurfEdgesData() const {
 		return 0;
 	return mySkelSF->getEdgesData();
 }
+bool r_surface_c::hasStageWithoutBlendFunc() const {
+	if(mat == 0)
+		return false;
+	return mat->hasStageWithoutBlendFunc();
+}
 void r_surface_c::setMaterial(mtrAPI_i *newMat) {
 #if 1
 	if(newMat == 0) {
@@ -1319,6 +1324,13 @@ bool r_model_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
 	if(surfs.size() == 0)
 		return false;
 	return surfs[0].hasTriangle(i0,i1,i2);
+}
+bool r_model_c::hasStageWithoutBlendFunc() const {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		if(surfs[i].hasStageWithoutBlendFunc())
+			return true;
+	}
+	return false;
 }
 bool r_model_c::getModelData(class staticModelCreatorAPI_i *out) const {
 	for(u32 i = 0; i < surfs.size(); i++) {
