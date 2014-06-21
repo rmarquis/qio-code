@@ -472,6 +472,13 @@ public:
 		}
 		return false;
 	}	
+	virtual bool isSkyMaterial() const {
+		if(skyParms)
+			return true;
+		if(hasStageOfType(ST_CUBEMAP_SKYBOX))
+			return true;
+		return false;
+	}
 	virtual bool isNeededForLightPass() const {
 		if(hasStageWithoutBlendFunc() == false)
 			return false;

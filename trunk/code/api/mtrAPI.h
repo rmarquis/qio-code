@@ -67,6 +67,7 @@ public:
 	virtual class deformArrayAPI_i *getDeformsArray() const = 0;
 	virtual bool hasDeformOfType(enum deformType_e type) const = 0;
 	virtual bool hasStageWithCubeMap() const = 0;
+	virtual bool isSkyMaterial() const = 0;
 	// returns true if material should generate light interactions
 	// This should return false for glass materials and explosion sprites.
 	virtual bool isNeededForLightPass() const = 0;

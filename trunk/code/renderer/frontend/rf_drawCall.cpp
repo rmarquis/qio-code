@@ -51,7 +51,9 @@ aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeD
 aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
 aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
 aCvar_c rf_drawCalls_printShadowMapLOD("rf_drawCalls_printShadowMapLOD","0");
+aCvar_c rf_drawCalls_printAll("rf_drawCalls_printAll","0");
 aCvar_c rf_ignoreMirrors("rf_ignoreMirrors","0");
+aCvar_c rf_drawCalls_printSortCompare("rf_drawCalls_printSortCompare","0");
 
 class drawCall_c {
 public:
@@ -169,7 +171,11 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 			n->drawOnlyOnDepthBuffer = false;
 			//return;
 		} else if(mat->hasStageWithCubeMap()) {
-			sort = DCS_BLEND_AFTER_LIGHTING;
+			if(mat->isSkyMaterial()) {
+				sort = DCS_BLEND_AFTER_LIGHTING_SKY;
+			} else {
+				sort = DCS_BLEND_AFTER_LIGHTING;
+			}
 			n->drawOnlyOnDepthBuffer = false;
 		} else {
 			n->drawOnlyOnDepthBuffer = true;
@@ -352,6 +358,9 @@ int compareDrawCall(const void *v0, const void *v1) {
 		return 1; // c1 first
 	}
 #endif
+	if(rf_drawCalls_printSortCompare.getInt()) {
+		g_core->Print("Comparing %s (sort %i) with %s (sort %i)\n",c0->material->getName(),c0->sort,c1->material->getName(),c1->sort);
+	}
 	if(c0->sort > c1->sort) {
 		return 1; // c1 first
 	} else if(c0->sort < c1->sort) {
@@ -421,6 +430,10 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		}
 		if(rf_drawCalls_printShadowMapLOD.getInt()) {
 			g_core->Print("Drawcall %i: material %s: shadowMapLOD %i\n",i,c->material->getName(),c->shadowMapLOD);
+		}
+		if(rf_drawCalls_printAll.getInt()) {
+			g_core->Print("Drawcall %i of %i: materials %s: bDrawOnDepthBuffer: %i, bDrawingSunShadowMap %i, bHasSunLight %i, sort %i\n",
+				i,numDrawCalls,c->material->getName(),c->drawOnlyOnDepthBuffer,c->bDrawingSunShadowMapPass,c->bHasSunLight,c->sort);
 		}
 		// draw sky after mirror/portal materials
 		// this is a quick fix for maps with mirrors AND skies like q3dm0
