@@ -850,6 +850,24 @@ void r_surface_c::createFlatGrid(float size, int rows) {
 		}
 	}
 }
+bool r_surface_c::hasPoint(const vec3_c &p) const {
+	for(u32 i = 0; i < verts.size(); i++) {
+		if(verts[i].xyz.compare(p))
+			return true;
+	}
+	return false;
+}
+u32 r_surface_c::hasPoints(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) const {
+	u32 count = 0;
+	if(hasPoint(p0))
+		count++;
+	if(hasPoint(p1))
+		count++;
+	if(hasPoint(p2))
+		count++;
+	return count;
+}
+
 void r_surface_c::addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3) {
 	u32 i0 = verts.size();
 	verts.push_back(v0);
@@ -1085,7 +1103,15 @@ void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 	if(!stricmp(matName,"textures/common/collision") || !stricmp(matName,"textures/common/collision_metal")) {
 		return;
 	}
-	r_surface_c *sf = registerSurf(matName);
+	r_surface_c *sf;
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	if(mat && mat->isMirrorMaterial()) {
+		// special case, mirror surfaces must be planar
+		sf = registerPlanarSurf(matName,v0.xyz,v1.xyz,v2.xyz);
+	} else {
+		// try to use an existing surface
+		sf = registerSurf(matName);
+	}
 	sf->addTriangle(v0,v1,v2);
 	this->bounds.addPoint(v0.xyz);
 	this->bounds.addPoint(v1.xyz);
@@ -1560,6 +1586,21 @@ r_surface_c *r_model_c::registerSurf(const char *matName) {
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		if(!Q_stricmp(sf->getMatName(),matName)) {
 			return sf;
+		}
+	}	
+	sf = &surfs.pushBack();
+	sf->setMaterial(matName);
+	return sf;
+}
+r_surface_c *r_model_c::registerPlanarSurf(const char *matName, const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		// first check material
+		if(!Q_stricmp(sf->getMatName(),matName)) {
+			u32 count = sf->hasPoints(p0,p1,p2);
+			if(count >= 2) {
+				return sf;
+			}
 		}
 	}	
 	sf = &surfs.pushBack();

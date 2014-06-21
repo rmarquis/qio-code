@@ -135,6 +135,9 @@ public:
 	void addPoly(const struct simplePoly_s &poly);
 	void addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3);
 
+	bool hasPoint(const vec3_c &p) const;
+	u32 hasPoints(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) const;
+
 	virtual void resizeVerts(u32 newNumVerts);
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);
 	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos);
@@ -385,6 +388,7 @@ public:
 	bool createDecal(class simpleDecalBatcher_c *out, const class vec3_c &pos,
 								 const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
+	r_surface_c *registerPlanarSurf(const char *matName, const vec3_c &p0, const vec3_c &p1, const vec3_c &p2);
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0, bool useVertexColors = false, const vec3_c *extraRGB = 0);
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);

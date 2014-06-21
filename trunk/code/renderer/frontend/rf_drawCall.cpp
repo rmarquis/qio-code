@@ -51,6 +51,7 @@ aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeD
 aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
 aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
 aCvar_c rf_drawCalls_printShadowMapLOD("rf_drawCalls_printShadowMapLOD","0");
+aCvar_c rf_ignoreMirrors("rf_ignoreMirrors","0");
 
 class drawCall_c {
 public:
@@ -550,6 +551,8 @@ void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) 
 		if(cameraDist > 0) {
 			continue; // camera is behind surface plane
 		}
+		if(rf_ignoreMirrors.getInt())
+			continue;
 		//g_core->Print("Found DCS_PORTAL drawCall with material %s (abs index %i)\n",dc.material->getName(),i);
 		// do the automatic mirror for now 
 		if(dc.material->isMirrorMaterial() || !stricmp(dc.material->getName(),"textures/common/mirror2")) {

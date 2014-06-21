@@ -46,6 +46,7 @@ static aCvar_c rf_sunShadowMap_boundZ("rf_sunShadowMap_boundZ","256");
 static aCvar_c rf_sunShadowMap_allowSplits("rf_sunShadowMap_allowSplits","1");
 static aCvar_c rf_sunShadowMap_splitCount("rf_sunShadowMap_splitCount","3");
 static aCvar_c rf_sunShadowMap_showFirstSplitBounds("rf_sunShadowMap_showFirstSplitBounds","0");
+static aCvar_c rf_sunShadowMap_showSecondSplitBounds("rf_sunShadowMap_showSecondSplitBounds","0");
 
 // it's in rf_proc.cpp
 extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
@@ -164,6 +165,10 @@ void RF_SetupAndDrawSunShadowMapSplit(const aabb &baseSunBounds, u32 splitNum, f
 		if(rf_sunShadowMap_showFirstSplitBounds.getInt()) {
 			RFDL_AddDebugBB(sunBounds,vec3_c(1,0,0),0.5);
 		}
+	} else if(splitNum == 1) {
+		if(rf_sunShadowMap_showSecondSplitBounds.getInt()) {
+			RFDL_AddDebugBB(sunBounds,vec3_c(0,1,0),0.5);
+		}
 	}
 
 	rf_currentSunBounds = sunBounds;
@@ -214,9 +219,9 @@ void RF_Generate3DSubView() {
 							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,0,lod0Exts);
 							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,1,lod1Exts);
 						} else {
-							float lod0Exts = 512;
-							float lod1Exts = 4096;
-							float lod2Exts = 8192;
+							float lod0Exts = 300;
+							float lod1Exts = 3000;
+							float lod2Exts = 12000;
 
 							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,0,lod0Exts);
 							RF_SetupAndDrawSunShadowMapSplit(baseSunBounds,1,lod1Exts);
