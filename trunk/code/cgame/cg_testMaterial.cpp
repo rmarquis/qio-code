@@ -95,7 +95,7 @@ public:
 
 static cgMaterialTester_c *cg_materialTester = 0;
 
-static void CG_FreeTestMaterialClass() {
+void CG_FreeTestMaterialClass() {
 	if(cg_materialTester) {
 		rf->removeCustomRenderObject(cg_materialTester);
 		delete cg_materialTester;

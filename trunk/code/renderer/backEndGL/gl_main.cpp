@@ -120,6 +120,7 @@ static aCvar_c rb_showSpotLightShadows("rb_showSpotLightShadows","0");
 static aCvar_c rb_showPointLightShadows("rb_showPointLightShadows","0");
 static aCvar_c rb_showSplits("rb_showSplits","0");
 static aCvar_c rb_forceSunShadowMapSize("rb_forceSunShadowMapSize","-1");
+static aCvar_c rb_printD3AlphaTests("rb_printD3AlphaTests","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -656,6 +657,9 @@ public:
 			}
 			glAlphaFunc( GL_LESS, 0.5f ); 
 		} else if(newAlphaFunc == AF_D3_ALPHATEST) {
+			if(rb_printD3AlphaTests.getInt()) {
+				g_core->Print("Using Doom3 alpha test value %f\n",customVal);
+			}
 			// set the custom alphaTest value provided by Doom3 material
 			if(prevAlphaFunc == AF_NONE) {
 				glEnable(GL_ALPHA_TEST);

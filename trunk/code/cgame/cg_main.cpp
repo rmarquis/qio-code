@@ -373,6 +373,8 @@ void CG_Shutdown( void ) {
 			cent->emitter = 0;
 		}
 	}
+	// shutdown test material
+	CG_FreeTestMaterialClass();
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
 	// unlink autocvars

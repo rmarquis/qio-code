@@ -17,3 +17,16 @@ qiotests/cpuWaterTest1
   }
 }
 
+
+textures/qiotests/alphaTestedGrate
+{
+  qer_editorImage textures/qiotests/alphaTestedGrate
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/alphaTestedGrate
+	alphaTest 0.5
+  }
+}
+
+

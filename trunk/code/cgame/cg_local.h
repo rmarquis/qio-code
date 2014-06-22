@@ -306,6 +306,7 @@ void CG_RunTestEmitter();
 // cg_testMaterial.cpp
 //
 void CG_RunTestMaterial();
+void CG_FreeTestMaterialClass();
 
 //
 // cg_tempLighs.cpp
