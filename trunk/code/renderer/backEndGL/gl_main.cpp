@@ -190,6 +190,9 @@ public:
 	u32 getTextureHandle() {
 		return textureHandle;
 	}
+	u32 getW() const {
+		return w;
+	}
 };
 // six texture2D FBOs composed into cubemap
 class depthCubeFBOs_c {
@@ -207,6 +210,9 @@ public:
 	}
 	u32 getSideTextureHandle(u32 sideNum) {
 		return sides[sideNum].getTextureHandle();
+	}
+	u32 getW() const {
+		return w;
 	}
 };
 
@@ -275,6 +281,9 @@ public:
 	}
 	u32 getHandle() {
 		return fboHandle;
+	}
+	u32 getW() const {
+		return w;
 	}
 };
 struct texState_s {
@@ -1350,6 +1359,7 @@ public:
 			}
 			return;
 		}
+		float usedShadowMapSize = 1024;
 		curShader = newShader;
 		if(newShader == 0) {
 			if(rb_verboseBindShader.getInt()) {
@@ -1434,11 +1444,15 @@ public:
 						u32 slot = 3;
 						bindTex(slot,depthFBO.getTextureHandle());
 						glUniform1i(newShader->u_spotLightShadowMap,slot);
+
+						usedShadowMapSize = depthFBO.getW();
 					} else {
 						if(rb_useDepthCubeMap.getInt()) {
 							selectTex(3);
 							glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
 							glUniform1i(newShader->u_shadowCubeMap,3);
+
+							usedShadowMapSize = depthCubeMap.getW();
 						} else {
 							for(u32 i = 0; i < 6; i++) {
 								matrix_c lProj = curLight->getSMLightProj();;
@@ -1453,6 +1467,7 @@ public:
 								u32 slot = 3+i;
 								bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
 								glUniform1i(newShader->u_shadowMap[i],slot);
+								usedShadowMapSize = depthCubeFBOs.getW();
 							}
 						}
 					}
@@ -1464,6 +1479,7 @@ public:
 
 				bindTex(3,depthFBO.getTextureHandle());
 				glUniform1i(newShader->u_directionalShadowMap,3);
+				usedShadowMapSize = depthFBO.getW();
 
 				// also bind LOD 1 fbo
 				if(newShader->u_directionalShadowMap_lod1 >= 0) {
@@ -1523,6 +1539,9 @@ public:
 			if(newShader->u_shadowMapLod1Mins != -1) {
 				glUniform3fv(newShader->u_shadowMapLod1Mins,1,sunShadowBounds[1].mins);
 			}
+			if(newShader->u_shadowMapSize != -1) {
+				glUniform1f(newShader->u_shadowMapSize,usedShadowMapSize);
+			}	
 		}
 	}
 	// temporary vertex buffer for stages that requires CPU 
@@ -1553,6 +1572,94 @@ public:
 			// set the classic Quake3 GT0 / LT128 / GT128 alphaFunc
 			setAlphaFunc(s->getAlphaFunc());
 		}
+	}
+	virtual void drawDepthPassElement(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		if(lastMat->hasStageWithoutCustomProgram() == false)
+			return;
+		if(bSkipStaticEnvCubeMapStages) {
+			if(lastMat->hasOnlyStagesOfType(ST_ENV_CUBEMAP)) {
+				return;
+			}
+		}
+
+		if(bRendererMirrorThisFrame) {
+			if(lastMat->isMirrorMaterial()) {
+				setColorMask(false, false, false, false);
+			} else {
+				// non-mirrored view should never be blended with mirror view,
+				// so draw all non-mirrored surfaces in draw color
+				setColorMask(true, true, true, true);
+				this->setColor4f(0,0,0,0);
+			}
+		} else {
+			setColorMask(false, false, false, false);
+		}
+		//if(lastMat->isMirrorMaterial()) {
+		//	setGLDepthMask(false);
+		//} else {
+		//	setGLDepthMask(true);
+		//}
+		setGLDepthMask(true);
+		if(curCubeMapSide >= 0 && rb_useDepthCubeMap.getInt()) {
+			glShader_c *sh = GL_RegisterShader("drawToShadowMap");
+			bindShader(sh);
+		} else {
+			bindShader(0);
+		}
+		bindVertexBuffer(&verts);
+		bindIBO(&indices);
+		//turnOffPolygonOffset();
+		if(lastMat->getPolygonOffset()) {
+			this->setPolygonOffset(-1,-2);
+		} else {
+			this->turnOffPolygonOffset();
+		}
+		turnOffTextureMatrices();
+
+		// check if material has an alpha test stage
+		// TODO: draw all of them, not only the first one?
+		const mtrStageAPI_i *alphaStage = lastMat->getFirstStageWithAlphaFunc();
+		if(alphaStage == 0) {
+			// material has no alpha test stages, we can draw without textures
+			turnOffAlphaFunc();
+			disableAllTextures();
+		} else {
+			// material has alpha test stage, we need to bind its texture
+			// and draw surface with alpha test enabled.
+			setupStageAlphaFunc(alphaStage);
+			disableAllTextures();
+			bindTex(0,alphaStage->getTexture(0)->getInternalHandleU32());
+		}
+
+		if(curCubeMapSide >= 0 || bDrawingSunShadowMapPass) {
+			// invert culling for shadow mapping 
+			// (because we want to get the depth of backfaces to avoid epsilon issues)
+			if(lastMat) {
+				if(lastMat->getCullType() == CT_TWO_SIDED) {
+					// this is needed for eg. tree leaves/branches
+					glCull(CT_TWO_SIDED);
+				} else {
+					glCull(CT_BACK_SIDED);
+				}
+			} else {
+				glCull(CT_BACK_SIDED);
+			}
+		} else {
+			if(lastMat) {
+				if(rb_forceTwoSided.getInt()) {
+					glCull(CT_FRONT_SIDED);
+				} else {
+					glCull(lastMat->getCullType());
+				}
+			} else {
+				glCull(CT_FRONT_SIDED);
+			}
+		}
+	///	setDepthRange(0.f,1.f);
+	//	glEnable(GL_DEPTH_TEST);
+
+		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
+		drawCurIBO();
 	}
 	bool bDeformsDone;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
@@ -1611,92 +1718,7 @@ public:
 		}
 		
 		if(bDrawOnlyOnDepthBuffer) {
-			if(lastMat->hasStageWithoutCustomProgram() == false)
-				return;
-			if(bSkipStaticEnvCubeMapStages) {
-				if(lastMat->hasOnlyStagesOfType(ST_ENV_CUBEMAP)) {
-					return;
-				}
-			}
-
-			if(bRendererMirrorThisFrame) {
-				if(lastMat->isMirrorMaterial()) {
-					setColorMask(false, false, false, false);
-				} else {
-					// non-mirrored view should never be blended with mirror view,
-					// so draw all non-mirrored surfaces in draw color
-					setColorMask(true, true, true, true);
-					this->setColor4f(0,0,0,0);
-				}
-			} else {
-				setColorMask(false, false, false, false);
-			}
-			//if(lastMat->isMirrorMaterial()) {
-			//	setGLDepthMask(false);
-			//} else {
-			//	setGLDepthMask(true);
-			//}
-			setGLDepthMask(true);
-			if(curCubeMapSide >= 0 && rb_useDepthCubeMap.getInt()) {
-				glShader_c *sh = GL_RegisterShader("drawToShadowMap");
-				bindShader(sh);
-			} else {
-				bindShader(0);
-			}
-			bindVertexBuffer(&verts);
-			bindIBO(&indices);
-			//turnOffPolygonOffset();
-			if(lastMat->getPolygonOffset()) {
-				this->setPolygonOffset(-1,-2);
-			} else {
-				this->turnOffPolygonOffset();
-			}
-			turnOffTextureMatrices();
-
-			// check if material has an alpha test stage
-			// TODO: draw all of them, not only the first one?
-			const mtrStageAPI_i *alphaStage = lastMat->getFirstStageWithAlphaFunc();
-			if(alphaStage == 0) {
-				// material has no alpha test stages, we can draw without textures
-				turnOffAlphaFunc();
-				disableAllTextures();
-			} else {
-				// material has alpha test stage, we need to bind its texture
-				// and draw surface with alpha test enabled.
-				setupStageAlphaFunc(alphaStage);
-				disableAllTextures();
-				bindTex(0,alphaStage->getTexture(0)->getInternalHandleU32());
-			}
-
-			if(curCubeMapSide >= 0 || bDrawingSunShadowMapPass) {
-				// invert culling for shadow mapping 
-				// (because we want to get the depth of backfaces to avoid epsilon issues)
-				if(lastMat) {
-					if(lastMat->getCullType() == CT_TWO_SIDED) {
-						// this is needed for eg. tree leaves/branches
-						glCull(CT_TWO_SIDED);
-					} else {
-						glCull(CT_BACK_SIDED);
-					}
-				} else {
-					glCull(CT_BACK_SIDED);
-				}
-			} else {
-				if(lastMat) {
-					if(rb_forceTwoSided.getInt()) {
-						glCull(CT_FRONT_SIDED);
-					} else {
-						glCull(lastMat->getCullType());
-					}
-				} else {
-					glCull(CT_FRONT_SIDED);
-				}
-			}
-		///	setDepthRange(0.f,1.f);
-		//	glEnable(GL_DEPTH_TEST);
-
-			setBlendFunc(BM_NOT_SET,BM_NOT_SET);
-			drawCurIBO();
+			drawDepthPassElement(verts,indices);
 			return;
 		}
 		if(rb_printLightingPassDrawCalls.getInt()) {

@@ -53,13 +53,16 @@ varying vec3 v_tbnEyeDir;
 #include "reliefMappingRaycast.inc"
 #endif
 
+#ifdef ENABLE_SHADOW_MAPPING_BLUR
+uniform float u_shadowMapSize;
+#endif
 
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
 {
 	float shadow = 0.0;
 	
-	float pixelOffset = 1.0/2048.0;
+	float pixelOffset = 1.0/u_shadowMapSize;
 	//float samples = 0;
 	// avoid counter shadow
 	if (coord.w > 1.0)
@@ -190,12 +193,6 @@ float computeShadow(vec3 lightToVertDirection) {
 		// never gets here
 	}
 #endif
-#endif
-
-	// silly hack for twosided materials (like tree leaves)
-	// This should be fixed in a better way later.
-#ifdef MATERIAL_TWO_SIDED
-	shadow += 0.5f;
 #endif
 	return shadow;
 }

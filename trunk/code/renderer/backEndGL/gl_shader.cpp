@@ -357,6 +357,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMapLod0Maxs = glGetUniformLocation(shader,"u_shadowMapLod0Maxs");
 	ret->u_shadowMapLod1Mins = glGetUniformLocation(shader,"u_shadowMapLod1Mins");
 	ret->u_shadowMapLod1Maxs = glGetUniformLocation(shader,"u_shadowMapLod1Maxs");
+	ret->u_shadowMapSize = glGetUniformLocation(shader,"u_shadowMapSize");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

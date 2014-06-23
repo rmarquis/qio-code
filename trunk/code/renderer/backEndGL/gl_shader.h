@@ -92,6 +92,7 @@ friend class rbSDLOpenGL_c;
 	// for 2D blur
 	int u_blurScale;
 	int u_averageScreenLuminance;
+	int u_shadowMapSize;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
