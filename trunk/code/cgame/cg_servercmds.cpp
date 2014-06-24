@@ -101,6 +101,8 @@ static void CG_ConfigStringModified( void ) {
 		rf->setSkyMaterial(str);
 	} else if(num == CS_WORLD_WATERLEVEL) {
 		rf->setWaterLevel(str);
+	} else if(num == CS_WORLD_FARPLANE) {
+		cg.farPlane = atof(str);
 	} else if ( num >= CS_MODELS && num < CS_MODELS+MAX_MODELS ) {
 		cgs.gameModels[ num-CS_MODELS ] = rf->registerModel( str );
 	} else if ( num >= CS_ANIMATIONS && num < CS_ANIMATIONS+MAX_ANIMATIONS ) {

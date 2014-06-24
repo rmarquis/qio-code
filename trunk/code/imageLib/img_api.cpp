@@ -53,8 +53,8 @@ class imgAPIImpl_c : public imgAPI_i {
 	virtual void verticalFlip(byte *pic, u32 w, u32 h) {
 		IMG_VerticalFlip(pic,w,h);
 	}
-	virtual void writeTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) {
-		IMG_WriteTGA(fname,pic,width,height,bpp);
+	virtual bool writeTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) {
+		return IMG_WriteTGA(fname,pic,width,height,bpp);
 	}
 };
 

@@ -43,7 +43,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define BSP_IDENT_2015	(('5'<<24)+('1'<<16)+('0'<<8)+'2')
 // MoHBT/MoHSH bsp ident
 #define BSP_IDENT_EALA	(('A'<<24)+('L'<<16)+('A'<<8)+'E')
+// Xreal bsp format
+// modified: drawVerts, lightgrid
+#define BSP_IDENT_XBSP (('P'<<24)+('S'<<16)+('B'<<8)+'X')
+#define BSP_VERSION_XBSP	48
 // our own bsp format
+// added: areaPortals data
 #define BSP_IDENT_QIOBSP (('!'<<24)+('O'<<16)+('I'<<8)+'Q')
 #define BSP_VERSION_QIOBSP	1
 
@@ -323,6 +328,16 @@ struct q3Vert_s {
 	byte		color[4];
 };
 
+struct xrealVert_s {
+	vec3_t		xyz;
+	float		st[2];
+	float		lightmap[2];
+	vec3_t		normal;
+	float		paintColor[4];
+	float       lightColor[4];
+	float		lightDirection[3];
+};
+
 enum q3mapSurfaceType_e {
 	Q3MST_BAD,
 	Q3MST_PLANAR,
@@ -431,6 +446,10 @@ struct q3Header_s {
 		} else if(this->ident == BSP_IDENT_QIOBSP) {
 			// out own bsp format
 			if(this->version == BSP_VERSION_QIOBSP)
+				return true;
+		} else if(this->ident == BSP_IDENT_XBSP) {
+			// XReal bsp
+			if(this->version == BSP_VERSION_XBSP)
 				return true;
 		}
 		return false; // this bsp file format is not supported
@@ -678,6 +697,11 @@ struct q3Header_s {
 		if(ident != BSP_IDENT_VBSP)
 			return false;
 		return true;
+	}
+	bool isBSPXreal() const {
+		if(ident == BSP_IDENT_XBSP && version == BSP_VERSION_XBSP)
+			return true;
+		return false;
 	}
 	
 	// for some reasons Call Of Duty bsps has swapped lump_t fields.

@@ -243,7 +243,10 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	if(s && s[0]) {
 		rf->setWaterLevel(s);
 	}
-
+	s = CG_ConfigString(CS_WORLD_FARPLANE);
+	if(s && s[0]) {
+		cg.farPlane = atof(s);
+	}
 	CG_ParseServerinfo();
 
 	// clear any references to old media

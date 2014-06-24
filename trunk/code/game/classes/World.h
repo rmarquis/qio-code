@@ -31,6 +31,7 @@ class World {
 	str skyMaterial;
 	float waterLevel;
 	bool hasWaterLevel;
+	float farPlane;
 
 	void runGlobalWaterPhysics();
 public:

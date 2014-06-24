@@ -203,6 +203,11 @@ public:
 		tmp[1] = 0;
 		this->append(tmp);
 	}
+	void appendInt(int i) {
+		char tmp[32];
+		sprintf(tmp,"%i",i);
+		this->append(tmp);
+	}
 	void removeCharBefore(int pos) {
 		if(pos < 1)
 			return;

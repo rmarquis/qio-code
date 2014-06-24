@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //============================================================================
 
 static aCvar_c cg_printCurCamPos("cg_printCurCamPos","0");
+static aCvar_c cg_printCurFarPlane("cg_printCurFarPlane","0");
 
 /*
 =================
@@ -269,10 +270,15 @@ static int CG_CalcViewValues( void ) {
 	if(cg_printCurCamPos.getInt()) {
 		CG_Printf("CG_CalcViewValues: camera eye is at %f %f %f\n",cg.refdefViewOrigin[0],cg.refdefViewOrigin[1],cg.refdefViewOrigin[2]);
 	}
+	if(cg_printCurFarPlane.getInt()) {
+		CG_Printf("CG_CalcViewValues: cg.farPlane is %f\n",cg.farPlane);
+	}
 
 	projDef_s projDef;
 	projDef.setDefaults();
-	//projDef.zFar = 1024.f;
+	if(cg.farPlane >= 8.f) {
+		projDef.zFar = cg.farPlane;
+	}
 	rf->setupProjection3D(&projDef);
 	rf->setup3DView(cg.refdefViewOrigin,cg.refdefViewAngles,cg_thirdPerson.integer);
 

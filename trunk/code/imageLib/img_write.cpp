@@ -22,11 +22,23 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 #include "img_local.h"
+#include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <stdio.h>
 #include <string.h>
 
-void IMG_WriteTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) {
+bool IMG_WriteTGA(const char *fname, byte *pic, u32 width, u32 height, u32 inBPP) {
+	u32 bpp;
+	if(inBPP == 3 || inBPP == 4) {
+		// image will be saved directly
+		bpp = inBPP;
+	} else if(inBPP == 1) {
+		// image will be converted to RGB
+		bpp = 3;
+	} else {
+		g_core->RedWarning("IMG_WriteTGA: invalid bpp %i, can't write to %s\n",fname,inBPP);
+		return true;
+	}
 	u32 fileLen = width*height*bpp+18;
 	
 	byte *buffer = new byte[fileLen];
@@ -38,15 +50,33 @@ void IMG_WriteTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) 
 	buffer[15] = height>>8;
 	buffer[16] = bpp*8;	// pixel size
 	
-	memcpy(buffer+18, pic, width*height*bpp);
-	// swap rgb to bgr
-	for(u32 i = 18; i < fileLen; i+=bpp) {
-		byte tmp = buffer[i];
-		buffer[i] = buffer[i+2];
-		buffer[i+2] = tmp;
+	u32 numPixels = width*height;
+	if(inBPP == bpp) {
+		memcpy(buffer+18, pic, numPixels*bpp);
+	} else {
+		byte *p = buffer + 18;
+		const byte *in = pic;
+		for(u32 i = 0; i < numPixels; i++) {
+			*p = *in;
+			p++;
+			*p = *in;
+			*p++;
+			*p = *in;
+			*p++;
+			in++;
+		}
 	}
+//	if(bpp >= 3) {
+		// swap rgb to bgr
+		for(u32 i = 18; i < fileLen; i+=bpp) {
+			byte tmp = buffer[i];
+			buffer[i] = buffer[i+2];
+			buffer[i+2] = tmp;
+		}
+//	}
 
 	g_vfs->FS_WriteFile(fname, buffer, fileLen);
 	
 	delete [] buffer;
+	return false;
 }

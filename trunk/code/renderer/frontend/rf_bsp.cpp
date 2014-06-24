@@ -503,36 +503,53 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 	return false; // OK
 }
 bool rBspTree_c::loadVerts(u32 lumpVerts) {
-	const q3Vert_s *iv = (const q3Vert_s*) h->getLumpData(lumpVerts);
-	u32 numVerts = h->getLumpStructCount(lumpVerts,sizeof(q3Vert_s));
-	verts.resize(numVerts);
-	rVert_c *ov = verts.getArray();
-	// convert vertices
-	// swap colors for DX9 backend
-	//if(rb->getType() == BET_DX9) {
-	//	for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
-	//		ov->xyz = iv->xyz;
-	//		ov->tc = iv->st;
-	//		ov->lc = iv->lightmap;
-	//		ov->normal = iv->normal;
-	//		// dx expects ARGB ....
-	//		ov->color[0] = iv->color[3];
-	//		ov->color[1] = iv->color[0];
-	//		ov->color[2] = iv->color[1];
-	//		ov->color[3] = iv->color[2];
-	//	}
-	//} else {
+	if(h->isBSPXreal()) {
+		const xrealVert_s *iv = (const xrealVert_s*) h->getLumpData(lumpVerts);
+		u32 numVerts = h->getLumpStructCount(lumpVerts,sizeof(q3Vert_s));
+		verts.resize(numVerts);
+		rVert_c *ov = verts.getArray();
 		for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
 			ov->xyz = iv->xyz;
 			ov->tc = iv->st;
 			ov->lc = iv->lightmap;
 			ov->normal = iv->normal;
-			ov->color[0] = iv->color[0];
-			ov->color[1] = iv->color[1];
-			ov->color[2] = iv->color[2];
-			ov->color[3] = iv->color[3];
+			//ov->color[0] = iv->color[0];
+			//ov->color[1] = iv->color[1];
+			//ov->color[2] = iv->color[2];
+			//ov->color[3] = iv->color[3];
 		}
-//	}
+	} else {
+		const q3Vert_s *iv = (const q3Vert_s*) h->getLumpData(lumpVerts);
+		u32 numVerts = h->getLumpStructCount(lumpVerts,sizeof(q3Vert_s));
+		verts.resize(numVerts);
+		rVert_c *ov = verts.getArray();
+		// convert vertices
+		// swap colors for DX9 backend
+		//if(rb->getType() == BET_DX9) {
+		//	for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
+		//		ov->xyz = iv->xyz;
+		//		ov->tc = iv->st;
+		//		ov->lc = iv->lightmap;
+		//		ov->normal = iv->normal;
+		//		// dx expects ARGB ....
+		//		ov->color[0] = iv->color[3];
+		//		ov->color[1] = iv->color[0];
+		//		ov->color[2] = iv->color[1];
+		//		ov->color[3] = iv->color[2];
+		//	}
+		//} else {
+			for(u32 i = 0; i < numVerts; i++, ov++, iv++) {
+				ov->xyz = iv->xyz;
+				ov->tc = iv->st;
+				ov->lc = iv->lightmap;
+				ov->normal = iv->normal;
+				ov->color[0] = iv->color[0];
+				ov->color[1] = iv->color[1];
+				ov->color[2] = iv->color[2];
+				ov->color[3] = iv->color[3];
+			}
+	//	}
+	}
 	return false; // no error
 }
 bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
@@ -547,9 +564,16 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		return true; // error
 	}
 	const lump_s &vl = h->getLumps()[lumpVerts];
-	if(vl.fileLen % sizeof(q3Vert_s)) {
-		g_core->RedWarning("rBspTree_c::loadSurfs: invalid indexes lump size\n");
-		return true; // error
+	if(h->isBSPXreal()) {
+		if(vl.fileLen % sizeof(xrealVert_s)) {
+			g_core->RedWarning("rBspTree_c::loadSurfs: invalid xreal verts lump size\n");
+			return true; // error
+		}
+	} else {
+		if(vl.fileLen % sizeof(q3Vert_s)) {
+			g_core->RedWarning("rBspTree_c::loadSurfs: invalid verts lump size\n");
+			return true; // error
+		}
 	}
 	const lump_s &ml = h->getLumps()[lumpMats];
 	if(ml.fileLen % sizeofMat) {
@@ -1779,6 +1803,41 @@ bool rBspTree_c::load(const char *fname) {
 				return true; // error
 			}
 			if(loadQ3LightGrid(Q3_LIGHTGRID)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else {
+			g_core->RedWarning("rBspTree_c::load: QIO bsp has unknown version %i\n",h->version);
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}
+	} else if(h->ident == BSP_IDENT_XBSP) {
+		if(h->version == BSP_VERSION_XBSP) {
+			if(loadLightmaps(Q3_LIGHTMAPS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadSurfs(Q3_SURFACES, sizeof(q3Surface_s), Q3_DRAWINDEXES, Q3_DRAWVERTS, Q3_SHADERS, sizeof(q3BSPMaterial_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadModels(Q3_MODELS)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadNodesAndLeaves(Q3_NODES,Q3_LEAVES,sizeof(q3Leaf_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafIndexes(Q3_LEAFSURFACES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadPlanes(Q3_PLANES)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadVisibility(Q3_VISIBILITY)) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}

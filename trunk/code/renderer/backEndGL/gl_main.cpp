@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/sdlSharedAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/rAPI.h>
+#include <api/imgAPI.h>
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -121,6 +122,7 @@ static aCvar_c rb_showPointLightShadows("rb_showPointLightShadows","0");
 static aCvar_c rb_showSplits("rb_showSplits","0");
 static aCvar_c rb_forceSunShadowMapSize("rb_forceSunShadowMapSize","-1");
 static aCvar_c rb_printD3AlphaTests("rb_printD3AlphaTests","0");
+static aCvar_c rb_saveCurrentShadowMapsToFile("rb_saveCurrentShadowMapsToFile","0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -182,6 +184,7 @@ public:
 	~fboDepth_c();
 
 	bool create(u32 newW, u32 newH);
+	bool writeToFile(const char *fname);
 	void destroy();
 
 	u32 getFBOHandle() {
@@ -193,6 +196,9 @@ public:
 	u32 getW() const {
 		return w;
 	}
+	u32 getH() const {
+		return h;
+	}
 };
 // six texture2D FBOs composed into cubemap
 class depthCubeFBOs_c {
@@ -203,6 +209,7 @@ public:
 	~depthCubeFBOs_c();
 
 	bool create(u32 newW, u32 newH);
+	bool writeToFile(const char *baseName);
 	void destroy();
 
 	u32 getSideFBOHandle(u32 sideNum) {
@@ -426,6 +433,9 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	// for glColorMask changes
 	bool colorMaskState[4];
 
+	// for debugging
+	bool bSavingDepthShadowMapsToFile;
+	int iCubeMapCounter;
 	// for Doom3 material expressions
 	astInput_c materialVarList;
 
@@ -461,6 +471,8 @@ public:
 		colorMaskState[0] = colorMaskState[1] = colorMaskState[2] = colorMaskState[3] = false;
 		bSkipStaticEnvCubeMapStages = false;
 		bHasSunLight = false;
+		bSavingDepthShadowMapsToFile = false;
+		iCubeMapCounter = 0;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -966,8 +978,15 @@ public:
 		}
 		if(iCubeSide == -1) {
 			this->stopDrawingToFBOAndRestoreCameraMatrices();
-	
+			if(isSavingDepthShadowMapsToFile()) {
+				str name = "depthCubeMap";
+				name.appendInt(iCubeMapCounter);
+				depthCubeFBOs.writeToFile(name);
+			}
+
 			this->curCubeMapSide = -1;
+
+			this->iCubeMapCounter++;
 
 			CHECK_GL_ERRORS;
 			return;
@@ -1777,7 +1796,13 @@ public:
 			if(lastMat->getPolygonOffset()) {
 				this->setPolygonOffset(-1,-2);
 			} else {
-				this->turnOffPolygonOffset();
+				if(portalDepth) {
+					// simple hack to fix mirror views z-fighting when rf_enableMultipassRendering=1
+					// I think there might be a better solution for it.
+					this->setPolygonOffset(-0.5,-1);
+				} else {
+					this->turnOffPolygonOffset();
+				}
 			}
 			u32 numMatStages = lastMat->getNumStages();
 			for(u32 i = 0; i < numMatStages; i++) {
@@ -2455,6 +2480,9 @@ drawOnlyLightmap:
 		// reset counters
 		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}
+	bool isSavingDepthShadowMapsToFile() {
+		return bSavingDepthShadowMapsToFile;
+	}
 	virtual void endFrame() {
 		if(rb_showDepthBuffer.getInt()) {
 			static arraySTD_c<float> pPixels;
@@ -2464,6 +2492,25 @@ drawOnlyLightmap:
 			bindShader(0);
 			setup2DView();
 			glDrawPixels( this->getWinWidth(), this->getWinHeight(), GL_DEPTH_COMPONENT, GL_FLOAT, pPixels );
+		}	
+		CHECK_GL_ERRORS;
+		if(isSavingDepthShadowMapsToFile()) {
+			if(bDepthFBODrawnThisFrame) {
+				depthFBO.writeToFile("depthFBO.tga");
+			}			
+			if(bDepthFBOLod1DrawnThisFrame) {
+				depthFBO_lod1.writeToFile("depthFBO_lod1.tga");
+			}		
+			if(bDepthFBOLod2DrawnThisFrame) {
+				depthFBO_lod2.writeToFile("depthFBO_lod2.tga");
+			}
+			depthCubeFBOs.writeToFile("lastDepthCubeFBOs");
+		}
+		if(rb_saveCurrentShadowMapsToFile.getInt()) {
+			bSavingDepthShadowMapsToFile = true;
+			rb_saveCurrentShadowMapsToFile.setString("0");
+		} else {
+			bSavingDepthShadowMapsToFile = false;
 		}
 		if(gl_callGLFinish.getInt()) {
 			glFinish();
@@ -2472,6 +2519,7 @@ drawOnlyLightmap:
 		bDepthFBODrawnThisFrame = false;
 		bDepthFBOLod1DrawnThisFrame = false;
 		bDepthFBOLod2DrawnThisFrame = false;
+		iCubeMapCounter = 0;
 		g_sharedSDLAPI->endFrame();
 		if(rb_printFrameTriCounts.getInt()) {
 			g_core->Print("%i input tris / %i total tris (%i in IBOs)\n",counters.c_inputTris,counters.c_totalTris,counters.c_totalTrisVBO);
@@ -3288,6 +3336,16 @@ bool fboDepth_c::create(u32 newW, u32 newH) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	return false;
 }
+bool fboDepth_c::writeToFile(const char *fname) {
+	static arraySTD_c<byte> pBytePixels;
+	// force texture selection
+	g_staticSDLOpenGLBackend.selectTex(1);
+	g_staticSDLOpenGLBackend.selectTex(0);
+	g_staticSDLOpenGLBackend.bindTex(0,this->getTextureHandle());
+	pBytePixels.resize(this->getW()*this->getH());
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, (void*)pBytePixels );
+	return g_img->writeTGA(fname,pBytePixels.getArray(),this->getW(),this->getH(),1);
+}
 void fboDepth_c::destroy() {
 	if(textureHandle) {
 		glDeleteTextures(1,&textureHandle);
@@ -3399,6 +3457,22 @@ bool depthCubeFBOs_c::create(u32 newW, u32 newH) {
 	w = newW;
 	h = newH;
 	return bError;
+}
+bool depthCubeFBOs_c::writeToFile(const char *baseName) {
+	str s;
+	u32 c_failed = 0;
+	for(u32 i = 0; i < 6; i++) {
+		s = baseName;
+		s.append("_side");
+		s.appendInt(i);
+		s.append(".tga");
+		if(sides[i].writeToFile(s.c_str())) {
+			c_failed++;
+		}
+	}
+	if(c_failed)
+		return true;
+	return false;
 }
 
 void SDLOpenGL_RegisterBackEnd() {

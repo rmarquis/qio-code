@@ -1,4 +1,5 @@
 {
+"farplane" "13000"
 "classname" "worldspawn"
 // brush 0
 {
@@ -316,6 +317,6 @@
 }
 // entity 1
 {
-"origin" "584 -376 -440"
 "classname" "info_player_start"
+"origin" "584 -376 -440"
 }

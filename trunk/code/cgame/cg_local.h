@@ -130,6 +130,9 @@ typedef struct {
 	int			zoomTime;
 	float		zoomSensitivity;
 
+	// zFar value
+	float farPlane;
+
 
 } cg_t;
 
