@@ -253,6 +253,10 @@
 				RelativePath="..\..\game\baseqio\hlsl\dx9\perPixelLighting.fx"
 				>
 			</File>
+			<File
+				RelativePath="..\..\game\baseqio\hlsl\dx9\skyboxCubeMap.fx"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="math"

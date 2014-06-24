@@ -90,7 +90,7 @@ public:
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
 	// cubemap textures
-	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) { }
+	virtual bool uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) { return true; }
 	virtual void freeCubeMap(class cubeMapAPI_i *cm) { }
 
 	// vertex buffers (VBOs)

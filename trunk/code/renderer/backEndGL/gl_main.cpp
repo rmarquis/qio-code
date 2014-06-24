@@ -1592,7 +1592,7 @@ public:
 			setAlphaFunc(s->getAlphaFunc());
 		}
 	}
-	virtual void drawDepthPassElement(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+	virtual void drawDepthPassElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(lastMat->hasStageWithoutCustomProgram() == false)
 			return;
 		if(bSkipStaticEnvCubeMapStages) {
@@ -1737,7 +1737,7 @@ public:
 		}
 		
 		if(bDrawOnlyOnDepthBuffer) {
-			drawDepthPassElement(verts,indices);
+			drawDepthPassElements(verts,indices);
 			return;
 		}
 		if(rb_printLightingPassDrawCalls.getInt()) {
@@ -3138,7 +3138,7 @@ drawOnlyLightmap:
 		glBindTexture(GL_TEXTURE_2D, 0);
 		out->setInternalHandleU32(texID);	
 	}
-	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) {
+	virtual bool uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) {
 		u32 cubemap;
 		glGenTextures(1, &cubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
@@ -3155,6 +3155,7 @@ drawOnlyLightmap:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 		out->setInternalHandleU32(cubemap);
+		return false;
 	}
 	virtual void freeCubeMap(class cubeMapAPI_i *cm) {
 		u32 cubemap = cm->getInternalHandleU32();

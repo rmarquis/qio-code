@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include <api/sdlSharedAPI.h>
 #include <api/rbAPI.h>
+#include <api/cubeMapAPI.h>
 
 #include <shared/r2dVert.h>
 #include <math/matrix.h>
@@ -476,6 +477,15 @@ public:
 		} else {
 			newShader->effect->SetTexture("lightMapTexture", 0);
 		}
+		if(stage) {
+			cubeMapAPI_i *cubeMap = stage->getCubeMap();
+			if(cubeMap) {
+				IDirect3DCubeTexture9 *cubeMapDX9 = (IDirect3DCubeTexture9 *)cubeMap->getInternalHandleV();
+				newShader->effect->SetTexture("cubeMapTexture",cubeMapDX9);
+			} else {
+
+			}
+		}
 		if(bClipPlaneEnabled) {
 			newShader->effect->SetBool("bHasClipPlane",true);
 			newShader->effect->SetValue("clipPlaneNormal", clipPlane.norm, sizeof(vec3_c));
@@ -603,6 +613,32 @@ public:
 		v.MaxZ = max;
 		pDev->SetViewport(&v);
 	}
+	void drawDepthPassElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
+		turnOffAlphaFunc();
+		if(bRendererMirrorThisFrame) {
+			if(lastMat->isMirrorMaterial()) {
+				pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
+				bindHLSLShader(0,0);
+			} else {
+				// non-mirrored view should never be blended with mirror view,
+				// so draw all non-mirrored surfaces in draw color
+				pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
+					D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);				
+				hlslShader_c *blackFillShader = DX9_RegisterShader("blackFill",0);
+				bindHLSLShader(blackFillShader,0);
+			}
+		} else {
+			// set the color mask
+			pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
+			bindHLSLShader(0,0);
+		}
+		setDX9DepthMask(true);
+		if(boundShader) {
+			drawStageWithHLSLShader(verts,indices,0);
+		} else {
+			drawIndexedTrimesh(verts,indices);
+		}
+	}
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		pDev->SetFVF(RVERT_FVF);
 
@@ -615,30 +651,7 @@ public:
 		}
 
 		if(bDrawOnlyOnDepthBuffer) {
-			turnOffAlphaFunc();
-			if(bRendererMirrorThisFrame) {
-				if(lastMat->isMirrorMaterial()) {
-					pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
-					bindHLSLShader(0,0);
-				} else {
-					// non-mirrored view should never be blended with mirror view,
-					// so draw all non-mirrored surfaces in draw color
-					pDev->SetRenderState(D3DRS_COLORWRITEENABLE,
-						D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_RED);				
-					hlslShader_c *blackFillShader = DX9_RegisterShader("blackFill",0);
-					bindHLSLShader(blackFillShader,0);
-				}
-			} else {
-				// set the color mask
-				pDev->SetRenderState(D3DRS_COLORWRITEENABLE,0);
-				bindHLSLShader(0,0);
-			}
-			setDX9DepthMask(true);
-			if(boundShader) {
-				drawStageWithHLSLShader(verts,indices,0);
-			} else {
-				drawIndexedTrimesh(verts,indices);
-			}
+			drawDepthPassElements(verts,indices);
 			return;
 		}
 		// set the color mask
@@ -728,7 +741,9 @@ public:
 				if(lastSurfaceColor.isFullBright() == false) {
 					shaderDef.hasMaterialColor = true;
 				}
-				if(curLight) {
+				if(stageType == ST_CUBEMAP_SKYBOX) {
+					selectedShader = DX9_RegisterShader("skyboxCubeMap",&shaderDef);
+				} else if(curLight) {
 					selectedShader = DX9_RegisterShader("perPixelLighting",&shaderDef);
 				} else {
 					if(
@@ -1051,7 +1066,56 @@ public:
 		texD9->Release();
 		tex->setInternalHandleV(0);
 	}
-
+	virtual bool uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) {
+		u32 cubeMapSize = in[0].w;
+		u32 numPixels = cubeMapSize * cubeMapSize;
+		IDirect3DCubeTexture9 *tex;
+		HRESULT hr = pDev->CreateCubeTexture(cubeMapSize, 0, 0, 
+			D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, 0);
+		if(FAILED(hr)) {
+			g_core->RedWarning("rbDX9_c::uploadCubeMap: CreateCubeTexture failed\n");
+			return true;
+		}	
+		
+		for(u32 i = 0; i < 6; i++) {
+			LPDIRECT3DSURFACE9 face;
+			hr = tex->GetCubeMapSurface(_D3DCUBEMAP_FACES(D3DCUBEMAP_FACE_POSITIVE_X+i), 0, &face);
+			if(FAILED(hr)) {
+				g_core->RedWarning("rbDX9_c::uploadCubeMap: GetCubeMapSurface failed\n");
+				continue;
+			}	
+			D3DLOCKED_RECT rect;
+			hr = face->LockRect(&rect, 0, 0);
+			if (FAILED(hr)) {
+				g_core->RedWarning("rbDX9_c::uploadCubeMap: LockRect failed for face %i\n",i);
+				continue;
+			}
+			const byte *pic = in[i].pic;
+			byte *p = (byte*)rect.pBits;
+			for(u32 j = 0; j < numPixels; j++) {
+				p[0] = pic[2];
+				p[1] = pic[1];
+				p[2] = pic[0];
+				p[3] = pic[3];
+				p += 4;
+				pic += 4;
+			}
+			hr = face->UnlockRect();
+			if (FAILED(hr)) {
+				g_core->RedWarning("rbDX9_c::uploadCubeMap: UnlockRect failed for face %i\n",i);
+				continue;
+			}
+		}
+		out->setInternalHandleV(tex);
+		return false;
+	}
+	virtual void freeCubeMap(class cubeMapAPI_i *cm) {
+		IDirect3DCubeTexture9 *cubemap = (IDirect3DCubeTexture9 *)cm->getInternalHandleV();
+		if(cubemap == 0)
+			return;
+		cubemap->Release();
+		cm->setInternalHandleV(0);
+	}
 	bool initRVertDecl() {
 		if(rVertDecl)
 			return false;
