@@ -222,6 +222,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.bHasShadowMapLod2) {
 		out.append("#define HAS_SHADOWMAP_LOD2\n");
 	}
+	if(p.hasLightColor) {
+		out.append("#define HAS_LIGHT_COLOR\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -358,6 +361,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMapLod1Mins = glGetUniformLocation(shader,"u_shadowMapLod1Mins");
 	ret->u_shadowMapLod1Maxs = glGetUniformLocation(shader,"u_shadowMapLod1Maxs");
 	ret->u_shadowMapSize = glGetUniformLocation(shader,"u_shadowMapSize");
+	ret->u_lightColor = glGetUniformLocation(shader,"u_lightColor");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

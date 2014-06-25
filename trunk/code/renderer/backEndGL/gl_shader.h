@@ -55,6 +55,7 @@ struct glslPermutationFlags_s {
 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
 	//float alphaTestValue;
 	bool hasSunLight; // #define HAS_SUNLIGHT
+	bool hasLightColor; // #define HAS_LIGHT_COLOR
 	bool hasDirectionalShadowMapping; // #define HAS_DIRECTIONAL_SHADOW_MAPPING
 	bool bHasShadowMapLod1; // #define HAS_SHADOWMAP_LOD1
 	bool bHasShadowMapLod2; // #define HAS_SHADOWMAP_LOD2
@@ -93,6 +94,8 @@ friend class rbSDLOpenGL_c;
 	int u_blurScale;
 	int u_averageScreenLuminance;
 	int u_shadowMapSize;
+	// RGB light color
+	int u_lightColor;
 
 	// sampler2D locations
 	int sColorMap; // main diffuse texture

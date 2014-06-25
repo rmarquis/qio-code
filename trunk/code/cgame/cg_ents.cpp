@@ -110,6 +110,12 @@ static void CG_OnEntityOrientationChange(centity_t *cent) {
 		} else {
 			cent->rLight->setLightType(LT_POINT);
 		}
+		if(cent->currentState.lightFlags & LF_COLOURED) {
+			cent->rLight->setBColoured(true);
+			cent->rLight->setColor(cent->currentState.lightColor);
+		} else {
+			cent->rLight->setBColoured(false);
+		}
 	}
 }
 /*

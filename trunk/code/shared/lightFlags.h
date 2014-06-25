@@ -34,8 +34,10 @@ enum {
 	LF_HASBSPLIGHTING = 2,
 	// q3map style spotlight ("target" field must be set)
 	LF_SPOTLIGHT = 4,
+	// set if light has a custom color 
+	LF_COLOURED = 8,
 
-	LIGHTFLAGS_BITS = 3,
+	LIGHTFLAGS_BITS = 4,
 };
 
 #endif // __SHARED_LIGHTFLAGS_H__

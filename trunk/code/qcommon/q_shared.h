@@ -659,6 +659,7 @@ struct entityState_s {
 	float lightRadius; // only for ET_LIGHT 
 	int lightTarget; // for spotlights (light target's entity number)
 	float spotLightRadius; // for spotlights
+	vec3_c lightColor;
 
 	// trail emitter data for all entity types (including BaseEntity)
 	int trailEmitterMaterial; 
@@ -692,6 +693,7 @@ struct entityState_s {
 		trailEmitterMaterial = 0;
 		trailEmitterSpriteRadius = 0.f;
 		trailEmitterInterval = 0;
+		lightColor.set(1.f,1.f,1.f);
 	}
 	entityState_s() {
 		setDefaults();

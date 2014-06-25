@@ -1865,6 +1865,8 @@ bool rBspTree_c::load(const char *fname) {
 	worldBoundsWithoutSkyBox.clear();
 	for(u32 i = 0; i < surfs.size(); i++) {
 		mtrAPI_i *mat = getSurfaceMaterial(i);
+		if(mat == 0)
+			continue;
 		if(mat->hasStageWithCubeMap())
 			continue;
 		const bspSurf_s &sf = surfs[i];

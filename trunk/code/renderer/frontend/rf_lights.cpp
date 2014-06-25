@@ -74,6 +74,8 @@ rLightImpl_c::rLightImpl_c() {
 	oq = 0;
 	shadowMapH = 2048;
 	shadowMapW = 2048;
+	bColoured = false;
+	color.set(1.f,1.f,1.f);
 }
 rLightImpl_c::~rLightImpl_c() {
 	clearInteractions();
@@ -135,6 +137,12 @@ void rLightImpl_c::setSpotLightTarget(const class vec3_c &newTargetPos) {
 void rLightImpl_c::setSpotRadius(float newSpotRadius) {
 	spotRadius = newSpotRadius;
 	this->recalcSpotLightCos();
+}
+void rLightImpl_c::setBColoured(bool newBColoured) {
+	bColoured = newBColoured;
+}
+void rLightImpl_c::setColor(const class vec3_c &newRGB) {
+	color = newRGB;
 }
 void rLightImpl_c::recalcSpotLightCos() {
 	spotLightDir = this->spotLightTarget - this->pos;

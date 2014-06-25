@@ -123,6 +123,10 @@ static aCvar_c rb_showSplits("rb_showSplits","0");
 static aCvar_c rb_forceSunShadowMapSize("rb_forceSunShadowMapSize","-1");
 static aCvar_c rb_printD3AlphaTests("rb_printD3AlphaTests","0");
 static aCvar_c rb_saveCurrentShadowMapsToFile("rb_saveCurrentShadowMapsToFile","0");
+static aCvar_c rb_wireframeLightmapStages("rb_wireframeLightmapStages","0");
+static aCvar_c rb_wireframeColormapLightmappedStages("rb_wireframeColormapLightmappedStages","0");
+static aCvar_c rb_wireframeSkyBoxCubeMapStages("rb_wireframeSkyBoxCubeMapStages","0");
+
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1561,6 +1565,11 @@ public:
 			if(newShader->u_shadowMapSize != -1) {
 				glUniform1f(newShader->u_shadowMapSize,usedShadowMapSize);
 			}	
+			if(curLight && curLight->isColoured()) {
+				if(newShader->u_lightColor != -1) {
+					glUniform3fv(newShader->u_lightColor,1,curLight->getColor());
+				}
+			}
 		}
 	}
 	// temporary vertex buffer for stages that requires CPU 
@@ -1680,6 +1689,26 @@ public:
 		setBlendFunc(BM_NOT_SET,BM_NOT_SET);
 		drawCurIBO();
 	}
+	void showTris(bool noDepthTest) {
+		// temporary disable stencil test for drawing triangle outlines
+		if(stencilTestEnabled) {
+			glDisable(GL_STENCIL_TEST);
+		}
+		this->unbindMaterial();
+		this->bindShader(0);
+		this->setColor4f(1,1,1,1);
+		glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+		if(noDepthTest)
+			setDepthRange( 0, 0 ); 
+		drawCurIBO();	
+		if(noDepthTest)
+			setDepthRange( 0, 1 ); 
+		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+		// restore it back
+		if(stencilTestEnabled) {
+			glEnable(GL_STENCIL_TEST);
+		}
+	}
 	bool bDeformsDone;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
@@ -1792,6 +1821,7 @@ public:
 		//bindVertexBuffer(&verts);
 		bindIBO(&indices);
 
+		bool bForceWireframe = false;
 		if(lastMat) {
 			if(lastMat->getPolygonOffset()) {
 				this->setPolygonOffset(-1,-2);
@@ -1808,6 +1838,22 @@ public:
 			for(u32 i = 0; i < numMatStages; i++) {
 				// get the material stage
 				const mtrStageAPI_i *s = lastMat->getStage(i);
+				// allow developers to outline certain types of stages
+				if(rb_wireframeLightmapStages.getInt()) {
+					if(s->getStageType() == ST_LIGHTMAP) {
+						bForceWireframe = true;
+					}	
+				}
+				if(rb_wireframeColormapLightmappedStages.getInt()) {
+					if(s->getStageType() == ST_COLORMAP_LIGHTMAPPED) {
+						bForceWireframe = true;
+					}	
+				}
+				if(rb_wireframeSkyBoxCubeMapStages.getInt()) {
+					if(s->getStageType() == ST_CUBEMAP_SKYBOX) {
+						bForceWireframe = true;
+					}	
+				}
 				// see if stage condition is met (Doom3 'if' materials)
 				if(s->hasIFCondition()) {
 					if(s->conditionMet(&materialVarList) == false) {
@@ -2199,6 +2245,7 @@ drawOnlyLightmap:
 						pf.hasDoom3AlphaTest = true;
 						pf.alphaTestValue = alphaFuncCustomValue;
 					}*/
+					pf.hasLightColor = curLight->isColoured();
 
 					selectedShader = GL_RegisterShader("perPixelLighting",&pf);
 					if(selectedShader) {
@@ -2280,6 +2327,7 @@ drawOnlyLightmap:
 				bindVertexBuffer(selectedVertexBuffer,bindLightmapCoordinatesToFirstTextureSlot);
 
 				drawCurIBO();
+
 				CHECK_GL_ERRORS;
 			}
 		} else {
@@ -2291,25 +2339,10 @@ drawOnlyLightmap:
 			}
 			drawCurIBO();
 		}
-		if(rb_showTris.getInt()) {
-			// temporary disable stencil test for drawing triangle outlines
-			if(stencilTestEnabled) {
-				glDisable(GL_STENCIL_TEST);
-			}
-			this->unbindMaterial();
-			this->bindShader(0);
-			this->setColor4f(1,1,1,1);
-			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-			if(rb_showTris.getInt()==1)
-				setDepthRange( 0, 0 ); 
-			drawCurIBO();	
-			if(rb_showTris.getInt()==1)
-				setDepthRange( 0, 1 ); 
-			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-			// restore it back
-			if(stencilTestEnabled) {
-				glEnable(GL_STENCIL_TEST);
-			}
+		if(bForceWireframe) {
+			showTris(true);
+		} else if(rb_showTris.getInt()) {
+			showTris(rb_showTris.getInt()==1);
 		}
 		if(rb_showNormals.getInt()) {
 			// temporary disable stencil test for drawing normal vectors

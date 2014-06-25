@@ -93,6 +93,10 @@ void Light::setKeyValue(const char *key, const char *value) {
 	//		this->myEdict->s->lightFlags &= ~LF_SPOTLIGHT;
 	//	}
 	//	this->myEdict->s->lightTarget = ENTITYNUM_NONE;
+	} else if(!stricmp(key,"_color") || !stricmp(key,"color")) {
+		vec3_c color(value);
+		this->myEdict->s->lightFlags |= LF_COLOURED;
+		this->myEdict->s->lightColor = color;
 	} else {
 		BaseEntity::setKeyValue(key,value);
 	}

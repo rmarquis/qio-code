@@ -175,6 +175,8 @@ class rLightImpl_c : public rLightAPI_i {
 	float spotRadius;
 	vec3_c spotLightDir; // calculated from spotLightTarget
 	float spotLightCos;
+	bool bColoured;
+	vec3_c color;
 	
 	aabb absBounds;
 
@@ -241,6 +243,12 @@ public:
 	virtual const matrix_c &getSpotLightView() const {
 		return spotLightView;
 	}
+	virtual bool isColoured() const {
+		return bColoured;
+	}
+	virtual const vec3_c &getColor() const {
+		return color;
+	}
 	void clearInteractions();
 	void clearInteractionsWithDynamicEntities();
 	void recalcStaticInteractionBatches();
@@ -301,6 +309,8 @@ public:
 	virtual void setLightType(rLightType_e newLightType);
 	virtual void setSpotLightTarget(const class vec3_c &newTargetPos);
 	virtual void setSpotRadius(float newSpotRadius);
+	virtual void setBColoured(bool newBColoured);
+	virtual void setColor(const class vec3_c &newRGB);
 
 	virtual void calcPosInEntitySpace(const rEntityAPI_i *ent, vec3_c &out) const;
 

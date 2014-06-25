@@ -38,6 +38,8 @@ public:
 	virtual void setLightType(rLightType_e newLightType) = 0;
 	virtual void setSpotLightTarget(const class vec3_c &newTargetPos) = 0;
 	virtual void setSpotRadius(float newSpotRadius) = 0;
+	virtual void setBColoured(bool newBColoured) = 0;
+	virtual void setColor(const class vec3_c &newRGB) = 0;
 
 	virtual const vec3_c &getOrigin() const = 0;
 	virtual float getRadius() const = 0;
@@ -48,6 +50,8 @@ public:
 	virtual bool isSpotLight() const = 0;
 	virtual const class frustum_c &getSpotLightFrustum() const = 0;
 	virtual const class matrix_c &getSpotLightView() const = 0;
+	virtual bool isColoured() const = 0;
+	virtual const vec3_c &getColor() const = 0;
 
 	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
 	virtual bool getBCameraInside() const = 0;
