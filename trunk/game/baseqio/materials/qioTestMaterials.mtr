@@ -29,4 +29,128 @@ textures/qiotests/alphaTestedGrate
   }
 }
 
+textures/qiotests/colorMapTexModD3ScrollX
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	scroll 0, time
+  }
+}
+textures/qiotests/colorMapTexModD3ScrollY
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	scroll time, 0
+  }
+}
+textures/qiotests/colorMapTexModD3ScrollXY
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	scroll time, time
+  }
+}
+
+table scaleTable{{ 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 1.75, 1.5, 1.25, 1, 0.75, 0.5 }} 
+
+textures/qiotests/colorMapTexModD3ScaleX
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	scale scaleTable[time], 1
+  }
+}
+textures/qiotests/colorMapTexModD3ScaleXY
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	scale scaleTable[time], scaleTable[time]
+  }
+}
+
+textures/qiotests/colorMapTexModD3CenterScaleXY
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	centerscale scaleTable[time], scaleTable[time]
+  }
+}
+table qioTestMaterialsTable1 {{ 0.2, 0.4, 0.8, 1, 0.8, 0.4, 0.2 }} 
+textures/qiotests/colorMapD3RGB
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	rgb qioTestMaterialsTable1[time]
+  }
+}
+
+textures/qiotests/colorMapD3Red
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	red qioTestMaterialsTable1[time]
+  }
+}
+
+textures/qiotests/colorMapD3Green
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	green qioTestMaterialsTable1[time]
+  }
+}
+
+textures/qiotests/colorMapD3Blue
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	blue qioTestMaterialsTable1[time]
+  }
+}
+
+
+textures/qiotests/colorMapD3Blue2
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    map textures/qiotests/tile1_d.png
+	red 0.5 
+	green 0.5
+	blue qioTestMaterialsTable1[time]
+  }
+}
+
+
 

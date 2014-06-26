@@ -2177,7 +2177,9 @@ void Com_Frame( void ) {
 			Com_Printf("Editor closed by user...\n");
 			Com_ShutdownEditorDLL();
 		}
-		wglMakeCurrent(currentHDC,currentHGLRC);
+		if(wglMakeCurrent(currentHDC,currentHGLRC)==FALSE) {
+			Com_RedWarning("wglMakeCurrent after editor frame failed.\n");
+		}
 	}
 
 	NET_FlushPacketQueue();
@@ -2493,6 +2495,26 @@ void Field_CompleteMaterialName()
 
 	if( !Field_Complete( ) ) {
 		g_ms->iterateAllAvailableMaterialNames(PrintMatches);
+	}
+}
+
+/*
+===============
+Field_CompleteMaterialFileName
+===============
+*/
+void Field_CompleteMaterialFileName()
+{
+	if(g_ms == 0)
+		return;
+
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	g_ms->iterateAllAvailableMaterialFileNames(FindMatches);
+
+	if( !Field_Complete( ) ) {
+		g_ms->iterateAllAvailableMaterialFileNames(PrintMatches);
 	}
 }
 

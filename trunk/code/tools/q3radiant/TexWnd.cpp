@@ -703,9 +703,39 @@ void LoadShader(char* pFilename, qtexture_t *q)
   }
   if (nSize > 0)
   {
+	  Printf("Parsing %s\n",pFilename);
     StartTokenParsing(pBuff);
     while (GetToken(true))
     {
+		if(!stricmp(token,"table")) {
+			GetToken(true);
+			int level = 0;
+			for(int i = 0; i < strlen(token); i++) {
+				if(token[i] == '{')
+					level++;
+			}
+			GetToken(true);
+			for(int i = 0; i < strlen(token); i++) {
+				if(token[i] == '{')
+					level++;
+				if(token[i] == '}')
+					level--;
+			}
+			while(1) {
+				if(GetToken(true)==false) {
+					break;
+				}
+				for(int i = 0; i < strlen(token); i++) {
+					if(token[i] == '{')
+						level++;
+					if(token[i] == '}')
+						level--;
+				}
+				if(level == 0)
+					break;
+			}
+			continue;
+		}
       // first token should be the path + name.. (from base)
       CShaderInfo *pShader = new CShaderInfo();
       pShader->setName(token);

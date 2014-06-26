@@ -696,6 +696,7 @@ void Field_CompleteCommand( char *cmd,
 void Field_CompleteEntityDefName();
 void Field_CompleteEmitterName();
 void Field_CompleteMaterialName();
+void Field_CompleteMaterialFileName();
 
 /*
 ==============================================================

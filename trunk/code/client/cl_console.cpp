@@ -328,12 +328,23 @@ void Cmd_CompleteEmitterName( char *args, int argNum ) {
 
 /*
 ==================
-Cmd_CompleteEmitterName
+Cmd_CompleteMaterialName
 ==================
 */
 void Cmd_CompleteMaterialName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		Field_CompleteMaterialName();
+	}
+}
+
+/*
+==================
+Cmd_CompleteMaterialFileName
+==================
+*/
+void Cmd_CompleteMaterialFileName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteMaterialFileName();
 	}
 }
 
@@ -398,6 +409,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "rf_setSunMaterial", Cmd_CompleteMaterialName );
 	Cmd_AddCommand ("rf_setSkyMaterial", 0);
 	Cmd_SetCommandCompletionFunc( "rf_setSkyMaterial", Cmd_CompleteMaterialName );
+	Cmd_SetCommandCompletionFunc( "mat_refreshSingleMaterial", Cmd_CompleteMaterialName );
+	Cmd_SetCommandCompletionFunc( "mat_refreshMaterialSourceFile", Cmd_CompleteMaterialFileName );
 }
 
 /*

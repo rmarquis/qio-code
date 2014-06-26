@@ -76,7 +76,7 @@ struct matFile_s {
 				p += 5; // skip 'table' token
 				p = G_SkipToNextToken(p);
 				// skip table name
-				while(iswspace(*p) == false && *p)
+				while(iswspace(*p) == false && *p && *p != '{')
 					p++;
 				p = G_SkipToNextToken(p);
 				if(*p != '{') {
@@ -392,6 +392,11 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName) {
 void MAT_IterateAllAvailableMaterialNames(void (*callback)(const char *s)) {
 	for(u32 i = 0; i < matFiles.size(); i++) {
 		matFiles[i]->iterateAllAvailableMaterialNames(callback);
+	}
+}
+void MAT_IterateAllAvailableMaterialFileNames(void (*callback)(const char *s)) {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		callback(matFiles[i]->fname.c_str());
 	}
 }
 class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {

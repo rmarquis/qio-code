@@ -205,11 +205,11 @@ void texMod_c::appendTransform(class matrix_c &mat, float timeNowSeconds, const 
 		// append transform
 		mat.translate(s,t,0);
 	} else if(type == TCMOD_D3_CENTERSCALE) {
-		//float scaleVal0 = astScale[0]->execute(in);
-		//float scaleVal1 = astScale[1]->execute(in);
-		//mat.translate(0.5f, 0.5f, 0);
-		//mat.translate(-0.5f, -0.5f, 0);
-		//mat.scale(scaleVal0,scaleVal1,0);
+		float scaleVal0 = astScale[0]->execute(in);
+		float scaleVal1 = astScale[1]->execute(in);
+		mat.translate(0.5f, 0.5f, 0);
+		mat.scale(scaleVal0,scaleVal1,0);
+		mat.translate(-0.5f, -0.5f, 0);
 	} else {
 		g_core->RedWarning("texMod_c::appendTransform: type %i not handled\n",this->type);
 	}

@@ -373,6 +373,10 @@ void BaseEntity::updateAttachmentOrigin() {
 void BaseEntity::setEntityLightRadius(float newEntityLightRadius) {
 	myEdict->s->lightRadius = newEntityLightRadius;
 }
+void BaseEntity::setEntityLightColor(const vec3_c &color) {
+	myEdict->s->lightColor = color;
+	myEdict->s->lightFlags |= LF_COLOURED;
+}
 void BaseEntity::setTrailEmitterMaterial(const char *matName) {
 	myEdict->s->trailEmitterMaterial = G_RenderMaterialIndex(matName);
 }

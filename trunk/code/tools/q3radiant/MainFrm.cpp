@@ -582,6 +582,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
   ON_COMMAND_RANGE(IDMRU, IDMRU_END, OnMru)
   ON_COMMAND_RANGE(ID_VIEW_NEAREST, ID_TEXTURES_FLATSHADE, OnViewNearest)
   ON_COMMAND_RANGE(ID_GRID_1, ID_GRID_64, OnGrid1)
+  ON_COMMAND_RANGE(ID_GRID_128, ID_GRID_8192, OnGrid1)
   ON_REGISTERED_MESSAGE(g_msgBSPDone, OnBSPDone)
   ON_REGISTERED_MESSAGE(g_msgBSPStatus, OnBSPStatus)
   ON_MESSAGE(WM_DISPLAYCHANGE, OnDisplayChange)
@@ -2247,6 +2248,13 @@ void CMainFrame::OnGrid1(unsigned int nID)
 	CheckMenuItem(hMenu, ID_GRID_16, MF_BYCOMMAND | MF_UNCHECKED);
 	CheckMenuItem(hMenu, ID_GRID_32, MF_BYCOMMAND | MF_UNCHECKED);
 	CheckMenuItem(hMenu, ID_GRID_64, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_128, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_256, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_512, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_1024, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_2048, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_4096, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_8192, MF_BYCOMMAND | MF_UNCHECKED);
 
 	switch (nID)
 	{
@@ -2257,6 +2265,11 @@ void CMainFrame::OnGrid1(unsigned int nID)
 		case ID_GRID_16: g_qeglobals.d_gridsize = 4; break;
 		case ID_GRID_32: g_qeglobals.d_gridsize = 5; break;
 		case ID_GRID_64: g_qeglobals.d_gridsize = 6; break;
+		case ID_GRID_128: g_qeglobals.d_gridsize = 7; break;
+		case ID_GRID_256: g_qeglobals.d_gridsize = 8; break;
+		case ID_GRID_512: g_qeglobals.d_gridsize = 9; break;
+		case ID_GRID_1024: g_qeglobals.d_gridsize = 10; break;
+		case ID_GRID_2048: g_qeglobals.d_gridsize = 11; break;
 	}
 	g_qeglobals.d_gridsize = 1 << g_qeglobals.d_gridsize;
 
@@ -3639,6 +3652,13 @@ void CMainFrame::OnGridNext()
 	  CheckMenuItem(hMenu, ID_GRID_16, MF_BYCOMMAND | MF_UNCHECKED);
 	  CheckMenuItem(hMenu, ID_GRID_32, MF_BYCOMMAND | MF_UNCHECKED);
 	  CheckMenuItem(hMenu, ID_GRID_64, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_128, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_256, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_512, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_1024, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_2048, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_4096, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_8192, MF_BYCOMMAND | MF_UNCHECKED);
 
     int nID;
 	  switch (g_qeglobals.d_gridsize)
@@ -3650,6 +3670,13 @@ void CMainFrame::OnGridNext()
 		  case  16: nID = ID_GRID_16; break;
 		  case  32: nID = ID_GRID_32; break;
 		  case  64: nID = ID_GRID_64; break;
+		  case  128: nID = ID_GRID_128; break;
+		  case  256: nID = ID_GRID_256; break;
+		  case  512: nID = ID_GRID_512; break;
+		  case  1024: nID = ID_GRID_1024; break;
+		  case  2048: nID = ID_GRID_2048; break;
+		  case  4096: nID = ID_GRID_4096; break;
+		  case  8192: nID = ID_GRID_8192; break;
 	  }
 	  CheckMenuItem(hMenu, nID, MF_BYCOMMAND | MF_CHECKED);
   }
@@ -3670,6 +3697,13 @@ void CMainFrame::OnGridPrev()
 	  CheckMenuItem(hMenu, ID_GRID_16, MF_BYCOMMAND | MF_UNCHECKED);
 	  CheckMenuItem(hMenu, ID_GRID_32, MF_BYCOMMAND | MF_UNCHECKED);
 	  CheckMenuItem(hMenu, ID_GRID_64, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_128, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_256, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_512, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_1024, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_2048, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_4096, MF_BYCOMMAND | MF_UNCHECKED);
+	CheckMenuItem(hMenu, ID_GRID_8192, MF_BYCOMMAND | MF_UNCHECKED);
 
     int nID;
 	  switch (g_qeglobals.d_gridsize)
@@ -3681,6 +3715,13 @@ void CMainFrame::OnGridPrev()
 		  case  16: nID = ID_GRID_16; break;
 		  case  32: nID = ID_GRID_32; break;
 		  case  64: nID = ID_GRID_64; break;
+		  case  128: nID = ID_GRID_128; break;
+		  case  256: nID = ID_GRID_256; break;
+		  case  512: nID = ID_GRID_512; break;
+		  case  1024: nID = ID_GRID_1024; break;
+		  case  2048: nID = ID_GRID_2048; break;
+		  case  4096: nID = ID_GRID_4096; break;
+		  case  8192: nID = ID_GRID_8192; break;
 	  }
 	  CheckMenuItem(hMenu, nID, MF_BYCOMMAND | MF_CHECKED);
   }

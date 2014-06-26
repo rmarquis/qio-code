@@ -2761,7 +2761,7 @@ void CXYWnd::XY_Draw()
 	maxs[1] = m_vOrigin[nDim2] + h;
 
 
-	qglOrtho (mins[0], maxs[0], mins[1], maxs[1], -18192, 18192);
+	qglOrtho (mins[0], maxs[0], mins[1], maxs[1], -65536, 65536);
   //glRotatef
 	//
 	// now draw the grid

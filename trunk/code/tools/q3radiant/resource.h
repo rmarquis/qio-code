@@ -816,6 +816,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ID_VIEW_GROUPS                  40199
 #define ID_SELECTION_NOOUTLINE          40200
 #define ID_SPLINES_POPUP                40201
+#define ID_GRID_128                      40202
+#define ID_GRID_256                      40203
+#define ID_GRID_512                      40204
+#define ID_GRID_1024                      40205
+#define ID_GRID_2048                     40206
+#define ID_GRID_4096                      40207
+#define ID_GRID_8192                      40208
 
 // Next default values for new objects
 // 

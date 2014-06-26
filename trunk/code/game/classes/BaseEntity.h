@@ -177,6 +177,7 @@ public:
 
 	// entity light
 	void setEntityLightRadius(float newEntityLightRadius);
+	void setEntityLightColor(const vec3_c &color);
 	// entity emitter
 	void setTrailEmitterMaterial(const char *matName);
 	void setTrailEmitterSpriteRadius(float newRadius);

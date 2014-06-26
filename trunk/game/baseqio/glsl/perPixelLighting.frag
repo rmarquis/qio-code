@@ -52,7 +52,9 @@ varying vec3 v_tbnEyeDir;
 #if defined(HAS_HEIGHT_MAP) && defined(USE_RELIEF_MAPPING)
 #include "reliefMappingRaycast.inc"
 #endif
-
+#ifdef HAS_LIGHT_COLOR
+uniform vec3 u_lightColor;
+#endif
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 uniform float u_shadowMapSize;
 #endif
@@ -296,6 +298,9 @@ void main() {
 
 	// calculate the final color
 	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
+#ifdef HAS_LIGHT_COLOR
+	gl_FragColor.xyz *= u_lightColor;
+#endif
 	//gl_FragColor = textureCube(shadowCubeMap,vec3(-lightToVert_world.x,lightToVert_world.y,lightToVert_world.z));
 #if defined(DEBUG_SHOW_SPOTLIGHT_SHADOWS) && defined(SHADOW_MAPPING_SPOTLIGHT)
 	if(shadow < 0.5) {

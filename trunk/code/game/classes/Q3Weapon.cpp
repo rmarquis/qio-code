@@ -84,6 +84,7 @@ void Q3Weapon::doWeaponAttack() {
 		plasma->setSpriteModel("sprites/plasma1",32.f);
 		vec3_c forward = owner->getViewAngles().getForward();
 		plasma->setEntityLightRadius(128.f);
+		plasma->setEntityLightColor(vec3_c(0.1f,0.1f,1.f));
 		plasma->setExplosionDelay(500);
 		plasma->setOrigin(owner->getEyePos()+forward*32);
 		plasma->setLinearVelocity(forward*500.f);
