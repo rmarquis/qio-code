@@ -167,6 +167,7 @@ public:
 			}
 			if(m->getNumSurfs() == 0) {
 				delete m;
+				entModels[i] = 0;
 				continue;
 			}
 #if 0
