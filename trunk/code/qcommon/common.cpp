@@ -80,7 +80,6 @@ cvar_s	*com_pipefile;
 cvar_s	*com_showtrace;
 cvar_s	*com_version;
 cvar_s	*com_blood;
-cvar_s	*com_buildScript;	// for automated data building scripts
 cvar_s	*com_introPlayed;
 cvar_s	*cl_paused;
 cvar_s	*sv_paused;
@@ -288,12 +287,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	com_errorEntered = true;
 
 	Cvar_Set("com_errorCode", va("%i", code));
-
-	// when we are running automated scripts, make sure we
-	// know if anything failed
-	if ( com_buildScript && com_buildScript->integer ) {
-		code = ERR_FATAL;
-	}
 
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
@@ -1737,7 +1730,6 @@ void Com_Init( char *commandLine ) {
 	sv_packetdelay = Cvar_Get ("sv_packetdelay", "0", CVAR_CHEAT);
 	com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM);
 	com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
-	com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 	com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
 
 	com_unfocused = Cvar_Get( "com_unfocused", "0", CVAR_ROM );

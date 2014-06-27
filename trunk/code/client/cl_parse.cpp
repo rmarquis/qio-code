@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2014 V.
 
 This file is part of Quake III Arena source code.
 
@@ -881,15 +882,15 @@ void CL_ParseServerMessage( msg_t *msg ) {
 		static char dst[MAX_MSGLEN];
 		uLongf dstLen = sizeof(dst);
 		int result = uncompress((Bytef*)dst,&dstLen,msg->data+msg->readcount,msg->cursize);
-		printf("%i\n",result);
-		if(result == 0) {
+		//printf("%i\n",result);
+		if(result == Z_OK) {
 			memcpy(msg->data,dst,dstLen);
 			msg->readcount = 0;
 			msg->bit = 0;
 			msg->oob = false;
 			msg->cursize = dstLen;
 		} else {
-			Com_Printf("Decompression of zlib packet failed\n");
+			Com_Printf("Decompression of zlib packet failed (zlib error %i)\n",result);
 		}
 	} else {
 		MSG_Bitstream(msg);

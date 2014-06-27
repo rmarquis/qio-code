@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2014 V.
 
 This file is part of Quake III Arena source code.
 
@@ -236,20 +237,24 @@ void SV_Netchan_Transmit( client_t *client, msg_t *msg)
 		byte buff[MAX_MSGLEN];
 		uLongf destLen = sizeof(buff);
 		int res = compress(buff,&destLen,msg->data+1,msg->cursize-1);
-		if(sv_printCompressedPacketSize.getInt()) {
-			Com_Printf("SV_Netchan_Transmit: zlib compressed %i to %i\n",msg->cursize,destLen);
-		}
-		// if the compressed message is smaller than original one, send compressed data instead.
-		// very small messages like snapshots usually have even bigger size after compression !!
-		if(destLen < msg->cursize) {
-			MSG_Init(msg,msg->data,msg->maxsize);
-			msg->oob = true;
-			// write compression marker (1 is 'zlib')
-			MSG_WriteByte(msg,1);
-			// write message data compressed with zlib
-			MSG_WriteData(msg,buff,destLen);
-			// done.
-			msg->oob = false;
+		if(res != Z_OK) {
+			Com_RedWarning("SV_Netchan_Transmit: zlib compress failed for %i bytes.\n",msg->cursize-1);
+		} else {
+			if(sv_printCompressedPacketSize.getInt()) {
+				Com_Printf("SV_Netchan_Transmit: zlib compressed %i to %i\n",msg->cursize,destLen);
+			}
+			// if the compressed message is smaller than original one, send compressed data instead.
+			// very small messages like snapshots usually have even bigger size after compression !!
+			if(destLen < msg->cursize) {
+				MSG_Init(msg,msg->data,msg->maxsize);
+				msg->oob = true;
+				// write compression marker (1 is 'zlib')
+				MSG_WriteByte(msg,1);
+				// write message data compressed with zlib
+				MSG_WriteData(msg,buff,destLen);
+				// done.
+				msg->oob = false;
+			}
 		}
 	}
 

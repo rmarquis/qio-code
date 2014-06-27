@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2012-2014 V.
 
 This file is part of Qio source code.
 
@@ -474,7 +474,11 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
 		// ragdoll controlers ovverides all the animations
 		if(myRagdollDef) {
-			rf_currentEntity = 0; // HACK, USE WORLD TRANSFORMS
+			// HACK, USE WORLD TRANSFORMS
+			// TODO: better fix?
+			rf_currentEntity = 0; 
+			setOrigin(vec3_c(0,0,0));
+			setAngles(vec3_c(0,0,0));
 			const afPublicData_s *af = this->myRagdollDef->getData();
 			arraySTD_c<u32> refCounts;
 			boneOrArray_c bones;

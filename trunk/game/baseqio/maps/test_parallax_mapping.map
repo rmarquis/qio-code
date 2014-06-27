@@ -93,11 +93,11 @@
 }
 // entity 1
 {
-"classname" "info_player_start"
 "origin" "8 -120 72"
+"classname" "info_player_start"
 }
 // entity 2
 {
-"classname" "light"
 "origin" "81 128 155"
+"classname" "light"
 }

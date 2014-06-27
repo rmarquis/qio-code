@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2014 V.
 
 This file is part of Quake III Arena source code.
 
@@ -51,7 +52,7 @@ static void CG_ResetEntity( centity_t *cent ) {
 	cent->lerpOrigin = cent->currentState.origin;
 	cent->lerpAngles = cent->currentState.angles;
 	if ( cent->currentState.eType == ET_PLAYER ) {
-//		CG_ResetPlayerEntity( cent );
+//		cent->extrapolated = false;	
 	}
 }
 

@@ -263,14 +263,6 @@ extern int demo_protocols[];
 #define MASTER_SERVER_NAME	"master.quake3arena.com"
 #endif
 
-#ifndef STANDALONE
-  #ifndef AUTHORIZE_SERVER_NAME
-    #define	AUTHORIZE_SERVER_NAME	"authorize.quake3arena.com"
-  #endif
-  #ifndef PORT_AUTHORIZE
-  #define	PORT_AUTHORIZE		27952
-  #endif
-#endif
 
 #define	PORT_MASTER			27950
 #define	PORT_UPDATE			27951
@@ -524,9 +516,6 @@ issues.
 #define FS_GENERAL_REF	0x01
 #define FS_UI_REF		0x02
 #define FS_CGAME_REF	0x04
-// number of id paks that will never be autodownloaded from baseq3/missionpack
-#define NUM_ID_PAKS		9
-#define NUM_TA_PAKS		4
 
 #define	MAX_FILE_HANDLES	64
 
@@ -785,7 +774,6 @@ extern	cvar_s	*com_sv_running;
 extern	cvar_s	*com_cl_running;
 extern	cvar_s	*com_version;
 extern	cvar_s	*com_blood;
-extern	cvar_s	*com_buildScript;		// for building release pak files
 extern	cvar_s	*com_journal;
 extern	cvar_s	*com_cameraMode;
 extern	cvar_s	*com_ansiColor;

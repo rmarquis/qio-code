@@ -286,9 +286,6 @@ extern	cvar_s	*sv_gametype;
 extern	cvar_s	*sv_pure;
 extern	cvar_s	*sv_floodProtect;
 extern	cvar_s	*sv_lanForceRate;
-#ifndef STANDALONE
-extern	cvar_s	*sv_strictAuth;
-#endif
 extern	cvar_s	*sv_banFile;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
@@ -339,10 +336,6 @@ void SV_FreeMap();
 void SV_GetChallenge(netadr_t from);
 
 void SV_DirectConnect( netadr_t from );
-
-#ifndef STANDALONE
-void SV_AuthorizeIpPacket( netadr_t from );
-#endif
 
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );
 void SV_UserinfoChanged( client_t *cl );

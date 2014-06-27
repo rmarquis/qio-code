@@ -3,6 +3,7 @@ game
  - serverside Bullet physics for rigid bodies and cars
  - player movement is done by Bullet character controler
  - networked ragdoll system based on Doom3 ArticulatedFigures and Bullet physics
+ - basic support for Quake3 / Doom3 weapon systems
  
 cgame 
  - cleared up code
@@ -10,14 +11,16 @@ cgame
  
 renderer
  - written from scratch in C++
- - Quake3, RTCW, ET, MoHAA, HalfLife2 BSP support with PVS and lightmapping
+ - Quake3, RTCW, ET, MoHAA bsp support with PVS and lightmapping
  - partial Quake2 and Quake BSP support
  - partial COD bsp support
+ - experimental Source Engine BSP support (HL2, Episodes, CS:Source) with displacements and static props 
  - Doom3/Quake4 .proc support with portal rendering system
  - ET:QW .procb support (without portals)
  - direct .map files loading (both Q3 and Doom3 versions)
  - openGL backend totally separated from frontend
- - basic DirectX 9 and 10 backends
+ - experimental dynamic lighting with stencil shadows / shadow mapping
+ - experimental DirectX 9 and 10 backends
  - VBO/IBO based (several times faster than Q3 renderer)
  - deltaRefEntities system
  - GLSL shaders support in backendGL
@@ -37,12 +40,14 @@ modelLoader
 materialSystem
  - written from scratch in C++
  - BASIC q3 shaders / Doom3 materials support
+ - basic Source Engine .vmt support
  
 declManager
  - Doom3 model decls support (.def files)
  - Doom3 entity decls support (.def files)
  - Doom3 Articulated Figures (.af files - ragdoll definitions) support
  - Doom3 particle emitters support
+ - Quake3 three part players model support
  
 common
  - interfaces system similiar to one in SourceEngine
@@ -56,6 +61,7 @@ shared
  - ???
  
  q3map
+ - custom QioBSP format that provides extra areaPortals data (similiar to one present in Doom3 proc files)
  - ???
  
  

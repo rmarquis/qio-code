@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2014 V.
 
 This file is part of Quake III Arena source code.
 
@@ -43,44 +44,8 @@ FUNCTIONS CALLED EACH FRAME
 
 ==========================================================================
 */
-/*
-===============
-CG_Player
-===============
-*/
-//void CG_Player( centity_t *cent ) {
-//	
-//
-//}
-
 
 //=====================================================================
-
-/*
-===============
-CG_ResetPlayerEntity
-
-A player just came into view or teleported, so reset all animation info
-===============
-*/
-void CG_ResetPlayerEntity( centity_t *cent ) {
-	cent->extrapolated = false;	
-
-//	BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
-//	BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
-
-
-}
-
-/*
-==================
-CG_General
-==================
-*/
-//static void CG_General( centity_t *cent ) {
-//	
-//}
-
 
 static void CG_OnEntityOrientationChange(centity_t *cent) {
 	// NOTE: some centities might have both rEnt and rLight present
@@ -161,7 +126,7 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 }
 
 
-static void CG_AddCEntity( centity_t *cent );
+static void CG_RunCEntity( centity_t *cent );
 /*
 ===============
 CG_CalcEntityLerpPositions
@@ -180,7 +145,7 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		}
 		// first we have to update parent orientation (pos + rot),
 		// then we can attach current entity to it
-		CG_AddCEntity(parent);
+		CG_RunCEntity(parent);
 		matrix_c mat;
 		parent->rEnt->getBoneWorldOrientation(cent->currentState.parentTagNum,mat);
 		cent->lerpAngles = mat.getAngles();
@@ -205,18 +170,6 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 		CG_InterpolateEntityPosition( cent );
 		return;
 	}
-
-
-	// just use the current frame and evaluate as best we can
-	//BG_EvaluateTrajectory( &cent->currentState.pos, cg.time, cent->lerpOrigin );
-	//BG_EvaluateTrajectory( &cent->currentState.apos, cg.time, cent->lerpAngles );
-
-	//// adjust for riding a mover if it wasn't rolled into the predicted
-	//// player state
-	//if ( cent != &cg.predictedPlayerEntity ) {
-	//	CG_AdjustPositionForMover( cent->lerpOrigin, cent->currentState.groundEntityNum, 
-	//	cg.snap->serverTime, cg.time, cent->lerpOrigin, cent->lerpAngles, cent->lerpAngles);
-	//}
 }
 
 static void CG_UpdateEntityEmitter( centity_t *cent ) {
@@ -263,11 +216,11 @@ static void CG_UpdateEntityEmitter( centity_t *cent ) {
 }
 /*
 ===============
-CG_AddCEntity
+CG_RunCEntity
 
 ===============
 */
-static void CG_AddCEntity( centity_t *cent ) {
+static void CG_RunCEntity( centity_t *cent ) {
 	if(cent->lastUpdateFrame == cg.clientFrame)
 		return; // it was already updated (this may happen for attachment parents)
 	cent->lastUpdateFrame = cg.clientFrame;
@@ -276,29 +229,6 @@ static void CG_AddCEntity( centity_t *cent ) {
 	CG_CalcEntityLerpPositions( cent );
 	// update entity emitter
 	CG_UpdateEntityEmitter( cent );
-
-	//switch ( cent->currentState.eType ) {
-	//default:
-	//	g_core->RedWarning( "Bad entity type: %i\n", cent->currentState.eType );
-	//	break;
-	//case ET_TRIGGER:
-	//	// they should be never sent to client...
-	//	// TODO: print warning?
-	//	break;
-
-	//case ET_PORTAL:
-
-	//	break;
-	//case ET_GENERAL:
-	//	//CG_General( cent );
-	//	break;
-	//case ET_PLAYER:
-	//	//CG_Player( cent );
-	//	break;
-	//case ET_LIGHT:
-	//	//CG_Light( cent );
-	//	break;
-	//}
 }
 
 /*
@@ -310,7 +240,6 @@ CG_AddPacketEntities
 void CG_AddPacketEntities( void ) {
 	int					num;
 	centity_t			*cent;
-//	playerState_s		*ps;
 
 	// set cg.frameInterpolation
 	if ( cg.nextSnap ) {
@@ -329,21 +258,12 @@ void CG_AddPacketEntities( void ) {
 
 	//CG_Printf("frameInterpolation: %f\n",cg.frameInterpolation);
 
-
-	// generate and add the entity from the playerstate
-	//ps = &cg.predictedPlayerState;
-	//BG_PlayerStateToEntityState( ps, &cg.predictedPlayerEntity.currentState, false );
-	//CG_AddCEntity( &cg.predictedPlayerEntity );
-
-	// lerp the non-predicted value for lightning gun origins
-	//CG_CalcEntityLerpPositions( &cg_entities[ cg.snap->ps.clientNum ] );
-
-	CG_AddCEntity( &cg_entities[ cg.snap->ps.clientNum ] );
+	CG_RunCEntity( &cg_entities[ cg.snap->ps.clientNum ] );
 
 	// add each entity sent over by the server
 	for ( num = 0 ; num < cg.snap->numEntities ; num++ ) {
 		cent = &cg_entities[ cg.snap->entities[ num ].number ];
-		CG_AddCEntity( cent );
+		CG_RunCEntity( cent );
 	}
 }
 

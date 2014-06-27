@@ -30,9 +30,11 @@ texture cubeMapTexture;
 samplerCUBE cubeMap = sampler_state
 {
 	Texture = (cubeMapTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
+	MagFilter = Point;
+	MinFilter = Point;
+	MipFilter = Point;
+    AddressU = Clamp;  
+    AddressV = Clamp;  
 };
 
 struct VS_INPUT

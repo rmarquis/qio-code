@@ -4,8 +4,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cgame", "cgame.vcproj", "{C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game.vcproj", "{F9EE10DA-2404-4154-B904-F93C936C040A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "quake3.vcproj", "{81CB51C4-B434-4E12-B69B-BAEE102F2852}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "renderer", "renderer.vcproj", "{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "materialSystem", "materialSystem.vcproj", "{B93D05ED-C73C-4797-A47B-AC898ECF0459}"
@@ -38,6 +36,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gphysics_ode", "gphysics_od
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "editor", "editor.vcproj", "{2F58DECA-EBEA-4138-B980-BA511AD46B2A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core.vcproj", "{81CB51C4-B434-4E12-B69B-BAEE102F2852}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -52,10 +52,6 @@ Global
 		{F9EE10DA-2404-4154-B904-F93C936C040A}.Debug|Win32.Build.0 = Debug|Win32
 		{F9EE10DA-2404-4154-B904-F93C936C040A}.Release|Win32.ActiveCfg = Release|Win32
 		{F9EE10DA-2404-4154-B904-F93C936C040A}.Release|Win32.Build.0 = Release|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|Win32.ActiveCfg = Debug|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|Win32.Build.0 = Debug|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|Win32.ActiveCfg = Release|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|Win32.Build.0 = Release|Win32
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Debug|Win32.Build.0 = Debug|Win32
 		{BF00AA05-BECF-4838-8B1F-4CF8CC83B56A}.Release|Win32.ActiveCfg = Release|Win32
@@ -120,6 +116,10 @@ Global
 		{2F58DECA-EBEA-4138-B980-BA511AD46B2A}.Debug|Win32.Build.0 = Debug|Win32
 		{2F58DECA-EBEA-4138-B980-BA511AD46B2A}.Release|Win32.ActiveCfg = Release|Win32
 		{2F58DECA-EBEA-4138-B980-BA511AD46B2A}.Release|Win32.Build.0 = Release|Win32
+		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|Win32.ActiveCfg = Debug|Win32
+		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|Win32.Build.0 = Debug|Win32
+		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|Win32.ActiveCfg = Release|Win32
+		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

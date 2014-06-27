@@ -35,12 +35,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 
 static aCvar_c g_showBulletTraces("g_showBulletTraces","0");
+static aCvar_c g_printBulletAttackCalls("g_printBulletAttackCalls","0");
+static aCvar_c g_printRailgunAttackCalls("g_printRailgunAttackCalls","0");
 
 void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip, const char *markMaterial) {
 	trace_c tr;
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
-	G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	if(g_printBulletAttackCalls.getInt()) {
+		G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	}
 	if(rf && g_showBulletTraces.getInt()) {
 		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
 	}
@@ -66,7 +70,9 @@ void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSk
 	trace_c tr;
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
-	G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	if(g_printRailgunAttackCalls.getInt()) {
+		G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+	}
 
 	railgunAttackMaterials_s defaultMats;
 	if(mats == 0) {
@@ -106,12 +112,7 @@ void G_FireProjectile(const char *projectileDefName, const vec3_c &muzzle, const
 	}
 }
 float G_randomFloat(float min, float max) {
-    // this  function assumes max > min, you may want 
-    // more robust error checking for a non-debug build
     float random = ((float) rand()) / (float) RAND_MAX;
-
-    // generate (in your case) a float between 0 and (4.5-.78)
-    // then add .78, giving you a float between .78 and 4.5
     float range = max - min;  
     return (random*range) + min;
 }

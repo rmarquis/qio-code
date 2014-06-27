@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2012-2014 V.
 
 This file is part of Qio source code.
 
@@ -102,14 +102,10 @@ CL_InitRenderer
 ============
 */
 void CL_InitRenderer( void ) {
-	// this sets up the renderer and calls R_Init
-	//re.BeginRegistration( &cls.glconfig );
 	rf->init();
 
 	// load character sets
 	cls.charSetShader = rf->registerMaterial( "gfx/2d/bigchars" );
 	cls.whiteShader = rf->registerMaterial( "white" );
 	cls.consoleShader = rf->registerMaterial( "console" );
-	//g_console_field_width = rf->getWinWidth() / SMALLCHAR_WIDTH - 2;
-	//g_consoleField.widthInChars = g_console_field_width;
 }
