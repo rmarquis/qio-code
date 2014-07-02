@@ -146,6 +146,12 @@
 }
 // entity 1
 {
-"classname" "info_player_start"
+"origin" "104 32 144"
+"light" "500"
+"classname" "light"
+}
+// entity 2
+{
 "origin" "8 -120 72"
+"classname" "info_player_start"
 }
