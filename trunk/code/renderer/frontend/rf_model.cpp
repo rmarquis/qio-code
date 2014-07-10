@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_bsp.h"
 #include <shared/hashTableTemplate.h>
+#include <shared/autoCmd.h>
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/skelModelAPI.h>
@@ -432,6 +433,31 @@ void RF_ClearModels() {
 	rf_models.clear();
 }
 
+
+void RF_ConvertStaticModelToWavefrontOBJ_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: convertStaticModelToWavefrontOBJ <source model name> [<dest model name>]\n");
+		return;
+	}
+	const char *srcModel = g_core->Argv(1);
+	str dstModel;
+	if(g_core->Argc() >= 3) {
+		dstModel = g_core->Argv(2);
+	} else {
+		dstModel = srcModel;
+		dstModel.stripExtension();
+		dstModel.append("_converted.obj");
+	}
+		
+	r_model_c tmp;
+	if(g_modelLoader->loadStaticModelFile(srcModel,&tmp)) {
+		g_core->RedWarning("Loading of static model %s failed\n",srcModel);
+		return;
+	} 
+	tmp.writeOBJ(dstModel);
+}
+
+static aCmd_c rf_convertStaticModelToWavefrontOBJ("convertStaticModelToWavefrontOBJ",RF_ConvertStaticModelToWavefrontOBJ_f);
 
 
 

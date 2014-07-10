@@ -707,7 +707,8 @@ extern aCvar_c rf_proc_useProcDataToOptimizeLighting;
 bool rLightImpl_c::isCulledByAreas() const {
 	if(rf_proc_useProcDataToOptimizeLighting.getInt() == 0)
 		return false;
-
+	if(RF_GetNumAreas() == 0)
+		return false;
 	for(u32 i = 0; i < numCurrentStaticInteractions; i++) {
 		const staticSurfInteraction_s &in = this->staticInteractions[i];
 		if(in.isNeededForLighting() == false)

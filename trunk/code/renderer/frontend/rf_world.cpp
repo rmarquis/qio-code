@@ -383,6 +383,12 @@ bool RF_IsWorldAreaVisible(int areaNum) {
 	}
 	return true;
 }
+int RF_GetNumAreas() {
+	if(r_procTree) {
+		return r_procTree->getNumAreas();
+	}
+	return 0;
+}
 u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out) {
 	if(r_procTree) {
 		return r_procTree->boxAreas(absBB,out);

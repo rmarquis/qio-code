@@ -403,6 +403,9 @@ public:
 	void setAmbientLightingVec3_255(const vec3_c &color);
 
 	bool parseProcModel(class parser_c &p);
+	
+	// model export
+	bool writeOBJ(const char *fname) const;
 
 	void getReferencedMatNames(class perStringCallbackListener_i *callback) const {
 		for(u32 i = 0; i < surfs.size(); i++) {

@@ -41,6 +41,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/colMeshBuilderAPI.h>
 #include "../pointLightSample.h"
 #include <shared/perStringCallback.h>
+#include <api/vfsAPI.h>
 
 static aCvar_c rf_dontRecalcNormals("rf_dontRecalcNormals","0");
 static aCvar_c rf_dontRecalcTB("rf_dontRecalcTB","0");
@@ -1736,4 +1737,32 @@ bool r_model_c::parseProcModel(class parser_c &p) {
 		return true; // error
 	}
 	return false;; // OK
+}
+
+bool r_model_c::writeOBJ(const char *fname) const {
+	str out = "# WaveFront obj file written by QIO\n";
+	u32 ofs = 1; // cause .obj indices are 1 based
+	for(u32 i = 0; i < surfs.size(); i++) {
+		const r_surface_c &sf = surfs[i];
+		//out.append(va("g \"%s\"\n",sf.getMatName()));
+		out.append(va("g %s\n",sf.getMatName()));
+		for(u32 j = 0; j < sf.getNumVerts(); j++) {
+			const vec3_c &xyz = sf.getVerts()[j].xyz;
+			const vec2_c &st = sf.getVerts()[j].tc;
+			out.append(va("v %f %f %f\n",xyz.x,xyz.y,xyz.z));
+			// invert Y texcoord
+			out.append(va("vt %f %f\n",st.x,1.f-st.y));
+		}
+		for(u32 j = 0; j < sf.getNumIndices(); j+=3) {
+			// invert triangles order
+			u32 i2 = sf.getIndices().getIndex(j) + ofs;
+			u32 i1 = sf.getIndices().getIndex(j+1) + ofs;
+			u32 i0 = sf.getIndices().getIndex(j+2) + ofs;
+			out.append(va("f %i/%i %i/%i %i/%i\n",i0,i0,i1,i1,i2,i2));
+		}
+		ofs += sf.getNumVerts();
+	}
+	g_vfs->FS_WriteFile(fname,out.c_str(),out.length()+1);
+	g_core->Print("Wrote %s.\n",fname);
+	return false;
 }

@@ -118,6 +118,9 @@ public:
 			return true;
 		return false;
 	}
+	int getNumAreas() const {
+		return areas.size();
+	}
 
 	int pointArea(const vec3_c &xyz);
 	u32 boxAreas(const aabb &bb, arraySTD_c<u32> &out);
