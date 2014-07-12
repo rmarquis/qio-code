@@ -1,0 +1,200 @@
+// entity 0
+{
+"classname" "worldspawn"
+// brush 0
+{
+( -128 512 0 ) ( -128 0 0 ) ( -128 0 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( 0 128 0 ) ( -512 128 0 ) ( -512 128 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( 128 -256 0 ) ( 128 256 0 ) ( 128 256 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( 0 -128 0 ) ( 512 -128 0 ) ( 512 -128 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( -384 -128 384 ) ( -384 384 384 ) ( 128 384 384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 128 384 0 ) ( -384 384 0 ) ( -384 -128 0 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 1
+{
+( -384 384 0 ) ( 128 384 0 ) ( -384 -128 0 ) development/floor01 0 0 0 0.125000 0.125000 0 0 0
+( 128 384 -128 ) ( -384 384 -128 ) ( -384 -128 -128 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 -512 128 ) ( 512 -512 128 ) ( 512 -512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 512 -512 128 ) ( 512 0 128 ) ( 512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 512 128 ) ( -512 512 128 ) ( -512 512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -512 512 128 ) ( -512 0 128 ) ( -512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 2
+{
+( -384 384 384 ) ( -384 -128 384 ) ( 128 384 384 ) development/ceiling01 0 0 0 0.125000 0.125000 0 0 0
+( -384 -128 512 ) ( -384 384 512 ) ( 128 384 512 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 -512 128 ) ( 512 -512 128 ) ( 512 -512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 512 -512 128 ) ( 512 0 128 ) ( 512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 512 128 ) ( -512 512 128 ) ( -512 512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -512 512 128 ) ( -512 0 128 ) ( -512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 3
+{
+( 512 -384 0 ) ( 0 -384 0 ) ( 512 -384 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( -384 -128 384 ) ( -384 384 384 ) ( 128 384 384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 128 384 0 ) ( -384 384 0 ) ( -384 -128 0 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 -512 128 ) ( 512 -512 128 ) ( 512 -512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 512 -512 128 ) ( 512 0 128 ) ( 512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -512 512 128 ) ( -512 0 128 ) ( -512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 4
+{
+( -512 384 0 ) ( 0 384 0 ) ( -512 384 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( 384 -512 0 ) ( 384 0 0 ) ( 384 0 -384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -384 -128 384 ) ( -384 384 384 ) ( 128 384 384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 128 384 0 ) ( -384 384 0 ) ( -384 -128 0 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 512 128 ) ( -512 512 128 ) ( -512 512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -512 512 128 ) ( -512 0 128 ) ( -512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 5
+{
+( -384 0 0 ) ( -384 512 0 ) ( -384 0 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+( 0 384 0 ) ( -512 384 0 ) ( -512 384 -384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 -384 0 ) ( 512 -384 0 ) ( 512 -384 -384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -384 -128 384 ) ( -384 384 384 ) ( 128 384 384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 128 384 0 ) ( -384 384 0 ) ( -384 -128 0 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -512 512 128 ) ( -512 0 128 ) ( -512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+}
+// brush 6
+{
+( 0 512 128 ) ( -512 512 128 ) ( -512 512 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 512 -512 128 ) ( 512 0 128 ) ( 512 0 -256 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 128 384 0 ) ( -384 384 0 ) ( -384 -128 0 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( -384 -128 384 ) ( -384 384 384 ) ( 128 384 384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 0 -384 0 ) ( 512 -384 0 ) ( 512 -384 -384 ) common/caulk 0 -56 0 0.500000 0.500000 0 0 0
+( 384 0 0 ) ( 384 -512 0 ) ( 384 0 -384 ) development/wall 0 8 0 0.125000 0.125000 0 0 0
+}
+}
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "256 -184 88"
+}
+// entity 2
+{
+"classname" "misc_model"
+"origin" "144 -88 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 3
+{
+"classname" "misc_model"
+"origin" "144 -48 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 4
+{
+"classname" "misc_model"
+"origin" "176 -64 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 5
+{
+"classname" "misc_model"
+"origin" "-155 -39 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 6
+{
+"classname" "misc_model"
+"origin" "-152 -79 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 7
+{
+"classname" "misc_model"
+"origin" "-145 94 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 8
+{
+"classname" "misc_model"
+"origin" "151 118 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 9
+{
+"classname" "misc_model"
+"origin" "167 158 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 10
+{
+"classname" "misc_model"
+"origin" "127 158 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 11
+{
+"classname" "misc_model"
+"origin" "-9 150 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 12
+{
+"classname" "misc_model"
+"origin" "-193 366 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 13
+{
+"classname" "misc_model"
+"origin" "-153 366 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 14
+{
+"classname" "misc_model"
+"origin" "-171 360 52"
+"model" "models/props/Barrel1.god"
+}
+// entity 15
+{
+"classname" "misc_model"
+"origin" "-171 340 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 16
+{
+"classname" "misc_model"
+"origin" "-363 364 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 17
+{
+"classname" "misc_model"
+"origin" "-367 -334 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 18
+{
+"classname" "misc_model"
+"origin" "-331 -360 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 19
+{
+"classname" "misc_model"
+"origin" "-144 -143 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 20
+{
+"classname" "misc_model"
+"origin" "-24 -303 0"
+"model" "models/props/Barrel1.god"
+}
+// entity 21
+{
+"classname" "misc_model"
+"origin" "367 -199 17"
+"model" "models/props/Barrel1.god"
+"angles" "0 0 90"
+}
+// entity 22
+{
+"classname" "misc_model"
+"origin" "367 -102 17"
+"model" "models/props/Barrel1.god"
+"angles" "0 0 90"
+}
