@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // newTools/tShared/tMath/Vec3.cs
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ using System.Threading.Tasks;
 
 namespace tMath
 {
-    struct Vec3
+    public struct Vec3
     {
         private float x, y, z;
 
@@ -49,11 +50,11 @@ namespace tMath
         }
         public override string ToString()
         {
-            return x.ToString() + " " + y.ToString() + " " + z;
+            return x.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " + y.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " + z;
         }
         public string ToStringBraced()
         {
-            return "( " + x.ToString() + " " + y.ToString() + " " + z + " )";
+            return "( " + x.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " + y.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " + z + " )";
         }
 
     };

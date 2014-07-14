@@ -161,6 +161,8 @@ namespace objFileExplorer
             ObjObject obj = (ObjObject)e.Node.Tag;
             if (obj == null)
                 return;
+            if (e.Label == null)
+                return;
             obj.setName(e.Label);
             TreeNode nodeObject = e.Node.Parent.Parent;
             nodeObject.Text = "Object " + m.getObjectIndex(obj).ToString() + " - \"" + obj.getName() + "\"";

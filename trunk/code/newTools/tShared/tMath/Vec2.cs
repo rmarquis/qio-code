@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace tMath
 {
-    struct Vec2
+    public struct Vec2
     {
         private float x, y;
 

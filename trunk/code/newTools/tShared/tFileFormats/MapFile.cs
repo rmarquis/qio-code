@@ -34,90 +34,7 @@ using shared;
 
 namespace fileFormats
 {
-
-    class KeyValue
-    {
-        private string key, value;
-
-        public KeyValue(string nk, string nv)
-        {
-            key = nk;
-            value = nv;
-        }
-        public void setValue(string s)
-        {
-            value = s;
-        }
-        public string getKey()
-        {
-            return key;
-        }
-        public string getValue()
-        {
-            return value;
-        }
-        public override string ToString()
-        {
-            return "\"" + key + "\" \"" + value + "\"\n";
-        }
-    }
-    class KeyValuesList
-    {
-        private List<KeyValue> data;
-
-        public KeyValuesList()
-        {
-            data = new List<KeyValue>();
-        }
-        public int findKeyIndex(string key)
-        {
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (string.Compare(data[i].getKey(), key, true) == 0)
-                    return i;
-            }
-            return -1;
-        }
-        public void setKeyValue(string key, string value)
-        {
-            int index = findKeyIndex(key);
-            if (index >= 0)
-            {
-                data[index].setValue(value);
-            }
-            else
-            {
-                data.Add(new KeyValue(key, value));
-            }
-        }
-        public string getKeyValue(string key)
-        {
-            int index = findKeyIndex(key);
-            if (index >= 0)
-            {
-                return data[index].getValue();
-            }
-            return "";
-        }
-        public KeyValue getKeyValue(int i)
-        {
-            return data[i];
-        }
-        public override string ToString()
-        {
-            string r = "";
-            for (int i = 0; i < data.Count; i++)
-            {
-                r += data[i].ToString();
-            }
-            return r;
-        }
-        public int size()
-        {
-            return data.Count;
-        }
-    }
-    struct MapPatchVertex
+    public struct MapPatchVertex
     {
         private Vec3 xyz;
         private Vec2 st;
@@ -135,7 +52,7 @@ namespace fileFormats
             return xyz.ToString() + " " + st.ToString();
         }
     }
-    class MapPatch
+    public class MapPatch
     {
         private string matName;
         private int w, h;
@@ -178,9 +95,21 @@ namespace fileFormats
         {
             return matName;
         }
-
+        public void getReferencedMaterialNames(HashSet<string> r)
+        {
+            r.Add(matName);
+        }
+        public int replaceMaterialName(string findWhat, string replaceWith)
+        {
+            if (matName.Equals(findWhat, StringComparison.InvariantCultureIgnoreCase))
+            {
+                setMatName(replaceWith);
+                return 1;
+            }
+            return 0;
+        }
     };
-    class MapBrushSideOld
+    public class MapBrushSideOld
     {
         private string matName;
         private Vec3 a, b, c;
@@ -268,12 +197,13 @@ namespace fileFormats
             return r;
         }
     }
-    abstract class MapBrushBase
+    public abstract class MapBrushBase
     {
         public abstract bool isOldBrush();
-
+        public abstract void getReferencedMaterialNames(HashSet<string> r);
+        public abstract int replaceMaterialName(string findWhat, string replaceWith);
     }
-    class MapBrushOld : MapBrushBase
+    public class MapBrushOld : MapBrushBase
     {
         private List<MapBrushSideOld> sides;
 
@@ -297,6 +227,25 @@ namespace fileFormats
         {
             return sides.Count;
         }
+        public override void getReferencedMaterialNames(HashSet<string> r)
+        {
+            for (int i = 0; i < sides.Count; i++)
+            {
+                r.Add(sides[i].getMatName());
+            }
+        }
+        public override int replaceMaterialName(string findWhat, string replaceWith)
+        {
+            int replaceCount = 0;
+            for (int i = 0; i < sides.Count; i++)
+            {
+                if (sides[i].getMatName().Equals(findWhat, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    sides[i].setMatName(replaceWith);
+                }
+            }
+            return replaceCount;
+        }
         public override string ToString()
         {
             string r = "{\n";
@@ -308,7 +257,7 @@ namespace fileFormats
             return r;
         }
     }
-    class MapBrushSide4
+    public class MapBrushSide4
     {
         private string matName;
         private Plane plane;
@@ -352,7 +301,7 @@ namespace fileFormats
             return r;
         }
     }
-    class MapBrushDef3 : MapBrushBase
+    public class MapBrushDef3 : MapBrushBase
     {
         private List<MapBrushSide4> sides;
 
@@ -376,6 +325,25 @@ namespace fileFormats
         {
             return sides.Count;
         }
+        public override void getReferencedMaterialNames(HashSet<string> r)
+        {
+            for (int i = 0; i < sides.Count; i++)
+            {
+                r.Add(sides[i].getMatName());
+            }
+        }
+        public override int replaceMaterialName(string findWhat, string replaceWith)
+        {
+            int replaceCount = 0;
+            for (int i = 0; i < sides.Count; i++)
+            {
+                if (sides[i].getMatName().Equals(findWhat, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    sides[i].setMatName(replaceWith);
+                }
+            }
+            return replaceCount;
+        }
         public override string ToString()
         {
             string r = "{\n brushDef3\n {\n";
@@ -387,17 +355,29 @@ namespace fileFormats
             return r;
         }
     }
-    class MapEntity
+    public class MapEntity
     {
+        // entity data
+        private int entityIndex;
         private KeyValuesList keyValues;
         private List<MapBrushBase> brushes;
         private List<MapPatch> patches;
+        // for GUI
+        private TreeNode myEntityNode;
 
         public MapEntity()
         {
             keyValues = new KeyValuesList();
             brushes = new List<MapBrushBase>();
             patches = new List<MapPatch>();
+        }
+        public void setIndex(int newIndex)
+        {
+            entityIndex = newIndex;
+        }
+        public int getIndex()
+        {
+            return entityIndex;
         }
         public void setKeyValue(string key, string value)
         {
@@ -447,18 +427,103 @@ namespace fileFormats
             r += "}\n";
             return r;
         }
+
+        public void setClassName(string replaceWith)
+        {
+            keyValues.setKeyValue("classname", replaceWith);
+            if(myEntityNode != null)
+            {
+                myEntityNode.Text = "Entity " + entityIndex + " (" + this.getClassName() + ")";
+            }
+        }
+        // for GUI
+        public void setTreeViewNode(TreeNode nodeEntity)
+        {
+            myEntityNode = nodeEntity;
+        }
+        public void getReferencedMaterialNames(HashSet<string> r)
+        {
+            for (int i = 0; i < brushes.Count; i++)
+            {
+                brushes[i].getReferencedMaterialNames(r);
+            }
+            for (int i = 0; i < patches.Count; i++)
+            {
+                patches[i].getReferencedMaterialNames(r);
+            }
+        }
+        public int replaceMaterialName(string findWhat, string replaceWith)
+        {
+            int replaceCount = 0;
+            for (int i = 0; i < brushes.Count; i++)
+            {
+                replaceCount += brushes[i].replaceMaterialName(findWhat, replaceWith);
+            }
+            for (int i = 0; i < patches.Count; i++)
+            {
+                replaceCount += patches[i].replaceMaterialName(findWhat, replaceWith);
+            }
+            return replaceCount;
+        }
+
+        public bool hasKey(string key)
+        {
+            return keyValues.hasKey(key);
+        }
+        public string getKeyValue(string key)
+        {
+            return keyValues.getKeyValue(key);
+        }
     }
-    enum EMapVersion
+    public enum EMapVersion
     {
         EMV_OLD, // Quake3, etc
         EMV_VERSION2, // "Version 2" ident, Doom3
         EMV_VERSION3, // "Version 3" ident, Quake4
     };
-    class MapFile
+    public class ValueUsersLists
+    {
+        private Dictionary<string, List<int>> data;
+
+        public ValueUsersLists()
+        {
+            data = new Dictionary<string, List<int>>();
+        }
+        public void addValueUser(string className, int entityIndex)
+        {
+            List<int> l;
+            if (!data.TryGetValue(className, out l))
+            {
+                l = new List<int>();
+                data.Add(className, l);
+            }
+            l.Add(entityIndex);
+        }
+        public string getValueName(int i)
+        {
+            return data.ElementAt(i).Key;
+        }
+        public int getValueNameUsersCount(int i)
+        {
+            return data.ElementAt(i).Value.Count;
+        }
+        public int getValueUserIndex(int i, int j)
+        {
+            return data.ElementAt(i).Value[j];
+        }
+        public int size()
+        {
+            return data.Count;
+        }
+
+    }
+    public class MapFile
     {
         private string fileName;
         private EMapVersion version;
         private List<MapEntity> entities;
+        // data for gui
+        private TreeView treeView;
 
         public MapFile()
         {
@@ -501,6 +566,82 @@ namespace fileFormats
                 r += entities[i].ToString();
             }
             return r;
+        }
+        public ValueUsersLists generateKeyValueUsersList(string key)
+        {
+            ValueUsersLists r = new ValueUsersLists();
+            for (int i = 0; i < entities.Count; i++)
+            {
+                if (entities[i].hasKey(key) == false)
+                    continue;
+                r.addValueUser(entities[i].getKeyValue(key), i);
+            }
+            return r;
+        }
+        public ValueUsersLists generateClassUsersList()
+        {
+            return generateKeyValueUsersList("classname");
+        }
+        public ValueUsersLists generateModelUsersList()
+        {
+            return generateKeyValueUsersList("model");
+        }
+        public HashSet<string> getUsedClassNames()
+        {
+            HashSet<string> r = new HashSet<string>();
+            for (int i = 0; i < entities.Count; i++)
+            {
+                r.Add(entities[i].getClassName());
+            }
+            return r;
+        }
+
+        public int replaceClassName(string findWhat, string replaceWith)
+        {
+            if (treeView != null)
+            {
+                // don't redraw treeView while editing
+                treeView.BeginUpdate();
+            }
+            int replaceCount = 0;
+            for (int i = 0; i < entities.Count; i++)
+            {
+                MapEntity e = entities[i];
+                if(e.getClassName().Equals(findWhat, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    e.setClassName(replaceWith);
+                    replaceCount++;
+                }
+            }
+            if (treeView != null)
+            {
+                treeView.EndUpdate();
+            }
+            return replaceCount;
+        }
+        public void setTreeView(TreeView ntn)
+        {
+            treeView = ntn;
+        }
+
+        public HashSet<string> getUsedMaterialNames()
+        {
+            HashSet<string> r = new HashSet<string>();
+            for (int i = 0; i < entities.Count; i++)
+            {
+                entities[i].getReferencedMaterialNames(r);
+            }
+            return r;
+        }
+
+        public int replaceMaterialName(string findWhat, string replaceWith)
+        {
+            int replaceCount = 0;
+            for (int i = 0; i < entities.Count; i++)
+            {
+                replaceCount += entities[i].replaceMaterialName(findWhat, replaceWith);
+            }
+            return replaceCount;
         }
     }
     class MapFileParser
@@ -563,11 +704,19 @@ namespace fileFormats
                     return true;
                 }
                 // used for detail flag, this is 0 for structural brushes
+                // those tokens are missing in older map formats (check subterfuge.map, etc)
                 int contents;
-                if (p.readInt(out contents))
+                if (p.isAtEOL() == false)
                 {
-                    showParseError("Failed to contentFlags of brushside " + br.getNumSides() + " at line " + p.getCurrentLineNumber());
-                    return true;
+                    if (p.readInt(out contents))
+                    {
+                        showParseError("Failed to contentFlags of brushside " + br.getNumSides() + " at line " + p.getCurrentLineNumber());
+                        return true;
+                    }
+                }
+                else
+                {
+                    contents = 0;
                 }
                 // now texDef->flags and texDef->value
                 p.skipToNextLine();
@@ -649,6 +798,11 @@ namespace fileFormats
                 {
                     string parmName;
                     p.readString(out parmName);
+                }
+                else if (p.isAtToken("subdivisions"))
+                {
+                    float subdivisions;
+                    p.readFloat(out subdivisions);
                 }
                 else
                 {
@@ -912,6 +1066,7 @@ namespace fileFormats
                     e.setKeyValue(key, value);
                 }
             }
+            e.setIndex(m.getNumEntities());
             m.addEntity(e);
             return false;
         }

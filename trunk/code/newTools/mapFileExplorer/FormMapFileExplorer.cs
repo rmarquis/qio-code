@@ -41,6 +41,7 @@ namespace mapFileExplorer
     public partial class FormMapFileExplorer : Form
     {
         private MapFile map;
+        private TreeNode contextMenuNode;
 
         public FormMapFileExplorer()
         {
@@ -52,22 +53,30 @@ namespace mapFileExplorer
             MapFileParser p = new MapFileParser();
             p.loadMapFile(mapName);
             map = p.getMapFile();
+            map.setTreeView(treeView1);
             /*
              * MapFileWriter w = new MapFileWriter();
             w.writeMapFile(map, mapName + "_textExport.map");
              * */
+            treeView1.BeginUpdate();
             treeView1.Nodes.Clear();
             for (int i = 0; i < map.getNumEntities(); i++)
             {
                 MapEntity entity = map.getEntity(i);
                 TreeNode nodeEntity = new TreeNode("Entity " + i + " ("+entity.getClassName()+")");
+                nodeEntity.Tag = entity;
+                entity.setTreeViewNode(nodeEntity);
                 TreeNode nodeKeyValues = new TreeNode("Variables");
                 KeyValuesList epairs = entity.getKeyValues();
+                nodeKeyValues.Tag = epairs;
                 for (int j = 0; j < epairs.size(); j++)
                 {
-                    KeyValue kv = epairs.getKeyValue(j);
-                    TreeNode nodeKey = new TreeNode(kv.getKey());
-                    TreeNode nodeValue = new TreeNode(kv.getValue());
+                    TreeNode nodeKey = new TreeNode(epairs.getPairKey(j));
+                    TreeNode nodeValue = new TreeNode(epairs.getPairValue(j));
+                    // save the node so epairs can automatically update GUI
+                    epairs.setPairTreeNode(j, nodeKey);
+                    nodeKey.Tag = epairs;
+                    nodeValue.Tag = epairs;
                     nodeKey.Nodes.Add(nodeValue);
                     nodeKeyValues.Nodes.Add(nodeKey);
                 }
@@ -85,6 +94,7 @@ namespace mapFileExplorer
                             {
                                 MapBrushOld br = (MapBrushOld)brBase;
                                 TreeNode nodeBrush = new TreeNode("Brush (old format) " + j);
+                                nodeBrush.Tag = br;
                                 for (int k = 0; k < br.getNumSides(); k++)
                                 {
                                     MapBrushSideOld side = br.getSide(k);
@@ -123,6 +133,7 @@ namespace mapFileExplorer
                             {
                                 MapBrushDef3 br = (MapBrushDef3)brBase;
                                 TreeNode nodeBrush = new TreeNode("Brush (Def3) " + j);
+                                nodeBrush.Tag = br;
                                 for (int k = 0; k < br.getNumSides(); k++)
                                 {
                                     MapBrushSide4 side = br.getSide(k);
@@ -186,6 +197,7 @@ namespace mapFileExplorer
                     nodeEntity.Nodes.Add(nodeGeometry);
                 }
                 treeView1.Nodes.Add(nodeEntity);
+                treeView1.EndUpdate();
             }
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -219,6 +231,135 @@ namespace mapFileExplorer
             {
                 MapFileWriter writer = new MapFileWriter();
                 writer.writeMapFile(map,saveFileDialog1.FileName);
+            }
+        }
+
+        private void treeView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (treeView1.SelectedNode == treeView1.GetNodeAt(e.Location))
+                {
+                    if (treeView1.SelectedNode.Nodes.Count == 0)
+                    {
+                        treeView1.LabelEdit = true;
+                        treeView1.SelectedNode.BeginEdit();
+                    }
+                }
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                if (treeView1.SelectedNode == treeView1.GetNodeAt(e.Location))
+                {
+                    contextMenuNode = treeView1.GetNodeAt(e.Location);
+                    if (contextMenuNode == null)
+                        return;
+                    contextMenuStrip1.Show(PointToScreen(e.Location));
+                }
+            }
+        }
+
+        private void treeView1_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            if (e.Label == null)
+                return;
+            KeyValuesList kvList = (KeyValuesList)e.Node.Tag;
+            // changing key-value of the entity
+            if (kvList != null)
+            {
+                string keyName = e.Node.Parent.Text;
+                kvList.setKeyValue(keyName, e.Label);
+                // fix the classname display at entity node
+                if (keyName.CompareTo("classname") == 0)
+                {
+                    TreeNode nodeKeyValues = e.Node.Parent.Parent;
+                    TreeNode nodeEntity = nodeKeyValues.Parent;
+                    MapEntity mapEntity = (MapEntity)nodeEntity.Tag;
+                    if (mapEntity != null)
+                    {
+                        nodeEntity.Text = ("Entity " + mapEntity.getIndex() + " (" + mapEntity.getClassName() + ")");
+                    }
+                }
+            }
+            MapBrushBase brushBase = (MapBrushBase)e.Node.Tag;
+            // changing the material name of brushside
+            if (brushBase != null)
+            {
+                // TODO
+            }
+        }
+
+   
+        private void classUsageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (map == null)
+            {
+                MessageBox.Show("You must load map file first.", "No map loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            ValueUsersLists classUsers = map.generateClassUsersList();
+            FormClassUsersStats f = new FormClassUsersStats(classUsers);
+            f.ShowDialog();
+        }
+
+        private void replaceClassnameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (map == null)
+            {
+                MessageBox.Show("You must load map file first.", "No map loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            FormReplaceClassName f = new FormReplaceClassName(map);
+            f.ShowDialog();
+        }
+
+        private void replaceMaterialToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (map == null)
+            {
+                MessageBox.Show("You must load map file first.", "No map loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            FormReplaceMaterial f = new FormReplaceMaterial(map);
+            f.ShowDialog();
+        }
+
+        private void modelsUsageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (map == null)
+            {
+                MessageBox.Show("You must load map file first.", "No map loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            ValueUsersLists modelUsers = map.generateModelUsersList();
+            FormModelUsersStats f = new FormModelUsersStats(modelUsers);
+            f.ShowDialog();
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (contextMenuNode == null)
+                return;
+            // allow user to copy entire entity (along with key valeus and brushes)
+            MapEntity entity = contextMenuNode.Tag as MapEntity;
+            if (entity != null)
+            {
+                Clipboard.SetText(entity.ToString());
+                return;
+            }
+            // allow user to copy single brushdef block
+            MapBrushBase brush = contextMenuNode.Tag as MapBrushBase;
+            if (brush != null)
+            {
+                Clipboard.SetText(brush.ToString());
+                return;
+            }
+            // allow user to copy single keyvalues list
+            KeyValuesList epairs = contextMenuNode.Tag as KeyValuesList;
+            if (epairs != null)
+            {
+                Clipboard.SetText(epairs.ToString());
+                return;
             }
         }
     }

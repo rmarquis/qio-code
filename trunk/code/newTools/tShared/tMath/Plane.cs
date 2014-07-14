@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace tMath
 {
-    struct Plane
+    public struct Plane
     {
         private Vec3 normal;
         private float distance;

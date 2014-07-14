@@ -78,26 +78,6 @@ namespace shared
                 return true;
             return false;
         }
-        public bool isAtEOL()
-        {
-            int i = pos;
-            while (i < text.Length)
-            {
-                if (text[i] == '\n')
-                    return true;
-                if (i + 1 < text.Length)
-                {
-                    if (text[i] == '/' && text[i + 1] == '/')
-                    {
-                        return true; // single line comment means end of the line
-                    }
-                }
-                if (char.IsWhiteSpace(text[i]) == false)
-                    return false;
-                i++;
-            }
-            return false;
-        }
         public bool isAtToken(string tok)
         {
             int p = skipWhiteSpaces();
