@@ -44,11 +44,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\tShared\ConvexVerticesBuilder.cs">
+      <Link>ConvexVerticesBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IConvexVolume.cs">
+      <Link>IConvexVolume.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IConvexVolumeArrayIterator.cs">
+      <Link>IConvexVolumeArrayIterator.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IVec3ArrayIterator.cs">
+      <Link>IVec3ArrayIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tFileFormats\MapFile.cs">
       <Link>MapFile.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
+      <Link>WavefrontOBJ.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Plane.cs">
       <Link>Plane.cs</Link>

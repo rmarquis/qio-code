@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\tShared\IVec3ArrayIterator.cs">
+      <Link>IVec3ArrayIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
       <Link>WavefrontOBJ.cs</Link>
     </Compile>

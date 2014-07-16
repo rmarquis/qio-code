@@ -30,12 +30,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using tMath;
+using shared;
 
 namespace fileFormats
 {
     struct ObjFaceVertex
     {
         private int xyzIndex, stIndex, nIndex;
+
+        public ObjFaceVertex(int newXyzIndex)
+        {
+            xyzIndex = newXyzIndex + 1;
+            stIndex = nIndex = 0;
+        }
 
         public override string ToString()
         {
@@ -154,7 +161,7 @@ namespace fileFormats
     {
 
     };
-    class WavefrontOBJ
+    class WavefrontOBJ : IVec3ArrayIterator
     {
         private List<Vec3> xyzs;
         private List<Vec2> texCoords;
@@ -165,6 +172,52 @@ namespace fileFormats
         private List<ObjGroup> groups;
         private static readonly char[] lineSplitChars = { ' ' };
 
+        public WavefrontOBJ()
+        {
+            xyzs = new List<Vec3>();
+            texCoords = new List<Vec2>();
+            normals = new List<Vec3>();
+            faceVerts = new List<ObjFaceVertex>();
+            faces = new List<ObjFace>();
+            objects = new List<ObjObject>();
+            groups = new List<ObjGroup>();
+        }
+        public override void addVec3Array(Vec3[] points, int numPoints)
+        {
+            ObjFace f = new ObjFace();
+            f.setFirstVertex(faceVerts.Count);
+            f.setNumVerts(numPoints);
+            faces.Add(f);
+            for (int i = 0; i < numPoints; i++)
+            {
+                faceVerts.Add(new ObjFaceVertex(xyzs.Count+i));
+            }
+            for (int i = 0; i < numPoints; i++)
+            {
+                xyzs.Add(points[i]);
+            }
+        }
+        public void addIndexedMesh(Vec3[] mPoints, int numPoints, short numFaces, short[] fIndices, short[] fOffsets, short[] fCounts)
+        {
+            int firstXyz = xyzs.Count;
+            for (int i = 0; i < numPoints; i++)
+            {
+                xyzs.Add(mPoints[i]);
+            }
+            for (int i = 0; i < numFaces; i++)
+            {
+                int numFaceVerts = fCounts[i];
+                ObjFace f = new ObjFace();
+                f.setFirstVertex(faceVerts.Count);
+                f.setNumVerts(numFaceVerts);
+                for (int j = 0; j < numFaceVerts; j++)
+                {
+                    int xyzIndex = firstXyz + fIndices[fOffsets[i] + j];
+                    faceVerts.Add(new ObjFaceVertex(xyzIndex));
+                }
+                faces.Add(f);
+            }
+        }
         private void showOBJParseError(string msg)
         {
             MessageBox.Show(msg,
@@ -176,13 +229,6 @@ namespace fileFormats
         }
         public bool loadObjModel(string fileName)
         {
-            xyzs = new List<Vec3>();
-            texCoords = new List<Vec2>();
-            normals = new List<Vec3>();
-            faceVerts = new List<ObjFaceVertex>();
-            faces = new List<ObjFace>();
-            objects = new List<ObjObject>();
-            groups = new List<ObjGroup>();
 
             StreamReader r = new StreamReader(fileName);
             string fileData = r.ReadToEnd();
@@ -452,6 +498,22 @@ namespace fileFormats
                 for (int j = 0; j < g.getNumFaces(); j++)
                 {
                     ObjFace face = faces[g.getFirstFace() + j];
+                    file.Write("f");
+                    for (int k = 0; k < face.getNumVerts(); k++)
+                    {
+                        int faceVertIndex = k + face.getFirstVert();
+                        ObjFaceVertex faceVertex = faceVerts[faceVertIndex];
+                        string faceVertString = " " + faceVertex.ToString();
+                        file.Write(faceVertString);
+                    }
+                    file.WriteLine();
+                }
+            }
+            if (groups.Count == 0 && objects.Count == 0)
+            {
+                for (int j = 0; j < faces.Count; j++)
+                {
+                    ObjFace face = faces[j];
                     file.Write("f");
                     for (int k = 0; k < face.getNumVerts(); k++)
                     {

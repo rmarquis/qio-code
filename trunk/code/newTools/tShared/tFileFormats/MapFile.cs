@@ -196,8 +196,15 @@ namespace fileFormats
             r += "\n";
             return r;
         }
+
+        public Plane getPlane()
+        {
+            Plane p = new Plane();
+            p.setupFromThreePoints(a, b, c);
+            return p;
+        }
     }
-    public abstract class MapBrushBase
+    public abstract class MapBrushBase : IConvexVolume
     {
         public abstract bool isOldBrush();
         public abstract void getReferencedMaterialNames(HashSet<string> r);
@@ -214,6 +221,14 @@ namespace fileFormats
         public override bool isOldBrush()
         {
             return true;
+        }
+        public override int getNumPlanes()
+        {
+            return sides.Count;
+        }
+        public override Plane getPlane(int i)
+        {
+            return sides[i].getPlane();
         }
         public void addSide(MapBrushSideOld ns)
         {
@@ -324,6 +339,14 @@ namespace fileFormats
         public int getNumSides()
         {
             return sides.Count;
+        }
+        public override int getNumPlanes()
+        {
+            return sides.Count;
+        }
+        public override Plane getPlane(int i)
+        {
+            return sides[i].getPlane();
         }
         public override void getReferencedMaterialNames(HashSet<string> r)
         {
@@ -473,6 +496,14 @@ namespace fileFormats
         public string getKeyValue(string key)
         {
             return keyValues.getKeyValue(key);
+        }
+
+        public void iterateBrushes(IConvexVolumeArrayIterator it)
+        {
+            for (int i = 0; i < brushes.Count; i++)
+            {
+                it.addConvexVolume(brushes[i]);
+            }
         }
     }
     public enum EMapVersion
@@ -642,6 +673,13 @@ namespace fileFormats
                 replaceCount += entities[i].replaceMaterialName(findWhat, replaceWith);
             }
             return replaceCount;
+        }
+        public void iterateBrushes(IConvexVolumeArrayIterator it)
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                entities[i].iterateBrushes(it);
+            }
         }
     }
     class MapFileParser
