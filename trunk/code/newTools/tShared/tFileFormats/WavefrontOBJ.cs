@@ -103,6 +103,10 @@ namespace fileFormats
             }
             return false;
         }
+        public int getXYZIndex()
+        {
+            return xyzIndex;
+        }
     }
     struct ObjFace
     {
@@ -527,6 +531,28 @@ namespace fileFormats
             }
             file.Close();
             return false;
+        }
+        public void iterateXYZTriangles(IXYZTrianglesIterator l)
+        {
+            for (int i = 0; i < faces.Count; i++)
+            {
+                ObjFace f = faces[i];
+                for (int j = 2; j < f.getNumVerts(); j++)
+                {
+                    int i0 = f.getFirstVert() + 0;
+                    int i1 = f.getFirstVert() + j-1;
+                    int i2 = f.getFirstVert() + j;
+
+                    ObjFaceVertex v0 = faceVerts[i0];
+                    ObjFaceVertex v1 = faceVerts[i1];
+                    ObjFaceVertex v2 = faceVerts[i2];
+
+                    Vec3 xyz0 = xyzs[v0.getXYZIndex()-1];
+                    Vec3 xyz1 = xyzs[v1.getXYZIndex()-1];
+                    Vec3 xyz2 = xyzs[v2.getXYZIndex()-1];
+                    l.addXYZTriangle(xyz0, xyz1, xyz2);
+                }
+            }
         }
         public int getNumObjects()
         {

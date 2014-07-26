@@ -4,13 +4,28 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AF4DB024-4896-4EFF-91FF-EC449193DB66}</ProjectGuid>
+    <ProjectGuid>{2C631FD2-F373-4BEF-B26E-F0DEBCC80E40}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>objFileExplorer</RootNamespace>
-    <AssemblyName>objFileExplorer</AssemblyName>
+    <RootNamespace>objViewer</RootNamespace>
+    <AssemblyName>objViewer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +47,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\directx_dlls\Microsoft.DirectX.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\directx_dlls\Microsoft.DirectX.Direct3D.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3DX, Version=1.0.2911.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\directx_dlls\Microsoft.DirectX.Direct3DX.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,14 +71,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\tShared\Camera.cs">
+      <Link>Camera.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\IVec3ArrayIterator.cs">
       <Link>IVec3ArrayIterator.cs</Link>
     </Compile>
     <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
       <Link>IXYZTrianglesIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\IXYZUVTrianglesIterator.cs">
+      <Link>IXYZUVTrianglesIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
       <Link>WavefrontOBJ.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Plane.cs">
+      <Link>Plane.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Vec2.cs">
       <Link>Vec2.cs</Link>
@@ -59,16 +95,22 @@
     <Compile Include="..\tShared\tMath\Vec3.cs">
       <Link>Vec3.cs</Link>
     </Compile>
-    <Compile Include="FormObjFileExplorer.cs">
+    <Compile Include="..\tShared\XYZTriangle.cs">
+      <Link>XYZTriangle.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\XYZTrianglesList.cs">
+      <Link>XYZTrianglesList.cs</Link>
+    </Compile>
+    <Compile Include="FormObjViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormObjFileExplorer.Designer.cs">
-      <DependentUpon>FormObjFileExplorer.cs</DependentUpon>
+    <Compile Include="FormObjViewer.Designer.cs">
+      <DependentUpon>FormObjViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="ProgramObjFileExplorer.cs" />
+    <Compile Include="ProgramObjViewer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FormObjFileExplorer.resx">
-      <DependentUpon>FormObjFileExplorer.cs</DependentUpon>
+    <EmbeddedResource Include="FormObjViewer.resx">
+      <DependentUpon>FormObjViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -90,7 +132,24 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppObjFileExplorer.config" />
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

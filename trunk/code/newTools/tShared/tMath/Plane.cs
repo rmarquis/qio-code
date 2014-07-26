@@ -39,15 +39,15 @@ namespace tMath
     };
     public struct PointOnPlaneSideResult
     {
-        public float distance;
+        public double distance;
         public PlaneSide side;
     };
     public struct Plane
     {
         private Vec3 normal;
-        private float distance;
+        private double distance;
 
-        public Plane(Vec3 p1, float p2)
+        public Plane(Vec3 p1, double p2)
         {
             normal = p1;
             distance = p2;
@@ -70,11 +70,11 @@ namespace tMath
             this.setupFromPointAndNormal(a, normal);
         }
 
-        public float calcDistanceToPoint(Vec3 p)
+        public double calcDistanceToPoint(Vec3 p)
         {
             return distance + normal.dotProduct(p);
         }
-        public void classifyPoint(Vec3 p, out PointOnPlaneSideResult res, float epsilon)
+        public void classifyPoint(Vec3 p, out PointOnPlaneSideResult res, double epsilon)
         {
             res.distance = calcDistanceToPoint(p);
             // assume that point is on the plane if the distance value is smaller than given epsilon
@@ -95,7 +95,7 @@ namespace tMath
         {
             normal = nn;
         }
-        public void setDistance(float nd)
+        public void setDistance(double nd)
         {
             distance = nd;
         }
@@ -107,7 +107,7 @@ namespace tMath
         {
             return normal;
         }
-        public float getDistance()
+        public double getDistance()
         {
             return distance;
         }

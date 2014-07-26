@@ -56,6 +56,9 @@
     <Compile Include="..\tShared\IVec3ArrayIterator.cs">
       <Link>IVec3ArrayIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
+      <Link>IXYZTrianglesIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>

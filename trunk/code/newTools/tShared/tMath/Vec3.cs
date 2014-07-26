@@ -34,15 +34,15 @@ namespace tMath
 {
     public struct Vec3
     {
-        private float x, y, z;
+        private double x, y, z;
 
-        public Vec3(float nX, float nY, float nZ)
+        public Vec3(double nX, double nY, double nZ)
         {
             x = nX;
             y = nY;
             z = nZ;
         }
-        public void set(float nX, float nY, float nZ)
+        public void set(double nX, double nY, double nZ)
         {
             x = nX;
             y = nY;
@@ -50,9 +50,9 @@ namespace tMath
         }
         public int findSmallestAxis()
         {
-            float absX = Math.Abs(x);
-            float absY = Math.Abs(y);
-            float absZ = Math.Abs(z);
+            double absX = Math.Abs(x);
+            double absY = Math.Abs(y);
+            double absZ = Math.Abs(z);
             if (absX < absY)
             {
                 if (absX < absZ)
@@ -65,9 +65,9 @@ namespace tMath
         }
         /*public int findLargestAxis()
         {
-            float absX = Math.Abs(x);
-            float absY = Math.Abs(y);
-            float absZ = Math.Abs(z);
+            double absX = Math.Abs(x);
+            double absY = Math.Abs(y);
+            double absZ = Math.Abs(z);
             if (absX > absY)
             {
                 if (absX > absZ)
@@ -101,8 +101,8 @@ namespace tMath
         {
 #if false
             int smallest = findSmallestAxis();
-            float invDenom = 1.0f / (x * x + y * y + z * z);
-            float invDenomSq = invDenom * invDenom;
+            double invDenom = 1.0f / (x * x + y * y + z * z);
+            double invDenomSq = invDenom * invDenom;
             if (smallest == 0)
             {
                 v.set(1 - x * x * invDenomSq,
@@ -123,7 +123,7 @@ namespace tMath
             }
 #else
             // get the squared length of XY subvector
-            float lenSquared = x*x + y*y;
+            double lenSquared = x*x + y*y;
             if (lenSquared == 0)
             {
                 v.set(1, 0, 0);
@@ -131,7 +131,7 @@ namespace tMath
             else
             {
                 // normalize the vector so it's unit lenght
-                float len = (float)Math.Sqrt(lenSquared);
+                double len = (double)Math.Sqrt(lenSquared);
                 v.set(-y / len,x / len,0);
             }	
 #endif
@@ -173,7 +173,7 @@ namespace tMath
         {
             return new Vec3(- b.x, - b.y, - b.z);
         }
-        public static Vec3 operator *(Vec3 a, float f)
+        public static Vec3 operator *(Vec3 a, double f)
         {
             return new Vec3(a.x * f, a.y * f, a.z * f);
         }
@@ -194,27 +194,27 @@ namespace tMath
 
             Vec3 randomVec0 = (new Vec3(1, 2, 3)).getNormalized();
             Vec3 randomVec0_perp = randomVec0.getPerpendicular();
-            float randomVec0_dot = randomVec0.dotProduct(randomVec0_perp);
+            double randomVec0_dot = randomVec0.dotProduct(randomVec0_perp);
 
             Vec3 randomVec1 = (new Vec3(4, -2, 3)).getNormalized();
             Vec3 randomVec1_perp = randomVec1.getPerpendicular();
-            float randomVec1_dot = randomVec1.dotProduct(randomVec1_perp);
+            double randomVec1_dot = randomVec1.dotProduct(randomVec1_perp);
 
             Vec3 randomVec2 = (new Vec3(12, -2, 8)).getNormalized();
             Vec3 randomVec2_perp = randomVec2.getPerpendicular();
-            float randomVec2_dot = randomVec2.dotProduct(randomVec2_perp);
+            double randomVec2_dot = randomVec2.dotProduct(randomVec2_perp);
 
 
         }
 
-        public float dotProduct(Vec3 b)
+        public double dotProduct(Vec3 b)
         {
             return x * b.x + y * b.y + z * b.z;
         }
 
-        public float calcLen()
+        public double calcLen()
         {
-            return (float)Math.Sqrt(x * x + y * y + z * z);
+            return (double)Math.Sqrt(x * x + y * y + z * z);
         }
         public void clear()
         {
@@ -222,13 +222,13 @@ namespace tMath
         }
         public void normalize()
         {
-            float len = calcLen();
-            float inv = 1.0f / len;
+            double len = calcLen();
+            double inv = 1.0f / len;
             x *= inv;
             y *= inv;
             z *= inv;
         }
-        public void scale(float f)
+        public void scale(double f)
         {
             x *= f;
             y *= f;
@@ -236,8 +236,8 @@ namespace tMath
         }
         public Vec3 getNormalized()
         {
-            float len = calcLen();
-            float inv = 1.0f / len;
+            double len = calcLen();
+            double inv = 1.0f / len;
             return new Vec3(x * inv, y * inv, z * inv);
         }
         public override string ToString()
@@ -253,14 +253,14 @@ namespace tMath
 
 
 
-        public Vec3 lerp(Vec3 b, float fraction)
+        public Vec3 lerp(Vec3 b, double fraction)
         {
             return this + (b - this) * fraction;
         }
 
         public bool compare(Vec3 o)
         {
-            float eps = 0.1f;
+            double eps = 0.0001;
             if (Math.Abs(x - o.x) > eps)
                 return false;
             if (Math.Abs(y - o.y) > eps)
@@ -268,6 +268,19 @@ namespace tMath
             if (Math.Abs(z - o.z) > eps)
                 return false;
             return true;
+        }
+
+        public double getX()
+        {
+            return x;
+        }
+        public double getY()
+        {
+            return y;
+        }
+        public double getZ()
+        {
+            return z;
         }
     };
 }

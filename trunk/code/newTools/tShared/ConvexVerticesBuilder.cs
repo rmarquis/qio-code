@@ -48,7 +48,7 @@ namespace shared
             }
             Vec3 a = new Vec3(), b = new Vec3();
             basePlane.getNormal().getPerpendicular(ref a, ref b);
-            float halfSize = 100000.0f;
+            double halfSize = 100000.0f;
             a.scale(halfSize);
             b.scale(halfSize);
             Vec3 center = basePlane.getCenter();
@@ -60,9 +60,9 @@ namespace shared
             // precision fix
             for (int i = 0; i < numPoints; i++)
             {
-                float distance = basePlane.calcDistanceToPoint(points[i]);
+                double distance = basePlane.calcDistanceToPoint(points[i]);
                 Vec3 better = points[i] - basePlane.getNormal() * distance;
-                float newDistance = basePlane.calcDistanceToPoint(better);
+                double newDistance = basePlane.calcDistanceToPoint(better);
                 if (Math.Abs(distance) > Math.Abs(newDistance))
                 {
                     points[i] = better;
@@ -120,7 +120,7 @@ namespace shared
 
                 // ccalculate where the point is relative to the two distances of the vertices of the plane:
                 // This is always a number between 0 and 1.
-                float fraction = rels[i].distance / (rels[i].distance - rels[next].distance);
+                double fraction = rels[i].distance / (rels[i].distance - rels[next].distance);
                 newPoints[newCount] = points[i].lerp(points[next], fraction);
                 newCount++;
             }

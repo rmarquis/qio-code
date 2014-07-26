@@ -202,6 +202,12 @@ namespace mapFileExplorer
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+         //   viewMapFile("E:/PROJECTS/qio/game/baseqio/maps/mapFormatSamples/oldFormat/singlebrush-64x64x64-fit.map");
+        // /   exportObjFile("E:/PROJECTS/qio/game/baseqio/maps/mapFormatSamples/oldFormat/singlebrush-64x64x64-fit.obj");
+      //     viewMapFile("E:/PROJECTS/qio/game/baseqio/maps/test_physics.map");
+       //    exportObjFile("E:/PROJECTS/qio/game/baseqio/maps/test_physics.obj");
+            viewMapFile("E:/PROJECTS/qio/game/baseqio/maps/mapFormatSamples/oldFormat/diamond_for_constraints.map");
+            exportObjFile("E:/PROJECTS/qio/game/baseqio/maps/mapFormatSamples/oldFormat/diamond_for_constraints.obj");
         }
         class PolygonVerticesMerger : IVec3ArrayIterator
         {
