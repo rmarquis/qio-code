@@ -70,6 +70,10 @@ namespace objViewer
                 device.SetStreamSource(0, vertexBuffer, 0);
                 device.DrawPrimitives(PrimitiveType.TriangleList, 0, primitiveCount);
             }
+            public void destroyBuffer()
+            {
+                vertexBuffer.Dispose();
+            }
         }
 
 
@@ -184,6 +188,10 @@ namespace objViewer
             XYZTrianglesList l = new XYZTrianglesList();
             model.iterateXYZTriangles(l);
 
+            if (vertexBuffer != null)
+            {
+                vertexBuffer.destroyBuffer();
+            }
             vertexBuffer = new DXVertexBufferXYZNormals();
             vertexBuffer.create(l, device);
         }
@@ -196,6 +204,12 @@ namespace objViewer
             }
             recreateGPUBuffers();
             UpdateDirectXDisplay();
+        }
+        private void saveModel(string fileName)
+        {
+            if (model == null)
+                return;
+            model.saveObjModel(fileName);
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -246,6 +260,102 @@ namespace objViewer
             mouseButton = e.Button;
             mouseX = e.X;
             mouseY = e.Y;
+        }
+
+        private void swapTrianglesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (model == null)
+            {
+                return;
+            }
+            model.swapTriangles();
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+        }
+
+        private void swapYZToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (model == null)
+            {
+                return;
+            }
+            model.swapYZ();
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.Filter = "Wavefront OBJ|*.obj|All files (*.*)|*.*";
+            saveFileDialog1.Title = "Save current model.";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                saveModel(saveFileDialog1.FileName);
+            }
+        }
+        private static DialogResult ShowInputDialog(ref string input)
+        {
+            System.Drawing.Size size = new System.Drawing.Size(200, 70);
+            Form inputBox = new Form();
+
+            inputBox.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            inputBox.ClientSize = size;
+            inputBox.Text = "Enter new model scale";
+
+            System.Windows.Forms.TextBox textBox = new TextBox();
+            textBox.Size = new System.Drawing.Size(size.Width - 10, 23);
+            textBox.Location = new System.Drawing.Point(5, 5);
+            textBox.Text = input;
+            inputBox.Controls.Add(textBox);
+
+            Button okButton = new Button();
+            okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            okButton.Name = "okButton";
+            okButton.Size = new System.Drawing.Size(75, 23);
+            okButton.Text = "&OK";
+            okButton.Location = new System.Drawing.Point(size.Width - 80 - 80, 39);
+            inputBox.Controls.Add(okButton);
+
+            Button cancelButton = new Button();
+            cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new System.Drawing.Size(75, 23);
+            cancelButton.Text = "&Cancel";
+            cancelButton.Location = new System.Drawing.Point(size.Width - 80, 39);
+            inputBox.Controls.Add(cancelButton);
+
+            inputBox.AcceptButton = okButton;
+            inputBox.CancelButton = cancelButton;
+            inputBox.StartPosition = FormStartPosition.CenterParent;
+
+            DialogResult result = inputBox.ShowDialog();
+            input = textBox.Text;
+            return result;
+        }
+        private void scaleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (model == null)
+                return;
+            string s = "1.0";
+            ShowInputDialog(ref s);
+            s = s.Replace('.', ',');
+            double scale;
+            try
+            {
+                scale = Double.Parse(s);
+            }
+            catch
+            {
+                MessageBox.Show("'"+s+"' is not a valid scale.",
+                    "Invalid scale.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                return;
+            }
+            model.scaleModel(scale);
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
         }
     }
 }

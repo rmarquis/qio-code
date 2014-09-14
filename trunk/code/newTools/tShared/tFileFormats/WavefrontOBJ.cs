@@ -43,7 +43,10 @@ namespace fileFormats
             xyzIndex = newXyzIndex + 1;
             stIndex = nIndex = 0;
         }
-
+        public void setTexCoordIndex(int newIndex)
+        {
+            stIndex = newIndex;
+        }
         public override string ToString()
         {
             if (stIndex == 0 && nIndex == 0)
@@ -113,6 +116,11 @@ namespace fileFormats
         private int firstVertex;
         private int numVerts;
 
+        public ObjFace(int firstVertex, int numVerts)
+        {
+            this.firstVertex = firstVertex;
+            this.numVerts = numVerts;
+        }
         public void setFirstVertex(int i)
         {
             firstVertex = i;
@@ -148,6 +156,10 @@ namespace fileFormats
         {
             numFaces = i;
         }
+        public void increaseFaceCounter()
+        {
+            numFaces++;
+        }
         public int getFirstFace()
         {
             return firstFace;
@@ -165,7 +177,13 @@ namespace fileFormats
     {
 
     };
-    class WavefrontOBJ : IVec3ArrayIterator
+    interface ISimpleStaticMeshBuilder
+    {
+       void beginSurface(string name);
+       void addTriangle(Vec3 a, Vec3 b, Vec3 c, Vec2 stA, Vec2 stB, Vec2 stC);
+       void endSurface();
+    };
+    class WavefrontOBJ : IVec3ArrayIterator, ISimpleStaticMeshBuilder
     {
         private List<Vec3> xyzs;
         private List<Vec2> texCoords;
@@ -186,7 +204,8 @@ namespace fileFormats
             objects = new List<ObjObject>();
             groups = new List<ObjGroup>();
         }
-        public override void addVec3Array(Vec3[] points, int numPoints)
+        // IVec3ArrayIterator
+        public void addVec3Array(Vec3[] points, int numPoints)
         {
             ObjFace f = new ObjFace();
             f.setFirstVertex(faceVerts.Count);
@@ -200,6 +219,44 @@ namespace fileFormats
             {
                 xyzs.Add(points[i]);
             }
+        }
+        // ISimpleStaticMeshBuilder
+        public void beginSurface(string name)
+        {
+            ObjGroup g = new ObjGroup();
+            g.setName(name);
+            groups.Add(g);
+            g.setFirstFace(faces.Count);
+        }
+        public void addTriangle(Vec3 a, Vec3 b, Vec3 c, Vec2 stA, Vec2 stB, Vec2 stC)
+        {
+            int iXYZA = xyzs.Count;
+            xyzs.Add(a);
+            int iXYZB = xyzs.Count;
+            xyzs.Add(b);
+            int iXYZC = xyzs.Count;
+            xyzs.Add(c);
+            int iSTA = xyzs.Count;
+            texCoords.Add(stA);
+            int iSTB = xyzs.Count;
+            texCoords.Add(stB);
+            int iSTC = xyzs.Count;
+            texCoords.Add(stC);
+            ObjFaceVertex v0 = new ObjFaceVertex(iXYZA);
+            v0.setTexCoordIndex(iSTA);
+            ObjFaceVertex v1 = new ObjFaceVertex(iXYZB);
+            v1.setTexCoordIndex(iSTB);
+            ObjFaceVertex v2 = new ObjFaceVertex(iXYZC);
+            v2.setTexCoordIndex(iSTC);
+            faces.Add(new ObjFace(faceVerts.Count, 3));
+            faceVerts.Add(v0);
+            faceVerts.Add(v1);
+            faceVerts.Add(v2);
+            groups.Last().increaseFaceCounter();
+        }
+        public void endSurface()
+        {
+
         }
         public void addIndexedMesh(Vec3[] mPoints, int numPoints, short numFaces, short[] fIndices, short[] fOffsets, short[] fCounts)
         {
@@ -552,6 +609,38 @@ namespace fileFormats
                     Vec3 xyz2 = xyzs[v2.getXYZIndex()-1];
                     l.addXYZTriangle(xyz0, xyz1, xyz2);
                 }
+            }
+        }
+        public void swapTriangles()
+        {
+            for (int i = 0; i < faces.Count; i++)
+            {
+                ObjFace f = faces[i];
+                int k = f.getNumVerts() - 1;
+                for (int j = 0; j < k; j++, k--)
+                {
+                    ObjFaceVertex tmp = faceVerts[f.getFirstVert() + j];
+                    faceVerts[f.getFirstVert() + j] = faceVerts[f.getFirstVert() + k];
+                    faceVerts[f.getFirstVert() + k] = tmp;
+                }
+            }
+        }
+        public void swapYZ()
+        {
+            for (int i = 0; i < xyzs.Count; i++)
+            {
+                Vec3 v = xyzs[i];
+                v.swapYZ();
+                xyzs[i] = v;
+            }
+        }
+        public void scaleModel(double scale)
+        {
+            for (int i = 0; i < xyzs.Count; i++)
+            {
+                Vec3 v = xyzs[i];
+                v *= scale;
+                xyzs[i] = v;
             }
         }
         public int getNumObjects()

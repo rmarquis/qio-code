@@ -63,6 +63,12 @@ namespace tMath
                 return 1;
             return 2;
         }
+        public void swapYZ()
+        {
+            double tmp = y;
+            y = z;
+            z = tmp;
+        }
         /*public int findLargestAxis()
         {
             double absX = Math.Abs(x);

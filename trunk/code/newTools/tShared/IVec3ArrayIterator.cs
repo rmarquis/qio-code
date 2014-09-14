@@ -32,8 +32,8 @@ using tMath;
 
 namespace shared
 {
-    abstract class IVec3ArrayIterator
+    interface IVec3ArrayIterator
     {
-        public abstract void addVec3Array(Vec3[] points, int numPoints);
+        void addVec3Array(Vec3[] points, int numPoints);
     }
 }

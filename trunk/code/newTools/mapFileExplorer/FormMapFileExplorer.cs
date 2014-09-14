@@ -245,7 +245,7 @@ namespace mapFileExplorer
                 }
                 return -1;
             }
-            public override void addVec3Array(Vec3[] points, int numPoints)
+            public void addVec3Array(Vec3[] points, int numPoints)
             {
                 offsets[numPolys] = numIndices;
                 counts[numPolys] = (short)numPoints;
