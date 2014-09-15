@@ -73,7 +73,11 @@ namespace md5meshFileExplorer
         private void viewMd5Mesh(string name)
         {
             md5model = new MD5Model();
-            md5model.loadMD5MeshFile(name);
+            if (md5model.loadMD5MeshFile(name))
+            {
+                md5model = null;
+                return;
+            }
 
             refreshTreeView();
         }

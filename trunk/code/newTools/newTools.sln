@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "objViewer", "objViewer\objV
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "md5meshFileExplorer", "md5meshFileExplorer\md5meshFileExplorer.csproj", "{EFDC905C-1186-4B38-A09D-50E67876C583}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "md3FileExplorer", "md3FileExplorer\md3FileExplorer.csproj", "{0A25425C-C753-4690-8664-C942ABA7D08B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{EFDC905C-1186-4B38-A09D-50E67876C583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFDC905C-1186-4B38-A09D-50E67876C583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFDC905C-1186-4B38-A09D-50E67876C583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A25425C-C753-4690-8664-C942ABA7D08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A25425C-C753-4690-8664-C942ABA7D08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A25425C-C753-4690-8664-C942ABA7D08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A25425C-C753-4690-8664-C942ABA7D08B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
