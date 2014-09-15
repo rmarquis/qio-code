@@ -44,8 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\tShared\IVec3ArrayIterator.cs">
+      <Link>IVec3ArrayIterator.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
+      <Link>IXYZTrianglesIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
       <Link>MD3Model.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
+      <Link>WavefrontOBJ.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Vec2.cs">
       <Link>Vec2.cs</Link>

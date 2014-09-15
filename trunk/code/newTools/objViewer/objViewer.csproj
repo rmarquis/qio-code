@@ -83,6 +83,9 @@
     <Compile Include="..\tShared\IXYZUVTrianglesIterator.cs">
       <Link>IXYZUVTrianglesIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
+      <Link>MD3Model.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
       <Link>WavefrontOBJ.cs</Link>
     </Compile>

@@ -37,7 +37,19 @@ namespace objViewer
 
             public void create(XYZTrianglesList l, Device device)
             {
+                // free previous buffer
+                if (vertexBuffer != null)
+                {
+                    vertexBuffer.Dispose();
+                    vertexBuffer = null;
+                }
+
                 primitiveCount = l.getTrianglesCount();
+                if (primitiveCount == 0)
+                {
+                    // "new VertexBuffer" causes exception if vertex count is 0
+                    return;
+                }
                 vertexBuffer = new VertexBuffer(typeof(CustomVertex.PositionNormalColored),
                             l.getTrianglesCount() * 3, device, 0, CustomVertex.PositionNormalColored.Format, Pool.Default);
 
@@ -192,8 +204,11 @@ namespace objViewer
             {
                 vertexBuffer.destroyBuffer();
             }
-            vertexBuffer = new DXVertexBufferXYZNormals();
-            vertexBuffer.create(l, device);
+            if (l.getTrianglesCount() > 0)
+            {
+                vertexBuffer = new DXVertexBufferXYZNormals();
+                vertexBuffer.create(l, device);
+            }
         }
         private void loadModel(string name)
         {
@@ -356,6 +371,29 @@ namespace objViewer
             model.scaleModel(scale);
             recreateGPUBuffers();
             UpdateDirectXDisplay();
+        }
+        private bool importMD3Model(string md3FileName)
+        {
+            MD3Model md3 = new MD3Model();
+            if (md3.loadMD3Model(md3FileName))
+            {
+                return true;
+            }
+            model = new WavefrontOBJ();
+            md3.addToSimpleStaticMeshBuilder(0,model);
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+            return false;
+        }
+        private void mD3ModelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // import md3 model
+            openFileDialog1.Filter = "Quake3 MD3|*.md3|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new model.";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                importMD3Model(openFileDialog1.FileName);
+            }   
         }
     }
 }

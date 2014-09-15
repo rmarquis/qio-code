@@ -132,6 +132,10 @@ namespace fileFormats
             double nZ = Math.Cos(aLng);
             normal = new Vec3(nX, nY, nZ);
         }
+        public Vec3 getPos()
+        {
+            return xyz;
+        }
     };
     class MD3SurfVertsFrame
     {
@@ -149,6 +153,10 @@ namespace fileFormats
                 v.readMD3Vertex(r);
                 verts.Add(v);
             }
+        }
+        public MD3Vertex getVertex(int vertexIndex)
+        {
+            return verts[vertexIndex];
         }
     }
     class MD3Surface
@@ -182,6 +190,24 @@ namespace fileFormats
         public int getNumTris()
         {
             return indices.Count / 3;
+        }
+        public void addToSimpleStaticMeshBuilder(int frameIndex, ISimpleStaticMeshBuilder o)
+        {
+            o.beginSurface(materials[0]);
+            for (int i = 0; i < indices.Count; i += 3)
+            {
+                int i0 = indices[i + 0];
+                int i1 = indices[i + 1];
+                int i2 = indices[i + 2];
+                MD3Vertex v0 = frameVerts[frameIndex].getVertex(i0);
+                MD3Vertex v1 = frameVerts[frameIndex].getVertex(i1);
+                MD3Vertex v2 = frameVerts[frameIndex].getVertex(i2);
+                Vec2 tc0 = texCoords[i0];
+                Vec2 tc1 = texCoords[i1];
+                Vec2 tc2 = texCoords[i2];
+                o.addTriangle(v0.getPos(), v1.getPos(), v2.getPos(), tc0, tc1, tc2);
+            }
+            o.endSurface();
         }
         public bool readMD3Surface(ByteFileReader r)
         {
@@ -420,6 +446,13 @@ namespace fileFormats
         {
             return frames[index];
         }
+        public void addToSimpleStaticMeshBuilder(int frameNum, ISimpleStaticMeshBuilder o)
+        {
+            foreach (MD3Surface s in surfaces)
+            {
+                s.addToSimpleStaticMeshBuilder(frameNum,o);
+            }
+        }
         public bool writeMD3Model(string outFileName)
         {
             ByteFileWriter w = new ByteFileWriter();
@@ -438,6 +471,10 @@ namespace fileFormats
             w.writeInt(0);
             int ofsFrames = 108;
             int ofsTags = ofsFrames + frames.Count * 52;
+            int ofsSurfaces = ofsTags;
+            foreach (MD3Surface sf in surfaces)
+            {
+            }
             // offset to first frame
             w.writeInt(ofsFrames);
 
