@@ -379,8 +379,39 @@ namespace objViewer
             {
                 return true;
             }
+            if (md3.getNumSurfaces() == 0)
+            {
+                MessageBox.Show("MD3 model you tried to import has no surfaces.",
+                    "MD3 model has 0 surfaces.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                return true;
+            }
             model = new WavefrontOBJ();
             md3.addToSimpleStaticMeshBuilder(0,model);
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+            return false;
+        }
+        private bool importMD5Model(string md3FileName)
+        {
+            MD5Model md5 = new MD5Model();
+            if (md5.loadMD5MeshFile(md3FileName))
+            {
+                return true;
+            }
+            if (md5.getMeshCount() == 0)
+            {
+                MessageBox.Show("MD5 model you tried to import has no surfaces.",
+                    "MD5 model has 0 surfaces.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                return true;
+            }
+            model = new WavefrontOBJ();
+            md5.addToSimpleStaticMeshBuilder(model);
             recreateGPUBuffers();
             UpdateDirectXDisplay();
             return false;
@@ -394,6 +425,17 @@ namespace objViewer
             {
                 importMD3Model(openFileDialog1.FileName);
             }   
+        }
+
+        private void mD5ModelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // import md5mesh model
+            openFileDialog1.Filter = "Doom3/Quake4 MD5mesh|*.md5mesh|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new model.";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                importMD5Model(openFileDialog1.FileName);
+            }  
         }
     }
 }

@@ -83,14 +83,23 @@
     <Compile Include="..\tShared\IXYZUVTrianglesIterator.cs">
       <Link>IXYZUVTrianglesIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\Parser.cs">
+      <Link>Parser.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
       <Link>MD3Model.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tFileFormats\MD5Mesh.cs">
+      <Link>MD5Mesh.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
       <Link>WavefrontOBJ.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Plane.cs">
       <Link>Plane.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Quaternion.cs">
+      <Link>Quaternion.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Vec2.cs">
       <Link>Vec2.cs</Link>

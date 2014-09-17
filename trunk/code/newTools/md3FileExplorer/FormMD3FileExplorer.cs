@@ -19,6 +19,7 @@ namespace md3FileExplorer
         {
             InitializeComponent();
 
+           viewMD3Model("E:/PROJECTS/qio/game/baseqio/models/testweapons/xrealMachinegun/machinegun.md3");
         }
 
         private void refreshTreeView()
@@ -125,6 +126,16 @@ namespace md3FileExplorer
         private void FormMD3FileExplorer_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Filter = "Quake3 MD3 |*.md3|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new model.";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                viewMD3Model(openFileDialog1.FileName);
+            }  
         }
     }
 }

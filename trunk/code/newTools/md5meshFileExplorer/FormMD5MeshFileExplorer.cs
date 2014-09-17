@@ -86,8 +86,14 @@ namespace md5meshFileExplorer
             if (md5model == null)
                 return;
             WavefrontOBJ obj = new WavefrontOBJ();
-            md5model.buildStaticMesh(obj);
+            md5model.addToSimpleStaticMeshBuilder(obj);
             obj.saveObjModel(fileName);
+        }
+        private void saveMD5MeshFile(string fileName)
+        {
+            if (md5model == null)
+                return;
+            md5model.saveMD5MeshFile(fileName);
         }
 
         private void FormMD5MeshFileExplorer_Load(object sender, EventArgs e)
@@ -118,6 +124,21 @@ namespace md5meshFileExplorer
             if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 exportObjFile(saveFileDialog1.FileName);
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (md5model == null)
+            {
+                MessageBox.Show("You must load model file first.", "No model loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            saveFileDialog1.Filter = "MD5mesh files|*.md5mesh";
+            saveFileDialog1.Title = "Save md5mesh";
+            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                saveMD5MeshFile(saveFileDialog1.FileName);
             }
         }
     }

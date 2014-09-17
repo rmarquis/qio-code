@@ -55,6 +55,15 @@ namespace fileFormats
             name = r.readFixedString(16);
             return false;
         }
+        public bool writeMD3Frame(ByteFileWriter w)
+        {
+            w.writeVec3(mins);
+            w.writeVec3(maxs);
+            w.writeVec3(localOrigin);
+            w.writeFloat((float)radius);
+            w.writeFixedString(name, 16);
+            return false;
+        }
         public string getName()
         {
             return name;
@@ -111,12 +120,30 @@ namespace fileFormats
             this.u = r.readVec3();
             return false;
         }
+        public bool writeMD3Tag(ByteFileWriter w)
+        {
+            w.writeFixedString(tagName,64);
+            w.writeVec3(origin);
+            w.writeVec3(f);
+            w.writeVec3(r);
+            w.writeVec3(u);
+            return false;
+        }
     }
     class MD3Vertex
     {
         private Vec3 xyz;
         private Vec3 normal;
 
+        public void writeMD3Vertex(ByteFileWriter w)
+        {
+            short x = (short)(xyz.getX() / 0.015625);
+            short y = (short)(xyz.getY() / 0.015625);
+            short z = (short)(xyz.getZ() / 0.015625);
+            w.writeShort(x);
+            w.writeShort(y);
+            w.writeShort(z);
+        }
         public void readMD3Vertex(ByteFileReader r)
         {
             short x = r.readShort();
@@ -153,6 +180,10 @@ namespace fileFormats
                 v.readMD3Vertex(r);
                 verts.Add(v);
             }
+        }
+        public List<MD3Vertex> getVerts()
+        {
+            return verts;
         }
         public MD3Vertex getVertex(int vertexIndex)
         {
@@ -252,6 +283,7 @@ namespace fileFormats
                 Vec2 tc = r.readVec2();
                 texCoords.Add(tc);
             }
+            r.setPos(surfaceDataStart + ofsXYZNormals);
             // read vertices of all frames
             for (int i = 0; i < numFrames; i++)
             {
@@ -261,6 +293,47 @@ namespace fileFormats
             }
 
             r.setPos(surfaceDataStart + ofsEnd);
+            return false;
+        }
+        public bool writeMD3Surface(ByteFileWriter w)
+        {
+            long surfaceDataStart = w.getPos();
+
+            int ident = 0;
+            w.writeInt(ident);
+            w.writeFixedString(surfName, 64);
+            w.writeInt(flags);
+            w.writeInt(frameVerts.Count);
+            w.writeInt(materials.Count);
+            w.writeInt(texCoords.Count);
+            w.writeInt(indices.Count / 3);
+            long offsetsAt = w.getPos();
+            // write offsets
+            w.writeInt(0); // ofsTris
+            w.writeInt(0); // ofsMaterials
+            w.writeInt(0); // ofsTexCoords
+            w.writeInt(0); // ofsXYZNormals
+            w.writeInt(0); // ofsEnd
+            long ofsMaterials = w.getPos();
+            // write material names
+            foreach (string s in materials)
+            {
+                w.writeFixedString(s, 64);
+                w.writeInt(0);
+            }
+            long ofsTris = w.getPos();
+            foreach (int i in indices)
+            {
+                w.writeInt(i);
+            }
+            long ofsXYZNormals = w.getPos();
+            foreach (MD3SurfVertsFrame f in frameVerts)
+            {
+                foreach (MD3Vertex v in f.getVerts())
+                {
+                    v.writeMD3Vertex(w);
+                }
+            }
             return false;
         }
     }
@@ -312,6 +385,20 @@ namespace fileFormats
         public void writeInt(int i)
         {
             file.Write(BitConverter.GetBytes(i), 0, 4);
+        }
+        public void writeShort(short s)
+        {
+            file.Write(BitConverter.GetBytes(s), 0, 2);
+        }
+        public void writeFloat(float f)
+        {
+            file.Write(BitConverter.GetBytes(f), 0, 4);
+        }
+        public void writeVec3(Vec3 v)
+        {
+            writeFloat((float)v.getX());
+            writeFloat((float)v.getY());
+            writeFloat((float)v.getZ());
         }
     }
     class ByteFileReader
@@ -471,14 +558,69 @@ namespace fileFormats
             w.writeInt(0);
             int ofsFrames = 108;
             int ofsTags = ofsFrames + frames.Count * 52;
-            int ofsSurfaces = ofsTags;
-            foreach (MD3Surface sf in surfaces)
+            int ofsSurfaces = ofsTags + tags.Count * 110;
+            // sanity check
+            if (ofsTags != w.getPos())
             {
+                MessageBox.Show("OfsTags mismatch.",
+                "MD3 write error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation,
+                MessageBoxDefaultButton.Button1);
+                return true;
             }
             // offset to first frame
             w.writeInt(ofsFrames);
-
             // offset to first tag
+            w.writeInt(ofsTags);
+            // write offset to surface
+            w.writeInt(ofsSurfaces);
+            // ofs ends - will be set after writing the surfaces
+            w.writeInt(0);
+
+            // sanity check
+            if (ofsFrames != w.getPos())
+            {
+                MessageBox.Show("Ofsframes mismatch.",
+                "MD3 write error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation,
+                MessageBoxDefaultButton.Button1);
+                return true;
+            }
+            foreach (MD3Frame f in frames)
+            {
+                f.writeMD3Frame(w);
+            }
+            // sanity check
+            if (ofsTags != w.getPos())
+            {
+                MessageBox.Show("OfsTags mismatch.",
+                "MD3 write error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation,
+                MessageBoxDefaultButton.Button1);
+                return true;
+            }
+            foreach (MD3Tag t in tags)
+            {
+                t.writeMD3Tag(w);
+            }
+            // sanity check
+            if (ofsSurfaces != w.getPos())
+            {
+                MessageBox.Show("OfsSurfaces mismatch.",
+                "MD3 write error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation,
+                MessageBoxDefaultButton.Button1);
+                return true;
+            }
+            foreach (MD3Surface sf in surfaces)
+            {
+               sf.writeMD3Surface(w);
+            }
+
 
 
             return false;

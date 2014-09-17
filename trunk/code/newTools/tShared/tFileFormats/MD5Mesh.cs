@@ -139,7 +139,7 @@ namespace fileFormats
                 v.setCurrentPos(pos);
             }
         }
-        public void addToStaticMesh(ISimpleStaticMeshBuilder o)
+        public void addToSimpleStaticMeshBuilder(ISimpleStaticMeshBuilder o)
         {
             o.beginSurface(this.materialName);
             for (int i = 0; i < indices.Count; i += 3)
@@ -466,12 +466,18 @@ namespace fileFormats
         {
             buildVertices(this);
         }
-        public void buildStaticMesh(ISimpleStaticMeshBuilder o)
+        public void addToSimpleStaticMeshBuilder(ISimpleStaticMeshBuilder o)
         {
             foreach(MD5Mesh m in meshes)
             {
-                m.addToStaticMesh(o);
+                m.addToSimpleStaticMeshBuilder(o);
             }
+        }
+        public bool saveMD5MeshFile(string fileName)
+        {
+
+            // TODO
+            return true;
         }
         public bool loadMD5MeshFile(string fileName)
         {

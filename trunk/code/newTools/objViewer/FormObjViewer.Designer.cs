@@ -41,6 +41,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mD3ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mD5ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -86,14 +87,14 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Text = "Open OBJ...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.saveToolStripMenuItem.Text = "Save";
+            this.saveToolStripMenuItem.Text = "Save OBJ..";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
@@ -134,7 +135,8 @@
             // importToolStripMenuItem
             // 
             this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mD3ModelToolStripMenuItem});
+            this.mD3ModelToolStripMenuItem,
+            this.mD5ModelToolStripMenuItem});
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
             this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.importToolStripMenuItem.Text = "Import";
@@ -146,6 +148,13 @@
             this.mD3ModelToolStripMenuItem.Text = "MD3 model..";
             this.mD3ModelToolStripMenuItem.Click += new System.EventHandler(this.mD3ModelToolStripMenuItem_Click);
             // 
+            // mD5ModelToolStripMenuItem
+            // 
+            this.mD5ModelToolStripMenuItem.Name = "mD5ModelToolStripMenuItem";
+            this.mD5ModelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.mD5ModelToolStripMenuItem.Text = "MD5 model...";
+            this.mD5ModelToolStripMenuItem.Click += new System.EventHandler(this.mD5ModelToolStripMenuItem_Click);
+            // 
             // FormObjViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -155,7 +164,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormObjViewer";
-            this.Text = "Form1";
+            this.Text = "OBJ Model Viewer";
             this.Load += new System.EventHandler(this.FormObjViewer_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
@@ -180,6 +189,7 @@
         private System.Windows.Forms.ToolStripMenuItem scaleToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mD3ModelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mD5ModelToolStripMenuItem;
     }
 }
 
