@@ -34,19 +34,19 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.classUsageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceClassnameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.modelsUsageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wavefrontOBJToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceClassnameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.classUsageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modelsUsageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -87,27 +87,38 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // exportToolStripMenuItem
+            // 
+            this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.wavefrontOBJToolStripMenuItem});
+            this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.exportToolStripMenuItem.Text = "Export";
+            // 
+            // wavefrontOBJToolStripMenuItem
+            // 
+            this.wavefrontOBJToolStripMenuItem.Name = "wavefrontOBJToolStripMenuItem";
+            this.wavefrontOBJToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.wavefrontOBJToolStripMenuItem.Text = "Wavefront OBJ...";
+            this.wavefrontOBJToolStripMenuItem.Click += new System.EventHandler(this.wavefrontOBJToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // editToolStripMenuItem
             // 
@@ -117,22 +128,6 @@
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
-            // 
-            // statsToolStripMenuItem
-            // 
-            this.statsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.classUsageToolStripMenuItem,
-            this.modelsUsageToolStripMenuItem});
-            this.statsToolStripMenuItem.Name = "statsToolStripMenuItem";
-            this.statsToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.statsToolStripMenuItem.Text = "Stats";
-            // 
-            // classUsageToolStripMenuItem
-            // 
-            this.classUsageToolStripMenuItem.Name = "classUsageToolStripMenuItem";
-            this.classUsageToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.classUsageToolStripMenuItem.Text = "Class usage";
-            this.classUsageToolStripMenuItem.Click += new System.EventHandler(this.classUsageToolStripMenuItem_Click);
             // 
             // replaceClassnameToolStripMenuItem
             // 
@@ -148,12 +143,32 @@
             this.replaceMaterialToolStripMenuItem.Text = "Replace material...";
             this.replaceMaterialToolStripMenuItem.Click += new System.EventHandler(this.replaceMaterialToolStripMenuItem_Click);
             // 
+            // statsToolStripMenuItem
+            // 
+            this.statsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.classUsageToolStripMenuItem,
+            this.modelsUsageToolStripMenuItem});
+            this.statsToolStripMenuItem.Name = "statsToolStripMenuItem";
+            this.statsToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.statsToolStripMenuItem.Text = "Stats";
+            // 
+            // classUsageToolStripMenuItem
+            // 
+            this.classUsageToolStripMenuItem.Name = "classUsageToolStripMenuItem";
+            this.classUsageToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.classUsageToolStripMenuItem.Text = "Class usage";
+            this.classUsageToolStripMenuItem.Click += new System.EventHandler(this.classUsageToolStripMenuItem_Click);
+            // 
             // modelsUsageToolStripMenuItem
             // 
             this.modelsUsageToolStripMenuItem.Name = "modelsUsageToolStripMenuItem";
-            this.modelsUsageToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.modelsUsageToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.modelsUsageToolStripMenuItem.Text = "Models usage";
             this.modelsUsageToolStripMenuItem.Click += new System.EventHandler(this.modelsUsageToolStripMenuItem_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // contextMenuStrip1
             // 
@@ -165,24 +180,9 @@
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
-            // 
-            // exportToolStripMenuItem
-            // 
-            this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.wavefrontOBJToolStripMenuItem});
-            this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.exportToolStripMenuItem.Text = "Export";
-            // 
-            // wavefrontOBJToolStripMenuItem
-            // 
-            this.wavefrontOBJToolStripMenuItem.Name = "wavefrontOBJToolStripMenuItem";
-            this.wavefrontOBJToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
-            this.wavefrontOBJToolStripMenuItem.Text = "Wavefront OBJ...";
-            this.wavefrontOBJToolStripMenuItem.Click += new System.EventHandler(this.wavefrontOBJToolStripMenuItem_Click);
             // 
             // FormMapFileExplorer
             // 
@@ -193,7 +193,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMapFileExplorer";
-            this.Text = "Form1";
+            this.Text = "MAP (.map) file explorer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

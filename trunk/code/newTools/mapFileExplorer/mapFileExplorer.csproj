@@ -59,6 +59,9 @@
     <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
       <Link>IXYZTrianglesIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\KeyValuesList.cs">
+      <Link>KeyValuesList.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>
@@ -107,7 +110,6 @@
     <Compile Include="FormReplaceMaterial.Designer.cs">
       <DependentUpon>FormReplaceMaterial.cs</DependentUpon>
     </Compile>
-    <Compile Include="KeyValuesList.cs" />
     <Compile Include="ProgramMapFileExplorer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormClassUsersStats.resx">
