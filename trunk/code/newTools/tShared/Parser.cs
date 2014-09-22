@@ -71,6 +71,11 @@ namespace shared
             streamReader.Close();
             return false;
         }
+        public bool beginParsingText(string newText)
+        {
+            this.text = newText;
+            return false;
+        }
         public bool isAtEOF()
         {
             int i = skipWhiteSpaces();
@@ -101,6 +106,8 @@ namespace shared
         public bool isAtToken(string tok)
         {
             int p = skipWhiteSpaces();
+            if (tok.Length + p > text.Length)
+                return false;
             for (int i = 0; i < tok.Length; i++)
             {
                 int charAt = p + i;
@@ -110,8 +117,12 @@ namespace shared
                 if (char.ToLower(at) != char.ToLower(tok[i]))
                     return false;
             }
-            if (Char.IsWhiteSpace(text[p + tok.Length]) == false)
-                return false;
+            // next character must be a whitespace (unless expected token is directly at the end of the buffer)
+            if (p + tok.Length < text.Length)
+            {
+                if (Char.IsWhiteSpace(text[p + tok.Length]) == false)
+                    return false;
+            }
             pos = p + tok.Length;
             return true;
         }
@@ -309,5 +320,6 @@ namespace shared
             }
             return ret;
         }
+
     }
 }

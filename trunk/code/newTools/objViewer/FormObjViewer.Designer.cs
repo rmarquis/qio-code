@@ -33,15 +33,17 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mD3ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mD5ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapTrianglesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapYZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mD3ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mD5ModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.singleBrushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mAPFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -97,6 +99,31 @@
             this.saveToolStripMenuItem.Text = "Save OBJ..";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
+            // importToolStripMenuItem
+            // 
+            this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mD3ModelToolStripMenuItem,
+            this.mD5ModelToolStripMenuItem,
+            this.mAPFileToolStripMenuItem,
+            this.singleBrushToolStripMenuItem});
+            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.importToolStripMenuItem.Text = "Import";
+            // 
+            // mD3ModelToolStripMenuItem
+            // 
+            this.mD3ModelToolStripMenuItem.Name = "mD3ModelToolStripMenuItem";
+            this.mD3ModelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.mD3ModelToolStripMenuItem.Text = "MD3 model..";
+            this.mD3ModelToolStripMenuItem.Click += new System.EventHandler(this.mD3ModelToolStripMenuItem_Click);
+            // 
+            // mD5ModelToolStripMenuItem
+            // 
+            this.mD5ModelToolStripMenuItem.Name = "mD5ModelToolStripMenuItem";
+            this.mD5ModelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.mD5ModelToolStripMenuItem.Text = "MD5 model...";
+            this.mD5ModelToolStripMenuItem.Click += new System.EventHandler(this.mD5ModelToolStripMenuItem_Click);
+            // 
             // editToolStripMenuItem
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -132,28 +159,19 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // importToolStripMenuItem
+            // singleBrushToolStripMenuItem
             // 
-            this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mD3ModelToolStripMenuItem,
-            this.mD5ModelToolStripMenuItem});
-            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.importToolStripMenuItem.Text = "Import";
+            this.singleBrushToolStripMenuItem.Name = "singleBrushToolStripMenuItem";
+            this.singleBrushToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.singleBrushToolStripMenuItem.Text = "Single brush...";
+            this.singleBrushToolStripMenuItem.Click += new System.EventHandler(this.singleBrushToolStripMenuItem_Click);
             // 
-            // mD3ModelToolStripMenuItem
+            // mAPFileToolStripMenuItem
             // 
-            this.mD3ModelToolStripMenuItem.Name = "mD3ModelToolStripMenuItem";
-            this.mD3ModelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.mD3ModelToolStripMenuItem.Text = "MD3 model..";
-            this.mD3ModelToolStripMenuItem.Click += new System.EventHandler(this.mD3ModelToolStripMenuItem_Click);
-            // 
-            // mD5ModelToolStripMenuItem
-            // 
-            this.mD5ModelToolStripMenuItem.Name = "mD5ModelToolStripMenuItem";
-            this.mD5ModelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.mD5ModelToolStripMenuItem.Text = "MD5 model...";
-            this.mD5ModelToolStripMenuItem.Click += new System.EventHandler(this.mD5ModelToolStripMenuItem_Click);
+            this.mAPFileToolStripMenuItem.Name = "mAPFileToolStripMenuItem";
+            this.mAPFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.mAPFileToolStripMenuItem.Text = "MAP file...";
+            this.mAPFileToolStripMenuItem.Click += new System.EventHandler(this.mAPFileToolStripMenuItem_Click);
             // 
             // FormObjViewer
             // 
@@ -190,6 +208,8 @@
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mD3ModelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mD5ModelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem singleBrushToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mAPFileToolStripMenuItem;
     }
 }
 

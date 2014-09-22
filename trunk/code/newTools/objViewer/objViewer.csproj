@@ -74,6 +74,18 @@
     <Compile Include="..\tShared\Camera.cs">
       <Link>Camera.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\ConvexVerticesBuilder.cs">
+      <Link>ConvexVerticesBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\ConvexVolumeArrayToWaveFrontObjIterator.cs">
+      <Link>ConvexVolumeArrayToWaveFrontObjIterator.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IConvexVolume.cs">
+      <Link>IConvexVolume.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\IConvexVolumeArrayIterator.cs">
+      <Link>IConvexVolumeArrayIterator.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\IVec3ArrayIterator.cs">
       <Link>IVec3ArrayIterator.cs</Link>
     </Compile>
@@ -83,8 +95,17 @@
     <Compile Include="..\tShared\IXYZUVTrianglesIterator.cs">
       <Link>IXYZUVTrianglesIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\KeyValuesList.cs">
+      <Link>KeyValuesList.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\PolygonVerticesMerger.cs">
+      <Link>PolygonVerticesMerger.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tFileFormats\MapFile.cs">
+      <Link>MapFile.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
       <Link>MD3Model.cs</Link>
@@ -119,10 +140,19 @@
     <Compile Include="FormObjViewer.Designer.cs">
       <DependentUpon>FormObjViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormPasteBrushText.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPasteBrushText.Designer.cs">
+      <DependentUpon>FormPasteBrushText.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProgramObjViewer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormObjViewer.resx">
       <DependentUpon>FormObjViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPasteBrushText.resx">
+      <DependentUpon>FormPasteBrushText.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -34,7 +34,7 @@ using shared;
 
 namespace fileFormats
 {
-    struct ObjFaceVertex
+    public struct ObjFaceVertex
     {
         private int xyzIndex, stIndex, nIndex;
 
@@ -111,7 +111,7 @@ namespace fileFormats
             return xyzIndex;
         }
     }
-    struct ObjFace
+    public struct ObjFace
     {
         private int firstVertex;
         private int numVerts;
@@ -138,7 +138,7 @@ namespace fileFormats
             return firstVertex;
         }
     }
-    class ObjObject
+    public class ObjObject
     {
         private string objectName;
         private int firstFace;
@@ -173,17 +173,17 @@ namespace fileFormats
             return objectName;
         }
     }
-    class ObjGroup : ObjObject
+    public class ObjGroup : ObjObject
     {
 
     };
-    interface ISimpleStaticMeshBuilder
+    public interface ISimpleStaticMeshBuilder
     {
        void beginSurface(string name);
        void addTriangle(Vec3 a, Vec3 b, Vec3 c, Vec2 stA, Vec2 stB, Vec2 stC);
        void endSurface();
     };
-    class WavefrontOBJ : IVec3ArrayIterator, ISimpleStaticMeshBuilder
+    public class WavefrontOBJ : IVec3ArrayIterator, ISimpleStaticMeshBuilder
     {
         private List<Vec3> xyzs;
         private List<Vec2> texCoords;

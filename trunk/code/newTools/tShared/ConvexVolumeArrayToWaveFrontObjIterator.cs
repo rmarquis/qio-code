@@ -1,4 +1,4 @@
-﻿/*
+/*
 ============================================================================
 Copyright (C) 2014 V.
 
@@ -21,19 +21,45 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// newTools/tShared/IXYZTrianglesIterator.cs
+// newTools/tShared/IConvexVolume.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using tMath;
+using fileFormats;
 
 namespace shared
 {
-    public abstract class IXYZTrianglesIterator
+    public class ConvexVolumeArrayToWaveFrontObjIterator : IConvexVolumeArrayIterator
     {
-        public abstract void addXYZTriangle(Vec3 a, Vec3 b, Vec3 c);
+        private WavefrontOBJ obj;
+        private bool bMergeBrushPolygonVertices;
+        private PolygonVerticesMerger merger;
+
+        public ConvexVolumeArrayToWaveFrontObjIterator(WavefrontOBJ obj)
+        {
+            this.obj = obj;
+            bMergeBrushPolygonVertices = true;
+        }
+
+        public override void addConvexVolume(IConvexVolume v)
+        {
+            if (bMergeBrushPolygonVertices == false)
+            {
+                ConvexVerticesBuilder.buildConvexSides(v, obj);
+            }
+            else
+            {
+                if (merger == null)
+                    merger = new PolygonVerticesMerger();
+                else
+                    merger.reset();
+                ConvexVerticesBuilder.buildConvexSides(v, merger);
+
+                obj.addIndexedMesh(merger.getXYZs(), merger.getNumUniquePoints(), merger.getNumFaces(), merger.getFaceIndices(), merger.getFaceOffsets(), merger.getFaceVertsCount());
+            }
+        }
     }
 }

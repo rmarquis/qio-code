@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5FEFE4EB-0922-4FF8-99EE-DDBE23BAD070}</ProjectGuid>
+    <ProjectGuid>{E33ECAEC-C3BD-4AF0-B687-7595D07E0924}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>mapFileExplorer</RootNamespace>
-    <AssemblyName>mapFileExplorer</AssemblyName>
+    <RootNamespace>md5animFileExplorer</RootNamespace>
+    <AssemblyName>md5animFileExplorer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\game\sdk\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -26,7 +26,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\game\sdk\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -44,41 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\tShared\ConvexVerticesBuilder.cs">
-      <Link>ConvexVerticesBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\ConvexVolumeArrayToWaveFrontObjIterator.cs">
-      <Link>ConvexVolumeArrayToWaveFrontObjIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IConvexVolume.cs">
-      <Link>IConvexVolume.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IConvexVolumeArrayIterator.cs">
-      <Link>IConvexVolumeArrayIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IVec3ArrayIterator.cs">
-      <Link>IVec3ArrayIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
-      <Link>IXYZTrianglesIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\KeyValuesList.cs">
-      <Link>KeyValuesList.cs</Link>
-    </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\PolygonVerticesMerger.cs">
-      <Link>PolygonVerticesMerger.cs</Link>
+    <Compile Include="..\tShared\tFileFormats\MD5Anim.cs">
+      <Link>MD5Anim.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\tFileFormats\MapFile.cs">
-      <Link>MapFile.cs</Link>
+    <Compile Include="..\tShared\tMath\AABB.cs">
+      <Link>AABB.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
-      <Link>WavefrontOBJ.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\tMath\Plane.cs">
-      <Link>Plane.cs</Link>
+    <Compile Include="..\tShared\tMath\Quaternion.cs">
+      <Link>Quaternion.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Vec2.cs">
       <Link>Vec2.cs</Link>
@@ -86,52 +62,16 @@
     <Compile Include="..\tShared\tMath\Vec3.cs">
       <Link>Vec3.cs</Link>
     </Compile>
-    <Compile Include="FormClassUsersStats.cs">
+    <Compile Include="FormMD5AnimFileExplorer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormClassUsersStats.Designer.cs">
-      <DependentUpon>FormClassUsersStats.cs</DependentUpon>
+    <Compile Include="FormMD5AnimFileExplorer.Designer.cs">
+      <DependentUpon>FormMD5AnimFileExplorer.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormMapFileExplorer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormMapFileExplorer.Designer.cs">
-      <DependentUpon>FormMapFileExplorer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormModelUsersStats.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormModelUsersStats.Designer.cs">
-      <DependentUpon>FormModelUsersStats.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormReplaceClassName.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormReplaceClassName.Designer.cs">
-      <DependentUpon>FormReplaceClassName.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormReplaceMaterial.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormReplaceMaterial.Designer.cs">
-      <DependentUpon>FormReplaceMaterial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProgramMapFileExplorer.cs" />
+    <Compile Include="ProgramMD5AnimFileExplorer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FormClassUsersStats.resx">
-      <DependentUpon>FormClassUsersStats.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormMapFileExplorer.resx">
-      <DependentUpon>FormMapFileExplorer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormModelUsersStats.resx">
-      <DependentUpon>FormModelUsersStats.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormReplaceClassName.resx">
-      <DependentUpon>FormReplaceClassName.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormReplaceMaterial.resx">
-      <DependentUpon>FormReplaceMaterial.cs</DependentUpon>
+    <EmbeddedResource Include="FormMD5AnimFileExplorer.resx">
+      <DependentUpon>FormMD5AnimFileExplorer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -153,7 +93,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppMapFileExplorer.config" />
+    <None Include="AppMD5AnimFileExplorer.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

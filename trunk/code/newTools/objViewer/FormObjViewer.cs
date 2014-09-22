@@ -106,10 +106,7 @@ namespace objViewer
                 presentParams.SwapEffect = SwapEffect.Discard;
                 presentParams.EnableAutoDepthStencil = true;
                 presentParams.AutoDepthStencilFormat = DepthFormat.D16;
-                device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, presentParams);
-
-
-                //MessageBox.Show("DirectX device for PictureBox successfuly initialized. Click button to draw the triangle.");
+                device = new Device(0, DeviceType.Hardware, handle, CreateFlags.HardwareVertexProcessing, presentParams);
             }
             catch (DirectXException e)
             {
@@ -150,10 +147,10 @@ namespace objViewer
                 // Ambient light is light that scatters and lights all objects evenly.
                 device.RenderState.Ambient = System.Drawing.Color.FromArgb(0x202020);
 
-                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, pictureBox1.Width / pictureBox1.Height, 1f, 500f);
+                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, pictureBox1.Width / pictureBox1.Height, 1f, 5000f);
 
                 Vector3 at;
-                at.X =(float) camera.getPosition().getX();
+                at.X = (float) camera.getPosition().getX();
                 at.Y = (float)camera.getPosition().getY();
                 at.Z = (float)camera.getPosition().getZ();
                 device.Transform.View = Matrix.LookAtLH(at, new Vector3(0,0,0), new Vector3(0, 0, 1));
@@ -436,6 +433,53 @@ namespace objViewer
             {
                 importMD5Model(openFileDialog1.FileName);
             }  
+        }
+
+        private void singleBrushToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormPasteBrushText f = new FormPasteBrushText();
+            f.setOBJViewerForm(this);
+            f.ShowDialog();
+        }
+
+        public void importMapFile(MapFile map)
+        {
+            WavefrontOBJ newObj = new WavefrontOBJ();
+            ConvexVolumeArrayToWaveFrontObjIterator converter = new ConvexVolumeArrayToWaveFrontObjIterator(newObj);
+            map.iterateBrushes(converter);
+            this.model = newObj;
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+        }
+        public void importBrushFromText(string textDef)
+        {
+            MapFileParser p = new MapFileParser();
+            if (p.loadBrushesFromText(textDef, "memory") )
+            {
+                return;
+            }
+            MapFile map = p.getMapFile();
+            importMapFile(map);
+        }
+        private void importMAPFile(string fileName)
+        {
+            MapFileParser p = new MapFileParser();
+            if (p.loadMapFile(fileName))
+            {
+                return;
+            }
+            MapFile map = p.getMapFile();
+            importMapFile(map);
+        }
+        private void mAPFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // import map model
+            openFileDialog1.Filter = "Q3/D3/Q4 MAP|*.map|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new model.";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                importMAPFile(openFileDialog1.FileName);
+            } 
         }
     }
 }

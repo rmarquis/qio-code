@@ -21,19 +21,46 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// newTools/tShared/IXYZTrianglesIterator.cs
+// newTools/tShared/tMath/AABB.cs
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using tMath;
 
-namespace shared
+namespace tMath
 {
-    public abstract class IXYZTrianglesIterator
+    public struct AABB
     {
-        public abstract void addXYZTriangle(Vec3 a, Vec3 b, Vec3 c);
-    }
+        private Vec3 mins, maxs;
+
+        public AABB(Vec3 a, Vec3 b)
+        {
+            mins = a;
+            maxs = a;
+
+            addPoint(b);
+        }
+        public void addPoint(Vec3 p)
+        {
+            if (mins.getX() > p.getX())
+                mins.setX(p.getX());
+            if (mins.getY() > p.getY())
+                mins.setY(p.getY());
+            if (mins.getZ() > p.getZ())
+                mins.setZ(p.getZ());
+            if (maxs.getX() < p.getX())
+                maxs.setX(p.getX());
+            if (maxs.getY() < p.getY())
+                maxs.setY(p.getY());
+            if (maxs.getZ() < p.getZ())
+                maxs.setZ(p.getZ());
+        }
+        public override string ToString()
+        {
+            return mins.ToStringBraced() + " " + maxs.ToStringBraced();
+        }
+    };
 }

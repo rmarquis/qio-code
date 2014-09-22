@@ -275,6 +275,18 @@ namespace tMath
                 return false;
             return true;
         }
+        public void setX(double f)
+        {
+            x = f;
+        }
+        public void setY(double f)
+        {
+            y = f;
+        }
+        public void setZ(double f)
+        {
+            z = f;
+        }
 
         public double getX()
         {

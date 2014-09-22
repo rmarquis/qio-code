@@ -686,6 +686,7 @@ namespace fileFormats
     {
         private Parser p;
         private MapFile m;
+        private bool bParsingOnlyBrushesTextFragment;
 
         private void showParseError(string msg)
         {
@@ -1001,9 +1002,17 @@ namespace fileFormats
             while (p.isAtToken("}") == false)
             {
                 if (p.isAtEOF())
-                { //should never happen                
-                    showParseError("Unexpected EOF hit while parsing entity " + m.getNumEntities());
-                    break;
+                {
+                    if (bParsingOnlyBrushesTextFragment)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        //should never happen                
+                        showParseError("Unexpected EOF hit while parsing entity " + m.getNumEntities());
+                        break;
+                    }
                 }
                 else if (p.isAtToken("{"))
                 {
@@ -1152,8 +1161,37 @@ namespace fileFormats
         {
             return m;
         }
+        public bool loadBrushesFromText(string text, string fileName)
+        {
+            this.bParsingOnlyBrushesTextFragment = true;
+
+            p = new Parser();
+            if (p.beginParsingText(text))
+                return true;
+            m = new MapFile();
+            m.setFileName(fileName);
+            //if (parseMapFile())
+            if(parseMapEntity())
+                return true;
+            return false;
+        }
+        public bool loadMapFileFromText(string text, string fileName)
+        {
+            this.bParsingOnlyBrushesTextFragment = false;
+
+            p = new Parser();
+            if (p.beginParsingText(text))
+                return true;
+            m = new MapFile();
+            m.setFileName(fileName);
+            if (parseMapFile())
+                return true;
+            return false;
+        }
         public bool loadMapFile(string fileName)
         {
+            this.bParsingOnlyBrushesTextFragment = false;
+
             p = new Parser();
             if (p.beginParsingFile(fileName))
                 return true;
