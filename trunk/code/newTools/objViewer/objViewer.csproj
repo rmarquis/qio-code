@@ -104,6 +104,9 @@
     <Compile Include="..\tShared\PolygonVerticesMerger.cs">
       <Link>PolygonVerticesMerger.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\tDirectx\DXVertexBufferXYZNormals.cs">
+      <Link>DXVertexBufferXYZNormals.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\MapFile.cs">
       <Link>MapFile.cs</Link>
     </Compile>

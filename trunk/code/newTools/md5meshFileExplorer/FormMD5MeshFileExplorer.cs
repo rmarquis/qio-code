@@ -23,6 +23,8 @@ namespace md5meshFileExplorer
         private void refreshTreeView()
         {
             treeView1.Nodes.Clear();
+            if (md5model == null)
+                return;
             TreeNode root = new TreeNode("MD5Model");
             TreeNode fileName = new TreeNode("FileName");
             TreeNode fileNameText = new TreeNode(md5model.getName());
@@ -139,6 +141,15 @@ namespace md5meshFileExplorer
             if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 saveMD5MeshFile(saveFileDialog1.FileName);
+            }
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (md5model != null)
+            {
+                md5model = null;
+                refreshTreeView();
             }
         }
     }

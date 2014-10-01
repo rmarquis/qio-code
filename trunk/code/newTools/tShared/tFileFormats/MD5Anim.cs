@@ -32,6 +32,7 @@ using System.Windows.Forms;
 using tMath;
 using shared;
 using md5animFileExplorer;
+using System.Globalization;
 
 namespace fileFormats
 {
@@ -68,6 +69,10 @@ namespace fileFormats
             this.parentIndex = parentIndex;
             this.componentFlags = componentFlags;
             this.firstComponent = firstComponent;
+        }
+        public override string ToString()
+        {
+            return "\"" + name + "\"\t" + parentIndex.ToString() + " " + firstComponent.ToString() + " " + componentFlags.ToString();
         }
         public void setBaseFrameOfs(Vec3 ofs)
         {
@@ -151,11 +156,75 @@ namespace fileFormats
         }
         public bool saveMD5AnimFile(string fileName)
         {
-
-            // TODO
-            return true;
+            // get md5anim text
+            string md5animFileText = this.ToString();
+            // write to file
+            System.IO.StreamWriter file = new System.IO.StreamWriter(fileName);
+            file.WriteLine(md5animFileText);
+            file.Close();
+            return false;
         }
-
+        public string getJointName(int index)
+        {
+            if (index < 0)
+                return "";
+            return animJoints[index].getName();
+        }
+        public override string ToString()
+        {
+            string r = "MD5Version 10\n";
+            r += "commandline \""+commandLine+"\"\n";
+            r += "\n";
+            r += "numFrames "+frames.Count.ToString()+"\n";
+            r += "numJoints "+animJoints.Count.ToString()+"\n";
+            r += "frameRate "+frameRate+"\n";
+            r += "numAnimatedComponents " +numAnimatedComponents.ToString() +"\n";
+            r += "\n";
+            // write skeleton
+            r += "hierarchy {\n";
+            foreach(MD5AnimJoint j in animJoints)
+            {
+                r += "\t" + j.ToString() + "\t// " + getJointName(j.getParentIndex()).ToString() + "\n";
+            }
+            r += "}\n\n";
+            // write frame bounds
+            r += "bounds {\n";
+            foreach (AABB bb in bounds)
+            {
+                r += "\t" + bb.ToString() + "\n";
+            }
+            r += "}\n\n";
+            // write base frame
+            r += "baseframe {\n";
+            foreach (MD5AnimJoint j in animJoints)
+            {
+                r += "\t" + j.getLocalOfs().ToStringBraced() + " " + j.getLocalRot().ToStringBracedXYZ() + "\n";
+            }
+            r += "}\n\n";
+            for (int i = 0; i < frames.Count; i++)
+            {
+                r += "frame " + i.ToString() + " {\n\t";
+                int j;
+                for (j = 0; j < numAnimatedComponents; j++)
+                {
+                    r += frames[i].getValue(j).ToString(CultureInfo.InvariantCulture.NumberFormat);
+                    if ((j + 1) % 6 == 0)
+                    {
+                        r += "\n\t";
+                    }
+                    else
+                    {
+                        r += " ";
+                    }
+                }
+                if ((j + 1) % 6 != 0)
+                {
+                    r += "\n";
+                }
+                r += "}\n";
+            }
+            return r;
+        }
         private bool parseFrame(Parser p)
         {
             int frameIndex;

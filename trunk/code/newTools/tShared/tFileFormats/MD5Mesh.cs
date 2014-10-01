@@ -52,6 +52,10 @@ namespace fileFormats
             this.weight = weight;
             this.offset = ofs;
         }
+        public override string ToString()
+        {
+            return boneIndex.ToString() + " " + weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + offset.ToStringBraced();
+        }
         public float getWeight()
         {
             return weight;
@@ -78,6 +82,10 @@ namespace fileFormats
             this.texCoord = st;
             this.firstWeight = firstWeight;
             this.numWeights = numWeights;
+        }
+        public override string ToString()
+        {
+           return texCoord.ToStringBraced() + " " + firstWeight.ToString() + " " + numWeights.ToString();
         }
         public void setCurrentPos(Vec3 np)
         {
@@ -166,6 +174,35 @@ namespace fileFormats
             }
             o.endSurface();
         }
+        public override string ToString()
+        {
+            string r = "\nmesh {\n";
+            r += "\tshader \"" + materialName + "\"\n";
+            r += "\n";
+            r += "\tnumVerts " + vertices.Count.ToString() + "\n";
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                r += "\tvert " + i.ToString() + " " + vertices[i].ToString() + "\n";
+            }
+            r += "\n";
+            int numTris = indices.Count / 3;
+            r += "\tnumTris " + numTris.ToString() + "\n";
+            for (int i = 0; i < numTris; i++)
+            {
+                int i0 = indices[i * 3 + 0];
+                int i1 = indices[i * 3 + 1];
+                int i2 = indices[i * 3 + 2];
+                r += "\ttri " + i.ToString() + " " +i0.ToString() + " " + i1.ToString() + " " + i2.ToString() + "\n";
+            }
+            r += "\n";
+            r += "\nnumweights " + weights.Count.ToString() + "\n";
+            for (int i = 0; i < weights.Count; i++)
+            {
+                r += "\tweight " + i.ToString() + " " + weights[i].ToString() + "\n";
+            }
+            r += "}\n";
+            return r;
+        }
         public void addVertex(MD5Vertex v)
         {
             vertices.Add(v);
@@ -216,6 +253,14 @@ namespace fileFormats
         public Quat getRot()
         {
             return rot;
+        }
+        public int getParentIndex()
+        {
+            return parentIndex;
+        }
+        public override string ToString()
+        {
+            return "\"" + name + "\"\t" + parentIndex.ToString() + " " + ofs.ToStringBraced() + " " + rot.ToStringBracedXYZ();
         }
     }
     class MD5Model : IBoneOrientations
@@ -418,6 +463,15 @@ namespace fileFormats
                 }
                 else
                 {
+                    int line = p.getCurrentLineNumber();
+                    string t;
+                    p.readString(out t);
+                    MessageBox.Show("Unknown token '"+t+"' at line "+line.ToString() + " in mesh block. Failed to parse md5file file " + fileName + ".",
+                    "Parse error.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                    return true;
                 }
             }
             meshes.Add(m);
@@ -475,9 +529,39 @@ namespace fileFormats
         }
         public bool saveMD5MeshFile(string fileName)
         {
-
-            // TODO
-            return true;
+            // get md5mesh text
+            string md5meshFileText = this.ToString();
+            // write to file
+            System.IO.StreamWriter file = new System.IO.StreamWriter(fileName);
+            file.WriteLine(md5meshFileText);
+            file.Close();
+            return false;
+        }
+        public string getJointName(int index)
+        {
+            if (index < 0)
+                return "";
+            return joints[index].getName();
+        }
+        public override string ToString()
+        {
+            string r = "MD5Version 10\n";
+            r += "commandLine \"" + commandLine + "\"\n";
+            r += "\n";
+            r += "numJoints " + joints.Count.ToString() + "\n";
+            r += "numMeshes " + meshes.Count.ToString() + "\n";
+            r += "\n";
+            r += "joints {\n";
+            foreach (MD5Joint j in joints)
+            {
+                r += "\t" + j.ToString() + "\t// " + getJointName(j.getParentIndex()).ToString() + "\n";
+            }
+            r += "}\n";
+            foreach (MD5Mesh m in meshes)
+            {
+                r += m.ToString();
+            }
+            return r;
         }
         public bool loadMD5MeshFile(string fileName)
         {
@@ -545,6 +629,14 @@ namespace fileFormats
                 }
                 else
                 {
+                    int line = p.getCurrentLineNumber();
+                    string t;
+                    p.readString(out t);
+                    MessageBox.Show("Unknown token '"+t+"' at line "+line.ToString() + ". Failed to parse md5file file " + fileName + ".",
+                    "Parse error.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
                     return true;
                 }
             }

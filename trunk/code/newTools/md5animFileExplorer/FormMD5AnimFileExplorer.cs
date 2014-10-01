@@ -35,9 +35,18 @@ namespace md5animFileExplorer
 
             refreshTreeView();
         }
+        private void saveMD5AnimFile(string fileName)
+        {
+            if (md5anim == null)
+                return;
+            md5anim.saveMD5AnimFile(fileName);
+        }
+
         private void refreshTreeView()
         {
             treeView1.Nodes.Clear();
+            if (md5anim == null)
+                return;
             TreeNode root = new TreeNode("MD5Anim");
             TreeNode fileName = new TreeNode("FileName");
             TreeNode fileNameText = new TreeNode(md5anim.getName());
@@ -107,6 +116,30 @@ namespace md5animFileExplorer
             {
                 viewMd5Anim(openFileDialog1.FileName);
             }  
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (md5anim == null)
+            {
+                MessageBox.Show("You must load animation file first.", "No anim loaded.", MessageBoxButtons.OK);
+                return;
+            }
+            saveFileDialog1.Filter = "MD5anim files|*.md5anim";
+            saveFileDialog1.Title = "Save md5anim";
+            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                saveMD5AnimFile(saveFileDialog1.FileName);
+            }
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (md5anim != null)
+            {
+                md5anim = null;
+                refreshTreeView();
+            }
         }
     }
 }

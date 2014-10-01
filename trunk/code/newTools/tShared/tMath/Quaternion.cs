@@ -108,6 +108,13 @@ namespace tMath
                 + " " + w.ToString(System.Globalization.CultureInfo.InvariantCulture)
                 + " )";
         }
+        public string ToStringBracedXYZ()
+        {
+            return "( " + x.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                + " " + y.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                + " " + z.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                + " )";
+        }
 
     };
 }
