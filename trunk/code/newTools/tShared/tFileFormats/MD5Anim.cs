@@ -31,11 +31,57 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using tMath;
 using shared;
-using md5animFileExplorer;
 using System.Globalization;
 
 namespace fileFormats
 {
+    struct BoneOrientation
+    {
+        private Quat q;
+        private Vec3 v;
+
+        public Quat getQuat()
+        {
+            return q;
+        }
+        public Vec3 getPos()
+        {
+            return v;
+        }
+        public void setQuat(Quat nq)
+        {
+            q = nq;
+        }
+        public void setPos(Vec3 nv)
+        {
+            v = nv;
+        }
+    }
+    class BoneOrientations : IBoneOrientations
+    {
+        private BoneOrientation [] ors;
+
+        public Quat getBoneQuat(int boneIndex)
+        {
+            return ors[boneIndex].getQuat();
+        }
+        public Vec3 getBonePos(int boneIndex)
+        {
+            return ors[boneIndex].getPos();
+        }
+        public void setBoneQuat(int boneIndex, Quat q)
+        {
+            ors[boneIndex].setQuat(q);
+        }
+        public void setBonePos(int boneIndex, Vec3 v)
+        {
+            ors[boneIndex].setPos(v);
+        }
+        public void allocBones(int newCount)
+        {
+            ors = new BoneOrientation[newCount];
+        }
+    }
     class MD5AnimFrame
     {
         private List<double> values;
@@ -153,6 +199,80 @@ namespace fileFormats
         public AABB getBounds(int index)
         {
             return bounds[index];
+        }
+        public bool buildFrameLocalBone(int frameIndex, int jointIndex, out Quat q, out Vec3 v)
+        {
+            MD5AnimFrame f = frames[frameIndex];
+            MD5AnimJoint j = animJoints[jointIndex];
+            v = j.getLocalOfs();
+            q = j.getLocalRot();
+            int flags = j.getComponentFlags();
+            int componentOfs = j.getFirstComponent();
+            if ((flags & 1) != 0)
+            { // animated X component
+                v.setX(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            if ((flags & 2) != 0)
+            { // animated Y component
+                v.setY(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            if ((flags & 4) != 0)
+            { // animated Z component
+                v.setZ(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            if ((flags & 8) != 0)
+            { // animated QUAT X component
+                q.setX(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            if ((flags & 16) != 0)
+            { // animated QUAT Y component
+                q.setY(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            if ((flags & 32) != 0)
+            { // animated QUAT Z component
+                q.setZ(f.getValue(componentOfs));
+                componentOfs++;
+            }
+            q.calculateW();
+            return false;
+        }
+        public bool buildFrameLocalBones(int frameIndex, BoneOrientations bones)
+        {
+            for (int i = 0; i < animJoints.Count; i++)
+            {
+                Quat q;
+                Vec3 v;
+                buildFrameLocalBone(frameIndex, i, out q, out v);
+                bones.setBonePos(i, v);
+                bones.setBoneQuat(i, q);
+            }
+            return false;
+        }
+        public bool buildFrameABSBones(int frameIndex, BoneOrientations bones)
+        {
+            if (buildFrameLocalBones(frameIndex, bones))
+            {
+                return true;
+            }
+            for (int i = 0; i < animJoints.Count; i++)
+            {
+                int parent = animJoints[i].getParentIndex();
+                if (parent != -1)
+                {
+                    Vec3 rotatedPos = bones.getBoneQuat(parent).rotatePoint(bones.getBonePos(i));
+                    Vec3 newPos = rotatedPos + bones.getBonePos(parent);
+                    Quat newRot = bones.getBoneQuat(parent).multiplyQuat(bones.getBoneQuat(i));
+                    newRot.normalize();
+                    bones.setBonePos(i,newPos);
+                    bones.setBoneQuat(i,newRot);
+                }
+            }
+            return false;
         }
         public bool saveMD5AnimFile(string fileName)
         {
@@ -330,14 +450,14 @@ namespace fileFormats
 
                     return true;
                 }
-                int componentBits;
-                if (p.readInt(out componentBits))
+                int firstComponent;
+                if (p.readInt(out firstComponent))
                 {
 
                     return true;
                 }
-                int firstComponent;
-                if (p.readInt(out firstComponent))
+                int componentBits;
+                if (p.readInt(out componentBits))
                 {
 
                     return true;

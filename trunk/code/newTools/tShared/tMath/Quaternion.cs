@@ -43,13 +43,16 @@ namespace tMath
             this.w = w;
         }
 
-
+        public void calculateW()
+        {
+            w = -Math.Sqrt(1 - x * x - y * y - z * z);
+        }
         public void setXYZAndCalculateW(Vec3 v)
         {
             x = v.getX();
             y = v.getY();
             z = v.getZ();
-            w = -Math.Sqrt(1 - x * x - y * y - z * z);
+            calculateW();
         }
         public void normalize()
         {
@@ -63,6 +66,12 @@ namespace tMath
                 z *= invLen;
                 w *= invLen;
             }
+        }
+        public void inverse()
+        {
+            x = -x;
+            y = -y;
+            z = -z;
         }
         public Quat getInversed()
         {
@@ -92,7 +101,20 @@ namespace tMath
             Quat final = tmp.multiplyQuat(inv);
             return new Vec3(final.x, final.y, final.z);
         }
-     
+
+        public void setX(double f)
+        {
+            x = f;
+        }
+        public void setY(double f)
+        {
+            y = f;
+        }
+        public void setZ(double f)
+        {
+            z = f;
+        }
+
         public override string ToString()
         {
             return x.ToString(System.Globalization.CultureInfo.InvariantCulture)

@@ -335,6 +335,14 @@ namespace objViewer
             UpdateDirectXDisplay();
             return false;
         }
+        private bool importMD5ModelMeshes(MD5Model md5)
+        {
+            model = new WavefrontOBJ();
+            md5.addToSimpleStaticMeshBuilder(model);
+            recreateGPUBuffers();
+            UpdateDirectXDisplay();
+            return false;
+        }
         private bool importMD5Model(string md3FileName)
         {
             MD5Model md5 = new MD5Model();
@@ -351,10 +359,7 @@ namespace objViewer
                     MessageBoxDefaultButton.Button1);
                 return true;
             }
-            model = new WavefrontOBJ();
-            md5.addToSimpleStaticMeshBuilder(model);
-            recreateGPUBuffers();
-            UpdateDirectXDisplay();
+            importMD5ModelMeshes(md5);
             return false;
         }
         private void mD3ModelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -424,6 +429,66 @@ namespace objViewer
             {
                 importMAPFile(openFileDialog1.FileName);
             } 
+        }
+
+        private void mD5ModelAnimationPoseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // first ask user for md5mesh file
+            openFileDialog1.Filter = "Doom3/Quake4 MD5mesh|*.md5mesh|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new model.";
+            if (openFileDialog1.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+            string md5meshFileName = openFileDialog1.FileName;
+            MD5Model md5 = new MD5Model();
+            if (md5.loadMD5MeshFile(md5meshFileName))
+            {
+                return;
+            }
+            if (md5.getMeshCount() == 0)
+            {
+                MessageBox.Show("MD5 model you tried to import has no surfaces.",
+                    "MD5 model has 0 surfaces.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                return;
+            }
+            // then ask user for md5anim file
+            openFileDialog1.Filter = "Doom3/Quake4 MD5anim|*.md5anim|All files (*.*)|*.*";
+            openFileDialog1.Title = "Open new anim.";
+            if (openFileDialog1.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+            string md5animFileName = openFileDialog1.FileName;
+#if false
+            // then md5anim file
+            FormImportMD5AnimatedFrame f = new FormImportMD5AnimatedFrame();
+            f.setOBJViewerForm(this);
+            f.ShowDialog();
+#else
+            MD5Anim anim = new MD5Anim();
+            if (anim.loadMD5AnimFile(md5animFileName))
+            {
+                return;
+            }
+            if (anim.getFrameCount() == 0)
+            {
+                MessageBox.Show("MD5 model you tried to import has no surfaces.",
+                    "MD5 model has 0 surfaces.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button1);
+                return;
+            }
+            BoneOrientations bones = new BoneOrientations();
+            bones.allocBones(anim.getJointCount());
+            anim.buildFrameABSBones(0, bones);
+            md5.buildVertices(bones);
+            importMD5ModelMeshes(md5);
+#endif
         }
     }
 }

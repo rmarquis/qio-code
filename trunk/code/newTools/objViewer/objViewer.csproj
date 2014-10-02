@@ -11,6 +11,7 @@
     <AssemblyName>objViewer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,7 +24,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -80,6 +80,9 @@
     <Compile Include="..\tShared\ConvexVolumeArrayToWaveFrontObjIterator.cs">
       <Link>ConvexVolumeArrayToWaveFrontObjIterator.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\IBoneOrientations.cs">
+      <Link>IBoneOrientations.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\IConvexVolume.cs">
       <Link>IConvexVolume.cs</Link>
     </Compile>
@@ -113,11 +116,17 @@
     <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
       <Link>MD3Model.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\tFileFormats\MD5Anim.cs">
+      <Link>MD5Anim.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tFileFormats\MD5Mesh.cs">
       <Link>MD5Mesh.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
       <Link>WavefrontOBJ.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\AABB.cs">
+      <Link>AABB.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Plane.cs">
       <Link>Plane.cs</Link>

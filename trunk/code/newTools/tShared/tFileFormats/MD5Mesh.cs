@@ -35,11 +35,6 @@ using tMath;
 
 namespace fileFormats
 {
-    interface IBoneOrientations
-    {
-        Quat getBoneQuat(int boneIndex);
-        Vec3 getBonePos(int boneIndex);
-    }
     class MD5Weight
     {
         private Vec3 offset;
