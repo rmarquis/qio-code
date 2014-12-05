@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 static arraySTD_c<Trigger*> g_triggers;
 
 DEFINE_CLASS(Trigger, "BaseEntity");
+DEFINE_CLASS_ALIAS(Trigger, idTrigger_Multi);
 
 Trigger::Trigger() {
 	this->setEntityType(ET_TRIGGER);

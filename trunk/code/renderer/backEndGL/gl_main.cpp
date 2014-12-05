@@ -1333,6 +1333,7 @@ public:
 
 
 			matrix_c tempView;
+			//tempView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getAngles().getForward());
 			tempView.setupLookAtRH(camOriginWorldSpace, -sunDirection, worldModelMatrix.getForward());
 
 			aabb bb = sunLightBounds;

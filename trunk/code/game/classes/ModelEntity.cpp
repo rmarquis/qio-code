@@ -55,8 +55,13 @@ DEFINE_CLASS_ALIAS(ModelEntity, idAnimated);
 // load Doom3 game/pdas map to test it
 DEFINE_CLASS_ALIAS(ModelEntity, idMoveablePDAItem);
 DEFINE_CLASS_ALIAS(ModelEntity, idPDAItem);
+DEFINE_CLASS_ALIAS(ModelEntity, idMoveableItem);
+DEFINE_CLASS_ALIAS(ModelEntity, idAFEntity_Generic);
+DEFINE_CLASS_ALIAS(ModelEntity, idSpawnableEntity);
+DEFINE_CLASS_ALIAS(ModelEntity, idFuncSplat);
 
 static aCvar_c g_verboseSetAnimationCalls("g_verboseSetAnimationCalls","0");
+static aCvar_c g_verboseSetDamageZoneCalls("g_verboseSetDamageZoneCalls","0");
 
 class damageZonesList_c {
 	class dmgZone_c {
@@ -120,13 +125,17 @@ public:
 			u32 boneIndex = boneIndices[i];
 			int boneZone = findBoneZone(boneIndex);
 			if(boneZone >= 0) {
-				g_core->Print("damageZonesList_c::setZone: bone %i is already referenced\n",boneIndex);
+				if(g_verboseSetDamageZoneCalls.getInt()) {
+					g_core->Print("damageZonesList_c::setZone: bone %i is already referenced\n",boneIndex);
+				}
 				// simulate Doom3 behaviour - overwrite joint group
 				zones[boneZone].removeBone(boneIndex);
 			}
 		}
 		zones[idx].setBoneIndices(boneIndices);
-		g_core->Print("damageZonesList_c::setZone: %s\n",zoneName);
+		if(g_verboseSetDamageZoneCalls.getInt()) {
+			g_core->Print("damageZonesList_c::setZone: %s\n",zoneName);
+		}
 	}
 };
 
@@ -597,6 +606,9 @@ void ModelEntity::initRagdollPhysics() {
 	ragdoll = G_SpawnTestRagdollFromAF(ragdollDefName,this->getOrigin(),this->getAngles());
 	if(ragdoll) {
 		this->myEdict->s->activeRagdollDefNameIndex = G_RagdollDefIndex(ragdollDefName);
+	} else {
+		g_core->RedWarning("ModelEntity::initRagdollPhysics(): failed to spawn ragdoll %s.\n",ragdollDefName.c_str());
+		return;
 	}
 	if(this->initialRagdolPose) {
 		// set the ragdoll pose

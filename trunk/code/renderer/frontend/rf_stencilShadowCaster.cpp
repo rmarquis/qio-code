@@ -27,7 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/coreAPI.h>
 
-static aCvar_c rf_stencilShadowCaster_verboseGeneration("rf_stencilShadowCaster_verboseGeneration","1");
+static aCvar_c rf_stencilShadowCaster_verboseGeneration("rf_stencilShadowCaster_verboseGeneration","0");
 
 void r_stencilShadowCaster_c::addTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2) {
 	u32 i0 = points.registerVec3(p0);

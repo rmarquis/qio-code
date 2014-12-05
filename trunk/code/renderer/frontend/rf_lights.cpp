@@ -49,6 +49,7 @@ static aCvar_c light_spotLights_printCulledEntities("light_spotLights_printCulle
 static aCvar_c light_printCulledShadowMappingPointLightSides("light_printCulledShadowMappingPointLightSides","0");
 static aCvar_c light_printCulledShadowMappingPointLightSideInteractions("light_printCulledShadowMappingPointLightSideInteractions","0");
 static aCvar_c light_printShadowMappingPointLightSideCullingStats("light_printShadowMappingPointLightSideCullingStats","0");
+static aCvar_c light_minShadowCastingLightRadius("light_minShadowCastingLightRadius","30");
 
 void staticInteractionBatch_c::recalcBounds() {
 	bounds.clear();
@@ -830,14 +831,16 @@ void RFL_AddLightInteractionsDrawCalls() {
 		// TODO: dont do this every frame
 		light->recalcLightInteractionsWithDynamicEntities();
 
-		// FIXME: right now it's causing strange shadows flickering
-		if(light->getBNoShadows() == false) 
-		{
-			// add shadow drawcalls (but only if shadow casting is enabled for this light)
-			if(RF_IsUsingShadowVolumes()) {
-				light->addLightShadowVolumesDrawCalls();
-			} else if(RF_IsUsingShadowMapping()) {
-				light->addShadowMapRenderingDrawCalls();
+		// some lights might have shadow casting disabled - "noShadows" "1" key value
+		if(light->getBNoShadows() == false)  {
+			// skip shadows of very small lights as they wouldn't be noticeable in game
+			if(light_minShadowCastingLightRadius.getFloat() < light->getRadius()) {
+				// add shadow drawcalls (but only if shadow casting is enabled for this light)
+				if(RF_IsUsingShadowVolumes()) {
+					light->addLightShadowVolumesDrawCalls();
+				} else if(RF_IsUsingShadowMapping()) {
+					light->addShadowMapRenderingDrawCalls();
+				}
 			}
 		}
 

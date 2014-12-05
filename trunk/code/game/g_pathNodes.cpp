@@ -124,7 +124,7 @@ public:
 };
 
 // defines a list of pathnodes for current world map.
-// Used by A-Start algorithm.
+// Used by A-Star algorithm.
 // TODO: optimize node searching/adding/removing with an octtree?
 class pathMap_c {
 	arraySTD_c<pathNode_c*> nodes;

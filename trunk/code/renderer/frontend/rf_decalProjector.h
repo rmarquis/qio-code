@@ -42,7 +42,7 @@ class decalProjector_c : public boxTrianglesCallback_i {
 	vec3_c perp, perp2; // vectors perpendicular to inNormal
 public:
 	decalProjector_c();
-	void init(const vec3_c &pos, const vec3_c &normal, float radius);
+	bool init(const vec3_c &pos, const vec3_c &normal, float radius);
 	void setMaterial(class mtrAPI_i *newMat);
 	u32 clipTriangle(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2);
 	void iterateResults(void (*untexturedTriCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2));

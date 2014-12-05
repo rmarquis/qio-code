@@ -713,8 +713,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("noshadows")) {
 
 				} else if(p.atWord("translucent")) {
+					// draw this material with an alpha blend
+					// used eg. for decals
+
+					// TODO
 				} else if(p.atWord("spectrum")) {
-					p.skipLine();
+					// usage: spectrum <integer>
+					// used by Doom3 to match materials with lights
+					// light<->surface interaction is allowed only if light->getSpectrum()==surf->getSpectrum()
+					p.getInteger();
+					// TODO
 				} else if(p.atWord("renderbump")) {
 					p.skipLine();
 				} else if(p.atWord("materialType")) {

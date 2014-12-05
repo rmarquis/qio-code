@@ -51,7 +51,7 @@ Q3Weapon::~Q3Weapon() {
 void Q3Weapon::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"giTag")) {
 		// "giTag" field of Quake3 gitem_t structure stores weapon type
-		g_core->Print("Q3Weapon::setKeyValue: giTag: %s\n",value);
+		//g_core->Print("Q3Weapon::setKeyValue: giTag: %s\n",value);
 		if(!stricmp(value,"WP_PLASMAGUN")) {
 			q3WeaponType = EQ3WPN_PLASMAGUN;
 			this->setDelayBetweenShots(100);

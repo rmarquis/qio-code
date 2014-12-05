@@ -231,11 +231,18 @@ bool afRagdollHelper_c::getBodyTransform(u32 bodyNum, matrix_c &out) {
 	return false; // no error
 }
 
+afRagdollHelper_c::afRagdollHelper_c() {
+	boneDefs = 0;
+	anim = 0;
+	af = 0;
+	afd = 0;
+	model = 0;
+}
 bool afRagdollHelper_c::setupRagdollHelper(const char *afName) {
 	af = g_declMgr->registerAFDecl(afName);
 	if(af == 0) {
 		g_core->RedWarning("afRagdollHelper_c::setupRagdollHelper: failed to find articulatedFigure \"%s\"\n",afName);
-		return 0;
+		return true;
 	}
 	afd = af->getData();
 	model = g_declMgr->registerModelDecl(afd->modelName);

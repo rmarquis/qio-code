@@ -94,6 +94,10 @@ public:
 		return false;
 	}
 	virtual bool setPoseFromRenderModelBonesArray(const class boneOrArray_c &boneOrs, const class skelAnimAPI_i *anim) {
+		if(anim == 0) {
+			g_core->RedWarning("ragdoll_c::setPoseFromRenderModelBonesArray: anim is NULL.\n");
+			return true; // error
+		}
 		// first get bone indexes
 		arraySTD_c<int> boneIndexes;
 		boneIndexes.resize(bodies.size());
@@ -102,7 +106,7 @@ public:
 			int boneIndex = anim->getLocalBoneIndexForBoneName(jointName);
 			if(boneIndex < 0) {
 				g_core->RedWarning("ragdoll_c::setPoseFromRenderModelBonesArray: bone %s not found. Failed to set pose.\n",jointName);
-				return true;
+				return true; // error
 			}
 			boneIndexes[i] = boneIndex;
 		}
@@ -110,8 +114,13 @@ public:
 		arraySTD_c<matrix_c> boneParentBody2Bone;
 		afRagdollHelper_c rh;
 		rh.calcBoneParentBody2BoneOfsets(af->getName(),boneParentBody2Bone);
+		// ragdoll is made of multiple rigid bodies connected together
+		// set the matrix of each rigid body
 		for(u32 i = 0; i < bodies.size(); i++) {
 			physObjectAPI_i *b = bodies[i];
+			if(b == 0) {
+				continue;
+			}
 			int boneIndex = boneIndexes[i];
 			const matrix_c &offset = boneParentBody2Bone[boneIndex];
 			const matrix_c &worldBone = boneOrs[boneIndex].mat;
@@ -132,6 +141,10 @@ public:
 		}
 		if(cm == 0) {
 			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: can't spawn ragdoll %s because CM module is not prsent.\n",afName);
+			return 0;
+		}
+		if(af == 0) {
+			g_core->RedWarning("afRagdollSpawner_c::spawnRagdollFromAF: can't spawn ragdoll because %s is not a valid AF name.\n",afName);
 			return 0;
 		}
 		matrix_c extraWorldTransform;

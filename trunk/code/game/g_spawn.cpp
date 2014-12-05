@@ -94,7 +94,11 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	BaseEntity *ent = G_SpawnClass(className);
 	if(ent == 0) {
 		// hack to spawn inline models
+#if 0
 		if(0 && entDef->hasKey("model") && entDef->getKeyValue("model")[0] == '*') {
+#else
+		if(entDef->hasKey("model")) {
+#endif
 			ModelEntity *mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
 			// make them immobile
 			mEnt->setRigidBodyPhysicsEnabled(false);

@@ -33,14 +33,14 @@ static aCvar_c decalProjector_debugDraw("decalProjector_debugDraw","0");
 decalProjector_c::decalProjector_c() {
 	mat = 0;
 }
-void decalProjector_c::init(const vec3_c &pos, const vec3_c &normal, float radius) {
+bool decalProjector_c::init(const vec3_c &pos, const vec3_c &normal, float radius) {
 	if(radius <= 0) {
 		g_core->RedWarning("decalProjector_c::init: radius (%f) <= 0\n",radius);
-		return; // TODO: return error
+		return true; //return error
 	}
 	if(normal.lenSQ() < 0.01f) {
 		g_core->RedWarning("decalProjector_c::init: normal.lenSQ() < 0.01f (%f, %f, %f)\n",normal.x,normal.y,normal.z);
-		return; // TODO: return error
+		return true; // return error
 	}
 
 	inPos = pos;
@@ -73,6 +73,7 @@ void decalProjector_c::init(const vec3_c &pos, const vec3_c &normal, float radiu
 	planes[3].fromThreePointsINV(points[1],points[2],points[2] + normal*radius*2.f);
 	planes[4].fromThreePointsINV(points[2],points[3],points[3] + normal*radius*2.f);
 	planes[5].fromThreePointsINV(points[3],points[0],points[0] + normal*radius*2.f);
+	return false;
 }
 void decalProjector_c::setMaterial(class mtrAPI_i *newMat) {
 	mat = newMat;

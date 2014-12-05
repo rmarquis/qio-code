@@ -271,7 +271,7 @@ bool MOD_LoadLWO(const char *fname, class staticModelCreatorAPI_i *out) {
 			g_core->RedWarning("MOD_LoadLWO: poly %i has %i vertices - ignoring (model file %s)\n",t->polyNum,p.numVerts,fname);
 			continue;
 		}
-		simpleVert_s verts[6];
+		simpleVert_s verts[LWO_MAX_POLYGON_VERTICES];
 		for(u32 j = 0; j < p.numVerts; j++) {
 			u32 vertNum = p.vertices[j];
 			if(vertNum >= points.size()) {
