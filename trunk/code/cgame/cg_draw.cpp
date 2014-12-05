@@ -101,13 +101,13 @@ LAGOMETER
 #define	LAG_SAMPLES		128
 
 
-typedef struct {
+struct lagometer_t {
 	int		frameSamples[LAG_SAMPLES];
 	int		frameCount;
 	int		snapshotFlags[LAG_SAMPLES];
 	int		snapshotSamples[LAG_SAMPLES];
 	int		snapshotCount;
-} lagometer_t;
+};
 
 lagometer_t		lagometer;
 

@@ -754,7 +754,7 @@ unsigned	Com_BlockChecksum( const void *buffer, int length );
 char		*Com_MD5File(const char *filename, int length, const char *prefix, int prefix_len);
 int			Com_Filter(const char *filter, char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, char *name, int casesensitive);
-int			Com_RealTime(qtime_t *qtime);
+int			Com_RealTime(qtime_s *qtime);
 bool	Com_SafeMode( void );
 void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
 

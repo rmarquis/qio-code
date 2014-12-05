@@ -712,7 +712,7 @@ int Com_FilterPath(const char *filter, char *name, int casesensitive)
 Com_RealTime
 ================
 */
-int Com_RealTime(qtime_t *qtime) {
+int Com_RealTime(qtime_s *qtime) {
 	time_t t;
 	struct tm *tms;
 

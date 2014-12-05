@@ -38,6 +38,14 @@ typedef vec_t vec5_t[5];
 #define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
 #endif
 
+#ifndef M_PI_2
+#define M_PI_2     1.57079632679489661923
+#endif
+
+#ifndef M_PI_4
+#define M_PI_4     0.785398163397448309616
+#endif
+
 #ifndef M_PI_64
 #define M_PI_64		3.1415926535897932384626433832795028841971693993751
 #endif
@@ -82,6 +90,15 @@ typedef vec_t vec5_t[5];
 
 // returns a clamped value in the range [min, max].
 #define Q_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
+
+#define random()	((rand () & 0x7fff) / ((float)0x7fff))
+#define crandom()	(2.0 * (random() - 0.5))
+
+float Q_rsqrt( float f );		// reciprocal square root
+
+signed char ClampChar( int i );
+
+#define Square(x) ((x)*(x))
 
 //#define DISABLE_ALL_FAST_SQRTS
 

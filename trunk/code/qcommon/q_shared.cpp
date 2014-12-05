@@ -205,27 +205,6 @@ int	LongNoSwap (int l)
 	return l;
 }
 
-qint64 Long64Swap (qint64 ll)
-{
-	qint64	result;
-
-	result.b0 = ll.b7;
-	result.b1 = ll.b6;
-	result.b2 = ll.b5;
-	result.b3 = ll.b4;
-	result.b4 = ll.b3;
-	result.b5 = ll.b2;
-	result.b6 = ll.b1;
-	result.b7 = ll.b0;
-
-	return result;
-}
-
-qint64 Long64NoSwap (qint64 ll)
-{
-	return ll;
-}
-
 float FloatSwap (const float *f) {
 	floatint_t out;
 
@@ -708,7 +687,7 @@ int Q_isalpha( int c )
 bool Q_isanumber( const char *s )
 {
 	char *p;
-	double UNUSED_VAR d;
+	double d;
 
 	if( *s == '\0' )
 		return false;

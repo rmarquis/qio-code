@@ -26,8 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
-
-
 #define C_ONLY
 
 #define STANDALONE 1
@@ -85,12 +83,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #endif
 
-#ifdef __GNUC__
-#define UNUSED_VAR __attribute__((unused))
-#else
-#define UNUSED_VAR
-#endif
-
 #if (defined _MSC_VER)
 #define Q_EXPORT __declspec(dllexport)
 #elif (defined __SUNPRO_C)
@@ -101,29 +93,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define Q_EXPORT
 #endif
 
-/**********************************************************************
-  VM Considerations
-
-  The VM can not use the standard system headers because we aren't really
-  using the compiler they were meant for.  We use bg_lib.h which contains
-  prototypes for the functions we define for our own use in bg_lib.c.
-
-  When writing mods, please add needed headers HERE, do not start including
-  stuff like <stdio.h> in the various .c files that make up each of the VMs
-  since you will be including system headers files can will have issues.
-
-  Remember, if you use a C library function that is not defined in bg_lib.c,
-  you will have to add your own version for support in the VM.
-
- **********************************************************************/
-
-#ifdef Q3_VM
-
-#include "../game/bg_lib.h"
-
-typedef int intptr_t;
-
-#else
 
 #include <assert.h>
 #include <math.h>
@@ -156,7 +125,6 @@ typedef int intptr_t;
   #define Q_vsnprintf vsnprintf
 #endif
 
-#endif
 
 
 #include "q_platform.h"
@@ -165,11 +133,11 @@ typedef int intptr_t;
 
 #include "../shared/typedefs.h"
 
-typedef union {
+union floatint_t {
 	float f;
 	int i;
 	unsigned int ui;
-} floatint_t;
+};
 
 #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
@@ -191,7 +159,6 @@ typedef union {
 #define XSTRING(s)			STRING(s)
 
 #define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
-#define STRARRAY_LEN(x)			(ARRAY_LEN(x) - 1)
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
@@ -218,12 +185,12 @@ typedef union {
 #define	MAX_NAME_LENGTH		32		// max length of a client name
 
 // paramters for command buffer stuffing
-typedef enum {
+enum cbufExec_e {
 	EXEC_NOW,			// don't return until completed, a VM should NEVER use this,
 						// because some commands might cause the VM to be unloaded...
 	EXEC_INSERT,		// insert at current position, but don't run yet
 	EXEC_APPEND			// add to end of the command buffer (normal case)
-} cbufExec_t;
+};
 
 
 //
@@ -236,18 +203,12 @@ typedef enum {
 #endif
 
 // parameters to the main Error routine
-typedef enum {
+enum errorParm_e {
 	ERR_FATAL,					// exit the entire game with a popup window
 	ERR_DROP,					// print to console and disconnect from game
 	ERR_SERVERDISCONNECT,		// don't kill server
 	ERR_DISCONNECT,				// client disconnected from the server
-} errorParm_t;
-
-#define CIN_system	1
-#define CIN_loop	2
-#define	CIN_hold	4
-#define CIN_silent	8
-#define CIN_shader	16
+};
 
 /*
 ==============================================================
@@ -264,46 +225,11 @@ MATHLIB
 #define	SCREEN_WIDTH		640
 #define	SCREEN_HEIGHT		480
 
-#define TINYCHAR_WIDTH		(SMALLCHAR_WIDTH)
-#define TINYCHAR_HEIGHT		(SMALLCHAR_HEIGHT/2)
-
 #define SMALLCHAR_WIDTH		8
 #define SMALLCHAR_HEIGHT	16
 
 #define BIGCHAR_WIDTH		16
 #define BIGCHAR_HEIGHT		16
-
-#define	GIANTCHAR_WIDTH		32
-#define	GIANTCHAR_HEIGHT	48
-
-
-#define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
-#define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
-
-#define	nanmask (255<<23)
-
-#define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
-
-float Q_rsqrt( float f );		// reciprocal square root
-
-#define Square(x) ((x)*(x))
-
-#ifndef M_PI
-#define M_PI       3.14159265358979323846
-#endif
-
-#ifndef M_PI_2
-#define M_PI_2     1.57079632679489661923
-#endif
-
-#ifndef M_PI_4
-#define M_PI_4     0.785398163397448309616
-#endif
-
-signed char ClampChar( int i );
-
-#define random()	((rand () & 0x7fff) / ((float)0x7fff))
-#define crandom()	(2.0 * (random() - 0.5))
 
 float	AngleMod(float a);
 float	LerpAngle (float from, float to, float frac);
@@ -313,15 +239,6 @@ void	AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 );
 float AngleNormalize360 ( float angle );
 float AngleNormalize180 ( float angle );
 float AngleDelta ( float angle1, float angle2 );
-
-
-//#ifndef MAX
-//#define MAX(x,y) ((x)>(y)?(x):(y))
-//#endif
-//
-//#ifndef MIN
-//#define MIN(x,y) ((x)<(y)?(x):(y))
-//#endif
 
 //=============================================
 
@@ -389,22 +306,6 @@ int Q_CountChar(const char *string, char tocount);
 
 //=============================================
 
-// 64-bit integers for global rankings interface
-// implemented as a struct for qvm compatibility
-typedef struct
-{
-	byte	b0;
-	byte	b1;
-	byte	b2;
-	byte	b3;
-	byte	b4;
-	byte	b5;
-	byte	b6;
-	byte	b7;
-} qint64;
-
-//=============================================
-
 char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
 #define TRUNCATE_LENGTH	64
@@ -434,35 +335,35 @@ default values.
 ==========================================================
 */
 
-#define	CVAR_ARCHIVE		0x0001	// set to cause it to be saved to vars.rc
-					// used for system variables, not for player
-					// specific configurations
-#define	CVAR_USERINFO		0x0002	// sent to server on connect or change
-#define	CVAR_SERVERINFO		0x0004	// sent in response to front end requests
-#define	CVAR_SYSTEMINFO		0x0008	// these cvars will be duplicated on all clients
-#define	CVAR_INIT		0x0010	// don't allow change from console at all,
-					// but can be set from the command line
-#define	CVAR_LATCH		0x0020	// will only change when C code next does
-					// a Cvar_Get(), so it can't be changed
-					// without proper initialization.  modified
-					// will be set, even though the value hasn't
-					// changed yet
-#define	CVAR_ROM		0x0040	// display only, cannot be set by user at all
-#define	CVAR_USER_CREATED	0x0080	// created by a set command
-#define	CVAR_TEMP		0x0100	// can be set even when cheats are disabled, but is not archived
-#define CVAR_CHEAT		0x0200	// can not be changed if cheats are disabled
-#define CVAR_NORESTART		0x0400	// do not clear when a cvar_restart is issued
+enum {
+	CVAR_ARCHIVE		=	0x0001,	// set to cause it to be saved to vars.rc
+							// used for system variables, not for player
+							// specific configurations
+	CVAR_USERINFO		=	0x0002,	// sent to server on connect or change
+	CVAR_SERVERINFO		=	0x0004,	// sent in response to front end requests
+	CVAR_SYSTEMINFO		=	0x0008,	// these cvars will be duplicated on all clients
+	CVAR_INIT			=	0x0010,	// don't allow change from console at all,
+							// but can be set from the command line
+	CVAR_LATCH			=	0x0020,	// will only change when C code next does
+							// a Cvar_Get(), so it can't be changed
+							// without proper initialization.  modified
+							// will be set, even though the value hasn't
+							// changed yet
+	CVAR_ROM			=	0x0040,	// display only, cannot be set by user at all
+	CVAR_USER_CREATED	=	0x0080,	// created by a set command
+	CVAR_TEMP			=	0x0100,	// can be set even when cheats are disabled, but is not archived
+	CVAR_CHEAT			=	0x0200,	// can not be changed if cheats are disabled
+	CVAR_NORESTART		=	0x0400,	// do not clear when a cvar_restart is issued
 
-#define CVAR_SERVER_CREATED	0x0800	// cvar was created by a server the client connected to.
-#define CVAR_VM_CREATED		0x1000	// cvar was created exclusively in one of the VMs.
-#define CVAR_PROTECTED		0x2000	// prevent modifying this var from VMs or the server
+	CVAR_SERVER_CREATED	=	0x0800,	// cvar was created by a server the client connected to.
+	CVAR_VM_CREATED		=	0x1000,	// cvar was created exclusively in one of the VMs.
+	CVAR_PROTECTED		=	0x2000,	// prevent modifying this var from VMs or the server
 // These flags are only returned by the Cvar_Flags() function
-#define CVAR_MODIFIED		0x40000000	// Cvar was modified
-#define CVAR_NONEXISTENT	0x80000000	// Cvar doesn't exist.
+	CVAR_MODIFIED		=	0x40000000,	// Cvar was modified
+	CVAR_NONEXISTENT	=	0x80000000,	// Cvar doesn't exist.
+};
 
 // nothing outside the Cvar_*() functions should modify these fields!
-typedef struct cvar_s cvar_s;
-
 struct cvar_s {
 	char			*name;
 	char			*string;
@@ -493,13 +394,13 @@ typedef int	cvarHandle_t;
 
 // the modules that run in the virtual machine can't access the cvar_s directly,
 // so they must ask for structured updates
-typedef struct {
+struct vmCvar_t {
 	cvarHandle_t	handle;
 	int			modificationCount;
 	float		value;
 	int			integer;
 	char		string[MAX_CVAR_VALUE_STRING];
-} vmCvar_t;
+};
 
 
 /*
@@ -593,11 +494,11 @@ VoIP
 
 //#define	MAX_GAMESTATE_CHARS	16000 // I need more to run game/lotaa.map (Prey)
 #define MAX_GAMESTATE_CHARS 32768
-typedef struct {
+struct gameState_t {
 	int			stringOffsets[MAX_CONFIGSTRINGS];
 	char		stringData[MAX_GAMESTATE_CHARS];
 	int			dataCount;
-} gameState_t;
+};
 
 //=========================================================
 
@@ -724,12 +625,6 @@ enum animFlags_e {
 	ANIMFLAG_BITS = 1,
 };
 
-// bit field limits
-//#define	MAX_STATS				16
-//#define	MAX_PERSISTANT			16
-//#define	MAX_POWERUPS			16
-//#define	MAX_WEAPONS				16		
-
 // playerState_s is the information needed by both the client and server
 // to predict player motion and actions
 // nothing outside of pmove should modify these, or some degree of prediction error
@@ -803,7 +698,7 @@ struct playerState_s : public entityState_s {
 //=============================================
 
 
-typedef struct qtime_s {
+struct qtime_s {
 	int tm_sec;     /* seconds after the minute - [0,59] */
 	int tm_min;     /* minutes after the hour - [0,59] */
 	int tm_hour;    /* hours since midnight - [0,23] */
@@ -813,40 +708,6 @@ typedef struct qtime_s {
 	int tm_wday;    /* days since Sunday - [0,6] */
 	int tm_yday;    /* days since January 1 - [0,365] */
 	int tm_isdst;   /* daylight savings time flag */
-} qtime_t;
-
-
-// server browser sources
-// TTimo: AS_MPLAYER is no longer used
-#define AS_LOCAL			0
-#define AS_MPLAYER		1
-#define AS_GLOBAL			2
-#define AS_FAVORITES	3
-
-
-// cinematic states
-typedef enum {
-	FMV_IDLE,
-	FMV_PLAY,		// play
-	FMV_EOF,		// all other conditions, i.e. stop/EOF/abort
-	FMV_ID_BLT,
-	FMV_ID_IDLE,
-	FMV_LOOPED,
-	FMV_ID_WAIT
-} e_status;
-
-#define	MAX_GLOBAL_SERVERS				4096
-#define	MAX_OTHER_SERVERS					128
-#define MAX_PINGREQUESTS					32
-#define MAX_SERVERSTATUSREQUESTS	16
-
-#define SAY_ALL		0
-#define SAY_TEAM	1
-#define SAY_TELL	2
-//
-//#define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
-//#define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
-
-
+};
 
 #endif	// __Q_SHARED_H

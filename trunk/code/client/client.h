@@ -43,6 +43,37 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
+// for server browser
+#define	MAX_GLOBAL_SERVERS				4096
+#define	MAX_OTHER_SERVERS					128
+#define MAX_PINGREQUESTS					32
+#define MAX_SERVERSTATUSREQUESTS	16
+
+// server browser sources
+// TTimo: AS_MPLAYER is no longer used
+#define AS_LOCAL			0
+#define AS_MPLAYER		1
+#define AS_GLOBAL			2
+#define AS_FAVORITES	3
+
+// for cl_cin.cpp
+// cinematic states
+enum e_status {
+	FMV_IDLE,
+	FMV_PLAY,		// play
+	FMV_EOF,		// all other conditions, i.e. stop/EOF/abort
+	FMV_ID_BLT,
+	FMV_ID_IDLE,
+	FMV_LOOPED,
+	FMV_ID_WAIT
+};
+// cinematic flags
+#define CIN_system	1
+#define CIN_loop	2
+#define	CIN_hold	4
+#define CIN_silent	8
+#define CIN_shader	16
+
 // client module connection state
 typedef enum {
 	CA_UNINITIALIZED,
