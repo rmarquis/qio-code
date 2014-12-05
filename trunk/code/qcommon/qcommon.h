@@ -39,7 +39,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // msg.c
 //
-typedef struct {
+struct msg_s {
 	bool	allowoverflow;	// if false, do a Com_Error
 	bool	overflowed;		// set to true if the buffer size failed (with allowoverflow set)
 	bool	oob;			// set to true if the buffer size failed (with allowoverflow set)
@@ -48,67 +48,67 @@ typedef struct {
 	int		cursize;
 	int		readcount;
 	int		bit;				// for bitwise reads and writes
-} msg_t;
+};
 
-void MSG_Init (msg_t *buf, byte *data, int length);
-void MSG_InitOOB( msg_t *buf, byte *data, int length );
-void MSG_Clear (msg_t *buf);
-void MSG_WriteData (msg_t *buf, const void *data, int length);
-void MSG_Bitstream( msg_t *buf );
+void MSG_Init (msg_s *buf, byte *data, int length);
+void MSG_InitOOB( msg_s *buf, byte *data, int length );
+void MSG_Clear (msg_s *buf);
+void MSG_WriteData (msg_s *buf, const void *data, int length);
+void MSG_Bitstream( msg_s *buf );
 
 // TTimo
-// copy a msg_t in case we need to store it as is for a bit
-// (as I needed this to keep an msg_t from a static var for later use)
+// copy a msg_s in case we need to store it as is for a bit
+// (as I needed this to keep an msg_s from a static var for later use)
 // sets data buffer as MSG_Init does prior to do the copy
-void MSG_Copy(msg_t *buf, byte *data, int length, msg_t *src);
+void MSG_Copy(msg_s *buf, byte *data, int length, msg_s *src);
 
-struct usercmd_s;
+struct userCmd_s;
 struct entityState_s;
 struct playerState_s;
 
-void MSG_WriteBits( msg_t *msg, int value, int bits );
+void MSG_WriteBits( msg_s *msg, int value, int bits );
 
-void MSG_WriteChar (msg_t *sb, int c);
-void MSG_WriteByte (msg_t *sb, int c);
-void MSG_WriteShort (msg_t *sb, int c);
-void MSG_WriteLong (msg_t *sb, int c);
-void MSG_WriteFloat (msg_t *sb, float f);
-void MSG_WriteString (msg_t *sb, const char *s);
-void MSG_WriteBigString (msg_t *sb, const char *s);
-void MSG_WriteAngle16 (msg_t *sb, float f);
+void MSG_WriteChar (msg_s *sb, int c);
+void MSG_WriteByte (msg_s *sb, int c);
+void MSG_WriteShort (msg_s *sb, int c);
+void MSG_WriteLong (msg_s *sb, int c);
+void MSG_WriteFloat (msg_s *sb, float f);
+void MSG_WriteString (msg_s *sb, const char *s);
+void MSG_WriteBigString (msg_s *sb, const char *s);
+void MSG_WriteAngle16 (msg_s *sb, float f);
 int MSG_HashKey(const char *string, int maxlen);
 
-void	MSG_BeginReading (msg_t *sb);
-void	MSG_BeginReadingOOB(msg_t *sb);
+void	MSG_BeginReading (msg_s *sb);
+void	MSG_BeginReadingOOB(msg_s *sb);
 
-int		MSG_ReadBits( msg_t *msg, int bits );
+int		MSG_ReadBits( msg_s *msg, int bits );
 
-int		MSG_ReadChar (msg_t *sb);
-int		MSG_ReadByte (msg_t *sb);
-int		MSG_ReadShort (msg_t *sb);
-int		MSG_ReadUShort (msg_t *sb);
-int		MSG_ReadLong (msg_t *sb);
-float	MSG_ReadFloat (msg_t *sb);
-char	*MSG_ReadString (msg_t *sb);
-char	*MSG_ReadBigString (msg_t *sb);
-char	*MSG_ReadStringLine (msg_t *sb);
-float	MSG_ReadAngle16 (msg_t *sb);
-void	MSG_ReadData (msg_t *sb, void *buffer, int size);
-int		MSG_LookaheadByte (msg_t *msg);
+int		MSG_ReadChar (msg_s *sb);
+int		MSG_ReadByte (msg_s *sb);
+int		MSG_ReadShort (msg_s *sb);
+int		MSG_ReadUShort (msg_s *sb);
+int		MSG_ReadLong (msg_s *sb);
+float	MSG_ReadFloat (msg_s *sb);
+char	*MSG_ReadString (msg_s *sb);
+char	*MSG_ReadBigString (msg_s *sb);
+char	*MSG_ReadStringLine (msg_s *sb);
+float	MSG_ReadAngle16 (msg_s *sb);
+void	MSG_ReadData (msg_s *sb, void *buffer, int size);
+int		MSG_LookaheadByte (msg_s *msg);
 
-void MSG_WriteDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
-void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
+void MSG_WriteDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
+void MSG_ReadDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
 
-void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to );
-void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to );
+void MSG_WriteDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to );
+void MSG_ReadDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to );
 
-void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
+void MSG_WriteDeltaEntity( msg_s *msg, struct entityState_s *from, struct entityState_s *to
 						   , bool force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_s *from, entityState_s *to, 
+void MSG_ReadDeltaEntity( msg_s *msg, entityState_s *from, entityState_s *to, 
 						 int number );
 
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
-void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
+void MSG_WriteDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to );
+void MSG_ReadDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to );
 
 
 void MSG_ReportChangeVectors_f( void );
@@ -135,7 +135,7 @@ NET
 							// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
-#define	MAX_PACKET_USERCMDS		32		// max number of usercmd_s in a packet
+#define	MAX_PACKET_USERCMDS		32		// max number of userCmd_s in a packet
 
 #define	PORT_ANY			-1
 
@@ -184,7 +184,7 @@ bool	NET_IsLocalAddress (netadr_t adr);
 const char	*NET_AdrToString (netadr_t a);
 const char	*NET_AdrToStringwPort (netadr_t a);
 int		NET_StringToAdr ( const char *s, netadr_t *a, netadrtype_t family);
-bool	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
+bool	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_s *net_message);
 void		NET_JoinMulticast6(void);
 void		NET_LeaveMulticast6(void);
 void		NET_Sleep(int msec);
@@ -238,7 +238,7 @@ void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, int 
 void Netchan_Transmit( netchan_t *chan, int length, const byte *data );
 void Netchan_TransmitNextFragment( netchan_t *chan );
 
-bool Netchan_Process( netchan_t *chan, msg_t *msg );
+bool Netchan_Process( netchan_t *chan, msg_s *msg );
 
 
 /*
@@ -298,8 +298,8 @@ enum svc_ops_e {
 enum clc_ops_e {
 	clc_bad,
 	clc_nop, 		
-	clc_move,				// [[usercmd_s]
-	clc_moveNoDelta,		// [[usercmd_s]
+	clc_move,				// [[userCmd_s]
+	clc_moveNoDelta,		// [[userCmd_s]
 	clc_clientCommand,		// [string] message
 	clc_EOF,
 
@@ -429,10 +429,10 @@ cvar_s *Cvar_Get( const char *var_name, const char *value, int flags );
 // that allows variables to be unarchived without needing bitflags
 // if value is "", the value will not override a previously set value.
 
-void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+void	Cvar_Register( vmCvar_s *vmCvar, const char *varName, const char *defaultValue, int flags );
 // basically a slightly modified Cvar_Get for the interpreted modules
 
-void	Cvar_Update( vmCvar_t *vmCvar );
+void	Cvar_Update( vmCvar_s *vmCvar );
 // updates an interpreted modules' version of a cvar
 
 void 	Cvar_Set( const char *var_name, const char *value );
@@ -756,7 +756,7 @@ int			Com_Filter(const char *filter, char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_s *qtime);
 bool	Com_SafeMode( void );
-void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
+void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_s *buf);
 
 bool	Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientNum);
 
@@ -846,7 +846,7 @@ void CL_MouseEvent( int dx, int dy, int time );
 
 void CL_JoystickEvent( int axis, int value, int time );
 
-void CL_PacketEvent( netadr_t from, msg_t *msg );
+void CL_PacketEvent( netadr_t from, msg_s *msg );
 
 void CL_ConsolePrint( char *text );
 
@@ -899,7 +899,7 @@ void SCR_DebugGraph (float value);	// FIXME: move logging to common?
 void SV_Init( void );
 void SV_Shutdown( char *finalmsg );
 void SV_Frame( int msec );
-void SV_PacketEvent( netadr_t from, msg_t *msg );
+void SV_PacketEvent( netadr_t from, msg_s *msg );
 int SV_FrameMsec(void);
 bool SV_GameCommand( void );
 int SV_SendQueuedPackets(void);
@@ -1052,8 +1052,8 @@ typedef struct {
 	huff_t		decompressor;
 } huffman_t;
 
-void	Huff_Compress(msg_t *buf, int offset);
-void	Huff_Decompress(msg_t *buf, int offset);
+void	Huff_Compress(msg_s *buf, int offset);
+void	Huff_Decompress(msg_s *buf, int offset);
 void	Huff_Init(huffman_t *huff);
 void	Huff_addRef(huff_t* huff, byte ch);
 int		Huff_Receive (node_t *node, int *ch, byte *fin);

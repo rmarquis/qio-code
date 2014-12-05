@@ -332,10 +332,10 @@ static signed char ClampChar( int i ) {
 ================
 CL_KeyMove
 
-Sets the usercmd_s based on key states
+Sets the userCmd_s based on key states
 ================
 */
-void CL_KeyMove( usercmd_s *cmd ) {
+void CL_KeyMove( userCmd_s *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
 
@@ -419,7 +419,7 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 CL_JoystickMove
 =================
 */
-void CL_JoystickMove( usercmd_s *cmd ) {
+void CL_JoystickMove( userCmd_s *cmd ) {
 	float	anglespeed;
 
 	if ( !(in_speed.active ^ cl_run->integer) ) {
@@ -457,7 +457,7 @@ CL_MouseMove
 =================
 */
 
-void CL_MouseMove(usercmd_s *cmd)
+void CL_MouseMove(userCmd_s *cmd)
 {
 	float mx, my;
 
@@ -546,7 +546,7 @@ void CL_MouseMove(usercmd_s *cmd)
 CL_CmdButtons
 ==============
 */
-void CL_CmdButtons( usercmd_s *cmd ) {
+void CL_CmdButtons( userCmd_s *cmd ) {
 	int		i;
 
 	//
@@ -578,7 +578,7 @@ void CL_CmdButtons( usercmd_s *cmd ) {
 CL_FinishMove
 ==============
 */
-void CL_FinishMove( usercmd_s *cmd ) {
+void CL_FinishMove( userCmd_s *cmd ) {
 	int		i;
 
 	// copy the state that the cgame is currently sending
@@ -599,8 +599,8 @@ void CL_FinishMove( usercmd_s *cmd ) {
 CL_CreateCmd
 =================
 */
-usercmd_s CL_CreateCmd( void ) {
-	usercmd_s	cmd;
+userCmd_s CL_CreateCmd( void ) {
+	userCmd_s	cmd;
 
 	vec3_c		oldAngles = cl.viewangles;
 
@@ -648,7 +648,7 @@ usercmd_s CL_CreateCmd( void ) {
 =================
 CL_CreateNewCommands
 
-Create a new usercmd_s structure for this frame
+Create a new userCmd_s structure for this frame
 =================
 */
 void CL_CreateNewCommands( void ) {
@@ -762,11 +762,11 @@ During normal gameplay, a client packet will contain something like:
 ===================
 */
 void CL_WritePacket( void ) {
-	msg_t		buf;
+	msg_s		buf;
 	byte		data[MAX_MSGLEN];
 	int			i, j;
-	usercmd_s	*cmd, *oldcmd;
-	usercmd_s	nullcmd;
+	userCmd_s	*cmd, *oldcmd;
+	userCmd_s	nullcmd;
 	int			packetNum;
 	int			oldPacketNum;
 	int			count, key;
@@ -837,7 +837,7 @@ void CL_WritePacket( void ) {
 			if(clc.demorecording && !clc.demowaiting)
 			{
 				const int voipSize = clc.voipOutgoingDataSize;
-				msg_t fakemsg;
+				msg_s fakemsg;
 				byte fakedata[MAX_MSGLEN];
 				MSG_Init (&fakemsg, fakedata, sizeof (fakedata));
 				MSG_Bitstream (&fakemsg);

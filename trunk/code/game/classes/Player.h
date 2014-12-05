@@ -44,7 +44,7 @@ typedef enum {
 // on each level change or team change at ClientBegin()
 typedef struct {
 	clientConnected_t	connected;	
-	usercmd_s	cmd;				// we would lose angles if not persistant
+	userCmd_s	cmd;				// we would lose angles if not persistant
 	bool	localClient;		// true if "ip" info key is "localhost"
 	//int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game

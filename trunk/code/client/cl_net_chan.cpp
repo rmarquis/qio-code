@@ -36,7 +36,7 @@ CL_Netchan_Encode
 
 ==============
 */
-static void CL_Netchan_Encode( msg_t *msg ) {
+static void CL_Netchan_Encode( msg_s *msg ) {
 	int serverId, messageAcknowledge, reliableAcknowledge;
 	int i, index, srdc, sbit, soob;
 	byte key, *string;
@@ -90,7 +90,7 @@ CL_Netchan_Decode
 
 ==============
 */
-static void CL_Netchan_Decode( msg_t *msg ) {
+static void CL_Netchan_Decode( msg_s *msg ) {
 	long reliableAcknowledge, i, index;
 	byte key, *string;
         int	srdc, sbit, soob;
@@ -149,7 +149,7 @@ bool CL_Netchan_TransmitNextFragment(netchan_t *chan)
 CL_Netchan_Transmit
 ================
 */
-void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg ) {
+void CL_Netchan_Transmit( netchan_t *chan, msg_s* msg ) {
 	MSG_WriteByte( msg, clc_EOF );
 
 #ifdef LEGACY_PROTOCOL
@@ -171,7 +171,7 @@ void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg ) {
 CL_Netchan_Process
 =================
 */
-bool CL_Netchan_Process( netchan_t *chan, msg_t *msg ) {
+bool CL_Netchan_Process( netchan_t *chan, msg_s *msg ) {
 	int ret;
 
 	ret = Netchan_Process( chan, msg );

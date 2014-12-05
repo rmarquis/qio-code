@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ========================
 BG_PlayerStateToEntityState
 
-This is done after each set of usercmd_s on the server,
+This is done after each set of userCmd_s on the server,
 and after local prediction on the client
 ========================
 */
@@ -88,7 +88,7 @@ This can be used as another entry point when only the viewangles
 are being updated isntead of a full move
 ================
 */
-void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd ) {
+void PM_UpdateViewAngles( playerState_s *ps, const userCmd_s *cmd ) {
 	short		temp;
 	int		i;
 

@@ -161,7 +161,7 @@ SV_GetUsercmd
 
 ===============
 */
-void SV_GetUsercmd( int clientNum, usercmd_s *cmd ) {
+void SV_GetUsercmd( int clientNum, userCmd_s *cmd ) {
 	if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 		Com_Error( ERR_DROP, "SV_GetUsercmd: bad clientNum:%i", clientNum );
 	}

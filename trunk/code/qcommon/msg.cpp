@@ -41,7 +41,7 @@ int oldsize = 0;
 
 void MSG_initHuffman( void );
 
-void MSG_Init( msg_t *buf, byte *data, int length ) {
+void MSG_Init( msg_s *buf, byte *data, int length ) {
 	if (!msgInit) {
 		MSG_initHuffman();
 	}
@@ -50,7 +50,7 @@ void MSG_Init( msg_t *buf, byte *data, int length ) {
 	buf->maxsize = length;
 }
 
-void MSG_InitOOB( msg_t *buf, byte *data, int length ) {
+void MSG_InitOOB( msg_s *buf, byte *data, int length ) {
 	if (!msgInit) {
 		MSG_initHuffman();
 	}
@@ -60,35 +60,35 @@ void MSG_InitOOB( msg_t *buf, byte *data, int length ) {
 	buf->oob = true;
 }
 
-void MSG_Clear( msg_t *buf ) {
+void MSG_Clear( msg_s *buf ) {
 	buf->cursize = 0;
 	buf->overflowed = false;
 	buf->bit = 0;					//<- in bits
 }
 
 
-void MSG_Bitstream( msg_t *buf ) {
+void MSG_Bitstream( msg_s *buf ) {
 	buf->oob = false;
 }
 
-void MSG_BeginReading( msg_t *msg ) {
+void MSG_BeginReading( msg_s *msg ) {
 	msg->readcount = 0;
 	msg->bit = 0;
 	msg->oob = false;
 }
 
-void MSG_BeginReadingOOB( msg_t *msg ) {
+void MSG_BeginReadingOOB( msg_s *msg ) {
 	msg->readcount = 0;
 	msg->bit = 0;
 	msg->oob = true;
 }
 
-void MSG_Copy(msg_t *buf, byte *data, int length, msg_t *src)
+void MSG_Copy(msg_s *buf, byte *data, int length, msg_s *src)
 {
 	if (length<src->cursize) {
-		Com_Error( ERR_DROP, "MSG_Copy: can't copy into a smaller msg_t buffer (%i < %i)",length,src->cursize);
+		Com_Error( ERR_DROP, "MSG_Copy: can't copy into a smaller msg_s buffer (%i < %i)",length,src->cursize);
 	}
-	memcpy(buf, src, sizeof(msg_t));
+	memcpy(buf, src, sizeof(msg_s));
 	buf->data = data;
 	memcpy(buf->data, src->data, src->cursize);
 }
@@ -104,7 +104,7 @@ bit functions
 int	overflows;
 
 // negative bit values include signs
-void MSG_WriteBits( msg_t *msg, int value, int bits ) {
+void MSG_WriteBits( msg_s *msg, int value, int bits ) {
 	int	i;
 //	FILE*	fp;
 
@@ -186,7 +186,7 @@ void MSG_WriteBits( msg_t *msg, int value, int bits ) {
 	}
 }
 
-int MSG_ReadBits( msg_t *msg, int bits ) {
+int MSG_ReadBits( msg_s *msg, int bits ) {
 	int			value;
 	int			get;
 	bool	sgn;
@@ -263,7 +263,7 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 // writing functions
 //
 
-void MSG_WriteChar( msg_t *sb, int c ) {
+void MSG_WriteChar( msg_s *sb, int c ) {
 #ifdef PARANOID
 	if (c < -128 || c > 127)
 		Com_Error (ERR_FATAL, "MSG_WriteChar: range error");
@@ -272,7 +272,7 @@ void MSG_WriteChar( msg_t *sb, int c ) {
 	MSG_WriteBits( sb, c, 8 );
 }
 
-void MSG_WriteByte( msg_t *sb, int c ) {
+void MSG_WriteByte( msg_s *sb, int c ) {
 #ifdef PARANOID
 	if (c < 0 || c > 255)
 		Com_Error (ERR_FATAL, "MSG_WriteByte: range error");
@@ -281,14 +281,14 @@ void MSG_WriteByte( msg_t *sb, int c ) {
 	MSG_WriteBits( sb, c, 8 );
 }
 
-void MSG_WriteData( msg_t *buf, const void *data, int length ) {
+void MSG_WriteData( msg_s *buf, const void *data, int length ) {
 	int i;
 	for(i=0;i<length;i++) {
 		MSG_WriteByte(buf, ((byte *)data)[i]);
 	}
 }
 
-void MSG_WriteShort( msg_t *sb, int c ) {
+void MSG_WriteShort( msg_s *sb, int c ) {
 #ifdef PARANOID
 	if (c < ((short)0x8000) || c > (short)0x7fff)
 		Com_Error (ERR_FATAL, "MSG_WriteShort: range error");
@@ -297,17 +297,17 @@ void MSG_WriteShort( msg_t *sb, int c ) {
 	MSG_WriteBits( sb, c, 16 );
 }
 
-void MSG_WriteLong( msg_t *sb, int c ) {
+void MSG_WriteLong( msg_s *sb, int c ) {
 	MSG_WriteBits( sb, c, 32 );
 }
 
-void MSG_WriteFloat( msg_t *sb, float f ) {
+void MSG_WriteFloat( msg_s *sb, float f ) {
 	floatInt_u dat;
 	dat.f = f;
 	MSG_WriteBits( sb, dat.i, 32 );
 }
 
-void MSG_WriteString( msg_t *sb, const char *s ) {
+void MSG_WriteString( msg_s *sb, const char *s ) {
 	if ( !s ) {
 		MSG_WriteData (sb, "", 1);
 	} else {
@@ -333,7 +333,7 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 	}
 }
 
-void MSG_WriteBigString( msg_t *sb, const char *s ) {
+void MSG_WriteBigString( msg_s *sb, const char *s ) {
 	if ( !s ) {
 		MSG_WriteData (sb, "", 1);
 	} else {
@@ -359,11 +359,11 @@ void MSG_WriteBigString( msg_t *sb, const char *s ) {
 	}
 }
 
-void MSG_WriteAngle( msg_t *sb, float f ) {
+void MSG_WriteAngle( msg_s *sb, float f ) {
 	MSG_WriteByte (sb, (int)(f*256/360) & 255);
 }
 
-void MSG_WriteAngle16( msg_t *sb, float f ) {
+void MSG_WriteAngle16( msg_s *sb, float f ) {
 	MSG_WriteShort (sb, ANGLE2SHORT(f));
 }
 
@@ -375,7 +375,7 @@ void MSG_WriteAngle16( msg_t *sb, float f ) {
 //
 
 // returns -1 if no more characters are available
-int MSG_ReadChar (msg_t *msg ) {
+int MSG_ReadChar (msg_s *msg ) {
 	int	c;
 	
 	c = (signed char)MSG_ReadBits( msg, 8 );
@@ -386,7 +386,7 @@ int MSG_ReadChar (msg_t *msg ) {
 	return c;
 }
 
-int MSG_ReadByte( msg_t *msg ) {
+int MSG_ReadByte( msg_s *msg ) {
 	int	c;
 	
 	c = (unsigned char)MSG_ReadBits( msg, 8 );
@@ -396,7 +396,7 @@ int MSG_ReadByte( msg_t *msg ) {
 	return c;
 }
 
-int MSG_LookaheadByte( msg_t *msg ) {
+int MSG_LookaheadByte( msg_s *msg ) {
 	const int bloc = Huff_getBloc();
 	const int readcount = msg->readcount;
 	const int bit = msg->bit;
@@ -407,7 +407,7 @@ int MSG_LookaheadByte( msg_t *msg ) {
 	return c;
 }
 
-int MSG_ReadShort( msg_t *msg ) {
+int MSG_ReadShort( msg_s *msg ) {
 	int	c;
 	
 	c = (short)MSG_ReadBits( msg, 16 );
@@ -418,7 +418,7 @@ int MSG_ReadShort( msg_t *msg ) {
 	return c;
 }
 
-int MSG_ReadUShort( msg_t *msg ) {
+int MSG_ReadUShort( msg_s *msg ) {
 	int	c;
 	
 	c = (unsigned short)MSG_ReadBits( msg, 16 );
@@ -429,7 +429,7 @@ int MSG_ReadUShort( msg_t *msg ) {
 	return c;
 }
 
-int MSG_ReadLong( msg_t *msg ) {
+int MSG_ReadLong( msg_s *msg ) {
 	int	c;
 	
 	c = MSG_ReadBits( msg, 32 );
@@ -440,7 +440,7 @@ int MSG_ReadLong( msg_t *msg ) {
 	return c;
 }
 
-float MSG_ReadFloat( msg_t *msg ) {
+float MSG_ReadFloat( msg_s *msg ) {
 	floatInt_u dat;
 	
 	dat.i = MSG_ReadBits( msg, 32 );
@@ -451,7 +451,7 @@ float MSG_ReadFloat( msg_t *msg ) {
 	return dat.f;	
 }
 
-char *MSG_ReadString( msg_t *msg ) {
+char *MSG_ReadString( msg_s *msg ) {
 	static char	string[MAX_STRING_CHARS];
 	int		l,c;
 	
@@ -479,7 +479,7 @@ char *MSG_ReadString( msg_t *msg ) {
 	return string;
 }
 
-char *MSG_ReadBigString( msg_t *msg ) {
+char *MSG_ReadBigString( msg_s *msg ) {
 	static char	string[BIG_INFO_STRING];
 	int		l,c;
 	
@@ -507,7 +507,7 @@ char *MSG_ReadBigString( msg_t *msg ) {
 	return string;
 }
 
-char *MSG_ReadStringLine( msg_t *msg ) {
+char *MSG_ReadStringLine( msg_s *msg ) {
 	static char	string[MAX_STRING_CHARS];
 	int		l,c;
 
@@ -535,11 +535,11 @@ char *MSG_ReadStringLine( msg_t *msg ) {
 	return string;
 }
 
-float MSG_ReadAngle16( msg_t *msg ) {
+float MSG_ReadAngle16( msg_s *msg ) {
 	return SHORT2ANGLE(MSG_ReadShort(msg));
 }
 
-void MSG_ReadData( msg_t *msg, void *data, int len ) {
+void MSG_ReadData( msg_s *msg, void *data, int len ) {
 	int		i;
 
 	for (i=0 ; i<len ; i++) {
@@ -575,7 +575,7 @@ extern cvar_s *cl_shownet;
 
 #define	LOG(x) if( cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
 
-void MSG_WriteDelta( msg_t *msg, int oldV, int newV, int bits ) {
+void MSG_WriteDelta( msg_s *msg, int oldV, int newV, int bits ) {
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
 		return;
@@ -584,14 +584,14 @@ void MSG_WriteDelta( msg_t *msg, int oldV, int newV, int bits ) {
 	MSG_WriteBits( msg, newV, bits );
 }
 
-int	MSG_ReadDelta( msg_t *msg, int oldV, int bits ) {
+int	MSG_ReadDelta( msg_s *msg, int oldV, int bits ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		return MSG_ReadBits( msg, bits );
 	}
 	return oldV;
 }
 
-void MSG_WriteDeltaFloat( msg_t *msg, float oldV, float newV ) {
+void MSG_WriteDeltaFloat( msg_s *msg, float oldV, float newV ) {
 	floatInt_u fi;
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
@@ -602,7 +602,7 @@ void MSG_WriteDeltaFloat( msg_t *msg, float oldV, float newV ) {
 	MSG_WriteBits( msg, fi.i, 32 );
 }
 
-float MSG_ReadDeltaFloat( msg_t *msg, float oldV ) {
+float MSG_ReadDeltaFloat( msg_s *msg, float oldV ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		floatInt_u fi;
 
@@ -631,7 +631,7 @@ int kbitmask[32] = {
 	0x1FFFFFFF,	0x3FFFFFFF,	0x7FFFFFFF,	0xFFFFFFFF,
 };
 
-void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits ) {
+void MSG_WriteDeltaKey( msg_s *msg, int key, int oldV, int newV, int bits ) {
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
 		return;
@@ -640,14 +640,14 @@ void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits ) {
 	MSG_WriteBits( msg, newV ^ key, bits );
 }
 
-int	MSG_ReadDeltaKey( msg_t *msg, int key, int oldV, int bits ) {
+int	MSG_ReadDeltaKey( msg_s *msg, int key, int oldV, int bits ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		return MSG_ReadBits( msg, bits ) ^ (key & kbitmask[bits]);
 	}
 	return oldV;
 }
 
-void MSG_WriteDeltaKeyFloat( msg_t *msg, int key, float oldV, float newV ) {
+void MSG_WriteDeltaKeyFloat( msg_s *msg, int key, float oldV, float newV ) {
 	floatInt_u fi;
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
@@ -658,7 +658,7 @@ void MSG_WriteDeltaKeyFloat( msg_t *msg, int key, float oldV, float newV ) {
 	MSG_WriteBits( msg, fi.i ^ key, 32 );
 }
 
-float MSG_ReadDeltaKeyFloat( msg_t *msg, int key, float oldV ) {
+float MSG_ReadDeltaKeyFloat( msg_s *msg, int key, float oldV ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		floatInt_u fi;
 
@@ -672,7 +672,7 @@ float MSG_ReadDeltaKeyFloat( msg_t *msg, int key, float oldV ) {
 /*
 ============================================================================
 
-usercmd_s communication
+userCmd_s communication
 
 ============================================================================
 */
@@ -692,7 +692,7 @@ usercmd_s communication
 MSG_WriteDeltaUsercmd
 =====================
 */
-void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
+void MSG_WriteDeltaUsercmd( msg_s *msg, userCmd_s *from, userCmd_s *to ) {
 	if ( to->serverTime - from->serverTime < 256 ) {
 		MSG_WriteBits( msg, 1, 1 );
 		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
@@ -716,7 +716,7 @@ void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
 MSG_ReadDeltaUsercmd
 =====================
 */
-void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
+void MSG_ReadDeltaUsercmd( msg_s *msg, userCmd_s *from, userCmd_s *to ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
 	} else {
@@ -743,7 +743,7 @@ void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_s *from, usercmd_s *to ) {
 MSG_WriteDeltaUsercmd
 =====================
 */
-void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to ) {
+void MSG_WriteDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to ) {
 	if ( to->serverTime - from->serverTime < 256 ) {
 		MSG_WriteBits( msg, 1, 1 );
 		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
@@ -781,7 +781,7 @@ void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *
 MSG_ReadDeltaUsercmd
 =====================
 */
-void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_s *from, usercmd_s *to ) {
+void MSG_ReadDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
 		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
 	} else {
@@ -1288,7 +1288,7 @@ If force is not set, then nothing at all will be generated if the entity is
 identical, under the assumption that the in-order delta code will catch it.
 ==================
 */
-void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to, 
+void MSG_WriteDeltaEntity( msg_s *msg, struct entityState_s *from, struct entityState_s *to, 
 						   bool force ) {
 	int			i, lc;
 	int			numFields;
@@ -1405,7 +1405,7 @@ If the delta removes the entity, entityState_s->number will be set to MAX_GENTIT
 Can go from either a baseline or a previous packet_entity
 ==================
 */
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_s *from, entityState_s *to, 
+void MSG_ReadDeltaEntity( msg_s *msg, entityState_s *from, entityState_s *to, 
 						 int number) {
 	int			i, lc;
 	int			numFields;
@@ -1583,7 +1583,7 @@ MSG_WriteDeltaPlayerstate
 
 =============
 */
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
+void MSG_WriteDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to ) {
 	int				i;
 	playerState_s	dummy;
 	int				numFields;
@@ -1653,7 +1653,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 MSG_ReadDeltaPlayerstate
 ===================
 */
-void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_s *from, playerState_s *to ) {
+void MSG_ReadDeltaPlayerstate (msg_s *msg, playerState_s *from, playerState_s *to ) {
 	int			i, lc;
 	netField_t	*field;
 	int			numFields;

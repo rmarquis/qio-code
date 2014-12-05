@@ -40,7 +40,7 @@ char *svc_strings[256] = {
 	"svc_voip",
 };
 
-void SHOWNET( msg_t *msg, char *s) {
+void SHOWNET( msg_s *msg, char *s) {
 	if ( cl_shownet->integer >= 2) {
 		Com_Printf ("%3i:%s\n", msg->readcount-1, s);
 	}
@@ -63,7 +63,7 @@ Parses deltas from the given base and adds the resulting entity
 to the current frame
 ==================
 */
-void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_s *old, 
+void CL_DeltaEntity (msg_s *msg, clSnapshot_t *frame, int newnum, entityState_s *old, 
 					 bool unchanged) {
 	entityState_s	*state;
 
@@ -90,7 +90,7 @@ CL_ParsePacketEntities
 
 ==================
 */
-void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *newframe) {
+void CL_ParsePacketEntities( msg_s *msg, clSnapshot_t *oldframe, clSnapshot_t *newframe) {
 	int			newnum;
 	entityState_s	*oldstate;
 	int			oldindex, oldnum;
@@ -202,7 +202,7 @@ cl.snap and saved in cl.snapshots[].  If the snapshot is invalid
 for any reason, no changes to the state will be made at all.
 ================
 */
-void CL_ParseSnapshot( msg_t *msg ) {
+void CL_ParseSnapshot( msg_s *msg ) {
 	int			len;
 	clSnapshot_t	*old;
 	clSnapshot_t	newSnap;
@@ -462,7 +462,7 @@ static void CL_ParseServerInfo(void)
 CL_ParseGamestate
 ==================
 */
-void CL_ParseGamestate( msg_t *msg ) {
+void CL_ParseGamestate( msg_s *msg ) {
 	int				i;
 	entityState_s	*es;
 	int				newnum;
@@ -565,7 +565,7 @@ CL_ParseDownload
 A download message has been received from the server
 =====================
 */
-void CL_ParseDownload ( msg_t *msg ) {
+void CL_ParseDownload ( msg_s *msg ) {
 	int		size;
 	unsigned char data[MAX_MSGLEN];
 	uint16_t block;
@@ -703,7 +703,7 @@ A VoIP message has been received from the server
 =====================
 */
 static
-void CL_ParseVoip ( msg_t *msg ) {
+void CL_ParseVoip ( msg_s *msg ) {
 	static short decoded[4096];  // !!! FIXME: don't hardcode.
 
 	const int sender = MSG_ReadShort(msg);
@@ -842,7 +842,7 @@ Command strings are just saved off until cgame asks for them
 when it transitions a snapshot
 =====================
 */
-void CL_ParseCommandString( msg_t *msg ) {
+void CL_ParseCommandString( msg_s *msg ) {
 	char	*s;
 	int		seq;
 	int		index;
@@ -867,7 +867,7 @@ CL_ParseServerMessage
 =====================
 */
 #include <zlib.h>
-void CL_ParseServerMessage( msg_t *msg ) {
+void CL_ParseServerMessage( msg_s *msg ) {
 	int			cmd;
 
 	if ( cl_shownet->integer == 1 ) {

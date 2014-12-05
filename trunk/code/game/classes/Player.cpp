@@ -354,7 +354,7 @@ bool Player::isPainAnimActive() const {
 	return true;
 }
 void Player::runPlayer() {
-	usercmd_s *ucmd = &this->pers.cmd;
+	userCmd_s *ucmd = &this->pers.cmd;
 
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {

@@ -55,7 +55,7 @@ SV_EmitPacketEntities
 Writes a delta update of an entityState_s list to the message.
 =============
 */
-static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to, msg_t *msg ) {
+static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to, msg_s *msg ) {
 	entityState_s	*oldent, *newent;
 	int		oldindex, newindex;
 	int		oldnum, newnum;
@@ -134,7 +134,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 SV_WriteSnapshotToClient
 ==================
 */
-static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
+static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 	clientSnapshot_t	*frame, *oldframe;
 	int					lastframe;
 	int					i;
@@ -230,7 +230,7 @@ SV_UpdateServerCommandsToClient
 (re)send all server commands the client hasn't acknowledged yet
 ==================
 */
-void SV_UpdateServerCommandsToClient( client_t *client, msg_t *msg ) {
+void SV_UpdateServerCommandsToClient( client_t *client, msg_s *msg ) {
 	int		i;
 
 	// write any unacknowledged serverCommands
@@ -503,7 +503,7 @@ SV_WriteVoipToClient
 Check to see if there is any VoIP queued for a client, and send if there is.
 ==================
 */
-static void SV_WriteVoipToClient(client_t *cl, msg_t *msg)
+static void SV_WriteVoipToClient(client_t *cl, msg_s *msg)
 {
 	int totalbytes = 0;
 	int i;
@@ -549,7 +549,7 @@ SV_SendMessageToClient
 Called by SV_SendClientSnapshot and SV_SendClientGameState
 =======================
 */
-void SV_SendMessageToClient(msg_t *msg, client_t *client)
+void SV_SendMessageToClient(msg_s *msg, client_t *client)
 {
 	// record information about the message
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSize = msg->cursize;
@@ -571,7 +571,7 @@ Also called by SV_FinalMessage
 */
 void SV_SendClientSnapshot( client_t *client ) {
 	byte		msg_buf[MAX_MSGLEN];
-	msg_t		msg;
+	msg_s		msg;
 
 	// build the snapshot
 	SV_BuildClientSnapshot( client );

@@ -41,7 +41,7 @@ struct svAPI_s : public iFaceBase_i {
 	void (*GetConfigstring)( int num, char *buffer, int bufferSize );
 	void (*GetUserinfo)( int num, char *buffer, int bufferSize );
 	void (*SetUserinfo)( int num, const char *buffer );
-	void (*GetUsercmd)( int clientNum, usercmd_s *cmd );
+	void (*GetUsercmd)( int clientNum, userCmd_s *cmd );
 
 	void (*linkEntity)(edict_s *ed);
 	void (*unlinkEntity)(edict_s *ed);

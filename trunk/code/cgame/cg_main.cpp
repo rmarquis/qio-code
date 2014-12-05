@@ -37,19 +37,19 @@ cg_t				cg;
 cgs_t				cgs;
 centity_t			cg_entities[MAX_GENTITIES];
 
-vmCvar_t		cg_lagometer;
-vmCvar_t		cg_drawFPS;
-vmCvar_t		cg_draw2D;
-vmCvar_t		cg_fov;
-vmCvar_t		cg_thirdPersonRange;
-vmCvar_t		cg_thirdPersonAngle;
-vmCvar_t		cg_thirdPerson;
-vmCvar_t		cg_timescale;
-vmCvar_t		cg_timescaleFadeEnd;
-vmCvar_t		cg_timescaleFadeSpeed;
+vmCvar_s		cg_lagometer;
+vmCvar_s		cg_drawFPS;
+vmCvar_s		cg_draw2D;
+vmCvar_s		cg_fov;
+vmCvar_s		cg_thirdPersonRange;
+vmCvar_s		cg_thirdPersonAngle;
+vmCvar_s		cg_thirdPerson;
+vmCvar_s		cg_timescale;
+vmCvar_s		cg_timescaleFadeEnd;
+vmCvar_s		cg_timescaleFadeSpeed;
 
 typedef struct {
-	vmCvar_t	*vmCvar;
+	vmCvar_s	*vmCvar;
 	char		*cvarName;
 	char		*defaultString;
 	int			cvarFlags;

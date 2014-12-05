@@ -373,7 +373,7 @@ typedef int	cvarHandle_t;
 
 // the modules that run in the virtual machine can't access the cvar_s directly,
 // so they must ask for structured updates
-struct vmCvar_t {
+struct vmCvar_s {
 	cvarHandle_t	handle;
 	int			modificationCount;
 	float		value;
@@ -473,7 +473,7 @@ VoIP
 
 //#define	MAX_GAMESTATE_CHARS	16000 // I need more to run game/lotaa.map (Prey)
 #define MAX_GAMESTATE_CHARS 32768
-struct gameState_t {
+struct gameState_s {
 	int			stringOffsets[MAX_CONFIGSTRINGS];
 	char		stringData[MAX_GAMESTATE_CHARS];
 	int			dataCount;

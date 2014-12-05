@@ -34,7 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 struct clAPI_s : public iFaceBase_i {
 	// the gamestate should be grabbed at startup, and whenever a
 	// configstring changes
-	void (*GetGameState)( gameState_t *gamestate );
+	void (*GetGameState)( gameState_s *gamestate );
 	// cgame will poll each frame to see if a newer snapshot has arrived
 	// that it is interested in.  The time is returned seperately so that
 	// snapshot latency can be calculated.
@@ -52,7 +52,7 @@ struct clAPI_s : public iFaceBase_i {
 	// snapshot, and it may be quite a few higher if it is a fast computer on
 	// a lagged connection
 	int (*GetCurrentCmdNumber)( void );	
-	bool (*GetUserCmd)( int cmdNumber, usercmd_s *ucmd );
+	bool (*GetUserCmd)( int cmdNumber, userCmd_s *ucmd );
 };
 
 extern clAPI_s *g_client;

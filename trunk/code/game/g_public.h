@@ -71,8 +71,8 @@ struct edict_s {
 //	// because it is not journaled
 //
 //	// console variable interaction
-//	G_CVAR_REGISTER,	// ( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
-//	G_CVAR_UPDATE,	// ( vmCvar_t *vmCvar );
+//	G_CVAR_REGISTER,	// ( vmCvar_s *vmCvar, const char *varName, const char *defaultValue, int flags );
+//	G_CVAR_UPDATE,	// ( vmCvar_s *vmCvar );
 //	G_CVAR_SET,		// ( const char *var_name, const char *value );
 //	G_CVAR_VARIABLE_INTEGER_VALUE,	// ( const char *var_name );
 //
@@ -121,7 +121,7 @@ struct edict_s {
 //	G_GET_SERVERINFO,	// ( char *buffer, int bufferSize );
 //	// the serverinfo info string has all the cvars visible to server browsers
 //
-//	G_GET_USERCMD,	// ( int clientNum, usercmd_s *cmd )
+//	G_GET_USERCMD,	// ( int clientNum, userCmd_s *cmd )
 //
 //
 //	G_FS_GETFILELIST,

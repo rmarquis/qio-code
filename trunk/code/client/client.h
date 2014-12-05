@@ -149,7 +149,7 @@ typedef struct {
 									// cleared when CL_AdjustTimeDelta looks at it
 	bool	newSnapshots;		// set on parse of any valid packet
 
-	gameState_t	gameState;			// configstrings
+	gameState_s	gameState;			// configstrings
 	char		mapname[MAX_QPATH];	// extracted from CS_SERVERINFO
 
 	int			parseEntitiesNum;	// index (not anded off) into cl_parse_entities[]
@@ -160,7 +160,7 @@ typedef struct {
 
 	// cmds[cmdNumber] is the predicted command, [cmdNumber-1] is the last
 	// properly generated command
-	usercmd_s	cmds[CMD_BACKUP];	// each mesage will send several old cmds
+	userCmd_s	cmds[CMD_BACKUP];	// each mesage will send several old cmds
 	int			cmdNumber;			// incremented each frame, because multiple
 									// frames may need to be packed into a single packet
 
@@ -546,11 +546,11 @@ void CL_Voip_f( void );
 #endif
 
 void CL_SystemInfoChanged( void );
-void CL_ParseServerMessage( msg_t *msg );
+void CL_ParseServerMessage( msg_s *msg );
 
 //====================================================================
 
-void	CL_ServerInfoPacket( netadr_t from, msg_t *msg );
+void	CL_ServerInfoPacket( netadr_t from, msg_s *msg );
 void	CL_LocalServers_f( void );
 void	CL_GlobalServers_f( void );
 void	CL_FavoriteServers_f( void );
@@ -630,8 +630,8 @@ void CL_CGameRendering();
 void CL_SetCGameTime( void );
 void CL_FirstSnapshot( void );
 void CL_ShaderStateChanged(void);
-void CL_GetGameState( gameState_t *gs );
-bool CL_GetUserCmd( int cmdNumber, usercmd_s *ucmd );
+void CL_GetGameState( gameState_s *gs );
+bool CL_GetUserCmd( int cmdNumber, userCmd_s *ucmd );
 int CL_GetCurrentCmdNumber( void );
 void CL_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime );
 bool CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot );
@@ -658,8 +658,8 @@ void CL_InitRef( void );
 //
 // cl_net_chan.c
 //
-void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg);	//int length, const byte *data );
-bool CL_Netchan_Process( netchan_t *chan, msg_t *msg );
+void CL_Netchan_Transmit( netchan_t *chan, msg_s* msg);	//int length, const byte *data );
+bool CL_Netchan_Process( netchan_t *chan, msg_s *msg );
 
 //
 // cl_avi.c
@@ -674,7 +674,7 @@ bool CL_VideoRecording( void );
 //
 // cl_main.c
 //
-void CL_WriteDemoMessage ( msg_t *msg, int headerBytes );
+void CL_WriteDemoMessage ( msg_s *msg, int headerBytes );
 
 //
 // cl_loadingScreenMgr.cpp

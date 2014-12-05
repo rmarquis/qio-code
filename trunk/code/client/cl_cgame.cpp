@@ -40,7 +40,7 @@ cgameAPI_s *g_cgame = 0;
 CL_GetGameState
 ====================
 */
-void CL_GetGameState( gameState_t *gs ) {
+void CL_GetGameState( gameState_s *gs ) {
 	*gs = cl.gameState;
 }
 
@@ -49,7 +49,7 @@ void CL_GetGameState( gameState_t *gs ) {
 CL_GetUserCmd
 ====================
 */
-bool CL_GetUserCmd( int cmdNumber, usercmd_s *ucmd ) {
+bool CL_GetUserCmd( int cmdNumber, userCmd_s *ucmd ) {
 	// cmds[cmdNumber] is the last properly generated command
 
 	// can't return anything that we haven't created yet
@@ -186,7 +186,7 @@ void CL_ConfigstringModified( void ) {
 	char		*old, *s;
 	int			i, index;
 	char		*dup;
-	gameState_t	oldGs;
+	gameState_s	oldGs;
 	int			len;
 
 	index = atoi( Cmd_Argv(1) );
@@ -201,7 +201,7 @@ void CL_ConfigstringModified( void ) {
 		return;		// unchanged
 	}
 
-	// build the new gameState_t
+	// build the new gameState_s
 	oldGs = cl.gameState;
 
 	memset( &cl.gameState, 0, sizeof( cl.gameState ) );

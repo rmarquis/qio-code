@@ -50,7 +50,7 @@ static void CG_InterpolatePlayerState( bool grabAngles ) {
 
 	// if we are still allowing local input, short circuit the view angles
 	if ( grabAngles ) {
-		usercmd_s	cmd;
+		userCmd_s	cmd;
 		int			cmdNum;
 
 		cmdNum = g_client->GetCurrentCmdNumber();
@@ -94,7 +94,7 @@ cg.predictedPlayerState is guaranteed to be valid after exiting.
 For demo playback, this will be an interpolation between two valid
 playerState_s.
 
-For normal gameplay, it will be the result of predicted usercmd_s on
+For normal gameplay, it will be the result of predicted userCmd_s on
 top of the most recent playerState_s received from the server.
 
 Each new snapshot will usually have one or more new usercmd over the last,

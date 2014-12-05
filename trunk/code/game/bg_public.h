@@ -69,7 +69,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 // if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( playerState_s *ps, const usercmd_s *cmd );
+void PM_UpdateViewAngles( playerState_s *ps, const userCmd_s *cmd );
 
 //===================================================================================
 

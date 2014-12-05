@@ -147,7 +147,7 @@ static int noGameRestart = false;
 void CL_CheckForResend( void );
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
-void CL_ServerStatusResponse( netadr_t from, msg_t *msg );
+void CL_ServerStatusResponse( netadr_t from, msg_s *msg );
 
 #ifdef USE_MUMBLE
 static
@@ -475,7 +475,7 @@ CLIENT RELIABLE COMMAND COMMUNICATION
 CL_AddReliableCommand
 
 The given command will be transmitted to the server, and is gauranteed to
-not have future usercmd_s executed before it is executed
+not have future userCmd_s executed before it is executed
 ======================
 */
 void CL_AddReliableCommand(const char *cmd, bool isDisconnectCmd)
@@ -532,7 +532,7 @@ Dumps the current net message, prefixed by the length
 ====================
 */
 
-void CL_WriteDemoMessage ( msg_t *msg, int headerBytes ) {
+void CL_WriteDemoMessage ( msg_s *msg, int headerBytes ) {
 	int		len, swlen;
 
 	// write the packet sequence
@@ -609,7 +609,7 @@ static char		demoName[MAX_QPATH];	// compiler bug workaround
 void CL_Record_f( void ) {
 	char		name[MAX_OSPATH];
 	byte		bufData[MAX_MSGLEN];
-	msg_t	buf;
+	msg_s	buf;
 	int			i;
 	int			len;
 	entityState_s	*ent;
@@ -842,7 +842,7 @@ CL_ReadDemoMessage
 */
 void CL_ReadDemoMessage( void ) {
 	int			r;
-	msg_t		buf;
+	msg_s		buf;
 	byte		bufData[ MAX_MSGLEN ];
 	int			s;
 
@@ -2246,7 +2246,7 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 CL_ServersResponsePacket
 ===================
 */
-void CL_ServersResponsePacket( const netadr_t* from, msg_t *msg, bool extended ) {
+void CL_ServersResponsePacket( const netadr_t* from, msg_s *msg, bool extended ) {
 	int				i, j, count, total;
 	netadr_t addresses[MAX_SERVERSPERPACKET];
 	int				numservers;
@@ -2369,7 +2369,7 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
-void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
+void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	char	*s;
 	const char	*c;
 	int challenge = 0;
@@ -2533,7 +2533,7 @@ CL_PacketEvent
 A packet has arrived from the main event loop
 =================
 */
-void CL_PacketEvent( netadr_t from, msg_t *msg ) {
+void CL_PacketEvent( netadr_t from, msg_s *msg ) {
 	int		headerBytes;
 
 	clc.lastPacketTime = cls.realtime;
@@ -3331,7 +3331,7 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 CL_ServerInfoPacket
 ===================
 */
-void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
+void CL_ServerInfoPacket( netadr_t from, msg_s *msg ) {
 	int		i, type;
 	char	info[MAX_INFO_STRING];
 	char	*infoString;
@@ -3544,7 +3544,7 @@ int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen )
 CL_ServerStatusResponse
 ===================
 */
-void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
+void CL_ServerStatusResponse( netadr_t from, msg_s *msg ) {
 	char	*s;
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;

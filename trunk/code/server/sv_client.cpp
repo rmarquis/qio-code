@@ -671,7 +671,7 @@ the wrong gamestate.
 static void SV_SendClientGameState( client_t *client ) {
 	int			start;
 	entityState_s	*base, nullstate;
-	msg_t		msg;
+	msg_s		msg;
 	byte		msgBuffer[MAX_MSGLEN];
 
  	Com_DPrintf ("SV_SendClientGameState() for %s\n", client->name);
@@ -744,7 +744,7 @@ static void SV_SendClientGameState( client_t *client ) {
 SV_ClientEnterWorld
 ==================
 */
-void SV_ClientEnterWorld( client_t *client, usercmd_s *cmd ) {
+void SV_ClientEnterWorld( client_t *client, userCmd_s *cmd ) {
 	int		clientNum;
 	edict_s *ent;
 
@@ -889,7 +889,7 @@ Check to see if the client wants a file, open it if needed and start pumping the
 Fill up msg with data, return number of download blocks added
 ==================
 */
-int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
+int SV_WriteDownloadToClient(client_t *cl, msg_s *msg)
 {
 	int curindex;
 	int unreferenced = 1;
@@ -1127,7 +1127,7 @@ int SV_SendDownloadMessages(void)
 {
 	int i, numDLs = 0, retval;
 	client_t *cl;
-	msg_t msg;
+	msg_s msg;
 	byte msgBuffer[MAX_MSGLEN];
 	
 	for(i=0; i < sv_maxclients->integer; i++)
@@ -1545,7 +1545,7 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, bool clientOK ) {
 SV_ClientCommand
 ===============
 */
-static bool SV_ClientCommand( client_t *cl, msg_t *msg ) {
+static bool SV_ClientCommand( client_t *cl, msg_s *msg ) {
 	int		seq;
 	const char	*s;
 	bool clientOk = true;
@@ -1606,7 +1606,7 @@ SV_ClientThink
 Also called by bot code
 ==================
 */
-void SV_ClientThink (client_t *cl, usercmd_s *cmd) {
+void SV_ClientThink (client_t *cl, userCmd_s *cmd) {
 	cl->lastUsercmd = *cmd;
 
 	if ( cl->state != CS_ACTIVE ) {
@@ -1627,12 +1627,12 @@ On very fast clients, there may be multiple usercmd packed into
 each of the backup packets.
 ==================
 */
-static void SV_UserMove( client_t *cl, msg_t *msg, bool delta ) {
+static void SV_UserMove( client_t *cl, msg_s *msg, bool delta ) {
 	int			i, key;
 	int			cmdCount;
-	usercmd_s	nullcmd;
-	usercmd_s	cmds[MAX_PACKET_USERCMDS];
-	usercmd_s	*cmd, *oldcmd;
+	userCmd_s	nullcmd;
+	userCmd_s	cmds[MAX_PACKET_USERCMDS];
+	userCmd_s	*cmd, *oldcmd;
 
 	if ( delta ) {
 		cl->deltaMessage = cl->messageAcknowledge;
@@ -1746,7 +1746,7 @@ static bool SV_ShouldIgnoreVoipSender(const client_t *cl)
 }
 
 static
-void SV_UserVoip(client_t *cl, msg_t *msg)
+void SV_UserVoip(client_t *cl, msg_s *msg)
 {
 	int sender, generation, sequence, frames, packetsize;
 	uint8_t recips[(MAX_CLIENTS + 7) / 8];
@@ -1850,7 +1850,7 @@ SV_ExecuteClientMessage
 Parse a client packet
 ===================
 */
-void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
+void SV_ExecuteClientMessage( client_t *cl, msg_s *msg ) {
 	int			c;
 	int			serverId;
 
@@ -1935,7 +1935,7 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		}
 	} while ( 1 );
 
-	// read the usercmd_s
+	// read the userCmd_s
 	if ( c == clc_move ) {
 		SV_UserMove( cl, msg, true );
 	} else if ( c == clc_moveNoDelta ) {

@@ -1225,7 +1225,7 @@ Cvar_Register
 basically a slightly modified Cvar_Get for the interpreted modules
 =====================
 */
-void Cvar_Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags)
+void Cvar_Register(vmCvar_s *vmCvar, const char *varName, const char *defaultValue, int flags)
 {
 	cvar_s	*cv;
 
@@ -1257,7 +1257,7 @@ Cvar_Update
 updates an interpreted modules' version of a cvar
 =====================
 */
-void	Cvar_Update( vmCvar_t *vmCvar ) {
+void	Cvar_Update( vmCvar_s *vmCvar ) {
 	cvar_s	*cv = NULL;
 	assert(vmCvar);
 

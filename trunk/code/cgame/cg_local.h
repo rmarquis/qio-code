@@ -154,7 +154,7 @@ typedef struct {
 // be cleared when a tournement restart is done, allowing
 // all clients to begin playing instantly
 typedef struct {
-	gameState_t		gameState;			// gamestate from server
+	gameState_s		gameState;			// gamestate from server
 //	glconfig_t		glconfig;			// rendering configuration
 	float			screenXScale;		// derived from glconfig
 	float			screenYScale;
@@ -193,16 +193,16 @@ extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
 
-extern	vmCvar_t		cg_lagometer;
-extern	vmCvar_t		cg_drawFPS;
-extern	vmCvar_t		cg_draw2D;
-extern	vmCvar_t		cg_fov;
-extern	vmCvar_t		cg_thirdPersonRange;
-extern	vmCvar_t		cg_thirdPersonAngle;
-extern	vmCvar_t		cg_thirdPerson;
-extern	vmCvar_t		cg_timescale;
-extern	vmCvar_t		cg_timescaleFadeEnd;
-extern	vmCvar_t		cg_timescaleFadeSpeed;
+extern	vmCvar_s		cg_lagometer;
+extern	vmCvar_s		cg_drawFPS;
+extern	vmCvar_s		cg_draw2D;
+extern	vmCvar_s		cg_fov;
+extern	vmCvar_s		cg_thirdPersonRange;
+extern	vmCvar_s		cg_thirdPersonAngle;
+extern	vmCvar_s		cg_thirdPerson;
+extern	vmCvar_s		cg_timescale;
+extern	vmCvar_s		cg_timescaleFadeEnd;
+extern	vmCvar_s		cg_timescaleFadeSpeed;
 
 //
 // cg_main.c

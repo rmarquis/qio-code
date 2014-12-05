@@ -32,8 +32,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 // these are only temporary function pointers, TODO: rework them?
 struct cvarsAPI_s : public iFaceBase_i {
-	void (*Cvar_Register)( vmCvar_t *cvar, const char *var_name, const char *value, int flags );
-	void (*Cvar_Update)( vmCvar_t *cvar );
+	void (*Cvar_Register)( vmCvar_s *cvar, const char *var_name, const char *value, int flags );
+	void (*Cvar_Update)( vmCvar_s *cvar );
 	void (*Cvar_Set)( const char *var_name, const char *value );
 	int	(*Cvar_VariableIntegerValue)( const char *var_name );
 	float (*Cvar_VariableValue)( const char *var_name );
