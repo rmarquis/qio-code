@@ -25,17 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <shared/colorTable.h>
 
-float Com_Clamp( float min, float max, float value ) {
-	if ( value < min ) {
-		return min;
-	}
-	if ( value > max ) {
-		return max;
-	}
-	return value;
-}
-
-
 /*
 ============
 COM_SkipPath
@@ -54,21 +43,6 @@ char *COM_SkipPath (char *pathname)
 	}
 	return last;
 }
-
-/*
-============
-COM_GetExtension
-============
-*/
-const char *COM_GetExtension( const char *name )
-{
-	const char *dot = strrchr(name, '.'), *slash;
-	if (dot && (!(slash = strrchr(name, '/')) || slash < dot))
-		return dot + 1;
-	else
-		return "";
-}
-
 
 /*
 ============
@@ -206,7 +180,7 @@ int	LongNoSwap (int l)
 }
 
 float FloatSwap (const float *f) {
-	floatint_t out;
+	floatInt_u out;
 
 	out.f = *f;
 	out.ui = LongSwap(out.ui);
@@ -274,38 +248,9 @@ void COM_BeginParseSession( const char *name )
 	Com_sprintf(com_parsename, sizeof(com_parsename), "%s", name);
 }
 
-int COM_GetCurrentParseLine( void )
-{
-	return com_lines;
-}
-
 char *COM_Parse( char **data_p )
 {
 	return COM_ParseExt( data_p, true );
-}
-
-void COM_ParseError( char *format, ... )
-{
-	va_list argptr;
-	static char string[4096];
-
-	va_start (argptr, format);
-	Q_vsnprintf (string, sizeof(string), format, argptr);
-	va_end (argptr);
-
-	g_core->Print("ERROR: %s, line %d: %s\n", com_parsename, com_lines, string);
-}
-
-void COM_ParseWarning( char *format, ... )
-{
-	va_list argptr;
-	static char string[4096];
-
-	va_start (argptr, format);
-	Q_vsnprintf (string, sizeof(string), format, argptr);
-	va_end (argptr);
-
-	g_core->Print("WARNING: %s, line %d: %s\n", com_parsename, com_lines, string);
 }
 
 /*
@@ -335,75 +280,6 @@ static char *SkipWhitespace( char *data, bool *hasNewLines ) {
 	}
 
 	return data;
-}
-
-int COM_Compress( char *data_p ) {
-	char *in, *out;
-	int c;
-	bool newline = false, whitespace = false;
-
-	in = out = data_p;
-	if (in) {
-		while ((c = *in) != 0) {
-			// skip double slash comments
-			if ( c == '/' && in[1] == '/' ) {
-				while (*in && *in != '\n') {
-					in++;
-				}
-			// skip /* */ comments
-			} else if ( c == '/' && in[1] == '*' ) {
-				while ( *in && ( *in != '*' || in[1] != '/' ) ) 
-					in++;
-				if ( *in ) 
-					in += 2;
-				// record when we hit a newline
-			} else if ( c == '\n' || c == '\r' ) {
-				newline = true;
-				in++;
-				// record when we hit whitespace
-			} else if ( c == ' ' || c == '\t') {
-				whitespace = true;
-				in++;
-				// an actual token
-			} else {
-				// if we have a pending newline, emit it (and it counts as whitespace)
-				if (newline) {
-					*out++ = '\n';
-					newline = false;
-					whitespace = false;
-				} if (whitespace) {
-					*out++ = ' ';
-					whitespace = false;
-				}
-
-				// copy quoted strings unmolested
-				if (c == '"') {
-					*out++ = c;
-					in++;
-					while (1) {
-						c = *in;
-						if (c && c != '"') {
-							*out++ = c;
-							in++;
-						} else {
-							break;
-						}
-					}
-					if (c == '"') {
-						*out++ = c;
-						in++;
-					}
-				} else {
-					*out = c;
-					out++;
-					in++;
-				}
-			}
-		}
-
-		*out = 0;
-	}
-	return out - data_p;
 }
 
 char *COM_ParseExt( char **data_p, bool allowLineBreaks )
@@ -506,107 +382,6 @@ char *COM_ParseExt( char **data_p, bool allowLineBreaks )
 
 	*data_p = ( char * ) data;
 	return com_token;
-}
-
-/*
-==================
-COM_MatchToken
-==================
-*/
-void COM_MatchToken( char **buf_p, char *match ) {
-	char	*token;
-
-	token = COM_Parse( buf_p );
-	if ( strcmp( token, match ) ) {
-		g_core->Error( ERR_DROP, "MatchToken: %s != %s", token, match );
-	}
-}
-
-
-/*
-=================
-SkipBracedSection
-
-The next token should be an open brace.
-Skips until a matching close brace is found.
-Internal brace depths are properly skipped.
-=================
-*/
-void SkipBracedSection (char **program) {
-	char			*token;
-	int				depth;
-
-	depth = 0;
-	do {
-		token = COM_ParseExt( program, true );
-		if( token[1] == 0 ) {
-			if( token[0] == '{' ) {
-				depth++;
-			}
-			else if( token[0] == '}' ) {
-				depth--;
-			}
-		}
-	} while( depth && *program );
-}
-
-/*
-=================
-SkipRestOfLine
-=================
-*/
-void SkipRestOfLine ( char **data ) {
-	char	*p;
-	int		c;
-
-	p = *data;
-	while ( (c = *p++) != 0 ) {
-		if ( c == '\n' ) {
-			com_lines++;
-			break;
-		}
-	}
-
-	*data = p;
-}
-
-
-void Parse1DMatrix (char **buf_p, int x, float *m) {
-	char	*token;
-	int		i;
-
-	COM_MatchToken( buf_p, "(" );
-
-	for (i = 0 ; i < x ; i++) {
-		token = COM_Parse(buf_p);
-		m[i] = atof(token);
-	}
-
-	COM_MatchToken( buf_p, ")" );
-}
-
-void Parse2DMatrix (char **buf_p, int y, int x, float *m) {
-	int		i;
-
-	COM_MatchToken( buf_p, "(" );
-
-	for (i = 0 ; i < y ; i++) {
-		Parse1DMatrix (buf_p, x, m + i * x);
-	}
-
-	COM_MatchToken( buf_p, ")" );
-}
-
-void Parse3DMatrix (char **buf_p, int z, int y, int x, float *m) {
-	int		i;
-
-	COM_MatchToken( buf_p, "(" );
-
-	for (i = 0 ; i < z ; i++) {
-		Parse2DMatrix (buf_p, y, x, m + i * x*y);
-	}
-
-	COM_MatchToken( buf_p, ")" );
 }
 
 /*

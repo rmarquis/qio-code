@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 float Q_rsqrt( float number )
 {
-	floatint_t t;
+	floatInt_u t;
 	float x2, y;
 	const float threehalfs = 1.5F;
 

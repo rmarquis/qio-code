@@ -133,7 +133,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../shared/typedefs.h"
 
-union floatint_t {
+union floatInt_u {
 	float f;
 	int i;
 	unsigned int ui;
@@ -143,12 +143,6 @@ union floatint_t {
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
 #define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
-
-#ifdef __GNUC__
-#define QALIGN(x) __attribute__((aligned(x)))
-#else
-#define QALIGN(x)
-#endif
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -242,31 +236,16 @@ float AngleDelta ( float angle1, float angle2 );
 
 //=============================================
 
-float Com_Clamp( float min, float max, float value );
-
 char	*COM_SkipPath( char *pathname );
-const char	*COM_GetExtension( const char *name );
 void	COM_StripExtension(const char *in, char *out, int destsize);
 bool COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 void	COM_BeginParseSession( const char *name );
-int		COM_GetCurrentParseLine( void );
 char	*COM_Parse( char **data_p );
 char	*COM_ParseExt( char **data_p, bool allowLineBreak );
-int		COM_Compress( char *data_p );
-void	COM_ParseError( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
-void	COM_ParseWarning( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
 //int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
 
-void	COM_MatchToken( char**buf_p, char *match );
-
-void SkipBracedSection (char **program);
-void SkipRestOfLine ( char **data );
-
-void Parse1DMatrix (char **buf_p, int x, float *m);
-void Parse2DMatrix (char **buf_p, int y, int x, float *m);
-void Parse3DMatrix (char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
 
 int QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
