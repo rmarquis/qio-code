@@ -189,7 +189,7 @@ AllocateLightmapForSurface
 */
 //#define	LIGHTMAP_BLOCK	16
 void AllocateLightmapForSurface( mapDrawSurface_t *ds ) {
-	vec3_t		mins, maxs, size, exactSize, delta;
+	vec3_t		mins, maxs, size, /*exactSize,*/ delta;
 	int			i;
 	drawVert_t	*verts;
 	int			w, h;
@@ -222,7 +222,7 @@ void AllocateLightmapForSurface( mapDrawSurface_t *ds ) {
 
 	// round to the lightmap resolution
 	for ( i = 0 ; i < 3 ; i++ ) {
-		exactSize[i] = maxs[i] - mins[i];
+		//exactSize[i] = maxs[i] - mins[i];
 		mins[i] = ssize * floor( mins[i] / ssize );
 		maxs[i] = ssize * ceil( maxs[i] / ssize );
 		size[i] = (maxs[i] - mins[i]) / ssize + 1;

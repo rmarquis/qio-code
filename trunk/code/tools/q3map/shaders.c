@@ -392,6 +392,42 @@ static void ParseShaderFile( const char *filename ) {
 		if ( !GetToken( qtrue ) ) {
 			break;
 		}
+		if(!stricmp(token,"table")) {
+			int level;
+			int len;
+			// get table name
+			if ( !GetToken( qtrue ) ) {
+				break;
+			}	
+			level = 0;
+			len = strlen(token);
+			for(i = 0; i < len; i++) {
+				if(token[i] == '{') {
+					level++;
+					token[i] = 0;
+				}
+			}
+			_printf("Parsing table %s\n",token);
+			if(level == 0) {
+				MatchToken( "{" );
+				level = 1;
+			}
+			while(1) 
+			{
+				if ( !GetToken( qtrue ) ) {
+					break;
+				}
+				if ( !strcmp( token, "}" ) ) {
+					level--;
+				}
+				if ( !strcmp( token, "{" ) ) {
+					level++;
+				}
+				if(level == 0)
+					break;
+			}
+			continue;
+		}
 
 		si = AllocShaderInfo();
 		strcpy( si->shader, token );
