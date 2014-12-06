@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <shared/str.h>
 #include <shared/array.h>
+#include <math/vec3.h>
 #include <renderer/drawCallSort.h>
 #include "mat_public.h"
 #include "mat_stageTexture.h"

@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <shared/autoCvar.h>
 #include <api/coreAPI.h>
+#include <protocol/voipFlags.h>
+#include <shared/keyCatchers.h>
 
 unsigned	frame_msec;
 int			old_com_frameTime;

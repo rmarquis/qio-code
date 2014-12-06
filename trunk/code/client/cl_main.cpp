@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <shared/str.h>
 #include <shared/colorTable.h>
+#include <shared/keyCatchers.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"

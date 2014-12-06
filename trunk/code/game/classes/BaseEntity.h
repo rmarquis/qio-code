@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/eventReceiverAPI.h>
 #include <math/matrix.h>
+#include <protocol/entityState.h>
 // LUA event callbacks
 #include "../lua/g_lua_eventHandler.h"
 

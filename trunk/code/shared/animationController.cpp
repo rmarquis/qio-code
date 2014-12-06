@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // animationController.cpp - animation blending code
 #include "animationController.h"
 #include <shared/autoCvar.h>
+#include <shared/animationFlags.h>
 #include <api/coreAPI.h>
 #include <api/skelModelAPI.h>
 #include <api/skelAnimAPI.h>

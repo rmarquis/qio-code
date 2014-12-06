@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/cgameAPI.h>
 #include <api/rAPI.h>
 #include <api/loadingScreenMgrAPI.h>
+#include <protocol/snapFlags.h>
+#include <shared/keyCatchers.h>
 
 static moduleAPI_i *cl_cgameDLL = 0;
 cgameAPI_s *g_cgame = 0;

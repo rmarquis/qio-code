@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "server.h"
 #include <shared/autoCvar.h>
 #include <shared/entityType.h>
+#include <protocol/snapFlags.h>
+#include <protocol/voipFlags.h>
 
 static aCvar_c sv_debugPlayerSnapshotEntities("sv_debugPlayerSnapshotEntities","-1");
 

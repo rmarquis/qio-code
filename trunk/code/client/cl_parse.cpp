@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <api/rAPI.h>
 #include <shared/colorTable.h>
+#include <protocol/voipFlags.h>
 
 char *svc_strings[256] = {
 	"svc_bad",

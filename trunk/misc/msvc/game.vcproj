@@ -1219,6 +1219,38 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="protocol"
+			>
+			<File
+				RelativePath="..\..\code\protocol\entityState.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\gameState.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\netLimits.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\playerState.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\snapFlags.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\userCmd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\voipFlags.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

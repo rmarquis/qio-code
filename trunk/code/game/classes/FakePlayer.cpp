@@ -25,7 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "FakePlayer.h"
 #include <api/simplePathAPI.h>
 #include <api/coreAPI.h>
-#include <shared/userCmd.h>
+#include <protocol/userCmd.h>
 #include <shared/skelUtils.h>
 #include "../g_pathNodes.h"
 #include "../g_local.h"

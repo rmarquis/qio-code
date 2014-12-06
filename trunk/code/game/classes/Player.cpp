@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelDeclAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
+#include <shared/animationFlags.h>
 
 static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
 static aCvar_c g_printPlayersHealth("g_printPlayersHealth","0");

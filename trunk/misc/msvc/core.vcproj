@@ -2081,6 +2081,10 @@
 				RelativePath="..\..\code\shared\colorTable.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\keyCatchers.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

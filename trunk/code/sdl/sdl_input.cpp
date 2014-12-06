@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../sys/sys_local.h"
 #include <api/rAPI.h>
 #include <api/coreAPI.h>
+#include <shared/keyCatchers.h>
 
 #ifdef MACOS_X
 // Mouse acceleration needs to be disabled

@@ -37,7 +37,7 @@ public:
 	virtual const char *getModelDeclName() const = 0;
 	virtual const char *getMeshName() const = 0;
 	virtual class skelModelAPI_i *getSkelModel() = 0;
-	virtual const vec3_c &getOffset() const = 0;
+	virtual const class vec3_c &getOffset() const = 0;
 
 	virtual u32 getNumBones() = 0;
 	virtual u32 getNumSurfaces() = 0;

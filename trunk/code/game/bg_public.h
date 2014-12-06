@@ -23,6 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // bg_public.h -- definitions shared by both the server game and client game modules
 #ifndef __BG_PUBLIC_H__
 #define __BG_PUBLIC_H__
+
+#include <protocol/netLimits.h>
+
 // because games can change separately from the main system version, we need a
 // second version that must match between game and cgame
 
@@ -69,10 +72,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 // if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( playerState_s *ps, const userCmd_s *cmd );
+void PM_UpdateViewAngles( struct playerState_s *ps, const struct userCmd_s *cmd );
 
 //===================================================================================
 
-void	BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, bool snap );
+void	BG_PlayerStateToEntityState( struct playerState_s *ps, struct entityState_s *s, bool snap );
 
 #endif // __BG_PUBLIC_H__

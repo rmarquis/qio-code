@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <math/vec3.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
+#include <protocol/snapFlags.h>
 
 //============================================================================
 

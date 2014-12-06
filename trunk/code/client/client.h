@@ -26,6 +26,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "keys.h"
 #include "../cgame/cg_public.h"
 #include "../game/bg_public.h"
+#include <protocol/gameState.h>
+#include <protocol/userCmd.h>
 #include <api/vfsAPI.h>
 
 #ifdef USE_CURL

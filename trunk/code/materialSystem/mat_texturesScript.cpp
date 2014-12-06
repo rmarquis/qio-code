@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/imgAPI.h>
 #include <shared/parser.h>
 #include <shared/textureWrapMode.h>
+#include <math/vec3.h>
 
 byte *IMG_Dropsample( const byte *in, int inwidth, int inheight,  
 							int outwidth, int outheight ) {
