@@ -61,7 +61,7 @@ if desired.
 void ClientUserinfoChanged( int clientNum ) {
 	Player *pl = dynamic_cast<Player*>(g_entities[clientNum].ent);
 
-	char buf[BIG_INFO_STRING];
+	char buf[MAX_INFO_STRING];
 	g_server->GetUserinfo(clientNum,buf,sizeof(buf));
 	const char *s = Info_ValueForKey(buf, "name");
 	if(s == 0) {

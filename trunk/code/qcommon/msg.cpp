@@ -341,11 +341,11 @@ void MSG_WriteBigString( msg_s *sb, const char *s ) {
 		MSG_WriteData (sb, "", 1);
 	} else {
 		int		l,i;
-		char	string[BIG_INFO_STRING];
+		char	string[MAX_INFO_STRING];
 
 		l = strlen( s );
-		if ( l >= BIG_INFO_STRING ) {
-			Com_Printf( "MSG_WriteString: BIG_INFO_STRING" );
+		if ( l >= MAX_INFO_STRING ) {
+			Com_Printf( "MSG_WriteString: MAX_INFO_STRING" );
 			MSG_WriteData (sb, "", 1);
 			return;
 		}
@@ -483,7 +483,7 @@ char *MSG_ReadString( msg_s *msg ) {
 }
 
 char *MSG_ReadBigString( msg_s *msg ) {
-	static char	string[BIG_INFO_STRING];
+	static char	string[MAX_INFO_STRING];
 	int		l,c;
 	
 	l = 0;

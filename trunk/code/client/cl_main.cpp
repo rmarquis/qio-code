@@ -128,7 +128,7 @@ ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
 typedef struct serverStatus_s
 {
-	char string[BIG_INFO_STRING];
+	char string[MAX_INFO_STRING];
 	netadr_t address;
 	int time, startTime;
 	bool pending;

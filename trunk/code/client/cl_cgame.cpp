@@ -251,7 +251,7 @@ Set up argc/argv for the given command
 bool CL_GetServerCommand( int serverCommandNumber ) {
 	const char	*s;
 	const char	*cmd;
-	static char bigConfigString[BIG_INFO_STRING];
+	static char bigConfigString[MAX_INFO_STRING];
 	int argc;
 
 	// if we have irretrievably lost a reliable command, drop the connection
@@ -289,14 +289,14 @@ rescan:
 	}
 
 	if ( !strcmp( cmd, "bcs0" ) ) {
-		Com_sprintf( bigConfigString, BIG_INFO_STRING, "cs %s \"%s", Cmd_Argv(1), Cmd_Argv(2) );
+		Com_sprintf( bigConfigString, MAX_INFO_STRING, "cs %s \"%s", Cmd_Argv(1), Cmd_Argv(2) );
 		return false;
 	}
 
 	if ( !strcmp( cmd, "bcs1" ) ) {
 		s = Cmd_Argv(2);
-		if( strlen(bigConfigString) + strlen(s) >= BIG_INFO_STRING ) {
-			Com_Error( ERR_DROP, "bcs exceeded BIG_INFO_STRING" );
+		if( strlen(bigConfigString) + strlen(s) >= MAX_INFO_STRING ) {
+			Com_Error( ERR_DROP, "bcs exceeded MAX_INFO_STRING" );
 		}
 		strcat( bigConfigString, s );
 		return false;
@@ -304,8 +304,8 @@ rescan:
 
 	if ( !strcmp( cmd, "bcs2" ) ) {
 		s = Cmd_Argv(2);
-		if( strlen(bigConfigString) + strlen(s) + 1 >= BIG_INFO_STRING ) {
-			Com_Error( ERR_DROP, "bcs exceeded BIG_INFO_STRING" );
+		if( strlen(bigConfigString) + strlen(s) + 1 >= MAX_INFO_STRING ) {
+			Com_Error( ERR_DROP, "bcs exceeded MAX_INFO_STRING" );
 		}
 		strcat( bigConfigString, s );
 		strcat( bigConfigString, "\"" );

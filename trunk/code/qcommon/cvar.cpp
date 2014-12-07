@@ -1178,7 +1178,7 @@ Cvar_InfoString_Big
 */
 char *Cvar_InfoString_Big(int bit)
 {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	cvar_s	*var;
 
 	info[0] = 0;

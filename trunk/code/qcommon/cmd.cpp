@@ -349,8 +349,8 @@ typedef struct cmd_function_s
 
 static	int			cmd_argc;
 static	char		*cmd_argv[MAX_STRING_TOKENS];		// points into cmd_tokenized
-static	char		cmd_tokenized[BIG_INFO_STRING+MAX_STRING_TOKENS];	// will have 0 bytes inserted
-static	char		cmd_cmd[BIG_INFO_STRING]; // the original command we received (no token processing)
+static	char		cmd_tokenized[MAX_INFO_STRING+MAX_STRING_TOKENS];	// will have 0 bytes inserted
+static	char		cmd_cmd[MAX_INFO_STRING]; // the original command we received (no token processing)
 
 static	cmd_function_t	*cmd_functions;		// possible commands to execute
 
@@ -418,7 +418,7 @@ Returns a single string containing argv(arg) to argv(argc()-1)
 ============
 */
 char *Cmd_ArgsFrom( int arg ) {
-	static	char		cmd_args[BIG_INFO_STRING];
+	static	char		cmd_args[MAX_INFO_STRING];
 	int		i;
 
 	cmd_args[0] = 0;

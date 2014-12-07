@@ -796,8 +796,8 @@ FIXME: overflow check?
 ===============
 */
 char *Info_ValueForKey( const char *s, const char *key ) {
-	char	pkey[BIG_INFO_KEY];
-	static	char value[2][BIG_INFO_VALUE];	// use two buffers so compares
+	char	pkey[MAX_INFO_KEY];
+	static	char value[2][MAX_INFO_VALUE];	// use two buffers so compares
 											// work without stomping on each other
 	static	int	valueindex = 0;
 	char	*o;
@@ -806,7 +806,7 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 		return "";
 	}
 
-	if ( strlen( s ) >= BIG_INFO_STRING ) {
+	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		g_core->Error( ERR_DROP, "Info_ValueForKey: oversize infostring" );
 	}
 
@@ -949,11 +949,11 @@ Info_RemoveKey_Big
 */
 void Info_RemoveKey_Big( char *s, const char *key ) {
 	char	*start;
-	char	pkey[BIG_INFO_KEY];
-	char	value[BIG_INFO_VALUE];
+	char	pkey[MAX_INFO_KEY];
+	char	value[MAX_INFO_VALUE];
 	char	*o;
 
-	if ( strlen( s ) >= BIG_INFO_STRING ) {
+	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		g_core->Error( ERR_DROP, "Info_RemoveKey_Big: oversize infostring" );
 	}
 
@@ -1067,10 +1067,10 @@ Includes and retains zero-length values
 ==================
 */
 void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
-	char	newi[BIG_INFO_STRING];
+	char	newi[MAX_INFO_STRING];
 	const char* blacklist = "\\;\"";
 
-	if ( strlen( s ) >= BIG_INFO_STRING ) {
+	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		g_core->Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
 	}
 
@@ -1089,7 +1089,7 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 
 	Com_sprintf (newi, sizeof(newi), "\\%s\\%s", key, value);
 
-	if (strlen(newi) + strlen(s) >= BIG_INFO_STRING)
+	if (strlen(newi) + strlen(s) >= MAX_INFO_STRING)
 	{
 		g_core->Print ("BIG Info string length exceeded\n");
 		return;

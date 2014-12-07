@@ -159,14 +159,9 @@ union floatInt_u {
 #define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
 #define	MAX_TOKEN_CHARS		1024	// max length of an individual token
 
-#define	MAX_INFO_STRING		1024
-#define	MAX_INFO_KEY		  1024
-#define	MAX_INFO_VALUE		1024
-
-#define	BIG_INFO_STRING		8192  // used for system info key only
-#define	BIG_INFO_KEY		  8192
-#define	BIG_INFO_VALUE		8192
-
+#define	MAX_INFO_STRING		8192
+#define	MAX_INFO_KEY		8192
+#define	MAX_INFO_VALUE		8192
 
 #define	MAX_QPATH			256		// max length of a quake game pathname
 #ifdef PATH_MAX
@@ -175,7 +170,7 @@ union floatInt_u {
 #define	MAX_OSPATH			256		// max length of a filesystem pathname
 #endif
 
-#define	MAX_NAME_LENGTH		32		// max length of a client name
+#define	MAX_NAME_LENGTH		64		// max length of a client name
 
 // paramters for command buffer stuffing
 enum cbufExec_e {

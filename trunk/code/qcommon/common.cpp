@@ -525,8 +525,8 @@ bool Com_AddStartupCommands( void ) {
 //============================================================================
 
 void Info_Print( const char *s ) {
-	char	key[BIG_INFO_KEY];
-	char	value[BIG_INFO_VALUE];
+	char	key[MAX_INFO_KEY];
+	char	value[MAX_INFO_VALUE];
 	char	*o;
 	int		l;
 
