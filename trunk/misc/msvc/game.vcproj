@@ -551,11 +551,43 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\FuncBombTarget.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncBombTarget.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncBuyZone.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncBuyZone.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncDustmotes.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncDustmotes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\FuncRotating.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\game\classes\FuncRotating.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncSmokeVolume.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\FuncSmokeVolume.h"
 				>
 			</File>
 			<File
@@ -655,6 +687,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\TriggerSoundscape.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\TriggerSoundscape.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\VehicleCar.cpp"
 				>
 			</File>
@@ -735,6 +775,18 @@
 				</File>
 				<File
 					RelativePath="..\..\code\game\classes\TriggerTeleport.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="CSS"
+				>
+				<File
+					RelativePath="..\..\code\game\classes\WeaponMP5.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\WeaponMP5.h"
 					>
 				</File>
 			</Filter>
@@ -860,6 +912,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\fileStreamHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\infoString.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\infoString.h"
 				>
 			</File>
 			<File

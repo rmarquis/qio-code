@@ -640,6 +640,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\infoString.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\infoString.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\random.cpp"
 				>
 			</File>
