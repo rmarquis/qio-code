@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/cvarModificationCallback.h>
 #include <shared/autoCvar.h>
 #include <shared/colorTable.h>
+#include <shared/infoString.h>
 
 cvar_s		*cvar_vars = NULL;
 cvar_s		*cvar_cheats;
@@ -1168,29 +1169,6 @@ char *Cvar_InfoString(int bit)
 
 	return info;
 }
-
-/*
-=====================
-Cvar_InfoString_Big
-
-  handles large info strings ( CS_SYSTEMINFO )
-=====================
-*/
-char *Cvar_InfoString_Big(int bit)
-{
-	static char	info[MAX_INFO_STRING];
-	cvar_s	*var;
-
-	info[0] = 0;
-
-	for (var = cvar_vars; var; var = var->next)
-	{
-		if(var->name && (var->flags & bit))
-			Info_SetValueForKey_Big (info, var->name, var->string);
-	}
-	return info;
-}
-
 
 
 /*

@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/serverAPI.h>
 #include <shared/array.h>
 #include <shared/colorTable.h>
+#include <shared/infoString.h>
 
 static int entity_Target(lua_State * L)
 {

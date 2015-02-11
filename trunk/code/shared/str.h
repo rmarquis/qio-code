@@ -185,6 +185,19 @@ public:
 		this->len += addLen;
 		this->data[this->len] = 0;
 	}
+	void truncatePrintString(const char *s, u32 truncateLenght = 64) {
+		u32 sLen = strlen( s );
+		if(sLen <= truncateLenght) {
+			*this = s;
+			return;
+		}
+		// add the beginning of the string
+		this->setFromTo(s, s+( truncateLenght / 2 ) - 3 );
+		// skip the middle
+		this->append(" ... ");
+		// add the ending of the strng
+		this->append(s + sLen - ( truncateLenght / 2 ) + 3 );
+	}
 	char getLastChar() const {
 		if(len == 0)
 			return 0;

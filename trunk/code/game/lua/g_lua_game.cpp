@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../g_local.h"
 #include <api/serverAPI.h>
 #include <shared/colorTable.h>
+#include <shared/infoString.h>
 
 static int game_Print(lua_State * L)
 {

@@ -177,12 +177,6 @@ namespace fileFormats
     {
 
     };
-    public interface ISimpleStaticMeshBuilder
-    {
-       void beginSurface(string name);
-       void addTriangle(Vec3 a, Vec3 b, Vec3 c, Vec2 stA, Vec2 stB, Vec2 stC);
-       void endSurface();
-    };
     public class WavefrontOBJ : IVec3ArrayIterator, ISimpleStaticMeshBuilder
     {
         private List<Vec3> xyzs;

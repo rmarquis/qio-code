@@ -47,6 +47,9 @@
     <Compile Include="..\tShared\IBoneOrientations.cs">
       <Link>IBoneOrientations.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\ISimpleStaticMeshBuilder.cs">
+      <Link>ISimpleStaticMeshBuilder.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\IVec3ArrayIterator.cs">
       <Link>IVec3ArrayIterator.cs</Link>
     </Compile>

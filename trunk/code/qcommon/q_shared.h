@@ -138,10 +138,6 @@ union floatInt_u {
 	unsigned int ui;
 };
 
-#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
-#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
-
-#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -153,15 +149,6 @@ union floatInt_u {
 
 #define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
 
-// the game guarantees that no string from the network will ever
-// exceed MAX_STRING_CHARS
-#define	MAX_STRING_CHARS	1024	// max length of a string passed to Cmd_TokenizeString
-#define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
-#define	MAX_TOKEN_CHARS		1024	// max length of an individual token
-
-#define	MAX_INFO_STRING		8192
-#define	MAX_INFO_KEY		8192
-#define	MAX_INFO_VALUE		8192
 
 #define	MAX_QPATH			256		// max length of a quake game pathname
 #ifdef PATH_MAX
@@ -219,10 +206,7 @@ MATHLIB
 #define BIGCHAR_WIDTH		16
 #define BIGCHAR_HEIGHT		16
 
-float	AngleMod(float a);
 float	LerpAngle (float from, float to, float frac);
-float	AngleSubtract( float a1, float a2 );
-void	AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 );
 
 float AngleNormalize360 ( float angle );
 float AngleNormalize180 ( float angle );
@@ -238,7 +222,6 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 void	COM_BeginParseSession( const char *name );
 char	*COM_Parse( char **data_p );
 char	*COM_ParseExt( char **data_p, bool allowLineBreak );
-//int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
 
 int Com_HexStrToInt( const char *str );
 
@@ -281,21 +264,7 @@ int Q_CountChar(const char *string, char tocount);
 
 char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
-#define TRUNCATE_LENGTH	64
-void Com_TruncateLongString( char *buffer, const char *s );
-
 //=============================================
-
-//
-// key / value info strings
-//
-char *Info_ValueForKey( const char *s, const char *key );
-void Info_RemoveKey( char *s, const char *key );
-void Info_RemoveKey_big( char *s, const char *key );
-void Info_SetValueForKey( char *s, const char *key, const char *value );
-void Info_SetValueForKey_Big( char *s, const char *key, const char *value );
-bool Info_Validate( const char *s );
-void Info_NextPair( const char **s, char *key, char *value );
 
 /*
 ==========================================================

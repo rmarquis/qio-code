@@ -68,6 +68,9 @@ public:
 	void applyKeyValues(const class entDefAPI_i *list);
 	void postEvent(int execTime, const char *eventName, const char *arg0 = 0, const char *arg1 = 0, const char *arg2 = 0, const char *arg3 = 0);
 	void removeAfterDelay(int delay);
+	virtual const char *getRenderModelName() const {
+		return "";
+	}
 
 	// maybe I should put those functions in ModelEntity...
 	void link();

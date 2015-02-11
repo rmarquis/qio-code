@@ -37,6 +37,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/materialSystemAPI.h>
 #include <api/editorAPI.h>
 #include <shared/colorTable.h>
+#include <shared/str.h>
+#include <shared/infoString.h>
 
 #pragma comment(lib,"winmm.lib") 
 #pragma comment(lib,"opengl32.lib") 
@@ -2305,11 +2307,11 @@ PrintCvarMatches
 ===============
 */
 static void PrintCvarMatches( const char *s ) {
-	char value[ TRUNCATE_LENGTH ];
+	str value;
 
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( "    %s = \"%s\"\n", s, value );
+		value.truncatePrintString(Cvar_VariableString( s ),64);
+		Com_Printf( "    %s = \"%s\"\n", s, value.c_str() );
 	}
 }
 

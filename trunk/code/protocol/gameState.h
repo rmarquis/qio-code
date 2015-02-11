@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2012-2014 V.
 
 This file is part of Qio source code.
 

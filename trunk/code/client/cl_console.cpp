@@ -316,6 +316,16 @@ void Cmd_CompleteMDLPPName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "mdlpp", 0, 0, false, false );
 	}
 }
+/*
+==================
+Cmd_CompleteMDLName
+==================
+*/
+void Cmd_CompleteMDLName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "mdl", 0, 0, false, false );
+	}
+}
 
 /*
 ==================
@@ -398,6 +408,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "physics_spawn", Cmd_CompleteModelName );
 	Cmd_AddCommand ("mdlpp_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdlpp_spawn", Cmd_CompleteMDLPPName );
+	Cmd_AddCommand ("mdl_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "mdl_spawn", Cmd_CompleteMDLName );
 	Cmd_AddCommand ("cg_testEmitter", 0);
 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
 	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);

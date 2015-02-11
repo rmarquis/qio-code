@@ -386,6 +386,10 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 			delete sf;
 		} else if(g_modelLoader->isSkelModelFile(modName)) {
 			return CM_RegisterSkelModel(modName);
+		} else if(!stricmp(ext,"phy")) {
+			return CM_LoadModelFromPHYFile(modName);
+		} else {
+			g_core->RedWarning("CM_RegisterModel: %s has unknown extension\n",modName);
 		}
 	}
 	return 0;

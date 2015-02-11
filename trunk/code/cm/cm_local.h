@@ -33,4 +33,7 @@ bool CM_TraceWorldRay(class trace_c &tr);
 bool CM_TraceWorldSphere(class trace_c &tr);
 bool CM_TraceWorldAABB(class trace_c &tr);
 
+// cm_phy.cpp - Source Engine .phy support
+class cMod_i *CM_LoadModelFromPHYFile(const char *fname);
+
 #endif // __CM_LOCAL_H__

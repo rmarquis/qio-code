@@ -24,6 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <shared/colorTable.h>
 
+#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
+#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
+
 #define INDEX_FILE_EXTENSION ".index.dat"
 
 #define MAX_RIFF_CHUNKS 16

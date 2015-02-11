@@ -34,6 +34,9 @@ DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_deathmatch);
 DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_axis);
 DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_allied);
 // NOTE: this is confusing... https://developer.valvesoftware.com/wiki/Info_player_allies
+// CSS spawnpoints:
+DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_counterterrorist);
+DEFINE_CLASS_ALIAS(InfoPlayerStart, info_player_terrorist);
 
 
 

@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <shared/colorTable.h>
+#include <shared/infoString.h>
 
 /*
 =============================================================================
@@ -2819,16 +2820,6 @@ bool FS_ComparePaks( char *neededpaks, int len, bool dlstring ) {
 		// Ok, see if we have this pak file
 		havepak = false;
 
-//		// never autodownload any of the id paks
-//		if(FS_idPak(fs_serverReferencedPakNames[i], BASEGAME, NUM_ID_PAKS)
-//#ifndef STANDALONE
-//		   || FS_idPak(fs_serverReferencedPakNames[i], BASETA, NUM_TA_PAKS)
-//#endif
-//		  )
-//		{
-//			continue;
-//		}
-
 		// Make sure the server cannot make us write to non-quake3 directories.
 		if(FS_CheckDirTraversal(fs_serverReferencedPakNames[i]))
 		{
@@ -3014,12 +3005,18 @@ static void FS_Startup( const char *gameName )
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
+	//FS_AddGameDirectory("E:/GAMES/Quake3/quake3","baseq3");
+	//FS_AddGameDirectory("E:/ENGINES/xreal-svn-3996-trunk/xreal","base");
+	//FS_AddGameDirectory("E:/GAMES/q4f","baseq4f");
+	//FS_AddGameDirectory("E:/GAMES/Doom3","base");
+	FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","cstrike");
+	FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","hl2");
+
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {
 		FS_AddGameDirectory( fs_basepath->string, gameName );
 	}
 	// fs_homepath is somewhat particular to *nix systems, only add if relevant
-	
 	#ifdef MACOS_X
 	fs_apppath = Cvar_Get ("fs_apppath", Sys_DefaultAppPath(), CVAR_INIT|CVAR_PROTECTED );
 	// Make MacOSX also include the base path included with the .app bundle
@@ -3088,7 +3085,7 @@ Servers with sv_pure set will get this string and pass it to clients.
 =====================
 */
 const char *FS_LoadedPakChecksums( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
 	info[0] = 0;
@@ -3114,7 +3111,7 @@ Servers with sv_pure set will get this string and pass it to clients.
 =====================
 */
 const char *FS_LoadedPakNames( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
 	info[0] = 0;
@@ -3144,7 +3141,7 @@ back to the server.
 =====================
 */
 const char *FS_LoadedPakPureChecksums( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
 	info[0] = 0;
@@ -3170,7 +3167,7 @@ The server will send this to the clients so they can check which files should be
 =====================
 */
 const char *FS_ReferencedPakChecksums( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t *search;
 
 	info[0] = 0;
@@ -3199,7 +3196,7 @@ The string has a specific order, "cgame ui @ ref1 ref2 ref3 ..."
 =====================
 */
 const char *FS_ReferencedPakPureChecksums( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 	int nFlags, numPaks, checksum;
 
@@ -3244,7 +3241,7 @@ The server will send this to the clients so they can check which files should be
 =====================
 */
 const char *FS_ReferencedPakNames( void ) {
-	static char	info[BIG_INFO_STRING];
+	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
 	info[0] = 0;

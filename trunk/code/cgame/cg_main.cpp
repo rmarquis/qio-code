@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include <shared/infoString.h>
 
 cg_t				cg;
 cgs_t				cgs;

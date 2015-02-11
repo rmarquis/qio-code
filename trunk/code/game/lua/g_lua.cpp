@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
+#include <shared/infoString.h>
 
 #define MAX_LUAFILE 32768
 

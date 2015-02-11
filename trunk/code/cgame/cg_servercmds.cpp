@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <api/coreAPI.h>
 #include <shared/str.h>
+#include <shared/infoString.h>
 
 
 /*
@@ -167,7 +168,9 @@ static void CG_TestBulletAttack() {
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 8.f;
 	centity_s *hit = tr.getHitCGEntity();
-	if(hit == &cg_entities[ENTITYNUM_WORLD]) {
+	if(hit == 0) {
+		CG_Printf("CG_TestBulletAttack: hit is NULL\n");
+	} else if(hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_TestBulletAttack: hit Worldspawn\n");
 		if(cg_debugDrawBulletAttack.getInt()) {
 			rf->addDebugLine(tr.getHitPos(),tr.getHitPos() + radius * tr.getHitPlaneNormal(),vec3_c(1,0,0),5.f);

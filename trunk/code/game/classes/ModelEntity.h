@@ -71,7 +71,7 @@ protected:
 	int findBoneDamageZone(int boneNum) const;
 	const char *getDamageZoneName(int zoneNum) const;
 	void printDamageZones() const;
-	const char *getRenderModelName() const {
+	virtual const char *getRenderModelName() const {
 		return renderModelName;
 	}
 public:

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/BaseEntity.h"
 #include "classes/Player.h"
 #include <api/serverAPI.h>
+#include <shared/infoString.h>
 
 /*
 =========================================================================

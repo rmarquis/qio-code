@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <protocol/gameState.h>
 #include <protocol/userCmd.h>
 #include <api/vfsAPI.h>
+#include <shared/infoString.h>
 
 #ifdef USE_CURL
 #include "cl_curl.h"
