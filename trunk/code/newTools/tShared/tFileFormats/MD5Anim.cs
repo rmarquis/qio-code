@@ -61,6 +61,13 @@ namespace fileFormats
     {
         private BoneOrientation [] ors;
 
+        public BoneOrientations()
+        {
+        }
+        public BoneOrientations(int c)
+        {
+            this.allocBones(c);
+        }
         public Quat getBoneQuat(int boneIndex)
         {
             return ors[boneIndex].getQuat();
@@ -450,14 +457,14 @@ namespace fileFormats
 
                     return true;
                 }
-                int firstComponent;
-                if (p.readInt(out firstComponent))
+                int componentBits;
+                if (p.readInt(out componentBits))
                 {
 
                     return true;
                 }
-                int componentBits;
-                if (p.readInt(out componentBits))
+                int firstComponent;
+                if (p.readInt(out firstComponent))
                 {
 
                     return true;

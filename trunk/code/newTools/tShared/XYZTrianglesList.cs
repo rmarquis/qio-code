@@ -32,7 +32,7 @@ using tMath;
 
 namespace shared
 {
-    class XYZTrianglesList : IXYZTrianglesIterator
+    class XYZTrianglesList : IXYZTrianglesIterator, ISimpleStaticMeshBuilder
     {
         private List<XYZTriangle> list;
 
@@ -44,6 +44,18 @@ namespace shared
         {
             list.Add(new XYZTriangle(a, b, c));
         }
+        //ISimpleStaticMeshBuilder begin
+        public void beginSurface(string name)
+        {
+        }
+        public void addTriangle(Vec3 a, Vec3 b, Vec3 c, Vec2 stA, Vec2 stB, Vec2 stC)
+        {
+            list.Add(new XYZTriangle(a, b, c));
+        }
+        public void endSurface()
+        {
+        }
+        // ISimpleStaticMeshBuilder end
         public Vec3 getXYZ(int i)
         {
             int triangle = i / 3;
@@ -62,6 +74,11 @@ namespace shared
         public void calcTriangleNormal(int i, out Vec3 normal)
         {
             list[i].calcTriangleNormal(out normal);
+        }
+
+        public void clear()
+        {
+            list.Clear();
         }
     }
 }

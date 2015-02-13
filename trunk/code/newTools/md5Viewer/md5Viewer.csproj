@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2C631FD2-F373-4BEF-B26E-F0DEBCC80E40}</ProjectGuid>
+    <ProjectGuid>{6D5ED17B-5324-4A22-A11B-A998EEAC7122}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>objViewer</RootNamespace>
-    <AssemblyName>objViewer</AssemblyName>
+    <RootNamespace>md5Viewer</RootNamespace>
+    <AssemblyName>md5Viewer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,8 +23,10 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,6 +37,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -45,6 +47,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -114,50 +117,20 @@
     <Compile Include="..\tShared\Camera.cs">
       <Link>Camera.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\ConvexVerticesBuilder.cs">
-      <Link>ConvexVerticesBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\ConvexVolumeArrayToWaveFrontObjIterator.cs">
-      <Link>ConvexVolumeArrayToWaveFrontObjIterator.cs</Link>
-    </Compile>
     <Compile Include="..\tShared\IBoneOrientations.cs">
       <Link>IBoneOrientations.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IConvexVolume.cs">
-      <Link>IConvexVolume.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IConvexVolumeArrayIterator.cs">
-      <Link>IConvexVolumeArrayIterator.cs</Link>
     </Compile>
     <Compile Include="..\tShared\ISimpleStaticMeshBuilder.cs">
       <Link>ISimpleStaticMeshBuilder.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\IVec3ArrayIterator.cs">
-      <Link>IVec3ArrayIterator.cs</Link>
-    </Compile>
     <Compile Include="..\tShared\IXYZTrianglesIterator.cs">
       <Link>IXYZTrianglesIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\IXYZUVTrianglesIterator.cs">
-      <Link>IXYZUVTrianglesIterator.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\KeyValuesList.cs">
-      <Link>KeyValuesList.cs</Link>
     </Compile>
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\PolygonVerticesMerger.cs">
-      <Link>PolygonVerticesMerger.cs</Link>
-    </Compile>
     <Compile Include="..\tShared\tDirectx\DXVertexBufferXYZNormals.cs">
       <Link>DXVertexBufferXYZNormals.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\tFileFormats\MapFile.cs">
-      <Link>MapFile.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\tFileFormats\MD3Model.cs">
-      <Link>MD3Model.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tFileFormats\MD5Anim.cs">
       <Link>MD5Anim.cs</Link>
@@ -165,14 +138,8 @@
     <Compile Include="..\tShared\tFileFormats\MD5Mesh.cs">
       <Link>MD5Mesh.cs</Link>
     </Compile>
-    <Compile Include="..\tShared\tFileFormats\WavefrontOBJ.cs">
-      <Link>WavefrontOBJ.cs</Link>
-    </Compile>
     <Compile Include="..\tShared\tMath\AABB.cs">
       <Link>AABB.cs</Link>
-    </Compile>
-    <Compile Include="..\tShared\tMath\Plane.cs">
-      <Link>Plane.cs</Link>
     </Compile>
     <Compile Include="..\tShared\tMath\Quaternion.cs">
       <Link>Quaternion.cs</Link>
@@ -189,25 +156,16 @@
     <Compile Include="..\tShared\XYZTrianglesList.cs">
       <Link>XYZTrianglesList.cs</Link>
     </Compile>
-    <Compile Include="FormObjViewer.cs">
+    <Compile Include="FormMD5Viewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormObjViewer.Designer.cs">
-      <DependentUpon>FormObjViewer.cs</DependentUpon>
+    <Compile Include="FormMD5Viewer.Designer.cs">
+      <DependentUpon>FormMD5Viewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormPasteBrushText.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormPasteBrushText.Designer.cs">
-      <DependentUpon>FormPasteBrushText.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProgramObjViewer.cs" />
+    <Compile Include="ProgramMD5Viewer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FormObjViewer.resx">
-      <DependentUpon>FormObjViewer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormPasteBrushText.resx">
-      <DependentUpon>FormPasteBrushText.cs</DependentUpon>
+    <EmbeddedResource Include="FormMD5Viewer.resx">
+      <DependentUpon>FormMD5Viewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -217,7 +175,9 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -229,7 +189,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="AppMD5Viewer.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

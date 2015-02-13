@@ -17,7 +17,7 @@ namespace shared
 
         public Camera()
         {
-            radius = 10.0;
+            radius = 150.0;
             updateCameraData();
         }
         private void updateCameraData()
