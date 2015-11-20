@@ -58,6 +58,7 @@ shared
  - autoCvar_c class for easier ConVars usage
  
  q3radiant
+ - merged codebase with main engine; type "editor" in console to run (Doom3 style)
  - ???
  
  q3map
