@@ -1,0 +1,71 @@
+// Vodin: .def files for RTCW weapons.
+// You still need RTCW pk3's (with .mdc, materials and textures) to spawn them
+
+entityDef weapon_rtcw_mp40
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Weapon"
+
+	"model_world"				"models/weapons2/mp40/mp40.mdc"
+	"model_view"				"models/weapons2/mp40/v_mp40.mdc"
+	
+	"weaponname"				"RTCW MP40"
+}
+
+
+
+entityDef weapon_rtcw_fg42
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Weapon"
+
+	"model_world"				"models/weapons2/fg42/fg42.mdc"
+	"model_view"				"models/weapons2/fg42/v_fg42.mdc"
+	
+	"weaponname"				"RTCW FG42"
+}
+
+
+entityDef weapon_rtcw_panzerfaust
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_ROCKET_LAUNCHER"
+
+	"model_world"				"models/weapons2/panzerfaust/pf.mdc"
+	"model_view"				"models/weapons2/panzerfaust/v_pf.mdc"
+	
+	"weaponname"				"RTCW Panzerfaust"
+}
+
+
+entityDef weapon_rtcw_tesla
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Weapon"
+
+	"model_world"				"models/weapons2/tesla/tesla.mdc"
+	"model_view"				"models/weapons2/tesla/v_tesla.mdc"
+	
+	"weaponname"				"RTCW Tesla"
+}
+
+
+
+

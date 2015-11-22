@@ -1,0 +1,86 @@
+// Vodin: .def files for Quake3 weapons.
+// You still need Q3 pk3's (with .md3, materials and textures) to spawn them
+
+entityDef weapon_quake3_plasmagun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_PLASMAGUN"
+
+	"model_world"				"models/weapons2/plasma/plasma.md3"
+	"model_view"				"models/weapons2/plasma/plasma.md3"
+	
+	"weaponname"				"Q3 Plasmagun"
+}
+
+entityDef weapon_quake3_railgun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_RAILGUN"
+
+	"model_world"				"models/weapons2/railgun/railgun.md3"
+	"model_view"				"models/weapons2/railgun/railgun.md3"
+	
+	"weaponname"				"Q3 Railgun"
+}
+
+entityDef weapon_quake3_rocketlauncher
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_ROCKET_LAUNCHER"
+
+	"model_world"				"models/weapons2/rocketl/rocketl.md3"
+	"model_view"				"models/weapons2/rocketl/rocketl.md3"
+	
+	"weaponname"				"Q3 RocketLauncher"
+}
+
+entityDef weapon_quake3_shotgun
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_SHOTGUN"
+
+	"model_world"				"models/weapons2/shotgun/shotgun.md3"
+	"model_view"				"models/weapons2/shotgun/shotgun.md3"
+	
+	"weaponname"				"Q3 Shotgun"
+}
+
+
+entityDef weapon_quake3_grenadelauncher
+{
+	// TODO: real size
+	"size"						"32 32 32"
+	
+	"viewoffset"				"5 -5 -10"
+	
+	"spawnclass"				"Q3Weapon"
+	"giTag"						"WP_GRENADE_LAUNCHER"
+
+	"model_world"				"models/weapons2/grenadel/grenadel.md3"
+	"model_view"				"models/weapons2/grenadel/grenadel.md3"
+	
+	"weaponname"				"Q3 Grenade Launcher"
+}
+
+
+
