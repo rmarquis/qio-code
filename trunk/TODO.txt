@@ -1,0 +1,10 @@
+- GUI (Dushan)
+- new sound system (Dushan)
+- particle editor (Dushan)
+- Doom3 Articulated Figures aka Ragdolls editor 
+- more RTCW support?
+- extend support for other game contents?
+- extend C# Toolset?
+- improve built-in Radiant clone 
+- port AAS navigation and AAS compiler (as a separate modules)
+- maybe recast navigation?
