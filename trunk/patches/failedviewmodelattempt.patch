@@ -1,0 +1,445 @@
+Index: api/rEntityAPI.h
+===================================================================
+--- api/rEntityAPI.h	(revision 307)
++++ api/rEntityAPI.h	(working copy)
+@@ -31,6 +31,8 @@
+ 	virtual void setAngles(const class vec3_c &newAngles) = 0;
+ 	virtual void setModel(class rModelAPI_i *mod) = 0;
+ 	virtual void setAnim(const class skelAnimAPI_i *anim) = 0;
++	virtual void setAnim(const char *animName) = 0;
++	virtual void setAnimLoopLastFrame(bool bLoopLastFrame) = 0;
+ 	virtual void setThirdPersonOnly(bool bOn) = 0;
+ 	virtual void setFirstPersonOnly(bool bOn) = 0;
+ 	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;
+@@ -41,6 +43,8 @@
+ 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex) = 0;
+ 	virtual void setSkin(const char *skinName) = 0;
+ 
++	virtual void setAnimLoopCallback(void (*newCallback)(class rEntityAPI_i *ent, const char *prevAnimName)) = 0;
++
+ 	virtual class rModelAPI_i *getModel() const = 0;
+ 	virtual const char *getModelName() const = 0;
+ 	virtual const class axis_c &getAxis() const = 0;
+Index: cgame/cg_viewModel.cpp
+===================================================================
+--- cgame/cg_viewModel.cpp	(revision 384)
++++ cgame/cg_viewModel.cpp	(working copy)
+@@ -40,8 +40,11 @@
+ static aCvar_c cg_printCurViewModelName("cg_printCurViewModelName","0");
+ static aCvar_c cg_printCurViewModelAnimationCount("cg_printCurViewModelAnimationCount","0");
+ static aCvar_c cg_forceViewModelAnimationIndex("cg_forceViewModelAnimationIndex","none");
++static aCvar_c cg_forceViewModelAnimationName("cg_forceViewModelAnimationName","none");
+ 
+ static class rEntityAPI_i *cg_viewModelEntity = 0;
++static class rModelAPI_i *cg_viewModel = 0;
++int cg_viewModelEntityNum = -1;
+ 
+ void CG_FreeViewModelEntity() {
+ 	if(cg_viewModelEntity == 0)
+@@ -48,6 +51,7 @@
+ 		return;
+ 	rf->removeEntity(cg_viewModelEntity);
+ 	cg_viewModelEntity = 0;
++	cg_viewModel = 0;
+ }
+ void CG_AllocViewModelEntity() {
+ 	if(cg_viewModelEntity)
+@@ -54,60 +58,94 @@
+ 		return;
+ 	cg_viewModelEntity = rf->allocEntity();
+ }
++enum {
++	VMS_NONE,
++	VMS_RAISE,
++	VMS_IDLE,
++	VMS_PUTAWAY,
++	VMS_DELETEME,
++} viewModelState = VMS_NONE;
+ 
++void CG_OnViewModelAnimLoop(class rEntityAPI_i *ent, const char *prevAnimName) {
++	if(viewModelState == VMS_RAISE) {
++		ent->setAnim("idle");
++		ent->setAnimLoopLastFrame(false);
++		viewModelState = VMS_IDLE;
++	}
++	if(viewModelState == VMS_PUTAWAY) {
++		viewModelState = VMS_DELETEME;
++	}
++}
+ void CG_RunViewModel() {
+ 	int viewModelEntity = cg.snap->ps.curWeaponEntNum;
+ 	if(cg_thirdPerson.integer) {
+ 		CG_FreeViewModelEntity();
++		viewModelState = VMS_NONE;
+ 		if(viewModelEntity != ENTITYNUM_NONE && cg_entities[viewModelEntity].rEnt) {
+ 			cg_entities[viewModelEntity].rEnt->showModel();
+ 		}
+ 		return;
+ 	}
+-	if(viewModelEntity == ENTITYNUM_NONE) {
++	if(viewModelState == VMS_DELETEME) {
+ 		CG_FreeViewModelEntity();
+-		return;
++		viewModelState = VMS_NONE;
+ 	}
+-	if(cg_entities[viewModelEntity].rEnt) {
+-		//cg_entities[viewModelEntity].rEnt->hideModel();
+-		cg_entities[viewModelEntity].rEnt->setThirdPersonOnly(true);
++	rModelAPI_i *newViewModel;
++	if(viewModelEntity != cg_viewModelEntityNum) {
++		if(viewModelState == VMS_NONE) {
++			cg_viewModelEntityNum = viewModelEntity;
++		} else {
++			viewModelState = VMS_PUTAWAY;
++			cg_viewModelEntity->setAnim("putaway");
++			cg_viewModelEntity->setAnimLoopLastFrame(true);
++		}
+ 	}
++	if(viewModelEntity != ENTITYNUM_NONE) {
++		if(cg_entities[viewModelEntity].rEnt) {
++			//cg_entities[viewModelEntity].rEnt->hideModel();
++			cg_entities[viewModelEntity].rEnt->setThirdPersonOnly(true);
++		}
+ 
++		if(cg.snap->ps.customViewRModelIndex) {
++			newViewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
++		} else {
++			if(cg_entities[viewModelEntity].rEnt) {
++				newViewModel = cg_entities[viewModelEntity].rEnt->getModel();
++			} else {
++				newViewModel = 0;
++			}
++		}
++	} else {
++		newViewModel = 0;
++		if(cg_viewModel == 0)
++			return;
++	}
++	if(newViewModel) {
++		if(cg_viewModel == 0) {
++			cg_viewModel = newViewModel;
++		}
++	}
++	
+ 	// local weapons offset (affected by cg_gunX/Y/Z cvars)
+ 	vec3_c localOfs(0,0,0);
+ 	// local weapon rotation (affected by cg_gunRotX/Y/Z cvars)
+ 	vec3_c localRot(0,0,0);
+-
+-	rModelAPI_i *viewModel;
+-	if(cg.snap->ps.customViewRModelIndex) {
+-		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
+-	} else {
+-		if(cg_entities[viewModelEntity].rEnt) {
+-			viewModel = cg_entities[viewModelEntity].rEnt->getModel();
+-		} else {
+-			viewModel = 0;
+-		}
+-	}
+-	if(viewModel == 0) {
+-		CG_FreeViewModelEntity();
+-		return;
+-	}
+ 	// add hardcoded gun offset
+-	if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+-		|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+-		|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+-		|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
++	if(!stricmp(cg_viewModel->getName(),"models/weapons2/plasma/plasma.md3")
++		|| !stricmp(cg_viewModel->getName(),"models/weapons2/railgun/railgun.md3")
++		|| !stricmp(cg_viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
++		|| !stricmp(cg_viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+ 		// it could be better for grenade launcher
+-		|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
++		|| !stricmp(cg_viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
+ 		localOfs.set(5,-5,-10);
+ 	}
+ 	// Half Life2 physgun (for weapon_physgun)
+-	if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
++	if(!stricmp(cg_viewModel->getName(),"models/weapons/w_physics.mdl")) {
+ 		// "w_*" is a worldmodel
+ 		// set 90 yaw rotation (around Z axis)
+ 		localRot.set(0,0,90);
+ 		localOfs.set(5,-5,-10);
+-	} else if(!stricmp(viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
++	} else if(!stricmp(cg_viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
+ 		// "v_*" is a viewmodel
+ #if 0
+ 		localRot.set(0,15,90);
+@@ -119,10 +157,10 @@
+ 	}
+ 
+ 	if(cg_printCurViewModelName.getInt()) {
+-		g_core->Print("Current viewmodel name: %s\n",viewModel->getName());
++		g_core->Print("Current viewmodel name: %s\n",cg_viewModel->getName());
+ 	}
+ 	if(cg_printCurViewModelAnimationCount.getInt()) {
+-		g_core->Print("Current viewmodel animation count: %i\n",viewModel->getNumAnims());
++		g_core->Print("Current viewmodel animation count: %i\n",cg_viewModel->getNumAnims());
+ 	}
+ 
+ 	CG_AllocViewModelEntity();
+@@ -159,11 +197,27 @@
+ 	cg_viewModelEntity->setAngles(angles);
+ 	cg_viewModelEntity->setFirstPersonOnly(true);
+ 	// set viewmodel model
+-	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
+-	cg_viewModelEntity->setModel(viewModel);
++	//rModelAPI_i *cg_viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
++	cg_viewModelEntity->setModel(cg_viewModel);
++
++	if(viewModelState == VMS_NONE) {
++		viewModelState = VMS_RAISE;
++		cg_viewModelEntity->setAnim("raise");
++		cg_viewModelEntity->setAnimLoopLastFrame(true);
++	}
++
++	printf("State: %i\n",viewModelState);
++
+ 	if(stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
+ 		int index = cg_forceViewModelAnimationIndex.getInt();
+ 		cg_viewModelEntity->setDeclModelAnimLocalIndex(index);
++		cg_viewModelEntity->setAnimLoopCallback(0);
++	} else if(stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
++		const char *animName = cg_forceViewModelAnimationName.getStr();
++		cg_viewModelEntity->setAnim(animName);
++		cg_viewModelEntity->setAnimLoopCallback(0);
++	} else {
++		cg_viewModelEntity->setAnimLoopCallback(CG_OnViewModelAnimLoop);
+ 	}
+ }
+ 
+Index: game/classes/Weapon.cpp
+===================================================================
+--- game/classes/Weapon.cpp	(revision 384)
++++ game/classes/Weapon.cpp	(working copy)
+@@ -41,6 +41,8 @@
+ 	delayBetweenShots = 250;
+ 	lastShotTime = 0;
+ 	invWeaponDecl = 0;
++	clipSize = 1;
++	curClipSize = 1;
+ }
+ Weapon::~Weapon() {
+ 
+@@ -52,7 +54,7 @@
+ 	if(!stricmp(key,"model_view")) {
+ 		// use this model for first person view
+ 		this->setViewModel(value);
+-	} else if(invWeaponDecl && !stricmp(key,"model")) {
++	} else if(invWeaponDecl && !stricmp(key,"model") && model_view.length()==0) {
+ 		// "model" keyword inside a "inv_weapon" entdefs sets the weapons viewModel
+ 		this->setViewModel(value);
+ 	} else if(!stricmp(key,"inv_weapon")) {	
+@@ -63,6 +65,12 @@
+ 			applyKeyValues(invWeaponDecl->getEntDefAPI());
+ 			invWeaponDecl = 0;
+ 		}
++	} else if(!stricmp(key,"clipSize")) {
++		clipSize = atoi(value);
++	} else if(!stricmp(key,"continuousFire")) {
++	} else if(!stricmp(key,"ammoRequired")) {
++	} else if(!stricmp(key,"ammoType")) {
++
+ 	} else {
+ 		ModelEntity::setKeyValue(key,value);
+ 	}
+Index: game/classes/Weapon.h
+===================================================================
+--- game/classes/Weapon.h	(revision 384)
++++ game/classes/Weapon.h	(working copy)
+@@ -28,6 +28,13 @@
+ 
+ #include "ModelEntity.h"
+ 
++enum weaponState_e {
++	WP_RAISE,
++	WP_PULLOUT,
++	WP_IDLE,
++	WP_RELOADING,
++};
++
+ class Weapon : public ModelEntity {
+ 	// custom viewmodel for Doom3-style weapons
+ 	str model_view;
+@@ -36,6 +43,8 @@
+ 	u32 delayBetweenShots;
+ 	u32 lastShotTime;
+ 	class entityDeclAPI_i *invWeaponDecl;
++	int clipSize;
++	int curClipSize;
+ protected:
+ 	safePtr_c<Player> owner;
+ 
+Index: renderer/frontend/rf_entities.cpp
+===================================================================
+--- renderer/frontend/rf_entities.cpp	(revision 384)
++++ renderer/frontend/rf_entities.cpp	(working copy)
+@@ -90,6 +90,7 @@
+ 	absSilChangeCount = 0;
+ 	//skinMatList = 0;
+ 	bCenterLightSampleValid = false;
++	animLoopCallback = 0;
+ }
+ rEntityImpl_c::~rEntityImpl_c() {
+ 	RFL_RemoveAllReferencesToEntity(this);
+@@ -256,6 +257,22 @@
+ 		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec);
+ 	}
+ }
++void rEntityImpl_c::setAnim(const char *animName) {
++	if(this->model == 0)
++		return; // ignore
++	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
++	if(dm == 0)
++		return;
++	int animIndex = dm->getAnimIndexForAnimAlias(animName);
++	if(animIndex < 0)
++		return;
++	this->setDeclModelAnimLocalIndex(animIndex);
++}
++void rEntityImpl_c::setAnimLoopLastFrame(bool bLoopLastFrame) {
++	if(skelAnimCtrl == 0)
++		return;
++	skelAnimCtrl->setAnimLoopLastFrame(bLoopLastFrame);
++}
+ void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex) {
+ 	if(model->isDeclModel() == false) {
+ 		g_core->Print("rEntityImpl_c::setDeclModelAnimLocalIndex: called on non-decl model %s\n",model->getName());
+@@ -291,6 +308,9 @@
+ 	this->skinName = newSkinName;
+ 	updateModelSkin();
+ }
++void rEntityImpl_c::setAnimLoopCallback(void (*newCallback)(class rEntityAPI_i *ent, const char *prevAnimName)) {
++	animLoopCallback = newCallback;
++}
+ void rEntityImpl_c::hideModel() {
+ 	bHidden = true;
+ }
+@@ -423,7 +443,12 @@
+ 				}
+ 			}
+ 		} else if(skelAnimCtrl) {
+-			skelAnimCtrl->runAnimController(rf_curTimeMsec);
++			const char *animName = skelAnimCtrl->getAnim()->getName();
++			if(skelAnimCtrl->runAnimController(rf_curTimeMsec)) {
++				if(animLoopCallback) {
++					animLoopCallback(this,animName);
++				}
++			}
+ 			skelAnimCtrl->updateModelAnimation(skelModel);
+ 			instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+ 			// if model needs normals
+Index: renderer/frontend/rf_entities.h
+===================================================================
+--- renderer/frontend/rf_entities.h	(revision 374)
++++ renderer/frontend/rf_entities.h	(working copy)
+@@ -72,6 +72,7 @@
+ 	bool bCenterLightSampleValid;
+ 	// areas touching entity absBounds
+ 	arraySTD_c<u32> touchingAreas;
++	void (*animLoopCallback)(class rEntityAPI_i *ent, const char *prevAnimName);
+ 
+ 	// this is called when a model skin, or a model itself is changed
+ 	void updateModelSkin();
+@@ -85,6 +86,8 @@
+ 	virtual void setAngles(const vec3_c &newAngles);
+ 	virtual void setModel(class rModelAPI_i *newModel);
+ 	virtual void setAnim(const class skelAnimAPI_i *anim);
++	virtual void setAnim(const char *animName);
++	virtual void setAnimLoopLastFrame(bool bLoopLastFrame);
+ 	virtual void setThirdPersonOnly(bool bOn) {
+ 		bThirdPersonOnly = bOn;
+ 	}
+@@ -103,6 +106,7 @@
+ 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
+ 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
+ 	virtual void setSkin(const char *skinName);
++	virtual void setAnimLoopCallback(void (*newCallback)(class rEntityAPI_i *ent, const char *prevAnimName));
+ 	virtual void hideModel();
+ 	virtual void showModel();
+ 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
+Index: shared/animationController.cpp
+===================================================================
+--- shared/animationController.cpp	(revision 275)
++++ shared/animationController.cpp	(working copy)
+@@ -31,6 +31,9 @@
+ aCvar_c anim_printAnimCtrlTime("anim_printAnimCtrlTime","0");
+ aCvar_c anim_printAnimChange("anim_printAnimChange","0");
+ 
++skelAnimController_c::skelAnimController_c() {
++	bLoopCurAnimLastFrame = false;
++}
+ void skelAnimController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
+ 	if(anim->getNumFrames() == 1) {
+ 		out.from = 0;
+@@ -90,20 +93,23 @@
+ 	blendTime = 0.1f;
+ 	nextAnim = newAnim;
+ }
+-void skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
++bool skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
+ 	int deltaTime = curGlobalTimeMSec - lastUpdateTime;
+ 	if(deltaTime == 0)
+-		return;
++		return false;
++	bool bLooped = false;
+ 	lastUpdateTime = curGlobalTimeMSec;
+ 	float deltaTimeSec = float(deltaTime) * 0.001f;
+ 	time += deltaTimeSec;
+ 	if(anim == nextAnim) {
+-		if(anim->getBLoopLastFrame()) {
+-			return; // dont loop this animation, just stop at the last frame
++		if(anim->getBLoopLastFrame() || bLoopCurAnimLastFrame) {
++			bLooped = true;
++			return true; // dont loop this animation, just stop at the last frame
+ 		} else {
+ 			while(time > anim->getTotalTimeSec()) {
+ 			//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
+ 				time -= anim->getTotalTimeSec();
++				bLooped = true;
+ 			}
+ 			if(anim_printAnimCtrlTime.getInt()) {
+ 				g_core->Print("Final time: %f\n",time);
+@@ -115,6 +121,7 @@
+ 			anim = nextAnim;
+ 		}
+ 	}
++	return bLooped;
+ }
+ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones) {
+ 	if(anim == nextAnim) {
+Index: shared/animationController.h
+===================================================================
+--- shared/animationController.h	(revision 275)
++++ shared/animationController.h	(working copy)
+@@ -32,6 +32,7 @@
+ 	float time; // in seconds
+ 	const class skelAnimAPI_i *anim;
+ 	int lastUpdateTime;
++	bool bLoopCurAnimLastFrame;
+ 	// extra variables for blending between new and old animation
+ 	//singleAnimLerp_s oldState;
+ 	boneOrArray_c oldBonesState;
+@@ -43,12 +44,20 @@
+ 
+ 	static void getSingleLoopAnimLerpValuesForTime(struct singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time);
+ public:
++	skelAnimController_c();
+ 	void resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec);
+ 	void setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec);
+-	void runAnimController(int curGlobalTimeMSec);
++	bool runAnimController(int curGlobalTimeMSec);
+ 	void updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones);
+ 	void updateModelAnimation(const class skelModelAPI_i *skelModel);
+ 	const boneOrArray_c &getCurBones() const;
++	
++	const skelAnimAPI_i *getAnim() const {
++		return anim;
++	}
++	void setAnimLoopLastFrame(bool bNewLoopLastFrame) {
++		bLoopCurAnimLastFrame = bNewLoopLastFrame;
++	}
+ };
+ 
+ #endif // __ANIMATION_CONTROLLER_H__

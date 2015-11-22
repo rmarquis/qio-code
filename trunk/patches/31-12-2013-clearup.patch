@@ -1,0 +1,4332 @@
+Index: code/api/vfsAPI.h
+===================================================================
+--- code/api/vfsAPI.h	(revision 296)
++++ code/api/vfsAPI.h	(working copy)
+@@ -27,7 +27,22 @@
+ #define __VFSAPI_H__
+ 
+ #include "iFaceBase.h"
+-#include <qcommon/q_shared.h> // for filehandle
++
++typedef int		fileHandle_t;
++
++// mode parm for FS_FOpenFile
++typedef enum {
++	FS_READ,
++	FS_WRITE,
++	FS_APPEND,
++	FS_APPEND_SYNC
++} fsMode_t;
++
++typedef enum {
++	FS_SEEK_CUR,
++	FS_SEEK_END,
++	FS_SEEK_SET
++} fsOrigin_t;
+ 
+ #define VFS_API_IDENTSTR "VFSAPI0001"
+ 
+Index: code/cgame/cg_draw.cpp
+===================================================================
+--- code/cgame/cg_draw.cpp	(revision 409)
++++ code/cgame/cg_draw.cpp	(working copy)
+@@ -27,6 +27,7 @@
+ #include <api/coreAPI.h>
+ #include <api/clientAPI.h>
+ #include <api/rAPI.h>
++#include <shared/colorTable.h>
+ 
+ /*
+ ==================
+Index: code/cgame/cg_drawtools.cpp
+===================================================================
+--- code/cgame/cg_drawtools.cpp	(revision 409)
++++ code/cgame/cg_drawtools.cpp	(working copy)
+@@ -23,6 +23,7 @@
+ // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc
+ #include "cg_local.h"
+ #include <api/rAPI.h>
++#include <shared/colorTable.h>
+ 
+ /*
+ ================
+Index: code/cgame/cg_ents.cpp
+===================================================================
+--- code/cgame/cg_ents.cpp	(revision 408)
++++ code/cgame/cg_ents.cpp	(working copy)
+@@ -180,7 +180,7 @@
+ 		cent->lerpOrigin = mat.getOrigin();
+ 		if(cent->currentState.parentOffset.isAlmostZero() == false) {
+ 			matrix_c matAngles = mat;
+-			matAngles.setOrigin(vec3_origin);
++			matAngles.setOrigin(vec3_c(0,0,0));
+ 			vec3_c ofs;
+ 			matAngles.transformPoint(cent->currentState.parentOffset,ofs);
+ 			cent->lerpOrigin += ofs;
+@@ -216,29 +216,37 @@
+ 	if(cent->currentState.isEmitterActive()) {
+ 		// get emitter name (it might be a material name or Doom3 particleDecl name)
+ 		const char *emitterName = CG_ConfigString(CS_MATERIALS+cent->currentState.trailEmitterMaterial);
+-		// see if we have a Doom3 .prt decl for it
+-		class particleDeclAPI_i *prtDecl = g_declMgr->registerParticleDecl(emitterName);
+-		// if particle decl was not present, fall back to default simple emitter
+-		if(prtDecl == 0) {
+-			class mtrAPI_i *mat = cgs.gameMaterials[cent->currentState.trailEmitterMaterial];
+-			if(cent->emitter == 0) {
+-				cent->emitter = new emitterDefault_c(cg.time);
+-				rf->addCustomRenderObject(cent->emitter);
++		if(emitterName[0] == 0) {
++			g_core->RedWarning("CG_UpdateEntityEmitter: NULL entity emitter name\n");
++		} else {
++			// see if we have a Doom3 .prt decl for it
++			class particleDeclAPI_i *prtDecl = g_declMgr->registerParticleDecl(emitterName);
++			// if particle decl was not present, fall back to default simple emitter
++			if(prtDecl == 0) {
++				class mtrAPI_i *mat = cgs.gameMaterials[cent->currentState.trailEmitterMaterial];
++				// if we have a valid material
++				if(mat) {
++					// create a simple material-based emitter
++					if(cent->emitter == 0) {
++						cent->emitter = new emitterDefault_c(cg.time);
++						rf->addCustomRenderObject(cent->emitter);
++					}
++					cent->emitter->setMaterial(mat);
++				}
++			} else {
++				// create a Doom3 particle system emitter
++				if(cent->emitter == 0) {
++					cent->emitter = new emitterD3_c;;
++					rf->addCustomRenderObject(cent->emitter);
++				}	
++				cent->emitter->setParticleDecl(prtDecl);
+ 			}
+-			cent->emitter->setMaterial(mat);
+-		} else {
+-			// create a Doom3 particle system emitter
+-			if(cent->emitter == 0) {
+-				cent->emitter = new emitterD3_c;;
+-				rf->addCustomRenderObject(cent->emitter);
+-			}	
+-			cent->emitter->setParticleDecl(prtDecl);
++			cent->emitter->setOrigin(cent->lerpOrigin);
++			cent->emitter->setRadius(cent->currentState.trailEmitterSpriteRadius);
++			cent->emitter->setInterval(cent->currentState.trailEmitterInterval);
++
++			cent->emitter->updateEmitter(cg.time);
+ 		}
+-		cent->emitter->setOrigin(cent->lerpOrigin);
+-		cent->emitter->setRadius(cent->currentState.trailEmitterSpriteRadius);
+-		cent->emitter->setInterval(cent->currentState.trailEmitterInterval);
+-
+-		cent->emitter->updateEmitter(cg.time);
+ 	} else {
+ 		if(cent->emitter) {
+ 			delete cent->emitter;
+Index: code/cgame/cg_local.h
+===================================================================
+--- code/cgame/cg_local.h	(revision 409)
++++ code/cgame/cg_local.h	(working copy)
+@@ -174,7 +174,7 @@
+ 	//
+ 	class rModelAPI_i	*gameModels[MAX_MODELS];
+ 	class cMod_i		*gameCollModels[MAX_MODELS];
+-	sfxHandle_t		gameSounds[MAX_SOUNDS];
++	//sfxHandle_t		gameSounds[MAX_SOUNDS];
+ 	const class skelAnimAPI_i	*gameAnims[MAX_ANIMATIONS];
+ //	str gameAnimNames[MAX_ANIMATIONS];
+ 	const class afDeclAPI_i	*gameAFs[MAX_RAGDOLLDEFS];
+Index: code/cgame/cg_main.cpp
+===================================================================
+--- code/cgame/cg_main.cpp	(revision 358)
++++ code/cgame/cg_main.cpp	(working copy)
+@@ -335,7 +335,7 @@
+ 	for(u32 i = 0; i < MAX_SOUNDS; i++) {
+ 		const char *str = CG_ConfigString(CS_SOUNDS+i);
+ 		if(str && str[0]) {
+-			cgs.gameSounds[i] = 0;//snd->registerSound(str);
++//			cgs.gameSounds[i] = 0;//snd->registerSound(str);
+ 			c_soundsLoaded++;
+ 		}
+ 	}
+Index: code/cgame/cg_predict.cpp
+===================================================================
+--- code/cgame/cg_predict.cpp	(revision 183)
++++ code/cgame/cg_predict.cpp	(working copy)
+@@ -28,58 +28,7 @@
+ #include "cg_local.h"
+ #include <api/clientAPI.h>
+ 
+-static	int			cg_numSolidEntities;
+-static	centity_t	*cg_solidEntities[MAX_ENTITIES_IN_SNAPSHOT];
+-static	int			cg_numTriggerEntities;
+-static	centity_t	*cg_triggerEntities[MAX_ENTITIES_IN_SNAPSHOT];
+-
+ /*
+-====================
+-CG_BuildSolidList
+-
+-When a new cg.snap has been set, this function builds a sublist
+-of the entities that are actually solid, to make for more
+-efficient collision detection
+-====================
+-*/
+-void CG_BuildSolidList( void ) {
+-	
+-}
+-
+-/*
+-====================
+-CG_ClipMoveToEntities
+-
+-====================
+-*/
+-static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
+-							int skipNumber, int mask, trace_t *tr ) {
+-
+-}
+-
+-/*
+-================
+-CG_Trace
+-================
+-*/
+-void	CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+-					 int skipNumber, int mask ) {
+-
+-}
+-
+-/*
+-================
+-CG_PointContents
+-================
+-*/
+-int		CG_PointContents( const vec3_t point, int passEntityNum ) {
+-
+-
+-	return 0;
+-}
+-
+-
+-/*
+ ========================
+ CG_InterpolatePlayerState
+ 
+Index: code/cgame/cg_servercmds.cpp
+===================================================================
+--- code/cgame/cg_servercmds.cpp	(revision 409)
++++ code/cgame/cg_servercmds.cpp	(working copy)
+@@ -110,7 +110,7 @@
+ 	} else if ( num >= CS_COLLMODELS && num < CS_MODELS+MAX_MODELS ) {
+ 		cgs.gameCollModels[ num-CS_COLLMODELS ] = cm->registerModel( str );
+ 	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
+-		cgs.gameSounds[ num-CS_SOUNDS] = 0;//trap_S_RegisterSound( str, qfalse );
++	//	cgs.gameSounds[ num-CS_SOUNDS] = 0;//trap_S_RegisterSound( str, qfalse );
+ 	} else if ( num >= CS_SKINS && num < CS_SKINS+MAX_SKINS ) {
+ 		//cgs.gameSkins[ num-CS_SKINS] = rf->registerSkin(str);
+ 	} else if ( num >= CS_MATERIALS && num < CS_MATERIALS+MAX_MATERIALS ) {
+Index: code/cgame/cg_snapshot.cpp
+===================================================================
+--- code/cgame/cg_snapshot.cpp	(revision 408)
++++ code/cgame/cg_snapshot.cpp	(working copy)
+@@ -34,6 +34,7 @@
+ #include <shared/autoCvar.h>
+ #include <shared/boneOrQP.h>
+ #include <shared/quake3Anims.h>
++#include <shared/colorTable.h>
+ 
+ static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
+ static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
+@@ -45,8 +46,8 @@
+ ==================
+ */
+ static void CG_ResetEntity( centity_t *cent ) {
+-	VectorCopy (cent->currentState.origin, cent->lerpOrigin);
+-	VectorCopy (cent->currentState.angles, cent->lerpAngles);
++	cent->lerpOrigin = cent->currentState.origin;
++	cent->lerpAngles = cent->currentState.angles;
+ 	if ( cent->currentState.eType == ET_PLAYER ) {
+ //		CG_ResetPlayerEntity( cent );
+ 	}
+Index: code/cgame/cg_view.cpp
+===================================================================
+--- code/cgame/cg_view.cpp	(revision 404)
++++ code/cgame/cg_view.cpp	(working copy)
+@@ -56,18 +56,18 @@
+ */
+ #define	FOCUS_DISTANCE	512
+ static void CG_OffsetThirdPersonView( void ) {
+-	vec3_t		forward, right, up;
++	vec3_c		forward, right, up;
+ 	vec3_c		view;
+-	vec3_t		focusAngles;
++	vec3_c		focusAngles;
+ 	static vec3_t	mins = { -4, -4, -4 };
+ 	static vec3_t	maxs = { 4, 4, 4 };
+-	vec3_t		focusPoint;
++	vec3_c		focusPoint;
+ 	float		focusDist;
+ 	float		forwardScale, sideScale;
+ 
+ 	cg.refdefViewOrigin[2] += cg.predictedPlayerState.viewheight;
+ 
+-	VectorCopy( cg.refdefViewAngles, focusAngles );
++	focusAngles = cg.refdefViewAngles;
+ 
+ 	// if dead, look at killer
+ 	//if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
+@@ -78,22 +78,22 @@
+ 	if ( focusAngles[PITCH] > 45 ) {
+ 		focusAngles[PITCH] = 45;		// don't go too far overhead
+ 	}
+-	AngleVectors( focusAngles, forward, NULL, NULL );
++	forward = focusAngles.getForward();
+ 
+-	VectorMA( cg.refdefViewOrigin, FOCUS_DISTANCE, forward, focusPoint );
++	focusPoint.vectorMA(cg.refdefViewOrigin, forward, FOCUS_DISTANCE);
+ 
+-	VectorCopy( cg.refdefViewOrigin, view );
++	view = cg.refdefViewOrigin;
+ 
+ 	view[2] += 8;
+ 
+ 	cg.refdefViewAngles[PITCH] *= 0.5;
+ 
+-	AngleVectors( cg.refdefViewAngles, forward, right, up );
++	cg.refdefViewAngles.angleVectors( forward, right, up );
+ float thirdPersonRange = 128.f;
+ 	forwardScale = cos( cg_thirdPersonAngle.value / 180 * M_PI );
+ 	sideScale = sin( cg_thirdPersonAngle.value / 180 * M_PI );
+-	VectorMA( view, -thirdPersonRange * forwardScale, forward, view );
+-	VectorMA( view, -thirdPersonRange * sideScale, right, view );
++	view.vectorMA(view,forward,-thirdPersonRange * forwardScale);
++	view.vectorMA(view,right,-thirdPersonRange * sideScale);
+ 
+ 	// trace a ray from the origin to the viewpoint to make sure the view isn't
+ 	// in a solid block.  Use an 8 by 8 block to prevent the view from near clipping anything
+@@ -119,10 +119,10 @@
+ 		}
+ 	}
+ 
+-	VectorCopy( view, cg.refdefViewOrigin );
++	cg.refdefViewOrigin = view;
+ 
+ 	// select pitch to look at focus point from vieword
+-	VectorSubtract( focusPoint, cg.refdefViewOrigin, focusPoint );
++	focusPoint -= cg.refdefViewOrigin;
+ 	focusDist = sqrt( focusPoint[0] * focusPoint[0] + focusPoint[1] * focusPoint[1] );
+ 	if ( focusDist < 1 ) {
+ 		focusDist = 1;	// should never happen
+@@ -156,7 +156,7 @@
+ 	float			delta;
+ 	float			speed;
+ 	float			f;
+-	vec3_t			predictedVelocity;
++	vec3_c			predictedVelocity;
+ 	int				timeDelta;
+ 
+ 	origin = cg.refdefViewOrigin;
+@@ -163,7 +163,7 @@
+ 	angles = cg.refdefViewAngles;
+ 
+ 	// add angles based on velocity
+-	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
++	predictedVelocity = cg.predictedPlayerState.velocity;;
+ 
+ 	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
+ 	//angles[PITCH] += delta * cg_runpitch.value;
+Index: code/cgame/cg_viewModel.cpp
+===================================================================
+--- code/cgame/cg_viewModel.cpp	(revision 404)
++++ code/cgame/cg_viewModel.cpp	(working copy)
+@@ -126,8 +126,8 @@
+ 		currentMovement += currentPosOffset;
+ 
+ 		// clamp the gun offset to the offset limit
+-		vec3_c vMovementNormalized;
+-		float vMovementLen = VectorNormalize2(currentMovement, vMovementNormalized);
++		vec3_c vMovementNormalized = currentMovement;
++		float vMovementLen = vMovementNormalized.normalize2();
+ 		if(cfg.offsetMax < vMovementLen) {
+ 			currentMovement = cfg.offsetMax * vMovementNormalized;
+ 		}
+Index: code/client/cl_avi.cpp
+===================================================================
+--- code/client/cl_avi.cpp	(revision 183)
++++ code/client/cl_avi.cpp	(working copy)
+@@ -22,6 +22,7 @@
+ 
+ #include "client.h"
+ #include <api/rAPI.h>
++#include <shared/colorTable.h>
+ 
+ #define INDEX_FILE_EXTENSION ".index.dat"
+ 
+@@ -92,7 +93,7 @@
+ */
+ static ID_INLINE void WRITE_STRING( const char *s )
+ {
+-  Com_Memcpy( &buffer[ bufIndex ], s, strlen( s ) );
++  memcpy( &buffer[ bufIndex ], s, strlen( s ) );
+   bufIndex += strlen( s );
+ }
+ 
+@@ -337,7 +338,7 @@
+   if( afd.fileOpen )
+     return qfalse;
+ 
+-  Com_Memset( &afd, 0, sizeof( aviFileData_t ) );
++  memset( &afd, 0, sizeof( aviFileData_t ) );
+ 
+   // Don't start if a framerate has not been chosen
+   if( cl_aviFrameRate->integer <= 0 )
+@@ -537,7 +538,7 @@
+     size = PCM_BUFFER_SIZE - bytesInBuffer;
+   }
+ 
+-  Com_Memcpy( &pcmCaptureBuffer[ bytesInBuffer ], pcmBuffer, size );
++  memcpy( &pcmCaptureBuffer[ bytesInBuffer ], pcmBuffer, size );
+   bytesInBuffer += size;
+ 
+   // Only write if we have a frame's worth of audio
+Index: code/client/cl_cgame.cpp
+===================================================================
+--- code/client/cl_cgame.cpp	(revision 343)
++++ code/client/cl_cgame.cpp	(working copy)
+@@ -139,7 +139,7 @@
+ 	snapshot->serverCommandSequence = clSnap->serverCommandNum;
+ 	snapshot->ping = clSnap->ping;
+ 	snapshot->serverTime = clSnap->serverTime;
+-	Com_Memcpy( snapshot->areamask, clSnap->areamask, sizeof( snapshot->areamask ) );
++	memcpy( snapshot->areamask, clSnap->areamask, sizeof( snapshot->areamask ) );
+ 	snapshot->ps = clSnap->ps;
+ 	count = clSnap->numEntities;
+ 	if ( count > MAX_ENTITIES_IN_SNAPSHOT ) {
+@@ -204,7 +204,7 @@
+ 	// build the new gameState_t
+ 	oldGs = cl.gameState;
+ 
+-	Com_Memset( &cl.gameState, 0, sizeof( cl.gameState ) );
++	memset( &cl.gameState, 0, sizeof( cl.gameState ) );
+ 
+ 	// leave the first 0 for uninitialized strings
+ 	cl.gameState.dataCount = 1;
+@@ -227,7 +227,7 @@
+ 
+ 		// append it to the gameState string buffer
+ 		cl.gameState.stringOffsets[ i ] = cl.gameState.dataCount;
+-		Com_Memcpy( cl.gameState.stringData + cl.gameState.dataCount, dup, len + 1 );
++		memcpy( cl.gameState.stringData + cl.gameState.dataCount, dup, len + 1 );
+ 		cl.gameState.dataCount += len + 1;
+ 	}
+ 
+@@ -324,7 +324,7 @@
+ 		Con_ClearNotify();
+ 		// reparse the string, because Con_ClearNotify() may have done another Cmd_TokenizeString()
+ 		Cmd_TokenizeString( s );
+-		Com_Memset( cl.cmds, 0, sizeof( cl.cmds ) );
++		memset( cl.cmds, 0, sizeof( cl.cmds ) );
+ 		return qtrue;
+ 	}
+ 
+@@ -620,7 +620,7 @@
+ 		clc.voipMuteAll = qfalse;
+ 		Cmd_AddCommand ("voip", CL_Voip_f);
+ 		Cvar_Set("cl_voipSendTarget", "spatial");
+-		Com_Memset(clc.voipTargets, ~0, sizeof(clc.voipTargets));
++		memset(clc.voipTargets, ~0, sizeof(clc.voipTargets));
+ 	}
+ #endif
+ }
+Index: code/client/cl_cin.cpp
+===================================================================
+--- code/client/cl_cin.cpp	(revision 183)
++++ code/client/cl_cin.cpp	(working copy)
+@@ -1127,7 +1127,7 @@
+ 				cinTable[currentHandle].buf = 	cin.linbuf;
+ 			}
+ 			if (cinTable[currentHandle].numQuads == 0) {		// first frame
+-				Com_Memcpy(cin.linbuf+cinTable[currentHandle].screenDelta, cin.linbuf, cinTable[currentHandle].samplesPerLine*cinTable[currentHandle].ysize);
++				memcpy(cin.linbuf+cinTable[currentHandle].screenDelta, cin.linbuf, cinTable[currentHandle].samplesPerLine*cinTable[currentHandle].ysize);
+ 			}
+ 			cinTable[currentHandle].numQuads++;
+ 			cinTable[currentHandle].dirty = qtrue;
+@@ -1419,7 +1419,7 @@
+ 
+ 	Com_DPrintf("CIN_PlayCinematic( %s )\n", arg);
+ 
+-	Com_Memset(&cin, 0, sizeof(cinematics_t) );
++	memset(&cin, 0, sizeof(cinematics_t) );
+ 	currentHandle = CIN_HandleForVideo();
+ 
+ 	cin.currentHandle = currentHandle;
+Index: code/client/cl_console.cpp
+===================================================================
+--- code/client/cl_console.cpp	(revision 401)
++++ code/client/cl_console.cpp	(working copy)
+@@ -25,6 +25,7 @@
+ #include <api/rAPI.h>
+ #include <api/declManagerAPI.h>
+ #include <api/coreAPI.h>
++#include <shared/colorTable.h>
+ 
+ int g_console_field_width = 78;
+ 
+@@ -248,7 +249,7 @@
+ 		if (con.linewidth < numchars)
+ 			numchars = con.linewidth;
+ 
+-		Com_Memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(short));
++		memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(short));
+ 		for(i=0; i<CON_TEXTSIZE; i++)
+ 
+ 			con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
+Index: code/client/cl_input.cpp
+===================================================================
+--- code/client/cl_input.cpp	(revision 326)
++++ code/client/cl_input.cpp	(working copy)
+@@ -318,6 +318,16 @@
+ 	cl.viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_lookdown);
+ }
+ 
++static signed char ClampChar( int i ) {
++	if ( i < -128 ) {
++		return -128;
++	}
++	if ( i > 127 ) {
++		return 127;
++	}
++	return i;
++}
++
+ /*
+ ================
+ CL_KeyMove
+@@ -591,14 +601,13 @@
+ */
+ usercmd_s CL_CreateCmd( void ) {
+ 	usercmd_s	cmd;
+-	vec3_t		oldAngles;
+ 
+-	VectorCopy( cl.viewangles, oldAngles );
++	vec3_c		oldAngles = cl.viewangles;
+ 
+ 	// keyboard angle adjustment
+ 	CL_AdjustAngles ();
+ 	
+-	Com_Memset( &cmd, 0, sizeof( cmd ) );
++	memset( &cmd, 0, sizeof( cmd ) );
+ 
+ 	CL_CmdButtons( &cmd );
+ 
+@@ -767,7 +776,7 @@
+ 		return;
+ 	}
+ 
+-	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
++	memset( &nullcmd, 0, sizeof(nullcmd) );
+ 	oldcmd = &nullcmd;
+ 
+ 	MSG_Init( &buf, data, sizeof(data) );
+Index: code/client/cl_keys.cpp
+===================================================================
+--- code/client/cl_keys.cpp	(revision 183)
++++ code/client/cl_keys.cpp	(working copy)
+@@ -20,6 +20,7 @@
+ ===========================================================================
+ */
+ #include "client.h"
++#include <shared/colorTable.h>
+ 
+ /*
+ 
+@@ -343,7 +344,7 @@
+ 		Com_Error( ERR_DROP, "drawLen >= MAX_STRING_CHARS" );
+ 	}
+ 
+-	Com_Memcpy( str, edit->buffer + prestep, drawLen );
++	memcpy( str, edit->buffer + prestep, drawLen );
+ 	str[ drawLen ] = 0;
+ 
+ 	// draw it
+@@ -1442,7 +1443,7 @@
+ 				Com_DPrintf( S_COLOR_YELLOW "WARNING: probable corrupt history\n" );
+ 				break;
+ 			}
+-			Com_Memcpy( historyEditLines[ i ].buffer,
++			memcpy( historyEditLines[ i ].buffer,
+ 					text_p, numChars );
+ 			historyEditLines[ i ].buffer[ numChars ] = '\0';
+ 			text_p += numChars;
+Index: code/client/cl_main.cpp
+===================================================================
+--- code/client/cl_main.cpp	(revision 401)
++++ code/client/cl_main.cpp	(working copy)
+@@ -26,6 +26,7 @@
+ #include <api/clientAPI.h>
+ #include <api/rAPI.h>
+ #include <shared/str.h>
++#include <shared/colorTable.h>
+ 
+ #ifdef USE_MUMBLE
+ #include "libmumblelink.h"
+@@ -148,17 +149,6 @@
+ void CL_ServerStatus_f(void);
+ void CL_ServerStatusResponse( netadr_t from, msg_t *msg );
+ 
+-/*
+-===============
+-CL_CDDialog
+-
+-Called by Com_Error when a cd is needed
+-===============
+-*/
+-void CL_CDDialog( void ) {
+-	cls.cddialog = qtrue;	// start it next frame
+-}
+-
+ #ifdef USE_MUMBLE
+ static
+ void CL_UpdateMumble(void)
+@@ -707,7 +697,7 @@
+ 	}
+ 
+ 	// baselines
+-	Com_Memset (&nullstate, 0, sizeof(nullstate));
++	memset (&nullstate, 0, sizeof(nullstate));
+ 	for ( i = 0; i < MAX_GENTITIES ; i++ ) {
+ 		ent = &cl.entityBaselines[i];
+ 		if ( !ent->number ) {
+@@ -1182,9 +1172,9 @@
+ 	// if we are already connected to the local host, stay connected
+ 	if ( clc.state >= CA_CONNECTED && !Q_stricmp( clc.servername, "localhost" ) ) {
+ 		clc.state = CA_CONNECTED;		// so the connect screen is drawn
+-		Com_Memset( cls.updateInfoString, 0, sizeof( cls.updateInfoString ) );
+-		Com_Memset( clc.serverMessage, 0, sizeof( clc.serverMessage ) );
+-		Com_Memset( &cl.gameState, 0, sizeof( cl.gameState ) );
++		memset( cls.updateInfoString, 0, sizeof( cls.updateInfoString ) );
++		memset( clc.serverMessage, 0, sizeof( clc.serverMessage ) );
++		memset( &cl.gameState, 0, sizeof( cl.gameState ) );
+ 		clc.lastPacketSentTime = -9999;
+ 		SCR_UpdateScreen();
+ 	} else {
+@@ -1214,7 +1204,7 @@
+ 
+ //	S_StopAllSounds();
+ 
+-	Com_Memset( &cl, 0, sizeof( cl ) );
++	memset( &cl, 0, sizeof( cl ) );
+ }
+ 
+ /*
+@@ -1336,7 +1326,7 @@
+ 	CL_ClearState ();
+ 
+ 	// wipe the client connection
+-	Com_Memset( &clc, 0, sizeof( clc ) );
++	memset( &clc, 0, sizeof( clc ) );
+ 
+ 	clc.state = CA_DISCONNECTED;
+ 
+@@ -2779,17 +2769,6 @@
+ 	}
+ #endif
+ 
+-	if ( cls.cddialog ) {
+-		// bring up the cd error dialog if needed
+-		cls.cddialog = qfalse;
+-//		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NEED_CD );
+-//	} else	if ( clc.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
+-//		&& !com_sv_running->integer && uivm ) {
+-		// if disconnected, bring up the menu
+-		//S_StopAllSounds();
+-//		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+-	}
+-
+ 	// if recording an avi, lock to a fixed fps
+ 	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
+ 		// save the current screen
+@@ -3384,7 +3363,7 @@
+ 
+ 	recursive = qfalse;
+ 
+-	Com_Memset( &cls, 0, sizeof( cls ) );
++	memset( &cls, 0, sizeof( cls ) );
+ 	Key_SetCatcher( 0 );
+ 
+ 	Com_Printf( "-----------------------\n" );
+@@ -3758,10 +3737,10 @@
+ 
+ 	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
+ 		qboolean b = cls.localServers[i].visible;
+-		Com_Memset(&cls.localServers[i], 0, sizeof(cls.localServers[i]));
++		memset(&cls.localServers[i], 0, sizeof(cls.localServers[i]));
+ 		cls.localServers[i].visible = b;
+ 	}
+-	Com_Memset( &to, 0, sizeof( to ) );
++	memset( &to, 0, sizeof( to ) );
+ 
+ 	// The 'xxx' in the message is a challenge that will be echoed back
+ 	// by the server.  We don't care about that here, but master servers
+@@ -4044,7 +4023,7 @@
+ 		server = Cmd_Argv(2);
+ 	}
+ 
+-	Com_Memset( &to, 0, sizeof(netadr_t) );
++	memset( &to, 0, sizeof(netadr_t) );
+ 
+ 	if ( !NET_StringToAdr( server, &to, family ) ) {
+ 		return;
+@@ -4193,7 +4172,7 @@
+ 	
+ 	if(!toptr)
+ 	{
+-		Com_Memset( &to, 0, sizeof(netadr_t) );
++		memset( &to, 0, sizeof(netadr_t) );
+ 	
+ 		if(argc == 2)
+ 			server = Cmd_Argv(1);
+Index: code/client/cl_parse.cpp
+===================================================================
+--- code/client/cl_parse.cpp	(revision 401)
++++ code/client/cl_parse.cpp	(working copy)
+@@ -23,6 +23,7 @@
+ 
+ #include "client.h"
+ #include <api/rAPI.h>
++#include <shared/colorTable.h>
+ 
+ char *svc_strings[256] = {
+ 	"svc_bad",
+@@ -214,7 +215,7 @@
+ 
+ 	// read in the new snapshot to a temporary buffer
+ 	// we will only copy to cl.snap if it is valid
+-	Com_Memset (&newSnap, 0, sizeof(newSnap));
++	memset (&newSnap, 0, sizeof(newSnap));
+ 
+ 	// we will have read any new server commands in this
+ 	// message before we got to svc_snapshot
+@@ -504,7 +505,7 @@
+ 
+ 			// append it to the gameState string buffer
+ 			cl.gameState.stringOffsets[ i ] = cl.gameState.dataCount;
+-			Com_Memcpy( cl.gameState.stringData + cl.gameState.dataCount, s, len + 1 );
++			memcpy( cl.gameState.stringData + cl.gameState.dataCount, s, len + 1 );
+ 			cl.gameState.dataCount += len + 1;
+ 		} else if ( cmd == svc_baseline ) {
+ 			newnum = MSG_ReadBits( msg, GENTITYNUM_BITS );
+@@ -511,7 +512,7 @@
+ 			if ( newnum < 0 || newnum >= MAX_GENTITIES ) {
+ 				Com_Error( ERR_DROP, "Baseline number out of range: %i", newnum );
+ 			}
+-			Com_Memset (&nullstate, 0, sizeof(nullstate));
++			memset (&nullstate, 0, sizeof(nullstate));
+ 			es = &cl.entityBaselines[ newnum ];
+ 			MSG_ReadDeltaEntity( msg, &nullstate, es, newnum );
+ 		} else {
+Index: code/client/cl_scrn.cpp
+===================================================================
+--- code/client/cl_scrn.cpp	(revision 284)
++++ code/client/cl_scrn.cpp	(working copy)
+@@ -25,6 +25,7 @@
+ #include <api/rAPI.h>
+ #include <api/loadingScreenMgrAPI.h>
+ #include <shared/str.h>
++#include <shared/colorTable.h>
+ 
+ qboolean	scr_initialized;		// ready to draw
+ 
+@@ -229,7 +230,7 @@
+ 	while ( *s ) {
+ 		if ( !noColorEscape && Q_IsColorString( s ) ) {
+ 			if ( !forceColor ) {
+-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
++				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+ 				color[3] = setColor[3];
+ 				rf->set2DColor( color );
+ 			}
+@@ -278,7 +279,7 @@
+ 	while ( *s ) {
+ 		if ( Q_IsColorString( s ) ) {
+ 			if ( !forceColor ) {
+-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
++				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+ 				color[3] = setColor[3];
+ 				rf->set2DColor( color );
+ 			}
+Index: code/client/cl_ui.cpp
+===================================================================
+--- code/client/cl_ui.cpp	(revision 183)
++++ code/client/cl_ui.cpp	(working copy)
+@@ -175,7 +175,7 @@
+ 			if (NET_CompareAdr( comp, servers[i].adr)) {
+ 				int j = i;
+ 				while (j < *count - 1) {
+-					Com_Memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
++					memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
+ 					j++;
+ 				}
+ 				(*count)--;
+@@ -536,50 +536,6 @@
+ 
+ /*
+ ====================
+-CLUI_GetCDKey
+-====================
+-*/
+-static void CLUI_GetCDKey( char *buf, int buflen ) {
+-#ifndef STANDALONE
+-	cvar_s	*fs;
+-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
+-		Com_Memcpy( buf, &cl_cdkey[16], 16);
+-		buf[16] = 0;
+-	} else {
+-		Com_Memcpy( buf, cl_cdkey, 16);
+-		buf[16] = 0;
+-	}
+-#else
+-	*buf = 0;
+-#endif
+-}
+-
+-
+-/*
+-====================
+-CLUI_SetCDKey
+-====================
+-*/
+-#ifndef STANDALONE
+-static void CLUI_SetCDKey( char *buf ) {
+-	cvar_s	*fs;
+-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
+-		Com_Memcpy( &cl_cdkey[16], buf, 16 );
+-		cl_cdkey[32] = 0;
+-		// set the flag so the fle will be written at the next opportunity
+-		cvar_modifiedFlags |= CVAR_ARCHIVE;
+-	} else {
+-		Com_Memcpy( cl_cdkey, buf, 16 );
+-		// set the flag so the fle will be written at the next opportunity
+-		cvar_modifiedFlags |= CVAR_ARCHIVE;
+-	}
+-}
+-#endif
+-
+-/*
+-====================
+ GetConfigString
+ ====================
+ */
+@@ -605,30 +561,6 @@
+ 
+ /*
+ ====================
+-FloatAsInt
+-====================
+-*/
+-static int FloatAsInt( float f ) {
+-	floatint_t fi;
+-	fi.f = f;
+-	return fi.i;
+-}
+-
+-/*
+-====================
+-CL_UISystemCalls
+-
+-The ui module is making a system call
+-====================
+-*/
+-intptr_t CL_UISystemCalls( intptr_t *args ) {
+-
+-
+-	return 0;
+-}
+-
+-/*
+-====================
+ CL_ShutdownUI
+ ====================
+ */
+Index: code/client/client.h
+===================================================================
+--- code/client/client.h	(revision 401)
++++ code/client/client.h	(working copy)
+@@ -26,6 +26,7 @@
+ #include "keys.h"
+ #include "../cgame/cg_public.h"
+ #include "../game/bg_public.h"
++#include <api/vfsAPI.h>
+ 
+ #ifdef USE_CURL
+ #include "cl_curl.h"
+@@ -42,6 +43,20 @@
+ 
+ #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
+ 
++// client module connection state
++typedef enum {
++	CA_UNINITIALIZED,
++	CA_DISCONNECTED, 	// not talking to a server
++	CA_AUTHORIZING,		// not used any more, was checking cd key 
++	CA_CONNECTING,		// sending request packets to the server
++	CA_CHALLENGING,		// sending challenge packets to the server
++	CA_CONNECTED,		// netchan_t established, getting gamestate
++	CA_LOADING,			// only during cgame initialization, never during main loop
++	CA_PRIMED,			// got gamestate, waiting for first frame
++	CA_ACTIVE,			// game views should be displayed
++	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
++} connstate_t;
++
+ // snapshots are a view of the server at a given time
+ typedef struct {
+ 	qboolean		valid;			// cleared if delta parsing was invalid
+@@ -299,8 +314,6 @@
+ } serverInfo_t;
+ 
+ typedef struct {
+-	qboolean	cddialog;			// bring up the cd needed dialog next frame
+-
+ 	// when the server clears the hunk, all of these must be restarted
+ 	qboolean	rendererStarted;
+ 	qboolean	soundStarted;
+Index: code/client/keys.h
+===================================================================
+--- code/client/keys.h	(revision 183)
++++ code/client/keys.h	(working copy)
+@@ -20,6 +20,7 @@
+ ===========================================================================
+ */
+ #include "keycodes.h"
++#include <api/vfsAPI.h>
+ 
+ typedef struct {
+ 	qboolean	down;
+Index: code/declManager/declManagerIMPL.cpp
+===================================================================
+--- code/declManager/declManagerIMPL.cpp	(revision 405)
++++ code/declManager/declManagerIMPL.cpp	(working copy)
+@@ -452,6 +452,10 @@
+ }
+ 
+ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qioModule_e userModule) {
++	if(name == 0 || name[0] == 0) {
++		g_core->RedWarning("declManagerIMPL_c::_registerModelDecl: NULL name\n");
++		return 0;
++	}
+ 	if(name[0] == '*') {
+ 		g_core->RedWarning("declManagerIMPL_c::_registerModelDecl: ignoring inline model \"%s\" request.\n",name);
+ 		return 0;
+@@ -484,7 +488,8 @@
+ 	return 0;
+ }
+ class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, qioModule_e userModule) {
+-	if(name == 0) {
++	if(name == 0 || name[0] == 0) {
++		g_core->RedWarning("declManagerIMPL_c::_registerEntityDecl: NULL name\n");
+ 		return 0;
+ 	}
+ 	g_core->Print("declManagerIMPL_c::_registerEntityDecl: registering %s\n",name);
+@@ -511,6 +516,10 @@
+ 	return 0;
+ }
+ class afDeclAPI_i *declManagerIMPL_c::_registerAFDecl(const char *name, qioModule_e userModule) {
++	if(name == 0 || name[0] == 0) {
++		g_core->RedWarning("declManagerIMPL_c::_registerAFDecl: NULL name\n");
++		return 0;
++	}
+ 	afDecl_c *ret = afDecls.getEntry(name);
+ 	if(ret) {
+ 		ret->setReferencedByModule(userModule);
+@@ -534,6 +543,10 @@
+ 	return 0;
+ }
+ class q3PlayerModelAPI_i *declManagerIMPL_c::_registerQ3PlayerDecl(const char *name, qioModule_e userModule) {
++	if(name == 0 || name[0] == 0) {
++		g_core->RedWarning("declManagerIMPL_c::_registerQ3PlayerDecl: NULL name\n");
++		return 0;
++	}
+ 	// '$' is no longer needed here
+ 	if(name[0] == '$') {
+ 		name++;
+@@ -557,6 +570,11 @@
+ 	return 0;
+ }
+ class particleDeclAPI_i *declManagerIMPL_c::_registerParticleDecl(const char *name, qioModule_e userModule) {
++	if(name == 0 || name[0] == 0) {
++		g_core->RedWarning("declManagerIMPL_c::_registerParticleDecl: NULL name\n");
++		return 0;
++	}
++
+ 	// strip .prt extension
+ 	str fixedName = name;
+ 	fixedName.stripExtension();
+Index: code/game/bg_misc.cpp
+===================================================================
+--- code/game/bg_misc.cpp	(revision 404)
++++ code/game/bg_misc.cpp	(working copy)
+@@ -46,10 +46,10 @@
+ 
+ 	s->number = ps->clientNum;
+ 
+-	VectorCopy( ps->origin, s->origin );
++	s->origin = ps->origin;
+ 
+ 	// copy angles (NOT viewangles)
+-	VectorCopy( ps->angles, s->angles );
++	s->angles = ps->angles;
+ 
+ 	s->animIndex = ps->animIndex;
+ 	s->torsoAnim = ps->torsoAnim;
+Index: code/game/classes/Player.cpp
+===================================================================
+--- code/game/classes/Player.cpp	(revision 409)
++++ code/game/classes/Player.cpp	(working copy)
+@@ -390,31 +390,31 @@
+ 			// update the viewangles
+ 			PM_UpdateViewAngles( &this->ps, ucmd );
+ 			{
+-				vec3_t v = { 0, this->ps.viewangles[1], 0 };
++				vec3_c v( 0, this->ps.viewangles[1], 0 );
+ 				vec3_c dir;;
+ 				if(isPainAnimActive()) {
+ 					dir.clear();
+ 				} else {
+-					vec3_t f,r,u;
++					vec3_c f,r,u;
+ 					//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+-					AngleVectors(v,f,r,u);
+-					VectorScale(f,level.frameTime*ucmd->forwardmove,f);
+-					VectorScale(r,level.frameTime*ucmd->rightmove,r);
+-					VectorScale(u,level.frameTime*ucmd->upmove,u);
+-					VectorAdd(dir,f,dir);
+-					VectorAdd(dir,r,dir);
+-					VectorAdd(dir,u,dir);
++					v.angleVectors(f,r,u);
++					f *= level.frameTime*ucmd->forwardmove;
++					r *= level.frameTime*ucmd->rightmove;
++					u *= level.frameTime*ucmd->upmove;
++					dir += f;
++					dir += r;
++					dir += u;
+ 				}
+ 				vec3_c newOrigin;
+ 				if(noclip || (characterController==0)) {
+ 					dir.scale(4.f);
+-					VectorAdd(this->ps.origin,dir,newOrigin);
++					newOrigin = ps.origin + dir;
+ 					ModelEntity::setOrigin(newOrigin);
+ 					ps.velocity = dir;
+ 					onGround = false;
+ 				} else {
+ 					dir[2] = 0;
+-					VectorScale(dir,0.75f,dir);
++					dir *= 0.75f;
+ 					this->characterController->update(dir);
+ 					newOrigin = this->characterController->getPos();
+ 					ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
+@@ -619,8 +619,7 @@
+ 	}
+ 	vec3_c eye = this->getEyePos();
+ 	trace_c tr;
+-	vec3_c dir;
+-	AngleVectors(this->ps.viewangles,dir,0,0);
++	vec3_c dir = ps.viewangles.getForward();
+ 	tr.setupRay(eye,eye + dir * 96.f);
+ 	if(G_TraceRay(tr,this)) {
+ 		BaseEntity *hit = tr.getHitEntity();
+@@ -746,16 +745,16 @@
+ 	g_core->Print("Player::dropCarryingEntity: dropping %s\n",carryingEntity->getClassName());
+ 	carryingEntity = 0;
+ }
+-void Player::setClientViewAngle(const vec3_c &angle) {
++void Player::setClientViewAngle(const vec3_c &newAngles) {
+ 	// set the delta angle
+ 	for(u32 i = 0; i < 3; i++) {
+-		int cmdAngle = ANGLE2SHORT(angle[i]);
++		int cmdAngle = ANGLE2SHORT(newAngles[i]);
+ 		this->ps.delta_angles[i] = cmdAngle - this->pers.cmd.angles[i];
+ 	}
+ 	// set the pitch/yaw view angles
+-	VectorCopy(angle, this->ps.viewangles);
++	this->ps.viewangles = newAngles;
+ 	// set the model angle - only yaw (turning left/right)
+-	VectorSet(this->ps.angles,0,angle[YAW],0);
++	this->ps.angles.set(0,newAngles[YAW],0);
+ }
+ void Player::setNetName(const char *newNetName) {
+ 	netName = newNetName;
+Index: code/game/g_client.cpp
+===================================================================
+--- code/game/g_client.cpp	(revision 409)
++++ code/game/g_client.cpp	(working copy)
+@@ -30,6 +30,7 @@
+ #include "classes/ModelEntity.h"
+ #include "classes/FakePlayer.h"
+ #include "classes/VehicleCar.h"
++#include <shared/colorTable.h>
+ 
+ // g_client.c -- client functions that don't happen every frame
+ 
+Index: code/game/lua/g_lua.cpp
+===================================================================
+--- code/game/lua/g_lua.cpp	(revision 364)
++++ code/game/lua/g_lua.cpp	(working copy)
+@@ -198,13 +198,13 @@
+ 	len = g_vfs->FS_FOpenFile(filename, &f, FS_READ);
+ 	if(!f)
+ 	{
+-		g_core->Print(va(S_COLOR_RED "file not found: %s\n", filename));
++		g_core->RedWarning("file not found: %s\n", filename);
+ 		return;
+ 	}
+ 
+ 	if(len >= MAX_LUAFILE)
+ 	{
+-		g_core->Print(va(S_COLOR_RED "file too large: %s is %i, max allowed is %i\n", filename, len, MAX_LUAFILE));
++		g_core->RedWarning("file too large: %s is %i, max allowed is %i\n", filename, len, MAX_LUAFILE);
+ 		g_vfs->FS_FCloseFile(f);
+ 		return;
+ 	}
+Index: code/game/lua/g_lua_entity.cpp
+===================================================================
+--- code/game/lua/g_lua_entity.cpp	(revision 364)
++++ code/game/lua/g_lua_entity.cpp	(working copy)
+@@ -33,6 +33,8 @@
+ #include <api/coreAPI.h>
+ #include <api/serverAPI.h>
+ #include <shared/array.h>
++#include <shared/colorTable.h>
++
+ static int entity_Target(lua_State * L)
+ {
+ 	/*lua_Entity     *lent;
+Index: code/game/lua/g_lua_game.cpp
+===================================================================
+--- code/game/lua/g_lua_game.cpp	(revision 362)
++++ code/game/lua/g_lua_game.cpp	(working copy)
+@@ -29,6 +29,7 @@
+ #include <lualib.h>
+ #include "../g_local.h"
+ #include <api/serverAPI.h>
++#include <shared/colorTable.h>
+ 
+ static int game_Print(lua_State * L)
+ {
+Index: code/game/lua/g_lua_vector.cpp
+===================================================================
+--- code/game/lua/g_lua_vector.cpp	(revision 362)
++++ code/game/lua/g_lua_vector.cpp	(working copy)
+@@ -39,7 +39,7 @@
+ 	luaL_getmetatable(L, "vector");
+ 	lua_setmetatable(L, -2);
+ 
+-	VectorClear(v);
++//	VectorClear(v);
+ 
+ 	return 1;
+ }
+@@ -79,7 +79,7 @@
+ 
+ 	a = lua_getvector(L, 1);
+ 
+-	VectorClear(a);
++//	VectorClear(a);
+ 
+ 	return 1;
+ }
+@@ -92,7 +92,7 @@
+ 	b = lua_getvector(L, 2);
+ 	c = lua_getvector(L, 3);
+ 
+-	VectorAdd(a, b, c);
++//	VectorAdd(a, b, c);
+ 
+ 	return 1;
+ }
+@@ -105,7 +105,7 @@
+ 	b = lua_getvector(L, 2);
+ 	c = lua_getvector(L, 3);
+ 
+-	VectorSubtract(a, b, c);
++//	VectorSubtract(a, b, c);
+ 
+ 	return 1;
+ }
+@@ -118,7 +118,7 @@
+ 	b = luaL_checknumber(L, 2);
+ 	c = lua_getvector(L, 3);
+ 
+-	VectorScale(a, b, c);
++//	VectorScale(a, b, c);
+ 
+ 	return 1;
+ }
+@@ -130,7 +130,7 @@
+ 
+ 	a = lua_getvector(L, 1);
+ 
+-	len = VectorLength(a);
++//	len = VectorLength(a);
+ 	lua_pushnumber(L, len);
+ 
+ 	return 1;
+@@ -143,7 +143,7 @@
+ 
+ 	a = lua_getvector(L, 1);
+ 
+-	len = VectorNormalize(a);
++	//len = VectorNormalize(a);
+ 	lua_pushnumber(L, len);
+ 
+ 	return 1;
+@@ -155,7 +155,7 @@
+ 
+ 	a = lua_getvector(L, 1);
+ 
+-	VectorNormalizeFast(a);
++//	VectorNormalizeFast(a);
+ 
+ 	return 1;
+ }
+@@ -172,7 +172,7 @@
+ 	point = lua_getvector(L, 3);
+ 	degrees = luaL_checknumber(L, 4);
+ 
+-	RotatePointAroundVector(dst, dir, point, degrees);
++	//RotatePointAroundVector(dst, dir, point, degrees);
+ 
+ 	return 1;
+ }
+@@ -185,7 +185,7 @@
+ 	dst = lua_getvector(L, 1);
+ 	src = lua_getvector(L, 2);
+ 
+-	PerpendicularVector(dst, src);
++	//PerpendicularVector(dst, src);
+ 
+ 	return 1;
+ }
+@@ -275,7 +275,7 @@
+ 	a = lua_getvector(L, 1);
+ 	b = lua_getvector(L, 2);
+ 
+-	VectorAdd(a, b, c);
++//	VectorAdd(a, b, c);
+ 
+ 	lua_pushvector(L, c);
+ 
+@@ -290,7 +290,7 @@
+ 	a = lua_getvector(L, 1);
+ 	b = lua_getvector(L, 2);
+ 
+-	VectorSubtract(a, b, c);
++//	VectorSubtract(a, b, c);
+ 
+ 	lua_pushvector(L, c);
+ 
+@@ -304,7 +304,7 @@
+ 	a = lua_getvector(L, 1);
+ 	b = lua_getvector(L, 2);
+ 
+-	lua_pushnumber(L, DotProduct(a, b));
++//	lua_pushnumber(L, DotProduct(a, b));
+ 
+ 	return 1;
+ }
+@@ -316,7 +316,7 @@
+ 
+ 	a = lua_getvector(L, 1);
+ 
+-	VectorNegate(a, b);
++//	VectorNegate(a, b);
+ 
+ 	lua_pushvector(L, b);
+ 
+@@ -400,7 +400,7 @@
+ 	luaL_getmetatable(L, "vector");
+ 	lua_setmetatable(L, -2);
+ 
+-	VectorCopy(v, vec);
++//	VectorCopy(v, vec);
+ }
+ 
+ vec_t          *lua_getvector(lua_State * L, int argNum)
+Index: code/materialSystem/mat_impl.cpp
+===================================================================
+--- code/materialSystem/mat_impl.cpp	(revision 403)
++++ code/materialSystem/mat_impl.cpp	(working copy)
+@@ -484,7 +484,7 @@
+ 	ADDOPTION("GL_SRC_ALPHA",BM_SRC_ALPHA)
+ 	ADDOPTION("GL_SRC_ALPHA_SATURATE",BM_SRC_ALPHA_SATURATE)
+ #undef ADDOPTION
+-	g_core->Print(S_COLOR_RED"Unknown blendFunc src/dst %s in file %s at line %i, setting to BM_ONE \n",token.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
++	g_core->RedWarning("Unknown blendFunc src/dst %s in file %s at line %i, setting to BM_ONE \n",token.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+ 	return BM_ZERO;
+ }
+ void mtrIMPL_c::setSkyParms(const char *farBox, const char *cloudHeightStr, const char *nearBox) {
+Index: code/math/vec3.h
+===================================================================
+--- code/math/vec3.h	(revision 406)
++++ code/math/vec3.h	(working copy)
+@@ -291,6 +291,36 @@
+ 		angles[YAW] = yaw;
+ 		angles[ROLL] = 0;
+ 		return angles;
++	}
++	void angleVectors(vec3_t forward, vec3_t right, vec3_t up) const {
++		// pitch
++		float angle = DEG2RAD(this->x);
++		float sp = sin(angle);
++		float cp = cos(angle);
++		// yaw
++		angle = DEG2RAD(this->y);
++		float sy = sin(angle);
++		float cy = cos(angle);
++		// roll
++		angle = DEG2RAD(this->z);
++		float sr = sin(angle);
++		float cr = cos(angle);
++
++		if (forward) {
++			forward[0] = cp*cy;
++			forward[1] = cp*sy;
++			forward[2] = -sp;
++		}
++		if (right) {
++			right[0] = (-1*sr*sp*cy+-1*cr*-sy);
++			right[1] = (-1*sr*sp*sy+-1*cr*cy);
++			right[2] = -1*sr*cp;
++		}
++		if (up) {
++			up[0] = (cr*sp*cy+-sr*-sy);
++			up[1] = (cr*sp*sy+-sr*cy);
++			up[2] = cr*cp;
++		}
+ 	}
+ 	// converts vector values to RGB color bytes (0-255 range)
+ 	void colorToBytes( byte *outColorRGB ) const {
+Index: code/qcommon/cmd.cpp
+===================================================================
+--- code/qcommon/cmd.cpp	(revision 392)
++++ code/qcommon/cmd.cpp	(working copy)
+@@ -23,6 +23,7 @@
+ 
+ #include "q_shared.h"
+ #include "qcommon.h"
++#include <shared/colorTable.h>
+ 
+ #define	MAX_CMD_BUFFER	16384
+ #define	MAX_CMD_LINE	1024
+@@ -97,7 +98,7 @@
+ 		Com_Printf ("Cbuf_AddText: overflow\n");
+ 		return;
+ 	}
+-	Com_Memcpy(&cmd_text.data[cmd_text.cursize], text, l);
++	memcpy(&cmd_text.data[cmd_text.cursize], text, l);
+ 	cmd_text.cursize += l;
+ }
+ 
+@@ -126,7 +127,7 @@
+ 	}
+ 
+ 	// copy the new text in
+-	Com_Memcpy( cmd_text.data, text, len - 1 );
++	memcpy( cmd_text.data, text, len - 1 );
+ 
+ 	// add a \n
+ 	cmd_text.data[ len - 1 ] = '\n';
+@@ -227,7 +228,7 @@
+ 			i = MAX_CMD_LINE - 1;
+ 		}
+ 				
+-		Com_Memcpy (line, text, i);
++		memcpy (line, text, i);
+ 		line[i] = 0;
+ 		
+ // delete the text from the command buffer and move remaining commands down
+Index: code/qcommon/common.cpp
+===================================================================
+--- code/qcommon/common.cpp	(revision 406)
++++ code/qcommon/common.cpp	(working copy)
+@@ -34,6 +34,7 @@
+ #include <api/moduleManagerAPI.h>
+ #include <api/coreAPI.h>
+ #include <api/declManagerAPI.h>
++#include <shared/colorTable.h>
+ 
+ int demo_protocols[] =
+ { 67, 66, 0 };
+@@ -308,7 +309,7 @@
+ 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
+ 	va_end (argptr);
+ 
+-	if (code != ERR_DISCONNECT && code != ERR_NEED_CD)
++	if (code != ERR_DISCONNECT)
+ 		Cvar_Set("com_errorMessage", com_errorMessage);
+ 
+ 	if (code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT) {
+@@ -331,23 +332,6 @@
+ 		FS_PureServerSetLoadedPaks("", "");
+ 		com_errorEntered = qfalse;
+ 		longjmp (abortframe, -1);
+-	} else if ( code == ERR_NEED_CD ) {
+-//		VM_Forced_Unload_Start();
+-		SV_Shutdown( "Server didn't have CD" );
+-		if ( com_cl_running && com_cl_running->integer ) {
+-			CL_Disconnect( qtrue );
+-			CL_FlushMemory( );
+-//			VM_Forced_Unload_Done();
+-			CL_CDDialog();
+-		} else {
+-			Com_Printf("Server didn't have CD\n" );
+-//			VM_Forced_Unload_Done();
+-		}
+-
+-		FS_PureServerSetLoadedPaks("", "");
+-
+-		com_errorEntered = qfalse;
+-		longjmp (abortframe, -1);
+ 	} else {
+ //		VM_Forced_Unload_Start();
+ 		CL_Shutdown(va("Client fatal crashed: %s", com_errorMessage), qtrue, qtrue);
+@@ -563,7 +547,7 @@
+ 		l = o - key;
+ 		if (l < 20)
+ 		{
+-			Com_Memset (o, ' ', 20-l);
++			memset (o, ' ', 20-l);
+ 			key[20] = 0;
+ 		}
+ 		else
+@@ -890,7 +874,7 @@
+ 	zone->used -= block->size;
+ 	// set the block to something that should cause problems
+ 	// if it is referenced...
+-	Com_Memset( ptr, 0xaa, block->size - sizeof( *block ) );
++	memset( ptr, 0xaa, block->size - sizeof( *block ) );
+ 
+ 	block->tag = 0;		// mark as free
+ 	
+@@ -1068,7 +1052,7 @@
+ #else
+ 	buf = Z_TagMalloc( size, TAG_GENERAL );
+ #endif
+-	Com_Memset( buf, 0, size );
++	memset( buf, 0, size );
+ 
+ 	return buf;
+ }
+@@ -1772,7 +1756,7 @@
+ 
+ 	hunk_permanent->temp = hunk_permanent->permanent;
+ 
+-	Com_Memset( buf, 0, size );
++	memset( buf, 0, size );
+ 
+ #ifdef HUNK_DEBUG
+ 	{
+@@ -2714,7 +2698,7 @@
+ 	Com_InitCoreAPI();
+ 
+ 	// Clear queues
+-	Com_Memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
++	memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
+ 
+ 	// initialize the weak pseudo-random number generator for use later.
+ 	Com_InitRand();
+Index: code/qcommon/cvar.cpp
+===================================================================
+--- code/qcommon/cvar.cpp	(revision 183)
++++ code/qcommon/cvar.cpp	(working copy)
+@@ -27,6 +27,7 @@
+ #include <api/cvarAPI.h>
+ #include <shared/cvarModificationCallback.h>
+ #include <shared/autoCvar.h>
++#include <shared/colorTable.h>
+ 
+ cvar_s		*cvar_vars = NULL;
+ cvar_s		*cvar_cheats;
+@@ -1063,7 +1064,7 @@
+ 	if(cv->hashNext)
+ 		cv->hashNext->hashPrev = cv->hashPrev;
+ 
+-	Com_Memset(cv, '\0', sizeof(*cv));
++	memset(cv, '\0', sizeof(*cv));
+ 	
+ 	return next;
+ }
+@@ -1337,8 +1338,8 @@
+ cvarsAPI_s *g_cvars = 0;
+ void Cvar_Init (void)
+ {
+-	Com_Memset(cvar_indexes, '\0', sizeof(cvar_indexes));
+-	Com_Memset(hashTable, '\0', sizeof(hashTable));
++	memset(cvar_indexes, '\0', sizeof(cvar_indexes));
++	memset(hashTable, '\0', sizeof(hashTable));
+ 
+ 	cvar_cheats = Cvar_Get("sv_cheats", "1", CVAR_ROM | CVAR_SYSTEMINFO );
+ 
+Index: code/qcommon/files.cpp
+===================================================================
+--- code/qcommon/files.cpp	(revision 403)
++++ code/qcommon/files.cpp	(working copy)
+@@ -34,6 +34,7 @@
+ #include "unzip.h"
+ #include <api/iFaceMgrAPI.h>
+ #include <api/vfsAPI.h>
++#include <shared/colorTable.h>
+ 
+ /*
+ =============================================================================
+@@ -806,7 +807,7 @@
+ 		if ( fsh[f].handleFiles.unique ) {
+ 			unzClose( fsh[f].handleFiles.file.z );
+ 		}
+-		Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
++		memset( &fsh[f], 0, sizeof( fsh[f] ) );
+ 		return;
+ 	}
+ 
+@@ -814,7 +815,7 @@
+ 	if (fsh[f].handleFiles.file.o) {
+ 		fclose (fsh[f].handleFiles.file.o);
+ 	}
+-	Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
++	memset( &fsh[f], 0, sizeof( fsh[f] ) );
+ }
+ 
+ /*
+@@ -2378,7 +2379,7 @@
+ 				if ( nDescLen > 0 && descHandle) {
+ 					FILE *file;
+ 					file = FS_FileForHandle(descHandle);
+-					Com_Memset( descPath, 0, sizeof( descPath ) );
++					memset( descPath, 0, sizeof( descPath ) );
+ 					nDescLen = fread(descPath, 1, 48, file);
+ 					if (nDescLen >= 0) {
+ 						descPath[nDescLen] = '\0';
+@@ -2526,7 +2527,7 @@
+ 		sortedlist[j] = filelist[i];
+ 		numsortedfiles++;
+ 	}
+-	Com_Memcpy(filelist, sortedlist, numfiles * sizeof( *filelist ) );
++	memcpy(filelist, sortedlist, numfiles * sizeof( *filelist ) );
+ 	Z_Free(sortedlist);
+ }
+ 
+@@ -3018,15 +3019,17 @@
+ 
+ 	// temporary hack
+ 	FS_AddGameDirectory("E:/GAMES/quake3/Quake3","baseq3");
++	// Xonotic is using Q3 bsp format
++	//FS_AddGameDirectory("E:/GAMES/xonotic-0.7.0/Xonotic","data");
++	//FS_AddGameDirectory("E:/GAMES/RTCW","main");
+ 	//FS_AddGameDirectory("E:/MoHAA","main");
+ 	//FS_AddGameDirectory("L:","Q4ZB");
+-
+ 	//FS_AddGameDirectory("E:/Call of Duty","main");
+ 	//FS_AddGameDirectory("E:/RTCW","main");
+ 	//FS_AddGameDirectory("E:/Half-Life 2","hl2");
+ 	//FS_AddGameDirectory("E:/Portal 2","portal2");
+ 	//FS_AddGameDirectory("E:/GAMES/Prey","base");
+-	FS_AddGameDirectory("E:/GAMES/Doom 3","base");
++	//FS_AddGameDirectory("E:/GAMES/Doom 3","base");
+ 
+ 
+ 	
+Index: code/qcommon/huffman.cpp
+===================================================================
+--- code/qcommon/huffman.cpp	(revision 183)
++++ code/qcommon/huffman.cpp	(working copy)
+@@ -344,7 +344,7 @@
+ 		return;
+ 	}
+ 
+-	Com_Memset(&huff, 0, sizeof(huff_t));
++	memset(&huff, 0, sizeof(huff_t));
+ 	// Initialize the tree & list with the NYT node 
+ 	huff.tree = huff.lhead = huff.ltail = huff.loc[NYT] = &(huff.nodeList[huff.blocNode++]);
+ 	huff.tree->symbol = NYT;
+@@ -380,7 +380,7 @@
+ 		Huff_addRef(&huff, (byte)ch);								/* Increment node */
+ 	}
+ 	mbuf->cursize = cch + offset;
+-	Com_Memcpy(mbuf->data + offset, seq, cch);
++	memcpy(mbuf->data + offset, seq, cch);
+ }
+ 
+ extern 	int oldsize;
+@@ -398,7 +398,7 @@
+ 		return;
+ 	}
+ 
+-	Com_Memset(&huff, 0, sizeof(huff_t));
++	memset(&huff, 0, sizeof(huff_t));
+ 	// Add the NYT (not yet transmitted) node into the tree/list */
+ 	huff.tree = huff.lhead = huff.loc[NYT] =  &(huff.nodeList[huff.blocNode++]);
+ 	huff.tree->symbol = NYT;
+@@ -421,13 +421,13 @@
+ 	bloc += 8;												// next byte
+ 
+ 	mbuf->cursize = (bloc>>3) + offset;
+-	Com_Memcpy(mbuf->data+offset, seq, (bloc>>3));
++	memcpy(mbuf->data+offset, seq, (bloc>>3));
+ }
+ 
+ void Huff_Init(huffman_t *huff) {
+ 
+-	Com_Memset(&huff->compressor, 0, sizeof(huff_t));
+-	Com_Memset(&huff->decompressor, 0, sizeof(huff_t));
++	memset(&huff->compressor, 0, sizeof(huff_t));
++	memset(&huff->decompressor, 0, sizeof(huff_t));
+ 
+ 	// Initialize the tree & list with the NYT node 
+ 	huff->decompressor.tree = huff->decompressor.lhead = huff->decompressor.ltail = huff->decompressor.loc[NYT] = &(huff->decompressor.nodeList[huff->decompressor.blocNode++]);
+Index: code/qcommon/md4.cpp
+===================================================================
+--- code/qcommon/md4.cpp	(revision 183)
++++ code/qcommon/md4.cpp	(working copy)
+@@ -138,8 +138,8 @@
+ 
+ 	b = m->totalN * 8;
+ 
+-	Com_Memset(buf, 0, 128);
+-	if (n) Com_Memcpy(buf, in, n);
++	memset(buf, 0, 128);
++	if (n) memcpy(buf, in, n);
+ 	buf[n] = 0x80;
+ 
+ 	if (n <= 55) {
+Index: code/qcommon/msg.cpp
+===================================================================
+--- code/qcommon/msg.cpp	(revision 407)
++++ code/qcommon/msg.cpp	(working copy)
+@@ -45,7 +45,7 @@
+ 	if (!msgInit) {
+ 		MSG_initHuffman();
+ 	}
+-	Com_Memset (buf, 0, sizeof(*buf));
++	memset (buf, 0, sizeof(*buf));
+ 	buf->data = data;
+ 	buf->maxsize = length;
+ }
+@@ -54,7 +54,7 @@
+ 	if (!msgInit) {
+ 		MSG_initHuffman();
+ 	}
+-	Com_Memset (buf, 0, sizeof(*buf));
++	memset (buf, 0, sizeof(*buf));
+ 	buf->data = data;
+ 	buf->maxsize = length;
+ 	buf->oob = qtrue;
+@@ -88,9 +88,9 @@
+ 	if (length<src->cursize) {
+ 		Com_Error( ERR_DROP, "MSG_Copy: can't copy into a smaller msg_t buffer (%i < %i)",length,src->cursize);
+ 	}
+-	Com_Memcpy(buf, src, sizeof(msg_t));
++	memcpy(buf, src, sizeof(msg_t));
+ 	buf->data = data;
+-	Com_Memcpy(buf->data, src->data, src->cursize);
++	memcpy(buf->data, src->data, src->cursize);
+ }
+ 
+ /*
+@@ -1424,7 +1424,7 @@
+ 
+ 	// check for a remove
+ 	if ( MSG_ReadBits( msg, 1 ) == 1 ) {
+-		Com_Memset( to, 0, sizeof( *to ) );	
++		memset( to, 0, sizeof( *to ) );	
+ 		to->number = MAX_GENTITIES - 1;
+ 		if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
+ 			Com_Printf( "%3i: #%-3i remove\n", msg->readcount, number );
+@@ -1591,7 +1591,7 @@
+ 
+ 	if (!from) {
+ 		from = &dummy;
+-		Com_Memset (&dummy, 0, sizeof(dummy));
++		memset (&dummy, 0, sizeof(dummy));
+ 	}
+ 
+ 	numFields = ARRAY_LEN( playerStateFields );
+@@ -1662,7 +1662,7 @@
+ 
+ 	if ( !from ) {
+ 		from = &dummy;
+-		Com_Memset( &dummy, 0, sizeof( dummy ) );
++		memset( &dummy, 0, sizeof( dummy ) );
+ 	}
+ 	*to = *from;
+ 
+Index: code/qcommon/net_chan.cpp
+===================================================================
+--- code/qcommon/net_chan.cpp	(revision 183)
++++ code/qcommon/net_chan.cpp	(working copy)
+@@ -85,7 +85,7 @@
+ */
+ void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, int challenge, qboolean compat)
+ {
+-	Com_Memset (chan, 0, sizeof(*chan));
++	memset (chan, 0, sizeof(*chan));
+ 	
+ 	chan->sock = sock;
+ 	chan->remoteAddress = adr;
+@@ -187,7 +187,7 @@
+ 	if ( length >= FRAGMENT_SIZE ) {
+ 		chan->unsentFragments = qtrue;
+ 		chan->unsentLength = length;
+-		Com_Memcpy( chan->unsentBuffer, data, length );
++		memcpy( chan->unsentBuffer, data, length );
+ 
+ 		// only send the first fragment now
+ 		Netchan_TransmitNextFragment( chan );
+@@ -366,7 +366,7 @@
+ 			return qfalse;
+ 		}
+ 
+-		Com_Memcpy( chan->fragmentBuffer + chan->fragmentLength, 
++		memcpy( chan->fragmentBuffer + chan->fragmentLength, 
+ 			msg->data + msg->readcount, fragmentLength );
+ 
+ 		chan->fragmentLength += fragmentLength;
+@@ -388,7 +388,7 @@
+ 		// make sure the sequence number is still there
+ 		*(int *)msg->data = LittleLong( sequence );
+ 
+-		Com_Memcpy( msg->data + 4, chan->fragmentBuffer, chan->fragmentLength );
++		memcpy( msg->data + 4, chan->fragmentBuffer, chan->fragmentLength );
+ 		msg->cursize = chan->fragmentLength + 4;
+ 		chan->fragmentLength = 0;
+ 		msg->readcount = 4;	// past the sequence number
+@@ -454,9 +454,9 @@
+ 	i = loop->get & (MAX_LOOPBACK-1);
+ 	loop->get++;
+ 
+-	Com_Memcpy (net_message->data, loop->msgs[i].data, loop->msgs[i].datalen);
++	memcpy (net_message->data, loop->msgs[i].data, loop->msgs[i].datalen);
+ 	net_message->cursize = loop->msgs[i].datalen;
+-	Com_Memset (net_from, 0, sizeof(*net_from));
++	memset (net_from, 0, sizeof(*net_from));
+ 	net_from->type = NA_LOOPBACK;
+ 	return qtrue;
+ 
+@@ -473,7 +473,7 @@
+ 	i = loop->send & (MAX_LOOPBACK-1);
+ 	loop->send++;
+ 
+-	Com_Memcpy (loop->msgs[i].data, data, length);
++	memcpy (loop->msgs[i].data, data, length);
+ 	loop->msgs[i].datalen = length;
+ }
+ 
+@@ -499,7 +499,7 @@
+ 
+ 	neww = (packetQueue_t*)S_Malloc(sizeof(packetQueue_t));
+ 	neww->data = (byte*)S_Malloc(length);
+-	Com_Memcpy(neww->data, data, length);
++	memcpy(neww->data, data, length);
+ 	neww->length = length;
+ 	neww->to = to;
+ 	neww->release = Sys_Milliseconds() + (int)((float)offset / com_timescale->value);	
+@@ -634,7 +634,7 @@
+ 	char	*port = NULL;
+ 
+ 	if (!strcmp (s, "localhost")) {
+-		Com_Memset (a, 0, sizeof(*a));
++		memset (a, 0, sizeof(*a));
+ 		a->type = NA_LOOPBACK;
+ // as NA_LOOPBACK doesn't require ports report port was given.
+ 		return 1;
+Index: code/qcommon/q_math.cpp
+===================================================================
+--- code/qcommon/q_math.cpp	(revision 183)
++++ code/qcommon/q_math.cpp	(working copy)
+@@ -22,480 +22,13 @@
+ //
+ // q_math.c -- stateless support routines that are included in each code module
+ 
+-// Some of the vector functions are static inline in q_shared.h. q3asm
+-// doesn't understand static functions though, so we only want them in
+-// one file. That's what this is about.
+-#ifdef Q3_VM
+-#define __Q3_VM_MATH
+-#endif
+-
+ #include "q_shared.h"
+ 
+-vec3_t	vec3_origin = {0,0,0};
+-vec3_t	axisDefault[3] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+ 
+ 
+-vec4_t		colorBlack	= {0, 0, 0, 1};
+-vec4_t		colorRed	= {1, 0, 0, 1};
+-vec4_t		colorGreen	= {0, 1, 0, 1};
+-vec4_t		colorBlue	= {0, 0, 1, 1};
+-vec4_t		colorYellow	= {1, 1, 0, 1};
+-vec4_t		colorMagenta= {1, 0, 1, 1};
+-vec4_t		colorCyan	= {0, 1, 1, 1};
+-vec4_t		colorWhite	= {1, 1, 1, 1};
+-vec4_t		colorLtGrey	= {0.75, 0.75, 0.75, 1};
+-vec4_t		colorMdGrey	= {0.5, 0.5, 0.5, 1};
+-vec4_t		colorDkGrey	= {0.25, 0.25, 0.25, 1};
+ 
+-vec4_t	g_color_table[8] =
+-	{
+-	{0.0, 0.0, 0.0, 1.0},
+-	{1.0, 0.0, 0.0, 1.0},
+-	{0.0, 1.0, 0.0, 1.0},
+-	{1.0, 1.0, 0.0, 1.0},
+-	{0.0, 0.0, 1.0, 1.0},
+-	{0.0, 1.0, 1.0, 1.0},
+-	{1.0, 0.0, 1.0, 1.0},
+-	{1.0, 1.0, 1.0, 1.0},
+-	};
+-
+-
+-vec3_t	bytedirs[NUMVERTEXNORMALS] =
+-{
+-{-0.525731f, 0.000000f, 0.850651f}, {-0.442863f, 0.238856f, 0.864188f}, 
+-{-0.295242f, 0.000000f, 0.955423f}, {-0.309017f, 0.500000f, 0.809017f}, 
+-{-0.162460f, 0.262866f, 0.951056f}, {0.000000f, 0.000000f, 1.000000f}, 
+-{0.000000f, 0.850651f, 0.525731f}, {-0.147621f, 0.716567f, 0.681718f}, 
+-{0.147621f, 0.716567f, 0.681718f}, {0.000000f, 0.525731f, 0.850651f}, 
+-{0.309017f, 0.500000f, 0.809017f}, {0.525731f, 0.000000f, 0.850651f}, 
+-{0.295242f, 0.000000f, 0.955423f}, {0.442863f, 0.238856f, 0.864188f}, 
+-{0.162460f, 0.262866f, 0.951056f}, {-0.681718f, 0.147621f, 0.716567f}, 
+-{-0.809017f, 0.309017f, 0.500000f},{-0.587785f, 0.425325f, 0.688191f}, 
+-{-0.850651f, 0.525731f, 0.000000f},{-0.864188f, 0.442863f, 0.238856f}, 
+-{-0.716567f, 0.681718f, 0.147621f},{-0.688191f, 0.587785f, 0.425325f}, 
+-{-0.500000f, 0.809017f, 0.309017f}, {-0.238856f, 0.864188f, 0.442863f}, 
+-{-0.425325f, 0.688191f, 0.587785f}, {-0.716567f, 0.681718f, -0.147621f}, 
+-{-0.500000f, 0.809017f, -0.309017f}, {-0.525731f, 0.850651f, 0.000000f}, 
+-{0.000000f, 0.850651f, -0.525731f}, {-0.238856f, 0.864188f, -0.442863f}, 
+-{0.000000f, 0.955423f, -0.295242f}, {-0.262866f, 0.951056f, -0.162460f}, 
+-{0.000000f, 1.000000f, 0.000000f}, {0.000000f, 0.955423f, 0.295242f}, 
+-{-0.262866f, 0.951056f, 0.162460f}, {0.238856f, 0.864188f, 0.442863f}, 
+-{0.262866f, 0.951056f, 0.162460f}, {0.500000f, 0.809017f, 0.309017f}, 
+-{0.238856f, 0.864188f, -0.442863f},{0.262866f, 0.951056f, -0.162460f}, 
+-{0.500000f, 0.809017f, -0.309017f},{0.850651f, 0.525731f, 0.000000f}, 
+-{0.716567f, 0.681718f, 0.147621f}, {0.716567f, 0.681718f, -0.147621f}, 
+-{0.525731f, 0.850651f, 0.000000f}, {0.425325f, 0.688191f, 0.587785f}, 
+-{0.864188f, 0.442863f, 0.238856f}, {0.688191f, 0.587785f, 0.425325f}, 
+-{0.809017f, 0.309017f, 0.500000f}, {0.681718f, 0.147621f, 0.716567f}, 
+-{0.587785f, 0.425325f, 0.688191f}, {0.955423f, 0.295242f, 0.000000f}, 
+-{1.000000f, 0.000000f, 0.000000f}, {0.951056f, 0.162460f, 0.262866f}, 
+-{0.850651f, -0.525731f, 0.000000f},{0.955423f, -0.295242f, 0.000000f}, 
+-{0.864188f, -0.442863f, 0.238856f}, {0.951056f, -0.162460f, 0.262866f}, 
+-{0.809017f, -0.309017f, 0.500000f}, {0.681718f, -0.147621f, 0.716567f}, 
+-{0.850651f, 0.000000f, 0.525731f}, {0.864188f, 0.442863f, -0.238856f}, 
+-{0.809017f, 0.309017f, -0.500000f}, {0.951056f, 0.162460f, -0.262866f}, 
+-{0.525731f, 0.000000f, -0.850651f}, {0.681718f, 0.147621f, -0.716567f}, 
+-{0.681718f, -0.147621f, -0.716567f},{0.850651f, 0.000000f, -0.525731f}, 
+-{0.809017f, -0.309017f, -0.500000f}, {0.864188f, -0.442863f, -0.238856f}, 
+-{0.951056f, -0.162460f, -0.262866f}, {0.147621f, 0.716567f, -0.681718f}, 
+-{0.309017f, 0.500000f, -0.809017f}, {0.425325f, 0.688191f, -0.587785f}, 
+-{0.442863f, 0.238856f, -0.864188f}, {0.587785f, 0.425325f, -0.688191f}, 
+-{0.688191f, 0.587785f, -0.425325f}, {-0.147621f, 0.716567f, -0.681718f}, 
+-{-0.309017f, 0.500000f, -0.809017f}, {0.000000f, 0.525731f, -0.850651f}, 
+-{-0.525731f, 0.000000f, -0.850651f}, {-0.442863f, 0.238856f, -0.864188f}, 
+-{-0.295242f, 0.000000f, -0.955423f}, {-0.162460f, 0.262866f, -0.951056f}, 
+-{0.000000f, 0.000000f, -1.000000f}, {0.295242f, 0.000000f, -0.955423f}, 
+-{0.162460f, 0.262866f, -0.951056f}, {-0.442863f, -0.238856f, -0.864188f}, 
+-{-0.309017f, -0.500000f, -0.809017f}, {-0.162460f, -0.262866f, -0.951056f}, 
+-{0.000000f, -0.850651f, -0.525731f}, {-0.147621f, -0.716567f, -0.681718f}, 
+-{0.147621f, -0.716567f, -0.681718f}, {0.000000f, -0.525731f, -0.850651f}, 
+-{0.309017f, -0.500000f, -0.809017f}, {0.442863f, -0.238856f, -0.864188f}, 
+-{0.162460f, -0.262866f, -0.951056f}, {0.238856f, -0.864188f, -0.442863f}, 
+-{0.500000f, -0.809017f, -0.309017f}, {0.425325f, -0.688191f, -0.587785f}, 
+-{0.716567f, -0.681718f, -0.147621f}, {0.688191f, -0.587785f, -0.425325f}, 
+-{0.587785f, -0.425325f, -0.688191f}, {0.000000f, -0.955423f, -0.295242f}, 
+-{0.000000f, -1.000000f, 0.000000f}, {0.262866f, -0.951056f, -0.162460f}, 
+-{0.000000f, -0.850651f, 0.525731f}, {0.000000f, -0.955423f, 0.295242f}, 
+-{0.238856f, -0.864188f, 0.442863f}, {0.262866f, -0.951056f, 0.162460f}, 
+-{0.500000f, -0.809017f, 0.309017f}, {0.716567f, -0.681718f, 0.147621f}, 
+-{0.525731f, -0.850651f, 0.000000f}, {-0.238856f, -0.864188f, -0.442863f}, 
+-{-0.500000f, -0.809017f, -0.309017f}, {-0.262866f, -0.951056f, -0.162460f}, 
+-{-0.850651f, -0.525731f, 0.000000f}, {-0.716567f, -0.681718f, -0.147621f}, 
+-{-0.716567f, -0.681718f, 0.147621f}, {-0.525731f, -0.850651f, 0.000000f}, 
+-{-0.500000f, -0.809017f, 0.309017f}, {-0.238856f, -0.864188f, 0.442863f}, 
+-{-0.262866f, -0.951056f, 0.162460f}, {-0.864188f, -0.442863f, 0.238856f}, 
+-{-0.809017f, -0.309017f, 0.500000f}, {-0.688191f, -0.587785f, 0.425325f}, 
+-{-0.681718f, -0.147621f, 0.716567f}, {-0.442863f, -0.238856f, 0.864188f}, 
+-{-0.587785f, -0.425325f, 0.688191f}, {-0.309017f, -0.500000f, 0.809017f}, 
+-{-0.147621f, -0.716567f, 0.681718f}, {-0.425325f, -0.688191f, 0.587785f}, 
+-{-0.162460f, -0.262866f, 0.951056f}, {0.442863f, -0.238856f, 0.864188f}, 
+-{0.162460f, -0.262866f, 0.951056f}, {0.309017f, -0.500000f, 0.809017f}, 
+-{0.147621f, -0.716567f, 0.681718f}, {0.000000f, -0.525731f, 0.850651f}, 
+-{0.425325f, -0.688191f, 0.587785f}, {0.587785f, -0.425325f, 0.688191f}, 
+-{0.688191f, -0.587785f, 0.425325f}, {-0.955423f, 0.295242f, 0.000000f}, 
+-{-0.951056f, 0.162460f, 0.262866f}, {-1.000000f, 0.000000f, 0.000000f}, 
+-{-0.850651f, 0.000000f, 0.525731f}, {-0.955423f, -0.295242f, 0.000000f}, 
+-{-0.951056f, -0.162460f, 0.262866f}, {-0.864188f, 0.442863f, -0.238856f}, 
+-{-0.951056f, 0.162460f, -0.262866f}, {-0.809017f, 0.309017f, -0.500000f}, 
+-{-0.864188f, -0.442863f, -0.238856f}, {-0.951056f, -0.162460f, -0.262866f}, 
+-{-0.809017f, -0.309017f, -0.500000f}, {-0.681718f, 0.147621f, -0.716567f}, 
+-{-0.681718f, -0.147621f, -0.716567f}, {-0.850651f, 0.000000f, -0.525731f}, 
+-{-0.688191f, 0.587785f, -0.425325f}, {-0.587785f, 0.425325f, -0.688191f}, 
+-{-0.425325f, 0.688191f, -0.587785f}, {-0.425325f, -0.688191f, -0.587785f}, 
+-{-0.587785f, -0.425325f, -0.688191f}, {-0.688191f, -0.587785f, -0.425325f}
+-};
+-
+-//==============================================================
+-
+-int		Q_rand( int *seed ) {
+-	*seed = (69069 * *seed + 1);
+-	return *seed;
+-}
+-
+-float	Q_random( int *seed ) {
+-	return ( Q_rand( seed ) & 0xffff ) / (float)0x10000;
+-}
+-
+-float	Q_crandom( int *seed ) {
+-	return 2.0 * ( Q_random( seed ) - 0.5 );
+-}
+-
+-//=======================================================
+-
+-signed char ClampChar( int i ) {
+-	if ( i < -128 ) {
+-		return -128;
+-	}
+-	if ( i > 127 ) {
+-		return 127;
+-	}
+-	return i;
+-}
+-
+-signed short ClampShort( int i ) {
+-	if ( i < -32768 ) {
+-		return -32768;
+-	}
+-	if ( i > 0x7fff ) {
+-		return 0x7fff;
+-	}
+-	return i;
+-}
+-
+-
+-// this isn't a real cheap function to call!
+-int DirToByte( vec3_t dir ) {
+-	int		i, best;
+-	float	d, bestd;
+-
+-	if ( !dir ) {
+-		return 0;
+-	}
+-
+-	bestd = 0;
+-	best = 0;
+-	for (i=0 ; i<NUMVERTEXNORMALS ; i++)
+-	{
+-		d = DotProduct (dir, bytedirs[i]);
+-		if (d > bestd)
+-		{
+-			bestd = d;
+-			best = i;
+-		}
+-	}
+-
+-	return best;
+-}
+-
+-void ByteToDir( int b, vec3_t dir ) {
+-	if ( b < 0 || b >= NUMVERTEXNORMALS ) {
+-		VectorCopy( vec3_origin, dir );
+-		return;
+-	}
+-	VectorCopy (bytedirs[b], dir);
+-}
+-
+-
+-unsigned ColorBytes3 (float r, float g, float b) {
+-	unsigned	i;
+-
+-	( (byte *)&i )[0] = r * 255;
+-	( (byte *)&i )[1] = g * 255;
+-	( (byte *)&i )[2] = b * 255;
+-
+-	return i;
+-}
+-
+-unsigned ColorBytes4 (float r, float g, float b, float a) {
+-	unsigned	i;
+-
+-	( (byte *)&i )[0] = r * 255;
+-	( (byte *)&i )[1] = g * 255;
+-	( (byte *)&i )[2] = b * 255;
+-	( (byte *)&i )[3] = a * 255;
+-
+-	return i;
+-}
+-
+-float NormalizeColor( const vec3_t in, vec3_t out ) {
+-	float	max;
+-	
+-	max = in[0];
+-	if ( in[1] > max ) {
+-		max = in[1];
+-	}
+-	if ( in[2] > max ) {
+-		max = in[2];
+-	}
+-
+-	if ( !max ) {
+-		VectorClear( out );
+-	} else {
+-		out[0] = in[0] / max;
+-		out[1] = in[1] / max;
+-		out[2] = in[2] / max;
+-	}
+-	return max;
+-}
+-
+-
+-/*
+-=====================
+-PlaneFromPoints
+-
+-Returns false if the triangle is degenrate.
+-The normal will point out of the clock for clockwise ordered points
+-=====================
+-*/
+-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c ) {
+-	vec3_t	d1, d2;
+-
+-	VectorSubtract( b, a, d1 );
+-	VectorSubtract( c, a, d2 );
+-	CrossProduct( d2, d1, plane );
+-	if ( VectorNormalize( plane ) == 0 ) {
+-		return qfalse;
+-	}
+-
+-	plane[3] = DotProduct( a, plane );
+-	return qtrue;
+-}
+-
+-/*
+-===============
+-RotatePointAroundVector
+-
+-This is not implemented very well...
+-===============
+-*/
+-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point,
+-							 float degrees ) {
+-	float	m[3][3];
+-	float	im[3][3];
+-	float	zrot[3][3];
+-	float	tmpmat[3][3];
+-	float	rot[3][3];
+-	int	i;
+-	vec3_t vr, vup, vf;
+-	float	rad;
+-
+-	vf[0] = dir[0];
+-	vf[1] = dir[1];
+-	vf[2] = dir[2];
+-
+-	PerpendicularVector( vr, dir );
+-	CrossProduct( vr, vf, vup );
+-
+-	m[0][0] = vr[0];
+-	m[1][0] = vr[1];
+-	m[2][0] = vr[2];
+-
+-	m[0][1] = vup[0];
+-	m[1][1] = vup[1];
+-	m[2][1] = vup[2];
+-
+-	m[0][2] = vf[0];
+-	m[1][2] = vf[1];
+-	m[2][2] = vf[2];
+-
+-	memcpy( im, m, sizeof( im ) );
+-
+-	im[0][1] = m[1][0];
+-	im[0][2] = m[2][0];
+-	im[1][0] = m[0][1];
+-	im[1][2] = m[2][1];
+-	im[2][0] = m[0][2];
+-	im[2][1] = m[1][2];
+-
+-	memset( zrot, 0, sizeof( zrot ) );
+-	zrot[0][0] = zrot[1][1] = zrot[2][2] = 1.0F;
+-
+-	rad = DEG2RAD( degrees );
+-	zrot[0][0] = cos( rad );
+-	zrot[0][1] = sin( rad );
+-	zrot[1][0] = -sin( rad );
+-	zrot[1][1] = cos( rad );
+-
+-	MatrixMultiply( m, zrot, tmpmat );
+-	MatrixMultiply( tmpmat, im, rot );
+-
+-	for ( i = 0; i < 3; i++ ) {
+-		dst[i] = rot[i][0] * point[0] + rot[i][1] * point[1] + rot[i][2] * point[2];
+-	}
+-}
+-
+-/*
+-===============
+-RotateAroundDirection
+-===============
+-*/
+-void RotateAroundDirection( vec3_t axis[3], float yaw ) {
+-
+-	// create an arbitrary axis[1] 
+-	PerpendicularVector( axis[1], axis[0] );
+-
+-	// rotate it around axis[0] by yaw
+-	if ( yaw ) {
+-		vec3_t	temp;
+-
+-		VectorCopy( axis[1], temp );
+-		RotatePointAroundVector( axis[1], axis[0], temp, yaw );
+-	}
+-
+-	// cross to get axis[2]
+-	CrossProduct( axis[0], axis[1], axis[2] );
+-}
+-
+-
+-
+-void vectoangles( const vec3_t value1, vec3_t angles ) {
+-	float	forward;
+-	float	yaw, pitch;
+-	
+-	if ( value1[1] == 0 && value1[0] == 0 ) {
+-		yaw = 0;
+-		if ( value1[2] > 0 ) {
+-			pitch = 90;
+-		}
+-		else {
+-			pitch = 270;
+-		}
+-	}
+-	else {
+-		if ( value1[0] ) {
+-			yaw = ( atan2 ( value1[1], value1[0] ) * 180 / M_PI );
+-		}
+-		else if ( value1[1] > 0 ) {
+-			yaw = 90;
+-		}
+-		else {
+-			yaw = 270;
+-		}
+-		if ( yaw < 0 ) {
+-			yaw += 360;
+-		}
+-
+-		forward = sqrt ( value1[0]*value1[0] + value1[1]*value1[1] );
+-		pitch = ( atan2(value1[2], forward) * 180 / M_PI );
+-		if ( pitch < 0 ) {
+-			pitch += 360;
+-		}
+-	}
+-
+-	angles[PITCH] = -pitch;
+-	angles[YAW] = yaw;
+-	angles[ROLL] = 0;
+-}
+-
+-
+-/*
+-=================
+-AnglesToAxis
+-=================
+-*/
+-void AnglesToAxis( const vec3_t angles, vec3_t axis[3] ) {
+-	vec3_t	right;
+-
+-	// angle vectors returns "right" instead of "y axis"
+-	AngleVectors( angles, axis[0], right, axis[2] );
+-	VectorSubtract( vec3_origin, right, axis[1] );
+-}
+-
+-void AxisClear( vec3_t axis[3] ) {
+-	axis[0][0] = 1;
+-	axis[0][1] = 0;
+-	axis[0][2] = 0;
+-	axis[1][0] = 0;
+-	axis[1][1] = 1;
+-	axis[1][2] = 0;
+-	axis[2][0] = 0;
+-	axis[2][1] = 0;
+-	axis[2][2] = 1;
+-}
+-
+-void AxisCopy( vec3_t in[3], vec3_t out[3] ) {
+-	VectorCopy( in[0], out[0] );
+-	VectorCopy( in[1], out[1] );
+-	VectorCopy( in[2], out[2] );
+-}
+-
+-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal )
+-{
+-	float d;
+-	vec3_t n;
+-	float inv_denom;
+-
+-	inv_denom =  DotProduct( normal, normal );
+-#ifndef Q3_VM
+-	assert( Q_fabs(inv_denom) != 0.0f ); // zero vectors get here
+-#endif
+-	inv_denom = 1.0f / inv_denom;
+-
+-	d = DotProduct( normal, p ) * inv_denom;
+-
+-	n[0] = normal[0] * inv_denom;
+-	n[1] = normal[1] * inv_denom;
+-	n[2] = normal[2] * inv_denom;
+-
+-	dst[0] = p[0] - d * n[0];
+-	dst[1] = p[1] - d * n[1];
+-	dst[2] = p[2] - d * n[2];
+-}
+-
+-/*
+-================
+-MakeNormalVectors
+-
+-Given a normalized forward vector, create two
+-other perpendicular vectors
+-================
+-*/
+-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up) {
+-	float		d;
+-
+-	// this rotate and negate guarantees a vector
+-	// not colinear with the original
+-	right[1] = -forward[0];
+-	right[2] = forward[1];
+-	right[0] = forward[2];
+-
+-	d = DotProduct (right, forward);
+-	VectorMA (right, -d, forward, right);
+-	VectorNormalize (right);
+-	CrossProduct (right, forward, up);
+-}
+-
+-
+-void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out )
+-{
+-	out[0] = DotProduct( in, matrix[0] );
+-	out[1] = DotProduct( in, matrix[1] );
+-	out[2] = DotProduct( in, matrix[2] );
+-}
+-
+ //============================================================================
+ 
+-#if !idppc
+ /*
+ ** float q_rsqrt( float number )
+ */
+@@ -514,15 +47,6 @@
+ 
+ 	return y;
+ }
+-
+-float Q_fabs( float f ) {
+-	floatint_t fi;
+-	fi.f = f;
+-	fi.i &= 0x7FFFFFFF;
+-	return fi.f;
+-}
+-#endif
+-
+ //============================================================
+ 
+ /*
+@@ -548,40 +72,6 @@
+ 
+ /*
+ =================
+-AngleSubtract
+-
+-Always returns a value from -180 to 180
+-=================
+-*/
+-float	AngleSubtract( float a1, float a2 ) {
+-	float	a;
+-
+-	a = a1 - a2;
+-	while ( a > 180 ) {
+-		a -= 360;
+-	}
+-	while ( a < -180 ) {
+-		a += 360;
+-	}
+-	return a;
+-}
+-
+-
+-void AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 ) {
+-	v3[0] = AngleSubtract( v1[0], v2[0] );
+-	v3[1] = AngleSubtract( v1[1], v2[1] );
+-	v3[2] = AngleSubtract( v1[2], v2[2] );
+-}
+-
+-
+-float	AngleMod(float a) {
+-	a = (360.0/65536) * ((int)(a*(65536/360.0)) & 65535);
+-	return a;
+-}
+-
+-
+-/*
+-=================
+ AngleNormalize360
+ 
+ returns angle normalized to the range [0 <= angle < 360]
+@@ -591,452 +81,3 @@
+ 	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
+ }
+ 
+-
+-/*
+-=================
+-AngleNormalize180
+-
+-returns angle normalized to the range [-180 < angle <= 180]
+-=================
+-*/
+-float AngleNormalize180 ( float angle ) {
+-	angle = AngleNormalize360( angle );
+-	if ( angle > 180.0 ) {
+-		angle -= 360.0;
+-	}
+-	return angle;
+-}
+-
+-
+-/*
+-=================
+-AngleDelta
+-
+-returns the normalized delta from angle1 to angle2
+-=================
+-*/
+-float AngleDelta ( float angle1, float angle2 ) {
+-	return AngleNormalize180( angle1 - angle2 );
+-}
+-
+-
+-//============================================================
+-
+-
+-/*
+-=================
+-SetPlaneSignbits
+-=================
+-*/
+-void SetPlaneSignbits (cplane_t *out) {
+-	int	bits, j;
+-
+-	// for fast box on planeside test
+-	bits = 0;
+-	for (j=0 ; j<3 ; j++) {
+-		if (out->normal[j] < 0) {
+-			bits |= 1<<j;
+-		}
+-	}
+-	out->signbits = bits;
+-}
+-
+-
+-/*
+-==================
+-BoxOnPlaneSide
+-
+-Returns 1, 2, or 1 + 2
+-==================
+-*/
+-int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+-{
+-	float	dist[2];
+-	int		sides, b, i;
+-
+-	// fast axial cases
+-	if (p->type < 3)
+-	{
+-		if (p->dist <= emins[p->type])
+-			return 1;
+-		if (p->dist >= emaxs[p->type])
+-			return 2;
+-		return 3;
+-	}
+-
+-	// general case
+-	dist[0] = dist[1] = 0;
+-	if (p->signbits < 8) // >= 8: default case is original code (dist[0]=dist[1]=0)
+-	{
+-		for (i=0 ; i<3 ; i++)
+-		{
+-			b = (p->signbits >> i) & 1;
+-			dist[ b] += p->normal[i]*emaxs[i];
+-			dist[!b] += p->normal[i]*emins[i];
+-		}
+-	}
+-
+-	sides = 0;
+-	if (dist[0] >= p->dist)
+-		sides = 1;
+-	if (dist[1] < p->dist)
+-		sides |= 2;
+-
+-	return sides;
+-}
+-
+-
+-/*
+-=================
+-RadiusFromBounds
+-=================
+-*/
+-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs ) {
+-	int		i;
+-	vec3_t	corner;
+-	float	a, b;
+-
+-	for (i=0 ; i<3 ; i++) {
+-		a = fabs( mins[i] );
+-		b = fabs( maxs[i] );
+-		corner[i] = a > b ? a : b;
+-	}
+-
+-	return VectorLength (corner);
+-}
+-
+-
+-void ClearBounds( vec3_t mins, vec3_t maxs ) {
+-	mins[0] = mins[1] = mins[2] = 99999;
+-	maxs[0] = maxs[1] = maxs[2] = -99999;
+-}
+-
+-void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
+-	if ( v[0] < mins[0] ) {
+-		mins[0] = v[0];
+-	}
+-	if ( v[0] > maxs[0]) {
+-		maxs[0] = v[0];
+-	}
+-
+-	if ( v[1] < mins[1] ) {
+-		mins[1] = v[1];
+-	}
+-	if ( v[1] > maxs[1]) {
+-		maxs[1] = v[1];
+-	}
+-
+-	if ( v[2] < mins[2] ) {
+-		mins[2] = v[2];
+-	}
+-	if ( v[2] > maxs[2]) {
+-		maxs[2] = v[2];
+-	}
+-}
+-
+-qboolean BoundsIntersect(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t mins2, const vec3_t maxs2)
+-{
+-	if ( maxs[0] < mins2[0] ||
+-		maxs[1] < mins2[1] ||
+-		maxs[2] < mins2[2] ||
+-		mins[0] > maxs2[0] ||
+-		mins[1] > maxs2[1] ||
+-		mins[2] > maxs2[2])
+-	{
+-		return qfalse;
+-	}
+-
+-	return qtrue;
+-}
+-
+-qboolean BoundsIntersectSphere(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t origin, vec_t radius)
+-{
+-	if ( origin[0] - radius > maxs[0] ||
+-		origin[0] + radius < mins[0] ||
+-		origin[1] - radius > maxs[1] ||
+-		origin[1] + radius < mins[1] ||
+-		origin[2] - radius > maxs[2] ||
+-		origin[2] + radius < mins[2])
+-	{
+-		return qfalse;
+-	}
+-
+-	return qtrue;
+-}
+-
+-qboolean BoundsIntersectPoint(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t origin)
+-{
+-	if ( origin[0] > maxs[0] ||
+-		origin[0] < mins[0] ||
+-		origin[1] > maxs[1] ||
+-		origin[1] < mins[1] ||
+-		origin[2] > maxs[2] ||
+-		origin[2] < mins[2])
+-	{
+-		return qfalse;
+-	}
+-
+-	return qtrue;
+-}
+-
+-vec_t VectorNormalize( vec3_t v ) {
+-	// NOTE: TTimo - Apple G4 altivec source uses double?
+-	float	length, ilength;
+-
+-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+-
+-	if ( length ) {
+-		/* writing it this way allows gcc to recognize that rsqrt can be used */
+-		ilength = 1/(float)sqrt (length);
+-		/* sqrt(length) = length * (1 / sqrt(length)) */
+-		length *= ilength;
+-		v[0] *= ilength;
+-		v[1] *= ilength;
+-		v[2] *= ilength;
+-	}
+-		
+-	return length;
+-}
+-
+-vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
+-	float	length, ilength;
+-
+-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+-
+-	if (length)
+-	{
+-		/* writing it this way allows gcc to recognize that rsqrt can be used */
+-		ilength = 1/(float)sqrt (length);
+-		/* sqrt(length) = length * (1 / sqrt(length)) */
+-		length *= ilength;
+-		out[0] = v[0]*ilength;
+-		out[1] = v[1]*ilength;
+-		out[2] = v[2]*ilength;
+-	} else {
+-		VectorClear( out );
+-	}
+-		
+-	return length;
+-
+-}
+-
+-void _VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc) {
+-	vecc[0] = veca[0] + scale*vecb[0];
+-	vecc[1] = veca[1] + scale*vecb[1];
+-	vecc[2] = veca[2] + scale*vecb[2];
+-}
+-
+-
+-vec_t _DotProduct( const vec3_t v1, const vec3_t v2 ) {
+-	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+-}
+-
+-void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out ) {
+-	out[0] = veca[0]-vecb[0];
+-	out[1] = veca[1]-vecb[1];
+-	out[2] = veca[2]-vecb[2];
+-}
+-
+-void _VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t out ) {
+-	out[0] = veca[0]+vecb[0];
+-	out[1] = veca[1]+vecb[1];
+-	out[2] = veca[2]+vecb[2];
+-}
+-
+-void _VectorCopy( const vec3_t in, vec3_t out ) {
+-	out[0] = in[0];
+-	out[1] = in[1];
+-	out[2] = in[2];
+-}
+-
+-void _VectorScale( const vec3_t in, vec_t scale, vec3_t out ) {
+-	out[0] = in[0]*scale;
+-	out[1] = in[1]*scale;
+-	out[2] = in[2]*scale;
+-}
+-
+-void Vector4Scale( const vec4_t in, vec_t scale, vec4_t out ) {
+-	out[0] = in[0]*scale;
+-	out[1] = in[1]*scale;
+-	out[2] = in[2]*scale;
+-	out[3] = in[3]*scale;
+-}
+-
+-
+-int Q_log2( int val ) {
+-	int answer;
+-
+-	answer = 0;
+-	while ( ( val>>=1 ) != 0 ) {
+-		answer++;
+-	}
+-	return answer;
+-}
+-
+-
+-
+-/*
+-=================
+-PlaneTypeForNormal
+-=================
+-*/
+-/*
+-int	PlaneTypeForNormal (vec3_t normal) {
+-	if ( normal[0] == 1.0 )
+-		return PLANE_X;
+-	if ( normal[1] == 1.0 )
+-		return PLANE_Y;
+-	if ( normal[2] == 1.0 )
+-		return PLANE_Z;
+-	
+-	return PLANE_NON_AXIAL;
+-}
+-*/
+-
+-
+-/*
+-================
+-MatrixMultiply
+-================
+-*/
+-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]) {
+-	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
+-				in1[0][2] * in2[2][0];
+-	out[0][1] = in1[0][0] * in2[0][1] + in1[0][1] * in2[1][1] +
+-				in1[0][2] * in2[2][1];
+-	out[0][2] = in1[0][0] * in2[0][2] + in1[0][1] * in2[1][2] +
+-				in1[0][2] * in2[2][2];
+-	out[1][0] = in1[1][0] * in2[0][0] + in1[1][1] * in2[1][0] +
+-				in1[1][2] * in2[2][0];
+-	out[1][1] = in1[1][0] * in2[0][1] + in1[1][1] * in2[1][1] +
+-				in1[1][2] * in2[2][1];
+-	out[1][2] = in1[1][0] * in2[0][2] + in1[1][1] * in2[1][2] +
+-				in1[1][2] * in2[2][2];
+-	out[2][0] = in1[2][0] * in2[0][0] + in1[2][1] * in2[1][0] +
+-				in1[2][2] * in2[2][0];
+-	out[2][1] = in1[2][0] * in2[0][1] + in1[2][1] * in2[1][1] +
+-				in1[2][2] * in2[2][1];
+-	out[2][2] = in1[2][0] * in2[0][2] + in1[2][1] * in2[1][2] +
+-				in1[2][2] * in2[2][2];
+-}
+-
+-
+-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up) {
+-	float		angle;
+-	static float		sr, sp, sy, cr, cp, cy;
+-	// static to help MS compiler fp bugs
+-
+-	angle = angles[YAW] * (M_PI*2 / 360);
+-	sy = sin(angle);
+-	cy = cos(angle);
+-	angle = angles[PITCH] * (M_PI*2 / 360);
+-	sp = sin(angle);
+-	cp = cos(angle);
+-	angle = angles[ROLL] * (M_PI*2 / 360);
+-	sr = sin(angle);
+-	cr = cos(angle);
+-
+-	if (forward)
+-	{
+-		forward[0] = cp*cy;
+-		forward[1] = cp*sy;
+-		forward[2] = -sp;
+-	}
+-	if (right)
+-	{
+-		right[0] = (-1*sr*sp*cy+-1*cr*-sy);
+-		right[1] = (-1*sr*sp*sy+-1*cr*cy);
+-		right[2] = -1*sr*cp;
+-	}
+-	if (up)
+-	{
+-		up[0] = (cr*sp*cy+-sr*-sy);
+-		up[1] = (cr*sp*sy+-sr*cy);
+-		up[2] = cr*cp;
+-	}
+-}
+-
+-/*
+-** assumes "src" is normalized
+-*/
+-void PerpendicularVector( vec3_t dst, const vec3_t src )
+-{
+-	int	pos;
+-	int i;
+-	float minelem = 1.0F;
+-	vec3_t tempvec;
+-
+-	/*
+-	** find the smallest magnitude axially aligned vector
+-	*/
+-	for ( pos = 0, i = 0; i < 3; i++ )
+-	{
+-		if ( fabs( src[i] ) < minelem )
+-		{
+-			pos = i;
+-			minelem = fabs( src[i] );
+-		}
+-	}
+-	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;
+-	tempvec[pos] = 1.0F;
+-
+-	/*
+-	** project the point onto the plane defined by src
+-	*/
+-	ProjectPointOnPlane( dst, tempvec, src );
+-
+-	/*
+-	** normalize the result
+-	*/
+-	VectorNormalize( dst );
+-}
+-
+-/*
+-================
+-Q_isnan
+-
+-Don't pass doubles to this
+-================
+-*/
+-int Q_isnan( float x )
+-{
+-	floatint_t fi;
+-
+-	fi.f = x;
+-	fi.ui &= 0x7FFFFFFF;
+-	fi.ui = 0x7F800000 - fi.ui;
+-
+-	return (int)( (unsigned int)fi.ui >> 31 );
+-}
+-//------------------------------------------------------------------------
+-
+-#ifndef Q3_VM
+-/*
+-=====================
+-Q_acos
+-
+-the msvc acos doesn't always return a value between -PI and PI:
+-
+-int i;
+-i = 1065353246;
+-acos(*(float*) &i) == -1.#IND0
+-
+-=====================
+-*/
+-float Q_acos(float c) {
+-	float angle;
+-
+-	angle = acos(c);
+-
+-	if (angle > M_PI) {
+-		return (float)M_PI;
+-	}
+-	if (angle < -M_PI) {
+-		return (float)M_PI;
+-	}
+-	return angle;
+-}
+-#endif
+Index: code/qcommon/q_platform.h
+===================================================================
+--- code/qcommon/q_platform.h	(revision 183)
++++ code/qcommon/q_platform.h	(working copy)
+@@ -376,8 +376,8 @@
+ 
+ #elif defined( Q3_LITTLE_ENDIAN )
+ 
+-#define CopyLittleShort(dest, src) Com_Memcpy(dest, src, 2)
+-#define CopyLittleLong(dest, src) Com_Memcpy(dest, src, 4)
++#define CopyLittleShort(dest, src) memcpy(dest, src, 2)
++#define CopyLittleLong(dest, src) memcpy(dest, src, 4)
+ #define LittleShort
+ #define LittleLong
+ #define LittleFloat
+Index: code/qcommon/q_shared.cpp
+===================================================================
+--- code/qcommon/q_shared.cpp	(revision 183)
++++ code/qcommon/q_shared.cpp	(working copy)
+@@ -22,7 +22,8 @@
+ //
+ // q_shared.c -- stateless support routines that are included in each code dll
+ #include "q_shared.h"
+-#include <api/coreAPI.h>
++#include <api/coreAPI.h>
++#include <shared/colorTable.h>
+ 
+ float Com_Clamp( float min, float max, float value ) {
+ 	if ( value < min ) {
+Index: code/qcommon/q_shared.h
+===================================================================
+--- code/qcommon/q_shared.h	(revision 408)
++++ code/qcommon/q_shared.h	(working copy)
+@@ -174,11 +174,6 @@
+ 	unsigned int ui;
+ } floatint_t;
+ 
+-typedef int		qhandle_t;
+-typedef int		sfxHandle_t;
+-typedef int		fileHandle_t;
+-typedef int		clipHandle_t;
+-
+ #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
+ #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
+ 
+@@ -198,9 +193,6 @@
+ // expand constants before stringifying them
+ #define XSTRING(s)			STRING(s)
+ 
+-#define	MAX_QINT			0x7fffffff
+-#define	MIN_QINT			(-MAX_QINT-1)
+-
+ #define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
+ #define STRARRAY_LEN(x)			(ARRAY_LEN(x) - 1)
+ 
+@@ -219,7 +211,7 @@
+ #define	BIG_INFO_VALUE		8192
+ 
+ 
+-#define	MAX_QPATH			64		// max length of a quake game pathname
++#define	MAX_QPATH			256		// max length of a quake game pathname
+ #ifdef PATH_MAX
+ #define MAX_OSPATH			PATH_MAX
+ #else
+@@ -228,8 +220,6 @@
+ 
+ #define	MAX_NAME_LENGTH		32		// max length of a client name
+ 
+-#define	MAX_SAY_TEXT	150
+-
+ // paramters for command buffer stuffing
+ typedef enum {
+ 	EXEC_NOW,			// don't return until completed, a VM should NEVER use this,
+@@ -254,32 +244,9 @@
+ 	ERR_DROP,					// print to console and disconnect from game
+ 	ERR_SERVERDISCONNECT,		// don't kill server
+ 	ERR_DISCONNECT,				// client disconnected from the server
+-	ERR_NEED_CD					// pop up the need-cd dialog
+ } errorParm_t;
+ 
+ 
+-// font rendering values used by ui and cgame
+-
+-#define PROP_GAP_WIDTH			3
+-#define PROP_SPACE_WIDTH		8
+-#define PROP_HEIGHT				27
+-#define PROP_SMALL_SIZE_SCALE	0.75
+-
+-#define BLINK_DIVISOR			200
+-#define PULSE_DIVISOR			75
+-
+-#define UI_LEFT			0x00000000	// default
+-#define UI_CENTER		0x00000001
+-#define UI_RIGHT		0x00000002
+-#define UI_FORMATMASK	0x00000007
+-#define UI_SMALLFONT	0x00000010
+-#define UI_BIGFONT		0x00000020	// default
+-#define UI_GIANTFONT	0x00000040
+-#define UI_DROPSHADOW	0x00000800
+-#define UI_BLINK		0x00001000
+-#define UI_INVERSE		0x00002000
+-#define UI_PULSE		0x00004000
+-
+ #if !defined(NDEBUG) && !defined(BSPC)
+ 	#define HUNK_DEBUG
+ #endif
+@@ -297,9 +264,6 @@
+ void *Hunk_Alloc( int size, ha_pref preference );
+ #endif
+ 
+-#define Com_Memset memset
+-#define Com_Memcpy memcpy
+-
+ #define CIN_system	1
+ #define CIN_loop	2
+ #define	CIN_hold	4
+@@ -316,13 +280,6 @@
+ 
+ #include "../math/math.h"
+ 
+-typedef	int	fixed4_t;
+-typedef	int	fixed8_t;
+-typedef	int	fixed16_t;
+-
+-#define NUMVERTEXNORMALS	162
+-extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
+-
+ // all drawing is done to a 640*480 virtual screen size
+ // and will be automatically scaled to the real resolution
+ #define	SCREEN_WIDTH		640
+@@ -340,139 +297,17 @@
+ #define	GIANTCHAR_WIDTH		32
+ #define	GIANTCHAR_HEIGHT	48
+ 
+-extern	vec4_t		colorBlack;
+-extern	vec4_t		colorRed;
+-extern	vec4_t		colorGreen;
+-extern	vec4_t		colorBlue;
+-extern	vec4_t		colorYellow;
+-extern	vec4_t		colorMagenta;
+-extern	vec4_t		colorCyan;
+-extern	vec4_t		colorWhite;
+-extern	vec4_t		colorLtGrey;
+-extern	vec4_t		colorMdGrey;
+-extern	vec4_t		colorDkGrey;
+ 
+-#define Q_COLOR_ESCAPE	'^'
+-#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1))) // ^[0-9a-zA-Z]
+-
+-#define COLOR_BLACK	'0'
+-#define COLOR_RED	'1'
+-#define COLOR_GREEN	'2'
+-#define COLOR_YELLOW	'3'
+-#define COLOR_BLUE	'4'
+-#define COLOR_CYAN	'5'
+-#define COLOR_MAGENTA	'6'
+-#define COLOR_WHITE	'7'
+-#define ColorIndex(c)	(((c) - '0') & 0x07)
+-
+-#define S_COLOR_BLACK	"^0"
+-#define S_COLOR_RED	"^1"
+-#define S_COLOR_GREEN	"^2"
+-#define S_COLOR_YELLOW	"^3"
+-#define S_COLOR_BLUE	"^4"
+-#define S_COLOR_CYAN	"^5"
+-#define S_COLOR_MAGENTA	"^6"
+-#define S_COLOR_WHITE	"^7"
+-
+-extern vec4_t	g_color_table[8];
+-
+ #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
+ #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
+ 
+-struct cplane_s;
+-
+-extern	vec3_t	vec3_origin;
+-extern	vec3_t	axisDefault[3];
+-
+ #define	nanmask (255<<23)
+ 
+ #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
+ 
+-int Q_isnan(float x);
+-
+-#if idx64
+-  extern long qftolsse(float f);
+-  extern int qvmftolsse(void);
+-  extern void qsnapvectorsse(vec3_t vec);
+-
+-  #define Q_ftol qftolsse
+-  #define Q_SnapVector qsnapvectorsse
+-
+-  extern int (*Q_VMftol)(void);
+-#elif id386
+-  extern long QDECL qftolx87(float f);
+-  extern long QDECL qftolsse(float f);
+-  extern int QDECL qvmftolx87(void);
+-  extern int QDECL qvmftolsse(void);
+-  extern void QDECL qsnapvectorx87(vec3_t vec);
+-  extern void QDECL qsnapvectorsse(vec3_t vec);
+-
+-  extern long (QDECL *Q_ftol)(float f);
+-  extern int (QDECL *Q_VMftol)(void);
+-  extern void (QDECL *Q_SnapVector)(vec3_t vec);
+-#else
+-  // Q_ftol must expand to a function name so the pluggable renderer can take
+-  // its address
+-  //#define Q_ftol lrintf
+-
+-inline long Q_ftol(float f) {
+-	return (long)f;
+-}
+-
+-  #define Q_round(v) do { if((v) < 0) (v) -= 0.5f; else (v) += 0.5f; (v) = Q_ftol((v)); } while(0)
+-
+-  #define Q_SnapVector(vec)\
+-		(vec)[0] = (int)((vec)[0]);\
+-		(vec)[1] = (int)((vec)[1]);\
+-		(vec)[2] = (int)((vec)[2]);
+-#endif
+-/*
+-// if your system does not have lrintf() and round() you can try this block. Please also open a bug report at bugzilla.icculus.org
+-// or write a mail to the ioq3 mailing list.
+-#else
+-  #define Q_ftol(v) ((long) (v))
+-  #define Q_SnapVector(vec) \
+-	do\
+-	{\
+-		vec3_t *temp = (vec);\
+-		\
+-		Q_round((*temp)[0]);\
+-		Q_round((*temp)[1]);\
+-		Q_round((*temp)[2]);\
+-	} while(0)
+-#endif
+-*/
+-
+-#if idppc
+-
+-static ID_INLINE float Q_rsqrt( float number ) {
+-		float x = 0.5f * number;
+-                float y;
+-#ifdef __GNUC__            
+-                asm("frsqrte %0,%1" : "=f" (y) : "f" (number));
+-#else
+-		y = __frsqrte( number );
+-#endif
+-		return y * (1.5f - (x * y * y));
+-	}
+-
+-#ifdef __GNUC__            
+-static ID_INLINE float Q_fabs(float x) {
+-    float abs_x;
+-    
+-    asm("fabs %0,%1" : "=f" (abs_x) : "f" (x));
+-    return abs_x;
+-}
+-#else
+-#define Q_fabs __fabsf
+-#endif
+-
+-#else
+-float Q_fabs( float f );
+ float Q_rsqrt( float f );		// reciprocal square root
+-#endif
+ 
+-#define SQRTFAST( x ) ( (x) * Q_rsqrt( x ) )
++#define Square(x) ((x)*(x))
+ 
+ #ifndef M_PI
+ #define M_PI       3.14159265358979323846
+@@ -487,173 +322,10 @@
+ #endif
+ 
+ signed char ClampChar( int i );
+-signed short ClampShort( int i );
+ 
+-// this isn't a real cheap function to call!
+-int DirToByte( vec3_t dir );
+-void ByteToDir( int b, vec3_t dir );
+-
+-#if	1
+-
+-#define DotProduct(x,y)			((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+-#define VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
+-#define VectorAdd(a,b,c)		((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
+-#define VectorCopy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
+-#define	VectorScale(v, s, o)	((o)[0]=(v)[0]*(s),(o)[1]=(v)[1]*(s),(o)[2]=(v)[2]*(s))
+-#define	VectorMA(v, s, b, o)	((o)[0]=(v)[0]+(b)[0]*(s),(o)[1]=(v)[1]+(b)[1]*(s),(o)[2]=(v)[2]+(b)[2]*(s))
+-
+-#else
+-
+-#define DotProduct(x,y)			_DotProduct(x,y)
+-#define VectorSubtract(a,b,c)	_VectorSubtract(a,b,c)
+-#define VectorAdd(a,b,c)		_VectorAdd(a,b,c)
+-#define VectorCopy(a,b)			_VectorCopy(a,b)
+-#define	VectorScale(v, s, o)	_VectorScale(v,s,o)
+-#define	VectorMA(v, s, b, o)	_VectorMA(v,s,b,o)
+-
+-#endif
+-
+-#ifdef Q3_VM
+-#ifdef VectorCopy
+-#undef VectorCopy
+-// this is a little hack to get more efficient copies in our interpreter
+-typedef struct {
+-	float	v[3];
+-} vec3struct_t;
+-#define VectorCopy(a,b)	(*(vec3struct_t *)b=*(vec3struct_t *)a)
+-#endif
+-#endif
+-
+-#define VectorClear(a)			((a)[0]=(a)[1]=(a)[2]=0)
+-#define VectorNegate(a,b)		((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
+-#define VectorSet(v, x, y, z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
+-#define Vector4Copy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
+-
+-#define Byte4Copy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
+-
+-#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
+-// just in case you do't want to use the macros
+-vec_t _DotProduct( const vec3_t v1, const vec3_t v2 );
+-void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out );
+-void _VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t out );
+-void _VectorCopy( const vec3_t in, vec3_t out );
+-void _VectorScale( const vec3_t in, float scale, vec3_t out );
+-void _VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc );
+-
+-unsigned ColorBytes3 (float r, float g, float b);
+-unsigned ColorBytes4 (float r, float g, float b, float a);
+-
+-float NormalizeColor( const vec3_t in, vec3_t out );
+-
+-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
+-void ClearBounds( vec3_t mins, vec3_t maxs );
+-void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
+-
+-#if !defined( Q3_VM ) || ( defined( Q3_VM ) && defined( __Q3_VM_MATH ) )
+-static ID_INLINE int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
+-	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
+-		return 0;
+-	}			
+-	return 1;
+-}
+-
+-static ID_INLINE vec_t VectorLength( const vec3_t v ) {
+-	return (vec_t)sqrt (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+-}
+-
+-static ID_INLINE vec_t VectorLengthSquared( const vec3_t v ) {
+-	return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+-}
+-
+-static ID_INLINE vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
+-	vec3_t	v;
+-
+-	VectorSubtract (p2, p1, v);
+-	return VectorLength( v );
+-}
+-
+-static ID_INLINE vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
+-	vec3_t	v;
+-
+-	VectorSubtract (p2, p1, v);
+-	return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+-}
+-
+-// fast vector normalize routine that does not check to make sure
+-// that length != 0, nor does it return length, uses rsqrt approximation
+-static ID_INLINE void VectorNormalizeFast( vec3_t v )
+-{
+-	float ilength;
+-
+-	ilength = Q_rsqrt( DotProduct( v, v ) );
+-
+-	v[0] *= ilength;
+-	v[1] *= ilength;
+-	v[2] *= ilength;
+-}
+-
+-static ID_INLINE void VectorInverse( vec3_t v ){
+-	v[0] = -v[0];
+-	v[1] = -v[1];
+-	v[2] = -v[2];
+-}
+-
+-static ID_INLINE void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
+-	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
+-	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
+-	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
+-}
+-
+-#else
+-int VectorCompare( const vec3_t v1, const vec3_t v2 );
+-
+-vec_t VectorLength( const vec3_t v );
+-
+-vec_t VectorLengthSquared( const vec3_t v );
+-
+-vec_t Distance( const vec3_t p1, const vec3_t p2 );
+-
+-vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 );
+-
+-void VectorNormalizeFast( vec3_t v );
+-
+-void VectorInverse( vec3_t v );
+-
+-void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross );
+-
+-#endif
+-
+-vec_t VectorNormalize (vec3_t v);		// returns vector length
+-vec_t VectorNormalize2( const vec3_t v, vec3_t out );
+-void Vector4Scale( const vec4_t in, vec_t scale, vec4_t out );
+-void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out );
+-int Q_log2(int val);
+-
+-float Q_acos(float c);
+-
+-int		Q_rand( int *seed );
+-float	Q_random( int *seed );
+-float	Q_crandom( int *seed );
+-
+ #define random()	((rand () & 0x7fff) / ((float)0x7fff))
+ #define crandom()	(2.0 * (random() - 0.5))
+ 
+-void vectoangles( const vec3_t value1, vec3_t angles);
+-void AnglesToAxis( const vec3_t angles, vec3_t axis[3] );
+-
+-void AxisClear( vec3_t axis[3] );
+-void AxisCopy( vec3_t in[3], vec3_t out[3] );
+-
+-void SetPlaneSignbits( struct cplane_s *out );
+-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
+-
+-qboolean BoundsIntersect(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t mins2, const vec3_t maxs2);
+-qboolean BoundsIntersectSphere(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t origin, vec_t radius);
+-qboolean BoundsIntersectPoint(const vec3_t mins, const vec3_t maxs,
+-		const vec3_t origin);
+-
+ float	AngleMod(float a);
+ float	LerpAngle (float from, float to, float frac);
+ float	AngleSubtract( float a1, float a2 );
+@@ -663,27 +335,15 @@
+ float AngleNormalize180 ( float angle );
+ float AngleDelta ( float angle1, float angle2 );
+ 
+-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
+-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
+-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
+-void RotateAroundDirection( vec3_t axis[3], float yaw );
+-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
+-// perpendicular vector could be replaced by this
+ 
+-//int	PlaneTypeForNormal (vec3_t normal);
++//#ifndef MAX
++//#define MAX(x,y) ((x)>(y)?(x):(y))
++//#endif
++//
++//#ifndef MIN
++//#define MIN(x,y) ((x)<(y)?(x):(y))
++//#endif
+ 
+-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]);
+-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+-void PerpendicularVector( vec3_t dst, const vec3_t src );
+-
+-#ifndef MAX
+-#define MAX(x,y) ((x)>(y)?(x):(y))
+-#endif
+-
+-#ifndef MIN
+-#define MIN(x,y) ((x)<(y)?(x):(y))
+-#endif
+-
+ //=============================================
+ 
+ float Com_Clamp( float min, float max, float value );
+@@ -703,28 +363,6 @@
+ void	COM_ParseWarning( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
+ //int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
+ 
+-#define MAX_TOKENLENGTH		1024
+-
+-#ifndef TT_STRING
+-//token types
+-#define TT_STRING					1			// string
+-#define TT_LITERAL					2			// literal
+-#define TT_NUMBER					3			// number
+-#define TT_NAME						4			// name
+-#define TT_PUNCTUATION				5			// punctuation
+-#endif
+-
+-typedef struct pc_token_s
+-{
+-	int type;
+-	int subtype;
+-	int intvalue;
+-	float floatvalue;
+-	char string[MAX_TOKENLENGTH];
+-} pc_token_t;
+-
+-// data is an in/out parm, returns a parsed out token
+-
+ void	COM_MatchToken( char**buf_p, char *match );
+ 
+ void SkipBracedSection (char **program);
+@@ -742,20 +380,6 @@
+ 
+ void Com_RandomBytes( byte *string, int len );
+ 
+-// mode parm for FS_FOpenFile
+-typedef enum {
+-	FS_READ,
+-	FS_WRITE,
+-	FS_APPEND,
+-	FS_APPEND_SYNC
+-} fsMode_t;
+-
+-typedef enum {
+-	FS_SEEK_CUR,
+-	FS_SEEK_END,
+-	FS_SEEK_SET
+-} fsOrigin_t;
+-
+ //=============================================
+ 
+ int Q_isprint( int c );
+@@ -801,18 +425,7 @@
+ } qint64;
+ 
+ //=============================================
+-/*
+-short	BigShort(short l);
+-short	LittleShort(short l);
+-int		BigLong (int l);
+-int		LittleLong (int l);
+-qint64  BigLong64 (qint64 l);
+-qint64  LittleLong64 (qint64 l);
+-float	BigFloat (const float *l);
+-float	LittleFloat (const float *l);
+ 
+-void	Swap_Init (void);
+-*/
+ char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
+ 
+ #define TRUNCATE_LENGTH	64
+@@ -926,72 +539,6 @@
+ // change this.
+ #define VOIP_FLAGCNT		2
+ 
+-/*
+-==============================================================
+-
+-COLLISION DETECTION
+-
+-==============================================================
+-*/
+-
+-#include "surfaceflags.h"			// shared with the q3map utility
+-
+-// plane types are used to speed some tests
+-// 0-2 are axial planes
+-#define	PLANE_X			0
+-#define	PLANE_Y			1
+-#define	PLANE_Z			2
+-#define	PLANE_NON_AXIAL	3
+-
+-
+-/*
+-=================
+-PlaneTypeForNormal
+-=================
+-*/
+-
+-#define PlaneTypeForNormal(x) (x[0] == 1.0 ? PLANE_X : (x[1] == 1.0 ? PLANE_Y : (x[2] == 1.0 ? PLANE_Z : PLANE_NON_AXIAL) ) )
+-
+-// plane_t structure
+-// !!! if this is changed, it must be changed in asm code too !!!
+-typedef struct cplane_s {
+-	vec3_t	normal;
+-	float	dist;
+-	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
+-	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
+-	byte	pad[2];
+-} cplane_t;
+-
+-
+-// a trace is returned when a box is swept through the world
+-typedef struct {
+-	qboolean	allsolid;	// if true, plane is not valid
+-	qboolean	startsolid;	// if true, the initial point was in a solid area
+-	float		fraction;	// time completed, 1.0 = didn't hit anything
+-	vec3_t		endpos;		// final position
+-	cplane_t	plane;		// surface normal at impact, transformed to world space
+-	int			surfaceFlags;	// surface hit
+-	int			contents;	// contents on other side of surface hit
+-	int			entityNum;	// entity the contacted sirface is a part of
+-} trace_t;
+-
+-// trace->entityNum can also be 0 to (MAX_GENTITIES-1)
+-// or ENTITYNUM_NONE, ENTITYNUM_WORLD
+-
+-
+-// markfragments are returned by CM_MarkFragments()
+-typedef struct {
+-	int		firstPoint;
+-	int		numPoints;
+-} markFragment_t;
+-
+-
+-
+-typedef struct {
+-	vec3_t		origin;
+-	vec3_t		axis[3];
+-} orientation_t;
+-
+ //=====================================================================
+ 
+ 
+@@ -1002,22 +549,6 @@
+ #define	KEYCATCH_MESSAGE		0x0004
+ #define	KEYCATCH_CGAME			0x0008
+ 
+-
+-// sound channels
+-// channel 0 never willingly overrides
+-// other channels will allways override a playing sound on that channel
+-typedef enum {
+-	CHAN_AUTO,
+-	CHAN_LOCAL,		// menu sounds, etc
+-	CHAN_WEAPON,
+-	CHAN_VOICE,
+-	CHAN_ITEM,
+-	CHAN_BODY,
+-	CHAN_LOCAL_SOUND,	// chat messages, etc
+-	CHAN_ANNOUNCER		// announcer voices, etc
+-} soundChannel_t;
+-
+-
+ /*
+ ========================================================================
+ 
+@@ -1179,6 +710,9 @@
+ 		lightRadius = 0.f;
+ 		lightTarget = ENTITYNUM_NONE;
+ 		spotLightRadius = 0.f;
++		trailEmitterMaterial = 0;
++		trailEmitterSpriteRadius = 0.f;
++		trailEmitterInterval = 0;
+ 	}
+ 	entityState_s() {
+ 		setDefaults();
+@@ -1283,23 +817,6 @@
+ 
+ #include "../shared/usercmd.h"
+ 
+-//===================================================================
+-
+-typedef enum {
+-	CA_UNINITIALIZED,
+-	CA_DISCONNECTED, 	// not talking to a server
+-	CA_AUTHORIZING,		// not used any more, was checking cd key 
+-	CA_CONNECTING,		// sending request packets to the server
+-	CA_CHALLENGING,		// sending challenge packets to the server
+-	CA_CONNECTED,		// netchan_t established, getting gamestate
+-	CA_LOADING,			// only during cgame initialization, never during main loop
+-	CA_PRIMED,			// got gamestate, waiting for first frame
+-	CA_ACTIVE,			// game views should be displayed
+-	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
+-} connstate_t;
+-
+-#define Square(x) ((x)*(x))
+-
+ // real time
+ //=============================================
+ 
+@@ -1344,10 +861,10 @@
+ #define SAY_ALL		0
+ #define SAY_TEAM	1
+ #define SAY_TELL	2
++//
++//#define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
++//#define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
+ 
+-#define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
+-#define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
+ 
+ 
+-
+ #endif	// __Q_SHARED_H
+Index: code/qcommon/qcommon.h
+===================================================================
+--- code/qcommon/qcommon.h	(revision 401)
++++ code/qcommon/qcommon.h	(working copy)
+@@ -23,6 +23,8 @@
+ #ifndef _QCOMMON_H_
+ #define _QCOMMON_H_
+ 
++#include <api/vfsAPI.h>
++
+ //Ignore __attribute__ on non-gcc platforms
+ #ifndef __GNUC__
+ #ifndef __attribute__
+Index: code/renderer/frontend/rf_api.cpp
+===================================================================
+--- code/renderer/frontend/rf_api.cpp	(revision 406)
++++ code/renderer/frontend/rf_api.cpp	(working copy)
+@@ -43,7 +43,8 @@
+ #include <math/matrix.h>
+ #include <math/axis.h>
+ #include <shared/autoCvar.h>
+-#include <shared/autoCmd.h>
++#include <shared/autoCmd.h>
++#include <shared/colorTable.h>
+ 
+ #include "rf_2d.h"
+ #include "rf_world.h"
+Index: code/renderer/frontend/rf_bsp.cpp
+===================================================================
+--- code/renderer/frontend/rf_bsp.cpp	(revision 409)
++++ code/renderer/frontend/rf_bsp.cpp	(working copy)
+@@ -39,7 +39,8 @@
+ #include <shared/autoCvar.h>
+ #include <api/mtrAPI.h>
+ #include "rf_lightGrid.h"
+-#include <shared/perStringCallback.h>
++#include <shared/perStringCallback.h>
++#include <shared/colorTable.h>
+ 
+ aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
+ aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
+@@ -215,7 +216,7 @@
+ 	// NOTE: default lightmap size is 128
+ 	const lump_s &l = h->getLumps()[lumpNum];
+ 	if(l.fileLen % (lightmapSize*lightmapSize*3)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
++		g_core->RedWarning("rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numLightmaps = l.fileLen / (lightmapSize*lightmapSize*3);
+@@ -260,7 +261,7 @@
+ bool rBspTree_c::loadPlanes(u32 lumpPlanes) {
+ 	const lump_s &pll = h->getLumps()[lumpPlanes];
+ 	if(pll.fileLen % sizeof(q3Plane_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanes: invalid planes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadPlanes: invalid planes lump size\n");
+ 		return true; // error
+ 	}
+ 	if(sizeof(bspPlane_s) != sizeof(q3Plane_s)) {
+@@ -275,7 +276,7 @@
+ bool rBspTree_c::loadPlanesQ2(u32 lumpPlanes) {
+ 	u32 planesLumpLen = h->getLumpSize(lumpPlanes);
+ 	if(planesLumpLen % sizeof(q2Plane_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadPlanesQ2: invalid planes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numPlanes = planesLumpLen / sizeof(q2Plane_s);
+@@ -291,7 +292,7 @@
+ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
+ 	const lump_s &nl = h->getLumps()[lumpNodes];
+ 	if(nl.fileLen % sizeof(q3Node_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid nodes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
+@@ -301,7 +302,7 @@
+ 	if(h->isBSPCoD1()) {
+ 		const lump_s &ll = h->getLumps()[COD1_LEAFS];
+ 		if(ll.fileLen % sizeof(cod1Leaf_s)) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
++			g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+ 			return true; // error
+ 		}
+ 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
+@@ -319,7 +320,7 @@
+ 	} else {
+ 		const lump_s &ll = h->getLumps()[lumpLeaves];
+ 		if(ll.fileLen % sizeOfLeaf) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
++			g_core->RedWarning("rBspTree_c::loadNodesAndLeaves: invalid leaves lump size\n");
+ 			return true; // error
+ 		}
+ 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
+@@ -331,7 +332,7 @@
+ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
+ 	const lump_s &nl = h->getLumps()[lumpNodes];
+ 	if(nl.fileLen % sizeof(q2Node_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid nodes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesQ2: invalid nodes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numNodes = nl.fileLen / sizeof(q2Node_s);
+@@ -345,7 +346,7 @@
+ 	}
+ 	const lump_s &ll = h->getLumps()[lumpLeaves];
+ 	if(ll.fileLen % sizeof(q2Leaf_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesQ2: invalid leaves lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesQ2: invalid leaves lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numLeaves = ll.fileLen / sizeof(q2Leaf_s);
+@@ -372,7 +373,7 @@
+ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
+ 	const lump_s &nl = h->getLumps()[lumpNodes];
+ 	if(nl.fileLen % sizeof(hlNode_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid nodes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesHL: invalid nodes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numNodes = nl.fileLen / sizeof(hlNode_s);
+@@ -388,7 +389,7 @@
+ 	}
+ 	const lump_s &ll = h->getLumps()[lumpLeaves];
+ 	if(ll.fileLen % sizeof(hlLeaf_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesHL: invalid leaves lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesHL: invalid leaves lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numLeaves = ll.fileLen / sizeof(hlLeaf_s);
+@@ -421,7 +422,7 @@
+ bool rBspTree_c::loadNodesAndLeavesSE() {
+ 	const srcLump_s &nl = srcH->getLumps()[SRC_NODES];
+ 	if(nl.fileLen % sizeof(srcNode_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid nodes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid nodes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numNodes = nl.fileLen / sizeof(srcNode_s);
+@@ -442,7 +443,7 @@
+ 	if(srcH->version == 19) {
+ 		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
+ 		if(ll.fileLen % sizeof(srcLeaf_s)) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
++			g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+ 			return true; // error
+ 		}
+ 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
+@@ -467,7 +468,7 @@
+ 	} else {		
+ 		const srcLump_s &ll = srcH->getLumps()[SRC_LEAFS];
+ 		if(ll.fileLen % sizeof(srcLeaf_noLightCube_s)) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
++			g_core->RedWarning("rBspTree_c::loadNodesAndLeavesSE: invalid leaves lump size\n");
+ 			return true; // error
+ 		}
+ 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_noLightCube_s);
+@@ -528,22 +529,22 @@
+ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 lumpVerts, u32 lumpMats, u32 sizeofMat) {
+ 	const lump_s &sl = h->getLumps()[lumpSurfs];
+ 	if(sl.fileLen % sizeofSurf) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid surfs lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfs: invalid surfs lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &il = h->getLumps()[lumpIndexes];
+ 	if(il.fileLen % sizeof(int)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfs: invalid indexes lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &vl = h->getLumps()[lumpVerts];
+ 	if(vl.fileLen % sizeof(q3Vert_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid indexes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfs: invalid indexes lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &ml = h->getLumps()[lumpMats];
+ 	if(ml.fileLen % sizeofMat) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfs: invalid material lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfs: invalid material lump size\n");
+ 		return true; // error
+ 	}
+ 	const byte *materials = h->getLumpData(lumpMats);
+@@ -723,27 +724,27 @@
+ bool rBspTree_c::loadSurfsQ2() {
+ 	const lump_s &sl = h->getLumps()[Q2_FACES];
+ 	if(sl.fileLen % sizeof(q2Surface_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfs lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid surfs lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &el = h->getLumps()[Q2_EDGES];
+ 	if(el.fileLen % sizeof(q2Edge_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid edges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid edges lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &tl = h->getLumps()[Q2_TEXINFO];
+ 	if(tl.fileLen % sizeof(q2TexInfo_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid texinfo lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid texinfo lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &vl = h->getLumps()[Q2_VERTEXES];
+ 	if(vl.fileLen % sizeof(q2Vert_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid vertexes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid vertexes lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &sel = h->getLumps()[Q2_SURFEDGES];
+ 	if(sel.fileLen % sizeof(int)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsQ2: invalid surfEdges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsQ2: invalid surfEdges lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numSurfaces = sl.fileLen / sizeof(q2Surface_s);
+@@ -797,27 +798,27 @@
+ bool rBspTree_c::loadSurfsHL() {
+ 	const lump_s &sl = h->getLumps()[HL_FACES];
+ 	if(sl.fileLen % sizeof(hlSurface_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfs lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid surfs lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &el = h->getLumps()[HL_EDGES];
+ 	if(el.fileLen % sizeof(hlEdge_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid edges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid edges lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &tl = h->getLumps()[HL_TEXINFO];
+ 	if(tl.fileLen % sizeof(hlTexInfo_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid texinfo lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid texinfo lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &vl = h->getLumps()[HL_VERTEXES];
+ 	if(vl.fileLen % sizeof(hlVert_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid vertexes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid vertexes lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &sel = h->getLumps()[HL_SURFEDGES];
+ 	if(sel.fileLen % sizeof(int)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsHL: invalid surfEdges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsHL: invalid surfEdges lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numSurfaces = sl.fileLen / sizeof(hlSurface_s);
+@@ -1017,33 +1018,33 @@
+ 	const srcLump_s &sl = srcH->getLumps()[SRC_FACES];
+ 	if(h->version == 18) {
+ 		if(sl.fileLen % sizeof(srcSurfaceV18_s)) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
++			g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+ 			return true; // error
+ 		}
+ 	} else {
+ 		if(sl.fileLen % sizeof(srcSurface_s)) {
+-			g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
++			g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfs lump size\n");
+ 			return true; // error
+ 		}
+ 	}
+ 	const srcLump_s &el = srcH->getLumps()[SRC_EDGES];
+ 	if(el.fileLen % sizeof(srcEdge_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid edges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid edges lump size\n");
+ 		return true; // error
+ 	}
+ 	const srcLump_s &tl = srcH->getLumps()[SRC_TEXINFO];
+ 	if(tl.fileLen % sizeof(srcTexInfo_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid texinfo lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid texinfo lump size\n");
+ 		return true; // error
+ 	}
+ 	const srcLump_s &vl = srcH->getLumps()[SRC_VERTEXES];
+ 	if(vl.fileLen % sizeof(srcVert_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid vertexes lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid vertexes lump size\n");
+ 		return true; // error
+ 	}
+ 	const srcLump_s &sel = srcH->getLumps()[SRC_SURFEDGES];
+ 	if(sel.fileLen % sizeof(int)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
++		g_core->RedWarning("rBspTree_c::loadSurfsSE: invalid surfEdges lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numSurfaces;
+@@ -1300,7 +1301,7 @@
+ bool rBspTree_c::loadModels(u32 modelsLump) {
+ 	const lump_s &ml = h->getLumps()[modelsLump];
+ 	if(ml.fileLen % h->getModelStructSize()) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModels: invalid models lump size\n");
++		g_core->RedWarning("rBspTree_c::loadModels: invalid models lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numModels = ml.fileLen / sizeof(q3Model_s);
+@@ -1319,7 +1320,7 @@
+ bool rBspTree_c::loadModelsQ2(u32 modelsLump) {
+ 	u32 lumpLen = h->getLumpSize(modelsLump);
+ 	if(lumpLen % sizeof(q2Model_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsQ2: invalid models lump size\n");
++		g_core->RedWarning("rBspTree_c::loadModelsQ2: invalid models lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numModels = lumpLen / sizeof(q2Model_s);
+@@ -1336,7 +1337,7 @@
+ bool rBspTree_c::loadModelsHL(u32 modelsLump) {
+ 	const lump_s &ml = h->getLumps()[modelsLump];
+ 	if(ml.fileLen % sizeof(hlModel_s)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadModelsHL: invalid models lump size\n");
++		g_core->RedWarning("rBspTree_c::loadModelsHL: invalid models lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numModels = ml.fileLen / sizeof(hlModel_s);
+@@ -1353,7 +1354,7 @@
+ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
+ 	const lump_s &sl = h->getLumps()[leafSurfsLump];
+ 	if(sl.fileLen % sizeof(u32)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
++		g_core->RedWarning("rBspTree_c::loadLeafIndexes: invalid leafSurfaces lump size\n");
+ 		return true; // error
+ 	}	
+ 	u32 numLeafSurfaces = sl.fileLen / sizeof(u32);
+@@ -1364,7 +1365,7 @@
+ bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
+ 	const lump_s &sl = h->getLumps()[leafSurfsLump];
+ 	if(sl.fileLen % sizeof(u16)) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
++		g_core->RedWarning("rBspTree_c::loadLeafIndexes16Bit: invalid leafSurfaces lump size\n");
+ 		return true; // error
+ 	}	
+ 	u32 numLeafSurfaces = sl.fileLen / sizeof(u16);
+@@ -1443,7 +1444,7 @@
+ 	fileData = 0;
+ 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+ 	if(fileData == 0) {
+-		g_core->Print(S_COLOR_RED "rBspTree_c::load: cannot open %s\n",fname);
++		g_core->RedWarning("rBspTree_c::load: cannot open %s\n",fname);
+ 		return true;
+ 	}
+ 	rf_bsp_forceEverythingVisible.setString("0");
+Index: code/renderer/frontend/rf_drawCall.cpp
+===================================================================
+--- code/renderer/frontend/rf_drawCall.cpp	(revision 403)
++++ code/renderer/frontend/rf_drawCall.cpp	(working copy)
+@@ -370,31 +370,30 @@
+ }
+ 
+ // from Q3 SDK, code for mirrors
+-void R_MirrorPoint(vec3_t in, vec3_t surfaceOrigin, vec3_t cameraOrigin, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
++void R_MirrorPoint(const vec3_c &in, const vec3_c &surfaceOrigin, const vec3_c &cameraOrigin, const axis_c &surfaceAxis, const axis_c &cameraAxis, vec3_c &out) {
+ 	int             i;
+-	vec3_t          local;
+-	vec3_t          transformed;
++	vec3_c          local;
++	vec3_c         transformed;
+ 	float           d;
+ 
+-	VectorSubtract(in, surfaceOrigin, local);
++	local = in - surfaceOrigin;
+ 
+-	VectorClear(transformed);
++	transformed.clear();
+ 	for(i = 0; i < 3; i++)
+ 	{
+-		d = DotProduct(local, surfaceAxis[i]);
+-		VectorMA(transformed, d, cameraAxis[i], transformed);
++		d = local.dotProduct(surfaceAxis[i]);
++		transformed.vectorMA(transformed, cameraAxis[i], d);
+ 	}
+-
+-	VectorAdd(transformed, cameraOrigin, out);
++	out = transformed + cameraOrigin;
+ }
+-void R_MirrorVector(vec3_t in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], vec3_t out) {
+-	VectorClear(out);
++void R_MirrorVector(const vec3_c &in, const axis_c &surfaceAxis, const axis_c &cameraAxis, vec3_c &out) {
++	out.clear();
+ 	for(u32 i = 0; i < 3; i++) {
+-		float d = DotProduct(in, surfaceAxis[i]);
+-		VectorMA(out, d, cameraAxis[i], out);
++		float d = in.dotProduct(surfaceAxis[i]);
++		out.vectorMA(out, cameraAxis[i], d);
+ 	}
+ }
+-void R_MirrorAxis(const axis_c &in, vec3_t surfaceAxis[3], vec3_t cameraAxis[3], axis_c &out) {
++void R_MirrorAxis(const axis_c &in, const axis_c &surfaceAxis, const axis_c &cameraAxis, axis_c &out) {
+ 	for(u32 i = 0; i < 3; i++) {
+ 		R_MirrorVector(in[i],surfaceAxis,cameraAxis,out[i]);
+ 	}
+Index: code/renderer/frontend/rf_model.cpp
+===================================================================
+--- code/renderer/frontend/rf_model.cpp	(revision 408)
++++ code/renderer/frontend/rf_model.cpp	(working copy)
+@@ -202,7 +202,7 @@
+ model_c *RF_AllocModel(const char *modName) {
+ 	model_c *check = (model_c*)RF_FindModel(modName);
+ 	if(check) {
+-		g_core->Print(S_COLOR_RED,"RF_AllocModel: model %s already exist. Overwriting.\n",modName);
++		g_core->RedWarning("RF_AllocModel: model %s already exist. Overwriting.\n",modName);
+ 		check->clear();
+ 		return check;
+ 	}
+Index: code/sdl/sdl_glimp.cpp
+===================================================================
+--- code/sdl/sdl_glimp.cpp	(revision 249)
++++ code/sdl/sdl_glimp.cpp	(working copy)
+@@ -175,8 +175,8 @@
+ 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
+ 	screen = NULL;
+ 
+-	//Com_Memset( &glConfig, 0, sizeof( glConfig ) );
+-	//Com_Memset( &glState, 0, sizeof( glState ) );
++	//memset( &glConfig, 0, sizeof( glConfig ) );
++	//memset( &glState, 0, sizeof( glState ) );
+ }
+ 
+ /*
+@@ -341,9 +341,9 @@
+ 		videoInfo = SDL_GetVideoInfo( );
+ 
+ 		// Take a copy of the videoInfo
+-		Com_Memcpy( &sPixelFormat, videoInfo->vfmt, sizeof( SDL_PixelFormat ) );
++		memcpy( &sPixelFormat, videoInfo->vfmt, sizeof( SDL_PixelFormat ) );
+ 		sPixelFormat.palette = NULL; // Should already be the case
+-		Com_Memcpy( &sVideoInfo, videoInfo, sizeof( SDL_VideoInfo ) );
++		memcpy( &sVideoInfo, videoInfo, sizeof( SDL_VideoInfo ) );
+ 		sVideoInfo.vfmt = &sPixelFormat;
+ 		videoInfo = &sVideoInfo;
+ 
+Index: code/server/sv_client.cpp
+===================================================================
+--- code/server/sv_client.cpp	(revision 401)
++++ code/server/sv_client.cpp	(working copy)
+@@ -23,6 +23,7 @@
+ 
+ #include "server.h"
+ #include <api/gameAPI.h>
++#include <shared/colorTable.h>
+ 
+ static void SV_CloseDownload( client_t *cl );
+ 
+@@ -224,7 +225,7 @@
+ //		// they are a demo client trying to connect to a real server
+ //		NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\nServer is not a demo server\n" );
+ //		// clear the challenge record so it won't timeout and let them through
+-//		Com_Memset( challengeptr, 0, sizeof( *challengeptr ) );
++//		memset( challengeptr, 0, sizeof( *challengeptr ) );
+ //		return;
+ //	}
+ //	if ( !Q_stricmp( s, "accept" ) ) {
+@@ -239,7 +240,7 @@
+ //			NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\n%s\n", r);
+ //		}
+ //		// clear the challenge record so it won't timeout and let them through
+-//		Com_Memset( challengeptr, 0, sizeof( *challengeptr ) );
++//		memset( challengeptr, 0, sizeof( *challengeptr ) );
+ //		return;
+ //	}
+ //
+@@ -251,7 +252,7 @@
+ //	}
+ //
+ //	// clear the challenge record so it won't timeout and let them through
+-//	Com_Memset( challengeptr, 0, sizeof(*challengeptr) );
++//	memset( challengeptr, 0, sizeof(*challengeptr) );
+ //}
+ //#endif
+ 
+@@ -419,7 +420,7 @@
+ 	}
+ 
+ 	newcl = &temp;
+-	Com_Memset (newcl, 0, sizeof(client_t));
++	memset (newcl, 0, sizeof(client_t));
+ 
+ 	// if there is already a slot for this ip, reuse it
+ 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
+@@ -611,7 +612,7 @@
+ 		{
+ 			if(NET_CompareAdr(drop->netchan.remoteAddress, challenge->adr))
+ 			{
+-				Com_Memset(challenge, 0, sizeof(*challenge));
++				memset(challenge, 0, sizeof(*challenge));
+ 				break;
+ 			}
+ 		}
+@@ -715,7 +716,7 @@
+ 	}
+ 
+ 	// write the baselines
+-	Com_Memset( &nullstate, 0, sizeof( nullstate ) );
++	memset( &nullstate, 0, sizeof( nullstate ) );
+ 	for ( start = 0 ; start < MAX_GENTITIES; start++ ) {
+ 		base = &sv.svEntities[start].baseline;
+ 		if ( !base->number ) {
+@@ -1657,7 +1658,7 @@
+ 	// also use the last acknowledged server command in the key
+ 	key ^= MSG_HashKey(cl->reliableCommands[ cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
+ 
+-	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
++	memset( &nullcmd, 0, sizeof(nullcmd) );
+ 	oldcmd = &nullcmd;
+ 	for ( i = 0 ; i < cmdCount ; i++ ) {
+ 		cmd = &cmds[i];
+Index: code/server/sv_init.cpp
+===================================================================
+--- code/server/sv_init.cpp	(revision 369)
++++ code/server/sv_init.cpp	(working copy)
+@@ -343,7 +343,7 @@
+ 			oldClients[i] = svs.clients[i];
+ 		}
+ 		else {
+-			Com_Memset(&oldClients[i], 0, sizeof(client_t));
++			memset(&oldClients[i], 0, sizeof(client_t));
+ 		}
+ 	}
+ 
+@@ -352,7 +352,7 @@
+ 
+ 	// allocate new clients
+ 	svs.clients = (client_t*)Z_Malloc ( sv_maxclients->integer * sizeof(client_t) );
+-	Com_Memset( svs.clients, 0, sv_maxclients->integer * sizeof(client_t) );
++	memset( svs.clients, 0, sv_maxclients->integer * sizeof(client_t) );
+ 
+ 	// copy the clients over
+ 	for ( i = 0 ; i < count ; i++ ) {
+@@ -386,7 +386,7 @@
+ 			Z_Free( sv.configstrings[i] );
+ 		}
+ 	}
+-	Com_Memset (&sv, 0, sizeof(sv));
++	memset (&sv, 0, sizeof(sv));
+ }
+ 
+ /*
+@@ -844,7 +844,7 @@
+ 		
+ 		Z_Free(svs.clients);
+ 	}
+-	Com_Memset( &svs, 0, sizeof( svs ) );
++	memset( &svs, 0, sizeof( svs ) );
+ 
+ 	Cvar_Set( "sv_running", "0" );
+ 	Cvar_Set("ui_singlePlayerActive", "0");
+Index: code/server/sv_main.cpp
+===================================================================
+--- code/server/sv_main.cpp	(revision 401)
++++ code/server/sv_main.cpp	(working copy)
+@@ -457,14 +457,14 @@
+ 				bucket->next->prev = bucket->prev;
+ 			}
+ 
+-			Com_Memset( bucket, 0, sizeof( leakyBucket_t ) );
++			memset( bucket, 0, sizeof( leakyBucket_t ) );
+ 		}
+ 
+ 		if ( bucket->type == NA_BAD ) {
+ 			bucket->type = address.type;
+ 			switch ( address.type ) {
+-				case NA_IP:  Com_Memcpy( bucket->ipv._4, address.ip, 4 );   break;
+-				case NA_IP6: Com_Memcpy( bucket->ipv._6, address.ip6, 16 ); break;
++				case NA_IP:  memcpy( bucket->ipv._4, address.ip, 4 );   break;
++				case NA_IP6: memcpy( bucket->ipv._6, address.ip6, 16 ); break;
+ 				default: break;
+ 			}
+ 
+Index: code/server/sv_snapshot.cpp
+===================================================================
+--- code/server/sv_snapshot.cpp	(revision 401)
++++ code/server/sv_snapshot.cpp	(working copy)
+@@ -406,7 +406,7 @@
+ =============
+ */
+ static void SV_BuildClientSnapshot( client_t *client ) {
+-	vec3_t						org;
++	vec3_c						org;
+ 	clientSnapshot_t			*frame;
+ 	snapshotEntityNumbers_t		entityNumbers;
+ 	int							i;
+@@ -425,7 +425,7 @@
+ 
+ 	// clear everything in this snapshot
+ 	entityNumbers.numSnapshotEntities = 0;
+-	Com_Memset( frame->areabits, 0, sizeof( frame->areabits ) );
++	memset( frame->areabits, 0, sizeof( frame->areabits ) );
+ 
+   // https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=62
+ 	frame->num_entities = 0;
+@@ -450,7 +450,7 @@
+ 	svEnt->snapshotCounter = sv.snapshotCounter;
+ 
+ 	// find the client's viewpoint
+-	VectorCopy( ps->origin, org );
++	org = ps->origin;
+ 	org[2] += ps->viewheight;
+ 
+ 	// add all the entities directly visible to the eye, which
+Index: code/server/sv_vis.cpp
+===================================================================
+--- code/server/sv_vis.cpp	(revision 323)
++++ code/server/sv_vis.cpp	(working copy)
+@@ -29,6 +29,7 @@
+ #include <api/vfsAPI.h>
+ #include <shared/shared.h>
+ #include <math/plane.h>
++#include <shared/colorTable.h>
+ 
+ svBSP_c::svBSP_c() {
+ 	h = 0;
+@@ -51,7 +52,7 @@
+ bool svBSP_c::loadPlanes(u32 lumpPlanes) {
+ 	const lump_s &pll = h->getLumps()[lumpPlanes];
+ 	if(pll.fileLen % sizeof(q3Plane_s)) {
+-		g_core->Print(S_COLOR_RED "svBSP_c::loadPlanes: invalid planes lump size\n");
++		g_core->RedWarning("svBSP_c::loadPlanes: invalid planes lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numPlanes = pll.fileLen / sizeof(q3Plane_s);
+@@ -62,12 +63,12 @@
+ bool svBSP_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf) {
+ 	const lump_s &nl = h->getLumps()[lumpNodes];
+ 	if(nl.fileLen % sizeof(q3Node_s)) {
+-		g_core->Print(S_COLOR_RED "svBSP_c::loadNodesAndLeaves: invalid nodes lump size\n");
++		g_core->RedWarning("svBSP_c::loadNodesAndLeaves: invalid nodes lump size\n");
+ 		return true; // error
+ 	}
+ 	const lump_s &ll = h->getLumps()[lumpLeaves];
+ 	if(ll.fileLen % sizeOfLeaf) {
+-		g_core->Print(S_COLOR_RED "svBSP_c::loadNodesAndLeaves: invalid leaves lump size\n");
++		g_core->RedWarning("svBSP_c::loadNodesAndLeaves: invalid leaves lump size\n");
+ 		return true; // error
+ 	}
+ 	u32 numNodes = nl.fileLen / sizeof(q3Node_s);
+@@ -131,7 +132,7 @@
+ 	byte *fileData = 0;
+ 	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+ 	if(fileData == 0) {
+-		g_core->Print(S_COLOR_RED "svBSP_c::load: cannot open %s\n",fname);
++		g_core->RedWarning("svBSP_c::load: cannot open %s\n",fname);
+ 		return true;
+ 	}
+ 	h = (const q3Header_s*) fileData;
+Index: code/shared/colorTable.cpp
+===================================================================
+--- code/shared/colorTable.cpp	(revision 0)
++++ code/shared/colorTable.cpp	(working copy)
+@@ -0,0 +1,38 @@
++/*
++============================================================================
++Copyright (C) 2013 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// colorTable.cpp - Quake3 color codes
++#include "colorTable.h"
++
++float	g_color_table[8][4] =
++	{
++	{0.0, 0.0, 0.0, 1.0},
++	{1.0, 0.0, 0.0, 1.0},
++	{0.0, 1.0, 0.0, 1.0},
++	{1.0, 1.0, 0.0, 1.0},
++	{0.0, 0.0, 1.0, 1.0},
++	{0.0, 1.0, 1.0, 1.0},
++	{1.0, 0.0, 1.0, 1.0},
++	{1.0, 1.0, 1.0, 1.0},
++	};
++
+Index: code/shared/colorTable.h
+===================================================================
+--- code/shared/colorTable.h	(revision 0)
++++ code/shared/colorTable.h	(working copy)
+@@ -0,0 +1,52 @@
++/*
++============================================================================
++Copyright (C) 2013 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// colorTable.h - Quake3 color codes
++#ifndef __SHARED_COLORTABLE_H__
++#define __SHARED_COLORTABLE_H__
++
++#define Q_COLOR_ESCAPE	'^'
++#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1))) // ^[0-9a-zA-Z]
++
++#define COLOR_BLACK	'0'
++#define COLOR_RED	'1'
++#define COLOR_GREEN	'2'
++#define COLOR_YELLOW	'3'
++#define COLOR_BLUE	'4'
++#define COLOR_CYAN	'5'
++#define COLOR_MAGENTA	'6'
++#define COLOR_WHITE	'7'
++#define ColorIndex(c)	(((c) - '0') & 0x07)
++
++#define S_COLOR_BLACK	"^0"
++#define S_COLOR_RED	"^1"
++#define S_COLOR_GREEN	"^2"
++#define S_COLOR_YELLOW	"^3"
++#define S_COLOR_BLUE	"^4"
++#define S_COLOR_CYAN	"^5"
++#define S_COLOR_MAGENTA	"^6"
++#define S_COLOR_WHITE	"^7"
++
++extern float g_color_table[8][4];
++
++#endif // __SHARED_COLORTABLE_H__
+Index: code/shared/entDefsList.cpp
+===================================================================
+--- code/shared/entDefsList.cpp	(revision 403)
++++ code/shared/entDefsList.cpp	(working copy)
+@@ -125,7 +125,7 @@
+ 	} else if(h->ident == BSP_IDENT_QIOBSP) {
+ 		text = (const char*)h->getLumpData(Q3_ENTITIES);
+ 	} else {
+-		g_core->Print(S_COLOR_RED"entDefsList_c::load: unknown bsp type\n");
++		g_core->RedWarning("entDefsList_c::load: unknown bsp type\n");
+ 		text = 0;
+ 		free(data);
+ 		return true; // error
+Index: code/sys/con_log.cpp
+===================================================================
+--- code/sys/con_log.cpp	(revision 183)
++++ code/sys/con_log.cpp	(working copy)
+@@ -88,8 +88,8 @@
+ 		secondChunk = 0;
+ 	}
+ 
+-	Com_Memcpy( consoleLog + writePos, in, firstChunk );
+-	Com_Memcpy( consoleLog, in + firstChunk, secondChunk );
++	memcpy( consoleLog + writePos, in, firstChunk );
++	memcpy( consoleLog, in + firstChunk, secondChunk );
+ 
+ 	writePos = ( writePos + length ) % MAX_LOG;
+ 
+@@ -120,8 +120,8 @@
+ 		secondChunk = 0;
+ 	}
+ 
+-	Com_Memcpy( out, consoleLog + readPos, firstChunk );
+-	Com_Memcpy( out + firstChunk, out, secondChunk );
++	memcpy( out, consoleLog + readPos, firstChunk );
++	memcpy( out + firstChunk, out, secondChunk );
+ 
+ 	readPos = ( readPos + outSize ) % MAX_LOG;
+ 
+Index: code/sys/sys_main.cpp
+===================================================================
+--- code/sys/sys_main.cpp	(revision 404)
++++ code/sys/sys_main.cpp	(working copy)
+@@ -46,6 +46,7 @@
+ 
+ #include "../qcommon/q_shared.h"
+ #include "../qcommon/qcommon.h"
++#include <shared/colorTable.h>
+ 
+ static char binaryPath[ MAX_OSPATH ] = { 0 };
+ static char installPath[ MAX_OSPATH ] = { 0 };
+Index: code/sys/sys_win32.cpp
+===================================================================
+--- code/sys/sys_win32.cpp	(revision 404)
++++ code/sys/sys_win32.cpp	(working copy)
+@@ -614,7 +614,7 @@
+ 
+ 			while( ( size = CON_LogRead( buffer, sizeof( buffer ) ) ) > 0 )
+ 			{
+-				Com_Memcpy( p, buffer, size );
++				memcpy( p, buffer, size );
+ 				p += size;
+ 			}
+ 
+Index: misc/msvc/cgame.vcproj
+===================================================================
+--- misc/msvc/cgame.vcproj	(revision 409)
++++ misc/msvc/cgame.vcproj	(working copy)
+@@ -608,6 +608,14 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\shared\colorTable.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\..\code\shared\colorTable.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\shared\random.cpp"
+ 				>
+ 			</File>
+Index: misc/msvc/game.vcproj
+===================================================================
+--- misc/msvc/game.vcproj	(revision 408)
++++ misc/msvc/game.vcproj	(working copy)
+@@ -433,14 +433,6 @@
+ 				RelativePath="..\..\code\game\g_weapons.cpp"
+ 				>
+ 			</File>
+-			<File
+-				RelativePath="..\..\code\qcommon\q_math.cpp"
+-				>
+-			</File>
+-			<File
+-				RelativePath="..\..\code\qcommon\q_shared.cpp"
+-				>
+-			</File>
+ 		</Filter>
+ 		<Filter
+ 			Name="Header Files"
+@@ -871,6 +863,14 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\qcommon\q_math.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\..\code\qcommon\q_shared.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\shared\quake3Anims.h"
+ 				>
+ 			</File>
+Index: misc/msvc/quake3.vcproj
+===================================================================
+--- misc/msvc/quake3.vcproj	(revision 407)
++++ misc/msvc/quake3.vcproj	(working copy)
+@@ -2054,6 +2054,34 @@
+ 				>
+ 			</File>
+ 		</Filter>
++		<Filter
++			Name="shared"
++			>
++			<File
++				RelativePath="..\..\code\shared\colorTable.cpp"
++				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						CompileAs="2"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						CompileAs="2"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="..\..\code\shared\colorTable.h"
++				>
++			</File>
++		</Filter>
+ 	</Files>
+ 	<Globals>
+ 	</Globals>

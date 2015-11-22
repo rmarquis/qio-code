@@ -1,0 +1,712 @@
+Index: code/api/rbAPI.h
+===================================================================
+--- code/api/rbAPI.h	(revision 448)
++++ code/api/rbAPI.h	(working copy)
+@@ -108,6 +108,9 @@
+ 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
+ 
+ 	}
++	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
++
++	}
+ 	virtual void drawIndexedShadowVolume(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+ 
+ 	}
+Index: code/renderer/backEndGL/gl_main.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_main.cpp	(revision 448)
++++ code/renderer/backEndGL/gl_main.cpp	(working copy)
+@@ -109,7 +109,8 @@
+ static aCvar_c rb_printIBOStats("rb_printIBOStats","0");
+ static aCvar_c rb_forceBlur("rb_forceBlur","0");
+ static aCvar_c rb_useDepthCubeMap("rb_useDepthCubeMap","0");
+-static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
++static aCvar_c rb_printShadowVolumeDrawCalls("rb_printShadowVolumeDrawCalls","0");
++static aCvar_c rb_skipMaterialsWithCubeMaps("rb_skipMaterialsWithCubeMaps","0");
+ 
+ #define MAX_TEXTURE_SLOTS 32
+ 
+@@ -299,6 +300,11 @@
+ 		memset(this,0,sizeof(*this));
+ 	}
+ };
++
++matrix_c rb_shadowMappingBias(0.5, 0.0, 0.0, 0.0, 
++	0.0, 0.5, 0.0, 0.0,
++	0.0, 0.0, 0.5, 0.0,
++	0.5, 0.5, 0.5, 1.0);
+ 
+ class rbSDLOpenGL_c : public rbAPI_i {
+ 	// gl limits
+@@ -324,6 +330,7 @@
+ 	int curShadowMapH;
+ 	depthCubeFBOs_c depthCubeFBOs;
+ 	depthCubeMap_c depthCubeMap;
++	fboDepth_c depthFBO;
+ 	fboScreen_c screenFBO;
+ 	fboScreen_c screenFBO2;
+ 	bool bDrawingSky;
+@@ -350,6 +357,9 @@
+ 
+ 	matrix_c savedCameraProjection;
+ 	matrix_c savedCameraView;
++
++	matrix_c sunLightView;
++	matrix_c sunLightProjection;
+ 	
+ 	bool boundVBOVertexColors;
+ 	const rVertexBuffer_c *boundVBO;
+@@ -876,30 +886,33 @@
+ 		CHECK_GL_ERRORS;
+ 		boundFBO = glHandle;
+ 	}
++	void stopDrawingToFBOAndRestoreCameraMatrices() {
++		// unbind the FBO
++		if(shouldDrawToScreenFBO()) {
++			bindFBO(screenFBO.getFBOHandle());
++		} else {
++			bindFBO(0);
++		}
++		// restore viewport
++		setGLViewPort(getWinWidth(),getWinHeight());
++
++		// restore camera view and projection matrices
++		projectionMatrix = savedCameraProjection;
++
++		glMatrixMode(GL_PROJECTION);
++		glLoadIdentity();
++		glLoadMatrixf(projectionMatrix);
++
++		worldModelMatrix = savedCameraView;
++		//setupWorldSpace();
++	}
+ 	virtual void setCurrentDrawCallCubeMapSide(int iCubeSide) {
+ 		if(iCubeSide == this->curCubeMapSide) {
+ 			return; // no change
+ 		}
+ 		if(iCubeSide == -1) {
+-			// unbind the FBO
+-			if(shouldDrawToScreenFBO()) {
+-				bindFBO(screenFBO.getFBOHandle());
+-			} else {
+-				bindFBO(0);
+-			}
+-			// restore viewport
+-			setGLViewPort(getWinWidth(),getWinHeight());
+-
+-			// restore camera view and projection matrices
+-			projectionMatrix = savedCameraProjection;
+-
+-			glMatrixMode(GL_PROJECTION);
+-			glLoadIdentity();
+-			glLoadMatrixf(projectionMatrix);
+-
+-			worldModelMatrix = savedCameraView;
+-			//setupWorldSpace();
+-
++			this->stopDrawingToFBOAndRestoreCameraMatrices();
++	
+ 			this->curCubeMapSide = -1;
+ 
+ 			CHECK_GL_ERRORS;
+@@ -1176,6 +1189,7 @@
+ 	class glShader_c *curShader;
+ 	bool bDrawOnlyOnDepthBuffer;
+ 	bool bDrawingShadowVolumes;
++	bool bDrawingSunShadowMapPass;
+ 	virtual void setCurLight(const class rLightAPI_i *light) {
+ 		if(this->curLight == light)
+ 			return;
+@@ -1187,6 +1201,62 @@
+ 	virtual void setBDrawOnlyOnDepthBuffer(bool bNewDrawOnlyOnDepthBuffer) {
+ 		bDrawOnlyOnDepthBuffer = bNewDrawOnlyOnDepthBuffer;
+ 	}
++	virtual void setBDrawingSunShadowMapPass(bool bNewDrawingSunShadowMapPass) {
++		if(bDrawingSunShadowMapPass == bNewDrawingSunShadowMapPass)
++			return;
++		if(bNewDrawingSunShadowMapPass) {
++			u32 shadowMapSize = 512;
++			depthFBO.create(shadowMapSize,shadowMapSize);		
++
++			bindFBO(depthFBO.getFBOHandle());	
++			// set viewport
++			setGLViewPort(shadowMapSize,shadowMapSize);
++			// clear buffers
++			// Depth mask must be set to true before calling glClear
++			// (otherwise GL_DEPTH_BUFFER_BIT would be ignored)
++			////if(!bDepthMask)
++			////	g_core->Print("Depth mask was off\n");
++			setGLDepthMask(true); // this is necessary here!
++			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
++			// save camera matrices
++			savedCameraProjection = projectionMatrix;
++			savedCameraView = worldModelMatrix;
++
++			float size = 1000.f;
++			float sizeZ = 1000.f;
++			sunLightProjection.setupProjectionOrtho(-size,size,-size,size,-sizeZ,sizeZ);
++			vec3_c offset = sunDirection * sizeZ * 0.5f;
++			////sl->generateSunShadowMapDrawCalls();
++#if 0
++			axis_c ax;
++			ax.mat[0] = sunDirection;
++			ax.mat[1] = ax.mat[0].getPerpendicular();
++			ax.mat[2].crossProduct(ax.mat[0],ax.mat[1]);
++
++			sunLightView.fromAxisAndOrigin(ax,offset);
++#else
++			sunLightView.setupLookAtRH(offset,-sunDirection,sunDirection.getPerpendicular());
++#endif
++
++		//sunLightView.invFromAxisAndVector(ax,offset);
++		//// convert to gl coord system
++		//sunLightView.toGL();
++
++
++			// set the light view matrices
++			worldModelMatrix = sunLightView;
++		//	worldModelMatrix.toGL();
++
++			projectionMatrix = sunLightProjection;
++			glMatrixMode(GL_PROJECTION);
++			glLoadIdentity();
++			glLoadMatrixf(projectionMatrix);
++
++		} else {
++			this->stopDrawingToFBOAndRestoreCameraMatrices();
++		}
++		bDrawingSunShadowMapPass = bNewDrawingSunShadowMapPass;
++	}
+ 	void bindShader(class glShader_c *newShader) {
+ 		curShader = newShader;
+ 		if(newShader == 0) {
+@@ -1257,33 +1327,25 @@
+ 				if(newShader->u_spotLightMaxCos != -1) {
+ 					glUniform1f(newShader->u_spotLightMaxCos,curLight->getSpotLightMaxCos());
+ 				}
+-				if(r_shadows == 2) {
+-					matrix_c bias(0.5, 0.0, 0.0, 0.0, 
+-						0.0, 0.5, 0.0, 0.0,
+-						0.0, 0.0, 0.5, 0.0,
+-						0.5, 0.5, 0.5, 1.0);
+-					
+-					for(u32 i = 0; i < 6; i++) {
+-						
+-		//if(i != 5)
+-		//	continue;
++				if(r_shadows == 2) {	
++					if(rb_useDepthCubeMap.getInt()) {
++						selectTex(3);
++						glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
++						glUniform1i(newShader->u_shadowCubeMap,3);
++					} else {
++						
++						for(u32 i = 0; i < 6; i++) {
++							matrix_c lProj = curLight->getSMLightProj();;
++							matrix_c lView = curLight->getSMSideView(i);
+ 
+-						matrix_c lProj = curLight->getSMLightProj();;
+-						matrix_c lView = curLight->getSMSideView(i);
+-
+-						// FIXME: the entity offset calculated here is wrong... 
+-						// shadows are not displayed correctly on entities
+-						matrix_c res = bias * lProj * lView * entityMatrix;
++							// FIXME: the entity offset calculated here is wrong... 
++							// shadows are not displayed correctly on entities
++							matrix_c res = rb_shadowMappingBias * lProj * lView * entityMatrix;
+ 
+ 
+-						u32 texSlot = 1 + i;
+-						setTextureMatrixCustom(texSlot,res);
++							u32 texSlot = 1 + i;
++							setTextureMatrixCustom(texSlot,res);
+ 
+-						if(rb_useDepthCubeMap.getInt()) {
+-							selectTex(3);
+-							glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap.getTextureHandle());
+-							glUniform1i(newShader->u_shadowCubeMap,3);
+-						} else {
+ 							u32 slot = 3+i;
+ 							bindTex(slot,depthCubeFBOs.getSideTextureHandle(i));
+ 							glUniform1i(newShader->u_shadowMap[i],slot);
+@@ -1290,6 +1352,15 @@
+ 						}
+ 					}
+ 				}
++			} 
++			if(bHasSunLight && r_shadows == 2 && newShader->u_directionalShadowMap >= 0) {
++				matrix_c res = rb_shadowMappingBias * sunLightProjection * sunLightView * entityMatrix;
++				u32 texSlot = 1;
++				setTextureMatrixCustom(texSlot,res);
++
++				u32 slot = 3;
++				bindTex(slot,depthFBO.getTextureHandle());
++				glUniform1i(newShader->u_directionalShadowMap,slot);
+ 			}
+ 			if(newShader->uViewOrigin != -1) {
+ 				glUniform3f(newShader->uViewOrigin,
+@@ -1344,6 +1415,10 @@
+ 		if(verts.size() == 0)
+ 			return;
+ 
++		if(rb_skipMaterialsWithCubeMaps.getInt()) {
++			if(lastMat && lastMat->hasStageWithCubeMap())
++				return;
++		}
+ 		// first apply deforms
+ 		if(bDeformsDone == false && lastMat && lastMat->hasDeforms()) {
+ 			// right now we're only supporting the autoSprite deform
+@@ -1443,7 +1518,7 @@
+ 				bindTex(0,alphaStage->getTexture(0)->getInternalHandleU32());
+ 			}
+ 
+-			if(curCubeMapSide >= 0) {
++			if(curCubeMapSide >= 0 || bDrawingSunShadowMapPass) {
+ 				// invert culling for shadow mapping 
+ 				// (because we want to get the depth of backfaces to avoid epsilon issues)
+ 				if(lastMat) {
+@@ -1951,6 +2026,9 @@
+ 					}
+ 					if(bHasSunLight) {
+ 						glslShaderDesc.hasSunLight = true;
++						if(r_shadows == 2) {
++							glslShaderDesc.hasDirectionalShadowMapping = true;
++						}
+ 					}
+ 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
+ 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
+@@ -2519,6 +2597,7 @@
+ 		curLight = 0;
+ 		bDrawOnlyOnDepthBuffer = false;
+ 		bDrawingShadowVolumes = false;
++		bDrawingSunShadowMapPass = false;
+ 		bDepthMask = true;
+ 		prevCullType = CT_NOT_SET;
+ 		stencilTestEnabled = 0;
+Index: code/renderer/backEndGL/gl_shader.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_shader.cpp	(revision 448)
++++ code/renderer/backEndGL/gl_shader.cpp	(working copy)
+@@ -201,6 +201,9 @@
+ 	if(p.hasSunLight) {
+ 		out.append("#define HAS_SUNLIGHT\n");
+ 	}
++	if(p.hasDirectionalShadowMapping) {
++		out.append("#define HAS_DIRECTIONAL_SHADOW_MAPPING\n");
++	}
+ }
+ static glslPermutationFlags_s gl_defaultPermutations;
+ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
+@@ -309,6 +312,7 @@
+ 	ret->u_shadowMap[4] = glGetUniformLocation(shader,"shadowMap4");
+ 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
+ 	ret->u_shadowCubeMap = glGetUniformLocation(shader,"shadowCubeMap");
++	ret->u_directionalShadowMap = glGetUniformLocation(shader,"directionalShadowMap");
+ 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
+ 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
+ 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");
+Index: code/renderer/backEndGL/gl_shader.h
+===================================================================
+--- code/renderer/backEndGL/gl_shader.h	(revision 448)
++++ code/renderer/backEndGL/gl_shader.h	(working copy)
+@@ -52,6 +52,7 @@
+ 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
+ 	//float alphaTestValue;
+ 	bool hasSunLight; // #define HAS_SUNLIGHT
++	bool hasDirectionalShadowMapping; // #define HAS_DIRECTIONAL_SHADOW_MAPPING
+ 	// lighting debug tools
+ 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
+ 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
+@@ -98,6 +99,8 @@
+ 	// for spotlights
+ 	int u_lightDir;
+ 	int u_spotLightMaxCos;
++	// for directional shadow mapping (sun)
++	int u_directionalShadowMap;
+ 
+ 	int atrTangents;
+ 	int atrBinormals;
+Index: code/renderer/cameraDef.h
+===================================================================
+--- code/renderer/cameraDef.h	(revision 403)
++++ code/renderer/cameraDef.h	(working copy)
+@@ -58,6 +58,12 @@
+ 		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
+ 		thirdPersonRendering = bThirdPersonRendering;
+ 	}
++	void setup(const vec3_c &newOrigin, const axis_c &newAxis) {
++		origin = newOrigin;
++		pvsOrigin = newOrigin;
++		axis = newAxis;
++		frustum.setup(proj.fovX,proj.fovY,proj.zFar,axis,origin);
++	}
+ 	void setPVSOrigin(const vec3_c &newPVSOrigin) {
+ 		pvsOrigin = newPVSOrigin;
+ 	}
+Index: code/renderer/frontend/rf_bsp.h
+===================================================================
+--- code/renderer/frontend/rf_bsp.h	(revision 433)
++++ code/renderer/frontend/rf_bsp.h	(working copy)
+@@ -264,6 +264,9 @@
+ 	const rVertexBuffer_c *getVertices() const {
+ 		return &verts;
+ 	}
++	const aabb &getWorldBounds() const {
++		return models[0].bb;
++	}
+ 
+ 	void updateVisibility();
+ 	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);
+Index: code/renderer/frontend/rf_drawCall.cpp
+===================================================================
+--- code/renderer/frontend/rf_drawCall.cpp	(revision 448)
++++ code/renderer/frontend/rf_drawCall.cpp	(working copy)
+@@ -49,6 +49,7 @@
+ aCvar_c rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls("rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls","0");
+ aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeDrawCalls","0");
+ aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
++aCvar_c rf_drawCalls_printSunShadowMapDrawCalls("rf_drawCalls_printSunShadowMapDrawCalls","0");
+ 
+ class drawCall_c {
+ public:
+@@ -74,6 +75,8 @@
+ 	bool bHasSunLight;
+ 	vec3_c sunDirection;
+ 	vec3_c sunColor;
++	// for directional light shadow mapping
++	bool bDrawingSunShadowMapPass;
+ //public:
+ 	
+ 	void clearDrawCall() {
+@@ -85,11 +88,14 @@
+ bool rf_bDrawOnlyOnDepthBuffer = false;
+ bool rf_bDrawingPrelitPath = false;
+ bool rf_bDrawingSunLightPass = false;
++bool rf_bDrawingSunShadowMapPass = false;
+ // used to force specific frame of "animMap" stage from cgame code
+ int rf_forceSpecificMaterialFrame = -1;
+ int rf_currentShadowMapCubeSide = -1;
+ int rf_currentShadowMapW;
+ int rf_currentShadowMapH;
++//class matrix_c rf_sunProjection;
++//class matrix_c rf_sunMatrix;
+ 
+ // -1 means that global material time will be used to select "animMap" frame
+ void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
+@@ -131,6 +137,9 @@
+ 		//		return; 
+ 		//}
+ 	}
++	// dont draw sky
++	if(rf_bDrawingSunShadowMapPass && mat->hasStageWithCubeMap())
++		return;
+ 	if(rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls.getInt()) {
+ 		if(rf_curLightAPI && rf_currentShadowMapCubeSide >= 0) {
+ 			g_core->Print("Adding DepthShadowMap drawcall (%i) with material: %s\n",rf_numDrawCalls,mat->getName());
+@@ -145,7 +154,9 @@
+ 	n->clearDrawCall();
+ 	// if we're drawing only on depth buffer
+ 	if(rf_bDrawOnlyOnDepthBuffer) {
+-		if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
++		if(rf_bDrawingSunShadowMapPass) {
++			n->drawOnlyOnDepthBuffer = true;
++		} else if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
+ 			sort = DCS_BLEND_AFTER_LIGHTING;
+ 			n->drawOnlyOnDepthBuffer = false;
+ 			//return;
+@@ -195,6 +206,7 @@
+ 			n->sunColor = sunMaterial->getSunParms()->getSunColor();
+ 		}
+ 	}
++	n->bDrawingSunShadowMapPass = rf_bDrawingSunShadowMapPass;
+ 	rf_numDrawCalls++;
+ }
+ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+@@ -296,6 +308,11 @@
+ 			return 1; // c1 first
+ 		return -1; // c0 first
+ 	} 
++	if(c1->bDrawingSunShadowMapPass != c0->bDrawingSunShadowMapPass) {
++		if(c1->bDrawingSunShadowMapPass)
++			return -1; // c0 first
++		return 1; // c1 first
++	} 
+ #if 1
+ 	// c0->curLight == c1->curLight
+ 	// light shadow volumes are drawn before light interactions
+@@ -350,6 +367,7 @@
+ 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
+ 	rEntityAPI_i *prevEntity = 0;
+ 	int prevCubeMapSide = -1;
++	bool prevBDrawingSunShadowMapPass = false;
+ 	rLightAPI_i *prevLight = 0;
+ 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
+ 		if(rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls.getInt()) {
+@@ -367,6 +385,11 @@
+ 				g_core->Print("Executing depth only drawcall %i: material %s, light %i\n",i,c->material->getName(),c->curLight);
+ 			}
+ 		}
++		if(rf_drawCalls_printSunShadowMapDrawCalls.getInt()) {
++			if(c->bDrawingSunShadowMapPass) {
++				g_core->Print("Executing sun shadow map drawcall %i: material %s\n",i,c->material->getName());
++			}
++		}
+ 		// draw sky after mirror/portal materials
+ 		// this is a quick fix for maps with mirrors AND skies like q3dm0
+ 		if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
+@@ -408,9 +431,11 @@
+ 		}
+ 		// set cubemap properties before changing model view matrix
+ 		// but after curLight is set
++		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection);
++		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass);
+ 		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
+ 		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
+-		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide) {
++		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide || prevBDrawingSunShadowMapPass != c->bDrawingSunShadowMapPass) {
+ 			if(c->entity == 0) {
+ 				rb->setupWorldSpace();
+ 			} else {
+@@ -418,6 +443,7 @@
+ 			}
+ 			prevEntity = c->entity;
+ 			prevCubeMapSide = c->cubeMapSide;
++			prevBDrawingSunShadowMapPass = c->bDrawingSunShadowMapPass;
+ 		}
+ 		rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
+ 		rb->setCurrentDrawCallSort(c->sort);
+@@ -424,7 +450,6 @@
+ 		rb->setBindVertexColors(c->bindVertexColors);
+ 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
+ 		rb->setColor4(c->surfaceColor.toPointer());
+-		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection);
+ 		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
+ 		if(c->verts) {
+ 			// draw surface
+Index: code/renderer/frontend/rf_drawCall.h
+===================================================================
+--- code/renderer/frontend/rf_drawCall.h	(revision 448)
++++ code/renderer/frontend/rf_drawCall.h	(working copy)
+@@ -42,11 +42,19 @@
+ void RF_DrawCallsEndFrame(); // sets the current drawCalls count to 0
+ u32 RF_GetCurrentDrawcallsCount();
+ 
++// for depth pass
+ extern bool rf_bDrawOnlyOnDepthBuffer;
++// for lightmaps/deluxemaps pass (which is replacing depth pass)
+ extern bool rf_bDrawingPrelitPath;
+-extern bool rf_bDrawingSunLightPass;
++// for point light shadow mapping
+ extern int rf_currentShadowMapCubeSide;
+ extern int rf_currentShadowMapW;
+ extern int rf_currentShadowMapH;
++// for sun lighting pass
++extern bool rf_bDrawingSunLightPass;
++// for directional light (sun) shadow mapping
++extern bool rf_bDrawingSunShadowMapPass;
++//extern class matrix_c rf_sunProjection;
++//extern class matrix_c rf_sunMatrix;
+ 
+ #endif // __RF_DRAWCALL_H__
+Index: code/renderer/frontend/rf_main.cpp
+===================================================================
+--- code/renderer/frontend/rf_main.cpp	(revision 448)
++++ code/renderer/frontend/rf_main.cpp	(working copy)
+@@ -164,6 +164,27 @@
+ 				sl->addSunLightShadowVolumes();
+ 			} else {
+ 				sl->freeSunLightShadowVolumes();
++				if(RF_IsUsingShadowMapping()) {
++					//aabb bb;
++					//RF_GetWorldBounds(bb);
++					//float size = 256.f;
++					//float sizeZ = 1000.f;
++					//rf_sunProjection.setupProjectionOrtho(-size,size,-size,size,1.f,sizeZ);
++					////sl->generateSunShadowMapDrawCalls();
++					//axis_c ax;
++					//vec3_c dir = RF_GetSunDirection();
++					//ax.mat[0] = dir;
++					//ax.mat[1] = ax.mat[0].getPerpendicular();
++					//ax.mat[2].crossProduct(ax.mat[0],ax.mat[1]);
++					//vec3_c offset = dir * sizeZ * 0.5f;
++					//rf_sunMatrix.fromAxisAndOrigin(ax,rf_camera.getOrigin()+offset);
++					//rf_camera.setup(rf_sunMatrix.getOrigin(),ax);
++					rf_bDrawingSunShadowMapPass = true;
++					rf_bDrawOnlyOnDepthBuffer = true;
++					RF_AddGenericDrawCalls();
++					rf_bDrawingSunShadowMapPass = false;
++					rf_bDrawOnlyOnDepthBuffer = false;
++				}
+ 			}
+ 			RF_AddGenericDrawCalls();
+ 			rf_bDrawingSunLightPass = false;
+Index: code/renderer/frontend/rf_world.cpp
+===================================================================
+--- code/renderer/frontend/rf_world.cpp	(revision 448)
++++ code/renderer/frontend/rf_world.cpp	(working copy)
+@@ -291,7 +291,17 @@
+ 		r_procTree->setSurfaceMaterial(areaNum,surfaceNum,matName);
+ 	}
+ }
++void RF_GetWorldBounds(class aabb &out) {
++	if(r_bspTree) {
++		out = r_bspTree->getWorldBounds();
++	} else if(r_worldModel) {
++		out = r_worldModel->getBounds();
++	} else if(r_procTree) {
++		//r_procTree->getBB();
++	}
++}
+ 
++
+ void RF_SetWorldSurfaceMaterial_f() {
+ 	if(g_core->Argc() < 4) {
+ 		g_core->Print("Usage: RF_SetWorldSurfaceMaterial_f <areaNum> <surfaceNum> <material_name>\n");
+Index: code/renderer/frontend/rf_world.h
+===================================================================
+--- code/renderer/frontend/rf_world.h	(revision 448)
++++ code/renderer/frontend/rf_world.h	(working copy)
+@@ -54,6 +54,7 @@
+ bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out);
+ void RF_GetLookatSurfaceInfo(struct rendererSurfaceRef_s &out);
+ void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName);
++void RF_GetWorldBounds(class aabb &out);
+ 
+ #endif // __RF_BSP_H__
+ 
+Index: code/renderer/rVertexBuffer.h
+===================================================================
+--- code/renderer/rVertexBuffer.h	(revision 446)
++++ code/renderer/rVertexBuffer.h	(working copy)
+@@ -131,7 +131,7 @@
+ 	inline void normalizeNormals() {
+ 		rVert_c *v = this->getArray();
+ 		for(u32 i = 0; i < numVerts; i++, v++) {
+-			v->normal.normalize();
++			v->normal.normalizeFast();
+ 		}
+ 	}
+ #ifdef RVERT_STORE_TANGENTS
+Index: game/baseqio/glsl/genericShader.frag
+===================================================================
+--- game/baseqio/glsl/genericShader.frag	(revision 360)
++++ game/baseqio/glsl/genericShader.frag	(working copy)
+@@ -56,6 +56,17 @@
+ varying mat3 tbnMat;
+ #endif
+ 
++#ifdef HAS_SUNLIGHT
++uniform vec3 u_sunDirection;
++uniform vec3 u_sunColor;
++varying vec3 v_vertNormal;
++#endif
++
++#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
++uniform sampler2DShadow directionalShadowMap;
++varying vec4 shadowCoord;
++#endif 
++
+ void main() {
+ #ifdef HAS_HEIGHT_MAP
+     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
+@@ -94,6 +105,18 @@
+     return;
+ #else
+     
++ 
++#ifdef HAS_SUNLIGHT
++    float angleFactor = dot(v_vertNormal, u_sunDirection);
++    if(angleFactor < 0) {
++		// light is behind the surface
++		return;
++    }
++#endif   
++
++#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
++	float shadow = shadow2DProj(directionalShadowMap, shadowCoord).s;
++#endif 
+   // calculate the final color
+ #ifdef HAS_LIGHTMAP
+ #ifdef HAS_VERTEXCOLORS
+@@ -112,4 +135,11 @@
+ 	gl_FragColor *= u_materialColor;
+ #endif
+ #endif // defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
++ 
++#ifdef HAS_SUNLIGHT
++    gl_FragColor *= angleFactor;
++#endif   
++#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
++    gl_FragColor *= shadow;
++#endif   
+ }
+\ No newline at end of file
+Index: game/baseqio/glsl/genericShader.vert
+===================================================================
+--- game/baseqio/glsl/genericShader.vert	(revision 428)
++++ game/baseqio/glsl/genericShader.vert	(working copy)
+@@ -43,6 +43,15 @@
+ varying mat3 tbnMat;
+ #endif    
+     
++#ifdef HAS_SUNLIGHT
++varying vec3 v_vertNormal;
++#endif
++#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
++// used for shadow lookup
++varying vec4 shadowCoord;
++#endif
++
++
+ void main() {
+ 	gl_Position = ftransform();
+ 	
+@@ -59,7 +68,12 @@
+ #if defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP)
+ 	tbnMat = mat3(atrTangents,atrBinormals,gl_Normal);
+ #endif    
+-    
++        
++#ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
++	// this is the only shadow part in the Vertex Shader
++	shadowCoord = gl_TextureMatrix[1] * gl_Vertex;
++#endif
++
+ #ifdef HAS_TEXGEN_ENVIROMENT
+ 	vec3 dir = u_viewOrigin - gl_Vertex.xyz;
+ 	dir = normalize(dir);
+@@ -86,5 +100,8 @@
+ #ifdef HAS_VERTEXCOLORS
+ 	v_color4 = gl_Color;
+ #endif // HAS_VERTEXCOLORS
++#ifdef HAS_SUNLIGHT
++	v_vertNormal = gl_Normal;
++#endif
+ }
+ 
+Index: misc/msvc/renderer.vcproj
+===================================================================
+--- misc/msvc/renderer.vcproj	(revision 435)
++++ misc/msvc/renderer.vcproj	(working copy)
+@@ -276,6 +276,10 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\renderer\frontend\rf_sunLight.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\renderer\frontend\rf_surface.cpp"
+ 				>
+ 			</File>
+@@ -374,6 +378,10 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\renderer\frontend\rf_sunLight.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\renderer\frontend\rf_surface.h"
+ 				>
+ 			</File>

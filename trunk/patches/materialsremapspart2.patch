@@ -1,0 +1,479 @@
+Index: code/api/rAPI.h
+===================================================================
+--- code/api/rAPI.h	(revision 394)
++++ code/api/rAPI.h	(working copy)
+@@ -73,6 +73,11 @@
+ 	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
+ 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
+ 
++	// this will use the current camera settings
++	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) = 0;
++	// areaNum is needed only for .proc world maps
++	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum = 0) = 0;
++
+ 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
+ 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
+ 
+Index: code/api/rEntityAPI.h
+===================================================================
+--- code/api/rEntityAPI.h	(revision 403)
++++ code/api/rEntityAPI.h	(working copy)
+@@ -42,6 +42,7 @@
+ 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex) = 0;
+ 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex) = 0;
+ 	virtual void setSkin(const char *skinName) = 0;
++	virtual void setNetworkingEntityNumber(int newNetEntNum) = 0;
+ 
+ 	virtual class rModelAPI_i *getModel() const = 0;
+ 	virtual const char *getModelName() const = 0;
+@@ -49,6 +50,7 @@
+ 	virtual const class vec3_c &getOrigin() const = 0;
+ 	virtual const class matrix_c &getMatrix() const = 0;
+ 	virtual const class aabb &getBoundsABS() const = 0;
++	virtual int getNetworkingEntityNumber() const = 0;
+ 
+ 	virtual void hideModel() = 0;
+ 	virtual void showModel() = 0;
+Index: code/cgame/cg_consoleCmds.cpp
+===================================================================
+--- code/cgame/cg_consoleCmds.cpp	(revision 0)
++++ code/cgame/cg_consoleCmds.cpp	(working copy)
+@@ -0,0 +1,44 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// cg_consoleCmds.cpp - cgame console commands
++#include <shared/autoCmd.h>
++#include <api/coreAPI.h>
++#include <api/rAPI.h>
++#include <shared/rendererSurfaceRef.h>
++
++void CG_SetCrosshairSurfaceMaterial_f() {
++	if(g_core->Argc() < 2) {
++		g_core->Print("Usage: cg_setCrosshairSurfaceMaterial <material_name>\n");
++		return;
++	}
++	const char *matName = g_core->Argv(1);
++	rendererSurfaceRef_s ref;
++	rf->getLookatSurfaceInfo(ref);
++	// send remap command to server so it can broadcast it to all clients
++	g_core->Cbuf_ExecuteText(EXEC_APPEND,va("net_setWorldSurfaceMaterial %i %i %s",ref.areaNum,ref.surfaceNum,matName));
++	//rf->setWorldSurfaceMaterial(matName,ref.surfaceNum,ref.areaNum);
++}
++
++static aCmd_c cg_setCrosshairSurfaceMaterial_f("cg_setCrosshairSurfaceMaterial",CG_SetCrosshairSurfaceMaterial_f);
++
+Index: code/cgame/cg_main.cpp
+===================================================================
+--- code/cgame/cg_main.cpp	(revision 413)
++++ code/cgame/cg_main.cpp	(working copy)
+@@ -30,6 +30,7 @@
+ #include <api/loadingScreenMgrAPI.h>
+ #include <api/declManagerAPI.h>
+ #include <shared/autoCvar.h>
++#include <shared/autoCmd.h>
+ 
+ cg_t				cg;
+ cgs_t				cgs;
+@@ -214,6 +215,8 @@
+ 	// init cgame console variables
+ 	AUTOCVAR_RegisterAutoCvars();
+ 	CG_RegisterCvars();
++	// init console commands
++	AUTOCMD_RegisterAutoConsoleCommands();
+ 
+ 	// get the rendering configuration from the client system
+ 	cgs.screenXScale = rf->getWinWidth() / 640.0;
+@@ -358,6 +361,8 @@
+ 	// like closing files or archiving session data
+ 	// unlink autocvars
+ 	AUTOCVAR_UnregisterAutoCvars();
++	// unlink autoCmds
++	AUTOCMD_UnregisterAutoConsoleCommands();
+ }
+ 
+ 
+Index: code/cgame/cg_servercmds.cpp
+===================================================================
+--- code/cgame/cg_servercmds.cpp	(revision 413)
++++ code/cgame/cg_servercmds.cpp	(working copy)
+@@ -331,6 +331,12 @@
+ 		g_core->Args(buff,sizeof(buff));
+ 		CG_AddChatMessage(buff);
+ 		return;
++	} else if( !strcmp( cmd, "stufftext" ) ) {
++		char buff[8192];
++		g_core->Args(buff,sizeof(buff));
++		// MoHAA-style "stufftext" command - passes command text to console
++		g_core->Cbuf_ExecuteText(EXEC_APPEND,buff);
++		return;
+ 	}
+ 
+ 	CG_Printf( "Unknown client game command: %s\n", cmd );
+Index: code/cgame/cg_snapshot.cpp
+===================================================================
+--- code/cgame/cg_snapshot.cpp	(revision 413)
++++ code/cgame/cg_snapshot.cpp	(working copy)
+@@ -209,6 +209,7 @@
+ 			rf->removeEntity(cent->rEnt);
+ 		}
+ 		cent->rEnt = rf->allocEntity();
++		cent->rEnt->setNetworkingEntityNumber(entNum);
+ 		if(cent->currentState.lightRadius >= 0) {
+ 			// new render light
+ 			if(cent->rLight) {
+Index: code/client/cl_console.cpp
+===================================================================
+--- code/client/cl_console.cpp	(revision 417)
++++ code/client/cl_console.cpp	(working copy)
+@@ -378,6 +378,8 @@
+ 	Cmd_SetCommandCompletionFunc( "cg_testMaterial", Cmd_CompleteMaterialName );
+ 	Cmd_AddCommand ("rf_setCrosshairSurfaceMaterial", 0);
+ 	Cmd_SetCommandCompletionFunc( "rf_setCrosshairSurfaceMaterial", Cmd_CompleteMaterialName );
++	Cmd_AddCommand ("cg_setCrosshairSurfaceMaterial", 0);
++	Cmd_SetCommandCompletionFunc( "cg_setCrosshairSurfaceMaterial", Cmd_CompleteMaterialName );
+ }
+ 
+ /*
+Index: code/game/g_client.cpp
+===================================================================
+--- code/game/g_client.cpp	(revision 413)
++++ code/game/g_client.cpp	(working copy)
+@@ -529,6 +529,13 @@
+ 		char buff[8192];
+ 		g_core->Args(buff,sizeof(buff));
+ 		pl->cmdSay(buff);
++	} else if(!stricmp(cmd,"net_setWorldSurfaceMaterial")) {
++		// command used to debug (display) various materials on world surfaces
++		int areaNum = atoi(g_core->Argv(1));
++		int surfaceNum = atoi(g_core->Argv(2));
++		const char *matName = g_core->Argv(3);
++		// broadcast world material change to all the clients
++		g_server->SendServerCommand(-1,va("stufftext rf_setWorldSurfaceMaterial %i %i %s",areaNum,surfaceNum,matName));
+ 	} else {
+ 		g_core->RedWarning("Unknown client command %s\n",cmd);
+ 		////vec3_c tmp(1400,1340,470);
+Index: code/renderer/frontend/rf_api.cpp
+===================================================================
+--- code/renderer/frontend/rf_api.cpp	(revision 412)
++++ code/renderer/frontend/rf_api.cpp	(working copy)
+@@ -201,6 +201,13 @@
+ 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) {
+ 		return RF_RemoveCustomRenderObject(api);
+ 	}
++	// this will use the current camera settings
++	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) {
++		RF_GetLookatSurfaceInfo(out);
++	}
++	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum) {
++		RF_SetWorldSurfaceMaterial(areaNum,surfNum,matName);
++	}
+ 	virtual class rDebugDrawer_i *getDebugDrawer() {
+ 		return r_dd;
+ 	}
+Index: code/renderer/frontend/rf_bsp.cpp
+===================================================================
+--- code/renderer/frontend/rf_bsp.cpp	(revision 417)
++++ code/renderer/frontend/rf_bsp.cpp	(working copy)
+@@ -2448,6 +2448,9 @@
+ 	}
+ 	rebuildBatches();
+ }
++void rBspTree_c::setSurfaceMaterial(u32 surfaceNum, const char *matName) {
++	setSurfaceMaterial(surfaceNum,g_ms->registerMaterial(matName));
++}
+ rBspTree_c *RF_LoadBSP(const char *fname) {
+ 	rBspTree_c *bsp = new rBspTree_c;
+ 	if(bsp->load(fname)) {
+Index: code/renderer/frontend/rf_bsp.h
+===================================================================
+--- code/renderer/frontend/rf_bsp.h	(revision 417)
++++ code/renderer/frontend/rf_bsp.h	(working copy)
+@@ -290,6 +290,7 @@
+ 	bool getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const;
+ 	
+ 	void setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material);
++	void setSurfaceMaterial(u32 surfaceNum, const char *matName);
+ 
+ 	const class lightGridAPI_i *getLightGridAPI() const {
+ 		return lightGrid;
+Index: code/renderer/frontend/rf_debugDrawing.cpp
+===================================================================
+--- code/renderer/frontend/rf_debugDrawing.cpp	(revision 323)
++++ code/renderer/frontend/rf_debugDrawing.cpp	(working copy)
+@@ -42,9 +42,7 @@
+ 
+ void RF_ShowCrossairSurfaceInfo() {
+ 	trace_c tr;
+-	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
+-	tr.setupRay(rf_camera.getOrigin(),to);
+-	RF_TraceSceneRay(tr,true);
++	RF_DoCameraTrace(tr,true);
+ 	if(tr.hasHit() == false)
+ 		return;
+ 	mtrAPI_i *rMat = tr.getHitRMaterial();
+Index: code/renderer/frontend/rf_entities.cpp
+===================================================================
+--- code/renderer/frontend/rf_entities.cpp	(revision 408)
++++ code/renderer/frontend/rf_entities.cpp	(working copy)
+@@ -92,6 +92,7 @@
+ 	//skinMatList = 0;
+ 	bCenterLightSampleValid = false;
+ 	finalBones = 0;
++	networkingEntityNumber = -1;
+ }
+ rEntityImpl_c::~rEntityImpl_c() {
+ 	RFL_RemoveAllReferencesToEntity(this);
+@@ -832,3 +833,8 @@
+ 	}
+ 	return bHit;
+ }
++bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels) {
++	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
++	tr.setupRay(rf_camera.getOrigin(),to);
++	return RF_TraceSceneRay(tr,bSkipPlayerModels);
++}
+Index: code/renderer/frontend/rf_entities.h
+===================================================================
+--- code/renderer/frontend/rf_entities.h	(revision 403)
++++ code/renderer/frontend/rf_entities.h	(working copy)
+@@ -76,6 +76,8 @@
+ 	arraySTD_c<u32> touchingAreas;
+ 	// used to avoid updating animated entity several times in single frame
+ 	u32 animatedEntityUpdateFrame;
++	// corresponding serverside entity index
++	int networkingEntityNumber;
+ 
+ 	// this is called when a model skin, or a model itself is changed
+ 	void updateModelSkin();
+@@ -109,6 +111,10 @@
+ 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
+ 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
+ 	virtual void setSkin(const char *skinName);
++	virtual void setNetworkingEntityNumber(int newNetEntNum) {
++		networkingEntityNumber = newNetEntNum;
++	}
++
+ 	virtual void hideModel();
+ 	virtual void showModel();
+ 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
+@@ -154,6 +160,9 @@
+ 	virtual const class aabb &getBoundsABS() const {
+ 		return absBB;
+ 	}
++	virtual int getNetworkingEntityNumber() const {
++		return networkingEntityNumber;
++	}
+ 	class simpleDecalBatcher_c *getStaticDecalsBatch() {
+ 		return staticDecals;
+ 	}
+Index: code/renderer/frontend/rf_local.h
+===================================================================
+--- code/renderer/frontend/rf_local.h	(revision 403)
++++ code/renderer/frontend/rf_local.h	(working copy)
+@@ -55,6 +55,7 @@
+ void RFE_ClearEntities();
+ void RFE_DrawEntityAbsBounds();
+ bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
++bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels);
+ u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
+ // "forceThirdPerson" is true while generating shadow map drawcalls
+ void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);
+Index: code/renderer/frontend/rf_proc.cpp
+===================================================================
+--- code/renderer/frontend/rf_proc.cpp	(revision 417)
++++ code/renderer/frontend/rf_proc.cpp	(working copy)
+@@ -745,6 +745,10 @@
+ 	}
+ }
+ void procTree_c::setSurfaceMaterial(u32 areaNum, u32 surfaceNum, const char *matName) {
++	if(areaNum >= areas.size()) {
++		g_core->RedWarning("procTree_c::setSurfaceMaterial: bad areaNum %i\n",areaNum);
++		return;
++	}
+ 	areas[areaNum]->areaModel->setSurfaceMaterial(surfaceNum,matName);
+ }
+ 
+Index: code/renderer/frontend/rf_world.cpp
+===================================================================
+--- code/renderer/frontend/rf_world.cpp	(revision 417)
++++ code/renderer/frontend/rf_world.cpp	(working copy)
+@@ -30,10 +30,12 @@
+ #include <api/coreAPI.h>
+ #include <api/modelLoaderDLLAPI.h>
+ #include <api/materialSystemAPI.h>
++#include <api/rEntityAPI.h>
+ #include <shared/autoCmd.h>
+ #include <shared/autoCvar.h>
+ #include <shared/trace.h>
+ #include <shared/stringList.h>
++#include <shared/rendererSurfaceRef.h>
+ 
+ static class rBspTree_c *r_bspTree = 0; // for .bsp files
+ static class r_model_c *r_worldModel = 0; // for .map files (converted to trimeshes) and other model types
+@@ -235,6 +237,48 @@
+ 		g_core->RedWarning("Map type is not BSP\n");
+ 	}
+ }
++void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName) {
++	if(r_bspTree) {
++		r_bspTree->setSurfaceMaterial(surfaceNum,matName);
++	} else if(r_worldModel) {
++		r_worldModel->setSurfaceMaterial(surfaceNum,matName);
++	} else if(r_procTree) {
++		r_procTree->setSurfaceMaterial(areaNum,surfaceNum,matName);
++	}
++}
++
++void RF_SetWorldSurfaceMaterial_f() {
++	if(g_core->Argc() < 4) {
++		g_core->Print("Usage: RF_SetWorldSurfaceMaterial_f <areaNum> <surfaceNum> <material_name>\n");
++		return;
++	}
++	// areaNum is needed only for .proc world maps
++	int areaNum = atoi(g_core->Argv(1));
++	int surfaceNum = atoi(g_core->Argv(2));
++	const char *matName = g_core->Argv(3);
++	mtrAPI_i *mat = g_ms->registerMaterial(matName);
++	if(mat == 0) {
++		g_core->Print("NULL material\n");
++		return;
++	}
++	RF_SetWorldSurfaceMaterial(areaNum,surfaceNum,matName);
++}
++void RF_GetLookatSurfaceInfo(rendererSurfaceRef_s &out) {
++	trace_c tr;
++	RF_DoCameraTrace(tr,true);
++	if(tr.hasHit() == false) {
++		out.clear();
++		return;
++	}
++	out.areaNum = tr.getHitAreaNum();
++	out.surfaceNum = tr.getHitSurfaceNum();
++	class rEntityAPI_i *e = tr.getHitREntity();
++	if(e) {
++		out.entityNum = e->getNetworkingEntityNumber();
++	} else {
++		out.entityNum = -1;
++	}
++}
+ void RF_SetCrosshairSurfaceMaterial_f() {
+ 	if(g_core->Argc() < 2) {
+ 		g_core->Print("Usage: rf_setCrosshairSurfaceMaterial <material_name>\n");
+@@ -246,19 +290,9 @@
+ 		g_core->Print("NULL material\n");
+ 		return;
+ 	}
+-	trace_c tr;
+-	vec3_c to = rf_camera.getOrigin() + rf_camera.getForward() * 10000.f;
+-	tr.setupRay(rf_camera.getOrigin(),to);
+-	RF_TraceSceneRay(tr,true);
+-	if(tr.hasHit() == false)
+-		return;
+-	if(r_bspTree) {
+-		r_bspTree->setSurfaceMaterial(tr.getHitSurfaceNum(),mat);
+-	} else if(r_worldModel) {
+-		r_worldModel->setSurfaceMaterial(tr.getHitSurfaceNum(),matName);
+-	} else if(r_procTree) {
+-		r_procTree->setSurfaceMaterial(tr.getHitAreaNum(),tr.getHitSurfaceNum(),matName);
+-	}
++	rendererSurfaceRef_s tmp;
++	RF_GetLookatSurfaceInfo(tmp);
++	RF_SetWorldSurfaceMaterial(tmp.areaNum,tmp.surfaceNum,matName);
+ }
+ bool RF_IsWorldTypeProc()  {
+ 	if(r_procTree)
+@@ -326,5 +360,6 @@
+ static aCmd_c rf_printWorldMapInfo("printWorldMapInfo",RF_PrintWorldMapInfo_f);
+ static aCmd_c rf_bsp_rebuildBatches("rebuildBSPWorldBatches",RF_BSP_RebuildBatches_f);
+ static aCmd_c rf_setCrosshairSurfaceMaterial("rf_setCrosshairSurfaceMaterial",RF_SetCrosshairSurfaceMaterial_f);
++static aCmd_c rf_setWorldSurfaceMaterial("rf_setWorldSurfaceMaterial",RF_SetWorldSurfaceMaterial_f);
+ 
+ 
+Index: code/renderer/frontend/rf_world.h
+===================================================================
+--- code/renderer/frontend/rf_world.h	(revision 374)
++++ code/renderer/frontend/rf_world.h	(working copy)
+@@ -43,6 +43,8 @@
+ void RF_WorldDebugDrawing();
+ const class lightGridAPI_i *RF_GetWorldLightGridAPI();
+ bool RF_SampleWorldLightGrid(const vec3_c &point, struct pointLightSample_s &out);
++void RF_GetLookatSurfaceInfo(struct rendererSurfaceRef_s &out);
++void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName);
+ 
+ #endif // __RF_BSP_H__
+ 
+Index: misc/msvc/cgame.vcproj
+===================================================================
+--- misc/msvc/cgame.vcproj	(revision 412)
++++ misc/msvc/cgame.vcproj	(working copy)
+@@ -254,6 +254,10 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\cgame\cg_consoleCmds.cpp"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\cgame\cg_draw.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -407,7 +411,7 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\code\cgame\cg_servercmds.cpp"
++				RelativePath="..\..\code\cgame\cg_serverCmds.cpp"
+ 				>
+ 				<FileConfiguration
+ 					Name="Debug|Win32"
+@@ -588,6 +592,14 @@
+ 			Name="shared"
+ 			>
+ 			<File
++				RelativePath="..\..\code\shared\autoCmd.cpp"
++				>
++			</File>
++			<File
++				RelativePath="..\..\code\shared\autoCmd.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\shared\autoCvar.cpp"
+ 				>
+ 			</File>
+Index: misc/msvc/renderer.vcproj
+===================================================================
+--- misc/msvc/renderer.vcproj	(revision 409)
++++ misc/msvc/renderer.vcproj	(working copy)
+@@ -306,6 +306,10 @@
+ 				>
+ 			</File>
+ 			<File
++				RelativePath="..\..\code\shared\rendererSurfaceRef.h"
++				>
++			</File>
++			<File
+ 				RelativePath="..\..\code\renderer\frontend\rf_2d.h"
+ 				>
+ 			</File>

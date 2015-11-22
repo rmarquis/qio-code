@@ -1,0 +1,1389 @@
+Index: code/api/mtrAPI.h
+===================================================================
+--- code/api/mtrAPI.h	(revision 435)
++++ code/api/mtrAPI.h	(working copy)
+@@ -50,6 +50,7 @@
+ 	virtual u32 getNumStages() const = 0;
+ 	virtual const class mtrStageAPI_i *getStage(u32 stageNum) const = 0;
+ 	virtual const class skyParmsAPI_i *getSkyParms() const = 0;
++	virtual const class sunParmsAPI_i *getSunParms() const = 0;
+ 	virtual enum drawCallSort_e getSort() const = 0;
+ 	virtual enum cullType_e getCullType() const = 0;
+ 	virtual bool hasTexGen() const = 0;
+Index: code/api/rbAPI.h
+===================================================================
+--- code/api/rbAPI.h	(revision 435)
++++ code/api/rbAPI.h	(working copy)
+@@ -133,6 +133,9 @@
+ 	virtual void setCurLightShadowMapSize(int newW, int newH) {
+ 
+ 	}
++	virtual void setSunParms(bool bHasSunLight, const class vec3_c &sunColor, const class vec3_c &sunDirection) {
++
++	}
+ 	// -1 means that renderer material time will be used to get "animMap" frame
+ 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+ 
+Index: code/materialSystem/mat_impl.cpp
+===================================================================
+--- code/materialSystem/mat_impl.cpp	(revision 435)
++++ code/materialSystem/mat_impl.cpp	(working copy)
+@@ -330,6 +330,7 @@
+ // material class
+ mtrIMPL_c::mtrIMPL_c() {
+ 	skyParms = 0;
++	sunParms = 0;
+ 	polygonOffset = 0;
+ 	hashNext = 0;
+ 	cullType = CT_FRONT_SIDED;
+@@ -350,8 +351,13 @@
+ 		delete skyParms;
+ 		skyParms = 0;
+ 	}
++	if(sunParms) {
++		delete sunParms;
++		sunParms = 0;
++	}
+ 	if(deforms) {
+ 		delete deforms;
++		deforms = 0;
+ 	}
+ 	// reset variables to their default values
+ 	polygonOffset = 0;
+@@ -767,6 +773,27 @@
+ 
+ 				} else if(p.atWord("wood")) {
+ 
++				} else if(p.atWord("xmap_sun")) {
++					// Xreal sun params.
++					// In Xreal they are automatically applied to tr. globals when they are parsed.
++					// We're using a separate class to store them.
++					if(sunParms) {
++						u32 line = p.getCurrentLineNumber();
++						g_core->RedWarning("mtrIMPL_c::loadFromText: sunParms already defined - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());
++					} else {
++						sunParms = new sunParms_c;
++					}
++					vec3_c color;
++					if(p.getFloatMat(color,3)) {
++						u32 line = p.getCurrentLineNumber();
++						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
++					}
++					vec3_c angles;
++					if(p.getFloatMat(angles,3)) {
++						u32 line = p.getCurrentLineNumber();
++						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
++					}
++					sunParms->setFromColorAndAngles(color,angles);
+ 				} else {
+ 					u32 line = p.getCurrentLineNumber();
+ 					str token  = p.getToken();
+Index: code/materialSystem/mat_impl.h
+===================================================================
+--- code/materialSystem/mat_impl.h	(revision 435)
++++ code/materialSystem/mat_impl.h	(working copy)
+@@ -97,6 +97,39 @@
+ 	}
+ };
+ 
++// parsed from xmap_sun.
++// Xreal is parsing this keyword in tr_shader.c and automatically applies it to tr.globals.
++// xmap_sun syntax: colorR colorG colorB anglesPitch anglesYaw anglesRoll
++// NOTE: Xreal ignores the anglesPitch component.
++// NOTE: there is also "xmap_skylight" keyword which seem to be ignored in Xreal.
++class sunParms_c : public sunParmsAPI_i {
++	vec3_c sunColor; // usually 1 1 1
++	vec3_c sunAngles;
++	vec3_c sunDirection; // calculated from angles
++public:
++	void setFromColorAndAngles(const vec3_c &nColor, const vec3_c &nAngles) {
++		sunColor = nColor;
++		sunAngles = nAngles;
++#if 0
++		sunDirection = nAngles.getForward();
++#else
++		// let's stick to Xreal "xmap_sun" angles format.
++		// It's different than the one used in vec3_c::getForward()
++		float radiansA = DEG2RAD(sunAngles.y);
++		float radiansB = DEG2RAD(sunAngles.z);
++		sunDirection[0] = cos(radiansA) * cos(radiansB);
++		sunDirection[1] = sin(radiansA) * cos(radiansB);
++		sunDirection[2] = sin(radiansB);
++#endif
++	}
++	virtual const class vec3_c &getSunDir() const {
++		return sunDirection;
++	}
++	virtual const class vec3_c &getSunColor() const {
++		return sunColor;
++	}
++};
++
+ class deform_c {
+ 	deformType_e type;
+ public:
+@@ -328,6 +361,7 @@
+ 	mtrIMPL_c *hashNext;
+ 	arraySTD_c<mtrStage_c*> stages;
+ 	skyParms_c *skyParms;
++	sunParms_c *sunParms;
+ 	float polygonOffset;
+ 	enum cullType_e cullType;
+ 	bool bPortalMaterial; // set to true by "portal" global material keyword
+@@ -500,6 +534,9 @@
+ 	virtual const class skyParmsAPI_i *getSkyParms() const {
+ 		return skyParms;
+ 	}
++	virtual const class sunParmsAPI_i *getSunParms() const {
++		return sunParms;
++	}
+ 	// TODO: precalculate stage->sort once and just return the stored value here?
+ 	virtual enum drawCallSort_e getSort() const { 
+ 		if(bPortalMaterial) {
+Index: code/materialSystem/mat_public.h
+===================================================================
+--- code/materialSystem/mat_public.h	(revision 435)
++++ code/materialSystem/mat_public.h	(working copy)
+@@ -125,4 +125,10 @@
+ 	virtual const skyBoxAPI_i *getNearBox() const = 0;
+ };
+ 
++class sunParmsAPI_i {
++public:
++	virtual const class vec3_c &getSunDir() const = 0;
++	virtual const class vec3_c &getSunColor() const = 0;
++};
++
+ #endif // __MAT_PUBLIC_H__
+Index: code/math/plane.h
+===================================================================
+--- code/math/plane.h	(revision 374)
++++ code/math/plane.h	(working copy)
+@@ -127,9 +127,9 @@
+ 	}
+ 	void fromPointAndNormal(const vec3_c &p, const vec3_c &_normal) {
+ 		this->norm = _normal;
+-		this->norm.normalize();
++		this->norm.normalizeFast();
+ 		this->dist = -this->norm.dotProduct(p);
+-#if 1
++#if 0
+ 		float check = this->distance(p);
+ 		assert(abs(check) < 0.01f);
+ #endif
+Index: code/renderer/backEndGL/gl_main.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_main.cpp	(revision 446)
++++ code/renderer/backEndGL/gl_main.cpp	(working copy)
+@@ -330,6 +330,9 @@
+ 	u32 viewPortWidth;
+ 	u32 viewPortHeight;
+ 	bool bSkipStaticEnvCubeMapStages;
++	bool bHasSunLight;
++	class vec3_c sunColor;
++	class vec3_c sunDirection;
+ 	// matrices
+ 	matrix_c worldModelMatrix;
+ 	matrix_c resultMatrix;
+@@ -400,6 +403,7 @@
+ 		bDrawingSky = false;
+ 		colorMaskState[0] = colorMaskState[1] = colorMaskState[2] = colorMaskState[3] = false;
+ 		bSkipStaticEnvCubeMapStages = false;
++		bHasSunLight = false;
+ 	}
+ 	virtual backEndType_e getType() const {
+ 		return BET_GL;
+@@ -901,11 +905,19 @@
+ 			CHECK_GL_ERRORS;
+ 			return;
+ 		}
+-		// ensure that FBO is ready
+-		if(rb_useDepthCubeMap.getInt()) {
+-			depthCubeMap.create(curShadowMapW,curShadowMapH);
+-		} else {
+-			depthCubeFBOs.create(curShadowMapW,curShadowMapH);
++		if(this->curCubeMapSide == -1) {
++			// ensure that FBO is ready
++			if(rb_useDepthCubeMap.getInt()) {
++				//if(1) {
++				//	depthCubeMap.destroy();
++				//}
++				depthCubeMap.create(curShadowMapW,curShadowMapH);
++			} else {
++				//if(1) {
++				//	depthCubeFBOs.destroy();
++				//}
++				depthCubeFBOs.create(curShadowMapW,curShadowMapH);
++			}
+ 		}
+ 		// bind the FBO
+ 		if(rb_useDepthCubeMap.getInt()) {
+@@ -916,7 +928,12 @@
+ 		}
+ 		// set viewport
+ 		setGLViewPort(curShadowMapW,curShadowMapH);
+-		// clear buffers
++		// clear buffers
++		// Depth mask must be set to true before calling glClear
++		// (otherwise GL_DEPTH_BUFFER_BIT would be ignored)
++		////if(!bDepthMask)
++		////	g_core->Print("Depth mask was off\n");
++		setGLDepthMask(true); // this is necessary here!
+ 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+ 		if(this->curCubeMapSide == -1) {
+ 			// save camera matrices
+@@ -942,6 +959,11 @@
+ 		curShadowMapW = newW;
+ 		curShadowMapH = newH;
+ 	}
++	virtual void setSunParms(bool newBHasSunLight, const class vec3_c &newSunColor, const class vec3_c &newSunDirection) {
++		bHasSunLight = newBHasSunLight;
++		sunColor = newSunColor;
++		sunDirection = newSunDirection;
++	}
+ 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+ 		this->forcedMaterialFrameNum = animMapFrame;
+ 	}
+@@ -1196,6 +1218,22 @@
+ 			if(newShader->sCubeMap != -1) {
+ 				glUniform1i(newShader->sCubeMap,0);
+ 			}
++			// pass the sunlight (directional light) paremeters to shader
++			if(bHasSunLight) {
++				if(newShader->u_sunDirection != -1) {
++					if(usingWorldSpace) {
++						glUniform3f(newShader->u_sunDirection,sunDirection.x,sunDirection.y,sunDirection.z);
++					} else {
++						vec3_c dirLocal;
++						entityMatrixInverse.transformNormal(sunDirection,dirLocal);
++						glUniform3f(newShader->u_sunDirection,dirLocal.x,dirLocal.y,dirLocal.z);
++					}
++				}
++				if(newShader->u_sunColor != -1) {
++					glUniform3f(newShader->u_sunColor,sunColor.x,sunColor.y,sunColor.z);
++				}
++			}
++			// pass the point/spot light parameters to shader
+ 			if(curLight) {
+ 				if(newShader->uLightOrigin != -1) {
+ 					const vec3_c &xyz = curLight->getOrigin();
+@@ -1885,6 +1923,8 @@
+ 					(heightMap != 0)
+ 					||
+ 					((bumpMap != 0) && (lastDeluxemap != 0))
++					||
++					bHasSunLight
+ 					)
+ 					) {
+ 					glslPermutationFlags_s glslShaderDesc;
+@@ -1909,6 +1949,9 @@
+ 					if(lastSurfaceColor.isFullBright() == false) {
+ 						glslShaderDesc.hasMaterialColor = true;
+ 					}
++					if(bHasSunLight) {
++						glslShaderDesc.hasSunLight = true;
++					}
+ 					glslShaderDesc.useReliefMapping = rb_useReliefMapping.getInt();
+ 					glslShaderDesc.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
+ 					glslShaderDesc.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
+Index: code/renderer/backEndGL/gl_shader.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_shader.cpp	(revision 446)
++++ code/renderer/backEndGL/gl_shader.cpp	(working copy)
+@@ -198,6 +198,9 @@
+ 	if(p.bHorizontalPass) {
+ 		out.append("#define HORIZONTAL_PASS\n");
+ 	}
++	if(p.hasSunLight) {
++		out.append("#define HAS_SUNLIGHT\n");
++	}
+ }
+ static glslPermutationFlags_s gl_defaultPermutations;
+ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
+@@ -311,7 +314,10 @@
+ 	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");
+ 	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
+ 	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
+-	//ret->u_alphaTestValue = glGetUniformLocation(shader,"u_alphaTestValue");
++	//ret->u_alphaTestValue = glGetUniformLocation(shader,"u_alphaTestValue");
++	ret->u_sunDirection = glGetUniformLocation(shader,"u_sunDirection");
++	ret->u_sunColor = glGetUniformLocation(shader,"u_sunColor");
++
+ 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
+ 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");
+ 
+Index: code/renderer/backEndGL/gl_shader.h
+===================================================================
+--- code/renderer/backEndGL/gl_shader.h	(revision 446)
++++ code/renderer/backEndGL/gl_shader.h	(working copy)
+@@ -51,6 +51,7 @@
+ 	bool isTwoSided; // #define MATERIAL_TWO_SIDED
+ 	//bool hasDoom3AlphaTest; // #define HAS_DOOM3_ALPHATEST
+ 	//float alphaTestValue;
++	bool hasSunLight; // #define HAS_SUNLIGHT
+ 	// lighting debug tools
+ 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
+ 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
+@@ -78,6 +79,9 @@
+ 	int u_entityMatrix; // mat4x4
+ 	int u_entityRotationMatrix; // mat4x4
+ 	//int u_alphaTestValue; // float
++	// sun (directional) lighting
++	int u_sunDirection;
++	int u_sunColor;
+ 
+ 	// sampler2D locations
+ 	int sColorMap; // main diffuse texture
+Index: code/renderer/frontend/rf_bsp.cpp
+===================================================================
+--- code/renderer/frontend/rf_bsp.cpp	(revision 433)
++++ code/renderer/frontend/rf_bsp.cpp	(working copy)
+@@ -590,6 +590,9 @@
+ 		if(mat->getSkyParms()) {
+ 			RF_SetSkyMaterial(mat);
+ 		}
++		if(mat->getSunParms()) {
++			RF_SetSunMaterial(mat);
++		}
+ 		if(sf->surfaceType == Q3MST_PLANAR) {
+ 			out->type = BSPSF_PLANAR;
+ parsePlanarSurf:;
+Index: code/renderer/frontend/rf_drawCall.cpp
+===================================================================
+--- code/renderer/frontend/rf_drawCall.cpp	(revision 432)
++++ code/renderer/frontend/rf_drawCall.cpp	(working copy)
+@@ -32,6 +32,7 @@
+ #include <api/materialSystemAPI.h>
+ #include <api/occlusionQueryAPI.h>
+ #include <api/rLightAPI.h>
++#include <materialSystem/mat_public.h>
+ #include <shared/array.h>
+ #include <shared/autoCvar.h>
+ #include <shared/fcolor4.h>
+@@ -44,7 +45,10 @@
+ aCvar_c rf_forceSpecificMaterial("rf_forceSpecificMaterial","");
+ aCvar_c rf_ignoreShadowVolumeDrawCalls("rf_ignoreShadowVolumeDrawCalls","0");
+ aCvar_c rf_drawCalls_dontAddBlendOnlyMaterials("rf_drawCalls_dontAddBlendOnlyMaterials","0");
+-aCvar_c rf_drawCalls_printShadowMappingCubeMapDrawCalls("rf_drawCalls_printShadowMappingCubeMapDrawCalls","0");
++aCvar_c rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls("rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls","0");
++aCvar_c rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls("rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls","0");
++aCvar_c rf_drawCalls_printShadowVolumeDrawCalls("rf_drawCalls_printShadowVolumeDrawCalls","0");
++aCvar_c rf_drawCalls_printDepthOnlyDrawCalls("rf_drawCalls_printDepthOnlyDrawCalls","0");
+ 
+ class drawCall_c {
+ public:
+@@ -59,6 +63,7 @@
+ 	enum drawCallSort_e sort;
+ 	class rEntityAPI_i *entity;
+ 	class rLightAPI_i *curLight;
++	bool bSunShadowVolume;
+ 	const class rPointBuffer_c *points; // ONLY for shadow volumes
+ 	int forceSpecificMaterialFrame;
+ 	int cubeMapSide;
+@@ -65,13 +70,21 @@
+ 	int shadowMapW;
+ 	int shadowMapH;
+ 	fcolor4_c surfaceColor;
++	// directional light
++	bool bHasSunLight;
++	vec3_c sunDirection;
++	vec3_c sunColor;
+ //public:
+ 	
++	void clearDrawCall() {
++		memset(this,0,sizeof(*this));
++	}
+ };
+ static arraySTD_c<drawCall_c> rf_drawCalls;
+ static u32 rf_numDrawCalls = 0;
+ bool rf_bDrawOnlyOnDepthBuffer = false;
+ bool rf_bDrawingPrelitPath = false;
++bool rf_bDrawingSunLightPass = false;
+ // used to force specific frame of "animMap" stage from cgame code
+ int rf_forceSpecificMaterialFrame = -1;
+ int rf_currentShadowMapCubeSide = -1;
+@@ -118,7 +131,7 @@
+ 		//		return; 
+ 		//}
+ 	}
+-	if(rf_drawCalls_printShadowMappingCubeMapDrawCalls.getInt()) {
++	if(rf_drawCalls_printAddedShadowMappingCubeMapDrawCalls.getInt()) {
+ 		if(rf_curLightAPI && rf_currentShadowMapCubeSide >= 0) {
+ 			g_core->Print("Adding DepthShadowMap drawcall (%i) with material: %s\n",rf_numDrawCalls,mat->getName());
+ 		}
+@@ -129,6 +142,7 @@
+ 	} else {
+ 		n = &rf_drawCalls[rf_numDrawCalls];
+ 	}
++	n->clearDrawCall();
+ 	// if we're drawing only on depth buffer
+ 	if(rf_bDrawOnlyOnDepthBuffer) {
+ 		if((mat->hasStageWithoutBlendFunc()==false) && mat->isMirrorMaterial() == false) {
+@@ -173,10 +187,18 @@
+ 	if(extraRGB) {
+ 		n->surfaceColor.scaleRGB(1.f/255.f);
+ 	}
++	if(rf_bDrawingSunLightPass) {
++		const class mtrAPI_i *sunMaterial = RF_GetSunMaterial();
++		if(sunMaterial) {
++			n->bHasSunLight = true;
++			n->sunDirection = sunMaterial->getSunParms()->getSunDir();
++			n->sunColor = sunMaterial->getSunParms()->getSunColor();
++		}
++	}
+ 	rf_numDrawCalls++;
+ }
+ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
+-	if(rf_curLightAPI == 0) {
++	if(rf_curLightAPI == 0 && rf_bDrawingSunLightPass==false) {
+ 		// should never happen..
+ 		g_core->RedWarning("RF_AddShadowVolumeDrawCall: rf_curLightAPI is NULL!!!\n");
+ 		return;
+@@ -204,6 +226,7 @@
+ 	n->drawOnlyOnDepthBuffer = false;
+ 	n->entity = rf_currentEntity;
+ 	n->curLight = rf_curLightAPI;
++	n->bSunShadowVolume = rf_bDrawingSunLightPass;
+ 	rf_numDrawCalls++;
+ }
+ u32 RF_GetCurrentDrawcallsCount() {
+@@ -220,6 +243,15 @@
+ 	if(c0->sort == DCS_BLEND_AFTER_LIGHTING && c1->sort != c0->sort) {
+ 		return 1; // c1 first
+ 	}
++#if 0
++	if(c1->drawOnlyOnDepthBuffer != c0->drawOnlyOnDepthBuffer) {
++		if(c1->drawOnlyOnDepthBuffer)
++			return 1; // c1 first
++		return -1; // c0 first
++	} 
++#endif // quick test
++	//else if(c1->drawOnlyOnDepthBuffer)
++	//	return 0; //equal
+ 
+ 	if(c0->curLight) {
+ 		if(c1->curLight == 0) {
+@@ -259,6 +291,22 @@
+ 	} else if(c1->curLight) {
+ 		return -1; // c0 first
+ 	}
++	if(c1->drawOnlyOnDepthBuffer != c0->drawOnlyOnDepthBuffer) {
++		if(c1->drawOnlyOnDepthBuffer)
++			return 1; // c1 first
++		return -1; // c0 first
++	} 
++#if 1
++	// c0->curLight == c1->curLight
++	// light shadow volumes are drawn before light interactions
++	if(c0->sort == DCS_SPECIAL_SHADOWVOLUME) {
++		if(c1->sort == DCS_SPECIAL_SHADOWVOLUME)
++			return 0; // equal
++		return -1; // c0 first
++	} else if(c1->sort == DCS_SPECIAL_SHADOWVOLUME) {
++		return 1; // c1 first
++	}
++#endif
+ 	if(c0->sort > c1->sort) {
+ 		return 1; // c1 first
+ 	} else if(c0->sort < c1->sort) {
+@@ -304,6 +352,21 @@
+ 	int prevCubeMapSide = -1;
+ 	rLightAPI_i *prevLight = 0;
+ 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
++		if(rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls.getInt()) {
++			if(c->cubeMapSide >= 0) {
++				g_core->Print("Executing shadow map drawcall %i: side %i, light %i\n",i,c->cubeMapSide,c->curLight);
++			}
++		}
++		if(rf_drawCalls_printShadowVolumeDrawCalls.getInt()) {
++			if(c->points) {
++				g_core->Print("Executing shadow volume drawcall %i: light %i\n",i,c->curLight);
++			}
++		}
++		if(rf_drawCalls_printDepthOnlyDrawCalls.getInt()) {
++			if(c->drawOnlyOnDepthBuffer) {
++				g_core->Print("Executing depth only drawcall %i: material %s, light %i\n",i,c->material->getName(),c->curLight);
++			}
++		}
+ 		// draw sky after mirror/portal materials
+ 		// this is a quick fix for maps with mirrors AND skies like q3dm0
+ 		if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
+@@ -361,6 +424,7 @@
+ 		rb->setBindVertexColors(c->bindVertexColors);
+ 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
+ 		rb->setColor4(c->surfaceColor.toPointer());
++		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection);
+ 		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
+ 		if(c->verts) {
+ 			// draw surface
+Index: code/renderer/frontend/rf_drawCall.h
+===================================================================
+--- code/renderer/frontend/rf_drawCall.h	(revision 398)
++++ code/renderer/frontend/rf_drawCall.h	(working copy)
+@@ -44,6 +44,7 @@
+ 
+ extern bool rf_bDrawOnlyOnDepthBuffer;
+ extern bool rf_bDrawingPrelitPath;
++extern bool rf_bDrawingSunLightPass;
+ extern int rf_currentShadowMapCubeSide;
+ extern int rf_currentShadowMapW;
+ extern int rf_currentShadowMapH;
+Index: code/renderer/frontend/rf_entities.cpp
+===================================================================
+--- code/renderer/frontend/rf_entities.cpp	(revision 427)
++++ code/renderer/frontend/rf_entities.cpp	(working copy)
+@@ -30,6 +30,7 @@
+ #include "rf_anims.h"
+ #include "rf_world.h"
+ #include "rf_skin.h"
++#include "rf_sunLight.h"
+ #include <api/coreAPI.h>
+ #include <api/skelModelAPI.h>
+ #include <api/skelAnimAPI.h>
+@@ -448,6 +449,8 @@
+ 	(*ragOrs)[partIndex] = or;
+ }
+ void rEntityImpl_c::updateAnimatedEntity() {
++	if(model == 0)
++		return;
+ 	absSilChangeCount++;
+ 	// we have an instance of dynamic model.
+ 	// It might be an instance of skeletal model (.md5mesh, etc)
+@@ -736,11 +739,13 @@
+ class rEntityAPI_i *RFE_AllocEntity() {
+ 	rEntityImpl_c *ent = new rEntityImpl_c;
+ 	rf_entities.push_back(ent);
++	RF_AddSunLightInteractionEntity(ent);
+ 	return ent;
+ }
+ void RFE_RemoveEntity(class rEntityAPI_i *ent) {
+ 	rEntityImpl_c *rent = (rEntityImpl_c*)ent;
+ 	rf_entities.remove(rent);
++	RF_RemoveSunLightInteractionEntity(rent);
+ 	delete rent;
+ }
+ static u32 c_entitiesCulledByABSBounds;
+@@ -793,6 +798,11 @@
+ 	}
+ 	ent->addDrawCalls();
+ }
++void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent)) {
++	for(u32 i = 0; i < rf_entities.size(); i++) {
++		callback(rf_entities[i]);
++	}
++}
+ static aCvar_c rf_printAddEntityDrawCallsCullStats("rf_printAddEntityDrawCallsCullStats","0");
+ static aCvar_c rf_printAddedEntityModelNames("rf_printAddedEntityModelNames","0");
+ static aCvar_c rf_printTotalREntitiesCount("rf_printTotalREntitiesCount","0");
+Index: code/renderer/frontend/rf_local.h
+===================================================================
+--- code/renderer/frontend/rf_local.h	(revision 435)
++++ code/renderer/frontend/rf_local.h	(working copy)
+@@ -59,6 +59,7 @@
+ u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<class rEntityImpl_c*> &out);
+ // "forceThirdPerson" is true while generating shadow map drawcalls
+ void RFE_AddEntity(class rEntityImpl_c *ent, const class frustum_c *customFrustum = 0, bool forceThirdPerson = false);
++void RFE_IterateEntities(void (*callback)(class rEntityImpl_c *ent));
+ 
+ // rf_lights.cpp
+ class rLightAPI_i *RFL_AllocLight();
+@@ -77,6 +78,10 @@
+ bool RF_HasSky();
+ void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);
+ void RF_SetSkyMaterial(const char *skyMaterialName);
++void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial);
++bool RF_HasSunMaterial();
++const class mtrAPI_i *RF_GetSunMaterial();
++const class vec3_c &RF_GetSunDirection();
+ 
+ // rf_decals.cpp
+ void RF_InitDecals();
+Index: code/renderer/frontend/rf_main.cpp
+===================================================================
+--- code/renderer/frontend/rf_main.cpp	(revision 409)
++++ code/renderer/frontend/rf_main.cpp	(working copy)
+@@ -25,6 +25,7 @@
+ #include "rf_local.h"
+ #include "rf_drawCall.h"
+ #include "rf_world.h"
++#include "rf_sunLight.h"
+ #include <api/coreAPI.h>
+ #include <api/rEntityAPI.h>
+ #include <api/mtrAPI.h>
+@@ -135,12 +136,17 @@
+ 	}
+ 	return false;
+ }
++bool RF_IsUsingDynamicSunLight() {
++	if(RF_HasSunMaterial())
++		return true;
++	return false;
++}
+ void RF_Generate3DSubView() {
+ 	u32 firstDrawCall = RF_GetCurrentDrawcallsCount();
+ 	if(RF_ShouldUseMultipassRendering() == false) { 
+ 		RF_AddGenericDrawCalls();
+ 	} else {
+-		if(RF_ShouldUseLightmapsWithMultipassRendering()) {
++		if(RF_ShouldUseLightmapsWithMultipassRendering() ) {
+ 			// generate prelit world drawcalls
+ 			// (using lightmaps + dynamic lights)
+ 			rf_bDrawingPrelitPath = true;
+@@ -150,6 +156,17 @@
+ 			// draw on depth buffer
+ 			// (100% dynamic lighting)
+ 			RF_GenerateDepthBufferOnlySceneDrawCalls();
++		}	
++		if(RF_IsUsingDynamicSunLight()) {
++			rf_bDrawingSunLightPass = true;
++			rSunLight_c *sl = RF_GetSunLight();
++			if(RF_IsUsingShadowVolumes()) {
++				sl->addSunLightShadowVolumes();
++			} else {
++				sl->freeSunLightShadowVolumes();
++			}
++			RF_AddGenericDrawCalls();
++			rf_bDrawingSunLightPass = false;
+ 		}
+ 		// add drawcalls of light interactions
+ 		RFL_AddLightInteractionsDrawCalls();
+Index: code/renderer/frontend/rf_map.cpp
+===================================================================
+--- code/renderer/frontend/rf_map.cpp	(revision 407)
++++ code/renderer/frontend/rf_map.cpp	(working copy)
+@@ -201,6 +201,16 @@
+ 			}
+ 		}
+ 	}
++	class mtrAPI_i *findSunMaterial() const {
++		for(u32 i = 0; i < entModels.size(); i++) {
++			if(entModels[i]) {
++				mtrAPI_i *r = entModels[i]->findSunMaterial();
++				if(r)
++					return r;
++			}
++		}
++		return 0;
++	} 
+ };
+ 
+ // used to load entire world scene directly from .map file
+@@ -212,6 +222,7 @@
+ 	}
+ 	loader.calcTBNs();
+ 	loader.registerSubModels();
++	RF_SetSunMaterial(loader.findSunMaterial());
+ 	return loader.getWorldModel();
+ }
+ 
+Index: code/renderer/frontend/rf_shadowVolume.cpp
+===================================================================
+--- code/renderer/frontend/rf_shadowVolume.cpp	(revision 408)
++++ code/renderer/frontend/rf_shadowVolume.cpp	(working copy)
+@@ -28,6 +28,7 @@
+ #include "rf_entities.h"
+ #include "rf_surface.h"
+ #include "rf_stencilShadowCaster.h"
++#include "rf_model.h"
+ #include <math/plane.h>
+ #include <shared/autoCvar.h>
+ #include <shared/planeArray.h>
+@@ -184,6 +185,11 @@
+ 				modAPI->getModelData(&tmp);
+ 				//tmp.transform(ent->getMatrix());
+ 				fromRModel(&tmp,light,lightRadius);
++			} else if(modAPI->isStatic()) {
++				class model_c *m = dynamic_cast<model_c*>(modAPI);
++				if(m) {
++					fromRModel(m->getRModel(),light,lightRadius);
++				}
+ 			}
+ 		}
+ 	}
+@@ -192,6 +198,44 @@
+ 			rf_curTimeMsec,points.size(),indices.getNumIndices()/3,ent->getModelName(),this->c_edgeQuadsAdded,this->c_capTriPairsAdded);
+ 	}
+ }
++void rIndexedShadowVolume_c::createDirectionalShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &lightDirection, float lightInfinity) {
++	clear();
++	// save the last light position
++	//this->lightPos = light;
++
++	if(ent == 0)
++		return;
++	if(ent->getModel() == 0)
++		return;
++	if(ent->isAnimated() && rf_skipAnimatedObjectsShadows.getInt())
++		return;
++	const r_model_c *m = ent->getCurrentRModelInstance();
++	if(m) {
++		fromDirectionalRModel(m,lightDirection,lightInfinity);
++	} else {
++		rModelAPI_i *modAPI = ent->getModel();
++		if(modAPI) {
++			if(modAPI->isInlineBSPModel()) {
++				r_model_c tmp;
++				modAPI->getModelData(&tmp);
++				//tmp.transform(ent->getMatrix());
++				fromRModel(&tmp,lightDirection,lightInfinity);
++			} else if(modAPI->isStatic()) {
++				class model_c *m = dynamic_cast<model_c*>(modAPI);
++				if(m) {
++					fromDirectionalRModel(m->getRModel(),lightDirection,lightInfinity);
++				} else {
++					g_core->RedWarning("rIndexedShadowVolume_c::createDirectionalShadowVolumeForEntity: dynamic_cast to model_c failed for model %s.\n",
++						modAPI->getName());
++				}
++			}
++		}
++	}
++	if(rf_printShadowVolumesStats.getInt()) {
++		g_core->Print("rIndexedShadowVolume_c::createDirectionalShadowVolumeForEntity: (time %i) %i points, %i tris for model %s (%i edge quads, %i cap pairs)\n",
++			rf_curTimeMsec,points.size(),indices.getNumIndices()/3,ent->getModelName(),this->c_edgeQuadsAdded,this->c_capTriPairsAdded);
++	}
++}
+ bool IsAABBInsideSphere(const aabb &bb, const vec3_c &sphereCenter, float sphereRadius) {
+ 	float radSq = Square(sphereRadius);
+ 	for(u32 i = 0; i < 8; i++) {
+@@ -439,6 +483,136 @@
+ 		addIndexedVertexList(indices,verts,light,0, lightRadius,&sf->getBB());
+ 	}
+ }
++void rIndexedShadowVolume_c::addDirectionalRSurface(const class r_surface_c *sf, const vec3_c &direction, float lightInfinity) {
++	const rVertexBuffer_c &verts = sf->getVerts();
++	const rIndexBuffer_c &indices = sf->getIndices();
++	const planeArray_c &triPlanes = sf->getTriPlanes();
++	if(triPlanes.size()) {
++		addDirectionalIndexedVertexList(indices,verts,direction,&triPlanes,lightInfinity,&sf->getBB());
++	} else {
++		addDirectionalIndexedVertexList(indices,verts,direction,0,lightInfinity,&sf->getBB());
++	}
++}
++void rIndexedShadowVolume_c::addDirectionalIndexedVertexList(const rIndexBuffer_c &oIndices, const rVertexBuffer_c &oVerts, const vec3_c &lightDir, const class planeArray_c *extraPlanesArray, float lightInfinity, const class aabb *bounds) {
++#if 1
++	// for a single triangle, in worst case we might need to create:
++	// front cap + end cap + 3 edge quads
++	// 1 + 1 + 3 * 2 = 2 + 6 = 8 triangles
++	indices.ensureAllocated_indices(indices.getNumIndices() + oIndices.getNumTriangles() * 8 * 3);
++	points.ensureAllocated(points.size() + oVerts.size()*2);
++#endif
++#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
++	if(indices.getU16Ptr() == 0)
++		return;
++	u16 *pFirstIndex = ((u16*)indices.getU16Ptr()) + indices.getNumIndices();
++	u16 *pNextIndex = pFirstIndex;
++#endif
++	vec3_c delta = lightDir * lightInfinity;
++	//if(rf_ssv_algorithm.getInt() == 0) {
++	//	for(u32 i = 0; i < oIndices.getNumIndices(); i+=3){
++	//		u32 i0 = oIndices[i+0];
++	//		u32 i1 = oIndices[i+1];
++	//		u32 i2 = oIndices[i+2];
++	//		const vec3_c &v0 = oVerts[i0].xyz;
++	//		const vec3_c &v1 = oVerts[i1].xyz;
++	//		const vec3_c &v2 = oVerts[i2].xyz;
++	//		addTriangle(v0,v1,v2,light);
++	//	}
++	//} else 
++	{
++		//bool bMeshFullyInsideLight;
++		//if(bounds) {
++		//	bMeshFullyInsideLight = IsAABBInsideSphere(*bounds,light,lightRadius);
++		//} else {
++		//	bMeshFullyInsideLight = false;
++		//}
++		// do the same thing as above, but a little faster way
++		static arraySTD_c<byte> bPointTransformed;
++		if(bPointTransformed.size() < oVerts.size()) {
++			bPointTransformed.resize(oVerts.size());
++		}
++		bPointTransformed.nullMemory();
++		static arraySTD_c<vec3_c> pointsTransformed;
++		if(pointsTransformed.size() < oVerts.size()) {
++			pointsTransformed.resize(oVerts.size());
++		}
++
++		u32 tri = 0;
++		for(u32 i = 0; i < oIndices.getNumIndices(); i+=3, tri++){
++			u32 vi0 = oIndices[i+0];
++			u32 vi1 = oIndices[i+1];
++			u32 vi2 = oIndices[i+2];
++			const vec3_c &p0 = oVerts[vi0].xyz;
++			const vec3_c &p1 = oVerts[vi1].xyz;
++			const vec3_c &p2 = oVerts[vi2].xyz;
++
++			// cull triangles that are outside light radius
++			// This is a good optimisation for very large models intersecting very small lights
++			//if(rf_ssv_cullTrianglesOutSideLightSpheres.getInt()) {
++			//	// we can't cull that way any triangles if mesh bounds are entirely inside light sphere
++			//	if(bMeshFullyInsideLight == false) {
++			//		if(CU_IntersectSphereTriangle(light,lightRadius,p0,p1,p2) == false) {
++			//			continue;
++			//		}
++			//	}
++			//}
++			float d;
++			if(extraPlanesArray == 0) {
++				plane_c triPlane;
++				triPlane.fromThreePoints(p2,p1,p0);
++				d = triPlane.norm.dotProduct(lightDir);
++			} else {
++				d = extraPlanesArray->getArray()[tri].norm.dotProduct(lightDir);
++			}
++			if(d > 0) {
++				continue;
++			}
++			vec3_c &p0Projected = pointsTransformed[vi0];
++			if(bPointTransformed[vi0] == 0) {
++				bPointTransformed[vi0] = 1;
++				p0Projected = p0 - delta;
++			}
++			vec3_c &p1Projected = pointsTransformed[vi1];
++			if(bPointTransformed[vi1] == 0) {
++				bPointTransformed[vi1] = 1;
++				p1Projected = p1 - delta;
++			}
++			vec3_c &p2Projected = pointsTransformed[vi2];
++			if(bPointTransformed[vi2] == 0) {
++				bPointTransformed[vi2] = 1;
++				p2Projected = p2 - delta;
++			}
++			u32 i0 = this->registerPoint(p0);
++			u32 i1 = this->registerPoint(p1);
++			u32 i2 = this->registerPoint(p2);
++			u32 pi0 = this->registerPoint(p0Projected);
++			u32 pi1 = this->registerPoint(p1Projected);
++			u32 pi2 = this->registerPoint(p2Projected);
++#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
++			ADD_TRIANGLE(pNextIndex,i2,i1,i0);
++			ADD_TRIANGLE(pNextIndex,pi0,pi1,pi2);
++			ADD_QUAD(pNextIndex,i0,i1,pi0,pi1);
++			ADD_QUAD(pNextIndex,i1,i2,pi1,pi2);
++			ADD_QUAD(pNextIndex,i2,i0,pi2,pi0);
++#else
++			indices.addTriangle(i2,i1,i0);
++			indices.addTriangle(pi0,pi1,pi2);
++			c_capTriPairsAdded++;
++			indices.addQuad(i0,i1,pi0,pi1);
++			c_edgeQuadsAdded++;
++			indices.addQuad(i1,i2,pi1,pi2);
++			c_edgeQuadsAdded++;
++			indices.addQuad(i2,i0,pi2,pi0);
++			c_edgeQuadsAdded++;
++#endif
++		}
++	}
++#ifdef OPTIMIZE_SLOW_ADDTRIANGLE
++	u32 numAddedIndices = pNextIndex - pFirstIndex;
++	indices.forceSetIndexCount(indices.getNumIndices()+numAddedIndices);
++#endif	
++}
++
+ void rIndexedShadowVolume_c::fromRModel(const class r_model_c *m, const vec3_c &light, float lightRadius) {
+ 	clear();
+ 	this->points.setEqualVertexEpsilon(0.f);
+@@ -454,6 +628,21 @@
+ 		addRSurface(sf,light,sf->getExtraSurfEdgesData(), lightRadius);
+ 	}
+ }
++void rIndexedShadowVolume_c::fromDirectionalRModel(const class r_model_c *m, const vec3_c &lightDirection, float lightInfinity) {
++	clear();
++	this->points.setEqualVertexEpsilon(0.f);
++#if 0
++	((r_model_c*)m)->precalculateStencilShadowCaster();
++#endif
++	//if(m->getStencilShadowCaster() && rf_dontUsePrecomputedSSVCasters.getInt() == 0) {
++	//	this->fromPrecalculatedStencilShadowCaster(m->getStencilShadowCaster(),light);
++	//	return;
++	//}
++	for(u32 i = 0; i < m->getNumSurfs(); i++) {
++		const r_surface_c *sf = m->getSurf(i);
++		addDirectionalRSurface(sf,lightDirection, lightInfinity);
++	}
++}
+ void rIndexedShadowVolume_c::fromPrecalculatedStencilShadowCaster(const class r_stencilShadowCaster_c *ssvCaster, const vec3_c &light) {
+ 	ssvCaster->generateShadowVolume(this,light);
+ }
+Index: code/renderer/frontend/rf_shadowVolume.h
+===================================================================
+--- code/renderer/frontend/rf_shadowVolume.h	(revision 406)
++++ code/renderer/frontend/rf_shadowVolume.h	(working copy)
+@@ -83,6 +83,12 @@
+ 	void addFrontCapAndBackCapForIndexedVertsList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &light);
+ 	void addEdge(const vec3_c &p0, const vec3_c &p1, const vec3_c &light);
+ 
++	// for directional lights
++	void addDirectionalRSurface(const class r_surface_c *sf, const vec3_c &direction, float lightInfinity);
++	void addDirectionalIndexedVertexList(const rIndexBuffer_c &ibo, const rVertexBuffer_c &vbo, const vec3_c &lightDir, const class planeArray_c *extraPlanesArray, float lightInfinity, const class aabb *bounds = 0);
++	void createDirectionalShadowVolumeForEntity(class rEntityImpl_c *ent, const vec3_c &lightDirection, float lightInfinity);
++	void fromDirectionalRModel(const class r_model_c *m, const vec3_c &lightDirection, float lightInfinity);
++
+ 	u32 getNumVerts() const {
+ 		return points.size();
+ 	}
+Index: code/renderer/frontend/rf_sky.cpp
+===================================================================
+--- code/renderer/frontend/rf_sky.cpp	(revision 366)
++++ code/renderer/frontend/rf_sky.cpp	(working copy)
+@@ -30,10 +30,12 @@
+ #include "rf_surface.h"
+ 
+ static class mtrAPI_i *rf_skyMaterial = 0;
++static class mtrAPI_i *rf_sunMaterial = 0;
+ static aCvar_c rf_skipSky("rf_skipSky","0");
+ 
+ void RF_InitSky() {
+ 	rf_skyMaterial = 0;
++	rf_sunMaterial = 0;
+ }
+ 
+ bool RF_HasSky() {
+@@ -120,6 +122,23 @@
+ void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial) {
+ 	rf_skyMaterial = newSkyMaterial;
+ }
++void RF_SetSunMaterial(class mtrAPI_i *newSunMaterial) {
++	rf_sunMaterial = newSunMaterial;
++}
+ void RF_SetSkyMaterial(const char *skyMaterialName) {
+ 	rf_skyMaterial = g_ms->registerMaterial(skyMaterialName);
+-}
+\ No newline at end of file
++}
++bool RF_HasSunMaterial() {
++	if(rf_sunMaterial)
++		return true;
++	return false;
++}
++const class mtrAPI_i *RF_GetSunMaterial() {
++	return rf_sunMaterial;
++}
++const class vec3_c &RF_GetSunDirection() {
++	static vec3_c dummy;
++	if(rf_sunMaterial)
++		return rf_sunMaterial->getSunParms()->getSunDir();
++	return dummy;
++}
+Index: code/renderer/frontend/rf_sunLight.cpp
+===================================================================
+--- code/renderer/frontend/rf_sunLight.cpp	(revision 0)
++++ code/renderer/frontend/rf_sunLight.cpp	(working copy)
+@@ -0,0 +1,185 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// rf_sunLight.cpp
++#include "rf_local.h"
++#include "rf_sunLight.h"
++#include "rf_world.h"
++#include "rf_shadowVolume.h"
++#include "rf_surface.h"
++#include "rf_drawCall.h"
++#include "rf_entities.h"
++#include <shared/autoCvar.h>
++
++static aCvar_c rf_usePointLightForSun("rf_usePointLightForSun","0");
++static aCvar_c rf_sunLight_printUnchangedInteractions("rf_sunLight_printUnchangedInteractions","0");
++
++static rSunLight_c *rf_sunLight = 0;
++
++class sunLightEntityInteraction_c {
++	class rEntityImpl_c *ent;
++	class rIndexedShadowVolume_c *shadowVolume;
++	u32 absSilChangeCount;
++public:
++	sunLightEntityInteraction_c(class rEntityImpl_c *newEnt) {
++		ent = newEnt;
++		shadowVolume = 0;
++		absSilChangeCount = 0;
++	}
++	~sunLightEntityInteraction_c() {
++		delete shadowVolume;
++	}
++	void updateSunLightInteraction() {
++		if(shadowVolume == 0) {
++			shadowVolume = new rIndexedShadowVolume_c;
++		} else {
++			if(ent->isAnimated() == false) {
++				if(absSilChangeCount == ent->getSilChangeCount()) {
++					if(rf_sunLight_printUnchangedInteractions.getInt()) {
++						g_core->Print("sunLightEntityInteraction_c::updateSunLightInteraction: %s didnt change\n",
++							ent->getModelName());
++					}
++					addDrawCall();
++					return;
++				}
++			}
++		}
++		ent->updateAnimatedEntity();
++		absSilChangeCount = ent->getSilChangeCount();
++		if(rf_usePointLightForSun.getInt()) {
++			vec3_c pos = rf_sunLight->getFakePointLightPosition();
++			ent->getMatrix().getInversed().transformPoint(pos);
++			shadowVolume->createShadowVolumeForEntity(ent,pos,rf_sunLight->getFakePointLightRadius());
++		} else {
++			vec3_c dir = RF_GetSunDirection();
++			ent->getMatrix().getInversed().transformNormal(dir);
++			shadowVolume->createDirectionalShadowVolumeForEntity(ent,dir,5000);
++		}
++		addDrawCall();
++	}
++	void addDrawCall() {
++		rf_currentEntity = ent;
++		shadowVolume->addDrawCall();
++		rf_currentEntity = 0;
++	}
++	void freeShadowVolume() {
++		delete shadowVolume;
++		shadowVolume = 0;
++	}
++	class rEntityImpl_c *getEntity() {
++		return ent;
++	}
++};
++
++rSunLight_c::rSunLight_c() {
++	mainVolume = 0;
++}
++rSunLight_c::~rSunLight_c() {
++	if(mainVolume) {
++		delete mainVolume;
++	}
++	for(u32 i = 0; i < entityInteractions.size(); i++) {
++		delete entityInteractions[i];
++	}
++	entityInteractions.clear();
++}
++void rSunLight_c::addEntityInteraction(class rEntityImpl_c *ent) {
++	sunLightEntityInteraction_c *i = new sunLightEntityInteraction_c(ent);
++	entityInteractions.push_back(i);
++}
++int rSunLight_c::findInteractionForEntity(class rEntityImpl_c *ent) {
++	for(u32 i = 0; i < entityInteractions.size(); i++) {
++		if(entityInteractions[i]->getEntity() == ent)
++			return i;
++	}
++	return -1;
++}
++void rSunLight_c::removeEntityInteraction(class rEntityImpl_c *ent) {
++	int index = findInteractionForEntity(ent);
++	if(index < 0)
++		return;
++	delete entityInteractions[index];
++	entityInteractions.erase(index);
++}
++vec3_c rSunLight_c::getFakePointLightPosition() {
++	vec3_c sunDir = RF_GetSunDirection();
++	return sunDir*10000.f;
++}
++float rSunLight_c::getFakePointLightRadius() {
++	return 50000.f;
++}
++void rSunLight_c::addSunLightShadowVolumes() {
++	if(mainVolume == 0) {
++		mainVolume = new rIndexedShadowVolume_c;
++		const r_model_c *m = RF_GetWorldModel();
++		
++		for(u32 i = 0; i < m->getNumSurfs(); i++) {
++			if(m->getSurf(i)->findSunMaterial())
++				continue;
++			if(rf_usePointLightForSun.getInt()) {
++				mainVolume->addRSurface(m->getSurf(i),getFakePointLightPosition(),0,getFakePointLightRadius());
++			} else {
++				mainVolume->addDirectionalRSurface(m->getSurf(i),RF_GetSunDirection(),5000);
++			}
++		}
++	}
++	for(u32 i = 0; i < entityInteractions.size(); i++) {
++		entityInteractions[i]->updateSunLightInteraction();
++	}
++	mainVolume->addDrawCall();
++}
++void rSunLight_c::freeSunLightShadowVolumes() {
++	if(mainVolume) {
++		delete mainVolume;
++		mainVolume = 0;
++	}
++	for(u32 i = 0; i < entityInteractions.size(); i++) {
++		entityInteractions[i]->freeShadowVolume();
++	}
++}
++
++
++rSunLight_c *RF_GetSunLight() {
++	if(rf_sunLight == 0) {
++		rf_sunLight = new rSunLight_c;
++		RFE_IterateEntities(RF_AddSunLightInteractionEntity);
++	}
++	return rf_sunLight;
++}
++
++void RF_ShutdownSunLight() {
++	if(rf_sunLight) {
++		delete rf_sunLight;
++		rf_sunLight = 0;
++	}
++}
++void RF_AddSunLightInteractionEntity(class rEntityImpl_c *ent) {
++	if(rf_sunLight) {
++		rf_sunLight->addEntityInteraction(ent);
++	}
++}
++void RF_RemoveSunLightInteractionEntity(class rEntityImpl_c *ent) {
++	if(rf_sunLight) {
++		rf_sunLight->removeEntityInteraction(ent);
++	}
++}
+\ No newline at end of file
+Index: code/renderer/frontend/rf_sunLight.h
+===================================================================
+--- code/renderer/frontend/rf_sunLight.h	(revision 0)
++++ code/renderer/frontend/rf_sunLight.h	(working copy)
+@@ -0,0 +1,51 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// rf_sunLight.h
++#ifndef __RF_SUNLIGHT_H__
++#define __RF_SUNLIGHT_H__
++
++class rSunLight_c {
++	class rIndexedShadowVolume_c *mainVolume;
++
++	arraySTD_c<class sunLightEntityInteraction_c*> entityInteractions;
++
++	int findInteractionForEntity(class rEntityImpl_c *ent);
++public:
++	rSunLight_c();
++	~rSunLight_c();
++	void addSunLightShadowVolumes();
++	void freeSunLightShadowVolumes();
++	vec3_c getFakePointLightPosition();
++	float getFakePointLightRadius();
++
++	void addEntityInteraction(class rEntityImpl_c *ent);
++	void removeEntityInteraction(class rEntityImpl_c *ent);
++};
++
++rSunLight_c *RF_GetSunLight();
++void RF_ShutdownSunLight();
++void RF_AddSunLightInteractionEntity(class rEntityImpl_c *ent);
++void RF_RemoveSunLightInteractionEntity(class rEntityImpl_c *ent);
++
++#endif // __RF_SUNLIGHT_H__
+Index: code/renderer/frontend/rf_surface.cpp
+===================================================================
+--- code/renderer/frontend/rf_surface.cpp	(revision 446)
++++ code/renderer/frontend/rf_surface.cpp	(working copy)
+@@ -695,6 +695,14 @@
+ 
+ void CalcVertexGridLighting(rVertexBuffer_c &verts, const struct pointLightSample_s &in);
+ 
++
++class mtrAPI_i *r_surface_c::findSunMaterial() const {
++	if(mat == 0)
++		return 0;
++	if(mat->getSunParms())
++		return mat;
++	return 0;
++}
+ void r_surface_c::calcVertexLighting(const struct pointLightSample_s &sample) {
+ 	CalcVertexGridLighting(verts,sample);
+ }
+Index: code/renderer/frontend/rf_surface.h
+===================================================================
+--- code/renderer/frontend/rf_surface.h	(revision 430)
++++ code/renderer/frontend/rf_surface.h	(working copy)
+@@ -219,6 +219,7 @@
+ #ifdef RVERT_STORE_TANGENTS
+ 	void recalcTBN();
+ #endif // RVERT_STORE_TANGENTS
++	class mtrAPI_i *findSunMaterial() const;
+ 
+ 	void calcVertexLighting(const struct pointLightSample_s &sample);
+ 	void setAmbientLightingVec3_255(const vec3_c &color);
+@@ -406,6 +407,14 @@
+ 			surfs[i].recalcTBN();
+ 		}
+ 	}
++	class mtrAPI_i *findSunMaterial() const {
++		for(u32 i = 0; i < surfs.size(); i++) {
++			mtrAPI_i *r = surfs[i].findSunMaterial();
++			if(r)
++				return r;
++		}
++		return 0;
++	}
+ 	void precalculateStencilShadowCaster();
+ 	const class r_stencilShadowCaster_c *getStencilShadowCaster() const {
+ 		return this->ssvCaster;
+Index: code/renderer/frontend/rf_world.cpp
+===================================================================
+--- code/renderer/frontend/rf_world.cpp	(revision 435)
++++ code/renderer/frontend/rf_world.cpp	(working copy)
+@@ -244,6 +244,9 @@
+ 		return 0;
+ 	return r_bspTree->getVertices();
+ }
++const class r_model_c *RF_GetWorldModel() {
++	return r_worldModel;
++}
+ void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius) {
+ 	r_bspTree->addBSPSurfaceToShadowVolume(sfNum, light,staticShadowVolume, lightRadius);
+ }
+Index: code/renderer/frontend/rf_world.h
+===================================================================
+--- code/renderer/frontend/rf_world.h	(revision 435)
++++ code/renderer/frontend/rf_world.h	(working copy)
+@@ -25,6 +25,9 @@
+ #ifndef __RF_WORLD_H__
+ #define __RF_WORLD_H__
+ 
++#include <shared/typedefs.h>
++#include <shared/array.h>
++
+ bool RF_LoadWorldMap(const char *name);
+ void RF_ClearWorldMap();
+ bool RF_IsAnyMapLoaded();
+@@ -32,16 +35,17 @@
+ void RF_AddWorldDrawCalls();
+ bool RF_RayTraceWorld(class trace_c &tr);
+ void RF_SetWorldAreaBits(const byte *bytes, u32 numBytes);
+-int RF_AddWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
++int RF_AddWorldMapDecal(const class vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material);
+ void RF_CacheLightWorldInteractions(class rLightImpl_c *l);
+ void RF_DrawSingleBSPSurface(u32 sfNum);
+-const rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum);
++const class rIndexBuffer_c *RF_GetSingleBSPSurfaceABSIndices(u32 sfNum);
+ class mtrAPI_i *RF_GetSingleBSPSurfaceMaterial(u32 sfNum);
+-const rVertexBuffer_c *RF_GetBSPVertices();
++const class rVertexBuffer_c *RF_GetBSPVertices();
++const class r_model_c *RF_GetWorldModel();
+ void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
+ bool RF_IsWorldTypeProc();
+ bool RF_IsWorldAreaVisible(int areaNum);
+-u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out);
++u32 RF_BoxAreas(const class aabb &absBB, arraySTD_c<u32> &out);
+ bool RF_CullBoundsByPortals(const aabb &absBB);
+ // it will work faster if you have touching areas precached
+ bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums);
+Index: code/renderer/rVertexBuffer.h
+===================================================================
+--- code/renderer/rVertexBuffer.h	(revision 446)
++++ code/renderer/rVertexBuffer.h	(working copy)
+@@ -131,7 +131,7 @@
+ 	inline void normalizeNormals() {
+ 		rVert_c *v = this->getArray();
+ 		for(u32 i = 0; i < numVerts; i++, v++) {
+-			v->normal.normalize();
++			v->normal.normalizeFast();
+ 		}
+ 	}
+ #ifdef RVERT_STORE_TANGENTS
+Index: game/baseqio/glsl/genericShader.frag
+===================================================================
+--- game/baseqio/glsl/genericShader.frag	(revision 360)
++++ game/baseqio/glsl/genericShader.frag	(working copy)
+@@ -56,6 +56,12 @@
+ varying mat3 tbnMat;
+ #endif
+ 
++#ifdef HAS_SUNLIGHT
++uniform vec3 u_sunDirection;
++uniform vec3 u_sunColor;
++varying vec3 v_vertNormal;
++#endif
++
+ void main() {
+ #ifdef HAS_HEIGHT_MAP
+     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
+@@ -94,6 +100,15 @@
+     return;
+ #else
+     
++ 
++#ifdef HAS_SUNLIGHT
++    float angleFactor = dot(v_vertNormal, u_sunDirection);
++    if(angleFactor < 0) {
++		// light is behind the surface
++		return;
++    }
++#endif   
++    
+   // calculate the final color
+ #ifdef HAS_LIGHTMAP
+ #ifdef HAS_VERTEXCOLORS
+@@ -112,4 +127,8 @@
+ 	gl_FragColor *= u_materialColor;
+ #endif
+ #endif // defined(HAS_BUMP_MAP) && defined(HAS_DELUXEMAP) && defined(HAS_LIGHTMAP)
++ 
++#ifdef HAS_SUNLIGHT
++    gl_FragColor *= angleFactor;
++#endif   
+ }
+\ No newline at end of file
+Index: game/baseqio/glsl/genericShader.vert
+===================================================================
+--- game/baseqio/glsl/genericShader.vert	(revision 428)
++++ game/baseqio/glsl/genericShader.vert	(working copy)
+@@ -43,6 +43,10 @@
+ varying mat3 tbnMat;
+ #endif    
+     
++#ifdef HAS_SUNLIGHT
++varying vec3 v_vertNormal;
++#endif
++
+ void main() {
+ 	gl_Position = ftransform();
+ 	
+@@ -86,5 +90,8 @@
+ #ifdef HAS_VERTEXCOLORS
+ 	v_color4 = gl_Color;
+ #endif // HAS_VERTEXCOLORS
++#ifdef HAS_SUNLIGHT
++	v_vertNormal = gl_Normal;
++#endif
+ }
+ 

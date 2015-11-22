@@ -1,0 +1,1345 @@
+Index: code/api/cubeMapAPI.h
+===================================================================
+--- code/api/cubeMapAPI.h	(revision 0)
++++ code/api/cubeMapAPI.h	(working copy)
+@@ -0,0 +1,46 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// cubemapAPI.h - cubemap class interface
++#ifndef __CUBEMAPAPI_H__
++#define __CUBEMAPAPI_H__
++
++#include <shared/typedefs.h>
++
++class cubeMapAPI_i {
++public:
++	virtual ~cubeMapAPI_i() {
++
++	}
++
++	// returns the cubemap name
++	virtual const char *getName() const = 0;
++
++	virtual void *getInternalHandleV() const = 0;
++	virtual void setInternalHandleV(void *newHandle) = 0;
++	virtual u32 getInternalHandleU32() const = 0;
++	virtual void setInternalHandleU32(u32 newHandle) = 0;
++};
++
++#endif // __CUBEMAPAPI_H__
++
+Index: code/api/imgAPI.h
+===================================================================
+--- code/api/imgAPI.h	(revision 338)
++++ code/api/imgAPI.h	(working copy)
+@@ -41,7 +41,10 @@
+ 	virtual void freeImageData(byte *data) = 0;
+ 
+ 	// image processing
+-	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
++	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
++	virtual void rotatePic(byte *pic, u32 w) = 0;
++	virtual void horizontalFlip(byte *pic, u32 w, u32 h) = 0;
++	virtual void verticalFlip(byte *pic, u32 w, u32 h) = 0;
+ };
+ 
+ extern imgAPI_i *g_img;
+Index: code/api/mtrStageAPI.h
+===================================================================
+--- code/api/mtrStageAPI.h	(revision 403)
++++ code/api/mtrStageAPI.h	(working copy)
+@@ -92,6 +92,7 @@
+ 	virtual class textureAPI_i *getTextureForFrameNum(u32 frameNum) const = 0;
+ 	virtual enum alphaFunc_e getAlphaFunc() const = 0;
+ 	virtual const struct blendDef_s &getBlendDef() const = 0;
++	virtual class cubeMapAPI_i *getCubeMap() const = 0;
+ 	virtual class mtrStageAPI_i *getBumpMap() const = 0;
+ 	virtual class mtrStageAPI_i *getHeightMap() const = 0;
+ 	virtual bool hasTexMods() const = 0;
+Index: code/api/rbAPI.h
+===================================================================
+--- code/api/rbAPI.h	(revision 399)
++++ code/api/rbAPI.h	(working copy)
+@@ -39,6 +39,11 @@
+ 	BET_DX10
+ };
+ 
++struct imageData_s {
++	u32 w, h;
++	byte *pic;
++};
++
+ class rbAPI_i : public iFaceBase_i {
+ public:
+ 	virtual backEndType_e getType() const = 0;
+@@ -71,9 +76,13 @@
+ 	virtual u32 getWinWidth() const = 0;
+ 	virtual u32 getWinHeight() const = 0;
+ 
++	// 2D textures
+ 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
+ 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
+ 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
++	// cubemap textures
++	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) { }
++	virtual void freeCubeMap(class cubeMapAPI_i *cm) { }
+ 
+ 	// vertex buffers (VBOs)
+ 	virtual bool createVBO(class rVertexBuffer_c *vbo) = 0;
+Index: code/api/staticModelCreatorAPI.h
+===================================================================
+--- code/api/staticModelCreatorAPI.h	(revision 403)
++++ code/api/staticModelCreatorAPI.h	(working copy)
+@@ -87,6 +87,14 @@
+ 	virtual bool onBezierPatch(const char *patchDefStart, const char *patchDefEnd) {
+ 		return false;
+ 	}
++
++	// for debugging
++	virtual u32 countDuplicatedTriangles() const { 
++		return 0;
++	}
++	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const {
++		return false;
++	}
+ };
+ 
+ #endif // __STATICMODELCREATORAPI_H__
+Index: code/client/cl_console.cpp
+===================================================================
+--- code/client/cl_console.cpp	(revision 429)
++++ code/client/cl_console.cpp	(working copy)
+@@ -304,6 +304,16 @@
+ 		Field_CompleteFilename( "models", "md3", "md5mesh", "obj", false, false );
+ 	}
+ }
++/*
++==================
++Cmd_CompleteMDLPPName
++==================
++*/
++void Cmd_CompleteMDLPPName( char *args, int argNum ) {
++	if( argNum == 2 ) {
++		Field_CompleteFilename( "models", "mdlpp", 0, 0, false, false );
++	}
++}
+ 
+ /*
+ ==================
+@@ -373,6 +383,8 @@
+ 	Cmd_SetCommandCompletionFunc( "model_spawn", Cmd_CompleteModelName );
+ 	Cmd_AddCommand ("physics_spawn", 0);
+ 	Cmd_SetCommandCompletionFunc( "physics_spawn", Cmd_CompleteModelName );
++	Cmd_AddCommand ("mdlpp_spawn", 0);
++	Cmd_SetCommandCompletionFunc( "mdlpp_spawn", Cmd_CompleteMDLPPName );
+ 	Cmd_AddCommand ("cg_testEmitter", 0);
+ 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
+ 	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);
+Index: code/game/g_client.cpp
+===================================================================
+--- code/game/g_client.cpp	(revision 429)
++++ code/game/g_client.cpp	(working copy)
+@@ -298,6 +298,7 @@
+ 			"ase",
+ 			"obj",
+ 			"map",
++			"mdlpp",
+ 		};
+ 		static u32 numExtensions = sizeof(extensions)/sizeof(extensions[0]);
+ 		for(u32 j = 0; j < numExtensions; j++) {
+@@ -510,7 +511,7 @@
+ 	} else if(!stricmp(cmd,"removentitiesofclass")) {
+ 		str className = g_core->Argv(1);
+ 		G_RemoveEntitiesOfClass(className);
+-	} else if(!stricmp(cmd,"model_spawn")) {
++	} else if(!stricmp(cmd,"model_spawn") || !stricmp(cmd,"mdlpp_spawn")) {
+ 		str model = g_core->Argv(1);
+ 		if(model.length()) {
+ 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
+Index: code/imageLib/img_api.cpp
+===================================================================
+--- code/imageLib/img_api.cpp	(revision 280)
++++ code/imageLib/img_api.cpp	(working copy)
+@@ -41,8 +41,17 @@
+ 	virtual void freeImageData(byte *data) {
+ 		free(data);
+ 	}
+-	void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) {
++	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) {
+ 		return IMG_Convert8BitImageToRGBA32(converted, outWidth, outHeight, pixels,width,height,palette);
++	}	
++	virtual void rotatePic(byte *pic, u32 w) {
++		IMG_RotatePic(pic,w);
++	}
++	virtual void horizontalFlip(byte *pic, u32 w, u32 h) {
++		IMG_HorizontalFlip(pic,w,h);
++	}
++	virtual void verticalFlip(byte *pic, u32 w, u32 h) {
++		IMG_VerticalFlip(pic,w,h);
+ 	}
+ };
+ 
+Index: code/imageLib/img_local.h
+===================================================================
+--- code/imageLib/img_local.h	(revision 285)
++++ code/imageLib/img_local.h	(working copy)
+@@ -13,5 +13,10 @@
+ // img_convert.cpp
+ void IMG_Convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette);
+ 
++// img_utils.cpp
++void IMG_HorizontalFlip(byte *data, u32 width, u32 height);
++void IMG_VerticalFlip(byte *data, u32 width, u32 height) ;
++void IMG_RotatePic(byte *data, u32 width);
++
+ #endif // __IMG_LOCAL_H__
+ 
+Index: code/imageLib/img_utils.cpp
+===================================================================
+--- code/imageLib/img_utils.cpp	(revision 0)
++++ code/imageLib/img_utils.cpp	(working copy)
+@@ -0,0 +1,63 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// img_utils.cpp - image loader interface
++#include <shared/typedefs.h>
++#include <stdlib.h> // malloc, free
++#include <string.h> // memcpy
++
++void IMG_HorizontalFlip(byte *data, u32 width, u32 height) {
++	for(u32 i = 0; i < height; i++) {
++		for(u32 j = 0; j < width / 2; j++) {
++			int temp = *( (int *)data + i * width + j );
++			*( (int *)data + i * width + j ) = *( (int *)data + i * width + width - 1 - j );
++			*( (int *)data + i * width + width - 1 - j ) = temp;
++		}
++	}
++}
++
++void IMG_VerticalFlip(byte *data, u32 width, u32 height) {
++	for(u32 i = 0; i < width; i++) {
++		for(u32 j = 0; j < height / 2; j++) {
++			int temp = *( (int *)data + j * width + i );
++			*( (int *)data + j * width + i ) = *( (int *)data + ( height - 1 - j ) * width + i );
++			*( (int *)data + ( height - 1 - j ) * width + i ) = temp;
++		}
++	}
++}
++
++void IMG_RotatePic(byte *data, u32 width) {
++	int *temp = (int *)malloc( width * width * 4 );
++
++	for(u32 i = 0 ; i < width; i++) {
++		for(u32 j = 0 ; j < width; j++) {
++			*( temp + i * width + j ) = *( (int *)data + j * width + i );
++		}
++	}
++
++	memcpy(data, temp, width * width * 4);
++
++	free(temp);
++}
++
++
+Index: code/materialSystem/mat_cubeMap.cpp
+===================================================================
+--- code/materialSystem/mat_cubeMap.cpp	(revision 0)
++++ code/materialSystem/mat_cubeMap.cpp	(working copy)
+@@ -0,0 +1,160 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// mat_cubeMap.cpp
++#include <api/cubeMapAPI.h>
++#include <api/rbAPI.h>
++#include <api/imgAPI.h>
++#include <api/coreAPI.h>
++#include <shared/str.h>
++#include <shared/hashTableTemplate.h>
++
++class cubemapIMPL_c : public cubeMapAPI_i {
++	str name;
++	union {
++		u32 handleU32;
++		void *handleV;
++	};
++	cubemapIMPL_c *hashNext;
++public:
++	cubemapIMPL_c() {
++		hashNext = 0;
++		handleV = 0;
++	}
++	~cubemapIMPL_c() {
++		if(rb == 0)
++			return;
++		rb->freeCubeMap(this);
++	}
++
++	// returns the path to the texture file (with extension)
++	virtual const char *getName() const {
++		return name;
++	}
++	void setName(const char *newName) {
++		name = newName;
++	}
++	virtual void *getInternalHandleV() const {
++		return handleV;
++	}
++	virtual void setInternalHandleV(void *newHandle) {
++		handleV = newHandle;
++	}
++	virtual u32 getInternalHandleU32() const {
++		return handleU32;
++	}
++	virtual void setInternalHandleU32(u32 newHandle) {
++		handleU32 = newHandle;
++	}
++
++	cubemapIMPL_c *getHashNext() {
++		return hashNext;
++	}
++	void setHashNext(cubemapIMPL_c *p) {
++		hashNext = p;
++	}
++};
++
++static hashTableTemplateExt_c<cubemapIMPL_c> mat_cubeMaps;
++
++const char *cameraCubeMapSufixes[6] = { 
++	"_forward", "_back",
++	"_left", "_right", 
++	"_up", "_down" };
++const char *generalCubeMapSufixes[6] = { 
++	"_px", "_nx",
++	"_py", "_ny", 
++	"_pz", "_nz" };
++enum cubeMapDataType_e {
++	CMDT_NOT_SET,
++	CMDT_CAMERA,
++	CMDT_OTHER,
++};
++class cubeMapAPI_i *MAT_RegisterCubeMap(const char *texName) {
++	cubemapIMPL_c *ret = mat_cubeMaps.getEntry(texName);
++	if(ret) {
++		return ret;
++	}
++
++	
++	cubeMapDataType_e type = CMDT_NOT_SET;
++	ret = new cubemapIMPL_c;
++	ret->setName(texName);
++	imageData_s imgs[6];
++	for(u32 i = 0; i < 6; i++) {
++		imageData_s &img = imgs[i];
++		str fullName = texName;
++		fullName.append(cameraCubeMapSufixes[i]);
++		g_img->loadImage(fullName.c_str(),&img.pic,&img.w,&img.h);
++		if(img.pic == 0) {
++			fullName = texName;
++			fullName.append(generalCubeMapSufixes[i]);
++			g_img->loadImage(fullName.c_str(),&img.pic,&img.w,&img.h);
++			if(img.pic) {
++				type = CMDT_OTHER;
++			} else {
++				g_core->RedWarning("MAT_RegisterCubeMap: cannot find side %i for cubemap %s\n",i,texName);
++			}
++		} else {
++			type = CMDT_CAMERA;
++		}
++	}
++	if(type == CMDT_CAMERA) {
++		for(u32 i = 0; i < 6; i++) {
++			imageData_s &img = imgs[i];
++			switch(i) {
++				case 0: 
++					g_img->rotatePic(img.pic,img.w);
++				break;
++				case 1:	// back
++					g_img->rotatePic(img.pic,img.w);
++					g_img->horizontalFlip(img.pic,img.w,img.h);
++					g_img->verticalFlip(img.pic,img.w,img.h);
++				break;
++				case 2:	// left
++					g_img->verticalFlip(img.pic,img.w,img.h);
++				break;
++				case 3:	// right
++					g_img->horizontalFlip(img.pic,img.w,img.h);
++				break;
++				case 4:	// up
++					g_img->rotatePic(img.pic,img.w);
++				break;
++				case 5: // down
++					g_img->rotatePic(img.pic,img.w);
++				break;
++			}
++		}
++	}
++	rb->uploadCubeMap(ret,imgs);
++	mat_cubeMaps.addObject(ret);
++	return ret;
++}
++void MAT_FreeAllCubeMaps() {
++	for(u32 i = 0; i < mat_cubeMaps.size(); i++) {
++		cubemapIMPL_c *t = mat_cubeMaps[i];
++		delete t;
++		mat_cubeMaps[i] = 0;
++	}
++	mat_cubeMaps.clear();
++}
+Index: code/materialSystem/mat_cubeMap.h
+===================================================================
+--- code/materialSystem/mat_cubeMap.h	(revision 0)
++++ code/materialSystem/mat_cubeMap.h	(working copy)
+@@ -0,0 +1,28 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// mat_cubeMap.h
++
++
++class cubeMapAPI_i *MAT_RegisterCubeMap(const char *texName);
++
+Index: code/materialSystem/mat_impl.cpp
+===================================================================
+--- code/materialSystem/mat_impl.cpp	(revision 420)
++++ code/materialSystem/mat_impl.cpp	(working copy)
+@@ -120,6 +120,7 @@
+ 	nextBundle = 0;
+ 	condition = 0;
+ 	alphaTestAST = 0;
++	cubeMap = 0;
+ }
+ mtrStage_c::~mtrStage_c() {
+ 	if(texMods) {
+@@ -577,6 +578,9 @@
+ 		} else if(p.atChar('}')) {
+ 			if(level == 2) {
+ 				if(stage) {
++					//if(stage->getStageType() == ST_NOT_SET) {
++					//	stage->setStageType(ST_COLORMAP);
++					//}
+ 					//if(stage->getTexture(0) == 0) {
+ 					//	delete stage;
+ 					//} else {
+@@ -868,6 +872,13 @@
+ 					} else if(p.atWord("normalMap")) {
+ 						// It's used in Xreal railgun
+ 						stage->setStageType(ST_BUMPMAP);
++					} else if(p.atWord("skyboxMap")) {
++						// it's used in material textures/mawi/mawi_sky from test_tree.pk3
++						// It's a modern replacement for old Q3 "skyparms" keyword
++						stage->setStageType(ST_CUBEMAP_SKYBOX);
++					} else if(p.atWord("reflectionMap")) {
++						// usefull for Doom3-style glass reflections
++						stage->setStageType(ST_CUBEMAP_REFLECTION);
+ 					} else {
+ 						u32 line = p.getCurrentLineNumber();
+ 						str token = p.getToken();
+@@ -979,8 +990,16 @@
+ 
+ 				} else if(p.atWord("highquality")) {
+ 					
+-				} else if(p.atWord("cubemap")) {
+-					p.skipLine();
++				} else if(p.atWord("cubemap") || p.atWord("cameraCubeMap")) {
++					// FIXME: what's the difference between these two?
++					//p.skipLine();
++					const char *cubeMapName = p.getToken();
++					cubeMapAPI_i *cubeMap = MAT_RegisterCubeMap(cubeMapName);
++					if(cubeMap) {
++						stage->setCubeMap(cubeMap);
++					} else {
++
++					}
+ 				} else if(p.atWord("texgen") || p.atWord("tcgen")) {
+ 					if(p.atWord("environment")) {
+ 						stage->setTCGen(TCG_ENVIRONMENT);
+@@ -987,8 +1006,12 @@
+ 					} else if(p.atWord("skybox")) {
+ 						// used eg. in Prey's (Id Tech 4) dave.mtr -> textures/skybox/dchtest
+ 						//stage->setTCGen(TCG_SKYBOX);
++						// This is used along with cubemap for Doom3 skyboxes.
++						stage->setStageType(ST_CUBEMAP_SKYBOX);
+ 					} else if(p.atWord("reflect")) {
++						// This is used along with cubemap for Doom3 glass materials.
+ 						//stage->setTCGen(TCG_REFLECT);
++						stage->setStageType(ST_CUBEMAP_REFLECTION);
+ 					} else if(p.atWord("screen")) {
+ 						// Prey's keyword?
+ 						//stage->setTCGen(TCG_SCREEN);
+@@ -1149,8 +1172,6 @@
+ 				} else if(p.atWord("fragmentMap")) {
+ 					p.skipLine();
+ 				} else if(p.atWord("ignoreAlphaTest")) {
+-				} else if(p.atWord("cameraCubeMap")) {
+-					p.getToken();
+ 				} else if(p.atWord("privatePolygonOffset")) {
+ 					if(p.isAtEOL()) {
+ 
+Index: code/materialSystem/mat_impl.h
+===================================================================
+--- code/materialSystem/mat_impl.h	(revision 403)
++++ code/materialSystem/mat_impl.h	(working copy)
+@@ -159,6 +159,8 @@
+ 	class astAPI_i *alphaTestAST;
+ 	// custom gpu shader name (not used yet)
+ 	str programName;
++	// cubemap
++	class cubeMapAPI_i *cubeMap;
+ public:
+ 	mtrStage_c();
+ 	~mtrStage_c();
+@@ -175,6 +177,9 @@
+ 	virtual const struct blendDef_s &getBlendDef() const {
+ 		return blend;
+ 	}
++	virtual cubeMapAPI_i *getCubeMap() const {
++		return cubeMap;
++	}
+ 	virtual mtrStageAPI_i *getBumpMap() const {
+ 		return subStageBumpMap;
+ 	}
+@@ -215,6 +220,9 @@
+ 	void setTexture(class textureAPI_i *nt) {
+ 		stageTexture.fromTexturePointer(nt);
+ 	}
++	void setCubeMap(class cubeMapAPI_i *n) {
++		cubeMap = n;
++	}
+ 	void setSubStageBumpMap(class mtrStage_c *s) {
+ 		this->subStageBumpMap = s;
+ 	}
+Index: code/materialSystem/mat_local.h
+===================================================================
+--- code/materialSystem/mat_local.h	(revision 417)
++++ code/materialSystem/mat_local.h	(working copy)
+@@ -69,4 +69,7 @@
+ // mat_texturesScript.cpp
+ class textureAPI_i *MAT_ParseImageScript(class parser_c &p);
+ 
++// mat_cubeMap.cpp
++class cubeMapAPI_i *MAT_RegisterCubeMap(const char *texName);
++
+ #endif // __MAT_LOCAL_H__
+Index: code/materialSystem/mat_public.h
+===================================================================
+--- code/materialSystem/mat_public.h	(revision 390)
++++ code/materialSystem/mat_public.h	(working copy)
+@@ -15,6 +15,17 @@
+ 	// added by me, heightmaps are not used directly in Doom3
+ 	// (they are converted to bump maps)
+ 	ST_HEIGHTMAP,
++	// skybox stage (with a cubemap texture)
++	// Set by "stage skyboxmap" in material,
++	// also set by Doom3 "texgen skybox" command.
++	// Used in Doom3 sky materials.
++	// Also used for sky in test_tree.pk3.
++	ST_CUBEMAP_SKYBOX,
++	// glass reflection stage (with a cubemap texture)
++	// Set by "stage reflectionMap" in material,
++	// also set by Doom3 "texgen reflect" command.
++	// Used in Doom3 glass materials.
++	ST_CUBEMAP_REFLECTION
+ };
+ 
+ // hardcoded alpha func test values (for non-blended transparency)
+Index: code/math/math.h
+===================================================================
+--- code/math/math.h	(revision 406)
++++ code/math/math.h	(working copy)
+@@ -83,7 +83,15 @@
+ // returns a clamped value in the range [min, max].
+ #define Q_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
+ 
++#define DISABLE_ALL_FAST_SQRTS
++
+ inline float G_rsqrt(float x) {
++#ifdef DISABLE_ALL_FAST_SQRTS
++	float tmp = sqrt(x);
++	//if(tmp == 0.f)
++	//	return 0.f;
++	return 1.f/tmp;
++#else
+     float xhalf = 0.5f*x;
+     int i = *(int*)&x;
+     i = 0x5f3759df - (i >> 1);
+@@ -90,15 +98,28 @@
+     x = *(float*)&i;
+     x = x*(1.5f - xhalf*x*x);
+     return x;
++#endif
+ }
+ 
+ inline float G_sqrt2(float n) {
++#ifdef DISABLE_ALL_FAST_SQRTS
++	return sqrt(n);
++#else
+     float r = 0.f;
+     float i = 1.f;
+     while((!(r*r>n || ((r+=i) && 0)) || ((r-=i) && (i*=0.1f))) && i>0.0001f);
+     return r;
++#endif
+ }	
+ 
++#ifdef DISABLE_ALL_FAST_SQRTS
++inline float G_rsqrt3(float x) {
++	float tmp = sqrt(x);
++	//if(tmp == 0.f)
++	//	return 0.f;
++	return 1.f/tmp;
++}
++#else
+ inline float __declspec(naked) __fastcall G_rsqrt3(float x) {
+     __asm {
+         mov	eax, 0be6eb508h
+@@ -130,6 +151,7 @@
+         ret 4
+     }
+ }
++#endif
+ 
+ // quadratic interpolation for n-dimensional vector
+ inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)
+Index: code/math/vec3.cpp
+===================================================================
+--- code/math/vec3.cpp	(revision 406)
++++ code/math/vec3.cpp	(working copy)
+@@ -24,9 +24,17 @@
+ #include "vec3.h"
+ 
+ void vec3_c::normalize() {
+-#if 0
++#if 1
+ 	float lengthSQ = x*x + y*y + z*z;
+ 	if ( lengthSQ ) {
++		float iLength = 1.f / sqrt(lengthSQ);
++		x *= iLength;
++		y *= iLength;
++		z *= iLength;
++	}
++#elif 0
++	float lengthSQ = x*x + y*y + z*z;
++	if ( lengthSQ ) {
+ 		//float iLength = G_rsqrt(lengthSQ);
+ 		float iLength = G_rsqrt3(lengthSQ);		
+ 		x *= iLength;
+Index: code/modelLoader/mod_postProcess.cpp
+===================================================================
+--- code/modelLoader/mod_postProcess.cpp	(revision 408)
++++ code/modelLoader/mod_postProcess.cpp	(working copy)
+@@ -31,9 +31,16 @@
+ #include <math/matrix.h>
+ #include <api/coreAPI.h>
+ #include <api/modelPostProcessFuncs.h>
++#include <api/modelLoaderDLLAPI.h>
++#include <api/staticModelCreatorAPI.h>
++#include <api/vfsAPI.h>
+ 
+ int		Q_stricmpn (const char *s1, const char *s2, int n);
+ 
++class simpleModel_c : public staticModelCreatorAPI_i {
++
++};
++
+ bool MOD_ApplyPostProcess(const char *modName, class modelPostProcessFuncs_i *inout) {
+ 	str mdlppName = modName;
+ 	mdlppName.setExtension("mdlpp");
+@@ -85,6 +92,25 @@
+ 			p.getFloatMat(tagPos,3);
+ 			p.getFloatMat(tagAngles,3);
+ 			inout->addAbsTag(tagName,tagPos,tagAngles);
++		} else if(p.atWord("appendModel")) {
++			str appendModelName = p.getToken();
++			str fullPath;
++			if(g_vfs->FS_FileExists(appendModelName)) {
++				fullPath = appendModelName;
++			} else {
++				fullPath = modName;
++				fullPath.toDir();
++				fullPath.append(appendModelName);
++			}
++			class staticModelCreatorAPI_i *sc = dynamic_cast<staticModelCreatorAPI_i*>(inout);
++			if(g_modelLoader->loadStaticModelFile(fullPath.c_str(),sc)) {
++				int line = p.getCurrentLineNumber();
++				g_core->RedWarning("MOD_ApplyPostProcess: failed to append model %s at line %i of file %s\n",
++					fullPath.c_str(),line,mdlppName.c_str());
++			}
++		} else if(p.atWord("scaleTexST")) {
++			float stScale = p.getFloat();
++			inout->multTexCoordsXY(stScale);
+ 		} else {
+ 			int line = p.getCurrentLineNumber();
+ 			str token = p.getToken();
+@@ -94,6 +120,10 @@
+ 	}
+ 	return false;
+ }
++bool MOD_CreateModelFromMDLPPScript(const char *fname, class staticModelCreatorAPI_i *out) {
++	return MOD_ApplyPostProcess(fname,out);
++}
++
+ const char *G_getFirstOf(const char *s, const char *charSet) {
+ 	const char *p = s;
+ 	u32 charSetLen = strlen(charSet);
+Index: code/modelLoader/modelLoaderAPI.cpp
+===================================================================
+--- code/modelLoader/modelLoaderAPI.cpp	(revision 429)
++++ code/modelLoader/modelLoaderAPI.cpp	(working copy)
+@@ -73,11 +73,11 @@
+ 			vertexIndex++;
+ 		}
+ 	}
+-	u32 numIndices = (rings * sectors * 6);
++	u32 numIndices = ((rings-1) * (sectors-1) * 6);
+ 	out->resizeIndices(numIndices);
+ 	u32 index = 0;
+-	for(r = 0; r < rings; r++) 	{
+-		for(s = 0; s < sectors; s++) {
++	for(r = 0; r < rings-1; r++) 	{
++		for(s = 0; s < sectors-1; s++) {
+ 			u32 i0 = r * sectors + s;
+ 			u32 i1 = r * sectors + (s+1);
+ 			u32 i2 = (r+1) * sectors + (s+1);
+@@ -97,6 +97,7 @@
+ 			index++;
+ 		}
+ 	}
++	out->countDuplicatedTriangles();
+ }
+ bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
+ class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
+@@ -131,6 +132,9 @@
+ 		// HL2 (Source Engine) .mdl (without animations)
+ 		if(!stricmp(ext,"mdl"))
+ 			return true;
++		// models can be created by mdlpp script
++		if(!stricmp(ext,"mdlpp"))
++			return true;
+ 		return false;
+ 	}
+ 	virtual bool loadStaticModelFile(const char *fileNameWithExtraCommands, class staticModelCreatorAPI_i *out)  {
+@@ -201,7 +205,8 @@
+ 			} else {
+ 				error = true;
+ 			}
+-
++		} else if(!stricmp(ext,"mdlpp")) {
++			error = MOD_CreateModelFromMDLPPScript(fname,out);
+ 		} else {
+ 			error = true;
+ 		}
+@@ -208,7 +213,9 @@
+ 		if(error == false) {
+ 			// apply model postprocess steps (scaling, rotating, etc)
+ 			// defined in optional .mdlpp file
+-			MOD_ApplyPostProcess(fname,out);
++			if(stricmp(ext,"mdlpp")) {
++				MOD_ApplyPostProcess(fname,out);
++			}
+ 			if(inlinePostProcessCommandMarker) {
+ 				MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
+ 			}
+Index: code/modelLoader/modelLoaderLocal.h
+===================================================================
+--- code/modelLoader/modelLoaderLocal.h	(revision 286)
++++ code/modelLoader/modelLoaderLocal.h	(working copy)
+@@ -49,6 +49,8 @@
+ bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFuncs_i *inout);
+ // skel_animPostProcess.cpp
+ bool SK_ApplyAnimPostProcess(const char *modName, class skelAnimPostProcessFuncs_i *inout);
++// used to create model 
++bool MOD_CreateModelFromMDLPPScript(const char *fname, staticModelCreatorAPI_i *out);
+ 
+ // keyFramedModelIMPL.cpp
+ class kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname);
+Index: code/qcommon/files.cpp
+===================================================================
+--- code/qcommon/files.cpp	(revision 413)
++++ code/qcommon/files.cpp	(working copy)
+@@ -3018,7 +3018,7 @@
+ 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+ 
+ 	// temporary hack
+-	FS_AddGameDirectory("E:/GAMES/quake3/Quake3","baseq3");
++	//FS_AddGameDirectory("E:/GAMES/quake3/Quake3","baseq3");
+ 	// Xonotic is using Q3 bsp format
+ 	//FS_AddGameDirectory("E:/GAMES/xonotic-0.7.0/Xonotic","data");
+ 	//FS_AddGameDirectory("E:/GAMES/RTCW","main");
+@@ -3029,7 +3029,7 @@
+ 	//FS_AddGameDirectory("E:/Half-Life 2","hl2");
+ 	//FS_AddGameDirectory("E:/Portal 2","portal2");
+ 	//FS_AddGameDirectory("E:/GAMES/Prey","base");
+-	//FS_AddGameDirectory("E:/GAMES/Doom 3","base");
++	FS_AddGameDirectory("E:/GAMES/Doom 3","base");
+ 
+ 
+ 	
+Index: code/renderer/backEndGL/gl_main.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_main.cpp	(revision 428)
++++ code/renderer/backEndGL/gl_main.cpp	(working copy)
+@@ -29,6 +29,7 @@
+ #include <api/rbAPI.h>
+ #include <api/iFaceMgrAPI.h>
+ #include <api/textureAPI.h>
++#include <api/cubeMapAPI.h>
+ #include <api/mtrAPI.h>
+ #include <api/mtrStageAPI.h>
+ #include <api/sdlSharedAPI.h>
+@@ -240,6 +241,7 @@
+ 	axis_c entityAxis;
+ 	vec3_c entityOrigin;
+ 	matrix_c entityMatrix;
++	matrix_c entityRotationMatrix;
+ 	matrix_c entityMatrixInverse;
+ 
+ 	matrix_c savedCameraProjection;
+@@ -1056,6 +1058,9 @@
+ 			if(newShader->sDeluxeMap != -1) {
+ 				glUniform1i(newShader->sDeluxeMap,4);
+ 			}
++			if(newShader->sCubeMap != -1) {
++				glUniform1i(newShader->sCubeMap,0);
++			}
+ 			if(curLight) {
+ 				if(newShader->uLightOrigin != -1) {
+ 					const vec3_c &xyz = curLight->getOrigin();
+@@ -1119,6 +1124,9 @@
+ 			if(newShader->u_entityMatrix) {
+ 				glUniformMatrix4fv(newShader->u_entityMatrix,1,false,entityMatrix);
+ 			}
++			if(newShader->u_entityRotationMatrix) {
++				glUniformMatrix4fv(newShader->u_entityRotationMatrix,1,false,entityRotationMatrix);
++			}
+ 		}
+ 	}
+ 	// temporary vertex buffer for stages that requires CPU 
+@@ -1361,6 +1369,7 @@
+ 					}
+ 					bumpMap = 0;
+ 				}
++				class cubeMapAPI_i *cubeMap = s->getCubeMap();
+ 
+ 				// set the alphafunc
+ 				alphaFunc_e newAlphaFunc = s->getAlphaFunc();
+@@ -1479,6 +1488,13 @@
+ 				} else {
+ 					unbindTex(4);
+ 				}
++				if(cubeMap) {
++					selectTex(0);
++					glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->getInternalHandleU32());
++				} else {
++					selectTex(0);
++					glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
++				}
+ 				// use given vertex buffer (with VBOs created) if we dont have to do any material calculations on CPU
+ 				const rVertexBuffer_c *selectedVertexBuffer = &verts;
+ 
+@@ -1630,7 +1646,19 @@
+ 
+ 				// see if we have to bind a GLSL shader
+ 				glShader_c *selectedShader = 0;
+-				if(curLight) {
++				if(stageType == ST_CUBEMAP_SKYBOX) {
++					glslPermutationFlags_s glslShaderDesc;
++					selectedShader = GL_RegisterShader("skyboxCubeMap",&glslShaderDesc);
++					if(selectedShader) {
++						bindShader(selectedShader);
++					}
++				} else if(stageType == ST_CUBEMAP_REFLECTION) {
++					glslPermutationFlags_s glslShaderDesc;
++					selectedShader = GL_RegisterShader("reflectionCubeMap",&glslShaderDesc);
++					if(selectedShader) {
++						bindShader(selectedShader);
++					}		
++				} else if(curLight) {
+ 					// TODO: add Q3 material effects handling to per pixel lighting GLSL shader....
+ 					glslPermutationFlags_s pf;
+ 					if(r_shadows == 2) {
+@@ -1690,6 +1718,12 @@
+ 					if(selectedShader) {
+ 						bindShader(selectedShader);
+ 					}
++				} else if(cubeMap) {
++					glslPermutationFlags_s glslShaderDesc;
++					selectedShader = GL_RegisterShader("cubeMapShader",&glslShaderDesc);
++					if(selectedShader) {
++						bindShader(selectedShader);
++					}
+ 				} else {
+ 					bindShader(0);
+ 				}
+@@ -1946,6 +1980,7 @@
+ 		entityAxis.identity();
+ 		entityOrigin.zero();
+ 		entityMatrix.identity();
++		entityRotationMatrix.identity();
+ 		entityMatrixInverse.identity();
+ 
+ 		usingWorldSpace = true;
+@@ -1955,6 +1990,7 @@
+ 		entityOrigin = origin;
+ 
+ 		entityMatrix.fromAxisAndOrigin(axis,origin);
++		entityRotationMatrix.fromAxisAndOrigin(axis,vec3_c(0,0,0));
+ 		entityMatrixInverse = entityMatrix.getInversed();
+ 		camMatrixInEntitySpace.fromAxisAndOrigin(viewAxis,camOriginWorldSpace);
+ 		camMatrixInEntitySpace = entityMatrixInverse * camMatrixInEntitySpace;
+@@ -2300,6 +2336,31 @@
+ 		glBindTexture(GL_TEXTURE_2D, 0);
+ 		out->setInternalHandleU32(texID);	
+ 	}
++	virtual void uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) {
++		u32 cubemap;
++		glGenTextures(1, &cubemap);
++		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
++		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
++		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
++		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
++
++		// set textures
++		for (u32 i = 0; i < 6; ++i)
++			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, in[i].w, in[i].h, 0, GL_RGBA, GL_UNSIGNED_BYTE, in[i].pic);
++
++		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
++
++		out->setInternalHandleU32(cubemap);
++	}
++	virtual void freeCubeMap(class cubeMapAPI_i *cm) {
++		u32 cubemap = cm->getInternalHandleU32();
++		if(cubemap == 0)
++			return;
++		glDeleteTextures(1,&cubemap);
++		cm->setInternalHandleU32(0);
++	}
+ 	virtual bool createVBO(class rVertexBuffer_c *vbo) {
+ 		if(vbo->getInternalHandleU32()) {
+ 			destroyVBO(vbo);
+Index: code/renderer/backEndGL/gl_shader.cpp
+===================================================================
+--- code/renderer/backEndGL/gl_shader.cpp	(revision 428)
++++ code/renderer/backEndGL/gl_shader.cpp	(working copy)
+@@ -283,6 +283,7 @@
+ 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
+ 	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
+ 	ret->sDeluxeMap = glGetUniformLocation(shader,"deluxeMap");
++	ret->sCubeMap = glGetUniformLocation(shader,"cubeMap");
+ 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
+ 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
+ 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");
+@@ -294,6 +295,7 @@
+ 	ret->u_shadowMap[5] = glGetUniformLocation(shader,"shadowMap5");
+ 	ret->u_materialColor = glGetUniformLocation(shader,"u_materialColor");
+ 	ret->u_entityMatrix = glGetUniformLocation(shader,"u_entityMatrix");
++	ret->u_entityRotationMatrix = glGetUniformLocation(shader,"u_entityRotationMatrix");
+ 	ret->u_lightDir = glGetUniformLocation(shader,"u_lightDir");
+ 	ret->u_spotLightMaxCos = glGetUniformLocation(shader,"u_spotLightMaxCos");
+ 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
+Index: code/renderer/backEndGL/gl_shader.h
+===================================================================
+--- code/renderer/backEndGL/gl_shader.h	(revision 428)
++++ code/renderer/backEndGL/gl_shader.h	(working copy)
+@@ -70,6 +70,7 @@
+ 	// current entity matrix
+ 	// (identity for world)
+ 	int u_entityMatrix;
++	int u_entityRotationMatrix;
+ 
+ 	// sampler2D locations
+ 	int sColorMap; // main diffuse texture
+@@ -77,6 +78,8 @@
+ 	int sBumpMap; // Doom3-style bumpmap (normalmap)
+ 	int sHeightMap; // heightmap (not used directly in Doom3)
+ 	int sDeluxeMap; // deluxemap (lightmap with light directions - not colors)
++	// samplerCube locations
++	int sCubeMap;
+ 
+ 	// shadow mapping
+ 	int u_shadowMap[6];
+Index: code/renderer/frontend/rf_surface.cpp
+===================================================================
+--- code/renderer/frontend/rf_surface.cpp	(revision 417)
++++ code/renderer/frontend/rf_surface.cpp	(working copy)
+@@ -153,6 +153,12 @@
+ 		mat.transformNormal(v->normal);
+ 	}
+ }
++u32 r_surface_c::countDuplicatedTriangles() const {
++	return indices.countDuplicatedTriangles();
++}
++bool r_surface_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
++	return indices.hasTriangle(i0,i1,i2);
++}
+ const struct extraSurfEdgesData_s *r_surface_c::getExtraSurfEdgesData() const {
+ 	if(mySkelSF == 0)
+ 		return 0;
+@@ -1137,6 +1143,18 @@
+ 		surfs[i].transform(mat);
+ 	}
+ }
++u32 r_model_c::countDuplicatedTriangles() const {
++	u32 ret = 0;
++	for(u32 i = 0; i < surfs.size(); i++) {
++		ret += surfs[i].countDuplicatedTriangles();
++	}
++	return ret;
++}
++bool r_model_c::hasTriangle(u32 i0, u32 i1, u32 i2) const {
++	if(surfs.size() == 0)
++		return false;
++	return surfs[0].hasTriangle(i0,i1,i2);
++}
+ bool r_model_c::getTagOrientation(int tagNum, class matrix_c &out) const {
+ 	if(tagNum < 0 || tagNum >= tags.size())
+ 		return true;
+Index: code/renderer/frontend/rf_surface.h
+===================================================================
+--- code/renderer/frontend/rf_surface.h	(revision 417)
++++ code/renderer/frontend/rf_surface.h	(working copy)
+@@ -130,6 +130,8 @@
+ 	virtual void resizeIndices(u32 newNumIndices);
+ 	virtual void setIndex(u32 indexNum, u32 value);
+ 	virtual void transform(const class matrix_c &mat);
++	virtual u32 countDuplicatedTriangles() const;
++	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
+ 
+ 	const struct extraSurfEdgesData_s *getExtraSurfEdgesData() const;
+ 
+@@ -338,7 +340,9 @@
+ 		}
+ 	}
+ 	virtual void transform(const class matrix_c &mat);
+-	
++	virtual u32 countDuplicatedTriangles() const;
++	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
++
+ 	bool getTagOrientation(int tagNum, class matrix_c &out) const;
+ 
+ 	void addPatch(class r_bezierPatch_c *newPatch);
+Index: code/renderer/rIndexBuffer.h
+===================================================================
+--- code/renderer/rIndexBuffer.h	(revision 360)
++++ code/renderer/rIndexBuffer.h	(working copy)
+@@ -335,6 +335,36 @@
+ 		}
+ 		this->numIndices++;
+ 	}
++	int findTriangle(u32 a, u32 b, u32 c, int skip = -1) const {
++		for(u32 i = 0; i < numIndices; i+=3) {
++			if(skip >= 0 && i/3 == skip)
++				continue;
++			u32 i0 = getIndex(i+0);
++			u32 i1 = getIndex(i+1);
++			u32 i2 = getIndex(i+2);
++			if(i0 == a && i1 == b && i2 == c)
++				return i/3;
++		}
++		return -1;
++	}
++	bool hasTriangle(u32 i0, u32 i1, u32 i2) const {
++		if(findTriangle(i0,i1,i2) >= 0)
++			return true;
++		return false;
++	}
++	u32 countDuplicatedTriangles() const {
++		u32 ret = 0;
++		for(u32 i = 0; i < numIndices; i+=3) {
++			u32 triNum = i / 3;
++			u32 i0 = getIndex(i+0);
++			u32 i1 = getIndex(i+1);
++			u32 i2 = getIndex(i+2);
++			int triIndex = findTriangle(i0,i1,i2,triNum);
++			if(triIndex >= 0)
++				ret++;
++		}
++		return ret;
++	}
+ 	void addTriangle(u32 i0, u32 i1, u32 i2) {
+ 		addIndex(i0);
+ 		addIndex(i1);
+@@ -395,7 +425,7 @@
+ 			p32[number] = value;
+ 		}
+ 	}
+-	u32 operator [] (u32 idx) const {
++	u32 getIndex(u32 idx) const {
+ 		if(type == IBO_U16) {
+ 			const u16 *p16 = (const u16*)data.getArray();
+ 			return p16[idx];
+@@ -406,6 +436,9 @@
+ 			return 0;
+ 		}
+ 	}
++	inline u32 operator [] (u32 idx) const {
++		return getIndex(idx);
++	}
+ };
+ 
+ #endif // __RINDEXBUFFER_H__
+Index: game/baseqio/glsl/reflectionCubeMap.frag
+===================================================================
+--- game/baseqio/glsl/reflectionCubeMap.frag	(revision 0)
++++ game/baseqio/glsl/reflectionCubeMap.frag	(working copy)
+@@ -0,0 +1,47 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// glsl/reflectionCubeMap.frag
++
++// shader input
++uniform samplerCube cubeMap;
++
++varying vec3 v_vertXYZ;
++varying vec3 v_vertNormal; 
++
++uniform vec3 u_viewOrigin;
++uniform mat4 u_entityMatrix;
++uniform mat4 u_entityRotationMatrix;
++
++void main() {
++	vec4 absVert = (u_entityMatrix) * vec4(v_vertXYZ,1);
++	vec4 absViewer = (u_entityMatrix) * vec4(u_viewOrigin,1);
++	vec3 absNormal = (u_entityRotationMatrix) * vec4(v_vertNormal,1);
++    vec3 normal = normalize(absNormal);
++    vec3 eyeRay = normalize(absVert.xyz-absViewer.xyz);
++    
++    vec3 reflectedRay = reflect(eyeRay, normal);
++
++    gl_FragColor = textureCube(cubeMap, reflectedRay).rgba;
++}
++
+Index: game/baseqio/glsl/reflectionCubeMap.vert
+===================================================================
+--- game/baseqio/glsl/reflectionCubeMap.vert	(revision 0)
++++ game/baseqio/glsl/reflectionCubeMap.vert	(working copy)
+@@ -0,0 +1,39 @@
++//*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// glsl/reflectionCubeMap.vert - reflection cubeMap shader.
++// Used for Doom3 glass effects.
++// Handles "texgen reflect" material command.
++
++varying vec3 v_vertNormal; 
++varying vec3 v_vertXYZ;
++
++void main() {
++	gl_Position = ftransform();
++	
++	v_vertNormal = normalize(gl_Normal);
++	v_vertXYZ = gl_Vertex.xyz;
++	
++	//gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
++}
++
+Index: game/baseqio/glsl/skyboxCubeMap.frag
+===================================================================
+--- game/baseqio/glsl/skyboxCubeMap.frag	(revision 0)
++++ game/baseqio/glsl/skyboxCubeMap.frag	(working copy)
+@@ -0,0 +1,42 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// glsl/skyboxCubeMap.frag
++// Used for Doom3 skyboxes.
++// Handles "texgen skybox" material command.
++
++// shader input
++uniform samplerCube cubeMap;
++
++varying vec3 v_vertXYZ;
++
++uniform vec3 u_viewOrigin;
++uniform mat4 u_entityMatrix;
++
++void main() {
++	vec4 absVert = (u_entityMatrix) * vec4(v_vertXYZ,1);
++	vec4 absViewer = (u_entityMatrix) * vec4(u_viewOrigin,1);
++    vec3 eyeRay = normalize(absVert.xyz-absViewer.xyz);
++    gl_FragColor = textureCube(cubeMap, eyeRay);
++}
++
+Index: game/baseqio/glsl/skyboxCubeMap.vert
+===================================================================
+--- game/baseqio/glsl/skyboxCubeMap.vert	(revision 0)
++++ game/baseqio/glsl/skyboxCubeMap.vert	(working copy)
+@@ -0,0 +1,34 @@
++/*
++============================================================================
++Copyright (C) 2014 V.
++
++This file is part of Qio source code.
++
++Qio source code is free software; you can redistribute it 
++and/or modify it under the terms of the GNU General Public License
++as published by the Free Software Foundation; either version 2
++of the License, or (at your option) any later version.
++
++Qio source code is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++
++See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program; if not, write to the Free Software Foundation,
++Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
++or simply visit <http://www.gnu.org/licenses/>.
++============================================================================
++*/
++// glsl/skyboxCubeMap.vert
++// Used for Doom3 skyboxes.
++// Handles "texgen skybox" material command.
++
++varying vec3 v_vertXYZ;
++
++void main() {
++	gl_Position = ftransform();
++	v_vertXYZ = gl_Vertex.xyz;
++}
++

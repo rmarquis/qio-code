@@ -1,0 +1,391 @@
+Index: api/rbAPI.h
+===================================================================
+--- api/rbAPI.h	(revision 272)
++++ api/rbAPI.h	(working copy)
+@@ -107,6 +107,10 @@
+ 		return false;
+ 	}
+ 
++	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
++		return 0;
++	}
++
+ 	virtual void init() = 0;
+ 	virtual void shutdown(bool destroyWindow) = 0;
+ };
+Index: api/rLightAPI.h
+===================================================================
+--- api/rLightAPI.h	(revision 249)
++++ api/rLightAPI.h	(working copy)
+@@ -33,6 +33,9 @@
+ 	virtual const vec3_c &getOrigin() const = 0;
+ 	virtual float getRadius() const = 0;
+ 
++	virtual class occlusionQueryAPI_i *getOcclusionQuery() = 0;
++	virtual bool getBCameraInside() const = 0;
++
+ 	
+ 	virtual void calcPosInEntitySpace(const class rEntityAPI_i *ent, class vec3_c &out) const = 0;
+ };
+Index: game/classes/Light.cpp
+===================================================================
+--- game/classes/Light.cpp	(revision 273)
++++ game/classes/Light.cpp	(working copy)
+@@ -30,7 +30,7 @@
+ 
+ Light::Light() {
+ 	this->myEdict->s->eType = ET_LIGHT;
+-	setRadius(128.f);
++	setRadius(512.f);
+ }
+ void Light::setRadius(float newRadius) {
+ 	this->radius = newRadius;
+Index: renderer/backEndGL/gl_main.cpp
+===================================================================
+--- renderer/backEndGL/gl_main.cpp	(revision 273)
++++ renderer/backEndGL/gl_main.cpp	(working copy)
+@@ -47,6 +47,7 @@
+ 
+ #include <shared/autoCvar.h>
+ #include <api/rLightAPI.h>
++#include <api/occlusionQueryAPI.h>
+ 
+ #include <shared/byteRGB.h>
+ 
+@@ -70,6 +71,20 @@
+ #endif
+ #endif // not defined offsetof
+ 
++class glOcclusionQuery_c : public occlusionQueryAPI_i {
++	u32 oqHandle;
++	bool waitingForResult;
++	mutable u32 lastResult;
++public:
++	glOcclusionQuery_c();
++	virtual void generateOcclusionQuery();
++	virtual void assignSphereQuery(const vec3_c &p, float radius);
++	virtual u32 getNumSamplesPassed() const;
++	virtual bool isResultAvailable() const;
++	virtual u32 getPreviousResult() const;
++	virtual u32 waitForLatestResult() const;
++};
++
+ struct texState_s {
+ 	bool enabledTexture2D;
+ 	bool texCoordArrayEnabled;
+@@ -776,6 +791,10 @@
+ 					} else {
+ 						setGLDepthMask(true);
+ 					}
++				} else {
++					// lighting passes (and shadow volume drawcalls)
++					// should be done with glDepthMask off
++					setGLDepthMask(false);
+ 				}
+ #endif
+ 				if(s->hasTexMods()) {
+@@ -1210,6 +1229,11 @@
+ 		glVertex3fv(verts[3]);
+ 		glVertex3fv(verts[7]);
+ 		glEnd();
++	}   
++	virtual class occlusionQueryAPI_i *allocOcclusionQuery() {
++		glOcclusionQuery_c *ret = new glOcclusionQuery_c;
++		ret->generateOcclusionQuery();
++		return ret;
+ 	}
+ 	virtual void setRenderTimeSeconds(float newCurTime) {
+ 		this->timeNowSeconds = newCurTime;
+@@ -1438,7 +1462,61 @@
+ };
+ 
+ static rbSDLOpenGL_c g_staticSDLOpenGLBackend;
++
++glOcclusionQuery_c::glOcclusionQuery_c() {
++	oqHandle = 0;
++	lastResult = 0xffffffff;
++	waitingForResult = false;
++}
++void glOcclusionQuery_c::generateOcclusionQuery() {
++	glGenQueriesARB(1, &oqHandle);
++}
++void glOcclusionQuery_c::assignSphereQuery(const vec3_c &p, float radius) {
++	// stop drawing shadow volumes
++	g_staticSDLOpenGLBackend.stopDrawingShadowVolumes();
++	glColorMask(false,false,false,false);
++	g_staticSDLOpenGLBackend.setGLDepthMask(false);
++	g_staticSDLOpenGLBackend.glCull(CT_TWO_SIDED);
++	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, oqHandle);
++	glTranslatef(p.x,p.y,p.z);
++	glutSolidSphere(radius, 20, 20);
++	glTranslatef(-p.x,-p.y,-p.z);
++	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
++	g_staticSDLOpenGLBackend.setGLDepthMask(true);
++	glColorMask(true,true,true,true);
++	waitingForResult = true;
++}
++u32 glOcclusionQuery_c::getNumSamplesPassed() const {
++	if(waitingForResult == false) {
++		return this->lastResult;
++	}
++	u32 resultSamples;
++	glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_ARB, &resultSamples);
++	this->lastResult = resultSamples;
++	return resultSamples;
++}
++bool glOcclusionQuery_c::isResultAvailable() const {
++	u32 bAvail;
++	glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_AVAILABLE_ARB, &bAvail);
++	if(bAvail)
++		return true;
++	return false;
++}
++u32 glOcclusionQuery_c::waitForLatestResult() const {
++	u32 bAvail;
++	while(1) {
++		glGetQueryObjectuivARB(oqHandle, GL_QUERY_RESULT_AVAILABLE_ARB, &bAvail);
++		if(bAvail) {
++			break;
++		}
++	}
++	return getNumSamplesPassed();
++}
++u32 glOcclusionQuery_c::getPreviousResult() const {
++	return lastResult;
++}
+ 
++
+ void SDLOpenGL_RegisterBackEnd() {
+ 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)&g_staticSDLOpenGLBackend,RENDERER_BACKEND_API_IDENTSTR);
+ }
+\ No newline at end of file
+Index: renderer/frontend/rf_drawCall.cpp
+===================================================================
+--- renderer/frontend/rf_drawCall.cpp	(revision 271)
++++ renderer/frontend/rf_drawCall.cpp	(working copy)
+@@ -30,6 +30,8 @@
+ #include <api/rbAPI.h>
+ #include <api/mtrAPI.h>
+ #include <api/materialSystemAPI.h>
++#include <api/occlusionQueryAPI.h>
++#include <api/rLightAPI.h>
+ #include <shared/array.h>
+ #include <shared/autoCvar.h>
+ 
+@@ -192,10 +194,12 @@
+ 	qsort(rf_drawCalls.getArray()+firstDrawCall,numDrawCalls,sizeof(drawCall_c),compareDrawCall);
+ }
+ void RF_Generate3DSubView();
++static aCvar_c light_printLightsCulledByGPUOcclusionQueries("light_printLightsCulledByGPUOcclusionQueries","1");
+ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
+ 	// issue the drawcalls
+ 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
+ 	rEntityAPI_i *prevEntity = 0;
++	rLightAPI_i *prevLight = 0;
+ 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
+ 		if(prevEntity != c->entity) {
+ 			if(c->entity == 0) {
+@@ -205,7 +209,36 @@
+ 			}
+ 			prevEntity = c->entity;
+ 		}
+-		rb->setCurLight(c->curLight);
++		if(prevLight != c->curLight) {
++			if(prevLight == 0) {
++				// depth pass finished
++				RFL_AssignLightOcclusionQueries();
++			}
++			rb->setCurLight(c->curLight);
++			prevLight = c->curLight;
++		}
++		if(c->curLight && RFL_GPUOcclusionQueriesForLightsEnabled() && (c->curLight->getBCameraInside()==false)) {
++			// see if the light is culled by GPU occlusion query
++			class occlusionQueryAPI_i *oq = c->curLight->getOcclusionQuery();
++			if(oq) {
++				u32 passed;
++#if 1
++				if(oq->isResultAvailable()) {
++					passed = oq->getNumSamplesPassed();
++				} else {
++					passed = oq->getPreviousResult();
++				}
++#else
++				passed = oq->waitForLatestResult();
++#endif
++				if(passed == 0) {
++					if(light_printLightsCulledByGPUOcclusionQueries.getInt()) {
++						g_core->Print("Skipping drawcall with light %i\n",c->curLight);
++					}
++					continue;
++				}
++			}
++		}
+ 		rb->setBindVertexColors(c->bindVertexColors);
+ 		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
+ 		rb->setMaterial(c->material,c->lightmap);
+Index: renderer/frontend/rf_lights.cpp
+===================================================================
+--- renderer/frontend/rf_lights.cpp	(revision 273)
++++ renderer/frontend/rf_lights.cpp	(working copy)
+@@ -42,6 +42,7 @@
+ 	numCurrentStaticInteractions = 0;
+ 	numCurrentEntityInteractions = 0;
+ 	staticShadowVolume = 0;
++	oq = 0;
+ }
+ rLightImpl_c::~rLightImpl_c() {
+ 	clearInteractions();
+@@ -55,6 +56,9 @@
+ 	if(staticShadowVolume) {
+ 		delete staticShadowVolume;
+ 	}
++	if(oq) {
++		delete oq;
++	}
+ }
+ void rLightImpl_c::setOrigin(const class vec3_c &newXYZ) {
+ 	if(pos.compare(newXYZ)) {
+@@ -73,6 +77,23 @@
+ 	absBounds.fromPointAndRadius(pos,radius);
+ 	recalcLightInteractions();
+ }
++occlusionQueryAPI_i *rLightImpl_c::ensureOcclusionQueryAllocated() {
++	if(oq) {
++		return oq;
++	}
++	oq = rb->allocOcclusionQuery();
++	return oq;
++}
++bool rLightImpl_c::setBCameraInside() {
++	const vec3_c &cameraWorld = rf_camera.getOrigin();
++	float distSQ = cameraWorld.distSQ(this->pos);
++	if(distSQ > Square((this->radius+2))) {
++		bCameraInside = false;
++	} else {
++		bCameraInside = true;
++	}
++	return bCameraInside;
++}
+ void rLightImpl_c::clearInteractionsWithDynamicEntities() {
+ 	for(u32 i = 0; i < numCurrentEntityInteractions; i++) {
+ 		entityInteraction_s &in = this->entityInteractions[i];
+@@ -202,7 +223,12 @@
+ 
+ static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
+ static aCvar_c light_printCullStats("light_printCullStats","0");
++static aCvar_c light_useGPUOcclusionQueries("light_useGPUOcclusionQueries","1");
+ 
++bool RFL_GPUOcclusionQueriesForLightsEnabled() {
++	return light_useGPUOcclusionQueries.getInt();
++}
++
+ rLightAPI_i *rf_curLightAPI = 0;
+ void RFL_AddLightInteractionsDrawCalls() {
+ 	if(rf_skipLightInteractionsDrawCalls.getInt())
+@@ -210,6 +236,7 @@
+ 	u32 c_lightsCulled = 0;
+ 	u32 c_lightsCulledByAABBTest = 0;
+ 	u32 c_lightsCulledBySphereTest = 0;
++	
+ 	for(u32 i = 0; i < rf_lights.size(); i++) {
+ 		rLightImpl_c *light = rf_lights[i];
+ 		rf_curLightAPI = light;
+@@ -222,14 +249,17 @@
+ 			if(rf_camera.getFrustum().cull(bb) == CULL_OUT) {
+ 				c_lightsCulled++;
+ 				c_lightsCulledByAABBTest++;
++				light->setCulled(true);
+ 				continue;
+ 			}
+ 			if(rf_camera.getFrustum().cullSphere(light->getOrigin(),light->getRadius()) == CULL_OUT) {
+ 				c_lightsCulled++;
+ 				c_lightsCulledBySphereTest++;
++				light->setCulled(true);
+ 				continue;
+ 			}
+ 		}
++		light->setCulled(false);
+ 
+ 		// TODO: dont do this every frame
+ 		light->recalcLightInteractionsWithDynamicEntities();
+@@ -250,7 +280,30 @@
+ 			rf_lights.size(),c_lightsCulled,c_lightsCulledByAABBTest,c_lightsCulledBySphereTest);
+ 	}
+ }
+-
++#include <api/occlusionQueryAPI.h>
++void RFL_AssignLightOcclusionQueries() {
++	if(light_useGPUOcclusionQueries.getInt() == 0)
++		return;
++	// assign occlusion queries for potentially visible lights
++	// (lights intersecting view frustum)
++	for(u32 i = 0; i < rf_lights.size(); i++) {
++		rLightImpl_c *light = rf_lights[i];
++		if(light->getBCulled()) {
++			continue;
++		}
++		if(light->setBCameraInside()) {
++			// if camera is inside this light, occlusion checks are meaningless
++			continue;
++		}
++		occlusionQueryAPI_i *oq = light->ensureOcclusionQueryAllocated();
++		if(oq == 0) {
++			continue; // occlusion queries not supported by renderer backend
++		}
++		float lightRadius = light->getRadius();
++		const vec3_c &lightPos = light->getOrigin();
++		oq->assignSphereQuery(lightPos,lightRadius);
++	}
++}
+ void RFL_RecalculateLightsInteractions() {
+ 	for(u32 i = 0; i < rf_lights.size(); i++) {
+ 		rLightImpl_c *light = rf_lights[i];
+Index: renderer/frontend/rf_lights.h
+===================================================================
+--- renderer/frontend/rf_lights.h	(revision 254)
++++ renderer/frontend/rf_lights.h	(working copy)
+@@ -67,10 +67,30 @@
+ 	arraySTD_c<entityInteraction_s> entityInteractions;
+ 	int numCurrentEntityInteractions;
+ 
++	bool bCulled;
++	class occlusionQueryAPI_i *oq;
++	bool bCameraInside; // true if camera eye is inside light sphere
++
+ public:
+ 	rLightImpl_c();
+ 	~rLightImpl_c();
+ 
++	void setCulled(bool newBCulled) {
++		bCulled = newBCulled;
++	}
++	bool getBCulled() const {
++		return bCulled;
++	}
++
++	class occlusionQueryAPI_i *ensureOcclusionQueryAllocated();
++	virtual class occlusionQueryAPI_i *getOcclusionQuery() {
++		return oq;
++	}
++	bool setBCameraInside();
++	virtual bool getBCameraInside() const {
++		return bCameraInside;
++	}
++
+ 	void clearInteractions();
+ 	void clearInteractionsWithDynamicEntities();
+ 	void recalcShadowVolumeOfStaticInteractions();
+Index: renderer/frontend/rf_local.h
+===================================================================
+--- renderer/frontend/rf_local.h	(revision 263)
++++ renderer/frontend/rf_local.h	(working copy)
+@@ -57,6 +57,9 @@
+ void RFL_RemoveLight(class rLightAPI_i *ent);
+ void RFL_AddLightInteractionsDrawCalls();
+ void RFL_RecalculateLightsInteractions();
++ // called when depth pass if done
++void RFL_AssignLightOcclusionQueries();
++bool RFL_GPUOcclusionQueriesForLightsEnabled();
+ 
+ // rf_sky.cpp
+ void RF_InitSky();
