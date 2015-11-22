@@ -29,8 +29,8 @@ DEFINE_CLASS_ALIAS(WeaponMP5, weapon_mp5);
 
 WeaponMP5::WeaponMP5() {
 	setRenderModel("models/weapons/w_smg_mp5.mdl");
-	setColModel("models/weapons/w_smg_mp5.phy");
-	//setKeyValue("size", "8 8 8");
+	//setColModel("models/weapons/w_smg_mp5.phy");
+	setKeyValue("size", "8 8 8");
 	//setViewModel("models/weapons/v_smg_mp5.mdl");
 }
 WeaponMP5::~WeaponMP5() {

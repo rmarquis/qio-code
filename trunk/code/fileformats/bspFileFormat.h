@@ -466,6 +466,10 @@ struct q3Header_s {
 		}
 	}
 	const q3Model_s *getModels() const {
+		// quake/half life/cs 1.6 models format is too different to be handled here
+		if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
+			return 0;
+		}
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs);
 		} else {
@@ -473,6 +477,10 @@ struct q3Header_s {
 		}
 	}
 	const q3Model_s *getModel(u32 modelNum) const {
+		// quake/half life/cs 1.6 models format is too different to be handled here
+		if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
+			return 0;
+		}
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs+modelNum*sizeof(q3Model_s));
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
@@ -514,6 +522,11 @@ struct q3Header_s {
 		return (const q3BrushSide_s*)(((const byte*)this)+lumps[Q3_BRUSHSIDES].fileOfs);
 	}
 	const q3Brush_s *getBrushes() const {
+		// very old BSPs don't have brushes data
+		// (quake, half life, counter strike 1.6)
+		if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
+			return 0;
+		}
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return (const q3Brush_s*)(((const byte*)this)+getLumps()[MOH_BRUSHES].fileOfs);
 		} else {

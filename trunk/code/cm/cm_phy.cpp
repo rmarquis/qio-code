@@ -30,7 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/readStream.h>
 
 class cMod_i *CM_LoadModelFromPHYFile(const char *fname) {
-#if 0
+#if 1
 	return 0;
 #else
 	readStream_c r;
@@ -46,7 +46,7 @@ class cMod_i *CM_LoadModelFromPHYFile(const char *fname) {
 		g_core->RedWarning("CM_LoadModelFromPHYFile: %s has extra data after base header\n",fname);
 	}
 	r.setPos(headerSize);
-	for(u32 i = 0; i < checkSum; i++) {
+	for(u32 i = 0; i < numSolids; i++) {
 		u32 ofsStart = r.getPos();
 		u32 size = r.readInt();
 		int solidID = r.readInt();

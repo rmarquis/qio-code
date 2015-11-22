@@ -877,7 +877,7 @@ bool rBspTree_c::loadSurfsHL() {
 	mipTexCache.nullMemory();
 	for(u32 i = 0; i < numSurfaces; i++, isf++, oSF++) {
 		const hlTexInfo_s *sfTexInfo = it + isf->texInfo;
-		str matName = "textures/";
+		//str matName = "textures/";
 		//matName.append(sfTexInfo->texture);
 		//matName.append(".wal");
 		oSF->type = BSPSF_PLANAR;
@@ -966,6 +966,8 @@ class lightmapAllocator_c {
 	arraySTD_c<u32> allocated; // [lightmapSize]
 	// current lightmap image data (pixels RGB)
 	arraySTD_c<byte> curData;
+	// for debugging - always add pixels to separate lightmap
+	bool bDebugAlwaysCreateNew;
 public:
 	void prepareNextLightmap() {
 		g_core->Print("lightmapAllocator_c::prepareNextLightmap: %i sublightmaps merged into lightmap texture %i\n",numSubLightmaps,lightmaps.size());
@@ -1011,13 +1013,17 @@ public:
 		allocated.nullMemory();
 		numSubLightmaps = 0;
 		assert(lightmaps.size() == 0);
+		bDebugAlwaysCreateNew = false;
+	}
+	void setBDebugAlwaysCreateNew(bool newBVal) {
+		bDebugAlwaysCreateNew = newBVal;
 	}
 	u32 addLightmap(const byte *data, u32 w, u32 h) {
 		u32 ret = surfLightmaps.size();
 		sfLightmapDef_s &n = surfLightmaps.pushBack();
 		n.w = w;
 		n.h = h;
-		if(allocNextBlock(n) == false) {
+		if(bDebugAlwaysCreateNew || allocNextBlock(n) == false) {
 			this->prepareNextLightmap();
 			if (!this->allocNextBlock(n)) {
 				printf("lightmapAllocator_c::addLightmap: allocNextBlock failed twice!\n");
@@ -1119,6 +1125,7 @@ bool rBspTree_c::loadSurfsSE() {
 
 	lightmapAllocator_c la;
 	la.init(1024);
+	//la.setBDebugAlwaysCreateNew(true);
 
 	surfs.resize(numSurfaces);
 	bspSurf_s *oSF = surfs.getArray();
@@ -1186,7 +1193,7 @@ bool rBspTree_c::loadSurfsSE() {
 				float exp = ((char*)in)[3];
 				float mult = pow(2.f,exp);
 				rgb *= mult;
-				rgb *= 255.f;
+				//rgb *= 255.f;
 				// see if we have to normalize rgb into 0-255.f range
 				if(rgb.getLargestAxisLen() > 255.f) {
 					float l = rgb.getLargestAxisLen();

@@ -273,11 +273,14 @@ void bspPhysicsDataLoader_c::iterateBrushPlanes(u32 brushNum, class perPlaneCall
 	if(h->isBSPCoD1()) {	
 		// TODO
 	} else {
-		const q3Brush_s *b = h->getBrushes() + brushNum;
-		for(u32 i = 0; i < b->numSides; i++) {
-			const q3BrushSide_s *s = h->getBrushSide(b->firstSide+i);
-			const q3Plane_s &plane = planes[s->planeNum];
-			callBack->perPlaneCallback((const float*)&plane);
+		const q3Brush_s *brushes = h->getBrushes();
+		if(brushes) {
+			const q3Brush_s *b = brushes + brushNum;
+			for(u32 i = 0; i < b->numSides; i++) {
+				const q3BrushSide_s *s = h->getBrushSide(b->firstSide+i);
+				const q3Plane_s &plane = planes[s->planeNum];
+				callBack->perPlaneCallback((const float*)&plane);
+			}
 		}
 	}
 }
@@ -475,10 +478,14 @@ void bspPhysicsDataLoader_c::getInlineModelBounds(u32 modelNum, class aabb &bb) 
 }
 u32 bspPhysicsDataLoader_c::getInlineModelBrushCount(u32 modelNum) const {
 	const q3Model_s *mod = h->getModel(modelNum);
+	if(mod == 0)
+		return 0;
 	return mod->numBrushes;
 }
 u32 bspPhysicsDataLoader_c::getInlineModelSurfaceCount(u32 modelNum) const {
 	const q3Model_s *mod = h->getModel(modelNum);
+	if(mod == 0)
+		return 0;
 	return mod->numSurfaces;
 }
 u32 bspPhysicsDataLoader_c::getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const {
