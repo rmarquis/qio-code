@@ -3002,7 +3002,12 @@ drawOnlyLightmap:
 		glGetIntegerv(GL_MAX_TEXTURE_COORDS,&maxActiveTextureCoords);
 
 		// ensure that all the states are reset after vid_restart
-		memset(texStates,0,sizeof(texStates));
+		///g_core->Print("sizeof(texStates) is: %i\n",sizeof(texStates));
+
+		// V: setting it to 0 causes GL_INVALID_OPERATION spam on backend start
+		//memset(texStates,0,sizeof(texStates));
+		// V: this fixes it
+		memset(texStates,0xff,sizeof(texStates));
 		curTexSlot = -1;
 		highestTCSlotUsed = 0;
 		// materials
