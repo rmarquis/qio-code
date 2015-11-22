@@ -1,0 +1,1 @@
+- changing the directory structure of svn; it would make checking older revisions (commits history) of file harder to read, so that's definetely out of the question- removing features; one of the project goals is to support more content
