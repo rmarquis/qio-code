@@ -5,6 +5,7 @@
 - more RTCW support?
 - extend support for other game contents?
 - extend C# Toolset?
+- add test maps for features from other games
 - improve built-in Radiant clone 
 - port AAS navigation and AAS compiler (as a separate modules)
 - maybe recast navigation?
