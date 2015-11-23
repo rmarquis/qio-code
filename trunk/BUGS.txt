@@ -2,3 +2,4 @@ Known Qio bugs:
 - car physics is jittery on triangle meshes (internal edges issue, known for a very long time for Bullet Physics users)
 - there are several Bullet-related memory leaks, most of them will be fixed soon
 - obsolete Com_Error mechanism (setjmp, etc) crashes sometimes; Com_Error handling code should be rewritten soon
+- engine crash on switching from DirectX 10 renderer on any other (GL or DX9)

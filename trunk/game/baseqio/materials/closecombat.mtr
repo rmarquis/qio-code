@@ -1,0 +1,341 @@
+////////////////////////////////////
+// CloseCombat.shader by DimStar //
+//////////////////////////////////
+
+
+//////////sky//////////
+
+textures/closecombat/nightsky01
+{
+	qer_editorimage textures/coroner_skies/nightsky01_up.tga
+	
+	q3map_lightrgb 0.7 0.85 1.0
+	
+	q3map_sun	0.7 0.85 1.0 40 45 45	
+	
+	q3map_lightmapFilterRadius 0 16
+	q3map_skylight 90 3
+	
+	q3map_nofog
+	nofog
+	
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm sky
+	
+	skyparms textures/coroner_skies/nightsky01 512 -
+	sunshader textures/skies_sd/full_moon2
+
+	{	fog off
+		map textures/skies_sd/goldrush_clouds.tga
+		tcMod scale 5 5
+		tcMod scroll 0.0015 -0.003
+		rgbGen identityLighting
+	}
+
+	{
+		map textures/skies_sd/ydnar_lightning.tga
+		blendFunc GL_SRC_ALPHA GL_ONE
+		rgbGen wave triangle -8 9 0 0.137
+		alphaGen wave noise -3 4 0 2.37
+		tcMod scale 3 3
+		tcMod scroll 0.003 -0.0015
+	}
+	{
+		animmap 2 textures/mrg_skies/plane01.tga textures/mrg_skies/plane01.tga textures/mrg_skies/plane01.tga textures/mrg_skies/plane01.tga textures/mrg_skies/plane02.tga 
+		blendfunc blend
+		rgbGen identity
+		tcMod scroll 0.01 -0.001
+	}
+}
+
+///////////windows//////////
+
+textures/closecombat/window_alpha
+{
+	surfaceparm trans
+	surfaceparm nonsolid
+	surfaceparm playerclip
+	cull none
+        nopicmip
+        nomipmaps
+        
+        qer_editorimage textures/bruce_window/window_b1_nightlight_alpha.tga
+	{
+		map textures/bruce_window/window_b1_nightlight_alpha.tga
+		//tcMod scale 4 4
+		blendFunc GL_ONE GL_ZERO
+		alphaFunc GE128
+		depthWrite
+		rgbGen identity
+	}
+	{
+		map $lightmap
+		rgbGen identity
+		blendFunc GL_DST_COLOR GL_ZERO
+		depthFunc equal
+	}
+}
+
+textures/closecombat/window_b1_nightlight_trans
+{
+	qer_editorimage textures/bruce_window/window_b1_nightlight_alpha.tga
+        qer_trans 0.5
+        
+	surfaceparm nolightmap
+        surfaceparm mat_glass
+        surfaceparm trans
+	{
+		map textures/bruce_window/window_b1_nightlight_alpha.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/closecombat/window_17
+{       
+	qer_editorimage textures/twy_window/window_17.tga
+	surfaceparm mat_glass
+	
+	{
+	map $lightmap
+	rgbGen identity
+	}
+	{
+	map textures/twy_window/window_17.tga
+	blendFunc GL_DST_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+//////////surfaceparm//////////
+
+textures/q3tc/metal_achtung
+{
+        qer_editorimage textures/q3tc/metal_achtung.jpg
+        surfaceparm mat_metal
+        {
+	map $lightmap
+	rgbGen identity
+        }
+        {
+	map textures/q3tc/metal_achtung.jpg
+	blendFunc GL_dst_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+textures/hos_misc/ammobox_ends
+{
+        qer_editorimage textures/hos_misc/ammobox_ends.jpg
+        surfaceparm mat_metal
+        {
+	map $lightmap
+	rgbGen identity
+        }
+        {
+	map textures/hos_misc/ammobox_ends.jpg
+	blendFunc GL_dst_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+textures/hos_misc/ammobox_sides
+{
+        qer_editorimage textures/hos_misc/ammobox_sides.jpg
+        surfaceparm mat_metal
+        {
+	map $lightmap
+	rgbGen identity
+        }
+        {
+	map textures/hos_misc/ammobox_sides.jpg
+	blendFunc GL_dst_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+textures/hos_misc/ammobox_top
+{
+        qer_editorimage textures/hos_misc/ammobox_top.jpg
+        surfaceparm mat_metal
+        {
+	map $lightmap
+	rgbGen identity
+        }
+        {
+	map textures/hos_misc/ammobox_top.jpg
+	blendFunc GL_dst_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+textures/closecombat/locker
+{
+        qer_editorimage models\mapobjects\liq\locker.jpg
+        surfaceparm mat_tin
+        {
+	map $lightmap
+	rgbGen identity
+        }
+        {
+	map models\mapobjects\liq\locker.jpg
+	blendFunc GL_dst_COLOR GL_ZERO
+	rgbGen identity
+	}
+}
+
+//////////decals//////////
+
+textures/mrg_decals/bloody_hand
+{
+	qer_editorimage textures/mrg_decals/bloody_hand.tga
+	qer_trans 0.60
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/bloody_hand.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/graf_boom
+{
+	qer_editorimage textures/mrg_decals/graf_boom.tga
+	qer_trans 0.60
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	{
+		map textures/mrg_decals/graf_boom.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/graf_fuckoff
+{
+	qer_editorimage textures/mrg_decals/graf_fuckoff.tga
+	qer_trans 0.50
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/graf_fuckoff.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/graf_hindu
+{
+	qer_editorimage textures/mrg_decals/graf_hindu.tga
+	qer_trans 0.50
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/graf_hindu.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/graf_mrg5
+{
+	qer_editorimage textures/mrg_decals/graf_mrg5.tga
+	qer_trans 0.60
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/graf_mrg5.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/graf_nexus
+{
+	qer_editorimage textures/mrg_decals/graf_nexus.tga
+	qer_trans 0.60
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/graf_nexus.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/pinup_aug2009
+{
+	qer_editorimage textures/mrg_decals/pinup_aug2009.tga
+	qer_trans 0.90
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/pinup_aug2009.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/skull2
+{
+	qer_editorimage textures/mrg_decals/skull2.tga
+	qer_trans 0.50
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/skull2.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+textures/mrg_decals/slick1
+{
+	qer_editorimage textures/mrg_decals/slick1.tga
+	qer_trans 0.50
+	polygonOffset
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	
+	{
+		map textures/mrg_decals/slick1.tga
+		blendFunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
