@@ -35,6 +35,7 @@ public:
 	cachedBoxAreas_c *next;
 	bool bInuse;
 	u32 hash;
+	u32 at;
 
 	bool hasAABB(const aabb &ob) const {
 		return ob.compare(box);
@@ -46,17 +47,35 @@ class boxAreasCacher_c {
 	cachedBoxAreas_c stored[MAX_CACHED_REQUESTS];
 	u32 lastHash;
 	// loop buffer for storing latest requests
-	//cachedBoxAreas_c *ptrs[MAX_CACHED_REQUESTS];
-	//u32 atPtr;
+	cachedBoxAreas_c *ptrs[MAX_CACHED_REQUESTS];
+	u32 atPtr;
 
 	u32 calcHash(const aabb &bb) {
 		return u32(bb.mins.getComponentsSum() + bb.maxs.getComponentsSum()) % TABLE_SIZE;
+	}
+	void removeFromHashTable(cachedBoxAreas_c *p) {
+		// simple case
+		if(hashTable[p->hash] == p) {
+			hashTable[p->hash] = p->next;
+			return;
+		}
+		cachedBoxAreas_c *o = hashTable[p->hash];
+		while(o) {
+			if(o->next == p) {
+				// just omit the p
+				o->next = o->next->next;
+				return;
+			}
+			o = o->next;
+		}
+		g_core->RedWarning("boxAreasCacher_c::removeFromHashTable: not on table!\n");
 	}
 public:
 	boxAreasCacher_c() {
 		memset(hashTable,0,sizeof(hashTable));
 		memset(stored,0,sizeof(stored));
-		///atPtr = 0;
+		memset(ptrs,0,sizeof(ptrs));
+		atPtr = 0;
 	}
 	cachedBoxAreas_c *create(const aabb &bb) {
 		// find first unused
@@ -69,16 +88,23 @@ public:
 			}
 		}
 		// if no free slots, then reuse the oldest one
-		// TODO
-		// find the oldest slot - TODO
-		// remove it from hash table - TODO
-		
+		if(useMe == 0) {
+			// this is a circular buffer, so the oldest entry is next to newest
+			u32 next = (atPtr+1) % MAX_CACHED_REQUESTS;
+			useMe = ptrs[next];
+			// remove it from hash table
+			removeFromHashTable(useMe);
+		}
 		// add to hash
 		useMe->bInuse = true;
 		useMe->next = hashTable[lastHash];
 		hashTable[lastHash] = useMe;
 		useMe->box = bb;
 		useMe->hash = lastHash;
+
+		atPtr = (atPtr+1) % MAX_CACHED_REQUESTS;
+		ptrs[atPtr] = useMe;
+		useMe->at = atPtr;
 
 		return useMe;
 	}
@@ -88,8 +114,20 @@ public:
 		cachedBoxAreas_c *p;
 		p = hashTable[lastHash];
 		while(p) {
-			if(p->hasAABB(bb))
+			if(p->hasAABB(bb)) {
+				// add the selected entry to the head of the list
+				u32 next = (atPtr+1) % MAX_CACHED_REQUESTS;
+				if(ptrs[next] && ptrs[next] != p) {
+					u32 moveBackTo = p->at;
+					cachedBoxAreas_c *moveBack = ptrs[next];
+					ptrs[next] = p;
+					ptrs[next]->at = next;
+					ptrs[moveBackTo] = moveBack;
+					ptrs[moveBackTo]->at = moveBackTo;
+					// now, the found entry is at the head of the list
+				}
 				return p;
+			}
 			p = p->next;
 		}
 		return 0;
