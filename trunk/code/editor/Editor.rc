@@ -8,7 +8,16 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 
+#if 1
+#define MSVC2008_EXPRESS_EDITION_HACK
+#endif
+
+// V: afxres.h is present in full MSVC 2008 but not in express edition
+#ifdef MSVC2008_EXPRESS_EDITION_HACK
+#include "../../code/tools/radiantAFXInclude/MFC/Include/afxres.h"
+#else
 #include <afxres.h>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS

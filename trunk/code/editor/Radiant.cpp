@@ -272,7 +272,8 @@ int CRadiantApp::Run( void )
 	BOOL bIdle = TRUE;
 	LONG lIdleCount = 0;
 
-#if _MSC_VER >= 1300
+// V: AfxGetCurrentMessage is in afxwin.h, which is present in full MSVC 2008 but not in express edition
+#if _MSC_VER >= 1300 && !MSVC2008_EXPRESS_EDITION_HACK
 	MSG *msg = AfxGetCurrentMessage();			// TODO Robert fix me!!
 #else
 	MSG *msg = &m_msgCur;
