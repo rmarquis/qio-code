@@ -6,6 +6,7 @@
 	* Updated VS solutions so everything is linked and compiling correctly
 	* Updated binary files (compiled based on latest revision: 551) - release build
 	* Fixed loading "test_lua_helloworld" map
+	* Fixed problem with "perPixelLighting.frag" file (atrTangents and atrBinormals are only available on vertex shader)
 
 11-23-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Uploaded two testing maps with textures (copyright Karl R Lèggètt a.k.a Dim$tar)

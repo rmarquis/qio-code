@@ -38,8 +38,9 @@ varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
 
 #if defined(HAS_BUMP_MAP) || defined(HAS_HEIGHT_MAP)
-attribute vec3 atrTangents;
-attribute vec3 atrBinormals;
+//Dushan - only supported in vertex shader
+//attribute vec3 atrTangents;
+//attribute vec3 atrBinormals;
 varying mat3 tbnMat;
 #endif
 #ifdef HAS_BUMP_MAP
