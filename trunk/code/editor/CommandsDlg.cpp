@@ -65,12 +65,10 @@ END_MESSAGE_MAP()
 
 BOOL CCommandsDlg::OnInitDialog() 
 {
-	CDialog::OnInitDialog();
+  CDialog::OnInitDialog();
   m_lstCommands.SetTabStops(96);
   int nCount = g_nCommandCount;
 
-  CFile fileout;
-  fileout.Open("c:/commandlist.txt", CFile::modeCreate | CFile::modeWrite);
   for (int n = 0; n < nCount; n++)
   {
     CString strLine;
@@ -99,11 +97,7 @@ BOOL CCommandsDlg::OnInitDialog()
     m_lstCommands.AddString(strLine);
 
     strLine.Format("%s \t\t\t%s%s", g_Commands[n].m_strCommand, strMod, strKeys);
-
-    fileout.Write(strLine, strLine.GetLength());
-    fileout.Write("\r\n", 2);
   }
-	fileout.Close();
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

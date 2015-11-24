@@ -216,12 +216,13 @@ Map_Free
 */
 void Map_Free (void)
 {
-  g_bRestoreBetween = false;
-	if (selected_brushes.next &&
-		(selected_brushes.next != &selected_brushes) )
+	if (selected_brushes.next && (selected_brushes.next != &selected_brushes) )
 	{
-    if (MessageBox(g_qeglobals.d_hwndMain, "Copy selection?", "", MB_YESNO) == IDYES)
-		  Map_SaveBetween ();
+		g_bRestoreBetween = false;
+		if (MessageBox(g_qeglobals.d_hwndMain, "Copy selection?", "", MB_YESNO) == IDYES)
+		{
+			Map_SaveBetween();
+		}
 	}
 
 	Texture_ClearInuse ();
@@ -251,9 +252,10 @@ void Map_Free (void)
 			Entity_Free (entities.next);
 	}
 
-  if (world_entity)
-    Entity_Free(world_entity);
+	if (world_entity)
+		Entity_Free(world_entity);
 	world_entity = NULL;
+	selected_face = NULL;
 }
 
 entity_s *AngledEntity()

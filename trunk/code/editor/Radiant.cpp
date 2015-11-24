@@ -183,7 +183,7 @@ BOOL CRadiantApp::InitInstance()
 
   g_PrefsDlg.LoadPrefs();
 
-  int nMenu = IDR_MENU1;
+  int nMenu = IDR_MENU_QUAKE3;
 g_PrefsDlg.m_bSGIOpenGL = 1;
   CString strOpenGL = (g_PrefsDlg.m_bSGIOpenGL) ? "opengl.dll" : "opengl32.dll";
   CString strGLU = (g_PrefsDlg.m_bSGIOpenGL) ? "glu.dll" : "glu32.dll";
@@ -272,12 +272,11 @@ int CRadiantApp::Run( void )
 	BOOL bIdle = TRUE;
 	LONG lIdleCount = 0;
 
-
-//#if _MSC_VER >= 1300
-//	MSG *msg = AfxGetCurrentMessage();			// TODO Robert fix me!!
-//#else
+#if _MSC_VER >= 1300
+	MSG *msg = AfxGetCurrentMessage();			// TODO Robert fix me!!
+#else
 	MSG *msg = &m_msgCur;
-//#endif
+#endif
 
 	// phase1: check to see if we can do idle work
 	while (bIdle &&	!::PeekMessage(msg, NULL, NULL, NULL, PM_NOREMOVE)) {
