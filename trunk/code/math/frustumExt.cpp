@@ -27,7 +27,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/cmWinding.h>
 
 frustumExt_c::frustumExt_c(const class frustum_c &fr) {
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+	curCount = FRP_NUM_FRUSTUM_PLANES;
+#else
 	planes.resize(FRP_NUM_FRUSTUM_PLANES);
+#endif
 	for(u32 i = 0; i < FRP_NUM_FRUSTUM_PLANES; i++) {
 		planes[i] = fr.getPlane(i);
 	}
@@ -46,7 +50,7 @@ cullResult_e frustumExt_c::cull(const aabb &bb) const {
 	// in order to avoid some reduntant frustum culling 
 	// in BSP rendering code
 	bool clip = false;
-	for(u32 i = 0; i < planes.size(); i++) {	
+	for(u32 i = 0; i < size(); i++) {	
 		int side = planes[i].onSide(bb);
 		if(side == SIDE_BACK)
 			return CULL_OUT;
@@ -80,13 +84,17 @@ void frustumExt_c::adjustFrustum(const frustumExt_c &other, const vec3_c &eye, c
 		return;
 	}
 	// build fr's planes clockwise
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+	curCount = copy.size();
+#else
 	this->planes.resize(copy.size());
+#endif
 	int prev = copy.size()-1;
 	for(int i = 0; i < copy.size(); i++) {
 		this->planes[i].fromThreePoints(eye, copy[prev], copy[i]);
 		prev = i;
 	}
-	this->planes.push_back(cap);
+	this->addPlane(cap);
 }
 void frustumExt_c::adjustFrustum(const frustumExt_c &other, const vec3_c &eye, const class vec3_c *points, u32 numPoints, const plane_c &plane) {
 	cmWinding_c w;
@@ -104,12 +112,16 @@ void frustumExt_c::fromPointAndWinding(const vec3_c &eye, const class cmWinding_
 		cap = plane;
 	}
 	// build fr's planes clockwise
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+	curCount = copy.size();
+#else
 	this->planes.resize(copy.size());
+#endif
 	int prev = copy.size()-1;
 	for(int i = 0; i < copy.size(); i++) {
 		this->planes[i].fromThreePoints(eye, copy[prev], copy[i]);
 		prev = i;
 	}
-	this->planes.push_back(cap);
+	this->addPlane(cap);
 }
 

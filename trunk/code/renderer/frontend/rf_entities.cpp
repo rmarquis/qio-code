@@ -480,11 +480,16 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			setOrigin(vec3_c(0,0,0));
 			setAngles(vec3_c(0,0,0));
 			const afPublicData_s *af = this->myRagdollDef->getData();
-			arraySTD_c<u32> refCounts;
-			boneOrArray_c bones;
-			refCounts.resize(skelModel->getNumBones());
+
+			// V: made those static, no sense to realloc memory every frame
+			static arraySTD_c<u32> refCounts;
+			static boneOrArray_c bones;
+			// resize only if needed (don't do free/new every function call!)
+			if(refCounts.size() < skelModel->getNumBones()) {
+				refCounts.resize(skelModel->getNumBones());
+				bones.resize(skelModel->getNumBones());
+			}
 			refCounts.nullMemory();
-			bones.resize(skelModel->getNumBones());
 			for(u32 i = 0; i < af->bodies.size(); i++) {
 				const afBody_s &b = af->bodies[i];
 				const boneOrQP_c &partOr = (*ragOrs)[i];

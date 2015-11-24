@@ -28,13 +28,26 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include "plane.h"
 
+// V: it seems that reallocating those planes is infact a bit slow
+#if 1
+#define FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY 
+#endif
+
+#define FRUSTUM_EXT_MAX_PLANES 16
+
 class frustumExt_c {
 public:
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+	plane_c planes[FRUSTUM_EXT_MAX_PLANES];
+	u32 curCount;
+#else
 	arraySTD_c<plane_c> planes;
-
+#endif
 
 	frustumExt_c() {
-
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+		curCount = 0;
+#endif
 	}
 	frustumExt_c(const class frustum_c &fr);
 
@@ -50,13 +63,29 @@ public:
 		return planes[index];
 	}
 	inline void addPlane(const plane_c &newPlane) {
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+		if(curCount >= FRUSTUM_EXT_MAX_PLANES) {
+			return;
+		}
+		planes[curCount] = newPlane;
+		curCount++;
+#else
 		planes.push_back(newPlane);
+#endif
 	}
 	inline void clear() {
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+		curCount = 0;
+#else
 		planes.clear();
+#endif
 	}
 	inline u32 size() const {
+#ifdef FRUSTUM_EXT_USE_FIXED_SIZE_ARRAY
+		return curCount;
+#else
 		return planes.size();
+#endif
 	}
 };
 
