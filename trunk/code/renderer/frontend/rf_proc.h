@@ -113,6 +113,8 @@ public:
 		return out.size();
 	}
 
+	u32 getNumSurfaces() const;
+
 	bool isAreaVisibleByPlayer(int areaNum) const {
 		if(areas[areaNum]->visCount == this->visCount)
 			return true;

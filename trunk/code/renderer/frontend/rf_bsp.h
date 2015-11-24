@@ -344,6 +344,9 @@ public:
 	void setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material);
 	void setSurfaceMaterial(u32 surfaceNum, const char *matName);
 
+	u32 getNumSurfaces() const {
+		return surfs.size();
+	}
 	const class lightGridAPI_i *getLightGridAPI() const {
 		return lightGrid;
 	}

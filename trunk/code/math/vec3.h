@@ -93,6 +93,9 @@ public:
 		y = (int)y;
 		z = (int)z;
 	}
+	float getComponentsSum() const {
+		return x + y + z;
+	}
 	bool isNull() const {
 		if(x != 0)
 			return false;

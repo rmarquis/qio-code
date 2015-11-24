@@ -547,6 +547,8 @@ void ClientCommand( int clientNum ) {
 		char buff[8192];
 		g_core->Args(buff,sizeof(buff));
 		pl->cmdSay(buff);
+	} else if(!stricmp(cmd,"removeLighs")) {
+		G_RemoveEntitiesOfClass("light");
 	} else if(!stricmp(cmd,"net_setWorldSurfaceMaterial")) {
 		// command used to debug (display) various materials on world surfaces
 		int areaNum = atoi(g_core->Argv(1));

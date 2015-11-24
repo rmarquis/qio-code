@@ -1103,6 +1103,11 @@ void r_model_c::precalculateStencilShadowCaster() {
 	ssvCaster->addRModel(this);
 	ssvCaster->calcEdges();
 }
+void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) const {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		cb->perStringCallback(surfs[i].getMatName());
+	}
+}
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	// HACK: ignore collision surfaces from Prey LWO models!

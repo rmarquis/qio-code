@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static aCvar_c g_printEntityPositions("g_printEntityPositions","0");
 static aCvar_c g_printModelEntityRenderModelNames("g_printModelEntityRenderModelNames","0");
+static aCvar_c g_printEntityClasses("g_printModelEntityRenderModelNames","0");
 
 level_locals_t	level;
 
@@ -295,6 +296,9 @@ void G_RunFrame( int levelTime ) {
 			if(modelName != 0 && modelName[0] != 0) {
 				g_core->Print("Entity with model: %i (%s - %s) is at %f %f %f\n",e->getEntNum(),e->getClassName(),e->getRenderModelName(),e->getOrigin().x,e->getOrigin().y,e->getOrigin().z);
 			}
+		}
+		if(g_printEntityClasses.getInt()) {
+			g_core->Print("Entity: %i (%s - %s) is at %f %f %f\n",e->getEntNum(),e->getClassName(),e->getRenderModelName(),e->getOrigin().x,e->getOrigin().y,e->getOrigin().z);
 		}
 		e->runFrame();
 		if(ed->ent == 0)

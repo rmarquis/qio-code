@@ -27,8 +27,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Projectile.h"
 #include "../g_local.h"
 #include <api/coreAPI.h>
+#include <shared/autoCvar.h>
 
 DEFINE_CLASS(Q3Weapon, "Weapon");
+
+static aCvar_c g_q3WeaponsPhysics("g_q3WeaponsPhysics","1");
 
 enum quake3WeaponType_e {
 	EQ3WPN_BAD,
@@ -78,6 +81,13 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 	}
 }
 
+void Q3Weapon::runFrame() {
+	if(body) {
+		if(g_q3WeaponsPhysics.getInt() == 0) {
+			destroyPhysicsObject();
+		}
+	}
+}
 void Q3Weapon::doWeaponAttack() {
 	if(q3WeaponType == EQ3WPN_PLASMAGUN) {
 		Projectile *plasma = new Projectile;

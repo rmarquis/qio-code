@@ -87,6 +87,13 @@ public:
 		maxs.y = halfSize;
 		maxs.z = halfSize;
 	}
+	bool compare(const aabb &o, float eps = 0.01f) const {
+		if(mins.compare(o.mins,eps)==false)
+			return false;
+		if(maxs.compare(o.maxs,eps)==false)
+			return false;
+		return true;
+	}
 	void fromHalfSizes(const vec3_c &halfSizes) {
 		mins.x = -halfSizes.x;
 		mins.y = -halfSizes.y;
@@ -323,6 +330,13 @@ public:
 		return dummy;
 	}
 
+	const vec3_c &getMins() const {
+		return mins;
+	}
+
+	const vec3_c &getMaxs() const {
+		return maxs;
+	}
 	vec3_c maxs;
 	vec3_c mins;
 };

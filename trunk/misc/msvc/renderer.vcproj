@@ -532,6 +532,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\boxAreasCacher.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\boxAreasCacher.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\calcTBN.cpp"
 				>
 			</File>

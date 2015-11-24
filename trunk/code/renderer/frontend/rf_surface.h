@@ -308,7 +308,7 @@ public:
 		const char *num = name.c_str() + 5;
 		return atoi(num);
 	}
-
+	void iterateMaterialNames(class perStringCallbackListener_i *cb) const;
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
@@ -460,6 +460,9 @@ public:
 		return &surfs[sfNum];
 	}
 
+	u32 getNumSurfaces() const {
+		return surfs.size();
+	}
 	const aabb &getBounds() const {
 		return bounds;
 	}

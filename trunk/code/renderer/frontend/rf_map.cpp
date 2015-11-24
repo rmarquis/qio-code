@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_bezier.h"
 #include <api/coreAPI.h>
 #include <api/modelLoaderDLLAPI.h>
+#include <shared/stringList.h>
 
 class rWorldMapLoader_c : public staticModelCreatorAPI_i {
 	u32 currentEntityNum;
@@ -224,6 +225,12 @@ class r_model_c *RF_LoadMAPFile(const char *fname) {
 	loader.calcTBNs();
 	loader.registerSubModels();
 	RF_SetSunMaterial(loader.findSunMaterial());
+	if(1) {
+		stringList_c matNames;
+		matNames.setIgnoreDuplicates(true);
+		loader.getWorldModel()->iterateMaterialNames(&matNames);
+		g_core->Print("There is %i unique map materials\n",matNames.size());
+	}
 	return loader.getWorldModel();
 }
 

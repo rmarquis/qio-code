@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/stringList.h>
 #include <shared/rendererSurfaceRef.h>
+#include <shared/boxAreasCacher.h>
 
 static str r_worldMapName;
 static class rBspTree_c *r_bspTree = 0; // for .bsp files
@@ -46,6 +47,9 @@ static aCvar_c rf_printWorldRayCasts("rf_printWorldRayCasts","0");
 static aCvar_c rf_printWorldUpdates("rf_printWorldUpdates","0");
 static aCvar_c rf_world_dontAddDecals("rf_world_dontAddDecals","0");
 static aCvar_c rf_skipWorld("rf_skipWorld","0");
+static aCvar_c rf_printWorldTotalSurfacesCount("rf_printWorldTotalSurfacesCount","0");
+// V: this is helpfull when a lot of reduntant boxAreas calls are done
+static aCvar_c rf_useBoxAreasCaching("rf_useBoxAreasCaching","1");
 
 void RF_ClearWorldMap() {
 	if(r_bspTree) {
@@ -162,17 +166,26 @@ void RF_AddWorldDrawCalls() {
 		if(rf_printWorldUpdates.getInt()) {
 			g_core->Print("RF_AddWorldDrawCalls: adding r_bspTree drawCalls\n");
 		}
+		if(rf_printWorldTotalSurfacesCount.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: r_bspTree has %i surfaces\n",r_bspTree->getNumSurfaces());
+		}
 		r_bspTree->addDrawCalls();
 	}
 	if(r_worldModel) {
 		if(rf_printWorldUpdates.getInt()) {
 			g_core->Print("RF_AddWorldDrawCalls: adding r_worldModel drawCalls\n");
 		}
+		if(rf_printWorldTotalSurfacesCount.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: r_worldModel has %i surfaces\n",r_worldModel->getNumSurfaces());
+		}
 		r_worldModel->addDrawCalls();
 	}
 	if(r_procTree) {
 		if(rf_printWorldUpdates.getInt()) {
 			g_core->Print("RF_AddWorldDrawCalls: adding r_procTree drawCalls\n");
+		}
+		if(rf_printWorldTotalSurfacesCount.getInt()) {
+			g_core->Print("RF_AddWorldDrawCalls: r_procTree has %i surfaces\n",r_procTree->getNumSurfaces());
 		}
 		r_procTree->addDrawCalls();
 	}
@@ -389,9 +402,33 @@ int RF_GetNumAreas() {
 	}
 	return 0;
 }
+
+// V: doing a lot of RF_BoxAreas is very slow
+// I have decided to create a small cache to speed things up.
+boxAreasCacher_c<8192,512> r_boxAreasCacher;
+
 u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out) {
-	if(r_procTree) {
-		return r_procTree->boxAreas(absBB,out);
+	if(rf_useBoxAreasCaching.getInt()) {
+		if(r_procTree) {
+			// check if is it cached
+			cachedBoxAreas_c *p = r_boxAreasCacher.find(absBB);
+			if(p) {
+				// just copy out results
+				out = p->areas;
+			} else {
+				// create new entry
+				p = r_boxAreasCacher.create(absBB);
+				// get it
+				u32 r = r_procTree->boxAreas(absBB,out);
+				// save it
+				p->areas = out;
+			}
+			return p->areas.size();
+		}
+	} else {
+		if(r_procTree) {
+			return r_procTree->boxAreas(absBB,out);
+		}
 	}
 	return 0;
 }

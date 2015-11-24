@@ -37,6 +37,7 @@ public:
 
 	DECLARE_CLASS( Q3Weapon );
 
+	virtual void runFrame();
 	virtual void doWeaponAttack();
 
 	virtual void setKeyValue(const char *key, const char *value);

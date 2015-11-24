@@ -1126,7 +1126,7 @@ public:
 	}
 	void disableZBuffer() {
 		if(pD3DDevice == 0) {
-			g_core->RedWarning("disableZBuffer::enableZBuffer: pD3DDevice is NULL\n");
+			g_core->RedWarning("rbDX10_c::enableZBuffer: pD3DDevice is NULL\n");
 			return;
 		}
 		pD3DDevice->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
@@ -1137,7 +1137,11 @@ public:
 		viewMatrix.identity();
 
 		disableZBuffer();
-		pD3DDevice->RSSetState(m_rasterState_noFaceCulling);;
+		if(pD3DDevice) {
+			pD3DDevice->RSSetState(m_rasterState_noFaceCulling);;
+		} else {
+			g_core->RedWarning("rbDX10_c::setup2DView: pD3DDevice is NULL\n");
+		}
 	}
 	virtual void setup3DView(const class vec3_c &newCamPos, const class axis_c &newCamAxis) {
 		camOriginWorldSpace = newCamPos;

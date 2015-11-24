@@ -347,6 +347,12 @@ parseModel:
 	}
 	return false; // OK
 }
+u32 procTree_c::getNumSurfaces() const {
+	u32 r = 0;
+	for(u32 i = 0; i < models.size(); i++)
+		r += models[i]->getNumSurfaces();
+	return r;
+}
 int procTree_c::pointArea(const vec3_c &xyz) {
 	if(nodes.size() == 0)
 		return 0;
