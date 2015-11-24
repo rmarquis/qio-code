@@ -1,3 +1,10 @@
+11-24-2015 Dusan Jocic <dusanjocic@msn.com>
+	* Fixed crash when you open "Command List" in Q3Editor
+	* Fixed the buffer overrun caused by the OpenGL extension string being too long in the editor.
+	* Fixed compiling in-game editor
+	* Added compiled files for ODE physics library
+	* Updated VS solutions so everything is linked and compiling correctly
+
 11-23-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Uploaded two testing maps with textures (copyright Karl R Lèggètt a.k.a Dim$tar)
 	* added Changelog and Notes files inside documentation folder
