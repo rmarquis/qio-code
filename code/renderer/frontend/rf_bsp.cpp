@@ -1624,9 +1624,15 @@ bool rBspTree_c::load(const char *fname) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
+			// V: both RTCW and ET bsps has version 47, but ET seems to have different lightgrid data
+			// Let the engine load map correctly even if lighgrid is unsuporred for now
 			if(loadQ3LightGrid(Q3_LIGHTGRID)) {
+#if 0
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
+#else
+				g_core->RedWarning("rBspTree_c::load: lightgrid data not supported for %s\n",fname);
+#endif
 			}
 		} else if(h->version == BSP_VERSION_Q2) {
 			// QuakeII bsp
