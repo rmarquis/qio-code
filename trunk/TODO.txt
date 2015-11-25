@@ -9,3 +9,5 @@
 - improve built-in Radiant clone 
 - port AAS navigation and AAS compiler (as a separate modules)
 - maybe recast navigation?
+- [Q3] fix Quake3 jumppads (how to replicate their behaviour with Bullet Physics?!)
+- [Q3] some solid brushes are not solid, why? fence content flags should be solid?
