@@ -237,6 +237,30 @@ bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
 	}
 	return false; // OK
 }
+// V: this way lightmaps are stored for example for cqb_sptest.bsp
+bool rBspTree_c::loadExternalLightmaps2(const char *path) {
+	str fixedPath = path;
+	fixedPath.stripExtension();
+	fixedPath.appendChar('/');
+	str lightmapPath = fixedPath;
+	lightmapPath.append("lm_0000.tga");
+	if(g_vfs->FS_FileExists(lightmapPath) == false)
+		return true; // error
+	u32 counter = 0;
+	while(1) {
+		lightmapPath = fixedPath;
+		lightmapPath.append(va("lm_000%i.tga",counter));
+		if(g_vfs->FS_FileExists(lightmapPath)==false)
+			break;
+		textureAPI_i *lm = g_ms->loadTexture(lightmapPath);
+		if(lm == 0)
+			break;
+		lightmaps.push_back(lm);
+		counter++;
+	}
+	return false;
+}
+// V: FIXME - where is it used?
 bool rBspTree_c::loadExternalLightmaps(const char *path) {
 	str fixedPath = path;
 	fixedPath.stripExtension();
@@ -244,7 +268,7 @@ bool rBspTree_c::loadExternalLightmaps(const char *path) {
 	str lightmapPath = fixedPath;
 	lightmapPath.append("lightmap0.png");
 	if(g_vfs->FS_FileExists(lightmapPath) == false)
-		return true; // error
+		return loadExternalLightmaps2(path);
 	u32 counter = 0;
 	while(1) {
 		lightmapPath = fixedPath;
