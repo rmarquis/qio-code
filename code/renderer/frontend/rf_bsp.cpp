@@ -249,7 +249,7 @@ bool rBspTree_c::loadExternalLightmaps2(const char *path) {
 	u32 counter = 0;
 	while(1) {
 		lightmapPath = fixedPath;
-		lightmapPath.append(va("lm_000%i.tga",counter));
+		lightmapPath.append(va("lm_%04d.tga",counter));
 		if(g_vfs->FS_FileExists(lightmapPath)==false)
 			break;
 		textureAPI_i *lm = g_ms->loadTexture(lightmapPath);
