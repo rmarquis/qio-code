@@ -243,6 +243,7 @@ class rBspTree_c {
 
 	bool loadLightmaps(u32 lumpNum, u32 lightmapSize = 128);
 	bool loadExternalLightmaps(const char *path);
+	bool loadExternalLightmaps2(const char *path);
 	bool loadPlanes(u32 lumpPlanes);
 	bool loadPlanesQ2(u32 lumpPlanes);
 	bool loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLeaf);
