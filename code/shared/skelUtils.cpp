@@ -119,3 +119,11 @@ void boneOrArray_c::scaleXYZ(const vec3_c &vScaleXYZ) {
 		or->mat.setOrigin(p);
 	}
 }
+boneOrArray_c boneOrArray_c::getInversed() const {
+	boneOrArray_c r = *this;
+	for(u32 i = 0; i < size(); i++) {
+		r[i].mat.inverse();
+	}
+	return r;
+
+}

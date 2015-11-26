@@ -33,6 +33,24 @@ class vec3_c {
 public:
 	float x, y, z;
 
+	inline float getX() const {
+		return x;
+	}
+	inline float getY() const {
+		return y;
+	}
+	inline float getZ() const {
+		return z;
+	}
+	inline void setX(float f) {
+		x = f;
+	}
+	inline void setY(float f) {
+		y = f;
+	}
+	inline void setZ(float f) {
+		z = f;
+	}
 	vec3_c() {
 		x = 0;
 		y = 0;

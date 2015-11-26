@@ -260,7 +260,7 @@ bool rBspTree_c::loadExternalLightmaps2(const char *path) {
 	}
 	return false;
 }
-// V: FIXME - where is it used?
+// V: this is used for QioMap lightmaps
 bool rBspTree_c::loadExternalLightmaps(const char *path) {
 	str fixedPath = path;
 	fixedPath.stripExtension();

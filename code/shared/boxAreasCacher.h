@@ -37,6 +37,12 @@ public:
 	u32 hash;
 	u32 at;
 
+	cachedBoxAreas_c() {
+		bInuse = false;
+		hash = 0;
+		at = 0;
+		next = 0;
+	}
 	bool hasAABB(const aabb &ob) const {
 		return ob.compare(box);
 	}
@@ -73,7 +79,6 @@ class boxAreasCacher_c {
 public:
 	boxAreasCacher_c() {
 		memset(hashTable,0,sizeof(hashTable));
-		memset(stored,0,sizeof(stored));
 		memset(ptrs,0,sizeof(ptrs));
 		atPtr = 0;
 	}

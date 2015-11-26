@@ -56,6 +56,7 @@ public:
 	void transform(const matrix_c &ofs);
 	void scale(float scale);
 	void scaleXYZ(const vec3_c &scaleXYZ);
+	boneOrArray_c getInversed() const;
 
 	const vec3_c &getBonePos(u32 idx) const {
 		return (*this)[idx].getOrigin();
