@@ -181,6 +181,24 @@ void skelModelIMPL_c::recalcEdges() {
 		sf->calcEdges();
 	}
 }
+
+void CalcTriangleTN(const vec3_c &v0xyz, const vec3_c &v1xyz, const vec3_c &v2xyz, 
+					const vec2_c &v0tc, const vec2_c &v1tc, const vec2_c &v2tc, vec3_c &normal, vec3_c &tangent) {	
+	// normal part
+	vec3_c edge0 = v2xyz - v0xyz;
+	vec3_c edge1 = v1xyz - v0xyz;
+	normal = edge0.crossProduct(edge1);
+
+	vec2_c st0 = v2tc - v0tc;
+	vec2_c st1 = v1tc - v0tc;
+
+	float coef = 1.f / (st0.getX() * st1.getY() - st1.getX() * st0.getY());
+
+	tangent.setX(coef * ((edge0.getX() * st1.getY())  + (edge1.getX() * -st0.getY())));
+	tangent.setY(coef * ((edge0.getY() * st1.getY())  + (edge1.getY() * -st0.getY())));
+	tangent.setZ(coef * ((edge0.getZ() * st1.getY())  + (edge1.getZ() * -st0.getY())));
+}
+
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;
@@ -355,6 +373,63 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 		}
 	}
 
+	// precalc TBN
+	for(u32 i = 0; i < surfs.size(); i++) {
+		skelSurfIMPL_c &sf = surfs[i];
+		arraySTD_c<vec3_c> positions;
+		positions.resize(sf.verts.size());
+		// calc positions
+		for(u32 j = 0; j < sf.verts.size(); j++) {
+			skelVert_s &v = sf.verts[j];
+			v.n.zero();
+			v.t.zero();
+			vec3_c &xyz = positions[j];
+			for(u32 k = 0; k < v.numWeights; k++) {
+				const skelWeight_s &w = sf.weights[v.firstWeight+k];
+				vec3_c p;
+				baseFrameABS[w.boneIndex].mat.transformPoint(w.ofs,p);
+				xyz += p * w.weight;
+			}
+		}
+		// calc tbn
+		for(u32 j = 0; j < sf.indices.size(); j+=3) {
+			u32 i0 = sf.indices[j+0];
+			u32 i1 = sf.indices[j+1];
+			u32 i2 = sf.indices[j+2];
+			const vec3_c &pA = positions[i0];
+			const vec3_c &pB = positions[i1];
+			const vec3_c &pC = positions[i2];
+			skelVert_s &vA = sf.verts[i0];
+			skelVert_s &vB = sf.verts[i1];
+			skelVert_s &vC = sf.verts[i2];
+			vec3_c n, t;
+			CalcTriangleTN(pA,pB,pC,vA.tc,vB.tc,vC.tc,n,t);
+			vA.n += n;
+			vB.n += n;
+			vC.n += n;
+			vA.t += t;
+			vB.t += t;
+			vC.t += t;
+		}
+		//arraySTD_c<matrix_c> mats;
+		//mats.resize(baseFrameABS.size());
+		//for(u32 i = 0; i < mats.size(); i++) {
+		//	matrix_c &m = mats[i];
+		//	const boneOr_s &o = baseFrameABS[i];
+		//	m.fromQuatAndOrigin(b
+		//}
+		boneOrArray_c inv = baseFrameABS.getInversed();
+		// calc locals
+		for(u32 j = 0; j < sf.verts.size(); j++) {
+			skelVert_s &v = sf.verts[j];
+			v.t.normalize();
+			v.n.normalize();
+			const skelWeight_s &fw = sf.weights[v.firstWeight];
+			const matrix_c &im = inv[fw.boneIndex].mat;
+			im.transformNormal(v.t);
+			im.transformNormal(v.n);
+		}
+	}
 	this->name = fname;
 
 	return false; // no error

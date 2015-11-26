@@ -405,7 +405,7 @@ int RF_GetNumAreas() {
 
 // V: doing a lot of RF_BoxAreas is very slow
 // I have decided to create a small cache to speed things up.
-boxAreasCacher_c<8192,512> r_boxAreasCacher;
+boxAreasCacher_c<1024,512> r_boxAreasCacher;
 
 u32 RF_BoxAreas(const aabb &absBB, arraySTD_c<u32> &out) {
 	if(rf_useBoxAreasCaching.getInt()) {

@@ -36,6 +36,8 @@ struct skelVert_s {
 	vec2_c tc;
 	u16 firstWeight;
 	u16 numWeights;
+	// V: optimisation
+	vec3_c n, t;
 };
 struct skelWeight_s {
 	vec3_c ofs;

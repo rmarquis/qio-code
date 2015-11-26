@@ -286,6 +286,7 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 	bounds.clear();
 	for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
 		const skelWeight_s *w = inWeights + inV->firstWeight;
+		int firstBone = w->boneIndex;
 		v->xyz.clear();
 		for(u32 j = 0; j < inV->numWeights; j++, w++) {
 			vec3_c p;
@@ -296,6 +297,16 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 				v->xyz += p * w->weight;
 			}
 		}
+		
+		// V: I hope that this approximation is faster and better than calculating TBN every frame
+		const matrix_c &mat = bones[firstBone].mat;
+		mat.transformNormal(inV->n,v->normal);
+		mat.transformNormal(inV->t,v->tan);
+		// TODO: store binormal handeness somewherE?
+		// Binormal handeness is usually stored as tangent fourth component (1.0 or -1.0)
+		v->bin.crossProduct(v->normal,v->tan);
+
+
 		bounds.addPoint(v->xyz);
 	}	
 }

@@ -31,6 +31,12 @@ class vec2_c {
 public:
 	float x, y;
 
+	inline float getX() const {
+		return x;
+	}
+	inline float getY() const {
+		return y;
+	}
 	vec2_c() {
 		x = 0;
 		y = 0;

@@ -58,6 +58,8 @@ static aCvar_c rf_printEntityTriangleCounts("rf_printEntityTriangleCounts","0");
 static aCvar_c rfe_drawFuncStatic("rfe_drawFuncStatic","1");
 static aCvar_c rfe_drawPlayers("rfe_drawPlayers","1");
 static aCvar_c rfe_drawGeneral("rfe_drawGeneral","1");
+// usefull to see how ragdolls are slowing engine down
+static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","0");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -473,7 +475,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
 		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
 		// ragdoll controlers ovverides all the animations
-		if(myRagdollDef) {
+		if(myRagdollDef && rf_dontUpdateRagdollAnimations.getInt() == 0) {
 			// HACK, USE WORLD TRANSFORMS
 			// TODO: better fix?
 			rf_currentEntity = 0; 
@@ -495,7 +497,8 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				const boneOrQP_c &partOr = (*ragOrs)[i];
 				matrix_c bodyMat;
 				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
-				arraySTD_c<u32> boneNumbers;
+				static arraySTD_c<u32> boneNumbers;
+				boneNumbers.resize(0);//set size to 0 but don't free memory - reallocating is slow
 				UTIL_ContainedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim);
 				for(u32 j = 0; j < boneNumbers.size(); j++) {
 					int boneNum = boneNumbers[j];
@@ -509,7 +512,16 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					bones[boneNum].mat = bodyMat * bpb2b;
 				}
 			}
+			// V: update vertex positions, normals, tangents and binormals (TBN approx)
 			instance->updateSkelModelInstance(skelModel,bones);	
+#if 0
+			// V: this very slow when there are many skeletal models in the scene.
+			// Right now we're using precomputed skel surfaces tangent/normals,
+			// they are set by updateSkelModelInstance call.
+
+			// NOTE: calculating TBNs from scratch took around 17% of total CPU time on game/mars_city1
+			// TODO: check if binormal calculations are correct (handeness is ignored righ now)
+
 			// if model needs normals
 			if(1) {
 				// if model needs TBN
@@ -519,6 +531,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					instance->recalcModelNormals(); // this is slow
 				}
 			}
+#endif
 		} else if(skelAnimCtrl) {
 			skelAnimCtrl->runAnimController(rf_curTimeMsec);
 			skelAnimCtrl->updateModelAnimation(skelModel);
@@ -533,12 +546,14 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					}
 					*finalBones = skelAnimCtrl->getCurBones();
 					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
+					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,*finalBones);
 				} else {
 					if(finalBones) {
 						delete finalBones;
 						finalBones = 0;
 					}
+					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
 				}
 			} else {
@@ -546,8 +561,17 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					delete finalBones;
 					finalBones = 0;
 				}
+				// V: update vertex positions, normals, tangents and binormals (TBN approx)
 				instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
 			}
+#if 0
+			// V: this very slow when there are many skeletal models in the scene.
+			// Right now we're using precomputed skel surfaces tangent/normals,
+			// they are set by updateSkelModelInstance call.
+
+			// NOTE: calculating TBNs from scratch took around 17% of total CPU time on game/mars_city1
+			// TODO: check if binormal calculations are correct (handeness is ignored righ now)
+
 			// if model needs normals
 			if(1) {
 				// if model needs TBN
@@ -557,6 +581,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					instance->recalcModelNormals(); // this is slow
 				}
 			}
+#endif
 		}
 	} else if(model->isKeyframed()) {
 		const kfModelAPI_i *kfModel = model->getKFModelAPI();
