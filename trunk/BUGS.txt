@@ -3,3 +3,4 @@ Known Qio bugs:
 - there are several Bullet-related memory leaks, most of them will be fixed soon
 - obsolete Com_Error mechanism (setjmp, etc) crashes sometimes; Com_Error handling code should be rewritten soon
 - engine crash on switching from DirectX 10 renderer on any other (GL or DX9)
+- the collision with Bullet triangle meshes without BHV is not working ("shape = new btBvhTriangleMeshShape(mesh,false,false);")
