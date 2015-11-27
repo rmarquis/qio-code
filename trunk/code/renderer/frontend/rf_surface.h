@@ -393,6 +393,8 @@ public:
 	r_surface_c *registerPlanarSurf(const char *matName, const vec3_c &p0, const vec3_c &p1, const vec3_c &p2);
 	r_surface_c *registerSurf(const char *matName);
 	void addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags = 0, bool useVertexColors = false, const vec3_c *extraRGB = 0);
+	void addDrawCallsCulled(const class frustumExt_c &f);
+	void addDrawCallsCulled(const class frustum_c &f);
 	void cacheLightStaticModelInteractions(class rLightImpl_c *light);
 	void setSurfMaterial(const char *surfName, const char *matName);
 	void appendSkinRemap(const class rSkinRemap_c *skin);

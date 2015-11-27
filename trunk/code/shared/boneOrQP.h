@@ -46,6 +46,13 @@ public:
 	void setQuat(const quat_c &newQuat) {
 		q = newQuat;
 	}
+	bool compare(const boneOrQP_c &o) const {
+		if(!p.compare(o.p))
+			return false;
+		if(!q.compare(o.q))
+			return false;
+		return true;
+	}
 	const quat_c &getQuat() const {
 		return q;
 	}

@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_drawCall.h"
 #include "rf_entities.h"
 #include "../rVertexBuffer.h"
+#include "../rIndexBuffer.h"
 #include <api/coreAPI.h>
 #include <api/rbAPI.h>
 #include <api/mtrAPI.h>
@@ -54,6 +55,8 @@ aCvar_c rf_drawCalls_printShadowMapLOD("rf_drawCalls_printShadowMapLOD","0");
 aCvar_c rf_drawCalls_printAll("rf_drawCalls_printAll","0");
 aCvar_c rf_ignoreMirrors("rf_ignoreMirrors","0");
 aCvar_c rf_drawCalls_printSortCompare("rf_drawCalls_printSortCompare","0");
+aCvar_c rf_drawCalls_printTotalTrianglesCount("rf_drawCalls_printTotalTrianglesCount","0");
+aCvar_c rf_drawCalls_printTotalDrawCallsCount("rf_drawCalls_printTotalDrawCallsCount","0");
 
 class drawCall_c {
 public:
@@ -88,6 +91,23 @@ public:
 	
 	void clearDrawCall() {
 		memset(this,0,sizeof(*this));
+	}
+	const char *getMatName() const {
+		if(material)
+			return material->getName();
+		return "DC_MATNAME_NOT_SET";
+	}
+	u32 getNumTris() const {
+		if(indices) {
+			return indices->getNumTriangles();
+		}
+		return 0;
+	}
+	u32 getNumVerts() const {
+		if(verts) {
+			return verts->size();
+		}
+		return 0;
 	}
 };
 static arraySTD_c<drawCall_c> rf_drawCalls;
@@ -408,6 +428,8 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	rb->setRShadows(RF_GetShadowingMode());
 	rb->setSunShadowBounds(rf_sunShadowBounds);
 
+	u32 totalTris = 0;
+
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
 	rEntityAPI_i *prevEntity = 0;
@@ -439,8 +461,8 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			g_core->Print("Drawcall %i: material %s: shadowMapLOD %i\n",i,c->material->getName(),c->shadowMapLOD);
 		}
 		if(rf_drawCalls_printAll.getInt()) {
-			g_core->Print("Drawcall %i of %i: materials %s: bDrawOnDepthBuffer: %i, bDrawingSunShadowMap %i, bHasSunLight %i, sort %i\n",
-				i,numDrawCalls,c->material->getName(),c->drawOnlyOnDepthBuffer,c->bDrawingSunShadowMapPass,c->bHasSunLight,c->sort);
+			g_core->Print("Drawcall %i of %i: materials %s, tris %i, verts %i, bDrawOnDepthBuffer: %i, bDrawingSunShadowMap %i, bHasSunLight %i, sort %i\n",
+				i,numDrawCalls,c->getMatName(),c->getNumTris(),c->getNumVerts(),c->drawOnlyOnDepthBuffer,c->bDrawingSunShadowMapPass,c->bHasSunLight,c->sort);
 		}
 		// draw sky after mirror/portal materials
 		// this is a quick fix for maps with mirrors AND skies like q3dm0
@@ -507,6 +529,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		if(c->verts) {
 			// draw surface
 			rb->drawElements(*c->verts,*c->indices);
+			totalTris += c->getNumTris();
 		} else {
 			// draw shadow volume points
 			rb->drawIndexedShadowVolume(c->points,c->indices);
@@ -517,6 +540,13 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	if(prevEntity) {
 		rb->setupWorldSpace();
 		prevEntity = 0;
+	}
+
+	if(rf_drawCalls_printTotalTrianglesCount.getInt()) {
+		g_core->Print("Total drawcall triangles: %i\n",totalTris);
+	}
+	if(rf_drawCalls_printTotalDrawCallsCount.getInt()) {
+		g_core->Print("Total drawcalls: %i\n",numDrawCalls);
 	}
 }
 

@@ -1638,6 +1638,27 @@ r_surface_c *r_model_c::registerPlanarSurf(const char *matName, const vec3_c &p0
 }
 #include <renderer/rfSurfsFlagsArray.h>
 #include <renderer/rfSurfFlags.h>
+#include <math/frustumExt.h>
+void r_model_c::addDrawCallsCulled(const class frustumExt_c &f) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(f.cull(sf->getBB())== CULL_OUT) {
+			//g_core->Print("r_model_c::addDrawCallsCulled: culled surf %i\n",i);
+			continue;
+		}
+		sf->addDrawCall(0,0);
+	}
+}
+void r_model_c::addDrawCallsCulled(const class frustum_c &f) {
+	r_surface_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		if(f.cull(sf->getBB())== CULL_OUT) {
+			//g_core->Print("r_model_c::addDrawCallsCulled: culled surf %i\n",i);
+			continue;
+		}
+		sf->addDrawCall(0,0);
+	}
+}
 void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool useVertexColors, const vec3_c *extraRGB) {
 	if(extraSfFlags) {
 		r_surface_c *sf = surfs.getArray();

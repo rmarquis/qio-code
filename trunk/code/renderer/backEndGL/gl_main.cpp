@@ -2077,7 +2077,7 @@ drawOnlyLightmap:
 				// by default dont use vertex colors...
 				// (right now it overrides the setting from frontend)
 				bindVertexColors = false;
-				if(s->hasRGBGen() && (rb_ignoreRGBGens.getInt() != 0)) {
+				if(s->hasRGBGen() && (rb_ignoreRGBGens.getInt() == 0)) {
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
 						bindVertexColors = false;
 					} else if(s->getRGBGenType() == RGBGEN_VERTEX && (rb_ignoreRGBGenVertex.getInt() == 0)) {
@@ -2091,6 +2091,7 @@ drawOnlyLightmap:
 						float val = s->getRGBGenWaveValue(this->timeNowSeconds*0.001f);
 						byte valAsByte = val * 255.f;
 #if 1
+						// TODO: REWRITE IT TO USE GLSL SHADER IF AVAILABLE
 						bindVertexColors = true;
 						// copy vertices data (first big CPU bottleneck)
 						// (but only if we havent done this already)
@@ -2121,6 +2122,7 @@ drawOnlyLightmap:
 							}
 						}
 						// get the constant color
+						// TODO: REWRITE IT TO USE GLSL SHADER IF AVAILABLE
 						byteRGB_s col;
 						vec3_c colFloats;
 						s->getRGBGenConstantColor3f(colFloats);
@@ -2138,6 +2140,7 @@ drawOnlyLightmap:
 								g_core->Print("Copying %i vertices to draw material %s\n",verts.size(),lastMat->getName());
 							}
 						}
+						// TODO: REWRITE IT TO USE GLSL SHADER IF AVAILABLE
 						// get the constant color
 						byteRGB_s col;
 						vec3_c colFloats;

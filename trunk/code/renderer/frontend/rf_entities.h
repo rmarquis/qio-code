@@ -63,8 +63,12 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// for ragdolls
 	const class afDeclAPI_i *myRagdollDef;
 	class boneOrQPArray_t *ragOrs;
+	// V :used to avoid rebuilding ragdoll surfaces when no bones has moved
+	bool bRagdollOrientationDirty;
 	class boneOrArray_c *finalBones;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
+	// for each ragdoll body - a list of connected bone
+	arraySTD_c<arraySTD_c<u32>> bodyBoneBones;
 	// incremented every time absolute entity silhuette is changed
 	// used for shadow volumes creation
 	// (shadow volumes are rebuild only when it's changed)

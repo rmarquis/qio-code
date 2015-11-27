@@ -145,6 +145,7 @@ void rEntityImpl_c::recalcABSBounds() {
 		absBB.clear();
 		return;
 	}
+	aabb prevABSBounds = this->absBB;
 	// update abs bounds
 	if(myRagdollDef) {
 		this->absBB.fromHalfSize(999999.f); // TODO
@@ -159,8 +160,11 @@ void rEntityImpl_c::recalcABSBounds() {
 	this->bCenterLightSampleValid = (RF_SampleWorldLightGrid(this->absBB.getCenter(),this->centerLightSample)==false);
 	// increase shape change counter
 	absSilChangeCount++;
-	// get areas touching abs bounds (for portal culling)
-	RF_BoxAreas(absBB,touchingAreas);
+	// V: RF_BoxAreas might be expensive - do it only if bounds has changed
+	if(absBB.compare(prevABSBounds)==false) {
+		// get areas touching abs bounds (for portal culling)
+		RF_BoxAreas(absBB,touchingAreas);
+	}
 }
 void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles
@@ -458,11 +462,44 @@ void rEntityImpl_c::setRagdoll(const class afDeclAPI_i *af) {
 	ragOrs->resize(af->getNumBodies());
 	afRagdollHelper_c rh;
 	rh.calcBoneParentBody2BoneOfsets(af->getName(),boneParentBody2Bone);
+
+			
+	{
+		const afPublicData_s *af = this->myRagdollDef->getData();
+		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
+		// V: made those static, no sense to realloc memory every frame
+		static arraySTD_c<u32> refCounts;
+		// resize only if needed (don't do free/new every function call!)
+		if(refCounts.size() < skelModel->getNumBones()) {
+			refCounts.resize(skelModel->getNumBones());
+		}
+		refCounts.nullMemory();
+		bodyBoneBones.resize(af->bodies.size());
+		for(u32 i = 0; i < af->bodies.size(); i++) {
+			const afBody_s &b = af->bodies[i];
+			arraySTD_c<u32> &boneNumbers = bodyBoneBones[i];
+			boneNumbers.resize(0);//set size to 0 but don't free memory - reallocating is slow
+			UTIL_ContainedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim);
+			for(u32 j = 0; j < boneNumbers.size(); j++) {
+				int boneNum = boneNumbers[j];
+				if(refCounts[boneNum]) {
+					// it should NEVER happen
+					g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
+					continue;
+				}
+			}
+		}
+	}
 }
 void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) {
 	if(ragOrs == 0)
 		return;
-	(*ragOrs)[partIndex] = or;
+	class boneOrQP_c &s = (*ragOrs)[partIndex];
+	if(!s.compare(or)) {
+		bRagdollOrientationDirty = true; // force vertices update
+		s = or;
+	}
 }
 void rEntityImpl_c::updateAnimatedEntity() {
 	if(model == 0)
@@ -473,7 +510,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 	// or an instance of keyframed model (.md3, .mdc, .md2, etc...)
 	if(model->isSkeletal()) {
 		const skelModelAPI_i *skelModel = model->getSkelModelAPI();
-		const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
+		//const skelAnimAPI_i *anim = model->getDeclModelAFPoseAnim();
 		// ragdoll controlers ovverides all the animations
 		if(myRagdollDef && rf_dontUpdateRagdollAnimations.getInt() == 0) {
 			// HACK, USE WORLD TRANSFORMS
@@ -481,39 +518,33 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			rf_currentEntity = 0; 
 			setOrigin(vec3_c(0,0,0));
 			setAngles(vec3_c(0,0,0));
-			const afPublicData_s *af = this->myRagdollDef->getData();
 
-			// V: made those static, no sense to realloc memory every frame
-			static arraySTD_c<u32> refCounts;
-			static boneOrArray_c bones;
-			// resize only if needed (don't do free/new every function call!)
-			if(refCounts.size() < skelModel->getNumBones()) {
-				refCounts.resize(skelModel->getNumBones());
-				bones.resize(skelModel->getNumBones());
-			}
-			refCounts.nullMemory();
-			for(u32 i = 0; i < af->bodies.size(); i++) {
-				const afBody_s &b = af->bodies[i];
-				const boneOrQP_c &partOr = (*ragOrs)[i];
-				matrix_c bodyMat;
-				bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
-				static arraySTD_c<u32> boneNumbers;
-				boneNumbers.resize(0);//set size to 0 but don't free memory - reallocating is slow
-				UTIL_ContainedJointNamesArrayToJointIndexes(b.containedJoints,boneNumbers,anim);
-				for(u32 j = 0; j < boneNumbers.size(); j++) {
-					int boneNum = boneNumbers[j];
-					if(refCounts[boneNum]) {
-						// it should NEVER happen
-						g_core->RedWarning("Bone %i is referenced more than once in AF\n",boneNum);
-						continue;
-					}
-					refCounts[boneNum] ++;
-					const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
-					bones[boneNum].mat = bodyMat * bpb2b;
+			// V: recalculate only if something has changed
+			if(bRagdollOrientationDirty) {
+				bRagdollOrientationDirty = false;
+				const afPublicData_s *af = this->myRagdollDef->getData();
+
+				// V: made those static, no sense to realloc memory every frame
+				static boneOrArray_c bones;
+				// resize only if needed (don't do free/new every function call!)
+				if(bones.size() < skelModel->getNumBones()) {
+					bones.resize(skelModel->getNumBones());
 				}
+				for(u32 i = 0; i < af->bodies.size(); i++) {
+					const afBody_s &b = af->bodies[i];
+					const boneOrQP_c &partOr = (*ragOrs)[i];
+					matrix_c bodyMat;
+					bodyMat.fromQuatAndOrigin(partOr.getQuat(),partOr.getPos());
+					const arraySTD_c<u32> &boneNumbers = bodyBoneBones[i];
+					for(u32 j = 0; j < boneNumbers.size(); j++) {
+						int boneNum = boneNumbers[j];
+						const matrix_c &bpb2b = boneParentBody2Bone[boneNum];
+						bones[boneNum].mat = bodyMat * bpb2b;
+					}
+				}
+				// V: update vertex positions, normals, tangents and binormals (TBN approx)
+				instance->updateSkelModelInstance(skelModel,bones);	
 			}
-			// V: update vertex positions, normals, tangents and binormals (TBN approx)
-			instance->updateSkelModelInstance(skelModel,bones);	
 #if 0
 			// V: this very slow when there are many skeletal models in the scene.
 			// Right now we're using precomputed skel surfaces tangent/normals,
