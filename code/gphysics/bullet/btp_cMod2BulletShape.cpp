@@ -114,10 +114,15 @@ btBvhTriangleMeshShape *BT_CMSurfaceToBHV(const class cmSurface_c *sf) {
 	mesh->addIndexedMesh(subMesh);
 
 	btBvhTriangleMeshShape* shape;
+#if 0
 	if(sf->getNumTris() < 13) {
 		// dont build BHV for really small meshes
+		// V: FIXME! It is not working (there are no collisions with such surfaces)
+		// Tested on doom3 testmaps/test_boxstack.proc (12 triangles)
 		shape = new btBvhTriangleMeshShape(mesh,false,false);
-	} else {
+	} else 
+#endif
+	{
 		// this function is slow, so tell user what we're doing
 		if(sf->getNumTris() > 1024) {
 			g_core->Print("BT_CMSurfaceToBHV: building BVH for cmSurface with %i tris and %i vertices...\n",sf->getNumTris(),sf->getNumVerts());
