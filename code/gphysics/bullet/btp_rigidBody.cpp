@@ -66,7 +66,8 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 	bulletRigidBody = new btRigidBody(cInfo);
 	bulletRigidBody->setDamping(0.05, 0.85);
 	bulletRigidBody->setDeactivationTime(0.8);
-	bulletRigidBody->setSleepingThresholds(1.6, 2.5);
+#define SLEEPING_THRESHOLDS_SCALE 10.f
+	bulletRigidBody->setSleepingThresholds(1.6*SLEEPING_THRESHOLDS_SCALE, 2.5*SLEEPING_THRESHOLDS_SCALE);
 	//btShape->setMargin(0.f);
 	bulletRigidBody->setWorldTransform(startTransform);
 	bulletRigidBody->setRestitution(def.bounciness);

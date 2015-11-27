@@ -127,5 +127,6 @@ bool cmSurface_c::loadDoom3ProcFileWorldModel(const char *fname) {
 			g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: skipping unknown token %s in file %s at line %i\n",p.getToken(),fname,p.getCurrentLineNumber());
 		}
 	}
+	g_core->Print("cmSurface_c::loadDoom3ProcFileWorldModel: loaded %i tris from %s\n",getNumTris(),fname);
 	return false; // OK
 }

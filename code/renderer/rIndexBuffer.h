@@ -260,6 +260,19 @@ public:
 		}
 		return 0;
 	}
+	void deltaIndices(u32 ofs) {
+		if(type == IBO_U16) {
+			u16 *p = getU16Ptr();
+			for(u32 i = 0; i < numIndices; i++) {
+				p[i] += ofs;
+			}
+		} else if(type == IBO_U32){ 
+			u32 *p = getU32Ptr();
+			for(u32 i = 0; i < numIndices; i++) {
+				p[i] += ofs;
+			}
+		}
+	}
 	bool is32Bit() const {
 		return (type == IBO_U32);
 	}
@@ -271,6 +284,16 @@ public:
 	}
 	void *getArray() {
 		return data.getArray();
+	}
+	u32 *getU32Ptr() {
+		if(type != IBO_U32)
+			return 0;
+		return (u32*)data.getArray();
+	}
+	u16 *getU16Ptr() {
+		if(type != IBO_U16)
+			return 0;
+		return (u16*)data.getArray();
 	}
 	const u32 *getU32Ptr() const {
 		if(type != IBO_U32)
@@ -302,6 +325,12 @@ public:
 		if(data.size() == 0)
 			return 0;
 		return (void*)data.getArray();
+	}
+	void operator=(const rIndexBuffer_c &o) {
+		numIndices = o.numIndices;
+		data = o.data;
+		type = o.type;
+		handleU32 = 0;
 	}
 	void ensureAllocated_bytes(u32 numBytes) {
 		if(data.size() >= numBytes)

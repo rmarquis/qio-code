@@ -26,7 +26,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_local.h"
 #include "rf_model.h"
+#include "rf_drawCall.h"
 #include <api/coreAPI.h>
+#include <api/mtrAPI.h>
 #include <shared/parser.h>
 #include <shared/cmWinding.h>
 #include <shared/autoCvar.h>
@@ -39,6 +41,8 @@ static aCvar_c rf_proc_ignoreCullBounds("rf_proc_ignoreCullBounds","0");
 // use this to see if lights are being properly culled by .proc areaportals
 /*static*/ aCvar_c rf_proc_useProcDataToOptimizeLighting("rf_proc_useProcDataToOptimizeLighting","1");
 static aCvar_c rf_proc_printChoppedFrustums("rf_proc_printChoppedFrustums","0");
+// turned of for now
+static aCvar_c rf_proc_batchSurfaces("rf_proc_batchSurfaces","0");
 
 class procPortal_c {
 friend class procTree_c;
@@ -222,6 +226,65 @@ bool procTree_c::loadProcFile(const char *fname) {
 	g_core->RedWarning("procTree_c::loadProcFile: %s has %i models, %i areas, %i portals, and %i nodes\n",
 		fname,models.size(),areas.size(),portals.size(),nodes.size());
 
+
+	// create batches
+	batchAreas.resize(areas.size());
+	u32 totalAreaSurfaces = 0;
+	for(u32 i = 0; i < batchAreas.size(); i++) {
+		totalAreaSurfaces += areas[i]->areaModel->getNumSurfaces();
+	}
+	batchSurfaces.resize(totalAreaSurfaces);
+	u32 atSurface = 0;
+	for(u32 i = 0; i < batchAreas.size(); i++) {
+		pbArea_c &a = batchAreas[i];
+		a.firstSurface = atSurface;
+		const r_model_c *m = areas[i]->areaModel;
+		a.numSurfaces = m->getNumSurfaces();
+		for(u32 j = 0; j < m->getNumSurfaces(); j++) {
+			const r_surface_c *sf = m->getSurf(j);
+			u32 firstVert = batchVerts.size();
+			batchVerts.addArray(sf->getVerts().getArray2());
+			pbSurface_c &o = batchSurfaces[atSurface];
+			o.mat = sf->getMat();
+			// get the largest index value of this surface
+			// to determine if we can use U16 index buffer
+			u32 largestIndex = 0;
+			for(u32 k = 0; k < sf->getNumIndices(); k++) {
+				u32 idx = sf->getIndex(k) + firstVert;
+				if(idx > largestIndex) {
+					largestIndex = idx;
+				}
+			}
+			if(largestIndex + 1 < U16_MAX) {
+				o.indices = sf->getIndices();
+				o.indices.deltaIndices(firstVert);
+			} else {
+				o.indices = sf->getIndices();
+				o.indices.convertToU32Buffer();
+				o.indices.deltaIndices(firstVert);
+			}
+			o.indices.uploadToGPU();
+			atSurface++;
+		}
+
+	}
+	for(u32 i = 0; i < batchSurfaces.size(); i++) {
+		pbSurface_c *sf = &batchSurfaces[i];
+		bool bfound = false;
+		for(u32 j = 0; j < batches.size(); j++) {
+			if(batches[j].mat == sf->mat) {
+				batches[j].sfs.push_back(sf);
+				bfound = true;
+				break;
+			}
+		}
+		if(bfound==false) {
+			pbBatch_c &b = batches.pushBack();
+			b.mat = sf->mat;
+			b.sfs.push_back(sf);
+		}
+	}
+	batchVerts.uploadToGPU();
 	return false; // OK
 }
 #include <shared/readStream.h>
@@ -441,7 +504,13 @@ void procTree_c::addAreaDrawCalls_r(int areaNum, const frustumExt_c &fr, procPor
 		return;
 	if(ar->visCount != this->visCount) {
 		//drawAreaDrawCalls(ar);
-		ar->areaModel->addDrawCalls();
+		if(rf_proc_batchSurfaces.getInt() == 0) {
+			ar->areaModel->addDrawCallsCulled(fr);
+		} else {
+			for(u32 i = 0; i < batchAreas[areaNum].numSurfaces; i++) {
+				batchSurfaces[i+batchAreas[areaNum].firstSurface].visCount = visCount;
+			}
+		}
 		ar->visCount = this->visCount;
 	}
 	for(u32 i = 0; i < ar->portals.size(); i++) {
@@ -521,6 +590,51 @@ void procTree_c::addDrawCalls() {
 	}
 	frustumExt_c baseFrustum(rf_camera.getFrustum());
 	addAreaDrawCalls_r(camArea,baseFrustum,0);
+	if(rf_proc_batchSurfaces.getInt()) {
+#if 0
+		for(u32 i = 0; i < areas.size(); i++) {
+			if(areas[i]->visCount == visCount) {
+				const pbArea_c &ar = batchAreas[i];
+				for(u32 j = 0; j < ar.numSurfaces; j++) {
+					u32 sfNum = j+ar.firstSurface;
+					const pbSurface_c &sf = batchSurfaces[sfNum];
+					//g_core->Print("Adding for ar %i - surf %i\n",i,sfNum);
+					RF_AddDrawCall(&this->batchVerts,&sf.indices,sf.mat,0,sf.mat->getSort(),0,0,0);
+				}
+			}
+		}
+#else
+		for(u32 i = 0; i < batches.size(); i++) {
+			pbBatch_c &b = batches[i];
+			bool bShouldRebuild = false;
+			if(b.bVis.size() != b.sfs.size())
+				b.bVis.resize(b.sfs.size());
+			for(u32 j = 0; j < b.sfs.size(); j++) {
+				if(b.bVis[j] != (b.sfs[j]->visCount == visCount)) {
+					bShouldRebuild = true;
+					break;
+				}
+			}
+			if(bShouldRebuild==false) {
+				continue;
+			}
+			b.indices.setNullCount();
+			for(u32 j = 0; j < b.sfs.size(); j++) {
+				b.bVis[j] = (b.sfs[j]->visCount == visCount);
+				if(b.sfs[j]->visCount == visCount) {
+					b.indices.addIndexBuffer(b.sfs[j]->indices);
+				}
+			}
+			b.indices.uploadToGPU();
+		}
+		for(u32 i = 0; i < batches.size(); i++) {
+			pbBatch_c &b = batches[i];
+			if(b.indices.getNumIndices()) {
+				RF_AddDrawCall(&this->batchVerts,&b.indices,b.mat,0,b.mat->getSort(),0,0,0);
+			}
+		}
+#endif
+	}
 }
 #include <shared/trace.h>
 void procTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {

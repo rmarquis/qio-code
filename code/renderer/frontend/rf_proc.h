@@ -28,6 +28,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <shared/str.h>
 #include <math/plane.h>
+#include "../rVertexBuffer.h"
+#include "../rIndexBuffer.h"
 
 class procNode_c {
 friend class procTree_c;
@@ -53,6 +55,24 @@ friend class procTree_c;
 	class r_model_c *areaModel; // this is a pointer to model from procTree_c::models array
 };
 
+class pbArea_c {
+friend class procTree_c;
+	u32 firstSurface;
+	u32 numSurfaces;
+};
+class pbSurface_c {
+friend class procTree_c;
+	u32 visCount;
+	rIndexBuffer_c indices;
+	mtrAPI_i *mat;
+};
+class pbBatch_c {
+friend class procTree_c;
+	arraySTD_c<pbSurface_c*> sfs;
+	arraySTD_c<bool> bVis;
+	rIndexBuffer_c indices;
+	mtrAPI_i *mat;
+};
 class procTree_c {
 	str procFileName;
 
@@ -65,6 +85,14 @@ class procTree_c {
 	int litCount;
 	int checkCount;
 	int camArea;
+
+	// merged, derived data
+	// V: Batching is used in order to reduce the number of drawcalls.
+	// TODO: improve it, that's a very initial version
+	arraySTD_c<pbArea_c> batchAreas;
+	arraySTD_c<pbSurface_c> batchSurfaces;
+	arraySTD_c<pbBatch_c> batches;
+	rVertexBuffer_c batchVerts;
 
 	procArea_c *getArea(u32 areaNum) {
 		u32 needAreaCount = areaNum+1;
