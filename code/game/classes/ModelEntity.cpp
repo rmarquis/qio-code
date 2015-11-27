@@ -50,7 +50,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
 DEFINE_CLASS_ALIAS(ModelEntity, func_moveable);
-DEFINE_CLASS_ALIAS(ModelEntity, idMoveable);
 DEFINE_CLASS_ALIAS(ModelEntity, idAnimated);
 // load Doom3 game/pdas map to test it
 DEFINE_CLASS_ALIAS(ModelEntity, idMoveablePDAItem);

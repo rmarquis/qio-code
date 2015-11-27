@@ -88,7 +88,7 @@ public:
 		for(u32 i = 0; i < MAX_CACHED_REQUESTS; i++) {
 			if(stored[i].bInuse == false) {
 				useMe = &stored[i];
-				g_core->Print("Using unused slot %i\n",i);
+				//g_core->Print("Using unused slot %i\n",i);
 				break;
 			}
 		}

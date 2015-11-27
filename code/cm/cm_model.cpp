@@ -312,6 +312,16 @@ class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName) {
 	}
 	return 0;
 }
+void CM_CreateTriMesh(const char *modName, cmSurface_c *sf) {
+	cMod_i *existing = CM_FindModelInternal(modName);
+	if(existing) {
+		// TODO
+		g_core->DropError("TODO reload trimesh\n");
+	} else {
+		cmTriMesh_c *triMesh = new cmTriMesh_c(modName,sf);
+		cm_models.addObject(triMesh);
+	}
+}
 #if 1
 #define SWAP_TRIMESH_INDEXES
 #endif

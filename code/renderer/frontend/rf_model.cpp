@@ -178,6 +178,10 @@ bool model_c::getModelData(class staticModelCreatorAPI_i *out) const {
 	} else if(type == MOD_STATIC) {
 		this->staticModel->getModelData(out);
 		return false;
+	} else if(type == MOD_PROC) {
+		//this->myProcTree->getModelData(this->m
+		this->staticModel->getModelData(out);
+		return false;
 	}
 	return true;
 }

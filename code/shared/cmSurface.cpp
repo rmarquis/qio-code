@@ -27,6 +27,67 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <shared/parser.h>
 
+bool cmSurface_c::parseDoom3ProcModelData(class parser_c &p, const char *fname) {
+	u32 numSurfs = p.getInteger();
+	if(numSurfs) {
+		for(u32 i = 0; i < numSurfs; i++) {
+			int sky = -1;
+			if(p.atWord("{")==false) {
+				// check for extra 'sky' parameter used in Q4 proc files
+				str token = p.getToken();
+				if(token.isNumerical() && p.atWord("{")) {
+					sky = atoi(token);
+				} else {
+					g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '{' to follow \"model\"'s surface in file %s at line %i, found %s\n",
+						p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+					return true; // error
+				}
+			}
+			str matName = p.getToken();
+			u32 numSurfVerts = p.getInteger();
+			u32 numSurfIndices = p.getInteger();
+			u32 numPrevVerts = verts.size();
+			u32 numPrevIndices = indices.size();
+			// read verts
+			verts.resize(numPrevVerts+numSurfVerts);
+			vec3_c *sfVerts = verts.getArray() + numPrevVerts;
+			for(u32 i = 0; i < numSurfVerts; i++) {
+				if(p.atWord("(")==false) {
+					g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' to follow vertex %i in file %s at line %i, found %s\n",
+						i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+					return true; // error
+				}
+				p.getFloatMat(sfVerts[i],3);
+				vec2_c tc;
+				vec3_c normal;
+				p.getFloatMat(tc,2);
+				p.getFloatMat(normal,3);
+				if(p.atWord(")")==false) {
+					g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' after vertex %i in file %s at line %i, found %s\n",
+						i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+					return true; // error
+				}
+			}
+			// read triangles
+			indices.resize(numPrevIndices+numSurfIndices);
+			u32 *sfIndices = indices.getArray() + numPrevIndices;
+			for(u32 i = 0; i < numSurfIndices; i++) {
+				sfIndices[i] = numPrevVerts+p.getInteger();
+			}
+			if(p.atWord("}")==false) {
+				g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected closing '}' for \"model\"'s surface block in file %s at line %i, found %s\n",
+					p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+				return true; // error
+			}					
+		}
+	}
+	if(p.atWord("}")==false) {
+		g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected closing '}' for \"model\" block in file %s at line %i, found %s\n",
+			p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+		return true; // error
+	}	
+	return false;
+}
 // load vertices/triangles data directly from Doom3 .proc file
 bool cmSurface_c::loadDoom3ProcFileWorldModel(const char *fname) {
 	parser_c p;
@@ -58,64 +119,8 @@ bool cmSurface_c::loadDoom3ProcFileWorldModel(const char *fname) {
 				// skip curly braced block
 				p.skipCurlyBracedBlock(false);
 			} else {
-				u32 numSurfs = p.getInteger();
-				if(numSurfs) {
-					for(u32 i = 0; i < numSurfs; i++) {
-						int sky = -1;
-						if(p.atWord("{")==false) {
-							// check for extra 'sky' parameter used in Q4 proc files
-							str token = p.getToken();
-							if(token.isNumerical() && p.atWord("{")) {
-								sky = atoi(token);
-							} else {
-								g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '{' to follow \"model\"'s surface in file %s at line %i, found %s\n",
-									p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-								return true; // error
-							}
-						}
-						str matName = p.getToken();
-						u32 numSurfVerts = p.getInteger();
-						u32 numSurfIndices = p.getInteger();
-						u32 numPrevVerts = verts.size();
-						u32 numPrevIndices = indices.size();
-						// read verts
-						verts.resize(numPrevVerts+numSurfVerts);
-						vec3_c *sfVerts = verts.getArray() + numPrevVerts;
-						for(u32 i = 0; i < numSurfVerts; i++) {
-							if(p.atWord("(")==false) {
-								g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' to follow vertex %i in file %s at line %i, found %s\n",
-									i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-								return true; // error
-							}
-							p.getFloatMat(sfVerts[i],3);
-							vec2_c tc;
-							vec3_c normal;
-							p.getFloatMat(tc,2);
-							p.getFloatMat(normal,3);
-							if(p.atWord(")")==false) {
-								g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' after vertex %i in file %s at line %i, found %s\n",
-									i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-								return true; // error
-							}
-						}
-						// read triangles
-						indices.resize(numPrevIndices+numSurfIndices);
-						u32 *sfIndices = indices.getArray() + numPrevIndices;
-						for(u32 i = 0; i < numSurfIndices; i++) {
-							sfIndices[i] = numPrevVerts+p.getInteger();
-						}
-						if(p.atWord("}")==false) {
-							g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected closing '}' for \"model\"'s surface block in file %s at line %i, found %s\n",
-								p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-							return true; // error
-						}					
-					}
-				}
-				if(p.atWord("}")==false) {
-					g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected closing '}' for \"model\" block in file %s at line %i, found %s\n",
-						p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-					return true; // error
-				}			
+				if(parseDoom3ProcModelData(p,fname)) 
+					return true;
 			}
 		} else if(p.atWord("interAreaPortals")) {
 			p.skipCurlyBracedBlock();

@@ -13,6 +13,7 @@ class cMod_i *CM_RegisterModel(const char *modName);
 class cmSkelModel_i *CM_RegisterSkelModel(const char *skelModelName);
 void CM_AddCObjectBaseToHashTable(class cmObjectBase_c *newCMObject);
 void CM_FreeAllModels();
+void CM_CreateTriMesh(const char *modName, class cmSurface_c *sf);
 
 // cm_modelLoaderWrapper.cpp
 bool CM_LoadRenderModelToSingleSurface(const char *rModelName, class cmSurface_c &out); // returns true if model loading fails
@@ -35,5 +36,8 @@ bool CM_TraceWorldAABB(class trace_c &tr);
 
 // cm_phy.cpp - Source Engine .phy support
 class cMod_i *CM_LoadModelFromPHYFile(const char *fname);
+
+// cm_proc.cpp - Doom3 .proc world map loading
+bool CM_LoadProcSubModels(const char *mapName);
 
 #endif // __CM_LOCAL_H__

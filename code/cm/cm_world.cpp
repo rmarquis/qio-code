@@ -41,7 +41,8 @@ bool CM_LoadWorldMap(const char *mapName) {
 	}
 	path.setExtension("proc");
 	if(g_vfs->FS_FileExists(path)) {
-		// not needed now
+		// V: Doom3 moveable brush-models must be loaded here
+		CM_LoadProcSubModels(path);
 		return false;
 	}
 	path.setExtension("map");
