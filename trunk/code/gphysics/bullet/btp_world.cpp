@@ -166,6 +166,7 @@ physObjectAPI_i *bulletPhysicsWorld_c::createPhysicsObject(const struct physObje
 		
 		return 0;
 	}
+	g_core->Print("bulletPhysicsWorld_c::createPhysicsObject: cmodel %s\n",def.collisionModel->getName());
 	bool isStatic = (def.mass == 0.f);
 	bulletColShape_c *colShape = registerShape(def.collisionModel,isStatic);
 	if(colShape == 0) {

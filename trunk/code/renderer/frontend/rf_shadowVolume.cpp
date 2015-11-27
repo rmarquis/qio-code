@@ -180,7 +180,7 @@ void rIndexedShadowVolume_c::createShadowVolumeForEntity(class rEntityImpl_c *en
 	} else {
 		rModelAPI_i *modAPI = ent->getModel();
 		if(modAPI) {
-			if(modAPI->isInlineBSPModel()) {
+			if(modAPI->isInlineBSPModel() || modAPI->isInlinePROCModel()) {
 				r_model_c tmp;
 				modAPI->getModelData(&tmp);
 				//tmp.transform(ent->getMatrix());

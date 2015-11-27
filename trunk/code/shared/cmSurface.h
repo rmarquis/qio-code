@@ -343,6 +343,7 @@ public:
 			out->addXYZTri(v0,v1,v2);
 		}
 	}
+	bool parseDoom3ProcModelData(class parser_c &p, const char *fname);
 	// load vertices/triangles data directly from Doom3 .proc file
 	bool loadDoom3ProcFileWorldModel(const char *fname);
 

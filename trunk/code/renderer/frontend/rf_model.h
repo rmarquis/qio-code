@@ -100,6 +100,11 @@ public:
 			return true;
 		return false;
 	}
+	virtual bool isInlinePROCModel() const {
+		if(type == MOD_PROC)
+			return true;
+		return false;
+	}
 	virtual bool isDeclModel() const {
 		if(type == MOD_DECL)
 			return true;

@@ -577,6 +577,7 @@ void procTree_c::addDrawCalls() {
 		// V: this happens on Doom3 testmaps/boxstack.proc,
 		// it's a single room with no nodes and no portals
 		camArea = 0;
+		areas[camArea]->visCount = this->visCount;
 		if(rf_proc_printCamArea.getInt()) {
 			g_core->Print("camera is in area %i of %i\n",camArea,areas.size());
 		}
