@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
+Copyright (C) 2012-2015 V.
 
 This file is part of Quake III Arena source code.
 
@@ -25,6 +26,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <assert.h>
 #include "qe3.h"
 #include "winding.h"
+#include <shared/typedefs.h>
+#include <api/materialSystemAPI.h>
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/textureAPI.h>
 
 
 // globals
@@ -3315,12 +3321,18 @@ void Brush_Draw( brush_s *b )
 			//--glEnable (GL_BLEND);
 		}
 #endif
+
+		mtrAPI_i *temp = g_ms->registerMaterial(face->d_texture->name);
 		
 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
 		{
 			// set the texture for this face
 			prev = face->d_texture;
-			glBindTexture( GL_TEXTURE_2D, face->d_texture->texture_number );
+			//glBindTexture( GL_TEXTURE_2D, face->d_texture->texture_number );
+
+			const mtrStageAPI_i *s = temp->getFirstColorMapStage();
+			u32 h = s->getTexture(0)->getInternalHandleU32();
+			glBindTexture( GL_TEXTURE_2D, h );
 		}
 		
 		

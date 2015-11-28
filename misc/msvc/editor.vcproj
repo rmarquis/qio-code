@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;MSVC2008_EXPRESS_EDITION_HACK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"

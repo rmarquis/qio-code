@@ -548,6 +548,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\cmSurface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cmTriSoupOctTree.cpp"
 				>
 			</File>

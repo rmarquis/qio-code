@@ -647,6 +647,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Moveable.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Moveable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Player.cpp"
 				>
 			</File>
