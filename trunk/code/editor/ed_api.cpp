@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/editorAPI.h>
 #include <shared/autoCvar.h>
+#include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
 
 
@@ -139,6 +140,7 @@ vfsAPI_s *g_vfs = 0;
 coreAPI_s *g_core = 0;
 rAPI_i *rf = 0;
 rbAPI_i *rb = 0;
+materialSystemAPI_i *g_ms = 0;
 // exports
 static edIMPL_c g_staticEditorAPI;
 editorAPI_i *g_editor = &g_staticEditorAPI;
@@ -156,6 +158,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 
 }
 

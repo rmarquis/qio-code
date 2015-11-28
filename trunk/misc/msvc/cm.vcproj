@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\cm\cm_proc.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\cm\cm_world.cpp"
 				>
 			</File>
@@ -279,6 +283,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\cmBrush.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cmSurface.h"
 				>
 			</File>
 			<File
