@@ -1,0 +1,2507 @@
+Index: q3radiant/Brush.cpp
+===================================================================
+--- q3radiant/Brush.cpp	(revision 443)
++++ q3radiant/Brush.cpp	(working copy)
+@@ -537,7 +537,7 @@
+ 	if (g_qeglobals.d_savedinfo.show_names)
+ 	{
+ 		name = ValueForKey (b->owner, "classname");
+-		qglRasterPos3f (b->mins[0]+4, b->mins[1]+4, b->mins[2]+4);
++		qglRasterPos3f (b->getMins()[0]+4, b->getMins()[1]+4, b->getMins()[2]+4);
+ 		qglCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
+ 	}
+ }
+@@ -2348,8 +2348,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	mins = b->mins;
+-	maxs = b->maxs;
++	mins = b->getMins();
++	maxs = b->getMaxs();
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -2628,8 +2628,7 @@
+   	n = Brush_Alloc();
+    	n->numberId = g_nBrushId++;
+ 		n->owner = b->owner;
+-		n->mins = b->mins;
+-		n->maxs = b->maxs;
++		n->bounds = b->bounds;
+ 		//
+ 		for (f = b->brush_faces; f; f = f->next)
+ 		{
+@@ -3074,8 +3073,7 @@
+ 		Brush_SnapPlanepts( b );
+ 
+ 	// clear the mins/maxs bounds
+-	b->mins[0] = b->mins[1] = b->mins[2] = 99999;
+-	b->maxs[0] = b->maxs[1] = b->maxs[2] = -99999;
++	b->bounds.clear();
+ 
+ 	Brush_MakeFacePlanes (b);
+ 
+@@ -3096,14 +3094,7 @@
+ 		for (i=0 ; i<w->numpoints ; i++)
+ 		{
+ 			// add to bounding box
+-			for (j=0 ; j<3 ; j++)
+-			{
+-				v = w->points[i][j];
+-				if (v > b->maxs[j])
+-					b->maxs[j] = v;
+-				if (v < b->mins[j])
+-					b->mins[j] = v;
+-			}
++			b->bounds.addPoint(w->points[i].getXYZ());
+ 		}
+ 		// setup s and t vectors, and set color
+ 		//if (!g_PrefsDlg.m_bGLLighting)
+@@ -3204,7 +3195,7 @@
+ 	// get center of the brush
+ 	for (int j = 0; j < 3; j++)
+ 	{
+-		vMid[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
++		vMid[j] = b->getMins()[j] + abs((b->getMaxs()[j] - b->getMins()[j]) * 0.5);
+ 	}
+ 	// calc distance between centers
+ 	vMid = vNewCenter - vMid;
+@@ -3572,8 +3563,8 @@
+ 		{
+ 			qglColor3fv(pEclass->color);
+ 
+-			edVec3_c mins = b->mins;
+-			edVec3_c maxs = b->maxs;
++			edVec3_c mins = b->getMins();
++			edVec3_c maxs = b->getMaxs();
+ 			/*
+ 			if (a)
+ 			{
+@@ -3688,13 +3679,13 @@
+ 	edVec3_c	start;
+ 	float	dist;
+ 
+-	start = (e->brushes.onext->mins + e->brushes.onext->maxs) * 0.5f;
+-	dist = (b->maxs[0] - start[0]) * 2.5;
++	start = (e->brushes.onext->getMins() + e->brushes.onext->getMaxs()) * 0.5f;
++	dist = (b->getMaxs()[0] - start[0]) * 2.5;
+ 
+ 	FacingVectors (e, forward, right, up);
+ 	endpoint.vectorMA (start, dist, forward);
+ 
+-	dist = (b->maxs[0] - start[0]) * 0.5;
++	dist = (b->getMaxs()[0] - start[0]) * 0.5;
+ 	tip1.vectorMA (endpoint, -dist, forward);
+ 	tip1.vectorMA (tip1, -dist, up);
+ 	tip2.vectorMA (tip1, 2*dist, up);
+@@ -3735,32 +3726,32 @@
+ 	qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);
+ 
+ 	vec3_t vCorners[4];
+-	float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
++	float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
+ 
+-	vCorners[0][0] = b->mins[0];
+-	vCorners[0][1] = b->mins[1];
++	vCorners[0][0] = b->getMins()[0];
++	vCorners[0][1] = b->getMins()[1];
+ 	vCorners[0][2] = fMid;
+ 
+-	vCorners[1][0] = b->mins[0];
+-	vCorners[1][1] = b->maxs[1];
++	vCorners[1][0] = b->getMins()[0];
++	vCorners[1][1] = b->getMaxs()[1];
+ 	vCorners[1][2] = fMid;
+ 
+-	vCorners[2][0] = b->maxs[0];
+-	vCorners[2][1] = b->maxs[1];
++	vCorners[2][0] = b->getMaxs()[0];
++	vCorners[2][1] = b->getMaxs()[1];
+ 	vCorners[2][2] = fMid;
+ 
+-	vCorners[3][0] = b->maxs[0];
+-	vCorners[3][1] = b->mins[1];
++	vCorners[3][0] = b->getMaxs()[0];
++	vCorners[3][1] = b->getMins()[1];
+ 	vCorners[3][2] = fMid;
+ 
+ 	edVec3_c vTop, vBottom;
+ 
+-	vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
+-	vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
+-	vTop[2] = b->maxs[2];
++	vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
++	vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
++	vTop[2] = b->getMaxs()[2];
+ 
+ 	vBottom = vTop;
+-	vBottom[2] = b->mins[2];
++	vBottom[2] = b->getMins()[2];
+ 
+ 	edVec3_c vSave = vTriColor;
+ 	int i;
+@@ -4032,32 +4023,32 @@
+ 		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->nShowFlags & ECLASS_LIGHT))
+ 		{
+ 			vec3_t vCorners[4];
+-			float fMid = b->mins[2] + (b->maxs[2] - b->mins[2]) / 2;
++			float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
+ 
+-			vCorners[0][0] = b->mins[0];
+-			vCorners[0][1] = b->mins[1];
++			vCorners[0][0] = b->getMins()[0];
++			vCorners[0][1] = b->getMins()[1];
+ 			vCorners[0][2] = fMid;
+ 
+-			vCorners[1][0] = b->mins[0];
+-			vCorners[1][1] = b->maxs[1];
++			vCorners[1][0] = b->getMins()[0];
++			vCorners[1][1] = b->getMaxs()[1];
+ 			vCorners[1][2] = fMid;
+ 
+-			vCorners[2][0] = b->maxs[0];
+-			vCorners[2][1] = b->maxs[1];
++			vCorners[2][0] = b->getMaxs()[0];
++			vCorners[2][1] = b->getMaxs()[1];
+ 			vCorners[2][2] = fMid;
+ 
+-			vCorners[3][0] = b->maxs[0];
+-			vCorners[3][1] = b->mins[1];
++			vCorners[3][0] = b->getMaxs()[0];
++			vCorners[3][1] = b->getMins()[1];
+ 			vCorners[3][2] = fMid;
+ 
+ 			edVec3_c vTop, vBottom;
+ 
+-			vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
+-			vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
+-			vTop[2] = b->maxs[2];
++			vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
++			vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
++			vTop[2] = b->getMaxs()[2];
+ 
+ 			vBottom = vTop;
+-			vBottom[2] = b->mins[2];
++			vBottom[2] = b->getMins()[2];
+ 
+ 			qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+ 			qglBegin(GL_TRIANGLE_FAN);
+@@ -4222,8 +4213,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	mins = b->mins;
+-	maxs = b->maxs;
++	mins = b->getMins();
++	maxs = b->getMaxs();
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -4314,8 +4305,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	mins = b->mins;
+-	maxs = b->maxs;
++	mins = b->getMins();
++	maxs = b->getMaxs();
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -4386,7 +4377,7 @@
+ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
+ {
+ 	winding_t *w;
+-	edVec3_c   mins,maxs;
++	edAABB_c bounds;
+ 	int i;
+ 	float width, height, temp;
+ 	float rot_width, rot_height;
+@@ -4406,7 +4397,7 @@
+ 		nWidth = 1;
+ 	}
+ 
+-	ClearBounds (mins, maxs);
++	bounds.clear();
+ 
+ 	td = &face->texdef;
+ 	w = face->face_winding;
+@@ -4416,7 +4407,7 @@
+ 	}
+ 	for (i=0 ; i<w->numpoints ; i++)
+ 	{
+-		AddPointToBounds( w->points[i], mins, maxs );
++		bounds.addPoint(w->points[i]);
+ 	}
+ 	// 
+ 	// get the current angle
+@@ -4428,10 +4419,10 @@
+ 	// get natural texture axis
+ 	TextureAxisFromPlane(face->plane, vecs[0], vecs[1]);
+ 
+-	min_s = mins.dotProduct(vecs[0]);
+-	min_t = mins.dotProduct(vecs[1]);
+-	max_s = maxs.dotProduct(vecs[0]);
+-	max_t = maxs.dotProduct(vecs[1]);
++	min_s = bounds.getMins().dotProduct(vecs[0]);
++	min_t = bounds.getMins().dotProduct(vecs[1]);
++	max_s = bounds.getMaxs().dotProduct(vecs[0]);
++	max_t = bounds.getMaxs().dotProduct(vecs[1]);
+ 	width = max_s - min_s;
+ 	height = max_t - min_t;
+ 	coords[0][0] = min_s;
+Index: q3radiant/CamWnd.cpp
+===================================================================
+--- q3radiant/CamWnd.cpp	(revision 443)
++++ q3radiant/CamWnd.cpp	(working copy)
+@@ -666,7 +666,7 @@
+ 		point[2] = m_Camera.origin[2] - fLevel;
+ 
+ 		for (i=0; i<3; i++)
+-			if (b->mins[i] < point[i] && b->maxs[i] < point[i])
++			if (b->getMins()[i] < point[i] && b->getMaxs()[i] < point[i])
+ 				return true;
+ 
+ 		point[0] = m_Camera.origin[0] + fLevel;
+@@ -674,13 +674,13 @@
+ 		point[2] = m_Camera.origin[2] + fLevel;
+ 	
+ 		for (i=0; i<3; i++)
+-			if (b->mins[i] > point[i] && b->maxs[i] > point[i])
++			if (b->getMins()[i] > point[i] && b->getMaxs()[i] > point[i])
+ 				return true;
+ 	}
+ 
+ 
+ 	for (i=0 ; i<3 ; i++)
+-		point[i] = b->mins[m_nCullv1[i]] - m_Camera.origin[i];
++		point[i] = b->getMins()[m_nCullv1[i]] - m_Camera.origin[i];
+ 
+ 	d = point.dotProduct(m_vCull1);
+ 	if (d < -1)
+@@ -687,7 +687,7 @@
+ 		return true;
+ 
+ 	for (i=0 ; i<3 ; i++)
+-		point[i] = b->mins[m_nCullv2[i]] - m_Camera.origin[i];
++		point[i] = b->getMins()[m_nCullv2[i]] - m_Camera.origin[i];
+ 
+ 	d = point.dotProduct(m_vCull2);
+ 	if (d < -1)
+Index: q3radiant/CSG.CPP
+===================================================================
+--- q3radiant/CSG.CPP	(revision 443)
++++ q3radiant/CSG.CPP	(working copy)
+@@ -98,8 +98,8 @@
+ 	// check for bounding box overlapp
+ 	for (i = 0; i < 3; i++)
+ 	{
+-		if (brush1->mins[i] > brush2->maxs[i] + ON_EPSILON
+-				|| brush1->maxs[i] < brush2->mins[i] - ON_EPSILON)
++		if (brush1->getMins()[i] > brush2->getMaxs()[i] + ON_EPSILON
++				|| brush1->getMaxs()[i] < brush2->getMins()[i] - ON_EPSILON)
+ 		{
+ 			// never merge if the brushes overlap
+ 			return NULL;
+@@ -496,8 +496,8 @@
+ 			snext = s->next;
+ 
+ 			for (i=0 ; i<3 ; i++)
+-				if (b->mins[i] >= s->maxs[i] - ON_EPSILON 
+-				|| b->maxs[i] <= s->mins[i] + ON_EPSILON)
++				if (b->getMins()[i] >= s->getMaxs()[i] - ON_EPSILON 
++				|| b->getMaxs()[i] <= s->getMins()[i] + ON_EPSILON)
+ 					break;
+ 			if (i != 3)
+ 				continue;	// definately don't touch
+@@ -534,8 +534,8 @@
+ 			}
+ 
+ 			for (i=0 ; i<3 ; i++)
+-				if (b->mins[i] >= s->maxs[i] - ON_EPSILON 
+-				|| b->maxs[i] <= s->mins[i] + ON_EPSILON)
++				if (b->getMins()[i] >= s->getMaxs()[i] - ON_EPSILON 
++				|| b->getMaxs()[i] <= s->getMins()[i] + ON_EPSILON)
+ 					break;
+ 			if (i != 3)
+ 				continue;	// definately don't touch
+Index: q3radiant/DRAG.CPP
+===================================================================
+--- q3radiant/DRAG.CPP	(revision 443)
++++ q3radiant/DRAG.CPP	(working copy)
+@@ -387,8 +387,8 @@
+ 		t = Test_Ray (origin, dir, false);
+ 		if (t.face)
+ 		{
+-			g_qeglobals.d_new_brush_bottom_z = t.brush->mins[2];
+-			g_qeglobals.d_new_brush_top_z = t.brush->maxs[2];
++			g_qeglobals.d_new_brush_bottom_z = t.brush->getMins()[2];
++			g_qeglobals.d_new_brush_top_z = t.brush->getMaxs()[2];
+ 			// use a local brushprimit_texdef fitted to a default 2x2 texture
+ 			brushprimit_texdef_t bp_local;
+ 			ConvertTexMatWithQTexture( &t.face->brushprimit_texdef, t.face->d_texture, &bp_local, NULL );
+@@ -638,18 +638,18 @@
+ 		//	VectorAdd (g_qeglobals.d_move_points2[i], move, g_qeglobals.d_move_points2[i]);
+ 		for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
+ 		{
+-			vTemp = b->maxs - b->mins;
++			vTemp = b->getMaxs() - b->getMins();
+ 			Brush_Build( b );
+ 			for (i=0 ; i<3 ; i++)
+-				if (b->mins[i] > b->maxs[i]
+-				|| b->maxs[i] - b->mins[i] > MAX_BRUSH_SIZE)
++				if (b->getMins()[i] > b->getMaxs()[i]
++				|| b->getMaxs()[i] - b->getMins()[i] > MAX_BRUSH_SIZE)
+ 					break;	// dragged backwards or fucked up
+ 			if (i != 3)
+ 				break;
+ 			if (b->patchBrush)
+ 			{
+-				vTemp2 = b->maxs;
+-				vTemp2 = vTemp2 - b->mins;
++				vTemp2 = b->getMaxs();
++				vTemp2 = vTemp2 - b->getMins();
+ 				vTemp2 = vTemp2 - vTemp;
+ 				//if (!Patch_DragScale(b->nPatchID, vTemp2, move))
+ 				if (!Patch_DragScale(b->pPatch, vTemp2, move))
+@@ -661,7 +661,7 @@
+ 
+ 			if (b->terrainBrush)
+ 			{
+-				vTemp2 = b->maxs - b->mins;
++				vTemp2 = b->getMaxs() - b->getMins();
+ 				vTemp2 -= vTemp;
+ 				if (!Terrain_DragScale(b->pTerrain, vTemp2, move))
+ 				{
+Index: q3radiant/ENTITY.CPP
+===================================================================
+--- q3radiant/ENTITY.CPP	(revision 443)
++++ q3radiant/ENTITY.CPP	(working copy)
+@@ -494,7 +494,7 @@
+ 		}
+ 		else
+ 		{
+-			origin = e->brushes.onext->mins - e->eclass->mins;
++			origin = e->brushes.onext->getMins() - e->eclass->mins;
+ 		}
+ 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -563,7 +563,7 @@
+     }
+     else
+     {
+-		  origin = e->brushes.onext->mins - e->eclass->mins;
++		  origin = e->brushes.onext->getMins() - e->eclass->mins;
+     }
+     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -621,7 +621,7 @@
+     }
+     else
+     {
+-		  origin =  e->brushes.onext->mins - e->eclass->mins;
++		  origin =  e->brushes.onext->getMins() - e->eclass->mins;
+     }
+     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -698,7 +698,7 @@
+ 		//
+ 		b = selected_brushes.next;
+ 		for (i=0 ; i<3 ; i++)
+-			e->origin[i] = b->mins[i] - c->mins[i];
++			e->origin[i] = b->getMins()[i] - c->mins[i];
+ 
+ 		// create a custom brush
+ 		mins = c->mins + e->origin;
+Index: q3radiant/MAP.CPP
+===================================================================
+--- q3radiant/MAP.CPP	(revision 443)
++++ q3radiant/MAP.CPP	(working copy)
+@@ -166,7 +166,7 @@
+   bool bTiny = false;
+ 	for (int i=0 ; i<3 ; i++)
+ 	{
+-    if (b->maxs[i] - b->mins[i] < fSize)
++    if (b->getMaxs()[i] - b->getMins()[i] < fSize)
+       bTiny = true;
+   }
+   if (bTiny)
+@@ -630,9 +630,9 @@
+ 
+ 	for (i=0 ; i<3 ; i++)
+ 	{
+-		if (b->mins[i] > region_maxs[i])
++		if (b->getMins()[i] > region_maxs[i])
+ 			return true;
+-		if (b->maxs[i] < region_mins[i])
++		if (b->getMaxs()[i] < region_mins[i])
+ 			return true;
+ 	}
+ 	return false;
+@@ -762,8 +762,8 @@
+ 
+ 	Map_RegionOff ();
+ 
+-	region_mins = b->mins;
+-	region_maxs = b->maxs;
++	region_mins = b->getMins();
++	region_maxs = b->getMaxs();
+ 	region_mins[2] = MIN_WORLD_COORD;
+ 	region_maxs[2] = MAX_WORLD_COORD;
+ 
+@@ -787,8 +787,8 @@
+ 
+ 	Map_RegionOff ();
+ 
+-	region_mins = b->mins;
+-	region_maxs = b->maxs;
++	region_mins = b->getMins();
++	region_maxs = b->getMaxs();
+ 
+ 	Select_Delete ();
+ 	Map_ApplyRegion ();
+Index: q3radiant/MATHLIB.CPP
+===================================================================
+--- q3radiant/MATHLIB.CPP	(revision 443)
++++ q3radiant/MATHLIB.CPP	(working copy)
+@@ -96,26 +96,5 @@
+ 	out[2] = in[2];
+ }
+ 
+-// NOTE: added these from Ritual's Q3Radiant
+-void ClearBounds (vec3_t mins, vec3_t maxs)
+-{
+-	mins[0] = mins[1] = mins[2] = 99999;
+-	maxs[0] = maxs[1] = maxs[2] = -99999;
+-}
+ 
+-void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
+-{
+-	int		i;
+-	vec_t	val;
+-	
+-	for (i=0 ; i<3 ; i++)
+-	{
+-		val = v[i];
+-		if (val < mins[i])
+-			mins[i] = val;
+-		if (val > maxs[i])
+-			maxs[i] = val;
+-	}
+-}
+ 
+-
+Index: q3radiant/MATHLIB.H
+===================================================================
+--- q3radiant/MATHLIB.H	(revision 443)
++++ q3radiant/MATHLIB.H	(working copy)
+@@ -73,6 +73,11 @@
+ 		_v[1] = b;
+ 		_v[2] = c;
+ 	}
++	void set(float abc) {
++		_v[0] = abc;
++		_v[1] = abc;
++		_v[2] = abc;
++	}
+ 	float vectorLength() const {
+ 		float length = 0.0f;
+ 		for (int i = 0; i < 3; i++)
+@@ -172,12 +177,12 @@
+ 	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
+ 		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
+ 	}
++	friend edVec3_c operator -(const edVec3_c &a, const edVec3_c &b) {
++		return edVec3_c(a.x-b.x,a.y-b.y,a.z-b.z);
++	}
+ 	friend edVec3_c operator *(const edVec3_c &a, float b) {
+ 		return edVec3_c(a.x*b,a.y*b,a.z*b);
+ 	}
+-	edVec3_c operator -(const edVec3_c &other) const {
+-		return edVec3_c(x-other.x,y-other.y,z-other.z);
+-	}
+ 	edVec3_c operator -() const {
+ 		return edVec3_c(-x,-y,-z);
+ 	}
+@@ -205,10 +210,6 @@
+ #define	SIDE_BACK		1
+ #define	SIDE_CROSS		-2
+ 
+-#ifdef M_PI
+-#define	M_PI	3.14159265358979323846
+-#endif 
+-
+ vec_t Q_rint (vec_t in);
+ 
+ void _Vector53Copy (vec5_t in, vec3_t out);
+@@ -215,12 +216,39 @@
+ void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out);
+ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
+ 
+-// NOTE: added these from Ritual's Q3Radiant
+-void ClearBounds (vec3_t mins, vec3_t maxs);
+-void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
++#include <float.h>
+ 
+-//void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+-//void VectorToAngles( vec3_t vec, vec3_t angles );
++class edAABB_c {
++	edVec3_c mins;
++	edVec3_c maxs;
++public:
++	void clear(float inf = FLT_MAX) {
++		mins.set(inf);
++		maxs.set(-inf);
++	}
++	void addPoint(const float *p) {
++		for(int i = 0; i < 3; i++) {
++			float f = p[i];
++			if(f < mins[i])
++				mins[i] = f;
++			if(f > maxs[i])
++				maxs[i] = f;
++		}
++	}
++	edVec3_c getSizes() const {
++		return maxs - mins;
++	}
++	void addBox(const edAABB_c &bb) {
++		addPoint(bb.getMins());
++		addPoint(bb.getMaxs());
++	}
++	const edVec3_c &getMaxs() const {
++		return maxs;
++	}
++	const edVec3_c &getMins() const {
++		return mins;
++	}
++};
+ 
+ #define ZERO_EPSILON 1.0E-6
+ #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+Index: q3radiant/PMESH.CPP
+===================================================================
+--- q3radiant/PMESH.CPP	(revision 443)
++++ q3radiant/PMESH.CPP	(working copy)
+@@ -1476,20 +1476,20 @@
+   {
+     p->type = PATCH_BEVEL;
+     p->width = 3;
+-    int nStep = (b->maxs[2] - b->mins[2]) / (p->height-1);
+-    int nStart = b->mins[2];
++    int nStep = (b->getMaxs()[2] - b->getMins()[2]) / (p->height-1);
++    int nStart = b->getMins()[2];
+     for (i = 0; i < p->height; i++)
+     {
+-	    p->ctrl[0][i].xyz[0] =  b->mins[0];
+-	    p->ctrl[0][i].xyz[1] =  b->mins[1];
++	    p->ctrl[0][i].xyz[0] =  b->getMins()[0];
++	    p->ctrl[0][i].xyz[1] =  b->getMins()[1];
+       p->ctrl[0][i].xyz[2] = nStart;
+ 
+-	    p->ctrl[1][i].xyz[0] =  b->maxs[0];
+-	    p->ctrl[1][i].xyz[1] =  b->mins[1];
++	    p->ctrl[1][i].xyz[0] =  b->getMaxs()[0];
++	    p->ctrl[1][i].xyz[1] =  b->getMins()[1];
+       p->ctrl[1][i].xyz[2] = nStart;
+ 
+-	    p->ctrl[2][i].xyz[0] =  b->maxs[0];
+-	    p->ctrl[2][i].xyz[1] =  b->maxs[1];
++	    p->ctrl[2][i].xyz[0] =  b->getMaxs()[0];
++	    p->ctrl[2][i].xyz[1] =  b->getMaxs()[1];
+       p->ctrl[2][i].xyz[2] = nStart;
+       nStart += nStep;
+     }
+@@ -1498,28 +1498,28 @@
+   {
+     p->type = PATCH_ENDCAP;
+     p->width = 5;
+-    int nStep = (b->maxs[2] - b->mins[2]) / (p->height-1);
+-    int nStart = b->mins[2];
++    int nStep = (b->getMaxs()[2] - b->getMins()[2]) / (p->height-1);
++    int nStart = b->getMins()[2];
+     for (i = 0; i < p->height; i++)
+     {
+-	    p->ctrl[0][i].xyz[0] =  b->mins[0];
+-	    p->ctrl[0][i].xyz[1] =  b->mins[1];
++	    p->ctrl[0][i].xyz[0] =  b->getMins()[0];
++	    p->ctrl[0][i].xyz[1] =  b->getMins()[1];
+       p->ctrl[0][i].xyz[2] = nStart;
+ 
+-	    p->ctrl[1][i].xyz[0] =  b->mins[0];
+-	    p->ctrl[1][i].xyz[1] =  b->maxs[1];
++	    p->ctrl[1][i].xyz[0] =  b->getMins()[0];
++	    p->ctrl[1][i].xyz[1] =  b->getMaxs()[1];
+       p->ctrl[1][i].xyz[2] = nStart;
+ 
+-	    p->ctrl[2][i].xyz[0] =  b->mins[0] + ((b->maxs[0] - b->mins[0]) * 0.5);
+-	    p->ctrl[2][i].xyz[1] =  b->maxs[1];
++	    p->ctrl[2][i].xyz[0] =  b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) * 0.5);
++	    p->ctrl[2][i].xyz[1] =  b->getMaxs()[1];
+       p->ctrl[2][i].xyz[2] = nStart;
+ 	   
+-      p->ctrl[3][i].xyz[0] =  b->maxs[0];
+-	    p->ctrl[3][i].xyz[1] =  b->maxs[1];
++      p->ctrl[3][i].xyz[0] =  b->getMaxs()[0];
++	    p->ctrl[3][i].xyz[1] =  b->getMaxs()[1];
+       p->ctrl[3][i].xyz[2] = nStart;
+ 
+-	    p->ctrl[4][i].xyz[0] =  b->maxs[0];
+-	    p->ctrl[4][i].xyz[1] =  b->mins[1];
++	    p->ctrl[4][i].xyz[0] =  b->getMaxs()[0];
++	    p->ctrl[4][i].xyz[1] =  b->getMins()[1];
+       p->ctrl[4][i].xyz[2] = nStart;
+       nStart += nStep;
+     }
+@@ -1527,26 +1527,26 @@
+   else
+   {
+     p->width = 9;
+-	  p->ctrl[1][0].xyz[0] =  b->mins[0];
+-	  p->ctrl[1][0].xyz[1] =  b->mins[1];
++	  p->ctrl[1][0].xyz[0] =  b->getMins()[0];
++	  p->ctrl[1][0].xyz[1] =  b->getMins()[1];
+ 
+-	  p->ctrl[3][0].xyz[0] =  b->maxs[0];
+-	  p->ctrl[3][0].xyz[1] =  b->mins[1];
++	  p->ctrl[3][0].xyz[0] =  b->getMaxs()[0];
++	  p->ctrl[3][0].xyz[1] =  b->getMins()[1];
+ 
+-	  p->ctrl[5][0].xyz[0] =  b->maxs[0];
+-	  p->ctrl[5][0].xyz[1] =  b->maxs[1];
++	  p->ctrl[5][0].xyz[0] =  b->getMaxs()[0];
++	  p->ctrl[5][0].xyz[1] =  b->getMaxs()[1];
+ 
+-	  p->ctrl[7][0].xyz[0] =  b->mins[0];
+-	  p->ctrl[7][0].xyz[1] =  b->maxs[1];
++	  p->ctrl[7][0].xyz[0] =  b->getMins()[0];
++	  p->ctrl[7][0].xyz[1] =  b->getMaxs()[1];
+ 
+ 	  for ( i = 1 ; i < p->width - 1 ; i += 2 ) 
+     {
+ 
+-      p->ctrl[i][0].xyz[2] =  b->mins[2];
++      p->ctrl[i][0].xyz[2] =  b->getMins()[2];
+ 
+ 		  p->ctrl[i][2].xyz = p->ctrl[i][0].xyz;
+ 
+-		  p->ctrl[i][2].xyz[2] =  b->maxs[2];
++		  p->ctrl[i][2].xyz[2] =  b->getMaxs()[2];
+ 
+ 		  p->ctrl[i][1].xyz[0] = ( p->ctrl[i][0].xyz[0] + p->ctrl[i][2].xyz[0] ) * 0.5;
+ 		  p->ctrl[i][1].xyz[1] = ( p->ctrl[i][0].xyz[1] + p->ctrl[i][2].xyz[1] ) * 0.5;
+@@ -1600,8 +1600,8 @@
+   if (bCone)
+   {
+     p->type = PATCH_CONE;
+-    float xc = (b->maxs[0] + b->mins[0]) * 0.5; 
+-    float yc = (b->maxs[1] + b->mins[1]) * 0.5; 
++    float xc = (b->getMaxs()[0] + b->getMins()[0]) * 0.5; 
++    float yc = (b->getMaxs()[1] + b->getMins()[1]) * 0.5; 
+ 
+     for ( i = 0 ; i < p->width ; i ++)
+     {
+@@ -1724,13 +1724,13 @@
+ 
+ 	brush_t *b = selected_brushes.next;
+ 
+-  int xStep = b->mins[nFirst];
+-  float xAdj = abs((b->maxs[nFirst] - b->mins[nFirst]) / (nWidth - 1));
+-  float yAdj = abs((b->maxs[nSecond] - b->mins[nSecond]) / (nHeight - 1));
++  int xStep = b->getMins()[nFirst];
++  float xAdj = abs((b->getMaxs()[nFirst] - b->getMins()[nFirst]) / (nWidth - 1));
++  float yAdj = abs((b->getMaxs()[nSecond] - b->getMins()[nSecond]) / (nHeight - 1));
+ 
+   for (i = 0; i < nWidth; i++)
+   {
+-    int yStep = b->mins[nSecond];
++    int yStep = b->getMins()[nSecond];
+     for (j = 0; j < nHeight; j++)
+     {
+       p->ctrl[i][j].xyz[nFirst] = xStep;
+Index: q3radiant/QERTYPES.H
+===================================================================
+--- q3radiant/QERTYPES.H	(revision 443)
++++ q3radiant/QERTYPES.H	(working copy)
+@@ -380,7 +380,7 @@
+ 	struct brush_s	*prev, *next;	// links in active/selected
+ 	struct brush_s	*oprev, *onext;	// links in entity
+ 	struct entity_s	*owner;
+-	edVec3_c	mins, maxs;
++	edAABB_c bounds;
+ 	face_t     *brush_faces;
+ 
+ 	bool bModelFailed;
+@@ -414,6 +414,15 @@
+ 	// brush primitive only
+ 	epair_t *epairs;
+ 
++	const edAABB_c &getBounds() const {
++		return bounds;
++	}
++	const edVec3_c &getMins() const {
++		return bounds.getMins();
++	}
++	const edVec3_c &getMaxs() const {
++		return bounds.getMaxs();
++	}
+ } brush_t;
+ 
+ 
+Index: q3radiant/Radiant.vcproj
+===================================================================
+--- q3radiant/Radiant.vcproj	(revision 439)
++++ q3radiant/Radiant.vcproj	(working copy)
+@@ -223,6 +223,31 @@
+ 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+ 			>
+ 			<File
++				RelativePath="brush.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="brush_primit.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -323,6 +348,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="csg.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="DialogInfo.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -423,6 +473,56 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="drag.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="eclass.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="EditWnd.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -448,6 +548,10 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath=".\ENTITY.CPP"
++				>
++			</File>
++			<File
+ 				RelativePath="EntityListDlg.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -523,6 +627,56 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="IShaders.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="lbmlib.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="LstToolBar.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -573,6 +727,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="map.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="MapInfo.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -598,6 +777,56 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="mathlib.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="mru.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="NameDlg.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -648,6 +877,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="parse.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="PatchDensityDlg.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -723,6 +977,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="points.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="PrefsDlg.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -748,6 +1027,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="qe3.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="qgl_win.c"
+ 				>
+ 				<FileConfiguration
+@@ -879,6 +1183,31 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="select.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
+ 				RelativePath="ShaderInfo.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -956,6 +1285,35 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
++				RelativePath="terrain.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="terrain.h"
++				>
++			</File>
++			<File
+ 				RelativePath="TexEdit.cpp"
+ 				>
+ 				<FileConfiguration
+@@ -1081,7 +1439,7 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="WaveOpen.cpp"
++				RelativePath="vertsel.cpp"
+ 				>
+ 				<FileConfiguration
+ 					Name="Release|Win32"
+@@ -1106,7 +1464,7 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="Winding.cpp"
++				RelativePath="WaveOpen.cpp"
+ 				>
+ 				<FileConfiguration
+ 					Name="Release|Win32"
+@@ -1131,7 +1489,7 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="XYWnd.cpp"
++				RelativePath="win_dlg.cpp"
+ 				>
+ 				<FileConfiguration
+ 					Name="Release|Win32"
+@@ -1156,7 +1514,7 @@
+ 				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="ZWnd.cpp"
++				RelativePath="win_ent.cpp"
+ 				>
+ 				<FileConfiguration
+ 					Name="Release|Win32"
+@@ -1180,543 +1538,156 @@
+ 					/>
+ 				</FileConfiguration>
+ 			</File>
+-			<Filter
+-				Name="QE4 Files"
++			<File
++				RelativePath="win_main.cpp"
+ 				>
+-				<File
+-					RelativePath="brush.cpp"
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="csg.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="drag.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="win_qe3.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="eclass.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="entity.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="Winding.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="lbmlib.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="map.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="XYWnd.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="mathlib.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="mru.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="z.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="parse.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="points.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="ZWnd.cpp"
++				>
++				<FileConfiguration
++					Name="Release|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="qe3.cpp"
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="2"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Debug|Win32"
+ 					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="select.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="terrain.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="terrain.h"
+-					>
+-				</File>
+-				<File
+-					RelativePath="vertsel.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="win_dlg.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="win_ent.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="win_main.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="win_qe3.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-				<File
+-					RelativePath="z.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-			</Filter>
+-			<Filter
+-				Name="interfaces"
+-				>
+-				<File
+-					RelativePath="IShaders.cpp"
+-					>
+-					<FileConfiguration
+-						Name="Release|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="2"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-						/>
+-					</FileConfiguration>
+-					<FileConfiguration
+-						Name="Debug|Win32"
+-						>
+-						<Tool
+-							Name="VCCLCompilerTool"
+-							Optimization="0"
+-							AdditionalIncludeDirectories=""
+-							PreprocessorDefinitions=""
+-							BrowseInformation="1"
+-						/>
+-					</FileConfiguration>
+-				</File>
+-			</Filter>
++					<Tool
++						Name="VCCLCompilerTool"
++						Optimization="0"
++						AdditionalIncludeDirectories=""
++						PreprocessorDefinitions=""
++						BrowseInformation="1"
++					/>
++				</FileConfiguration>
++			</File>
+ 		</Filter>
+ 		<Filter
+ 			Name="Header Files"
+@@ -1940,11 +1911,11 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="res\q.bmp"
++				RelativePath="q.bmp"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="q.bmp"
++				RelativePath="res\q.bmp"
+ 				>
+ 			</File>
+ 			<File
+@@ -1976,11 +1947,11 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="toolbar1.bmp"
++				RelativePath="res\toolbar1.bmp"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="res\toolbar1.bmp"
++				RelativePath="toolbar1.bmp"
+ 				>
+ 			</File>
+ 			<File
+Index: q3radiant/SELECT.CPP
+===================================================================
+--- q3radiant/SELECT.CPP	(revision 443)
++++ q3radiant/SELECT.CPP	(working copy)
+@@ -400,10 +400,10 @@
+ 	clearSelection();
+ 
+ 	// grab top / bottom height for new brushes
+-	if (b->mins[2] < b->maxs[2])
++	if (b->getMins()[2] < b->getMaxs()[2])
+ 	{
+-		g_qeglobals.d_new_brush_bottom_z = b->mins[2];
+-		g_qeglobals.d_new_brush_top_z = b->maxs[2];
++		g_qeglobals.d_new_brush_bottom_z = b->getMins()[2];
++		g_qeglobals.d_new_brush_top_z = b->getMaxs()[2];
+ 	}
+ 
+ 	selected_brushes.next->prev = &active_brushes;
+@@ -602,10 +602,10 @@
+ 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+ 		for (i=0 ; i<3 ; i++)
+ 		{
+-			if (b->mins[i] < mins[i])
+-				mins[i] = b->mins[i];
+-			if (b->maxs[i] > maxs[i])
+-				maxs[i] = b->maxs[i];
++			if (b->getMins()[i] < mins[i])
++				mins[i] = b->getMins()[i];
++			if (b->getMaxs()[i] > maxs[i])
++				maxs[i] = b->getMaxs()[i];
+ 		}
+ }
+ 
+@@ -1048,8 +1048,8 @@
+ 
+ 	clearSelection();
+ 
+-	mins = selected_brushes.next->mins;
+-	maxs = selected_brushes.next->maxs;
++	mins = selected_brushes.next->getMins();
++	maxs = selected_brushes.next->getMaxs();
+ 	Select_Delete ();
+ 
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -1059,8 +1059,8 @@
+ 	{
+ 		next = b->next;
+ 
+-    if ( (b->maxs[nDim1] > maxs[nDim1] || b->mins[nDim1] < mins[nDim1]) 
+-      || (b->maxs[nDim2] > maxs[nDim2] || b->mins[nDim2] < mins[nDim2]) )
++    if ( (b->getMaxs()[nDim1] > maxs[nDim1] || b->getMins()[nDim1] < mins[nDim1]) 
++      || (b->getMaxs()[nDim2] > maxs[nDim2] || b->getMins()[nDim2] < mins[nDim2]) )
+       continue;
+ 
+ 	 	if (FilterBrush (b))
+@@ -1094,8 +1094,8 @@
+ 
+ 	clearSelection();
+ 
+-	mins = selected_brushes.next->mins;
+-	maxs = selected_brushes.next->maxs;
++	mins = selected_brushes.next->getMins();
++	maxs = selected_brushes.next->getMaxs();
+ 	Select_Delete ();
+ 
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -1105,8 +1105,8 @@
+ 	{
+ 		next = b->next;
+ 
+-    if ( (b->mins[nDim1] > maxs[nDim1] || b->maxs[nDim1] < mins[nDim1]) 
+-      || (b->mins[nDim2] > maxs[nDim2] || b->maxs[nDim2] < mins[nDim2]) )
++    if ( (b->getMins()[nDim1] > maxs[nDim1] || b->getMaxs()[nDim1] < mins[nDim1]) 
++      || (b->getMins()[nDim2] > maxs[nDim2] || b->getMaxs()[nDim2] < mins[nDim2]) )
+       continue;
+ 
+ 	 	if (FilterBrush (b))
+@@ -1142,8 +1142,8 @@
+ 
+ 	clearSelection();
+ 
+-	 mins = selected_brushes.next->mins;
+-	maxs = selected_brushes.next->maxs;
++	 mins = selected_brushes.next->getMins();
++	maxs = selected_brushes.next->getMaxs();
+ 
+ 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
+ 	{
+@@ -1153,7 +1153,7 @@
+ 	 		continue;
+ 
+ 		for (i=0 ; i<3 ; i++)
+-			if (b->mins[i] > maxs[i]+1 || b->maxs[i] < mins[i]-1)
++			if (b->getMins()[i] > maxs[i]+1 || b->getMaxs()[i] < mins[i]-1)
+ 				break;
+ 
+ 		if (i == 3)
+@@ -1176,8 +1176,8 @@
+ 
+ 	clearSelection();
+ 
+-	mins = selected_brushes.next->mins;
+-	maxs = selected_brushes.next->maxs;
++	mins = selected_brushes.next->getMins();
++	maxs = selected_brushes.next->getMaxs();
+ 	Select_Delete ();
+ 
+ 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
+@@ -1188,7 +1188,7 @@
+ 	 		continue;
+ 
+ 		for (i=0 ; i<3 ; i++)
+-			if (b->maxs[i] > maxs[i] || b->mins[i] < mins[i])
++			if (b->getMaxs()[i] > maxs[i] || b->getMins()[i] < mins[i])
+ 				break;
+ 		if (i == 3)
+ 		{
+Index: q3radiant/terrain.cpp
+===================================================================
+--- q3radiant/terrain.cpp	(revision 443)
++++ q3radiant/terrain.cpp	(working copy)
+@@ -375,10 +375,10 @@
+ 	}
+ 
+ 	p = MakeNewTerrain( g_qeglobals.d_terrainWidth + 1, g_qeglobals.d_terrainHeight + 1, b->brush_faces->d_texture );
+-	p->scale_x = ( b->maxs[ 0 ] - b->mins[ 0 ] ) / float( p->width - 1 );
+-	p->scale_y = ( b->maxs[ 1 ] - b->mins[ 1 ] ) / float( p->height - 1 );
++	p->scale_x = ( b->getMaxs()[ 0 ] - b->getMins()[ 0 ] ) / float( p->width - 1 );
++	p->scale_y = ( b->getMaxs()[ 1 ] - b->getMins()[ 1 ] ) / float( p->height - 1 );
+ 
+-	p->origin =  b->mins;
++	p->origin =  b->getMins();
+ 
+ 	b = AddBrushForTerrain( p );
+ 	Select_Delete();
+Index: q3radiant/WIN_DLG.CPP
+===================================================================
+--- q3radiant/WIN_DLG.CPP	(revision 436)
++++ q3radiant/WIN_DLG.CPP	(working copy)
+@@ -340,13 +340,13 @@
+ 	for (i=0 ; i<3 ; i++)
+   {
+     if (g_pParentWnd->GetXYWnd())
+-      g_pParentWnd->GetXYWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
++      g_pParentWnd->GetXYWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
+ 
+     if (g_pParentWnd->GetXZWnd())
+-      g_pParentWnd->GetXZWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
++      g_pParentWnd->GetXZWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
+     
+     if (g_pParentWnd->GetYZWnd())
+-      g_pParentWnd->GetYZWnd()->GetOrigin()[i] = (b->mins[i] + b->maxs[i])/2;
++      g_pParentWnd->GetYZWnd()->GetOrigin()[i] = (b->getMins()[i] + b->getMaxs()[i])/2;
+   }
+ 
+ 	Sys_Status ("Selected.", 0);
+Index: q3radiant/XYWnd.cpp
+===================================================================
+--- q3radiant/XYWnd.cpp	(revision 443)
++++ q3radiant/XYWnd.cpp	(working copy)
+@@ -518,27 +518,27 @@
+         {
+           if (m_nViewType == XY)
+           {
+-            face.planepts[0][2] = selected_brushes.next->mins[2];
+-            face.planepts[1][2] = selected_brushes.next->mins[2];
++            face.planepts[0][2] = selected_brushes.next->getMins()[2];
++            face.planepts[1][2] = selected_brushes.next->getMins()[2];
+             face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
+             face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
+-            face.planepts[2][2] = selected_brushes.next->maxs[2];
++            face.planepts[2][2] = selected_brushes.next->getMaxs()[2];
+           }
+           else if (m_nViewType == YZ)
+           {
+-            face.planepts[0][0] = selected_brushes.next->mins[0];
+-            face.planepts[1][0] = selected_brushes.next->mins[0];
++            face.planepts[0][0] = selected_brushes.next->getMins()[0];
++            face.planepts[1][0] = selected_brushes.next->getMins()[0];
+             face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
+             face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
+-            face.planepts[2][0] = selected_brushes.next->maxs[0];
++            face.planepts[2][0] = selected_brushes.next->getMaxs()[0];
+           }
+           else
+           {
+-            face.planepts[0][1] = selected_brushes.next->mins[1];
+-            face.planepts[1][1] = selected_brushes.next->mins[1];
++            face.planepts[0][1] = selected_brushes.next->getMins()[1];
++            face.planepts[1][1] = selected_brushes.next->getMins()[1];
+             face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
+             face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
+-            face.planepts[2][1] = selected_brushes.next->maxs[1];
++            face.planepts[2][1] = selected_brushes.next->getMaxs()[1];
+           }
+         }
+ 
+@@ -605,27 +605,27 @@
+ 				{
+ 					if (g_pParentWnd->ActiveXY()->GetViewType() == XY)
+ 					{
+-						face.planepts[0][2] = pBrush->mins[2];
+-						face.planepts[1][2] = pBrush->mins[2];
++						face.planepts[0][2] = pBrush->getMins()[2];
++						face.planepts[1][2] = pBrush->getMins()[2];
+ 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
+ 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
+-						face.planepts[2][2] = pBrush->maxs[2];
++						face.planepts[2][2] = pBrush->getMaxs()[2];
+ 					}
+ 					else if (g_pParentWnd->ActiveXY()->GetViewType() == YZ)
+ 					{
+-						face.planepts[0][0] = pBrush->mins[0];
+-						face.planepts[1][0] = pBrush->mins[0];
++						face.planepts[0][0] = pBrush->getMins()[0];
++						face.planepts[1][0] = pBrush->getMins()[0];
+ 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
+ 						face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
+-						face.planepts[2][0] = pBrush->maxs[0];
++						face.planepts[2][0] = pBrush->getMaxs()[0];
+ 					}
+ 					else
+ 					{
+-						face.planepts[0][1] = pBrush->mins[1];
+-						face.planepts[1][1] = pBrush->mins[1];
++						face.planepts[0][1] = pBrush->getMins()[1];
++						face.planepts[1][1] = pBrush->getMins()[1];
+ 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
+ 						face.planepts[2][2] = Betwixt(g_Clip1.m_ptClip[2], g_Clip2.m_ptClip[2]);
+-						face.planepts[2][1] = pBrush->maxs[1];
++						face.planepts[2][1] = pBrush->getMaxs()[1];
+ 					}
+ 				}
+ 				Brush_SplitBrushByFace (pBrush, &face, &pFront, &pBack);
+@@ -1168,7 +1168,7 @@
+ 				edVec3_c mins, maxs;
+ 				edVec3_c origin;
+ 				for (int i=0 ; i<3 ; i++)
+-					origin[i] = b->mins[i] - pecNew->mins[i];
++					origin[i] = b->getMins()[i] - pecNew->mins[i];
+ 				
+ 				mins = pecNew->mins + origin;
+ 				maxs = pecNew->maxs + origin;
+@@ -2543,10 +2543,10 @@
+ 				continue;
+ 
+ 			for (i=0 ; i<3 ; i++)
+-				mid[i] = (sb->mins[i] + sb->maxs[i])*0.5; 
++				mid[i] = (sb->getMins()[i] + sb->getMaxs()[i])*0.5; 
+ 
+ 			for (i=0 ; i<3 ; i++)
+-				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
++				mid1[i] = (tb->getMins()[i] + tb->getMaxs()[i])*0.5; 
+ 
+ 			dir = mid1 - mid;
+ 			len = dir.normalize();
+@@ -2586,10 +2586,10 @@
+ 
+ // can be greatly simplified but per usual i am in a hurry 
+ // which is not an excuse, just a fact
+-void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds)
++void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds)
+ {
+ 
+-  edVec3_c vSize = vMaxBounds - vMinBounds;
++  edVec3_c vSize = bounds.getSizes();
+ 
+   qglColor3f(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][0] * .65, 
+             g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][1] * .65,
+@@ -2599,37 +2599,37 @@
+   {
+ 		qglBegin (GL_LINES);
+ 
+-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale, 0.0f);
+-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale, 0.0f);
+ 
+-    qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale, 0.0f);
+-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale, 0.0f);
+ 
+-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale, 0.0f);
+-    qglVertex3f(vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale, 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale, 0.0f);
+   
+ 
+-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
+ 
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2], 0.0f);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
+   
+-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2], 0.0f);
+ 
+     qglEnd();
+ 
+-    qglRasterPos3f (Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]),  vMinBounds[nDim2] - 20.0  / m_fScale, 0.0f);
++    qglRasterPos3f (Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]),  bounds.getMins()[nDim2] - 20.0  / m_fScale, 0.0f);
+     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+     
+-    qglRasterPos3f (vMaxBounds[nDim1] + 16.0  / m_fScale, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]), 0.0f);
++    qglRasterPos3f (bounds.getMaxs()[nDim1] + 16.0  / m_fScale, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]), 0.0f);
+     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+-    qglRasterPos3f (vMinBounds[nDim1] + 4, vMaxBounds[nDim2] + 8 / m_fScale, 0.0f);
+-    g_strDim.Format(g_pOrgStrings[0], vMinBounds[nDim1], vMaxBounds[nDim2]);
++    qglRasterPos3f (bounds.getMins()[nDim1] + 4, bounds.getMaxs()[nDim2] + 8 / m_fScale, 0.0f);
++    g_strDim.Format(g_pOrgStrings[0], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+   }
+@@ -2638,37 +2638,37 @@
+   {
+ 		qglBegin (GL_LINES);
+ 
+-    qglVertex3f(vMinBounds[nDim1], 0, vMinBounds[nDim2] - 6.0f  / m_fScale);
+-    qglVertex3f(vMinBounds[nDim1], 0, vMinBounds[nDim2] - 10.0f / m_fScale);
++    qglVertex3f(bounds.getMins()[nDim1], 0, bounds.getMins()[nDim2] - 6.0f  / m_fScale);
++    qglVertex3f(bounds.getMins()[nDim1], 0, bounds.getMins()[nDim2] - 10.0f / m_fScale);
+ 
+-    qglVertex3f(vMinBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f  / m_fScale);
+-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f  / m_fScale);
++    qglVertex3f(bounds.getMins()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f  / m_fScale);
++    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f  / m_fScale);
+ 
+-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 6.0f  / m_fScale);
+-    qglVertex3f(vMaxBounds[nDim1], 0,vMinBounds[nDim2] - 10.0f / m_fScale);
++    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 6.0f  / m_fScale);
++    qglVertex3f(bounds.getMaxs()[nDim1], 0,bounds.getMins()[nDim2] - 10.0f / m_fScale);
+   
+ 
+-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, 0,vMinBounds[nDim2]);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMinBounds[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
+ 
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMinBounds[nDim2]);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMaxBounds[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMins()[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
+   
+-    qglVertex3f(vMaxBounds[nDim1] + 6.0f  / m_fScale, 0,vMaxBounds[nDim2]);
+-    qglVertex3f(vMaxBounds[nDim1] + 10.0f  / m_fScale, 0,vMaxBounds[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
++    qglVertex3f(bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, 0,bounds.getMaxs()[nDim2]);
+ 
+     qglEnd();
+ 
+-    qglRasterPos3f (Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]), 0, vMinBounds[nDim2] - 20.0  / m_fScale);
++    qglRasterPos3f (Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]), 0, bounds.getMins()[nDim2] - 20.0  / m_fScale);
+     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+     
+-    qglRasterPos3f (vMaxBounds[nDim1] + 16.0  / m_fScale, 0, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]));
++    qglRasterPos3f (bounds.getMaxs()[nDim1] + 16.0  / m_fScale, 0, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]));
+     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+-    qglRasterPos3f (vMinBounds[nDim1] + 4, 0, vMaxBounds[nDim2] + 8 / m_fScale);
+-    g_strDim.Format(g_pOrgStrings[1], vMinBounds[nDim1], vMaxBounds[nDim2]);
++    qglRasterPos3f (bounds.getMins()[nDim1] + 4, 0, bounds.getMaxs()[nDim2] + 8 / m_fScale);
++    g_strDim.Format(g_pOrgStrings[1], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+   }
+@@ -2676,37 +2676,37 @@
+   {
+ 		qglBegin (GL_LINES);
+ 
+-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale);
+-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale);
++    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale);
++    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale);
+ 
+-    qglVertex3f(0, vMinBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale);
+-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f  / m_fScale);
++    qglVertex3f(0, bounds.getMins()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale);
++    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f  / m_fScale);
+ 
+-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 6.0f  / m_fScale);
+-    qglVertex3f(0, vMaxBounds[nDim1], vMinBounds[nDim2] - 10.0f / m_fScale);
++    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 6.0f  / m_fScale);
++    qglVertex3f(0, bounds.getMaxs()[nDim1], bounds.getMins()[nDim2] - 10.0f / m_fScale);
+   
+ 
+-    qglVertex3f(0, vMaxBounds[nDim1] + 6.0f  / m_fScale, vMinBounds[nDim2]);
+-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMins()[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2]);
+ 
+-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMinBounds[nDim2]);
+-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMins()[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2]);
+   
+-    qglVertex3f(0, vMaxBounds[nDim1] + 6.0f  / m_fScale, vMaxBounds[nDim2]);
+-    qglVertex3f(0, vMaxBounds[nDim1] + 10.0f  / m_fScale, vMaxBounds[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 6.0f  / m_fScale, bounds.getMaxs()[nDim2]);
++    qglVertex3f(0, bounds.getMaxs()[nDim1] + 10.0f  / m_fScale, bounds.getMaxs()[nDim2]);
+ 
+     qglEnd();
+ 
+-    qglRasterPos3f (0, Betwixt(vMinBounds[nDim1], vMaxBounds[nDim1]),  vMinBounds[nDim2] - 20.0  / m_fScale);
++    qglRasterPos3f (0, Betwixt(bounds.getMins()[nDim1], bounds.getMaxs()[nDim1]),  bounds.getMins()[nDim2] - 20.0  / m_fScale);
+     g_strDim.Format(g_pDimStrings[nDim1], vSize[nDim1]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+     
+-    qglRasterPos3f (0, vMaxBounds[nDim1] + 16.0  / m_fScale, Betwixt(vMinBounds[nDim2], vMaxBounds[nDim2]));
++    qglRasterPos3f (0, bounds.getMaxs()[nDim1] + 16.0  / m_fScale, Betwixt(bounds.getMins()[nDim2], bounds.getMaxs()[nDim2]));
+     g_strDim.Format(g_pDimStrings[nDim2], vSize[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+-    qglRasterPos3f (0, vMinBounds[nDim1] + 4.0, vMaxBounds[nDim2] + 8 / m_fScale);
+-    g_strDim.Format(g_pOrgStrings[2], vMinBounds[nDim1], vMaxBounds[nDim2]);
++    qglRasterPos3f (0, bounds.getMins()[nDim1] + 4.0, bounds.getMaxs()[nDim2] + 8 / m_fScale);
++    g_strDim.Format(g_pOrgStrings[2], bounds.getMins()[nDim1], bounds.getMaxs()[nDim2]);
+ 	  qglCallLists (g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
+ 
+   }
+@@ -2804,10 +2804,10 @@
+ 
+ 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
+ 	{
+-		if (brush->mins[nDim1] > maxs[0] || 
+-        brush->mins[nDim2] > maxs[1] || 
+-        brush->maxs[nDim1] < mins[0] || 
+-        brush->maxs[nDim2] < mins[1])
++		if (brush->getMins()[nDim1] > maxs[0] || 
++        brush->getMins()[nDim2] > maxs[1] || 
++        brush->getMaxs()[nDim1] < mins[0] || 
++        brush->getMaxs()[nDim2] < mins[1])
+ 		{
+ 		  culled++;
+ 		  continue;		// off screen
+@@ -2886,10 +2886,8 @@
+   }
+ 	qglLineWidth (2);
+ 
+-  vec3_t vMinBounds;
+-  vec3_t vMaxBounds;
+-  vMinBounds[0] = vMinBounds[1] = vMinBounds[2] = 9999.9f;
+-  vMaxBounds[0] = vMaxBounds[1] = vMaxBounds[2] = -9999.9f;
++	edAABB_c bounds;
++  bounds.clear();
+ 
+   int nSaveDrawn = drawn;
+   bool bFixedSize = false;
+@@ -2904,13 +2902,7 @@
+         bFixedSize = true;
+       if (g_PrefsDlg.m_bSizePaint)
+       {
+-        for (i = 0; i < 3; i ++)
+-        {
+-          if (brush->mins[i] < vMinBounds[i])
+-            vMinBounds[i] = brush->mins[i];
+-          if (brush->maxs[i] > vMaxBounds[i])
+-            vMaxBounds[i] = brush->maxs[i];
+-        }
++			bounds.addBox(brush->getBounds());
+       }
+     }
+ 	}
+@@ -2922,7 +2914,7 @@
+ 	qglLineWidth (1);
+ 
+   if (!bFixedSize && !RotateMode() && !ScaleMode() && drawn - nSaveDrawn > 0 && g_PrefsDlg.m_bSizePaint)
+-    PaintSizeInfo(nDim1, nDim2, vMinBounds, vMaxBounds);
++    PaintSizeInfo(nDim1, nDim2, bounds);
+ 
+ 
+ 	// edge / vertex flags
+@@ -3174,8 +3166,8 @@
+   brush_t* b = selected_brushes.next;
+   if (b && b->next != b)
+   {
+-	  m_vOrigin[nDim1] = b->mins[nDim1];
+-	  m_vOrigin[nDim2] = b->mins[nDim2];
++	  m_vOrigin[nDim1] = b->getMins()[nDim1];
++	  m_vOrigin[nDim2] = b->getMins()[nDim2];
+   }
+   else
+   {
+Index: q3radiant/XYWnd.h
+===================================================================
+--- q3radiant/XYWnd.h	(revision 443)
++++ q3radiant/XYWnd.h	(working copy)
+@@ -205,7 +205,7 @@
+   void ProduceSplits(brush_t** pFront, brush_t** pBack);
+   void ProduceSplitLists();
+   void HandleDrop();
+-  void PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds);
++  void PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds);
+ 
+   void OnEntityCreate(unsigned int nID);
+   CPoint m_ptDown;
+Index: q3radiant/Z.CPP
+===================================================================
+--- q3radiant/Z.CPP	(revision 443)
++++ q3radiant/Z.CPP	(working copy)
+@@ -74,7 +74,7 @@
+ 	b = selected_brushes.next;
+ 	if (b && b != &selected_brushes)
+ 	{
+-		org[0] = (b->mins[0] + b->maxs[0])/2;
++		org[0] = (b->getMins()[0] + b->getMaxs()[0])/2;
+ 	}
+ 
+ 	dir[0] = 0; dir[1] = 1; dir[2] = 0;
+@@ -347,10 +347,10 @@
+ 
+ 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
+ 	{
+-		if (brush->mins[0] >= z.origin[0]
+-			|| brush->maxs[0] <= z.origin[0]
+-			|| brush->mins[1] >= z.origin[1]
+-			|| brush->maxs[1] <= z.origin[1])
++		if (brush->getMins()[0] >= z.origin[0]
++			|| brush->getMaxs()[0] <= z.origin[0]
++			|| brush->getMins()[1] >= z.origin[1]
++			|| brush->getMaxs()[1] <= z.origin[1])
+ 			continue;
+ 
+ 		if (!Brush_Ray (org_top, dir_down, brush, &top))
+@@ -383,10 +383,10 @@
+ 	//
+ 	for (brush = selected_brushes.next ; brush != &selected_brushes ; brush=brush->next)
+ 	{
+-		if ( !(brush->mins[0] >= z.origin[0]
+-			|| brush->maxs[0] <= z.origin[0]
+-			|| brush->mins[1] >= z.origin[1]
+-			|| brush->maxs[1] <= z.origin[1]) )
++		if ( !(brush->getMins()[0] >= z.origin[0]
++			|| brush->getMaxs()[0] <= z.origin[0]
++			|| brush->getMins()[1] >= z.origin[1]
++			|| brush->getMaxs()[1] <= z.origin[1]) )
+ 		{
+ 			if (Brush_Ray (org_top, dir_down, brush, &top))
+ 			{
+@@ -409,10 +409,10 @@
+ 
+ 	  qglColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
+ 		qglBegin (GL_LINE_LOOP);
+-		qglVertex2f (-xCam, brush->mins[2]);
+-		qglVertex2f (xCam, brush->mins[2]);
+-		qglVertex2f (xCam, brush->maxs[2]);
+-		qglVertex2f (-xCam, brush->maxs[2]);
++		qglVertex2f (-xCam, brush->getMins()[2]);
++		qglVertex2f (xCam, brush->getMins()[2]);
++		qglVertex2f (xCam, brush->getMaxs()[2]);
++		qglVertex2f (-xCam, brush->getMaxs()[2]);
+ 		qglEnd ();
+ 	}
+ 
