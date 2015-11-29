@@ -1,0 +1,4355 @@
+Index: q3radiant/Brush.cpp
+===================================================================
+--- q3radiant/Brush.cpp	(revision 442)
++++ q3radiant/Brush.cpp	(working copy)
+@@ -430,7 +430,7 @@
+ 	}
+ 	
+ 	f->plane.normal.crossProduct(t1,t2);
+-	if (VectorCompare (f->plane.normal, vec3_origin))
++	if (f->plane.normal.vectorCompare(edVec3_c(0,0,0)))
+ 		printf ("WARNING: brush plane with no normal\n");
+ 	f->plane.normal.normalize();
+ 	f->plane.dist = t3.dotProduct(f->plane.normal);
+@@ -580,7 +580,7 @@
+ 		}
+ 
+ 		// flip the plane, because we want to keep the back side
+-		VectorSubtract (vec3_origin,clip->plane.normal, plane.normal);
++		plane.normal = -clip->plane.normal;
+ 		plane.dist = -clip->plane.dist;
+ 		
+ 		w = Winding_Clip (w, plane, false);
+@@ -669,6 +669,13 @@
+ 		g_qeglobals.bNeedConvert = false;
+ }
+ 
++template<typename TYPE> 
++void T_Swap(TYPE &a, TYPE &b) {
++	TYPE temp;
++	temp = a;
++	a = b;
++	b = temp;
++}
+ /*
+ ==============
+ Brush_SplitBrushByFace
+@@ -681,7 +688,7 @@
+ {
+ 	brush_t	*b;
+ 	face_t	*nf;
+-	vec3_t	temp;
++//	vec3_t	temp;
+ 
+ 	b = Brush_Clone (in);
+ 	nf = Face_Clone (f);
+@@ -706,9 +713,7 @@
+ 	b = Brush_Clone (in);
+ 	nf = Face_Clone (f);
+ 	// swap the plane winding
+-	VectorCopy (nf->planepts[0], temp);
+-	VectorCopy (nf->planepts[1], nf->planepts[0]);
+-	VectorCopy (temp, nf->planepts[1]);
++	T_Swap(nf->planepts[0],nf->planepts[1]);
+ 
+ 	nf->texdef = b->brush_faces->texdef;
+ 	nf->next = b->brush_faces;
+@@ -1320,16 +1325,16 @@
+ 	//
+ 	tmpw.numpoints = 3;
+ 	tmpw.maxpoints = 3;
+-	VectorCopy(vertex, start);
+-	VectorAdd(vertex, delta, end);
++	start = vertex;
++	end = vertex + delta;
+ 	//snap or not?
+ 	if (bSnap)
+ 		for (i = 0; i < 3; i++)
+ 			end[i] = floor(end[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
+ 	//
+-	VectorCopy(end, mid);
++	mid = end;
+ 	//if the start and end are the same
+-	if (Point_Equal(start, end, 0.3)) return false;
++	if (start.vectorCompare(end, 0.3)) return false;
+ 	//the end point may not be the same as another vertex
+ 	for (face = b->brush_faces; face; face = face->next)
+ 	{
+@@ -1337,9 +1342,9 @@
+ 		if (!w) continue;
+ 		for (i = 0; i < w->numpoints; i++)
+ 		{
+-			if (Point_Equal(w->points[i], end, 0.3))
++			if (w->points[i].vectorCompare(end, 0.3))
+ 			{
+-				VectorCopy(vertex, end);
++				end = vertex;;
+ 				return false;
+ 			}
+ 		}
+@@ -1357,7 +1362,7 @@
+ 			if (!w) continue;
+ 			for (i = 0; i < w->numpoints; i++)
+ 			{
+-				if (Point_Equal(w->points[i], start, 0.2))
++				if (w->points[i].vectorCompare(start, 0.2))
+ 				{
+ 					if (face->face_winding->numpoints <= 3)
+ 					{
+@@ -1372,9 +1377,9 @@
+ 						//fanout triangle subdivision
+ 						for (k = i; k < i + w->numpoints-3; k++)
+ 						{
+-							VectorCopy(w->points[i], tmpw.points[0]);
+-							VectorCopy(w->points[(k+1) % w->numpoints], tmpw.points[1]);
+-							VectorCopy(w->points[(k+2) % w->numpoints], tmpw.points[2]);
++							tmpw.points[0] = w->points[i];
++							tmpw.points[1] = w->points[(k+1) % w->numpoints];
++							tmpw.points[2] = w->points[(k+2) % w->numpoints];
+ 							//
+ 							newface = Face_Clone(face);
+ 							//get the original
+@@ -1393,9 +1398,9 @@
+ 							movefaces[nummovefaces++] = newface;
+ 						}
+ 						//give the original face a new winding
+-						VectorCopy(w->points[(i-2+w->numpoints) % w->numpoints], tmpw.points[0]);
+-						VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[1]);
+-						VectorCopy(w->points[i], tmpw.points[2]);
++						tmpw.points[0] = w->points[(i-2+w->numpoints) % w->numpoints];
++						tmpw.points[1] = w->points[(i-1+w->numpoints) % w->numpoints];
++						tmpw.points[2] = w->points[i];
+ 						Winding_Free(face->face_winding);
+ 						face->face_winding = Winding_Clone(&tmpw);
+ 						//add the original face to the move faces
+@@ -1405,9 +1410,9 @@
+ 					else
+ 					{
+ 						//chop a triangle off the face
+-						VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[0]);
+-						VectorCopy(w->points[i], tmpw.points[1]);
+-						VectorCopy(w->points[(i+1) % w->numpoints], tmpw.points[2]);
++						tmpw.points[0] = w->points[(i-1+w->numpoints) % w->numpoints];
++						tmpw.points[1] = w->points[i];
++						tmpw.points[2] = w->points[(i+1) % w->numpoints];
+ 						//remove the point from the face winding
+ 						Winding_RemovePoint(w, i);
+ 						//get texture crap right
+@@ -1439,7 +1444,7 @@
+ 		//contain the to be moved vertex
+ 		//
+ 		done = true;
+-		VectorCopy(end, mid);
++		mid = end;
+ 		smallestfrac = 1;
+ 		for (face = b->brush_faces; face; face = face->next)
+ 		{
+@@ -1463,15 +1468,15 @@
+ 			{
+ 				k = movefacepoints[j];
+ 				w = movefaces[j]->face_winding;
+-				VectorCopy(w->points[(k+1)%w->numpoints], tmpw.points[0]);
+-				VectorCopy(w->points[(k+2)%w->numpoints], tmpw.points[1]);
++				tmpw.points[0] = w->points[(k+1)%w->numpoints];
++				tmpw.points[1] = w->points[(k+2)%w->numpoints];
+ 				//
+ 				k = movefacepoints[i];
+ 				w = movefaces[i]->face_winding;
+-				VectorCopy(w->points[(k+1)%w->numpoints], tmpw.points[2]);
++				tmpw.points[2] = w->points[(k+1)%w->numpoints];
+ 				if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+ 				{
+-					VectorCopy(w->points[(k+2)%w->numpoints], tmpw.points[2]);
++					tmpw.points[2] = w->points[(k+2)%w->numpoints];
+ 					if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+ 						//this should never happen otherwise the face merge did a crappy job a previous pass
+ 						continue;
+@@ -1502,11 +1507,11 @@
+ 		for (i = 0; i < nummovefaces; i++)
+ 		{
+ 			//move vertex to end position
+-			VectorCopy(mid, movefaces[i]->face_winding->points[movefacepoints[i]]);
++			movefaces[i]->face_winding->points[movefacepoints[i]].setXYZ(mid);
+ 			//create new face plane
+ 			for (j = 0; j < 3; j++)
+ 			{
+-				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
++				movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
+ 			}
+ 			Face_MakePlane(movefaces[i]);
+ 			if (movefaces[i]->plane.normal.vectorLength() < 0.1)
+@@ -1518,21 +1523,21 @@
+ 			for (i = 0; i < nummovefaces; i++)
+ 			{
+ 				//move the vertex back to the initial position
+-				VectorCopy(start, movefaces[i]->face_winding->points[movefacepoints[i]]);
++				movefaces[i]->face_winding->points[movefacepoints[i]].setXYZ(start);
+ 				//create new face plane
+ 				for (j = 0; j < 3; j++)
+ 				{
+-					VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
++					movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
+ 				}
+ 				Face_MakePlane(movefaces[i]);
+ 			}
+ 			result = false;
+-			VectorCopy(start, end);
++			end = start;
+ 			done = true;
+ 		}
+ 		else
+ 		{
+-			VectorCopy(mid, start);
++			start = mid;
+ 		}
+ 		//get texture crap right
+ 		for (i = 0; i < nummovefaces; i++)
+@@ -1583,7 +1588,7 @@
+ Brush_InsertVertexBetween
+ =================
+ */
+-int Brush_InsertVertexBetween(brush_t *b, vec3_t p1, vec3_t p2)
++int Brush_InsertVertexBetween(brush_t *b, const edVec3_c &p1, const edVec3_c &p2)
+ {
+ 	face_t *face;
+ 	winding_t *w, *neww;
+@@ -1590,9 +1595,9 @@
+ 	edVec3_c point;
+ 	int i, insert;
+ 
+-	if (Point_Equal(p1, p2, 0.4))
++	if (p1.vectorCompare(p2, 0.4))
+ 		return false;
+-	VectorAdd(p1, p2, point);
++	point = p1 + p2;
+ 	point *= 0.5;
+ 	insert = false;
+ 	//the end point may not be the same as another vertex
+@@ -1603,14 +1608,14 @@
+ 		neww = NULL;
+ 		for (i = 0; i < w->numpoints; i++)
+ 		{
+-			if (!Point_Equal(w->points[i], p1, 0.1))
++			if (!w->points[i].vectorCompare(p1, 0.1))
+ 				continue;
+-			if (Point_Equal(w->points[(i+1) % w->numpoints], p2, 0.1))
++			if (w->points[(i+1) % w->numpoints].vectorCompare(p2, 0.1))
+ 			{
+ 				neww = Winding_InsertPoint(w, point, (i+1) % w->numpoints);
+ 				break;
+ 			}
+-			else if (Point_Equal(w->points[(i-1+w->numpoints) % w->numpoints], p2, 0.3))
++			else if (w->points[(i-1+w->numpoints) % w->numpoints].vectorCompare(p2, 0.3))
+ 			{
+ 				neww = Winding_InsertPoint(w, point, i);
+ 				break;
+@@ -2194,9 +2199,9 @@
+ 		b->brush_faces = f;
+ 		j = (i+1)%4;
+ 
+-		VectorCopy (pts[j][1], f->planepts[0]);
+-		VectorCopy (pts[i][1], f->planepts[1]);
+-		VectorCopy (pts[i][0], f->planepts[2]);
++		f->planepts[0] = pts[j][1];
++		f->planepts[1] = pts[i][1];
++		f->planepts[2] = pts[i][0];
+ 	}
+ 	
+ 	f = Face_Alloc();
+@@ -2206,9 +2211,9 @@
+ 	f->next = b->brush_faces;
+ 	b->brush_faces = f;
+ 
+-	VectorCopy (pts[0][1], f->planepts[0]);
+-	VectorCopy (pts[1][1], f->planepts[1]);
+-	VectorCopy (pts[2][1], f->planepts[2]);
++	f->planepts[0] = pts[0][1];
++	f->planepts[1] = pts[1][1];
++	f->planepts[2] = pts[2][1];
+ 
+ 	f = Face_Alloc();
+ 	f->texdef = *texdef;
+@@ -2217,9 +2222,9 @@
+ 	f->next = b->brush_faces;
+ 	b->brush_faces = f;
+ 
+-	VectorCopy (pts[2][0], f->planepts[0]);
+-	VectorCopy (pts[1][0], f->planepts[1]);
+-	VectorCopy (pts[0][0], f->planepts[2]);
++	f->planepts[0] = pts[2][0];
++	f->planepts[1] = pts[1][0];
++	f->planepts[2] = pts[0][0];
+ 
+ 	return b;
+ }
+@@ -2264,13 +2269,13 @@
+ 	corners[3][1] = mins[1];
+ 	corners[3][2] = fMid;
+ 
+-	vec3_t top, bottom;
++	edVec3_c top, bottom;
+ 
+ 	top[0] = Q_rint(mins[0] + ((maxs[0] - mins[0]) / 2));
+ 	top[1] = Q_rint(mins[1] + ((maxs[1] - mins[1]) / 2));
+ 	top[2] = Q_rint(maxs[2]);
+ 
+-	VectorCopy(top, bottom);
++	bottom = top;
+ 	bottom[2] = mins[2];
+ 
+ 	// sides
+@@ -2284,9 +2289,9 @@
+ 		b->brush_faces = f;
+ 		int j = (i+1)%4;
+ 
+-		VectorCopy (top, f->planepts[0]);
+-		VectorCopy (corners[i], f->planepts[1]);
+-		VectorCopy(corners[j], f->planepts[2]);
++		f->planepts[0] = top;
++		f->planepts[1] = corners[i];
++		f->planepts[2] = corners[j];
+ 
+ 		f = Face_Alloc();
+ 		f->texdef = *texdef;
+@@ -2295,9 +2300,9 @@
+ 		f->next = b->brush_faces;
+ 		b->brush_faces = f;
+ 
+-		VectorCopy (bottom, f->planepts[2]);
+-		VectorCopy (corners[i], f->planepts[1]);
+-		VectorCopy(corners[j], f->planepts[0]);
++		f->planepts[2] = bottom;
++		f->planepts[1] = corners[i];
++		f->planepts[0] = corners[j];
+ 	}
+ 
+ 	return b;
+@@ -2316,7 +2321,7 @@
+ void Brush_MakeSided (int sides)
+ {
+ 	int		i, axis;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	brush_t	*b;
+ 	texdef_t	*texdef;
+ 	face_t	*f;
+@@ -2343,8 +2348,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	VectorCopy (b->mins, mins);
+-	VectorCopy (b->maxs, maxs);
++	mins = b->mins;
++	maxs = b->maxs;
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -2623,8 +2628,8 @@
+   	n = Brush_Alloc();
+    	n->numberId = g_nBrushId++;
+ 		n->owner = b->owner;
+-		VectorCopy(b->mins, n->mins);
+-		VectorCopy(b->maxs, n->maxs);
++		n->mins = b->mins;
++		n->maxs = b->maxs;
+ 		//
+ 		for (f = b->brush_faces; f; f = f->next)
+ 		{
+@@ -2672,7 +2677,7 @@
+ Returns NULL and 0 if not hit at all
+ ==============
+ */
+-face_t *Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist)
++face_t *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_t *b, float *dist)
+ {
+ 	if(b == 0)
+ 		return 0;
+@@ -2681,7 +2686,7 @@
+ 	float	frac, d1, d2;
+ 	int		i;
+ 
+-	VectorCopy (origin, p1);
++	p1 = origin;
+ 	for (i=0 ; i<3 ; i++)
+ 		p2[i] = p1[i] + dir[i] * 131072*2; // max world coord
+ 
+@@ -2712,7 +2717,7 @@
+ 	}
+ 
+ 	// find distance p1 is along dir
+-	VectorSubtract (p1, origin, p1);
++	p1 -= origin;
+ 	d1 = p1.dotProduct(dir);
+ 
+ 	*dist = d1;
+@@ -2818,16 +2823,15 @@
+ 			// compute absolute coordinates
+ 			ComputeAbsolute(f,p1,p2,p3);
+ 			// compute the scale
+-			edVec3_c vx,vy;
+-			VectorSubtract(p2,p1,vx);
++			edVec3_c vx = p2 - p1;
+ 			vx.normalize();
+-			VectorSubtract(p3,p1,vy);
++			edVec3_c vy = p3 - p1;
+ 			vy.normalize();
+ 			// assign scale
+ 			vx *= texdef->scale[0];
+ 			vy *= texdef->scale[1];
+-			VectorAdd(p1,vx,p2);
+-			VectorAdd(p1,vy,p3);
++			p2 = p1 + vx;
++			p3 = p1 + vy; 
+ 			// compute back shift scale rot
+ 			AbsoluteToLocal(f->plane,f,p1,p2,p3);
+ 		}
+@@ -2994,7 +2998,7 @@
+ 
+ 			AddPlanept (f2->planepts[0]);
+ 
+-			VectorCopy (w->points[i], f2->planepts[0]);
++			f2->planepts[0] = w->points[i].getXYZ();
+ 			if (++i == w->numpoints)
+ 				i = 0;
+ 			
+@@ -3003,13 +3007,13 @@
+ 			if (d > -ON_EPSILON && d < ON_EPSILON)
+ 				AddPlanept (f2->planepts[1]);
+ 
+-			VectorCopy (w->points[i], f2->planepts[1]);
++			f2->planepts[1] = w->points[i].getXYZ();
+ 			if (++i == w->numpoints)
+ 				i = 0;
+ 
+ 			// the third point is never on the plane
+ 
+-			VectorCopy (w->points[i], f2->planepts[2]);
++			f2->planepts[2] = w->points[i].getXYZ();
+ 		}
+ 
+ 		free(w);
+@@ -3036,8 +3040,8 @@
+     //Patch_SideSelect(b->nPatchID, origin, dir);
+ 	for (f=b->brush_faces ; f ; f=f->next)
+ 	{
+-		VectorCopy (origin, p1);
+-		VectorMA (origin, 131072*2, dir, p2);
++		p1 = origin;
++		p2.vectorMA (origin, 131072*2, dir);
+ 
+ 		for (f2=b->brush_faces ; f2 ; f2=f2->next)
+ 		{
+@@ -3049,7 +3053,7 @@
+ 		if (f2)
+ 			continue;
+ 
+-		if (VectorCompare (p1, origin))
++		if (p1.vectorCompare(origin))
+ 			continue;
+ 		if (ClipLineToFace (p1, p2, f))
+ 			continue;
+@@ -3194,9 +3198,9 @@
+ 	}
+ }
+ 
+-void Brush_Center(brush_t *b, vec3_t vNewCenter)
++void Brush_Center(brush_t *b, const edVec3_c &vNewCenter)
+ {
+-	vec3_t vMid;
++	edVec3_c vMid;
+ 	// get center of the brush
+ 	for (int j = 0; j < 3; j++)
+ 	{
+@@ -3203,7 +3207,7 @@
+ 		vMid[j] = b->mins[j] + abs((b->maxs[j] - b->mins[j]) * 0.5);
+ 	}
+ 	// calc distance between centers
+-	VectorSubtract(vNewCenter, vMid, vMid);
++	vMid = vNewCenter - vMid;
+ 	Brush_Move(b, vMid, true);
+ 
+ }
+@@ -3232,7 +3236,7 @@
+ 
+ eclass_t* HasModel(brush_t *b)
+ {
+-	vec3_t vMin, vMax;
++	edVec3_c vMin, vMax;
+ 	vMin[0] = vMin[1] = vMin[2] = 9999;
+ 	vMax[0] = vMax[1] = vMax[2] = -9999;
+ 
+@@ -3259,8 +3263,8 @@
+ 				// we need to scale the brush to the proper size based on the model load
+ 				// recreate brush just like in load/save
+ 
+-				VectorAdd (vMin, b->owner->origin, vMin);
+-				VectorAdd (vMax, b->owner->origin, vMax);
++				vMin += b->owner->origin;
++				vMax += b->owner->origin;
+ 
+ 				Brush_Resize(b, vMin, vMax);
+ 
+@@ -3378,11 +3382,14 @@
+ 		edVec3_c v;
+ 
+ 		int i,j;
+-		VectorAdd(b->maxs, b->mins, v);
+-		v *= 0.5;
+-		VectorCopy(b->owner->origin, v);
++#if 0
++		v = (b->maxs + b->mins) * 0.5f;
++#else
++		// who was writing this, that line overwrites the previous one...
++		// this radiant code REALLY needs a clearup!
++		v = b->owner->origin;
++#endif
+ 
+-
+ 		//for (i = 0; i < 3; i++)
+ 		//{
+ 		//  v[i] -= (pEclass->mins[i] - b->mins[i]);
+@@ -3400,10 +3407,8 @@
+ 			c = cos (DEG2RAD(a));
+ 		}
+ 
+-		vec3_t vSin;
+-		vec3_t vCos;
+-		VectorClear(vSin);
+-		VectorClear(vCos);
++		edVec3_c vSin(0,0,0);
++		edVec3_c vCos(0,0,0);
+ 		for ( j = 0; j < 3; j++)
+ 		{
+ 			if (b->owner->vRotation[j])
+@@ -3499,8 +3504,8 @@
+ 
+ 		edVec3_c  vColor = edVec3_c(pEclass->color) * 0.50;
+ 
+-		vec3_t vCenter, vMin, vMax;
+-		VectorCopy(b->owner->origin, vCenter);
++		edVec3_c vCenter, vMin, vMax;
++		vCenter = b->owner->origin;
+ 
+ 		qglColor3fv(vColor);
+ 		qglPointSize(4);
+@@ -3527,8 +3532,9 @@
+ 		vCenter[2] -= 8;
+ 		qglEnd();
+ 
+-		VectorCopy(vCenter, vMin);
+-		VectorCopy(vCenter, vMax);
++		vMin = vCenter;
++		vMax = vCenter;
++
+ 		vMin[0] -= 4;
+ 		vMin[1] -= 4;
+ 		vMin[2] -= 4;
+@@ -3566,9 +3572,8 @@
+ 		{
+ 			qglColor3fv(pEclass->color);
+ 
+-			vec3_t mins, maxs;
+-			VectorCopy(b->mins, mins);
+-			VectorCopy(b->maxs, maxs);
++			edVec3_c mins = b->mins;
++			edVec3_c maxs = b->maxs;
+ 			/*
+ 			if (a)
+ 			{
+@@ -3657,43 +3662,42 @@
+ void FacingVectors (entity_t *e, vec3_t forward, vec3_t right, vec3_t up)
+ {
+ 	int			angleVal;
+-	vec3_t		angles;
++	edVec3_c		angles;
+ 
+ 	angleVal = IntForKey(e, "angle");
+ 	if (angleVal == -1)				// up
+ 	{
+-		VectorSet(angles, 270, 0, 0);
++		angles.set(270, 0, 0);
+ 	}
+ 	else if(angleVal == -2)		// down
+ 	{
+-		VectorSet(angles, 90, 0, 0);
++		angles.set(90, 0, 0);
+ 	}
+ 	else
+ 	{
+-		VectorSet(angles, 0, angleVal, 0);
++		angles.set(0, angleVal, 0);
+ 	}
+ 
+-	AngleVectors(angles, forward, right, up);
++	angles.makeAngleVectors(forward, right, up);
+ }
+ 
+ void Brush_DrawFacingAngle (brush_t *b, entity_t *e)
+ {
+ 	vec3_t	forward, right, up;
+-	vec3_t	endpoint, tip1, tip2;
++	edVec3_c	endpoint, tip1, tip2;
+ 	edVec3_c	start;
+ 	float	dist;
+ 
+-	VectorAdd(e->brushes.onext->mins, e->brushes.onext->maxs, start);
+-	start *= 0.5f;
++	start = (e->brushes.onext->mins + e->brushes.onext->maxs) * 0.5f;
+ 	dist = (b->maxs[0] - start[0]) * 2.5;
+ 
+ 	FacingVectors (e, forward, right, up);
+-	VectorMA (start, dist, forward, endpoint);
++	endpoint.vectorMA (start, dist, forward);
+ 
+ 	dist = (b->maxs[0] - start[0]) * 0.5;
+-	VectorMA (endpoint, -dist, forward, tip1);
+-	VectorMA (tip1, -dist, up, tip1);
+-	VectorMA (tip1, 2*dist, up, tip2);
++	tip1.vectorMA (endpoint, -dist, forward);
++	tip1.vectorMA (tip1, -dist, up);
++	tip2.vectorMA (tip1, 2*dist, up);
+ 
+ 	qglColor4f (1, 1, 1, 1);
+ 	qglLineWidth (4);
+@@ -3710,7 +3714,7 @@
+ 
+ void DrawLight(brush_t *b)
+ {
+-	vec3_t vTriColor;
++	edVec3_c vTriColor;
+ 	bool bTriPaint = false;
+ 
+ 	vTriColor[0] = vTriColor[2] = 1.0;
+@@ -3749,17 +3753,16 @@
+ 	vCorners[3][1] = b->mins[1];
+ 	vCorners[3][2] = fMid;
+ 
+-	vec3_t vTop, vBottom;
++	edVec3_c vTop, vBottom;
+ 
+ 	vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
+ 	vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
+ 	vTop[2] = b->maxs[2];
+ 
+-	VectorCopy(vTop, vBottom);
++	vBottom = vTop;
+ 	vBottom[2] = b->mins[2];
+ 
+-	vec3_t vSave;
+-	VectorCopy(vTriColor, vSave);
++	edVec3_c vSave = vTriColor;
+ 	int i;
+ 	qglBegin(GL_TRIANGLE_FAN);
+ 	qglVertex3fv(vTop);
+@@ -3774,7 +3777,7 @@
+ 	qglVertex3fv(vCorners[0]);
+ 	qglEnd();
+ 
+-	VectorCopy(vSave, vTriColor);
++	vTriColor = vSave;
+ 	vTriColor[0] *= 0.95;
+ 	vTriColor[1] *= 0.95;
+ 	vTriColor[2] *= 0.95;
+@@ -3795,7 +3798,7 @@
+ 	// check for DOOM lights
+ 	CString str = ValueForKey(b->owner, "light_right");
+ 	if (str.GetLength() > 0) {
+-		vec3_t vRight, vUp, vTarget, vTemp;
++		edVec3_c vRight, vUp, vTarget, vTemp;
+ 		GetVectorForKey (b->owner, "light_right", vRight);
+ 		GetVectorForKey (b->owner, "light_up", vUp);
+ 		GetVectorForKey (b->owner, "light_target", vTarget);
+@@ -3802,24 +3805,24 @@
+ 
+ 		qglColor3f(0, 1, 0);
+ 		qglBegin(GL_LINE_LOOP);
+-		VectorAdd(vTarget, b->owner->origin, vTemp);
+-		VectorAdd(vTemp, vRight, vTemp);
+-		VectorAdd(vTemp, vUp, vTemp);
++		vTemp = vTarget + b->owner->origin;
++		vTemp += vRight;
++		vTemp += vUp;
+ 		qglVertex3fv(b->owner->origin);
+ 		qglVertex3fv(vTemp);
+-		VectorAdd(vTarget, b->owner->origin, vTemp);
+-		VectorAdd(vTemp, vUp, vTemp);
+-		VectorSubtract(vTemp, vRight, vTemp);
++		vTemp = vTarget + b->owner->origin;
++		vTemp += vUp;
++		vTemp -= vRight;
+ 		qglVertex3fv(b->owner->origin);
+ 		qglVertex3fv(vTemp);
+-		VectorAdd(vTarget, b->owner->origin, vTemp);
+-		VectorAdd(vTemp, vRight, vTemp);
+-		VectorSubtract(vTemp, vUp, vTemp);
++		vTemp = vTarget + b->owner->origin;
++		vTemp += vRight;
++		vTemp -= vUp;
+ 		qglVertex3fv(b->owner->origin);
+ 		qglVertex3fv(vTemp);
+-		VectorAdd(vTarget, b->owner->origin, vTemp);
+-		VectorSubtract(vTemp, vUp, vTemp);
+-		VectorSubtract(vTemp, vRight, vTemp);
++		vTemp = vTarget + b->owner->origin;
++		vTemp -= vUp;
++		vTemp -= vRight;
+ 		qglVertex3fv(b->owner->origin);
+ 		qglVertex3fv(vTemp);
+ 		qglEnd();
+@@ -4047,13 +4050,13 @@
+ 			vCorners[3][1] = b->mins[1];
+ 			vCorners[3][2] = fMid;
+ 
+-			vec3_t vTop, vBottom;
++			edVec3_c vTop, vBottom;
+ 
+ 			vTop[0] = b->mins[0] + ((b->maxs[0] - b->mins[0]) / 2);
+ 			vTop[1] = b->mins[1] + ((b->maxs[1] - b->mins[1]) / 2);
+ 			vTop[2] = b->maxs[2];
+ 
+-			VectorCopy(vTop, vBottom);
++			vBottom = vTop;
+ 			vBottom[2] = b->mins[2];
+ 
+ 			qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+@@ -4140,14 +4143,13 @@
+ 
+ 	for (f=b->brush_faces ; f ; f=f->next)
+ 	{
+-		vec3_t vTemp;
+-		VectorCopy(move, vTemp);
++		edVec3_c vTemp = move;
+ 
+ 		if (g_PrefsDlg.m_bTextureLock)
+ 			Face_MoveTexture(f, vTemp);
+ 
+ 		for (i=0 ; i<3 ; i++)
+-			VectorAdd (f->planepts[i], move, f->planepts[i]);
++			f->planepts[i] += move;
+ 	}
+ 	Brush_Build( b, bSnap );
+ 
+@@ -4167,7 +4169,7 @@
+ 	// PGM - keep the origin vector up to date on fixed size entities.
+ 	if(b->owner->eclass->fixedsize)
+ 	{
+-		VectorAdd(b->owner->origin, move, b->owner->origin);
++		b->owner->origin += move;
+ 		//VectorAdd(b->maxs, b->mins, b->owner->origin);
+ 		//VectorScale(b->owner->origin, 0.5, b->owner->origin);
+ 	}
+@@ -4199,7 +4201,7 @@
+ void Brush_MakeSidedCone(int sides)
+ {
+ 	int		i;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	brush_t	*b;
+ 	texdef_t	*texdef;
+ 	face_t	*f;
+@@ -4220,8 +4222,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	VectorCopy (b->mins, mins);
+-	VectorCopy (b->maxs, maxs);
++	mins = b->mins;
++	maxs = b->maxs;
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -4293,7 +4295,7 @@
+ void Brush_MakeSidedSphere(int sides)
+ {
+ 	int		i,j;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	brush_t	*b;
+ 	texdef_t	*texdef;
+ 	face_t	*f;
+@@ -4312,8 +4314,8 @@
+ 	}
+ 
+ 	b = selected_brushes.next;
+-	VectorCopy (b->mins, mins);
+-	VectorCopy (b->maxs, maxs);
++	mins = b->mins;
++	maxs = b->maxs;
+ 	texdef = &g_qeglobals.d_texturewin.texdef;
+ 
+ 	Brush_Free (b);
+@@ -4350,7 +4352,7 @@
+ 			f->planepts[2].setupPolar(radius, t + dt, p + dp);
+ 
+ 			for (int k = 0; k < 3; k++)
+-				VectorAdd(f->planepts[k], mid, f->planepts[k]);
++				f->planepts[k] += mid;
+ 		}
+ 	}
+ 
+@@ -4369,7 +4371,7 @@
+ 		f->planepts[2].setupPolar(radius, t + dt, p);
+ 
+ 		for (int k = 0; k < 3; k++)
+-			VectorAdd(f->planepts[k], mid, f->planepts[k]);
++			f->planepts[k] += mid;
+ 	}
+ 
+ 	Brush_AddToList (b, &selected_brushes);
+Index: q3radiant/BRUSH.H
+===================================================================
+--- q3radiant/BRUSH.H	(revision 442)
++++ q3radiant/BRUSH.H	(working copy)
+@@ -91,7 +91,7 @@
+ int			Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap = true);
+ void		Brush_ResetFaceOriginals(brush_t *b);
+ brush_t*	Brush_Parse (void);
+-face_t*		Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist);
++face_t*		Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_t *b, float *dist);
+ void		Brush_RemoveFromList (brush_t *b);
+ void		Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back);
+ void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear);
+Index: q3radiant/brush_primit.cpp
+===================================================================
+--- q3radiant/brush_primit.cpp	(revision 442)
++++ q3radiant/brush_primit.cpp	(working copy)
+@@ -88,13 +88,13 @@
+ 	// (1,0) in plane axis base is texX in world coordinates + projection on the affine plane
+ 	// (0,1) in plane axis base is texY in world coordinates + projection on the affine plane
+ 	// use old texture code to compute the ST coords of these points
+-	VectorCopy(proj,ST[0]);
++	ST[0].setXYZ(proj);
+ 	EmitTextureCoordinates(ST[0], f->d_texture, f);
+-	VectorCopy(texX,ST[1]);
+-	VectorAdd(ST[1],proj,ST[1]);
++	ST[1].setXYZ(texX);
++	ST[1].xyz += proj;
+ 	EmitTextureCoordinates(ST[1], f->d_texture, f);
+-	VectorCopy(texY,ST[2]);
+-	VectorAdd(ST[2],proj,ST[2]);
++	ST[2].setXYZ(texY);
++	ST[2].xyz += proj;
+ 	EmitTextureCoordinates(ST[2], f->d_texture, f);
+ 	// compute texture matrix
+ 	f->brushprimit_texdef.coords[0][2]=ST[0][3];
+Index: q3radiant/CAMERA.H
+===================================================================
+--- q3radiant/CAMERA.H	(revision 442)
++++ q3radiant/CAMERA.H	(working copy)
+@@ -37,8 +37,8 @@
+ 
+ 	bool	timing;
+ 
+-	vec3_t	origin;
+-	vec3_t	angles;
++	edVec3_c	origin;
++	edVec3_c	angles;
+ 
+ 	camera_draw_mode	draw_mode;
+ 
+Index: q3radiant/CamWnd.cpp
+===================================================================
+--- q3radiant/CamWnd.cpp	(revision 442)
++++ q3radiant/CamWnd.cpp	(working copy)
+@@ -429,7 +429,7 @@
+ 	if (x != m_ptCursor.x || y != m_ptCursor.y)
+ 	{
+ 		x -= m_ptCursor.x;
+-		VectorMA (m_Camera.origin, x, m_Camera.vright, m_Camera.origin);
++		m_Camera.origin.vectorMA(m_Camera.origin, x, m_Camera.vright);
+ 		y -= m_ptCursor.y;
+ 		m_Camera.origin[2] -= y;
+     SetCursorPos(m_ptCursor.x, m_ptCursor.y);
+Index: q3radiant/CSG.CPP
+===================================================================
+--- q3radiant/CSG.CPP	(revision 442)
++++ q3radiant/CSG.CPP	(working copy)
+@@ -61,8 +61,9 @@
+ 		{
+ 			split = *f;
+ 			move = f->plane.normal * g_qeglobals.d_gridsize;
+-			for (i=0 ; i<3 ; i++)
+-				VectorSubtract (split.planepts[i], move, split.planepts[i]);
++			for (i=0 ; i<3 ; i++) {
++				split.planepts[i] -= move;
++			}
+ 
+ 			Brush_SplitBrushByFace (b, &split, &front, &back);
+ 			if (back)
+@@ -175,9 +176,9 @@
+ 		//
+ 		newface = Face_Alloc();
+ 		newface->texdef = face1->texdef;
+-		VectorCopy(face1->planepts[0], newface->planepts[0]);
+-		VectorCopy(face1->planepts[1], newface->planepts[1]);
+-		VectorCopy(face1->planepts[2], newface->planepts[2]);
++		newface->planepts[0] = face1->planepts[0];
++		newface->planepts[1] = face1->planepts[1];
++		newface->planepts[2] = face1->planepts[2];
+ 		newface->plane = face1->plane;
+ 		newface->next = newbrush->brush_faces;
+ 		newbrush->brush_faces = newface;
+@@ -206,9 +207,9 @@
+ 		//
+ 		newface = Face_Alloc();
+ 		newface->texdef = face2->texdef;
+-		VectorCopy(face2->planepts[0], newface->planepts[0]);
+-		VectorCopy(face2->planepts[1], newface->planepts[1]);
+-		VectorCopy(face2->planepts[2], newface->planepts[2]);
++		newface->planepts[0] = face2->planepts[0];
++		newface->planepts[1] = face2->planepts[1];
++		newface->planepts[2] = face2->planepts[2];
+ 		newface->plane = face2->plane;
+ 		newface->next = newbrush->brush_faces;
+ 		newbrush->brush_faces = newface;
+@@ -396,9 +397,9 @@
+ 			//
+ 			newface = Face_Alloc();
+ 			newface->texdef = face1->texdef;
+-			VectorCopy(face1->planepts[0], newface->planepts[0]);
+-			VectorCopy(face1->planepts[1], newface->planepts[1]);
+-			VectorCopy(face1->planepts[2], newface->planepts[2]);
++			newface->planepts[0] = face1->planepts[0];
++			newface->planepts[1] = face1->planepts[1];
++			newface->planepts[2] = face1->planepts[2];
+ 			newface->plane = face1->plane;
+ 			newface->next = newbrush->brush_faces;
+ 			newbrush->brush_faces = newface;
+Index: q3radiant/DRAG.CPP
+===================================================================
+--- q3radiant/DRAG.CPP	(revision 442)
++++ q3radiant/DRAG.CPP	(working copy)
+@@ -30,13 +30,13 @@
+ */
+ 
+ bool	drag_ok;
+-vec3_t	drag_xvec;
+-vec3_t	drag_yvec;
++edVec3_c	drag_xvec;
++edVec3_c	drag_yvec;
+ 
+ static	int	buttonstate;
+ int	pressx, pressy;
+-static	vec3_t pressdelta;
+-static	vec3_t vPressStart;
++static	edVec3_c pressdelta;
++static	edVec3_c vPressStart;
+ static	int	buttonx, buttony;
+ 
+ 
+@@ -48,7 +48,7 @@
+ bool	drag_first;
+ 
+ 
+-void	AxializeVector (vec3_t v)
++void	AxializeVector (edVec3_c& v)
+ {
+ 	vec3_t	a;
+ 	float	o;
+@@ -71,7 +71,7 @@
+ 		i = 2;
+ 
+ 	o = v[i];
+-	VectorCopy (vec3_origin, v);
++	v.clear();
+ 	if (o<0)
+ 		v[i] = -1;
+ 	else
+@@ -94,13 +94,13 @@
+ 
+ 	drag_first = true;
+ 	
+-	VectorCopy (vec3_origin, pressdelta);
++	pressdelta.clear();
+ 	pressx = x;
+ 	pressy = y;
+ 
+-	VectorCopy (xaxis, drag_xvec);
++	drag_xvec = xaxis;
+ 	AxializeVector (drag_xvec);
+-	VectorCopy (yaxis, drag_yvec);
++	drag_yvec = yaxis;
+ 	AxializeVector (drag_yvec);
+ 
+ 
+@@ -332,8 +332,8 @@
+ 	bool altdown;
+ 
+ 	drag_ok = false;
+-	VectorCopy (vec3_origin, pressdelta);
+-	VectorCopy (vec3_origin, vPressStart);
++	pressdelta.clear();
++	vPressStart.clear();
+ 	drag_first = true;
+ 	peLink = NULL;
+ 
+@@ -454,8 +454,7 @@
+           qtexture_t* pTex = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
+           if (pTex)
+           {
+-            vec3_t vColor;
+-            VectorCopy(pTex->color, vColor);
++            edVec3_c vColor = pTex->color;
+ 
+             float fLargest = 0.0f;
+             for (int i = 0; i < 3; i++)
+@@ -586,8 +585,7 @@
+ 	}
+ 
+ 
+-	vec3_t vDistance;
+-	VectorSubtract(pressdelta, vPressStart, vDistance);
++	edVec3_c vDistance = pressdelta - vPressStart;
+ 	strStatus.Format("Distance x: %.1f  y: %.1f  z: %.1f", vDistance[0], vDistance[1], vDistance[2]);
+ 	g_pParentWnd->SetStatusText(3, strStatus);
+ 
+@@ -604,7 +602,7 @@
+ 		//area selection
+ 		if (g_qeglobals.d_select_mode == sel_area)
+ 		{
+-			VectorAdd(g_qeglobals.d_vAreaBR, move, g_qeglobals.d_vAreaBR);
++			g_qeglobals.d_vAreaBR += move;
+ 			return;
+ 		}
+ 		//curve point selection
+@@ -629,19 +627,18 @@
+ 				success &= Brush_MoveVertex(b, g_qeglobals.d_move_points[0], move, end, true);
+ 			}
+ 			if (success)
+-				VectorCopy(end, g_qeglobals.d_move_points[0]);
++				*((edVec3_c*)g_qeglobals.d_move_points[0]) = end;
+ 			return;
+ 		}
+ 		//all other selection types
+ 		for (i=0 ; i<g_qeglobals.d_num_move_points ; i++)
+-			VectorAdd (g_qeglobals.d_move_points[i], move, g_qeglobals.d_move_points[i]);
++			*((edVec3_c*)g_qeglobals.d_move_points[i]) += move;
+ 		//VectorScale(move, .5, move);
+ 		//for (i=0 ; i<g_qeglobals.d_num_move_points2 ; i++)
+ 		//	VectorAdd (g_qeglobals.d_move_points2[i], move, g_qeglobals.d_move_points2[i]);
+ 		for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
+ 		{
+-			VectorCopy(b->maxs, vTemp);
+-			VectorSubtract(vTemp, b->mins, vTemp);
++			vTemp = b->maxs - b->mins;
+ 			Brush_Build( b );
+ 			for (i=0 ; i<3 ; i++)
+ 				if (b->mins[i] > b->maxs[i]
+@@ -651,9 +648,9 @@
+ 				break;
+ 			if (b->patchBrush)
+ 			{
+-				VectorCopy(b->maxs, vTemp2);
+-				VectorSubtract(vTemp2, b->mins, vTemp2);
+-				VectorSubtract(vTemp2, vTemp, vTemp2);
++				vTemp2 = b->maxs;
++				vTemp2 = vTemp2 - b->mins;
++				vTemp2 = vTemp2 - vTemp;
+ 				//if (!Patch_DragScale(b->nPatchID, vTemp2, move))
+ 				if (!Patch_DragScale(b->pPatch, vTemp2, move))
+ 				{
+@@ -664,9 +661,8 @@
+ 
+ 			if (b->terrainBrush)
+ 			{
+-				VectorCopy(b->maxs, vTemp2);
+-				VectorSubtract(vTemp2, b->mins, vTemp2);
+-				VectorSubtract(vTemp2, vTemp, vTemp2);
++				vTemp2 = b->maxs - b->mins;
++				vTemp2 -= vTemp;
+ 				if (!Terrain_DragScale(b->pTerrain, vTemp2, move))
+ 				{
+ 					b = NULL;
+@@ -679,8 +675,9 @@
+ 		if (b != &selected_brushes)
+ 		{
+ 			Sys_Printf ("Brush dragged backwards, move canceled\n");
+-			for (i=0 ; i<g_qeglobals.d_num_move_points ; i++)
+-				VectorSubtract (g_qeglobals.d_move_points[i], move, g_qeglobals.d_move_points[i]);
++			for (i=0 ; i<g_qeglobals.d_num_move_points ; i++) {
++				*((edVec3_c*)g_qeglobals.d_move_points[i]) -= move;
++			}
+ 
+ 			for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+ 				Brush_Build( b );
+@@ -719,7 +716,7 @@
+ */
+ void Drag_MouseMoved (int x, int y, int buttons)
+ {
+-	vec3_t	move, delta;
++	edVec3_c	move, delta;
+ 	int		i;
+ 
+ 	if (!buttons)
+@@ -750,8 +747,8 @@
+     }
+ 	}
+ 
+-	VectorSubtract (move, pressdelta, delta);
+-	VectorCopy (move, pressdelta);
++	delta = move - pressdelta;
++	pressdelta = move;
+ 
+   MoveSelection (delta);
+ 
+@@ -785,7 +782,7 @@
+ 	if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])
+ 	{
+ 		Select_Move (g_qeglobals.d_select_translate);
+-		VectorCopy (vec3_origin, g_qeglobals.d_select_translate);
++		g_qeglobals.d_select_translate.clear();
+ 		Sys_UpdateWindows (W_CAMERA);
+ 	}
+   
+Index: q3radiant/ECLASS.CPP
+===================================================================
+--- q3radiant/ECLASS.CPP	(revision 442)
++++ q3radiant/ECLASS.CPP	(working copy)
+@@ -107,7 +107,7 @@
+   }
+ }
+ 
+-void ExtendBounds(vec3_t v, vec3_t &vMin, vec3_t &vMax)
++void ExtendBounds(vec3_t v, edVec3_c &vMin, edVec3_c &vMax)
+ {
+ 	for (int i = 0 ;i < 3 ;i++)
+ 	{
+@@ -129,7 +129,7 @@
+ 
+ // FIXME: this code is a TOTAL clusterfuck
+ //
+-void LoadModel(const char *pLocation, eclass_t *e, vec3_t &vMin, vec3_t &vMax, entitymodel *&pModel, const char *pSkin)
++void LoadModel(const char *pLocation, eclass_t *e, edVec3_c &vMin, edVec3_c &vMax, entitymodel *&pModel, const char *pSkin)
+ {
+   // this assumes a path only and uses tris.md2
+   // for the model and skin.pcx for the skin
+@@ -557,7 +557,7 @@
+ 		Eclass_InsertAlphabetized(cl);
+ 	}
+ }
+-bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax)
++bool Eclass_hasModel(eclass_t *e, edVec3_c &vMin, edVec3_c &vMax)
+ {
+ 	int i;
+   if (e->modelpath != NULL)
+@@ -608,8 +608,8 @@
+     // at this poitn vMin and vMax contain the min max of the model
+     // which needs to be centered at origin 0, 0, 0
+ 
+-    VectorSnap(vMin);
+-    VectorSnap(vMax);
++    vMin.vectorSnap();
++    vMax.vectorSnap();
+ 
+     if (vMax[0] - vMin[0] < 2)
+     {
+@@ -629,9 +629,7 @@
+       vMax[2] += 1;
+     }
+ 
+-    edVec3_c vTemp;
+-    VectorAdd(vMin, vMax, vTemp);
+-    vTemp *= 0.5;
++    edVec3_c vTemp = (vMin + vMax) * 0.5f;
+     model = e->model;
+     while (model != NULL)
+     {
+@@ -900,7 +898,7 @@
+ }
+ 
+ 
+-eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec3_t &vMax)
++eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax)
+ {
+ 
+ 	eclass_t *e = NULL;
+@@ -914,8 +912,8 @@
+ 		if (!strcmp (pName, e->name))
+     {
+       pEntity->md3Class = e;
+-      VectorCopy(e->mins, vMin);
+-      VectorCopy(e->maxs, vMax);
++      vMin = e->mins;
++      vMax = e->maxs;
+ 			return e;
+     }
+   }
+@@ -942,8 +940,8 @@
+   if (Eclass_hasModel(e, vMin, vMax))
+   {
+     EClass_InsertSortedList(g_md3Cache, e);
+-    VectorCopy(vMin, e->mins);
+-    VectorCopy(vMax, e->maxs);
++    e->mins = vMin;
++    e->maxs = vMax;
+     pEntity->md3Class = e;
+     return e;
+   }
+Index: q3radiant/ENTITY.CPP
+===================================================================
+--- q3radiant/ENTITY.CPP	(revision 437)
++++ q3radiant/ENTITY.CPP	(working copy)
+@@ -292,7 +292,7 @@
+ 	entity_t	*ent;
+ 	eclass_t	*e;
+ 	brush_t		*b;
+-	vec3_t		mins, maxs;
++	edVec3_c		mins, maxs;
+ 	epair_t		*ep;
+ 	bool	has_brushes;
+ 	
+@@ -373,8 +373,8 @@
+ 		}
+ 		
+ 		// create a custom brush
+-		VectorAdd (e->mins, ent->origin, mins);
+-		VectorAdd (e->maxs, ent->origin, maxs);
++		mins = e->mins + ent->origin;
++		maxs = e->maxs + ent->origin;
+ 		
+ 		float a = 0;
+ 		if (e->nShowFlags & ECLASS_MISCMODEL)
+@@ -382,13 +382,13 @@
+ 			char* p = ValueForKey(ent, "model");
+ 			if (p != NULL && strlen(p) > 0)
+ 			{
+-				vec3_t vMin, vMax;
++				edVec3_c vMin, vMax;
+ 				a = FloatForKey (ent, "angle");
+ 				if (GetCachedModel(ent, p, vMin, vMax))
+ 				{
+ 					// create a custom brush
+-					VectorAdd (ent->md3Class->mins, ent->origin, mins);
+-					VectorAdd (ent->md3Class->maxs, ent->origin, maxs);
++					mins = ent->md3Class->mins + ent->origin;
++					maxs = ent->md3Class->maxs + ent->origin;
+ 				}
+ 			}
+ 		}
+@@ -448,7 +448,7 @@
+ {
+ 	epair_t		*ep;
+ 	brush_t		*b;
+-	vec3_t		origin;
++	edVec3_c		origin;
+ 	char		text[128];
+ 	int			count;
+ 
+@@ -479,7 +479,7 @@
+ 	if ( e->eclass->nShowFlags & ECLASS_PLUGINENTITY )
+ 	{
+ 		// NOTE: the whole brush placement / origin stuff is a mess
+-		VectorCopy( e->origin, origin );
++		origin = e->origin;
+ 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+ 	}
+@@ -489,12 +489,12 @@
+ 	{
+ 		if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+ 		{
+-			VectorCopy(e->origin, origin);
++			origin = e->origin;
+ 			//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+ 		}
+ 		else
+ 		{
+-			VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
++			origin = e->brushes.onext->mins - e->eclass->mins;
+ 		}
+ 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -541,7 +541,7 @@
+ {
+ 	epair_t		*ep;
+ 	brush_t		*b;
+-	vec3_t		origin;
++	edVec3_c		origin;
+ 	char		text[128];
+ 	int			count;
+ 
+@@ -558,12 +558,12 @@
+ 	{
+     if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+     {
+-      VectorCopy(e->origin, origin);
++      origin = e->origin;
+ 		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+     }
+     else
+     {
+-		  VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
++		  origin = e->brushes.onext->mins - e->eclass->mins;
+     }
+     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -599,7 +599,7 @@
+ {
+ 	epair_t		*ep;
+ 	brush_t		*b;
+-	vec3_t		origin;
++	edVec3_c		origin;
+ 	char		text[128];
+ 	int			count;
+ 
+@@ -617,11 +617,11 @@
+     if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+     {
+ 		  //VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
+-      VectorCopy(e->origin, origin);
++      origin = e->origin;
+     }
+     else
+     {
+-		  VectorSubtract (e->brushes.onext->mins, e->eclass->mins, origin);
++		  origin =  e->brushes.onext->mins - e->eclass->mins;
+     }
+     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+ 		SetKeyValue (e, "origin", text);
+@@ -664,7 +664,7 @@
+ {
+ 	entity_t	*e;
+ 	brush_t		*b;
+-	vec3_t		mins, maxs;
++	edVec3_c	mins, maxs;
+ 	int			i;
+ 
+ 	// check to make sure the brushes are ok
+@@ -701,8 +701,8 @@
+ 			e->origin[i] = b->mins[i] - c->mins[i];
+ 
+ 		// create a custom brush
+-		VectorAdd (c->mins, e->origin, mins);
+-		VectorAdd (c->maxs, e->origin, maxs);
++		mins = c->mins + e->origin;
++		maxs = c->maxs + e->origin;
+ 
+ 	  b = Brush_Create (mins, maxs, &c->texdef);
+ 
+Index: q3radiant/ENTITY.H
+===================================================================
+--- q3radiant/ENTITY.H	(revision 437)
++++ q3radiant/ENTITY.H	(working copy)
+@@ -34,7 +34,7 @@
+     	struct entity_s	*prev, *next;
+     	brush_t		brushes;					// head/tail of list
+      	int			undoId, redoId, entityId;	// used for undo/redo
+-    	vec3_t		origin;
++    	edVec3_c		origin;
+     	eclass_t	*eclass;
+     	epair_t		*epairs;
+     	eclass_t  *md3Class;
+@@ -69,8 +69,8 @@
+     entity_t	*FindEntityInt(char *pszKey, int iValue);
+     
+     int GetUniqueTargetId(int iHint);
+-    bool Eclass_hasModel(eclass_t *e, vec3_t &vMin, vec3_t &vMax);
+-    eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, vec3_t &vMin, vec3_t &vMax);
++    bool Eclass_hasModel(eclass_t *e, class edVec3_c &vMin, edVec3_c &vMax);
++    eclass_t* GetCachedModel(entity_t *pEntity, const char *pName, class edVec3_c &vMin, edVec3_c &vMax);
+     
+     //Timo : used for parsing epairs in brush primitive
+     epair_t* ParseEpair(void);
+Index: q3radiant/MainFrm.cpp
+===================================================================
+--- q3radiant/MainFrm.cpp	(revision 439)
++++ q3radiant/MainFrm.cpp	(working copy)
+@@ -2902,7 +2902,7 @@
+ 
+ void CMainFrame::OnCameraBack() 
+ {
+-  VectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
++  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().forward);
+   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
+ 	Sys_UpdateWindows (nUpdate);
+ }
+@@ -2916,7 +2916,7 @@
+ 
+ void CMainFrame::OnCameraForward() 
+ {
+-  VectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
++  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().forward);
+   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
+ 	Sys_UpdateWindows (nUpdate);
+ }
+@@ -2937,7 +2937,7 @@
+ 
+ void CMainFrame::OnCameraStrafeleft() 
+ {
+-  VectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
++ m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().right);
+   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
+ 	Sys_UpdateWindows (nUpdate);
+ }
+@@ -2944,7 +2944,7 @@
+ 
+ void CMainFrame::OnCameraStraferight() 
+ {
+-  VectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
++  m_pCamWnd->Camera().origin.vectorMA (m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().right);
+   int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
+ 	Sys_UpdateWindows (nUpdate);
+ }
+Index: q3radiant/MAP.CPP
+===================================================================
+--- q3radiant/MAP.CPP	(revision 437)
++++ q3radiant/MAP.CPP	(working copy)
+@@ -394,8 +394,8 @@
+ 	else
+ 	{
+ 		g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
+-		VectorCopy (vec3_origin, g_pParentWnd->GetCamera()->Camera().origin);
+-		VectorCopy (vec3_origin, g_pParentWnd->GetXYWnd()->GetOrigin());
++		g_pParentWnd->GetCamera()->Camera().origin.clear();
++		g_pParentWnd->GetXYWnd()->GetOrigin().clear();
+ 	}
+ 
+ 	Map_RegionOff ();
+@@ -538,9 +538,9 @@
+ 
+ 	g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
+ 	g_pParentWnd->GetCamera()->Camera().angles[PITCH] = 0;
+-	VectorCopy (vec3_origin, g_pParentWnd->GetCamera()->Camera().origin);
++	g_pParentWnd->GetCamera()->Camera().origin.clear();
+ 	g_pParentWnd->GetCamera()->Camera().origin[2] = 48;
+-	VectorCopy (vec3_origin, g_pParentWnd->GetXYWnd()->GetOrigin());
++	g_pParentWnd->GetXYWnd()->GetOrigin().clear();
+ 
+ 	Map_RestoreBetween ();
+ 
+@@ -559,8 +559,8 @@
+ */
+ 
+ bool	region_active;
+-vec3_t	region_mins = {MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD};
+-vec3_t	region_maxs = {MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD};
++edVec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
++edVec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
+ 
+ brush_t	*region_sides[4];
+ /*
+@@ -762,8 +762,8 @@
+ 
+ 	Map_RegionOff ();
+ 
+-	VectorCopy (b->mins, region_mins);
+-	VectorCopy (b->maxs, region_maxs);
++	region_mins = b->mins;
++	region_maxs = b->maxs;
+ 	region_mins[2] = MIN_WORLD_COORD;
+ 	region_maxs[2] = MAX_WORLD_COORD;
+ 
+@@ -787,8 +787,8 @@
+ 
+ 	Map_RegionOff ();
+ 
+-	VectorCopy (b->mins, region_mins);
+-	VectorCopy (b->maxs, region_maxs);
++	region_mins = b->mins;
++	region_maxs = b->maxs;
+ 
+ 	Select_Delete ();
+ 	Map_ApplyRegion ();
+Index: q3radiant/MAP.H
+===================================================================
+--- q3radiant/MAP.H	(revision 437)
++++ q3radiant/MAP.H	(working copy)
+@@ -40,7 +40,7 @@
+ 
+ extern	bool	modified;		// for quit confirmations
+ 
+-extern	vec3_t	region_mins, region_maxs;
++extern	class edVec3_c region_mins, region_maxs;
+ extern	bool	region_active;
+ 
+ void 	Map_LoadFile (char *filename);
+Index: q3radiant/MATHLIB.CPP
+===================================================================
+--- q3radiant/MATHLIB.CPP	(revision 442)
++++ q3radiant/MATHLIB.CPP	(working copy)
+@@ -25,20 +25,6 @@
+ #include "cmdlib.h"
+ #include "mathlib.h"
+ 
+-vec3_t vec3_origin = {0.0f,0.0f,0.0f};
+-
+-
+-bool VectorCompare (vec3_t v1, vec3_t v2)
+-{
+-	int		i;
+-	
+-	for (i=0 ; i<3 ; i++)
+-		if (fabs(v1[i]-v2[i]) > EQUAL_EPSILON)
+-			return false;
+-			
+-	return true;
+-}
+-
+ vec_t Q_rint (vec_t in)
+ {
+   if (g_PrefsDlg.m_bNoClamp)
+@@ -47,21 +33,14 @@
+ 	  return (float)floor (in + 0.5);
+ }
+ 
+-void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc)
+-{
+-	vc[0] = va[0] + scale*vb[0];
+-	vc[1] = va[1] + scale*vb[1];
+-	vc[2] = va[2] + scale*vb[2];
+-}
+ 
+ 
+ 
+ 
+-void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t out)
++void VectorRotate (vec3_t vIn, const edVec3_c &vRotation, edVec3_c &out)
+ {
+-  vec3_t vWork, va;
+-  VectorCopy(vIn, va);
+-  VectorCopy(va, vWork);
++  edVec3_c va = vIn;
++  edVec3_c vWork = va;
+   int nIndex[3][2];
+   nIndex[0][0] = 1; nIndex[0][1] = 2;
+   nIndex[1][0] = 2; nIndex[1][1] = 0;
+@@ -77,26 +56,19 @@
+       vWork[nIndex[i][0]] = va[nIndex[i][0]] * c - va[nIndex[i][1]] * s;
+       vWork[nIndex[i][1]] = va[nIndex[i][0]] * s + va[nIndex[i][1]] * c;
+     }
+-    VectorCopy(vWork, va);
++    va = vWork;
+   }
+-  VectorCopy(vWork, out);
++  out = vWork;
+ }
+ 
+-void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t vOrigin, vec3_t out)
++void VectorRotate(const edVec3_c &vIn, const edVec3_c &vRotation, const edVec3_c &vOrigin, edVec3_c &out)
+ {
+-  vec3_t vTemp, vTemp2;
+-  VectorSubtract(vIn, vOrigin, vTemp);
+-  VectorRotate(vTemp, vRotation, vTemp2);
+-  VectorAdd(vTemp2, vOrigin, out);
++	edVec3_c vTemp = vIn - vOrigin;
++	edVec3_c vTemp2;
++	VectorRotate(vTemp, vRotation, vTemp2);
++	out = vTemp2 + vOrigin;
+ }
+ 
+-void VectorSnap(vec3_t v)
+-{
+-  for (int i = 0; i < 3; i++)
+-  {
+-    v[i] = floor (v[i] + 0.5);
+-  }
+-}
+ 
+ 
+ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out)
+@@ -146,45 +118,4 @@
+ 	}
+ }
+ 
+-#define	PITCH				0		// up / down
+-#define	YAW					1		// left / right
+-#define	ROLL				2		// fall over
+-#ifndef M_PI
+-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+-#endif
+ 
+-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
+-{
+-	float		angle;
+-	static float		sr, sp, sy, cr, cp, cy;
+-	// static to help MS compiler fp bugs
+-	
+-	angle = angles[YAW] * (M_PI*2 / 360);
+-	sy = sin(angle);
+-	cy = cos(angle);
+-	angle = angles[PITCH] * (M_PI*2 / 360);
+-	sp = sin(angle);
+-	cp = cos(angle);
+-	angle = angles[ROLL] * (M_PI*2 / 360);
+-	sr = sin(angle);
+-	cr = cos(angle);
+-	
+-	if (forward)
+-	{
+-		forward[0] = cp*cy;
+-		forward[1] = cp*sy;
+-		forward[2] = -sp;
+-	}
+-	if (right)
+-	{
+-		right[0] = -sr*sp*cy+cr*sy;
+-		right[1] = -sr*sp*sy-cr*cy;
+-		right[2] = -sr*cp;
+-	}
+-	if (up)
+-	{
+-		up[0] = cr*sp*cy+sr*sy;
+-		up[1] = cr*sp*sy-sr*cy;
+-		up[2] = cr*cp;
+-	}
+-}
+\ No newline at end of file
+Index: q3radiant/MATHLIB.H
+===================================================================
+--- q3radiant/MATHLIB.H	(revision 442)
++++ q3radiant/MATHLIB.H	(working copy)
+@@ -30,6 +30,15 @@
+ typedef vec_t vec3_t[3];
+ typedef vec_t vec5_t[5];
+ 
++#define	EQUAL_EPSILON	0.001
++#define	PITCH				0		// up / down
++#define	YAW					1		// left / right
++#define	ROLL				2		// fall over
++
++#ifndef M_PI
++#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
++#endif
++
+ class edVec3_c {
+ public:
+ 	union {
+@@ -48,6 +57,10 @@
+ 		_v[2] = c;
+ 	}
+ 	edVec3_c(const float *p) {
++		if(p == 0) {
++			_v[0] = _v[1] = _v[2] = 0.f;
++			return;
++		}
+ 		_v[0] = p[0];
+ 		_v[1] = p[1];
+ 		_v[2] = p[2];
+@@ -55,6 +68,11 @@
+ 	void clear() {
+ 		x = y = z = 0.0f;
+ 	}
++	void set(float a, float b, float c) {
++		_v[0] = a;
++		_v[1] = b;
++		_v[2] = c;
++	}
+ 	float vectorLength() const {
+ 		float length = 0.0f;
+ 		for (int i = 0; i < 3; i++)
+@@ -62,6 +80,12 @@
+ 		length = sqrt (length);
+ 		return length;
+ 	}
++	void vectorSnap() {
++		for (int i = 0; i < 3; i++) {
++			_v[i] = floor (_v[i] + 0.5);
++		}
++	}
++
+ 	float normalize() {
+ 		float length = 0.0f;
+ 		for (int i = 0; i < 3; i++)
+@@ -81,6 +105,47 @@
+ 	float dotProduct(const float *x) const {
+ 		return (x[0]*_v[0]+x[1]*_v[1]+x[2]*_v[2]);
+ 	}
++	// sets this vector to a MA (multiply add) result of given arguments
++	void vectorMA (const edVec3_c &base, float scale, const edVec3_c &dir) {
++		_v[0] = base[0] + scale*dir[0];
++		_v[1] = base[1] + scale*dir[1];
++		_v[2] = base[2] + scale*dir[2];
++	}
++	void makeAngleVectors(vec3_t forward, vec3_t right, vec3_t up) {
++		float		angle;
++		static float		sr, sp, sy, cr, cp, cy;
++		// static to help MS compiler fp bugs
++		
++		angle = _v[YAW] * (M_PI*2 / 360);
++		sy = sin(angle);
++		cy = cos(angle);
++		angle = _v[PITCH] * (M_PI*2 / 360);
++		sp = sin(angle);
++		cp = cos(angle);
++		angle = _v[ROLL] * (M_PI*2 / 360);
++		sr = sin(angle);
++		cr = cos(angle);
++		
++		if (forward)
++		{
++			forward[0] = cp*cy;
++			forward[1] = cp*sy;
++			forward[2] = -sp;
++		}
++		if (right)
++		{
++			right[0] = -sr*sp*cy+cr*sy;
++			right[1] = -sr*sp*sy-cr*cy;
++			right[2] = -sr*cp;
++		}
++		if (up)
++		{
++			up[0] = cr*sp*cy+sr*sy;
++			up[1] = cr*sp*sy-sr*cy;
++			up[2] = cr*cp;
++		}
++	}
++
+ 	void operator *=(float f) {
+ 		x *= f;
+ 		y *= f;
+@@ -91,6 +156,19 @@
+ 		y += other.y;
+ 		z += other.z;
+ 	}
++	void operator -=(const edVec3_c &other) {
++		x -= other.x;
++		y -= other.y;
++		z -= other.z;
++	}
++	bool vectorCompare(const edVec3_c &other, float epsilon = EQUAL_EPSILON) const {
++		for (int i = 0; i < 3; i++) {
++			if (fabs(_v[i]-other._v[i]) > epsilon) {
++				return false;
++			}
++		}			
++		return true;
++	}
+ 	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
+ 		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
+ 	}
+@@ -103,8 +181,7 @@
+ 	edVec3_c operator -() const {
+ 		return edVec3_c(-x,-y,-z);
+ 	}
+-	void setupPolar(float radius, float theta, float phi)
+-	{
++	void setupPolar(float radius, float theta, float phi) {
+  		_v[0]=float(radius * cos(theta) * cos(phi));
+ 		_v[1]=float(radius * sin(theta) * cos(phi));
+ 		_v[2]=float(radius * sin(phi));
+@@ -132,25 +209,8 @@
+ #define	M_PI	3.14159265358979323846
+ #endif 
+ 
+-extern vec3_t vec3_origin;
+-
+-#define	EQUAL_EPSILON	0.001
+-
+-bool VectorCompare (vec3_t v1, vec3_t v2);
+-
+-//#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
+-#define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
+-#define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
+-#define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
+-#define VectorSet(v, a, b, c) {v[0]=a;v[1]=b;v[2]=c;}
+-
+ vec_t Q_rint (vec_t in);
+ 
+-
+-void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc);
+-
+-void VectorSnap(vec3_t v);
+-
+ void _Vector53Copy (vec5_t in, vec3_t out);
+ void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out);
+ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
+@@ -159,9 +219,8 @@
+ void ClearBounds (vec3_t mins, vec3_t maxs);
+ void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
+ 
+-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+-void VectorToAngles( vec3_t vec, vec3_t angles );
+-#define VectorClear(x) {x[0] = x[1] = x[2] = 0;}
++//void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
++//void VectorToAngles( vec3_t vec, vec3_t angles );
+ 
+ #define ZERO_EPSILON 1.0E-6
+ #define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+Index: q3radiant/PMESH.CPP
+===================================================================
+--- q3radiant/PMESH.CPP	(revision 442)
++++ q3radiant/PMESH.CPP	(working copy)
+@@ -75,7 +75,7 @@
+ int  g_nPatchBendState = -1;
+ int  g_nPatchInsertState = -1;
+ int  g_nBendOriginIndex = 0;
+-vec3_t g_vBendOrigin;
++edVec3_c g_vBendOrigin;
+ 
+ bool g_bPatchAxisOnRow = true;
+ int  g_nPatchAxisIndex = 0;
+@@ -147,7 +147,7 @@
+ 	qglColor3fv(fColor);
+ }
+ 
+-vec_t __VectorNormalize (vec3_t in, vec3_t out)
++vec_t __VectorNormalize (vec3_t in, edVec3_c &out)
+ {
+ 	vec_t	length, ilength;
+ 
+@@ -154,7 +154,7 @@
+ 	length = sqrt (in[0]*in[0] + in[1]*in[1] + in[2]*in[2]);
+ 	if (length == 0)
+ 	{
+-		VectorClear (out);
++		out.clear();
+ 		return 0;
+ 	}
+ 
+@@ -247,13 +247,13 @@
+ {
+ 	int		i, j, k, dist;
+ 	edVec3_c	normal;
+-	vec3_t	sum;
++	edVec3_c	sum;
+ 	int		count;
+-	vec3_t	base;
++	edVec3_c	base;
+ 	edVec3_c	delta;
+ 	int		x, y;
+ 	drawVert_t	*dv;
+-	vec3_t		around[8], temp;
++	edVec3_c		around[8], temp;
+ 	bool	good[8];
+ 	bool	wrapWidth, wrapHeight;
+ 	float		len;
+@@ -297,10 +297,10 @@
+ 			count = 0;
+ 			//--dv = reinterpret_cast<drawVert_t*>(in.ctrl[j*in.width+i]);
+ 			dv = &in->ctrl[i][j];
+-			VectorCopy( dv->xyz, base );
++			base = dv->xyz;
+ 			for ( k = 0 ; k < 8 ; k++ ) 
+       {
+-				VectorClear( around[k] );
++				around[k].clear();
+ 				good[k] = false;
+ 
+ 				for ( dist = 1 ; dist <= 3 ; dist++ ) 
+@@ -335,7 +335,7 @@
+ 						break;					// edge of patch
+ 					}
+ 					//--VectorSubtract( in.ctrl[y*in.width+x]->xyz, base, temp );
+-					VectorSubtract( in->ctrl[x][y].xyz, base, temp );
++					temp = in->ctrl[x][y].xyz - base;
+ 					if ( __VectorNormalize( temp, temp ) == 0 ) 
+           {
+ 						continue;				// degenerate edge, get more dist
+@@ -343,13 +343,13 @@
+           else                 
+           {
+ 						good[k] = true;
+-						VectorCopy( temp, around[k] );
++						around[k] = temp;
+ 						break;					// good edge
+ 					}
+ 				}
+ 			}
+ 
+-			VectorClear( sum );
++			sum.clear();
+ 			for ( k = 0 ; k < 8 ; k++ ) 
+       {
+ 				if ( !good[k] || !good[(k+1)&7] ) 
+@@ -361,7 +361,7 @@
+         {
+ 					continue;
+ 				}
+-				VectorAdd( normal, sum, sum );
++				normal += sum;
+ 				count++;
+ 			}
+ 			if ( count == 0 ) 
+@@ -481,9 +481,9 @@
+ 		b->brush_faces = f;
+ 		j = (i+1)%4;
+ 
+-		VectorCopy (pts[j][1], f->planepts[0]);
+-		VectorCopy (pts[i][1], f->planepts[1]);
+-		VectorCopy (pts[i][0], f->planepts[2]);
++		 f->planepts[0] = pts[j][1];
++		f->planepts[1] = pts[i][1];
++		f->planepts[2] = pts[i][0];
+ 	}
+ 	
+ 	f = Face_Alloc();
+@@ -497,9 +497,9 @@
+ 	f->next = b->brush_faces;
+ 	b->brush_faces = f;
+ 
+-	VectorCopy (pts[0][1], f->planepts[0]);
+-	VectorCopy (pts[1][1], f->planepts[1]);
+-	VectorCopy (pts[2][1], f->planepts[2]);
++	f->planepts[0] = pts[0][1];
++	f->planepts[1] = pts[1][1];
++	f->planepts[2] = pts[2][1];
+ 
+ 	f = Face_Alloc();
+ 	f->texdef = texdef;
+@@ -512,9 +512,9 @@
+ 	f->next = b->brush_faces;
+ 	b->brush_faces = f;
+ 
+-	VectorCopy (pts[2][0], f->planepts[0]);
+-	VectorCopy (pts[1][0], f->planepts[1]);
+-	VectorCopy (pts[0][0], f->planepts[2]);
++	f->planepts[0] = pts[2][0];
++	f->planepts[1] = pts[1][0];
++	f->planepts[2] = pts[0][0];
+ 
+   Brush_Build(b);
+ }
+@@ -768,12 +768,12 @@
+ face_t* Patch_GetAxisFace(patchMesh_t *p)
+ {
+   face_t *f = NULL;
+-  vec3_t vTemp;
++  edVec3_c vTemp;
+   brush_t *b = p->pSymbiot;
+ 
+ 	for (f = b->brush_faces ; f ; f = f->next) 
+   {
+-    VectorSubtract(f->face_winding->points[1], f->face_winding->points[0], vTemp);
++    vTemp = f->face_winding->points[1].getXYZ() - f->face_winding->points[0].getXYZ();
+     int nScore = 0;
+ 
+     // default edge faces on caps are 8 high so
+@@ -821,9 +821,7 @@
+ {
+   Patch_MeshNormals(p);
+   face_t *f = (bFaceCycle) ? nextFace(p) : Patch_GetAxisFace(p);
+-  vec3_t vSave;
+-  VectorCopy(f->plane.normal, vSave);
+-  
++  edVec3_c vSave = f->plane.normal;
+   float fRotate = f->texdef.rotate;
+   f->texdef.rotate = 0;
+   float fScale[2];
+@@ -843,12 +841,12 @@
+     {
+       if (!bFaceCycle)
+       {
+-        VectorCopy(p->ctrl[i][j].normal, f->plane.normal);
++        f->plane.normal = p->ctrl[i][j].normal;
+       }
+ 		  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
+     }
+   }
+-  VectorCopy(vSave, f->plane.normal);
++  f->plane.normal = vSave;
+   f->texdef.rotate = fRotate;
+   f->texdef.scale[0] = fScale[0];
+   f->texdef.scale[1] = fScale[1];
+@@ -863,7 +861,7 @@
+   {
+     for (int j = 0; j < p->height; j++)
+     {
+-      VectorCopy(v, p->ctrl[i][j].xyz);
++     p->ctrl[i][j].xyz = v;
+     }
+   }
+ }
+@@ -912,11 +910,11 @@
+     {
+       if (bSmall)
+       {
+-        VectorCopy(pParent->ctrl[i][nIndex].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
++        p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[i][nIndex].xyz;
+       }
+       else
+       {
+-        VectorCopy(pParent->ctrl[i][nIndex].xyz, p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz);
++        p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz = pParent->ctrl[i][nIndex].xyz;
+       }
+     }
+     else
+@@ -923,11 +921,11 @@
+     {
+       if (bSmall)
+       {
+-        VectorCopy(pParent->ctrl[nIndex][i].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
++        p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[nIndex][i].xyz;
+       }
+       else
+       {
+-        VectorCopy(pParent->ctrl[nIndex][i].xyz, p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz);
++        p->ctrl[Index5By[i][0]][Index5By[i][1]].xyz = pParent->ctrl[nIndex][i].xyz;
+       }
+     }
+   
+@@ -952,11 +950,11 @@
+   {
+     if (bSmall)
+     {
+-      VectorCopy(vTemp, p->ctrl[Interior3By[j][0]][Interior3By[j][1]].xyz);
++      p->ctrl[Interior3By[j][0]][Interior3By[j][1]].xyz = vTemp;
+     }
+     else
+     {
+-      VectorCopy(vTemp, p->ctrl[Interior5By[j][0]][Interior5By[j][1]].xyz);
++      p->ctrl[Interior5By[j][0]][Interior5By[j][1]].xyz = vTemp;
+     }
+   }
+ 
+@@ -1016,27 +1014,27 @@
+ 
+   if (nType == CCapDialog::IBEVEL)
+   {
+-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[0][2].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][2].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][0].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][1].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][2].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][0].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[2][1].xyz);
++    p->ctrl[0][0].xyz = pParent->ctrl[0][nIndex].xyz;
++    p->ctrl[0][2].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[2][2].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[1][0].xyz = pParent->ctrl[1][nIndex].xyz;
++   p->ctrl[1][1].xyz = pParent->ctrl[1][nIndex].xyz;
++   p->ctrl[1][2].xyz = pParent->ctrl[1][nIndex].xyz;
++   p->ctrl[2][0].xyz = pParent->ctrl[1][nIndex].xyz;
++   p->ctrl[2][1].xyz = pParent->ctrl[1][nIndex].xyz;
+   }
+   else if (nType == CCapDialog::BEVEL)
+   {
+     edVec3_c p1, p2, p3, p4, temp, dir;
+ 
+-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p3);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p1);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p2);
++    p3 = pParent->ctrl[0][nIndex].xyz;
++    p1 = pParent->ctrl[1][nIndex].xyz;
++    p2 = pParent->ctrl[2][nIndex].xyz;
+ 
+-    VectorSubtract(p3, p2, dir);
++    dir = p3 - p2;
+     dir.normalize();
+-    VectorSubtract(p1, p2, temp);
++    temp = p1 - p2;
+     vec_t dist = temp.dotProduct(dir);
+ 
+ 	temp = dir * dist;
+@@ -1043,56 +1041,56 @@
+ 
+ 	temp += p2;
+ 
+-    VectorSubtract(temp, p1, temp);
++	temp -= p1;
+ 	temp *= 2.0;
+-    VectorAdd(p1, temp, p4);
++	p4 = p1 + temp;
+ 
+-    VectorCopy(p4, p->ctrl[0][0].xyz);
+-    VectorCopy(p4, p->ctrl[1][0].xyz);
+-    VectorCopy(p4, p->ctrl[0][1].xyz);
+-    VectorCopy(p4, p->ctrl[1][1].xyz);
+-    VectorCopy(p4, p->ctrl[0][2].xyz);
+-    VectorCopy(p4, p->ctrl[1][2].xyz);
+-    VectorCopy(p3, p->ctrl[2][0].xyz);
+-    VectorCopy(p1, p->ctrl[2][1].xyz);
+-    VectorCopy(p2, p->ctrl[2][2].xyz);
++    p->ctrl[0][0].xyz = p4;
++    p->ctrl[1][0].xyz = p4;
++    p->ctrl[0][1].xyz = p4;
++    p->ctrl[1][1].xyz = p4;
++    p->ctrl[0][2].xyz = p4;
++    p->ctrl[1][2].xyz = p4;
++    p->ctrl[2][0].xyz = p3;
++    p->ctrl[2][1].xyz = p1;
++    p->ctrl[2][2].xyz = p2;
+ 
+   }
+   else if (nType == CCapDialog::ENDCAP)
+   {
+-    VectorAdd(pParent->ctrl[4][nIndex].xyz, pParent->ctrl[0][nIndex].xyz, vTemp);
++    vTemp = pParent->ctrl[4][nIndex].xyz + pParent->ctrl[0][nIndex].xyz;
+     vTemp *= 0.5;
+-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
+-                       VectorCopy(vTemp, p->ctrl[1][0].xyz);
+-    VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[2][0].xyz);
++    p->ctrl[0][0].xyz =pParent->ctrl[0][nIndex].xyz;
++    p->ctrl[1][0].xyz = vTemp;
++    p->ctrl[2][0].xyz = pParent->ctrl[4][nIndex].xyz;
+ 
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[0][2].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[1][2].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][2].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[1][1].xyz);
++    p->ctrl[0][2].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[1][2].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[2][2].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[1][1].xyz = pParent->ctrl[2][nIndex].xyz;
+     
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[2][1].xyz);
++    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[2][1].xyz = pParent->ctrl[3][nIndex].xyz;
+   }
+   else
+   {
+-    VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][0].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][0].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][0].xyz);
+-    VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[4][0].xyz);
++    p->ctrl[0][0].xyz = pParent->ctrl[0][nIndex].xyz;
++    p->ctrl[1][0].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[2][0].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[3][0].xyz = pParent->ctrl[3][nIndex].xyz;
++    p->ctrl[4][0].xyz = pParent->ctrl[4][nIndex].xyz;
+     
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][1].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][1].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][1].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][1].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[4][1].xyz);
++    p->ctrl[0][1].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[1][1].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[2][1].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[3][1].xyz = pParent->ctrl[3][nIndex].xyz;
++    p->ctrl[4][1].xyz = pParent->ctrl[3][nIndex].xyz;
+ 
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[0][2].xyz);
+-    VectorCopy(pParent->ctrl[1][nIndex].xyz, p->ctrl[1][2].xyz);
+-    VectorCopy(pParent->ctrl[2][nIndex].xyz, p->ctrl[2][2].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[3][2].xyz);
+-    VectorCopy(pParent->ctrl[3][nIndex].xyz, p->ctrl[4][2].xyz);
++    p->ctrl[0][2].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[1][2].xyz = pParent->ctrl[1][nIndex].xyz;
++    p->ctrl[2][2].xyz = pParent->ctrl[2][nIndex].xyz;
++    p->ctrl[3][2].xyz = pParent->ctrl[3][nIndex].xyz;
++    p->ctrl[4][2].xyz = pParent->ctrl[3][nIndex].xyz;
+   }
+ 
+ 
+@@ -1143,7 +1141,7 @@
+       // if any of these compares hit, it is a closed patch and as such
+       // the generic capping will work.. if we do not find a closed edge 
+       // then we need to ask which kind of cap to add
+-      if (VectorCompare(pParent->ctrl[0][0].xyz, pParent->ctrl[pParent->width-1][0].xyz))
++      if (pParent->ctrl[0][0].xyz.vectorCompare(pParent->ctrl[pParent->width-1][0].xyz))
+       {
+         pCap = Cap(pParent, true, false);
+         if (pCap != NULL)
+@@ -1151,7 +1149,7 @@
+           b[nIndex++] = pCap;
+         }
+       }
+-      if (VectorCompare(pParent->ctrl[0][pParent->height-1].xyz, pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
++      if (pParent->ctrl[0][pParent->height-1].xyz.vectorCompare(pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
+       {
+         pCap = Cap(pParent, true, true);
+         if (pCap != NULL)
+@@ -1159,7 +1157,7 @@
+           b[nIndex++] = pCap;
+         }
+       }
+-      if (VectorCompare(pParent->ctrl[0][0].xyz, pParent->ctrl[0][pParent->height-1].xyz))
++      if (pParent->ctrl[0][0].xyz.vectorCompare(pParent->ctrl[0][pParent->height-1].xyz))
+       {
+         pCap = Cap(pParent, false, false);
+         if (pCap != NULL)
+@@ -1167,7 +1165,7 @@
+           b[nIndex++] = pCap;
+         }
+       }
+-      if (VectorCompare(pParent->ctrl[pParent->width-1][0].xyz, pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
++      if (pParent->ctrl[pParent->width-1][0].xyz.vectorCompare(pParent->ctrl[pParent->width-1][pParent->height-1].xyz))
+       {
+         pCap = Cap(pParent, false, true);
+         if (pCap != NULL)
+@@ -1237,7 +1235,7 @@
+ 
+   for (i = 0; i < pParent->width; i++)
+   {
+-    VectorCopy(pParent->ctrl[i][0].xyz, p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz);
++    p->ctrl[Index3By[i][0]][Index3By[i][1]].xyz = pParent->ctrl[i][0].xyz;
+     for (j = 0; j < 3; j++)
+     {
+       if (pParent->ctrl[i][0].xyz[j] < vMin[j])
+@@ -1254,7 +1252,7 @@
+ 
+   for (i = 0; i < Interior3ByCount; i++)
+   {
+-    VectorCopy(vTemp, p->ctrl[Interior3By[i][0]][Interior3By[i][1]].xyz);
++    p->ctrl[Interior3By[i][0]][Interior3By[i][1]].xyz = vTemp;
+   }
+ 
+   Patch_CalcBounds(p, vMin, vMax);
+@@ -1270,23 +1268,22 @@
+     {
+       b = Patch_GenericMesh(3, 3, 2, false);
+       p = b->pPatch;
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][2].xyz);
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[2][1].xyz);
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[0][1].xyz);
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][0].xyz);
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][1].xyz);
+-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[0][0].xyz);
++      p->ctrl[1][2].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[2][1].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[0][1].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[1][0].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[1][1].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[0][0].xyz = p->ctrl[2][0].xyz;
+ 
+       b2 = Patch_GenericMesh(3, 3, 2, false);
+       p2 = b2->pPatch;
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][2].xyz);
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[2][1].xyz);
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[0][1].xyz);
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][0].xyz);
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][1].xyz);
+-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[0][0].xyz);
++      p2->ctrl[1][2].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[2][1].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[0][1].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[1][0].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[1][1].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[0][0].xyz = p2->ctrl[2][0].xyz;
+ 
+-
+       bCreated = true;
+ 
+     }
+@@ -1294,21 +1291,21 @@
+     {
+       b = Patch_GenericMesh(5, 5, 2, false);
+       p = b->pPatch;
+-      VectorCopy(p->ctrl[4][4].xyz, p->ctrl[4][3].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[1][4].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[2][4].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[3][4].xyz);
++      p->ctrl[4][3].xyz = p->ctrl[4][4].xyz;
++      p->ctrl[1][4].xyz = p->ctrl[0][4].xyz;
++      p->ctrl[2][4].xyz = p->ctrl[0][4].xyz;
++      p->ctrl[3][4].xyz = p->ctrl[0][4].xyz;
+ 
+-      VectorCopy(p->ctrl[4][0].xyz, p->ctrl[4][1].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[3][0].xyz);
++      p->ctrl[4][1].xyz = p->ctrl[4][0].xyz;
++      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[3][0].xyz = p->ctrl[0][0].xyz;
+ 
+       for (i = 1; i < 4; i++)
+       {
+         for (j = 0; j < 4; j++)
+         {
+-          VectorCopy(p->ctrl[4][i].xyz, p->ctrl[j][i].xyz);
++          p->ctrl[j][i].xyz = p->ctrl[4][i].xyz;
+         }
+       }
+ 
+@@ -1315,21 +1312,21 @@
+ 
+       b2 = Patch_GenericMesh(5, 5, 2, false);
+       p2 = b2->pPatch;
+-      VectorCopy(p2->ctrl[4][4].xyz, p2->ctrl[4][3].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[1][4].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[2][4].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[3][4].xyz);
++      p2->ctrl[4][3].xyz = p2->ctrl[4][4].xyz;
++      p2->ctrl[1][4].xyz = p2->ctrl[0][4].xyz;
++      p2->ctrl[2][4].xyz = p2->ctrl[0][4].xyz;
++      p2->ctrl[3][4].xyz = p2->ctrl[0][4].xyz;
+ 
+-      VectorCopy(p2->ctrl[4][0].xyz, p2->ctrl[4][1].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[3][0].xyz);
++      p2->ctrl[4][1].xyz = p2->ctrl[4][0].xyz;
++      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[3][0].xyz = p2->ctrl[0][0].xyz;
+ 
+       for (i = 1; i < 4; i++)
+       {
+         for (j = 0; j < 4; j++)
+         {
+-          VectorCopy(p2->ctrl[4][i].xyz, p2->ctrl[j][i].xyz);
++          p2->ctrl[j][i].xyz = p2->ctrl[4][i].xyz;
+         }
+       }
+ 
+@@ -1343,15 +1340,15 @@
+     {
+       b = Patch_GenericMesh(3, 3, 2, false);
+       p = b->pPatch;
+-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[2][1].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
++      p->ctrl[2][1].xyz = p->ctrl[2][0].xyz;
++      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;
+ 
+       b2 = Patch_GenericMesh(3, 3, 2, false);
+       p2 = b2->pPatch;
+-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[2][1].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
++      p2->ctrl[2][1].xyz = p2->ctrl[2][0].xyz;
++      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
+       bCreated = true;
+     }
+     else if (bEndcap)
+@@ -1358,31 +1355,31 @@
+     {
+       b = Patch_GenericMesh(5, 5, 2, false);
+       p = b->pPatch;
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[2][0].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[3][0].xyz);
+-      VectorCopy(p->ctrl[4][0].xyz, p->ctrl[4][1].xyz);
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[4][0].xyz);
++      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[2][0].xyz = p->ctrl[0][0].xyz;;
++      p->ctrl[3][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[4][1].xyz = p->ctrl[4][0].xyz;
++      p->ctrl[4][0].xyz = p->ctrl[0][0].xyz;
+ 
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[1][4].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[2][4].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[3][4].xyz);
+-      VectorCopy(p->ctrl[4][4].xyz, p->ctrl[4][3].xyz);
+-      VectorCopy(p->ctrl[0][4].xyz, p->ctrl[4][4].xyz);
++      p->ctrl[1][4].xyz = p->ctrl[0][4].xyz;
++      p->ctrl[2][4].xyz = p->ctrl[0][4].xyz;
++      p->ctrl[3][4].xyz = p->ctrl[0][4].xyz;
++      p->ctrl[4][3].xyz = p->ctrl[4][4].xyz;
++      p->ctrl[4][4].xyz = p->ctrl[0][4].xyz;
+ 
+       b2 = Patch_GenericMesh(5, 5, 2, false);
+       p2 = b2->pPatch;
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[2][0].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[3][0].xyz);
+-      VectorCopy(p2->ctrl[4][0].xyz, p2->ctrl[4][1].xyz);
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[4][0].xyz);
++      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[2][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[3][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[4][1].xyz = p2->ctrl[4][0].xyz;
++      p2->ctrl[4][0].xyz = p2->ctrl[0][0].xyz;
+ 
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[1][4].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[2][4].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[3][4].xyz);
+-      VectorCopy(p2->ctrl[4][4].xyz, p2->ctrl[4][3].xyz);
+-      VectorCopy(p2->ctrl[0][4].xyz, p2->ctrl[4][4].xyz);
++      p2->ctrl[1][4].xyz = p2->ctrl[0][4].xyz;
++      p2->ctrl[2][4].xyz = p2->ctrl[0][4].xyz;
++      p2->ctrl[3][4].xyz = p2->ctrl[0][4].xyz;
++      p2->ctrl[4][3].xyz = p2->ctrl[4][4].xyz;
++      p2->ctrl[4][4].xyz = p2->ctrl[0][4].xyz;
+       bCreated = true;
+     }
+     else
+@@ -1390,27 +1387,27 @@
+       b = Patch_GenericMesh(3, 3, 2, false);
+       p = b->pPatch;
+       
+-      VectorCopy(p->ctrl[0][1].xyz, vTemp);
+-      VectorCopy(p->ctrl[0][2].xyz, p->ctrl[0][1].xyz)
+-      VectorCopy(p->ctrl[1][2].xyz, p->ctrl[0][2].xyz)
+-      VectorCopy(p->ctrl[2][2].xyz, p->ctrl[1][2].xyz)
+-      VectorCopy(p->ctrl[2][1].xyz, p->ctrl[2][2].xyz)
+-      VectorCopy(p->ctrl[2][0].xyz, p->ctrl[2][1].xyz)
+-      VectorCopy(p->ctrl[1][0].xyz, p->ctrl[2][0].xyz)
+-      VectorCopy(p->ctrl[0][0].xyz, p->ctrl[1][0].xyz)
+-      VectorCopy(vTemp, p->ctrl[0][0].xyz)
++      vTemp = p->ctrl[0][1].xyz;
++      p->ctrl[0][1].xyz = p->ctrl[0][2].xyz;
++      p->ctrl[0][2].xyz = p->ctrl[1][2].xyz;
++      p->ctrl[1][2].xyz = p->ctrl[2][2].xyz;
++      p->ctrl[2][2].xyz = p->ctrl[2][1].xyz;
++      p->ctrl[2][1].xyz = p->ctrl[2][0].xyz;
++      p->ctrl[2][0].xyz = p->ctrl[1][0].xyz;
++      p->ctrl[1][0].xyz = p->ctrl[0][0].xyz;
++      p->ctrl[0][0].xyz = vTemp;
+ 
+       b2 = Patch_GenericMesh(3, 3, 2, false);
+       p2 = b2->pPatch;
+-      VectorCopy(p2->ctrl[0][1].xyz, vTemp);
+-      VectorCopy(p2->ctrl[0][2].xyz, p2->ctrl[0][1].xyz)
+-      VectorCopy(p2->ctrl[1][2].xyz, p2->ctrl[0][2].xyz)
+-      VectorCopy(p2->ctrl[2][2].xyz, p2->ctrl[1][2].xyz)
+-      VectorCopy(p2->ctrl[2][1].xyz, p2->ctrl[2][2].xyz)
+-      VectorCopy(p2->ctrl[2][0].xyz, p2->ctrl[2][1].xyz)
+-      VectorCopy(p2->ctrl[1][0].xyz, p2->ctrl[2][0].xyz)
+-      VectorCopy(p2->ctrl[0][0].xyz, p2->ctrl[1][0].xyz)
+-      VectorCopy(vTemp, p2->ctrl[0][0].xyz)
++      vTemp = p2->ctrl[0][1].xyz;
++      p2->ctrl[0][1].xyz = p2->ctrl[0][2].xyz;
++      p2->ctrl[0][2].xyz = p2->ctrl[1][2].xyz;
++      p2->ctrl[1][2].xyz = p2->ctrl[2][2].xyz;
++      p2->ctrl[2][2].xyz = p2->ctrl[2][1].xyz;
++      p2->ctrl[2][1].xyz = p2->ctrl[2][0].xyz;
++      p2->ctrl[2][0].xyz = p2->ctrl[1][0].xyz;
++      p2->ctrl[1][0].xyz = p2->ctrl[0][0].xyz;
++      p2->ctrl[0][0].xyz = vTemp;
+       bCreated = true;
+     }
+   }
+@@ -1547,7 +1544,7 @@
+ 
+       p->ctrl[i][0].xyz[2] =  b->mins[2];
+ 
+-		  VectorCopy( p->ctrl[i][0].xyz, p->ctrl[i][2].xyz );
++		  p->ctrl[i][2].xyz = p->ctrl[i][0].xyz;
+ 
+ 		  p->ctrl[i][2].xyz[2] =  b->maxs[2];
+ 
+@@ -1565,8 +1562,8 @@
+         {
+           for (i = 0; i < p->height; i++)
+           {
+-            VectorCopy(p->ctrl[1][i].xyz, p->ctrl[2][i].xyz);
+-            VectorCopy(p->ctrl[7][i].xyz, p->ctrl[6][i].xyz);
++            p->ctrl[2][i].xyz = p->ctrl[1][i].xyz;
++            p->ctrl[6][i].xyz = p->ctrl[7][i].xyz;
+           }
+         }
+         else
+@@ -1573,10 +1570,10 @@
+         {
+           for (i = 0; i < p->height; i++)
+           {
+-            VectorCopy(p->ctrl[5][i].xyz, p->ctrl[4][i].xyz);
+-            VectorCopy(p->ctrl[1][i].xyz, p->ctrl[2][i].xyz);
+-            VectorCopy(p->ctrl[7][i].xyz, p->ctrl[6][i].xyz);
+-            VectorCopy(p->ctrl[8][i].xyz, p->ctrl[7][i].xyz);
++            p->ctrl[4][i].xyz = p->ctrl[5][i].xyz;
++            p->ctrl[2][i].xyz = p->ctrl[1][i].xyz;
++            p->ctrl[6][i].xyz = p->ctrl[7][i].xyz;
++            p->ctrl[7][i].xyz = p->ctrl[8][i].xyz;
+           }
+         }
+       }
+@@ -1586,12 +1583,12 @@
+         {
+           for (j = 0; j < p->height; j++)
+           {
+-            VectorCopy(p->ctrl[i+1][j].xyz, p->ctrl[i][j].xyz);
++            p->ctrl[i][j].xyz = p->ctrl[i+1][j].xyz;
+           }
+         }
+         for (j = 0; j < p->height; j++)
+         {
+-          VectorCopy(p->ctrl[0][j].xyz, p->ctrl[8][j].xyz);
++          p->ctrl[8][j].xyz = p->ctrl[0][j].xyz;
+         }
+       }
+     }
+@@ -1777,11 +1774,11 @@
+ PointValueInMoveList
+ ==================
+ */
+-int PointValueInMoveList(vec3_t v)
++int PointValueInMoveList(const edVec3_c &v)
+ {
+   for (int i = 0; i < g_qeglobals.d_num_move_points; i++)
+   {
+-    if (VectorCompare(v, g_qeglobals.d_move_points[i]))
++    if (v.vectorCompare(g_qeglobals.d_move_points[i]))
+       return i;
+   }
+   return -1;
+@@ -1793,7 +1790,7 @@
+ RemovePointFromMoveList
+ ==================
+ */
+-void RemovePointFromMoveList(vec3_t v)
++void RemovePointFromMoveList(const edVec3_c &v)
+ {
+   int n;
+   while ( (n = PointValueInMoveList(v)) >= 0)
+@@ -1826,6 +1823,15 @@
+ AddPoint
+ ==================
+ */
++static int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
++	int		i;
++	
++	for (i=0 ; i<3 ; i++)
++		if (fabs(v1[i]-v2[i]) > EQUAL_EPSILON)
++			return false;
++			
++	return true;
++}
+ void AddPoint(patchMesh_t* p, vec3_t v, bool bWeldOrDrill = true)
+ {
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -1839,7 +1845,7 @@
+       {
+         if (g_bPatchWeld)
+         {
+-          if ( VectorCompare(v, p->ctrl[i][j].xyz)
++          if (VectorCompare(v,p->ctrl[i][j].xyz)
+             && PointInMoveList(p->ctrl[i][j].xyz) == -1)
+           {
+             g_qeglobals.d_move_points[g_qeglobals.d_num_move_points++] = p->ctrl[i][j].xyz;
+@@ -1955,7 +1961,7 @@
+ AddPatchMovePoint
+ ==================
+ */
+-void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull)
++void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull)
+ {
+   if (!g_bSameView && !bMulti && !bFull)
+   {
+@@ -1972,7 +1978,7 @@
+       {
+ 		    for ( int j = 0 ; j < p->height ; j++ ) 
+         {
+-          if (VectorCompare(v, p->ctrl[i][j].xyz))
++          if (v.vectorCompare(p->ctrl[i][j].xyz))
+           {
+             if (PointInMoveList(p->ctrl[i][j].xyz) == -1)
+             {
+@@ -2027,7 +2033,7 @@
+   int i, j;
+   for (i=0 ; i < g_qeglobals.d_num_move_points ; i++)
+   {
+-	  VectorAdd (g_qeglobals.d_move_points[i], vMove, g_qeglobals.d_move_points[i]);
++	*((edVec3_c*)g_qeglobals.d_move_points[i]) += vMove;
+     if (g_qeglobals.d_num_move_points == 1)
+     {
+     }
+@@ -2046,7 +2052,7 @@
+       {
+ 		    for ( j = 0 ; j < p->height ; j++ ) 
+         {
+-	        VectorCopy (p->ctrl[i][j].xyz, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
++	        g_qeglobals.d_points[g_qeglobals.d_numpoints] = p->ctrl[i][j].xyz;
+           if (g_qeglobals.d_numpoints < MAX_POINTS-1)
+           {
+ 	          g_qeglobals.d_numpoints++;
+@@ -2731,7 +2737,7 @@
+   {
+     for (int h = 0; h < pm->height; h++)
+     {
+-      VectorAdd(pm->ctrl[w][h].xyz, vMove, pm->ctrl[w][h].xyz);
++      pm->ctrl[w][h].xyz += vMove;
+     }
+   }
+   if (bRebuild)
+@@ -2749,7 +2755,7 @@
+ Patch_ApplyMatrix
+ ==================
+ */
+-void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap)
++void Patch_ApplyMatrix(patchMesh_t *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap)
+ {
+   edVec3_c vTemp;
+ 
+@@ -2760,7 +2766,7 @@
+       if ( (g_qeglobals.d_select_mode == sel_curvepoint || g_bPatchBendMode)
+         && PointInMoveList(p->ctrl[w][h].xyz) == -1)
+         continue;
+-			VectorSubtract (p->ctrl[w][h].xyz, vOrigin, vTemp);
++			vTemp = p->ctrl[w][h].xyz - vOrigin;
+ 			for (int j = 0; j < 3; j++)
+       {
+         p->ctrl[w][h].xyz[j] = vTemp.dotProduct(vMatrix[j]) + vOrigin[j];
+@@ -2796,7 +2802,7 @@
+       {
+ 		    for ( int j = 0 ; j < p->height ; j++ ) 
+         {
+-	        VectorCopy (p->ctrl[i][j].xyz, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
++	        g_qeglobals.d_points[g_qeglobals.d_numpoints] = p->ctrl[i][j].xyz;
+           if (g_qeglobals.d_numpoints < MAX_POINTS-1)
+           {
+ 	          g_qeglobals.d_numpoints++;
+@@ -2964,7 +2970,7 @@
+ Patch_DragScale
+ ==================
+ */
+-bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
++bool Patch_DragScale(patchMesh_t *p, const edVec3_c &vAmt, const edVec3_c &vMove)
+ {
+   edVec3_c vMin, vMax, vScale, vTemp, vMid;
+   int i;
+@@ -2971,7 +2977,7 @@
+ 
+   Patch_CalcBounds(p, vMin, vMax);
+ 
+-  VectorSubtract(vMax, vMin, vTemp);
++  vTemp = vMax - vMin;
+ 
+   // if we are scaling in the same dimension the patch has no depth
+   for (i = 0; i < 3; i ++)
+@@ -3000,11 +3006,11 @@
+ 
+   Patch_Scale(p, vMid, vScale, false);
+ 
+-  VectorSubtract(vMax, vMin, vTemp);
++  vTemp = vMax - vMin;
+ 
+   Patch_CalcBounds(p, vMin, vMax);
+   
+-  VectorSubtract(vMax, vMin, vMid);
++  vMid = vMax - vMin;
+ 
+   vTemp = vMid - vTemp;
+ 
+@@ -3011,7 +3017,7 @@
+   vTemp *= 0.5;
+ 
+   // abs of both should always be equal
+-  if (!VectorCompare(vMove, vAmt))
++  if (!vMove.vectorCompare(vAmt))
+   {
+     for (i = 0; i < 3; i++)
+     {
+@@ -3039,7 +3045,7 @@
+   if (p->height+2 < MAX_PATCH_HEIGHT)
+   {
+     Patch_CalcBounds(p, vMin, vMax);
+-    VectorSubtract(vMax, vMin, vTemp);
++    vTemp = vMax - vMin;
+     for (i = 0; i < 3; i++)
+     {
+       vTemp[i] /= p->height + 2;
+@@ -3047,13 +3053,13 @@
+ 
+     for (j = 0; j < p->width; j++)
+     {
+-      VectorCopy(p->ctrl[j][p->height].xyz, p->ctrl[j][p->height+1].xyz);
+-      VectorCopy(p->ctrl[j][p->height].xyz, p->ctrl[j][p->height+2].xyz);
++      p->ctrl[j][p->height+1].xyz = p->ctrl[j][p->height].xyz;
++      p->ctrl[j][p->height+2].xyz = p->ctrl[j][p->height].xyz;
+       p->height += 2;
+       i = 1;
+       while (i < p->height)
+       {
+-        VectorAdd(p->ctrl[j][i].xyz, vTemp, p->ctrl[j][i].xyz);
++        p->ctrl[j][i].xyz += vTemp;
+         i++;
+       }
+     }
+@@ -3072,7 +3078,7 @@
+ void Patch_InsertColumn(patchMesh_t *p, bool bAdd)
+ {
+   int h, w, i, j;
+-  vec3_t vTemp;
++  edVec3_c vTemp;
+   
+   if (p->width + 2 >= MAX_PATCH_WIDTH)
+     return;
+@@ -3082,7 +3088,7 @@
+     for (h = 0; h < p->height; h++)
+     {
+       j = p->width-1;
+-      VectorSubtract(p->ctrl[j][h].xyz, p->ctrl[j-1][h].xyz, vTemp);
++      vTemp = p->ctrl[j][h].xyz - p->ctrl[j-1][h].xyz;
+       for (i = 0; i < 3; i++)
+         vTemp[i] /= 3;
+ 
+@@ -3089,9 +3095,9 @@
+       memcpy(&p->ctrl[j+2][h],&p->ctrl[j][h], sizeof(drawVert_t));
+       memcpy(&p->ctrl[j][h],&p->ctrl[j-1][h], sizeof(drawVert_t));
+ 
+-      VectorAdd(p->ctrl[j][h].xyz, vTemp, p->ctrl[j][h].xyz);
++      p->ctrl[j][h].xyz += vTemp;
+       memcpy(&p->ctrl[j+1][h], &p->ctrl[j][h], sizeof(drawVert_t));
+-      VectorAdd(p->ctrl[j+1][h].xyz, vTemp, p->ctrl[j+1][h].xyz);
++      p->ctrl[j+1][h].xyz += vTemp;
+     }
+   }
+   else
+@@ -3104,13 +3110,13 @@
+         memcpy(&p->ctrl[w+2][h],&p->ctrl[w][h], sizeof(drawVert_t));
+         w--;
+       }
+-      VectorSubtract(p->ctrl[1][h].xyz, p->ctrl[0][h].xyz, vTemp);
++      vTemp = p->ctrl[1][h].xyz - p->ctrl[0][h].xyz;
+       for (i = 0; i < 3; i++)
+         vTemp[i] /= 3;
+-      VectorCopy(p->ctrl[0][h].xyz, p->ctrl[1][h].xyz);
+-      VectorAdd(p->ctrl[1][h].xyz, vTemp, p->ctrl[1][h].xyz);
+-      VectorCopy(p->ctrl[1][h].xyz, p->ctrl[2][h].xyz);
+-      VectorAdd(p->ctrl[2][h].xyz, vTemp, p->ctrl[2][h].xyz);
++      p->ctrl[1][h].xyz = p->ctrl[0][h].xyz;
++      p->ctrl[1][h].xyz += vTemp;
++      p->ctrl[2][h].xyz = p->ctrl[1][h].xyz;
++      p->ctrl[2][h].xyz+= vTemp;
+     }
+   }
+   p->width += 2;
+@@ -3126,7 +3132,7 @@
+ void Patch_InsertRow(patchMesh_t *p, bool bAdd)
+ {
+   int h, w, i, j;
+-  vec3_t vTemp;
++  edVec3_c vTemp;
+   
+   if (p->height + 2 >= MAX_PATCH_HEIGHT)
+     return;
+@@ -3136,7 +3142,7 @@
+     for (w = 0; w < p->width; w++)
+     {
+       j = p->height-1;
+-      VectorSubtract(p->ctrl[w][j].xyz, p->ctrl[w][j-1].xyz, vTemp);
++      vTemp = p->ctrl[w][j].xyz - p->ctrl[w][j-1].xyz;
+       for (i = 0; i < 3; i++)
+         vTemp[i] /= 3;
+ 
+@@ -3143,9 +3149,9 @@
+       memcpy(&p->ctrl[w][j+2],&p->ctrl[w][j], sizeof(drawVert_t));
+       memcpy(&p->ctrl[w][j],&p->ctrl[w][j-1], sizeof(drawVert_t));
+ 
+-      VectorAdd(p->ctrl[w][j].xyz, vTemp, p->ctrl[w][j].xyz);
++      p->ctrl[w][j].xyz += vTemp;
+       memcpy(&p->ctrl[w][j+1], &p->ctrl[w][j], sizeof(drawVert_t));
+-      VectorAdd(p->ctrl[w][j+1].xyz, vTemp, p->ctrl[w][j+1].xyz);
++      p->ctrl[w][j+1].xyz += vTemp;
+     }
+   }
+   else
+@@ -3158,13 +3164,13 @@
+         memcpy(&p->ctrl[w][h+2],&p->ctrl[w][h], sizeof(drawVert_t));
+         h--;
+       }
+-      VectorSubtract(p->ctrl[w][1].xyz, p->ctrl[w][0].xyz, vTemp);
++      vTemp = p->ctrl[w][1].xyz - p->ctrl[w][0].xyz;
+       for (i = 0; i < 3; i++)
+         vTemp[i] /= 3;
+-      VectorCopy(p->ctrl[w][0].xyz, p->ctrl[w][1].xyz);
+-      VectorAdd(p->ctrl[w][1].xyz, vTemp, p->ctrl[w][1].xyz);
+-      VectorCopy(p->ctrl[w][1].xyz, p->ctrl[w][2].xyz);
+-      VectorAdd(p->ctrl[w][2].xyz, vTemp, p->ctrl[w][2].xyz);
++      p->ctrl[w][1].xyz = p->ctrl[w][0].xyz;
++      p->ctrl[w][1].xyz += vTemp;
++      p->ctrl[w][2].xyz = p->ctrl[w][1].xyz;
++      p->ctrl[w][2].xyz += vTemp;
+     }
+   }
+   p->height += 2;
+@@ -3233,7 +3239,7 @@
+ */
+ void Patch_AdjustColumns(patchMesh_t *p, int nCols)
+ {
+-  vec3_t vTemp, vTemp2;
++  edVec3_c vTemp, vTemp2;
+   int i, w, h;
+ 
+   if (nCols & 0x01 || p->width + nCols < 3 || p->width + nCols > MAX_PATCH_WIDTH)
+@@ -3248,7 +3254,7 @@
+     // of points across the old bounds
+     
+     // calc total distance to interpolate 
+-    VectorSubtract(p->ctrl[p->width - 1 - nCols][h].xyz, p->ctrl[0][h].xyz, vTemp);
++    vTemp = p->ctrl[p->width - 1 - nCols][h].xyz - p->ctrl[0][h].xyz;
+ 
+     // amount per cycle
+     for (i = 0; i < 3; i ++)
+@@ -3259,7 +3265,7 @@
+     // move along
+     for (w = 0; w < p->width-1; w++)
+     {
+-      VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w+1][h].xyz);
++       p->ctrl[w+1][h].xyz = p->ctrl[w][h].xyz + vTemp2;
+     }
+ 
+   }
+@@ -3282,7 +3288,7 @@
+ */
+ void Patch_AdjustRows(patchMesh_t *p, int nRows)
+ {
+-  vec3_t vTemp, vTemp2;
++  edVec3_c vTemp, vTemp2;
+   int i, w, h;
+ 
+   if (nRows & 0x01 || p->height + nRows < 3 || p->height + nRows > MAX_PATCH_HEIGHT)
+@@ -3297,7 +3303,7 @@
+     // of points across the old bounds
+ 
+     // calc total distance to interpolate 
+-    VectorSubtract(p->ctrl[w][p->height - 1 - nRows].xyz, p->ctrl[w][0].xyz, vTemp);
++    vTemp = p->ctrl[w][p->height - 1 - nRows].xyz - p->ctrl[w][0].xyz;
+     
+     //vTemp[0] = vTemp[1] = vTemp[2] = 0;
+     //for (h = 0; h < p->height - nRows; h ++)
+@@ -3314,7 +3320,7 @@
+     // move along
+     for (h = 0; h < p->height-1; h++)
+     {
+-      VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w][h+1].xyz);
++      p->ctrl[w][h+1].xyz = p->ctrl[w][h].xyz + vTemp2;
+     }
+ 
+   }
+@@ -3332,7 +3338,7 @@
+ 
+ void Patch_DisperseRows()
+ {
+-  vec3_t vTemp, vTemp2;
++  edVec3_c vTemp, vTemp2;
+   int i, w, h;
+ 
+ 
+@@ -3348,7 +3354,7 @@
+         // of points across the old bounds
+ 
+         // calc total distance to interpolate 
+-        VectorSubtract(p->ctrl[w][p->height - 1].xyz, p->ctrl[w][0].xyz, vTemp);
++        vTemp = p->ctrl[w][p->height - 1].xyz - p->ctrl[w][0].xyz;
+     
+         //vTemp[0] = vTemp[1] = vTemp[2] = 0;
+         //for (h = 0; h < p->height - nRows; h ++)
+@@ -3365,7 +3371,7 @@
+         // move along
+         for (h = 0; h < p->height-1; h++)
+         {
+-          VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w][h+1].xyz);
++          p->ctrl[w][h+1].xyz = p->ctrl[w][h].xyz + vTemp2;
+         }
+         Patch_Naturalize(p);
+ 
+@@ -3383,7 +3389,7 @@
+ */
+ void Patch_DisperseColumns()
+ {
+-  vec3_t vTemp, vTemp2;
++  edVec3_c vTemp, vTemp2;
+   int i, w, h;
+ 
+ 	for (brush_t *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
+@@ -3399,7 +3405,7 @@
+         // of points across the old bounds
+     
+         // calc total distance to interpolate 
+-        VectorSubtract(p->ctrl[p->width - 1][h].xyz, p->ctrl[0][h].xyz, vTemp);
++        vTemp = p->ctrl[p->width - 1][h].xyz - p->ctrl[0][h].xyz;
+ 
+         // amount per cycle
+         for (i = 0; i < 3; i ++)
+@@ -3410,7 +3416,7 @@
+         // move along
+         for (w = 0; w < p->width-1; w++)
+         {
+-          VectorAdd(p->ctrl[w][h].xyz, vTemp2, p->ctrl[w+1][h].xyz);
++          p->ctrl[w+1][h].xyz = p->ctrl[w][h].xyz + vTemp2;
+         }
+ 
+       }
+@@ -4118,7 +4124,7 @@
+         if (g_nBendOriginIndex > p->width-1)
+           g_nBendOriginIndex = 0;
+       }
+-      VectorCopy(p->ctrl[g_nBendOriginIndex][g_nPatchAxisIndex].xyz, g_vBendOrigin);
++      g_vBendOrigin = p->ctrl[g_nBendOriginIndex][g_nPatchAxisIndex].xyz;
+     }
+     else
+     {
+@@ -4132,7 +4138,7 @@
+         if (g_nBendOriginIndex > p->height-1)
+           g_nBendOriginIndex = 0;
+       }
+-      VectorCopy(p->ctrl[g_nPatchAxisIndex][g_nBendOriginIndex].xyz, g_vBendOrigin);
++      g_vBendOrigin = p->ctrl[g_nPatchAxisIndex][g_nBendOriginIndex].xyz;
+     }
+   }
+   else
+@@ -4203,7 +4209,7 @@
+   int nDim3 = (nType == XY) ? 2 : (nType == YZ) ? 0 : 1;
+ 
+   g_vBendOrigin[nDim3] = 0;
+-  VectorCopy(g_vBendOrigin, g_pParentWnd->ActiveXY()->RotateOrigin());
++  g_pParentWnd->ActiveXY()->RotateOrigin() = g_vBendOrigin;
+   return;
+ #else
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -4587,7 +4593,7 @@
+       {
+         for (j = 0; j < p->height; j++)
+         {
+-		      VectorMA (p->ctrl[i][j].xyz, nAmount, p->ctrl[i][j].normal, pNew->ctrl[i][j].xyz);
++		      pNew->ctrl[i][j].xyz.vectorMA (p->ctrl[i][j].xyz, nAmount, p->ctrl[i][j].normal);
+         }
+       }
+ 
+@@ -4607,9 +4613,9 @@
+           pSeam->type |= PATCH_SEAM;
+           for (i = 0; i < p->height; i++)
+           {
+-            VectorCopy(p->ctrl[0][i].xyz, pSeam->ctrl[0][i].xyz);
+-            VectorCopy(pNew->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz);
+-            VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
++            pSeam->ctrl[0][i].xyz = p->ctrl[0][i].xyz;
++            pSeam->ctrl[2][i].xyz = pNew->ctrl[0][i].xyz;
++            pSeam->ctrl[1][i].xyz = pSeam->ctrl[0][i].xyz + pSeam->ctrl[2][i].xyz;
+             pSeam->ctrl[1][i].xyz *= 0.5;
+           }
+ 
+@@ -4627,9 +4633,9 @@
+           pSeam->type |= PATCH_SEAM;
+           for (i = 0; i < p->height; i++)
+           {
+-            VectorCopy(p->ctrl[w][i].xyz, pSeam->ctrl[0][i].xyz);
+-            VectorCopy(pNew->ctrl[w][i].xyz, pSeam->ctrl[2][i].xyz);
+-            VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
++            pSeam->ctrl[0][i].xyz = p->ctrl[w][i].xyz;
++            pSeam->ctrl[2][i].xyz = pNew->ctrl[w][i].xyz;
++            pSeam->ctrl[1][i].xyz = pSeam->ctrl[0][i].xyz + pSeam->ctrl[2][i].xyz;
+             pSeam->ctrl[1][i].xyz *= 0.5;
+           }
+           Patch_CalcBounds(pSeam, vMin, vMax);
+@@ -4646,9 +4652,9 @@
+           pSeam->type |= PATCH_SEAM;
+           for (i = 0; i < p->width; i++)
+           {
+-            VectorCopy(p->ctrl[i][0].xyz, pSeam->ctrl[i][0].xyz);
+-            VectorCopy(pNew->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz);
+-            VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
++            pSeam->ctrl[i][0].xyz = p->ctrl[i][0].xyz;
++            pSeam->ctrl[i][2].xyz = pNew->ctrl[i][0].xyz;
++            pSeam->ctrl[i][1].xyz = pSeam->ctrl[i][0].xyz + pSeam->ctrl[i][2].xyz;
+             pSeam->ctrl[i][1].xyz *= 0.5;
+           }
+ 
+@@ -4666,9 +4672,9 @@
+           pSeam->type |= PATCH_SEAM;
+           for (i = 0; i < p->width; i++)
+           {
+-            VectorCopy(p->ctrl[i][h].xyz, pSeam->ctrl[i][0].xyz);
+-            VectorCopy(pNew->ctrl[i][h].xyz, pSeam->ctrl[i][2].xyz);
+-            VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
++            pSeam->ctrl[i][0].xyz = p->ctrl[i][h].xyz;
++           pSeam->ctrl[i][2].xyz = pNew->ctrl[i][h].xyz;
++            pSeam->ctrl[i][1].xyz = pSeam->ctrl[i][0].xyz + pSeam->ctrl[i][2].xyz;
+             pSeam->ctrl[i][1].xyz *= 0.5;
+           }
+           Patch_CalcBounds(pSeam, vMin, vMax);
+Index: q3radiant/POINTS.CPP
+===================================================================
+--- q3radiant/POINTS.CPP	(revision 442)
++++ q3radiant/POINTS.CPP	(working copy)
+@@ -25,7 +25,7 @@
+ 
+ 
+ #define	MAX_POINTFILE	8192
+-static vec3_t	s_pointvecs[MAX_POINTFILE];
++static edVec3_c	s_pointvecs[MAX_POINTFILE];
+ static int		s_num_points, s_check_point;
+ 
+ void Pointfile_Delete (void)
+@@ -50,9 +50,9 @@
+ 		return;
+ 	}
+ 	s_check_point++;
+-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
+-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
+-	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
++	g_pParentWnd->GetCamera()->Camera().origin = s_pointvecs[s_check_point];
++	g_pParentWnd->GetXYWnd()->GetOrigin() = s_pointvecs[s_check_point];
++	dir = s_pointvecs[s_check_point+1] - g_pParentWnd->GetCamera()->Camera().origin;
+ 	dir.normalize();
+ 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
+ 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
+@@ -71,9 +71,9 @@
+ 		return;
+ 	}
+ 	s_check_point--;
+-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
+-	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
+-	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
++	g_pParentWnd->GetCamera()->Camera().origin = s_pointvecs[s_check_point];
++	g_pParentWnd->GetXYWnd()->GetOrigin() = s_pointvecs[s_check_point];
++	dir = s_pointvecs[s_check_point+1] - g_pParentWnd->GetCamera()->Camera().origin;
+ 	dir.normalize();
+ 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
+ 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
+@@ -113,7 +113,7 @@
+ 			break;
+ 		if (s_num_points < MAX_POINTFILE)
+ 		{
+-			VectorCopy (v, s_pointvecs[s_num_points]);
++			s_pointvecs[s_num_points] = v;
+ 			s_num_points++;
+ 		}
+ 		qglVertex3fv (v);
+Index: q3radiant/QE3.H
+===================================================================
+--- q3radiant/QE3.H	(revision 442)
++++ q3radiant/QE3.H	(working copy)
+@@ -203,7 +203,7 @@
+ 	// connect entities uses the last two brushes selected
+ 	int			 d_select_count;
+ 	brush_t		*d_select_order[2];
+-	vec3_t       d_select_translate;    // for dragging w/o making new display lists
++	edVec3_c       d_select_translate;    // for dragging w/o making new display lists
+ 	select_t     d_select_mode;
+ 	
+ 	int		     d_font_list;
+@@ -224,8 +224,8 @@
+ 	bool	bOldBrushes;
+ 	bool	bPrimitBrushes;
+ 	
+-	vec3_t  d_vAreaTL;
+-	vec3_t  d_vAreaBR;
++	edVec3_c  d_vAreaTL;
++	edVec3_c  d_vAreaBR;
+ 	
+ 	// tells if we are using .INI files for prefs instead of registry
+ 	bool	use_ini;
+@@ -416,8 +416,7 @@
+ void Patch_WriteFile (char *name); 
+ void Patch_BuildPoints (brush_t *b);
+ void Patch_Move(patchMesh_t *p, const vec3_t vMove, bool bRebuild = false);
+-//++timo had to add a default value for bSnap (see Patch_ApplyMatrix call from Select_ApplyMatrix in select.cpp)
+-void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap = false);
++void Patch_ApplyMatrix(patchMesh_t *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap = false);
+ void Patch_EditPatch();
+ void Patch_Deselect();
+ void Patch_Deselect(patchMesh_t *p);
+@@ -429,7 +428,7 @@
+ void Patch_SetView(int n);
+ void Patch_SetTexture(patchMesh_t *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef = NULL);
+ void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
+-bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove);
++bool Patch_DragScale(patchMesh_t *p, const edVec3_c &vAmt, const edVec3_c &vMove);
+ void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
+ void Patch_WriteFile (CMemFile* pMemFile);
+ void Patch_UpdateSelected(vec3_t vMove);
+@@ -491,7 +490,7 @@
+ extern bool g_bPatchDrillDown;
+ extern bool g_bPatchInsertMode;
+ extern bool g_bPatchBendMode;
+-extern vec3_t g_vBendOrigin;
++extern edVec3_c g_vBendOrigin;
+ void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
+ const char* Patch_GetKeyValue(patchMesh_t *p, const char *pKey);
+ void Patch_SetEpair(patchMesh_t *p, const char *pKey, const char *pValue);
+Index: q3radiant/QERTYPES.H
+===================================================================
+--- q3radiant/QERTYPES.H	(revision 442)
++++ q3radiant/QERTYPES.H	(working copy)
+@@ -32,10 +32,6 @@
+ typedef vec_t vec3_t[3];
+ typedef vec_t vec4_t[4];
+ 
+-#ifndef M_PI
+-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+-#endif
+-
+ class texdef_t
+ {
+ public:
+@@ -170,6 +166,9 @@
+ 	float dotProduct(const float *pVec3) const {
+ 		return xyz.dotProduct(pVec3);
+ 	}
++	bool vectorCompare(const edVec3_c &other, float epsilon = EQUAL_EPSILON) const {
++		return xyz.vectorCompare(other,epsilon);
++	}
+ 	const float operator [] (int index) const {
+ 		return (&xyz.x)[index];
+ 	}
+@@ -308,7 +307,7 @@
+ 	edVec3_c	xyz;
+ 	float		st[2];
+ 	float		lightmap[2];
+-	vec3_t		normal;	
++	edVec3_c	normal;	
+ 	
+ 	texturedVertex_c &asWindingPoint() {
+ 		return *((texturedVertex_c*)(this));
+@@ -350,8 +349,8 @@
+ 	float			scale;
+ 	terrainFace_t	tri;
+ 	vec4_t			rgba;
+-	vec3_t			normal;
+-	vec3_t			xyz;
++	edVec3_c			normal;
++	edVec3_c			xyz;
+ } terrainVert_t;
+ 
+ #define MAX_TERRAIN_TEXTURES 128
+@@ -358,8 +357,8 @@
+ typedef struct {
+ 	int				width, height;
+ 
+-	vec3_t			mins, maxs;
+-	vec3_t			origin;
++	edVec3_c			mins, maxs;
++	edVec3_c			origin;
+ 	float			scale_x;
+ 	float			scale_y;
+ 
+@@ -381,7 +380,7 @@
+ 	struct brush_s	*prev, *next;	// links in active/selected
+ 	struct brush_s	*oprev, *onext;	// links in entity
+ 	struct entity_s	*owner;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	face_t     *brush_faces;
+ 
+ 	bool bModelFailed;
+@@ -453,7 +452,7 @@
+ 	char	*name;
+ 	bool	fixedsize;
+ 	bool	unknown;		// wasn't found in source
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	vec3_t	color;
+ 	texdef_t	texdef;
+ 	char	*comments;
+Index: q3radiant/SELECT.CPP
+===================================================================
+--- q3radiant/SELECT.CPP	(revision 442)
++++ q3radiant/SELECT.CPP	(working copy)
+@@ -257,9 +257,9 @@
+ 	}
+   if (bStatus)
+   {
+-    vec3_t vMin, vMax, vSize;
++    edVec3_c vMin, vMax, vSize;
+ 	  Select_GetBounds (vMin, vMax);
+-    VectorSubtract(vMax, vMin, vSize);
++    vSize = vMax - vMin;
+     CString strStatus;
+     strStatus.Format("Selection X:: %.1f  Y:: %.1f  Z:: %.1f", vSize[0], vSize[1], vSize[2]);
+     g_pParentWnd->SetStatusText(2, strStatus);
+@@ -429,7 +429,7 @@
+ 	for (b = selected_brushes.next ; b != &selected_brushes ; b=b->next)
+ 		Brush_Move (b, delta, bSnap);
+ 
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+ 	Select_GetBounds (vMin, vMax);
+   CString strStatus;
+   strStatus.Format("Origin X:: %.1f  Y:: %.1f  Z:: %.1f", vMin[0], vMax[1], vMax[2]);
+@@ -588,7 +588,7 @@
+ ================================================================
+ */
+ 
+-void Select_GetBounds (vec3_t mins, vec3_t maxs)
++void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs)
+ {
+ 	brush_t	*b;
+ 	int		i;
+@@ -612,7 +612,7 @@
+ 
+ void Select_GetTrueMid (vec3_t mid)
+ {
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	Select_GetBounds (mins, maxs);
+ 
+   for (int i=0 ; i<3 ; i++)
+@@ -622,7 +622,7 @@
+ 
+ void Select_GetMid (vec3_t mid)
+ {
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 	int		i;
+ 
+   if (g_PrefsDlg.m_bNoClamp)
+@@ -639,7 +639,7 @@
+ }
+ 
+ edVec3_c	select_origin;
+-vec3_t	select_matrix[3];
++edVec3_c	select_matrix[3];
+ bool	select_fliporder;
+ 
+ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
+@@ -684,10 +684,10 @@
+ 			Patch_ApplyMatrix(b->pPatch, select_origin, select_matrix, bSnap);
+ 		}
+ 
+-		if (b->terrainBrush)
+-		{
+-		  Terrain_ApplyMatrix(b->pTerrain, select_origin, select_matrix, bSnap);
+-		}
++		//if (b->terrainBrush)
++		//{
++		//  Terrain_ApplyMatrix(b->pTerrain, select_origin, select_matrix, bSnap);
++		//}
+ 
+ 	}
+ }
+@@ -732,23 +732,22 @@
+   ez.crossProduct(ex,ey);
+ 	    
+   edVec3_c aux = ex * -f->texdef.shift[0];
+-  VectorCopy(aux, p1);
++  p1 = aux;
+   aux = ey * -f->texdef.shift[1];
+-  VectorAdd(p1, aux, p1);
+-  VectorCopy(p1, p2);
+-  VectorAdd(p2, ex, p2);
+-  VectorCopy(p1, p3);
+-  VectorAdd(p3, ey, p3);
+-  VectorCopy(ez, aux);
++  p1 += aux;
++  p2 = p1;
++  p2 += ex;
++  p3 = p1;
++  p3 += ey;
++  aux = ez;
+   aux *= -f->texdef.rotate;
+   VectorRotate(p1, aux, p1);
+   VectorRotate(p2, aux, p2);
+   VectorRotate(p3, aux, p3);
+ 	// computing rotated local axis base
+-	vec3_t rex,rey;
+-  VectorCopy(ex, rex);
++	edVec3_c rex = ex;
+   VectorRotate(rex, aux, rex);
+-  VectorCopy(ey, rey);
++  edVec3_c rey = ey;
+   VectorRotate(rey, aux, rey);
+ 
+   ComputeScale(rex,rey,p1,f);
+@@ -831,10 +830,10 @@
+ void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
+ {
+ 	edVec3_c p1,p2,p3, rota;   
+-	p1[0] = p1[1] = p1[2] = 0;
+-	VectorCopy(p1, p2);
+-	VectorCopy(p1, p3);
+-	VectorCopy(p1, rota);
++	p1.clear();
++	p2.clear();
++	p3.clear();
++	rota.clear();
+ 	ComputeAbsolute(f, p1, p2, p3);
+   
+ 	rota[nAxis] = fDeg;
+@@ -843,7 +842,7 @@
+ 	VectorRotate(p3, rota, select_origin, p3);
+ 
+ 	edPlane_c normal2;
+-	vec3_t vNormal;
++	edVec3_c vNormal;
+ 	vNormal[0] = f->plane.normal[0];
+ 	vNormal[1] = f->plane.normal[1];
+ 	vNormal[2] = f->plane.normal[2];
+@@ -880,7 +879,7 @@
+ 	Select_GetMid (select_origin);
+ 	for (i=0 ; i<3 ; i++)
+ 	{
+-		VectorCopy (vec3_origin, select_matrix[i]);
++		select_matrix[i].clear();
+ 		select_matrix[i][i] = 1;
+ 	}
+ 	select_matrix[axis][axis] = -1;
+@@ -940,7 +939,7 @@
+ 
+ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
+ {
+-	vec3_t	temp;
++	edVec3_c	temp;
+ 	int		i, j;
+ 	vec_t	c, s;
+ 
+@@ -952,7 +951,7 @@
+ 
+   if (bMouse)
+   {
+-    VectorCopy(g_pParentWnd->ActiveXY()->RotateOrigin(), select_origin);
++    select_origin = g_pParentWnd->ActiveXY()->RotateOrigin();
+   }
+   else
+   {
+@@ -965,14 +964,14 @@
+ 	{
+ 		for (i=0 ; i<3 ; i++)
+ 		{
+-			VectorCopy (vec3_origin, select_matrix[i]);
++			select_matrix[i].clear();
+ 			select_matrix[i][i] = 1;
+ 		}
+ 		i = (axis+1)%3;
+ 		j = (axis+2)%3;
+-		VectorCopy (select_matrix[i], temp);
+-		VectorCopy (select_matrix[j], select_matrix[i]);
+-		VectorSubtract (vec3_origin, temp, select_matrix[j]);
++		temp = select_matrix[i];
++		select_matrix[i] = select_matrix[j];
++		select_matrix[j] = -temp;
+ 	}
+ 	else
+ 	{
+@@ -995,7 +994,7 @@
+ 
+ 		for (i=0 ; i<3 ; i++)
+ 		{
+-			VectorCopy (vec3_origin, select_matrix[i]);
++			select_matrix[i].clear();
+ 			select_matrix[i][i] = 1;
+ 		}
+ 
+@@ -1042,7 +1041,7 @@
+ {
+ 	brush_t	*b, *next;
+ 	//int		i;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 
+ 	if (!QE_SingleBrush ())
+ 		return;
+@@ -1049,8 +1048,8 @@
+ 
+ 	clearSelection();
+ 
+-	VectorCopy (selected_brushes.next->mins, mins);
+-	VectorCopy (selected_brushes.next->maxs, maxs);
++	mins = selected_brushes.next->mins;
++	maxs = selected_brushes.next->maxs;
+ 	Select_Delete ();
+ 
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -1088,7 +1087,7 @@
+ {
+ 	brush_t	*b, *next;
+ 	//int		i;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 
+ 	if (!QE_SingleBrush ())
+ 		return;
+@@ -1095,8 +1094,8 @@
+ 
+ 	clearSelection();
+ 
+-	VectorCopy (selected_brushes.next->mins, mins);
+-	VectorCopy (selected_brushes.next->maxs, maxs);
++	mins = selected_brushes.next->mins;
++	maxs = selected_brushes.next->maxs;
+ 	Select_Delete ();
+ 
+   int nDim1 = (g_pParentWnd->ActiveXY()->GetViewType() == YZ) ? 1 : 0;
+@@ -1136,7 +1135,7 @@
+ {
+ 	brush_t	*b, *next;
+ 	int		i;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 
+ 	if (!QE_SingleBrush ())
+ 		return;
+@@ -1143,8 +1142,8 @@
+ 
+ 	clearSelection();
+ 
+-	VectorCopy (selected_brushes.next->mins, mins);
+-	VectorCopy (selected_brushes.next->maxs, maxs);
++	 mins = selected_brushes.next->mins;
++	maxs = selected_brushes.next->maxs;
+ 
+ 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
+ 	{
+@@ -1170,7 +1169,7 @@
+ {
+ 	brush_t	*b, *next;
+ 	int		i;
+-	vec3_t	mins, maxs;
++	edVec3_c	mins, maxs;
+ 
+ 	if (!QE_SingleBrush ())
+ 		return;
+@@ -1177,8 +1176,8 @@
+ 
+ 	clearSelection();
+ 
+-	VectorCopy (selected_brushes.next->mins, mins);
+-	VectorCopy (selected_brushes.next->maxs, maxs);
++	mins = selected_brushes.next->mins;
++	maxs = selected_brushes.next->maxs;
+ 	Select_Delete ();
+ 
+ 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
+Index: q3radiant/SELECT.H
+===================================================================
+--- q3radiant/SELECT.H	(revision 442)
++++ q3radiant/SELECT.H	(working copy)
+@@ -57,7 +57,7 @@
+ 
+ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags);
+ 
+-void Select_GetBounds (vec3_t mins, vec3_t maxs);
++void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs);
+ void Select_Brush (brush_t *b, bool bComplete = true, bool bStatus = true);
+ void Select_Ray (vec3_t origin, vec3_t dir, int flags);
+ void Select_Delete (void);
+Index: q3radiant/StdAfx.h
+===================================================================
+--- q3radiant/StdAfx.h	(revision 442)
++++ q3radiant/StdAfx.h	(working copy)
+@@ -134,8 +134,8 @@
+ extern void Select_Scale(float x, float y, float z);
+ extern CString g_strProject;
+ extern void TextureAxisFromPlane(const class edPlane_c &pln, edVec3_c &xv, edVec3_c &yv);
+-extern void VectorRotate (vec3_t va, vec3_t vb, vec3_t out);
+-extern void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t vOrigin, vec3_t out);
++extern void VectorRotate (vec3_t va, const class edVec3_c &vr,  edVec3_c &out);
++extern void VectorRotate(const class edVec3_c &vIn, const edVec3_c &vRotation, const edVec3_c &vOrigin, edVec3_c &out);
+ extern bool QE_SaveProject (const char* pProjectFile);
+ extern void NewBSP(char* pCommandLine, HWND);
+ extern void NewVIS(char* pCommandLine, HWND);
+Index: q3radiant/terrain.cpp
+===================================================================
+--- q3radiant/terrain.cpp	(revision 442)
++++ q3radiant/terrain.cpp	(working copy)
+@@ -95,7 +95,7 @@
+ }
+ 
+ void Terrain_GetVert( terrainMesh_t *pm, int x, int y, float s, float t, terravert_t *v, qtexture_t *texture = NULL ) {
+-	terrainVert_t *cell;
++	/*terrainVert_t *cell;
+ 
+ 	v->index = x + y * pm->width;
+ 
+@@ -114,7 +114,7 @@
+ 	}
+ 
+ 	v->tc[ 0 ] = s;
+-	v->tc[ 1 ] = t;
++	v->tc[ 1 ] = t;*/
+ }
+ 
+ void Terrain_GetTriangles( terrainMesh_t *pm, int x, int y, terravert_t *a0, terravert_t *a1, terravert_t *a2, terravert_t *b0, terravert_t *b1, terravert_t *b2, qtexture_t *texture ) {
+@@ -265,9 +265,11 @@
+ 
+ 			vert->height = 0;
+ 
+-			VectorClear( vert->normal );
+-			VectorSet( vert->rgba, 1.0f, 1.0f, 1.0f );
+-			vert->rgba[ 3 ] = 1.0f;
++			vert->normal.clear();
++			vert->rgba[0] = 1.0f;
++			vert->rgba[1] = 1.0f;
++			vert->rgba[2] = 1.0f;
++			vert->rgba[3] = 1.0f;
+ 		}
+ 	}
+    
+@@ -319,14 +321,14 @@
+ }
+ 
+ terrainMesh_t *Terrain_Duplicate( terrainMesh_t *pFrom ) {
+-	terrainMesh_t *p;
+-	int w;
++	terrainMesh_t *p = 0;
++/*	int w;
+ 	int h;
+ 	int index;
+ 
+ 	p = MakeNewTerrain( pFrom->width, pFrom->height );
+    
+-	VectorCopy( pFrom->origin, p->origin );
++	p->origin = pFrom->origin,  );
+ 	VectorCopy( pFrom->mins, p->mins );
+ 	VectorCopy( pFrom->maxs, p->maxs );
+ 
+@@ -349,7 +351,7 @@
+ 	p->bDirty      = true;
+ 	p->nListID     = -1;
+ 
+-	AddBrushForTerrain( p );
++	AddBrushForTerrain( p );*/
+ 
+ 	return p;
+ }
+@@ -376,7 +378,7 @@
+ 	p->scale_x = ( b->maxs[ 0 ] - b->mins[ 0 ] ) / float( p->width - 1 );
+ 	p->scale_y = ( b->maxs[ 1 ] - b->mins[ 1 ] ) / float( p->height - 1 );
+ 
+-	VectorCopy( b->mins, p->origin );
++	p->origin =  b->mins;
+ 
+ 	b = AddBrushForTerrain( p );
+ 	Select_Delete();
+@@ -566,7 +568,7 @@
+ void Terrain_Move( terrainMesh_t *pm, const vec3_t vMove, bool bRebuild ) {
+ 	pm->bDirty = true;
+ 
+-	VectorAdd( pm->origin, vMove, pm->origin );
++	pm->origin += vMove;
+ 
+ 	if ( bRebuild ) {
+ 		vec3_t vMin; 
+@@ -628,14 +630,14 @@
+ }
+ 
+ inline void Terrain_CalcVertPos( terrainMesh_t *p, int x, int y, vec3_t vert ) {
+-	int index;
++	//int index;
+ 
+-	index = x + y * p->width;
+-	vert[ 0 ] = p->origin[ 0 ] + x * p->scale_x;
+-	vert[ 1 ] = p->origin[ 1 ] + y * p->scale_y;
+-	vert[ 2 ] = p->origin[ 2 ] + p->heightmap[ index ].height;
+-	
+-	VectorCopy( vert, p->heightmap[ index ].xyz );
++	//index = x + y * p->width;
++	//vert[ 0 ] = p->origin[ 0 ] + x * p->scale_x;
++	//vert[ 1 ] = p->origin[ 1 ] + y * p->scale_y;
++	//vert[ 2 ] = p->origin[ 2 ] + p->heightmap[ index ].height;
++	//
++	//VectorCopy( vert, p->heightmap[ index ].xyz );
+ }
+    
+ void Terrain_CalcNormals( terrainMesh_t *p ) {
+@@ -832,54 +834,54 @@
+ }
+ 
+ bool Terrain_DragScale( terrainMesh_t *p, vec3_t vAmt, vec3_t vMove ) {
+-	vec3_t	vMin;
+-	vec3_t	vMax;
+-	vec3_t	vScale;
+-	edVec3_c	vTemp;
+-	vec3_t	vMid;
+-	int		i;
++	//vec3_t	vMin;
++	//vec3_t	vMax;
++	//vec3_t	vScale;
++	//edVec3_c	vTemp;
++	//vec3_t	vMid;
++	//int		i;
+ 
+-	Terrain_CalcBounds( p, vMin, vMax );
++	//Terrain_CalcBounds( p, vMin, vMax );
+ 
+-	VectorSubtract( vMax, vMin, vTemp );
++	//VectorSubtract( vMax, vMin, vTemp );
+ 
+-	// if we are scaling in the same dimension the terrain has no depth
+-	for( i = 0; i < 3; i++ ) {
+-		if ( ( vTemp[ i ] == 0 ) && ( vMove[ i ] != 0 ) ) {
+-			return false;
+-		}
+-	}
+-  
+-	for( i = 0; i < 3; i++ ) {
+-		vMid[ i ] = ( vMin[ i ] + vMax[ i ] ) / 2;
+-	}
++	//// if we are scaling in the same dimension the terrain has no depth
++	//for( i = 0; i < 3; i++ ) {
++	//	if ( ( vTemp[ i ] == 0 ) && ( vMove[ i ] != 0 ) ) {
++	//		return false;
++	//	}
++	//}
++ // 
++	//for( i = 0; i < 3; i++ ) {
++	//	vMid[ i ] = ( vMin[ i ] + vMax[ i ] ) / 2;
++	//}
+ 
+-	for( i = 0; i < 3; i++ ) {
+-		if ( vAmt[ i ] != 0 ) {
+-			vScale[i] = 1.0 + vAmt[i] / vTemp[i];
+-		} else {
+-			vScale[i] = 1.0;
+-		}
+-	}
++	//for( i = 0; i < 3; i++ ) {
++	//	if ( vAmt[ i ] != 0 ) {
++	//		vScale[i] = 1.0 + vAmt[i] / vTemp[i];
++	//	} else {
++	//		vScale[i] = 1.0;
++	//	}
++	//}
+ 
+-	Terrain_Scale( p, vMid, vScale, false );
+-	VectorSubtract( vMax, vMin, vTemp );
+-	Terrain_CalcBounds( p, vMin, vMax );
+-  	VectorSubtract( vMax, vMin, vMid );
+-	VectorSubtract( vMid, vTemp, vTemp );
+-	vTemp *= 0.5f;
++	//Terrain_Scale( p, vMid, vScale, false );
++	//VectorSubtract( vMax, vMin, vTemp );
++	//Terrain_CalcBounds( p, vMin, vMax );
++ // 	VectorSubtract( vMax, vMin, vMid );
++	//VectorSubtract( vMid, vTemp, vTemp );
++	//vTemp *= 0.5f;
+ 
+-	// abs of both should always be equal
+-	if ( !VectorCompare( vMove, vAmt ) ) {
+-		for( i = 0; i < 3; i++ ) {
+-			if ( vMove[ i ] != vAmt[ i ] ) {
+-				vTemp[ i ] = -vTemp[ i ];
+-			}
+-		}
+-	}
++	//// abs of both should always be equal
++	//if ( !VectorCompare( vMove, vAmt ) ) {
++	//	for( i = 0; i < 3; i++ ) {
++	//		if ( vMove[ i ] != vAmt[ i ] ) {
++	//			vTemp[ i ] = -vTemp[ i ];
++	//		}
++	//	}
++	//}
+ 
+-	Terrain_CalcNormals( p );
+-	Terrain_Move( p, vTemp );
++	//Terrain_CalcNormals( p );
++	//Terrain_Move( p, vTemp );
+ 
+ 	return true;
+ }
+@@ -1351,7 +1353,7 @@
+ 	terrainFace_t	*bestface;
+ 	brush_t			*pb;
+ 	float			dist;
+-	vec3_t			vec;
++	edVec3_c			vec;
+ 
+ 	// find the point closest to the ray
+ 	bestface = NULL;
+@@ -1380,7 +1382,7 @@
+ 		return;
+ 	}
+ 	
+-	VectorMA( org, bestd, dir, vec );
++	vec.vectorMA( org, bestd, dir );
+ 	Terrain_AddMovePoint( vec, buttons & MK_CONTROL, buttons & MK_SHIFT, buttons );
+ }
+ 
+Index: q3radiant/VERTSEL.CPP
+===================================================================
+--- q3radiant/VERTSEL.CPP	(revision 442)
++++ q3radiant/VERTSEL.CPP	(working copy)
+@@ -40,7 +40,7 @@
+ 			return i;
+ 	}
+ 
+-	VectorCopy (point, g_qeglobals.d_points[g_qeglobals.d_numpoints]);
++	g_qeglobals.d_points[g_qeglobals.d_numpoints] = point;
+   if (g_qeglobals.d_numpoints < MAX_POINTS-1)
+   {
+ 	  g_qeglobals.d_numpoints++;
+@@ -146,9 +146,9 @@
+   for (i=0 ; i<w->numpoints ; i++)
+ 		if (pnum[i] == p1 && pnum[(i+1)%w->numpoints] == p2)
+ 		{
+-			VectorCopy (g_qeglobals.d_points[pnum[i]], f->planepts[0]);
+-			VectorCopy (g_qeglobals.d_points[pnum[(i+1)%w->numpoints]], f->planepts[1]);
+-			VectorCopy (g_qeglobals.d_points[pnum[(i+2)%w->numpoints]], f->planepts[2]);
++			f->planepts[0] = g_qeglobals.d_points[pnum[i]];
++			f->planepts[1] = g_qeglobals.d_points[pnum[(i+1)%w->numpoints]];
++			f->planepts[2] = g_qeglobals.d_points[pnum[(i+2)%w->numpoints]];
+ 			for (j=0 ; j<3 ; j++)
+ 			{
+ 				for (k=0 ; k<3 ; k++)
+@@ -187,9 +187,9 @@
+ 		  {
+ 			  if (FindPoint (w->points[i]) == p1)
+ 			  {
+-				  VectorCopy (w->points[(i+w->numpoints-1)%w->numpoints], f->planepts[0]);
+-				  VectorCopy (w->points[i], f->planepts[1]);
+-				  VectorCopy (w->points[(i+1)%w->numpoints], f->planepts[2]);
++				  f->planepts[0] = w->points[(i+w->numpoints-1)%w->numpoints].getXYZ();
++				  f->planepts[1] = w->points[i].getXYZ();
++				  f->planepts[2] = w->points[(i+1)%w->numpoints].getXYZ();
+ 			    for (j=0 ; j<3 ; j++)
+           {
+ 				    for (k=0 ; k<3 ; k++)
+@@ -258,7 +258,7 @@
+ 
+ 		temp = mid - org;
+ 		d = temp.dotProduct(dir);
+-		VectorMA (org, d, dir, temp);
++		temp.vectorMA (org, d, dir);
+ 		temp = mid - temp;
+ 		d = temp.vectorLength();
+ 		if (d < bestd)
+@@ -307,7 +307,7 @@
+ 	{
+ 		temp = g_qeglobals.d_points[i] - org;
+ 		d = temp.dotProduct(dir);
+-		VectorMA (org, d, dir, temp);
++		temp.vectorMA (org, d, dir);
+ 		temp = g_qeglobals.d_points[i] - temp;
+ 		d = temp.vectorLength();
+ 		if (d < bestd)
+@@ -329,7 +329,7 @@
+ 
+ 
+ 
+-extern void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull);
++extern void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull);
+ void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
+ {
+ 	int		i, besti;
+@@ -344,7 +344,7 @@
+ 	{
+ 		temp = g_qeglobals.d_points[i] - org;
+ 		d = temp.dotProduct(dir);
+-		VectorMA (org, d, dir, temp);
++		temp.vectorMA (org, d, dir);
+ 		temp = g_qeglobals.d_points[i] - temp;
+ 		d = temp.vectorLength();
+ 		if (d <= bestd)
+@@ -359,8 +359,8 @@
+     if (g_pParentWnd->ActiveXY()->AreaSelectOK())
+     {
+       g_qeglobals.d_select_mode = sel_area;
+-      VectorCopy(org, g_qeglobals.d_vAreaTL);
+-      VectorCopy(org, g_qeglobals.d_vAreaBR);
++      g_qeglobals.d_vAreaTL = org;
++      g_qeglobals.d_vAreaBR = org;
+     }
+ 		return;
+ 	}
+Index: q3radiant/Winding.cpp
+===================================================================
+--- q3radiant/Winding.cpp	(revision 442)
++++ q3radiant/Winding.cpp	(working copy)
+@@ -27,71 +27,7 @@
+ #include "winding.h"
+ 
+ #define	BOGUS_RANGE	18000
+-//
+-///*
+-//=============
+-//Plane_Equal
+-//=============
+-//*/
+-//#define	NORMAL_EPSILON	0.0001
+-//#define	DIST_EPSILON	0.02
+-//
+-//int Plane_Equal(plane_t *a, plane_t *b, int flip)
+-//{
+-//	vec3_t normal;
+-//	float dist;
+-//
+-//	if (flip) {
+-//		normal[0] = - b->normal[0];
+-//		normal[1] = - b->normal[1];
+-//		normal[2] = - b->normal[2];
+-//		dist = - b->dist;
+-//	}
+-//	else {
+-//		normal[0] = b->normal[0];
+-//		normal[1] = b->normal[1];
+-//		normal[2] = b->normal[2];
+-//		dist = b->dist;
+-//	}
+-//	if (
+-//	   fabs(a->normal[0] - normal[0]) < NORMAL_EPSILON
+-//	&& fabs(a->normal[1] - normal[1]) < NORMAL_EPSILON
+-//	&& fabs(a->normal[2] - normal[2]) < NORMAL_EPSILON
+-//	&& fabs(a->dist - dist) < DIST_EPSILON )
+-//		return true;
+-//	return false;
+-//}
+-//
+-///*
+-//============
+-//Plane_FromPoints
+-//============
+-//*/
+-//int Plane_FromPoints(vec3_t p1, vec3_t p2, vec3_t p3, plane_t *plane)
+-//{
+-//	vec3_t v1, v2;
+-//
+-//	VectorSubtract(p2, p1, v1);
+-//	VectorSubtract(p3, p1, v2);
+-//	//CrossProduct(v2, v1, plane->normal);
+-//	CrossProduct(v1, v2, plane->normal);
+-//	if (VectorNormalize(plane->normal) < 0.1) return false;
+-//	plane->dist = DotProduct(p1, plane->normal);
+-//	return true;
+-//}
+ 
+-int Point_Equal(vec3_t p1, vec3_t p2, float epsilon)
+-{
+-	int i;
+-
+-	for (i = 0; i < 3; i++)
+-	{
+-		if (fabs(p1[i] - p2[i]) > epsilon) return false;
+-	}
+-	return true;
+-}
+-
+-
+ /*
+ =================
+ Winding_BaseForPlane
+@@ -120,7 +56,7 @@
+ 	if (x==-1)
+ 		Error ("Winding_BaseForPlane: no axis found");
+ 		
+-	VectorCopy (vec3_origin, vup);	
++	vup.clear();	
+ 	switch (x)
+ 	{
+ 	case 0:
+@@ -134,7 +70,7 @@
+ 
+ 
+ 	v = vup.dotProduct(p.normal);
+-	VectorMA (vup, -v, p.normal, vup);
++	vup.vectorMA (vup, -v, p.normal);
+ 	vup.normalize();
+ 		
+ 	org = p.normal * p.dist;
+@@ -214,7 +150,7 @@
+ 	c = Winding_Alloc(w->numpoints);
+ 	for (i = 0; i < w->numpoints; i++)
+ 	{
+-		VectorCopy (w->points[w->numpoints-1-i], c->points[i]);
++		c->points[i].setXYZ(w->points[w->numpoints-1-i].getXYZ());
+ 	}
+ 	c->numpoints = w->numpoints;
+ 	return c;
+@@ -262,11 +198,11 @@
+ 	{
+ 		if (i == spot)
+ 		{
+-			VectorCopy(point, neww->points[i]);
++			neww->points[i].setXYZ(point);
+ 		}
+ 		else
+ 		{
+-			VectorCopy(w->points[j], neww->points[i]);
++			neww->points[i] = w->points[j];
+ 			j++;
+ 		}
+ 	}
+@@ -284,7 +220,6 @@
+ {
+ 	int		i, j;
+ 	vec_t	len;
+-	edVec3_c delta;
+ 	int		edges;
+ 
+ 	edges = 0;
+@@ -291,7 +226,7 @@
+ 	for (i=0 ; i<w->numpoints ; i++)
+ 	{
+ 		j = i == w->numpoints - 1 ? 0 : i+1;
+-		VectorSubtract (w->points[j], w->points[i], delta);
++		edVec3_c delta = w->points[j].getXYZ() - w->points[i].getXYZ();
+ 		len = delta.vectorLength();
+ 		if (len > EDGE_LENGTH)
+ 		{
+@@ -415,7 +350,7 @@
+ 		
+ 		if (sides[i] == SIDE_ON)
+ 		{
+-			VectorCopy (p1, neww->points[neww->numpoints]);
++			neww->points[neww->numpoints].setXYZ(p1);
+ 			neww->numpoints++;
+ 			continue;
+ 		}
+@@ -422,7 +357,7 @@
+ 	
+ 		if (sides[i] == SIDE_FRONT)
+ 		{
+-			VectorCopy (p1, neww->points[neww->numpoints]);
++			neww->points[neww->numpoints].setXYZ(p1);
+ 			neww->numpoints++;
+ 		}
+ 		
+@@ -443,7 +378,7 @@
+ 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);
+ 		}
+ 			
+-		VectorCopy (mid, neww->points[neww->numpoints]);
++		neww->points[neww->numpoints].setXYZ(mid);
+ 		neww->numpoints++;
+ 	}
+ 	
+@@ -523,9 +458,9 @@
+ 		
+ 		if (sides[i] == SIDE_ON)
+ 		{
+-			VectorCopy (p1, f->points[f->numpoints]);
++			f->points[f->numpoints].setXYZ(p1);
+ 			f->numpoints++;
+-			VectorCopy (p1, b->points[b->numpoints]);
++			b->points[b->numpoints].setXYZ(p1);
+ 			b->numpoints++;
+ 			continue;
+ 		}
+@@ -532,12 +467,12 @@
+ 	
+ 		if (sides[i] == SIDE_FRONT)
+ 		{
+-			VectorCopy (p1, f->points[f->numpoints]);
++			f->points[f->numpoints].setXYZ(p1);
+ 			f->numpoints++;
+ 		}
+ 		if (sides[i] == SIDE_BACK)
+ 		{
+-			VectorCopy (p1, b->points[b->numpoints]);
++			b->points[b->numpoints].setXYZ(p1);
+ 			b->numpoints++;
+ 		}
+ 
+@@ -559,9 +494,9 @@
+ 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);
+ 		}
+ 			
+-		VectorCopy (mid, f->points[f->numpoints]);
++		f->points[f->numpoints].setXYZ(mid);
+ 		f->numpoints++;
+-		VectorCopy (mid, b->points[b->numpoints]);
++		b->points[b->numpoints].setXYZ(mid);
+ 		b->numpoints++;
+ 	}
+ 	
+@@ -586,9 +521,9 @@
+ */
+ #define	CONTINUOUS_EPSILON	0.005
+ 
+-winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, int keep)
++winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep)
+ {
+-	vec_t		*p1, *p2, *p3, *p4, *back;
++	edVec3_c p1, p2, p3, p4, back;
+ 	winding_t	*newf;
+ 	int			i, j, k, l;
+ 	edVec3_c		normal, delta;
+@@ -604,12 +539,12 @@
+ 	
+ 	for (i = 0; i < f1->numpoints; i++)
+ 	{
+-		p1 = f1->points[i];
+-		p2 = f1->points[(i+1) % f1->numpoints];
++		p1 = f1->points[i].getXYZ();
++		p2 = f1->points[(i+1) % f1->numpoints].getXYZ();
+ 		for (j = 0; j < f2->numpoints; j++)
+ 		{
+-			p3 = f2->points[j];
+-			p4 = f2->points[(j+1) % f2->numpoints];
++			p3 = f2->points[j].getXYZ();
++			p4 = f2->points[(j+1) % f2->numpoints].getXYZ();
+ 			for (k = 0; k < 3; k++)
+ 			{
+ 				if (fabs(p1[k] - p4[k]) > 0.1)//EQUAL_EPSILON) //ME
+@@ -631,25 +566,25 @@
+ 	// check slope of connected lines
+ 	// if the slopes are colinear, the point can be removed
+ 	//
+-	back = f1->points[(i+f1->numpoints-1)%f1->numpoints];
+-	VectorSubtract (p1, back, delta);
++	back = f1->points[(i+f1->numpoints-1)%f1->numpoints].getXYZ();
++	delta = p1 - back;
+ 	normal.crossProduct (planenormal, delta);
+ 	normal.normalize();
+ 
+-	back = f2->points[(j+2)%f2->numpoints];
+-	VectorSubtract (back, p1, delta);
++	back = f2->points[(j+2)%f2->numpoints].getXYZ();
++	delta = back - p1;
+ 	dot = delta.dotProduct(normal);
+ 	if (dot > CONTINUOUS_EPSILON)
+ 		return NULL;			// not a convex polygon
+ 	keep1 = (bool)(dot < -CONTINUOUS_EPSILON);
+ 	
+-	back = f1->points[(i+2)%f1->numpoints];
+-	VectorSubtract (back, p2, delta);
++	back = f1->points[(i+2)%f1->numpoints].getXYZ();
++	delta = back - p2;
+ 	normal.crossProduct (planenormal, delta);
+ 	normal.normalize();
+ 
+-	back = f2->points[(j+f2->numpoints-1)%f2->numpoints];
+-	VectorSubtract (back, p2, delta);
++	back = f2->points[(j+f2->numpoints-1)%f2->numpoints].getXYZ();
++	delta = back - p2;
+ 	dot = delta.dotProduct(normal);
+ 	if (dot > CONTINUOUS_EPSILON)
+ 		return NULL;			// not a convex polygon
+@@ -666,7 +601,7 @@
+ 		if (!keep && k==(i+1)%f1->numpoints && !keep2)
+ 			continue;
+ 		
+-		VectorCopy (f1->points[k], newf->points[newf->numpoints]);
++		newf->points[newf->numpoints] = f1->points[k];
+ 		newf->numpoints++;
+ 	}
+ 	
+@@ -675,7 +610,7 @@
+ 	{
+ 		if (!keep && l==(j+1)%f2->numpoints && !keep1)
+ 			continue;
+-		VectorCopy (f2->points[l], newf->points[newf->numpoints]);
++		newf->points[newf->numpoints] = f2->points[l];
+ 		newf->numpoints++;
+ 	}
+ 
+@@ -785,7 +720,7 @@
+ int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon)
+ {
+ 	float front, back, frac;
+-	vec3_t mid;
++	edVec3_c mid;
+ 
+ 	front = p1.dotProduct(plane.normal) - plane.dist;
+ 	back = p2.dotProduct(plane.normal) - plane.dist;
+@@ -795,7 +730,7 @@
+ 	//get point of intersection with winding plane
+ 	if (fabs(front-back) < 0.001)
+ 	{
+-		VectorCopy(p2, mid);
++		mid = p2;
+ 	}
+ 	else
+ 	{
+Index: q3radiant/Winding.h
+===================================================================
+--- q3radiant/Winding.h	(revision 442)
++++ q3radiant/Winding.h	(working copy)
+@@ -57,7 +57,7 @@
+ void		Winding_SplitEpsilon(winding_t *in, vec3_t normal, double dist, 
+ 								vec_t epsilon, winding_t **front, winding_t **back);
+ //try to merge the windings, returns the new merged winding or NULL
+-winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, int keep);
++winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep);
+ //create a plane for the winding
+ void		Winding_Plane(winding_t *w, class edVec3_c &normal, double *dist);
+ //returns the winding area
+Index: q3radiant/XYWnd.cpp
+===================================================================
+--- q3radiant/XYWnd.cpp	(revision 442)
++++ q3radiant/XYWnd.cpp	(working copy)
+@@ -63,8 +63,8 @@
+ brush_t g_brUndo;
+ entity_t	g_enClipboard;
+ 
+-vec3_t g_vRotateOrigin;
+-vec3_t g_vRotation;
++edVec3_c g_vRotateOrigin;
++edVec3_c g_vRotation;
+ 
+ bool g_bPathMode;
+ CClipPoint g_PathPoints[256];
+@@ -509,9 +509,9 @@
+     if (g_Clip1.Set() && g_Clip2.Set())
+     {
+       face_t face;
+-      VectorCopy(g_Clip1.m_ptClip,face.planepts[0]);
+-      VectorCopy(g_Clip2.m_ptClip,face.planepts[1]);
+-      VectorCopy(g_Clip3.m_ptClip,face.planepts[2]);
++      face.planepts[0] = g_Clip1.m_ptClip;
++      face.planepts[1] = g_Clip2.m_ptClip;
++      face.planepts[2] = g_Clip3.m_ptClip;
+       if (selected_brushes.next && (selected_brushes.next->next == &selected_brushes))
+       {
+         if (g_Clip3.Set() == false)
+@@ -598,9 +598,9 @@
+ 			if (g_Clip1.Set() && g_Clip2.Set())
+ 			{
+ 				face_t face;
+-				VectorCopy(g_Clip1.m_ptClip,face.planepts[0]);
+-				VectorCopy(g_Clip2.m_ptClip,face.planepts[1]);
+-				VectorCopy(g_Clip3.m_ptClip,face.planepts[2]);
++				face.planepts[0] = g_Clip1.m_ptClip;
++				face.planepts[1] = g_Clip2.m_ptClip;
++				face.planepts[2] = g_Clip3.m_ptClip;
+ 				if (g_Clip3.Set() == false)
+ 				{
+ 					if (g_pParentWnd->ActiveXY()->GetViewType() == XY)
+@@ -1165,13 +1165,13 @@
+ 			brush_t* b = selected_brushes.next;
+ 			if (b->owner != world_entity && b->owner->eclass->fixedsize && pecNew->fixedsize)
+ 			{
+-				vec3_t mins, maxs;
+-				vec3_t origin;
++				edVec3_c mins, maxs;
++				edVec3_c origin;
+ 				for (int i=0 ; i<3 ; i++)
+ 					origin[i] = b->mins[i] - pecNew->mins[i];
+ 				
+-				VectorAdd (pecNew->mins, origin, mins);
+-				VectorAdd (pecNew->maxs, origin, maxs);
++				mins = pecNew->mins + origin;
++				maxs = pecNew->maxs + origin;
+ 				brush_t* nb = Brush_Create (mins, maxs, &pecNew->texdef);
+ 				Entity_LinkBrush (b->owner, nb);
+ 				nb->owner->eclass = pecNew;
+@@ -1620,17 +1620,17 @@
+ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
+ {
+ 
+-	vec3_t	point;
+-	vec3_t	origin, dir, right, up;
++	edVec3_c	point;
++	edVec3_c	origin, dir, right, up;
+ 
+ 	m_nButtonstate = buttons;
+   m_nPressx = x;
+ 	m_nPressy = y;
+-	VectorCopy (vec3_origin, m_vPressdelta);
++	m_vPressdelta.clear();
+ 
+ 	XY_ToPoint (x, y, point);
+ 	
+-  VectorCopy (point, origin);
++  origin = point;
+ 
+ 	dir[0] = 0; dir[1] = 0; dir[2] = 0;
+   if (m_nViewType == XY)
+@@ -1698,7 +1698,7 @@
+ 	if ((g_PrefsDlg.m_nMouseButtons == 3 && m_nButtonstate == MK_MBUTTON) ||
+       (g_PrefsDlg.m_nMouseButtons == 2 && m_nButtonstate == (MK_SHIFT|MK_CONTROL|MK_RBUTTON)))
+ 	{	
+-		VectorSubtract (point, g_pParentWnd->GetCamera()->Camera().origin, point);
++		point -= g_pParentWnd->GetCamera()->Camera().origin;
+ 
+     int n1 = (m_nViewType == XY) ? 1 : 2;
+     int n2 = (m_nViewType == YZ) ? 1 : 0;
+@@ -1719,7 +1719,7 @@
+ 	    VectorCopyXY(point, g_vRotateOrigin);
+       if (g_bPatchBendMode)
+       {
+-        VectorCopy(point, g_vBendOrigin);
++        g_vBendOrigin = point;
+       }
+ 		  Sys_UpdateWindows (W_XY);
+       return;
+@@ -1761,7 +1761,7 @@
+ 
+ bool CXYWnd::DragDelta (int x, int y, vec3_t move)
+ {
+-	vec3_t	xvec, yvec, delta;
++	edVec3_c	xvec, yvec, delta;
+ 	int		i;
+ 
+ 	xvec[0] = 1 / m_fScale;
+@@ -1777,8 +1777,8 @@
+ 		  delta[i] = floor(delta[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
+     }
+ 	}
+-	VectorSubtract (delta, m_vPressdelta, move);
+-	VectorCopy (delta, m_vPressdelta);
++	move = delta - m_vPressdelta;
++	m_vPressdelta = delta;
+ 
+ 	if (move[0] || move[1] || move[2])
+ 		return true;
+@@ -1793,7 +1793,7 @@
+ */
+ void CXYWnd::NewBrushDrag (int x, int y)
+ {
+-	vec3_t	mins, maxs, junk;
++	edVec3_c	mins, maxs, junk;
+ 	int		i;
+ 	float	temp;
+ 	brush_t	*n;
+@@ -1831,8 +1831,7 @@
+ 	if (!n)
+ 		return;
+ 
+-  vec3_t vSize;
+-  VectorSubtract(maxs, mins, vSize);
++  edVec3_c vSize = maxs - mins;
+   g_strStatus.Format("Size X:: %.1f  Y:: %.1f  Z:: %.1f", vSize[0], vSize[1], vSize[2]);
+   g_pParentWnd->SetStatusText(2, g_strStatus);
+ 
+@@ -1854,7 +1853,7 @@
+ */
+ void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
+ {
+-	vec3_t	point;
++	edVec3_c	point;
+ 
+ 
+ 	if (!m_nButtonstate)
+@@ -1904,7 +1903,7 @@
+ 	    VectorCopyXY(point, g_vRotateOrigin);
+       if (g_bPatchBendMode)
+       {
+-        VectorCopy(point, g_vBendOrigin);
++        g_vBendOrigin = point;
+       }
+ 		  Sys_UpdateWindows (W_XY);
+       return;
+@@ -1937,7 +1936,7 @@
+       (g_PrefsDlg.m_nMouseButtons == 2 && m_nButtonstate == (MK_SHIFT|MK_CONTROL|MK_RBUTTON)))
+ 	{	
+ 		SnapToPoint (x, y, point);
+-		VectorSubtract (point, g_pParentWnd->GetCamera()->Camera().origin, point);
++		point -= g_pParentWnd->GetCamera()->Camera().origin;
+ 
+     int n1 = (m_nViewType == XY) ? 1 : 2;
+     int n2 = (m_nViewType == YZ) ? 1 : 0;
+@@ -2497,7 +2496,7 @@
+ void DrawPathLines (void)
+ {
+ 	int		i, j, k;
+-	vec3_t	mid, mid1;
++	edVec3_c	mid, mid1;
+ 	entity_t *se, *te;
+ 	brush_t	*sb, *tb;
+ 	char	*psz;
+@@ -2549,7 +2548,7 @@
+ 			for (i=0 ; i<3 ; i++)
+ 				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
+ 
+-			VectorSubtract (mid1, mid, dir);
++			dir = mid1 - mid;
+ 			len = dir.normalize();
+ 			s1[0] = -dir[1]*8 + dir[0]*8;
+ 			s2[0] = dir[1]*8 + dir[0]*8;
+@@ -2587,11 +2586,10 @@
+ 
+ // can be greatly simplified but per usual i am in a hurry 
+ // which is not an excuse, just a fact
+-void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, vec3_t vMinBounds, vec3_t vMaxBounds)
++void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds)
+ {
+ 
+-  vec3_t vSize;
+-  VectorSubtract(vMaxBounds, vMinBounds, vSize);
++  edVec3_c vSize = vMaxBounds - vMinBounds;
+ 
+   qglColor3f(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][0] * .65, 
+             g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][1] * .65,
+@@ -3010,8 +3008,8 @@
+ {
+ 	int	w, h;
+ 	int	r[4];
+-	static	vec3_t	lastz;
+-	static	vec3_t	lastcamera;
++	static	edVec3_c	lastz;
++	static	edVec3_c	lastcamera;
+ 
+ 
+ 	qglViewport(0, 0, m_nWidth, m_nHeight);
+@@ -3048,8 +3046,8 @@
+ 	//
+ 	// save off underneath where we are about to draw
+ 	//
+-	VectorCopy (z.origin, lastz);
+-	VectorCopy (g_pParentWnd->GetCamera()->Camera().origin, lastcamera);
++	lastz = z.origin;
++	lastcamera = g_pParentWnd->GetCamera()->Camera().origin;
+ 
+ 	qglReadBuffer (GL_FRONT);
+ 	qglDrawBuffer (GL_BACK);
+@@ -3082,7 +3080,7 @@
+ }
+ 
+ 
+-vec3_t& CXYWnd::GetOrigin()
++edVec3_c& CXYWnd::GetOrigin()
+ {
+   return m_vOrigin;
+ }
+@@ -3555,12 +3553,12 @@
+ }
+ 
+ 
+-vec3_t& CXYWnd::Rotation()
++edVec3_c& CXYWnd::Rotation()
+ {
+   return g_vRotation;
+ }
+ 
+-vec3_t& CXYWnd::RotateOrigin()
++edVec3_c& CXYWnd::RotateOrigin()
+ {
+   return g_vRotateOrigin;
+ }
+Index: q3radiant/XYWnd.h
+===================================================================
+--- q3radiant/XYWnd.h	(revision 442)
++++ q3radiant/XYWnd.h	(working copy)
+@@ -93,8 +93,8 @@
+ // Implementation
+ public:
+   bool AreaSelectOK();
+-  vec3_t& RotateOrigin();
+-  vec3_t& Rotation();
++  edVec3_c& RotateOrigin();
++  edVec3_c& Rotation();
+   void UndoClear();
+   bool UndoAvailable();
+   void KillPathMode();
+@@ -108,7 +108,7 @@
+ 	void FlipClip();
+ 	void SplitClip();
+ 	void Clip();
+-	vec3_t& GetOrigin();
++	edVec3_c& GetOrigin();
+ 	void SetOrigin(vec3_t org);		// PGM
+ 	void XY_Init();
+   void XY_Overlay();
+@@ -178,7 +178,7 @@
+ 	float	m_TopClip;
+   float m_BottomClip;
+   bool m_bDirty;
+-	vec3_t m_vOrigin;
++	edVec3_c m_vOrigin;
+ 	CPoint m_ptCursor;
+   bool m_bRButtonDown;
+ 
+@@ -185,7 +185,7 @@
+   int	m_nButtonstate;
+   int m_nPressx;
+   int m_nPressy;
+-  vec3_t m_vPressdelta;
++  edVec3_c m_vPressdelta;
+   bool m_bPress_selection;
+ 
+   friend CCamWnd;
+@@ -205,7 +205,7 @@
+   void ProduceSplits(brush_t** pFront, brush_t** pBack);
+   void ProduceSplitLists();
+   void HandleDrop();
+-  void PaintSizeInfo(int nDim1, int nDim2, vec3_t vMinBounds, vec3_t vMaxBounds);
++  void PaintSizeInfo(int nDim1, int nDim2, const edVec3_c &vMinBounds, const edVec3_c &vMaxBounds);
+ 
+   void OnEntityCreate(unsigned int nID);
+   CPoint m_ptDown;
+Index: q3radiant/Z.CPP
+===================================================================
+--- q3radiant/Z.CPP	(revision 436)
++++ q3radiant/Z.CPP	(working copy)
+@@ -60,7 +60,7 @@
+ */
+ void Z_MouseDown (int x, int y, int buttons)
+ {
+-	vec3_t	org, dir, vup, vright;
++	edVec3_c	org, dir, vup, vright;
+ 	brush_t	*b;
+ 
+ 	Sys_GetCursorPos (&cursorx, &cursory);
+@@ -67,7 +67,7 @@
+ 
+ 	vup[0] = 0; vup[1] = 0; vup[2] = 1/z.scale;
+ 
+-	VectorCopy (z.origin, org);
++	org = z.origin;
+ 	org[2] += (y - (z.height/2))/z.scale;
+ 	org[1] = -8192;
+ 
+@@ -277,7 +277,7 @@
+ 	double	start, end;
+ 	qtexture_t	*q;
+ 	float	top, bottom;
+-	vec3_t	org_top, org_bottom, dir_up, dir_down;
++	edVec3_c	org_top, org_bottom, dir_up, dir_down;
+ 	int xCam = z.width/3;
+ 
+ 	if (!active_brushes.next)
+@@ -340,9 +340,9 @@
+ 	// draw filled interiors and edges
+ 	dir_up[0] = 0 ; dir_up[1] = 0; dir_up[2] = 1;
+ 	dir_down[0] = 0 ; dir_down[1] = 0; dir_down[2] = -1;
+-	VectorCopy (z.origin, org_top);
++	org_top = z.origin;
+ 	org_top[2] = 4096;
+-	VectorCopy (z.origin, org_bottom);
++	org_bottom = z.origin;
+ 	org_bottom[2] = -4096;
+ 
+ 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)

@@ -1,0 +1,3709 @@
+Index: q3radiant/Brush.cpp
+===================================================================
+--- q3radiant/Brush.cpp	(revision 441)
++++ q3radiant/Brush.cpp	(working copy)
+@@ -98,7 +98,7 @@
+ {0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
+ };
+ 
+-void TextureAxisFromPlane(const edPlane_c &pln, vec3_t xv, vec3_t yv)
++void TextureAxisFromPlane(const edPlane_c &pln, edVec3_c &xv, edVec3_c &yv)
+ {
+ 	int		bestaxis;
+ 	float	dot,best;
+@@ -109,7 +109,7 @@
+ 	
+ 	for (i=0 ; i<6 ; i++)
+ 	{
+-		dot = DotProduct (pln.normal, baseaxis[i*3]);
++		dot = pln.normal.dotProduct(baseaxis[i*3]);
+ 		if (dot > best)
+ 		{
+ 			best = dot;
+@@ -117,8 +117,8 @@
+ 		}
+ 	}
+ 	
+-	VectorCopy (baseaxis[bestaxis*3+1], xv);
+-	VectorCopy (baseaxis[bestaxis*3+2], yv);
++	xv = (baseaxis[bestaxis*3+1]);
++	yv = (baseaxis[bestaxis*3+2]);
+ }
+ 
+ 
+@@ -253,9 +253,9 @@
+ Face_MoveTexture
+ ================
+ */
+-void Face_MoveTexture(face_t *f, vec3_t delta)
++void Face_MoveTexture(face_t *f, const edVec3_c &delta)
+ {
+-	vec3_t vX, vY;
++	edVec3_c vX, vY;
+ /*
+ #ifdef _DEBUG
+ 	if (g_PrefsDlg.m_bBrushPrimitMode)
+@@ -269,10 +269,10 @@
+ 		TextureAxisFromPlane(f->plane, vX, vY);
+ 
+ 		vec3_t vDP, vShift;
+-		vDP[0] = DotProduct(delta, vX);
+-		vDP[1] = DotProduct(delta, vY);
++		vDP[0] = delta.dotProduct(vX);
++		vDP[1] = delta.dotProduct(vY);
+ 
+-		double fAngle = f->texdef.rotate  / 180 * Q_PI;
++		double fAngle = DEG2RAD(f->texdef.rotate);
+ 		double c = cos(fAngle);
+ 		double s = sin(fAngle);
+ 
+@@ -331,7 +331,7 @@
+ */
+ void Face_TextureVectors (face_t *f, float STfromXYZ[2][4])
+ {
+-	vec3_t		pvecs[2];
++	edVec3_c		pvecs[2];
+ 	int			sv, tv;
+ 	float		ang, sinv, cosv;
+ 	float		ns, nt;
+@@ -370,7 +370,7 @@
+ 		{ sinv = -1 ; cosv = 0; }
+ 	else
+ 	{	
+-		ang = td->rotate / 180 * Q_PI;
++		ang = DEG2RAD(td->rotate);
+ 		sinv = sin(ang);
+ 		cosv = cos(ang);
+ 	}
+@@ -419,7 +419,7 @@
+ void Face_MakePlane (face_t *f)
+ {
+ 	int		j;
+-	vec3_t	t1, t2, t3;
++	edVec3_c	t1, t2, t3;
+ 
+ 	// convert to a vector / dist plane
+ 	for (j=0 ; j<3 ; j++)
+@@ -429,11 +429,11 @@
+ 		t3[j] = f->planepts[1][j];
+ 	}
+ 	
+-	CrossProduct(t1,t2, f->plane.normal);
++	f->plane.normal.crossProduct(t1,t2);
+ 	if (VectorCompare (f->plane.normal, vec3_origin))
+ 		printf ("WARNING: brush plane with no normal\n");
+-	VectorNormalize (f->plane.normal);
+-	f->plane.dist = DotProduct (t3, f->plane.normal);
++	f->plane.normal.normalize();
++	f->plane.dist = t3.dotProduct(f->plane.normal);
+ }
+ 
+ /*
+@@ -441,13 +441,14 @@
+ EmitTextureCoordinates
+ ================
+ */
+-void EmitTextureCoordinates ( float *xyzst, qtexture_t *q, face_t *f)
++void EmitTextureCoordinates (texturedVertex_c &out, qtexture_t *q, face_t *f)
+ {
+ 	float	STfromXYZ[2][4];
+ 
++	// out layout is: xyz st
+ 	Face_TextureVectors (f,  STfromXYZ);
+-	xyzst[3] = DotProduct (xyzst, STfromXYZ[0]) + STfromXYZ[0][3];
+-	xyzst[4] = DotProduct (xyzst, STfromXYZ[1]) + STfromXYZ[1][3];
++	out[3] = out.dotProduct(STfromXYZ[0]) + STfromXYZ[0][3];
++	out[4] = out.dotProduct(STfromXYZ[1]) + STfromXYZ[1][3];
+ }
+ 
+ //==========================================================================
+@@ -567,7 +568,7 @@
+ 			past = true;
+ 			continue;
+ 		}
+-		if (DotProduct (face->plane.normal, clip->plane.normal) > 0.999
++		if (face->plane.normal.dotProduct(clip->plane.normal) > 0.999
+ 			&& fabs(face->plane.dist - clip->plane.dist) < 0.01 )
+ 		{	// identical plane, use the later one
+ 			if (past)
+@@ -863,240 +864,240 @@
+ #define MAX_MOVE_FACES		64
+ #define INTERSECT_EPSILON	0.1
+ #define POINT_EPSILON		0.3
++//
++//int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
++//{
++//	face_t *f, *face, *newface, *lastface, *nextface;
++//	face_t *movefaces[MAX_MOVE_FACES];
++//	int movefacepoints[MAX_MOVE_FACES];
++//	winding_t *w, tmpw;
++//	int i, j, k, nummovefaces, result;
++//	float dot;
++//
++//	result = false;
++//	//
++//	tmpw.numpoints = 3;
++//	tmpw.maxpoints = 3;
++//	VectorAdd(vertex, delta, end);
++//	//snap or not?
++//	if (bSnap)
++//		for (i = 0; i < 3; i++)
++//			end[i] = floor(end[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
++//	//chop off triangles from all brush faces that use the to be moved vertex
++//	//store pointers to these chopped off triangles in movefaces[]
++//	nummovefaces = 0;
++//	for (face = b->brush_faces; face; face = face->next)
++//	{
++//		w = face->face_winding;
++//		if (!w) continue;
++//		for (i = 0; i < w->numpoints; i++)
++//		{
++//			if (Point_Equal(w->points[i], vertex, POINT_EPSILON))
++//			{
++//				if (face->face_winding->numpoints <= 3)
++//				{
++//					movefacepoints[nummovefaces] = i;
++//					movefaces[nummovefaces++] = face;
++//					break;
++//				}
++//				dot = end.dotProduct(face->plane.normal) - face->plane.dist;
++//				//if the end point is in front of the face plane
++//				if (dot > 0.1)
++//				{
++//					//fanout triangle subdivision
++//					for (k = i; k < i + w->numpoints-3; k++)
++//					{
++//						VectorCopy(w->points[i], tmpw.points[0]);
++//						VectorCopy(w->points[(k+1) % w->numpoints], tmpw.points[1]);
++//						VectorCopy(w->points[(k+2) % w->numpoints], tmpw.points[2]);
++//						//
++//						newface = Face_Clone(face);
++//						//get the original
++//						for (f = face; f->original; f = f->original) ;
++//						newface->original = f;
++//						//store the new winding
++//						if (newface->face_winding) Winding_Free(newface->face_winding);
++//						newface->face_winding = Winding_Clone(&tmpw);
++//						//get the texture
++//						newface->d_texture = Texture_ForName( newface->texdef.name );
++//						//add the face to the brush
++//						newface->next = b->brush_faces;
++//						b->brush_faces = newface;
++//						//add this new triangle to the move faces
++//						movefacepoints[nummovefaces] = 0;
++//						movefaces[nummovefaces++] = newface;
++//					}
++//					//give the original face a new winding
++//					VectorCopy(w->points[(i-2+w->numpoints) % w->numpoints], tmpw.points[0]);
++//					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[1]);
++//					VectorCopy(w->points[i], tmpw.points[2]);
++//					Winding_Free(face->face_winding);
++//					face->face_winding = Winding_Clone(&tmpw);
++//					//add the original face to the move faces
++//					movefacepoints[nummovefaces] = 2;
++//					movefaces[nummovefaces++] = face;
++//				}
++//				else
++//				{
++//					//chop a triangle off the face
++//					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[0]);
++//					VectorCopy(w->points[i], tmpw.points[1]);
++//					VectorCopy(w->points[(i+1) % w->numpoints], tmpw.points[2]);
++//					//remove the point from the face winding
++//					Winding_RemovePoint(w, i);
++//					//get texture crap right
++//					Face_SetColor(b, face, 1.0);
++//					for (j = 0; j < w->numpoints; j++)
++//						EmitTextureCoordinates(w->points[j], face->d_texture, face);
++//					//make a triangle face
++//					newface = Face_Clone(face);
++//					//get the original
++//					for (f = face; f->original; f = f->original) ;
++//					newface->original = f;
++//					//store the new winding
++//					if (newface->face_winding) Winding_Free(newface->face_winding);
++//					newface->face_winding = Winding_Clone(&tmpw);
++//					//get the texture
++//					newface->d_texture = Texture_ForName( newface->texdef.name );
++//					//add the face to the brush
++//					newface->next = b->brush_faces;
++//					b->brush_faces = newface;
++//					//
++//					movefacepoints[nummovefaces] = 1;
++//					movefaces[nummovefaces++] = newface;
++//				}
++//				break;
++//			}
++//		}
++//	}
++//	//now movefaces contains pointers to triangle faces that
++//	//contain the to be moved vertex
++//
++//	//check if the move is valid
++//	int l;
++//	vec3_t p1, p2;
++//	winding_t *w2;
++//	edPlane_c plane;
++//
++//	face = NULL;
++//	VectorCopy(vertex, tmpw.points[1]);
++//	VectorCopy(end, tmpw.points[2]);
++//	for (face = b->brush_faces; face; face = face->next)
++//	{
++//		for (i = 0; i < nummovefaces; i++)
++//		{
++//			if (face == movefaces[i])
++//				break;
++//		}
++//		if (i < nummovefaces)
++//			continue;
++//		//the delta vector may not intersect with any of the not move faces
++//		if (Winding_VectorIntersect(face->face_winding, face->plane, vertex, end, INTERSECT_EPSILON))
++//			break;
++//		//if the end point of the to be moved vertex is near this not move face
++//		if (abs(face->plane.normal.dotProduct(end) - face->plane.dist) < 0.5)
++//		{
++//			//the end point may not be inside or very close to the not move face winding
++//			if (Winding_PointInside(face->face_winding, face->plane, end, 0.5))
++//				break;
++//		}
++//		for (i = 0; i < nummovefaces; i++)
++//		{
++//			w = movefaces[i]->face_winding;
++//			j = movefacepoints[i];
++//			for (k = -1; k <= 1; k += 2)
++//			{
++//				//check if the new edge will not intersect with the not move face
++//				VectorCopy(w->points[(j + k + w->numpoints) % w->numpoints], tmpw.points[0]);
++//				if (Winding_VectorIntersect(face->face_winding, face->plane, tmpw.points[0].getXYZ(), end, INTERSECT_EPSILON))
++//				{
++//					//ok the new edge instersects with the not move face
++//					//we can't perform the vertex movement
++//					//break;
++//				}
++//				//check if the not move face intersects the "movement winding"
++//				Winding_Plane(&tmpw, plane.normal, &plane.dist);
++//				w2 = face->face_winding;
++//				for (l = 0; l < w2->numpoints; l++)
++//				{
++//					VectorCopy(w2->points[l], p1);
++//					if (Point_Equal(p1, tmpw.points[0], POINT_EPSILON)) continue;
++//					VectorCopy(w2->points[(l+1) % w2->numpoints], p2);
++//					if (Point_Equal(p2, tmpw.points[0], POINT_EPSILON)) continue;
++//					if (Winding_VectorIntersect(&tmpw, plane, p1, p2, INTERSECT_EPSILON))
++//						break;
++//				}
++//				if (l < w2->numpoints)
++//				{
++//					//ok this not move face intersects the "movement winding"
++//					//we can't perform the vertex movement
++//					break;
++//				}
++//			}
++//			if (k <= 1) break;
++//		}
++//		if (i < nummovefaces)
++//			break;
++//	}
++//	if (!face)
++//	{
++//		//ok the move was valid
++//		//now move all the vertexes of the movefaces
++//		for (i = 0; i < nummovefaces; i++)
++//		{
++//			VectorCopy(end, movefaces[i]->face_winding->points[movefacepoints[i]]);
++//			//create new face plane
++//			for (j = 0; j < 3; j++)
++//			{
++//				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
++//			}
++//			Face_MakePlane(movefaces[i]);
++//		}
++//		result = true;
++//	}
++//	//get texture crap right
++//	for (i = 0; i < nummovefaces; i++)
++//	{
++//		Face_SetColor(b, movefaces[i], 1.0);
++//		for (j = 0; j < movefaces[i]->face_winding->numpoints; j++)
++//			EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
++//	}
++//
++//	//now try to merge faces with their original faces
++//	lastface = NULL;
++//	for (face = b->brush_faces; face; face = nextface)
++//	{
++//		nextface = face->next;
++//		if (!face->original)
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		if (!face->plane.isPlaneEqual(face->original->plane, false))
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		w = Winding_TryMerge(face->face_winding, face->original->face_winding, face->plane.normal, true);
++//		if (!w)
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		Winding_Free(face->original->face_winding);
++//		face->original->face_winding = w;
++//		//get texture crap right
++//		Face_SetColor(b, face->original, 1.0);
++//		for (j = 0; j < face->original->face_winding->numpoints; j++)
++//			EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
++//		//remove the face that was merged with the original
++//		if (lastface) lastface->next = face->next;
++//		else b->brush_faces = face->next;
++//		Face_Free(face);
++//	}
++//	return result;
++//}
+ 
+-int Brush_MoveVertex_old1(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
+-{
+-	face_t *f, *face, *newface, *lastface, *nextface;
+-	face_t *movefaces[MAX_MOVE_FACES];
+-	int movefacepoints[MAX_MOVE_FACES];
+-	winding_t *w, tmpw;
+-	int i, j, k, nummovefaces, result;
+-	float dot;
+-
+-	result = false;
+-	//
+-	tmpw.numpoints = 3;
+-	tmpw.maxpoints = 3;
+-	VectorAdd(vertex, delta, end);
+-	//snap or not?
+-	if (bSnap)
+-		for (i = 0; i < 3; i++)
+-			end[i] = floor(end[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
+-	//chop off triangles from all brush faces that use the to be moved vertex
+-	//store pointers to these chopped off triangles in movefaces[]
+-	nummovefaces = 0;
+-	for (face = b->brush_faces; face; face = face->next)
+-	{
+-		w = face->face_winding;
+-		if (!w) continue;
+-		for (i = 0; i < w->numpoints; i++)
+-		{
+-			if (Point_Equal(w->points[i], vertex, POINT_EPSILON))
+-			{
+-				if (face->face_winding->numpoints <= 3)
+-				{
+-					movefacepoints[nummovefaces] = i;
+-					movefaces[nummovefaces++] = face;
+-					break;
+-				}
+-				dot = DotProduct(end, face->plane.normal) - face->plane.dist;
+-				//if the end point is in front of the face plane
+-				if (dot > 0.1)
+-				{
+-					//fanout triangle subdivision
+-					for (k = i; k < i + w->numpoints-3; k++)
+-					{
+-						VectorCopy(w->points[i], tmpw.points[0]);
+-						VectorCopy(w->points[(k+1) % w->numpoints], tmpw.points[1]);
+-						VectorCopy(w->points[(k+2) % w->numpoints], tmpw.points[2]);
+-						//
+-						newface = Face_Clone(face);
+-						//get the original
+-						for (f = face; f->original; f = f->original) ;
+-						newface->original = f;
+-						//store the new winding
+-						if (newface->face_winding) Winding_Free(newface->face_winding);
+-						newface->face_winding = Winding_Clone(&tmpw);
+-						//get the texture
+-						newface->d_texture = Texture_ForName( newface->texdef.name );
+-						//add the face to the brush
+-						newface->next = b->brush_faces;
+-						b->brush_faces = newface;
+-						//add this new triangle to the move faces
+-						movefacepoints[nummovefaces] = 0;
+-						movefaces[nummovefaces++] = newface;
+-					}
+-					//give the original face a new winding
+-					VectorCopy(w->points[(i-2+w->numpoints) % w->numpoints], tmpw.points[0]);
+-					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[1]);
+-					VectorCopy(w->points[i], tmpw.points[2]);
+-					Winding_Free(face->face_winding);
+-					face->face_winding = Winding_Clone(&tmpw);
+-					//add the original face to the move faces
+-					movefacepoints[nummovefaces] = 2;
+-					movefaces[nummovefaces++] = face;
+-				}
+-				else
+-				{
+-					//chop a triangle off the face
+-					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[0]);
+-					VectorCopy(w->points[i], tmpw.points[1]);
+-					VectorCopy(w->points[(i+1) % w->numpoints], tmpw.points[2]);
+-					//remove the point from the face winding
+-					Winding_RemovePoint(w, i);
+-					//get texture crap right
+-					Face_SetColor(b, face, 1.0);
+-					for (j = 0; j < w->numpoints; j++)
+-						EmitTextureCoordinates(w->points[j], face->d_texture, face);
+-					//make a triangle face
+-					newface = Face_Clone(face);
+-					//get the original
+-					for (f = face; f->original; f = f->original) ;
+-					newface->original = f;
+-					//store the new winding
+-					if (newface->face_winding) Winding_Free(newface->face_winding);
+-					newface->face_winding = Winding_Clone(&tmpw);
+-					//get the texture
+-					newface->d_texture = Texture_ForName( newface->texdef.name );
+-					//add the face to the brush
+-					newface->next = b->brush_faces;
+-					b->brush_faces = newface;
+-					//
+-					movefacepoints[nummovefaces] = 1;
+-					movefaces[nummovefaces++] = newface;
+-				}
+-				break;
+-			}
+-		}
+-	}
+-	//now movefaces contains pointers to triangle faces that
+-	//contain the to be moved vertex
+-
+-	//check if the move is valid
+-	int l;
+-	vec3_t p1, p2;
+-	winding_t *w2;
+-	edPlane_c plane;
+-
+-	face = NULL;
+-	VectorCopy(vertex, tmpw.points[1]);
+-	VectorCopy(end, tmpw.points[2]);
+-	for (face = b->brush_faces; face; face = face->next)
+-	{
+-		for (i = 0; i < nummovefaces; i++)
+-		{
+-			if (face == movefaces[i])
+-				break;
+-		}
+-		if (i < nummovefaces)
+-			continue;
+-		//the delta vector may not intersect with any of the not move faces
+-		if (Winding_VectorIntersect(face->face_winding, face->plane, vertex, end, INTERSECT_EPSILON))
+-			break;
+-		//if the end point of the to be moved vertex is near this not move face
+-		if (abs(DotProduct(face->plane.normal, end) - face->plane.dist) < 0.5)
+-		{
+-			//the end point may not be inside or very close to the not move face winding
+-			if (Winding_PointInside(face->face_winding, face->plane, end, 0.5))
+-				break;
+-		}
+-		for (i = 0; i < nummovefaces; i++)
+-		{
+-			w = movefaces[i]->face_winding;
+-			j = movefacepoints[i];
+-			for (k = -1; k <= 1; k += 2)
+-			{
+-				//check if the new edge will not intersect with the not move face
+-				VectorCopy(w->points[(j + k + w->numpoints) % w->numpoints], tmpw.points[0]);
+-				if (Winding_VectorIntersect(face->face_winding, face->plane, tmpw.points[0], end, INTERSECT_EPSILON))
+-				{
+-					//ok the new edge instersects with the not move face
+-					//we can't perform the vertex movement
+-					//break;
+-				}
+-				//check if the not move face intersects the "movement winding"
+-				Winding_Plane(&tmpw, plane.normal, &plane.dist);
+-				w2 = face->face_winding;
+-				for (l = 0; l < w2->numpoints; l++)
+-				{
+-					VectorCopy(w2->points[l], p1);
+-					if (Point_Equal(p1, tmpw.points[0], POINT_EPSILON)) continue;
+-					VectorCopy(w2->points[(l+1) % w2->numpoints], p2);
+-					if (Point_Equal(p2, tmpw.points[0], POINT_EPSILON)) continue;
+-					if (Winding_VectorIntersect(&tmpw, plane, p1, p2, INTERSECT_EPSILON))
+-						break;
+-				}
+-				if (l < w2->numpoints)
+-				{
+-					//ok this not move face intersects the "movement winding"
+-					//we can't perform the vertex movement
+-					break;
+-				}
+-			}
+-			if (k <= 1) break;
+-		}
+-		if (i < nummovefaces)
+-			break;
+-	}
+-	if (!face)
+-	{
+-		//ok the move was valid
+-		//now move all the vertexes of the movefaces
+-		for (i = 0; i < nummovefaces; i++)
+-		{
+-			VectorCopy(end, movefaces[i]->face_winding->points[movefacepoints[i]]);
+-			//create new face plane
+-			for (j = 0; j < 3; j++)
+-			{
+-				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
+-			}
+-			Face_MakePlane(movefaces[i]);
+-		}
+-		result = true;
+-	}
+-	//get texture crap right
+-	for (i = 0; i < nummovefaces; i++)
+-	{
+-		Face_SetColor(b, movefaces[i], 1.0);
+-		for (j = 0; j < movefaces[i]->face_winding->numpoints; j++)
+-			EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
+-	}
+-
+-	//now try to merge faces with their original faces
+-	lastface = NULL;
+-	for (face = b->brush_faces; face; face = nextface)
+-	{
+-		nextface = face->next;
+-		if (!face->original)
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		if (!face->plane.isPlaneEqual(face->original->plane, false))
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		w = Winding_TryMerge(face->face_winding, face->original->face_winding, face->plane.normal, true);
+-		if (!w)
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		Winding_Free(face->original->face_winding);
+-		face->original->face_winding = w;
+-		//get texture crap right
+-		Face_SetColor(b, face->original, 1.0);
+-		for (j = 0; j < face->original->face_winding->numpoints; j++)
+-			EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
+-		//remove the face that was merged with the original
+-		if (lastface) lastface->next = face->next;
+-		else b->brush_faces = face->next;
+-		Face_Free(face);
+-	}
+-	return result;
+-}
+-
+ /*
+ =================
+ Brush_MoveVertexes_old2
+@@ -1112,185 +1113,185 @@
+ #define INTERSECT_EPSILON	0.1
+ #define POINT_EPSILON		0.3
+ 
+-int Brush_MoveVertex_old2(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
+-{
+-	face_t *f, *face, *newface, *lastface, *nextface;
+-	face_t *movefaces[MAX_MOVE_FACES];
+-	int movefacepoints[MAX_MOVE_FACES];
+-	winding_t *w, tmpw;
+-	int i, j, k, nummovefaces, result;
+-	float dot;
++//int Brush_MoveVertex_old2(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
++//{
++//	face_t *f, *face, *newface, *lastface, *nextface;
++//	face_t *movefaces[MAX_MOVE_FACES];
++//	int movefacepoints[MAX_MOVE_FACES];
++//	winding_t *w, tmpw;
++//	int i, j, k, nummovefaces, result;
++//	float dot;
++//
++//	result = true;
++//	//
++//	tmpw.numpoints = 3;
++//	tmpw.maxpoints = 3;
++//	VectorAdd(vertex, delta, end);
++//	//snap or not?
++//	if (bSnap)
++//		for (i = 0; i < 3; i++)
++//			end[i] = floor(end[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
++//	//chop off triangles from all brush faces that use the to be moved vertex
++//	//store pointers to these chopped off triangles in movefaces[]
++//	nummovefaces = 0;
++//	for (face = b->brush_faces; face; face = face->next)
++//	{
++//		w = face->face_winding;
++//		if (!w) continue;
++//		for (i = 0; i < w->numpoints; i++)
++//		{
++//			if (Point_Equal(w->points[i], vertex, POINT_EPSILON))
++//			{
++//				if (face->face_winding->numpoints <= 3)
++//				{
++//					movefacepoints[nummovefaces] = i;
++//					movefaces[nummovefaces++] = face;
++//					break;
++//				}
++//				dot = DotProduct(end, face->plane.normal) - face->plane.dist;
++//				//if the end point is in front of the face plane
++//				if (dot > 0.1)
++//				{
++//					//fanout triangle subdivision
++//					for (k = i; k < i + w->numpoints-3; k++)
++//					{
++//						VectorCopy(w->points[i], tmpw.points[0]);
++//						VectorCopy(w->points[(k+1) % w->numpoints], tmpw.points[1]);
++//						VectorCopy(w->points[(k+2) % w->numpoints], tmpw.points[2]);
++//						//
++//						newface = Face_Clone(face);
++//						//get the original
++//						for (f = face; f->original; f = f->original) ;
++//						newface->original = f;
++//						//store the new winding
++//						if (newface->face_winding) Winding_Free(newface->face_winding);
++//						newface->face_winding = Winding_Clone(&tmpw);
++//						//get the texture
++//						newface->d_texture = Texture_ForName( newface->texdef.name );
++//						//add the face to the brush
++//						newface->next = b->brush_faces;
++//						b->brush_faces = newface;
++//						//add this new triangle to the move faces
++//						movefacepoints[nummovefaces] = 0;
++//						movefaces[nummovefaces++] = newface;
++//					}
++//					//give the original face a new winding
++//					VectorCopy(w->points[(i-2+w->numpoints) % w->numpoints], tmpw.points[0]);
++//					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[1]);
++//					VectorCopy(w->points[i], tmpw.points[2]);
++//					Winding_Free(face->face_winding);
++//					face->face_winding = Winding_Clone(&tmpw);
++//					//add the original face to the move faces
++//					movefacepoints[nummovefaces] = 2;
++//					movefaces[nummovefaces++] = face;
++//				}
++//				else
++//				{
++//					//chop a triangle off the face
++//					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[0]);
++//					VectorCopy(w->points[i], tmpw.points[1]);
++//					VectorCopy(w->points[(i+1) % w->numpoints], tmpw.points[2]);
++//					//remove the point from the face winding
++//					Winding_RemovePoint(w, i);
++//					//get texture crap right
++//					Face_SetColor(b, face, 1.0);
++//					for (j = 0; j < w->numpoints; j++)
++//						EmitTextureCoordinates(w->points[j], face->d_texture, face);
++//					//make a triangle face
++//					newface = Face_Clone(face);
++//					//get the original
++//					for (f = face; f->original; f = f->original) ;
++//					newface->original = f;
++//					//store the new winding
++//					if (newface->face_winding) Winding_Free(newface->face_winding);
++//					newface->face_winding = Winding_Clone(&tmpw);
++//					//get the texture
++//					newface->d_texture = Texture_ForName( newface->texdef.name );
++//					//add the face to the brush
++//					newface->next = b->brush_faces;
++//					b->brush_faces = newface;
++//					//
++//					movefacepoints[nummovefaces] = 1;
++//					movefaces[nummovefaces++] = newface;
++//				}
++//				break;
++//			}
++//		}
++//	}
++//	//now movefaces contains pointers to triangle faces that
++//	//contain the to be moved vertex
++//
++//	//move the vertex
++//	for (i = 0; i < nummovefaces; i++)
++//	{
++//		//move vertex to end position
++//		VectorCopy(end, movefaces[i]->face_winding->points[movefacepoints[i]]);
++//		//create new face plane
++//		for (j = 0; j < 3; j++)
++//		{
++//			VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
++//		}
++//		Face_MakePlane(movefaces[i]);
++//	}
++//	//if the brush is no longer convex
++//	if (!Brush_Convex(b))
++//	{
++//		for (i = 0; i < nummovefaces; i++)
++//		{
++//			//move the vertex back to the initial position
++//			VectorCopy(vertex, movefaces[i]->face_winding->points[movefacepoints[i]]);
++//			//create new face plane
++//			for (j = 0; j < 3; j++)
++//			{
++//				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
++//			}
++//			Face_MakePlane(movefaces[i]);
++//		}
++//		result = false;
++//	}
++//	//get texture crap right
++//	for (i = 0; i < nummovefaces; i++)
++//	{
++//		Face_SetColor(b, movefaces[i], 1.0);
++//		for (j = 0; j < movefaces[i]->face_winding->numpoints; j++)
++//			EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
++//	}
++//
++//	//now try to merge faces with their original faces
++//	lastface = NULL;
++//	for (face = b->brush_faces; face; face = nextface)
++//	{
++//		nextface = face->next;
++//		if (!face->original)
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		if (!face->plane.isPlaneEqual(face->original->plane, false))
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		w = Winding_TryMerge(face->face_winding, face->original->face_winding, face->plane.normal, true);
++//		if (!w)
++//		{
++//			lastface = face;
++//			continue;
++//		}
++//		Winding_Free(face->original->face_winding);
++//		face->original->face_winding = w;
++//		//get texture crap right
++//		Face_SetColor(b, face->original, 1.0);
++//		for (j = 0; j < face->original->face_winding->numpoints; j++)
++//			EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
++//		//remove the face that was merged with the original
++//		if (lastface) lastface->next = face->next;
++//		else b->brush_faces = face->next;
++//		Face_Free(face);
++//	}
++//	return result;
++//}
+ 
+-	result = true;
+-	//
+-	tmpw.numpoints = 3;
+-	tmpw.maxpoints = 3;
+-	VectorAdd(vertex, delta, end);
+-	//snap or not?
+-	if (bSnap)
+-		for (i = 0; i < 3; i++)
+-			end[i] = floor(end[i] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
+-	//chop off triangles from all brush faces that use the to be moved vertex
+-	//store pointers to these chopped off triangles in movefaces[]
+-	nummovefaces = 0;
+-	for (face = b->brush_faces; face; face = face->next)
+-	{
+-		w = face->face_winding;
+-		if (!w) continue;
+-		for (i = 0; i < w->numpoints; i++)
+-		{
+-			if (Point_Equal(w->points[i], vertex, POINT_EPSILON))
+-			{
+-				if (face->face_winding->numpoints <= 3)
+-				{
+-					movefacepoints[nummovefaces] = i;
+-					movefaces[nummovefaces++] = face;
+-					break;
+-				}
+-				dot = DotProduct(end, face->plane.normal) - face->plane.dist;
+-				//if the end point is in front of the face plane
+-				if (dot > 0.1)
+-				{
+-					//fanout triangle subdivision
+-					for (k = i; k < i + w->numpoints-3; k++)
+-					{
+-						VectorCopy(w->points[i], tmpw.points[0]);
+-						VectorCopy(w->points[(k+1) % w->numpoints], tmpw.points[1]);
+-						VectorCopy(w->points[(k+2) % w->numpoints], tmpw.points[2]);
+-						//
+-						newface = Face_Clone(face);
+-						//get the original
+-						for (f = face; f->original; f = f->original) ;
+-						newface->original = f;
+-						//store the new winding
+-						if (newface->face_winding) Winding_Free(newface->face_winding);
+-						newface->face_winding = Winding_Clone(&tmpw);
+-						//get the texture
+-						newface->d_texture = Texture_ForName( newface->texdef.name );
+-						//add the face to the brush
+-						newface->next = b->brush_faces;
+-						b->brush_faces = newface;
+-						//add this new triangle to the move faces
+-						movefacepoints[nummovefaces] = 0;
+-						movefaces[nummovefaces++] = newface;
+-					}
+-					//give the original face a new winding
+-					VectorCopy(w->points[(i-2+w->numpoints) % w->numpoints], tmpw.points[0]);
+-					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[1]);
+-					VectorCopy(w->points[i], tmpw.points[2]);
+-					Winding_Free(face->face_winding);
+-					face->face_winding = Winding_Clone(&tmpw);
+-					//add the original face to the move faces
+-					movefacepoints[nummovefaces] = 2;
+-					movefaces[nummovefaces++] = face;
+-				}
+-				else
+-				{
+-					//chop a triangle off the face
+-					VectorCopy(w->points[(i-1+w->numpoints) % w->numpoints], tmpw.points[0]);
+-					VectorCopy(w->points[i], tmpw.points[1]);
+-					VectorCopy(w->points[(i+1) % w->numpoints], tmpw.points[2]);
+-					//remove the point from the face winding
+-					Winding_RemovePoint(w, i);
+-					//get texture crap right
+-					Face_SetColor(b, face, 1.0);
+-					for (j = 0; j < w->numpoints; j++)
+-						EmitTextureCoordinates(w->points[j], face->d_texture, face);
+-					//make a triangle face
+-					newface = Face_Clone(face);
+-					//get the original
+-					for (f = face; f->original; f = f->original) ;
+-					newface->original = f;
+-					//store the new winding
+-					if (newface->face_winding) Winding_Free(newface->face_winding);
+-					newface->face_winding = Winding_Clone(&tmpw);
+-					//get the texture
+-					newface->d_texture = Texture_ForName( newface->texdef.name );
+-					//add the face to the brush
+-					newface->next = b->brush_faces;
+-					b->brush_faces = newface;
+-					//
+-					movefacepoints[nummovefaces] = 1;
+-					movefaces[nummovefaces++] = newface;
+-				}
+-				break;
+-			}
+-		}
+-	}
+-	//now movefaces contains pointers to triangle faces that
+-	//contain the to be moved vertex
+-
+-	//move the vertex
+-	for (i = 0; i < nummovefaces; i++)
+-	{
+-		//move vertex to end position
+-		VectorCopy(end, movefaces[i]->face_winding->points[movefacepoints[i]]);
+-		//create new face plane
+-		for (j = 0; j < 3; j++)
+-		{
+-			VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
+-		}
+-		Face_MakePlane(movefaces[i]);
+-	}
+-	//if the brush is no longer convex
+-	if (!Brush_Convex(b))
+-	{
+-		for (i = 0; i < nummovefaces; i++)
+-		{
+-			//move the vertex back to the initial position
+-			VectorCopy(vertex, movefaces[i]->face_winding->points[movefacepoints[i]]);
+-			//create new face plane
+-			for (j = 0; j < 3; j++)
+-			{
+-				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
+-			}
+-			Face_MakePlane(movefaces[i]);
+-		}
+-		result = false;
+-	}
+-	//get texture crap right
+-	for (i = 0; i < nummovefaces; i++)
+-	{
+-		Face_SetColor(b, movefaces[i], 1.0);
+-		for (j = 0; j < movefaces[i]->face_winding->numpoints; j++)
+-			EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
+-	}
+-
+-	//now try to merge faces with their original faces
+-	lastface = NULL;
+-	for (face = b->brush_faces; face; face = nextface)
+-	{
+-		nextface = face->next;
+-		if (!face->original)
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		if (!face->plane.isPlaneEqual(face->original->plane, false))
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		w = Winding_TryMerge(face->face_winding, face->original->face_winding, face->plane.normal, true);
+-		if (!w)
+-		{
+-			lastface = face;
+-			continue;
+-		}
+-		Winding_Free(face->original->face_winding);
+-		face->original->face_winding = w;
+-		//get texture crap right
+-		Face_SetColor(b, face->original, 1.0);
+-		for (j = 0; j < face->original->face_winding->numpoints; j++)
+-			EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
+-		//remove the face that was merged with the original
+-		if (lastface) lastface->next = face->next;
+-		else b->brush_faces = face->next;
+-		Face_Free(face);
+-	}
+-	return result;
+-}
+-
+ /*
+ =================
+ Brush_MoveVertexes
+@@ -1304,13 +1305,13 @@
+ 
+ #define MAX_MOVE_FACES		64
+ 
+-int Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap)
++int Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap)
+ {
+ 	face_t *f, *face, *newface, *lastface, *nextface;
+ 	face_t *movefaces[MAX_MOVE_FACES];
+ 	int movefacepoints[MAX_MOVE_FACES];
+ 	winding_t *w, tmpw;
+-	vec3_t start, mid;
++	edVec3_c start, mid;
+ 	edPlane_c plane;
+ 	int i, j, k, nummovefaces, result, done;
+ 	float dot, front, back, frac, smallestfrac;
+@@ -1364,7 +1365,7 @@
+ 						movefaces[nummovefaces++] = face;
+ 						break;
+ 					}
+-					dot = DotProduct(end, face->plane.normal) - face->plane.dist;
++					dot = end.dotProduct(face->plane.normal) - face->plane.dist;
+ 					//if the end point is in front of the face plane
+ 					if (dot > 0.1)
+ 					{
+@@ -1468,17 +1469,17 @@
+ 				k = movefacepoints[i];
+ 				w = movefaces[i]->face_winding;
+ 				VectorCopy(w->points[(k+1)%w->numpoints], tmpw.points[2]);
+-				if (!plane.fromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2]))
++				if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+ 				{
+ 					VectorCopy(w->points[(k+2)%w->numpoints], tmpw.points[2]);
+-					if (!plane.fromPoints(tmpw.points[0], tmpw.points[1], tmpw.points[2]))
++					if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+ 						//this should never happen otherwise the face merge did a crappy job a previous pass
+ 						continue;
+ 				}
+ 			}
+ 			//now we've got the plane to check agains
+-			front = DotProduct(start, plane.normal) - plane.dist;
+-			back = DotProduct(end, plane.normal) - plane.dist;
++			front = start.dotProduct(plane.normal) - plane.dist;
++			back = end.dotProduct(plane.normal) - plane.dist;
+ 			//if the whole move is at one side of the plane
+ 			if (front < 0.01 && back < 0.01) continue;
+ 			if (front > -0.01 && back > -0.01) continue;
+@@ -1508,7 +1509,7 @@
+ 				VectorCopy(movefaces[i]->face_winding->points[j], movefaces[i]->planepts[j]);
+ 			}
+ 			Face_MakePlane(movefaces[i]);
+-			if (VectorLength(movefaces[i]->plane.normal) < 0.1)
++			if (movefaces[i]->plane.normal.vectorLength() < 0.1)
+ 				result = false;
+ 		}
+ 		//if the brush is no longer convex
+@@ -1586,13 +1587,13 @@
+ {
+ 	face_t *face;
+ 	winding_t *w, *neww;
+-	vec3_t point;
++	edVec3_c point;
+ 	int i, insert;
+ 
+ 	if (Point_Equal(p1, p2, 0.4))
+ 		return false;
+ 	VectorAdd(p1, p2, point);
+-	VectorScale(point, 0.5, point);
++	point *= 0.5;
+ 	insert = false;
+ 	//the end point may not be the same as another vertex
+ 	for (face = b->brush_faces; face; face = face->next)
+@@ -2676,7 +2677,7 @@
+ 	if(b == 0)
+ 		return 0;
+ 	face_t	*f, *firstface;
+-	vec3_t	p1, p2;
++	edVec3_c	p1, p2;
+ 	float	frac, d1, d2;
+ 	int		i;
+ 
+@@ -2686,8 +2687,8 @@
+ 
+ 	for (f=b->brush_faces ; f ; f=f->next)
+ 	{
+-		d1 = DotProduct (p1, f->plane.normal) - f->plane.dist;
+-		d2 = DotProduct (p2, f->plane.normal) - f->plane.dist;
++		d1 = p1.dotProduct(f->plane.normal) - f->plane.dist;
++		d2 = p2.dotProduct(f->plane.normal) - f->plane.dist;
+ 		if (d1 >= 0 && d2 >= 0)
+ 		{
+ 			*dist = 0;
+@@ -2712,7 +2713,7 @@
+ 
+ 	// find distance p1 is along dir
+ 	VectorSubtract (p1, origin, p1);
+-	d1 = DotProduct (p1, dir);
++	d1 = p1.dotProduct(dir);
+ 
+ 	*dist = d1;
+ 
+@@ -2720,7 +2721,7 @@
+ }
+ 
+ //PGM
+-face_t *Brush_Point (vec3_t origin, brush_t *b)
++face_t *Brush_Point (const edVec3_c &origin, brush_t *b)
+ {
+ 	face_t	*f;
+ 	float	d1;
+@@ -2727,7 +2728,7 @@
+ 
+ 	for (f=b->brush_faces ; f ; f=f->next)
+ 	{
+-		d1 = DotProduct (origin, f->plane.normal) - f->plane.dist;
++		d1 = origin.dotProduct(f->plane.normal) - f->plane.dist;
+ 		if (d1 > 0)
+ 		{
+ 			return NULL;	// point is on front side of face
+@@ -2813,18 +2814,18 @@
+ 		{
+ 			f->texdef = *texdef;
+ 			// fit the scaling of the texture on the actual plane
+-			vec3_t p1,p2,p3; // absolute coordinates
++			edVec3_c p1,p2,p3; // absolute coordinates
+ 			// compute absolute coordinates
+ 			ComputeAbsolute(f,p1,p2,p3);
+ 			// compute the scale
+-			vec3_t vx,vy;
++			edVec3_c vx,vy;
+ 			VectorSubtract(p2,p1,vx);
+-			VectorNormalize(vx);
++			vx.normalize();
+ 			VectorSubtract(p3,p1,vy);
+-			VectorNormalize(vy);
++			vy.normalize();
+ 			// assign scale
+-			VectorScale(vx,texdef->scale[0],vx);
+-			VectorScale(vy,texdef->scale[1],vy);
++			vx *= texdef->scale[0];
++			vy *= texdef->scale[1];
+ 			VectorAdd(p1,vx,p2);
+ 			VectorAdd(p1,vy,p3);
+ 			// compute back shift scale rot
+@@ -2869,14 +2870,14 @@
+ }
+ 
+ 
+-bool ClipLineToFace (vec3_t p1, vec3_t p2, face_t *f)
++bool ClipLineToFace (edVec3_c &p1, edVec3_c &p2, face_t *f)
+ {
+ 	float	d1, d2, fr;
+ 	int		i;
+ 	float	*v;
+ 
+-	d1 = DotProduct (p1, f->plane.normal) - f->plane.dist;
+-	d2 = DotProduct (p2, f->plane.normal) - f->plane.dist;
++	d1 = p1.dotProduct(f->plane.normal) - f->plane.dist;
++	d2 = p2.dotProduct(f->plane.normal) - f->plane.dist;
+ 
+ 	if (d1 >= 0 && d2 >= 0)
+ 		return false;		// totally outside
+@@ -2942,7 +2943,7 @@
+ 		for (f2=b2->brush_faces ; f2 ; f2=f2->next)
+ 		{
+ 			for (i=0 ; i<3 ; i++)
+-				if (fabs(DotProduct(f2->planepts[i], f->plane.normal)
++				if (fabs(f2->planepts[i].dotProduct(f->plane.normal)
+ 				-f->plane.dist) > ON_EPSILON)
+ 					break;
+ 			if (i==3)
+@@ -2971,7 +2972,7 @@
+ 		// any points on f will become new control points
+ 		for (i=0 ; i<w->numpoints ; i++)
+ 		{
+-			d = DotProduct (w->points[i], f->plane.normal) 
++			d = w->points[i].dotProduct(f->plane.normal) 
+ 				- f->plane.dist;
+ 			if (d > -ON_EPSILON && d < ON_EPSILON)
+ 				break;
+@@ -2986,8 +2987,7 @@
+ 			if (i == 0)
+ 			{	// see if the first clockwise point was the
+ 				// last point on the winding
+-				d = DotProduct (w->points[w->numpoints-1]
+-					, f->plane.normal) - f->plane.dist;
++				d = w->points[w->numpoints-1].dotProduct(f->plane.normal) - f->plane.dist;
+ 				if (d > -ON_EPSILON && d < ON_EPSILON)
+ 					i = w->numpoints - 1;
+ 			}
+@@ -2999,8 +2999,7 @@
+ 				i = 0;
+ 			
+ 			// see if the next point is also on the plane
+-			d = DotProduct (w->points[i]
+-				, f->plane.normal) - f->plane.dist;
++			d = w->points[i].dotProduct(f->plane.normal) - f->plane.dist;
+ 			if (d > -ON_EPSILON && d < ON_EPSILON)
+ 				AddPlanept (f2->planepts[1]);
+ 
+@@ -3029,9 +3028,9 @@
+ 					   , bool shear)
+ {
+ 	face_t	*f, *f2;
+-	vec3_t	p1, p2;
+-if(b == 0)
+-	return;
++	edVec3_c	p1, p2;
++	if(b == 0)
++		return;
+   //if (b->patchBrush)
+   //  return;
+     //Patch_SideSelect(b->nPatchID, origin, dir);
+@@ -3376,11 +3375,11 @@
+ 			qglEnable(GL_TEXTURE_2D);
+ 			qglBindTexture( GL_TEXTURE_2D, model->nTextureBind );
+ 		}
+-		vec3_t v;
++		edVec3_c v;
+ 
+ 		int i,j;
+ 		VectorAdd(b->maxs, b->mins, v);
+-		VectorScale(v, 0.5, v);
++		v *= 0.5;
+ 		VectorCopy(b->owner->origin, v);
+ 
+ 
+@@ -3395,10 +3394,10 @@
+ 		//}
+ 
+ 		float s, c;
+-		if (a)
++		//if (a)
+ 		{
+-			s = sin (a/180*Q_PI);
+-			c = cos (a/180*Q_PI);
++			s = sin (DEG2RAD(a));
++			c = cos (DEG2RAD(a));
+ 		}
+ 
+ 		vec3_t vSin;
+@@ -3409,8 +3408,8 @@
+ 		{
+ 			if (b->owner->vRotation[j])
+ 			{
+-				vSin[j] = sin(b->owner->vRotation[j]/180*Q_PI);
+-				vCos[j] = cos(b->owner->vRotation[j]/180*Q_PI);
++				vSin[j] = sin(DEG2RAD(b->owner->vRotation[j]));
++				vCos[j] = cos(DEG2RAD(b->owner->vRotation[j]));
+ 			}
+ 		}
+ 
+@@ -3498,8 +3497,7 @@
+ 			g_bDoIt = false;
+ 		}
+ 
+-		vec3_t vColor;
+-		VectorScale(pEclass->color, 0.50, vColor);
++		edVec3_c  vColor = edVec3_c(pEclass->color) * 0.50;
+ 
+ 		vec3_t vCenter, vMin, vMax;
+ 		VectorCopy(b->owner->origin, vCenter);
+@@ -3682,11 +3680,11 @@
+ {
+ 	vec3_t	forward, right, up;
+ 	vec3_t	endpoint, tip1, tip2;
+-	vec3_t	start;
++	edVec3_c	start;
+ 	float	dist;
+ 
+ 	VectorAdd(e->brushes.onext->mins, e->brushes.onext->maxs, start);
+-	VectorScale(start, 0.5, start);
++	start *= 0.5f;
+ 	dist = (b->maxs[0] - start[0]) * 2.5;
+ 
+ 	FacingVectors (e, forward, right, up);
+@@ -4332,8 +4330,8 @@
+ 
+ 	b = Brush_Alloc();
+ 
+-	float dt = float(2 * Q_PI / sides);
+-	float dp = float(Q_PI / sides);
++	float dt = float(2 * M_PI / sides);
++	float dp = float(M_PI / sides);
+ 	float t,p;
+ 	for(i=0; i <= sides-1; i++)
+ 	{
+@@ -4340,7 +4338,7 @@
+ 		for(j=0;j <= sides-2; j++)
+ 		{
+ 			t = i * dt;
+-			p = float(j * dp - Q_PI / 2);
++			p = float(j * dp - M_PI / 2);
+ 
+ 			f = Face_Alloc();
+ 			f->texdef = *texdef;
+@@ -4347,9 +4345,9 @@
+ 			f->next = b->brush_faces;
+ 			b->brush_faces = f;
+ 
+-			VectorPolar(f->planepts[0], radius, t, p);
+-			VectorPolar(f->planepts[1], radius, t, p + dp);
+-			VectorPolar(f->planepts[2], radius, t + dt, p + dp);
++			f->planepts[0].setupPolar(radius, t, p);
++			f->planepts[1].setupPolar(radius, t, p + dp);
++			f->planepts[2].setupPolar(radius, t + dt, p + dp);
+ 
+ 			for (int k = 0; k < 3; k++)
+ 				VectorAdd(f->planepts[k], mid, f->planepts[k]);
+@@ -4356,7 +4354,7 @@
+ 		}
+ 	}
+ 
+-	p = float((sides - 1) * dp - Q_PI / 2);
++	p = float((sides - 1) * dp - M_PI / 2);
+ 	for(i = 0; i <= sides-1; i++)
+ 	{
+ 		t = i * dt;
+@@ -4366,9 +4364,9 @@
+ 		f->next = b->brush_faces;
+ 		b->brush_faces = f;
+ 
+-		VectorPolar(f->planepts[0], radius, t, p);
+-		VectorPolar(f->planepts[1], radius, t + dt, p + dp);
+-		VectorPolar(f->planepts[2], radius, t + dt, p);
++		f->planepts[0].setupPolar(radius, t, p);
++		f->planepts[1].setupPolar(radius, t + dt, p + dp);
++		f->planepts[2].setupPolar(radius, t + dt, p);
+ 
+ 		for (int k = 0; k < 3; k++)
+ 			VectorAdd(f->planepts[k], mid, f->planepts[k]);
+@@ -4386,7 +4384,7 @@
+ void Face_FitTexture( face_t * face, int nHeight, int nWidth )
+ {
+ 	winding_t *w;
+-	vec3_t   mins,maxs;
++	edVec3_c   mins,maxs;
+ 	int i;
+ 	float width, height, temp;
+ 	float rot_width, rot_height;
+@@ -4393,7 +4391,7 @@
+ 	float cosv,sinv,ang;
+ 	float min_t, min_s, max_t, max_s;
+ 	float s,t;
+-	vec3_t	vecs[2];
++	edVec3_c	vecs[2];
+ 	vec3_t   coords[4];
+ 	texdef_t	*td;
+ 
+@@ -4421,7 +4419,7 @@
+ 	// 
+ 	// get the current angle
+ 	//
+-	ang = td->rotate / 180 * Q_PI;
++	ang = DEG2RAD(td->rotate);
+ 	sinv = sin(ang);
+ 	cosv = cos(ang);
+ 
+@@ -4428,10 +4426,10 @@
+ 	// get natural texture axis
+ 	TextureAxisFromPlane(face->plane, vecs[0], vecs[1]);
+ 
+-	min_s = DotProduct( mins, vecs[0] );
+-	min_t = DotProduct( mins, vecs[1] );
+-	max_s = DotProduct( maxs, vecs[0] );
+-	max_t = DotProduct( maxs, vecs[1] );
++	min_s = mins.dotProduct(vecs[0]);
++	min_t = mins.dotProduct(vecs[1]);
++	max_s = maxs.dotProduct(vecs[0]);
++	max_t = maxs.dotProduct(vecs[1]);
+ 	width = max_s - min_s;
+ 	height = max_t - min_t;
+ 	coords[0][0] = min_s;
+Index: q3radiant/BRUSH.H
+===================================================================
+--- q3radiant/BRUSH.H	(revision 441)
++++ q3radiant/BRUSH.H	(working copy)
+@@ -88,7 +88,7 @@
+ void		Brush_MakeSided (int sides);
+ void		Brush_MakeSidedCone (int sides);
+ void		Brush_Move (brush_t *b, const vec3_t move, bool bSnap = true);
+-int			Brush_MoveVertex(brush_t *b, vec3_t vertex, vec3_t delta, vec3_t end, bool bSnap = true);
++int			Brush_MoveVertex(brush_t *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap = true);
+ void		Brush_ResetFaceOriginals(brush_t *b);
+ brush_t*	Brush_Parse (void);
+ face_t*		Brush_Ray (vec3_t origin, vec3_t dir, brush_t *b, float *dist);
+Index: q3radiant/brush_primit.cpp
+===================================================================
+--- q3radiant/brush_primit.cpp	(revision 436)
++++ q3radiant/brush_primit.cpp	(working copy)
+@@ -35,7 +35,7 @@
+ // NOTE : ComputeAxisBase here and in q3map code must always BE THE SAME !
+ // WARNING : special case behaviour of atan2(y,x) <-> atan(y/x) might not be the same everywhere when x == 0
+ // rotation by (0,RotY,RotZ) assigns X to normal
+-void ComputeAxisBase(vec3_t normal,vec3_t texS,vec3_t texT )
++void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT)
+ {
+ 	vec_t RotY,RotZ;
+ 	// do some cleaning
+@@ -59,10 +59,10 @@
+ 
+ void FaceToBrushPrimitFace(face_t *f)
+ {
+-	vec3_t texX,texY;
+-	vec3_t proj;
++	edVec3_c texX,texY;
++	edVec3_c proj;
+ 	// ST of (0,0) (1,0) (0,1)
+-	vec_t ST[3][5]; // [ point index ] [ xyz ST ]
++	texturedVertex_c ST[3]; // [ point index ] [ xyz ST ]
+ 	//++timo not used as long as brushprimit_texdef and texdef are static
+ /*	f->brushprimit_texdef.contents=f->texdef.contents;
+ 	f->brushprimit_texdef.flags=f->texdef.flags;
+@@ -83,8 +83,7 @@
+ 	// compute axis base
+ 	ComputeAxisBase(f->plane.normal,texX,texY);
+ 	// compute projection vector
+-	VectorCopy(f->plane.normal,proj);
+-	VectorScale(proj,f->plane.dist,proj);
++	proj = f->plane.normal * f->plane.dist;
+ 	// (0,0) in plane axis base is (0,0,0) in world coordinates + projection on the affine plane
+ 	// (1,0) in plane axis base is texX in world coordinates + projection on the affine plane
+ 	// (0,1) in plane axis base is texY in world coordinates + projection on the affine plane
+@@ -109,7 +108,7 @@
+ // compute texture coordinates for the winding points
+ void EmitBrushPrimitTextureCoordinates(face_t * f, winding_t * w)
+ {
+-	vec3_t texX,texY;
++	edVec3_c texX,texY;
+ 	vec_t x,y;
+ 	// compute axis base
+ 	ComputeAxisBase(f->plane.normal,texX,texY);
+@@ -124,8 +123,8 @@
+ 	int i;
+     for (i=0 ; i<w->numpoints ; i++)
+ 	{
+-		x=DotProduct(w->points[i],texX);
+-		y=DotProduct(w->points[i],texY);
++		x=w->points[i].dotProduct(texX);
++		y=w->points[i].dotProduct(texY);
+ #ifdef _DEBUG
+ 		if (g_qeglobals.bNeedConvert)
+ 		{
+@@ -335,9 +334,9 @@
+ }
+ 
+ // texture locking
+-void Face_MoveTexture_BrushPrimit(face_t *f, vec3_t delta)
++void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta)
+ {
+-	vec3_t texS,texT;
++	edVec3_c texS,texT;
+ 	vec_t tx,ty;
+ 	vec3_t M[3]; // columns of the matrix .. easier that way
+ 	vec_t det;
+@@ -345,8 +344,8 @@
+ 	// compute plane axis base ( doesn't change with translation )
+ 	ComputeAxisBase( f->plane.normal, texS, texT );
+ 	// compute translation vector in plane axis base
+-	tx = DotProduct( delta, texS );
+-	ty = DotProduct( delta, texT );
++	tx = delta.dotProduct( texS );
++	ty = delta.dotProduct( texT );
+ 	// fill the data vectors
+ 	M[0][0]=tx; M[0][1]=1.0f+tx; M[0][2]=tx;
+ 	M[1][0]=ty; M[1][1]=ty; M[1][2]=1.0f+ty;
+@@ -370,13 +369,12 @@
+ // call Face_MoveTexture_BrushPrimit after vec3_t computation
+ void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y )
+ {
+-	vec3_t texS,texT;
+-	vec3_t delta;
++	edVec3_c texS,texT;
++	edVec3_c delta;
+ 	ComputeAxisBase( f->plane.normal, texS, texT );
+-	VectorScale( texS, static_cast<float>(x), texS );
+-	VectorScale( texT, static_cast<float>(y), texT );
+-	VectorCopy( texS, delta );
+-	VectorAdd( delta, texT, delta );
++	texS *= x;
++	texT *= y;
++	delta = texS + texT;
+ 	Face_MoveTexture_BrushPrimit( f, delta );
+ }
+ 
+@@ -384,13 +382,13 @@
+ // called before the points on the face are actually rotated
+ void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, vec3_t vOrigin )
+ {
+-	vec3_t texS,texT;			// axis base of the initial plane
+-	vec3_t vRotate;				// rotation vector
+-	vec3_t Orig;
+-	vec3_t rOrig,rvecS,rvecT;	// (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation ( world axis base )
+-	vec3_t rNormal;				// normal of the plane after rotation
+-	vec3_t rtexS,rtexT;			// axis base of the rotated plane
+-	vec3_t lOrig,lvecS,lvecT;	// [2] are not used ( but usefull for debugging )
++	edVec3_c texS,texT;			// axis base of the initial plane
++	edVec3_c vRotate;				// rotation vector
++	edVec3_c Orig;
++	edVec3_c rOrig,rvecS,rvecT;	// (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation ( world axis base )
++	edVec3_c rNormal;				// normal of the plane after rotation
++	edVec3_c rtexS,rtexT;			// axis base of the rotated plane
++	edVec3_c lOrig,lvecS,lvecT;	// [2] are not used ( but usefull for debugging )
+ 	vec3_t M[3];
+ 	vec_t det;
+ 	vec3_t D[2];
+@@ -399,9 +397,9 @@
+ 	// compute coordinates of (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation
+ 	// (0,0) (1,0) (0,1) ( initial plane axis base ) <-> (0,0,0) texS texT ( world axis base )
+ 	// rotation vector
+-	VectorSet( vRotate, 0.0f, 0.0f, 0.0f );
++	vRotate.clear();
+ 	vRotate[nAxis]=fDeg;
+-	VectorSet( Orig, 0.0f, 0.0f, 0.0f );
++	Orig.clear();
+ 	VectorRotate( Orig, vRotate, vOrigin, rOrig );
+ 	VectorRotate( texS, vRotate, vOrigin, rvecS );
+ 	VectorRotate( texT, vRotate, vOrigin, rvecT );
+@@ -410,12 +408,12 @@
+ 	// compute rotated plane axis base
+ 	ComputeAxisBase( rNormal, rtexS, rtexT );
+ 	// compute S/T coordinates of the three points in rotated axis base ( in M matrix )
+-	lOrig[0] = DotProduct( rOrig, rtexS );
+-	lOrig[1] = DotProduct( rOrig, rtexT );
+-	lvecS[0] = DotProduct( rvecS, rtexS );
+-	lvecS[1] = DotProduct( rvecS, rtexT );
+-	lvecT[0] = DotProduct( rvecT, rtexS );
+-	lvecT[1] = DotProduct( rvecT, rtexT );
++	lOrig[0] = rOrig.dotProduct( rtexS );
++	lOrig[1] = rOrig.dotProduct( rtexT );
++	lvecS[0] = rvecS.dotProduct( rtexS );
++	lvecS[1] = rvecS.dotProduct( rtexT );
++	lvecT[0] = rvecT.dotProduct( rtexS );
++	lvecT[1] = rvecT.dotProduct( rtexT );
+ 	M[0][0] = lOrig[0]; M[1][0] = lOrig[1]; M[2][0] = 1.0f;
+ 	M[0][1] = lvecS[0]; M[1][1] = lvecS[1]; M[2][1] = 1.0f;
+ 	M[0][2] = lvecT[0]; M[1][2] = lvecT[1]; M[2][2] = 1.0f;
+@@ -437,11 +435,11 @@
+ }
+ 
+ // best fitted 2D vector is x.X+y.Y
+-void ComputeBest2DVector( vec3_t v, vec3_t X, vec3_t Y, int &x, int &y )
++void ComputeBest2DVector(const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y )
+ {
+ 	double sx,sy;
+-	sx = DotProduct( v, X );
+-	sy = DotProduct( v, Y );
++	sx = v.dotProduct( X );
++	sy = v.dotProduct( Y );
+ 	if ( fabs(sy) > fabs(sx) )
+ 	{
+ 		x = 0;
+Index: q3radiant/CAMERA.H
+===================================================================
+--- q3radiant/CAMERA.H	(revision 437)
++++ q3radiant/CAMERA.H	(working copy)
+@@ -22,7 +22,7 @@
+ 
+ // window system independent camera view code
+ 
+-typedef enum
++enum camera_draw_mode
+ {
+ 	cd_wire,
+ 	cd_solid,
+@@ -29,9 +29,9 @@
+ 	cd_texture,
+   cd_light,
+ 	cd_blend
+-} camera_draw_mode;
++};
+ 
+-typedef struct
++struct camera_t
+ {
+ 	int		width, height;
+ 
+@@ -46,6 +46,6 @@
+ 
+ 	vec3_t	forward, right, up;	// move matrix
+ 
+-	vec3_t	vup, vpn, vright;	// view matrix
+-} camera_t;
++	edVec3_c	vup, vpn, vright;	// view matrix
++};
+ 
+Index: q3radiant/CamWnd.cpp
+===================================================================
+--- q3radiant/CamWnd.cpp	(revision 437)
++++ q3radiant/CamWnd.cpp	(working copy)
+@@ -358,8 +358,8 @@
+ 	float	matrix[4][4];
+ 	int		i;
+ 
+-	xa = m_Camera.angles[0]/180*Q_PI;
+-	ya = m_Camera.angles[1]/180*Q_PI;
++	xa = m_Camera.angles[0]/180*M_PI;
++	ya = m_Camera.angles[1]/180*M_PI;
+ 
+ 	// the movement matrix is kept 2d
+ 
+@@ -377,9 +377,9 @@
+ 		m_Camera.vpn[i] = matrix[i][2];
+ 	}
+ 
+-	VectorNormalize (m_Camera.vright);
+-	VectorNormalize (m_Camera.vup);
+-	VectorNormalize (m_Camera.vpn);
++	m_Camera.vright.normalize();
++	m_Camera.vup.normalize();
++	m_Camera.vpn.normalize();
+ }
+ 
+ 
+@@ -518,7 +518,7 @@
+ 
+ void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
+ {
+-	vec3_t		dir;
++	edVec3_c		dir;
+ 	float		f, r, u;
+ 	int			i;
+ 
+@@ -531,7 +531,7 @@
+ 
+ 	for (i=0 ; i<3 ; i++)
+ 		dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
+-	VectorNormalize (dir);
++	dir.normalize();
+ 
+ 	GetCursorPos(&m_ptCursor);
+ 
+@@ -586,7 +586,7 @@
+ 	m_nCambuttonstate = buttons;
+ 	if (!buttons) {
+ 		if ( ( g_qeglobals.d_select_mode == sel_terrainpoint ) || ( g_qeglobals.d_select_mode == sel_terraintexture ) ) {
+-			vec3_t		dir;
++			edVec3_c		dir;
+ 			float		f, r, u;
+ 			int			i;
+ 
+@@ -599,7 +599,7 @@
+ 
+ 			for (i=0 ; i<3 ; i++)
+ 				dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
+-			VectorNormalize (dir);
++			dir.normalize();
+ 
+ 			m_ptButton.x = x;
+ 			m_ptButton.y = y;
+@@ -635,8 +635,8 @@
+ {
+ 	int		i;
+ 
+-	VectorSubtract (m_Camera.vpn, m_Camera.vright, m_vCull1);
+-	VectorAdd (m_Camera.vpn, m_Camera.vright, m_vCull2);
++	m_vCull1 = m_Camera.vpn - m_Camera.vright;
++	m_vCull2 = m_Camera.vpn + m_Camera.vright;
+ 
+ 	for (i=0 ; i<3 ; i++)
+ 	{
+@@ -654,7 +654,7 @@
+ bool CCamWnd::CullBrush (brush_t *b)
+ {
+ 	int		i;
+-	vec3_t	point;
++	edVec3_c	point;
+ 	float	d;
+ 
+ 	if (g_PrefsDlg.m_bCubicClipping)
+@@ -682,7 +682,7 @@
+ 	for (i=0 ; i<3 ; i++)
+ 		point[i] = b->mins[m_nCullv1[i]] - m_Camera.origin[i];
+ 
+-	d = DotProduct (point, m_vCull1);
++	d = point.dotProduct(m_vCull1);
+ 	if (d < -1)
+ 		return true;
+ 
+@@ -689,7 +689,7 @@
+ 	for (i=0 ; i<3 ; i++)
+ 		point[i] = b->mins[m_nCullv2[i]] - m_Camera.origin[i];
+ 
+-	d = DotProduct (point, m_vCull2);
++	d = point.dotProduct(m_vCull2);
+ 	if (d < -1)
+ 		return true;
+ 
+@@ -787,7 +787,7 @@
+ 	qglLoadIdentity ();
+ 	
+ 	screenaspect = (float)m_Camera.width / m_Camera.height;
+-	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/Q_PI;
++	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/M_PI;
+ 	qgluPerspective (yfov,  screenaspect,  2,  8192);
+ 	
+ 	qglRotatef (-90,  1, 0, 0);	    // put Z going up
+@@ -1128,8 +1128,8 @@
+ // brush primitive texture shifting, using camera view to select translations :
+ void CCamWnd::ShiftTexture_BrushPrimit(face_t *f, int x, int y)
+ {
+-	vec3_t texS,texT;
+-	vec3_t viewX,viewY;
++	edVec3_c texS,texT;
++	edVec3_c viewX,viewY;
+ 	int XS,XT,YS,YT;
+ 	int outS,outT;
+ #ifdef _DEBUG
+@@ -1142,8 +1142,8 @@
+ 	// compute face axis base
+ 	ComputeAxisBase( f->plane.normal, texS, texT );
+ 	// compute camera view vectors
+-	VectorCopy( m_Camera.vup, viewY );
+-	VectorCopy( m_Camera.vright, viewX );
++	viewY = m_Camera.vup;
++	viewX = m_Camera.vright;
+ 	// compute best vectors
+ 	ComputeBest2DVector( viewX, texS, texT, XS, XT );
+ 	ComputeBest2DVector( viewY, texS, texT, YS, YT );
+Index: q3radiant/CamWnd.h
+===================================================================
+--- q3radiant/CamWnd.h	(revision 437)
++++ q3radiant/CamWnd.h	(working copy)
+@@ -83,8 +83,8 @@
+   CPoint m_ptCursor;
+   CPoint m_ptLastCursor;
+   face_t* m_pSide_select;
+-  vec3_t m_vCull1;
+-  vec3_t m_vCull2;
++  edVec3_c m_vCull1;
++  edVec3_c m_vCull2;
+   int m_nCullv1[3];
+   int m_nCullv2[3];
+   bool m_bClipMode;
+Index: q3radiant/CSG.CPP
+===================================================================
+--- q3radiant/CSG.CPP	(revision 441)
++++ q3radiant/CSG.CPP	(working copy)
+@@ -37,7 +37,7 @@
+   {
+ 	  for (int i=0 ; i<3 ; i++)
+     {
+-      VectorScale (f->planepts[i], g_qeglobals.d_gridsize, f->planepts[i]);
++      f->planepts[i] *= g_qeglobals.d_gridsize;
+     }
+   }
+ }
+@@ -47,7 +47,7 @@
+ 	brush_t		*b, *front, *back, *next;
+ 	face_t		*f;
+ 	face_t		split;
+-	vec3_t		move;
++	edVec3_c		move;
+ 	int			i;
+ 
+ 	for (b = selected_brushes.next ; b != &selected_brushes ; b=next)
+@@ -60,7 +60,7 @@
+ 		for (f = b->brush_faces ; f ; f=f->next)
+ 		{
+ 			split = *f;
+-			VectorScale (f->plane.normal, g_qeglobals.d_gridsize, move);
++			move = f->plane.normal * g_qeglobals.d_gridsize;
+ 			for (i=0 ; i<3 ; i++)
+ 				VectorSubtract (split.planepts[i], move, split.planepts[i]);
+ 
+Index: q3radiant/DRAG.CPP
+===================================================================
+--- q3radiant/DRAG.CPP	(revision 437)
++++ q3radiant/DRAG.CPP	(working copy)
+@@ -105,7 +105,7 @@
+ 
+ 
+ 
+-	extern void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons);
++	extern void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons);
+ 	if (g_qeglobals.d_select_mode == sel_curvepoint)
+ 	{
+ 		//if ((buttons == MK_LBUTTON))
+@@ -512,7 +512,7 @@
+ 	int		i, success;
+ 	brush_t	*b;
+ 	CString strStatus;
+-	vec3_t vTemp, vTemp2, end;
++	edVec3_c vTemp, vTemp2, end;
+ 
+ 	if (!move[0] && !move[1] && !move[2])
+ 		return;
+Index: q3radiant/ECLASS.CPP
+===================================================================
+--- q3radiant/ECLASS.CPP	(revision 437)
++++ q3radiant/ECLASS.CPP	(working copy)
+@@ -629,9 +629,9 @@
+       vMax[2] += 1;
+     }
+ 
+-    vec3_t vTemp;
++    edVec3_c vTemp;
+     VectorAdd(vMin, vMax, vTemp);
+-    VectorScale(vTemp, 0.5, vTemp);
++    vTemp *= 0.5;
+     model = e->model;
+     while (model != NULL)
+     {
+Index: q3radiant/libs/cmdlib.lib
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: q3radiant/libs/pak.lib
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: q3radiant/MATHLIB.CPP
+===================================================================
+--- q3radiant/MATHLIB.CPP	(revision 441)
++++ q3radiant/MATHLIB.CPP	(working copy)
+@@ -28,19 +28,6 @@
+ vec3_t vec3_origin = {0.0f,0.0f,0.0f};
+ 
+ 
+-float VectorLength(vec3_t v)
+-{
+-	int		i;
+-	float	length;
+-	
+-	length = 0.0f;
+-	for (i=0 ; i< 3 ; i++)
+-		length += v[i]*v[i];
+-	length = (float)sqrt (length);
+-
+-	return length;
+-}
+-
+ bool VectorCompare (vec3_t v1, vec3_t v2)
+ {
+ 	int		i;
+@@ -67,72 +54,9 @@
+ 	vc[2] = va[2] + scale*vb[2];
+ }
+ 
+-void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross)
+-{
+-	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
+-	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
+-	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
+-}
+ 
+-vec_t _DotProduct (vec3_t v1, vec3_t v2)
+-{
+-	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+-}
+ 
+-void _VectorSubtract (vec3_t va, vec3_t vb, vec3_t out)
+-{
+-	out[0] = va[0]-vb[0];
+-	out[1] = va[1]-vb[1];
+-	out[2] = va[2]-vb[2];
+-}
+ 
+-void _VectorAdd (vec3_t va, vec3_t vb, vec3_t out)
+-{
+-	out[0] = va[0]+vb[0];
+-	out[1] = va[1]+vb[1];
+-	out[2] = va[2]+vb[2];
+-}
+-
+-void _VectorCopy (vec3_t in, vec3_t out)
+-{
+-	out[0] = in[0];
+-	out[1] = in[1];
+-	out[2] = in[2];
+-}
+-
+-vec_t VectorNormalize (vec3_t v)
+-{
+-	int		i;
+-	float	length;
+-	
+-	length = 0.0f;
+-	for (i=0 ; i< 3 ; i++)
+-		length += v[i]*v[i];
+-	length = (float)sqrt (length);
+-	if (length == 0)
+-		return (vec_t)0;
+-		
+-	for (i=0 ; i< 3 ; i++)
+-		v[i] /= length;	
+-
+-	return length;
+-}
+-
+-void VectorInverse (vec3_t v)
+-{
+-	v[0] = -v[0];
+-	v[1] = -v[1];
+-	v[2] = -v[2];
+-}
+-
+-void VectorScale (const vec3_t v, vec_t scale, vec3_t out)
+-{
+-	out[0] = v[0] * scale;
+-	out[1] = v[1] * scale;
+-	out[2] = v[2] * scale;
+-}
+-
+-
+ void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t out)
+ {
+   vec3_t vWork, va;
+@@ -147,7 +71,7 @@
+   {
+     if (vRotation[i] != 0)
+     {
+-      double dAngle = vRotation[i] * Q_PI / 180.0;
++      double dAngle = DEG2RAD(vRotation[i]);
+ 	  double c = cos(dAngle);
+       double s = sin(dAngle);
+       vWork[nIndex[i][0]] = va[nIndex[i][0]] * c - va[nIndex[i][1]] * s;
+@@ -166,13 +90,6 @@
+   VectorAdd(vTemp2, vOrigin, out);
+ }
+ 
+-void VectorPolar(vec3_t v, float radius, float theta, float phi)
+-{
+- 	v[0]=float(radius * cos(theta) * cos(phi));
+-	v[1]=float(radius * sin(theta) * cos(phi));
+-	v[2]=float(radius * sin(phi));
+-}
+-
+ void VectorSnap(vec3_t v)
+ {
+   for (int i = 0; i < 3; i++)
+Index: q3radiant/MATHLIB.H
+===================================================================
+--- q3radiant/MATHLIB.H	(revision 441)
++++ q3radiant/MATHLIB.H	(working copy)
+@@ -30,12 +30,107 @@
+ typedef vec_t vec3_t[3];
+ typedef vec_t vec5_t[5];
+ 
++class edVec3_c {
++public:
++	union {
++		vec_t _v[3];
++		struct {
++			float x, y, z;
++		};
++	};
++public:
++	edVec3_c() {
++
++	}
++	edVec3_c(float a, float b, float c) {
++		_v[0] = a;
++		_v[1] = b;
++		_v[2] = c;
++	}
++	edVec3_c(const float *p) {
++		_v[0] = p[0];
++		_v[1] = p[1];
++		_v[2] = p[2];
++	}
++	void clear() {
++		x = y = z = 0.0f;
++	}
++	float vectorLength() const {
++		float length = 0.0f;
++		for (int i = 0; i < 3; i++)
++			length += _v[i]*_v[i];
++		length = sqrt (length);
++		return length;
++	}
++	float normalize() {
++		float length = 0.0f;
++		for (int i = 0; i < 3; i++)
++			length += _v[i]*_v[i];
++		length = sqrt (length);
++		if (length == 0)
++			return 0.0;
++		for (int i = 0; i < 3; i++)
++			_v[i] /= length;	
++		return length;
++	}
++	void crossProduct (const float *v1, const float *v2) {
++		_v[0] = v1[1]*v2[2] - v1[2]*v2[1];
++		_v[1] = v1[2]*v2[0] - v1[0]*v2[2];
++		_v[2] = v1[0]*v2[1] - v1[1]*v2[0];
++	}
++	float dotProduct(const float *x) const {
++		return (x[0]*_v[0]+x[1]*_v[1]+x[2]*_v[2]);
++	}
++	void operator *=(float f) {
++		x *= f;
++		y *= f;
++		z *= f;
++	}
++	void operator +=(const edVec3_c &other) {
++		x += other.x;
++		y += other.y;
++		z += other.z;
++	}
++	friend edVec3_c operator +(const edVec3_c &a, const edVec3_c &b) {
++		return edVec3_c(a.x+b.x,a.y+b.y,a.z+b.z);
++	}
++	friend edVec3_c operator *(const edVec3_c &a, float b) {
++		return edVec3_c(a.x*b,a.y*b,a.z*b);
++	}
++	edVec3_c operator -(const edVec3_c &other) const {
++		return edVec3_c(x-other.x,y-other.y,z-other.z);
++	}
++	edVec3_c operator -() const {
++		return edVec3_c(-x,-y,-z);
++	}
++	void setupPolar(float radius, float theta, float phi)
++	{
++ 		_v[0]=float(radius * cos(theta) * cos(phi));
++		_v[1]=float(radius * sin(theta) * cos(phi));
++		_v[2]=float(radius * sin(phi));
++	}
++	inline float operator[](int index) const {
++		return _v[index];
++	}
++	inline float &operator[](int index) {
++		return _v[index];
++	}
++	inline operator const float *() const {
++		return _v;
++	}
++	inline operator float *() {
++		return _v;
++	}
++};
++
+ #define	SIDE_FRONT		0
+ #define	SIDE_ON			2
+ #define	SIDE_BACK		1
+ #define	SIDE_CROSS		-2
+ 
+-#define	Q_PI	3.14159265358979323846
++#ifdef M_PI
++#define	M_PI	3.14159265358979323846
++#endif 
+ 
+ extern vec3_t vec3_origin;
+ 
+@@ -43,7 +138,7 @@
+ 
+ bool VectorCompare (vec3_t v1, vec3_t v2);
+ 
+-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
++//#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
+ #define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
+ #define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
+ #define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
+@@ -50,20 +145,10 @@
+ #define VectorSet(v, a, b, c) {v[0]=a;v[1]=b;v[2]=c;}
+ 
+ vec_t Q_rint (vec_t in);
+-vec_t _DotProduct (vec3_t v1, vec3_t v2);
+-void _VectorSubtract (vec3_t va, vec3_t vb, vec3_t out);
+-void _VectorAdd (vec3_t va, vec3_t vb, vec3_t out);
+-void _VectorCopy (vec3_t in, vec3_t out);
+ 
+-float VectorLength(vec3_t v);
+ 
+ void VectorMA (const vec3_t va, float scale, const vec3_t vb, vec3_t vc);
+ 
+-void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross);
+-vec_t VectorNormalize (vec3_t v);
+-void VectorInverse (vec3_t v);
+-void VectorScale (const vec3_t v, vec_t scale, vec3_t out);
+-void VectorPolar(vec3_t v, float radius, float theta, float phi);
+ void VectorSnap(vec3_t v);
+ 
+ void _Vector53Copy (vec5_t in, vec3_t out);
+@@ -79,8 +164,8 @@
+ #define VectorClear(x) {x[0] = x[1] = x[2] = 0;}
+ 
+ #define ZERO_EPSILON 1.0E-6
+-#define RAD2DEG( a ) ( ( (a) * 180.0f ) / Q_PI )
+-#define DEG2RAD( a ) ( ( (a) * Q_PI ) / 180.0f )
++#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
++#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0f )
+ 
+ 
+ #endif
+Index: q3radiant/PMESH.CPP
+===================================================================
+--- q3radiant/PMESH.CPP	(revision 439)
++++ q3radiant/PMESH.CPP	(working copy)
+@@ -246,11 +246,11 @@
+ void Patch_MeshNormals(patchMesh_t *in ) 
+ {
+ 	int		i, j, k, dist;
+-	vec3_t	normal;
++	edVec3_c	normal;
+ 	vec3_t	sum;
+ 	int		count;
+ 	vec3_t	base;
+-	vec3_t	delta;
++	edVec3_c	delta;
+ 	int		x, y;
+ 	drawVert_t	*dv;
+ 	vec3_t		around[8], temp;
+@@ -262,9 +262,8 @@
+ 	for ( i = 0 ; i < in->height ; i++ ) 
+   {
+ 
+-		VectorSubtract( in->ctrl[0][i].xyz, 
+-			              in->ctrl[in->width-1][i].xyz, delta );
+-		len = VectorLength( delta );
++		delta = in->ctrl[0][i].xyz - in->ctrl[in->width-1][i].xyz;
++		len = delta.vectorLength();
+ 		if ( len > 1.0 ) 
+     {
+ 			break;
+@@ -278,9 +277,8 @@
+ 	wrapHeight = false;
+ 	for ( i = 0 ; i < in->width ; i++ ) 
+   {
+-		VectorSubtract( in->ctrl[i][0].xyz, 
+-			              in->ctrl[i][in->height-1].xyz, delta );
+-		len = VectorLength( delta );
++		delta = in->ctrl[i][0].xyz - in->ctrl[i][in->height-1].xyz;
++		len = delta.vectorLength();
+ 		if ( len > 1.0 ) 
+     {
+ 			break;
+@@ -358,7 +356,7 @@
+         {
+ 					continue;	// didn't get two points
+ 				}
+-				CrossProduct( around[(k+1)&7], around[k], normal );
++				normal.crossProduct( around[(k+1)&7], around[k] );
+ 				if ( __VectorNormalize( normal, normal ) == 0 ) 
+         {
+ 					continue;
+@@ -385,7 +383,7 @@
+ Patch_CalcBounds
+ ==================
+ */
+-void Patch_CalcBounds(patchMesh_t *p, vec3_t& vMin, vec3_t& vMax)
++void Patch_CalcBounds(patchMesh_t *p, edVec3_c& vMin, edVec3_c& vMax)
+ {
+   vMin[0] = vMin[1] = vMin[2] = 99999;
+   vMax[0] = vMax[1] = vMax[2] = -99999;
+@@ -523,7 +521,7 @@
+ 
+ void WINAPI Patch_Rebuild(patchMesh_t *p)
+ {
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+   Patch_CalcBounds(p, vMin, vMax);
+   Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+   p->bDirty = true;
+@@ -538,7 +536,7 @@
+ brush_t* AddBrushForPatch(patchMesh_t *pm, bool bLinkToWorld )
+ {
+   // find the farthest points in x,y,z
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+   Patch_CalcBounds(pm, vMin, vMax);
+ 
+   for (int j = 0; j < 3; j++)
+@@ -601,9 +599,9 @@
+   float f = 0;
+   for (int i = 0; i < p->width-1; i++)
+   {
+-    vec3_t vTemp;
+-    VectorSubtract(p->ctrl[i][0].xyz, p->ctrl[i+1][0].xyz, vTemp);
+-    f += VectorLength(vTemp);
++    edVec3_c vTemp;
++    vTemp = p->ctrl[i][0].xyz - p->ctrl[i+1][0].xyz;
++    f += vTemp.vectorLength();
+   }
+   return f;
+ }
+@@ -613,9 +611,9 @@
+   float f = 0;
+   for (int i = 0; i < j; i++)
+   {
+-    vec3_t vTemp;
+-    VectorSubtract(p->ctrl[i][0].xyz, p->ctrl[i+1][0].xyz, vTemp);
+-    f += VectorLength(vTemp);
++    edVec3_c vTemp;
++    vTemp = p->ctrl[i][0].xyz - p->ctrl[i+1][0].xyz;
++    f += vTemp.vectorLength();
+   }
+   return f;
+ }
+@@ -632,9 +630,9 @@
+   float f = 0;
+   for (int i = 0; i < p->height-1; i++)
+   {
+-    vec3_t vTemp;
+-    VectorSubtract(p->ctrl[0][i].xyz, p->ctrl[0][i+1].xyz, vTemp);
+-    f += VectorLength(vTemp);
++    edVec3_c vTemp;
++    vTemp = p->ctrl[0][i].xyz - p->ctrl[0][i+1].xyz;
++    f += vTemp.vectorLength();
+   }
+   return f;
+ }
+@@ -644,9 +642,9 @@
+   float f = 0;
+   for (int i = 0; i < j; i++)
+   {
+-    vec3_t vTemp;
+-    VectorSubtract(p->ctrl[0][i].xyz, p->ctrl[0][i+1].xyz, vTemp);
+-    f += VectorLength(vTemp);
++    edVec3_c vTemp;
++    vTemp = p->ctrl[0][i].xyz - p->ctrl[0][i+1].xyz;
++    f += vTemp.vectorLength();
+   }
+   return f;
+ }
+@@ -817,7 +815,8 @@
+ }
+ 
+ 
+-extern void EmitTextureCoordinates ( float *xyzst, qtexture_t *q, face_t *f);
++///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, qtexture_t *q, face_t *f);
++
+ void Patch_CapTexture(patchMesh_t *p, bool bFaceCycle = false)
+ {
+   Patch_MeshNormals(p);
+@@ -846,7 +845,7 @@
+       {
+         VectorCopy(p->ctrl[i][j].normal, f->plane.normal);
+       }
+-		  EmitTextureCoordinates( p->ctrl[i][j].xyz, f->d_texture, f);
++		  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
+     }
+   }
+   VectorCopy(vSave, f->plane.normal);
+@@ -984,7 +983,7 @@
+ {
+   brush_t *b;
+   patchMesh_t *p;
+-  vec3_t vMin, vMax, vTemp;
++  edVec3_c vMin, vMax, vTemp;
+   int i, j;
+ 
+   if (nType == CCapDialog::IENDCAP)
+@@ -1029,7 +1028,7 @@
+   }
+   else if (nType == CCapDialog::BEVEL)
+   {
+-    vec3_t p1, p2, p3, p4, temp, dir;
++    edVec3_c p1, p2, p3, p4, temp, dir;
+ 
+     VectorCopy(pParent->ctrl[0][nIndex].xyz, p3);
+     VectorCopy(pParent->ctrl[1][nIndex].xyz, p1);
+@@ -1036,16 +1035,16 @@
+     VectorCopy(pParent->ctrl[2][nIndex].xyz, p2);
+ 
+     VectorSubtract(p3, p2, dir);
+-    VectorNormalize(dir);
++    dir.normalize();
+     VectorSubtract(p1, p2, temp);
+-    vec_t dist = _DotProduct(temp, dir);
++    vec_t dist = temp.dotProduct(dir);
+ 
+-    VectorScale(dir, dist, temp);
++	temp = dir * dist;
+ 
+-    VectorAdd(p2, temp, temp);
++	temp += p2;
+ 
+     VectorSubtract(temp, p1, temp);
+-    VectorScale(temp, 2, temp);
++	temp *= 2.0;
+     VectorAdd(p1, temp, p4);
+ 
+     VectorCopy(p4, p->ctrl[0][0].xyz);
+@@ -1062,7 +1061,7 @@
+   else if (nType == CCapDialog::ENDCAP)
+   {
+     VectorAdd(pParent->ctrl[4][nIndex].xyz, pParent->ctrl[0][nIndex].xyz, vTemp);
+-    VectorScale(vTemp, 0.5, vTemp);
++    vTemp *= 0.5;
+     VectorCopy(pParent->ctrl[0][nIndex].xyz, p->ctrl[0][0].xyz);
+                        VectorCopy(vTemp, p->ctrl[1][0].xyz);
+     VectorCopy(pParent->ctrl[4][nIndex].xyz, p->ctrl[2][0].xyz);
+@@ -1219,7 +1218,7 @@
+ {
+   brush_t *b, *b2;
+   patchMesh_t *p, *p2, *pParent;
+-  vec3_t vTemp, vMin, vMax;
++  edVec3_c vTemp, vMin, vMax;
+   int i, j;
+ 
+   pParent = brushParent->pPatch;
+@@ -2055,7 +2054,7 @@
+ 		    }
+       }
+ 	    
+-      vec3_t vMin, vMax;
++      edVec3_c vMin, vMax;
+       Patch_CalcBounds(p, vMin, vMax);
+       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+     }
+@@ -2737,7 +2736,7 @@
+   }
+   if (bRebuild)
+   {
+-    vec3_t vMin, vMax;
++    edVec3_c vMin, vMax;
+     Patch_CalcBounds(pm, vMin, vMax);
+     //Brush_RebuildBrush(patchMeshes[n].pSymbiot, vMin, vMax);
+   }
+@@ -2752,7 +2751,7 @@
+ */
+ void Patch_ApplyMatrix(patchMesh_t *p, const vec3_t vOrigin, const vec3_t vMatrix[3], bool bSnap)
+ {
+-  vec3_t vTemp;
++  edVec3_c vTemp;
+ 
+   for (int w = 0; w < p->width; w++)
+   {
+@@ -2764,7 +2763,7 @@
+ 			VectorSubtract (p->ctrl[w][h].xyz, vOrigin, vTemp);
+ 			for (int j = 0; j < 3; j++)
+       {
+-        p->ctrl[w][h].xyz[j] = DotProduct(vTemp, vMatrix[j]) + vOrigin[j];
++        p->ctrl[w][h].xyz[j] = vTemp.dotProduct(vMatrix[j]) + vOrigin[j];
+         if (bSnap)
+         {
+           p->ctrl[w][h].xyz[j] = floor(p->ctrl[w][h].xyz[j] + 0.5);
+@@ -2772,7 +2771,7 @@
+       }
+     }
+   }
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+   Patch_CalcBounds(p, vMin, vMax);
+   Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+ }
+@@ -2914,7 +2913,7 @@
+   }
+   if (bRebuild)
+   {
+-    vec3_t vMin, vMax;
++    edVec3_c vMin, vMax;
+     Patch_CalcBounds(p, vMin, vMax);
+     Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+   }
+@@ -2967,7 +2966,7 @@
+ */
+ bool Patch_DragScale(patchMesh_t *p, vec3_t vAmt, vec3_t vMove)
+ {
+-  vec3_t vMin, vMax, vScale, vTemp, vMid;
++  edVec3_c vMin, vMax, vScale, vTemp, vMid;
+   int i;
+ 
+   Patch_CalcBounds(p, vMin, vMax);
+@@ -3007,9 +3006,9 @@
+   
+   VectorSubtract(vMax, vMin, vMid);
+ 
+-  VectorSubtract(vMid, vTemp, vTemp);
++  vTemp = vMid - vTemp;
+ 
+-  VectorScale(vTemp, 0.5, vTemp);
++  vTemp *= 0.5;
+ 
+   // abs of both should always be equal
+   if (!VectorCompare(vMove, vAmt))
+@@ -3033,7 +3032,7 @@
+ */
+ void Patch_AddRow(patchMesh_t *p)
+ {
+-  vec3_t vMin, vMax, vTemp;
++  edVec3_c vMin, vMax, vTemp;
+   int i, j;
+ 
+ 
+@@ -3458,7 +3457,7 @@
+         }
+       }
+       bUpdate = true;
+-      vec3_t vMin, vMax;
++      edVec3_c vMin, vMax;
+       patchMesh_t *p = pb->pPatch;
+       Patch_CalcBounds(p, vMin, vMax);
+       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+@@ -3729,7 +3728,7 @@
+ */
+ void Patch_RotateTexture(patchMesh_t *p, float fAngle)
+ {
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+   Patch_CalcBounds(p, vMin, vMax);
+   p->bDirty = true;
+   for (int w = 0; w < p->width; w++)
+@@ -3741,8 +3740,8 @@
+ 
+       float x = p->ctrl[w][h].st[0];
+       float y = p->ctrl[w][h].st[1];
+-      p->ctrl[w][h].st[0] = x * cos(fAngle * Q_PI / 180) - y * sin(fAngle * Q_PI / 180);
+-      p->ctrl[w][h].st[1] = y * cos(fAngle * Q_PI / 180) + x * sin(fAngle * Q_PI / 180);
++      p->ctrl[w][h].st[0] = x * cos(DEG2RAD(fAngle)) - y * sin(DEG2RAD(fAngle));
++      p->ctrl[w][h].st[1] = y * cos(DEG2RAD(fAngle)) + x * sin(DEG2RAD(fAngle));
+     }
+   }
+ }
+@@ -4565,7 +4564,7 @@
+   int i, j, h, w;
+   brush_t *b;
+   patchMesh_t *pSeam;
+-  vec3_t vMin, vMax;
++  edVec3_c vMin, vMax;
+   CPtrArray brushes;
+ 
+   nAmount = -nAmount;
+@@ -4611,7 +4610,7 @@
+             VectorCopy(p->ctrl[0][i].xyz, pSeam->ctrl[0][i].xyz);
+             VectorCopy(pNew->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz);
+             VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
+-            VectorScale(pSeam->ctrl[1][i].xyz, 0.5, pSeam->ctrl[1][i].xyz);
++            pSeam->ctrl[1][i].xyz *= 0.5;
+           }
+ 
+ 
+@@ -4631,7 +4630,7 @@
+             VectorCopy(p->ctrl[w][i].xyz, pSeam->ctrl[0][i].xyz);
+             VectorCopy(pNew->ctrl[w][i].xyz, pSeam->ctrl[2][i].xyz);
+             VectorAdd(pSeam->ctrl[0][i].xyz, pSeam->ctrl[2][i].xyz, pSeam->ctrl[1][i].xyz);
+-            VectorScale(pSeam->ctrl[1][i].xyz, 0.5, pSeam->ctrl[1][i].xyz);
++            pSeam->ctrl[1][i].xyz *= 0.5;
+           }
+           Patch_CalcBounds(pSeam, vMin, vMax);
+           Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+@@ -4650,7 +4649,7 @@
+             VectorCopy(p->ctrl[i][0].xyz, pSeam->ctrl[i][0].xyz);
+             VectorCopy(pNew->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz);
+             VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
+-            VectorScale(pSeam->ctrl[i][1].xyz, 0.5, pSeam->ctrl[i][1].xyz);
++            pSeam->ctrl[i][1].xyz *= 0.5;
+           }
+ 
+ 
+@@ -4670,7 +4669,7 @@
+             VectorCopy(p->ctrl[i][h].xyz, pSeam->ctrl[i][0].xyz);
+             VectorCopy(pNew->ctrl[i][h].xyz, pSeam->ctrl[i][2].xyz);
+             VectorAdd(pSeam->ctrl[i][0].xyz, pSeam->ctrl[i][2].xyz, pSeam->ctrl[i][1].xyz);
+-            VectorScale(pSeam->ctrl[i][1].xyz, 0.5, pSeam->ctrl[i][1].xyz);
++            pSeam->ctrl[i][1].xyz *= 0.5;
+           }
+           Patch_CalcBounds(pSeam, vMin, vMax);
+           Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+@@ -4884,7 +4883,7 @@
+         }
+       }
+ #endif
+-      vec3_t vMin, vMax;
++      edVec3_c vMin, vMax;
+       Patch_CalcBounds(p, vMin, vMax);
+       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+     }
+Index: q3radiant/POINTS.CPP
+===================================================================
+--- q3radiant/POINTS.CPP	(revision 436)
++++ q3radiant/POINTS.CPP	(working copy)
+@@ -42,7 +42,7 @@
+ // advance camera to next point
+ void Pointfile_Next (void)
+ {
+-	vec3_t	dir;
++	edVec3_c	dir;
+ 
+ 	if (s_check_point >= s_num_points-2)
+ 	{
+@@ -53,7 +53,7 @@
+ 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
+ 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
+ 	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
+-	VectorNormalize (dir);
++	dir.normalize();
+ 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
+ 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
+ 
+@@ -63,7 +63,7 @@
+ // advance camera to previous point
+ void Pointfile_Prev (void)
+ {
+-	vec3_t	dir;
++	edVec3_c	dir;
+ 
+ 	if ( s_check_point == 0)
+ 	{
+@@ -74,7 +74,7 @@
+ 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetCamera()->Camera().origin);
+ 	VectorCopy (s_pointvecs[s_check_point], g_pParentWnd->GetXYWnd()->GetOrigin());
+ 	VectorSubtract (s_pointvecs[s_check_point+1], g_pParentWnd->GetCamera()->Camera().origin, dir);
+-	VectorNormalize (dir);
++	dir.normalize();
+ 	g_pParentWnd->GetCamera()->Camera().angles[1] = atan2 (dir[1], dir[0])*180/3.14159;
+ 	g_pParentWnd->GetCamera()->Camera().angles[0] = asin (dir[2])*180/3.14159;
+ 
+Index: q3radiant/QE3.H
+===================================================================
+--- q3radiant/QE3.H	(revision 439)
++++ q3radiant/QE3.H	(working copy)
+@@ -166,7 +166,7 @@
+ 	HWND      d_hwndGroup;
+ 	HWND      d_hwndMedia;
+ 	
+-	vec3_t    d_points[MAX_POINTS];
++	edVec3_c  d_points[MAX_POINTS];
+ 	int       d_numpoints;
+ 	pedge_t   d_edges[MAX_EDGES];
+ 	int       d_numedges;
+@@ -269,8 +269,8 @@
+ //
+ 
+ void SetupVertexSelection (void);
+-void SelectEdgeByRay (vec3_t org, vec3_t dir);
+-void SelectVertexByRay (vec3_t org, vec3_t dir);
++void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir);
++void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir);
+ 
+ void ConnectEntities (void);
+ 
+@@ -539,11 +539,11 @@
+ 
+ // Timo
+ // new brush primitive stuff
+-void ComputeAxisBase(vec3_t normal,vec3_t texS,vec3_t texT );
++void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT);
+ void FaceToBrushPrimitFace(face_t *f);
+ void EmitBrushPrimitTextureCoordinates(face_t *, winding_t *);
+ // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
+-void EmitTextureCoordinates ( float *xyzst, qtexture_t *q, face_t *f);
++void EmitTextureCoordinates ( class texturedVertex_c &out, qtexture_t *q, face_t *f);
+ void BrushPrimit_Parse(brush_t *);
+ // compute a fake shift scale rot representation from the texture matrix
+ void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] );
+@@ -550,11 +550,11 @@
+ void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
+ void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, qtexture_t *qtex1, brushprimit_texdef_t *texMat2, qtexture_t *qtex2 );
+ // texture locking
+-void Face_MoveTexture_BrushPrimit(face_t *f, vec3_t delta);
++void Face_MoveTexture_BrushPrimit(face_t *f, const edVec3_c &delta);
+ void Select_ShiftTexture_BrushPrimit( face_t *f, int x, int y );
+ void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, vec3_t vOrigin );
+ // used in CCamWnd::ShiftTexture_BrushPrimit
+-void ComputeBest2DVector( vec3_t v, vec3_t X, vec3_t Y, int &x, int &y );
++void ComputeBest2DVector( const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y );
+ 
+ 
+ //
+Index: q3radiant/QERTYPES.H
+===================================================================
+--- q3radiant/QERTYPES.H	(revision 441)
++++ q3radiant/QERTYPES.H	(working copy)
+@@ -154,6 +154,32 @@
+ 
+ } qtexture_t;
+ 
++#include "mathlib.h"
++class texturedVertex_c {
++public:
++	edVec3_c xyz;
++	float st[2];
++
++
++	void setXYZ(const float *newXYZ) {
++		xyz = newXYZ;
++	}
++	const edVec3_c &getXYZ() const {
++		return xyz;
++	}
++	float dotProduct(const float *pVec3) const {
++		return xyz.dotProduct(pVec3);
++	}
++	const float operator [] (int index) const {
++		return (&xyz.x)[index];
++	}
++	float &operator [] (int index) {
++		return (&xyz.x)[index];
++	}
++	operator float *() {
++		return &xyz.x;
++	}
++};
+ // NOTE: don't trust this definition!
+ // you should read float points[..][5]
+ // see NewWinding definition
+@@ -162,31 +188,26 @@
+ {
+ 	int		numpoints;
+ 	int		maxpoints;
+-	float 	points[8][5];			// variable sized
++	texturedVertex_c 	points[8];			// variable sized
+ } winding_t;
+ 
+ #define	NORMAL_EPSILON	0.0001
+ #define	DIST_EPSILON	0.02
+ 
+-#include "mathlib.h"
+ class edPlane_c {
+ public:
+-    vec3_t	normal;
+-    double	dist;
++    edVec3_c normal;
++    double dist;
+ public:
+ 	int isPlaneEqual(const edPlane_c &b, int flip) const {
+-		vec3_t tempNormal;
++		edVec3_c tempNormal;
+ 		double tempDist;
+ 
+ 		if (flip) {
+-			tempNormal[0] = - b.normal[0];
+-			tempNormal[1] = - b.normal[1];
+-			tempNormal[2] = - b.normal[2];
+-			tempDist = - b.dist;
++			tempNormal = -b.normal;
++			tempDist = -b.dist;
+ 		} else {
+-			tempNormal[0] = b.normal[0];
+-			tempNormal[1] = b.normal[1];
+-			tempNormal[2] = b.normal[2];
++			tempNormal = b.normal;
+ 			tempDist = b.dist;
+ 		}
+ 		if (
+@@ -197,19 +218,28 @@
+ 			return true;
+ 		return false;
+ 	}
+-	int fromPoints(vec3_t p1, vec3_t p2, vec3_t p3)
++	int fromPoints(const edVec3_c &p1, const edVec3_c &p2, const edVec3_c &p3)
+ 	{
+-		vec3_t v1, v2;
+-
+-		VectorSubtract(p2, p1, v1);
+-		VectorSubtract(p3, p1, v2);
+-		//CrossProduct(v2, v1, plane->normal);
+-		CrossProduct(v1, v2, this->normal);
+-		if (VectorNormalize(this->normal) < 0.1) 
++		edVec3_c v1 = p2 - p1;
++		edVec3_c v2 = p3 - p1;
++		this->normal.crossProduct(v1,v2);
++		if (this->normal.normalize() < 0.1) 
+ 			return false;
+-		this->dist = DotProduct(p1, this->normal);
++		this->dist = this->normal.dotProduct(p1);
+ 		return true;
+ 	}
++	// project on normal plane
++	// along ez 
++	// assumes plane normal is normalized
++	void projectOnPlane(const edVec3_c &ez, edVec3_c &p) {
++		if (fabs(ez[0]) == 1)
++			p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
++		else if (fabs(ez[1]) == 1)
++			p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
++		else
++			p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
++	}
++
+ };
+ 
+ //++timo texdef and brushprimit_texdef are static
+@@ -218,7 +248,7 @@
+ {
+ 	struct face_s			*next;
+ 	struct face_s			*original;		//used for vertex movement
+-	vec3_t					planepts[3];
++	edVec3_c				planepts[3];
+ 	texdef_t				texdef;
+ 	edPlane_c				plane;
+ 
+@@ -232,7 +262,7 @@
+ } face_t;
+ 
+ typedef struct {
+-	vec3_t	xyz;
++	edVec3_c xyz;
+ 	float	sideST[2];
+ 	float	capST[2];
+ } curveVertex_t;
+@@ -275,10 +305,14 @@
+ #define PATCH_STYLEMASK    0xffff0000    // 
+ 
+ typedef struct {
+-	vec3_t		xyz;
++	edVec3_c	xyz;
+ 	float		st[2];
+ 	float		lightmap[2];
+-	vec3_t		normal;
++	vec3_t		normal;	
++	
++	texturedVertex_c &asWindingPoint() {
++		return *((texturedVertex_c*)(this));
++	}
+ } drawVert_t;
+ 
+ // used in brush primitive AND entities
+Index: q3radiant/SELECT.CPP
+===================================================================
+--- q3radiant/SELECT.CPP	(revision 441)
++++ q3radiant/SELECT.CPP	(working copy)
+@@ -638,7 +638,7 @@
+ 
+ }
+ 
+-vec3_t	select_origin;
++edVec3_c	select_origin;
+ vec3_t	select_matrix[3];
+ bool	select_fliporder;
+ 
+@@ -647,7 +647,7 @@
+ 	brush_t	*b;
+ 	face_t	*f;
+ 	int		i, j;
+-	vec3_t	temp;
++	edVec3_c	temp;
+ 
+ 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+ 	{
+@@ -655,15 +655,16 @@
+ 		{
+ 			for (i=0 ; i<3 ; i++)
+ 			{
+-				VectorSubtract (f->planepts[i], select_origin, temp);
++				temp = f->planepts[i] - select_origin;
+ 				for (j=0 ; j<3 ; j++)
+-					f->planepts[i][j] = DotProduct(temp, select_matrix[j]) + select_origin[j];
++					f->planepts[i][j] = temp.dotProduct(select_matrix[j]) + select_origin[j];
+ 			}
+ 			if (select_fliporder)
+ 			{
+-				VectorCopy (f->planepts[0], temp);
+-				VectorCopy (f->planepts[2], f->planepts[0]);
+-				VectorCopy (temp, f->planepts[2]);
++				// swap the points
++				temp = f->planepts[0];
++				f->planepts[0] = f->planepts[2];
++				f->planepts[2] = temp;
+ 			}
+ 		}
+ 
+@@ -691,18 +692,8 @@
+ 	}
+ }
+ 
+-void ProjectOnPlane(vec3_t& normal,float dist,vec3_t& ez, vec3_t& p)
++void Back(const edVec3_c &dir, edVec3_c &p)
+ {
+-	if (fabs(ez[0]) == 1)
+-		p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
+-	else if (fabs(ez[1]) == 1)
+-		p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
+-	else
+-		p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
+-}
+-
+-void Back(vec3_t& dir, vec3_t& p)
+-{
+ 	if (fabs(dir[0]) == 1)
+ 		p[0] = 0;
+ 	else if (fabs(dir[1]) == 1)
+@@ -713,24 +704,23 @@
+ 
+ 
+ // using scale[0] and scale[1]
+-void ComputeScale(vec3_t& rex, vec3_t& rey, vec3_t& p, face_t* f)
++void ComputeScale(const edVec3_c &rex, const edVec3_c &rey, edVec3_c &p, const face_t *f)
+ {
+-	float px = DotProduct(rex, p);
+-	float py = DotProduct(rey, p);
++	float px = rex.dotProduct(p);
++	float py = rey.dotProduct(p);
+ 	px *= f->texdef.scale[0];
+ 	py *= f->texdef.scale[1];
+-  vec3_t aux;
+-  VectorCopy(rex, aux);
+-  VectorScale(aux, px, aux);
+-  VectorCopy(aux, p);
+-  VectorCopy(rey, aux);
+-  VectorScale(aux, py, aux);
+-  VectorAdd(p, aux, p);
++	edVec3_c aux = rex;
++	aux *= px;
++	p = aux;
++	aux = rey;
++	aux *= py;
++	p += aux;
+ }
+ 
+-void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
++void ComputeAbsolute(face_t* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
+ {
+-	vec3_t ex,ey,ez;	        // local axis base
++	edVec3_c ex,ey,ez;	        // local axis base
+ 
+ #ifdef _DEBUG
+ 	if (g_qeglobals.m_bBrushPrimitMode)
+@@ -739,14 +729,11 @@
+ 
+   // compute first local axis base
+   TextureAxisFromPlane(f->plane, ex, ey);
+-  CrossProduct(ex, ey, ez);
++  ez.crossProduct(ex,ey);
+ 	    
+-	vec3_t aux;
+-  VectorCopy(ex, aux);
+-  VectorScale(aux, -f->texdef.shift[0], aux);
++  edVec3_c aux = ex * -f->texdef.shift[0];
+   VectorCopy(aux, p1);
+-  VectorCopy(ey, aux);
+-  VectorScale(aux, -f->texdef.shift[1], aux);
++  aux = ey * -f->texdef.shift[1];
+   VectorAdd(p1, aux, p1);
+   VectorCopy(p1, p2);
+   VectorAdd(p2, ex, p2);
+@@ -753,7 +740,7 @@
+   VectorCopy(p1, p3);
+   VectorAdd(p3, ey, p3);
+   VectorCopy(ez, aux);
+-  VectorScale(aux, -f->texdef.rotate, aux);
++  aux *= -f->texdef.rotate;
+   VectorRotate(p1, aux, p1);
+   VectorRotate(p2, aux, p2);
+   VectorRotate(p3, aux, p3);
+@@ -771,15 +758,15 @@
+ 	// project on normal plane
+ 	// along ez 
+ 	// assumes plane normal is normalized
+-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p1);
+-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p2);
+-	ProjectOnPlane(f->plane.normal,f->plane.dist,ez,p3);
++	f->plane.projectOnPlane(ez,p1);
++	f->plane.projectOnPlane(ez,p2);
++	f->plane.projectOnPlane(ez,p3);
+ };
+ 
+ 
+-void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3)
++void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3)
+ {
+-	vec3_t ex,ey,ez;
++	edVec3_c ex,ey,ez;
+ 
+ #ifdef _DEBUG
+ 	if (g_qeglobals.m_bBrushPrimitMode)
+@@ -788,7 +775,7 @@
+ 
+ 	// computing new local axis base
+   TextureAxisFromPlane(normal2, ex, ey);
+-  CrossProduct(ex, ey, ez);
++  ez.crossProduct(ex,ey);
+ 
+   // projecting back on (ex,ey)
+ 	Back(ez,p1);
+@@ -795,49 +782,41 @@
+ 	Back(ez,p2);
+ 	Back(ez,p3);
+ 
+-	vec3_t aux;
+-	// rotation
+-  VectorCopy(p2, aux);
+-  VectorSubtract(aux, p1,aux);
++	edVec3_c aux = p2 - p1;
+ 	
+-	float x = DotProduct(aux,ex);
+-	float y = DotProduct(aux,ey);
+-  f->texdef.rotate = 180 * atan2(y,x) / Q_PI;
++	float x = aux.dotProduct(ex);
++	float y = aux.dotProduct(ey);
++  f->texdef.rotate = RAD2DEG(atan2(y,x));
+ 
+-	vec3_t rex,rey;
+ 	// computing rotated local axis base
+-  VectorCopy(ez, aux);
+-  VectorScale(aux, f->texdef.rotate, aux);
+-  VectorCopy(ex, rex);
++  aux = ez;
++  aux *= f->texdef.rotate;
++  edVec3_c rex = ex;
+   VectorRotate(rex, aux, rex);
+-  VectorCopy(ey, rey);
++  edVec3_c rey = ey;
+   VectorRotate(rey, aux, rey);
+ 
+ 	// scale
+-  VectorCopy(p2, aux);
+-  VectorSubtract(aux, p1, aux);
+-  f->texdef.scale[0] = DotProduct(aux, rex);
+-  VectorCopy(p3, aux);
+-  VectorSubtract(aux, p1, aux);
+-  f->texdef.scale[1] = DotProduct(aux, rey);
++  aux = p2 - p1;
++  f->texdef.scale[0] = aux.dotProduct(rex);
++  aux = p3 - p1;
++  f->texdef.scale[1] = aux.dotProduct(rey);
+ 
+ 	// shift
+ 	// only using p1
+-	x = DotProduct(rex,p1);
+-	y = DotProduct(rey,p1);                 
++	x = rex.dotProduct(p1);
++	y = rey.dotProduct(p1);                 
+ 	x /= f->texdef.scale[0];
+ 	y /= f->texdef.scale[1];
+ 
+-  VectorCopy(rex, p1);
+-  VectorScale(p1, x, p1);
+-  VectorCopy(rey, aux);
+-  VectorScale(aux, y, aux);
+-  VectorAdd(p1, aux, p1);
+-  VectorCopy(ez, aux);
+-  VectorScale(aux, -f->texdef.rotate, aux);
++	p1 = rex * x;
++	aux = rey * y;
++  aux *= y;
++  p1 += aux;
++  aux = ez * -f->texdef.rotate;
+   VectorRotate(p1, aux, p1);
+-	f->texdef.shift[0] = -DotProduct(p1, ex);
+-	f->texdef.shift[1] = -DotProduct(p1, ey);
++	f->texdef.shift[0] = -p1.dotProduct(ex);
++	f->texdef.shift[1] = -p1.dotProduct(ey);
+ 
+ 	// stored rot is good considering local axis base
+ 	// change it if necessary
+@@ -851,7 +830,7 @@
+ 
+ void RotateFaceTexture(face_t* f, int nAxis, float fDeg)
+ {
+-	vec3_t p1,p2,p3, rota;   
++	edVec3_c p1,p2,p3, rota;   
+ 	p1[0] = p1[1] = p1[2] = 0;
+ 	VectorCopy(p1, p2);
+ 	VectorCopy(p1, p3);
+@@ -1010,8 +989,8 @@
+ 		}
+ 		else
+ 		{
+-			c = cos(deg * Q_PI / 180.0);
+-			s = sin(deg * Q_PI / 180.0);
++			c = cos(DEG2RAD(deg));
++			s = sin(DEG2RAD(deg));
+ 		}
+ 
+ 		for (i=0 ; i<3 ; i++)
+Index: q3radiant/SELECT.H
+===================================================================
+--- q3radiant/SELECT.H	(revision 441)
++++ q3radiant/SELECT.H	(working copy)
+@@ -80,8 +80,8 @@
+ 
+ // absolute texture coordinates
+ // TTimo NOTE: this is stuff for old brushes format and rotation texture lock .. sort of in-between with bush primitives
+-void ComputeAbsolute(face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3);
+-void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, vec3_t& p1, vec3_t& p2, vec3_t& p3);
++void ComputeAbsolute(face_t* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3);
++void AbsoluteToLocal(const class edPlane_c &normal2, face_t* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3);
+ void Select_Hide();
+ void Select_ShowAllHidden();
+ // add selected brushes to a group, update the tree
+Index: q3radiant/StdAfx.h
+===================================================================
+--- q3radiant/StdAfx.h	(revision 441)
++++ q3radiant/StdAfx.h	(working copy)
+@@ -133,7 +133,7 @@
+ extern z_t z;
+ extern void Select_Scale(float x, float y, float z);
+ extern CString g_strProject;
+-extern void TextureAxisFromPlane(const class edPlane_c &pln, vec3_t xv, vec3_t yv);
++extern void TextureAxisFromPlane(const class edPlane_c &pln, edVec3_c &xv, edVec3_c &yv);
+ extern void VectorRotate (vec3_t va, vec3_t vb, vec3_t out);
+ extern void VectorRotate (vec3_t vIn, vec3_t vRotation, vec3_t vOrigin, vec3_t out);
+ extern bool QE_SaveProject (const char* pProjectFile);
+Index: q3radiant/terrain.cpp
+===================================================================
+--- q3radiant/terrain.cpp	(revision 437)
++++ q3radiant/terrain.cpp	(working copy)
+@@ -613,17 +613,18 @@
+ }
+ 
+ void CalcTriNormal( const vec3_t a, const vec3_t b, const vec3_t c, vec3_t o ) {
+-	vec3_t a1;
+-	vec3_t b1;
++	assert(0); // todo
++	//vec3_t a1;
++	//vec3_t b1;
+ 
+-	VectorSubtract( b, a, a1 );
+-	VectorNormalize( a1 );
++	//VectorSubtract( b, a, a1 );
++	//VectorNormalize( a1 );
+ 
+-	VectorSubtract( c, a, b1 );
+-	VectorNormalize( b1 );
++	//VectorSubtract( c, a, b1 );
++	//VectorNormalize( b1 );
+ 
+-	CrossProduct( a1, b1, o );
+-	VectorNormalize( o );
++	//CrossProduct( a1, b1, o );
++	//VectorNormalize( o );
+ }
+ 
+ inline void Terrain_CalcVertPos( terrainMesh_t *p, int x, int y, vec3_t vert ) {
+@@ -638,61 +639,62 @@
+ }
+    
+ void Terrain_CalcNormals( terrainMesh_t *p ) {
+-	int				x;
+-	int				y;
+-	int				width;
+-	int				num;
+-	terrainVert_t	*vert;
+-	vec3_t			norm;
+-	terravert_t		a0;
+-	terravert_t		a1;
+-	terravert_t		a2;
+-	terravert_t		b0;
+-	terravert_t		b1;
+-	terravert_t		b2;
+-
+-	p->bDirty = true;
+-
+-	num = p->height * p->width;
+-	vert = p->heightmap;
+-	//for( x = 0; x < num; x++, vert++ ) {
+-	for( y = 0; y < p->height - 1; y++ ) {
+-		for( x = 0; x < p->width - 1; x++, vert++ ) {
+-			VectorClear( vert->normal );
+-			Terrain_CalcVertPos( p, x, y, norm );
+-		}
+-	}
+-
+-	width = p->width;
+-	vert = p->heightmap;
+-   
+-	for( y = 0; y < p->height - 1; y++ ) {
+-		for( x = 0; x < width - 1; x++ ) {
+-			Terrain_GetTriangles( p, x, y, &a0, &a1, &a2, &b0, &b1, &b2, NULL );
+-
+-			CalcTriNormal( a0.xyz, a2.xyz, a1.xyz, norm );
+-
+-			VectorAdd( vert[ a0.index ].normal, norm, vert[ a0.index ].normal );
+-			VectorAdd( vert[ a1.index ].normal, norm, vert[ a1.index ].normal );
+-			VectorAdd( vert[ a2.index ].normal, norm, vert[ a2.index ].normal );
+-
+-			CalcTriNormal( b0.xyz, b2.xyz, b1.xyz, norm );
+-
+-			VectorAdd( vert[ b0.index ].normal, norm, vert[ b0.index ].normal );
+-			VectorAdd( vert[ b1.index ].normal, norm, vert[ b1.index ].normal );
+-			VectorAdd( vert[ b2.index ].normal, norm, vert[ b2.index ].normal );
+-		}
+-	}
+-   
+-	for( x = 0; x < num; x++, vert++ ) {
+-		VectorNormalize( vert->normal );
+-		//FIXME
+-		vert->normal[ 2 ] += 0.5;
+-		VectorNormalize( vert->normal );
+-		assert( vert->normal[ 2 ] > 0 );
+-		VectorSet( vert->rgba, vert->normal[ 2 ], vert->normal[ 2 ], vert->normal[ 2 ] );
+-		vert->rgba[ 3 ] = 1.0f;
+-	}
++	assert(0); // todo
++//	int				x;
++//	int				y;
++//	int				width;
++//	int				num;
++//	terrainVert_t	*vert;
++//	vec3_t			norm;
++//	terravert_t		a0;
++//	terravert_t		a1;
++//	terravert_t		a2;
++//	terravert_t		b0;
++//	terravert_t		b1;
++//	terravert_t		b2;
++//
++//	p->bDirty = true;
++//
++//	num = p->height * p->width;
++//	vert = p->heightmap;
++//	//for( x = 0; x < num; x++, vert++ ) {
++//	for( y = 0; y < p->height - 1; y++ ) {
++//		for( x = 0; x < p->width - 1; x++, vert++ ) {
++//			VectorClear( vert->normal );
++//			Terrain_CalcVertPos( p, x, y, norm );
++//		}
++//	}
++//
++//	width = p->width;
++//	vert = p->heightmap;
++//   
++//	for( y = 0; y < p->height - 1; y++ ) {
++//		for( x = 0; x < width - 1; x++ ) {
++//			Terrain_GetTriangles( p, x, y, &a0, &a1, &a2, &b0, &b1, &b2, NULL );
++//
++//			CalcTriNormal( a0.xyz, a2.xyz, a1.xyz, norm );
++//
++//			VectorAdd( vert[ a0.index ].normal, norm, vert[ a0.index ].normal );
++//			VectorAdd( vert[ a1.index ].normal, norm, vert[ a1.index ].normal );
++//			VectorAdd( vert[ a2.index ].normal, norm, vert[ a2.index ].normal );
++//
++//			CalcTriNormal( b0.xyz, b2.xyz, b1.xyz, norm );
++//
++//			VectorAdd( vert[ b0.index ].normal, norm, vert[ b0.index ].normal );
++//			VectorAdd( vert[ b1.index ].normal, norm, vert[ b1.index ].normal );
++//			VectorAdd( vert[ b2.index ].normal, norm, vert[ b2.index ].normal );
++//		}
++//	}
++//   
++//	for( x = 0; x < num; x++, vert++ ) {
++//		VectorNormalize( vert->normal );
++//		//FIXME
++//		vert->normal[ 2 ] += 0.5;
++//		VectorNormalize( vert->normal );
++//		assert( vert->normal[ 2 ] > 0 );
++//		VectorSet( vert->rgba, vert->normal[ 2 ], vert->normal[ 2 ], vert->normal[ 2 ] );
++//		vert->rgba[ 3 ] = 1.0f;
++//	}
+ }
+ 
+ void Terrain_FindReplaceTexture( terrainMesh_t *p, const char *pFind, const char *pReplace, bool bForce ) {
+@@ -833,7 +835,7 @@
+ 	vec3_t	vMin;
+ 	vec3_t	vMax;
+ 	vec3_t	vScale;
+-	vec3_t	vTemp;
++	edVec3_c	vTemp;
+ 	vec3_t	vMid;
+ 	int		i;
+ 
+@@ -865,7 +867,7 @@
+ 	Terrain_CalcBounds( p, vMin, vMax );
+   	VectorSubtract( vMax, vMin, vMid );
+ 	VectorSubtract( vMid, vTemp, vTemp );
+-	VectorScale( vTemp, 0.5f, vTemp );
++	vTemp *= 0.5f;
+ 
+ 	// abs of both should always be equal
+ 	if ( !VectorCompare( vMove, vAmt ) ) {
+@@ -1549,49 +1551,47 @@
+ }
+ 
+ #define EPSILON 0.0001
+-
+-bool RayTriangleIntersect( vec3_t orig, vec3_t dir, vec3_t vert1, vec3_t vert2, vec3_t vert3, float *t ) {
++bool RayTriangleIntersect(const edVec3_c &orig, const edVec3_c &dir, 
++						  const edVec3_c &vert1, const edVec3_c &vert2, const edVec3_c &vert3, float *t ) {
+ 	float   u;
+ 	float   v;
+-	vec3_t  edge1;
+-	vec3_t  edge2;
+-	vec3_t  tvec;
+-	vec3_t	pvec;
+-	vec3_t	qvec;
++	edVec3_c  tvec;
++	edVec3_c	pvec;
++	edVec3_c	qvec;
+ 	float	det;
+ 
+-	VectorSubtract( vert2, vert1, edge1 );
+-	VectorSubtract( vert3, vert1, edge2 );
++	edVec3_c edge1 = vert2 - vert1;
++	edVec3_c edge2 = vert3 - vert1;
+ 
+ 	// begin calculating determinant - also used to calculate U parameter
+-	CrossProduct( dir, edge2, pvec );
++	pvec.crossProduct( dir, edge2 );
+ 
+ 	// if determinant is near zero, ray lies in plane of triangle
+-	det = DotProduct( edge1, pvec );
++	det = edge1.dotProduct(pvec );
+ 	if ( det < EPSILON ) {
+ 		return false;
+ 	}
+ 
+ 	// calculate distance from vert1 to ray origin
+-	VectorSubtract( orig, vert1, tvec );
++	tvec = orig - vert1;
+ 
+ 	// calculate U parameter and test bounds
+-	u = DotProduct( tvec, pvec );
++	u = tvec.dotProduct(pvec );
+ 	if ( ( u < 0.0f ) || ( u > det ) ) {
+ 		return false;
+ 	}
+ 
+ 	// prepare to test V parameter
+-	CrossProduct( tvec, edge1, qvec );
++	qvec.crossProduct( tvec, edge1 );
+ 
+ 	// calculate V parameter and test bounds
+-	v = DotProduct( dir, qvec );
++	v = dir.dotProduct( qvec );
+ 	if ( ( v < 0.0f ) || ( u + v > det ) ) {
+ 		return false;
+ 	}
+ 
+ 	// calculate t, scale parameters, ray intersects triangle
+-	*t = DotProduct( edge2, qvec ) / det;
++	*t = edge2.dotProduct( qvec ) / det;
+ 
+ 	return true;
+ }
+Index: q3radiant/terrain.h
+===================================================================
+--- q3radiant/terrain.h	(revision 436)
++++ q3radiant/terrain.h	(working copy)
+@@ -63,7 +63,7 @@
+ void			Terrain_AddPoint( terrainMesh_t *p, terrainVert_t *v );
+ void			Terrain_RemovePointFromMoveList( terrainVert_t *v );
+ void			Terrain_SelectAreaPoints( void );
+-bool			RayTriangleIntersect( vec3_t orig, vec3_t dir, vec3_t vert1, vec3_t vert2, vec3_t vert3, float *t );
++bool			RayTriangleIntersect(const edVec3_c &orig, const edVec3_c &dir, const edVec3_c &vert1, const edVec3_c &vert2, const edVec3_c &vert3, float *t );
+ terrainFace_t	*Terrain_Ray( vec3_t origin, vec3_t dir, brush_t *b, float *dist );
+ void			Select_TerrainFacesFromBrush( brush_t *brush );
+ void			SetTerrainTexdef( brush_t *brush, terrainFace_t *vert, texdef_t *texdef );
+Index: q3radiant/VERTSEL.CPP
+===================================================================
+--- q3radiant/VERTSEL.CPP	(revision 436)
++++ q3radiant/VERTSEL.CPP	(working copy)
+@@ -240,11 +240,11 @@
+ #endif
+ }
+ 
+-void SelectEdgeByRay (vec3_t org, vec3_t dir)
++void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
+ {
+ 	int		i, j, besti;
+ 	float	d, bestd;
+-	vec3_t	mid, temp;
++	edVec3_c	mid, temp;
+ 	pedge_t	*e;
+ 
+ 	// find the edge closest to the ray
+@@ -256,11 +256,11 @@
+ 		for (j=0 ; j<3 ; j++)
+ 			mid[j] = 0.5*(g_qeglobals.d_points[g_qeglobals.d_edges[i].p1][j] + g_qeglobals.d_points[g_qeglobals.d_edges[i].p2][j]);
+ 
+-		VectorSubtract (mid, org, temp);
+-		d = DotProduct (temp, dir);
++		temp = mid - org;
++		d = temp.dotProduct(dir);
+ 		VectorMA (org, d, dir, temp);
+-		VectorSubtract (mid, temp, temp);
+-		d = VectorLength (temp);
++		temp = mid - temp;
++		d = temp.vectorLength();
+ 		if (d < bestd)
+ 		{
+ 			bestd = d;
+@@ -293,11 +293,11 @@
+ 
+ }
+ 
+-void SelectVertexByRay (vec3_t org, vec3_t dir)
++void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
+ {
+ 	int		i, besti;
+ 	float	d, bestd;
+-	vec3_t	temp;
++	edVec3_c	temp;
+ 
+ 	// find the point closest to the ray
+ 	besti = -1;
+@@ -305,11 +305,11 @@
+ 
+ 	for (i=0 ; i<g_qeglobals.d_numpoints ; i++)
+ 	{
+-		VectorSubtract (g_qeglobals.d_points[i], org, temp);
+-		d = DotProduct (temp, dir);
++		temp = g_qeglobals.d_points[i] - org;
++		d = temp.dotProduct(dir);
+ 		VectorMA (org, d, dir, temp);
+-		VectorSubtract (g_qeglobals.d_points[i], temp, temp);
+-		d = VectorLength (temp);
++		temp = g_qeglobals.d_points[i] - temp;
++		d = temp.vectorLength();
+ 		if (d < bestd)
+ 		{
+ 			bestd = d;
+@@ -330,11 +330,11 @@
+ 
+ 
+ extern void AddPatchMovePoint(vec3_t v, bool bMulti, bool bFull);
+-void SelectCurvePointByRay (vec3_t org, vec3_t dir, int buttons)
++void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
+ {
+ 	int		i, besti;
+ 	float	d, bestd;
+-	vec3_t	temp;
++	edVec3_c	temp;
+ 
+ 	// find the point closest to the ray
+ 	besti = -1;
+@@ -342,11 +342,11 @@
+ 
+ 	for (i=0 ; i<g_qeglobals.d_numpoints ; i++)
+ 	{
+-		VectorSubtract (g_qeglobals.d_points[i], org, temp);
+-		d = DotProduct (temp, dir);
++		temp = g_qeglobals.d_points[i] - org;
++		d = temp.dotProduct(dir);
+ 		VectorMA (org, d, dir, temp);
+-		VectorSubtract (g_qeglobals.d_points[i], temp, temp);
+-		d = VectorLength (temp);
++		temp = g_qeglobals.d_points[i] - temp;
++		d = temp.vectorLength();
+ 		if (d <= bestd)
+ 		{
+ 			bestd = d;
+Index: q3radiant/Winding.cpp
+===================================================================
+--- q3radiant/Winding.cpp	(revision 441)
++++ q3radiant/Winding.cpp	(working copy)
+@@ -101,7 +101,7 @@
+ {
+ 	int		i, x;
+ 	vec_t	max, v;
+-	vec3_t	org, vright, vup;
++	edVec3_c	org, vright, vup;
+ 	winding_t	*w;
+ 	
+ 	// find the major axis
+@@ -133,32 +133,25 @@
+ 	}
+ 
+ 
+-	v = DotProduct (vup, p.normal);
++	v = vup.dotProduct(p.normal);
+ 	VectorMA (vup, -v, p.normal, vup);
+-	VectorNormalize (vup);
++	vup.normalize();
+ 		
+-	VectorScale (p.normal, p.dist, org);
++	org = p.normal * p.dist;
++
++	vright.crossProduct (vup, p.normal);
+ 	
+-	CrossProduct (vup, p.normal, vright);
+-	
+-	VectorScale (vup, BOGUS_RANGE, vup);
+-	VectorScale (vright, BOGUS_RANGE, vright);
++	vup *= BOGUS_RANGE;
++	vright *= BOGUS_RANGE;
+ 
+ 	// project a really big	axis aligned box onto the plane
+ 	w = Winding_Alloc (4);
+ 	
+-	VectorSubtract (org, vright, w->points[0]);
+-	VectorAdd (w->points[0], vup, w->points[0]);
++	w->points[0].setXYZ(org - vright + vup);
++	w->points[1].setXYZ(org + vright + vup);
++	w->points[2].setXYZ(org + vright - vup);
++	w->points[3].setXYZ(org - vright - vup);
+ 	
+-	VectorAdd (org, vright, w->points[1]);
+-	VectorAdd (w->points[1], vup, w->points[1]);
+-	
+-	VectorAdd (org, vright, w->points[2]);
+-	VectorSubtract (w->points[2], vup, w->points[2]);
+-	
+-	VectorSubtract (org, vright, w->points[3]);
+-	VectorSubtract (w->points[3], vup, w->points[3]);
+-	
+ 	w->numpoints = 4;
+ 	
+ 	return w;	
+@@ -177,7 +170,7 @@
+ 	if (points > MAX_POINTS_ON_WINDING)
+ 		Error ("Winding_Alloc: %i points", points);
+ 	
+-	size = (int)((winding_t *)0)->points[points];
++	size = (int)&((winding_t *)0)->points[points];
+ 	w = (winding_t*) malloc (size);
+ 	memset (w, 0, size);
+ 	w->maxpoints = points;
+@@ -202,7 +195,7 @@
+ 	int			size;
+ 	winding_t	*c;
+ 	
+-	size = (int)((winding_t *)0)->points[w->numpoints];
++	size = (int)&((winding_t *)0)->points[w->numpoints];
+ 	c = (winding_t*)qmalloc (size);
+ 	memcpy (c, w, size);
+ 	return c;
+@@ -240,7 +233,7 @@
+ 
+ 	if (point < w->numpoints-1)
+ 	{
+-		memmove(&w->points[point], &w->points[point+1], (int)((winding_t *)0)->points[w->numpoints - point - 1]);
++		memmove(&w->points[point], &w->points[point+1], (int)&((winding_t *)0)->points[w->numpoints - point - 1]);
+ 	}
+ 	w->numpoints--;
+ }
+@@ -291,7 +284,7 @@
+ {
+ 	int		i, j;
+ 	vec_t	len;
+-	vec3_t	delta;
++	edVec3_c delta;
+ 	int		edges;
+ 
+ 	edges = 0;
+@@ -299,7 +292,7 @@
+ 	{
+ 		j = i == w->numpoints - 1 ? 0 : i+1;
+ 		VectorSubtract (w->points[j], w->points[i], delta);
+-		len = VectorLength (delta);
++		len = delta.vectorLength();
+ 		if (len > EDGE_LENGTH)
+ 		{
+ 			if (++edges == 3)
+@@ -335,7 +328,7 @@
+ #define WCONVEX_EPSILON		0.2
+ 
+ int Winding_PlanesConcave(winding_t *w1, winding_t *w2,
+-							 vec3_t normal1, vec3_t normal2,
++							 const edVec3_c &normal1, const edVec3_c &normal2,
+ 							 float dist1, float dist2)
+ {
+ 	int i;
+@@ -345,12 +338,14 @@
+ 	// check if one of the points of winding 1 is at the back of the plane of winding 2
+ 	for (i = 0; i < w1->numpoints; i++)
+ 	{
+-		if (DotProduct(normal2, w1->points[i]) - dist2 > WCONVEX_EPSILON) return true;
++		if (normal2.dotProduct(w1->points[i]) - dist2 > WCONVEX_EPSILON)
++			return true;
+ 	}
+ 	// check if one of the points of winding 2 is at the back of the plane of winding 1
+ 	for (i = 0; i < w2->numpoints; i++)
+ 	{
+-		if (DotProduct(normal1, w2->points[i]) - dist1 > WCONVEX_EPSILON) return true;
++		if (normal1.dotProduct(w2->points[i]) - dist1 > WCONVEX_EPSILON)
++			return true;
+ 	}
+ 
+ 	return false;
+@@ -383,7 +378,7 @@
+ 	// determine sides for each point
+ 	for (i=0 ; i<in->numpoints ; i++)
+ 	{
+-		dot = DotProduct (in->points[i], split.normal);
++		dot = in->points[i].dotProduct(split.normal);
+ 		dot -= split.dist;
+ 		dists[i] = dot;
+ 		if (dot > ON_EPSILON)
+@@ -487,7 +482,7 @@
+ 	// determine sides for each point
+ 	for (i = 0; i < in->numpoints; i++)
+ 	{
+-		dot = DotProduct (in->points[i], normal);
++		dot = in->points[i].dotProduct(normal);
+ 		dot -= dist;
+ 		dists[i] = dot;
+ 		if (dot > epsilon)
+@@ -596,7 +591,7 @@
+ 	vec_t		*p1, *p2, *p3, *p4, *back;
+ 	winding_t	*newf;
+ 	int			i, j, k, l;
+-	vec3_t		normal, delta;
++	edVec3_c		normal, delta;
+ 	vec_t		dot;
+ 	bool	keep1, keep2;
+ 	
+@@ -638,12 +633,12 @@
+ 	//
+ 	back = f1->points[(i+f1->numpoints-1)%f1->numpoints];
+ 	VectorSubtract (p1, back, delta);
+-	CrossProduct (planenormal, delta, normal);
+-	VectorNormalize (normal);
+-	
++	normal.crossProduct (planenormal, delta);
++	normal.normalize();
++
+ 	back = f2->points[(j+2)%f2->numpoints];
+ 	VectorSubtract (back, p1, delta);
+-	dot = DotProduct (delta, normal);
++	dot = delta.dotProduct(normal);
+ 	if (dot > CONTINUOUS_EPSILON)
+ 		return NULL;			// not a convex polygon
+ 	keep1 = (bool)(dot < -CONTINUOUS_EPSILON);
+@@ -650,12 +645,12 @@
+ 	
+ 	back = f1->points[(i+2)%f1->numpoints];
+ 	VectorSubtract (back, p2, delta);
+-	CrossProduct (planenormal, delta, normal);
+-	VectorNormalize (normal);
++	normal.crossProduct (planenormal, delta);
++	normal.normalize();
+ 
+ 	back = f2->points[(j+f2->numpoints-1)%f2->numpoints];
+ 	VectorSubtract (back, p2, delta);
+-	dot = DotProduct (delta, normal);
++	dot = delta.dotProduct(normal);
+ 	if (dot > CONTINUOUS_EPSILON)
+ 		return NULL;			// not a convex polygon
+ 	keep2 = (bool)(dot < -CONTINUOUS_EPSILON);
+@@ -692,21 +687,22 @@
+ Winding_Plane
+ ============
+ */
+-void Winding_Plane (winding_t *w, vec3_t normal, double *dist)
++void Winding_Plane (winding_t *w, class edVec3_c &normal, double *dist)
+ {
+-	vec3_t v1, v2;
++	edVec3_c v1, v2;
+ 	int i;
+ 
+ 	//find two vectors each longer than 0.5 units
+ 	for (i = 0; i < w->numpoints; i++)
+ 	{
+-		VectorSubtract(w->points[(i+1) % w->numpoints], w->points[i], v1);
+-		VectorSubtract(w->points[(i+2) % w->numpoints], w->points[i], v2);
+-		if (VectorLength(v1) > 0.5 && VectorLength(v2) > 0.5) break;
++		v1 = w->points[(i+1) % w->numpoints].xyz - w->points[i].xyz;
++		v2 = w->points[(i+2) % w->numpoints].xyz - w->points[i].xyz;
++		if (v1.vectorLength() > 0.5 && v2.vectorLength() > 0.5)
++			break;
+ 	}
+-	CrossProduct(v2, v1, normal);
+-	VectorNormalize(normal);
+-	*dist = DotProduct(w->points[0], normal);
++	normal.crossProduct(v2, v1);
++	normal.normalize();
++	*dist = normal.dotProduct(w->points[0]);
+ }
+ 
+ /*
+@@ -717,16 +713,16 @@
+ float Winding_Area (winding_t *w)
+ {
+ 	int		i;
+-	vec3_t	d1, d2, cross;
++	edVec3_c	d1, d2, cross;
+ 	float	total;
+ 
+ 	total = 0;
+ 	for (i=2 ; i<w->numpoints ; i++)
+ 	{
+-		VectorSubtract (w->points[i-1], w->points[0], d1);
+-		VectorSubtract (w->points[i], w->points[0], d2);
+-		CrossProduct (d1, d2, cross);
+-		total += 0.5 * VectorLength ( cross );
++		d1 = w->points[i-1].xyz -w->points[0].xyz;
++		d2 = w->points[i].xyz - w->points[0].xyz;
++		cross.crossProduct (d1, d2);
++		total += 0.5 * cross.vectorLength();
+ 	}
+ 	return total;
+ }
+@@ -763,19 +759,20 @@
+ Winding_PointInside
+ =================
+ */
+-int Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point, float epsilon)
++int Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3_c &point, float epsilon)
+ {
+ 	int i;
+-	vec3_t dir, normal, pointvec;
++	edVec3_c dir, normal, pointvec;
+ 
+ 	for (i = 0; i < w->numpoints; i++)
+ 	{
+-		VectorSubtract(w->points[(i+1) % w->numpoints], w->points[i], dir);
+-		VectorSubtract(point, w->points[i], pointvec);
++		dir = w->points[(i+1) % w->numpoints].getXYZ() - w->points[i].getXYZ();
++		pointvec = point - w->points[i].getXYZ();
+ 		//
+-		CrossProduct(dir, plane.normal, normal);
++		normal.crossProduct(dir, plane.normal);
+ 		//
+-		if (DotProduct(pointvec, normal) < -epsilon) return false;
++		if (pointvec.dotProduct(normal) < -epsilon)
++			return false;
+ 	}
+ 	return true;
+ }
+@@ -785,13 +782,13 @@
+ Winding_VectorIntersect
+ =================
+ */
+-int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, vec3_t p1, vec3_t p2, float epsilon)
++int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon)
+ {
+ 	float front, back, frac;
+ 	vec3_t mid;
+ 
+-	front = DotProduct(p1, plane.normal) - plane.dist;
+-	back = DotProduct(p2, plane.normal) - plane.dist;
++	front = p1.dotProduct(plane.normal) - plane.dist;
++	back = p2.dotProduct(plane.normal) - plane.dist;
+ 	//if both points at the same side of the plane
+ 	if (front < -epsilon && back < -epsilon) return false;
+ 	if (front > epsilon && back > epsilon) return false;
+Index: q3radiant/Winding.h
+===================================================================
+--- q3radiant/Winding.h	(revision 441)
++++ q3radiant/Winding.h	(working copy)
+@@ -45,7 +45,7 @@
+ winding_t*	Winding_InsertPoint(winding_t *w, vec3_t point, int spot);
+ //returns true if the planes are concave
+ int			Winding_PlanesConcave(winding_t *w1, winding_t *w2,
+-									 vec3_t normal1, vec3_t normal2,
++									 const edVec3_c &normal1, const edVec3_c &normal2,
+ 									 float dist1, float dist2);
+ //returns true if the winding is tiny
+ int			Winding_IsTiny(winding_t *w);
+@@ -59,12 +59,12 @@
+ //try to merge the windings, returns the new merged winding or NULL
+ winding_t *Winding_TryMerge(winding_t *f1, winding_t *f2, vec3_t planenormal, int keep);
+ //create a plane for the winding
+-void		Winding_Plane(winding_t *w, vec3_t normal, double *dist);
++void		Winding_Plane(winding_t *w, class edVec3_c &normal, double *dist);
+ //returns the winding area
+ float		Winding_Area(winding_t *w);
+ //returns the bounds of the winding
+ void		Winding_Bounds(winding_t *w, vec3_t mins, vec3_t maxs);
+ //returns true if the point is inside the winding
+-int			Winding_PointInside(winding_t *w, const class edPlane_c &plane, vec3_t point, float epsilon);
++int			Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3_c &point, float epsilon);
+ //returns true if the vector intersects with the winding
+-int			Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, vec3_t p1, vec3_t p2, float epsilon);
++int			Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon);
+Index: q3radiant/XYWnd.cpp
+===================================================================
+--- q3radiant/XYWnd.cpp	(revision 437)
++++ q3radiant/XYWnd.cpp	(working copy)
+@@ -463,7 +463,7 @@
+ {
+   g_PointPoints[g_nPointCount].Set(true);
+   //g_PointPoints[g_nPointCount].m_ptScreen = point;
+-  _VectorCopy(*pVec, g_PointPoints[g_nPointCount]);
++  g_PointPoints[g_nPointCount] = *pVec;
+   g_PointPoints[g_nPointCount].SetPointPtr(pVec);
+   g_nPointCount++;
+   Sys_UpdateWindows(XY | W_CAMERA_IFON);
+@@ -1705,7 +1705,7 @@
+     int nAngle = (m_nViewType == XY) ? YAW : PITCH;
+     if (point[n1] || point[n2])
+     {
+-		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = 180/Q_PI*atan2 (point[n1], point[n2]);
++		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG(atan2 (point[n1], point[n2]));
+ 		  Sys_UpdateWindows (W_CAMERA_IFON|W_XY_OVERLAY);
+     }
+ 	}
+@@ -1944,7 +1944,7 @@
+     int nAngle = (m_nViewType == XY) ? YAW : PITCH;
+     if (point[n1] || point[n2])
+     {
+-		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = 180/Q_PI*atan2 (point[n1], point[n2]);
++		  g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG(atan2 (point[n1], point[n2]));
+ 		  Sys_UpdateWindows (W_CAMERA_IFON|W_XY_OVERLAY);
+     }
+ 		return;
+@@ -2276,19 +2276,19 @@
+   {
+     x = g_pParentWnd->GetCamera()->Camera().origin[0];
+ 		y = g_pParentWnd->GetCamera()->Camera().origin[1];
+-	  a = g_pParentWnd->GetCamera()->Camera().angles[YAW]/180*Q_PI;
++	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[YAW]);;
+   }
+   else if (m_nViewType == YZ)
+   {
+ 	  x = g_pParentWnd->GetCamera()->Camera().origin[1];
+ 		y = g_pParentWnd->GetCamera()->Camera().origin[2];
+-	  a = g_pParentWnd->GetCamera()->Camera().angles[PITCH]/180*Q_PI;
++	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
+   }
+   else
+   {
+ 	  x = g_pParentWnd->GetCamera()->Camera().origin[0];
+ 		y = g_pParentWnd->GetCamera()->Camera().origin[2];
+-	  a = g_pParentWnd->GetCamera()->Camera().angles[PITCH]/180*Q_PI;
++	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
+   }
+ 
+ 	qglColor3f (0.0, 0.0, 1.0);
+@@ -2302,9 +2302,9 @@
+ 	qglEnd ();
+ 	
+ 	qglBegin(GL_LINE_STRIP);
+-	qglVertex3f (x+48*cos(a+Q_PI/4), y+48*sin(a+Q_PI/4), 0);
++	qglVertex3f (x+48*cos(a+M_PI/4), y+48*sin(a+M_PI/4), 0);
+ 	qglVertex3f (x, y, 0);
+-	qglVertex3f (x+48*cos(a-Q_PI/4), y+48*sin(a-Q_PI/4), 0);
++	qglVertex3f (x+48*cos(a-M_PI/4), y+48*sin(a-M_PI/4), 0);
+ 	qglEnd ();
+ 
+ #if 0
+@@ -2501,7 +2501,7 @@
+ 	entity_t *se, *te;
+ 	brush_t	*sb, *tb;
+ 	char	*psz;
+-	vec3_t	dir, s1, s2;
++	edVec3_c	dir, s1, s2;
+ 	vec_t	len, f;
+ 	int		arrows;
+ 	int			num_entities;
+@@ -2550,7 +2550,7 @@
+ 				mid1[i] = (tb->mins[i] + tb->maxs[i])*0.5; 
+ 
+ 			VectorSubtract (mid1, mid, dir);
+-			len = VectorNormalize (dir);
++			len = dir.normalize();
+ 			s1[0] = -dir[1]*8 + dir[0]*8;
+ 			s2[0] = dir[1]*8 + dir[0]*8;
+ 			s1[1] = dir[0]*8 + dir[1]*8;
+Index: q3radiant/XYWnd.h
+===================================================================
+--- q3radiant/XYWnd.h	(revision 437)
++++ q3radiant/XYWnd.h	(working copy)
+@@ -49,7 +49,13 @@
+   void Reset(){ m_ptClip[0] = m_ptClip[1] = m_ptClip[2] = 0.0; m_bSet = false; m_pVec3 = NULL;};
+   bool Set(){ return m_bSet; };
+   void Set(bool b) { m_bSet = b; };
+-  void UpdatePointPtr() { if (m_pVec3) VectorCopy(m_ptClip, *m_pVec3); };
++  void UpdatePointPtr() { 
++	  if (m_pVec3) {
++		  (*m_pVec3)[0] = m_ptClip[0];
++		  (*m_pVec3)[1] = m_ptClip[1];
++		  (*m_pVec3)[2] = m_ptClip[2];
++	  }
++  }
+   void SetPointPtr(vec3_t* p) { m_pVec3 = p; };
+   vec3_t m_ptClip;      // the 3d point
+   vec3_t* m_pVec3;      // optional ptr for 3rd party updates
+@@ -57,6 +63,11 @@
+   bool m_bSet;
+   operator vec3_t&() {return m_ptClip;};
+   operator vec3_t*() {return &m_ptClip;};
++  void operator = (const float *xyz) {
++	m_ptClip[0] = xyz[0];
++	m_ptClip[1] = xyz[1];
++	m_ptClip[2] = xyz[2];
++  }
+ };
+ 
+ class CXYWnd : public CWnd

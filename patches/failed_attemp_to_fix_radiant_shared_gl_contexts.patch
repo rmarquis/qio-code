@@ -1,0 +1,357 @@
+Index: api/rAPI.h
+===================================================================
+--- api/rAPI.h	(revision 562)
++++ api/rAPI.h	(working copy)
+@@ -89,6 +89,10 @@
+ 	virtual void shutdown(bool destroyWindow) = 0;
+ 	virtual u32 getWinWidth() const = 0;
+ 	virtual u32 getWinHeight() const = 0;
++
++	// V: this is for /editor (built-in Radiant)
++	// This will work only for GL backends.
++	virtual bool getHGLRC(void *o) = 0;
+ };
+ 
+ extern rAPI_i *rf;
+Index: api/rbAPI.h
+===================================================================
+--- api/rbAPI.h	(revision 562)
++++ api/rbAPI.h	(working copy)
+@@ -167,6 +167,9 @@
+ 
+ 	}
+ 
++	virtual bool getHGLRC(void *o) {
++		return true; /// error;
++	}
+ 	virtual void init() = 0;
+ 	virtual void shutdown(bool destroyWindow) = 0;
+ };
+Index: editor/Brush.cpp
+===================================================================
+--- editor/Brush.cpp	(revision 570)
++++ editor/Brush.cpp	(working copy)
+@@ -3322,7 +3322,7 @@
+ 		}
+ #endif
+ 
+-		mtrAPI_i *temp = g_ms->registerMaterial(face->d_texture->name);
++		mtrAPI_i *temp = face->d_texture->qioMat; //g_ms->registerMaterial(face->d_texture->name);
+ 		
+ 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
+ 		{
+Index: editor/CamWnd.cpp
+===================================================================
+--- editor/CamWnd.cpp	(revision 562)
++++ editor/CamWnd.cpp	(working copy)
+@@ -1,24 +1,24 @@
+-/*
+-===========================================================================
+-Copyright (C) 1999-2005 Id Software, Inc.
+-
+-This file is part of Quake III Arena source code.
+-
+-Quake III Arena source code is free software; you can redistribute it
+-and/or modify it under the terms of the GNU General Public License as
+-published by the Free Software Foundation; either version 2 of the License,
+-or (at your option) any later version.
+-
+-Quake III Arena source code is distributed in the hope that it will be
+-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with Foobar; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-===========================================================================
+-*/
++/*
++===========================================================================
++Copyright (C) 1999-2005 Id Software, Inc.
++
++This file is part of Quake III Arena source code.
++
++Quake III Arena source code is free software; you can redistribute it
++and/or modify it under the terms of the GNU General Public License as
++published by the Free Software Foundation; either version 2 of the License,
++or (at your option) any later version.
++
++Quake III Arena source code is distributed in the hope that it will be
++useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with Foobar; if not, write to the Free Software
++Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++===========================================================================
++*/
+ // CamWnd.cpp : implementation file
+ //
+ 
+@@ -29,7 +29,9 @@
+ #include "qe3.h"
+ #include "qgl.h"
+ #include <gl/glu.h>
++#include <api/rAPI.h>
+ 
++
+ #ifdef _DEBUG
+ #define new DEBUG_NEW
+ #undef THIS_FILE
+@@ -266,6 +268,12 @@
+   if ((g_qeglobals.d_hglrcBase = wglCreateContext(g_qeglobals.d_hdcBase)) == 0)
+ 	  Error("wglCreateContext failed");
+   
++  HGLRC qioRC;
++	rf->getHGLRC(&qioRC);
++	if (!wglShareLists(qioRC, g_qeglobals.d_hglrcBase))
++	  Error( "wglShareLists in CZWnd::OnCreate failed");
++
++
+   if (!wglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
+ 	  Error ("wglMakeCurrent failed");
+ 
+@@ -319,6 +327,7 @@
+ 	Sys_Printf ("GL_VENDOR: %s\n", glGetString (GL_VENDOR));
+ 	Sys_Printf ("GL_RENDERER: %s\n", glGetString (GL_RENDERER));
+ 	Sys_Printf ("GL_VERSION: %s\n", glGetString (GL_VERSION));
++	Sys_Printf ("GL_EXTENSIONS: %s\n", glGetString (GL_EXTENSIONS));
+ 
+   g_qeglobals.d_hwndCamera = GetSafeHwnd();
+ 
+Index: editor/IShaders.cpp
+===================================================================
+--- editor/IShaders.cpp	(revision 562)
++++ editor/IShaders.cpp	(working copy)
+@@ -38,6 +38,9 @@
+ //
+ 
+ #include "stdafx.h"
++#include <api/mtrAPI.h>
++#include <api/mtrStageAPI.h>
++#include <api/materialSystemAPI.h>
+ 
+ // this is a modified version of Texture_ForName
+ qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
+@@ -50,43 +53,50 @@
+ 				return q;
+ 	}
+ 	// try loading from file .. this is a copy of the worst part of Texture_ForName
+-	char cWork[1024];
+-	sprintf (filename, "%s/%s.tga", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), name);
+-	QE_ConvertDOSToUnixName( cWork, filename );
+-	strcpy(filename, cWork);
+-	unsigned char* pPixels = NULL;
+-	int nWidth;
+-	int nHeight;
+-	LoadImage(filename, &pPixels, &nWidth, &nHeight);
+-	if (pPixels == NULL)
++	//char cWork[1024];
++	//sprintf (filename, "%s/%s.tga", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), name);
++	//QE_ConvertDOSToUnixName( cWork, filename );
++	//strcpy(filename, cWork);
++	//unsigned char* pPixels = NULL;
++	//int nWidth;
++	//int nHeight;
++	//LoadImage(filename, &pPixels, &nWidth, &nHeight);
++	//if (pPixels == NULL)
++	//{
++	//	// try jpg
++	//	// blatant assumption of .tga should be fine since we sprintf'd it above
++	//	int nLen = strlen(filename);
++	//	filename[nLen-3] = 'j';
++	//	filename[nLen-2] = 'p';
++	//	filename[nLen-1] = 'g';
++	//	LoadImage(filename, &pPixels, &nWidth, &nHeight);;
++	//	if (pPixels == NULL)
++	//	{
++	//		// try png
++	//		// blatant assumption of .tga should be fine since we sprintf'd it above
++	//		int nLen = strlen(filename);
++	//		filename[nLen-3] = 'p';
++	//		filename[nLen-2] = 'n';
++	//		filename[nLen-1] = 'g';
++	//		LoadImage(filename, &pPixels, &nWidth, &nHeight);
++	//	}
++	//}
++	mtrAPI_i *mat = g_ms->registerMaterial(name);
++	if (mat)
+ 	{
+-		// try jpg
+-		// blatant assumption of .tga should be fine since we sprintf'd it above
+-		int nLen = strlen(filename);
+-		filename[nLen-3] = 'j';
+-		filename[nLen-2] = 'p';
+-		filename[nLen-1] = 'g';
+-		LoadImage(filename, &pPixels, &nWidth, &nHeight);;
+-		if (pPixels == NULL)
+-		{
+-			// try png
+-			// blatant assumption of .tga should be fine since we sprintf'd it above
+-			int nLen = strlen(filename);
+-			filename[nLen-3] = 'p';
+-			filename[nLen-2] = 'n';
+-			filename[nLen-1] = 'g';
+-			LoadImage(filename, &pPixels, &nWidth, &nHeight);
+-		}
+-	}
+-	if (pPixels)
+-	{
+-		q = Texture_LoadTGATexture(pPixels, nWidth, nHeight, NULL, 0, 0, 0);
++  qtexture_t* q = (qtexture_t*)qmalloc(sizeof(*q));
++  q->width = mat->getImageWidth();
++  q->height = mat->getImageHeight();
++	q->flags = 0;
++	q->value = 0;
++	q->contents = 0;
++	q->qioMat = mat;
+ 		//++timo storing the filename .. will be removed by shader code cleanup
+ 		// this is dirty, and we sure miss some places were we should fill the filename info
+ 		strcpy( q->filename, name );
+ 		SetNameShaderInfo(q, filename, name);
+ 		Sys_Printf ("done.\n", name);
+-		free(pPixels);
++	//	free(pPixels);
+ 		return q;
+ 	}
+ 	return NULL;
+Index: editor/QERTYPES.H
+===================================================================
+--- editor/QERTYPES.H	(revision 562)
++++ editor/QERTYPES.H	(working copy)
+@@ -144,6 +144,8 @@
+ 	bool	inuse;		    // true = is present on the level
+ 
+ 	
++	class mtrAPI_i *qioMat;
++
+ 	//++timo FIXME: this is the actual filename of the texture
+ 	// this will be removed after shader code cleanup
+ 	char filename[64];
+Index: editor/TexWnd.cpp
+===================================================================
+--- editor/TexWnd.cpp	(revision 562)
++++ editor/TexWnd.cpp	(working copy)
+@@ -37,6 +37,7 @@
+ #include <gl/glu.h>
+ #include <vector>
+ #include "qgl.h"
++#include <api/rAPI.h>
+ Str m_gStr;
+ 
+ #ifdef _DEBUG
+@@ -1124,7 +1125,7 @@
+ 					  LoadImage(filename, &pPixels, &nWidth, &nHeight);
+ 			}
+         }
+-				if (pPixels)
++		/*		if (pPixels)
+ 				{
+ 					// if we were asked to ignore alpha channel, do it now (.TGA is the only supported file type with alpha channel)
+ 					//if (bNoAlpha)
+@@ -1134,27 +1135,30 @@
+ 						int nCount = nWidth * nHeight;
+ 						for(iPix=pPixels+3; iPix-pPixels < nCount*4; iPix+=4)
+ 							*iPix = 255;
+-					}
++					}*/
+           // we'll be binding the GL texture now
+           // need to check we are using a right GL context
+           // with GL plugins that have their own window, the GL context may be the plugin's, in which case loading textures will bug
+ 	        HDC currentHDC = wglGetCurrentDC();
+ 	        HGLRC currentHGLRC = wglGetCurrentContext();
++		////	HGLRC qioRC;
++		//	rf->getHGLRC(&qioRC);
+           //++timo FIXME: this may duplicate with qtexture_t* WINAPI QERApp_Texture_ForName (const char *name)
+           //++timo FIXME: we need a list of lawfull GL contexts or something?
+           // I'd rather always use the same GL context for binding...
++
+           if (currentHDC != g_qeglobals.d_hdcBase || currentHGLRC != g_qeglobals.d_hglrcBase)
+ 	          wglMakeCurrent( g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase );
+-					q = Texture_LoadTGATexture(pPixels, nWidth, nHeight, NULL, 0, 0, 0);
++					q = QERApp_TryTextureForName(name);
+           //++timo I don't set back the GL context .. I don't know how safe it is
+-          //qwglMakeCurrent( currentHDC, currentHGLRC );
++        //  wglMakeCurrent( currentHDC, currentHGLRC );
+     	//++timo storing the filename .. will be removed by shader code cleanup
+ 		// this is dirty, and we sure miss some places were we should fill the filename info
+ 		strcpy( q->filename, name );
+ 					SetNameShaderInfo(q, filename, name);
+ 					Sys_Printf ("done.\n", name);
+-					free(pPixels);
+-				}
++			///		free(pPixels);
++		//		}
+ 
+ 			
+  			if (g_PrefsDlg.m_bSGIOpenGL)
+Index: qcommon/common.cpp
+===================================================================
+--- qcommon/common.cpp	(revision 562)
++++ qcommon/common.cpp	(working copy)
+@@ -2151,7 +2151,8 @@
+ 		timeBeforeClient = Sys_Milliseconds ();
+ 	}
+ 
+-	CL_Frame( msec );
++	if(g_editor == 0)
++		CL_Frame( msec );
+ 
+ 	if ( com_speeds->integer ) {
+ 		timeAfter = Sys_Milliseconds ();
+Index: renderer/backEndGL/gl_main.cpp
+===================================================================
+--- renderer/backEndGL/gl_main.cpp	(revision 564)
++++ renderer/backEndGL/gl_main.cpp	(working copy)
+@@ -59,6 +59,8 @@
+ #include <shared/fColor4.h>
+ #include <shared/ast_input.h>
+ 
++#include <windows.h>
++
+ static aCvar_c rb_showTris("rb_showTris","0");
+ static aCvar_c rb_showNormals("rb_showNormals","0");
+ // use a special GLSL shader to show normal vectors as colors
+@@ -1070,6 +1072,10 @@
+ 	virtual void setForcedMaterialMapFrame(int animMapFrame) {
+ 		this->forcedMaterialFrameNum = animMapFrame;
+ 	}
++	virtual bool getHGLRC(void *o) {
++		memcpy(o,&tmpHackRC,sizeof(tmpHackRC));
++		return false;
++	}
+ 	void disableAllVertexAttribs() {
+ 		for(int loc = 0; loc < 16; loc++) {
+ 			if(bVertexAttribLocationsEnabled[loc] == true) {
+@@ -2985,6 +2991,7 @@
+ 	virtual void disablePortalClipPlane() {
+ 		glDisable (GL_CLIP_PLANE0);	
+ 	}
++	HGLRC tmpHackRC;
+ 	virtual void init()  {
+ 		if(backendInitialized) {
+ 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: already initialized\n");
+@@ -3063,6 +3070,7 @@
+ 		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 4.0f);
+ 		selectTex(0);
+ #endif
++		tmpHackRC = wglGetCurrentContext();
+ 		backendInitialized = true;
+ 	}
+ 	virtual void shutdown(bool destroyWindow)  {
+Index: renderer/frontend/rf_api.cpp
+===================================================================
+--- renderer/frontend/rf_api.cpp	(revision 562)
++++ renderer/frontend/rf_api.cpp	(working copy)
+@@ -273,6 +273,9 @@
+ 	virtual u32 getWinHeight() const {
+ 		return rb->getWinHeight();
+ 	}
++	virtual bool getHGLRC(void *o) {
++		return rb->getHGLRC(o);
++	}
+ };
+ 
+ // interface manager (import)
