@@ -228,7 +228,9 @@ class r_model_c *RF_LoadMAPFile(const char *fname) {
 	if(1) {
 		stringList_c matNames;
 		matNames.setIgnoreDuplicates(true);
-		loader.getWorldModel()->iterateMaterialNames(&matNames);
+		if(loader.getWorldModel()) {
+			loader.getWorldModel()->iterateMaterialNames(&matNames);
+		}
 		g_core->Print("There is %i unique map materials\n",matNames.size());
 	}
 	return loader.getWorldModel();
