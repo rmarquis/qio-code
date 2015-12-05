@@ -512,7 +512,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!stricmp(cmd,"model_spawn") || !stricmp(cmd,"mdlpp_spawn") || !stricmp(cmd,"mdl_spawn")) {
+	} else if(!stricmp(cmd,"model_spawn") || !stricmp(cmd,"mdlpp_spawn") || !stricmp(cmd,"mdl_spawn") || !stricmp(cmd,"psk_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
