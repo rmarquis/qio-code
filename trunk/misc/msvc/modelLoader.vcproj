@@ -396,6 +396,10 @@
 			Name="fileformats"
 			>
 			<File
+				RelativePath="..\..\code\fileformats\actorX_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\md2_file_format.h"
 				>
 			</File>

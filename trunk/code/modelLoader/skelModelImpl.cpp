@@ -23,10 +23,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 #include "skelModelImpl.h"
 #include <api/coreAPI.h>
+#include <api/vfsAPI.h>
 #include <shared/parser.h>
 #include <shared/hashTableTemplate.h>
 #include <shared/stringHashTable.h>
 #include <shared/extraSurfEdgesData.h>
+#include <fileFormats/actorX_file_format.h>
 #include <math/quat.h>
 
 static stringRegister_c sk_boneNames;
@@ -431,6 +433,256 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 		}
 	}
 	this->name = fname;
+
+	return false; // no error
+}
+
+bool skelModelIMPL_c::loadPSK(const char *fname) {	
+	this->name = fname;
+
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+	
+	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
+	if(h->hasIdent(PSK_IDENT_HEADER)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong ident %s, should be %s\n",fname,h->ident,PSK_IDENT_HEADER);
+		return true; // error
+	}
+	const axChunkHeader_t *s;
+
+	s = h->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_POINTS)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_POINTS);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axPoint_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axPoint_t));
+		return true; // error
+	}
+	const axChunkHeader_t *pSection = s;
+	u32 numPoints = s->numData;
+	arraySTD_c<vec3_c> points;
+	points.resize(numPoints);
+	vec3_c *p = points.getArray();
+	for(u32 i = 0; i < numPoints; i++, p++) {
+		const axPoint_t *pi = s->getPoint(i);
+		p->set(pi->point[0],pi->point[1],pi->point[2]);
+	}
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_VERTS)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_VERTS);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axVertex_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axVertex_t));
+		return true; // error
+	}
+	const axChunkHeader_t *vertSection = s;
+	u32 numVerts = s->numData;
+
+	for(u32 i = 0; i < numVerts; i++) {
+		const axVertex_t *vi = s->getVertex(i);
+		if(vi->pointIndex < 0 || vi->pointIndex >= numPoints) {
+			g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has vertex with point index %i out of range <0,%i)\n",fname,vi->pointIndex,numPoints);
+			return true; // error
+		}
+	}
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_FACES)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_FACES);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axTriangle_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axTriangle_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	const axChunkHeader_t *triSection = s;
+	u32 numTris = s->numData;
+	for(u32 i = 0; i < numTris; i++) {
+		const axTriangle_t *ti = s->getTri(i);
+		for(u32 j = 0; j < 3; j++) {
+			if(ti->indexes[j] >= numVerts) {
+				g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has triangle with vertex index %i (%i) out of range <0,%i)\n",fname,ti->indexes[j],j,numVerts);
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		}
+	}
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_MATS)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_MATS);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axMaterial_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axMaterial_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	const axChunkHeader_t *matSection = s;
+	u32 numMaterials = s->numData;
+	if(0) {
+		for(u32 i = 0; i < numMaterials; i++) {
+			const axMaterial_t *ti = s->getMat(i);
+			g_core->RedWarning("Mat %i name %s\n",i,ti->name);
+		}
+	}
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_REFS)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_REFS);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axReferenceBone_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axReferenceBone_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	u32 nj = s->numData;
+	this->bones.resize(nj);
+	this->baseFrameABS.resize(nj);
+	boneOrArray_c baseFrameRelative;
+	baseFrameRelative.resize(nj);
+	for(u32 i = 0; i < nj; i++) {
+		const axReferenceBone_t *bi = s->getBone(i);
+		if(0) {
+			g_core->RedWarning("Bone %i name %s\n",i,bi->name);
+		}
+
+		bones[i].nameIndex = SK_RegisterString(bi->name);
+		bones[i].parentIndex = bi->parentIndex;
+		if(i == 0)
+			bones[i].parentIndex--;
+
+		const axBone_t *or = &bi->bone;
+		quat_c q;
+		q = or->quat;
+		if(i == 0) {
+			// negate y only
+			//q.setY(-q.getY());
+		} else {
+			// negate x,y,z
+			q.conjugate();
+		}
+		vec3_c pos = or->position;
+		baseFrameRelative[i].mat.fromQuatAndOrigin(q,pos);
+		baseFrameRelative[i].boneName = bones[i].nameIndex;
+	}
+	baseFrameABS = baseFrameRelative;
+	baseFrameABS.localBonesToAbsBones(&bones);
+	boneOrArray_c baseFrameABSInverse = baseFrameABS.getInversed();
+	
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_WEIGHTS)==false) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_WEIGHTS);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axBoneWeight_t)) {
+		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axBoneWeight_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	const axChunkHeader_t *wSection = s;
+	u32 numBoneWeights = s->numData;
+	for(u32 i = 0; i < numBoneWeights; i++) {
+		const axBoneWeight_t *wi = s->getWeight(i);
+		if(wi->pointIndex >= numPoints) {
+			g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has boneWeight with point index %i out of range <0,%i)\n",fname,wi->pointIndex,numPoints);
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}		
+		if(wi->boneIndex >= nj) {
+			g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has boneWeight with bone index %i out of range <0,%i)\n",fname,wi->boneIndex,nj);
+			g_vfs->FS_FreeFile(fileData);
+			return true; // error
+		}		
+	}
+	surfs.resize(numMaterials);
+	for(u32 i = 0; i < numMaterials; i++) {
+		const axMaterial_t *ti = matSection->getMat(i);
+		surfs[i].matName = ti->name;
+	}
+	for(u32 i = 0; i < numTris; i++) {
+		const axTriangle_t *ti = triSection->getTri(i);
+		const axMaterial_t *mat = matSection->getMat(ti->materialIndex);
+		skelSurfIMPL_c &sf = surfs[ti->materialIndex];
+		const axVertex_t *v[3];
+
+		// load vertex info
+		arraySTD_c<const axBoneWeight_t*> weights[3];
+		for(u32 j = 0; j < 3; j++) {
+			v[j] = vertSection->getVertex(ti->indexes[j]);
+			wSection->getPointWeights(v[j]->pointIndex,weights[j]);
+		}
+	
+		vec3_c pointsABS[3];
+		// convert it to our CSkelVert
+		skelVert_s tri[3];
+		for(u32 j = 0; j < 3; j++) {
+			skelVert_s &ov = tri[j];
+
+			ov.tc = v[j]->st;
+
+			if(weights[0].size() == 0 && weights[0].size() == 0 && weights[0].size() == 0) {
+				// this is for PSKX loading (static models psk - no weights...)
+				vec3_c pXYZ = points[v[j]->pointIndex];
+				ov.firstWeight = sf.weights.size();
+				ov.numWeights = 1;
+				skelWeight_s w;
+				w.boneIndex = 0;
+				w.boneName = 0;
+				w.ofs = pXYZ;
+				w.weight = 1.f;
+				sf.weights.push_back(w);
+				pointsABS[j] = pXYZ;
+			} else {
+				ov.firstWeight = sf.weights.size();
+				ov.numWeights = weights[j].size();
+				sf.weights.resize(ov.firstWeight+weights[j].size());
+				for(u32 k = 0; k < weights[j].size(); k++)
+				{
+					skelWeight_s &w = sf.weights[ov.firstWeight+k];
+					const axBoneWeight_t *wi = weights[j][k];
+					w.boneIndex = wi->boneIndex;
+					w.boneName = bones[wi->boneIndex].nameIndex;
+					w.weight = wi->weight;
+					const axPoint_t *wPoint = pSection->getPoint(wi->pointIndex);
+					pointsABS[j] = wPoint->point;
+					const matrix_c &m = baseFrameABSInverse[w.boneIndex].mat;
+					m.transformPoint(pointsABS[j],w.ofs);
+				}
+			}
+		}
+		vec3_c n, t;
+		CalcTriangleTN(pointsABS[0],pointsABS[1],pointsABS[2],tri[0].tc,tri[1].tc,tri[2].tc,n,t);
+		for(u32 j = 0; j < 3; j++) {
+			skelWeight_s &w = sf.weights[tri[j].firstWeight];
+			if(w.boneIndex < baseFrameABSInverse.size()) {
+				const matrix_c &m = baseFrameABSInverse[w.boneIndex].mat;
+				m.transformNormal(n,tri[j].n);
+				m.transformNormal(t,tri[j].t);
+			} else {
+				tri[j].n = n;
+				tri[j].t = t;
+			}
+		}
+		// add to model
+		sf.indices.push_back(sf.verts.size());
+		sf.verts.push_back(tri[0]);
+		sf.indices.push_back(sf.verts.size());
+		sf.verts.push_back(tri[1]);
+		sf.indices.push_back(sf.verts.size());
+		sf.verts.push_back(tri[2]);
+	}
+
+	g_vfs->FS_FreeFile(fileData);
 
 	return false; // no error
 }

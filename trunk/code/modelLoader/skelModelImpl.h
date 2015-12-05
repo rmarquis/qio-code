@@ -160,6 +160,7 @@ public:
 	~skelModelIMPL_c();
 
 	bool loadMD5Mesh(const char *fname);
+	bool loadPSK(const char *fname);
 	void recalcEdges();
 };
 
