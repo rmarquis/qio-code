@@ -326,6 +326,16 @@ void Cmd_CompleteMDLName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "mdl", 0, 0, false, false );
 	}
 }
+/*
+==================
+Cmd_CompletePSKName
+==================
+*/
+void Cmd_CompletePSKName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "psk", "pskx", 0, false, false );
+	}
+}
 
 /*
 ==================
@@ -410,6 +420,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "mdlpp_spawn", Cmd_CompleteMDLPPName );
 	Cmd_AddCommand ("mdl_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdl_spawn", Cmd_CompleteMDLName );
+	Cmd_AddCommand ("psk_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("cg_testEmitter", 0);
 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
 	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);
