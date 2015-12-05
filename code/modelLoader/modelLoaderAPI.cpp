@@ -264,6 +264,8 @@ public:
 		ext++;
 		if(!stricmp(ext,"md5mesh"))
 			return true;
+		if(!stricmp(ext,"psk"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -271,10 +273,21 @@ public:
 		if(fname == 0 || fname[0] == 0)
 			return 0;
 		skelModelIMPL_c *skelModel = new skelModelIMPL_c;
-		if(skelModel->loadMD5Mesh(fname)) {
+		str tmp = fname;
+		if(tmp.hasExt("md5mesh")) {
+			if(skelModel->loadMD5Mesh(fname)) {
+				delete skelModel;
+				return 0;
+			}		
+		} else if(tmp.hasExt("psk")) {
+			if(skelModel->loadPSK(fname)) {
+				delete skelModel;
+				return 0;
+			}		
+		} else {
 			delete skelModel;
 			return 0;
-		}		
+		}
 		skelModel->recalcEdges();
 		//if(skelModel) {
 			// apply model postprocess steps (scaling, rotating, etc)
