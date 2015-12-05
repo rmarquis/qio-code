@@ -658,11 +658,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					//} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
 				//	}
-				} else if(p.atWord("diffusemap") || p.atWord("colormap")) {
+				} else if(p.atWord("diffusemap") || p.atWord("colormap") || p.atWord("implicitMap")) {
 					// "diffusemap" keyword is a shortcut for a material stage with single image
 					// it was introduced in Doom3
+					// "implicitMap" is used only in Wolfeinstein: Enemy Territory
+					// ET's way
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
-					newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
+					if(p.atWord("-")) {newDiffuseMapStage->setTexture(this->getName());
+					} else {
+						newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
+					}
 					//newDiffuseMapStage->setStageType(ST_COLORMAP);
 					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 					stages.push_back(newDiffuseMapStage);
@@ -1352,6 +1357,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("scopeView")) {
 					// for sniper rifle?
 				} else if(p.atWord("specularExp")) {
+					p.skipLine();
+				} else if(p.atWord("detail")) {
+					// In ET it's used in mp_siwa.shader
+				} else if(p.atWord("alphaGen")) {
+					p.skipLine();
+				} else if(p.atWord("fog")) {
+					// Enemy Territory keyword? "fog off"
+					// It's used in skies_sd.shader
 					p.skipLine();
 				} else {
 					u32 line = p.getCurrentLineNumber();
