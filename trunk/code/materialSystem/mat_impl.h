@@ -185,6 +185,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	bool bMarkedForDelete;
 	// only if this->type == ST_COLORMAP
 	mtrStage_c *subStageBumpMap;
+	mtrStage_c *subStageSpecularMap;
 	mtrStage_c *subStageHeightMap;
 	mtrStage_c *nextBundle;
 	// "if" condition for Doom3 materials
@@ -221,7 +222,7 @@ public:
 		return subStageHeightMap;
 	}
 	virtual mtrStageAPI_i *getSpecularMap() const {
-		return 0;
+		return subStageSpecularMap;
 	}
 	virtual bool hasTexMods() const {
 		if(texMods)
@@ -259,6 +260,9 @@ public:
 	}
 	void setSubStageBumpMap(class mtrStage_c *s) {
 		this->subStageBumpMap = s;
+	}
+	void setSubStageSpecularMap( class mtrStage_c *s) {
+		this->subStageSpecularMap = s;
 	}
 	void setSubStageHeightMap(class mtrStage_c *s) {
 		this->subStageHeightMap = s;
@@ -504,6 +508,10 @@ public:
 				return true;
 			if(type == ST_BUMPMAP) {
 				if(s->getBumpMap())
+					return true;
+			}
+			if(type == ST_SPECULARMAP) {
+				if(s->getSpecularMap())
 					return true;
 			}
 			if(type == ST_HEIGHTMAP) { 

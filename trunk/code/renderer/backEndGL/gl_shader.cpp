@@ -170,6 +170,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasDeluxeMap) {
 		out.append("#define HAS_DELUXEMAP\n");
 	}
+	if(p.hasSpecularMap) {
+		out.append("#define HAS_SPECULAR_MAP\n");
+	}
 	if(p.hasMaterialColor) {
 		// extra per-surface material color
 		out.append("#define HAS_MATERIAL_COLOR\n");
@@ -331,6 +334,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->sBumpMap = glGetUniformLocation(shader,"bumpMap");
 	ret->sHeightMap = glGetUniformLocation(shader,"heightMap");
 	ret->sDeluxeMap = glGetUniformLocation(shader,"deluxeMap");
+	ret->sSpecularMap = glGetUniformLocation(shader,"specularMap");
 	ret->sCubeMap = glGetUniformLocation(shader,"cubeMap");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
