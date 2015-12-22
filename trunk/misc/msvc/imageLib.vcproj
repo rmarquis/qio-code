@@ -116,6 +116,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"

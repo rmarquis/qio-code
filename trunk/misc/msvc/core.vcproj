@@ -159,7 +159,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\code\SDL12\include;..\..\code\;..\..\code\libcurl;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib"
-				PreprocessorDefinitions="_WIN32; WIN32; NDEBUG; _WINDOWS; _CRT_SECURE_NO_DEPRECATE; BOTLIB; USE_ICON; USE_CURL; USE_CURL_DLOPEN; USE_OPENAL; USE_OPENAL_DLOPEN; USE_VOIP; HAVE_CONFIG_H;USE_INTERNAL_JPEG"
+				PreprocessorDefinitions="_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;HAVE_CONFIG_H;USE_INTERNAL_JPEG"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
