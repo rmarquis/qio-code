@@ -277,8 +277,5 @@ public:
 };
 
 #define ZERO_EPSILON 1.0E-6
-#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
-#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0f )
-
 
 #endif

@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DialogInfo.h"
 #include "CapDialog.h"
 
+#include <math/math.h>
+
 // externs
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
 extern face_s *Face_Alloc( void );
