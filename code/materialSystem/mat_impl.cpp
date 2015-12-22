@@ -1376,6 +1376,22 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// Enemy Territory keyword? "fog off"
 					// It's used in skies_sd.shader
 					p.skipLine();
+				//Dushan 
+				} else if(p.atWord("q3map_sunExt")) {
+					//extended sun directive
+					p.skipLine();
+				} else if(p.atWord("q3map_skyLight")) {
+					//q3map_skyLight <value> <iterations>
+					p.skipLine();
+				} else if(p.atWord("nolightmap")) {
+					// surface don't generate a lightmap
+					p.skipLine();
+				} else if(p.atWord("sky")) {
+					// sky surfaceparm
+					p.skipLine();
+				} else if(p.atWord("alphaShadow")) {
+					// test light on a per-pixel basis
+					p.skipLine();
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();
