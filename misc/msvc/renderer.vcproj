@@ -115,7 +115,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\code\"
-				PreprocessorDefinitions="_NDEBUG;NDEBUG"
+				PreprocessorDefinitions="_NDEBUG;NDEBUG;_CRT_SECURE_NO_WARNINGS;"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
