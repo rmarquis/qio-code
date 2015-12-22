@@ -39,6 +39,7 @@ struct glslPermutationFlags_s {
 	bool hasTexGenEnvironment; // #define HAS_TEXGEN_ENVIROMENT
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 	bool hasBumpMap; // #define HAS_BUMP_MAP
+	bool hasSpecularMap; // #define HAS_SPECULAR_MAP
 	bool hasHeightMap; // #define HAS_HEIGHT_MAP
 	int useReliefMapping; // #define USE_RELIEF_MAPPING
 	// deluxemap is a "lightmap" with light direction normals encoded as colors
@@ -102,6 +103,7 @@ friend class rbSDLOpenGL_c;
 	int sColorMap2; // uses the same slot as lightmap
 	int sLightMap; // Quake3 bsp lightmap
 	int sBumpMap; // Doom3-style bumpmap (normalmap)
+	int sSpecularMap; // specularmap
 	int sHeightMap; // heightmap (not used directly in Doom3)
 	int sDeluxeMap; // deluxemap (lightmap with light directions - not colors)
 	// samplerCube locations

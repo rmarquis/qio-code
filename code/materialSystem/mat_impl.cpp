@@ -116,6 +116,7 @@ mtrStage_c::mtrStage_c() {
 	depthWrite = true;
 	bMarkedForDelete = false;
 	subStageBumpMap = 0;
+	subStageSpecularMap = 0;
 	subStageHeightMap = 0;
 	nextBundle = 0;
 	condition = 0;
@@ -131,6 +132,9 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(subStageBumpMap) {
 		delete subStageBumpMap;
+	}
+	if(subStageSpecularMap) {
+		delete subStageSpecularMap;
 	}
 	if(subStageHeightMap) {
 		delete subStageHeightMap;
@@ -677,7 +681,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					newBumpMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newBumpMapStage);
 				} else if(p.atWord("specularmap")) {
-					p.skipLine();	
+					//p.skipLine();	
+					mtrStage_c *newSpecularMapStage = new mtrStage_c;
+					newSpecularMapStage->setStageType(ST_SPECULARMAP);
+					newSpecularMapStage->setTexture(MAT_ParseImageScript(p));
+					stages.push_back(newSpecularMapStage);
 				} else if(p.atWord("heightmap")) {
 					mtrStage_c *newHeightMapStage = new mtrStage_c;
 					newHeightMapStage->setStageType(ST_HEIGHTMAP);
@@ -979,6 +987,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("normalMap")) {
 						// It's used in Xreal railgun
 						stage->setStageType(ST_BUMPMAP);
+					} else if(p.atWord("specularMap")) {
+						stage->setStageType(ST_SPECULARMAP);
 					} else if(p.atWord("skyboxMap")) {
 						// it's used in material textures/mawi/mawi_sky from test_tree.pk3
 						// It's a modern replacement for old Q3 "skyparms" keyword
@@ -1410,13 +1420,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				colorMapStage->setSubStageBumpMap(bumpMapStage);
 				this->stages.removeObject(bumpMapStage);
 			}
+			mtrStage_c *speclarMapStage = this->getFirstStageOfType(ST_SPECULARMAP);
+			if(speclarMapStage) {
+				colorMapStage->setSubStageSpecularMap(speclarMapStage);
+				this->stages.removeObject(speclarMapStage);
+			}
 			mtrStage_c *heightMapStage = this->getFirstStageOfType(ST_HEIGHTMAP);
 			if(heightMapStage) {
 				colorMapStage->setSubStageHeightMap(heightMapStage);
 				this->stages.removeObject(heightMapStage);
 			}
-
-		//	mtrStage_c *specularMapStage = this->getFirstStageOfType(ST_SPECULARMAP);
 		}
 		this->removeAllStagesOfType(ST_BUMPMAP);
 		this->removeAllStagesOfType(ST_SPECULARMAP);

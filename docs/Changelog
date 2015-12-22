@@ -1,3 +1,6 @@
+12-22-2015 Dusan Jocic <dusanjocic@msn.com>
+	* Added support for specular mapping, without shaders
+
 11-24-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Fixed crash when you open "Command List" in Q3Editor
 	* Fixed the buffer overrun caused by the OpenGL extension string being too long in the editor.

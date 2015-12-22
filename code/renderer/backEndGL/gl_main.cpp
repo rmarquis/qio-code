@@ -80,6 +80,7 @@ static aCvar_c rb_verboseDrawElements("rb_verboseDrawElements","0");
 static aCvar_c rb_ignoreBumpMaps("rb_ignoreBumpMaps","0");
 static aCvar_c rb_ignoreHeightMaps("rb_ignoreHeightMaps","0");
 static aCvar_c rb_ignoreDeluxeMaps("rb_ignoreDeluxeMaps","0");
+static aCvar_c rb_ignoreSpecularMaps("rb_ignoreSpecularMaps","0");
 // use relief mapping raycast function to handle heightMaps
 // (if disabled, a simple bad-looking trick is used instead)
 static aCvar_c rb_useReliefMapping("rb_useReliefMapping","1");
@@ -87,6 +88,7 @@ static aCvar_c rb_showBumpMaps("rb_showBumpMaps","0");
 static aCvar_c rb_showHeightMaps("rb_showHeightMaps","0");
 static aCvar_c rb_showLightMaps("rb_showLightMaps","0");
 static aCvar_c rb_showDeluxeMaps("rb_showDeluxeMaps","0");
+static aCvar_c rb_showSpecularMaps("rb_showSpecularMaps","0");
 static aCvar_c rb_verboseBindShader("rb_verboseBindShader","0");
 static aCvar_c rb_ignoreLightmaps("rb_ignoreLightmaps","0");
 static aCvar_c rb_printFrameTriCounts("rb_printFrameTriCounts","0");
@@ -1414,6 +1416,9 @@ public:
 			if(newShader->sDeluxeMap != -1) {
 				glUniform1i(newShader->sDeluxeMap,4);
 			}
+			if(newShader->sSpecularMap != -1) {
+				glUniform1i(newShader->sSpecularMap,5);
+			}
 			if(newShader->sCubeMap != -1) {
 				glUniform1i(newShader->sCubeMap,0);
 			}
@@ -1893,6 +1898,13 @@ public:
 				} else {
 					bumpMap = s->getBumpMap();
 				}
+				// get the specularmap substage of current stage
+				const mtrStageAPI_i *specularMap;
+				if(rb_ignoreSpecularMaps.getInt()) {
+					specularMap = 0;
+				} else {
+					specularMap = s->getSpecularMap();
+				}
 				// get the heightmap substage of current stage
 				const mtrStageAPI_i *heightMap;
 				if(rb_ignoreHeightMaps.getInt()) {
@@ -1919,6 +1931,12 @@ public:
 						heightMap = 0;
 					}
 					bumpMap = 0;
+				}
+				if(rb_showSpecularMaps.getInt()) {
+					if(specularMap) {
+						s = specularMap;
+						specularMap = 0;
+					}
 				}
 				class cubeMapAPI_i *cubeMap;
 				if(stageType == ST_ENV_CUBEMAP) {
@@ -2039,6 +2057,13 @@ drawOnlyLightmap:
 					bindTex(4,deluxeMap->getInternalHandleU32());
 				} else {
 					unbindTex(4);
+				}
+				// SpecularMap
+				if(specularMap) {
+					textureAPI_i *specularMapTexture = specularMap->getTexture(this->timeNowSeconds);
+					bindTex(5,specularMapTexture->getInternalHandleU32()); //bind specular map texture (texture slot 5)
+				} else {
+					unbindTex(5); //unbind specular map texture (texture slot 5)
 				}
 				// using cubeMap requires GLSL support
 				if(cubeMap && glUseProgram) {
@@ -2238,6 +2263,9 @@ drawOnlyLightmap:
 					if(heightMap) {
 						pf.hasHeightMap = true;
 					}
+					if(specularMap) {
+						pf.hasSpecularMap = true;
+					}
 					pf.useReliefMapping = rb_useReliefMapping.getInt();
 					pf.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();
@@ -2287,6 +2315,9 @@ drawOnlyLightmap:
 					}
 					if(deluxeMap) {
 						glslShaderDesc.hasDeluxeMap = true;
+					}
+					if(specularMap) {
+						glslShaderDesc.hasSpecularMap = true;
 					}
 					if(lastSurfaceColor.isFullBright() == false) {
 						glslShaderDesc.hasMaterialColor = true;
