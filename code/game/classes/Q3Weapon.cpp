@@ -52,19 +52,19 @@ Q3Weapon::~Q3Weapon() {
 		delete railMats;
 }
 void Q3Weapon::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"giTag")) {
+	if(!_stricmp(key,"giTag")) {
 		// "giTag" field of Quake3 gitem_t structure stores weapon type
 		//g_core->Print("Q3Weapon::setKeyValue: giTag: %s\n",value);
-		if(!stricmp(value,"WP_PLASMAGUN")) {
+		if(!_stricmp(value,"WP_PLASMAGUN")) {
 			q3WeaponType = EQ3WPN_PLASMAGUN;
 			this->setDelayBetweenShots(100);
-		} else if(!stricmp(value,"WP_ROCKET_LAUNCHER")) {
+		} else if(!_stricmp(value,"WP_ROCKET_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_ROCKETLAUNCHER;
 			this->setDelayBetweenShots(1000);
-		} else if(!stricmp(value,"WP_SHOTGUN")) {
+		} else if(!_stricmp(value,"WP_SHOTGUN")) {
 			q3WeaponType = EQ3WPN_SHOTGUN;
 			this->setDelayBetweenShots(1000);
-		} else if(!stricmp(value,"WP_RAILGUN")) {
+		} else if(!_stricmp(value,"WP_RAILGUN")) {
 			q3WeaponType = EQ3WPN_RAILGUN;
 			this->setDelayBetweenShots(2000);
 			// use Quake3 railgun materials
@@ -72,7 +72,7 @@ void Q3Weapon::setKeyValue(const char *key, const char *value) {
 			//	railMats = new railgunAttackMaterials_s;
 			//}
 			//railMats->setupQuake3();
-		} else if(!stricmp(value,"WP_GRENADE_LAUNCHER")) {
+		} else if(!_stricmp(value,"WP_GRENADE_LAUNCHER")) {
 			q3WeaponType = EQ3WPN_GRENADE_LAUNCHER;
 			this->setDelayBetweenShots(1000);
 		}	

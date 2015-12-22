@@ -77,10 +77,10 @@ void Weapon::setViewModel(const char *newViewModelName) {
 	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model_view")) {
+	if(!_stricmp(key,"model_view")) {
 		// use this model for first person view
 		this->setViewModel(value);
-	} else if(invWeaponDecl && !stricmp(key,"model") && model_view.length()==0) {
+	} else if(invWeaponDecl && !_stricmp(key,"model") && model_view.length()==0) {
 		// "model" keyword inside a "inv_weapon" entdefs sets the weapons viewModel
 		this->setViewModel(value);
 #if 0
@@ -88,7 +88,7 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		this->setRenderModel(value);
 		this->setColModel(value);
 #endif
-	} else if(!stricmp(key,"inv_weapon")) {	
+	} else if(!_stricmp(key,"inv_weapon")) {	
 		if(invWeaponDecl)
 			return;
 		invWeaponDecl = g_declMgr->registerEntityDecl(value);
@@ -96,46 +96,46 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 			applyKeyValues(invWeaponDecl->getEntDefAPI());
 			invWeaponDecl = 0;
 		}
-	} else if(!stricmp(key,"clipSize")) {
+	} else if(!_stricmp(key,"clipSize")) {
 		clipSize = atoi(value);
 		curClipSize = clipSize;
-	} else if(!stricmp(key,"ddaName")) {
+	} else if(!_stricmp(key,"ddaName")) {
 		ddaName = value;
-	} else if(!stricmp(key,"weaponName")) {
+	} else if(!_stricmp(key,"weaponName")) {
 		weaponName = value;
-	} else if(!stricmp(key,"continuousFire")) {
-	} else if(!stricmp(key,"ammoRequired")) {
-	} else if(!stricmp(key,"ammoType")) {
+	} else if(!_stricmp(key,"continuousFire")) {
+	} else if(!_stricmp(key,"ammoRequired")) {
+	} else if(!_stricmp(key,"ammoType")) {
 
-	} else if(!stricmp(key,"fireRate")) {
+	} else if(!_stricmp(key,"fireRate")) {
 
-	} else if(!stricmp(key,"def_viewStyle")) {
+	} else if(!_stricmp(key,"def_viewStyle")) {
 		// Quake4 (???) viewStyle dict
 		entityDeclAPI_i *viewStyleDef = g_declMgr->registerEntityDecl(value);
 		if(viewStyleDef) {
 			applyKeyValues(viewStyleDef->getEntDefAPI());
 		}
-	} else if(!stricmp(key,"viewoffset")) {
+	} else if(!_stricmp(key,"viewoffset")) {
 		// set from "def_viewStyle" entityDef
 		viewOffset.fromString(value);
-	} else if(!stricmp(key,"viewangles")) {
+	} else if(!_stricmp(key,"viewangles")) {
 		// set from "def_viewStyle" entityDef
 		viewAngles.fromString(value);
-	} else if(!stricmp(key,"def_projectile")) {
+	} else if(!_stricmp(key,"def_projectile")) {
 		def_projectile = value;
-	} else if(!stricmp(key,"smoke_muzzle")) {
+	} else if(!_stricmp(key,"smoke_muzzle")) {
 		smoke_muzzle = value;
-	} else if(!stricmp(key,"flashColor")) {
+	} else if(!_stricmp(key,"flashColor")) {
 		// example usage: "flashColor"	"1 0.8 0.4"
 		flashColor.fromString(value);
-	} else if(!stricmp(key,"flashRadius")) {
+	} else if(!_stricmp(key,"flashRadius")) {
 		// example usage: "flashRadius"	"120"
 		flashRadius = atof(value);
-	} else if(!stricmp(key,"shotBulletCount")) {
+	} else if(!_stricmp(key,"shotBulletCount")) {
 		shotBulletCount = atoi(value);
-	} else if(!stricmp(key,"maxSpread")) {
+	} else if(!_stricmp(key,"maxSpread")) {
 		maxSpread = atof(value);
-	} else if(!stricmp(key,"spreadDist")) {
+	} else if(!_stricmp(key,"spreadDist")) {
 		spreadDist = atof(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);

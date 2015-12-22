@@ -167,7 +167,7 @@ void QE_CheckAutoSave( void )
 		  Sys_Status (strMsg.GetBuffer(0),0);
 
       // only snapshot if not working on a default map
-      if (g_PrefsDlg.m_bSnapShots && stricmp(currentmap, "unnamed.map") != 0)
+      if (g_PrefsDlg.m_bSnapShots && _stricmp(currentmap, "unnamed.map") != 0)
       {
         Map_Snapshot();
       }
@@ -741,7 +741,7 @@ int CheckParm (char *check)
 
 	for (i = 1;i<argc;i++)
 	{
-		if ( stricmp(check, argv[i]) )
+		if ( _stricmp(check, argv[i]) )
 			return i;
 	}
 

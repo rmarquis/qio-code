@@ -1321,28 +1321,28 @@ void LoadImage( const char *name, byte **pic, int *width, int *height )
 		return;
 	}
 
-	if ( !stricmp( name+len-4, ".tga" ) ) 
+	if ( !_stricmp( name+len-4, ".tga" ) ) 
 	{
 		LoadTGA( name, pic, width, height );
 	}
-	else if ( !stricmp(name+len-4, ".pcx") ) 
+	else if ( !_stricmp(name+len-4, ".pcx") ) 
 	{
 		LoadPCX32( name, pic, width, height );
 	} 
-	else if ( !stricmp( name+len-4, ".bmp" ) ) 
+	else if ( !_stricmp( name+len-4, ".bmp" ) ) 
 	{
 		LoadBMP( name, pic, width, height );
 	} 
 #ifdef USE_DEVIL_LIBRARY
-	else if ( !stricmp( name+len-4, ".jpg" ) ) 
+	else if ( !_stricmp( name+len-4, ".jpg" ) ) 
 	{
 		LoadImageJPG( name, pic, width, height ); 
 	}
-	else if ( !stricmp( name+len-4, ".png" ) ) 
+	else if ( !_stricmp( name+len-4, ".png" ) ) 
 	{
 		LoadImagePNG( name, pic, width, height ); 
 	}
-	else if ( !stricmp( name+len-4, ".dds" ) ) 
+	else if ( !_stricmp( name+len-4, ".dds" ) ) 
 	{
 		LoadImageDDS( name, pic, width, height ); 
 	}

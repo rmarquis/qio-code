@@ -34,7 +34,7 @@ Location::Location() {
 	this->setEntityType(ET_INFO_LOCATION);
 }
 void Location::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"name")) {
+	if(!_stricmp(key,"name")) {
 		locationName = value;
 	} else {
 		BaseEntity::setKeyValue(key,value);		

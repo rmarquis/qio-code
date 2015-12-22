@@ -45,7 +45,7 @@ public:
 		return className;
 	}
 	bool hasClassName(const char *c) const {
-		return !stricmp(className,c);
+		return !_stricmp(className,c);
 	}
 	gClassDef_c *getNext() {
 		return nextDef;

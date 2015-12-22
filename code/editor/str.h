@@ -94,7 +94,7 @@ public:
   {
     if (m_pStr)
     {
-      strlwr(m_pStr);
+      _strlwr(m_pStr);
     }
   }
 
@@ -198,12 +198,12 @@ public:
   }
 
 
-  bool operator ==(const Str& rhs) const { return (m_bIgnoreCase) ? stricmp(m_pStr, rhs.m_pStr) == 0 : strcmp(m_pStr, rhs.m_pStr) == 0; }
-  bool operator ==(char* pStr) const { return (m_bIgnoreCase) ? stricmp(m_pStr, pStr) == 0 : strcmp(m_pStr, pStr) == 0; }
-  bool operator ==(const char* pStr) const { return (m_bIgnoreCase) ? stricmp(m_pStr, pStr) == 0 : strcmp(m_pStr, pStr) == 0; }
-  bool operator !=(Str& rhs) const { return (m_bIgnoreCase) ? stricmp(m_pStr, rhs.m_pStr) != 0 : strcmp(m_pStr, rhs.m_pStr) != 0; }
-  bool operator !=(char* pStr) const { return (m_bIgnoreCase) ? stricmp(m_pStr, pStr) != 0 : strcmp(m_pStr, pStr) != 0; }
-  bool operator !=(const char* pStr) const { return (m_bIgnoreCase) ? stricmp(m_pStr, pStr) != 0 : strcmp(m_pStr, pStr) != 0; }
+  bool operator ==(const Str& rhs) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, rhs.m_pStr) == 0 : strcmp(m_pStr, rhs.m_pStr) == 0; }
+  bool operator ==(char* pStr) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, pStr) == 0 : strcmp(m_pStr, pStr) == 0; }
+  bool operator ==(const char* pStr) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, pStr) == 0 : strcmp(m_pStr, pStr) == 0; }
+  bool operator !=(Str& rhs) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, rhs.m_pStr) != 0 : strcmp(m_pStr, rhs.m_pStr) != 0; }
+  bool operator !=(char* pStr) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, pStr) != 0 : strcmp(m_pStr, pStr) != 0; }
+  bool operator !=(const char* pStr) const { return (m_bIgnoreCase) ? _stricmp(m_pStr, pStr) != 0 : strcmp(m_pStr, pStr) != 0; }
   char& operator [](int nIndex) { return m_pStr[nIndex]; }
   char& operator [](int nIndex) const { return m_pStr[nIndex]; }
      

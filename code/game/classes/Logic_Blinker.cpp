@@ -55,9 +55,9 @@ void Logic_Blinker::runFrame() {
 	}
 }
 void Logic_Blinker::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"wait_enabled")) {
+	if(!_stricmp(key,"wait_enabled")) {
 		wait_enabled = atoi(value);
-	} else if(!stricmp(key,"wait_disabled")) {
+	} else if(!_stricmp(key,"wait_disabled")) {
 		wait_disabled = atoi(value);
 	} else {
 		BaseEntity::setKeyValue(key,value);

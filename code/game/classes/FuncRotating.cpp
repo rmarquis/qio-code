@@ -42,7 +42,7 @@ FuncRotating::FuncRotating() {
 }
 
 void FuncRotating::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"y_axis")) {
+	if(!_stricmp(key,"y_axis")) {
 		// "y_axis" "1" is used on Prey's maps/game/shuttlea.map
 		int bYAxis = atoi(value);
 		if(bYAxis) {

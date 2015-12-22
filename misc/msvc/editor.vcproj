@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="editor"
 	ProjectGUID="{2F58DECA-EBEA-4138-B980-BA511AD46B2A}"
 	RootNamespace="editor"
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;MSVC2008_EXPRESS_EDITION_HACK"
+				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -63,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib "
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib devil.lib"
 				OutputFile="..\..\game\system\editorx86.dll"
-				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib"
+				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="editor.def"
 				GenerateDebugInformation="true"
@@ -121,8 +121,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\"
-				PreprocessorDefinitions="MSVC2008_EXPRESS_EDITION_HACK"
+				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\external\gl;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY;"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -141,9 +141,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib devil.lib"
 				OutputFile="..\..\game\system\editorx86.dll"
-				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib"
+				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				IgnoreDefaultLibraryNames="libc.lib msvcrtd.lib"
 				ModuleDefinitionFile="editor.def"
 				GenerateDebugInformation="true"
@@ -768,6 +768,22 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\unzip.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="shared"
+			>
+			<File
+				RelativePath="..\..\code\qcommon\q_platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
 		</Filter>

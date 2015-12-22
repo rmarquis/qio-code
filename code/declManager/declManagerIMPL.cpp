@@ -299,14 +299,14 @@ public:
 	}
 	const animDef_c *findAnimDef(const char *alias) const {
 		for(u32 i = 0; i < anims.size(); i++) {
-			if(!stricmp(anims[i].animAlias,alias)) 
+			if(!_stricmp(anims[i].animAlias,alias)) 
 				return &anims[i];
 		}
 		return 0;
 	}
 	virtual int getAnimIndexForAnimAlias(const char *alias) const {
 		for(u32 i = 0; i < anims.size(); i++) {
-			if(!stricmp(anims[i].animAlias,alias)) 
+			if(!_stricmp(anims[i].animAlias,alias)) 
 				return i;
 		}
 		return -1;
@@ -372,7 +372,7 @@ public:
 			}
 			str key = p.getToken();
 			str val = p.getToken();
-			if(!stricmp(key,"inherit")) {
+			if(!_stricmp(key,"inherit")) {
 				inherit = val;
 			} else {
 				entDef.setKeyValue(key,val);
@@ -758,7 +758,7 @@ void fileTextDataCache_c::listDeclNames(class stringList_c &out, const char *dec
 		const char *fileText = f->text.c_str();
 		const char *p = fileText;
 		while(*p) {
-			if(!strnicmp(p,declType,typeLen) && G_isWS(p[typeLen])) {
+			if(!_strnicmp(p,declType,typeLen) && G_isWS(p[typeLen])) {
 				if(p != fileText && G_isWS(p[-1]) == false) {
 					p ++;
 					continue;

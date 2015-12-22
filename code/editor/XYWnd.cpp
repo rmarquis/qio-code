@@ -1149,7 +1149,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 {
 	eclass_s *pecNew;
 	entity_s *petNew;
-	if (stricmp(pName, "worldspawn") == 0)
+	if (_stricmp(pName, "worldspawn") == 0)
 	{
 		MessageBox(g_qeglobals.d_hwndMain, "Can't create an entity with worldspawn.", "info", 0);
 		return;
@@ -1194,7 +1194,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 	//	pEntity = selected_brushes.next->owner;
 	Select_Brush (petNew->brushes.onext);
 	
-	if (stricmp(pName, "misc_model") == 0)
+	if (_stricmp(pName, "misc_model") == 0)
 	{
 		SetInspectorMode(W_ENTITY);
 		PostMessage(g_qeglobals.d_hwndEntity, WM_COMMAND, IDC_BTN_ASSIGNMODEL, 0);

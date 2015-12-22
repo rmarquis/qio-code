@@ -141,12 +141,12 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	}
 	// developers can supress manually some materials for debugging purposes
 	if(rf_ignoreSpecificMaterial.strLen() && rf_ignoreSpecificMaterial.getStr()[0] != '0') {
-		if(!stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {
+		if(!_stricmp(rf_ignoreSpecificMaterial.getStr(),mat->getName())) {
 			return;
 		}
 	}
 	if(rf_ignoreSpecificMaterial2.strLen() && rf_ignoreSpecificMaterial2.getStr()[0] != '0') {
-		if(!stricmp(rf_ignoreSpecificMaterial2.getStr(),mat->getName())) {
+		if(!_stricmp(rf_ignoreSpecificMaterial2.getStr(),mat->getName())) {
 			return;
 		}
 	}
@@ -605,7 +605,7 @@ void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) 
 			continue;
 		//g_core->Print("Found DCS_PORTAL drawCall with material %s (abs index %i)\n",dc.material->getName(),i);
 		// do the automatic mirror for now 
-		if(dc.material->isMirrorMaterial() || !stricmp(dc.material->getName(),"textures/common/mirror2")) {
+		if(dc.material->isMirrorMaterial() || !_stricmp(dc.material->getName(),"textures/common/mirror2")) {
 			//vec3_c center;
 			//dc.verts->getCenter(*dc.indices, center);
 			vec3_c surfaceOrigin = surfacePlane.norm * -surfacePlane.dist;

@@ -82,17 +82,17 @@ void Constraint::finishSpawningConstraint() {
 	}
 }
 void Constraint::processEvent(class eventBaseAPI_i *ev) {
-	if(!stricmp(ev->getEventName(),"finishSpawningConstraint")) {
+	if(!_stricmp(ev->getEventName(),"finishSpawningConstraint")) {
 		finishSpawningConstraint();
 	}
 }
 void Constraint::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"body0")) {
+	if(!_stricmp(key,"body0")) {
 		e0TargetName = value;
-	} else if(!stricmp(key,"body1")) {
+	} else if(!_stricmp(key,"body1")) {
 		e1TargetName = value;
-	} else if(!stricmp(key,"type")) {
-		if(!stricmp(value,"hinge")) {
+	} else if(!_stricmp(key,"type")) {
+		if(!_stricmp(value,"hinge")) {
 			type = PCT_HINGE;
 		}	
 	} else {

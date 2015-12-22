@@ -509,7 +509,7 @@ void mtrIMPL_c::createFromTexturePointer(class textureAPI_i *tex) {
 }
 u16 mtrIMPL_c::readBlendEnum(class parser_c &p) {
 	str token = p.getD3Token();
-#define ADDOPTION(label, value) if(!stricmp(token,label)) return value;
+#define ADDOPTION(label, value) if(!_stricmp(token,label)) return value;
 	ADDOPTION("GL_ONE",BM_ONE)
 	ADDOPTION("GL_ZERO",BM_ZERO) 
 	ADDOPTION("GL_DST_COLOR",BM_DST_COLOR)
@@ -1120,7 +1120,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// FIXME: what's the difference between these two?
 					//p.skipLine();
 					const char *cubeMapName = p.getToken();
-					if(!stricmp(cubeMapName,"nearest_env_cubemap")) {
+					if(!_stricmp(cubeMapName,"nearest_env_cubemap")) {
 						// support 'env_cubemap' system similiar to one in Source Engine.
 						stage->setStageType(ST_ENV_CUBEMAP);
 					} else {

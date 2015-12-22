@@ -38,9 +38,9 @@ class entDef_c : public entDefAPI_i {
 
 public:
 	void setKeyValue(const char *key, const char *value) {
-		if(!stricmp(key,"classname")
+		if(!_stricmp(key,"classname")
 			// NOTE: "spawnclass" keyword is used in Doom3 .def files
-			|| !stricmp(key,"spawnclass")
+			|| !_stricmp(key,"spawnclass")
 			) {
 			this->className = value;
 			return;
@@ -61,7 +61,7 @@ public:
 		return false;
 	}
 	virtual bool hasClassName(const char *s) const {
-		if(!stricmp(className.c_str(),s))
+		if(!_stricmp(className.c_str(),s))
 			return true;
 		return false;
 	}

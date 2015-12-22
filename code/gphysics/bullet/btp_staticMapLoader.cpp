@@ -185,7 +185,7 @@ void btpStaticMapLoader_c::createEmptyMap() {
 }
 bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld_c *pWorld) {
 	this->myPhysWorld = pWorld;
-	if(!stricmp(mapName,"_empty")) {
+	if(!_stricmp(mapName,"_empty")) {
 		createEmptyMap();
 		return false;
 	}

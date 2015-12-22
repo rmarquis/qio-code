@@ -63,7 +63,7 @@ void CG_RunTestModel() {
 	}
 	cg_testModelEntity->setModel(mod);
 	cg_testModelEntity->setAnim(cg_testAnim.getStr());
-	if(cg_testModelParentEntity.strLen() && stricmp(cg_testModelParentEntity.getStr(),"none")) {
+	if(cg_testModelParentEntity.strLen() && _stricmp(cg_testModelParentEntity.getStr(),"none")) {
 		int entNum = atoi(cg_testModelParentEntity.getStr());
 		centity_s *cent = &cg_entities[entNum];
 		if(cent->rEnt) {

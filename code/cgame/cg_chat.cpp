@@ -50,7 +50,7 @@ public:
 			free(lines[0]);
 			lines.remove(0);
 		}
-		lines.push_back(strdup(newString));
+		lines.push_back(_strdup(newString));
 	}
 	void drawChat(u32 x, u32 y, u32 w, u32 h) {
 		y -= h;

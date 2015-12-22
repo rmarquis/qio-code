@@ -265,7 +265,7 @@ const class tableListAPI_i *MAT_GetTablesAPI() {
 matFile_s *MAT_FindMatFileForName(const char *fname) {
 	for(u32 i = 0; i < matFiles.size(); i++) {
 		matFile_s *mf = matFiles[i];
-		if(!stricmp(mf->fname,fname)) {
+		if(!_stricmp(mf->fname,fname)) {
 			return mf;
 		}
 	}
@@ -319,7 +319,7 @@ mtrIMPL_c *MAT_RegisterMaterial(const char *inMatName) {
 	str matName = inMatName;
 	const char *ext = matName.getExt();
 	// strip non-vmt extensions
-	if(ext && stricmp(ext,"vmt")) {
+	if(ext && _stricmp(ext,"vmt")) {
 		matName.stripExtension();
 	}
 	mtrIMPL_c *ret = materials.getEntry(matName);
@@ -373,7 +373,7 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName) {
 		u32 c_reloadedMats = 0;
 		for(u32 i = 0; i < materials.size(); i++) {
 			mtrIMPL_c *m = materials[i];
-			if(!stricmp(m->getSourceFileName(),mtrSourceFileName)) {
+			if(!_stricmp(m->getSourceFileName(),mtrSourceFileName)) {
 				MAT_ReloadSingleMaterial_internal(m);
 				c_reloadedMats++;
 			}

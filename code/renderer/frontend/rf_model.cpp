@@ -275,7 +275,7 @@ class strParmList_c {
 	arraySTD_c<strParm_c> parms;
 	strParm_c *getParmForName(const char *parmName) {
 		for(u32 i = 0; i < parms.size(); i++) {
-			if(!stricmp(parms[i].getName(),parmName)) {
+			if(!_stricmp(parms[i].getName(),parmName)) {
 				return &parms[i];
 			}
 		}
@@ -283,7 +283,7 @@ class strParmList_c {
 	}
 	const strParm_c *getParmForName(const char *parmName) const {
 		for(u32 i = 0; i < parms.size(); i++) {
-			if(!stricmp(parms[i].getName(),parmName)) {
+			if(!_stricmp(parms[i].getName(),parmName)) {
 				return &parms[i];
 			}
 		}
@@ -296,7 +296,7 @@ public:
 	}
 	bool hasKey(const char *keyName) const {
 		for(u32 i = 0; i < parms.size(); i++) {
-			if(!stricmp(parms[i].getName(),keyName)) {
+			if(!_stricmp(parms[i].getName(),keyName)) {
 				return true;
 			}
 		}

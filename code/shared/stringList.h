@@ -60,7 +60,7 @@ public:
 	int findIndex(const char *s) const {
 		for(u32 i = 0; i < list.size(); i++) {
 			const char *check = list[i];
-			if(!stricmp(s,check))
+			if(!_stricmp(s,check))
 				return i;
 		}
 		return -1;
@@ -81,7 +81,7 @@ public:
 	static int CompareStringQSort(const void *v0, const void *v1) {
 		const char *s0 = *((const char **)v0);
 		const char *s1 = *((const char **)v1);
-		return stricmp(s0,s1);
+		return _stricmp(s0,s1);
 	}
 	void sortStrings() {
 		qsort(list.getArray(),list.size(),list.getElementSize(),CompareStringQSort);

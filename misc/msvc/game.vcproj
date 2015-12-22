@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="game"
 	ProjectGUID="{F9EE10DA-2404-4154-B904-F93C936C040A}"
 	RootNamespace="game"
@@ -48,7 +48,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;_CRT_SECURE_NO_DEPRECATE;G_ENABLE_LUA_SCRIPTING"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;G_ENABLE_LUA_SCRIPTING;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)\game.pch"

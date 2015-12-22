@@ -656,7 +656,7 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 
 	// use a small malloc to avoid zone fragmentation
 	cmd = (cmd_function_t*)malloc (sizeof(cmd_function_t));
-	cmd->name = strdup( cmd_name );
+	cmd->name = _strdup( cmd_name );
 	cmd->function = function;
 	cmd->complete = NULL;
 	cmd->next = cmd_functions;

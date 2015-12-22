@@ -61,7 +61,7 @@ public:
 		// link users
 		for(int i = 0; i < users.size(); i++) {
 			iFaceUser_s &u = users[i];
-			if(!stricmp(u.iFaceName,iFaceName)) {
+			if(!_stricmp(u.iFaceName,iFaceName)) {
 				(*u.ptr) = iFace;	
 			}
 		}
@@ -96,7 +96,7 @@ public:
 		// try to link 
 		for(int i = 0; i < providers.size(); i++) {
 			iFaceProvider_s &p = providers[i];
-			if(!stricmp(p.iFaceName,iFaceName)) {
+			if(!_stricmp(p.iFaceName,iFaceName)) {
 				(*nu.ptr) = p.iFace;
 				return; // done, linked
 			}

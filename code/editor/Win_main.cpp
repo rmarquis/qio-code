@@ -59,7 +59,7 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
 	const char *modDir;
 
 	strcpy(src, mapname);
-	strlwr(src);
+	_strlwr(src);
 	in = strstr(src, "maps/");
 	if (!in)
 	{
@@ -168,7 +168,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
   char buff[1024];
   const char* p = reinterpret_cast<const char*>(lParam);
   GetWindowText(hwnd, buff, 1024);
-  if (!strcmpi(p, buff)) {
+  if (!_strcmpi(p, buff)) {
     g_hwndFoundIt = hwnd;
     return 1;
   }

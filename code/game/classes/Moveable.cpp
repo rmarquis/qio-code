@@ -37,7 +37,7 @@ DEFINE_CLASS(Moveable, "ModelEntity");
 DEFINE_CLASS_ALIAS(Moveable, idMoveable);
 
 void Moveable::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model")) {
+	if(!_stricmp(key,"model")) {
 		this->setRenderModel(value);
 		this->setColModel(value);
 	} else {

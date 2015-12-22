@@ -32,7 +32,7 @@ arraySTD_c<hlslShader_c*> dx9_shaders;
 static hlslShader_c *DX9_FindShader(const char *baseName, const hlslPermutationFlags_s &p) {
 	for(u32 i = 0; i < dx9_shaders.size(); i++) {
 		hlslShader_c *s = dx9_shaders[i];
-		if(!stricmp(baseName,s->getName())
+		if(!_stricmp(baseName,s->getName())
 			&& !memcmp(&s->getPermutations(),&p,sizeof(hlslPermutationFlags_s))) {
 			return s;
 		}

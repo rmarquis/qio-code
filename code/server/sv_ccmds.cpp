@@ -165,7 +165,7 @@ static void SV_Map_f( void ) {
 	}
 
 	// "_empty" is a build-in 'map' so we dont have to check filesystem for it
-	if(stricmp(map,"_empty")) {
+	if(_stricmp(map,"_empty")) {
 		// make sure the level exists before trying to change, so that
 		// a typo at the server console won't end the game
 		Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);

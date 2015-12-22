@@ -1122,7 +1122,7 @@ void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) cons
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 	// HACK: ignore collision surfaces from Prey LWO models!
-	if(!stricmp(matName,"textures/common/collision") || !stricmp(matName,"textures/common/collision_metal")) {
+	if(!_stricmp(matName,"textures/common/collision") || !_stricmp(matName,"textures/common/collision_metal")) {
 		return;
 	}
 	r_surface_c *sf;
@@ -1687,7 +1687,7 @@ void r_model_c::addDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, bool
 void r_model_c::setSurfMaterial(const char *surfName, const char *matName) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
-		if(!stricmp(sf->getName(),surfName)) {
+		if(!_stricmp(sf->getName(),surfName)) {
 		//if(!Q_stricmpn(sf->getName(),surfName,strlen(surfName))) {
 			sf->setMaterial(matName);
 		}

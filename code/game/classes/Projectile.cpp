@@ -41,34 +41,34 @@ Projectile::Projectile() {
 	bHasStartVelocitySet = false;
 }
 void Projectile::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model_detonate")) {
+	if(!_stricmp(key,"model_detonate")) {
 
-	} else if(!stricmp(key,"mtr_detonate")) {
+	} else if(!_stricmp(key,"mtr_detonate")) {
 		// decal material?
 		this->setExplosionMarkMaterial(value);
-	} else if(!stricmp(key,"decal_size")) {
+	} else if(!_stricmp(key,"decal_size")) {
 		// decal radius
 		this->setExplosionMarkRadius(atof(value));
-	} else if(!stricmp(key,"smoke_fly")) {
+	} else if(!_stricmp(key,"smoke_fly")) {
 #if 1
 		this->setTrailEmitterMaterial(value);
 		// this will be overriden by Doom3 particle def settings
 		this->setTrailEmitterSpriteRadius(1.f);
 #endif
-	} else if(!stricmp(key,"velocity")) {
+	} else if(!_stricmp(key,"velocity")) {
 		startVelocity = vec3_c(value);
 		bHasStartVelocitySet = true;
-	} else if(!stricmp(key,"def_damage")) {
+	} else if(!_stricmp(key,"def_damage")) {
 		// direct hit damage def
 		def_damage = value;
-	} else if(!stricmp(key,"def_splash_damage")) {
+	} else if(!_stricmp(key,"def_splash_damage")) {
 		// explosion (radius) damage def
 		def_splash_damage = value;
-	} else if(!stricmp(key,"explosionRadius")) {
+	} else if(!_stricmp(key,"explosionRadius")) {
 		setExplosionRadius(atof(value));
-	} else if(!stricmp(key,"explosionSpriteRadius")) {
+	} else if(!_stricmp(key,"explosionSpriteRadius")) {
 		setExplosionSpriteRadius(atof(value));
-	} else if(!stricmp(key,"explosionSpriteMaterial")) {
+	} else if(!_stricmp(key,"explosionSpriteMaterial")) {
 		setExplosionSpriteMaterial(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);

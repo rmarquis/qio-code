@@ -136,7 +136,7 @@ void portalizedBSPTree_c::addPortalToAreas(pbspPortal_c *portal) {
 bool portalizedBSPTree_c::load(const char *fname) {
 	const char *ext = G_strgetExt(fname);
 	bool result;
-	if(!stricmp(ext,"proc")) {
+	if(!_stricmp(ext,"proc")) {
 		result = loadProcFile(fname);
 	} else {
 		result = true;

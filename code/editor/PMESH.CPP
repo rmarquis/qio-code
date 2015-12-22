@@ -4664,7 +4664,7 @@ void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pRepla
 	if (pb->patchBrush)
 	{
 		patchMesh_c *p = pb->pPatch;
-		if (bForce || strcmpi(p->d_texture->name, pFind) == 0)
+		if (bForce || _strcmpi(p->d_texture->name, pFind) == 0)
 		{
 			p->d_texture = Texture_ForName(pReplace);
 			//strcpy(p->d_texture->name, pReplace);

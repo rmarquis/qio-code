@@ -183,7 +183,7 @@ u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<BaseEntity*> &out
 			continue;
 		}
 		const char *entClass = e->ent->getClassName();
-		if(!stricmp(entClass,className)) {
+		if(!_stricmp(entClass,className)) {
 			out.push_back(e->ent);
 		}
 	}	
@@ -208,7 +208,7 @@ class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName) {
 		if(be == 0)
 			continue;
 		const char *beTargetName = be->getTargetName();
-		if(!stricmp(beTargetName,targetName)) {
+		if(!_stricmp(beTargetName,targetName)) {
 			return be;
 		}
 	}
@@ -224,7 +224,7 @@ void G_HideEntitiesWithTargetName(const char *targetName) {
 		if(be == 0)
 			continue;
 		const char *beTargetName = be->getTargetName();
-		if(!stricmp(beTargetName,targetName)) {
+		if(!_stricmp(beTargetName,targetName)) {
 			be->hideEntity();
 		}
 	}
@@ -239,7 +239,7 @@ void G_ShowEntitiesWithTargetName(const char *targetName) {
 		if(be == 0)
 			continue;
 		const char *beTargetName = be->getTargetName();
-		if(!stricmp(beTargetName,targetName)) {
+		if(!_stricmp(beTargetName,targetName)) {
 			be->showEntity();
 		}
 	}
@@ -254,7 +254,7 @@ void G_PostEvent(const char *targetName, int execTime, const char *eventName, co
 		if(be == 0)
 			continue;
 		const char *beTargetName = be->getTargetName();
-		if(!stricmp(beTargetName,targetName)) {
+		if(!_stricmp(beTargetName,targetName)) {
 			be->postEvent(execTime,eventName,arg0,arg1,arg2,arg3);
 		}
 	}

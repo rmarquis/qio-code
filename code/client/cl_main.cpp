@@ -1950,7 +1950,7 @@ void CL_NextDownload(void)
 				ext++;
 			}
 			// do it only for .pk3 files (zip archives)
-			if(!stricmp(ext,"pk3")) {
+			if(!_stricmp(ext,"pk3")) {
 				char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
 				zippath[strlen(zippath)-1] = '\0';
 

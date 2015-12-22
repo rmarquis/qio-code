@@ -41,7 +41,7 @@ struct floatVar_s {
 		value = newValue;
 	}
 	bool hasName(const char *s) const {
-		if(!stricmp(name,s))
+		if(!_stricmp(name,s))
 			return true;
 		return false;
 	}

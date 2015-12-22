@@ -1396,7 +1396,7 @@ void CMainFrame::OnDestroy()
 
 	SaveRegistryInfo("SavedInfo", &g_qeglobals.d_savedinfo, sizeof(g_qeglobals.d_savedinfo));
 
-  if (strcmpi(currentmap, "unnamed.map") != 0)
+  if (_strcmpi(currentmap, "unnamed.map") != 0)
   {
     g_PrefsDlg.m_strLastMap = currentmap;
     g_PrefsDlg.SavePrefs();
@@ -2041,7 +2041,7 @@ void CMainFrame::OnTextureWad(unsigned int nID)
 
 void CMainFrame::OnBspCommand(unsigned int nID) 
 {
-  if (g_PrefsDlg.m_bSnapShots && stricmp(currentmap, "unnamed.map") != 0)
+  if (g_PrefsDlg.m_bSnapShots && _stricmp(currentmap, "unnamed.map") != 0)
     Map_Snapshot();
 
  RunBsp (bsp_commands[LOWORD(nID-CMD_BSPCOMMAND)]);
@@ -2482,7 +2482,7 @@ void CMainFrame::OnBrushFlipx()
 			char buf[16];
 			float a = FloatForKey(b->owner, "angle");
 			a = div( ( 180 - a ) , 180 ).rem;
-			SetKeyValue(b->owner, "angle", itoa(a, buf, 10));
+			SetKeyValue(b->owner, "angle", _itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}
@@ -2518,7 +2518,7 @@ void CMainFrame::OnBrushFlipy()
 				a -= 90;
 			a = (int)a % 360;
 			char buf[16];
-			SetKeyValue(b->owner, "angle", itoa(a, buf, 10));
+			SetKeyValue(b->owner, "angle", _itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}
@@ -4463,7 +4463,7 @@ void CMainFrame::OnPatchTab()
     entity_s * e;
     if (b != &selected_brushes)
     {
-	    if (strcmpi(b->owner->eclass->name, "worldspawn") != 0)
+	    if (_strcmpi(b->owner->eclass->name, "worldspawn") != 0)
       {
         e = b->owner;
         Select_Deselect();

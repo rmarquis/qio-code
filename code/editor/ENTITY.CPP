@@ -48,7 +48,7 @@ char *ValueForKey (entity_s *ent, const char *key)
 
 void TrackMD3Angles(entity_s *e, const char *key, const char *value)
 {
-  if (strcmpi(key, "angle") != 0)
+  if (_strcmpi(key, "angle") != 0)
   {
     return;
   }

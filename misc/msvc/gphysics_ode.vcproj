@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="gphysics_ode"
 	ProjectGUID="{1C76F821-4830-4C55-931A-0802361CD332}"
 	RootNamespace="gphysics_ode"
@@ -41,6 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\ode-r1939\include&quot;"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

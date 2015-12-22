@@ -115,27 +115,27 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 	if(g_baseEntity_debugSetKeyValue.getInt()) {
 		g_core->Print("BaseEntity::setKeyValue: <%s> <%s>\n",key,value);
 	}
-	if(!stricmp(key,"origin")) {
+	if(!_stricmp(key,"origin")) {
 		this->setOrigin(value);
-	} else if(!stricmp(key,"angles")) {
+	} else if(!_stricmp(key,"angles")) {
 		this->setAngles(value);
-	} else if(!stricmp(key,"rotation")) {
+	} else if(!_stricmp(key,"rotation")) {
 		axis_c ax;
 		ax.fromString(value);
 		this->setAngles(ax.toAngles());
-	} else if(!stricmp(key,"angle")) {
+	} else if(!_stricmp(key,"angle")) {
 		// it's used in Q3 maps and somehow
 		// in Prey's game/roadhouse as well
 		float angle = atof(value);
 		this->setAngles(vec3_c(0,angle,0));
-	} else if(!stricmp(key,"targetname")) {
+	} else if(!_stricmp(key,"targetname")) {
 		this->setTargetName(value);
-	} else if(!stricmp(key,"target")) {
+	} else if(!_stricmp(key,"target")) {
 		this->setTarget(value);
-	} else if(!stricmp(key,"parent")) {
+	} else if(!_stricmp(key,"parent")) {
 		this->postEvent(0,"setparent",value,"-1","1");
 		//this->setParent(value,-1,true);
-	} else if(!stricmp(key,"addAttachment")) {
+	} else if(!_stricmp(key,"addAttachment")) {
 		// spawn new entity and attach it to this one
 		char objName[256];
 		char tagName[256];
@@ -148,7 +148,7 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		} else {
 
 		}
-	} else if(!stricmp(key,"setLastAttachmentKeyValue")) {
+	} else if(!_stricmp(key,"setLastAttachmentKeyValue")) {
 		// cast a key-value on the last spawned attachment
 		if(attachments.size() == 0) {
 			g_core->RedWarning("setLastAttachmentKeyValue: entity has no attachments\n");
@@ -192,12 +192,12 @@ void BaseEntity::setEntityType(int newEType) {
 	_myEntityState->eType = newEType;
 }
 void BaseEntity::processEvent(class eventBaseAPI_i *ev) {
-	if(!stricmp(ev->getEventName(),"setparent")) {
+	if(!_stricmp(ev->getEventName(),"setparent")) {
 		const char *targetName = ev->getArg(0);
 		const char *tag = ev->getArg(1);
 		const char *enableLocalOffset = ev->getArg(2);
 		this->setParent(targetName,atoi(tag),atoi(enableLocalOffset));
-	} else if(!stricmp(ev->getEventName(),"remove")) {
+	} else if(!_stricmp(ev->getEventName(),"remove")) {
 		bMarkedForDelete = true;
 	}
 }	
@@ -257,7 +257,7 @@ u32 BaseEntity::getEntNum() const {
 }
 bool BaseEntity::hasClassName(const char *className) const {
 	const char *cn = getClassName();
-	return !stricmp(cn,className);
+	return !_stricmp(cn,className);
 }
 const char *BaseEntity::getTargetName() const {
 	return targetName;
@@ -399,7 +399,7 @@ u32 BaseEntity::getTouchingArea(u32 localIdx) const {
 }
 // for lua wrapper
 bool BaseEntity::addLuaEventHandler(struct lua_State *L, const char *eventName, int func) {
-	if(!stricmp(eventName,"runFrame")) {
+	if(!_stricmp(eventName,"runFrame")) {
 		lua_runFrameHandlers.addEventHandler(L,func);
 		return false;
 	} 

@@ -357,7 +357,7 @@ void rEntityImpl_c::setQ3TorsoAnimLocalIndex(int localAnimIndex) {
 	q3AnimCtrl->setTorsoAnim(localAnimIndex,model);
 }
 void rEntityImpl_c::setSkin(const char *newSkinName) {
-	if(!stricmp(newSkinName,this->skinName)) {
+	if(!_stricmp(newSkinName,this->skinName)) {
 		return; // no change
 	}
 	this->skinName = newSkinName;

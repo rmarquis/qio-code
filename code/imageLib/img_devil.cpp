@@ -325,23 +325,23 @@ imgType_s img_types [] = {
 
 int ILTypeForExt(const char *s)
 {
-	if(!stricmp(s,"tga"))
+	if(!_stricmp(s,"tga"))
 		return IL_TGA;
-	if(!stricmp(s,"jpg"))
+	if(!_stricmp(s,"jpg"))
 		return IL_JPG;
-	if(!stricmp(s,"bmp"))
+	if(!_stricmp(s,"bmp"))
 		return IL_BMP;
-	if(!stricmp(s,"dds"))
+	if(!_stricmp(s,"dds"))
 		return IL_DDS;
-	if(!stricmp(s,"ftx"))
+	if(!_stricmp(s,"ftx"))
 		return IL_FTX;
-	if(!stricmp(s,"png"))
+	if(!_stricmp(s,"png"))
 		return IL_PNG;
-	if(!stricmp(s,"vtf"))
+	if(!_stricmp(s,"vtf"))
 		return IL_VTF;
-	if(!stricmp(s,"wal"))
+	if(!_stricmp(s,"wal"))
 		return IL_WAL;
-	if(!stricmp(s,"gif"))
+	if(!_stricmp(s,"gif"))
 		return IL_GIF;
 	g_core->Print("WARNING: unknown image file extension %s \n",s);
 	return IL_TGA;
@@ -379,7 +379,7 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 
 	ext = s.getExt();
 
-	if(1 && !stricmp(ext,"tga")) {
+	if(1 && !_stricmp(ext,"tga")) {
 		// devil tga loader swaps colors....
 		IMG_LoadTGA( s, imageData, buf, width, height ); 
 		g_vfs->FS_FreeFile(buf);
@@ -387,7 +387,7 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 		return lastValidFName;
 	}
 #ifdef IMAGE_USE_VTF_LIB
-	if(1 && !stricmp(ext,"vtf")) {
+	if(1 && !_stricmp(ext,"vtf")) {
 		// we have a better loader for vtf...
 		// Devil VTF loader cant load SOME OF vtf types
 		IMG_LoadVTF(s,buf,len,imageData,width,height);

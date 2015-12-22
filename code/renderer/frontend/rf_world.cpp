@@ -98,7 +98,7 @@ const char *RF_GetWorldMapName() {
 }
 bool RF_LoadWorldMap(const char *name) {
 	RF_ClearWorldMap();
-	if(!stricmp(name,"_empty")) {
+	if(!_stricmp(name,"_empty")) {
 		RF_CreateEmptyMap();
 		return false;
 	}
@@ -110,7 +110,7 @@ bool RF_LoadWorldMap(const char *name) {
 		return true;
 	}
 	r_worldMapName = "_nomap";
-	if(!stricmp(ext,"bsp")) {
+	if(!_stricmp(ext,"bsp")) {
 		// Q3/RTCW/ET/MoH/CoD .bsp file
 		r_bspTree = RF_LoadBSP(name);
 		if(r_bspTree) {
@@ -118,7 +118,7 @@ bool RF_LoadWorldMap(const char *name) {
 			return false; // ok
 		}
 		return true; // error
-	} else if(!stricmp(ext,"proc")) {
+	} else if(!_stricmp(ext,"proc")) {
 		// Doom3 / Quake4 .proc
 		r_procTree = RF_LoadPROC(name);
 		if(r_procTree) {
@@ -126,7 +126,7 @@ bool RF_LoadWorldMap(const char *name) {
 			return false; // ok
 		}
 		return true; // error
-	} else if(!stricmp(ext,"procb")) {
+	} else if(!_stricmp(ext,"procb")) {
 		// ETQW binary .proc
 		r_procTree = RF_LoadPROCB(name);
 		if(r_procTree) {
@@ -134,7 +134,7 @@ bool RF_LoadWorldMap(const char *name) {
 			return false; // ok
 		}
 		return true; // error
-	} else if(!stricmp(ext,"map")) {
+	} else if(!_stricmp(ext,"map")) {
 		// load .map file directly
 		r_worldModel = RF_LoadMAPFile(name);
 		if(r_worldModel) {

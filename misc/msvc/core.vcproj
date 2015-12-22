@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="core"
 	ProjectGUID="{81CB51C4-B434-4E12-B69B-BAEE102F2852}"
 	RootNamespace="core"
@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\code\SDL12\include;..\..\code\;..\..\code\libcurl;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib"
-				PreprocessorDefinitions="_WIN32; WIN32; _DEBUG; _WINDOWS; _CRT_SECURE_NO_DEPRECATE; BOTLIB; USE_ICON; USE_CURL; USE_CURL_DLOPEN; USE_OPENAL; USE_OPENAL_DLOPEN; USE_VOIP; HAVE_CONFIG_H;USE_INTERNAL_JPEG"
+				PreprocessorDefinitions="_WIN32;WIN32;_DEBUG;_WINDOWS;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;HAVE_CONFIG_H;USE_INTERNAL_JPEG;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)\core.pch"

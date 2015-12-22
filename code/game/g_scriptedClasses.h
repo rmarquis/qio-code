@@ -42,7 +42,7 @@ public:
 		
 	}
 	void setKeyValue(const char *key, const char *value) {
-		if(!stricmp(key,"classname")) {
+		if(!_stricmp(key,"classname")) {
 			this->className = value;
 		} else {
 			keyValues.set(key,value);

@@ -1667,7 +1667,7 @@ brush_s *Brush_Parse (void)
 			break;
 		
 		// handle "Brush" primitive
-		if (strcmpi(token, "brushDef") == 0)
+		if (_strcmpi(token, "brushDef") == 0)
 		{
 			// Timo parsing new brush format
 			g_qeglobals.bPrimitBrushes=true;
@@ -1692,12 +1692,12 @@ brush_s *Brush_Parse (void)
         		continue;
 			}
 		}
-		if (strcmpi(token, "patchDef2") == 0 || strcmpi(token, "patchDef3") == 0)
+		if (_strcmpi(token, "patchDef2") == 0 || _strcmpi(token, "patchDef3") == 0)
 		{
 			free (b);
 			
 			// double string compare but will go away soon
-			b = Patch_Parse(strcmpi(token, "patchDef2") == 0);
+			b = Patch_Parse(_strcmpi(token, "patchDef2") == 0);
 			if (b == NULL)
 			{
 				Warning ("parsing patch/brush");

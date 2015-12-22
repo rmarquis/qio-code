@@ -173,9 +173,9 @@ inline float __declspec(naked) __fastcall G_rsqrt3(float x) {
 // quadratic interpolation for n-dimensional vector
 inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, const float *v2, const float *v3, f32 d)
 {
-	const f32 inv = 1.0 - d;
+	const f32 inv = 1.0f - d;
 	const f32 mul0 = inv * inv;
-	const f32 mul1 =  2.0 * d * inv;
+	const f32 mul1 =  2.0f * d * inv;
 	const f32 mul2 = d * d;
 	for(int i = 0; i < rows; i++) {
 		out[i] = (v1[i] * mul0 + v2[i] * mul1 + v3[i] * mul2);
