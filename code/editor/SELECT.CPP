@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "qe3.h"
 
+#include <math/math.h>
 
 // externs
 CPtrArray g_SelectedFaces;

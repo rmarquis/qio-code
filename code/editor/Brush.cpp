@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
-
 #include "stdafx.h"
 #include <assert.h>
 #include "qe3.h"
@@ -31,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
-
+#include <math/math.h>
 
 // globals
 
@@ -3326,16 +3325,15 @@ void Brush_Draw( brush_s *b )
 		
 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
 		{
-			// set the texture for this face
-			prev = face->d_texture;
-			//glBindTexture( GL_TEXTURE_2D, face->d_texture->texture_number );
+			for(u32 i = 0; i < temp->getNumStages(); i++) {
+				// set the texture for this face
+				prev = face->d_texture;
 
-			const mtrStageAPI_i *s = temp->getFirstColorMapStage();
-			u32 h = s->getTexture(0)->getInternalHandleU32();
-			glBindTexture( GL_TEXTURE_2D, h );
+				const mtrStageAPI_i *s = temp->getStage(i);
+				u32 h = s->getTexture(0)->getInternalHandleU32();
+				glBindTexture( GL_TEXTURE_2D, h );
+			}
 		}
-		
-		
 		
 		if (!b->patchBrush)
 		{
