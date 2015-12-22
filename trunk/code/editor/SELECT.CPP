@@ -1473,7 +1473,7 @@ void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected
 
 		for (face_s* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
 		{
-			if(bForce || strcmpi(pFace->texdef.name, pFind) == 0)
+			if(bForce || _strcmpi(pFace->texdef.name, pFind) == 0)
 			{
 				pFace->d_texture = Texture_ForName(pReplace);
 				//strcpy(pFace->texdef.name, pReplace);
@@ -1515,7 +1515,7 @@ void Select_AllOfType()
 
       if (b->patchBrush)
       {
-        if (strcmpi(strName, b->pPatch->d_texture->name) == 0)
+        if (_strcmpi(strName, b->pPatch->d_texture->name) == 0)
         {
 			    Brush_RemoveFromList (b);
 			    Brush_AddToList (b, &selected_brushes);
@@ -1525,7 +1525,7 @@ void Select_AllOfType()
       {
         for (face_s* pFace = b->brush_faces; pFace; pFace = pFace->next)
         {
-          if (strcmpi(strName, pFace->texdef.name) == 0)
+          if (_strcmpi(strName, pFace->texdef.name) == 0)
           {
 			      Brush_RemoveFromList (b);
 			      Brush_AddToList (b, &selected_brushes);
@@ -1561,7 +1561,7 @@ void Select_AllOfType()
         e = b->owner;
         if (e != NULL)
         {
-          if (strcmpi(e->eclass->name, strName) == 0)
+          if (_strcmpi(e->eclass->name, strName) == 0)
           {
             bool doIt = true;
             if (bCriteria) {

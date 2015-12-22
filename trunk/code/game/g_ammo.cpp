@@ -41,7 +41,7 @@ public:
 		printName = npn;
 	}
 	bool hasName(const char *n) const {
-		return !stricmp(n,name);
+		return !_stricmp(n,name);
 	}
 	const char *getName() const {
 		return name;

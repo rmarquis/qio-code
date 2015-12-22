@@ -137,7 +137,7 @@ void setSpecialLoad(eclass_s *e, const char* pWhat, char*& p)
     }
     if (str.GetLength() > 0)
     {         
-      p = strdup(str);
+      p = _strdup(str);
       //--LoadModel(str, e);
     }
   }
@@ -257,22 +257,22 @@ eclass_s *Eclass_InitFromText (const char *text)
 
   // setup show flags
   e->nShowFlags = 0;
-  if (strcmpi(e->name, "light") == 0 || strcmpi(e->name, "light_static") == 0 || strcmpi(e->name, "light_dynamic") == 0)
+  if (_strcmpi(e->name, "light") == 0 || _strcmpi(e->name, "light_static") == 0 || _strcmpi(e->name, "light_dynamic") == 0)
   {
     e->nShowFlags |= ECLASS_LIGHT;
   }
 
-  if (  (strnicmp(e->name, "info_player", strlen("info_player")) == 0)
-      ||(strnicmp(e->name, "path_corner", strlen("path_corner")) == 0) 
-      ||(strnicmp(e->name, "team_ctf", strlen("team_ctf")) == 0) )
+  if (  (_strnicmp(e->name, "info_player", strlen("info_player")) == 0)
+      ||(_strnicmp(e->name, "path_corner", strlen("path_corner")) == 0) 
+      ||(_strnicmp(e->name, "team_ctf", strlen("team_ctf")) == 0) )
   {
     e->nShowFlags |= ECLASS_ANGLE;
   }
-  if (strcmpi(e->name, "path") == 0)
+  if (_strcmpi(e->name, "path") == 0)
   {
     e->nShowFlags |= ECLASS_PATH;
   }
-  if (strcmpi(e->name, "misc_model") == 0)
+  if (_strcmpi(e->name, "misc_model") == 0)
   {
     e->nShowFlags |= ECLASS_MISCMODEL;
   }
@@ -301,7 +301,7 @@ void EClass_InsertSortedList(eclass_s *&pList, eclass_s *e)
 
 
 	s = pList;
-	if (stricmp (e->name, s->name) < 0)
+	if (_stricmp (e->name, s->name) < 0)
 	{
 		e->next = s;
 		pList = e;
@@ -310,7 +310,7 @@ void EClass_InsertSortedList(eclass_s *&pList, eclass_s *e)
 
 	do
 	{
-		if (!s->next || stricmp (e->name, s->next->name) < 0)
+		if (!s->next || _stricmp (e->name, s->next->name) < 0)
 		{
 			e->next = s->next;
 			s->next = e;
@@ -481,7 +481,6 @@ void Eclass_InitForSourceDirectory (char *path)
 
 eclass_s *Eclass_FindExisting (const char *name) {
 	eclass_s	*e;
-	char		init[1024];
 
 	if (!name)
 		return 0;

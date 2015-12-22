@@ -73,7 +73,7 @@ class damageZonesList_c {
 			multipler = 1.f;
 		}
 		bool hasName(const char *s) const {
-			return !stricmp(name.c_str(),s);
+			return !_stricmp(name.c_str(),s);
 		}
 		void setBoneIndices(const arraySTD_c<u32> &newIndices) {
 			boneNumbers = newIndices;
@@ -216,7 +216,7 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	this->link();
 }
 bool ModelEntity::hasRenderModel(const char *checkRModelName) const {
-	if(!stricmp(this->renderModelName,checkRModelName))
+	if(!_stricmp(this->renderModelName,checkRModelName))
 		return true;
 	return false;
 }
@@ -394,16 +394,16 @@ void ModelEntity::printDamageZones() const {
 	}
 }
 void ModelEntity::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model") || !stricmp(key,"rendermodel") || !stricmp(key,"world_model") || !stricmp(key,"model_world")) {
+	if(!_stricmp(key,"model") || !_stricmp(key,"rendermodel") || !_stricmp(key,"world_model") || !_stricmp(key,"model_world")) {
 		this->setRenderModel(value);
 		if(value[0] == '*') {
 			this->setColModel(value);
 		}
-	} else if(!stricmp(key,"model2")) {
+	} else if(!_stricmp(key,"model2")) {
 		this->setRenderModel(value);
-	} else if(!stricmp(key,"cmodel") || !stricmp(key,"collisionmodel")) {
+	} else if(!_stricmp(key,"cmodel") || !_stricmp(key,"collisionmodel")) {
 		this->setColModel(value);
-	} else if(!stricmp(key,"size")) {
+	} else if(!_stricmp(key,"size")) {
 		if(cm) {
 			sizes = vec3_c(value);
 #if 0
@@ -422,17 +422,17 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		} else {
 
 		}
-	} else if(!stricmp(key,"ragdoll")) {
+	} else if(!_stricmp(key,"ragdoll")) {
 		// Doom3 "ragdoll" keyword (name of ArticulatedFigure)
 		this->ragdollDefName = value;
-	} else if(!stricmp(key,"articulatedFigure")) {
+	} else if(!_stricmp(key,"articulatedFigure")) {
 		// I dont really know whats the difference between "ragdoll"
 		// and "articulatedFigure" keywords, they are both used in Doom3
 		// and seem to have the same meaning
 		this->ragdollDefName = value;
-	} else if(!stricmp(key,"anim")) {
+	} else if(!_stricmp(key,"anim")) {
 		this->setAnimation(value);
-	} else if(!stricmp(key,"takeDamage")) {
+	} else if(!_stricmp(key,"takeDamage")) {
 		this->bTakeDamage = atoi(value);
 	} else if(!Q_stricmpn(key,"_articulatedFigureBody",strlen("_articulatedFigureBody"))) {
 		// this is a saved pos/quat of single AF (ragdoll) body
@@ -451,17 +451,17 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		if(initialRagdolPose->size() < bodyIndex + 1) {
 			initialRagdolPose->resize(bodyIndex+1);
 		}
-		if(!stricmp(p,"pos")) {
+		if(!_stricmp(p,"pos")) {
 			vec3_c vec3Value(value);
 			initialRagdolPose->setVec3(bodyIndex,vec3Value);
-		} else if(!stricmp(p,"quat")) {
+		} else if(!_stricmp(p,"quat")) {
 			quat_c quatValue(value);
 			initialRagdolPose->setQuat(bodyIndex,quatValue);
 		}
-	} else if(!stricmp(key,"bUseRModelToCreateDynamicCVXShape")) {
+	} else if(!_stricmp(key,"bUseRModelToCreateDynamicCVXShape")) {
 		this->bUseRModelToCreateDynamicCVXShape = atoi(value);
 		this->bUseDynamicConvexForTrimeshCMod = true;
-	} else if(!strnicmp(key,"damage_zone ",12)) {
+	} else if(!_strnicmp(key,"damage_zone ",12)) {
 		const char *zoneName = key + 12;
 		setDamageZone(zoneName,value);
 	} else {

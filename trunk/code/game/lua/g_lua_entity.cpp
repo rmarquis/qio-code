@@ -389,7 +389,7 @@ static int luaM_toref (lua_State *L, int i)
 
     // convert the function pointer to a string so we can use it as index
     char buf[10] = {0};
-    char * index = itoa ( (int)lua_topointer ( L, i ), buf, 16 );
+    char * index = _itoa ( (int)lua_topointer ( L, i ), buf, 16 );
 
     // get the callback table we made in CLuaMain::InitVM (at location 1)
     lua_getref ( L, 1 );

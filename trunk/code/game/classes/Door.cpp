@@ -37,7 +37,7 @@ Door::Door() {
 	bRigidBodyPhysicsEnabled = true;
 }
 void Door::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"angle")) {
+	if(!_stricmp(key,"angle")) {
 		// that's door opening angle and not the ModelEntity orientation angle
 	} else {
 		ModelEntity::setKeyValue(key,value);

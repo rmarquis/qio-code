@@ -346,7 +346,7 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 		{
 			var->flags &= ~CVAR_USER_CREATED;
 			free( var->resetString );
-			var->resetString = strdup( var_value );
+			var->resetString = _strdup( var_value );
 
 			if(flags & CVAR_ROM)
 			{
@@ -356,7 +356,7 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 				if(var->latchedString)
 					free(var->latchedString);
 				
-				var->latchedString = strdup(var_value);
+				var->latchedString = _strdup(var_value);
 			}
 		}
 		
@@ -390,7 +390,7 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 		if ( !var->resetString[0] ) {
 			// we don't have a reset string yet
 			free( var->resetString );
-			var->resetString = strdup( var_value );
+			var->resetString = _strdup( var_value );
 		} else if ( var_value[0] && strcmp( var->resetString, var_value ) ) {
 			Com_DPrintf( "Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n",
 				var_name, var->resetString, var_value );
@@ -436,13 +436,13 @@ cvar_s *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 	if(index >= cvar_numIndexes)
 		cvar_numIndexes = index + 1;
 		
-	var->name = strdup (var_name);
-	var->string = strdup (var_value);
+	var->name = _strdup (var_name);
+	var->string = _strdup (var_value);
 	var->modified = true;
 	var->modificationCount = 1;
 	var->value = atof (var->string);
 	var->integer = atoi(var->string);
-	var->resetString = strdup( var_value );
+	var->resetString = _strdup( var_value );
 	var->validate = false;
 
 	// link the variable in
@@ -585,7 +585,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 			}
 
 			Com_Printf ("%s will be changed upon restarting.\n", var_name);
-			var->latchedString = strdup(value);
+			var->latchedString = _strdup(value);
 			var->modified = true;
 			var->modificationCount++;
 			return var;
@@ -615,7 +615,7 @@ cvar_s *Cvar_Set2( const char *var_name, const char *value, bool force ) {
 	
 	free (var->string);	// free the old value string
 	
-	var->string = strdup(value);
+	var->string = _strdup(value);
 	var->value = atof (var->string);
 	var->integer = atoi (var->string);
 

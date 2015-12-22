@@ -391,7 +391,7 @@ class dx10ShadersSystem_c {
 	dx10Shader_c *findShader(const char *baseName, const dx10ShaderPermutationFlags_s &p) {
 		for(u32 i = 0; i < shaders.size(); i++) {
 			dx10Shader_c *s = shaders[i];
-			if(!stricmp(baseName,s->getName())
+			if(!_stricmp(baseName,s->getName())
 				&& !memcmp(&s->getPermutations(),&p,sizeof(dx10ShaderPermutationFlags_s))) {
 				return s;
 			}

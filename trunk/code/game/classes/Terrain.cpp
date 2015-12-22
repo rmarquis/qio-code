@@ -34,7 +34,7 @@ Terrain::Terrain() {
 	mass = 0.f;
 }
 void Terrain::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"heightmap")) {
+	if(!_stricmp(key,"heightmap")) {
 		this->setRenderModel(value);
 		this->setColModel(value);
 	} else {

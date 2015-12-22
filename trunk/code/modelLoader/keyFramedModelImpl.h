@@ -116,7 +116,7 @@ public:
 	}
 	virtual int getTagIndexForName(const char *tagName) const {
 		for(u32 i = 0; i < tagNames.size(); i++) {
-			if(!stricmp(tagName,tagNames[i])) {
+			if(!_stricmp(tagName,tagNames[i])) {
 				return i;
 			}
 		}

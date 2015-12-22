@@ -648,11 +648,11 @@ void G_LoadQuake3ItemDefs() {
 				const cFieldValue_c *giTypeField = si->findFieldValue(giTypeStrIndex);
 				if(giTypeField) {
 					const char *giTypeStr = giTypeField->getSingleValue();
-					if(!stricmp(giTypeStr,"IT_HEALTH")) {
+					if(!_stricmp(giTypeStr,"IT_HEALTH")) {
 						newClass->setBaseClass("ModelEntity");//"ItemHealth");
-					} else if(!stricmp(giTypeStr,"IT_ARMOR")) {
+					} else if(!_stricmp(giTypeStr,"IT_ARMOR")) {
 						newClass->setBaseClass("ModelEntity");//"ItemArmor");
-					} else if(!stricmp(giTypeStr,"IT_WEAPON")) {
+					} else if(!_stricmp(giTypeStr,"IT_WEAPON")) {
 						//newClass->setBaseClass("ModelEntity");
 						newClass->setBaseClass("Q3Weapon");
 						//if(bFoundWorldModelStr) {

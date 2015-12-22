@@ -583,7 +583,7 @@ void DumpPACKDirectory(FILE *outf, PACKDirPtr dir, UInt16 dirsize)
 	sum = 0L;
 	for (i = 0; i < dirsize; i++)
 	{
-		if(!strnicmp(dir[i].name, "textures", 8))
+		if(!_strnicmp(dir[i].name, "textures", 8))
 		{
    	   strncpy(buf, dir[i].name, 56);
 	      buf[56] = '\0';
@@ -629,7 +629,7 @@ DIRECTORY *FindPakDir(DIRECTORY *dir, char *name)
 
 	for(currentPtr = dir; currentPtr; currentPtr = currentPtr->next)
 	{
-		if(!stricmp(name, currentPtr->name))
+		if(!_stricmp(name, currentPtr->name))
 		{
 			return currentPtr;
 		}
@@ -656,7 +656,7 @@ boolean LoadPK3FileList(FILELIST **filelist, const char *pattern)
   __ExtractFilePath(pattern, cPath);
   __ExtractFileName(pattern, cFile);
   __ExtractFileExtension(pattern, cExt);
-  const char *pCompare = (strnicmp(cFile, "*.", 2) == 0) ? cExt : cFile;
+  const char *pCompare = (_strnicmp(cFile, "*.", 2) == 0) ? cExt : cFile;
   strcpy(cWork, cPath);
   sprintf(cPath, "textures/%s", cWork);
 
@@ -735,7 +735,7 @@ boolean GetPackTextureDirs(DIRLIST **dirlist)
 
 	for (i = 0; i < dirsize; i++)
 	{
-		if(!strnicmp(pakdirptr[i].name, "textures", 8))
+		if(!_strnicmp(pakdirptr[i].name, "textures", 8))
 		{
 			strncpy(buf, &(pakdirptr[i].name[9]), 46);
 			if(strchr(buf, '\\'))
@@ -758,10 +758,10 @@ boolean AddToDirListAlphabetized(DIRLIST **list, char *dirname, int from)
 {
 	DIRLIST	*currentPtr, *previousPtr, *newPtr;
 
-	strlwr(dirname);
+	_strlwr(dirname);
 	for(currentPtr = *list; currentPtr; currentPtr = currentPtr->next)
 	{
-		if(!stricmp(dirname, currentPtr->dirname))
+		if(!_stricmp(dirname, currentPtr->dirname))
 		{
 			return false;
 		}
@@ -775,7 +775,7 @@ boolean AddToDirListAlphabetized(DIRLIST **list, char *dirname, int from)
 	strcpy(newPtr->dirname, dirname);
 	newPtr->from = from;
 
-	while(currentPtr != NULL && stricmp(dirname, currentPtr->dirname) > 0)
+	while(currentPtr != NULL && _stricmp(dirname, currentPtr->dirname) > 0)
 	{
 		previousPtr = currentPtr;
 		currentPtr = currentPtr->next;
@@ -799,7 +799,7 @@ boolean AddToFileListAlphabetized(FILELIST **list, char *filename, UInt32 offset
 
 	for(currentPtr = *list; currentPtr; currentPtr = currentPtr->next)
 	{
-		if(!stricmp(filename, currentPtr->filename))
+		if(!_stricmp(filename, currentPtr->filename))
 		{
 			return false;
 		}
@@ -814,7 +814,7 @@ boolean AddToFileListAlphabetized(FILELIST **list, char *filename, UInt32 offset
 	newPtr->offset = offset;
 	newPtr->size = size;
 
-	while(currentPtr != NULL && stricmp(filename, currentPtr->filename) > 0)
+	while(currentPtr != NULL && _stricmp(filename, currentPtr->filename) > 0)
 	{
 		previousPtr = currentPtr;
 		currentPtr = currentPtr->next;
@@ -861,7 +861,7 @@ boolean PakLoadFile(const char *filename, void **bufferptr)
   // FIXME: add error handling routines
 	for(p = dummy->files; p; p = p->next)
 	{
-		if(!stricmp(str1, p->filename))
+		if(!_stricmp(str1, p->filename))
 		{
 			if (fseek(pakfile[m_nPAKIndex], p->offset, SEEK_SET) < 0)
 			{
@@ -898,7 +898,7 @@ int PakLoadAnyFile(const char *filename, void **bufferptr)
     Str strFile(filename);
     __ConvertDOSToUnixName(strFile, strFile);
     strFile.MakeLower();
-    strlwr(cWork);
+    _strlwr(cWork);
     FindReplace(strFile, cWork, "");
 
     PK3FileInfo infoFind;
@@ -926,7 +926,7 @@ int PakLoadAnyFile(const char *filename, void **bufferptr)
 
 	for (int i = 0; i < dirsize; i++)
 	{
-		if(!stricmp(filename, pakdirptr[i].name))
+		if(!_stricmp(filename, pakdirptr[i].name))
 		{
 			if (fseek(pakfile[m_nPAKIndex], pakdirptr[i].offset, SEEK_SET) >= 0)
       {
@@ -955,7 +955,7 @@ DIRECTORY *AddPakDir(DIRECTORY **dir, char *name)
 
 	for(currentPtr = *dir; currentPtr; currentPtr = currentPtr->next)
 	{
-		if(!stricmp(name, currentPtr->name))
+		if(!_stricmp(name, currentPtr->name))
 		{
 			return currentPtr;
 		}
@@ -969,7 +969,7 @@ DIRECTORY *AddPakDir(DIRECTORY **dir, char *name)
 	strcpy(newPtr->name, name);
 	newPtr->files = NULL;
 
-	while(currentPtr != NULL && stricmp(name, currentPtr->name) > 0)
+	while(currentPtr != NULL && _stricmp(name, currentPtr->name) > 0)
 	{
 		previousPtr = currentPtr;
 		currentPtr = currentPtr->next;
@@ -1008,7 +1008,7 @@ boolean OpenPK3(const char *filename)
     {
       cFilename[0] = '\0';
       unzGetCurrentFileInfo(*zFile, &zInfo, cFilename, WORK_LEN, NULL, 0, NULL, 0);
-      strlwr(cFilename);
+      _strlwr(cFilename);
     	__ConvertDOSToUnixName( cWork, cFilename);
       if (strstr(cWork, ".") != NULL)
       {
@@ -1036,7 +1036,7 @@ boolean OpenPK3(const char *filename)
           StrList *pl = g_PK3TexturePaths.Next();
           while (pl != NULL)
           {
-            if (strcmpi(pl->Ref(), cName) == 0)
+            if (_strcmpi(pl->Ref(), cName) == 0)
             {
               // already have this, continue
               bFound = true;
@@ -1108,7 +1108,7 @@ void OpenPakFile(const char *filename)
 	}
 	for (i = 0; i < dirsize; i++)
 	{
-		if(!strnicmp("textures/", pakdirptr[i].name, 9))
+		if(!_strnicmp("textures/", pakdirptr[i].name, 9))
 		{
 			dummy = paktextures;
 			str1 = pakdirptr[i].name+9;
@@ -1122,7 +1122,7 @@ void OpenPakFile(const char *filename)
 
 			AddToFileListAlphabetized(&(dummy->files), str1, pakdirptr[i].offset, pakdirptr[i].size, true);
 		}
-		else if(!strnicmp("pics/colormap.pcx", pakdirptr[i].name, 17))
+		else if(!_strnicmp("pics/colormap.pcx", pakdirptr[i].name, 17))
 		{
 			HavePakColormap = true;
 			PakColormapOffset = pakdirptr[i].offset;

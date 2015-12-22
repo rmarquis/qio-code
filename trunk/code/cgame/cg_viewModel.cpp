@@ -213,20 +213,20 @@ void CG_RunViewModel() {
 		return;
 	}
 	// add hardcoded gun offset
-	if(!stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
-		|| !stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
-		|| !stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
-		|| !stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
+	if(!_stricmp(viewModel->getName(),"models/weapons2/plasma/plasma.md3")
+		|| !_stricmp(viewModel->getName(),"models/weapons2/railgun/railgun.md3")
+		|| !_stricmp(viewModel->getName(),"models/weapons2/rocketl/rocketl.md3")
+		|| !_stricmp(viewModel->getName(),"models/weapons2/shotgun/shotgun.md3")
 		// it could be better for grenade launcher
-		|| !stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
+		|| !_stricmp(viewModel->getName(),"models/weapons2/grenadel/grenadel.md3")) {
 		localOfs.set(5,-5,-10);
-	} else if(!stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
+	} else if(!_stricmp(viewModel->getName(),"models/weapons/w_physics.mdl")) {
 		// Half Life2 physgun (for weapon_physgun)
 		// "w_*" is a worldmodel
 		// set 90 yaw rotation (around Z axis)
 		localRot.set(0,0,90);
 		localOfs.set(5,-5,-10);
-	} else if(!stricmp(viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
+	} else if(!_stricmp(viewModel->getName(),"models/weapons/v_physcannon.mdl")) {
 		// "v_*" is a viewmodel
 #if 0
 		localRot.set(0,15,90);
@@ -302,15 +302,15 @@ void CG_RunViewModel() {
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);
 	int viewModelAnimFlags;
-	if(stricmp(cg_forceViewModelAnimationFlags.getStr(),"none")) {
+	if(_stricmp(cg_forceViewModelAnimationFlags.getStr(),"none")) {
 		viewModelAnimFlags = cg_forceViewModelAnimationFlags.getInt();
 	} else {
 		viewModelAnimFlags = cg.snap->ps.viewModelAnimFlags;
 	}
-	if(stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
+	if(_stricmp(cg_forceViewModelAnimationIndex.getStr(),"none")) {
 		int index = cg_forceViewModelAnimationIndex.getInt();
 		cg_viewModelEntity->setDeclModelAnimLocalIndex(index,viewModelAnimFlags);
-	} else if(stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
+	} else if(_stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
 		const char *animName = cg_forceViewModelAnimationName.getStr();
 		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
 	} else {

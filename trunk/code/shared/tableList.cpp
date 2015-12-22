@@ -34,7 +34,7 @@ bool table_c::parse(const char *at, const char *textBase, const char *sourceFile
 	bSnap = false;
 	while(p.atWord_dontNeedWS("{") == false) {
 		const char *parm = p.getToken();
-		if(!stricmp(parm,"snap")) {
+		if(!_stricmp(parm,"snap")) {
 			bSnap = true;
 		} else {
 			g_core->RedWarning("table_c::parse: table %s from file %s has unknown modifier '%s'.\n",

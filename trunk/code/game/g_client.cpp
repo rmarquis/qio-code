@@ -322,14 +322,14 @@ void ClientCommand( int clientNum ) {
 	}
 
 	const char *cmd = g_core->Argv(0);
-	if(!stricmp(cmd,"noclip")) {
+	if(!_stricmp(cmd,"noclip")) {
 		pl->toggleNoclip();
-	} else if(!stricmp(cmd,"shootbox")) {
+	} else if(!_stricmp(cmd,"shootbox")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
 		G_SpawnRandomBoxAt(p,pl->getAngles());
-	} else if(!stricmp(cmd,"createboxstack")) {
+	} else if(!_stricmp(cmd,"createboxstack")) {
 		vec3_c p = pl->getOrigin();
 		//p.z += float(pl->getViewHeight())*0.5;
 		p.z += 32;
@@ -347,7 +347,7 @@ void ClientCommand( int clientNum ) {
 		G_SpawnRandomBoxAt(p-left*boxSize*0.5+up*boxSize,angles);
 		// top box
 		G_SpawnRandomBoxAt(p+up*boxSize*2.f,angles);
-	} else if(!stricmp(cmd,"createkubelwagen") || !stricmp(cmd,"createporshe")) {
+	} else if(!_stricmp(cmd,"createkubelwagen") || !_stricmp(cmd,"createporshe")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 128.f;
@@ -357,7 +357,7 @@ void ClientCommand( int clientNum ) {
 		VehicleCar *veh = new VehicleCar;
 		veh->setOrigin(p);
 		veh->setAngles(angles);
-		if(!stricmp(cmd,"createkubelwagen")) {
+		if(!_stricmp(cmd,"createkubelwagen")) {
 			veh->setRenderModel("models/vehicles/kubeldakwre/kubeldakwre.obj");
 			veh->setColModel("models/vehicles/kubeldakwre/kubeldakwre.map");
 		} else {
@@ -365,7 +365,7 @@ void ClientCommand( int clientNum ) {
 			veh->setColModel("models/vehicles/Porsche_911/porsche-911.map");
 		}
 		veh->spawnPhysicsVehicle();
-	} else if(!stricmp(cmd,"createbarrel")) {
+	} else if(!_stricmp(cmd,"createbarrel")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
@@ -375,7 +375,7 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		//e->setAngles(rot);
 		e->initRigidBodyPhysics();
-	} else if(!stricmp(cmd,"spawn")) {
+	} else if(!_stricmp(cmd,"spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			vec3_c spawnPos = pl->getOrigin();
@@ -410,7 +410,7 @@ void ClientCommand( int clientNum ) {
 				model = fixed;
 			}
 			const char *ext = G_strgetExt(model);
-			if(ext && !stricmp(ext,"entDef")) {
+			if(ext && !_stricmp(ext,"entDef")) {
 				BaseEntity *be = G_SpawnFirstEntDefFromFile(model);
 				if(be == 0) {
 					g_core->Print("Failed to spawn %s\n",model.c_str());
@@ -427,7 +427,7 @@ void ClientCommand( int clientNum ) {
 				me->initRigidBodyPhysics();
 			}
 		}
-	} else if(!stricmp(cmd,"spawnStatic")) {
+	} else if(!_stricmp(cmd,"spawnStatic")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(g_vfs->FS_ReadFile(model,0) < 1) {
@@ -454,18 +454,18 @@ void ClientCommand( int clientNum ) {
 			e->setOrigin(p);
 			e->initStaticBodyPhysics();
 		}
-	} else if(!stricmp(cmd,"spawntestbtragdoll")) {
+	} else if(!_stricmp(cmd,"spawntestbtragdoll")) {
 		//vec3_c p = pl->getOrigin();
 		//p.z += pl->getViewHeight();
 		//p += pl->getForward() * 64.f;
 		//BT_TestSpawnInternalRagDoll(p);
-	} else if(!stricmp(cmd,"spawntestaf_old")) {
+	} else if(!_stricmp(cmd,"spawntestaf_old")) {
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
 		G_SpawnTestRagdollFromAF(afName,p,vec3_c(0,0,0));
-	} else if(!stricmp(cmd,"spawntestaf")) {
+	} else if(!_stricmp(cmd,"spawntestaf")) {
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
@@ -475,10 +475,10 @@ void ClientCommand( int clientNum ) {
 		if(e->initRagdollRenderAndPhysicsObject(afName)) {
 			delete e; // failed to initialzie ragdoll
 		}
-	} else if(!stricmp(cmd,"quicksave")) {
+	} else if(!_stricmp(cmd,"quicksave")) {
 		// well, this should be a server command and NOT a client command, but I'll leave it here for testing
 		G_SaveCurrentSceneToMapFile("maps/saves/quicksave.map");
-	} else if(!stricmp(cmd,"tele")) {
+	} else if(!_stricmp(cmd,"tele")) {
 		if(g_core->Argc() >= 3) {
 			vec3_c newPos;
 			newPos.x = atof(g_core->Argv(1));
@@ -486,12 +486,12 @@ void ClientCommand( int clientNum ) {
 			newPos.z = atof(g_core->Argv(3));
 			pl->setOrigin(newPos);
 		}
-	} else if(!stricmp(cmd,"forcePlayerModelChange")) {
+	} else if(!_stricmp(cmd,"forcePlayerModelChange")) {
 		str newPlayerModel = g_core->Argv(1);
 		pl->setPlayerModel(newPlayerModel);
-	} else if(!stricmp(cmd,"kill")) {
+	} else if(!_stricmp(cmd,"kill")) {
 		pl->onDeath();
-	} else if(!stricmp(cmd,"addbot")) {
+	} else if(!_stricmp(cmd,"addbot")) {
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
@@ -509,10 +509,10 @@ void ClientCommand( int clientNum ) {
 		np->enableCharacterController();
 		np->setHealth(100);
 		np->setLeader(pl);
-	} else if(!stricmp(cmd,"removentitiesofclass")) {
+	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!stricmp(cmd,"model_spawn") || !stricmp(cmd,"mdlpp_spawn") || !stricmp(cmd,"mdl_spawn") || !stricmp(cmd,"psk_spawn")) {
+	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -527,7 +527,7 @@ void ClientCommand( int clientNum ) {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
 			}
 		}
-	} else if(!stricmp(cmd,"physics_spawn")) {
+	} else if(!_stricmp(cmd,"physics_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -543,13 +543,13 @@ void ClientCommand( int clientNum ) {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
 			}
 		}
-	} else if(!stricmp(cmd,"say")) {
+	} else if(!_stricmp(cmd,"say")) {
 		char buff[8192];
 		g_core->Args(buff,sizeof(buff));
 		pl->cmdSay(buff);
-	} else if(!stricmp(cmd,"removeLighs")) {
+	} else if(!_stricmp(cmd,"removeLighs")) {
 		G_RemoveEntitiesOfClass("light");
-	} else if(!stricmp(cmd,"net_setWorldSurfaceMaterial")) {
+	} else if(!_stricmp(cmd,"net_setWorldSurfaceMaterial")) {
 		// command used to debug (display) various materials on world surfaces
 		int areaNum = atoi(g_core->Argv(1));
 		int surfaceNum = atoi(g_core->Argv(2));

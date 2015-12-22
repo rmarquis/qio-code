@@ -520,7 +520,7 @@ public:
 		return distSQ(begin) <= f && distSQ(end) <= f;
 	}
 	void fromString(const char *str) {
-		sscanf(str,"%f %f %f",&this->x,&this->y,&this->z);
+		sscanf_s(str,"%f %f %f",&this->x,&this->y,&this->z);
 	}
 	vec3_c lerp(const vec3_c &other, float frac) const {
 		vec3_c ret = *this + frac * (other - *this);

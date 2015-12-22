@@ -112,28 +112,28 @@ public:
 		}
 		ext++;
 		// Wavefront .obj static triangle model
-		if(!stricmp(ext,"obj"))
+		if(!_stricmp(ext,"obj"))
 			return true;
 		// raw .map file that will be converted to trimesh
-		if(!stricmp(ext,"map"))
+		if(!_stricmp(ext,"map"))
 			return true;
 		// .ASE model (this format is used in Doom3)
-		if(!stricmp(ext,"ase"))
+		if(!_stricmp(ext,"ase"))
 			return true;
 		// we can load heightmaps here as well
-		if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp"))
+		if(!_stricmp(ext,"png") || !_stricmp(ext,"jpg") || !_stricmp(ext,"tga") || !_stricmp(ext,"bmp"))
 			return true;
 		// Quake3 .md3 models (without animations; only first frame is loaded)
-		if(!stricmp(ext,"md3"))
+		if(!_stricmp(ext,"md3"))
 			return true;
 		// LWO, used in Doom3 along with ASE
-		if(!stricmp(ext,"lwo"))
+		if(!_stricmp(ext,"lwo"))
 			return true;
 		// HL2 (Source Engine) .mdl (without animations)
-		if(!stricmp(ext,"mdl"))
+		if(!_stricmp(ext,"mdl"))
 			return true;
 		// models can be created by mdlpp script
-		if(!stricmp(ext,"mdlpp"))
+		if(!_stricmp(ext,"mdlpp"))
 			return true;
 		return false;
 	}
@@ -185,27 +185,27 @@ public:
 		}
 		ext++; // skip '.'
 		bool error;
-		if(!stricmp(ext,"obj")) {
+		if(!_stricmp(ext,"obj")) {
 			error = MOD_LoadOBJ(fname,out);
-		} else if(!stricmp(ext,"ase")) {
+		} else if(!_stricmp(ext,"ase")) {
 			error = MOD_LoadASE(fname,out);
-		} else if(!stricmp(ext,"map")) {
+		} else if(!_stricmp(ext,"map")) {
 			error = MOD_LoadConvertMapFileToStaticTriMesh(fname,out);
-		} else if(!stricmp(ext,"png") || !stricmp(ext,"jpg") || !stricmp(ext,"tga") || !stricmp(ext,"bmp")) {
+		} else if(!_stricmp(ext,"png") || !_stricmp(ext,"jpg") || !_stricmp(ext,"tga") || !_stricmp(ext,"bmp")) {
 			error = MOD_LoadModelFromHeightmap(fname,out);
-		} else if(!stricmp(ext,"md3")) {
+		} else if(!_stricmp(ext,"md3")) {
 			// load md3 as static model (first animation frame)
 			error = MOD_LoadStaticMD3(fname,out);
-		} else if(!stricmp(ext,"lwo")) {
+		} else if(!_stricmp(ext,"lwo")) {
 			error = MOD_LoadLWO(fname,out);
-		} else if(!stricmp(ext,"mdl")) {
+		} else if(!_stricmp(ext,"mdl")) {
 			hl2MDLReader_c r;
 			if(r.beginReading(fname) == false) {
 				error = r.getStaticModelData(out);
 			} else {
 				error = true;
 			}
-		} else if(!stricmp(ext,"mdlpp")) {
+		} else if(!_stricmp(ext,"mdlpp")) {
 			error = MOD_CreateModelFromMDLPPScript(fname,out);
 		} else {
 			error = true;
@@ -213,7 +213,7 @@ public:
 		if(error == false) {
 			// apply model postprocess steps (scaling, rotating, etc)
 			// defined in optional .mdlpp file
-			if(stricmp(ext,"mdlpp")) {
+			if(_stricmp(ext,"mdlpp")) {
 				MOD_ApplyPostProcess(fname,out);
 			}
 			if(inlinePostProcessCommandMarker) {
@@ -229,17 +229,17 @@ public:
 			return false;
 		}	
 		ext++; // skip '.'
-		if(!stricmp(ext,"md3")) {
+		if(!_stricmp(ext,"md3")) {
 			u32 numFrames = MOD_ReadMD3FileFrameCount(fname);
 			if(numFrames > 1) {
 				return true;
 			}
 		}
-		if(!stricmp(ext,"md2")) {
+		if(!_stricmp(ext,"md2")) {
 			// TODO: read the number of md2 frame?
 			return true;
 		}
-		if(!stricmp(ext,"mdc")) {
+		if(!_stricmp(ext,"mdc")) {
 			// TODO: read the number of mdc frame?
 			return true;
 		}
@@ -262,9 +262,9 @@ public:
 			return false;
 		}
 		ext++;
-		if(!stricmp(ext,"md5mesh"))
+		if(!_stricmp(ext,"md5mesh"))
 			return true;
-		if(!stricmp(ext,"psk"))
+		if(!_stricmp(ext,"psk"))
 			return true;
 		return false;
 	}
@@ -302,7 +302,7 @@ public:
 			return false;
 		}
 		ext++;
-		if(!stricmp(ext,"md5anim"))
+		if(!_stricmp(ext,"md5anim"))
 			return true;
 		return false;
 	}
@@ -313,7 +313,7 @@ public:
 		}
 		ext++; // skip '.'
 		skelAnimAPI_i *ret;
-		if(!stricmp(ext,"md5anim")) {
+		if(!_stricmp(ext,"md5anim")) {
 			skelAnimMD5_c *md5Anim = new skelAnimMD5_c;
 			if(md5Anim->loadMD5Anim(fname)) {
 				delete md5Anim;

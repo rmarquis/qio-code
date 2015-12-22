@@ -54,26 +54,26 @@ void Light::setSpotLightRadius(float newSpotLightRadius) {
 }
 void Light::setKeyValue(const char *key, const char *value) {
 	//g_core->Print("Light::setKeyValue: %s %s\n",key,value);
-	if(!stricmp(key,"light")) {
+	if(!_stricmp(key,"light")) {
 		// Q3 light value
 		float lightKeyValue = atof(value);
 		this->setRadius(lightKeyValue);
-	} else if(!stricmp(key,"radius")) {
+	} else if(!_stricmp(key,"radius")) {
 		// Q3 spot light radius (at target)
 		this->setSpotLightRadius(atof(value));
-	} else if(!stricmp(key,"light_radius")) {
+	} else if(!_stricmp(key,"light_radius")) {
 		// Doom3 light value? 3 values
 		vec3_c sizes(value);
 		// FIXME: 
 		this->setRadius((sizes.x+sizes.y+sizes.z)/3.f);
-	} else if(!stricmp(key,"noshadows")) {
+	} else if(!_stricmp(key,"noshadows")) {
 		int bNoShadows = atoi(value);
 		if(bNoShadows) {
 			this->myEdict->s->lightFlags |= LF_NOSHADOWS;
 		} else {
 			this->myEdict->s->lightFlags &= ~LF_NOSHADOWS;
 		}
-	} else if(!stricmp(key,"bBSPLightingCalculated")) {
+	} else if(!_stricmp(key,"bBSPLightingCalculated")) {
 		// set by our BSP compiler	
 		int bBSPLightingCalculated = atoi(value);
 		if(bBSPLightingCalculated) {
@@ -81,7 +81,7 @@ void Light::setKeyValue(const char *key, const char *value) {
 		} else {
 			this->myEdict->s->lightFlags &= ~LF_HASBSPLIGHTING;
 		}
-	} else if(!stricmp(key,"target")) {
+	} else if(!_stricmp(key,"target")) {
 		// Q3 spotlight target. Used to determine spot direction/range
 		postEvent(0,"light_updateTarget");
 		BaseEntity::setKeyValue(key,value);
@@ -93,7 +93,7 @@ void Light::setKeyValue(const char *key, const char *value) {
 	//		this->myEdict->s->lightFlags &= ~LF_SPOTLIGHT;
 	//	}
 	//	this->myEdict->s->lightTarget = ENTITYNUM_NONE;
-	} else if(!stricmp(key,"_color") || !stricmp(key,"color")) {
+	} else if(!_stricmp(key,"_color") || !_stricmp(key,"color")) {
 		vec3_c color(value);
 		this->myEdict->s->lightFlags |= LF_COLOURED;
 		this->myEdict->s->lightColor = color;
@@ -109,11 +109,11 @@ void Light::getLocalBounds(aabb &out) const {
 	out.fromHalfSize(radius);
 }
 void Light::processEvent(class eventBaseAPI_i *ev) {
-	if(!stricmp(ev->getEventName(),"onMoverReachPos1")
+	if(!_stricmp(ev->getEventName(),"onMoverReachPos1")
 		||
-		!stricmp(ev->getEventName(),"onMoverReachPos2")) {
+		!_stricmp(ev->getEventName(),"onMoverReachPos2")) {
 		toggleEntityVisibility();
-	} else if(!stricmp(ev->getEventName(),"light_updateTarget")) { 
+	} else if(!_stricmp(ev->getEventName(),"light_updateTarget")) { 
 		class BaseEntity *be = G_FindFirstEntityWithTargetName(this->getTarget());
 		if(be == 0) {
 			g_core->RedWarning("Light at %i %i %i couldn't find it's target %s\n",

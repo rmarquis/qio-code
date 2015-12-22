@@ -2022,7 +2022,7 @@ static int FS_AddFileToList( char *name, char *list[MAX_FOUND_FILES], int nfiles
 			return nfiles;		// allready in list
 		}
 	}
-	list[nfiles] = strdup( name );
+	list[nfiles] = _strdup( name );
 	nfiles++;
 
 	return nfiles;
@@ -3341,7 +3341,7 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 		}
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverPakNames[i] = strdup( Cmd_Argv( i ) );
+			fs_serverPakNames[i] = _strdup( Cmd_Argv( i ) );
 		}
 	}
 }
@@ -3386,7 +3386,7 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 			d = c;
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverReferencedPakNames[i] = strdup( Cmd_Argv( i ) );
+			fs_serverReferencedPakNames[i] = _strdup( Cmd_Argv( i ) );
 		}
 	}
 	

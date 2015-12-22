@@ -71,7 +71,7 @@ public:
 		TYPE *ret;
 		for (ret = hashTable[currentHash]; ret; ret = ret->getHashNext()) {
 			//if(compareEntryWithNameStr(ret,entryName))
-			if(!stricmp(ret->getName(),entryName))
+			if(!_stricmp(ret->getName(),entryName))
 				return ret;
 		}
 		return 0;
@@ -83,7 +83,7 @@ public:
 		TYPE *ret;
 		for (ret = hashTable[currentHash]; ret; ret = ret->getHashNext()) {
 			//if(compareEntryWithNameStr(ret,entryName))
-			if(!stricmp(ret->getName(),entryName))
+			if(!_stricmp(ret->getName(),entryName))
 				return ret;
 		}
 		return 0;

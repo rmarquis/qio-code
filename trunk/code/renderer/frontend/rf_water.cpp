@@ -32,7 +32,7 @@ static bool rf_hasGlobalWaterLevel = false;
 static r_surface_c *rf_waterSurface = 0;
 
 void RF_SetWaterLevel(const char *waterLevel) {
-	if(waterLevel == 0 || waterLevel[0] == 0 || !stricmp(waterLevel,"none")) {
+	if(waterLevel == 0 || waterLevel[0] == 0 || !_stricmp(waterLevel,"none")) {
 		rf_hasGlobalWaterLevel = false;
 		rf_waterLevel = -1.f;
 		if(rf_waterSurface) {

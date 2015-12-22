@@ -64,7 +64,7 @@ public:
 		maxs.z = radius;
 	}
 	void fromCapsuleZ(float h, float r) {
-		maxs.z = h * 0.5 + r;
+		maxs.z = h * 0.5f + r;
 		mins.z = -maxs.z;
 		mins.x = mins.y = -r;
 		maxs.x = maxs.y = r;

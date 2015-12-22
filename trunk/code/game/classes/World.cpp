@@ -39,14 +39,14 @@ World::World() {
 	farPlane = 8000.f;
 }
 void World::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"skymaterial")) {
+	if(!_stricmp(key,"skymaterial")) {
 		this->skyMaterial = value;
 		g_server->SetConfigstring(CS_WORLD_SKYMATERIAL, value);
-	} else if(!stricmp(key,"waterlevel")) {
+	} else if(!_stricmp(key,"waterlevel")) {
 		this->waterLevel = atof(value);
 		hasWaterLevel = true;
 		g_server->SetConfigstring(CS_WORLD_WATERLEVEL, value);
-	} else if(!stricmp(key,"farPlane")) {
+	} else if(!_stricmp(key,"farPlane")) {
 		// zFar value
 		this->farPlane = atof(value);
 		//hasFarPlane = true;

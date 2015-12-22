@@ -92,7 +92,7 @@ public:
 		this->mat[2][2] = cr*cp;
 	}	
 	void fromString(const char *str) {
-		sscanf(str,"%f %f %f %f %f %f %f %f %f",&this->mat[0].x,&this->mat[0].y,&this->mat[0].z
+		sscanf_s(str,"%f %f %f %f %f %f %f %f %f",&this->mat[0].x,&this->mat[0].y,&this->mat[0].z
 			,&this->mat[1].x,&this->mat[1].y,&this->mat[1].z,&this->mat[2].x,&this->mat[2].y,&this->mat[2].z);
 	}
 	inline vec3_c&	operator [] (const int index) {

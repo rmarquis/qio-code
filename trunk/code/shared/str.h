@@ -414,7 +414,7 @@ public:
 		const char *ext = this->getExt();
 		if(ext == 0)
 			return false;
-		if(!stricmp(ext,extToCheck))
+		if(!_stricmp(ext,extToCheck))
 			return true;
 		return false;
 	}

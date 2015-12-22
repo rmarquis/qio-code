@@ -380,7 +380,7 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	// check if modName is a fileName
 	const char *ext = G_strgetExt(modName);
 	if(ext) {
-		if(!stricmp(ext,"map")) {
+		if(!_stricmp(ext,"map")) {
 			return CM_LoadModelFromMapFile(modName);
 		} else if(g_modelLoader->isStaticModelFile(modName)) {
 			cmSurface_c *sf = new cmSurface_c;
@@ -396,7 +396,7 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 			delete sf;
 		} else if(g_modelLoader->isSkelModelFile(modName)) {
 			return CM_RegisterSkelModel(modName);
-		} else if(!stricmp(ext,"phy")) {
+		} else if(!_stricmp(ext,"phy")) {
 			return CM_LoadModelFromPHYFile(modName);
 		} else {
 			g_core->RedWarning("CM_RegisterModel: %s has unknown extension\n",modName);

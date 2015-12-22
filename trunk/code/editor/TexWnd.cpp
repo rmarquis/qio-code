@@ -285,7 +285,7 @@ Texture_SetMode
 */
 void Texture_SetMode(int iMenu)
 {
-	int	i, iMode;
+	int iMode;
 	HMENU hMenu;
 	bool texturing = true;
 
@@ -368,7 +368,7 @@ void Texture_SetMode(int iMenu)
 	}
 
 	//for (i=1 ; i<texture_extension_number ; i++)
-	for(i = 0; i   < textureNumbers.size(); i++) 
+	for (u32 i = 0, ilen = textureNumbers.size(); i < ilen; i++)
 	{
 		glBindTexture( GL_TEXTURE_2D, textureNumbers[i] );
 		SetTexParameters ();
@@ -743,11 +743,11 @@ void LoadShader(char* pFilename, qtexture_t *q)
           {
             nMatch--;
           }
-          else if (strcmpi(token, "qer_nocarve") == 0)
+          else if (_strcmpi(token, "qer_nocarve") == 0)
           {
             pShader->m_nFlags |= QER_NOCARVE;
           }
-          else if (strcmpi(token, "qer_trans") == 0)
+          else if (_strcmpi(token, "qer_trans") == 0)
           {
             if (GetToken(true))
             {
@@ -755,7 +755,7 @@ void LoadShader(char* pFilename, qtexture_t *q)
             }
             pShader->m_nFlags |= QER_TRANS;
           }
-          else if (strcmpi(token, "qer_editorimage") == 0)
+          else if (_strcmpi(token, "qer_editorimage") == 0)
           {
             if (GetToken(true))
             {
@@ -785,7 +785,7 @@ void LoadShader(char* pFilename, qtexture_t *q)
               }
             }
           }
-          else if (strcmpi(token, "surfaceparm") == 0)
+          else if (_strcmpi(token, "surfaceparm") == 0)
           {
             //--while (GetToken(false))
             //--{
@@ -798,7 +798,7 @@ void LoadShader(char* pFilename, qtexture_t *q)
               //--{
               //--  fTrans = 0.33;
               //--}
-              if (strcmpi(token, "fog") == 0)
+              if (_strcmpi(token, "fog") == 0)
               {
                 if (fTrans == 1.0) // has not been explicitly set by qer_trans
                 {
@@ -992,7 +992,6 @@ Texture_ForName
 //an already loaded texture
 qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool bNoAlpha, bool bReload, bool makeShader)
 {
-  byte    *lump;
 	qtexture_t	*q = NULL;
 	char	filename[1024];
 	
@@ -1211,7 +1210,6 @@ Texture_ForNamePath
 */
 qtexture_t *Texture_ForNamePath(char* name, char* pFullPath)
 {
-  byte    *lump;
 	qtexture_t	*q;
 	char	filename[1024];
 
@@ -1796,7 +1794,7 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 				nPos = strName.Find('/');
 			if (nPos >= 0)
 				strName = strName.Right(strName.GetLength() - nPos - 1);
-			if (strnicmp(g_strFilter.GetBuffer(0), strName, g_strFilter.GetLength()) == 0)
+			if (_strnicmp(g_strFilter.GetBuffer(0), strName, g_strFilter.GetLength()) == 0)
 				break;
 			else
 				continue;
@@ -1810,7 +1808,7 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 		if (q->inuse)
 			break;			// always show in use
 
-		if (!texture_showinuse && !strnicmp (q->name, texture_directory, strlen(texture_directory)))
+		if (!texture_showinuse && !_strnicmp (q->name, texture_directory, strlen(texture_directory)))
 			break;
 		continue;
 	}
@@ -1899,7 +1897,7 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 
     int nWidth =q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
     int nHeight = q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-		if (!strcmpi(texdef->name, q->name))
+		if (!_strcmpi(texdef->name, q->name))
 		{
 			if (y > g_qeglobals.d_texturewin.originy)
 			{
@@ -2229,7 +2227,7 @@ void Texture_Draw2 (int width, int height)
 			glEnd ();
 
 			// draw the selection border
-			if (!strcmpi(g_qeglobals.d_texturewin.texdef.name, q->name))
+			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.name, q->name))
 			{
 				glLineWidth (3);
 				glColor3f (1,0,0);
@@ -2283,7 +2281,6 @@ void Texture_Draw2 (int width, int height)
 
 void Texture_Init (bool bHardInit)
 {
-	char	name[1024];
 	byte	*pal = NULL;
 
 	// create the fallback texture
@@ -2373,7 +2370,8 @@ void Texture_Flush (bool bReload)
   delete []pGln;*/
  // texture_extension_number = 1;
 
-  for(int i = 0; i < textureNumbers.size(); i++) {
+  //for(int i = 0; i < textureNumbers.size(); i++) {
+  for (u32 i = 0, ilen = textureNumbers.size(); i < ilen; i++) {
 	  glDeleteTextures(1,&textureNumbers[i]);
   }
   textureNumbers.clear();
@@ -2814,17 +2812,18 @@ void LoadShaders()
 
 #else
   char last = path[strlen(path)-1];
- // if(last == '/' || last == '\\') {
-	//sprintf (dirstring, "%sscripts/*.shader", path);
- // } else {
-	//sprintf (dirstring, "%s/scripts/*.shader", path);
- // } 
+//  if(last == '/' || last == '\\') {
+//	sprintf (dirstring, "%sscripts/*.shader", path);
+//  } else {
+//	sprintf (dirstring, "%s/scripts/*.shader", path);
+//  } 
   if(last == '/' || last == '\\') {
 	sprintf (dirstring, "%smaterials/*.mtr", path);
   } else {
 	sprintf (dirstring, "%s/materials/*.mtr", path);
   }
-  for(int i = 0; i < strlen(dirstring); i++) {
+  //for(int i = 0; i < strlen(dirstring); i++) {
+  for (u32 i = 0, ilen = strlen(dirstring); i < ilen; i++) {
 		if(dirstring[i] == '\\')
 			dirstring[i] = '/';
   }
@@ -2835,7 +2834,7 @@ void LoadShaders()
     {
       if ((fileinfo.attrib & _A_SUBDIR))
         continue;
-     // sprintf(dirstring, "%s/scripts/%s", path, fileinfo.name);
+      //sprintf(dirstring, "%s/scripts/%s", path, fileinfo.name);
       sprintf(dirstring, "%s/materials/%s", path, fileinfo.name);
       LoadShader(dirstring, NULL);
 	  } while (_findnext( handle, &fileinfo ) != -1);

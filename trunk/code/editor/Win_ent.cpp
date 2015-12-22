@@ -708,7 +708,7 @@ void CreateEntity(void)
 
 	SendMessage(hwnd, LB_GETTEXT, i, (LPARAM)sz);
 
-	if (!stricmp(sz, "worldspawn"))
+	if (!_stricmp(sz, "worldspawn"))
 	{
 	    MessageBox(g_qeglobals.d_hwndMain, "Can't create an entity with worldspawn.", "info", 0);
 		return;

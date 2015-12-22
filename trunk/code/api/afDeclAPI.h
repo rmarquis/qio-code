@@ -109,7 +109,7 @@ struct afPublicData_s {
 	int getLocalIndexForBodyName(const char *bodyName) const {
 		const afBody_s *b = bodies.getArray();
 		for(u32 i = 0; i < bodies.size(); i++, b++) {
-			if(!stricmp(b->name,bodyName)) {
+			if(!_stricmp(b->name,bodyName)) {
 				return i;
 			}
 		}

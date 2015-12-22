@@ -144,7 +144,7 @@ void SV_SetConfigstring (int index, const char *val) {
 
 	// change the string in sv
 	free( sv.configstrings[index] );
-	sv.configstrings[index] = strdup( val );
+	sv.configstrings[index] = _strdup( val );
 
 	// send it to all the clients if we aren't
 	// spawning a new server
@@ -535,7 +535,7 @@ void SV_SpawnServer( char *server, bool killBots ) {
 	// wipe the entire per-level structure
 	SV_ClearServer();
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
-		sv.configstrings[i] = strdup("");
+		sv.configstrings[i] = _strdup("");
 	}
 
 	// make sure we are not paused

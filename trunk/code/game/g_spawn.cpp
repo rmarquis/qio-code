@@ -83,7 +83,7 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 		g_core->Print("G_SpawnEntDef: No classname set\n");
 		return 0;
 	}
-	if(!stricmp(className,"worldspawn") || !stricmp(className,"world")) {
+	if(!_stricmp(className,"worldspawn") || !_stricmp(className,"world")) {
 		for(u32 j = 0; j < entDef->getNumKeyValues(); j++) {
 			const char *key, *value;
 			entDef->getKeyValue(j,&key,&value);

@@ -26,7 +26,7 @@ class moduleManagerIMPL_c : public moduleManagerAPI_i {
 	moduleIMPL_c *findModuleInternal(const char *moduleName) {
 		for(u32 i = 0; i < modules.size(); i++) {
 			moduleIMPL_c *m = modules[i];
-			if(!stricmp(moduleName,m->name)) {
+			if(!_stricmp(moduleName,m->name)) {
 				return m;
 			}
 		}

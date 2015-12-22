@@ -115,7 +115,7 @@ void stageTexture_c::uploadTexture() {
 	if(animated) {
 		animated->uploadTextures();
 	}
-	if(mapName.length() == 0 || !stricmp(mapName,"$lightmap")) {
+	if(mapName.length() == 0 || !_stricmp(mapName,"$lightmap")) {
 		return;
 	}
 	if(this->bClamp) {
@@ -169,7 +169,7 @@ bool stageTexture_c::parseAnimMap(parser_c &p) {
 	return animated->parseAnimMap(p);	
 }
 bool stageTexture_c::isLightmap() const {
-	if(!stricmp(mapName,"$lightmap")) {
+	if(!_stricmp(mapName,"$lightmap")) {
 		return true;
 	}
 	return false;

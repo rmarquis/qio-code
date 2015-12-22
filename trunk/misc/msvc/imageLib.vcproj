@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="imageLib"
 	ProjectGUID="{607BEC1E-1C28-4BB2-8B36-71377A41A631}"
 	RootNamespace="imageLib"
@@ -41,6 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

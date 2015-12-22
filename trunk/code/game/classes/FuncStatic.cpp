@@ -37,7 +37,7 @@ FuncStatic::FuncStatic() {
 	this->setEntityType(ET_FUNC_STATIC);
 }
 void FuncStatic::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model")) {
+	if(!_stricmp(key,"model")) {
 		this->setRenderModel(value);
 		this->setColModel(value);
 	} else {

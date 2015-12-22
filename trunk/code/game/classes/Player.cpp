@@ -81,7 +81,7 @@ static u32 g_numSharedAnimNames = sizeof(sharedGameAnimNames) / sizeof(sharedGam
 static sharedGameAnim_e G_FindSharedAnim(const char *name) {
 	for(u32 i = 0; i < g_numSharedAnimNames; i++) {
 		const char *iName = sharedGameAnimNames[i];
-		if(!stricmp(iName,name)) {
+		if(!_stricmp(iName,name)) {
 			return (sharedGameAnim_e)i;
 		}
 	}

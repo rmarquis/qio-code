@@ -90,11 +90,11 @@ void kfSurf_c::instance(void *outXYZ, u32 outStride, u32 from, u32 to, float ler
 
 bool kfModelImpl_c::load(const char *fname) {
 	const char *ext = G_strgetExt(fname);
-	if(!stricmp(ext,"md3")) {
+	if(!_stricmp(ext,"md3")) {
 		return loadMD3(fname);
-	} else if(!stricmp(ext,"mdc")) {
+	} else if(!_stricmp(ext,"mdc")) {
 		return loadMDC(fname);
-	} else if(!stricmp(ext,"md2")) {
+	} else if(!_stricmp(ext,"md2")) {
 		return loadMD2(fname);
 	} else {
 		g_core->RedWarning("kfModelImpl_c::load: %s has unknown extension\n",fname);

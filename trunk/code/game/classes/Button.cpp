@@ -39,9 +39,9 @@ Button::Button() {
 }
 
 void Button::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"lip")) {
+	if(!_stricmp(key,"lip")) {
 		lip = atof(value);
-	} else if(!stricmp(key,"angle")) {
+	} else if(!_stricmp(key,"angle")) {
 		moverAngles.set(0,atof(value),0);
 	} else {
 		ModelEntity::setKeyValue(key,value);

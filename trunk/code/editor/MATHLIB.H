@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // mathlib.h
 
-#include <math.h>
+#include <math/math.h>
 
 typedef float vec_t;
 typedef vec_t vec3_t[3];
@@ -34,10 +34,6 @@ typedef vec_t vec5_t[5];
 #define	PITCH				0		// up / down
 #define	YAW					1		// left / right
 #define	ROLL				2		// fall over
-
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
 
 class edVec3_c {
 public:

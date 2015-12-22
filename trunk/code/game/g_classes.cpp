@@ -54,7 +54,7 @@ gClassAlias_c::gClassAlias_c(const char *newClassName, const char *newClassAlias
 const char *G_TranslateClassAlias(const char *classNameOrAlias) {
 	gClassAlias_c *ca = g_aliasList;
 	while(ca) {
-		if(!stricmp(ca->getClassAlias(),classNameOrAlias))
+		if(!_stricmp(ca->getClassAlias(),classNameOrAlias))
 			return ca->getClassName();
 		ca = ca->getNext();
 	}
@@ -66,7 +66,7 @@ gClassDef_c *G_FindClassDefBasic(const char *origClassName) {
 	const char *className = G_TranslateClassAlias(origClassName);
 	gClassDef_c *cd = g_classList;
 	while(cd) {
-		if(!stricmp(cd->getClassName(),className))
+		if(!_stricmp(cd->getClassName(),className))
 			return cd;
 		cd = cd->getNext();
 	}

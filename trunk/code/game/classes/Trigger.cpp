@@ -53,7 +53,7 @@ void Trigger::onTriggerContact(class ModelEntity *ent) {
 
 }
 void Trigger::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"model")) {
+	if(!_stricmp(key,"model")) {
 		this->setTriggerModel(value);
 	} else {
 		BaseEntity::setKeyValue(key,value);

@@ -100,7 +100,7 @@ bool mtlFile_c::loadMTL(const char *fileName) {
 }
 const mtlEntry_s *mtlFile_c::findEntry(const char *mtlName) const {
 	for(u32 i = 0; i < entries.size(); i++) {
-		if(!stricmp(entries[i].name,mtlName)) {
+		if(!_stricmp(entries[i].name,mtlName)) {
 			return &entries[i];
 		}
 	}

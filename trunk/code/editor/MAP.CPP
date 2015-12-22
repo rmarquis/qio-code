@@ -420,7 +420,7 @@ void Map_SaveFile (char *filename, bool use_region )
   {
     CFileDialog dlgSave(FALSE, "map", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "Map Files (*.map)|*.map||", AfxGetMainWnd());
     if (dlgSave.DoModal() == IDOK)
-      filename = strdup(dlgSave.m_ofn.lpstrFile);
+      filename = _strdup(dlgSave.m_ofn.lpstrFile);
     else 
       return;
   }

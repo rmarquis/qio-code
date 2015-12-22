@@ -144,7 +144,7 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 	if(ret) {
 		return ret;
 	}
-	if(!stricmp(texString,"default")) {
+	if(!_stricmp(texString,"default")) {
 		return MAT_GetDefaultTexture();
 	}
 	byte *data = 0;

@@ -67,7 +67,7 @@ void Weapon_PhysGun::onWeaponPickedUp() {
 	}
 }
 void Weapon_PhysGun::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"physGunForce")) {
+	if(!_stricmp(key,"physGunForce")) {
 
 	} else {
 		Weapon::setKeyValue(key,value);
