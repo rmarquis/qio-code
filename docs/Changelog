@@ -6,6 +6,7 @@
 	* Removed all deprecated calls from compiler (no more compiler warnings about them)
 	* Added new preprocessor definitions for VS solution (both DEBUG and RELEASE builds)
 	* Added preprocessor _CRT_SECURE_NO_WARNINGS flag for "Release" build in Visual Studio
+	* Updated binary files (compiled based on latest revision: 579) - release build
 
 11-24-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Fixed crash when you open "Command List" in Q3Editor
