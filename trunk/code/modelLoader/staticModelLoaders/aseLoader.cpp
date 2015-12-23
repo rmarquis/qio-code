@@ -572,6 +572,10 @@ bool MOD_LoadASE(const char *fname, staticModelCreatorAPI_i *out) {
 						g_core->RedWarning("MOD_LoadASE: skipping braced block of data at line %i of file %s\n",p.getCurrentLineNumber(),fname);
 					}
 				} else {
+					if(p.atEOF()) {				
+						g_core->RedWarning("MOD_LoadASE: unexpected end of file %s\n",fname);
+						break;
+					}
 					const char *unknownToken = p.getToken();
 					if(ase_printUnknownTokens.getInt()) {
 						g_core->RedWarning("MOD_LoadASE: skipping unknown token %s at line %i of file %s\n",unknownToken,p.getCurrentLineNumber(),fname);
