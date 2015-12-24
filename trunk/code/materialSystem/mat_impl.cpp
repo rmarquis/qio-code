@@ -766,6 +766,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					this->bMirrorMaterial = true;
 				} else if(p.atWord("qer_editorimage")) {
 					this->editorImage = p.getToken();
+				} else if(p.atWord("qer_keyword")) {
+					// Material global keywords
+					// it is used in some script what are present
+					// inside testing maps
+					// EXAMPLE : baseqio/materials/knightBK_glass.mtr
+					//           line 19, 36 and 59
+					// 
+					this->keyword = p.getToken();
 				} else if(p.atWord("qer_trans")) {
 					// 0.5 means 50% transparency
 					p.getFloat();

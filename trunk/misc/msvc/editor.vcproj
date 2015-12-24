@@ -199,10 +199,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ChildFrm.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\cmdlib.cpp"
 				>
 			</File>
@@ -461,15 +457,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\code\editor\BMP.H"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\BRUSH.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\BSPFILE.H"
 				>
 			</File>
 			<File
@@ -482,10 +470,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\CapDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CharBuffer.h"
 				>
 			</File>
 			<File

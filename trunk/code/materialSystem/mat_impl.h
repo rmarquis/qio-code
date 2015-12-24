@@ -373,6 +373,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	bool bPortalMaterial; // set to true by "portal" global material keyword
 	bool bMirrorMaterial; // set to true by "mirror" global material keyword
 	str editorImage; // set by "qer_editorimage" keyword (Q3/D3)
+	str keyword; //set "qer_keyword" keyword (Q3)
 	// vertex deforms array (they are per-material, not per-stage)
 	deformArray_c *deforms;
 	// for .vmt support, set by $compilesky key
