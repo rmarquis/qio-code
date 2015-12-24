@@ -1,0 +1,3344 @@
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btContactSolverInfo.h bullet-contact/src/BulletDynamics/ConstraintSolver/btContactSolverInfo.h
+--- bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btContactSolverInfo.h	2012-05-24 12:46:39.266351800 -0400
++++ bullet-contact/src/BulletDynamics/ConstraintSolver/btContactSolverInfo.h	2012-05-24 12:41:44.139471500 -0400
+@@ -13,8 +13,8 @@
+ 3. This notice may not be removed or altered from any source distribution.
+ */
+ 
+-#ifndef BT_CONTACT_SOLVER_INFO
+-#define BT_CONTACT_SOLVER_INFO
++#ifndef CONTACT_SOLVER_INFO
++#define CONTACT_SOLVER_INFO
+ 
+ enum	btSolverMode
+ {
+@@ -35,7 +35,7 @@
+ 	
+ 
+ 	btScalar	m_tau;
+-	btScalar	m_damping;//global non-contact constraint damping, can be locally overridden by constraints during 'getInfo2'.
++	btScalar	m_damping;
+ 	btScalar	m_friction;
+ 	btScalar	m_timeStep;
+ 	btScalar	m_restitution;
+@@ -51,7 +51,6 @@
+ 	btScalar	m_warmstartingFactor;
+ 
+ 	int			m_solverMode;
+-	int	m_restingContactRestitutionThreshold;
+ 	int			m_minimumSolverBatchSize;
+ 
+ 
+@@ -79,9 +78,8 @@
+ 		m_linearSlop = btScalar(0.0);
+ 		m_warmstartingFactor=btScalar(0.85);
+ 		m_solverMode = SOLVER_USE_WARMSTARTING | SOLVER_SIMD;// | SOLVER_RANDMIZE_ORDER;
+-		m_restingContactRestitutionThreshold = 2;//resting contact lifetime threshold to disable restitution
+ 		m_minimumSolverBatchSize = 128; //try to combine islands until the amount of constraints reaches this limit
+ 	}
+ };
+ 
+-#endif //BT_CONTACT_SOLVER_INFO
++#endif //CONTACT_SOLVER_INFO
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp bullet-contact/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp
+--- bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp	2012-05-24 12:48:26.195467800 -0400
++++ bullet-contact/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp	2012-05-24 12:41:44.151472200 -0400
+@@ -29,12 +29,11 @@
+ #include <new>
+ #include "LinearMath/btStackAlloc.h"
+ #include "LinearMath/btQuickprof.h"
+-#include "btSolverBody.h"
+ #include "btSolverConstraint.h"
+ #include "LinearMath/btAlignedObjectArray.h"
+ #include <string.h> //for memset
+ 
+-int		gNumSplitImpulseRecoveries = 0;
++ContactProcessedCallback gContactProcessedCallback = 0;
+ 
+ btSequentialImpulseConstraintSolver::btSequentialImpulseConstraintSolver()
+ :m_btSeed2(0)
+@@ -46,49 +45,6 @@
+ {
+ }
+ 
+-#ifdef USE_SIMD
+-#include <emmintrin.h>
+-#define btVecSplat(x, e) _mm_shuffle_ps(x, x, _MM_SHUFFLE(e,e,e,e))
+-static inline __m128 btSimdDot3( __m128 vec0, __m128 vec1 )
+-{
+-	__m128 result = _mm_mul_ps( vec0, vec1);
+-	return _mm_add_ps( btVecSplat( result, 0 ), _mm_add_ps( btVecSplat( result, 1 ), btVecSplat( result, 2 ) ) );
+-}
+-#endif//USE_SIMD
+-
+-// Project Gauss Seidel or the equivalent Sequential Impulse
+-void btSequentialImpulseConstraintSolver::resolveSingleConstraintRowGenericSIMD(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& c)
+-{
+-#ifdef USE_SIMD
+-	__m128 cpAppliedImp = _mm_set1_ps(c.m_appliedImpulse);
+-	__m128	lowerLimit1 = _mm_set1_ps(c.m_lowerLimit);
+-	__m128	upperLimit1 = _mm_set1_ps(c.m_upperLimit);
+-	__m128 deltaImpulse = _mm_sub_ps(_mm_set1_ps(c.m_rhs), _mm_mul_ps(_mm_set1_ps(c.m_appliedImpulse),_mm_set1_ps(c.m_cfm)));
+-	__m128 deltaVel1Dotn	=	_mm_add_ps(btSimdDot3(c.m_contactNormal.mVec128,body1.internalGetDeltaLinearVelocity().mVec128), btSimdDot3(c.m_relpos1CrossNormal.mVec128,body1.internalGetDeltaAngularVelocity().mVec128));
+-	__m128 deltaVel2Dotn	=	_mm_sub_ps(btSimdDot3(c.m_relpos2CrossNormal.mVec128,body2.internalGetDeltaAngularVelocity().mVec128),btSimdDot3((c.m_contactNormal).mVec128,body2.internalGetDeltaLinearVelocity().mVec128));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel1Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel2Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	btSimdScalar sum = _mm_add_ps(cpAppliedImp,deltaImpulse);
+-	btSimdScalar resultLowerLess,resultUpperLess;
+-	resultLowerLess = _mm_cmplt_ps(sum,lowerLimit1);
+-	resultUpperLess = _mm_cmplt_ps(sum,upperLimit1);
+-	__m128 lowMinApplied = _mm_sub_ps(lowerLimit1,cpAppliedImp);
+-	deltaImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowMinApplied), _mm_andnot_ps(resultLowerLess, deltaImpulse) );
+-	c.m_appliedImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowerLimit1), _mm_andnot_ps(resultLowerLess, sum) );
+-	__m128 upperMinApplied = _mm_sub_ps(upperLimit1,cpAppliedImp);
+-	deltaImpulse = _mm_or_ps( _mm_and_ps(resultUpperLess, deltaImpulse), _mm_andnot_ps(resultUpperLess, upperMinApplied) );
+-	c.m_appliedImpulse = _mm_or_ps( _mm_and_ps(resultUpperLess, c.m_appliedImpulse), _mm_andnot_ps(resultUpperLess, upperLimit1) );
+-	__m128	linearComponentA = _mm_mul_ps(c.m_contactNormal.mVec128,body1.internalGetInvMass().mVec128);
+-	__m128	linearComponentB = _mm_mul_ps((c.m_contactNormal).mVec128,body2.internalGetInvMass().mVec128);
+-	__m128 impulseMagnitude = deltaImpulse;
+-	body1.internalGetDeltaLinearVelocity().mVec128 = _mm_add_ps(body1.internalGetDeltaLinearVelocity().mVec128,_mm_mul_ps(linearComponentA,impulseMagnitude));
+-	body1.internalGetDeltaAngularVelocity().mVec128 = _mm_add_ps(body1.internalGetDeltaAngularVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentA.mVec128,impulseMagnitude));
+-	body2.internalGetDeltaLinearVelocity().mVec128 = _mm_sub_ps(body2.internalGetDeltaLinearVelocity().mVec128,_mm_mul_ps(linearComponentB,impulseMagnitude));
+-	body2.internalGetDeltaAngularVelocity().mVec128 = _mm_add_ps(body2.internalGetDeltaAngularVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentB.mVec128,impulseMagnitude));
+-#else
+-	resolveSingleConstraintRowGeneric(body1,body2,c);
+-#endif
+-}
+ 
+ // Project Gauss Seidel or the equivalent Sequential Impulse
+  void btSequentialImpulseConstraintSolver::resolveSingleConstraintRowGeneric(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& c)
+@@ -101,57 +57,21 @@
+ 	deltaImpulse	-=	deltaVel1Dotn*c.m_jacDiagABInv;
+ 	deltaImpulse	-=	deltaVel2Dotn*c.m_jacDiagABInv;
+ 
+-	const btScalar sum = btScalar(c.m_appliedImpulse) + deltaImpulse;
+-	if (sum < c.m_lowerLimit)
+-	{
+-		deltaImpulse = c.m_lowerLimit-c.m_appliedImpulse;
+-		c.m_appliedImpulse = c.m_lowerLimit;
+-	}
+-	else if (sum > c.m_upperLimit) 
+-	{
+-		deltaImpulse = c.m_upperLimit-c.m_appliedImpulse;
+-		c.m_appliedImpulse = c.m_upperLimit;
+-	}
+-	else
+-	{
+-		c.m_appliedImpulse = sum;
+-	}
++	//clamp the impulse correction so that applied impulse never goes beyond its limits
++	deltaImpulse = btMin(deltaImpulse, c.m_upperLimit - c.m_appliedImpulse);
++	deltaImpulse = btMax(deltaImpulse, c.m_lowerLimit - c.m_appliedImpulse);
++	c.m_appliedImpulse = btScalar(c.m_appliedImpulse) + deltaImpulse;
++
+ 		body1.internalApplyImpulse(c.m_contactNormal*body1.internalGetInvMass(),c.m_angularComponentA,deltaImpulse);
+ 		body2.internalApplyImpulse(-c.m_contactNormal*body2.internalGetInvMass(),c.m_angularComponentB,deltaImpulse);
+ }
+ 
+- void btSequentialImpulseConstraintSolver::resolveSingleConstraintRowLowerLimitSIMD(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& c)
+-{
+-#ifdef USE_SIMD
+-	__m128 cpAppliedImp = _mm_set1_ps(c.m_appliedImpulse);
+-	__m128	lowerLimit1 = _mm_set1_ps(c.m_lowerLimit);
+-	__m128	upperLimit1 = _mm_set1_ps(c.m_upperLimit);
+-	__m128 deltaImpulse = _mm_sub_ps(_mm_set1_ps(c.m_rhs), _mm_mul_ps(_mm_set1_ps(c.m_appliedImpulse),_mm_set1_ps(c.m_cfm)));
+-	__m128 deltaVel1Dotn	=	_mm_add_ps(btSimdDot3(c.m_contactNormal.mVec128,body1.internalGetDeltaLinearVelocity().mVec128), btSimdDot3(c.m_relpos1CrossNormal.mVec128,body1.internalGetDeltaAngularVelocity().mVec128));
+-	__m128 deltaVel2Dotn	=	_mm_sub_ps(btSimdDot3(c.m_relpos2CrossNormal.mVec128,body2.internalGetDeltaAngularVelocity().mVec128),btSimdDot3((c.m_contactNormal).mVec128,body2.internalGetDeltaLinearVelocity().mVec128));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel1Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel2Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	btSimdScalar sum = _mm_add_ps(cpAppliedImp,deltaImpulse);
+-	btSimdScalar resultLowerLess,resultUpperLess;
+-	resultLowerLess = _mm_cmplt_ps(sum,lowerLimit1);
+-	resultUpperLess = _mm_cmplt_ps(sum,upperLimit1);
+-	__m128 lowMinApplied = _mm_sub_ps(lowerLimit1,cpAppliedImp);
+-	deltaImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowMinApplied), _mm_andnot_ps(resultLowerLess, deltaImpulse) );
+-	c.m_appliedImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowerLimit1), _mm_andnot_ps(resultLowerLess, sum) );
+-	__m128	linearComponentA = _mm_mul_ps(c.m_contactNormal.mVec128,body1.internalGetInvMass().mVec128);
+-	__m128	linearComponentB = _mm_mul_ps((c.m_contactNormal).mVec128,body2.internalGetInvMass().mVec128);
+-	__m128 impulseMagnitude = deltaImpulse;
+-	body1.internalGetDeltaLinearVelocity().mVec128 = _mm_add_ps(body1.internalGetDeltaLinearVelocity().mVec128,_mm_mul_ps(linearComponentA,impulseMagnitude));
+-	body1.internalGetDeltaAngularVelocity().mVec128 = _mm_add_ps(body1.internalGetDeltaAngularVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentA.mVec128,impulseMagnitude));
+-	body2.internalGetDeltaLinearVelocity().mVec128 = _mm_sub_ps(body2.internalGetDeltaLinearVelocity().mVec128,_mm_mul_ps(linearComponentB,impulseMagnitude));
+-	body2.internalGetDeltaAngularVelocity().mVec128 = _mm_add_ps(body2.internalGetDeltaAngularVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentB.mVec128,impulseMagnitude));
+-#else
+-	resolveSingleConstraintRowLowerLimit(body1,body2,c);
+-#endif
+-}
+ 
+ // Project Gauss Seidel or the equivalent Sequential Impulse
+- void btSequentialImpulseConstraintSolver::resolveSingleConstraintRowLowerLimit(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& c)
++ void btSequentialImpulseConstraintSolver::resolveSingleConstraintRowLowerLimit(
++	 btRigidBody& body1,
++	 btRigidBody& body2,
++	 const btSolverConstraint& c)
+ {
+ 	btScalar deltaImpulse = c.m_rhs-btScalar(c.m_appliedImpulse)*c.m_cfm;
+ 	const btScalar deltaVel1Dotn	=	c.m_contactNormal.dot(body1.internalGetDeltaLinearVelocity()) 	+ c.m_relpos1CrossNormal.dot(body1.internalGetDeltaAngularVelocity());
+@@ -159,16 +79,11 @@
+ 
+ 	deltaImpulse	-=	deltaVel1Dotn*c.m_jacDiagABInv;
+ 	deltaImpulse	-=	deltaVel2Dotn*c.m_jacDiagABInv;
+-	const btScalar sum = btScalar(c.m_appliedImpulse) + deltaImpulse;
+-	if (sum < c.m_lowerLimit)
+-	{
+-		deltaImpulse = c.m_lowerLimit-c.m_appliedImpulse;
+-		c.m_appliedImpulse = c.m_lowerLimit;
+-	}
+-	else
+-	{
+-		c.m_appliedImpulse = sum;
+-	}
++
++	//clamp the impulse correction so that applied impulse never goes below its lower limit (in this case 0.0f)
++	deltaImpulse = btMax(deltaImpulse, -c.m_appliedImpulse);
++	c.m_appliedImpulse = btScalar(c.m_appliedImpulse) + deltaImpulse;
++
+ 	body1.internalApplyImpulse(c.m_contactNormal*body1.internalGetInvMass(),c.m_angularComponentA,deltaImpulse);
+ 	body2.internalApplyImpulse(-c.m_contactNormal*body2.internalGetInvMass(),c.m_angularComponentB,deltaImpulse);
+ }
+@@ -179,65 +94,20 @@
+         btRigidBody& body2,
+         const btSolverConstraint& c)
+ {
+-		if (c.m_rhsPenetration)
+-        {
+-			gNumSplitImpulseRecoveries++;
+ 			btScalar deltaImpulse = c.m_rhsPenetration-btScalar(c.m_appliedPushImpulse)*c.m_cfm;
+ 			const btScalar deltaVel1Dotn	=	c.m_contactNormal.dot(body1.internalGetPushVelocity()) 	+ c.m_relpos1CrossNormal.dot(body1.internalGetTurnVelocity());
+ 			const btScalar deltaVel2Dotn	=	-c.m_contactNormal.dot(body2.internalGetPushVelocity()) + c.m_relpos2CrossNormal.dot(body2.internalGetTurnVelocity());
+ 
+ 			deltaImpulse	-=	deltaVel1Dotn*c.m_jacDiagABInv;
+ 			deltaImpulse	-=	deltaVel2Dotn*c.m_jacDiagABInv;
+-			const btScalar sum = btScalar(c.m_appliedPushImpulse) + deltaImpulse;
+-			if (sum < c.m_lowerLimit)
+-			{
+-				deltaImpulse = c.m_lowerLimit-c.m_appliedPushImpulse;
+-				c.m_appliedPushImpulse = c.m_lowerLimit;
+-			}
+-			else
+-			{
+-				c.m_appliedPushImpulse = sum;
+-			}
++
++	//clamp the impulse correction so that applied impulse never goes below its lower limit
++	deltaImpulse = btMax(deltaImpulse, c.m_lowerLimit - c.m_appliedPushImpulse);
++	c.m_appliedPushImpulse = btScalar(c.m_appliedPushImpulse) + deltaImpulse;
++
+ 			body1.internalApplyPushImpulse(c.m_contactNormal*body1.internalGetInvMass(),c.m_angularComponentA,deltaImpulse);
+ 			body2.internalApplyPushImpulse(-c.m_contactNormal*body2.internalGetInvMass(),c.m_angularComponentB,deltaImpulse);
+         }
+-}
+-
+- void btSequentialImpulseConstraintSolver::resolveSplitPenetrationSIMD(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& c)
+-{
+-#ifdef USE_SIMD
+-	if (!c.m_rhsPenetration)
+-		return;
+-
+-	gNumSplitImpulseRecoveries++;
+-
+-	__m128 cpAppliedImp = _mm_set1_ps(c.m_appliedPushImpulse);
+-	__m128	lowerLimit1 = _mm_set1_ps(c.m_lowerLimit);
+-	__m128	upperLimit1 = _mm_set1_ps(c.m_upperLimit);
+-	__m128 deltaImpulse = _mm_sub_ps(_mm_set1_ps(c.m_rhsPenetration), _mm_mul_ps(_mm_set1_ps(c.m_appliedPushImpulse),_mm_set1_ps(c.m_cfm)));
+-	__m128 deltaVel1Dotn	=	_mm_add_ps(btSimdDot3(c.m_contactNormal.mVec128,body1.internalGetPushVelocity().mVec128), btSimdDot3(c.m_relpos1CrossNormal.mVec128,body1.internalGetTurnVelocity().mVec128));
+-	__m128 deltaVel2Dotn	=	_mm_sub_ps(btSimdDot3(c.m_relpos2CrossNormal.mVec128,body2.internalGetTurnVelocity().mVec128),btSimdDot3((c.m_contactNormal).mVec128,body2.internalGetPushVelocity().mVec128));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel1Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	deltaImpulse	=	_mm_sub_ps(deltaImpulse,_mm_mul_ps(deltaVel2Dotn,_mm_set1_ps(c.m_jacDiagABInv)));
+-	btSimdScalar sum = _mm_add_ps(cpAppliedImp,deltaImpulse);
+-	btSimdScalar resultLowerLess,resultUpperLess;
+-	resultLowerLess = _mm_cmplt_ps(sum,lowerLimit1);
+-	resultUpperLess = _mm_cmplt_ps(sum,upperLimit1);
+-	__m128 lowMinApplied = _mm_sub_ps(lowerLimit1,cpAppliedImp);
+-	deltaImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowMinApplied), _mm_andnot_ps(resultLowerLess, deltaImpulse) );
+-	c.m_appliedPushImpulse = _mm_or_ps( _mm_and_ps(resultLowerLess, lowerLimit1), _mm_andnot_ps(resultLowerLess, sum) );
+-	__m128	linearComponentA = _mm_mul_ps(c.m_contactNormal.mVec128,body1.internalGetInvMass().mVec128);
+-	__m128	linearComponentB = _mm_mul_ps((c.m_contactNormal).mVec128,body2.internalGetInvMass().mVec128);
+-	__m128 impulseMagnitude = deltaImpulse;
+-	body1.internalGetPushVelocity().mVec128 = _mm_add_ps(body1.internalGetPushVelocity().mVec128,_mm_mul_ps(linearComponentA,impulseMagnitude));
+-	body1.internalGetTurnVelocity().mVec128 = _mm_add_ps(body1.internalGetTurnVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentA.mVec128,impulseMagnitude));
+-	body2.internalGetPushVelocity().mVec128 = _mm_sub_ps(body2.internalGetPushVelocity().mVec128,_mm_mul_ps(linearComponentB,impulseMagnitude));
+-	body2.internalGetTurnVelocity().mVec128 = _mm_add_ps(body2.internalGetTurnVelocity().mVec128 ,_mm_mul_ps(c.m_angularComponentB.mVec128,impulseMagnitude));
+-#else
+-	resolveSplitPenetrationImpulseCacheFriendly(body1,body2,c);
+-#endif
+-}
+-
+ 
+ 
+ unsigned long btSequentialImpulseConstraintSolver::btRand2()
+@@ -307,8 +177,7 @@
+ 
+ btScalar btSequentialImpulseConstraintSolver::restitutionCurve(btScalar rel_vel, btScalar restitution)
+ {
+-	btScalar rest = restitution * -rel_vel;
+-	return rest;
++	return restitution * -rel_vel;
+ }
+ 
+ 
+@@ -350,12 +219,12 @@
+ 	{
+ 		btVector3 ftorqueAxis1 = rel_pos1.cross(solverConstraint.m_contactNormal);
+ 		solverConstraint.m_relpos1CrossNormal = ftorqueAxis1;
+-		solverConstraint.m_angularComponentA = body0 ? body0->getInvInertiaTensorWorld()*ftorqueAxis1*body0->getAngularFactor() : btVector3(0,0,0);
++		solverConstraint.m_angularComponentA = body0 ? body0->getInvInertiaTensorWorld() * ftorqueAxis1 : btVector3(0,0,0);
+ 	}
+ 	{
+ 		btVector3 ftorqueAxis1 = rel_pos2.cross(-solverConstraint.m_contactNormal);
+ 		solverConstraint.m_relpos2CrossNormal = ftorqueAxis1;
+-		solverConstraint.m_angularComponentB = body1 ? body1->getInvInertiaTensorWorld()*ftorqueAxis1*body1->getAngularFactor() : btVector3(0,0,0);
++		solverConstraint.m_angularComponentB = body1 ? body1->getInvInertiaTensorWorld() * ftorqueAxis1 : btVector3(0,0,0);
+ 	}
+ 
+ #ifdef COMPUTE_IMPULSE_DENOM
+@@ -461,6 +330,10 @@
+ 			btRigidBody* rb0 = btRigidBody::upcast(colObj0);
+ 			btRigidBody* rb1 = btRigidBody::upcast(colObj1);
+ 
++	//TODO: figure out if this ever happens, we could save a lot of tests.
++	btAssert(rb0 != NULL); //This will happen if the collision object is not a rigid body
++	btAssert(rb1 != NULL);
++
+ 			const btVector3& pos1 = cp.getPositionWorldOnA();
+ 			const btVector3& pos2 = cp.getPositionWorldOnB();
+ 
+@@ -472,9 +345,9 @@
+ 			relaxation = 1.f;
+ 
+ 			btVector3 torqueAxis0 = rel_pos1.cross(cp.m_normalWorldOnB);
+-			solverConstraint.m_angularComponentA = rb0 ? rb0->getInvInertiaTensorWorld()*torqueAxis0*rb0->getAngularFactor() : btVector3(0,0,0);
++	solverConstraint.m_angularComponentA = rb0 ? rb0->getInvInertiaTensorWorld() * torqueAxis0 : btVector3(0,0,0);
+ 			btVector3 torqueAxis1 = rel_pos2.cross(cp.m_normalWorldOnB);		
+-			solverConstraint.m_angularComponentB = rb1 ? rb1->getInvInertiaTensorWorld()*-torqueAxis1*rb1->getAngularFactor() : btVector3(0,0,0);
++	solverConstraint.m_angularComponentB = rb1 ? rb1->getInvInertiaTensorWorld() * -torqueAxis1 : btVector3(0,0,0);
+ 
+ 				{
+ #ifdef COMPUTE_IMPULSE_DENOM
+@@ -501,98 +374,84 @@
+ 				}
+ 
+ 				solverConstraint.m_contactNormal = cp.m_normalWorldOnB;
+-				solverConstraint.m_relpos1CrossNormal = rel_pos1.cross(cp.m_normalWorldOnB);
+-				solverConstraint.m_relpos2CrossNormal = rel_pos2.cross(-cp.m_normalWorldOnB);
+-
+-
++	solverConstraint.m_relpos1CrossNormal = torqueAxis0;
++	solverConstraint.m_relpos2CrossNormal = -torqueAxis1;
+ 
+ 
+ 			btVector3 vel1 = rb0 ? rb0->getVelocityInLocalPoint(rel_pos1) : btVector3(0,0,0);
+ 			btVector3 vel2 = rb1 ? rb1->getVelocityInLocalPoint(rel_pos2) : btVector3(0,0,0);
+ 			vel  = vel1 - vel2;
+-			rel_vel = cp.m_normalWorldOnB.dot(vel);
+ 
+-				btScalar penetration = cp.getDistance()+infoGlobal.m_linearSlop;
++	btVector3 oldVel1 = rb0 ? rb0->getOldVelocityInLocalPoint(rel_pos1) : btVector3(0,0,0);
++	btVector3 oldVel2 = rb1 ? rb1->getOldVelocityInLocalPoint(rel_pos2) : btVector3(0,0,0);
++	btVector3 oldVel  = oldVel1 - oldVel2;
+ 
+ 
+-				solverConstraint.m_friction = cp.m_combinedFriction;
++	rel_vel = cp.m_normalWorldOnB.dot(vel);
++	btScalar oldRelVel = cp.m_normalWorldOnB.dot(oldVel);
+ 
+-				btScalar restitution = 0.f;
++	btScalar penetration = cp.getDistance() + infoGlobal.m_linearSlop;
++	btScalar positionalError = -penetration/* * infoGlobal.m_erp*/ / infoGlobal.m_timeStep;
++	btScalar penetrationImpulse = positionalError * solverConstraint.m_jacDiagABInv;
++
++	solverConstraint.m_lowerLimit = 0.0f;
++	btScalar target_rel_vel = 0.0f;
+ 				
+-				if (cp.m_lifeTime>infoGlobal.m_restingContactRestitutionThreshold)
++	if (penetration <= 0.0f)
+ 				{
+-					restitution = 0.f;
+-				} else
++		btScalar restitutionThreshold = (2.02f * cp.m_combinedRestitution * (oldRelVel - rel_vel)) / (1.0f + cp.m_combinedRestitution);
++		target_rel_vel = cp.m_combinedRestitution * -oldRelVel;
++		if (target_rel_vel <= restitutionThreshold)
+ 				{
+-					restitution =  restitutionCurve(rel_vel, cp.m_combinedRestitution);
+-					if (restitution <= btScalar(0.))
++			target_rel_vel = 0.0f;
++		}
++	}
++	else if (rel_vel <= 0.0f)
+ 					{
+-						restitution = 0.f;
+-					};
++		//if we are not detaching, we want to zero the contact distance
++		solverConstraint.m_lowerLimit = penetrationImpulse;
+ 				}
+ 
+-
+ 				///warm starting (or zero if disabled)
+ 				if (infoGlobal.m_solverMode & SOLVER_USE_WARMSTARTING)
+ 				{
+ 					solverConstraint.m_appliedImpulse = cp.m_appliedImpulse * infoGlobal.m_warmstartingFactor;
+ 					if (rb0)
+-						rb0->internalApplyImpulse(solverConstraint.m_contactNormal*rb0->getInvMass()*rb0->getLinearFactor(),solverConstraint.m_angularComponentA,solverConstraint.m_appliedImpulse);
++			rb0->internalApplyImpulse(solverConstraint.m_contactNormal*rb0->internalGetInvMass(),solverConstraint.m_angularComponentA,solverConstraint.m_appliedImpulse);
+ 					if (rb1)
+-						rb1->internalApplyImpulse(solverConstraint.m_contactNormal*rb1->getInvMass()*rb1->getLinearFactor(),-solverConstraint.m_angularComponentB,-(btScalar)solverConstraint.m_appliedImpulse);
+-				} else
++			rb1->internalApplyImpulse(solverConstraint.m_contactNormal*rb1->internalGetInvMass(),-solverConstraint.m_angularComponentB,-solverConstraint.m_appliedImpulse);
++	}
++	else
+ 				{
+ 					solverConstraint.m_appliedImpulse = 0.f;
+ 				}
+ 
+ 				solverConstraint.m_appliedPushImpulse = 0.f;
+ 
+-				{
+-					btScalar rel_vel;
+-					btScalar vel1Dotn = solverConstraint.m_contactNormal.dot(rb0?rb0->getLinearVelocity():btVector3(0,0,0)) 
+-						+ solverConstraint.m_relpos1CrossNormal.dot(rb0?rb0->getAngularVelocity():btVector3(0,0,0));
+-					btScalar vel2Dotn = -solverConstraint.m_contactNormal.dot(rb1?rb1->getLinearVelocity():btVector3(0,0,0)) 
+-						+ solverConstraint.m_relpos2CrossNormal.dot(rb1?rb1->getAngularVelocity():btVector3(0,0,0));
+-
+-					rel_vel = vel1Dotn+vel2Dotn;
+-
+-					btScalar positionalError = 0.f;
+-					btScalar	velocityError = restitution - rel_vel;// * damping;
+-
+-					if (penetration>0)
+-					{
+-						positionalError = 0;
+-						velocityError -= penetration / infoGlobal.m_timeStep;
+-					} else
+-					{
+-						positionalError = -penetration * infoGlobal.m_erp/infoGlobal.m_timeStep;
+-					}
+-
+-					btScalar  penetrationImpulse = positionalError*solverConstraint.m_jacDiagABInv;
++	btScalar velocityError = target_rel_vel - rel_vel;// * damping;
+ 					btScalar velocityImpulse = velocityError *solverConstraint.m_jacDiagABInv;
+-					if (!infoGlobal.m_splitImpulse || (penetration > infoGlobal.m_splitImpulsePenetrationThreshold))
++
++/*	if (!infoGlobal.m_splitImpulse  || (penetration > infoGlobal.m_splitImpulsePenetrationThreshold))
+ 					{
+ 						//combine position and velocity into rhs
+ 						solverConstraint.m_rhs = penetrationImpulse+velocityImpulse;
+ 						solverConstraint.m_rhsPenetration = 0.f;
+-					} else
++//		solverConstraint.m_lowerLimit = 0.0f;
++	}
++	else*/
+ 					{
+ 						//split position and velocity into rhs and m_rhsPenetration
+ 						solverConstraint.m_rhs = velocityImpulse;
+ 						solverConstraint.m_rhsPenetration = penetrationImpulse;
+ 					}
++
++	solverConstraint.m_friction = cp.m_combinedFriction;
+ 					solverConstraint.m_cfm = 0.f;
+-					solverConstraint.m_lowerLimit = 0;
+ 					solverConstraint.m_upperLimit = 1e10f;
+ 				}
+ 
+ 
+ 
+-
+-}
+-
+-
+-
+ void btSequentialImpulseConstraintSolver::setFrictionConstraintImpulse( btSolverConstraint& solverConstraint, 
+ 																		btRigidBody* rb0, btRigidBody* rb1, 
+ 																 btManifoldPoint& cp, const btContactSolverInfo& infoGlobal)
+@@ -605,9 +464,9 @@
+ 							{
+ 								frictionConstraint1.m_appliedImpulse = cp.m_appliedImpulseLateral1 * infoGlobal.m_warmstartingFactor;
+ 								if (rb0)
+-									rb0->internalApplyImpulse(frictionConstraint1.m_contactNormal*rb0->getInvMass()*rb0->getLinearFactor(),frictionConstraint1.m_angularComponentA,frictionConstraint1.m_appliedImpulse);
++									rb0->internalApplyImpulse(frictionConstraint1.m_contactNormal*rb0->internalGetInvMass(),frictionConstraint1.m_angularComponentA,frictionConstraint1.m_appliedImpulse);
+ 								if (rb1)
+-									rb1->internalApplyImpulse(frictionConstraint1.m_contactNormal*rb1->getInvMass()*rb1->getLinearFactor(),-frictionConstraint1.m_angularComponentB,-(btScalar)frictionConstraint1.m_appliedImpulse);
++									rb1->internalApplyImpulse(frictionConstraint1.m_contactNormal*rb1->internalGetInvMass(),-frictionConstraint1.m_angularComponentB,-frictionConstraint1.m_appliedImpulse);
+ 							} else
+ 							{
+ 								frictionConstraint1.m_appliedImpulse = 0.f;
+@@ -623,7 +482,7 @@
+ 								if (rb0)
+ 									rb0->internalApplyImpulse(frictionConstraint2.m_contactNormal*rb0->getInvMass(),frictionConstraint2.m_angularComponentA,frictionConstraint2.m_appliedImpulse);
+ 								if (rb1)
+-									rb1->internalApplyImpulse(frictionConstraint2.m_contactNormal*rb1->getInvMass(),-frictionConstraint2.m_angularComponentB,-(btScalar)frictionConstraint2.m_appliedImpulse);
++									rb1->internalApplyImpulse(frictionConstraint2.m_contactNormal*rb1->getInvMass(),-frictionConstraint2.m_angularComponentB,-frictionConstraint2.m_appliedImpulse);
+ 							} else
+ 							{
+ 								frictionConstraint2.m_appliedImpulse = 0.f;
+@@ -651,13 +510,11 @@
+ 	colObj0 = (btCollisionObject*)manifold->getBody0();
+ 	colObj1 = (btCollisionObject*)manifold->getBody1();
+ 
+-
+ 	btRigidBody* solverBodyA = btRigidBody::upcast(colObj0);
+ 	btRigidBody* solverBodyB = btRigidBody::upcast(colObj1);
+ 
+-	///avoid collision response between two static objects
+-	if ((!solverBodyA || !solverBodyA->getInvMass()) && (!solverBodyB || !solverBodyB->getInvMass()))
+-		return;
++	/// collision response between two static objects should have been filtered a long time ago
++	btAssert ((solverBodyA && solverBodyA->getInvMass()) || (solverBodyB && solverBodyB->getInvMass()));
+ 
+ 	for (int j=0;j<manifold->getNumContacts();j++)
+ 	{
+@@ -709,10 +566,11 @@
+ 					applyAnisotropicFriction(colObj1,cp.m_lateralFrictionDir1);
+ 					addFrictionConstraint(cp.m_lateralFrictionDir1,solverBodyA,solverBodyB,frictionIndex,cp,rel_pos1,rel_pos2,colObj0,colObj1, relaxation);
+ 					cp.m_lateralFrictionInitialized = true;
+-				} else
++				}
++				else
+ 				{
+ 					//re-calculate friction direction every frame, todo: check if this is really needed
+-					btPlaneSpace1(cp.m_normalWorldOnB,cp.m_lateralFrictionDir1,cp.m_lateralFrictionDir2);
++//					btPlaneSpace1(cp.m_normalWorldOnB,cp.m_lateralFrictionDir1,cp.m_lateralFrictionDir2);
+ 					if ((infoGlobal.m_solverMode & SOLVER_USE_2_FRICTION_DIRECTIONS))
+ 					{
+ 						applyAnisotropicFriction(colObj0,cp.m_lateralFrictionDir2);
+@@ -740,13 +598,13 @@
+ 	}
+ }
+ 
+-btScalar btSequentialImpulseConstraintSolver::solveGroupCacheFriendlySetup(btCollisionObject** bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc)
++
++btScalar btSequentialImpulseConstraintSolver::solveGroupCacheFriendlySetup(btCollisionObject** /*bodies */,int /*numBodies */,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc)
+ {
+ 	BT_PROFILE("solveGroupCacheFriendlySetup");
+ 	(void)stackAlloc;
+ 	(void)debugDrawer;
+ 
+-	m_maxOverrideNumSolverIterations = 0;
+ 
+ 	if (!(numConstraints + numManifolds))
+ 	{
+@@ -754,33 +612,6 @@
+ 		return 0.f;
+ 	}
+ 
+-	if (infoGlobal.m_splitImpulse)
+-	{
+-		for (int i = 0; i < numBodies; i++)
+-		{
+-			btRigidBody* body = btRigidBody::upcast(bodies[i]);
+-			if (body)
+-			{	
+-				body->internalGetDeltaLinearVelocity().setZero();
+-				body->internalGetDeltaAngularVelocity().setZero();
+-				body->internalGetPushVelocity().setZero();
+-				body->internalGetTurnVelocity().setZero();
+-			}
+-		}
+-	}
+-	else
+-	{
+-		for (int i = 0; i < numBodies; i++)
+-		{
+-			btRigidBody* body = btRigidBody::upcast(bodies[i]);
+-			if (body)
+-			{	
+-				body->internalGetDeltaLinearVelocity().setZero();
+-				body->internalGetDeltaAngularVelocity().setZero();
+-			}
+-		}
+-	}
+-
+ 	if (1)
+ 	{
+ 		int j;
+@@ -788,7 +619,6 @@
+ 		{
+ 			btTypedConstraint* constraint = constraints[j];
+ 			constraint->buildJacobian();
+-			constraint->internalSetAppliedImpulse(0.0f);
+ 		}
+ 	}
+ 	//btRigidBody* rb0=0,*rb1=0;
+@@ -805,15 +635,11 @@
+ 			for (i=0;i<numConstraints;i++)
+ 			{
+ 				btTypedConstraint::btConstraintInfo1& info1 = m_tmpConstraintSizesPool[i];
+-				if (constraints[i]->isEnabled())
+-				{
+ 					constraints[i]->getInfo1(&info1);
+-				} else
+-				{
+-					info1.m_numConstraintRows = 0;
+-					info1.nub = 0;
+-				}
+ 				totalNumRows += info1.m_numConstraintRows;
++
++				//zero out last frame's applied impulse for the constraints
++				constraints[i]->internalSetAppliedImpulse(0.0f);
+ 			}
+ 			m_tmpSolverNonContactConstraintPool.resize(totalNumRows);
+ 
+@@ -831,26 +657,23 @@
+ 
+ 					btSolverConstraint* currentConstraintRow = &m_tmpSolverNonContactConstraintPool[currentRow];
+ 					btTypedConstraint* constraint = constraints[i];
+-					btRigidBody& rbA = constraint->getRigidBodyA();
+-					btRigidBody& rbB = constraint->getRigidBodyB();
+ 
+ 
+-					int overrideNumSolverIterations = constraint->getOverrideNumSolverIterations() > 0 ? constraint->getOverrideNumSolverIterations() : infoGlobal.m_numIterations;
+-					if (overrideNumSolverIterations>m_maxOverrideNumSolverIterations)
+-						m_maxOverrideNumSolverIterations = overrideNumSolverIterations;
++
++					btRigidBody& rbA = *constraint->getRigidBodyA();
++					btRigidBody& rbB = *constraint->getRigidBodyB();
+ 
+ 
+ 					int j;
+ 					for ( j=0;j<info1.m_numConstraintRows;j++)
+ 					{
+ 						memset(&currentConstraintRow[j],0,sizeof(btSolverConstraint));
+-						currentConstraintRow[j].m_lowerLimit = -SIMD_INFINITY;
+-						currentConstraintRow[j].m_upperLimit = SIMD_INFINITY;
++						currentConstraintRow[j].m_lowerLimit = -FLT_MAX;
++						currentConstraintRow[j].m_upperLimit = FLT_MAX;
+ 						currentConstraintRow[j].m_appliedImpulse = 0.f;
+ 						currentConstraintRow[j].m_appliedPushImpulse = 0.f;
+ 						currentConstraintRow[j].m_solverBodyA = &rbA;
+ 						currentConstraintRow[j].m_solverBodyB = &rbB;
+-						currentConstraintRow[j].m_overrideNumSolverIterations = overrideNumSolverIterations;
+ 					}
+ 
+ 					rbA.internalGetDeltaLinearVelocity().setValue(0.f,0.f,0.f);
+@@ -872,7 +695,6 @@
+ 					btAssert(info2.rowskip*sizeof(btScalar)== sizeof(btSolverConstraint));
+ 					info2.m_constraintError = &currentConstraintRow->m_rhs;
+ 					currentConstraintRow->m_cfm = infoGlobal.m_globalCfm;
+-					info2.m_damping = infoGlobal.m_damping;
+ 					info2.cfm = &currentConstraintRow->m_cfm;
+ 					info2.m_lowerLimit = &currentConstraintRow->m_lowerLimit;
+ 					info2.m_upperLimit = &currentConstraintRow->m_upperLimit;
+@@ -883,26 +705,15 @@
+ 					for ( j=0;j<info1.m_numConstraintRows;j++)
+ 					{
+ 						btSolverConstraint& solverConstraint = currentConstraintRow[j];
+-
+-						if (solverConstraint.m_upperLimit>=constraints[i]->getBreakingImpulseThreshold())
+-						{
+-							solverConstraint.m_upperLimit = constraints[i]->getBreakingImpulseThreshold();
+-						}
+-
+-						if (solverConstraint.m_lowerLimit<=-constraints[i]->getBreakingImpulseThreshold())
+-						{
+-							solverConstraint.m_lowerLimit = -constraints[i]->getBreakingImpulseThreshold();
+-						}
+-
+ 						solverConstraint.m_originalContactPoint = constraint;
+ 
+ 						{
+ 							const btVector3& ftorqueAxis1 = solverConstraint.m_relpos1CrossNormal;
+-							solverConstraint.m_angularComponentA = constraint->getRigidBodyA().getInvInertiaTensorWorld()*ftorqueAxis1*constraint->getRigidBodyA().getAngularFactor();
++							solverConstraint.m_angularComponentA = constraint->getRigidBodyA()->getInvInertiaTensorWorld() * ftorqueAxis1;
+ 						}
+ 						{
+ 							const btVector3& ftorqueAxis2 = solverConstraint.m_relpos2CrossNormal;
+-							solverConstraint.m_angularComponentB = constraint->getRigidBodyB().getInvInertiaTensorWorld()*ftorqueAxis2*constraint->getRigidBodyB().getAngularFactor();
++							solverConstraint.m_angularComponentB = constraint->getRigidBodyB()->getInvInertiaTensorWorld() * ftorqueAxis2;
+ 						}
+ 
+ 						{
+@@ -929,9 +740,9 @@
+ 
+ 							rel_vel = vel1Dotn+vel2Dotn;
+ 
+-							btScalar restitution = 0.f;
++							btScalar target_rel_vel = 0.f;
+ 							btScalar positionalError = solverConstraint.m_rhs;//already filled in by getConstraintInfo2
+-							btScalar	velocityError = restitution - rel_vel * info2.m_damping;
++							btScalar	velocityError = target_rel_vel - rel_vel;// * damping;
+ 							btScalar	penetrationImpulse = positionalError*solverConstraint.m_jacDiagABInv;
+ 							btScalar	velocityImpulse = velocityError *solverConstraint.m_jacDiagABInv;
+ 							solverConstraint.m_rhs = penetrationImpulse+velocityImpulse;
+@@ -961,20 +772,15 @@
+ 	btContactSolverInfo info = infoGlobal;
+ 
+ 
+-	int numNonContactPool = m_tmpSolverNonContactConstraintPool.size();
++
+ 	int numConstraintPool = m_tmpSolverContactConstraintPool.size();
+ 	int numFrictionPool = m_tmpSolverContactFrictionConstraintPool.size();
+ 
+ 	///@todo: use stack allocator for such temporarily memory, same for solver bodies/constraints
+-	m_orderNonContactConstraintPool.resize(numNonContactPool);
+ 	m_orderTmpConstraintPool.resize(numConstraintPool);
+ 	m_orderFrictionConstraintPool.resize(numFrictionPool);
+ 	{
+ 		int i;
+-		for (i=0;i<numNonContactPool;i++)
+-		{
+-			m_orderNonContactConstraintPool[i] = i;
+-		}
+ 		for (i=0;i<numConstraintPool;i++)
+ 		{
+ 			m_orderTmpConstraintPool[i] = i;
+@@ -992,33 +798,24 @@
+ btScalar btSequentialImpulseConstraintSolver::solveSingleIteration(int iteration, btCollisionObject** /*bodies */,int /*numBodies*/,btPersistentManifold** /*manifoldPtr*/, int /*numManifolds*/,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* /*debugDrawer*/,btStackAlloc* /*stackAlloc*/)
+ {
+ 
+-	int numNonContactPool = m_tmpSolverNonContactConstraintPool.size();
+ 	int numConstraintPool = m_tmpSolverContactConstraintPool.size();
+ 	int numFrictionPool = m_tmpSolverContactFrictionConstraintPool.size();
+ 
+-	int j;
+ 
+ 	if (infoGlobal.m_solverMode & SOLVER_RANDMIZE_ORDER)
+ 	{
+-		if ((iteration & 7) == 0) {
+-			for (j=0; j<numNonContactPool; ++j) {
+-				int tmp = m_orderNonContactConstraintPool[j];
+-				int swapi = btRandInt2(j+1);
+-				m_orderNonContactConstraintPool[j] = m_orderNonContactConstraintPool[swapi];
+-				m_orderNonContactConstraintPool[swapi] = tmp;
+-			}
+-
+-			//contact/friction constraints are not solved more than 
+-			if (iteration< infoGlobal.m_numIterations)
++		if ((iteration & 7) == 0)
++		{
++			for (int j = 0; j < numConstraintPool; ++j)
+ 			{
+-				for (j=0; j<numConstraintPool; ++j) {
+ 					int tmp = m_orderTmpConstraintPool[j];
+ 					int swapi = btRandInt2(j+1);
+ 					m_orderTmpConstraintPool[j] = m_orderTmpConstraintPool[swapi];
+ 					m_orderTmpConstraintPool[swapi] = tmp;
+ 				}
+ 
+-				for (j=0; j<numFrictionPool; ++j) {
++			for (int j = 0; j < numFrictionPool; ++j)
++			{
+ 					int tmp = m_orderFrictionConstraintPool[j];
+ 					int swapi = btRandInt2(j+1);
+ 					m_orderFrictionConstraintPool[j] = m_orderFrictionConstraintPool[swapi];
+@@ -1026,151 +823,76 @@
+ 				}
+ 			}
+ 		}
+-	}
+-
+-	if (infoGlobal.m_solverMode & SOLVER_SIMD)
+-	{
+-		///solve all joint constraints, using SIMD, if available
+-		for (j=0;j<m_tmpSolverNonContactConstraintPool.size();j++)
+-		{
+-			btSolverConstraint& constraint = m_tmpSolverNonContactConstraintPool[m_orderNonContactConstraintPool[j]];
+-			if (iteration < constraint.m_overrideNumSolverIterations)
+-				resolveSingleConstraintRowGenericSIMD(*constraint.m_solverBodyA,*constraint.m_solverBodyB,constraint);
+-		}
+-
+-		if (iteration< infoGlobal.m_numIterations)
+-		{
+-			for (j=0;j<numConstraints;j++)
+-			{
+-				constraints[j]->solveConstraintObsolete(constraints[j]->getRigidBodyA(),constraints[j]->getRigidBodyB(),infoGlobal.m_timeStep);
+-			}
+-
+-			///solve all contact constraints using SIMD, if available
+-			int numPoolConstraints = m_tmpSolverContactConstraintPool.size();
+-			for (j=0;j<numPoolConstraints;j++)
+-			{
+-				const btSolverConstraint& solveManifold = m_tmpSolverContactConstraintPool[m_orderTmpConstraintPool[j]];
+-				resolveSingleConstraintRowLowerLimitSIMD(*solveManifold.m_solverBodyA,*solveManifold.m_solverBodyB,solveManifold);
+-
+-			}
+-		
+-			///solve all friction constraints, using SIMD, if available
+-			int numFrictionPoolConstraints = m_tmpSolverContactFrictionConstraintPool.size();
+-			for (j=0;j<numFrictionPoolConstraints;j++)
+-			{
+-				btSolverConstraint& solveManifold = m_tmpSolverContactFrictionConstraintPool[m_orderFrictionConstraintPool[j]];
+-				btScalar totalImpulse = m_tmpSolverContactConstraintPool[solveManifold.m_frictionIndex].m_appliedImpulse;
+-
+-				if (totalImpulse>btScalar(0))
+-				{
+-					solveManifold.m_lowerLimit = -(solveManifold.m_friction*totalImpulse);
+-					solveManifold.m_upperLimit = solveManifold.m_friction*totalImpulse;
+-
+-					resolveSingleConstraintRowGenericSIMD(*solveManifold.m_solverBodyA,	*solveManifold.m_solverBodyB,solveManifold);
+-				}
+-			}
+-		}
+-	} else
+-	{
+ 
+ 		///solve all joint constraints
+-		for (j=0;j<m_tmpSolverNonContactConstraintPool.size();j++)
++	for (int j = 0; j < m_tmpSolverNonContactConstraintPool.size(); j++)
+ 		{
+-			btSolverConstraint& constraint = m_tmpSolverNonContactConstraintPool[m_orderNonContactConstraintPool[j]];
+-			if (iteration < constraint.m_overrideNumSolverIterations)
++		btSolverConstraint& constraint = m_tmpSolverNonContactConstraintPool[j];
+ 				resolveSingleConstraintRowGeneric(*constraint.m_solverBodyA,*constraint.m_solverBodyB,constraint);
+ 		}
+ 
+-		if (iteration< infoGlobal.m_numIterations)
++	for (int j = 0; j < numConstraints; j++)
+ 		{
+-			for (j=0;j<numConstraints;j++)
+-			{
+-				constraints[j]->solveConstraintObsolete(constraints[j]->getRigidBodyA(),constraints[j]->getRigidBodyB(),infoGlobal.m_timeStep);
++		constraints[j]->solveConstraintObsolete(*(constraints[j]->getRigidBodyA()), *(constraints[j]->getRigidBodyB()), infoGlobal.m_timeStep);
+ 			}
++
+ 			///solve all contact constraints
+ 			int numPoolConstraints = m_tmpSolverContactConstraintPool.size();
+-			for (j=0;j<numPoolConstraints;j++)
++	for (int j = 0; j < numPoolConstraints; j++)
+ 			{
+ 				const btSolverConstraint& solveManifold = m_tmpSolverContactConstraintPool[m_orderTmpConstraintPool[j]];
+ 				resolveSingleConstraintRowLowerLimit(*solveManifold.m_solverBodyA,*solveManifold.m_solverBodyB,solveManifold);
+ 			}
++
+ 			///solve all friction constraints
+ 			int numFrictionPoolConstraints = m_tmpSolverContactFrictionConstraintPool.size();
+-			for (j=0;j<numFrictionPoolConstraints;j++)
++	for (int j = 0; j < numFrictionPoolConstraints; j++)
+ 			{
+ 				btSolverConstraint& solveManifold = m_tmpSolverContactFrictionConstraintPool[m_orderFrictionConstraintPool[j]];
+ 				btScalar totalImpulse = m_tmpSolverContactConstraintPool[solveManifold.m_frictionIndex].m_appliedImpulse;
+ 
+-				if (totalImpulse>btScalar(0))
++		if (totalImpulse > btScalar(0.0f))
+ 				{
+ 					solveManifold.m_lowerLimit = -(solveManifold.m_friction*totalImpulse);
+ 					solveManifold.m_upperLimit = solveManifold.m_friction*totalImpulse;
+-
+ 					resolveSingleConstraintRowGeneric(*solveManifold.m_solverBodyA,*solveManifold.m_solverBodyB,solveManifold);
+ 				}
+ 			}
+-		}
+-	}
++
+ 	return 0.f;
+ }
+ 
+ 
+ void btSequentialImpulseConstraintSolver::solveGroupCacheFriendlySplitImpulseIterations(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc)
+ {
+-	int iteration;
+-	if (infoGlobal.m_splitImpulse)
+-	{
+-		if (infoGlobal.m_solverMode & SOLVER_SIMD)
+-		{
+-			for ( iteration = 0;iteration<infoGlobal.m_numIterations;iteration++)
+-			{
+-				{
+ 					int numPoolConstraints = m_tmpSolverContactConstraintPool.size();
+-					int j;
+-					for (j=0;j<numPoolConstraints;j++)
+-					{
+-						const btSolverConstraint& solveManifold = m_tmpSolverContactConstraintPool[m_orderTmpConstraintPool[j]];
+-
+-						resolveSplitPenetrationSIMD(*solveManifold.m_solverBodyA,*solveManifold.m_solverBodyB,solveManifold);
+-					}
+-				}
+-			}
+-		}
+-		else
+-		{
+-			for ( iteration = 0;iteration<infoGlobal.m_numIterations;iteration++)
+-			{
++	for ( int iteration = 0; iteration < infoGlobal.m_numIterations; iteration++)
+ 				{
+-					int numPoolConstraints = m_tmpSolverContactConstraintPool.size();
+-					int j;
+-					for (j=0;j<numPoolConstraints;j++)
++		for (int j = 0; j < numPoolConstraints; j++)
+ 					{
+ 						const btSolverConstraint& solveManifold = m_tmpSolverContactConstraintPool[m_orderTmpConstraintPool[j]];
+-
+ 						resolveSplitPenetrationImpulseCacheFriendly(*solveManifold.m_solverBodyA,*solveManifold.m_solverBodyB,solveManifold);
+ 					}
+ 				}
+ 			}
+-		}
+-	}
+-}
+ 
+ btScalar btSequentialImpulseConstraintSolver::solveGroupCacheFriendlyIterations(btCollisionObject** bodies ,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc)
+ {
+ 	BT_PROFILE("solveGroupCacheFriendlyIterations");
+ 
+-	{
+-		///this is a special step to resolve penetrations (just for contacts)
+-		solveGroupCacheFriendlySplitImpulseIterations(bodies ,numBodies,manifoldPtr, numManifolds,constraints,numConstraints,infoGlobal,debugDrawer,stackAlloc);
+-
+-		int maxIterations = m_maxOverrideNumSolverIterations > infoGlobal.m_numIterations? m_maxOverrideNumSolverIterations : infoGlobal.m_numIterations;
+ 
+-		for ( int iteration = 0 ; iteration< maxIterations ; iteration++)
+-		//for ( int iteration = maxIterations-1  ; iteration >= 0;iteration--)
++	//should traverse the contacts random order...
++	int iteration;
++	{
++		for ( iteration = 0;iteration<infoGlobal.m_numIterations;iteration++)
+ 		{			
+ 			solveSingleIteration(iteration, bodies ,numBodies,manifoldPtr, numManifolds,constraints,numConstraints,infoGlobal,debugDrawer,stackAlloc);
+ 		}
+ 		
++		if (infoGlobal.m_splitImpulse)
++		{
++			solveGroupCacheFriendlySplitImpulseIterations(bodies ,numBodies,manifoldPtr, numManifolds,constraints,numConstraints,infoGlobal,debugDrawer,stackAlloc);
++		}
+ 	}
+ 	return 0.f;
+ }
+@@ -1178,12 +900,9 @@
+ btScalar btSequentialImpulseConstraintSolver::solveGroupCacheFriendlyFinish(btCollisionObject** bodies ,int numBodies,btPersistentManifold** /*manifoldPtr*/, int /*numManifolds*/,btTypedConstraint** /*constraints*/,int /* numConstraints*/,const btContactSolverInfo& infoGlobal,btIDebugDraw* /*debugDrawer*/,btStackAlloc* /*stackAlloc*/)
+ {
+ 	int numPoolConstraints = m_tmpSolverContactConstraintPool.size();
+-	int i,j;
+-
+-	for (j=0;j<numPoolConstraints;j++)
++	for (int j = 0; j < numPoolConstraints; j++)
+ 	{
+-
+-		const btSolverConstraint& solveManifold = m_tmpSolverContactConstraintPool[j];
++		btSolverConstraint const & solveManifold = m_tmpSolverContactConstraintPool[j];
+ 		btManifoldPoint* pt = (btManifoldPoint*) solveManifold.m_originalContactPoint;
+ 		btAssert(pt);
+ 		pt->m_appliedImpulse = solveManifold.m_appliedImpulse;
+@@ -1193,33 +912,36 @@
+ 			pt->m_appliedImpulseLateral2 = m_tmpSolverContactFrictionConstraintPool[solveManifold.m_frictionIndex+1].m_appliedImpulse;
+ 		}
+ 
+-		//do a callback here?
++		//contact point processed callback
++		if (solveManifold.m_solverBodyA->wantsContactCallback() || solveManifold.m_solverBodyB->wantsContactCallback())
++		{
++			btAssert(gContactProcessedCallback);
++			(*gContactProcessedCallback)(*pt, solveManifold);
++		}
+ 	}
+ 
+ 	numPoolConstraints = m_tmpSolverNonContactConstraintPool.size();
+-	for (j=0;j<numPoolConstraints;j++)
++	for (int j = 0; j < numPoolConstraints; j++)
+ 	{
+ 		const btSolverConstraint& solverConstr = m_tmpSolverNonContactConstraintPool[j];
+ 		btTypedConstraint* constr = (btTypedConstraint*)solverConstr.m_originalContactPoint;
+-		constr->internalSetAppliedImpulse(solverConstr.m_appliedImpulse);
+-		if (btFabs(solverConstr.m_appliedImpulse)>=constr->getBreakingImpulseThreshold())
+-		{
+-			constr->setEnabled(false);
++		btScalar sum = constr->internalGetAppliedImpulse();
++		sum += solverConstr.m_appliedImpulse * solverConstr.m_appliedImpulse; //we add the squared value of the component, otherwise we get non uniform breaking thresholds.
++		constr->internalSetAppliedImpulse(sum);
+ 		}
+-	}
+-
+ 
+ 	if (infoGlobal.m_splitImpulse)
+ 	{		
+-		for ( i=0;i<numBodies;i++)
++		for (int i = 0; i < numBodies; i++)
+ 		{
+ 			btRigidBody* body = btRigidBody::upcast(bodies[i]);
+ 			if (body)
+ 				body->internalWritebackVelocity(infoGlobal.m_timeStep);
+ 		}
+-	} else
++	}
++	else
+ 	{
+-		for ( i=0;i<numBodies;i++)
++		for (int i = 0; i < numBodies; i++)
+ 		{
+ 			btRigidBody* body = btRigidBody::upcast(bodies[i]);
+ 			if (body)
+@@ -1227,7 +949,6 @@
+ 		}
+ 	}
+ 
+-
+ 	m_tmpSolverContactConstraintPool.resize(0);
+ 	m_tmpSolverNonContactConstraintPool.resize(0);
+ 	m_tmpSolverContactFrictionConstraintPool.resize(0);
+@@ -1240,7 +961,6 @@
+ /// btSequentialImpulseConstraintSolver Sequentially applies impulses
+ btScalar btSequentialImpulseConstraintSolver::solveGroup(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc,btDispatcher* /*dispatcher*/)
+ {
+-
+ 	BT_PROFILE("solveGroup");
+ 	//you need to provide at least some bodies
+ 	btAssert(bodies);
+@@ -1260,10 +980,4 @@
+ 	m_btSeed2 = 0;
+ }
+ 
+-btRigidBody& btSequentialImpulseConstraintSolver::getFixedBody()
+-{
+-	static btRigidBody s_fixed(0, 0,0);
+-	s_fixed.setMassProps(btScalar(0.),btVector3(btScalar(0.),btScalar(0.),btScalar(0.)));
+-	return s_fixed;
+-}
+ 
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h bullet-contact/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h
+--- bullet-2.80-rev2531/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h	2012-05-24 12:48:26.211468700 -0400
++++ bullet-contact/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h	2012-05-24 12:41:44.144471800 -0400
+@@ -13,17 +13,19 @@
+ 3. This notice may not be removed or altered from any source distribution.
+ */
+ 
+-#ifndef BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
+-#define BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
++#ifndef SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
++#define SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
+ 
+ #include "btConstraintSolver.h"
+ class btIDebugDraw;
+ #include "btContactConstraint.h"
+-#include "btSolverBody.h"
+ #include "btSolverConstraint.h"
+ #include "btTypedConstraint.h"
+ #include "BulletCollision/NarrowPhaseCollision/btManifoldPoint.h"
+ 
++typedef void (*ContactProcessedCallback)(btManifoldPoint & cp, btSolverConstraint const & solveManifold);
++extern ContactProcessedCallback gContactProcessedCallback;
++
+ ///The btSequentialImpulseConstraintSolver is a fast SIMD implementation of the Projected Gauss Seidel (iterative LCP) method.
+ class btSequentialImpulseConstraintSolver : public btConstraintSolver
+ {
+@@ -33,10 +35,8 @@
+ 	btConstraintArray			m_tmpSolverNonContactConstraintPool;
+ 	btConstraintArray			m_tmpSolverContactFrictionConstraintPool;
+ 	btAlignedObjectArray<int>	m_orderTmpConstraintPool;
+-	btAlignedObjectArray<int>	m_orderNonContactConstraintPool;
+ 	btAlignedObjectArray<int>	m_orderFrictionConstraintPool;
+ 	btAlignedObjectArray<btTypedConstraint::btConstraintInfo1> m_tmpConstraintSizesPool;
+-	int							m_maxOverrideNumSolverIterations;
+ 
+ 	void setupFrictionConstraint(	btSolverConstraint& solverConstraint, const btVector3& normalAxis,btRigidBody* solverBodyA,btRigidBody* solverBodyIdB,
+ 									btManifoldPoint& cp,const btVector3& rel_pos1,const btVector3& rel_pos2,
+@@ -60,12 +60,6 @@
+ 
+ 	void	convertContact(btPersistentManifold* manifold,const btContactSolverInfo& infoGlobal);
+ 
+-
+-	void	resolveSplitPenetrationSIMD(
+-        btRigidBody& body1,
+-        btRigidBody& body2,
+-        const btSolverConstraint& contactConstraint);
+-
+ 	void	resolveSplitPenetrationImpulseCacheFriendly(
+         btRigidBody& body1,
+         btRigidBody& body2,
+@@ -76,15 +70,13 @@
+ 
+ 	void	resolveSingleConstraintRowGeneric(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& contactConstraint);
+ 
+-	void	resolveSingleConstraintRowGenericSIMD(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& contactConstraint);
+-	
+ 	void	resolveSingleConstraintRowLowerLimit(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& contactConstraint);
+ 	
+-	void	resolveSingleConstraintRowLowerLimitSIMD(btRigidBody& body1,btRigidBody& body2,const btSolverConstraint& contactConstraint);
+-		
+ protected:
+-	static btRigidBody& getFixedBody();
+-	
++	static btRigidBody& getFixedBody()
++	{
++		return btRigidBody::s_fixed;
++	}	
+ 	virtual void solveGroupCacheFriendlySplitImpulseIterations(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc);
+ 	virtual btScalar solveGroupCacheFriendlyFinish(btCollisionObject** bodies ,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc);
+ 	btScalar solveSingleIteration(int iteration, btCollisionObject** bodies ,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer,btStackAlloc* stackAlloc);
+@@ -126,5 +118,5 @@
+ #endif
+ 
+ 
+-#endif //BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
++#endif //SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H
+ 
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp bullet-contact/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp
+--- bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp	2012-05-24 12:47:13.121288100 -0400
++++ bullet-contact/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp	2012-05-24 12:41:44.146471900 -0400
+@@ -35,8 +35,6 @@
+ #include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
+ #include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"
+ #include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
+-#include "BulletDynamics/ConstraintSolver/btContactConstraint.h"
+-
+ 
+ #include "LinearMath/btIDebugDraw.h"
+ #include "BulletCollision/CollisionShapes/btSphereShape.h"
+@@ -48,178 +46,16 @@
+ 
+ #include "LinearMath/btSerializer.h"
+ 
+-#if 0
+-btAlignedObjectArray<btVector3> debugContacts;
+-btAlignedObjectArray<btVector3> debugNormals;
+-int startHit=2;
+-int firstHit=startHit;
+-#endif
+-
+-SIMD_FORCE_INLINE	int	btGetConstraintIslandId(const btTypedConstraint* lhs)
+-{
+-	int islandId;
+-	
+-	const btCollisionObject& rcolObj0 = lhs->getRigidBodyA();
+-	const btCollisionObject& rcolObj1 = lhs->getRigidBodyB();
+-	islandId= rcolObj0.getIslandTag()>=0?rcolObj0.getIslandTag():rcolObj1.getIslandTag();
+-	return islandId;
+-
+-}
+-
+-
+-class btSortConstraintOnIslandPredicate
+-{
+-	public:
+-
+-		bool operator() ( const btTypedConstraint* lhs, const btTypedConstraint* rhs ) const
+-		{
+-			int rIslandId0,lIslandId0;
+-			rIslandId0 = btGetConstraintIslandId(rhs);
+-			lIslandId0 = btGetConstraintIslandId(lhs);
+-			return lIslandId0 < rIslandId0;
+-		}
+-};
+-
+-struct InplaceSolverIslandCallback : public btSimulationIslandManager::IslandCallback
+-{
+-	btContactSolverInfo*	m_solverInfo;
+-	btConstraintSolver*		m_solver;
+-	btTypedConstraint**		m_sortedConstraints;
+-	int						m_numConstraints;
+-	btIDebugDraw*			m_debugDrawer;
+-	btStackAlloc*			m_stackAlloc;
+-	btDispatcher*			m_dispatcher;
+-	
+-	btAlignedObjectArray<btCollisionObject*> m_bodies;
+-	btAlignedObjectArray<btPersistentManifold*> m_manifolds;
+-	btAlignedObjectArray<btTypedConstraint*> m_constraints;
+-
+-
+-	InplaceSolverIslandCallback(
+-		btConstraintSolver*	solver,
+-		btStackAlloc* stackAlloc,
+-		btDispatcher* dispatcher)
+-		:m_solverInfo(NULL),
+-		m_solver(solver),
+-		m_sortedConstraints(NULL),
+-		m_numConstraints(0),
+-		m_debugDrawer(NULL),
+-		m_stackAlloc(stackAlloc),
+-		m_dispatcher(dispatcher)
+-	{
+-
+-	}
+-
+-	InplaceSolverIslandCallback& operator=(InplaceSolverIslandCallback& other)
+-	{
+-		btAssert(0);
+-		(void)other;
+-		return *this;
+-	}
+-
+-	SIMD_FORCE_INLINE void setup ( btContactSolverInfo* solverInfo, btTypedConstraint** sortedConstraints,	int	numConstraints,	btIDebugDraw* debugDrawer)
+-	{
+-		btAssert(solverInfo);
+-		m_solverInfo = solverInfo;
+-		m_sortedConstraints = sortedConstraints;
+-		m_numConstraints = numConstraints;
+-		m_debugDrawer = debugDrawer;
+-		m_bodies.resize (0);
+-		m_manifolds.resize (0);
+-		m_constraints.resize (0);
+-	}
+-
+-	
+-	virtual	void	processIsland(btCollisionObject** bodies,int numBodies,btPersistentManifold**	manifolds,int numManifolds, int islandId)
+-	{
+-		if (islandId<0)
+-		{
+-			if (numManifolds + m_numConstraints)
+-			{
+-				///we don't split islands, so all constraints/contact manifolds/bodies are passed into the solver regardless the island id
+-				m_solver->solveGroup( bodies,numBodies,manifolds, numManifolds,&m_sortedConstraints[0],m_numConstraints,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
+-			}
+-		} else
+-		{
+-				//also add all non-contact constraints/joints for this island
+-			btTypedConstraint** startConstraint = 0;
+-			int numCurConstraints = 0;
+-			int i;
+-			
+-			//find the first constraint for this island
+-			for (i=0;i<m_numConstraints;i++)
+-			{
+-				if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)
+-				{
+-					startConstraint = &m_sortedConstraints[i];
+-					break;
+-				}
+-			}
+-			//count the number of constraints in this island
+-			for (;i<m_numConstraints;i++)
+-			{
+-				if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)
+-				{
+-					numCurConstraints++;
+-				}
+-			}
+-
+-			if (m_solverInfo->m_minimumSolverBatchSize<=1)
+-			{
+-				///only call solveGroup if there is some work: avoid virtual function call, its overhead can be excessive
+-				if (numManifolds + numCurConstraints)
+-				{
+-					m_solver->solveGroup( bodies,numBodies,manifolds, numManifolds,startConstraint,numCurConstraints,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
+-				}
+-			} else
+-			{
+-				
+-				for (i=0;i<numBodies;i++)
+-					m_bodies.push_back(bodies[i]);
+-				for (i=0;i<numManifolds;i++)
+-					m_manifolds.push_back(manifolds[i]);
+-				for (i=0;i<numCurConstraints;i++)
+-					m_constraints.push_back(startConstraint[i]);
+-				if ((m_constraints.size()+m_manifolds.size())>m_solverInfo->m_minimumSolverBatchSize)
+-				{
+-					processConstraints();
+-				} else
+-				{
+-					//printf("deferred\n");
+-				}
+-			}
+-		}
+-	}
+-	void	processConstraints()
+-	{
+-		if (m_manifolds.size() + m_constraints.size()>0)
+-		{
+-
+-			btCollisionObject** bodies = m_bodies.size()? &m_bodies[0]:0;
+-			btPersistentManifold** manifold = m_manifolds.size()?&m_manifolds[0]:0;
+-			btTypedConstraint** constraints = m_constraints.size()?&m_constraints[0]:0;
+-			
+-			m_solver->solveGroup( bodies,m_bodies.size(),manifold, m_manifolds.size(),constraints, m_constraints.size() ,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
+-		}
+-		m_bodies.resize(0);
+-		m_manifolds.resize(0);
+-		m_constraints.resize(0);
+-
+-	}
+-
+-};
+-
++ConstraintRemovedCallback gConstraintRemovedCallback = 0;
+ 
+ 
+ btDiscreteDynamicsWorld::btDiscreteDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration)
+ :btDynamicsWorld(dispatcher,pairCache,collisionConfiguration),
+ m_constraintSolver(constraintSolver),
+-m_gravity(0,-10,0),
+-m_localTime(0),
++m_gravity(0.0f,-10.0f,0.0f),
++m_localTime(0.0f),
+ m_synchronizeAllMotionStates(false),
+-m_profileTimings(0),
+-m_sortedConstraints	(),
+-m_solverIslandCallback ( NULL )
++m_profileTimings(0)
+ {
+ 	if (!m_constraintSolver)
+ 	{
+@@ -237,11 +73,6 @@
+ 	}
+ 
+ 	m_ownsIslandManager = true;
+-
+-	{
+-		void* mem = btAlignedAlloc(sizeof(InplaceSolverIslandCallback),16);
+-		m_solverIslandCallback = new (mem) InplaceSolverIslandCallback (constraintSolver, m_stackAlloc, dispatcher);
+-	}
+ }
+ 
+ 
+@@ -253,11 +84,6 @@
+ 		m_islandManager->~btSimulationIslandManager();
+ 		btAlignedFree( m_islandManager);
+ 	}
+-	if (m_solverIslandCallback)
+-	{
+-		m_solverIslandCallback->~InplaceSolverIslandCallback();
+-		btAlignedFree(m_solverIslandCallback);
+-	}
+ 	if (m_ownsConstraintSolver)
+ 	{
+ 
+@@ -266,26 +92,6 @@
+ 	}
+ }
+ 
+-void	btDiscreteDynamicsWorld::saveKinematicState(btScalar timeStep)
+-{
+-///would like to iterate over m_nonStaticRigidBodies, but unfortunately old API allows
+-///to switch status _after_ adding kinematic objects to the world
+-///fix it for Bullet 3.x release
+-	for (int i=0;i<m_collisionObjects.size();i++)
+-	{
+-		btCollisionObject* colObj = m_collisionObjects[i];
+-		btRigidBody* body = btRigidBody::upcast(colObj);
+-		if (body && body->getActivationState() != ISLAND_SLEEPING)
+-		{
+-			if (body->isKinematicObject())
+-			{
+-				//to calculate velocities next frame
+-				body->saveKinematicState(timeStep);
+-			}
+-		}
+-	}
+-
+-}
+ 
+ void	btDiscreteDynamicsWorld::debugDrawWorld()
+ {
+@@ -313,7 +119,7 @@
+ 
+ 
+ 
+-    if (getDebugDrawer() && (getDebugDrawer()->getDebugMode() & (btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawAabb | btIDebugDraw::DBG_DrawNormals)))
++	if (getDebugDrawer() && getDebugDrawer()->getDebugMode() & (btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawAabb))
+ 	{
+ 		int i;
+ 
+@@ -327,29 +133,32 @@
+ 	}
+ }
+ 
+-void	btDiscreteDynamicsWorld::clearForces()
++
++///apply continuous forces, call this once per timestep
++void btDiscreteDynamicsWorld::applyForces(btScalar timeStep)
+ {
+ 	///@todo: iterate over awake simulation islands!
+ 	for ( int i=0;i<m_nonStaticRigidBodies.size();i++)
+ 	{
+ 		btRigidBody* body = m_nonStaticRigidBodies[i];
+-		//need to check if next line is ok
+-		//it might break backward compatibility (people applying forces on sleeping objects get never cleared and accumulate on wake-up
+-		body->clearForces();
++
++		if (body->isActive())
++		{
++			body->applyForces(m_gravity, timeStep);
+ 	}
+ }	
++}
++
+ 
+-///apply gravity, call this once per timestep
+-void	btDiscreteDynamicsWorld::applyGravity()
++///clear the accumulated continuous forces for the next frame
++void btDiscreteDynamicsWorld::clearForces()
+ {
+-	///@todo: iterate over awake simulation islands!
++	///TODO: iterate only over awake objects
++	//this would mean that accumulated forces have to be cleared when objects go to sleep too.
+ 	for ( int i=0;i<m_nonStaticRigidBodies.size();i++)
+ 	{
+ 		btRigidBody* body = m_nonStaticRigidBodies[i];
+-		if (body->isActive())
+-		{
+-			body->applyGravity();
+-		}
++		body->ClearAccumulatedForces();
+ 	}
+ }
+ 
+@@ -400,7 +209,10 @@
+ }
+ 
+ 
+-int	btDiscreteDynamicsWorld::stepSimulation( btScalar timeStep,int maxSubSteps, btScalar fixedTimeStep)
++int	btDiscreteDynamicsWorld::stepSimulation(
++	btScalar timeStep,			// The amount of time to move the simulation forward by
++	int maxSubSteps,			// The maximum number of time steps allowed to be computed
++	btScalar fixedTimeStep)		// The maximum fixed timestep used by the physics simulation
+ {
+ 	startProfiling(timeStep);
+ 
+@@ -408,61 +220,35 @@
+ 
+ 	int numSimulationSubSteps = 0;
+ 
+-	if (maxSubSteps)
+-	{
+-		//fixed timestep with interpolation
++	//cumulate the timestep
+ 		m_localTime += timeStep;
+-		if (m_localTime >= fixedTimeStep)
+-		{
+-			numSimulationSubSteps = int( m_localTime / fixedTimeStep);
+-			m_localTime -= numSimulationSubSteps * fixedTimeStep;
+-		}
+-	} else
+-	{
+-		//variable timestep
+-		fixedTimeStep = timeStep;
+-		m_localTime = timeStep;
+-		if (btFuzzyZero(timeStep))
+-		{
+-			numSimulationSubSteps = 0;
+-			maxSubSteps = 0;
+-		} else
+-		{
+-			numSimulationSubSteps = 1;
+-			maxSubSteps = 1;
+-		}
+-	}
+ 
+-	//process some debugging flags
+-	if (getDebugDrawer())
++	//if the total time is too small, skip physics until it gets large enough.
++	if (!btFuzzyZero(m_localTime))
+ 	{
+-		btIDebugDraw* debugDrawer = getDebugDrawer ();
+-		gDisableDeactivation = (debugDrawer->getDebugMode() & btIDebugDraw::DBG_NoDeactivation) != 0;
++		//determine how many sub steps need to be performed
++		float numSteps = m_localTime / fixedTimeStep;
++
++		numSteps = ceil(numSteps);
++		numSimulationSubSteps = (int)numSteps;
++		fixedTimeStep = m_localTime / numSteps;
++		m_localTime = 0.0f;
+ 	}
++
+ 	if (numSimulationSubSteps)
+ 	{
+-
+ 		//clamp the number of substeps, to prevent simulation grinding spiralling down to a halt
+-		int clampedSimulationSteps = (numSimulationSubSteps > maxSubSteps)? maxSubSteps : numSimulationSubSteps;
+-
+-		saveKinematicState(fixedTimeStep*clampedSimulationSteps);
+-
+-		applyGravity();
+-
++		numSimulationSubSteps = btMin(numSimulationSubSteps, maxSubSteps);
+ 		
+-
+-		for (int i=0;i<clampedSimulationSteps;i++)
++		for (int i = 0; i < numSimulationSubSteps; i++)
+ 		{
++			//run the simulation
+ 			internalSingleStepSimulation(fixedTimeStep);
+-			synchronizeMotionStates();
+-		}
+-
+-	} else
+-	{
+-		synchronizeMotionStates();
+ 	}
+ 
++		//clear the accumulated forces for all objects
+ 	clearForces();
++	}
+ 
+ #ifndef BT_NO_PROFILE
+ 	CProfileManager::Increment_Frame_Counter();
+@@ -471,50 +257,53 @@
+ 	return numSimulationSubSteps;
+ }
+ 
++
+ void	btDiscreteDynamicsWorld::internalSingleStepSimulation(btScalar timeStep)
+ {
+-	
+ 	BT_PROFILE("internalSingleStepSimulation");
+ 
+-	if(0 != m_internalPreTickCallback) {
++	if(m_internalPreTickCallback != 0)
++	{
+ 		(*m_internalPreTickCallback)(this, timeStep);
+ 	}	
+ 
+-	///apply gravity, predict motion
++	/// Integrate object's motion as if there were no constraints
++	// We use the velocity from last frame to compute our new position
+ 	predictUnconstraintMotion(timeStep);
+ 
++	//apply gravity and other continuous forces to all active rigid bodies
++	//and compute the new unconstrained velocity
++	applyForces(timeStep);
++
+ 	btDispatcherInfo& dispatchInfo = getDispatchInfo();
+ 
+ 	dispatchInfo.m_timeStep = timeStep;
+ 	dispatchInfo.m_stepCount = 0;
+ 	dispatchInfo.m_debugDraw = getDebugDrawer();
+ 
+-
+ 	///perform collision detection
+ 	performDiscreteCollisionDetection();
+ 
+-
+ 	calculateSimulationIslands();
+ 
+-	
+ 	getSolverInfo().m_timeStep = timeStep;
+ 	
+-
+-
+ 	///solve contact and other joint constraints
+ 	solveConstraints(getSolverInfo());
+ 	
+ 	///CallbackTriggers();
+ 
+ 	///integrate transforms
+-	integrateTransforms(timeStep);
++//	integrateTransforms(timeStep);
+ 
+ 	///update vehicle simulation
+ 	updateActions(timeStep);
+ 	
++	//deactivate objects that should be
+ 	updateActivationState( timeStep );
+ 
+-	if(0 != m_internalTickCallback) {
++	if(m_internalTickCallback != 0)
++	{
+ 		(*m_internalTickCallback)(this, timeStep);
+ 	}	
+ }
+@@ -522,14 +311,6 @@
+ void	btDiscreteDynamicsWorld::setGravity(const btVector3& gravity)
+ {
+ 	m_gravity = gravity;
+-	for ( int i=0;i<m_nonStaticRigidBodies.size();i++)
+-	{
+-		btRigidBody* body = m_nonStaticRigidBodies[i];
+-		if (body->isActive() && !(body->getFlags() &BT_DISABLE_WORLD_GRAVITY))
+-		{
+-			body->setGravity(gravity);
+-		}
+-	}
+ }
+ 
+ btVector3 btDiscreteDynamicsWorld::getGravity () const
+@@ -537,11 +318,13 @@
+ 	return m_gravity;
+ }
+ 
+-void	btDiscreteDynamicsWorld::addCollisionObject(btCollisionObject* collisionObject,short int collisionFilterGroup,short int collisionFilterMask)
++
++void btDiscreteDynamicsWorld::addCollisionObject(btCollisionObject* collisionObject, unsigned short collisionFilterGroup, unsigned short collisionFilterMask)
+ {
+ 	btCollisionWorld::addCollisionObject(collisionObject,collisionFilterGroup,collisionFilterMask);
+ }
+ 
++
+ void	btDiscreteDynamicsWorld::removeCollisionObject(btCollisionObject* collisionObject)
+ {
+ 	btRigidBody* body = btRigidBody::upcast(collisionObject);
+@@ -551,54 +334,49 @@
+ 		btCollisionWorld::removeCollisionObject(collisionObject);
+ }
+ 
++
+ void	btDiscreteDynamicsWorld::removeRigidBody(btRigidBody* body)
+ {
+ 	m_nonStaticRigidBodies.remove(body);
++	RemoveFromActiveRigidBodyList(body);
+ 	btCollisionWorld::removeCollisionObject(body);
+ }
+ 
+ 
+ void	btDiscreteDynamicsWorld::addRigidBody(btRigidBody* body)
+ {
+-	if (!body->isStaticOrKinematicObject() && !(body->getFlags() &BT_DISABLE_WORLD_GRAVITY))
+-	{
+-		body->setGravity(m_gravity);
+-	}
++	bool isDynamic = !body->isStaticOrKinematicObject();
++	unsigned short collisionFilterGroup = isDynamic? unsigned short(btBroadphaseProxy::DefaultFilter) : unsigned short(btBroadphaseProxy::StaticFilter);
++	unsigned short collisionFilterMask = isDynamic? unsigned short(btBroadphaseProxy::AllFilter) : unsigned short(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
+ 
+-	if (body->getCollisionShape())
+-	{
+-		if (!body->isStaticObject())
+-		{
+-			m_nonStaticRigidBodies.push_back(body);
+-		} else
+-		{
+-			body->setActivationState(ISLAND_SLEEPING);
++	addRigidBody(body, collisionFilterGroup, collisionFilterMask);
+ 		}
+ 
+-		bool isDynamic = !(body->isStaticObject() || body->isKinematicObject());
+-		short collisionFilterGroup = isDynamic? short(btBroadphaseProxy::DefaultFilter) : short(btBroadphaseProxy::StaticFilter);
+-		short collisionFilterMask = isDynamic? 	short(btBroadphaseProxy::AllFilter) : 	short(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
+-
+-		addCollisionObject(body,collisionFilterGroup,collisionFilterMask);
+-	}
+-}
+ 
+ void	btDiscreteDynamicsWorld::addRigidBody(btRigidBody* body, short group, short mask)
+ {
+-	if (!body->isStaticOrKinematicObject() && !(body->getFlags() &BT_DISABLE_WORLD_GRAVITY))
+-	{
+-		body->setGravity(m_gravity);
+-	}
+-
+ 	if (body->getCollisionShape())
+ 	{
+ 		if (!body->isStaticObject())
+ 		{
+ 			m_nonStaticRigidBodies.push_back(body);
++			AddToActiveRigidBodyList(body);
++
++			if (body->isStaticOrKinematicObject())
++			{
++				body->forceActivationState(ISLAND_SLEEPING);
++				body->setCollisionFlag(btCollisionObject::CF_DISABLE_STATE_CHANGE);
+ 		}
+ 		 else
+ 		{
+-			body->setActivationState(ISLAND_SLEEPING);
++				body->clearCollisionFlag(btCollisionObject::CF_DISABLE_STATE_CHANGE);
++				body->activate();
++			}
++		}
++		else
++		{
++			body->forceActivationState(ISLAND_SLEEPING);
++			body->setCollisionFlag(btCollisionObject::CF_DISABLE_STATE_CHANGE);
+ 		}
+ 		addCollisionObject(body,group,mask);
+ 	}
+@@ -620,53 +398,54 @@
+ {
+ 	BT_PROFILE("updateActivationState");
+ 
+-	for ( int i=0;i<m_nonStaticRigidBodies.size();i++)
+-	{
+-		btRigidBody* body = m_nonStaticRigidBodies[i];
+-		if (body)
++	for ( int i=0;i<m_activeRigidBodies.size();i++)
+ 		{
++		btRigidBody* body = m_activeRigidBodies[i];
++		btAssert(body != NULL);
++
+ 			body->updateDeactivation(timeStep);
++	}
++}
+ 
+-			if (body->wantsSleeping())
+-			{
+-				if (body->isStaticOrKinematicObject())
+-				{
+-					body->setActivationState(ISLAND_SLEEPING);
+-				} else
+-				{
+-					if (body->getActivationState() == ACTIVE_TAG)
+-						body->setActivationState( WANTS_DEACTIVATION );
+-					if (body->getActivationState() == ISLAND_SLEEPING) 
++
++void btDiscreteDynamicsWorld::AddToActiveRigidBodyList(btCollisionObject* colObj)
+ 					{
+-						body->setAngularVelocity(btVector3(0,0,0));
+-						body->setLinearVelocity(btVector3(0,0,0));
+-					}
++	btRigidBody* body = btRigidBody::upcast(colObj);
++	if (body == NULL)
++		return;
++
++	//test the flag to see if they are not already in the list
++	if (body->testCollisionFlag(btCollisionObject::CF_IN_ACTIVE_LIST))
++		return;
+ 
++	m_activeRigidBodies.push_back(body);
++	body->setCollisionFlag(btCollisionObject::CF_IN_ACTIVE_LIST);
+ 				}
+-			} else
++
++void btDiscreteDynamicsWorld::RemoveFromActiveRigidBodyList(btRigidBody* body)
+ 			{
+-				if (body->getActivationState() != DISABLE_DEACTIVATION)
+-					body->setActivationState( ACTIVE_TAG );
+-			}
+-		}
+-	}
++	//no need to do anything if the object is not already in the list
++	if (!body->testCollisionFlag(btCollisionObject::CF_IN_ACTIVE_LIST))
++		return;
++
++	//remove it from the list
++	m_activeRigidBodies.remove(body);
++	body->clearCollisionFlag(btCollisionObject::CF_IN_ACTIVE_LIST);
+ }
+ 
++
+ void	btDiscreteDynamicsWorld::addConstraint(btTypedConstraint* constraint,bool disableCollisionsBetweenLinkedBodies)
+ {
+ 	m_constraints.push_back(constraint);
+ 	if (disableCollisionsBetweenLinkedBodies)
+-	{
+-		constraint->getRigidBodyA().addConstraintRef(constraint);
+-		constraint->getRigidBodyB().addConstraintRef(constraint);
+-	}
++		constraint->disableCollisions(true);
+ }
+ 
+ void	btDiscreteDynamicsWorld::removeConstraint(btTypedConstraint* constraint)
+ {
+ 	m_constraints.remove(constraint);
+-	constraint->getRigidBodyA().removeConstraintRef(constraint);
+-	constraint->getRigidBodyB().removeConstraintRef(constraint);
++	if (constraint->disablesCollisions())
++		constraint->disableCollisions(false);
+ }
+ 
+ void	btDiscreteDynamicsWorld::addAction(btActionInterface* action)
+@@ -680,26 +459,29 @@
+ }
+ 
+ 
+-void	btDiscreteDynamicsWorld::addVehicle(btActionInterface* vehicle)
++SIMD_FORCE_INLINE	int	btGetConstraintIslandId(const btTypedConstraint* lhs)
+ {
+-	addAction(vehicle);
+-}
++	int islandId;
+ 
+-void	btDiscreteDynamicsWorld::removeVehicle(btActionInterface* vehicle)
+-{
+-	removeAction(vehicle);
++	const btCollisionObject& rcolObj0 = *lhs->getRigidBodyA();
++	const btCollisionObject& rcolObj1 = *lhs->getRigidBodyB();
++	islandId = rcolObj0.getIslandTag() >= 0 ? rcolObj0.getIslandTag() : rcolObj1.getIslandTag();
++	return islandId;
+ }
+ 
+-void	btDiscreteDynamicsWorld::addCharacter(btActionInterface* character)
++
++class btSortConstraintOnIslandPredicate
+ {
+-	addAction(character);
+-}
++	public:
+ 
+-void	btDiscreteDynamicsWorld::removeCharacter(btActionInterface* character)
++		bool operator() ( const btTypedConstraint* lhs, const btTypedConstraint* rhs )
+ {
+-	removeAction(character);
++			int rIslandId0, lIslandId0;
++			rIslandId0 = btGetConstraintIslandId(rhs);
++			lIslandId0 = btGetConstraintIslandId(lhs);
++			return lIslandId0 < rIslandId0;
+ }
+-
++};
+ 
+ 
+ 
+@@ -707,28 +489,147 @@
+ {
+ 	BT_PROFILE("solveConstraints");
+ 	
+-	m_sortedConstraints.resize( m_constraints.size());
++	struct InplaceSolverIslandCallback : public btSimulationIslandManager::IslandCallback
++	{
++
++		btContactSolverInfo&	m_solverInfo;
++		btConstraintSolver*		m_solver;
++		btTypedConstraint**		m_sortedConstraints;
++		int						m_numConstraints;
++		btIDebugDraw*			m_debugDrawer;
++		btStackAlloc*			m_stackAlloc;
++		btDispatcher*			m_dispatcher;
++		
++		btAlignedObjectArray<btCollisionObject*> m_bodies;
++		btAlignedObjectArray<btPersistentManifold*> m_manifolds;
++		btAlignedObjectArray<btTypedConstraint*> m_constraints;
++
++
++		InplaceSolverIslandCallback(
++			btContactSolverInfo& solverInfo,
++			btConstraintSolver*	solver,
++			btTypedConstraint** sortedConstraints,
++			int	numConstraints,
++			btIDebugDraw*	debugDrawer,
++			btStackAlloc*			stackAlloc,
++			btDispatcher* dispatcher)
++			:m_solverInfo(solverInfo),
++			m_solver(solver),
++			m_sortedConstraints(sortedConstraints),
++			m_numConstraints(numConstraints),
++			m_debugDrawer(debugDrawer),
++			m_stackAlloc(stackAlloc),
++			m_dispatcher(dispatcher)
++		{
++
++		}
++
++
++		InplaceSolverIslandCallback& operator=(InplaceSolverIslandCallback& other)
++		{
++			btAssert(0);
++			(void)other;
++			return *this;
++		}
++		virtual	void	ProcessIsland(btCollisionObject** bodies,int numBodies,btPersistentManifold**	manifolds,int numManifolds, int islandId)
++		{
++			if (islandId<0)
++			{
++				if (numManifolds + m_numConstraints)
++				{
++					///we don't split islands, so all constraints/contact manifolds/bodies are passed into the solver regardless the island id
++					m_solver->solveGroup( bodies,numBodies,manifolds, numManifolds,&m_sortedConstraints[0],m_numConstraints,m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
++				}
++			} else
++			{
++					//also add all non-contact constraints/joints for this island
++				btTypedConstraint** startConstraint = 0;
++				int numCurConstraints = 0;
+ 	int i; 
+-	for (i=0;i<getNumConstraints();i++)
++				
++				//find the first constraint for this island
++				for (i=0;i<m_numConstraints;i++)
+ 	{
+-		m_sortedConstraints[i] = m_constraints[i];
++					if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)
++					{
++						startConstraint = &m_sortedConstraints[i];
++						break;
++					}
++				}
++				//count the number of constraints in this island
++				for (;i<m_numConstraints;i++)
++				{
++					if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)
++					{
++						numCurConstraints++;
++					}
+ 	}
+ 
+-//	btAssert(0);
++				if (m_solverInfo.m_minimumSolverBatchSize<=1)
++				{
++					///only call solveGroup if there is some work: avoid virtual function call, its overhead can be excessive
++					if (numManifolds + numCurConstraints)
++					{
++						m_solver->solveGroup( bodies,numBodies,manifolds, numManifolds,startConstraint,numCurConstraints,m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
++					}
++				} else
++				{
+ 		
++					for (i=0;i<numBodies;i++)
++						m_bodies.push_back(bodies[i]);
++					for (i=0;i<numManifolds;i++)
++						m_manifolds.push_back(manifolds[i]);
++					for (i=0;i<numCurConstraints;i++)
++						m_constraints.push_back(startConstraint[i]);
++					if ((m_constraints.size()+m_manifolds.size())>m_solverInfo.m_minimumSolverBatchSize)
++					{
++						processConstraints();
++					} else
++					{
++						//printf("deferred\n");
++					}
++				}
++			}
++		}
++		void	processConstraints()
++		{
++			if (m_manifolds.size() + m_constraints.size()>0)
++			{
++				m_solver->solveGroup( &m_bodies[0],m_bodies.size(), &m_manifolds[0], m_manifolds.size(), &m_constraints[0], m_constraints.size() ,m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);
++			}
++			m_bodies.resize(0);
++			m_manifolds.resize(0);
++			m_constraints.resize(0);
+ 	
++		}
+ 
+-	m_sortedConstraints.quickSort(btSortConstraintOnIslandPredicate());
++	};
+ 	
+-	btTypedConstraint** constraintsPtr = getNumConstraints() ? &m_sortedConstraints[0] : 0;
+ 	
+-	m_solverIslandCallback->setup(&solverInfo,constraintsPtr,m_sortedConstraints.size(),getDebugDrawer());
+-	m_constraintSolver->prepareSolve(getCollisionWorld()->getNumCollisionObjects(), getCollisionWorld()->getDispatcher()->getNumManifolds());
++
++	//sorted version of all btTypedConstraint, based on islandId
++	//TODO: this should be a block copy if at all necessary
++	btAlignedObjectArray<btTypedConstraint*> sortedConstraints;
++	sortedConstraints.resize( m_constraints.size());
++	for (int i = 0; i < getNumConstraints(); i++)
++	{
++		sortedConstraints[i] = m_constraints[i];
++	}
++
++//	btAssert(0);
++
++	sortedConstraints.quickSort(btSortConstraintOnIslandPredicate());
++
++	btTypedConstraint** constraintsPtr = getNumConstraints() ? &sortedConstraints[0] : 0;
++
++	InplaceSolverIslandCallback	solverCallback(solverInfo, m_constraintSolver, constraintsPtr, sortedConstraints.size(), m_debugDrawer, m_stackAlloc, m_dispatcher1);
++
++	m_constraintSolver->prepareSolve(getNumCollisionObjects(), getDispatcher()->getNumManifolds());
+ 	
+ 	/// solve all the constraints for this island
+-	m_islandManager->buildAndProcessIslands(getCollisionWorld()->getDispatcher(),getCollisionWorld(),m_solverIslandCallback);
++	m_islandManager->buildAndProcessIslands(getDispatcher(), this, &solverCallback);
+ 
+-	m_solverIslandCallback->processConstraints();
++	solverCallback.processConstraints();
+ 
+ 	m_constraintSolver->allSolved(solverInfo, m_debugDrawer, m_stackAlloc);
+ }
+@@ -738,37 +639,40 @@
+ {
+ 	BT_PROFILE("calculateSimulationIslands");
+ 
+-	getSimulationIslandManager()->updateActivationState(getCollisionWorld(),getCollisionWorld()->getDispatcher());
++	getSimulationIslandManager()->updateActivationState(this, getDispatcher());
+ 
++	//join islands that are connected by constraints.
+ 	{
+-		int i;
+-		int numConstraints = int(m_constraints.size());
+-		for (i=0;i< numConstraints ; i++ )
++		for (int i = m_constraints.size() - 1; i >= 0; i--)
+ 		{
+ 			btTypedConstraint* constraint = m_constraints[i];
+-			if (constraint->isEnabled())
++
++			const btRigidBody* colObj0 = constraint->getRigidBodyA();
++			const btRigidBody* colObj1 = constraint->getRigidBodyB();
++
++			//if either rigid body is waiting to be destroyed we need to delete the constraint now
++			if (colObj0->mustDestroy() || colObj1->mustDestroy())
+ 			{
+-				const btRigidBody* colObj0 = &constraint->getRigidBodyA();
+-				const btRigidBody* colObj1 = &constraint->getRigidBodyB();
++				removeConstraint(constraint);
++				if (gConstraintRemovedCallback)
++					gConstraintRemovedCallback(constraint);
++
++				continue;
++			}
+ 
+ 				if (((colObj0) && (!(colObj0)->isStaticOrKinematicObject())) &&
+ 					((colObj1) && (!(colObj1)->isStaticOrKinematicObject())))
+ 				{
+ 					if (colObj0->isActive() || colObj1->isActive())
+ 					{
+-
+-						getSimulationIslandManager()->getUnionFind().unite((colObj0)->getIslandTag(),
+-							(colObj1)->getIslandTag());
+-					}
++					getSimulationIslandManager()->getUnionFind().unite((colObj0)->getIslandTag(), (colObj1)->getIslandTag());
+ 				}
+ 			}
+ 		}
+ 	}
+ 
+ 	//Store the island id in each body
+-	getSimulationIslandManager()->storeIslandActivationState(getCollisionWorld());
+-
+-	
++	getSimulationIslandManager()->storeIslandActivationState(this);
+ }
+ 
+ 
+@@ -776,13 +680,12 @@
+ 
+ class btClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback
+ {
+-public:
+-
+ 	btCollisionObject* m_me;
+ 	btScalar m_allowedPenetration;
+ 	btOverlappingPairCache* m_pairCache;
+ 	btDispatcher* m_dispatcher;
+ 
++
+ public:
+ 	btClosestNotMeConvexResultCallback (btCollisionObject* me,const btVector3& fromA,const btVector3& toA,btOverlappingPairCache* pairCache,btDispatcher* dispatcher) : 
+ 	  btCollisionWorld::ClosestConvexResultCallback(fromA,toA),
+@@ -829,7 +732,6 @@
+ 		//call needsResponse, see http://code.google.com/p/bullet/issues/detail?id=179
+ 		if (m_dispatcher->needsResponse(m_me,otherObj))
+ 		{
+-#if 0
+ 			///don't do CCD when there are already contact points (touching contact/penetration)
+ 			btAlignedObjectArray<btPersistentManifold*> manifoldArray;
+ 			btBroadphasePair* collisionPair = m_pairCache->findPair(m_me->getBroadphaseHandle(),proxy0);
+@@ -847,11 +749,8 @@
+ 					}
+ 				}
+ 			}
+-#endif
+-			return true;
+ 		}
+-
+-		return false;
++		return true;
+ 	}
+ 
+ 
+@@ -860,6 +759,7 @@
+ ///internal debugging variable. this value shouldn't be too high
+ int gNumClampedCcdMotions=0;
+ 
++//#include "stdio.h"
+ void	btDiscreteDynamicsWorld::integrateTransforms(btScalar timeStep)
+ {
+ 	BT_PROFILE("integrateTransforms");
+@@ -869,96 +769,37 @@
+ 		btRigidBody* body = m_nonStaticRigidBodies[i];
+ 		body->setHitFraction(1.f);
+ 
+-		if (body->isActive() && (!body->isStaticOrKinematicObject()))
++		if (body->isActive())
+ 		{
+-
+ 			body->predictIntegratedTransform(timeStep, predictedTrans);
+ 			
+ 			btScalar squareMotion = (predictedTrans.getOrigin()-body->getWorldTransform().getOrigin()).length2();
+-
+-			
+-
+-			if (getDispatchInfo().m_useContinuous && body->getCcdSquareMotionThreshold() && body->getCcdSquareMotionThreshold() < squareMotion)
++			if (body->getCcdSquareMotionThreshold() && body->getCcdSquareMotionThreshold() < squareMotion)
+ 			{
+ 				BT_PROFILE("CCD motion clamping");
+ 				if (body->getCollisionShape()->isConvex())
+ 				{
+ 					gNumClampedCcdMotions++;
+-#ifdef USE_STATIC_ONLY
+-					class StaticOnlyCallback : public btClosestNotMeConvexResultCallback
+-					{
+-					public:
+-
+-						StaticOnlyCallback (btCollisionObject* me,const btVector3& fromA,const btVector3& toA,btOverlappingPairCache* pairCache,btDispatcher* dispatcher) : 
+-						  btClosestNotMeConvexResultCallback(me,fromA,toA,pairCache,dispatcher)
+-						{
+-						}
+ 
+-					  	virtual bool needsCollision(btBroadphaseProxy* proxy0) const
+-						{
+-							btCollisionObject* otherObj = (btCollisionObject*) proxy0->m_clientObject;
+-							if (!otherObj->isStaticOrKinematicObject())
+-								return false;
+-							return btClosestNotMeConvexResultCallback::needsCollision(proxy0);
+-						}
+-					};
+-
+-					StaticOnlyCallback sweepResults(body,body->getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()->getOverlappingPairCache(),getDispatcher());
+-#else
+ 					btClosestNotMeConvexResultCallback sweepResults(body,body->getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()->getOverlappingPairCache(),getDispatcher());
+-#endif
+ 					//btConvexShape* convexShape = static_cast<btConvexShape*>(body->getCollisionShape());
+ 					btSphereShape tmpSphere(body->getCcdSweptSphereRadius());//btConvexShape* convexShape = static_cast<btConvexShape*>(body->getCollisionShape());
+-					sweepResults.m_allowedPenetration=getDispatchInfo().m_allowedCcdPenetration;
+ 
+-					sweepResults.m_collisionFilterGroup = body->getBroadphaseProxy()->m_collisionFilterGroup;
+-					sweepResults.m_collisionFilterMask  = body->getBroadphaseProxy()->m_collisionFilterMask;
+-					btTransform modifiedPredictedTrans = predictedTrans;
+-					modifiedPredictedTrans.setBasis(body->getWorldTransform().getBasis());
++					sweepResults.m_collisionFilterGroup = body->getBroadphaseHandle()->m_collisionFilterGroup;
++					sweepResults.m_collisionFilterMask  = body->getBroadphaseHandle()->m_collisionFilterMask;
+ 
+-					convexSweepTest(&tmpSphere,body->getWorldTransform(),modifiedPredictedTrans,sweepResults);
++					convexSweepTest(&tmpSphere,body->getWorldTransform(),predictedTrans,sweepResults);
+ 					if (sweepResults.hasHit() && (sweepResults.m_closestHitFraction < 1.f))
+ 					{
+-						
+-						//printf("clamped integration to hit fraction = %f\n",fraction);
+ 						body->setHitFraction(sweepResults.m_closestHitFraction);
+ 						body->predictIntegratedTransform(timeStep*body->getHitFraction(), predictedTrans);
+ 						body->setHitFraction(0.f);
+-						body->proceedToTransform( predictedTrans);
+-
+-#if 0
+-						btVector3 linVel = body->getLinearVelocity();
+-
+-						btScalar maxSpeed = body->getCcdMotionThreshold()/getSolverInfo().m_timeStep;
+-						btScalar maxSpeedSqr = maxSpeed*maxSpeed;
+-						if (linVel.length2()>maxSpeedSqr)
+-						{
+-							linVel.normalize();
+-							linVel*= maxSpeed;
+-							body->setLinearVelocity(linVel);
+-							btScalar ms2 = body->getLinearVelocity().length2();
+-							body->predictIntegratedTransform(timeStep, predictedTrans);
+-
+-							btScalar sm2 = (predictedTrans.getOrigin()-body->getWorldTransform().getOrigin()).length2();
+-							btScalar smt = body->getCcdSquareMotionThreshold();
+-							printf("sm2=%f\n",sm2);
+-						}
+-#else
+-						//response  between two dynamic objects without friction, assuming 0 penetration depth
+-						btScalar appliedImpulse = 0.f;
+-						btScalar depth = 0.f;
+-						appliedImpulse = resolveSingleCollision(body,sweepResults.m_hitCollisionObject,sweepResults.m_hitPointWorld,sweepResults.m_hitNormalWorld,getSolverInfo(), depth);
+-						
+-
+-#endif
+-
+-        				continue;
++//							printf("clamped integration to hit fraction = %f\n",fraction);
+ 					}
+ 				}
+ 			}
+ 			
+-
+-			body->proceedToTransform( predictedTrans);
++			body->moveTo(predictedTrans);
+ 		}
+ 	}
+ }
+@@ -967,7 +808,6 @@
+ 
+ 
+ 
+-
+ void	btDiscreteDynamicsWorld::predictUnconstraintMotion(btScalar timeStep)
+ {
+ 	BT_PROFILE("predictUnconstraintMotion");
+@@ -976,12 +816,15 @@
+ 		btRigidBody* body = m_nonStaticRigidBodies[i];
+ 		if (!body->isStaticOrKinematicObject())
+ 		{
+-			body->integrateVelocities( timeStep);
+-			//damping
++			body->clampAngularVelocity( timeStep);
++
++			//apply linear and angular damping
+ 			body->applyDamping(timeStep);
+ 
+-			body->predictIntegratedTransform(timeStep,body->getInterpolationWorldTransform());
+ 		}
++
++		body->predictIntegratedTransform(timeStep, body->getInterpolationWorldTransform());
++		body->setWorldTransform(body->getInterpolationWorldTransform());
+ 	}
+ }
+ 
+@@ -1019,12 +862,12 @@
+ 				btTransform tr;
+ 				tr.setIdentity();
+ 				btVector3 pivot = p2pC->getPivotInA();
+-				pivot = p2pC->getRigidBodyA().getCenterOfMassTransform() * pivot; 
++				pivot = p2pC->getRigidBodyA()->getWorldTransform() * pivot; 
+ 				tr.setOrigin(pivot);
+ 				getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+ 				// that ideally should draw the same frame	
+ 				pivot = p2pC->getPivotInB();
+-				pivot = p2pC->getRigidBodyB().getCenterOfMassTransform() * pivot; 
++				pivot = p2pC->getRigidBodyB()->getWorldTransform() * pivot; 
+ 				tr.setOrigin(pivot);
+ 				if(drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+ 			}
+@@ -1032,9 +875,9 @@
+ 		case HINGE_CONSTRAINT_TYPE:
+ 			{
+ 				btHingeConstraint* pHinge = (btHingeConstraint*)constraint;
+-				btTransform tr = pHinge->getRigidBodyA().getCenterOfMassTransform() * pHinge->getAFrame();
++				btTransform tr = pHinge->getRigidBodyA()->getWorldTransform() * pHinge->getFrameInA();
+ 				if(drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+-				tr = pHinge->getRigidBodyB().getCenterOfMassTransform() * pHinge->getBFrame();
++				tr = pHinge->getRigidBodyB()->getWorldTransform() * pHinge->getFrameInB();
+ 				if(drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+ 				btScalar minAng = pHinge->getLowerLimit();
+ 				btScalar maxAng = pHinge->getUpperLimit();
+@@ -1061,9 +904,9 @@
+ 		case CONETWIST_CONSTRAINT_TYPE:
+ 			{
+ 				btConeTwistConstraint* pCT = (btConeTwistConstraint*)constraint;
+-				btTransform tr = pCT->getRigidBodyA().getCenterOfMassTransform() * pCT->getAFrame();
++				btTransform tr = pCT->getRigidBodyA()->getWorldTransform() * pCT->getAFrame();
+ 				if(drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+-				tr = pCT->getRigidBodyB().getCenterOfMassTransform() * pCT->getBFrame();
++				tr = pCT->getRigidBodyB()->getWorldTransform() * pCT->getBFrame();
+ 				if(drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
+ 				if(drawLimits)
+ 				{
+@@ -1087,14 +930,14 @@
+ 					}						
+ 					btScalar tws = pCT->getTwistSpan();
+ 					btScalar twa = pCT->getTwistAngle();
+-					bool useFrameB = (pCT->getRigidBodyB().getInvMass() > btScalar(0.f));
++					bool useFrameB = (pCT->getRigidBodyB()->getInvMass() > btScalar(0.f));
+ 					if(useFrameB)
+ 					{
+-						tr = pCT->getRigidBodyB().getCenterOfMassTransform() * pCT->getBFrame();
++						tr = pCT->getRigidBodyB()->getWorldTransform() * pCT->getBFrame();
+ 					}
+ 					else
+ 					{
+-						tr = pCT->getRigidBodyA().getCenterOfMassTransform() * pCT->getAFrame();
++						tr = pCT->getRigidBodyA()->getWorldTransform() * pCT->getAFrame();
+ 					}
+ 					btVector3 pivot = tr.getOrigin();
+ 					btVector3 normal = tr.getBasis().getColumn(0);
+@@ -1104,7 +947,6 @@
+ 				}
+ 			}
+ 			break;
+-		case D6_SPRING_CONSTRAINT_TYPE:
+ 		case D6_CONSTRAINT_TYPE:
+ 			{
+ 				btGeneric6DofConstraint* p6DOF = (btGeneric6DofConstraint*)constraint;
+@@ -1200,15 +1042,16 @@
+ 	return m_constraintSolver;
+ }
+ 
+-
+ int		btDiscreteDynamicsWorld::getNumConstraints() const
+ {
+ 	return int(m_constraints.size());
+ }
++
+ btTypedConstraint* btDiscreteDynamicsWorld::getConstraint(int index)
+ {
+ 	return m_constraints[index];
+ }
++
+ const btTypedConstraint* btDiscreteDynamicsWorld::getConstraint(int index) const
+ {
+ 	return m_constraints[index];
+@@ -1223,7 +1066,7 @@
+ 	for (i=0;i<m_collisionObjects.size();i++)
+ 	{
+ 		btCollisionObject* colObj = m_collisionObjects[i];
+-		if (colObj->getInternalType() & btCollisionObject::CO_RIGID_BODY)
++		if (colObj->getInternalType() == btCollisionObject::CO_RIGID_BODY)
+ 		{
+ 			int len = colObj->calculateSerializeBufferSize();
+ 			btChunk* chunk = serializer->allocate(len,1);
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btRigidBody.cpp bullet-contact/src/BulletDynamics/Dynamics/btRigidBody.cpp
+--- bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btRigidBody.cpp	2012-05-24 12:47:53.204580800 -0400
++++ bullet-contact/src/BulletDynamics/Dynamics/btRigidBody.cpp	2012-05-24 12:41:44.148472000 -0400
+@@ -22,19 +22,19 @@
+ #include "LinearMath/btSerializer.h"
+ 
+ //'temporarily' global variables
+-btScalar	gDeactivationTime = btScalar(2.);
+-bool	gDisableDeactivation = false;
++btScalar gDeactivationTime = btScalar(2.0f);
+ static int uniqueId = 0;
+ 
++btRigidBody btRigidBody::s_fixed(btScalar(0.), btVector3::s_zero, NULL, NULL);
+ 
+ btRigidBody::btRigidBody(const btRigidBody::btRigidBodyConstructionInfo& constructionInfo)
+ {
+ 	setupRigidBody(constructionInfo);
+ }
+ 
+-btRigidBody::btRigidBody(btScalar mass, btMotionState *motionState, btCollisionShape *collisionShape, const btVector3 &localInertia)
++btRigidBody::btRigidBody(btScalar mass, btVector3 const & shapeOffset, btMotionState *motionState, btCollisionShape *collisionShape, btVector3 const & localInertia)
+ {
+-	btRigidBodyConstructionInfo cinfo(mass,motionState,collisionShape,localInertia);
++	btRigidBodyConstructionInfo cinfo(mass, shapeOffset, motionState, collisionShape, localInertia);
+ 	setupRigidBody(cinfo);
+ }
+ 
+@@ -44,17 +44,15 @@
+ 	m_internalType=CO_RIGID_BODY;
+ 
+ 	m_linearVelocity.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
++	m_oldLinearVelocity.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
+ 	m_angularVelocity.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
+-	m_angularFactor.setValue(1,1,1);
+-	m_linearFactor.setValue(1,1,1);
+-	m_gravity.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
+-	m_gravity_acceleration.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
+-	m_totalForce.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
+-	m_totalTorque.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0)),
+-    setDamping(constructionInfo.m_linearDamping, constructionInfo.m_angularDamping);
+-
+-	m_linearSleepingThreshold = constructionInfo.m_linearSleepingThreshold;
+-	m_angularSleepingThreshold = constructionInfo.m_angularSleepingThreshold;
++	m_oldAngularVelocity.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
++	m_accumulatedForces.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
++	m_accumulatedTorque.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
++	m_linearDamping = btScalar(0.);
++	m_angularDamping = btScalar(0.5);
++	m_linearSleepingThresholdSquared = constructionInfo.m_linearSleepingThresholdSquared;
++	m_angularSleepingThresholdSquared = constructionInfo.m_angularSleepingThresholdSquared;
+ 	m_optionalMotionState = constructionInfo.m_motionState;
+ 	m_contactSolverType = 0;
+ 	m_frictionSolverType = 0;
+@@ -63,13 +61,17 @@
+ 	m_additionalLinearDampingThresholdSqr = constructionInfo.m_additionalLinearDampingThresholdSqr;
+ 	m_additionalAngularDampingThresholdSqr = constructionInfo.m_additionalAngularDampingThresholdSqr;
+ 	m_additionalAngularDampingFactor = constructionInfo.m_additionalAngularDampingFactor;
++	m_shapeOffset = constructionInfo.m_shapeOffset; //this MUST be set before we call getWorldTransformFromCollisionShapeTransform
+ 
+ 	if (m_optionalMotionState)
+ 	{
+ 		m_optionalMotionState->getWorldTransform(m_worldTransform);
+-	} else
++	}
++	else
+ 	{
+-		m_worldTransform = constructionInfo.m_startWorldTransform;
++		btTransform btStartTrans = constructionInfo.m_startWorldTransform;
++		getWorldTransformFromCollisionShapeTransform(&btStartTrans);
++		m_worldTransform = btStartTrans;
+ 	}
+ 
+ 	m_interpolationWorldTransform = m_worldTransform;
+@@ -81,47 +83,24 @@
+ 	m_restitution = constructionInfo.m_restitution;
+ 
+ 	setCollisionShape( constructionInfo.m_collisionShape );
+-	m_debugBodyId = uniqueId++;
+ 	
+ 	setMassProps(constructionInfo.m_mass, constructionInfo.m_localInertia);
++    setDamping(constructionInfo.m_linearDamping, constructionInfo.m_angularDamping);
+ 	updateInertiaTensor();
+ 
+-	m_rigidbodyFlags = 0;
+-
+-
+ 	m_deltaLinearVelocity.setZero();
+ 	m_deltaAngularVelocity.setZero();
+-	m_invMass = m_inverseMass*m_linearFactor;
++	m_invMass.setValue(m_inverseMass, m_inverseMass, m_inverseMass);
+ 	m_pushVelocity.setZero();
+ 	m_turnVelocity.setZero();
+-
+-	
+-
+ }
+ 
+ 
+ void btRigidBody::predictIntegratedTransform(btScalar timeStep,btTransform& predictedTransform) 
+ {
+-	btTransformUtil::integrateTransform(m_worldTransform,m_linearVelocity,m_angularVelocity,timeStep,predictedTransform);
++	btTransformUtil::integrateTransform(getWorldTransform(), getLinearVelocity(), getAngularVelocity(), timeStep, predictedTransform);
+ }
+ 
+-void			btRigidBody::saveKinematicState(btScalar timeStep)
+-{
+-	//todo: clamp to some (user definable) safe minimum timestep, to limit maximum angular/linear velocities
+-	if (timeStep != btScalar(0.))
+-	{
+-		//if we use motionstate to synchronize world transforms, get the new kinematic/animated world transform
+-		if (getMotionState())
+-			getMotionState()->getWorldTransform(m_worldTransform);
+-		btVector3 linVel,angVel;
+-		
+-		btTransformUtil::calculateVelocity(m_interpolationWorldTransform,m_worldTransform,timeStep,m_linearVelocity,m_angularVelocity);
+-		m_interpolationLinearVelocity = m_linearVelocity;
+-		m_interpolationAngularVelocity = m_angularVelocity;
+-		m_interpolationWorldTransform = m_worldTransform;
+-		//printf("angular = %f %f %f\n",m_angularVelocity.getX(),m_angularVelocity.getY(),m_angularVelocity.getZ());
+-	}
+-}
+ 	
+ void	btRigidBody::getAabb(btVector3& aabbMin,btVector3& aabbMax) const
+ {
+@@ -129,26 +108,10 @@
+ }
+ 
+ 
+-
+-
+-void btRigidBody::setGravity(const btVector3& acceleration) 
+-{
+-	if (m_inverseMass != btScalar(0.0))
+-	{
+-		m_gravity = acceleration * (btScalar(1.0) / m_inverseMass);
+-	}
+-	m_gravity_acceleration = acceleration;
+-}
+-
+-
+-
+-
+-
+-
+ void btRigidBody::setDamping(btScalar lin_damping, btScalar ang_damping)
+ {
+-	m_linearDamping = btClamped(lin_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
+-	m_angularDamping = btClamped(ang_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
++	m_linearDamping = GEN_clamped(lin_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
++	m_angularDamping = GEN_clamped(ang_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
+ }
+ 
+ 
+@@ -212,18 +175,29 @@
+ }
+ 
+ 
+-void btRigidBody::applyGravity()
++void btRigidBody::applyForces(btVector3 const &vGravity, btScalar timeStep)
+ {
++	//TODO: this test should not be necessary, only the dynamic object list should be allowed to call into this
+ 	if (isStaticOrKinematicObject())
+ 		return;
+ 	
+-	applyCentralForce(m_gravity);	
+-
+-}
+-
+-void btRigidBody::proceedToTransform(const btTransform& newTrans)
+-{
+-	setCenterOfMassTransform( newTrans );
++	//store the value before forces, will we use it to determine restitution
++	m_oldLinearVelocity = m_linearVelocity;
++	m_oldAngularVelocity = m_angularVelocity;
++
++	btVector3 btvLinearImpulse(vGravity);
++
++	//add our own cached forces to apply
++	btvLinearImpulse += m_accumulatedForces;
++	btVector3 btvAngularImpulse(m_accumulatedTorque);
++
++	//apply the timestep's worth of impulse
++	btvLinearImpulse *= timeStep;
++	btvAngularImpulse *= timeStep;
++
++	//WARNING, this code assumes that continuous forces never point in a direction restricted by an object's linear factor.
++	m_linearVelocity += btvLinearImpulse;// * m_linearFactor;
++	m_angularVelocity += btvAngularImpulse;
+ }
+ 	
+ 
+@@ -233,20 +207,18 @@
+ 	{
+ 		m_collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+ 		m_inverseMass = btScalar(0.);
+-	} else
++	}
++	else
+ 	{
+ 		m_collisionFlags &= (~btCollisionObject::CF_STATIC_OBJECT);
+ 		m_inverseMass = btScalar(1.0) / mass;
+ 	}
+ 
+-	//Fg = m * a
+-	m_gravity = mass * m_gravity_acceleration;
+-	
+ 	m_invInertiaLocal.setValue(inertia.x() != btScalar(0.0) ? btScalar(1.0) / inertia.x(): btScalar(0.0),
+ 				   inertia.y() != btScalar(0.0) ? btScalar(1.0) / inertia.y(): btScalar(0.0),
+ 				   inertia.z() != btScalar(0.0) ? btScalar(1.0) / inertia.z(): btScalar(0.0));
+ 
+-	m_invMass = m_linearFactor*m_inverseMass;
++	m_invMass.setValue(m_inverseMass, m_inverseMass, m_inverseMass);
+ }
+ 
+ 	
+@@ -257,14 +229,8 @@
+ }
+ 
+ 
+-void btRigidBody::integrateVelocities(btScalar step) 
++void btRigidBody::clampAngularVelocity(btScalar step) 
+ {
+-	if (isStaticOrKinematicObject())
+-		return;
+-
+-	m_linearVelocity += m_totalForce * (m_inverseMass * step);
+-	m_angularVelocity += m_invInertiaTensorWorld * m_totalTorque * step;
+-
+ #define MAX_ANGVEL SIMD_HALF_PI
+ 	/// clamp angular velocity. collision calculations will fail on higher angular velocities	
+ 	btScalar angvel = m_angularVelocity.length();
+@@ -272,32 +238,21 @@
+ 	{
+ 		m_angularVelocity *= (MAX_ANGVEL/step) /angvel;
+ 	}
+-
+ }
+ 
+-btQuaternion btRigidBody::getOrientation() const
+-{
+-		btQuaternion orn;
+-		m_worldTransform.getBasis().getRotation(orn);
+-		return orn;
+-}
+-	
+-	
+-void btRigidBody::setCenterOfMassTransform(const btTransform& xform)
+-{
+ 
+-	if (isKinematicObject())
+-	{
+-		m_interpolationWorldTransform = m_worldTransform;
+-	} else
++void btRigidBody::moveTo(const btTransform& xform)
+ 	{
+ 		m_interpolationWorldTransform = xform;
+-	}
++	m_worldTransform = xform;
+ 	m_interpolationLinearVelocity = getLinearVelocity();
+ 	m_interpolationAngularVelocity = getAngularVelocity();
+-	m_worldTransform = xform;
++
++	if (!isStaticOrKinematicObject())
++	{
+ 	updateInertiaTensor();
+ }
++}
+ 
+ 
+ bool btRigidBody::checkCollideWithOverride(btCollisionObject* co)
+@@ -306,11 +261,10 @@
+ 	if (!otherRb)
+ 		return true;
+ 
+-	for (int i = 0; i < m_constraintRefs.size(); ++i)
++	for (int i = 0; i < m_noCollideRefs.size(); ++i)
+ 	{
+-		btTypedConstraint* c = m_constraintRefs[i];
+-		if (c->isEnabled())
+-			if (&c->getRigidBodyA() == otherRb || &c->getRigidBodyB() == otherRb)
++		btRigidBody* body = m_noCollideRefs[i];
++		if (body == otherRb)
+ 				return false;
+ 	}
+ 
+@@ -329,29 +283,29 @@
+ 		btTransform newTransform;
+ 		btTransformUtil::integrateTransform(getWorldTransform(),m_pushVelocity,m_turnVelocity,timeStep,newTransform);
+ 		setWorldTransform(newTransform);
+-		//m_originalBody->setCompanionId(-1);
+ 	}
+-//	m_deltaLinearVelocity.setZero();
+-//	m_deltaAngularVelocity .setZero();
+-//	m_pushVelocity.setZero();
+-//	m_turnVelocity.setZero();
++	m_deltaLinearVelocity.setZero();
++	m_deltaAngularVelocity .setZero();
++	m_pushVelocity.setZero();
++	m_turnVelocity.setZero();
+ }
+ 
+ 
+ 
+-void btRigidBody::addConstraintRef(btTypedConstraint* c)
++void btRigidBody::addNoCollideRef(btRigidBody* body)
+ {
+-	int index = m_constraintRefs.findLinearSearch(c);
+-	if (index == m_constraintRefs.size())
+-		m_constraintRefs.push_back(c); 
++	//add the body to the list of objects we don't collide with.
++	m_noCollideRefs.push_back(body); 
+ 
+ 	m_checkCollideWith = true;
+ }
+ 
+-void btRigidBody::removeConstraintRef(btTypedConstraint* c)
++
++void btRigidBody::removeNoCollideRef(btRigidBody* body)
+ {
+-	m_constraintRefs.remove(c);
+-	m_checkCollideWith = m_constraintRefs.size() > 0;
++	//remove the body from the list of objects we don't collide with.
++	m_noCollideRefs.remove(body);
++	m_checkCollideWith = m_noCollideRefs.size() > 0;
+ }
+ 
+ int	btRigidBody::calculateSerializeBufferSize()	const
+@@ -371,13 +325,7 @@
+ 	m_linearVelocity.serialize(rbd->m_linearVelocity);
+ 	m_angularVelocity.serialize(rbd->m_angularVelocity);
+ 	rbd->m_inverseMass = m_inverseMass;
+-	m_angularFactor.serialize(rbd->m_angularFactor);
+-	m_linearFactor.serialize(rbd->m_linearFactor);
+-	m_gravity.serialize(rbd->m_gravity);
+-	m_gravity_acceleration.serialize(rbd->m_gravity_acceleration);
+ 	m_invInertiaLocal.serialize(rbd->m_invInertiaLocal);
+-	m_totalForce.serialize(rbd->m_totalForce);
+-	m_totalTorque.serialize(rbd->m_totalTorque);
+ 	rbd->m_linearDamping = m_linearDamping;
+ 	rbd->m_angularDamping = m_angularDamping;
+ 	rbd->m_additionalDamping = m_additionalDamping;
+@@ -385,8 +333,8 @@
+ 	rbd->m_additionalLinearDampingThresholdSqr = m_additionalLinearDampingThresholdSqr;
+ 	rbd->m_additionalAngularDampingThresholdSqr = m_additionalAngularDampingThresholdSqr;
+ 	rbd->m_additionalAngularDampingFactor = m_additionalAngularDampingFactor;
+-	rbd->m_linearSleepingThreshold=m_linearSleepingThreshold;
+-	rbd->m_angularSleepingThreshold = m_angularSleepingThreshold;
++	rbd->m_linearSleepingThreshold = m_linearSleepingThresholdSquared;
++	rbd->m_angularSleepingThreshold = m_angularSleepingThresholdSquared;
+ 
+ 	return btRigidBodyDataName;
+ }
+diff -ruw bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btRigidBody.h bullet-contact/src/BulletDynamics/Dynamics/btRigidBody.h
+--- bullet-2.80-rev2531/src/BulletDynamics/Dynamics/btRigidBody.h	2012-05-24 12:47:53.220581700 -0400
++++ bullet-contact/src/BulletDynamics/Dynamics/btRigidBody.h	2012-05-24 12:41:44.141471600 -0400
+@@ -13,8 +13,8 @@
+ 3. This notice may not be removed or altered from any source distribution.
+ */
+ 
+-#ifndef BT_RIGIDBODY_H
+-#define BT_RIGIDBODY_H
++#ifndef RIGIDBODY_H
++#define RIGIDBODY_H
+ 
+ #include "LinearMath/btAlignedObjectArray.h"
+ #include "LinearMath/btTransform.h"
+@@ -27,7 +27,6 @@
+ 
+ 
+ extern btScalar gDeactivationTime;
+-extern bool gDisableDeactivation;
+ 
+ #ifdef BT_USE_DOUBLE_PRECISION
+ #define btRigidBodyData	btRigidBodyDoubleData
+@@ -38,12 +37,6 @@
+ #endif //BT_USE_DOUBLE_PRECISION
+ 
+ 
+-enum	btRigidBodyFlags
+-{
+-	BT_DISABLE_WORLD_GRAVITY = 1
+-};
+-
+-
+ ///The btRigidBody is the main class for rigid body objects. It is derived from btCollisionObject, so it keeps a pointer to a btCollisionShape.
+ ///It is recommended for performance and memory use to share btCollisionShape objects whenever possible.
+ ///There are 3 types of rigid bodies: 
+@@ -54,18 +47,22 @@
+ ///Deactivated (sleeping) rigid bodies don't take any processing time, except a minor broadphase collision detection impact (to allow active objects to activate/wake up sleeping objects)
+ class btRigidBody  : public btCollisionObject
+ {
++public:
++	ATTRIBUTE_ALIGNED64(static btRigidBody s_fixed);
++
++private:
++	btVector3		m_shapeOffset; // Offset in local space of our collision shape. This is used to be able to displace the center of mass of an object.
+ 
+ 	btMatrix3x3	m_invInertiaTensorWorld;
+ 	btVector3		m_linearVelocity;
+ 	btVector3		m_angularVelocity;
+ 	btScalar		m_inverseMass;
+-	btVector3		m_linearFactor;
+-
+-	btVector3		m_gravity;	
+-	btVector3		m_gravity_acceleration;
+ 	btVector3		m_invInertiaLocal;
+-	btVector3		m_totalForce;
+-	btVector3		m_totalTorque;
++
++	btVector3		m_oldLinearVelocity;
++	btVector3		m_oldAngularVelocity;
++	btVector3		m_accumulatedForces;
++	btVector3		m_accumulatedTorque;
+ 	
+ 	btScalar		m_linearDamping;
+ 	btScalar		m_angularDamping;
+@@ -76,26 +73,23 @@
+ 	btScalar		m_additionalAngularDampingThresholdSqr;
+ 	btScalar		m_additionalAngularDampingFactor;
+ 
+-
+-	btScalar		m_linearSleepingThreshold;
+-	btScalar		m_angularSleepingThreshold;
++	btScalar		m_linearSleepingThresholdSquared;
++	btScalar		m_angularSleepingThresholdSquared;
+ 
+ 	//m_optionalMotionState allows to automatic synchronize the world transform for active objects
+ 	btMotionState*	m_optionalMotionState;
+ 
+-	//keep track of typed constraints referencing this rigid body
+-	btAlignedObjectArray<btTypedConstraint*> m_constraintRefs;
+-
+-	int				m_rigidbodyFlags;
+-	
+-	int				m_debugBodyId;
++	//keep track of rigid bodies we do not want to collide with (this is to do pair filtering)
++	btAlignedObjectArray<btRigidBody*> m_noCollideRefs;
+ 	
++	//for experimental overriding of friction/contact solver func
++	int	m_contactSolverType;
++	int	m_frictionSolverType;
+ 
+ protected:
+ 
+ 	ATTRIBUTE_ALIGNED64(btVector3		m_deltaLinearVelocity);
+ 	btVector3		m_deltaAngularVelocity;
+-	btVector3		m_angularFactor;
+ 	btVector3		m_invMass;
+ 	btVector3		m_pushVelocity;
+ 	btVector3		m_turnVelocity;
+@@ -111,6 +105,8 @@
+ 	///m_startWorldTransform is only used when you don't provide a motion state.
+ 	struct	btRigidBodyConstructionInfo
+ 	{
++		btVector3			m_shapeOffset;
++
+ 		btScalar			m_mass;
+ 
+ 		///When a motionState is provided, the rigid body will initialize its world transform from the motion state
+@@ -128,8 +124,8 @@
+ 		///best simulation results using zero restitution.
+ 		btScalar			m_restitution;
+ 
+-		btScalar			m_linearSleepingThreshold;
+-		btScalar			m_angularSleepingThreshold;
++		btScalar			m_linearSleepingThresholdSquared;
++		btScalar			m_angularSleepingThresholdSquared;
+ 
+ 		//Additional damping can help avoiding lowpass jitter motion, help stability for ragdolls etc.
+ 		//Such damping is undesirable, so once the overall simulation quality of the rigid body dynamics system has improved, this should become obsolete
+@@ -139,7 +135,29 @@
+ 		btScalar			m_additionalAngularDampingThresholdSqr;
+ 		btScalar			m_additionalAngularDampingFactor;
+ 
+-		btRigidBodyConstructionInfo(	btScalar mass, btMotionState* motionState, btCollisionShape* collisionShape, const btVector3& localInertia=btVector3(0,0,0)):
++		btRigidBodyConstructionInfo():
++			m_shapeOffset(btVector3::s_zero),
++			m_mass(btScalar(1.)),
++			m_motionState(NULL),
++			m_collisionShape(NULL),
++			m_localInertia(btVector3::s_zero),
++			m_linearDamping(btScalar(0.)),
++			m_angularDamping(btScalar(0.)),
++			m_friction(btScalar(0.5)),
++			m_restitution(btScalar(0.)),
++			m_linearSleepingThresholdSquared(btScalar(0.8) * btScalar(0.8)),
++			m_angularSleepingThresholdSquared(btScalar(0.2) * btScalar(0.2)),
++			m_additionalDamping(false),
++			m_additionalDampingFactor(btScalar(0.005)),
++			m_additionalLinearDampingThresholdSqr(btScalar(0.01)),
++			m_additionalAngularDampingThresholdSqr(btScalar(0.01)),
++			m_additionalAngularDampingFactor(btScalar(0.01))
++		{
++			m_startWorldTransform.setIdentity();
++		}
++
++		btRigidBodyConstructionInfo( btScalar mass, btVector3 const & shapeOffset, btMotionState* motionState, btCollisionShape* collisionShape, const btVector3& localInertia = btVector3::s_zero):
++			m_shapeOffset(shapeOffset),
+ 		m_mass(mass),
+ 			m_motionState(motionState),
+ 			m_collisionShape(collisionShape),
+@@ -148,8 +166,8 @@
+ 			m_angularDamping(btScalar(0.)),
+ 			m_friction(btScalar(0.5)),
+ 			m_restitution(btScalar(0.)),
+-			m_linearSleepingThreshold(btScalar(0.8)),
+-			m_angularSleepingThreshold(btScalar(1.f)),
++			m_linearSleepingThresholdSquared(btScalar(0.8) * btScalar(0.8)),
++			m_angularSleepingThresholdSquared(btScalar(1.f)),
+ 			m_additionalDamping(false),
+ 			m_additionalDampingFactor(btScalar(0.005)),
+ 			m_additionalLinearDampingThresholdSqr(btScalar(0.01)),
+@@ -165,14 +183,16 @@
+ 
+ 	///btRigidBody constructor for backwards compatibility. 
+ 	///To specify friction (etc) during rigid body construction, please use the other constructor (using btRigidBodyConstructionInfo)
+-	btRigidBody(	btScalar mass, btMotionState* motionState, btCollisionShape* collisionShape, const btVector3& localInertia=btVector3(0,0,0));
+-
++	btRigidBody(btScalar mass, btVector3 const & shapeOffset, btMotionState* motionState, btCollisionShape* collisionShape, const btVector3& localInertia=btVector3(0,0,0));
+ 
+ 	virtual ~btRigidBody()
+         { 
+-                //No constraints should point to this rigidbody
+-		//Remove constraints from the dynamics world before you delete the related rigidbodies. 
+-                btAssert(m_constraintRefs.size()==0); 
++			//Remove all no collide pairs before deleting the rigid body.
++			for (int i = 0; i < m_noCollideRefs.size(); i++)
++			{
++				btRigidBody* body = m_noCollideRefs[i];
++				body->removeNoCollideRef(this);
++			}
+         }
+ 
+ protected:
+@@ -182,19 +202,17 @@
+ 
+ public:
+ 
+-	void			proceedToTransform(const btTransform& newTrans); 
+-	
+ 	///to keep collision detection and dynamics separate we don't store a rigidbody pointer
+ 	///but a rigidbody is derived from btCollisionObject, so we can safely perform an upcast
+ 	static const btRigidBody*	upcast(const btCollisionObject* colObj)
+ 	{
+-		if (colObj->getInternalType()&btCollisionObject::CO_RIGID_BODY)
++		if (colObj->getInternalType()==btCollisionObject::CO_RIGID_BODY)
+ 			return (const btRigidBody*)colObj;
+ 		return 0;
+ 	}
+ 	static btRigidBody*	upcast(btCollisionObject* colObj)
+ 	{
+-		if (colObj->getInternalType()&btCollisionObject::CO_RIGID_BODY)
++		if (colObj->getInternalType()==btCollisionObject::CO_RIGID_BODY)
+ 			return (btRigidBody*)colObj;
+ 		return 0;
+ 	}
+@@ -202,16 +220,7 @@
+ 	/// continuous collision detection needs prediction
+ 	void			predictIntegratedTransform(btScalar step, btTransform& predictedTransform) ;
+ 	
+-	void			saveKinematicState(btScalar step);
+-	
+-	void			applyGravity();
+-	
+-	void			setGravity(const btVector3& acceleration);  
+-
+-	const btVector3&	getGravity() const
+-	{
+-		return m_gravity_acceleration;
+-	}
++	void applyForces(btVector3 const &vGravity, btScalar timeStep);
+ 
+ 	void			setDamping(btScalar lin_damping, btScalar ang_damping);
+ 
+@@ -225,14 +234,14 @@
+ 		return m_angularDamping;
+ 	}
+ 
+-	btScalar getLinearSleepingThreshold() const
++	btScalar getLinearSleepingThresholdSquared() const
+ 	{
+-		return m_linearSleepingThreshold;
++		return m_linearSleepingThresholdSquared;
+ 	}
+ 
+-	btScalar getAngularSleepingThreshold() const
++	btScalar getAngularSleepingThresholdSquared() const
+ 	{
+-		return m_angularSleepingThreshold;
++		return m_angularSleepingThresholdSquared;
+ 	}
+ 
+ 	void			applyDamping(btScalar timeStep);
+@@ -247,38 +256,24 @@
+ 	
+ 	void			setMassProps(btScalar mass, const btVector3& inertia);
+ 	
+-	const btVector3& getLinearFactor() const
+-	{
+-		return m_linearFactor;
+-	}
+ 	void setLinearFactor(const btVector3& linearFactor)
+ 	{
+-		m_linearFactor = linearFactor;
+-		m_invMass = m_linearFactor*m_inverseMass;
+-	}
+-	btScalar		getInvMass() const { return m_inverseMass; }
+-	const btMatrix3x3& getInvInertiaTensorWorld() const { 
+-		return m_invInertiaTensorWorld; 
++		m_invMass = linearFactor * m_inverseMass;
+ 	}
+ 		
+-	void			integrateVelocities(btScalar step);
+-
+-	void			setCenterOfMassTransform(const btTransform& xform);
++	btScalar getInvMass() const { return m_inverseMass; }
+ 
+-	void			applyCentralForce(const btVector3& force)
++	const btMatrix3x3& getInvInertiaTensorWorld() const
+ 	{
+-		m_totalForce += force*m_linearFactor;
++		return m_invInertiaTensorWorld; 
+ 	}
+ 
+-	const btVector3& getTotalForce() const
+-	{
+-		return m_totalForce;
+-	};
++	void clampAngularVelocity(btScalar step);
+ 
+-	const btVector3& getTotalTorque() const
++	void applyCentralForce(const btVector3& force, btScalar step)
+ 	{
+-		return m_totalTorque;
+-	};
++		applyCentralImpulse(force * step);
++	}
+     
+ 	const btVector3& getInvInertiaDiagLocal() const
+ 	{
+@@ -292,66 +287,108 @@
+ 
+ 	void	setSleepingThresholds(btScalar linear,btScalar angular)
+ 	{
+-		m_linearSleepingThreshold = linear;
+-		m_angularSleepingThreshold = angular;
++		m_linearSleepingThresholdSquared = linear * linear;
++		m_angularSleepingThresholdSquared = angular * angular;
+ 	}
+ 
+-	void	applyTorque(const btVector3& torque)
++	inline void applyTorque(const btVector3& torque)
+ 	{
+-		m_totalTorque += torque*m_angularFactor;
++		m_accumulatedTorque += m_invInertiaTensorWorld * torque;
+ 	}
+ 	
+-	void	applyForce(const btVector3& force, const btVector3& rel_pos) 
++	inline void applyCentralForce(const btVector3& force) 
+ 	{
+-		applyCentralForce(force);
+-		applyTorque(rel_pos.cross(force*m_linearFactor));
++		m_accumulatedForces += force;
+ 	}
+ 	
+-	void applyCentralImpulse(const btVector3& impulse)
++	inline void applyForce(const btVector3& force, const btVector3& rel_pos) 
+ 	{
+-		m_linearVelocity += impulse *m_linearFactor * m_inverseMass;
++		applyCentralForce(force);
++		applyTorque(rel_pos.cross(force));
+ 	}
+ 	
+-  	void applyTorqueImpulse(const btVector3& torque)
++	inline void applyCentralImpulse(const btVector3& impulse)
+ 	{
+-			m_angularVelocity += m_invInertiaTensorWorld * torque * m_angularFactor;
++		m_linearVelocity += impulse * m_invMass;
+ 	}
+ 	
+-	void applyImpulse(const btVector3& impulse, const btVector3& rel_pos) 
++  	inline void applyTorqueImpulse(const btVector3& torque)
+ 	{
+-		if (m_inverseMass != btScalar(0.))
++		m_angularVelocity += m_invInertiaTensorWorld * torque;
++	}
++	
++	inline void applyImpulse(const btVector3& impulse, const btVector3& rel_pos) 
+ 		{
+ 			applyCentralImpulse(impulse);
+-			if (m_angularFactor)
+-			{
+-				applyTorqueImpulse(rel_pos.cross(impulse*m_linearFactor));
++		applyTorqueImpulse(rel_pos.cross(impulse));
+ 			}
++
++	inline void applyWorldImpulse(const btVector3& impulse, const btVector3& worldPos) 
++	{
++		btVector3 rel_pos = worldPos - getWorldPosition();
++		applyCentralImpulse(impulse);
++		applyTorqueImpulse(rel_pos.cross(impulse));
+ 		}
++	
++	void updateInertiaTensor();
++
++	void moveTo(const btTransform& xform);
++
++	virtual const btVector3& getShapeOffset() const
++	{
++		return m_shapeOffset;
+ 	}
+ 
+-	void clearForces() 
++	void setLocalCenterOfMassPosition(const btVector3& massCenter)
+ 	{
+-		m_totalForce.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
+-		m_totalTorque.setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0));
++		//compute the difference between the new and previous shape offset and shift the entire object so we don't pop.
++		btVector3 posOffset = m_shapeOffset;
++		m_shapeOffset = -massCenter;
++
++		posOffset -= m_shapeOffset;
++		posOffset = m_worldTransform.getBasis() * posOffset;
++
++		translateWorldPosition(posOffset);
++
++		//TODO: MAKE SURE WE WAKE THE OBJET UP!!!
+ 	}
+ 	
+-	void updateInertiaTensor();    
++	void getWorldTransformFromCollisionShapeTransform(btTransform *pTransform)
++	{
++		pTransform->getOrigin() -= pTransform->getBasis() * m_shapeOffset;
++	}
+ 	
+-	const btVector3&     getCenterOfMassPosition() const { 
+-		return m_worldTransform.getOrigin(); 
++	void getCollisionShapeTransform(btTransform *pTransform)
++	{
++		*pTransform = getWorldTransform();
++		pTransform->getOrigin() += pTransform->getBasis() * m_shapeOffset;
+ 	}
+-	btQuaternion getOrientation() const;
+ 	
+-	const btTransform&  getCenterOfMassTransform() const { 
+-		return m_worldTransform; 
++	virtual void getDebugRenderTransform(btTransform * pTransform) const
++	{
++		*pTransform = getWorldTransform();
++		pTransform->getOrigin() += pTransform->getBasis() * m_shapeOffset;
+ 	}
+-	const btVector3&   getLinearVelocity() const { 
++
++	const btVector3& getLinearVelocity() const
++	{ 
+ 		return m_linearVelocity; 
+ 	}
+-	const btVector3&    getAngularVelocity() const { 
++
++	const btVector3& getOldLinearVelocity() const
++	{ 
++		return m_oldLinearVelocity; 
++	}
++
++	const btVector3& getAngularVelocity() const
++	{ 
+ 		return m_angularVelocity; 
+ 	}
+ 	
++	const btVector3& getOldAngularVelocity() const
++	{ 
++		return m_oldAngularVelocity; 
++	}
+ 
+ 	inline void setLinearVelocity(const btVector3& lin_vel)
+ 	{ 
+@@ -363,6 +400,22 @@
+ 		m_angularVelocity = ang_vel; 
+ 	}
+ 
++	inline void setOldLinearVelocity(const btVector3& lin_vel)
++	{ 
++		m_oldLinearVelocity = lin_vel;
++	}
++
++	inline void setOldAngularVelocity(const btVector3& ang_vel)
++	{ 
++		m_oldAngularVelocity = ang_vel;
++	}
++
++	inline void ClearAccumulatedForces() 
++	{ 
++		m_accumulatedForces.setZero();
++		m_accumulatedTorque.setZero();
++	}
++
+ 	btVector3 getVelocityInLocalPoint(const btVector3& rel_pos) const
+ 	{
+ 		//we also calculate lin/ang velocity for kinematic objects
+@@ -372,28 +425,28 @@
+ 		//		return 	(m_worldTransform(rel_pos) - m_interpolationWorldTransform(rel_pos)) / m_kinematicTimeStep;
+ 	}
+ 
+-	void translate(const btVector3& v) 
++	btVector3 getOldVelocityInLocalPoint(const btVector3& rel_pos) const
+ 	{
+-		m_worldTransform.getOrigin() += v; 
++		return m_oldLinearVelocity + m_oldAngularVelocity.cross(rel_pos);
+ 	}
+ 
++	btVector3 getVelocityAtWorldPos(const btVector3& worldPos) const
++	{
++		btVector3 rel_pos = worldPos - getWorldPosition();
++		return m_linearVelocity + m_angularVelocity.cross(rel_pos);
++	}
+ 	
+ 	void	getAabb(btVector3& aabbMin,btVector3& aabbMax) const;
+ 
+-
+-
+-
+-	
+ 	SIMD_FORCE_INLINE btScalar computeImpulseDenominator(const btVector3& pos, const btVector3& normal) const
+ 	{
+-		btVector3 r0 = pos - getCenterOfMassPosition();
++		btVector3 r0 = pos - getWorldPosition();
+ 
+ 		btVector3 c0 = (r0).cross(normal);
+ 
+ 		btVector3 vec = (c0 * getInvInertiaTensorWorld()).cross(r0);
+ 
+ 		return m_inverseMass + normal.dot(vec);
+-
+ 	}
+ 
+ 	SIMD_FORCE_INLINE btScalar computeAngularImpulseDenominator(const btVector3& axis) const
+@@ -404,65 +457,45 @@
+ 
+ 	SIMD_FORCE_INLINE void	updateDeactivation(btScalar timeStep)
+ 	{
+-		if ( (getActivationState() == ISLAND_SLEEPING) || (getActivationState() == DISABLE_DEACTIVATION))
++		if ( (getActivationState() == ISLAND_SLEEPING) || testCollisionFlag(CF_DISABLE_STATE_CHANGE))
+ 			return;
+ 
+-		if ((getLinearVelocity().length2() < m_linearSleepingThreshold*m_linearSleepingThreshold) &&
+-			(getAngularVelocity().length2() < m_angularSleepingThreshold*m_angularSleepingThreshold))
+-		{
+-			m_deactivationTime += timeStep;
+-		} else
+-		{
+-			m_deactivationTime=btScalar(0.);
+-			setActivationState(0);
+-		}
+-
+-	}
+-
+-	SIMD_FORCE_INLINE bool	wantsSleeping()
++		if ((getLinearVelocity().length2() < m_linearSleepingThresholdSquared) &&
++			(getAngularVelocity().length2() < m_angularSleepingThresholdSquared))
+ 	{
++			if (getActivationState() == WANTS_DEACTIVATION)
++				return;
+ 
+-		if (getActivationState() == DISABLE_DEACTIVATION)
+-			return false;
+-
+-		//disable deactivation
+-		if (gDisableDeactivation || (gDeactivationTime == btScalar(0.)))
+-			return false;
+-
+-		if ( (getActivationState() == ISLAND_SLEEPING) || (getActivationState() == WANTS_DEACTIVATION))
+-			return true;
+-
++			m_deactivationTime += timeStep;
+ 		if (m_deactivationTime> gDeactivationTime)
++				setActivationState( WANTS_DEACTIVATION );
++		}
++		else
+ 		{
+-			return true;
++			activate();
+ 		}
+-		return false;
+ 	}
+ 
+ 
+-	
+-	const btBroadphaseProxy*	getBroadphaseProxy() const
++	virtual void deactivate() //put the object to sleep
+ 	{
+-		return m_broadphaseHandle;
+-	}
+-	btBroadphaseProxy*	getBroadphaseProxy() 
+-	{
+-		return m_broadphaseHandle;
+-	}
+-	void	setNewBroadphaseProxy(btBroadphaseProxy* broadphaseProxy)
+-	{
+-		m_broadphaseHandle = broadphaseProxy;
++		btCollisionObject::deactivate();
++		setLinearVelocity(btVector3::s_zero);
++		setAngularVelocity(btVector3::s_zero);
+ 	}
+ 
++
+ 	//btMotionState allows to automatic synchronize the world transform for active objects
+ 	btMotionState*	getMotionState()
+ 	{
+ 		return m_optionalMotionState;
+ 	}
++
+ 	const btMotionState*	getMotionState() const
+ 	{
+ 		return m_optionalMotionState;
+ 	}
++
+ 	void	setMotionState(btMotionState* motionState)
+ 	{
+ 		m_optionalMotionState = motionState;
+@@ -470,74 +503,16 @@
+ 			motionState->getWorldTransform(m_worldTransform);
+ 	}
+ 
+-	//for experimental overriding of friction/contact solver func
+-	int	m_contactSolverType;
+-	int	m_frictionSolverType;
+-
+-	void	setAngularFactor(const btVector3& angFac)
+-	{
+-		m_angularFactor = angFac;
+-	}
+-
+-	void	setAngularFactor(btScalar angFac)
+-	{
+-		m_angularFactor.setValue(angFac,angFac,angFac);
+-	}
+-	const btVector3&	getAngularFactor() const
+-	{
+-		return m_angularFactor;
+-	}
+-
+ 	//is this rigidbody added to a btCollisionWorld/btDynamicsWorld/btBroadphase?
+ 	bool	isInWorld() const
+ 	{
+-		return (getBroadphaseProxy() != 0);
++		return (getBroadphaseHandle() != 0);
+ 	}
+ 
+ 	virtual bool checkCollideWithOverride(btCollisionObject* co);
+ 
+-	void addConstraintRef(btTypedConstraint* c);
+-	void removeConstraintRef(btTypedConstraint* c);
+-
+-	btTypedConstraint* getConstraintRef(int index)
+-	{
+-		return m_constraintRefs[index];
+-	}
+-
+-	int getNumConstraintRefs() const
+-	{
+-		return m_constraintRefs.size();
+-	}
+-
+-	void	setFlags(int flags)
+-	{
+-		m_rigidbodyFlags = flags;
+-	}
+-
+-	int getFlags() const
+-	{
+-		return m_rigidbodyFlags;
+-	}
+-
+-	const btVector3& getDeltaLinearVelocity() const
+-	{
+-		return m_deltaLinearVelocity;
+-	}
+-
+-	const btVector3& getDeltaAngularVelocity() const
+-	{
+-		return m_deltaAngularVelocity;
+-	}
+-
+-	const btVector3& getPushVelocity() const 
+-	{
+-		return m_pushVelocity;
+-	}
+-
+-	const btVector3& getTurnVelocity() const 
+-	{
+-		return m_turnVelocity;
+-	}
++	void addNoCollideRef(btRigidBody * body);
++	void removeNoCollideRef(btRigidBody * body);
+ 
+ 
+ 	////////////////////////////////////////////////
+@@ -553,11 +528,6 @@
+ 		return m_deltaAngularVelocity;
+ 	}
+ 
+-	const btVector3& internalGetAngularFactor() const
+-	{
+-		return m_angularFactor;
+-	}
+-
+ 	const btVector3& internalGetInvMass() const
+ 	{
+ 		return m_invMass;
+@@ -587,20 +557,14 @@
+ 	//Optimization for the iterative solver: avoid calculating constant terms involving inertia, normal, relative position
+ 	SIMD_FORCE_INLINE void internalApplyImpulse(const btVector3& linearComponent, const btVector3& angularComponent,const btScalar impulseMagnitude)
+ 	{
+-		if (m_inverseMass)
+-		{
+ 			m_deltaLinearVelocity += linearComponent*impulseMagnitude;
+-			m_deltaAngularVelocity += angularComponent*(impulseMagnitude*m_angularFactor);
+-		}
++		m_deltaAngularVelocity += angularComponent * impulseMagnitude;
+ 	}
+ 
+ 	SIMD_FORCE_INLINE void internalApplyPushImpulse(const btVector3& linearComponent, const btVector3& angularComponent,btScalar impulseMagnitude)
+ 	{
+-		if (m_inverseMass)
+-		{
+ 			m_pushVelocity += linearComponent*impulseMagnitude;
+-			m_turnVelocity += angularComponent*(impulseMagnitude*m_angularFactor);
+-		}
++		m_turnVelocity += angularComponent * impulseMagnitude;
+ 	}
+ 	
+ 	void	internalWritebackVelocity()
+@@ -609,9 +573,8 @@
+ 		{
+ 			setLinearVelocity(getLinearVelocity()+ m_deltaLinearVelocity);
+ 			setAngularVelocity(getAngularVelocity()+m_deltaAngularVelocity);
+-			//m_deltaLinearVelocity.setZero();
+-			//m_deltaAngularVelocity .setZero();
+-			//m_originalBody->setCompanionId(-1);
++			m_deltaLinearVelocity.setZero();
++			m_deltaAngularVelocity .setZero();
+ 		}
+ 	}
+ 
+@@ -619,7 +582,6 @@
+ 	void	internalWritebackVelocity(btScalar timeStep);
+ 
+ 	
+-
+ 	///////////////////////////////////////////////
+ 
+ 	virtual	int	calculateSerializeBufferSize()	const;
+@@ -639,13 +601,13 @@
+ 	btMatrix3x3FloatData		m_invInertiaTensorWorld;
+ 	btVector3FloatData		m_linearVelocity;
+ 	btVector3FloatData		m_angularVelocity;
+-	btVector3FloatData		m_angularFactor;
+-	btVector3FloatData		m_linearFactor;
+-	btVector3FloatData		m_gravity;	
+-	btVector3FloatData		m_gravity_acceleration;
++	btVector3FloatData		m_angularFactor;		//unused
++	btVector3FloatData		m_linearFactor;			//unused
++	btVector3FloatData		m_gravity;				//unused
++	btVector3FloatData		m_gravity_acceleration;	//unused
+ 	btVector3FloatData		m_invInertiaLocal;
+-	btVector3FloatData		m_totalForce;
+-	btVector3FloatData		m_totalTorque;
++	btVector3FloatData		m_totalForce;			//unused
++	btVector3FloatData		m_totalTorque;			//unused
+ 	float					m_inverseMass;
+ 	float					m_linearDamping;
+ 	float					m_angularDamping;
+@@ -653,8 +615,8 @@
+ 	float					m_additionalLinearDampingThresholdSqr;
+ 	float					m_additionalAngularDampingThresholdSqr;
+ 	float					m_additionalAngularDampingFactor;
+-	float					m_linearSleepingThreshold;
+-	float					m_angularSleepingThreshold;
++	float					m_linearSleepingThreshold;	//should be renamed to squared
++	float					m_angularSleepingThreshold;	//should be renamed to squared
+ 	int						m_additionalDamping;
+ };
+ 
+@@ -665,13 +627,13 @@
+ 	btMatrix3x3DoubleData		m_invInertiaTensorWorld;
+ 	btVector3DoubleData		m_linearVelocity;
+ 	btVector3DoubleData		m_angularVelocity;
+-	btVector3DoubleData		m_angularFactor;
+-	btVector3DoubleData		m_linearFactor;
+-	btVector3DoubleData		m_gravity;	
+-	btVector3DoubleData		m_gravity_acceleration;
++	btVector3DoubleData		m_angularFactor;		//unused
++	btVector3DoubleData		m_linearFactor;			//unused
++	btVector3DoubleData		m_gravity;				//unused
++	btVector3DoubleData		m_gravity_acceleration;	//unused
+ 	btVector3DoubleData		m_invInertiaLocal;
+-	btVector3DoubleData		m_totalForce;
+-	btVector3DoubleData		m_totalTorque;
++	btVector3DoubleData		m_totalForce;			//unused
++	btVector3DoubleData		m_totalTorque;			//unused
+ 	double					m_inverseMass;
+ 	double					m_linearDamping;
+ 	double					m_angularDamping;
+@@ -679,13 +641,13 @@
+ 	double					m_additionalLinearDampingThresholdSqr;
+ 	double					m_additionalAngularDampingThresholdSqr;
+ 	double					m_additionalAngularDampingFactor;
+-	double					m_linearSleepingThreshold;
+-	double					m_angularSleepingThreshold;
++	double					m_linearSleepingThreshold;	//should be renamed to squared
++	double					m_angularSleepingThreshold;	//should be renamed to squared
+ 	int						m_additionalDamping;
+ 	char	m_padding[4];
+ };
+ 
+ 
+ 
+-#endif //BT_RIGIDBODY_H
++#endif
+ 
