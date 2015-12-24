@@ -1,3 +1,7 @@
+12-24-2015 Dusan Jocic <dusanjocic@msn.com>
+	* Cleaned editor files
+	* Added support for reading "qer_keyword" inside script files
+
 12-22-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Added support for specular mapping, without shaders
 	* Fixed crash while loading map with textures inside integrated Radiant
