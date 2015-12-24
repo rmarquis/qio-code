@@ -225,7 +225,7 @@ public:
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) {
 		return RFDL_AddDebugLine(from,to,color,life);
 	}
-	virtual void init() {
+	virtual void init(bool bEditorMode) {
 		if(initialized) {
 			g_core->DropError("rAPIImpl_c::init: already initialized\n");
 		}
@@ -239,7 +239,7 @@ public:
 		AUTOCMD_RegisterAutoConsoleCommands();
 		RF_InitMain();
 		loadMaterialSystem();
-		rb->init();
+		rb->init(!bEditorMode);
 		RF_InitSky();
 		RF_InitDecals();
 	}

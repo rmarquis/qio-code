@@ -3321,7 +3321,7 @@ void Brush_Draw( brush_s *b )
 		}
 #endif
 
-		mtrAPI_i *temp = g_ms->registerMaterial(face->d_texture->name);
+		mtrAPI_i *temp = face->d_texture->qioMat; //g_ms->registerMaterial(face->d_texture->name);
 		
 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
 		{

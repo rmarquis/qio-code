@@ -818,6 +818,8 @@ extern	int		com_frameTime;
 
 extern	bool	com_errorEntered;
 extern	bool	com_fullyInitialized;
+// V: -editor starts engine in editor mode
+extern	bool	com_bEditorMode;
 
 extern	fileHandle_t	com_journalFile;
 extern	fileHandle_t	com_journalDataFile;
@@ -827,6 +829,9 @@ extern	fileHandle_t	com_journalDataFile;
 void Com_Init( char *commandLine );
 void Com_Frame( void );
 void Com_Shutdown( void );
+
+bool Com_InitEditorDLL();
+bool COM_RunEditorFrame();
 
 void Hunk_Clear( void );
 

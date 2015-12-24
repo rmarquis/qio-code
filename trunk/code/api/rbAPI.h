@@ -167,7 +167,8 @@ public:
 
 	}
 
-	virtual void init() = 0;
+	// V: bCreateWindow is for my built-in Radiant fork, which is using Qio's materialsystem
+	virtual void init(bool bCreateWindow = true) = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
 };
 

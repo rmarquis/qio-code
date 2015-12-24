@@ -84,7 +84,8 @@ public:
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
 
-	virtual void init() = 0;
+	// V: bEditorMode is for my built-in Radiant fork, which is using Qio's materialsystem
+	virtual void init(bool bEditorMode = false) = 0;
 	virtual void endRegistration() = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
 	virtual u32 getWinWidth() const = 0;

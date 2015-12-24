@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <gl/glu.h>
 #include <vector>
 #include "qgl.h"
+#include <api/rAPI.h>
 Str m_gStr;
 
 #ifdef _DEBUG
@@ -983,6 +984,7 @@ q->texture_number = 0;
 
 
 
+qtexture_t* WINAPI QERApp_TryTextureForName(const char* name);
 /*
 ===============
 Texture_ForName
@@ -992,6 +994,7 @@ Texture_ForName
 //an already loaded texture
 qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool bNoAlpha, bool bReload, bool makeShader)
 {
+	return QERApp_TryTextureForName(name);
 	qtexture_t	*q = NULL;
 	char	filename[1024];
 	
@@ -1123,7 +1126,7 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 					  LoadImage(filename, &pPixels, &nWidth, &nHeight);
 			}
         }
-				if (pPixels)
+		/*		if (pPixels)
 				{
 					// if we were asked to ignore alpha channel, do it now (.TGA is the only supported file type with alpha channel)
 					//if (bNoAlpha)
@@ -1133,27 +1136,30 @@ qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool
 						int nCount = nWidth * nHeight;
 						for(iPix=pPixels+3; iPix-pPixels < nCount*4; iPix+=4)
 							*iPix = 255;
-					}
+					}*/
           // we'll be binding the GL texture now
           // need to check we are using a right GL context
           // with GL plugins that have their own window, the GL context may be the plugin's, in which case loading textures will bug
 	        HDC currentHDC = wglGetCurrentDC();
 	        HGLRC currentHGLRC = wglGetCurrentContext();
+		////	HGLRC qioRC;
+		//	rf->getHGLRC(&qioRC);
           //++timo FIXME: this may duplicate with qtexture_t* WINAPI QERApp_Texture_ForName (const char *name)
           //++timo FIXME: we need a list of lawfull GL contexts or something?
           // I'd rather always use the same GL context for binding...
+
           if (currentHDC != g_qeglobals.d_hdcBase || currentHGLRC != g_qeglobals.d_hglrcBase)
 	          wglMakeCurrent( g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase );
-					q = Texture_LoadTGATexture(pPixels, nWidth, nHeight, NULL, 0, 0, 0);
+					q = QERApp_TryTextureForName(name);
           //++timo I don't set back the GL context .. I don't know how safe it is
-          //qwglMakeCurrent( currentHDC, currentHGLRC );
+        //  wglMakeCurrent( currentHDC, currentHGLRC );
     	//++timo storing the filename .. will be removed by shader code cleanup
 		// this is dirty, and we sure miss some places were we should fill the filename info
 		strcpy( q->filename, name );
 					SetNameShaderInfo(q, filename, name);
 					Sys_Printf ("done.\n", name);
-					free(pPixels);
-				}
+			///		free(pPixels);
+		//		}
 
 			
  			if (g_PrefsDlg.m_bSGIOpenGL)

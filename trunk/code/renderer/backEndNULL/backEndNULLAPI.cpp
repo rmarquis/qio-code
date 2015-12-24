@@ -119,7 +119,7 @@ public:
 		return false;
 	}
 
-	virtual void init() {
+	virtual void init(bool bCreateWindow) {
 	}
 	virtual void shutdown(bool destroyWindow) {
 	}

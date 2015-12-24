@@ -144,6 +144,8 @@ typedef struct qtexture_s
 	bool	inuse;		    // true = is present on the level
 
 	
+	class mtrAPI_i *qioMat;
+
 	//++timo FIXME: this is the actual filename of the texture
 	// this will be removed after shader code cleanup
 	char filename[64];
