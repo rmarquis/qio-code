@@ -1373,11 +1373,13 @@ public:
 		return false;
 	}
 
-	virtual void init() {
+	virtual void init(bool bCreateWindow) {
 		// cvars
 		AUTOCVAR_RegisterAutoCvars();
 		// init SDL window
-		g_sharedSDLAPI->init();
+		if(bCreateWindow) {
+			g_sharedSDLAPI->init();
+		}
 
 		// hack to get HWND (that wasnt needed for GL!)
 		// I hope it won't cause any bugs

@@ -54,7 +54,7 @@ void CL_InitRef( void ) {
 		Com_Error (ERR_FATAL, "Renderer BackEnd DLL already loaded!" );
 	}
 	str backEndModuleName = "backend";
-	backEndModuleName.append(cl_r_backEnd->string);
+	backEndModuleName.append(cl_r_backEnd == 0 ? "gl" : cl_r_backEnd->string);
 	cl_rendererBackEndDLL = g_moduleMgr->load(backEndModuleName);
 	if ( !cl_rendererBackEndDLL ) {
 		g_core->RedWarning("Failed to initialize renderer backend \"%s\"\n",cl_r_backEnd->string);

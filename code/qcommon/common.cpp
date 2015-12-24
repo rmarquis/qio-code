@@ -120,6 +120,8 @@ int			com_frameNumber;
 bool	com_errorEntered = false;
 bool	com_fullyInitialized = false;
 bool	com_gameRestarting = false;
+// V: -editor starts engine in editor mode
+bool	com_bEditorMode = false;
 
 char	com_errorMessage[MAXPRINTMSG];
 
@@ -1380,13 +1382,13 @@ void Com_BenchRSQRTFunctions_f() {
 	Com_Printf("AVG MSec: sqrt: %f, rsqrt %f, rsqrt3 %f\n",single_sqrt_msec,single_rsqrt_msec,single_rsqrt3_msec);
 }
 
-bool Com_InitEditorDLL();
 void Com_Editor_f() {
 	if(g_editor) {
 		Com_Printf("Editor already running.\n");
 		return;
 	}
-	Com_InitEditorDLL();
+	Com_Printf("Not functional now - please start engine with -editor parameter.\n");
+	//Com_InitEditorDLL();
 }
 static void Com_DetectAltivec(void)
 {
@@ -1468,7 +1470,11 @@ static void Com_InitRand(void)
 		srand(time(NULL));
 }
 
-
+#include <api/rAPI.h>
+void EditorInitRenderer() {
+	CL_InitRef();
+	rf->init(true);
+}
 void IN_InitInputSystemAPI();
 void Com_InitSysEventCasterAPI();
 void SDLShared_InitSharedSDLAPI();
@@ -1488,6 +1494,7 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
 	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
+	g_staticCoreAPI.EditorInitRenderer = EditorInitRenderer;
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
@@ -1590,8 +1597,8 @@ editorAPI_i *g_editor = 0;
 	    HDC currentHDC;
 	    HGLRC currentHGLRC;
 bool Com_InitEditorDLL() {
-	    currentHDC = wglGetCurrentDC();
-	    currentHGLRC = wglGetCurrentContext();
+	///    currentHDC = wglGetCurrentDC();
+	///    currentHGLRC = wglGetCurrentContext();
 	com_editorLib = g_moduleMgr->load("editor");
 	if(com_editorLib == 0) {
 		return true; // error
@@ -1765,16 +1772,18 @@ void Com_Init( char *commandLine ) {
 #endif
 	}
 
-	// Pick a random port value
-	Com_RandomBytes( (byte*)&qport, sizeof(int) );
-	Netchan_Init( qport & 0xffff );
+	if(com_bEditorMode == false) {
+		// Pick a random port value
+		Com_RandomBytes( (byte*)&qport, sizeof(int) );
+		Netchan_Init( qport & 0xffff );
 
-	SV_Init();
+		SV_Init();
 
-	com_dedicated->modified = false;
+		com_dedicated->modified = false;
 #ifndef DEDICATED
-	CL_Init();
+		CL_Init();
 #endif
+	}
 
 	// set com_frameTime so that if a map is started on the
 	// command line it will still be able to count on com_frameTime
@@ -1796,7 +1805,10 @@ void Com_Init( char *commandLine ) {
 	// start in full screen ui mode
 	Cvar_Set("r_uiFullScreen", "1");
 
-	CL_StartHunkUsers( false );
+	
+	if(com_bEditorMode == false) {
+		CL_StartHunkUsers( false );
+	}
 
 	// make sure single player is off by default
 	Cvar_Set("ui_singlePlayerActive", "0");
@@ -2002,6 +2014,17 @@ int Com_TimeVal(int minMsec)
 	return timeVal;
 }
 
+bool COM_RunEditorFrame() {
+		if(g_editor->runEditor()) {
+			Com_Printf("Editor closed by user...\n");
+			Com_ShutdownEditorDLL();
+			return true;
+		}
+	///	if(wglMakeCurrent(currentHDC,currentHGLRC)==FALSE) {
+	///		Com_RedWarning("wglMakeCurrent after editor frame failed.\n");
+	///	}
+		return false;
+}
 /*
 =================
 Com_Frame
@@ -2167,13 +2190,7 @@ void Com_Frame( void ) {
 	// editor system
 	//	
 	if(g_editor) {
-		if(g_editor->runEditor()) {
-			Com_Printf("Editor closed by user...\n");
-			Com_ShutdownEditorDLL();
-		}
-		if(wglMakeCurrent(currentHDC,currentHGLRC)==FALSE) {
-			Com_RedWarning("wglMakeCurrent after editor frame failed.\n");
-		}
+		COM_RunEditorFrame();
 	}
 
 	NET_FlushPacketQueue();

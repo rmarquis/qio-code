@@ -502,6 +502,14 @@ void Sys_ParseArgs( int argc, char **argv )
 			Sys_Exit( 0 );
 		}
 	}
+	if( argc >= 2 )
+	{
+		if( !strcmp( argv[1], "--editor" ) ||
+				!strcmp( argv[1], "-editor" ) )
+		{
+			com_bEditorMode = true;
+		}
+	}
 }
 
 #ifndef DEFAULT_BASEDIR
@@ -697,7 +705,17 @@ int main( int argc, char **argv )
 		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
 
+
 	Com_Init( commandLine );
+	
+	if(com_bEditorMode == true) {
+		Com_InitEditorDLL();
+
+		while(COM_RunEditorFrame()==false) {
+		
+		}
+		return 0;
+	}
 	NET_Init( );
 
 	CON_Init( );

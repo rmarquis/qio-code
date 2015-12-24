@@ -29,6 +29,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "qgl.h"
 #include <gl/glu.h>
+#include <api/rAPI.h>
+#include <api/coreAPI.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -265,7 +268,13 @@ int CCamWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   if ((g_qeglobals.d_hglrcBase = wglCreateContext(g_qeglobals.d_hdcBase)) == 0)
 	  Error("wglCreateContext failed");
-  
+ // 
+ // HGLRC qioRC;
+	//rf->getHGLRC(&qioRC);
+	//if (!wglShareLists(qioRC, g_qeglobals.d_hglrcBase))
+	//  Error( "wglShareLists in CZWnd::OnCreate failed");
+
+
   if (!wglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
 	  Error ("wglMakeCurrent failed");
 
@@ -319,8 +328,11 @@ int CCamWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	Sys_Printf ("GL_VENDOR: %s\n", glGetString (GL_VENDOR));
 	Sys_Printf ("GL_RENDERER: %s\n", glGetString (GL_RENDERER));
 	Sys_Printf ("GL_VERSION: %s\n", glGetString (GL_VERSION));
+	Sys_Printf ("GL_EXTENSIONS: %s\n", glGetString (GL_EXTENSIONS));
 
   g_qeglobals.d_hwndCamera = GetSafeHwnd();
+
+  g_core->EditorInitRenderer();
 
 	return 0;
 }

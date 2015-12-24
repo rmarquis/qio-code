@@ -3016,7 +3016,7 @@ drawOnlyLightmap:
 	virtual void disablePortalClipPlane() {
 		glDisable (GL_CLIP_PLANE0);	
 	}
-	virtual void init()  {
+	virtual void init(bool bCreateWindow)  {
 		if(backendInitialized) {
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: already initialized\n");
 			return;		
@@ -3025,7 +3025,9 @@ drawOnlyLightmap:
 		AUTOCVAR_RegisterAutoCvars();
 
 		// init SDL window
-		g_sharedSDLAPI->init();
+		if(bCreateWindow) {
+			g_sharedSDLAPI->init();
+		}
 
 		u32 res = glewInit();
 		if (GLEW_OK != res) {
