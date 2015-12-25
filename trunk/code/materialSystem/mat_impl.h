@@ -374,6 +374,9 @@ class mtrIMPL_c : public mtrAPI_i {
 	bool bMirrorMaterial; // set to true by "mirror" global material keyword
 	str editorImage; // set by "qer_editorimage" keyword (Q3/D3)
 	str keyword; //set "qer_keyword" keyword (Q3)
+	// qer_transparency for editor (eg. trigger materials)
+	bool bHasEditorTransparency;
+	float editorTransparency;
 	// vertex deforms array (they are per-material, not per-stage)
 	deformArray_c *deforms;
 	// for .vmt support, set by $compilesky key
@@ -630,7 +633,12 @@ public:
 	virtual float getPolygonOffset() const {
 		return polygonOffset;
 	}
-
+	virtual bool hasEditorTransparency() const {
+		return bHasEditorTransparency;
+	}
+	virtual float getEditorTransparency() const {
+		return editorTransparency;
+	}
 	bool isVMTMaterial() const {
 		return name.hasExt("vmt");
 	}

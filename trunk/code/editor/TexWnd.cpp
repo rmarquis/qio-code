@@ -100,20 +100,7 @@ void	Texture_MouseMoved (int x, int y, int buttons);
 
 CPtrArray g_lstShaders;
 
-// checks wether a qtexture_t exists for a given name
-//++timo FIXME: is this really any use? redundant.
-bool ShaderQTextureExists(const char *pName)
-{
-  for (qtexture_t *q=g_qeglobals.d_qtextures ; q ; q=q->next)
-  {
-    if (!strcmp(q->name,  pName))
-    {
-      return true;
-    }
-  }
-  return false;
 
-}
 
 // gets active texture extension
 // 
@@ -164,7 +151,7 @@ void SortTextures(void)
 		while (qcur)
 		{
 			// Insert it here?
-			if (strcmp(qtemp->name, qcur->name) < 0)
+			if (strcmp(qtemp->qioMat->getName(), qcur->qioMat->getName()) < 0)
 			{
 				qtemp->next = qcur;
 				if (qprev)
@@ -839,7 +826,7 @@ void	Texture_ShowInuse (void)
 	{
 		if (b->patchBrush)
 		{
-			Texture_ForName(b->pPatch->d_texture->name);
+			Texture_ForName(b->pPatch->d_texture->qioMat->getName());
 		}
 		else
 		{
@@ -854,7 +841,7 @@ void	Texture_ShowInuse (void)
 	{
 		if (b->patchBrush)
 		{
-			Texture_ForName(b->pPatch->d_texture->name);
+			Texture_ForName(b->pPatch->d_texture->qioMat->getName());
 		}
 		else
 		{
@@ -906,12 +893,12 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 			return q;
 		q->inuse = true;
 		current_texture = current_texture->next;
-		if (q->name[0] == '(')	// fake color texture
+		if (q->qioMat->getName()[0] == '(')	// fake color texture
 			continue;
 
 		if (g_bFilterEnabled)
 		{
-			CString strName = q->name;
+			CString strName = q->qioMat->getName();
 			int nPos = strName.Find('\\');
 			if (nPos == -1)
 				nPos = strName.Find('/');
@@ -923,21 +910,21 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 				continue;
 		}
 
-		if (q->bFromShader && g_PrefsDlg.m_bShowShaders == FALSE)
-		{
-			continue;
-		}
+		//if (q->bFromShader && g_PrefsDlg.m_bShowShaders == FALSE)
+		//{
+		//	continue;
+		//}
 
 		if (q->inuse)
 			break;			// always show in use
 
-		if (!texture_showinuse && !_strnicmp (q->name, texture_directory, strlen(texture_directory)))
+		if (!texture_showinuse && !_strnicmp (q->qioMat->getName(), texture_directory, strlen(texture_directory)))
 			break;
 		continue;
 	}
 
-	int nWidth = q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-	int nHeight =q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+	int nWidth = q->qioMat->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+	int nHeight =q->qioMat->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 	if (current_x + nWidth > g_qeglobals.d_texturewin.width-8 && current_row)
 	{	// go to the next row unless the texture is the first on the row
 		current_x = 8;
@@ -1018,9 +1005,9 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 		if (!q)
 			break;
 
-    int nWidth =q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-    int nHeight = q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-		if (!_strcmpi(texdef->name, q->name))
+    int nWidth =q->qioMat->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+    int nHeight = q->qioMat->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+		if (!_strcmpi(texdef->name, q->qioMat->getName()))
 		{
 			if (y > g_qeglobals.d_texturewin.originy)
 			{
@@ -1139,19 +1126,19 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 		if (!q)
 			break;
 		int nWidth =  q->width * ((float)g_PrefsDlg.m_nTextureScale / 100);
-		int nHeight = q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+		int nHeight = q->qioMat->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		if (mx > x && mx - x < nWidth
 			&& my < y && y - my < nHeight + FONT_HEIGHT)
 		{
 			if (bShift)
 			{
-				if (q->shadername[0] != 0)
+				if (q->qioMat->getSourceFileName() !=  0)
 				{
 					//CString s = "notepad ";
 					//s += q->shadername;
 					//WinExec(s, SW_SHOWNORMAL);	
 	
-					ViewShader(q->shadername, q->name);				
+					ViewShader(q->qioMat->getSourceFileName(), q->qioMat->getName());				
 
 				}
 			}
@@ -1168,20 +1155,20 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 				tex.scale[0] =0.5;
 				tex.scale[1] = 0.5;
 			}
-			tex.flags = q->flags;
+			tex.flags = 0; //q->flags;
 			tex.value = 0;//q->value;
 			tex.contents = q->contents;
 			//strcpy (tex.name, q->name);
-			tex.SetName(q->name);
+			tex.SetName(q->qioMat->getName());
 			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, 0);
 			CString strTex;
-			CString strName = q->name;
+			CString strName = q->qioMat->getName();
 			//int nPos = strName.Find('\\');
 			//if (nPos == -1)
 			//  nPos = strName.Find('/');
 			//if (nPos >= 0)
 			//  strName = strName.Right(strName.GetLength() - nPos - 1);
-			strTex.Format("%s W: %i H: %i", strName.GetBuffer(0), q->width, q->height);
+			strTex.Format("%s W: %i H: %i", strName.GetBuffer(0), q->qioMat->getImageWidth(), q->qioMat->getImageHeight());
 			g_pParentWnd->SetStatusText(3, strTex);
 			return;
 		}
@@ -1272,7 +1259,7 @@ void Texture_Draw2 (int width, int height)
 {
 	qtexture_t	*q;
 	int			x, y;
-	char		*name;
+	const char		*name;
 
 	glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][0], g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][1],
 		g_qeglobals.d_savedinfo.colors[COLOR_TEXTUREBACK][2],0);
@@ -1297,8 +1284,8 @@ void Texture_Draw2 (int width, int height)
 		if (!q)
 			break;
 
-		int nWidth =q->width * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-		int nHeight =  q->height * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+		int nWidth =q->qioMat->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
+		int nHeight =  q->qioMat->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		// Is this texture visible?
 		if ( (y-nHeight-FONT_HEIGHT < g_qeglobals.d_texturewin.originy) && (y > g_qeglobals.d_texturewin.originy - height) )
 		{
@@ -1308,14 +1295,14 @@ void Texture_Draw2 (int width, int height)
 			{
 				glLineWidth (1);
 
-				if (q->bFromShader)
+				///if (q->bFromShader)
 				{
 					glColor3f (1,1,1);
 				}
-				else
-				{
-					glColor3f (0.5,1,0.5);
-				}
+				//else
+				//{
+				//	glColor3f (0.5,1,0.5);
+				//}
 				glDisable (GL_TEXTURE_2D);
 
 				glBegin (GL_LINE_LOOP);
@@ -1347,7 +1334,7 @@ void Texture_Draw2 (int width, int height)
 			glEnd ();
 
 			// draw the selection border
-			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.name, q->name))
+			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.name, q->qioMat->getName()))
 			{
 				glLineWidth (3);
 				glColor3f (1,0,0);
@@ -1370,22 +1357,22 @@ void Texture_Draw2 (int width, int height)
 			glRasterPos2f (x, y-FONT_HEIGHT+2);
 
 			// don't draw the directory name
-			for (name = q->name ; *name && *name != '/' && *name != '\\' ; name++)
+			for (name = q->qioMat->getName() ; *name && *name != '/' && *name != '\\' ; name++)
 			;
 			if (!*name)
-				name = q->name;
+				name = q->qioMat->getName();
 			else
 				name++;
 
-			if ( q->shadername[0] != 0)
-			{
-				// slow as shit
-				CString s = "[";
-				s += name;
-				s += "]";
-				glCallLists (s.GetLength(), GL_UNSIGNED_BYTE, s.GetBuffer(0));
-			}
-			else
+			//if ( q->shadername[0] != 0)
+			//{
+			//	// slow as shit
+			//	CString s = "[";
+			//	s += name;
+			//	s += "]";
+			//	glCallLists (s.GetLength(), GL_UNSIGNED_BYTE, s.GetBuffer(0));
+			//}
+			//else
 			{
 				glCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
 			}
@@ -1450,9 +1437,9 @@ void Texture_Cleanup(CStringList *pList)
       qtexture_t* pNextTex = pTex->next;
       if (pList)
       {
-        if (pTex->name[0] != '(')
+        if (pTex->qioMat->getName()[0] != '(')
         {
-          pList->AddTail(pTex->name);
+          pList->AddTail(pTex->qioMat->getName());
         }
       }
 

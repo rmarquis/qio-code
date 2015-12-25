@@ -283,8 +283,8 @@ void Face_MoveTexture(face_s *f, const edVec3_c &delta)
 		f->texdef.shift[1] -= vShift[1] / f->texdef.scale[1];
   
 		// clamp the shifts
-		Clamp(f->texdef.shift[0], f->d_texture->width);
-		Clamp(f->texdef.shift[1], f->d_texture->height);
+		Clamp(f->texdef.shift[0], f->d_texture->qioMat->getImageWidth());
+		Clamp(f->texdef.shift[1], f->d_texture->qioMat->getImageHeight());
 	}
 }
 
@@ -401,8 +401,8 @@ void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 	STfromXYZ[1][3] = td->shift[1];
 
 	for (j=0 ; j<4 ; j++) {
-		STfromXYZ[0][j] /= q->width;
-		STfromXYZ[1][j] /= q->height;
+		STfromXYZ[0][j] /= q->qioMat->getImageWidth();
+		STfromXYZ[1][j] /= q->qioMat->getImageHeight();
 	}
 }
 
@@ -1789,7 +1789,7 @@ brush_s *Brush_Parse (void)
 						
 			// the flags and value field aren't necessarily present
 			f->d_texture = Texture_ForName( f->texdef.name );
-			f->texdef.flags = f->d_texture->flags;
+			f->texdef.flags = 0;//f->d_texture->flags;
 			// V: what is this used for
 			f->texdef.value = 0; //f->d_texture->value;
 			f->texdef.contents = f->d_texture->contents;
@@ -3322,7 +3322,7 @@ void Brush_Draw( brush_s *b )
 		}
 #endif
 
-		mtrAPI_i *temp = face->d_texture->qioMat; //g_ms->registerMaterial(face->d_texture->name);
+		mtrAPI_i *temp = face->d_texture->qioMat; //g_ms->registerMaterial(face->d_texture->qioMat->getName());
 		
 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
 		{
@@ -3351,10 +3351,10 @@ void Brush_Draw( brush_s *b )
 		}
 		
 		// shader drawing stuff
-		if (face->d_texture->bFromShader)
+		if (face->d_texture->qioMat->hasEditorTransparency())
 		{
 			// setup shader drawing
-			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->fTrans );
+			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->qioMat->getEditorTransparency() );
 			
 		}
 		
@@ -3867,18 +3867,18 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	}
 	rot_width =  (max_s - min_s);
 	rot_height = (max_t - min_t);
-	td->scale[0] = -(rot_width/((float)(face->d_texture->width*nWidth)));
-	td->scale[1] = -(rot_height/((float)(face->d_texture->height*nHeight)));
+	td->scale[0] = -(rot_width/((float)(face->d_texture->qioMat->getImageWidth()*nWidth)));
+	td->scale[1] = -(rot_height/((float)(face->d_texture->qioMat->getImageHeight()*nHeight)));
 
 	td->shift[0] = min_s/td->scale[0];
-	temp = (int)(td->shift[0] / (face->d_texture->width*nWidth));
-	temp = (temp+1)*face->d_texture->width*nWidth;
+	temp = (int)(td->shift[0] / (face->d_texture->qioMat->getImageWidth()*nWidth));
+	temp = (temp+1)*face->d_texture->qioMat->getImageWidth()*nWidth;
 	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->width*nWidth);
 
 	td->shift[1] = min_t/td->scale[1];
-	temp = (int)(td->shift[1] / (face->d_texture->height*nHeight));
-	temp = (temp+1)*(face->d_texture->height*nHeight);
-	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->height*nHeight);
+	temp = (int)(td->shift[1] / (face->d_texture->qioMat->getImageHeight()*nHeight));
+	temp = (temp+1)*(face->d_texture->qioMat->getImageHeight()*nHeight);
+	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->qioMat->getImageHeight()*nHeight);
 }
 
 void Brush_FitTexture( brush_s *b, int nHeight, int nWidth )

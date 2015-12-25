@@ -351,6 +351,8 @@ mtrIMPL_c::mtrIMPL_c() {
 	bMirrorMaterial = false;
 	deforms = 0;
 	bGenericSky = false;
+	bHasEditorTransparency = false;
+	editorTransparency = 1.f;;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -378,6 +380,8 @@ void mtrIMPL_c::clear() {
 	cullType = CT_FRONT_SIDED;
 	bPortalMaterial = false;
 	bGenericSky = false;
+	bHasEditorTransparency = false;
+	editorTransparency = 1.f;;
 	// but don't clear material name and this->hashNext pointer...
 }
 
@@ -775,8 +779,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// 
 					this->keyword = p.getToken();
 				} else if(p.atWord("qer_trans")) {
+					// This is used by our built-in editor
 					// 0.5 means 50% transparency
-					p.getFloat();
+					editorTransparency = p.getFloat();
+					bHasEditorTransparency = true;
 				} else if(p.atWord("qer_nocarve")) {
 
 				} else if(p.atWord("nopicmip")) {

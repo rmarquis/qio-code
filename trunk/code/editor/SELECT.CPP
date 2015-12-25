@@ -1515,7 +1515,7 @@ void Select_AllOfType()
 
       if (b->patchBrush)
       {
-        if (_strcmpi(strName, b->pPatch->d_texture->name) == 0)
+        if (_strcmpi(strName, b->pPatch->d_texture->qioMat->getName()) == 0)
         {
 			    Brush_RemoveFromList (b);
 			    Brush_AddToList (b, &selected_brushes);

@@ -528,7 +528,7 @@ void CSG_Subtract (void)
 				continue;
 
 			//face_s *pFace = s->brush_faces;
-			if (s->brush_faces->d_texture->bFromShader && (s->brush_faces->d_texture->nShaderFlags & QER_NOCARVE))
+			if (s->brush_faces->d_texture->qioMat->hasNoCarveFlag())
 			{
 				continue;
 			}
@@ -632,7 +632,7 @@ void CSG_Merge(void)
 			return;
 		}
 
-		if (b->brush_faces->d_texture->bFromShader && (b->brush_faces->d_texture->nShaderFlags & QER_NOCARVE))
+		if (b->brush_faces->d_texture->qioMat->hasNoCarveFlag())
 		{
 			Sys_Printf("Cannot add brushes using shaders that don't allows CSG operations.\n");
 			return;

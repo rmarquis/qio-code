@@ -2403,11 +2403,11 @@ void patchMesh_c::drawPatchCam()
 		glCullFace(GL_FRONT);
 		glBindTexture (GL_TEXTURE_2D, this->d_texture->qioMat->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
 
-		if (this->d_texture->bFromShader && this->d_texture->fTrans < 1.0)
+		if (this->d_texture->qioMat->hasEditorTransparency() && this->d_texture->qioMat->getEditorTransparency() < 1.0)
 		{
 			//glEnable ( GL_BLEND );
 			//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glColor4f(this->d_texture->color[0], this->d_texture->color[1], this->d_texture->color[2], this->d_texture->fTrans); 
+			glColor4f(this->d_texture->color[0], this->d_texture->color[1], this->d_texture->color[2], this->d_texture->qioMat->getEditorTransparency()); 
 		}
 		this->drawPatchMesh(this->bSelected, true );
 
@@ -2496,7 +2496,7 @@ void Patch_WriteFile (char *name)
     for (int i = 0; i < numPatchMeshes; i++)
     {
 		  fprintf(file, "{\n");
-      fprintf(file, " %s\n", patchMeshes[i].d_texture->name);
+      fprintf(file, " %s\n", patchMeshes[i].d_texture->qioMat->getName());
       fprintf(file, " ( %i %i %i ) \n", patchMeshes[i].width, patchMeshes[i].height, patchMeshes[i].negative);
       for (int w = 0; w < patchMeshes[i].width; w++)
       {
@@ -3434,7 +3434,7 @@ void Patch_Write (patchMesh_c *p, CMemFile *file)
   //--MemFile_fprintf(file, " {\n  patchDef3\n  {\n");
   MemFile_fprintf(file, " {\n  patchDef2\n  {\n");
 
-  MemFile_fprintf(file, "   %s\n",p->d_texture->name);
+  MemFile_fprintf(file, "   %s\n",p->d_texture->qioMat->getName());
   //--MemFile_fprintf(file, "   ( %i %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value, p->type);
   MemFile_fprintf(file, "   ( %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value);
 
@@ -3464,7 +3464,7 @@ void Patch_Write (patchMesh_c *p, FILE *file)
 	fprintf(file, " {\n  patchDef2\n  {\n");
 	
 	{
-		fprintf(file, "   %s\n",p->d_texture->name);
+		fprintf(file, "   %s\n",p->d_texture->qioMat->getName());
 		fprintf(file, "   ( %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value);
 	}
 
@@ -4307,8 +4307,8 @@ const char* Patch_GetTextureName()
   if (b->patchBrush)
   {
     patchMesh_c *p = b->pPatch;
-    if (p->d_texture->name)
-      return p->d_texture->name;
+    if (p->d_texture->qioMat->getName())
+      return p->d_texture->qioMat->getName();
   }
   return "";
 }
@@ -4667,10 +4667,10 @@ void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pRepla
 	if (pb->patchBrush)
 	{
 		patchMesh_c *p = pb->pPatch;
-		if (bForce || _strcmpi(p->d_texture->name, pFind) == 0)
+		if (bForce || _strcmpi(p->d_texture->qioMat->getName(), pFind) == 0)
 		{
 			p->d_texture = Texture_ForName(pReplace);
-			//strcpy(p->d_texture->name, pReplace);
+			//strcpy(p->d_texture->qioMat->getName(), pReplace);
 		}
 	}
 }
