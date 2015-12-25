@@ -1132,7 +1132,7 @@ void CXYWnd::OnPaint()
 
 	glFinish();
 		//wgl
-	qwglSwapBuffers(dc.m_hDC);
+	SwapBuffers(dc.m_hDC);
     TRACE("XY Paint\n");
   }
  }
