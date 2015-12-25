@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
+#include <api/rAPI.h>
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/materialSystemAPI.h>
@@ -1470,8 +1471,7 @@ static void Com_InitRand(void)
 		srand(time(NULL));
 }
 
-#include <api/rAPI.h>
-void EditorInitRenderer() {
+void Com_EditorInitRenderer() {
 	CL_InitRef();
 	rf->init(true);
 }
@@ -1494,7 +1494,7 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
 	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
-	g_staticCoreAPI.EditorInitRenderer = EditorInitRenderer;
+	g_staticCoreAPI.EditorInitRenderer = Com_EditorInitRenderer;
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
@@ -2015,15 +2015,16 @@ int Com_TimeVal(int minMsec)
 }
 
 bool COM_RunEditorFrame() {
-		if(g_editor->runEditor()) {
-			Com_Printf("Editor closed by user...\n");
-			Com_ShutdownEditorDLL();
-			return true;
-		}
-	///	if(wglMakeCurrent(currentHDC,currentHGLRC)==FALSE) {
-	///		Com_RedWarning("wglMakeCurrent after editor frame failed.\n");
-	///	}
-		return false;
+	if(g_editor->runEditor()) {
+		Com_Printf("Editor closed by user...\n");
+		Com_ShutdownEditorDLL();
+		return true;
+	}
+// V: not used now, it should be used when editor is running along with game window
+///	if(wglMakeCurrent(currentHDC,currentHGLRC)==FALSE) {
+///		Com_RedWarning("wglMakeCurrent after editor frame failed.\n");
+///	}
+	return false;
 }
 /*
 =================
@@ -2189,9 +2190,10 @@ void Com_Frame( void ) {
 	//
 	// editor system
 	//	
-	if(g_editor) {
-		COM_RunEditorFrame();
-	}
+	// V: not used not, it was used when editor was supposed to run along with game window
+	//if(g_editor) {
+	//	COM_RunEditorFrame();
+	//}
 
 	NET_FlushPacketQueue();
 
