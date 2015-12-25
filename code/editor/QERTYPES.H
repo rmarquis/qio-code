@@ -32,6 +32,10 @@ typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/textureAPI.h>
+
 class texdef_t
 {
 public:
@@ -128,25 +132,15 @@ public:
 typedef struct qtexture_s
 {
 	struct	qtexture_s *next;
-	char	name[64];		// includes partial directory and extension
 	int		width,  height;
 	int		contents;
-	int		flags;
 
-	// name of the .shader file
-	char  shadername[1024]; // old shader stuff
-	bool bFromShader;   // created from a shader
-	float fTrans;           // amount of transparency
-	int   nShaderFlags;     // qer_ shader flags
 	vec3_t	color;			    // for flat shade mode
 	bool	inuse;		    // true = is present on the level
 
 	
 	class mtrAPI_i *qioMat;
 
-	//++timo FIXME: this is the actual filename of the texture
-	// this will be removed after shader code cleanup
-	char filename[64];
 
 } qtexture_t;
 

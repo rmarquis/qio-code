@@ -85,6 +85,15 @@ public:
 	virtual bool hasStageWithoutCustomProgram() const = 0;
 
 	virtual float getPolygonOffset() const = 0;
+	// for editor
+	virtual bool hasEditorTransparency() const = 0;
+	virtual float getEditorTransparency() const = 0;
+	// don't affect those brushes with CSG.
+	// For radiant.
+	// In old editor there was a "QER_NOCARVE" flag.
+	virtual bool hasNoCarveFlag() const {
+		return false;
+	}
 };
 
 #endif // __MTR_API_H__
