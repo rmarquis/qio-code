@@ -259,6 +259,12 @@ bool MAT_FindTableText(const char *tableName, const char **p, const char **textB
 // tables list for Doom3/Quake4 material tables
 static tableList_c mat_tableList(MAT_FindTableText);
 
+u32 MAT_GetNumAllocatedMaterials() {
+	return materials.size();
+}
+mtrAPI_i *MAT_GetAllocatedMaterial(u32 i) {
+	return materials[i];
+}
 const class tableListAPI_i *MAT_GetTablesAPI() {
 	return &mat_tableList;
 }

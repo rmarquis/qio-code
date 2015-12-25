@@ -52,6 +52,9 @@ public:
 	virtual const class tableListAPI_i *getTablesAPI() const = 0;
 	// cubemap loader access (for "env_cubemap" handling in renderer)
 	virtual class cubeMapAPI_i *registerCubeMap(const char *cubeMapName, bool forceReload = false) = 0;
+	// for Editor
+	virtual u32 getNumAllocatedMaterials() const = 0;
+	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const = 0;
 };
 
 extern materialSystemAPI_i *g_ms;

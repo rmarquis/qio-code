@@ -275,7 +275,7 @@ void Z_Draw (void)
     brush_s	*brush;
 	float	w, h;
 	double	start, end;
-	qtexture_s	*q;
+	mtrAPI_i	*q;
 	float	top, bottom;
 	edVec3_c	org_top, org_bottom, dir_up, dir_down;
 	int xCam = z.width/3;
@@ -360,8 +360,8 @@ void Z_Draw (void)
 			continue;
 		bottom = org_bottom[2] + bottom;
 
-		q = Texture_ForName (brush->brush_faces->texdef.name);
-		glColor3f (q->qioMat->getEditorColor()[0], q->qioMat->getEditorColor()[1], q->qioMat->getEditorColor()[2]);
+		q = QERApp_TryTextureForName (brush->brush_faces->texdef.name);
+		glColor3f (q->getEditorColor()[0], q->getEditorColor()[1], q->getEditorColor()[2]);
 		glBegin (GL_QUADS);
 		glVertex2f (-xCam, bottom);
 		glVertex2f (xCam, bottom);
@@ -395,8 +395,8 @@ void Z_Draw (void)
 				{
 					bottom = org_bottom[2] + bottom;
 
-					q = Texture_ForName (brush->brush_faces->texdef.name);
-					glColor3f (q->qioMat->getEditorColor()[0], q->qioMat->getEditorColor()[1], q->qioMat->getEditorColor()[2]);
+					q = QERApp_TryTextureForName (brush->brush_faces->texdef.name);
+					glColor3f (q->getEditorColor()[0], q->getEditorColor()[1], q->getEditorColor()[2]);
 					glBegin (GL_QUADS);
 					glVertex2f (-xCam, bottom);
 					glVertex2f (xCam, bottom);

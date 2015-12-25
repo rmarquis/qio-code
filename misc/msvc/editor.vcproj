@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="editor"
 	ProjectGUID="{2F58DECA-EBEA-4138-B980-BA511AD46B2A}"
 	RootNamespace="editor"
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY; MSVC2008_EXPRESS_EDITION_HACK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
