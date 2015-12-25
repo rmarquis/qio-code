@@ -502,19 +502,12 @@ extern eclass_s *eclass_e;
 void Eclass_ScanFile( char *filename );
 
 //
-// ShaderInfo.cpp
-//
-#include "ShaderInfo.h"
-
-//
 // TexWnd.cpp
 //
-CShaderInfo* hasShader(const char *pName);
 
 extern CStringArray g_BSPFrontendCommands;
 //
 // IShaders interface
-CShaderInfo* SetNameShaderInfo(qtexture_t* q, const char* pPath, const char* pName);
 qtexture_t* Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
 qtexture_t* WINAPI QERApp_TryTextureForName(const char* name);
 
