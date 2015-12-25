@@ -30,6 +30,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "CapDialog.h"
 
 #include <math/math.h>
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/textureAPI.h>
 
 // externs
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
@@ -2398,7 +2401,7 @@ void patchMesh_c::drawPatchCam()
 	{
 		glEnable( GL_CULL_FACE );
 		glCullFace(GL_FRONT);
-		glBindTexture (GL_TEXTURE_2D, this->d_texture->texture_number);
+		glBindTexture (GL_TEXTURE_2D, this->d_texture->qioMat->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
 
 		if (this->d_texture->bFromShader && this->d_texture->fTrans < 1.0)
 		{

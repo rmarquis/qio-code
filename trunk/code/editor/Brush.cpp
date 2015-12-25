@@ -1790,7 +1790,8 @@ brush_s *Brush_Parse (void)
 			// the flags and value field aren't necessarily present
 			f->d_texture = Texture_ForName( f->texdef.name );
 			f->texdef.flags = f->d_texture->flags;
-			f->texdef.value = f->d_texture->value;
+			// V: what is this used for
+			f->texdef.value = 0; //f->d_texture->value;
 			f->texdef.contents = f->d_texture->contents;
 			
 			if (TokenAvailable ())

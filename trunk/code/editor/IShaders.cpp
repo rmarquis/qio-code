@@ -19,23 +19,7 @@ along with Foobar; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
-//-----------------------------------------------------------------------------
-//
-// $LogFile$
-// $Revision: 1.1.2.2 $
-// $Author: ttimo $
-// $Date: 2000/02/24 22:24:45 $
-// $Log: IShaders.cpp,v $
-// Revision 1.1.2.2  2000/02/24 22:24:45  ttimo
-// RC2
-//
-// Revision 1.1.2.1  2000/02/11 03:52:30  ttimo
-// working on the IShader interface
-//
-//
-// DESCRIPTION:
-// implementation of the shaders / textures interface
-//
+
 
 #include "stdafx.h"
 #include <api/mtrAPI.h>
@@ -70,7 +54,6 @@ qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
 		q->width = mat->getImageWidth();
 		q->height = mat->getImageHeight();
 		q->flags = 0;
-		q->value = 0;
 		q->contents = 0;
 		q->qioMat = mat;
 		//++timo storing the filename .. will be removed by shader code cleanup
@@ -78,6 +61,8 @@ qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
 		strcpy( q->filename, name );
 		Sys_Printf ("done.\n", name);
 	//	free(pPixels);
+		q->next = g_qeglobals.d_qtextures;
+		g_qeglobals.d_qtextures = q;
 		return q;
 	}
 	return NULL;
