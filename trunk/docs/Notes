@@ -6,3 +6,5 @@ V: Doom3 visportal brushes should have a single side with editor/visportal textu
 V: It's good to turn off the physics simulation while looking for bottlenecks in Qio (g_runPhysics 0).
 
 V: Both Radiant, Doom3 editor and Qio's Radiant fork are not running correctly for me on my dedicated high speed GPU - I have to use the integrated one.
+
+V: I have tested Qio windows binaries (exe and dlls) under Ubuntu with Wine - they are working fine, except some GLSL shaders
