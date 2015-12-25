@@ -357,6 +357,26 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 	if(fname == 0 || fname[0] == 0)
 		return 0;
 
+	// support single-color images, like in the Radiant editor
+	float r, g, b;
+	if(sscanf(fname,"(%f %f %f)",&r,&g,&b)==3) {
+		u32 size = 16;
+		*width = size;
+		*height = size;
+		u32 numPixels = size*size;
+		byte *pic = (byte *)malloc (numPixels*4); 
+		byte rb = r * 255.f;
+		byte gb = g * 255.f;
+		byte bb = b * 255.f;
+		for(u32 i = 0; i < numPixels*4; i+=4) {
+			pic[i] = r;
+			pic[i+1] = g;
+			pic[i+2] = b;
+			pic[i+3] = 255;
+		}
+		*imageData = pic;
+		return fname;
+	}
 	const char *ext = G_strgetExt(fname);
 
 	str s = fname;
