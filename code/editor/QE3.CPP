@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "PrefsDlg.h"
 #include <direct.h>  
 #include <sys\stat.h> 
+#include <api/vfsAPI.h>
 
 QEGlobals_t  g_qeglobals;
 
@@ -224,13 +225,13 @@ bool QE_LoadProject (char *projectfile)
 
 	Sys_Printf ("QE_LoadProject (%s)\n", projectfile);
 	
-	if ( LoadFileNoCrash (projectfile, (void **)&data) == -1)
+	if ( g_vfs->FS_ReadFile (projectfile, (void **)&data) == -1)
 		return false;
 	
 	g_strProject = projectfile;
 	
 	CString strData = data;
-	free(data);
+	g_vfs->FS_FreeFile(data);
 	
 	CString strQ2Path;// = g_PrefsDlg.m_strQuake2;
 	CString strQ2File;

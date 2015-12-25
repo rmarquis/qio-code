@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "mru.h"
 #include "PrefsDlg.h"
+#include <api/vfsAPI.h>
 
 extern CEdit* g_pEdit;
 
@@ -431,6 +432,28 @@ void ProjectDialog (void)
 		Error ("Couldn't load project file");
 }
 
+#define PATHSEPERATOR   '/'
+
+void DefaultExtension (char *path, char *extension)
+{
+	char    *src;
+//
+// if path doesn't have a .EXT, append extension
+// (extension should include the .)
+//
+	src = path + strlen(path) - 1;
+
+	while (*src != PATHSEPERATOR && src != path)
+	{
+		if (*src == '.')
+			return;                 // it has an extension
+		src--;
+	}
+
+	strcat (path, extension);
+}
+
+
 
 extern void AddSlash(CString& strPath);
 void SaveAsDialog (bool bRegion)
@@ -577,10 +600,10 @@ void CheckBspProcess (void)
 	GetTempPath(512, temppath);
 	sprintf (outputpath, "%sjunk.txt", temppath);
 
-	LoadFile (outputpath, (void **)&out);
+	g_vfs->FS_ReadFile (outputpath, (void **)&out);
 	Sys_Printf ("%s", out);
 	Sys_Printf ("\ncompleted.\n");
-	free (out);
+	g_vfs->FS_FreeFile (out);
 
 	CTime tEnd = CTime::GetCurrentTime();
 	CTimeSpan tElapsed = tEnd - g_tBegin;
@@ -641,79 +664,6 @@ void CheckBspProcess (void)
 	}
 }
 
-extern int	cambuttonstate;
-
-extern "C" {
-void *Com_Allocate( int bytes ) {
-	return malloc(bytes);
-}
-
-void Com_Dealloc( void *ptr ) {
-	free(ptr);
-}
 
 
-void Com_Printf( const char *msg, ... ) {
-	va_list argptr;
-	char	buf[32768];
-	char	*out;
-
-	va_start (argptr,msg);
-	vsprintf (buf, msg,argptr);
-	va_end (argptr);
-
-	out = TranslateString (buf);
-
-	Sys_Printf(buf);
-}
-
-void Com_Error( int level, const char *error, ... ) {
-	va_list argptr;
-	char	buf[32768];
-	char	*out;
-
-	va_start (argptr,error);
-	vsprintf (buf, error,argptr);
-	va_end (argptr);
-
-	out = TranslateString (buf);
-
-	Sys_Printf(buf);
-}
-
-void Com_DPrintf( const char *msg, ... ) {
-	return;
-}
-
-int FS_Write( const void *buffer, int len, fileHandle_t h ) {
-	SafeWrite(reinterpret_cast<FILE*>(h), buffer, len);
-	return len;
-}
-
-int FS_ReadFile( const char *qpath, void **buffer ) {
-	CString strPath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
-	AddSlash(strPath);
-	strPath += qpath;
-	return LoadFile(strPath, buffer);
-}
-
-void FS_FreeFile( void *buffer ) {
-	Com_Dealloc(buffer);
-}
-
-fileHandle_t FS_FOpenFileWrite( const char *filename ) {
-	CString strPath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
-	AddSlash(strPath);
-	strPath += filename;
-	// bad casting ptr to int
-	return reinterpret_cast<fileHandle_t>(SafeOpenWrite(strPath));
-}
-
-void FS_FCloseFile( fileHandle_t f ) {
-	fclose(reinterpret_cast<FILE*>(f));
-}
-
-
-
-}
 

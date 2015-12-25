@@ -1313,6 +1313,14 @@ long FS_FOpenFileRead(const char *filename, fileHandle_t *file, bool uniqueFILE)
 
 	for(search = fs_searchpaths; search; search = search->next)
 	{
+		if(search->dir)
+		{
+			// V: hack only for editor so VFS accepts full paths
+			if(strnicmp(search->dir->fullpath,filename,strlen(search->dir->fullpath))==0)
+			{
+				filename += strlen(search->dir->fullpath);
+			}
+		}
 	        len = FS_FOpenFileReadDir(filename, search, file, uniqueFILE, false);
 	        
 	        if(file == NULL)

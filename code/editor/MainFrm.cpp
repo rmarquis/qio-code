@@ -1138,13 +1138,13 @@ void CMainFrame::CreateQEChildren()
     }
     if (!bProjectLoaded)
     {
-      CString str = g_strAppPath;
-      AddSlash(str);
-      str += "../baseq3/scripts/quake.qe4";
-      char cWork[1024];
-      char *pFile = NULL;
-      GetFullPathName(str, 1024, cWork, &pFile);
-      bProjectLoaded = QE_LoadProject(cWork);
+      //CString str = g_strAppPath;
+      //AddSlash(str);
+      //str += "baseqio/;
+      //char cWork[1024];
+      //char *pFile = NULL;
+      //GetFullPathName(str, 1024, cWork, &pFile);
+      bProjectLoaded = QE_LoadProject("editor/qioEditorDefault.qe4");
     }
     if (!bProjectLoaded)
     {

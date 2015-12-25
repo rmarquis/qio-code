@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "qe3.h"
 #include "io.h"
+#include <api/vfsAPI.h>
 //#include "qertypes.h"
 
 eclass_s	*eclass = NULL;
@@ -386,7 +387,7 @@ void Eclass_ScanFile (char *filename)
 	Sys_Printf ("ScanFile: %s\n", temp);
 	
 	// BUG
-	size = LoadFile (filename, (void**)&data);
+	size = g_vfs->FS_ReadFile (filename, (void**)&data);
 	eclass_found = false;
 	for (i=0 ; i<size ; i++)
 		if (!strncmp(data+i, "/*QUAKED",8))
@@ -421,7 +422,7 @@ void Eclass_ScanFile (char *filename)
 				break;
 		}
 		
-		free (data);		
+		g_vfs->FS_FreeFile (data);		
 }
 
 
