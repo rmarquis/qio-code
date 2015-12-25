@@ -1202,13 +1202,6 @@ void CMainFrame::CreateQEChildren()
     Error("Unable to load project file. It was unavailable in the scripts path and the default could not be found");
 
 
-  if (g_PrefsDlg.m_bPAK == TRUE)
-  {
-    // FIXME: pay attention to Q3 pref
-    //InitPakFile(ValueForKey(g_qeglobals.d_project_entity, "basepath"), g_PrefsDlg.m_strPAKFile);
-    InitPakFile(ValueForKey(g_qeglobals.d_project_entity, "basepath"), NULL);
-  }
-
 	QE_Init ();
   
 	Sys_Printf ("Entering message loop\n");
@@ -1442,9 +1435,6 @@ void CMainFrame::OnDestroy()
     free(notexture);
   }
 
-  //if (current_texture)
-  //  free(current_texture);
-  ClosePakFile();
 
 
 	CFrameWnd::OnDestroy();

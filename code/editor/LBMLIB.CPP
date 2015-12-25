@@ -667,15 +667,10 @@ static void LoadBMP( const char *name, byte **pic, int *width, int *height )
 	// load the file
 	//
 	length = LoadFile( ( char * ) name, (void **)&buffer);
-	if (length == -1)
-  {
-    length = PakLoadAnyFile( (char*)name, (void**)&buffer);
     if (length == -1)
     {
 		  return;
     }
-  }
-
 	buf_p = buffer;
 
 	bmpHeader.id[0] = *buf_p++;
@@ -837,12 +832,8 @@ static void LoadPCX ( const char *filename, byte **pic, byte **palette, int *wid
 	//
 	len = LoadFile( ( char * ) filename, (void **)&raw);
 	if (len == -1) 
-  {
-    len = PakLoadAnyFile( (char*)filename, (void**)&raw);
-    if (len == -1)
     {
 		  return;
-    }
 	}
 
 	//
@@ -976,12 +967,8 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	//
 	int nLen = LoadFile ( ( char * ) name, (void **)&buffer);
 	if (nLen == -1) 
-  {
-    nLen = PakLoadAnyFile((char*)name, (void**)&buffer);
-    if (nLen == -1)
     {
 		  return;
-    }
 	}
 
 	buf_p = buffer;
@@ -1256,11 +1243,9 @@ void LoadImagePNG(const char *filename, unsigned char **pic, int *width, int *he
 	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
 	if (nLen == -1) 
 	{
-		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
-		if (nLen == -1)
-		{
+
 			return;
-		}
+
 	}
 	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_PNG);
 	free(fbuffer);
@@ -1272,11 +1257,9 @@ void LoadImageDDS(const char *filename, unsigned char **pic, int *width, int *he
 	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
 	if (nLen == -1) 
 	{
-		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
-		if (nLen == -1)
-		{
+
 			return;
-		}
+
 	}
 	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_DDS);
 	free(fbuffer);
@@ -1287,11 +1270,8 @@ void LoadImageJPG(const char *filename, unsigned char **pic, int *width, int *he
 	int nLen = LoadFile( ( char * ) filename, (void **)&fbuffer);
 	if (nLen == -1) 
 	{
-		nLen = PakLoadAnyFile((char*)filename, (void**)&fbuffer);
-		if (nLen == -1)
-		{
 			return;
-		}
+
 	}
 	LoadBuff_IL(fbuffer, nLen, pic, width, height,IL_JPG);
 	free(fbuffer);
