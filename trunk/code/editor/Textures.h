@@ -32,10 +32,7 @@ void	Texture_ShowDirectory (int menunum, bool bLinked = false);
 void	Texture_ShowAll();
 void Texture_Cleanup(CStringList *pList = NULL);
 
-// TTimo: added bNoAlpha flag to ignore alpha channel when parsing a .TGA file, transparency is usually achieved through qer_trans keyword in shaders
-// in some cases loading an empty alpha channel causes display bugs (brushes not seen)
-qtexture_s *Texture_ForName (const char *name, bool bReplace = false, bool bShader = false, bool bNoAlpha = false, bool bReload = false, bool makeShader = true);
-
+mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 void	Texture_Init (void);
 // Timo
 // added an optional IPluginTexdef when one is available
@@ -49,4 +46,4 @@ void Texture_ResetPosition();
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
 void Texture_LoadFromPlugIn(LPVOID vp);
 void Texture_StartPos (void);
-qtexture_s *Texture_NextPos (int *x, int *y);
+mtrAPI_i *Texture_NextPos (int *x, int *y);

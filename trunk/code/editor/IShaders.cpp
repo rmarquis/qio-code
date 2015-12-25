@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrStageAPI.h>
 #include <api/materialSystemAPI.h>
 
-// this is a modified version of Texture_ForName
-qtexture_s* WINAPI QERApp_TryTextureForName(const char* name)
+// this is a modified version of QERApp_TryTextureForName
+mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name)
 {
 	char fullName[256];
 	if(name[0] != '(') 
@@ -40,13 +40,6 @@ qtexture_s* WINAPI QERApp_TryTextureForName(const char* name)
 	{
 		strcpy(fullName,name);
 	}
-	qtexture_s *q;
-	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
-	{
-		if (!strcmp(name,  q->qioMat->getName()))
-				return q;
-	}
-
 	HDC currentHDC = wglGetCurrentDC();
 	HGLRC currentHGLRC = wglGetCurrentContext();
 
@@ -56,18 +49,8 @@ qtexture_s* WINAPI QERApp_TryTextureForName(const char* name)
 	//++timo I don't set back the GL context .. I don't know how safe it is
 	//  wglMakeCurrent( currentHDC, currentHGLRC );
 
+	// This should always return a non-null pointer, altought it will be a default-image material if the valid one is missing
 	mtrAPI_i *mat = g_ms->registerMaterial(fullName);
-	if (mat)
-	{
-		qtexture_s* q = (qtexture_s*)qmalloc(sizeof(*q));
-
-
-		q->qioMat = mat;
-		Sys_Printf ("Loading material (or texture) %s done.\n", name);
-	//	free(pPixels);
-		q->next = g_qeglobals.d_qtextures;
-		g_qeglobals.d_qtextures = q;
-		return q;
-	}
-	return NULL;
+	Sys_Printf ("Loading material (or texture) %s done.\n", name);
+	return mat;
 }

@@ -56,6 +56,8 @@ void MAT_IterateAllAvailableMaterialFileNames(void (*callback)(const char *s));
 class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette);
 // Doom3 material tables interface
 const class tableListAPI_i *MAT_GetTablesAPI();
+u32 MAT_GetNumAllocatedMaterials();
+mtrAPI_i *MAT_GetAllocatedMaterial(u32 i);
 
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();

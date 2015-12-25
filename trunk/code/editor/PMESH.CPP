@@ -602,8 +602,8 @@ dist( this control point to first control point ) / dist ( last control pt to fi
 */
 void patchMesh_c::naturalizePatch()
 {
-	int nWidth = this->d_texture->qioMat->getImageWidth() * 0.5;
-	int nHeight = this->d_texture->qioMat->getImageHeight() * 0.5 ;
+	int nWidth = this->d_texture->getImageWidth() * 0.5;
+	int nHeight = this->d_texture->getImageHeight() * 0.5 ;
 	float fPWidth = this->calcPatchWidth();
 	float fPHeight = this->calcPatchHeight();
 	float xAccum = 0;
@@ -735,7 +735,7 @@ face_s* nextFace(patchMesh_c *p)
 }
 
 
-///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, qtexture_s *q, face_s *f);
+///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, mtrAPI_i *q, face_s *f);
 
 void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
 {
@@ -1622,7 +1622,7 @@ brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDele
 
 
 	patchMesh_c* p = MakeNewPatch();
-	p->d_texture = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
+	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
 
 	p->width = nWidth;
 	p->height = nHeight;
@@ -2401,13 +2401,13 @@ void patchMesh_c::drawPatchCam()
 	{
 		glEnable( GL_CULL_FACE );
 		glCullFace(GL_FRONT);
-		glBindTexture (GL_TEXTURE_2D, this->d_texture->qioMat->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
+		glBindTexture (GL_TEXTURE_2D, this->d_texture->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
 
-		if (this->d_texture->qioMat->hasEditorTransparency() && this->d_texture->qioMat->getEditorTransparency() < 1.0)
+		if (this->d_texture->hasEditorTransparency() && this->d_texture->getEditorTransparency() < 1.0)
 		{
 			//glEnable ( GL_BLEND );
 			//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glColor4f(this->d_texture->qioMat->getEditorColor()[0], this->d_texture->qioMat->getEditorColor()[1], this->d_texture->qioMat->getEditorColor()[2], this->d_texture->qioMat->getEditorTransparency()); 
+			glColor4f(this->d_texture->getEditorColor()[0], this->d_texture->getEditorColor()[1], this->d_texture->getEditorColor()[2], this->d_texture->getEditorTransparency()); 
 		}
 		this->drawPatchMesh(this->bSelected, true );
 
@@ -2496,7 +2496,7 @@ void Patch_WriteFile (char *name)
     for (int i = 0; i < numPatchMeshes; i++)
     {
 		  fprintf(file, "{\n");
-      fprintf(file, " %s\n", patchMeshes[i].d_texture->qioMat->getName());
+      fprintf(file, " %s\n", patchMeshes[i].d_texture->getName());
       fprintf(file, " ( %i %i %i ) \n", patchMeshes[i].width, patchMeshes[i].height, patchMeshes[i].negative);
       for (int w = 0; w < patchMeshes[i].width; w++)
       {
@@ -2746,7 +2746,7 @@ Patch_SetTexture
 // FIXME: need array validation throughout
 void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef)
 {
-	p->d_texture = Texture_ForName(tex_def->name);
+	p->d_texture = QERApp_TryTextureForName(tex_def->name);
 	UpdatePatchInspector();
 }
 
@@ -3342,7 +3342,7 @@ brush_s* Patch_Parse(bool bOld)
 		// band-aid 
 		if (strcmp(token, "("))
 		{
-			pm->d_texture = Texture_ForName(token);
+			pm->d_texture = QERApp_TryTextureForName(token);
 			GetToken(true);
 		}
 		else
@@ -3434,7 +3434,7 @@ void Patch_Write (patchMesh_c *p, CMemFile *file)
   //--MemFile_fprintf(file, " {\n  patchDef3\n  {\n");
   MemFile_fprintf(file, " {\n  patchDef2\n  {\n");
 
-  MemFile_fprintf(file, "   %s\n",p->d_texture->qioMat->getName());
+  MemFile_fprintf(file, "   %s\n",p->d_texture->getName());
   //--MemFile_fprintf(file, "   ( %i %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value, p->type);
   MemFile_fprintf(file, "   ( %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value);
 
@@ -3464,7 +3464,7 @@ void Patch_Write (patchMesh_c *p, FILE *file)
 	fprintf(file, " {\n  patchDef2\n  {\n");
 	
 	{
-		fprintf(file, "   %s\n",p->d_texture->qioMat->getName());
+		fprintf(file, "   %s\n",p->d_texture->getName());
 		fprintf(file, "   ( %i %i %i %i %i ) \n", p->width, p->height, p->contents, p->flags, p->value);
 	}
 
@@ -4307,8 +4307,8 @@ const char* Patch_GetTextureName()
   if (b->patchBrush)
   {
     patchMesh_c *p = b->pPatch;
-    if (p->d_texture->qioMat->getName())
-      return p->d_texture->qioMat->getName();
+    if (p->d_texture->getName())
+      return p->d_texture->getName();
   }
   return "";
 }
@@ -4667,15 +4667,15 @@ void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pRepla
 	if (pb->patchBrush)
 	{
 		patchMesh_c *p = pb->pPatch;
-		if (bForce || _strcmpi(p->d_texture->qioMat->getName(), pFind) == 0)
+		if (bForce || _strcmpi(p->d_texture->getName(), pFind) == 0)
 		{
-			p->d_texture = Texture_ForName(pReplace);
-			//strcpy(p->d_texture->qioMat->getName(), pReplace);
+			p->d_texture = QERApp_TryTextureForName(pReplace);
+			//strcpy(p->d_texture->getName(), pReplace);
 		}
 	}
 }
 
-void Patch_ReplaceQTexture(brush_s *pb, qtexture_s *pOld, qtexture_s *pNew)
+void Patch_ReplaceQTexture(brush_s *pb, mtrAPI_i *pOld, mtrAPI_i *pNew)
 {
 	if (pb->patchBrush)
 	{
@@ -4691,7 +4691,7 @@ void Patch_ReplaceQTexture(brush_s *pb, qtexture_s *pOld, qtexture_s *pNew)
 void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz)
 {
   patchMesh_c* p = MakeNewPatch();
-	p->d_texture = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
+	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
 	p->width = 3;
 	p->height = 3;
   p->type = PATCH_TRIANGLE;

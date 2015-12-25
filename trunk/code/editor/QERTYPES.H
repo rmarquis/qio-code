@@ -129,16 +129,6 @@ public:
 #define QER_TRANS     0x00000001
 #define QER_NOCARVE   0x00000002
 
-struct qtexture_s
-{
-	struct	qtexture_s *next;
-
-	
-	class mtrAPI_i *qioMat;
-
-
-};
-
 #include "mathlib.h"
 class texturedVertex_c {
 public:
@@ -243,7 +233,7 @@ struct face_s
 	winding_t				*face_winding;
 
 	vec3_t					d_color;
-	qtexture_s				*d_texture;
+	mtrAPI_i				*d_texture;
 
 	// Timo new brush primit texdef
 	brushprimit_texdef_s	brushprimit_texdef;
@@ -315,7 +305,7 @@ class patchMesh_c {
 public:
 	int	width, height;		// in control points, not patches
 	int   contents, flags, value, type;
-	qtexture_s *d_texture;
+	mtrAPI_i *d_texture;
 	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
 	struct brush_s *pSymbiot;
 	bool bSelected;

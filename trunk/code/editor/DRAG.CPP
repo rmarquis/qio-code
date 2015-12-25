@@ -385,10 +385,10 @@ void Drag_Begin (int x, int y, int buttons,
         if (t.brush->owner->eclass->nShowFlags & ECLASS_LIGHT)
         {
           CString strBuff;
-          qtexture_s* pTex = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
+          mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
           if (pTex)
           {
-            edVec3_c vColor = pTex->qioMat->getEditorColor();
+            edVec3_c vColor = pTex->getEditorColor();
 
             float fLargest = 0.0f;
             for (int i = 0; i < 3; i++)
@@ -409,7 +409,7 @@ void Drag_Begin (int x, int y, int buttons,
                 vColor[i] *= fScale;
               }
             }
-            strBuff.Format("%f %f %f",pTex->qioMat->getEditorColor()[0], pTex->qioMat->getEditorColor()[1], pTex->qioMat->getEditorColor()[2]);
+            strBuff.Format("%f %f %f",pTex->getEditorColor()[0], pTex->getEditorColor()[1], pTex->getEditorColor()[2]);
             SetKeyValue(t.brush->owner, "_color", strBuff.GetBuffer(0));
 				    Sys_UpdateWindows (W_ALL);
           }

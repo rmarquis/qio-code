@@ -46,7 +46,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DialogThick.h"
 #include "PatchDialog.h"
 #include "Undo.h"
-#include "pakstuff.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1428,13 +1427,6 @@ void CMainFrame::OnDestroy()
 
   if (world_entity)
     Entity_Free(world_entity);
-
-  if (notexture)
-  {
-
-    free(notexture);
-  }
-
 
 
 	CFrameWnd::OnDestroy();

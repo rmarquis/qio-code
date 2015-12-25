@@ -227,7 +227,7 @@ face_s	*Face_FullClone (face_s *f)
 		n->face_winding = Winding_Clone(f->face_winding);
 	else
 		n->face_winding = NULL;
-	n->d_texture = Texture_ForName( n->texdef.name );
+	n->d_texture = QERApp_TryTextureForName( n->texdef.name );
 	return n;
 }
 
@@ -283,8 +283,8 @@ void Face_MoveTexture(face_s *f, const edVec3_c &delta)
 		f->texdef.shift[1] -= vShift[1] / f->texdef.scale[1];
   
 		// clamp the shifts
-		Clamp(f->texdef.shift[0], f->d_texture->qioMat->getImageWidth());
-		Clamp(f->texdef.shift[1], f->d_texture->qioMat->getImageHeight());
+		Clamp(f->texdef.shift[0], f->d_texture->getImageWidth());
+		Clamp(f->texdef.shift[1], f->d_texture->getImageHeight());
 	}
 }
 
@@ -296,7 +296,7 @@ Face_SetColor
 void Face_SetColor (brush_s *b, face_s *f, float fCurveColor) 
 {
 	float	shade;
-	qtexture_s *q;
+	mtrAPI_i *q;
 
 	q = f->d_texture;
 
@@ -312,9 +312,9 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 	}
 	else
 	{
-		f->d_color[0] = shade*q->qioMat->getEditorColor()[0];
-		f->d_color[1] = shade*q->qioMat->getEditorColor()[1];
-		f->d_color[2] = shade*q->qioMat->getEditorColor()[2];
+		f->d_color[0] = shade*q->getEditorColor()[0];
+		f->d_color[1] = shade*q->getEditorColor()[1];
+		f->d_color[2] = shade*q->getEditorColor()[2];
 	}
 }
 
@@ -331,7 +331,7 @@ void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 	float		ang, sinv, cosv;
 	float		ns, nt;
 	int			i,j;
-	qtexture_s *q;
+	mtrAPI_i *q;
 	texdef_t	*td;
 
 #ifdef _DEBUG
@@ -401,8 +401,8 @@ void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 	STfromXYZ[1][3] = td->shift[1];
 
 	for (j=0 ; j<4 ; j++) {
-		STfromXYZ[0][j] /= q->qioMat->getImageWidth();
-		STfromXYZ[1][j] /= q->qioMat->getImageHeight();
+		STfromXYZ[0][j] /= q->getImageWidth();
+		STfromXYZ[1][j] /= q->getImageHeight();
 	}
 }
 
@@ -436,7 +436,7 @@ void Face_MakePlane (face_s *f)
 EmitTextureCoordinates
 ================
 */
-void EmitTextureCoordinates (texturedVertex_c &out, qtexture_s *q, face_s *f)
+void EmitTextureCoordinates (texturedVertex_c &out, mtrAPI_i *q, face_s *f)
 {
 	float	STfromXYZ[2][4];
 
@@ -916,7 +916,7 @@ Brush_MoveVertexes_old1
 //						if (newface->face_winding) Winding_Free(newface->face_winding);
 //						newface->face_winding = Winding_Clone(&tmpw);
 //						//get the texture
-//						newface->d_texture = Texture_ForName( newface->texdef.name );
+//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 //						//add the face to the brush
 //						newface->next = b->brush_faces;
 //						b->brush_faces = newface;
@@ -955,7 +955,7 @@ Brush_MoveVertexes_old1
 //					if (newface->face_winding) Winding_Free(newface->face_winding);
 //					newface->face_winding = Winding_Clone(&tmpw);
 //					//get the texture
-//					newface->d_texture = Texture_ForName( newface->texdef.name );
+//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 //					//add the face to the brush
 //					newface->next = b->brush_faces;
 //					b->brush_faces = newface;
@@ -1164,7 +1164,7 @@ Brush_MoveVertexes_old2
 //						if (newface->face_winding) Winding_Free(newface->face_winding);
 //						newface->face_winding = Winding_Clone(&tmpw);
 //						//get the texture
-//						newface->d_texture = Texture_ForName( newface->texdef.name );
+//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 //						//add the face to the brush
 //						newface->next = b->brush_faces;
 //						b->brush_faces = newface;
@@ -1203,7 +1203,7 @@ Brush_MoveVertexes_old2
 //					if (newface->face_winding) Winding_Free(newface->face_winding);
 //					newface->face_winding = Winding_Clone(&tmpw);
 //					//get the texture
-//					newface->d_texture = Texture_ForName( newface->texdef.name );
+//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 //					//add the face to the brush
 //					newface->next = b->brush_faces;
 //					b->brush_faces = newface;
@@ -1381,7 +1381,7 @@ int Brush_MoveVertex(brush_s *b, const edVec3_c &vertex, const edVec3_c &delta, 
 							if (newface->face_winding) Winding_Free(newface->face_winding);
 							newface->face_winding = Winding_Clone(&tmpw);
 							//get the texture
-							newface->d_texture = Texture_ForName( newface->texdef.name );
+							newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 							//add the face to the brush
 							newface->next = b->brush_faces;
 							b->brush_faces = newface;
@@ -1420,7 +1420,7 @@ int Brush_MoveVertex(brush_s *b, const edVec3_c &vertex, const edVec3_c &delta, 
 						if (newface->face_winding) Winding_Free(newface->face_winding);
 						newface->face_winding = Winding_Clone(&tmpw);
 						//get the texture
-						newface->d_texture = Texture_ForName( newface->texdef.name );
+						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
 						//add the face to the brush
 						newface->next = b->brush_faces;
 						b->brush_faces = newface;
@@ -1788,11 +1788,11 @@ brush_s *Brush_Parse (void)
 			f->texdef.scale[1] = atof(token);
 						
 			// the flags and value field aren't necessarily present
-			f->d_texture = Texture_ForName( f->texdef.name );
+			f->d_texture = QERApp_TryTextureForName( f->texdef.name );
 			f->texdef.flags = 0;//f->d_texture->flags;
 			// V: what is this used for
 			f->texdef.value = 0; //f->d_texture->value;
-			f->texdef.contents = f->d_texture->qioMat->getEditorContentFlags();
+			f->texdef.contents = f->d_texture->getEditorContentFlags();
 			
 			if (TokenAvailable ())
 			{
@@ -2640,8 +2640,8 @@ Doesn't set the curve flags
 
 NOTE : ( TTimo )
 	never trust f->d_texture here, f->texdef and f->d_texture are out of sync when called by Brush_SetTexture
-	use Texture_ForName() to find the right shader
-	FIXME : send the right shader ( qtexture_s * ) in the parameters ?
+	use QERApp_TryTextureForName() to find the right shader
+	FIXME : send the right shader ( mtrAPI_i * ) in the parameters ?
 
 TTimo: surface plugin, added an IPluginTexdef* parameter
 		if not NULL, get ->Copy() of it into the face ( and remember to hook )
@@ -2658,7 +2658,7 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
 		f->texdef = *texdef;
-		ConvertTexMatWithQTexture( brushprimit_texdef, NULL, &f->brushprimit_texdef, Texture_ForName( f->texdef.name ) );
+		ConvertTexMatWithQTexture( brushprimit_texdef, NULL, &f->brushprimit_texdef, QERApp_TryTextureForName( f->texdef.name ) );
 	}
 	else
 		if (bFitScale)
@@ -2927,7 +2927,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 		int i;
 		free(face->face_winding);
 		w = face->face_winding = Brush_MakeFaceWinding (b, face);
-		face->d_texture = Texture_ForName( face->texdef.name );
+		face->d_texture = QERApp_TryTextureForName( face->texdef.name );
 
 		if (!w)
 			continue;
@@ -3246,7 +3246,7 @@ void Brush_Draw( brush_s *b )
 {
 	face_s			*face;
 	int				i, order;
-	qtexture_s		*prev = 0;
+	mtrAPI_i		*prev = 0;
 	winding_t *w;
 
 	// (TTimo) NOTE: added by build 173, I check after pPlugEnt so it doesn't interfere ?
@@ -3322,7 +3322,7 @@ void Brush_Draw( brush_s *b )
 		}
 #endif
 
-		mtrAPI_i *temp = face->d_texture->qioMat; //g_ms->registerMaterial(face->d_texture->qioMat->getName());
+		mtrAPI_i *temp = face->d_texture; //g_ms->registerMaterial(face->d_texture->getName());
 		
 		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
 		{
@@ -3351,10 +3351,10 @@ void Brush_Draw( brush_s *b )
 		}
 		
 		// shader drawing stuff
-		if (face->d_texture->qioMat->hasEditorTransparency())
+		if (face->d_texture->hasEditorTransparency())
 		{
 			// setup shader drawing
-			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->qioMat->getEditorTransparency() );
+			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->getEditorTransparency() );
 			
 		}
 		
@@ -3867,18 +3867,18 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	}
 	rot_width =  (max_s - min_s);
 	rot_height = (max_t - min_t);
-	td->scale[0] = -(rot_width/((float)(face->d_texture->qioMat->getImageWidth()*nWidth)));
-	td->scale[1] = -(rot_height/((float)(face->d_texture->qioMat->getImageHeight()*nHeight)));
+	td->scale[0] = -(rot_width/((float)(face->d_texture->getImageWidth()*nWidth)));
+	td->scale[1] = -(rot_height/((float)(face->d_texture->getImageHeight()*nHeight)));
 
 	td->shift[0] = min_s/td->scale[0];
-	temp = (int)(td->shift[0] / (face->d_texture->qioMat->getImageWidth()*nWidth));
-	temp = (temp+1)*face->d_texture->qioMat->getImageWidth()*nWidth;
-	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->qioMat->getImageWidth()*nWidth);
+	temp = (int)(td->shift[0] / (face->d_texture->getImageWidth()*nWidth));
+	temp = (temp+1)*face->d_texture->getImageWidth()*nWidth;
+	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->getImageWidth()*nWidth);
 
 	td->shift[1] = min_t/td->scale[1];
-	temp = (int)(td->shift[1] / (face->d_texture->qioMat->getImageHeight()*nHeight));
-	temp = (temp+1)*(face->d_texture->qioMat->getImageHeight()*nHeight);
-	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->qioMat->getImageHeight()*nHeight);
+	temp = (int)(td->shift[1] / (face->d_texture->getImageHeight()*nHeight));
+	temp = (temp+1)*(face->d_texture->getImageHeight()*nHeight);
+	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->getImageHeight()*nHeight);
 }
 
 void Brush_FitTexture( brush_s *b, int nHeight, int nWidth )

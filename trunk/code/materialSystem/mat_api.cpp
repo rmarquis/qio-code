@@ -95,6 +95,12 @@ public:
 	virtual class cubeMapAPI_i *registerCubeMap(const char *cubeMapName, bool forceReload) {
 		return MAT_RegisterCubeMap(cubeMapName,forceReload);
 	}
+	virtual u32 getNumAllocatedMaterials() const {
+		return MAT_GetNumAllocatedMaterials();
+	}
+	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const {
+		return MAT_GetAllocatedMaterial(i);
+	}
 };
 
 // interface manager (import)

@@ -510,7 +510,7 @@ void Select_Clone (void)
 Select_SetTexture
 Timo : bFitScale to compute scale on the plane and counteract plane / axial plane snapping
 Timo :	brush primitive texturing
-		the brushprimit_texdef given must be understood as a qtexture_s width=2 height=2 ( HiRes )
+		the brushprimit_texdef given must be understood as a mtrAPI_i width=2 height=2 ( HiRes )
 Timo :  texture plugin, added an IPluginTexdef* parameter
 		must be casted to an IPluginTexdef!
 		if not NULL, get ->Copy() of it into each face or brush ( and remember to hook )
@@ -794,8 +794,8 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, ed
 	// change it if necessary
 	f->texdef.rotate = -f->texdef.rotate;
 
-	Clamp(f->texdef.shift[0], f->d_texture->qioMat->getImageWidth());
-  Clamp(f->texdef.shift[1], f->d_texture->qioMat->getImageHeight());
+	Clamp(f->texdef.shift[0], f->d_texture->getImageWidth());
+  Clamp(f->texdef.shift[1], f->d_texture->getImageHeight());
   Clamp(f->texdef.rotate, 360);
 
 }
@@ -1475,7 +1475,7 @@ void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected
 		{
 			if(bForce || _strcmpi(pFace->texdef.name, pFind) == 0)
 			{
-				pFace->d_texture = Texture_ForName(pReplace);
+				pFace->d_texture = QERApp_TryTextureForName(pReplace);
 				//strcpy(pFace->texdef.name, pReplace);
 				pFace->texdef.SetName(pReplace);
 			}
@@ -1515,7 +1515,7 @@ void Select_AllOfType()
 
       if (b->patchBrush)
       {
-        if (_strcmpi(strName, b->pPatch->d_texture->qioMat->getName()) == 0)
+        if (_strcmpi(strName, b->pPatch->d_texture->getName()) == 0)
         {
 			    Brush_RemoveFromList (b);
 			    Brush_AddToList (b, &selected_brushes);

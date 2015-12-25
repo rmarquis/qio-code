@@ -41,7 +41,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cmdlib.h"
 #include "mathlib.h"
 #include "parse.h"
-#include "lbmlib.h"
 
 #include <commctrl.h>
 #include "afxres.h"
@@ -168,7 +167,6 @@ typedef struct
 	int       d_num_move_points;
 	float    *d_move_points[4096];
 	
-	qtexture_s	*d_qtextures;
 	
 	texturewin_t d_texturewin;
 	
@@ -462,7 +460,7 @@ void Patch_Freeze();
 void Patch_UnFreeze(bool bAll);
 const char* Patch_GetTextureName();
 void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pReplace, bool bForce);
-void Patch_ReplaceQTexture(brush_s *pb, qtexture_s *pOld, qtexture_s *pNew);
+void Patch_ReplaceQTexture(brush_s *pb, mtrAPI_i *pOld, mtrAPI_i *pNew);
 void Select_SnapToGrid();
 extern bool g_bPatchShowBounds;
 extern bool g_bPatchWireFrame;
@@ -479,12 +477,12 @@ void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT);
 void FaceToBrushPrimitFace(face_s *f);
 void EmitBrushPrimitTextureCoordinates(face_s *, winding_t *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
-void EmitTextureCoordinates ( class texturedVertex_c &out, qtexture_s *q, face_s *f);
+void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
 void BrushPrimit_Parse(brush_s *);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
-void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, qtexture_s *qtex1, brushprimit_texdef_s *texMat2, qtexture_s *qtex2 );
+void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, brushprimit_texdef_s *texMat2, mtrAPI_i *qtex2 );
 // texture locking
 void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta);
 void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y );
@@ -508,8 +506,8 @@ void Eclass_ScanFile( char *filename );
 extern CStringArray g_BSPFrontendCommands;
 //
 // IShaders interface
-qtexture_s* Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
-qtexture_s* WINAPI QERApp_TryTextureForName(const char* name);
+class mtrAPI_i * Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
+class mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 
 
 
