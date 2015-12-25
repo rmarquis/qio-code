@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "qe3.h"
 #include "PrefsDlg.h"
+#include <api/vfsAPI.h>
 
 bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
@@ -313,7 +314,7 @@ void Map_LoadFile (char *filename)
 	g_qeglobals.d_parsed_brushes = 0;
 	strcpy (currentmap, filename);
 
-	if (LoadFile (filename, (void **)&buf) != -1)
+	if (g_vfs->FS_ReadFile(filename, (void **)&buf) != -1)
 	{
 
 		StartTokenParsing (buf);
@@ -346,9 +347,9 @@ void Map_LoadFile (char *filename)
 				g_qeglobals.d_num_entities++;
 			}
 		}
+		g_vfs->FS_FreeFile (buf);
 	}
 
-  free (buf);
 
 	if (!world_entity)
 	{
@@ -958,10 +959,10 @@ void Map_ImportFile (char *filename)
 	char temp[1024];
 	Sys_BeginWait ();
 	QE_ConvertDOSToUnixName( temp, filename );
-	if (LoadFile (filename, (void **)&buf) != -1)
+	if (g_vfs->FS_ReadFile (filename, (void **)&buf) != -1)
 	{
 		Map_ImportBuffer(buf);
-		free(buf);
+		g_vfs->FS_FreeFile(buf);
 		Map_BuildBrushData();
 	}
 	Sys_UpdateWindows (W_ALL);

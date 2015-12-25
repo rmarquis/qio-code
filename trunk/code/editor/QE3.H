@@ -63,14 +63,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "undo.h"
 
-// the dec offsetof macro doesn't work very well...
-#define myoffsetof(type,identifier) ((size_t)&((type *)0)->identifier)
-
-
-// set these before calling CheckParm
-extern int myargc;
-extern char **myargv;
-
 double I_FloatTime (void);
 
 void	Error (char *error, ...);
@@ -93,13 +85,13 @@ extern	char	*argv[MAX_NUM_ARGVS];
 
 typedef int fileHandle_t;
 
-typedef struct
+struct pedge_t
 {
 	int		p1, p2;
 	face_s	*f1, *f2;
-} pedge_t;
+};
 
-typedef struct
+struct SavedInfo_t
 {
 	int		  iSize;
 	int		  iTexMenu;		// nearest, linear, etc
@@ -110,7 +102,7 @@ typedef struct
   bool  show_coordinates;
 	int       exclude;
   int     m_nTextureTweak;
-} SavedInfo_t;
+};
 
 //
 // system functions
@@ -132,7 +124,7 @@ void    Sys_Status(const char *psz, int part);
 /*
 ** most of the QE globals are stored in this structure
 */
-typedef struct
+struct QEGlobals_t
 {
 	bool d_showgrid;
 	int      d_gridsize;
@@ -214,7 +206,7 @@ typedef struct
 
 	bool dontDrawSelectedOutlines;
 	
-} QEGlobals_t;
+};
 
 //void *qmalloc (size_t size);
 char *copystring (char *s);

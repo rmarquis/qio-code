@@ -40,6 +40,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrStageAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/textureAPI.h>
+#include <api/vfsAPI.h>
+
 Str m_gStr;
 
 #ifdef _DEBUG
@@ -1051,10 +1053,11 @@ void ViewShader(const char *pFile, const char *pName)
 {
   CString str;
   char* pBuff = NULL;
-  int nSize = LoadFile(pFile, reinterpret_cast<void**>(&pBuff));
+  int nSize = g_vfs->FS_ReadFile(pFile, reinterpret_cast<void**>(&pBuff));
   if (nSize > 0)
   {
     str = pBuff;
+	g_vfs->FS_FreeFile(pBuff);
   }
   int nStart = 0; 
   if (str.GetLength() > 0)
