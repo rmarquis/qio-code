@@ -534,7 +534,7 @@ void CCamWnd::Cam_MouseControl (float dtime)
 
 void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
 {
-	edVec3_c		dir;
+	vec3_c		dir;
 	float		f, r, u;
 	int			i;
 
@@ -646,7 +646,7 @@ void CCamWnd::InitCull()
 bool CCamWnd::CullBrush (brush_s *b)
 {
 	int		i;
-	edVec3_c	point;
+	vec3_c	point;
 	float	d;
 
 	if (g_PrefsDlg.m_bCubicClipping)
@@ -1082,8 +1082,8 @@ void CCamWnd::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 // brush primitive texture shifting, using camera view to select translations :
 void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
 {
-	edVec3_c texS,texT;
-	edVec3_c viewX,viewY;
+	vec3_c texS,texT;
+	vec3_c viewX,viewY;
 	int XS,XT,YS,YT;
 	int outS,outT;
 #ifdef _DEBUG

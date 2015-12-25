@@ -38,7 +38,7 @@ extern	entity_s	*world_entity;	// the world entity is NOT included in
 
 extern	bool	modified;		// for quit confirmations
 
-extern	class edVec3_c region_mins, region_maxs;
+extern	class vec3_c region_mins, region_maxs;
 extern	bool	region_active;
 
 void 	Map_LoadFile (char *filename);

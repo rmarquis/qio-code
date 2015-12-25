@@ -60,7 +60,7 @@ Z_MouseDown
 */
 void Z_MouseDown (int x, int y, int buttons)
 {
-	edVec3_c	org, dir, vup, vright;
+	vec3_c	org, dir, vup, vright;
 	brush_s	*b;
 
 	Sys_GetCursorPos (&cursorx, &cursory);
@@ -277,7 +277,7 @@ void Z_Draw (void)
 	double	start, end;
 	mtrAPI_i	*q;
 	float	top, bottom;
-	edVec3_c	org_top, org_bottom, dir_up, dir_down;
+	vec3_c	org_top, org_bottom, dir_up, dir_down;
 	int xCam = z.width/3;
 
 	if (!active_brushes.next)

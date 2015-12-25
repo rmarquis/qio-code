@@ -292,7 +292,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	entity_s	*ent;
 	eclass_s	*e;
 	brush_s		*b;
-	edVec3_c		mins, maxs;
+	vec3_c		mins, maxs;
 	epair_s		*ep;
 	bool	has_brushes;
 	
@@ -382,7 +382,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 			char* p = ValueForKey(ent, "model");
 			if (p != NULL && strlen(p) > 0)
 			{
-				edVec3_c vMin, vMax;
+				vec3_c vMin, vMax;
 				a = FloatForKey (ent, "angle");
 				//if (GetCachedModel(ent, p, vMin, vMax))
 				//{
@@ -441,7 +441,7 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 {
 	epair_s		*ep;
 	brush_s		*b;
-	edVec3_c		origin;
+	vec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -534,7 +534,7 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 {
 	epair_s		*ep;
 	brush_s		*b;
-	edVec3_c		origin;
+	vec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -592,7 +592,7 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 {
 	epair_s		*ep;
 	brush_s		*b;
-	edVec3_c		origin;
+	vec3_c		origin;
 	char		text[128];
 	int			count;
 
@@ -657,7 +657,7 @@ entity_s	*Entity_Create (eclass_s *c)
 {
 	entity_s	*e;
 	brush_s		*b;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	int			i;
 
 	// check to make sure the brushes are ok

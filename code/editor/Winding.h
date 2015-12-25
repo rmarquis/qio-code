@@ -45,7 +45,7 @@ void		Winding_RemovePoint(winding_t *w, int point);
 winding_t*	Winding_InsertPoint(winding_t *w, vec3_t point, int spot);
 //returns true if the planes are concave
 int			Winding_PlanesConcave(winding_t *w1, winding_t *w2,
-									 const edVec3_c &normal1, const edVec3_c &normal2,
+									 const vec3_c &normal1, const vec3_c &normal2,
 									 float dist1, float dist2);
 //returns true if the winding is tiny
 int			Winding_IsTiny(winding_t *w);
@@ -59,12 +59,12 @@ void		Winding_SplitEpsilon(winding_t *in, vec3_t normal, double dist,
 //try to merge the windings, returns the new merged winding or NULL
 winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep);
 //create a plane for the winding
-void		Winding_Plane(winding_t *w, class edVec3_c &normal, double *dist);
+void		Winding_Plane(winding_t *w, class vec3_c &normal, double *dist);
 //returns the winding area
 float		Winding_Area(winding_t *w);
 //returns the bounds of the winding
 void		Winding_Bounds(winding_t *w, vec3_t mins, vec3_t maxs);
 //returns true if the point is inside the winding
-int			Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3_c &point, float epsilon);
+int			Winding_PointInside(winding_t *w, const class edPlane_c &plane, const vec3_c &point, float epsilon);
 //returns true if the vector intersects with the winding
-int			Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon);
+int			Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const vec3_c &p1, const vec3_c &p2, float epsilon);

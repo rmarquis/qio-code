@@ -70,7 +70,7 @@ bool g_bPatchBendMode = false;
 int  g_nPatchBendState = -1;
 int  g_nPatchInsertState = -1;
 int  g_nBendOriginIndex = 0;
-edVec3_c g_vBendOrigin;
+vec3_c g_vBendOrigin;
 
 bool g_bPatchAxisOnRow = true;
 int  g_nPatchAxisIndex = 0;
@@ -114,7 +114,7 @@ const float fFullBright = 1.0;
 const float fLowerLimit = .50;
 const float fDec = .05;
 
-vec_t __VectorNormalize (vec3_t in, edVec3_c &out)
+vec_t __VectorNormalize (vec3_t in, vec3_c &out)
 {
 	vec_t	length, ilength;
 
@@ -201,14 +201,14 @@ int	neighbors[8][2] = {
 void patchMesh_c::meshNormals() 
 {
 	int		i, j, k, dist;
-	edVec3_c	normal;
-	edVec3_c	sum;
+	vec3_c	normal;
+	vec3_c	sum;
 	int		count;
-	edVec3_c	base;
-	edVec3_c	delta;
+	vec3_c	base;
+	vec3_c	delta;
 	int		x, y;
 	drawVert_t	*dv;
-	edVec3_c		around[8], temp;
+	vec3_c		around[8], temp;
 	bool	good[8];
 	bool	wrapWidth, wrapHeight;
 	float		len;
@@ -338,7 +338,7 @@ void patchMesh_c::meshNormals()
 Patch_CalcBounds
 ==================
 */
-void patchMesh_c::calcPatchBounds(edVec3_c& vMin, edVec3_c& vMax)
+void patchMesh_c::calcPatchBounds(vec3_c& vMin, vec3_c& vMax)
 {
 	vMin[0] = vMin[1] = vMin[2] = 99999;
 	vMax[0] = vMax[1] = vMax[2] = -99999;
@@ -476,7 +476,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 
 void patchMesh_c::rebuildPatch()
 {
-	edVec3_c vMin, vMax;
+	vec3_c vMin, vMax;
 	this->calcPatchBounds(vMin, vMax);
 	Brush_RebuildBrush(this->pSymbiot, vMin, vMax);
 	this->bDirty = true;
@@ -491,7 +491,7 @@ AddBrushForPatch
 brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
 {
   // find the farthest points in x,y,z
-  edVec3_c vMin, vMax;
+  vec3_c vMin, vMax;
   pm->calcPatchBounds(vMin, vMax);
 
   for (int j = 0; j < 3; j++)
@@ -540,7 +540,7 @@ float patchMesh_c::calcPatchWidth()
 	float f = 0;
 	for (int i = 0; i < this->width-1; i++)
 	{
-		edVec3_c vTemp;
+		vec3_c vTemp;
 		vTemp = this->ctrl[i][0].xyz - this->ctrl[i+1][0].xyz;
 		f += vTemp.vectorLength();
 	}
@@ -552,7 +552,7 @@ float patchMesh_c::calcPatchWidthDistanceTo(int j)
 	float f = 0;
 	for (int i = 0; i < j; i++)
 	{
-		edVec3_c vTemp;
+		vec3_c vTemp;
 		vTemp = this->ctrl[i][0].xyz - this->ctrl[i+1][0].xyz;
 		f += vTemp.vectorLength();
 	}
@@ -571,7 +571,7 @@ float patchMesh_c::calcPatchHeight()
 	float f = 0;
 	for (int i = 0; i < this->height-1; i++)
 	{
-		edVec3_c vTemp;
+		vec3_c vTemp;
 		vTemp = this->ctrl[0][i].xyz - this->ctrl[0][i+1].xyz;
 		f += vTemp.vectorLength();
 	}
@@ -583,7 +583,7 @@ float patchMesh_c::calcPatchHeightDistanceTo(int j)
 	float f = 0;
 	for (int i = 0; i < j; i++)
 	{
-		edVec3_c vTemp;
+		vec3_c vTemp;
 		vTemp = this->ctrl[0][i].xyz - this->ctrl[0][i+1].xyz;
 		f += vTemp.vectorLength();
 	}
@@ -688,7 +688,7 @@ int Interior5ByCount = sizeof(Interior5By) / sizeof(int[2]);
 face_s* Patch_GetAxisFace(patchMesh_c *p)
 {
 	face_s *f = NULL;
-	edVec3_c vTemp;
+	vec3_c vTemp;
 	brush_s *b = p->pSymbiot;
 
 	for (f = b->brush_faces ; f ; f = f->next) 
@@ -741,7 +741,7 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
 {
 	p->meshNormals();
   face_s *f = (bFaceCycle) ? nextFace(p) : Patch_GetAxisFace(p);
-  edVec3_c vSave = f->plane.normal;
+  vec3_c vSave = f->plane.normal;
   float fRotate = f->texdef.rotate;
   f->texdef.rotate = 0;
   float fScale[2];
@@ -901,7 +901,7 @@ brush_s* CapSpecial(patchMesh_c *pParent, int nType, bool bFirst)
 {
   brush_s *b;
   patchMesh_c *p;
-  edVec3_c vMin, vMax, vTemp;
+  vec3_c vMin, vMax, vTemp;
   int i, j;
 
   if (nType == CCapDialog::IENDCAP)
@@ -946,7 +946,7 @@ brush_s* CapSpecial(patchMesh_c *pParent, int nType, bool bFirst)
   }
   else if (nType == CCapDialog::BEVEL)
   {
-    edVec3_c p1, p2, p3, p4, temp, dir;
+    vec3_c p1, p2, p3, p4, temp, dir;
 
     p3 = pParent->ctrl[0][nIndex].xyz;
     p1 = pParent->ctrl[1][nIndex].xyz;
@@ -1134,7 +1134,7 @@ void GenerateEndCaps(brush_s *brushParent, bool bBevel, bool bEndcap, bool bInve
 {
   brush_s *b, *b2;
   patchMesh_c *p, *p2, *pParent;
-  edVec3_c vTemp, vMin, vMax;
+  vec3_c vTemp, vMin, vMax;
   int i, j;
 
   pParent = brushParent->pPatch;
@@ -1692,7 +1692,7 @@ int PointInMoveList(float *pf)
 PointValueInMoveList
 ==================
 */
-int PointValueInMoveList(const edVec3_c &v)
+int PointValueInMoveList(const vec3_c &v)
 {
 	for (int i = 0; i < g_qeglobals.d_num_move_points; i++)
 	{
@@ -1708,7 +1708,7 @@ int PointValueInMoveList(const edVec3_c &v)
 RemovePointFromMoveList
 ==================
 */
-void RemovePointFromMoveList(const edVec3_c &v)
+void RemovePointFromMoveList(const vec3_c &v)
 {
 	int n;
 	while ( (n = PointValueInMoveList(v)) >= 0)
@@ -1879,7 +1879,7 @@ void SelectColumn(patchMesh_c* p, int nCol, bool bMulti)
 AddPatchMovePoint
 ==================
 */
-void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull)
+void AddPatchMovePoint(const vec3_c &v, bool bMulti, bool bFull)
 {
 	if (!g_bSameView && !bMulti && !bFull)
 	{
@@ -1951,7 +1951,7 @@ void Patch_UpdateSelected(vec3_t vMove)
   int i, j;
   for (i=0 ; i < g_qeglobals.d_num_move_points ; i++)
   {
-	*((edVec3_c*)g_qeglobals.d_move_points[i]) += vMove;
+	*((vec3_c*)g_qeglobals.d_move_points[i]) += vMove;
     if (g_qeglobals.d_num_move_points == 1)
     {
     }
@@ -1978,7 +1978,7 @@ void Patch_UpdateSelected(vec3_t vMove)
 		    }
       }
 	    
-      edVec3_c vMin, vMax;
+      vec3_c vMin, vMax;
       p->calcPatchBounds(vMin, vMax);
       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
     }
@@ -2538,7 +2538,7 @@ void patchMesh_c::movePatch(const vec3_t vMove, bool bRebuild)
 	}
 	if (bRebuild)
 	{
-		edVec3_c vMin, vMax;
+		vec3_c vMin, vMax;
 		this->calcPatchBounds(vMin, vMax);
 		//Brush_RebuildBrush(patchMeshes[n].pSymbiot, vMin, vMax);
 	}
@@ -2550,9 +2550,9 @@ void patchMesh_c::movePatch(const vec3_t vMove, bool bRebuild)
 Patch_ApplyMatrix
 ==================
 */
-void Patch_ApplyMatrix(patchMesh_c *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap)
+void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c vMatrix[3], bool bSnap)
 {
-  edVec3_c vTemp;
+  vec3_c vTemp;
 
   for (int w = 0; w < p->width; w++)
   {
@@ -2572,7 +2572,7 @@ void Patch_ApplyMatrix(patchMesh_c *p, const class edVec3_c &vOrigin, const edVe
       }
     }
   }
-  edVec3_c vMin, vMax;
+  vec3_c vMin, vMax;
   p->calcPatchBounds(vMin, vMax);
   Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
 }
@@ -2705,7 +2705,7 @@ void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool b
 	}
 	if (bRebuild)
 	{
-		edVec3_c vMin, vMax;
+		vec3_c vMin, vMax;
 		p->calcPatchBounds(vMin, vMax);
 		Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
 	}
@@ -2756,9 +2756,9 @@ void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def)
 Patch_DragScale
 ==================
 */
-bool Patch_DragScale(patchMesh_c *p, const edVec3_c &vAmt, const edVec3_c &vMove)
+bool Patch_DragScale(patchMesh_c *p, const vec3_c &vAmt, const vec3_c &vMove)
 {
-  edVec3_c vMin, vMax, vScale, vTemp, vMid;
+  vec3_c vMin, vMax, vScale, vTemp, vMid;
   int i;
 
   p->calcPatchBounds(vMin, vMax);
@@ -2824,7 +2824,7 @@ Patch_AddRow
 */
 void Patch_AddRow(patchMesh_c *p)
 {
-  edVec3_c vMin, vMax, vTemp;
+  vec3_c vMin, vMax, vTemp;
   int i, j;
 
 
@@ -2864,7 +2864,7 @@ Patch_InsertColumn
 void Patch_InsertColumn(patchMesh_c *p, bool bAdd)
 {
   int h, w, i, j;
-  edVec3_c vTemp;
+  vec3_c vTemp;
   
   if (p->width + 2 >= MAX_PATCH_WIDTH)
     return;
@@ -2918,7 +2918,7 @@ Patch_InsertRow
 void Patch_InsertRow(patchMesh_c *p, bool bAdd)
 {
   int h, w, i, j;
-  edVec3_c vTemp;
+  vec3_c vTemp;
   
   if (p->height + 2 >= MAX_PATCH_HEIGHT)
     return;
@@ -3023,7 +3023,7 @@ Patch_AdjustColumns
 */
 void patchMesh_c::adjustPatchColumns(int nCols)
 {
-	edVec3_c vTemp, vTemp2;
+	vec3_c vTemp, vTemp2;
 	int i, w, h;
 
 	if (nCols & 0x01 || this->width + nCols < 3 || this->width + nCols > MAX_PATCH_WIDTH)
@@ -3072,7 +3072,7 @@ Patch_AdjustRows
 */
 void patchMesh_c::adjustPatchRows(int nRows)
 {
-	edVec3_c vTemp, vTemp2;
+	vec3_c vTemp, vTemp2;
 	int i, w, h;
 
 	if (nRows & 0x01 || this->height + nRows < 3 || this->height + nRows > MAX_PATCH_HEIGHT)
@@ -3122,7 +3122,7 @@ void patchMesh_c::adjustPatchRows(int nRows)
 
 void Patch_DisperseRows()
 {
-	edVec3_c vTemp, vTemp2;
+	vec3_c vTemp, vTemp2;
 	int i, w, h;
 
 
@@ -3173,7 +3173,7 @@ Patch_AdjustColumns
 */
 void Patch_DisperseColumns()
 {
-	edVec3_c vTemp, vTemp2;
+	vec3_c vTemp, vTemp2;
 	int i, w, h;
 
 	for (brush_s *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
@@ -3247,7 +3247,7 @@ void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag)
 	}
 	}
 	bUpdate = true;
-	edVec3_c vMin, vMax;
+	vec3_c vMin, vMax;
 	patchMesh_c *p = pb->pPatch;
 	p->calcPatchBounds(vMin, vMax);
 	Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
@@ -3497,7 +3497,7 @@ Patch_RotateTexture
 */
 void Patch_RotateTexture(patchMesh_c *p, float fAngle)
 {
-  edVec3_c vMin, vMax;
+  vec3_c vMin, vMax;
   p->calcPatchBounds(vMin, vMax);
   p->bDirty = true;
   for (int w = 0; w < p->width; w++)
@@ -4333,7 +4333,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
   int i, j, h, w;
   brush_s *b;
   patchMesh_c *pSeam;
-  edVec3_c vMin, vMax;
+  vec3_c vMin, vMax;
   CPtrArray brushes;
 
   nAmount = -nAmount;
@@ -4650,7 +4650,7 @@ void Select_SnapToGrid()
         }
       }
 #endif
-      edVec3_c vMin, vMax;
+      vec3_c vMin, vMax;
       p->calcPatchBounds(vMin, vMax);
       Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
     }

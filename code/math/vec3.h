@@ -29,9 +29,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <stdio.h> // sscanf
 #include <string.h> // memcmp
 
+#define	EQUAL_EPSILON	0.001
+
 class vec3_c {
 public:
-	float x, y, z;
+	union {
+		vec_t _v[3];
+		struct {
+			float x, y, z;
+		};
+	};
 
 	inline float getX() const {
 		return x;
@@ -85,6 +92,11 @@ public:
 		this->y = y;
 		this->z = z;
 	}	
+	void set(const float f) {
+		x = f;
+		y = f;
+		z = f;
+	}
 	void set(const float *f) {
 		x = f[0];
 		y = f[1];
@@ -123,13 +135,94 @@ public:
 			return false;
 		return true;
 	}
+#if 1
+	// for editor - TODO: carefully merge -avoid epsilon issues!
+	void setupPolar(float radius, float theta, float phi) {
+ 		x=float(radius * cos(theta) * cos(phi));
+		y=float(radius * sin(theta) * cos(phi));
+		z=float(radius * sin(phi));
+	}
+	// sets this vector to a MA (multiply add) result of given arguments
+	void vectorMA (const vec3_c &base, float scale, const vec3_c &dir) {
+		x = base[0] + scale*dir[0];
+		y = base[1] + scale*dir[1];
+		z = base[2] + scale*dir[2];
+	}
+	float vectorLength() const {
+		return sqrt(x*x + y*y + z*z);
+	}
+	bool vectorCompare(const vec3_c &other, float epsilon = EQUAL_EPSILON) const {
+		return compare(other,epsilon);
+	}
+	void makeAngleVectors(vec3_t forward, vec3_t right, vec3_t up) {
+		float		angle;
+		static float		sr, sp, sy, cr, cp, cy;
+		// static to help MS compiler fp bugs
+		
+		angle = y * (M_PI*2 / 360);
+		sy = sin(angle);
+		cy = cos(angle);
+		angle = x * (M_PI*2 / 360);
+		sp = sin(angle);
+		cp = cos(angle);
+		angle = z * (M_PI*2 / 360);
+		sr = sin(angle);
+		cr = cos(angle);
+		
+		if (forward)
+		{
+			forward[0] = cp*cy;
+			forward[1] = cp*sy;
+			forward[2] = -sp;
+		}
+		if (right)
+		{
+			right[0] = -sr*sp*cy+cr*sy;
+			right[1] = -sr*sp*sy-cr*cy;
+			right[2] = -sr*cp;
+		}
+		if (up)
+		{
+			up[0] = cr*sp*cy+sr*sy;
+			up[1] = cr*sp*sy-sr*cy;
+			up[2] = cr*cp;
+		}
+	}
+	void axializeVector() {
+		if (!x && !y)
+			return;
+		if (!y && !z)
+			return;
+		if (!x && !z)
+			return;
+
+		int i;
+		float a[3];
+		for (i=0 ; i<3 ; i++)
+			a[i] = fabs(_v[i]);
+		if (a[0] > a[1] && a[0] > a[2])
+			i = 0;
+		else if (a[1] > a[0] && a[1] > a[2])
+			i = 1;
+		else
+			i = 2;
+
+		float o = _v[i];
+		this->clear();
+		if (o<0)
+			_v[i] = -1;
+		else
+			_v[i] = 1;
+	}
+
+#endif
 	inline bool compare(const vec3_c &other, const float eps = 0.01f) const {
 #if 1
-		if(abs(this->x - other.x) > eps)
+		if(fabs(this->x - other.x) > eps)
 			return false;
-		if(abs(this->y - other.y) > eps)
+		if(fabs(this->y - other.y) > eps)
 			return false;
-		if(abs(this->z - other.z) > eps)
+		if(fabs(this->z - other.z) > eps)
 			return false;
 		return true;
 #else

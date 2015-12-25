@@ -132,20 +132,20 @@ public:
 #include "mathlib.h"
 class texturedVertex_c {
 public:
-	edVec3_c xyz;
+	vec3_c xyz;
 	float st[2];
 
 
 	void setXYZ(const float *newXYZ) {
 		xyz = newXYZ;
 	}
-	const edVec3_c &getXYZ() const {
+	const vec3_c &getXYZ() const {
 		return xyz;
 	}
 	float dotProduct(const float *pVec3) const {
 		return xyz.dotProduct(pVec3);
 	}
-	bool vectorCompare(const edVec3_c &other, float epsilon = EQUAL_EPSILON) const {
+	bool vectorCompare(const vec3_c &other, float epsilon = EQUAL_EPSILON) const {
 		return xyz.vectorCompare(other,epsilon);
 	}
 	const float operator [] (int index) const {
@@ -153,6 +153,9 @@ public:
 	}
 	float &operator [] (int index) {
 		return (&xyz.x)[index];
+	}
+	operator vec3_c &() {
+		return xyz;
 	}
 	operator float *() {
 		return &xyz.x;
@@ -174,11 +177,11 @@ struct winding_t
 
 class edPlane_c {
 public:
-    edVec3_c normal;
+    vec3_c normal;
     double dist;
 public:
 	int isPlaneEqual(const edPlane_c &b, int flip) const {
-		edVec3_c tempNormal;
+		vec3_c tempNormal;
 		double tempDist;
 
 		if (flip) {
@@ -196,12 +199,12 @@ public:
 			return true;
 		return false;
 	}
-	int fromPoints(const edVec3_c &p1, const edVec3_c &p2, const edVec3_c &p3)
+	int fromPoints(const vec3_c &p1, const vec3_c &p2, const vec3_c &p3)
 	{
-		edVec3_c v1 = p2 - p1;
-		edVec3_c v2 = p3 - p1;
+		vec3_c v1 = p2 - p1;
+		vec3_c v2 = p3 - p1;
 		this->normal.crossProduct(v1,v2);
-		if (this->normal.normalize() < 0.1) 
+		if (this->normal.normalize2() < 0.1) 
 			return false;
 		this->dist = this->normal.dotProduct(p1);
 		return true;
@@ -209,7 +212,7 @@ public:
 	// project on normal plane
 	// along ez 
 	// assumes plane normal is normalized
-	void projectOnPlane(const edVec3_c &ez, edVec3_c &p) {
+	void projectOnPlane(const vec3_c &ez, vec3_c &p) {
 		if (fabs(ez[0]) == 1)
 			p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
 		else if (fabs(ez[1]) == 1)
@@ -226,7 +229,7 @@ struct face_s
 {
 	struct face_s			*next;
 	struct face_s			*original;		//used for vertex movement
-	edVec3_c				planepts[3];
+	vec3_c				planepts[3];
 	texdef_t				texdef;
 	edPlane_c				plane;
 
@@ -240,7 +243,7 @@ struct face_s
 };
 
 struct curveVertex_t {
-	edVec3_c xyz;
+	vec3_c xyz;
 	float	sideST[2];
 	float	capST[2];
 };
@@ -279,10 +282,10 @@ struct curveVertex_t {
 #define PATCH_STYLEMASK    0xffff0000    // 
 
 struct drawVert_t {
-	edVec3_c	xyz;
+	vec3_c	xyz;
 	float		st[2];
 	float		lightmap[2];
-	edVec3_c	normal;	
+	vec3_c	normal;	
 	
 	texturedVertex_c &asWindingPoint() {
 		return *((texturedVertex_c*)(this));
@@ -340,7 +343,7 @@ public:
 	void adjustPatchRows(int nRows);
 	void adjustPatchColumns(int nCols);
 	void movePatch(const vec3_t vMove, bool bRebuild = false);
-	void calcPatchBounds(edVec3_c& vMin, edVec3_c& vMax);
+	void calcPatchBounds(vec3_c& vMin, vec3_c& vMax);
 	void drawPatchMesh(bool bPoints, bool bShade = false);
 	void drawPatchXY();
 	void removePatchColumn(bool bFirst);
@@ -376,10 +379,10 @@ typedef struct brush_s
 	const edAABB_c &getBounds() const {
 		return bounds;
 	}
-	const edVec3_c &getMins() const {
+	const vec3_c &getMins() const {
 		return bounds.getMins();
 	}
-	const edVec3_c &getMaxs() const {
+	const vec3_c &getMaxs() const {
 		return bounds.getMaxs();
 	}
 } brush_s;
@@ -402,7 +405,7 @@ struct eclass_s
 	char	*name;
 	bool	fixedsize;
 	bool	unknown;		// wasn't found in source
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	vec3_t	color;
 	texdef_t	texdef;
 	char	*comments;
