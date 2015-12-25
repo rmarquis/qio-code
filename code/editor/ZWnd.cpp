@@ -149,11 +149,11 @@ void CZWnd::OnPaint()
     Z_Draw ();
 
 	glFinish();
-	  //qwglSwapBuffers(m_dcZ);
+	  //SwapBuffers(m_dcZ);
 	 // wgl
-	//wglSwapBuffers(dc.m_hDC)
+	//SwapBuffers(dc.m_hDC)
 	
-	qwglSwapBuffers(dc.m_hDC);
+	SwapBuffers(dc.m_hDC);
     TRACE("Z Paint\n");
   }
 }

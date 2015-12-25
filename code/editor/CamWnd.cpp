@@ -182,7 +182,7 @@ void CCamWnd::OnPaint()
 	glFinish();
 
 		//qwgl
-		qwglSwapBuffers(dc.m_hDC);
+		SwapBuffers(dc.m_hDC);
   }
 }
 
@@ -1044,7 +1044,7 @@ void CCamWnd::BenchMark()
 		Cam_Draw();
 	}
 //	wgl
-	qwglSwapBuffers(ps.hdc);
+	SwapBuffers(ps.hdc);
 	glDrawBuffer (GL_BACK);
 	double dEnd = Sys_DoubleTime ();
 	EndPaint(&ps);

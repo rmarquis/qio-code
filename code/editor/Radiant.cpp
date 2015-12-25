@@ -188,7 +188,7 @@ g_PrefsDlg.m_bSGIOpenGL = 1;
   CString strOpenGL = (g_PrefsDlg.m_bSGIOpenGL) ? "opengl.dll" : "opengl32.dll";
   CString strGLU = (g_PrefsDlg.m_bSGIOpenGL) ? "glu.dll" : "glu32.dll";
   
-  if (!QGL_Init(strOpenGL))
+  /*if (!QGL_Init(strOpenGL))
   {
     g_PrefsDlg.m_bSGIOpenGL ^= 1;
     strOpenGL = (g_PrefsDlg.m_bSGIOpenGL) ? "opengl.dll" : "opengl32.dll";
@@ -199,7 +199,7 @@ g_PrefsDlg.m_bSGIOpenGL = 1;
       return FALSE;
     }
     g_PrefsDlg.SavePrefs();
-  }
+  }*/
 
 	CString strTemp = m_lpCmdLine;
   strTemp.MakeLower();

@@ -1571,7 +1571,7 @@ LONG WINAPI TexWndProc (
         else
         {
 			    Texture_Draw2 (rect.right-rect.left, rect.bottom-rect.top - g_nTextureOffset);
-			    qwglSwapBuffers(s_hdcTexture);
+			    SwapBuffers(s_hdcTexture);
           TRACE("Texture Paint\n");
         }
 		    EndPaint(hWnd, &ps);
@@ -1792,7 +1792,7 @@ void CTexWnd::OnPaint()
   {
     Texture_Draw2 (rctClient.right-rctClient.left, rctClient.bottom-rctClient.top - g_nTextureOffset);
 //		wgl
-	qwglSwapBuffers(s_hdcTexture);
+	SwapBuffers(s_hdcTexture);
     TRACE("Texture Paint\n");
   }
   if (g_PrefsDlg.m_bTextureScrollbar && (m_bNeedRange || g_qeglobals.d_texturewin.m_nTotalHeight != nOld))
