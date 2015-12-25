@@ -361,7 +361,7 @@ void Z_Draw (void)
 		bottom = org_bottom[2] + bottom;
 
 		q = Texture_ForName (brush->brush_faces->texdef.name);
-		glColor3f (q->color[0], q->color[1], q->color[2]);
+		glColor3f (q->qioMat->getEditorColor()[0], q->qioMat->getEditorColor()[1], q->qioMat->getEditorColor()[2]);
 		glBegin (GL_QUADS);
 		glVertex2f (-xCam, bottom);
 		glVertex2f (xCam, bottom);
@@ -396,7 +396,7 @@ void Z_Draw (void)
 					bottom = org_bottom[2] + bottom;
 
 					q = Texture_ForName (brush->brush_faces->texdef.name);
-					glColor3f (q->color[0], q->color[1], q->color[2]);
+					glColor3f (q->qioMat->getEditorColor()[0], q->qioMat->getEditorColor()[1], q->qioMat->getEditorColor()[2]);
 					glBegin (GL_QUADS);
 					glVertex2f (-xCam, bottom);
 					glVertex2f (xCam, bottom);

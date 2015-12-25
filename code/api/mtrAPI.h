@@ -94,6 +94,17 @@ public:
 	virtual bool hasNoCarveFlag() const {
 		return false;
 	}
+	// For Radiant, those are the content flags (number value) that are written to .map file
+	// They are used eg. for marking solid brushes, see CONTENT_SOLID (0x01).
+	// Should we keep them compatible with Q3?
+	virtual int getEditorContentFlags() const {
+		return 0;
+	}
+	// What should it return?
+	virtual const float *getEditorColor() const {
+		static float tmp[3] = { 1,1,1};
+		return tmp;
+	}
 };
 
 #endif // __MTR_API_H__

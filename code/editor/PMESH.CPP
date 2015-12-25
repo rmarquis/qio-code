@@ -2407,7 +2407,7 @@ void patchMesh_c::drawPatchCam()
 		{
 			//glEnable ( GL_BLEND );
 			//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glColor4f(this->d_texture->color[0], this->d_texture->color[1], this->d_texture->color[2], this->d_texture->qioMat->getEditorTransparency()); 
+			glColor4f(this->d_texture->qioMat->getEditorColor()[0], this->d_texture->qioMat->getEditorColor()[1], this->d_texture->qioMat->getEditorColor()[2], this->d_texture->qioMat->getEditorTransparency()); 
 		}
 		this->drawPatchMesh(this->bSelected, true );
 
