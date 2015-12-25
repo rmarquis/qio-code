@@ -37,7 +37,7 @@ winding_t *Winding_BaseForPlane (const class edPlane_c &p)
 {
 	int		i, x;
 	vec_t	max, v;
-	edVec3_c	org, vright, vup;
+	vec3_c	org, vright, vup;
 	winding_t	*w;
 	
 	// find the major axis
@@ -226,7 +226,7 @@ int Winding_IsTiny (winding_t *w)
 	for (i=0 ; i<w->numpoints ; i++)
 	{
 		j = i == w->numpoints - 1 ? 0 : i+1;
-		edVec3_c delta = w->points[j].getXYZ() - w->points[i].getXYZ();
+		vec3_c delta = w->points[j].getXYZ() - w->points[i].getXYZ();
 		len = delta.vectorLength();
 		if (len > EDGE_LENGTH)
 		{
@@ -263,7 +263,7 @@ Winding_PlanesConcave
 #define WCONVEX_EPSILON		0.2
 
 int Winding_PlanesConcave(winding_t *w1, winding_t *w2,
-							 const edVec3_c &normal1, const edVec3_c &normal2,
+							 const vec3_c &normal1, const vec3_c &normal2,
 							 float dist1, float dist2)
 {
 	int i;
@@ -523,10 +523,10 @@ if keep is true no points are ever removed
 
 winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t planenormal, int keep)
 {
-	edVec3_c p1, p2, p3, p4, back;
+	vec3_c p1, p2, p3, p4, back;
 	winding_t	*newf;
 	int			i, j, k, l;
-	edVec3_c		normal, delta;
+	vec3_c		normal, delta;
 	vec_t		dot;
 	bool	keep1, keep2;
 	
@@ -534,7 +534,6 @@ winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t pla
 	//
 	// find a common edge
 	//	
-	p1 = p2 = NULL;	// stop compiler warning
 	j = 0;			// 
 	
 	for (i = 0; i < f1->numpoints; i++)
@@ -622,9 +621,9 @@ winding_t *Winding_TryMerge(const winding_t *f1, const winding_t *f2, vec3_t pla
 Winding_Plane
 ============
 */
-void Winding_Plane (winding_t *w, class edVec3_c &normal, double *dist)
+void Winding_Plane (winding_t *w, class vec3_c &normal, double *dist)
 {
-	edVec3_c v1, v2;
+	vec3_c v1, v2;
 	int i;
 
 	//find two vectors each longer than 0.5 units
@@ -648,7 +647,7 @@ Winding_Area
 float Winding_Area (winding_t *w)
 {
 	int		i;
-	edVec3_c	d1, d2, cross;
+	vec3_c	d1, d2, cross;
 	float	total;
 
 	total = 0;
@@ -694,10 +693,10 @@ void Winding_Bounds (winding_t *w, vec3_t mins, vec3_t maxs)
 Winding_PointInside
 =================
 */
-int Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3_c &point, float epsilon)
+int Winding_PointInside(winding_t *w, const class edPlane_c &plane, const vec3_c &point, float epsilon)
 {
 	int i;
-	edVec3_c dir, normal, pointvec;
+	vec3_c dir, normal, pointvec;
 
 	for (i = 0; i < w->numpoints; i++)
 	{
@@ -717,10 +716,10 @@ int Winding_PointInside(winding_t *w, const class edPlane_c &plane, const edVec3
 Winding_VectorIntersect
 =================
 */
-int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const edVec3_c &p1, const edVec3_c &p2, float epsilon)
+int Winding_VectorIntersect(winding_t *w, const class edPlane_c &plane, const vec3_c &p1, const vec3_c &p2, float epsilon)
 {
 	float front, back, frac;
-	edVec3_c mid;
+	vec3_c mid;
 
 	front = p1.dotProduct(plane.normal) - plane.dist;
 	back = p2.dotProduct(plane.normal) - plane.dist;

@@ -233,7 +233,7 @@ singleselect:
 	}
   if (bStatus)
   {
-    edVec3_c vMin, vMax, vSize;
+    vec3_c vMin, vMax, vSize;
 	  Select_GetBounds (vMin, vMax);
     vSize = vMax - vMin;
     CString strStatus;
@@ -401,7 +401,7 @@ void Select_Move (vec3_t delta, bool bSnap)
 	for (b = selected_brushes.next ; b != &selected_brushes ; b=b->next)
 		Brush_Move (b, delta, bSnap);
 
-  edVec3_c vMin, vMax;
+  vec3_c vMin, vMax;
 	Select_GetBounds (vMin, vMax);
   CString strStatus;
   strStatus.Format("Origin X:: %.1f  Y:: %.1f  Z:: %.1f", vMin[0], vMax[1], vMax[2]);
@@ -560,7 +560,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprim
 ================================================================
 */
 
-void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs)
+void Select_GetBounds (vec3_c &mins, vec3_c &maxs)
 {
 	brush_s	*b;
 	int		i;
@@ -584,7 +584,7 @@ void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs)
 
 void Select_GetTrueMid (vec3_t mid)
 {
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	Select_GetBounds (mins, maxs);
 
   for (int i=0 ; i<3 ; i++)
@@ -594,7 +594,7 @@ void Select_GetTrueMid (vec3_t mid)
 
 void Select_GetMid (vec3_t mid)
 {
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	int		i;
 
   if (g_PrefsDlg.m_bNoClamp)
@@ -610,8 +610,8 @@ void Select_GetMid (vec3_t mid)
 
 }
 
-edVec3_c	select_origin;
-edVec3_c	select_matrix[3];
+vec3_c	select_origin;
+vec3_c	select_matrix[3];
 bool	select_fliporder;
 
 void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
@@ -619,7 +619,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 	brush_s	*b;
 	face_s	*f;
 	int		i, j;
-	edVec3_c	temp;
+	vec3_c	temp;
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
@@ -664,7 +664,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 	}
 }
 
-void Back(const edVec3_c &dir, edVec3_c &p)
+void Back(const vec3_c &dir, vec3_c &p)
 {
 	if (fabs(dir[0]) == 1)
 		p[0] = 0;
@@ -677,13 +677,13 @@ void Back(const edVec3_c &dir, edVec3_c &p)
 
 
 // using scale[0] and scale[1]
-void ComputeScale(const edVec3_c &rex, const edVec3_c &rey, edVec3_c &p, const face_s *f)
+void ComputeScale(const vec3_c &rex, const vec3_c &rey, vec3_c &p, const face_s *f)
 {
 	float px = rex.dotProduct(p);
 	float py = rey.dotProduct(p);
 	px *= f->texdef.scale[0];
 	py *= f->texdef.scale[1];
-	edVec3_c aux = rex;
+	vec3_c aux = rex;
 	aux *= px;
 	p = aux;
 	aux = rey;
@@ -691,9 +691,9 @@ void ComputeScale(const edVec3_c &rex, const edVec3_c &rey, edVec3_c &p, const f
 	p += aux;
 }
 
-void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
+void ComputeAbsolute(face_s* f, vec3_c &p1, vec3_c &p2, vec3_c &p3)
 {
-	edVec3_c ex,ey,ez;	        // local axis base
+	vec3_c ex,ey,ez;	        // local axis base
 
 #ifdef _DEBUG
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -704,7 +704,7 @@ void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
   TextureAxisFromPlane(f->plane, ex, ey);
   ez.crossProduct(ex,ey);
 	    
-  edVec3_c aux = ex * -f->texdef.shift[0];
+  vec3_c aux = ex * -f->texdef.shift[0];
   p1 = aux;
   aux = ey * -f->texdef.shift[1];
   p1 += aux;
@@ -718,9 +718,9 @@ void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
   VectorRotate(p2, aux, p2);
   VectorRotate(p3, aux, p3);
 	// computing rotated local axis base
-	edVec3_c rex = ex;
+	vec3_c rex = ex;
   VectorRotate(rex, aux, rex);
-  edVec3_c rey = ey;
+  vec3_c rey = ey;
   VectorRotate(rey, aux, rey);
 
   ComputeScale(rex,rey,p1,f);
@@ -736,9 +736,9 @@ void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3)
 };
 
 
-void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3)
+void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, vec3_c& p1, vec3_c& p2, vec3_c& p3)
 {
-	edVec3_c ex,ey,ez;
+	vec3_c ex,ey,ez;
 
 #ifdef _DEBUG
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -754,7 +754,7 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, ed
 	Back(ez,p2);
 	Back(ez,p3);
 
-	edVec3_c aux = p2 - p1;
+	vec3_c aux = p2 - p1;
 	
 	float x = aux.dotProduct(ex);
 	float y = aux.dotProduct(ey);
@@ -763,9 +763,9 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, ed
 	// computing rotated local axis base
   aux = ez;
   aux *= f->texdef.rotate;
-  edVec3_c rex = ex;
+  vec3_c rex = ex;
   VectorRotate(rex, aux, rex);
-  edVec3_c rey = ey;
+  vec3_c rey = ey;
   VectorRotate(rey, aux, rey);
 
 	// scale
@@ -802,7 +802,7 @@ void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, ed
 
 void RotateFaceTexture(face_s* f, int nAxis, float fDeg)
 {
-	edVec3_c p1,p2,p3, rota;   
+	vec3_c p1,p2,p3, rota;   
 	p1.clear();
 	p2.clear();
 	p3.clear();
@@ -815,7 +815,7 @@ void RotateFaceTexture(face_s* f, int nAxis, float fDeg)
 	VectorRotate(p3, rota, select_origin, p3);
 
 	edPlane_c normal2;
-	edVec3_c vNormal;
+	vec3_c vNormal;
 	vNormal[0] = f->plane.normal[0];
 	vNormal[1] = f->plane.normal[1];
 	vNormal[2] = f->plane.normal[2];
@@ -904,7 +904,7 @@ void Select_Scale(float x, float y, float z)
 
 void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 {
-	edVec3_c	temp;
+	vec3_c	temp;
 	int		i, j;
 	vec_t	c, s;
 
@@ -1006,7 +1006,7 @@ void Select_CompleteTall (void)
 {
 	brush_s	*b, *next;
 	//int		i;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -1052,7 +1052,7 @@ void Select_PartialTall (void)
 {
 	brush_s	*b, *next;
 	//int		i;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -1100,7 +1100,7 @@ void Select_Touching (void)
 {
 	brush_s	*b, *next;
 	int		i;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -1134,7 +1134,7 @@ void Select_Inside (void)
 {
 	brush_s	*b, *next;
 	int		i;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 
 	if (!QE_SingleBrush ())
 		return;

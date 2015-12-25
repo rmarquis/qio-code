@@ -37,7 +37,7 @@ vec_t SarrusDet(vec3_t a, vec3_t b, vec3_t c)
 // NOTE : ComputeAxisBase here and in q3map code must always BE THE SAME !
 // WARNING : special case behaviour of atan2(y,x) <-> atan(y/x) might not be the same everywhere when x == 0
 // rotation by (0,RotY,RotZ) assigns X to normal
-void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT)
+void ComputeAxisBase(vec3_c &normal, vec3_c &texS, vec3_c &texT)
 {
 	vec_t RotY,RotZ;
 	// do some cleaning
@@ -61,8 +61,8 @@ void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT)
 
 void FaceToBrushPrimitFace(face_s *f)
 {
-	edVec3_c texX,texY;
-	edVec3_c proj;
+	vec3_c texX,texY;
+	vec3_c proj;
 	// ST of (0,0) (1,0) (0,1)
 	texturedVertex_c ST[3]; // [ point index ] [ xyz ST ]
 	//++timo not used as long as brushprimit_texdef and texdef are static
@@ -110,7 +110,7 @@ void FaceToBrushPrimitFace(face_s *f)
 // compute texture coordinates for the winding points
 void EmitBrushPrimitTextureCoordinates(face_s * f, winding_t * w)
 {
-	edVec3_c texX,texY;
+	vec3_c texX,texY;
 	vec_t x,y;
 	// compute axis base
 	ComputeAxisBase(f->plane.normal,texX,texY);
@@ -335,9 +335,9 @@ void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, 
 }
 
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta)
+void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta)
 {
-	edVec3_c texS,texT;
+	vec3_c texS,texT;
 	vec_t tx,ty;
 	vec3_t M[3]; // columns of the matrix .. easier that way
 	vec_t det;
@@ -370,8 +370,8 @@ void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta)
 // call Face_MoveTexture_BrushPrimit after vec3_t computation
 void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y )
 {
-	edVec3_c texS,texT;
-	edVec3_c delta;
+	vec3_c texS,texT;
+	vec3_c delta;
 	ComputeAxisBase( f->plane.normal, texS, texT );
 	texS *= x;
 	texT *= y;
@@ -383,13 +383,13 @@ void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y )
 // called before the points on the face are actually rotated
 void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOrigin )
 {
-	edVec3_c texS,texT;			// axis base of the initial plane
-	edVec3_c vRotate;				// rotation vector
-	edVec3_c Orig;
-	edVec3_c rOrig,rvecS,rvecT;	// (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation ( world axis base )
-	edVec3_c rNormal;				// normal of the plane after rotation
-	edVec3_c rtexS,rtexT;			// axis base of the rotated plane
-	edVec3_c lOrig,lvecS,lvecT;	// [2] are not used ( but usefull for debugging )
+	vec3_c texS,texT;			// axis base of the initial plane
+	vec3_c vRotate;				// rotation vector
+	vec3_c Orig;
+	vec3_c rOrig,rvecS,rvecT;	// (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation ( world axis base )
+	vec3_c rNormal;				// normal of the plane after rotation
+	vec3_c rtexS,rtexT;			// axis base of the rotated plane
+	vec3_c lOrig,lvecS,lvecT;	// [2] are not used ( but usefull for debugging )
 	vec3_t M[3];
 	vec_t det;
 	vec3_t D[2];
@@ -436,7 +436,7 @@ void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOri
 }
 
 // best fitted 2D vector is x.X+y.Y
-void ComputeBest2DVector(const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y )
+void ComputeBest2DVector(const vec3_c &v, const vec3_c &X, const vec3_c &Y, int &x, int &y )
 {
 	double sx,sy;
 	sx = v.dotProduct( X );

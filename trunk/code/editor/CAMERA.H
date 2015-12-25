@@ -37,8 +37,8 @@ struct camera_t
 
 	bool	timing;
 
-	edVec3_c	origin;
-	edVec3_c	angles;
+	vec3_c	origin;
+	vec3_c	angles;
 
 	camera_draw_mode	draw_mode;
 
@@ -46,6 +46,6 @@ struct camera_t
 
 	vec3_t	forward, right, up;	// move matrix
 
-	edVec3_c	vup, vpn, vright;	// view matrix
+	vec3_c	vup, vpn, vright;	// view matrix
 };
 

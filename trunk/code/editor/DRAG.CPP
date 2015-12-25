@@ -30,13 +30,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 bool	drag_ok;
-edVec3_c	drag_xvec;
-edVec3_c	drag_yvec;
+vec3_c	drag_xvec;
+vec3_c	drag_yvec;
 
 static	int	buttonstate;
 int	pressx, pressy;
-static	edVec3_c pressdelta;
-static	edVec3_c vPressStart;
+static	vec3_c pressdelta;
+static	vec3_c vPressStart;
 static	int	buttonx, buttony;
 
 int		lastx, lasty;
@@ -72,7 +72,7 @@ void Drag_Setup (int x, int y, int buttons,
 
 
 
-	extern void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons);
+	extern void SelectCurvePointByRay (const vec3_c &org, vec3_t dir, int buttons);
 	if (g_qeglobals.d_select_mode == sel_curvepoint)
 	{
 		//if ((buttons == MK_LBUTTON))
@@ -388,7 +388,7 @@ void Drag_Begin (int x, int y, int buttons,
           mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
           if (pTex)
           {
-            edVec3_c vColor = pTex->getEditorColor();
+            vec3_c vColor = pTex->getEditorColor();
 
             float fLargest = 0.0f;
             for (int i = 0; i < 3; i++)
@@ -445,7 +445,7 @@ void MoveSelection (vec3_t move)
 	int		i, success;
 	brush_s	*b;
 	CString strStatus;
-	edVec3_c vTemp, vTemp2, end;
+	vec3_c vTemp, vTemp2, end;
 
 	if (!move[0] && !move[1] && !move[2])
 		return;
@@ -519,7 +519,7 @@ void MoveSelection (vec3_t move)
 	}
 
 
-	edVec3_c vDistance = pressdelta - vPressStart;
+	vec3_c vDistance = pressdelta - vPressStart;
 	strStatus.Format("Distance x: %.1f  y: %.1f  z: %.1f", vDistance[0], vDistance[1], vDistance[2]);
 	g_pParentWnd->SetStatusText(3, strStatus);
 
@@ -555,12 +555,12 @@ void MoveSelection (vec3_t move)
 				success &= Brush_MoveVertex(b, g_qeglobals.d_move_points[0], move, end, true);
 			}
 			if (success)
-				*((edVec3_c*)g_qeglobals.d_move_points[0]) = end;
+				*((vec3_c*)g_qeglobals.d_move_points[0]) = end;
 			return;
 		}
 		//all other selection types
 		for (i=0 ; i<g_qeglobals.d_num_move_points ; i++)
-			*((edVec3_c*)g_qeglobals.d_move_points[i]) += move;
+			*((vec3_c*)g_qeglobals.d_move_points[i]) += move;
 		//VectorScale(move, .5, move);
 		//for (i=0 ; i<g_qeglobals.d_num_move_points2 ; i++)
 		//	VectorAdd (g_qeglobals.d_move_points2[i], move, g_qeglobals.d_move_points2[i]);
@@ -593,7 +593,7 @@ void MoveSelection (vec3_t move)
 		{
 			Sys_Printf ("Brush dragged backwards, move canceled\n");
 			for (i=0 ; i<g_qeglobals.d_num_move_points ; i++) {
-				*((edVec3_c*)g_qeglobals.d_move_points[i]) -= move;
+				*((vec3_c*)g_qeglobals.d_move_points[i]) -= move;
 			}
 
 			for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
@@ -633,7 +633,7 @@ Drag_MouseMoved
 */
 void Drag_MouseMoved (int x, int y, int buttons)
 {
-	edVec3_c	move, delta;
+	vec3_c	move, delta;
 	int		i;
 
 	if (!buttons)

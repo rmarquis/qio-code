@@ -150,7 +150,7 @@ struct QEGlobals_t
 	HWND      d_hwndStatus;
 	HWND      d_hwndMedia;
 	
-	edVec3_c  d_points[MAX_POINTS];
+	vec3_c  d_points[MAX_POINTS];
 	int       d_numpoints;
 	pedge_t   d_edges[MAX_EDGES];
 	int       d_numedges;
@@ -173,7 +173,7 @@ struct QEGlobals_t
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
 	brush_s		*d_select_order[2];
-	edVec3_c       d_select_translate;    // for dragging w/o making new display lists
+	vec3_c       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	
 	int		     d_font_list;
@@ -194,8 +194,8 @@ struct QEGlobals_t
 	bool	bOldBrushes;
 	bool	bPrimitBrushes;
 	
-	edVec3_c  d_vAreaTL;
-	edVec3_c  d_vAreaBR;
+	vec3_c  d_vAreaTL;
+	vec3_c  d_vAreaBR;
 	
 	// tells if we are using .INI files for prefs instead of registry
 	bool	use_ini;
@@ -239,8 +239,8 @@ void CSG_Merge (void);
 //
 
 void SetupVertexSelection (void);
-void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir);
-void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir);
+void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir);
+void SelectVertexByRay (const vec3_c &org, const vec3_c &dir);
 
 void ConnectEntities (void);
 
@@ -386,7 +386,7 @@ void Patch_ReadFile (char *name);
 void Patch_WriteFile (char *name); 
 void Patch_BuildPoints (brush_s *b);
 //void Patch_Move(patchMesh_c *p, const vec3_t vMove, bool bRebuild = false);
-void Patch_ApplyMatrix(patchMesh_c *p, const class edVec3_c &vOrigin, const edVec3_c vMatrix[3], bool bSnap = false);
+void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c vMatrix[3], bool bSnap = false);
 void Patch_EditPatch();
 void Patch_Deselect();
 void Patch_Deselect(patchMesh_c *p);
@@ -398,7 +398,7 @@ void Patch_Cleanup();
 void Patch_SetView(int n);
 void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def);
 void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
-bool Patch_DragScale(patchMesh_c *p, const edVec3_c &vAmt, const edVec3_c &vMove);
+bool Patch_DragScale(patchMesh_c *p, const vec3_c &vAmt, const vec3_c &vMove);
 void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
 void Patch_WriteFile (CMemFile* pMemFile);
 void Patch_UpdateSelected(vec3_t vMove);
@@ -458,12 +458,12 @@ extern bool g_bPatchWeld;
 extern bool g_bPatchDrillDown;
 extern bool g_bPatchInsertMode;
 extern bool g_bPatchBendMode;
-extern edVec3_c g_vBendOrigin;
+extern vec3_c g_vBendOrigin;
 void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
 
 // Timo
 // new brush primitive stuff
-void ComputeAxisBase(edVec3_c &normal, edVec3_c &texS, edVec3_c &texT);
+void ComputeAxisBase(vec3_c &normal, vec3_c &texS, vec3_c &texT);
 void FaceToBrushPrimitFace(face_s *f);
 void EmitBrushPrimitTextureCoordinates(face_s *, winding_t *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
@@ -474,11 +474,11 @@ void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, floa
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
 void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, brushprimit_texdef_s *texMat2, mtrAPI_i *qtex2 );
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_s *f, const edVec3_c &delta);
+void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta);
 void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y );
 void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOrigin );
 // used in CCamWnd::ShiftTexture_BrushPrimit
-void ComputeBest2DVector( const edVec3_c &v, const edVec3_c &X, const edVec3_c &Y, int &x, int &y );
+void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int &x, int &y );
 
 
 //

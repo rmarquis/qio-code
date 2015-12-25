@@ -93,7 +93,7 @@ vec3_t	baseaxis[18] =
 {0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
 };
 
-void TextureAxisFromPlane(const edPlane_c &pln, edVec3_c &xv, edVec3_c &yv)
+void TextureAxisFromPlane(const edPlane_c &pln, vec3_c &xv, vec3_c &yv)
 {
 	int		bestaxis;
 	float	dot,best;
@@ -248,9 +248,9 @@ void Clamp(float& f, int nClamp)
 Face_MoveTexture
 ================
 */
-void Face_MoveTexture(face_s *f, const edVec3_c &delta)
+void Face_MoveTexture(face_s *f, const vec3_c &delta)
 {
-	edVec3_c vX, vY;
+	vec3_c vX, vY;
 /*
 #ifdef _DEBUG
 	if (g_PrefsDlg.m_bBrushPrimitMode)
@@ -326,7 +326,7 @@ TTimo: NOTE: this is never to get called while in brush primitives mode
 */
 void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 {
-	edVec3_c		pvecs[2];
+	vec3_c		pvecs[2];
 	int			sv, tv;
 	float		ang, sinv, cosv;
 	float		ns, nt;
@@ -414,7 +414,7 @@ Face_MakePlane
 void Face_MakePlane (face_s *f)
 {
 	int		j;
-	edVec3_c	t1, t2, t3;
+	vec3_c	t1, t2, t3;
 
 	// convert to a vector / dist plane
 	for (j=0 ; j<3 ; j++)
@@ -425,7 +425,7 @@ void Face_MakePlane (face_s *f)
 	}
 	
 	f->plane.normal.crossProduct(t1,t2);
-	if (f->plane.normal.vectorCompare(edVec3_c(0,0,0)))
+	if (f->plane.normal.vectorCompare(vec3_c(0,0,0)))
 		printf ("WARNING: brush plane with no normal\n");
 	f->plane.normal.normalize();
 	f->plane.dist = t3.dotProduct(f->plane.normal);
@@ -1302,13 +1302,13 @@ Brush_MoveVertexes
 
 #define MAX_MOVE_FACES		64
 
-int Brush_MoveVertex(brush_s *b, const edVec3_c &vertex, const edVec3_c &delta, edVec3_c &end, bool bSnap)
+int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap)
 {
 	face_s *f, *face, *newface, *lastface, *nextface;
 	face_s *movefaces[MAX_MOVE_FACES];
 	int movefacepoints[MAX_MOVE_FACES];
 	winding_t *w, tmpw;
-	edVec3_c start, mid;
+	vec3_c start, mid;
 	edPlane_c plane;
 	int i, j, k, nummovefaces, result, done;
 	float dot, front, back, frac, smallestfrac;
@@ -1580,11 +1580,11 @@ int Brush_MoveVertex(brush_s *b, const edVec3_c &vertex, const edVec3_c &delta, 
 Brush_InsertVertexBetween
 =================
 */
-int Brush_InsertVertexBetween(brush_s *b, const edVec3_c &p1, const edVec3_c &p2)
+int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 {
 	face_s *face;
 	winding_t *w, *neww;
-	edVec3_c point;
+	vec3_c point;
 	int i, insert;
 
 	if (p1.vectorCompare(p2, 0.4))
@@ -2172,7 +2172,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 	corners[3][1] = mins[1];
 	corners[3][2] = fMid;
 
-	edVec3_c top, bottom;
+	vec3_c top, bottom;
 
 	top[0] = Q_rint(mins[0] + ((maxs[0] - mins[0]) / 2));
 	top[1] = Q_rint(mins[1] + ((maxs[1] - mins[1]) / 2));
@@ -2224,7 +2224,7 @@ Makes the current brush have the given number of 2d sides
 void Brush_MakeSided (int sides)
 {
 	int		i, axis;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	brush_s	*b;
 	texdef_t	*texdef;
 	face_s	*f;
@@ -2530,13 +2530,13 @@ Returns the face hit and the distance along the ray the intersection occured at
 Returns NULL and 0 if not hit at all
 ==============
 */
-face_s *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_s *b, float *dist)
+face_s *Brush_Ray (const vec3_c &origin, const vec3_c &dir, brush_s *b, float *dist)
 {
 	if(b == 0)
 		return 0;
 	face_s	*f = 0;
 	face_s *firstface = 0;
-	edVec3_c	p1, p2;
+	vec3_c	p1, p2;
 	float	frac, d1, d2;
 	int		i;
 
@@ -2580,7 +2580,7 @@ face_s *Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_s *b, floa
 }
 
 //PGM
-face_s *Brush_Point (const edVec3_c &origin, brush_s *b)
+face_s *Brush_Point (const vec3_c &origin, brush_s *b)
 {
 	face_s	*f;
 	float	d1;
@@ -2665,13 +2665,13 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 		{
 			f->texdef = *texdef;
 			// fit the scaling of the texture on the actual plane
-			edVec3_c p1,p2,p3; // absolute coordinates
+			vec3_c p1,p2,p3; // absolute coordinates
 			// compute absolute coordinates
 			ComputeAbsolute(f,p1,p2,p3);
 			// compute the scale
-			edVec3_c vx = p2 - p1;
+			vec3_c vx = p2 - p1;
 			vx.normalize();
-			edVec3_c vy = p3 - p1;
+			vec3_c vy = p3 - p1;
 			vy.normalize();
 			// assign scale
 			vx *= texdef->scale[0];
@@ -2715,7 +2715,7 @@ void Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brush
 }
 
 
-bool ClipLineToFace (edVec3_c &p1, edVec3_c &p2, face_s *f)
+bool ClipLineToFace (vec3_c &p1, vec3_c &p2, face_s *f)
 {
 	float	d1, d2, fr;
 	int		i;
@@ -2873,7 +2873,7 @@ void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
 					   , bool shear)
 {
 	face_s	*f, *f2;
-	edVec3_c	p1, p2;
+	vec3_c	p1, p2;
 	if(b == 0)
 		return;
   //if (b->patchBrush)
@@ -3030,9 +3030,9 @@ void Brush_Rotate(brush_s *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 	}
 }
 
-void Brush_Center(brush_s *b, const edVec3_c &vNewCenter)
+void Brush_Center(brush_s *b, const vec3_c &vNewCenter)
 {
-	edVec3_c vMid;
+	vec3_c vMid;
 	// get center of the brush
 	for (int j = 0; j < 3; j++)
 	{
@@ -3074,7 +3074,7 @@ eclass_s* HasModel(brush_s *b)
 void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 {
 	int			angleVal;
-	edVec3_c		angles;
+	vec3_c		angles;
 
 	angleVal = IntForKey(e, "angle");
 	if (angleVal == -1)				// up
@@ -3096,8 +3096,8 @@ void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 void Brush_DrawFacingAngle (brush_s *b, entity_s *e)
 {
 	vec3_t	forward, right, up;
-	edVec3_c	endpoint, tip1, tip2;
-	edVec3_c	start;
+	vec3_c	endpoint, tip1, tip2;
+	vec3_c	start;
 	float	dist;
 
 	start = (e->brushes.onext->getMins() + e->brushes.onext->getMaxs()) * 0.5f;
@@ -3126,7 +3126,7 @@ void Brush_DrawFacingAngle (brush_s *b, entity_s *e)
 
 void DrawLight(brush_s *b)
 {
-	edVec3_c vTriColor;
+	vec3_c vTriColor;
 	bool bTriPaint = false;
 
 	vTriColor[0] = vTriColor[2] = 1.0;
@@ -3165,7 +3165,7 @@ void DrawLight(brush_s *b)
 	vCorners[3][1] = b->getMins()[1];
 	vCorners[3][2] = fMid;
 
-	edVec3_c vTop, vBottom;
+	vec3_c vTop, vBottom;
 
 	vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
 	vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
@@ -3174,7 +3174,7 @@ void DrawLight(brush_s *b)
 	vBottom = vTop;
 	vBottom[2] = b->getMins()[2];
 
-	edVec3_c vSave = vTriColor;
+	vec3_c vSave = vTriColor;
 	int i;
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex3fv(vTop);
@@ -3210,7 +3210,7 @@ void DrawLight(brush_s *b)
 	// check for DOOM lights
 	CString str = ValueForKey(b->owner, "light_right");
 	if (str.GetLength() > 0) {
-		edVec3_c vRight, vUp, vTarget, vTemp;
+		vec3_c vRight, vUp, vTarget, vTemp;
 		GetVectorForKey (b->owner, "light_right", vRight);
 		GetVectorForKey (b->owner, "light_up", vUp);
 		GetVectorForKey (b->owner, "light_target", vTarget);
@@ -3444,7 +3444,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 			vCorners[3][1] = b->getMins()[1];
 			vCorners[3][2] = fMid;
 
-			edVec3_c vTop, vBottom;
+			vec3_c vTop, vBottom;
 
 			vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
 			vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
@@ -3537,7 +3537,7 @@ void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
-		edVec3_c vTemp = move;
+		vec3_c vTemp = move;
 
 		if (g_PrefsDlg.m_bTextureLock)
 			Face_MoveTexture(f, vTemp);
@@ -3588,7 +3588,7 @@ Makes the current brushhave the given number of 2d sides and turns it into a con
 void Brush_MakeSidedCone(int sides)
 {
 	int		i;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	brush_s	*b;
 	texdef_t	*texdef;
 	face_s	*f;
@@ -3682,7 +3682,7 @@ Makes the current brushhave the given number of 2d sides and turns it into a sph
 void Brush_MakeSidedSphere(int sides)
 {
 	int		i,j;
-	edVec3_c	mins, maxs;
+	vec3_c	mins, maxs;
 	brush_s	*b;
 	texdef_t	*texdef;
 	face_s	*f;
@@ -3780,7 +3780,7 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	float cosv,sinv,ang;
 	float min_t, min_s, max_t, max_s;
 	float s,t;
-	edVec3_c	vecs[2];
+	vec3_c	vecs[2];
 	vec3_t   coords[4];
 	texdef_t	*td;
 

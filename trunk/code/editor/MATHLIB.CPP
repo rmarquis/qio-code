@@ -39,10 +39,10 @@ vec_t Q_rint (vec_t in)
 
 
 
-void VectorRotate (vec3_t vIn, const edVec3_c &vRotation, edVec3_c &out)
+void VectorRotate (vec3_t vIn, const vec3_c &vRotation, vec3_c &out)
 {
-  edVec3_c va = vIn;
-  edVec3_c vWork = va;
+  vec3_c va = vIn;
+  vec3_c vWork = va;
   int nIndex[3][2];
   nIndex[0][0] = 1; nIndex[0][1] = 2;
   nIndex[1][0] = 2; nIndex[1][1] = 0;
@@ -63,10 +63,10 @@ void VectorRotate (vec3_t vIn, const edVec3_c &vRotation, edVec3_c &out)
   out = vWork;
 }
 
-void VectorRotate(const edVec3_c &vIn, const edVec3_c &vRotation, const edVec3_c &vOrigin, edVec3_c &out)
+void VectorRotate(const vec3_c &vIn, const vec3_c &vRotation, const vec3_c &vOrigin, vec3_c &out)
 {
-	edVec3_c vTemp = vIn - vOrigin;
-	edVec3_c vTemp2;
+	vec3_c vTemp = vIn - vOrigin;
+	vec3_c vTemp2;
 	VectorRotate(vTemp, vRotation, vTemp2);
 	out = vTemp2 + vOrigin;
 }

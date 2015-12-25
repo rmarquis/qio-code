@@ -34,7 +34,7 @@ struct entity_s
 	struct entity_s	*prev, *next;
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
-	edVec3_c		origin;
+	vec3_c		origin;
 	eclass_s	*eclass;
 	epair_s		*epairs;
 	vec3_t vRotation;   // valid for misc_models only

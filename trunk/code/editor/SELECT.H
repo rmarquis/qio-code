@@ -52,7 +52,7 @@ struct trace_t
 
 trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags);
 
-void Select_GetBounds (edVec3_c &mins, edVec3_c &maxs);
+void Select_GetBounds (vec3_c &mins, vec3_c &maxs);
 void Select_Brush (brush_s *b, bool bComplete = true, bool bStatus = true);
 void Select_Ray (vec3_t origin, vec3_t dir, int flags);
 void Select_Delete (void);
@@ -75,8 +75,8 @@ void Select_FitTexture(int nHeight = 1, int nWidth = 1);
 
 // absolute texture coordinates
 // TTimo NOTE: this is stuff for old brushes format and rotation texture lock .. sort of in-between with bush primitives
-void ComputeAbsolute(face_s* f, edVec3_c &p1, edVec3_c &p2, edVec3_c &p3);
-void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, edVec3_c& p1, edVec3_c& p2, edVec3_c& p3);
+void ComputeAbsolute(face_s* f, vec3_c &p1, vec3_c &p2, vec3_c &p3);
+void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, vec3_c& p1, vec3_c& p2, vec3_c& p3);
 void Select_Hide();
 void Select_ShowAllHidden();
 void clearSelection();

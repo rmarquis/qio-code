@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #define	MAX_POINTFILE	8192
-static edVec3_c	s_pointvecs[MAX_POINTFILE];
+static vec3_c	s_pointvecs[MAX_POINTFILE];
 static int		s_num_points, s_check_point;
 
 void Pointfile_Delete (void)
@@ -42,7 +42,7 @@ void Pointfile_Delete (void)
 // advance camera to next point
 void Pointfile_Next (void)
 {
-	edVec3_c	dir;
+	vec3_c	dir;
 
 	if (s_check_point >= s_num_points-2)
 	{
@@ -63,7 +63,7 @@ void Pointfile_Next (void)
 // advance camera to previous point
 void Pointfile_Prev (void)
 {
-	edVec3_c	dir;
+	vec3_c	dir;
 
 	if ( s_check_point == 0)
 	{

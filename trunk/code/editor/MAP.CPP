@@ -548,8 +548,8 @@ void Map_New (void)
 */
 
 bool	region_active;
-edVec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
-edVec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
+vec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
+vec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
 
 brush_s	*region_sides[4];
 /*

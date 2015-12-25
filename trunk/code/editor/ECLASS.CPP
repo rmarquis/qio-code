@@ -100,7 +100,7 @@ void CleanUpEntities()
   }
 }
 
-void ExtendBounds(vec3_t v, edVec3_c &vMin, edVec3_c &vMax)
+void ExtendBounds(vec3_t v, vec3_c &vMin, vec3_c &vMax)
 {
 	for (int i = 0 ;i < 3 ;i++)
 	{

@@ -240,11 +240,11 @@ void SelectVertex (int p1)
 #endif
 }
 
-void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
+void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir)
 {
 	int		i, j, besti;
 	float	d, bestd;
-	edVec3_c	mid, temp;
+	vec3_c	mid, temp;
 	pedge_t	*e;
 
 	// find the edge closest to the ray
@@ -293,11 +293,11 @@ void SelectEdgeByRay (const edVec3_c &org, const edVec3_c &dir)
 
 }
 
-void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
+void SelectVertexByRay (const vec3_c &org, const vec3_c &dir)
 {
 	int		i, besti;
 	float	d, bestd;
-	edVec3_c	temp;
+	vec3_c	temp;
 
 	// find the point closest to the ray
 	besti = -1;
@@ -329,12 +329,12 @@ void SelectVertexByRay (const edVec3_c &org, const edVec3_c &dir)
 
 
 
-extern void AddPatchMovePoint(const edVec3_c &v, bool bMulti, bool bFull);
-void SelectCurvePointByRay (const edVec3_c &org, vec3_t dir, int buttons)
+extern void AddPatchMovePoint(const vec3_c &v, bool bMulti, bool bFull);
+void SelectCurvePointByRay (const vec3_c &org, vec3_t dir, int buttons)
 {
 	int		i, besti;
 	float	d, bestd;
-	edVec3_c	temp;
+	vec3_c	temp;
 
 	// find the point closest to the ray
 	besti = -1;

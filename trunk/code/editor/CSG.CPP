@@ -47,7 +47,7 @@ void CSG_MakeHollow (void)
 	brush_s		*b, *front, *back, *next;
 	face_s		*f;
 	face_s		split;
-	edVec3_c		move;
+	vec3_c		move;
 	int			i;
 
 	for (b = selected_brushes.next ; b != &selected_brushes ; b=next)
