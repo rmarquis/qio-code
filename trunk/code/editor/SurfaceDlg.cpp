@@ -380,7 +380,7 @@ void CSurfaceDlg::GetTexMods()
 
 	g_changed_surface = true;
 
-	// a local copy of the texture matrix, given for a qtexture_t with width=2 height=2
+	// a local copy of the texture matrix, given for a qtexture_s with width=2 height=2
 	brushprimit_texdef_s	local_bp;
 	brushprimit_texdef_s	*bpt;
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -396,10 +396,10 @@ void CSurfaceDlg::GetTexMods()
 			bpt = &g_qeglobals.d_texturewin.brushprimit_texdef;
     }
 		// compute texture matrix
-		// the matrix returned must be understood as a qtexture_t with width=2 height=2
+		// the matrix returned must be understood as a qtexture_s with width=2 height=2
 		FakeTexCoordsToTexMat( m_shift, m_rotate, m_scale, local_bp.coords );
 		// copy the texture matrix in the global struct
-		// fit the qtexture if we have a face selected, otherwise g_qeglobals.d_texturewin.brushprimit_texdef uses the basic qtexture_t with width=2 height=2
+		// fit the qtexture if we have a face selected, otherwise g_qeglobals.d_texturewin.brushprimit_texdef uses the basic qtexture_s with width=2 height=2
 
 		ConvertTexMatWithQTexture( &local_bp, NULL, bpt, ( ( g_bNewFace && selFace ) ? selFace->d_texture : NULL ) );
 	}
@@ -577,7 +577,7 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 			}
 		}
 	}
-	// a local copy of the texture matrix, given for a qtexture_t with width=2 height=2
+	// a local copy of the texture matrix, given for a qtexture_s with width=2 height=2
 	brushprimit_texdef_s	local_bp;
 	brushprimit_texdef_s	*bpt;
 	if (g_qeglobals.m_bBrushPrimitMode)
@@ -593,10 +593,10 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 			bpt = &g_qeglobals.d_texturewin.brushprimit_texdef;
     }
 		// compute texture matrix
-		// the matrix returned must be understood as a qtexture_t with width=2 height=2
+		// the matrix returned must be understood as a qtexture_s with width=2 height=2
 		FakeTexCoordsToTexMat( m_shift, m_rotate, m_scale, local_bp.coords );
 		// copy the texture matrix in the global struct
-		// fit the qtexture if we have a face selected, otherwise g_qeglobals.d_texturewin.brushprimit_texdef uses the basic qtexture_t with width=2 height=2
+		// fit the qtexture if we have a face selected, otherwise g_qeglobals.d_texturewin.brushprimit_texdef uses the basic qtexture_s with width=2 height=2
 		ConvertTexMatWithQTexture( &local_bp, NULL, bpt, ( ( g_bNewFace && selFace ) ? selFace->d_texture : NULL ) );
 	}
 	// brush primit : will update the widgets after reading back texture matrix and computing fake shift scale rot

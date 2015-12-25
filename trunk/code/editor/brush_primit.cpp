@@ -308,7 +308,7 @@ void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, floa
 }
 
 // compute back the texture matrix from fake shift scale rot
-// the matrix returned must be understood as a qtexture_t with width=2 height=2 ( the default one )
+// the matrix returned must be understood as a qtexture_s with width=2 height=2 ( the default one )
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] )
 {
 	texMat[0][0] = scale[0] * cos( DEG2RAD( rot ) );
@@ -319,13 +319,13 @@ void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t tex
 	texMat[1][2] = shift[1];
 }
 
-// convert a texture matrix between two qtexture_t
-// if NULL for qtexture_t, basic 2x2 texture is assumed ( straight mapping between s/t coordinates and geometric coordinates )
-void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, qtexture_t *qtex1, brushprimit_texdef_s *texMat2, qtexture_t *qtex2 )
+// convert a texture matrix between two qtexture_s
+// if NULL for qtexture_s, basic 2x2 texture is assumed ( straight mapping between s/t coordinates and geometric coordinates )
+void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, qtexture_s *qtex1, brushprimit_texdef_s *texMat2, qtexture_s *qtex2 )
 {
 	float s1,s2;
-	s1 = ( qtex1 ? static_cast<float>( qtex1->width ) : 2.0f ) / ( qtex2 ? static_cast<float>( qtex2->width ) : 2.0f );
-	s2 = ( qtex1 ? static_cast<float>( qtex1->height ) : 2.0f ) / ( qtex2 ? static_cast<float>( qtex2->height ) : 2.0f );
+	s1 = ( qtex1 ? static_cast<float>( qtex1->qioMat->getImageWidth() ) : 2.0f ) / ( qtex2 ? static_cast<float>( qtex2->qioMat->getImageWidth() ) : 2.0f );
+	s2 = ( qtex1 ? static_cast<float>( qtex1->qioMat->getImageHeight() ) : 2.0f ) / ( qtex2 ? static_cast<float>( qtex2->qioMat->getImageHeight() ) : 2.0f );
 	texMat2->coords[0][0]=s1*texMat1->coords[0][0];
 	texMat2->coords[0][1]=s1*texMat1->coords[0][1];
 	texMat2->coords[0][2]=s1*texMat1->coords[0][2];

@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/materialSystemAPI.h>
 
 // this is a modified version of Texture_ForName
-qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
+qtexture_s* WINAPI QERApp_TryTextureForName(const char* name)
 {
 	char fullName[256];
 	if(name[0] != '(') 
@@ -40,7 +40,7 @@ qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
 	{
 		strcpy(fullName,name);
 	}
-	qtexture_t *q;
+	qtexture_s *q;
 	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
 	{
 		if (!strcmp(name,  q->qioMat->getName()))
@@ -59,7 +59,7 @@ qtexture_t* WINAPI QERApp_TryTextureForName(const char* name)
 	mtrAPI_i *mat = g_ms->registerMaterial(fullName);
 	if (mat)
 	{
-		qtexture_t* q = (qtexture_t*)qmalloc(sizeof(*q));
+		qtexture_s* q = (qtexture_s*)qmalloc(sizeof(*q));
 
 
 		q->qioMat = mat;

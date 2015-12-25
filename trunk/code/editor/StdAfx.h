@@ -76,8 +76,8 @@ extern void FindReplace(CString& strContents, const char* pTag, const char* pVal
 extern void CheckBspProcess();
 extern void QE_CountBrushesAndUpdateStatusBar();
 extern void	QE_CheckAutoSave();
-extern qtexture_t	*notexture;
-extern qtexture_t	*current_texture;
+extern qtexture_s	*notexture;
+extern qtexture_s	*current_texture;
 extern BOOL SaveWindowState(HWND hWnd, const char *pszName);
 extern BOOL DoMru(HWND, WORD);
 extern void RunBsp (char *command);

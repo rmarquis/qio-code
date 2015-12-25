@@ -296,7 +296,7 @@ Face_SetColor
 void Face_SetColor (brush_s *b, face_s *f, float fCurveColor) 
 {
 	float	shade;
-	qtexture_t *q;
+	qtexture_s *q;
 
 	q = f->d_texture;
 
@@ -331,7 +331,7 @@ void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 	float		ang, sinv, cosv;
 	float		ns, nt;
 	int			i,j;
-	qtexture_t *q;
+	qtexture_s *q;
 	texdef_t	*td;
 
 #ifdef _DEBUG
@@ -436,7 +436,7 @@ void Face_MakePlane (face_s *f)
 EmitTextureCoordinates
 ================
 */
-void EmitTextureCoordinates (texturedVertex_c &out, qtexture_t *q, face_s *f)
+void EmitTextureCoordinates (texturedVertex_c &out, qtexture_s *q, face_s *f)
 {
 	float	STfromXYZ[2][4];
 
@@ -1792,7 +1792,7 @@ brush_s *Brush_Parse (void)
 			f->texdef.flags = 0;//f->d_texture->flags;
 			// V: what is this used for
 			f->texdef.value = 0; //f->d_texture->value;
-			f->texdef.contents = f->d_texture->contents;
+			f->texdef.contents = f->d_texture->qioMat->getEditorContentFlags();
 			
 			if (TokenAvailable ())
 			{
@@ -2641,7 +2641,7 @@ Doesn't set the curve flags
 NOTE : ( TTimo )
 	never trust f->d_texture here, f->texdef and f->d_texture are out of sync when called by Brush_SetTexture
 	use Texture_ForName() to find the right shader
-	FIXME : send the right shader ( qtexture_t * ) in the parameters ?
+	FIXME : send the right shader ( qtexture_s * ) in the parameters ?
 
 TTimo: surface plugin, added an IPluginTexdef* parameter
 		if not NULL, get ->Copy() of it into the face ( and remember to hook )
@@ -3246,7 +3246,7 @@ void Brush_Draw( brush_s *b )
 {
 	face_s			*face;
 	int				i, order;
-	qtexture_t		*prev = 0;
+	qtexture_s		*prev = 0;
 	winding_t *w;
 
 	// (TTimo) NOTE: added by build 173, I check after pPlugEnt so it doesn't interfere ?
@@ -3873,7 +3873,7 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	td->shift[0] = min_s/td->scale[0];
 	temp = (int)(td->shift[0] / (face->d_texture->qioMat->getImageWidth()*nWidth));
 	temp = (temp+1)*face->d_texture->qioMat->getImageWidth()*nWidth;
-	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->width*nWidth);
+	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->qioMat->getImageWidth()*nWidth);
 
 	td->shift[1] = min_t/td->scale[1];
 	temp = (int)(td->shift[1] / (face->d_texture->qioMat->getImageHeight()*nHeight));
