@@ -46,10 +46,6 @@ Str m_gStr;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-qtexture_t *Texture_ForNamePath(char* name, char* pFullPath);
-#define	TYP_MIPTEX	68
-static unsigned	tex_palette[256];
-
 qtexture_t	*notexture = NULL;
 qtexture_t	*g_pluginTexture = NULL;
 
@@ -194,53 +190,6 @@ void SortTextures(void)
 	}
 
 	g_qeglobals.d_qtextures = qhead;
-}
-
-/*
-==============
-Texture_InitPalette
-==============
-*/
-void Texture_InitPalette (byte *pal)
-{
-    int		r,g,b,v;
-    int		i;
-	int		inf;
-	byte	gammatable[256];
-	float	gamma;
-
-	gamma = g_qeglobals.d_savedinfo.fGamma;
-
-	if (gamma == 1.0)
-	{
-		for (i=0 ; i<256 ; i++)
-			gammatable[i] = i;
-	}
-	else
-	{
-		for (i=0 ; i<256 ; i++)
-		{
-			inf = 255 * pow ( (float)( (i+0.5)/255.5 ), gamma ) + 0.5;
-			if (inf < 0)
-				inf = 0;
-			if (inf > 255)
-				inf = 255;
-			gammatable[i] = inf;
-		}
-	}
-
-    for (i=0 ; i<256 ; i++)
-    {
-		  r = gammatable[pal[0]];
-		  g = gammatable[pal[1]];
-		  b = gammatable[pal[2]];
-		  pal += 3;
-		
-		  v = (r<<24) + (g<<16) + (b<<8) + 255;
-		  v = BigLong (v);
-		
-		  tex_palette[i] = v;
-    }
 }
 
 void SetTexParameters (void)
@@ -762,92 +711,6 @@ Texture_ForName
 qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool bNoAlpha, bool bReload, bool makeShader)
 {
 	return QERApp_TryTextureForName(name);
-}
-
-/*
-===============
-Texture_ForNamePath
-===============
-*/
-qtexture_t *Texture_ForNamePath(char* name, char* pFullPath)
-{
-	qtexture_t	*q;
-	char	filename[1024];
-
-  if (strlen(name) == 0)
-    return notexture;
-
-	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
-  {
-	  if (!strcmp(name,  q->name))
-		{
-			if (!g_dontuse)
-				q->inuse = true;
-		    return q;
-		}
-  }
-
-	if (name[0] == '(')
-	{
-		q = Texture_CreateSolid (name);
-		strncpy (q->name, name, sizeof(q->name)-1);
-	}
-	else
-	{
-
-      char cWork[1024];
-      if (strstr(pFullPath, ".tga") == NULL) {
-        sprintf(filename, "%s%s", pFullPath, ".tga");
-      } else {
-        strcpy(filename, pFullPath);
-      }
-  		QE_ConvertDOSToUnixName( cWork, filename );
-	    strcpy(filename, cWork);
-		  Sys_Printf ("Loading %s...", name);
-      unsigned char* pPixels = NULL;
-      int nWidth;
-      int nHeight;
-      LoadImage(filename, &pPixels, &nWidth, &nHeight);
-      if (!pPixels)
-      {
-        // try jpg
-        // blatant assumption of .tga should be fine since we sprintf'd it above
-        int nLen = strlen(filename);
-        filename[nLen-3] = 'j';
-        filename[nLen-2] = 'p';
-        filename[nLen-1] = 'g';
-				LoadImage(filename, &pPixels, &nWidth, &nHeight);
-      }
-      if (pPixels)
-      {
-        q = Texture_LoadTGATexture(pPixels, nWidth, nHeight, NULL, 0, 0, 0);
-    	//++timo storing the filename .. will be removed by shader code cleanup
-		// this is dirty, and we sure miss some places were we should fill the filename info
-		// NOTE: we store relative path, need to extract it
-		strcpy( q->filename, name );
-
-      }
-      else
-      {
-        return notexture;
-      }
-      free(pPixels);
-
-    if (g_PrefsDlg.m_bSGIOpenGL)
-    {
-		  if(!q)
-			  return notexture;
-    }
-		strncpy (q->name, name, sizeof(q->name)-1);
-		StripExtension (q->name);
-	}
-
-	if (!g_dontuse)
-		q->inuse = true;
-	q->next = g_qeglobals.d_qtextures;
-	g_qeglobals.d_qtextures = q;
-
-  return q;
 }
 
 
