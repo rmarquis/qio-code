@@ -342,14 +342,7 @@ void R_MipMap (byte *in, int &width, int &height)
 }
 
 
-void Texture_LoadFromPlugIn(LPVOID vp)
-{
 
-}
-
-
-
-extern bool DoesFileExist(const char* pBuff, long& lSize);
 
 
 void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, brush_s *pList)

@@ -517,7 +517,7 @@ Timo :  texture plugin, added an IPluginTexdef* parameter
 		if NULL, means we have no information, ask for a default
 ============
 */
-void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, void* pPlugTexdef )
+void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale)
 {
 	brush_s	*b;
 	int nCount = g_ptrSelectedFaces.GetSize();
@@ -530,7 +530,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprim
 			face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
 			brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
 			Undo_AddBrush(selBrush);
-			SetFaceTexdef (selBrush, selFace, texdef, brushprimit_texdef, bFitScale, static_cast<IPluginTexdef *>(pPlugTexdef) );
+			SetFaceTexdef (selBrush, selFace, texdef, brushprimit_texdef, bFitScale);
 			Brush_Build(selBrush, bFitScale);
 			Undo_EndBrush(selBrush);
 		}
@@ -543,7 +543,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprim
 			if (!b->owner->eclass->fixedsize)
 			{
 				Undo_AddBrush(b);
-				Brush_SetTexture (b, texdef, brushprimit_texdef, bFitScale, static_cast<IPluginTexdef *>(pPlugTexdef) );
+				Brush_SetTexture (b, texdef, brushprimit_texdef, bFitScale );
 				Undo_EndBrush(b);
 			}
 		Undo_End();

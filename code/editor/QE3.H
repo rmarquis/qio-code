@@ -57,7 +57,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "select.h"
 
 #include "camera.h"
-#include "xy.h"
 #include "z.h"
 #include "mru.h"
 
@@ -164,7 +163,6 @@ struct QEGlobals_t
 	
 	int	         d_pointfile_display_list;
 	
-	xy_t         d_xyOld;
 	
 	LPMRUMENU    d_lpMruMenu;
 	
@@ -398,7 +396,7 @@ void Patch_Select(patchMesh_c *p);
 void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool bRebuilt = true);
 void Patch_Cleanup();
 void Patch_SetView(int n);
-void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef = NULL);
+void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def);
 void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
 bool Patch_DragScale(patchMesh_c *p, const edVec3_c &vAmt, const edVec3_c &vMove);
 void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
@@ -501,6 +499,8 @@ extern CStringArray g_BSPFrontendCommands;
 class mtrAPI_i * Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
 class mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 
+
+BOOL FilterBrush(brush_s *pb);
 
 
 #endif

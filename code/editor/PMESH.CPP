@@ -2744,7 +2744,7 @@ Patch_SetTexture
 ==================
 */
 // FIXME: need array validation throughout
-void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def, IPluginTexdef* pPlugTexdef)
+void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def)
 {
 	p->d_texture = QERApp_TryTextureForName(tex_def->name);
 	UpdatePatchInspector();
