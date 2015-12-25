@@ -70,7 +70,6 @@ public:
 	BOOL	m_bAutoSave;
   BOOL  m_bNewApplyHandling;
 	CString	m_strAutoSave;
-	BOOL	m_bPAK;
 	BOOL	m_bLoadLastMap;
 	BOOL	m_bGatewayHack;
 	BOOL	m_bTextureWindow;

@@ -132,7 +132,6 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
 	m_bAutoSave = TRUE;
   m_bNewApplyHandling = FALSE;
 	m_strAutoSave = _T("5");
-	m_bPAK = FALSE;
 	m_bLoadLastMap = FALSE;
 	m_bTextureWindow = FALSE;
 	m_bSnapShots = FALSE;
@@ -200,7 +199,7 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_VERTEX, m_bVertex);
 	DDX_Check(pDX, IDC_CHECK_AUTOSAVE, m_bAutoSave);
 	DDX_Text(pDX, IDC_EDIT_AUTOSAVE, m_strAutoSave);
-	DDX_Check(pDX, IDC_CHECK_PAK, m_bPAK);
+///	DDX_Check(pDX, IDC_CHECK_PAK, m_bPAK);
 	DDX_Check(pDX, IDC_CHECK_LOADLASTMAP, m_bLoadLastMap);
 	DDX_Check(pDX, IDC_CHECK_TEXTUREWINDOW, m_bTextureWindow);
 	DDX_Check(pDX, IDC_CHECK_SNAPSHOTS, m_bSnapShots);
@@ -319,7 +318,7 @@ void CPrefsDlg::LoadPrefs()
   m_bRightClick = AfxGetApp()->GetProfileInt(PREF_SECTION, RCLICK_KEY, 1);
   m_bVertex = AfxGetApp()->GetProfileInt(PREF_SECTION, VERTEX_KEY, 1);
   m_bAutoSave = AfxGetApp()->GetProfileInt(PREF_SECTION, AUTOSAVE_KEY, 1);
-  m_bPAK = AfxGetApp()->GetProfileInt(PREF_SECTION, PAK_KEY, 1);
+///  m_bPAK = AfxGetApp()->GetProfileInt(PREF_SECTION, PAK_KEY, 1);
   m_bNewApplyHandling = AfxGetApp()->GetProfileInt(PREF_SECTION, NEWAPPLY_KEY, 0);
   m_bLoadLastMap = AfxGetApp()->GetProfileInt(PREF_SECTION, LOADLASTMAP_KEY, 0);
   m_bGatewayHack = AfxGetApp()->GetProfileInt(PREF_SECTION, HACK_KEY, 0);
@@ -399,7 +398,7 @@ void CPrefsDlg::SavePrefs()
   AfxGetApp()->WriteProfileInt(PREF_SECTION, RCLICK_KEY, m_bRightClick);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, VERTEX_KEY, m_bVertex);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, AUTOSAVE_KEY, m_bAutoSave);
-  AfxGetApp()->WriteProfileInt(PREF_SECTION, PAK_KEY, m_bPAK);
+//  AfxGetApp()->WriteProfileInt(PREF_SECTION, PAK_KEY, m_bPAK);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, LOADLASTMAP_KEY, m_bLoadLastMap);
   AfxGetApp()->WriteProfileInt(PREF_SECTION, TEXTURE_KEY, m_bTextureWindow);
   m_nAutoSave = atoi(m_strAutoSave);

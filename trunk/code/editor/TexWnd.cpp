@@ -860,82 +860,82 @@ FillTextureMenu
 */
 void FillTextureMenu (CStringArray* pArray)
 {
-	HMENU	hmenu;
-	int		i;
-	struct _finddata_t fileinfo;
-	int		handle;
-	char	dirstring[1024];
-	char	*path;
-	DIRLIST	*list = NULL, *temp;
+	//HMENU	hmenu;
+	//int		i;
+	//struct _finddata_t fileinfo;
+	//int		handle;
+	//char	dirstring[1024];
+	//char	*path;
+	//DIRLIST	*list = NULL, *temp;
 
-	hmenu = GetSubMenu (GetMenu(g_qeglobals.d_hwndMain), MENU_TEXTURE);
+	//hmenu = GetSubMenu (GetMenu(g_qeglobals.d_hwndMain), MENU_TEXTURE);
 
-	// delete everything
-	for (i=0 ; i<texture_nummenus ; i++)
-		DeleteMenu (hmenu, CMD_TEXTUREWAD+i, MF_BYCOMMAND);
+	//// delete everything
+	//for (i=0 ; i<texture_nummenus ; i++)
+	//	DeleteMenu (hmenu, CMD_TEXTUREWAD+i, MF_BYCOMMAND);
 
-  texture_nummenus = 0;
+ // texture_nummenus = 0;
 
-	// add everything
-  if (g_qeglobals.d_project_entity)
-  {
-    //if (g_PrefsDlg.m_bUseShaders)
-    //{
-	   // path = ValueForKey (g_qeglobals.d_project_entity, "basepath");
-	   // sprintf (dirstring, "%s/scripts/*.shader", path);
-    //
-    //}
-    //--else
-    //--{
-	    path = ValueForKey (g_qeglobals.d_project_entity, "texturepath");
-	    sprintf (dirstring, "%s/*.*", path);
-    //--}
+	//// add everything
+ // if (g_qeglobals.d_project_entity)
+ // {
+ //   //if (g_PrefsDlg.m_bUseShaders)
+ //   //{
+	//   // path = ValueForKey (g_qeglobals.d_project_entity, "basepath");
+	//   // sprintf (dirstring, "%s/scripts/*.shader", path);
+ //   //
+ //   //}
+ //   //--else
+ //   //--{
+	//    path = ValueForKey (g_qeglobals.d_project_entity, "texturepath");
+	//    sprintf (dirstring, "%s/*.*", path);
+ //   //--}
 
-	  handle = _findfirst (dirstring, &fileinfo);
-	  if (handle != -1)
-    {
-	    do
-	    {
-        //--if (g_PrefsDlg.m_bUseShaders)
-        //--{
-		    //--  if ((fileinfo.attrib & _A_SUBDIR))
-        //--    continue;
-        //--}
-        //--else
-        //--{
-		      if (!(fileinfo.attrib & _A_SUBDIR))
-		        continue;
-		      if (fileinfo.name[0] == '.')
-		        continue;
-        //--}
-        // add this directory to the menu
-	      AddToDirListAlphabetized(&list, fileinfo.name, FROMDISK);
-	    } while (_findnext( handle, &fileinfo ) != -1);
+	//  handle = _findfirst (dirstring, &fileinfo);
+	//  if (handle != -1)
+ //   {
+	//    do
+	//    {
+ //       //--if (g_PrefsDlg.m_bUseShaders)
+ //       //--{
+	//	    //--  if ((fileinfo.attrib & _A_SUBDIR))
+ //       //--    continue;
+ //       //--}
+ //       //--else
+ //       //--{
+	//	      if (!(fileinfo.attrib & _A_SUBDIR))
+	//	        continue;
+	//	      if (fileinfo.name[0] == '.')
+	//	        continue;
+ //       //--}
+ //       // add this directory to the menu
+	//      AddToDirListAlphabetized(&list, fileinfo.name, FROMDISK);
+	//    } while (_findnext( handle, &fileinfo ) != -1);
 
-	    _findclose (handle);
-    }
+	//    _findclose (handle);
+ //   }
 
-    //--if (!g_PrefsDlg.m_bUseShaders)
-    //--{
-      GetPackTextureDirs(&list);
-    //--}
+ //   //--if (!g_PrefsDlg.m_bUseShaders)
+ //   //--{
+ //     GetPackTextureDirs(&list);
+ //   //--}
 
-	  for(temp = list; temp; temp = temp->next)
-	  {
-		  AppendMenu (hmenu, MF_ENABLED|MF_STRING, CMD_TEXTUREWAD+texture_nummenus, (LPCTSTR)temp->dirname);
-		  strcpy (texture_menunames[texture_nummenus], temp->dirname);
-      //--if (!g_PrefsDlg.m_bUseShaders)
-      //--{
-		    strcat (texture_menunames[texture_nummenus], "/");
-      //--}
-      if (pArray)
-        pArray->Add(temp->dirname);
-		  if (++texture_nummenus == MAX_TEXTUREDIRS)
-		   break;
-	  }
+	//  for(temp = list; temp; temp = temp->next)
+	//  {
+	//	  AppendMenu (hmenu, MF_ENABLED|MF_STRING, CMD_TEXTUREWAD+texture_nummenus, (LPCTSTR)temp->dirname);
+	//	  strcpy (texture_menunames[texture_nummenus], temp->dirname);
+ //     //--if (!g_PrefsDlg.m_bUseShaders)
+ //     //--{
+	//	    strcat (texture_menunames[texture_nummenus], "/");
+ //     //--}
+ //     if (pArray)
+ //       pArray->Add(temp->dirname);
+	//	  if (++texture_nummenus == MAX_TEXTUREDIRS)
+	//	   break;
+	//  }
 
-	  ClearDirList(&list);
-  }
+	//  ClearDirList(&list);
+ // }
 
 
 }
@@ -968,131 +968,131 @@ Texture_ShowDirectory
 */
 void	Texture_ShowDirectory (int menunum, bool bLinked)
 {
-	struct _finddata_t fileinfo;
-	int		handle;
-	char	name[1024];
-	char	dirstring[1024];
-	char	linkstring[1024];
-	FILELIST			*list = NULL, *temp;
-  CString strTemp;
-
-  //Texture_Flush(false);
-	//Select_Deselect();
-	Texture_ClearInuse();
-	texture_showinuse = false;
-	strcpy (texture_directory, texture_menunames[menunum-CMD_TEXTUREWAD]);
-
-  //if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
-  //{
-  //  if (g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
-  //    return;
-  //}
-
-  // new
-/*
-  if (!g_PrefsDlg.m_bShaderTest)
-  {
-	g_dontuse = true;	// needed because this next piece of code calls Texture_ForName() internally! -slc
-    LoadDeferred(texture_directory);
-    g_dontuse = false;
-  }
-*/
-
-
-	g_qeglobals.d_texturewin.originy = 0;
-
-  //--if (g_PrefsDlg.m_bUseShaders)
-  //--{
-  //--  sprintf (dirstring, "%s/scripts/%s", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_directory);
-	//--  Sys_Printf("loading textures from shader %s\n", dirstring);
-  //--  LoadShader(dirstring);
-  //--}
-  //--else
-  //--{
-	  Sys_Status("Loading textures\n", 0);
-
-	  // load all image files
-                                          
-    sprintf (linkstring, "%s/textures/%stextureinfo.ini", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_menunames[menunum-CMD_TEXTUREWAD]);
-
-    for (int nExt = 0; nExt < GetTextureExtensionCount(); nExt++)
-    {
-      sprintf (dirstring, "%s/textures/%s*.%s", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
-      Sys_Printf ("Scanning %s\n", dirstring);
-	    handle = _findfirst (dirstring, &fileinfo);
-
-      if (handle == -1)
-      {
-        sprintf(dirstring, "%s/%s*.%s", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
-        handle = _findfirst (dirstring, &fileinfo);
-      }
-      if (handle != -1)
-	    {
-		    do
-  		  {
-	  		  sprintf (name, "%s%s", texture_directory, fileinfo.name);
-		  	  AddToFileListAlphabetized(&list, name, FROMDISK, 0, false);
-  		  } while (_findnext( handle, &fileinfo ) != -1);
-	  	  _findclose (handle);
-  	  }
-	    else
-	    {
-	      sprintf (dirstring, "%s*.%s", texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
-  		  GetPackFileList(&list, dirstring);
-	    }
-    }
-
-	  g_dontuse = true;
-	  for(temp = list; temp; temp = temp->next)
-	  {
-		  if(temp->offset == -1)
-			  sprintf(name, "%s", temp->filename);
-		  else
-			  sprintf(name, "%s%s", texture_menunames[menunum-CMD_TEXTUREWAD], temp->filename);
-		  StripExtension (name);
-      strTemp = name;
-      strTemp.MakeLower();
-      if ( strTemp.Find(".specular") >= 0 ||
-           strTemp.Find(".glow") >= 0 ||
-           strTemp.Find(".bump") >= 0 ||
-           strTemp.Find(".diffuse") >= 0 ||
-           strTemp.Find(".blend") >= 0 ||
-           strTemp.Find(".alpha") >= 0
-         )
-        continue;
-      else
-      {
-		    Texture_ForName (name, true);
-      }
-	  }
-
-	  ClearFileList(&list);
-  //--}
-
-
-	g_dontuse = false;
-
-  if (!bLinked)
-  {
-
-    for (int k = 0; k < 10; k++)
-    {
-      sprintf(name, "Path%d", k);
-      if (GetPrivateProfileString("Include", name, "", dirstring, 1024, linkstring) > 0)
-      {
-        Texture_ShowDirectory(dirstring, true);
-      }
-    }
-
-    SortTextures();
-	  
-    sprintf (name, "Textures: %s", texture_directory);
-	  SetWindowText(g_qeglobals.d_hwndEntity, name);
-
-	  // select the first texture in the list
-	  if (!g_qeglobals.d_texturewin.texdef.name[0])
-		  SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
-  }
+//	struct _finddata_t fileinfo;
+//	int		handle;
+//	char	name[1024];
+//	char	dirstring[1024];
+//	char	linkstring[1024];
+//	FILELIST			*list = NULL, *temp;
+//  CString strTemp;
+//
+//  //Texture_Flush(false);
+//	//Select_Deselect();
+//	Texture_ClearInuse();
+//	texture_showinuse = false;
+//	strcpy (texture_directory, texture_menunames[menunum-CMD_TEXTUREWAD]);
+//
+//  //if (g_pParentWnd->GetPlugInMgr().GetTextureInfo() != NULL)
+//  //{
+//  //  if (g_pParentWnd->GetPlugInMgr().GetTextureInfo()->m_bWadStyle)
+//  //    return;
+//  //}
+//
+//  // new
+///*
+//  if (!g_PrefsDlg.m_bShaderTest)
+//  {
+//	g_dontuse = true;	// needed because this next piece of code calls Texture_ForName() internally! -slc
+//    LoadDeferred(texture_directory);
+//    g_dontuse = false;
+//  }
+//*/
+//
+//
+//	g_qeglobals.d_texturewin.originy = 0;
+//
+//  //--if (g_PrefsDlg.m_bUseShaders)
+//  //--{
+//  //--  sprintf (dirstring, "%s/scripts/%s", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_directory);
+//	//--  Sys_Printf("loading textures from shader %s\n", dirstring);
+//  //--  LoadShader(dirstring);
+//  //--}
+//  //--else
+//  //--{
+//	  Sys_Status("Loading textures\n", 0);
+//
+//	  // load all image files
+//                                          
+//    sprintf (linkstring, "%s/textures/%stextureinfo.ini", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_menunames[menunum-CMD_TEXTUREWAD]);
+//
+//    for (int nExt = 0; nExt < GetTextureExtensionCount(); nExt++)
+//    {
+//      sprintf (dirstring, "%s/textures/%s*.%s", ValueForKey (g_qeglobals.d_project_entity, "basepath"), texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
+//      Sys_Printf ("Scanning %s\n", dirstring);
+//	    handle = _findfirst (dirstring, &fileinfo);
+//
+//      if (handle == -1)
+//      {
+//        sprintf(dirstring, "%s/%s*.%s", ValueForKey (g_qeglobals.d_project_entity, "texturepath"), texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
+//        handle = _findfirst (dirstring, &fileinfo);
+//      }
+//      if (handle != -1)
+//	    {
+//		    do
+//  		  {
+//	  		  sprintf (name, "%s%s", texture_directory, fileinfo.name);
+//		  	  AddToFileListAlphabetized(&list, name, FROMDISK, 0, false);
+//  		  } while (_findnext( handle, &fileinfo ) != -1);
+//	  	  _findclose (handle);
+//  	  }
+//	    else
+//	    {
+//	      sprintf (dirstring, "%s*.%s", texture_menunames[menunum-CMD_TEXTUREWAD],GetTextureExtension(nExt));
+//  		  GetPackFileList(&list, dirstring);
+//	    }
+//    }
+//
+//	  g_dontuse = true;
+//	  for(temp = list; temp; temp = temp->next)
+//	  {
+//		  if(temp->offset == -1)
+//			  sprintf(name, "%s", temp->filename);
+//		  else
+//			  sprintf(name, "%s%s", texture_menunames[menunum-CMD_TEXTUREWAD], temp->filename);
+//		  StripExtension (name);
+//      strTemp = name;
+//      strTemp.MakeLower();
+//      if ( strTemp.Find(".specular") >= 0 ||
+//           strTemp.Find(".glow") >= 0 ||
+//           strTemp.Find(".bump") >= 0 ||
+//           strTemp.Find(".diffuse") >= 0 ||
+//           strTemp.Find(".blend") >= 0 ||
+//           strTemp.Find(".alpha") >= 0
+//         )
+//        continue;
+//      else
+//      {
+//		    Texture_ForName (name, true);
+//      }
+//	  }
+//
+//	  ClearFileList(&list);
+//  //--}
+//
+//
+//	g_dontuse = false;
+//
+//  if (!bLinked)
+//  {
+//
+//    for (int k = 0; k < 10; k++)
+//    {
+//      sprintf(name, "Path%d", k);
+//      if (GetPrivateProfileString("Include", name, "", dirstring, 1024, linkstring) > 0)
+//      {
+//        Texture_ShowDirectory(dirstring, true);
+//      }
+//    }
+//
+//    SortTextures();
+//	  
+//    sprintf (name, "Textures: %s", texture_directory);
+//	  SetWindowText(g_qeglobals.d_hwndEntity, name);
+//
+//	  // select the first texture in the list
+//	  if (!g_qeglobals.d_texturewin.texdef.name[0])
+//		  SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
+//  }
 }
 
 
@@ -1100,100 +1100,100 @@ void	Texture_ShowDirectory (int menunum, bool bLinked)
 //
 void	Texture_ShowDirectory (char* pPath, bool bLinked)
 {
-	struct _finddata_t fileinfo;
-	int		handle;
-	char	name[1024];
-	char	dirstring[1024];
-	char	linkstring[1024];
-	FILELIST			*list = NULL, *temp;
+	//struct _finddata_t fileinfo;
+	//int		handle;
+	//char	name[1024];
+	//char	dirstring[1024];
+	//char	linkstring[1024];
+	//FILELIST			*list = NULL, *temp;
 
-  //Texture_Flush(false);
+ // //Texture_Flush(false);
 
-	texture_showinuse = false;
-	Texture_ClearInuse();
-	strcpy (texture_directory, pPath);
-
-
-
-	g_qeglobals.d_texturewin.originy = 0;
-	Sys_Status("loading all textures\n", 0);
-
-	// load all .wal files
-  for (int nExt = 0; nExt < GetTextureExtensionCount(); nExt++)
-  {
-    sprintf(dirstring, "%s*.%s", pPath,GetTextureExtension(nExt));
-                                          
-	  Sys_Printf ("Scanning %s\n", dirstring);
-
-	  handle = _findfirst (dirstring, &fileinfo);
-
-    if (handle != -1)
-	  {
-		  do
-		  {
-			  sprintf (name, "%s%s", texture_directory, fileinfo.name);
-			  AddToFileListAlphabetized(&list, name, FROMDISK, 0, false);
-		  } while (_findnext( handle, &fileinfo ) != -1);
-		  _findclose (handle);
-	  }
-	  else
-	  {
-		  //sprintf (dirstring, "%s*.wal", texture_menunames[menunum-CMD_TEXTUREWAD]);
-		  //if(!GetPackFileList(&list, dirstring))
-			  return;
-	  }
-  }
-
-	g_dontuse = true;
-	for(temp = list; temp; temp = temp->next)
-	{
-		if(temp->offset == -1)
-			sprintf(name, "%s", temp->filename);
-		else
-		  sprintf(name, "%s%s", pPath, temp->filename);
-		StripExtension (name);
-
-    int nLen = strlen(name)-1;
-    ASSERT(nLen > 0);
-    while (name[nLen] != '\\')
-      nLen--;
-    // found first one
-    nLen--;
-    ASSERT(nLen > 0);
-    while (name[nLen] != '\\')
-      nLen--;
-    ASSERT(nLen >= 0);
-    QE_ConvertDOSToUnixName(name, name);
-    Texture_ForName(&name[nLen+1]);
-
-	}
-
-	ClearFileList(&list);
-
-	g_dontuse = false;
-
-  SortTextures();
-
-  if (!bLinked)
-  {
-
-    for (int k = 0; k < 10; k++)
-    {
-      sprintf(name, "Path%d", k);
-      if (GetPrivateProfileString("Include", name, "", dirstring, 1024, linkstring) > 0)
-      {
-        Texture_ShowDirectory(dirstring, true);
-      }
-    }
+	//texture_showinuse = false;
+	//Texture_ClearInuse();
+	//strcpy (texture_directory, pPath);
 
 
-	  sprintf (name, "Textures: %s", texture_directory);
-	  SetWindowText(g_qeglobals.d_hwndEntity, name);
 
-	  // select the first texture in the list
-	  if (!g_qeglobals.d_texturewin.texdef.name[0])
-		  SelectTexture (16, g_qeglobals.d_texturewin.height -16 ,false);
-  }
+	//g_qeglobals.d_texturewin.originy = 0;
+	//Sys_Status("loading all textures\n", 0);
+
+	//// load all .wal files
+ // for (int nExt = 0; nExt < GetTextureExtensionCount(); nExt++)
+ // {
+ //   sprintf(dirstring, "%s*.%s", pPath,GetTextureExtension(nExt));
+ //                                         
+	//  Sys_Printf ("Scanning %s\n", dirstring);
+
+	//  handle = _findfirst (dirstring, &fileinfo);
+
+ //   if (handle != -1)
+	//  {
+	//	  do
+	//	  {
+	//		  sprintf (name, "%s%s", texture_directory, fileinfo.name);
+	//		  AddToFileListAlphabetized(&list, name, FROMDISK, 0, false);
+	//	  } while (_findnext( handle, &fileinfo ) != -1);
+	//	  _findclose (handle);
+	//  }
+	//  else
+	//  {
+	//	  //sprintf (dirstring, "%s*.wal", texture_menunames[menunum-CMD_TEXTUREWAD]);
+	//	  //if(!GetPackFileList(&list, dirstring))
+	//		  return;
+	//  }
+ // }
+
+	//g_dontuse = true;
+	//for(temp = list; temp; temp = temp->next)
+	//{
+	//	if(temp->offset == -1)
+	//		sprintf(name, "%s", temp->filename);
+	//	else
+	//	  sprintf(name, "%s%s", pPath, temp->filename);
+	//	StripExtension (name);
+
+ //   int nLen = strlen(name)-1;
+ //   ASSERT(nLen > 0);
+ //   while (name[nLen] != '\\')
+ //     nLen--;
+ //   // found first one
+ //   nLen--;
+ //   ASSERT(nLen > 0);
+ //   while (name[nLen] != '\\')
+ //     nLen--;
+ //   ASSERT(nLen >= 0);
+ //   QE_ConvertDOSToUnixName(name, name);
+ //   Texture_ForName(&name[nLen+1]);
+
+	//}
+
+	//ClearFileList(&list);
+
+	//g_dontuse = false;
+
+ // SortTextures();
+
+ // if (!bLinked)
+ // {
+
+ //   for (int k = 0; k < 10; k++)
+ //   {
+ //     sprintf(name, "Path%d", k);
+ //     if (GetPrivateProfileString("Include", name, "", dirstring, 1024, linkstring) > 0)
+ //     {
+ //       Texture_ShowDirectory(dirstring, true);
+ //     }
+ //   }
+
+
+	//  sprintf (name, "Textures: %s", texture_directory);
+	//  SetWindowText(g_qeglobals.d_hwndEntity, name);
+
+	//  // select the first texture in the list
+	//  if (!g_qeglobals.d_texturewin.texdef.name[0])
+	//	  SelectTexture (16, g_qeglobals.d_texturewin.height -16 ,false);
+ // }
 }
 
 
@@ -1496,10 +1496,6 @@ void ViewShader(const char *pFile, const char *pName)
   CString str;
   char* pBuff = NULL;
   int nSize = LoadFile(pFile, reinterpret_cast<void**>(&pBuff));
-  if (nSize == -1)
-  {
-    nSize = PakLoadAnyFile(pFile, reinterpret_cast<void**>(&pBuff));
-  }
   if (nSize > 0)
   {
     str = pBuff;
