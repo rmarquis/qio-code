@@ -132,8 +132,6 @@ typedef struct qtexture_s
 	int		width,  height;
 	int		contents;
 	int		flags;
-	int		value;
-	unsigned int		texture_number;	// gl bind number
 
 	// name of the .shader file
 	char  shadername[1024]; // old shader stuff

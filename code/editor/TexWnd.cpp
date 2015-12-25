@@ -38,6 +38,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 #include "qgl.h"
 #include <api/rAPI.h>
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/textureAPI.h>
 Str m_gStr;
 
 #ifdef _DEBUG
@@ -351,249 +354,8 @@ void R_MipMap (byte *in, int &width, int &height)
 }
 
 
-/*
-=================
-Texture_LoadTexture
-=================
-*/
-qtexture_t *Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue )
-{
-  int i, j, inf;
-	byte	gammatable[256];
-	float fGamma = g_qeglobals.d_savedinfo.fGamma;
-
-
-  qtexture_t* q = (qtexture_t*)qmalloc(sizeof(*q));
-  q->width = nWidth;
-  q->height = nHeight;
-	q->flags = nFlags;
-	q->value = nValue;
-	q->contents = nContents;
-
-  int nCount = nWidth * nHeight;
-  float total[3];
-  total[0] = total[1] = total[2] = 0.0f;
-
-  //++timo FIXME: move gamma table initialization somewhere else!
-	if (fGamma == 1.0)
-	{
-		for (i=0 ; i<256 ; i++)
-			gammatable[i] = i;
-	}
-	else
-	{
-		for (i=0 ; i<256 ; i++)
-		{
-			inf = 255 * pow ( (float)( (i+0.5)/255.5 ), fGamma ) + 0.5;
-			if (inf < 0)
-				inf = 0;
-			if (inf > 255)
-				inf = 255;
-			gammatable[i] = inf;
-		}
-	}
-
-
-  // all targas are stored internally as 32bit so rgba = 4 bytes
-  for (i = 0 ; i < (nCount * 4) ; i += 4)
-	{
-    for (j = 0; j < 3; j++)
-    {
-	    total[j] += (pPixels+i)[j];
-      byte b = (pPixels+i)[j];
-      (pPixels+i)[j] = gammatable[b];
-              
-    }
-	}
-
-	q->color[0] = total[0] / (nCount * 255);
-	q->color[1] = total[1] / (nCount * 255);
-	q->color[2] = total[2] / (nCount * 255);
-
-q->texture_number = 0;
-	//glGenTextures(1,& q->texture_number);
-	//textureNumbers.push_back(q->texture_number);
-
-
-
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-    //if (!qwglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
-    if (!wglMakeCurrent(s_hdcTexture, s_hglrcTexture))
-		  Error ("wglMakeCurrent in LoadTexture failed");
-  }
-
-  glBindTexture( GL_TEXTURE_2D, q->texture_number );
-
-  //Handle3DfxTexturing(q, width, height, dest);
-
-  SetTexParameters();
-
-  nCount = MAX_TEXTURE_QUALITY - g_PrefsDlg.m_nTextureQuality;
-  while (nCount-- > 0)
-  {
-    if (nWidth > 16 && nHeight > 16)
-    {
-      R_MipMap(pPixels, nWidth, nHeight);
-    }
-    else
-    {
-      break;
-    }
-  }
-
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-	  //if (nomips)
-   // {
-		  glTexImage2D(GL_TEXTURE_2D, 0, 4, nWidth, nHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pPixels);
-  /*  }
-	  else
-		  gluBuild2DMipmaps(GL_TEXTURE_2D, 4, nWidth, nHeight,GL_RGBA, GL_UNSIGNED_BYTE, pPixels);*/
-  }
-  else
-  {
-	  //if (nomips)
-		  glTexImage2D(GL_TEXTURE_2D, 0, 4, nWidth, nHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pPixels);
-/*	  else
-		  gluBuild2DMipmaps(GL_TEXTURE_2D, 4, nWidth, nHeight,GL_RGBA, GL_UNSIGNED_BYTE, pPixels);*/
-  }
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-  return q;
-}
-
-
-qtexture_t *Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char *pPath)
-{
-  CString strName;
-  CString strPath;
-  ExtractPath_and_Filename(pPath, strPath, strName);
-  AddSlash(strPath);
-  strPath += "textureinfo.ini";
-  strName.MakeLower();
-  StripExtension (strName.GetBuffer(0));
-  strName.ReleaseBuffer();
-  
-  int nFlags = GetPrivateProfileInt(strName, "Flags", 0, strPath);
-  int nValue = GetPrivateProfileInt(strName, "Value", 0, strPath);
-  int nContents = GetPrivateProfileInt(strName, "Contents", 0, strPath);
-  return Texture_LoadTGATexture(pPixels, nWidth, nHeight, pPath, nFlags, nValue, nContents);
-}
-
-
 void Texture_LoadFromPlugIn(LPVOID vp)
 {
-
-}
-
-
-/*
-===============
-Texture_CreateSolid
-
-Create a single pixel texture of the apropriate color
-===============
-*/
-qtexture_t *Texture_CreateSolid (const char *name)
-{
-	byte	data[4];
-	qtexture_t	*q;
-
-  q = (qtexture_t*)qmalloc(sizeof(*q));
-
-
-	
-	sscanf (name, "(%f %f %f)", &q->color[0], &q->color[1], &q->color[2]);
-
-	data[0] = q->color[0]*255;
-	data[1] = q->color[1]*255;
-	data[2] = q->color[2]*255;
-	data[3] = 255;
-
-	q->width = q->height = 1;
-	//q->width = q->height = 2;
-	q->texture_number = 0;
-	//glGenTextures(1,& q->texture_number);
-	//textureNumbers.push_back(q->texture_number);
-	//glBindTexture( GL_TEXTURE_2D, q->texture_number );
-	//SetTexParameters ();
-//
-//  if (g_PrefsDlg.m_bSGIOpenGL)
-//  {
-//		glTexImage2D(GL_TEXTURE_2D, 0, 3, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-//  }
-//  else
-//  {
-//	//  if (nomips)
-//		  glTexImage2D(GL_TEXTURE_2D, 0, 3, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-////	  else
-//	//	  gluBuild2DMipmaps(GL_TEXTURE_2D, 3, 1, 1,GL_RGBA, GL_UNSIGNED_BYTE, data);
-//  }
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	return q;
-}
-
-
-/*
-=================
-Texture_MakeDefault
-=================
-*/
-qtexture_t* Texture_MakeDefault (void)
-{
-  qtexture_t	*q;
-  byte		data[4][4];
-
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-    if (s_hdcTexture && s_hglrcTexture)
-    { 
-       //if (!qwglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
-       if (!wglMakeCurrent(s_hdcTexture, s_hglrcTexture))
-		     Error ("wglMakeCurrent in LoadTexture failed");
-    }
-    else
-      return NULL;
-  }
-
-  q = (qtexture_t*)qmalloc(sizeof(*q));
-  
-  strcpy (q->name, "notexture");
-  q->width = q->height = 64;
-  
-  memset (data, 0, sizeof(data));
-  data[0][2] = data[3][2] = 255;
-  
-  q->color[0] = 0;
-  q->color[1] = 0;
-  q->color[2] = 0.5;
-q->texture_number = 0;
-	//glGenTextures(1,& q->texture_number);
-	//textureNumbers.push_back(q->texture_number);
- // glBindTexture( GL_TEXTURE_2D, q->texture_number );
- // SetTexParameters ();
-
-//	if (nomips)
-//		glTexImage2D(GL_TEXTURE_2D, 0, 3, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-////	else
-////		VERIFY(gluBuild2DMipmaps(GL_TEXTURE_2D, 3, 2, 2,GL_RGBA, GL_UNSIGNED_BYTE, data) == 0);
-//
-//  glBindTexture( GL_TEXTURE_2D, 0 );
-  return q;
-}
-
-
-/*
-=================
-Texture_MakeNotexture
-=================
-*/
-void Texture_MakeNotexture (void)
-{
-  notexture = Texture_MakeDefault();
 
 }
 
@@ -652,50 +414,6 @@ void Texture_Remove(qtexture_t *q)
 
   free(q);
 
-}
-
-/*
-=================
-Texture_MakeNoShadertexture
-
-Make a default black/red check pattern texture
-=================
-*/
-qtexture_t * Texture_MakeNoshadertexture( const char *name )
-{
-	qtexture_t	*q;
-	byte		data[4][4];
-
-	notexture = q = (qtexture_t*)qmalloc(sizeof(*q));
-	q->width = q->height = 64;
-	q->fTrans = 1;
-
-	q = (qtexture_t*)qmalloc(sizeof(*q));
-  strcpy (q->name, name);
-
-	q->width = q->height = 64;
-	q->fTrans = 1;
-
-	memset (data, 0, sizeof(data));
-	data[0][0] = data[3][0] = 255;
-
-	q->color[0] = 0;
-	q->color[1] = 0;
-	q->color[2] = 0.5;
-q->texture_number = 0;
-	//glGenTextures(1,& q->texture_number);
-	//textureNumbers.push_back(q->texture_number);
-	//glBindTexture( GL_TEXTURE_2D, q->texture_number );
-	//SetTexParameters ();
-
-	////if (nomips)
-	////	glTexImage2D(GL_TEXTURE_2D, 0, 3, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	////else
-	//	VERIFY(gluBuild2DMipmaps(GL_TEXTURE_2D, 3, 2, 2,GL_RGBA, GL_UNSIGNED_BYTE, data) == 0);
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	return q;
 }
 
 
@@ -1186,6 +904,7 @@ qtexture_t *Texture_NextPos (int *x, int *y)
 		q = current_texture;
 		if (!q)
 			return q;
+		q->inuse = true;
 		current_texture = current_texture->next;
 		if (q->name[0] == '(')	// fake color texture
 			continue;
@@ -1450,7 +1169,7 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 				tex.scale[1] = 0.5;
 			}
 			tex.flags = q->flags;
-			tex.value = q->value;
+			tex.value = 0;//q->value;
 			tex.contents = q->contents;
 			//strcpy (tex.name, q->name);
 			tex.SetName(q->name);
@@ -1585,7 +1304,7 @@ void Texture_Draw2 (int width, int height)
 		{
 
 			// if in use, draw a background
-			if ((q->inuse && !texture_showinuse) || q->bFromShader)
+		//	if ((q->inuse && !texture_showinuse) || q->bFromShader)
 			{
 				glLineWidth (1);
 
@@ -1612,7 +1331,8 @@ void Texture_Draw2 (int width, int height)
 			// Draw the texture
 			float fScale =  ((float)g_PrefsDlg.m_nTextureScale / 100);
 
-			glBindTexture( GL_TEXTURE_2D, q->texture_number );
+			if(q->qioMat && q->qioMat->getFirstColorMapStage() && q->qioMat->getFirstColorMapStage()->getTexture(0))
+				glBindTexture( GL_TEXTURE_2D, q->qioMat->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
 			QE_CheckOpenGLForErrors();
 			glColor3f (1,1,1);
 			glBegin (GL_QUADS);
@@ -1687,7 +1407,7 @@ void Texture_Init (bool bHardInit)
 
   if (bHardInit)
   {
-	  Texture_MakeNotexture();
+		notexture = Texture_ForName("default");
 	  g_qeglobals.d_qtextures = NULL;
   }
 }
@@ -1706,8 +1426,8 @@ void Texture_FlushUnused()
 
       if (!pTex->inuse)
       {
-        unsigned int nTexture = pTex->texture_number;
-        glDeleteTextures(1, &nTexture);
+     //// ...  unsigned int nTexture = pTex->texture_number;
+    ////    glDeleteTextures(1, &nTexture);
         pPrev->next = pNextTex;
 	      free(pTex);
       }
