@@ -1,3 +1,8 @@
+12-25-2015 Dusan Jocic <dusanjocic@msn.com>
+	* First part of cMake for cross-platform build system
+	* Reorganized library files and folder (moved all them into the external folder)
+	* Fixed compiling on VS2008
+
 12-24-2015 Dusan Jocic <dusanjocic@msn.com>
 	* Cleaned editor files
 	* Added support for reading "qer_keyword" inside script files
