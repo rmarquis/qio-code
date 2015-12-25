@@ -714,6 +714,7 @@ int main( int argc, char **argv )
 		while(COM_RunEditorFrame()==false) {
 		
 		}
+		Com_Shutdown();
 		return 0;
 	}
 	NET_Init( );
