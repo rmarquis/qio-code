@@ -133,9 +133,6 @@ struct qtexture_s
 {
 	struct	qtexture_s *next;
 
-	vec3_t	color;			    // for flat shade mode
-	bool	inuse;		    // true = is present on the level
-
 	
 	class mtrAPI_i *qioMat;
 

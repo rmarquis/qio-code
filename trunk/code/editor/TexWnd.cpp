@@ -518,12 +518,12 @@ A new map is being loaded, so clear inuse markers
 */
 void Texture_ClearInuse (void)
 {
-	qtexture_s	*q;
+	//qtexture_s	*q;
 
-	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
-    {
-		q->inuse = false;
-	}
+	//for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
+ //   {
+	//	q->inuse = false;
+	//}
 }
 
 
@@ -782,12 +782,12 @@ Texture_SetInuse
 */
 void Texture_SetInuse (void)
 {
-	qtexture_s	*q;
+	//qtexture_s	*q;
 
-	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
-  {
-		q->inuse = true;
-	}
+	//for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
+ // {
+	//	q->inuse = true;
+	//}
 }
 
 
@@ -891,7 +891,7 @@ qtexture_s *Texture_NextPos (int *x, int *y)
 		q = current_texture;
 		if (!q)
 			return q;
-		q->inuse = true;
+///		q->inuse = true;
 		current_texture = current_texture->next;
 		if (q->qioMat->getName()[0] == '(')	// fake color texture
 			continue;
@@ -915,12 +915,12 @@ qtexture_s *Texture_NextPos (int *x, int *y)
 		//	continue;
 		//}
 
-		if (q->inuse)
+	////	if (q->inuse)
 			break;			// always show in use
 
-		if (!texture_showinuse && !_strnicmp (q->qioMat->getName(), texture_directory, strlen(texture_directory)))
-			break;
-		continue;
+	////	if (!texture_showinuse && !_strnicmp (q->qioMat->getName(), texture_directory, strlen(texture_directory)))
+	//		break;
+	////	continue;
 	}
 
 	int nWidth = q->qioMat->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
@@ -1402,29 +1402,29 @@ void Texture_Init (bool bHardInit)
 void Texture_FlushUnused()
 {
   CWaitCursor cursor;
-  Texture_ShowInuse();
-  if (g_qeglobals.d_qtextures)
-  {
-	  qtexture_s* pTex = g_qeglobals.d_qtextures->next;
-    qtexture_s *pPrev = g_qeglobals.d_qtextures;
-    while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
-    {
-      qtexture_s* pNextTex = pTex->next;
+  //Texture_ShowInuse();
+  //if (g_qeglobals.d_qtextures)
+  //{
+	 // qtexture_s* pTex = g_qeglobals.d_qtextures->next;
+  //  qtexture_s *pPrev = g_qeglobals.d_qtextures;
+  //  while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
+  //  {
+  //    qtexture_s* pNextTex = pTex->next;
 
-      if (!pTex->inuse)
-      {
-     //// ...  unsigned int nTexture = pTex->texture_number;
-    ////    glDeleteTextures(1, &nTexture);
-        pPrev->next = pNextTex;
-	      free(pTex);
-      }
-      else
-      {
-        pPrev = pTex;
-      }
-      pTex = pNextTex;
-    }
-  }
+  //    if (!pTex->inuse)
+  //    {
+  //   //// ...  unsigned int nTexture = pTex->texture_number;
+  //  ////    glDeleteTextures(1, &nTexture);
+  //      pPrev->next = pNextTex;
+	 //     free(pTex);
+  //    }
+  //    else
+  //    {
+  //      pPrev = pTex;
+  //    }
+  //    pTex = pNextTex;
+  //  }
+  //}
 }
 
 void Texture_Cleanup(CStringList *pList)

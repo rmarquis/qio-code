@@ -312,9 +312,9 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 	}
 	else
 	{
-		f->d_color[0] = shade*q->color[0];
-		f->d_color[1] = shade*q->color[1];
-		f->d_color[2] = shade*q->color[2];
+		f->d_color[0] = shade*q->qioMat->getEditorColor()[0];
+		f->d_color[1] = shade*q->qioMat->getEditorColor()[1];
+		f->d_color[2] = shade*q->qioMat->getEditorColor()[2];
 	}
 }
 
