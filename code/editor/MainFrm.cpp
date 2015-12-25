@@ -1446,7 +1446,6 @@ void CMainFrame::OnDestroy()
   //  free(current_texture);
   ClosePakFile();
 
-  FreeShaders();
 
 	CFrameWnd::OnDestroy();
 }
@@ -4680,7 +4679,7 @@ void CMainFrame::OnCurveMatrixTranspose()
 void CMainFrame::OnTexturesReloadshaders() 
 {
   CWaitCursor wait;
-  ReloadShaders();
+  ///ReloadShaders();
   Sys_UpdateWindows (W_ALL);
 }
 

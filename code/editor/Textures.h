@@ -46,9 +46,6 @@ void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 void	Texture_SetMode(int iMenu);	// GL_TEXTURE_NEAREST, etc..
 void Texture_ResetPosition();
 
-void FreeShaders();
-void LoadShaders();
-void ReloadShaders();
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
 void Texture_LoadFromPlugIn(LPVOID vp);
 void Texture_StartPos (void);
