@@ -43,7 +43,7 @@ face_s*		Brush_Ray (const edVec3_c &origin, const edVec3_c &dir, brush_s *b, flo
 void		Brush_RemoveFromList (brush_s *b);
 void		Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **back);
 void		Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear);
-void		Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, IPluginTexdef* pPlugTexdef=NULL );
+void		Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 void		Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir, bool shear);
 void		Brush_SnapToGrid(brush_s *pb);
 void		Brush_Rotate(brush_s *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
@@ -62,7 +62,7 @@ face_s*		Face_Clone (face_s *f);
 void		Face_MakePlane (face_s *f);
 void		Face_Draw( face_s *face );
 void		Face_TextureVectors (face_s *f, float STfromXYZ[2][4]);
-void		SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, IPluginTexdef* pPlugTexdef = NULL );
+void		SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 
 void Face_FitTexture( face_s * face, int nHeight, int nWidth );
 void Brush_FitTexture( brush_s *b, int nHeight, int nWidth );

@@ -708,6 +708,9 @@ void CCamWnd::DrawLightRadius(brush_s* pBrush)
 }
 #endif
 
+BOOL FilterBrush(brush_s *pb);
+
+
 /*
 ==============
 Cam_Draw

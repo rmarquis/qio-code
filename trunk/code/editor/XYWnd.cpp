@@ -2416,14 +2416,14 @@ BOOL FilterBrush(brush_s *pb)
 		//	return TRUE;
 	}
 
-	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_WATER)
-	{
-		for (face_s* f = pb->brush_faces ; f ; f=f->next)
-    {
-      if (f->texdef.contents & (CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA))
-        return TRUE;
-    }
-	}
+	//if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_WATER)
+	//{
+	//	for (face_s* f = pb->brush_faces ; f ; f=f->next)
+ //   {
+ //     if (f->texdef.contents & (CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA))
+ //       return TRUE;
+ //   }
+	//}
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_DETAIL)
 	{

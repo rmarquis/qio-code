@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
-typedef enum
+enum select_t
 {
 	sel_brush,
 	// sel_sticky_brush,
@@ -30,17 +30,15 @@ typedef enum
 	sel_singlevertex,
 	sel_curvepoint,
 	sel_area,
+};
 
-
-} select_t;
-
-typedef struct
+struct trace_t
 {
 	brush_s		*brush;
 	face_s		*face;
 	float		dist;
 	bool	selected;
-} trace_t;
+};
 
 
 #define	SF_SELECTED_ONLY	 0x01
@@ -62,7 +60,7 @@ void Select_Deselect (bool bDeselectFaces = true);
 void Select_Invert(void);
 void Select_Clone (void);
 void Select_Move (vec3_t delta, bool bSnap = true);
-void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, void* pPlugTexdef = NULL);
+void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 void Select_FlipAxis (int axis);
 void Select_RotateAxis (int axis, float deg, bool bPaint = true, bool bMouse = false);
 void Select_CompleteTall (void);

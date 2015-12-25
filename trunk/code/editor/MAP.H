@@ -30,8 +30,6 @@ extern	brush_s	selected_brushes;	// highlighted
 
 extern CPtrArray& g_ptrSelectedFaces;
 extern CPtrArray& g_ptrSelectedFaceBrushes;
-//extern	face_s	*selected_face;
-//extern	brush_s	*selected_face_brush;
 extern	brush_s	filtered_brushes;	// brushes that have been filtered or regioned
 
 extern	entity_s	entities;

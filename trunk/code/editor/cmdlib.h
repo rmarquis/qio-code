@@ -48,7 +48,6 @@ typedef unsigned char byte;
 //typedef unsigned char byte;
 #endif
 
-void 	StripFilename (char *path);
 void 	StripExtension (char *path);
 void	ExtractFileName (const char *path, char *dest);
 void 	ExtractFileBase (const char *path, char *dest);
@@ -60,11 +59,6 @@ void* qblockmalloc(size_t nSize);
 
 
 void Error(const char *pFormat, ...);
-void Printf(const char *pFormat, ...);
-void ErrorNum(int n, const char *pFormat, ...);
-void PrintfNum(int n, const char *pFormat, ...);
-
-void ConvertDOSToUnixName( char *dst, const char *src );
 
 
 

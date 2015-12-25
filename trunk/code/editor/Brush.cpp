@@ -2648,7 +2648,7 @@ TTimo: surface plugin, added an IPluginTexdef* parameter
 		if NULL, ask for a default
 ===============
 */
-void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, IPluginTexdef* pPlugTexdef) {
+void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale) {
 	int		oldFlags;
 	int		oldContents;
 	face_s	*tf;
@@ -2699,18 +2699,18 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 }
 
 
-void Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, IPluginTexdef* pTexdef)
+void Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale)
 {
 	for (face_s* f = b->brush_faces ; f ; f = f->next) 
 	{
-		SetFaceTexdef (b, f, texdef, brushprimit_texdef, bFitScale, pTexdef);
+		SetFaceTexdef (b, f, texdef, brushprimit_texdef, bFitScale);
 	}
 	Brush_Build( b );
 	if (b->patchBrush)
 	{
 		//++timo clean
 //		Sys_Printf("WARNING: Brush_SetTexture needs surface plugin code for patches\n");
-		Patch_SetTexture(b->pPatch, texdef, pTexdef );
+		Patch_SetTexture(b->pPatch, texdef );
 	}
 }
 
@@ -3249,7 +3249,6 @@ void Brush_Draw( brush_s *b )
 	mtrAPI_i		*prev = 0;
 	winding_t *w;
 
-	// (TTimo) NOTE: added by build 173, I check after pPlugEnt so it doesn't interfere ?
 	if (b->hiddenBrush)
 	{
 		return;

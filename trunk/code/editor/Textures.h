@@ -34,16 +34,11 @@ void Texture_Cleanup(CStringList *pList = NULL);
 
 mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 void	Texture_Init (void);
-// Timo
-// added an optional IPluginTexdef when one is available
-// we need a forward declaration, this is crap
-class IPluginTexdef;
 void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
 void	Texture_SetMode(int iMenu);	// GL_TEXTURE_NEAREST, etc..
 void Texture_ResetPosition();
 
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
-void Texture_LoadFromPlugIn(LPVOID vp);
 void Texture_StartPos (void);
 mtrAPI_i *Texture_NextPos (int *x, int *y);
