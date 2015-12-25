@@ -34,7 +34,7 @@ void Texture_Cleanup(CStringList *pList = NULL);
 
 // TTimo: added bNoAlpha flag to ignore alpha channel when parsing a .TGA file, transparency is usually achieved through qer_trans keyword in shaders
 // in some cases loading an empty alpha channel causes display bugs (brushes not seen)
-qtexture_t *Texture_ForName (const char *name, bool bReplace = false, bool bShader = false, bool bNoAlpha = false, bool bReload = false, bool makeShader = true);
+qtexture_s *Texture_ForName (const char *name, bool bReplace = false, bool bShader = false, bool bNoAlpha = false, bool bReload = false, bool makeShader = true);
 
 void	Texture_Init (void);
 // Timo
@@ -49,4 +49,4 @@ void Texture_ResetPosition();
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
 void Texture_LoadFromPlugIn(LPVOID vp);
 void Texture_StartPos (void);
-qtexture_t *Texture_NextPos (int *x, int *y);
+qtexture_s *Texture_NextPos (int *x, int *y);

@@ -275,7 +275,7 @@ void Z_Draw (void)
     brush_s	*brush;
 	float	w, h;
 	double	start, end;
-	qtexture_t	*q;
+	qtexture_s	*q;
 	float	top, bottom;
 	edVec3_c	org_top, org_bottom, dir_up, dir_down;
 	int xCam = z.width/3;

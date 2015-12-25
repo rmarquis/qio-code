@@ -49,8 +49,8 @@ Str m_gStr;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-qtexture_t	*notexture = NULL;
-qtexture_t	*g_pluginTexture = NULL;
+qtexture_s	*notexture = NULL;
+qtexture_s	*g_pluginTexture = NULL;
 
 static bool	nomips = false;
 
@@ -82,7 +82,7 @@ bool g_bFilterEnabled = false;
 CString g_strFilter;
 
 // texture layout functions
-qtexture_t	*current_texture = NULL;
+qtexture_s	*current_texture = NULL;
 int			current_x, current_y, current_row;
 
 int			texture_nummenus;
@@ -126,7 +126,7 @@ const char* GetTextureExtension(int nIndex)
 
 void SortTextures(void)
 {	
-	qtexture_t	*q, *qtemp, *qhead, *qcur, *qprev;
+	qtexture_s	*q, *qtemp, *qhead, *qcur, *qprev;
 
 	// standard insertion sort
 	// Take the first texture from the list and
@@ -351,7 +351,7 @@ void Texture_LoadFromPlugIn(LPVOID vp)
 extern bool DoesFileExist(const char* pBuff, long& lSize);
 
 
-void ReplaceQTexture(qtexture_t *pOld, qtexture_t *pNew, brush_s *pList)
+void ReplaceQTexture(qtexture_s *pOld, qtexture_s *pNew, brush_s *pList)
 { 
 	for (brush_s* pBrush = pList->next ; pBrush != pList; pBrush = pBrush->next)
 	{
@@ -373,9 +373,9 @@ void ReplaceQTexture(qtexture_t *pOld, qtexture_t *pNew, brush_s *pList)
 }
 
 
-void Texture_Remove(qtexture_t *q)
+void Texture_Remove(qtexture_s *q)
 {
-  qtexture_t* pTex = g_qeglobals.d_qtextures->next;
+  qtexture_s* pTex = g_qeglobals.d_qtextures->next;
   if (q == g_qeglobals.d_qtextures)   // it is the head
   {
     g_qeglobals.d_qtextures->next = q->next->next;
@@ -383,7 +383,7 @@ void Texture_Remove(qtexture_t *q)
   }
   else
   {
-    qtexture_t* pLast = g_qeglobals.d_qtextures;
+    qtexture_s* pLast = g_qeglobals.d_qtextures;
     while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
     {
       if (pTex == q)
@@ -405,7 +405,7 @@ void Texture_Remove(qtexture_t *q)
 
 
 
-qtexture_t* WINAPI QERApp_TryTextureForName(const char* name);
+qtexture_s* WINAPI QERApp_TryTextureForName(const char* name);
 /*
 ===============
 Texture_ForName
@@ -413,7 +413,7 @@ Texture_ForName
 */
 //bReload is set to true when called from DemandLoadShaderTexture because it should never re-use
 //an already loaded texture
-qtexture_t *Texture_ForName (const char *name, bool bReplace, bool bShader, bool bNoAlpha, bool bReload, bool makeShader)
+qtexture_s *Texture_ForName (const char *name, bool bReplace, bool bShader, bool bNoAlpha, bool bReload, bool makeShader)
 {
 	return QERApp_TryTextureForName(name);
 }
@@ -518,7 +518,7 @@ A new map is being loaded, so clear inuse markers
 */
 void Texture_ClearInuse (void)
 {
-	qtexture_t	*q;
+	qtexture_s	*q;
 
 	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
     {
@@ -782,7 +782,7 @@ Texture_SetInuse
 */
 void Texture_SetInuse (void)
 {
-	qtexture_t	*q;
+	qtexture_s	*q;
 
 	for (q=g_qeglobals.d_qtextures ; q ; q=q->next)
   {
@@ -882,9 +882,9 @@ void Texture_StartPos (void)
 	current_row = 0;
 }
 
-qtexture_t *Texture_NextPos (int *x, int *y)
+qtexture_s *Texture_NextPos (int *x, int *y)
 {
-	qtexture_t	*q;
+	qtexture_s	*q;
 
 	while (1)
 	{
@@ -963,12 +963,12 @@ static	int	textures_cursorx, textures_cursory;
 ============
 Texture_SetTexture
 
-brushprimit_texdef must be understood as a qtexture_t with width=2 height=2 ( the default one )
+brushprimit_texdef must be understood as a qtexture_s with width=2 height=2 ( the default one )
 ============
 */
 void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale, bool bSetSelection )
 {
-	qtexture_t	*q;
+	qtexture_s	*q;
 	int			x,y;
 
 	if (texdef->name[0] == '(')
@@ -1113,7 +1113,7 @@ SelectTexture
 void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 {
 	int		x, y;
-	qtexture_t	*q;
+	qtexture_s	*q;
 	texdef_t	tex;
 	brushprimit_texdef_s brushprimit_tex;
 
@@ -1125,7 +1125,7 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 		q = Texture_NextPos (&x, &y);
 		if (!q)
 			break;
-		int nWidth =  q->width * ((float)g_PrefsDlg.m_nTextureScale / 100);
+		int nWidth =  q->qioMat->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100);
 		int nHeight = q->qioMat->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
 		if (mx > x && mx - x < nWidth
 			&& my < y && y - my < nHeight + FONT_HEIGHT)
@@ -1157,7 +1157,7 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 			}
 			tex.flags = 0; //q->flags;
 			tex.value = 0;//q->value;
-			tex.contents = q->contents;
+			tex.contents = q->qioMat->getEditorContentFlags();
 			//strcpy (tex.name, q->name);
 			tex.SetName(q->qioMat->getName());
 			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, 0);
@@ -1257,7 +1257,7 @@ Texture_Draw2
 */
 void Texture_Draw2 (int width, int height)
 {
-	qtexture_t	*q;
+	qtexture_s	*q;
 	int			x, y;
 	const char		*name;
 
@@ -1405,11 +1405,11 @@ void Texture_FlushUnused()
   Texture_ShowInuse();
   if (g_qeglobals.d_qtextures)
   {
-	  qtexture_t* pTex = g_qeglobals.d_qtextures->next;
-    qtexture_t *pPrev = g_qeglobals.d_qtextures;
+	  qtexture_s* pTex = g_qeglobals.d_qtextures->next;
+    qtexture_s *pPrev = g_qeglobals.d_qtextures;
     while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
     {
-      qtexture_t* pNextTex = pTex->next;
+      qtexture_s* pNextTex = pTex->next;
 
       if (!pTex->inuse)
       {
@@ -1431,10 +1431,10 @@ void Texture_Cleanup(CStringList *pList)
 {
   if (g_qeglobals.d_qtextures)
   {
-	  qtexture_t* pTex = g_qeglobals.d_qtextures->next;
+	  qtexture_s* pTex = g_qeglobals.d_qtextures->next;
     while (pTex != NULL && pTex != g_qeglobals.d_qtextures)
     {
-      qtexture_t* pNextTex = pTex->next;
+      qtexture_s* pNextTex = pTex->next;
       if (pList)
       {
         if (pTex->qioMat->getName()[0] != '(')

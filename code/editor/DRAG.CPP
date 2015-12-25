@@ -385,7 +385,7 @@ void Drag_Begin (int x, int y, int buttons,
         if (t.brush->owner->eclass->nShowFlags & ECLASS_LIGHT)
         {
           CString strBuff;
-          qtexture_t* pTex = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
+          qtexture_s* pTex = Texture_ForName(g_qeglobals.d_texturewin.texdef.name);
           if (pTex)
           {
             edVec3_c vColor = pTex->color;

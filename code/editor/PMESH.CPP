@@ -602,8 +602,8 @@ dist( this control point to first control point ) / dist ( last control pt to fi
 */
 void patchMesh_c::naturalizePatch()
 {
-	int nWidth = this->d_texture->width * 0.5;
-	int nHeight = this->d_texture->height * 0.5 ;
+	int nWidth = this->d_texture->qioMat->getImageWidth() * 0.5;
+	int nHeight = this->d_texture->qioMat->getImageHeight() * 0.5 ;
 	float fPWidth = this->calcPatchWidth();
 	float fPHeight = this->calcPatchHeight();
 	float xAccum = 0;
@@ -735,7 +735,7 @@ face_s* nextFace(patchMesh_c *p)
 }
 
 
-///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, qtexture_t *q, face_s *f);
+///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, qtexture_s *q, face_s *f);
 
 void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
 {
@@ -4675,7 +4675,7 @@ void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pRepla
 	}
 }
 
-void Patch_ReplaceQTexture(brush_s *pb, qtexture_t *pOld, qtexture_t *pNew)
+void Patch_ReplaceQTexture(brush_s *pb, qtexture_s *pOld, qtexture_s *pNew)
 {
 	if (pb->patchBrush)
 	{
