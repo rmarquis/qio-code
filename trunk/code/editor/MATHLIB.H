@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <math/math.h>
 #include <math/vec3.h>
+#include <math/aabb.h>
 
 typedef float vec_t;
 typedef vec_t vec3_t[3];
@@ -240,37 +241,37 @@ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
 
 #include <float.h>
 
-class edAABB_c {
-	vec3_c mins;
-	vec3_c maxs;
-public:
-	void clear(float inf = FLT_MAX) {
-		mins.set(inf);
-		maxs.set(-inf);
-	}
-	void addPoint(const float *p) {
-		for(int i = 0; i < 3; i++) {
-			float f = p[i];
-			if(f < mins[i])
-				mins[i] = f;
-			if(f > maxs[i])
-				maxs[i] = f;
-		}
-	}
-	vec3_c getSizes() const {
-		return maxs - mins;
-	}
-	void addBox(const edAABB_c &bb) {
-		addPoint(bb.getMins());
-		addPoint(bb.getMaxs());
-	}
-	const vec3_c &getMaxs() const {
-		return maxs;
-	}
-	const vec3_c &getMins() const {
-		return mins;
-	}
-};
+//class aabb {
+//	vec3_c mins;
+//	vec3_c maxs;
+//public:
+//	void clear(float inf = FLT_MAX) {
+//		mins.set(inf);
+//		maxs.set(-inf);
+//	}
+//	void addPoint(const float *p) {
+//		for(int i = 0; i < 3; i++) {
+//			float f = p[i];
+//			if(f < mins[i])
+//				mins[i] = f;
+//			if(f > maxs[i])
+//				maxs[i] = f;
+//		}
+//	}
+//	vec3_c getSizes() const {
+//		return maxs - mins;
+//	}
+//	void addBox(const aabb &bb) {
+//		addPoint(bb.getMins());
+//		addPoint(bb.getMaxs());
+//	}
+//	const vec3_c &getMaxs() const {
+//		return maxs;
+//	}
+//	const vec3_c &getMins() const {
+//		return mins;
+//	}
+//};
 
 #define ZERO_EPSILON 1.0E-6
 

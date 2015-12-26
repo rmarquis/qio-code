@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "PrefsDlg.h"
 #include <api/vfsAPI.h>
+#include <shared/str.h>
 
 bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
@@ -410,7 +411,7 @@ void Map_LoadFile (char *filename)
 Map_SaveFile
 ===========
 */
-void Map_SaveFile (char *filename, bool use_region )
+void Map_SaveFile (const char *filename, bool use_region )
 {
 	entity_s	*e, *next;
 	FILE		*f;
@@ -431,12 +432,8 @@ void Map_SaveFile (char *filename, bool use_region )
 
 	if (!use_region)
 	{
-		char	backup[1024];
-
-		// rename current to .bak
-		strcpy (backup, filename);
-		StripExtension (backup);
-		strcat (backup, ".bak");
+		str backup = filename;
+		backup.setExtension("bak");
 		_unlink (backup);
 		rename (filename, backup);
 	}

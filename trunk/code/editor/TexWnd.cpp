@@ -34,7 +34,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <windows.h>
 #include <gl/glu.h>
 #include <vector>
-#include "qgl.h"
 #include <api/rAPI.h>
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>

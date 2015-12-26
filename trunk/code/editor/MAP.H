@@ -42,7 +42,7 @@ extern	class vec3_c region_mins, region_maxs;
 extern	bool	region_active;
 
 void 	Map_LoadFile (char *filename);
-void 	Map_SaveFile (char *filename, bool use_region);
+void 	Map_SaveFile (const char *filename, bool use_region);
 void	Map_New (void);
 void	Map_BuildBrushData(void);
 

@@ -27,7 +27,6 @@ enum camera_draw_mode
 	cd_wire,
 	cd_solid,
 	cd_texture,
-  cd_light,
 	cd_blend
 };
 

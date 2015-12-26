@@ -357,7 +357,7 @@ typedef struct brush_s
 	struct brush_s	*prev, *next;	// links in active/selected
 	struct brush_s	*oprev, *onext;	// links in entity
 	struct entity_s	*owner;
-	edAABB_c bounds;
+	aabb bounds;
 	face_s     *brush_faces;
 
 	bool bModelFailed;
@@ -376,7 +376,7 @@ typedef struct brush_s
 	int redoId;						//redo ID
 	int ownerId;					//entityId of the owner entity for undo
 
-	const edAABB_c &getBounds() const {
+	const aabb &getBounds() const {
 		return bounds;
 	}
 	const vec3_c &getMins() const {
