@@ -48,12 +48,10 @@ typedef unsigned char byte;
 //typedef unsigned char byte;
 #endif
 
-void 	StripExtension (char *path);
 void	ExtractFileName (const char *path, char *dest);
 void 	ExtractFileBase (const char *path, char *dest);
 
 void *qmalloc (size_t size);
-void* qblockmalloc(size_t nSize);
 
 
 

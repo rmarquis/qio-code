@@ -205,7 +205,7 @@ protected:
   void ProduceSplits(brush_s** pFront, brush_s** pBack);
   void ProduceSplitLists();
   void HandleDrop();
-  void PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds);
+  void PaintSizeInfo(int nDim1, int nDim2, const aabb &bounds);
 
   void OnEntityCreate(unsigned int nID);
   CPoint m_ptDown;

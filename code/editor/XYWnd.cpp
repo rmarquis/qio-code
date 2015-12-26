@@ -31,7 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "PrefsDlg.h"
 #include "DialogInfo.h"
-#include "qgl.h"
 
 #include <math/math.h>
 
@@ -2587,7 +2586,7 @@ void DrawPathLines (void)
 
 // can be greatly simplified but per usual i am in a hurry 
 // which is not an excuse, just a fact
-void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const edAABB_c &bounds)
+void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, const aabb &bounds)
 {
 
   vec3_c vSize = bounds.getSizes();
@@ -2887,7 +2886,7 @@ void CXYWnd::XY_Draw()
   }
 	glLineWidth (2);
 
-	edAABB_c bounds;
+	aabb bounds;
   bounds.clear();
 
   int nSaveDrawn = drawn;

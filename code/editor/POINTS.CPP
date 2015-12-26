@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 #include "stdafx.h"
+#include <shared/str.h>
 
 #include "qe3.h"
 
@@ -30,11 +31,8 @@ static int		s_num_points, s_check_point;
 
 void Pointfile_Delete (void)
 {
-	char	name[1024];
-
-	strcpy (name, currentmap);
-	StripExtension (name);
-	strcat (name, ".lin");
+	str name = currentmap;
+	name.setExtension("lin");
 
 	remove(name);
 }
@@ -83,13 +81,11 @@ void Pointfile_Prev (void)
 
 void WINAPI Pointfile_Check (void)
 {
-	char	name[1024];
+	str	name = currentmap;
 	FILE	*f;
 	vec3_t	v;
 
-	strcpy (name, currentmap);
-	StripExtension (name);
-	strcat (name, ".lin");
+	name.setExtension("lin");
 
 	f = fopen (name, "r");
 	if (!f)

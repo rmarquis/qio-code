@@ -27,7 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "XYWnd.h"
 #include "CamWnd.h"
 #include "qe3.h"
-#include "qgl.h"
 #include <gl/glu.h>
 #include <api/rAPI.h>
 #include <api/coreAPI.h>
@@ -645,47 +644,48 @@ void CCamWnd::InitCull()
 
 bool CCamWnd::CullBrush (brush_s *b)
 {
-	int		i;
-	vec3_c	point;
-	float	d;
-
-	if (g_PrefsDlg.m_bCubicClipping)
-	{
-		float fLevel = g_PrefsDlg.m_nCubicScale * 64;
-
-		point[0] = m_Camera.origin[0] - fLevel;
-		point[1] = m_Camera.origin[1] - fLevel;
-		point[2] = m_Camera.origin[2] - fLevel;
-
-		for (i=0; i<3; i++)
-			if (b->getMins()[i] < point[i] && b->getMaxs()[i] < point[i])
-				return true;
-
-		point[0] = m_Camera.origin[0] + fLevel;
-		point[1] = m_Camera.origin[1] + fLevel;
-		point[2] = m_Camera.origin[2] + fLevel;
-	
-		for (i=0; i<3; i++)
-			if (b->getMins()[i] > point[i] && b->getMaxs()[i] > point[i])
-				return true;
-	}
-
-
-	for (i=0 ; i<3 ; i++)
-		point[i] = b->getMins()[m_nCullv1[i]] - m_Camera.origin[i];
-
-	d = point.dotProduct(m_vCull1);
-	if (d < -1)
-		return true;
-
-	for (i=0 ; i<3 ; i++)
-		point[i] = b->getMins()[m_nCullv2[i]] - m_Camera.origin[i];
-
-	d = point.dotProduct(m_vCull2);
-	if (d < -1)
-		return true;
-
 	return false;
+	//int		i;
+	//vec3_c	point;
+	//float	d;
+
+	//if (g_PrefsDlg.m_bCubicClipping)
+	//{
+	//	float fLevel = g_PrefsDlg.m_nCubicScale * 64;
+
+	//	point[0] = m_Camera.origin[0] - fLevel;
+	//	point[1] = m_Camera.origin[1] - fLevel;
+	//	point[2] = m_Camera.origin[2] - fLevel;
+
+	//	for (i=0; i<3; i++)
+	//		if (b->getMins()[i] < point[i] && b->getMaxs()[i] < point[i])
+	//			return true;
+
+	//	point[0] = m_Camera.origin[0] + fLevel;
+	//	point[1] = m_Camera.origin[1] + fLevel;
+	//	point[2] = m_Camera.origin[2] + fLevel;
+	//
+	//	for (i=0; i<3; i++)
+	//		if (b->getMins()[i] > point[i] && b->getMaxs()[i] > point[i])
+	//			return true;
+	//}
+
+
+	//for (i=0 ; i<3 ; i++)
+	//	point[i] = b->getMins()[m_nCullv1[i]] - m_Camera.origin[i];
+
+	//d = point.dotProduct(m_vCull1);
+	//if (d < -1)
+	//	return true;
+
+	//for (i=0 ; i<3 ; i++)
+	//	point[i] = b->getMins()[m_nCullv2[i]] - m_Camera.origin[i];
+
+	//d = point.dotProduct(m_vCull2);
+	//if (d < -1)
+	//	return true;
+
+	//return false;
 }
 
 #if 0
@@ -725,18 +725,6 @@ void CCamWnd::Cam_Draw()
 	float	yfov;
 	double	start, end;
 	int		i;
-
-	/*
-  FILE *f = fopen("g:/nardo/raduffy/editorhack.dat", "w");
-  if (f != NULL) {
-    fwrite(&m_Camera.origin[0], sizeof(float), 1, f);
-    fwrite(&m_Camera.origin[1], sizeof(float), 1, f);
-    fwrite(&m_Camera.origin[2], sizeof(float), 1, f);
-		fwrite(&m_Camera.angles[PITCH], sizeof(float), 1, f);
-		fwrite(&m_Camera.angles[YAW], sizeof(float), 1, f);
-    fclose(f);
-  }
-	*/
 	
 	if (!active_brushes.next)
 		return;	// not valid yet

@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "mru.h"
 #include "entityw.h"
 #include "PrefsDlg.h"
+#include <shared/str.h>
 
 static HWND      s_hwndToolbar;
 
@@ -195,7 +196,7 @@ void RunBsp (char *command)
 	char	batpath[2048];
 	char	outputpath[2048];
 	char	temppath[1024];
-	char	name[2048];
+	str	name;
 	char	cWork[2048];
 	FILE	*hFile;
 	BOOL	ret;
@@ -228,12 +229,11 @@ void RunBsp (char *command)
 
 	sprintf (outputpath, " >>%s\r\n", strOutFile);
 
-  strcpy (name, currentmap);
+  name = currentmap;
 	if (region_active)
 	{
 		Map_SaveFile (name, false);
-		StripExtension (name);
-		strcat (name, ".reg");
+		name.setExtension("reg");
 	}
 
 	Map_SaveFile (name, region_active);

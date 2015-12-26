@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Radiant.h"
 #include "ZWnd.h"
 #include "qe3.h"
-#include "qgl.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

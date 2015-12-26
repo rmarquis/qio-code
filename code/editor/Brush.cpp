@@ -3275,13 +3275,13 @@ void Brush_Draw( brush_s *b )
 			DrawLight(b);
 			return;
 		}
-		if (nDrawMode == cd_texture || nDrawMode == cd_light)
+		if (nDrawMode == cd_texture)
 			glDisable (GL_TEXTURE_2D);
 		
 		// if we are wireframing models
 		//bool bp = (b->bModelFailed) ? false : PaintedModel(b, true);
 		
-		if (nDrawMode == cd_texture || nDrawMode == cd_light)
+		if (nDrawMode == cd_texture)
 			glEnable (GL_TEXTURE_2D);
 		//
 		//if (bp)
@@ -3323,7 +3323,7 @@ void Brush_Draw( brush_s *b )
 
 		mtrAPI_i *temp = face->d_texture; //g_ms->registerMaterial(face->d_texture->getName());
 		
-		if ((nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev)
+		if ((nDrawMode == cd_texture) && face->d_texture != prev)
 		{
 			for(u32 i = 0; i < temp->getNumStages(); i++) {
 				// set the texture for this face
@@ -3360,11 +3360,10 @@ void Brush_Draw( brush_s *b )
 		// draw the polygon
 		
 		glBegin(GL_POLYGON);
-		//if (nDrawMode == cd_light)
 		
 		for (i=0 ; i<w->numpoints ; i++)
 		{
-			if (nDrawMode == cd_texture || nDrawMode == cd_light)
+			if (nDrawMode == cd_texture)
 				glTexCoord2fv( &w->points[i][3] );
 			glVertex3fv(w->points[i]);
 		}
@@ -3381,7 +3380,7 @@ void Brush_Draw( brush_s *b )
 	}
 #endif
 	
-	if (b->owner->eclass->fixedsize && (nDrawMode == cd_texture || nDrawMode == cd_light))
+	if (b->owner->eclass->fixedsize && (nDrawMode == cd_texture))
 		glEnable (GL_TEXTURE_2D);
 	
 	glBindTexture( GL_TEXTURE_2D, 0 );
@@ -3773,7 +3772,7 @@ void Brush_MakeSidedSphere(int sides)
 void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 {
 	winding_t *w;
-	edAABB_c bounds;
+	aabb bounds;
 	int i;
 	float width, height, temp;
 	float rot_width, rot_height;
