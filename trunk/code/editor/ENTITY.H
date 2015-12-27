@@ -28,17 +28,40 @@ eclass_s *Eclass_ForName (char *name, bool has_brushes);
 eclass_s *Eclass_FindExisting (const char *name);
 void EClass_CreateNewFromText(const char *text);
 
+// allocated counter is only used for debugging
+extern int g_allocatedCounter_entity;
 
 struct entity_s
 {
+	bool bIsLinkedListHeader;
 	struct entity_s	*prev, *next;
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
 	vec3_c		origin;
 	eclass_s	*eclass;
 	epair_s		*epairs;
-	vec3_t vRotation;   // valid for misc_models only
-	vec3_t vScale;      // valid for misc_models only
+	vec3_c vRotation;   // valid for misc_models only
+	vec3_c vScale;      // valid for misc_models only
+
+	entity_s(bool bIsLinkedListHeader = false) {
+		prev = 0;
+		next = 0;
+		undoId = 0;
+		redoId = 0;
+		entityId = 0;
+		eclass = 0;
+		epairs = 0;
+
+		this->bIsLinkedListHeader = bIsLinkedListHeader;
+		// allocated counter is only used for debugging
+		if(bIsLinkedListHeader==false)
+			g_allocatedCounter_entity++;
+	}
+	~entity_s() {
+		// allocated counter is only used for debugging
+		if(bIsLinkedListHeader==false) 
+			g_allocatedCounter_entity--;
+	}
 };
 
 char 	*ValueForKey (entity_s *ent, const char *key);

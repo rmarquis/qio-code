@@ -1425,9 +1425,10 @@ void CMainFrame::OnDestroy()
 
   Texture_Cleanup();
 
-  if (world_entity)
+  if (world_entity) {
     Entity_Free(world_entity);
-
+	world_entity = 0;
+  }
 
 	CFrameWnd::OnDestroy();
 }
@@ -1438,6 +1439,15 @@ void CMainFrame::OnClose()
 	{
 		g_bClosingRadiant = true;
 		CFrameWnd::OnClose();
+		if(g_qeglobals.d_project_entity) {
+			delete g_qeglobals.d_project_entity;
+			g_qeglobals.d_project_entity = 0;
+		}
+		if(world_entity ) {
+			delete world_entity;
+			world_entity = 0;
+		}
+		Undo_Clear();
 	}
 }
                         

@@ -33,15 +33,15 @@ bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 char		currentmap[1024];
 
 
-brush_s	active_brushes;		// brushes currently being displayed
-brush_s	selected_brushes;	// highlighted
+brush_s	active_brushes(true);		// brushes currently being displayed
+brush_s	selected_brushes(true);	// highlighted
 
 face_s	*selected_face;
 brush_s	*selected_face_brush;
 
-brush_s	filtered_brushes;	// brushes that have been filtered or regioned
+brush_s	filtered_brushes(true);	// brushes that have been filtered or regioned
 
-entity_s	entities;		// head/tail of doubly linked list
+entity_s	entities(true);		// head/tail of doubly linked list
 
 entity_s	*world_entity = NULL; // "classname" "worldspawn" !
 
@@ -58,8 +58,8 @@ void RemoveRegionBrushes (void);
 =============================================================
 */
 
-brush_s		between_brushes;
-entity_s	between_entities;
+brush_s		between_brushes(true);
+entity_s	between_entities(true);
 
 bool g_bRestoreBetween = false;
 
@@ -436,7 +436,7 @@ void Map_New (void)
 
   Patch_Cleanup();
 
-	world_entity = (entity_s*)qmalloc(sizeof(*world_entity));
+	world_entity = new entity_s();
 	world_entity->brushes.onext = 
 		world_entity->brushes.oprev = &world_entity->brushes;
 	SetKeyValue (world_entity, "classname", "worldspawn");

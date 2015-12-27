@@ -176,9 +176,6 @@ void Face_Free( face_s *f )
 	}
 
 
-
-	f->texdef.~texdef_t();;
-
 	delete f;
 }
 
@@ -1649,7 +1646,7 @@ brush_s *Brush_Parse (void)
 	int			i,j;
 	
 	g_qeglobals.d_parsed_brushes++;
-	b = new brush_s();
+	b = new brush_s(false);;
 
 	do
 	{
@@ -1686,7 +1683,8 @@ brush_s *Brush_Parse (void)
 		}
 		if (_strcmpi(token, "patchDef2") == 0 || _strcmpi(token, "patchDef3") == 0)
 		{
-			free (b);
+			//free (b);
+			Brush_Free(b);
 			
 			// double string compare but will go away soon
 			b = Patch_Parse(_strcmpi(token, "patchDef2") == 0);
@@ -2062,7 +2060,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 			Error ("Brush_InitSolid: backwards");
 	}
 
-	b = new brush_s();
+	b = new brush_s(false);;
 	
 	pts[0][0][0] = mins[0];
 	pts[0][0][1] = mins[1];
@@ -2142,7 +2140,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 		if (maxs[i] < mins[i])
 			Error ("Brush_InitSolid: backwards");
 
-	brush_s* b = new brush_s();
+	brush_s* b = new brush_s(false);;
 
 	vec3_t corners[4];
 
@@ -2273,7 +2271,7 @@ void Brush_MakeSided (int sides)
 			width = (maxs[i] - mins[i]) * 0.5;
 	}
 
-	b = new brush_s();
+	b = new brush_s(false);;
 		
 	// create top face
 	f = new face_s();
@@ -2433,7 +2431,7 @@ brush_s *Brush_Clone (brush_s *b)
 	}
 	else
 	{
-  	n = new brush_s();
+  	n = new brush_s(false);;
 		n->owner = b->owner;
 		for (f=b->brush_faces ; f ; f=f->next)
 		{
@@ -2472,7 +2470,7 @@ brush_s *Brush_FullClone(brush_s *b)
 	}
 	else
 	{
-  	n = new brush_s();
+  	n = new brush_s(false);;
 		n->owner = b->owner;
 		n->bounds = b->bounds;
 		//
@@ -3342,7 +3340,7 @@ void Brush_Draw( brush_s *b )
 		}
 		
 		// shader drawing stuff
-		if (face->d_texture->hasEditorTransparency())
+		if (face->d_texture && face->d_texture->hasEditorTransparency())
 		{
 			// setup shader drawing
 			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->getEditorTransparency() );
@@ -3601,7 +3599,7 @@ void Brush_MakeSidedCone(int sides)
 	}
 	width /= 2;
 
-	b = new brush_s();
+	b = new brush_s(false);;
 
 	// create bottom face
 	f = new face_s();
@@ -3693,7 +3691,7 @@ void Brush_MakeSidedSphere(int sides)
 	}
 	radius /= 2;
 
-	b = new brush_s();
+	b = new brush_s(false);;
 
 	float dt = float(2 * M_PI / sides);
 	float dp = float(M_PI / sides);
