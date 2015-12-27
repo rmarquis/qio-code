@@ -72,7 +72,7 @@ void WINAPI QE_CheckOpenGLForErrors(void)
 char *ExpandReletivePath (char *p)
 {
 	static char	temp[1024];
-	char	*base;
+	const char	*base;
 
 	if (!p || !p[0])
 		return NULL;
@@ -294,7 +294,7 @@ bool QE_LoadProject (char *projectfile)
 
   for (int i = 0; i < g_nPathFixupCount; i++)
   {
-    char *pPath = ValueForKey (g_qeglobals.d_project_entity, g_pPathFixups[i]);
+   const char *pPath = ValueForKey (g_qeglobals.d_project_entity, g_pPathFixups[i]);
     if (pPath[0] != '\\' && pPath[0] != '/')
     {
 	    if (GetFullPathName(pPath, 1024, pBuff, &pFile))
@@ -382,7 +382,6 @@ bool QE_SaveProject (const char* pProjectFile)
 {
 	//char	filename[1024];
 	FILE	*fp;
-	epair_s	*ep;
 
 	//sprintf (filename, "%s\\%s.prj", g_projectdir, g_username);
 
@@ -390,8 +389,12 @@ bool QE_SaveProject (const char* pProjectFile)
 		Error ("Could not open project file!");
 	
 	fprintf (fp, "{\n");
-	for (ep = g_qeglobals.d_project_entity->epairs; ep; ep=ep->next)
-		fprintf (fp, "\"%s\" \"%s\"\n", ep->key, ep->value);
+	for(u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++)
+	{
+		const char *key = g_qeglobals.d_project_entity->keyValues.getKey(i);
+		const char *value = g_qeglobals.d_project_entity->keyValues.getValue(i);
+		fprintf (fp, "\"%s\" \"%s\"\n", key, value);
+	}
 	fprintf (fp, "}\n");
 
 	fclose (fp);
@@ -421,7 +424,7 @@ from the first selected to the secon
 void ConnectEntities (void)
 {
 	entity_s	*e1, *e2, *e;
-	char		*target, *tn;
+	const char		*target, *tn;
 	int			maxtarg, targetnum;
 	char		newtarg[32];
 

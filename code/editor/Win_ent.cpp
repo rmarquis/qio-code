@@ -505,7 +505,6 @@ void SetInspectorMode(int iType)
 
 void SetKeyValuePairs (bool bClearMD3)
 {
-	epair_s	*pep;
 	RECT	rc;
 	char	sz[4096];
 	
@@ -520,13 +519,15 @@ void SetKeyValuePairs (bool bClearMD3)
 	
 	// Walk through list and add pairs
 	
-	for (pep = edit_entity->epairs ; pep ; pep = pep->next)
+	for(u32 i = 0; i < edit_entity->keyValues.size(); i++) 
 	{
+		const char *key = edit_entity->keyValues.getKey(i);
+		const char *value = edit_entity->keyValues.getValue(i);
 		// if the key is less than 8 chars, add a tab for alignment
-		if (strlen(pep->key) > 8)
-			sprintf (sz, "%s\t%s", pep->key, pep->value);
+		if (strlen(key) > 8)
+			sprintf (sz, "%s\t%s", key, value);
 		else
-			sprintf (sz, "%s\t\t%s", pep->key, pep->value);
+			sprintf (sz, "%s\t\t%s", key, value);
 		SendMessage(hwndEnt[EntProps], LB_ADDSTRING, 0, (LPARAM)sz);
 	}
 	
@@ -795,10 +796,10 @@ void DelProp(void)
 		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-			DeleteKey(b->owner, sz);
+			b->owner->deleteKey(sz);
 	}
 	else
-		DeleteKey(edit_entity, sz);
+		edit_entity->deleteKey(sz);
 
 	// refresh the prop listbox
 

@@ -1405,15 +1405,8 @@ void CMainFrame::OnDestroy()
 	while (entities.next != &entities)
 		Entity_Free (entities.next);
 
-	epair_s* pEPair = g_qeglobals.d_project_entity->epairs;
-  while (pEPair)
-  {
-    epair_s* pNextEPair = pEPair->next;
-    free (pEPair->key);
-    free (pEPair->value);
-    free (pEPair);
-    pEPair = pNextEPair;
-  }
+	g_qeglobals.d_project_entity->clearKeyValues();
+
 
 	entity_s* pEntity = g_qeglobals.d_project_entity->next;
   while (pEntity != NULL && pEntity != g_qeglobals.d_project_entity)

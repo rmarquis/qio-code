@@ -427,7 +427,7 @@ void Eclass_ScanFile (char *filename)
 
 
 
-void Eclass_InitForSourceDirectory (char *path)
+void Eclass_InitForSourceDirectory (const char *path)
 {
 	struct _finddata_t fileinfo;
 	int		handle;
@@ -491,7 +491,7 @@ eclass_s *Eclass_FindExisting (const char *name) {
 
 	return 0;
 }
-eclass_s *Eclass_ForName (char *name, bool has_brushes)
+eclass_s *Eclass_ForName (const char *name, bool has_brushes)
 {
 	eclass_s	*e;
 	char		init[1024];

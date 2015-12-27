@@ -679,12 +679,9 @@ void Undo_Undo(void)
 		//if this is the world entity
 		if (pEntity->entityId == world_entity->entityId)
 		{
-			//free the epairs of the world entity
-			Entity_FreeEpairs(world_entity);
 			//set back the original epairs
-			world_entity->epairs = pEntity->epairs;
-			// unhook the epairs and free the world_entity clone that stored the epairs
-			pEntity->epairs = NULL;
+			world_entity->keyValues = pEntity->keyValues;
+			// free the world_entity clone that stored the epairs
 			Entity_Free(pEntity);
 		}
 		else
@@ -809,10 +806,8 @@ void Undo_Redo(void)
 		//if this is the world entity
 		if (pEntity->entityId == world_entity->entityId)
 		{
-			//free the epairs of the world entity
-			Entity_FreeEpairs(world_entity);
 			//set back the original epairs
-			world_entity->epairs = pEntity->epairs;
+			world_entity->keyValues = pEntity->keyValues;
 			//free the world_entity clone that stored the epairs
 			Entity_Free(pEntity);
 		}

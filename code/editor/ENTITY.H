@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // entity.h
 
-void Eclass_InitForSourceDirectory (char *path);
+#include <shared/ePairsList.h>
+
+void Eclass_InitForSourceDirectory (const char *path);
 // this will create a new eclass_s if one is not present
-eclass_s *Eclass_ForName (char *name, bool has_brushes);
+eclass_s *Eclass_ForName (const char *name, bool has_brushes);
 // this will return 0 if class with given name is not present
 eclass_s *Eclass_FindExisting (const char *name);
 void EClass_CreateNewFromText(const char *text);
@@ -39,10 +41,22 @@ struct entity_s
 	int			undoId, redoId, entityId;	// used for undo/redo
 	vec3_c		origin;
 	eclass_s	*eclass;
-	epair_s		*epairs;
+	ePairList_c keyValues;
 	vec3_c vRotation;   // valid for misc_models only
 	vec3_c vScale;      // valid for misc_models only
 
+	void clearKeyValues() {
+		keyValues.clear();
+	}
+	void deleteKey(const char *k) {
+		keyValues.remove(k);
+	}
+	const char *getKeyValue(const char *k) const {
+		const char *r = keyValues.getKeyValue(k);
+		if(r == 0)
+			return "";
+		return r;
+	}
 	entity_s(bool bIsLinkedListHeader = false) {
 		prev = 0;
 		next = 0;
@@ -50,7 +64,6 @@ struct entity_s
 		redoId = 0;
 		entityId = 0;
 		eclass = 0;
-		epairs = 0;
 
 		this->bIsLinkedListHeader = bIsLinkedListHeader;
 		// allocated counter is only used for debugging
@@ -64,17 +77,14 @@ struct entity_s
 	}
 };
 
-char 	*ValueForKey (entity_s *ent, const char *key);
+const char 	*ValueForKey (entity_s *ent, const char *key);
 void	SetKeyValue (entity_s *ent, const char *key, const char *value);
-void 	SetKeyValue (epair_s *&e, const char *key, const char *value);
-void 	DeleteKey (entity_s *ent, const char *key);
-void 	DeleteKey (epair_s *&e, const char *key);
+
 float	FloatForKey (entity_s *ent, const char *key);
 int		IntForKey (entity_s *ent, const char *key);
 void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec);
 
 void		Entity_Free (entity_s *e);
-void		Entity_FreeEpairs(entity_s *e);
 int			Entity_MemorySize(entity_s *e);
 entity_s	*Entity_Parse (bool onlypairs, brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);
@@ -94,4 +104,4 @@ int GetUniqueTargetId(int iHint);
 
 //Timo : used for parsing epairs in brush primitive
 epair_s* ParseEpair(void);
-char *ValueForKey ( epair_s *&e, const char *key);
+const char *ValueForKey ( epair_s *&e, const char *key);

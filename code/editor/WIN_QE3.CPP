@@ -514,12 +514,11 @@ FillBSPMenu
 
 ==================
 */
-char	*bsp_commands[256];
+const char	*bsp_commands[256];
 
 void FillBSPMenu (void)
 {
 	HMENU	hmenu;
-	epair_s	*ep;
 	int		i;
 	static int count;
 
@@ -530,13 +529,14 @@ void FillBSPMenu (void)
 	count = 0;
 
 	i = 0;
-	for (ep = g_qeglobals.d_project_entity->epairs ; ep ; ep=ep->next)
+	for (u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++)
 	{
-		if (ep->key[0] == 'b' && ep->key[1] == 's' && ep->key[2] == 'p')
+		const char *key = g_qeglobals.d_project_entity->keyValues.getKey(i);
+		if (key[0] == 'b' && key[1] == 's' && key[2] == 'p')
 		{
-			bsp_commands[i] = ep->key;
+			bsp_commands[i] = key;
 			AppendMenu (hmenu, MF_ENABLED|MF_STRING,
-				CMD_BSPCOMMAND+i, (LPCTSTR)ep->key);
+				CMD_BSPCOMMAND+i, (LPCTSTR)key);
 			i++;
 		}
 	}

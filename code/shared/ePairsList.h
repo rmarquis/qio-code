@@ -94,6 +94,16 @@ public:
 		}
 		pairs.clear();
 	}
+	void remove(const char *key) {
+		for(u32 i = 0; i < pairs.size(); i++) {
+			ePair_c *ep = pairs[i];
+			if(!_stricmp(key,ep->key.c_str())) {
+				delete ep;
+				pairs.remove(ep);
+				return;
+			}
+		}
+	}
 	void set(const char *key, const char *val) {
 		if(key[0] != '@') {
 			// see if we have already entry for this key
@@ -105,6 +115,22 @@ public:
 		}
 		ePair_c *np = new ePair_c(key,val);
 		pairs.push_back(np);
+	}
+	const char *getKey(u32 idx) const {
+		if(idx >= pairs.size()) {
+			// this should never happen
+			return 0;
+		}
+		ePair_c *p = pairs[idx];
+		return p->getKey();
+	}
+	const char *getValue(u32 idx) const {
+		if(idx >= pairs.size()) {
+			// this should never happen
+			return 0;
+		}
+		ePair_c *p = pairs[idx];
+		return p->getValue();
 	}
 	void getKeyValue(u32 idx, const char **key, const char **value) const {
 		if(idx >= pairs.size()) {

@@ -459,7 +459,7 @@ DrawBrushEntityName
 */
 void DrawBrushEntityName (brush_s *b)
 {
-	char	*name;
+	const char	*name;
 	//float	a, s, c;
 	//vec3_t	mid;
 	//int		i;
