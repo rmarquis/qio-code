@@ -240,6 +240,13 @@ struct face_s
 
 	// Timo new brush primit texdef
 	brushprimit_texdef_s	brushprimit_texdef;
+
+	face_s() {
+		next = 0;
+		original = 0;
+		face_winding = 0;
+		d_texture = 0;
+	}
 };
 
 struct curveVertex_t {
@@ -376,6 +383,23 @@ struct brush_s
 	int redoId;						//redo ID
 	int ownerId;					//entityId of the owner entity for undo
 
+	brush_s() {
+		undoId = 0;
+		redoId = 0;
+		ownerId = 0;
+		pUndoOwner = 0;
+		pPatch = 0;
+		prev = 0;
+		next = 0;
+		oprev = 0;
+		onext = 0;
+		owner = 0;
+		brush_faces = 0;
+		bModelFailed = 0;
+		patchBrush = 0;
+		hiddenBrush = 0;
+		terrainBrush = 0;
+	}
 	const aabb &getBounds() const {
 		return bounds;
 	}

@@ -151,7 +151,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		} //end for
 	} //end for
 	//
-	newbrush = Brush_Alloc();
+	newbrush = new brush_s();
 	//
 	for (face1 = brush1->brush_faces; face1; face1 = face1->next)
 	{
@@ -174,7 +174,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		if (f)
 			continue;
 		//
-		newface = Face_Alloc();
+		newface = new face_s();
 		newface->texdef = face1->texdef;
 		newface->planepts[0] = face1->planepts[0];
 		newface->planepts[1] = face1->planepts[1];
@@ -205,7 +205,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		if (f)
 			continue;
 		//
-		newface = Face_Alloc();
+		newface = new face_s();
 		newface->texdef = face2->texdef;
 		newface->planepts[0] = face2->planepts[0];
 		newface->planepts[1] = face2->planepts[1];
@@ -364,7 +364,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 		}
 	}
 	//
-	newbrush = Brush_Alloc();
+	newbrush = new brush_s();
 	//
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
 	{
@@ -395,7 +395,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 			if (f)
 				continue;
 			//
-			newface = Face_Alloc();
+			newface = new face_s();
 			newface->texdef = face1->texdef;
 			newface->planepts[0] = face1->planepts[0];
 			newface->planepts[1] = face1->planepts[1];

@@ -174,7 +174,7 @@ void BrushPrimit_Parse(brush_s	*b)
 		//else
 		// it's a face
 		{
-			f = Face_Alloc();
+			f = new face_s();
 			f->next = NULL;
 			if (!b->brush_faces)
 			  	b->brush_faces = f;
