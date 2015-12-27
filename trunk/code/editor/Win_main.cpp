@@ -50,6 +50,29 @@ void SaveAsDialog (bool bRegion);
 bool ConfirmModified (void);
 void  Select_Ungroup (void);
 
+
+
+
+void ExtractFileName (const char *path, char *dest)
+{
+	const char *src;
+
+	src = path + strlen(path) - 1;
+
+//
+// back up until a \ or the start
+//
+	while (src != path && *(src-1) != '/' 
+		 && *(src-1) != '\\' )
+		src--;
+
+	while (*src)
+	{
+		*dest++ = *src++;
+	}
+	*dest = 0;
+}
+
 void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps)
 {
 	char	*in;

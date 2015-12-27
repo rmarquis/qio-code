@@ -62,9 +62,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "undo.h"
 
+inline void* qmalloc (size_t nSize)
+{
+	void *b;
+	b = malloc(nSize + 1);
+	memset (b, 0, nSize);
+	return b;
+}
+
 double I_FloatTime (void);
 
-void	Error (char *error, ...);
+void	Error (const  char *error, ...);
 void	Warning (char *error, ...);
 int		CheckParm (char *check);
 void ParseCommandLine (char *lpCmdLine);
