@@ -49,12 +49,6 @@ void AddRegionBrushes (void);
 void RemoveRegionBrushes (void);
 
 
-void DupLists()
-{
-  DWORD dw = GetTickCount();
-
-}
-
 /*
 =============================================================
 
@@ -77,88 +71,12 @@ void Map_SaveBetween (void)
     g_bRestoreBetween = true;
     g_pParentWnd->ActiveXY()->Copy();
   }
-  return;
-
-#if 0
-
-	brush_s		*b;
-	entity_s	*e, *e2;
-
-	between_brushes.next = selected_brushes.next;
-	between_brushes.prev = selected_brushes.prev;
-	between_brushes.next->prev = &between_brushes;
-	between_brushes.prev->next = &between_brushes;
-
-	between_entities.next = between_entities.prev = &between_entities;
-	selected_brushes.next = selected_brushes.prev = &selected_brushes;
-
-	for (b=between_brushes.next ; b != &between_brushes ; b=b->next)
-	{
-		e = b->owner;
-		if (e == world_entity)
-			b->owner = NULL;
-		else
-		{
-			for (e2=between_entities.next ; e2 != &between_entities ; e2=e2->next)
-				if (e2 == e)
-					goto next;	// allready got the entity
-			// move the entity over
-			e->prev->next = e->next;
-			e->next->prev = e->prev;
-			e->next = between_entities.next;
-			e->prev = &between_entities;
-			e->next->prev = e;
-			e->prev->next = e;
-		}
-next: ;
-	}
-#endif
 }
 
 void Map_RestoreBetween (void)
 {
 	if (g_pParentWnd->ActiveXY() && g_bRestoreBetween)
-    g_pParentWnd->ActiveXY()->Paste();
-  return;
-
-#if 0  
-  entity_s	*head, *tail;
-	brush_s		*b;
-
-	if (!between_brushes.next)
-		return;
-
-	for (b=between_brushes.next ; b != &between_brushes ; b=b->next)
-	{
-		if (!b->owner)
-		{
-			b->owner = world_entity;
-			b->onext = world_entity->brushes.onext;
-			b->oprev = &world_entity->brushes;
-			b->onext->oprev = b;
-			b->oprev->onext = b;
-		}
-	}
-
-	selected_brushes.next = between_brushes.next;
-	selected_brushes.prev = between_brushes.prev;
-	selected_brushes.next->prev = &selected_brushes;
-	selected_brushes.prev->next = &selected_brushes;
-
-	head = between_entities.next;
-	tail = between_entities.prev;
-
-	if (head != tail)
-	{
-		entities.prev->next = head;
-		head->prev = entities.prev;
-		tail->next = &entities;
-		entities.prev = tail;
-	}
-
-	between_brushes.next = NULL;
-	between_entities.next = NULL;
-#endif
+		 g_pParentWnd->ActiveXY()->Paste();
 }
 
 //============================================================================
