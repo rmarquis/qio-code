@@ -199,10 +199,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\cmdlib.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\CommandsDlg.cpp"
 				>
 			</File>
@@ -319,10 +315,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\QGL_WIN.CPP"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\RADEditView.cpp"
 				>
 			</File>
@@ -335,14 +327,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\RadiantDoc.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RadiantView.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\RotateDlg.cpp"
 				>
 			</File>
@@ -352,10 +336,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\SELECT.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ShaderEdit.cpp"
 				>
 			</File>
 			<File
@@ -453,15 +433,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\CamWnd.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\CapDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\cmdlib.h"
 				>
 			</File>
 			<File
@@ -565,10 +537,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\QGL.H"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\RADEditView.h"
 				>
 			</File>
@@ -602,14 +570,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\SELECT.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ShaderEdit.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ShaderInfo.h"
 				>
 			</File>
 			<File
@@ -710,6 +670,14 @@
 		<Filter
 			Name="math"
 			>
+			<File
+				RelativePath="..\..\code\math\aabb.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\math\aabb.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\math\vec3.cpp"
 				>
