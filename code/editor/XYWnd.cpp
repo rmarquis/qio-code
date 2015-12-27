@@ -59,12 +59,12 @@ CClipPoint g_Clip1;
 CClipPoint g_Clip2;
 CClipPoint g_Clip3;
 CClipPoint* g_pMovingClip;
-brush_s g_brFrontSplits;
-brush_s g_brBackSplits;
+brush_s g_brFrontSplits(true);
+brush_s g_brBackSplits(true);
 
-brush_s g_brClipboard;
-brush_s g_brUndo;
-entity_s	g_enClipboard;
+brush_s g_brClipboard(true);
+brush_s g_brUndo(true);
+entity_s	g_enClipboard(true);
 
 vec3_c g_vRotateOrigin;
 vec3_c g_vRotation;
@@ -3286,7 +3286,8 @@ void CleanCopyEntities()
       free (ep->value);
 		  free (ep);
     }
-	  free (pe);
+	  // delete entity 
+	  delete pe;
     pe = next;
   }
   g_enClipboard.next = g_enClipboard.prev = &g_enClipboard;
@@ -3297,7 +3298,7 @@ entity_s	*Entity_CopyClone (entity_s *e)
 	entity_s	*n;
 	epair_s		*ep, *np;
 
-	n = (entity_s*)qmalloc(sizeof(*n));
+	n = new entity_s();
 	n->brushes.onext = n->brushes.oprev = &n->brushes;
 	n->eclass = e->eclass;
 

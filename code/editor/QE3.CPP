@@ -27,6 +27,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 
 QEGlobals_t  g_qeglobals;
+int g_allocatedCounter_face;
+int g_allocatedCounter_brush;
+int g_allocatedCounter_entity;
+
+class allocatedCounterWatcher_c {
+
+public:
+	~allocatedCounterWatcher_c() {
+		FILE *d = fopen("editorAllocatedCounterDump.txt","wb");
+		if(d == 0)
+			return;
+		fprintf(d,"Unfried faces: %i\n",g_allocatedCounter_face);
+		fprintf(d,"Unfried brushes: %i\n",g_allocatedCounter_brush);
+		fprintf(d,"Unfried entities: %i\n",g_allocatedCounter_entity);
+		fclose(d);
+	}
+} acw;
 
 void WINAPI QE_CheckOpenGLForErrors(void)
 {

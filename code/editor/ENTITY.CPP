@@ -234,7 +234,7 @@ void Entity_Free (entity_s *e)
 
 	Entity_FreeEpairs(e);
 
-	free (e);
+	delete e;
 }
 
 /*
@@ -302,7 +302,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	if (strcmp (token, "{") )
 		Error ("ParseEntity: { not found");
 	
-	ent = (entity_s*)qmalloc (sizeof(*ent));
+	ent = new entity_s();
 	ent->entityId = g_entityId++;
 	ent->brushes.onext = ent->brushes.oprev = &ent->brushes;
 
@@ -674,7 +674,7 @@ entity_s	*Entity_Create (eclass_s *c)
 
 	// create it
 
-	e = (entity_s*)qmalloc(sizeof(*e));
+	e = new entity_s();
 	e->entityId = g_entityId++;
 	e->brushes.onext = e->brushes.oprev = &e->brushes;
 	e->eclass = c;
@@ -772,7 +772,7 @@ entity_s	*Entity_Clone (entity_s *e)
 	entity_s	*n;
 	epair_s		*ep, *np;
 
-	n = (entity_s*)qmalloc(sizeof(*n));
+	n = new entity_s();
 	n->entityId = g_entityId++;
 	n->brushes.onext = n->brushes.oprev = &n->brushes;
 	n->eclass = e->eclass;

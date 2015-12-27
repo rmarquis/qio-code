@@ -151,7 +151,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		} //end for
 	} //end for
 	//
-	newbrush = new brush_s();
+	newbrush = new brush_s(false);
 	//
 	for (face1 = brush1->brush_faces; face1; face1 = face1->next)
 	{
@@ -364,7 +364,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 		}
 	}
 	//
-	newbrush = new brush_s();
+	newbrush = new brush_s(false);
 	//
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
 	{
@@ -467,7 +467,7 @@ CSG_Subtract
 void CSG_Subtract (void)
 {
 	brush_s		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
-	brush_s		fragmentlist;
+	brush_s		fragmentlist(true);
 	int			i, numfragments, numbrushes;
 
 	Sys_Printf ("Subtracting...\n");

@@ -223,6 +223,8 @@ public:
 
 };
 
+extern int g_allocatedCounter_face;
+
 //++timo texdef and brushprimit_texdef are static
 // TODO : do dynamic ?
 struct face_s
@@ -246,6 +248,11 @@ struct face_s
 		original = 0;
 		face_winding = 0;
 		d_texture = 0;
+		g_allocatedCounter_face++;
+	}
+	~face_s() {
+		// allocated counter is only used for debugging
+		g_allocatedCounter_face--;
 	}
 };
 
@@ -358,9 +365,12 @@ public:
 
 };
 
+// allocated counter is only used for debugging
+extern int g_allocatedCounter_brush;
 
 struct brush_s
 {
+	bool bIsLinkedListHeader;
 	struct brush_s	*prev, *next;	// links in active/selected
 	struct brush_s	*oprev, *onext;	// links in entity
 	struct entity_s	*owner;
@@ -383,7 +393,7 @@ struct brush_s
 	int redoId;						//redo ID
 	int ownerId;					//entityId of the owner entity for undo
 
-	brush_s() {
+	brush_s(bool bIsLinkedListHeader = true) {
 		undoId = 0;
 		redoId = 0;
 		ownerId = 0;
@@ -399,6 +409,15 @@ struct brush_s
 		patchBrush = 0;
 		hiddenBrush = 0;
 		terrainBrush = 0;
+		this->bIsLinkedListHeader = bIsLinkedListHeader;
+		// allocated counter is only used for debugging
+		if(bIsLinkedListHeader==false) 
+			g_allocatedCounter_brush++;
+	}
+	~brush_s() {
+		// allocated counter is only used for debugging
+		if(bIsLinkedListHeader==false) 
+			g_allocatedCounter_brush--;
 	}
 	const aabb &getBounds() const {
 		return bounds;
