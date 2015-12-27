@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // mathlib.c -- math primitives
 
 #include "stdafx.h"
-#include "cmdlib.h"
 #include "mathlib.h"
 
 #include <math/math.h>

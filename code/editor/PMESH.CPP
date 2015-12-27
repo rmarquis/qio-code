@@ -3347,7 +3347,7 @@ brush_s* Patch_Parse(bool bOld)
 		}
 		else
 		{
-			pm->d_texture = notexture;
+			pm->d_texture = QERApp_TryTextureForName("notexture");
 			Sys_Printf("Warning: Patch read with no texture, using notexture... \n");
 		}               
 		

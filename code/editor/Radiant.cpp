@@ -26,8 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Radiant.h"
 
 #include "MainFrm.h"
-#include "RadiantDoc.h"
-#include "RadiantView.h"
 #include "PrefsDlg.h"
 
 extern bool g_bClosingRadiant;
