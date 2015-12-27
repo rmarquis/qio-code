@@ -38,7 +38,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // this define to use HTREEITEM and MFC stuff in the headers
 #define QERTYPES_USE_MFC
 #include "qertypes.h"
-#include "cmdlib.h"
 #include "mathlib.h"
 #include "parse.h"
 

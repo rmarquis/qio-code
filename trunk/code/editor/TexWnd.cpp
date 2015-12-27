@@ -49,7 +49,6 @@ Str m_gStr;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-mtrAPI_i	*notexture = NULL;
 mtrAPI_i	*g_pluginTexture = NULL;
 
 static bool	nomips = false;
@@ -1368,18 +1367,7 @@ void Texture_Draw2 (int width, int height)
 }
 
 
-void Texture_Init (bool bHardInit)
-{
-	byte	*pal = NULL;
 
-	// create the fallback texture
-
-  if (bHardInit)
-  {
-		notexture = QERApp_TryTextureForName("default");
-////	  g_qeglobals.d_qtextures = NULL;
-  }
-}
 
 void Texture_FlushUnused()
 {
@@ -1446,7 +1434,6 @@ void Texture_Flush (bool bReload)
 
   CWaitCursor cursor;
   CStringList strList;
-  Texture_Init(false);
   Texture_Cleanup(&strList);
 
  /* GLuint* pGln = new GLuint[texture_extension_number-1];

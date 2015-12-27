@@ -22,8 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // window system independent camera view code
 
-struct z_t
+class z_t
 {
+public:
 	int		width, height;
 
 	bool	timing;

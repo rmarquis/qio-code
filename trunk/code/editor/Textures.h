@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // a texturename of the form (0 0 0) will
 // create a solid color texture
 
-void	Texture_Init (bool bHardInit = true);
 void	Texture_FlushUnused ();
 void	Texture_Flush (bool bReload = false);
 void	Texture_ClearInuse (void);
@@ -33,7 +32,6 @@ void	Texture_ShowAll();
 void Texture_Cleanup(CStringList *pList = NULL);
 
 mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
-void	Texture_Init (void);
 void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
 void	Texture_SetMode(int iMenu);	// GL_TEXTURE_NEAREST, etc..

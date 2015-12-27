@@ -497,10 +497,6 @@ void QE_Init (void)
 	g_qeglobals.d_gridsize = 8;
 	g_qeglobals.d_showgrid = true;
 
-	/*
-	** other stuff
-	*/
-	Texture_Init (true);
 	//Cam_Init ();
 	//XY_Init ();
 	Z_Init ();

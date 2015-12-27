@@ -352,7 +352,7 @@ public:
 };
 
 
-typedef struct brush_s
+struct brush_s
 {
 	struct brush_s	*prev, *next;	// links in active/selected
 	struct brush_s	*oprev, *onext;	// links in entity
@@ -385,7 +385,7 @@ typedef struct brush_s
 	const vec3_c &getMaxs() const {
 		return bounds.getMaxs();
 	}
-} brush_s;
+};
 
 
 //#define	MAX_FLAGS	8
