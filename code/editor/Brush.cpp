@@ -38,15 +38,6 @@ int g_nBrushId = 0;
 
 
 
-brush_s *Brush_Alloc()
-{
-  brush_s *b = (brush_s*)qmalloc(sizeof(brush_s));
-  return b;
-}
-
-
-
-
 void PrintWinding (winding_t *w)
 {
 	int		i;
@@ -156,17 +147,18 @@ float SetShadeForPlane (const class edPlane_c &p)
 vec3_t  vecs[2];
 float	shift[2];
 
-/*
-================
-Face_Alloc
-================
-*/
-face_s *Face_Alloc( void )
+void Brush_Print(brush_s* b)
 {
-	face_s *f = (face_s*)qmalloc( sizeof( *f ) );
-
-	return f;
+	int nFace = 0;
+	for (face_s* f = b->brush_faces ; f ; f=f->next)
+	{
+		Sys_Printf("Face %i\n", nFace++);
+		Sys_Printf("%f %f %f\n", f->planepts[0][0], f->planepts[0][1], f->planepts[0][2]);
+		Sys_Printf("%f %f %f\n", f->planepts[1][0], f->planepts[1][1], f->planepts[1][2]);
+		Sys_Printf("%f %f %f\n", f->planepts[2][0], f->planepts[2][1], f->planepts[2][2]);
+	}
 }
+
 
 /*
 ================
@@ -187,7 +179,7 @@ void Face_Free( face_s *f )
 
 	f->texdef.~texdef_t();;
 
-	free( f );
+	delete f;
 }
 
 /*
@@ -199,7 +191,7 @@ face_s	*Face_Clone (face_s *f)
 {
 	face_s	*n;
 
-	n = Face_Alloc();
+	n = new face_s();
 	n->texdef = f->texdef;
 
 	memcpy (n->planepts, f->planepts, sizeof(n->planepts));
@@ -219,7 +211,7 @@ face_s	*Face_FullClone (face_s *f)
 {
 	face_s	*n;
 
-	n = Face_Alloc();
+	n = new face_s();
 	n->texdef = f->texdef;
 	memcpy(n->planepts, f->planepts, sizeof(n->planepts));
 	n->plane = f->plane;
@@ -1657,7 +1649,7 @@ brush_s *Brush_Parse (void)
 	int			i,j;
 	
 	g_qeglobals.d_parsed_brushes++;
-	b = Brush_Alloc();
+	b = new brush_s();
 
 	do
 	{
@@ -1722,7 +1714,7 @@ brush_s *Brush_Parse (void)
 				g_qeglobals.bNeedConvert=true;
 			}
 			
-			f = Face_Alloc();
+			f = new face_s();
 			
 			// add the brush to the end of the chain, so
 			// loading and saving a map doesn't reverse the order
@@ -2070,7 +2062,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 			Error ("Brush_InitSolid: backwards");
 	}
 
-	b = Brush_Alloc();
+	b = new brush_s();
 	
 	pts[0][0][0] = mins[0];
 	pts[0][0][1] = mins[1];
@@ -2094,7 +2086,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 
 	for (i=0 ; i<4 ; i++)
 	{
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = *texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2107,7 +2099,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 		f->planepts[2] = pts[i][0];
 	}
 	
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = *texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2118,7 +2110,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 	f->planepts[1] = pts[1][1];
 	f->planepts[2] = pts[2][1];
 
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = *texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2150,7 +2142,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 		if (maxs[i] < mins[i])
 			Error ("Brush_InitSolid: backwards");
 
-	brush_s* b = Brush_Alloc();
+	brush_s* b = new brush_s();
 
 	vec3_t corners[4];
 
@@ -2184,7 +2176,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 	// sides
 	for (i = 0; i < 4; i++)
 	{
-		face_s* f = Face_Alloc();
+		face_s* f = new face_s();
 		f->texdef = *texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2196,7 +2188,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 		f->planepts[1] = corners[i];
 		f->planepts[2] = corners[j];
 
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = *texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
@@ -2281,10 +2273,10 @@ void Brush_MakeSided (int sides)
 			width = (maxs[i] - mins[i]) * 0.5;
 	}
 
-	b = Brush_Alloc();
+	b = new brush_s();
 		
 	// create top face
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = *texdef;
 	f->next = b->brush_faces;
 	b->brush_faces = f;
@@ -2294,7 +2286,7 @@ void Brush_MakeSided (int sides)
 	f->planepts[0][(axis+1)%3] = maxs[(axis+1)%3]; f->planepts[0][(axis+2)%3] = maxs[(axis+2)%3]; f->planepts[0][axis] = maxs[axis];
 
 	// create bottom face
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = *texdef;
 	f->next = b->brush_faces;
 	b->brush_faces = f;
@@ -2305,7 +2297,7 @@ void Brush_MakeSided (int sides)
 
 	for (i=0 ; i<sides ; i++)
 	{
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = *texdef;
 		f->next = b->brush_faces;
 		b->brush_faces = f;
@@ -2374,7 +2366,7 @@ void Brush_Free (brush_s *b, bool bRemoveNode)
 	if (b->onext)
 		Entity_UnlinkBrush (b);
 
-	free (b);
+	delete b;
 }
 
 /*
@@ -2441,7 +2433,7 @@ brush_s *Brush_Clone (brush_s *b)
 	}
 	else
 	{
-  	n = Brush_Alloc();
+  	n = new brush_s();
 		n->owner = b->owner;
 		for (f=b->brush_faces ; f ; f=f->next)
 		{
@@ -2480,7 +2472,7 @@ brush_s *Brush_FullClone(brush_s *b)
 	}
 	else
 	{
-  	n = Brush_Alloc();
+  	n = new brush_s();
 		n->owner = b->owner;
 		n->bounds = b->bounds;
 		//
@@ -3562,21 +3554,6 @@ void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 }
 
 
-
-void Brush_Print(brush_s* b)
-{
-	int nFace = 0;
-	for (face_s* f = b->brush_faces ; f ; f=f->next)
-	{
-		Sys_Printf("Face %i\n", nFace++);
-		Sys_Printf("%f %f %f\n", f->planepts[0][0], f->planepts[0][1], f->planepts[0][2]);
-		Sys_Printf("%f %f %f\n", f->planepts[1][0], f->planepts[1][1], f->planepts[1][2]);
-		Sys_Printf("%f %f %f\n", f->planepts[2][0], f->planepts[2][1], f->planepts[2][2]);
-	}
-}
-
-
-
 /*
 =============
 Brush_MakeSided
@@ -3624,10 +3601,10 @@ void Brush_MakeSidedCone(int sides)
 	}
 	width /= 2;
 
-	b = Brush_Alloc();
+	b = new brush_s();
 
 	// create bottom face
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = *texdef;
 	f->next = b->brush_faces;
 	b->brush_faces = f;
@@ -3638,7 +3615,7 @@ void Brush_MakeSidedCone(int sides)
 
 	for (i=0 ; i<sides ; i++)
 	{
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = *texdef;
 		f->next = b->brush_faces;
 		b->brush_faces = f;
@@ -3716,7 +3693,7 @@ void Brush_MakeSidedSphere(int sides)
 	}
 	radius /= 2;
 
-	b = Brush_Alloc();
+	b = new brush_s();
 
 	float dt = float(2 * M_PI / sides);
 	float dp = float(M_PI / sides);
@@ -3728,7 +3705,7 @@ void Brush_MakeSidedSphere(int sides)
 			t = i * dt;
 			p = float(j * dp - M_PI / 2);
 
-			f = Face_Alloc();
+			f = new face_s();
 			f->texdef = *texdef;
 			f->next = b->brush_faces;
 			b->brush_faces = f;
@@ -3747,7 +3724,7 @@ void Brush_MakeSidedSphere(int sides)
 	{
 		t = i * dt;
 
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = *texdef;
 		f->next = b->brush_faces;
 		b->brush_faces = f;

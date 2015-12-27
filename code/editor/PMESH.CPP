@@ -36,7 +36,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // externs
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
-extern face_s *Face_Alloc( void );
 void _Write3DMatrix (FILE *f, int y, int x, int z, float *m);
 void _Write3DMatrix (CMemFile *f, int y, int x, int z, float *m);
 
@@ -424,7 +423,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 
 	for (i=0 ; i<4 ; i++)
 	{
-		f = Face_Alloc();
+		f = new face_s();
 		f->texdef = texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
@@ -441,7 +440,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 		f->planepts[2] = pts[i][0];
 	}
 
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
@@ -456,7 +455,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 	f->planepts[1] = pts[1][1];
 	f->planepts[2] = pts[2][1];
 
-	f = Face_Alloc();
+	f = new face_s();
 	f->texdef = texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
