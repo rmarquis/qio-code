@@ -32,7 +32,7 @@ BOOL CALLBACK EditCommandDlgProc (
 {
 	char	key[1024];
 	char	value[1024];
-	char	*temp;
+	const char	*temp;
 	int		index;
 	HWND	hOwner;
 	
@@ -138,16 +138,16 @@ BOOL CALLBACK AddCommandDlgProc (
 void UpdateBSPCommandList (HWND hwndDlg)
 {
 	int			i;
-	epair_s		*ep;
 
 	SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_RESETCONTENT, 0 , 0);
 
 	i = 0;
-	for (ep = g_qeglobals.d_project_entity->epairs ; ep ; ep=ep->next)
-	{
-		if (ep->key[0] == 'b' && ep->key[1] == 's' && ep->key[2] == 'p')
+	for(u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++) {
+		const char *key =g_qeglobals.d_project_entity->keyValues.getKey(i);
+		const char *value = g_qeglobals.d_project_entity->keyValues.getValue(i);
+		if (key[0] == 'b' && key[1] == 's' && key[2] == 'p')
 		{
-			SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_ADDSTRING, i , (LPARAM) ep->key);
+			SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_ADDSTRING, i , (LPARAM) key);
 			i++;
 		}
 	}
@@ -200,7 +200,7 @@ BOOL CALLBACK ProjectDlgProc (
 			case IDC_REMCMD:
 				index = SendDlgItemMessage (hwndDlg, IDC_CMD_LIST, LB_GETCURSEL, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_GETTEXT, index, (LPARAM) (LPCTSTR) key);
-				DeleteKey (g_qeglobals.d_project_entity, key);
+				g_qeglobals.d_project_entity->deleteKey(key);
 				Sys_Printf ("Selected %d\n", index);
 				UpdateBSPCommandList (hwndDlg);
 				break;

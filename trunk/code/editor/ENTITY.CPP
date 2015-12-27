@@ -25,25 +25,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 int g_entityId = 1;
 
-char *ValueForKey ( epair_s *&e, const char *key)
-{
-  epair_s *ep;
-  for (ep=e ; ep ; ep=ep->next)
-  {
-		if (!strcmp (ep->key, key) )
-    {
-      return ep->value;
-    }
-  }
-  return "";
-}
 
 
-char *ValueForKey (entity_s *ent, const char *key)
+const char *ValueForKey (entity_s *ent, const char *key)
 {
 	if(ent == 0)
 		return "";
-  return ValueForKey(ent->epairs, key);
+  return ent->getKeyValue(key);
 }
 
 void TrackMD3Angles(entity_s *e, const char *key, const char *value)
@@ -69,28 +57,6 @@ void TrackMD3Angles(entity_s *e, const char *key, const char *value)
   }
 }
 
-void 	SetKeyValue (epair_s *&e, const char *key, const char *value)
-{
-	epair_s	*ep;
-  for (ep=e ; ep ; ep=ep->next)
-  {
-		if (!strcmp (ep->key, key) )
-		{
-			free (ep->value);
-			ep->value = (char*)qmalloc(strlen(value)+1);
-			strcpy (ep->value, value);
-			return;
-		}
-  }
-	ep = (epair_s*)qmalloc (sizeof(*ep));
-	ep->next = e;
-	e = ep;
-	ep->key = (char*)qmalloc(strlen(key)+1);
-	strcpy (ep->key, key);
-	ep->value = (char*)qmalloc(strlen(value)+1);
-	strcpy (ep->value, value);
-
-}
 
 
 void 	SetKeyValue (entity_s *ent, const char *key, const char *value)
@@ -104,42 +70,17 @@ void 	SetKeyValue (entity_s *ent, const char *key, const char *value)
 
   TrackMD3Angles(ent, key, value);
 
-  SetKeyValue(ent->epairs, key, value);
+  ent->keyValues.set(key,value);
 
 }
 
-void 	DeleteKey (epair_s *&e, const char *key)
-{
-	epair_s	**ep, *next;
-	
-	ep = &e;
-	while (*ep)
-	{
-		next = *ep;
-		if ( !strcmp (next->key, key) )
-		{
-			*ep = next->next;
-			free(next->key);
-			free(next->value);
-			free(next);
-			return;
-		}
-		ep = &next->next;
-	}
-}
-
-
-void 	DeleteKey (entity_s *ent, const char *key)
-{
-  DeleteKey(ent->epairs, key);
-}
 
 
 
 
 float	FloatForKey (entity_s *ent, const char *key)
 {
-	char	*k;
+	const char	*k;
 	
 	k = ValueForKey (ent, key);
 	return atof(k);
@@ -147,7 +88,7 @@ float	FloatForKey (entity_s *ent, const char *key)
 
 int IntForKey (entity_s *ent, const char *key)
 {
-	char	*k;
+	const char	*k;
 	
 	k = ValueForKey (ent, key);
 	return atoi(k);
@@ -155,32 +96,12 @@ int IntForKey (entity_s *ent, const char *key)
 
 void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec)
 {
-	char	*k;
+	const char	*k;
 	
 	k = ValueForKey (ent, key);
 	sscanf (k, "%f %f %f", &vec[0], &vec[1], &vec[2]);
 }
 
-/*
-===============
-Entity_FreeEpairs
-
-Frees the entity epairs.
-===============
-*/
-void Entity_FreeEpairs(entity_s *e)
-{
-	epair_s	*ep, *next;
-
-	for (ep = e->epairs; ep; ep = next)
-	{
-		next = ep->next;
-		free (ep->key);
-		free (ep->value);
-		free (ep);
-	}
-	e->epairs = NULL;
-}
 
 /*
 ===========
@@ -232,8 +153,6 @@ void Entity_Free (entity_s *e)
 		e->prev->next = e->next;
 	}
 
-	Entity_FreeEpairs(e);
-
 	delete e;
 }
 
@@ -244,39 +163,11 @@ Entity_MemorySize
 */
 int Entity_MemorySize(entity_s *e)
 {
-	epair_s	*ep;
 	int size = 0;
-
-	for (ep = e->epairs; ep; ep = ep->next)
-	{
-		size += _msize(ep->key);
-		size += _msize(ep->value);
-		size += _msize(ep);
-	}
-	size += _msize(e);
 	return size;
 }
 
-/*
-=================
-ParseEpair
-=================
-*/
-epair_s *ParseEpair (void)
-{
-	epair_s	*e;
-	
-	e = (epair_s*)qmalloc (sizeof(*e));
-	
-	e->key = (char*)qmalloc(strlen(token)+1);
-	strcpy (e->key, token);
 
-	GetToken (false);
-	e->value = (char*)qmalloc(strlen(token)+1);
-	strcpy (e->value, token);
-
-	return e;
-}
 
 /*
 ================
@@ -293,7 +184,6 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	eclass_s	*e;
 	brush_s		*b;
 	vec3_c		mins, maxs;
-	epair_s		*ep;
 	bool	has_brushes;
 	
 	if (!GetToken (true))
@@ -335,9 +225,12 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 		}
 		else
 		{
-			ep = ParseEpair ();
-			ep->next = ent->epairs;
-			ent->epairs = ep;
+			char key[2048];
+			strcpy (key, token);
+
+			GetToken (false);
+
+			ent->keyValues.set(key,token);
 		}
 	} while (1);
 	
@@ -379,7 +272,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 		float a = 0;
 		if (e->nShowFlags & ECLASS_MISCMODEL)
 		{
-			char* p = ValueForKey(ent, "model");
+			const char* p = ValueForKey(ent, "model");
 			if (p != NULL && strlen(p) > 0)
 			{
 				vec3_c vMin, vMax;
@@ -439,7 +332,6 @@ Entity_Write
 */
 void Entity_Write (entity_s *e, FILE *f, bool use_region)
 {
-	epair_s		*ep;
 	brush_s		*b;
 	vec3_c		origin;
 	char		text[128];
@@ -494,8 +386,11 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 	}
 
 	fprintf (f, "{\n");
-	for (ep = e->epairs ; ep ; ep=ep->next)
-		fprintf (f, "\"%s\" \"%s\"\n", ep->key, ep->value);
+	for(u32 i = 0; i < e->keyValues.size(); i++) {
+		const char *key = e->keyValues.getKey(i);
+		const char *value = e->keyValues.getValue(i);
+		fprintf (f, "\"%s\" \"%s\"\n", key, value);
+	}
 
 	if (!e->eclass->fixedsize)
 	{
@@ -532,7 +427,6 @@ bool IsBrushSelected(brush_s* bSel)
 //
 void Entity_WriteSelected(entity_s *e, FILE *f)
 {
-	epair_s		*ep;
 	brush_s		*b;
 	vec3_c		origin;
 	char		text[128];
@@ -563,8 +457,12 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 	}
 
   fprintf (f, "{\n");
-	for (ep = e->epairs ; ep ; ep=ep->next)
-	  fprintf (f, "\"%s\" \"%s\"\n", ep->key, ep->value);
+    for(u32 i = 0; i < e->keyValues.size(); i++) 
+	{
+		const char *key = e->keyValues.getKey(i);
+		const char *value = e->keyValues.getValue(i);
+	  fprintf (f, "\"%s\" \"%s\"\n", key, value);
+	}
 
   if (!e->eclass->fixedsize)
   {
@@ -621,8 +519,11 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 	}
 
   MemFile_fprintf(pMemFile, "{\n");
-	for (ep = e->epairs ; ep ; ep=ep->next)
-	  MemFile_fprintf(pMemFile, "\"%s\" \"%s\"\n", ep->key, ep->value);
+	for(u32 i = 0; i < e->keyValues.size(); i++) {
+		const char *key = e->keyValues.getKey(i);
+		const char *value = e->keyValues.getValue(i);
+	  MemFile_fprintf(pMemFile, "\"%s\" \"%s\"\n", key, value);
+	}
 
   if (!e->eclass->fixedsize)
   {
@@ -780,14 +681,7 @@ entity_s	*Entity_Clone (entity_s *e)
 	// add the entity to the entity list
 	Entity_AddToList(n, &entities);
 
-	for (ep = e->epairs ; ep ; ep=ep->next)
-	{
-		np = (epair_s*)qmalloc(sizeof(*np));
-		np->key = copystring(ep->key);
-		np->value = copystring(ep->value);
-		np->next = n->epairs;
-		n->epairs = np;
-	}
+	n->keyValues = e->keyValues;
 	return n;
 }
 

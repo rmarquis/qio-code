@@ -706,7 +706,7 @@ void UniqueTargetName(CString& rStr)
 	int maxtarg = 0;
 	for (entity_s* e=entities.next ; e != &entities ; e=e->next)
 	{
-		char* tn = ValueForKey (e, "targetname");
+		const char* tn = ValueForKey (e, "targetname");
 		if (tn && tn[0])
 		{
 			int targetnum = atoi(tn+1);

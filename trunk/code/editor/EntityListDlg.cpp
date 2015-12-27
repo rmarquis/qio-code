@@ -124,14 +124,16 @@ void CEntityListDlg::OnSelchangedTreeEntity(NMHDR* pNMHDR, LRESULT* pResult)
     entity_s* pEntity = reinterpret_cast<entity_s*>(m_treeEntity.GetItemData(hItem));
     if (pEntity)
     {
-	    for (epair_s* pEpair = pEntity->epairs ; pEpair ; pEpair = pEpair->next)
-      {
-		    if (strlen(pEpair->key) > 8)
-          strList.Format("%s\t%s", pEpair->key, pEpair->value);
+		for(u32 i = 0; i < pEntity->keyValues.size(); i++) 
+		{
+			const char *key = pEntity->keyValues.getKey(i);
+			const char *value = pEntity->keyValues.getValue(i);
+		    if (strlen(key) > 8)
+          strList.Format("%s\t%s", key, value);
         else
-          strList.Format("%s\t\t%s", pEpair->key, pEpair->value);
-        int nParent = m_lstEntity.InsertItem(0, pEpair->key);
-        m_lstEntity.SetItem(nParent, 1, LVIF_TEXT, pEpair->value, 0, 0, 0, reinterpret_cast<DWORD>(pEntity));
+          strList.Format("%s\t\t%s", key, value);
+        int nParent = m_lstEntity.InsertItem(0, key);
+        m_lstEntity.SetItem(nParent, 1, LVIF_TEXT, value, 0, 0, 0, reinterpret_cast<DWORD>(pEntity));
 
       }
     }

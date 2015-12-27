@@ -338,7 +338,7 @@ void     QE_CheckAutoSave( void );
 void     WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src );
 void     QE_CountBrushesAndUpdateStatusBar( void );
 void     WINAPI QE_CheckOpenGLForErrors(void);
-void     QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps);
+void     QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool useTemps);
 void     QE_Init (void);
 bool QE_KeyDown (int key, int nFlags = 0);
 bool QE_LoadProject (char *projectfile);

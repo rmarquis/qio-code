@@ -73,9 +73,10 @@ void ExtractFileName (const char *path, char *dest)
 	*dest = 0;
 }
 
-void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps)
+void QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool useTemps)
 {
-	char	*in;
+	const char	*in;
+	char *p;
 	char	src[2048];
 	char	rsh[2048];
 	char	base[2048];
@@ -84,23 +85,23 @@ void QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemp
 
 	strcpy(src, mapname);
 	_strlwr(src);
-	in = strstr(src, "maps/");
-	if (!in)
+	p = strstr(src, "maps/");
+	if (!p)
 	{
-		in = strstr(src, "maps\\");
+		p = strstr(src, "maps\\");
 	}
-	if (in)
+	if (p)
 	{
-		in += 5;
-		strcpy(base, in);
+		p += 5;
+		strcpy(base, p);
 		in = base;
-		while (*in)
+		while (*p)
 		{
-			if (*in == '\\')
+			if (*p == '\\')
 			{
-				*in = '/';
+				*p = '/';
 			}
-			in++;
+			p++;
 		}
 	}
 	else
@@ -213,7 +214,7 @@ HWND FindAnyWindow(const char *pTitle) {
 const UINT wm_AddCommand = RegisterWindowMessage( "Q3MPC_AddCommand" );
 
 CTime g_tBegin;
-void RunBsp (char *command)
+void RunBsp (const char *command)
 {
 	char	sys[2048];
 	char	batpath[2048];
@@ -264,7 +265,7 @@ void RunBsp (char *command)
   // FIXME: this code just gets worse and worse
   CString strPath, strFile;
 
-  char *rsh = ValueForKey(g_qeglobals.d_project_entity, "rshcmd");
+ const char *rsh = ValueForKey(g_qeglobals.d_project_entity, "rshcmd");
   if (rsh == NULL)
   {
     ExtractPath_and_Filename(name, strPath, strFile);

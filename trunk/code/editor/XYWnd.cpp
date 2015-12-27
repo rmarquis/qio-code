@@ -2499,12 +2499,12 @@ void DrawPathLines (void)
 	vec3_c	mid, mid1;
 	entity_s *se, *te;
 	brush_s	*sb, *tb;
-	char	*psz;
+	const char	*psz;
 	vec3_c	dir, s1, s2;
 	vec_t	len, f;
 	int		arrows;
 	int			num_entities;
-	char		*ent_target[MAX_MAP_ENTITIES];
+	const char		*ent_target[MAX_MAP_ENTITIES];
 	entity_s	*ent_entity[MAX_MAP_ENTITIES];
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS)
@@ -3278,14 +3278,6 @@ void CleanCopyEntities()
   while (pe != NULL && pe != &g_enClipboard)
   {
     entity_s* next = pe->next;
-    epair_s* enext = NULL;
-	  for (epair_s* ep = pe->epairs ; ep ; ep=enext)
-    {
-		  enext = ep->next;
-      free (ep->key);
-      free (ep->value);
-		  free (ep);
-    }
 	  // delete entity 
 	  delete pe;
     pe = next;
@@ -3308,14 +3300,16 @@ entity_s	*Entity_CopyClone (entity_s *e)
 	n->next->prev = n;
 	n->prev = &g_enClipboard;
 
-	for (ep = e->epairs ; ep ; ep=ep->next)
-	{
-		np = (epair_s*)qmalloc(sizeof(*np));
-		np->key = copystring(ep->key);
-		np->value = copystring(ep->value);
-		np->next = n->epairs;
-		n->epairs = np;
-	}
+	// copy key values
+	n->keyValues = e->keyValues;
+	//for (ep = e->epairs ; ep ; ep=ep->next)
+	//{
+	//	np = (epair_s*)qmalloc(sizeof(*np));
+	//	np->key = copystring(ep->key);
+	//	np->value = copystring(ep->value);
+	//	np->next = n->epairs;
+	//	n->epairs = np;
+	//}
 	return n;
 }
 
