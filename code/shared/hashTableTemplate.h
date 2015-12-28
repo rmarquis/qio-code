@@ -173,6 +173,14 @@ public:
 		removeEntry(removeMe);
 		return removeMe;
 	}
+	static int comp(const void *a, const void *b) {
+		TYPE *ta = *(TYPE**)a;	
+		TYPE *tb = *(TYPE**)b;	
+		return stricmp(ta->getName(),tb->getName());
+	}
+	void sortArray() {
+		qsort(ar.getArray(),ar.size(),ar.getElementSize(),comp);;
+	}
 	void iterateEntries(void (*callback)(const char *entryName)) {
 		for(u32 e = 0; e < ar.size(); e++) {
 			callback(ar[e]->name);

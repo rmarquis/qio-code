@@ -167,7 +167,6 @@ Initializes all non-persistant parts of playerState
 */
 void ClientSpawn(edict_s *ent) {
 	int		index;
-	char	userinfo[MAX_INFO_STRING];
 
 	index = ent - g_entities;
 

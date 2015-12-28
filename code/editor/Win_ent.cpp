@@ -315,7 +315,6 @@ ENTITY WINDOW
 ===============================================================
 */
 
-
 void FillClassList (void)
 {
 	eclass_s	*pec;

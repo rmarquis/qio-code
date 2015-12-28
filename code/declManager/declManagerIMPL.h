@@ -102,5 +102,12 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	virtual void onRendererShutdown();
 	virtual void iterateEntityDefNames(void (*callback)(const char *s));
 	virtual void iterateParticleDefNames(void (*callback)(const char *s));
+
+	
+	virtual void loadAllEntityDecls();
+	virtual const char *getLoadedEntityDeclName(u32 i) const;
+	virtual u32 getNumLoadedEntityDecls() const {
+		return entityDecls.size();
+	}
 };
 

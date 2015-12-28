@@ -69,6 +69,11 @@ public:
 	// clear up unused decls
 	virtual void onGameShutdown() = 0;
 	virtual void onRendererShutdown() = 0;
+	// for editor
+	virtual void loadAllEntityDecls() = 0;
+	virtual const char *getLoadedEntityDeclName(u32 i) const = 0;
+	// counts access
+	virtual u32 getNumLoadedEntityDecls() const = 0;
 	// used for console command autocompletion
 	virtual void iterateEntityDefNames(void (*callback)(const char *s)) = 0;
 	virtual void iterateParticleDefNames(void (*callback)(const char *s)) = 0;

@@ -283,16 +283,7 @@ struct curveVertex_t {
 #define PATCH_STYLEMASK    0xffff0000    // 
 
 #include <renderer/rVertex.h>
-struct drawVert_t {
-	vec3_c	xyz;
-	float		st[2];
-	float		lightmap[2];
-	vec3_c	normal;	
-	
-	texturedVertex_c &asWindingPoint() {
-		return *((texturedVertex_c*)(this));
-	}
-};
+typedef rVert_c drawVert_t;
 
 class patchMesh_c {
 	float calcPatchWidth();

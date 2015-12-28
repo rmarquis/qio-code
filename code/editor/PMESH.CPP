@@ -611,8 +611,8 @@ void patchMesh_c::naturalizePatch()
 		float yAccum = 0;
 		for ( int j = 0 ; j < this->height ; j++ ) 
 		{
-			this->ctrl[i][j].st[0] = (fPWidth / nWidth) * xAccum / fPWidth;
-			this->ctrl[i][j].st[1] = (fPHeight / nHeight) * yAccum / fPHeight;
+			this->ctrl[i][j].tc[0] = (fPWidth / nWidth) * xAccum / fPWidth;
+			this->ctrl[i][j].tc[1] = (fPHeight / nHeight) * yAccum / fPHeight;
 			yAccum = this->calcPatchHeightDistanceTo(j+1);
 			//this->ctrl[i][j][3] = (fPWidth / nWidth) * (float)i / (this->width - 1);
 			//this->ctrl[i][j][4] = (fPHeight/ nHeight) * (float)j / (this->height - 1);
@@ -762,7 +762,11 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
       {
         f->plane.normal = p->ctrl[i][j].normal;
       }
-		  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
+	  texturedVertex_c tmp;
+	  tmp.xyz = p->ctrl[i][j].xyz;
+		///  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
+	   EmitTextureCoordinates(tmp, f->d_texture, f);
+	   p->ctrl[i][j].tc = tmp.st;
     }
   }
   f->plane.normal = vSave;
@@ -2113,8 +2117,8 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 						ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
 						ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
 						ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
-						ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].xyz[ 3 ];
-						ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].xyz[ 4 ];
+						ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
+						ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
 					}
 				}
 				DrawSinglePatch( ctrl, bPoints );
@@ -2124,11 +2128,11 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 	else
 	{
 		glBegin (GL_TRIANGLES);
-		glTexCoord2fv( this->ctrl[0][0].st);
+		glTexCoord2fv( this->ctrl[0][0].tc);
 		glVertex3fv( this->ctrl[0][0].xyz);
-		glTexCoord2fv( this->ctrl[2][0].st);
+		glTexCoord2fv( this->ctrl[2][0].tc);
 		glVertex3fv( this->ctrl[2][0].xyz);
-		glTexCoord2fv( this->ctrl[2][2].st);
+		glTexCoord2fv( this->ctrl[2][2].tc);
 		glVertex3fv( this->ctrl[2][2].xyz);
 		glEnd();
 	}
@@ -3056,8 +3060,8 @@ void patchMesh_c::adjustPatchColumns(int nCols)
 	{
 		for ( h = 0 ; h < this->height ; h++ ) 
 		{
-			this->ctrl[w][h].st[0] = 4 * (float)w / (this->width - 1);
-			this->ctrl[w][h].st[1] = 4 * (float)h / (this->height - 1);
+			this->ctrl[w][h].tc[0] = 4 * (float)w / (this->width - 1);
+			this->ctrl[w][h].tc[1] = 4 * (float)h / (this->height - 1);
 		}
 	}
 	UpdatePatchInspector();
@@ -3111,8 +3115,8 @@ void patchMesh_c::adjustPatchRows(int nRows)
 	{
 		for ( h = 0 ; h < this->height ; h++ ) 
 		{
-			this->ctrl[w][h].st[0] = 4 * (float)w / (this->width - 1);
-			this->ctrl[w][h].st[1] = 4 * (float)h / (this->height - 1);
+			this->ctrl[w][h].tc[0] = 4 * (float)w / (this->width - 1);
+			this->ctrl[w][h].tc[1] = 4 * (float)h / (this->height - 1);
 		}
 	}
 	UpdatePatchInspector();
@@ -3395,8 +3399,8 @@ brush_s* Patch_Parse(bool bOld)
       pm->ctrl[w][h].xyz[0] = ctrl[w][h][0];  
       pm->ctrl[w][h].xyz[1] = ctrl[w][h][1];  
       pm->ctrl[w][h].xyz[2] = ctrl[w][h][2];  
-      pm->ctrl[w][h].st[0] = ctrl[w][h][3]; 
-      pm->ctrl[w][h].st[1] = ctrl[w][h][4];  
+      pm->ctrl[w][h].tc[0] = ctrl[w][h][3]; 
+      pm->ctrl[w][h].tc[1] = ctrl[w][h][4];  
     }
   }
 
@@ -3448,8 +3452,8 @@ void Patch_Write (patchMesh_c *p, CMemFile *file)
       ctrl[w][h][0] = p->ctrl[w][h].xyz[0];
       ctrl[w][h][1] = p->ctrl[w][h].xyz[1];
       ctrl[w][h][2] = p->ctrl[w][h].xyz[2];
-      ctrl[w][h][3] = p->ctrl[w][h].st[0];
-      ctrl[w][h][4] = p->ctrl[w][h].st[1];
+      ctrl[w][h][3] = p->ctrl[w][h].tc[0];
+      ctrl[w][h][4] = p->ctrl[w][h].tc[1];
     }
   }
 
@@ -3477,8 +3481,8 @@ void Patch_Write (patchMesh_c *p, FILE *file)
       ctrl[w][h][0] = p->ctrl[w][h].xyz[0];
       ctrl[w][h][1] = p->ctrl[w][h].xyz[1];
       ctrl[w][h][2] = p->ctrl[w][h].xyz[2];
-      ctrl[w][h][3] = p->ctrl[w][h].st[0];
-      ctrl[w][h][4] = p->ctrl[w][h].st[1];
+      ctrl[w][h][3] = p->ctrl[w][h].tc[0];
+      ctrl[w][h][4] = p->ctrl[w][h].tc[1];
     }
   }
 
@@ -3506,10 +3510,10 @@ void Patch_RotateTexture(patchMesh_c *p, float fAngle)
       if (g_qeglobals.d_select_mode == sel_curvepoint && PointInMoveList(p->ctrl[w][h].xyz) == -1)
         continue;
 
-      float x = p->ctrl[w][h].st[0];
-      float y = p->ctrl[w][h].st[1];
-      p->ctrl[w][h].st[0] = x * cos(DEG2RAD(fAngle)) - y * sin(DEG2RAD(fAngle));
-      p->ctrl[w][h].st[1] = y * cos(DEG2RAD(fAngle)) + x * sin(DEG2RAD(fAngle));
+      float x = p->ctrl[w][h].tc[0];
+      float y = p->ctrl[w][h].tc[1];
+      p->ctrl[w][h].tc[0] = x * cos(DEG2RAD(fAngle)) - y * sin(DEG2RAD(fAngle));
+      p->ctrl[w][h].tc[1] = y * cos(DEG2RAD(fAngle)) + x * sin(DEG2RAD(fAngle));
     }
   }
 }
@@ -3544,8 +3548,8 @@ void Patch_ScaleTexture(patchMesh_c *p, float fx, float fy, bool bFixup)
       if (g_qeglobals.d_select_mode == sel_curvepoint && PointInMoveList(p->ctrl[w][h].xyz) == -1)
         continue;
 
-      p->ctrl[w][h].st[0] *= fx;
-      p->ctrl[w][h].st[1] *= fy;
+      p->ctrl[w][h].tc[0] *= fx;
+      p->ctrl[w][h].tc[1] *= fy;
     }
   }
   p->bDirty = true;
@@ -3574,8 +3578,8 @@ void Patch_ShiftTexture(patchMesh_c *p, float fx, float fy)
       if (g_qeglobals.d_select_mode == sel_curvepoint && PointInMoveList(p->ctrl[w][h].xyz) == -1)
         continue;
 
-      p->ctrl[w][h].st[0] += fx;
-      p->ctrl[w][h].st[1] += fy;
+      p->ctrl[w][h].tc[0] += fx;
+      p->ctrl[w][h].tc[1] += fy;
     }
   }
   p->bDirty = true;
@@ -3644,9 +3648,9 @@ void Patch_InvertTexture(bool bY)
         {
           for (int j = 0; j < p->width / 2; j++)
           {
-            memcpy(fTemp, &p->ctrl[p->width - 1- j][i].st[0], sizeof (float[2]));
-            memcpy(&p->ctrl[p->width - 1- j][i].st[0], &p->ctrl[j][i].st[0], sizeof(float[2]));
-            memcpy(&p->ctrl[j][i].st[0], fTemp, sizeof(float[2]));
+            memcpy(fTemp, &p->ctrl[p->width - 1- j][i].tc[0], sizeof (float[2]));
+            memcpy(&p->ctrl[p->width - 1- j][i].tc[0], &p->ctrl[j][i].tc[0], sizeof(float[2]));
+            memcpy(&p->ctrl[j][i].tc[0], fTemp, sizeof(float[2]));
 		      }
 	      }
       }
@@ -3656,9 +3660,9 @@ void Patch_InvertTexture(bool bY)
         {
           for (int j = 0; j < p->height / 2; j++)
           {
-            memcpy(fTemp, &p->ctrl[i][p->height - 1- j].st[0], sizeof (float[2]));
-            memcpy(&p->ctrl[i][p->height - 1 - j].st[0], &p->ctrl[i][j].st[0], sizeof(float[2]));
-            memcpy(&p->ctrl[i][j].st[0], fTemp, sizeof(float[2]));
+            memcpy(fTemp, &p->ctrl[i][p->height - 1- j].tc[0], sizeof (float[2]));
+            memcpy(&p->ctrl[i][p->height - 1 - j].tc[0], &p->ctrl[i][j].tc[0], sizeof(float[2]));
+            memcpy(&p->ctrl[i][j].tc[0], fTemp, sizeof(float[2]));
 		      }
 	      }
       }
@@ -3714,8 +3718,8 @@ void Patch_ResetTexturing(float fx, float fy)
 			{
 				for ( int j = 0 ; j < p->height ; j++ ) 
 				{
-					p->ctrl[i][j].st[0] = fx * (float)i / (p->width - 1);
-					p->ctrl[i][j].st[1] = fy * (float)j / (p->height - 1);
+					p->ctrl[i][j].tc[0] = fx * (float)i / (p->width - 1);
+					p->ctrl[i][j].tc[1] = fy * (float)j / (p->height - 1);
 				}
 			}
 		}
@@ -3735,8 +3739,8 @@ void Patch_FitTexturing()
 			{
 				for ( int j = 0 ; j < p->height ; j++ ) 
 				{
-					p->ctrl[i][j].st[0] = 1 * (float)i / (p->width - 1);
-					p->ctrl[i][j].st[1] = 1 * (float)j / (p->height - 1);
+					p->ctrl[i][j].tc[0] = 1 * (float)i / (p->width - 1);
+					p->ctrl[i][j].tc[1] = 1 * (float)j / (p->height - 1);
 				}
 			}
 		}
@@ -4736,32 +4740,32 @@ int j;
   _Vector53Copy(vx, p->ctrl[0][0].xyz);
   _Vector53Copy(vx, p->ctrl[0][1].xyz);
   _Vector53Copy(vx, p->ctrl[0][2].xyz);
-  p->ctrl[0][0].st[0] = vx[3];
-  p->ctrl[0][0].st[1] = vx[4];
-  p->ctrl[0][1].st[0] = vx[3];
-  p->ctrl[0][1].st[1] = vx[4];
-  p->ctrl[0][2].st[0] = vx[3];
-  p->ctrl[0][2].st[1] = vx[4];
+  p->ctrl[0][0].tc[0] = vx[3];
+  p->ctrl[0][0].tc[1] = vx[4];
+  p->ctrl[0][1].tc[0] = vx[3];
+  p->ctrl[0][1].tc[1] = vx[4];
+  p->ctrl[0][2].tc[0] = vx[3];
+  p->ctrl[0][2].tc[1] = vx[4];
 
   _Vector53Copy(vMidXY, p->ctrl[1][0].xyz);
   _Vector53Copy(vx, p->ctrl[1][1].xyz);
   _Vector53Copy(vMidXZ, p->ctrl[1][2].xyz);
-  p->ctrl[1][0].st[0] = vMidXY[3];
-  p->ctrl[1][0].st[1] = vMidXY[4];
-  p->ctrl[1][1].st[0] = vx[3];
-  p->ctrl[1][1].st[1] = vx[4];
-  p->ctrl[1][2].st[0] = vMidXZ[3];
-  p->ctrl[1][2].st[1] = vMidXZ[4];
+  p->ctrl[1][0].tc[0] = vMidXY[3];
+  p->ctrl[1][0].tc[1] = vMidXY[4];
+  p->ctrl[1][1].tc[0] = vx[3];
+  p->ctrl[1][1].tc[1] = vx[4];
+  p->ctrl[1][2].tc[0] = vMidXZ[3];
+  p->ctrl[1][2].tc[1] = vMidXZ[4];
 
   _Vector53Copy(vy, p->ctrl[2][0].xyz);
   _Vector53Copy(vMidYZ, p->ctrl[2][1].xyz);
   _Vector53Copy(vz, p->ctrl[2][2].xyz);
-  p->ctrl[2][0].st[0] = vy[3];
-  p->ctrl[2][0].st[1] = vy[4];
-  p->ctrl[2][1].st[0] = vMidYZ[3];
-  p->ctrl[2][1].st[1] = vMidYZ[4];
-  p->ctrl[2][2].st[0] = vz[3];
-  p->ctrl[2][2].st[1] = vz[4];
+  p->ctrl[2][0].tc[0] = vy[3];
+  p->ctrl[2][0].tc[1] = vy[4];
+  p->ctrl[2][1].tc[0] = vMidYZ[3];
+  p->ctrl[2][1].tc[1] = vMidYZ[4];
+  p->ctrl[2][2].tc[0] = vz[3];
+  p->ctrl[2][2].tc[1] = vz[4];
 
 
   //p->naturalizePatch();

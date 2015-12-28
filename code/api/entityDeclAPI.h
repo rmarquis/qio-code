@@ -27,6 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/typedefs.h>
 
+// NOTE: those are loaded from .def files in Doom3 and are also used by Doom3 editor
+// Editor keys used in entity defs:
+// editor_color, editor_mins, editor_maxs, editor_var <name>
+
 class entityDeclAPI_i {
 public:
 	virtual const char *getDeclName() const = 0;

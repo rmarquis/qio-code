@@ -70,7 +70,6 @@ G_InitGame
 ============
 */
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
-	int					i;
 	char mapName[128];
 
 	G_Printf ("------- Game Initialization -------\n");
