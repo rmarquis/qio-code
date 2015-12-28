@@ -51,11 +51,29 @@ struct entity_s
 	void deleteKey(const char *k) {
 		keyValues.remove(k);
 	}
+	int getKeyInt(const char *k) const {
+		return keyValues.getKeyInt(k);
+	}
+	int getKeyFloat(const char *k) const {
+		return keyValues.getKeyFloat(k);
+	}
 	const char *getKeyValue(const char *k) const {
 		const char *r = keyValues.getKeyValue(k);
 		if(r == 0)
 			return "";
 		return r;
+	}
+	void trackMD3Angles(const char *key, const char *value);
+	void setKeyValue(const char *key, const char *value) {
+		if (this == NULL)
+			return;
+
+		if (!key || !key[0])
+			return;
+
+		trackMD3Angles(key, value);
+
+		this->keyValues.set(key,value);
 	}
 	entity_s(bool bIsLinkedListHeader = false) {
 		prev = 0;
@@ -77,11 +95,7 @@ struct entity_s
 	}
 };
 
-const char 	*ValueForKey (entity_s *ent, const char *key);
-void	SetKeyValue (entity_s *ent, const char *key, const char *value);
 
-float	FloatForKey (entity_s *ent, const char *key);
-int		IntForKey (entity_s *ent, const char *key);
 void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec);
 
 void		Entity_Free (entity_s *e);
@@ -101,7 +115,3 @@ entity_s	*FindEntity(char *pszKey, char *pszValue);
 entity_s	*FindEntityInt(char *pszKey, int iValue);
 
 int GetUniqueTargetId(int iHint);
-
-//Timo : used for parsing epairs in brush primitive
-epair_s* ParseEpair(void);
-const char *ValueForKey ( epair_s *&e, const char *key);

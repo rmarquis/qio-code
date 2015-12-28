@@ -79,7 +79,7 @@ char *ExpandReletivePath (char *p)
 	if (p[0] == '/' || p[0] == '\\')
 		return p;
 
-	base = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+	base = g_qeglobals.d_project_entity->getKeyValue("basepath");
 	sprintf (temp, "%s/%s", base, p);
 	return temp;
 }
@@ -191,7 +191,7 @@ void QE_CheckAutoSave( void )
       }
       else
       {
-		    Map_SaveFile (ValueForKey(g_qeglobals.d_project_entity, "autosave"), false);
+		  Map_SaveFile (g_qeglobals.d_project_entity->getKeyValue("autosave"), false);
       }
 
 		  Sys_Status ("Autosaving...Saved.", 0 );
@@ -294,12 +294,12 @@ bool QE_LoadProject (char *projectfile)
 
   for (int i = 0; i < g_nPathFixupCount; i++)
   {
-   const char *pPath = ValueForKey (g_qeglobals.d_project_entity, g_pPathFixups[i]);
+	  const char *pPath = g_qeglobals.d_project_entity->getKeyValue(g_pPathFixups[i]);
     if (pPath[0] != '\\' && pPath[0] != '/')
     {
 	    if (GetFullPathName(pPath, 1024, pBuff, &pFile))
       {
-        SetKeyValue(g_qeglobals.d_project_entity, g_pPathFixups[i], pBuff);
+		  g_qeglobals.d_project_entity->setKeyValue(g_pPathFixups[i], pBuff);
       }
     }
   }
@@ -307,15 +307,15 @@ bool QE_LoadProject (char *projectfile)
 	delete []pBuff;
 
 	// set here some default project settings you need
-	if ( strlen( ValueForKey( g_qeglobals.d_project_entity, "brush_primit" ) ) == 0 )
+	if ( strlen( g_qeglobals.d_project_entity->getKeyValue("brush_primit" ) ) == 0 )
 	{
-		SetKeyValue( g_qeglobals.d_project_entity, "brush_primit", "0" );
+		g_qeglobals.d_project_entity->setKeyValue("brush_primit", "0" );
 	}
 
-	g_qeglobals.m_bBrushPrimitMode = IntForKey( g_qeglobals.d_project_entity, "brush_primit" );
+	g_qeglobals.m_bBrushPrimitMode = g_qeglobals.d_project_entity->getKeyInt("brush_primit" );
 
 
-	Eclass_InitForSourceDirectory (ValueForKey (g_qeglobals.d_project_entity, "entitypath"));
+	Eclass_InitForSourceDirectory (g_qeglobals.d_project_entity->getKeyValue("entitypath"));
 	
 	// ensure we have basic classes available
 	if(Eclass_FindExisting("info_player_start") == 0) {
@@ -452,12 +452,12 @@ void ConnectEntities (void)
 		return;
 	}
 
-	target = ValueForKey (e1, "target");
+	target = e1->getKeyValue("target");
 	if (target && target[0])
 		strcpy (newtarg, target);
 	else
 	{
-		target = ValueForKey (e2, "targetname");
+		target = e2->getKeyValue("targetname");
 		if (target && target[0])
 			strcpy (newtarg, target);
 		else
@@ -466,7 +466,7 @@ void ConnectEntities (void)
 			maxtarg = 0;
 			for (e=entities.next ; e != &entities ; e=e->next)
 			{
-				tn = ValueForKey (e, "targetname");
+				tn = e->getKeyValue("targetname");
 				if (tn && tn[0])
 				{
 					targetnum = atoi(tn+1);
@@ -478,8 +478,8 @@ void ConnectEntities (void)
 		}
 	}
 
-	SetKeyValue (e1, "target", newtarg);
-	SetKeyValue (e2, "targetname", newtarg);
+	e1->setKeyValue("target", newtarg);
+	e2->setKeyValue("targetname", newtarg);
 	Sys_UpdateWindows (W_XY | W_CAMERA);
 
 	Select_Deselect();

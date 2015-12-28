@@ -2325,7 +2325,7 @@ void CMainFrame::OnMiscSelectentitycolor()
 {
   if (edit_entity)
   {
-    CString strColor = ValueForKey(edit_entity, "_color");
+	  CString strColor = edit_entity->getKeyValue( "_color");
     if (strColor.GetLength() > 0)
     {
       float fR, fG, fB;
@@ -2464,9 +2464,9 @@ void CMainFrame::OnBrushFlipx()
 		if(b->owner->eclass->fixedsize)
 		{
 			char buf[16];
-			float a = FloatForKey(b->owner, "angle");
+			float a = b->owner->getKeyFloat("angle");
 			a = div( ( 180 - a ) , 180 ).rem;
-			SetKeyValue(b->owner, "angle", _itoa(a, buf, 10));
+			b->owner->setKeyValue("angle", _itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}
@@ -2485,7 +2485,7 @@ void CMainFrame::OnBrushFlipy()
 	{
 		if(b->owner->eclass->fixedsize)
 		{
-			float a = FloatForKey(b->owner, "angle");
+			float a = b->owner->getKeyFloat("angle");
 			if (a == 0 || a == 180 || a == 360)
 				continue;
 			if ( a == 90 || a == 270)
@@ -2502,7 +2502,7 @@ void CMainFrame::OnBrushFlipy()
 				a -= 90;
 			a = (int)a % 360;
 			char buf[16];
-			SetKeyValue(b->owner, "angle", _itoa(a, buf, 10));
+			b->owner->setKeyValue("angle", _itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}

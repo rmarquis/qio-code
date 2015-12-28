@@ -563,7 +563,7 @@ void SetSpawnFlags(void)
 	int		i;
 	int		v;
 
-	f = atoi(ValueForKey (edit_entity, "spawnflags"));
+	f = edit_entity->getKeyInt("spawnflags");
 	for (i=0 ; i<12 ; i++)
 	{
 		v = !!(f&(1<<i));
@@ -596,10 +596,10 @@ void GetSpawnFlags(void)
 		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-			SetKeyValue(b->owner, "spawnflags", sz);
+			b->owner->setKeyValue("spawnflags", sz);
 	}
 	else
-		SetKeyValue (edit_entity, "spawnflags", sz);
+		edit_entity->setKeyValue( "spawnflags", sz);
 	SetKeyValuePairs ();
 }
 
@@ -765,10 +765,10 @@ void AddProp()
 		brush_s	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-			SetKeyValue(b->owner, key, value);
+			b->owner->setKeyValue(key, value);
 	}
 	else
-		SetKeyValue(edit_entity, key, value);
+		edit_entity->setKeyValue(key, value);
 
 	// refresh the prop listbox
 	SetKeyValuePairs();	
@@ -1085,7 +1085,7 @@ void SizeEntityDlg(int iWidth, int iHeight)
 
 void AssignSound()
 {
-  CString strBasePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+	CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
   AddSlash(strBasePath);
   CString strPath = strBasePath;
   strPath += "sound\\";
@@ -1114,7 +1114,7 @@ void AssignSound()
 
 void AssignModel()
 {
-  CString strBasePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+	CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
   AddSlash(strBasePath);
   CString strPath = strBasePath;
   strPath += "models\\mapobjects\\";
@@ -1268,52 +1268,52 @@ BOOL CALLBACK EntityWndProc(
 			break;
 
 		case IDC_E_0:
-			SetKeyValue (edit_entity, "angle", "360");
+			edit_entity->setKeyValue("angle", "360");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_45:
-			SetKeyValue (edit_entity, "angle", "45");
+			edit_entity->setKeyValue("angle", "45");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_90:
-			SetKeyValue (edit_entity, "angle", "90");
+			edit_entity->setKeyValue("angle", "90");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_135:
-			SetKeyValue (edit_entity, "angle", "135");
+			edit_entity->setKeyValue("angle", "135");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_180:
-			SetKeyValue (edit_entity, "angle", "180");
+			edit_entity->setKeyValue("angle", "180");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_225:
-			SetKeyValue (edit_entity, "angle", "225");
+			edit_entity->setKeyValue( "angle", "225");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_270:
-			SetKeyValue (edit_entity, "angle", "270");
+			edit_entity->setKeyValue("angle", "270");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_315:
-			SetKeyValue (edit_entity, "angle", "315");
+			edit_entity->setKeyValue("angle", "315");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_UP:
-			SetKeyValue (edit_entity, "angle", "-1");
+			edit_entity->setKeyValue("angle", "-1");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;
 		case IDC_E_DOWN:
-			SetKeyValue (edit_entity, "angle", "-2");
+			edit_entity->setKeyValue("angle", "-2");
 			SetFocus (g_qeglobals.d_hwndCamera);
 			SetKeyValuePairs ();
 			break;

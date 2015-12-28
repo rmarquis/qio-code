@@ -115,19 +115,19 @@ void QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool u
     if ( strstr(mapname, ".reg") ) {
       strExt = "reg";
     }
-    str.Format("%s/maps/%i.%s", ValueForKey(g_qeglobals.d_project_entity, "remotebasepath"), ::GetTickCount(), strExt);
+    str.Format("%s/maps/%i.%s", g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), ::GetTickCount(), strExt);
     CopyFile(mapname, str, FALSE);
-	  sprintf (src, "-tempname %s %s/maps/%s", str, ValueForKey(g_qeglobals.d_project_entity, "remotebasepath"), base);
+	  sprintf (src, "-tempname %s %s/maps/%s", str, g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), base);
   } else {
-	  sprintf (src, "%s/maps/%s", ValueForKey(g_qeglobals.d_project_entity, "remotebasepath"), base);
+	  sprintf (src, "%s/maps/%s", g_qeglobals.d_project_entity->getKeyValue( "remotebasepath"), base);
   }
-	strcpy (rsh, ValueForKey(g_qeglobals.d_project_entity, "rshcmd"));
+	strcpy (rsh, g_qeglobals.d_project_entity->getKeyValue( "rshcmd"));
 
   QE_ConvertDOSToUnixName(src, src);
 
-	in = ValueForKey( g_qeglobals.d_project_entity, bspaction );
-	basePath = ValueForKey( g_qeglobals.d_project_entity, "basepath" );
-	modDir = ValueForKey( g_qeglobals.d_project_entity, "moddir" );
+	in = g_qeglobals.d_project_entity->getKeyValue(bspaction );
+	basePath = g_qeglobals.d_project_entity->getKeyValue("basepath" );
+	modDir = g_qeglobals.d_project_entity->getKeyValue("moddir" );
 	if(modDir[0] == '/' || modDir[0] == '\\')
 		modDir++;
 	while (*in)
@@ -265,7 +265,7 @@ void RunBsp (const char *command)
   // FIXME: this code just gets worse and worse
   CString strPath, strFile;
 
- const char *rsh = ValueForKey(g_qeglobals.d_project_entity, "rshcmd");
+ const char *rsh = g_qeglobals.d_project_entity->getKeyValue( "rshcmd");
   if (rsh == NULL)
   {
     ExtractPath_and_Filename(name, strPath, strFile);

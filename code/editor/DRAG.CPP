@@ -231,19 +231,19 @@ void UpdateTarget(vec3_t origin, vec3_t dir)
 		// Get the target id from out current target
 		// if there is no id, make one
 
-		i = IntForKey(pe, "target");
+		i = pe->getKeyInt("target");
 		if (i <= 0)
 		{
 			i = GetUniqueTargetId(1);
 			sprintf(sz, "%d", i);
 
-			SetKeyValue(pe, "target", sz);
+			pe->setKeyValue( "target", sz);
 		}
 
 		// set the target # into our src
 
 		sprintf(sz, "%d", i);
-		SetKeyValue(peLink, "targetname", sz);
+		peLink->setKeyValue("targetname", sz);
 
 		Sys_UpdateWindows(W_ENTITY);
 
@@ -410,7 +410,7 @@ void Drag_Begin (int x, int y, int buttons,
               }
             }
             strBuff.Format("%f %f %f",pTex->getEditorColor()[0], pTex->getEditorColor()[1], pTex->getEditorColor()[2]);
-            SetKeyValue(t.brush->owner, "_color", strBuff.GetBuffer(0));
+			t.brush->owner->setKeyValue("_color", strBuff.GetBuffer(0));
 				    Sys_UpdateWindows (W_ALL);
           }
         }

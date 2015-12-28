@@ -1565,7 +1565,7 @@ void Select_AllOfType()
           {
             bool doIt = true;
             if (bCriteria) {
-              CString str = ValueForKey (e, strKey);
+				CString str = e->getKeyValue(strKey);
               if (str.CompareNoCase(strVal) != 0) {
                 doIt = false;
               }
