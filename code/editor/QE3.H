@@ -137,8 +137,6 @@ struct QEGlobals_t
 	
 	int      d_num_entities;
 	
-	entity_s *d_project_entity;
-	
 	float     d_new_brush_bottom_z,
 		      d_new_brush_top_z;
 	
@@ -215,7 +213,6 @@ struct QEGlobals_t
 
 //void *qmalloc (size_t size);
 char *copystring (char *s);
-char *ExpandReletivePath (char *p);
 
 void Pointfile_Delete (void);
 void WINAPI Pointfile_Check (void);
@@ -263,7 +260,6 @@ extern HANDLE g_hBSPInput;
 
 char	*TranslateString (char *buf);
 
-void ProjectDialog (void);
 
 void FillTextureMenu (CStringArray* pArray = NULL);
 void FillBSPMenu (void);

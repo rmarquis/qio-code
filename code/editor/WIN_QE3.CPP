@@ -346,12 +346,19 @@ void OpenDialog (void)
 	 * store it in szDirName. 
 	 */ 
  
-	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("mapspath") );
-  if (strlen(szDirName) == 0)
-  {
-	  strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
-	  strcat (szDirName, "\\maps");
-  }
+	//if(g_qeglobals.d_project_entity) 
+	//{
+	//		strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("mapspath") );
+	//	  if (strlen(szDirName) == 0)
+	//	  {
+	//		  strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
+	//		  strcat (szDirName, "\\maps");
+	//	  }
+	//}
+	//else
+	{
+		strcpy(szDirName,"./baseqio/maps/");
+	}
 
 	/* Place the terminating null character in the szFile. */ 
  
@@ -390,47 +397,7 @@ void OpenDialog (void)
 	Map_LoadFile (ofn.lpstrFile);	
 }
 
-void ProjectDialog (void)
-{
-	/* 
-	 * Obtain the system directory name and 
-	 * store it in szDirName. 
-	 */ 
- 
-	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
-	strcat (szDirName, "\\scripts");
 
-	/* Place the terminating null character in the szFile. */ 
- 
-	szFile[0] = '\0'; 
- 
-	/* Set the members of the OPENFILENAME structure. */ 
- 
-	ofn.lStructSize = sizeof(OPENFILENAME); 
-	ofn.hwndOwner = g_qeglobals.d_hwndCamera;
-	ofn.lpstrFilter = szProjectFilter; 
-	ofn.nFilterIndex = 1; 
-	ofn.lpstrFile = szFile; 
-	ofn.nMaxFile = sizeof(szFile); 
-	ofn.lpstrFileTitle = szFileTitle; 
-	ofn.nMaxFileTitle = sizeof(szFileTitle); 
-	ofn.lpstrInitialDir = szDirName; 
-	ofn.Flags = OFN_SHOWHELP | OFN_PATHMUSTEXIST | 
-		OFN_FILEMUSTEXIST; 
-
-	/* Display the Open dialog box. */ 
- 
-	if (!GetOpenFileName(&ofn))
-		return;	// canceled
- 
-	// Refresh the File menu.
-	PlaceMenuMRUItem(g_qeglobals.d_lpMruMenu,GetSubMenu(GetMenu(g_qeglobals.d_hwndMain),0), 
-			ID_FILE_EXIT);
-
-	/* Open the file. */ 
-	if (!QE_LoadProject(ofn.lpstrFile))
-		Error ("Couldn't load project file");
-}
 
 #define PATHSEPERATOR   '/'
 
@@ -458,7 +425,10 @@ void DefaultExtension (char *path, char *extension)
 extern void AddSlash(CString& strPath);
 void SaveAsDialog (bool bRegion)
 { 
-	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
+	//if(g_qeglobals.d_project_entity)
+	//strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
+	//else
+		strcpy(szDirName,"baseqio/");
   CString strPath = szDirName;
   AddSlash(strPath);
   strPath += "maps";
@@ -529,17 +499,17 @@ void FillBSPMenu (void)
 	count = 0;
 
 	i = 0;
-	for (u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++)
-	{
-		const char *key = g_qeglobals.d_project_entity->keyValues.getKey(i);
-		if (key[0] == 'b' && key[1] == 's' && key[2] == 'p')
-		{
-			bsp_commands[i] = key;
-			AppendMenu (hmenu, MF_ENABLED|MF_STRING,
-				CMD_BSPCOMMAND+i, (LPCTSTR)key);
-			i++;
-		}
-	}
+	//for (u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++)
+	//{
+	//	const char *key = g_qeglobals.d_project_entity->keyValues.getKey(i);
+	//	if (key[0] == 'b' && key[1] == 's' && key[2] == 'p')
+	//	{
+	//		bsp_commands[i] = key;
+	//		AppendMenu (hmenu, MF_ENABLED|MF_STRING,
+	//			CMD_BSPCOMMAND+i, (LPCTSTR)key);
+	//		i++;
+	//	}
+	//}
 	count = i;
 }
 
@@ -548,7 +518,7 @@ void AddSlash(CString& strPath)
 {
   if (strPath.GetLength() > 0)
   {
-    if (strPath.GetAt(strPath.GetLength()-1) != '\\')
+    if (strPath.GetAt(strPath.GetLength()-1) != '\\' && strPath.GetAt(strPath.GetLength()-1) != '/')
       strPath += '\\';
   }
 }
@@ -580,88 +550,88 @@ extern CTime g_tBegin;
 
 void CheckBspProcess (void)
 {
-	char	outputpath[1024];
-	char	temppath[512];
-	DWORD	exitcode;
-	char	*out;
-	BOOL	ret;
+	//char	outputpath[1024];
+	//char	temppath[512];
+	//DWORD	exitcode;
+	//char	*out;
+	//BOOL	ret;
 
-	if (!bsp_process)
-		return;
+	//if (!bsp_process)
+	//	return;
 
-	ret = GetExitCodeProcess (bsp_process, &exitcode);
-	if (!ret)
-		Error ("GetExitCodeProcess failed");
-	if (exitcode == STILL_ACTIVE)
-		return;
+	//ret = GetExitCodeProcess (bsp_process, &exitcode);
+	//if (!ret)
+	//	Error ("GetExitCodeProcess failed");
+	//if (exitcode == STILL_ACTIVE)
+	//	return;
 
-	bsp_process = 0;
+	//bsp_process = 0;
 
-	GetTempPath(512, temppath);
-	sprintf (outputpath, "%sjunk.txt", temppath);
+	//GetTempPath(512, temppath);
+	//sprintf (outputpath, "%sjunk.txt", temppath);
 
-	g_vfs->FS_ReadFile (outputpath, (void **)&out);
-	Sys_Printf ("%s", out);
-	Sys_Printf ("\ncompleted.\n");
-	g_vfs->FS_FreeFile (out);
+	//g_vfs->FS_ReadFile (outputpath, (void **)&out);
+	//Sys_Printf ("%s", out);
+	//Sys_Printf ("\ncompleted.\n");
+	//g_vfs->FS_FreeFile (out);
 
-	CTime tEnd = CTime::GetCurrentTime();
-	CTimeSpan tElapsed = tEnd - g_tBegin;
-	CString strElapsed;
-	strElapsed.Format("Run time was %i hours, %i minutes and %i seconds", tElapsed.GetHours(), tElapsed.GetMinutes(), tElapsed.GetSeconds());
-	Sys_Printf(strElapsed.GetBuffer(0));
+	//CTime tEnd = CTime::GetCurrentTime();
+	//CTimeSpan tElapsed = tEnd - g_tBegin;
+	//CString strElapsed;
+	//strElapsed.Format("Run time was %i hours, %i minutes and %i seconds", tElapsed.GetHours(), tElapsed.GetMinutes(), tElapsed.GetSeconds());
+	//Sys_Printf(strElapsed.GetBuffer(0));
 
 
-	Sys_Beep ();
-	Pointfile_Check();
-	// run game if no PointFile and pref is set
-	//++timo needs to stop after BSP if leaked .. does run through vis and light instead ..
-	if (g_PrefsDlg.m_bRunQuake == TRUE  && !g_qeglobals.d_pointfile_display_list)
-	{
-		char cCurDir[1024];
-		GetCurrentDirectory(1024, cCurDir);
-		CString strExePath = "../../qio.exe";
-		//= g_PrefsDlg.m_strQuake2;
-		CString strOrgPath;
-		CString strOrgFile;
-		ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
-		if (g_PrefsDlg.m_bSetGame == TRUE) // run in place with set game.. don't copy map
-		{
-			CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
-			strExePath += " +set game ";
-			strExePath += strBasePath;
-			WinExec(strExePath, SW_SHOW);
-		}
-		else
-		{
-			CString strCopyPath = strExePath;
-			char* pBuffer = strCopyPath.GetBufferSetLength(_MAX_PATH + 1);
-			pBuffer[strCopyPath.ReverseFind('\\') + 1] = '\0';
-			strCopyPath.ReleaseBuffer();
-			SetCurrentDirectory(strCopyPath);
-			CString strOrgPath;
-			CString strOrgFile;
-			ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
-			AddSlash(strCopyPath);
-			FindReplace(strOrgFile, ".map", ".bsp");
-			//++timo modified for Quake3 !!
-			strCopyPath += "baseq3\\maps\\";
-			strCopyPath += strOrgFile;
-			AddSlash(strOrgPath);
-			strOrgPath += strOrgFile;
-			bool bRun = (strOrgPath.CompareNoCase(strCopyPath) == 0);
-			if (!bRun)
-				bRun = (CopyFile(strOrgPath, strCopyPath, FALSE) == TRUE);
-			if (bRun)
-			{
-				FindReplace(strOrgFile, ".bsp", "");
-				strExePath += " +map ";
-				strExePath += strOrgFile;
-				WinExec(strExePath, SW_SHOW);
-			}
-		}
-		SetCurrentDirectory(cCurDir);
-	}
+	//Sys_Beep ();
+	//Pointfile_Check();
+	//// run game if no PointFile and pref is set
+	////++timo needs to stop after BSP if leaked .. does run through vis and light instead ..
+	//if (g_PrefsDlg.m_bRunQuake == TRUE  && !g_qeglobals.d_pointfile_display_list)
+	//{
+	//	char cCurDir[1024];
+	//	GetCurrentDirectory(1024, cCurDir);
+	//	CString strExePath = "../../qio.exe";
+	//	//= g_PrefsDlg.m_strQuake2;
+	//	CString strOrgPath;
+	//	CString strOrgFile;
+	//	ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
+	//	if (g_PrefsDlg.m_bSetGame == TRUE) // run in place with set game.. don't copy map
+	//	{
+	//		CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
+	//		strExePath += " +set game ";
+	//		strExePath += strBasePath;
+	//		WinExec(strExePath, SW_SHOW);
+	//	}
+	//	else
+	//	{
+	//		CString strCopyPath = strExePath;
+	//		char* pBuffer = strCopyPath.GetBufferSetLength(_MAX_PATH + 1);
+	//		pBuffer[strCopyPath.ReverseFind('\\') + 1] = '\0';
+	//		strCopyPath.ReleaseBuffer();
+	//		SetCurrentDirectory(strCopyPath);
+	//		CString strOrgPath;
+	//		CString strOrgFile;
+	//		ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
+	//		AddSlash(strCopyPath);
+	//		FindReplace(strOrgFile, ".map", ".bsp");
+	//		//++timo modified for Quake3 !!
+	//		strCopyPath += "baseq3\\maps\\";
+	//		strCopyPath += strOrgFile;
+	//		AddSlash(strOrgPath);
+	//		strOrgPath += strOrgFile;
+	//		bool bRun = (strOrgPath.CompareNoCase(strCopyPath) == 0);
+	//		if (!bRun)
+	//			bRun = (CopyFile(strOrgPath, strCopyPath, FALSE) == TRUE);
+	//		if (bRun)
+	//		{
+	//			FindReplace(strOrgFile, ".bsp", "");
+	//			strExePath += " +map ";
+	//			strExePath += strOrgFile;
+	//			WinExec(strExePath, SW_SHOW);
+	//		}
+	//	}
+	//	SetCurrentDirectory(cCurDir);
+	//}
 }
 
 

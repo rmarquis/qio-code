@@ -75,95 +75,95 @@ void ExtractFileName (const char *path, char *dest)
 
 void QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool useTemps)
 {
-	const char	*in;
-	char *p;
-	char	src[2048];
-	char	rsh[2048];
-	char	base[2048];
-	const char *basePath;
-	const char *modDir;
+	//const char	*in;
+	//char *p;
+	//char	src[2048];
+	//char	rsh[2048];
+	//char	base[2048];
+	//const char *basePath;
+	//const char *modDir;
 
-	strcpy(src, mapname);
-	_strlwr(src);
-	p = strstr(src, "maps/");
-	if (!p)
-	{
-		p = strstr(src, "maps\\");
-	}
-	if (p)
-	{
-		p += 5;
-		strcpy(base, p);
-		in = base;
-		while (*p)
-		{
-			if (*p == '\\')
-			{
-				*p = '/';
-			}
-			p++;
-		}
-	}
-	else
-	{
-		ExtractFileName (mapname, base);
-	}
+	//strcpy(src, mapname);
+	//_strlwr(src);
+	//p = strstr(src, "maps/");
+	//if (!p)
+	//{
+	//	p = strstr(src, "maps\\");
+	//}
+	//if (p)
+	//{
+	//	p += 5;
+	//	strcpy(base, p);
+	//	in = base;
+	//	while (*p)
+	//	{
+	//		if (*p == '\\')
+	//		{
+	//			*p = '/';
+	//		}
+	//		p++;
+	//	}
+	//}
+	//else
+	//{
+	//	ExtractFileName (mapname, base);
+	//}
 
-  if (useTemps) {
-    CString str;
-    CString strExt = "map";
-    if ( strstr(mapname, ".reg") ) {
-      strExt = "reg";
-    }
-    str.Format("%s/maps/%i.%s", g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), ::GetTickCount(), strExt);
-    CopyFile(mapname, str, FALSE);
-	  sprintf (src, "-tempname %s %s/maps/%s", str, g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), base);
-  } else {
-	  sprintf (src, "%s/maps/%s", g_qeglobals.d_project_entity->getKeyValue( "remotebasepath"), base);
-  }
-	strcpy (rsh, g_qeglobals.d_project_entity->getKeyValue( "rshcmd"));
+ // if (useTemps) {
+ //   CString str;
+ //   CString strExt = "map";
+ //   if ( strstr(mapname, ".reg") ) {
+ //     strExt = "reg";
+ //   }
+ //   str.Format("%s/maps/%i.%s", g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), ::GetTickCount(), strExt);
+ //   CopyFile(mapname, str, FALSE);
+	//  sprintf (src, "-tempname %s %s/maps/%s", str, g_qeglobals.d_project_entity->getKeyValue("remotebasepath"), base);
+ // } else {
+	//  sprintf (src, "%s/maps/%s", g_qeglobals.d_project_entity->getKeyValue( "remotebasepath"), base);
+ // }
+	//strcpy (rsh, g_qeglobals.d_project_entity->getKeyValue( "rshcmd"));
 
-  QE_ConvertDOSToUnixName(src, src);
+ // QE_ConvertDOSToUnixName(src, src);
 
-	in = g_qeglobals.d_project_entity->getKeyValue(bspaction );
-	basePath = g_qeglobals.d_project_entity->getKeyValue("basepath" );
-	modDir = g_qeglobals.d_project_entity->getKeyValue("moddir" );
-	if(modDir[0] == '/' || modDir[0] == '\\')
-		modDir++;
-	while (*in)
-	{
-		if (in[0] == '!')
-		{
-			strcpy (out, rsh);
-			out += strlen(rsh);
-			in++;
-			continue;
-		}
-		if (in[0] == '$')
-		{
-			strcpy(out,"-gamedir ");
-			out += strlen ("-gamedir ");
-			strcpy(out,basePath);
-			out += strlen(basePath);
-			//strcpy(out,modDir);
-			//out += strlen(modDir);
-			
-			*out = ' ';
-			out++;
-			strcpy (out, src);
-			out += strlen(src);
-			in++;
-			continue;
-		}
-		if (in[0] == '@')
-		{
-			*out++ = '"';
-			in++;
-			continue;
-		}
-		*out++ = *in++;
-	}
-	*out = 0;
+	//in = g_qeglobals.d_project_entity->getKeyValue(bspaction );
+	//basePath = g_qeglobals.d_project_entity->getKeyValue("basepath" );
+	//modDir = g_qeglobals.d_project_entity->getKeyValue("moddir" );
+	//if(modDir[0] == '/' || modDir[0] == '\\')
+	//	modDir++;
+	//while (*in)
+	//{
+	//	if (in[0] == '!')
+	//	{
+	//		strcpy (out, rsh);
+	//		out += strlen(rsh);
+	//		in++;
+	//		continue;
+	//	}
+	//	if (in[0] == '$')
+	//	{
+	//		strcpy(out,"-gamedir ");
+	//		out += strlen ("-gamedir ");
+	//		strcpy(out,basePath);
+	//		out += strlen(basePath);
+	//		//strcpy(out,modDir);
+	//		//out += strlen(modDir);
+	//		
+	//		*out = ' ';
+	//		out++;
+	//		strcpy (out, src);
+	//		out += strlen(src);
+	//		in++;
+	//		continue;
+	//	}
+	//	if (in[0] == '@')
+	//	{
+	//		*out++ = '"';
+	//		in++;
+	//		continue;
+	//	}
+	//	*out++ = *in++;
+	//}
+	//*out = 0;
 }
 
 void FindReplace(CString& strContents, const char* pTag, const char* pValue)
@@ -216,221 +216,221 @@ const UINT wm_AddCommand = RegisterWindowMessage( "Q3MPC_AddCommand" );
 CTime g_tBegin;
 void RunBsp (const char *command)
 {
-	char	sys[2048];
-	char	batpath[2048];
-	char	outputpath[2048];
-	char	temppath[1024];
-	str	name;
-	char	cWork[2048];
-	FILE	*hFile;
-	BOOL	ret;
-	PROCESS_INFORMATION ProcessInformation;
-	STARTUPINFO	startupinfo;
-  HWND hwndPClient = NULL;
-
-  g_hWnd = g_pParentWnd->GetSafeHwnd();
-	SetInspectorMode(W_CONSOLE);
-  g_tBegin = CTime::GetCurrentTime();
-
-	
-	DWORD	dwExitcode;
-  ret = GetExitCodeProcess (g_hToolThread, &dwExitcode);
-  if (dwExitcode != STILL_ACTIVE)
-    g_hToolThread = NULL;
-
-	if (bsp_process || g_hToolThread)
-	{
-		Sys_Printf ("BSP is still going...\n");
-		return;
-	}
-
-  outputpath[0] = '\0';
-	GetTempPath(512, temppath);
-
-  CString strOutFile = temppath;
-  AddSlash(strOutFile);
-  strOutFile += "junk.txt";
-
-	sprintf (outputpath, " >>%s\r\n", strOutFile);
-
-  name = currentmap;
-	if (region_active)
-	{
-		Map_SaveFile (name, false);
-		name.setExtension("reg");
-	}
-
-	Map_SaveFile (name, region_active);
-
-  // FIXME: this code just gets worse and worse
-  CString strPath, strFile;
-
- const char *rsh = g_qeglobals.d_project_entity->getKeyValue( "rshcmd");
-  if (rsh == NULL)
-  {
-    ExtractPath_and_Filename(name, strPath, strFile);
-    AddSlash(strPath);
-    BuildShortPathName(strPath, cWork, 1024);
-    strcat(cWork, strFile);
-  }
-  else
-  {
-    strcpy(cWork, name);
-  }
-
-  hwndPClient = FindWindow(NULL, "Q3Map Process Client");
-  if ( hwndPClient == NULL ) {
-    hwndPClient = FindAnyWindow("Q3Map Process Client");
-  }
-
-  Sys_Printf("Window info for Process Client %i\n", reinterpret_cast<int>(hwndPClient));
-
-  bool processServer = (rsh && strlen(rsh) > 0 && hwndPClient);
-
-  QE_ExpandBspString (command, sys, cWork, processServer);
-
-  // if we can find the q3map process server running 
-  // we will submit maps to it instead of via createprocess
-  //
-  if (processServer)
-  {
-    CString str;
-    char cBuff[2048];
-    char *pStart = sys;
-    char *pEnd = strstr(pStart, "&&");
-    while (pEnd)
-    {
-      int nLen = pEnd-pStart-1;
-      strncpy(cBuff, pStart, nLen);
-      cBuff[nLen] = 0;
-      str = cBuff;
-      FindReplace(str, rsh, "");
-      str.TrimLeft(' ');
-      str.TrimRight(' ');
-      ATOM a = GlobalAddAtom(str);
-      PostMessage(hwndPClient, wm_AddCommand, 0, (LPARAM)a);
-      pStart = pEnd+2;
-      pEnd = strstr(pStart, "&&");
-    }
-    str = pStart;
-    FindReplace(str, rsh, "");
-    str.TrimLeft(' ');
-    str.TrimRight(' ');
-    ATOM a = GlobalAddAtom(str);
-    PostMessage(hwndPClient, wm_AddCommand, 0, (LPARAM)a);
-    Sys_Printf("Commands sent to Q3Map Process Client\n");
-    return;
-  }
-
-  CString strSys = sys;
-
-  FindReplace(strSys, "&&", outputpath);
-  strcpy(sys, strSys);
-  strcat(sys, outputpath);
-
-
-	  Sys_ClearPrintf ();
-	  Sys_Printf ("==================\nRunning bsp command...\n");
-	  Sys_Printf ("\n%s\n", sys);
-
-	  //++timo removed the old way BSP commands .. dumping to junk.txt doesn't work on my win98 box
-	  // FIXME : will most likely break Quake2 BSP commands, is fitted to a one-lined sys command
-	  //
-	  // write qe3bsp.bat
-	  //
-	//const char *basePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
-	//if(basePath) {
-		//const char *mapName = 
-		//sprintf(batpath,"%s/maps/%s.bat",basePath,mapName);
-	  strcpy(batpath,currentmap);
-	  char *dot = strchr(batpath,'.');
-	  strcpy(dot,".bat");
-	//} else {
-	//  sprintf (batpath, "%sqe3bsp.bat", temppath);
-	//}
-	  hFile = fopen(batpath, "w");
-	  if (!hFile)
-		  Error ("Can't write to %s", batpath);
-	  fprintf (hFile, sys);
-	  fclose (hFile);
-
-	  Pointfile_Delete ();
-
-	  // delete junk.txt file
-	  remove(strOutFile);
-
-	  GetStartupInfo (&startupinfo);
-
-	  ret = CreateProcess(
-		  batpath,
-		  NULL,
-		  NULL,
-		  NULL,
-		  FALSE,
-		  0,
-		  NULL,
-		  NULL,
-		  &startupinfo,
-		  &ProcessInformation
-		  );
-
-	  if (!ret)
-		  Error ("CreateProcess failed");
-
-	  bsp_process = ProcessInformation.hProcess;
-
-	  Sleep (100);	// give the new process a chance to open it's window
-
-	  BringWindowToTop( g_qeglobals.d_hwndMain );	// pop us back on top
-#if 0
-	  //
-	  // write qe3bsp.bat
-	  //
-	  sprintf (batpath, "%sqe3bsp.bat", temppath);
-	  hFile = fopen(batpath, "w");
-	  if (!hFile)
-		  Error ("Can't write to %s", batpath);
-	  fprintf (hFile, sys);
-	  fclose (hFile);
-
-	  //
-	  // write qe3bsp2.bat
-	  //
-	  sprintf (batpath, "%sqe3bsp2.bat", temppath);
-	  hFile = fopen(batpath, "w");
-	  if (!hFile)
-		  Error ("Can't write to %s", batpath);
-	  fprintf (hFile, "%sqe3bsp.bat > %s", temppath, outputpath);
-	  fclose (hFile);
-
-	  Pointfile_Delete ();
-
-	  GetStartupInfo (&startupinfo);
-
-	  ret = CreateProcess(
-      batpath,		// pointer to name of executable module 
-      NULL,			// pointer to command line string
-      NULL,			// pointer to process security attributes 
-      NULL,			// pointer to thread security attributes 
-      FALSE,			// handle inheritance flag 
-      0 /*DETACHED_PROCESS*/,		// creation flags
-      NULL,			// pointer to new environment block 
-      NULL,			// pointer to current directory name 
-      &startupinfo,	// pointer to STARTUPINFO 
-      &ProcessInformation 	// pointer to PROCESS_INFORMATION  
-     );
-
-	  if (!ret)
-		  Error ("CreateProcess failed");
-
-	  bsp_process = ProcessInformation.hProcess;
-
-	  Sleep (100);	// give the new process a chance to open it's window
-
-	  //BringWindowToTop( g_qeglobals.d_hwndMain );	// pop us back on top
-	  //SetFocus (g_qeglobals.d_hwndCamera);
-#endif
-  
+//	char	sys[2048];
+//	char	batpath[2048];
+//	char	outputpath[2048];
+//	char	temppath[1024];
+//	str	name;
+//	char	cWork[2048];
+//	FILE	*hFile;
+//	BOOL	ret;
+//	PROCESS_INFORMATION ProcessInformation;
+//	STARTUPINFO	startupinfo;
+//  HWND hwndPClient = NULL;
+//
+//  g_hWnd = g_pParentWnd->GetSafeHwnd();
+//	SetInspectorMode(W_CONSOLE);
+//  g_tBegin = CTime::GetCurrentTime();
+//
+//	
+//	DWORD	dwExitcode;
+//  ret = GetExitCodeProcess (g_hToolThread, &dwExitcode);
+//  if (dwExitcode != STILL_ACTIVE)
+//    g_hToolThread = NULL;
+//
+//	if (bsp_process || g_hToolThread)
+//	{
+//		Sys_Printf ("BSP is still going...\n");
+//		return;
+//	}
+//
+//  outputpath[0] = '\0';
+//	GetTempPath(512, temppath);
+//
+//  CString strOutFile = temppath;
+//  AddSlash(strOutFile);
+//  strOutFile += "junk.txt";
+//
+//	sprintf (outputpath, " >>%s\r\n", strOutFile);
+//
+//  name = currentmap;
+//	if (region_active)
+//	{
+//		Map_SaveFile (name, false);
+//		name.setExtension("reg");
+//	}
+//
+//	Map_SaveFile (name, region_active);
+//
+//  // FIXME: this code just gets worse and worse
+//  CString strPath, strFile;
+//
+// const char *rsh = g_qeglobals.d_project_entity->getKeyValue( "rshcmd");
+//  if (rsh == NULL)
+//  {
+//    ExtractPath_and_Filename(name, strPath, strFile);
+//    AddSlash(strPath);
+//    BuildShortPathName(strPath, cWork, 1024);
+//    strcat(cWork, strFile);
+//  }
+//  else
+//  {
+//    strcpy(cWork, name);
+//  }
+//
+//  hwndPClient = FindWindow(NULL, "Q3Map Process Client");
+//  if ( hwndPClient == NULL ) {
+//    hwndPClient = FindAnyWindow("Q3Map Process Client");
+//  }
+//
+//  Sys_Printf("Window info for Process Client %i\n", reinterpret_cast<int>(hwndPClient));
+//
+//  bool processServer = (rsh && strlen(rsh) > 0 && hwndPClient);
+//
+//  QE_ExpandBspString (command, sys, cWork, processServer);
+//
+//  // if we can find the q3map process server running 
+//  // we will submit maps to it instead of via createprocess
+//  //
+//  if (processServer)
+//  {
+//    CString str;
+//    char cBuff[2048];
+//    char *pStart = sys;
+//    char *pEnd = strstr(pStart, "&&");
+//    while (pEnd)
+//    {
+//      int nLen = pEnd-pStart-1;
+//      strncpy(cBuff, pStart, nLen);
+//      cBuff[nLen] = 0;
+//      str = cBuff;
+//      FindReplace(str, rsh, "");
+//      str.TrimLeft(' ');
+//      str.TrimRight(' ');
+//      ATOM a = GlobalAddAtom(str);
+//      PostMessage(hwndPClient, wm_AddCommand, 0, (LPARAM)a);
+//      pStart = pEnd+2;
+//      pEnd = strstr(pStart, "&&");
+//    }
+//    str = pStart;
+//    FindReplace(str, rsh, "");
+//    str.TrimLeft(' ');
+//    str.TrimRight(' ');
+//    ATOM a = GlobalAddAtom(str);
+//    PostMessage(hwndPClient, wm_AddCommand, 0, (LPARAM)a);
+//    Sys_Printf("Commands sent to Q3Map Process Client\n");
+//    return;
+//  }
+//
+//  CString strSys = sys;
+//
+//  FindReplace(strSys, "&&", outputpath);
+//  strcpy(sys, strSys);
+//  strcat(sys, outputpath);
+//
+//
+//	  Sys_ClearPrintf ();
+//	  Sys_Printf ("==================\nRunning bsp command...\n");
+//	  Sys_Printf ("\n%s\n", sys);
+//
+//	  //++timo removed the old way BSP commands .. dumping to junk.txt doesn't work on my win98 box
+//	  // FIXME : will most likely break Quake2 BSP commands, is fitted to a one-lined sys command
+//	  //
+//	  // write qe3bsp.bat
+//	  //
+//	//const char *basePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+//	//if(basePath) {
+//		//const char *mapName = 
+//		//sprintf(batpath,"%s/maps/%s.bat",basePath,mapName);
+//	  strcpy(batpath,currentmap);
+//	  char *dot = strchr(batpath,'.');
+//	  strcpy(dot,".bat");
+//	//} else {
+//	//  sprintf (batpath, "%sqe3bsp.bat", temppath);
+//	//}
+//	  hFile = fopen(batpath, "w");
+//	  if (!hFile)
+//		  Error ("Can't write to %s", batpath);
+//	  fprintf (hFile, sys);
+//	  fclose (hFile);
+//
+//	  Pointfile_Delete ();
+//
+//	  // delete junk.txt file
+//	  remove(strOutFile);
+//
+//	  GetStartupInfo (&startupinfo);
+//
+//	  ret = CreateProcess(
+//		  batpath,
+//		  NULL,
+//		  NULL,
+//		  NULL,
+//		  FALSE,
+//		  0,
+//		  NULL,
+//		  NULL,
+//		  &startupinfo,
+//		  &ProcessInformation
+//		  );
+//
+//	  if (!ret)
+//		  Error ("CreateProcess failed");
+//
+//	  bsp_process = ProcessInformation.hProcess;
+//
+//	  Sleep (100);	// give the new process a chance to open it's window
+//
+//	  BringWindowToTop( g_qeglobals.d_hwndMain );	// pop us back on top
+//#if 0
+//	  //
+//	  // write qe3bsp.bat
+//	  //
+//	  sprintf (batpath, "%sqe3bsp.bat", temppath);
+//	  hFile = fopen(batpath, "w");
+//	  if (!hFile)
+//		  Error ("Can't write to %s", batpath);
+//	  fprintf (hFile, sys);
+//	  fclose (hFile);
+//
+//	  //
+//	  // write qe3bsp2.bat
+//	  //
+//	  sprintf (batpath, "%sqe3bsp2.bat", temppath);
+//	  hFile = fopen(batpath, "w");
+//	  if (!hFile)
+//		  Error ("Can't write to %s", batpath);
+//	  fprintf (hFile, "%sqe3bsp.bat > %s", temppath, outputpath);
+//	  fclose (hFile);
+//
+//	  Pointfile_Delete ();
+//
+//	  GetStartupInfo (&startupinfo);
+//
+//	  ret = CreateProcess(
+//      batpath,		// pointer to name of executable module 
+//      NULL,			// pointer to command line string
+//      NULL,			// pointer to process security attributes 
+//      NULL,			// pointer to thread security attributes 
+//      FALSE,			// handle inheritance flag 
+//      0 /*DETACHED_PROCESS*/,		// creation flags
+//      NULL,			// pointer to new environment block 
+//      NULL,			// pointer to current directory name 
+//      &startupinfo,	// pointer to STARTUPINFO 
+//      &ProcessInformation 	// pointer to PROCESS_INFORMATION  
+//     );
+//
+//	  if (!ret)
+//		  Error ("CreateProcess failed");
+//
+//	  bsp_process = ProcessInformation.hProcess;
+//
+//	  Sleep (100);	// give the new process a chance to open it's window
+//
+//	  //BringWindowToTop( g_qeglobals.d_hwndMain );	// pop us back on top
+//	  //SetFocus (g_qeglobals.d_hwndCamera);
+//#endif
+//  
 }
 
 /*

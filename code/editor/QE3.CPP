@@ -69,20 +69,6 @@ void WINAPI QE_CheckOpenGLForErrors(void)
 }
 
 
-char *ExpandReletivePath (char *p)
-{
-	static char	temp[1024];
-	const char	*base;
-
-	if (!p || !p[0])
-		return NULL;
-	if (p[0] == '/' || p[0] == '\\')
-		return p;
-
-	base = g_qeglobals.d_project_entity->getKeyValue("basepath");
-	sprintf (temp, "%s/%s", base, p);
-	return temp;
-}
 
 char *copystring (char *s)
 {
@@ -191,7 +177,9 @@ void QE_CheckAutoSave( void )
       }
       else
       {
-		  Map_SaveFile (g_qeglobals.d_project_entity->getKeyValue("autosave"), false);
+		///  Map_SaveFile (g_qeglobals.d_project_entity->getKeyValue("autosave"), false);
+		  // TODO - VALID PATH
+		  Map_SaveFile ("C:/radiantAutoSave.map", false);
       }
 
 		  Sys_Status ("Autosaving...Saved.", 0 );
@@ -219,18 +207,6 @@ int BuildShortPathName(const char* pPath, char* pBuffer, int nBufferLen)
 
 
 
-const char *g_pPathFixups[]=
-{
-  "basepath",
-  "remotebasepath",
-  "entitypath",
-  "texturepath",
-  "autosave",
-  "mapspath"
-};
-
-const int g_nPathFixupCount = sizeof(g_pPathFixups) / sizeof(const char*);
-
 /*
 ===========
 QE_LoadProject
@@ -238,84 +214,10 @@ QE_LoadProject
 */
 bool QE_LoadProject (char *projectfile)
 {
-	char	*data;
-
-	Sys_Printf ("QE_LoadProject (%s)\n", projectfile);
-	
-	if ( g_vfs->FS_ReadFile (projectfile, (void **)&data) == -1)
-		return false;
-	
-	g_strProject = projectfile;
-	
-	CString strData = data;
-	g_vfs->FS_FreeFile(data);
-	
-	CString strQ2Path;// = g_PrefsDlg.m_strQuake2;
-	CString strQ2File;
-//	ExtractPath_and_Filename(g_PrefsDlg.m_strQuake2, strQ2Path, strQ2File);
-	AddSlash(strQ2Path);
-	
-	
-	char* pBuff = new char[1024];
-	
-	BuildShortPathName(strQ2Path, pBuff, 1024);
-	FindReplace(strData, "__Q2PATH", pBuff);
-	BuildShortPathName(g_strAppPath, pBuff, 1024);
-	FindReplace(strData, "__QERPATH", pBuff);
-	
-	char* pFile;
-	if (GetFullPathName(projectfile, 1024, pBuff, &pFile))
-	{
-		g_PrefsDlg.m_strLastProject = pBuff;
-		BuildShortPathName(g_PrefsDlg.m_strLastProject, pBuff, 1024);
-		g_PrefsDlg.m_strLastProject = pBuff;
-		g_PrefsDlg.SavePrefs();
-		
-		ExtractPath_and_Filename(pBuff, strQ2Path, strQ2File);
-		int nLen = strQ2Path.GetLength();
-		if (nLen > 0)
-		{
-			if (strQ2Path[nLen - 1] == '\\')
-				strQ2Path.SetAt(nLen-1,'\0');
-			char* pBuffer = strQ2Path.GetBufferSetLength(_MAX_PATH + 1);
-			int n = strQ2Path.ReverseFind('\\');
-			if (n >=0 )
-				pBuffer[n + 1] = '\0';
-			strQ2Path.ReleaseBuffer();
-			FindReplace(strData, "__QEPROJPATH", strQ2Path);
-		}
-	}
-	
-	
-	StartTokenParsing (strData.GetBuffer(0));
-	g_qeglobals.d_project_entity = Entity_Parse (true);
-	if (!g_qeglobals.d_project_entity)
-		Error ("Couldn't parse %s", projectfile);
-
-  for (int i = 0; i < g_nPathFixupCount; i++)
-  {
-	  const char *pPath = g_qeglobals.d_project_entity->getKeyValue(g_pPathFixups[i]);
-    if (pPath[0] != '\\' && pPath[0] != '/')
-    {
-	    if (GetFullPathName(pPath, 1024, pBuff, &pFile))
-      {
-		  g_qeglobals.d_project_entity->setKeyValue(g_pPathFixups[i], pBuff);
-      }
-    }
-  }
-
-	delete []pBuff;
-
-	// set here some default project settings you need
-	if ( strlen( g_qeglobals.d_project_entity->getKeyValue("brush_primit" ) ) == 0 )
-	{
-		g_qeglobals.d_project_entity->setKeyValue("brush_primit", "0" );
-	}
-
-	g_qeglobals.m_bBrushPrimitMode = g_qeglobals.d_project_entity->getKeyInt("brush_primit" );
+	g_qeglobals.m_bBrushPrimitMode = 0;
 
 
-	Eclass_InitForSourceDirectory (g_qeglobals.d_project_entity->getKeyValue("entitypath"));
+	///Eclass_InitForSourceDirectory (g_qeglobals.d_project_entity->getKeyValue("entitypath"));
 	
 	// ensure we have basic classes available
 	if(Eclass_FindExisting("info_player_start") == 0) {
@@ -370,38 +272,6 @@ bool QE_LoadProject (char *projectfile)
 	
 	return true;
 }
-
-/*
-===========
-QE_SaveProject
-===========
-*/
-//extern char	*bsp_commands[256];
-
-bool QE_SaveProject (const char* pProjectFile)
-{
-	//char	filename[1024];
-	FILE	*fp;
-
-	//sprintf (filename, "%s\\%s.prj", g_projectdir, g_username);
-
-	if (!(fp = fopen (pProjectFile, "w+")))
-		Error ("Could not open project file!");
-	
-	fprintf (fp, "{\n");
-	for(u32 i = 0; i < g_qeglobals.d_project_entity->keyValues.size(); i++)
-	{
-		const char *key = g_qeglobals.d_project_entity->keyValues.getKey(i);
-		const char *value = g_qeglobals.d_project_entity->keyValues.getValue(i);
-		fprintf (fp, "\"%s\" \"%s\"\n", key, value);
-	}
-	fprintf (fp, "}\n");
-
-	fclose (fp);
-	
-	return TRUE;
-}
-
 
 
 /*
