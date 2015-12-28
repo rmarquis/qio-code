@@ -167,6 +167,20 @@ public:
 		}
 		return 0;
 	}
+	int getKeyInt(const char *key) const {
+		const ePair_c *p = find(key);
+		if(p) {
+			return atoi(p->getValue());
+		}
+		return 0;
+	}
+	float getKeyFloat(const char *key) const {
+		const ePair_c *p = find(key);
+		if(p) {
+			return atof(p->getValue());
+		}
+		return 0;
+	}
 	bool getKeyVec3(const char *key, class vec3_c &out) const;
 
 	virtual bool getKeyValue(const char *key, int &out) const {

@@ -89,8 +89,6 @@ extern	bool	com_eof;
 extern	int		argc;
 extern	char	*argv[MAX_NUM_ARGVS];
 
-typedef int fileHandle_t;
-
 struct pedge_t
 {
 	int		p1, p2;

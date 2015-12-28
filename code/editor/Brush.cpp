@@ -216,7 +216,7 @@ face_s	*Face_FullClone (face_s *f)
 		n->face_winding = Winding_Clone(f->face_winding);
 	else
 		n->face_winding = NULL;
-	n->d_texture = QERApp_TryTextureForName( n->texdef.name );
+	n->d_texture = QERApp_TryTextureForName( n->texdef.getName() );
 	return n;
 }
 
@@ -905,7 +905,7 @@ Brush_MoveVertexes_old1
 //						if (newface->face_winding) Winding_Free(newface->face_winding);
 //						newface->face_winding = Winding_Clone(&tmpw);
 //						//get the texture
-//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 //						//add the face to the brush
 //						newface->next = b->brush_faces;
 //						b->brush_faces = newface;
@@ -944,7 +944,7 @@ Brush_MoveVertexes_old1
 //					if (newface->face_winding) Winding_Free(newface->face_winding);
 //					newface->face_winding = Winding_Clone(&tmpw);
 //					//get the texture
-//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 //					//add the face to the brush
 //					newface->next = b->brush_faces;
 //					b->brush_faces = newface;
@@ -1153,7 +1153,7 @@ Brush_MoveVertexes_old2
 //						if (newface->face_winding) Winding_Free(newface->face_winding);
 //						newface->face_winding = Winding_Clone(&tmpw);
 //						//get the texture
-//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+//						newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 //						//add the face to the brush
 //						newface->next = b->brush_faces;
 //						b->brush_faces = newface;
@@ -1192,7 +1192,7 @@ Brush_MoveVertexes_old2
 //					if (newface->face_winding) Winding_Free(newface->face_winding);
 //					newface->face_winding = Winding_Clone(&tmpw);
 //					//get the texture
-//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+//					newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 //					//add the face to the brush
 //					newface->next = b->brush_faces;
 //					b->brush_faces = newface;
@@ -1370,7 +1370,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 							if (newface->face_winding) Winding_Free(newface->face_winding);
 							newface->face_winding = Winding_Clone(&tmpw);
 							//get the texture
-							newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+							newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 							//add the face to the brush
 							newface->next = b->brush_faces;
 							b->brush_faces = newface;
@@ -1409,7 +1409,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 						if (newface->face_winding) Winding_Free(newface->face_winding);
 						newface->face_winding = Winding_Clone(&tmpw);
 						//get the texture
-						newface->d_texture = QERApp_TryTextureForName( newface->texdef.name );
+						newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 						//add the face to the brush
 						newface->next = b->brush_faces;
 						b->brush_faces = newface;
@@ -1761,7 +1761,7 @@ brush_s *Brush_Parse (void)
 			
 			// read the texturedef
 			GetToken (false);
-			f->texdef.SetName(token);
+			f->texdef.setName(token);
 			if (token[0] == '(')
 			{
 				int i = 32;
@@ -1778,7 +1778,7 @@ brush_s *Brush_Parse (void)
 			f->texdef.scale[1] = atof(token);
 						
 			// the flags and value field aren't necessarily present
-			f->d_texture = QERApp_TryTextureForName( f->texdef.name );
+			f->d_texture = QERApp_TryTextureForName( f->texdef.getName() );
 			f->texdef.flags = 0;//f->d_texture->flags;
 			// V: what is this used for
 			f->texdef.value = 0; //f->d_texture->value;
@@ -1812,7 +1812,6 @@ save all brushes as Brush primitive format
 void Brush_Write (brush_s *b, FILE *f)
 {
 	face_s	*fa;
-	char	*pname;
 	int		i;
 	
 	if (b->patchBrush)
@@ -1853,7 +1852,7 @@ void Brush_Write (brush_s *b, FILE *f)
 			fprintf(f,") ) ");
 			// save texture attribs
 
-      char *pName = strlen(fa->texdef.name) > 0 ? fa->texdef.name : "unnamed";
+      char *pName = strlen(fa->texdef.getName()) > 0 ? fa->texdef.getName() : "unnamed";
 			fprintf(f, "%s ", pName );
 			fprintf(f, "%i %i %i\n", fa->texdef.contents, fa->texdef.flags, fa->texdef.value);
 		}
@@ -1879,7 +1878,7 @@ void Brush_Write (brush_s *b, FILE *f)
 			
 	
 			{
-				pname = fa->texdef.name;
+				const char *pname = fa->texdef.getName();
 				if (pname[0] == 0)
 					pname = "unnamed";
 				
@@ -1934,7 +1933,6 @@ save all brushes as Brush primitive format
 void Brush_Write (brush_s *b, CMemFile *pMemFile)
 {
 	face_s	*fa;
-	char *pname;
 	int		i;
 	
 	if (b->patchBrush)
@@ -1975,7 +1973,7 @@ void Brush_Write (brush_s *b, CMemFile *pMemFile)
 					MemFile_fprintf(pMemFile,"%f ",fa->brushprimit_texdef.coords[1][i]);
 			MemFile_fprintf(pMemFile,") ) ");
 			// save texture attribs
-      char *pName = strlen(fa->texdef.name) > 0 ? fa->texdef.name : "unnamed";
+      char *pName = strlen(fa->texdef.getName()) > 0 ? fa->texdef.getName() : "unnamed";
 			MemFile_fprintf(pMemFile, "%s ", pName);
 			MemFile_fprintf(pMemFile, "%i %i %i\n", fa->texdef.contents, fa->texdef.flags, fa->texdef.value);
 		}
@@ -2002,7 +2000,7 @@ void Brush_Write (brush_s *b, CMemFile *pMemFile)
 			}
 	
 			{
-				pname = fa->texdef.name;
+				const char *pname = fa->texdef.getName();
 				if (pname[0] == 0)
 					pname = "unnamed";
 				
@@ -2648,7 +2646,7 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
 		f->texdef = *texdef;
-		ConvertTexMatWithQTexture( brushprimit_texdef, NULL, &f->brushprimit_texdef, QERApp_TryTextureForName( f->texdef.name ) );
+		ConvertTexMatWithQTexture( brushprimit_texdef, NULL, &f->brushprimit_texdef, QERApp_TryTextureForName( f->texdef.getName() ) );
 	}
 	else
 		if (bFitScale)
@@ -2675,7 +2673,8 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 			f->texdef = *texdef;
 	f->texdef.flags = (f->texdef.flags & ~SURF_KEEP) | (oldFlags & SURF_KEEP);
 	f->texdef.contents = (f->texdef.contents & ~CONTENTS_KEEP) | (oldContents & CONTENTS_KEEP);
-
+	
+	f->d_texture = QERApp_TryTextureForName(f->texdef.getName());
 
 	// if this is a curve face, set all other curve faces to the same texdef
 	if (f->texdef.flags & SURF_CURVE) 
@@ -2917,7 +2916,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 		int i;
 		free(face->face_winding);
 		w = face->face_winding = Brush_MakeFaceWinding (b, face);
-		face->d_texture = QERApp_TryTextureForName( face->texdef.name );
+		face->d_texture = QERApp_TryTextureForName( face->texdef.getName() );
 
 		if (!w)
 			continue;
@@ -3290,7 +3289,7 @@ void Brush_Draw( brush_s *b )
 		
 		if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_CAULK)
 		{
-			if (strstr(face->texdef.name, "caulk"))
+			if (strstr(face->texdef.getName(), "caulk"))
 			{
 				continue;
 			}

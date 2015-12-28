@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name)
 {
 	char fullName[256];
-	if(name[0] != '(') 
+	if(name[0] != '(' && strnicmp(name,"textures",strlen("textures"))) 
 	{
 		sprintf(fullName,"textures/%s",name);
 

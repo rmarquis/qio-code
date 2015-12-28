@@ -148,8 +148,8 @@ eclass_s *Eclass_InitFromText (const char *text)
 	if (r != 3)
 		return e;
 	sprintf (color, "(%f %f %f)", e->color[0], e->color[1], e->color[2]);
-	//strcpy (e->texdef.name, color);
-	e->texdef.SetName(color);
+	//strcpy (e->texdef.getName(), color);
+	e->texdef.setName(color);
 
 	while (*text != ')')
 	{

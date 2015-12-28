@@ -2380,7 +2380,7 @@ BOOL FilterBrush(brush_s *pb)
     f=pb->brush_faces;
     while (f)
     {
-      if (!strstr(f->texdef.name, "caulk"))
+      if (!strstr(f->texdef.getName(), "caulk"))
         break;
       f = f->next;
     }
@@ -2388,30 +2388,30 @@ BOOL FilterBrush(brush_s *pb)
       return TRUE;
 
 #if 0
-    if (strstr(pb->brush_faces->texdef.name, "caulk"))
+    if (strstr(pb->brush_faces->texdef.getName(), "caulk"))
       return TRUE;
 #endif
 
     //++timo FIXME: .. same deal here?
-    if (strstr(pb->brush_faces->texdef.name, "donotenter"))
+    if (strstr(pb->brush_faces->texdef.getName(), "donotenter"))
       return TRUE;
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_HINT)
   {
-    if (strstr(pb->brush_faces->texdef.name, "hint"))
+    if (strstr(pb->brush_faces->texdef.getName(), "hint"))
       return TRUE;
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_CLIP)
 	{
-    if (strstr(pb->brush_faces->texdef.name, "clip"))
+    if (strstr(pb->brush_faces->texdef.getName(), "clip"))
       return TRUE;
 
-    if (strstr(pb->brush_faces->texdef.name, "skip"))
+    if (strstr(pb->brush_faces->texdef.getName(), "skip"))
       return TRUE;
 
-		//if (!strncmp(pb->brush_faces->texdef.name, "clip", 4))
+		//if (!strncmp(pb->brush_faces->texdef.getName(), "clip", 4))
 		//	return TRUE;
 	}
 
