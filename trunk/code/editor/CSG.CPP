@@ -138,7 +138,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 			if (face1->plane.isPlaneEqual(face2->plane, false))
 			{
 				//if the texture/shader references should be the same but are not
-				if (!onlyshape && _stricmp(face1->texdef.name, face2->texdef.name) != 0) return NULL;
+				if (!onlyshape && _stricmp(face1->texdef.getName(), face2->texdef.getName()) != 0) return NULL;
 				continue;
 			}
 			//
@@ -349,7 +349,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 					if (face1->plane.isPlaneEqual(face2->plane, false))
 					{
 						//if the texture/shader references should be the same but are not
-						if (!onlyshape && _stricmp(face1->texdef.name, face2->texdef.name) != 0) return NULL;
+						if (!onlyshape && _stricmp(face1->texdef.getName(), face2->texdef.getName()) != 0) return NULL;
 						continue;
 					}
 					//

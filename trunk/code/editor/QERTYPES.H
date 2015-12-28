@@ -35,44 +35,33 @@ typedef vec_t vec4_t[4];
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
+#include <shared/str.h>
 
 class texdef_t
 {
+	str name;
 public:
-  texdef_t()
-  {
-    name = new char[1];
-    name[0] = '\0';
-  }
-  ~texdef_t()
-  {
-    delete []name;
-    name = NULL;
-  }
+	texdef_t()
+	{
+	}
+	~texdef_t()
+	{
+	}
 
-  const char *Name( void )
+  const char *getName()
   {
-	  if ( name ) {
-		  return name;
-	  }
-
-	  return "";
+	  return name.c_str();
   }
 
-  void SetName(const char *p)
+  void setName(const char *p)
   {
-    if (name)
-    {
-      delete []name;
-    }
     if (p)
     {
-      name = strcpy(new char[strlen(p)+1], p);
+      name = p;
     }
     else
     {
-      name = new char[1];
-      name[0] = '\0';
+      name = "";
     }
   }
 
@@ -80,7 +69,7 @@ public:
   {
     if (&rhs != this)
     {
-      SetName(rhs.name);
+     setName(rhs.name);
       shift[0] = rhs.shift[0];
       shift[1] = rhs.shift[1];
       rotate = rhs.rotate;
@@ -92,8 +81,6 @@ public:
     }
     return *this;
   }
-	//char	name[128];
-	char	*name;
 	float	shift[2];
 	float	rotate;
 	float	scale[2];
@@ -295,6 +282,7 @@ struct curveVertex_t {
 #define PATCH_BTYPEMASK    0x0000f000    // 
 #define PATCH_STYLEMASK    0xffff0000    // 
 
+#include <renderer/rVertex.h>
 struct drawVert_t {
 	vec3_c	xyz;
 	float		st[2];

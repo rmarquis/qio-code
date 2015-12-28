@@ -341,7 +341,7 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.name[0] == '(')
+			if (t.brush->brush_faces->texdef.getName()[0] == '(')
 				Sys_Printf ("Can't change an entity texture\n");
 			else
 			{
@@ -360,7 +360,7 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.name[0] == '(')
+			if (t.brush->brush_faces->texdef.getName()[0] == '(')
 				Sys_Printf ("Can't change an entity texture\n");
 			else
 			{
@@ -380,12 +380,12 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.name[0] == '(')
+			if (t.brush->brush_faces->texdef.getName()[0] == '(')
       {
         if (t.brush->owner->eclass->nShowFlags & ECLASS_LIGHT)
         {
           CString strBuff;
-          mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
+          mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
           if (pTex)
           {
             vec3_c vColor = pTex->getEditorColor();
@@ -421,8 +421,8 @@ void Drag_Begin (int x, int y, int buttons,
       }
 			else
 			{
-      	//strcpy(t.face->texdef.name,g_qeglobals.d_texturewin.texdef.name);
-      	t.face->texdef.SetName(g_qeglobals.d_texturewin.texdef.name);
+      	//strcpy(t.face->texdef.getName(),g_qeglobals.d_texturewin.texdef.getName());
+      	t.face->texdef.setName(g_qeglobals.d_texturewin.texdef.getName());
 				Brush_Build(t.brush);
 				Sys_UpdateWindows (W_ALL);
 			}

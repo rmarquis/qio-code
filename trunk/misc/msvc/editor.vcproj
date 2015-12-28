@@ -251,10 +251,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\GroupBar.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\IShaders.cpp"
 				>
 			</File>
@@ -546,14 +542,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\Radiant.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RadiantDoc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RadiantView.h"
 				>
 			</File>
 			<File

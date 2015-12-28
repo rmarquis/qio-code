@@ -69,7 +69,7 @@ void FaceToBrushPrimitFace(face_s *f)
 /*	f->brushprimit_texdef.contents=f->texdef.contents;
 	f->brushprimit_texdef.flags=f->texdef.flags;
 	f->brushprimit_texdef.value=f->texdef.value;
-	strcpy(f->brushprimit_texdef.name,f->texdef.name); */
+	strcpy(f->brushprimit_texdef.name,f->texdef.getName()); */
 #ifdef _DEBUG
 	if ( f->plane.normal[0]==0.0f && f->plane.normal[1]==0.0f && f->plane.normal[2]==0.0f )
 	{
@@ -257,8 +257,8 @@ void BrushPrimit_Parse(brush_s	*b)
 			}
 			// read the texturedef
 			GetToken (false);
-			//strcpy(f->texdef.name, token);
-			f->texdef.SetName(token);
+			//strcpy(f->texdef.getName(), token);
+			f->texdef.setName(token);
 			if (TokenAvailable ())
 			{
 				GetToken (false);

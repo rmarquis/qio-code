@@ -1621,7 +1621,7 @@ brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDele
 
 
 	patchMesh_c* p = MakeNewPatch();
-	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
+	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
 
 	p->width = nWidth;
 	p->height = nHeight;
@@ -2745,7 +2745,7 @@ Patch_SetTexture
 // FIXME: need array validation throughout
 void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def)
 {
-	p->d_texture = QERApp_TryTextureForName(tex_def->name);
+	p->d_texture = QERApp_TryTextureForName(tex_def->getName());
 	UpdatePatchInspector();
 }
 
@@ -4690,7 +4690,7 @@ void Patch_ReplaceQTexture(brush_s *pb, mtrAPI_i *pOld, mtrAPI_i *pNew)
 void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz)
 {
   patchMesh_c* p = MakeNewPatch();
-	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.name);
+	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
 	p->width = 3;
 	p->height = 3;
   p->type = PATCH_TRIANGLE;

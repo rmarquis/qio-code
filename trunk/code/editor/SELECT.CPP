@@ -1475,11 +1475,11 @@ void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected
 
 		for (face_s* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
 		{
-			if(bForce || _strcmpi(pFace->texdef.name, pFind) == 0)
+			if(bForce || _strcmpi(pFace->texdef.getName(), pFind) == 0)
 			{
 				pFace->d_texture = QERApp_TryTextureForName(pReplace);
-				//strcpy(pFace->texdef.name, pReplace);
-				pFace->texdef.SetName(pReplace);
+				//strcpy(pFace->texdef.getName(), pReplace);
+				pFace->texdef.setName(pReplace);
 			}
 		}
 		Brush_Build(pBrush);
@@ -1499,12 +1499,12 @@ void Select_AllOfType()
     CString strName;
     if (g_ptrSelectedFaces.GetSize() == 0)
     {
-      strName = g_qeglobals.d_texturewin.texdef.name;
+      strName = g_qeglobals.d_texturewin.texdef.getName();
     }
     else
     {
       face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
-      strName = selFace->texdef.name;
+      strName = selFace->texdef.getName();
     }
 
     Select_Deselect();
@@ -1527,7 +1527,7 @@ void Select_AllOfType()
       {
         for (face_s* pFace = b->brush_faces; pFace; pFace = pFace->next)
         {
-          if (_strcmpi(strName, pFace->texdef.name) == 0)
+          if (_strcmpi(strName, pFace->texdef.getName()) == 0)
           {
 			      Brush_RemoveFromList (b);
 			      Brush_AddToList (b, &selected_brushes);

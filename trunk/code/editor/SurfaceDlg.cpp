@@ -169,12 +169,12 @@ void CSurfaceDlg::SetTexMods()
 		if (QE_SingleBrush())
     {
 			//strcpy(g_patch_texdef.name, Patch_GetTextureName());
-			g_patch_texdef.SetName(Patch_GetTextureName());
+			g_patch_texdef.setName(Patch_GetTextureName());
     }
 		else
     {
 			//strcpy(g_patch_texdef.name, pt->name);
-			g_patch_texdef.SetName(pt->name);
+			g_patch_texdef.setName(pt->getName());
     }
 		g_patch_texdef.contents = pt->contents;
 		g_patch_texdef.flags = pt->flags;
@@ -210,7 +210,7 @@ void CSurfaceDlg::SetTexMods()
 
 	SendMessage (WM_SETREDRAW, 0, 0);
 
-	::SetWindowText(GetDlgItem(IDC_TEXTURE)->GetSafeHwnd(), pt->name);
+	::SetWindowText(GetDlgItem(IDC_TEXTURE)->GetSafeHwnd(), pt->getName());
 
 	if (m_bPatchMode)
 		sprintf(sz, "%4.6f", pt->shift[0]);
@@ -334,12 +334,12 @@ void CSurfaceDlg::GetTexMods()
 
 	::GetWindowText (GetDlgItem(IDC_TEXTURE)->GetSafeHwnd(), sz, 127);
 	//strncpy (pt->name, sz, sizeof(pt->name)-1);
-	pt->SetName(sz);
-	if (pt->name[0] <= ' ')
+	pt->setName(sz);
+	if (pt->getName()[0] <= ' ')
 	{
 		//strcpy (pt->name, "none");
-		pt->SetName("none");
-		::SetWindowText(GetDlgItem(IDC_TEXTURE)->GetSafeHwnd(), pt->name);
+		pt->setName("none");
+		::SetWindowText(GetDlgItem(IDC_TEXTURE)->GetSafeHwnd(), pt->getName());
 	}
 
 	::GetWindowText (GetDlgItem(IDC_HSHIFT)->GetSafeHwnd(), sz, 127);

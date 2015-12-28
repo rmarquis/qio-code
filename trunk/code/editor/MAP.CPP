@@ -485,7 +485,7 @@ void AddRegionBrushes (void)
 
 	memset (&td, 0, sizeof(td));
 	//strcpy (td.name, "REGION");
-	td.SetName("REGION");
+	td.setName("REGION");
 
 	mins[0] = region_mins[0] - 16;
 	maxs[0] = region_mins[0] + 1;

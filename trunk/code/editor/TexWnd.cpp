@@ -636,7 +636,7 @@ void	Texture_ShowDirectory (int menunum, bool bLinked)
 //	  SetWindowText(g_qeglobals.d_hwndEntity, name);
 //
 //	  // select the first texture in the list
-//	  if (!g_qeglobals.d_texturewin.texdef.name[0])
+//	  if (!g_qeglobals.d_texturewin.texdef.getName()[0])
 //		  SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
 //  }
 }
@@ -737,7 +737,7 @@ void	Texture_ShowDirectory (char* pPath, bool bLinked)
 	//  SetWindowText(g_qeglobals.d_hwndEntity, name);
 
 	//  // select the first texture in the list
-	//  if (!g_qeglobals.d_texturewin.texdef.name[0])
+	//  if (!g_qeglobals.d_texturewin.texdef.getName()[0])
 	//	  SelectTexture (16, g_qeglobals.d_texturewin.height -16 ,false);
  // }
 }
@@ -810,7 +810,7 @@ void	Texture_ShowInuse (void)
 		{
 			for (f=b->brush_faces ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->texdef.name);
+				QERApp_TryTextureForName (f->texdef.getName());
 			}
 		}
 	}
@@ -825,7 +825,7 @@ void	Texture_ShowInuse (void)
 		{
 			for (f=b->brush_faces ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->texdef.name);
+				QERApp_TryTextureForName (f->texdef.getName());
 			}
 		}
 	}
@@ -838,7 +838,7 @@ void	Texture_ShowInuse (void)
 	SetWindowText(g_qeglobals.d_hwndEntity, name);
 
 	// select the first texture in the list
-	if (!g_qeglobals.d_texturewin.texdef.name[0])
+	if (!g_qeglobals.d_texturewin.texdef.getName()[0])
 	{
 		SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
 	}
@@ -951,7 +951,7 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 	mtrAPI_i	*q;
 	int			x,y;
 
-	if (texdef->name[0] == '(')
+	if (texdef->getName()[0] == '(')
 	{
 		Sys_Status("Can't select an entity texture\n", 0);
 		return;
@@ -969,7 +969,7 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 
 	Sys_UpdateWindows (W_TEXTURE);
 
-  g_dlgFind.updateTextures(texdef->name);
+  g_dlgFind.updateTextures(texdef->getName());
 
   if (!g_dlgFind.isOpen() && bSetSelection)
   {
@@ -987,7 +987,7 @@ void Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 
     int nWidth =q->getImageWidth() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
     int nHeight = q->getImageHeight() * ((float)g_PrefsDlg.m_nTextureScale / 100) ;
-		if (!_strcmpi(texdef->name, q->getName()))
+		if (!_strcmpi(texdef->getName(), q->getName()))
 		{
 			if (y > g_qeglobals.d_texturewin.originy)
 			{
@@ -1140,8 +1140,8 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale)
 			tex.value = 0;//q->value;
 			tex.contents = q->getEditorContentFlags();
 			//strcpy (tex.name, q->name);
-			tex.SetName(q->getName());
-			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, 0);
+			tex.setName(q->getName());
+			Texture_SetTexture ( &tex, &brushprimit_tex, bFitScale, 1);
 			CString strTex;
 			CString strName = q->getName();
 			//int nPos = strName.Find('\\');
@@ -1315,7 +1315,7 @@ void Texture_Draw2 (int width, int height)
 			glEnd ();
 
 			// draw the selection border
-			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.name, q->getName()))
+			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.getName(), q->getName()))
 			{
 				glLineWidth (3);
 				glColor3f (1,0,0);
