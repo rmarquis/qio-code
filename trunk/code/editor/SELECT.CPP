@@ -323,6 +323,8 @@ void Select_Delete (void)
 	while (selected_brushes.next != &selected_brushes)
 	{
 		brush = selected_brushes.next;
+		if(brush == 0)
+			break;
 		if (brush->patchBrush)
 		{
 		  //Patch_Delete(brush->nPatchID);
@@ -398,7 +400,7 @@ void Select_Move (vec3_t delta, bool bSnap)
   
  
 // actually move the selected brushes
-	for (b = selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (b = selected_brushes.next ; b && b != &selected_brushes ; b=b->next)
 		Brush_Move (b, delta, bSnap);
 
   vec3_c vMin, vMax;
@@ -571,7 +573,7 @@ void Select_GetBounds (vec3_c &mins, vec3_c &maxs)
 		maxs[i] = -99999;
 	}
 
-	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (b=selected_brushes.next ; b &&  b != &selected_brushes ; b=b->next)
 		for (i=0 ; i<3 ; i++)
 		{
 			if (b->getMins()[i] < mins[i])

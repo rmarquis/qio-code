@@ -712,13 +712,13 @@ void CMainFrame::SetButtonMenuStates()
 
 
 	}
-  if (g_qeglobals.d_project_entity)
-  {
+  //if (g_qeglobals.d_project_entity)
+  //{
     FillTextureMenu();      // redundant but i'll clean it up later.. yeah right.. 
 	  FillBSPMenu();
 	  LoadMruInReg(g_qeglobals.d_lpMruMenu,"Software\\id\\QuakeEd4\\MRU");
     PlaceMenuMRUItem(g_qeglobals.d_lpMruMenu,::GetSubMenu(::GetMenu(GetSafeHwnd()),0), ID_FILE_EXIT);
-  }
+ // }
 }
 
 void CMainFrame::ShowMenuItemKeyBindings(CMenu *pMenu)
@@ -1405,7 +1405,7 @@ void CMainFrame::OnDestroy()
 	while (entities.next != &entities)
 		delete entities.next;
 
-	g_qeglobals.d_project_entity->clearKeyValues();
+	/*g_qeglobals.d_project_entity->clearKeyValues();
 
 
 	entity_s* pEntity = g_qeglobals.d_project_entity->next;
@@ -1414,7 +1414,7 @@ void CMainFrame::OnDestroy()
     entity_s* pNextEntity = pEntity->next;
     delete pEntity;
     pEntity = pNextEntity;
-  }
+  }*/
 
   Texture_Cleanup();
 
@@ -1432,10 +1432,6 @@ void CMainFrame::OnClose()
 	{
 		g_bClosingRadiant = true;
 		CFrameWnd::OnClose();
-		if(g_qeglobals.d_project_entity) {
-			delete g_qeglobals.d_project_entity;
-			g_qeglobals.d_project_entity = 0;
-		}
 		if(world_entity ) {
 			delete world_entity;
 			world_entity = 0;
@@ -1873,8 +1869,8 @@ void CMainFrame::OnFileExit()
 
 void CMainFrame::OnFileLoadproject() 
 {
-	if (ConfirmModified())
-		ProjectDialog ();
+///	if (ConfirmModified())
+	///	ProjectDialog ();
 }
 
 void CMainFrame::OnFileNew() 
@@ -2644,7 +2640,7 @@ void CMainFrame::OnSelectionDelete()
 	Undo_Start("delete");
 	Undo_AddBrushList(&selected_brushes);
 	//add all deleted entities to the undo
-	for (brush = selected_brushes.next; brush != &selected_brushes; brush = brush->next)
+	for (brush = selected_brushes.next; brush && brush != &selected_brushes; brush = brush->next)
 	{
 		Undo_AddEntity(brush->owner);
 	}

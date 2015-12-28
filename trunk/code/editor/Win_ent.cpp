@@ -1085,7 +1085,7 @@ void SizeEntityDlg(int iWidth, int iHeight)
 
 void AssignSound()
 {
-	CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
+	CString strBasePath = "baseqio/";///g_qeglobals.d_project_entity->getKeyValue("basepath");
   AddSlash(strBasePath);
   CString strPath = strBasePath;
   strPath += "sound\\";
@@ -1114,7 +1114,7 @@ void AssignSound()
 
 void AssignModel()
 {
-	CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
+	CString strBasePath = "baseqio/";//g_qeglobals.d_project_entity->getKeyValue("basepath");
   AddSlash(strBasePath);
   CString strPath = strBasePath;
   strPath += "models\\mapobjects\\";

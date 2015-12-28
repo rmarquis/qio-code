@@ -135,7 +135,6 @@ extern CString g_strProject;
 extern void TextureAxisFromPlane(const class edPlane_c &pln, vec3_c &xv, vec3_c &yv);
 extern void VectorRotate (vec3_t va, const class vec3_c &vr,  vec3_c &out);
 extern void VectorRotate(const class vec3_c &vIn, const vec3_c &vRotation, const vec3_c &vOrigin, vec3_c &out);
-extern bool QE_SaveProject (const char* pProjectFile);
 extern void NewBSP(char* pCommandLine, HWND);
 extern void NewVIS(char* pCommandLine, HWND);
 extern void NewRAD(char* pCommandLine, HWND);
