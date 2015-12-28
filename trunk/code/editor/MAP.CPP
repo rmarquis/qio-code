@@ -169,11 +169,11 @@ void Map_Free (void)
 			Brush_Free (filtered_brushes.next);
 
 		while (entities.next != &entities)
-			Entity_Free (entities.next);
+			delete entities.next;
 	}
 
 	if (world_entity)
-		Entity_Free(world_entity);
+		delete world_entity;
 	world_entity = NULL;
 	selected_face = NULL;
 }
@@ -381,7 +381,7 @@ void Map_SaveFile (const char *filename, bool use_region )
 		next = e->next;
 		if (e->brushes.onext == &e->brushes)
     {
-			Entity_Free (e);	// no brushes left, so remove it
+			delete e;	// no brushes left, so remove it
     }
 		else
     {

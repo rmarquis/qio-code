@@ -1403,7 +1403,7 @@ void CMainFrame::OnDestroy()
 		Brush_Free (filtered_brushes.next, false);
 
 	while (entities.next != &entities)
-		Entity_Free (entities.next);
+		delete entities.next;
 
 	g_qeglobals.d_project_entity->clearKeyValues();
 
@@ -1412,14 +1412,14 @@ void CMainFrame::OnDestroy()
   while (pEntity != NULL && pEntity != g_qeglobals.d_project_entity)
   {
     entity_s* pNextEntity = pEntity->next;
-    Entity_Free(pEntity);
+    delete pEntity;
     pEntity = pNextEntity;
   }
 
   Texture_Cleanup();
 
   if (world_entity) {
-    Entity_Free(world_entity);
+    delete world_entity;
 	world_entity = 0;
   }
 

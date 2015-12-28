@@ -1196,7 +1196,7 @@ void Select_Ungroup(void)
 			Brush_Build( b );
 			b->owner = world_entity;
 		}
-		Entity_Free (e);
+		delete e;
 		numselectedgroups++;
 	}
 

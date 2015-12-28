@@ -117,7 +117,7 @@ void Undo_ClearRedo(void)
 		for (pEntity = redo->entitylist.next; pEntity != NULL && pEntity != &redo->entitylist; pEntity = pNextEntity)
 		{
 			pNextEntity = pEntity->next;
-			Entity_Free(pEntity);
+			delete pEntity;
 		}
 		free(redo);
 	}
@@ -153,7 +153,7 @@ void Undo_Clear(void)
 		{
 			pNextEntity = pEntity->next;
 			g_undoMemorySize -= Entity_MemorySize(pEntity);
-			Entity_Free(pEntity);
+			delete pEntity;
 		}
 		g_undoMemorySize -= sizeof(undo_t);
 		free(undo);
@@ -235,7 +235,7 @@ void Undo_FreeFirstUndo(void)
 	{
 		pNextEntity = pEntity->next;
 		g_undoMemorySize -= Entity_MemorySize(pEntity);
-		Entity_Free(pEntity);
+		delete pEntity;
 	}
 	g_undoMemorySize -= sizeof(undo_t);
 	free(undo);
@@ -666,7 +666,6 @@ void Undo_Undo(void)
 				}
 			}
 			//
-			//Entity_Free(pEntity);
 			//move the entity to the redo
 			Entity_RemoveFromList(pEntity);
 			Entity_AddToList(pEntity, &redo->entitylist);
@@ -682,7 +681,7 @@ void Undo_Undo(void)
 			//set back the original epairs
 			world_entity->keyValues = pEntity->keyValues;
 			// free the world_entity clone that stored the epairs
-			Entity_Free(pEntity);
+			delete pEntity;
 		}
 		else
 		{
@@ -793,7 +792,6 @@ void Undo_Redo(void)
 				}
 			}
 			//
-			//Entity_Free(pEntity);
 			//move the entity to the redo
 			Entity_RemoveFromList(pEntity);
 			Entity_AddToList(pEntity, &g_lastundo->entitylist);
@@ -809,7 +807,7 @@ void Undo_Redo(void)
 			//set back the original epairs
 			world_entity->keyValues = pEntity->keyValues;
 			//free the world_entity clone that stored the epairs
-			Entity_Free(pEntity);
+			delete pEntity;
 		}
 		else
 		{
