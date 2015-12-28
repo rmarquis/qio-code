@@ -1432,6 +1432,7 @@ void CXYWnd::OnEntityCreate(unsigned int nID)
 }
 
 
+#include <api/declManagerAPI.h>
 void CXYWnd::HandleDrop()
 {
   if (g_PrefsDlg.m_bRightClick == false)
@@ -1477,10 +1478,12 @@ void CXYWnd::HandleDrop()
     CString strActive;
     CString strLast;
     CString strName;
-	  for (e=eclass ; e ; e=e->next)
-    {
+
+	for (u32 i = 0; i < g_declMgr->getNumLoadedEntityDecls(); i++)
+	{
+		const char *name = g_declMgr->getLoadedEntityDeclName(i);
       strLast = strName;
-      strName = e->name;
+      strName = name;
       int n_ = strName.Find("_");
       if (n_ > 0)
       {

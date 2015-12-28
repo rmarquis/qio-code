@@ -264,8 +264,8 @@ void CPatchDialog::UpdateRowColInfo()
       m_fX = m_Patch->ctrl[c][r].xyz[0];
       m_fY = m_Patch->ctrl[c][r].xyz[1];
       m_fZ = m_Patch->ctrl[c][r].xyz[2];
-      m_fS = m_Patch->ctrl[c][r].st[0];
-      m_fT = m_Patch->ctrl[c][r].st[1];
+      m_fS = m_Patch->ctrl[c][r].tc[0];
+      m_fT = m_Patch->ctrl[c][r].tc[1];
     }
   }
   UpdateData(FALSE);
@@ -288,8 +288,8 @@ void CPatchDialog::OnApply()
       m_Patch->ctrl[c][r].xyz[0] = m_fX;
       m_Patch->ctrl[c][r].xyz[1] = m_fY;
       m_Patch->ctrl[c][r].xyz[2] = m_fZ;
-      m_Patch->ctrl[c][r].st[0] = m_fS;
-      m_Patch->ctrl[c][r].st[1] = m_fT;
+      m_Patch->ctrl[c][r].tc[0] = m_fS;
+      m_Patch->ctrl[c][r].tc[1] = m_fT;
       m_Patch->bDirty = true;
       Sys_UpdateWindows(W_ALL);
     }

@@ -69,25 +69,6 @@ void CleanEntityList(eclass_s *&pList)
 void CleanUpEntities()
 {
   CleanEntityList(eclass);
-/*
-  while (eclass)
-  {
-    eclass_s* pTemp = eclass->next;
-    delete []eclass->pTriList;
-    
-    if (eclass->modelpath)
-      free(eclass->modelpath);
-	  if (eclass->skinpath)			// PGM
-		  free(eclass->skinpath);		// PGM
-    
-    free(eclass->name);
-    free(eclass->comments);
-    free(eclass);
-    eclass = pTemp;
-  }
-
-  eclass = NULL;
-*/
   if (eclass_bad)
   {
     free(eclass_bad->name);
@@ -305,37 +286,7 @@ Eclass_InsertAlphabetized
 */
 void Eclass_InsertAlphabetized (eclass_s *e)
 {
-#if 1
   EClass_InsertSortedList(eclass, e);
-#else
-	eclass_s	*s;
-	
-	if (!eclass)
-	{
-		eclass = e;
-		return;
-	}
-
-
-	s = eclass;
-	if (stricmp (e->name, s->name) < 0)
-	{
-		e->next = s;
-		eclass = e;
-		return;
-	}
-
-	do
-	{
-		if (!s->next || stricmp (e->name, s->next->name) < 0)
-		{
-			e->next = s->next;
-			s->next = e;
-			return;
-		}
-		s=s->next;
-	} while (1);
-#endif
 }
 
 

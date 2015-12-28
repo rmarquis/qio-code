@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
 #include <api/editorAPI.h>
+#include <api/declManagerAPI.h>
 #include <shared/autoCvar.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
@@ -141,6 +142,7 @@ coreAPI_s *g_core = 0;
 rAPI_i *rf = 0;
 rbAPI_i *rb = 0;
 materialSystemAPI_i *g_ms = 0;
+declManagerAPI_i *g_declMgr = 0;
 // exports
 static edIMPL_c g_staticEditorAPI;
 editorAPI_i *g_editor = &g_staticEditorAPI;
@@ -159,7 +161,10 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 
+	g_declMgr->loadAllEntityDecls();
+	g_core->Print("Editor detected %i ent defs\n",g_declMgr->getNumLoadedEntityDecls());
 }
 
 qioModule_e IFM_GetCurModule() {

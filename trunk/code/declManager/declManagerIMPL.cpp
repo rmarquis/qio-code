@@ -707,6 +707,17 @@ void declManagerIMPL_c::onRendererShutdown() {
 	}
 	removeUnrefrencedDecls();
 }
+const char *declManagerIMPL_c::getLoadedEntityDeclName(u32 i) const {
+	return entityDecls.objectAt(i)->getName();
+}
+void declManagerIMPL_c::loadAllEntityDecls() {
+	cacheEntDefNamesList();
+	for(u32 i = 0; i < entDefNamesList.size(); i++) {
+		const char *name = entDefNamesList.getString(i);
+		_registerEntityDecl(name,qioModule_e::QMD_DECL_MANAGER); // FIXME - mark module
+	}
+	entityDecls.sortArray();
+}
 void declManagerIMPL_c::iterateEntityDefNames(void (*callback)(const char *s)) {
 	cacheEntDefNamesList();
 	entDefNamesList.iterateStringList(callback);
