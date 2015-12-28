@@ -520,7 +520,7 @@ void DrawBrushEntityName (brush_s *b)
 
 	if (g_qeglobals.d_savedinfo.show_names)
 	{
-		name = ValueForKey (b->owner, "classname");
+		name = b->owner->getKeyValue("classname");
 		glRasterPos3f (b->getMins()[0]+4, b->getMins()[1]+4, b->getMins()[2]+4);
 		glCallLists (strlen(name), GL_UNSIGNED_BYTE, name);
 	}
@@ -3066,7 +3066,7 @@ void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 	int			angleVal;
 	vec3_c		angles;
 
-	angleVal = IntForKey(e, "angle");
+	angleVal = e->getKeyFloat("angle");
 	if (angleVal == -1)				// up
 	{
 		angles.set(270, 0, 0);
@@ -3122,7 +3122,7 @@ void DrawLight(brush_s *b)
 	vTriColor[0] = vTriColor[2] = 1.0;
 	vTriColor[1]  = 1.0;
 	bTriPaint = true;
-	CString strColor = ValueForKey(b->owner, "_color");
+	CString strColor = b->owner->getKeyValue("_color");
 	if (strColor.GetLength() > 0)
 	{
 		float fR, fG, fB;
@@ -3198,7 +3198,7 @@ void DrawLight(brush_s *b)
 	glEnd();
 
 	// check for DOOM lights
-	CString str = ValueForKey(b->owner, "light_right");
+	CString str = b->owner->getKeyValue("light_right");
 	if (str.GetLength() > 0) {
 		vec3_c vRight, vUp, vTarget, vTemp;
 		GetVectorForKey (b->owner, "light_right", vRight);

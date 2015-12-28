@@ -1120,7 +1120,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
       if (pecNew)
       {
         entity_s *e = Entity_Create(pecNew);
-        SetKeyValue(e, "type", "patchCapped");
+		e->setKeyValue("type", "patchCapped");
       }
     }
   }
@@ -4449,7 +4449,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
           if (pecNew)
           {
             entity_s *e = Entity_Create(pecNew);
-            SetKeyValue(e, "type", "patchThick");
+			e->setKeyValue("type", "patchThick");
           }
 
         

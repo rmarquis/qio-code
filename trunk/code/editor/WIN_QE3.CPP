@@ -346,10 +346,10 @@ void OpenDialog (void)
 	 * store it in szDirName. 
 	 */ 
  
-	strcpy (szDirName, ValueForKey (g_qeglobals.d_project_entity, "mapspath") );
+	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("mapspath") );
   if (strlen(szDirName) == 0)
   {
-	  strcpy (szDirName, ValueForKey (g_qeglobals.d_project_entity, "basepath") );
+	  strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
 	  strcat (szDirName, "\\maps");
   }
 
@@ -397,7 +397,7 @@ void ProjectDialog (void)
 	 * store it in szDirName. 
 	 */ 
  
-	strcpy (szDirName, ValueForKey(g_qeglobals.d_project_entity, "basepath") );
+	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
 	strcat (szDirName, "\\scripts");
 
 	/* Place the terminating null character in the szFile. */ 
@@ -458,7 +458,7 @@ void DefaultExtension (char *path, char *extension)
 extern void AddSlash(CString& strPath);
 void SaveAsDialog (bool bRegion)
 { 
-	strcpy (szDirName, ValueForKey (g_qeglobals.d_project_entity, "basepath") );
+	strcpy (szDirName, g_qeglobals.d_project_entity->getKeyValue("basepath") );
   CString strPath = szDirName;
   AddSlash(strPath);
   strPath += "maps";
@@ -627,7 +627,7 @@ void CheckBspProcess (void)
 		ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
 		if (g_PrefsDlg.m_bSetGame == TRUE) // run in place with set game.. don't copy map
 		{
-			CString strBasePath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+			CString strBasePath = g_qeglobals.d_project_entity->getKeyValue("basepath");
 			strExePath += " +set game ";
 			strExePath += strBasePath;
 			WinExec(strExePath, SW_SHOW);

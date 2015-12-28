@@ -25,80 +25,41 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 int g_entityId = 1;
 
-
-
-const char *ValueForKey (entity_s *ent, const char *key)
-{
-	if(ent == 0)
-		return "";
-  return ent->getKeyValue(key);
-}
-
-void TrackMD3Angles(entity_s *e, const char *key, const char *value)
+void entity_s::trackMD3Angles(const char *key, const char *value)
 {
   if (_strcmpi(key, "angle") != 0)
   {
     return;
   }
 
-  if (e->eclass->fixedsize && e->eclass->nShowFlags & ECLASS_MISCMODEL)
+  if (this->eclass->fixedsize && this->eclass->nShowFlags & ECLASS_MISCMODEL)
   {
-    float a = FloatForKey (e, "angle");
+	  float a = this->getKeyFloat("angle");
     float b = atof(value);
     if (a != b)
     {
       vec3_t vAngle;
       vAngle[0] = vAngle[1] = 0;
       vAngle[2] = -a;
-      Brush_Rotate(e->brushes.onext, vAngle, e->origin, true);
+      Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
       vAngle[2] = b;
-      Brush_Rotate(e->brushes.onext, vAngle, e->origin, true);
+      Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
     }
   }
 }
 
 
 
-void 	SetKeyValue (entity_s *ent, const char *key, const char *value)
-{
-
-	if (ent == NULL)
-		return;
-
-	if (!key || !key[0])
-		return;
-
-  TrackMD3Angles(ent, key, value);
-
-  ent->keyValues.set(key,value);
-
-}
 
 
 
 
-
-float	FloatForKey (entity_s *ent, const char *key)
-{
-	const char	*k;
-	
-	k = ValueForKey (ent, key);
-	return atof(k);
-}
-
-int IntForKey (entity_s *ent, const char *key)
-{
-	const char	*k;
-	
-	k = ValueForKey (ent, key);
-	return atoi(k);
-}
 
 void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec)
 {
 	const char	*k;
 	
-	k = ValueForKey (ent, key);
+	k = ent->getKeyValue( key);
 	sscanf (k, "%f %f %f", &vec[0], &vec[1], &vec[2]);
 }
 
@@ -235,7 +196,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	} while (1);
 	
   // group info entity?
-  if (strcmp(ValueForKey (ent, "classname"), "group_info") == 0)
+	if (strcmp(ent->getKeyValue("classname"), "group_info") == 0)
     return ent;
 
 	if (onlypairs)
@@ -248,7 +209,7 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	
 	GetVectorForKey (ent, "origin", ent->origin);
 	
-	e = Eclass_ForName (ValueForKey (ent, "classname"), has_brushes);
+	e = Eclass_ForName (ent->getKeyValue("classname"), has_brushes);
 	ent->eclass = e;
 
 	if (e->fixedsize)
@@ -272,11 +233,11 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 		float a = 0;
 		if (e->nShowFlags & ECLASS_MISCMODEL)
 		{
-			const char* p = ValueForKey(ent, "model");
+			const char* p = ent->getKeyValue( "model");
 			if (p != NULL && strlen(p) > 0)
 			{
 				vec3_c vMin, vMax;
-				a = FloatForKey (ent, "angle");
+				a = ent->getKeyFloat("angle");
 				//if (GetCachedModel(ent, p, vMin, vMax))
 				//{
 				//	// create a custom brush
@@ -342,7 +303,7 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 	if (use_region)
 	{
 		// in region mode, save the camera position as playerstart
-		if ( !strcmp(ValueForKey (e, "classname"), "info_player_start") )
+		if ( !strcmp(e->getKeyValue( "classname"), "info_player_start") )
 		{
 			fprintf (f, "{\n");
 			fprintf (f, "\"classname\" \"info_player_start\"\n");
@@ -366,7 +327,7 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 		// NOTE: the whole brush placement / origin stuff is a mess
 		origin = e->origin;
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		SetKeyValue (e, "origin", text);
+		e->setKeyValue( "origin", text);
 	}
 	// if fixedsize, calculate a new origin based on the current
 	// brush position
@@ -382,7 +343,7 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 			origin = e->brushes.onext->getMins() - e->eclass->mins;
 		}
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		SetKeyValue (e, "origin", text);
+		e->setKeyValue( "origin", text);
 	}
 
 	fprintf (f, "{\n");
@@ -453,7 +414,7 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 		  origin = e->brushes.onext->getMins() - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		SetKeyValue (e, "origin", text);
+	e->setKeyValue("origin", text);
 	}
 
   fprintf (f, "{\n");
@@ -488,7 +449,6 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 //
 void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 {
-	epair_s		*ep;
 	brush_s		*b;
 	vec3_c		origin;
 	char		text[128];
@@ -515,7 +475,7 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 		  origin =  e->brushes.onext->getMins() - e->eclass->mins;
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		SetKeyValue (e, "origin", text);
+	e->setKeyValue("origin", text);
 	}
 
   MemFile_fprintf(pMemFile, "{\n");
@@ -579,7 +539,7 @@ entity_s	*Entity_Create (eclass_s *c)
 	e->entityId = g_entityId++;
 	e->brushes.onext = e->brushes.oprev = &e->brushes;
 	e->eclass = c;
-	SetKeyValue (e, "classname", c->name);
+	e->setKeyValue( "classname", c->name);
 
 	// add the entity to the entity list
   Entity_AddToList(e, &entities);
@@ -671,7 +631,6 @@ Entity_Clone
 entity_s	*Entity_Clone (entity_s *e)
 {
 	entity_s	*n;
-	epair_s		*ep, *np;
 
 	n = new entity_s();
 	n->entityId = g_entityId++;
@@ -698,7 +657,7 @@ int GetUniqueTargetId(int iHint)
 	
 	for (; pe != NULL && pe != &entities ; pe = pe->next)
 	{
-		i = IntForKey(pe, "target");
+		i = pe->getKeyInt("target");
 		if (i)
 		{
 			iMin = min(i, iMin);
@@ -722,7 +681,7 @@ entity_s *FindEntity(char *pszKey, char *pszValue)
 	
 	for (; pe != NULL && pe != &entities ; pe = pe->next)
 	{
-		if (!strcmp(ValueForKey(pe, pszKey), pszValue))
+		if (!strcmp(pe->getKeyValue(pszKey), pszValue))
 			return pe;
 	}
 
@@ -737,7 +696,7 @@ entity_s *FindEntityInt(char *pszKey, int iValue)
 	
 	for (; pe != NULL && pe != &entities ; pe = pe->next)
 	{
-		if (IntForKey(pe, pszKey) == iValue)
+		if (pe->getKeyInt(pszKey) == iValue)
 			return pe;
 	}
 

@@ -1175,7 +1175,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 				brush_s* nb = Brush_Create (mins, maxs, &pecNew->texdef);
 				Entity_LinkBrush (b->owner, nb);
 				nb->owner->eclass = pecNew;
-				SetKeyValue (nb->owner, "classname", pName);
+				nb->owner->setKeyValue("classname", pName);
 				Brush_Free(b);
 				Brush_Build(nb);
 				Brush_AddToList (nb, &active_brushes);
@@ -2513,7 +2513,7 @@ void DrawPathLines (void)
 	num_entities = 0;
 	for (te = entities.next ; te != &entities && num_entities != MAX_MAP_ENTITIES ; te = te->next)
 	{
-		ent_target[num_entities] = ValueForKey (te, "target");
+		ent_target[num_entities] = te->getKeyValue("target");
 		if (ent_target[num_entities][0])
 		{
 			ent_entity[num_entities] = te;
@@ -2523,7 +2523,7 @@ void DrawPathLines (void)
 
 	for (se = entities.next ; se != &entities ; se = se->next)
 	{
-		psz = ValueForKey(se, "targetname");
+		psz = se->getKeyValue("targetname");
 	
 		if (psz == NULL || psz[0] == '\0')
 			continue;
@@ -3288,7 +3288,6 @@ void CleanCopyEntities()
 entity_s	*Entity_CopyClone (entity_s *e)
 {
 	entity_s	*n;
-	epair_s		*ep, *np;
 
 	n = new entity_s();
 	n->brushes.onext = n->brushes.oprev = &n->brushes;
@@ -3302,14 +3301,6 @@ entity_s	*Entity_CopyClone (entity_s *e)
 
 	// copy key values
 	n->keyValues = e->keyValues;
-	//for (ep = e->epairs ; ep ; ep=ep->next)
-	//{
-	//	np = (epair_s*)qmalloc(sizeof(*np));
-	//	np->key = copystring(ep->key);
-	//	np->value = copystring(ep->value);
-	//	np->next = n->epairs;
-	//	n->epairs = np;
-	//}
 	return n;
 }
 

@@ -123,7 +123,7 @@ entity_s *Map_FindClass (char *cname)
 
 	for (ent = entities.next ; ent != &entities ; ent=ent->next)
 	{
-		if (!strcmp(cname, ValueForKey (ent, "classname")))
+		if (!strcmp(cname, ent->getKeyValue("classname")))
 			return ent;
 	}
 	return NULL;
@@ -250,7 +250,7 @@ void Map_LoadFile (char *filename)
 			ent = Entity_Parse (false, &active_brushes);
 			if (!ent)
 				break;
-			if (!strcmp(ValueForKey (ent, "classname"), "worldspawn"))
+			if (!strcmp(ent->getKeyValue("classname"), "worldspawn"))
 			{
 				if (world_entity)
 					Sys_Printf ("WARNING: multiple worldspawn\n");
@@ -302,7 +302,7 @@ void Map_LoadFile (char *filename)
 	{
 		GetVectorForKey (ent, "origin", g_pParentWnd->GetCamera()->Camera().origin);
 		GetVectorForKey (ent, "origin", g_pParentWnd->GetXYWnd()->GetOrigin());
-		g_pParentWnd->GetCamera()->Camera().angles[YAW] = FloatForKey (ent, "angle");
+		g_pParentWnd->GetCamera()->Camera().angles[YAW] = ent->getKeyFloat("angle");
 	}
 	else
 	{
@@ -439,7 +439,7 @@ void Map_New (void)
 	world_entity = new entity_s();
 	world_entity->brushes.onext = 
 		world_entity->brushes.oprev = &world_entity->brushes;
-	SetKeyValue (world_entity, "classname", "worldspawn");
+	world_entity->setKeyValue("classname", "worldspawn");
 	world_entity->eclass = Eclass_ForName ("worldspawn", true);
 
 	g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
@@ -706,7 +706,7 @@ void UniqueTargetName(CString& rStr)
 	int maxtarg = 0;
 	for (entity_s* e=entities.next ; e != &entities ; e=e->next)
 	{
-		const char* tn = ValueForKey (e, "targetname");
+		const char* tn = e->getKeyValue("targetname");
 		if (tn && tn[0])
 		{
 			int targetnum = atoi(tn+1);
@@ -715,7 +715,7 @@ void UniqueTargetName(CString& rStr)
 		}
     else
     {
-		  tn = ValueForKey (e, "target");
+		  tn = e->getKeyValue("target");
 		  if (tn && tn[0])
 		  {
 			  int targetnum = atoi(tn+1);
@@ -773,7 +773,7 @@ void Map_ImportBuffer (char* buf)
 				Undo_EndBrush(b);
 			}
 
-			if (!strcmp(ValueForKey (ent, "classname"), "worldspawn"))
+			if (!strcmp(ent->getKeyValue("classname"), "worldspawn"))
 			{
 				// world brushes need to be added to the current world entity
 
@@ -790,7 +790,7 @@ void Map_ImportBuffer (char* buf)
 			else
 			{
 				// the following bit remaps conflicting target/targetname key/value pairs
-				CString str = ValueForKey(ent, "target");
+				CString str = ent->getKeyValue("target");
 				CString strKey;
 				CString strTarget("");
 				if (str.GetLength() > 0)
@@ -803,10 +803,10 @@ void Map_ImportBuffer (char* buf)
 							mapStr.SetAt(str, strKey);
 						}
 						strTarget = strKey;
-						SetKeyValue(ent, "target", strTarget.GetBuffer(0));
+						ent->setKeyValue("target", strTarget.GetBuffer(0));
 					}
 				}
-				str = ValueForKey(ent, "targetname");
+				str = ent->getKeyValue("targetname");
 				if (str.GetLength() > 0)
 				{
 					if (FindEntity("targetname", str.GetBuffer(0)))
@@ -816,7 +816,7 @@ void Map_ImportBuffer (char* buf)
 							UniqueTargetName(strKey);
 							mapStr.SetAt(str, strKey);
 						}
-						SetKeyValue(ent, "targetname", strKey.GetBuffer(0));
+						ent->setKeyValue("targetname", strKey.GetBuffer(0));
 					}
 				}
 				//if (strTarget.GetLength() > 0)

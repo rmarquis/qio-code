@@ -306,14 +306,6 @@ struct drawVert_t {
 	}
 };
 
-// used in brush primitive AND entities
-struct epair_s
-{
-	struct epair_s	*next;
-	char	*key;
-	char	*value;
-};
-
 class patchMesh_c {
 	float calcPatchWidth();
 	float calcPatchWidthDistanceTo(int j);
