@@ -55,13 +55,7 @@ void entity_s::trackMD3Angles(const char *key, const char *value)
 
 
 
-void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec)
-{
-	const char	*k;
-	
-	k = ent->getKeyValue( key);
-	sscanf (k, "%f %f %f", &vec[0], &vec[1], &vec[2]);
-}
+
 
 
 /*
@@ -118,7 +112,7 @@ be looked up, and the entity will not be added
 to the global list.  Used for parsing the project.
 ================
 */
-entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
+entity_s	*Entity_Parse (brush_s* pList)
 {
 	entity_s	*ent;
 	eclass_s	*e;
@@ -176,17 +170,14 @@ entity_s	*Entity_Parse (bool onlypairs, brush_s* pList)
 	
   // group info entity?
 	if (strcmp(ent->getKeyValue("classname"), "group_info") == 0)
-    return ent;
+		 return ent;
 
-	if (onlypairs)
-		return ent;
-	
 	if (ent->brushes.onext == &ent->brushes)
 		has_brushes = false;
 	else
 		has_brushes = true;
 	
-	GetVectorForKey (ent, "origin", ent->origin);
+	ent->getKeyVector("origin", ent->origin);
 	
 	e = Eclass_ForName (ent->getKeyValue("classname"), has_brushes);
 	ent->eclass = e;

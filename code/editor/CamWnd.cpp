@@ -837,7 +837,7 @@ void CCamWnd::Cam_Draw()
 		if (FilterBrush (brush))
 			continue;
 		
-		if ((brush->brush_faces->texdef.flags & (SURF_TRANS33 | SURF_TRANS66)) || (brush->brush_faces->d_texture->hasEditorTransparency() && brush->brush_faces->d_texture->getEditorTransparency() != 1.0))
+		if ((brush->brush_faces->d_texture->hasEditorTransparency() && brush->brush_faces->d_texture->getEditorTransparency() != 1.0))
 		{
 			m_TransBrushes [ m_nNumTransBrushes++ ] = brush;
 		} 
