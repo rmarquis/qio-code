@@ -57,6 +57,11 @@ struct entity_s
 	int getKeyFloat(const char *k) const {
 		return keyValues.getKeyFloat(k);
 	}
+	bool getKeyVector(const char *key, vec3_t vec) const {
+		const char	*k = this->getKeyValue(key);
+		sscanf (k, "%f %f %f", &vec[0], &vec[1], &vec[2]);
+		return false;
+	}
 	const char *getKeyValue(const char *k) const {
 		const char *r = keyValues.getKeyValue(k);
 		if(r == 0)
@@ -109,11 +114,8 @@ struct entity_s
 	}
 };
 
-
-void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec);
-
 int			Entity_MemorySize(entity_s *e);
-entity_s	*Entity_Parse (bool onlypairs, brush_s* pList = NULL);
+entity_s	*Entity_Parse (brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);
 void		Entity_WriteSelected(entity_s *e, FILE *f);
 void		Entity_WriteSelected(entity_s *e, CMemFile*);

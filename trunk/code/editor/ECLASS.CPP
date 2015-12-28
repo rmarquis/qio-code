@@ -29,8 +29,6 @@ eclass_s	*eclass = NULL;
 eclass_s	*eclass_bad = NULL;
 char		eclass_directory[1024];
 
-// md3 cache for misc_models
-eclass_s *g_md3Cache = NULL;
 
 /*
 
@@ -71,7 +69,6 @@ void CleanEntityList(eclass_s *&pList)
 void CleanUpEntities()
 {
   CleanEntityList(eclass);
-  CleanEntityList(g_md3Cache);
 /*
   while (eclass)
   {
@@ -99,25 +96,6 @@ void CleanUpEntities()
     eclass_bad = NULL;
   }
 }
-
-void ExtendBounds(vec3_t v, vec3_c &vMin, vec3_c &vMax)
-{
-	for (int i = 0 ;i < 3 ;i++)
-	{
-		vec_t f = v[i];
-		
-    if (f < vMin[i])
-    {
-			vMin[i] = f;
-    }
-
-    if (f > vMax[i])
-    {
-			vMax[i] = f;
-    }
-	}
-}
-
 
 void setSpecialLoad(eclass_s *e, const char* pWhat, char*& p)
 {

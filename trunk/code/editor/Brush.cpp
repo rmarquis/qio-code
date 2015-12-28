@@ -3201,9 +3201,9 @@ void DrawLight(brush_s *b)
 	CString str = b->owner->getKeyValue("light_right");
 	if (str.GetLength() > 0) {
 		vec3_c vRight, vUp, vTarget, vTemp;
-		GetVectorForKey (b->owner, "light_right", vRight);
-		GetVectorForKey (b->owner, "light_up", vUp);
-		GetVectorForKey (b->owner, "light_target", vTarget);
+		b->owner->getKeyVector("light_right", vRight);
+		b->owner->getKeyVector("light_up", vUp);
+		b->owner->getKeyVector("light_target", vTarget);
 
 		glColor3f(0, 1, 0);
 		glBegin(GL_LINE_LOOP);
@@ -3327,12 +3327,7 @@ void Brush_Draw( brush_s *b )
 		
 		if (!b->patchBrush)
 		{
-			if (face->texdef.flags & SURF_TRANS33) 
-				glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], 0.33 );
-			else if ( face->texdef.flags & SURF_TRANS66) 
-				glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], 0.66 );
-			else
-				glColor3fv( face->d_color );
+			glColor3fv( face->d_color );
 		}
 		else
 		{

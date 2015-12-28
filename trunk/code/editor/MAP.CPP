@@ -247,7 +247,7 @@ void Map_LoadFile (char *filename)
 
 		while (1)
 		{
-			ent = Entity_Parse (false, &active_brushes);
+			ent = Entity_Parse (&active_brushes);
 			if (!ent)
 				break;
 			if (!strcmp(ent->getKeyValue("classname"), "worldspawn"))
@@ -300,8 +300,8 @@ void Map_LoadFile (char *filename)
   g_pParentWnd->GetCamera()->Camera().angles[PITCH] = 0;
 	if (ent)
 	{
-		GetVectorForKey (ent, "origin", g_pParentWnd->GetCamera()->Camera().origin);
-		GetVectorForKey (ent, "origin", g_pParentWnd->GetXYWnd()->GetOrigin());
+		ent->getKeyVector("origin", g_pParentWnd->GetCamera()->Camera().origin);
+		ent->getKeyVector("origin", g_pParentWnd->GetXYWnd()->GetOrigin());
 		g_pParentWnd->GetCamera()->Camera().angles[YAW] = ent->getKeyFloat("angle");
 	}
 	else
@@ -762,7 +762,7 @@ void Map_ImportBuffer (char* buf)
 
 			// use the selected brushes list as it's handy
 			//ent = Entity_Parse (false, &selected_brushes);
-			ent = Entity_Parse (false, &active_brushes);
+			ent = Entity_Parse (&active_brushes);
 			if (!ent)
 				break;
 			//end entity for undo
