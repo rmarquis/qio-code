@@ -83,12 +83,26 @@ struct entity_s
 		entityId = 0;
 		eclass = 0;
 
+		// mark linked list as empty
+		//this->brushes.onext = &this->brushes;
+		//this->brushes.oprev = &this->brushes;
+
 		this->bIsLinkedListHeader = bIsLinkedListHeader;
 		// allocated counter is only used for debugging
 		if(bIsLinkedListHeader==false)
 			g_allocatedCounter_entity++;
 	}
 	~entity_s() {
+		if(this->brushes.onext != 0) {
+			while (this->brushes.onext != &this->brushes)
+				Brush_Free (this->brushes.onext);
+		}
+
+		if (this->next)
+		{
+			this->next->prev = this->prev;
+			this->prev->next = this->next;
+		}
 		// allocated counter is only used for debugging
 		if(bIsLinkedListHeader==false) 
 			g_allocatedCounter_entity--;
@@ -98,7 +112,6 @@ struct entity_s
 
 void 	GetVectorForKey (entity_s *ent, const char *key, vec3_t vec);
 
-void		Entity_Free (entity_s *e);
 int			Entity_MemorySize(entity_s *e);
 entity_s	*Entity_Parse (bool onlypairs, brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);

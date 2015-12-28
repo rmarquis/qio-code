@@ -95,27 +95,6 @@ void Entity_RemoveFromList (entity_s *e)
 
 
 
-/*
-===============
-Entity_Free
-
-Frees the entity and any brushes is has.
-The entity is removed from the global entities list.
-===============
-*/
-void Entity_Free (entity_s *e)
-{
-	while (e->brushes.onext != &e->brushes)
-		Brush_Free (e->brushes.onext);
-
-	if (e->next)
-	{
-		e->next->prev = e->prev;
-		e->prev->next = e->next;
-	}
-
-	delete e;
-}
 
 /*
 =================
