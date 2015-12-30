@@ -22,13 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // entity.h
 
 #include <shared/ePairsList.h>
-
-void Eclass_InitForSourceDirectory (const char *path);
-// this will create a new eclass_s if one is not present
-eclass_s *Eclass_ForName (const char *name, bool has_brushes);
-// this will return 0 if class with given name is not present
-eclass_s *Eclass_FindExisting (const char *name);
-void EClass_CreateNewFromText(const char *text);
+#include <api/entityDeclAPI.h>
+#include <api/declManagerAPI.h>
 
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_entity;
@@ -40,7 +35,7 @@ struct entity_s
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
 	vec3_c		origin;
-	eclass_s	*eclass;
+	entityDeclAPI_i	*eclass;
 	ePairList_c keyValues;
 	vec3_c vRotation;   // valid for misc_models only
 	vec3_c vScale;      // valid for misc_models only
@@ -119,7 +114,7 @@ entity_s	*Entity_Parse (brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);
 void		Entity_WriteSelected(entity_s *e, FILE *f);
 void		Entity_WriteSelected(entity_s *e, CMemFile*);
-entity_s	*Entity_Create (eclass_s *c);
+entity_s	*Entity_Create (entityDeclAPI_i *c);
 entity_s	*Entity_Clone (entity_s *e);
 void		Entity_AddToList(entity_s *e, entity_s *list);
 void		Entity_RemoveFromList(entity_s *e);

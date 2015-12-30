@@ -415,7 +415,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 		// if it's a fixed size entity, the brush that reprents it is not really relevant, it's used for selecting and moving around
 		// what we want to store for undo is the owner entity, epairs and origin/angle stuff
 		//++timo FIXME: if the entity is not fixed size I don't know, so I don't do it yet
-		if (pBrush->owner->eclass->fixedsize == 1)
+		if (pBrush->owner->eclass->isFixedSize() == 1)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
 		brush_s* pClone = Brush_FullClone(pBrush);

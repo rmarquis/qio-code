@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "entityw.h"
 #include "TexWnd.h"
 #include "WaveOpen.h"
+#include <api/declManagerAPI.h>
 
 int rgIds[EntLast] = {
 	IDC_E_LIST,
@@ -317,15 +318,16 @@ ENTITY WINDOW
 
 void FillClassList (void)
 {
-	eclass_s	*pec;
+	entityDeclAPI_i	*pec;
 	int			iIndex;
 
 	SendMessage(hwndEnt[EntList], LB_RESETCONTENT, 0 , 0);
 
-	for (pec = eclass ; pec ; pec = pec->next)
+	for (u32 i = 0; i < g_declMgr->getNumLoadedEntityDecls(); i++)
 	{
-		iIndex = SendMessage(hwndEnt[EntList], LB_ADDSTRING, 0 , (LPARAM)pec->name);
-		SendMessage(hwndEnt[EntList], LB_SETITEMDATA, iIndex, (LPARAM)pec);
+		const char *name = g_declMgr->getLoadedEntityDeclName(i);
+		iIndex = SendMessage(hwndEnt[EntList], LB_ADDSTRING, 0 , (LPARAM)name);
+		SendMessage(hwndEnt[EntList], LB_SETITEMDATA, iIndex, (LPARAM)g_declMgr->getLoadedEntityDecl(i));
 	}	
 
 }
@@ -530,7 +532,7 @@ void SetKeyValuePairs (bool bClearMD3)
 		SendMessage(hwndEnt[EntProps], LB_ADDSTRING, 0, (LPARAM)sz);
 	}
 	
-	if (edit_entity->eclass->nShowFlags & ECLASS_MISCMODEL)
+	if (edit_entity->eclass->hasEditorFlagMiscModel())
 	{
 		// if this is a misc_model
 		// cache the md3 for display later
@@ -606,7 +608,7 @@ void GetSpawnFlags(void)
 //
 // Update the listbox, checkboxes and k/v pairs to reflect the new selection
 //
-BOOL UpdateSel(int iIndex, eclass_s *pec)
+BOOL UpdateSel(int iIndex, entityDeclAPI_i *pec)
 {
 	int		i;
 	brush_s	*b;
@@ -638,15 +640,15 @@ BOOL UpdateSel(int iIndex, eclass_s *pec)
 	// Set up the description
 
 	SendMessage(hwndEnt[EntComment], WM_SETTEXT, 0, 
-			(LPARAM)TranslateString(pec->comments));
+		(LPARAM)(pec->getEditorComments()));
 
 	for (i=0 ; i<8 ; i++)
 	{
 		HWND hwnd = hwndEnt[EntCheck1+i];
-		if (pec->flagnames[i] && pec->flagnames[i][0] != 0)
+		if (pec->getEditorFlagName(i) && pec->getEditorFlagName(i)[0] != 0)
 		{
 			EnableWindow(hwnd, TRUE);
-			SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)pec->flagnames[i]);
+			SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)pec->getEditorFlagName(i));
 		} else {
 
 			// disable check box
@@ -660,12 +662,12 @@ BOOL UpdateSel(int iIndex, eclass_s *pec)
 	return TRUE;
 }
 
-BOOL UpdateEntitySel(eclass_s *pec)
+BOOL UpdateEntitySel(entityDeclAPI_i *pec)
 {
 	int iIndex;
 
 	iIndex = (int)SendMessage(hwndEnt[EntList], LB_FINDSTRINGEXACT, 
-			(WPARAM)-1, (LPARAM)pec->name);
+		(WPARAM)-1, (LPARAM)pec->getDeclName());
 
 	return UpdateSel(iIndex, pec);
 }
@@ -677,7 +679,7 @@ BOOL UpdateEntitySel(eclass_s *pec)
 
 void CreateEntity(void)
 {
-	eclass_s *pecNew;
+	entityDeclAPI_i *pecNew;
 	entity_s *petNew;
 	int i;
 	HWND hwnd;
@@ -714,7 +716,7 @@ void CreateEntity(void)
 		return;
 	}
 
-	pecNew = Eclass_ForName(sz, false);
+	pecNew = g_declMgr->findOrCreateEntityDecl(sz, false);
 
 	// create it
 
@@ -1355,10 +1357,10 @@ BOOL CALLBACK EntityWndProc(
 			case LBN_SELCHANGE: 
 			{
 				int iIndex;
-				eclass_s *pec;
+				entityDeclAPI_i *pec;
 				
 				iIndex = SendMessage(hwndEnt[EntList], LB_GETCURSEL, 0, 0);	
-				pec = (eclass_s *)SendMessage(hwndEnt[EntList], LB_GETITEMDATA, 
+				pec = (entityDeclAPI_i *)SendMessage(hwndEnt[EntList], LB_GETITEMDATA, 
 						iIndex, 0); 
 			
 				UpdateSel(iIndex, pec);

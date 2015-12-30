@@ -1393,7 +1393,6 @@ void CMainFrame::OnDestroy()
     g_PrefsDlg.m_strLastMap = currentmap;
     g_PrefsDlg.SavePrefs();
   }
-  CleanUpEntities();
 
   while (active_brushes.next != &active_brushes)
 	  Brush_Free (active_brushes.next, false);
@@ -2457,7 +2456,7 @@ void CMainFrame::OnBrushFlipx()
 	Select_FlipAxis (0);
 	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		if(b->owner->eclass->fixedsize)
+		if(b->owner->eclass->isFixedSize())
 		{
 			char buf[16];
 			float a = b->owner->getKeyFloat("angle");
@@ -2479,7 +2478,7 @@ void CMainFrame::OnBrushFlipy()
 	Select_FlipAxis (1);
 	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		if(b->owner->eclass->fixedsize)
+		if(b->owner->eclass->isFixedSize())
 		{
 			float a = b->owner->getKeyFloat("angle");
 			if (a == 0 || a == 180 || a == 360)
@@ -4443,7 +4442,7 @@ void CMainFrame::OnPatchTab()
     entity_s * e;
     if (b != &selected_brushes)
     {
-	    if (_strcmpi(b->owner->eclass->name, "worldspawn") != 0)
+	    if (_strcmpi(b->owner->eclass->getDeclName(), "worldspawn") != 0)
       {
         e = b->owner;
         Select_Deselect();

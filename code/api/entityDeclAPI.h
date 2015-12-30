@@ -35,6 +35,17 @@ class entityDeclAPI_i {
 public:
 	virtual const char *getDeclName() const = 0;
 	virtual const class entDefAPI_i *getEntDefAPI() const = 0;
+	// for build-in editor
+	virtual bool isFixedSize() const = 0;
+	virtual const char *getEditorComments() const = 0;
+	virtual const class vec3_c &getEditorColor() const = 0;
+	virtual const class vec3_c &getEditorMins() const = 0;
+	virtual const class vec3_c &getEditorMaxs() const = 0;
+	virtual bool hasEditorFlagLight() const = 0;
+	virtual bool hasEditorFlagMiscModel() const = 0;
+	virtual bool hasEditorFlagAngle() const = 0;
+	virtual const char *getEditorFlagName(u32 i) const = 0;
+	virtual const char *getEditorMaterialName() const = 0;
 };
 
 #endif // __ENTITYDECLAPI_H__

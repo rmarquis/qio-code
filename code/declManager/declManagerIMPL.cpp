@@ -348,6 +348,15 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	entDef_c entDef;
 	entityDecl_c *hashNext;
 
+	// V: those are only for editor. Should they be here always present?
+	// It's just a waste of memory for them to be here when engine is in game mode
+	vec3_c editorColor;
+	vec3_c editorMins, editorMaxs;
+	bool bHasEditorFlagLight;
+	bool bHasEditorFlagMiscModel;
+	bool bHasEditorFlagAngle;
+	bool bIsFixedSize;
+
 	virtual const char *getDeclName() const {
 		return declName;
 	}
@@ -355,9 +364,48 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	virtual const class entDefAPI_i *getEntDefAPI() const {
 		return &entDef;
 	}
+	// for build-in editor
+	virtual bool isFixedSize() const {
+		return bIsFixedSize;
+	}
+	virtual const char *getEditorComments() const {
+		return "";
+	}
+	virtual const class vec3_c &getEditorColor() const {
+		return editorColor;
+	}
+	virtual const class vec3_c &getEditorMins() const  {
+		return editorMins;
+	}
+	virtual const class vec3_c &getEditorMaxs() const  {
+		return editorMaxs;
+	}
+	virtual bool hasEditorFlagLight() const  {
+		return bHasEditorFlagLight;
+	}
+	virtual bool hasEditorFlagMiscModel() const  {
+		return bHasEditorFlagMiscModel;
+	}
+	virtual bool hasEditorFlagAngle() const  {
+		return bHasEditorFlagAngle;
+	}
+	virtual const char *getEditorFlagName(u32 i) const  {
+		return "";
+	}
+	virtual const char *getEditorMaterialName() const  {
+		return "";
+	}
 public:	
 	entityDecl_c() {
 		hashNext = 0;
+		// for editor
+		editorColor.set(1,1,1);
+		editorMins.set(-8,-8,-8);
+		editorMaxs.set(8,8,8);
+		bHasEditorFlagLight = false;
+		bHasEditorFlagMiscModel = false;
+		bHasEditorFlagAngle = false;
+		bIsFixedSize = false;
 	}
 	bool parse(const char *text, const char *textBase, const char *fname) {
 		parser_c p;
@@ -398,6 +446,21 @@ public:
 			return true;
 		return false;
 	}	
+	void setEditorFlagLight(bool b) {
+		bHasEditorFlagLight = true;
+	}
+	void setFixedSize(bool b) {
+		bIsFixedSize = b;
+	}
+	void setEditorMins(const vec3_c &v) {
+		editorMins = v;
+	}
+	void setEditorMaxs(const vec3_c &v) {
+		editorMaxs = v;
+	}
+	void setValid() {
+		entDef.setClassName(getDeclName());
+	}
 	void setDeclName(const char *newName) {
 		declName = newName;
 	}
@@ -509,6 +572,27 @@ class modelDeclAPI_i *declManagerIMPL_c::_registerModelDecl(const char *name, qi
 		return ret;
 	}
 	return 0;
+}
+class entityDeclAPI_i *declManagerIMPL_c::_findOrCreateEntityDecl(const char *name, bool bHashBrushes, qioModule_e userModule) {
+	entityDeclAPI_i *r = _registerEntityDecl(name,userModule);
+	if(r)
+		return r;
+	entityDecl_c *ret = entityDecls.getEntry(name);
+	if(ret == 0) {
+		return 0;
+	}
+	ret->setValid();
+	// built-in entities
+	if(!stricmp(name,"light")) {
+		ret->setEditorFlagLight(true);
+		ret->setFixedSize(true);
+	} else if(!stricmp(name,"info_player_start")) {
+		ret->setFixedSize(true);
+		ret->setEditorMins(vec3_c(-16,-16,-24));
+		ret->setEditorMaxs(vec3_c(16,16,24));
+	}
+	ret->setFixedSize(!bHashBrushes);
+	return ret;
 }
 class entityDeclAPI_i *declManagerIMPL_c::_registerEntityDecl(const char *name, qioModule_e userModule) {
 	if(name == 0 || name[0] == 0) {
@@ -709,6 +793,9 @@ void declManagerIMPL_c::onRendererShutdown() {
 }
 const char *declManagerIMPL_c::getLoadedEntityDeclName(u32 i) const {
 	return entityDecls.objectAt(i)->getName();
+}
+entityDeclAPI_i *declManagerIMPL_c::getLoadedEntityDecl(u32 i) const {
+	return (entityDeclAPI_i*)entityDecls.objectAt(i);
 }
 void declManagerIMPL_c::loadAllEntityDecls() {
 	cacheEntDefNamesList();

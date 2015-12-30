@@ -407,32 +407,11 @@ struct brush_s
 
 // eclass show flags
 
-#define     ECLASS_LIGHT      0x00000001
-#define     ECLASS_ANGLE      0x00000002
-#define     ECLASS_PATH       0x00000004
-#define     ECLASS_MISCMODEL  0x00000008
-#define		ECLASS_PLUGINENTITY 0x00000010
-
-struct eclass_s
-{
-	struct eclass_s *next;
-	char	*name;
-	bool	fixedsize;
-	bool	unknown;		// wasn't found in source
-	vec3_c	mins, maxs;
-	vec3_t	color;
-	texdef_t	texdef;
-	char	*comments;
-	char	flagnames[8][32];
-
-
-	char	*modelpath;
-	char	*skinpath;
-	int   nFrame;
-	unsigned int nShowFlags;
-};
-
-extern	eclass_s	*eclass;
+//#define     ECLASS_LIGHT      0x00000001
+//#define     ECLASS_ANGLE      0x00000002
+//#define     ECLASS_PATH       0x00000004
+//#define     ECLASS_MISCMODEL  0x00000008
+//#define		ECLASS_PLUGINENTITY 0x00000010
 
 /*
 ** window bits

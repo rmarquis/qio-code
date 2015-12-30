@@ -96,6 +96,7 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	virtual class afDeclAPI_i *_registerAFDecl(const char *name, qioModule_e userModule);
 	virtual class q3PlayerModelAPI_i *_registerQ3PlayerDecl(const char *name, qioModule_e userModule);
 	virtual class particleDeclAPI_i *_registerParticleDecl(const char *name, qioModule_e userModule);
+	virtual class entityDeclAPI_i *_findOrCreateEntityDecl(const char *name, bool bHashBrushes, qioModule_e userModule);
 
 	void removeUnrefrencedDecls();
 	virtual void onGameShutdown();
@@ -106,6 +107,7 @@ class declManagerIMPL_c : public declManagerAPI_i {
 	
 	virtual void loadAllEntityDecls();
 	virtual const char *getLoadedEntityDeclName(u32 i) const;
+	virtual entityDeclAPI_i *getLoadedEntityDecl(u32 i) const;
 	virtual u32 getNumLoadedEntityDecls() const {
 		return entityDecls.size();
 	}

@@ -3017,8 +3017,8 @@ static void FS_Startup( const char *gameName )
 	//FS_AddGameDirectory("E:/ENGINES/xreal-svn-3996-trunk/xreal","base");
 	//FS_AddGameDirectory("E:/GAMES/q4f","baseq4f");
 	//FS_AddGameDirectory("E:/GAMES/Doom3","base");
-	FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","cstrike");
-	FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","hl2");
+	//FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","cstrike");
+	//FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","hl2");
 
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {

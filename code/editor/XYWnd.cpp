@@ -1146,7 +1146,7 @@ void CXYWnd::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 // FIXME: the brush_s *pBrush is never used. ( Entity_Create uses selected_brushes )
 void CreateEntityFromName(char* pName, brush_s* pBrush)
 {
-	eclass_s *pecNew;
+	entityDeclAPI_i *pecNew;
 	entity_s *petNew;
 	if (_stricmp(pName, "worldspawn") == 0)
 	{
@@ -1154,7 +1154,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 		return;
 	}
 	
-	pecNew = Eclass_ForName(pName, false);
+	pecNew = g_declMgr->findOrCreateEntityDecl(pName, false);
 	
 	// create it
 	petNew = Entity_Create(pecNew);
@@ -1163,16 +1163,18 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 		if (!((selected_brushes.next == &selected_brushes)||(selected_brushes.next->next != &selected_brushes)))
 		{
 			brush_s* b = selected_brushes.next;
-			if (b->owner != world_entity && b->owner->eclass->fixedsize && pecNew->fixedsize)
+			if (b->owner != world_entity && b->owner->eclass->isFixedSize() && pecNew->isFixedSize())
 			{
 				vec3_c mins, maxs;
 				vec3_c origin;
 				for (int i=0 ; i<3 ; i++)
-					origin[i] = b->getMins()[i] - pecNew->mins[i];
+					origin[i] = b->getMins()[i] - pecNew->getEditorMins()[i];
 				
-				mins = pecNew->mins + origin;
-				maxs = pecNew->maxs + origin;
-				brush_s* nb = Brush_Create (mins, maxs, &pecNew->texdef);
+				mins = pecNew->getEditorMins() + origin;
+				maxs = pecNew->getEditorMaxs() + origin;
+				texdef_t td;
+				td.setName(pecNew->getEditorMaterialName());
+				brush_s* nb = Brush_Create (mins, maxs, &td);
 				Entity_LinkBrush (b->owner, nb);
 				nb->owner->eclass = pecNew;
 				nb->owner->setKeyValue("classname", pName);
@@ -1474,7 +1476,7 @@ void CXYWnd::HandleDrop()
     m_mnuDrop.AppendMenu(MF_SEPARATOR, nID++, "");
 
     pChild = NULL;
-	  eclass_s	*e;
+	  entityDeclAPI_i	*e;
     CString strActive;
     CString strLast;
     CString strName;
@@ -2457,23 +2459,23 @@ BOOL FilterBrush(brush_s *pb)
   {
     if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_ENT)
     {
-		  return (strncmp(pb->owner->eclass->name, "func_group", 10));
+		  return (strncmp(pb->owner->eclass->getDeclName(), "func_group", 10));
     }
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_LIGHTS)
 	{
-    return (pb->owner->eclass->nShowFlags & ECLASS_LIGHT);
-		//if (!strncmp(pb->owner->eclass->name, "light", 5))
+    return (pb->owner->eclass->hasEditorFlagLight());
+		//if (!strncmp(pb->owner->eclass->getDeclName(), "light", 5))
 		//	return TRUE;
 	}
 
-	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS)
-	{
-    return (pb->owner->eclass->nShowFlags & ECLASS_PATH);
-		//if (!strncmp(pb->owner->eclass->name, "path", 4))
-		//	return TRUE;
-	}
+	//if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS)
+	//{
+ //   return (pb->owner->eclass->nShowFlags & ECLASS_PATH);
+	//	//if (!strncmp(pb->owner->eclass->getDeclName(), "path", 4))
+	//	//	return TRUE;
+	//}
 
 	return FALSE;
 }
@@ -2558,7 +2560,7 @@ void DrawPathLines (void)
 			s1[1] = dir[0]*8 + dir[1]*8;
 			s2[1] = -dir[0]*8 + dir[1]*8;
 
-			glColor3f (se->eclass->color[0], se->eclass->color[1], se->eclass->color[2]);
+			glColor3f (se->eclass->getEditorColor()[0], se->eclass->getEditorColor()[1], se->eclass->getEditorColor()[2]);
 
 			glBegin(GL_LINES);
 			glVertex3fv(mid);
@@ -2824,7 +2826,7 @@ void CXYWnd::XY_Draw()
     if (brush->owner != e && brush->owner)
 		{
 
-			glColor3fv(brush->owner->eclass->color);
+			glColor3fv(brush->owner->eclass->getEditorColor());
 		}
     else
     {
@@ -2901,7 +2903,7 @@ void CXYWnd::XY_Draw()
 
     if (!bFixedSize)
     {
-      if (brush->owner->eclass->fixedsize)
+      if (brush->owner->eclass->isFixedSize())
         bFixedSize = true;
       if (g_PrefsDlg.m_bSizePaint)
       {
