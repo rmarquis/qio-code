@@ -460,8 +460,8 @@ void EmitBrushPrimitTextureCoordinates(face_s *, edWinding_t *);
 void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
 void BrushPrimit_Parse(brush_s *);
 // compute a fake shift scale rot representation from the texture matrix
-void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] );
-void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] );
+void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] );
+void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] );
 void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, brushprimit_texdef_s *texMat2, mtrAPI_i *qtex2 );
 // texture locking
 void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta);

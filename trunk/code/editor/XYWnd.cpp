@@ -1096,7 +1096,7 @@ void CXYWnd::OnPaint()
 		        // draw the polygon
 		        glBegin(GL_LINE_LOOP);
             for (int i=0 ; i<w->size() ; i++)
-		          glVertex3fv(w->points[i]);
+		          glVertex3fv(w->getXYZ(i));
 		        glEnd();
 	        }
         }
@@ -2505,7 +2505,7 @@ void DrawPathLines (void)
 	brush_s	*sb, *tb;
 	const char	*psz;
 	vec3_c	dir, s1, s2;
-	vec_t	len, f;
+	float	len, f;
 	int		arrows;
 	int			num_entities;
 	const char		*ent_target[MAX_MAP_ENTITIES];

@@ -908,7 +908,7 @@ void Select_RotateAxis (int axis, float deg, bool bPaint, bool bMouse)
 {
 	vec3_c	temp;
 	int		i, j;
-	vec_t	c, s;
+	float	c, s;
 
 	if (deg == 0)
   {

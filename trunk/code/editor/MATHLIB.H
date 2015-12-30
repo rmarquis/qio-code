@@ -33,10 +33,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	SIDE_BACK		1
 #define	SIDE_CROSS		-2
 
-vec_t Q_rint (vec_t in);
+float Q_rint (float in);
 
 void _Vector53Copy (vec5_t in, vec3_t out);
-void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out);
+void _Vector5Scale (vec5_t v, float scale, vec5_t out);
 void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
 
 #include <float.h>

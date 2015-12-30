@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <math/math.h>
 
-vec_t Q_rint (vec_t in)
+float Q_rint (float in)
 {
   if (g_PrefsDlg.m_bNoClamp)
     return in;
@@ -81,7 +81,7 @@ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out)
 	out[4] = va[4]+vb[4];
 }
 
-void _Vector5Scale (vec5_t v, vec_t scale, vec5_t out)
+void _Vector5Scale (vec5_t v, float scale, vec5_t out)
 {
 	out[0] = v[0] * scale;
 	out[1] = v[1] * scale;

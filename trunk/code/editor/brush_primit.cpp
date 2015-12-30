@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // compute a determinant using Sarrus rule
 //++timo "inline" this with a macro
 // NOTE : the three vec3_t are understood as columns of the matrix
-vec_t SarrusDet(vec3_t a, vec3_t b, vec3_t c)
+float SarrusDet(vec3_t a, vec3_t b, vec3_t c)
 {
 	return a[0]*b[1]*c[2]+b[0]*c[1]*a[2]+c[0]*a[1]*b[2]
 		-c[0]*b[1]*a[2]-a[1]*b[0]*c[2]-a[0]*b[2]*c[1];
@@ -39,7 +39,7 @@ vec_t SarrusDet(vec3_t a, vec3_t b, vec3_t c)
 // rotation by (0,RotY,RotZ) assigns X to normal
 void ComputeAxisBase(vec3_c &normal, vec3_c &texS, vec3_c &texT)
 {
-	vec_t RotY,RotZ;
+	float RotY,RotZ;
 	// do some cleaning
 	if (fabs(normal[0])<1e-6)
 		normal[0]=0.0f;
@@ -111,7 +111,7 @@ void FaceToBrushPrimitFace(face_s *f)
 void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
 {
 	vec3_c texX,texY;
-	vec_t x,y;
+	float x,y;
 	// compute axis base
 	ComputeAxisBase(f->plane.normal,texX,texY);
 	// in case the texcoords matrix is empty, build a default one
@@ -125,14 +125,14 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
 	int i;
     for (i=0 ; i<w->size() ; i++)
 	{
-		x=w->points[i].dotProduct(texX);
-		y=w->points[i].dotProduct(texY);
+		x=w->getXYZ(i).dotProduct(texX);
+		y=w->getXYZ(i).dotProduct(texY);
 #ifdef _DEBUG
 		if (g_qeglobals.bNeedConvert)
 		{
 			// check we compute the same ST as the traditional texture computation used before
-			vec_t S=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
-			vec_t T=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
+			float S=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
+			float T=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
 			if ( fabs(S-w->points[i][3])>1e-2 || fabs(T-w->points[i][4])>1e-2 )
 			{
 				if ( fabs(S-w->points[i][3])>1e-4 || fabs(T-w->points[i][4])>1e-4 )
@@ -142,8 +142,7 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
 			}
 		}
 #endif
-		w->points[i][3]=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
-		w->points[i][4]=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
+		w->setTC(i,f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2],f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2]);
 	}
 }
 
@@ -274,7 +273,7 @@ void BrushPrimit_Parse(brush_s	*b)
 
 // compute a fake shift scale rot representation from the texture matrix
 // these shift scale rot values are to be understood in the local axis base
-void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, float scale[2] )
+void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] )
 {
 #ifdef _DEBUG
 	// check this matrix is orthogonal
@@ -309,7 +308,7 @@ void TexMatToFakeTexCoords( vec_t texMat[2][3], float shift[2], float *rot, floa
 
 // compute back the texture matrix from fake shift scale rot
 // the matrix returned must be understood as a mtrAPI_i with width=2 height=2 ( the default one )
-void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], vec_t texMat[2][3] )
+void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] )
 {
 	texMat[0][0] = scale[0] * cos( DEG2RAD( rot ) );
 	texMat[1][0] = scale[0] * sin( DEG2RAD( rot ) );
@@ -338,9 +337,9 @@ void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, 
 void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta)
 {
 	vec3_c texS,texT;
-	vec_t tx,ty;
+	float tx,ty;
 	vec3_t M[3]; // columns of the matrix .. easier that way
-	vec_t det;
+	float det;
 	vec3_t D[2];
 	// compute plane axis base ( doesn't change with translation )
 	ComputeAxisBase( f->plane.normal, texS, texT );
@@ -391,7 +390,7 @@ void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOri
 	vec3_c rtexS,rtexT;			// axis base of the rotated plane
 	vec3_c lOrig,lvecS,lvecT;	// [2] are not used ( but usefull for debugging )
 	vec3_t M[3];
-	vec_t det;
+	float det;
 	vec3_t D[2];
 	// compute plane axis base
 	ComputeAxisBase( f->plane.normal, texS, texT );

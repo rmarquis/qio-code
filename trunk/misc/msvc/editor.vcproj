@@ -239,15 +239,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\SurfaceDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\TexEdit.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureBar.cpp"
 				>
 			</File>
 			<File
@@ -449,10 +441,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\RotateDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\ScaleDialog.h"
 				>
 			</File>
@@ -462,10 +450,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\StdAfx.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\SurfaceDlg.h"
 				>
 			</File>
 			<File
@@ -498,10 +482,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\Undo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WaveOpen.h"
 				>
 			</File>
 			<File
@@ -576,7 +556,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="SourceGUI"
+			Name="GUI"
 			>
 			<File
 				RelativePath="..\..\code\editor\CamWnd.cpp"
@@ -667,7 +647,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\editor\RotateDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\ScaleDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\SurfaceDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\SurfaceDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\TextureBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\WaveOpen.h"
 				>
 			</File>
 		</Filter>
