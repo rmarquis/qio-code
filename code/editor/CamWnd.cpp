@@ -771,30 +771,7 @@ void CCamWnd::Cam_Draw()
 	//
 	GLfloat lAmbient[] = {1.0, 1.0, 1.0, 1.0};
 	
-	switch (m_Camera.draw_mode)
-	{
-	case cd_wire:
-		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_TEXTURE_1D);
-		glDisable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
-		glColor3f(1.0, 1.0, 1.0);
-		//		glEnable (GL_LINE_SMOOTH);
-		break;
-		
-	case cd_solid:
-		glCullFace(GL_FRONT);
-		glEnable(GL_CULL_FACE);
-		glShadeModel (GL_FLAT);
-		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc (GL_LEQUAL);
-		break;
-		
-	case cd_texture:
+
 		glCullFace(GL_FRONT);
 		glEnable(GL_CULL_FACE);
 		glShadeModel (GL_FLAT);
@@ -806,22 +783,7 @@ void CCamWnd::Cam_Draw()
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc (GL_LEQUAL);
-		break;
-		
-	case cd_blend:
-		glCullFace(GL_FRONT);
-		glEnable(GL_CULL_FACE);
-		glShadeModel (GL_FLAT);
-		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glDisable(GL_DEPTH_TEST);
-		glEnable (GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		break;
-	}
+	
 	
 	glMatrixMode(GL_TEXTURE);
 	

@@ -109,7 +109,7 @@ void FaceToBrushPrimitFace(face_s *f)
 }
 
 // compute texture coordinates for the winding points
-void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
+void EmitBrushPrimitTextureCoordinates(face_s * f, texturedWinding_c * w)
 {
 	vec3_c texX,texY;
 	float x,y;

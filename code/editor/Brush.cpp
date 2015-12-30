@@ -73,7 +73,7 @@ void TextureAxisFromPlane(const edPlane_c &pln, vec3_c &xv, vec3_c &yv)
 	
 	for (i=0 ; i<6 ; i++)
 	{
-		dot = pln.normal.dotProduct(baseaxis[i*3]);
+		dot = pln.getNormal().dotProduct(baseaxis[i*3]);
 		if (dot > best)
 		{
 			best = dot;
@@ -103,7 +103,7 @@ float SetShadeForPlane (const class edPlane_c &p)
 
 	// axial plane
 	for (i=0 ; i<3 ; i++)
-		if (fabs(p.normal[i]) > 0.9)
+		if (fabs(p.getNormal()[i]) > 0.9)
 		{
 			f = lightaxis[i];
 			return f;
@@ -111,7 +111,7 @@ float SetShadeForPlane (const class edPlane_c &p)
 
 	// between two axial planes
 	for (i=0 ; i<3 ; i++)
-		if (fabs(p.normal[i]) < 0.1)
+		if (fabs(p.getNormal()[i]) < 0.1)
 		{
 			f = (lightaxis[(i+1)%3] + lightaxis[(i+2)%3])/2;
 			return f;
@@ -214,7 +214,7 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 
 	// set shading for face
 	shade = SetShadeForPlane (f->plane);
-	if (g_pParentWnd->GetCamera()->Camera().draw_mode == cd_texture && !b->owner->eclass->isFixedSize())
+	if (!b->owner->eclass->isFixedSize())
 	{
 		//if (b->curveBrush)
 		//  shade = fCurveColor;
@@ -420,15 +420,15 @@ Brush_MakeFaceWinding
 returns the visible polygon on a face
 =================
 */
-edWinding_t *brush_s::makeFaceWinding (face_s *face)
+texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
 {
-	edWinding_t	*w;
+	texturedWinding_c	*w;
 	face_s		*clip;
 	edPlane_c			plane;
 	bool		past;
 
 	// get a poly that covers an effectively infinite area
-	w = new edWinding_t (face->plane);
+	w = new texturedWinding_c (face->plane);
 
 	// chop the poly by all of the other faces
 	past = false;
@@ -439,8 +439,8 @@ edWinding_t *brush_s::makeFaceWinding (face_s *face)
 			past = true;
 			continue;
 		}
-		if (face->plane.normal.dotProduct(clip->plane.normal) > 0.999
-			&& fabs(face->plane.dist - clip->plane.dist) < 0.01 )
+		if (face->plane.getNormal().dotProduct(clip->plane.getNormal()) > 0.999
+			&& fabs(face->plane.getDist() - clip->plane.getDist()) < 0.01 )
 		{	// identical plane, use the later one
 			if (past)
 			{
@@ -612,7 +612,7 @@ return NULL if the brush is convex
 face_s *Brush_BestSplitFace(brush_s *b)
 {
 	face_s *face, *f, *bestface;
-	edWinding_t *front, *back;
+	texturedWinding_c *front, *back;
 	int splits, tinywindings, value, bestvalue;
 
 	bestvalue = 999999;
@@ -706,7 +706,7 @@ int Brush_Convex(brush_s *b)
 		{
 			if (face1 == face2) continue;
 			if (!face2->face_winding) continue;
-			if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
+			if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
 										face1->plane.normal, face2->plane.normal,
 										face1->plane.dist, face2->plane.dist))
 			{
@@ -755,7 +755,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 	face_s *f, *face, *newface, *lastface, *nextface;
 	face_s *movefaces[MAX_MOVE_FACES];
 	int movefacepoints[MAX_MOVE_FACES];
-	edWinding_t *w;
+	texturedWinding_c *w;
 	vec3_c start, mid;
 	edPlane_c plane;
 	int i, j, k, nummovefaces, result, done;
@@ -763,7 +763,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 
 	result = true;
 	//
-	edWinding_t tmpw(3);
+	texturedWinding_c tmpw(3);
 	start = vertex;
 	end = vertex + delta;
 	//snap or not?
@@ -1031,7 +1031,7 @@ Brush_InsertVertexBetween
 int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 {
 	face_s *face;
-	edWinding_t *w, *neww;
+	texturedWinding_c *w, *neww;
 	vec3_c point;
 	int i, insert;
 
@@ -1681,7 +1681,7 @@ void Brush_MakeSided (int sides)
 		return;
 	}
 
-	if (sides >= MAX_POINTS_ON_WINDING-4)
+	if (sides >= 64-4)
 	{
 		Sys_Printf("too many sides.\n");
 		return;
@@ -2206,7 +2206,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 {
 	int		i;
 	face_s	*f2;
-	edWinding_t	*w;
+	texturedWinding_c	*w;
 	float	d;
 	brush_s	*b2;
 	int		c;
@@ -2347,7 +2347,7 @@ void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
 
 void Brush_BuildWindings( brush_s *b, bool bSnap )
 {
-	edWinding_t *w;
+	texturedWinding_c *w;
 	face_s    *face;
 
 	if (bSnap)
@@ -2687,7 +2687,7 @@ void Brush_Draw( brush_s *b )
 	face_s			*face;
 	int				i, order;
 	mtrAPI_i		*prev = 0;
-	edWinding_t *w;
+	texturedWinding_c *w;
 
 	if (b->hiddenBrush)
 	{
@@ -2700,7 +2700,6 @@ void Brush_Draw( brush_s *b )
 		return;
 	}
 	
-	int nDrawMode = g_pParentWnd->GetCamera()->Camera().draw_mode;
 	
 	if (b->owner->eclass->isFixedSize())
 	{
@@ -2715,12 +2714,6 @@ void Brush_Draw( brush_s *b )
 			DrawLight(b);
 			return;
 		}
-		if (nDrawMode == cd_texture)
-			glDisable (GL_TEXTURE_2D);
-		
-		
-		if (nDrawMode == cd_texture)
-			glEnable (GL_TEXTURE_2D);
 		//
 		//if (bp)
 		//	return;
@@ -2743,25 +2736,11 @@ void Brush_Draw( brush_s *b )
 				continue;
 			}
 		}
-		
-#if 0
-		if (b->alphaBrush)
-		{
-			if (!(face->texdef.flags & SURF_ALPHA))
-				continue;
-			//--glPushAttrib(GL_ALL_ATTRIB_BITS);
-			glDisable(GL_CULL_FACE);
-			//--glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-			//--glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			//--glDisable(GL_DEPTH_TEST);
-			//--glBlendFunc (GL_SRC_ALPHA, GL_DST_ALPHA);
-			//--glEnable (GL_BLEND);
-		}
-#endif
+
 
 		mtrAPI_i *temp = face->d_texture; //g_ms->registerMaterial(face->d_texture->getName());
 		
-		if ((nDrawMode == cd_texture) && face->d_texture != prev)
+		if (face->d_texture != prev)
 		{
 			for(u32 i = 0; i < temp->getNumStages(); i++) {
 				// set the texture for this face
@@ -2793,27 +2772,16 @@ void Brush_Draw( brush_s *b )
 		// draw the polygon
 		
 		glBegin(GL_POLYGON);
-		
 		for (i=0 ; i<w->size() ; i++)
 		{
-			if (nDrawMode == cd_texture)
-				glTexCoord2fv( w->getTC(i) );
+			glTexCoord2fv( w->getTC(i) );
 			glVertex3fv(w->getXYZ(i));
 		}
 		glEnd();
 	}
 	
-#if 0
-	if (b->alphaBrush)
-	{
-		//--glPopAttrib();
-		glEnable(GL_CULL_FACE);
-		//--glDisable (GL_BLEND);
-		//--glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	}
-#endif
-	
-	if (b->owner->eclass->isFixedSize() && (nDrawMode == cd_texture))
+
+	if (b->owner->eclass->isFixedSize())
 		glEnable (GL_TEXTURE_2D);
 	
 	glBindTexture( GL_TEXTURE_2D, 0 );
@@ -2837,7 +2805,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 {
 	face_s *face;
 	int     order;
-	edWinding_t *w;
+	texturedWinding_c *w;
 	int        i;
 
 	if (b->hiddenBrush)
@@ -2955,11 +2923,6 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 
 }
 
-/*
-============
-Brush_Move
-============
-*/
 void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 {
 	int i;
@@ -2996,11 +2959,7 @@ void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 
 
 /*
-=============
-Brush_MakeSided
-
 Makes the current brushhave the given number of 2d sides and turns it into a cone
-=============
 */
 void Brush_MakeSidedCone(int sides)
 {
@@ -3088,14 +3047,7 @@ void Brush_MakeSidedCone(int sides)
 	Sys_UpdateWindows (W_ALL);
 }
 
-/*
-=============
-Brush_MakeSided
-
-Makes the current brushhave the given number of 2d sides and turns it into a sphere
-=============
-
-*/
+// Makes the current brushhave the given number of 2d sides and turns it into a sphere
 void Brush_MakeSidedSphere(int sides)
 {
 	int		i,j;
@@ -3189,7 +3141,7 @@ void Brush_MakeSidedSphere(int sides)
 
 void face_s::fitTexture(int nHeight, int nWidth )
 {
-	edWinding_t *w;
+	texturedWinding_c *w;
 	aabb bounds;
 	int i;
 	float width, height, temp;
