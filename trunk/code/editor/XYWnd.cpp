@@ -1850,11 +1850,6 @@ void CXYWnd::NewBrushDrag (int x, int y)
 
 }
 
-/*
-==============
-XY_MouseMoved
-==============
-*/
 void CXYWnd::XY_MouseMoved (int x, int y, int buttons)
 {
 	vec3_c	point;
