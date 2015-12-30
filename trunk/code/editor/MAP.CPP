@@ -505,7 +505,7 @@ void AddRegionBrushes (void)
 	for (i=0 ; i<4 ; i++)
 	{
 		Brush_AddToList (region_sides[i], &selected_brushes);
-		Entity_LinkBrush (world_entity, region_sides[i]);
+		world_entity->linkBrush(region_sides[i]);
 		Brush_Build( region_sides[i] );
 	}
 }
@@ -775,7 +775,7 @@ void Map_ImportBuffer (char* buf)
 				{
 					brush_s* bNext = b->onext;
 					Entity_UnlinkBrush(b);
-					Entity_LinkBrush(world_entity, b);
+					world_entity->linkBrush(b);
 					ptrs.Add(b);
 					b = bNext;
 				}

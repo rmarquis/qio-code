@@ -368,11 +368,7 @@ bool IsBrushSelected(brush_s* bSel)
   return false;
 }
 
-//
-//============
-//Entity_WriteSelected
-//============
-//
+
 void Entity_WriteSelected(entity_s *e, FILE *f)
 {
 	brush_s		*b;
@@ -428,12 +424,6 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 	fprintf (f, "}\n");
 }
 
-
-//
-//============
-//Entity_WriteSelected to a CMemFile
-//============
-//
 void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 {
 	brush_s		*b;
@@ -549,7 +539,7 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 				td.setName(c->getEditorMaterialName());
 	  b = Brush_Create (mins, maxs, &td);
 
-		Entity_LinkBrush (e, b);
+	  e->linkBrush(b);
 
 		// delete the current selection
 		Select_Delete ();
@@ -568,7 +558,7 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 		{
 			Entity_UnlinkBrush (b);
-			Entity_LinkBrush (e, b);
+			e->linkBrush(b);
 			Brush_Build( b );	// so the key brush gets a name
 		}
 	}
@@ -577,22 +567,16 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 	return e;
 }
 
-
-/*
-===========
-Entity_LinkBrush
-===========
-*/
-void Entity_LinkBrush (entity_s *e, brush_s *b)
+void entity_s::linkBrush (brush_s *b)
 {
 	if (b->oprev || b->onext)
 		Error ("Entity_LinkBrush: Allready linked");
-	b->owner = e;
+	b->owner = this;
 
-	b->onext = e->brushes.onext;
-	b->oprev = &e->brushes;
-	e->brushes.onext->oprev = b;
-	e->brushes.onext = b;
+	b->onext = this->brushes.onext;
+	b->oprev = &this->brushes;
+	this->brushes.onext->oprev = b;
+	this->brushes.onext = b;
 }
 
 /*

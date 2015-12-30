@@ -700,14 +700,14 @@ void Undo_Undo(void)
 		{
 			if (pEntity->entityId == pBrush->ownerId)
 			{
-				Entity_LinkBrush(pEntity, pBrush);
+				pEntity->linkBrush(pBrush);
 				break;
 			}
 		}
 		//if the brush is not linked then it should be linked into the world entity
 		if (pEntity == NULL || pEntity == &entities)
 		{
-			Entity_LinkBrush(world_entity, pBrush);
+			world_entity->linkBrush(pBrush);
 		}
 		//build the brush
 		//Brush_Build(pBrush);
@@ -824,14 +824,14 @@ void Undo_Redo(void)
 		{
 			if (pEntity->entityId == pBrush->ownerId)
 			{
-				Entity_LinkBrush(pEntity, pBrush);
+				pEntity->linkBrush(pBrush);
 				break;
 			}
 		}
 		//if the brush is not linked then it should be linked into the world entity
 		if (pEntity == NULL || pEntity == &entities)
 		{
-			Entity_LinkBrush(world_entity, pBrush);
+			world_entity->linkBrush(pBrush);
 		}
 		//build the brush
 		//Brush_Build(pBrush);

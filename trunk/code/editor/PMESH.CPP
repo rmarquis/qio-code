@@ -206,7 +206,7 @@ void patchMesh_c::meshNormals()
 	vec3_c	base;
 	vec3_c	delta;
 	int		x, y;
-	drawVert_t	*dv;
+	rVert_c	*dv;
 	vec3_c		around[8], temp;
 	bool	good[8];
 	bool	wrapWidth, wrapHeight;
@@ -249,7 +249,7 @@ void patchMesh_c::meshNormals()
 		for ( j = 0 ; j < this->height ; j++ ) 
 		{
 			count = 0;
-			//--dv = reinterpret_cast<drawVert_t*>(this.ctrl[j*this.width+i]);
+			//--dv = reinterpret_cast<rVert_c*>(this.ctrl[j*this.width+i]);
 			dv = &this->ctrl[i][j];
 			base = dv->xyz;
 			for ( k = 0 ; k < 8 ; k++ ) 
@@ -520,7 +520,7 @@ brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
   if (bLinkToWorld)
   {
     Brush_AddToList (b, &active_brushes);
-	  Entity_LinkBrush (world_entity, b);
+	world_entity->linkBrush(b);
     Brush_Build(b);
   }
 
@@ -883,14 +883,14 @@ brush_s* Cap(patchMesh_c *pParent, bool bByColumn, bool bFirst)
 
   if (bFirst)
   {
-    drawVert_t vertTemp;
+    rVert_c vertTemp;
     for (i = 0; i < p->width; i++)
     {
       for (j = 0; j < p->height / 2; j++)
       {
-        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (drawVert_t));
-        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(drawVert_t));
-        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(drawVert_t));
+        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (rVert_c));
+        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(rVert_c));
+        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(rVert_c));
       }
     }
   }
@@ -1020,14 +1020,14 @@ brush_s* CapSpecial(patchMesh_c *pParent, int nType, bool bFirst)
   bool bEndCap = (nType == CCapDialog::ENDCAP || nType == CCapDialog::IENDCAP);
   if ((!bFirst && !bEndCap) || (bFirst && bEndCap))
   {
-    drawVert_t vertTemp;
+    rVert_c vertTemp;
     for (i = 0; i < p->width; i++)
     {
       for (j = 0; j < p->height / 2; j++)
       {
-        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (drawVert_t));
-        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(drawVert_t));
-        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(drawVert_t));
+        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (rVert_c));
+        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(rVert_c));
+        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(rVert_c));
       }
     }
   }
@@ -1335,7 +1335,7 @@ void GenerateEndCaps(brush_s *brushParent, bool bBevel, bool bEndcap, bool bInve
 
   if (bCreated)
   {
-    drawVert_t vertTemp;
+    rVert_c vertTemp;
     for (i = 0; i < p->width; i++)
     {
       for (j = 0; j < p->height; j++)
@@ -1346,9 +1346,9 @@ void GenerateEndCaps(brush_s *brushParent, bool bBevel, bool bEndcap, bool bInve
 
       for (j = 0; j < p->height / 2; j++)
       {
-        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (drawVert_t));
-        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(drawVert_t));
-        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(drawVert_t));
+        memcpy(&vertTemp, &p->ctrl[i][p->height - 1- j], sizeof (rVert_c));
+        memcpy(&p->ctrl[i][p->height - 1 - j], &p->ctrl[i][j], sizeof(rVert_c));
+        memcpy(&p->ctrl[i][j], &vertTemp, sizeof(rVert_c));
       }
 
     }
@@ -2881,11 +2881,11 @@ void Patch_InsertColumn(patchMesh_c *p, bool bAdd)
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
 
-      memcpy(&p->ctrl[j+2][h],&p->ctrl[j][h], sizeof(drawVert_t));
-      memcpy(&p->ctrl[j][h],&p->ctrl[j-1][h], sizeof(drawVert_t));
+      memcpy(&p->ctrl[j+2][h],&p->ctrl[j][h], sizeof(rVert_c));
+      memcpy(&p->ctrl[j][h],&p->ctrl[j-1][h], sizeof(rVert_c));
 
       p->ctrl[j][h].xyz += vTemp;
-      memcpy(&p->ctrl[j+1][h], &p->ctrl[j][h], sizeof(drawVert_t));
+      memcpy(&p->ctrl[j+1][h], &p->ctrl[j][h], sizeof(rVert_c));
       p->ctrl[j+1][h].xyz += vTemp;
     }
   }
@@ -2896,7 +2896,7 @@ void Patch_InsertColumn(patchMesh_c *p, bool bAdd)
       w = p->width-1;
       while (w >= 0)
       {
-        memcpy(&p->ctrl[w+2][h],&p->ctrl[w][h], sizeof(drawVert_t));
+        memcpy(&p->ctrl[w+2][h],&p->ctrl[w][h], sizeof(rVert_c));
         w--;
       }
       vTemp = p->ctrl[1][h].xyz - p->ctrl[0][h].xyz;
@@ -2935,11 +2935,11 @@ void Patch_InsertRow(patchMesh_c *p, bool bAdd)
       for (i = 0; i < 3; i++)
         vTemp[i] /= 3;
 
-      memcpy(&p->ctrl[w][j+2],&p->ctrl[w][j], sizeof(drawVert_t));
-      memcpy(&p->ctrl[w][j],&p->ctrl[w][j-1], sizeof(drawVert_t));
+      memcpy(&p->ctrl[w][j+2],&p->ctrl[w][j], sizeof(rVert_c));
+      memcpy(&p->ctrl[w][j],&p->ctrl[w][j-1], sizeof(rVert_c));
 
       p->ctrl[w][j].xyz += vTemp;
-      memcpy(&p->ctrl[w][j+1], &p->ctrl[w][j], sizeof(drawVert_t));
+      memcpy(&p->ctrl[w][j+1], &p->ctrl[w][j], sizeof(rVert_c));
       p->ctrl[w][j+1].xyz += vTemp;
     }
   }
@@ -2950,7 +2950,7 @@ void Patch_InsertRow(patchMesh_c *p, bool bAdd)
       h = p->height-1;
       while (h >= 0)
       {
-        memcpy(&p->ctrl[w][h+2],&p->ctrl[w][h], sizeof(drawVert_t));
+        memcpy(&p->ctrl[w][h+2],&p->ctrl[w][h], sizeof(rVert_c));
         h--;
       }
       vTemp = p->ctrl[w][1].xyz - p->ctrl[w][0].xyz;
@@ -2985,7 +2985,7 @@ void Patch_RemoveRow(patchMesh_c *p, bool bFirst)
 		{
 			for (int h = 0; h < p->height; h++)
 			{
-				memcpy(&p->ctrl[w][h], &p->ctrl[w][h+2], sizeof(drawVert_t));
+				memcpy(&p->ctrl[w][h], &p->ctrl[w][h+2], sizeof(rVert_c));
 			}
 		}
 	}
@@ -3011,7 +3011,7 @@ void patchMesh_c::removePatchColumn(bool bFirst)
 		{
 			for (int w = 0; w < this->width; w++)
 			{
-				memcpy(&this->ctrl[w][h], &this->ctrl[w+2][h], sizeof(drawVert_t));
+				memcpy(&this->ctrl[w][h], &this->ctrl[w+2][h], sizeof(rVert_c));
 			}
 		}
 	}
@@ -3587,15 +3587,15 @@ void Patch_ShiftTexture(patchMesh_c *p, float fx, float fy)
 
 void patchMesh_c::invertPatch()
 {
-	drawVert_t vertTemp;
+	rVert_c vertTemp;
 	this->bDirty = true;
 	for ( int i = 0 ; i < this->width ; i++ ) 
 	{
 		for (int j = 0; j < this->height / 2; j++)
 		{
-			memcpy(&vertTemp, &this->ctrl[i][this->height - 1- j], sizeof (drawVert_t));
-			memcpy(&this->ctrl[i][this->height - 1 - j], &this->ctrl[i][j], sizeof(drawVert_t));
-			memcpy(&this->ctrl[i][j], &vertTemp, sizeof(drawVert_t));
+			memcpy(&vertTemp, &this->ctrl[i][this->height - 1- j], sizeof (rVert_c));
+			memcpy(&this->ctrl[i][this->height - 1 - j], &this->ctrl[i][j], sizeof(rVert_c));
+			memcpy(&this->ctrl[i][j], &vertTemp, sizeof(rVert_c));
 		}
 	}
 }
@@ -4554,7 +4554,7 @@ void Patch_UnFreeze(bool bAll)
 void Patch_Transpose()
 {
 	int		i, j, w;
-  drawVert_t dv;
+  rVert_c dv;
 	for (brush_s *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
 	{
     if (pb->patchBrush)
@@ -4570,14 +4570,14 @@ void Patch_Transpose()
     				if ( j < p->height ) 
             {
     					// swap the value
-		    			memcpy(&dv,&p->ctrl[j][i],sizeof(drawVert_t));
-				    	memcpy(&p->ctrl[j][i],&p->ctrl[i][j], sizeof(drawVert_t));
-    					memcpy(&p->ctrl[i][j],&dv, sizeof(drawVert_t));
+		    			memcpy(&dv,&p->ctrl[j][i],sizeof(rVert_c));
+				    	memcpy(&p->ctrl[j][i],&p->ctrl[i][j], sizeof(rVert_c));
+    					memcpy(&p->ctrl[i][j],&dv, sizeof(rVert_c));
     				} 
             else 
             {
     					// just copy
-		    			memcpy(&p->ctrl[j][i],&p->ctrl[i][j], sizeof(drawVert_t));
+		    			memcpy(&p->ctrl[j][i],&p->ctrl[i][j], sizeof(rVert_c));
 		    		}
     			}
   		  }
@@ -4591,14 +4591,14 @@ void Patch_Transpose()
     				if ( j < p->width ) 
             {
 					    // swap the value
-					    memcpy(&dv,&p->ctrl[i][j], sizeof(drawVert_t));
-              memcpy(&p->ctrl[i][j],&p->ctrl[j][i], sizeof(drawVert_t));
-    					memcpy(&p->ctrl[j][i],&dv, sizeof(drawVert_t));
+					    memcpy(&dv,&p->ctrl[i][j], sizeof(rVert_c));
+              memcpy(&p->ctrl[i][j],&p->ctrl[j][i], sizeof(rVert_c));
+    					memcpy(&p->ctrl[j][i],&dv, sizeof(rVert_c));
 		    		} 
             else 
             {
     					// just copy
-    					memcpy(&p->ctrl[i][j],&p->ctrl[j][i], sizeof(drawVert_t));
+    					memcpy(&p->ctrl[i][j],&p->ctrl[j][i], sizeof(rVert_c));
 		    		}
     			}
     		}

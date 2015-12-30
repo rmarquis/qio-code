@@ -117,7 +117,7 @@ public:
 class texturedVertex_c {
 public:
 	vec3_c xyz;
-	float st[2];
+	vec2_c st;
 
 
 	void setXYZ(const float *newXYZ) {
@@ -366,7 +366,6 @@ struct face_s
 #define PATCH_STYLEMASK    0xffff0000    // 
 
 #include <renderer/rVertex.h>
-typedef rVert_c drawVert_t;
 
 class patchMesh_c {
 	float calcPatchWidth();
@@ -377,7 +376,7 @@ public:
 	int	width, height;		// in control points, not patches
 	int   contents, flags, value, type;
 	mtrAPI_i *d_texture;
-	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
+	rVert_c ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
 	class brush_s *pSymbiot;
 	bool bSelected;
 	bool bOverlay;
@@ -394,14 +393,6 @@ public:
 		bDirty = false;
 		nListID = 0;
 	}
-	/*void setType(int nType)
-	{
-		this->type = (this->type & PATCH_STYLEMASK) | nType;
-	}
-	void setStyle(int nStyle)
-	{
-		this->type = (this->type & PATCH_TYPEMASK) | nStyle;
-	}*/
 	void fillPatch(vec3_t v);
 	void naturalizePatch();
 	void invertPatch();

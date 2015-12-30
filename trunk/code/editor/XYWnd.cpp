@@ -1175,7 +1175,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 				texdef_t td;
 				td.setName(pecNew->getEditorMaterialName());
 				brush_s* nb = Brush_Create (mins, maxs, &td);
-				Entity_LinkBrush (b->owner, nb);
+				b->owner->linkBrush(nb);
 				nb->owner->eclass = pecNew;
 				nb->owner->setKeyValue("classname", pName);
 				Brush_Free(b);
@@ -1240,7 +1240,7 @@ brush_s* CreateEntityBrush(int x, int y, CXYWnd* pWnd)
 		return NULL;
 
 	Brush_AddToList (n, &selected_brushes);
-	Entity_LinkBrush (world_entity, n);
+	world_entity->linkBrush(n);
 	Brush_Build( n );
   return n;
 }
@@ -1841,7 +1841,7 @@ void CXYWnd::NewBrushDrag (int x, int y)
 
 	Brush_AddToList (n, &selected_brushes);
 
-	Entity_LinkBrush (world_entity, n);
+	world_entity->linkBrush(n);
 
 	Brush_Build( n );
 

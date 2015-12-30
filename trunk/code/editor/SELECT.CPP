@@ -325,12 +325,6 @@ void Select_Delete (void)
 		brush = selected_brushes.next;
 		if(brush == 0)
 			break;
-		if (brush->patchBrush)
-		{
-		  //Patch_Delete(brush->nPatchID);
-		  Patch_Delete(brush->pPatch);
-		}
-
 		Brush_Free (brush);
 	}
 
@@ -1194,7 +1188,7 @@ void Select_Ungroup(void)
 			//Brush_RemoveFromList (b);
 			//Brush_AddToList (b, &active_brushes);
 			Entity_UnlinkBrush (b);
-			Entity_LinkBrush (world_entity, b);
+			world_entity->linkBrush(b);
 			Brush_Build( b );
 			b->owner = world_entity;
 		}

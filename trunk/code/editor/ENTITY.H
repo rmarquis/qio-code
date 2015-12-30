@@ -71,6 +71,7 @@ public:
 	u32 getMemorySize() const {
 		return sizeof(entity_s);
 	}
+	void linkBrush (brush_s *b);
 };
 
 entity_s	*Entity_Parse (brush_s* pList = NULL);
@@ -82,7 +83,6 @@ entity_s	*Entity_Clone (entity_s *e);
 void		Entity_AddToList(entity_s *e, entity_s *list);
 void		Entity_RemoveFromList(entity_s *e);
 
-void		Entity_LinkBrush (entity_s *e, brush_s *b);
 void		Entity_UnlinkBrush (brush_s *b);
 entity_s	*FindEntity(char *pszKey, char *pszValue);
 

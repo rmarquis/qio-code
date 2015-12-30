@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <math/math.h>
 #include <math/vec3.h>
+#include <math/vec2.h>
 #include <math/aabb.h>
 
 #define	SIDE_FRONT		0
