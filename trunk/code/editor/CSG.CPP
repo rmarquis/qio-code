@@ -125,7 +125,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 				continue;
 			}
 			//
-			if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
+			if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
 									face1->plane.normal, face2->plane.normal,
 									face1->plane.dist, face2->plane.dist))
 			{
@@ -205,14 +205,10 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 }
 
 /*
-=============
-Brush_MergeListPairs
-
   Returns a list with merged brushes.
   Tries to merge brushes pair wise.
   The input list is destroyed.
   Input and output should be a single linked list using .next
-=============
 */
 brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
 {
@@ -271,9 +267,6 @@ brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
 }
 
 /*
-=============
-Brush_MergeList
-
  Tries to merge all brushes in the list into one new brush.
  The input brush list stays intact.
  Returns NULL if no merged brush can be created.
@@ -283,7 +276,6 @@ Brush_MergeList
  if onlyshape is true then the merge is allowed based on the shape only
  otherwise the texture/shader references of faces in the same plane have to
  be the same as well.
-=============
 */
 brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 {
@@ -336,7 +328,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 						continue;
 					}
 					//
-					if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
+					if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
 											face1->plane.normal, face2->plane.normal,
 											face1->plane.dist, face2->plane.dist))
 					{
@@ -396,13 +388,9 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 }
 
 /*
-=============
-Brush_Subtract
-
  Returns a list of brushes that remain after B is subtracted from A.
  May by empty if A is contained inside B.
  The originals are undisturbed.
-=============
 */
 brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 {
@@ -442,11 +430,7 @@ brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 	return out;
 }
 
-/*
-=============
-CSG_Subtract
-=============
-*/
+
 void CSG_Subtract (void)
 {
 	brush_s		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;

@@ -40,9 +40,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define	PAGEFLIPS	2
-
-
 const char* g_pDimStrings[] = {"x:%.f", "y:%.f", "z:%.f"};
 const char* g_pOrgStrings[] = {"(x:%.f  y:%.f)", "(x:%.f  z:%.f)", "(y:%.f  z:%.f)"};
 CString g_strDim;
@@ -1090,7 +1087,7 @@ void CXYWnd::OnPaint()
 	        int order;
 	        for (face = pBrush->brush_faces,order = 0 ; face ; face=face->next, order++)
 	        {
-		        edWinding_t* w = face->face_winding;
+		        texturedWinding_c* w = face->face_winding;
 		        if (!w)
 			        continue;
 		        // draw the polygon

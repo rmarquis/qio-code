@@ -454,7 +454,7 @@ void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
 // new brush primitive stuff
 void ComputeAxisBase(vec3_c &normal, vec3_c &texS, vec3_c &texT);
 void FaceToBrushPrimitFace(face_s *f);
-void EmitBrushPrimitTextureCoordinates(face_s *, edWinding_t *);
+void EmitBrushPrimitTextureCoordinates(face_s *, texturedWinding_c *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
 void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
 void BrushPrimit_Parse(class parser_c &p, brush_s *);

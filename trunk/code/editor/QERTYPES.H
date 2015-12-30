@@ -114,152 +114,9 @@ public:
 #define QER_NOCARVE   0x00000002
 
 #include "mathlib.h"
-class texturedVertex_c {
-public:
-	vec3_c xyz;
-	vec2_c st;
+#include <shared/texturedWinding.h>
 
 
-	void setXYZ(const float *newXYZ) {
-		xyz = newXYZ;
-	}
-	const vec3_c &getXYZ() const {
-		return xyz;
-	}
-	float dotProduct(const float *pVec3) const {
-		return xyz.dotProduct(pVec3);
-	}
-	bool vectorCompare(const vec3_c &other, float epsilon = EQUAL_EPSILON) const {
-		return xyz.vectorCompare(other,epsilon);
-	}
-	void setTC(float s, float t) {
-		st[0] = s;
-		st[1] = t;
-	}
-	const float operator [] (int index) const {
-		return (&xyz.x)[index];
-	}
-	float &operator [] (int index) {
-		return (&xyz.x)[index];
-	}
-	operator vec3_c &() {
-		return xyz;
-	}
-	operator float *() {
-		return &xyz.x;
-	}
-};
-// NOTE: don't trust this definition!
-// you should read float points[..][5]
-// see NewWinding definition
-#define MAX_POINTS_ON_WINDING 128
-class edWinding_t
-{
-	arraySTD_c<texturedVertex_c> points;
-public:
-	edWinding_t();
-	edWinding_t(const class edPlane_c &pl);
-	edWinding_t(u32 numPoints);
-	edWinding_t *cloneWinding();
-	edWinding_t *clip(const class edPlane_c &split, bool keepon);
-	void splitEpsilon(vec3_t normal, double dist, float epsilon, edWinding_t **front, edWinding_t **back);
-	edWinding_t *tryMerge(const edWinding_t *f2, vec3_t planenormal, int keep);
-	bool isTiny() const;
-	bool removePoint(int point);
-	edWinding_t *insertPoint(vec3_t point, int spot);
-	static int planesConcave(edWinding_t *w1, edWinding_t *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
-
-
-	void removeLastPoint() {
-		points.resize(points.size()-1);
-	}
-	u32 size() const {
-		return points.size();
-	}
-	void addPointXYZ(const vec3_c &xyz) {
-		texturedVertex_c tv;
-		tv.xyz = xyz;
-		points.push_back(tv);
-	}
-	void addPoint(const texturedVertex_c &tv) {
-		points.push_back(tv);
-	}
-	const vec3_c &getXYZ(u32 i) const {
-		return points[i].xyz;
-	}
-	texturedVertex_c &getPoint(u32 i) {
-		return points[i];
-	}
-	const texturedVertex_c &getPoint(u32 i) const {
-		return points[i];
-	}
-	const float *getTC(u32 i) const {
-		return points[i].st;
-	}
-	void setTC(u32 i, float s, float t) {
-		points[i].setTC(s,t);
-	}
-	void setXYZ(u32 i, const vec3_c &v) {
-		points[i].xyz = v;
-	}
-	void setPoint(u32 i, const texturedVertex_c &v) {
-		points[i] = v;
-	}
-
-};
-
-
-
-#define	NORMAL_EPSILON	0.0001
-#define	DIST_EPSILON	0.02
-
-class edPlane_c {
-public:
-    vec3_c normal;
-    double dist;
-public:
-	int isPlaneEqual(const edPlane_c &b, int flip) const {
-		vec3_c tempNormal;
-		double tempDist;
-
-		if (flip) {
-			tempNormal = -b.normal;
-			tempDist = -b.dist;
-		} else {
-			tempNormal = b.normal;
-			tempDist = b.dist;
-		}
-		if (
-		   fabs(this->normal[0] - tempNormal[0]) < NORMAL_EPSILON
-		&& fabs(this->normal[1] - tempNormal[1]) < NORMAL_EPSILON
-		&& fabs(this->normal[2] - tempNormal[2]) < NORMAL_EPSILON
-		&& fabs(this->dist - tempDist) < DIST_EPSILON )
-			return true;
-		return false;
-	}
-	int fromPoints(const vec3_c &p1, const vec3_c &p2, const vec3_c &p3)
-	{
-		vec3_c v1 = p2 - p1;
-		vec3_c v2 = p3 - p1;
-		this->normal.crossProduct(v1,v2);
-		if (this->normal.normalize2() < 0.1) 
-			return false;
-		this->dist = this->normal.dotProduct(p1);
-		return true;
-	}
-	// project on normal plane
-	// along ez 
-	// assumes plane normal is normalized
-	void projectOnPlane(const vec3_c &ez, vec3_c &p) {
-		if (fabs(ez[0]) == 1)
-			p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
-		else if (fabs(ez[1]) == 1)
-			p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
-		else
-			p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
-	}
-
-};
 
 extern int g_allocatedCounter_face;
 
@@ -273,7 +130,7 @@ struct face_s
 	texdef_t				texdef;
 	edPlane_c				plane;
 
-	edWinding_t				*face_winding;
+	texturedWinding_c				*face_winding;
 
 	vec3_t					d_color;
 	mtrAPI_i				*d_texture;
@@ -300,22 +157,23 @@ struct face_s
 	}
 	void calculatePlaneFromPoints()
 	{
-		int		j;
-		vec3_c	t1, t2, t3;
+		plane.fromPoints(planepts[2],planepts[1],planepts[0]);
+		//int		j;
+		//vec3_c	t1, t2, t3;
 
-		// convert to a vector / dist plane
-		for (j=0 ; j<3 ; j++)
-		{
-			t1[j] = this->planepts[0][j] - this->planepts[1][j];
-			t2[j] = this->planepts[2][j] - this->planepts[1][j];
-			t3[j] = this->planepts[1][j];
-		}
-		
-		this->plane.normal.crossProduct(t1,t2);
-		if (this->plane.normal.vectorCompare(vec3_c(0,0,0)))
-			printf ("WARNING: brush plane with no normal\n");
-		this->plane.normal.normalize();
-		this->plane.dist = t3.dotProduct(this->plane.normal);
+		//// convert to a vector / dist plane
+		//for (j=0 ; j<3 ; j++)
+		//{
+		//	t1[j] = this->planepts[0][j] - this->planepts[1][j];
+		//	t2[j] = this->planepts[2][j] - this->planepts[1][j];
+		//	t3[j] = this->planepts[1][j];
+		//}
+		//
+		//this->plane.normal.crossProduct(t1,t2);
+		//if (this->plane.normal.vectorCompare(vec3_c(0,0,0)))
+		//	printf ("WARNING: brush plane with no normal\n");
+		//this->plane.normal.normalize();
+		//this->plane.dist = t3.dotProduct(this->plane.normal);
 	}	
 	face_s *cloneFace()
 	{
@@ -467,7 +325,7 @@ public:
 	void fitTexture(int nHeight, int nWidth);
 	void removeEmptyFaces();
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
-	edWinding_t *makeFaceWinding (face_s *face);
+	texturedWinding_c *makeFaceWinding (face_s *face);
 
 	const aabb &getBounds() const {
 		return bounds;

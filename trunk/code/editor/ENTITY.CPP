@@ -113,20 +113,6 @@ void Entity_RemoveFromList (entity_s *e)
 	e->next = e->prev = NULL;
 }
 
-
-
-
-
-
-/*
-================
-Entity_Parse
-
-If onlypairs is set, the classname info will not
-be looked up, and the entity will not be added
-to the global list.  Used for parsing the project.
-================
-*/
 entity_s	*Entity_Parse (class parser_c &p, brush_s* pList)
 {
 	entity_s	*ent;

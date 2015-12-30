@@ -22,14 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // window system independent camera view code
 
-enum camera_draw_mode
-{
-	cd_wire,
-	cd_solid,
-	cd_texture,
-	cd_blend
-};
-
 struct camera_t
 {
 	int		width, height;
@@ -38,8 +30,6 @@ struct camera_t
 
 	vec3_c	origin;
 	vec3_c	angles;
-
-	camera_draw_mode	draw_mode;
 
 	vec3_t	color;			// background 
 

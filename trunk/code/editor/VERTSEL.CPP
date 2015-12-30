@@ -77,7 +77,7 @@ void MakeFace (brush_s* b, face_s *f)
 void MakeFace (face_s *f)
 #endif
 {
-	edWinding_t	*w;
+	texturedWinding_c	*w;
 	int			i;
 	int			pnum[128];
 
@@ -128,7 +128,7 @@ void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
 void SelectFaceEdge (face_s *f, int p1, int p2)
 #endif
 {
-	edWinding_t	*w;
+	texturedWinding_c	*w;
 	int			i, j, k;
 	int			pnum[128];
 
@@ -170,7 +170,7 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 void SelectVertex (int p1)
 {
 	brush_s		*b;
-	edWinding_t	*w;
+	texturedWinding_c	*w;
 	int			i, j, k;
 	face_s		*f;
 

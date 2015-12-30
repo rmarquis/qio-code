@@ -66,7 +66,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	PLANE_ANYY	4
 #define	PLANE_ANYZ	5
 
-#define	ON_EPSILON	0.01
 
 #define	KEY_FORWARD		1
 #define	KEY_BACK		2

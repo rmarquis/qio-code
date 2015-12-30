@@ -294,14 +294,6 @@
 				RelativePath="..\..\code\editor\Z.CPP"
 				>
 			</File>
-			<File
-				RelativePath="..\..\code\editor\ZView.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ZWnd.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -534,6 +526,18 @@
 				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\texturedVertex.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\texturedWinding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\texturedWinding.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="math"
@@ -668,6 +672,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\WaveOpen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ZView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ZWnd.cpp"
 				>
 			</File>
 		</Filter>

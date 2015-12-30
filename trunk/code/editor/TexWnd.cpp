@@ -88,18 +88,12 @@ int			texture_nummenus;
 #define		MAX_TEXTUREDIRS	128
 char		texture_menunames[MAX_TEXTUREDIRS][128];
 
-bool	g_dontuse = true;		// set to true to load the texture but not flag as used
-
 // void SelectTexture (int mx, int my, bool bShift = false);
 void SelectTexture (int mx, int my, bool bShift, bool bFitScale=false);
 
 void	Texture_MouseDown (int x, int y, int buttons);
 void	Texture_MouseUp (int x, int y, int buttons);
 void	Texture_MouseMoved (int x, int y, int buttons);
-
-CPtrArray g_lstShaders;
-
-
 
 void SetTexParameters (void)
 {
@@ -120,11 +114,6 @@ void SetTexParameters (void)
 	}
 }
 
-/*
-============
-Texture_SetMode
-============
-*/
 void Texture_SetMode(int iMenu)
 {
 	int iMode;
@@ -196,16 +185,12 @@ void Texture_SetMode(int iMenu)
 
 	if ( !texturing && iMenu == ID_TEXTURES_WIREFRAME)
 	{
-		g_pParentWnd->GetCamera()->Camera().draw_mode = cd_wire;
-		Map_BuildBrushData();
-		Sys_UpdateWindows (W_ALL);
+
 		return;
 
 	} else if ( !texturing && iMenu == ID_TEXTURES_FLATSHADE) {
 
-		g_pParentWnd->GetCamera()->Camera().draw_mode = cd_solid;
-		Map_BuildBrushData();
-		Sys_UpdateWindows (W_ALL);
+
 		return;
 	}
 
@@ -221,46 +206,12 @@ void Texture_SetMode(int iMenu)
 
 	glFinish();
 
-	if (g_pParentWnd->GetCamera()->Camera().draw_mode != cd_texture)
-	{
-		g_pParentWnd->GetCamera()->Camera().draw_mode = cd_texture;
+
 		Map_BuildBrushData();
-	}
+
 
 	Sys_UpdateWindows (W_ALL);
 }
-
-/*
-================
-R_MipMap
-
-Operates in place, quartering the size of the texture
-================
-*/
-void R_MipMap (byte *in, int &width, int &height)
-{
-	int		i, j;
-	byte	*out;
-	int		row;
-	
-	row = width * 4;
-	width >>= 1;
-	height >>= 1;
-	out = in;
-	for (i=0 ; i<height ; i++, in+=row)
-	{
-		for (j=0 ; j<width ; j++, out+=4, in+=8)
-		{
-			out[0] = (in[0] + in[4] + in[row+0] + in[row+4])>>2;
-			out[1] = (in[1] + in[5] + in[row+1] + in[row+5])>>2;
-			out[2] = (in[2] + in[6] + in[row+2] + in[row+6])>>2;
-			out[3] = (in[3] + in[7] + in[row+3] + in[row+7])>>2;
-		}
-	}
-}
-
-
-
 
 
 void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, brush_s *pList)
@@ -364,7 +315,6 @@ void	Texture_ShowInuse (void)
 	char	name[1024];
 
 	texture_showinuse = true;
-	g_dontuse = false;
 
 	g_qeglobals.d_texturewin.originy = 0;	
 
