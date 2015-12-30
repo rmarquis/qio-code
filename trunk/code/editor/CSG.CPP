@@ -30,7 +30,6 @@ void CSG_MakeHollow (void)
 {
 	brush_s		*b, *front, *back, *next;
 	face_s		*f;
-	face_s		split;
 	vec3_c		move;
 	int			i;
 
@@ -43,17 +42,18 @@ void CSG_MakeHollow (void)
 
 		for (f = b->brush_faces ; f ; f=f->next)
 		{
-			split = *f;
+			face_s *split = f->cloneFace();
 			move = f->plane.normal * g_qeglobals.d_gridsize;
 			for (i=0 ; i<3 ; i++) {
-				split.planepts[i] -= move;
+				split->planepts[i] -= move;
 			}
 
-			Brush_SplitBrushByFace (b, &split, &front, &back);
+			Brush_SplitBrushByFace (b, split, &front, &back);
 			if (back)
 				Brush_Free (back);
 			if (front)
 				Brush_AddToList (front, &selected_brushes);
+			delete split;
 		}
 		Brush_Free (b);
 	}
@@ -126,7 +126,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 				continue;
 			}
 			//
-			if (Winding_PlanesConcave(face1->face_winding, face2->face_winding,
+			if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
 									face1->plane.normal, face2->plane.normal,
 									face1->plane.dist, face2->plane.dist))
 			{
@@ -337,7 +337,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 						continue;
 					}
 					//
-					if (Winding_PlanesConcave(face1->face_winding, face2->face_winding,
+					if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
 											face1->plane.normal, face2->plane.normal,
 											face1->plane.dist, face2->plane.dist))
 					{

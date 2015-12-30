@@ -108,7 +108,7 @@ void FaceToBrushPrimitFace(face_s *f)
 }
 
 // compute texture coordinates for the winding points
-void EmitBrushPrimitTextureCoordinates(face_s * f, winding_t * w)
+void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
 {
 	vec3_c texX,texY;
 	vec_t x,y;
@@ -123,7 +123,7 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, winding_t * w)
 		ConvertTexMatWithQTexture( &f->brushprimit_texdef, NULL, &f->brushprimit_texdef, f->d_texture );
 	}
 	int i;
-    for (i=0 ; i<w->numpoints ; i++)
+    for (i=0 ; i<w->size() ; i++)
 	{
 		x=w->points[i].dotProduct(texX);
 		y=w->points[i].dotProduct(texY);

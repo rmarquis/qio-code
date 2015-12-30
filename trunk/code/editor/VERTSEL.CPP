@@ -78,7 +78,7 @@ void MakeFace (brush_s* b, face_s *f)
 void MakeFace (face_s *f)
 #endif
 {
-	winding_t	*w;
+	edWinding_t	*w;
 	int			i;
 	int			pnum[128];
 
@@ -89,10 +89,10 @@ void MakeFace (face_s *f)
 #endif
 	if (!w)
 		return;
-	for (i=0 ; i<w->numpoints ; i++)
+	for (i=0 ; i<w->size() ; i++)
 		pnum[i] = FindPoint (w->points[i]);
-	for (i=0 ; i<w->numpoints ; i++)
-		FindEdge (pnum[i], pnum[(i+1)%w->numpoints], f);
+	for (i=0 ; i<w->size() ; i++)
+		FindEdge (pnum[i], pnum[(i+1)%w->size()], f);
 
 	free (w);
 }
@@ -129,7 +129,7 @@ void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
 void SelectFaceEdge (face_s *f, int p1, int p2)
 #endif
 {
-	winding_t	*w;
+	edWinding_t	*w;
 	int			i, j, k;
 	int			pnum[128];
 
@@ -140,15 +140,15 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 #endif
 	if (!w)
 		return;
-	for (i=0 ; i<w->numpoints ; i++)
+	for (i=0 ; i<w->size() ; i++)
 		pnum[i] = FindPoint (w->points[i]);
 
-  for (i=0 ; i<w->numpoints ; i++)
-		if (pnum[i] == p1 && pnum[(i+1)%w->numpoints] == p2)
+  for (i=0 ; i<w->size() ; i++)
+		if (pnum[i] == p1 && pnum[(i+1)%w->size()] == p2)
 		{
 			f->planepts[0] = g_qeglobals.d_points[pnum[i]];
-			f->planepts[1] = g_qeglobals.d_points[pnum[(i+1)%w->numpoints]];
-			f->planepts[2] = g_qeglobals.d_points[pnum[(i+2)%w->numpoints]];
+			f->planepts[1] = g_qeglobals.d_points[pnum[(i+1)%w->size()]];
+			f->planepts[2] = g_qeglobals.d_points[pnum[(i+2)%w->size()]];
 			for (j=0 ; j<3 ; j++)
 			{
 				for (k=0 ; k<3 ; k++)
@@ -162,7 +162,7 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 			break;
 		}
 
-	if (i == w->numpoints)
+	if (i == w->size())
 		Sys_Printf ("SelectFaceEdge: failed\n");
 	free (w);
 }
@@ -171,7 +171,7 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 void SelectVertex (int p1)
 {
 	brush_s		*b;
-	winding_t	*w;
+	edWinding_t	*w;
 	int			i, j, k;
 	face_s		*f;
 
@@ -183,13 +183,13 @@ void SelectVertex (int p1)
 		  w =  b->makeFaceWinding(f);
 		  if (!w)
 			  continue;
-		  for (i=0 ; i<w->numpoints ; i++)
+		  for (i=0 ; i<w->size() ; i++)
 		  {
 			  if (FindPoint (w->points[i]) == p1)
 			  {
-				  f->planepts[0] = w->points[(i+w->numpoints-1)%w->numpoints].getXYZ();
+				  f->planepts[0] = w->points[(i+w->size()-1)%w->size()].getXYZ();
 				  f->planepts[1] = w->points[i].getXYZ();
-				  f->planepts[2] = w->points[(i+1)%w->numpoints].getXYZ();
+				  f->planepts[2] = w->points[(i+1)%w->size()].getXYZ();
 			    for (j=0 ; j<3 ; j++)
           {
 				    for (k=0 ; k<3 ; k++)
@@ -214,13 +214,13 @@ void SelectVertex (int p1)
 		w =  Brush_MakeFaceWinding (b, f);
 		if (!w)
 			continue;
-		for (i=0 ; i<w->numpoints ; i++)
+		for (i=0 ; i<w->size() ; i++)
 		{
 			if (FindPoint (w->points[i]) == p1)
 			{
-				VectorCopy (w->points[(i+w->numpoints-1)%w->numpoints], f->planepts[0]);
+				VectorCopy (w->points[(i+w->size()-1)%w->size()], f->planepts[0]);
 				VectorCopy (w->points[i], f->planepts[1]);
-				VectorCopy (w->points[(i+1)%w->numpoints], f->planepts[2]);
+				VectorCopy (w->points[(i+1)%w->size()], f->planepts[2]);
 			  for (j=0 ; j<3 ; j++)
         {
 				  for (k=0 ; k<3 ; k++)
