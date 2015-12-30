@@ -421,6 +421,10 @@ public:
 			g_allocatedCounter_brush--;
 	}
 	void makeFacePlanes();
+	void fitTexture(int nHeight, int nWidth);
+	void removeEmptyFaces();
+	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
+	winding_t *makeFaceWinding (face_s *face);
 
 	const aabb &getBounds() const {
 		return bounds;

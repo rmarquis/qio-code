@@ -967,7 +967,7 @@ void CCamWnd::Cam_Draw()
 	
 	if (g_qeglobals.d_pointfile_display_list)
 	{
-		Pointfile_Draw();
+//		Pointfile_Draw();
 		//		glCallList (g_qeglobals.d_pointfile_display_list);
 	}
 	

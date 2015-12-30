@@ -65,49 +65,9 @@ public:
 		return r;
 	}
 	void trackMD3Angles(const char *key, const char *value);
-	void setKeyValue(const char *key, const char *value) {
-		if (this == NULL)
-			return;
-
-		if (!key || !key[0])
-			return;
-
-		trackMD3Angles(key, value);
-
-		this->keyValues.set(key,value);
-	}
-	entity_s(bool bIsLinkedListHeader = false) {
-		prev = 0;
-		next = 0;
-		undoId = 0;
-		redoId = 0;
-		entityId = 0;
-		eclass = 0;
-
-		// mark linked list as empty
-		//this->brushes.onext = &this->brushes;
-		//this->brushes.oprev = &this->brushes;
-
-		this->bIsLinkedListHeader = bIsLinkedListHeader;
-		// allocated counter is only used for debugging
-		if(bIsLinkedListHeader==false)
-			g_allocatedCounter_entity++;
-	}
-	~entity_s() {
-		if(this->brushes.onext != 0) {
-			while (this->brushes.onext != &this->brushes)
-				Brush_Free (this->brushes.onext);
-		}
-
-		if (this->next)
-		{
-			this->next->prev = this->prev;
-			this->prev->next = this->next;
-		}
-		// allocated counter is only used for debugging
-		if(bIsLinkedListHeader==false) 
-			g_allocatedCounter_entity--;
-	}
+	void setKeyValue(const char *key, const char *value);
+	entity_s(bool bIsLinkedListHeader = false);
+	~entity_s();
 	u32 getMemorySize() const {
 		return sizeof(entity_s);
 	}
@@ -125,6 +85,5 @@ void		Entity_RemoveFromList(entity_s *e);
 void		Entity_LinkBrush (entity_s *e, brush_s *b);
 void		Entity_UnlinkBrush (brush_s *b);
 entity_s	*FindEntity(char *pszKey, char *pszValue);
-entity_s	*FindEntityInt(char *pszKey, int iValue);
 
 int GetUniqueTargetId(int iHint);

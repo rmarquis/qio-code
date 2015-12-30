@@ -41,7 +41,7 @@ basic setup:
 #include "Radiant.h"
 #include "qe3.h"
 
-typedef struct undo_s
+struct undo_s
 {
 	double time;				//time operation was performed
 	int id;						//every undo has an unique id
@@ -50,12 +50,12 @@ typedef struct undo_s
 	brush_s brushlist;			//deleted brushes
 	entity_s entitylist;		//deleted entities
 	struct undo_s *prev, *next;	//next and prev undo in list
-} undo_t;
+};
 
-undo_t *g_undolist;						//first undo in the list
-undo_t *g_lastundo;						//last undo in the list
-undo_t *g_redolist;						//first redo in the list
-undo_t *g_lastredo;						//last undo in list
+undo_s *g_undolist;						//first undo in the list
+undo_s *g_lastundo;						//last undo in the list
+undo_s *g_redolist;						//first redo in the list
+undo_s *g_lastredo;						//last undo in list
 int g_undoMaxSize = 64;					//maximum number of undos
 int g_undoSize = 0;						//number of undos in the list
 int g_undoMaxMemorySize = 2*1024*1024;	//maximum undo memory (default 2 MB)
@@ -73,7 +73,7 @@ int Undo_MemorySize(void)
 {
 	/*
 	int size;
-	undo_t *undo;
+	undo_s *undo;
 	brush_s *pBrush;
 	entity_s *pEntity;
 
@@ -88,7 +88,7 @@ int Undo_MemorySize(void)
 		{
 			size += Entity_MemorySize(pEntity);
 		}
-		size += sizeof(undo_t);
+		size += sizeof(undo_s);
 	}
 	return size;
 	*/
@@ -102,7 +102,7 @@ Undo_ClearRedo
 */
 void Undo_ClearRedo(void)
 {
-	undo_t *redo, *nextredo;
+	undo_s *redo, *nextredo;
 	brush_s *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
@@ -135,7 +135,7 @@ Undo_Clear
 */
 void Undo_Clear(void)
 {
-	undo_t *undo, *nextundo;
+	undo_s *undo, *nextundo;
 	brush_s *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
@@ -155,7 +155,7 @@ void Undo_Clear(void)
 			g_undoMemorySize -= pEntity->getMemorySize();
 			delete pEntity;
 		}
-		g_undoMemorySize -= sizeof(undo_t);
+		g_undoMemorySize -= sizeof(undo_s);
 		free(undo);
 	}
 	g_undolist = NULL;
@@ -216,7 +216,7 @@ Undo_FreeFirstUndo
 */
 void Undo_FreeFirstUndo(void)
 {
-	undo_t *undo;
+	undo_s *undo;
 	brush_s *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
@@ -237,7 +237,7 @@ void Undo_FreeFirstUndo(void)
 		g_undoMemorySize -= pEntity->getMemorySize();
 		delete pEntity;
 	}
-	g_undoMemorySize -= sizeof(undo_t);
+	g_undoMemorySize -= sizeof(undo_s);
 	free(undo);
 	g_undoSize--;
 }
@@ -249,7 +249,7 @@ Undo_GeneralStart
 */
 void Undo_GeneralStart(char *operation)
 {
-	undo_t *undo;
+	undo_s *undo;
 	brush_s *pBrush;
 	entity_s *pEntity;
 
@@ -262,9 +262,9 @@ void Undo_GeneralStart(char *operation)
 		}
 	}
 
-	undo = (undo_t *) malloc(sizeof(undo_t));
+	undo = (undo_s *) malloc(sizeof(undo_s));
 	if (!undo) return;
-	memset(undo, 0, sizeof(undo_t));
+	memset(undo, 0, sizeof(undo_s));
 	undo->brushlist.next = &undo->brushlist;
 	undo->brushlist.prev = &undo->brushlist;
 	undo->entitylist.next = &undo->entitylist;
@@ -305,7 +305,7 @@ void Undo_GeneralStart(char *operation)
 			pEntity->undoId = 0;
 		}
 	}
-	g_undoMemorySize += sizeof(undo_t);
+	g_undoMemorySize += sizeof(undo_s);
 	g_undoSize++;
 	//undo buffer is bound to a max
 	if (g_undoSize > g_undoMaxSize)
@@ -319,7 +319,7 @@ void Undo_GeneralStart(char *operation)
 Undo_BrushInUndo
 =============
 */
-int Undo_BrushInUndo(undo_t *undo, brush_s *brush)
+int Undo_BrushInUndo(undo_s *undo, brush_s *brush)
 {
 	brush_s *b;
 
@@ -335,7 +335,7 @@ int Undo_BrushInUndo(undo_t *undo, brush_s *brush)
 Undo_EntityInUndo
 =============
 */
-int Undo_EntityInUndo(undo_t *undo, entity_s *ent)
+int Undo_EntityInUndo(undo_s *undo, entity_s *ent)
 {
 	entity_s *e;
 
@@ -568,7 +568,7 @@ Undo_Undo
 */
 void Undo_Undo(void)
 {
-	undo_t *undo, *redo;
+	undo_s *undo, *redo;
 	brush_s *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity, *pUndoEntity;
 
@@ -588,9 +588,9 @@ void Undo_Undo(void)
 	g_lastundo = g_lastundo->prev;
 
 	//allocate a new redo
-	redo = (undo_t *) malloc(sizeof(undo_t));
+	redo = (undo_s *) malloc(sizeof(undo_s));
 	if (!redo) return;
-	memset(redo, 0, sizeof(undo_t));
+	memset(redo, 0, sizeof(undo_s));
 	redo->brushlist.next = &redo->brushlist;
 	redo->brushlist.prev = &redo->brushlist;
 	redo->entitylist.next = &redo->entitylist;
@@ -717,7 +717,7 @@ void Undo_Undo(void)
 	//
 	Sys_Printf("%s undone.\n", undo->operation);
 	// free the undo
-	g_undoMemorySize -= sizeof(undo_t);
+	g_undoMemorySize -= sizeof(undo_s);
 	free(undo);
 	g_undoSize--;
 	g_undoId--;
@@ -734,7 +734,7 @@ Undo_Redo
 */
 void Undo_Redo(void)
 {
-	undo_t *redo;
+	undo_s *redo;
 	brush_s *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity, *pRedoEntity;
 

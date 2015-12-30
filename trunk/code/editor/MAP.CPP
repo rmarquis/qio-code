@@ -146,7 +146,7 @@ void Map_Free (void)
 	}
 
 	Texture_ClearInuse ();
-	Pointfile_Clear ();
+////Pointfile_Clear ();
 	strcpy (currentmap, "unnamed.map");
 	Sys_SetTitle (currentmap);
 	g_qeglobals.d_num_entities = 0;
@@ -208,13 +208,6 @@ entity_s *AngledEntity()
   return ent;
 }
 
-
-
-/*
-================
-Map_LoadFile
-================
-*/
 void Map_LoadFile (char *filename)
 {
     char		*buf;
@@ -345,7 +338,7 @@ void Map_SaveFile (const char *filename, bool use_region )
       return;
   }
 
-	Pointfile_Clear ();
+///Pointfile_Clear ();
 	QE_ConvertDOSToUnixName( temp, filename );
 
 	if (!use_region)

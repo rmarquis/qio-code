@@ -178,7 +178,7 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
+			Name="SourceEditor"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
@@ -191,35 +191,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\CamWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CapDialog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CommandsDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\CSG.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogInfo.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogTextures.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogThick.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DlgEvent.cpp"
 				>
 			</File>
 			<File
@@ -231,19 +203,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\EditWnd.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\ENTITY.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\EntityListDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\FindTextureDlg.cpp"
 				>
 			</File>
 			<File
@@ -251,19 +211,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\LstToolBar.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MainFrm.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\MAP.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MapInfo.cpp"
 				>
 			</File>
 			<File
@@ -271,23 +219,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\MRU.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\NewProjDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\PARSE.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDensityDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDialog.cpp"
 				>
 			</File>
 			<File
@@ -295,35 +227,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\POINTS.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PrefsDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\QE3.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditView.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Radiant.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RotateDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ScaleDialog.cpp"
 				>
 			</File>
 			<File
@@ -668,6 +572,102 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="SourceGUI"
+			>
+			<File
+				RelativePath="..\..\code\editor\CamWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\CapDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\CommandsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\DialogInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\DialogTextures.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\DialogThick.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\DlgEvent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\EditWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\EntityListDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\FindTextureDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\LstToolBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\MapInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\MRU.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\NewProjDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\PatchDensityDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\PatchDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\PrefsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\RADEditView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\RADEditWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\Radiant.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\RotateDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ScaleDialog.cpp"
 				>
 			</File>
 		</Filter>

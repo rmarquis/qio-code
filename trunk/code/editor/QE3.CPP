@@ -69,16 +69,6 @@ void WINAPI QE_CheckOpenGLForErrors(void)
 }
 
 
-
-char *copystring (char *s)
-{
-	char	*b;
-	b = (char*)malloc(strlen(s)+1);
-	strcpy (b,s);
-	return b;
-}
-
-
 bool DoesFileExist(const char* pBuff, long& lSize)
 {
   CFile file;
