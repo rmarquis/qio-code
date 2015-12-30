@@ -106,7 +106,7 @@ texturedWinding_c::texturedWinding_c() {
 texturedWinding_c::texturedWinding_c(u32 newCount) {
 	points.resize(newCount);
 }
-texturedWinding_c::texturedWinding_c(const edPlane_c &p) {
+texturedWinding_c::texturedWinding_c(const plane_c &p) {
 	int		i, x;
 	float	max, v;
 	vec3_c	org, vright, vup;
@@ -117,7 +117,7 @@ texturedWinding_c::texturedWinding_c(const edPlane_c &p) {
 	x = -1;
 	for (i=0 ; i<3; i++)
 	{
-		v = fabs(p.normal[i]);
+		v = fabs(p.norm[i]);
 		if (v > max)
 		{
 			x = i;
@@ -140,13 +140,13 @@ texturedWinding_c::texturedWinding_c(const edPlane_c &p) {
 	}
 
 
-	v = vup.dotProduct(p.normal);
-	vup.vectorMA (vup, -v, p.normal);
+	v = vup.dotProduct(p.norm);
+	vup.vectorMA (vup, -v, p.norm);
 	vup.normalize();
 		
-	org = p.normal * p.dist;
+	org = p.norm * p.dist;
 
-	vright.crossProduct (vup, p.normal);
+	vright.crossProduct (vup, p.norm);
 	
 	vup *= BOGUS_RANGE;
 	vright *= BOGUS_RANGE;
@@ -169,7 +169,7 @@ Frees the input winding.
 If keepon is true, an exactly on-plane winding will be saved, otherwise
 it will be clipped away.
 */
-texturedWinding_c *texturedWinding_c::clip(const edPlane_c &split, bool keepon) {
+texturedWinding_c *texturedWinding_c::clip(const plane_c &split, bool keepon) {
 	float	dists[128];
 	int		sides[128];
 	int		counts[3];
@@ -184,7 +184,7 @@ texturedWinding_c *texturedWinding_c::clip(const edPlane_c &split, bool keepon) 
 
 	// determine sides for each point
 	for (i=0 ; i<this->size() ; i++) {
-		dot = this->points[i].dotProduct(split.normal);
+		dot = this->points[i].dotProduct(split.norm);
 		dot -= split.dist;
 		dists[i] = dot;
 		if (dot > ON_EPSILON)
@@ -235,9 +235,9 @@ texturedWinding_c *texturedWinding_c::clip(const edPlane_c &split, bool keepon) 
 		dot = dists[i] / (dists[i]-dists[i+1]);
 		for (j=0 ; j<3 ; j++)
 		{	// avoid round off error when possible
-			if (split.normal[j] == 1)
+			if (split.norm[j] == 1)
 				mid[j] = split.dist;
-			else if (split.normal[j] == -1)
+			else if (split.norm[j] == -1)
 				mid[j] = -split.dist;
 			else
 				mid[j] = p1[j] + dot*(p2[j]-p1[j]);

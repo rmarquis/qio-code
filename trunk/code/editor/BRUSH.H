@@ -51,7 +51,7 @@ void		Brush_Write (brush_s *b, FILE *f);
 void		Brush_Write (brush_s *b, CMemFile* pMemFile);
 
 int			AddPlanept (float *f);
-float		SetShadeForPlane (const class edPlane_c &p);
+float		SetShadeForPlane (const class plane_c &p);
 
 void		Face_Draw( face_s *face );
 void		Face_TextureVectors (face_s *f, float STfromXYZ[2][4]);

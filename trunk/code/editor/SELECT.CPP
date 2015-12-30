@@ -732,7 +732,7 @@ void ComputeAbsolute(face_s* f, vec3_c &p1, vec3_c &p2, vec3_c &p3)
 };
 
 
-void AbsoluteToLocal(const class edPlane_c &normal2, face_s* f, vec3_c& p1, vec3_c& p2, vec3_c& p3)
+void AbsoluteToLocal(const class plane_c &normal2, face_s* f, vec3_c& p1, vec3_c& p2, vec3_c& p3)
 {
 	vec3_c ex,ey,ez;
 
@@ -810,15 +810,12 @@ void RotateFaceTexture(face_s* f, int nAxis, float fDeg)
 	VectorRotate(p2, rota, select_origin, p2);
 	VectorRotate(p3, rota, select_origin, p3);
 
-	edPlane_c normal2;
-	vec3_c vNormal;
-	vNormal[0] = f->plane.normal[0];
-	vNormal[1] = f->plane.normal[1];
-	vNormal[2] = f->plane.normal[2];
+	plane_c normal2;
+	vec3_c vNormal = f->plane.getNormal();
 	VectorRotate(vNormal, rota, vNormal);
-	normal2.normal[0] = vNormal[0];
-	normal2.normal[1] = vNormal[1];
-	normal2.normal[2] = vNormal[2];
+	normal2.norm[0] = vNormal[0];
+	normal2.norm[1] = vNormal[1];
+	normal2.norm[2] = vNormal[2];
 	AbsoluteToLocal(normal2, f, p1, p2 ,p3);
 
 }

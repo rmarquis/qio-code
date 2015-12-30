@@ -165,6 +165,59 @@ public:
 	bool compare(const plane_c &pl, const float normalEps = PL_NORM_EPS, const float distEps = PL_DIST_EPS) const {
 		return compare2(pl.norm,pl.dist,normalEps,distEps);
 	}
+
+#define	NORMAL_EPSILON	0.0001
+#define	DIST_EPSILON	0.02
+#define	ON_EPSILON	0.01
+
+
+	// TODO: integrate
+	int isPlaneEqual(const plane_c &b, int flip) const {
+		vec3_c tempNormal;
+		double tempDist;
+
+		if (flip) {
+			tempNormal = -b.norm;
+			tempDist = -b.dist;
+		} else {
+			tempNormal = b.norm;
+			tempDist = b.dist;
+		}
+		if (
+		   fabs(this->norm[0] - tempNormal[0]) < NORMAL_EPSILON
+		&& fabs(this->norm[1] - tempNormal[1]) < NORMAL_EPSILON
+		&& fabs(this->norm[2] - tempNormal[2]) < NORMAL_EPSILON
+		&& fabs(this->dist - tempDist) < DIST_EPSILON )
+			return true;
+		return false;
+	}
+	int fromPoints(const vec3_c &p1, const vec3_c &p2, const vec3_c &p3)
+	{
+		vec3_c v1 = p2 - p1;
+		vec3_c v2 = p3 - p1;
+		this->norm.crossProduct(v1,v2);
+		if (this->norm.normalize2() < 0.1) 
+			return false;
+		this->dist = this->norm.dotProduct(p1);
+		return true;
+	}
+	// project on normal plane
+	// along ez 
+	// assumes plane normal is normalized
+	void projectOnPlane(const vec3_c &ez, vec3_c &p) {
+		if (fabs(ez[0]) == 1)
+			p[0] = (dist - norm[1] * p[1] - norm[2] * p[2]) / norm[0];
+		else if (fabs(ez[1]) == 1)
+			p[1] = (dist - norm[0] * p[0] - norm[2] * p[2]) / norm[1];
+		else
+			p[2] = (dist - norm[0] * p[0] - norm[1] * p[1]) / norm[2];
+	}
+	const vec3_c &getNormal() const {
+		return norm;
+	}
+	float getDist() const {
+		return dist;
+	}
 };
 
 // extended plane class with same extra information (signbits and planeType) 
