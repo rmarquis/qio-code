@@ -28,10 +28,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_entity;
 
-struct entity_s
+class entity_s
 {
 	bool bIsLinkedListHeader;
-	struct entity_s	*prev, *next;
+public:
+	class entity_s	*prev, *next;
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
 	vec3_c		origin;
@@ -107,9 +108,11 @@ struct entity_s
 		if(bIsLinkedListHeader==false) 
 			g_allocatedCounter_entity--;
 	}
+	u32 getMemorySize() const {
+		return sizeof(entity_s);
+	}
 };
 
-int			Entity_MemorySize(entity_s *e);
 entity_s	*Entity_Parse (brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);
 void		Entity_WriteSelected(entity_s *e, FILE *f);

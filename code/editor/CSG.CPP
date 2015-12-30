@@ -25,22 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "winding.h"
 
 
-/*
-=============
-CSG_MakeHollow
-=============
-*/
-
-void Brush_Scale(brush_s* b)
-{
-  for (face_s* f = b->brush_faces ; f ; f=f->next)
-  {
-	  for (int i=0 ; i<3 ; i++)
-    {
-      f->planepts[i] *= g_qeglobals.d_gridsize;
-    }
-  }
-}
 
 void CSG_MakeHollow (void)
 {
@@ -592,7 +576,7 @@ CSG_Merge
 void CSG_Merge(void)
 {
 	brush_s *b, *next, *newlist, *newbrush;
-	struct entity_s	*owner;
+	class entity_s	*owner;
 
 	Sys_Printf ("Merging...\n");
 

@@ -1476,7 +1476,6 @@ void CXYWnd::HandleDrop()
     m_mnuDrop.AppendMenu(MF_SEPARATOR, nID++, "");
 
     pChild = NULL;
-	  entityDeclAPI_i	*e;
     CString strActive;
     CString strLast;
     CString strName;
