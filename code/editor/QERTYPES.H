@@ -27,10 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef _QERTYPE_H
 #define _QERTYPE_H
 
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
+typedef float vec3_t[3];
 
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
@@ -93,7 +90,7 @@ public:
 // new brush primitive texdef
 struct brushprimit_texdef_s
 {
-	vec_t	coords[2][3];
+	float	coords[2][3];
 };
 
 class texturewin_t
@@ -135,6 +132,10 @@ public:
 	bool vectorCompare(const vec3_c &other, float epsilon = EQUAL_EPSILON) const {
 		return xyz.vectorCompare(other,epsilon);
 	}
+	void setTC(float s, float t) {
+		st[0] = s;
+		st[1] = t;
+	}
 	const float operator [] (int index) const {
 		return (&xyz.x)[index];
 	}
@@ -151,17 +152,17 @@ public:
 // NOTE: don't trust this definition!
 // you should read float points[..][5]
 // see NewWinding definition
-#define MAX_POINTS_ON_WINDING 64
-struct edWinding_t
+#define MAX_POINTS_ON_WINDING 128
+class edWinding_t
 {
 	arraySTD_c<texturedVertex_c> points;
-
+public:
 	edWinding_t();
 	edWinding_t(const class edPlane_c &pl);
 	edWinding_t(u32 numPoints);
 	edWinding_t *cloneWinding();
 	edWinding_t *clip(const class edPlane_c &split, bool keepon);
-	void splitEpsilon(vec3_t normal, double dist, vec_t epsilon, edWinding_t **front, edWinding_t **back);
+	void splitEpsilon(vec3_t normal, double dist, float epsilon, edWinding_t **front, edWinding_t **back);
 	edWinding_t *tryMerge(const edWinding_t *f2, vec3_t planenormal, int keep);
 	bool isTiny() const;
 	void removePoint(int point);
@@ -182,6 +183,27 @@ struct edWinding_t
 	}
 	void addPoint(const texturedVertex_c &tv) {
 		points.push_back(tv);
+	}
+	const vec3_c &getXYZ(u32 i) const {
+		return points[i].xyz;
+	}
+	texturedVertex_c &getPoint(u32 i) {
+		return points[i];
+	}
+	const texturedVertex_c &getPoint(u32 i) const {
+		return points[i];
+	}
+	const float *getTC(u32 i) const {
+		return points[i].st;
+	}
+	void setTC(u32 i, float s, float t) {
+		points[i].setTC(s,t);
+	}
+	void setXYZ(u32 i, const vec3_c &v) {
+		points[i].xyz = v;
+	}
+	void setPoint(u32 i, const texturedVertex_c &v) {
+		points[i] = v;
 	}
 
 };

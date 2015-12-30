@@ -34,7 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class vec3_c {
 public:
 	union {
-		vec_t _v[3];
+		float _v[3];
 		struct {
 			float x, y, z;
 		};

@@ -90,7 +90,7 @@ void MakeFace (face_s *f)
 	if (!w)
 		return;
 	for (i=0 ; i<w->size() ; i++)
-		pnum[i] = FindPoint (w->points[i]);
+		pnum[i] = FindPoint (w->getXYZ(i));
 	for (i=0 ; i<w->size() ; i++)
 		FindEdge (pnum[i], pnum[(i+1)%w->size()], f);
 
@@ -141,7 +141,7 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 	if (!w)
 		return;
 	for (i=0 ; i<w->size() ; i++)
-		pnum[i] = FindPoint (w->points[i]);
+		pnum[i] = FindPoint (w->getXYZ(i));
 
   for (i=0 ; i<w->size() ; i++)
 		if (pnum[i] == p1 && pnum[(i+1)%w->size()] == p2)
@@ -185,11 +185,11 @@ void SelectVertex (int p1)
 			  continue;
 		  for (i=0 ; i<w->size() ; i++)
 		  {
-			  if (FindPoint (w->points[i]) == p1)
+			  if (FindPoint (w->getXYZ(i)) == p1)
 			  {
-				  f->planepts[0] = w->points[(i+w->size()-1)%w->size()].getXYZ();
-				  f->planepts[1] = w->points[i].getXYZ();
-				  f->planepts[2] = w->points[(i+1)%w->size()].getXYZ();
+				  f->planepts[0] = w->getXYZ((i+w->size()-1)%w->size());
+				  f->planepts[1] = w->getXYZ(i);
+				  f->planepts[2] = w->getXYZ((i+1)%w->size());
 			    for (j=0 ; j<3 ; j++)
           {
 				    for (k=0 ; k<3 ; k++)
@@ -204,7 +204,7 @@ void SelectVertex (int p1)
 			    break;
         }
 		  }
-		  free (w);
+		  delete (w);
 	  }
   }
 #else

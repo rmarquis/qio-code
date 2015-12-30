@@ -28,33 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	BOGUS_RANGE	18000
 
-
-
-
-/*
-==================
-ReverseWinding
-==================
-*/
-edWinding_t *Winding_Reverse(edWinding_t *w)
-{
-	int			i;
-	edWinding_t	*c;
-
-	c = new edWinding_t(w->size());
-	for (i = 0; i < w->size(); i++)
-	{
-		c->points[i].setXYZ(w->points[w->size()-1-i].getXYZ());
-	}
-	return c;
-}
-
-
-/*
-==============
-Winding_RemovePoint
-==============
-*/
 void edWinding_t::removePoint(int point)
 {
 	if (point < 0 || point >= this->size())
@@ -68,11 +41,6 @@ void edWinding_t::removePoint(int point)
 	//w->removeLastPoint();
 }
 
-/*
-=============
-Winding_InsertPoint
-=============
-*/
 edWinding_t *edWinding_t::insertPoint(vec3_t point, int spot)
 {
 	int i, j;
@@ -102,17 +70,12 @@ edWinding_t *edWinding_t::insertPoint(vec3_t point, int spot)
 	return neww;
 }
 
-/*
-==============
-Winding_IsTiny
-==============
-*/
 #define	EDGE_LENGTH	0.2
 
 bool edWinding_t::isTiny () const
 {
 	int		i, j;
-	vec_t	len;
+	float	len;
 	int		edges;
 
 	edges = 0;
@@ -130,23 +93,6 @@ bool edWinding_t::isTiny () const
 	return true;
 }
 
-/*
-==============
-Winding_IsHuge
-==============
-*/
-int Winding_IsHuge(edWinding_t *w)
-{
-	int		i, j;
-
-	for (i=0 ; i<w->size() ; i++)
-	{
-		for (j=0 ; j<3 ; j++)
-			if (w->points[i][j] < -BOGUS_RANGE+1 || w->points[i][j] > BOGUS_RANGE-1)
-				return true;
-	}
-	return false;
-}
 
 /*
 =============
@@ -186,7 +132,7 @@ edWinding_t::edWinding_t(u32 newCount) {
 }
 edWinding_t::edWinding_t(const edPlane_c &p) {
 	int		i, x;
-	vec_t	max, v;
+	float	max, v;
 	vec3_c	org, vright, vup;
 	
 	// find the major axis
@@ -253,12 +199,12 @@ it will be clipped away.
 */
 edWinding_t *edWinding_t::clip(const edPlane_c &split, bool keepon)
 {
-	vec_t	dists[MAX_POINTS_ON_WINDING];
+	float	dists[MAX_POINTS_ON_WINDING];
 	int		sides[MAX_POINTS_ON_WINDING];
 	int		counts[3];
-	vec_t	dot;
+	float	dot;
 	int		i, j;
-	vec_t	*p1, *p2;
+	float	*p1, *p2;
 	vec3_t	mid;
 	edWinding_t	*neww;
 	int		maxpts;
@@ -352,14 +298,14 @@ Winding_SplitEpsilon
 =============
 */
 void edWinding_t::splitEpsilon (vec3_t normal, double dist, 
-				vec_t epsilon, edWinding_t **front, edWinding_t **back)
+				float epsilon, edWinding_t **front, edWinding_t **back)
 {
-	vec_t	dists[MAX_POINTS_ON_WINDING+4];
+	float	dists[MAX_POINTS_ON_WINDING+4];
 	int		sides[MAX_POINTS_ON_WINDING+4];
 	int		counts[3];
-	vec_t	dot;
+	float	dot;
 	int		i, j;
-	vec_t	*p1, *p2;
+	float	*p1, *p2;
 	vec3_t	mid;
 	edWinding_t	*f, *b;
 	int		maxpts;
@@ -473,7 +419,7 @@ edWinding_t *edWinding_t::tryMerge(const edWinding_t *f2, vec3_t planenormal, in
 	edWinding_t	*newf;
 	int			i, j, k, l;
 	vec3_c		normal, delta;
-	vec_t		dot;
+	float		dot;
 	bool	keep1, keep2;
 	
 
@@ -559,124 +505,3 @@ edWinding_t *edWinding_t::tryMerge(const edWinding_t *f2, vec3_t planenormal, in
 
 	return newf;
 }
-
-void Winding_Plane (edWinding_t *w, class vec3_c &normal, double *dist)
-{
-	vec3_c v1, v2;
-	int i;
-
-	//find two vectors each longer than 0.5 units
-	for (i = 0; i < w->size(); i++)
-	{
-		v1 = w->points[(i+1) % w->size()].xyz - w->points[i].xyz;
-		v2 = w->points[(i+2) % w->size()].xyz - w->points[i].xyz;
-		if (v1.vectorLength() > 0.5 && v2.vectorLength() > 0.5)
-			break;
-	}
-	normal.crossProduct(v2, v1);
-	normal.normalize();
-	*dist = normal.dotProduct(w->points[0]);
-}
-
-/*
-=============
-Winding_Area
-=============
-*/
-float Winding_Area (edWinding_t *w)
-{
-	int		i;
-	vec3_c	d1, d2, cross;
-	float	total;
-
-	total = 0;
-	for (i=2 ; i<w->size() ; i++)
-	{
-		d1 = w->points[i-1].xyz -w->points[0].xyz;
-		d2 = w->points[i].xyz - w->points[0].xyz;
-		cross.crossProduct (d1, d2);
-		total += 0.5 * cross.vectorLength();
-	}
-	return total;
-}
-
-/*
-=============
-Winding_Bounds
-=============
-*/
-void Winding_Bounds (edWinding_t *w, vec3_t mins, vec3_t maxs)
-{
-	vec_t	v;
-	int		i,j;
-
-	mins[0] = mins[1] = mins[2] = 99999;
-	maxs[0] = maxs[1] = maxs[2] = -99999;
-
-	for (i=0 ; i<w->size() ; i++)
-	{
-		for (j=0 ; j<3 ; j++)
-		{
-			v = w->points[i][j];
-			if (v < mins[j])
-				mins[j] = v;
-			if (v > maxs[j])
-				maxs[j] = v;
-		}
-	}
-}
-
-
-/*
-=================
-Winding_PointInside
-=================
-*/
-int Winding_PointInside(edWinding_t *w, const class edPlane_c &plane, const vec3_c &point, float epsilon)
-{
-	int i;
-	vec3_c dir, normal, pointvec;
-
-	for (i = 0; i < w->size(); i++)
-	{
-		dir = w->points[(i+1) % w->size()].getXYZ() - w->points[i].getXYZ();
-		pointvec = point - w->points[i].getXYZ();
-		//
-		normal.crossProduct(dir, plane.normal);
-		//
-		if (pointvec.dotProduct(normal) < -epsilon)
-			return false;
-	}
-	return true;
-}
-
-/*
-=================
-Winding_VectorIntersect
-=================
-*/
-int Winding_VectorIntersect(edWinding_t *w, const class edPlane_c &plane, const vec3_c &p1, const vec3_c &p2, float epsilon)
-{
-	float front, back, frac;
-	vec3_c mid;
-
-	front = p1.dotProduct(plane.normal) - plane.dist;
-	back = p2.dotProduct(plane.normal) - plane.dist;
-	//if both points at the same side of the plane
-	if (front < -epsilon && back < -epsilon) return false;
-	if (front > epsilon && back > epsilon) return false;
-	//get point of intersection with winding plane
-	if (fabs(front-back) < 0.001)
-	{
-		mid = p2;
-	}
-	else
-	{
-		frac = front/(front-back);
-		mid[0] = p1[0] + (p2[0] - p1[0]) * frac;
-		mid[1] = p1[1] + (p2[1] - p1[1]) * frac;
-		mid[2] = p1[2] + (p2[2] - p1[2]) * frac;
-	}
-	return Winding_PointInside(w, plane, mid, epsilon);
-}
-

@@ -781,7 +781,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 		if (!w) continue;
 		for (i = 0; i < w->size(); i++)
 		{
-			if (w->points[i].vectorCompare(end, 0.3))
+			if (w->getXYZ(i).vectorCompare(end, 0.3))
 			{
 				end = vertex;;
 				return false;
@@ -801,7 +801,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			if (!w) continue;
 			for (i = 0; i < w->size(); i++)
 			{
-				if (w->points[i].vectorCompare(start, 0.2))
+				if (w->getXYZ(i).vectorCompare(start, 0.2))
 				{
 					if (face->face_winding->size() <= 3)
 					{
@@ -816,9 +816,9 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 						//fanout triangle subdivision
 						for (k = i; k < i + w->size()-3; k++)
 						{
-							tmpw.points[0] = w->points[i];
-							tmpw.points[1] = w->points[(k+1) % w->size()];
-							tmpw.points[2] = w->points[(k+2) % w->size()];
+							tmpw.setPoint(0,w->getPoint(i));
+							tmpw.setPoint(1,w->getPoint((k+1) % w->size()));
+							tmpw.setPoint(2,w->getPoint((k+2) % w->size()));
 							//
 							newface = face->cloneFace();
 							//get the original
@@ -838,9 +838,9 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 							movefaces[nummovefaces++] = newface;
 						}
 						//give the original face a new winding
-						tmpw.points[0] = w->points[(i-2+w->size()) % w->size()];
-						tmpw.points[1] = w->points[(i-1+w->size()) % w->size()];
-						tmpw.points[2] = w->points[i];
+						tmpw.setPoint(0,w->getPoint((i-2+w->size()) % w->size()));
+						tmpw.setPoint(1,w->getPoint((i-1+w->size()) % w->size()));
+						tmpw.setPoint(2,w->getPoint(i));
 						delete (face->face_winding);
 						face->face_winding = tmpw.cloneWinding();
 						//add the original face to the move faces
@@ -850,15 +850,15 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 					else
 					{
 						//chop a triangle off the face
-						tmpw.points[0] = w->points[(i-1+w->size()) % w->size()];
-						tmpw.points[1] = w->points[i];
-						tmpw.points[2] = w->points[(i+1) % w->size()];
+						tmpw.setPoint(0,w->getPoint((i-1+w->size()) % w->size()));
+						tmpw.setPoint(1,w->getPoint(i));
+						tmpw.setPoint(2,w->getPoint((i+1) % w->size()));
 						//remove the point from the face winding
 						w->removePoint(i);
 						//get texture crap right
 						Face_SetColor(b, face, 1.0);
 						for (j = 0; j < w->size(); j++)
-							EmitTextureCoordinates(w->points[j], face->d_texture, face);
+							EmitTextureCoordinates(w->getPoint(j), face->d_texture, face);
 						//make a triangle face
 						newface = face->cloneFace();
 						//get the original
@@ -908,16 +908,16 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			{
 				k = movefacepoints[j];
 				w = movefaces[j]->face_winding;
-				tmpw.points[0] = w->points[(k+1)%w->size()];
-				tmpw.points[1] = w->points[(k+2)%w->size()];
+				tmpw.setPoint(0,w->getPoint((k+1)%w->size()));
+				tmpw.setPoint(1,w->getPoint((k+2)%w->size()));
 				//
 				k = movefacepoints[i];
 				w = movefaces[i]->face_winding;
-				tmpw.points[2] = w->points[(k+1)%w->size()];
-				if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+				tmpw.setPoint(2,w->getPoint((k+1)%w->size()));
+				if (!plane.fromPoints(tmpw.getXYZ(0), tmpw.getXYZ(1), tmpw.getXYZ(2)))
 				{
-					tmpw.points[2] = w->points[(k+2)%w->size()];
-					if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
+					tmpw.setPoint(2,w->getPoint((k+2)%w->size()));
+					if (!plane.fromPoints(tmpw.getXYZ(0), tmpw.getXYZ(1), tmpw.getXYZ(2)))
 						//this should never happen otherwise the face merge did a crappy job a previous pass
 						continue;
 				}
@@ -947,11 +947,11 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 		for (i = 0; i < nummovefaces; i++)
 		{
 			//move vertex to end position
-			movefaces[i]->face_winding->points[movefacepoints[i]].setXYZ(mid);
+			movefaces[i]->face_winding->setXYZ(movefacepoints[i],mid);
 			//create new face plane
 			for (j = 0; j < 3; j++)
 			{
-				movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
+				movefaces[i]->planepts[j] = movefaces[i]->face_winding->getXYZ(j);
 			}
 			movefaces[i]->calculatePlaneFromPoints();
 			if (movefaces[i]->plane.normal.vectorLength() < 0.1)
@@ -963,11 +963,11 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			for (i = 0; i < nummovefaces; i++)
 			{
 				//move the vertex back to the initial position
-				movefaces[i]->face_winding->points[movefacepoints[i]].setXYZ(start);
+				movefaces[i]->face_winding->setXYZ(movefacepoints[i],start);
 				//create new face plane
 				for (j = 0; j < 3; j++)
 				{
-					movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
+					movefaces[i]->planepts[j] = movefaces[i]->face_winding->getXYZ(j);
 				}
 				movefaces[i]->calculatePlaneFromPoints();
 			}
@@ -984,7 +984,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 		{
 			Face_SetColor(b, movefaces[i], 1.0);
 			for (j = 0; j < movefaces[i]->face_winding->size(); j++)
-				EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
+				EmitTextureCoordinates(movefaces[i]->face_winding->getPoint(j), movefaces[i]->d_texture, movefaces[i]);
 		}
 
 		//now try to merge faces with their original faces
@@ -1013,7 +1013,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			//get texture crap right
 			Face_SetColor(b, face->original, 1.0);
 			for (j = 0; j < face->original->face_winding->size(); j++)
-				EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
+				EmitTextureCoordinates(face->original->face_winding->getPoint(j), face->original->d_texture, face->original);
 			//remove the face that was merged with the original
 			if (lastface) lastface->next = face->next;
 			else b->brush_faces = face->next;
@@ -1048,14 +1048,14 @@ int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 		neww = NULL;
 		for (i = 0; i < w->size(); i++)
 		{
-			if (!w->points[i].vectorCompare(p1, 0.1))
+			if (!w->getXYZ(i).vectorCompare(p1, 0.1))
 				continue;
-			if (w->points[(i+1) % w->size()].vectorCompare(p2, 0.1))
+			if (w->getXYZ((i+1) % w->size()).vectorCompare(p2, 0.1))
 			{
 				neww = w->insertPoint(point, (i+1) % w->size());
 				break;
 			}
-			else if (w->points[(i-1+w->size()) % w->size()].vectorCompare(p2, 0.3))
+			else if (w->getXYZ((i-1+w->size()) % w->size()).vectorCompare(p2, 0.3))
 			{
 				neww = w->insertPoint(point, i);
 				break;
@@ -1960,7 +1960,7 @@ brush_s *Brush_FullClone(brush_s *b)
         else
         {
 				  for (j = 0; j < nf->face_winding->size(); j++)
-  					EmitTextureCoordinates(nf->face_winding->points[j], nf->d_texture, nf);
+					  EmitTextureCoordinates(nf->face_winding->getPoint(j), nf->d_texture, nf);
         }
       }
 		}
@@ -2265,7 +2265,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 		// any points on f will become new control points
 		for (i=0 ; i<w->size() ; i++)
 		{
-			d = w->points[i].dotProduct(f->plane.normal) 
+			d = w->getXYZ(i).dotProduct(f->plane.normal) 
 				- f->plane.dist;
 			if (d > -ON_EPSILON && d < ON_EPSILON)
 				break;
@@ -2280,29 +2280,29 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 			if (i == 0)
 			{	// see if the first clockwise point was the
 				// last point on the winding
-				d = w->points[w->size()-1].dotProduct(f->plane.normal) - f->plane.dist;
+				d = w->getXYZ(w->size()-1).dotProduct(f->plane.normal) - f->plane.dist;
 				if (d > -ON_EPSILON && d < ON_EPSILON)
 					i = w->size() - 1;
 			}
 
 			AddPlanept (f2->planepts[0]);
 
-			f2->planepts[0] = w->points[i].getXYZ();
+			f2->planepts[0] = w->getXYZ(i);
 			if (++i == w->size())
 				i = 0;
 			
 			// see if the next point is also on the plane
-			d = w->points[i].dotProduct(f->plane.normal) - f->plane.dist;
+			d = w->getXYZ(i).dotProduct(f->plane.normal) - f->plane.dist;
 			if (d > -ON_EPSILON && d < ON_EPSILON)
 				AddPlanept (f2->planepts[1]);
 
-			f2->planepts[1] = w->points[i].getXYZ();
+			f2->planepts[1] = w->getXYZ(i);
 			if (++i == w->size())
 				i = 0;
 
 			// the third point is never on the plane
 
-			f2->planepts[2] = w->points[i].getXYZ();
+			f2->planepts[2] = w->getXYZ(i);
 		}
 
 		delete(w);
@@ -2383,7 +2383,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 		for (i=0 ; i<w->size() ; i++)
 		{
 			// add to bounding box
-			b->bounds.addPoint(w->points[i].getXYZ());
+			b->bounds.addPoint(w->getXYZ(i));
 		}
 		// setup s and t vectors, and set color
 		//if (!g_PrefsDlg.m_bGLLighting)
@@ -2416,7 +2416,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 		else
 		{
 		    for (i=0 ; i<w->size() ; i++)
-				EmitTextureCoordinates( w->points[i], face->d_texture, face);
+				EmitTextureCoordinates( w->getPoint(i), face->d_texture, face);
 		}
 	}
 }
@@ -2805,8 +2805,8 @@ void Brush_Draw( brush_s *b )
 		for (i=0 ; i<w->size() ; i++)
 		{
 			if (nDrawMode == cd_texture)
-				glTexCoord2fv( &w->points[i][3] );
-			glVertex3fv(w->points[i]);
+				glTexCoord2fv( w->getTC(i) );
+			glVertex3fv(w->getXYZ(i));
 		}
 		glEnd();
 	}
@@ -2837,7 +2837,7 @@ void Face_Draw( face_s *f )
 		return;
 	glBegin( GL_POLYGON );
 	for ( i = 0 ; i < f->face_winding->size(); i++)
-		glVertex3fv( f->face_winding->points[i] );
+		glVertex3fv( f->face_winding->getXYZ(i) );
 	glEnd();
 }
 
@@ -2955,7 +2955,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 		// draw the polygon
 		glBegin(GL_LINE_LOOP);
 		for (i=0 ; i<w->size() ; i++)
-			glVertex3fv(w->points[i]);
+			glVertex3fv(w->getXYZ(i));
 		glEnd();
 	}
 
@@ -3228,7 +3228,7 @@ void face_s::fitTexture(int nHeight, int nWidth )
 	}
 	for (i=0 ; i<w->size() ; i++)
 	{
-		bounds.addPoint(w->points[i]);
+		bounds.addPoint(w->getXYZ(i));
 	}
 	// 
 	// get the current angle

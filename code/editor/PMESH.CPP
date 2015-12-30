@@ -113,9 +113,9 @@ const float fFullBright = 1.0;
 const float fLowerLimit = .50;
 const float fDec = .05;
 
-vec_t __VectorNormalize (vec3_t in, vec3_c &out)
+float __VectorNormalize (vec3_t in, vec3_c &out)
 {
-	vec_t	length, ilength;
+	float	length, ilength;
 
 	length = sqrt (in[0]*in[0] + in[1]*in[1] + in[2]*in[2]);
 	if (length == 0)
@@ -692,7 +692,7 @@ face_s* Patch_GetAxisFace(patchMesh_c *p)
 
 	for (f = b->brush_faces ; f ; f = f->next) 
 	{
-		vTemp = f->face_winding->points[1].getXYZ() - f->face_winding->points[0].getXYZ();
+		vTemp = f->face_winding->getXYZ(1) - f->face_winding->getXYZ(0);
 		int nScore = 0;
 
 		// default edge faces on caps are 8 high so
@@ -958,7 +958,7 @@ brush_s* CapSpecial(patchMesh_c *pParent, int nType, bool bFirst)
     dir = p3 - p2;
     dir.normalize();
     temp = p1 - p2;
-    vec_t dist = temp.dotProduct(dir);
+    float dist = temp.dotProduct(dir);
 
 	temp = dir * dist;
 
