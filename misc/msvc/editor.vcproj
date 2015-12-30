@@ -219,10 +219,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\PARSE.CPP"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\PMESH.CPP"
 				>
 			</File>
