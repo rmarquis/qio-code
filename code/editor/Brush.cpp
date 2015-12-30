@@ -574,7 +574,7 @@ void Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **
 	}
 	else
 	{
-		Entity_LinkBrush (in->owner, b);
+		in->owner->linkBrush(b);
 		*back = b;
 	}
 
@@ -596,7 +596,7 @@ void Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **
 	}
 	else
 	{
-		Entity_LinkBrush (in->owner, b);
+		in->owner->linkBrush(b);
 		*front = b;
 	}
 }
@@ -1775,7 +1775,7 @@ void Brush_MakeSided (int sides)
 
 	Brush_AddToList (b, &selected_brushes);
 
-	Entity_LinkBrush (world_entity, b);
+	world_entity->linkBrush(b);
 
 	Brush_Build( b );
 
@@ -1831,14 +1831,10 @@ Face_MemorySize
 */
 int Face_MemorySize(face_s *f )
 {
-	int size = 0;
-
+	int size = sizeof(face_s);
 	if (f->face_winding)
 	{
-		size += _msize(f->face_winding);
 	}
-	//f->texdef.~texdef_t();;
-	size += _msize(f);
 	return size;
 }
 
@@ -3089,7 +3085,7 @@ void Brush_MakeSidedCone(int sides)
 
 	Brush_AddToList (b, &selected_brushes);
 
-	Entity_LinkBrush (world_entity, b);
+	world_entity->linkBrush(b);
 
 	Brush_Build( b );
 
@@ -3188,7 +3184,7 @@ void Brush_MakeSidedSphere(int sides)
 
 	Brush_AddToList (b, &selected_brushes);
 
-	Entity_LinkBrush (world_entity, b);
+	world_entity->linkBrush(b);
 
 	Brush_Build( b );
 

@@ -199,7 +199,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		newbrush->brush_faces = newface;
 	}
 	// link the new brush to an entity
-	Entity_LinkBrush (brush1->owner, newbrush);
+	brush1->owner->linkBrush(newbrush);
 	// build windings for the faces
 	Brush_BuildWindings( newbrush, false);
 	return newbrush;
@@ -390,7 +390,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 		}
 	}
 	// link the new brush to an entity
-	Entity_LinkBrush (brushlist->owner, newbrush);
+	brushlist->owner->linkBrush(newbrush);
 	// build windings for the faces
 	Brush_BuildWindings( newbrush, false);
 	return newbrush;
