@@ -54,7 +54,7 @@ void CSG_MakeHollow (void)
 	{
 		next = b->next;
 
-    if (b->owner->eclass->fixedsize || b->patchBrush || b->terrainBrush || b->hiddenBrush)
+    if (b->owner->eclass->isFixedSize() || b->patchBrush || b->terrainBrush || b->hiddenBrush)
 		  continue;
 
 		for (f = b->brush_faces ; f ; f=f->next)
@@ -487,7 +487,7 @@ void CSG_Subtract (void)
 	{
 		next = b->next;
 
-		if (b->owner->eclass->fixedsize)
+		if (b->owner->eclass->isFixedSize())
 			continue;	// can't use texture from a fixed entity, so don't subtract
 
 		// chop all fragments further up
@@ -524,7 +524,7 @@ void CSG_Subtract (void)
 		{
 			snext = s->next;
 
-			if (s->owner->eclass->fixedsize || s->patchBrush || s->terrainBrush || s->hiddenBrush)
+			if (s->owner->eclass->isFixedSize() || s->patchBrush || s->terrainBrush || s->hiddenBrush)
 				continue;
 
 			//face_s *pFace = s->brush_faces;
@@ -614,7 +614,7 @@ void CSG_Merge(void)
 	{
 		next = b->next;
 
-		if (b->owner->eclass->fixedsize)
+		if (b->owner->eclass->isFixedSize())
 		{
 			// can't use texture from a fixed entity, so don't subtract
 			Sys_Printf("Cannot add fixed size entities.\n");

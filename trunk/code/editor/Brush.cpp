@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
+#include <api/entityDeclAPI.h>
 #include <math/math.h>
 
 // globals
@@ -291,7 +292,7 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 
 	// set shading for face
 	shade = SetShadeForPlane (f->plane);
-	if (g_pParentWnd->GetCamera()->Camera().draw_mode == cd_texture && !b->owner->eclass->fixedsize)
+	if (g_pParentWnd->GetCamera()->Camera().draw_mode == cd_texture && !b->owner->eclass->isFixedSize())
 	{
 		//if (b->curveBrush)
 		//  shade = fCurveColor;
@@ -2760,7 +2761,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 	brush_s	*b2;
 	int		c;
 
-	if (b->owner->eclass->fixedsize)
+	if (b->owner->eclass->isFixedSize())
 		return;
 
 	c = 0;
@@ -3055,7 +3056,7 @@ void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
 }
 
 
-eclass_s* HasModel(brush_s *b)
+entityDeclAPI_i* HasModel(brush_s *b)
 {
 	return 0;
 }
@@ -3251,15 +3252,15 @@ void Brush_Draw( brush_s *b )
 	
 	int nDrawMode = g_pParentWnd->GetCamera()->Camera().draw_mode;
 	
-	if (b->owner->eclass->fixedsize)
+	if (b->owner->eclass->isFixedSize())
 	{
 		
-		if (!(g_qeglobals.d_savedinfo.exclude & EXCLUDE_ANGLES) && (b->owner->eclass->nShowFlags & ECLASS_ANGLE))
+		if (!(g_qeglobals.d_savedinfo.exclude & EXCLUDE_ANGLES) && (b->owner->eclass->hasEditorFlagAngle()))
 		{
 			Brush_DrawFacingAngle(b, b->owner);
 		}
 		
-		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->nShowFlags & ECLASS_LIGHT))
+		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->hasEditorFlagLight()))
 		{
 			DrawLight(b);
 			return;
@@ -3364,7 +3365,7 @@ void Brush_Draw( brush_s *b )
 	}
 #endif
 	
-	if (b->owner->eclass->fixedsize && (nDrawMode == cd_texture))
+	if (b->owner->eclass->isFixedSize() && (nDrawMode == cd_texture))
 		glEnable (GL_TEXTURE_2D);
 	
 	glBindTexture( GL_TEXTURE_2D, 0 );
@@ -3404,9 +3405,9 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 	}
         
 
-	if (b->owner->eclass->fixedsize)
+	if (b->owner->eclass->isFixedSize())
 	{
-		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->nShowFlags & ECLASS_LIGHT))
+		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->hasEditorFlagLight()))
 		{
 			vec3_t vCorners[4];
 			float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
@@ -3456,7 +3457,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 			DrawBrushEntityName (b);
 			return;
 		}
-		else if (b->owner->eclass->nShowFlags & ECLASS_MISCMODEL)
+		else if (b->owner->eclass->hasEditorFlagMiscModel())
 		{
 			//if (PaintedModel(b, false))
 			//return;
@@ -3537,7 +3538,7 @@ void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 	}
 
 	// PGM - keep the origin vector up to date on fixed size entities.
-	if(b->owner->eclass->fixedsize)
+	if(b->owner->eclass->isFixedSize())
 	{
 		b->owner->origin += move;
 		//VectorAdd(b->maxs, b->mins, b->owner->origin);

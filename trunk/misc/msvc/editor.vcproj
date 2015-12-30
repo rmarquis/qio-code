@@ -227,10 +227,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ECLASS.CPP"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\ed_api.cpp"
 				>
 			</File>

@@ -32,7 +32,7 @@ void entity_s::trackMD3Angles(const char *key, const char *value)
     return;
   }
 
-  if (this->eclass->fixedsize && this->eclass->nShowFlags & ECLASS_MISCMODEL)
+  if (this->eclass->isFixedSize() && this->eclass->hasEditorFlagMiscModel())
   {
 	  float a = this->getKeyFloat("angle");
     float b = atof(value);
@@ -115,7 +115,7 @@ to the global list.  Used for parsing the project.
 entity_s	*Entity_Parse (brush_s* pList)
 {
 	entity_s	*ent;
-	eclass_s	*e;
+	entityDeclAPI_i	*e;
 	brush_s		*b;
 	vec3_c		mins, maxs;
 	bool	has_brushes;
@@ -179,10 +179,10 @@ entity_s	*Entity_Parse (brush_s* pList)
 	
 	ent->getKeyVector("origin", ent->origin);
 	
-	e = Eclass_ForName (ent->getKeyValue("classname"), has_brushes);
+	e = g_declMgr->findOrCreateEntityDecl (ent->getKeyValue("classname"), has_brushes);
 	ent->eclass = e;
 
-	if (e->fixedsize)
+	if (e->isFixedSize())
 	{	// fixed size entity
 		if (ent->brushes.onext != &ent->brushes)
 		{
@@ -197,11 +197,11 @@ entity_s	*Entity_Parse (brush_s* pList)
 		}
 		
 		// create a custom brush
-		mins = e->mins + ent->origin;
-		maxs = e->maxs + ent->origin;
+		mins = e->getEditorMins() + ent->origin;
+		maxs = e->getEditorMaxs() + ent->origin;
 		
 		float a = 0;
-		if (e->nShowFlags & ECLASS_MISCMODEL)
+		if (e->hasEditorFlagMiscModel())
 		{
 			const char* p = ent->getKeyValue( "model");
 			if (p != NULL && strlen(p) > 0)
@@ -217,7 +217,9 @@ entity_s	*Entity_Parse (brush_s* pList)
 			}
 		}
 		
-		b = Brush_Create (mins, maxs, &e->texdef);
+				texdef_t td;
+				td.setName(e->getEditorMaterialName());
+		b = Brush_Create (mins, maxs, &td);
 		
 		if (a)
 		{
@@ -292,25 +294,25 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 			return;		// nothing visible
 	}
 
-	if ( e->eclass->nShowFlags & ECLASS_PLUGINENTITY )
-	{
-		// NOTE: the whole brush placement / origin stuff is a mess
-		origin = e->origin;
-		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		e->setKeyValue( "origin", text);
-	}
+	//if ( e->eclass->nShowFlags & ECLASS_PLUGINENTITY )
+	//{
+	//	// NOTE: the whole brush placement / origin stuff is a mess
+	//	origin = e->origin;
+	//	sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+	//	e->setKeyValue( "origin", text);
+	//}
 	// if fixedsize, calculate a new origin based on the current
 	// brush position
-	else if (e->eclass->fixedsize)
+	else if (e->eclass->isFixedSize())
 	{
-		//if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+		//if (e->eclass->hasEditorFlagMiscModel() && e->md3Class != NULL)
 		//{
 		//	origin = e->origin;
 		//	//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
 		//}
 		//else
 		{
-			origin = e->brushes.onext->getMins() - e->eclass->mins;
+			origin = e->brushes.onext->getMins() - e->eclass->getEditorMins();
 		}
 		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 		e->setKeyValue( "origin", text);
@@ -323,7 +325,7 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 		fprintf (f, "\"%s\" \"%s\"\n", key, value);
 	}
 
-	if (!e->eclass->fixedsize)
+	if (!e->eclass->isFixedSize())
 	{
 		count = 0;
 		for (b=e->brushes.onext ; b != &e->brushes ; b=b->onext)
@@ -372,16 +374,16 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 
 	// if fixedsize, calculate a new origin based on the current
 	// brush position
-	if (e->eclass->fixedsize)
+	if (e->eclass->isFixedSize())
 	{
-    //if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+    //if (e->eclass->hasEditorFlagMiscModel() && e->md3Class != NULL)
     //{
     //  origin = e->origin;
 		  ////VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
     //}
     //else
     {
-		  origin = e->brushes.onext->getMins() - e->eclass->mins;
+		origin = e->brushes.onext->getMins() - e->eclass->getEditorMins();
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 	e->setKeyValue("origin", text);
@@ -395,7 +397,7 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 	  fprintf (f, "\"%s\" \"%s\"\n", key, value);
 	}
 
-  if (!e->eclass->fixedsize)
+  if (!e->eclass->isFixedSize())
   {
 	  count = 0;
 	  for (b=e->brushes.onext ; b != &e->brushes ; b=b->onext)
@@ -433,16 +435,16 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 
 	// if fixedsize, calculate a new origin based on the current
 	// brush position
-	if (e->eclass->fixedsize)
+	if (e->eclass->isFixedSize())
 	{
-    //if (e->eclass->nShowFlags & ECLASS_MISCMODEL && e->md3Class != NULL)
+    //if (e->eclass->hasEditorFlagMiscModel() && e->md3Class != NULL)
     //{
 		  ////VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
     //  origin = e->origin;
     //}
     //else
     {
-		  origin =  e->brushes.onext->getMins() - e->eclass->mins;
+		origin =  e->brushes.onext->getMins() - e->eclass->getEditorMins();
     }
     sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
 	e->setKeyValue("origin", text);
@@ -455,7 +457,7 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 	  MemFile_fprintf(pMemFile, "\"%s\" \"%s\"\n", key, value);
 	}
 
-  if (!e->eclass->fixedsize)
+  if (!e->eclass->isFixedSize())
   {
 	  count = 0;
 	  for (b=e->brushes.onext ; b != &e->brushes ; b=b->onext)
@@ -484,7 +486,7 @@ used to find a midpoint.  Otherwise, the brushes have
 their ownership transfered to the new entity.
 ============
 */
-entity_s	*Entity_Create (eclass_s *c)
+entity_s	*Entity_Create (entityDeclAPI_i *c)
 {
 	entity_s	*e;
 	brush_s		*b;
@@ -509,26 +511,28 @@ entity_s	*Entity_Create (eclass_s *c)
 	e->entityId = g_entityId++;
 	e->brushes.onext = e->brushes.oprev = &e->brushes;
 	e->eclass = c;
-	e->setKeyValue( "classname", c->name);
+	e->setKeyValue( "classname", c->getDeclName());
 
 	// add the entity to the entity list
   Entity_AddToList(e, &entities);
 
 
-	if (c->fixedsize)
+  if (c->isFixedSize())
 	{
 		//
 		// just use the selection for positioning
 		//
 		b = selected_brushes.next;
 		for (i=0 ; i<3 ; i++)
-			e->origin[i] = b->getMins()[i] - c->mins[i];
+			e->origin[i] = b->getMins()[i] - c->getEditorMins()[i];
 
 		// create a custom brush
-		mins = c->mins + e->origin;
-		maxs = c->maxs + e->origin;
+		mins = c->getEditorMins() + e->origin;
+		maxs = c->getEditorMaxs() + e->origin;
 
-	  b = Brush_Create (mins, maxs, &c->texdef);
+				texdef_t td;
+				td.setName(c->getEditorMaterialName());
+	  b = Brush_Create (mins, maxs, &td);
 
 		Entity_LinkBrush (e, b);
 

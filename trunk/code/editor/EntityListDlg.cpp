@@ -86,19 +86,19 @@ BOOL CEntityListDlg::OnInitDialog()
 	
   CMapStringToPtr mapEntity;
 
-  HTREEITEM hParent = m_treeEntity.InsertItem(world_entity->eclass->name);
-  HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->eclass->name, hParent);
+  HTREEITEM hParent = m_treeEntity.InsertItem(world_entity->eclass->getDeclName());
+  HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->eclass->getDeclName(), hParent);
   m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(world_entity));
 
 	for (entity_s* pEntity=entities.next ; pEntity != &entities ; pEntity=pEntity->next)
 	{
     hParent = NULL;
-    if (mapEntity.Lookup(pEntity->eclass->name, reinterpret_cast<void*&>(hParent)) == FALSE)
+    if (mapEntity.Lookup(pEntity->eclass->getDeclName(), reinterpret_cast<void*&>(hParent)) == FALSE)
     {
-      hParent = m_treeEntity.InsertItem(pEntity->eclass->name);
-      mapEntity.SetAt(pEntity->eclass->name, reinterpret_cast<void*>(hParent));
+      hParent = m_treeEntity.InsertItem(pEntity->eclass->getDeclName());
+      mapEntity.SetAt(pEntity->eclass->getDeclName(), reinterpret_cast<void*>(hParent));
     }
-    hChild = m_treeEntity.InsertItem(pEntity->eclass->name, hParent);
+    hChild = m_treeEntity.InsertItem(pEntity->eclass->getDeclName(), hParent);
     m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(pEntity));
   }
 

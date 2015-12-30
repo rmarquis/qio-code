@@ -90,9 +90,9 @@ BOOL CMapInfo::OnInitDialog()
 	{
     m_nTotalEntities++;
     nValue = 0;
-    mapEntity.Lookup(pEntity->eclass->name, reinterpret_cast<void*&>(nValue));
+    mapEntity.Lookup(pEntity->eclass->getDeclName(), reinterpret_cast<void*&>(nValue));
     nValue++ ;
-    mapEntity.SetAt(pEntity->eclass->name, reinterpret_cast<void*>(nValue));
+    mapEntity.SetAt(pEntity->eclass->getDeclName(), reinterpret_cast<void*>(nValue));
   }
 
   m_lstEntity.ResetContent();

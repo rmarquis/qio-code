@@ -52,6 +52,9 @@ public:
 			return className;
 		return 0;
 	}
+	void setClassName(const char *n) {
+		className = n;
+	}
 	virtual u32 getNumKeyValues() const {
 		return ePairs.size();
 	}

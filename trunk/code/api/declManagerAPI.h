@@ -36,6 +36,7 @@ class declManagerAPI_i : public iFaceBase_i {
 	virtual class afDeclAPI_i *_registerAFDecl(const char *name, qioModule_e userModule) = 0;
 	virtual class q3PlayerModelAPI_i *_registerQ3PlayerDecl(const char *name, qioModule_e userModule) = 0;
 	virtual class particleDeclAPI_i *_registerParticleDecl(const char *name, qioModule_e userModule) = 0;
+	virtual class entityDeclAPI_i *_findOrCreateEntityDecl(const char *name, bool bHashBrushes, qioModule_e userModule) = 0;
 public:
 	virtual void init() = 0;
 	virtual void shutdown() = 0;
@@ -72,6 +73,12 @@ public:
 	// for editor
 	virtual void loadAllEntityDecls() = 0;
 	virtual const char *getLoadedEntityDeclName(u32 i) const = 0;
+	virtual entityDeclAPI_i *getLoadedEntityDecl(u32 i) const = 0;
+	inline entityDeclAPI_i *findOrCreateEntityDecl(const char *name, bool bHasBrushes) {
+		// NOTE: IFM_GetCurModule must be implemented in each and every Qio module!
+		qioModule_e userModule = IFM_GetCurModule();
+		return _findOrCreateEntityDecl(name,bHasBrushes,userModule);
+	}
 	// counts access
 	virtual u32 getNumLoadedEntityDecls() const = 0;
 	// used for console command autocompletion

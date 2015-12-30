@@ -216,56 +216,9 @@ bool QE_LoadProject (char *projectfile)
 {
 	g_qeglobals.m_bBrushPrimitMode = 0;
 
-
-	///Eclass_InitForSourceDirectory (g_qeglobals.d_project_entity->getKeyValue("entitypath"));
-	
-	// ensure we have basic classes available
-	if(Eclass_FindExisting("info_player_start") == 0) {
-		// Q3 info_player_start size: (-16 -16 -24) (16 16 24)
-		// MoHAA info_player_start size: (-16 -16 0) (16 16 96)
-		EClass_CreateNewFromText("/*QUAKED info_player_start (0.75 0.75 0) (-16 -16 -24) (16 16 24)\n"
-				"The normal starting point for a level.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("light") == 0) {
-		EClass_CreateNewFromText("/*QUAKED light (0.75 0.5 0) (-8 -8 -8) (8 8 8)\n"
-				"Light.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("misc_model") == 0) {
-		EClass_CreateNewFromText("/*QUAKED misc_model (0 0.5 0) (-8 -8 -8) (8 8 8)\n"
-				"Misc model.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("brushmodel") == 0) {
-		EClass_CreateNewFromText("/*QUAKED brushmodel (0 0.5 0)\n"
-				"Brush model.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("func_constraint") == 0) {
-		EClass_CreateNewFromText("/*QUAKED func_constraint (0.75 0.5 0) (-8 -8 -8) (8 8 8)\n"
-				"Physics constraint, used to connect two bodies together.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("func_button") == 0) {
-		EClass_CreateNewFromText("/*QUAKED func_button (0 0.5 0)\n"
-				"Button brush.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("info_pathnode") == 0) {
-		EClass_CreateNewFromText("/*QUAKED info_pathnode (1 0 1) (-16 -16 0) (16 16 32)\n"
-				"Path node for AI navigation.\n"
-				"******************************************************************************/\n");
-	}
-	if(Eclass_FindExisting("env_cubemap") == 0) {
-		EClass_CreateNewFromText("/*QUAKED env_cubemap (1 0.64 0) (-8 -8 -8) (8 8 8)\n"
-				"Static cubemap sample. Must be calculated with 'buildCubeMaps' command.\n"
-				"******************************************************************************/\n");
-	}
 	FillClassList();		// list in entity window
 	
 	Map_New();
-	
 	
 	FillTextureMenu();
 	FillBSPMenu();
@@ -367,7 +320,7 @@ bool QE_SingleBrush (bool bQuiet)
 		}
 		return false;
 	}
-	if (selected_brushes.next->owner->eclass->fixedsize)
+	if (selected_brushes.next->owner->eclass->isFixedSize())
 	{
 		if (!bQuiet)
 		{
@@ -425,7 +378,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 			next = b->next;
 			if (b->brush_faces )
 			{
-				if ( !b->owner->eclass->fixedsize)
+				if ( !b->owner->eclass->isFixedSize())
 					g_numbrushes++;
 				else
 					g_numentities++;

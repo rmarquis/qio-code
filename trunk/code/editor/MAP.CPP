@@ -440,7 +440,7 @@ void Map_New (void)
 	world_entity->brushes.onext = 
 		world_entity->brushes.oprev = &world_entity->brushes;
 	world_entity->setKeyValue("classname", "worldspawn");
-	world_entity->eclass = Eclass_ForName ("worldspawn", true);
+	world_entity->eclass = g_declMgr->findOrCreateEntityDecl ("worldspawn", true);
 
 	g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
 	g_pParentWnd->GetCamera()->Camera().angles[PITCH] = 0;

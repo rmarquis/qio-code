@@ -464,7 +464,7 @@ void Select_Clone (void)
 		DeleteKey (e, "targetname");
 
 		// if the brush is a fixed size entity, create a new entity
-		if (b->owner->eclass->fixedsize)
+		if (b->owner->eclass->isFixedSize())
 		{
 			n = Brush_Clone (b);
 			Brush_AddToList (n, &active_brushes);
@@ -542,7 +542,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprim
 	{
 		Undo_Start("set brush textures");
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-			if (!b->owner->eclass->fixedsize)
+			if (!b->owner->eclass->isFixedSize())
 			{
 				Undo_AddBrush(b);
 				Brush_SetTexture (b, texdef, brushprimit_texdef, bFitScale );
@@ -642,7 +642,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 			}
 		}
 
-		//if(b->owner->eclass->fixedsize)
+		//if(b->owner->eclass->isFixedSize())
 		//{
 		//	if (bRotation && b->owner->md3Class)
 		//	{
@@ -1184,7 +1184,7 @@ void Select_Ungroup(void)
 	{
 		e = sb->owner;
 
-		if (!e || e == world_entity || e->eclass->fixedsize)
+		if (!e || e == world_entity || e->eclass->isFixedSize())
 		{
 			continue;
 		}
@@ -1547,7 +1547,7 @@ void Select_AllOfType()
   {
     if (e != world_entity)
     {
-      CString strName = e->eclass->name;
+      CString strName = e->eclass->getDeclName();
       CString strKey, strVal;
       bool bCriteria = GetSelectAllCriteria(strKey, strVal);
       Sys_Printf("Selecting all %s(s)\n", strName);
@@ -1563,7 +1563,7 @@ void Select_AllOfType()
         e = b->owner;
         if (e != NULL)
         {
-          if (_strcmpi(e->eclass->name, strName) == 0)
+          if (_strcmpi(e->eclass->getDeclName(), strName) == 0)
           {
             bool doIt = true;
             if (bCriteria) {

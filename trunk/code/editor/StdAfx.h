@@ -69,7 +69,6 @@ extern CFindTextureDlg& g_dlgFind;
 // externs
 extern void AddSlash(CString&);
 extern void DLLBuildDone();
-extern void CleanUpEntities();
 extern void MFCCreate(HINSTANCE);
 extern BOOL Init3Dfx();
 extern void FindReplace(CString& strContents, const char* pTag, const char* pValue);

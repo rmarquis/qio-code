@@ -382,7 +382,7 @@ void Drag_Begin (int x, int y, int buttons,
 		{
 			if (t.brush->brush_faces->texdef.getName()[0] == '(')
       {
-        if (t.brush->owner->eclass->nShowFlags & ECLASS_LIGHT)
+        if (t.brush->owner->eclass->hasEditorFlagLight())
         {
           CString strBuff;
           mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());

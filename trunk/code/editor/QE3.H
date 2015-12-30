@@ -306,7 +306,7 @@ extern BOOL LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 //
 BOOL CreateEntityWindow(HINSTANCE hInstance);
 void FillClassList (void);
-BOOL UpdateEntitySel(eclass_s *pec);	
+BOOL UpdateEntitySel(entityDeclAPI_i *pec);	
 void SetInspectorMode(int iType);
 int DrawTexControls(HWND hWnd);
 void SetSpawnFlags(void);
@@ -487,7 +487,7 @@ void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int
 //
 extern bool parsing_single;
 extern bool eclass_found;
-extern eclass_s *eclass_e;
+extern entityDeclAPI_i *eclass_e;
 void Eclass_ScanFile( char *filename );
 
 //

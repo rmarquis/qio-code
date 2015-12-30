@@ -1120,7 +1120,7 @@ void Patch_CapCurrent(bool bInvertedBevel, bool bInvertedEndcap)
           Select_Brush(b[nIndex]);
         }
       }
-      eclass_s *pecNew = Eclass_ForName("func_group", false);
+      entityDeclAPI_i *pecNew = g_declMgr->findOrCreateEntityDecl("func_group", false);
       if (pecNew)
       {
         entity_s *e = Entity_Create(pecNew);
@@ -1586,7 +1586,7 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
     Select_Delete();
     Select_Brush(b);
     GenerateEndCaps(b, bBevel, bEndcap, bInverted);
-    eclass_s *pecNew = Eclass_ForName("func_group", false);
+    entityDeclAPI_i *pecNew = Eclass_ForName("func_group", false);
     if (pecNew)
     {
       Entity_Create(pecNew);
@@ -4449,7 +4449,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
           pSeam->naturalizePatch();
           brushes.Add(b);
 
-          eclass_s *pecNew = Eclass_ForName("func_group", false);
+          entityDeclAPI_i *pecNew = g_declMgr->findOrCreateEntityDecl("func_group", false);
           if (pecNew)
           {
             entity_s *e = Entity_Create(pecNew);
