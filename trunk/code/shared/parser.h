@@ -56,7 +56,12 @@ public:
 
 	// returns true if eof is reached
 	bool skipToNextToken();
-
+	bool tryToGetNextToken(const char *stopSet = 0) {
+		getToken(this->lastToken, stopSet);
+		if(this->lastToken.size())
+			return false;
+		return true;
+	}	
 	const char *getToken(str &out, const char *stopSet = 0);
 	const char *getToken(const char *stopSet = 0) {
 		return getToken(this->lastToken, stopSet);

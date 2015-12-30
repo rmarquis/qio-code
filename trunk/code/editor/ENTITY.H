@@ -74,7 +74,7 @@ public:
 	void linkBrush (brush_s *b);
 };
 
-entity_s	*Entity_Parse (brush_s* pList = NULL);
+entity_s	*Entity_Parse (class parser_c &p, brush_s* pList = NULL);
 void		Entity_Write (entity_s *e, FILE *f, bool use_region);
 void		Entity_WriteSelected(entity_s *e, FILE *f);
 void		Entity_WriteSelected(entity_s *e, CMemFile*);

@@ -165,7 +165,7 @@ public:
 	void splitEpsilon(vec3_t normal, double dist, float epsilon, edWinding_t **front, edWinding_t **back);
 	edWinding_t *tryMerge(const edWinding_t *f2, vec3_t planenormal, int keep);
 	bool isTiny() const;
-	void removePoint(int point);
+	bool removePoint(int point);
 	edWinding_t *insertPoint(vec3_t point, int spot);
 	static int planesConcave(edWinding_t *w1, edWinding_t *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
 

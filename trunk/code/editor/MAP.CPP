@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "PrefsDlg.h"
 #include <api/vfsAPI.h>
 #include <shared/str.h>
+#include <shared/parser.h>
 
 bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
@@ -228,8 +229,8 @@ void Map_LoadFile (char *filename)
 
 	if (g_vfs->FS_ReadFile(filename, (void **)&buf) != -1)
 	{
-
-		StartTokenParsing (buf);
+		parser_c p;
+		p.setup (buf);
 		g_qeglobals.d_num_entities = 0;
 
 		// Timo
@@ -240,7 +241,7 @@ void Map_LoadFile (char *filename)
 
 		while (1)
 		{
-			ent = Entity_Parse (&active_brushes);
+			ent = Entity_Parse (p,&active_brushes);
 			if (!ent)
 				break;
 			if (!strcmp(ent->getKeyValue("classname"), "worldspawn"))
@@ -741,7 +742,8 @@ void Map_ImportBuffer (char* buf)
 	if (buf)
 	{
 		CMapStringToString mapStr;
-		StartTokenParsing (buf);
+		parser_c p;
+		p.setup(buf);
 		g_qeglobals.d_num_entities = 0;
 
 		// Timo
@@ -755,7 +757,7 @@ void Map_ImportBuffer (char* buf)
 
 			// use the selected brushes list as it's handy
 			//ent = Entity_Parse (false, &selected_brushes);
-			ent = Entity_Parse (&active_brushes);
+			ent = Entity_Parse (p,&active_brushes);
 			if (!ent)
 				break;
 			//end entity for undo
