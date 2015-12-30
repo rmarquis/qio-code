@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/textureAPI.h>
 #include <api/entityDeclAPI.h>
 #include <math/math.h>
+#include <shared/parser.h>
 
 // globals
 
@@ -1098,7 +1099,7 @@ The brush is NOT linked to any list
 */
 //++timo FIXME: when using old brush primitives, the test loop for "Brush" and "patchDef2" "patchDef3" is ran
 // before each face parsing. It works, but it's a performance hit
-brush_s *Brush_Parse (void)
+brush_s *Brush_Parse (class parser_c &p)
 {
 	brush_s		*b;
 	face_s		*f;
@@ -1109,13 +1110,13 @@ brush_s *Brush_Parse (void)
 
 	do
 	{
-		if (!GetToken (true))
+		if (p.tryToGetNextToken())
 			break;
-		if (!strcmp (token, "}") )
+		if (!strcmp (p.getLastStoredToken(), "}") )
 			break;
 		
 		// handle "Brush" primitive
-		if (_strcmpi(token, "brushDef") == 0)
+		if (_strcmpi(p.getLastStoredToken(), "brushDef") == 0)
 		{
 			// Timo parsing new brush format
 			g_qeglobals.bPrimitBrushes=true;
@@ -1129,7 +1130,7 @@ brush_s *Brush_Parse (void)
 			else
 				Sys_Printf("Warning : conversion code from brush primitive not done ( Brush_Parse )\n");
 			
-			BrushPrimit_Parse(b);
+			BrushPrimit_Parse(p,b);
 			if (b == NULL)
 			{
 				Warning ("parsing brush primitive");
@@ -1140,13 +1141,13 @@ brush_s *Brush_Parse (void)
         		continue;
 			}
 		}
-		if (_strcmpi(token, "patchDef2") == 0 || _strcmpi(token, "patchDef3") == 0)
+		if (_strcmpi(p.getLastStoredToken(), "patchDef2") == 0 || _strcmpi(p.getLastStoredToken(), "patchDef3") == 0)
 		{
 			//free (b);
 			Brush_Free(b);
 			
 			// double string compare but will go away soon
-			b = Patch_Parse(_strcmpi(token, "patchDef2") == 0);
+			b = Patch_Parse(p,_strcmpi(p.getLastStoredToken(), "patchDef2") == 0);
 			if (b == NULL)
 			{
 				Warning ("parsing patch/brush");
@@ -1193,8 +1194,8 @@ brush_s *Brush_Parse (void)
 			for (i=0 ; i<3 ; i++)
 			{
 				if (i != 0)
-					GetToken (true);
-				if (strcmp (token, "(") )
+					p.tryToGetNextToken();
+				if (strcmp (p.getLastStoredToken(), "(") )
 				{
 					Warning ("parsing brush");
 					return NULL;
@@ -1202,12 +1203,12 @@ brush_s *Brush_Parse (void)
 				
 				for (j=0 ; j<3 ; j++)
 				{
-					GetToken (false);
-					f->planepts[i][j] = atof(token);
+					p.tryToGetNextToken();
+					f->planepts[i][j] = atof(p.getLastStoredToken());
 				}
 				
-				GetToken (false);
-				if (strcmp (token, ")") )
+				p.tryToGetNextToken();
+				if (strcmp (p.getLastStoredToken(), ")") )
 				{
 					Warning ("parsing brush");
 					return NULL;
@@ -1219,22 +1220,18 @@ brush_s *Brush_Parse (void)
 		{
 			
 			// read the texturedef
-			GetToken (false);
-			f->texdef.setName(token);
-			if (token[0] == '(')
-			{
-				int i = 32;
-			}
-			GetToken (false);
-			f->texdef.shift[0] = atoi(token);
-			GetToken (false);
-			f->texdef.shift[1] = atoi(token);
-			GetToken (false);
-			f->texdef.rotate = atoi(token);	
-			GetToken (false);
-			f->texdef.scale[0] = atof(token);
-			GetToken (false);
-			f->texdef.scale[1] = atof(token);
+			p.tryToGetNextToken();
+			f->texdef.setName(p.getLastStoredToken());
+			p.tryToGetNextToken();
+			f->texdef.shift[0] = atoi(p.getLastStoredToken());
+			p.tryToGetNextToken();
+			f->texdef.shift[1] = atoi(p.getLastStoredToken());
+			p.tryToGetNextToken();
+			f->texdef.rotate = atoi(p.getLastStoredToken());	
+			p.tryToGetNextToken();
+			f->texdef.scale[0] = atof(p.getLastStoredToken());
+			p.tryToGetNextToken();
+			f->texdef.scale[1] = atof(p.getLastStoredToken());
 						
 			// the flags and value field aren't necessarily present
 			f->d_texture = QERApp_TryTextureForName( f->texdef.getName() );
@@ -1243,14 +1240,14 @@ brush_s *Brush_Parse (void)
 			f->texdef.value = 0; //f->d_texture->value;
 			f->texdef.contents = f->d_texture->getEditorContentFlags();
 			
-			if (TokenAvailable ())
+			if (p.isAtEOL ()==false)
 			{
-				GetToken (false);
-				f->texdef.contents = atoi(token);
-				GetToken (false);
-				f->texdef.flags = atoi(token);
-				GetToken (false);
-				f->texdef.value = atoi(token);
+				p.tryToGetNextToken();
+				f->texdef.contents = atoi(p.getLastStoredToken());
+				p.tryToGetNextToken();
+				f->texdef.flags = atoi(p.getLastStoredToken());
+				p.tryToGetNextToken();
+				f->texdef.value = atoi(p.getLastStoredToken());
 			}
 			
 		}
@@ -2399,11 +2396,11 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 				// we have parsed old brushes format and need conversion
 				// convert old brush texture representation to new format
 				FaceToBrushPrimitFace(face);
-#ifdef _DEBUG
-				// use old texture coordinates code to check against
-			    for (i=0 ; i<w->size() ; i++)
-					EmitTextureCoordinates( w->points[i], face->d_texture, face);
-#endif
+//#ifdef _DEBUG
+//				// use old texture coordinates code to check against
+//			    for (i=0 ; i<w->size() ; i++)
+//					EmitTextureCoordinates( w->points[i], face->d_texture, face);
+//#endif
 			}
 			// use new texture representation to compute texture coordinates
 			// in debug mode we will check against old code and warn if there are differences

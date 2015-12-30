@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 
 #include <math/math.h>
+#include <shared/parser.h>
 
 // compute a determinant using Sarrus rule
 //++timo "inline" this with a macro
@@ -127,44 +128,44 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, edWinding_t * w)
 	{
 		x=w->getXYZ(i).dotProduct(texX);
 		y=w->getXYZ(i).dotProduct(texY);
-#ifdef _DEBUG
-		if (g_qeglobals.bNeedConvert)
-		{
-			// check we compute the same ST as the traditional texture computation used before
-			float S=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
-			float T=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
-			if ( fabs(S-w->points[i][3])>1e-2 || fabs(T-w->points[i][4])>1e-2 )
-			{
-				if ( fabs(S-w->points[i][3])>1e-4 || fabs(T-w->points[i][4])>1e-4 )
-					Sys_Printf("Warning : precision loss in brush -> brush primitive texture computation\n");
-				else
-					Sys_Printf("Warning : brush -> brush primitive texture computation bug detected\n");
-			}
-		}
-#endif
+//#ifdef _DEBUG
+//		if (g_qeglobals.bNeedConvert)
+//		{
+//			// check we compute the same ST as the traditional texture computation used before
+//			float S=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
+//			float T=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
+//			if ( fabs(S-w->points[i][3])>1e-2 || fabs(T-w->points[i][4])>1e-2 )
+//			{
+//				if ( fabs(S-w->points[i][3])>1e-4 || fabs(T-w->points[i][4])>1e-4 )
+//					Sys_Printf("Warning : precision loss in brush -> brush primitive texture computation\n");
+//				else
+//					Sys_Printf("Warning : brush -> brush primitive texture computation bug detected\n");
+//			}
+//		}
+//#endif
 		w->setTC(i,f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2],f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2]);
 	}
 }
 
 // parse a brush in brush primitive format
-void BrushPrimit_Parse(brush_s	*b)
+void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
 {
 	face_s		*f;
 	int			i,j;
-	GetToken (true);
-	if (strcmp (token, "{"))
+	p.getToken();
+	if (strcmp (p.getLastStoredToken(), "{"))
 	{
 		Warning ("parsing brush primitive");
 		return;
 	}
 	do
 	{
-		if (!GetToken (true))
+		if (!p.getToken())
 			break;
-		if (!strcmp (token, "}") )
+		if (!strcmp (p.getLastStoredToken(), "}") )
 			break;
 		//// reading of b->epairs if any
-		//if (strcmp (token, "(") )
+		//if (strcmp (p.getLastStoredToken(), "(") )
 		//{
 		//	ep = ParseEpair();
 		//	ep->next = b->epairs;
@@ -189,83 +190,83 @@ void BrushPrimit_Parse(brush_s	*b)
 			for (i=0 ; i<3 ; i++)
 			{
 				if (i != 0)
-					GetToken (true);
-				if (strcmp (token, "(") )
+					p.getToken();
+				if (strcmp (p.getLastStoredToken(), "(") )
 				{
 					Warning ("parsing brush");
 					return;
 				}
 				for (j=0 ; j<3 ; j++)
 				{
-					GetToken (false);
-					f->planepts[i][j] = atof(token);
+					p.getToken();
+					f->planepts[i][j] = atof(p.getLastStoredToken());
 				}
-				GetToken (false);
-				if (strcmp (token, ")") )
+				p.getToken();
+				if (strcmp (p.getLastStoredToken(), ")") )
 				{
 					Warning ("parsing brush");
 					return;
 				}
 			}
 			// texture coordinates
-			GetToken (false);
-			if (strcmp(token, "("))
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
 			{
 				Warning ("parsing brush primitive");
 				return;
 			}
-			GetToken (false);
-			if (strcmp(token, "("))
-			{
-				Warning ("parsing brush primitive");
-				return;
-			}
-			for (j=0;j<3;j++)
-			{
-				GetToken(false);
-				f->brushprimit_texdef.coords[0][j]=atof(token);
-			}
-			GetToken (false);
-			if (strcmp(token, ")"))
-			{
-				Warning ("parsing brush primitive");
-				return;
-			}
-			GetToken (false);
-			if (strcmp(token, "("))
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
 			{
 				Warning ("parsing brush primitive");
 				return;
 			}
 			for (j=0;j<3;j++)
 			{
-				GetToken(false);
-				f->brushprimit_texdef.coords[1][j]=atof(token);
+				p.getToken();
+				f->brushprimit_texdef.coords[0][j]=atof(p.getLastStoredToken());
 			}
-			GetToken (false);
-			if (strcmp(token, ")"))
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
 			{
 				Warning ("parsing brush primitive");
 				return;
 			}
-			GetToken (false);
-			if (strcmp(token, ")"))
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			for (j=0;j<3;j++)
+			{
+				p.getToken();
+				f->brushprimit_texdef.coords[1][j]=atof(p.getLastStoredToken());
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
 			{
 				Warning ("parsing brush primitive");
 				return;
 			}
 			// read the texturedef
-			GetToken (false);
-			//strcpy(f->texdef.getName(), token);
-			f->texdef.setName(token);
-			if (TokenAvailable ())
+			p.getToken();
+			//strcpy(f->texdef.getName(), p.getLastStoredToken());
+			f->texdef.setName(p.getLastStoredToken());
+			if (p.isAtEOL ()==false)
 			{
-				GetToken (false);
-				f->texdef.contents = atoi(token);
-        GetToken (false);
-				f->texdef.flags = atoi(token);
-				GetToken (false);
-				f->texdef.value = atoi(token);
+				p.getToken();
+				f->texdef.contents = atoi(p.getLastStoredToken());
+        p.getToken();
+				f->texdef.flags = atoi(p.getLastStoredToken());
+				p.getToken();
+				f->texdef.value = atoi(p.getLastStoredToken());
 			}
 		}
 	} while (1);

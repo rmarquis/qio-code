@@ -393,7 +393,7 @@ void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
 void Patch_WriteFile (CMemFile* pMemFile);
 void Patch_UpdateSelected(vec3_t vMove);
 void Patch_AddRow(patchMesh_c *p);
-brush_s* Patch_Parse(bool bOld);
+brush_s* Patch_Parse(class parser_c &p,bool bOld);
 void Patch_Write (patchMesh_c *p, FILE *f);
 void Patch_Write (patchMesh_c *p, CMemFile *file);
 //void Patch_AdjustColumns(patchMesh_c *p, int nCols);
@@ -458,7 +458,7 @@ void FaceToBrushPrimitFace(face_s *f);
 void EmitBrushPrimitTextureCoordinates(face_s *, edWinding_t *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
 void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
-void BrushPrimit_Parse(brush_s *);
+void BrushPrimit_Parse(class parser_c &p, brush_s *);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] );
@@ -470,14 +470,6 @@ void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOri
 // used in CCamWnd::ShiftTexture_BrushPrimit
 void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int &x, int &y );
 
-
-//
-// eclass.cpp
-//
-extern bool parsing_single;
-extern bool eclass_found;
-extern entityDeclAPI_i *eclass_e;
-void Eclass_ScanFile( char *filename );
 
 //
 // TexWnd.cpp

@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrAPI.h>
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
+#include <shared/parser.h>
 
 // externs
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
@@ -3291,48 +3292,48 @@ void Patch_AdjustSelectedRowCols(int nRows, int nCols)
 
 
 
-void Parse1DMatrix(int x, float* p)
+void Parse1DMatrix(parser_c &par, int x, float* p)
 {
-  GetToken(true); // (
+  par.tryToGetNextToken(); // (
   for (int i = 0; i < x; i++)
   {
-    GetToken(false);
-    p[i] = atof(token);
+    par.tryToGetNextToken();
+	p[i] = atof(par.getLastStoredToken());
   }
-  GetToken(true); // )
+  par.tryToGetNextToken(); // )
 }
 
-void Parse2DMatrix(int y, int x, float* p)
+void Parse2DMatrix(parser_c &par, int y, int x, float* p)
 {
-  GetToken(true); // (
+ par.tryToGetNextToken(); // (
   for (int i = 0; i < y; i++)
   {
-    Parse1DMatrix(x, p + i*x);
+    Parse1DMatrix(par, x, p + i*x);
   }
-  GetToken(true); // )
+ par.tryToGetNextToken(); // )
 }
 
-void Parse3DMatrix(int z, int y, int x, float* p)
+void Parse3DMatrix(parser_c &par, int z, int y, int x, float* p)
 {
-  GetToken(true); // (
+  par.tryToGetNextToken(); // (
   for (int i = 0; i < z; i++)
   {
-    Parse2DMatrix(y, x, p + i*(x*MAX_PATCH_HEIGHT));
+    Parse2DMatrix(par, y, x, p + i*(x*MAX_PATCH_HEIGHT));
   }
-  GetToken(true); // )
+ par.tryToGetNextToken(); // )
 }
 
 // parses a patch
-brush_s* Patch_Parse(bool bOld)
+brush_s* Patch_Parse(class parser_c &p,bool bOld)
 {
     //--if (bOld)
     //--{
     //--  return Patch_ParseOld();
     //--}
 
-  GetToken(true);
+p.tryToGetNextToken();
     
-  if (strcmp(token, "{"))
+  if (strcmp(p.getLastStoredToken(), "{"))
     return NULL;
 
 	patchMesh_c *pm = MakeNewPatch();
@@ -3340,13 +3341,13 @@ brush_s* Patch_Parse(bool bOld)
 
 	{
 		// texture def
-		GetToken(true);
+		p.tryToGetNextToken();
 		
 		// band-aid 
-		if (strcmp(token, "("))
+		if (strcmp(p.getLastStoredToken(), "("))
 		{
-			pm->d_texture = QERApp_TryTextureForName(token);
-			GetToken(true);
+			pm->d_texture = QERApp_TryTextureForName(p.getLastStoredToken());
+			p.tryToGetNextToken();
 		}
 		else
 		{
@@ -3354,33 +3355,33 @@ brush_s* Patch_Parse(bool bOld)
 			Sys_Printf("Warning: Patch read with no texture, using notexture... \n");
 		}               
 		
-		if (strcmp(token, "("))
+		if (strcmp(p.getLastStoredToken(), "("))
 			return NULL;
 		
 		// width, height, flags (currently only negative)
-		GetToken(false);
-		pm->width = atoi(token);
+		p.tryToGetNextToken();
+		pm->width = atoi(p.getLastStoredToken());
 		
-		GetToken(false);
-		pm->height = atoi(token);
+		p.tryToGetNextToken();
+		pm->height = atoi(p.getLastStoredToken());
 		
-		GetToken(false);
-		pm->contents = atoi(token);
+		p.tryToGetNextToken();
+		pm->contents = atoi(p.getLastStoredToken());
 		
-		GetToken(false);
-		pm->flags = atoi(token);
+		p.tryToGetNextToken();
+		pm->flags = atoi(p.getLastStoredToken());
 		
-		GetToken(false);
-		pm->value = atoi(token);
+		p.tryToGetNextToken();
+		pm->value = atoi(p.getLastStoredToken());
 		
 		if (!bOld)
 		{
-			GetToken(false);
-			pm->type = atoi(token);
+			p.tryToGetNextToken();
+			pm->type = atoi(p.getLastStoredToken());
 		}
 		
-		GetToken(false);
-		if (strcmp(token, ")"))
+		p.tryToGetNextToken();
+		if (strcmp(p.getLastStoredToken(), ")"))
 			return NULL;
 		
 	}
@@ -3388,7 +3389,7 @@ brush_s* Patch_Parse(bool bOld)
 
 
   float ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT][5];
-  Parse3DMatrix(pm->width, pm->height, 5, reinterpret_cast<float*>(&ctrl));
+  Parse3DMatrix(p,pm->width, pm->height, 5, reinterpret_cast<float*>(&ctrl));
 
   int w, h;
 
@@ -3404,21 +3405,21 @@ brush_s* Patch_Parse(bool bOld)
     }
   }
 
-  GetToken(true);
+  p.tryToGetNextToken();
 
 	//if (g_qeglobals.m_bBrushPrimitMode)
  // {
  //   // we are in brush primit mode, but maybe it's a classic patch that needs converting, test "}"
- //   if (strcmp(token, "}") && strcmp (token, "(") )
+ //   if (strcmp(p.getLastStoredToken(), "}") && strcmp (p.getLastStoredToken(), "(") )
 	//  {
 	//	  epair_s *ep = ParseEpair();
 	//	  ep->next = pm->epairs;
 	//	  pm->epairs = ep;
- //     GetToken(true);
+ //     p.tryToGetNextToken();
 	//  }
  // }
 
-  if (strcmp(token, "}"))
+  if (strcmp(p.getLastStoredToken(), "}"))
     return NULL;
 
   brush_s *b = AddBrushForPatch(pm, false);

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "stdafx.h"
 #include "qe3.h"
+#include <shared/parser.h>
 
 //
 int g_entityId = 1;
@@ -126,7 +127,7 @@ be looked up, and the entity will not be added
 to the global list.  Used for parsing the project.
 ================
 */
-entity_s	*Entity_Parse (brush_s* pList)
+entity_s	*Entity_Parse (class parser_c &p, brush_s* pList)
 {
 	entity_s	*ent;
 	entityDeclAPI_i	*e;
@@ -134,10 +135,11 @@ entity_s	*Entity_Parse (brush_s* pList)
 	vec3_c		mins, maxs;
 	bool	has_brushes;
 	
-	if (!GetToken (true))
+
+	if (p.tryToGetNextToken())
 		return NULL;
 	
-	if (strcmp (token, "{") )
+	if (strcmp (p.getLastStoredToken(), "{") )
 		Error ("ParseEntity: { not found");
 	
 	ent = new entity_s();
@@ -147,16 +149,16 @@ entity_s	*Entity_Parse (brush_s* pList)
   int n = 0;
 	do
 	{
-		if (!GetToken (true))
+		if (p.tryToGetNextToken())
 		{
 			Warning ("ParseEntity: EOF without closing brace");
 			return NULL;
 		}
-		if (!strcmp (token, "}") )
+		if (!strcmp (p.getLastStoredToken(), "}") )
 			break;
-		if (!strcmp (token, "{") )
+		if (!strcmp (p.getLastStoredToken(), "{") )
 		{
-			b = Brush_Parse ();
+			b = Brush_Parse (p);
 			if (b != NULL)
 			{
 				b->owner = ent;
@@ -174,11 +176,11 @@ entity_s	*Entity_Parse (brush_s* pList)
 		else
 		{
 			char key[2048];
-			strcpy (key, token);
+			strcpy (key, p.getLastStoredToken());
 
-			GetToken (false);
+			p.getToken();
 
-			ent->keyValues.set(key,token);
+			ent->keyValues.set(key,p.getLastStoredToken());
 		}
 	} while (1);
 	

@@ -28,17 +28,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	BOGUS_RANGE	18000
 
-void edWinding_t::removePoint(int point)
+bool edWinding_t::removePoint(int point)
 {
 	if (point < 0 || point >= this->size())
-		Error("Winding_RemovePoint: point out of range");
-
+		return true;
 	points.erase(point);
-	//if (point < this->size()-1)
-	//{
-	//	memmove(&this->points[point], &this->points[point+1], (int)&((edWinding_t *)0)->points[this->size() - point - 1]);
-	//}
-	//w->removeLastPoint();
+	return false;
 }
 
 edWinding_t *edWinding_t::insertPoint(vec3_t point, int spot)
@@ -48,11 +43,11 @@ edWinding_t *edWinding_t::insertPoint(vec3_t point, int spot)
 
 	if (spot > this->size())
 	{
-		Error("Winding_InsertPoint: spot > w->size()");
+		return 0;
 	} //end if
 	if (spot < 0)
 	{
-		Error("Winding_InsertPoint: spot < 0");
+		return 0;
 	} //end if
 	neww = new edWinding_t(this->size() + 1);
 	for (i = 0, j = 0; i < neww->size(); i++)
@@ -93,12 +88,6 @@ bool edWinding_t::isTiny () const
 	return true;
 }
 
-
-/*
-=============
-Winding_PlanesConcave
-=============
-*/
 #define WCONVEX_EPSILON		0.2
 
 int edWinding_t::planesConcave(edWinding_t *w1, edWinding_t *w2,
@@ -188,14 +177,10 @@ edWinding_t *edWinding_t::cloneWinding() {
 	return c;
 }
 /*
-==================
-Winding_Clip
-
 Clips the winding to the plane, returning the new winding on the positive side
 Frees the input winding.
 If keepon is true, an exactly on-plane winding will be saved, otherwise
 it will be clipped away.
-==================
 */
 edWinding_t *edWinding_t::clip(const edPlane_c &split, bool keepon)
 {
@@ -290,12 +275,8 @@ edWinding_t *edWinding_t::clip(const edPlane_c &split, bool keepon)
 }
 
 /*
-=============
-Winding_SplitEpsilon
-
   split the input winding with the plane
   the input winding stays untouched
-=============
 */
 void edWinding_t::splitEpsilon (vec3_t normal, double dist, 
 				float epsilon, edWinding_t **front, edWinding_t **back)
@@ -399,9 +380,6 @@ void edWinding_t::splitEpsilon (vec3_t normal, double dist,
 }
 
 /*
-=============
-Winding_TryMerge
-
 If two windings share a common edge and the edges that meet at the
 common points are both inside the other polygons, merge them
 
@@ -409,7 +387,6 @@ Returns NULL if the windings couldn't be merged, or the new winding.
 The originals will NOT be freed.
 
 if keep is true no points are ever removed
-=============
 */
 #define	CONTINUOUS_EPSILON	0.005
 
