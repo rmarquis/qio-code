@@ -152,7 +152,7 @@ face_s	*Face_FullClone (face_s *f)
 	memcpy(n->planepts, f->planepts, sizeof(n->planepts));
 	n->plane = f->plane;
 	if (f->face_winding)
-		n->face_winding = Winding_Clone(f->face_winding);
+		n->face_winding = f->face_winding->cloneWinding();
 	else
 		n->face_winding = NULL;
 	n->d_texture = QERApp_TryTextureForName( n->texdef.getName() );
@@ -420,15 +420,15 @@ Brush_MakeFaceWinding
 returns the visible polygon on a face
 =================
 */
-winding_t *brush_s::makeFaceWinding (face_s *face)
+edWinding_t *brush_s::makeFaceWinding (face_s *face)
 {
-	winding_t	*w;
+	edWinding_t	*w;
 	face_s		*clip;
 	edPlane_c			plane;
 	bool		past;
 
 	// get a poly that covers an effectively infinite area
-	w = Winding_BaseForPlane (face->plane);
+	w = new edWinding_t (face->plane);
 
 	// chop the poly by all of the other faces
 	past = false;
@@ -444,7 +444,7 @@ winding_t *brush_s::makeFaceWinding (face_s *face)
 		{	// identical plane, use the later one
 			if (past)
 			{
-				free (w);
+				delete (w);
 				return NULL;
 			}
 			continue;
@@ -454,14 +454,14 @@ winding_t *brush_s::makeFaceWinding (face_s *face)
 		plane.normal = -clip->plane.normal;
 		plane.dist = -clip->plane.dist;
 		
-		w = Winding_Clip (w, plane, false);
+		w = w->clip(plane, false);
 		if (!w)
 			return w;
 	}
 	
-	if (w->numpoints < 3)
+	if (w->size() < 3)
 	{
-		free(w);
+		delete(w);
 		w = NULL;
 	}
 
@@ -612,7 +612,7 @@ return NULL if the brush is convex
 face_s *Brush_BestSplitFace(brush_s *b)
 {
 	face_s *face, *f, *bestface;
-	winding_t *front, *back;
+	edWinding_t *front, *back;
 	int splits, tinywindings, value, bestvalue;
 
 	bestvalue = 999999;
@@ -625,21 +625,21 @@ face_s *Brush_BestSplitFace(brush_s *b)
 		{
 			if (f == face) continue;
 			//
-			Winding_SplitEpsilon(f->face_winding, face->plane.normal, face->plane.dist, 0.1, &front, &back);
+			f->face_winding->splitEpsilon(face->plane.normal, face->plane.dist, 0.1, &front, &back);
 
 			if (!front)
 			{
-				Winding_Free(back);
+				delete (back);
 			}
 			else if (!back)
 			{
-				Winding_Free(front);
+				delete (front);
 			}
 			else
 			{
 				splits++;
-				if (Winding_IsTiny(front)) tinywindings++;
-				if (Winding_IsTiny(back)) tinywindings++;
+				if (front->isTiny()) tinywindings++;
+				if (back->isTiny()) tinywindings++;
 			}
 		}
 		if (splits)
@@ -706,7 +706,7 @@ int Brush_Convex(brush_s *b)
 		{
 			if (face1 == face2) continue;
 			if (!face2->face_winding) continue;
-			if (Winding_PlanesConcave(face1->face_winding, face2->face_winding,
+			if (edWinding_t::planesConcave(face1->face_winding, face2->face_winding,
 										face1->plane.normal, face2->plane.normal,
 										face1->plane.dist, face2->plane.dist))
 			{
@@ -755,7 +755,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 	face_s *f, *face, *newface, *lastface, *nextface;
 	face_s *movefaces[MAX_MOVE_FACES];
 	int movefacepoints[MAX_MOVE_FACES];
-	winding_t *w, tmpw;
+	edWinding_t *w;
 	vec3_c start, mid;
 	edPlane_c plane;
 	int i, j, k, nummovefaces, result, done;
@@ -763,8 +763,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 
 	result = true;
 	//
-	tmpw.numpoints = 3;
-	tmpw.maxpoints = 3;
+	edWinding_t tmpw(3);
 	start = vertex;
 	end = vertex + delta;
 	//snap or not?
@@ -780,7 +779,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 	{
 		w = face->face_winding;
 		if (!w) continue;
-		for (i = 0; i < w->numpoints; i++)
+		for (i = 0; i < w->size(); i++)
 		{
 			if (w->points[i].vectorCompare(end, 0.3))
 			{
@@ -800,11 +799,11 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 		{
 			w = face->face_winding;
 			if (!w) continue;
-			for (i = 0; i < w->numpoints; i++)
+			for (i = 0; i < w->size(); i++)
 			{
 				if (w->points[i].vectorCompare(start, 0.2))
 				{
-					if (face->face_winding->numpoints <= 3)
+					if (face->face_winding->size() <= 3)
 					{
 						movefacepoints[nummovefaces] = i;
 						movefaces[nummovefaces++] = face;
@@ -815,19 +814,20 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 					if (dot > 0.1)
 					{
 						//fanout triangle subdivision
-						for (k = i; k < i + w->numpoints-3; k++)
+						for (k = i; k < i + w->size()-3; k++)
 						{
 							tmpw.points[0] = w->points[i];
-							tmpw.points[1] = w->points[(k+1) % w->numpoints];
-							tmpw.points[2] = w->points[(k+2) % w->numpoints];
+							tmpw.points[1] = w->points[(k+1) % w->size()];
+							tmpw.points[2] = w->points[(k+2) % w->size()];
 							//
 							newface = face->cloneFace();
 							//get the original
 							for (f = face; f->original; f = f->original) ;
 							newface->original = f;
 							//store the new winding
-							if (newface->face_winding) Winding_Free(newface->face_winding);
-							newface->face_winding = Winding_Clone(&tmpw);
+							if (newface->face_winding) 
+								delete(newface->face_winding);
+							newface->face_winding = tmpw.cloneWinding();
 							//get the texture
 							newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 							//add the face to the brush
@@ -838,11 +838,11 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 							movefaces[nummovefaces++] = newface;
 						}
 						//give the original face a new winding
-						tmpw.points[0] = w->points[(i-2+w->numpoints) % w->numpoints];
-						tmpw.points[1] = w->points[(i-1+w->numpoints) % w->numpoints];
+						tmpw.points[0] = w->points[(i-2+w->size()) % w->size()];
+						tmpw.points[1] = w->points[(i-1+w->size()) % w->size()];
 						tmpw.points[2] = w->points[i];
-						Winding_Free(face->face_winding);
-						face->face_winding = Winding_Clone(&tmpw);
+						delete (face->face_winding);
+						face->face_winding = tmpw.cloneWinding();
 						//add the original face to the move faces
 						movefacepoints[nummovefaces] = 2;
 						movefaces[nummovefaces++] = face;
@@ -850,14 +850,14 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 					else
 					{
 						//chop a triangle off the face
-						tmpw.points[0] = w->points[(i-1+w->numpoints) % w->numpoints];
+						tmpw.points[0] = w->points[(i-1+w->size()) % w->size()];
 						tmpw.points[1] = w->points[i];
-						tmpw.points[2] = w->points[(i+1) % w->numpoints];
+						tmpw.points[2] = w->points[(i+1) % w->size()];
 						//remove the point from the face winding
-						Winding_RemovePoint(w, i);
+						w->removePoint(i);
 						//get texture crap right
 						Face_SetColor(b, face, 1.0);
-						for (j = 0; j < w->numpoints; j++)
+						for (j = 0; j < w->size(); j++)
 							EmitTextureCoordinates(w->points[j], face->d_texture, face);
 						//make a triangle face
 						newface = face->cloneFace();
@@ -865,8 +865,8 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 						for (f = face; f->original; f = f->original) ;
 						newface->original = f;
 						//store the new winding
-						if (newface->face_winding) Winding_Free(newface->face_winding);
-						newface->face_winding = Winding_Clone(&tmpw);
+						if (newface->face_winding) delete(newface->face_winding);
+						newface->face_winding = tmpw.cloneWinding();
 						//get the texture
 						newface->d_texture = QERApp_TryTextureForName( newface->texdef.getName() );
 						//add the face to the brush
@@ -908,15 +908,15 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			{
 				k = movefacepoints[j];
 				w = movefaces[j]->face_winding;
-				tmpw.points[0] = w->points[(k+1)%w->numpoints];
-				tmpw.points[1] = w->points[(k+2)%w->numpoints];
+				tmpw.points[0] = w->points[(k+1)%w->size()];
+				tmpw.points[1] = w->points[(k+2)%w->size()];
 				//
 				k = movefacepoints[i];
 				w = movefaces[i]->face_winding;
-				tmpw.points[2] = w->points[(k+1)%w->numpoints];
+				tmpw.points[2] = w->points[(k+1)%w->size()];
 				if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
 				{
-					tmpw.points[2] = w->points[(k+2)%w->numpoints];
+					tmpw.points[2] = w->points[(k+2)%w->size()];
 					if (!plane.fromPoints(tmpw.points[0].getXYZ(), tmpw.points[1].getXYZ(), tmpw.points[2].getXYZ()))
 						//this should never happen otherwise the face merge did a crappy job a previous pass
 						continue;
@@ -983,7 +983,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 		for (i = 0; i < nummovefaces; i++)
 		{
 			Face_SetColor(b, movefaces[i], 1.0);
-			for (j = 0; j < movefaces[i]->face_winding->numpoints; j++)
+			for (j = 0; j < movefaces[i]->face_winding->size(); j++)
 				EmitTextureCoordinates(movefaces[i]->face_winding->points[j], movefaces[i]->d_texture, movefaces[i]);
 		}
 
@@ -1002,17 +1002,17 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 				lastface = face;
 				continue;
 			}
-			w = Winding_TryMerge(face->face_winding, face->original->face_winding, face->plane.normal, true);
+			w = face->face_winding->tryMerge(face->original->face_winding, face->plane.normal, true);
 			if (!w)
 			{
 				lastface = face;
 				continue;
 			}
-			Winding_Free(face->original->face_winding);
+			delete (face->original->face_winding);
 			face->original->face_winding = w;
 			//get texture crap right
 			Face_SetColor(b, face->original, 1.0);
-			for (j = 0; j < face->original->face_winding->numpoints; j++)
+			for (j = 0; j < face->original->face_winding->size(); j++)
 				EmitTextureCoordinates(face->original->face_winding->points[j], face->original->d_texture, face->original);
 			//remove the face that was merged with the original
 			if (lastface) lastface->next = face->next;
@@ -1031,7 +1031,7 @@ Brush_InsertVertexBetween
 int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 {
 	face_s *face;
-	winding_t *w, *neww;
+	edWinding_t *w, *neww;
 	vec3_c point;
 	int i, insert;
 
@@ -1046,24 +1046,24 @@ int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 		w = face->face_winding;
 		if (!w) continue;
 		neww = NULL;
-		for (i = 0; i < w->numpoints; i++)
+		for (i = 0; i < w->size(); i++)
 		{
 			if (!w->points[i].vectorCompare(p1, 0.1))
 				continue;
-			if (w->points[(i+1) % w->numpoints].vectorCompare(p2, 0.1))
+			if (w->points[(i+1) % w->size()].vectorCompare(p2, 0.1))
 			{
-				neww = Winding_InsertPoint(w, point, (i+1) % w->numpoints);
+				neww = w->insertPoint(point, (i+1) % w->size());
 				break;
 			}
-			else if (w->points[(i-1+w->numpoints) % w->numpoints].vectorCompare(p2, 0.3))
+			else if (w->points[(i-1+w->size()) % w->size()].vectorCompare(p2, 0.3))
 			{
-				neww = Winding_InsertPoint(w, point, i);
+				neww = w->insertPoint(point, i);
 				break;
 			}
 		}
 		if (neww)
 		{
-			Winding_Free(face->face_winding);
+			delete (face->face_winding);
 			face->face_winding = neww;
 			insert = true;
 		}
@@ -1959,7 +1959,7 @@ brush_s *Brush_FullClone(brush_s *b)
     			EmitBrushPrimitTextureCoordinates(nf,nf->face_winding);
         else
         {
-				  for (j = 0; j < nf->face_winding->numpoints; j++)
+				  for (j = 0; j < nf->face_winding->size(); j++)
   					EmitTextureCoordinates(nf->face_winding->points[j], nf->d_texture, nf);
         }
       }
@@ -2214,7 +2214,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 {
 	int		i;
 	face_s	*f2;
-	winding_t	*w;
+	edWinding_t	*w;
 	float	d;
 	brush_s	*b2;
 	int		c;
@@ -2263,7 +2263,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 			continue;
 
 		// any points on f will become new control points
-		for (i=0 ; i<w->numpoints ; i++)
+		for (i=0 ; i<w->size() ; i++)
 		{
 			d = w->points[i].dotProduct(f->plane.normal) 
 				- f->plane.dist;
@@ -2275,20 +2275,20 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 		// if none of the points were on the plane,
 		// leave it alone
 		//
-		if (i != w->numpoints)
+		if (i != w->size())
 		{
 			if (i == 0)
 			{	// see if the first clockwise point was the
 				// last point on the winding
-				d = w->points[w->numpoints-1].dotProduct(f->plane.normal) - f->plane.dist;
+				d = w->points[w->size()-1].dotProduct(f->plane.normal) - f->plane.dist;
 				if (d > -ON_EPSILON && d < ON_EPSILON)
-					i = w->numpoints - 1;
+					i = w->size() - 1;
 			}
 
 			AddPlanept (f2->planepts[0]);
 
 			f2->planepts[0] = w->points[i].getXYZ();
-			if (++i == w->numpoints)
+			if (++i == w->size())
 				i = 0;
 			
 			// see if the next point is also on the plane
@@ -2297,7 +2297,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 				AddPlanept (f2->planepts[1]);
 
 			f2->planepts[1] = w->points[i].getXYZ();
-			if (++i == w->numpoints)
+			if (++i == w->size())
 				i = 0;
 
 			// the third point is never on the plane
@@ -2305,7 +2305,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 			f2->planepts[2] = w->points[i].getXYZ();
 		}
 
-		free(w);
+		delete(w);
 	}
 }
 
@@ -2355,7 +2355,7 @@ void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
 
 void Brush_BuildWindings( brush_s *b, bool bSnap )
 {
-	winding_t *w;
+	edWinding_t *w;
 	face_s    *face;
 
 	if (bSnap)
@@ -2373,14 +2373,14 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 	for ( ; face ; face=face->next)
 	{
 		int i;
-		free(face->face_winding);
+		delete (face->face_winding);
 		w = face->face_winding = b->makeFaceWinding(face);
 		face->d_texture = QERApp_TryTextureForName( face->texdef.getName() );
 
 		if (!w)
 			continue;
 	
-		for (i=0 ; i<w->numpoints ; i++)
+		for (i=0 ; i<w->size() ; i++)
 		{
 			// add to bounding box
 			b->bounds.addPoint(w->points[i].getXYZ());
@@ -2405,7 +2405,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 				FaceToBrushPrimitFace(face);
 #ifdef _DEBUG
 				// use old texture coordinates code to check against
-			    for (i=0 ; i<w->numpoints ; i++)
+			    for (i=0 ; i<w->size() ; i++)
 					EmitTextureCoordinates( w->points[i], face->d_texture, face);
 #endif
 			}
@@ -2415,7 +2415,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 		}
 		else
 		{
-		    for (i=0 ; i<w->numpoints ; i++)
+		    for (i=0 ; i<w->size() ; i++)
 				EmitTextureCoordinates( w->points[i], face->d_texture, face);
 		}
 	}
@@ -2509,7 +2509,7 @@ void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
 	// unlink from active/selected list
 	if (b2->next)
 		Brush_RemoveFromList (b2);
-	free(b2);
+	delete(b2);
 	Brush_Build(b, true);
 }
 
@@ -2695,7 +2695,7 @@ void Brush_Draw( brush_s *b )
 	face_s			*face;
 	int				i, order;
 	mtrAPI_i		*prev = 0;
-	winding_t *w;
+	edWinding_t *w;
 
 	if (b->hiddenBrush)
 	{
@@ -2802,7 +2802,7 @@ void Brush_Draw( brush_s *b )
 		
 		glBegin(GL_POLYGON);
 		
-		for (i=0 ; i<w->numpoints ; i++)
+		for (i=0 ; i<w->size() ; i++)
 		{
 			if (nDrawMode == cd_texture)
 				glTexCoord2fv( &w->points[i][3] );
@@ -2836,7 +2836,7 @@ void Face_Draw( face_s *f )
 	if ( f->face_winding == 0 )
 		return;
 	glBegin( GL_POLYGON );
-	for ( i = 0 ; i < f->face_winding->numpoints; i++)
+	for ( i = 0 ; i < f->face_winding->size(); i++)
 		glVertex3fv( f->face_winding->points[i] );
 	glEnd();
 }
@@ -2845,7 +2845,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 {
 	face_s *face;
 	int     order;
-	winding_t *w;
+	edWinding_t *w;
 	int        i;
 
 	if (b->hiddenBrush)
@@ -2954,7 +2954,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 
 		// draw the polygon
 		glBegin(GL_LINE_LOOP);
-		for (i=0 ; i<w->numpoints ; i++)
+		for (i=0 ; i<w->size() ; i++)
 			glVertex3fv(w->points[i]);
 		glEnd();
 	}
@@ -3197,7 +3197,7 @@ void Brush_MakeSidedSphere(int sides)
 
 void face_s::fitTexture(int nHeight, int nWidth )
 {
-	winding_t *w;
+	edWinding_t *w;
 	aabb bounds;
 	int i;
 	float width, height, temp;
@@ -3226,7 +3226,7 @@ void face_s::fitTexture(int nHeight, int nWidth )
 	{
 		return;
 	}
-	for (i=0 ; i<w->numpoints ; i++)
+	for (i=0 ; i<w->size() ; i++)
 	{
 		bounds.addPoint(w->points[i]);
 	}

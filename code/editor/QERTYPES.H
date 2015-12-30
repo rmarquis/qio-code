@@ -152,12 +152,41 @@ public:
 // you should read float points[..][5]
 // see NewWinding definition
 #define MAX_POINTS_ON_WINDING 64
-struct winding_t
+struct edWinding_t
 {
-	int		numpoints;
-	int		maxpoints;
-	texturedVertex_c 	points[8];			// variable sized
+	arraySTD_c<texturedVertex_c> points;
+
+	edWinding_t();
+	edWinding_t(const class edPlane_c &pl);
+	edWinding_t(u32 numPoints);
+	edWinding_t *cloneWinding();
+	edWinding_t *clip(const class edPlane_c &split, bool keepon);
+	void splitEpsilon(vec3_t normal, double dist, vec_t epsilon, edWinding_t **front, edWinding_t **back);
+	edWinding_t *tryMerge(const edWinding_t *f2, vec3_t planenormal, int keep);
+	bool isTiny() const;
+	void removePoint(int point);
+	edWinding_t *insertPoint(vec3_t point, int spot);
+	static int planesConcave(edWinding_t *w1, edWinding_t *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
+
+
+	void removeLastPoint() {
+		points.resize(points.size()-1);
+	}
+	u32 size() const {
+		return points.size();
+	}
+	void addPointXYZ(const vec3_c &xyz) {
+		texturedVertex_c tv;
+		tv.xyz = xyz;
+		points.push_back(tv);
+	}
+	void addPoint(const texturedVertex_c &tv) {
+		points.push_back(tv);
+	}
+
 };
+
+
 
 #define	NORMAL_EPSILON	0.0001
 #define	DIST_EPSILON	0.02
@@ -222,7 +251,7 @@ struct face_s
 	texdef_t				texdef;
 	edPlane_c				plane;
 
-	winding_t				*face_winding;
+	edWinding_t				*face_winding;
 
 	vec3_t					d_color;
 	mtrAPI_i				*d_texture;
@@ -240,7 +269,7 @@ struct face_s
 	~face_s() {
 		if ( this->face_winding )
 		{
-			free( this->face_winding );
+			delete this->face_winding;
 			this->face_winding = 0;
 		}
 
@@ -274,6 +303,7 @@ struct face_s
 		n->texdef = this->texdef;
 
 		memcpy (n->planepts, this->planepts, sizeof(n->planepts));
+		n->plane = this->plane;
 
 		// all other fields are derived, and will be set by Brush_Build
 		return n;
@@ -424,7 +454,7 @@ public:
 	void fitTexture(int nHeight, int nWidth);
 	void removeEmptyFaces();
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
-	winding_t *makeFaceWinding (face_s *face);
+	edWinding_t *makeFaceWinding (face_s *face);
 
 	const aabb &getBounds() const {
 		return bounds;

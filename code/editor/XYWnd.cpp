@@ -1090,12 +1090,12 @@ void CXYWnd::OnPaint()
 	        int order;
 	        for (face = pBrush->brush_faces,order = 0 ; face ; face=face->next, order++)
 	        {
-		        winding_t* w = face->face_winding;
+		        edWinding_t* w = face->face_winding;
 		        if (!w)
 			        continue;
 		        // draw the polygon
 		        glBegin(GL_LINE_LOOP);
-            for (int i=0 ; i<w->numpoints ; i++)
+            for (int i=0 ; i<w->size() ; i++)
 		          glVertex3fv(w->points[i]);
 		        glEnd();
 	        }
