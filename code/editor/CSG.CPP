@@ -42,7 +42,7 @@ void CSG_MakeHollow (void)
 		for (f = b->brush_faces ; f ; f=f->next)
 		{
 			face_s *split = f->cloneFace();
-			move = f->plane.normal * g_qeglobals.d_gridsize;
+			move = f->plane.norm * g_qeglobals.d_gridsize;
 			for (i=0 ; i<3 ; i++) {
 				split->planepts[i] -= move;
 			}
@@ -126,7 +126,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 			}
 			//
 			if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
-									face1->plane.normal, face2->plane.normal,
+									face1->plane.norm, face2->plane.norm,
 									face1->plane.dist, face2->plane.dist))
 			{
 				return NULL;
@@ -329,7 +329,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 					}
 					//
 					if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
-											face1->plane.normal, face2->plane.normal,
+											face1->plane.norm, face2->plane.norm,
 											face1->plane.dist, face2->plane.dist))
 					{
 						return NULL;

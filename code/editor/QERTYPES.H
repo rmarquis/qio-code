@@ -128,7 +128,7 @@ struct face_s
 	struct face_s			*original;		//used for vertex movement
 	vec3_c				planepts[3];
 	texdef_t				texdef;
-	edPlane_c				plane;
+	plane_c				plane;
 
 	texturedWinding_c				*face_winding;
 

@@ -62,7 +62,7 @@ vec3_t	baseaxis[18] =
 {0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
 };
 
-void TextureAxisFromPlane(const edPlane_c &pln, vec3_c &xv, vec3_c &yv)
+void TextureAxisFromPlane(const plane_c &pln, vec3_c &xv, vec3_c &yv)
 {
 	int		bestaxis;
 	float	dot,best;
@@ -96,7 +96,7 @@ Light different planes differently to
 improve recognition
 ================
 */
-float SetShadeForPlane (const class edPlane_c &p)
+float SetShadeForPlane (const class plane_c &p)
 {
 	int		i;
 	float	f;
@@ -424,7 +424,7 @@ texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
 {
 	texturedWinding_c	*w;
 	face_s		*clip;
-	edPlane_c			plane;
+	plane_c			plane;
 	bool		past;
 
 	// get a poly that covers an effectively infinite area
@@ -451,7 +451,7 @@ texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
 		}
 
 		// flip the plane, because we want to keep the back side
-		plane.normal = -clip->plane.normal;
+		plane.norm = -clip->plane.norm;
 		plane.dist = -clip->plane.dist;
 		
 		w = w->clip(plane, false);
@@ -625,7 +625,7 @@ face_s *Brush_BestSplitFace(brush_s *b)
 		{
 			if (f == face) continue;
 			//
-			f->face_winding->splitEpsilon(face->plane.normal, face->plane.dist, 0.1, &front, &back);
+			f->face_winding->splitEpsilon(face->plane.norm, face->plane.dist, 0.1, &front, &back);
 
 			if (!front)
 			{
@@ -707,7 +707,7 @@ int Brush_Convex(brush_s *b)
 			if (face1 == face2) continue;
 			if (!face2->face_winding) continue;
 			if (texturedWinding_c::planesConcave(face1->face_winding, face2->face_winding,
-										face1->plane.normal, face2->plane.normal,
+										face1->plane.norm, face2->plane.norm,
 										face1->plane.dist, face2->plane.dist))
 			{
 				return false;
@@ -757,7 +757,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 	int movefacepoints[MAX_MOVE_FACES];
 	texturedWinding_c *w;
 	vec3_c start, mid;
-	edPlane_c plane;
+	plane_c plane;
 	int i, j, k, nummovefaces, result, done;
 	float dot, front, back, frac, smallestfrac;
 
@@ -809,7 +809,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 						movefaces[nummovefaces++] = face;
 						break;
 					}
-					dot = end.dotProduct(face->plane.normal) - face->plane.dist;
+					dot = end.dotProduct(face->plane.norm) - face->plane.dist;
 					//if the end point is in front of the face plane
 					if (dot > 0.1)
 					{
@@ -902,7 +902,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			//if the original is not a move face itself
 			if (j >= nummovefaces)
 			{
-				memcpy(&plane, &movefaces[i]->original->plane, sizeof(edPlane_c));
+				memcpy(&plane, &movefaces[i]->original->plane, sizeof(plane_c));
 			}
 			else
 			{
@@ -923,8 +923,8 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 				}
 			}
 			//now we've got the plane to check agains
-			front = start.dotProduct(plane.normal) - plane.dist;
-			back = end.dotProduct(plane.normal) - plane.dist;
+			front = start.dotProduct(plane.norm) - plane.dist;
+			back = end.dotProduct(plane.norm) - plane.dist;
 			//if the whole move is at one side of the plane
 			if (front < 0.01 && back < 0.01) continue;
 			if (front > -0.01 && back > -0.01) continue;
@@ -954,7 +954,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 				movefaces[i]->planepts[j] = movefaces[i]->face_winding->getXYZ(j);
 			}
 			movefaces[i]->calculatePlaneFromPoints();
-			if (movefaces[i]->plane.normal.vectorLength() < 0.1)
+			if (movefaces[i]->plane.norm.vectorLength() < 0.1)
 				result = false;
 		}
 		//if the brush is no longer convex
@@ -1002,7 +1002,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 				lastface = face;
 				continue;
 			}
-			w = face->face_winding->tryMerge(face->original->face_winding, face->plane.normal, true);
+			w = face->face_winding->tryMerge(face->original->face_winding, face->plane.norm, true);
 			if (!w)
 			{
 				lastface = face;
@@ -1985,8 +1985,8 @@ face_s *Brush_Ray (const vec3_c &origin, const vec3_c &dir, brush_s *b, float *d
 
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
-		d1 = p1.dotProduct(f->plane.normal) - f->plane.dist;
-		d2 = p2.dotProduct(f->plane.normal) - f->plane.dist;
+		d1 = p1.dotProduct(f->plane.norm) - f->plane.dist;
+		d2 = p2.dotProduct(f->plane.norm) - f->plane.dist;
 		if (d1 >= 0 && d2 >= 0)
 		{
 			*dist = 0;
@@ -2026,7 +2026,7 @@ face_s *Brush_Point (const vec3_c &origin, brush_s *b)
 
 	for (f=b->brush_faces ; f ; f=f->next)
 	{
-		d1 = origin.dotProduct(f->plane.normal) - f->plane.dist;
+		d1 = origin.dotProduct(f->plane.norm) - f->plane.dist;
 		if (d1 > 0)
 		{
 			return NULL;	// point is on front side of face
@@ -2161,8 +2161,8 @@ bool ClipLineToFace (vec3_c &p1, vec3_c &p2, face_s *f)
 	int		i;
 	float	*v;
 
-	d1 = p1.dotProduct(f->plane.normal) - f->plane.dist;
-	d2 = p2.dotProduct(f->plane.normal) - f->plane.dist;
+	d1 = p1.dotProduct(f->plane.norm) - f->plane.dist;
+	d2 = p2.dotProduct(f->plane.norm) - f->plane.dist;
 
 	if (d1 >= 0 && d2 >= 0)
 		return false;		// totally outside
@@ -2228,7 +2228,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 		for (f2=b2->brush_faces ; f2 ; f2=f2->next)
 		{
 			for (i=0 ; i<3 ; i++)
-				if (fabs(f2->planepts[i].dotProduct(f->plane.normal)
+				if (fabs(f2->planepts[i].dotProduct(f->plane.norm)
 				-f->plane.dist) > ON_EPSILON)
 					break;
 			if (i==3)
@@ -2257,7 +2257,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 		// any points on f will become new control points
 		for (i=0 ; i<w->size() ; i++)
 		{
-			d = w->getXYZ(i).dotProduct(f->plane.normal) 
+			d = w->getXYZ(i).dotProduct(f->plane.norm) 
 				- f->plane.dist;
 			if (d > -ON_EPSILON && d < ON_EPSILON)
 				break;
@@ -2272,7 +2272,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 			if (i == 0)
 			{	// see if the first clockwise point was the
 				// last point on the winding
-				d = w->getXYZ(w->size()-1).dotProduct(f->plane.normal) - f->plane.dist;
+				d = w->getXYZ(w->size()-1).dotProduct(f->plane.norm) - f->plane.dist;
 				if (d > -ON_EPSILON && d < ON_EPSILON)
 					i = w->size() - 1;
 			}
@@ -2284,7 +2284,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 				i = 0;
 			
 			// see if the next point is also on the plane
-			d = w->getXYZ(i).dotProduct(f->plane.normal) - f->plane.dist;
+			d = w->getXYZ(i).dotProduct(f->plane.norm) - f->plane.dist;
 			if (d > -ON_EPSILON && d < ON_EPSILON)
 				AddPlanept (f2->planepts[1]);
 
@@ -2887,19 +2887,19 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 		{
 			if (nViewType == XY)
 			{
-				  if (face->plane.normal[2] <= 0)
+				  if (face->plane.norm[2] <= 0)
 					  continue;
 			}
 			else
 			{
 				if (nViewType == XZ)
 				{
-					if (face->plane.normal[1] <= 0)
+					if (face->plane.norm[1] <= 0)
 						continue;
 				}
 				else 
 				{
-					if (face->plane.normal[0] <= 0)
+					if (face->plane.norm[0] <= 0)
 						continue;
 				}
 			}

@@ -84,9 +84,9 @@ void FaceToBrushPrimitFace(face_s *f)
 	}
 #endif
 	// compute axis base
-	ComputeAxisBase(f->plane.normal,texX,texY);
+	ComputeAxisBase(f->plane.norm,texX,texY);
 	// compute projection vector
-	proj = f->plane.normal * f->plane.dist;
+	proj = f->plane.norm * f->plane.dist;
 	// (0,0) in plane axis base is (0,0,0) in world coordinates + projection on the affine plane
 	// (1,0) in plane axis base is texX in world coordinates + projection on the affine plane
 	// (0,1) in plane axis base is texY in world coordinates + projection on the affine plane
@@ -114,7 +114,7 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, texturedWinding_c * w)
 	vec3_c texX,texY;
 	float x,y;
 	// compute axis base
-	ComputeAxisBase(f->plane.normal,texX,texY);
+	ComputeAxisBase(f->plane.norm,texX,texY);
 	// in case the texcoords matrix is empty, build a default one
 	// same behaviour as if scale[0]==0 && scale[1]==0 in old code
 	if (f->brushprimit_texdef.coords[0][0]==0 && f->brushprimit_texdef.coords[1][0]==0 && f->brushprimit_texdef.coords[0][1]==0 && f->brushprimit_texdef.coords[1][1]==0)
@@ -343,7 +343,7 @@ void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta)
 	float det;
 	vec3_t D[2];
 	// compute plane axis base ( doesn't change with translation )
-	ComputeAxisBase( f->plane.normal, texS, texT );
+	ComputeAxisBase( f->plane.norm, texS, texT );
 	// compute translation vector in plane axis base
 	tx = delta.dotProduct( texS );
 	ty = delta.dotProduct( texT );
@@ -372,7 +372,7 @@ void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y )
 {
 	vec3_c texS,texT;
 	vec3_c delta;
-	ComputeAxisBase( f->plane.normal, texS, texT );
+	ComputeAxisBase( f->plane.norm, texS, texT );
 	texS *= x;
 	texT *= y;
 	delta = texS + texT;
@@ -394,7 +394,7 @@ void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOri
 	float det;
 	vec3_t D[2];
 	// compute plane axis base
-	ComputeAxisBase( f->plane.normal, texS, texT );
+	ComputeAxisBase( f->plane.norm, texS, texT );
 	// compute coordinates of (0,0) (1,0) (0,1) ( initial plane axis base ) after rotation
 	// (0,0) (1,0) (0,1) ( initial plane axis base ) <-> (0,0,0) texS texT ( world axis base )
 	// rotation vector
@@ -405,7 +405,7 @@ void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOri
 	VectorRotate( texS, vRotate, vOrigin, rvecS );
 	VectorRotate( texT, vRotate, vOrigin, rvecT );
 	// compute normal of plane after rotation
-	VectorRotate( f->plane.normal, vRotate, rNormal );
+	VectorRotate( f->plane.norm, vRotate, rNormal );
 	// compute rotated plane axis base
 	ComputeAxisBase( rNormal, rtexS, rtexT );
 	// compute S/T coordinates of the three points in rotated axis base ( in M matrix )

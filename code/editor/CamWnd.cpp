@@ -1044,7 +1044,7 @@ void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
 	}
 #endif
 	// compute face axis base
-	ComputeAxisBase( f->plane.normal, texS, texT );
+	ComputeAxisBase( f->plane.norm, texS, texT );
 	// compute camera view vectors
 	viewY = m_Camera.vup;
 	viewX = m_Camera.vright;

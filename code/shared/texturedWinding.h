@@ -27,73 +27,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/array.h>
 #include <shared/texturedVertex.h>
-
-
-#define	NORMAL_EPSILON	0.0001
-#define	DIST_EPSILON	0.02
-#define	ON_EPSILON	0.01
-
-class edPlane_c {
-public:
-    vec3_c normal;
-    double dist;
-public:
-	int isPlaneEqual(const edPlane_c &b, int flip) const {
-		vec3_c tempNormal;
-		double tempDist;
-
-		if (flip) {
-			tempNormal = -b.normal;
-			tempDist = -b.dist;
-		} else {
-			tempNormal = b.normal;
-			tempDist = b.dist;
-		}
-		if (
-		   fabs(this->normal[0] - tempNormal[0]) < NORMAL_EPSILON
-		&& fabs(this->normal[1] - tempNormal[1]) < NORMAL_EPSILON
-		&& fabs(this->normal[2] - tempNormal[2]) < NORMAL_EPSILON
-		&& fabs(this->dist - tempDist) < DIST_EPSILON )
-			return true;
-		return false;
-	}
-	int fromPoints(const vec3_c &p1, const vec3_c &p2, const vec3_c &p3)
-	{
-		vec3_c v1 = p2 - p1;
-		vec3_c v2 = p3 - p1;
-		this->normal.crossProduct(v1,v2);
-		if (this->normal.normalize2() < 0.1) 
-			return false;
-		this->dist = this->normal.dotProduct(p1);
-		return true;
-	}
-	// project on normal plane
-	// along ez 
-	// assumes plane normal is normalized
-	void projectOnPlane(const vec3_c &ez, vec3_c &p) {
-		if (fabs(ez[0]) == 1)
-			p[0] = (dist - normal[1] * p[1] - normal[2] * p[2]) / normal[0];
-		else if (fabs(ez[1]) == 1)
-			p[1] = (dist - normal[0] * p[0] - normal[2] * p[2]) / normal[1];
-		else
-			p[2] = (dist - normal[0] * p[0] - normal[1] * p[1]) / normal[2];
-	}
-	const vec3_c &getNormal() const {
-		return normal;
-	}
-	float getDist() const {
-		return dist;
-	}
-};
+#include <math/plane.h>
 
 class texturedWinding_c {
 	arraySTD_c<texturedVertex_c> points;
 public:
 	texturedWinding_c();
-	texturedWinding_c(const class edPlane_c &pl);
+	texturedWinding_c(const class plane_c &pl);
 	texturedWinding_c(u32 numPoints);
 	texturedWinding_c *cloneWinding();
-	texturedWinding_c *clip(const class edPlane_c &split, bool keepon);
+	texturedWinding_c *clip(const class plane_c &split, bool keepon);
 	void splitEpsilon(vec3_t normal, double dist, float epsilon, texturedWinding_c **front, texturedWinding_c **back);
 	texturedWinding_c *tryMerge(const texturedWinding_c *f2, vec3_t planenormal, int keep);
 	bool isTiny() const;

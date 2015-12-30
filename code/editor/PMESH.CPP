@@ -741,7 +741,7 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
 {
 	p->meshNormals();
   face_s *f = (bFaceCycle) ? nextFace(p) : Patch_GetAxisFace(p);
-  vec3_c vSave = f->plane.normal;
+  vec3_c vSave = f->plane.getNormal();
   float fRotate = f->texdef.rotate;
   f->texdef.rotate = 0;
   float fScale[2];
@@ -761,7 +761,7 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
     {
       if (!bFaceCycle)
       {
-        f->plane.normal = p->ctrl[i][j].normal;
+		  f->plane.setNormal( p->ctrl[i][j].normal);
       }
 	  texturedVertex_c tmp;
 	  tmp.xyz = p->ctrl[i][j].xyz;
@@ -770,7 +770,7 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
 	   p->ctrl[i][j].tc = tmp.st;
     }
   }
-  f->plane.normal = vSave;
+  f->plane.setNormal(vSave);
   f->texdef.rotate = fRotate;
   f->texdef.scale[0] = fScale[0];
   f->texdef.scale[1] = fScale[1];
