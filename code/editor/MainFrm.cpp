@@ -1886,10 +1886,10 @@ void CMainFrame::OnFileOpen()
 
 void CMainFrame::OnFilePointfile() 
 {
-	if (g_qeglobals.d_pointfile_display_list)
-		Pointfile_Clear ();
-	else
-		Pointfile_Check ();
+///	if (g_qeglobals.d_pointfile_display_list)
+/////		Pointfile_Clear ();
+///	else
+////		Pointfile_Check ();
 }
 
 void CMainFrame::OnFilePrint() 
@@ -2303,12 +2303,12 @@ void CMainFrame::OnMiscGamma()
 
 void CMainFrame::OnMiscNextleakspot() 
 {
-  Pointfile_Next();
+///  Pointfile_Next();
 }
 
 void CMainFrame::OnMiscPreviousleakspot() 
 {
-  Pointfile_Prev();
+ //// Pointfile_Prev();
 }
 
 void CMainFrame::OnMiscPrintxy() 

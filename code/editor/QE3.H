@@ -209,17 +209,6 @@ struct QEGlobals_t
 	
 };
 
-//void *qmalloc (size_t size);
-char *copystring (char *s);
-
-void Pointfile_Delete (void);
-void WINAPI Pointfile_Check (void);
-void Pointfile_Next (void);
-void Pointfile_Prev (void);
-void Pointfile_Clear (void);
-void Pointfile_Draw( void );
-void Pointfile_Load( void );
-
 //
 // drag.c
 //

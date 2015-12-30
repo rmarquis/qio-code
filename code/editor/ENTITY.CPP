@@ -41,19 +41,56 @@ void entity_s::trackMD3Angles(const char *key, const char *value)
 			vec3_t vAngle;
 			vAngle[0] = vAngle[1] = 0;
 			vAngle[2] = -a;
-			Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
+			this->brushes.onext->rotateBrush(vAngle, this->origin, true);
 			vAngle[2] = b;
-			Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
+			this->brushes.onext->rotateBrush(vAngle, this->origin, true);
 		}
 	}
 }
 
+void entity_s::setKeyValue(const char *key, const char *value) {
+	if (this == NULL)
+		return;
 
+	if (!key || !key[0])
+		return;
 
+	trackMD3Angles(key, value);
 
+	this->keyValues.set(key,value);
+}
+entity_s::entity_s(bool bIsLinkedListHeader) {
+	prev = 0;
+	next = 0;
+	undoId = 0;
+	redoId = 0;
+	entityId = 0;
+	eclass = 0;
 
+	// mark linked list as empty
+	//this->brushes.onext = &this->brushes;
+	//this->brushes.oprev = &this->brushes;
 
+	this->bIsLinkedListHeader = bIsLinkedListHeader;
+	// allocated counter is only used for debugging
+	if(bIsLinkedListHeader==false)
+		g_allocatedCounter_entity++;
+}
+entity_s::~entity_s() {
+	if(this->brushes.onext != 0) {
+		while (this->brushes.onext != &this->brushes)
+			Brush_Free (this->brushes.onext);
+	}
 
+	if (this->next)
+	{
+		this->next->prev = this->prev;
+		this->prev->next = this->next;
+	}
+	// allocated counter is only used for debugging
+	if(bIsLinkedListHeader==false) 
+		g_allocatedCounter_entity--;
+}
 
 
 void Entity_AddToList(entity_s *e, entity_s *list)
@@ -203,7 +240,7 @@ entity_s	*Entity_Parse (brush_s* pList)
 			vec3_t vAngle;
 			vAngle[0] = vAngle[1] = 0;
 			vAngle[2] = a;
-			Brush_Rotate(b, vAngle, ent->origin, false);
+			b->rotateBrush(vAngle, ent->origin, false);
 		}
 		
 		
@@ -634,21 +671,6 @@ entity_s *FindEntity(char *pszKey, char *pszValue)
 	for (; pe != NULL && pe != &entities ; pe = pe->next)
 	{
 		if (!strcmp(pe->getKeyValue(pszKey), pszValue))
-			return pe;
-	}
-
-	return NULL;
-}
-
-entity_s *FindEntityInt(char *pszKey, int iValue)
-{
-	entity_s *pe;
-	
-	pe = entities.next;
-	
-	for (; pe != NULL && pe != &entities ; pe = pe->next)
-	{
-		if (pe->getKeyInt(pszKey) == iValue)
 			return pe;
 	}
 

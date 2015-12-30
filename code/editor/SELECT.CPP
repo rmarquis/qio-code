@@ -1615,7 +1615,7 @@ void Select_FitTexture(int nHeight, int nWidth)
 
   for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-    Brush_FitTexture(b, nHeight, nWidth);
+		b->fitTexture(nHeight, nWidth);
 		Brush_Build(b);
 	}
 

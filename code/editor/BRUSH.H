@@ -46,12 +46,9 @@ void		Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear);
 void		Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 void		Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir, bool shear);
 void		Brush_SnapToGrid(brush_s *pb);
-void		Brush_Rotate(brush_s *b, vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 void		Brush_MakeSidedSphere(int sides);
 void		Brush_Write (brush_s *b, FILE *f);
 void		Brush_Write (brush_s *b, CMemFile* pMemFile);
-void		Brush_RemoveEmptyFaces ( brush_s *b );
-winding_t*	Brush_MakeFaceWinding (brush_s *b, face_s *face);
 
 int			AddPlanept (float *f);
 float		SetShadeForPlane (const class edPlane_c &p);
@@ -59,6 +56,5 @@ float		SetShadeForPlane (const class edPlane_c &p);
 void		Face_Draw( face_s *face );
 void		Face_TextureVectors (face_s *f, float STfromXYZ[2][4]);
 void		SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
-
-void Brush_FitTexture( brush_s *b, int nHeight, int nWidth );
+;
 const char* Brush_GetKeyValue(brush_s *b, const char *pKey);

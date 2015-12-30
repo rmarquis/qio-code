@@ -83,7 +83,7 @@ void MakeFace (face_s *f)
 	int			pnum[128];
 
 #ifdef NEWEDGESEL
-	w = Brush_MakeFaceWinding (b, f);
+	w = b->makeFaceWinding(f);
 #else
 	w = Brush_MakeFaceWinding (selected_brushes.next, f);
 #endif
@@ -134,7 +134,7 @@ void SelectFaceEdge (face_s *f, int p1, int p2)
 	int			pnum[128];
 
 #ifdef NEWEDGESEL
-	w = Brush_MakeFaceWinding (b, f);
+	w = b->makeFaceWinding(f);
 #else
 	w = Brush_MakeFaceWinding (selected_brushes.next, f);
 #endif
@@ -180,7 +180,7 @@ void SelectVertex (int p1)
   {
 	  for (f=b->brush_faces ; f ; f=f->next)
 	  {
-		  w =  Brush_MakeFaceWinding (b, f);
+		  w =  b->makeFaceWinding(f);
 		  if (!w)
 			  continue;
 		  for (i=0 ; i<w->numpoints ; i++)
