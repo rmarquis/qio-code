@@ -1625,7 +1625,7 @@ void Select_FitTexture(int nHeight, int nWidth)
     {
       face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
       brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
-      Face_FitTexture(selFace, nHeight, nWidth);
+	  selFace->fitTexture(nHeight, nWidth);
 	  	Brush_Build(selBrush);
     }
 	}

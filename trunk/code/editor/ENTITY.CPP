@@ -27,25 +27,25 @@ int g_entityId = 1;
 
 void entity_s::trackMD3Angles(const char *key, const char *value)
 {
-  if (_strcmpi(key, "angle") != 0)
-  {
-    return;
-  }
+	if (_strcmpi(key, "angle") != 0)
+	{
+		return;
+	}
 
-  if (this->eclass->isFixedSize() && this->eclass->hasEditorFlagMiscModel())
-  {
-	  float a = this->getKeyFloat("angle");
-    float b = atof(value);
-    if (a != b)
-    {
-      vec3_t vAngle;
-      vAngle[0] = vAngle[1] = 0;
-      vAngle[2] = -a;
-      Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
-      vAngle[2] = b;
-      Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
-    }
-  }
+	if (this->eclass->isFixedSize() && this->eclass->hasEditorFlagMiscModel())
+	{
+		float a = this->getKeyFloat("angle");
+		float b = atof(value);
+		if (a != b)
+		{
+			vec3_t vAngle;
+			vAngle[0] = vAngle[1] = 0;
+			vAngle[2] = -a;
+			Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
+			vAngle[2] = b;
+			Brush_Rotate(this->brushes.onext, vAngle, this->origin, true);
+		}
+	}
 }
 
 
@@ -56,13 +56,6 @@ void entity_s::trackMD3Angles(const char *key, const char *value)
 
 
 
-
-
-/*
-===========
-Entity_AddToList
-===========
-*/
 void Entity_AddToList(entity_s *e, entity_s *list)
 {
 	if (e->next || e->prev)
@@ -73,11 +66,6 @@ void Entity_AddToList(entity_s *e, entity_s *list)
 	e->prev = list;
 }
 
-/*
-===========
-Entity_RemoveFromList
-===========
-*/
 void Entity_RemoveFromList (entity_s *e)
 {
 	if (!e->next || !e->prev)
@@ -89,17 +77,6 @@ void Entity_RemoveFromList (entity_s *e)
 
 
 
-
-/*
-=================
-Entity_MemorySize
-=================
-*/
-int Entity_MemorySize(entity_s *e)
-{
-	int size = 0;
-	return size;
-}
 
 
 
@@ -303,7 +280,8 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 	//}
 	// if fixedsize, calculate a new origin based on the current
 	// brush position
-	else if (e->eclass->isFixedSize())
+//	else 
+	if (e->eclass->isFixedSize())
 	{
 		//if (e->eclass->hasEditorFlagMiscModel() && e->md3Class != NULL)
 		//{

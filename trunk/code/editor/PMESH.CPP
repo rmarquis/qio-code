@@ -390,7 +390,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 		next = f->next;
 		if (f)
 			texdef = f->texdef;
-		Face_Free( f );
+		delete f;
 	}
 
 	b->brush_faces = NULL;

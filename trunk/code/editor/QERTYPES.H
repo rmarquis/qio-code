@@ -238,17 +238,48 @@ struct face_s
 		g_allocatedCounter_face++;
 	}
 	~face_s() {
+		if ( this->face_winding )
+		{
+			free( this->face_winding );
+			this->face_winding = 0;
+		}
+
 		// allocated counter is only used for debugging
 		g_allocatedCounter_face--;
 	}
-};
+	void calculatePlaneFromPoints()
+	{
+		int		j;
+		vec3_c	t1, t2, t3;
 
-struct curveVertex_t {
-	vec3_c xyz;
-	float	sideST[2];
-	float	capST[2];
-};
+		// convert to a vector / dist plane
+		for (j=0 ; j<3 ; j++)
+		{
+			t1[j] = this->planepts[0][j] - this->planepts[1][j];
+			t2[j] = this->planepts[2][j] - this->planepts[1][j];
+			t3[j] = this->planepts[1][j];
+		}
+		
+		this->plane.normal.crossProduct(t1,t2);
+		if (this->plane.normal.vectorCompare(vec3_c(0,0,0)))
+			printf ("WARNING: brush plane with no normal\n");
+		this->plane.normal.normalize();
+		this->plane.dist = t3.dotProduct(this->plane.normal);
+	}	
+	face_s *cloneFace()
+	{
+		face_s	*n;
 
+		n = new face_s();
+		n->texdef = this->texdef;
+
+		memcpy (n->planepts, this->planepts, sizeof(n->planepts));
+
+		// all other fields are derived, and will be set by Brush_Build
+		return n;
+	}
+	void fitTexture(int nHeight, int nWidth );
+};
 
 #define	MIN_PATCH_WIDTH		3
 #define	MIN_PATCH_HEIGHT 	3
@@ -295,7 +326,7 @@ public:
 	int   contents, flags, value, type;
 	mtrAPI_i *d_texture;
 	drawVert_t ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
-	struct brush_s *pSymbiot;
+	class brush_s *pSymbiot;
 	bool bSelected;
 	bool bOverlay;
 	bool bDirty;
@@ -339,16 +370,16 @@ public:
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_brush;
 
-struct brush_s
+class brush_s
 {
 	bool bIsLinkedListHeader;
-	struct brush_s	*prev, *next;	// links in active/selected
-	struct brush_s	*oprev, *onext;	// links in entity
-	struct entity_s	*owner;
+public:
+	class brush_s	*prev, *next;	// links in active/selected
+	class brush_s	*oprev, *onext;	// links in entity
+	class entity_s	*owner;
 	aabb bounds;
 	face_s     *brush_faces;
 
-	bool bModelFailed;
 	//
 	// curve brush extensions
 	// all are derived from brush_faces
@@ -358,7 +389,7 @@ struct brush_s
   
 	patchMesh_c *pPatch;
 
-	struct entity_s *pUndoOwner;
+	class entity_s *pUndoOwner;
 
 	int undoId;						//undo ID
 	int redoId;						//redo ID
@@ -376,7 +407,6 @@ struct brush_s
 		onext = 0;
 		owner = 0;
 		brush_faces = 0;
-		bModelFailed = 0;
 		patchBrush = 0;
 		hiddenBrush = 0;
 		terrainBrush = 0;
@@ -390,6 +420,8 @@ struct brush_s
 		if(bIsLinkedListHeader==false) 
 			g_allocatedCounter_brush--;
 	}
+	void makeFacePlanes();
+
 	const aabb &getBounds() const {
 		return bounds;
 	}
@@ -401,17 +433,6 @@ struct brush_s
 	}
 };
 
-
-//#define	MAX_FLAGS	8
-//
-
-// eclass show flags
-
-//#define     ECLASS_LIGHT      0x00000001
-//#define     ECLASS_ANGLE      0x00000002
-//#define     ECLASS_PATH       0x00000004
-//#define     ECLASS_MISCMODEL  0x00000008
-//#define		ECLASS_PLUGINENTITY 0x00000010
 
 /*
 ** window bits

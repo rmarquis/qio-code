@@ -318,7 +318,6 @@ ENTITY WINDOW
 
 void FillClassList (void)
 {
-	entityDeclAPI_i	*pec;
 	int			iIndex;
 
 	SendMessage(hwndEnt[EntList], LB_RESETCONTENT, 0 , 0);
@@ -1139,8 +1138,6 @@ void AssignModel()
 
 	  SendMessage(hwndEnt[EntValueField], WM_SETTEXT, 0, (LPARAM)str.GetBuffer(0));	
     AddProp();
-//    edit_entity->md3Class = NULL;
-    edit_entity->brushes.onext->bModelFailed = false;
     g_pParentWnd->GetXYWnd()->SetFocus();
   }
 }

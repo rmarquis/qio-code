@@ -163,43 +163,6 @@ void Brush_Print(brush_s* b)
 
 /*
 ================
-Face_Free
-================
-*/
-void Face_Free( face_s *f )
-{
-	assert( f != 0 );
-
-	if ( f->face_winding )
-	{
-		free( f->face_winding );
-		f->face_winding = 0;
-	}
-
-
-	delete f;
-}
-
-/*
-================
-Face_Clone
-================
-*/
-face_s	*Face_Clone (face_s *f)
-{
-	face_s	*n;
-
-	n = new face_s();
-	n->texdef = f->texdef;
-
-	memcpy (n->planepts, f->planepts, sizeof(n->planepts));
-
-	// all other fields are derived, and will be set by Brush_Build
-	return n;
-}
-
-/*
-================
 Face_FullClone
 
 makes an exact copy of the face
@@ -396,30 +359,6 @@ void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
 	}
 }
 
-/*
-================
-Face_MakePlane
-================
-*/
-void Face_MakePlane (face_s *f)
-{
-	int		j;
-	vec3_c	t1, t2, t3;
-
-	// convert to a vector / dist plane
-	for (j=0 ; j<3 ; j++)
-	{
-		t1[j] = f->planepts[0][j] - f->planepts[1][j];
-		t2[j] = f->planepts[2][j] - f->planepts[1][j];
-		t3[j] = f->planepts[1][j];
-	}
-	
-	f->plane.normal.crossProduct(t1,t2);
-	if (f->plane.normal.vectorCompare(vec3_c(0,0,0)))
-		printf ("WARNING: brush plane with no normal\n");
-	f->plane.normal.normalize();
-	f->plane.dist = t3.dotProduct(f->plane.normal);
-}
 
 /*
 ================
@@ -438,21 +377,15 @@ void EmitTextureCoordinates (texturedVertex_c &out, mtrAPI_i *q, face_s *f)
 
 //==========================================================================
 
-/*
-================
-Brush_MakeFacePlanes
-================
-*/
-void Brush_MakeFacePlanes (brush_s *b)
-{
+
+void brush_s::makeFacePlanes() {
 	face_s	*f;
 
-	for (f=b->brush_faces ; f ; f=f->next)
+	for (f=this->brush_faces ; f ; f=f->next)
 	{
-		Face_MakePlane (f);
+		f->calculatePlaneFromPoints();
 	}
 }
-
 /*
 ================
 DrawBrushEntityName
@@ -673,7 +606,7 @@ void Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **
 //	vec3_t	temp;
 
 	b = Brush_Clone (in);
-	nf = Face_Clone (f);
+	nf = f->cloneFace();
 
 	nf->texdef = b->brush_faces->texdef;
 	nf->next = b->brush_faces;
@@ -693,7 +626,7 @@ void Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **
 	}
 
 	b = Brush_Clone (in);
-	nf = Face_Clone (f);
+	nf = f->cloneFace();
 	// swap the plane winding
 	T_Swap(nf->planepts[0],nf->planepts[1]);
 
@@ -1363,7 +1296,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 							tmpw.points[1] = w->points[(k+1) % w->numpoints];
 							tmpw.points[2] = w->points[(k+2) % w->numpoints];
 							//
-							newface = Face_Clone(face);
+							newface = face->cloneFace();
 							//get the original
 							for (f = face; f->original; f = f->original) ;
 							newface->original = f;
@@ -1402,7 +1335,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 						for (j = 0; j < w->numpoints; j++)
 							EmitTextureCoordinates(w->points[j], face->d_texture, face);
 						//make a triangle face
-						newface = Face_Clone(face);
+						newface = face->cloneFace();
 						//get the original
 						for (f = face; f->original; f = f->original) ;
 						newface->original = f;
@@ -1495,7 +1428,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			{
 				movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
 			}
-			Face_MakePlane(movefaces[i]);
+			movefaces[i]->calculatePlaneFromPoints();
 			if (movefaces[i]->plane.normal.vectorLength() < 0.1)
 				result = false;
 		}
@@ -1511,7 +1444,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 				{
 					movefaces[i]->planepts[j] = movefaces[i]->face_winding->points[j].getXYZ();
 				}
-				Face_MakePlane(movefaces[i]);
+				movefaces[i]->calculatePlaneFromPoints();
 			}
 			result = false;
 			end = start;
@@ -1559,7 +1492,7 @@ int Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3
 			//remove the face that was merged with the original
 			if (lastface) lastface->next = face->next;
 			else b->brush_faces = face->next;
-			Face_Free(face);
+			delete face;
 		}
 	}
 	return result;
@@ -2352,7 +2285,7 @@ void Brush_Free (brush_s *b, bool bRemoveNode)
 	for (f=b->brush_faces ; f ; f=next)
 	{
 		next = f->next;
-		Face_Free( f );
+		delete f;
 	}
 
 	// unlink from active/selected list
@@ -2434,7 +2367,7 @@ brush_s *Brush_Clone (brush_s *b)
 		n->owner = b->owner;
 		for (f=b->brush_faces ; f ; f=f->next)
 		{
-			nf = Face_Clone( f );
+			nf = f->cloneFace();
 			nf->next = n->brush_faces;
 			n->brush_faces = nf;
 		}
@@ -2906,7 +2839,7 @@ void Brush_BuildWindings( brush_s *b, bool bSnap )
 	// clear the mins/maxs bounds
 	b->bounds.clear();
 
-	Brush_MakeFacePlanes (b);
+	b->makeFacePlanes();
 
 	face = b->brush_faces;
 
@@ -2981,7 +2914,7 @@ void Brush_RemoveEmptyFaces ( brush_s *b )
 	{
 		next = f->next;
 		if (!f->face_winding)
-			Face_Free (f);
+			delete f;
 		else
 		{
 			f->next = b->brush_faces;
@@ -3043,7 +2976,7 @@ void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
 	for (face_s *f=b->brush_faces ; f ; f=next)
 	{
 		next = f->next;
-		Face_Free( f );
+		delete f;
 	}
 
 	b->brush_faces = b2->brush_faces;
@@ -3268,8 +3201,6 @@ void Brush_Draw( brush_s *b )
 		if (nDrawMode == cd_texture)
 			glDisable (GL_TEXTURE_2D);
 		
-		// if we are wireframing models
-		//bool bp = (b->bModelFailed) ? false : PaintedModel(b, true);
 		
 		if (nDrawMode == cd_texture)
 			glEnable (GL_TEXTURE_2D);
@@ -3739,7 +3670,7 @@ void Brush_MakeSidedSphere(int sides)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Face_FitTexture( face_s * face, int nHeight, int nWidth )
+void face_s::fitTexture(int nHeight, int nWidth )
 {
 	winding_t *w;
 	aabb bounds;
@@ -3764,8 +3695,8 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 
 	bounds.clear();
 
-	td = &face->texdef;
-	w = face->face_winding;
+	td = &this->texdef;
+	w = this->face_winding;
 	if (!w)
 	{
 		return;
@@ -3782,7 +3713,7 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	cosv = cos(ang);
 
 	// get natural texture axis
-	TextureAxisFromPlane(face->plane, vecs[0], vecs[1]);
+	TextureAxisFromPlane(this->plane, vecs[0], vecs[1]);
 
 	min_s = bounds.getMins().dotProduct(vecs[0]);
 	min_t = bounds.getMins().dotProduct(vecs[1]);
@@ -3835,18 +3766,18 @@ void Face_FitTexture( face_s * face, int nHeight, int nWidth )
 	}
 	rot_width =  (max_s - min_s);
 	rot_height = (max_t - min_t);
-	td->scale[0] = -(rot_width/((float)(face->d_texture->getImageWidth()*nWidth)));
-	td->scale[1] = -(rot_height/((float)(face->d_texture->getImageHeight()*nHeight)));
+	td->scale[0] = -(rot_width/((float)(this->d_texture->getImageWidth()*nWidth)));
+	td->scale[1] = -(rot_height/((float)(this->d_texture->getImageHeight()*nHeight)));
 
 	td->shift[0] = min_s/td->scale[0];
-	temp = (int)(td->shift[0] / (face->d_texture->getImageWidth()*nWidth));
-	temp = (temp+1)*face->d_texture->getImageWidth()*nWidth;
-	td->shift[0] = (int)(temp - td->shift[0])%(face->d_texture->getImageWidth()*nWidth);
+	temp = (int)(td->shift[0] / (this->d_texture->getImageWidth()*nWidth));
+	temp = (temp+1)*this->d_texture->getImageWidth()*nWidth;
+	td->shift[0] = (int)(temp - td->shift[0])%(this->d_texture->getImageWidth()*nWidth);
 
 	td->shift[1] = min_t/td->scale[1];
-	temp = (int)(td->shift[1] / (face->d_texture->getImageHeight()*nHeight));
-	temp = (temp+1)*(face->d_texture->getImageHeight()*nHeight);
-	td->shift[1] = (int)(temp - td->shift[1])%(face->d_texture->getImageHeight()*nHeight);
+	temp = (int)(td->shift[1] / (this->d_texture->getImageHeight()*nHeight));
+	temp = (temp+1)*(this->d_texture->getImageHeight()*nHeight);
+	td->shift[1] = (int)(temp - td->shift[1])%(this->d_texture->getImageHeight()*nHeight);
 }
 
 void Brush_FitTexture( brush_s *b, int nHeight, int nWidth )
@@ -3855,7 +3786,7 @@ void Brush_FitTexture( brush_s *b, int nHeight, int nWidth )
 
 	for (face = b->brush_faces ; face ; face=face->next)
 	{
-		Face_FitTexture( face, nHeight, nWidth );
+		face->fitTexture(nHeight, nWidth );
 	}
 }
 

@@ -56,13 +56,9 @@ winding_t*	Brush_MakeFaceWinding (brush_s *b, face_s *face);
 int			AddPlanept (float *f);
 float		SetShadeForPlane (const class edPlane_c &p);
 
-void		Face_Free( face_s *f );
-face_s*		Face_Clone (face_s *f);
-void		Face_MakePlane (face_s *f);
 void		Face_Draw( face_s *face );
 void		Face_TextureVectors (face_s *f, float STfromXYZ[2][4]);
 void		SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 
-void Face_FitTexture( face_s * face, int nHeight, int nWidth );
 void Brush_FitTexture( brush_s *b, int nHeight, int nWidth );
 const char* Brush_GetKeyValue(brush_s *b, const char *pKey);

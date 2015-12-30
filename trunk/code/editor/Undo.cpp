@@ -152,7 +152,7 @@ void Undo_Clear(void)
 		for (pEntity = undo->entitylist.next; pEntity != NULL && pEntity != &undo->entitylist; pEntity = pNextEntity)
 		{
 			pNextEntity = pEntity->next;
-			g_undoMemorySize -= Entity_MemorySize(pEntity);
+			g_undoMemorySize -= pEntity->getMemorySize();
 			delete pEntity;
 		}
 		g_undoMemorySize -= sizeof(undo_t);
@@ -234,7 +234,7 @@ void Undo_FreeFirstUndo(void)
 	for (pEntity = undo->entitylist.next; pEntity != NULL && pEntity != &undo->entitylist; pEntity = pNextEntity)
 	{
 		pNextEntity = pEntity->next;
-		g_undoMemorySize -= Entity_MemorySize(pEntity);
+		g_undoMemorySize -= pEntity->getMemorySize();
 		delete pEntity;
 	}
 	g_undoMemorySize -= sizeof(undo_t);
@@ -501,7 +501,7 @@ void Undo_AddEntity(entity_s *entity)
 	//
 	Entity_AddToList(pClone, &g_lastundo->entitylist);
 	//
-	g_undoMemorySize += Entity_MemorySize(pClone);
+	g_undoMemorySize += pClone->getMemorySize();
 }
 
 /*
@@ -674,7 +674,7 @@ void Undo_Undo(void)
 	// add the undo entities back into the entity list
 	for (pEntity = undo->entitylist.next; pEntity != NULL && pEntity != &undo->entitylist; pEntity = undo->entitylist.next)
 	{
-		g_undoMemorySize -= Entity_MemorySize(pEntity);
+		g_undoMemorySize -= pEntity->getMemorySize();
 		//if this is the world entity
 		if (pEntity->entityId == world_entity->entityId)
 		{
@@ -795,7 +795,7 @@ void Undo_Redo(void)
 			//move the entity to the redo
 			Entity_RemoveFromList(pEntity);
 			Entity_AddToList(pEntity, &g_lastundo->entitylist);
-			g_undoMemorySize += Entity_MemorySize(pEntity);
+			g_undoMemorySize += pEntity->getMemorySize();
 		}
 	}
 	// add the undo entities back into the entity list
