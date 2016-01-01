@@ -8,3 +8,4 @@ V: It's good to turn off the physics simulation while looking for bottlenecks in
 V: Both Radiant, Doom3 editor and Qio's Radiant fork are not running correctly for me on my dedicated high speed GPU - I have to use the integrated one.
 
 V: I have tested Qio windows binaries (exe and dlls) under Ubuntu with Wine - they are working fine, except some GLSL shaders
+V: 2016 01 01: I have also tested Qio built-in editor (run engine exe with -editor parameter) under Ubuntu with Wine - it seems to be working fine.
