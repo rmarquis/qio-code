@@ -45,11 +45,6 @@ void _Write3DMatrix (CMemFile *f, int y, int x, int z, float *m);
 #define	CBLOCK_SUBDIVISIONS	6 
 
 
-patchMesh_c* MakeNewPatch()
-{
-	return new patchMesh_c();
-}
-
 // used for a save spot
 patchMesh_c patchSave;
 
@@ -513,7 +508,7 @@ brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
   // FIXME: this entire type of linkage needs to be fixed
   b->pPatch = pm;
   pm->pSymbiot = b;
-  pm->bSelected = false;
+  pm->setSelected(false);
   pm->bOverlay = false;
   pm->bDirty = true;
   pm->nListID = -1;
@@ -737,10 +732,10 @@ face_s* nextFace(patchMesh_c *p)
 
 ///extern void EmitTextureCoordinates ( texturedVertex_c & xyzst, mtrAPI_i *q, face_s *f);
 
-void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
+void patchMesh_c::capTexture(bool bFaceCycle)
 {
-	p->meshNormals();
-  face_s *f = (bFaceCycle) ? nextFace(p) : Patch_GetAxisFace(p);
+	this->meshNormals();
+  face_s *f = (bFaceCycle) ? nextFace(this) : Patch_GetAxisFace(this);
   vec3_c vSave = f->plane.getNormal();
   float fRotate = f->texdef.rotate;
   f->texdef.rotate = 0;
@@ -755,19 +750,19 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
   f->texdef.shift[0] = 0;
   f->texdef.shift[1] = 0;
   
-  for (int i = 0; i < p->width; i++)
+  for (int i = 0; i < this->width; i++)
   {
-    for (int j = 0; j < p->height; j++)
+    for (int j = 0; j < this->height; j++)
     {
       if (!bFaceCycle)
       {
-		  f->plane.setNormal( p->ctrl[i][j].normal);
+		  f->plane.setNormal( this->ctrl[i][j].normal);
       }
 	  texturedVertex_c tmp;
-	  tmp.xyz = p->ctrl[i][j].xyz;
-		///  EmitTextureCoordinates( p->ctrl[i][j].asWindingPoint(), f->d_texture, f);
+	  tmp.xyz = this->ctrl[i][j].xyz;
+		///  EmitTextureCoordinates( this->ctrl[i][j].asWindingPoint(), f->d_texture, f);
 	   EmitTextureCoordinates(tmp, f->d_texture, f);
-	   p->ctrl[i][j].tc = tmp.st;
+	   this->ctrl[i][j].tc = tmp.st;
     }
   }
   f->plane.setNormal(vSave);
@@ -776,7 +771,7 @@ void Patch_CapTexture(patchMesh_c *p, bool bFaceCycle = false)
   f->texdef.scale[1] = fScale[1];
   f->texdef.shift[0] = fShift[0];
   f->texdef.shift[1] = fShift[1];
-  p->bDirty = true;
+  this->bDirty = true;
 }
 
 void patchMesh_c::fillPatch(vec3_t v)
@@ -897,7 +892,7 @@ brush_s* Cap(patchMesh_c *pParent, bool bByColumn, bool bFirst)
   }
 
   p->rebuildPatch();
-  Patch_CapTexture(p);
+  p->capTexture();
   return p->pSymbiot;
 }
 
@@ -1034,7 +1029,7 @@ brush_s* CapSpecial(patchMesh_c *pParent, int nType, bool bFirst)
   }
 
   p->rebuildPatch();
-  Patch_CapTexture(p);
+  p->capTexture();
   return p->pSymbiot;
 }
 
@@ -1387,7 +1382,7 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
 
 	b = selected_brushes.next;
 
-	p = MakeNewPatch();
+	p = new patchMesh_c();
 
 	p->d_texture = b->brush_faces->d_texture;
 
@@ -1625,7 +1620,7 @@ brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDele
 
 
 
-	patchMesh_c* p = MakeNewPatch();
+	patchMesh_c* p = new patchMesh_c();
 	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
 
 	p->width = nWidth;
@@ -2601,7 +2596,7 @@ void Patch_Deselect()
 	{
 		if (b->patchBrush)
 		{
-			b->pPatch->bSelected = false;
+			b->pPatch->setSelected(false);
 		}
 	}
 
@@ -2619,13 +2614,13 @@ void Patch_Select(patchMesh_c *p)
 	// maintained for point manip.. which i need to fix as this 
 	// is pf error prone
 	//--g_nSelectedPatch = n;
-	p->bSelected = true;
+	p->setSelected(true);
 }
 
 
 void Patch_Deselect(patchMesh_c *p)
 {
-	p->bSelected = false;
+	p->setSelected(false);
 }
 
 
@@ -2666,12 +2661,6 @@ void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool b
 }
 
 
-
-void Patch_Cleanup()
-{
-	//--g_nSelectedPatch = -1;
-	//numPatchMeshes = 0;
-}
 
 
 
@@ -3232,7 +3221,7 @@ p.tryToGetNextToken();
   if (strcmp(p.getLastStoredToken(), "{"))
     return NULL;
 
-	patchMesh_c *pm = MakeNewPatch();
+	patchMesh_c *pm = new patchMesh_c();
 
 
 	{
@@ -3324,11 +3313,6 @@ p.tryToGetNextToken();
 }
 
 
-/*
-==================
-Patch_Write 
-==================
-*/
 void Patch_Write (patchMesh_c *p, CMemFile *file)
 {
   //--MemFile_fprintf(file, " {\n  patchDef3\n  {\n");
@@ -3390,11 +3374,7 @@ void Patch_Write (patchMesh_c *p, FILE *file)
 }
 
 
-/*
-==================
-Patch_RotateTexture
-==================
-*/
+
 void Patch_RotateTexture(patchMesh_c *p, float fAngle)
 {
   vec3_c vMin, vMax;
@@ -3416,11 +3396,6 @@ void Patch_RotateTexture(patchMesh_c *p, float fAngle)
 }
 
 
-/*
-==================
-Patch_ScaleTexture
-==================
-*/
 void Patch_ScaleTexture(patchMesh_c *p, float fx, float fy, bool bFixup)
 {
   // FIXME:
@@ -3453,11 +3428,6 @@ void Patch_ScaleTexture(patchMesh_c *p, float fx, float fy, bool bFixup)
 }
 
 
-/*
-==================
-Patch_ShiftTexture
-==================
-*/
 void Patch_ShiftTexture(patchMesh_c *p, float fx, float fy)
 {
   //if (fx)
@@ -3497,11 +3467,6 @@ void patchMesh_c::invertPatch()
 	}
 }
 
-/*
-==================
-Patch_ToggleInverted
-==================
-*/
 void Patch_ToggleInverted()
 {
   bool bUpdate = false;
@@ -3522,11 +3487,7 @@ void Patch_ToggleInverted()
   UpdatePatchInspector();
 }
 
-/*
-==================
-Patch_ToggleInverted
-==================
-*/
+
 void Patch_InvertTexture(bool bY)
 {
   bool bUpdate = false;
@@ -3577,9 +3538,6 @@ void Patch_InvertTexture(bool bY)
 
 
 /*
-==================
-Patch_Save
-==================
  Saves patch ctrl info (originally to deal with a 
  cancel in the surface dialog
 */
@@ -3591,11 +3549,6 @@ void Patch_Save(patchMesh_c *p)
 }
 
 
-/*
-==================
-Patch_Restore
-==================
-*/
 void Patch_Restore(patchMesh_c *p)
 {
 	p->width = patchSave.width;
@@ -4155,7 +4108,7 @@ void Patch_NaturalizeSelected(bool bCap, bool bCycleCap)
     if (pb->patchBrush)
     {
       if (bCap)
-        Patch_CapTexture(pb->pPatch, bCycleCap);
+		  pb->pPatch->capTexture(bCycleCap);
       else
         pb->pPatch->naturalizePatch();
     }
@@ -4215,14 +4168,7 @@ const char* Patch_GetTextureName()
 
 patchMesh_c* Patch_Duplicate(patchMesh_c *pFrom)
 {
-  patchMesh_c* p = MakeNewPatch();
-  memcpy(p, pFrom , sizeof(patchMesh_c));
-  p->bSelected = false;
-  p->bDirty = true;
-  p->bOverlay = false;
-  p->nListID = -1;
-  // surface plugin
-  
+  patchMesh_c* p = new patchMesh_c(pFrom);
   AddBrushForPatch(p);
   return p;
 }
@@ -4587,126 +4533,3 @@ void Patch_ReplaceQTexture(brush_s *pb, mtrAPI_i *pOld, mtrAPI_i *pNew)
 	}
 }
 
-
-void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz)
-{
-  patchMesh_c* p = MakeNewPatch();
-	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
-	p->width = 3;
-	p->height = 3;
-  p->type = PATCH_TRIANGLE;
-
-  // 0 0 goes to x
-  // 0 1 goes to x
-  // 0 2 goes to x
-
-  // 1 0 goes to mid of x and z
-  // 1 1 goes to mid of x y and z
-  // 1 2 goes to mid of x and y
-
-  // 2 0 goes to z
-  // 2 1 goes to mid of y and z
-  // 2 2 goes to y
-
-  vec5_t vMidXZ;
-  vec5_t vMidXY;
-  vec5_t vMidYZ;
-int j;
-
-  for ( j = 0; j < 3; j++)
-  {
-    _Vector5Add(vx, vz, vMidXZ);
-    _Vector5Scale(vMidXZ, 0.5, vMidXZ);
-    //vMidXZ[j] = vx[j] + abs((vx[j] - vz[j]) * 0.5);
-  }
-
-  for (j = 0; j < 3; j++)
-  {
-    _Vector5Add(vx, vy, vMidXY);
-    _Vector5Scale(vMidXY, 0.5, vMidXY);
-    //vMidXY[j] = vx[j] + abs((vx[j] - vy[j]) * 0.5);
-  }
-
-  for (j = 0; j < 3; j++)
-  {
-    _Vector5Add(vy, vz, vMidYZ);
-    _Vector5Scale(vMidYZ, 0.5, vMidYZ);
-    //vMidYZ[j] = vy[j] + abs((vy[j] - vz[j]) * 0.5);
-  }
-
-  _Vector53Copy(vx, p->ctrl[0][0].xyz);
-  _Vector53Copy(vx, p->ctrl[0][1].xyz);
-  _Vector53Copy(vx, p->ctrl[0][2].xyz);
-  p->ctrl[0][0].tc[0] = vx[3];
-  p->ctrl[0][0].tc[1] = vx[4];
-  p->ctrl[0][1].tc[0] = vx[3];
-  p->ctrl[0][1].tc[1] = vx[4];
-  p->ctrl[0][2].tc[0] = vx[3];
-  p->ctrl[0][2].tc[1] = vx[4];
-
-  _Vector53Copy(vMidXY, p->ctrl[1][0].xyz);
-  _Vector53Copy(vx, p->ctrl[1][1].xyz);
-  _Vector53Copy(vMidXZ, p->ctrl[1][2].xyz);
-  p->ctrl[1][0].tc[0] = vMidXY[3];
-  p->ctrl[1][0].tc[1] = vMidXY[4];
-  p->ctrl[1][1].tc[0] = vx[3];
-  p->ctrl[1][1].tc[1] = vx[4];
-  p->ctrl[1][2].tc[0] = vMidXZ[3];
-  p->ctrl[1][2].tc[1] = vMidXZ[4];
-
-  _Vector53Copy(vy, p->ctrl[2][0].xyz);
-  _Vector53Copy(vMidYZ, p->ctrl[2][1].xyz);
-  _Vector53Copy(vz, p->ctrl[2][2].xyz);
-  p->ctrl[2][0].tc[0] = vy[3];
-  p->ctrl[2][0].tc[1] = vy[4];
-  p->ctrl[2][1].tc[0] = vMidYZ[3];
-  p->ctrl[2][1].tc[1] = vMidYZ[4];
-  p->ctrl[2][2].tc[0] = vz[3];
-  p->ctrl[2][2].tc[1] = vz[4];
-
-
-  //p->naturalizePatch();
-
-  brush_s *b = AddBrushForPatch(p);
-
-}
-
-
-
-//Real nitpicky, but could you make CTRL-S save the current map with the current name? (ie: File/Save)
-/*
-Feature addition.
-When reading in textures, please check for the presence of a file called "textures.link" or something, which contains one line such as;
-
-g:\quake3\baseq3\textures\common
-
- So that, when I'm reading in, lets say, my \eerie directory, it goes through and adds my textures to the palette, along with everything in common.
-
-  Don't forget to add "Finer texture alignment" to the list. I'd like to be able to move in 0.1 increments using the Shift-Arrow Keys.
-
-  No. Sometimes textures are drawn the wrong way on patches. We'd like the ability to flip a texture. Like the way X/Y scale -1 used to worked.
-
-  1) Easier way of deleting rows, columns
-2) Fine tuning of textures on patches (X/Y shifts other than with the surface dialog)
-2) Patch matrix transposition
-
-  1) Actually, bump texture flipping on patches to the top of the list of things to do.
-2) When you select a patch, and hit S, it should read in the selected patch texture. Should not work if you multiselect patches and hit S
-3) Brandon has a wierd anomoly. He fine-tunes a patch with caps. It looks fine when the patch is selected, but as soon as he escapes out, it reverts to it's pre-tuned state. When he selects the patch again, it looks tuned
-
-
-*1) Flipping textures on patches
-*2) When you select a patch, and hit S, it should read in the selected patch texture. Should not work if you multiselect patches and hit S
-3) Easier way of deleting rows columns
-*4) Thick Curves
-5) Patch matrix transposition
-6) Inverted cylinder capping
-*7) bugs
-*8) curve speed
-
-  Have a new feature request. "Compute Bounding Box" for mapobjects (md3 files). This would be used for misc_mapobject (essentially, drop in 3DS Max models into our maps)
-
-  Ok, Feature Request. Load and draw MD3's in the Camera view with proper bounding boxes. This should be off misc_model
-
-  Feature Addition: View/Hide Hint Brushes -- This should be a specific case.
-*/

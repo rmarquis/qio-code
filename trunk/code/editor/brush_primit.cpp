@@ -66,23 +66,6 @@ void FaceToBrushPrimitFace(face_s *f)
 	vec3_c proj;
 	// ST of (0,0) (1,0) (0,1)
 	texturedVertex_c ST[3]; // [ point index ] [ xyz ST ]
-	//++timo not used as long as brushprimit_texdef and texdef are static
-/*	f->brushprimit_texdef.contents=f->texdef.contents;
-	f->brushprimit_texdef.flags=f->texdef.flags;
-	f->brushprimit_texdef.value=f->texdef.value;
-	strcpy(f->brushprimit_texdef.name,f->texdef.getName()); */
-#ifdef _DEBUG
-	if ( f->plane.normal[0]==0.0f && f->plane.normal[1]==0.0f && f->plane.normal[2]==0.0f )
-	{
-		Sys_Printf("Warning : f->plane.normal is (0,0,0) in FaceToBrushPrimitFace\n");
-	}
-	// check d_texture
-	if (!f->d_texture)
-	{
-		Sys_Printf("Warning : f.d_texture is NULL in FaceToBrushPrimitFace\n");
-		return;
-	}
-#endif
 	// compute axis base
 	ComputeAxisBase(f->plane.norm,texX,texY);
 	// compute projection vector
@@ -128,21 +111,7 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, texturedWinding_c * w)
 	{
 		x=w->getXYZ(i).dotProduct(texX);
 		y=w->getXYZ(i).dotProduct(texY);
-//#ifdef _DEBUG
-//		if (g_qeglobals.bNeedConvert)
-//		{
-//			// check we compute the same ST as the traditional texture computation used before
-//			float S=f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2];
-//			float T=f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2];
-//			if ( fabs(S-w->points[i][3])>1e-2 || fabs(T-w->points[i][4])>1e-2 )
-//			{
-//				if ( fabs(S-w->points[i][3])>1e-4 || fabs(T-w->points[i][4])>1e-4 )
-//					Sys_Printf("Warning : precision loss in brush -> brush primitive texture computation\n");
-//				else
-//					Sys_Printf("Warning : brush -> brush primitive texture computation bug detected\n");
-//			}
-//		}
-//#endif
+
 		w->setTC(i,f->brushprimit_texdef.coords[0][0]*x+f->brushprimit_texdef.coords[0][1]*y+f->brushprimit_texdef.coords[0][2],f->brushprimit_texdef.coords[1][0]*x+f->brushprimit_texdef.coords[1][1]*y+f->brushprimit_texdef.coords[1][2]);
 	}
 }
@@ -164,15 +133,7 @@ void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
 			break;
 		if (!strcmp (p.getLastStoredToken(), "}") )
 			break;
-		//// reading of b->epairs if any
-		//if (strcmp (p.getLastStoredToken(), "(") )
-		//{
-		//	ep = ParseEpair();
-		//	ep->next = b->epairs;
-		//	b->epairs = ep;
-		//}
-		//else
-		// it's a face
+
 		{
 			f = new face_s();
 			f->next = NULL;
@@ -276,25 +237,19 @@ void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
 // these shift scale rot values are to be understood in the local axis base
 void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] )
 {
-#ifdef _DEBUG
 	// check this matrix is orthogonal
 	if (fabs(texMat[0][0]*texMat[0][1]+texMat[1][0]*texMat[1][1])>ZERO_EPSILON)
 		Sys_Printf("Warning : non orthogonal texture matrix in TexMatToFakeTexCoords\n");
-#endif
 	scale[0]=sqrt(texMat[0][0]*texMat[0][0]+texMat[1][0]*texMat[1][0]);
 	scale[1]=sqrt(texMat[0][1]*texMat[0][1]+texMat[1][1]*texMat[1][1]);
-#ifdef _DEBUG
 	if (scale[0]<ZERO_EPSILON || scale[1]<ZERO_EPSILON)
 		Sys_Printf("Warning : unexpected scale==0 in TexMatToFakeTexCoords\n");
-#endif
 	// compute rotate value
 	if (fabs(texMat[0][0])<ZERO_EPSILON)
 	{
-#ifdef _DEBUG
 		// check brushprimit_texdef[1][0] is not zero
 		if (fabs(texMat[1][0])<ZERO_EPSILON)
 			Sys_Printf("Warning : unexpected texdef[1][0]==0 in TexMatToFakeTexCoords\n");
-#endif
 		// rotate is +-90
 		if (texMat[1][0]>0)
 			*rot=90.0f;

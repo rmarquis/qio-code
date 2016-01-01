@@ -34,7 +34,6 @@ void Texture_Cleanup(CStringList *pList = NULL);
 mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
-void	Texture_SetMode(int iMenu);	// GL_TEXTURE_NEAREST, etc..
 void Texture_ResetPosition();
 
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);

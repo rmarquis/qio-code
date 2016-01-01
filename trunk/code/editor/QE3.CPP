@@ -197,42 +197,14 @@ int BuildShortPathName(const char* pPath, char* pBuffer, int nBufferLen)
 
 
 
-/*
-===========
-QE_LoadProject
-===========
-*/
-bool QE_LoadProject (char *projectfile)
-{
-	g_qeglobals.m_bBrushPrimitMode = 0;
 
-	FillClassList();		// list in entity window
-	
-	Map_New();
-	
-	FillTextureMenu();
-	FillBSPMenu();
-	
-	return true;
-}
-
-
-/*
-===========
-QE_KeyDown
-===========
-*/
 #define	SPEED_MOVE	32
 #define	SPEED_TURN	22.5
 
 
 /*
-===============
-ConnectEntities
-
 Sets target / targetname on the two entities selected
 from the first selected to the secon
-===============
 */
 void ConnectEntities (void)
 {
@@ -322,18 +294,7 @@ bool QE_SingleBrush (bool bQuiet)
 	return true;
 }
 
-void QE_Init (void)
-{
-	/*
-	** initialize variables
-	*/
-	g_qeglobals.d_gridsize = 8;
-	g_qeglobals.d_showgrid = true;
 
-	//Cam_Init ();
-	//XY_Init ();
-	Z_Init ();
-}
 
 void WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src )
 {
@@ -394,14 +355,6 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 	}
 }
 
-char		com_token[1024];
-bool	com_eof;
-
-/*
-================
-I_FloatTime
-================
-*/
 double I_FloatTime (void)
 {
 	time_t	t;
@@ -409,216 +362,5 @@ double I_FloatTime (void)
 	time (&t);
 	
 	return t;
-#if 0
-// more precise, less portable
-	struct timeval tp;
-	struct timezone tzp;
-	static int		secbase;
-
-	gettimeofday(&tp, &tzp);
-	
-	if (!secbase)
-	{
-		secbase = tp.tv_sec;
-		return tp.tv_usec/1000000.0;
-	}
-	
-	return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
-#endif
 }
-
-
-/*
-==============
-COM_Parse
-
-Parse a token out of a string
-==============
-*/
-char *COM_Parse (char *data)
-{
-	int		c;
-	int		len;
-	
-	len = 0;
-	com_token[0] = 0;
-	
-	if (!data)
-		return NULL;
-		
-// skip whitespace
-skipwhite:
-	while ( (c = *data) <= ' ')
-	{
-		if (c == 0)
-		{
-			com_eof = true;
-			return NULL;			// end of file;
-		}
-		data++;
-	}
-	
-// skip // comments
-	if (c=='/' && data[1] == '/')
-	{
-		while (*data && *data != '\n')
-			data++;
-		goto skipwhite;
-	}
-	
-
-// handle quoted strings specially
-	if (c == '\"')
-	{
-		data++;
-		do
-		{
-			c = *data++;
-			if (c=='\"')
-			{
-				com_token[len] = 0;
-				return data;
-			}
-			com_token[len] = c;
-			len++;
-		} while (1);
-	}
-
-// parse single characters
-	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c==':')
-	{
-		com_token[len] = c;
-		len++;
-		com_token[len] = 0;
-		return data+1;
-	}
-
-// parse a regular word
-	do
-	{
-		com_token[len] = c;
-		data++;
-		len++;
-		c = *data;
-	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c==':')
-			break;
-	} while (c>32);
-	
-	com_token[len] = 0;
-	return data;
-}
-
-
-
-/*
-=============================================================================
-
-						MISC FUNCTIONS
-
-=============================================================================
-*/
-
-
-int		argc;
-char	*argv[MAX_NUM_ARGVS];
-
-/*
-============
-ParseCommandLine
-============
-*/
-void ParseCommandLine (char *lpCmdLine)
-{
-	argc = 1;
-	argv[0] = "programname";
-
-	while (*lpCmdLine && (argc < MAX_NUM_ARGVS))
-	{
-		while (*lpCmdLine && ((*lpCmdLine <= 32) || (*lpCmdLine > 126)))
-			lpCmdLine++;
-
-		if (*lpCmdLine)
-		{
-			argv[argc] = lpCmdLine;
-			argc++;
-
-			while (*lpCmdLine && ((*lpCmdLine > 32) && (*lpCmdLine <= 126)))
-				lpCmdLine++;
-
-			if (*lpCmdLine)
-			{
-				*lpCmdLine = 0;
-				lpCmdLine++;
-			}
-			
-		}
-	}
-}
-
-
-
-/*
-=================
-CheckParm
-
-Checks for the given parameter in the program's command line arguments
-Returns the argument number (1 to argc-1) or 0 if not present
-=================
-*/
-int CheckParm (char *check)
-{
-	int             i;
-
-	for (i = 1;i<argc;i++)
-	{
-		if ( _stricmp(check, argv[i]) )
-			return i;
-	}
-
-	return 0;
-}
-
-
-
-
-/*
-==============
-ParseNum / ParseHex
-==============
-*/
-int ParseHex (char *hex)
-{
-	char    *str;
-	int    num;
-
-	num = 0;
-	str = hex;
-
-	while (*str)
-	{
-		num <<= 4;
-		if (*str >= '0' && *str <= '9')
-			num += *str-'0';
-		else if (*str >= 'a' && *str <= 'f')
-			num += 10 + *str-'a';
-		else if (*str >= 'A' && *str <= 'F')
-			num += 10 + *str-'A';
-		else
-			Error ("Bad hex number: %s",hex);
-		str++;
-	}
-
-	return num;
-}
-
-
-int ParseNum (char *str)
-{
-	if (str[0] == '$')
-		return ParseHex (str+1);
-	if (str[0] == '0' && str[1] == 'x')
-		return ParseHex (str+2);
-	return atol (str);
-}
-
 

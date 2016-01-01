@@ -231,27 +231,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\StdAfx.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TexEdit.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureLayout.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureLoad.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\TexWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ToolWnd.cpp"
 				>
 			</File>
 			<File
@@ -260,14 +240,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\VERTSEL.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WaveOpen.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WIN_DLG.CPP"
 				>
 			</File>
 			<File
@@ -280,10 +252,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\WIN_QE3.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Winding.cpp"
 				>
 			</File>
 			<File
@@ -667,11 +635,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\editor\TexEdit.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\TextureBar.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\editor\TextureLayout.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\TextureLoad.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ToolWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\WaveOpen.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\WaveOpen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\WIN_DLG.CPP"
 				>
 			</File>
 			<File

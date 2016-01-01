@@ -1122,86 +1122,26 @@ void CMainFrame::Dump(CDumpContext& dc) const
 // CMainFrame message handlers
 void CMainFrame::CreateQEChildren()
 {
-	// the project file can be specified on the command line,
-	// or implicitly found in the scripts directory
-  bool bProjectLoaded = false;
-	if (AfxGetApp()->m_lpCmdLine && strlen(AfxGetApp()->m_lpCmdLine))
-	{
-		ParseCommandLine (AfxGetApp()->m_lpCmdLine);
-		bProjectLoaded = QE_LoadProject(argv[1]);
-	}
-	else 
-  {
-    if (g_PrefsDlg.m_bLoadLast && g_PrefsDlg.m_strLastProject.GetLength() > 0)
-    {
-	    bProjectLoaded = QE_LoadProject(g_PrefsDlg.m_strLastProject.GetBuffer(0));
-    }
-    if (!bProjectLoaded)
-    {
-      //CString str = g_strAppPath;
-      //AddSlash(str);
-      //str += "baseqio/;
-      //char cWork[1024];
-      //char *pFile = NULL;
-      //GetFullPathName(str, 1024, cWork, &pFile);
-      bProjectLoaded = QE_LoadProject("editor/qioEditorDefault.qe4");
-    }
-    if (!bProjectLoaded)
-    {
-      bProjectLoaded = QE_LoadProject("scripts/quake.qe4");
-    }
-  }
+	g_qeglobals.m_bBrushPrimitMode = 0;
 
-  if (!bProjectLoaded)
-  {
-#if 0
-    // let's try the default project directory..
-    char* pBuff = new char[1024];
-    ::GetCurrentDirectory(1024, pBuff);
-    CString strDefProj = g_strAppPath;
-    AddSlash(strDefProj);
-    strDefProj += "defproj";
-    if (::SetCurrentDirectory(strDefProj))
-    {
-	    bProjectLoaded = QE_LoadProject("scripts/quake.qe4");
-      if (bProjectLoaded)
-      {
-        // setup auto load stuff for the default map
-        g_PrefsDlg.m_bLoadLast = TRUE;
-        AddSlash(strDefProj);
-        strDefProj += "maps\\defproj.map";
-        g_PrefsDlg.m_strLastMap = strDefProj;
-        g_PrefsDlg.SavePrefs();
-      }
-    }
-    else
-    {
-      ::SetCurrentDirectory(pBuff);
-    }
-    delete []pBuff;
-#endif
+	FillClassList();		// list in entity window
+	
+	Map_New();
+	
+	FillTextureMenu();
+	FillBSPMenu();
 
-    if (!bProjectLoaded)
-    {
-      Sys_Printf ("Using default.qe4. You may experience problems. See the readme.txt\n");
-      CString strProj = g_strAppPath;
-      strProj += "\\default.qe4";
-      bProjectLoaded = QE_LoadProject(strProj.GetBuffer(0));
+	/*
+	** initialize variables
+	*/
+	g_qeglobals.d_gridsize = 8;
+	g_qeglobals.d_showgrid = true;
 
-      if (!bProjectLoaded)
-      {
-        CFileDialog dlgFile(true, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "Q3Radiant Project files (*.qe4, *.prj)|*.qe4|*.prj||", this);
-        if (dlgFile.DoModal() == IDOK)
-          bProjectLoaded = QE_LoadProject(dlgFile.GetPathName().GetBuffer(0));
-      }
-    }
-  }
-
-  if (!bProjectLoaded)
-    Error("Unable to load project file. It was unavailable in the scripts path and the default could not be found");
+	//Cam_Init ();
+	//XY_Init ();
+	Z_Init ();
 
 
-	QE_Init ();
   
 	Sys_Printf ("Entering message loop\n");
 
@@ -1769,7 +1709,6 @@ g_PrefsDlg.m_nView = 0;
   if (m_pXYWnd)
     m_pXYWnd->SetActive(true);
   m_bSplittersOK = true;
-	Texture_SetMode(g_qeglobals.d_savedinfo.iTexMenu);
 
   return TRUE;
 }
@@ -2008,7 +1947,7 @@ void CMainFrame::OnMru(unsigned int nID)
 
 void CMainFrame::OnViewNearest(unsigned int nID) 
 {
-  Texture_SetMode(nID);
+
 }
 
 void CMainFrame::OnTextureWad(unsigned int nID) 

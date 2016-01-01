@@ -661,7 +661,6 @@ void MFCCreate (HINSTANCE hInstance)
 		// fill in new defaults
 		g_qeglobals.d_savedinfo.iSize = sizeof(g_qeglobals.d_savedinfo);
 		g_qeglobals.d_savedinfo.fGamma = 1.0;
-		g_qeglobals.d_savedinfo.iTexMenu = ID_VIEW_BILINEARMIPMAP;
     g_qeglobals.d_savedinfo.m_nTextureTweak = 1;
   
 		//g_qeglobals.d_savedinfo.exclude = INCLUDE_EASY | INCLUDE_NORMAL | INCLUDE_HARD | INCLUDE_DEATHMATCH;

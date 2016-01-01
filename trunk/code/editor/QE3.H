@@ -72,21 +72,6 @@ double I_FloatTime (void);
 
 void	Error (const  char *error, ...);
 void	Warning (char *error, ...);
-int		CheckParm (char *check);
-void ParseCommandLine (char *lpCmdLine);
-
-
-int 	ParseNum (char *str);
-
-
-char *COM_Parse (char *data);
-
-extern	char		com_token[1024];
-extern	bool	com_eof;
-
-#define	MAX_NUM_ARGVS	32
-extern	int		argc;
-extern	char	*argv[MAX_NUM_ARGVS];
 
 struct pedge_t
 {
@@ -97,7 +82,6 @@ struct pedge_t
 struct SavedInfo_t
 {
 	int		  iSize;
-	int		  iTexMenu;		// nearest, linear, etc
 	float	  fGamma;			// gamma for textures
 	char	  szProject[256];	// last project loaded
 	vec3_t	colors[COLOR_LAST];
@@ -321,18 +305,12 @@ void     WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src );
 void     QE_CountBrushesAndUpdateStatusBar( void );
 void     WINAPI QE_CheckOpenGLForErrors(void);
 void     QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool useTemps);
-void     QE_Init (void);
 bool QE_KeyDown (int key, int nFlags = 0);
-bool QE_LoadProject (char *projectfile);
 bool QE_SingleBrush (bool bQuiet = false);
 
 
-// sys stuff
 void Sys_MarkMapModified (void);
 
-/*
-** QE Win32 function declarations
-*/
 int  WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer );
 void QEW_StopGL( HWND hWnd, HGLRC hGLRC, HDC hDC );
 
@@ -368,11 +346,9 @@ extern int  g_nPatchClickedView;
 bool within(vec3_t vTest, vec3_t vTL, vec3_t vBR);
 
 void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs );
-patchMesh_c* MakeNewPatch();
 brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
 brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
-void Patch_ReadFile (char *name);
-void Patch_WriteFile (char *name); 
+
 void Patch_BuildPoints (brush_s *b);
 //void Patch_Move(patchMesh_c *p, const vec3_t vMove, bool bRebuild = false);
 void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c vMatrix[3], bool bSnap = false);
@@ -383,7 +359,6 @@ void Patch_Delete(patchMesh_c *p);
 int  Patch_MemorySize(patchMesh_c *p);
 void Patch_Select(patchMesh_c *p);
 void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool bRebuilt = true);
-void Patch_Cleanup();
 void Patch_SetView(int n);
 void Patch_SetTexture(patchMesh_c *p, texdef_t *tex_def);
 void Patch_BrushToMesh(bool bCone = false, bool bBevel = false, bool bEndcap = false, bool bSquare = false, int nHeight = 3);
@@ -448,7 +423,6 @@ extern bool g_bPatchDrillDown;
 extern bool g_bPatchInsertMode;
 extern bool g_bPatchBendMode;
 extern vec3_c g_vBendOrigin;
-void Patch_FromTriangle(vec5_t vx, vec5_t vy, vec5_t vz);
 
 // Timo
 // new brush primitive stuff
