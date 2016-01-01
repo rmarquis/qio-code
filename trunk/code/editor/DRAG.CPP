@@ -153,7 +153,7 @@ void Drag_Setup (int x, int y, int buttons,
 		else if (buttons == (MK_LBUTTON|MK_CONTROL|MK_SHIFT) )
 		{
 			Sys_Printf ("Sticky dragging brush\n");
-			for (f=t.brush->brush_faces ; f ; f=f->next)
+			for (f=t.brush->getFirstFace() ; f ; f=f->next)
 				Brush_SelectFaceForDragging (t.brush, f, false);
 		}
 		else
@@ -341,7 +341,7 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.getName()[0] == '(')
+			if (t.brush->getFirstFace()->getMatName()[0] == '(')
 				Sys_Printf ("Can't change an entity texture\n");
 			else
 			{
@@ -360,7 +360,7 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.getName()[0] == '(')
+			if (t.brush->getFirstFace()->getMatName()[0] == '(')
 				Sys_Printf ("Can't change an entity texture\n");
 			else
 			{
@@ -380,12 +380,12 @@ void Drag_Begin (int x, int y, int buttons,
 		t = Test_Ray (origin, dir, false);
 		if (t.brush)
 		{
-			if (t.brush->brush_faces->texdef.getName()[0] == '(')
+			if (t.brush->getFirstFace()->getMatName()[0] == '(')
       {
         if (t.brush->owner->eclass->hasEditorFlagLight())
         {
           CString strBuff;
-          mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
+          mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.getMatName());
           if (pTex)
           {
             vec3_c vColor = pTex->getEditorColor();
@@ -421,8 +421,8 @@ void Drag_Begin (int x, int y, int buttons,
       }
 			else
 			{
-      	//strcpy(t.face->texdef.getName(),g_qeglobals.d_texturewin.texdef.getName());
-      	t.face->texdef.setName(g_qeglobals.d_texturewin.texdef.getName());
+      	//strcpy(t.face->getMatName(),g_qeglobals.d_texturewin.getMatName());
+      	t.face->setMatName(g_qeglobals.d_texturewin.getMatName());
 				Brush_Build(t.brush);
 				Sys_UpdateWindows (W_ALL);
 			}
@@ -552,7 +552,7 @@ void MoveSelection (vec3_t move)
 			success = true;
 			for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
 			{
-				success &= Brush_MoveVertex(b, g_qeglobals.d_move_points[0], move, end, true);
+				success &= b->moveVertex(g_qeglobals.d_move_points[0], move, end, true);
 			}
 			if (success)
 				*((vec3_c*)g_qeglobals.d_move_points[0]) = end;

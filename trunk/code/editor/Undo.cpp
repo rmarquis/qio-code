@@ -377,7 +377,7 @@ void Undo_AddBrush(brush_s *pBrush)
 	if (Undo_BrushInUndo(g_lastundo, pBrush))
 		return;
 	//clone the brush
-	brush_s* pClone = Brush_FullClone(pBrush);
+	brush_s* pClone = pBrush->fullClone();
 	//save the ID of the owner entity
 	pClone->ownerId = pBrush->owner->entityId;
 	//save the old undo ID for previous undos
@@ -418,7 +418,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 		if (pBrush->owner->eclass->isFixedSize() == 1)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
-		brush_s* pClone = Brush_FullClone(pBrush);
+		brush_s* pClone = pBrush->fullClone();
 		//save the ID of the owner entity
 		pClone->ownerId = pBrush->owner->entityId;
 		//save the old undo ID from previous undos

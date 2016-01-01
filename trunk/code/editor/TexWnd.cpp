@@ -98,7 +98,7 @@ void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, brush_s *pList)
 			Patch_ReplaceQTexture(pBrush, pOld, pNew);
 		}
 
-		for (face_s* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
+		for (face_s* pFace = pBrush->getFirstFace(); pFace; pFace = pFace->next)
 		{
 			if (pFace->d_texture == pOld)
 			{
@@ -200,9 +200,9 @@ void	Texture_ShowInuse (void)
 		}
 		else
 		{
-			for (f=b->brush_faces ; f ; f=f->next)
+			for (f=b->getFirstFace() ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->texdef.getName());
+				QERApp_TryTextureForName (f->getMatName());
 			}
 		}
 	}
@@ -215,9 +215,9 @@ void	Texture_ShowInuse (void)
 		}
 		else
 		{
-			for (f=b->brush_faces ; f ; f=f->next)
+			for (f=b->getFirstFace() ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->texdef.getName());
+				QERApp_TryTextureForName (f->getMatName());
 			}
 		}
 	}
@@ -229,7 +229,7 @@ void	Texture_ShowInuse (void)
 	SetWindowText(g_qeglobals.d_hwndEntity, name);
 
 	// select the first texture in the list
-	if (!g_qeglobals.d_texturewin.texdef.getName()[0])
+	if (!g_qeglobals.d_texturewin.getMatName()[0])
 	{
 		SelectTexture (16, g_qeglobals.d_texturewin.height -16, false);
 	}
@@ -705,7 +705,7 @@ void Texture_Draw2 (int width, int height)
 			glEnd ();
 
 			// draw the selection border
-			if (!_strcmpi(g_qeglobals.d_texturewin.texdef.getName(), q->getName()))
+			if (!_strcmpi(g_qeglobals.d_texturewin.getMatName(), q->getName()))
 			{
 				glLineWidth (3);
 				glColor3f (1,0,0);

@@ -117,7 +117,7 @@ void EmitBrushPrimitTextureCoordinates(face_s * f, texturedWinding_c * w)
 }
 
 // parse a brush in brush primitive format
-void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
+void brush_s::parseBrushPrimit(class parser_c &p)
 {
 	face_s		*f;
 	int			i,j;
@@ -137,12 +137,12 @@ void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
 		{
 			f = new face_s();
 			f->next = NULL;
-			if (!b->brush_faces)
-			  	b->brush_faces = f;
+			if (!this->getFirstFace())
+			  	this->brush_faces = f;
 		  	else
 			{
 				face_s *scan;
-				for (scan=b->brush_faces ; scan->next ; scan=scan->next)
+				for (scan=this->getFirstFace() ; scan->next ; scan=scan->next)
 					;
 				scan->next = f;
 		  	}
@@ -218,8 +218,8 @@ void BrushPrimit_Parse(class parser_c &p, brush_s	*b)
 			}
 			// read the texturedef
 			p.getToken();
-			//strcpy(f->texdef.getName(), p.getLastStoredToken());
-			f->texdef.setName(p.getLastStoredToken());
+			//strcpy(f->getMatName(), p.getLastStoredToken());
+			f->setMatName(p.getLastStoredToken());
 			if (p.isAtEOL ()==false)
 			{
 				p.getToken();

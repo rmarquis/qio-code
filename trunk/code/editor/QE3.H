@@ -147,8 +147,6 @@ struct QEGlobals_t
 	
 	texturewin_t d_texturewin;
 	
-	int	         d_pointfile_display_list;
-	
 	
 	LPMRUMENU    d_lpMruMenu;
 	
@@ -345,7 +343,6 @@ extern bool g_bSameView;
 extern int  g_nPatchClickedView;
 bool within(vec3_t vTest, vec3_t vTL, vec3_t vBR);
 
-void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs );
 brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
 brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
 
@@ -431,7 +428,6 @@ void FaceToBrushPrimitFace(face_s *f);
 void EmitBrushPrimitTextureCoordinates(face_s *, texturedWinding_c *);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
 void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
-void BrushPrimit_Parse(class parser_c &p, brush_s *);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] );

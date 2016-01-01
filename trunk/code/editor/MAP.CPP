@@ -109,7 +109,7 @@ void Map_BuildBrushData(void)
 	{
 		next = b->next;
 		Brush_Build( b, true, false, false );
-		if (!b->brush_faces || (g_PrefsDlg.m_bCleanTiny && CheckForTinyBrush(b, n++, g_PrefsDlg.m_fTinySize)))
+		if (!b->getFirstFace() || (g_PrefsDlg.m_bCleanTiny && CheckForTinyBrush(b, n++, g_PrefsDlg.m_fTinySize)))
 		{
 			Brush_Free (b);
 			Sys_Printf ("Removed degenerate brush\n");

@@ -39,7 +39,7 @@ void CSG_MakeHollow (void)
     if (b->owner->eclass->isFixedSize() || b->patchBrush || b->terrainBrush || b->hiddenBrush)
 		  continue;
 
-		for (f = b->brush_faces ; f ; f=f->next)
+		for (f = b->getFirstFace() ; f ; f=f->next)
 		{
 			face_s *split = f->cloneFace();
 			move = f->plane.norm * g_qeglobals.d_gridsize;
@@ -47,7 +47,7 @@ void CSG_MakeHollow (void)
 				split->planepts[i] -= move;
 			}
 
-			Brush_SplitBrushByFace (b, split, &front, &back);
+			b->splitBrushByFace(split, &front, &back);
 			if (back)
 				Brush_Free (back);
 			if (front)
@@ -72,7 +72,7 @@ Brush_Merge
  be the same as well.
 =============
 */
-brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
+brush_s *brush_s::tryMergeWith(brush_s *brush2, int onlyshape)
 {
 	int i, shared;
 	brush_s *newbrush;
@@ -81,8 +81,8 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 	// check for bounding box overlapp
 	for (i = 0; i < 3; i++)
 	{
-		if (brush1->getMins()[i] > brush2->getMaxs()[i] + ON_EPSILON
-				|| brush1->getMaxs()[i] < brush2->getMins()[i] - ON_EPSILON)
+		if (this->getMins()[i] > brush2->getMaxs()[i] + ON_EPSILON
+				|| this->getMaxs()[i] < brush2->getMins()[i] - ON_EPSILON)
 		{
 			// never merge if the brushes overlap
 			return NULL;
@@ -91,10 +91,10 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 	//
 	shared = 0;
 	// check if the new brush would be convex... flipped planes make a brush non-convex
-	for (face1 = brush1->brush_faces; face1; face1 = face1->next)
+	for (face1 = this->getFirstFace(); face1; face1 = face1->next)
 	{
 		// don't check the faces of brush 1 and 2 touching each other
-		for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+		for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 		{
 			if (face1->plane.isPlaneEqual(face2->plane, true))
 			{
@@ -108,10 +108,10 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		// if this face plane is shared
 		if (face2) continue;
 		//
-		for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+		for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 		{
 			// don't check the faces of brush 1 and 2 touching each other
-			for (f = brush1->brush_faces; f; f = f->next)
+			for (f = this->getFirstFace(); f; f = f->next)
 			{
 				if (face2->plane.isPlaneEqual(f->plane, true)) break;
 			}
@@ -121,7 +121,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 			if (face1->plane.isPlaneEqual(face2->plane, false))
 			{
 				//if the texture/shader references should be the same but are not
-				if (!onlyshape && _stricmp(face1->texdef.getName(), face2->texdef.getName()) != 0) return NULL;
+				if (!onlyshape && _stricmp(face1->getMatName(), face2->getMatName()) != 0) return NULL;
 				continue;
 			}
 			//
@@ -136,10 +136,10 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 	//
 	newbrush = new brush_s(false);
 	//
-	for (face1 = brush1->brush_faces; face1; face1 = face1->next)
+	for (face1 = this->getFirstFace(); face1; face1 = face1->next)
 	{
 		// don't add the faces of brush 1 and 2 touching each other
-		for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+		for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 		{
 			if (face1->plane.isPlaneEqual(face2->plane, true))
 				break;
@@ -147,7 +147,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		if (face2)
 			continue;
 		// don't add faces with the same plane twice
-		for (f = newbrush->brush_faces; f; f = f->next)
+		for (f = newbrush->getFirstFace(); f; f = f->next)
 		{
 			if (face1->plane.isPlaneEqual(f->plane, false))
 				break;
@@ -163,14 +163,14 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		newface->planepts[1] = face1->planepts[1];
 		newface->planepts[2] = face1->planepts[2];
 		newface->plane = face1->plane;
-		newface->next = newbrush->brush_faces;
+		newface->next = newbrush->getFirstFace();
 		newbrush->brush_faces = newface;
 	}
 	//
-	for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+	for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 	{
 		// don't add the faces of brush 1 and 2 touching each other
-		for (face1 = brush1->brush_faces; face1; face1 = face1->next)
+		for (face1 = this->getFirstFace(); face1; face1 = face1->next)
 		{
 			if (face2->plane.isPlaneEqual(face1->plane, true))
 				break;
@@ -178,7 +178,7 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		if (face1)
 			continue;
 		// don't add faces with the same plane twice
-		for (f = newbrush->brush_faces; f; f = f->next)
+		for (f = newbrush->getFirstFace(); f; f = f->next)
 		{
 			if (face2->plane.isPlaneEqual(f->plane, false))
 				break;
@@ -198,9 +198,9 @@ brush_s *Brush_Merge(brush_s *brush1, brush_s *brush2, int onlyshape)
 		newbrush->brush_faces = newface;
 	}
 	// link the new brush to an entity
-	brush1->owner->linkBrush(newbrush);
+	this->owner->linkBrush(newbrush);
 	// build windings for the faces
-	Brush_BuildWindings( newbrush, false);
+	newbrush->buildWindings(false);
 	return newbrush;
 }
 
@@ -232,7 +232,7 @@ brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
 			lastb2 = b1;
 			for (b2 = b1->next; b2; b2 = b2->next)
 			{
-				newbrush = Brush_Merge(b1, b2, onlyshape);
+				newbrush = b1->tryMergeWith(b2, onlyshape);
 				if (newbrush)
 				{
 					tail->next = newbrush;
@@ -286,13 +286,13 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
 	{
 		// check if the new brush would be convex... flipped planes make a brush concave
-		for (face1 = brush1->brush_faces; face1; face1 = face1->next)
+		for (face1 = brush1->getFirstFace(); face1; face1 = face1->next)
 		{
 			// don't check face1 if it touches another brush
 			for (brush2 = brushlist; brush2; brush2 = brush2->next)
 			{
 				if (brush2 == brush1) continue;
-				for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+				for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 				{
 					if (face1->plane.isPlaneEqual(face2->plane, true))
 					{
@@ -307,12 +307,12 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 			for (brush2 = brush1->next; brush2; brush2 = brush2->next)
 			{
 				// don't check the faces of brush 2 touching another brush
-				for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+				for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 				{
 					for (brush3 = brushlist; brush3; brush3 = brush3->next)
 					{
 						if (brush3 == brush2) continue;
-						for (face3 = brush3->brush_faces; face3; face3 = face3->next)
+						for (face3 = brush3->getFirstFace(); face3; face3 = face3->next)
 						{
 							if (face2->plane.isPlaneEqual(face3->plane, true)) break;
 						}
@@ -324,7 +324,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 					if (face1->plane.isPlaneEqual(face2->plane, false))
 					{
 						//if the texture/shader references should be the same but are not
-						if (!onlyshape && _stricmp(face1->texdef.getName(), face2->texdef.getName()) != 0) return NULL;
+						if (!onlyshape && _stricmp(face1->getMatName(), face2->getMatName()) != 0) return NULL;
 						continue;
 					}
 					//
@@ -343,13 +343,13 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 	//
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
 	{
-		for (face1 = brush1->brush_faces; face1; face1 = face1->next)
+		for (face1 = brush1->getFirstFace(); face1; face1 = face1->next)
 		{
 			// don't add face1 to the new brush if it touches another brush
 			for (brush2 = brushlist; brush2; brush2 = brush2->next)
 			{
 				if (brush2 == brush1) continue;
-				for (face2 = brush2->brush_faces; face2; face2 = face2->next)
+				for (face2 = brush2->getFirstFace(); face2; face2 = face2->next)
 				{
 					if (face1->plane.isPlaneEqual(face2->plane, true))
 					{
@@ -360,7 +360,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 			}
 			if (brush2) continue;
 			// don't add faces with the same plane twice
-			for (f = newbrush->brush_faces; f; f = f->next)
+			for (f = newbrush->getFirstFace(); f; f = f->next)
 			{
 				if (face1->plane.isPlaneEqual(f->plane, false))
 					break;
@@ -376,14 +376,14 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 			newface->planepts[1] = face1->planepts[1];
 			newface->planepts[2] = face1->planepts[2];
 			newface->plane = face1->plane;
-			newface->next = newbrush->brush_faces;
-			newbrush->brush_faces = newface;
+			newface->next = newbrush->getFirstFace();
+			newbrush->setFaces(newface);
 		}
 	}
 	// link the new brush to an entity
 	brushlist->owner->linkBrush(newbrush);
 	// build windings for the faces
-	Brush_BuildWindings( newbrush, false);
+	newbrush->buildWindings(false);
 	return newbrush;
 }
 
@@ -401,9 +401,9 @@ brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 
 	in = a;
 	out = NULL;
-	for (f = b->brush_faces; f && in; f = f->next)
+	for (f = b->getFirstFace(); f && in; f = f->next)
 	{
-		Brush_SplitBrushByFace(in, f, &front, &back);
+		in->splitBrushByFace(f, &front, &back);
 		if (in != a) Brush_Free(in);
 		if (front)
 		{	// add to list
@@ -495,7 +495,7 @@ void CSG_Subtract (void)
 				continue;
 
 			//face_s *pFace = s->brush_faces;
-			if (s->brush_faces->d_texture->hasNoCarveFlag())
+			if (s->getFirstFace()->d_texture->hasNoCarveFlag())
 			{
 				continue;
 			}
@@ -599,7 +599,7 @@ void CSG_Merge(void)
 			return;
 		}
 
-		if (b->brush_faces->d_texture->hasNoCarveFlag())
+		if (b->getFirstFace()->d_texture->hasNoCarveFlag())
 		{
 			Sys_Printf("Cannot add brushes using shaders that don't allows CSG operations.\n");
 			return;

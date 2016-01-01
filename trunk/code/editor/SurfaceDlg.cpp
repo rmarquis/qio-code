@@ -168,12 +168,10 @@ void CSurfaceDlg::SetTexMods()
 		pt = &g_qeglobals.d_texturewin.texdef;
 		if (QE_SingleBrush())
     {
-			//strcpy(g_patch_texdef.name, Patch_GetTextureName());
 			g_patch_texdef.setName(Patch_GetTextureName());
     }
 		else
     {
-			//strcpy(g_patch_texdef.name, pt->name);
 			g_patch_texdef.setName(pt->getName());
     }
 		g_patch_texdef.contents = pt->contents;
@@ -184,9 +182,9 @@ void CSurfaceDlg::SetTexMods()
 	}
 	else
 	{
-		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+		if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
 		{
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
@@ -321,9 +319,9 @@ void CSurfaceDlg::GetTexMods()
 	}
 	else
 	{
-		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+		if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
     }
 		else
@@ -386,9 +384,9 @@ void CSurfaceDlg::GetTexMods()
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
     face_s *selFace = NULL;
-		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+		if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
     {
-      selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+      selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 			bpt = &selFace->brushprimit_texdef;
     }
 		else
@@ -478,9 +476,9 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 	{
 		// in brush primitive mode, will read up-to-date m_shift m_rotate m_scale
 		GetTexMods ();
-		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+		if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 			pt = &selFace->texdef;
     }
 		else
@@ -583,9 +581,9 @@ void CSurfaceDlg::UpdateSpinners(bool bUp, int nID)
 	if (g_qeglobals.m_bBrushPrimitMode)
 	{
     face_s *selFace = NULL;
-		if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+		if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
     {
-      selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+      selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 			bpt = &selFace->brushprimit_texdef;
     }
 		else
@@ -610,9 +608,9 @@ void CSurfaceDlg::UpdateSpinners(int nScrollCode, int nPos, CScrollBar* pBar)
 	texdef_t *pt;
 
 	GetTexMods ();
-  if (g_bNewFace && g_ptrSelectedFaces.GetSize() > 0)
+  if (g_bNewFace && g_SelectedFaces.GetSize() > 0)
   {
-    face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
+    face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
 		pt = &selFace->texdef;
   }
   else
@@ -944,15 +942,15 @@ void CSurfaceDlg::OnBtnBrushfit()
 void CSurfaceDlg::OnBtnFacefit() 
 {
   UpdateData(TRUE);
-  if (g_ptrSelectedFaces.GetSize() == 0)
+  if (g_SelectedFaces.GetSize() == 0)
   {
     brush_s *b;
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
     {
-      for (face_s* pFace = b->brush_faces; pFace; pFace = pFace->next)
+      for (face_s* pFace = b->getFirstFace(); pFace; pFace = pFace->next)
       {
-        g_ptrSelectedFaces.Add(pFace);
-        g_ptrSelectedFaceBrushes.Add(b);
+        g_SelectedFaces.Add(pFace);
+        g_SelectedFaceBrushes.Add(b);
       }
     }
   }

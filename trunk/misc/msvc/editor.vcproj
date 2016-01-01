@@ -127,7 +127,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)\Radiant_Release.pch"
-				WarningLevel="3"
+				WarningLevel="1"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -240,22 +240,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\VERTSEL.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Win_ent.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Win_main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WIN_QE3.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\XYWnd.cpp"
 				>
 			</File>
 			<File
@@ -664,6 +648,22 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\WIN_DLG.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\Win_ent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\Win_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\WIN_QE3.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\XYWnd.cpp"
 				>
 			</File>
 			<File
