@@ -28,19 +28,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // externs
 CPtrArray g_SelectedFaces;
 CPtrArray g_SelectedFaceBrushes;
-CPtrArray& g_ptrSelectedFaces = g_SelectedFaces;
-CPtrArray& g_ptrSelectedFaceBrushes = g_SelectedFaceBrushes;
 
 
 void clearSelection() {
 	g_qeglobals.d_select_mode = sel_brush;
 }
 
-/*
-===========
-Test_Ray
-===========
-*/
 #define	DIST_START	999999
 trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 {
@@ -181,19 +174,13 @@ trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags)
 }
 
 
-/*
-============
-Select_Brush
-
-============
-*/
 void Select_Brush (brush_s *brush, bool bComplete, bool bStatus)
 {
 	brush_s	*b;
 	entity_s	*e;
 
-  g_ptrSelectedFaces.RemoveAll();
-  g_ptrSelectedFaceBrushes.RemoveAll();
+  g_SelectedFaces.RemoveAll();
+  g_SelectedFaceBrushes.RemoveAll();
 	//selected_face = NULL;
 	if (g_qeglobals.d_select_count < 2)
 		g_qeglobals.d_select_order[g_qeglobals.d_select_count] = brush;
@@ -243,13 +230,7 @@ singleselect:
 }
 
 
-/*
-============
-Select_Ray
-
-If the origin is inside a brush, that brush will be ignored.
-============
-*/
+// If the origin is inside a brush, that brush will be ignored.
 void Select_Ray (vec3_t origin, vec3_t dir, int flags)
 {
 	trace_t	t;
@@ -312,8 +293,8 @@ void Select_Delete (void)
 {
 	brush_s	*brush;
 
-  g_ptrSelectedFaces.RemoveAll();
-  g_ptrSelectedFaceBrushes.RemoveAll();
+  g_SelectedFaces.RemoveAll();
+  g_SelectedFaceBrushes.RemoveAll();
 	//selected_face = NULL;
 	
 	clearSelection();
@@ -350,8 +331,8 @@ void Select_Deselect (bool bDeselectFaces)
 	{
 		if (bDeselectFaces)
 		{
-			g_ptrSelectedFaces.RemoveAll();
-      g_ptrSelectedFaceBrushes.RemoveAll();
+			g_SelectedFaces.RemoveAll();
+      g_SelectedFaceBrushes.RemoveAll();
       //selected_face = NULL;
 		}
  		Sys_UpdateWindows (W_ALL);
@@ -360,8 +341,8 @@ void Select_Deselect (bool bDeselectFaces)
 
   if (bDeselectFaces)
   {
-  	g_ptrSelectedFaces.RemoveAll();
-    g_ptrSelectedFaceBrushes.RemoveAll();
+  	g_SelectedFaces.RemoveAll();
+    g_SelectedFaceBrushes.RemoveAll();
 	  //selected_face = NULL;
   }
 
@@ -516,15 +497,15 @@ Timo :  texture plugin, added an IPluginTexdef* parameter
 void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale)
 {
 	brush_s	*b;
-	int nCount = g_ptrSelectedFaces.GetSize();
+	int nCount = g_SelectedFaces.GetSize();
 	if (nCount > 0)
 	{
 		Undo_Start("set face textures");
-		ASSERT(g_ptrSelectedFaces.GetSize() == g_ptrSelectedFaceBrushes.GetSize());
+		ASSERT(g_SelectedFaces.GetSize() == g_SelectedFaceBrushes.GetSize());
 		for (int i = 0; i < nCount; i++)
 		{
-			face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
-			brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
+			face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+			brush_s *selBrush = reinterpret_cast<brush_s*>(g_SelectedFaceBrushes.GetAt(i));
 			Undo_AddBrush(selBrush);
 			SetFaceTexdef (selBrush, selFace, texdef, brushprimit_texdef, bFitScale);
 			Brush_Build(selBrush, bFitScale);
@@ -619,7 +600,7 @@ void Select_ApplyMatrix (bool bSnap, bool bRotation, int nAxis, float fDeg)
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 		{
 			for (i=0 ; i<3 ; i++)
 			{
@@ -824,7 +805,7 @@ void RotateTextures(int nAxis, float fDeg, vec3_t vOrigin)
 {
 	for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (face_s* f=b->brush_faces ; f ; f=f->next)
+		for (face_s* f=b->getFirstFace() ; f ; f=f->next)
 		{
 			if (g_qeglobals.m_bBrushPrimitMode)
 				RotateFaceTexture_BrushPrimit( f, nAxis, fDeg, vOrigin );
@@ -861,7 +842,7 @@ void Select_Scale(float x, float y, float z)
 	Select_GetMid (select_origin);
 	for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (face_s* f=b->brush_faces ; f ; f=f->next)
+		for (face_s* f=b->getFirstFace() ; f ; f=f->next)
 		{
 			for (int i=0 ; i<3 ; i++)
 			{
@@ -1214,7 +1195,7 @@ void Select_MakeStructural (void)
 	face_s	*f;
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 			f->texdef.contents &= ~CONTENTS_DETAIL;
 	Select_Deselect ();
 	Sys_UpdateWindows (W_ALL);
@@ -1226,7 +1207,7 @@ void Select_MakeDetail (void)
 	face_s	*f;
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 			f->texdef.contents |= CONTENTS_DETAIL;
 	Select_Deselect ();
 	Sys_UpdateWindows (W_ALL);
@@ -1237,14 +1218,14 @@ void Select_ShiftTexture(int x, int y)
 	brush_s		*b;
 	face_s		*f;
 
-  int nFaceCount = g_ptrSelectedFaces.GetSize();
+  int nFaceCount = g_SelectedFaces.GetSize();
 
 	if(selected_brushes.next == &selected_brushes && nFaceCount == 0)
 		return;
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 		{
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
@@ -1269,8 +1250,8 @@ void Select_ShiftTexture(int x, int y)
 	{
     for (int i = 0; i < nFaceCount; i++)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
-      brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+      brush_s *selBrush = reinterpret_cast<brush_s*>(g_SelectedFaceBrushes.GetAt(i));
   		if (g_qeglobals.m_bBrushPrimitMode)
 	  	{
 
@@ -1296,7 +1277,7 @@ void Select_ScaleTexture(int x, int y)
 	brush_s		*b;
 	face_s		*f;
 
-  int nFaceCount = g_ptrSelectedFaces.GetSize();
+  int nFaceCount = g_SelectedFaces.GetSize();
 
   if(selected_brushes.next == &selected_brushes && nFaceCount == 0)
 	{
@@ -1305,7 +1286,7 @@ void Select_ScaleTexture(int x, int y)
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 		{
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
@@ -1343,8 +1324,8 @@ void Select_ScaleTexture(int x, int y)
 	{
     for (int i = 0; i < nFaceCount; i++)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
-      brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+      brush_s *selBrush = reinterpret_cast<brush_s*>(g_SelectedFaceBrushes.GetAt(i));
 		  if (g_qeglobals.m_bBrushPrimitMode)
 		  {
 			  float	shift[2];
@@ -1375,7 +1356,7 @@ void Select_RotateTexture(int amt)
 	brush_s		*b;
 	face_s		*f;
 
-  int nFaceCount = g_ptrSelectedFaces.GetSize();
+  int nFaceCount = g_SelectedFaces.GetSize();
 
   if(selected_brushes.next == &selected_brushes && nFaceCount == 0)
 	{
@@ -1384,7 +1365,7 @@ void Select_RotateTexture(int amt)
 
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		for (f=b->brush_faces ; f ; f=f->next)
+		for (f=b->getFirstFace() ; f ; f=f->next)
 		{
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
@@ -1422,8 +1403,8 @@ void Select_RotateTexture(int amt)
 	{
     for (int i = 0; i < nFaceCount; i++)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
-      brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+      brush_s *selBrush = reinterpret_cast<brush_s*>(g_SelectedFaceBrushes.GetAt(i));
 		  if (g_qeglobals.m_bBrushPrimitMode)
 		  {
 			  float	shift[2];
@@ -1464,13 +1445,13 @@ void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected
 			Patch_FindReplaceTexture(pBrush, pFind, pReplace, bForce);
 		}
 
-		for (face_s* pFace = pBrush->brush_faces; pFace; pFace = pFace->next)
+		for (face_s* pFace = pBrush->getFirstFace(); pFace; pFace = pFace->next)
 		{
-			if(bForce || _strcmpi(pFace->texdef.getName(), pFind) == 0)
+			if(bForce || _strcmpi(pFace->getMatName(), pFind) == 0)
 			{
 				pFace->d_texture = QERApp_TryTextureForName(pReplace);
-				//strcpy(pFace->texdef.getName(), pReplace);
-				pFace->texdef.setName(pReplace);
+				//strcpy(pFace->getMatName(), pReplace);
+				pFace->setMatName(pReplace);
 			}
 		}
 		Brush_Build(pBrush);
@@ -1488,14 +1469,14 @@ void Select_AllOfType()
 	{
 
     CString strName;
-    if (g_ptrSelectedFaces.GetSize() == 0)
+    if (g_SelectedFaces.GetSize() == 0)
     {
-      strName = g_qeglobals.d_texturewin.texdef.getName();
+      strName = g_qeglobals.d_texturewin.getMatName();
     }
     else
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(0));
-      strName = selFace->texdef.getName();
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(0));
+      strName = selFace->getMatName();
     }
 
     Select_Deselect();
@@ -1516,9 +1497,9 @@ void Select_AllOfType()
       }
       else
       {
-        for (face_s* pFace = b->brush_faces; pFace; pFace = pFace->next)
+        for (face_s* pFace = b->getFirstFace(); pFace; pFace = pFace->next)
         {
-          if (_strcmpi(strName, pFace->texdef.getName()) == 0)
+          if (_strcmpi(strName, pFace->getMatName()) == 0)
           {
 			      Brush_RemoveFromList (b);
 			      Brush_AddToList (b, &selected_brushes);
@@ -1599,7 +1580,7 @@ void Select_FitTexture(int nHeight, int nWidth)
 {
 	brush_s		*b;
 
-  int nFaceCount = g_ptrSelectedFaces.GetSize();
+  int nFaceCount = g_SelectedFaces.GetSize();
 
   if(selected_brushes.next == &selected_brushes && nFaceCount == 0)
 		return;
@@ -1614,8 +1595,8 @@ void Select_FitTexture(int nHeight, int nWidth)
 	{
     for (int i = 0; i < nFaceCount; i++)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
-      brush_s *selBrush = reinterpret_cast<brush_s*>(g_ptrSelectedFaceBrushes.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+      brush_s *selBrush = reinterpret_cast<brush_s*>(g_SelectedFaceBrushes.GetAt(i));
 	  selFace->fitTexture(nHeight, nWidth);
 	  	Brush_Build(selBrush);
     }

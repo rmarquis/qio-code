@@ -799,7 +799,7 @@ void CCamWnd::Cam_Draw()
 		if (FilterBrush (brush))
 			continue;
 		
-		if ((brush->brush_faces->d_texture->hasEditorTransparency() && brush->brush_faces->d_texture->getEditorTransparency() != 1.0))
+		if ((brush->getFirstFace()->d_texture->hasEditorTransparency() && brush->getFirstFace()->d_texture->getEditorTransparency() != 1.0))
 		{
 			m_TransBrushes [ m_nNumTransBrushes++ ] = brush;
 		} 
@@ -856,17 +856,17 @@ void CCamWnd::Cam_Draw()
 		if ( (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
 			continue;
 		
-		for (face=brush->brush_faces ; face ; face=face->next)
+		for (face=brush->getFirstFace() ; face ; face=face->next)
 			Face_Draw( face );
 	}
 	
  
-  int nCount = g_ptrSelectedFaces.GetSize();
+  int nCount = g_SelectedFaces.GetSize();
 	if (nCount > 0)
   {
     for (int i = 0; i < nCount; i++)
     {
-      face_s *selFace = reinterpret_cast<face_s*>(g_ptrSelectedFaces.GetAt(i));
+      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
 		  Face_Draw(selFace);
     }
   }
@@ -882,7 +882,7 @@ void CCamWnd::Cam_Draw()
 		if (g_qeglobals.dontDrawSelectedOutlines || (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
 			continue;
 		
-		for (face=brush->brush_faces ; face ; face=face->next)
+		for (face=brush->getFirstFace() ; face ; face=face->next)
 			Face_Draw( face );
 	}
 	
@@ -927,11 +927,11 @@ void CCamWnd::Cam_Draw()
 	
 	
 	
-	if (g_qeglobals.d_pointfile_display_list)
-	{
-//		Pointfile_Draw();
-		//		glCallList (g_qeglobals.d_pointfile_display_list);
-	}
+//	if (g_qeglobals.d_pointfile_display_list)
+//	{
+////		Pointfile_Draw();
+//		//		glCallList (g_qeglobals.d_pointfile_display_list);
+//	}
 	
 	// bind back to the default texture so that we don't have problems
 	// elsewhere using/modifying texture maps between contexts

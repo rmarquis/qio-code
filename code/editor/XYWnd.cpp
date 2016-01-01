@@ -543,7 +543,7 @@ void CXYWnd::ProduceSplits(brush_s** pFront, brush_s** pBack)
           }
         }
 
-        Brush_SplitBrushByFace (selected_brushes.next, &face, pFront, pBack);
+		selected_brushes.next->splitBrushByFace(&face, pFront, pBack);
       }
 
     }
@@ -623,7 +623,7 @@ void CXYWnd::ProduceSplitLists()
 						face.planepts[2][1] = pBrush->getMaxs()[1];
 					}
 				}
-				Brush_SplitBrushByFace (pBrush, &face, &pFront, &pBack);
+				pBrush->splitBrushByFace(&face, &pFront, &pBack);
 				if (pBack)
 					Brush_AddToList(pBack, &g_brBackSplits);
 				if (pFront)
@@ -1085,7 +1085,7 @@ void CXYWnd::OnPaint()
 		      glColor3f (1,1,0);
 	        face_s *face;
 	        int order;
-	        for (face = pBrush->brush_faces,order = 0 ; face ; face=face->next, order++)
+	        for (face = pBrush->getFirstFace(),order = 0 ; face ; face=face->getNextFace(), order++)
 	        {
 		        texturedWinding_c* w = face->face_winding;
 		        if (!w)
@@ -2373,10 +2373,10 @@ BOOL FilterBrush(brush_s *pb)
     // if not don't hide the whole brush, proceed on a per-face basis (Cam_Draw)
     //++timo TODO: set this as a preference .. show caulk: hide any brush with caulk // don't draw caulk faces
     face_s *f;
-    f=pb->brush_faces;
+    f=pb->getFirstFace();
     while (f)
     {
-      if (!strstr(f->texdef.getName(), "caulk"))
+      if (!strstr(f->getMatName(), "caulk"))
         break;
       f = f->next;
     }
@@ -2384,36 +2384,36 @@ BOOL FilterBrush(brush_s *pb)
       return TRUE;
 
 #if 0
-    if (strstr(pb->brush_faces->texdef.getName(), "caulk"))
+    if (strstr(pb->getFirstFace()->getMatName(), "caulk"))
       return TRUE;
 #endif
 
     //++timo FIXME: .. same deal here?
-    if (strstr(pb->brush_faces->texdef.getName(), "donotenter"))
+    if (strstr(pb->getFirstFace()->getMatName(), "donotenter"))
       return TRUE;
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_HINT)
   {
-    if (strstr(pb->brush_faces->texdef.getName(), "hint"))
+    if (strstr(pb->getFirstFace()->getMatName(), "hint"))
       return TRUE;
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_CLIP)
 	{
-    if (strstr(pb->brush_faces->texdef.getName(), "clip"))
+    if (strstr(pb->getFirstFace()->getMatName(), "clip"))
       return TRUE;
 
-    if (strstr(pb->brush_faces->texdef.getName(), "skip"))
+    if (strstr(pb->getFirstFace()->getMatName(), "skip"))
       return TRUE;
 
-		//if (!strncmp(pb->brush_faces->texdef.getName(), "clip", 4))
+		//if (!strncmp(pb->getFirstFace()->getMatName(), "clip", 4))
 		//	return TRUE;
 	}
 
 	//if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_WATER)
 	//{
-	//	for (face_s* f = pb->brush_faces ; f ; f=f->next)
+	//	for (face_s* f = pb->getFirstFace() ; f ; f=f->next)
  //   {
  //     if (f->texdef.contents & (CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA))
  //       return TRUE;
@@ -2422,7 +2422,7 @@ BOOL FilterBrush(brush_s *pb)
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_DETAIL)
 	{
-		if (pb->brush_faces->texdef.contents & CONTENTS_DETAIL)
+		if (pb->getFirstFace()->texdef.contents & CONTENTS_DETAIL)
 			return TRUE;
 	}
 
@@ -2837,8 +2837,8 @@ void CXYWnd::XY_Draw()
 	//
 	// draw pointfile
 	//
-	if ( g_qeglobals.d_pointfile_display_list)
-		glCallList (g_qeglobals.d_pointfile_display_list);
+///	if ( g_qeglobals.d_pointfile_display_list)
+///		glCallList (g_qeglobals.d_pointfile_display_list);
 
 
   if (!(m_nViewType == XY))

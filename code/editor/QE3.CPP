@@ -327,7 +327,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 		for ( b = active_brushes.next ; b != NULL && b != &active_brushes ; b=next)
 		{
 			next = b->next;
-			if (b->brush_faces )
+			if (b->getFirstFace() )
 			{
 				if ( !b->owner->eclass->isFixedSize())
 					g_numbrushes++;

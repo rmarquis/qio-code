@@ -24,9 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 void		Brush_AddToList (brush_s *b, brush_s *list);
 void		Brush_Build(brush_s *b, bool bSnap = true, bool bMarkMap = true, bool bConvert = false);
-void		Brush_BuildWindings( brush_s *b, bool bSnap = true );
 brush_s*	Brush_Clone (brush_s *b);
-brush_s*	Brush_FullClone(brush_s *b);
 brush_s*	Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef);
 void		Brush_Draw( brush_s *b );
 void		Brush_DrawXY(brush_s *b, int nViewType);
@@ -36,12 +34,10 @@ int			Brush_MemorySize(brush_s *b);
 void		Brush_MakeSided (int sides);
 void		Brush_MakeSidedCone (int sides);
 void		Brush_Move (brush_s *b, const vec3_t move, bool bSnap = true);
-int			Brush_MoveVertex(brush_s *b, const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap = true);
 void		Brush_ResetFaceOriginals(brush_s *b);
 brush_s*	Brush_Parse (class parser_c &p);
 face_s*		Brush_Ray (const vec3_c &origin, const vec3_c &dir, brush_s *b, float *dist);
 void		Brush_RemoveFromList (brush_s *b);
-void		Brush_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush_s **back);
 void		Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear);
 void		Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 void		Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir, bool shear);

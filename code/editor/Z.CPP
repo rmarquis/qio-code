@@ -327,7 +327,7 @@ void Z_Draw (void)
 			continue;
 		bottom = org_bottom[2] + bottom;
 
-		q = QERApp_TryTextureForName (brush->brush_faces->texdef.getName());
+		q = QERApp_TryTextureForName (brush->getFirstFace()->getMatName());
 		glColor3f (q->getEditorColor()[0], q->getEditorColor()[1], q->getEditorColor()[2]);
 		glBegin (GL_QUADS);
 		glVertex2f (-xCam, bottom);
@@ -362,7 +362,7 @@ void Z_Draw (void)
 				{
 					bottom = org_bottom[2] + bottom;
 
-					q = QERApp_TryTextureForName (brush->brush_faces->texdef.getName());
+					q = QERApp_TryTextureForName (brush->getFirstFace()->getMatName());
 					glColor3f (q->getEditorColor()[0], q->getEditorColor()[1], q->getEditorColor()[2]);
 					glBegin (GL_QUADS);
 					glVertex2f (-xCam, bottom);

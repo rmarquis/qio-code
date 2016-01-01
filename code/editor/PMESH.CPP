@@ -355,12 +355,7 @@ void patchMesh_c::calcPatchBounds(vec3_c& vMin, vec3_c& vMax)
 	}
 }
 
-/*
-==================
-Brush_RebuildBrush
-==================
-*/
-void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
+void brush_s::rebuildBrush(vec3_t vMins, vec3_t vMaxs)
 {
 	//
 	// Total hack job 
@@ -381,7 +376,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 	}
 
 
-	for (f=b->brush_faces ; f ; f=next)
+	for (f=this->getFirstFace() ; f ; f=next)
 	{
 		next = f->next;
 		if (f)
@@ -389,7 +384,7 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 		delete f;
 	}
 
-	b->brush_faces = NULL;
+	this->brush_faces = NULL;
 
 	// left the last face so we can use its texdef
 
@@ -423,12 +418,12 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 		f->texdef = texdef;
 		f->texdef.flags &= ~SURF_KEEP;
 		f->texdef.contents &= ~CONTENTS_KEEP;
-		if ( b->patchBrush )
+		if ( this->patchBrush )
 		{
 			f->texdef.flags |= SURF_PATCH; 
 		}
-		f->next = b->brush_faces;
-		b->brush_faces = f;
+		f->next = this->getFirstFace();
+		this->brush_faces = f;
 		j = (i+1)%4;
 
 		f->planepts[0] = pts[j][1];
@@ -440,12 +435,12 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 	f->texdef = texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
-	if ( b->patchBrush )
+	if ( this->patchBrush )
 	{
 		f->texdef.flags |= SURF_PATCH; 
 	}
-	f->next = b->brush_faces;
-	b->brush_faces = f;
+	f->next = this->getFirstFace();
+	this->brush_faces = f;
 
 	f->planepts[0] = pts[0][1];
 	f->planepts[1] = pts[1][1];
@@ -455,25 +450,25 @@ void Brush_RebuildBrush(brush_s *b, vec3_t vMins, vec3_t vMaxs)
 	f->texdef = texdef;
 	f->texdef.flags &= ~SURF_KEEP;
 	f->texdef.contents &= ~CONTENTS_KEEP;
-	if ( b->patchBrush )
+	if ( this->patchBrush )
 	{
 		f->texdef.flags |= SURF_PATCH; 
 	}
-	f->next = b->brush_faces;
-	b->brush_faces = f;
+	f->next = this->getFirstFace();
+	this->brush_faces = f;
 
 	f->planepts[0] = pts[2][0];
 	f->planepts[1] = pts[1][0];
 	f->planepts[2] = pts[0][0];
 
-	Brush_Build(b);
+	Brush_Build(this);
 }
 
 void patchMesh_c::rebuildPatch()
 {
 	vec3_c vMin, vMax;
 	this->calcPatchBounds(vMin, vMax);
-	Brush_RebuildBrush(this->pSymbiot, vMin, vMax);
+	this->pSymbiot->rebuildBrush(vMin, vMax);
 	this->bDirty = true;
 }
 
@@ -500,7 +495,7 @@ brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
 
   brush_s *b = Brush_Create(vMin, vMax, &g_qeglobals.d_texturewin.texdef);
 	face_s		*f;
-	for (f=b->brush_faces ; f ; f=f->next) 
+	for (f=b->getFirstFace() ; f ; f=f->next) 
   {
 		f->texdef.flags |= SURF_PATCH; 
 	}
@@ -686,7 +681,7 @@ face_s* Patch_GetAxisFace(patchMesh_c *p)
 	vec3_c vTemp;
 	brush_s *b = p->pSymbiot;
 
-	for (f = b->brush_faces ; f ; f = f->next) 
+	for (f = b->getFirstFace() ; f ; f = f->next) 
 	{
 		vTemp = f->face_winding->getXYZ(1) - f->face_winding->getXYZ(0);
 		int nScore = 0;
@@ -704,7 +699,7 @@ face_s* Patch_GetAxisFace(patchMesh_c *p)
 	}
 
 	if (f == NULL)
-		f = b->brush_faces;
+		f = b->getFirstFace();
 	return f;
 }
 
@@ -715,7 +710,7 @@ face_s* nextFace(patchMesh_c *p)
   brush_s *b = p->pSymbiot;
   face_s *f = NULL;
   int n = 0;
-	for (f = b->brush_faces ; f && n <= g_nFaceCycle; f = f->next) 
+	for (f = b->getFirstFace() ; f && n <= g_nFaceCycle; f = f->next) 
   {
     n++;
   }
@@ -723,7 +718,7 @@ face_s* nextFace(patchMesh_c *p)
   if (g_nFaceCycle > 5)
   {
     g_nFaceCycle =0;
-    f = b->brush_faces;
+	f = b->getFirstFace();
   }
 
   return f;
@@ -1173,7 +1168,7 @@ void GenerateEndCaps(brush_s *brushParent, bool bBevel, bool bEndcap, bool bInve
   }
 
   p->calcPatchBounds(vMin, vMax);
-  Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+  p->pSymbiot->rebuildBrush(vMin, vMax);
   Select_Brush(p->pSymbiot);
   return;
 
@@ -1351,9 +1346,9 @@ void GenerateEndCaps(brush_s *brushParent, bool bBevel, bool bEndcap, bool bInve
     //Select_Delete();
 
     p->calcPatchBounds(vMin, vMax);
-    Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+	p->pSymbiot->rebuildBrush(vMin, vMax);
     p2->calcPatchBounds(vMin, vMax);
-    Brush_RebuildBrush(p2->pSymbiot, vMin, vMax);
+	p2->pSymbiot->rebuildBrush(vMin, vMax);
     Select_Brush(p->pSymbiot);
     Select_Brush(p2->pSymbiot);
   }
@@ -1384,7 +1379,7 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
 
 	p = new patchMesh_c();
 
-	p->d_texture = b->brush_faces->d_texture;
+	p->d_texture = b->getFirstFace()->d_texture;
 
   p->height = nHeight;
 
@@ -1621,7 +1616,7 @@ brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDele
 
 
 	patchMesh_c* p = new patchMesh_c();
-	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.texdef.getName());
+	p->d_texture = QERApp_TryTextureForName(g_qeglobals.d_texturewin.getMatName());
 
 	p->width = nWidth;
 	p->height = nHeight;
@@ -1979,7 +1974,7 @@ void Patch_UpdateSelected(vec3_t vMove)
 	    
       vec3_c vMin, vMax;
       p->calcPatchBounds(vMin, vMax);
-      Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+	  p->pSymbiot->rebuildBrush(vMin, vMax);
     }
   }
   //Brush_Free(p->pSymbiot);
@@ -2450,7 +2445,7 @@ void Patch_BuildPoints (brush_s *b)
 {
 	face_s		*f;
 	b->patchBrush = false;
-	for (f=b->brush_faces ; f ; f=f->next) 
+	for (f=b->getFirstFace() ; f ; f=f->next) 
   {
 		if (f->texdef.flags & SURF_PATCH) 
     {
@@ -2553,7 +2548,7 @@ void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c
   }
   vec3_c vMin, vMax;
   p->calcPatchBounds(vMin, vMax);
-  Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+  p->pSymbiot->rebuildBrush(vMin, vMax);
 }
 
 
@@ -2655,7 +2650,7 @@ void Patch_Scale(patchMesh_c *p, const vec3_t vOrigin, const vec3_t vAmt, bool b
 	{
 		vec3_c vMin, vMax;
 		p->calcPatchBounds(vMin, vMax);
-		Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+		p->pSymbiot->rebuildBrush(vMin, vMax);
 	}
 	UpdatePatchInspector();
 }
@@ -2769,7 +2764,7 @@ void Patch_AddRow(patchMesh_c *p)
     }
     
     p->calcPatchBounds(vMin, vMax);
-    Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+	p->pSymbiot->rebuildBrush(vMin, vMax);
   }
   UpdatePatchInspector();
 }
@@ -3139,7 +3134,7 @@ void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag)
 	vec3_c vMin, vMax;
 	patchMesh_c *p = pb->pPatch;
 	p->calcPatchBounds(vMin, vMax);
-	Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+	p->pSymbiot->rebuildBrush(vMin, vMax);
 	}
 	}
 	if (bUpdate)
@@ -3623,7 +3618,7 @@ void Patch_SetTextureInfo(texdef_t *pt)
 
 bool WINAPI OnlyPatchesSelected()
 {
-	if (g_ptrSelectedFaces.GetSize() > 0 || selected_brushes.next == &selected_brushes)
+	if (g_SelectedFaces.GetSize() > 0 || selected_brushes.next == &selected_brushes)
 		return false;
 	for (brush_s *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
 	{
@@ -3637,7 +3632,7 @@ bool WINAPI OnlyPatchesSelected()
 
 bool WINAPI AnyPatchesSelected()
 {
-	if (g_ptrSelectedFaces.GetSize() > 0  || selected_brushes.next == &selected_brushes)
+	if (g_SelectedFaces.GetSize() > 0  || selected_brushes.next == &selected_brushes)
 		return false;
 	for (brush_s *pb = selected_brushes.next ; pb != &selected_brushes ; pb = pb->next)
 	{
@@ -4230,7 +4225,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
 
 
           pSeam->calcPatchBounds(vMin, vMax);
-          Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+		  pSeam->pSymbiot->rebuildBrush(vMin, vMax);
           //--Patch_CapTexture(pSeam);
           pSeam->naturalizePatch();
           pSeam->invertPatch();
@@ -4248,7 +4243,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             pSeam->ctrl[1][i].xyz *= 0.5;
           }
           pSeam->calcPatchBounds(vMin, vMax);
-          Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+		  pSeam->pSymbiot->rebuildBrush(vMin, vMax);
           //--Patch_CapTexture(pSeam);
           pSeam->naturalizePatch();
           brushes.Add(b);
@@ -4269,7 +4264,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
 
 
           pSeam->calcPatchBounds(vMin, vMax);
-          Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+		  pSeam->pSymbiot->rebuildBrush( vMin, vMax);
           //--Patch_CapTexture(pSeam);
           pSeam->naturalizePatch();
           pSeam->invertPatch();
@@ -4287,7 +4282,7 @@ void Patch_Thicken(int nAmount, bool bSeam)
             pSeam->ctrl[i][1].xyz *= 0.5;
           }
           pSeam->calcPatchBounds(vMin, vMax);
-          Brush_RebuildBrush(pSeam->pSymbiot, vMin, vMax);
+		  pSeam->pSymbiot->rebuildBrush(vMin, vMax);
           //--Patch_CapTexture(pSeam);
           pSeam->naturalizePatch();
           brushes.Add(b);
@@ -4498,7 +4493,7 @@ void Select_SnapToGrid()
 #endif
       vec3_c vMin, vMax;
       p->calcPatchBounds(vMin, vMax);
-      Brush_RebuildBrush(p->pSymbiot, vMin, vMax);
+	  p->pSymbiot->rebuildBrush(vMin, vMax);
     }
     else
     {

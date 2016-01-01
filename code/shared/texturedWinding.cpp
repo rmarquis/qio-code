@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 
 #define	BOGUS_RANGE	18000
+#define	EDGE_LENGTH	0.2
+#define WCONVEX_EPSILON		0.2
 
 bool texturedWinding_c::removePoint(int point) {
 	if (point < 0 || point >= this->size())
@@ -56,18 +58,12 @@ texturedWinding_c *texturedWinding_c::insertPoint(vec3_t point, int spot) {
 	return neww;
 }
 
-#define	EDGE_LENGTH	0.2
-
 bool texturedWinding_c::isTiny () const {
-	int		i, j;
-	float	len;
-	int		edges;
-
-	edges = 0;
-	for (i=0 ; i<this->size() ; i++) {
-		j = i == this->size() - 1 ? 0 : i+1;
+	u32 edges = 0;
+	for (u32 i=0 ; i<this->size() ; i++) {
+		u32 j = i == this->size() - 1 ? 0 : i+1;
 		vec3_c delta = this->points[j].getXYZ() - this->points[i].getXYZ();
-		len = delta.vectorLength();
+		float len = delta.vectorLength();
 		if (len > EDGE_LENGTH) {
 			if (++edges == 3)
 				return false;
@@ -76,23 +72,20 @@ bool texturedWinding_c::isTiny () const {
 	return true;
 }
 
-#define WCONVEX_EPSILON		0.2
 
 int texturedWinding_c::planesConcave(texturedWinding_c *w1, texturedWinding_c *w2,
 							 const vec3_c &normal1, const vec3_c &normal2,
 							 float dist1, float dist2) {
-	int i;
-
 	if (!w1 || !w2) return false;
 
 	// check if one of the points of winding 1 is at the back of the plane of winding 2
-	for (i = 0; i < w1->size(); i++)
+	for (u32 i = 0; i < w1->size(); i++)
 	{
 		if (normal2.dotProduct(w1->points[i]) - dist2 > WCONVEX_EPSILON)
 			return true;
 	}
 	// check if one of the points of winding 2 is at the back of the plane of winding 1
-	for (i = 0; i < w2->size(); i++)
+	for (u32 i = 0; i < w2->size(); i++)
 	{
 		if (normal1.dotProduct(w2->points[i]) - dist1 > WCONVEX_EPSILON)
 			return true;

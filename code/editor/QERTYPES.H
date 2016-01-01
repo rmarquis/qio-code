@@ -36,7 +36,6 @@ typedef float vec3_t[3];
 
 class texdef_t
 {
-	str name;
 public:
 	texdef_t()
 	{
@@ -45,39 +44,16 @@ public:
 	{
 	}
 
-  const char *getName()
-  {
-	  return name.c_str();
-  }
+	str matName;
 
-  void setName(const char *p)
-  {
-    if (p)
-    {
-      name = p;
-    }
-    else
-    {
-      name = "";
-    }
-  }
+	void setName(const char *s) {
+		matName = s;
+	}
+	const char *getName() const {
+		return matName;
+	}
 
-  texdef_t& operator =(const texdef_t& rhs)
-  {
-    if (&rhs != this)
-    {
-     setName(rhs.name);
-      shift[0] = rhs.shift[0];
-      shift[1] = rhs.shift[1];
-      rotate = rhs.rotate;
-      scale[0] = rhs.scale[0];
-      scale[1] = rhs.scale[1];
-      contents = rhs.contents;
-      flags = rhs.flags;
-      value = rhs.value;
-    }
-    return *this;
-  }
+
 	float	shift[2];
 	float	rotate;
 	float	scale[2];
@@ -108,6 +84,11 @@ public:
 	brushprimit_texdef_s	brushprimit_texdef;
 	int m_nTotalHeight;
 	texdef_t	texdef;
+
+
+	const char *getMatName() const {
+		return texdef.getName();
+	}
 };
 
 #define QER_TRANS     0x00000001
@@ -122,10 +103,14 @@ extern int g_allocatedCounter_face;
 
 //++timo texdef and brushprimit_texdef are static
 // TODO : do dynamic ?
-struct face_s
+class face_s
 {
-	struct face_s			*next;
-	struct face_s			*original;		//used for vertex movement
+friend class brush_c;
+
+public:
+	///str matName;
+	class face_s			*next;
+	class face_s			*original;		//used for vertex movement
 	vec3_c				planepts[3];
 	texdef_t				texdef;
 	plane_c				plane;
@@ -137,6 +122,8 @@ struct face_s
 
 	// Timo new brush primit texdef
 	brushprimit_texdef_s	brushprimit_texdef;
+
+
 
 	face_s() {
 		next = 0;
@@ -154,6 +141,17 @@ struct face_s
 
 		// allocated counter is only used for debugging
 		g_allocatedCounter_face--;
+	}
+	void setMatName(const char *s) {
+		texdef.matName = s;
+		//matName = s;
+	}
+	const char *getMatName() const {
+	///	return matName;
+		return texdef.matName;
+	}
+	face_s *getNextFace() {
+		return next;
 	}
 	void calculatePlaneFromPoints()
 	{
@@ -294,12 +292,12 @@ extern int g_allocatedCounter_brush;
 class brush_s
 {
 	bool bIsLinkedListHeader;
+	aabb bounds;
+	face_s *brush_faces;
 public:
 	class brush_s	*prev, *next;	// links in active/selected
 	class brush_s	*oprev, *onext;	// links in entity
 	class entity_s	*owner;
-	aabb bounds;
-	face_s     *brush_faces;
 
 	//
 	// curve brush extensions
@@ -341,12 +339,29 @@ public:
 		if(bIsLinkedListHeader==false) 
 			g_allocatedCounter_brush--;
 	}
+	void setupSphere(const vec3_c &mid, u32 sides, float radius, texdef_t *texdef);
+	void setupBox(vec3_t mins, vec3_t maxs, texdef_t *texdef);
+	friend brush_s *Brush_Parse (class parser_c &p);
 	void makeFacePlanes();
 	void fitTexture(int nHeight, int nWidth);
 	void removeEmptyFaces();
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 	texturedWinding_c *makeFaceWinding (face_s *face);
+	void snapPlanePoints();
+	brush_s *fullClone();
+	void buildWindings(bool bSnap = true);
+	void rebuildBrush(vec3_t vMins, vec3_t vMaxs);
+	void parseBrushPrimit(class parser_c &p);
+	void splitBrushByFace (face_s *f, brush_s **front, brush_s **back);
+	brush_s *tryMergeWith(brush_s *brush2, int onlyshape);
+	int moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap = true);
 
+	face_s *getFirstFace() {
+		return brush_faces;
+	}
+	void setFaces(face_s *p) {
+		brush_faces = p;
+	}
 	const aabb &getBounds() const {
 		return bounds;
 	}

@@ -107,7 +107,7 @@ void SetupVertexSelection (void)
 #ifdef NEWEDGESEL
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
-	  for (f=b->brush_faces ; f ; f=f->next)
+	  for (f=b->getFirstFace() ; f ; f=f->next)
 		  MakeFace (b,f);
   }
 #else
@@ -115,7 +115,7 @@ void SetupVertexSelection (void)
 		return;
 
   b = selected_brushes.next;
-  for (f=b->brush_faces ; f ; f=f->next)
+  for (f=b->getFirstFace() ; f ; f=f->next)
     MakeFace (b,f);
 #endif
 
@@ -177,7 +177,7 @@ void SelectVertex (int p1)
 #ifdef NEWEDGESEL
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
-	  for (f=b->brush_faces ; f ; f=f->next)
+	  for (f=b->getFirstFace() ; f ; f=f->next)
 	  {
 		  w =  b->makeFaceWinding(f);
 		  if (!w)
@@ -208,7 +208,7 @@ void SelectVertex (int p1)
   }
 #else
 	b = selected_brushes.next;
-	for (f=b->brush_faces ; f ; f=f->next)
+	for (f=b->getFirstFace() ; f ; f=f->next)
 	{
 		w =  Brush_MakeFaceWinding (b, f);
 		if (!w)
