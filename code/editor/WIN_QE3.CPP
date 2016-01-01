@@ -175,25 +175,6 @@ double Sys_DoubleTime (void)
 	return clock()/ 1000.0;
 }
 
-void PrintPixels (HDC hDC)
-{
-	int		i;
-	PIXELFORMATDESCRIPTOR p[64];
-
-	printf ("### flags color layer\n");
-	for (i=1 ; i<64 ; i++)
-	{
-		if (!DescribePixelFormat ( hDC, i, sizeof(p[0]), &p[i]))
-			break;
-		printf ("%3i %5i %5i %5i\n", i,
-			p[i].dwFlags,
-			p[i].cColorBits,
-			p[i].bReserved);
-	}
-	printf ("%i modes\n", i-1);
-}
-
-
 
 //==========================================================================
 

@@ -850,22 +850,14 @@ void Undo_Redo(void)
     Sys_UpdateWindows(W_ALL);
 }
 
-/*
-=============
-Undo_RedoAvailable
-=============
-*/
+
 int Undo_RedoAvailable(void)
 {
 	if (g_lastredo) return true;
 	return false;
 }
 
-/*
-=============
-Undo_UndoAvailable
-=============
-*/
+
 int Undo_UndoAvailable(void)
 {
 	if (g_lastundo)

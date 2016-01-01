@@ -130,11 +130,6 @@ entity_s *Map_FindClass (char *cname)
 	return NULL;
 }
 
-/*
-================
-Map_Free
-================
-*/
 void Map_Free (void)
 {
 	if (selected_brushes.next && (selected_brushes.next != &selected_brushes) )
@@ -318,11 +313,7 @@ void Map_LoadFile (char *filename)
 
 }
 
-/*
-===========
-Map_SaveFile
-===========
-*/
+
 void Map_SaveFile (const char *filename, bool use_region )
 {
 	entity_s	*e, *next;
@@ -418,17 +409,10 @@ void Map_SaveFile (const char *filename, bool use_region )
   //Patch_WriteFile (filename);
 }
 
-/*
-===========
-Map_New
-===========
-*/
 void Map_New (void)
 {
 	Sys_Printf ("Map_New\n");
 	Map_Free ();
-
-  Patch_Cleanup();
 
 	world_entity = new entity_s();
 	world_entity->brushes.onext = 
@@ -589,12 +573,6 @@ void Map_ApplyRegion (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-
-/*
-========================
-Map_RegionSelectedBrushes
-========================
-*/
 void Map_RegionSelectedBrushes (void)
 {
 	Map_RegionOff ();
@@ -625,12 +603,6 @@ void Map_RegionSelectedBrushes (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-
-/*
-===========
-Map_RegionXY
-===========
-*/
 void Map_RegionXY (void)
 {
 	Map_RegionOff ();
@@ -644,11 +616,6 @@ void Map_RegionXY (void)
 	Map_ApplyRegion ();
 }
 
-/*
-===========
-Map_RegionTallBrush
-===========
-*/
 void Map_RegionTallBrush (void)
 {
 	brush_s	*b;
@@ -669,11 +636,7 @@ void Map_RegionTallBrush (void)
 	Select_Delete ();
 	Map_ApplyRegion ();
 }
-/*
-===========
-Map_RegionBrush
-===========
-*/
+
 void Map_RegionBrush (void)
 {
 	brush_s	*b;
@@ -857,12 +820,6 @@ void Map_ImportBuffer (char* buf)
 
 }
 
-
-//
-//================
-//Map_ImportFile
-//================
-//
 void Map_ImportFile (char *filename)
 {
 	char* buf;
@@ -880,13 +837,7 @@ void Map_ImportFile (char *filename)
 	Sys_EndWait();
 }
 
-//
-//===========
-//Map_SaveSelected
-//===========
-//
 // Saves selected world brushes and whole entities with partial/full selections
-//
 void Map_SaveSelected(char* pFilename)
 {
 	entity_s	*e, *next;
@@ -918,12 +869,6 @@ void Map_SaveSelected(char* pFilename)
 	fclose (f);
 }
 
-
-//
-//===========
-//Map_SaveSelected
-//===========
-//
 // Saves selected world brushes and whole entities with partial/full selections
 //
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile)

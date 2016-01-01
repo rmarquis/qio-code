@@ -58,12 +58,6 @@ static bool	nomips = false;
 HGLRC s_hglrcTexture = NULL;
 HDC	 s_hdcTexture = NULL;
 
-//int		texture_mode = GL_NEAREST;
-//int		texture_mode = GL_NEAREST_MIPMAP_NEAREST;
-//int		texture_mode = GL_NEAREST_MIPMAP_LINEAR;
-//int		texture_mode = GL_LINEAR;
-//int		texture_mode = GL_LINEAR_MIPMAP_NEAREST;
-int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
 
 // this is the global counter for GL bind numbers
 //int		texture_extension_number = 1;
@@ -94,125 +88,6 @@ void SelectTexture (int mx, int my, bool bShift, bool bFitScale=false);
 void	Texture_MouseDown (int x, int y, int buttons);
 void	Texture_MouseUp (int x, int y, int buttons);
 void	Texture_MouseMoved (int x, int y, int buttons);
-
-void SetTexParameters (void)
-{
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_mode );
-	
-	switch ( texture_mode )
-	{
-	case GL_NEAREST:
-	case GL_NEAREST_MIPMAP_NEAREST:
-	case GL_NEAREST_MIPMAP_LINEAR:
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		break;
-	case GL_LINEAR:
-	case GL_LINEAR_MIPMAP_NEAREST:
-	case GL_LINEAR_MIPMAP_LINEAR:
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		break;
-	}
-}
-
-void Texture_SetMode(int iMenu)
-{
-	int iMode;
-	HMENU hMenu;
-	bool texturing = true;
-
-	hMenu = GetMenu(g_qeglobals.d_hwndMain);
-
-	switch(iMenu) {
-	case ID_VIEW_NEAREST:					
-		iMode = GL_NEAREST;
-		break;
-	case ID_VIEW_NEARESTMIPMAP:
-		iMode = GL_NEAREST_MIPMAP_NEAREST;
-		break;
-	case ID_VIEW_LINEAR:
-		iMode = GL_NEAREST_MIPMAP_LINEAR;
-		break;
-	case ID_VIEW_BILINEAR:
-		iMode = GL_LINEAR;
-		break;
-	case ID_VIEW_BILINEARMIPMAP:
-		iMode = GL_LINEAR_MIPMAP_NEAREST;
-		break;
-	case ID_VIEW_TRILINEAR:
-		iMode = GL_LINEAR_MIPMAP_LINEAR;
-		break;
-
-	case ID_TEXTURES_WIREFRAME:
-		iMode = 0;
-		texturing = false;
-		break;
-
-	case ID_TEXTURES_FLATSHADE:
-		iMode = 0;
-		texturing = false;
-		break;
-
-	}
-
-	CheckMenuItem(hMenu, ID_VIEW_NEAREST, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_VIEW_NEARESTMIPMAP, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_VIEW_LINEAR, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_VIEW_BILINEARMIPMAP, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_VIEW_BILINEAR, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_VIEW_TRILINEAR, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_TEXTURES_WIREFRAME, MF_BYCOMMAND | MF_UNCHECKED);
-	CheckMenuItem(hMenu, ID_TEXTURES_FLATSHADE, MF_BYCOMMAND | MF_UNCHECKED);
-
-	CheckMenuItem(hMenu, iMenu, MF_BYCOMMAND | MF_CHECKED);
-
-	g_qeglobals.d_savedinfo.iTexMenu = iMenu;
-	texture_mode = iMode;
-
-  if (g_PrefsDlg.m_bSGIOpenGL)
-  {
-    if (s_hdcTexture && s_hglrcTexture)
-    {
-      //if (!qwglMakeCurrent(g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase))
-      if (!wglMakeCurrent(s_hdcTexture, s_hglrcTexture))
-		    Error ("wglMakeCurrent in LoadTexture failed");
-    }
-    else
-      return;
-  }
-
-	if ( texturing )
-		SetTexParameters ();
-
-	if ( !texturing && iMenu == ID_TEXTURES_WIREFRAME)
-	{
-
-		return;
-
-	} else if ( !texturing && iMenu == ID_TEXTURES_FLATSHADE) {
-
-
-		return;
-	}
-
-	//for (i=1 ; i<texture_extension_number ; i++)
-	for (u32 i = 0, ilen = textureNumbers.size(); i < ilen; i++)
-	{
-		glBindTexture( GL_TEXTURE_2D, textureNumbers[i] );
-		SetTexParameters ();
-	}
-
-	// select the default texture
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	glFinish();
-
-
-		Map_BuildBrushData();
-
-
-	Sys_UpdateWindows (W_ALL);
-}
-
 
 void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, brush_s *pList)
 { 
@@ -303,11 +178,7 @@ void	Texture_ShowAll()
 	Sys_UpdateWindows (W_TEXTURE);
 }
 
-/*
-==============
-Texture_ShowInuse
-==============
-*/
+
 void	Texture_ShowInuse (void)
 {
 	face_s	*f;
@@ -390,8 +261,7 @@ mtrAPI_i *Texture_NextPos (int *x, int *y)
 		curIndex++;
 		if (!q)
 			return 0;
-///		q->inuse = true;
-		///current_texture = current_texture->next;
+
 		if (q->getName()[0] == '(')	// fake color texture
 			continue;
 

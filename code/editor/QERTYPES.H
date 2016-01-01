@@ -226,6 +226,9 @@ struct face_s
 #include <renderer/rVertex.h>
 
 class patchMesh_c {
+	bool bSelected;
+
+
 	float calcPatchWidth();
 	float calcPatchWidthDistanceTo(int j);
 	float calcPatchHeight();
@@ -234,12 +237,11 @@ public:
 	int	width, height;		// in control points, not patches
 	int   contents, flags, value, type;
 	mtrAPI_i *d_texture;
-	rVert_c ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
 	class brush_s *pSymbiot;
-	bool bSelected;
 	bool bOverlay;
 	bool bDirty;
 	int  nListID;
+	rVert_c ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT];
 
 	patchMesh_c() {
 		width = height = 0;
@@ -250,6 +252,24 @@ public:
 		bOverlay = false;
 		bDirty = false;
 		nListID = 0;
+	}
+	patchMesh_c(const patchMesh_c *o) {
+		width = o->width;
+		height = o->height;
+		contents = o->contents;
+		d_texture = o->d_texture;
+		pSymbiot = o->pSymbiot;
+		flags = o->flags;
+		value = o->value;
+		type = o->type;
+		memcpy(ctrl,o->ctrl,sizeof(ctrl));
+		this->bSelected = false;
+		this->bDirty = true;
+		this->bOverlay = false;
+		this->nListID = -1;
+	}
+	void setSelected(bool b) {
+		bSelected = b;
 	}
 	void fillPatch(vec3_t v);
 	void naturalizePatch();
@@ -265,7 +285,7 @@ public:
 	void drawPatchXY();
 	void removePatchColumn(bool bFirst);
 	void drawPatchCam();
-
+	void capTexture(bool bFaceCycle = false);
 };
 
 // allocated counter is only used for debugging
