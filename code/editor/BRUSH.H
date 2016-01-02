@@ -50,7 +50,6 @@ int			AddPlanept (float *f);
 float		SetShadeForPlane (const class plane_c &p);
 
 void		Face_Draw( face_s *face );
-void		Face_TextureVectors (face_s *f, float STfromXYZ[2][4]);
 void		SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 ;
 const char* Brush_GetKeyValue(brush_s *b, const char *pKey);

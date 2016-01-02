@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="modelLoader"
 	ProjectGUID="{F5B4778A-0A42-4E81-8AD8-5743A5F99F7F}"
 	RootNamespace="modelLoader"
@@ -307,6 +307,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\tagOr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\textureAxisFromNormal.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\textureAxisFromNormal.h"
 				>
 			</File>
 		</Filter>

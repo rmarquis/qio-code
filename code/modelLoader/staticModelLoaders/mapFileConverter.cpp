@@ -32,32 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
-
-// ==========================================
-vec3_t	baseAxis[18] = {
-	{0,0,1}, {1,0,0}, {0,-1,0},			// floor
-	{0,0,-1}, {1,0,0}, {0,-1,0},		// ceiling
-	{1,0,0}, {0,1,0}, {0,0,-1},			// west wall
-	{-1,0,0}, {0,1,0}, {0,0,-1},		// east wall
-	{0,1,0}, {1,0,0}, {0,0,-1},			// south wall
-	{0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
-};
-void MOD_TextureAxisFromNormal(const vec3_c &normal, vec3_c &xv, vec3_c &yv) {
-	float best = 0;
-	int bestaxis = 0;
-	
-	for (u32 i = 0; i < 6; i++) {
-		float dot = normal.dotProduct(baseAxis[i*3]);
-		if (dot > best) {
-			best = dot;
-			bestaxis = i;
-		}
-	}
-	
-	xv = baseAxis[bestaxis*3+1];
-	yv = baseAxis[bestaxis*3+2];
-}
-
+#include <shared/textureAxisFromNormal.h>
 
 struct r_brushSide_s {
 	plane_c plane;

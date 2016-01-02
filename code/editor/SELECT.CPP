@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 
 #include <math/math.h>
+#include <shared/textureAxisFromNormal.h>
+
 
 // externs
 CPtrArray g_SelectedFaces;
@@ -678,7 +680,7 @@ void ComputeAbsolute(face_s* f, vec3_c &p1, vec3_c &p2, vec3_c &p3)
 #endif
 
   // compute first local axis base
-  TextureAxisFromPlane(f->plane, ex, ey);
+	MOD_TextureAxisFromNormal(f->plane.getNormal(), ex, ey);
   ez.crossProduct(ex,ey);
 	    
   vec3_c aux = ex * -f->texdef.shift[0];
@@ -723,7 +725,7 @@ void AbsoluteToLocal(const class plane_c &normal2, face_s* f, vec3_c& p1, vec3_c
 #endif
 
 	// computing new local axis base
-  TextureAxisFromPlane(normal2, ex, ey);
+  MOD_TextureAxisFromNormal(normal2.getNormal(), ex, ey);
   ez.crossProduct(ex,ey);
 
   // projecting back on (ex,ey)
@@ -808,7 +810,7 @@ void RotateTextures(int nAxis, float fDeg, vec3_t vOrigin)
 		for (face_s* f=b->getFirstFace() ; f ; f=f->next)
 		{
 			if (g_qeglobals.m_bBrushPrimitMode)
-				RotateFaceTexture_BrushPrimit( f, nAxis, fDeg, vOrigin );
+				f->rotateFaceTexture_BrushPrimit(nAxis, fDeg, vOrigin );
 			else
 				RotateFaceTexture(f, nAxis, fDeg);
 			//++timo removed that call .. works fine .. ???????
@@ -1230,7 +1232,7 @@ void Select_ShiftTexture(int x, int y)
 			if (g_qeglobals.m_bBrushPrimitMode)
 			{
 				// use face normal to compute a true translation
-				Select_ShiftTexture_BrushPrimit( f, x, y );
+				f->shiftTexture_BrushPrimit(x, y );
 			}
 			else
 			{

@@ -42,6 +42,5 @@ void _Vector5Add (vec5_t va, vec5_t vb, vec5_t out);
 
 #include <float.h>
 
-#define ZERO_EPSILON 1.0E-6
 
 #endif

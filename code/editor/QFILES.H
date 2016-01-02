@@ -39,20 +39,3 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 
-// lower bits are stronger, and will eat weaker brushes completely
-#define	CONTENTS_SOLID			1		// an eye is never valid in a solid
-
-#define	CONTENTS_DETAIL			    0x8000000	  // brushes to be added after vis leafs
-#define	CONTENTS_NEGATIVE_CURVE 0x40000000	// reverse inside / outside
-
-#define	CONTENTS_KEEP	(CONTENTS_DETAIL | CONTENTS_NEGATIVE_CURVE)
-
-
-
-
-
-#define SURF_PATCH        0x20000000
-#define	SURF_CURVE_FAKE		0x40000000
-#define	SURF_CURVE		    0x80000000
-#define	SURF_KEEP		(SURF_CURVE | SURF_CURVE_FAKE | SURF_PATCH)
-

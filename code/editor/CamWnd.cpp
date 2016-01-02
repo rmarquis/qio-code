@@ -1028,6 +1028,8 @@ void CCamWnd::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
   g_pParentWnd->HandleKey(nChar, nRepCnt, nFlags, false);
 }
 
+void ComputeAxisBase(const vec3_c &inNormal, vec3_c &texS, vec3_c &texT);
+
 // Timo
 // brush primitive texture shifting, using camera view to select translations :
 void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
@@ -1058,12 +1060,12 @@ void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
 		Sys_Printf("Warning : degenerate best vectors axis base in CCamWnd::ShiftTexture_BrushPrimit\n");
 #endif
 		// forget it
-		Select_ShiftTexture_BrushPrimit( f, x, y );
+		f->shiftTexture_BrushPrimit(x, y );
 		return;
 	}
 	// compute best fitted translation in face axis base
 	outS = XS*x + YS*y;
 	outT = XT*x + YT*y;
 	// call actual texture shifting code
-	Select_ShiftTexture_BrushPrimit( f, outS, outT );
+	f->shiftTexture_BrushPrimit(outS, outT );
 }

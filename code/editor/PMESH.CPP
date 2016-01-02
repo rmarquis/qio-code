@@ -756,7 +756,7 @@ void patchMesh_c::capTexture(bool bFaceCycle)
 	  texturedVertex_c tmp;
 	  tmp.xyz = this->ctrl[i][j].xyz;
 		///  EmitTextureCoordinates( this->ctrl[i][j].asWindingPoint(), f->d_texture, f);
-	   EmitTextureCoordinates(tmp, f->d_texture, f);
+	   f->calcTextureCoordinates(tmp);
 	   this->ctrl[i][j].tc = tmp.st;
     }
   }
