@@ -367,6 +367,40 @@ public:
 		}
 		*this = vWork;
 	}
+	
+	static void vectorRotate (const vec3_c &vIn, const vec3_c &vRotation, vec3_c &out)
+	{
+	  vec3_c va = vIn;
+	  vec3_c vWork = va;
+	  int nIndex[3][2];
+	  nIndex[0][0] = 1; nIndex[0][1] = 2;
+	  nIndex[1][0] = 2; nIndex[1][1] = 0;
+	  nIndex[2][0] = 0; nIndex[2][1] = 1;
+
+	  for (int i = 0; i < 3; i++)
+	  {
+		if (vRotation[i] != 0)
+		{
+		  double dAngle = DEG2RAD(vRotation[i]);
+		  double c = cos(dAngle);
+		  double s = sin(dAngle);
+		  vWork[nIndex[i][0]] = va[nIndex[i][0]] * c - va[nIndex[i][1]] * s;
+		  vWork[nIndex[i][1]] = va[nIndex[i][0]] * s + va[nIndex[i][1]] * c;
+		}
+		va = vWork;
+	  }
+	  out = vWork;
+	}
+
+	static void vectorRotate(const vec3_c &vIn, const vec3_c &vRotation, const vec3_c &vOrigin, vec3_c &out)
+	{
+		vec3_c vTemp = vIn - vOrigin;
+		vec3_c vTemp2;
+		vectorRotate(vTemp, vRotation, vTemp2);
+		out = vTemp2 + vOrigin;
+	}
+
+
 	vec3_c toAngles() const {
 		float	forward;
 		float	yaw, pitch;

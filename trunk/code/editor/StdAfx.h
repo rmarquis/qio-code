@@ -130,9 +130,6 @@ extern void CSG_SplitBrushByFace (brush_s *in, face_s *f, brush_s **front, brush
 extern void HandlePopup(CWnd* pWindow, unsigned int uId);
 extern z_t z;
 extern void Select_Scale(float x, float y, float z);
-extern CString g_strProject;
-extern void VectorRotate (vec3_t va, const class vec3_c &vr,  vec3_c &out);
-extern void VectorRotate(const class vec3_c &vIn, const vec3_c &vRotation, const vec3_c &vOrigin, vec3_c &out);
 extern void NewBSP(char* pCommandLine, HWND);
 extern void NewVIS(char* pCommandLine, HWND);
 extern void NewRAD(char* pCommandLine, HWND);

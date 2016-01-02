@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/str.h>
 #include <shared/parser.h>
 
-bool	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
+int	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
 
 char		currentmap[1024];

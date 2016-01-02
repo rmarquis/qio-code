@@ -36,7 +36,7 @@ extern	entity_s	entities;
 extern	entity_s	*world_entity;	// the world entity is NOT included in
 									// the entities chain
 
-extern	bool	modified;		// for quit confirmations
+extern	int	modified;		// for quit confirmations
 
 extern	class vec3_c region_mins, region_maxs;
 extern	bool	region_active;

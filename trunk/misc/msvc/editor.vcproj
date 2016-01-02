@@ -219,15 +219,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\IShaders.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\MAP.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MATHLIB.CPP"
 				>
 			</File>
 			<File
@@ -330,10 +322,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\MapInfo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MATHLIB.H"
 				>
 			</File>
 			<File

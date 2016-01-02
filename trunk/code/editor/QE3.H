@@ -38,7 +38,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // this define to use HTREEITEM and MFC stuff in the headers
 #define QERTYPES_USE_MFC
 #include "qertypes.h"
-#include "mathlib.h"
+#include <math/math.h>
+#include <math/vec3.h>
+#include <math/vec2.h>
+#include <math/aabb.h>
+
+float Q_rint (float in);
+
+
+#include <float.h>
 
 #include <commctrl.h>
 #include "afxres.h"

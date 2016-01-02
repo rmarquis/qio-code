@@ -260,11 +260,6 @@ entity_s	*Entity_Parse (class parser_c &p, brush_s* pList)
 	return ent;
 }
 
-/*
-============
-Entity_Write
-============
-*/
 void Entity_Write (entity_s *e, FILE *f, bool use_region)
 {
 	brush_s		*b;
@@ -470,14 +465,10 @@ void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 
 
 /*
-============
-Entity_Create
-
 Creates a new entity out of the selected_brushes list.
 If the entity class is fixed size, the brushes are only
 used to find a midpoint.  Otherwise, the brushes have
 their ownership transfered to the new entity.
-============
 */
 entity_s	*Entity_Create (entityDeclAPI_i *c)
 {
@@ -567,11 +558,6 @@ void entity_s::linkBrush (brush_s *b)
 	this->brushes.onext = b;
 }
 
-/*
-===========
-Entity_UnlinkBrush
-===========
-*/
 void Entity_UnlinkBrush (brush_s *b)
 {
 	//if (!b->owner || !b->onext || !b->oprev)
@@ -583,12 +569,6 @@ void Entity_UnlinkBrush (brush_s *b)
 	b->owner = NULL;
 }
 
-
-/*
-===========
-Entity_Clone
-===========
-*/
 entity_s	*Entity_Clone (entity_s *e)
 {
 	entity_s	*n;

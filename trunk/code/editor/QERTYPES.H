@@ -62,7 +62,6 @@ public:
 #define QER_TRANS     0x00000001
 #define QER_NOCARVE   0x00000002
 
-#include "mathlib.h"
 
 #define	MIN_PATCH_WIDTH		3
 #define	MIN_PATCH_HEIGHT 	3
@@ -213,7 +212,6 @@ public:
 	}
 	friend brush_s *Brush_Parse (class parser_c &p);
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
-	texturedWinding_c *makeFaceWinding (face_s *face);
 	brush_s *fullClone();
 	void buildWindings(bool bSnap = true);
 	void rebuildBrush(vec3_t vMins, vec3_t vMaxs);

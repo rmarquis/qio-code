@@ -130,14 +130,9 @@ float __VectorNormalize (vec3_t in, vec3_c &out)
 
 
 
-/*
-==================
-Patch_MemorySize
-==================
-*/
 int Patch_MemorySize(patchMesh_c *p)
 {
-	return _msize(p);
+	return sizeof(patchMesh_c);
 }
 
 
@@ -183,12 +178,6 @@ void patchMesh_c::interpolateInteriorPoints()
 	}
 }
 
-/*
-=================
-MakeMeshNormals
-
-=================
-*/
 int	neighbors[8][2] = {
 	{0,1}, {1,1}, {1,0}, {1,-1}, {0,-1}, {-1,-1}, {-1,0}, {-1,1}
 };
@@ -2066,11 +2055,6 @@ void DrawSinglePatch (float ctrl[3][3][5], bool bPoints)
 
 }
 
-/*
-=================
-DrawPatchMesh
-=================
-*/
 //FIXME: this routine needs to be reorganized.. should be about 1/4 the size and complexity
 void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 	int		i, j, k, l;
@@ -2353,16 +2337,10 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 
 }
 
-/*
-==================
-Patch_DrawXY
-==================
-*/
 void patchMesh_c::drawPatchXY()
 {
 	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	if (this->bSelected)
-	{
+	if (this->bSelected) {
 		glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
 	}
 	else
@@ -2372,11 +2350,6 @@ void patchMesh_c::drawPatchXY()
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 }
 
-/*
-==================
-Patch_DrawCam
-==================
-*/
 void patchMesh_c::drawPatchCam()
 {
 	glColor3f (1,1,1);
