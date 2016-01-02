@@ -51,7 +51,6 @@ IMPLEMENT_DYNCREATE(CCamWnd, CWnd);
 CCamWnd::CCamWnd()
 {
   m_pXYFriend = NULL;
-  m_nNumTransBrushes = 0;
   memset(&m_Camera, 0, sizeof(camera_t));
   m_pSide_select = NULL;
   m_bClipMode = false;
@@ -787,7 +786,7 @@ void CCamWnd::Cam_Draw()
 	
 	glMatrixMode(GL_TEXTURE);
 	
-	m_nNumTransBrushes = 0;
+	m_TransBrushes.clear();
 	
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
 	{
@@ -801,7 +800,7 @@ void CCamWnd::Cam_Draw()
 		
 		if ((brush->getFirstFace()->d_texture->hasEditorTransparency() && brush->getFirstFace()->d_texture->getEditorTransparency() != 1.0))
 		{
-			m_TransBrushes [ m_nNumTransBrushes++ ] = brush;
+			m_TransBrushes.push_back(brush);
 		} 
 		else 
 		{
@@ -816,7 +815,7 @@ void CCamWnd::Cam_Draw()
 	//glDepthMask ( 0 ); // Don't write to depth buffer
 	glEnable ( GL_BLEND );
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	for ( i = 0; i < m_nNumTransBrushes; i++ ) 
+	for ( i = 0; i < m_TransBrushes.size(); i++ ) 
 		Brush_Draw (m_TransBrushes[i]);
 	
 	//glDepthMask ( 1 ); // Ok, write now

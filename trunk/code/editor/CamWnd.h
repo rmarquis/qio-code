@@ -75,8 +75,7 @@ protected:
   void Cam_Draw();
 
 
-  brush_s* m_TransBrushes[MAX_MAP_BRUSHES];
-  int m_nNumTransBrushes;
+ arraySTD_c< brush_s*> m_TransBrushes;
   camera_t m_Camera;
   int	m_nCambuttonstate;
   CPoint m_ptButton;

@@ -68,6 +68,16 @@ float Q_rint (float in);
 
 #include "undo.h"
 
+
+#define MAX_WORLD_COORD		( 128*1024 )
+#define MIN_WORLD_COORD		( -128*1024 )
+#define WORLD_SIZE			( MAX_WORLD_COORD - MIN_WORLD_COORD )
+
+
+
+#define MAX_BRUSH_SIZE		( WORLD_SIZE )
+
+
 inline void* qmalloc (size_t nSize)
 {
 	void *b;
@@ -453,6 +463,6 @@ class mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
 
 
 BOOL FilterBrush(brush_s *pb);
-
+extern int g_numentities;
 
 #endif
