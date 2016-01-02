@@ -38,6 +38,59 @@ brush_c::~brush_c() {
 	}
 	brush_faces = 0;
 }
+/*
+returns the visible polygon on a face
+*/
+texturedWinding_c *brush_c::makeFaceWinding (face_s *face)
+{
+	texturedWinding_c	*w;
+	face_s		*clip;
+	plane_c			plane;
+	bool		past;
+
+	// get a poly that covers an effectively infinite area
+	w = new texturedWinding_c (face->plane);
+
+	// chop the poly by all of the other faces
+	past = false;
+	for (clip = this->getFirstFace() ; clip && w ; clip=clip->next)
+	{
+		if (clip == face)
+		{
+			past = true;
+			continue;
+		}
+		if (face->plane.getNormal().dotProduct(clip->plane.getNormal()) > 0.999
+			&& fabs(face->plane.getDist() - clip->plane.getDist()) < 0.01 )
+		{	// identical plane, use the later one
+			if (past)
+			{
+				delete (w);
+				return NULL;
+			}
+			continue;
+		}
+
+		// flip the plane, because we want to keep the back side
+		plane.norm = -clip->plane.norm;
+		plane.dist = -clip->plane.dist;
+		
+		w = w->clip(plane, false);
+		if (!w)
+			return w;
+	}
+	
+	if (w->size() < 3)
+	{
+		delete(w);
+		w = NULL;
+	}
+
+	if (!w)
+		printf ("unused plane\n");
+
+	return w;
+}
 void brush_c::setupSphere(const vec3_c &mid, u32 sides, float radius, const texdef_t *texdef) {
 	float dt = float(2 * M_PI / sides);
 	float dp = float(M_PI / sides);

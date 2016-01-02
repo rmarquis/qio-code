@@ -62,6 +62,7 @@ public:
 	void fitTexture(int nHeight, int nWidth);
 	void removeEmptyFaces();
 	void snapPlanePoints();
+	texturedWinding_c *makeFaceWinding (face_s *face);
 
 	
 	face_s *getFirstFace() {

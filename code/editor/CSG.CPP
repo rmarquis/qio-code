@@ -551,11 +551,6 @@ void CSG_Subtract (void)
 	Sys_UpdateWindows(W_ALL);
 }
 
-/*
-=============
-CSG_Merge
-=============
-*/
 void CSG_Merge(void)
 {
 	brush_s *b, *next, *newlist, *newbrush;

@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <direct.h>  
 #include <sys\stat.h> 
 #include <api/vfsAPI.h>
+#include <math/math.h>
 
 QEGlobals_t  g_qeglobals;
 int g_allocatedCounter_brush;
@@ -127,15 +128,9 @@ void Map_Snapshot()
   }
 }
 /*
-===============
-QE_CheckAutoSave
-
 If five minutes have passed since making a change
 and the map hasn't been saved, save it out.
-===============
 */
-
-
 void QE_CheckAutoSave( void )
 {
 	static clock_t s_start;
@@ -192,6 +187,16 @@ int BuildShortPathName(const char* pPath, char* pBuffer, int nBufferLen)
   if (nResult == 0)
     strcpy(pBuffer, pPath);                     // Use long filename
   return nResult;
+}
+
+
+
+float Q_rint (float in)
+{
+  if (g_PrefsDlg.m_bNoClamp)
+    return in;
+  else
+	  return (float)floor (in + 0.5);
 }
 
 

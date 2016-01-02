@@ -244,59 +244,6 @@ void DrawBrushEntityName (brush_s *b)
 	}
 }
 
-/*
-returns the visible polygon on a face
-*/
-texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
-{
-	texturedWinding_c	*w;
-	face_s		*clip;
-	plane_c			plane;
-	bool		past;
-
-	// get a poly that covers an effectively infinite area
-	w = new texturedWinding_c (face->plane);
-
-	// chop the poly by all of the other faces
-	past = false;
-	for (clip = this->getFirstFace() ; clip && w ; clip=clip->next)
-	{
-		if (clip == face)
-		{
-			past = true;
-			continue;
-		}
-		if (face->plane.getNormal().dotProduct(clip->plane.getNormal()) > 0.999
-			&& fabs(face->plane.getDist() - clip->plane.getDist()) < 0.01 )
-		{	// identical plane, use the later one
-			if (past)
-			{
-				delete (w);
-				return NULL;
-			}
-			continue;
-		}
-
-		// flip the plane, because we want to keep the back side
-		plane.norm = -clip->plane.norm;
-		plane.dist = -clip->plane.dist;
-		
-		w = w->clip(plane, false);
-		if (!w)
-			return w;
-	}
-	
-	if (w->size() < 3)
-	{
-		delete(w);
-		w = NULL;
-	}
-
-	if (!w)
-		printf ("unused plane\n");
-
-	return w;
-}
 
 	
 /*
@@ -2157,7 +2104,7 @@ void brush_s::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 	{
 		for (int i=0 ; i<3 ; i++)
 		{
-			VectorRotate(f->planepts[i], vAngle, vOrigin, f->planepts[i]);
+			vec3_c::vectorRotate(f->planepts[i], vAngle, vOrigin, f->planepts[i]);
 		}
 	}
 	if (bBuild)
@@ -2901,7 +2848,7 @@ void brush_s::parseBrushPrimit(class parser_c &p)
 			{
 				p.getToken();
 				f->texdef.contents = atoi(p.getLastStoredToken());
-        p.getToken();
+				 p.getToken();
 				f->texdef.flags = atoi(p.getLastStoredToken());
 				p.getToken();
 				f->texdef.value = atoi(p.getLastStoredToken());

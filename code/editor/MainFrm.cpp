@@ -66,7 +66,7 @@ bool g_bScreenUpdates = true;           // whether window painting is active, us
                                         // both of the above should be made members of CMainFrame
 
 //bool g_bSnapToGrid = true;              // early use, no longer in use, clamping pref will be used
-CString g_strProject;                   // holds the active project filename
+//CString g_strProject;                   // holds the active project filename
 bool g_bClosingRadiant = false;
 
 /////////////////////////////////////////////////////////////////////////////

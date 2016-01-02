@@ -32,9 +32,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // used only for debugging
 int g_allocatedCounter_face = 0;
 
-void VectorRotate (vec3_t vIn, const vec3_c &vRotation, vec3_c &out);
-void VectorRotate(const vec3_c &vIn, const vec3_c &vRotation, const vec3_c &vOrigin, vec3_c &out);
-
 face_s::face_s() {
 	next = 0;
 	original = 0;
@@ -347,11 +344,11 @@ void face_s::rotateFaceTexture_BrushPrimit(int nAxis, float fDeg, const vec3_c &
 	vRotate.clear();
 	vRotate[nAxis]=fDeg;
 	Orig.clear();
-	VectorRotate( Orig, vRotate, vOrigin, rOrig );
-	VectorRotate( texS, vRotate, vOrigin, rvecS );
-	VectorRotate( texT, vRotate, vOrigin, rvecT );
+	vec3_c::vectorRotate( Orig, vRotate, vOrigin, rOrig );
+	vec3_c::vectorRotate( texS, vRotate, vOrigin, rvecS );
+	vec3_c::vectorRotate( texT, vRotate, vOrigin, rvecT );
 	// compute normal of plane after rotation
-	VectorRotate( this->plane.norm, vRotate, rNormal );
+	vec3_c::vectorRotate( this->plane.norm, vRotate, rNormal );
 	// compute rotated plane axis base
 	ComputeAxisBase( rNormal, rtexS, rtexT );
 	// compute S/T coordinates of the three points in rotated axis base ( in M matrix )

@@ -693,14 +693,14 @@ void ComputeAbsolute(face_s* f, vec3_c &p1, vec3_c &p2, vec3_c &p3)
   p3 += ey;
   aux = ez;
   aux *= -f->texdef.rotate;
-  VectorRotate(p1, aux, p1);
-  VectorRotate(p2, aux, p2);
-  VectorRotate(p3, aux, p3);
+  vec3_c::vectorRotate(p1, aux, p1);
+  vec3_c::vectorRotate(p2, aux, p2);
+  vec3_c::vectorRotate(p3, aux, p3);
 	// computing rotated local axis base
 	vec3_c rex = ex;
-  VectorRotate(rex, aux, rex);
+  vec3_c::vectorRotate(rex, aux, rex);
   vec3_c rey = ey;
-  VectorRotate(rey, aux, rey);
+  vec3_c::vectorRotate(rey, aux, rey);
 
   ComputeScale(rex,rey,p1,f);
 	ComputeScale(rex,rey,p2,f);
@@ -743,9 +743,9 @@ void AbsoluteToLocal(const class plane_c &normal2, face_s* f, vec3_c& p1, vec3_c
   aux = ez;
   aux *= f->texdef.rotate;
   vec3_c rex = ex;
-  VectorRotate(rex, aux, rex);
+  vec3_c::vectorRotate(rex, aux, rex);
   vec3_c rey = ey;
-  VectorRotate(rey, aux, rey);
+  vec3_c::vectorRotate(rey, aux, rey);
 
 	// scale
   aux = p2 - p1;
@@ -765,7 +765,7 @@ void AbsoluteToLocal(const class plane_c &normal2, face_s* f, vec3_c& p1, vec3_c
   aux *= y;
   p1 += aux;
   aux = ez * -f->texdef.rotate;
-  VectorRotate(p1, aux, p1);
+  vec3_c::vectorRotate(p1, aux, p1);
 	f->texdef.shift[0] = -p1.dotProduct(ex);
 	f->texdef.shift[1] = -p1.dotProduct(ey);
 
@@ -789,13 +789,13 @@ void RotateFaceTexture(face_s* f, int nAxis, float fDeg)
 	ComputeAbsolute(f, p1, p2, p3);
   
 	rota[nAxis] = fDeg;
-	VectorRotate(p1, rota, select_origin, p1);
-	VectorRotate(p2, rota, select_origin, p2);
-	VectorRotate(p3, rota, select_origin, p3);
+	vec3_c::vectorRotate(p1, rota, select_origin, p1);
+	vec3_c::vectorRotate(p2, rota, select_origin, p2);
+	vec3_c::vectorRotate(p3, rota, select_origin, p3);
 
 	plane_c normal2;
 	vec3_c vNormal = f->plane.getNormal();
-	VectorRotate(vNormal, rota, vNormal);
+	vec3_c::vectorRotate(vNormal, rota, vNormal);
 	normal2.norm[0] = vNormal[0];
 	normal2.norm[1] = vNormal[1];
 	normal2.norm[2] = vNormal[2];
@@ -1140,13 +1140,7 @@ void Select_Inside (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-/*
-=============
-Select_Ungroup
-
-Turn the currently selected entity back into normal brushes
-=============
-*/
+// Turn the currently selected entity back into normal brushes
 void Select_Ungroup(void)
 {
 	int numselectedgroups;
@@ -1186,11 +1180,6 @@ void Select_Ungroup(void)
 }
 
 
-/*
-====================
-Select_MakeStructural
-====================
-*/
 void Select_MakeStructural (void)
 {
 	brush_s	*b;
@@ -1635,12 +1624,6 @@ void Select_ShowAllHidden()
 	Sys_UpdateWindows (W_ALL);
 }
 
-
-/*
-============
-Select_Invert
-============
-*/
 void Select_Invert(void)
 {
 	brush_s *next, *prev;

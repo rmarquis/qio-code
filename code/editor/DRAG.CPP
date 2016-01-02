@@ -45,13 +45,6 @@ bool	drag_first;
 
 
 
-
-
-/*
-===========
-Drag_Setup
-===========
-*/
 void Drag_Setup (int x, int y, int buttons,
 		   vec3_t xaxis, vec3_t yaxis,
 		   vec3_t origin, vec3_t dir)
@@ -255,12 +248,7 @@ void UpdateTarget(vec3_t origin, vec3_t dir)
 	
 }
 
-/*
-===========
-Drag_Begin
 //++timo test three button mouse and three button emulation here ?
-===========
-*/
 void Drag_Begin (int x, int y, int buttons,
 		   vec3_t xaxis, vec3_t yaxis,
 		   vec3_t origin, vec3_t dir)
@@ -435,11 +423,6 @@ void Drag_Begin (int x, int y, int buttons,
 }
 
 
-//
-//===========
-//MoveSelection
-//===========
-//
 void MoveSelection (vec3_t move)
 {
 	int		i, success;
@@ -626,11 +609,6 @@ void MoveSelection (vec3_t move)
 	}
 }
 
-/*
-===========
-Drag_MouseMoved
-===========
-*/
 void Drag_MouseMoved (int x, int y, int buttons)
 {
 	vec3_c	move, delta;
@@ -670,11 +648,6 @@ void Drag_MouseMoved (int x, int y, int buttons)
 	MoveSelection (delta);
 }
 
-/*
-===========
-Drag_MouseUp
-===========
-*/
 void Drag_MouseUp (int nButtons)
 {
 	Sys_Status ("drag completed.", 0);

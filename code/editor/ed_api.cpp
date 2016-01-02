@@ -33,6 +33,38 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/materialSystemAPI.h>
+
+// this is a modified version of QERApp_TryTextureForName
+mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name)
+{
+	char fullName[256];
+	if(name[0] != '(' && strnicmp(name,"textures",strlen("textures"))) 
+	{
+		sprintf(fullName,"textures/%s",name);
+
+		name = fullName; // HACK HACK HACK
+	}
+	else
+	{
+		strcpy(fullName,name);
+	}
+	HDC currentHDC = wglGetCurrentDC();
+	HGLRC currentHGLRC = wglGetCurrentContext();
+
+	if (currentHDC != g_qeglobals.d_hdcBase || currentHGLRC != g_qeglobals.d_hglrcBase)
+		wglMakeCurrent( g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase );
+
+	//++timo I don't set back the GL context .. I don't know how safe it is
+	//  wglMakeCurrent( currentHDC, currentHGLRC );
+
+	// This should always return a non-null pointer, altought it will be a default-image material if the valid one is missing
+	mtrAPI_i *mat = g_ms->registerMaterial(fullName);
+	Sys_Printf ("Loading material (or texture) %s done.\n", name);
+	return mat;
+}
 
 
 #include <windows.h>

@@ -575,11 +575,6 @@ void Texture_MouseUp (int x, int y, int buttons)
 {
 }
 
-/*
-==============
-Texture_MouseMoved
-==============
-*/
 void Texture_MouseMoved (int x, int y, int buttons)
 {
 	int scale = 1;
@@ -618,14 +613,6 @@ DRAWING
 ============================================================================
 */
 
-int imax(int iFloor, int i) { if (i>iFloor) return iFloor; return i; }
-HFONT ghFont = NULL;
-
-/*
-============
-Texture_Draw2
-============
-*/
 void Texture_Draw2 (int width, int height)
 {
 	mtrAPI_i	*q;
@@ -810,11 +797,6 @@ void Texture_Cleanup(CStringList *pList)
   //}
 }
 
-/*
-==================
-Texture_Flush
-==================
-*/
 void Texture_Flush (bool bReload)
 {
   if (!ConfirmModified())
@@ -892,11 +874,6 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTexWnd message handlers
 
-/*
-============
-WTexWndProc
-============
-*/
 LONG WINAPI TexWndProc (
     HWND    hWnd,
     UINT    uMsg,
