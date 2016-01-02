@@ -144,7 +144,7 @@
 				AdditionalDependencies="opengl32.lib glu32.lib devil.lib"
 				OutputFile="..\..\game\system\editorx86.dll"
 				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
-				IgnoreDefaultLibraryNames="libc.lib msvcrtd.lib"
+				IgnoreDefaultLibraryNames="libc.lib;msvcrtd.lib"
 				ModuleDefinitionFile="editor.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -183,14 +183,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\editor\Brush.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\brush_primit.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\CSG.CPP"
 				>
 			</File>
@@ -201,6 +193,26 @@
 			<File
 				RelativePath="..\..\code\editor\ed_api.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\edBrush.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\edbrush.obj"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\code\editor\ENTITY.CPP"
@@ -463,6 +475,22 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\brush.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\brush.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\brushside.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\brushside.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>
@@ -476,6 +504,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\qcommon\q_shared.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\textureAxisFromNormal.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\textureAxisFromNormal.h"
 				>
 			</File>
 			<File

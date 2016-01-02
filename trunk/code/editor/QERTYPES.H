@@ -34,40 +34,8 @@ typedef float vec3_t[3];
 #include <api/textureAPI.h>
 #include <shared/str.h>
 
-class texdef_t
-{
-public:
-	texdef_t()
-	{
-	}
-	~texdef_t()
-	{
-	}
 
-	str matName;
-
-	void setName(const char *s) {
-		matName = s;
-	}
-	const char *getName() const {
-		return matName;
-	}
-
-
-	float	shift[2];
-	float	rotate;
-	float	scale[2];
-	int		contents;
-	int		flags;
-	int		value;
-};
-
-// Timo
-// new brush primitive texdef
-struct brushprimit_texdef_s
-{
-	float	coords[2][3];
-};
+#include <shared/brush.h>
 
 class texturewin_t
 {
@@ -95,99 +63,6 @@ public:
 #define QER_NOCARVE   0x00000002
 
 #include "mathlib.h"
-#include <shared/texturedWinding.h>
-
-
-
-extern int g_allocatedCounter_face;
-
-//++timo texdef and brushprimit_texdef are static
-// TODO : do dynamic ?
-class face_s
-{
-friend class brush_c;
-
-public:
-	///str matName;
-	class face_s			*next;
-	class face_s			*original;		//used for vertex movement
-	vec3_c				planepts[3];
-	texdef_t				texdef;
-	plane_c				plane;
-
-	texturedWinding_c				*face_winding;
-
-	vec3_t					d_color;
-	mtrAPI_i				*d_texture;
-
-	// Timo new brush primit texdef
-	brushprimit_texdef_s	brushprimit_texdef;
-
-
-
-	face_s() {
-		next = 0;
-		original = 0;
-		face_winding = 0;
-		d_texture = 0;
-		g_allocatedCounter_face++;
-	}
-	~face_s() {
-		if ( this->face_winding )
-		{
-			delete this->face_winding;
-			this->face_winding = 0;
-		}
-
-		// allocated counter is only used for debugging
-		g_allocatedCounter_face--;
-	}
-	void setMatName(const char *s) {
-		texdef.matName = s;
-		//matName = s;
-	}
-	const char *getMatName() const {
-	///	return matName;
-		return texdef.matName;
-	}
-	face_s *getNextFace() {
-		return next;
-	}
-	void calculatePlaneFromPoints()
-	{
-		plane.fromPoints(planepts[2],planepts[1],planepts[0]);
-		//int		j;
-		//vec3_c	t1, t2, t3;
-
-		//// convert to a vector / dist plane
-		//for (j=0 ; j<3 ; j++)
-		//{
-		//	t1[j] = this->planepts[0][j] - this->planepts[1][j];
-		//	t2[j] = this->planepts[2][j] - this->planepts[1][j];
-		//	t3[j] = this->planepts[1][j];
-		//}
-		//
-		//this->plane.normal.crossProduct(t1,t2);
-		//if (this->plane.normal.vectorCompare(vec3_c(0,0,0)))
-		//	printf ("WARNING: brush plane with no normal\n");
-		//this->plane.normal.normalize();
-		//this->plane.dist = t3.dotProduct(this->plane.normal);
-	}	
-	face_s *cloneFace()
-	{
-		face_s	*n;
-
-		n = new face_s();
-		n->texdef = this->texdef;
-
-		memcpy (n->planepts, this->planepts, sizeof(n->planepts));
-		n->plane = this->plane;
-
-		// all other fields are derived, and will be set by Brush_Build
-		return n;
-	}
-	void fitTexture(int nHeight, int nWidth );
-};
 
 #define	MIN_PATCH_WIDTH		3
 #define	MIN_PATCH_HEIGHT 	3
@@ -289,11 +164,9 @@ public:
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_brush;
 
-class brush_s
+class brush_s : public brush_c
 {
 	bool bIsLinkedListHeader;
-	aabb bounds;
-	face_s *brush_faces;
 public:
 	class brush_s	*prev, *next;	// links in active/selected
 	class brush_s	*oprev, *onext;	// links in entity
@@ -325,7 +198,6 @@ public:
 		oprev = 0;
 		onext = 0;
 		owner = 0;
-		brush_faces = 0;
 		patchBrush = 0;
 		hiddenBrush = 0;
 		terrainBrush = 0;
@@ -339,15 +211,9 @@ public:
 		if(bIsLinkedListHeader==false) 
 			g_allocatedCounter_brush--;
 	}
-	void setupSphere(const vec3_c &mid, u32 sides, float radius, texdef_t *texdef);
-	void setupBox(vec3_t mins, vec3_t maxs, texdef_t *texdef);
 	friend brush_s *Brush_Parse (class parser_c &p);
-	void makeFacePlanes();
-	void fitTexture(int nHeight, int nWidth);
-	void removeEmptyFaces();
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 	texturedWinding_c *makeFaceWinding (face_s *face);
-	void snapPlanePoints();
 	brush_s *fullClone();
 	void buildWindings(bool bSnap = true);
 	void rebuildBrush(vec3_t vMins, vec3_t vMaxs);
@@ -356,9 +222,6 @@ public:
 	brush_s *tryMergeWith(brush_s *brush2, int onlyshape);
 	int moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap = true);
 
-	face_s *getFirstFace() {
-		return brush_faces;
-	}
 	void setFaces(face_s *p) {
 		brush_faces = p;
 	}

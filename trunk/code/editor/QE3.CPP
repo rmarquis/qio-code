@@ -27,7 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 
 QEGlobals_t  g_qeglobals;
-int g_allocatedCounter_face;
 int g_allocatedCounter_brush;
 int g_allocatedCounter_entity;
 

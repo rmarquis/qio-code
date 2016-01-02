@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/entityDeclAPI.h>
 #include <math/math.h>
 #include <shared/parser.h>
+#include <shared/textureAxisFromNormal.h>
 
 // globals
 
@@ -47,43 +48,6 @@ int g_nBrushId = 0;
 */
 
 
-/*
-==================
-textureAxisFromPlane
-==================
-*/
-vec3_t	baseaxis[18] =
-{
-{0,0,1}, {1,0,0}, {0,-1,0},			// floor
-{0,0,-1}, {1,0,0}, {0,-1,0},		// ceiling
-{1,0,0}, {0,1,0}, {0,0,-1},			// west wall
-{-1,0,0}, {0,1,0}, {0,0,-1},		// east wall
-{0,1,0}, {1,0,0}, {0,0,-1},			// south wall
-{0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
-};
-
-void TextureAxisFromPlane(const plane_c &pln, vec3_c &xv, vec3_c &yv)
-{
-	int		bestaxis;
-	float	dot,best;
-	int		i;
-	
-	best = 0;
-	bestaxis = 0;
-	
-	for (i=0 ; i<6 ; i++)
-	{
-		dot = pln.getNormal().dotProduct(baseaxis[i*3]);
-		if (dot > best)
-		{
-			best = dot;
-			bestaxis = i;
-		}
-	}
-	
-	xv = (baseaxis[bestaxis*3+1]);
-	yv = (baseaxis[bestaxis*3+2]);
-}
 
 
 
@@ -136,29 +100,6 @@ void Brush_Print(brush_s* b)
 }
 
 
-/*
-================
-Face_FullClone
-
-makes an exact copy of the face
-================
-*/
-face_s	*Face_FullClone (face_s *f)
-{
-	face_s	*n;
-
-	n = new face_s();
-	n->texdef = f->texdef;
-	memcpy(n->planepts, f->planepts, sizeof(n->planepts));
-	n->plane = f->plane;
-	if (f->face_winding)
-		n->face_winding = f->face_winding->cloneWinding();
-	else
-		n->face_winding = NULL;
-	n->d_texture = QERApp_TryTextureForName( n->getMatName() );
-	return n;
-}
-
 void Clamp(float& f, int nClamp)
 {
   float fFrac = f - static_cast<int>(f);
@@ -176,10 +117,10 @@ void Face_MoveTexture(face_s *f, const vec3_c &delta)
 #endif
 */
 	if (g_qeglobals.m_bBrushPrimitMode)
-		Face_MoveTexture_BrushPrimit( f, delta );
+		f->moveTexture_BrushPrimit(delta );
 	else
 	{
-		TextureAxisFromPlane(f->plane, vX, vY);
+		MOD_TextureAxisFromNormal(f->plane.getNormal(), vX, vY);
 
 		vec3_t vDP, vShift;
 		vDP[0] = delta.dotProduct(vX);
@@ -230,120 +171,10 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 	}
 }
 
-/*
-================
-Face_TextureVectors
-TTimo: NOTE: this is never to get called while in brush primitives mode
-================
-*/
-void Face_TextureVectors (face_s *f, float STfromXYZ[2][4])
-{
-	vec3_c		pvecs[2];
-	int			sv, tv;
-	float		ang, sinv, cosv;
-	float		ns, nt;
-	int			i,j;
-	mtrAPI_i *q;
-	texdef_t	*td;
-
-#ifdef _DEBUG
-	//++timo when playing with patches, this sometimes get called and the Warning is displayed
-	// find some way out ..
-	if (g_qeglobals.m_bBrushPrimitMode && !g_qeglobals.bNeedConvert)
-		Sys_Printf("Warning : illegal call of Face_TextureVectors in brush primitive mode\n");
-#endif
-
-	td = &f->texdef;
-	q = f->d_texture;
-
-	memset (STfromXYZ, 0, 8*sizeof(float));
-
-	if (!td->scale[0])
-		td->scale[0] =  0.5 ;
-	if (!td->scale[1])
-		td->scale[1] = 0.5 ;
-
-	// get natural texture axis
-	TextureAxisFromPlane(f->plane, pvecs[0], pvecs[1]);
-
-	// rotate axis
-	if (td->rotate == 0)
-		{ sinv = 0 ; cosv = 1; }
-	else if (td->rotate == 90)
-		{ sinv = 1 ; cosv = 0; }
-	else if (td->rotate == 180)
-		{ sinv = 0 ; cosv = -1; }
-	else if (td->rotate == 270)
-		{ sinv = -1 ; cosv = 0; }
-	else
-	{	
-		ang = DEG2RAD(td->rotate);
-		sinv = sin(ang);
-		cosv = cos(ang);
-	}
-
-	if (pvecs[0][0])
-		sv = 0;
-	else if (pvecs[0][1])
-		sv = 1;
-	else
-		sv = 2;
-				
-	if (pvecs[1][0])
-		tv = 0;
-	else if (pvecs[1][1])
-		tv = 1;
-	else
-		tv = 2;
-					
-	for (i=0 ; i<2 ; i++) {
-		ns = cosv * pvecs[i][sv] - sinv * pvecs[i][tv];
-		nt = sinv * pvecs[i][sv] +  cosv * pvecs[i][tv];
-		STfromXYZ[i][sv] = ns;
-		STfromXYZ[i][tv] = nt;
-	}
-
-	// scale
-	for (i=0 ; i<2 ; i++)
-		for (j=0 ; j<3 ; j++)
-			STfromXYZ[i][j] = STfromXYZ[i][j] / td->scale[i];
-
-	// shift
-	STfromXYZ[0][3] = td->shift[0];
-	STfromXYZ[1][3] = td->shift[1];
-
-	for (j=0 ; j<4 ; j++) {
-		STfromXYZ[0][j] /= q->getImageWidth();
-		STfromXYZ[1][j] /= q->getImageHeight();
-	}
-}
-
-void EmitTextureCoordinates (texturedVertex_c &out, mtrAPI_i *q, face_s *f)
-{
-	float	STfromXYZ[2][4];
-
-	// out layout is: xyz st
-	Face_TextureVectors (f,  STfromXYZ);
-	out[3] = out.dotProduct(STfromXYZ[0]) + STfromXYZ[0][3];
-	out[4] = out.dotProduct(STfromXYZ[1]) + STfromXYZ[1][3];
-}
 
 //==========================================================================
 
 
-void brush_s::makeFacePlanes() {
-	face_s	*f;
-
-	for (f=this->getFirstFace() ; f ; f=f->next)
-	{
-		f->calculatePlaneFromPoints();
-	}
-}
-/*
-================
-DrawBrushEntityName
-================
-*/
 void DrawBrushEntityName (brush_s *b)
 {
 	const char	*name;
@@ -414,11 +245,7 @@ void DrawBrushEntityName (brush_s *b)
 }
 
 /*
-=================
-Brush_MakeFaceWinding
-
 returns the visible polygon on a face
-=================
 */
 texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
 {
@@ -471,16 +298,6 @@ texturedWinding_c *brush_s::makeFaceWinding (face_s *face)
 	return w;
 }
 
-void brush_s::snapPlanePoints()
-{
-  if (g_PrefsDlg.m_bNoClamp)
-    return;
-
-	for (face_s	*f=this->getFirstFace() ; f; f=f->next)
-		for (u32 i=0 ; i<3 ; i++)
-			for (u32 j=0 ; j<3 ; j++)
-				f->planepts[i][j] = floor (f->planepts[i][j] + 0.5);
-}
 	
 /*
 ** Brush_Build
@@ -842,7 +659,7 @@ int brush_s::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, 
 						//get texture crap right
 						Face_SetColor(this, face, 1.0);
 						for (j = 0; j < w->size(); j++)
-							EmitTextureCoordinates(w->getPoint(j), face->d_texture, face);
+							face->calcTextureCoordinates(w->getPoint(j));
 						//make a triangle face
 						newface = face->cloneFace();
 						//get the original
@@ -968,7 +785,7 @@ int brush_s::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, 
 		{
 			Face_SetColor(this, movefaces[i], 1.0);
 			for (j = 0; j < movefaces[i]->face_winding->size(); j++)
-				EmitTextureCoordinates(movefaces[i]->face_winding->getPoint(j), movefaces[i]->d_texture, movefaces[i]);
+				movefaces[i]->calcTextureCoordinates(movefaces[i]->face_winding->getPoint(j));
 		}
 
 		//now try to merge faces with their original faces
@@ -997,7 +814,7 @@ int brush_s::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, 
 			//get texture crap right
 			Face_SetColor(this, face->original, 1.0);
 			for (j = 0; j < face->original->face_winding->size(); j++)
-				EmitTextureCoordinates(face->original->face_winding->getPoint(j), face->original->d_texture, face->original);
+				face->original->calcTextureCoordinates(face->original->face_winding->getPoint(j));
 			//remove the face that was merged with the original
 			if (lastface) lastface->next = face->next;
 			else this->brush_faces = face->next;
@@ -1467,69 +1284,6 @@ void Brush_Write (brush_s *b, CMemFile *pMemFile)
 }
 
 
-void brush_s::setupBox(vec3_t mins, vec3_t maxs, texdef_t *texdef) 
-{
-	int		i, j;
-	vec3_t	pts[4][2];
-	face_s	*f;
-
-	pts[0][0][0] = mins[0];
-	pts[0][0][1] = mins[1];
-	
-	pts[1][0][0] = mins[0];
-	pts[1][0][1] = maxs[1];
-	
-	pts[2][0][0] = maxs[0];
-	pts[2][0][1] = maxs[1];
-	
-	pts[3][0][0] = maxs[0];
-	pts[3][0][1] = mins[1];
-	
-	for (i=0 ; i<4 ; i++)
-	{
-		pts[i][0][2] = mins[2];
-		pts[i][1][0] = pts[i][0][0];
-		pts[i][1][1] = pts[i][0][1];
-		pts[i][1][2] = maxs[2];
-	}
-
-	for (i=0 ; i<4 ; i++)
-	{
-		f = new face_s();
-		f->texdef = *texdef;
-		f->texdef.flags &= ~SURF_KEEP;
-		f->texdef.contents &= ~CONTENTS_KEEP;
-		f->next = this->getFirstFace();
-		this->brush_faces = f;
-		j = (i+1)%4;
-
-		f->planepts[0] = pts[j][1];
-		f->planepts[1] = pts[i][1];
-		f->planepts[2] = pts[i][0];
-	}
-	
-	f = new face_s();
-	f->texdef = *texdef;
-	f->texdef.flags &= ~SURF_KEEP;
-	f->texdef.contents &= ~CONTENTS_KEEP;
-	f->next = this->getFirstFace();
-	this->brush_faces = f;
-
-	f->planepts[0] = pts[0][1];
-	f->planepts[1] = pts[1][1];
-	f->planepts[2] = pts[2][1];
-
-	f = new face_s();
-	f->texdef = *texdef;
-	f->texdef.flags &= ~SURF_KEEP;
-	f->texdef.contents &= ~CONTENTS_KEEP;
-	f->next = this->getFirstFace();
-	this->brush_faces = f;
-
-	f->planepts[0] = pts[2][0];
-	f->planepts[1] = pts[1][0];
-	f->planepts[2] = pts[0][0];
-}
 /*
 =============
 Brush_Create
@@ -1809,14 +1563,6 @@ void Brush_Free (brush_s *b, bool bRemoveNode)
 	delete b;
 }
 
-int Face_MemorySize(face_s *f )
-{
-	int size = sizeof(face_s);
-	if (f->face_winding)
-	{
-	}
-	return size;
-}
 
 int Brush_MemorySize(brush_s *b)
 {
@@ -1831,20 +1577,14 @@ int Brush_MemorySize(brush_s *b)
 	//
 	for (f = b->getFirstFace(); f; f = f->next)
 	{
-		size += Face_MemorySize(f);
+		size += f->getMemorySize();
 	}
 	size += _msize(b);
 	return size;
 }
 
 
-/*
-============
-Brush_Clone
-
-Does NOT add the new brush to any lists
-============
-*/
+// does NOT add the new brush to any lists
 brush_s *Brush_Clone (brush_s *b)
 {
 	brush_s	*n = NULL;
@@ -1905,7 +1645,7 @@ brush_s *brush_s::fullClone()
 		for (f = this->getFirstFace(); f; f = f->next)
 		{
 			if (f->original) continue;
-			nf = Face_FullClone(f);
+			nf = f->cloneFace();
 			nf->next = n->getFirstFace();
 			n->brush_faces = nf;
 			//copy all faces that have the original set to this face
@@ -1913,7 +1653,7 @@ brush_s *brush_s::fullClone()
 			{
 				if (f2->original == f)
 				{
-					nf2 = Face_FullClone(f2);
+					nf2 = f2->cloneFace();
 					nf2->next = n->getFirstFace();
 					n->brush_faces = nf2;
 					//set original
@@ -1927,11 +1667,11 @@ brush_s *brush_s::fullClone()
 			if (nf->face_winding)
       {
         if (g_qeglobals.m_bBrushPrimitMode)
-    			EmitBrushPrimitTextureCoordinates(nf,nf->face_winding);
+    			nf->calcBrushPrimitTextureCoordinates(nf->face_winding);
         else
         {
 				  for (j = 0; j < nf->face_winding->size(); j++)
-					  EmitTextureCoordinates(nf->face_winding->getPoint(j), nf->d_texture, nf);
+					nf->calcTextureCoordinates(nf->face_winding->getPoint(j));
         }
       }
 		}
@@ -2329,8 +2069,12 @@ void brush_s::buildWindings(bool bSnap)
 	texturedWinding_c *w;
 	face_s    *face;
 
-	if (bSnap)
-		this->snapPlanePoints();
+	if (bSnap) {
+		 if (g_PrefsDlg.m_bNoClamp==false)
+		 {
+				this->snapPlanePoints();
+		 }
+	}
 
 	// clear the mins/maxs bounds
 	this->bounds.clear();
@@ -2373,7 +2117,7 @@ void brush_s::buildWindings(bool bSnap)
 			{
 				// we have parsed old brushes format and need conversion
 				// convert old brush texture representation to new format
-				FaceToBrushPrimitFace(face);
+				face->convertFaceToBrushPrimitFace();
 //#ifdef _DEBUG
 //				// use old texture coordinates code to check against
 //			    for (i=0 ; i<w->size() ; i++)
@@ -2382,39 +2126,12 @@ void brush_s::buildWindings(bool bSnap)
 			}
 			// use new texture representation to compute texture coordinates
 			// in debug mode we will check against old code and warn if there are differences
-			EmitBrushPrimitTextureCoordinates(face,w);
+			face->calcBrushPrimitTextureCoordinates(w);
 		}
 		else
 		{
 		    for (i=0 ; i<w->size() ; i++)
-				EmitTextureCoordinates( w->getPoint(i), face->d_texture, face);
-		}
-	}
-}
-
-/*
-==================
-Brush_RemoveEmptyFaces
-
-Frees any overconstraining faces
-==================
-*/
-void brush_s::removeEmptyFaces ()
-{
-	face_s	*f, *next;
-
-	f = this->getFirstFace();
-	this->brush_faces = NULL;
-
-	for ( ; f ; f=next)
-	{
-		next = f->next;
-		if (!f->face_winding)
-			delete f;
-		else
-		{
-			f->next = this->getFirstFace();
-			this->brush_faces = f;
+				face->calcTextureCoordinates(w->getPoint(i));
 		}
 	}
 }
@@ -2485,10 +2202,6 @@ void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
 }
 
 
-entityDeclAPI_i* HasModel(brush_s *b)
-{
-	return 0;
-}
 
 void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 {
@@ -3025,51 +2738,6 @@ void Brush_MakeSidedCone(int sides)
 
 	Sys_UpdateWindows (W_ALL);
 }
-void brush_s::setupSphere(const vec3_c &mid, u32 sides, float radius, texdef_t *texdef) {
-	float dt = float(2 * M_PI / sides);
-	float dp = float(M_PI / sides);
-	float t,p;
-	int i,j;
-	face_s *f;
-	for(i=0; i <= sides-1; i++)
-	{
-		for(j=0;j <= sides-2; j++)
-		{
-			t = i * dt;
-			p = float(j * dp - M_PI / 2);
-
-			f = new face_s();
-			f->texdef = *texdef;
-			f->next = this->getFirstFace();
-			this->brush_faces = f;
-
-			f->planepts[0].setupPolar(radius, t, p);
-			f->planepts[1].setupPolar(radius, t, p + dp);
-			f->planepts[2].setupPolar(radius, t + dt, p + dp);
-
-			for (int k = 0; k < 3; k++)
-				f->planepts[k] += mid;
-		}
-	}
-
-	p = float((sides - 1) * dp - M_PI / 2);
-	for(i = 0; i <= sides-1; i++)
-	{
-		t = i * dt;
-
-		f = new face_s();
-		f->texdef = *texdef;
-		f->next = this->getFirstFace();
-		this->brush_faces = f;
-
-		f->planepts[0].setupPolar(radius, t, p);
-		f->planepts[1].setupPolar(radius, t + dt, p + dp);
-		f->planepts[2].setupPolar(radius, t + dt, p);
-
-		for (int k = 0; k < 3; k++)
-			f->planepts[k] += mid;
-	}
-}
 // Makes the current brushhave the given number of 2d sides and turns it into a sphere
 void Brush_MakeSidedSphere(int sides)
 {
@@ -3122,124 +2790,147 @@ void Brush_MakeSidedSphere(int sides)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void face_s::fitTexture(int nHeight, int nWidth )
+
+
+
+// parse a brush in brush primitive format
+void brush_s::parseBrushPrimit(class parser_c &p)
 {
-	texturedWinding_c *w;
-	aabb bounds;
-	int i;
-	float width, height, temp;
-	float rot_width, rot_height;
-	float cosv,sinv,ang;
-	float min_t, min_s, max_t, max_s;
-	float s,t;
-	vec3_c	vecs[2];
-	vec3_t   coords[4];
-	texdef_t	*td;
-
-	if (nHeight < 1)
+	face_s		*f;
+	int			i,j;
+	p.getToken();
+	if (strcmp (p.getLastStoredToken(), "{"))
 	{
-		nHeight = 1;
-	}
-	if (nWidth < 1)
-	{
-		nWidth = 1;
-	}
-
-	bounds.clear();
-
-	td = &this->texdef;
-	w = this->face_winding;
-	if (!w)
-	{
+		Warning ("parsing brush primitive");
 		return;
 	}
-	for (i=0 ; i<w->size() ; i++)
+	do
 	{
-		bounds.addPoint(w->getXYZ(i));
-	}
-	// 
-	// get the current angle
-	//
-	ang = DEG2RAD(td->rotate);
-	sinv = sin(ang);
-	cosv = cos(ang);
+		if (!p.getToken())
+			break;
+		if (!strcmp (p.getLastStoredToken(), "}") )
+			break;
 
-	// get natural texture axis
-	TextureAxisFromPlane(this->plane, vecs[0], vecs[1]);
+		{
+			f = new face_s();
+			f->next = NULL;
+			if (!this->getFirstFace())
+			  	this->brush_faces = f;
+		  	else
+			{
+				face_s *scan;
+				for (scan=this->getFirstFace() ; scan->next ; scan=scan->next)
+					;
+				scan->next = f;
+		  	}
 
-	min_s = bounds.getMins().dotProduct(vecs[0]);
-	min_t = bounds.getMins().dotProduct(vecs[1]);
-	max_s = bounds.getMaxs().dotProduct(vecs[0]);
-	max_t = bounds.getMaxs().dotProduct(vecs[1]);
-	width = max_s - min_s;
-	height = max_t - min_t;
-	coords[0][0] = min_s;
-	coords[0][1] = min_t;
-	coords[1][0] = max_s;
-	coords[1][1] = min_t;
-	coords[2][0] = min_s;
-	coords[2][1] = max_t;
-	coords[3][0] = max_s;
-	coords[3][1] = max_t;
-	min_s = min_t = 99999;
-	max_s = max_t = -99999;
-	for (i=0; i<4; i++)
-	{
-		s = cosv * coords[i][0] - sinv * coords[i][1];
-		t = sinv * coords[i][0] + cosv * coords[i][1];
-		if (i&1)
-		{
-			if (s > max_s) 
+			// read the three point plane definition
+			for (i=0 ; i<3 ; i++)
 			{
-				max_s = s;
-			}
-		}
-		else
-		{
-			if (s < min_s) 
-			{
-				min_s = s;
-			}
-			if (i<2)
-			{
-				if (t < min_t) 
+				if (i != 0)
+					p.getToken();
+				if (strcmp (p.getLastStoredToken(), "(") )
 				{
-					min_t = t;
+					Warning ("parsing brush");
+					return;
+				}
+				for (j=0 ; j<3 ; j++)
+				{
+					p.getToken();
+					f->planepts[i][j] = atof(p.getLastStoredToken());
+				}
+				p.getToken();
+				if (strcmp (p.getLastStoredToken(), ")") )
+				{
+					Warning ("parsing brush");
+					return;
 				}
 			}
-			else
+			// texture coordinates
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
 			{
-				if (t > max_t) 
-				{
-					max_t = t;
-				}
+				Warning ("parsing brush primitive");
+				return;
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			for (j=0;j<3;j++)
+			{
+				p.getToken();
+				f->brushprimit_texdef.coords[0][j]=atof(p.getLastStoredToken());
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), "("))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			for (j=0;j<3;j++)
+			{
+				p.getToken();
+				f->brushprimit_texdef.coords[1][j]=atof(p.getLastStoredToken());
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			p.getToken();
+			if (strcmp(p.getLastStoredToken(), ")"))
+			{
+				Warning ("parsing brush primitive");
+				return;
+			}
+			// read the texturedef
+			p.getToken();
+			//strcpy(f->getMatName(), p.getLastStoredToken());
+			f->setMatName(p.getLastStoredToken());
+			if (p.isAtEOL ()==false)
+			{
+				p.getToken();
+				f->texdef.contents = atoi(p.getLastStoredToken());
+        p.getToken();
+				f->texdef.flags = atoi(p.getLastStoredToken());
+				p.getToken();
+				f->texdef.value = atoi(p.getLastStoredToken());
 			}
 		}
-	}
-	rot_width =  (max_s - min_s);
-	rot_height = (max_t - min_t);
-	td->scale[0] = -(rot_width/((float)(this->d_texture->getImageWidth()*nWidth)));
-	td->scale[1] = -(rot_height/((float)(this->d_texture->getImageHeight()*nHeight)));
-
-	td->shift[0] = min_s/td->scale[0];
-	temp = (int)(td->shift[0] / (this->d_texture->getImageWidth()*nWidth));
-	temp = (temp+1)*this->d_texture->getImageWidth()*nWidth;
-	td->shift[0] = (int)(temp - td->shift[0])%(this->d_texture->getImageWidth()*nWidth);
-
-	td->shift[1] = min_t/td->scale[1];
-	temp = (int)(td->shift[1] / (this->d_texture->getImageHeight()*nHeight));
-	temp = (temp+1)*(this->d_texture->getImageHeight()*nHeight);
-	td->shift[1] = (int)(temp - td->shift[1])%(this->d_texture->getImageHeight()*nHeight);
+	} while (1);
 }
 
-void brush_s::fitTexture(int nHeight, int nWidth )
+// best fitted 2D vector is x.X+y.Y
+void ComputeBest2DVector(const vec3_c &v, const vec3_c &X, const vec3_c &Y, int &x, int &y )
 {
-	face_s *face;
-
-	for (face = this->getFirstFace() ; face ; face=face->next)
+	double sx,sy;
+	sx = v.dotProduct( X );
+	sy = v.dotProduct( Y );
+	if ( fabs(sy) > fabs(sx) )
 	{
-		face->fitTexture(nHeight, nWidth );
+		x = 0;
+		if ( sy > 0.0 )
+			y =  1;
+		else
+			y = -1;
+	}
+	else
+	{
+		y = 0;
+		if ( sx > 0.0 )
+			x =  1;
+		else
+			x = -1;
 	}
 }
-
 

@@ -423,19 +423,12 @@ extern vec3_c g_vBendOrigin;
 
 // Timo
 // new brush primitive stuff
-void ComputeAxisBase(vec3_c &normal, vec3_c &texS, vec3_c &texT);
-void FaceToBrushPrimitFace(face_s *f);
-void EmitBrushPrimitTextureCoordinates(face_s *, texturedWinding_c *);
-// EmitTextureCoordinates, is old code used for brush to brush primitive conversion
-void EmitTextureCoordinates ( class texturedVertex_c &out, mtrAPI_i *q, face_s *f);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] );
 void ConvertTexMatWithQTexture( brushprimit_texdef_s *texMat1, mtrAPI_i *qtex1, brushprimit_texdef_s *texMat2, mtrAPI_i *qtex2 );
 // texture locking
-void Face_MoveTexture_BrushPrimit(face_s *f, const vec3_c &delta);
-void Select_ShiftTexture_BrushPrimit( face_s *f, int x, int y );
-void RotateFaceTexture_BrushPrimit(face_s *f, int nAxis, float fDeg, vec3_t vOrigin );
+
 // used in CCamWnd::ShiftTexture_BrushPrimit
 void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int &x, int &y );
 
