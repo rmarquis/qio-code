@@ -2500,14 +2500,17 @@ void DrawPathLines (void)
 	float	len, f;
 	int		arrows;
 	int			num_entities;
-	const char		*ent_target[MAX_MAP_ENTITIES];
-	entity_s	*ent_entity[MAX_MAP_ENTITIES];
+	arraySTD_c<const char		*> ent_target;
+	arraySTD_c<entity_s	*>ent_entity;
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS)
     return;
 
+	ent_entity.resize(g_numentities);
+	ent_target.resize(g_numentities);
+
 	num_entities = 0;
-	for (te = entities.next ; te != &entities && num_entities != MAX_MAP_ENTITIES ; te = te->next)
+	for (te = entities.next ; te != &entities ; te = te->next)
 	{
 		ent_target[num_entities] = te->getKeyValue("target");
 		if (ent_target[num_entities][0])

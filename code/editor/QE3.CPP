@@ -340,15 +340,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 			}
 		}
 	}
-/*
-	if ( entities.next != NULL )
-	{
-		for ( e = entities.next ; e != &entities && g_numentities != MAX_MAP_ENTITIES ; e = e->next)
-		{
-			g_numentities++;
-		}
-	}
-*/
+
 	if ( ( ( g_numbrushes != s_lastbrushcount ) || ( g_numentities != s_lastentitycount ) ) || ( !s_didonce ) )
 	{
 		Sys_UpdateStatusBar();
