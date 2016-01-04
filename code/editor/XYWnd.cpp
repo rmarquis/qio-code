@@ -2502,7 +2502,7 @@ void DrawPathLines ()
 		return;
 
 	num_entities = 0;
-	for (te = entities.next ; te != &entities ; te = te->next)
+	for (te = entities.getNextEntity() ; te != &entities ; te = te->getNextEntity())
 	{
 		num_entities++;
 	}
@@ -2510,7 +2510,7 @@ void DrawPathLines ()
 	ent_target.resize(num_entities);
 
 	num_entities = 0;
-	for (te = entities.next ; te != &entities ; te = te->next)
+	for (te = entities.getNextEntity() ; te != &entities ; te = te->getNextEntity())
 	{
 		ent_target[num_entities] = te->getKeyValue("target");
 		if (ent_target[num_entities][0])
@@ -2520,7 +2520,7 @@ void DrawPathLines ()
 		}
 	}
 
-	for (se = entities.next ; se != &entities ; se = se->next)
+	for (se = entities.getNextEntity() ; se != &entities ; se = se->getNextEntity())
 	{
 		psz = se->getKeyValue("targetname");
 	
@@ -3273,10 +3273,10 @@ void CXYWnd::OnSelectMouserotate()
 
 void CleanCopyEntities()
 {
-	entity_s* pe = g_enClipboard.next;
+	entity_s* pe = g_enClipboard.getNextEntity();
   while (pe != NULL && pe != &g_enClipboard)
   {
-    entity_s* next = pe->next;
+    entity_s* next = pe->getNextEntity();
 	  // delete entity 
 	  delete pe;
     pe = next;

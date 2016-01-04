@@ -38,6 +38,9 @@ public:
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
 
+	entity_s *getNextEntity() {
+		return next;
+	}
 	const vec3_c &getOrigin() const {
 		return origin;
 	}

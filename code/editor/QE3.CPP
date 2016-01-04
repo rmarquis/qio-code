@@ -253,7 +253,7 @@ void ConnectEntities ()
 		{
 			// make a unique target value
 			maxtarg = 0;
-			for (e=entities.next ; e != &entities ; e=e->next)
+			for (e=entities.getNextEntity() ; e != &entities ; e=e->getNextEntity())
 			{
 				tn = e->getKeyValue("targetname");
 				if (tn && tn[0])

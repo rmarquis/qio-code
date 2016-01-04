@@ -31,7 +31,7 @@ void	Texture_ShowDirectory (int menunum, bool bLinked = false);
 void	Texture_ShowAll();
 void Texture_Cleanup(CStringList *pList = NULL);
 
-mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
+mtrAPI_i * QERApp_TryTextureForName(const char* name);
 void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
 void Texture_ResetPosition();

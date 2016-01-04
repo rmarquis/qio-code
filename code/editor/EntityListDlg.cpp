@@ -90,7 +90,7 @@ BOOL CEntityListDlg::OnInitDialog()
   HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->getEntityClass()->getDeclName(), hParent);
   m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(world_entity));
 
-	for (entity_s* pEntity=entities.next ; pEntity != &entities ; pEntity=pEntity->next)
+	for (entity_s* pEntity=entities.getNextEntity() ; pEntity != &entities ; pEntity=pEntity->getNextEntity())
 	{
     hParent = NULL;
     if (mapEntity.Lookup(pEntity->getEntityClass()->getDeclName(), reinterpret_cast<void*&>(hParent)) == FALSE)

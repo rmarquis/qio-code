@@ -304,10 +304,10 @@ void SelectBrush (int entitynum, int brushnum)
 		e = world_entity;
 	else
 	{
-		e = entities.next;
+		e = entities.getNextEntity();
 		while (--entitynum)
 		{
-			e=e->next;
+			e=e->getNextEntity();
 			if (e == &entities)
 			{
 				Sys_Status ("No such entity.", 0);

@@ -103,9 +103,9 @@ void Undo_ClearRedo()
 			pNextBrush = pBrush->next;
 			Brush_Free(pBrush);
 		}
-		for (pEntity = redo->entitylist.next; pEntity != NULL && pEntity != &redo->entitylist; pEntity = pNextEntity)
+		for (pEntity = redo->entitylist.getNextEntity(); pEntity != NULL && pEntity != &redo->entitylist; pEntity = pNextEntity)
 		{
-			pNextEntity = pEntity->next;
+			pNextEntity = pEntity->getNextEntity();
 			delete pEntity;
 		}
 		free(redo);
@@ -131,9 +131,9 @@ void Undo_Clear()
 			g_undoMemorySize -= Brush_MemorySize(pBrush);
 			Brush_Free(pBrush);
 		}
-		for (pEntity = undo->entitylist.next; pEntity != NULL && pEntity != &undo->entitylist; pEntity = pNextEntity)
+		for (pEntity = undo->entitylist.getNextEntity(); pEntity != NULL && pEntity != &undo->entitylist; pEntity = pNextEntity)
 		{
-			pNextEntity = pEntity->next;
+			pNextEntity = pEntity->getNextEntity();
 			g_undoMemorySize -= pEntity->getMemorySize();
 			delete pEntity;
 		}
@@ -301,7 +301,7 @@ void Undo_AddBrush(brush_s *pBrush)
 		Sys_Printf("Undo_AddBrushList: no last undo.\n");
 		return;
 	}
-	if (g_lastundo->entitylist.next != &g_lastundo->entitylist)
+	if (g_lastundo->entitylist.getNextEntity() != &g_lastundo->entitylist)
 	{
 		Sys_Printf("Undo_AddBrushList: WARNING adding brushes after entity.\n");
 	}
@@ -328,7 +328,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 		Sys_Printf("Undo_AddBrushList: no last undo.\n");
 		return;
 	}
-	if (g_lastundo->entitylist.next != &g_lastundo->entitylist)
+	if (g_lastundo->entitylist.getNextEntity() != &g_lastundo->entitylist)
 	{
 		Sys_Printf("Undo_AddBrushList: WARNING adding brushes after entity.\n");
 	}
@@ -518,7 +518,7 @@ void Undo_Undo()
 		}
 	}
 	//reset the redo IDs of all entities using thew new ID
-	for (pEntity = entities.next; pEntity != NULL && pEntity != &entities; pEntity = pEntity->next)
+	for (pEntity = entities.getNextEntity(); pEntity != NULL && pEntity != &entities; pEntity = pEntity->getNextEntity())
 	{
 		if (pEntity->redoId == redo->id)
 		{
@@ -551,7 +551,7 @@ void Undo_Undo()
 		if (pEntity->undoId == undo->id)
 		{
 			// check if this entity is in the undo
-			for (pUndoEntity = undo->entitylist.next; pUndoEntity != NULL && pUndoEntity != &undo->entitylist; pUndoEntity = pUndoEntity->next)
+			for (pUndoEntity = undo->entitylist.getNextEntity(); pUndoEntity != NULL && pUndoEntity != &undo->entitylist; pUndoEntity = pUndoEntity->getNextEntity())
 			{
 				// move brushes to the undo entity
 				if (pUndoEntity->entityId == pEntity->entityId)
@@ -569,7 +569,7 @@ void Undo_Undo()
 		}
 	}
 	// add the undo entities back into the entity list
-	for (pEntity = undo->entitylist.next; pEntity != NULL && pEntity != &undo->entitylist; pEntity = undo->entitylist.next)
+	for (pEntity = undo->entitylist.getNextEntity(); pEntity != NULL && pEntity != &undo->entitylist; pEntity = undo->entitylist.getNextEntity())
 	{
 		g_undoMemorySize -= pEntity->getMemorySize();
 		//if this is the world entity
