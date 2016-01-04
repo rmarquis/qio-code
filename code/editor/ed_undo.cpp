@@ -37,7 +37,7 @@ basic setup:
 		 maybe also reset the entityId at map load
 */
 
-#include "stdafx.h"
+#include <stdafx.h>
 #include "Radiant.h"
 #include "qe3.h"
 #include <api/entityDeclAPI.h>

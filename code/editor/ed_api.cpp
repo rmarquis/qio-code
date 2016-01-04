@@ -22,7 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // ed_api.cpp
-#include "stdafx.h"
+#include <stdafx.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>

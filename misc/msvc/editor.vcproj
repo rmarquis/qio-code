@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
+				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\editor\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY; MSVC2008_EXPRESS_EDITION_HACK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\external\gl;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
+				AdditionalIncludeDirectories="..\..\code\editor\;..\..\code\editor\gui\mfc\;..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\external\gl;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY;MSVC2008_EXPRESS_EDITION_HACK;"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -255,6 +255,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\editor\ed_textures.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\ed_undo.cpp"
 				>
 			</File>
@@ -274,158 +278,332 @@
 				RelativePath="..\..\code\editor\ed_z.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath="..\..\code\editor\CAMERA.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CapDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CommandsDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogInfo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogTextures.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogThick.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DlgEvent.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\EditWnd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\EntityListDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ENTITYW.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\FindTextureDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\LstToolBar.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MainFrm.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MapInfo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MRU.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\NewProjDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDensityDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PrefsDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\QE3.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\QEDEFS.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditView.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditWnd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Radiant.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\resource.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ScaleDialog.h"
+				RelativePath="..\..\code\editor\StdAfx.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\editor\StdAfx.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="gui_mfc"
+			>
 			<File
-				RelativePath="..\..\code\editor\TexEdit.h"
+				RelativePath="..\..\code\editor\gui\mfc\CamWnd.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\TextureBar.h"
+				RelativePath="..\..\code\editor\gui\mfc\CamWnd.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\TextureLayout.h"
+				RelativePath="..\..\code\editor\gui\mfc\CapDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\TextureLoad.h"
+				RelativePath="..\..\code\editor\gui\mfc\CapDialog.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\Textures.h"
+				RelativePath="..\..\code\editor\gui\mfc\CommandsDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\TexWnd.h"
+				RelativePath="..\..\code\editor\gui\mfc\CommandsDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ToolWnd.h"
+				RelativePath="..\..\code\editor\gui\mfc\DialogInfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\XYWnd.h"
+				RelativePath="..\..\code\editor\gui\mfc\DialogInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ZView.h"
+				RelativePath="..\..\code\editor\gui\mfc\DialogTextures.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ZWnd.h"
+				RelativePath="..\..\code\editor\gui\mfc\DialogTextures.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\DialogThick.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\DialogThick.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\DlgEvent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\DlgEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\EditWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\EditWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\EntityListDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\EntityListDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ENTITYW.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\FindTextureDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\FindTextureDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\LstToolBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\LstToolBar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MainFrm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MapInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MapInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MRU.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\MRU.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\NewProjDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\NewProjDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PatchDensityDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PatchDensityDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PatchDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PatchDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PrefsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\PrefsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\QE3.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\QEDEFS.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\QERTYPES.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RADEditView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RADEditView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RADEditWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RADEditWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\Radiant.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\Radiant.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RotateDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\RotateDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ScaleDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ScaleDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\SurfaceDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\SurfaceDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TexEdit.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TexEdit.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureBar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureLayout.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureLayout.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureLoad.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TextureLoad.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TexWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\TexWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ToolWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ToolWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WaveOpen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WaveOpen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WIN_CAM.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WIN_DLG.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\Win_ent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\Win_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WIN_QE3.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WIN_XY.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\WIN_Z.CPP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\XYWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\XYWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ZView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ZView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ZWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\gui\mfc\ZWnd.h"
 				>
 			</File>
 		</Filter>
@@ -516,174 +694,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\vec3.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="GUI"
-			>
-			<File
-				RelativePath="..\..\code\editor\CamWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CapDialog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\CommandsDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogInfo.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogTextures.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DialogThick.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DlgEvent.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\EditWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\EntityListDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\FindTextureDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\LstToolBar.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MainFrm.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MapInfo.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\MRU.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\NewProjDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDensityDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PatchDialog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PrefsDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditView.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RADEditWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Radiant.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RotateDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\RotateDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ScaleDialog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\SurfaceDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\SurfaceDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TexEdit.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureBar.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureLayout.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TextureLoad.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\TexWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ToolWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WaveOpen.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WaveOpen.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WIN_DLG.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Win_ent.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Win_main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\WIN_QE3.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\XYWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ZView.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\ZWnd.cpp"
 				>
 			</File>
 		</Filter>
