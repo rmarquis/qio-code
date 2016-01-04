@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\;..\..\code\external\gl;..\..\code\external\SDL12\include"
+				AdditionalIncludeDirectories="..\..\code\;..\..\code\external\SDL12\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDLmain.lib SDL.lib OpenGL32.lib glew32.lib"
+				AdditionalDependencies="SDLmain.lib SDL.lib"
 				OutputFile="..\..\game\system\backendNULLx86.dll"
 				AdditionalLibraryDirectories="..\..\code\external\SDL12\libs\win32"
 				ModuleDefinitionFile="backendNULL.def"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\code\;..\..\code\external\gl;..\..\code\external\SDL12\include"
+				AdditionalIncludeDirectories="..\..\code\;..\..\code\external\SDL12\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -133,7 +133,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDLmain.lib SDL.lib OpenGL32.lib glew32.lib"
+				AdditionalDependencies="SDLmain.lib SDL.lib"
 				OutputFile="..\..\game\system\backendNULLx86.dll"
 				AdditionalLibraryDirectories="..\..\code\external\SDL12\libs\win32"
 				ModuleDefinitionFile="backendNULL.def"
