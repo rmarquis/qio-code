@@ -32,42 +32,16 @@ option( BUILD_MATERIALSYSTEM  "Build QIO material system libary"               O
 #option( BUILD_IMAGELIB        "Build QIO image library"                        OFF )
 if (WIN32)
 #Dushan // only on Windows platform
+#option( BUILD_DX12_RENDERER   "Build DirectX 12 renderer"                      OFF )
+#option( BUILD_DX11_RENDERER   "Build DirectX 11 renderer"                      OFF )
+option( BUILD_DX10_RENDERER   "Build DirectX 9 renderer"                      ON )
 option( BUILD_DX9_RENDERER    "Build DirectX 9 renderer"                      ON )
 endif(WIN32)
 option( BUILD_GL_RENDERER     "Build new renderer library"                    OFF )
 option( BUILD_NULL_RENDERER   "Build new renderer library"                    OFF )
 
 # Determine arch.
-IF( CMAKE_SYSTEM_NAME STREQUAL "Darwin" )
-  # CMAKE_SYSTEM_PROCESSOR always returns i386 for x86 and x86_64 on Mac
-  IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    SET( BUILD_ARCH "x86_64" )
-  ELSEIF( CMAKE_SIZEOF_VOID_P EQUAL 4 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "i386" )
-    SET( BUILD_ARCH "i386" )
-  ELSEIF( CMAKE_SIZEOF_VOID_P EQUAL 4 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc" )
-    SET( BUILD_ARCH "ppc" )
-  ELSE()
-    SET( BUILD_ARCH "Unknown" )
-  ENDIF()
-ELSEIF( WIN32 )
-  # CMAKE_SYSTEM_PROCESSOR is not reliable under windows
-  IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    SET( BUILD_ARCH "x86_64" )
-  ELSEIF( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-    SET( BUILD_ARCH "i386" )
-  ENDIF()
-ELSE()
-  # CMAKE_SYSTEM_PROCESSOR is reliable for *nix
-  IF( CMAKE_SYSTEM_PROCESSOR MATCHES "i.86" )
-    SET( BUILD_ARCH "i386" )
-  ELSEIF( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-    SET( BUILD_ARCH "x86_64" )
-  ELSEIF( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SIZEOF_VOID_P EQUAL 4 )
-    SET( BUILD_ARCH "x32" )
-  ELSE()
-    SET( BUILD_ARCH ${CMAKE_SYSTEM_PROCESSOR} )
-  ENDIF()
-ENDIF()
+SET( BUILD_ARCH "x86" )
 
 # Package info
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "QIO client" )
@@ -214,9 +188,37 @@ set( IMAGELIB_HEADERS
 # End of the file list for Image Library System Build Files #
 #############################################################
 
-#####################################################
-# Start of the list for Material System Build Files #
-#####################################################
+################################################
+# Start of the list for DirectX 10 Build Files #
+################################################
+
+set( DIRECTX10LIB_SOURCES
+	${MOUNT_DIR}/renderer/backEndDX10/backendDX10API.cpp
+)
+
+set( DIRECTXANDNULLRENDERER_SHARED_HEADERS
+	${MOUNT_DIR}/shared/autoCvar.h
+	${MOUNT_DIR}/math/matrix.h
+	${MOUNT_DIR}/qcommon/q_shared.h
+)
+
+set( DIRECTXANDNULLRENDERER_SHARED_SOURCES
+	${MOUNT_DIR}/shared/autoCvar.cpp
+	${MOUNT_DIR}/math/matrix.cpp
+	${MOUNT_DIR}/qcommon/q_shared.cpp
+)
+
+###################################################
+# Start of the list for NULL renderer Build Files #
+###################################################
+
+set( NULLRENDERER_SOURCES
+	${MOUNT_DIR}/renderer/backEndNULL/backEndNULLAPI.cpp
+)
+
+###############################################
+# Start of the list for DirectX 9 Build Files #
+###############################################
 
 set( DIRECTX9LIB_HEADERS 
 	${MOUNT_DIR}/renderer/backEndDX9/dx9_local.h
@@ -301,23 +303,55 @@ if( BUILD_IMAGELIB )
 	endif()
 endif()
 
-if( BUILD_DX9_RENDERER )
-	# This section finds and provides REQUIRED dependencies to imageLib target
-	find_package( DirectX REQUIRED )
+if( WIN32 )
+	if( BUILD_DX9_RENDERER )
+		# This section finds and provides REQUIRED dependencies to imageLib target
+		find_package( DirectX REQUIRED )
 
-	add_library( backendDX9 
+		add_library( backendDX9 
+			SHARED 
+			${MATHLIST_SOURCES} 
+			${MATHLIST_HEADERS} 
+			${DIRECTX9LIB_SOURCES}
+			${DIRECTX9LIB_HEADERS}
+			${DIRECTX9LIB_SHARED_HEADERS}
+			${DIRECTX9LIB_SHARED_SOURCES}
+		)
+		include_directories( ${MOUNT_DIR} )
+		if( WIN32 )
+			set_target_properties( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
+			include_directories( dll ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+			target_link_libraries( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
+		endif()
+	endif()
+
+	if( BUILD_DX10_RENDERER )
+		# This section finds and provides REQUIRED dependencies to imageLib target
+		find_package( DirectX REQUIRED )
+
+		add_library( backendDX10
+			SHARED 
+			${DIRECTX10LIB_SOURCES}
+			${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
+			${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
+		)
+		include_directories( ${MOUNT_DIR} )
+		set_target_properties( backendDX10 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX10.def" OUTPUT_NAME "backendDX10${BUILD_ARCH}" PREFIX "" )
+		include_directories( dll ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+		target_link_libraries( backendDX10 ${DXSDK_D3DX10_LIBRARY} ${DXSDK_D3D10_LIBRARY} -lm )
+	endif()
+endif() ## WIN32
+
+if( BUILD_NULL_RENDERER )
+
+	add_library( backendNULL
 		SHARED 
-		${MATHLIST_SOURCES} 
-		${MATHLIST_HEADERS} 
-		${DIRECTX9LIB_SOURCES}
-		${DIRECTX9LIB_HEADERS}
-		${DIRECTX9LIB_SHARED_HEADERS}
-		${DIRECTX9LIB_SHARED_SOURCES}
+		${NULLRENDERER_SOURCES}
+		${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
+		${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
 	)
 	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
-		include_directories( dll ${DXSDK_INCLUDE_DIR} ${MOUNT_DIR}/SDL12/include )
-		target_link_libraries( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
-	endif()
+	set_target_properties( backendNULL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendNULL.def" OUTPUT_NAME "backendNULL${BUILD_ARCH}" PREFIX "" )
+	include_directories( dll ${LIB_DIR}/SDL12/include )
+	target_link_libraries( backendNULL ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
 endif()
