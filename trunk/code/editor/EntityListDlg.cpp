@@ -86,19 +86,19 @@ BOOL CEntityListDlg::OnInitDialog()
 	
   CMapStringToPtr mapEntity;
 
-  HTREEITEM hParent = m_treeEntity.InsertItem(world_entity->eclass->getDeclName());
-  HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->eclass->getDeclName(), hParent);
+  HTREEITEM hParent = m_treeEntity.InsertItem(world_entity->getEntityClass()->getDeclName());
+  HTREEITEM hChild = m_treeEntity.InsertItem(world_entity->getEntityClass()->getDeclName(), hParent);
   m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(world_entity));
 
 	for (entity_s* pEntity=entities.next ; pEntity != &entities ; pEntity=pEntity->next)
 	{
     hParent = NULL;
-    if (mapEntity.Lookup(pEntity->eclass->getDeclName(), reinterpret_cast<void*&>(hParent)) == FALSE)
+    if (mapEntity.Lookup(pEntity->getEntityClass()->getDeclName(), reinterpret_cast<void*&>(hParent)) == FALSE)
     {
-      hParent = m_treeEntity.InsertItem(pEntity->eclass->getDeclName());
-      mapEntity.SetAt(pEntity->eclass->getDeclName(), reinterpret_cast<void*>(hParent));
+      hParent = m_treeEntity.InsertItem(pEntity->getEntityClass()->getDeclName());
+      mapEntity.SetAt(pEntity->getEntityClass()->getDeclName(), reinterpret_cast<void*>(hParent));
     }
-    hChild = m_treeEntity.InsertItem(pEntity->eclass->getDeclName(), hParent);
+    hChild = m_treeEntity.InsertItem(pEntity->getEntityClass()->getDeclName(), hParent);
     m_treeEntity.SetItemData(hChild, reinterpret_cast<DWORD>(pEntity));
   }
 
@@ -124,10 +124,10 @@ void CEntityListDlg::OnSelchangedTreeEntity(NMHDR* pNMHDR, LRESULT* pResult)
     entity_s* pEntity = reinterpret_cast<entity_s*>(m_treeEntity.GetItemData(hItem));
     if (pEntity)
     {
-		for(u32 i = 0; i < pEntity->keyValues.size(); i++) 
+		for(u32 i = 0; i < pEntity->getKeyValues().size(); i++) 
 		{
-			const char *key = pEntity->keyValues.getKey(i);
-			const char *value = pEntity->keyValues.getValue(i);
+			const char *key = pEntity->getKeyValues().getKey(i);
+			const char *value = pEntity->getKeyValues().getValue(i);
 		    if (strlen(key) > 8)
           strList.Format("%s\t%s", key, value);
         else

@@ -229,11 +229,6 @@ static unsigned s_stipple[32] =
 	0xaaaaaaaa, 0x55555555,0xaaaaaaaa, 0x55555555,
 };
 
-/*
-============
-WXY_WndProc
-============
-*/
 LONG WINAPI XYWndProc (
     HWND    hWnd,
     UINT    uMsg,
@@ -1160,7 +1155,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 		if (!((selected_brushes.next == &selected_brushes)||(selected_brushes.next->next != &selected_brushes)))
 		{
 			brush_s* b = selected_brushes.next;
-			if (b->owner != world_entity && b->owner->eclass->isFixedSize() && pecNew->isFixedSize())
+			if (b->owner != world_entity && b->owner->getEntityClass()->isFixedSize() && pecNew->isFixedSize())
 			{
 				vec3_c mins, maxs;
 				vec3_c origin;
@@ -1173,7 +1168,7 @@ void CreateEntityFromName(char* pName, brush_s* pBrush)
 				td.setName(pecNew->getEditorMaterialName());
 				brush_s* nb = Brush_Create (mins, maxs, &td);
 				b->owner->linkBrush(nb);
-				nb->owner->eclass = pecNew;
+				nb->owner->setEntityClass(pecNew);
 				nb->owner->setKeyValue("classname", pName);
 				Brush_Free(b);
 				Brush_Build(nb);
@@ -2311,7 +2306,7 @@ void CXYWnd::DrawCameraIcon()
 
 }
 
-void CXYWnd::DrawZIcon (void)
+void CXYWnd::DrawZIcon ()
 {
   if (m_nViewType == XY)
   {
@@ -2450,13 +2445,13 @@ BOOL FilterBrush(brush_s *pb)
   {
     if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_ENT)
     {
-		  return (strncmp(pb->owner->eclass->getDeclName(), "func_group", 10));
+		  return (strncmp(pb->owner->getEntityClass()->getDeclName(), "func_group", 10));
     }
   }
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_LIGHTS)
 	{
-    return (pb->owner->eclass->hasEditorFlagLight());
+    return (pb->owner->getEntityClass()->hasEditorFlagLight());
 		//if (!strncmp(pb->owner->eclass->getDeclName(), "light", 5))
 		//	return TRUE;
 	}
@@ -2489,7 +2484,7 @@ because the lines can be visible when neither end is.
 Called for both camera view and xy view.
 ==================
 */
-void DrawPathLines (void)
+void DrawPathLines ()
 {
 	int		i, j, k;
 	vec3_c	mid, mid1;
@@ -2504,10 +2499,15 @@ void DrawPathLines (void)
 	arraySTD_c<entity_s	*>ent_entity;
 
 	if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS)
-    return;
+		return;
 
-	ent_entity.resize(g_numentities);
-	ent_target.resize(g_numentities);
+	num_entities = 0;
+	for (te = entities.next ; te != &entities ; te = te->next)
+	{
+		num_entities++;
+	}
+	ent_entity.resize(num_entities);
+	ent_target.resize(num_entities);
 
 	num_entities = 0;
 	for (te = entities.next ; te != &entities ; te = te->next)
@@ -2554,7 +2554,7 @@ void DrawPathLines (void)
 			s1[1] = dir[0]*8 + dir[1]*8;
 			s2[1] = -dir[0]*8 + dir[1]*8;
 
-			glColor3f (se->eclass->getEditorColor()[0], se->eclass->getEditorColor()[1], se->eclass->getEditorColor()[2]);
+			glColor3f (se->getEntityClass()->getEditorColor()[0], se->getEntityClass()->getEditorColor()[1], se->getEntityClass()->getEditorColor()[2]);
 
 			glBegin(GL_LINES);
 			glVertex3fv(mid);
@@ -2820,7 +2820,7 @@ void CXYWnd::XY_Draw()
     if (brush->owner != e && brush->owner)
 		{
 
-			glColor3fv(brush->owner->eclass->getEditorColor());
+			glColor3fv(brush->owner->getEntityClass()->getEditorColor());
 		}
     else
     {
@@ -2897,7 +2897,7 @@ void CXYWnd::XY_Draw()
 
     if (!bFixedSize)
     {
-      if (brush->owner->eclass->isFixedSize())
+      if (brush->owner->getEntityClass()->isFixedSize())
         bFixedSize = true;
       if (g_PrefsDlg.m_bSizePaint)
       {
@@ -3284,24 +3284,6 @@ void CleanCopyEntities()
   g_enClipboard.next = g_enClipboard.prev = &g_enClipboard;
 }
 
-entity_s	*Entity_CopyClone (entity_s *e)
-{
-	entity_s	*n;
-
-	n = new entity_s();
-	n->brushes.onext = n->brushes.oprev = &n->brushes;
-	n->eclass = e->eclass;
-
-	// add the entity to the entity list
-	n->next = g_enClipboard.next;
-	g_enClipboard.next = n;
-	n->next->prev = n;
-	n->prev = &g_enClipboard;
-
-	// copy key values
-	n->keyValues = e->keyValues;
-	return n;
-}
 
 bool OnList(entity_s* pFind, CPtrArray* pList)
 {
@@ -3317,7 +3299,6 @@ bool OnList(entity_s* pFind, CPtrArray* pList)
 
 void CXYWnd::Copy()
 {
-#if 1
   CWaitCursor WaitCursor; 
   g_Clipboard.SetLength(0);
   g_PatchClipboard.SetLength(0);
@@ -3361,36 +3342,7 @@ void CXYWnd::Copy()
   Map_SaveSelected(strOut.GetBuffer(0));
 */
 
-#else
-  CPtrArray holdArray;
-  CleanList(&g_brClipboard);
-  CleanCopyEntities();
-	for (brush_s* pBrush = selected_brushes.next ; pBrush != NULL && pBrush != &selected_brushes ; pBrush=pBrush->next)
-  {
-		if (pBrush->owner == world_entity)
-    {
-      brush_s* pClone = Brush_Clone(pBrush);
-      pClone->owner = NULL;
-  	  Brush_AddToList (pClone, &g_brClipboard);
-    }
-    else
-    {
-      if (!OnList(pBrush->owner, &holdArray))
-      {
-        entity_s* e = pBrush->owner;
-        holdArray.Add(reinterpret_cast<void*>(e));
-        entity_s* pEClone = Entity_CopyClone(e);
-			  for (brush_s* pEB = e->brushes.onext ; pEB != &e->brushes ; pEB=pEB->onext)
-			  {
-          brush_s* pClone = Brush_Clone(pEB);
-	        //Brush_AddToList (pClone, &g_brClipboard);
-          Entity_LinkBrush(pEClone, pClone);
-          Brush_Build(pClone);
-			  }
-      }
-    }
-  }
-#endif
+
 }
 
 void CXYWnd::Undo()

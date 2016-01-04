@@ -370,7 +370,7 @@ void Drag_Begin (int x, int y, int buttons,
 		{
 			if (t.brush->getFirstFace()->getMatName()[0] == '(')
       {
-        if (t.brush->owner->eclass->hasEditorFlagLight())
+        if (t.brush->owner->getEntityClass()->hasEditorFlagLight())
         {
           CString strBuff;
           mtrAPI_i* pTex = QERApp_TryTextureForName(g_qeglobals.d_texturewin.getMatName());

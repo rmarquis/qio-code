@@ -31,13 +31,11 @@ int	screen_width;
 int	screen_height;
 bool	have_quit;
 
-int	update_bits;
-
 HANDLE	bsp_process;
 
 //===========================================
 
-void Sys_MarkMapModified (void)
+void Sys_MarkMapModified ()
 {
 	char			title[1024];
 
@@ -59,12 +57,12 @@ void Sys_SetTitle (char *text)
 
 HCURSOR	waitcursor;
 
-void Sys_BeginWait (void)
+void Sys_BeginWait ()
 {
 	waitcursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 }
 
-void Sys_EndWait (void)
+void Sys_EndWait ()
 {
 	if (waitcursor)
 	{
@@ -89,7 +87,7 @@ void Sys_SetCursorPos (int x, int y)
 }
 
 
-void Sys_Beep (void)
+void Sys_Beep ()
 {
 	MessageBeep (MB_ICONASTERISK);
 }
@@ -118,7 +116,7 @@ char	*TranslateString (char *buf)
 }
 
 
-void Sys_ClearPrintf (void)
+void Sys_ClearPrintf ()
 {
 	char	text[4];
 	text[0] = 0;
@@ -170,7 +168,7 @@ void Sys_Printf (char *text, ...)
 }
 
 
-double Sys_DoubleTime (void)
+double Sys_DoubleTime ()
 {
 	return clock()/ 1000.0;
 }
@@ -297,7 +295,7 @@ FILE DIALOGS
 ======================================================================
 */
  
-bool ConfirmModified (void)
+bool ConfirmModified ()
 {
 	if (!modified)
 		return true;
@@ -320,7 +318,7 @@ static char chReplace;         /* string separator for szFilter */
 static int i, cbString;        /* integer count variables       */ 
 static HANDLE hf;              /* file handle                   */ 
 
-void OpenDialog (void)
+void OpenDialog ()
 {
 	/* 
 	 * Obtain the system directory name and 
@@ -467,7 +465,7 @@ FillBSPMenu
 */
 const char	*bsp_commands[256];
 
-void FillBSPMenu (void)
+void FillBSPMenu ()
 {
 	HMENU	hmenu;
 	int		i;
@@ -529,7 +527,7 @@ See if the BSP is done yet
 extern void FindReplace(CString& strContents, const char* pTag, const char* pValue);
 extern CTime g_tBegin;
 
-void CheckBspProcess (void)
+void CheckBspProcess ()
 {
 	//char	outputpath[1024];
 	//char	temppath[512];

@@ -23,9 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "qe3.h"
 
-#define NEWEDGESEL 1
-
-
 int	FindPoint (vec3_t point)
 {
 	int		i, j;
@@ -71,21 +68,13 @@ int FindEdge (int p1, int p2, face_s *f)
 	return g_qeglobals.d_numedges-1;
 }
 
-#ifdef NEWEDGESEL
 void MakeFace (brush_s* b, face_s *f)
-#else
-void MakeFace (face_s *f)
-#endif
 {
 	texturedWinding_c	*w;
 	int			i;
 	int			pnum[128];
 
-#ifdef NEWEDGESEL
 	w = b->makeFaceWinding(f);
-#else
-	w = Brush_MakeFaceWinding (selected_brushes.next, f);
-#endif
 	if (!w)
 		return;
 	for (i=0 ; i<w->size() ; i++)
@@ -96,7 +85,7 @@ void MakeFace (face_s *f)
 	free (w);
 }
 
-void SetupVertexSelection (void)
+void SetupVertexSelection ()
 {
 	face_s	*f;
 	brush_s *b;
@@ -104,39 +93,21 @@ void SetupVertexSelection (void)
 	g_qeglobals.d_numpoints = 0;
 	g_qeglobals.d_numedges = 0;
 
-#ifdef NEWEDGESEL
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
 	  for (f=b->getFirstFace() ; f ; f=f->next)
 		  MakeFace (b,f);
   }
-#else
-	if (!QE_SingleBrush())
-		return;
-
-  b = selected_brushes.next;
-  for (f=b->getFirstFace() ; f ; f=f->next)
-    MakeFace (b,f);
-#endif
-
 }
 
 
-#ifdef NEWEDGESEL
 void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
-#else
-void SelectFaceEdge (face_s *f, int p1, int p2)
-#endif
 {
 	texturedWinding_c	*w;
 	int			i, j, k;
 	int			pnum[128];
 
-#ifdef NEWEDGESEL
 	w = b->makeFaceWinding(f);
-#else
-	w = Brush_MakeFaceWinding (selected_brushes.next, f);
-#endif
 	if (!w)
 		return;
 	for (i=0 ; i<w->size() ; i++)
@@ -174,7 +145,6 @@ void SelectVertex (int p1)
 	int			i, j, k;
 	face_s		*f;
 
-#ifdef NEWEDGESEL
 	for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
 	  for (f=b->getFirstFace() ; f ; f=f->next)
@@ -206,37 +176,6 @@ void SelectVertex (int p1)
 		  delete (w);
 	  }
   }
-#else
-	b = selected_brushes.next;
-	for (f=b->getFirstFace() ; f ; f=f->next)
-	{
-		w =  Brush_MakeFaceWinding (b, f);
-		if (!w)
-			continue;
-		for (i=0 ; i<w->size() ; i++)
-		{
-			if (FindPoint (w->points[i]) == p1)
-			{
-				VectorCopy (w->points[(i+w->size()-1)%w->size()], f->planepts[0]);
-				VectorCopy (w->points[i], f->planepts[1]);
-				VectorCopy (w->points[(i+1)%w->size()], f->planepts[2]);
-			  for (j=0 ; j<3 ; j++)
-        {
-				  for (k=0 ; k<3 ; k++)
-          {
-					  ;//f->planepts[j][k] = floor(f->planepts[j][k]/g_qeglobals.d_gridsize+0.5)*g_qeglobals.d_gridsize;
-          } 
-        }
-
-			  AddPlanept (f->planepts[1]);
-        //MessageBeep(-1);
-
-			  break;
-      }
-		}
-		free (w);
-	}
-#endif
 }
 
 void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir)
@@ -278,16 +217,12 @@ void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir)
 	// as primary drag points
 	g_qeglobals.d_num_move_points = 0;
 	e = &g_qeglobals.d_edges[besti];
-#ifdef NEWEDGESEL
 	for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
     SelectFaceEdge (b, e->f1, e->p1, e->p2);
 	  SelectFaceEdge (b, e->f2, e->p2, e->p1);
   }
-#else
-  SelectFaceEdge (e->f1, e->p1, e->p2);
-	SelectFaceEdge (e->f2, e->p2, e->p1);
-#endif
+
 
 
 }

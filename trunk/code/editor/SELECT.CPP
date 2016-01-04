@@ -215,9 +215,9 @@ singleselect:
       UpdatePatchInspector();
 		}
 
-		if (e->eclass)
+		if (e->getEntityClass())
 		{
-			UpdateEntitySel(brush->owner->eclass);
+			UpdateEntitySel(brush->owner->getEntityClass());
 		}
 	}
   if (bStatus)
@@ -291,7 +291,7 @@ void Select_Ray (vec3_t origin, vec3_t dir, int flags)
 }
 
 
-void Select_Delete (void)
+void Select_Delete ()
 {
 	brush_s	*brush;
 
@@ -324,7 +324,6 @@ void Select_Deselect (bool bDeselectFaces)
 
   g_pParentWnd->ActiveXY()->UndoClear();
 
-  g_qeglobals.d_workcount++;
 	g_qeglobals.d_select_count = 0;
 	g_qeglobals.d_num_move_points = 0;
 	b = selected_brushes.next;
@@ -366,11 +365,6 @@ void Select_Deselect (bool bDeselectFaces)
 	Sys_UpdateWindows (W_ALL);
 }
 
-/*
-============
-Select_Move
-============
-*/
 void Select_Move (vec3_t delta, bool bSnap)
 {
 	brush_s	*b;
@@ -390,14 +384,10 @@ void Select_Move (vec3_t delta, bool bSnap)
 }
 
 /*
-============
-Select_Clone
-
 Creates an exact duplicate of the selection in place, then moves
 the selected brushes off of their old positions
-============
 */
-void Select_Clone (void)
+void Select_Clone ()
 {
 #if 1
   ASSERT(g_pParentWnd->ActiveXY());
@@ -519,7 +509,7 @@ void WINAPI Select_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprim
 	{
 		Undo_Start("set brush textures");
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
-			if (!b->owner->eclass->isFixedSize())
+			if (!b->owner->getEntityClass()->isFixedSize())
 			{
 				Undo_AddBrush(b);
 				Brush_SetTexture (b, texdef, brushprimit_texdef, bFitScale );
@@ -978,7 +968,7 @@ GROUP SELECTIONS
 ================================================================
 */
 
-void Select_CompleteTall (void)
+void Select_CompleteTall ()
 {
 	brush_s	*b, *next;
 	//int		i;
@@ -1024,7 +1014,7 @@ void Select_CompleteTall (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Select_PartialTall (void)
+void Select_PartialTall ()
 {
 	brush_s	*b, *next;
 	//int		i;
@@ -1072,7 +1062,7 @@ void Select_PartialTall (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Select_Touching (void)
+void Select_Touching ()
 {
 	brush_s	*b, *next;
 	int		i;
@@ -1106,7 +1096,7 @@ void Select_Touching (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Select_Inside (void)
+void Select_Inside ()
 {
 	brush_s	*b, *next;
 	int		i;
@@ -1141,7 +1131,7 @@ void Select_Inside (void)
 }
 
 // Turn the currently selected entity back into normal brushes
-void Select_Ungroup(void)
+void Select_Ungroup()
 {
 	int numselectedgroups;
 	entity_s	*e;
@@ -1152,7 +1142,7 @@ void Select_Ungroup(void)
 	{
 		e = sb->owner;
 
-		if (!e || e == world_entity || e->eclass->isFixedSize())
+		if (!e || e == world_entity || e->getEntityClass()->isFixedSize())
 		{
 			continue;
 		}
@@ -1180,7 +1170,7 @@ void Select_Ungroup(void)
 }
 
 
-void Select_MakeStructural (void)
+void Select_MakeStructural ()
 {
 	brush_s	*b;
 	face_s	*f;
@@ -1192,7 +1182,7 @@ void Select_MakeStructural (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Select_MakeDetail (void)
+void Select_MakeDetail ()
 {
 	brush_s	*b;
 	face_s	*f;
@@ -1510,7 +1500,7 @@ void Select_AllOfType()
   {
     if (e != world_entity)
     {
-      CString strName = e->eclass->getDeclName();
+      CString strName = e->getEntityClass()->getDeclName();
       CString strKey, strVal;
       bool bCriteria = GetSelectAllCriteria(strKey, strVal);
       Sys_Printf("Selecting all %s(s)\n", strName);
@@ -1526,7 +1516,7 @@ void Select_AllOfType()
         e = b->owner;
         if (e != NULL)
         {
-          if (_strcmpi(e->eclass->getDeclName(), strName) == 0)
+          if (_strcmpi(e->getEntityClass()->getDeclName(), strName) == 0)
           {
             bool doIt = true;
             if (bCriteria) {
@@ -1624,7 +1614,7 @@ void Select_ShowAllHidden()
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Select_Invert(void)
+void Select_Invert()
 {
 	brush_s *next, *prev;
 

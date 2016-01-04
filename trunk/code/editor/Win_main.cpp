@@ -45,10 +45,10 @@ extern void WXY_Print( void );
 ==============================================================================
 */
 
-void OpenDialog (void);
+void OpenDialog ();
 void SaveAsDialog (bool bRegion);
-bool ConfirmModified (void);
-void  Select_Ungroup (void);
+bool ConfirmModified ();
+void  Select_Ungroup ();
 
 
 

@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 z_t		z;
 
-void Z_Init (void)
+void Z_Init ()
 {
 	z.origin[0] = 0;
 	z.origin[1] = 20;
@@ -57,7 +57,7 @@ void Z_MouseDown (int x, int y, int buttons)
 
 	org = z.origin;
 	org[2] += (y - (z.height/2))/z.scale;
-	org[1] = -8192;
+	org[1] = -WORLD_SIZE;
 
 	b = selected_brushes.next;
 	if (b && b != &selected_brushes)
@@ -144,7 +144,7 @@ DRAWING
 ============================================================================
 */
 
-void Z_DrawGrid (void)
+void Z_DrawGrid ()
 {
 	float	zz, zb, ze;
 	int		w, h;
@@ -212,7 +212,7 @@ void Z_DrawGrid (void)
 #define CAM_HEIGHT		48 // height of main part
 #define CAM_GIZMO		8	// height of the gizmo
 
-void ZDrawCameraIcon (void)
+void ZDrawCameraIcon ()
 {
 	float	x, y;
 	int	xCam = z.width/4;
@@ -235,9 +235,7 @@ void ZDrawCameraIcon (void)
 
 }
 
-GLbitfield glbitClear = GL_COLOR_BUFFER_BIT; //HACK
-
-void Z_Draw (void)
+void Z_Draw ()
 {
     brush_s	*brush;
 	float	w, h;
@@ -264,12 +262,7 @@ void Z_Draw (void)
 		g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][2],
 		0);
 
-    /* GL Bug */ 
-	/* When not using hw acceleration, gl will fault if we clear the depth 
-	buffer bit on the first pass. The hack fix is to set the GL_DEPTH_BUFFER_BIT
-	only after Z_Draw() has been called once. Yeah, right. */
-	glClear(glbitClear); 
-	glbitClear |= GL_DEPTH_BUFFER_BIT;
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); 
 
 	glMatrixMode(GL_PROJECTION);
 

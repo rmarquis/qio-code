@@ -43,14 +43,14 @@ extern	bool	region_active;
 
 void 	Map_LoadFile (char *filename);
 void 	Map_SaveFile (const char *filename, bool use_region);
-void	Map_New (void);
-void	Map_BuildBrushData(void);
+void	Map_New ();
+void	Map_BuildBrushData();
 
-void	Map_RegionOff (void);
-void	Map_RegionXY (void);
-void	Map_RegionTallBrush (void);
-void	Map_RegionBrush (void);
-void	Map_RegionSelectedBrushes (void);
+void	Map_RegionOff ();
+void	Map_RegionXY ();
+void	Map_RegionTallBrush ();
+void	Map_RegionBrush ();
+void	Map_RegionSelectedBrushes ();
 bool Map_IsBrushFiltered (brush_s *b);
 
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile = NULL);

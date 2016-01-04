@@ -155,7 +155,7 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 
 	// set shading for face
 	shade = SetShadeForPlane (f->plane);
-	if (!b->owner->eclass->isFixedSize())
+	if (!b->owner->getEntityClass()->isFixedSize())
 	{
 		//if (b->curveBrush)
 		//  shade = fCurveColor;
@@ -1877,7 +1877,7 @@ void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
 	brush_s	*b2;
 	int		c;
 
-	if (b->owner->eclass->isFixedSize())
+	if (b->owner->getEntityClass()->isFixedSize())
 		return;
 
 	c = 0;
@@ -2296,25 +2296,25 @@ void DrawLight(brush_s *b)
 
 		glColor3f(0, 1, 0);
 		glBegin(GL_LINE_LOOP);
-		vTemp = vTarget + b->owner->origin;
+		vTemp = vTarget + b->owner->getOrigin();
 		vTemp += vRight;
 		vTemp += vUp;
-		glVertex3fv(b->owner->origin);
+		glVertex3fv(b->owner->getOrigin());
 		glVertex3fv(vTemp);
-		vTemp = vTarget + b->owner->origin;
+		vTemp = vTarget + b->owner->getOrigin();
 		vTemp += vUp;
 		vTemp -= vRight;
-		glVertex3fv(b->owner->origin);
+		glVertex3fv(b->owner->getOrigin());
 		glVertex3fv(vTemp);
-		vTemp = vTarget + b->owner->origin;
+		vTemp = vTarget + b->owner->getOrigin();
 		vTemp += vRight;
 		vTemp -= vUp;
-		glVertex3fv(b->owner->origin);
+		glVertex3fv(b->owner->getOrigin());
 		glVertex3fv(vTemp);
-		vTemp = vTarget + b->owner->origin;
+		vTemp = vTarget + b->owner->getOrigin();
 		vTemp -= vUp;
 		vTemp -= vRight;
-		glVertex3fv(b->owner->origin);
+		glVertex3fv(b->owner->getOrigin());
 		glVertex3fv(vTemp);
 		glEnd();
 	}
@@ -2340,15 +2340,15 @@ void Brush_Draw( brush_s *b )
 	}
 	
 	
-	if (b->owner->eclass->isFixedSize())
+	if (b->owner->getEntityClass()->isFixedSize())
 	{
 		
-		if (!(g_qeglobals.d_savedinfo.exclude & EXCLUDE_ANGLES) && (b->owner->eclass->hasEditorFlagAngle()))
+		if (!(g_qeglobals.d_savedinfo.exclude & EXCLUDE_ANGLES) && (b->owner->getEntityClass()->hasEditorFlagAngle()))
 		{
 			Brush_DrawFacingAngle(b, b->owner);
 		}
 		
-		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->hasEditorFlagLight()))
+		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
 		{
 			DrawLight(b);
 			return;
@@ -2420,7 +2420,7 @@ void Brush_Draw( brush_s *b )
 	}
 	
 
-	if (b->owner->eclass->isFixedSize())
+	if (b->owner->getEntityClass()->isFixedSize())
 		glEnable (GL_TEXTURE_2D);
 	
 	glBindTexture( GL_TEXTURE_2D, 0 );
@@ -2460,9 +2460,9 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 	}
         
 
-	if (b->owner->eclass->isFixedSize())
+	if (b->owner->getEntityClass()->isFixedSize())
 	{
-		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->eclass->hasEditorFlagLight()))
+		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
 		{
 			vec3_t vCorners[4];
 			float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
@@ -2512,7 +2512,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 			DrawBrushEntityName (b);
 			return;
 		}
-		else if (b->owner->eclass->hasEditorFlagMiscModel())
+		else if (b->owner->getEntityClass()->hasEditorFlagMiscModel())
 		{
 			//if (PaintedModel(b, false))
 			//return;
@@ -2588,11 +2588,9 @@ void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
 	}
 
 	// PGM - keep the origin vector up to date on fixed size entities.
-	if(b->owner->eclass->isFixedSize())
+	if(b->owner->getEntityClass()->isFixedSize())
 	{
-		b->owner->origin += move;
-		//VectorAdd(b->maxs, b->mins, b->owner->origin);
-		//VectorScale(b->owner->origin, 0.5, b->owner->origin);
+		b->owner->moveOrigin(move);
 	}
 }
 

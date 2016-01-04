@@ -46,7 +46,7 @@ struct undo_s
 	double time;				//time operation was performed
 	int id;						//every undo has an unique id
 	int done;					//true when undo is build
-	char *operation;			//name of the operation
+	const char *operation;		//name of the operation
 	brush_s brushlist;			//deleted brushes
 	entity_s entitylist;		//deleted entities
 	struct undo_s *prev, *next;	//next and prev undo in list
@@ -63,13 +63,7 @@ int g_undoMemorySize = 0;				//memory size of undo buffer
 int g_undoId = 1;						//current undo ID (zero is invalid id)
 int g_redoId = 1;						//current redo ID (zero is invalid id)
 
-
-/*
-=============
-Undo_MemorySize
-=============
-*/
-int Undo_MemorySize(void)
+int Undo_MemorySize()
 {
 	/*
 	int size;
@@ -95,12 +89,7 @@ int Undo_MemorySize(void)
 	return g_undoMemorySize;
 }
 
-/*
-=============
-Undo_ClearRedo
-=============
-*/
-void Undo_ClearRedo(void)
+void Undo_ClearRedo()
 {
 	undo_s *redo, *nextredo;
 	brush_s *pBrush, *pNextBrush;
@@ -125,15 +114,8 @@ void Undo_ClearRedo(void)
 	g_lastredo = NULL;
 	g_redoId = 1;
 }
-
-/*
-=============
-Undo_Clear
-
-  Clears the undo buffer.
-=============
-*/
-void Undo_Clear(void)
+// Clears the undo buffer.
+void Undo_Clear()
 {
 	undo_s *undo, *nextundo;
 	brush_s *pBrush, *pNextBrush;
@@ -165,11 +147,6 @@ void Undo_Clear(void)
 	g_undoId = 1;
 }
 
-/*
-=============
-Undo_SetMaxSize
-=============
-*/
 void Undo_SetMaxSize(int size)
 {
 	Undo_Clear();
@@ -177,21 +154,11 @@ void Undo_SetMaxSize(int size)
 	else g_undoMaxSize = size;
 }
 
-/*
-=============
-Undo_GetMaxSize
-=============
-*/
-int Undo_GetMaxSize(void)
+int Undo_GetMaxSize()
 {
 	return g_undoMaxSize;
 }
 
-/*
-=============
-Undo_SetMaxMemorySize
-=============
-*/
 void Undo_SetMaxMemorySize(int size)
 {
 	Undo_Clear();
@@ -199,22 +166,12 @@ void Undo_SetMaxMemorySize(int size)
 	else g_undoMaxMemorySize = size;
 }
 
-/*
-=============
-Undo_GetMaxMemorySize
-=============
-*/
-int Undo_GetMaxMemorySize(void)
+int Undo_GetMaxMemorySize()
 {
 	return g_undoMaxMemorySize;
 }
 
-/*
-=============
-Undo_FreeFirstUndo
-=============
-*/
-void Undo_FreeFirstUndo(void)
+void Undo_FreeFirstUndo()
 {
 	undo_s *undo;
 	brush_s *pBrush, *pNextBrush;
@@ -242,12 +199,7 @@ void Undo_FreeFirstUndo(void)
 	g_undoSize--;
 }
 
-/*
-=============
-Undo_GeneralStart
-=============
-*/
-void Undo_GeneralStart(char *operation)
+void Undo_GeneralStart(const char *operation)
 {
 	undo_s *undo;
 	brush_s *pBrush;
@@ -314,11 +266,6 @@ void Undo_GeneralStart(char *operation)
 	}
 }
 
-/*
-=============
-Undo_BrushInUndo
-=============
-*/
 int Undo_BrushInUndo(undo_s *undo, brush_s *brush)
 {
 	brush_s *b;
@@ -330,11 +277,6 @@ int Undo_BrushInUndo(undo_s *undo, brush_s *brush)
 	return false;
 }
 
-/*
-=============
-Undo_EntityInUndo
-=============
-*/
 int Undo_EntityInUndo(undo_s *undo, entity_s *ent)
 {
 	entity_s *e;
@@ -346,22 +288,12 @@ int Undo_EntityInUndo(undo_s *undo, entity_s *ent)
 	return false;
 }
 
-/*
-=============
-Undo_Start
-=============
-*/
-void Undo_Start(char *operation)
+void Undo_Start(const char *operation)
 {
 	Undo_ClearRedo();
 	Undo_GeneralStart(operation);
 }
 
-/*
-=============
-Undo_AddBrush
-=============
-*/
 void Undo_AddBrush(brush_s *pBrush)
 {
 	if (!g_lastundo)
@@ -387,11 +319,6 @@ void Undo_AddBrush(brush_s *pBrush)
 	g_undoMemorySize += Brush_MemorySize(pClone);
 }
 
-/*
-=============
-Undo_AddBrushList
-=============
-*/
 void Undo_AddBrushList(brush_s *brushlist)
 {
 	brush_s *pBrush;
@@ -415,7 +342,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 		// if it's a fixed size entity, the brush that reprents it is not really relevant, it's used for selecting and moving around
 		// what we want to store for undo is the owner entity, epairs and origin/angle stuff
 		//++timo FIXME: if the entity is not fixed size I don't know, so I don't do it yet
-		if (pBrush->owner->eclass->isFixedSize() == 1)
+		if (pBrush->owner->getEntityClass()->isFixedSize() == 1)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
 		brush_s* pClone = pBrush->fullClone();
@@ -429,11 +356,6 @@ void Undo_AddBrushList(brush_s *brushlist)
 	}
 }
 
-/*
-=============
-Undo_EndBrush
-=============
-*/
 void Undo_EndBrush(brush_s *pBrush)
 {
 	if (!g_lastundo)
@@ -449,11 +371,6 @@ void Undo_EndBrush(brush_s *pBrush)
 	pBrush->undoId = g_lastundo->id;
 }
 
-/*
-=============
-Undo_EndBrushList
-=============
-*/
 void Undo_EndBrushList(brush_s *brushlist)
 {
 	if (!g_lastundo)
@@ -472,11 +389,6 @@ void Undo_EndBrushList(brush_s *brushlist)
 	}
 }
 
-/*
-=============
-Undo_AddEntity
-=============
-*/
 void Undo_AddEntity(entity_s *entity)
 {
 	entity_s* pClone;
@@ -504,11 +416,6 @@ void Undo_AddEntity(entity_s *entity)
 	g_undoMemorySize += pClone->getMemorySize();
 }
 
-/*
-=============
-Undo_EndEntity
-=============
-*/
 void Undo_EndEntity(entity_s *entity)
 {
 	if (!g_lastundo)
@@ -531,12 +438,7 @@ void Undo_EndEntity(entity_s *entity)
 	entity->undoId = g_lastundo->id;
 }
 
-/*
-=============
-Undo_End
-=============
-*/
-void Undo_End(void)
+void Undo_End()
 {
 	if (!g_lastundo)
 	{
@@ -561,12 +463,7 @@ void Undo_End(void)
 	//Sys_Printf("undo size = %d, undo memory = %d\n", g_undoSize, g_undoMemorySize);
 }
 
-/*
-=============
-Undo_Undo
-=============
-*/
-void Undo_Undo(void)
+void Undo_Undo()
 {
 	undo_s *undo, *redo;
 	brush_s *pBrush, *pNextBrush;
@@ -679,7 +576,7 @@ void Undo_Undo(void)
 		if (pEntity->entityId == world_entity->entityId)
 		{
 			//set back the original epairs
-			world_entity->keyValues = pEntity->keyValues;
+			world_entity->setKeyValues(pEntity->getKeyValues());
 			// free the world_entity clone that stored the epairs
 			delete pEntity;
 		}
@@ -727,12 +624,7 @@ void Undo_Undo(void)
     Sys_UpdateWindows(W_ALL);
 }
 
-/*
-=============
-Undo_Redo
-=============
-*/
-void Undo_Redo(void)
+void Undo_Redo()
 {
 	undo_s *redo;
 	brush_s *pBrush, *pNextBrush;
@@ -805,7 +697,7 @@ void Undo_Redo(void)
 		if (pEntity->entityId == world_entity->entityId)
 		{
 			//set back the original epairs
-			world_entity->keyValues = pEntity->keyValues;
+			world_entity->setKeyValues(pEntity->getKeyValues());
 			//free the world_entity clone that stored the epairs
 			delete pEntity;
 		}
@@ -851,14 +743,14 @@ void Undo_Redo(void)
 }
 
 
-int Undo_RedoAvailable(void)
+int Undo_RedoAvailable()
 {
 	if (g_lastredo) return true;
 	return false;
 }
 
 
-int Undo_UndoAvailable(void)
+int Undo_UndoAvailable()
 {
 	if (g_lastundo)
 	{

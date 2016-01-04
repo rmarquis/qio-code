@@ -690,7 +690,7 @@ void UpdateSurfaceDialog()
 
 bool ByeByeSurfaceDialog();
 
-void DoSurface (void)
+void DoSurface ()
 {
 
 
