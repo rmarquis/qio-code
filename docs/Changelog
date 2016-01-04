@@ -2,6 +2,7 @@
 	* Added rendererGL for cMake along with more cMake modules
 	* Separated SDL and GLEW modules into proper folders
 	* Fixed compiling for Visual Studio 2008
+	* Removed unneeded dependences and include files for backEndDX9 and backEndDX10 renderers
 
 01-04-2016 Dusan Jocic <dusanjocic@msn.com>
 	* More work on cMake system for QIO engine
