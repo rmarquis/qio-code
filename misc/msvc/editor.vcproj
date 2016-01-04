@@ -555,10 +555,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\gui\mfc\WIN_CAM.CPP"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\gui\mfc\WIN_DLG.CPP"
 				>
 			</File>
@@ -572,14 +568,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\gui\mfc\WIN_QE3.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\gui\mfc\WIN_XY.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\gui\mfc\WIN_Z.CPP"
 				>
 			</File>
 			<File
