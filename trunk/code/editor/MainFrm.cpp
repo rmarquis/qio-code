@@ -1341,8 +1341,8 @@ void CMainFrame::OnDestroy()
 	while (filtered_brushes.next != &filtered_brushes)
 		Brush_Free (filtered_brushes.next, false);
 
-	while (entities.next != &entities)
-		delete entities.next;
+	while (entities.getNextEntity() != &entities)
+		delete entities.getNextEntity();
 
 	/*g_qeglobals.d_project_entity->clearKeyValues();
 

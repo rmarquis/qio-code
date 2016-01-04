@@ -38,7 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 
 // this is a modified version of QERApp_TryTextureForName
-mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name)
+mtrAPI_i *QERApp_TryTextureForName(const char* name)
 {
 	char fullName[256];
 	if(name[0] != '(' && strnicmp(name,"textures",strlen("textures"))) 

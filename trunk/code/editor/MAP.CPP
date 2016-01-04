@@ -122,7 +122,7 @@ entity_s *Map_FindClass (char *cname)
 {
 	entity_s	*ent;
 
-	for (ent = entities.next ; ent != &entities ; ent=ent->next)
+	for (ent = entities.getNextEntity() ; ent != &entities ; ent=ent->getNextEntity())
 	{
 		if (!strcmp(cname, ent->getKeyValue("classname")))
 			return ent;
@@ -657,7 +657,7 @@ void UniqueTargetName(CString& rStr)
 {
 	// make a unique target value
 	int maxtarg = 0;
-	for (entity_s* e=entities.next ; e != &entities ; e=e->next)
+	for (entity_s* e=entities.getNextEntity() ; e != &entities ; e=e->getNextEntity())
 	{
 		const char* tn = e->getKeyValue("targetname");
 		if (tn && tn[0])
@@ -855,12 +855,12 @@ void Map_SaveSelected(char* pFilename)
 
 	// then write all other ents
 	count = 1;
-	for (e=entities.next ; e != &entities ; e=next)
+	for (e=entities.getNextEntity() ; e != &entities ; e=next)
 	{
   	fprintf (f, "// entity %i\n", count);
    	count++;
  		Entity_WriteSelected(e, f);
-		next = e->next;
+		next = e->getNextEntity();
 	}
 	fclose (f);
 }
@@ -878,12 +878,12 @@ void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile)
 
 	// then write all other ents
 	count = 1;
-	for (e=entities.next ; e != &entities ; e=next)
+	for (e=entities.getNextEntity() ; e != &entities ; e=next)
 	{
 		MemFile_fprintf(pMemFile, "// entity %i\n", count);
 		count++;
  		Entity_WriteSelected(e, pMemFile);
-		next = e->next;
+		next = e->getNextEntity();
 	}
 
   //if (pPatchFile)

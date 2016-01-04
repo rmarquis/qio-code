@@ -251,32 +251,9 @@ BOOL CALLBACK Win_Dialog (
     LPARAM lParam 	// second message parameter
 );
 
-
-//
-// win_cam.c
-//
-void WCam_Create (HINSTANCE hInstance);
-
-
-//
-// win_xy.c
-//
-void WXY_Create (HINSTANCE hInstance);
-
-//
-// win_z.c
-//
-void WZ_Create (HINSTANCE hInstance);
-
-//
-// win_ent.c
-//
-
-
 //
 // win_main.c
 //
-void Main_Create (HINSTANCE hInstance);
 extern BOOL SaveWindowState(HWND hWnd, const char *pszName);
 extern BOOL LoadWindowState(HWND hWnd, const char *pszName);
 
@@ -343,9 +320,6 @@ void Curve_Invert ();
 void Curve_BuildPoints (brush_s *b);
 void Curve_XYDraw (brush_s *b);
 void Curve_CameraDraw (brush_s *b);
-
-void Curve_WriteFile (char *name);
-
 
 // patch stuff
 
@@ -440,11 +414,8 @@ void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int
 // TexWnd.cpp
 //
 
-extern CStringArray g_BSPFrontendCommands;
 //
-// IShaders interface
-class mtrAPI_i * Texture_LoadTGATexture (unsigned char* pPixels, int nWidth, int nHeight, char* pPath, int nFlags, int nContents, int nValue );
-class mtrAPI_i * WINAPI QERApp_TryTextureForName(const char* name);
+class mtrAPI_i *QERApp_TryTextureForName(const char* name);
 
 
 BOOL FilterBrush(brush_s *pb);
