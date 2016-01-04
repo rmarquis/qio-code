@@ -183,19 +183,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\code\editor\CSG.CPP"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\DRAG.CPP"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\ed_api.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\edBrush.cpp"
+				RelativePath="..\..\code\editor\ed_bezierPatch.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_bezierPatch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_brush.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -215,35 +215,63 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ENTITY.CPP"
+				RelativePath="..\..\code\editor\ed_brush.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\MAP.CPP"
+				RelativePath="..\..\code\editor\ed_csg.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\PMESH.CPP"
+				RelativePath="..\..\code\editor\ed_drag.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\QE3.CPP"
+				RelativePath="..\..\code\editor\ed_entity.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\SELECT.CPP"
+				RelativePath="..\..\code\editor\ed_entity.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\Undo.cpp"
+				RelativePath="..\..\code\editor\ed_main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\VERTSEL.CPP"
+				RelativePath="..\..\code\editor\ed_map.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\Z.CPP"
+				RelativePath="..\..\code\editor\ed_map.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_select.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_select.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_undo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_undo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_verticesSelection.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_z.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\ed_z.h"
 				>
 			</File>
 		</Filter>
@@ -252,10 +280,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\code\editor\BRUSH.H"
-				>
-			</File>
 			<File
 				RelativePath="..\..\code\editor\CAMERA.H"
 				>
@@ -289,10 +313,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\ENTITY.H"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\EntityListDlg.h"
 				>
 			</File>
@@ -313,10 +333,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\MAP.H"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\MapInfo.h"
 				>
 			</File>
@@ -326,10 +342,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\NewProjDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\PARSE.H"
 				>
 			</File>
 			<File
@@ -353,14 +365,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\QERTYPES.H"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\QFILES.H"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\RADEditView.h"
 				>
 			</File>
@@ -378,10 +382,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\ScaleDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\SELECT.H"
 				>
 			</File>
 			<File
@@ -417,19 +417,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\Undo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Winding.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\XYWnd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\editor\Z.H"
 				>
 			</File>
 			<File

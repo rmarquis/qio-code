@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "stdafx.h"
 #include "qe3.h"
+#include <api/entityDeclAPI.h>
 
 /*
 
@@ -168,7 +169,7 @@ void Drag_Setup (int x, int y, int buttons,
 		bool bOK = (g_PrefsDlg.m_bALTEdge) ? (static_cast<bool>(::GetAsyncKeyState(VK_MENU))) : true;
 		if (bOK)
 		{
-			for (brush_s* pBrush = selected_brushes.next ; pBrush != &selected_brushes ; pBrush = pBrush->next)
+			for (edBrush_c* pBrush = selected_brushes.next ; pBrush != &selected_brushes ; pBrush = pBrush->next)
 			{
 				if (buttons & MK_CONTROL)
 					Brush_SideSelect (pBrush, origin, dir, true);
@@ -426,7 +427,7 @@ void Drag_Begin (int x, int y, int buttons,
 void MoveSelection (vec3_t move)
 {
 	int		i, success;
-	brush_s	*b;
+	edBrush_c	*b;
 	CString strStatus;
 	vec3_c vTemp, vTemp2, end;
 

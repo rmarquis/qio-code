@@ -25,6 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "Radiant.h"
 #include "EntityListDlg.h"
+#include <api/entityDeclAPI.h>
+#include <api/declManagerAPI.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "stdafx.h"
 #include "qe3.h"
+#include <api/entityDeclAPI.h>
 
 
 
 void CSG_MakeHollow ()
 {
-	brush_s		*b, *front, *back, *next;
+	edBrush_c		*b, *front, *back, *next;
 	face_s		*f;
 	vec3_c		move;
 	int			i;
@@ -68,10 +69,10 @@ void CSG_MakeHollow ()
  otherwise the texture/shader references of faces in the same plane have to
  be the same as well.
 */
-brush_s *brush_s::tryMergeWith(brush_s *brush2, int onlyshape)
+edBrush_c *edBrush_c::tryMergeWith(edBrush_c *brush2, int onlyshape)
 {
 	int i, shared;
-	brush_s *newbrush;
+	edBrush_c *newbrush;
 	face_s *face1, *face2, *newface, *f;
 
 	// check for bounding box overlapp
@@ -130,7 +131,7 @@ brush_s *brush_s::tryMergeWith(brush_s *brush2, int onlyshape)
 		} //end for
 	} //end for
 	//
-	newbrush = new brush_s(false);
+	newbrush = new edBrush_c(false);
 	//
 	for (face1 = this->getFirstFace(); face1; face1 = face1->next)
 	{
@@ -206,11 +207,11 @@ brush_s *brush_s::tryMergeWith(brush_s *brush2, int onlyshape)
   The input list is destroyed.
   Input and output should be a single linked list using .next
 */
-brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
+edBrush_c *Brush_MergeListPairs(edBrush_c *brushlist, int onlyshape)
 {
 	int nummerges, merged;
-	brush_s *b1, *b2, *tail, *newbrush, *newbrushlist;
-	brush_s *lastb2;
+	edBrush_c *b1, *b2, *tail, *newbrush, *newbrushlist;
+	edBrush_c *lastb2;
 
 	if (!brushlist) return NULL;
 
@@ -273,9 +274,9 @@ brush_s *Brush_MergeListPairs(brush_s *brushlist, int onlyshape)
  otherwise the texture/shader references of faces in the same plane have to
  be the same as well.
 */
-brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
+edBrush_c *Brush_MergeList(edBrush_c *brushlist, int onlyshape)
 {
-	brush_s *brush1, *brush2, *brush3, *newbrush;
+	edBrush_c *brush1, *brush2, *brush3, *newbrush;
 	face_s *face1, *face2, *face3, *newface, *f;
 
 	if (!brushlist) return NULL;
@@ -335,7 +336,7 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
 		}
 	}
 	//
-	newbrush = new brush_s(false);
+	newbrush = new edBrush_c(false);
 	//
 	for (brush1 = brushlist; brush1; brush1 = brush1->next)
 	{
@@ -388,11 +389,11 @@ brush_s *Brush_MergeList(brush_s *brushlist, int onlyshape)
  May by empty if A is contained inside B.
  The originals are undisturbed.
 */
-brush_s *Brush_Subtract(brush_s *a, brush_s *b)
+edBrush_c *Brush_Subtract(edBrush_c *a, edBrush_c *b)
 {
 	// a - b = out (list)
-	brush_s *front, *back;
-	brush_s *in, *out, *next;
+	edBrush_c *front, *back;
+	edBrush_c *in, *out, *next;
 	face_s *f;
 
 	in = a;
@@ -429,8 +430,8 @@ brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 
 void CSG_Subtract ()
 {
-	brush_s		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
-	brush_s		fragmentlist(true);
+	edBrush_c		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
+	edBrush_c		fragmentlist(true);
 	int			i, numfragments, numbrushes;
 
 	Sys_Printf ("Subtracting...\n");
@@ -549,7 +550,7 @@ void CSG_Subtract ()
 
 void CSG_Merge()
 {
-	brush_s *b, *next, *newlist, *newbrush;
+	edBrush_c *b, *next, *newlist, *newbrush;
 	class entity_s	*owner;
 
 	Sys_Printf ("Merging...\n");

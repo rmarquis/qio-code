@@ -152,7 +152,7 @@ void CCamWnd::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 }
 
 
-brush_s* g_pSplitList = NULL;
+edBrush_c* g_pSplitList = NULL;
 
 void CCamWnd::OnPaint() 
 {
@@ -402,7 +402,7 @@ void CCamWnd::Cam_BuildMatrix()
 
 void CCamWnd::Cam_ChangeFloor (bool up)
 {
-	brush_s	*b;
+	edBrush_c	*b;
 	float	d, bestd, current;
 	vec3_t	start, dir;
 
@@ -641,7 +641,7 @@ void CCamWnd::InitCull()
 	}
 }
 
-bool CCamWnd::CullBrush (brush_s *b)
+bool CCamWnd::CullBrush (edBrush_c *b)
 {
 	return false;
 	//int		i;
@@ -688,7 +688,7 @@ bool CCamWnd::CullBrush (brush_s *b)
 }
 
 #if 0
-void CCamWnd::DrawLightRadius(brush_s* pBrush)
+void CCamWnd::DrawLightRadius(edBrush_c* pBrush)
 {
   // if lighting
   int nRadius = Brush_LightRadius(pBrush);
@@ -707,11 +707,11 @@ void CCamWnd::DrawLightRadius(brush_s* pBrush)
 }
 #endif
 
-BOOL FilterBrush(brush_s *pb);
+BOOL FilterBrush(edBrush_c *pb);
 
 void CCamWnd::Cam_Draw()
 {
-	brush_s	*brush;
+	edBrush_c	*brush;
 	face_s	*face;
 	float	screenaspect;
 	float	yfov;
@@ -822,7 +822,7 @@ void CCamWnd::Cam_Draw()
 	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
 	glMatrixMode(GL_TEXTURE);
 	
-	brush_s* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
+	edBrush_c* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
 	// draw normally
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{

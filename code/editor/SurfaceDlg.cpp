@@ -944,7 +944,7 @@ void CSurfaceDlg::OnBtnFacefit()
   UpdateData(TRUE);
   if (g_SelectedFaces.GetSize() == 0)
   {
-    brush_s *b;
+    edBrush_c *b;
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
     {
       for (face_s* pFace = b->getFirstFace(); pFace; pFace = pFace->next)

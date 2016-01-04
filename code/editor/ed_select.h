@@ -1,24 +1,29 @@
 /*
-===========================================================================
-Copyright (C) 1999-2005 Id Software, Inc.
+============================================================================
+Copyright (C) 2015 V.
 
-This file is part of Quake III Arena source code.
+This file is part of Qio source code.
 
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
+Qio source code is free software; you can redistribute it 
+and/or modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Qio source code is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Foobar; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-===========================================================================
+along with this program; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
+or simply visit <http://www.gnu.org/licenses/>.
+============================================================================
 */
+// ed_select.h
+#ifndef __EDITOR_SELECT_H__
+#define __EDITOR_SELECT_H__
 
 enum select_t
 {
@@ -34,7 +39,7 @@ enum select_t
 
 struct trace_t
 {
-	brush_s		*brush;
+	edBrush_c		*brush;
 	face_s		*face;
 	float		dist;
 	bool	selected;
@@ -53,7 +58,7 @@ struct trace_t
 trace_t Test_Ray (vec3_t origin, vec3_t dir, int flags);
 
 void Select_GetBounds (vec3_c &mins, vec3_c &maxs);
-void Select_Brush (brush_s *b, bool bComplete = true, bool bStatus = true);
+void Select_Brush (edBrush_c *b, bool bComplete = true, bool bStatus = true);
 void Select_Ray (vec3_t origin, vec3_t dir, int flags);
 void Select_Delete ();
 void Select_Deselect (bool bDeselectFaces = true);
@@ -80,3 +85,5 @@ void AbsoluteToLocal(const class plane_c &normal2, face_s* f, vec3_c& p1, vec3_c
 void Select_Hide();
 void Select_ShowAllHidden();
 void clearSelection();
+
+#endif // __EDITOR_SELECT_H__

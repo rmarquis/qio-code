@@ -71,11 +71,11 @@ protected:
   void Cam_MouseUp (int x, int y, int buttons);
   void Cam_MouseMoved (int x, int y, int buttons);
   void InitCull();
-  bool CullBrush (brush_s *b);
+  bool CullBrush (class edBrush_c *b);
   void Cam_Draw();
 
 
- arraySTD_c< brush_s*> m_TransBrushes;
+ arraySTD_c< edBrush_c*> m_TransBrushes;
   camera_t m_Camera;
   int	m_nCambuttonstate;
   CPoint m_ptButton;

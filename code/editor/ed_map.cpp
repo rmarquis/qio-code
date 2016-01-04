@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <shared/str.h>
 #include <shared/parser.h>
+#include <api/declManagerAPI.h>
 
 int	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 							// 2 = autosaved, but not regular saved) 
@@ -34,13 +35,13 @@ int	modified;		// for quit confirmation (0 = clean, 1 = unsaved,
 char		currentmap[1024];
 
 
-brush_s	active_brushes(true);		// brushes currently being displayed
-brush_s	selected_brushes(true);	// highlighted
+edBrush_c	active_brushes(true);		// brushes currently being displayed
+edBrush_c	selected_brushes(true);	// highlighted
 
 face_s	*selected_face;
-brush_s	*selected_face_brush;
+edBrush_c	*selected_face_brush;
 
-brush_s	filtered_brushes(true);	// brushes that have been filtered or regioned
+edBrush_c	filtered_brushes(true);	// brushes that have been filtered or regioned
 
 entity_s	entities(true);		// head/tail of doubly linked list
 
@@ -59,7 +60,7 @@ void RemoveRegionBrushes ();
 =============================================================
 */
 
-brush_s		between_brushes(true);
+edBrush_c		between_brushes(true);
 entity_s	between_entities(true);
 
 bool g_bRestoreBetween = false;
@@ -82,7 +83,7 @@ void Map_RestoreBetween ()
 
 //============================================================================
 
-bool CheckForTinyBrush(brush_s* b, int n, float fSize)
+bool CheckForTinyBrush(edBrush_c* b, int n, float fSize)
 {
   bool bTiny = false;
 	for (int i=0 ; i<3 ; i++)
@@ -97,7 +98,7 @@ bool CheckForTinyBrush(brush_s* b, int n, float fSize)
 
 void Map_BuildBrushData()
 {
-	brush_s	*b, *next;
+	edBrush_c	*b, *next;
 
 	if (active_brushes.next == NULL)
 		return;
@@ -204,7 +205,7 @@ entity_s *AngledEntity()
   return ent;
 }
 
-void Map_LoadFile (char *filename)
+void Map_LoadFile (const char *filename)
 {
     char		*buf;
 	entity_s	*ent;
@@ -440,7 +441,7 @@ bool	region_active;
 vec3_c	region_mins(MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
 vec3_c	region_maxs(MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
 
-brush_s	*region_sides[4];
+edBrush_c	*region_sides[4];
 /*
 ===========
 AddRegionBrushes
@@ -502,7 +503,7 @@ void RemoveRegionBrushes ()
 }
 
 
-bool Map_IsBrushFiltered (brush_s *b)
+bool Map_IsBrushFiltered (edBrush_c *b)
 {
 	int		i;
 
@@ -525,7 +526,7 @@ Other filtering options may still be on
 */
 void Map_RegionOff ()
 {
-	brush_s	*b, *next;
+	edBrush_c	*b, *next;
 	int			i;
 
 	region_active = false;
@@ -554,7 +555,7 @@ void Map_RegionOff ()
 
 void Map_ApplyRegion ()
 {
-	brush_s	*b, *next;
+	edBrush_c	*b, *next;
 
 	region_active = true;
 	for (b=active_brushes.next ; b != &active_brushes ; b=next)
@@ -614,7 +615,7 @@ void Map_RegionXY ()
 
 void Map_RegionTallBrush ()
 {
-	brush_s	*b;
+	edBrush_c	*b;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -635,7 +636,7 @@ void Map_RegionTallBrush ()
 
 void Map_RegionBrush ()
 {
-	brush_s	*b;
+	edBrush_c	*b;
 
 	if (!QE_SingleBrush ())
 		return;
@@ -690,7 +691,7 @@ void UniqueTargetName(CString& rStr)
 void Map_ImportBuffer (char* buf)
 {
 	entity_s* ent;
-	brush_s* b = NULL;
+	edBrush_c* b = NULL;
 	CPtrArray ptrs;
 
 	Select_Deselect();
@@ -734,7 +735,7 @@ void Map_ImportBuffer (char* buf)
 				b=ent->brushes.onext;
 				while (b && b != &ent->brushes)
 				{
-					brush_s* bNext = b->onext;
+					edBrush_c* bNext = b->onext;
 					Entity_UnlinkBrush(b);
 					world_entity->linkBrush(b);
 					ptrs.Add(b);
@@ -796,8 +797,8 @@ void Map_ImportBuffer (char* buf)
 	g_bScreenUpdates = false; 
 	for (int i = 0; i < ptrs.GetSize(); i++)
 	{
-		Brush_Build(reinterpret_cast<brush_s*>(ptrs[i]), true, false);
-		Select_Brush(reinterpret_cast<brush_s*>(ptrs[i]), true, false);
+		Brush_Build(reinterpret_cast<edBrush_c*>(ptrs[i]), true, false);
+		Select_Brush(reinterpret_cast<edBrush_c*>(ptrs[i]), true, false);
 	}
 	//::LockWindowUpdate(NULL);
 	g_bScreenUpdates = true; 

@@ -68,7 +68,7 @@ int FindEdge (int p1, int p2, face_s *f)
 	return g_qeglobals.d_numedges-1;
 }
 
-void MakeFace (brush_s* b, face_s *f)
+void MakeFace (edBrush_c* b, face_s *f)
 {
 	texturedWinding_c	*w;
 	int			i;
@@ -88,7 +88,7 @@ void MakeFace (brush_s* b, face_s *f)
 void SetupVertexSelection ()
 {
 	face_s	*f;
-	brush_s *b;
+	edBrush_c *b;
 
 	g_qeglobals.d_numpoints = 0;
 	g_qeglobals.d_numedges = 0;
@@ -101,7 +101,7 @@ void SetupVertexSelection ()
 }
 
 
-void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
+void SelectFaceEdge (edBrush_c* b, face_s *f, int p1, int p2)
 {
 	texturedWinding_c	*w;
 	int			i, j, k;
@@ -140,7 +140,7 @@ void SelectFaceEdge (brush_s* b, face_s *f, int p1, int p2)
 
 void SelectVertex (int p1)
 {
-	brush_s		*b;
+	edBrush_c		*b;
 	texturedWinding_c	*w;
 	int			i, j, k;
 	face_s		*f;
@@ -217,7 +217,7 @@ void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir)
 	// as primary drag points
 	g_qeglobals.d_num_move_points = 0;
 	e = &g_qeglobals.d_edges[besti];
-	for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (edBrush_c* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
   {
     SelectFaceEdge (b, e->f1, e->p1, e->p2);
 	  SelectFaceEdge (b, e->f2, e->p2, e->p1);

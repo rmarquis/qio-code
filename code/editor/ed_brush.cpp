@@ -87,7 +87,7 @@ float SetShadeForPlane (const class plane_c &p)
 }
 
 
-void Brush_Print(brush_s* b)
+void Brush_Print(edBrush_c* b)
 {
 	int nFace = 0;
 	for (face_s* f = b->getFirstFace() ; f ; f=f->next)
@@ -146,7 +146,7 @@ void Face_MoveTexture(face_s *f, const vec3_c &delta)
 		Clamp(f->texdef.shift[1], f->d_texture->getImageHeight());
 	}
 }
-void Face_SetColor (brush_s *b, face_s *f, float fCurveColor) 
+void Face_SetColor (edBrush_c *b, face_s *f, float fCurveColor) 
 {
 	float	shade;
 	mtrAPI_i *q;
@@ -175,7 +175,7 @@ void Face_SetColor (brush_s *b, face_s *f, float fCurveColor)
 //==========================================================================
 
 
-void DrawBrushEntityName (brush_s *b)
+void DrawBrushEntityName (edBrush_c *b)
 {
 	const char	*name;
 	//float	a, s, c;
@@ -255,7 +255,7 @@ void DrawBrushEntityName (brush_s *b)
 // added a bConvert flag to convert between old and new brush texture formats
 // TTimo
 // brush grouping: update the group treeview if necessary
-void Brush_Build( brush_s *b, bool bSnap, bool bMarkMap, bool bConvert )
+void Brush_Build( edBrush_c *b, bool bSnap, bool bMarkMap, bool bConvert )
 {
 	bool		bLocalConvert = false;
 
@@ -304,9 +304,9 @@ void T_Swap(TYPE &a, TYPE &b) {
 The incoming brush is NOT freed.
 The incoming face is NOT left referenced.
 */
-void brush_s::splitBrushByFace (face_s *f, brush_s **front, brush_s **back)
+void edBrush_c::splitBrushByFace (face_s *f, edBrush_c **front, edBrush_c **back)
 {
-	brush_s	*b;
+	edBrush_c	*b;
 	face_s	*nf;
 //	vec3_t	temp;
 
@@ -361,7 +361,7 @@ returns the best face to split the brush with.
 return NULL if the brush is convex
 =================
 */
-face_s *Brush_BestSplitFace(brush_s *b)
+face_s *Brush_BestSplitFace(edBrush_c *b)
 {
 	face_s *face, *f, *bestface;
 	texturedWinding_c *front, *back;
@@ -415,9 +415,9 @@ face_s *Brush_BestSplitFace(brush_s *b)
 //Otherwise the input brush will be freed.
 //NOTE: the input brush should have windings for the faces.
 //*/
-//brush_s *Brush_MakeConvexBrushes(brush_s *b)
+//edBrush_c *Brush_MakeConvexBrushes(edBrush_c *b)
 //{
-//	brush_s *front, *back, *end;
+//	edBrush_c *front, *back, *end;
 //	face_s *face;
 //
 //	b->next = NULL;
@@ -443,7 +443,7 @@ face_s *Brush_BestSplitFace(brush_s *b)
 Brush_Convex
 =================
 */
-int Brush_Convex(brush_s *b)
+int Brush_Convex(edBrush_c *b)
 {
 	face_s *face1, *face2;
 
@@ -498,7 +498,7 @@ Brush_MoveVertexes
 
 #define MAX_MOVE_FACES		64
 
-int brush_s::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap)
+int edBrush_c::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap)
 {
 	face_s *f, *face, *newface, *lastface, *nextface;
 	face_s *movefaces[MAX_MOVE_FACES];
@@ -776,7 +776,7 @@ int brush_s::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, 
 Brush_InsertVertexBetween
 =================
 */
-int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
+int Brush_InsertVertexBetween(edBrush_c *b, const vec3_c &p1, const vec3_c &p2)
 {
 	face_s *face;
 	texturedWinding_c *w, *neww;
@@ -825,7 +825,7 @@ int Brush_InsertVertexBetween(brush_s *b, const vec3_c &p1, const vec3_c &p2)
 Brush_ResetFaceOriginals
 =================
 */
-void Brush_ResetFaceOriginals(brush_s *b)
+void Brush_ResetFaceOriginals(edBrush_c *b)
 {
 	if(b == 0)
 		return;
@@ -846,14 +846,14 @@ The brush is NOT linked to any list
 */
 //++timo FIXME: when using old brush primitives, the test loop for "Brush" and "patchDef2" "patchDef3" is ran
 // before each face parsing. It works, but it's a performance hit
-brush_s *Brush_Parse (class parser_c &p)
+edBrush_c *Brush_Parse (class parser_c &p)
 {
-	brush_s		*b;
+	edBrush_c		*b;
 	face_s		*f;
 	int			i,j;
 	
 	g_qeglobals.d_parsed_brushes++;
-	b = new brush_s(false);;
+	b = new edBrush_c(false);;
 
 	do
 	{
@@ -1012,7 +1012,7 @@ Brush_Write
 save all brushes as Brush primitive format
 =================
 */
-void Brush_Write (brush_s *b, FILE *f)
+void Brush_Write (edBrush_c *b, FILE *f)
 {
 	face_s	*fa;
 	int		i;
@@ -1133,7 +1133,7 @@ Brush_Write to a CMemFile*
 save all brushes as Brush primitive format
 =================
 */
-void Brush_Write (brush_s *b, CMemFile *pMemFile)
+void Brush_Write (edBrush_c *b, CMemFile *pMemFile)
 {
 	face_s	*fa;
 	int		i;
@@ -1239,9 +1239,9 @@ Create non-textured blocks for entities
 The brush is NOT linked to any list
 =============
 */
-brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
+edBrush_c	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 {
-	brush_s	*b;
+	edBrush_c	*b;
 
 	// brush primitive mode : convert texdef to brushprimit_texdef ?
 	// most of the time texdef is empty
@@ -1258,7 +1258,7 @@ brush_s	*Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 			Error ("Brush_InitSolid: backwards");
 	}
 
-	b = new brush_s(false);;
+	b = new edBrush_c(false);;
 	b->setupBox(mins,maxs,texdef);
 
 	return b;
@@ -1272,7 +1272,7 @@ Create non-textured pyramid for light entities
 The brush is NOT linked to any list
 =============
 */
-brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
+edBrush_c	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 {
 	int i;
 	//++timo handle new brush primitive ? return here ??
@@ -1282,7 +1282,7 @@ brush_s	*Brush_CreatePyramid (vec3_t mins, vec3_t maxs, texdef_t *texdef)
 	//	if (maxs[i] < mins[i])
 	//		Error ("Brush_InitSolid: backwards");
 
-	//brush_s* b = new brush_s(false);;
+	//edBrush_c* b = new edBrush_c(false);;
 
 	//vec3_t corners[4];
 
@@ -1357,7 +1357,7 @@ void Brush_MakeSided (int sides)
 {
 	int		i, axis;
 	vec3_c	mins, maxs;
-	brush_s	*b;
+	edBrush_c	*b;
 	texdef_t	*texdef;
 	face_s	*f;
 	vec3_t	mid;
@@ -1413,7 +1413,7 @@ void Brush_MakeSided (int sides)
 			width = (maxs[i] - mins[i]) * 0.5;
 	}
 
-	b = new brush_s(false);;
+	b = new edBrush_c(false);;
 		
 	// create top face
 	f = new face_s();
@@ -1481,7 +1481,7 @@ unless owner is the world.
 Removes from groups
 =============
 */
-void Brush_Free (brush_s *b, bool bRemoveNode)
+void Brush_Free (edBrush_c *b, bool bRemoveNode)
 {
 	face_s	*f, *next;
 
@@ -1511,7 +1511,7 @@ void Brush_Free (brush_s *b, bool bRemoveNode)
 }
 
 
-int Brush_MemorySize(brush_s *b)
+int Brush_MemorySize(edBrush_c *b)
 {
 	face_s	*f;
 	int size = 0;
@@ -1532,9 +1532,9 @@ int Brush_MemorySize(brush_s *b)
 
 
 // does NOT add the new brush to any lists
-brush_s *Brush_Clone (brush_s *b)
+edBrush_c *Brush_Clone (edBrush_c *b)
 {
-	brush_s	*n = NULL;
+	edBrush_c	*n = NULL;
 	face_s	*f, *nf;
 
 	if (b->patchBrush)
@@ -1546,7 +1546,7 @@ brush_s *Brush_Clone (brush_s *b)
 	}
 	else
 	{
-  	n = new brush_s(false);;
+  	n = new edBrush_c(false);;
 		n->owner = b->owner;
 		for (f=b->getFirstFace() ; f ; f=f->next)
 		{
@@ -1568,9 +1568,9 @@ Brush_Clone
 Does NOT add the new brush to any lists
 ============
 */
-brush_s *brush_s::fullClone()
+edBrush_c *edBrush_c::fullClone()
 {
-	brush_s	*n = NULL;
+	edBrush_c	*n = NULL;
 	face_s *f, *nf, *f2, *nf2;
 	int j;
 
@@ -1585,7 +1585,7 @@ brush_s *brush_s::fullClone()
 	}
 	else
 	{
-  	n = new brush_s(false);;
+  	n = new edBrush_c(false);;
 		n->owner = this->owner;
 		n->bounds = this->bounds;
 		//
@@ -1635,7 +1635,7 @@ Returns the face hit and the distance along the ray the intersection occured at
 Returns NULL and 0 if not hit at all
 ==============
 */
-face_s *Brush_Ray (const vec3_c &origin, const vec3_c &dir, brush_s *b, float *dist)
+face_s *Brush_Ray (const vec3_c &origin, const vec3_c &dir, edBrush_c *b, float *dist)
 {
 	if(b == 0)
 		return 0;
@@ -1685,7 +1685,7 @@ face_s *Brush_Ray (const vec3_c &origin, const vec3_c &dir, brush_s *b, float *d
 }
 
 //PGM
-face_s *Brush_Point (const vec3_c &origin, brush_s *b)
+face_s *Brush_Point (const vec3_c &origin, edBrush_c *b)
 {
 	face_s	*f;
 	float	d1;
@@ -1704,7 +1704,7 @@ face_s *Brush_Point (const vec3_c &origin, brush_s *b)
 //PGM
 
 
-void	Brush_AddToList (brush_s *b, brush_s *list)
+void	Brush_AddToList (edBrush_c *b, edBrush_c *list)
 {
 	if (b->next || b->prev)
 		Error ("Brush_AddToList: allready linked");
@@ -1722,7 +1722,7 @@ void	Brush_AddToList (brush_s *b, brush_s *list)
 	b->prev = list;
 }
 
-void	Brush_RemoveFromList (brush_s *b)
+void	Brush_RemoveFromList (edBrush_c *b)
 {
 	if (!b->next || !b->prev)
 		Error ("Brush_RemoveFromList: not linked");
@@ -1753,7 +1753,7 @@ TTimo: surface plugin, added an IPluginTexdef* parameter
 		if NULL, ask for a default
 ===============
 */
-void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale) {
+void SetFaceTexdef (edBrush_c *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale) {
 	int		oldFlags;
 	int		oldContents;
 	face_s	*tf;
@@ -1805,7 +1805,7 @@ void SetFaceTexdef (brush_s *b, face_s *f, texdef_t *texdef, brushprimit_texdef_
 }
 
 
-void Brush_SetTexture (brush_s *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale)
+void Brush_SetTexture (edBrush_c *b, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale)
 {
 	for (face_s* f = b->getFirstFace() ; f ; f = f->next) 
 	{
@@ -1868,13 +1868,13 @@ Adds the faces planepts to move_points, and
 rotates and adds the planepts of adjacent face if shear is set
 ==============
 */
-void Brush_SelectFaceForDragging (brush_s *b, face_s *f, bool shear)
+void Brush_SelectFaceForDragging (edBrush_c *b, face_s *f, bool shear)
 {
 	int		i;
 	face_s	*f2;
 	texturedWinding_c	*w;
 	float	d;
-	brush_s	*b2;
+	edBrush_c	*b2;
 	int		c;
 
 	if (b->owner->getEntityClass()->isFixedSize())
@@ -1975,7 +1975,7 @@ The mouse click did not hit the brush, so grab one or more side
 planes for dragging
 ==============
 */
-void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
+void Brush_SideSelect (edBrush_c *b, vec3_t origin, vec3_t dir
 					   , bool shear)
 {
 	face_s	*f, *f2;
@@ -2011,7 +2011,7 @@ void Brush_SideSelect (brush_s *b, vec3_t origin, vec3_t dir
 	
 }
 
-void brush_s::buildWindings(bool bSnap)
+void edBrush_c::buildWindings(bool bSnap)
 {
 	texturedWinding_c *w;
 	face_s    *face;
@@ -2083,7 +2083,7 @@ void brush_s::buildWindings(bool bSnap)
 	}
 }
 
-void Brush_SnapToGrid(brush_s *pb)
+void Brush_SnapToGrid(edBrush_c *pb)
 {
 	for (face_s *f = pb->getFirstFace() ; f; f = f->next)
 	{
@@ -2098,7 +2098,7 @@ void Brush_SnapToGrid(brush_s *pb)
 	Brush_Build(pb);
 }
 
-void brush_s::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
+void edBrush_c::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 {
 	for (face_s* f=this->getFirstFace() ; f ; f=f->next)
 	{
@@ -2113,7 +2113,7 @@ void brush_s::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 	}
 }
 
-void Brush_Center(brush_s *b, const vec3_c &vNewCenter)
+void Brush_Center(edBrush_c *b, const vec3_c &vNewCenter)
 {
 	vec3_c vMid;
 	// get center of the brush
@@ -2128,9 +2128,9 @@ void Brush_Center(brush_s *b, const vec3_c &vNewCenter)
 }
 
 // only designed for fixed size entity brushes
-void Brush_Resize(brush_s *b, vec3_t vMin, vec3_t vMax)
+void Brush_Resize(edBrush_c *b, vec3_t vMin, vec3_t vMax)
 {
-	brush_s *b2 = Brush_Create(vMin, vMax, &b->getFirstFace()->texdef);
+	edBrush_c *b2 = Brush_Create(vMin, vMax, &b->getFirstFace()->texdef);
 
 	face_s *next;
 	for (face_s *f=b->getFirstFace() ; f ; f=next)
@@ -2172,7 +2172,7 @@ void FacingVectors (entity_s *e, vec3_t forward, vec3_t right, vec3_t up)
 	angles.makeAngleVectors(forward, right, up);
 }
 
-void Brush_DrawFacingAngle (brush_s *b, entity_s *e)
+void Brush_DrawFacingAngle (edBrush_c *b, entity_s *e)
 {
 	vec3_t	forward, right, up;
 	vec3_c	endpoint, tip1, tip2;
@@ -2203,7 +2203,7 @@ void Brush_DrawFacingAngle (brush_s *b, entity_s *e)
 	glLineWidth (1);
 }
 
-void DrawLight(brush_s *b)
+void DrawLight(edBrush_c *b)
 {
 	vec3_c vTriColor;
 	bool bTriPaint = false;
@@ -2321,7 +2321,7 @@ void DrawLight(brush_s *b)
 
 }
 
-void Brush_Draw( brush_s *b )
+void Brush_Draw( edBrush_c *b )
 {
 	face_s			*face;
 	int				i, order;
@@ -2440,7 +2440,7 @@ void Face_Draw( face_s *f )
 	glEnd();
 }
 
-void Brush_DrawXY(brush_s *b, int nViewType)
+void Brush_DrawXY(edBrush_c *b, int nViewType)
 {
 	face_s *face;
 	int     order;
@@ -2562,7 +2562,7 @@ void Brush_DrawXY(brush_s *b, int nViewType)
 
 }
 
-void Brush_Move (brush_s *b, const vec3_t move, bool bSnap)
+void Brush_Move (edBrush_c *b, const vec3_t move, bool bSnap)
 {
 	int i;
 	face_s *f;
@@ -2602,7 +2602,7 @@ void Brush_MakeSidedCone(int sides)
 {
 	int		i;
 	vec3_c	mins, maxs;
-	brush_s	*b;
+	edBrush_c	*b;
 	texdef_t	*texdef;
 	face_s	*f;
 	vec3_t	mid;
@@ -2638,7 +2638,7 @@ void Brush_MakeSidedCone(int sides)
 	}
 	width /= 2;
 
-	b = new brush_s(false);;
+	b = new edBrush_c(false);;
 
 	// create bottom face
 	f = new face_s();
@@ -2688,7 +2688,7 @@ void Brush_MakeSidedSphere(int sides)
 {
 	int		i,j;
 	vec3_c	mins, maxs;
-	brush_s	*b;
+	edBrush_c	*b;
 	texdef_t	*texdef;
 	face_s	*f;
 	vec3_t	mid;
@@ -2722,7 +2722,7 @@ void Brush_MakeSidedSphere(int sides)
 	}
 	radius /= 2;
 
-	b = new brush_s(false);;
+	b = new edBrush_c(false);;
 
 	b->setupSphere(mid,sides,radius,texdef);
 
@@ -2739,7 +2739,7 @@ void Brush_MakeSidedSphere(int sides)
 
 
 // parse a brush in brush primitive format
-void brush_s::parseBrushPrimit(class parser_c &p)
+void edBrush_c::parseBrushPrimit(class parser_c &p)
 {
 	face_s		*f;
 	int			i,j;

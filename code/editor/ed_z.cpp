@@ -49,7 +49,7 @@ static	int	cursorx, cursory;
 void Z_MouseDown (int x, int y, int buttons)
 {
 	vec3_c	org, dir, vup, vright;
-	brush_s	*b;
+	edBrush_c	*b;
 
 	Sys_GetCursorPos (&cursorx, &cursory);
 
@@ -237,7 +237,7 @@ void ZDrawCameraIcon ()
 
 void Z_Draw ()
 {
-    brush_s	*brush;
+    edBrush_c	*brush;
 	float	w, h;
 	double	start, end;
 	mtrAPI_i	*q;
