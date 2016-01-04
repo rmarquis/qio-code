@@ -34,11 +34,11 @@ if (WIN32)
 #Dushan // only on Windows platform
 #option( BUILD_DX12_RENDERER   "Build DirectX 12 renderer"                      OFF )
 #option( BUILD_DX11_RENDERER   "Build DirectX 11 renderer"                      OFF )
-option( BUILD_DX10_RENDERER   "Build DirectX 9 renderer"                      ON )
+option( BUILD_DX10_RENDERER   "Build DirectX 10 renderer"                     ON )
 option( BUILD_DX9_RENDERER    "Build DirectX 9 renderer"                      ON )
 endif(WIN32)
-option( BUILD_GL_RENDERER     "Build new renderer library"                    OFF )
-option( BUILD_NULL_RENDERER   "Build new renderer library"                    OFF )
+option( BUILD_GL_RENDERER     "Build new renderer library"                    ON )
+option( BUILD_NULL_RENDERER   "Build new renderer library"                    ON )
 
 # Determine arch.
 SET( BUILD_ARCH "x86" )
@@ -246,6 +246,41 @@ set( DIRECTX9LIB_SHARED_SOURCES
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 )
 
+set ( RENDERERGL_APIS_HEADERS
+	${MOUNT_DIR}/api/tableListAPI.h
+)
+
+set ( RENDERERGL_SHARED_HEADERS
+	${MOUNT_DIR}/shared/ast_input.h
+	${MOUNT_DIR}/shared/autoCvar.h
+	${MOUNT_DIR}/shared/byteRGB.h
+	${MOUNT_DIR}/shared/calcTBN.h
+	${MOUNT_DIR}/shared/cullType.h
+	${MOUNT_DIR}/math/matrix.h
+	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/renderer/rVertexBuffer.h
+)
+
+set ( RENDERERGL_SHARED_SOURCES
+	${MOUNT_DIR}/shared/ast_input.cpp
+	${MOUNT_DIR}/shared/autoCvar.cpp
+	${MOUNT_DIR}/shared/calcTBN.cpp
+	${MOUNT_DIR}/math/matrix.cpp
+	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
+)
+
+set ( RENDERERGL_HEADERS
+	${MOUNT_DIR}/renderer/backEndGL/gl_local.h
+	${MOUNT_DIR}/renderer/backEndGL/gl_shader.h
+)
+
+set ( RENDERERGL_SOURCES
+	${MOUNT_DIR}/renderer/backEndGL/backEndGLAPI.cpp
+	${MOUNT_DIR}/renderer/backEndGL/gl_main.cpp
+	${MOUNT_DIR}/renderer/backEndGL/gl_shader.cpp
+)
+
 if( WIN32 )
   add_definitions( -DWINVER=0x501 )
   #set( OS_LIBRARIES m winmm wsock32 gdi32 ole32 ws2_32 psapi Iphlpapi advapi32 shell32 user32 )
@@ -317,12 +352,9 @@ if( WIN32 )
 			${DIRECTX9LIB_SHARED_HEADERS}
 			${DIRECTX9LIB_SHARED_SOURCES}
 		)
-		include_directories( ${MOUNT_DIR} )
-		if( WIN32 )
-			set_target_properties( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
-			include_directories( dll ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
-			target_link_libraries( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
-		endif()
+		include_directories( ${MOUNT_DIR} ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+		set_target_properties( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
+		target_link_libraries( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
 	endif()
 
 	if( BUILD_DX10_RENDERER )
@@ -335,9 +367,8 @@ if( WIN32 )
 			${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
 			${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
 		)
-		include_directories( ${MOUNT_DIR} )
+		include_directories( ${MOUNT_DIR} ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
 		set_target_properties( backendDX10 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX10.def" OUTPUT_NAME "backendDX10${BUILD_ARCH}" PREFIX "" )
-		include_directories( dll ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
 		target_link_libraries( backendDX10 ${DXSDK_D3DX10_LIBRARY} ${DXSDK_D3D10_LIBRARY} -lm )
 	endif()
 endif() ## WIN32
@@ -350,8 +381,31 @@ if( BUILD_NULL_RENDERER )
 		${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
 		${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
 	)
-	include_directories( ${MOUNT_DIR} )
+	include_directories( ${MOUNT_DIR} ${LIB_DIR}/SDL12/include )
 	set_target_properties( backendNULL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendNULL.def" OUTPUT_NAME "backendNULL${BUILD_ARCH}" PREFIX "" )
-	include_directories( dll ${LIB_DIR}/SDL12/include )
 	target_link_libraries( backendNULL ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} -lm )
+endif()
+
+if( BUILD_GL_RENDERER )
+	# This section finds and provides REQUIRED dependencies to backEndGL target
+	find_package( GLEW REQUIRED )
+	find_package( GLUT REQUIRED )
+
+	add_library( backendGL
+		SHARED 
+		${RENDERERGL_APIS_HEADERS}
+		${MATHLIST_SOURCES} 
+		${MATHLIST_HEADERS} 
+		${RENDERERGL_SHARED_HEADERS} 
+		${RENDERERGL_SHARED_SOURCES} 
+		${RENDERERGL_HEADERS} 
+		${RENDERERGL_SOURCES} 
+	)
+	include_directories( ${MOUNT_DIR} ${GLEW_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+	target_link_libraries( backendGL ${GLEW_LIBRARY} ${GLUT_glut_LIBRARY} -lm )
+	if( WIN32 )
+		set_target_properties( backendGL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendGL.def" OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+	else()
+		set_target_properties( backendGL PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+	endif()
 endif()
