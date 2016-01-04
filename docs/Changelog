@@ -1,3 +1,12 @@
+01-05-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Added rendererGL for cMake along with more cMake modules
+	* Separated SDL and GLEW modules into proper folders
+	* Fixed compiling for Visual Studio 2008
+
+01-04-2016 Dusan Jocic <dusanjocic@msn.com>
+	* More work on cMake system for QIO engine
+		- Added possibility to build and to compile DirectX10 and NULL renderer for QIO on Windows platform
+
 12-25-2015 Dusan Jocic <dusanjocic@msn.com>
 	* First part of cMake for cross-platform build system
 	* Reorganized library files and folder (moved all them into the external folder)
