@@ -29,7 +29,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include "io.h"
 #include "PrefsDlg.h"
-#include "str.h"
 #include "PrefsDlg.h"
 #include <windows.h>
 #include <gl/glu.h>
@@ -41,7 +40,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/textureAPI.h>
 #include <api/vfsAPI.h>
 
-Str m_gStr;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,11 +55,6 @@ static bool	nomips = false;
 
 HGLRC s_hglrcTexture = NULL;
 HDC	 s_hdcTexture = NULL;
-
-
-// this is the global counter for GL bind numbers
-//int		texture_extension_number = 1;
-std::vector<unsigned int> textureNumbers;
 
 int g_nCurrentTextureMenuName;
 
@@ -89,9 +82,9 @@ void	Texture_MouseDown (int x, int y, int buttons);
 void	Texture_MouseUp (int x, int y, int buttons);
 void	Texture_MouseMoved (int x, int y, int buttons);
 
-void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, brush_s *pList)
+void ReplaceQTexture(mtrAPI_i *pOld, mtrAPI_i *pNew, edBrush_c *pList)
 { 
-	for (brush_s* pBrush = pList->next ; pBrush != pList; pBrush = pBrush->next)
+	for (edBrush_c* pBrush = pList->next ; pBrush != pList; pBrush = pBrush->next)
 	{
 		if (pBrush->patchBrush)
 		{
@@ -182,7 +175,7 @@ void	Texture_ShowAll()
 void	Texture_ShowInuse ()
 {
 	face_s	*f;
-	brush_s	*b;
+	edBrush_c	*b;
 	char	name[1024];
 
 	texture_showinuse = true;
@@ -774,7 +767,7 @@ void Texture_FlushUnused()
   //}
 }
 
-void Texture_Cleanup(CStringList *pList)
+void Texture_Cleanup()
 {
   //if (g_qeglobals.d_qtextures)
   //{
@@ -805,8 +798,7 @@ void Texture_Flush (bool bReload)
   Map_New ();
 
   CWaitCursor cursor;
-  CStringList strList;
-  Texture_Cleanup(&strList);
+  Texture_Cleanup();
 
  /* GLuint* pGln = new GLuint[texture_extension_number-1];
   glGenTextures(texture_extension_number-1, pGln);
@@ -814,13 +806,7 @@ void Texture_Flush (bool bReload)
   glDeleteTextures(texture_extension_number-1, pGln);
   QE_CheckOpenGLForErrors();
   delete []pGln;*/
- // texture_extension_number = 1;
-
-  //for(int i = 0; i < textureNumbers.size(); i++) {
-  for (u32 i = 0, ilen = textureNumbers.size(); i < ilen; i++) {
-	  glDeleteTextures(1,&textureNumbers[i]);
-  }
-  textureNumbers.clear();
+ // texture_extension_number = 1
 	//glGenTextures(1,& q->texture_number);
 	//textureNumbers.push_back(q->texture_number);
 
@@ -829,12 +815,12 @@ void Texture_Flush (bool bReload)
 
   if (bReload)
   {
-    POSITION pos = strList.GetHeadPosition();
-    while (pos)
-    {
-      CString strTex = strList.GetNext(pos);
-		  QERApp_TryTextureForName (strTex.GetBuffer(0));
-    }
+    //POSITION pos = strList.GetHeadPosition();
+    //while (pos)
+    //{
+    //  CString strTex = strList.GetNext(pos);
+		  //QERApp_TryTextureForName (strTex.GetBuffer(0));
+    //}
   }
 
 }

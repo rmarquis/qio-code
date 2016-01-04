@@ -40,6 +40,7 @@ basic setup:
 #include "stdafx.h"
 #include "Radiant.h"
 #include "qe3.h"
+#include <api/entityDeclAPI.h>
 
 struct undo_s
 {
@@ -47,7 +48,7 @@ struct undo_s
 	int id;						//every undo has an unique id
 	int done;					//true when undo is build
 	const char *operation;		//name of the operation
-	brush_s brushlist;			//deleted brushes
+	edBrush_c brushlist;			//deleted brushes
 	entity_s entitylist;		//deleted entities
 	struct undo_s *prev, *next;	//next and prev undo in list
 };
@@ -68,7 +69,7 @@ int Undo_MemorySize()
 	/*
 	int size;
 	undo_s *undo;
-	brush_s *pBrush;
+	edBrush_c *pBrush;
 	entity_s *pEntity;
 
 	size = 0;
@@ -92,7 +93,7 @@ int Undo_MemorySize()
 void Undo_ClearRedo()
 {
 	undo_s *redo, *nextredo;
-	brush_s *pBrush, *pNextBrush;
+	edBrush_c *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
 	for (redo = g_redolist; redo; redo = nextredo)
@@ -118,7 +119,7 @@ void Undo_ClearRedo()
 void Undo_Clear()
 {
 	undo_s *undo, *nextundo;
-	brush_s *pBrush, *pNextBrush;
+	edBrush_c *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
 	Undo_ClearRedo();
@@ -174,7 +175,7 @@ int Undo_GetMaxMemorySize()
 void Undo_FreeFirstUndo()
 {
 	undo_s *undo;
-	brush_s *pBrush, *pNextBrush;
+	edBrush_c *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity;
 
 	//remove the oldest undo from the undo buffer
@@ -202,7 +203,7 @@ void Undo_FreeFirstUndo()
 void Undo_GeneralStart(const char *operation)
 {
 	undo_s *undo;
-	brush_s *pBrush;
+	edBrush_c *pBrush;
 	entity_s *pEntity;
 
 
@@ -266,9 +267,9 @@ void Undo_GeneralStart(const char *operation)
 	}
 }
 
-int Undo_BrushInUndo(undo_s *undo, brush_s *brush)
+int Undo_BrushInUndo(undo_s *undo, edBrush_c *brush)
 {
-	brush_s *b;
+	edBrush_c *b;
 
 	for (b = undo->brushlist.next; b != &undo->brushlist; b = b->next)
 	{
@@ -294,7 +295,7 @@ void Undo_Start(const char *operation)
 	Undo_GeneralStart(operation);
 }
 
-void Undo_AddBrush(brush_s *pBrush)
+void Undo_AddBrush(edBrush_c *pBrush)
 {
 	if (!g_lastundo)
 	{
@@ -309,7 +310,7 @@ void Undo_AddBrush(brush_s *pBrush)
 	if (Undo_BrushInUndo(g_lastundo, pBrush))
 		return;
 	//clone the brush
-	brush_s* pClone = pBrush->fullClone();
+	edBrush_c* pClone = pBrush->fullClone();
 	//save the ID of the owner entity
 	pClone->ownerId = pBrush->owner->entityId;
 	//save the old undo ID for previous undos
@@ -319,9 +320,9 @@ void Undo_AddBrush(brush_s *pBrush)
 	g_undoMemorySize += Brush_MemorySize(pClone);
 }
 
-void Undo_AddBrushList(brush_s *brushlist)
+void Undo_AddBrushList(edBrush_c *brushlist)
 {
-	brush_s *pBrush;
+	edBrush_c *pBrush;
 
 	if (!g_lastundo)
 	{
@@ -345,7 +346,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 		if (pBrush->owner->getEntityClass()->isFixedSize() == 1)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
-		brush_s* pClone = pBrush->fullClone();
+		edBrush_c* pClone = pBrush->fullClone();
 		//save the ID of the owner entity
 		pClone->ownerId = pBrush->owner->entityId;
 		//save the old undo ID from previous undos
@@ -356,7 +357,7 @@ void Undo_AddBrushList(brush_s *brushlist)
 	}
 }
 
-void Undo_EndBrush(brush_s *pBrush)
+void Undo_EndBrush(edBrush_c *pBrush)
 {
 	if (!g_lastundo)
 	{
@@ -371,7 +372,7 @@ void Undo_EndBrush(brush_s *pBrush)
 	pBrush->undoId = g_lastundo->id;
 }
 
-void Undo_EndBrushList(brush_s *brushlist)
+void Undo_EndBrushList(edBrush_c *brushlist)
 {
 	if (!g_lastundo)
 	{
@@ -383,7 +384,7 @@ void Undo_EndBrushList(brush_s *brushlist)
 		//Sys_Printf("Undo_End: last undo already finished.\n");
 		return;
 	}
-	for (brush_s* pBrush = brushlist->next; pBrush != NULL && pBrush != brushlist; pBrush=pBrush->next)
+	for (edBrush_c* pBrush = brushlist->next; pBrush != NULL && pBrush != brushlist; pBrush=pBrush->next)
 	{
 		pBrush->undoId = g_lastundo->id;
 	}
@@ -466,7 +467,7 @@ void Undo_End()
 void Undo_Undo()
 {
 	undo_s *undo, *redo;
-	brush_s *pBrush, *pNextBrush;
+	edBrush_c *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity, *pUndoEntity;
 
 	if (!g_lastundo)
@@ -627,7 +628,7 @@ void Undo_Undo()
 void Undo_Redo()
 {
 	undo_s *redo;
-	brush_s *pBrush, *pNextBrush;
+	edBrush_c *pBrush, *pNextBrush;
 	entity_s *pEntity, *pNextEntity, *pRedoEntity;
 
 	if (!g_lastredo)

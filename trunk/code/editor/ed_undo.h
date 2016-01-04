@@ -30,13 +30,13 @@ void Undo_Start(const char *operation);
 //end operation
 void Undo_End();
 //add brush to the undo
-void Undo_AddBrush(brush_s *pBrush);
+void Undo_AddBrush(edBrush_c *pBrush);
 //add a list with brushes to the undo
-void Undo_AddBrushList(brush_s *brushlist);
+void Undo_AddBrushList(edBrush_c *brushlist);
 //end a brush after the operation is performed
-void Undo_EndBrush(brush_s *pBrush);
+void Undo_EndBrush(edBrush_c *pBrush);
 //end a list with brushes after the operation is performed
-void Undo_EndBrushList(brush_s *brushlist);
+void Undo_EndBrushList(edBrush_c *brushlist);
 //add entity to undo
 void Undo_AddEntity(entity_s *entity);
 //end an entity after the operation is performed

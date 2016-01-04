@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "stdafx.h"
 #include "qe3.h"
 #include <shared/parser.h>
+#include <api/entityDeclAPI.h>
+#include <api/declManagerAPI.h>
+
 
 //
 int g_entityId = 1;
@@ -113,11 +116,11 @@ void Entity_RemoveFromList (entity_s *e)
 	e->next = e->prev = NULL;
 }
 
-entity_s	*Entity_Parse (class parser_c &p, brush_s* pList)
+entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 {
 	entity_s	*ent;
 	entityDeclAPI_i	*e;
-	brush_s		*b;
+	edBrush_c		*b;
 	vec3_c		mins, maxs;
 	bool	has_brushes;
 	
@@ -262,7 +265,7 @@ entity_s	*Entity_Parse (class parser_c &p, brush_s* pList)
 
 void Entity_Write (entity_s *e, FILE *f, bool use_region)
 {
-	brush_s		*b;
+	edBrush_c		*b;
 	vec3_c		origin;
 	char		text[128];
 	int			count;
@@ -341,9 +344,9 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 
 
 
-bool IsBrushSelected(brush_s* bSel)
+bool IsBrushSelected(edBrush_c* bSel)
 {
-	for (brush_s* b = selected_brushes.next ;b != NULL && b != &selected_brushes; b = b->next)
+	for (edBrush_c* b = selected_brushes.next ;b != NULL && b != &selected_brushes; b = b->next)
   {
     if (b == bSel)
       return true;
@@ -354,7 +357,7 @@ bool IsBrushSelected(brush_s* bSel)
 
 void Entity_WriteSelected(entity_s *e, FILE *f)
 {
-	brush_s		*b;
+	edBrush_c		*b;
 	vec3_c		origin;
 	char		text[128];
 	int			count;
@@ -409,7 +412,7 @@ void Entity_WriteSelected(entity_s *e, FILE *f)
 
 void Entity_WriteSelected(entity_s *e, CMemFile* pMemFile)
 {
-	brush_s		*b;
+	edBrush_c		*b;
 	vec3_c		origin;
 	char		text[128];
 	int			count;
@@ -473,7 +476,7 @@ their ownership transfered to the new entity.
 entity_s	*Entity_Create (entityDeclAPI_i *c)
 {
 	entity_s	*e;
-	brush_s		*b;
+	edBrush_c		*b;
 	vec3_c	mins, maxs;
 	int			i;
 
@@ -546,7 +549,7 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 	return e;
 }
 
-void entity_s::linkBrush (brush_s *b)
+void entity_s::linkBrush (edBrush_c *b)
 {
 	if (b->oprev || b->onext)
 		Error ("Entity_LinkBrush: Allready linked");
@@ -558,7 +561,7 @@ void entity_s::linkBrush (brush_s *b)
 	this->brushes.onext = b;
 }
 
-void Entity_UnlinkBrush (brush_s *b)
+void Entity_UnlinkBrush (edBrush_c *b)
 {
 	//if (!b->owner || !b->onext || !b->oprev)
 	if (!b->onext || !b->oprev)

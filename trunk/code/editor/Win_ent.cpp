@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "TexWnd.h"
 #include "WaveOpen.h"
 #include <api/declManagerAPI.h>
+#include <api/entityDeclAPI.h>
+
 
 int rgIds[EntLast] = {
 	IDC_E_LIST,
@@ -579,7 +581,7 @@ void GetSpawnFlags()
 
 	if (multiple_entities)
 	{
-		brush_s	*b;
+		edBrush_c	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			b->owner->setKeyValue("spawnflags", sz);
@@ -593,7 +595,7 @@ void GetSpawnFlags()
 BOOL UpdateSel(int iIndex, const entityDeclAPI_i *pec)
 {
 	int		i;
-	brush_s	*b;
+	edBrush_c	*b;
 
 	if (selected_brushes.next == &selected_brushes)
 	{
@@ -733,7 +735,7 @@ void AddProp()
 
 	if (multiple_entities)
 	{
-		brush_s	*b;
+		edBrush_c	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			b->owner->setKeyValue(key, value);
@@ -758,7 +760,7 @@ void DelProp()
 
 	if (multiple_entities)
 	{
-		brush_s	*b;
+		edBrush_c	*b;
 
 		for (b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 			b->owner->deleteKey(sz);

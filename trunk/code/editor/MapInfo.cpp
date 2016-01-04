@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Radiant.h"
 #include "MapInfo.h"
 #include "qe3.h"
+#include <api/entityDeclAPI.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,7 +76,7 @@ BOOL CMapInfo::OnInitDialog()
   m_nTotalBrushes = 0;
   m_nTotalEntities = 0;
   m_nNet = 0;
-	for (brush_s* pBrush=active_brushes.next ; pBrush != &active_brushes ; pBrush=pBrush->next)
+	for (edBrush_c* pBrush=active_brushes.next ; pBrush != &active_brushes ; pBrush=pBrush->next)
   {
     m_nTotalBrushes++;
     if (pBrush->owner == world_entity)

@@ -35,8 +35,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <malloc.h>
 
-// this define to use HTREEITEM and MFC stuff in the headers
-#define QERTYPES_USE_MFC
 #include "qertypes.h"
 #include <math/math.h>
 #include <math/vec3.h>
@@ -54,39 +52,82 @@ float Q_rint (float in);
 
 #include "qedefs.h"
 #include "textures.h"
-#include "brush.h"
-#include "entity.h"
-#include "map.h"
-#include "select.h"
+#include "ed_map.h"
+#include "ed_select.h"
 
 #include "camera.h"
-#include "z.h"
+#include "ed_z.h"
 #include "mru.h"
 
-#include "undo.h"
-
-
-#define MAX_WORLD_COORD		( 128*1024 )
-#define MIN_WORLD_COORD		( -128*1024 )
-#define WORLD_SIZE			( MAX_WORLD_COORD - MIN_WORLD_COORD )
-
-
-
-#define MAX_BRUSH_SIZE		( WORLD_SIZE )
-
-
-inline void* qmalloc (size_t nSize)
-{
-	void *b;
-	b = malloc(nSize + 1);
-	memset (b, 0, nSize);
-	return b;
-}
+#include "ed_undo.h"
 
 double I_FloatTime ();
 
 void	Error (const  char *error, ...);
 void	Warning (char *error, ...);
+
+typedef float vec3_t[3];
+
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
+#include <api/textureAPI.h>
+#include <shared/str.h>
+
+#include "ed_brush.h"
+#include "ed_entity.h"
+#include "ed_bezierPatch.h"
+
+
+class texturewin_t
+{
+public:
+  texturewin_t()
+  {
+  }
+  ~texturewin_t()
+  {
+  }
+	int			width, height;
+	int			originy;
+	// add brushprimit_texdef_s for brush primitive coordinates storage
+	brushprimit_texdef_s	brushprimit_texdef;
+	int m_nTotalHeight;
+	texdef_t	texdef;
+
+
+	const char *getMatName() const {
+		return texdef.getName();
+	}
+};
+
+#define QER_TRANS     0x00000001
+#define QER_NOCARVE   0x00000002
+
+
+
+
+
+/*
+** window bits
+*/
+#define	W_CAMERA		  0x0001
+#define	W_XY			    0x0002
+#define	W_XY_OVERLAY	0x0004
+#define	W_Z				    0x0008
+#define	W_TEXTURE		  0x0010
+#define	W_Z_OVERLAY		0x0020
+#define W_CONSOLE		  0x0040
+#define W_ENTITY		  0x0080
+#define W_CAMERA_IFON 0x0100
+#define W_XZ          0x0200  //--| only used for patch vertex manip stuff
+#define W_YZ          0x0400  //--|
+#define W_GROUP       0x0800 
+#define W_MEDIA       0x1000 
+#define	W_ALL			0xFFFFFFFF
+
+// used in some Drawing routines
+enum VIEWTYPE {YZ, XZ, XY};
+
 
 struct pedge_t
 {
@@ -169,7 +210,7 @@ struct QEGlobals_t
 	
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
-	brush_s		*d_select_order[2];
+	edBrush_c		*d_select_order[2];
 	vec3_c       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	
@@ -308,7 +349,7 @@ extern QEGlobals_t   g_qeglobals;
 
 //++timo clean (moved into qertypes.h)
 //enum VIEWTYPE {YZ, XZ, XY};
-bool IsBrushSelected(brush_s* bSel);
+bool IsBrushSelected(edBrush_c* bSel);
 
 // curve brushes
 
@@ -317,9 +358,9 @@ void Curve_MakeCurvedBrush (bool negative, bool top, bool bottom,
 
 void Curve_Invert ();
 
-void Curve_BuildPoints (brush_s *b);
-void Curve_XYDraw (brush_s *b);
-void Curve_CameraDraw (brush_s *b);
+void Curve_BuildPoints (edBrush_c *b);
+void Curve_XYDraw (edBrush_c *b);
+void Curve_CameraDraw (edBrush_c *b);
 
 // patch stuff
 
@@ -327,10 +368,10 @@ extern bool g_bSameView;
 extern int  g_nPatchClickedView;
 bool within(vec3_t vTest, vec3_t vTL, vec3_t vBR);
 
-brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
-brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
+edBrush_c* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
+edBrush_c* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
 
-void Patch_BuildPoints (brush_s *b);
+void Patch_BuildPoints (edBrush_c *b);
 void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c vMatrix[3], bool bSnap = false);
 void Patch_EditPatch();
 void Patch_Deselect();
@@ -347,7 +388,7 @@ void Patch_ReadBuffer(char* pBuff, bool bSelect = false);
 void Patch_WriteFile (CMemFile* pMemFile);
 void Patch_UpdateSelected(vec3_t vMove);
 void Patch_AddRow(patchMesh_c *p);
-brush_s* Patch_Parse(class parser_c &p,bool bOld);
+edBrush_c* Patch_Parse(class parser_c &p,bool bOld);
 void Patch_Write (patchMesh_c *p, FILE *f);
 void Patch_Write (patchMesh_c *p, CMemFile *file);
 void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag);
@@ -387,8 +428,8 @@ void Patch_Transpose();
 void Patch_Freeze();
 void Patch_UnFreeze(bool bAll);
 const char* Patch_GetTextureName();
-void Patch_FindReplaceTexture(brush_s *pb, const char *pFind, const char *pReplace, bool bForce);
-void Patch_ReplaceQTexture(brush_s *pb, mtrAPI_i *pOld, mtrAPI_i *pNew);
+void Patch_FindReplaceTexture(edBrush_c *pb, const char *pFind, const char *pReplace, bool bForce);
+void Patch_ReplaceQTexture(edBrush_c *pb, mtrAPI_i *pOld, mtrAPI_i *pNew);
 void Select_SnapToGrid();
 extern bool g_bPatchShowBounds;
 extern bool g_bPatchWireFrame;
@@ -418,7 +459,7 @@ void ComputeBest2DVector( const vec3_c &v, const vec3_c &X, const vec3_c &Y, int
 class mtrAPI_i *QERApp_TryTextureForName(const char* name);
 
 
-BOOL FilterBrush(brush_s *pb);
+BOOL FilterBrush(edBrush_c *pb);
 extern int g_numentities;
 
 #endif

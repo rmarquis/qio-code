@@ -67,7 +67,7 @@ extern int g_allocatedCounter_face;
 class face_s
 {
 friend class brush_c;
-friend class brush_s;
+friend class edBrush_c;
 
 public:
 	// face order (linked list)

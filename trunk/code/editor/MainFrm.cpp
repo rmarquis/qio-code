@@ -45,7 +45,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "PatchDensityDlg.h"
 #include "DialogThick.h"
 #include "PatchDialog.h"
-#include "Undo.h"
+#include "ed_undo.h"
+#include <api/entityDeclAPI.h>
+#include <api/declManagerAPI.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -999,7 +1002,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       vec3_t vMin, vMax;
       vMin[0] = vMin[1] = vMin[2] = 0;
       vMax[0] = vMax[1] = vMax[2] = 8;
-      brush_s* pBrush = Brush_Create(vMin, vMax, &g_qeglobals.d_texturewin.texdef);
+      edBrush_c* pBrush = Brush_Create(vMin, vMax, &g_qeglobals.d_texturewin.texdef);
 	    Entity_LinkBrush (world_entity, pBrush);
       Brush_Build(pBrush);
 	    Brush_AddToList (pBrush, &active_brushes);
@@ -2393,7 +2396,7 @@ void CMainFrame::OnBrushFlipx()
 	Undo_AddBrushList(&selected_brushes);
 
 	Select_FlipAxis (0);
-	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (edBrush_c *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
 		if(b->owner->getEntityClass()->isFixedSize())
 		{
@@ -2415,7 +2418,7 @@ void CMainFrame::OnBrushFlipy()
 	Undo_AddBrushList(&selected_brushes);
 
 	Select_FlipAxis (1);
-	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+	for (edBrush_c *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
 		if(b->owner->getEntityClass()->isFixedSize())
 		{
@@ -2572,7 +2575,7 @@ void CMainFrame::OnSelectionNoOutline()
 
 void CMainFrame::OnSelectionDelete() 
 {
-	brush_s *brush;
+	edBrush_c *brush;
 	//if (ActiveXY())
 	//	ActiveXY()->UndoCopy();
 	Undo_Start("delete");
@@ -3800,7 +3803,7 @@ void CMainFrame::OnToolbarTexture()
 
 void CMainFrame::OnSelectionPrint() 
 {
-  for (brush_s* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
+  for (edBrush_c* b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
     Brush_Print(b);
 }
 
@@ -4084,7 +4087,7 @@ void CMainFrame::OnConvertcurves()
 {
 #if 0
   Select_Deselect();
-	for (brush_s* pb = active_brushes.next ; pb != &active_brushes ; pb = pb->next)
+	for (edBrush_c* pb = active_brushes.next ; pb != &active_brushes ; pb = pb->next)
 	{
     if (pb->curveBrush)
     {
@@ -4377,7 +4380,7 @@ void CMainFrame::OnPatchTab()
     // check to see if the selected brush is part of a func group
     // if it is, deselect everything and reselect the next brush 
     // in the group
-	  brush_s *b = selected_brushes.next;
+	  edBrush_c *b = selected_brushes.next;
     entity_s * e;
     if (b != &selected_brushes)
     {
@@ -4385,7 +4388,7 @@ void CMainFrame::OnPatchTab()
       {
         e = b->owner;
         Select_Deselect();
-		brush_s * b2;
+		edBrush_c * b2;
 		    for (b2 = e->brushes.onext ; b2 != &e->brushes ; b2 = b2->onext)
 		    {
           if (b == b2)

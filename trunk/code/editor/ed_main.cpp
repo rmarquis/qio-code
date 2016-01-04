@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys\stat.h> 
 #include <api/vfsAPI.h>
 #include <math/math.h>
+#include <api/entityDeclAPI.h>
 
 QEGlobals_t  g_qeglobals;
 int g_allocatedCounter_brush;
@@ -321,7 +322,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 	static bool s_didonce;
 	
 	//entity_s   *e;
-	brush_s	   *b, *next;
+	edBrush_c	   *b, *next;
 
 	g_numbrushes = 0;
 	g_numentities = 0;

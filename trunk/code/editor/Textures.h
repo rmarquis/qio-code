@@ -29,13 +29,13 @@ void	Texture_ClearInuse ();
 void	Texture_ShowInuse ();
 void	Texture_ShowDirectory (int menunum, bool bLinked = false);
 void	Texture_ShowAll();
-void Texture_Cleanup(CStringList *pList = NULL);
+void Texture_Cleanup();
 
-mtrAPI_i * QERApp_TryTextureForName(const char* name);
-void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
+class mtrAPI_i * QERApp_TryTextureForName(const char* name);
+void	Texture_SetTexture (struct texdef_t *texdef, struct brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false, bool bSetSelection = true);
 
 void Texture_ResetPosition();
 
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
 void Texture_StartPos ();
-mtrAPI_i *Texture_NextPos (int *x, int *y);
+class mtrAPI_i *Texture_NextPos (int *x, int *y);

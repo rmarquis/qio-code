@@ -297,7 +297,7 @@ void DoGamma()
 void SelectBrush (int entitynum, int brushnum)
 {
 	entity_s	*e;
-	brush_s		*b;
+	edBrush_c		*b;
 	int			i;
 
 	if (entitynum == 0)
@@ -359,7 +359,7 @@ GetSelectionIndex
 */
 void GetSelectionIndex (int *ent, int *brush)
 {
-	brush_s		*b, *b2;
+	edBrush_c		*b, *b2;
 	entity_s	*entity;
 
 	*ent = *brush = 0;

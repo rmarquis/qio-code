@@ -19,18 +19,22 @@ along with Foobar; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
-// map.h -- the state of the current world that all views are displaying
+// ed_map.h -- the state of the current world that all views are displaying
+#ifndef __EDITOR_MAP_H__
+#define __EDITOR_MAP_H__
+
+#include "ed_brush.h"
 
 extern	char		currentmap[1024];
 
 // head/tail of doubly linked lists
-extern	brush_s	active_brushes;	// brushes currently being displayed
-extern	brush_s	selected_brushes;	// highlighted
+extern	edBrush_c	active_brushes;	// brushes currently being displayed
+extern	edBrush_c	selected_brushes;	// highlighted
 
 
 extern CPtrArray g_SelectedFaces;
 extern CPtrArray g_SelectedFaceBrushes;
-extern	brush_s	filtered_brushes;	// brushes that have been filtered or regioned
+extern	edBrush_c	filtered_brushes;	// brushes that have been filtered or regioned
 
 extern	entity_s	entities;
 extern	entity_s	*world_entity;	// the world entity is NOT included in
@@ -41,7 +45,7 @@ extern	int	modified;		// for quit confirmations
 extern	class vec3_c region_mins, region_maxs;
 extern	bool	region_active;
 
-void 	Map_LoadFile (char *filename);
+void 	Map_LoadFile (const char *filename);
 void 	Map_SaveFile (const char *filename, bool use_region);
 void	Map_New ();
 void	Map_BuildBrushData();
@@ -51,7 +55,9 @@ void	Map_RegionXY ();
 void	Map_RegionTallBrush ();
 void	Map_RegionBrush ();
 void	Map_RegionSelectedBrushes ();
-bool Map_IsBrushFiltered (brush_s *b);
+bool Map_IsBrushFiltered (edBrush_c *b);
 
 void Map_SaveSelected(CMemFile* pMemFile, CMemFile* pPatchFile = NULL);
 void Map_ImportBuffer (char* buf);
+
+#endif // __EDITOR_MAP_H__
