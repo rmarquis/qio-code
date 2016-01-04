@@ -26,9 +26,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // 
 
 //start operation
-void Undo_Start(char *operation);
+void Undo_Start(const char *operation);
 //end operation
-void Undo_End(void);
+void Undo_End();
 //add brush to the undo
 void Undo_AddBrush(brush_s *pBrush);
 //add a list with brushes to the undo
@@ -42,23 +42,23 @@ void Undo_AddEntity(entity_s *entity);
 //end an entity after the operation is performed
 void Undo_EndEntity(entity_s *entity);
 //undo last operation
-void Undo_Undo(void);
+void Undo_Undo();
 //redo last undone operation
-void Undo_Redo(void);
+void Undo_Redo();
 //returns true if there is something to be undone available
-int  Undo_UndoAvailable(void);
+int  Undo_UndoAvailable();
 //returns true if there is something to redo available
-int  Undo_RedoAvailable(void);
+int  Undo_RedoAvailable();
 //clear the undo buffer
-void Undo_Clear(void);
+void Undo_Clear();
 //set maximum undo size (default 64)
 void Undo_SetMaxSize(int size);
 //get maximum undo size
-int  Undo_GetMaxSize(void);
+int  Undo_GetMaxSize();
 //set maximum undo memory in bytes (default 2 MB)
 void Undo_SetMaxMemorySize(int size);
 //get maximum undo memory in bytes
-int  Undo_GetMaxMemorySize(void);
+int  Undo_GetMaxMemorySize();
 //returns the amount of memory used by undo
-int  Undo_MemorySize(void);
+int  Undo_MemorySize();
 

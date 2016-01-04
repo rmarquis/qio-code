@@ -25,8 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 void	Texture_FlushUnused ();
 void	Texture_Flush (bool bReload = false);
-void	Texture_ClearInuse (void);
-void	Texture_ShowInuse (void);
+void	Texture_ClearInuse ();
+void	Texture_ShowInuse ();
 void	Texture_ShowDirectory (int menunum, bool bLinked = false);
 void	Texture_ShowAll();
 void Texture_Cleanup(CStringList *pList = NULL);
@@ -37,5 +37,5 @@ void	Texture_SetTexture (texdef_t *texdef, brushprimit_texdef_s *brushprimit_tex
 void Texture_ResetPosition();
 
 int  WINAPI Texture_LoadSkin(char *pName, int *pnWidth, int *pnHeight);
-void Texture_StartPos (void);
+void Texture_StartPos ();
 mtrAPI_i *Texture_NextPos (int *x, int *y);

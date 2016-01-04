@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 
-void CSG_MakeHollow (void)
+void CSG_MakeHollow ()
 {
 	brush_s		*b, *front, *back, *next;
 	face_s		*f;
@@ -36,7 +36,7 @@ void CSG_MakeHollow (void)
 	{
 		next = b->next;
 
-    if (b->owner->eclass->isFixedSize() || b->patchBrush || b->terrainBrush || b->hiddenBrush)
+    if (b->owner->getEntityClass()->isFixedSize() || b->patchBrush || b->terrainBrush || b->hiddenBrush)
 		  continue;
 
 		for (f = b->getFirstFace() ; f ; f=f->next)
@@ -60,9 +60,6 @@ void CSG_MakeHollow (void)
 }
 
 /*
-=============
-Brush_Merge
-
  Returns a new brush that is created by merging brush1 and brush2.
  May return NULL if brush1 and brush2 do not create a convex brush when merged.
  The input brushes brush1 and brush2 stay intact.
@@ -70,7 +67,6 @@ Brush_Merge
  if onlyshape is true then the merge is allowed based on the shape only
  otherwise the texture/shader references of faces in the same plane have to
  be the same as well.
-=============
 */
 brush_s *brush_s::tryMergeWith(brush_s *brush2, int onlyshape)
 {
@@ -431,7 +427,7 @@ brush_s *Brush_Subtract(brush_s *a, brush_s *b)
 }
 
 
-void CSG_Subtract (void)
+void CSG_Subtract ()
 {
 	brush_s		*b, *s, *fragments, *nextfragment, *frag, *next, *snext;
 	brush_s		fragmentlist(true);
@@ -454,7 +450,7 @@ void CSG_Subtract (void)
 	{
 		next = b->next;
 
-		if (b->owner->eclass->isFixedSize())
+		if (b->owner->getEntityClass()->isFixedSize())
 			continue;	// can't use texture from a fixed entity, so don't subtract
 
 		// chop all fragments further up
@@ -491,7 +487,7 @@ void CSG_Subtract (void)
 		{
 			snext = s->next;
 
-			if (s->owner->eclass->isFixedSize() || s->patchBrush || s->terrainBrush || s->hiddenBrush)
+			if (s->owner->getEntityClass()->isFixedSize() || s->patchBrush || s->terrainBrush || s->hiddenBrush)
 				continue;
 
 			//face_s *pFace = s->brush_faces;
@@ -551,7 +547,7 @@ void CSG_Subtract (void)
 	Sys_UpdateWindows(W_ALL);
 }
 
-void CSG_Merge(void)
+void CSG_Merge()
 {
 	brush_s *b, *next, *newlist, *newbrush;
 	class entity_s	*owner;
@@ -576,7 +572,7 @@ void CSG_Merge(void)
 	{
 		next = b->next;
 
-		if (b->owner->eclass->isFixedSize())
+		if (b->owner->getEntityClass()->isFixedSize())
 		{
 			// can't use texture from a fixed entity, so don't subtract
 			Sys_Printf("Cannot add fixed size entities.\n");

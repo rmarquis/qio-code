@@ -1783,9 +1783,9 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 }
 
 
-void OpenDialog (void);
+void OpenDialog ();
 void SaveAsDialog (bool bRegion);
-void  Select_Ungroup (void);
+void  Select_Ungroup ();
 
 void CMainFrame::ToggleCamera()
 {
@@ -2395,7 +2395,7 @@ void CMainFrame::OnBrushFlipx()
 	Select_FlipAxis (0);
 	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		if(b->owner->eclass->isFixedSize())
+		if(b->owner->getEntityClass()->isFixedSize())
 		{
 			char buf[16];
 			float a = b->owner->getKeyFloat("angle");
@@ -2417,7 +2417,7 @@ void CMainFrame::OnBrushFlipy()
 	Select_FlipAxis (1);
 	for (brush_s *b=selected_brushes.next ; b != &selected_brushes ; b=b->next)
 	{
-		if(b->owner->eclass->isFixedSize())
+		if(b->owner->getEntityClass()->isFixedSize())
 		{
 			float a = b->owner->getKeyFloat("angle");
 			if (a == 0 || a == 180 || a == 360)
@@ -4381,7 +4381,7 @@ void CMainFrame::OnPatchTab()
     entity_s * e;
     if (b != &selected_brushes)
     {
-	    if (_strcmpi(b->owner->eclass->getDeclName(), "worldspawn") != 0)
+	    if (_strcmpi(b->owner->getEntityClass()->getDeclName(), "worldspawn") != 0)
       {
         e = b->owner;
         Select_Deselect();

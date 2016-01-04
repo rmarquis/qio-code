@@ -28,19 +28,37 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_entity;
 
-class entity_s
-{
+class entity_s {
 	bool bIsLinkedListHeader;
+	ePairList_c keyValues;
+	vec3_c		origin;
+	entityDeclAPI_i	*eclass;
 public:
 	class entity_s	*prev, *next;
 	brush_s		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
-	vec3_c		origin;
-	entityDeclAPI_i	*eclass;
-	ePairList_c keyValues;
-	vec3_c vRotation;   // valid for misc_models only
-	vec3_c vScale;      // valid for misc_models only
 
+	const vec3_c &getOrigin() const {
+		return origin;
+	}
+	void moveOrigin(const vec3_c &delta) {
+		origin += delta;
+	}
+	void setKeyValues(const ePairList_c &newKeyValues) {
+		keyValues = newKeyValues;
+	}
+	const ePairList_c &getKeyValues() const {
+		return keyValues;
+	}
+	const entityDeclAPI_i *getEntityClass() const {
+		return eclass;
+	}
+	void setEntityClass(entityDeclAPI_i *nc) {
+		eclass = nc;
+	}
+	//entityDeclAPI_i *getEntityClass() {
+	//	return eclass;
+	//}
 	void clearKeyValues() {
 		keyValues.clear();
 	}
@@ -72,18 +90,20 @@ public:
 		return sizeof(entity_s);
 	}
 	void linkBrush (brush_s *b);
+
+	
+
+friend entity_s	*Entity_Parse (class parser_c &p, brush_s* pList = NULL);
+friend void		Entity_Write (entity_s *e, FILE *f, bool use_region);
+friend void		Entity_WriteSelected(entity_s *e, FILE *f);
+friend void		Entity_WriteSelected(entity_s *e, CMemFile*);
+friend entity_s	*Entity_Create (entityDeclAPI_i *c);
+friend entity_s	*Entity_Clone (entity_s *e);
+friend void		Entity_AddToList(entity_s *e, entity_s *list);
+friend void		Entity_RemoveFromList(entity_s *e);
+
+friend void		Entity_UnlinkBrush (brush_s *b);
+friend entity_s	*FindEntity(char *pszKey, char *pszValue);
+
+friend int GetUniqueTargetId(int iHint);
 };
-
-entity_s	*Entity_Parse (class parser_c &p, brush_s* pList = NULL);
-void		Entity_Write (entity_s *e, FILE *f, bool use_region);
-void		Entity_WriteSelected(entity_s *e, FILE *f);
-void		Entity_WriteSelected(entity_s *e, CMemFile*);
-entity_s	*Entity_Create (entityDeclAPI_i *c);
-entity_s	*Entity_Clone (entity_s *e);
-void		Entity_AddToList(entity_s *e, entity_s *list);
-void		Entity_RemoveFromList(entity_s *e);
-
-void		Entity_UnlinkBrush (brush_s *b);
-entity_s	*FindEntity(char *pszKey, char *pszValue);
-
-int GetUniqueTargetId(int iHint);

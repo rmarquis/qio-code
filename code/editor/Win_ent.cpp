@@ -84,7 +84,7 @@ BOOL CALLBACK EntityWndProc(
 
 void SizeEntityDlg(int iWidth, int iHeight);
 void AddProp();
-void GetTexMods(void);
+void GetTexMods();
 
 
 LRESULT (CALLBACK* OldFieldWindowProc) (HWND, UINT, WPARAM, LPARAM);
@@ -316,7 +316,7 @@ ENTITY WINDOW
 ===============================================================
 */
 
-void FillClassList (void)
+void FillClassList ()
 {
 	int			iIndex;
 
@@ -375,11 +375,6 @@ void WEnt_Create (HINSTANCE hInstance)
 		Error ("Couldn't create Entity window");
 }
 
-/*
-==============
-CreateEntityWindow
-==============
-*/
 BOOL CreateEntityWindow(HINSTANCE hInstance)
 {
 	HWND hwndEntityPalette;
@@ -412,11 +407,6 @@ BOOL CreateEntityWindow(HINSTANCE hInstance)
 	return TRUE;
 }
 
-/*
-==============
-SetInspectorMode
-==============
-*/
 void SetInspectorMode(int iType)
 {
 	RECT rc;
@@ -519,10 +509,10 @@ void SetKeyValuePairs (bool bClearMD3)
 	
 	// Walk through list and add pairs
 	
-	for(u32 i = 0; i < edit_entity->keyValues.size(); i++) 
+	for(u32 i = 0; i < edit_entity->getKeyValues().size(); i++) 
 	{
-		const char *key = edit_entity->keyValues.getKey(i);
-		const char *value = edit_entity->keyValues.getValue(i);
+		const char *key = edit_entity->getKeyValues().getKey(i);
+		const char *value = edit_entity->getKeyValues().getValue(i);
 		// if the key is less than 8 chars, add a tab for alignment
 		if (strlen(key) > 8)
 			sprintf (sz, "%s\t%s", key, value);
@@ -531,7 +521,7 @@ void SetKeyValuePairs (bool bClearMD3)
 		SendMessage(hwndEnt[EntProps], LB_ADDSTRING, 0, (LPARAM)sz);
 	}
 	
-	if (edit_entity->eclass->hasEditorFlagMiscModel())
+	if (edit_entity->getEntityClass()->hasEditorFlagMiscModel())
 	{
 		// if this is a misc_model
 		// cache the md3 for display later
@@ -557,7 +547,7 @@ void SetKeyValuePairs (bool bClearMD3)
 // 
 // Update the checkboxes to reflect the flag state of the entity
 //
-void SetSpawnFlags(void)
+void SetSpawnFlags()
 {
 	int		f;
 	int		i;
@@ -571,12 +561,8 @@ void SetSpawnFlags(void)
 	}
 }
 
-
-// GetSpawnFlags
-// 
 // Update the entity flags to reflect the state of the checkboxes
-//
-void GetSpawnFlags(void)
+void GetSpawnFlags()
 {
 	int		f;
 	int		i, v;
@@ -603,11 +589,8 @@ void GetSpawnFlags(void)
 	SetKeyValuePairs ();
 }
 
-// UpdateSel
-//
 // Update the listbox, checkboxes and k/v pairs to reflect the new selection
-//
-BOOL UpdateSel(int iIndex, entityDeclAPI_i *pec)
+BOOL UpdateSel(int iIndex, const entityDeclAPI_i *pec)
 {
 	int		i;
 	brush_s	*b;
@@ -661,7 +644,7 @@ BOOL UpdateSel(int iIndex, entityDeclAPI_i *pec)
 	return TRUE;
 }
 
-BOOL UpdateEntitySel(entityDeclAPI_i *pec)
+BOOL UpdateEntitySel(const entityDeclAPI_i *pec)
 {
 	int iIndex;
 
@@ -671,12 +654,8 @@ BOOL UpdateEntitySel(entityDeclAPI_i *pec)
 	return UpdateSel(iIndex, pec);
 }
 
-// CreateEntity
-//
 // Creates a new entity based on the currently selected brush and entity type.
-//
-
-void CreateEntity(void)
+void CreateEntity()
 {
 	entityDeclAPI_i *pecNew;
 	entity_s *petNew;
@@ -739,14 +718,6 @@ void CreateEntity(void)
 
 }
 
-
-
-/*
-===============
-AddProp
-
-===============
-*/
 void AddProp()
 {
 	char	key[4096];
@@ -774,13 +745,7 @@ void AddProp()
 	SetKeyValuePairs();	
 }
 
-/*
-===============
-DelProp
-
-===============
-*/
-void DelProp(void)
+void DelProp()
 {
 	char	sz[4096];
 
@@ -820,13 +785,7 @@ BOOL GetSelectAllCriteria(CString &strKey, CString &strVal) {
   return FALSE;
 }
 
-/*
-===============
-EditProp
-
-===============
-*/
-void EditProp(void)
+void EditProp()
 {
 	int i;
 	HWND hwnd;
@@ -874,13 +833,9 @@ void MOVE(HWND e, int x, int y, int w, int h, HWND hwndPlacement = HWND_TOP, int
 
 
 /*
-===============
-SizeEnitityDlg
-
 Positions all controls so that the active inspector
 is displayed correctly and the inactive ones are
 off the side
-===============
 */
 void SizeEntityDlg(int iWidth, int iHeight)
 {
@@ -1142,12 +1097,6 @@ void AssignModel()
   }
 }
 
-
-/*
-=========================
-EntityWndProc
-=========================
-*/
 BOOL CALLBACK EntityWndProc(
     HWND hwndDlg,	// handle to dialog box
     UINT uMsg,		// message

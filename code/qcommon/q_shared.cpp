@@ -200,7 +200,7 @@ Swap_Init
 ================
 */
 /*
-void Swap_Init (void)
+void Swap_Init ()
 {
 	byte	swaptest[2] = {1,0};
 

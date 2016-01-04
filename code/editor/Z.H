@@ -35,9 +35,9 @@ public:
 
 extern z_t z;
 
-void Z_Init (void);
+void Z_Init ();
 void Z_MouseDown (int x, int y, int buttons);
 void Z_MouseUp (int x, int y, int buttons);
 void Z_MouseMoved (int x, int y, int buttons);
-void Z_Draw (void);
+void Z_Draw ();
 

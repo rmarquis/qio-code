@@ -131,7 +131,7 @@ Texture_ClearInuse
 A new map is being loaded, so clear inuse markers
 ==================
 */
-void Texture_ClearInuse (void)
+void Texture_ClearInuse ()
 {
 
 }
@@ -166,7 +166,7 @@ void Texture_ResetPosition()
 }
 
 
-void Texture_SetInuse (void)
+void Texture_SetInuse ()
 {
 }
 
@@ -179,7 +179,7 @@ void	Texture_ShowAll()
 }
 
 
-void	Texture_ShowInuse (void)
+void	Texture_ShowInuse ()
 {
 	face_s	*f;
 	brush_s	*b;
@@ -243,7 +243,7 @@ TEXTURE LAYOUT
 ============================================================================
 */
 
-void Texture_StartPos (void)
+void Texture_StartPos ()
 {
 	curIndex = 0;
 	current_x = 8;

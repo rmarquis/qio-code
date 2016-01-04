@@ -46,8 +46,8 @@ entity_s	entities(true);		// head/tail of doubly linked list
 
 entity_s	*world_entity = NULL; // "classname" "worldspawn" !
 
-void AddRegionBrushes (void);
-void RemoveRegionBrushes (void);
+void AddRegionBrushes ();
+void RemoveRegionBrushes ();
 
 
 /*
@@ -64,7 +64,7 @@ entity_s	between_entities(true);
 
 bool g_bRestoreBetween = false;
 
-void Map_SaveBetween (void)
+void Map_SaveBetween ()
 {
 
 	if (g_pParentWnd->ActiveXY())
@@ -74,7 +74,7 @@ void Map_SaveBetween (void)
   }
 }
 
-void Map_RestoreBetween (void)
+void Map_RestoreBetween ()
 {
 	if (g_pParentWnd->ActiveXY() && g_bRestoreBetween)
 		 g_pParentWnd->ActiveXY()->Paste();
@@ -95,7 +95,7 @@ bool CheckForTinyBrush(brush_s* b, int n, float fSize)
   return bTiny;
 }
 
-void Map_BuildBrushData(void)
+void Map_BuildBrushData()
 {
 	brush_s	*b, *next;
 
@@ -130,7 +130,7 @@ entity_s *Map_FindClass (char *cname)
 	return NULL;
 }
 
-void Map_Free (void)
+void Map_Free ()
 {
 	if (selected_brushes.next && (selected_brushes.next != &selected_brushes) )
 	{
@@ -400,16 +400,12 @@ void Map_SaveFile (const char *filename, bool use_region )
 			fprintf (f, "%s", filename);
 			//fprintf (f, "%4i : %35s : %s", g_qeglobals.d_workcount, filename, ctime(&timer));
 			fclose (f);
-			g_qeglobals.d_workcount = 0;
 		}
 		Sys_Status ("Saved.\n", 0);
 	}
-	
-  //Curve_WriteFile (filename);		//.trinity
-  //Patch_WriteFile (filename);
 }
 
-void Map_New (void)
+void Map_New ()
 {
 	Sys_Printf ("Map_New\n");
 	Map_Free ();
@@ -418,7 +414,7 @@ void Map_New (void)
 	world_entity->brushes.onext = 
 		world_entity->brushes.oprev = &world_entity->brushes;
 	world_entity->setKeyValue("classname", "worldspawn");
-	world_entity->eclass = g_declMgr->findOrCreateEntityDecl ("worldspawn", true);
+	world_entity->setEntityClass(g_declMgr->findOrCreateEntityDecl ("worldspawn", true));
 
 	g_pParentWnd->GetCamera()->Camera().angles[YAW] = 0;
 	g_pParentWnd->GetCamera()->Camera().angles[PITCH] = 0;
@@ -452,7 +448,7 @@ AddRegionBrushes
 a regioned map will have temp walls put up at the region boundary
 ===========
 */
-void AddRegionBrushes (void)
+void AddRegionBrushes ()
 {
 	vec3_t	mins, maxs;
 	int		i;
@@ -495,7 +491,7 @@ void AddRegionBrushes (void)
 	}
 }
 
-void RemoveRegionBrushes (void)
+void RemoveRegionBrushes ()
 {
 	int		i;
 
@@ -527,7 +523,7 @@ Map_RegionOff
 Other filtering options may still be on
 ===========
 */
-void Map_RegionOff (void)
+void Map_RegionOff ()
 {
 	brush_s	*b, *next;
 	int			i;
@@ -556,7 +552,7 @@ void Map_RegionOff (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Map_ApplyRegion (void)
+void Map_ApplyRegion ()
 {
 	brush_s	*b, *next;
 
@@ -573,7 +569,7 @@ void Map_ApplyRegion (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Map_RegionSelectedBrushes (void)
+void Map_RegionSelectedBrushes ()
 {
 	Map_RegionOff ();
 
@@ -603,7 +599,7 @@ void Map_RegionSelectedBrushes (void)
 	Sys_UpdateWindows (W_ALL);
 }
 
-void Map_RegionXY (void)
+void Map_RegionXY ()
 {
 	Map_RegionOff ();
 
@@ -616,7 +612,7 @@ void Map_RegionXY (void)
 	Map_ApplyRegion ();
 }
 
-void Map_RegionTallBrush (void)
+void Map_RegionTallBrush ()
 {
 	brush_s	*b;
 
@@ -637,7 +633,7 @@ void Map_RegionTallBrush (void)
 	Map_ApplyRegion ();
 }
 
-void Map_RegionBrush (void)
+void Map_RegionBrush ()
 {
 	brush_s	*b;
 

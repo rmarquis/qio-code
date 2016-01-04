@@ -53,9 +53,6 @@ float Q_rint (float in);
 #include "resource.h"
 
 #include "qedefs.h"
-
-#include "qfiles.h"
-
 #include "textures.h"
 #include "brush.h"
 #include "entity.h"
@@ -86,7 +83,7 @@ inline void* qmalloc (size_t nSize)
 	return b;
 }
 
-double I_FloatTime (void);
+double I_FloatTime ();
 
 void	Error (const  char *error, ...);
 void	Warning (char *error, ...);
@@ -115,15 +112,15 @@ struct SavedInfo_t
 // TTimo NOTE: WINAPI funcs can be accessed by plugins
 void    Sys_UpdateStatusBar( void );
 void    WINAPI Sys_UpdateWindows (int bits);
-void    Sys_Beep (void);
-void    Sys_ClearPrintf (void);
+void    Sys_Beep ();
+void    Sys_ClearPrintf ();
 void    Sys_Printf (char *text, ...);
-double	Sys_DoubleTime (void);
+double	Sys_DoubleTime ();
 void    Sys_GetCursorPos (int *x, int *y);
 void    Sys_SetCursorPos (int x, int y);
 void    Sys_SetTitle (char *text);
-void    Sys_BeginWait (void);
-void    Sys_EndWait (void);
+void    Sys_BeginWait ();
+void    Sys_EndWait ();
 void    Sys_Status(const char *psz, int part);
 
 /*
@@ -169,8 +166,6 @@ struct QEGlobals_t
 	LPMRUMENU    d_lpMruMenu;
 	
 	SavedInfo_t  d_savedinfo;
-	
-	int          d_workcount;
 	
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
@@ -220,21 +215,20 @@ void Drag_MouseUp (int nButtons = 0);
 //
 // csg.c
 //
-void CSG_MakeHollow (void);
-void CSG_Subtract (void);
-void CSG_Merge (void);
+void CSG_MakeHollow ();
+void CSG_Subtract ();
+void CSG_Merge ();
 
 //
 // vertsel.c
 //
 
-void SetupVertexSelection (void);
+void SetupVertexSelection ();
 void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir);
 void SelectVertexByRay (const vec3_c &org, const vec3_c &dir);
 
-void ConnectEntities (void);
+void ConnectEntities ();
 
-extern	int	update_bits;
 
 extern	int	screen_width;
 extern	int	screen_height;
@@ -248,7 +242,7 @@ char	*TranslateString (char *buf);
 
 
 void FillTextureMenu (CStringArray* pArray = NULL);
-void FillBSPMenu (void);
+void FillBSPMenu ();
 
 BOOL CALLBACK Win_Dialog (
     HWND hwndDlg,	// handle to dialog box
@@ -293,12 +287,12 @@ extern BOOL LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 // entityw.c
 //
 BOOL CreateEntityWindow(HINSTANCE hInstance);
-void FillClassList (void);
-BOOL UpdateEntitySel(entityDeclAPI_i *pec);	
+void FillClassList ();
+BOOL UpdateEntitySel(const entityDeclAPI_i *pec);	
 void SetInspectorMode(int iType);
 int DrawTexControls(HWND hWnd);
-void SetSpawnFlags(void);
-void GetSpawnFlags(void);
+void SetSpawnFlags();
+void GetSpawnFlags();
 void SetKeyValuePairs(bool bClearMD3 = false);
 extern void BuildGammaTable(float g);
 BOOL GetSelectAllCriteria(CString &strKey, CString &strVal);
@@ -306,11 +300,11 @@ BOOL GetSelectAllCriteria(CString &strKey, CString &strVal);
 
 // win_dlg.c
 
-void DoGamma(void);
-void DoFind(void);
-void DoRotate(void);
+void DoGamma();
+void DoFind();
+void DoRotate();
 void DoSides(bool bCone = false, bool bSphere = false, bool bTorus = false);
-void DoAbout(void);
+void DoAbout();
 void DoSurface();
 
 /*
@@ -319,13 +313,13 @@ void DoSurface();
 void     QE_CheckAutoSave( void );
 void     WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src );
 void     QE_CountBrushesAndUpdateStatusBar( void );
-void     WINAPI QE_CheckOpenGLForErrors(void);
+void     WINAPI QE_CheckOpenGLForErrors();
 void     QE_ExpandBspString (const char *bspaction, char *out, char *mapname, bool useTemps);
 bool QE_KeyDown (int key, int nFlags = 0);
 bool QE_SingleBrush (bool bQuiet = false);
 
 
-void Sys_MarkMapModified (void);
+void Sys_MarkMapModified ();
 
 int  WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer );
 void QEW_StopGL( HWND hWnd, HGLRC hGLRC, HDC hDC );
@@ -344,10 +338,8 @@ bool IsBrushSelected(brush_s* bSel);
 void Curve_MakeCurvedBrush (bool negative, bool top, bool bottom, 
 					bool s1, bool s2, bool s3, bool s4);
 
-void Curve_Invert (void);
+void Curve_Invert ();
 
-void Curve_AddFakePlanes( brush_s *B );
-void Curve_StripFakePlanes( brush_s *B );
 void Curve_BuildPoints (brush_s *b);
 void Curve_XYDraw (brush_s *b);
 void Curve_CameraDraw (brush_s *b);
@@ -365,7 +357,6 @@ brush_s* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld = true);
 brush_s* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation = 2, bool bDeleteSource = true, bool bOverride = false);
 
 void Patch_BuildPoints (brush_s *b);
-//void Patch_Move(patchMesh_c *p, const vec3_t vMove, bool bRebuild = false);
 void Patch_ApplyMatrix(patchMesh_c *p, const class vec3_c &vOrigin, const vec3_c vMatrix[3], bool bSnap = false);
 void Patch_EditPatch();
 void Patch_Deselect();
@@ -385,17 +376,11 @@ void Patch_AddRow(patchMesh_c *p);
 brush_s* Patch_Parse(class parser_c &p,bool bOld);
 void Patch_Write (patchMesh_c *p, FILE *f);
 void Patch_Write (patchMesh_c *p, CMemFile *file);
-//void Patch_AdjustColumns(patchMesh_c *p, int nCols);
-//void Patch_AdjustRows(patchMesh_c *p, int nRows);
 void Patch_AdjustSelected(bool bInsert, bool bColumn, bool bFlag);
 patchMesh_c* Patch_Duplicate(patchMesh_c *pFrom);
 void Patch_RotateTexture(patchMesh_c *p, float fAngle);
 void Patch_ScaleTexture(patchMesh_c *p, float fx, float fy, bool bFixup = true);
 void Patch_ShiftTexture(patchMesh_c *p, float fx, float fy);
-//void Patch_DrawCam(patchMesh_c *p);
-//void Patch_InsertColumn(patchMesh_c *p, bool bAdd);
-//void Patch_InsertRow(patchMesh_c *p, bool bAdd);
-//void Patch_RemoveRow(patchMesh_c *p, bool bFirst);
 void Patch_ToggleInverted();
 void Patch_Restore(patchMesh_c *p);
 void Patch_Save(patchMesh_c *p);

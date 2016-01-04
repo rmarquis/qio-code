@@ -235,10 +235,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\editor\TexWnd.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\editor\Undo.cpp"
 				>
 			</File>
@@ -656,6 +652,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\editor\TextureLoad.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\TexWnd.cpp"
 				>
 			</File>
 			<File

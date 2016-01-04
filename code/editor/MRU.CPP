@@ -509,7 +509,7 @@ WORD i;
 
 #ifdef WIN32
 
-BOOL IsWin395OrHigher(void)
+BOOL IsWin395OrHigher()
 {
   WORD wVer;
 
@@ -656,7 +656,7 @@ DWORD dwType;
 //*************************************************************
 WIN32KIND GetWin32Kind()
 {
-BOOL IsWin395OrHigher(void);
+BOOL IsWin395OrHigher();
 
   WORD wVer;
 

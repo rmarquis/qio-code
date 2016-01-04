@@ -45,7 +45,7 @@ public:
 	}
 } acw;
 
-void WINAPI QE_CheckOpenGLForErrors(void)
+void WINAPI QE_CheckOpenGLForErrors()
 {
   CString strMsg;
   int i = glGetError();
@@ -210,7 +210,7 @@ float Q_rint (float in)
 Sets target / targetname on the two entities selected
 from the first selected to the secon
 */
-void ConnectEntities (void)
+void ConnectEntities ()
 {
 	entity_s	*e1, *e2, *e;
 	const char		*target, *tn;
@@ -286,7 +286,7 @@ bool QE_SingleBrush (bool bQuiet)
 		}
 		return false;
 	}
-	if (selected_brushes.next->owner->eclass->isFixedSize())
+	if (selected_brushes.next->owner->getEntityClass()->isFixedSize())
 	{
 		if (!bQuiet)
 		{
@@ -333,7 +333,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 			next = b->next;
 			if (b->getFirstFace() )
 			{
-				if ( !b->owner->eclass->isFixedSize())
+				if ( !b->owner->getEntityClass()->isFixedSize())
 					g_numbrushes++;
 				else
 					g_numentities++;
@@ -351,7 +351,7 @@ void QE_CountBrushesAndUpdateStatusBar( void )
 	}
 }
 
-double I_FloatTime (void)
+double I_FloatTime ()
 {
 	time_t	t;
 	

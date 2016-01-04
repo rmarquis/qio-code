@@ -138,7 +138,7 @@ extern void Clamp(float& f, int nClamp);
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
 extern void SaveWindowPlacement(HWND hwnd, const char* pName);
 extern bool LoadWindowPlacement(HWND hwnd, const char* pName);
-extern bool ConfirmModified (void);
+extern bool ConfirmModified ();
 extern void DoPatchInspector();
 void UpdatePatchInspector();
 extern int BuildShortPathName(const char* pPath, char* pBuffer, int nBufferLen);
