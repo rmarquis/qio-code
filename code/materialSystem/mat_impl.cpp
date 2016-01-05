@@ -1428,6 +1428,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			s->setStageType(ST_COLORMAP);
 			s->setTexture(editorImage);
 			stages.push_back(s);
+		} else {
+			// V: load image automatically
+			// TODO: check if this is okay with other engines
+			mtrStage_c *s = new mtrStage_c;
+			s->setStageType(ST_COLORMAP);
+			s->setTexture(getName());
+			stages.push_back(s);
 		}
 	} else {
 		// delete unwanted stages
