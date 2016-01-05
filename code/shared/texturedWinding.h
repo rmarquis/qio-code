@@ -45,6 +45,15 @@ public:
 	static int planesConcave(texturedWinding_c *w1, texturedWinding_c *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
 
 
+	const vec2_c *getTCs() const {
+		return &points[0].st;
+	}
+	const vec3_c *getXYZs() const {
+		return &points[0].xyz;
+	}
+	u32 getStride() const {
+		return sizeof(texturedVertex_c);
+	}
 	void removeLastPoint() {
 		points.resize(points.size()-1);
 	}

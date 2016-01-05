@@ -65,6 +65,7 @@ public:
 	virtual void drawLineFromTo(const float *from, const float *to, const float *colorRGB, float lineWidth = 1.f) = 0;
 	virtual void drawBBLines(const class aabb &bb) = 0;
 	virtual void drawWinding(const class vec3_c *p, u32 numPoints, u32 stride = 12) { };
+	virtual void drawWindingTextured(const class vec3_c *p, const class vec2_c *tc, u32 numPoints, u32 stride = 12) { };
 
 	// used while drawing world surfaces and particles
 	virtual void setupWorldSpace() = 0;

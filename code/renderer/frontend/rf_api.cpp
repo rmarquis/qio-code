@@ -273,6 +273,9 @@ public:
 	virtual u32 getWinHeight() const {
 		return rb->getWinHeight();
 	}
+	virtual class rbAPI_i *getBackend() const {
+		return rb;
+	}
 };
 
 // interface manager (import)

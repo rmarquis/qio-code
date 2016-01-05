@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
 #include <api/entityDeclAPI.h>
+#include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <math/math.h>
 #include <shared/parser.h>
 #include <shared/textureAxisFromNormal.h>
@@ -2396,63 +2398,44 @@ void Brush_Draw( edBrush_c *b )
 	
 	// guarantee the texture will be set first
 	prev = NULL;
-	for (face = b->getFirstFace(),order = 0 ; face ; face=face->next, order++)
+	for (face = b->getFirstFace(),order = 0; face; face=face->next, order++)
 	{
 		w = face->face_winding;
-		if (!w)
-		{
-			continue;		// freed face
+		// V: skip faces without windings
+		if (!w) {
+			continue;
 		}
-		
-		if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_CAULK)
-		{
-			if (strstr(face->getMatName(), "caulk"))
-			{
-				continue;
+		// V: allow mappers to hide caulk surfaces
+		if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_CAULK) {
+			if (strstr(face->getMatName(), "caulk")) {
+				continue; 
 			}
 		}
-
-
-		mtrAPI_i *temp = face->d_texture; //g_ms->registerMaterial(face->d_texture->getName());
-		
-		if (face->d_texture != prev)
-		{
-			for(u32 i = 0; i < temp->getNumStages(); i++) {
-				// set the texture for this face
-				prev = face->d_texture;
-
-				const mtrStageAPI_i *s = temp->getStage(i);
-				u32 h = s->getTexture(0)->getInternalHandleU32();
-				glBindTexture( GL_TEXTURE_2D, h );
+		float colorToUse[4];
+		if (!b->patchBrush) {
+			// V: normal brush
+			colorToUse[0] = face->d_color[0];
+			colorToUse[1] = face->d_color[1];
+			colorToUse[2] = face->d_color[2];
+			if (face->d_texture && face->d_texture->hasEditorTransparency()) {
+				// V: transparency is used eg. for triggers
+				colorToUse[3] = face->d_texture->getEditorTransparency();	
+			} else {
+				colorToUse[3] = 1.f;
 			}
+		} else {
+			// V: "ghost" brushes on patches are drawn almost transparent
+			colorToUse[0] = face->d_color[0];
+			colorToUse[1] = face->d_color[1];
+			colorToUse[2] = face->d_color[2];
+			colorToUse[3] = 0.13f;
 		}
-		
-		if (!b->patchBrush)
-		{
-			glColor3fv( face->d_color );
-		}
-		else
-		{
-			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], 0.13 );
-		}
-		
-		// shader drawing stuff
-		if (face->d_texture && face->d_texture->hasEditorTransparency())
-		{
-			// setup shader drawing
-			glColor4f ( face->d_color[0], face->d_color[1], face->d_color[2], face->d_texture->getEditorTransparency() );
-			
-		}
-		
 		// draw the polygon
-		
-		glBegin(GL_POLYGON);
-		for (i=0 ; i<w->size() ; i++)
-		{
-			glTexCoord2fv( w->getTC(i) );
-			glVertex3fv(w->getXYZ(i));
-		}
-		glEnd();
+		//rf->getBackend()->setMaterial(face->d_texture);
+		//rf->getBackend()->setColor4(colorToUse);
+		glBindTexture(GL_TEXTURE_2D,face->d_texture->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
+		glColor4fv(colorToUse);
+		rf->getBackend()->drawWindingTextured(w->getXYZs(),w->getTCs(),w->size(),w->getStride());
 	}
 	
 
