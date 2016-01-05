@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\editor\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
+				AdditionalIncludeDirectories="..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\editor\gui\mfc\;..\..\code\editor\;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY; MSVC2008_EXPRESS_EDITION_HACK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
