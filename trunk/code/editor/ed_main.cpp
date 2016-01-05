@@ -128,6 +128,16 @@ void Map_Snapshot()
     g_pParentWnd->MessageBox(strMsg);
   }
 }
+// Store the formatted string of time in the output
+void format_time(char *output){
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    sprintf(output, "[%d %d %d %d:%d:%d]",timeinfo->tm_mday, timeinfo->tm_mon + 1, timeinfo->tm_year + 1900, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+}
 /*
 If five minutes have passed since making a change
 and the map hasn't been saved, save it out.
@@ -164,7 +174,12 @@ void QE_CheckAutoSave( void )
       {
 		///  Map_SaveFile (g_qeglobals.d_project_entity->getKeyValue("autosave"), false);
 		  // TODO - VALID PATH
-		  Map_SaveFile ("C:/radiantAutoSave.map", false);
+		  char tmp[512];
+		  format_time(tmp);
+		  str path = "autosave/";
+		  path.append(tmp);
+		  path.append(".map");
+		  Map_SaveFile (path, false);
       }
 
 		  Sys_Status ("Autosaving...Saved.", 0 );
