@@ -468,14 +468,22 @@ void CCamWnd::Cam_MouseControl (float dtime)
       return;
   }
 
-	xf = (float)(m_ptButton.x - m_Camera.width/2) / (m_Camera.width/2);
-	yf = (float)(m_ptButton.y - m_Camera.height/2) / (m_Camera.height/2);
+	//xf = (float)(m_ptButton.x - m_Camera.width/2) / (m_Camera.width/2);
+	//yf = (float)(m_ptButton.y - m_Camera.height/2) / (m_Camera.height/2);
 
+	RECT r;
+	GetWindowRect(&r);
 
-	xl = m_Camera.width/3;
-	xh = xl*2;
-	yl = m_Camera.height/3;
-	yh = yl*2;
+	int	x, y;
+	Sys_GetCursorPos (&x, &y);
+	x -= r.left;
+	y -= r.top;
+	xf = x - m_Camera.width/2;
+	yf = m_Camera.height/2 - y;
+	//xl = m_Camera.width/3;
+	//xh = xl*2;
+	//yl = m_Camera.height/3;
+	//yh = yl*2;
 
   //Sys_Printf("xf-%f  yf-%f  xl-%i  xh-i%  yl-i%  yh-i%\n",xf,yf,xl,xh,yl,yh);
 #if 0
@@ -505,8 +513,7 @@ void CCamWnd::Cam_MouseControl (float dtime)
 #else
 		m_Camera.angles[YAW] -= xf;
 		m_Camera.angles[PITCH] += yf;
-
-   //// SetCursorPos(m_Camera.width/2,  m_Camera.height/2);
+		SetCursorPos(r.left+m_Camera.width/2,  r.top+m_Camera.height/2);
 #endif
 	}
 
