@@ -163,11 +163,17 @@ void Face_SetColor (edBrush_c *b, face_s *f, float fCurveColor)
 		f->d_color[1] = 
 		f->d_color[2] = shade;
 	}
-	else
+	else if(q)
 	{
 		f->d_color[0] = shade*q->getEditorColor()[0];
 		f->d_color[1] = shade*q->getEditorColor()[1];
 		f->d_color[2] = shade*q->getEditorColor()[2];
+	}
+	else
+	{
+		f->d_color[0] = 
+		f->d_color[1] = 
+		f->d_color[2] = shade;
 	}
 }
 
@@ -2287,8 +2293,8 @@ void DrawLight(edBrush_c *b)
 	glEnd();
 
 	// check for DOOM lights
-	CString str = b->owner->getKeyValue("light_right");
-	if (str.GetLength() > 0) {
+	str s = b->owner->getKeyValue("light_right");
+	if (s.size() > 0) {
 		vec3_c vRight, vUp, vTarget, vTemp;
 		b->owner->getKeyVector("light_right", vRight);
 		b->owner->getKeyVector("light_up", vUp);
@@ -2318,6 +2324,36 @@ void DrawLight(edBrush_c *b)
 		glVertex3fv(vTemp);
 		glEnd();
 	}
+
+	//if (s.size() > 0) {
+	//	vec3_c vRight, vUp, vTemp;
+	//	vRight = vec3_c(0,1,0) * atof(s);
+	//	vUp = vec3_c(0,0,1) * atof(s);
+
+	//	glColor3f(0, 1, 0);
+	//	glBegin(GL_LINE_LOOP);
+	//	vTemp = vTarget + b->owner->getOrigin();
+	//	vTemp += vRight;
+	//	vTemp += vUp;
+	//	glVertex3fv(b->owner->getOrigin());
+	//	glVertex3fv(vTemp);
+	//	vTemp = vTarget + b->owner->getOrigin();
+	//	vTemp += vUp;
+	//	vTemp -= vRight;
+	//	glVertex3fv(b->owner->getOrigin());
+	//	glVertex3fv(vTemp);
+	//	vTemp = vTarget + b->owner->getOrigin();
+	//	vTemp += vRight;
+	//	vTemp -= vUp;
+	//	glVertex3fv(b->owner->getOrigin());
+	//	glVertex3fv(vTemp);
+	//	vTemp = vTarget + b->owner->getOrigin();
+	//	vTemp -= vUp;
+	//	vTemp -= vRight;
+	//	glVertex3fv(b->owner->getOrigin());
+	//	glVertex3fv(vTemp);
+	//	glEnd();
+	//}
 
 }
 
@@ -2440,6 +2476,7 @@ void Face_Draw( face_s *f )
 	glEnd();
 }
 
+void DrawLightRadius(entity_s *e);
 void Brush_DrawXY(edBrush_c *b, int nViewType)
 {
 	face_s *face;
@@ -2510,6 +2547,8 @@ void Brush_DrawXY(edBrush_c *b, int nViewType)
 			glVertex3fv(vCorners[0]);
 			glEnd();
 			DrawBrushEntityName (b);
+			glColor3f(1,1,0);
+			DrawLightRadius(b->owner);
 			return;
 		}
 		else if (b->owner->getEntityClass()->hasEditorFlagMiscModel())

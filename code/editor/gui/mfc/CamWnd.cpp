@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <gl/glu.h>
 #include <api/rAPI.h>
 #include <api/coreAPI.h>
+#include <api/entityDeclAPI.h>
 
 
 #ifdef _DEBUG
@@ -513,6 +514,10 @@ void CCamWnd::Cam_MouseControl (float dtime)
 #else
 		m_Camera.angles[YAW] -= xf;
 		m_Camera.angles[PITCH] += yf;
+		if(m_Camera.angles[PITCH] > 88)
+			m_Camera.angles[PITCH] = 88;
+		else if(m_Camera.angles[PITCH] < -88)
+			m_Camera.angles[PITCH] = -88;
 		SetCursorPos(r.left+m_Camera.width/2,  r.top+m_Camera.height/2);
 #endif
 	}
@@ -694,26 +699,28 @@ bool CCamWnd::CullBrush (edBrush_c *b)
 	//return false;
 }
 
-#if 0
-void CCamWnd::DrawLightRadius(edBrush_c* pBrush)
-{
-  // if lighting
-  int nRadius = Brush_LightRadius(pBrush);
-  if (nRadius > 0)
-  {
-    Brush_SetLightColor(pBrush);
-	  glEnable (GL_BLEND);
-	  glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	  glDisable (GL_TEXTURE_2D);
+#include <gl/glut.h>
+void DrawLightRadius(entity_s *e)
+{	
+	str s = e->getKeyValue("light");
+	float radius;
+	if(s.size()) 
+		radius = atof(s);
+	else
+		radius = 512.f;
 
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
-    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-  }
+	const vec3_c &at = e->getOrigin();	
+
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(at.getX(),at.getY(),at.getZ());
+	glDisable(GL_CULL_FACE);
+	glutSolidSphere(atof(s),16,16);
+	glEnable(GL_CULL_FACE);
+	//glTranslatef(-at.getX(),-at.getY(),-at.getZ());
+	glPopMatrix();
 }
-#endif
-
 BOOL FilterBrush(edBrush_c *pb);
 
 void CCamWnd::Cam_Draw()
@@ -787,7 +794,7 @@ void CCamWnd::Cam_Draw()
 	glMatrixMode(GL_TEXTURE);
 	
 	m_TransBrushes.clear();
-	
+	arraySTD_c<entity_s*> lights;
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
 	{
 		//DrawLightRadius(brush);
@@ -808,6 +815,10 @@ void CCamWnd::Cam_Draw()
 			//--			  m_TransBrushes [ m_nNumTransBrushes++ ] = brush;
 			//--      else
 			Brush_Draw(brush);
+		}
+		if(brush->owner->getEntityClass()->hasEditorFlagLight())
+		{
+			lights.push_back(brush->owner);
 		}
 	}
 
@@ -850,6 +861,19 @@ void CCamWnd::Cam_Draw()
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable (GL_TEXTURE_2D);
+	glColor4f(1.0, 1.0, 1.0, 0.5);
+
+	// it must be drawn without writing to depth buffer
+	glDepthMask(false);
+	for(u32 i = 0; i < lights.size(); i++) {
+		DrawLightRadius(lights[i]);
+	}
+	// it must be drawn without writing to depth buffer
+	glDepthMask(true);
+
+	
+	glColor4f(1.0, 0.0, 0.0, 0.3);
+
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{
 		if ( (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
@@ -883,6 +907,10 @@ void CCamWnd::Cam_Draw()
 		
 		for (face=brush->getFirstFace() ; face ; face=face->next)
 			Face_Draw( face );
+
+		if(brush->owner->getEntityClass()->hasEditorFlagLight()) {
+			DrawLightRadius(brush->owner);
+		}
 	}
 	
 	
