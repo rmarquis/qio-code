@@ -90,6 +90,7 @@ public:
 	virtual void shutdown(bool destroyWindow) = 0;
 	virtual u32 getWinWidth() const = 0;
 	virtual u32 getWinHeight() const = 0;
+	virtual class rbAPI_i *getBackend() const = 0;
 };
 
 extern rAPI_i *rf;

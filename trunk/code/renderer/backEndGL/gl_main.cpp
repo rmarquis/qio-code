@@ -2960,6 +2960,17 @@ drawOnlyLightmap:
 		}
 		glEnd();
 	}
+	virtual void drawWindingTextured(const class vec3_c *p, const class vec2_c *tc, u32 numPoints, u32 stride = 12) { 
+		glCull(CT_TWO_SIDED);
+		glBegin(GL_TRIANGLE_FAN);
+		for(u32 i = 0; i < numPoints; i++) {
+			glTexCoord2fv(tc->floatPtr());
+			glVertex3fv(p->floatPtr());
+			p = (const vec3_c*)(((const byte*)p)+stride);
+			tc = (const vec2_c*)(((const byte*)tc)+stride);
+		}
+		glEnd();
+	}
 	virtual bool areGPUOcclusionQueriesSupported() const {
 		int bitsSupported = 0;
         glGetQueryiv(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &bitsSupported);
