@@ -458,16 +458,16 @@ void CCamWnd::Cam_MouseControl (float dtime)
 	int		xl, xh;
 	int		yl, yh;
 	float	xf, yf;
-  if (g_PrefsDlg.m_nMouseButtons == 2)
-  {
-    if (m_nCambuttonstate != (MK_RBUTTON | MK_SHIFT))
-      return;
-  }
-  else
-  {
-	  if (m_nCambuttonstate != MK_RBUTTON)
-      return;
-  }
+	if (g_PrefsDlg.m_nMouseButtons == 2)
+	{
+		if (m_nCambuttonstate != (MK_RBUTTON | MK_SHIFT))
+			return;
+	}
+	else
+	{
+		if (m_nCambuttonstate != MK_RBUTTON)
+			return;
+	}
 
 	//xf = (float)(m_ptButton.x - m_Camera.width/2) / (m_Camera.width/2);
 	//yf = (float)(m_ptButton.y - m_Camera.height/2) / (m_Camera.height/2);
@@ -481,10 +481,6 @@ void CCamWnd::Cam_MouseControl (float dtime)
 	y -= r.top;
 	xf = x - m_Camera.width/2;
 	yf = m_Camera.height/2 - y;
-	//xl = m_Camera.width/3;
-	//xh = xl*2;
-	//yl = m_Camera.height/3;
-	//yh = yl*2;
 
   //Sys_Printf("xf-%f  yf-%f  xl-%i  xh-i%  yl-i%  yh-i%\n",xf,yf,xl,xh,yl,yh);
 #if 0
@@ -521,23 +517,9 @@ void CCamWnd::Cam_MouseControl (float dtime)
 		SetCursorPos(r.left+m_Camera.width/2,  r.top+m_Camera.height/2);
 #endif
 	}
-
-#if 0
-  if (g_PrefsDlg.m_bQE4Painting)
-  {
-    MSG msg;
-    if (::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE )) 
-    { 
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-  }
-#endif
-
-  int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
+	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
 	Sys_UpdateWindows (nUpdate);
-  g_pParentWnd->PostMessage(WM_TIMER, 0, 0);
-
+	g_pParentWnd->PostMessage(WM_TIMER, 0, 0);
 }
 
 
@@ -753,8 +735,6 @@ void CCamWnd::Cam_Draw()
 	//
 	// set up viewpoint
 	//
-	glDisable(GL_LIGHTING);
-	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity ();
 	
@@ -855,7 +835,6 @@ void CCamWnd::Cam_Draw()
 	glMatrixMode(GL_PROJECTION);
 	
 	
-	glDisable (GL_LIGHTING);
 	glColor4f(1.0, 0.0, 0.0, 0.3);
 	glEnable (GL_BLEND);
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
@@ -884,16 +863,16 @@ void CCamWnd::Cam_Draw()
 	}
 	
  
-  int nCount = g_SelectedFaces.GetSize();
+	int nCount = g_SelectedFaces.GetSize();
 	if (nCount > 0)
-  {
-    for (int i = 0; i < nCount; i++)
-    {
-      face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
-		  Face_Draw(selFace);
-    }
-  }
-		
+	{
+		for (int i = 0; i < nCount; i++)
+		{
+			face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+			Face_Draw(selFace);
+		}
+	}
+
 	// non-zbuffered outline
 	
 	glDisable (GL_BLEND);
