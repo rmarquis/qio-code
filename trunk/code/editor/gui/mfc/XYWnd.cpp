@@ -1783,12 +1783,6 @@ bool CXYWnd::DragDelta (int x, int y, vec3_t move)
 	return false;
 }
 
-
-/*
-==============
-NewBrushDrag
-==============
-*/
 void CXYWnd::NewBrushDrag (int x, int y)
 {
 	vec3_c	mins, maxs, junk;
@@ -1825,6 +1819,8 @@ void CXYWnd::NewBrushDrag (int x, int y)
 		}
 	}
 
+	// all new brushes should be caulked
+	g_qeglobals.d_texturewin.texdef.setName("common/caulk");
 	n = Brush_Create (mins, maxs, &g_qeglobals.d_texturewin.texdef);
 	if (!n)
 		return;
