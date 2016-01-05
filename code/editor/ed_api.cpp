@@ -51,6 +51,10 @@ mtrAPI_i *QERApp_TryTextureForName(const char* name)
 	{
 		strcpy(fullName,name);
 	}
+	mtrAPI_i *mat = g_ms->findLoadedMaterial(fullName);
+	if(mat)
+		return mat;
+
 	HDC currentHDC = wglGetCurrentDC();
 	HGLRC currentHGLRC = wglGetCurrentContext();
 
@@ -61,7 +65,7 @@ mtrAPI_i *QERApp_TryTextureForName(const char* name)
 	//  wglMakeCurrent( currentHDC, currentHGLRC );
 
 	// This should always return a non-null pointer, altought it will be a default-image material if the valid one is missing
-	mtrAPI_i *mat = g_ms->registerMaterial(fullName);
+	mat = g_ms->registerMaterial(fullName);
 	Sys_Printf ("Loading material (or texture) %s done.\n", name);
 	return mat;
 }

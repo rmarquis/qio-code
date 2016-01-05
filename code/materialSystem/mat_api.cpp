@@ -56,6 +56,9 @@ public:
 	virtual mtrAPI_i *registerMaterial(const char *matName) {
 		return MAT_RegisterMaterialAPI(matName);
 	}
+	virtual mtrAPI_i *findLoadedMaterial(const char *matName) {
+		return MAT_FindLoadedMaterialAPI(matName);
+	}
 	virtual textureAPI_i *getDefaultTexture() {
 		return MAT_GetDefaultTexture();
 	}

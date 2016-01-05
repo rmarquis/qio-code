@@ -427,6 +427,13 @@ class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixel
 class mtrAPI_i *MAT_RegisterMaterialAPI(const char *matName) {
 	return MAT_RegisterMaterial(matName);
 }
+class mtrAPI_i *MAT_FindLoadedMaterialAPI(const char *matName) {
+	mtrIMPL_c *ret = materials.getEntry(matName);
+	if(ret) {
+		return ret;
+	}
+	return 0;;
+}
 bool MAT_IsMaterialOrImagePresent(const char *matName) {
 	// try to load from material text (.shader/.mtr files)
 	matTextDef_s text;
