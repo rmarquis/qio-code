@@ -2431,18 +2431,10 @@ void Brush_Draw( edBrush_c *b )
 			colorToUse[3] = 0.13f;
 		}
 		// draw the polygon
-		//rf->getBackend()->setMaterial(face->d_texture);
-		//rf->getBackend()->setColor4(colorToUse);
-		glBindTexture(GL_TEXTURE_2D,face->d_texture->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
-		glColor4fv(colorToUse);
-		rf->getBackend()->drawWindingTextured(w->getXYZs(),w->getTCs(),w->size(),w->getStride());
+		rf->getBackend()->setMaterial(face->d_texture);
+		rf->getBackend()->setColor4(colorToUse);
+		rf->rbDrawElements_winding(w->getXYZs(),w->getTCs(),w->size(),w->getStride());
 	}
-	
-
-	if (b->owner->getEntityClass()->isFixedSize())
-		glEnable (GL_TEXTURE_2D);
-	
-	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 
