@@ -793,7 +793,7 @@ void CCamWnd::Cam_Draw()
 			//--      if (brush->patchBrush)
 			//--			  m_TransBrushes [ m_nNumTransBrushes++ ] = brush;
 			//--      else
-			Brush_Draw(brush);
+			Brush_Draw(brush,false);
 		}
 		if(brush->owner->getEntityClass()->hasEditorFlagLight())
 		{
@@ -811,20 +811,23 @@ void CCamWnd::Cam_Draw()
 	//
 	// now draw selected brushes
 	//
-#if 0	
-	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
-	glMatrixMode(GL_TEXTURE);'
 	edBrush_c* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
+
+////	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
+///	glMatrixMode(GL_TEXTURE);'
 	// draw normally
+	float red[4] = { 1.f, 0.5, 0.5, 1.f };
+	rf->getBackend()->setColor4(red);
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
 	{
 		//DrawLightRadius(brush);
 		//if (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint)
 		//  continue;
 		
-		Brush_Draw(brush);
+		Brush_Draw(brush,true);
 	}
-	
+	rf->getBackend()->setColor4(0);
+#if 0	
 	// blend on top
 	glMatrixMode(GL_PROJECTION);
 	

@@ -109,7 +109,7 @@ friend void		Brush_AddToList (edBrush_c *b, edBrush_c *list);
 friend void		Brush_Build(edBrush_c *b, bool bSnap = true, bool bMarkMap = true, bool bConvert = false);
 friend edBrush_c*	Brush_Clone (edBrush_c *b);
 friend edBrush_c*	Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef);
-friend void		Brush_Draw( edBrush_c *b );
+friend void		Brush_Draw( edBrush_c *b, bool bIsSelected );
 friend void		Brush_DrawXY(edBrush_c *b, int nViewType);
 // set bRemoveNode to false to avoid trying to delete the item in group view tree control
 friend void		Brush_Free (edBrush_c *b, bool bRemoveNode = true);

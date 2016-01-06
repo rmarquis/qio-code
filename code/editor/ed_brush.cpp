@@ -2216,7 +2216,7 @@ void DrawLight(edBrush_c *b)
 	rf->rbDrawEditorLightShape(b->getBounds());
 }
 
-void Brush_Draw( edBrush_c *b )
+void Brush_Draw( edBrush_c *b , bool bIsSelected)
 {
 	face_s			*face;
 	int				i, order;
@@ -2268,6 +2268,7 @@ void Brush_Draw( edBrush_c *b )
 				continue; 
 			}
 		}
+#if 0
 		float colorToUse[4];
 		if (!b->patchBrush) {
 			// V: normal brush
@@ -2287,10 +2288,17 @@ void Brush_Draw( edBrush_c *b )
 			colorToUse[2] = face->d_color[2];
 			colorToUse[3] = 0.13f;
 		}
+#else
+		if(bIsSelected) {
+			float red[4] = { 1, 0.5 , 0.5, 1 };
+			rf->getBackend()->setColor4(red);
+		} else {
+			rf->getBackend()->setColor4(0);
+		}
+#endif
 		// draw the polygon
 		rf->getBackend()->setupWorldSpace();
 		rf->getBackend()->setMaterial(face->d_texture);
-		rf->getBackend()->setColor4(colorToUse);
 		rf->rbDrawElements_winding(w->getXYZs(),w->getTCs(),w->size(),w->getStride());
 	}
 }
