@@ -225,6 +225,9 @@ enum rgbGen_e mtrStage_c::getRGBGenType() const {
 		return RGBGEN_NONE;
 	return rgbGen->getType();
 }
+void mtrStage_c::setRGBGenVerex() {
+	allocRGBGen()->setVertex();
+}
 class rgbGen_c *mtrStage_c::allocRGBGen() {
 	if(rgbGen)
 		return rgbGen;

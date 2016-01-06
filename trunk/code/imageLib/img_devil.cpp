@@ -369,9 +369,9 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 		byte gb = g * 255.f;
 		byte bb = b * 255.f;
 		for(u32 i = 0; i < numPixels*4; i+=4) {
-			pic[i] = r;
-			pic[i+1] = g;
-			pic[i+2] = b;
+			pic[i] = rb;
+			pic[i+1] = gb;
+			pic[i+2] = bb;
 			pic[i+3] = 255;
 		}
 		*imageData = pic;
