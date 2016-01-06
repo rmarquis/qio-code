@@ -153,4 +153,15 @@ textures/qiotests/colorMapD3Blue2
 }
 
 
+textures/qiotests/animMapTest1
+{
+  qer_editorImage textures/qiotests/tile1_d.png
+  cull none
+  {
+	stage diffuseMap
+    animmap 1 textures/qiotests/tile1_d.png textures/qiotests/rockwall_d.png
+  }
+}
+
+
 
