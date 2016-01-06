@@ -2215,6 +2215,13 @@ void DrawLight(edBrush_c *b)
 {
 	rf->rbDrawEditorLightShape(b->getBounds());
 }
+bool Face_IsSelected(const face_s *f) {
+	for(u32 i = 0; i < g_SelectedFaces.GetSize(); i++) {
+		if(f == g_SelectedFaces.ElementAt(i))
+			return true;
+	}
+	return false;
+}
 
 void Brush_Draw( edBrush_c *b , bool bIsSelected)
 {
@@ -2289,7 +2296,7 @@ void Brush_Draw( edBrush_c *b , bool bIsSelected)
 			colorToUse[3] = 0.13f;
 		}
 #else
-		if(bIsSelected) {
+		if(bIsSelected || Face_IsSelected(face)) {
 			float red[4] = { 1, 0.5 , 0.5, 1 };
 			rf->getBackend()->setColor4(red);
 		} else {
