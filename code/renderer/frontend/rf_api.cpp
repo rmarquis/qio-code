@@ -46,6 +46,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
 #include <shared/colorTable.h>
+#include "../rVertexBuffer.h"
+#include "../rIndexBuffer.h"
 
 #include "rf_2d.h"
 #include "rf_world.h"
@@ -275,6 +277,29 @@ public:
 	}
 	virtual class rbAPI_i *getBackend() const {
 		return rb;
+	}
+	// This will setup a rVertexBuffer and rIndexBuffer and call rb->drawElements
+	virtual void rbDrawElements_winding(const class vec3_c *p, const class vec2_c *tc, u32 numPoints, u32 stride) {
+		rVertexBuffer_c verts;
+		verts.resize(numPoints);
+		for(u32 i = 0; i < numPoints; i++) {
+			verts.setXYZ(i,*p);
+			verts.setTC(i,*tc);
+			p = (const vec3_c*)(((const byte*)p)+stride);
+			tc = (const vec2_c*)(((const byte*)tc)+stride);
+		}
+		rIndexBuffer_c indices;
+		indices.initU16((numPoints-2)*3);
+		u32 idx = 0;
+		for(u32 i = 2; i < numPoints; i++) {
+			indices.setIndex(idx,0);
+			idx++;
+			indices.setIndex(idx,i-1);
+			idx++;
+			indices.setIndex(idx,i);
+			idx++;
+		}
+		rb->drawElements(verts,indices);
 	}
 };
 

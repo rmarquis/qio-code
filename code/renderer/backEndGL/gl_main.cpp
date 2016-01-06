@@ -2545,6 +2545,8 @@ drawOnlyLightmap:
 		materialVarList.setTableList(g_ms->getTablesAPI());
 		materialVarList.setVariable("time",timeNowSeconds);
 
+		unbindMaterial();
+
 		// reset counters
 		c_frame_vbsReusedByDifferentDrawCall = 0;
 	}

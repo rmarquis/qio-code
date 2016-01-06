@@ -110,6 +110,12 @@ public:
 	const rVert_c &operator [] (u32 index) const {
 		return data[index];
 	}
+	void setXYZ(u32 i, const vec3_c &p) {
+		data[i].xyz = p;
+	}
+	void setTC(u32 i, const vec2_c &p) {
+		data[i].tc = p;
+	}
 	rVert_c &operator [] (u32 index) {
 		return data[index];
 	}

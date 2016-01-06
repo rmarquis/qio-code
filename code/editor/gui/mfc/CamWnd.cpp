@@ -615,25 +615,6 @@ void CCamWnd::Cam_MouseMoved (int x, int y, int buttons)
 }
 
 
-void CCamWnd::InitCull()
-{
-	int		i;
-
-	m_vCull1 = m_Camera.vpn - m_Camera.vright;
-	m_vCull2 = m_Camera.vpn + m_Camera.vright;
-
-	for (i=0 ; i<3 ; i++)
-	{
-		if (m_vCull1[i] > 0)
-			m_nCullv1[i] = 3+i;
-		else
-			m_nCullv1[i] = i;
-		if (m_vCull2[i] > 0)
-			m_nCullv2[i] = 3+i;
-		else
-			m_nCullv2[i] = i;
-	}
-}
 
 bool CCamWnd::CullBrush (edBrush_c *b)
 {
@@ -717,6 +698,7 @@ void CCamWnd::Cam_Draw()
 	if (!active_brushes.next)
 		return;	// not valid yet
 	
+
 	if (m_Camera.timing)
 		start = Sys_DoubleTime ();
 	
@@ -731,6 +713,8 @@ void CCamWnd::Cam_Draw()
 		g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
 		g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	rf->beginFrame();
+	rf->setRenderTimeMsec(clock());
 	
 	//
 	// set up viewpoint
@@ -750,7 +734,6 @@ void CCamWnd::Cam_Draw()
 	
 	Cam_BuildMatrix ();
 	
-	InitCull ();
 	
 	//
 	// draw stuff
@@ -785,7 +768,7 @@ void CCamWnd::Cam_Draw()
 		if (FilterBrush (brush))
 			continue;
 		
-		if ((brush->getFirstFace()->d_texture->hasEditorTransparency() && brush->getFirstFace()->d_texture->getEditorTransparency() != 1.0))
+		if (brush->getFirstFace()->d_texture && (brush->getFirstFace()->d_texture->hasEditorTransparency() && brush->getFirstFace()->d_texture->getEditorTransparency() != 1.0))
 		{
 			m_TransBrushes.push_back(brush);
 		} 
