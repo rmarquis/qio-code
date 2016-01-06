@@ -735,7 +735,7 @@ void CCamWnd::Cam_Draw()
 	rf->setupProjection3D(&pd);
 	rf->setup3DView(m_Camera.origin,m_Camera.angles,false);
 	const axis_c &cax = rf->getCameraAxis();
-    m_Camera.forward = cax.getForward();
+    m_Camera.vpn = m_Camera.forward = cax.getForward();
 	m_Camera.vright = m_Camera.right = -cax.getLeft();
 	m_Camera.vup = m_Camera.up = cax.getUp();
 	//gluPerspective (yfov,  screenaspect,  2,  8192);
