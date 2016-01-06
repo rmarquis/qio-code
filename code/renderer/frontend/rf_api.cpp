@@ -63,6 +63,7 @@ class rAPIImpl_c : public rAPI_i {
 	moduleAPI_i *materialSystemDLL;
 	bool initialized;
 	projDef_s projDef;
+	axis_c camAxis;
 
 	void unloadMaterialSystem() {
 		if(materialSystemDLL == 0) {
@@ -117,9 +118,11 @@ public:
 	virtual void setup3DView(const class vec3_c &newCamPos, const vec3_c &newCamAngles, bool thirdPersonRendering) {
 		//camPos = newCamPos;
 		//camAngles = newCamAngles;
-		axis_c camAxis;
 		camAxis.fromAngles(newCamAngles);
 		rf_camera.setup(newCamPos,camAxis,projDef,thirdPersonRendering);
+	}
+	virtual const class axis_c &getCameraAxis() const {
+		return camAxis;
 	}
 	//// used while drawing world surfaces and particles
 	//virtual void setupWorldSpace() {

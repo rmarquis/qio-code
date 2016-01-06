@@ -125,6 +125,9 @@ void RF_GenerateDepthBufferOnlySceneDrawCalls() {
 void RF_Draw3DSubView(u32 firstDrawCall, u32 numDrawCalls) {
 	rb->clearDepthBuffer();
 	rb->setupProjection3D(&rf_camera.getProjDef());
+	if(rf_camera.getProjDef().fovX == 0.f) {
+		g_core->RedWarning("RF_Draw3DSubView: fovX is 0! Did you forget to setup projection?\n");
+	}
 	rb->setup3DView(rf_camera.getOrigin(), rf_camera.getAxis());
 	rb->setIsMirror(rf_camera.isMirror());
 	// for recursive mirror/portal views
