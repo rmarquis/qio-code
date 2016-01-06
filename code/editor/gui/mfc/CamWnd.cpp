@@ -371,36 +371,6 @@ void CCamWnd::Cam_Init()
 	m_Camera.color[2] = 0.3;
 }
 
-void CCamWnd::Cam_BuildMatrix()
-{
-	float	xa, ya;
-	float	matrix[4][4];
-	int		i;
-
-	xa = m_Camera.angles[0]/180*M_PI;
-	ya = m_Camera.angles[1]/180*M_PI;
-
-	// the movement matrix is kept 2d
-
-  m_Camera.forward[0] = cos(ya);
-  m_Camera.forward[1] = sin(ya);
-  m_Camera.right[0] = m_Camera.forward[1];
-  m_Camera.right[1] = -m_Camera.forward[0];
-
-	glGetFloatv (GL_PROJECTION_MATRIX, &matrix[0][0]);
-
-	for (i=0 ; i<3 ; i++)
-	{
-		m_Camera.vright[i] = matrix[i][0];
-		m_Camera.vup[i] = matrix[i][1];
-		m_Camera.vpn[i] = matrix[i][2];
-	}
-
-	m_Camera.vright.normalize();
-	m_Camera.vup.normalize();
-	m_Camera.vpn.normalize();
-}
-
 
 
 void CCamWnd::Cam_ChangeFloor (bool up)
