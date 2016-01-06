@@ -184,11 +184,14 @@ struct projDef_s {
 	float zFar;
 	float zNear;
 
+	void calcFovYForViewPort(float viewPortW, float viewPortH) {
+		float x = viewPortW / tan( this->fovX / 360 * M_PI );
+		this->fovY = atan2( viewPortH, x ) * 360 / M_PI;
+	}
 	void calcFovY() {
 		float viewPortW = rb->getWinWidth();
 		float viewPortH = rb->getWinHeight();
-		float x = viewPortW / tan( this->fovX / 360 * M_PI );
-		this->fovY = atan2( viewPortH, x ) * 360 / M_PI;
+		calcFovYForViewPort(viewPortW,viewPortH);
 	}
 	void setDefaults() {
 		fovX = 80;

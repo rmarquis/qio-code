@@ -2388,7 +2388,7 @@ void Brush_Draw( edBrush_c *b )
 		
 		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
 		{
-			DrawLight(b);
+		//	DrawLight(b);
 			return;
 		}
 		//
@@ -2431,6 +2431,7 @@ void Brush_Draw( edBrush_c *b )
 			colorToUse[3] = 0.13f;
 		}
 		// draw the polygon
+		rf->getBackend()->setupWorldSpace();
 		rf->getBackend()->setMaterial(face->d_texture);
 		rf->getBackend()->setColor4(colorToUse);
 		rf->rbDrawElements_winding(w->getXYZs(),w->getTCs(),w->size(),w->getStride());

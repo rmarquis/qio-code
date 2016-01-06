@@ -38,6 +38,7 @@ public:
 	virtual void setup3DView(const class vec3_c &camPos, const vec3_c &camAngles, bool thirdPersonRendering) = 0;
 	virtual void setupProjection3D(const struct projDef_s *pd) = 0;
 	virtual void setRenderTimeMsec(int msec) = 0;
+	virtual const class axis_c &getCameraAxis() const = 0;
 
 	virtual class rEntityAPI_i *allocEntity() = 0;
 	virtual void removeEntity(class rEntityAPI_i *ent) = 0;
@@ -49,7 +50,7 @@ public:
 	virtual u32 addExplosion(const vec3_c &pos, float radius, const char *matName) = 0;
 
 	//virtual void registerRenderableForCurrentFrame(class iRenderable_c *r) = 0;
-	//virtual void draw3DView() = 0;
+	virtual void draw3DView() = 0;
 	//virtual void setup2DView() = 0;
 	virtual void set2DColor(const float *rgba) = 0;	// NULL = 1,1,1,1
 	virtual void drawStretchPic(float x, float y, float w, float h,

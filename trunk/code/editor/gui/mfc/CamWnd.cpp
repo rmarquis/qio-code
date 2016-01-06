@@ -29,8 +29,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qe3.h"
 #include <gl/glu.h>
 #include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <api/coreAPI.h>
 #include <api/entityDeclAPI.h>
+#include <math/axis.h>
 
 
 #ifdef _DEBUG
@@ -509,7 +511,8 @@ void CCamWnd::Cam_MouseControl (float dtime)
 		m_Camera.angles[YAW] += xf*-dtime*g_nAngleSpeed;
 #else
 		m_Camera.angles[YAW] -= xf;
-		m_Camera.angles[PITCH] += yf;
+		// V: in Q3Rad there was +yf, but for Qio renderer is -yf
+		m_Camera.angles[PITCH] -= yf;
 		if(m_Camera.angles[PITCH] > 88)
 			m_Camera.angles[PITCH] = 88;
 		else if(m_Camera.angles[PITCH] < -88)
@@ -707,55 +710,68 @@ void CCamWnd::Cam_Draw()
 	//
 	QE_CheckOpenGLForErrors();
 	
-	glViewport(0, 0, m_Camera.width, m_Camera.height);
-	glScissor(0, 0, m_Camera.width, m_Camera.height);
-	glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][0],
-		g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
-		g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][0],
+	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
+	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
+	rf->getBackend()->setViewPort(m_Camera.width, m_Camera.height);
 	rf->beginFrame();
 	rf->setRenderTimeMsec(clock());
 	
 	//
 	// set up viewpoint
 	//
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity ();
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity ();
 	
 	screenaspect = (float)m_Camera.width / m_Camera.height;
 	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/M_PI;
-	gluPerspective (yfov,  screenaspect,  2,  8192);
-	
-	glRotatef (-90,  1, 0, 0);	    // put Z going up
-	glRotatef (90,  0, 0, 1);	    // put Z going up
-	glRotatef (m_Camera.angles[0],  0, 1, 0);
-	glRotatef (-m_Camera.angles[1],  0, 0, 1);
-	glTranslatef (-m_Camera.origin[0],  -m_Camera.origin[1],  -m_Camera.origin[2]);
-	
-	Cam_BuildMatrix ();
-	
+
+
+	projDef_s pd;
+	pd.zFar = 8000.f;
+	pd.zNear = 1.f;
+	pd.fovX = 90.f;
+	pd.calcFovYForViewPort(m_Camera.width,m_Camera.height);
+	rf->setupProjection3D(&pd);
+	rf->setup3DView(m_Camera.origin,m_Camera.angles,false);
+	const axis_c &cax = rf->getCameraAxis();
+    m_Camera.forward = cax.getForward();
+	m_Camera.vright = m_Camera.right = -cax.getLeft();
+	m_Camera.vup = m_Camera.up = cax.getUp();
+	//gluPerspective (yfov,  screenaspect,  2,  8192);
+	//
+	//glRotatef (-90,  1, 0, 0);	    // put Z going up
+	//glRotatef (90,  0, 0, 1);	    // put Z going up
+	//glRotatef (m_Camera.angles[0],  0, 1, 0);
+	//glRotatef (-m_Camera.angles[1],  0, 0, 1);
+	//glTranslatef (-m_Camera.origin[0],  -m_Camera.origin[1],  -m_Camera.origin[2]);
+	//
+	//Cam_BuildMatrix ();
+	//
 	
 	//
 	// draw stuff
 	//
-	GLfloat lAmbient[] = {1.0, 1.0, 1.0, 1.0};
-	
+	///*GLfloat lAmbient[] = {1.0, 1.0, 1.0, 1.0};
+	//
 
-		glCullFace(GL_FRONT);
-		glEnable(GL_CULL_FACE);
-		glShadeModel (GL_FLAT);
-		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc (GL_LEQUAL);
+	//	glCullFace(GL_FRONT);
+	//	glEnable(GL_CULL_FACE);
+	//	glShadeModel (GL_FLAT);
+	//	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	//	glEnable(GL_TEXTURE_2D);
+	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//	glDisable(GL_BLEND);
+	//	glEnable(GL_DEPTH_TEST);
+	//	glDepthFunc (GL_LEQUAL);
+	//
+	//
+	//glMatrixMode(GL_TEXTURE);*/
 	
-	
-	glMatrixMode(GL_TEXTURE);
-	
+	rf->draw3DView();
+
 	m_TransBrushes.clear();
 	arraySTD_c<entity_s*> lights;
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
@@ -784,25 +800,21 @@ void CCamWnd::Cam_Draw()
 			lights.push_back(brush->owner);
 		}
 	}
-
-	//
-	//glDepthMask ( 0 ); // Don't write to depth buffer
+#if 0
 	glEnable ( GL_BLEND );
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for ( i = 0; i < m_TransBrushes.size(); i++ ) 
 		Brush_Draw (m_TransBrushes[i]);
 	
-	//glDepthMask ( 1 ); // Ok, write now
-	
 	glMatrixMode(GL_PROJECTION);
-	
+#endif
 	//
 	// now draw selected brushes
 	//
-	
+#if 0	
 	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
 	glMatrixMode(GL_TEXTURE);
-	
+
 	edBrush_c* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
 	// draw normally
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
@@ -939,6 +951,7 @@ void CCamWnd::Cam_Draw()
 	}
 #endif
 	
+#endif
 	glFinish();
 	QE_CheckOpenGLForErrors();
 	//	Sys_EndWait();
