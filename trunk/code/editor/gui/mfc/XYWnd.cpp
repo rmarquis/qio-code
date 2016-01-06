@@ -2865,7 +2865,7 @@ void CXYWnd::XY_Draw()
 
 
   glPushMatrix();
-	glTranslatef( g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
+///	glTranslatef( g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
 
   if (RotateMode())
     glColor3f(0.8, 0.1, 0.9);
@@ -2945,7 +2945,7 @@ void CXYWnd::XY_Draw()
 
   glPopMatrix();
 
-	glTranslatef (-g_qeglobals.d_select_translate[0], -g_qeglobals.d_select_translate[1], -g_qeglobals.d_select_translate[2]);
+	//glTranslatef (-g_qeglobals.d_select_translate[0], -g_qeglobals.d_select_translate[1], -g_qeglobals.d_select_translate[2]);
 
 
   if (!(m_nViewType == XY))

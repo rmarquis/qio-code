@@ -210,7 +210,7 @@ struct QEGlobals_t
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
 	edBrush_c		*d_select_order[2];
-	vec3_c       d_select_translate;    // for dragging w/o making new display lists
+///	vec3_c       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	
 	int		     d_font_list;
