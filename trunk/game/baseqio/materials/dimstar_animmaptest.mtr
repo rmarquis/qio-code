@@ -1,0 +1,21 @@
+//Test animmap
+
+textures/animmaptest/horseandman_decal
+{
+	qer_editorimage textures/animmaptest/1.png
+	polygonOffset
+	surfaceparm nonsolid
+	surfaceparm nomarks
+	{
+		animMap 4 textures/animmaptest/1.png textures/animmaptest/2.png textures/animmaptest/3.png textures/animmaptest/4.png textures/animmaptest/5.png textures/animmaptest/6.png textures/animmaptest/7.png textures/animmaptest/8.png textures/animmaptest/9.png textures/animmaptest/10.png textures/animmaptest/11.png textures/animmaptest/12.png textures/animmaptest/13.png textures/animmaptest/14.png textures/animmaptest/15.png
+		blendFunc blend
+	}
+}
+
+textures/animmaptest/horseandman
+{
+	qer_editorimage textures/animmaptest/1.png
+	{
+		animMap 4 textures/animmaptest/1.png textures/animmaptest/2.png textures/animmaptest/3.png textures/animmaptest/4.png textures/animmaptest/5.png textures/animmaptest/6.png textures/animmaptest/7.png textures/animmaptest/8.png textures/animmaptest/9.png textures/animmaptest/10.png textures/animmaptest/11.png textures/animmaptest/12.png textures/animmaptest/13.png textures/animmaptest/14.png textures/animmaptest/15.png
+	}
+}
