@@ -660,13 +660,13 @@ void Drag_MouseUp (int nButtons)
 		Sys_UpdateWindows (W_ALL);
 	}
 	
-	if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])
-	{
-		Select_Move (g_qeglobals.d_select_translate);
-		g_qeglobals.d_select_translate.clear();
-		Sys_UpdateWindows (W_CAMERA);
-	}
-  
+	//if (g_qeglobals.d_select_translate[0] || g_qeglobals.d_select_translate[1] || g_qeglobals.d_select_translate[2])
+	//{
+	//	Select_Move (g_qeglobals.d_select_translate);
+	//	g_qeglobals.d_select_translate.clear();
+	//	Sys_UpdateWindows (W_CAMERA);
+	//}
+ // 
 	g_pParentWnd->SetStatusText(3, "");
 
 	//
