@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="editor"
 	ProjectGUID="{2F58DECA-EBEA-4138-B980-BA511AD46B2A}"
 	RootNamespace="editor"
@@ -65,7 +65,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib devil.lib"
 				OutputFile="..\..\game\system\editorx86.dll"
-				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib;..\..\code\external\gl\gl;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
+				AdditionalLibraryDirectories="..\..\code\tools\radiantAFXInclude\MFC\Lib;..\..\code\external\gl\lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="editor.def"
 				GenerateDebugInformation="true"
@@ -143,7 +143,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib glu32.lib devil.lib"
 				OutputFile="..\..\game\system\editorx86.dll"
-				AdditionalLibraryDirectories="..\..\code\external\gl\gl;..\..\code\tools\radiantAFXInclude\MFC\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
+				AdditionalLibraryDirectories="..\..\code\external\gl\lib;..\..\code\tools\radiantAFXInclude\MFC\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;"
 				IgnoreDefaultLibraryNames="libc.lib;msvcrtd.lib"
 				ModuleDefinitionFile="editor.def"
 				GenerateDebugInformation="true"
