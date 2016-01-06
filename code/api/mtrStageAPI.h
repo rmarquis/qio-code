@@ -119,6 +119,8 @@ public:
 	// doom3 alphaTest AST evaluation
 	virtual float evaluateAlphaTestValue(const class astInputAPI_i *in) const = 0;
 	virtual bool isUsingCustomProgram() const = 0;
+	// material editing?
+	virtual void setRGBGenVerex() = 0;
 };
 
 #endif // __MTRSTAGE_API_H__

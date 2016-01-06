@@ -813,8 +813,7 @@ void CCamWnd::Cam_Draw()
 	//
 #if 0	
 	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
-	glMatrixMode(GL_TEXTURE);
-
+	glMatrixMode(GL_TEXTURE);'
 	edBrush_c* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
 	// draw normally
 	for (brush = pList->next ; brush != pList ; brush=brush->next)

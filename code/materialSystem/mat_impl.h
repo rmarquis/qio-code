@@ -241,6 +241,7 @@ public:
 	virtual bool getDepthWrite() const {
 		return depthWrite;
 	}
+	virtual void setRGBGenVerex();
 	virtual bool isUsingCustomProgram() const {
 		if(programName.length())
 			return true;

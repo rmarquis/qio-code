@@ -94,6 +94,7 @@ public:
 	virtual class rbAPI_i *getBackend() const = 0;
 	// This will setup a rVertexBuffer and rIndexBuffer and call rb->drawElements
 	virtual void rbDrawElements_winding(const class vec3_c *p, const class vec2_c *tc, u32 numPoints, u32 stride = 12) = 0;
+	virtual void rbDrawEditorLightShape(const class aabb &inside, const vec3_c *color = 0) = 0;
 };
 
 extern rAPI_i *rf;

@@ -137,7 +137,20 @@ public:
 		numVerts = 0;
 		unloadFromGPU();
 	}
-
+	void addVertexXYZ(const vec3_c &v) {
+		rVert_c vert;
+		vert.xyz = v;
+		data.push_back(v);
+		numVerts++;
+	}
+	void addVertexXYZColor3f(const vec3_c &v, const vec3_c &c3f) {
+		rVert_c &vert = data.pushBack();
+		vert.xyz = v;
+		vert.color[0] = c3f.getX() * 255.f;
+		vert.color[1] = c3f.getY() * 255.f;
+		vert.color[2] = c3f.getZ() * 255.f;
+		numVerts++;
+	}
 	inline void nullNormals() {
 		rVert_c *v = this->getArray();
 		for(u32 i = 0; i < numVerts; i++, v++) {
