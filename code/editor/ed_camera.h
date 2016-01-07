@@ -34,7 +34,5 @@ struct camera_t
 	vec3_t	color;			// background 
 
 	vec3_c	forward, right, up;	// move matrix
-
-	vec3_c	vup, vpn, vright;	// view matrix
 };
 

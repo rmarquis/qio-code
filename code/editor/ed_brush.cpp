@@ -2211,9 +2211,14 @@ void Brush_DrawFacingAngle (edBrush_c *b, entity_s *e)
 	glLineWidth (1);
 }
 
-void DrawLight(edBrush_c *b)
+void DrawLight(edBrush_c *b, bool bIsSelected)
 {
-	rf->rbDrawEditorLightShape(b->getBounds());
+	vec3_c col;
+	if(bIsSelected)
+		col.set(1,0.7,0.7);
+	else
+		col.set(1,1,1);
+	rf->rbDrawEditorLightShape(b->getBounds(),&col);
 }
 bool Face_IsSelected(const face_s *f) {
 	for(u32 i = 0; i < g_SelectedFaces.GetSize(); i++) {
@@ -2252,7 +2257,7 @@ void Brush_Draw( edBrush_c *b , bool bIsSelected)
 		
 		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
 		{
-			DrawLight(b);
+			DrawLight(b,bIsSelected);
 			return;
 		}
 		//
