@@ -1088,7 +1088,9 @@ public:
 			glEnableVertexAttribArray(loc);
 		}
 	}
+#define DONT_AVOID_VBO_REBIND
 	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
+#ifndef DONT_AVOID_VBO_REBIND
 		if(boundVBO == verts) {
 			if(boundVBOVertexColors == bindVertexColors) {
 				if(bBoundLightmapCoordsToFirstTextureSlot == bindLightmapCoordsToFirstTextureSlot) {
@@ -1099,6 +1101,7 @@ public:
 
 			}
 		}
+#endif
 		
 		disableAllVertexAttribs();
 
@@ -1205,8 +1208,10 @@ public:
 		boundIBO = 0;
 	}
 	void bindIBO(const class rIndexBuffer_c *indices) {
+#ifndef DONT_AVOID_VBO_REBIND
 		if(boundIBO == indices)
 			return;
+#endif
 		if(indices == 0) {
 			unbindIBO();
 			return;
