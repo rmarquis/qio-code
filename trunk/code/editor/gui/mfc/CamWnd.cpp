@@ -416,7 +416,7 @@ void CCamWnd::Cam_PositionDrag()
 	if (x != m_ptCursor.x || y != m_ptCursor.y)
 	{
 		x -= m_ptCursor.x;
-		m_Camera.origin.vectorMA(m_Camera.origin, x, m_Camera.vright);
+		m_Camera.origin.vectorMA(m_Camera.origin, x, m_Camera.right);
 		y -= m_ptCursor.y;
 		m_Camera.origin[2] -= y;
     SetCursorPos(m_ptCursor.x, m_ptCursor.y);
@@ -511,7 +511,7 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
 	f = 1;
 
 	for (i=0 ; i<3 ; i++)
-		dir[i] = m_Camera.vpn[i] * f + m_Camera.vright[i] * r + m_Camera.vup[i] * u;
+		dir[i] = m_Camera.forward[i] * f + m_Camera.right[i] * r + m_Camera.up[i] * u;
 	dir.normalize();
 
 	GetCursorPos(&m_ptCursor);
@@ -542,7 +542,7 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
     {
       // something global needs to track which window is responsible for stuff
       Patch_SetView(W_CAMERA);
-		  Drag_Begin (x, y, buttons, m_Camera.vright, m_Camera.vup,	m_Camera.origin, dir);
+		  Drag_Begin (x, y, buttons, m_Camera.right, m_Camera.up,	m_Camera.origin, dir);
     }
     return;
 	}
@@ -663,8 +663,6 @@ void CCamWnd::Cam_Draw()
 {
 	edBrush_c	*brush;
 	face_s	*face;
-	float	screenaspect;
-	float	yfov;
 	double	start, end;
 	int		i;
 	
@@ -680,65 +678,28 @@ void CCamWnd::Cam_Draw()
 	//
 	QE_CheckOpenGLForErrors();
 	
+	//rf->getBackend()->set
 	//glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][0],
 	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
 	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
 	rf->getBackend()->setViewPort(m_Camera.width, m_Camera.height);
 	rf->beginFrame();
 	rf->setRenderTimeMsec(clock());
-	
-	//
-	// set up viewpoint
-	//
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity ();
-	
-	screenaspect = (float)m_Camera.width / m_Camera.height;
-	yfov = 2*atan((float)m_Camera.height / m_Camera.width)*180/M_PI;
 
-
+	// V: setup projection
 	projDef_s pd;
 	pd.zFar = 8000.f;
 	pd.zNear = 1.f;
 	pd.fovX = 90.f;
 	pd.calcFovYForViewPort(m_Camera.width,m_Camera.height);
 	rf->setupProjection3D(&pd);
+	// V: setup camera orientation
 	rf->setup3DView(m_Camera.origin,m_Camera.angles,false);
 	const axis_c &cax = rf->getCameraAxis();
-    m_Camera.vpn = m_Camera.forward = cax.getForward();
-	m_Camera.vright = m_Camera.right = -cax.getLeft();
-	m_Camera.vup = m_Camera.up = cax.getUp();
-	//gluPerspective (yfov,  screenaspect,  2,  8192);
-	//
-	//glRotatef (-90,  1, 0, 0);	    // put Z going up
-	//glRotatef (90,  0, 0, 1);	    // put Z going up
-	//glRotatef (m_Camera.angles[0],  0, 1, 0);
-	//glRotatef (-m_Camera.angles[1],  0, 0, 1);
-	//glTranslatef (-m_Camera.origin[0],  -m_Camera.origin[1],  -m_Camera.origin[2]);
-	//
-	//Cam_BuildMatrix ();
-	//
-	
-	//
-	// draw stuff
-	//
-	///*GLfloat lAmbient[] = {1.0, 1.0, 1.0, 1.0};
-	//
+    m_Camera.forward = cax.getForward();
+	m_Camera.right = -cax.getLeft();
+	m_Camera.up = cax.getUp();
 
-	//	glCullFace(GL_FRONT);
-	//	glEnable(GL_CULL_FACE);
-	//	glShadeModel (GL_FLAT);
-	//	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	//	glEnable(GL_TEXTURE_2D);
-	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//	glDisable(GL_BLEND);
-	//	glEnable(GL_DEPTH_TEST);
-	//	glDepthFunc (GL_LEQUAL);
-	//
-	//
-	//glMatrixMode(GL_TEXTURE);*/
 	
 	rf->draw3DView();
 
@@ -782,10 +743,6 @@ void CCamWnd::Cam_Draw()
 	// now draw selected brushes
 	//
 	edBrush_c* pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
-
-////	glTranslatef (g_qeglobals.d_select_translate[0], g_qeglobals.d_select_translate[1], g_qeglobals.d_select_translate[2]);
-///	glMatrixMode(GL_TEXTURE);'
-	// draw normally
 	float red[4] = { 1.f, 0.5, 0.5, 1.f };
 	rf->getBackend()->setColor4(red);
 	for (brush = pList->next ; brush != pList ; brush=brush->next)
@@ -797,69 +754,7 @@ void CCamWnd::Cam_Draw()
 		Brush_Draw(brush,true);
 	}
 	rf->getBackend()->setColor4(0);
-#if 0	
-	// blend on top
-	glMatrixMode(GL_PROJECTION);
-	
-	
-	glColor4f(1.0, 0.0, 0.0, 0.3);
-	glEnable (GL_BLEND);
-	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable (GL_TEXTURE_2D);
-	glColor4f(1.0, 1.0, 1.0, 0.5);
-
-	// it must be drawn without writing to depth buffer
-	glDepthMask(false);
-	for(u32 i = 0; i < lights.size(); i++) {
-		DrawLightRadius(lights[i]);
-	}
-	// it must be drawn without writing to depth buffer
-	glDepthMask(true);
-
-	
-	glColor4f(1.0, 0.0, 0.0, 0.3);
-
-	for (brush = pList->next ; brush != pList ; brush=brush->next)
-	{
-		if ( (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
-			continue;
-		
-		for (face=brush->getFirstFace() ; face ; face=face->next)
-			Face_Draw( face );
-	}
-	
- 
-	int nCount = g_SelectedFaces.GetSize();
-	if (nCount > 0)
-	{
-		for (int i = 0; i < nCount; i++)
-		{
-			face_s *selFace = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
-			Face_Draw(selFace);
-		}
-	}
-
-	// non-zbuffered outline
-	
-	glDisable (GL_BLEND);
-	glDisable (GL_DEPTH_TEST);
-	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	glColor3f (1, 1, 1);
-	for (brush = pList->next ; brush != pList ; brush=brush->next)
-	{
-		if (g_qeglobals.dontDrawSelectedOutlines || (brush->patchBrush && g_qeglobals.d_select_mode == sel_curvepoint))
-			continue;
-		
-		for (face=brush->getFirstFace() ; face ; face=face->next)
-			Face_Draw( face );
-
-		if(brush->owner->getEntityClass()->hasEditorFlagLight()) {
-			DrawLightRadius(brush->owner);
-		}
-	}
-	
-	
+#if 0		
 	// edge / vertex flags
 	
 	if (g_qeglobals.d_select_mode == sel_vertex)
@@ -1022,8 +917,8 @@ void CCamWnd::ShiftTexture_BrushPrimit(face_s *f, int x, int y)
 	// compute face axis base
 	ComputeAxisBase( f->plane.norm, texS, texT );
 	// compute camera view vectors
-	viewY = m_Camera.vup;
-	viewX = m_Camera.vright;
+	viewY = m_Camera.up;
+	viewX = m_Camera.right;
 	// compute best vectors
 	ComputeBest2DVector( viewX, texS, texT, XS, XT );
 	ComputeBest2DVector( viewY, texS, texT, YS, YT );

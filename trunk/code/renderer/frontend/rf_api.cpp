@@ -336,6 +336,8 @@ public:
 		bottom[2] = inside.getMins()[2];
 		rVertexBuffer_c verts;
 		vec3_c curColor(1,1,1);
+		if(color)
+			curColor = *color;
 		vec3_c vSave = curColor;
 		u16 indices[] = {
 			// top sides
