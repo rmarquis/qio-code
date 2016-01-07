@@ -2052,6 +2052,10 @@ void edBrush_c::buildWindings(bool bSnap)
 	rData->clearStaticModelData();
 	bool bAddWindingsToRData;
 	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
+		// V: This is a ghost brush for Light entity
+		bAddWindingsToRData = false;
+	} else if(pPatch) {
+		// V: This is a ghost brush for bezier patch entity
 		bAddWindingsToRData = false;
 	} else {
 		bAddWindingsToRData = true;
@@ -2115,8 +2119,14 @@ void edBrush_c::buildWindings(bool bSnap)
 			rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
 		}
 	}
+	// V: if this is a ghost-brush that's around the ligh shape, just generate the light shape.
+	// IMHO it's a very strange way for handling entities, but that's how it was done in Q3Radiant.
 	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
 		rData->buildEditorLightDiamondShape(this->getBounds(),0);
+	}
+	// V: if it's a symbiot for bezier patch...
+	if(pPatch) {
+		pPatch->buildStaticModelData(rData->getStaticModelCreator());
 	}
 }
 

@@ -81,6 +81,19 @@ void r_surface_c::addWinding(const texturedVertex_c *pVerts, u32 numVerts) {
 		indices.addIndex(firstVert+i);
 	}
 }
+void r_surface_c::addTriangle(const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+		const vec3_c &v2, const vec2_c &t2) {
+	simpleVert_s verts[3];
+	verts[0].xyz = v0;
+	verts[1].xyz = v1;
+	verts[2].xyz = v2;
+	verts[0].tc = t0;
+	verts[1].tc = t1;
+	verts[2].tc = t2;
+
+
+	addTriangle(verts[0],verts[1],verts[2]);
+}	
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 #if 0
 	// add a new triangle
@@ -1147,6 +1160,12 @@ void r_model_c::addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u
 	r_surface_c *sf = registerSurf(mat->getName());
 	sf->addWinding(verts,numVerts);
 	sf->recalcBB();
+}
+void r_model_c::addTriangle(class mtrAPI_i *mat, const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+							const vec3_c &v2, const vec2_c &t2) {
+	r_surface_c *sf = registerSurf(mat->getName());
+	sf->addTriangle(v0,t0,v1,t1,v2,t2);
+	bounds.addBox(sf->getBB());
 }
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {

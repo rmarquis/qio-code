@@ -102,6 +102,7 @@ public:
 		this->bOverlay = false;
 		this->nListID = -1;
 	}
+	void buildStaticModelData(class staticModelCreatorAPI_i *out);
 	void setSelected(bool b) {
 		bSelected = b;
 	}

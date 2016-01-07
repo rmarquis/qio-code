@@ -51,6 +51,15 @@ public:
 	virtual void addTriangleToSF(u32 surfNum, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2) = 0;
 
+	virtual void addTriangle(class mtrAPI_i *mat, const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+		const vec3_c &v2, const vec2_c &t2) { }
+	void addQuad(class mtrAPI_i *mat, const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+		const vec3_c &v2, const vec2_c &t2, const vec3_c &v3, const vec2_c &t3) {
+		addTriangle(mat,v0,t0,v1,t1,v2,t2);
+		addTriangle(mat,v2,t2,v3,t3,v0,t0);
+	}
+
+
 	virtual void resizeVerts(u32 newNumVerts) = 0;
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v) = 0;
 	virtual void setVertexPos(u32 vertexIndex, const vec3_c &newPos) = 0;
