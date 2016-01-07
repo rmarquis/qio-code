@@ -651,9 +651,7 @@ void DrawLightRadius(entity_s *e)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(at.getX(),at.getY(),at.getZ());
-	glDisable(GL_CULL_FACE);
 	glutSolidSphere(atof(s),16,16);
-	glEnable(GL_CULL_FACE);
 	//glTranslatef(-at.getX(),-at.getY(),-at.getZ());
 	glPopMatrix();
 }
@@ -700,16 +698,15 @@ void CCamWnd::Cam_Draw()
 	m_Camera.right = -cax.getLeft();
 	m_Camera.up = cax.getUp();
 
-	
+	aabb clip;
+	clip.fromPointAndRadius(m_Camera.origin,1024.f);
 	rf->draw3DView();
 
 	m_TransBrushes.clear();
 	arraySTD_c<entity_s*> lights;
 	for (brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
 	{
-		//DrawLightRadius(brush);
-		
-		if (CullBrush (brush))
+		if(brush->getBounds().intersect(clip)==false)
 			continue;
 		
 		if (FilterBrush (brush))
