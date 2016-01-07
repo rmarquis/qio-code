@@ -34,7 +34,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/mtrStageAPI.h>
 #include <api/textureAPI.h>
 #include <api/declManagerAPI.h>
+#include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <shared/parser.h>
+#include <shared/simpleModel.h>
 
 // externs
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
@@ -1927,7 +1930,7 @@ void SampleSinglePatch (float ctrl[3][3][5], float u, float v, float out[5]) {
 	}
 }
 
-void DrawSinglePatch (float ctrl[3][3][5], bool bPoints) 
+void DrawSinglePatch (float ctrl[3][3][5], bool bPoints, simpleSurface_c &out) 
 {
 	int		i, j;
 	float	u, v;
@@ -1945,108 +1948,54 @@ void DrawSinglePatch (float ctrl[3][3][5], bool bPoints)
 	// at this point we have 
 	for (i = 0 ; i < CBLOCK_SUBDIVISIONS ; i++) 
 	{
-		glBegin (GL_QUAD_STRIP);
 
-		for (j = 0 ; j <= CBLOCK_SUBDIVISIONS ; j++) 
+		for (j = 1 ; j <= CBLOCK_SUBDIVISIONS ; j++) 
 		{
-			glTexCoord2fv( verts[i+1][j] + 3 );
-			glVertex3fv( verts[i+1][j] );
-			glTexCoord2fv( verts[i][j] + 3 );
-			glVertex3fv( verts[i][j] );
+			
+			const float *st_prev_a = ( verts[i+1][j-1] + 3 );
+			const float *xyz_prev_a = ( verts[i+1][j-1] );
+			const float *st_prev_b = ( verts[i][j-1] + 3 );
+			const float *xyz_prev_b = ( verts[i][j-1] );
+
+
+			const float *st_cur_a = ( verts[i][j] + 3 );
+			const float *xyz_cur_a = ( verts[i][j] );
+			const float *st_cur_b = ( verts[i+1][j] + 3 );
+			const float *xyz_cur_b = ( verts[i+1][j] );
+
+			out.addQuad(xyz_prev_a,st_prev_a,xyz_prev_b,st_prev_b,
+				xyz_cur_a,st_cur_a,xyz_cur_b,st_cur_b);
 		}
-		glEnd ();
 	}
 }
 
 //FIXME: this routine needs to be reorganized.. should be about 1/4 the size and complexity
-void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
+void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade, simpleSurface_c &sf) {
 	int		i, j, k, l;
 	float	ctrl[3][3][5];
 
 	bool bOverlay = this->bOverlay;
 
-	if (g_PrefsDlg.m_bDisplayLists)
+	for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
 	{
-		if (this->bDirty || this->nListID <= 0)
+		for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
 		{
-			if (this->nListID <= 0)
-				this->nListID = glGenLists(1);
-			if (this->nListID > 0)
+			for ( k = 0 ; k < 3 ; k++ ) 
 			{
-				glNewList(this->nListID, GL_COMPILE_AND_EXECUTE);
-			}
-
-
-
-			if (this->type != PATCH_TRIANGLE)
-			{
-				//vec3_t *vMeshData = new vec3_t[this->width * this->height];
-				for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
+				for ( l = 0 ; l < 3 ; l++ ) 
 				{
-					for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
-					{
-						for ( k = 0 ; k < 3 ; k++ ) 
-						{
-							vec3_t vAvg;
-							vAvg[0] = vAvg[1] = vAvg[2] = 0;
-							for ( l = 0 ; l < 3 ; l++ ) 
-							{
-								ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
-								ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
-								ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
-								ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
-								ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
-							}
-						}
-						DrawSinglePatch( ctrl, bPoints );
-					}
+					ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
+					ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
+					ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
+					ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
+					ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
 				}
 			}
-			else
-			{
-				glBegin (GL_TRIANGLES);
-				glTexCoord2fv( this->ctrl[0][0].tc);
-				glVertex3fv( this->ctrl[0][0].xyz);
-				glTexCoord2fv( this->ctrl[2][0].tc);
-				glVertex3fv( this->ctrl[2][0].xyz);
-				glTexCoord2fv( this->ctrl[2][2].tc);
-				glVertex3fv( this->ctrl[2][2].xyz);
-				glEnd();
-			}
-
-			if (this->nListID > 0)
-			{
-				glEndList();
-				this->bDirty = false;
-			}
-		}
-		else
-		{
-			glCallList(this->nListID);
-		}
-	}
-	else
-	{
-		for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
-		{
-			for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
-			{
-				for ( k = 0 ; k < 3 ; k++ ) 
-				{
-					for ( l = 0 ; l < 3 ; l++ ) 
-					{
-						ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
-						ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
-						ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
-						ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].xyz[ 3 ];
-						ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].xyz[ 4 ];
-					}
-				}
-				DrawSinglePatch( ctrl, bPoints );
-			}
+			DrawSinglePatch( ctrl, bPoints, sf );
 		}
 	}
 
+#if 0
 	vec3_t* pSelectedPoints[256];
 	int nIndex = 0;
 
@@ -2065,151 +2014,151 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 	// FIXME: this bend painting code needs to be rolled up significantly as it is a cluster fuck right now
 	if (bPoints && (g_qeglobals.d_select_mode == sel_curvepoint || g_qeglobals.d_select_mode == sel_area || g_bPatchBendMode || g_bPatchInsertMode))
 	{
-	bOverlay = false;
+		bOverlay = false;
 
-	// bending or inserting
-	if (g_bPatchBendMode || g_bPatchInsertMode)
-	{
-	glPointSize(6);
-	if (g_bPatchAxisOnRow)
-	{
-		glColor3f(1, 0, 1);
-		glBegin(GL_POINTS);
-		for (i = 0; i < this->width; i++)
+		// bending or inserting
+		if (g_bPatchBendMode || g_bPatchInsertMode)
 		{
-			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
-		}
-		glEnd();
-
-		// could do all of this in one loop but it was pretty messy
-		if (g_bPatchInsertMode)
-		{
-			glColor3f(0, 0, 1);
-			glBegin(GL_POINTS);
-			for (i = 0; i < this->width; i++)
+			glPointSize(6);
+			if (g_bPatchAxisOnRow)
 			{
-				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
-				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex+1].xyz));
-			}
-			glEnd();
-		}
-		else
-		{
-			if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
-			{
-				glColor3f(0, 0, 1);
+				glColor3f(1, 0, 1);
 				glBegin(GL_POINTS);
-				if (g_nPatchBendState == BEND_SELECT_ORIGIN)
+				for (i = 0; i < this->width; i++)
 				{
-					glVertex3fv(g_vBendOrigin);
+					glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
+				}
+				glEnd();
+
+				// could do all of this in one loop but it was pretty messy
+				if (g_bPatchInsertMode)
+				{
+					glColor3f(0, 0, 1);
+					glBegin(GL_POINTS);
+					for (i = 0; i < this->width; i++)
+					{
+						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
+						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex+1].xyz));
+					}
+					glEnd();
 				}
 				else
 				{
-					for (i = 0; i < this->width; i++)
+					if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
 					{
-						if (g_bPatchLowerEdge)
+						glColor3f(0, 0, 1);
+						glBegin(GL_POINTS);
+						if (g_nPatchBendState == BEND_SELECT_ORIGIN)
 						{
-							for (j = 0; j < g_nPatchAxisIndex; j++)
-								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
+							glVertex3fv(g_vBendOrigin);
 						}
 						else
 						{
-							for (j = this->height-1; j > g_nPatchAxisIndex; j--)
-								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
+							for (i = 0; i < this->width; i++)
+							{
+								if (g_bPatchLowerEdge)
+								{
+									for (j = 0; j < g_nPatchAxisIndex; j++)
+										glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
+								}
+								else
+								{
+									for (j = this->height-1; j > g_nPatchAxisIndex; j--)
+										glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
+								}
+							}
 						}
+						glEnd();
 					}
 				}
-				glEnd();
 			}
-		}
-	}
-	else
-	{
-		glColor3f(1, 0, 1);
-		glBegin(GL_POINTS);
-		for (i = 0; i < this->height; i++)
-		{
-			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
-		}
-		glEnd();
-
-		// could do all of this in one loop but it was pretty messy
-		if (g_bPatchInsertMode)
-		{
-			glColor3f(0, 0, 1);
-			glBegin(GL_POINTS);
-			for (i = 0; i < this->height; i++)
+			else
 			{
-				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
-				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex+1][i].xyz));
-			}
-			glEnd();
-		}
-		else
-		{
-			if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
-			{
-				glColor3f(0, 0, 1);
+				glColor3f(1, 0, 1);
 				glBegin(GL_POINTS);
 				for (i = 0; i < this->height; i++)
 				{
-					if (g_nPatchBendState == BEND_SELECT_ORIGIN)
+					glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
+				}
+				glEnd();
+
+				// could do all of this in one loop but it was pretty messy
+				if (g_bPatchInsertMode)
+				{
+					glColor3f(0, 0, 1);
+					glBegin(GL_POINTS);
+					for (i = 0; i < this->height; i++)
 					{
-						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nBendOriginIndex][i].xyz));
+						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
+						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex+1][i].xyz));
 					}
-					else
+					glEnd();
+				}
+				else
+				{
+					if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
 					{
-						if (g_bPatchLowerEdge)
+						glColor3f(0, 0, 1);
+						glBegin(GL_POINTS);
+						for (i = 0; i < this->height; i++)
 						{
-							for (j = 0; j < g_nPatchAxisIndex; j++)
-								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
-						}
+							if (g_nPatchBendState == BEND_SELECT_ORIGIN)
+							{
+								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nBendOriginIndex][i].xyz));
+							}
 							else
 							{
-								for (j = this->width-1; j > g_nPatchAxisIndex; j--)
-									glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+								if (g_bPatchLowerEdge)
+								{
+									for (j = 0; j < g_nPatchAxisIndex; j++)
+										glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+								}
+								else
+								{
+									for (j = this->width-1; j > g_nPatchAxisIndex; j--)
+										glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+								}
 							}
 						}
+						glEnd();
 					}
+				}
+			}
+		}
+		else // just painting the grid for selection
+		{
+			glPointSize(6);
+			for ( i = 0 ; i < this->width ; i++ )
+			{
+				for ( j = 0 ; j < this->height ; j++ ) 
+				{
+					glBegin(GL_POINTS);
+					// FIXME: need to not do loop lookups inside here
+					int n = PointValueInMoveList(this->ctrl[i][j].xyz);
+					if (n >= 0)
+					{
+						pSelectedPoints[nIndex++] = reinterpret_cast<float(*)[3]>(&this->ctrl[i][j].xyz);
+					}
+
+					if (i & 0x01 || j & 0x01)
+						glColor3f(1, 0, 1);
+					else
+						glColor3f(0, 1, 0);
+					glVertex3fv(this->ctrl[i][j].xyz);
 					glEnd();
 				}
 			}
 		}
-	}
-	else // just painting the grid for selection
-	{
-		glPointSize(6);
-		for ( i = 0 ; i < this->width ; i++ )
+		if (nIndex > 0)
 		{
-			for ( j = 0 ; j < this->height ; j++ ) 
+			glBegin(GL_POINTS);
+			glColor3f(0, 0, 1);
+			while (nIndex-- > 0)
 			{
-				glBegin(GL_POINTS);
-				// FIXME: need to not do loop lookups inside here
-				int n = PointValueInMoveList(this->ctrl[i][j].xyz);
-				if (n >= 0)
-				{
-					pSelectedPoints[nIndex++] = reinterpret_cast<float(*)[3]>(&this->ctrl[i][j].xyz);
-				}
-
-				if (i & 0x01 || j & 0x01)
-					glColor3f(1, 0, 1);
-				else
-					glColor3f(0, 1, 0);
-				glVertex3fv(this->ctrl[i][j].xyz);
-				glEnd();
+				glVertex3fv(*pSelectedPoints[nIndex]);
 			}
+			glEnd();
 		}
-	}
-	if (nIndex > 0)
-	{
-		glBegin(GL_POINTS);
-		glColor3f(0, 0, 1);
-		while (nIndex-- > 0)
-		{
-			glVertex3fv(*pSelectedPoints[nIndex]);
-		}
-		glEnd();
-	}
 	}
 
 	if (bOverlay)
@@ -2237,56 +2186,72 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 	}
 
 	glPopAttrib();
+#endif
 
 }
 
 void patchMesh_c::drawPatchXY()
 {
-	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	if (this->bSelected) {
-		glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
-	}
-	else
-		glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_BRUSHES]);
+	//glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+	//if (this->bSelected) {
+	//	glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
+	//}
+	//else
+	//	glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_BRUSHES]);
 
-	this->drawPatchMesh(this->bSelected);
-	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	//this->drawPatchMesh(this->bSelected);
+	//glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void patchMesh_c::drawPatchCam()
 {
-	glColor3f (1,1,1);
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	if (g_bPatchWireFrame)
-	{
-		glDisable( GL_CULL_FACE );
-		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-		glDisable(GL_TEXTURE_2D);
-		this->drawPatchMesh(this->bSelected, true );
-		glEnable( GL_CULL_FACE );
+	simpleSurface_c sf;
+	drawPatchMesh(false,true,sf);
+	
+	if(bSelected) {
+		float red[4] = { 1, 0.5 , 0.5, 1 };
+		rf->getBackend()->setColor4(red);
+	} else {
+		rf->getBackend()->setColor4(0);
 	}
-	else
-	{
-		glEnable( GL_CULL_FACE );
-		glCullFace(GL_FRONT);
-		glBindTexture (GL_TEXTURE_2D, this->d_texture->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
 
-		if (this->d_texture->hasEditorTransparency() && this->d_texture->getEditorTransparency() < 1.0)
-		{
-			//glEnable ( GL_BLEND );
-			//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glColor4f(this->d_texture->getEditorColor()[0], this->d_texture->getEditorColor()[1], this->d_texture->getEditorColor()[2], this->d_texture->getEditorTransparency()); 
-		}
-		this->drawPatchMesh(this->bSelected, true );
+	// draw the polygon
+	rf->getBackend()->setupWorldSpace();
+	rf->getBackend()->setMaterial(this->d_texture);
+	rf->getBackend()->drawElements(sf.getVerts(), sf.getIndices());
 
-		glCullFace(GL_BACK);
-		//glDisable(GL_TEXTURE_2D);
-		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+	//glColor3f (1,1,1);
+	//glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-		glDisable ( GL_BLEND );
-		this->drawPatchMesh(this->bSelected, true );
-	}
+	//if (g_bPatchWireFrame)
+	//{
+	//	glDisable( GL_CULL_FACE );
+	//	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+	//	glDisable(GL_TEXTURE_2D);
+	//	this->drawPatchMesh(this->bSelected, true );
+	//	glEnable( GL_CULL_FACE );
+	//}
+	//else
+	//{
+	//	glEnable( GL_CULL_FACE );
+	//	glCullFace(GL_FRONT);
+	//	glBindTexture (GL_TEXTURE_2D, this->d_texture->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
+
+	//	if (this->d_texture->hasEditorTransparency() && this->d_texture->getEditorTransparency() < 1.0)
+	//	{
+	//		//glEnable ( GL_BLEND );
+	//		//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//		glColor4f(this->d_texture->getEditorColor()[0], this->d_texture->getEditorColor()[1], this->d_texture->getEditorColor()[2], this->d_texture->getEditorTransparency()); 
+	//	}
+	//	this->drawPatchMesh(this->bSelected, true );
+
+	//	glCullFace(GL_BACK);
+	//	//glDisable(GL_TEXTURE_2D);
+	//	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+
+	//	glDisable ( GL_BLEND );
+	//	this->drawPatchMesh(this->bSelected, true );
+	//}
 
 #if 0 // this paints normal indicators on the ctrl points
 //--glDisable (GL_DEPTH_TEST);
