@@ -55,6 +55,13 @@ public:
 	r_surface_c();
 	~r_surface_c();
 
+	void setVerts(const class rVertexBuffer_c &v) {
+		verts = v;
+	}
+	void setIndices(const class rIndexBuffer_c &i) {
+		indices = i;
+	}
+
 	u32 getNumVerts() const {
 		return verts.size();
 	}
@@ -314,6 +321,7 @@ public:
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 	virtual void addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u32 numVerts);
+	virtual void addSurface(class mtrAPI_i *mat, const class rVertexBuffer_c &v, const class rIndexBuffer_c &i);
 	// for default, first surface
 	virtual void resizeVerts(u32 newNumVerts);
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);

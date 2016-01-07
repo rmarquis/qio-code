@@ -73,6 +73,9 @@ public:
 	edBrush_c *tryMergeWith(edBrush_c *brush2, int onlyshape);
 	int moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap = true);
 
+	bool isLinkedListHeader() const {
+		return bIsLinkedListHeader;
+	}
 	void setFaces(face_s *p) {
 		brush_faces = p;
 	}

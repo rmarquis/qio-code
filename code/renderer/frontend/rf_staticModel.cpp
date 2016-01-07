@@ -25,6 +25,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_surface.h"
 #include <api/rStaticModelAPI.h>
+#include <api/materialSystemAPI.h>
+#include <api/mtrAPI.h>
+#include <api/mtrStageAPI.h>
 
 class rStaticModelImpl_c : public rStaticModelAPI_i {
 	r_model_c data;
@@ -55,6 +58,68 @@ public:
 	}
 	virtual void buildVBOsAndIBOs() { 
 		data.createVBOsAndIBOs();
+	}
+	virtual void buildEditorLightDiamondShape(const class aabb &inside, const vec3_c *color) {
+		vec3_t corners[4];
+		float midZ = inside.getMins()[2] + (inside.getMaxs()[2] - inside.getMins()[2]) / 2;
+
+		corners[0][0] = inside.getMins()[0];
+		corners[0][1] = inside.getMins()[1];
+		corners[0][2] = midZ;
+
+		corners[1][0] = inside.getMins()[0];
+		corners[1][1] = inside.getMaxs()[1];
+		corners[1][2] = midZ;
+
+		corners[2][0] = inside.getMaxs()[0];
+		corners[2][1] = inside.getMaxs()[1];
+		corners[2][2] = midZ;
+
+		corners[3][0] = inside.getMaxs()[0];
+		corners[3][1] = inside.getMins()[1];
+		corners[3][2] = midZ;
+
+		vec3_c top, bottom;
+
+		top[0] = inside.getMins()[0] + ((inside.getMaxs()[0] - inside.getMins()[0]) / 2);
+		top[1] = inside.getMins()[1] + ((inside.getMaxs()[1] - inside.getMins()[1]) / 2);
+		top[2] = inside.getMaxs()[2];
+
+		bottom = top;
+		bottom[2] = inside.getMins()[2];
+		rVertexBuffer_c verts;
+		vec3_c curColor(1,1,1);
+		if(color)
+			curColor = *color;
+		vec3_c vSave = curColor;
+		u16 indices[] = {
+			// top sides
+			0, 1, 2,
+			0, 2, 3,
+			0, 3, 4,
+			0, 4, 1,
+			// bottom sides
+			2, 1, 5,
+			3, 2, 5,
+			4, 3, 5,
+			1, 4, 5
+		};
+		verts.addVertexXYZColor3f(top,curColor);
+		for (u32 i = 0; i < 4; i++) {
+			curColor *= 0.95;
+			verts.addVertexXYZColor3f(corners[i],curColor);
+		}
+		curColor *= 0.95;
+		verts.addVertexXYZColor3f(bottom,curColor);
+
+		rIndexBuffer_c pIndices;
+		pIndices.addU16Array(indices,sizeof(indices)/sizeof(indices[0]));
+		// get an unique name so this material is used only here
+		mtrAPI_i *mat = g_ms->registerMaterial("(1 0.92016 0.80106)");
+		// HACK, so vertex colors are working...
+		((mtrStageAPI_i*)mat->getFirstColorMapStage())->setRGBGenVerex();
+
+		data.addSurface(mat,verts,pIndices);
 	}
 	void addDrawCalls() {
 

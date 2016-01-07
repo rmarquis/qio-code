@@ -31,6 +31,8 @@ public:
 	virtual void setColor(const float *rgba) = 0;
 	virtual class staticModelCreatorAPI_i *getStaticModelCreator() = 0;
 	virtual void buildVBOsAndIBOs() = 0;
+	// editor-specific feature
+	virtual void buildEditorLightDiamondShape(const class aabb &inside, const vec3_c *color) = 0;
 };
 
 #endif // __API_RSTATICMODELAPI_H__
