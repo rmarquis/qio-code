@@ -608,7 +608,7 @@ void Undo_Undo()
 			world_entity->linkBrush(pBrush);
 		}
 		//build the brush
-		//Brush_Build(pBrush);
+		Brush_Build(pBrush);
 		Select_Brush(pBrush);
 		pBrush->redoId = redo->id;
     }
