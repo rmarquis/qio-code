@@ -2317,17 +2317,6 @@ void Brush_Draw( edBrush_c *b , bool bIsSelected)
 
 
 
-void Face_Draw( face_s *f )
-{
-	int i;
-
-	if ( f->face_winding == 0 )
-		return;
-	glBegin( GL_POLYGON );
-	for ( i = 0 ; i < f->face_winding->size(); i++)
-		glVertex3fv( f->face_winding->getXYZ(i) );
-	glEnd();
-}
 
 void DrawLightRadius(entity_s *e);
 void Brush_DrawXY(edBrush_c *b, int nViewType)
@@ -2349,67 +2338,66 @@ void Brush_DrawXY(edBrush_c *b, int nViewType)
 			return;
 	}
         
+	//if (b->owner->getEntityClass()->isFixedSize())
+	//{
+	//	if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
+	//	{
+	//		vec3_t vCorners[4];
+	//		float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
 
-	if (b->owner->getEntityClass()->isFixedSize())
-	{
-		if (g_PrefsDlg.m_bNewLightDraw && (b->owner->getEntityClass()->hasEditorFlagLight()))
-		{
-			vec3_t vCorners[4];
-			float fMid = b->getMins()[2] + (b->getMaxs()[2] - b->getMins()[2]) / 2;
+	//		vCorners[0][0] = b->getMins()[0];
+	//		vCorners[0][1] = b->getMins()[1];
+	//		vCorners[0][2] = fMid;
 
-			vCorners[0][0] = b->getMins()[0];
-			vCorners[0][1] = b->getMins()[1];
-			vCorners[0][2] = fMid;
+	//		vCorners[1][0] = b->getMins()[0];
+	//		vCorners[1][1] = b->getMaxs()[1];
+	//		vCorners[1][2] = fMid;
 
-			vCorners[1][0] = b->getMins()[0];
-			vCorners[1][1] = b->getMaxs()[1];
-			vCorners[1][2] = fMid;
+	//		vCorners[2][0] = b->getMaxs()[0];
+	//		vCorners[2][1] = b->getMaxs()[1];
+	//		vCorners[2][2] = fMid;
 
-			vCorners[2][0] = b->getMaxs()[0];
-			vCorners[2][1] = b->getMaxs()[1];
-			vCorners[2][2] = fMid;
+	//		vCorners[3][0] = b->getMaxs()[0];
+	//		vCorners[3][1] = b->getMins()[1];
+	//		vCorners[3][2] = fMid;
 
-			vCorners[3][0] = b->getMaxs()[0];
-			vCorners[3][1] = b->getMins()[1];
-			vCorners[3][2] = fMid;
+	//		vec3_c vTop, vBottom;
 
-			vec3_c vTop, vBottom;
+	//		vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
+	//		vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
+	//		vTop[2] = b->getMaxs()[2];
 
-			vTop[0] = b->getMins()[0] + ((b->getMaxs()[0] - b->getMins()[0]) / 2);
-			vTop[1] = b->getMins()[1] + ((b->getMaxs()[1] - b->getMins()[1]) / 2);
-			vTop[2] = b->getMaxs()[2];
+	//		vBottom = vTop;
+	//		vBottom[2] = b->getMins()[2];
 
-			vBottom = vTop;
-			vBottom[2] = b->getMins()[2];
-
-			glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3fv(vTop);
-			glVertex3fv(vCorners[0]);
-			glVertex3fv(vCorners[1]);
-			glVertex3fv(vCorners[2]);
-			glVertex3fv(vCorners[3]);
-			glVertex3fv(vCorners[0]);
-			glEnd();
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3fv(vBottom);
-			glVertex3fv(vCorners[0]);
-			glVertex3fv(vCorners[3]);
-			glVertex3fv(vCorners[2]);
-			glVertex3fv(vCorners[1]);
-			glVertex3fv(vCorners[0]);
-			glEnd();
-			DrawBrushEntityName (b);
-			glColor3f(1,1,0);
-			DrawLightRadius(b->owner);
-			return;
-		}
-		else if (b->owner->getEntityClass()->hasEditorFlagMiscModel())
-		{
-			//if (PaintedModel(b, false))
-			//return;
-		}
-	}
+	//		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+	//		glBegin(GL_TRIANGLE_FAN);
+	//		glVertex3fv(vTop);
+	//		glVertex3fv(vCorners[0]);
+	//		glVertex3fv(vCorners[1]);
+	//		glVertex3fv(vCorners[2]);
+	//		glVertex3fv(vCorners[3]);
+	//		glVertex3fv(vCorners[0]);
+	//		glEnd();
+	//		glBegin(GL_TRIANGLE_FAN);
+	//		glVertex3fv(vBottom);
+	//		glVertex3fv(vCorners[0]);
+	//		glVertex3fv(vCorners[3]);
+	//		glVertex3fv(vCorners[2]);
+	//		glVertex3fv(vCorners[1]);
+	//		glVertex3fv(vCorners[0]);
+	//		glEnd();
+	//		DrawBrushEntityName (b);
+	//		glColor3f(1,1,0);
+	//		DrawLightRadius(b->owner);
+	//		return;
+	//	}
+	//	else if (b->owner->getEntityClass()->hasEditorFlagMiscModel())
+	//	{
+	//		//if (PaintedModel(b, false))
+	//		//return;
+	//	}
+	///}
 
 	for (face = b->getFirstFace(),order = 0 ; face ; face=face->next, order++)
 	{
@@ -2448,9 +2436,10 @@ void Brush_DrawXY(edBrush_c *b, int nViewType)
 		for (i=0 ; i<w->size() ; i++)
 			glVertex3fv(w->getXYZ(i));
 		glEnd();
+	//	rf->getBackend()->drawWinding(w->getXYZs(),w->size(),w->getStride());
 	}
 
-	DrawBrushEntityName (b);
+//	DrawBrushEntityName (b);
 
 }
 

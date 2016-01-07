@@ -132,7 +132,6 @@ friend void		Brush_Write (edBrush_c *b, class CMemFile* pMemFile);
 friend int			AddPlanept (float *f);
 friend float		SetShadeForPlane (const class plane_c &p);
 
-friend void		Face_Draw( face_s *face );
 friend void		SetFaceTexdef (edBrush_c *b, face_s *f, texdef_t *texdef, brushprimit_texdef_s *brushprimit_texdef, bool bFitScale = false);
 ;
 friend const char* Brush_GetKeyValue(edBrush_c *b, const char *pKey);
