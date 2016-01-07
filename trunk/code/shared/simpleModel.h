@@ -54,6 +54,15 @@ public:
 		addTriangle(v0,t0,v1,t1,v2,t2);
 		addTriangle(v2,t2,v3,t3,v0,t0);
 	}
+	u32 getNumIndices() const {
+		return indices.getNumIndices();
+	}
+	const vec3_c &getXYZ(u32 i) const {
+		return verts[i].xyz;
+	}
+	u32 getIndex(u32 i) const {
+		return indices[i];
+	}
 	const rIndexBuffer_c &getIndices() const {
 		return indices;
 	}

@@ -819,6 +819,7 @@ void CCamWnd::Cam_Draw()
 #endif
 	
 #endif
+	rf->getBackend()->unbindMaterial();
 	glFinish();
 	QE_CheckOpenGLForErrors();
 	//	Sys_EndWait();

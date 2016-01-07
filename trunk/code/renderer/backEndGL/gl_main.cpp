@@ -1720,6 +1720,22 @@ public:
 			glEnable(GL_STENCIL_TEST);
 		}
 	}
+	//virtual void drawElements_wireframe(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) { 
+	//	if(indices.getNumIndices() == 0)
+	//		return;
+	//	if(verts.size() == 0)
+	//		return;
+	/////	unbindMaterial();
+
+	//	bindVertexBuffer(&verts);
+	//	bindIBO(&indices);
+
+	//	showTris(false);
+
+	//	/*glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+	//	drawCurIBO();
+	//	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);*/
+	//}
 	bool bDeformsDone;
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)

@@ -2192,15 +2192,26 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade, simpleSurface_c &sf) 
 
 void patchMesh_c::drawPatchXY()
 {
-	//glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	//if (this->bSelected) {
-	//	glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
-	//}
-	//else
-	//	glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_BRUSHES]);
+	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+	if (this->bSelected)
+		glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES]);
+	else
+		glColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_BRUSHES]);
+	simpleSurface_c sf;
+	drawPatchMesh(false,true,sf);
+	glBegin(GL_TRIANGLES);
+	for(u32 i = 0; i < sf.getNumIndices(); i+= 3) {
+		const vec3_c &a = sf.getXYZ(sf.getIndex(i+0));
+		const vec3_c &b = sf.getXYZ(sf.getIndex(i+1));
+		const vec3_c &c = sf.getXYZ(sf.getIndex(i+2));
+		glVertex3fv(a);
+		glVertex3fv(b);
+		glVertex3fv(c);
+	}
+	glEnd();
 
-	//this->drawPatchMesh(this->bSelected);
-	//glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+
 }
 
 void patchMesh_c::drawPatchCam()
@@ -2275,7 +2286,7 @@ glEnable (GL_TEXTURE_2D);
 #endif
 
 
-	glPopAttrib();
+//	glPopAttrib();
 }
 
 

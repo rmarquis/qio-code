@@ -2779,6 +2779,7 @@ void CXYWnd::XY_Draw()
 	glDisable(GL_TEXTURE_1D);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
 	glColor3f(0, 0, 0);
 
   //glEnable (GL_LINE_SMOOTH);
