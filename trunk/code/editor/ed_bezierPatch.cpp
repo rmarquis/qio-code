@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/staticModelCreatorAPI.h>
 #include <shared/parser.h>
 #include <shared/simpleModel.h>
 
@@ -1968,7 +1969,70 @@ void DrawSinglePatch (float ctrl[3][3][5], bool bPoints, simpleSurface_c &out)
 		}
 	}
 }
+void DrawSinglePatch (class mtrAPI_i *mat, float ctrl[3][3][5], staticModelCreatorAPI_i *out) 
+{
+	int		i, j;
+	float	u, v;
+	float	verts[CBLOCK_SUBDIVISIONS+1][CBLOCK_SUBDIVISIONS+1][5];
 
+	for (i = 0 ; i <= CBLOCK_SUBDIVISIONS ; i++) 
+	{
+		for (j = 0 ; j <= CBLOCK_SUBDIVISIONS ; j++) 
+		{
+			u = (float)i / CBLOCK_SUBDIVISIONS;
+			v = (float)j / CBLOCK_SUBDIVISIONS;
+			SampleSinglePatch (ctrl, u, v, verts[i][j]);
+		}
+	}
+	// at this point we have 
+	for (i = 0 ; i < CBLOCK_SUBDIVISIONS ; i++) 
+	{
+
+		for (j = 1 ; j <= CBLOCK_SUBDIVISIONS ; j++) 
+		{
+			
+			const float *st_prev_a = ( verts[i+1][j-1] + 3 );
+			const float *xyz_prev_a = ( verts[i+1][j-1] );
+			const float *st_prev_b = ( verts[i][j-1] + 3 );
+			const float *xyz_prev_b = ( verts[i][j-1] );
+
+
+			const float *st_cur_a = ( verts[i][j] + 3 );
+			const float *xyz_cur_a = ( verts[i][j] );
+			const float *st_cur_b = ( verts[i+1][j] + 3 );
+			const float *xyz_cur_b = ( verts[i+1][j] );
+
+			out->addQuad(mat, xyz_prev_a,st_prev_a,xyz_prev_b,st_prev_b,
+				xyz_cur_a,st_cur_a,xyz_cur_b,st_cur_b);
+		}
+	}
+}
+
+void patchMesh_c::buildStaticModelData(class staticModelCreatorAPI_i *out) {
+	int		i, j, k, l;
+	float	ctrl[3][3][5];
+
+	bool bOverlay = this->bOverlay;
+
+	for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
+	{
+		for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
+		{
+			for ( k = 0 ; k < 3 ; k++ ) 
+			{
+				for ( l = 0 ; l < 3 ; l++ ) 
+				{
+					ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
+					ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
+					ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
+					ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
+					ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
+				}
+			}
+			DrawSinglePatch(d_texture, ctrl, out);
+		}
+	}
+}
 //FIXME: this routine needs to be reorganized.. should be about 1/4 the size and complexity
 void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade, simpleSurface_c &sf) {
 	int		i, j, k, l;

@@ -139,6 +139,8 @@ public:
 		indices.fromU32Array(newNumIndices,newFirstIndex);
 	}
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	void addTriangle(const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+							const vec3_c &v2, const vec2_c &t2);
 	void getTriangle(u32 triNum, vec3_c &v0, vec3_c &v1, vec3_c &v2) const;
 	void addPoly(const struct simplePoly_s &poly);
 	void addQuad(const rVert_c &v0, const rVert_c &v1, const rVert_c &v2, const rVert_c &v3);
@@ -320,6 +322,8 @@ public:
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	virtual void addTriangle(class mtrAPI_i *mat, const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
+		const vec3_c &v2, const vec2_c &t2);
 	virtual void addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u32 numVerts);
 	virtual void addSurface(class mtrAPI_i *mat, const class rVertexBuffer_c &v, const class rIndexBuffer_c &i);
 	// for default, first surface
