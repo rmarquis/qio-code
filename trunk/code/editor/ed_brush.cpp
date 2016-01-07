@@ -266,6 +266,8 @@ void DrawBrushEntityName (edBrush_c *b)
 // brush grouping: update the group treeview if necessary
 void Brush_Build( edBrush_c *b, bool bSnap, bool bMarkMap, bool bConvert )
 {
+	if(b->isLinkedListHeader())
+		return;
 	bool		bLocalConvert = false;
 
 #ifdef _DEBUG
@@ -2048,6 +2050,12 @@ void edBrush_c::buildWindings(bool bSnap)
 		rData = rf->allocStaticModel();
 	}
 	rData->clearStaticModelData();
+	bool bAddWindingsToRData;
+	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
+		bAddWindingsToRData = false;
+	} else {
+		bAddWindingsToRData = true;
+	}
 
 	this->makeFacePlanes();
 
@@ -2103,7 +2111,12 @@ void edBrush_c::buildWindings(bool bSnap)
 		    for (i=0 ; i<w->size() ; i++)
 				face->calcTextureCoordinates(w->getPoint(i));
 		}
-		rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
+		if(bAddWindingsToRData) {
+			rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
+		}
+	}
+	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
+		rData->buildEditorLightDiamondShape(this->getBounds(),0);
 	}
 }
 

@@ -324,9 +324,11 @@ mtrIMPL_c *MAT_RegisterMaterial(const char *inMatName) {
 	// strip the image name extension (if any)
 	str matName = inMatName;
 	const char *ext = matName.getExt();
-	// strip non-vmt extensions
-	if(ext && _stricmp(ext,"vmt")) {
-		matName.stripExtension();
+	// strip non-vmt extensions, but don't touch single-color materials
+	if(inMatName[0] != '(') {
+		if(ext && _stricmp(ext,"vmt")) {
+			matName.stripExtension();
+		}
 	}
 	mtrIMPL_c *ret = materials.getEntry(matName);
 	if(ret) {

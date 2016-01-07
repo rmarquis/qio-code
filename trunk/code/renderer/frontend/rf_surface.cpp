@@ -72,6 +72,7 @@ void r_surface_c::addWinding(const texturedVertex_c *pVerts, u32 numVerts) {
 	for(u32 i = 0; i < numVerts; i++) {
 		verts[firstVert+i].xyz = pVerts[i].xyz;
 		verts[firstVert+i].tc = pVerts[i].st;
+		bounds.addPoint(verts[firstVert+i].xyz);
 	}
 	//indices.resize(firstIndex+(numVerts-2)*3);
 	for(u32 i = 2; i < numVerts; i++) {
@@ -1135,9 +1136,17 @@ void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) cons
 		cb->perStringCallback(surfs[i].getMatName());
 	}
 }
+void r_model_c::addSurface(class mtrAPI_i *mat, const class rVertexBuffer_c &v, const class rIndexBuffer_c &i) {
+	r_surface_c *sf = registerSurf(mat->getName());
+	sf->setVerts(v);
+	sf->setIndices(i);
+	sf->recalcBB();
+	bounds.addBox(sf->getBB());
+}
 void r_model_c::addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u32 numVerts) {
 	r_surface_c *sf = registerSurf(mat->getName());
 	sf->addWinding(verts,numVerts);
+	sf->recalcBB();
 }
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {

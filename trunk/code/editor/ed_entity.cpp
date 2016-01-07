@@ -222,6 +222,8 @@ entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 			}
 		}
 		
+		// V: NOTE: here is created a ghost brush for fixed-size entity
+		// GHOST BRUSH CREATION IS HERE!
 				texdef_t td;
 				td.setName(e->getEditorMaterialName());
 		b = Brush_Create (mins, maxs, &td);
