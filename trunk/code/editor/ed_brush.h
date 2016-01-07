@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __EDITOR_BRUSH_H__
 
 #include <shared/brush.h>
+#include <api/rStaticModelAPI.h>
 
 #define MAX_WORLD_COORD		( 128*1024 )
 #define MIN_WORLD_COORD		( -128*1024 )
@@ -38,6 +39,7 @@ extern int g_allocatedCounter_brush;
 class edBrush_c : public brush_c
 {
 	bool bIsLinkedListHeader;
+	class rStaticModelAPI_i *rData;
 public:
 	class edBrush_c	*prev, *next;	// links in active/selected
 	class edBrush_c	*oprev, *onext;	// links in entity
@@ -58,30 +60,9 @@ public:
 	int redoId;						//redo ID
 	int ownerId;					//entityId of the owner entity for undo
 
-	edBrush_c(bool bIsLinkedListHeader = true) {
-		undoId = 0;
-		redoId = 0;
-		ownerId = 0;
-		pUndoOwner = 0;
-		pPatch = 0;
-		prev = 0;
-		next = 0;
-		oprev = 0;
-		onext = 0;
-		owner = 0;
-		patchBrush = 0;
-		hiddenBrush = 0;
-		terrainBrush = 0;
-		this->bIsLinkedListHeader = bIsLinkedListHeader;
-		// allocated counter is only used for debugging
-		if(bIsLinkedListHeader==false) 
-			g_allocatedCounter_brush++;
-	}
-	~edBrush_c() {
-		// allocated counter is only used for debugging
-		if(bIsLinkedListHeader==false) 
-			g_allocatedCounter_brush--;
-	}
+	edBrush_c(bool bIsLinkedListHeader = true);
+	~edBrush_c();
+	void onBrushSelectedStateChanged(bool newBIsSelected);
 	friend edBrush_c *Brush_Parse (class parser_c &p);
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 	edBrush_c *fullClone();

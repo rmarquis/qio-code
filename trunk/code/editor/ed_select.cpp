@@ -325,6 +325,11 @@ void Select_Deselect (bool bDeselectFaces)
 
   g_pParentWnd->ActiveXY()->UndoClear();
 
+
+  // clear selected flags
+	for (b = selected_brushes.next ; b && b != &selected_brushes ; b=b->next)
+		b->onBrushSelectedStateChanged(false);
+
 	g_qeglobals.d_select_count = 0;
 	g_qeglobals.d_num_move_points = 0;
 	b = selected_brushes.next;
@@ -334,8 +339,8 @@ void Select_Deselect (bool bDeselectFaces)
 		if (bDeselectFaces)
 		{
 			g_SelectedFaces.RemoveAll();
-      g_SelectedFaceBrushes.RemoveAll();
-      //selected_face = NULL;
+			  g_SelectedFaceBrushes.RemoveAll();
+			 //selected_face = NULL;
 		}
  		Sys_UpdateWindows (W_ALL);
 		return;

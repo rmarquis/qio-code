@@ -57,6 +57,8 @@ public:
 	virtual void resizeIndices(u32 newNumIndices) = 0;
 	virtual void setIndex(u32 indexNum, u32 value) = 0;
 
+	virtual void addWinding(class mtrAPI_i *mat, const class texturedVertex_c *verts, u32 numVerts) { }
+
 	virtual void clear() = 0;
 
 	virtual void setAllVertexColors(byte r, byte g, byte b, byte a) {

@@ -1835,6 +1835,9 @@ void CXYWnd::NewBrushDrag (int x, int y)
 
 	Brush_Build( n );
 
+	// ensure tha's marked as selected
+	n->onBrushSelectedStateChanged(true);
+
   //	Sys_UpdateWindows (W_ALL);
 	Sys_UpdateWindows (W_XY| W_CAMERA);
 

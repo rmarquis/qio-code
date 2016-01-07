@@ -114,6 +114,7 @@ public:
 		nv.xyz = xyz;
 		nv.tc.set(tX,tY);
 	}
+	void addWinding(const texturedVertex_c *verts, u32 numVerts);
 	void addIndex(u32 idx) {
 		indices.addIndex(idx);
 	}
@@ -312,6 +313,7 @@ public:
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
+	virtual void addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u32 numVerts);
 	// for default, first surface
 	virtual void resizeVerts(u32 newNumVerts);
 	virtual void setVert(u32 vertexIndex, const struct simpleVert_s &v);

@@ -659,6 +659,56 @@ BOOL FilterBrush(edBrush_c *pb);
 
 void CCamWnd::Cam_Draw()
 {
+	double	start, end;
+
+	if (!active_brushes.next)
+		return;	// not valid yet
+	
+	if (m_Camera.timing)
+		start = Sys_DoubleTime ();
+
+
+	//
+	// clear
+	//
+	QE_CheckOpenGLForErrors();
+	
+	//rf->getBackend()->set
+	//glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][0],
+	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
+	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
+	rf->getBackend()->setViewPort(m_Camera.width, m_Camera.height);
+	rf->beginFrame();
+	rf->setRenderTimeMsec(clock());
+
+	// V: setup projection
+	projDef_s pd;
+	pd.zFar = 8000.f;
+	pd.zNear = 1.f;
+	pd.fovX = 90.f;
+	pd.calcFovYForViewPort(m_Camera.width,m_Camera.height);
+	rf->setupProjection3D(&pd);
+	// V: setup camera orientation
+	rf->setup3DView(m_Camera.origin,m_Camera.angles,false);
+	const axis_c &cax = rf->getCameraAxis();
+    m_Camera.forward = cax.getForward();
+	m_Camera.right = -cax.getLeft();
+	m_Camera.up = cax.getUp();
+
+	rf->draw3DView();
+
+	rf->getBackend()->unbindMaterial();
+	glFinish();
+	QE_CheckOpenGLForErrors();
+	//	Sys_EndWait();
+	if (m_Camera.timing)
+	{
+		end = Sys_DoubleTime ();
+		Sys_Printf ("Camera: %i ms\n", (int)(1000*(end-start)));
+	}
+}
+void CCamWnd::Cam_Draw_Old()
+{
 	edBrush_c	*brush;
 	face_s	*face;
 	double	start, end;

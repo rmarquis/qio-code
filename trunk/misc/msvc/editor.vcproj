@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="editor"
 	ProjectGUID="{2F58DECA-EBEA-4138-B980-BA511AD46B2A}"
 	RootNamespace="editor"
@@ -686,6 +686,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\math\vec3.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="api"
+			>
+			<File
+				RelativePath="..\..\code\api\rStaticModelAPI.h"
 				>
 			</File>
 		</Filter>

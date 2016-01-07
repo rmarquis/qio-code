@@ -45,6 +45,9 @@ public:
 	static int planesConcave(texturedWinding_c *w1, texturedWinding_c *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
 
 
+	const texturedVertex_c *getPoints() const {
+		return points.getArray();
+	}
 	const vec2_c *getTCs() const {
 		return &points[0].st;
 	}
