@@ -66,6 +66,7 @@ public:
 	friend edBrush_c *Brush_Parse (class parser_c &p);
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
 	edBrush_c *fullClone();
+	void rebuildRendererStaticModelData();
 	void buildWindings(bool bSnap = true);
 	void rebuildBrush(vec3_t vMins, vec3_t vMaxs);
 	void parseBrushPrimit(class parser_c &p);

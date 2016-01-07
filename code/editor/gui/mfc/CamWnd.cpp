@@ -648,7 +648,7 @@ void DrawLightRadius(entity_s *e)
 	const vec3_c &at = e->getOrigin();	
 
 	
-	glMatrixMode(GL_MODELVIEW);
+///	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(at.getX(),at.getY(),at.getZ());
 	glutSolidSphere(atof(s),16,16);
@@ -695,9 +695,40 @@ void CCamWnd::Cam_Draw()
 	m_Camera.right = -cax.getLeft();
 	m_Camera.up = cax.getUp();
 
+	// V: this will draw all Qio rStaticModelAPI_i instances,
+	// which are used now for brushes, patches and light shapes.
 	rf->draw3DView();
 
 	rf->getBackend()->unbindMaterial();
+
+
+	if (g_qeglobals.d_select_mode == sel_vertex)
+	{
+		glPointSize (4);
+		glColor3f (0,1,0);
+		glBegin (GL_POINTS);
+		for (u32 i=0 ; i<g_qeglobals.d_numpoints ; i++)
+			glVertex3fv (g_qeglobals.d_points[i]);
+		glEnd ();
+		glPointSize (1);
+	}
+	else if (g_qeglobals.d_select_mode == sel_edge)
+	{
+		float	*v1, *v2;
+		
+		glPointSize (4);
+		glColor3f (0,0,1);
+		glBegin (GL_POINTS);
+		for (u32 i=0 ; i<g_qeglobals.d_numedges ; i++)
+		{
+			v1 = g_qeglobals.d_points[g_qeglobals.d_edges[i].p1];
+			v2 = g_qeglobals.d_points[g_qeglobals.d_edges[i].p2];
+			glVertex3f ( (v1[0]+v2[0])*0.5,(v1[1]+v2[1])*0.5,(v1[2]+v2[2])*0.5);
+		}
+		glEnd ();
+		glPointSize (1);
+	}
+
 	glFinish();
 	QE_CheckOpenGLForErrors();
 	//	Sys_EndWait();

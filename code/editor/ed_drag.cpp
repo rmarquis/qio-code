@@ -537,6 +537,8 @@ void MoveSelection (vec3_t move)
 			for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
 			{
 				success &= b->moveVertex(g_qeglobals.d_move_points[0], move, end, true);
+				// V: force updating Qio static model
+				b->rebuildRendererStaticModelData();
 			}
 			if (success)
 				*((vec3_c*)g_qeglobals.d_move_points[0]) = end;

@@ -2031,6 +2031,28 @@ void Brush_SideSelect (edBrush_c *b, vec3_t origin, vec3_t dir
 	
 }
 
+void edBrush_c::rebuildRendererStaticModelData() {
+	if(rData == 0) {
+		rData = rf->allocStaticModel();
+	}
+	rData->clearStaticModelData();
+	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
+		// V: if this is a ghost-brush that's around the ligh shape, just generate the light shape.
+		// IMHO it's a very strange way for handling entities, but that's how it was done in Q3Radiant.
+		rData->buildEditorLightDiamondShape(this->getBounds(),0);
+	} else if(pPatch) {
+		// V: This is a ghost brush for bezier patch entity
+		// V: if it's a symbiot for bezier patch...
+		pPatch->buildStaticModelData(rData->getStaticModelCreator());
+	} else {
+		for (face_s *face = this->getFirstFace(); face ; face=face->next) {
+			texturedWinding_c *w = face->face_winding;
+			if(w == 0)
+				continue;
+			rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
+		}
+	}
+}
 void edBrush_c::buildWindings(bool bSnap)
 {
 	texturedWinding_c *w;
@@ -2046,20 +2068,6 @@ void edBrush_c::buildWindings(bool bSnap)
 	// clear the mins/maxs bounds
 	this->bounds.clear();
 
-	if(rData == 0) {
-		rData = rf->allocStaticModel();
-	}
-	rData->clearStaticModelData();
-	bool bAddWindingsToRData;
-	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
-		// V: This is a ghost brush for Light entity
-		bAddWindingsToRData = false;
-	} else if(pPatch) {
-		// V: This is a ghost brush for bezier patch entity
-		bAddWindingsToRData = false;
-	} else {
-		bAddWindingsToRData = true;
-	}
 
 	this->makeFacePlanes();
 
@@ -2115,19 +2123,8 @@ void edBrush_c::buildWindings(bool bSnap)
 		    for (i=0 ; i<w->size() ; i++)
 				face->calcTextureCoordinates(w->getPoint(i));
 		}
-		if(bAddWindingsToRData) {
-			rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
-		}
 	}
-	// V: if this is a ghost-brush that's around the ligh shape, just generate the light shape.
-	// IMHO it's a very strange way for handling entities, but that's how it was done in Q3Radiant.
-	if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
-		rData->buildEditorLightDiamondShape(this->getBounds(),0);
-	}
-	// V: if it's a symbiot for bezier patch...
-	if(pPatch) {
-		pPatch->buildStaticModelData(rData->getStaticModelCreator());
-	}
+	rebuildRendererStaticModelData();
 }
 
 void Brush_SnapToGrid(edBrush_c *pb)

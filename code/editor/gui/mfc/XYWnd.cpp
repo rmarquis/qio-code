@@ -2754,6 +2754,8 @@ void CXYWnd::XY_Draw()
 	//
 	// set up viewpoint
 	//
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity ();
 	glMatrixMode(GL_PROJECTION);
   glLoadIdentity ();
 
