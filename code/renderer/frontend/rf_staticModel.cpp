@@ -22,27 +22,53 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // rf_staticModel.cpp
+#include "rf_local.h"
 #include "rf_surface.h"
+#include <api/rStaticModelAPI.h>
 
-class rStaticModelAPI_i {
-
-public:
-	virtual void clearStaticModelData() = 0;
-	virtual staticModelCreatorAPI_i *getStaticModelCreator() = 0;
-};
 class rStaticModelImpl_c : public rStaticModelAPI_i {
 	r_model_c data;
+	float color[4];
+	bool bHasCustomColor;
 public:
-
+	rStaticModelImpl_c() {
+		bHasCustomColor = false;
+	}
 	virtual void clearStaticModelData() {
 		data.clear();
+	}
+	virtual void setColor(const float *rgba) {
+		if(rgba) {
+			memcpy(color,rgba,sizeof(color));
+			// hack
+			color[0] *= 255.f;
+			color[1] *= 255.f;
+			color[2] *= 255.f;
+			color[3] *= 255.f;
+			bHasCustomColor = true;
+		} else {
+			bHasCustomColor = false;
+		}
 	}
 	virtual staticModelCreatorAPI_i *getStaticModelCreator() {
 		return &data;
 	}
-
+	virtual void buildVBOsAndIBOs() { 
+		data.createVBOsAndIBOs();
+	}
 	void addDrawCalls() {
-		data.addDrawCalls();
+
+
+		if(rf_camera.getFrustum().cull(data.getBounds()) == CULL_OUT) {
+			return;
+		}
+
+
+		if(bHasCustomColor) {
+			data.addDrawCalls(0,false,(vec3_c*)color);
+		} else {
+			data.addDrawCalls();
+		}
 	}
 };
 

@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/parser.h> // for Doom3 .proc surfaces parsing
 #include <shared/autoCvar.h>
+#include <shared/texturedVertex.h>
 #include "rf_decalProjector.h"
 #include <shared/simpleTexturedPoly.h>
 #include <api/colMeshBuilderAPI.h>
@@ -63,6 +64,21 @@ r_surface_c::r_surface_c() {
 }
 r_surface_c::~r_surface_c() {
 	this->clear();
+}
+void r_surface_c::addWinding(const texturedVertex_c *pVerts, u32 numVerts) {
+	u32 firstVert = verts.size();
+	///u32 firstIndex = indices.getNumIndices();
+	verts.resize(firstVert+numVerts);
+	for(u32 i = 0; i < numVerts; i++) {
+		verts[firstVert+i].xyz = pVerts[i].xyz;
+		verts[firstVert+i].tc = pVerts[i].st;
+	}
+	//indices.resize(firstIndex+(numVerts-2)*3);
+	for(u32 i = 2; i < numVerts; i++) {
+		indices.addIndex(firstVert);
+		indices.addIndex(firstVert+i-1);
+		indices.addIndex(firstVert+i);
+	}
 }
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
 #if 0
@@ -1118,6 +1134,10 @@ void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) cons
 	for(u32 i = 0; i < surfs.size(); i++) {
 		cb->perStringCallback(surfs[i].getMatName());
 	}
+}
+void r_model_c::addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u32 numVerts) {
+	r_surface_c *sf = registerSurf(mat->getName());
+	sf->addWinding(verts,numVerts);
 }
 void r_model_c::addTriangle(const char *matName, const struct simpleVert_s &v0,
 							const struct simpleVert_s &v1, const struct simpleVert_s &v2) {

@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/entityDeclAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/staticModelCreatorAPI.h>
 #include <math/math.h>
 #include <shared/parser.h>
 #include <shared/textureAxisFromNormal.h>
@@ -1717,6 +1718,15 @@ void	Brush_AddToList (edBrush_c *b, edBrush_c *list)
 	if (b->next || b->prev)
 		Error ("Brush_AddToList: allready linked");
 	
+	// selecteing
+	if(list == &selected_brushes) {
+		b->onBrushSelectedStateChanged(true);
+	}
+	// dselecting
+	if(list == &active_brushes) {
+		b->onBrushSelectedStateChanged(false);
+	}
+
 	if (list == &selected_brushes || list == &active_brushes)
 	{
 		if (b->patchBrush && list == &selected_brushes)
@@ -2034,6 +2044,11 @@ void edBrush_c::buildWindings(bool bSnap)
 	// clear the mins/maxs bounds
 	this->bounds.clear();
 
+	if(rData == 0) {
+		rData = rf->allocStaticModel();
+	}
+	rData->clearStaticModelData();
+
 	this->makeFacePlanes();
 
 	face = this->getFirstFace();
@@ -2088,6 +2103,7 @@ void edBrush_c::buildWindings(bool bSnap)
 		    for (i=0 ; i<w->size() ; i++)
 				face->calcTextureCoordinates(w->getPoint(i));
 		}
+		rData->getStaticModelCreator()->addWinding(face->d_texture,w->getPoints(),w->size());
 	}
 }
 
@@ -2106,6 +2122,45 @@ void Brush_SnapToGrid(edBrush_c *pb)
 	Brush_Build(pb);
 }
 
+edBrush_c::edBrush_c(bool bIsLinkedListHeader) {
+	undoId = 0;
+	redoId = 0;
+	ownerId = 0;
+	pUndoOwner = 0;
+	pPatch = 0;
+	prev = 0;
+	next = 0;
+	oprev = 0;
+	onext = 0;
+	owner = 0;
+	patchBrush = 0;
+	hiddenBrush = 0;
+	terrainBrush = 0;
+	rData = 0;
+	this->bIsLinkedListHeader = bIsLinkedListHeader;
+	// allocated counter is only used for debugging
+	if(bIsLinkedListHeader==false) 
+		g_allocatedCounter_brush++;
+}
+edBrush_c::~edBrush_c() {
+	if(rData) {
+		rf->removeStaticModel(rData);
+		rData = 0;
+	}
+	// allocated counter is only used for debugging
+	if(bIsLinkedListHeader==false) 
+		g_allocatedCounter_brush--;
+}
+void edBrush_c::onBrushSelectedStateChanged(bool newBIsSelected) {
+	if(rData) {
+		float r[4] = { 1, 0.7, 0.7, 1 };
+		if(newBIsSelected) {
+			rData->setColor(r);
+		} else {
+			rData->setColor(0);
+		}
+	} 
+}
 void edBrush_c::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 {
 	for (face_s* f=this->getFirstFace() ; f ; f=f->next)
