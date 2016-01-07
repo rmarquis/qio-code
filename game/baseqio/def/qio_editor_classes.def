@@ -1,0 +1,21 @@
+
+
+entityDef light
+{
+	"bEditorFlagLight"	"1"
+}
+
+
+entityDef misc_model
+{
+	"bShouldHaveModel"	"1"
+}
+
+entityDef prop_physics
+{
+	"bShouldHaveModel"	"1"
+}
+
+
+
+

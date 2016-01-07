@@ -1074,7 +1074,7 @@ void AssignModel()
 	CString strBasePath = "baseqio/";//g_qeglobals.d_project_entity->getKeyValue("basepath");
   AddSlash(strBasePath);
   CString strPath = strBasePath;
-  strPath += "models\\mapobjects\\";
+  strPath += "models\\";
 
   CFileDialog dlgFile(TRUE, NULL, NULL, OFN_OVERWRITEPROMPT, "Model files (*.md3)|*.md3||", g_pParentWnd);
   dlgFile.m_ofn.lpstrInitialDir = strPath;
