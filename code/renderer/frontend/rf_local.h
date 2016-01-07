@@ -123,6 +123,11 @@ bool RF_LoadWorldMapCubeMaps(const char *mapName);
 class rCubeMap_c *RF_FindNearestEnvCubeMap(const class vec3_c &p);
 class cubeMapAPI_i *RF_FindNearestEnvCubeMap_Image(const class vec3_c &p);
 
+// rf_staticModel.cpp
+class rStaticModelAPI_i *RF_AllocStaticModel();
+void RF_RemoveStaticModel(class rStaticModelAPI_i *ent);
+void RF_AddStaticModelDrawCalls();
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;
