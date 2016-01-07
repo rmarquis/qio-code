@@ -137,12 +137,6 @@ int Patch_MemorySize(patchMesh_c *p)
 }
 
 
-
-/*
-===============
-InterpolateInteriorPoints
-===============
-*/
 void patchMesh_c::interpolateInteriorPoints() 
 {
 	int		i, j, k;
@@ -316,13 +310,6 @@ void patchMesh_c::meshNormals()
 }
 
 
-
-
-/*
-==================
-Patch_CalcBounds
-==================
-*/
 void patchMesh_c::calcPatchBounds(vec3_c& vMin, vec3_c& vMax)
 {
 	vMin[0] = vMin[1] = vMin[2] = 99999;
@@ -463,9 +450,6 @@ void patchMesh_c::rebuildPatch()
 }
 
 /*
-==================
-AddBrushForPatch
-==================
  adds a patch brush and ties it to this patch id
 */
 edBrush_c* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
@@ -510,11 +494,6 @@ edBrush_c* AddBrushForPatch(patchMesh_c *pm, bool bLinkToWorld )
 
 // very approximate widths and heights
 
-/*
-==================
-Patch_Width
-==================
-*/
 float patchMesh_c::calcPatchWidth()
 {
 	float f = 0;
@@ -540,12 +519,6 @@ float patchMesh_c::calcPatchWidthDistanceTo(int j)
 }
 
 
-
-/*
-==================
-Patch_Height
-==================
-*/
 float patchMesh_c::calcPatchHeight()
 {
 	float f = 0;
@@ -573,9 +546,6 @@ float patchMesh_c::calcPatchHeightDistanceTo(int j)
 
 
 /*
-==================
-Patch_Naturalize
-==================
 texture = TotalTexture * LengthToThisControlPoint / TotalControlPointLength
 
 dist( this control point to first control point ) / dist ( last control pt to first)
@@ -1351,11 +1321,6 @@ void GenerateEndCaps(edBrush_c *brushParent, bool bBevel, bool bEndcap, bool bIn
 }
 
 
-/*
-===============
-BrushToPatchMesh
-===============
-*/
 void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int nHeight)
 {
 	edBrush_c		*b;
@@ -1582,11 +1547,6 @@ void Patch_BrushToMesh(bool bCone, bool bBevel, bool bEndcap, bool bSquare, int 
 
 }
 
-/*
-==================
-Patch_GenericMesh
-==================
-*/
 edBrush_c* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDeleteSource, bool bOverride)
 {
 	int i,j;
@@ -1656,11 +1616,6 @@ edBrush_c* Patch_GenericMesh(int nWidth, int nHeight, int nOrientation, bool bDe
 	//g_qeglobals.d_select_mode = sel_curvepoint;
 }
 
-/*
-==================
-PointInMoveList
-==================
-*/
 int PointInMoveList(float *pf)
 {
 	for (int i = 0; i < g_qeglobals.d_num_move_points; i++)
@@ -1671,11 +1626,6 @@ int PointInMoveList(float *pf)
 	return -1;
 }
 
-/*
-==================
-PointValueInMoveList
-==================
-*/
 int PointValueInMoveList(const vec3_c &v)
 {
 	for (int i = 0; i < g_qeglobals.d_num_move_points; i++)
@@ -1687,11 +1637,6 @@ int PointValueInMoveList(const vec3_c &v)
 }
 
 
-/*
-==================
-RemovePointFromMoveList
-==================
-*/
 void RemovePointFromMoveList(const vec3_c &v)
 {
 	int n;
@@ -1705,11 +1650,6 @@ void RemovePointFromMoveList(const vec3_c &v)
 	}
 }
 
-/*
-==================
-ColumnSelected
-==================
-*/
 bool ColumnSelected(patchMesh_c* p, int nCol)
 {
 	for (int i = 0; i < p->height; i++)
@@ -1720,11 +1660,6 @@ bool ColumnSelected(patchMesh_c* p, int nCol)
 	return true;
 }
 
-/*
-==================
-AddPoint
-==================
-*/
 static int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
 	int		i;
 	
@@ -1825,11 +1760,6 @@ void AddPoint(patchMesh_c* p, vec3_t v, bool bWeldOrDrill = true)
 #endif
 }
 
-/*
-==================
-SelectRow
-==================
-*/
 void SelectRow(patchMesh_c* p, int nRow, bool bMulti)
 {
 	if (!bMulti)
@@ -1841,11 +1771,6 @@ void SelectRow(patchMesh_c* p, int nRow, bool bMulti)
 	//Sys_Printf("Selected Row %d\n", nRow);
 }
 
-/*
-==================
-SelectColumn
-==================
-*/
 void SelectColumn(patchMesh_c* p, int nCol, bool bMulti)
 {
 	if (!bMulti)
@@ -1857,12 +1782,6 @@ void SelectColumn(patchMesh_c* p, int nCol, bool bMulti)
 	//Sys_Printf("Selected Col %d\n", nCol);
 }
 
-
-/*
-==================
-AddPatchMovePoint
-==================
-*/
 void AddPatchMovePoint(const vec3_c &v, bool bMulti, bool bFull)
 {
 	if (!g_bSameView && !bMulti && !bFull)
@@ -1925,11 +1844,6 @@ void AddPatchMovePoint(const vec3_c &v, bool bMulti, bool bFull)
 	}
 }
 
-/*
-==================
-Patch_UpdateSelected
-==================
-*/
 void Patch_UpdateSelected(vec3_t vMove)
 {
   int i, j;
@@ -1972,12 +1886,6 @@ void Patch_UpdateSelected(vec3_t vMove)
 }
 
 
-
-/*
-===============
-SampleSinglePatch
-===============
-*/
 void SampleSinglePatch (float ctrl[3][3][5], float u, float v, float out[5]) {
 	float	vCtrl[3][5];
 	int		vPoint;
@@ -2019,11 +1927,6 @@ void SampleSinglePatch (float ctrl[3][3][5], float u, float v, float out[5]) {
 	}
 }
 
-/*
-===================
-DrawSinglePatch
-===================
-*/
 void DrawSinglePatch (float ctrl[3][3][5], bool bPoints) 
 {
 	int		i, j;
@@ -2053,7 +1956,6 @@ void DrawSinglePatch (float ctrl[3][3][5], bool bPoints)
 		}
 		glEnd ();
 	}
-
 }
 
 //FIXME: this routine needs to be reorganized.. should be about 1/4 the size and complexity
@@ -2065,63 +1967,63 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 
 	if (g_PrefsDlg.m_bDisplayLists)
 	{
-	if (this->bDirty || this->nListID <= 0)
-	{
-	if (this->nListID <= 0)
-	this->nListID = glGenLists(1);
-	if (this->nListID > 0)
-	{
-		glNewList(this->nListID, GL_COMPILE_AND_EXECUTE);
-	}
-
-
-
-	if (this->type != PATCH_TRIANGLE)
-	{
-		//vec3_t *vMeshData = new vec3_t[this->width * this->height];
-		for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
+		if (this->bDirty || this->nListID <= 0)
 		{
-			for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
+			if (this->nListID <= 0)
+				this->nListID = glGenLists(1);
+			if (this->nListID > 0)
 			{
-				for ( k = 0 ; k < 3 ; k++ ) 
+				glNewList(this->nListID, GL_COMPILE_AND_EXECUTE);
+			}
+
+
+
+			if (this->type != PATCH_TRIANGLE)
+			{
+				//vec3_t *vMeshData = new vec3_t[this->width * this->height];
+				for ( i = 0 ; i + 2 < this->width ; i += 2 ) 
 				{
-					vec3_t vAvg;
-					vAvg[0] = vAvg[1] = vAvg[2] = 0;
-					for ( l = 0 ; l < 3 ; l++ ) 
+					for ( j = 0 ; j + 2 < this->height ; j += 2 ) 
 					{
-						ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
-						ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
-						ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
-						ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
-						ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
+						for ( k = 0 ; k < 3 ; k++ ) 
+						{
+							vec3_t vAvg;
+							vAvg[0] = vAvg[1] = vAvg[2] = 0;
+							for ( l = 0 ; l < 3 ; l++ ) 
+							{
+								ctrl[k][l][0] = this->ctrl[ i + k ][ j + l ].xyz[ 0 ];
+								ctrl[k][l][1] = this->ctrl[ i + k ][ j + l ].xyz[ 1 ];
+								ctrl[k][l][2] = this->ctrl[ i + k ][ j + l ].xyz[ 2 ];
+								ctrl[k][l][3] = this->ctrl[ i + k ][ j + l ].tc[ 0 ];
+								ctrl[k][l][4] = this->ctrl[ i + k ][ j + l ].tc[ 1 ];
+							}
+						}
+						DrawSinglePatch( ctrl, bPoints );
 					}
 				}
-				DrawSinglePatch( ctrl, bPoints );
+			}
+			else
+			{
+				glBegin (GL_TRIANGLES);
+				glTexCoord2fv( this->ctrl[0][0].tc);
+				glVertex3fv( this->ctrl[0][0].xyz);
+				glTexCoord2fv( this->ctrl[2][0].tc);
+				glVertex3fv( this->ctrl[2][0].xyz);
+				glTexCoord2fv( this->ctrl[2][2].tc);
+				glVertex3fv( this->ctrl[2][2].xyz);
+				glEnd();
+			}
+
+			if (this->nListID > 0)
+			{
+				glEndList();
+				this->bDirty = false;
 			}
 		}
-	}
-	else
-	{
-		glBegin (GL_TRIANGLES);
-		glTexCoord2fv( this->ctrl[0][0].tc);
-		glVertex3fv( this->ctrl[0][0].xyz);
-		glTexCoord2fv( this->ctrl[2][0].tc);
-		glVertex3fv( this->ctrl[2][0].xyz);
-		glTexCoord2fv( this->ctrl[2][2].tc);
-		glVertex3fv( this->ctrl[2][2].xyz);
-		glEnd();
-	}
-
-	if (this->nListID > 0)
-	{
-		glEndList();
-		this->bDirty = false;
-	}
-	}
-	else
-	{
-		glCallList(this->nListID);
-	}
+		else
+		{
+			glCallList(this->nListID);
+		}
 	}
 	else
 	{
@@ -2171,101 +2073,49 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 	glPointSize(6);
 	if (g_bPatchAxisOnRow)
 	{
-	glColor3f(1, 0, 1);
-	glBegin(GL_POINTS);
-	for (i = 0; i < this->width; i++)
-	{
-	glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
-	}
-	glEnd();
-
-	// could do all of this in one loop but it was pretty messy
-	if (g_bPatchInsertMode)
-	{
-		glColor3f(0, 0, 1);
+		glColor3f(1, 0, 1);
 		glBegin(GL_POINTS);
 		for (i = 0; i < this->width; i++)
 		{
 			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
-			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex+1].xyz));
 		}
 		glEnd();
-	}
-	else
-	{
-	if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
-	{
-	glColor3f(0, 0, 1);
-	glBegin(GL_POINTS);
-	if (g_nPatchBendState == BEND_SELECT_ORIGIN)
-	{
-		glVertex3fv(g_vBendOrigin);
-	}
-	else
-	{
-	for (i = 0; i < this->width; i++)
-	{
-	if (g_bPatchLowerEdge)
-	{
-	for (j = 0; j < g_nPatchAxisIndex; j++)
-	glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
-	}
-	else
-	{
-	for (j = this->height-1; j > g_nPatchAxisIndex; j--)
-	glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
-	}
-	}
-	}
-	glEnd();
-	}
-	}
-	}
-	else
-	{
-	glColor3f(1, 0, 1);
-	glBegin(GL_POINTS);
-	for (i = 0; i < this->height; i++)
-	{
-		glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
-	}
-	glEnd();
 
-	// could do all of this in one loop but it was pretty messy
-	if (g_bPatchInsertMode)
-	{
-		glColor3f(0, 0, 1);
-		glBegin(GL_POINTS);
-		for (i = 0; i < this->height; i++)
-		{
-			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
-			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex+1][i].xyz));
-		}
-		glEnd();
-	}
-	else
-	{
-		if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
+		// could do all of this in one loop but it was pretty messy
+		if (g_bPatchInsertMode)
 		{
 			glColor3f(0, 0, 1);
 			glBegin(GL_POINTS);
-			for (i = 0; i < this->height; i++)
+			for (i = 0; i < this->width; i++)
 			{
+				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex].xyz));
+				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][g_nPatchAxisIndex+1].xyz));
+			}
+			glEnd();
+		}
+		else
+		{
+			if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
+			{
+				glColor3f(0, 0, 1);
+				glBegin(GL_POINTS);
 				if (g_nPatchBendState == BEND_SELECT_ORIGIN)
 				{
-					glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nBendOriginIndex][i].xyz));
+					glVertex3fv(g_vBendOrigin);
 				}
 				else
 				{
-					if (g_bPatchLowerEdge)
+					for (i = 0; i < this->width; i++)
 					{
-						for (j = 0; j < g_nPatchAxisIndex; j++)
-							glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
-					}
+						if (g_bPatchLowerEdge)
+						{
+							for (j = 0; j < g_nPatchAxisIndex; j++)
+								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
+						}
 						else
 						{
-							for (j = this->width-1; j > g_nPatchAxisIndex; j--)
-								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+							for (j = this->height-1; j > g_nPatchAxisIndex; j--)
+								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[i][j].xyz));
 						}
 					}
 				}
@@ -2273,6 +2123,58 @@ void patchMesh_c::drawPatchMesh(bool bPoints, bool bShade) {
 			}
 		}
 	}
+	else
+	{
+		glColor3f(1, 0, 1);
+		glBegin(GL_POINTS);
+		for (i = 0; i < this->height; i++)
+		{
+			glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
+		}
+		glEnd();
+
+		// could do all of this in one loop but it was pretty messy
+		if (g_bPatchInsertMode)
+		{
+			glColor3f(0, 0, 1);
+			glBegin(GL_POINTS);
+			for (i = 0; i < this->height; i++)
+			{
+				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex][i].xyz));
+				glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nPatchAxisIndex+1][i].xyz));
+			}
+			glEnd();
+		}
+		else
+		{
+			if (g_nPatchBendState == BEND_SELECT_EDGE || g_nPatchBendState == BEND_BENDIT || g_nPatchBendState == BEND_SELECT_ORIGIN)
+			{
+				glColor3f(0, 0, 1);
+				glBegin(GL_POINTS);
+				for (i = 0; i < this->height; i++)
+				{
+					if (g_nPatchBendState == BEND_SELECT_ORIGIN)
+					{
+						glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[g_nBendOriginIndex][i].xyz));
+					}
+					else
+					{
+						if (g_bPatchLowerEdge)
+						{
+							for (j = 0; j < g_nPatchAxisIndex; j++)
+								glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+						}
+							else
+							{
+								for (j = this->width-1; j > g_nPatchAxisIndex; j--)
+									glVertex3fv(reinterpret_cast<float(*)>(&this->ctrl[j][i].xyz));
+							}
+						}
+					}
+					glEnd();
+				}
+			}
+		}
 	}
 	else // just painting the grid for selection
 	{
