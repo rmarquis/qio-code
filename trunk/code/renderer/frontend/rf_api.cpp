@@ -182,6 +182,12 @@ public:
 	virtual void removeEntity(class rEntityAPI_i *ent) {
 		RFE_RemoveEntity(ent);
 	}
+	virtual class rStaticModelAPI_i *allocStaticModel() {
+		return RF_AllocStaticModel();
+	}
+	virtual void removeStaticModel(class rStaticModelAPI_i *m) {
+		RF_RemoveStaticModel(m);
+	}
 	virtual class rLightAPI_i *allocLight() {
 		return RFL_AllocLight();
 	}

@@ -110,6 +110,7 @@ bool RF_MaterialNeedsCPU(const class mtrAPI_i *mat) {
 void RF_AddGenericDrawCalls() {
 	RF_AddWorldDrawCalls();
 	RFE_AddEntityDrawCalls();
+	RF_AddStaticModelDrawCalls();
 	RF_AddWorldDecalDrawCalls();
 	RF_AddWaterDrawCalls();
 	RF_AddExplosionDrawCalls();
