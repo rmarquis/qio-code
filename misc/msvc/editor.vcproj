@@ -645,6 +645,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\simpleModel.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\textureAxisFromNormal.cpp"
 				>
 			</File>

@@ -115,7 +115,7 @@ public:
 	void adjustPatchColumns(int nCols);
 	void movePatch(const vec3_t vMove, bool bRebuild = false);
 	void calcPatchBounds(vec3_c& vMin, vec3_c& vMax);
-	void drawPatchMesh(bool bPoints, bool bShade = false);
+	void drawPatchMesh(bool bPoints, bool bShade, class simpleSurface_c &sf);
 	void drawPatchXY();
 	void removePatchColumn(bool bFirst);
 	void drawPatchCam();

@@ -365,6 +365,10 @@
 				RelativePath="..\..\code\api\skelModelAPI.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\api\staticModelCreatorAPI.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="math"

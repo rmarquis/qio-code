@@ -72,6 +72,10 @@ public:
 		xyz[1] = f[1];
 		xyz[2] = f[2];
 	}
+	void setXYZST(const float *p, const float *pst) {
+		xyz = p;
+		tc = pst;
+	}
 	void setXYZ(float nX, float nY, float nZ) {
 		xyz[0] = nX;
 		xyz[1] = nY;

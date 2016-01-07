@@ -13,6 +13,10 @@ struct simpleVert_s {
 		xyz[1] = d[1];
 		xyz[2] = d[2];
 	}
+	void setXYZST(const float *p, const float *st) {
+		xyz = p;
+		tc = st;
+	}
 	void setUV(const double *d) {
 		tc[0] = d[0];
 		tc[1] = d[1];
