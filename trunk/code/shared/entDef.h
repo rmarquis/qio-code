@@ -74,6 +74,11 @@ public:
 	virtual bool getKeyValue(const char *key, int &out) const {
 		return ePairs.getKeyValue(key,out);
 	}
+	int getKeyInteger(const char *key) const {
+		int i = 0;
+		getKeyValue(key,i);
+		return i;
+	}
 	virtual bool getKeyValue(const char *key, class vec3_c &out) const {
 		return ePairs.getKeyVec3(key,out);
 	}

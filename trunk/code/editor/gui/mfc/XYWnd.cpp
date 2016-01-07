@@ -1138,7 +1138,7 @@ void CXYWnd::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 
 // FIXME: the edBrush_c *pBrush is never used. ( Entity_Create uses selected_brushes )
-void CreateEntityFromName(char* pName, edBrush_c* pBrush)
+void CreateEntityFromName(const char* pName, edBrush_c* pBrush)
 {
 	entityDeclAPI_i *pecNew;
 	entity_s *petNew;
@@ -1189,7 +1189,8 @@ void CreateEntityFromName(char* pName, edBrush_c* pBrush)
 	//	pEntity = selected_brushes.next->owner;
 	Select_Brush (petNew->brushes.onext);
 	
-	if (_stricmp(pName, "misc_model") == 0)
+	//if (_stricmp(pName, "misc_model") == 0)
+	if(pecNew->hasEditorFlagMiscModel())
 	{
 		SetInspectorMode(W_ENTITY);
 		PostMessage(g_qeglobals.d_hwndEntity, WM_COMMAND, IDC_BTN_ASSIGNMODEL, 0);
@@ -1239,7 +1240,7 @@ edBrush_c* CreateEntityBrush(int x, int y, CXYWnd* pWnd)
   return n;
 }
 
-void CreateRightClickEntity(CXYWnd* pWnd, int x, int y, char* pName)
+void CreateRightClickEntity(CXYWnd* pWnd, int x, int y, const char* pName)
 {
   CRect rctZ;
   pWnd->GetClientRect(rctZ);

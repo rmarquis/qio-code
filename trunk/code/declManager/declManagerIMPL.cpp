@@ -437,6 +437,15 @@ public:
 				this->entDef.appendOtherAPI_overwrite(&tmp);
 			}
 		}
+		// check for editor flags
+		if(entDef.getKeyInteger("bEditorFlagLight")) {
+			bHasEditorFlagLight = true;
+			bIsFixedSize = true;
+		}
+		if(entDef.getKeyInteger("bShouldHaveModel")) {
+			bHasEditorFlagMiscModel = true;
+			bIsFixedSize = true;
+		}
 		return false;
 	}
 	bool isValid() const {
