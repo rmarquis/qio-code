@@ -233,14 +233,17 @@ entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 		}
 		
 		// create a custom brush
-		mins = e->getEditorMins() + ent->origin;
-		maxs = e->getEditorMaxs() + ent->origin;
-		
 		float a = 0;
 		if (e->hasEditorFlagMiscModel())
 		{
 			const char *p = ent->getKeyValue( "model");
 			ent->setKeyValue("model",p);
+
+			mins = ent->getREntity()->getBoundsABS().getMins();
+			maxs = ent->getREntity()->getBoundsABS().getMaxs();
+		} else {
+			mins = e->getEditorMins() + ent->origin;
+			maxs = e->getEditorMaxs() + ent->origin;
 		}
 		
 		// V: NOTE: here is created a ghost brush for fixed-size entity

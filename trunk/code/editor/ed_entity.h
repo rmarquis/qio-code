@@ -49,6 +49,9 @@ public:
 	const vec3_c &getOrigin() const {
 		return origin;
 	}
+	const rEntityAPI_i *getREntity() const {
+		return rEnt;
+	}
 	void moveOrigin(const vec3_c &delta);
 	void setKeyValues(const ePairList_c &newKeyValues) {
 		keyValues = newKeyValues;

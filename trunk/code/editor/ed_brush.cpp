@@ -2032,6 +2032,14 @@ void Brush_SideSelect (edBrush_c *b, vec3_t origin, vec3_t dir
 }
 
 void edBrush_c::rebuildRendererStaticModelData() {
+	// We don't need brush data for model entities
+	if(owner && owner->getEntityClass()->hasEditorFlagMiscModel()) {
+		if(rData) {
+			rf->removeStaticModel(rData);
+			rData = 0;
+		}
+		return;
+	}
 	if(rData == 0) {
 		rData = rf->allocStaticModel();
 	}
@@ -2044,7 +2052,18 @@ void edBrush_c::rebuildRendererStaticModelData() {
 		// V: This is a ghost brush for bezier patch entity
 		// V: if it's a symbiot for bezier patch...
 		pPatch->buildStaticModelData(rData->getStaticModelCreator());
+	} else if(owner && owner->getEntityClass()->isFixedSize()) {
+		// V: fixed size entities (eg. info_player_start) are infact drawn as brushes,
+		// but the texture from entityDef is used (usually single color)
+		mtrAPI_i *mat = QERApp_TryTextureForName(owner->getEntityClass()->getEditorMaterialName());
+		for (face_s *face = this->getFirstFace(); face ; face=face->next) {
+			texturedWinding_c *w = face->face_winding;
+			if(w == 0)
+				continue;
+			rData->getStaticModelCreator()->addWinding(mat,w->getPoints(),w->size());
+		}
 	} else {
+		// V: normal brush case
 		for (face_s *face = this->getFirstFace(); face ; face=face->next) {
 			texturedWinding_c *w = face->face_winding;
 			if(w == 0)
