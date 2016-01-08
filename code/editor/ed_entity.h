@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "ed_brush.h"
 #include <shared/ePairsList.h>
+#include <api/rEntityAPI.h>
 
 // allocated counter is only used for debugging
 extern int g_allocatedCounter_entity;
@@ -36,20 +37,19 @@ class entity_s {
 	ePairList_c keyValues;
 	vec3_c		origin;
 	class entityDeclAPI_i *eclass;
+	rEntityAPI_i *rEnt;
 public:
 	class entity_s	*prev, *next;
 	edBrush_c		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
-
+	
 	entity_s *getNextEntity() {
 		return next;
 	}
 	const vec3_c &getOrigin() const {
 		return origin;
 	}
-	void moveOrigin(const vec3_c &delta) {
-		origin += delta;
-	}
+	void moveOrigin(const vec3_c &delta);
 	void setKeyValues(const ePairList_c &newKeyValues) {
 		keyValues = newKeyValues;
 	}
@@ -88,6 +88,7 @@ public:
 			return "";
 		return r;
 	}
+	void onBrushSelectedStateChanged(bool newBIsSelected);
 	void trackMD3Angles(const char *key, const char *value);
 	void setKeyValue(const char *key, const char *value);
 	entity_s(bool bIsLinkedListHeader = false);
