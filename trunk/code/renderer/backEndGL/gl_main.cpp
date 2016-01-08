@@ -804,6 +804,7 @@ public:
 		this->selectTex(slot);
 		glPushAttrib(GL_TRANSFORM_BIT);
 		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
 		glLoadMatrixf(mat);
 		glPopAttrib();
 	}
