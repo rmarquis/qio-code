@@ -2080,12 +2080,12 @@ drawOnlyLightmap:
 					unbindTex(4);
 				}
 				// SpecularMap
-				if(specularMap) {
-					textureAPI_i *specularMapTexture = specularMap->getTexture(this->timeNowSeconds);
-					bindTex(5,specularMapTexture->getInternalHandleU32()); //bind specular map texture (texture slot 5)
-				} else {
-					unbindTex(5); //unbind specular map texture (texture slot 5)
-				}
+				//if(specularMap) {
+				//	textureAPI_i *specularMapTexture = specularMap->getTexture(this->timeNowSeconds);
+				//	bindTex(5,specularMapTexture->getInternalHandleU32()); //bind specular map texture (texture slot 5)
+				//} else {
+				//	unbindTex(5); //unbind specular map texture (texture slot 5)
+				//}
 				// using cubeMap requires GLSL support
 				if(cubeMap && glUseProgram) {
 					selectTex(0);

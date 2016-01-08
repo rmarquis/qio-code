@@ -357,6 +357,7 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	bool bHasEditorFlagAngle;
 	bool bIsFixedSize;
 	str editorMaterialName;
+	str model;
 
 	virtual const char *getDeclName() const {
 		return declName;
@@ -386,6 +387,12 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	}
 	virtual bool hasEditorFlagMiscModel() const  {
 		return bHasEditorFlagMiscModel;
+	}
+	virtual bool hasDefinedModel() const {
+		return (model.size()!=0);
+	}
+	virtual const char *getModelName() const {
+		return model;
 	}
 	virtual bool hasEditorFlagAngle() const  {
 		return bHasEditorFlagAngle;
@@ -448,6 +455,9 @@ public:
 			bHasEditorFlagMiscModel = true;
 			bIsFixedSize = true;
 		}
+		model = entDef.getKeyValue("model");
+		if(model.size())
+			bIsFixedSize = true;
 		return false;
 	}
 	bool isValid() const {

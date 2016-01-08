@@ -311,6 +311,8 @@ void Undo_AddBrush(edBrush_c *pBrush)
 		return;
 	//clone the brush
 	edBrush_c* pClone = pBrush->fullClone();
+	// V: don't store entity pointer because entity might be fried earlier...
+	pClone->owner = 0;
 	//save the ID of the owner entity
 	pClone->ownerId = pBrush->owner->entityId;
 	//save the old undo ID for previous undos
@@ -347,6 +349,8 @@ void Undo_AddBrushList(edBrush_c *brushlist)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
 		edBrush_c* pClone = pBrush->fullClone();
+		// V: don't store entity pointer because entity might be fried earlier...
+		pClone->owner = 0;
 		//save the ID of the owner entity
 		pClone->ownerId = pBrush->owner->entityId;
 		//save the old undo ID from previous undos

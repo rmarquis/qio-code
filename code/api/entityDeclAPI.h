@@ -42,10 +42,14 @@ public:
 	virtual const class vec3_c &getEditorMins() const = 0;
 	virtual const class vec3_c &getEditorMaxs() const = 0;
 	virtual bool hasEditorFlagLight() const = 0;
+	// used for prop_physics and misc_model which can have any model
 	virtual bool hasEditorFlagMiscModel() const = 0;
 	virtual bool hasEditorFlagAngle() const = 0;
 	virtual const char *getEditorFlagName(u32 i) const = 0;
 	virtual const char *getEditorMaterialName() const = 0;
+	// used eg. for monster_qshambler entity which has a certain model specified
+	virtual bool hasDefinedModel() const = 0;
+	virtual const char *getModelName() const = 0;
 };
 
 #endif // __ENTITYDECLAPI_H__

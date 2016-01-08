@@ -52,6 +52,7 @@ public:
 	const rEntityAPI_i *getREntity() const {
 		return rEnt;
 	}
+	void removeREntity();
 	void moveOrigin(const vec3_c &delta);
 	void setKeyValues(const ePairList_c &newKeyValues) {
 		keyValues = newKeyValues;
