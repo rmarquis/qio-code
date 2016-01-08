@@ -589,51 +589,6 @@ void CCamWnd::Cam_MouseMoved (int x, int y, int buttons)
 
 
 
-bool CCamWnd::CullBrush (edBrush_c *b)
-{
-	return false;
-	//int		i;
-	//vec3_c	point;
-	//float	d;
-
-	//if (g_PrefsDlg.m_bCubicClipping)
-	//{
-	//	float fLevel = g_PrefsDlg.m_nCubicScale * 64;
-
-	//	point[0] = m_Camera.origin[0] - fLevel;
-	//	point[1] = m_Camera.origin[1] - fLevel;
-	//	point[2] = m_Camera.origin[2] - fLevel;
-
-	//	for (i=0; i<3; i++)
-	//		if (b->getMins()[i] < point[i] && b->getMaxs()[i] < point[i])
-	//			return true;
-
-	//	point[0] = m_Camera.origin[0] + fLevel;
-	//	point[1] = m_Camera.origin[1] + fLevel;
-	//	point[2] = m_Camera.origin[2] + fLevel;
-	//
-	//	for (i=0; i<3; i++)
-	//		if (b->getMins()[i] > point[i] && b->getMaxs()[i] > point[i])
-	//			return true;
-	//}
-
-
-	//for (i=0 ; i<3 ; i++)
-	//	point[i] = b->getMins()[m_nCullv1[i]] - m_Camera.origin[i];
-
-	//d = point.dotProduct(m_vCull1);
-	//if (d < -1)
-	//	return true;
-
-	//for (i=0 ; i<3 ; i++)
-	//	point[i] = b->getMins()[m_nCullv2[i]] - m_Camera.origin[i];
-
-	//d = point.dotProduct(m_vCull2);
-	//if (d < -1)
-	//	return true;
-
-	//return false;
-}
 
 #include <gl/glut.h>
 void DrawLightRadius(entity_s *e)

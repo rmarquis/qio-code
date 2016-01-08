@@ -69,7 +69,6 @@ protected:
   void Cam_MouseDown(int x, int y, int buttons);
   void Cam_MouseUp (int x, int y, int buttons);
   void Cam_MouseMoved (int x, int y, int buttons);
-  bool CullBrush (class edBrush_c *b);
   void Cam_Draw_Old();
   void Cam_Draw();
 

@@ -356,6 +356,7 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 	bool bHasEditorFlagMiscModel;
 	bool bHasEditorFlagAngle;
 	bool bIsFixedSize;
+	str editorMaterialName;
 
 	virtual const char *getDeclName() const {
 		return declName;
@@ -393,13 +394,14 @@ class entityDecl_c : public entityDeclAPI_i, public declRefState_c  {
 		return "";
 	}
 	virtual const char *getEditorMaterialName() const  {
-		return "";
+		return editorMaterialName;
 	}
 public:	
 	entityDecl_c() {
 		hashNext = 0;
 		// for editor
-		editorColor.set(1,1,1);
+	///	editorColor.set(1,1,1);
+		editorColor.set(0.2,1,0.6);
 		editorMins.set(-8,-8,-8);
 		editorMaxs.set(8,8,8);
 		bHasEditorFlagLight = false;
@@ -466,6 +468,9 @@ public:
 	}
 	void setEditorMaxs(const vec3_c &v) {
 		editorMaxs = v;
+	}
+	void setEditorMaterial(const char *s) {
+		editorMaterialName = s;
 	}
 	void setValid() {
 		entDef.setClassName(getDeclName());
@@ -599,6 +604,7 @@ class entityDeclAPI_i *declManagerIMPL_c::_findOrCreateEntityDecl(const char *na
 		ret->setFixedSize(true);
 		ret->setEditorMins(vec3_c(-16,-16,-24));
 		ret->setEditorMaxs(vec3_c(16,16,24));
+		ret->setEditorMaterial("(1 1 0)");
 	}
 	ret->setFixedSize(!bHashBrushes);
 	return ret;
