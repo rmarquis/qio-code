@@ -1496,6 +1496,11 @@ void Brush_Free (edBrush_c *b, bool bRemoveNode)
 {
 	face_s	*f, *next;
 
+	// V: this is very dirty... remove rEntity if ghost brush is removed
+	if(b->owner && b->owner->getREntity()) {
+		b->owner->removeREntity();
+	}
+
 	// free the patch if it's there
 	if (b->patchBrush)
 	{
@@ -2033,7 +2038,7 @@ void Brush_SideSelect (edBrush_c *b, vec3_t origin, vec3_t dir
 
 void edBrush_c::rebuildRendererStaticModelData() {
 	// We don't need brush data for model entities
-	if(owner && owner->getEntityClass()->hasEditorFlagMiscModel()) {
+	if(owner && (owner->getEntityClass()->hasEditorFlagMiscModel() || owner->getEntityClass()->hasDefinedModel())) {
 		if(rData) {
 			rf->removeStaticModel(rData);
 			rData = 0;

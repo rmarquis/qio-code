@@ -41,6 +41,12 @@ void entity_s::onBrushSelectedStateChanged(bool newBIsSelected) {
 		}
 	}
 }
+void entity_s::removeREntity() {
+	if(rEnt) {
+		rf->removeEntity(rEnt);
+		rEnt = 0;
+	}
+}
 void entity_s::moveOrigin(const vec3_c &delta) {
 	origin += delta;
 	if(rEnt) {
@@ -54,7 +60,7 @@ void entity_s::trackMD3Angles(const char *key, const char *value)
 		return;
 	}
 
-	if (this->eclass->isFixedSize() && this->eclass->hasEditorFlagMiscModel())
+	if (this->eclass->hasDefinedModel() || this->eclass->hasEditorFlagMiscModel())
 	{
 		float a = this->getKeyFloat("angle");
 		float b = atof(value);
@@ -79,12 +85,12 @@ void entity_s::setKeyValue(const char *key, const char *value) {
 
 	trackMD3Angles(key, value);
 	if(!stricmp(key,"model")) {
-		if(eclass->hasEditorFlagMiscModel()) {
+		if(eclass->hasEditorFlagMiscModel() || eclass->hasDefinedModel()) {
 			if(rEnt == 0) {
 				rEnt = rf->allocEntity();
-				rEnt->setModel(rf->registerModel(value));
-				rEnt->setOrigin(this->origin);
 			}
+			rEnt->setModel(rf->registerModel(value));
+			rEnt->setOrigin(this->origin);
 		}
 	}
 
@@ -234,10 +240,14 @@ entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 		
 		// create a custom brush
 		float a = 0;
-		if (e->hasEditorFlagMiscModel())
-		{
+		if (e->hasEditorFlagMiscModel()) {
 			const char *p = ent->getKeyValue( "model");
 			ent->setKeyValue("model",p);
+
+			mins = ent->getREntity()->getBoundsABS().getMins();
+			maxs = ent->getREntity()->getBoundsABS().getMaxs();
+		} else if (e->hasDefinedModel()) {
+			ent->setKeyValue("model",e->getModelName());
 
 			mins = ent->getREntity()->getBoundsABS().getMins();
 			maxs = ent->getREntity()->getBoundsABS().getMaxs();
@@ -540,8 +550,22 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 			e->origin[i] = b->getMins()[i] - c->getEditorMins()[i];
 
 		// create a custom brush
-		mins = c->getEditorMins() + e->origin;
-		maxs = c->getEditorMaxs() + e->origin;
+		float a = 0;
+		if (c->hasEditorFlagMiscModel()) {
+			const char *p = e->getKeyValue( "model");
+			e->setKeyValue("model",p);
+
+			mins = e->getREntity()->getBoundsABS().getMins();
+			maxs = e->getREntity()->getBoundsABS().getMaxs();
+		} else if (c->hasDefinedModel()) {
+			e->setKeyValue("model",c->getModelName());
+
+			mins = e->getREntity()->getBoundsABS().getMins();
+			maxs = e->getREntity()->getBoundsABS().getMaxs();
+		} else {
+			mins = c->getEditorMins() + e->origin;
+			maxs = c->getEditorMaxs() + e->origin;
+		}
 
 				texdef_t td;
 				td.setName(c->getEditorMaterialName());
