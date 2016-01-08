@@ -479,6 +479,10 @@ void SCR_DrawScreenField() {
 
 	rf->beginFrame();
 
+	if(clc.state != CA_ACTIVE) {
+		rf->setRenderTimeMsec(cls.realtime);
+	}
+
 	// let the loadingScreenMGR override old drawing routines
 	if(g_loadingScreen && g_loadingScreen->isEmpty() == false) {
 		g_loadingScreen->addDrawCalls();
