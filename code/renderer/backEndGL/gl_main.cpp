@@ -1271,6 +1271,14 @@ public:
 				setAlphaFunc(s->getAlphaFunc());
 				//const blendDef_s &bd = s->getBlendDef();
 				//setBlendFunc(bd.src,bd.dst);
+				
+				if(s->hasTexMods()) {
+					matrix_c mat;
+					s->applyTexMods(mat,this->timeNowSeconds,&materialVarList);
+					this->setTextureMatrixCustom(0,mat);
+				} else {
+					this->setTextureMatrixIdentity(0);
+				}
 				textureAPI_i *t = s->getTexture(this->timeNowSeconds);
 				bindTex(0,t->getInternalHandleU32());
 				CHECK_GL_ERRORS;
