@@ -103,6 +103,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	bCenterLightSampleValid = false;
 	finalBones = 0;
 	networkingEntityNumber = -1;
+	bHasGlobalColor = false;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -170,6 +171,15 @@ void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles
 	matrix.fromAnglesAndOrigin(angles,origin);
 	recalcABSBounds();
+}
+void rEntityImpl_c::setColor(const float *rgba) {
+	if(rgba == 0) {
+		bHasGlobalColor = 0;
+	} else {
+		bHasGlobalColor = true;
+		entityColor = rgba; // TODO also set alpha
+		entityColor *= 255.f; // FIXME
+	}
 }
 void rEntityImpl_c::setOrigin(const vec3_c &newXYZ) {
 	if(origin.compare(newXYZ))
@@ -691,7 +701,11 @@ void rEntityImpl_c::addDrawCalls() {
 		if(bCenterLightSampleValid && (RF_IsUsingDynamicLights() == false || RF_IsDrawingPrelitGeometry())) {
 			extraRGB = &this->centerLightSample.ambientLight;
 		} else {
-			extraRGB = 0;
+			if(bHasGlobalColor) {
+				extraRGB = &entityColor;
+			} else {
+				extraRGB = 0;
+			}
 		}
 		((model_c*)model)->addModelDrawCalls(&surfaceFlags,extraRGB);
 		if(staticDecals) {
@@ -703,8 +717,14 @@ void rEntityImpl_c::addDrawCalls() {
 			this->animatedEntityUpdateFrame = rf_draw3DViewCount;
 			this->updateAnimatedEntity();
 		}
+		vec3_c *extraRGB;
+		if(bHasGlobalColor) {
+			extraRGB = &entityColor;
+		} else {
+			extraRGB = 0;
+		}
 		// instance->addDrawCalls is called for depth pass and each light pass
-		instance->addDrawCalls(&surfaceFlags,bCenterLightSampleValid);
+		instance->addDrawCalls(&surfaceFlags,bCenterLightSampleValid,extraRGB);
 	}
 
 	// done.

@@ -2180,6 +2180,9 @@ void edBrush_c::onBrushSelectedStateChanged(bool newBIsSelected) {
 			rData->setColor(0);
 		}
 	} 
+	if(owner) {
+		owner->onBrushSelectedStateChanged(newBIsSelected);
+	}
 }
 void edBrush_c::rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild)
 {

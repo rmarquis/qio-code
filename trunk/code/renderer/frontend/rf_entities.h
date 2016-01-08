@@ -84,6 +84,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	int networkingEntityNumber;
 	// entityType_e
 	int entityType;
+	// extra color per entire entity
+	bool bHasGlobalColor;
+	vec3_c entityColor;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -125,6 +128,7 @@ public:
 	virtual void setEntityType(int newEntityType) {
 		entityType = newEntityType;
 	}
+	virtual void setColor(const float *rgba);
 
 	virtual void hideModel();
 	virtual void showModel();

@@ -24,11 +24,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/parser.h>
 #include <api/entityDeclAPI.h>
 #include <api/declManagerAPI.h>
+#include <api/rApi.h>
+
 
 
 //
 int g_entityId = 1;
 
+void entity_s::onBrushSelectedStateChanged(bool newBIsSelected) {
+	if(rEnt) {
+		if(newBIsSelected) {
+			float red[4] = { 1, 0.7, 0.7, 1 };
+			rEnt->setColor(red);
+		} else {
+			rEnt->setColor(0);
+		}
+	}
+}
+void entity_s::moveOrigin(const vec3_c &delta) {
+	origin += delta;
+	if(rEnt) {
+		rEnt->setOrigin(origin);
+	}
+}
 void entity_s::trackMD3Angles(const char *key, const char *value)
 {
 	if (_strcmpi(key, "angle") != 0)
@@ -60,6 +78,15 @@ void entity_s::setKeyValue(const char *key, const char *value) {
 		return;
 
 	trackMD3Angles(key, value);
+	if(!stricmp(key,"model")) {
+		if(eclass->hasEditorFlagMiscModel()) {
+			if(rEnt == 0) {
+				rEnt = rf->allocEntity();
+				rEnt->setModel(rf->registerModel(value));
+				rEnt->setOrigin(this->origin);
+			}
+		}
+	}
 
 	this->keyValues.set(key,value);
 }
@@ -70,6 +97,7 @@ entity_s::entity_s(bool bIsLinkedListHeader) {
 	redoId = 0;
 	entityId = 0;
 	eclass = 0;
+	rEnt = 0;
 
 	// mark linked list as empty
 	//this->brushes.onext = &this->brushes;
@@ -85,7 +113,10 @@ entity_s::~entity_s() {
 		while (this->brushes.onext != &this->brushes)
 			Brush_Free (this->brushes.onext);
 	}
-
+	if(rEnt) {
+		rf->removeEntity(rEnt);
+		rEnt = 0;
+	}
 	if (this->next)
 	{
 		this->next->prev = this->prev;
@@ -208,18 +239,8 @@ entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 		float a = 0;
 		if (e->hasEditorFlagMiscModel())
 		{
-			const char* p = ent->getKeyValue( "model");
-			if (p != NULL && strlen(p) > 0)
-			{
-				vec3_c vMin, vMax;
-				a = ent->getKeyFloat("angle");
-				//if (GetCachedModel(ent, p, vMin, vMax))
-				//{
-				//	// create a custom brush
-				//	mins = ent->md3Class->mins + ent->origin;
-				//	maxs = ent->md3Class->maxs + ent->origin;
-				//}
-			}
+			const char *p = ent->getKeyValue( "model");
+			ent->setKeyValue("model",p);
 		}
 		
 		// V: NOTE: here is created a ghost brush for fixed-size entity
