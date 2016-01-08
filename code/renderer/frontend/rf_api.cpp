@@ -139,7 +139,6 @@ public:
 		RF_Draw3DView();
 	}
 	virtual void setup2DView() {
-		draw3DView(); // fixme
 		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {
