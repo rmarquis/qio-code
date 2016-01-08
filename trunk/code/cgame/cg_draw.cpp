@@ -352,6 +352,7 @@ void CG_DrawActive() {
 	}
 
 	// draw 3D view
+	rf->draw3DView();
 	//trap_R_RenderScene();
 
 	// draw status bar and other floating elements
