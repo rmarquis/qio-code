@@ -725,13 +725,14 @@ public:
 	void enableNormalArray() {
 		if(glNormalArrayEnabled)
 			return;
-		glEnable(GL_NORMAL_ARRAY);
+		// glEnable here gave me GL_INVALID_ENUM spam
+		glEnableClientState(GL_NORMAL_ARRAY);
 		glNormalArrayEnabled = true;
 	}
 	void disableNormalArray() {
 		if(glNormalArrayEnabled==false)
 			return;
-		glDisable(GL_NORMAL_ARRAY);
+		glDisableClientState(GL_NORMAL_ARRAY);
 		glNormalArrayEnabled = false;
 	}
 	static int blendModeEnumToGLBlend(int in) {
@@ -1104,7 +1105,9 @@ public:
 		}
 #endif
 		
+		CHECK_GL_ERRORS;
 		disableAllVertexAttribs();
+		CHECK_GL_ERRORS;
 
 		u32 h = verts->getInternalHandleU32();
 		glBindBufferARB(GL_ARRAY_BUFFER,h);
@@ -1147,6 +1150,7 @@ public:
 			glVertexPointer(3,GL_FLOAT,sizeof(rVert_c),0);
 			selectTexCoordSlot(0);
 			enableTexCoordArrayForCurrentTexCoordSlot();
+			CHECK_GL_ERRORS;
 			if(bindLightmapCoordsToFirstTextureSlot) {
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
 				disableTexCoordArrayForTexSlot(1);
@@ -1156,14 +1160,17 @@ public:
 				enableTexCoordArrayForCurrentTexCoordSlot();
 				glTexCoordPointer(2,GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,lc));
 			}
+			CHECK_GL_ERRORS;
 			if(bindVertexColors) {
 				enableColorArray();
 				glColorPointer(4,GL_UNSIGNED_BYTE,sizeof(rVert_c),(void*)offsetof(rVert_c,color));
 			} else {
 				disableColorArray();
 			}
+			CHECK_GL_ERRORS;
 			enableNormalArray();
 			glNormalPointer(GL_FLOAT,sizeof(rVert_c),(void*)offsetof(rVert_c,normal));
+			CHECK_GL_ERRORS;
 			// bind tangents and binormals for bump/paralax mapping effects
 			if(curShader) {
 				int tangentsLocation = curShader->getAtrTangentsLocation();
