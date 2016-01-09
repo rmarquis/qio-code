@@ -40,6 +40,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
 static aCvar_c g_printPlayersHealth("g_printPlayersHealth","0");
 static aCvar_c g_printPlayerWeaponState("g_printPlayerWeaponState","0");
+static aCvar_c g_printPlayerPrimaryFireState("g_printPlayerPrimaryFireState","0");
+static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPrimaryFireState","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -539,31 +541,37 @@ void Player::runPlayer() {
 
 		if(this->pers.cmd.buttons & BUTTON_ATTACK) {
 			if(fireHeld) {
-				G_Printf("Fire held\n");
+				if(g_printPlayerPrimaryFireState.getInt())
+					G_Printf("Fire held\n");
 				onFireKeyHeld();
 			} else {
-				G_Printf("Fire pressed\n");
+				if(g_printPlayerPrimaryFireState.getInt())
+					G_Printf("Fire pressed\n");
 				fireHeld = true;
 				onFireKeyDown();
 			}
 		} else {
 			if(fireHeld) {
-				G_Printf("Fire released\n");
+				if(g_printPlayerPrimaryFireState.getInt())
+					G_Printf("Fire released\n");
 				fireHeld = false;
 			}
 		}
 		if(this->pers.cmd.buttons & BUTTON_ATTACK_SECONDARY) {
 			if(secondaryFireHeld) {
-				G_Printf("Secondary fire held\n");
+				if(g_printPlayerSecondaryPrimaryFireState.getInt())
+					G_Printf("Secondary fire held\n");
 				onSecondaryFireKeyHeld();
 			} else {
-				G_Printf("Secondary fire pressed\n");
+				if(g_printPlayerSecondaryPrimaryFireState.getInt())
+					G_Printf("Secondary fire pressed\n");
 				secondaryFireHeld = true;
 				onSecondaryFireKeyDown();
 			}
 		} else {
 			if(secondaryFireHeld) {
-				G_Printf("Secondary fire released\n");
+				if(g_printPlayerSecondaryPrimaryFireState.getInt())
+					G_Printf("Secondary fire released\n");
 				secondaryFireHeld = false;
 				onSecondaryFireKeyUp();
 			}
