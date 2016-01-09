@@ -65,6 +65,7 @@ aCvar_c rf_bsp_useBSPForTracing("rf_bsp_useBSPForTracing","1");
 aCvar_c rf_bsp_skipAreaPortals("rf_bsp_skipAreaPortals","0");
 aCvar_c rf_bsp_printCamera2PortalDist("rf_bsp_printCamera2PortalDist","0");
 aCvar_c rf_bsp_forceAllDisplacementsVisible("rf_bsp_forceAllDisplacementsVisible","0");
+aCvar_c rf_bsp_printChosenIBOTypes("rf_bsp_printChosenIBOTypes","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -674,7 +675,8 @@ parsePlanarSurf:;
 			}
 			ts->bounds.clear();
 			if(largestIndex + 1 < U16_MAX) {
-				g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
+				if(rf_bsp_printChosenIBOTypes.getInt())
+					g_core->Print("rBspTree_c::loadSurfs: using U16 index buffer for surface %i\n",i);
 				u16 *u16Indexes = ts->absIndexes.initU16(sf->numIndexes);
 				u16 *u16IndexesLocal = ts->localIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
@@ -684,7 +686,8 @@ parsePlanarSurf:;
 					ts->bounds.addPoint(this->verts[u16Indexes[j]].xyz);
 				}
 			} else {
-				g_core->Print("rBspTree_c::loadSurfs: using U32 index buffer for surface %i\n",i);
+				if(rf_bsp_printChosenIBOTypes.getInt())
+					g_core->Print("rBspTree_c::loadSurfs: using U32 index buffer for surface %i\n",i);
 				u32 *u32Indexes = ts->absIndexes.initU32(sf->numIndexes);
 				u16 *u16IndexesLocal = ts->localIndexes.initU16(sf->numIndexes);
 				for(u32 j = 0; j < sf->numIndexes; j++) {
