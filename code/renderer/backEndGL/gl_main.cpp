@@ -1090,7 +1090,7 @@ public:
 			glEnableVertexAttribArray(loc);
 		}
 	}
-#define DONT_AVOID_VBO_REBIND
+//#define DONT_AVOID_VBO_REBIND
 	void bindVertexBuffer(const class rVertexBuffer_c *verts, bool bindLightmapCoordsToFirstTextureSlot = false) {
 #ifndef DONT_AVOID_VBO_REBIND
 		if(boundVBO == verts) {
