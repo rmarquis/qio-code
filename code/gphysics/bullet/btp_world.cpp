@@ -91,6 +91,7 @@ void bulletPhysicsWorld_c::runFrame(float frameTime) {
 	dynamicsWorld->stepSimulation(frameTime,2);
 }
 void bulletPhysicsWorld_c::shutdown() {
+	g_core->Print("bulletPhysicsWorld_c::shutdown: freeing Bullet Physics allocated memory...\n");
 	// see if we forgot to free some rigid bodies or constraings
 	if(bodies.size()) {
 		g_core->RedWarning("bulletPhysicsWorld_c::shutdown: forgot to free %i bodies\n",bodies.size());
@@ -140,6 +141,7 @@ void bulletPhysicsWorld_c::shutdown() {
 		delete broadphase;
 		broadphase = 0;
 	}
+	g_core->Print("bulletPhysicsWorld_c::shutdown: Physics world shat down!\n");
 }
 bulletColShape_c *bulletPhysicsWorld_c::registerShape(const cMod_i *cmodel, bool isStatic) {
 	str shapeName;
