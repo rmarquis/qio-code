@@ -77,6 +77,7 @@ bool RFL_GPUOcclusionQueriesForLightsEnabled();
 
 // rf_sky.cpp
 void RF_InitSky();
+void RF_ShutdownSky();
 void RF_DrawSky();
 bool RF_HasSky();
 void RF_SetSkyMaterial(class mtrAPI_i *newSkyMaterial);

@@ -42,6 +42,7 @@ static aCvar_c g_printPlayersHealth("g_printPlayersHealth","0");
 static aCvar_c g_printPlayerWeaponState("g_printPlayerWeaponState","0");
 static aCvar_c g_printPlayerPrimaryFireState("g_printPlayerPrimaryFireState","0");
 static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPrimaryFireState","0");
+static aCvar_c g_printPlayerLanding("g_printPlayerLanding","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -432,7 +433,9 @@ void Player::runPlayer() {
 						}
 						if(onGround == false) {
 							bLanding = true;
-							g_core->Print("Player::runPlayer: LANDING\n");
+							if(g_printPlayerLanding.getInt()) {
+								g_core->Print("Player::runPlayer: LANDING (at %f %f %f)\n",ps.origin[0],ps.origin[1],ps.origin[2]);
+							}
 						}
 					}
 					onGround = isNowOnGround;

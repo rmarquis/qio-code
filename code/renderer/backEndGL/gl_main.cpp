@@ -3086,7 +3086,9 @@ drawOnlyLightmap:
 		}
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,&maxActiveTextureSlots);
 		glGetIntegerv(GL_MAX_TEXTURE_COORDS,&maxActiveTextureCoords);
-
+		g_core->Print("GL_RENDERER: %s\n",glGetString(GL_RENDERER));
+		g_core->Print("GL_VENDOR: %s\n",glGetString(GL_VENDOR));
+		g_core->Print("GL_VERSION: %s\n",glGetString(GL_VERSION));
 		// ensure that all the states are reset after vid_restart
 		///g_core->Print("sizeof(texStates) is: %i\n",sizeof(texStates));
 

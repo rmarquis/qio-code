@@ -57,6 +57,7 @@ aCvar_c rf_ignoreMirrors("rf_ignoreMirrors","0");
 aCvar_c rf_drawCalls_printSortCompare("rf_drawCalls_printSortCompare","0");
 aCvar_c rf_drawCalls_printTotalTrianglesCount("rf_drawCalls_printTotalTrianglesCount","0");
 aCvar_c rf_drawCalls_printTotalDrawCallsCount("rf_drawCalls_printTotalDrawCallsCount","0");
+aCvar_c rf_printFoundMirrorSurfaces("rf_printFoundMirrorSurfaces","0");
 
 class drawCall_c {
 public:
@@ -87,6 +88,7 @@ public:
 	int shadowMapLOD;
 	// for directional light shadow mapping
 	bool bDrawingSunShadowMapPass;
+	bool bSkip;
 //public:
 	
 	void clearDrawCall() {
@@ -609,8 +611,9 @@ void RF_CheckDrawCallsForMirrorsAndPortals(u32 firstDrawCall, u32 numDrawCalls) 
 			//vec3_c center;
 			//dc.verts->getCenter(*dc.indices, center);
 			vec3_c surfaceOrigin = surfacePlane.norm * -surfacePlane.dist;
-			//g_core->Print("Center %f %f %f, origin %f %f %f\n",center.x,center.y,center.z,surfaceOrigin.x,surfaceOrigin.y,surfaceOrigin.z);
-
+			if(rf_printFoundMirrorSurfaces.getInt()) {
+				g_core->Print("Mirror found - origin %f %f %f\n",surfaceOrigin.x,surfaceOrigin.y,surfaceOrigin.z);
+			}
 			axis_c surfaceAxis;
 			surfaceAxis[0] = surfacePlane.norm;
 			surfacePlane.norm.makeNormalVectors(surfaceAxis[1],surfaceAxis[2]);
