@@ -1480,7 +1480,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	if(stages.size() == 0) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		//this->createFromImage();
-#if 0
+#if 1
 		// V: can't do that, it breaks the mirrors.
 		// It would render editor image on mirror, check test_mirror map
 		if(editorImage.length()) {
