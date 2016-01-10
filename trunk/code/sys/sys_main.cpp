@@ -551,7 +551,7 @@ void Sys_SigHandler( int signal )
 		Sys_Exit( 2 );
 }
 
-#define QIO_USE_CRT_DEBUGGING
+//#define QIO_USE_CRT_DEBUGGING
 
 #ifdef QIO_USE_CRT_DEBUGGING
 #include <crtdbg.h>

@@ -470,9 +470,11 @@ bool cStyleStructuresParser_c::parseVar() {
 						getToken(tok,",}");
 						fVal.setSingleValue(tok);
 
-						u32 fieldNameIndex = fd.getName();
-						const char *fieldName = outData->getString(fieldNameIndex);
-						printf("Field \"%s\", value \"%s\"\n",fieldName,tok.c_str());
+						if(0) {
+							u32 fieldNameIndex = fd.getName();
+							const char *fieldName = outData->getString(fieldNameIndex);
+							printf("Field \"%s\", value \"%s\"\n",fieldName,tok.c_str());
+						}
 					}
 					skipWhiteSpaces();
 					if(*p == ',') {

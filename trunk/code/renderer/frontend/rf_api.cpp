@@ -268,6 +268,7 @@ public:
 		RF_ClearAnims();
 		RF_ClearModels();
 		RF_ShutdownDecals();
+		RF_ShutdownSky();
 		RF_ShutdownWater();
 		RF_ShutdownExplosions();
 		unloadMaterialSystem();

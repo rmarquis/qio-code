@@ -1426,6 +1426,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	if(stages.size() == 0) {
 		g_core->RedWarning("mtrIMPL_c::loadFromText: %s has 0 stages\n",this->getName());
 		//this->createFromImage();
+#if 0
+		// V: can't do that, it breaks the mirrors.
+		// It would render editor image on mirror, check test_mirror map
 		if(editorImage.length()) {
 			mtrStage_c *s = new mtrStage_c;
 			s->setStageType(ST_COLORMAP);
@@ -1439,6 +1442,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			s->setTexture(getName());
 			stages.push_back(s);
 		}
+#endif
 	} else {
 		// delete unwanted stages
 		for(int i = 0; i < stages.size(); i++) {
