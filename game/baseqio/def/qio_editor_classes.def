@@ -18,4 +18,10 @@ entityDef prop_physics
 
 
 
+entityDef prop_physics_brush
+{
+	"classname" "PropPhysics"
+}
+
+
 
