@@ -899,6 +899,60 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// Prey keyword?
 				} else if(p.atWord("glass_macro")) {
 					// Prey keyword?
+				} else if(p.atWord("qer_alphaFunc")) {
+					// V: found in cqbtest materials
+					// qer_alphaFunc greater 0.5
+					p.skipLine();
+				} else if(p.atWord("q3map_bounceScale")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_shadeAngle")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("tessSize")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_lightmapMergable")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("q3map_lightmapSize")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_tcGen")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_shadeAngle")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_nonplanar")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("q3map_clipModel")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("implicitMask")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_sunExt")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_baseShader")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_foliage")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_noFog")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("q3map_skyLight")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("distanceCull")) {
+					// V: found in cqbtest materials
+					p.skipLine();
+				} else if(p.atWord("q3map_forceMeta")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("q3map_globalTexture")) {
+					// V: found in cqbtest materials
+				} else if(p.atWord("nocompress")) {
+					// V: found in cqbtest materials
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();
