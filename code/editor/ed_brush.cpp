@@ -2099,6 +2099,7 @@ void edBrush_c::buildWindings(bool bSnap)
 
 	float fCurveColor = 1.0;
 
+	bWindingsGenerationFailed = false;
 	for ( ; face ; face=face->next)
 	{
 		int i;

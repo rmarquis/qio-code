@@ -33,13 +33,14 @@ class texturedWinding_c {
 	arraySTD_c<texturedVertex_c> points;
 public:
 	texturedWinding_c();
-	texturedWinding_c(const class plane_c &pl);
+	texturedWinding_c(const class plane_c &pl, float range);
 	texturedWinding_c(u32 numPoints);
 	texturedWinding_c *cloneWinding();
 	texturedWinding_c *clip(const class plane_c &split, bool keepon);
 	void splitEpsilon(vec3_t normal, double dist, float epsilon, texturedWinding_c **front, texturedWinding_c **back);
 	texturedWinding_c *tryMerge(const texturedWinding_c *f2, vec3_t planenormal, int keep);
 	bool isTiny() const;
+	bool hasAnyCoordLargerThan(float val) const;
 	bool removePoint(int point);
 	texturedWinding_c *insertPoint(vec3_t point, int spot);
 	static int planesConcave(texturedWinding_c *w1, texturedWinding_c *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);

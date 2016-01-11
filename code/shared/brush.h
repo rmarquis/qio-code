@@ -51,6 +51,7 @@ class brush_c {
 protected:
 	aabb bounds;
 	face_s *brush_faces;
+	bool bWindingsGenerationFailed;
 
 public:
 	brush_c();

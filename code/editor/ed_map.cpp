@@ -110,10 +110,15 @@ void Map_BuildBrushData()
 	{
 		next = b->next;
 		Brush_Build( b, true, false, false );
-		if (!b->getFirstFace() || (g_PrefsDlg.m_bCleanTiny && CheckForTinyBrush(b, n++, g_PrefsDlg.m_fTinySize)))
-		{
+		if(b->hasWindingsGenerationFailedFlag()) {
 			Brush_Free (b);
-			Sys_Printf ("Removed degenerate brush\n");
+			Sys_Printf ("Removed brush which windins failed to generate\n");
+		} else {
+			if (!b->getFirstFace() || (g_PrefsDlg.m_bCleanTiny && CheckForTinyBrush(b, n++, g_PrefsDlg.m_fTinySize)))
+			{
+				Brush_Free (b);
+				Sys_Printf ("Removed degenerate brush\n");
+			}
 		}
 	}
 	Sys_EndWait();

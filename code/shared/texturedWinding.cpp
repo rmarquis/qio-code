@@ -58,6 +58,16 @@ texturedWinding_c *texturedWinding_c::insertPoint(vec3_t point, int spot) {
 	return neww;
 }
 
+bool texturedWinding_c::hasAnyCoordLargerThan(float val) const {
+	for (u32 i=0 ; i<this->size() ; i++) {
+		const vec3_c &v = this->getXYZ(i);
+		if(v.getX() >= val || v.getY() >= val || v.getZ() >= val) 
+			return true;
+		if(v.getX() <= -val || v.getY() <= -val || v.getZ() <= -val) 
+			return true;
+	}
+	return false;
+}
 bool texturedWinding_c::isTiny () const {
 	u32 edges = 0;
 	for (u32 i=0 ; i<this->size() ; i++) {
@@ -99,14 +109,15 @@ texturedWinding_c::texturedWinding_c() {
 texturedWinding_c::texturedWinding_c(u32 newCount) {
 	points.resize(newCount);
 }
-texturedWinding_c::texturedWinding_c(const plane_c &p) {
+texturedWinding_c::texturedWinding_c(const plane_c &p, float range) {
 	int		i, x;
 	float	max, v;
 	vec3_c	org, vright, vup;
 	
 	// find the major axis
 
-	max = -BOGUS_RANGE;
+	// V: it was 18000
+	max = -range;
 	x = -1;
 	for (i=0 ; i<3; i++)
 	{
@@ -141,8 +152,8 @@ texturedWinding_c::texturedWinding_c(const plane_c &p) {
 
 	vright.crossProduct (vup, p.norm);
 	
-	vup *= BOGUS_RANGE;
-	vright *= BOGUS_RANGE;
+	vup *= range;
+	vright *= range;
 
 
 	this->addPointXYZ(org - vright + vup);

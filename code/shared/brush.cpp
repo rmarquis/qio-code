@@ -43,18 +43,90 @@ returns the visible polygon on a face
 */
 texturedWinding_c *brush_c::makeFaceWinding (face_s *face)
 {
+#if 0
 	texturedWinding_c	*w;
 	face_s		*clip;
 	plane_c			plane;
 	bool		past;
 
+	// V: let's try several times.
+	float ranges[] = { 2048.f, 8192.f, 32768.f };
+	bool bThisFaceWindingGenerationFailed = false;
+	u32 numRanges = sizeof(ranges)/sizeof(ranges[0]);
+	for(u32 ri = 0; ri < numRanges; ri++) {
+		bThisFaceWindingGenerationFailed = false;
+		float range = ranges[ri];
+		// get a poly that covers an effectively infinite area
+		w = new texturedWinding_c (face->plane,range);
+
+		// chop the poly by all of the other faces
+		past = false;
+		u32 clipCount = 0;
+		for (clip = this->getFirstFace() ; clip && w ; clip=clip->next)
+		{
+			clipCount++;
+			if (clip == face)
+			{
+				past = true;
+				continue;
+			}
+			if (face->plane.getNormal().dotProduct(clip->plane.getNormal()) > 0.999
+				&& fabs(face->plane.getDist() - clip->plane.getDist()) < 0.01 )
+			{	// identical plane, use the later one
+				if (past)
+				{
+					delete (w);
+					return NULL;
+				}
+				continue;
+			}
+
+			// flip the plane, because we want to keep the back side
+			plane.norm = -clip->plane.norm;
+			plane.dist = -clip->plane.dist;
+			
+			w = w->clip(plane, false);
+			if (!w)
+				return w;
+		}
+		
+		if (w->size() < 3)
+		{
+			delete(w);
+			w = NULL;
+		}
+		if(w->hasAnyCoordLargerThan(range)) {
+			delete(w);
+			w = NULL;
+			bThisFaceWindingGenerationFailed = true;
+			continue;
+		}
+
+		if (!w)
+			printf ("unused plane\n");
+		return w;
+	}
+	if(bThisFaceWindingGenerationFailed) {
+		this->bWindingsGenerationFailed = true;
+	}
+	return 0;
+#else
+
+	texturedWinding_c	*w;
+	face_s		*clip;
+	plane_c			plane;
+	bool		past;
+
+	float range = 32768.f;
 	// get a poly that covers an effectively infinite area
-	w = new texturedWinding_c (face->plane);
+	w = new texturedWinding_c (face->plane,range);
 
 	// chop the poly by all of the other faces
 	past = false;
+	u32 clipCount = 0;
 	for (clip = this->getFirstFace() ; clip && w ; clip=clip->next)
 	{
+		clipCount++;
 		if (clip == face)
 		{
 			past = true;
@@ -85,11 +157,17 @@ texturedWinding_c *brush_c::makeFaceWinding (face_s *face)
 		delete(w);
 		w = NULL;
 	}
+	if(w->hasAnyCoordLargerThan(range)) {
+		delete(w);
+		w = NULL;
+		bWindingsGenerationFailed = true;
+		return 0;
+	}
 
 	if (!w)
 		printf ("unused plane\n");
-
 	return w;
+#endif
 }
 void brush_c::setupSphere(const vec3_c &mid, u32 sides, float radius, const texdef_t *texdef) {
 	float dt = float(2 * M_PI / sides);
