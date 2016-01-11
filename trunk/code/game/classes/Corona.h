@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2014 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,33 +21,25 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// entityType.h
-#ifndef __SHARED_ENTITYTYPE_H__
-#define __SHARED_ENTITYTYPE_H__
+// Corona.h
+#ifndef __CORONA_H__
+#define __CORONA_H__
 
-//
-// entityState_s->eType
-//
-enum entityType_e {
-	ET_GENERAL,
-	ET_PLAYER,
-	// dynamic light entity
-	ET_LIGHT,
-	// camera view portal; used for example on q3dm0
-	ET_PORTAL, // classname: misc_portal_surface
-	// server-only entity for triggers
-	ET_TRIGGER, 
-	// path node for AI navigation (server-only)
-	// the classname is: "info_pathnode"
-	ET_PATHNODE,
-	// static object (used heavily on Doom3 maps)
-	ET_FUNC_STATIC,
-	// info_location entities
-	ET_INFO_LOCATION,
-	// added for ET "Corona" entity
-	// used also on cqbtest maps
-	//ET_CORONA,
+#include "ModelEntity.h"
+
+class Corona : public ModelEntity {
+	float scale;
+public:
+	Corona();
+
+	DECLARE_CLASS( Corona );
+
+	void updateCoronaModel();
+
+	virtual void setKeyValue(const char *key, const char *value); 
 };
 
-#endif // __SHARED_ENTITYTYPE_H__
+#endif // __CORONA_H__
+
+
 

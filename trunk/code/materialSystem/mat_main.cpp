@@ -349,6 +349,17 @@ void MAT_ReloadSingleMaterial_internal(mtrIMPL_c *mat) {
 	// load material once again
 	MAT_LoadMaterial(mat);
 }
+
+void MAT_PrintMaterialSourceFileName(const char *matName) {
+	mtrIMPL_c *mat = materials.getEntry(matName);
+	if(mat == 0) {
+		g_core->RedWarning("MAT_PrintMaterialSourceFileName: material %s was not loaded.\n",matName);
+		return;
+	}
+	// see if we have to reload entire .mtr text file
+	const char *sourceFileName = mat->getSourceFileName();
+	g_core->Print("Material %s was loaded from file %s\n",matName,sourceFileName);
+}
 // reload entire material source text 
 // but recreate only material with given name
 // (matName is the name of single material)
@@ -485,6 +496,15 @@ static void MAT_RefreshMaterialSourceFile_f() {
 	const char *mtrFileName = g_core->Argv(1);
 	MAT_ReloadMaterialFileSource(mtrFileName);
 }
+static void MAT_PrintMaterialSourceFileName_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("usage: \"mat_printMaterialSourceFileName <matName>\"\n");
+		return;
+	}
+	const char *mtrFileName = g_core->Argv(1);
+	MAT_PrintMaterialSourceFileName(mtrFileName);
+}
 static aCmd_c mat_refreshSingleMaterial_f("mat_refreshSingleMaterial",MAT_RefreshSingleMaterial_f);
 static aCmd_c mat_refreshMaterialSourceFile_f("mat_refreshMaterialSourceFile",MAT_RefreshMaterialSourceFile_f);
+static aCmd_c mat_printMaterialSourceFileName("mat_printMaterialSourceFileName",MAT_PrintMaterialSourceFileName_f);
 
