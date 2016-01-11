@@ -45,6 +45,9 @@ public:
 	class edBrush_c	*oprev, *onext;	// links in entity
 	class entity_s	*owner;
 
+	bool hasWindingsGenerationFailedFlag() const {
+		return bWindingsGenerationFailed;
+	}
 	//
 	// curve brush extensions
 	// all are derived from brush_faces
