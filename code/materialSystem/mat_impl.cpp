@@ -591,7 +591,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
 	p.setup(txt.textBase,txt.p);
 	p.setDebugFileName(txt.sourceFile);
-	
+	str qerAlphaFuncType;
+	float qerAlphaFuncRefValue;
 	if(p.atChar('{') == false) {
 		int line = p.getCurrentLineNumber();
 		str tok = p.getToken();
@@ -675,7 +676,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// "implicitMap" is used only in Wolfeinstein: Enemy Territory
 					// ET's way
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
-					if(p.atWord("-")) {newDiffuseMapStage->setTexture(this->getName());
+					if(p.atWord("-")) {
+						newDiffuseMapStage->setTexture(this->getName());
 					} else {
 						newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
 					}
@@ -698,6 +700,21 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					newHeightMapStage->setStageType(ST_HEIGHTMAP);
 					newHeightMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newHeightMapStage);
+
+				} else if(p.atWord("implicitMask")) {
+					// Enemy Territory - implicitMask for fast alpha-tested materials
+					// for models/mapobjects/tree_desert_sd/palm_leaf1
+					// from ET models_mapobject.shader
+					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
+					if(p.atWord("-")) {
+						newDiffuseMapStage->setTexture(this->getName());
+					} else {
+						newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
+					}
+					//newDiffuseMapStage->setStageType(ST_COLORMAP);
+					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
+					newDiffuseMapStage->setAlphaFunc(AF_GE128); // implicitMask for Enemy Territory
+					stages.push_back(newDiffuseMapStage);
 				} else if(p.atWord("lightFalloffImage")) {
 					p.skipLine();	
 				} else if(p.atWord("deformVertexes")) {
@@ -902,7 +919,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("qer_alphaFunc")) {
 					// V: found in cqbtest materials
 					// qer_alphaFunc greater 0.5
-					p.skipLine();
+					//p.skipLine();
+					qerAlphaFuncType = p.getToken();
+					qerAlphaFuncRefValue = p.getFloat();
 				} else if(p.atWord("q3map_bounceScale")) {
 					// V: found in cqbtest materials
 					p.skipLine();

@@ -640,13 +640,13 @@ static bool MOD_ConvertBrushQ3(class parser_c &p, staticModelCreatorAPI_i *out) 
 			const plane_c &other = sides[j].plane;
 			// V: this is the solution to diseappearing polygons problem
 			// Very helpfull on test_prop_physics_brush_sphere.map
-			if((other.norm.dotProduct(bs.plane.norm) > 0.999)
+			if((other.norm.dotProduct(bs.plane.norm) > 0.999f)
 				&&
-				(	fabs(other.dist-bs.plane.dist) < 0.01)){
+				(	fabs(other.dist-bs.plane.dist) < 0.01f)){
 				continue;
 			}
 			// clip it by other side planes
-			winding.clipWindingByPlane(other.getOpposite(),0.01);
+			winding.clipWindingByPlane(other.getOpposite(),0.01f);
 		}
 #endif
 		if(winding.size() == 0) {
