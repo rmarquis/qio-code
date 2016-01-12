@@ -151,6 +151,12 @@ public:
 		ret.dist = -dist;
 		return ret;
 	}
+	plane_c getScaled(float f) const {
+		plane_c ret;
+		ret.norm = norm;
+		ret.dist = f*dist;
+		return ret;
+	}
 	void makeOpposite() {
 		norm = -norm;
 		dist = -dist;
