@@ -46,6 +46,13 @@ public:
 		maxs.set(-AABB_INFINITE, -AABB_INFINITE, -AABB_INFINITE);
 		mins.set(AABB_INFINITE, AABB_INFINITE, AABB_INFINITE);
 	}
+	float getMaxAbsCoord() const {
+		float a = maxs.getMaxAbsCoord();
+		float b = mins.getMaxAbsCoord();
+		if(a > b)
+			return a;
+		return b;
+	}
 	void fromTwoPoints(const vec3_c &p0, const vec3_c &p1) {
 		maxs = mins = p0;
 		addPoint(p1);

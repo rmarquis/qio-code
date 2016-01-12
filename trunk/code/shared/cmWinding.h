@@ -54,6 +54,10 @@ public:
 	void removeDuplicatedPoints(float epsilon = 0.001f);
 	void addPointsUnique(const vec3_c *first, u32 numPoints, float epsilon = 0.001f);
 	vec3_c getCenter() const;
+	void scale(float f) {
+		for(u32 i = 0; i < points.size(); i++)
+			points[i] *= f;
+	}
 	
 	void iterateTriangles(void (*triCallback)(const vec3_c &p0, const vec3_c &p1, const vec3_c &p2)) const;
 	void iterateTriangles(class staticModelCreatorAPI_i *smc) const;

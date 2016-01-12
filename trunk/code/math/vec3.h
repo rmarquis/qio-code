@@ -87,6 +87,19 @@ public:
 		this->fromString(text);
 	}
 
+	float getMaxAbsCoord() const {
+		float ax = abs(x);
+		float ay = abs(y);
+		float az = abs(z);
+		if(ax > ay) {
+			if(ax > az)
+				return ax;
+			return az;
+		}
+		if(ay > az)
+			return ay;
+		return az;
+	}
 	void set(float x,float y, float z){
 		this->x = x;
 		this->y = y;
