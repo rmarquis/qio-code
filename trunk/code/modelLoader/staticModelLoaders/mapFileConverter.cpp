@@ -248,293 +248,293 @@ static bool MOD_ConvertBrushD3(class parser_c &p, staticModelCreatorAPI_i *out) 
 	}
 	return false; // no error
 }
-class dVec3_c {
-public:
-	double x, y, z;
-	
-	dVec3_c() {
-	}
-	dVec3_c(const float *f) {
-		x = f[0];
-		y = f[1];
-		z = f[2];
-	}
-	dVec3_c(float x,float y, float z){
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-	void vectorMA(const dVec3_c &base, const dVec3_c &dir, const double scale) {
-		x = base.x + scale * dir.x;
-		y = base.y + scale * dir.y;
-		z = base.z + scale * dir.z;
-	}
-	// classic 3d vector dot product
-	double dotProduct(const dVec3_c &v) const {
-		return (x*v.x + y*v.y + z*v.z);
-	}
-	// sets this vector to a cross product result of two argument vectors
-	dVec3_c&	crossProduct(const dVec3_c &v1, const dVec3_c &v2) {
-		x = v1.y*v2.z - v1.z*v2.y;
-		y = v1.z*v2.x - v1.x*v2.z;
-		z = v1.x*v2.y - v1.y*v2.x;
-		return *this;
-	}
-	// returns the result of cross product between this and other vector
-	dVec3_c crossProduct(const dVec3_c &v) const {
-		dVec3_c o;
-		o.x = this->y*v.z - this->z*v.y;
-		o.y = this->z*v.x - this->x*v.z;
-		o.z = this->x*v.y - this->y*v.x;
-		return o;
-	}
-	void normalize() {
-		double lengthSQ = x*x + y*y + z*z;
-		if ( lengthSQ ) {
-			double iLength = 1.f / sqrt(lengthSQ);
-			x *= iLength;
-			y *= iLength;
-			z *= iLength;
-		}
-	}
-	void operator *= ( const double f ) {
-		this->x *= f;
-		this->y *= f;
-		this->z *= f;
-	}
-	void operator /= ( const double f ) {
-		this->x /= f;
-		this->y /= f;
-		this->z /= f;
-	}
-	dVec3_c operator - () const {
-		return dVec3_c(-x,-y,-z);
-	}
-	void operator += ( const dVec3_c &other ) {
-		this->x += other.x;
-		this->y += other.y;
-		this->z += other.z;
-	}
-	void operator -= ( const dVec3_c &other ) {
-		this->x -= other.x;
-		this->y -= other.y;
-		this->z -= other.z;
-	}
-	// fast-access operators
-	inline operator double *() const {
-		return (double*)&x;
-	}
-
-	inline operator double *() {
-		return (double*)&x;
-	}
-	inline double operator [] (const int index) const {
-		return ((double*)this)[index];
-	}
-	inline double &operator [] (const int index) {
-		return ((double*)this)[index];
-	}
-};
-
-inline dVec3_c operator*(const dVec3_c& a, const double f ) {
-	dVec3_c o;
-	o.x = a.x * f;
-	o.y = a.y * f;
-	o.z = a.z * f;
-	return o;
-}
-inline dVec3_c operator*(const double f, const dVec3_c& b ) {
-	dVec3_c o;
-	o.x = b.x * f;
-	o.y = b.y * f;
-	o.z = b.z * f;
-	return o;
-}
-inline dVec3_c operator/(const dVec3_c& a, const double f ) {
-	dVec3_c o;
-	o.x = a.x / f;
-	o.y = a.y / f;
-	o.z = a.z / f;
-	return o;
-}
-inline dVec3_c operator/(const double f, const dVec3_c& b ) {
-	dVec3_c o;
-	o.x = f / b.x;
-	o.y = f / b.y;
-	o.z = f / b.z;
-	return o;
-}
-inline dVec3_c operator+(const dVec3_c& a, const dVec3_c& b ) {
-	dVec3_c o;
-	o.x = a.x + b.x;
-	o.y = a.y + b.y;
-	o.z = a.z + b.z;
-	return o;
-}
-inline dVec3_c operator-(const dVec3_c& a, const dVec3_c& b ) {
-	dVec3_c o;
-	o.x = a.x - b.x;
-	o.y = a.y - b.y;
-	o.z = a.z - b.z;
-	return o;
-}
-class dWinding_c {
-	arraySTD_c<dVec3_c> points;
-public:
-	bool createBaseWindingFromPlane(const class dVec3_c &norm, double dist, float maxCoord = 131072.f) {
-		// find the major axis
-		double max = -maxCoord;
-		int x = -1;
-		for (u32 i = 0; i < 3; i++) {
-			double v = abs(norm[i]);
-			if (v > max) {
-				x = i;
-				max = v;
-			}
-		}
-		if (x == -1) {
-			g_core->RedWarning("cmWinding_c::createBaseWindingFromPlane: plane is degnerate - no axis found\n");
-			return true; // error
-		}
-		
-		dVec3_c up(0,0,0);
-		if(x == 2) {
-			up.x = 1;
-		} else {
-			up.z = 1;
-		}
-
-		double v = norm.dotProduct(up);
-		up.vectorMA(up, norm, -v);
-		up.normalize();
-
-		dVec3_c org = norm * -dist;
-
-		dVec3_c vright;
-		vright.crossProduct(up,norm);
-
-		up *= maxCoord;
-		vright *= maxCoord;
-
-		// project a really big	axis aligned box onto the plane
-		dVec3_c p[4];
-		p[0] = org - vright;
-		p[0] += up;
-
-		p[1] = org + vright;
-		p[1] += up;
-
-		p[2] = org + vright;
-		p[2] -= up;
-
-		p[3] = org - vright;
-		p[3] -= up;
-
-		points.push_back(p[0]);
-		points.push_back(p[1]);
-		points.push_back(p[2]);
-		points.push_back(p[3]);
-
-		for (u32 i = 0; i < points.size(); i++) {
-			double d = norm.dotProduct(points[i]) + dist;
-			if(d != 0.f) {
-				dVec3_c delta = -d * norm;
-				dVec3_c fixed = points[i] + delta;
-				double fixedDist = norm.dotProduct(fixed) + dist;
-				if(abs(fixedDist) < abs(d)) {
-					points[i] = fixed;
-				}
-			}
-		}
-
-		//if(areAllPointsOnPlane(pl,1.f) == false) {
-		//	__asm int 3
-		//}
-	}
-	enum planeSide_e clipWindingByPlane(const class dVec3_c &norm, double dist, float epsilon = 0.00001f){
-		u32 counts[3];
-		counts[SIDE_FRONT] = counts[SIDE_BACK] = counts[SIDE_ON] = 0;
-		arraySTD_c<float> dists;
-		dists.resize(points.size()+1);
-		arraySTD_c<u32> sides;
-		sides.resize(points.size()+1);
-		// determine sides for each point
-		u32 i;
-		for (i = 0; i < points.size(); i++) {
-			float d = norm.dotProduct(points[i]) + dist;
-		
-			dists[i] = d;
-
-			if (d > epsilon)
-				sides[i] = SIDE_FRONT;
-			else if (d < -epsilon)
-				sides[i] = SIDE_BACK;
-			else {
-				sides[i] = SIDE_ON;
-			}
-			counts[sides[i]]++;
-		}
-		sides[i] = sides[0];
-		dists[i] = dists[0];
-		if (!counts[SIDE_FRONT]) {
-			// there are no points on the front side of the plane
-			points.clear(); // (winding gets entirely chopped away)
-			return SIDE_BACK;
-		}
-		if (!counts[SIDE_BACK]) {
-			// there are no points on the back side of the plane
-			return SIDE_FRONT;
-		}
-		arraySTD_c<dVec3_c> f;
-		f.reserve(points.size()*2);
-		for ( i = 0; i < points.size(); i++) {
-			dVec3_c p1 = points[i];
-
-			if (sides[i] == SIDE_ON) {
-				f.push_back(p1);
-				continue;
-			}
-			if (sides[i] == SIDE_FRONT)
-				f.push_back(p1);
-			if (sides[i+1] == SIDE_ON || sides[i+1] == sides[i])
-				continue;
-			dVec3_c p2 = points[(i+1)%points.size()];
-
-			float dot = dists[i] / (dists[i]-dists[i+1]);
-			dVec3_c mid;
-			if (norm.x == 1)
-				mid.x = -dist;
-			else if (norm.x == -1)
-				mid.x = dist;
-			else
-				mid.x = p1.x + dot*(p2.x-p1.x);
-
-			if (norm.y == 1)
-				mid.y = -dist;
-			else if (norm.y == -1)
-				mid.y = dist;
-			else
-				mid.y = p1.y + dot*(p2.y-p1.y);
-
-			if (norm.z == 1)
-				mid.z = -dist;
-			else if (norm.z == -1)
-				mid.z = dist;
-			else
-				mid.z = p1.z + dot*(p2.z-p1.z);
-
-			f.push_back(mid);
-		}
-		points = f;
-		return SIDE_CROSS;
-	}
-	u32 size() const {
-		return points.size();
-	}
-	const dVec3_c &operator [] (u32 index) const {
-		return points[index];
-	}
-};
+//class dVec3_c {
+//public:
+//	double x, y, z;
+//	
+//	dVec3_c() {
+//	}
+//	dVec3_c(const float *f) {
+//		x = f[0];
+//		y = f[1];
+//		z = f[2];
+//	}
+//	dVec3_c(float x,float y, float z){
+//		this->x = x;
+//		this->y = y;
+//		this->z = z;
+//	}
+//	void vectorMA(const dVec3_c &base, const dVec3_c &dir, const double scale) {
+//		x = base.x + scale * dir.x;
+//		y = base.y + scale * dir.y;
+//		z = base.z + scale * dir.z;
+//	}
+//	// classic 3d vector dot product
+//	double dotProduct(const dVec3_c &v) const {
+//		return (x*v.x + y*v.y + z*v.z);
+//	}
+//	// sets this vector to a cross product result of two argument vectors
+//	dVec3_c&	crossProduct(const dVec3_c &v1, const dVec3_c &v2) {
+//		x = v1.y*v2.z - v1.z*v2.y;
+//		y = v1.z*v2.x - v1.x*v2.z;
+//		z = v1.x*v2.y - v1.y*v2.x;
+//		return *this;
+//	}
+//	// returns the result of cross product between this and other vector
+//	dVec3_c crossProduct(const dVec3_c &v) const {
+//		dVec3_c o;
+//		o.x = this->y*v.z - this->z*v.y;
+//		o.y = this->z*v.x - this->x*v.z;
+//		o.z = this->x*v.y - this->y*v.x;
+//		return o;
+//	}
+//	void normalize() {
+//		double lengthSQ = x*x + y*y + z*z;
+//		if ( lengthSQ ) {
+//			double iLength = 1.f / sqrt(lengthSQ);
+//			x *= iLength;
+//			y *= iLength;
+//			z *= iLength;
+//		}
+//	}
+//	void operator *= ( const double f ) {
+//		this->x *= f;
+//		this->y *= f;
+//		this->z *= f;
+//	}
+//	void operator /= ( const double f ) {
+//		this->x /= f;
+//		this->y /= f;
+//		this->z /= f;
+//	}
+//	dVec3_c operator - () const {
+//		return dVec3_c(-x,-y,-z);
+//	}
+//	void operator += ( const dVec3_c &other ) {
+//		this->x += other.x;
+//		this->y += other.y;
+//		this->z += other.z;
+//	}
+//	void operator -= ( const dVec3_c &other ) {
+//		this->x -= other.x;
+//		this->y -= other.y;
+//		this->z -= other.z;
+//	}
+//	// fast-access operators
+//	inline operator double *() const {
+//		return (double*)&x;
+//	}
+//
+//	inline operator double *() {
+//		return (double*)&x;
+//	}
+//	inline double operator [] (const int index) const {
+//		return ((double*)this)[index];
+//	}
+//	inline double &operator [] (const int index) {
+//		return ((double*)this)[index];
+//	}
+//};
+//
+//inline dVec3_c operator*(const dVec3_c& a, const double f ) {
+//	dVec3_c o;
+//	o.x = a.x * f;
+//	o.y = a.y * f;
+//	o.z = a.z * f;
+//	return o;
+//}
+//inline dVec3_c operator*(const double f, const dVec3_c& b ) {
+//	dVec3_c o;
+//	o.x = b.x * f;
+//	o.y = b.y * f;
+//	o.z = b.z * f;
+//	return o;
+//}
+//inline dVec3_c operator/(const dVec3_c& a, const double f ) {
+//	dVec3_c o;
+//	o.x = a.x / f;
+//	o.y = a.y / f;
+//	o.z = a.z / f;
+//	return o;
+//}
+//inline dVec3_c operator/(const double f, const dVec3_c& b ) {
+//	dVec3_c o;
+//	o.x = f / b.x;
+//	o.y = f / b.y;
+//	o.z = f / b.z;
+//	return o;
+//}
+//inline dVec3_c operator+(const dVec3_c& a, const dVec3_c& b ) {
+//	dVec3_c o;
+//	o.x = a.x + b.x;
+//	o.y = a.y + b.y;
+//	o.z = a.z + b.z;
+//	return o;
+//}
+//inline dVec3_c operator-(const dVec3_c& a, const dVec3_c& b ) {
+//	dVec3_c o;
+//	o.x = a.x - b.x;
+//	o.y = a.y - b.y;
+//	o.z = a.z - b.z;
+//	return o;
+//}
+//class dWinding_c {
+//	arraySTD_c<dVec3_c> points;
+//public:
+//	bool createBaseWindingFromPlane(const class dVec3_c &norm, double dist, float maxCoord = 131072.f) {
+//		// find the major axis
+//		double max = -maxCoord;
+//		int x = -1;
+//		for (u32 i = 0; i < 3; i++) {
+//			double v = abs(norm[i]);
+//			if (v > max) {
+//				x = i;
+//				max = v;
+//			}
+//		}
+//		if (x == -1) {
+//			g_core->RedWarning("cmWinding_c::createBaseWindingFromPlane: plane is degnerate - no axis found\n");
+//			return true; // error
+//		}
+//		
+//		dVec3_c up(0,0,0);
+//		if(x == 2) {
+//			up.x = 1;
+//		} else {
+//			up.z = 1;
+//		}
+//
+//		double v = norm.dotProduct(up);
+//		up.vectorMA(up, norm, -v);
+//		up.normalize();
+//
+//		dVec3_c org = norm * -dist;
+//
+//		dVec3_c vright;
+//		vright.crossProduct(up,norm);
+//
+//		up *= maxCoord;
+//		vright *= maxCoord;
+//
+//		// project a really big	axis aligned box onto the plane
+//		dVec3_c p[4];
+//		p[0] = org - vright;
+//		p[0] += up;
+//
+//		p[1] = org + vright;
+//		p[1] += up;
+//
+//		p[2] = org + vright;
+//		p[2] -= up;
+//
+//		p[3] = org - vright;
+//		p[3] -= up;
+//
+//		points.push_back(p[0]);
+//		points.push_back(p[1]);
+//		points.push_back(p[2]);
+//		points.push_back(p[3]);
+//
+//		for (u32 i = 0; i < points.size(); i++) {
+//			double d = norm.dotProduct(points[i]) + dist;
+//			if(d != 0.f) {
+//				dVec3_c delta = -d * norm;
+//				dVec3_c fixed = points[i] + delta;
+//				double fixedDist = norm.dotProduct(fixed) + dist;
+//				if(abs(fixedDist) < abs(d)) {
+//					points[i] = fixed;
+//				}
+//			}
+//		}
+//
+//		//if(areAllPointsOnPlane(pl,1.f) == false) {
+//		//	__asm int 3
+//		//}
+//	}
+//	enum planeSide_e clipWindingByPlane(const class dVec3_c &norm, double dist, float epsilon = 0.00001f){
+//		u32 counts[3];
+//		counts[SIDE_FRONT] = counts[SIDE_BACK] = counts[SIDE_ON] = 0;
+//		arraySTD_c<float> dists;
+//		dists.resize(points.size()+1);
+//		arraySTD_c<u32> sides;
+//		sides.resize(points.size()+1);
+//		// determine sides for each point
+//		u32 i;
+//		for (i = 0; i < points.size(); i++) {
+//			float d = norm.dotProduct(points[i]) + dist;
+//		
+//			dists[i] = d;
+//
+//			if (d > epsilon)
+//				sides[i] = SIDE_FRONT;
+//			else if (d < -epsilon)
+//				sides[i] = SIDE_BACK;
+//			else {
+//				sides[i] = SIDE_ON;
+//			}
+//			counts[sides[i]]++;
+//		}
+//		sides[i] = sides[0];
+//		dists[i] = dists[0];
+//		if (!counts[SIDE_FRONT]) {
+//			// there are no points on the front side of the plane
+//			points.clear(); // (winding gets entirely chopped away)
+//			return SIDE_BACK;
+//		}
+//		if (!counts[SIDE_BACK]) {
+//			// there are no points on the back side of the plane
+//			return SIDE_FRONT;
+//		}
+//		arraySTD_c<dVec3_c> f;
+//		f.reserve(points.size()*2);
+//		for ( i = 0; i < points.size(); i++) {
+//			dVec3_c p1 = points[i];
+//
+//			if (sides[i] == SIDE_ON) {
+//				f.push_back(p1);
+//				continue;
+//			}
+//			if (sides[i] == SIDE_FRONT)
+//				f.push_back(p1);
+//			if (sides[i+1] == SIDE_ON || sides[i+1] == sides[i])
+//				continue;
+//			dVec3_c p2 = points[(i+1)%points.size()];
+//
+//			float dot = dists[i] / (dists[i]-dists[i+1]);
+//			dVec3_c mid;
+//			if (norm.x == 1)
+//				mid.x = -dist;
+//			else if (norm.x == -1)
+//				mid.x = dist;
+//			else
+//				mid.x = p1.x + dot*(p2.x-p1.x);
+//
+//			if (norm.y == 1)
+//				mid.y = -dist;
+//			else if (norm.y == -1)
+//				mid.y = dist;
+//			else
+//				mid.y = p1.y + dot*(p2.y-p1.y);
+//
+//			if (norm.z == 1)
+//				mid.z = -dist;
+//			else if (norm.z == -1)
+//				mid.z = dist;
+//			else
+//				mid.z = p1.z + dot*(p2.z-p1.z);
+//
+//			f.push_back(mid);
+//		}
+//		points = f;
+//		return SIDE_CROSS;
+//	}
+//	u32 size() const {
+//		return points.size();
+//	}
+//	const dVec3_c &operator [] (u32 index) const {
+//		return points[index];
+//	}
+//};
 
 
 static bool MOD_ConvertBrushQ3(class parser_c &p, staticModelCreatorAPI_i *out) {
