@@ -30,6 +30,8 @@ DEFINE_CLASS_ALIAS(PropPhysics, prop_dynamic);
 DEFINE_CLASS_ALIAS(PropPhysics, physics_prop);
 // used eg. on de_dust2 of CSS
 DEFINE_CLASS_ALIAS(PropPhysics, prop_physics_multiplayer);
+// temporary
+DEFINE_CLASS_ALIAS(PropPhysics, misc_gamemodel);
 
 PropPhysics::PropPhysics() {
 	bUseRModelToCreateDynamicCVXShape = true;
