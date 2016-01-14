@@ -103,6 +103,7 @@ public:
 	virtual enum stageType_e getStageType() const = 0;
 	virtual bool hasRGBGen() const = 0;
 	virtual enum rgbGen_e getRGBGenType() const = 0;
+	virtual enum alphaGen_e getAlphaGenType() const = 0;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const = 0;
 	virtual float getRGBGenWaveValue(float curTimeSec) const = 0;
 	virtual bool getDepthWrite() const = 0;

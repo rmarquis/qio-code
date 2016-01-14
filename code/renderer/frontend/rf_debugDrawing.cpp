@@ -58,7 +58,7 @@ void RF_ShowCrossairSurfaceInfo() {
 			g_core->Print("Hit render entity with model %s and material %s (loaded from %s)\n",rEnt->getModelName(),rMat->getName(),rMat->getSourceFileName());
 		}
 	} else {
-		g_core->Print("Hit render World, material %s (loaded from %s)\n",rMat->getName(),rMat->getSourceFileName());
+		g_core->Print("Hit render World, material %s (loaded from %s, stages %i)\n",rMat->getName(),rMat->getSourceFileName(),rMat->getNumStages());
 	}
 }
 

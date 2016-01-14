@@ -179,6 +179,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	class texModArray_c *texMods;
 	enum stageType_e type;
 	class rgbGen_c *rgbGen;
+	enum alphaGen_e alphaGen;
 	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
 	// custom per-stage RGBA masking for Doom3 materials
 	maskState_s colorMask;
@@ -235,6 +236,7 @@ public:
 	}
 	virtual bool hasRGBGen() const;
 	virtual enum rgbGen_e getRGBGenType() const;
+	virtual enum alphaGen_e getAlphaGenType() const;
 	virtual bool getRGBGenConstantColor3f(float *out3Floats) const;
 	virtual float getRGBGenWaveValue(float curTimeSec) const;
 	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
@@ -360,6 +362,8 @@ public:
 	}
 	// 'vertexColor' keyword
 	void setRGBAGenVertex();
+	// alphaGen vertex
+	void setAlphaGenVertex();
 };
 
 class mtrIMPL_c : public mtrAPI_i { 
