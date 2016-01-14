@@ -1,0 +1,1 @@
+Simple hacky terrain blending. Requires "alphaGen vertex" support in material system. Blending is using BSP vertex colors data.

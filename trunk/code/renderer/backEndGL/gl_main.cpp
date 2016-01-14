@@ -2138,7 +2138,15 @@ drawOnlyLightmap:
 				}
 				// by default dont use vertex colors...
 				// (right now it overrides the setting from frontend)
-				bindVertexColors = false;
+
+				// HACK HACK HACK
+				// FOR ET MAPS
+				// It improves (totally fixes?) the color vertices/lightmaps mess on OASIS!
+				if(lastLightmap == 0) {
+					bindVertexColors = true;
+				} else {
+					bindVertexColors = false;
+				}
 				if(s->hasRGBGen() && (rb_ignoreRGBGens.getInt() == 0)) {
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
 						bindVertexColors = false;
@@ -2242,8 +2250,13 @@ drawOnlyLightmap:
 				} else {
 #if 1
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
-						bindVertexColors = false;
-					} else if(s->getRGBGenType() == RGBGEN_VERTEX && (rb_ignoreRGBGenVertex.getInt() == 0)) {
+						if(s->getAlphaGenType() == ALPHAGEN_VERTEX) {
+							// FIXME: this will look incorrectly if rgb values are not indentity in vbo
+							bindVertexColors = true;
+						} else {
+							bindVertexColors = false;
+						}
+					} else if((s->getRGBGenType() == RGBGEN_VERTEX && (rb_ignoreRGBGenVertex.getInt() == 0))) {
 						// just use vertex colors from VBO,
 						// nothing to calculate on CPU
 						bindVertexColors = true;
@@ -2259,7 +2272,6 @@ drawOnlyLightmap:
 					}
 					}
 				}
-	
 				bool modifiedVertexArrayOnCPU = (selectedVertexBuffer != &verts);
 
 				// see if we have to bind a GLSL shader

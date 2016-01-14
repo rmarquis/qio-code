@@ -122,6 +122,7 @@ mtrStage_c::mtrStage_c() {
 	condition = 0;
 	alphaTestAST = 0;
 	cubeMap = 0;
+	alphaGen = ALPHAGEN_NOT_SET;
 }
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
@@ -219,6 +220,9 @@ bool mtrStage_c::hasRGBGen() const {
 		return false; // ignore invalid rgbGens
 	}
 	return true;
+}
+enum alphaGen_e mtrStage_c::getAlphaGenType() const {
+	return alphaGen;
 }
 enum rgbGen_e mtrStage_c::getRGBGenType() const {
 	if(rgbGen == 0)
@@ -338,6 +342,9 @@ void mtrStage_c::setAlphaAST(class astAPI_i *ast) {
 #else
 	delete ast;
 #endif
+}
+void mtrStage_c::setAlphaGenVertex() {
+	alphaGen = ALPHAGEN_VERTEX;
 }
 void mtrStage_c::setRGBAGenVertex() {
 	allocRGBGen();
@@ -670,9 +677,17 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					//} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
 				//	}
-				} else if(p.atWord("diffusemap") || p.atWord("colormap") || p.atWord("implicitMap")) {
-					// "diffusemap" keyword is a shortcut for a material stage with single image
-					// it was introduced in Doom3
+				} else if(p.atWord("diffusemap") || p.atWord("colormap")) {
+					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
+					if(p.atWord("-")) { // ET's way
+						newDiffuseMapStage->setTexture(this->getName());
+					} else {
+						newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
+					}
+					//newDiffuseMapStage->setStageType(ST_COLORMAP);
+					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
+					stages.push_back(newDiffuseMapStage);
+				} else if(p.atWord("implicitMap")) {
 					// "implicitMap" is used only in Wolfeinstein: Enemy Territory
 					// ET's way
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
@@ -681,6 +696,16 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else {
 						newDiffuseMapStage->setTexture(MAT_ParseImageScript(p));
 					}
+					// V: it seems that implicitMap materials should be drawn with vertex colors.
+					// See bezier patches on oasis with stucco07a material (from egypt_wals_sd)
+					/*
+					textures/egypt_walls_sd/stucco07a
+					{
+						q3map_nonplanar
+						q3map_shadeangle 90
+						implicitMap -
+					}
+					*/
 					//newDiffuseMapStage->setStageType(ST_COLORMAP);
 					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 					stages.push_back(newDiffuseMapStage);
@@ -1461,7 +1486,13 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("detail")) {
 					// In ET it's used in mp_siwa.shader
 				} else if(p.atWord("alphaGen")) {
-					p.skipLine();
+					// V: it is used in TCQ3b (ET) terrain blending
+					// for example, dim_terrblendtest.bsp
+					if(p.atWord("vertex")) {
+						stage->setAlphaGenVertex();
+					} else {
+						p.skipLine();
+					}
 				} else if(p.atWord("fog")) {
 					// Enemy Territory keyword? "fog off"
 					// It's used in skies_sd.shader
@@ -1558,7 +1589,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				// if we have a non-lightmap stage without blendfunc, we can collapse...
 				for(int i = 0; i < stages.size(); i++) {
 					mtrStage_c *s = stages[i];
-					if(s->isLightmapStage() == false && s->hasBlendFunc() == false) {
+					if(s->isLightmapStage() == false && s->hasBlendFunc() == false
+						&& s->getAlphaGenType() == ALPHAGEN_NOT_SET) {
 						this->removeAllStagesOfType(ST_LIGHTMAP);
 						this->replaceStageType(ST_NOT_SET,ST_COLORMAP_LIGHTMAPPED);
 						this->replaceStageType(ST_COLORMAP,ST_COLORMAP_LIGHTMAPPED);

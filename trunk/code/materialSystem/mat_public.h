@@ -70,6 +70,12 @@ enum rgbGen_e {
 	RGBGEN_AST, // one D3 material script expression for r,g,b
 };
 
+// TODO
+enum alphaGen_e {
+	ALPHAGEN_NOT_SET,
+	ALPHAGEN_VERTEX,
+};
+
 // blend modes; abstracted so they can apply to both opengl and dx
 // if you edit this enum, remember to mirror your changes in blendModeEnumToGLBlend array.
 enum blendMode_e {
