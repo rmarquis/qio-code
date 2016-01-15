@@ -39,6 +39,7 @@ public:
 	virtual bool getKeyValue(const char *key, class vec3_c &out) const = 0;
 	virtual bool hasKey(const char *key) const = 0;
 	virtual const char *getKeyValue(const char *key) const = 0;
+	virtual float getKeyFloat(const char *key, float def) const = 0;
 };
 
 #endif // __ENTDEFAPI_H__

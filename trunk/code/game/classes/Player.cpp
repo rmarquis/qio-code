@@ -33,6 +33,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physObjectAPI.h>
 #include <api/physCharacterControllerAPI.h>
 #include <api/modelDeclAPI.h>
+#include <api/declManagerAPI.h>
+#include <api/entDefAPI.h>
+#include <api/entityDeclAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 #include <shared/animationFlags.h>
@@ -239,10 +242,20 @@ void Player::setPlayerModel(const char *newPlayerModelName) {
 		this->ps.viewheight = 26; // so eye is 24+26 = 50 units above ground
 	} else {
 		animHandler = new qioPlayerAnimController_c;
-		// NOTE: shina models origin is on the ground, between its feet
-		this->createCharacterControllerCapsule(48,19);
-		this->setCharacterControllerZOffset(48);
-		this->ps.viewheight = 82; // so eye is 82 units above ground
+		// For Dim's request and TCQB support - player size controlled by .def file
+		entityDeclAPI_i *qioPlayerModelDef = g_declMgr->registerEntityDecl("qioPlayerModelCfg");
+		if(qioPlayerModelDef) {
+			float h = qioPlayerModelDef->getEntDefAPI()->getKeyFloat("capsuleHeight",30);
+			float r = qioPlayerModelDef->getEntDefAPI()->getKeyFloat("capsuleRadius",19);
+			this->createCharacterControllerCapsule(h,r);
+			this->setCharacterControllerZOffset(qioPlayerModelDef->getEntDefAPI()->getKeyFloat("zOffset",30));
+			this->ps.viewheight = qioPlayerModelDef->getEntDefAPI()->getKeyFloat("viewHeight",72);
+		} else {
+			// NOTE: shina models origin is on the ground, between its feet
+			this->createCharacterControllerCapsule(48,19);
+			this->setCharacterControllerZOffset(48);
+			this->ps.viewheight = 82; // so eye is 82 units above ground
+		}
 	}
 	animHandler->setGameEntity(this);
 	animHandler->setModelName(newPlayerModelName);
