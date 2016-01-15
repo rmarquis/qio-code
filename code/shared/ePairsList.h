@@ -174,12 +174,12 @@ public:
 		}
 		return 0;
 	}
-	float getKeyFloat(const char *key) const {
+	float getKeyFloat(const char *key, float def = 0) const {
 		const ePair_c *p = find(key);
 		if(p) {
 			return atof(p->getValue());
 		}
-		return 0;
+		return def;
 	}
 	bool getKeyVec3(const char *key, class vec3_c &out) const;
 

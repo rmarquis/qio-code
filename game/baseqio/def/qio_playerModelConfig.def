@@ -1,0 +1,12 @@
+
+
+entityDef qioPlayerModelCfg {
+	"viewHeight" "72" 
+	"capsuleHeight" "30"
+	"capsuleRadius" "15"
+	// V: by default, player capsule origin (point 0 0 0) is at it center,
+	// as in Quake3. But some newer player models have their
+	// origin at bounding box bottom (at feet), so it must be moved.
+	// That's where zOffset is usefull.
+	"zOffset" "30"
+}

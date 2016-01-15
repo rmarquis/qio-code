@@ -74,6 +74,9 @@ public:
 	virtual bool getKeyValue(const char *key, int &out) const {
 		return ePairs.getKeyValue(key,out);
 	}
+	virtual float getKeyFloat(const char *key, float def) const {
+		return ePairs.getKeyFloat(key,def);
+	}
 	int getKeyInteger(const char *key) const {
 		int i = 0;
 		getKeyValue(key,i);
