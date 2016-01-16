@@ -14,7 +14,8 @@ textures/hipshot_sky/grimmnight
 	
 	xmap_sun 1 1 1 150 75 45
 
-	skyparms - 2048 -
+	// V: not used in Qio and I'm not sure what it did in Xreal
+	//skyparms - 2048 -
 
 	{ 
 		stage skyboxMap
