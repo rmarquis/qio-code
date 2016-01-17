@@ -38,7 +38,9 @@ public:
 	void uploadTextures();
 	void unloadTextures();
 	~textureAnimation_c();
+	bool loadAnimMapImagesFromDirectory(const char *dir);
 	bool parseAnimMap(class parser_c &p);
+	bool parseAnimMapDir(class parser_c &p);
 	textureAPI_i *getTexture(u32 idx);
 	textureAPI_i *getTextureForTime(float time);
 	u32 getNumFrames() const {
@@ -62,6 +64,7 @@ public:
 	bool hasTexture() const;
 	bool parseMap(parser_c &p);
 	bool parseAnimMap(parser_c &p);
+	bool parseAnimMapDir(parser_c &p);
 	bool isLightmap() const;
 	void setDefaultTexture();
 	// returns the singleTexture (if its present)

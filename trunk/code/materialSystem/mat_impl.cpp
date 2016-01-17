@@ -836,8 +836,6 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("q3map_surfacelight")) {
 					p.getFloat();
-				} else if(p.atWord("q3map_sun")) {
-					p.skipLine();
 				} else if(p.atWord("sort")) {
 					p.getToken();
 				} else if(p.atWord("guisurf")) {
@@ -886,7 +884,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 
 				} else if(p.atWord("wood")) {
 
-				} else if(p.atWord("xmap_sun")) {
+				} else if(p.atWord("xmap_sun") || p.atWord("q3map_sun")) {
 					// Xreal sun params.
 					// In Xreal they are automatically applied to tr. globals when they are parsed.
 					// We're using a separate class to store them.
@@ -1033,6 +1031,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("clampmap")) {
 					stage->getStageTexture().setBClamp(true);
 					stage->getStageTexture().parseMap(p);
+					stage->getStageTexture().uploadTexture();
+				} else if(p.atWord("animmapdir")) {
+					// V: added for Qio
+					stage->getStageTexture().parseAnimMapDir(p);
 					stage->getStageTexture().uploadTexture();
 				} else if(p.atWord("animmap")) {
 					stage->getStageTexture().parseAnimMap(p);
