@@ -151,6 +151,7 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 	u32 w, h;
 	const char *fixedPath = g_img->loadImage(texString,&data,&w,&h);
 	if(data == 0) {
+		g_core->RedWarning("MAT_RegisterTexture: using default texture for %s\n",texString);
 		return MAT_GetDefaultTexture();
 	}
 	ret = new textureIMPL_c;
