@@ -266,6 +266,14 @@ public:
 	void clear() {
 		makeEmpty();
 	}
+	u32 countCharacter(char ch) const {
+		u32 r=  0;
+		for(u32 i = 0; i < len; i++) {
+			if(data[i] == ch)
+				r++;
+		}
+		return r;
+	}
 	void setFromTo(const char *from, const char *to) {
 		if(from >= to) {
 			makeEmpty();

@@ -400,6 +400,10 @@ class textureAPI_i *MAT_ParseImageScript(parser_c &p) {
 	str texName;
 	texName.setFromTo(startPos,endPos);
 	if(finalImage == 0) {
+		// HACK for Dim's obj_mp_office where texure names have (32) inside them
+		if(texName.countCharacter('(') != texName.countCharacter(')')) {
+			texName.append(p.getNextWordInLine());
+		}
 		return MAT_RegisterTexture(texName,TWM_REPEAT);
 	}
 	class textureAPI_i *ret = MAT_CreateTexture(texName, finalImage->getData(), finalImage->getW(), finalImage->getH());
