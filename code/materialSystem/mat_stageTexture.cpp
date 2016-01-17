@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/textureAPI.h>
 #include <shared/textureWrapMode.h>
+#include <api/vfsAPI.h>
 
 // http://wiki.splashdamage.com/index.php/Materials
 const char *imageOps [] = {
@@ -78,6 +79,27 @@ void textureAnimation_c::unloadTextures() {
 textureAnimation_c::~textureAnimation_c() {
 	unloadTextures();
 }
+bool textureAnimation_c::parseAnimMapDir(parser_c &p) {
+	frequency = p.getFloat();
+	if(frequency == 0) {
+		g_core->RedWarning("textureAnimation_c::parseAnimMapDir: frequency is %s (see line %i of file %s)\n",p.getLastStoredToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+		return true; // error
+	}
+	str dir = p.getNextWordInLine();
+	return loadAnimMapImagesFromDirectory(dir);
+}
+bool textureAnimation_c::loadAnimMapImagesFromDirectory(const char *dir) {
+	int count = 0;
+	char **list = g_vfs->FS_ListFiles(dir,0,&count);
+	for(u32 i = 0; i < count; i++) {
+		str f = dir;
+		f.appendChar('/');
+		f.append(list[i]);
+		texNames.push_back(f);
+	}
+	g_vfs->FS_FreeFileList(list);
+	return false;
+}
 bool textureAnimation_c::parseAnimMap(parser_c &p) {
 	frequency = p.getFloat();
 	if(frequency == 0) {
@@ -88,6 +110,11 @@ bool textureAnimation_c::parseAnimMap(parser_c &p) {
 		const char *imgName = p.getLastStoredToken();
 		//g_core->Print("Img %i is %s\n",texNames.size(),imgName);
 		texNames.push_back(imgName);
+	}
+	if(texNames.size() == 1) {
+		str dir = texNames[0];
+		texNames.clear();
+		return loadAnimMapImagesFromDirectory(dir);
 	}
 	return false; // no error
 }
@@ -167,6 +194,12 @@ bool stageTexture_c::parseAnimMap(parser_c &p) {
 		animated = new textureAnimation_c;
 	}
 	return animated->parseAnimMap(p);	
+}
+bool stageTexture_c::parseAnimMapDir(parser_c &p) {
+	if(animated == 0) {
+		animated = new textureAnimation_c;
+	}
+	return animated->parseAnimMapDir(p);	
 }
 bool stageTexture_c::isLightmap() const {
 	if(!_stricmp(mapName,"$lightmap")) {
