@@ -52,7 +52,7 @@ class bulletPhysicsWorld_c : public physWorldAPI_i {
 	class btSequentialImpulseConstraintSolver *solver;
 	class btDiscreteDynamicsWorld *dynamicsWorld;
 
-	bulletColShape_c *registerShape(const class cMod_i *cmodel, bool isStatic);
+	bulletColShape_c *registerShape(const class cMod_i *cmodel, bool isStatic, const vec3_c &scale);
 
 public:
 	bulletPhysicsWorld_c(const char *newDebugName);

@@ -143,13 +143,22 @@ void bulletPhysicsWorld_c::shutdown() {
 	}
 	g_core->Print("bulletPhysicsWorld_c::shutdown: Physics world shat down!\n");
 }
-bulletColShape_c *bulletPhysicsWorld_c::registerShape(const cMod_i *cmodel, bool isStatic) {
+bulletColShape_c *bulletPhysicsWorld_c::registerShape(const cMod_i *cmodel, bool isStatic, const vec3_c &scale) {
 	str shapeName;
 	// static trimeshes must be handled other way then dynamic ones
 	if(isStatic && (cmodel->isTriMesh() || cmodel->isCompound())) {
 		shapeName = "|static|";
 	} else {
 		shapeName = "|dynamic|";
+	}
+	const vec3_c *pScale;
+	if(scale.compare(vec3_c(1,1,1))==false) {
+		char tmp[256];
+		sprintf(tmp,"%f_%f_%f|",scale.getX(),scale.getY(),scale.getZ());
+		shapeName.append(tmp);
+		pScale = &scale;
+	} else {
+		pScale = 0;
 	}
 	shapeName.append(cmodel->getName());
 	bulletColShape_c *ret = shapes.getEntry(shapeName);
@@ -158,7 +167,7 @@ bulletColShape_c *bulletPhysicsWorld_c::registerShape(const cMod_i *cmodel, bool
 	}
 	ret = new bulletColShape_c;
 	ret->setName(shapeName);
-	ret->init(cmodel,isStatic);
+	ret->init(cmodel,isStatic,pScale);
 	shapes.addObject(ret);
 	return ret;
 }
@@ -170,7 +179,7 @@ physObjectAPI_i *bulletPhysicsWorld_c::createPhysicsObject(const struct physObje
 	}
 	g_core->Print("bulletPhysicsWorld_c::createPhysicsObject: cmodel %s\n",def.collisionModel->getName());
 	bool isStatic = (def.mass == 0.f);
-	bulletColShape_c *colShape = registerShape(def.collisionModel,isStatic);
+	bulletColShape_c *colShape = registerShape(def.collisionModel,isStatic,def.scale);
 	if(colShape == 0) {
 
 		return 0;

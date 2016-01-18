@@ -464,7 +464,7 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!_strnicmp(key,"damage_zone ",12)) {
 		const char *zoneName = key + 12;
 		setDamageZone(zoneName,value);
-	} else if(!_stricmp(key,"scale")) {
+	} else if(!_stricmp(key,"scale") || !_stricmp(key,"modelscale")) {
 		float f = atof(value);
 		this->myEdict->s->scale.set(f,f,f);
 	} else {
@@ -572,7 +572,7 @@ void ModelEntity::initRigidBodyPhysics() {
 	if(body) {
 		destroyPhysicsObject();
 	}
-	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
+	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),this->getScale(),
 		this->cmod,this->mass,bUseDynamicConvexForTrimeshCMod,physBounciness));
 	if(this->body == 0) {
 		g_core->RedWarning("ModelEntity::initRigidBodyPhysics: BT_CreateRigidBodyWithCModel failed for cModel %s\n",this->cmod->getName());
@@ -597,7 +597,7 @@ void ModelEntity::initStaticBodyPhysics() {
 		return;
 	}
 	// static physics bodies have NULL mass
-	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),
+	this->body = g_physWorld->createPhysicsObject(physObjectDef_s(this->getOrigin(),this->getAngles(),this->getScale(),
 		this->cmod,0,false));
 	this->body->setEntityPointer(this);
 }

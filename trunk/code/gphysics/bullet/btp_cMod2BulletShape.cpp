@@ -59,7 +59,7 @@ btConvexHullShape *BT_ConvexHullShapeFromVerticesArray(const btAlignedObjectArra
 #endif
 	return shape;
 }
-btConvexHullShape *BT_CModelHullToConvex(const cmHull_i *h, const vec3_c *ofs = 0) {
+btConvexHullShape *BT_CModelHullToConvex(const cmHull_i *h, const vec3_c *ofs, const vec3_c *pScale) {
 	planeEquations.clear();
 	h->iterateSidePlanes(BT_AddBrushPlane);
 	// convert plane equations -> vertex cloud
@@ -70,17 +70,27 @@ btConvexHullShape *BT_CModelHullToConvex(const cmHull_i *h, const vec3_c *ofs = 
 			vertices[i] -= btVector3(ofs->floatPtr());
 		}
 	}
+	if(pScale) {
+		for(u32 i = 0; i < vertices.size(); i++) {
+			vertices[i].m_floats[0] *= pScale->getX();
+			vertices[i].m_floats[1] *= pScale->getY();
+			vertices[i].m_floats[2] *= pScale->getZ();
+		}
+	}
 	BT_ConvertVerticesArrayFromQioToBullet(vertices);
 	btConvexHullShape *shape = BT_ConvexHullShapeFromVerticesArray(vertices);
 	// the default margin is too high...
 	//shape->setMargin(0.f);
 	return shape;
 }
-btConvexHullShape *BT_CModelTriMeshToConvex(const class cmTriMesh_i *triMesh, const vec3_c *ofs) {
+btConvexHullShape *BT_CModelTriMeshToConvex(const class cmTriMesh_i *triMesh, const vec3_c *ofs, const vec3_c *pScale) {
 	btAlignedObjectArray<btVector3>	vertices;
 	vertices.resize(triMesh->getNumVerts());
 	for(u32 i = 0; i < triMesh->getNumVerts(); i++) {
 		vec3_c p = triMesh->getVerts()[i];
+		if(pScale) {
+			p.scaleXYZ(*pScale);
+		}
 		if(ofs) {
 			p -= *ofs;
 		}	
@@ -174,7 +184,7 @@ btBvhTriangleMeshShape *BT_CModelTriMeshToBHV(const class cmTriMesh_i *triMesh) 
 void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransform &localTrans, const class cMod_i *cmodel) {
 	if(cmodel->isHull()) {
 		const cmHull_i *h = cmodel->getHull();
-		btConvexHullShape *shape = BT_CModelHullToConvex(h);
+		btConvexHullShape *shape = BT_CModelHullToConvex(h,0,0);
 		compound->addChildShape(localTrans,shape);
 	} else if(cmodel->isCompound()) {
 		const cmCompound_i *cmCompound = cmodel->getCompound();
@@ -184,17 +194,17 @@ void BT_AddCModelToCompoundShape(btCompoundShape *compound, const class btTransf
 		}
 	}
 }
-btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bool bIsStatic, class vec3_c *extraCenterOfMassOffset) {
+btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bool bIsStatic, class vec3_c *extraCenterOfMassOffset, const vec3_c *pScale) {
 	if(cModel->isCompound()) {
 		const cmCompound_i *cmCompound = cModel->getCompound();
 		u32 numSubShapes = cmCompound->getNumSubShapes();
 		if(numSubShapes == 1) {
-			return BT_CModelToBulletCollisionShape(cmCompound->getSubShapeN(0),bIsStatic,extraCenterOfMassOffset);
+			return BT_CModelToBulletCollisionShape(cmCompound->getSubShapeN(0),bIsStatic,extraCenterOfMassOffset,pScale);
 		}
 		btCompoundShape *btCompound = new btCompoundShape;
 		for(u32 i = 0; i < numSubShapes; i++) {
 			const cMod_i *cmSubModel = cmCompound->getSubShapeN(i);
-			btCollisionShape *btSubmodel = BT_CModelToBulletCollisionShape(cmSubModel,bIsStatic,extraCenterOfMassOffset);
+			btCollisionShape *btSubmodel = BT_CModelToBulletCollisionShape(cmSubModel,bIsStatic,extraCenterOfMassOffset,pScale);
 			if(btSubmodel == 0)
 				continue;
 			btTransform id;
@@ -203,12 +213,12 @@ btCollisionShape *BT_CModelToBulletCollisionShape(const class cMod_i *cModel, bo
 		}
 		return btCompound;
 	} else if(cModel->isHull()) {
-		return BT_CModelHullToConvex(cModel->getHull(),extraCenterOfMassOffset);
+		return BT_CModelHullToConvex(cModel->getHull(),extraCenterOfMassOffset,pScale);
 	} else if(cModel->isTriMesh()) {
 		if(bIsStatic) {
 			return BT_CModelTriMeshToBHV(cModel->getTriMesh());
 		} else {
-			return BT_CModelTriMeshToConvex(cModel->getTriMesh(),extraCenterOfMassOffset);
+			return BT_CModelTriMeshToConvex(cModel->getTriMesh(),extraCenterOfMassOffset,pScale);
 		}
 	} else if(cModel->isBBExts()) {
 		aabb bb;

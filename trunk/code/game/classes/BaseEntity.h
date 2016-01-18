@@ -88,6 +88,7 @@ public:
 		return getOrigin(); // overriden in Player class
 	}
 	const class vec3_c &getAngles() const;
+	const class vec3_c &getScale() const;
 	const class matrix_c &getMatrix() const {
 		return matrix;
 	}
