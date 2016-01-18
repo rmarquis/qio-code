@@ -62,6 +62,8 @@ protected:
 	float pvsBoundsSkinWidth;
 	float physBounciness;
 	vec3_c sizes; // this is set only by "sizes" keyvalue
+	// for model entities
+	///vec3_c scale;
 	// damage zones (head/torso/arms/legs, etc)
 	// they are set through key values from Doom3 entity defs
 	// Also used to choose the proper pain animation.
