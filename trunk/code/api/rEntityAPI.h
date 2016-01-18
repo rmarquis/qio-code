@@ -29,6 +29,7 @@ class rEntityAPI_i {
 public:
 	virtual void setOrigin(const class vec3_c &newXYZ) = 0;
 	virtual void setAngles(const class vec3_c &newAngles) = 0;
+	virtual void setScale(const class vec3_c &newScale) = 0;
 	virtual void setModel(class rModelAPI_i *mod) = 0;
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
 	virtual void setAnim(const char *animName, int newFlags = 0) = 0;

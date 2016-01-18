@@ -68,6 +68,12 @@ public:
 		mat[1] *= -1;
 		mat[2] *= -1;
 	}
+	void fromAnglesAndScale(const vec3_c &angles, const vec3_c &scale) {
+		fromAngles(angles);
+		mat[0] *= scale.getX();
+		mat[1] *= scale.getY();
+		mat[2] *= scale.getZ();
+	}
 	void fromAngles(const vec3_c &angles) {
 		float angle = angles[YAW] * (M_PI*2 / 360);
 		float sy = sin(angle);

@@ -58,6 +58,7 @@ struct entityState_s {
 
 	class vec3_c	origin;
 	class vec3_c	angles;
+	class vec3_c	scale;
 
 	int		groundEntityNum;	// ENTITYNUM_NONE = in air
 
@@ -120,6 +121,7 @@ struct entityState_s {
 		trailEmitterSpriteRadius = 0.f;
 		trailEmitterInterval = 0;
 		lightColor.set(1.f,1.f,1.f);
+		scale.set(1.f,1.f,1.f);
 	}
 	entityState_s() {
 		setDefaults();

@@ -136,6 +136,10 @@ CG_CalcEntityLerpPositions
 #include <api/rAPI.h>
 #include <api/mtrAPI.h>
 static void CG_CalcEntityLerpPositions( centity_t *cent ) {
+	// fast test
+	if(cent->rEnt) {
+		cent->rEnt->setScale(cent->currentState.scale);
+	}
 	if(cent->currentState.parentNum != ENTITYNUM_NONE) {
 		centity_t *parent = &cg_entities[cent->currentState.parentNum];
 		if(parent->rEnt == 0)

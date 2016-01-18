@@ -464,6 +464,9 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!_strnicmp(key,"damage_zone ",12)) {
 		const char *zoneName = key + 12;
 		setDamageZone(zoneName,value);
+	} else if(!_stricmp(key,"scale")) {
+		float f = atof(value);
+		this->myEdict->s->scale.set(f,f,f);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

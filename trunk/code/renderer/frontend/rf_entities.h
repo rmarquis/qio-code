@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
 	vec3_c angles;
+	vec3_c scale;
 	axis_c axis;
 	vec3_c origin;
 	class rModelAPI_i *model;
@@ -100,6 +101,7 @@ public:
 	void recalcMatrix();
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setAngles(const vec3_c &newAngles);
+	virtual void setScale(const class vec3_c &newScale);
 	virtual void setModel(class rModelAPI_i *newModel);
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setAnim(const char *animName, int newFlags);

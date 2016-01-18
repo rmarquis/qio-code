@@ -170,6 +170,7 @@ void rEntityImpl_c::recalcABSBounds() {
 void rEntityImpl_c::recalcMatrix() {
 	// TODO: use axis instead of angles
 	matrix.fromAnglesAndOrigin(angles,origin);
+	matrix.scale(scale.getX(),scale.getY(),scale.getZ());
 	recalcABSBounds();
 }
 void rEntityImpl_c::setColor(const float *rgba) {
@@ -191,7 +192,14 @@ void rEntityImpl_c::setAngles(const vec3_c &newAngles) {
 	if(angles.compare(newAngles))
 		return;
 	angles = newAngles;
-	axis.fromAngles(angles);
+	axis.fromAnglesAndScale(angles,scale);
+	recalcMatrix();
+}
+void rEntityImpl_c::setScale(const class vec3_c &newScale) {
+	if(scale.compare(newScale))
+		return;
+	scale = newScale;
+	axis.fromAnglesAndScale(angles,scale);
 	recalcMatrix();
 }
 void rEntityImpl_c::updateModelSkin() {
