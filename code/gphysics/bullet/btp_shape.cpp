@@ -40,7 +40,7 @@ bulletColShape_c::~bulletColShape_c() {
 	}
 }		
 
-bool bulletColShape_c::init(const class cMod_i *newCModel, bool newBIStatic) {
+bool bulletColShape_c::init(const class cMod_i *newCModel, bool newBIStatic, const vec3_c *pScale) {
 	this->cModel = newCModel;
 
 	vec3_c centerOfMass;
@@ -60,7 +60,7 @@ bool bulletColShape_c::init(const class cMod_i *newCModel, bool newBIStatic) {
 			this->centerOfMassTransform.setOrigin((centerOfMass*QIO_TO_BULLET).floatPtr());
 		}
 	}
-	bulletShape = BT_CModelToBulletCollisionShape(newCModel,newBIStatic,&centerOfMass);
+	bulletShape = BT_CModelToBulletCollisionShape(newCModel,newBIStatic,&centerOfMass,pScale);
 	return false; // no error
 }
 

@@ -52,7 +52,7 @@ public:
 	bulletColShape_c();
 	~bulletColShape_c();
 
-	bool init(const class cMod_i *newCModel, bool newBIStatic);
+	bool init(const class cMod_i *newCModel, bool newBIStatic, const vec3_c *scale = 0);
 
 	void setName(const char *newName) {
 		name = newName;

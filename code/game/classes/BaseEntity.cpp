@@ -241,6 +241,9 @@ void BaseEntity::setMatrix(const class matrix_c &newMat) {
 const vec3_c &BaseEntity::getOrigin() const {
 	return myEdict->s->origin;
 }
+const class vec3_c &BaseEntity::getScale() const {
+	return myEdict->s->scale;
+}
 const vec3_c &BaseEntity::getAngles() const {
 	return myEdict->s->angles;
 }
