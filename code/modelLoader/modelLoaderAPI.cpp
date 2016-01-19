@@ -266,7 +266,11 @@ public:
 			return true;
 		if(!_stricmp(ext,"psk"))
 			return true;
+		// ET
 		if(!_stricmp(ext,"mdm"))
+			return true;
+		// RTCW
+		if(!_stricmp(ext,"mds"))
 			return true;
 		return false;
 	}
@@ -288,6 +292,11 @@ public:
 			}			
 		} else if(tmp.hasExt("mdm")) {
 			if(skelModel->loadMDM(fname)) {
+				delete skelModel;
+				return 0;
+			}			
+		} else if(tmp.hasExt("mds")) {
+			if(skelModel->loadMDS(fname)) {
 				delete skelModel;
 				return 0;
 			}	
@@ -313,6 +322,8 @@ public:
 			return true;
 		if(!_stricmp(ext,"mdx"))
 			return true;
+		if(!_stricmp(ext,"mds"))
+			return true;
 		return false;
 	}
 	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) {
@@ -332,6 +343,13 @@ public:
 		} else if(!_stricmp(ext,"mdx")) {
 			skelAnimGeneric_c *mdxAnim = new skelAnimGeneric_c;
 			if(mdxAnim->loadMDXAnim(fname)) {
+				delete mdxAnim;
+				return 0;
+			}
+			ret = mdxAnim;
+		} else if(!_stricmp(ext,"mds")) {
+			skelAnimGeneric_c *mdxAnim = new skelAnimGeneric_c;
+			if(mdxAnim->loadMDSAnim(fname)) {
 				delete mdxAnim;
 				return 0;
 			}

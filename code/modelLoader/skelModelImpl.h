@@ -163,6 +163,8 @@ public:
 	bool loadPSK(const char *fname);
 	// for Enemy Territory and TCCQB
 	bool loadMDM(const char *fname);
+	// RTCW
+	bool loadMDS(const char *fname);
 	void recalcEdges();
 };
 

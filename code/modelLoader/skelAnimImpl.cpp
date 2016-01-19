@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "skelAnimImpl.h"
 #include <shared/skelUtils.h> // boneOrArray_c
 #include <fileFormats/mdx_file_format.h>
+#include <fileFormats/mds_file_format.h>
 #include <api/vfsAPI.h>
 
 skelAnimGeneric_c::skelAnimGeneric_c() {
@@ -148,6 +149,115 @@ bool skelAnimGeneric_c::loadMDXAnim(const char *fname) {
 	return false;
 }
 
+//
+//	RTCW .mds files loading
+//
+bool skelAnimGeneric_c::loadMDSAnim(const char *fname) {
+
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+
+	const mdsHeader_t *h = (const mdsHeader_t *)fileData;
+	if(h->ident != MDS_IDENT) {
+		g_core->RedWarning("MDS file %s header has bad ident\n",fname);
+		return true;
+	}
+	if(h->version != MDS_VERSION) {
+		g_core->RedWarning("MDS file %s has bad version %i, should be %i\n",fname,h->version,MDX_VERSION);
+		return true;
+	}
+
+	this->animFileName = fname;
+	this->frameTime = 1.f;
+	this->bones.resize(h->numBones);
+	boneDef_s *bd = bones.getArray();
+	for(u32 i = 0; i < h->numBones; i++, bd++) {
+		const mdsBoneInfo_t *bi = h->pBone(i);
+
+		bd->nameIndex = SK_RegisterString(bi->name);
+		bd->parentIndex = bi->parent;
+	}
+
+	this->frames.resize(h->numFrames);
+	for(u32 i = 0; i < h->numFrames; i++) {
+		const mdsFrame_t *f = h->pFrame(i);
+		skelFrame_c *of = &this->frames[i];
+		// step 1 - build ABS frameBones
+		boneOrArray_c frameABS;
+		frameABS.resize(h->numBones);
+		boneOr_s *bor = frameABS.getArray();
+		for(u32 j = 0; j < h->numBones; j++, bor++) {
+			const mdsBoneFrameCompressed_t *bi = f->pBone(j);
+			const mdsBoneInfo_t *bd = h->pBone(j);
+
+			vec3_c offsetAngles = bi->getOfsAngles();
+
+			matrix_c matRot;
+			matRot.fromAngles(offsetAngles);
+			vec3_c point(bd->parentDist,0,0);
+
+			matRot.transformPoint(point);
+
+			vec3_c parentOrigin;
+			if(bd->parent == -1) {
+				parentOrigin = f->parentOffset;
+			} else {
+				parentOrigin = frameABS[bd->parent].mat.getOrigin();
+			}
+			point += parentOrigin;
+
+			vec3_c angles = bi->getAngles();
+
+			// we cant just use matrix_c::fromAngles
+			// because the order of rotations in mds
+			// is slightly different.
+			// (pitch-yaw-roll vs roll-pitch-yaw)
+
+			matrix_c rollMatrix;
+			rollMatrix.setupXRotation(angles[ROLL]);
+
+			matrix_c yawMatrix;
+			yawMatrix.setupZRotation(angles[YAW]);
+
+			matrix_c pitchMatrix;
+			pitchMatrix.setupYRotation(angles[PITCH]);
+
+			matrix_c rotMatrix = yawMatrix * pitchMatrix * rollMatrix;
+
+			rotMatrix.inverse();
+
+			bor->boneName = bones[j].nameIndex;
+
+			// copy rotation
+			bor->mat = rotMatrix;
+
+			// and just set matrix origin fields
+			bor->mat.setOrigin(point);			
+			
+			///g_core->Print("ABS : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,point[0],point[1],point[2]);
+
+		}
+		// step 2 - build relative baseFrame from abs baseFrame
+		boneOrArray_c frameRel;
+		frameRel.absBonesToLocalBones(&this->bones,&frameABS);
+		// step 3 - copy out bone pos/rot channels
+		of->bones.resize(h->numBones);
+		boneOr_s *bRelOr = frameRel.getArray();
+		for(u32 j = 0; j < h->numBones; j++, bRelOr++) {
+			of->bones[j].setQuat(bRelOr->mat.getQuat());
+			of->bones[j].setVec3(bRelOr->mat.getOrigin());
+			//g_core->Print("REL : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,of->bones[j].pos[0],of->bones[j].pos[1],of->bones[j].pos[2]);
+		}
+	}
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
 
 void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_c &pos, quat_c &quat) const {
 	pos = f.bones[boneNum].pos;

@@ -430,6 +430,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\mds_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\mdx_file_format.h"
 				>
 			</File>
