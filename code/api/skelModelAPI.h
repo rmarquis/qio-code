@@ -42,7 +42,7 @@ struct skelVert_s {
 struct skelWeight_s {
 	vec3_c ofs;
 	float weight;
-	u16 boneName;
+	//u16 boneName;
 	short boneIndex; // "-1" means not attached
 };
 

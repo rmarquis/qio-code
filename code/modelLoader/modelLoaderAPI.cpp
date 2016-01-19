@@ -266,6 +266,8 @@ public:
 			return true;
 		if(!_stricmp(ext,"psk"))
 			return true;
+		if(!_stricmp(ext,"mdm"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -283,7 +285,12 @@ public:
 			if(skelModel->loadPSK(fname)) {
 				delete skelModel;
 				return 0;
-			}		
+			}			
+		} else if(tmp.hasExt("mdm")) {
+			if(skelModel->loadMDM(fname)) {
+				delete skelModel;
+				return 0;
+			}	
 		} else {
 			delete skelModel;
 			return 0;
@@ -304,6 +311,8 @@ public:
 		ext++;
 		if(!_stricmp(ext,"md5anim"))
 			return true;
+		if(!_stricmp(ext,"mdx"))
+			return true;
 		return false;
 	}
 	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) {
@@ -320,6 +329,13 @@ public:
 				return 0;
 			}
 			ret = md5Anim;
+		} else if(!_stricmp(ext,"mdx")) {
+			skelAnimGeneric_c *mdxAnim = new skelAnimGeneric_c;
+			if(mdxAnim->loadMDXAnim(fname)) {
+				delete mdxAnim;
+				return 0;
+			}
+			ret = mdxAnim;
 		} else {
 			return 0;
 		}

@@ -511,7 +511,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn")) {
+	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") || !_stricmp(cmd,"mdm_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -548,6 +548,32 @@ void ClientCommand( int clientNum ) {
 		pl->cmdSay(buff);
 	} else if(!_stricmp(cmd,"removeLighs")) {
 		G_RemoveEntitiesOfClass("light");
+	} else if(!_stricmp(cmd,"mdm_test1")) {
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/axis/temperate/cvops/body.mdm");
+	} else if(!_stricmp(cmd,"mdm_test2")) {
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/temperate/axis/cvops/body.mdm");
+		e->setAnimation("animations/human/base/cqb_rifle_aimed.mdx");
+	} else if(!_stricmp(cmd,"mdm_test3")) {
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("body.mdm");
+		e->setAnimation("akimbo.mdx");
 	} else if(!_stricmp(cmd,"net_setWorldSurfaceMaterial")) {
 		// command used to debug (display) various materials on world surfaces
 		int areaNum = atoi(g_core->Argv(1));
