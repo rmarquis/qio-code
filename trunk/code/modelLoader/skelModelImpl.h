@@ -161,6 +161,8 @@ public:
 
 	bool loadMD5Mesh(const char *fname);
 	bool loadPSK(const char *fname);
+	// for Enemy Territory and TCCQB
+	bool loadMDM(const char *fname);
 	void recalcEdges();
 };
 

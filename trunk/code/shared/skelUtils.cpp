@@ -41,6 +41,22 @@ void boneOr_s::setBlendResult(const boneOr_s &from, const boneOr_s &to, float fr
 	this->boneName = to.boneName;
 }
 
+void boneOrArray_c::absBonesToLocalBones(const class boneDefArray_c *boneDefs, const boneOrArray_c *absBones) {
+	// TODO: validate the bones order and their names?
+	this->resize(boneDefs->size());
+	boneOr_s *out = this->getArray();
+	const boneOr_s *in = absBones->getArray();
+	const boneDef_s *b = boneDefs->getArray();
+	for(u32 i = 0; i < size(); i++, out++, in++, b++) {
+		if(b->parentIndex == -1) {
+			out->mat = in->mat;
+		} else {
+			matrix_c parent = (*absBones)[b->parentIndex].mat;
+			parent.inverse();
+			out->mat = parent * in->mat;
+		}
+	}
+}
 void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 	// TODO: validate the bones order and their names?
 

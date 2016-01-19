@@ -27,7 +27,172 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include "skelAnimImpl.h"
 #include <shared/skelUtils.h> // boneOrArray_c
+#include <fileFormats/mdx_file_format.h>
+#include <api/vfsAPI.h>
 
+skelAnimGeneric_c::skelAnimGeneric_c() {
+	animFlags = 0;
+}
+skelAnimGeneric_c::~skelAnimGeneric_c() {
+	frames.clear();
+	bones.clear();
+	baseFrame.clear();
+}
+//
+//	Wolfenstein: Enemy Territory .mdx files loading
+//
+bool skelAnimGeneric_c::loadMDXAnim(const char *fname) {
+
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+
+	const mdxHeader_t *h = (const mdxHeader_t *)fileData;
+	if(h->ident != MDX_IDENT) {
+		g_core->RedWarning("MDX file %s header has bad ident\n",fname);
+		return true;
+	}
+	if(h->version != MDX_VERSION) {
+		g_core->RedWarning("MDX file %s has bad version %i, should be %i\n",fname,h->version,MDX_VERSION);
+		return true;
+	}
+
+	this->animFileName = fname;
+	this->frameTime = 1.f;
+	this->bones.resize(h->numBones);
+	boneDef_s *bd = bones.getArray();
+	for(u32 i = 0; i < h->numBones; i++, bd++) {
+		const mdxBoneInfo_t *bi = h->pBone(i);
+
+		bd->nameIndex = SK_RegisterString(bi->name);
+		bd->parentIndex = bi->parent;
+	}
+
+	this->frames.resize(h->numFrames);
+	for(u32 i = 0; i < h->numFrames; i++) {
+		const mdxFrame_t *f = h->pFrame(i);
+		skelFrame_c *of = &this->frames[i];
+		// step 1 - build ABS frameBones
+		boneOrArray_c frameABS;
+		frameABS.resize(h->numBones);
+		boneOr_s *bor = frameABS.getArray();
+		for(u32 j = 0; j < h->numBones; j++, bor++) {
+			const mdxBoneFrameCompressed_t *bi = f->pBone(j);
+			const mdxBoneInfo_t *bd = h->pBone(j);
+
+			vec3_c offsetAngles = bi->getOfsAngles();
+
+			matrix_c matRot;
+			matRot.fromAngles(offsetAngles);
+			vec3_c point(bd->parentDist,0,0);
+
+			matRot.transformPoint(point);
+
+			vec3_c parentOrigin;
+			if(bd->parent == -1) {
+				parentOrigin = f->parentOffset;
+			} else {
+				parentOrigin = frameABS[bd->parent].mat.getOrigin();
+			}
+			point += parentOrigin;
+
+			vec3_c angles = bi->getAngles();
+
+			// we cant just use matrix_c::fromAngles
+			// because the order of rotations in mds
+			// is slightly different.
+			// (pitch-yaw-roll vs roll-pitch-yaw)
+
+			matrix_c rollMatrix;
+			rollMatrix.setupXRotation(angles[ROLL]);
+
+			matrix_c yawMatrix;
+			yawMatrix.setupZRotation(angles[YAW]);
+
+			matrix_c pitchMatrix;
+			pitchMatrix.setupYRotation(angles[PITCH]);
+
+			matrix_c rotMatrix = yawMatrix * pitchMatrix * rollMatrix;
+
+			rotMatrix.inverse();
+
+			bor->boneName = bones[j].nameIndex;
+
+			// copy rotation
+			bor->mat = rotMatrix;
+
+			// and just set matrix origin fields
+			bor->mat.setOrigin(point);			
+			
+			///g_core->Print("ABS : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,point[0],point[1],point[2]);
+
+		}
+		// step 2 - build relative baseFrame from abs baseFrame
+		boneOrArray_c frameRel;
+		frameRel.absBonesToLocalBones(&this->bones,&frameABS);
+		// step 3 - copy out bone pos/rot channels
+		of->bones.resize(h->numBones);
+		boneOr_s *bRelOr = frameRel.getArray();
+		for(u32 j = 0; j < h->numBones; j++, bRelOr++) {
+			of->bones[j].setQuat(bRelOr->mat.getQuat());
+			of->bones[j].setVec3(bRelOr->mat.getOrigin());
+			//g_core->Print("REL : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,of->bones[j].pos[0],of->bones[j].pos[1],of->bones[j].pos[2]);
+		}
+	}
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
+
+
+void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_c &pos, quat_c &quat) const {
+	pos = f.bones[boneNum].pos;
+	quat = f.bones[boneNum].quat;
+	//if(bones[boneNum].parentIndex != -1)
+	//	quat.conjugate();
+}
+void skelAnimGeneric_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const {
+
+}
+void skelAnimGeneric_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
+
+}
+void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
+	if(lerp.to >= this->frames.size()) {
+		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
+		return;
+	}
+	if(lerp.from >= this->frames.size()) {
+		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame index %i out of range <0,%i)\n",lerp.from,frames.size());
+		return;
+	}
+	const skelFrame_c &from = this->frames[lerp.from];
+	const skelFrame_c &to = this->frames[lerp.to];
+	if(out.size() != bones.size()) {
+		// reallocating array_c memory in another module might cause
+		// some issues (as long we dont have own memory system)
+		g_core->DropError("skelAnimMD5_c::buildFrameBonesLocal: out.size() != this->bones.size()\n");
+	}
+	const boneDef_s *boneDef = bones.getArray();
+	boneOr_s *outBone = out.getArray();
+	for(u32 i = 0; i < bones.size(); i++, boneDef++, outBone++) {
+		vec3_c posFrom, posTo;
+		quat_c quatFrom, quatTo;
+		buildSingleBone(i,from,posFrom,quatFrom);
+		buildSingleBone(i,to,posTo,quatTo);
+		// lerp frame values
+		quat_c quat;
+		vec3_c pos;
+		quat.slerp(quatFrom,quatTo,lerp.frac);
+		pos.lerp(posFrom,posTo,lerp.frac);
+		outBone->boneName = boneDef->nameIndex;
+		outBone->mat.fromQuatAndOrigin(quat,pos);
+	}
+}
 skelAnimMD5_c::skelAnimMD5_c() {
 	animFlags = 0;
 }

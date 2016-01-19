@@ -426,6 +426,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\mdm_file_format.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\fileformats\mdx_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\vvdFileFormat.h"
 				>
 			</File>

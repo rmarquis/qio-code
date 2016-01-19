@@ -48,6 +48,7 @@ class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:
 	// concat bone transforms
 	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
+	void absBonesToLocalBones(const class boneDefArray_c *boneDefs, const boneOrArray_c *absBones);
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac);	
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac, const arraySTD_c<u32> &bonesToBlend);	
 	void setBones(const boneOrArray_c &from, const arraySTD_c<u32> &bonesToSet);	
