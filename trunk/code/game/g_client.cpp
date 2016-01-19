@@ -549,6 +549,8 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removeLighs")) {
 		G_RemoveEntitiesOfClass("light");
 	} else if(!_stricmp(cmd,"mdm_test1")) {
+		// V: simple ET skeletal model test (model will show deformed without animation)
+		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
@@ -557,6 +559,8 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		e->setRenderModel("models/players/axis/temperate/cvops/body.mdm");
 	} else if(!_stricmp(cmd,"mdm_test2")) {
+		// V: simple ET skeletal model test
+		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
@@ -566,6 +570,8 @@ void ClientCommand( int clientNum ) {
 		e->setRenderModel("models/players/temperate/axis/cvops/body.mdm");
 		e->setAnimation("animations/human/base/cqb_rifle_aimed.mdx");
 	} else if(!_stricmp(cmd,"mdm_test3")) {
+		// V: simple ET skeletal model test
+		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
@@ -575,6 +581,8 @@ void ClientCommand( int clientNum ) {
 		e->setRenderModel("body.mdm");
 		e->setAnimation("akimbo.mdx");
 	} else if(!_stricmp(cmd,"mdm_test4")) {
+		// V: simple ET skeletal model test
+		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();
 		p.z += pl->getViewHeight();
@@ -593,6 +601,18 @@ void ClientCommand( int clientNum ) {
 		const char *matName = g_core->Argv(3);
 		// broadcast world material change to all the clients
 		g_server->SendServerCommand(-1,va("stufftext rf_setWorldSurfaceMaterial %i %i %s",areaNum,surfaceNum,matName));
+	} else if(!_stricmp(cmd,"mds_test1")) {
+		// V: simple RTCW skeletal model test
+		// NOTE: mdm models has no bone data in file
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/loper/body.mds");
+		e->setAnimation("models/players/loper/body.mds");
+		e->setRenderModelSkin("default");
 	} else {
 		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);

@@ -261,6 +261,7 @@ public:
 	skelAnimGeneric_c();
 	virtual ~skelAnimGeneric_c();
 	bool loadMDXAnim(const char *fname);
+	bool loadMDSAnim(const char *fname);
 };
 
 #endif //__SKELANIMIMPL_H__

@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/extraSurfEdgesData.h>
 #include <fileFormats/actorX_file_format.h>
 #include <fileFormats/mdm_file_format.h>
+#include <fileFormats/mds_file_format.h>
 #include <math/quat.h>
 
 static stringRegister_c sk_boneNames;
@@ -438,6 +439,78 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	return false; // no error
 }
 
+bool skelModelIMPL_c::loadMDS(const char *fname) {
+	this->name = fname;
+
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+	const mdsHeader_t *h = (const mdsHeader_t *)fileData;
+	if(h->ident != MDS_IDENT) {
+		g_core->RedWarning("MDM file %s header has bad ident\n",fname);
+		return true;
+	}
+	if(h->version != MDS_VERSION) {
+		g_core->RedWarning("MDM file %s has bad version %i, should be %i\n",fname,h->version,MDM_VERSION);
+		return true;
+	}
+
+	this->surfs.resize(h->numSurfaces);
+	skelSurfIMPL_c *s = this->surfs.getArray();
+	for(u32 i = 0; i < h->numSurfaces; i++, s++) {
+		const mdsSurface_t *sf = h->pSurface(i);
+
+		s->surfName = sf->name;
+		s->matName = sf->shader;
+
+		s->indices.resize(sf->numTriangles*3);
+		for(u32 j = 0; j < sf->numTriangles; j++) {
+			const mdsTriangle_t *tri = sf->pTri(j);
+			s->indices[j*3+0] = tri->indexes[0];
+			s->indices[j*3+1] = tri->indexes[1];
+			s->indices[j*3+2] = tri->indexes[2];
+		}
+
+		const mdsVertex_t *iv = sf->pFirstVert();
+		s->verts.resize(sf->numVerts);
+		skelVert_s *v = s->verts.getArray();
+		for(u32 j = 0; j < sf->numVerts; j++, v++) {
+			v->n = iv->normal;
+			v->tc = iv->texCoords;
+			v->numWeights = (iv->numWeights);
+			v->firstWeight = s->weights.size();
+			s->weights.resize(v->firstWeight + v->numWeights);
+			skelWeight_s *w = &s->weights[v->firstWeight];
+			for(u32 k = 0; k < iv->numWeights; k++, w++) {
+				const mdsWeight_t *wi = iv->pWeight(k);
+				w->boneIndex = wi->boneIndex;
+				w->ofs = wi->offset;
+				w->weight = wi->boneWeight;
+			}
+			iv = iv->pNextVert();
+		}
+	}
+
+#if 0
+	this->bones.resize(h->numBones);
+	boneOr_s *bfb = this->baseFrameABS.getArray();
+	boneDef_s *b = this->bones.getArray();
+	for(u32 i = 0; i < h->numBones; i++, b++) {
+		const mdsBoneInfo_t *bi = h->pBone(i);
+
+		b->name = SK_RegisterString(bi->name);
+		b->parentIndex = bi->parent;
+	}
+#endif
+
+	return false; // no error
+
+
+	return false;
+}
 bool skelModelIMPL_c::loadMDM(const char *fname) {
 	this->name = fname;
 
