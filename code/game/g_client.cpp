@@ -574,6 +574,18 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		e->setRenderModel("body.mdm");
 		e->setAnimation("akimbo.mdx");
+	} else if(!_stricmp(cmd,"mdm_test4")) {
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/temperate/axis/cvops/body.mdm");
+		e->setAnimation("animations/human/base/body.mdx");
+		// V: skin file is: models/players/temperate/axis/cvops/body_cvops.skin
+		// but we use only "cvops" because the path is set automatically
+		e->setRenderModelSkin("cvops");
 	} else if(!_stricmp(cmd,"net_setWorldSurfaceMaterial")) {
 		// command used to debug (display) various materials on world surfaces
 		int areaNum = atoi(g_core->Argv(1));
