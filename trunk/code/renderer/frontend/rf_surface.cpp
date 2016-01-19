@@ -299,7 +299,9 @@ bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
 void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
 	clear();
 	this->mySkelSF = skelSF;
-	//this->name = skelSF->getSurfName();
+	// V: this is needed for .skin files to work.
+	// .skin files are used eg. in Enemy Territory
+	this->name = skelSF->getSurfName();
 	setMaterial(skelSF->getMatName());
 	verts.resize(skelSF->getNumVerts());
 	rVert_c *v = verts.getArray();

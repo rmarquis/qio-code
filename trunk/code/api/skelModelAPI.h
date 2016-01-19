@@ -50,7 +50,7 @@ struct skelWeight_s {
 class skelSurfaceAPI_i {
 public:
 	virtual const char *getMatName() const = 0;
-	//virtual const char *getSurfName() const = 0;
+	virtual const char *getSurfName() const = 0;
 
 	virtual u32 getNumVerts() const = 0;
 	virtual u32 getNumWeights() const = 0;
