@@ -1027,7 +1027,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						class textureAPI_i *tex = MAT_ParseImageScript(p);
 						stage->setTexture(tex);
 #endif
-					}		
+					}	
+				} else if(p.atWord("lightmap")) {
+					// V: this is used in ET, eg. on fueldump
+					// Allow any arbitraty image as lighmap?
+					// TODO
+					stage->getStageTexture().parseMap(p);
+					stage->getStageTexture().uploadTexture();
+					stage->setStageType(ST_LIGHTMAP);
 				} else if(p.atWord("clampmap")) {
 					stage->getStageTexture().setBClamp(true);
 					stage->getStageTexture().parseMap(p);
