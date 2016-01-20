@@ -2166,6 +2166,14 @@ void rBspTree_c::markAreas() {
 	frustumExt_c baseFrustum(rf_camera.getFrustum());
 	markAreas_r(camArea,baseFrustum,0);
 }
+void rBspTree_c::printBSPInfo() {
+	if(vis) {
+		g_core->Print("BSP vis data: clusters %i, clusterBytes %i, total size: %i\n",
+			vis->numClusters,vis->clusterSize,vis->numClusters*vis->clusterSize);
+	} else {
+		g_core->Print("BSP has no vis data\n");
+	}
+}
 void rBspTree_c::updateVisibility() {
 	int camLeaf = pointInLeaf(rf_camera.getPVSOrigin());
 	int camCluster, camArea;

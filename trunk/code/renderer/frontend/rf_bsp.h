@@ -310,6 +310,7 @@ public:
 		return worldBoundsWithoutSkyBox;
 	}
 
+	void printBSPInfo();
 	void updateVisibility();
 	void markAreas_r(int areaNum, const class frustumExt_c &fr, dareaPortal_t *prevPortal);
 	void markAreas();

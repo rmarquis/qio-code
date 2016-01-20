@@ -290,6 +290,7 @@ void RF_PrintWorldMapMaterials_f() {
 void RF_PrintWorldMapInfo_f() {
 	if(r_bspTree) {
 		g_core->Print("World map type: BSP\n");
+		r_bspTree->printBSPInfo();
 	} else if(r_procTree) {
 		g_core->Print("World map type: PROC\n");
 	} else if(r_worldModel) {
