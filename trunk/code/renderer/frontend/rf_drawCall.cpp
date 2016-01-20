@@ -558,6 +558,8 @@ public:
 dcBatcher_c r_dcBatcher;
 
 bool CanBatch(drawCall_c *a, drawCall_c *b) {
+	if(b == 0)
+		return false;
 	if(a->entity != b->entity)
 		return false;
 	if(a->lightmap != b->lightmap)
@@ -586,6 +588,12 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	prevBDrawingSunShadowMapPass = false;
 	prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
+		drawCall_c *next;
+		if(i == numDrawCalls-1) 
+			next = 0;
+		else
+			next = (rf_drawCalls.getArray()+firstDrawCall+i+1);
+
 		if(rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls.getInt()) {
 			if(c->cubeMapSide >= 0) {
 				g_core->Print("Executing shadow map drawcall %i: side %i, light %i\n",i,c->cubeMapSide,c->curLight);
@@ -614,27 +622,41 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 				i,numDrawCalls,c->getMatName(),c->getNumTris(),c->getNumVerts(),c->drawOnlyOnDepthBuffer,c->bDrawingSunShadowMapPass,c->bHasSunLight,c->sort);
 		}
 		if(rf_batchDrawCalls.getInt()) {
-			//if(r_dcBatcher.isEmpty() == false) {
+			// if not inside batch
+			if(r_dcBatcher.isEmpty()) {
+				// if cant start batch
+				if(!CanBatch(c,next)) {
+					batchesDrawn++;
+					RF_AssignDrawCall(c);
+				} else {
+					// else start bach
+					*((drawCall_c*)(&r_dcBatcher)) = *c;
+					r_dcBatcher.addDrawCall(c);
+				}
+			} else {
+				// inside batch
+				// check for batching end
 				if(r_dcBatcher.entity != c->entity || r_dcBatcher.lightmap != c->lightmap || 
 					r_dcBatcher.material != c->material || r_dcBatcher.curLight != c->curLight ||
 					r_dcBatcher.cubeMapSide != c->cubeMapSide) {
+					// flush
 					batchesDrawn++;
 					RF_AssignDrawCall(&r_dcBatcher);
 					r_dcBatcher.resetBatcher();
-
-#if 0
-					r_dcBatcher.entity = c->entity;
-					r_dcBatcher.lightmap = c->lightmap;
-					r_dcBatcher.material = c->material;
-					r_dcBatcher.curLight = c->curLight;
-					r_dcBatcher.cubeMapSide = c->cubeMapSide;
-#else
-					*((drawCall_c*)(&r_dcBatcher)) = *c;
-#endif
+					// should add current to batch?
+					if(!CanBatch(c,next)) {
+						batchesDrawn++;
+						RF_AssignDrawCall(c);
+					} else {
+						// else start bach
+						*((drawCall_c*)(&r_dcBatcher)) = *c;
+						r_dcBatcher.addDrawCall(c);
+					}
+				} else {
+					// batch next
+					r_dcBatcher.addDrawCall(c);
 				}
-				r_dcBatcher.addDrawCall(c);
-		//	}
-
+			}
 		} else {
 			RF_AssignDrawCall(c);
 		}
