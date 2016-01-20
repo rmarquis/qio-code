@@ -48,6 +48,9 @@ public:
 			unloadFromGPU();
 		}
 	}
+	const rVert_c &getVert(u32 i) const {
+		return data[i];
+	}
 	void ensureAllocated(u32 needVerts) {
 		if(data.size() >= needVerts)
 			return;
@@ -186,6 +189,9 @@ public:
 	}
 #endif // RVERT_STORE_TANGENTS
 
+	void setCount(u32 i) {
+		numVerts = 0;
+	}
 	u32 getInternalHandleU32() const {
 		return handleU32;
 	}

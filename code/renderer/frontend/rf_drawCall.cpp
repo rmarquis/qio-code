@@ -58,6 +58,7 @@ aCvar_c rf_drawCalls_printSortCompare("rf_drawCalls_printSortCompare","0");
 aCvar_c rf_drawCalls_printTotalTrianglesCount("rf_drawCalls_printTotalTrianglesCount","0");
 aCvar_c rf_drawCalls_printTotalDrawCallsCount("rf_drawCalls_printTotalDrawCallsCount","0");
 aCvar_c rf_printFoundMirrorSurfaces("rf_printFoundMirrorSurfaces","0");
+aCvar_c rf_batchDrawCalls("rf_batchDrawCalls","0");
 
 class drawCall_c {
 public:
@@ -422,22 +423,168 @@ void RF_SortDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 	// sort the needed part of the drawCalls array
 	qsort(rf_drawCalls.getArray()+firstDrawCall,numDrawCalls,sizeof(drawCall_c),compareDrawCall);
 }
-void RF_Generate3DSubView();
+bool bNeedsSky;
+u32 totalTris;
+drawCall_c *c;
+rEntityAPI_i *prevEntity;
+rLightAPI_i *prevLight;
+int prevCubeMapSide;
+bool prevBDrawingSunShadowMapPass;
 static aCvar_c light_printLightsCulledByGPUOcclusionQueries("light_printLightsCulledByGPUOcclusionQueries","0");
+
+void RF_AssignDrawCall(class drawCall_c *c) {
+	if(c->verts == 0 && c->indices == 0)
+		return;
+	if(c->material == 0) {
+		c->material = g_ms->registerMaterial("missingDrawCallMaterial");
+	}
+	// draw sky after mirror/portal materials
+	// this is a quick fix for maps with mirrors AND skies like q3dm0
+	if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
+		RF_DrawSky();
+		bNeedsSky = false;
+		prevCubeMapSide = -1;
+		prevEntity = 0;
+		prevLight = 0;
+	}
+	if(prevLight != c->curLight) {
+		if(prevLight == 0) {
+			// depth pass finished
+			RFL_AssignLightOcclusionQueries();
+		}
+		rb->setCurLight(c->curLight);
+		prevLight = c->curLight;
+	}
+	if(c->curLight && RFL_GPUOcclusionQueriesForLightsEnabled() && (c->curLight->getBCameraInside()==false)) {
+		// see if the light is culled by GPU occlusion query
+		class occlusionQueryAPI_i *oq = c->curLight->getOcclusionQuery();
+		if(oq) {
+			u32 passed;
+#if 1
+			if(oq->isResultAvailable()) {
+				passed = oq->getNumSamplesPassed();
+			} else {
+				passed = oq->getPreviousResult();
+			}
+#else
+			passed = oq->waitForLatestResult();
+#endif
+			if(passed == 0) {
+				if(light_printLightsCulledByGPUOcclusionQueries.getInt()) {
+					g_core->Print("Skipping drawcall with light %i\n",c->curLight);
+				}
+				return;
+			}
+		}
+	}
+	// set cubemap properties before changing model view matrix
+	// but after curLight is set
+	rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection,c->sunBounds);
+	// 0 is always the highest LOD, -1 is the default value.
+	rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass,c->shadowMapLOD);
+	rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
+	rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
+	if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide || prevBDrawingSunShadowMapPass != c->bDrawingSunShadowMapPass) {
+		if(c->entity == 0) {
+			rb->setupWorldSpace();
+		} else {
+			rb->setupEntitySpace(c->entity->getAxis(),c->entity->getOrigin());
+		}
+		prevEntity = c->entity;
+		prevCubeMapSide = c->cubeMapSide;
+		prevBDrawingSunShadowMapPass = c->bDrawingSunShadowMapPass;
+	}
+	rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
+	rb->setCurrentDrawCallSort(c->sort);
+	rb->setBindVertexColors(c->bindVertexColors);
+	rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
+	rb->setColor4(c->surfaceColor.toPointer());
+	rb->setMaterial(c->material,c->lightmap,c->deluxemap);
+	if(c->verts) {
+		// draw surface
+		rb->drawElements(*c->verts,*c->indices);
+		totalTris += c->getNumTris();
+	} else {
+		// draw shadow volume points
+		rb->drawIndexedShadowVolume(c->points,c->indices);
+	}
+}
+class dcBatcher_c : public drawCall_c {
+public:
+	rVertexBuffer_c nverts;
+	rIndexBuffer_c nindices;
+
+	dcBatcher_c() {
+		nverts.ensureAllocated(131072);
+		nindices.ensureAllocated_indices(131072*3);
+	}
+	bool isEmpty() const {
+		if(nindices.getNumIndices())
+			return false;
+		return true;
+	}
+	void resetBatcher() {
+		nverts.setCount(0);
+		nindices.setNullCount();
+	}
+	void addDrawCall(class drawCall_c *dc) {
+		this->indices = &nindices;
+		this->verts = &nverts;
+		const rIndexBuffer_c *in = dc->indices;
+		const rVertexBuffer_c *iv = dc->verts;
+		u32 fv = nverts.size();
+		nverts.resize(fv+in->getNumIndices());
+		u32 vert = fv;
+		for(u32 i = 0; i < in->getNumIndices(); i+=3) {
+			u32 i0 = in->getIndex(i+0);
+			u32 i1 = in->getIndex(i+1);
+			u32 i2 = in->getIndex(i+2);
+			const rVert_c &v0 = iv->getVert(i0);
+			const rVert_c &v1 = iv->getVert(i1);
+			const rVert_c &v2 = iv->getVert(i2);
+			nverts[vert] = v0;
+			nindices.addIndex(vert);
+			vert++;
+			nverts[vert] = v1;
+			nindices.addIndex(vert);
+			vert++;
+			nverts[vert] = v2;
+			nindices.addIndex(vert);
+			vert++;
+		}
+	}
+};
+
+dcBatcher_c r_dcBatcher;
+
+bool CanBatch(drawCall_c *a, drawCall_c *b) {
+	if(a->entity != b->entity)
+		return false;
+	if(a->lightmap != b->lightmap)
+		return false;
+	if(a->material != b->material)
+		return false;
+	if(a->curLight != b->curLight)
+		return false;
+	if(a->cubeMapSide != b->cubeMapSide)
+		return false;
+	return true;
+}
+void RF_Generate3DSubView();
 void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
-	bool bNeedsSky = RF_HasSky();
+	bNeedsSky = RF_HasSky();
 
 	rb->setRShadows(RF_GetShadowingMode());
 	rb->setSunShadowBounds(rf_sunShadowBounds);
 
-	u32 totalTris = 0;
-
+	totalTris = 0;
+	u32 batchesDrawn = 0;
 	// issue the drawcalls
 	drawCall_c *c = (rf_drawCalls.getArray()+firstDrawCall);
-	rEntityAPI_i *prevEntity = 0;
-	int prevCubeMapSide = -1;
-	bool prevBDrawingSunShadowMapPass = false;
-	rLightAPI_i *prevLight = 0;
+	prevEntity = 0;
+	prevCubeMapSide = -1;
+	prevBDrawingSunShadowMapPass = false;
+	prevLight = 0;
 	for(u32 i = 0; i < numDrawCalls; i++, c++) {
 		if(rf_drawCalls_printExecutedShadowMappingCubeMapDrawCalls.getInt()) {
 			if(c->cubeMapSide >= 0) {
@@ -466,75 +613,30 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 			g_core->Print("Drawcall %i of %i: materials %s, tris %i, verts %i, bDrawOnDepthBuffer: %i, bDrawingSunShadowMap %i, bHasSunLight %i, sort %i\n",
 				i,numDrawCalls,c->getMatName(),c->getNumTris(),c->getNumVerts(),c->drawOnlyOnDepthBuffer,c->bDrawingSunShadowMapPass,c->bHasSunLight,c->sort);
 		}
-		// draw sky after mirror/portal materials
-		// this is a quick fix for maps with mirrors AND skies like q3dm0
-		if(bNeedsSky && (c->material->isMirrorMaterial()==false && c->material->isPortalMaterial()==false)) {
-			RF_DrawSky();
-			bNeedsSky = false;
-			prevCubeMapSide = -1;
-			prevEntity = 0;
-			prevLight = 0;
-		}
-		if(prevLight != c->curLight) {
-			if(prevLight == 0) {
-				// depth pass finished
-				RFL_AssignLightOcclusionQueries();
-			}
-			rb->setCurLight(c->curLight);
-			prevLight = c->curLight;
-		}
-		if(c->curLight && RFL_GPUOcclusionQueriesForLightsEnabled() && (c->curLight->getBCameraInside()==false)) {
-			// see if the light is culled by GPU occlusion query
-			class occlusionQueryAPI_i *oq = c->curLight->getOcclusionQuery();
-			if(oq) {
-				u32 passed;
-#if 1
-				if(oq->isResultAvailable()) {
-					passed = oq->getNumSamplesPassed();
-				} else {
-					passed = oq->getPreviousResult();
-				}
+		if(rf_batchDrawCalls.getInt()) {
+			//if(r_dcBatcher.isEmpty() == false) {
+				if(r_dcBatcher.entity != c->entity || r_dcBatcher.lightmap != c->lightmap || 
+					r_dcBatcher.material != c->material || r_dcBatcher.curLight != c->curLight ||
+					r_dcBatcher.cubeMapSide != c->cubeMapSide) {
+					batchesDrawn++;
+					RF_AssignDrawCall(&r_dcBatcher);
+					r_dcBatcher.resetBatcher();
+
+#if 0
+					r_dcBatcher.entity = c->entity;
+					r_dcBatcher.lightmap = c->lightmap;
+					r_dcBatcher.material = c->material;
+					r_dcBatcher.curLight = c->curLight;
+					r_dcBatcher.cubeMapSide = c->cubeMapSide;
 #else
-				passed = oq->waitForLatestResult();
+					*((drawCall_c*)(&r_dcBatcher)) = *c;
 #endif
-				if(passed == 0) {
-					if(light_printLightsCulledByGPUOcclusionQueries.getInt()) {
-						g_core->Print("Skipping drawcall with light %i\n",c->curLight);
-					}
-					continue;
 				}
-			}
-		}
-		// set cubemap properties before changing model view matrix
-		// but after curLight is set
-		rb->setSunParms(c->bHasSunLight,c->sunColor,c->sunDirection,c->sunBounds);
-		// 0 is always the highest LOD, -1 is the default value.
-		rb->setBDrawingSunShadowMapPass(c->bDrawingSunShadowMapPass,c->shadowMapLOD);
-		rb->setCurLightShadowMapSize(c->shadowMapW,c->shadowMapH);
-		rb->setCurrentDrawCallCubeMapSide(c->cubeMapSide);
-		if(prevEntity != c->entity || prevCubeMapSide != c->cubeMapSide || prevBDrawingSunShadowMapPass != c->bDrawingSunShadowMapPass) {
-			if(c->entity == 0) {
-				rb->setupWorldSpace();
-			} else {
-				rb->setupEntitySpace(c->entity->getAxis(),c->entity->getOrigin());
-			}
-			prevEntity = c->entity;
-			prevCubeMapSide = c->cubeMapSide;
-			prevBDrawingSunShadowMapPass = c->bDrawingSunShadowMapPass;
-		}
-		rb->setForcedMaterialMapFrame(c->forceSpecificMaterialFrame);
-		rb->setCurrentDrawCallSort(c->sort);
-		rb->setBindVertexColors(c->bindVertexColors);
-		rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
-		rb->setColor4(c->surfaceColor.toPointer());
-		rb->setMaterial(c->material,c->lightmap,c->deluxemap);
-		if(c->verts) {
-			// draw surface
-			rb->drawElements(*c->verts,*c->indices);
-			totalTris += c->getNumTris();
+				r_dcBatcher.addDrawCall(c);
+		//	}
+
 		} else {
-			// draw shadow volume points
-			rb->drawIndexedShadowVolume(c->points,c->indices);
+			RF_AssignDrawCall(c);
 		}
 	}
 	rb->setBindVertexColors(false);	
@@ -548,7 +650,7 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		g_core->Print("Total drawcall triangles: %i\n",totalTris);
 	}
 	if(rf_drawCalls_printTotalDrawCallsCount.getInt()) {
-		g_core->Print("Total drawcalls: %i\n",numDrawCalls);
+		g_core->Print("Total drawcalls: %i, batches %i\n",numDrawCalls,batchesDrawn);
 	}
 }
 
