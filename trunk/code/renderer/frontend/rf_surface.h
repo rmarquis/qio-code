@@ -370,6 +370,7 @@ public:
 		}
 	}
 	virtual void transform(const class matrix_c &mat);
+	virtual void transform(const class matrix_c &mat, u32 first, u32 last);
 	virtual u32 countDuplicatedTriangles() const;
 	virtual bool hasTriangle(u32 i0, u32 i1, u32 i2) const;
 
