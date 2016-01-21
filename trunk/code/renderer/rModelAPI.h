@@ -76,6 +76,8 @@ public:
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const = 0;
 	// debug output (this should work for tags as well)
 	virtual void printBoneNames() const = 0;
+	// will return -1 if bone not found
+	virtual int findBone(const char *boneName) const = 0;
 	// returns the total number of triangles in model
 	virtual u32 getTotalTriangleCount() const = 0;
 	virtual bool hasStageWithoutBlendFunc() const = 0;

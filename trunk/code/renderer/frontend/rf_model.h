@@ -198,6 +198,8 @@ public:
 	virtual void printBoneNames() const;
 	virtual u32 getTotalTriangleCount() const;
 	virtual bool hasStageWithoutBlendFunc() const;
+	// will return -1 if bone not found
+	virtual int findBone(const char *boneName) const;
 
 	void clear();
 

@@ -93,6 +93,15 @@ static void CG_TransitionModel(centity_t *cent) {
 	cent->rEnt->setOrigin(cent->currentState.origin);
 	cent->rEnt->setAngles(cent->currentState.angles);
 	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
+	for(u32 i = 0; i < MAX_RMODEL_ATTACHMENTS; i++) {
+		if(cent->currentState.attachments[i].isEmpty() == false) {
+			const char *boneName = CG_ConfigString(CS_MODELS+cent->currentState.attachments[i].boneIndex);
+			const char *modelName = CG_ConfigString(CS_MODELS+cent->currentState.attachments[i].modelIndex);
+			cent->rEnt->setAttachment(i,modelName,boneName);
+		} else {
+			cent->rEnt->setAttachment(i,0,0);
+		}
+	}
 	if(cent->rEnt->hasDeclModel()) {
 		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
 	} else if(cent->rEnt->isQ3PlayerModel()) {

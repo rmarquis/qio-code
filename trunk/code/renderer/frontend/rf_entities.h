@@ -36,6 +36,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <renderer/rfSurfsFlagsArray.h>
 #include "../pointLightSample.h"
 
+class rEntityAttachment_c {
+friend class rEntityImpl_c;
+	class rModelAPI_i *model;
+	int boneIndex;
+};
+
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
 	vec3_c angles;
@@ -88,7 +94,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// extra color per entire entity
 	bool bHasGlobalColor;
 	vec3_c entityColor;
-
+	// model attachments are merged inside instance
+	arraySTD_c<rEntityAttachment_c> attachments;
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
 
@@ -103,6 +110,7 @@ public:
 	virtual void setAngles(const vec3_c &newAngles);
 	virtual void setScale(const class vec3_c &newScale);
 	virtual void setModel(class rModelAPI_i *newModel);
+	virtual void setAttachment(u32 which, const char *modelName, const char *boneName);
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setAnim(const char *animName, int newFlags);
 	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags);
@@ -193,6 +201,9 @@ public:
 
 	virtual void hideSurface(u32 surfNum);
 
+	// update .md3/.mdc attachments at the bones
+	// in RTCW/ET player head is md3 and body is mds
+	void updateInstanceAttachments();
 	void updateAnimatedEntity();
 	void addDrawCalls();
 

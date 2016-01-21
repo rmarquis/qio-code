@@ -94,6 +94,9 @@ public:
 	void setRagdollName(const char *ragName);
 	void setRenderModelSkin(const char *newSkinName);
 	void setSpriteModel(const char *newSpriteMaterial, float newSpriteRadius);
+	// used in RTCW and ET for player heads
+	// Player body is mds/mdm skeletal model and head is mdc keyframed (md3).
+	void setRenderModelAttachment(u32 index, const char*boneName, const char *modelName);
 
 	// for skeletal models
 	int getBoneNumForName(const char *boneName);

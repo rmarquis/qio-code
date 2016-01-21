@@ -31,6 +31,8 @@ public:
 	virtual void setAngles(const class vec3_c &newAngles) = 0;
 	virtual void setScale(const class vec3_c &newScale) = 0;
 	virtual void setModel(class rModelAPI_i *mod) = 0;
+	// used eg. to attach md3 head models to RTCW .mds skeletal models
+	virtual void setAttachment(u32 which, const char *modelName, const char *boneName) = 0;
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
 	virtual void setAnim(const char *animName, int newFlags = 0) = 0;
 	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
