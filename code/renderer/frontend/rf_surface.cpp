@@ -1377,6 +1377,11 @@ void r_model_c::recalcBoundingBoxes() {
 void r_model_c::addAbsTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles) { 
 	tags.pushBack().setupTag(newTagName,newPos,newAngles);
 }
+void r_model_c::transform(const class matrix_c &mat, u32 first, u32 last) {
+	for(u32 i = first; i < last; i++) {
+		surfs[i].transform(mat);
+	}
+}
 void r_model_c::transform(const class matrix_c &mat) {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		surfs[i].transform(mat);

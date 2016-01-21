@@ -251,6 +251,11 @@ void rEntityImpl_c::setAttachment(u32 which, const char *modelName, const char *
 	} else {
 		rModelAPI_i *am = RF_RegisterModel(modelName);
 		int boneIndex = this->getModel()->findBone(boneName);
+		if(boneIndex == -1) {
+			if(skelAnimCtrl && skelAnimCtrl->getAnim()) {
+				boneIndex = skelAnimCtrl->getAnim()->getLocalBoneIndexForBoneName(boneName);
+			}
+		}
 		g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s\n",modelName,boneName);
 		if(attachments.size() <= which) {
 			attachments.resize(which+1);
@@ -539,10 +544,12 @@ void rEntityImpl_c::updateInstanceAttachments() {
 	u32 firstSurface = skelModel->getNumSurfs();
 	for(u32 i = 0; i < attachments.size(); i++) {
 		class rEntityAttachment_c &a = attachments[i];
+		matrix_c m;
+		getBoneLocalOrientation(a.boneIndex,m);
 		if(a.model->isKeyframed()) {
 			const kfModelAPI_i *kfModel = a.model->getKFModelAPI();
 			instance->updateKeyframedModelInstance(kfModel,0,firstSurface);
-
+			instance->transform(m,firstSurface,firstSurface+kfModel->getNumSurfaces());
 		} else {
 			// TODO
 		}
@@ -771,6 +778,42 @@ void rEntityImpl_c::addDrawCalls() {
 	// done.
 	rf_currentEntity = 0;
 }
+bool rEntityImpl_c::getBoneLocalOrientation(int localBoneIndex, class matrix_c &out) {
+	if(model == 0) {
+		out.identity();
+		return true; // error 
+	}
+	if(model->isQ3PlayerModel() && this->q3AnimCtrl) {
+		model->getTagOrientation(localBoneIndex,this->q3AnimCtrl->getLegs().curLerp,this->q3AnimCtrl->getTorso().curLerp,out);
+		return false; // OK
+	}
+	skelModelAPI_i *skel = model->getSkelModelAPI();
+	if(skel == 0) {
+		// try to get static tag orientation
+		if(model->getTagOrientation(localBoneIndex,out)==false) {
+			return false; // ok
+		}
+		out.identity();
+		return true; // error 
+	}
+	if(skelAnimCtrl == 0) {
+		out.identity();
+		return true; // error 
+	}
+	const boneOrArray_c *curBones;
+	if(finalBones) {
+		curBones = finalBones;
+	} else {
+		curBones = &skelAnimCtrl->getCurBones();
+	}
+	if(localBoneIndex < 0 || localBoneIndex >= curBones->size()) {
+		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones->size());
+		out.identity();	
+		return true;
+	}
+	out = curBones->getBoneMat(localBoneIndex);
+	return false;
+}
 bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &out) {
 	if(model == 0) {
 		out = this->matrix;
@@ -804,9 +847,8 @@ bool rEntityImpl_c::getBoneWorldOrientation(int localBoneIndex, class matrix_c &
 		curBones = &skelAnimCtrl->getCurBones();
 	}
 	if(localBoneIndex < 0 || localBoneIndex >= curBones->size()) {
-		if(localBoneIndex != 255) {
-			g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones->size());
-		}
+		g_core->RedWarning("rEntityImpl_c::getBoneWorldOrientation: bone index %i out of range <0,%i)\n",localBoneIndex,curBones->size());
+		out = this->matrix;
 		return true;
 	}
 	const matrix_c &localMat = curBones->getBoneMat(localBoneIndex);

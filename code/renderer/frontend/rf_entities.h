@@ -211,6 +211,7 @@ public:
 	virtual bool rayTraceWorld(class trace_c &tr) const;
 	virtual bool getBoneWorldOrientation(const char *boneName, class matrix_c &out);
 	virtual bool getBoneWorldOrientation(int localBoneIndex, class matrix_c &out);
+	virtual bool getBoneLocalOrientation(int localBoneIndex, class matrix_c &out);
 };
 
 // NULL == worldspawn
