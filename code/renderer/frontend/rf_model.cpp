@@ -206,6 +206,15 @@ u32 model_c::getTotalTriangleCount() const {
 	}
 	return 0;
 }
+// will return -1 if bone not found
+int model_c::findBone(const char *boneName) const {
+	if(type == MOD_SKELETAL) {
+		return this->skelModel->getLocalBoneIndexForBoneName(boneName);
+	} else {
+		// TODO?
+		return -1;
+	}
+}
 bool model_c::hasStageWithoutBlendFunc() const {
 	if(type == MOD_STATIC) {
 		return this->staticModel->hasStageWithoutBlendFunc();
@@ -359,6 +368,8 @@ r_model_c *RF_LoadStaticModel(const char *modelName) {
 }
 
 rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
+	if(modNameWithParameters == 0)
+		return 0;
 	// see if the model is already loaded
 	rModelAPI_i *existing = rf_models.getEntry(modNameWithParameters);
 	if(existing) {

@@ -245,6 +245,20 @@ void rEntityImpl_c::updateModelSkin() {
 		}
 	}
 }
+void rEntityImpl_c::setAttachment(u32 which, const char *modelName, const char *boneName) {
+	if(modelName == 0 || boneName == 0) {
+
+	} else {
+		rModelAPI_i *am = RF_RegisterModel(modelName);
+		int boneIndex = this->getModel()->findBone(boneName);
+		g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s\n",modelName,boneName);
+		if(attachments.size() <= which) {
+			attachments.resize(which+1);
+		}
+		attachments[which].model = am;
+		attachments[which].boneIndex = boneIndex;
+	}
+}
 void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	if(model == newModel) {
 		return;
@@ -519,6 +533,21 @@ void rEntityImpl_c::setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) 
 		s = or;
 	}
 }
+void rEntityImpl_c::updateInstanceAttachments() {
+	const skelModelAPI_i *skelModel = model->getSkelModelAPI();
+	// we need to know where to append new surfaces
+	u32 firstSurface = skelModel->getNumSurfs();
+	for(u32 i = 0; i < attachments.size(); i++) {
+		class rEntityAttachment_c &a = attachments[i];
+		if(a.model->isKeyframed()) {
+			const kfModelAPI_i *kfModel = a.model->getKFModelAPI();
+			instance->updateKeyframedModelInstance(kfModel,0,firstSurface);
+
+		} else {
+			// TODO
+		}
+	}
+}
 void rEntityImpl_c::updateAnimatedEntity() {
 	if(model == 0)
 		return;
@@ -597,13 +626,16 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
 					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,*finalBones);
+					// append .md3/.mdc attachments at the tags
+					updateInstanceAttachments();
 				} else {
 					if(finalBones) {
 						delete finalBones;
 						finalBones = 0;
 					}
 					// V: update vertex positions, normals, tangents and binormals (TBN approx)
-					instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+					instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());
+					updateInstanceAttachments();	
 				}
 			} else {
 				if(finalBones) {
@@ -612,6 +644,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				}
 				// V: update vertex positions, normals, tangents and binormals (TBN approx)
 				instance->updateSkelModelInstance(skelModel,skelAnimCtrl->getCurBones());	
+				updateInstanceAttachments();	
 			}
 #if 0
 			// V: this very slow when there are many skeletal models in the scene.

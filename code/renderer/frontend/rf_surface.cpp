@@ -1451,24 +1451,29 @@ void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
 	r_surface_c *sf = surfs.getArray();
 	this->bounds.clear();
-	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+	for(u32 i = 0; i < skel->getNumSurfs(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
 		sf->updateSkelSurfInstance(inSF,bones);
 		this->bounds.addBox(sf->getBB());
 	}
 }
-void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf) {
+void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 firstSurface) {
 	u32 numSurfs = kf->getNumSurfaces();
-	surfs.resize(numSurfs);
-	r_surface_c *sf = surfs.getArray();
+	surfs.resize(firstSurface+numSurfs);
+	r_surface_c *sf = surfs.getArray()+firstSurface;
 	for(u32 i = 0; i < numSurfs; i++, sf++) {
 		const kfSurfAPI_i *sfApi = kf->getSurfAPI(i);
 		sf->initKeyframedSurfaceInstance(sfApi);
 	}
 }
-void r_model_c::updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum) {
-	u32 numSurfs = surfs.size();
-	r_surface_c *sf = surfs.getArray();
+void r_model_c::updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum, u32 firstSurface) {
+	u32 numSurfs = kf->getNumSurfaces();
+	u32 shouldHaveAtLeastSurfaces = numSurfs + firstSurface;
+	// see if we have to init first
+	if(surfs.size() < shouldHaveAtLeastSurfaces) {
+		initKeyframedModelInstance(kf,firstSurface);
+	}
+	r_surface_c *sf = surfs.getArray()+firstSurface;
 	for(u32 i = 0; i < numSurfs; i++, sf++) {
 		const kfSurfAPI_i *sfApi = kf->getSurfAPI(i);
 		sf->updateKeyframedSurfInstance(sfApi,frameNum);

@@ -223,6 +223,10 @@ bool ModelEntity::hasRenderModel(const char *checkRModelName) const {
 void ModelEntity::setRenderModelSkin(const char *newSkinName) {
 	this->myEdict->s->rSkinIndex = G_RenderSkinIndex(newSkinName);
 }
+void ModelEntity::setRenderModelAttachment(u32 index, const char *boneName, const char *modelName) {
+	this->myEdict->s->attachments[index].modelIndex = G_RenderModelIndex(modelName);
+	this->myEdict->s->attachments[index].boneIndex = G_RenderModelIndex(boneName);// use as bone index
+}
 void ModelEntity::setSpriteModel(const char *newSpriteMaterial, float newSpriteRadius) {
 	// "sprites/plasma1|sprite|radius,32"
 	str newRenderModelName = newSpriteMaterial;

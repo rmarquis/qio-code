@@ -387,8 +387,8 @@ public:
 	void initSkelModelInstance(const class skelModelAPI_i *skel);
 	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones);
 	// keyframed models instacing
-	void initKeyframedModelInstance(const class kfModelAPI_i *kf);
-	void updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum);
+	void initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 firstSurface = 0);
+	void updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum, u32 firstSurface = 0);
 	// q3 multipart models (separate .md3's for head, torso, legs...)
 	void initQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp);
 	void updateQ3PlayerModelInstance(const class q3PlayerModelAPI_i *qp, u32 legsFrameNum, u32 torsoFrameNum);

@@ -48,6 +48,7 @@ void MSG_initHuffman( void );
 void MSG_Init( msg_s *buf, byte *data, int length ) {
 	if (!msgInit) {
 		MSG_initHuffman();
+		Com_Printf("MSG_Init: sizeof(entityState_s)=%i\n",sizeof(entityState_s));
 	}
 	memset (buf, 0, sizeof(*buf));
 	buf->data = data;
@@ -1276,6 +1277,14 @@ netField_t	entityStateFields[] =
 { NETF(boneOrs[63].quatXYZ.x), 0 },
 { NETF(boneOrs[63].quatXYZ.y), 0 },
 { NETF(boneOrs[63].quatXYZ.z), 0 },
+{ NETF(attachments[0].modelIndex), MODELNUM_BITS },
+{ NETF(attachments[0].boneIndex), MODELNUM_BITS },
+{ NETF(attachments[1].modelIndex), MODELNUM_BITS },
+{ NETF(attachments[1].boneIndex), MODELNUM_BITS },
+{ NETF(attachments[2].modelIndex), MODELNUM_BITS },
+{ NETF(attachments[2].boneIndex), MODELNUM_BITS },
+{ NETF(attachments[3].modelIndex), MODELNUM_BITS },
+{ NETF(attachments[3].boneIndex), MODELNUM_BITS },
 };
 
 
@@ -1352,7 +1361,7 @@ void MSG_WriteDeltaEntity( msg_s *msg, struct entityState_s *from, struct entity
 	MSG_WriteBits( msg, 0, 1 );			// not removed
 	MSG_WriteBits( msg, 1, 1 );			// we have a delta
 
-	MSG_WriteByte( msg, lc );	// # of changes
+	MSG_WriteBits( msg, lc, 9 );	// # of changes
 
 	oldsize += numFields;
 
@@ -1450,7 +1459,7 @@ void MSG_ReadDeltaEntity( msg_s *msg, entityState_s *from, entityState_s *to,
 	}
 
 	numFields = ARRAY_LEN( entityStateFields );
-	lc = MSG_ReadByte(msg);
+	lc = MSG_ReadBits(msg,9);
 
 	if ( lc > numFields || lc < 0 ) {
 		Com_Error( ERR_DROP, "invalid entityState field count" );

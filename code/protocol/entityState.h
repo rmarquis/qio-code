@@ -44,6 +44,18 @@ struct netBoneOr_s {
 };
 #define MAX_NETWORKED_BONES 64
 
+#define MAX_RMODEL_ATTACHMENTS 4
+
+// used to attach md3 model to skeletal model (eg. head)
+struct rAttachment_s {
+	int modelIndex;
+	int boneIndex;
+
+	bool isEmpty() const {
+		return (modelIndex == boneIndex);
+	}
+};
+
 // entityState_s is the information conveyed from the server
 // in an update message about entities that the client will
 // need to render in some way
@@ -70,6 +82,9 @@ struct entityState_s {
 	int parentTagNum;
 	vec3_c parentOffset; // in local space
 	vec3_c localAttachmentAngles;
+
+	// allow to attach md3 models
+	rAttachment_s attachments[MAX_RMODEL_ATTACHMENTS];
 
 	//int		clientNum;		// 0 to (MAX_CLIENTS - 1), for players and corpses
 
@@ -122,6 +137,7 @@ struct entityState_s {
 		trailEmitterInterval = 0;
 		lightColor.set(1.f,1.f,1.f);
 		scale.set(1.f,1.f,1.f);
+		memset(attachments,0,sizeof(attachments));
 	}
 	entityState_s() {
 		setDefaults();
