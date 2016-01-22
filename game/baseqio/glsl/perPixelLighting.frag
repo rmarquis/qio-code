@@ -235,6 +235,7 @@ void main() {
 	float distance = length(lightToVert);
 	if(distance > u_lightRadius) {
 		// pixel is too far from the ligh
+		gl_FragColor = vec4(0,0,0,0); // put black pixel - added after updating my drivers
 		return;
 	}
     vec3 lightDirection = normalize(lightToVert);
@@ -242,6 +243,7 @@ void main() {
 #ifdef LIGHT_IS_SPOTLIGHT
 	float spotDOT = dot(lightDirection,u_lightDir);
 	if(-spotDOT < u_spotLightMaxCos) {
+		gl_FragColor = vec4(0,0,0,0); // put black pixel - added after updating my drivers
 		return;
 	}
 #endif
@@ -261,6 +263,7 @@ void main() {
 #endif
     if(angleFactor < 0.0) {
 		// light is behind the surface
+		gl_FragColor = vec4(0,0,0,0); // put black pixel - added after updating my drivers
 		return;
     }
 #ifdef DEBUG_IGNOREANGLEFACTOR
