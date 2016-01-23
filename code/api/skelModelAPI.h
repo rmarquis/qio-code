@@ -71,10 +71,13 @@ public:
 	virtual u32 getTotalTriangleCount() const = 0;
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const = 0;
 	virtual const boneOrArray_c &getBaseFrameABS() const = 0;
+	virtual const class boneDefArray_c *getBoneDefs() const = 0;
 	virtual bool hasCustomScaling() const = 0;
 	virtual const vec3_c& getScaleXYZ() const = 0;
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const = 0;
 	virtual const char *getBoneName(u32 boneIndex) const = 0;
+	virtual u32 getBoneNameIndex(u32 boneIndex) const = 0;
+	virtual int getBoneParentIndex(u32 boneIndex) const = 0;
 	//virtual const aabb &getEstimatedBounds() const = 0;
 	virtual void printBoneNames() const = 0;
 };

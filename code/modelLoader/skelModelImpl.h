@@ -121,6 +121,9 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual const skelSurfaceAPI_i *getSurface(u32 surfNum) const {
 		return &surfs[surfNum];
 	}
+	virtual const class boneDefArray_c *getBoneDefs() const {
+		return &bones;
+	}
 	virtual const boneOrArray_c &getBaseFrameABS() const {
 		return baseFrameABS;
 	}
@@ -139,6 +142,12 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual const char *getBoneName(u32 boneIndex) const {
 		return SK_GetString(bones[boneIndex].nameIndex);
 	}
+	virtual u32 getBoneNameIndex(u32 boneIndex) const {
+		return bones[boneIndex].nameIndex;
+	}
+	virtual int getBoneParentIndex(u32 boneIndex) const {
+		return bones[boneIndex].parentIndex;
+	}
 	virtual void printBoneNames() const;
 	// modelPostProcessFuncs_i impl
 	virtual void scaleXYZ(float scale);
@@ -155,6 +164,8 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual void recalcBoundingBoxes() {
 		// TODO?
 	}
+
+	skelSurfIMPL_c *registerSurface(const char *matName);
 public:
 	skelModelIMPL_c();
 	~skelModelIMPL_c();
@@ -165,6 +176,8 @@ public:
 	bool loadMDM(const char *fname);
 	// RTCW
 	bool loadMDS(const char *fname);
+	// Source (intermediate)
+	bool loadSMD(const char *fname);
 	void recalcEdges();
 };
 

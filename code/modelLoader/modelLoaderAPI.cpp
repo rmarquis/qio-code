@@ -272,6 +272,9 @@ public:
 		// RTCW
 		if(!_stricmp(ext,"mds"))
 			return true;
+		// Source (intermediate)
+		if(!_stricmp(ext,"smd"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -299,6 +302,11 @@ public:
 			if(skelModel->loadMDS(fname)) {
 				delete skelModel;
 				return 0;
+			}			
+		} else if(tmp.hasExt("smd")) {
+			if(skelModel->loadSMD(fname)) {
+				delete skelModel;
+				return 0;
 			}	
 		} else {
 			delete skelModel;
@@ -323,6 +331,8 @@ public:
 		if(!_stricmp(ext,"mdx"))
 			return true;
 		if(!_stricmp(ext,"mds"))
+			return true;
+		if(!_stricmp(ext,"smd"))
 			return true;
 		return false;
 	}
@@ -354,6 +364,13 @@ public:
 				return 0;
 			}
 			ret = mdxAnim;
+		} else if(!_stricmp(ext,"smd")) {
+			skelAnimGeneric_c *smdAnim = new skelAnimGeneric_c;
+			if(smdAnim->loadSMDAnim(fname)) {
+				delete smdAnim;
+				return 0;
+			}
+			ret = smdAnim;
 		} else {
 			return 0;
 		}

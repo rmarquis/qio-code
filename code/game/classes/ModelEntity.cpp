@@ -471,6 +471,8 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 	} else if(!_stricmp(key,"scale") || !_stricmp(key,"modelscale")) {
 		float f = atof(value);
 		this->myEdict->s->scale.set(f,f,f);
+	} else if(!_stricmp(key,"anim")) {
+		this->setAnimation(value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);

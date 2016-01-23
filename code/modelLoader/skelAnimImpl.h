@@ -118,6 +118,9 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual bool getBLoopLastFrame() const {
 		return animFlags & AF_LOOP_LAST_FRAME;
 	}
+	virtual int findBoneForBoneNameIndex(u32 boneNameIndex) const {
+		return bones.getLocalBoneIndexForBoneName(boneNameIndex);
+	}
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const {
 		u16 nameIndex = SK_RegisterString(nameStr);
 		return bones.getLocalBoneIndexForBoneName(nameIndex);
@@ -169,6 +172,8 @@ class skelFrame_c {
 friend class skelAnimGeneric_c;
 	arraySTD_c<md5BoneVal_s> bones;
 	aabb bounds;
+
+	void setOrs(const class boneOrArray_c &ors);
 };
 class skelAnimGeneric_c : public skelAnimAPI_i {
 	str animFileName;
@@ -216,6 +221,9 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual bool getBLoopLastFrame() const {
 		return animFlags & AF_LOOP_LAST_FRAME;
 	}
+	virtual int findBoneForBoneNameIndex(u32 boneNameIndex) const {
+		return bones.getLocalBoneIndexForBoneName(boneNameIndex);
+	}
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const {
 		u16 nameIndex = SK_RegisterString(nameStr);
 		return bones.getLocalBoneIndexForBoneName(nameIndex);
@@ -257,11 +265,14 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
+
+	void addFrameRelative(const class boneOrArray_c &ors);
 public:
 	skelAnimGeneric_c();
 	virtual ~skelAnimGeneric_c();
 	bool loadMDXAnim(const char *fname);
 	bool loadMDSAnim(const char *fname);
+	bool loadSMDAnim(const char *fname);
 };
 
 #endif //__SKELANIMIMPL_H__

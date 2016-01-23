@@ -511,7 +511,7 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") || !_stricmp(cmd,"mdm_spawn")) {
+	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") || !_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -639,6 +639,15 @@ void ClientCommand( int clientNum ) {
 		e->setAnimation("models/players/infantryss/body.mds");
 		e->setRenderModelAttachment(0,"tag_head","models/players/infantryss/head.mdc");
 		e->setRenderModelSkin("default");
+	} else if(!_stricmp(cmd,"smd_test1")) {
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/tests/smd_anim/Male_06_reference.smd");
+		e->setAnimation("models/tests/smd_anim/MP5_RunN.smd");
 	} else {
 		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);
