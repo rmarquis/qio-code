@@ -33,6 +33,9 @@ modelLoader
  - .ASE static models support
  - usefull .mdpp (MoDelPreProcess) "scripts" system used to scale/rotate model after loading
  - Doom3 .md5mesh / .md5anim support
+ - Wolfenstein Enemy Territory .mdm / .mdx support (skeletal models)
+ - RTCW .mds support (skeletal models)
+ - RTCW .mdc support (compressed md3)
  - .LWO static models support
  - Quake3 .md3 and Quake2 .md2 keyframed meshes support
  - unfinished Half Life2 .mdl loader (without animations)
@@ -57,9 +60,9 @@ shared
  - many math, geometry and util C++ classes
  - autoCvar_c class for easier ConVars usage
  
- q3radiant
+editor
  - merged codebase with main engine; type "editor" in console to run (Doom3 style)
- - ???
+ - realtime materials preview (texmods, animmaps etc. are working in 3d view)
  
  q3map
  - custom QioBSP format that provides extra areaPortals data (similiar to one present in Doom3 proc files)

@@ -2142,10 +2142,12 @@ drawOnlyLightmap:
 				// HACK HACK HACK
 				// FOR ET MAPS
 				// It improves (totally fixes?) the color vertices/lightmaps mess on OASIS!
-				if(lastLightmap == 0) {
-					bindVertexColors = true;
-				} else {
-					bindVertexColors = false;
+				if(curLight == 0) {
+					if(lastLightmap == 0) {
+						bindVertexColors = true;
+					} else {
+						bindVertexColors = false;
+					}
 				}
 				if(s->hasRGBGen() && (rb_ignoreRGBGens.getInt() == 0)) {
 					if(s->getRGBGenType() == RGBGEN_IDENTITY) {
