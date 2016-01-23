@@ -80,6 +80,8 @@ static void CG_InterpolatePlayerState( bool grabAngles ) {
 		}
 		out->velocity[i] = prev->ps.velocity[i] + 
 			f * (next->ps.velocity[i] - prev->ps.velocity[i] );
+		out->scale[i] = prev->ps.scale[i] + 
+			f * (next->ps.scale[i] - prev->ps.scale[i] );
 	}
 
 }
