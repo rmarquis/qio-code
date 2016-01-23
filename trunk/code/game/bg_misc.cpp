@@ -50,6 +50,7 @@ void BG_PlayerStateToEntityState( playerState_s *ps, entityState_s *s, bool snap
 	s->number = ps->clientNum;
 
 	s->origin = ps->origin;
+	s->scale = ps->scale;
 
 	// copy angles (NOT viewangles)
 	s->angles = ps->angles;
