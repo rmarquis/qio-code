@@ -117,13 +117,11 @@ void skelAnimController_c::runAnimController(int curGlobalTimeMSec) {
 		if(anim->getBLoopLastFrame() || flags & ANIMFLAG_STOPATLASTFRAME) {
 			return; // dont loop this animation, just stop at the last frame
 		} else {
-			int timeMS = time * 1000;
-			int totalMS = anim->getTotalTimeSec() * 1000;
-			while(time > totalMS) {
+			// TODO: improve
+			while(time > anim->getTotalTimeSec()) {
 			//	g_core->Print("Clamping time %f by %f\n",time,anim->getTotalTimeSec());
-				timeMS -= totalMS;
+				time -= anim->getTotalTimeSec();
 			}
-			time = float(timeMS) * 0.001f;
 			if(anim_printAnimCtrlTime.getInt()) {
 				g_core->Print("Final time: %f\n",time);
 			}

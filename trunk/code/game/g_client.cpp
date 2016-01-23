@@ -626,6 +626,19 @@ void ClientCommand( int clientNum ) {
 		e->setRenderModel("models/players/venom/body.mds");
 		e->setAnimation("models/players/venom/body.mds");
 		e->setRenderModelSkin("default");
+	} else if(!_stricmp(cmd,"mds_test3")) {
+		// V: simple RTCW skeletal model test
+		// NOTE: mdm models has no bone data in file
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/infantryss/body.mds");
+		e->setAnimation("models/players/infantryss/body.mds");
+		e->setRenderModelAttachment(0,"tag_head","models/players/infantryss/head.mdc");
+		e->setRenderModelSkin("default");
 	} else {
 		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);

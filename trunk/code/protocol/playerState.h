@@ -85,6 +85,7 @@ struct playerState_s : public entityState_s {
 		viewWeaponCurClipSize = 0;
 		viewModelAngles.set(0,0,0);
 		viewModelOffset.set(0,0,0);
+		scale.set(1.f,1.f,1.f);
 	}
 	bool isOnGround() const {
 		return (groundEntityNum != ENTITYNUM_NONE);

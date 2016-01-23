@@ -1590,7 +1590,10 @@ netField_t	playerStateFields[] =
 { PSF(viewModelOffset[2]), 0 },
 { PSF(viewWeaponMaxClipSize), 0 },
 { PSF(viewWeaponCurClipSize), 0 },
-{ PSF(eFlags), EF_NUM_FLAG_BITS },	
+{ PSF(eFlags), EF_NUM_FLAG_BITS },
+{ PSF(scale[0]), 0 },
+{ PSF(scale[1]), 0 },
+{ PSF(scale[2]), 0 },	
 };
 
 /*
