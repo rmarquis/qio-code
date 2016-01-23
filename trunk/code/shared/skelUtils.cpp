@@ -95,6 +95,11 @@ void boneOrArray_c::setBones(const boneOrArray_c &from, const arraySTD_c<u32> &b
 		(*this)[boneIndex] = from[boneIndex];
 	}
 }
+void boneOrArray_c::inverse() {
+	for(u32 i = 0; i < size(); i++) {
+		(*this)[i].mat.inverse();
+	}
+}
 u32 boneOrArray_c::findNearestBone(const vec3_c &pos, float *outDist) const {
 	u32 best = 0;
 	float bestDist = getBonePos(0).distSQ(pos);

@@ -259,6 +259,91 @@ bool skelAnimGeneric_c::loadMDSAnim(const char *fname) {
 	return false;
 }
 
+//
+//	Source intermediate .smd files loading
+//
+bool skelAnimGeneric_c::loadSMDAnim(const char *fname) {
+	// .smd files are a raw text files, so setup the parsing
+	parser_c p;
+	p.openFile(fname);
+
+	if(p.atWord("version")==false) {
+		g_core->Print("skelModel_c::loadSMD: expected \"version\" string at the beggining of the file, found %s, in file %s\n",
+			p.getToken(),fname);
+		return true; // error
+	}
+	u32 version = p.getInteger();
+	if(version != 1) {
+		g_core->Print("skelModel_c::loadSMD: bad version %i, expected %i, in file %s\n",version,1,fname);
+		return true; // error
+	}
+	u32 numNodesParsed = 0;
+	while(!p.atEOF()) {
+		if(p.atWord("nodes")) {
+			while(p.atWord("end") == false) {
+				u32 checkIndex = p.getInteger();
+				if(checkIndex != numNodesParsed) {
+					g_core->Print("Expected node index %i at line %i of %s, found %s\n",numNodesParsed,p.getCurrentLineNumber(),fname,p.getToken());
+				}
+				str nodeName = p.getToken();
+				int parentIndex = p.getInteger();
+
+				boneDef_s b;
+				b.nameIndex = SK_RegisterString(nodeName);
+				b.parentIndex = parentIndex;
+
+				numNodesParsed++;
+
+				this->bones.push_back(b);
+			}
+			g_core->Print("%i smd nodes (bones) loaded\n",this->bones.size());
+		} else if(p.atWord("skeleton")) {
+			bool stop = false;
+			while(stop == false) {
+				if(p.atWord("time") == false) {
+					g_core->Print("Expected \"time\" to follow \"skeleton\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),fname,p.getToken());
+					return true;
+				}
+				atTimeToken:
+				float timeVal = p.getFloat();
+				boneOrArray_c frameRelative;
+				frameRelative.resize(this->bones.size());
+				while(1) {
+					// <int|bone ID> <float|PosX PosY PosZ> <float|RotX RotY RotZ>
+					u32 id = p.getInteger();
+					vec3_c pos;
+					p.getFloatMat(pos,3);
+					vec3_c rot;
+					p.getFloatMat(rot,3);
+
+					vec3_c angles( RAD2DEG(rot.y), RAD2DEG(rot.z), RAD2DEG(rot.x) );
+					frameRelative[id].mat.fromAnglesAndOrigin(angles,pos);
+
+					if(p.atWord("time")) {
+						this->addFrameRelative(frameRelative);
+						goto atTimeToken; 
+					} else if(p.atWord("end")) {
+						stop = true;
+						break;
+					}
+				}
+				this->addFrameRelative(frameRelative);
+			}
+		} else if(p.atWord("triangles")) {
+			while(p.atWord("end") == false && p.atEOF() == false) {
+				const char *dummy = p.getToken();
+			}
+		} else {
+			g_core->Print("Unknown token %s in smd file %s\n",p.getToken(),fname);
+		}
+	}
+
+	this->frameTime = 0.2f;
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
+
 void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_c &pos, quat_c &quat) const {
 	pos = f.bones[boneNum].pos;
 	quat = f.bones[boneNum].quat;
@@ -270,6 +355,21 @@ void skelAnimGeneric_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &
 }
 void skelAnimGeneric_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
 
+}
+void skelFrame_c::setOrs(const class boneOrArray_c &ors) {
+	bones.resize(ors.size());
+	for(u32 i = 0; i < ors.size(); i++) {
+		const matrix_c &m = ors[i].mat;
+		md5BoneVal_s &v = bones[i];
+		v.setQuat(m.getQuat());
+		v.setVec3(m.getOrigin());
+	}
+}	
+void skelAnimGeneric_c::addFrameRelative(const class boneOrArray_c &ors) {
+	skelFrame_c f;
+	f.setOrs(ors);
+	//f.bounds.fromRadius(16.f); // TODO?
+	frames.push_back(f);
 }
 void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
 	if(lerp.to >= this->frames.size()) {
@@ -462,7 +562,8 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 	return false; // no error
 }	
 void skelAnimMD5_c::clearMD5BoneComponentFlags(const char *boneName) {
-	int localIndex = SK_RegisterString(boneName);
+	u32 nameIndex = SK_RegisterString(boneName);
+	int localIndex = findBoneForBoneNameIndex(nameIndex);
 	if(localIndex == -1) {
 		g_core->RedWarning("skelAnimMD5_c::clearMD5BoneComponentFlags: Bone %s not found\n",boneName);
 		return;

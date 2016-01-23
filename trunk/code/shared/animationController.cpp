@@ -147,10 +147,13 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 	}
 	if(anim == nextAnim) {
 		outLocalBones.resize(anim->getNumBones());
-		if((anim->getBLoopLastFrame() || flags & ANIMFLAG_STOPATLASTFRAME) && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
+		bool bAnimationShouldStopAtLastFrame = (anim->getBLoopLastFrame() || flags & ANIMFLAG_STOPATLASTFRAME);
+		if(bAnimationShouldStopAtLastFrame && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
+			// build only last frame
 			anim->buildFrameBonesLocal(anim->getNumFrames()-1,outLocalBones);		
 		//	g_core->Print("skelAnimController_c::updateModelAnimationLocal: %i: using last frame\n",lastUpdateTime);
 		} else {
+			// Lerp between two frames
 			singleAnimLerp_s lerp;
 			getSingleLoopAnimLerpValuesForTime(lerp,anim,time);
 			//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
@@ -183,6 +186,36 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		outLocalBones.setBlendResult(oldBonesState, newBones, frac);	
 	//	g_core->Print("skelAnimController_c::updateModelAnimationLocal: %i: blending between two anims\n",lastUpdateTime);	
 	}
+	u32 numSkelModelBones = skelModel->getNumBones();
+	u32 numAnimBones = anim->getNumBones();
+	// This is the case for SMD models which have different bones in animation and mesh files
+	// (not always)
+	if(numSkelModelBones != numAnimBones) {
+		boneOrArray_c copy = outLocalBones;
+		outLocalBones.resize(numSkelModelBones);
+		for(u32 i = 0; i < numSkelModelBones; i++) {
+			u32 skelModelBoneName = skelModel->getBoneNameIndex(i);
+			int animBoneIndex = anim->findBoneForBoneNameIndex(skelModelBoneName);
+			if(animBoneIndex != -1) {
+				outLocalBones[i] = copy[animBoneIndex];
+				continue;
+			}
+			bool bFound = false;
+			int parentBoneIndex = skelModel->getBoneParentIndex(i);
+			while(parentBoneIndex != -1) {
+				int animBoneIndex = anim->findBoneForBoneNameIndex(skelModel->getBoneNameIndex(parentBoneIndex));
+				if(animBoneIndex != -1) {
+					outLocalBones[i] = copy[animBoneIndex];
+					bFound = true;
+					break;
+				}
+				parentBoneIndex = skelModel->getBoneParentIndex(parentBoneIndex);
+			}
+			if(!bFound) {
+				outLocalBones[i] = copy[0];
+			}
+		}
+	}
 }
 void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel) {
 	if(anim == 0)
@@ -192,7 +225,12 @@ void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skel
 	if(anim == 0)
 		return;
 	// convert relative bones matrices to absolute bone matrices
-	currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+	if(skelModel->getNumBones() != anim->getNumBones()) {
+		// SMD case...
+		currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+	} else {
+		currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+	}
 	if(skelModel->hasCustomScaling()) {
 		currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
 	}

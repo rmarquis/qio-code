@@ -1,0 +1,3 @@
+appendModel simple_uv_sphere.obj
+scale 32
+swapIndices

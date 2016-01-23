@@ -53,6 +53,7 @@ public:
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac, const arraySTD_c<u32> &bonesToBlend);	
 	void setBones(const boneOrArray_c &from, const arraySTD_c<u32> &bonesToSet);	
 	u32 findNearestBone(const vec3_c &pos, float *outDist) const;
+	void inverse();
 
 	void transform(const matrix_c &ofs);
 	void scale(float scale);

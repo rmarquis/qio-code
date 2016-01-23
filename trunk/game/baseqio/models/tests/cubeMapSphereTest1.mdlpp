@@ -1,0 +1,4 @@
+appendModel simple_uv_sphere.obj
+scale 32
+setallsurfsmaterial qiotests/cubeMapTest1 
+swapYZ

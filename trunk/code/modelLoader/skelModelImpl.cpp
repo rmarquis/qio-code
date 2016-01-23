@@ -202,7 +202,16 @@ void CalcTriangleTN(const vec3_c &v0xyz, const vec3_c &v1xyz, const vec3_c &v2xy
 	tangent.setY(coef * ((edge0.getY() * st1.getY())  + (edge1.getY() * -st0.getY())));
 	tangent.setZ(coef * ((edge0.getZ() * st1.getY())  + (edge1.getZ() * -st0.getY())));
 }
-
+skelSurfIMPL_c *skelModelIMPL_c::registerSurface(const char *matName) {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		if(stricmp(surfs[i].matName,matName)==0)
+			return &surfs[i];
+	}
+	skelSurfIMPL_c ns ;
+	ns.setMaterial(matName);
+	surfs.push_back(ns);
+	return &surfs[surfs.size()-1];
+}
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;
@@ -437,6 +446,173 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	this->name = fname;
 
 	return false; // no error
+}
+struct smdLink_s {
+	int bone;
+	float weight;
+};
+
+
+bool skelModelIMPL_c::loadSMD(const char *fname) {
+	this->name = fname;
+
+	// .smd files are a raw text files, so setup the parsing
+	parser_c p;
+	p.openFile(fname);
+
+	if(p.atWord("version")==false) {
+		g_core->Print("skelModel_c::loadSMD: expected \"version\" string at the beggining of the file, found %s, in file %s\n",
+			p.getToken(),fname);
+		return true; // error
+	}
+	u32 version = p.getInteger();
+	if(version != 1) {
+		g_core->Print("skelModel_c::loadSMD: bad version %i, expected %i, in file %s\n",version,1,fname);
+		return true; // error
+	}
+	boneOrArray_c baseFrameInv;
+	u32 numNodesParsed = 0;
+	while(p.atEOF()==false) {
+		if(p.atWord("nodes")) {
+			while(p.atWord("end") == false && p.atEOF() == false) {
+				u32 checkIndex = p.getInteger();
+				if(checkIndex != numNodesParsed) {
+					g_core->Print("Expected node index %i at line %i of %s, found %s\n",numNodesParsed,p.getCurrentLineNumber(),fname,p.getToken());
+				}
+				str nodeName = p.getToken();
+				int parentIndex = p.getInteger();
+
+				boneDef_s b;
+				b.nameIndex = SK_RegisterString(nodeName);
+				b.parentIndex = parentIndex;
+
+				numNodesParsed++;
+
+				this->bones.push_back(b);
+			}
+			g_core->Print("%i smd nodes (bones) loaded\n",this->bones.size());
+		} else if(p.atWord("skeleton") && p.atEOF() == false) {
+			bool stop = false;
+			boneOrArray_c baseFrameRelative;
+			while(stop == false) {
+				if(p.atWord("time") == false) {
+					g_core->Print("Expected \"time\" to follow \"skeleton\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),fname,p.getToken());
+					return true;
+				}
+				atTimeToken:
+				float timeVal = p.getFloat();
+				baseFrameRelative.resize(this->bones.size());
+				while(1) {
+					// <int|bone ID> <float|PosX PosY PosZ> <float|RotX RotY RotZ>
+					u32 id = p.getInteger();
+					vec3_c pos;
+					p.getFloatMat(pos,3);
+					vec3_c rot;
+					p.getFloatMat(rot,3);
+					if(timeVal == 0) {
+						vec3_c angles( RAD2DEG(rot.y), RAD2DEG(rot.z), RAD2DEG(rot.x) );
+					//	angles *= -1;
+						baseFrameRelative[id].mat.fromAnglesAndOrigin(angles,pos);
+					}
+					if(p.atWord("time")) {
+						goto atTimeToken; 
+					} else if(p.atWord("end")) {
+						stop = true;
+						break;
+					}
+				}
+			}
+			baseFrameABS = baseFrameRelative;
+			baseFrameABS.localBonesToAbsBones(&bones);
+			baseFrameInv = baseFrameABS;
+			baseFrameInv.inverse();
+		} else if(p.atWord("triangles")) {
+			while(p.atWord("end") == false && p.atEOF() == false) {
+				str materialName = p.getToken();
+				skelSurfIMPL_c *sf = this->registerSurface(materialName.c_str());
+
+				skelVert_s tri[3];
+				// 0 -328.499207 -69.337677 1692.571899 -0.216319 1.422574 1.000000 0.000000 0.000000 0
+				// <int|Parent bone> <float|PosX PosY PosZ> <normal|NormX NormY NormZ> <normal|U V> <int|links> <int|Bone ID> <normal|Weight> [...]
+				// The final three values are optional: they override
+				// <Parent bone> to define a series of weightmap links. 
+				// Bone ID and Weight are repeated for each link.
+				// If the weights do not add up to 1,
+				// any remaining value is placed on <Parent bone>.
+				for(u32 i = 0; i < 3; i++) {
+					skelVert_s &ov = tri[i];
+					ov.firstWeight = sf->weights.size();
+					int parentBone = p.getInteger();
+					vec3_c pos;
+					p.getFloatMat(pos,3);
+					vec3_c norm;
+					p.getFloatMat(norm,3);
+					vec2_c tc;
+					p.getFloatMat(tc,2);
+					// there is no "numLinks" token in airboat_LOD_1.smd from source sdk,
+					// it looks like that keyword is optional
+					u32 numLinks = 0;
+					arraySTD_c<smdLink_s> links;
+					float linksWSum = 0;
+					if(p.isAtEOL() == false) {
+						numLinks = p.getInteger();
+						if(numLinks) {
+							for(u32 l = 0; l < numLinks; l++) {
+								smdLink_s link;
+								link.bone = p.getInteger();
+								link.weight = p.getFloat();
+								linksWSum += link.weight;
+								links.push_back(link);
+							}
+						}
+					}
+					if(numLinks == 0) {
+						smdLink_s missing;
+						missing.weight = 1.f;
+						missing.bone = parentBone;
+						links.push_back(missing);
+						numLinks++;
+					} else if(abs(linksWSum-1.f) > 0.05) {
+						smdLink_s missing;
+						missing.weight = 1.f - linksWSum;
+						missing.bone = parentBone;
+						links.push_back(missing);
+						numLinks++;
+					}
+					for(u32 l = 0; l < numLinks; l++) {
+						int boneIndex = links[l].bone;
+						vec3_c posLocal;
+						const matrix_c &m = baseFrameInv[boneIndex].mat;
+						posLocal = pos;
+						m.transformPoint(posLocal);
+
+						skelWeight_s sw;
+						sw.boneIndex = boneIndex;
+						sw.ofs = posLocal;
+						sw.weight = links[l].weight;
+						if(sw.weight < 0.0001) {
+							g_core->Print("skelModel_c::loadSMD: bone weight lower than 0.00001, ignoring\n");
+							continue;
+						}
+						sf->weights.push_back(sw);
+					}
+					ov.tc = tc;
+					tri[i].numWeights = sf->weights.size()-tri[i].firstWeight;
+				}
+				for(int idx = 2; idx >= 0; idx--) {
+					sf->indices.push_back(sf->verts.size());
+					sf->verts.push_back(tri[idx]);
+				}
+			}
+		} else {
+			g_core->Print("Unknown token %s in smd file %s\n",p.getToken(),fname);
+		}
+	}
+	for(u32 i = 0; i < bones.size(); i++) {
+		baseFrameABS[i].boneName = bones[i].nameIndex;
+	}
+	g_core->Print("SMD file %s has %i surfaces\n",fname,surfs.size());
+	return false;
 }
 
 bool skelModelIMPL_c::loadMDS(const char *fname) {
