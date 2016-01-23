@@ -251,8 +251,11 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 			n->sunDirection = sunMaterial->getSunParms()->getSunDir();
 			n->sunColor = sunMaterial->getSunParms()->getSunColor();
 		}
+	} else {
+		n->bHasSunLight = false;
 	}
 	n->bDrawingSunShadowMapPass = rf_bDrawingSunShadowMapPass;
+//	g_core->Print("DC %i - rf_bDrawingSunShadowMapPass %i, shadowMapLOD %i\n",rf_numDrawCalls,rf_bDrawingSunShadowMapPass,rf_currentShadowMapLOD);
 	rf_numDrawCalls++;
 }
 void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class rIndexBuffer_c *indices) {
@@ -285,6 +288,7 @@ void RF_AddShadowVolumeDrawCall(const class rPointBuffer_c *points, const class 
 	n->entity = rf_currentEntity;
 	n->curLight = rf_curLightAPI;
 	n->bSunShadowVolume = rf_bDrawingSunLightPass;
+	n->shadowMapLOD = -1;
 	rf_numDrawCalls++;
 }
 u32 RF_GetCurrentDrawcallsCount() {
@@ -606,16 +610,16 @@ void RF_IssueDrawCalls(u32 firstDrawCall, u32 numDrawCalls) {
 		}
 		if(rf_drawCalls_printDepthOnlyDrawCalls.getInt()) {
 			if(c->drawOnlyOnDepthBuffer) {
-				g_core->Print("Executing depth only drawcall %i: material %s, light %i\n",i,c->material->getName(),c->curLight);
+				g_core->Print("Executing depth only drawcall %i: material %s, light %i\n",i,c->getMatName(),c->curLight);
 			}
 		}
 		if(rf_drawCalls_printSunShadowMapDrawCalls.getInt()) {
 			if(c->bDrawingSunShadowMapPass) {
-				g_core->Print("Executing sun shadow map drawcall %i: material %s\n",i,c->material->getName());
+				g_core->Print("Executing sun shadow map drawcall %i: material %s\n",i,c->getMatName());
 			}
 		}
 		if(rf_drawCalls_printShadowMapLOD.getInt()) {
-			g_core->Print("Drawcall %i: material %s: shadowMapLOD %i\n",i,c->material->getName(),c->shadowMapLOD);
+			g_core->Print("Drawcall %i: material %s: shadowMapLOD %i\n",i,c->getMatName(),c->shadowMapLOD);
 		}
 		if(rf_drawCalls_printAll.getInt()) {
 			g_core->Print("Drawcall %i of %i: materials %s, tris %i, verts %i, bDrawOnDepthBuffer: %i, bDrawingSunShadowMap %i, bHasSunLight %i, sort %i\n",
