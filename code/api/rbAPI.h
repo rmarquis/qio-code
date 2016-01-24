@@ -172,6 +172,9 @@ public:
 	// V: bCreateWindow is for my built-in Radiant fork, which is using Qio's materialsystem
 	virtual void init(bool bCreateWindow = true) = 0;
 	virtual void shutdown(bool destroyWindow) = 0;
+	// in editor mode qer_editorImages stages should be drawn
+	// otherwise they are skipped
+	virtual void setBDrawEditorImageStages(bool newBDraw) { }
 };
 
 extern rbAPI_i *rb;

@@ -66,7 +66,7 @@ struct matFile_s {
 	}
 	void iterateAllAvailableMaterialNames(void (*callback)(const char *s)) {
 		const char *p = this->text.c_str();
-		while(*p) {
+		while(p && *p) {
 			// skip comments and whitespaces
 			p = G_SkipToNextToken(p);
 			if(p == 0 || *p == 0)

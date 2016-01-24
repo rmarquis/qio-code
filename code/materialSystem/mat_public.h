@@ -28,6 +28,8 @@ enum stageType_e {
 	ST_CUBEMAP_REFLECTION,
 	// this will automatically use nearest 'env_cubemap' for reflections
 	ST_ENV_CUBEMAP,
+	// only for editor (qer_editorImage)
+	ST_EDITORIMAGE,
 };
 
 // hardcoded alpha func test values (for non-blended transparency)

@@ -1544,14 +1544,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		// It would render editor image on mirror, check test_mirror map
 		if(editorImage.length()) {
 			mtrStage_c *s = new mtrStage_c;
-			s->setStageType(ST_COLORMAP);
+			s->setStageType(ST_EDITORIMAGE);
 			s->setTexture(editorImage);
 			stages.push_back(s);
 		} else {
 			// V: load image automatically
 			// TODO: check if this is okay with other engines
 			mtrStage_c *s = new mtrStage_c;
-			s->setStageType(ST_COLORMAP);
+			s->setStageType(ST_EDITORIMAGE);
 			s->setTexture(getName());
 			stages.push_back(s);
 		}
