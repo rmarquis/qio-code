@@ -128,6 +128,7 @@ static aCvar_c rb_saveCurrentShadowMapsToFile("rb_saveCurrentShadowMapsToFile","
 static aCvar_c rb_wireframeLightmapStages("rb_wireframeLightmapStages","0");
 static aCvar_c rb_wireframeColormapLightmappedStages("rb_wireframeColormapLightmappedStages","0");
 static aCvar_c rb_wireframeSkyBoxCubeMapStages("rb_wireframeSkyBoxCubeMapStages","0");
+static aCvar_c rb_wireframeEditorImageStages("rb_wireframeEditorImageStages","0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -466,6 +467,7 @@ public:
 		isMirror = false;
 		forcedMaterialFrameNum = -1;
 		bRendererMirrorThisFrame = false;
+		bDrawEditorImageStages = false;
 		bDepthFBODrawnThisFrame = false;
 		bDepthFBOLod1DrawnThisFrame = false;
 		bDepthFBOLod2DrawnThisFrame = false;
@@ -479,6 +481,9 @@ public:
 		bHasSunLight = false;
 		bSavingDepthShadowMapsToFile = false;
 		iCubeMapCounter = 0;
+	}
+	virtual void setBDrawEditorImageStages(bool newBDraw) {
+		bDrawEditorImageStages = newBDraw;
 	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
@@ -1303,6 +1308,10 @@ public:
 	bool bDrawOnlyOnDepthBuffer;
 	bool bDrawingShadowVolumes;
 	bool bDrawingSunShadowMapPass;
+	// in editor mode all qer_editorImage stages are displayed
+	// in game mode they are hidden (otherwise they would show up on some surfaces,
+	// for example on RTCW xlabs.bsp main room pipes)
+	bool bDrawEditorImageStages;
 	virtual void setCurLight(const class rLightAPI_i *light) {
 		if(this->curLight == light)
 			return;
@@ -1897,6 +1906,17 @@ public:
 						bForceWireframe = true;
 					}	
 				}
+				if(rb_wireframeEditorImageStages.getInt()) {
+					if(s->getStageType() == ST_EDITORIMAGE) {
+						bForceWireframe = true;
+					}	
+				}
+				if(s->getStageType() == ST_EDITORIMAGE) {
+					if(bDrawEditorImageStages==false)
+						continue;
+				}
+
+				
 				// see if stage condition is met (Doom3 'if' materials)
 				if(s->hasIFCondition()) {
 					if(s->conditionMet(&materialVarList) == false) {

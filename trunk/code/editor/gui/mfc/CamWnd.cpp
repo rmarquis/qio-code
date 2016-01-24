@@ -632,6 +632,7 @@ void CCamWnd::Cam_Draw()
 	//glClearColor (g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][0],
 	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][1],
 	//	g_qeglobals.d_savedinfo.colors[COLOR_CAMERABACK][2], 0);
+	rf->getBackend()->setBDrawEditorImageStages(true);
 	rf->getBackend()->setViewPort(m_Camera.width, m_Camera.height);
 	rf->beginFrame();
 	rf->setRenderTimeMsec(clock());
