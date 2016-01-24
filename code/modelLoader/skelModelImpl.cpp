@@ -596,6 +596,14 @@ bool skelModelIMPL_c::loadSMD(const char *fname) {
 						}
 						sf->weights.push_back(sw);
 					}
+					// calc normal
+				
+					int boneIndex = links[0].bone;
+					vec3_c normLocal;
+					const matrix_c &m = baseFrameInv[boneIndex].mat;
+					m.transformNormal(norm,normLocal);
+					ov.n = normLocal;
+
 					ov.tc = tc;
 					tri[i].numWeights = sf->weights.size()-tri[i].firstWeight;
 				}
