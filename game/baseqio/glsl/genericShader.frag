@@ -150,6 +150,7 @@ void main() {
     float angleFactor = dot(vertNormal, deluxeLightDir);
     if(angleFactor < 0) {
 		// light is behind the surface
+		gl_FragColor = vec4(0,0,0,0); // need to set default color for some GPUs
 		return;
     }
 	gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st)*angleFactor;
@@ -164,6 +165,7 @@ void main() {
     float angleFactor = dot(v_vertNormal, u_sunDirection);
     if(angleFactor < 0) {
 		// light is behind the surface
+		gl_FragColor = vec4(0,0,0,0); // need to set default color for some GPUs
 		return;
     }
 #endif   
