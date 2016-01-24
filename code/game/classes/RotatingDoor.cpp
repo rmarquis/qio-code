@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,38 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Door.cpp
-#include "Door.h"
+// RotatingDoor.cpp
+#include "RotatingDoor.h"
 #include <api/serverAPI.h>
+#include <api/physAPI.h>
 
-DEFINE_CLASS(Door, "ModelEntity");
-DEFINE_CLASS_ALIAS(Door, func_door);
-// NOTE: they are using RotatingDoor class
+DEFINE_CLASS(RotatingDoor, "ModelEntity");
 // RTCW rotating door
-//DEFINE_CLASS_ALIAS(Door, func_door_rotating);
+DEFINE_CLASS_ALIAS(RotatingDoor, func_door_rotating);
 // MoHAA/FAKK rotating door
-//DEFINE_CLASS_ALIAS(Door, func_rotatingdoor);
+DEFINE_CLASS_ALIAS(RotatingDoor, func_rotatingdoor);
 
-Door::Door() {
-	bPhysicsBodyKinematic = true;
+RotatingDoor::RotatingDoor() {
 	bRigidBodyPhysicsEnabled = true;
+	hinge = 0;
 }
-void Door::setKeyValue(const char *key, const char *value) {
+RotatingDoor::~RotatingDoor() {
+	if(this->hinge) {
+		g_physWorld->destroyPhysicsConstraint(hinge);
+		hinge = 0;
+	}
+}
+void RotatingDoor::setKeyValue(const char *key, const char *value) {
 	if(!_stricmp(key,"angle")) {
 		// that's door opening angle and not the ModelEntity orientation angle
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
 }
-void Door::postSpawn() {
-	// close touched areaportal (but only if we're using new areaPortals system)
-	//u32 touchingAreas = getNumTouchingAreas();
-	//if(touchingAreas > 1) {
-	//	int area0 = this->getTouchingArea(0);
-	//	int area1 = this->getTouchingArea(1);
-	//	// mark portal as closed (by this doors)
-	//	g_server->adjustAreaPortalState(area0,area1,false);
-	//}
+void RotatingDoor::postSpawn() {
 	ModelEntity::postSpawn();
+
+
+	vec3_c axis(0,0,1);
+	hinge = g_physWorld->createConstraintHinge(this->getOrigin(),axis,this->getRigidBody(),0);
 }
 

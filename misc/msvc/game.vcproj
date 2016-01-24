@@ -679,6 +679,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\RotatingDoor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\RotatingDoor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Terrain.cpp"
 				>
 			</File>
