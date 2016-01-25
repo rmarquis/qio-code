@@ -21,15 +21,21 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// AI_Soldier.h
-#ifndef __AI_SOLDIER_H__
-#define __AI_SOLDIER_H__
+// AI_RTCW_Base.h
+#ifndef __AI_RTCW_BASE_H__
+#define __AI_RTCW_BASE_H__
 
-#include "AI_RTCW_Base.h"
+#include "ModelEntity.h"
 
-class AI_Soldier : public AI_RTCW_Base {
+class AI_RTCW_Base : public ModelEntity {
 public:
-	DECLARE_CLASS( AI_Soldier );
+	AI_RTCW_Base();
+
+	DECLARE_CLASS( AI_RTCW_Base );
+
+	virtual void postSpawn();
+
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-#endif // __AI_SOLDIER_H__
+#endif // __AI_RTCW_BASE_H__

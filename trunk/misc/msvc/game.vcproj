@@ -822,6 +822,22 @@
 				Name="RTCW"
 				>
 				<File
+					RelativePath="..\..\code\game\classes\AI_Loper.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_Loper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_RTCW_Base.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_RTCW_Base.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\AI_Soldier.cpp"
 					>
 				</File>
