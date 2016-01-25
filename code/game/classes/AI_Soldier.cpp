@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2013 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -25,35 +25,5 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "AI_Soldier.h"
 #include <api/serverAPI.h>
 
-DEFINE_CLASS(AI_Soldier, "ModelEntity");
+DEFINE_CLASS(AI_Soldier, "AI_RTCW_Base");
  
-AI_Soldier::AI_Soldier() {
-	health = 100;
-	bTakeDamage = true;
-
-}
-void AI_Soldier::setKeyValue(const char *key, const char *value) {
-	if(!stricmp(key,"skin")) {
-		// "skin" "infantryss/assault1"
-		// modelName / skinName
-		str modelName = value;
-		modelName.stripAfterFirst('/');
-		str modelPath = "models/players/";
-		modelPath.append(modelName);
-		modelPath.append("/body.mds");
-		setRenderModel(modelPath);
-		setAnimation(modelPath);
-		const char *skin = strchr(value,'/');
-		if(skin) {
-			skin++; // skip /
-			setRenderModelSkin(skin);
-		}
-	}
-	ModelEntity::setKeyValue(key,value);
-}
-void AI_Soldier::postSpawn() {
-	if(cmod) {
-	}
-}
-
-

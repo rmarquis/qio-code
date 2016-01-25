@@ -21,15 +21,43 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// AI_Soldier.h
-#ifndef __AI_SOLDIER_H__
-#define __AI_SOLDIER_H__
-
+// AI_RTCW_Base.cpp
 #include "AI_RTCW_Base.h"
+#include <api/serverAPI.h>
 
-class AI_Soldier : public AI_RTCW_Base {
-public:
-	DECLARE_CLASS( AI_Soldier );
-};
+DEFINE_CLASS(AI_RTCW_Base, "ModelEntity");
+ 
+AI_RTCW_Base::AI_RTCW_Base() {
+	health = 100;
+	bTakeDamage = true;
 
-#endif // __AI_SOLDIER_H__
+}
+void AI_RTCW_Base::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"skin")) {
+		// "skin" "infantryss/assault1"
+		// modelName / skinName
+		str modelName = value;
+		modelName.stripAfterFirst('/');
+		str modelPath = "models/players/";
+		modelPath.append(modelName);
+		modelPath.append("/body.mds");
+		str headPath = "models/players/";
+		headPath.append(modelName);
+		headPath.append("/head.mdc");
+		setRenderModel(modelPath);
+		setAnimation(modelPath);
+		setRenderModelAttachment(0,"tag_head",headPath);
+		const char *skin = strchr(value,'/');
+		if(skin) {
+			skin++; // skip /
+			setRenderModelSkin(skin);
+		}
+	}
+	ModelEntity::setKeyValue(key,value);
+}
+void AI_RTCW_Base::postSpawn() {
+	if(cmod) {
+	}
+}
+
+

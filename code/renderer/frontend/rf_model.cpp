@@ -35,6 +35,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/kfModelAPI.h>
 #include <api/q3PlayerModelDeclAPI.h>
 #include <api/materialSystemAPI.h>
+#include <shared/autoCvar.h>
+
+static aCvar_c rf_model_printLoadedKeyFramedModelsFrameCounts("rf_model_printLoadedKeyFramedModelsFrameCounts","0");
 
 // for bsp inline models
 void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
@@ -411,6 +414,9 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			g_core->RedWarning("Loading keyframed model %s failed\n",modName);
 		} else {
 			ret->type = MOD_KEYFRAMED; // that's a valid model
+			if(rf_model_printLoadedKeyFramedModelsFrameCounts.getInt()) {
+				g_core->Print("Loaded keyframed model %s has %i frames\n",modName,ret->kfModel->getNumFrames());
+			}	
 		}
 	} else if(g_modelLoader && g_modelLoader->isStaticModelFile(modName)) {
 		ret->staticModel = RF_LoadStaticModel(modNameWithParameters);
