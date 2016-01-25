@@ -28,6 +28,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelAnimAPI.h>
 #include <shared/parser.h>
 
+etAnimGroup_c::~etAnimGroup_c() {
+	for(u32 i = 0; i < anims.size(); i++) {
+		delete anims[i];
+	}
+	anims.clear();
+}
 bool etAnimGroup_c::parseAninc(const char *mdxName, const char *anincName) {
 	parser_c p;
 	if(p.openFile(anincName)) {
@@ -133,6 +139,16 @@ bool etChar_c::loadCharacterData() {
 }
 
 
+etCharMgr_c::~etCharMgr_c() {
+	for(u32 i = 0; i < animGroups.size(); i++) {
+		delete animGroups[i];
+	}
+	animGroups.clear();
+	for(u32 i = 0; i < characters.size(); i++) {
+		delete characters[i];
+	}
+	characters.clear();
+}
 etAnimGroup_c *etCharMgr_c::registerAnimationGroup(const char *fname) {
 	etAnimGroup_c *a = animGroups.getEntry(fname);
 	if(a)

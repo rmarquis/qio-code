@@ -78,6 +78,8 @@ class etAnimGroup_c {
 	bool parseAninc(const char *mdxName, class parser_c &p);
 	bool parseAninc(const char *mdxName, const char *anincName);
 public:
+	~etAnimGroup_c();
+
 	bool parse(const char *fname);
 
 	const skelAnimAPI_i *findSkelAnim(const char *animName) const;
@@ -102,6 +104,7 @@ class etCharMgr_c {
 
 	etAnimGroup_c *registerAnimationGroup(const char *fname);
 public:
+	~etCharMgr_c();
 
 	etChar_c *registerCharacter(const char *fname);
 };
