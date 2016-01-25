@@ -68,6 +68,8 @@ public:
 	// returns true if entity model has wolfAnim.cfg
 	// (for RTCW player models)
 	virtual bool hasWolfAnimConfig() const = 0;
+	// for ET players (.char file models)
+	virtual bool hasCharacterFile() const = 0;
 
 	virtual bool hasAnim(const char *animName) const = 0;
 

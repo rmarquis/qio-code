@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/wolfAnimCfg.h>
+#include <shared/etCharMgr.h>
 
 static aCvar_c rf_model_printLoadedKeyFramedModelsFrameCounts("rf_model_printLoadedKeyFramedModelsFrameCounts","0");
 
@@ -91,15 +92,27 @@ void model_c::initSprite(const char *matName, float newSpriteRadius) {
 	this->spriteRadius = newSpriteRadius;
 	this->bb.fromRadius(newSpriteRadius);
 }
+bool model_c::hasDefaultSkinName() const {
+	if(etChar)
+		return etChar->hasDefaultSkinName();
+	return false;
+}
+const char *model_c::getDefaultSkinName() const {
+	if(etChar)
+		return etChar->getDefaultSkinName();
+	return 0;
+}
 bool model_c::findWolfAnimData(const char *animName, int *firstFrame, int *lastFrame, float *fps) const {
 	if(wolfAnim == 0)
 		return true;
 	return wolfAnim->findWolfAnimData(animName,firstFrame,lastFrame,fps);
 }
 const skelAnimAPI_i *model_c::findSkelAnim(const char *animName) const {
-	if(wolfAnim == 0)
-		return 0;
-	return wolfAnim->findSkelAnim(animName);
+	if(wolfAnim)
+		return wolfAnim->findSkelAnim(animName);
+	if(etChar)
+		return etChar->findSkelAnim(animName);
+	return 0;
 }
 u32 model_c::getNumSurfaces() const {
 	if(type == MOD_BSP) {
@@ -271,8 +284,11 @@ void model_c::clear() {
 		delete staticModel;
 		staticModel = 0;
 	} else if(type == MOD_SKELETAL) {
-		delete skelModel;
-		skelModel = 0;
+		// only if etChar is null, otherwise skelModel is a pointer from etChar class
+		if(etChar == 0) {
+			delete skelModel;
+			skelModel = 0;
+		}
 	} else if(type == MOD_PROC) {
 		// proc inline models are fried in rf_proc.cpp
 	}
@@ -474,6 +490,16 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			ret->bb.fromRadius(96.f);
 		} else {
 			g_core->RedWarning("Loading of skeletal model %s failed\n",modName);
+		}
+	} else if(modName.hasExt("char")) {
+		// ET player model - .char file
+		static etCharMgr_c test;
+		etChar_c *etChar = test.registerCharacter(modName);
+		if(etChar) {
+			ret->skelModel = etChar->getSkelModel();
+			ret->type = MOD_SKELETAL;
+			ret->bb.fromRadius(96.f);
+			ret->etChar = etChar;
 		}
 	} else if(g_declMgr) {
 		ret->declModel = g_declMgr->registerModelDecl(modName);

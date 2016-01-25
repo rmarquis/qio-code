@@ -60,6 +60,10 @@ public:
 	virtual bool isSprite() const = 0;
 	virtual float getSpriteRadius() const = 0;
 	virtual bool hasWolfAnimConfig() const = 0;
+	virtual bool hasCharacterFile() const = 0;
+	virtual bool hasDefaultSkinName() const = 0;
+	virtual const char *getDefaultSkinName() const = 0;
+
 	virtual const skelAnimAPI_i *findSkelAnim(const char *animName) const = 0;
 	virtual bool findWolfAnimData(const char *animName, int *firstFrame, int *lastFrame, float *fps) const = 0;
 	virtual mtrAPI_i *getSpriteMaterial() const = 0;

@@ -764,6 +764,8 @@ bool skelModelIMPL_c::loadMDM(const char *fname) {
 	//	b->parentIndex = bi->parent;
 	//}
 
+	this->name = fname;
+
 	return false; // no error
 
 	return false;

@@ -553,6 +553,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\charFile.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\charFile.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\cmSurface.cpp"
 				>
 			</File>
@@ -610,6 +618,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\ePairsList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\etCharMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\etCharMgr.h"
 				>
 			</File>
 			<File
