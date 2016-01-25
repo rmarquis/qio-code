@@ -137,6 +137,15 @@ public:
 			free(data);
 		}
 	}
+	void stripAfterFirst(char ch) {
+		for(u32 i = 0; i < len; i++) {
+			if(data[i] == ch) {
+				data[i] = 0;
+				len = i;
+				return;
+			}
+		}
+	}
 	void freeMemory() {
 		if(data != buffer) {
 			free(data);

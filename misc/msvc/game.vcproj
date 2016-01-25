@@ -818,6 +818,18 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="RTCW"
+				>
+				<File
+					RelativePath="..\..\code\game\classes\AI_Soldier.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_Soldier.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="shared"
