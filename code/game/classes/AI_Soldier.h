@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 class AI_Soldier : public AI_RTCW_Base {
 public:
 	DECLARE_CLASS( AI_Soldier );
+
+	AI_Soldier();
 };
 
 #endif // __AI_SOLDIER_H__

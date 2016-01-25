@@ -94,6 +94,9 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual const class boneDefArray_c *getBoneDefs() const {
 		return &bones;
 	}
+	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const {
+		return 0; // TODO
+	}
 	virtual float getFrameTime() const {
 		return frameTime;
 	}
@@ -204,6 +207,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual float getTotalTimeSec() const {
 		return totalTime;
 	}
+	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const;
 	// anim post process funcs impl
 	virtual void scaleAnimationSpeed(float scale) {
 		frameTime *= scale;

@@ -343,6 +343,11 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim, int newFlags) {
 void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	if(this->model == 0)
 		return; // ignore
+	if(this->model->hasWolfAnimConfig()) {
+		//str animName = this->model->getName();
+		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
+		return setAnim(anim,newFlags);
+	}
 	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
 	if(dm == 0)
 		return;
@@ -433,6 +438,11 @@ bool rEntityImpl_c::isSprite() const {
 	if(model->isSprite())
 		return true;
 	return false;
+}
+bool rEntityImpl_c::hasWolfAnimConfig() const {
+	if(model == 0)
+		return false;
+	return model->hasWolfAnimConfig();
 }
 bool rEntityImpl_c::hasAnim(const char *animName) const {
 	if(model == 0)
