@@ -215,7 +215,11 @@ void rEntityImpl_c::updateModelSkin() {
 		//	delete skinMatList;
 		//	skinMatList = 0;
 		//}
-		return;
+		if(model->hasDefaultSkinName()) {
+			skinName = model->getDefaultSkinName();
+		} else {
+			return;
+		}
 	}
 	if(model->isQ3PlayerModel()) {
 		const q3PlayerModelAPI_i *q3p = model->getQ3PlayerModelAPI();
@@ -232,7 +236,13 @@ void rEntityImpl_c::updateModelSkin() {
 		}
 	} else {
 		// load single skin file
-		rSkinRemap_c *skin = RF_RegisterSkinForModel(model->getName(),skinName);
+		const char *baseName;
+		if(model->hasCharacterFile())
+			baseName = model->getSkelModelAPI()->getName();
+		else 
+			baseName = model->getName();
+
+		rSkinRemap_c *skin = RF_RegisterSkinForModel(baseName,skinName);
 		if(skin) {
 			if(instance) {
 				instance->appendSkinRemap(skin);
@@ -348,6 +358,11 @@ void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
 		return setAnim(anim,newFlags);
 	}
+	if(this->model->hasCharacterFile()) {
+		//str animName = this->model->getName();
+		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
+		return setAnim(anim,newFlags);
+	}
 	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
 	if(dm == 0)
 		return;
@@ -438,6 +453,11 @@ bool rEntityImpl_c::isSprite() const {
 	if(model->isSprite())
 		return true;
 	return false;
+}
+bool rEntityImpl_c::hasCharacterFile() const {
+	if(model == 0)
+		return false;
+	return model->hasCharacterFile();
 }
 bool rEntityImpl_c::hasWolfAnimConfig() const {
 	if(model == 0)

@@ -107,7 +107,7 @@ static void CG_TransitionModel(centity_t *cent) {
 	} else if(cent->rEnt->isQ3PlayerModel()) {
 		cent->rEnt->setQ3LegsAnimLocalIndex(cent->currentState.animIndex);
 		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
-	} else if(cent->rEnt->hasWolfAnimConfig()) {
+	} else if(cent->rEnt->hasWolfAnimConfig() || cent->rEnt->hasCharacterFile()) {
 		cent->rEnt->setAnim(CG_ConfigString(CS_ANIMATIONS+cent->currentState.animIndex));
 	} else {
 		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);

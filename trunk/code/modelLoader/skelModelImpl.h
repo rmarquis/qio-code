@@ -105,6 +105,9 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	vec3_c curScale;
 
 	// skelModelAPI_i impl
+	virtual const char *getName() const {
+		return name;
+	}
 	virtual u32 getNumSurfs() const {
 		return surfs.size();
 	}

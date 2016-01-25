@@ -166,6 +166,7 @@ public:
 	virtual bool isSprite() const;
 	virtual bool hasAnim(const char *animName) const;
 	virtual bool hasWolfAnimConfig() const;
+	virtual bool hasCharacterFile() const;
 
 	bool hasStageWithoutBlendFunc() const;
 	u32 getSilChangeCount() const {

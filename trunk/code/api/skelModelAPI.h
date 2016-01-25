@@ -66,6 +66,7 @@ public:
 class skelModelAPI_i {
 public:
 	virtual ~skelModelAPI_i() { };
+	virtual const char *getName() const = 0;
 	virtual u32 getNumSurfs() const = 0;
 	virtual u32 getNumBones() const = 0;
 	virtual u32 getTotalTriangleCount() const = 0;

@@ -614,6 +614,17 @@ void ClientCommand( int clientNum ) {
 		e->setAnimation("models/players/loper/body.mds");
 		e->setRenderModelAttachment(0,"tag_head","models/players/loper/head.mdc");
 		e->setRenderModelSkin("default");
+
+	} else if(!_stricmp(cmd,"char_test1")) {
+		// V: ET character
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("characters/temperate/axis/cvops.char");
+		e->setAnimation("stand_panzer");
 	} else if(!_stricmp(cmd,"mds_test2")) {
 		// V: simple RTCW skeletal model test
 		// NOTE: mdm models has no bone data in file

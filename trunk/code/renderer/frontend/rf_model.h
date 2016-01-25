@@ -73,12 +73,15 @@ class model_c : public rModelAPI_i {
 	// wolfAnim.cfg file is used to map animation names 
 	// to mds model frames.
 	class rWolfAnimCfg_c *wolfAnim;
+	// ET character extra data
+	class etChar_c *etChar;
 public:
 	model_c() {
 		hashNext = 0;
 		myBSP = 0;
 		type = MOD_BAD;
 		wolfAnim = 0;
+		etChar = 0;
 	}
 	virtual const char *getName() const {
 		return name;
@@ -155,6 +158,13 @@ public:
 			return true;
 		return false;
 	}
+	virtual bool hasCharacterFile() const {
+		if(etChar)
+			return true;
+		return false;
+	}
+	virtual bool hasDefaultSkinName() const;
+	virtual const char *getDefaultSkinName() const;
 	virtual bool findWolfAnimData(const char *animName, int *firstFrame, int *lastFrame, float *fps) const;
 	virtual const skelAnimAPI_i *findSkelAnim(const char *animName) const;
 	virtual u32 getNumSurfaces() const;
