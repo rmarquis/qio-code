@@ -190,7 +190,7 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 	u32 numAnimBones = anim->getNumBones();
 	// This is the case for SMD models which have different bones in animation and mesh files
 	// (not always)
-	if(numSkelModelBones != numAnimBones) {
+	if(numSkelModelBones != 0 && numSkelModelBones != numAnimBones) {
 		boneOrArray_c copy = outLocalBones;
 		outLocalBones.resize(numSkelModelBones);
 		for(u32 i = 0; i < numSkelModelBones; i++) {
@@ -225,7 +225,7 @@ void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skel
 	if(anim == 0)
 		return;
 	// convert relative bones matrices to absolute bone matrices
-	if(skelModel->getNumBones() != anim->getNumBones()) {
+	if(skelModel->getNumBones() && skelModel->getNumBones() != anim->getNumBones()) {
 		// SMD case...
 		currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
 	} else {
