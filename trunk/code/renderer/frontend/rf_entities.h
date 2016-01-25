@@ -42,6 +42,7 @@ friend class rEntityImpl_c;
 	int boneIndex;
 };
 
+
 class rEntityImpl_c : public rEntityAPI_i {
 	matrix_c matrix;
 	vec3_c angles;
@@ -164,6 +165,7 @@ public:
 	virtual bool isAnimated() const;
 	virtual bool isSprite() const;
 	virtual bool hasAnim(const char *animName) const;
+	virtual bool hasWolfAnimConfig() const;
 
 	bool hasStageWithoutBlendFunc() const;
 	u32 getSilChangeCount() const {

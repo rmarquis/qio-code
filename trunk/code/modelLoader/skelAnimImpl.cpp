@@ -343,7 +343,21 @@ bool skelAnimGeneric_c::loadSMDAnim(const char *fname) {
 	this->frameRate = 1.f / this->frameTime;
 	return false;
 }
-
+skelAnimAPI_i *skelAnimGeneric_c::createSubAnim(u32 firstFrame, u32 numFrames) const {
+	skelAnimGeneric_c *copy = new skelAnimGeneric_c();
+	u32 lastFrame = firstFrame + numFrames;
+	for(u32 i = firstFrame; i < lastFrame; i++) {
+		copy->frames.push_back(frames[i]);
+	}
+	copy->animFileName = animFileName;
+	copy->frameRate = frameRate;
+	copy->frameTime = frameTime;
+	copy->totalTime = totalTime;
+	copy->bones = bones;
+	copy->baseFrame = baseFrame;
+	copy->animFlags = animFlags;
+	return copy;
+}
 void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_c &pos, quat_c &quat) const {
 	pos = f.bones[boneNum].pos;
 	quat = f.bones[boneNum].quat;

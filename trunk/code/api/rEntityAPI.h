@@ -65,6 +65,10 @@ public:
 	virtual bool isQ3PlayerModel() const = 0;
 	virtual bool isSprite() const = 0;
 
+	// returns true if entity model has wolfAnim.cfg
+	// (for RTCW player models)
+	virtual bool hasWolfAnimConfig() const = 0;
+
 	virtual bool hasAnim(const char *animName) const = 0;
 
 	// trace must be transformed into entity coordinates before calling this function.

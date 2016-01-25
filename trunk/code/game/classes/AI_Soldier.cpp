@@ -27,3 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(AI_Soldier, "AI_RTCW_Base");
  
+
+AI_Soldier::AI_Soldier() {
+	setKeyValue("skin","infantryss/assault1");
+}

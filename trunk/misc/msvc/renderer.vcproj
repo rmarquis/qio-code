@@ -724,6 +724,14 @@
 				RelativePath="..\..\code\shared\vec3hash.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfAnimCfg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfAnimCfg.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="fileformats"

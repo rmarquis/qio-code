@@ -45,7 +45,10 @@ void AI_RTCW_Base::setKeyValue(const char *key, const char *value) {
 		headPath.append(modelName);
 		headPath.append("/head.mdc");
 		setRenderModel(modelPath);
-		setAnimation(modelPath);
+		// old test to play all anims
+		//setAnimation(modelPath);
+		// This animation name is inside wolfanim.cfg
+		setAnimation("relaxed_walk_no");
 		setRenderModelAttachment(0,"tag_head",headPath);
 		const char *skin = strchr(value,'/');
 		if(skin) {

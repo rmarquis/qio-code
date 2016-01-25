@@ -35,10 +35,38 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/kfModelAPI.h>
 #include <api/q3PlayerModelDeclAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/vfsAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/wolfAnimCfg.h>
 
 static aCvar_c rf_model_printLoadedKeyFramedModelsFrameCounts("rf_model_printLoadedKeyFramedModelsFrameCounts","0");
 
+#include <api/skelAnimAPI.h>
+
+class rWolfAnimCfg_c : public wolfAnimCfg_c {
+	arraySTD_c<skelAnimAPI_i*> loaded;
+public:
+	bool loadAnimationsData(const char *animFileName) {
+		skelAnimAPI_i *base = g_modelLoader->loadSkelAnimFile(animFileName);
+		if(base == 0) {
+			return true;
+		}
+		loaded.resize(anims.size());
+		for(u32 i = 0; i < anims.size(); i++) {
+			loaded[i] = base->createSubAnim(anims[i].firstFrame,anims[i].numFrames);
+		}
+		delete base;
+		return false;
+	}
+	const skelAnimAPI_i *findSkelAnim(const char *animName) const {
+		for(u32 i = 0; i < loaded.size(); i++) {
+			if(!stricmp(anims[i].name,animName)) {
+				return loaded[i];
+			}
+		}
+		return 0;
+	}
+};
 // for bsp inline models
 void model_c::initInlineModel(class rBspTree_c *pMyBSP, u32 myBSPModNum) {
 	this->type = MOD_BSP;
@@ -62,6 +90,16 @@ void model_c::initSprite(const char *matName, float newSpriteRadius) {
 	this->spriteMaterial = g_ms->registerMaterial(matName);
 	this->spriteRadius = newSpriteRadius;
 	this->bb.fromRadius(newSpriteRadius);
+}
+bool model_c::findWolfAnimData(const char *animName, int *firstFrame, int *lastFrame, float *fps) const {
+	if(wolfAnim == 0)
+		return true;
+	return wolfAnim->findWolfAnimData(animName,firstFrame,lastFrame,fps);
+}
+const skelAnimAPI_i *model_c::findSkelAnim(const char *animName) const {
+	if(wolfAnim == 0)
+		return 0;
+	return wolfAnim->findSkelAnim(animName);
 }
 u32 model_c::getNumSurfaces() const {
 	if(type == MOD_BSP) {
@@ -237,6 +275,10 @@ void model_c::clear() {
 		skelModel = 0;
 	} else if(type == MOD_PROC) {
 		// proc inline models are fried in rf_proc.cpp
+	}
+	if(wolfAnim) {
+		delete wolfAnim;
+		wolfAnim = 0;
 	}
 }
 
@@ -439,6 +481,27 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			ret->type = MOD_DECL;
 //			ret->bb = ret->declModel->getEstimatedBounds();
 			ret->bb.fromRadius(96.f);
+		}
+	}
+	// also check for wolfAnim.cfg
+	// This is present only for mds models
+	if(ret->type == MOD_SKELETAL) {
+		str wolfAnimName = ret->getName();
+		wolfAnimName.toDir();
+		wolfAnimName.append("wolfAnim.cfg");
+		if(g_vfs->FS_FileExists(wolfAnimName)) {
+			ret->wolfAnim = new rWolfAnimCfg_c();
+			// parse wolfAnim.cfg
+			if(ret->wolfAnim->parse(wolfAnimName)) {
+				delete ret->wolfAnim;
+				ret->wolfAnim = 0;
+			} else {
+				// load animations from mds file into separate classes
+				if(ret->wolfAnim->loadAnimationsData(ret->getName())) {
+					delete ret->wolfAnim;
+					ret->wolfAnim = 0;
+				}
+			}
 		}
 	}
 	return ret;

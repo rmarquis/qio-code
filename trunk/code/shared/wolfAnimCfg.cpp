@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,44 +21,46 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// quake3AnimationConfig.cpp - quake3 character animation.cfg parser
-// NOTE: this is used by Quake3 .md3 three-parts player models
-// NOTE: there is a similiar system in RTCW, wolfanim.cfg, which 
-// is used by mds skeletal player body + mdc head system.
-#include "quake3AnimationConfig.h"
+// wolfAnimCfg.cpp - RTCW character wolfAnim.cfg parser
+#include "wolfAnimCfg.h"
 #include <shared/parser.h>
-#include <shared/quake3Anims.h>
 
-bool q3AnimCfg_c::parse(const char *fileName) {
+bool wolfAnimCfg_c::findWolfAnimData(const char *animName, int *firstFrame, int *lastFrame, float *fps) const {
+	for(u32 i = 0; i < anims.size(); i++) {
+		if(!stricmp(anims[i].name,animName)) {
+			*firstFrame = anims[i].firstFrame;
+			*lastFrame = anims[i].firstFrame + anims[i].numFrames;
+			*fps = anims[i].FPS;
+			return false;
+		}
+	}
+	return true;
+}
+bool wolfAnimCfg_c::parse(const char *fileName) {
 	parser_c p;
-	u32 skip;
 	if(p.openFile(fileName)) {
 		return true;
 	}
 	while(p.atEOF() == false) {
-		if(p.atWord("headoffset")) {
+		if(p.atWord("VERSION")) {
 			p.skipLine();
-		} else if(p.atWord("sex")) {
+		} else if(p.atWord("SKELETAL")) {
 			p.skipLine();
-		} else if(p.atWord("footsteps")) {
+		} else if(p.atWord("STARTANIMS")) {
+			p.skipLine();
+		} else if(p.atWord("ENDANIMS")) {
 			p.skipLine();
 		} else {
 			u32 animNum = anims.size();
-			q3AnimDef_s &nextAnim = anims.pushBack();
+			wolfAnimDef_s &nextAnim = anims.pushBack();
+			nextAnim.name = p.getToken();
 			nextAnim.firstFrame = p.getInteger();
 			nextAnim.numFrames = p.getInteger();
 			nextAnim.loopingFrames = p.getInteger();
 			nextAnim.FPS = p.getFloat();
+			nextAnim.moveSpeed = p.getFloat();
 			nextAnim.calcFrameTimeFromFPS();
 			nextAnim.calcTotalTimeFromFrameTime();	
-			
-			// leg only frames are adjusted to not count the upper body only frames
-			if ( animNum == LEGS_WALKCR ) {
-				skip = anims[LEGS_WALKCR].firstFrame - anims[TORSO_GESTURE].firstFrame;
-			}
-			if ( animNum >= LEGS_WALKCR && animNum < TORSO_GETFLAG) {
-				nextAnim.firstFrame -= skip;
-			}
 		}
 	}
 	return false; // no error
