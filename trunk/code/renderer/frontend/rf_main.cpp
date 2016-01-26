@@ -315,7 +315,10 @@ void RF_OnRFUseProcDataToOptimizeLightingCvarModified(const class aCvar_c *cv) {
 	g_core->RedWarning("Running full light interactions rebuild...\n");
 	RFL_RecalculateLightsInteractions();
 }
+#include <shared/wolfAnimScript.h>
 void RF_InitMain() {
+	wolfAnimScript_c test;
+	test.parse("models/players/infantryss/wolfanim.script");
 	rf_shadows.setExtraModificationCallback(RF_OnRFShadowsCvarModified);
 	rf_enableMultipassRendering.setExtraModificationCallback(RF_OnRFEnableMultipassRenderingCvarModified);
 	rf_proc_useProcDataToOptimizeLighting.setExtraModificationCallback(RF_OnRFUseProcDataToOptimizeLightingCvarModified);
