@@ -748,6 +748,14 @@
 				RelativePath="..\..\code\shared\wolfAnimCfg.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfAnimScript.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfAnimScript.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="fileformats"
