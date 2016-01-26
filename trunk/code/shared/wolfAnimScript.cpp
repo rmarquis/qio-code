@@ -34,6 +34,9 @@ enum wolfAnimScriptSection_e {
 	WASS_STATECHANGES,
 	
 };
+
+wolfSetArray_c g_weaponsSet;
+wolfSetArray_c g_moveTypesSet;
 /*
 
 		// example conditions string
@@ -67,15 +70,31 @@ bool wolfAnimScript_c::parseConditions(class parser_c &p, wolfAnimConditions_c &
 	// 	weapons pistols, movetype walk AND turnleft AND turnright AND idlecr AND idle
 	while(p.atChar('{')==false) {
 		if(p.atWord("weapons")) {
-			p.skipLine();
+			wolfAnimCondition_c &weaponsCondition = o.conditions.pushBack();
+			weaponsCondition.type = WC_WEAPONS;
+			const char *w = p.getToken();
+			const wolfSet_c *extended = g_weaponsSet.findSet(w);
+			if(extended) {
+				extended->addValuesTo(weaponsCondition.data);
+			} else {
+				weaponsCondition.data.push_back(w);
+			}
 		} else if(p.atWord("moveType")) {
 			p.skipLine();
 		} else if(p.atWord("special_condition")) {
+			wolfAnimCondition_c &con = o.conditions.pushBack();
+			con.type = WC_SPECIAL;
 			p.skipLine();
 		} else if(p.atWord("mounted")) {
+			wolfAnimCondition_c &con = o.conditions.pushBack();
+			con.type = WC_MOUNTED;
 			p.skipLine();
 		} else if(p.atWord("default")) {
-
+			wolfAnimCondition_c &defaultCondition = o.conditions.pushBack();
+			defaultCondition.type = WC_DEFAULT;
+		} else if(p.atWord("firing")) {
+			wolfAnimCondition_c &con = o.conditions.pushBack();
+			con.type = WC_FIRING;
 		} else {
 			g_core->RedWarning("wolfAnimScript_c::parseState: unknown condition %s at line %i of %s\n",
 				p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
@@ -94,12 +113,12 @@ bool wolfAnimScript_c::parseState(class parser_c &p) {
 		return true;
 	}
 	while(p.atChar('}')==false) {
-		wolfStateSet_c &set = state.sets.pushBack();
-		str setName = p.getToken();
-		set.setName = setName;
+		wolfStateMove_c &set = state.moveStates.pushBack();
+		str moveType = p.getToken();
+		set.moveType = moveType;
 		if(p.atChar('{')==false) {
-			g_core->RedWarning("wolfAnimScript_c::parseState: expected '{' at line %i of %s (after set %s) - found %s\n",
-				p.getCurrentLineNumber(),p.getDebugFileName(),setName.c_str(),p.getToken());
+			g_core->RedWarning("wolfAnimScript_c::parseState: expected '{' at line %i of %s (after moveType %s) - found %s\n",
+				p.getCurrentLineNumber(),p.getDebugFileName(),moveType.c_str(),p.getToken());
 			return true;
 		}
 		while(p.atChar('}')==false) {
@@ -112,11 +131,89 @@ bool wolfAnimScript_c::parseState(class parser_c &p) {
 	return false;
 }
 
+bool wolfAnimScript_c::parseSet(class parser_c &p, wolfSet_c &o) {
+	o.alias = p.getToken();
+	if(p.atChar('=')==false) {	
+		g_core->RedWarning("wolfAnimScript_c::parse: expected '=' after 'set weapons %s', found %s at line %i of %s\n",o.alias.c_str(),p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+		return true;
+	}
+	g_core->Print("wolfAnimScript_c::parseSet: alias: <%s>\n",o.alias.c_str());
+	str caseName;
+	while(p.isAtEOL() == false) {
+		if(p.atWord("AND")) {
+			g_core->Print("wolfAnimScript_c::parseSet: caseName: <%s>\n",caseName.c_str());
+			o.values.push_back(caseName);
+			caseName.clear();
+		} else {
+			if(caseName.size()) {
+				caseName.append(" ");
+			}
+			caseName.append(p.getToken());
+		}
+	}
+	return false;
+}
+const wolfState_c *wolfAnimScript_c::findState(const char *stateName) const {
+	for(u32 i = 0; i < states.size(); i++) {
+		if(!stricmp(states[i].stateName,stateName))
+			return &states[i];
+	}
+	return 0;
+}
+bool wolfStateMove_c::hasMoveType(const char *name) const {
+	if(!stricmp(moveType,name))
+		return true;
+	return false;
+}
+const wolfStateMove_c *wolfState_c::findMoveType(const wolfAnimScriptInput_s &in) const {
+	for(u32 i = 0; i < moveStates.size(); i++) {
+		if(moveStates[i].hasMoveType(in.moveType)) {
+			return &moveStates[i];
+		}
+	}
+	return 0;
+}
+bool wolfAnimConditions_c::checkConditions(const wolfAnimScriptInput_s &in) const {
+	for(u32 i = 0; i < conditions.size(); i++) {
+		const wolfAnimCondition_c &con = conditions[i];
+		if(con.type == WC_DEFAULT) {
+			continue;
+		}
+		if(con.type == WC_WEAPONS) {
+			// is current weapon on list?
+			if(con.isOnDataList(in.weapon)==false) {
+				return false; // not met
+			}
+		}
+	}
+	return true;
+}
+const wolfAnimDef_c *wolfAnimScript_c::findAnimDef(const wolfAnimScriptInput_s &in) const {
+	const char *stateName = in.state;
+	const wolfState_c *state = findState(stateName);
+	if(state == 0) {
+		return 0;
+	}
+	const wolfStateMove_c *m = state->findMoveType(in);
+	if(m == 0) {
+		return 0;
+	}
+	for(u32 i = 0; i < m->conditionalCases.size(); i++) {
+		const wolfAnimConditions_c &cons = m->conditionalCases[i].conditions;
+		if(cons.checkConditions(in)) {
+			// all conditions met - use first one
+			return &m->conditionalCases[i].def;
+		}
+	}
+	return 0;
+}
 bool wolfAnimScript_c::parse(const char *fileName) {
 	parser_c p;
 	if(p.openFile(fileName)) {
 		return true;
 	}
+	g_moveTypesSet.clear();
+	g_weaponsSet.clear();
 	wolfAnimScriptSection_e curSec = WASS_NOT_SET;
 	while(p.atEOF() == false) {
 		if(p.atWord("DEFINES")) {
@@ -134,10 +231,34 @@ bool wolfAnimScript_c::parse(const char *fileName) {
 
 			}
 		} else if(p.atWord("set")) {
-			p.skipLine();
+			if(p.atWord("weapons")) {
+				wolfSet_c &newSet = g_weaponsSet.nextSet();
+				if(parseSet(p,newSet)) {
+					return true;
+				}
+			} else if(p.atWord("moveType")) {
+				wolfSet_c &newSet = g_moveTypesSet.nextSet();
+				if(parseSet(p,newSet)) {
+					return true;
+				}
+			} else {
+				g_core->RedWarning("wolfAnimScript_c::parse: unknown set type %s at line %i of %s\n",p.getToken(),p.getCurrentLineNumber(),p.getDebugFileName());
+				p.skipLine();
+			}
 		} else  {
 			p.skipLine();
 		}
 	}
+	// testing
+	wolfAnimScriptInput_s s;
+	s.state = "COMBAT";
+	s.moveType = "walk";
+	s.weapon = "mp40"; // it's two handed
+	const wolfAnimDef_c *ad = findAnimDef(s); // should be both alert_run_2h
+	s.weapon = "luger"; // it's one handed
+	const wolfAnimDef_c *ad2 = findAnimDef(s); // should be both alert_run_1h
+	s.weapon = "none"; // it's none
+	const wolfAnimDef_c *ad3 = findAnimDef(s); // should be both alert_run_no
+
 	return false; // no error
 }
