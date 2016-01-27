@@ -62,7 +62,7 @@ struct md3St_s {
 
 struct md3XyzNormal_s {
 	short xyz[3];
-	short normal;
+	byte normal[2];
 
 	inline vec3_c getPos() const {
 		vec3_c ret;
@@ -70,6 +70,11 @@ struct md3XyzNormal_s {
 		ret.y = float(xyz[1]) * MD3_XYZ_SCALE;
 		ret.z = float(xyz[2]) * MD3_XYZ_SCALE;
 		return ret;
+	}
+	inline vec3_c getNormal() const {
+		float lng = normal[0] * (2 * M_PI) / 255.0f;
+		float lat = normal[1] * (2 * M_PI) / 255.0f;
+		return vec3_c (cos(lat) * sin(lng), sin(lat) * sin(lng),cos(lng));
 	}
 };
 
