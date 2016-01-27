@@ -348,6 +348,16 @@ void Cmd_CompleteMDMName( char *args, int argNum ) {
 }
 /*
 ==================
+Cmd_CompleteMDCName
+==================
+*/
+void Cmd_CompleteMDCName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "mdc", 0, 0, false, false );
+	}
+}
+/*
+==================
 Cmd_CompleteSMDName
 ==================
 */
@@ -444,6 +454,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("mdm_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdm_spawn", Cmd_CompleteMDMName );
+	Cmd_AddCommand ("mdc_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "mdc_spawn", Cmd_CompleteMDCName );
 	Cmd_AddCommand ("smd_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "smd_spawn", Cmd_CompleteSMDName );
 	Cmd_AddCommand ("cg_testEmitter", 0);

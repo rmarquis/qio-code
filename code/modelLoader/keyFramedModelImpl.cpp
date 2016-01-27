@@ -65,6 +65,7 @@ void kfSurf_c::instanceSingleFrame(void *outXYZ, u32 outStride, u32 frameNum) co
 	const kfVert_c *in = f.verts.getArray();
 	for(u32 i = 0; i < numVerts; i++, in++) {
 		memcpy(p,in->xyz,sizeof(vec3_c));
+		memcpy(p+12,in->normal,sizeof(vec3_c));
 		p += outStride;
 	}
 }
@@ -314,6 +315,7 @@ bool kfModelImpl_c::loadMDC(const byte *buf, const u32 fileLen, const char *fnam
 			kfVert_c *v = f->verts.getArray();
 			for(u32 k = 0; k < is->numVerts; k++, v++) {
 				v->xyz = xyzNormal->getPos();
+				v->normal = xyzNormal->getNormal();
 				xyzNormal++;
 			}
 		}

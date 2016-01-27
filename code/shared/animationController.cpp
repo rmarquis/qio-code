@@ -43,21 +43,23 @@ void skelAnimController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &
 		out.frac = 0.f;
 		return;
 	}
-	float step = anim->getFrameTime();
-	float cur = 0;
-	float next = step;
+	u32 timeMS = time * 1000;
+	u32 stepMS = anim->getFrameTime() * 1000;
+	timeMS %= (stepMS*anim->getNumFrames());
+	u32 cur = 0;
+	u32 next = stepMS;
 	for(u32 i = 0; i < anim->getNumFrames(); i++) {
-		if(time >= cur && time < next) {
+		if(timeMS >= cur && timeMS < next) {
 			out.from = i;
 			out.to = i + 1;
 			if(out.to == anim->getNumFrames()) {
 				out.to = 0;
 			}
-			out.frac = (time - cur) / step;
+			out.frac = float(timeMS - cur) / float(stepMS);
 			return;
 		}
-		next += step;
-		cur += step;
+		next += stepMS;
+		cur += stepMS;
 	}
 }
 void skelAnimController_c::resetToAnim(const class skelAnimAPI_i *newAnim, int curGlobalTimeMSec, int newFlags) {

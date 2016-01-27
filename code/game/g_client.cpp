@@ -511,7 +511,10 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
-	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || !_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") || !_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn")) {
+	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || 
+		!_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") ||
+		!_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn") 
+		|| !_stricmp(cmd,"mdc_spawn") ) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -614,7 +617,20 @@ void ClientCommand( int clientNum ) {
 		e->setAnimation("models/players/loper/body.mds");
 		e->setRenderModelAttachment(0,"tag_head","models/players/loper/head.mdc");
 		e->setRenderModelSkin("default");
-
+	} else if(!_stricmp(cmd,"mds_test2")) {
+		// V: simple RTCW skeletal model test
+		// NOTE: mdm models has no bone data in file
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/infantryss/body.mds");
+		e->setAnimation("alert_run_2h");
+		e->setRenderModelAttachment(1,"tag_head","models/players/infantryss/head.mdc");
+		e->setRenderModelAttachment(0,"tag_weapon","models/weapons2/mp40/mp40.mdc");
+		e->setRenderModelSkin("default");
 	} else if(!_stricmp(cmd,"char_test1")) {
 		// V: ET character
 		str afName = g_core->Argv(1);

@@ -576,10 +576,16 @@ void rEntityImpl_c::updateInstanceAttachments() {
 		class rEntityAttachment_c &a = attachments[i];
 		matrix_c m;
 		getBoneLocalOrientation(a.boneIndex,m);
+#if 1
+		vec3_c angles = m.getAngles();
+		angles.y*=-1;
+		m.fromAnglesAndOrigin(angles,m.getOrigin());
+#endif
 		if(a.model->isKeyframed()) {
 			const kfModelAPI_i *kfModel = a.model->getKFModelAPI();
 			instance->updateKeyframedModelInstance(kfModel,0,firstSurface);
 			instance->transform(m,firstSurface,firstSurface+kfModel->getNumSurfaces());
+			firstSurface += kfModel->getNumSurfaces();
 		} else {
 			// TODO
 		}
@@ -809,6 +815,10 @@ void rEntityImpl_c::addDrawCalls() {
 	rf_currentEntity = 0;
 }
 bool rEntityImpl_c::getBoneLocalOrientation(int localBoneIndex, class matrix_c &out) {
+	if(localBoneIndex < 0) {
+		out.identity();
+		return true; // error 
+	}
 	if(model == 0) {
 		out.identity();
 		return true; // error 
