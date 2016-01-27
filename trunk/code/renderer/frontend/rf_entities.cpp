@@ -104,6 +104,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	finalBones = 0;
 	networkingEntityNumber = -1;
 	bHasGlobalColor = false;
+	scale.set(1,1,1);
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
