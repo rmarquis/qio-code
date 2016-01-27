@@ -123,9 +123,9 @@ bool btpStaticMapLoader_c::loadFromBSPFile(const char *fname) {
 	}
 	l.iterateStaticProps(BT_ConvertStaticProp);
 	if(mainWorldSurface.getNumIndices()) {
-		//mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);
-		//mainWorldSurface_body = new btRigidBody(0,0,mainWorldSurface_shape,btVector3(0,0,0));	
-		//myPhysWorld->getBTDynamicsWorld()->addRigidBody(mainWorldSurface_body);
+		mainWorldSurface_shape = BT_CMSurfaceToBHV(&mainWorldSurface);
+		mainWorldSurface_body = new btRigidBody(0,0,mainWorldSurface_shape,btVector3(0,0,0));	
+		myPhysWorld->getBTDynamicsWorld()->addRigidBody(mainWorldSurface_body);
 	}
 	return false;
 }

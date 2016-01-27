@@ -153,6 +153,12 @@ struct mdcHeader_s {
 		}
 		return sf;
 	}
+	const mdcTag_s *getTags() const {
+		return (const mdcTag_s*)(((const byte*)this)+ofsTags);
+	}
+	const mdcTag_s *getFrameTags(u32 frameIndex) const {
+		return (const mdcTag_s*)(((const byte*)this)+ofsTags+sizeof(mdcTag_s)*numTags*frameIndex);
+	}
 };
 
 #endif // __MDC_FILE_FORMAT_H__

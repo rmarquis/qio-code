@@ -372,9 +372,21 @@ bool kfModelImpl_c::loadMDC(const byte *buf, const u32 fileLen, const char *fnam
 		of->radius = f->radius;
 	}
 	// load tags
-	for(u32 i = 0; i < h->numFrames; i++) {
-		for(u32 j = 0; j < h->numTags; j++) {
-			
+	if(h->numTags) {
+		tagFrames.resize(h->numFrames);
+		kfTagFrame_c *ktf = tagFrames.getArray();
+		for(u32 i = 0; i < h->numFrames; i++, ktf++) {
+			ktf->tags.resize(h->numTags);
+			const mdcTag_s *t = h->getFrameTags(i);
+			for(u32 j = 0; j < h->numTags; j++, t++) {
+				tagOr_c &o = ktf->tags[j];
+				vec3_c a(t->angles[0]*MDC_TAG_ANGLE_SCALE,t->angles[1]*MDC_TAG_ANGLE_SCALE,t->angles[2]*MDC_TAG_ANGLE_SCALE);
+				o.pos = vec3_c(t->xyz[0]*MD3_XYZ_SCALE,t->xyz[1]*MD3_XYZ_SCALE,t->xyz[2]*MD3_XYZ_SCALE);
+				o.axis.fromAngles(a);
+				
+///				o.pos = t->xyz;
+
+			}
 		}
 	}
 	return false; // no error

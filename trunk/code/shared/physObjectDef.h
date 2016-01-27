@@ -44,6 +44,7 @@ struct physObjectDef_s {
 		mass = 0.f;
 		collisionModel = 0;
 		bounciness = 0.f;
+		scale.set(1,1,1);
 	}
 	physObjectDef_s(const vec3_c &newXYZ, const vec3_c &newAngles, const vec3_c &newScale, const class cMod_i *newCMod,
 		float newMass, bool newBUseDynamicConvexForTrimeshCMod, float newBounciness = 0.f) {

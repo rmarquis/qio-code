@@ -37,6 +37,9 @@ static aCvar_c cg_testModelParentTag("cg_testModelParentTag","MG_ATTACHER");
 static aCvar_c cg_testModelAttached_extraYaw("cg_testModelAttached_extraYaw","0");
 static aCvar_c cg_testModelAttached_extraPitch("cg_testModelAttached_extraPitch","0");
 static aCvar_c cg_testModelAttached_extraRoll("cg_testModelAttached_extraRoll","0");
+static aCvar_c cg_testModelAttached_extraX("cg_testModelAttached_extraX","0");
+static aCvar_c cg_testModelAttached_extraY("cg_testModelAttached_extraY","0");
+static aCvar_c cg_testModelAttached_extraZ("cg_testModelAttached_extraZ","0");
 static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","1");
 
 static rEntityAPI_i *cg_testModelEntity = 0;
@@ -77,7 +80,11 @@ void CG_RunTestModel() {
 			cg_testModelEntity->setAngles(angles);
 		}
 	} else if(cg_testModel_attachToCamera.getInt()) {
-		cg_testModelEntity->setOrigin(cg.refdefViewOrigin);
+		vec3_c usePos = cg.refdefViewOrigin;
+		usePos += cg.refdefViewAxis.getForward() * cg_testModelAttached_extraX.getFloat();
+		usePos += cg.refdefViewAxis.getLeft() * cg_testModelAttached_extraY.getFloat();
+		usePos += cg.refdefViewAxis.getUp() * cg_testModelAttached_extraZ.getFloat();
+		cg_testModelEntity->setOrigin(usePos);
 		cg_testModelEntity->setAngles(cg.refdefViewAngles);
 	}
 	//cg_testModelEntity->hideSurface(2);
