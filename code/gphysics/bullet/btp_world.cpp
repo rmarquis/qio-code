@@ -179,7 +179,14 @@ physObjectAPI_i *bulletPhysicsWorld_c::createPhysicsObject(const struct physObje
 	}
 	g_core->Print("bulletPhysicsWorld_c::createPhysicsObject: cmodel %s\n",def.collisionModel->getName());
 	bool isStatic = (def.mass == 0.f);
-	bulletColShape_c *colShape = registerShape(def.collisionModel,isStatic,def.scale);
+	bulletColShape_c *colShape;
+	if(def.scale.lenSQ() < 0.1f) {
+		vec3_c s(1,1,1);
+		colShape = registerShape(def.collisionModel,isStatic,s);
+		g_core->RedWarning("bulletPhysicsWorld_c::createPhysicsObject: cmodel %s has tiny scale\n",def.collisionModel->getName());
+	} else {
+		colShape = registerShape(def.collisionModel,isStatic,def.scale);
+	}
 	if(colShape == 0) {
 
 		return 0;
