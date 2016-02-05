@@ -1,0 +1,24 @@
+BSPC version 2.1h, Feb  5 2016 10:32:50
+Usage:   bspc [-<switch> [-<switch> ...]]
+Example 1: bspc -bsp2aas d:\quake3\baseq3\maps\mymap?.bsp
+Example 2: bspc -bsp2aas d:\quake3\baseq3\pak0.pk3\maps/q3dm*.bsp
+
+Switches:
+   bsp2aas  <[pakfilter/]filter.bsp>    = convert BSP to AAS
+   reach    <filter.bsp>                = compute reachability & clusters
+   cluster  <filter.aas>                = compute clusters
+   aasopt   <filter.aas>                = optimize aas file
+   aasinfo  <filter.aas>                = show AAS file info
+   output   <output path>               = set output path
+   threads  <X>                         = set number of threads to X
+   cfg      <filename>                  = use this cfg file
+   optimize                             = enable optimization
+   noverbose                            = disable verbose output
+   breadthfirst                         = breadth first bsp building
+   nobrushmerge                         = don't merge brushes
+   noliquids                            = don't write liquids to map
+   freetree                             = free the bsp tree
+   nocsg                                = disables brush chopping
+   forcesidesvisible                    = force all sides to be visible
+   grapplereach                         = calculate grapple reachabilities
+
