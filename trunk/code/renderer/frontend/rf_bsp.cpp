@@ -94,6 +94,7 @@ void rBspTree_c::writeBSPDataToOBJ(const char *fname) const {
 	getModelData(0,&m);
 	m.writeOBJ(fname);
 	m.swapYZ();
+	m.swapIndexes();
 	str name2 = fname;
 	name2.stripExtension();
 	name2.append("_yz.obj");
@@ -102,6 +103,11 @@ void rBspTree_c::writeBSPDataToOBJ(const char *fname) const {
 	name2.stripExtension();
 	name2.append("_yz01.obj");
 	m.scaleXYZ(0.1);
+	m.writeOBJ(name2);
+	name2 = fname;
+	name2.stripExtension();
+	name2.append("_yz005.obj");
+	m.scaleXYZ(0.5);
 	m.writeOBJ(name2);
 }
 void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
