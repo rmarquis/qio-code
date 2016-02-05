@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pak", "q3radiant\libs\pak\p
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "q3map", "q3map\q3map.vcproj", "{F1162C55-66E7-4486-B1F3-071CFAA78332}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bspc", "bspc\bspc.vcproj", "{7B83E863-EC4B-4409-BC42-509060A42DD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{F1162C55-66E7-4486-B1F3-071CFAA78332}.Debug|Win32.Build.0 = Debug|Win32
 		{F1162C55-66E7-4486-B1F3-071CFAA78332}.Release|Win32.ActiveCfg = Release|Win32
 		{F1162C55-66E7-4486-B1F3-071CFAA78332}.Release|Win32.Build.0 = Release|Win32
+		{7B83E863-EC4B-4409-BC42-509060A42DD6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7B83E863-EC4B-4409-BC42-509060A42DD6}.Debug|Win32.Build.0 = Debug|Win32
+		{7B83E863-EC4B-4409-BC42-509060A42DD6}.Release|Win32.ActiveCfg = Release|Win32
+		{7B83E863-EC4B-4409-BC42-509060A42DD6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
