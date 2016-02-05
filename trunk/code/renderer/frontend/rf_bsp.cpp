@@ -66,6 +66,7 @@ aCvar_c rf_bsp_skipAreaPortals("rf_bsp_skipAreaPortals","0");
 aCvar_c rf_bsp_printCamera2PortalDist("rf_bsp_printCamera2PortalDist","0");
 aCvar_c rf_bsp_forceAllDisplacementsVisible("rf_bsp_forceAllDisplacementsVisible","0");
 aCvar_c rf_bsp_printChosenIBOTypes("rf_bsp_printChosenIBOTypes","0");
+aCvar_c rf_bsp_exportToOBJ("rf_bsp_exportToOBJ","0");
 
 const aabb &bspSurf_s::getBounds() const {
 	if(type == BSPSF_BEZIER) {
@@ -84,6 +85,24 @@ rBspTree_c::rBspTree_c() {
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
+}
+void rBspTree_c::writeBSPDataToOBJ(const char *fname) const {
+	r_model_c m;
+	//for(u32 i = 0; i < surfs.size(); i++) {
+	//	
+	//}
+	getModelData(0,&m);
+	m.writeOBJ(fname);
+	m.swapYZ();
+	str name2 = fname;
+	name2.stripExtension();
+	name2.append("_yz.obj");
+	m.writeOBJ(name2);
+	name2 = fname;
+	name2.stripExtension();
+	name2.append("_yz01.obj");
+	m.scaleXYZ(0.1);
+	m.writeOBJ(name2);
 }
 void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
 	for(u32 i = 0; i < leaves.size(); i++) {
@@ -1913,6 +1932,12 @@ bool rBspTree_c::load(const char *fname) {
 		if(sf.type == BSPSF_PLANAR) {
 			worldBoundsWithoutSkyBox.addBox(sf.sf->bounds);
 		}
+	}
+	if(rf_bsp_exportToOBJ.getInt()) {
+		str name = fname;
+		name.stripExtension();
+		name.append("_obj_export.obj");
+		writeBSPDataToOBJ(name);
 	}
 
 	return false;

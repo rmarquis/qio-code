@@ -286,6 +286,9 @@ class rBspTree_c {
 	u32 createStaticPropDecals(u32 staticPropNum, class decalProjector_c &out) const;			
 
 	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
+
+	// for debugging
+	void writeBSPDataToOBJ(const char *fname) const;
 public:
 	rBspTree_c();
 	~rBspTree_c();
