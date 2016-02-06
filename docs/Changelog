@@ -1,3 +1,6 @@
+02-06-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Added Bullet multithreading support patch for references only 
+
 01-05-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Added rendererGL for cMake along with more cMake modules
 	* Separated SDL and GLEW modules into proper folders
