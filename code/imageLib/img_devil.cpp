@@ -343,6 +343,8 @@ int ILTypeForExt(const char *s)
 		return IL_WAL;
 	if(!_stricmp(s,"gif"))
 		return IL_GIF;
+	if(!_stricmp(s,"dds"))
+		return IL_DDS;
 	g_core->Print("WARNING: unknown image file extension %s \n",s);
 	return IL_TGA;
 }
