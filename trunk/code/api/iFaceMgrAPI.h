@@ -44,6 +44,7 @@ enum qioModule_e {
 	QMD_REF_BACKEND_DX10,
 	QMD_GPHYSICS,
 	QMD_EDITOR,
+	QMD_RECASTNAVIGATION,
 };
 
 inline bool QM_IsServerSide(qioModule_e m) {

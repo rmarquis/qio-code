@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
+				AdditionalIncludeDirectories="..\..\code\recastnavigation\Recast\Include;..\..\code\recastnavigation\Detour\Include;&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;G_ENABLE_LUA_SCRIPTING;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -146,7 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
+				AdditionalIncludeDirectories="..\..\code\recastnavigation\Recast\Include;..\..\code\recastnavigation\Detour\Include;&quot;..\..\code\external\lua-5.1.5\src\&quot;;..\..\code\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;_CRT_SECURE_NO_WARNINGS;G_ENABLE_LUA_SCRIPTING"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -431,6 +431,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_weapons.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\rd_main.cpp"
 				>
 			</File>
 		</Filter>
