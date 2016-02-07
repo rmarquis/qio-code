@@ -21,5 +21,8 @@ void IMG_RotatePic(byte *data, u32 width);
 // img_write.cpp
 bool IMG_WriteTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp);
 
+// img_webp.cpp
+bool IMG_LoadWEBP(const char *fname, const byte *buffer, const u32 bufferLen, byte **pic, u32 *width, u32 *height);
+
 #endif // __IMG_LOCAL_H__
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="imageLib"
 	ProjectGUID="{607BEC1E-1C28-4BB2-8B36-71377A41A631}"
 	RootNamespace="imageLib"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
+				AdditionalIncludeDirectories="..\..\code\external\libwebp\Include;&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -59,9 +59,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="devil.lib"
+				AdditionalDependencies="devil.lib libwebp.lib"
 				OutputFile="..\..\game\system\imageLibx86.dll"
-				AdditionalLibraryDirectories="&quot;..\..\code\external\il-1.7.8-x86\lib&quot;;&quot;..\..\code\external\vtflib132-bin\lib\x86&quot;"
+				AdditionalLibraryDirectories="..\..\code\external\libwebp\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;;&quot;..\..\code\external\vtflib132-bin\lib\x86&quot;"
 				ModuleDefinitionFile="imageLib.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
+				AdditionalIncludeDirectories="..\..\code\external\libwebp\Include;&quot;..\..\code\external\il-1.7.8-x86\include&quot;;..\..\code\;&quot;..\..\code\external\vtflib132-bin\lib&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -133,9 +133,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="devil.lib"
+				AdditionalDependencies="devil.lib libwebp.lib"
 				OutputFile="..\..\game\system\imageLibx86.dll"
-				AdditionalLibraryDirectories="&quot;..\..\code\external\il-1.7.8-x86\lib&quot;;&quot;..\..\code\external\vtflib132-bin\lib\x86&quot;"
+				AdditionalLibraryDirectories="..\..\code\external\libwebp\Lib;&quot;..\..\code\external\il-1.7.8-x86\lib&quot;;&quot;..\..\code\external\vtflib132-bin\lib\x86&quot;"
 				ModuleDefinitionFile="imageLib.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -191,6 +191,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\imageLib\img_utils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\imageLib\img_webp.cpp"
 				>
 			</File>
 			<File
