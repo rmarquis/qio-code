@@ -321,6 +321,7 @@ imgType_s img_types [] = {
 	"dds",
 	"ftx",
 	"vtf",
+	"webp",
 };
 
 int ILTypeForExt(const char *s)
@@ -418,7 +419,13 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 		return lastValidFName;
 	}
 #endif // IMAGE_USE_VTF_LIB
-	
+	if(!stricmp(ext,"webp")) {
+		IMG_LoadWEBP(s,buf,len,imageData,width,height);
+		g_vfs->FS_FreeFile(buf);
+		strcpy(lastValidFName,s.c_str());
+		return lastValidFName;
+	}
+
     ILuint ilTexture;
     ilGenImages(1, &ilTexture);
     ilBindImage(ilTexture);
