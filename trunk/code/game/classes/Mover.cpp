@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,34 +21,43 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Door.cpp
-#include "Door.h"
+// Mover.cpp
+#include "Mover.h"
 #include <api/serverAPI.h>
+#include <math/aabb.h>
 
-DEFINE_CLASS(Door, "Mover");
-DEFINE_CLASS_ALIAS(Door, func_door);
-// NOTE: they are using RotatingDoor class
-// RTCW rotating door
-//DEFINE_CLASS_ALIAS(Door, func_door_rotating);
-// MoHAA/FAKK rotating door
-//DEFINE_CLASS_ALIAS(Door, func_rotatingdoor);
+DEFINE_CLASS(Mover, "ModelEntity");
+DEFINE_CLASS_ALIAS(Mover, func_mover);
 
-Door::Door() {
+Mover::Mover() {
 	bPhysicsBodyKinematic = true;
 	bRigidBodyPhysicsEnabled = true;
 }
-void Door::setKeyValue(const char *key, const char *value) {
-	Mover::setKeyValue(key,value);
+void Mover::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"angle")) {
+		float f = atof(value);
+		if(f == -1.f) {
+			direction.set(0,0,1);
+		} else if(f == -2.f) {
+			direction.set(0,0,-1);
+		} else {
+			direction = vec3_c(0,f,0).getForward();
+		}
+		//g_logger->printMsg("Door %i angle %f\n",getEntNum(),f);
+	} else if(!stricmp(key,"angles")) {
+		direction = vec3_c(value).getForward();
+	} else if(!stricmp(key,"lip")) {
+		lip = atof(value);
+	} else if(!stricmp(key,"team")) {
+		team = value;
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
 }
-void Door::postSpawn() {
-	// close touched areaportal (but only if we're using new areaPortals system)
-	//u32 touchingAreas = getNumTouchingAreas();
-	//if(touchingAreas > 1) {
-	//	int area0 = this->getTouchingArea(0);
-	//	int area1 = this->getTouchingArea(1);
-	//	// mark portal as closed (by this doors)
-	//	g_server->adjustAreaPortalState(area0,area1,false);
-	//}
-	Mover::postSpawn();
+void Mover::postSpawn() {
+	distance = abs(direction.dotProduct(getAbsBounds().getSizes())) - lip;
+	closedPos = getOrigin();
+	openPos = closedPos + distance * direction;
+	ModelEntity::postSpawn();
 }
 

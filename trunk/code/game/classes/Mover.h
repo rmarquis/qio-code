@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,21 +21,47 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Door.h
-#ifndef __DOOR_H__
-#define __DOOR_H__
+// Mover.h
+#ifndef __MOVER_H__
+#define __MOVER_H__
 
-#include "Mover.h"
+#include "ModelEntity.h"
 
-class Door : public Mover {
+enum doorState_e {
+	EDS_CLOSED,
+	EDS_OPENING,
+	EDS_OPEN,
+	EDS_CLOSING
+};
+
+class Mover : public ModelEntity {
+	// door offset = door_size - lip
+	float lip;
+	// open direction
+	vec3_c direction;
+	// current doors state
+	doorState_e doorState;
+	// door speed, by default 400.f
+	float speed;
+	// total open/close movement distance
+	float distance;
+	// current distance traveled (if door is moving)
+	float traveled;
+	// closed doors are at this position
+	vec3_c closedPos;
+	// open doors are at this position
+	vec3_c openPos;
+	// teams are used to group doors together
+	str team;
 public:
-	Door();
+	Mover();
 
-	DECLARE_CLASS( Door );
+	DECLARE_CLASS( Mover );
 
 	virtual void postSpawn();
 
 	virtual void setKeyValue(const char *key, const char *value);
 };
 
-#endif // __DOOR_H__
+#endif // __MOVER_H__
+
