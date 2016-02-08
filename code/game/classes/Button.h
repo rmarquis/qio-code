@@ -25,22 +25,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __FUNC_BUTTON_H__
 #define __FUNC_BUTTON_H__
 
-#include "ModelEntity.h"
+#include "Mover.h"
 
-enum moverState_e {
-	MOVER_POS1,
-	MOVER_POS2,
-	MOVER_1TO2,
-	MOVER_2TO1,
-};
+class Button : public Mover {
 
-class Button : public ModelEntity {
-	float lip;
-	moverState_e state;
-	vec3_c moverAngles;
-	vec3_c pos1, pos2;
-	vec3_c moveDir;
-	float speed;
 public:
 	Button();
 
@@ -51,8 +39,8 @@ public:
 	virtual bool doUse(class Player *activator);
 	virtual void runFrame();
 
-	void onMoverReachPos1();
-	void onMoverReachPos2();
+	virtual void onMoverReachPos1();
+	virtual void onMoverReachPos2();
 };
 
 #endif // __FUNC_BUTTON_H__
