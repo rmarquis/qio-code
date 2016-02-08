@@ -61,13 +61,16 @@ public:
 	void convertBezierPatchToTriSurface(u32 surfNum, u32 tesselationLevel, class cmSurface_c &out) const;
 	void convertDisplacementToTriSurface(u32 surfNum, class cmSurface_c &out) const;
 	void convertStaticPropToSurface(u32 staticPropNum, class cmSurface_c &out) const;
-	void getTriangleSurface(u32 surfNum, class cmSurface_c &out);
+	void getTriangleSurface(u32 surfNum, class cmSurface_c &out) const;
 
 	u32 getNumInlineModels() const;
 	void getInlineModelBounds(u32 modelNum, class aabb &bb) const;
 	u32 getInlineModelBrushCount(u32 modelNum) const;
 	u32 getInlineModelSurfaceCount(u32 modelNum) const;
+	u32 getInlineModelNonBrushSurfacesCount(u32 modelNum) const;
 	u32 getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const;
+	u32 getInlineModelFirstSurface(u32 modelNum) const;
+	int getSurfaceType(u32 sfNum) const;
 
 	bool isCoD1BSP() const;
 	bool isHLBSP() const;

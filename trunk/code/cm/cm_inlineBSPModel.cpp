@@ -35,7 +35,8 @@ cMod_i *CM_LoadBSPFileSubModel(const bspPhysicsDataLoader_c *bsp, u32 subModelNu
 	}
 	str inlineModelName = va("*%i",subModelNumber);
 	u32 numBrushes = bsp->getInlineModelBrushCount(subModelNumber);
-	if(numBrushes == 1) {
+	u32 nonBrushSurfaces = bsp->getInlineModelNonBrushSurfacesCount(subModelNumber);
+	if(numBrushes == 1 && nonBrushSurfaces == 0) {
 		// create single convex hull
 		cmHull_c *retSingleBrush = new cmHull_c(inlineModelName);
 		cmBrush_c &b = retSingleBrush->getMyBrush();
@@ -57,6 +58,24 @@ cMod_i *CM_LoadBSPFileSubModel(const bspPhysicsDataLoader_c *bsp, u32 subModelNu
 		brush->recalcBounds();
 		retCompound->addShape(brush);
 	}
+	// also add triangles of the bezier patches...
+	if(nonBrushSurfaces) {
+		u32 numSurfaces = bsp->getInlineModelSurfaceCount(subModelNumber);
+		u32 firstSurface = bsp->getInlineModelFirstSurface(subModelNumber);
+		for(u32 i = 0; i < numSurfaces; i++) {
+			u32 sfIndex = firstSurface + i;
+			u32 type = bsp->getSurfaceType(sfIndex);
+			if(type != 1) {
+				cmSurface_c *sf = new cmSurface_c;
+				bsp->getTriangleSurface(sfIndex,*sf);
+				char name[256];
+				sprintf(name,"*%isf%i",subModelNumber,sfIndex);
+				cmTriMesh_c *triMesh = new cmTriMesh_c(name,sf);
+				retCompound->addShape(triMesh);
+			}
+		}
+	}
+
 	CM_AddCObjectBaseToHashTable(retCompound);
 	return retCompound;
 }
