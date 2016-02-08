@@ -70,6 +70,14 @@ public:
 	virtual void setKeyValue(const char *key, const char *value);
 
 	virtual bool doUse(class Player *activator);
+
+
+	virtual bool isMover() const {
+		return true;
+	}
+	virtual const char *getMoverTeam() const {
+		return team;
+	}
 };
 
 #endif // __MOVER_H__

@@ -96,6 +96,7 @@ void G_PostEvent(const char *targetName, int execTime, const char *eventName, co
 u32 G_RemoveEntitiesOfClass(const char *className);
 const vec3_c &G_GetPlayerOrigin(u32 playerNum);
 class Player *G_GetPlayer(u32 playerNum);
+u32 G_FindMoversWithTeam(class arraySTD_c<class Mover*> &out, const char *team);
 
 //
 // g_client.c

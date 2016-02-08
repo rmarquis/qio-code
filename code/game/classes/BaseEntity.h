@@ -115,6 +115,14 @@ public:
 
 	bool hasClassName(const char *className) const;
 
+	// for Movers
+	virtual bool isMover() const {
+		return false;
+	}
+	virtual const char *getMoverTeam() const {
+		return "";
+	}
+
 	// "targetname" field (unique name of this entity)
 	const char *getTargetName() const;
 	void setTargetName(const char *newTargetName);

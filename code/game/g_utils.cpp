@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_classes.h"
 #include "classes/BaseEntity.h"
 #include "classes/Player.h"
+#include "classes/Mover.h"
 #include <api/serverAPI.h>
 #include <shared/infoString.h>
 
@@ -295,6 +296,21 @@ class Player *G_GetPlayer(u32 playerNum) {
 	}
 	Player *ret = dynamic_cast<Player*>(ed->ent);
 	return ret;
+}
+
+u32 G_FindMoversWithTeam(class arraySTD_c<class Mover*> &out, const char *team) {
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		BaseEntity *be = e->ent;
+		if(be == 0)
+			continue;
+		if(be->isMover()) {
+			if(!stricmp(be->getMoverTeam(),team)) {
+				out.push_back(dynamic_cast<Mover*>(be));
+			}
+		}
+	}
+	return out.size();
 }
 
 //==============================================================================

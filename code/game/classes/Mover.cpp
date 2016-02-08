@@ -32,6 +32,7 @@ DEFINE_CLASS(Mover, "ModelEntity");
 DEFINE_CLASS_ALIAS(Mover, func_mover);
 
 static aCvar_c g_mover_warp("g_mover_warp","0");
+bool g_mover_callingMoverTeam = false;
 
 Mover::Mover() {
 	bPhysicsBodyKinematic = true;
@@ -99,6 +100,20 @@ void Mover::runFrame() {
 	this->setOrigin(p);
 }
 bool Mover::doUse(class Player *activator) {
+	// also activate all other objects with the same team field value,
+	// but avoid stack overflow
+	if(g_mover_callingMoverTeam == false) {
+		g_mover_callingMoverTeam = true;
+		if(team.length()) {
+			arraySTD_c<Mover*> movers;
+			G_FindMoversWithTeam(movers,team);
+			for(u32 i = 0; i < movers.size(); i++) {
+				if(movers[i] != this)
+					movers[i]->doUse(activator);
+			}
+		}
+		g_mover_callingMoverTeam = false;
+	}
 	if(moverState == MOVER_POS1) {
 		if(g_mover_warp.getInt()) {
 			this->setOrigin(pos2);
