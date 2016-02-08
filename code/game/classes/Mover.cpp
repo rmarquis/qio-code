@@ -92,6 +92,8 @@ void Mover::runFrame() {
 			moverState = MOVER_POS1;
 			// fire reach events
 			onMoverReachPos1();
+			// close areaportal
+			closeAreaPortalIfPossible();
 		}
 		return;
 	}
@@ -121,6 +123,7 @@ bool Mover::doUse(class Player *activator) {
 			// fire reach events
 			onMoverReachPos2();
 		} else {
+			openAreaPortalIfPossible();
 			moverState = MOVER_1TO2;
 		}
 	} else if(moverState == MOVER_POS2) {

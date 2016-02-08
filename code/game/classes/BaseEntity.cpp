@@ -400,6 +400,36 @@ u32 BaseEntity::getNumTouchingAreas() const {
 u32 BaseEntity::getTouchingArea(u32 localIdx) const {
 	return this->myEdict->bspBoxDesc->getArea(localIdx);
 }
+bool BaseEntity::openAreaPortalIfPossible() {
+	u32 touchingAreas = getNumTouchingAreas();
+	if(touchingAreas > 1) {
+		if(touchingAreas != 2) {
+			g_core->RedWarning("BaseEntity::openAreaPortalIfPossible: entity %i (%s) touches more than two areas - %i\n",
+				getEntNum(),getRenderModelName(),touchingAreas);
+		}
+		int area0 = this->getTouchingArea(0);
+		int area1 = this->getTouchingArea(1);
+		// mark portal as open 
+		g_server->adjustAreaPortalState(area0,area1,true);
+		return true;
+	}
+	return false;
+}
+bool BaseEntity::closeAreaPortalIfPossible() {
+	u32 touchingAreas = getNumTouchingAreas();
+	if(touchingAreas > 1) {
+		if(touchingAreas != 2) {
+			g_core->RedWarning("BaseEntity::openAreaPortalIfPossible: entity %i (%s) touches more than two areas - %i\n",
+				getEntNum(),getRenderModelName(),touchingAreas);
+		}
+		int area0 = this->getTouchingArea(0);
+		int area1 = this->getTouchingArea(1);
+		// mark portal as closed
+		g_server->adjustAreaPortalState(area0,area1,false);
+		return true;
+	}
+	return false;
+}
 // for lua wrapper
 bool BaseEntity::addLuaEventHandler(struct lua_State *L, const char *eventName, int func) {
 	if(!_stricmp(eventName,"runFrame")) {
