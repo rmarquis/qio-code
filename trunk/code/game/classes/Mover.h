@@ -27,20 +27,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "ModelEntity.h"
 
-enum doorState_e {
-	EDS_CLOSED,
-	EDS_OPENING,
-	EDS_OPEN,
-	EDS_CLOSING
+enum moverState_e {
+	MOVER_POS1,
+	MOVER_POS2,
+	MOVER_1TO2,
+	MOVER_2TO1,
 };
 
 class Mover : public ModelEntity {
+protected:
 	// door offset = door_size - lip
 	float lip;
 	// open direction
 	vec3_c direction;
 	// current doors state
-	doorState_e doorState;
+	moverState_e moverState;
 	// door speed, by default 400.f
 	float speed;
 	// total open/close movement distance
@@ -48,11 +49,15 @@ class Mover : public ModelEntity {
 	// current distance traveled (if door is moving)
 	float traveled;
 	// closed doors are at this position
-	vec3_c closedPos;
+	vec3_c pos1;
 	// open doors are at this position
-	vec3_c openPos;
+	vec3_c pos2;
 	// teams are used to group doors together
 	str team;
+
+	// callbacks
+	virtual void onMoverReachPos1() { }
+	virtual void onMoverReachPos2()  { }
 public:
 	Mover();
 
@@ -60,7 +65,11 @@ public:
 
 	virtual void postSpawn();
 
+	virtual void runFrame();
+
 	virtual void setKeyValue(const char *key, const char *value);
+
+	virtual bool doUse(class Player *activator);
 };
 
 #endif // __MOVER_H__

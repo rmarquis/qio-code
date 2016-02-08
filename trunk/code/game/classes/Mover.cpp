@@ -25,13 +25,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Mover.h"
 #include <api/serverAPI.h>
 #include <math/aabb.h>
+#include <shared/autoCvar.h>
+#include "../g_local.h"
 
 DEFINE_CLASS(Mover, "ModelEntity");
 DEFINE_CLASS_ALIAS(Mover, func_mover);
 
+static aCvar_c g_mover_warp("g_mover_warp","0");
+
 Mover::Mover() {
 	bPhysicsBodyKinematic = true;
 	bRigidBodyPhysicsEnabled = true;
+	lip = 4.f;
+	moverState = MOVER_POS1;
+	speed = 40.f;
 }
 void Mover::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"angle")) {
@@ -56,8 +63,62 @@ void Mover::setKeyValue(const char *key, const char *value) {
 }
 void Mover::postSpawn() {
 	distance = abs(direction.dotProduct(getAbsBounds().getSizes())) - lip;
-	closedPos = getOrigin();
-	openPos = closedPos + distance * direction;
+	pos1 = getOrigin();
+	pos2 = pos1 + distance * direction;
+	if(distance < 0)
+		direction *= -1;
 	ModelEntity::postSpawn();
 }
+void Mover::runFrame() {
+	if(moverState != MOVER_1TO2 && moverState != MOVER_2TO1)
+		return;
+	float delta = level.frameTime * speed;
+	vec3_c dest;
+	if(moverState == MOVER_1TO2) {
+		dest = pos2;
+	} else if(moverState == MOVER_2TO1) {
+		dest = pos1;
+		delta *= -1.f;
+	}
+	float remaining = dest.dist(this->getOrigin());
+	if(abs(delta) > remaining) {
+		this->setOrigin(dest);
+		if(moverState == MOVER_1TO2) {
+			moverState = MOVER_POS2;
+			// fire reach events
+			onMoverReachPos2();
+		} else {
+			moverState = MOVER_POS1;
+			// fire reach events
+			onMoverReachPos1();
+		}
+		return;
+	}
+	vec3_c p = this->getOrigin();
+	p += direction * delta;
+	this->setOrigin(p);
+}
+bool Mover::doUse(class Player *activator) {
+	if(moverState == MOVER_POS1) {
+		if(g_mover_warp.getInt()) {
+			this->setOrigin(pos2);
+			moverState = MOVER_POS2;
+			// fire reach events
+			onMoverReachPos2();
+		} else {
+			moverState = MOVER_1TO2;
+		}
+	} else if(moverState == MOVER_POS2) {
+		if(g_mover_warp.getInt()) {
+			this->setOrigin(pos1);
+			moverState = MOVER_POS1;
+			// fire reach events
+			onMoverReachPos1();
+		} else {
+			moverState = MOVER_2TO1;
+		}
+	}
+	return true;
+}
+
 
