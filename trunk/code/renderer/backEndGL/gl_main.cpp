@@ -129,6 +129,7 @@ static aCvar_c rb_wireframeLightmapStages("rb_wireframeLightmapStages","0");
 static aCvar_c rb_wireframeColormapLightmappedStages("rb_wireframeColormapLightmappedStages","0");
 static aCvar_c rb_wireframeSkyBoxCubeMapStages("rb_wireframeSkyBoxCubeMapStages","0");
 static aCvar_c rb_wireframeEditorImageStages("rb_wireframeEditorImageStages","0");
+static aCvar_c rb_printBumpHeightMapMaterials("rb_printBumpHeightMapMaterials","0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -1959,7 +1960,9 @@ public:
 						bumpMap = s->getBumpHeightMap();
 						if(bumpMap) {
 							bHasBumpHeightMap = true;
-							g_core->Print("Material %s has bumpheightmap \n",lastMat->getName());
+							if(rb_printBumpHeightMapMaterials.getInt()) {
+								g_core->Print("Material %s has bumpheightmap \n",lastMat->getName());
+							}
 						}
 					}
 				}
