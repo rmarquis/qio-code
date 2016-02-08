@@ -188,6 +188,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	mtrStage_c *subStageBumpMap;
 	mtrStage_c *subStageSpecularMap;
 	mtrStage_c *subStageHeightMap;
+	mtrStage_c *subStageBumpHeightMap;
 	mtrStage_c *nextBundle;
 	// "if" condition for Doom3 materials
 	class astAPI_i *condition;
@@ -225,6 +226,10 @@ public:
 	virtual mtrStageAPI_i *getSpecularMap() const {
 		return subStageSpecularMap;
 	}
+	virtual mtrStageAPI_i *getBumpHeightMap() const {
+		return subStageBumpHeightMap;
+	}
+	
 	virtual bool hasTexMods() const {
 		if(texMods)
 			return true;
@@ -270,6 +275,10 @@ public:
 	void setSubStageHeightMap(class mtrStage_c *s) {
 		this->subStageHeightMap = s;
 	}
+	void setSubStageBumpHeightMap(class mtrStage_c *s) {
+		this->subStageBumpHeightMap = s;
+	}
+	
 	void setNextBundle(class mtrStage_c *s) {
 		this->nextBundle = s;
 	}

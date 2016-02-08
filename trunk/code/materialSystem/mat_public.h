@@ -15,6 +15,9 @@ enum stageType_e {
 	// added by me, heightmaps are not used directly in Doom3
 	// (they are converted to bump maps)
 	ST_HEIGHTMAP,
+	// This is an RGBA image with bumpmap in RGB channels
+	// and heightmap in Alpha channel
+	ST_BUMPHEIGHTMAP,
 	// skybox stage (with a cubemap texture)
 	// Set by "stage skyboxmap" in material,
 	// also set by Doom3 "texgen skybox" command.

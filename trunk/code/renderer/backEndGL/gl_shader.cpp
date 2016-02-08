@@ -173,6 +173,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasSpecularMap) {
 		out.append("#define HAS_SPECULAR_MAP\n");
 	}
+	if(p.hasBumpHeightMap) {
+		out.append("#define HAS_BUMP_HEIGHTMAP_MAP\n");
+	}
 	if(p.hasMaterialColor) {
 		// extra per-surface material color
 		out.append("#define HAS_MATERIAL_COLOR\n");
