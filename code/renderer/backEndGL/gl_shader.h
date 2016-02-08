@@ -40,6 +40,7 @@ struct glslPermutationFlags_s {
 	bool pointLightShadowMapping; // #define SHADOW_MAPPING_POINT_LIGHT
 	bool hasBumpMap; // #define HAS_BUMP_MAP
 	bool hasSpecularMap; // #define HAS_SPECULAR_MAP
+	bool hasBumpHeightMap; // #define HAS_BUMP_HEIGHTMAP_MAP
 	bool hasHeightMap; // #define HAS_HEIGHT_MAP
 	int useReliefMapping; // #define USE_RELIEF_MAPPING
 	// deluxemap is a "lightmap" with light direction normals encoded as colors

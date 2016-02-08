@@ -1949,11 +1949,19 @@ public:
 				// get material stage type
 				enum stageType_e stageType = s->getStageType();
 				// get the bumpmap substage of current stage
+				bool bHasBumpHeightMap = false;
 				const mtrStageAPI_i *bumpMap;
 				if(rb_ignoreBumpMaps.getInt()) {
 					bumpMap = 0;
 				} else {
 					bumpMap = s->getBumpMap();
+					if(bumpMap == 0) {
+						bumpMap = s->getBumpHeightMap();
+						if(bumpMap) {
+							bHasBumpHeightMap = true;
+							g_core->Print("Material %s has bumpheightmap \n",lastMat->getName());
+						}
+					}
 				}
 				// get the specularmap substage of current stage
 				const mtrStageAPI_i *specularMap;
@@ -2337,6 +2345,7 @@ drawOnlyLightmap:
 					if(specularMap) {
 						pf.hasSpecularMap = true;
 					}
+					pf.hasBumpHeightMap = bHasBumpHeightMap;
 					pf.useReliefMapping = rb_useReliefMapping.getInt();
 					pf.debug_ignoreAngleFactor = rb_dynamicLighting_ignoreAngleFactor.getInt();
 					pf.debug_ignoreDistanceFactor = rb_dynamicLighting_ignoreDistanceFactor.getInt();

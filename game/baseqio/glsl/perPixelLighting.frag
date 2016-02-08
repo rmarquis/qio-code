@@ -48,9 +48,14 @@ uniform sampler2D bumpMap;
 #endif
 #ifdef HAS_HEIGHT_MAP
 uniform sampler2D heightMap;
+#endif
+
+#if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
 varying vec3 v_tbnEyeDir;
 #endif
-#if defined(HAS_HEIGHT_MAP) && defined(USE_RELIEF_MAPPING)
+
+
+#if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP)) && defined(USE_RELIEF_MAPPING)
 #include "reliefMappingRaycast.inc"
 #endif
 #ifdef HAS_LIGHT_COLOR
@@ -216,14 +221,18 @@ void main() {
 	return;
 #endif
 	// calculate texcoord
-#ifdef HAS_HEIGHT_MAP
+#if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
     vec3 eyeDirNormalized = normalize(v_tbnEyeDir);
 #ifdef USE_RELIEF_MAPPING
 	// relief mapping
 	vec2 texCoord = ReliefMappingRayCast(gl_TexCoord[0].xy,eyeDirNormalized);
 #else
 	// simple height mapping
+#ifdef HAS_BUMP_HEIGHTMAP_MAP
+    vec4 offset = texture2D(bumpMap, gl_TexCoord[0].xy).a;
+#else
     vec4 offset = texture2D(heightMap, gl_TexCoord[0].xy);
+#endif
 	offset = offset * 0.05 - 0.02;
 	vec2 texCoord = offset.xy * eyeDirNormalized.xy +  gl_TexCoord[0].xy;   
 #endif

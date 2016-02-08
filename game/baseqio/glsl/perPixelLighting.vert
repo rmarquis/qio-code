@@ -47,12 +47,14 @@ uniform sampler2D bumpMap;
 #endif
 #ifdef HAS_HEIGHT_MAP
 uniform sampler2D heightMap;
+#endif
+#if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
 varying vec3 v_tbnEyeDir;
 uniform vec3 u_viewOrigin;
 #endif
 
 void main() {	
-#ifdef HAS_HEIGHT_MAP
+#if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
     // calculate the direction of the viewOrigin from the vertex;
     vec3 dirEye = u_viewOrigin  - gl_Vertex;
         

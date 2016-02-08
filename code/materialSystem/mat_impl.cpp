@@ -118,6 +118,7 @@ mtrStage_c::mtrStage_c() {
 	subStageBumpMap = 0;
 	subStageSpecularMap = 0;
 	subStageHeightMap = 0;
+	subStageBumpHeightMap = 0;
 	nextBundle = 0;
 	condition = 0;
 	alphaTestAST = 0;
@@ -139,6 +140,9 @@ mtrStage_c::~mtrStage_c() {
 	}
 	if(subStageHeightMap) {
 		delete subStageHeightMap;
+	}
+	if(subStageBumpHeightMap) {
+		delete subStageBumpHeightMap;
 	}
 	if(nextBundle) {
 		delete nextBundle;
@@ -677,7 +681,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					//} else {
 						setSkyParms(farBox,cloudHeight,nearBox);
 				//	}
-				} else if(p.atWord("diffusemap") || p.atWord("colormap")) {
+				} else if(p.atWord("diffusemap") || p.atWord("colormap") || p.atWord("diffuseMapLightmapped")) {
 					mtrStage_c *newDiffuseMapStage = new mtrStage_c;
 					if(p.atWord("-")) { // ET's way
 						newDiffuseMapStage->setTexture(this->getName());
@@ -709,9 +713,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					//newDiffuseMapStage->setStageType(ST_COLORMAP);
 					newDiffuseMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
 					stages.push_back(newDiffuseMapStage);
-				} else if(p.atWord("bumpmap") || p.atWord("normalmap") ) {
+				} else if(p.atWord("bumpmap") || p.atWord("normalmap")) {
 					mtrStage_c *newBumpMapStage = new mtrStage_c;
 					newBumpMapStage->setStageType(ST_BUMPMAP);
+					newBumpMapStage->setTexture(MAT_ParseImageScript(p));
+					stages.push_back(newBumpMapStage);
+				} else if(p.atWord("bumpHeightMap")) {
+					mtrStage_c *newBumpMapStage = new mtrStage_c;
+					newBumpMapStage->setStageType(ST_BUMPHEIGHTMAP);
 					newBumpMapStage->setTexture(MAT_ParseImageScript(p));
 					stages.push_back(newBumpMapStage);
 				} else if(p.atWord("specularmap")) {
@@ -1586,6 +1595,11 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 			if(heightMapStage) {
 				colorMapStage->setSubStageHeightMap(heightMapStage);
 				this->stages.removeObject(heightMapStage);
+			}
+			mtrStage_c *bumpHeightMapStage = this->getFirstStageOfType(ST_BUMPHEIGHTMAP);
+			if(bumpHeightMapStage) {
+				colorMapStage->setSubStageBumpHeightMap(bumpHeightMapStage);
+				this->stages.removeObject(bumpHeightMapStage);
 			}
 		}
 		this->removeAllStagesOfType(ST_BUMPMAP);
