@@ -82,6 +82,7 @@ rBspTree_c::rBspTree_c() {
 	visCounter = 1;
 	c_flares = 0;
 	lightGrid = 0;
+	numWorldSurfs = 0;
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
@@ -202,7 +203,7 @@ void rBspTree_c::addSurfToBatches(u32 surfNum) {
 void rBspTree_c::createBatches() {
 	deleteBatches();
 	numBatchSurfIndexes = 0;
-	u32 numWorldSurfs = models[0].numSurfs;
+	numWorldSurfs = models[0].numSurfs;
 	for(u32 i = 0; i < numWorldSurfs; i++) {
 		addSurfToBatches(i);
 	}
@@ -2423,7 +2424,7 @@ void rBspTree_c::addDrawCalls() {
 	u32 c_culledBezierPatches = 0;
 	// add bezier patches (they are a subtype of bspSurf_s)
 	bspSurf_s *sf = surfs.getArray();
-	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+	for(u32 i = 0; i < numWorldSurfs; i++, sf++) {
 		if(sf->type == BSPSF_BEZIER) {
 			if(sf->lastVisCount != this->visCounter) {
 				continue; // culled by PVS

@@ -219,6 +219,8 @@ class rBspTree_c {
 	// static props (models)
 	arraySTD_c<bspStaticProp_c> staticProps;
 
+	u32 numWorldSurfs; // models[0].numSurfs
+
 	// total number of surface indexes in batches (this->batches)
 	u32 numBatchSurfIndexes;
 
