@@ -403,7 +403,7 @@ void bspPhysicsDataLoader_c::convertStaticPropToSurface(u32 staticPropNum, class
 		out.transform(prop->origin,prop->angles);
 	}
 }
-void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &out) {
+void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &out) const {
 	if(h->isBSPHL()) {
 		const hlSurface_s *isf = (const hlSurface_s *)h->getLumpData(HL_FACES)+surfNum;
 		const hlVert_s *iv = (const hlVert_s *)h->getLumpData(HL_VERTEXES);
@@ -441,16 +441,21 @@ void bspPhysicsDataLoader_c::getTriangleSurface(u32 surfNum, class cmSurface_c &
 		}
 	} else {
 		const q3Surface_s *q3SF = h->getSurface(surfNum);
-		const q3Vert_s *v = h->getVerts() + q3SF->firstVert;
-		const u32 *indices = h->getIndices();;
-		out.setNumVerts(q3SF->numVerts);
-		for(u32 i = 0; i < q3SF->numVerts; i++, v++) {
-			out.setVertex(i,v->xyz);
-		}
-		out.setNumIndices(q3SF->numIndexes);
-		for(u32 i = 0; i < q3SF->numIndexes; i++) {
-			u16 val = indices[q3SF->firstIndex+i];
-			out.setIndex(i,val);
+		if(q3SF->surfaceType == 2) {
+			// bezier patch
+			convertBezierPatchToTriSurface(surfNum,2,out);
+		} else {
+			const q3Vert_s *v = h->getVerts() + q3SF->firstVert;
+			const u32 *indices = h->getIndices();;
+			out.setNumVerts(q3SF->numVerts);
+			for(u32 i = 0; i < q3SF->numVerts; i++, v++) {
+				out.setVertex(i,v->xyz);
+			}
+			out.setNumIndices(q3SF->numIndexes);
+			for(u32 i = 0; i < q3SF->numIndexes; i++) {
+				u16 val = indices[q3SF->firstIndex+i];
+				out.setIndex(i,val);
+			}
 		}
 	}
 }
@@ -482,11 +487,37 @@ u32 bspPhysicsDataLoader_c::getInlineModelBrushCount(u32 modelNum) const {
 		return 0;
 	return mod->numBrushes;
 }
+u32 bspPhysicsDataLoader_c::getInlineModelNonBrushSurfacesCount(u32 modelNum) const {
+	const q3Model_s *mod = h->getModel(modelNum);
+	if(mod == 0)
+		return 0;
+	u32 ret = 0;
+	for(u32 i = 0; i < mod->numSurfaces; i++) {
+		u32 surfNum = i+mod->firstSurface;
+		const q3Surface_s *q3SF = h->getSurface(surfNum);
+		if(q3SF) {
+			if(q3SF->surfaceType != Q3MST_PLANAR) {
+				ret++;
+			}
+		}
+	}
+	return ret;
+}
 u32 bspPhysicsDataLoader_c::getInlineModelSurfaceCount(u32 modelNum) const {
 	const q3Model_s *mod = h->getModel(modelNum);
 	if(mod == 0)
 		return 0;
 	return mod->numSurfaces;
+}
+int bspPhysicsDataLoader_c::getSurfaceType(u32 sfNum) const {
+	const q3Surface_s *sf = h->getSurface(sfNum);
+	if(sf == 0)
+		return 0;
+	return sf->surfaceType;
+}
+u32 bspPhysicsDataLoader_c::getInlineModelFirstSurface(u32 modelNum) const {
+	const q3Model_s *mod = h->getModel(modelNum);
+	return mod->firstSurface;
 }
 u32 bspPhysicsDataLoader_c::getInlineModelGlobalBrushIndex(u32 subModelNum, u32 localBrushIndex) const {
 	const q3Model_s *mod = h->getModel(subModelNum);
