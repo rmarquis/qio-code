@@ -202,6 +202,9 @@ public:
 	// returns the count of BSP areas touching this entity
 	u32 getNumTouchingAreas() const;
 	u32 getTouchingArea(u32 localIdx) const;
+	// for Doors, etc
+	bool openAreaPortalIfPossible();
+	bool closeAreaPortalIfPossible();
 
 	// for lua wrapper
 	virtual bool addLuaEventHandler(struct lua_State *L, const char *eventName, int func);
