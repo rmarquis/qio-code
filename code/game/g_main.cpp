@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/World.h"
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include <shared/wolfScript.h>
 #include "g_pathNodes.h"
 
 static aCvar_c g_printEntityPositions("g_printEntityPositions","0");
@@ -130,6 +131,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	
 	G_InitLua();
 
+	wsScript_c test;
+	test.loadScriptFile("maps/escape1.script");
 	G_Printf ("-----------------------------------\n");
 }
 
