@@ -56,7 +56,7 @@ uniform vec3 u_viewOrigin;
 void main() {	
 #if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
     // calculate the direction of the viewOrigin from the vertex;
-    vec3 dirEye = u_viewOrigin  - gl_Vertex;
+    vec3 dirEye = u_viewOrigin  - gl_Vertex.xyz;
         
     // transform eyeDirection into tangent space
     v_tbnEyeDir.x = dot(atrTangents , dirEye);
