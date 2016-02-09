@@ -26,7 +26,7 @@ vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
 #ifdef HAS_BUMP_HEIGHTMAP_MAP
             tHeight = texture2D(bumpMap,tc-delta*height).a;
 #else
-            tHeight = texture2D(heightMap,tc-delta*height);
+            tHeight = texture2D(heightMap,tc-delta*height).a;
 #endif
         }
     }
