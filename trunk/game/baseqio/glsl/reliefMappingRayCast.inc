@@ -11,9 +11,9 @@ vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
     float step = 1.0/float(numsteps);
     int currStep;
 #ifdef HAS_BUMP_HEIGHTMAP_MAP
-    vec4 tHeight= texture2D(bumpMap,tc).a;
+    float tHeight = texture2D(bumpMap,tc).a;
 #else
-    vec4 tHeight= texture2D(heightMap,tc);
+    float tHeight = texture2D(heightMap,tc).a;
 #endif
     vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA/ (ray.z);
     
