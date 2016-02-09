@@ -27,7 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifdef USE_SHADOW_CUBESHADOWSAMPLER
 #version 130
 #extension GL_EXT_gpu_shader4 : enable
-#endif // USE_SHADOW_CUBESHADOWSAMPLER
+#endif
 #endif
 // shader input
 uniform sampler2D colorMap;
