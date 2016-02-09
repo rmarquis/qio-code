@@ -1038,6 +1038,14 @@
 				RelativePath="..\..\code\shared\trace.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfScript.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\wolfScript.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="math"
