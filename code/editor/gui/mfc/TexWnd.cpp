@@ -112,7 +112,24 @@ FillTextureMenu
 */
 void FillTextureMenu (CStringArray* pArray)
 {
+	HMENU	hmenu;
+	int		i;
+	struct _finddata_t fileinfo;
+	int		handle;
+	char	dirstring[1024];
+	char	*path;
 
+
+	hmenu = GetSubMenu (GetMenu(g_qeglobals.d_hwndMain), MENU_TEXTURE);
+
+	// delete everything
+	for (i=0 ; i<texture_nummenus ; i++)
+		DeleteMenu (hmenu, CMD_TEXTUREWAD+i, MF_BYCOMMAND);
+
+  texture_nummenus = 0;
+const char *test = "test hello materials";
+		  AppendMenu (hmenu, MF_ENABLED|MF_STRING, CMD_TEXTUREWAD+texture_nummenus, (LPCTSTR)test);
+		  strcpy (texture_menunames[texture_nummenus], test);
 
 }
 
