@@ -657,6 +657,16 @@ void CCamWnd::Cam_Draw()
 
 	rf->getBackend()->unbindMaterial();
 
+	float redc[4] = { 1, 0, 0, 1 };
+	rf->getBackend()->setColor4(redc);
+	rf->getBackend()->setAdditiveBlending();
+	int nCount = g_SelectedFaces.GetSize();
+	for (int i = 0; i < nCount; i++)
+	{
+		face_s *face = reinterpret_cast<face_s*>(g_SelectedFaces.GetAt(i));
+		rf->getBackend()->drawWinding(face->face_winding->getXYZs(),face->face_winding->size(),face->face_winding->getStride());
+	}
+	rf->getBackend()->unbindMaterial();
 
 	if (g_qeglobals.d_select_mode == sel_vertex)
 	{

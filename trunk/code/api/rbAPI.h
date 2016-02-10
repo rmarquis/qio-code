@@ -175,6 +175,8 @@ public:
 	// in editor mode qer_editorImages stages should be drawn
 	// otherwise they are skipped
 	virtual void setBDrawEditorImageStages(bool newBDraw) { }
+	// for selected surface highlights..
+	virtual void setAdditiveBlending() { }
 };
 
 extern rbAPI_i *rb;

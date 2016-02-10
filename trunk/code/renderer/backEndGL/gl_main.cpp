@@ -486,6 +486,9 @@ public:
 	virtual void setBDrawEditorImageStages(bool newBDraw) {
 		bDrawEditorImageStages = newBDraw;
 	}
+	virtual void setAdditiveBlending() {
+		setBlendFunc(BM_ONE,BM_ONE);
+	}
 	virtual backEndType_e getType() const {
 		return BET_GL;
 	}
