@@ -64,7 +64,14 @@ r_surface_c::r_surface_c() {
 }
 r_surface_c::~r_surface_c() {
 	this->clear();
+}	
+// call markAsUsed on every referenced material
+void r_surface_c::markMaterials() {
+	if(mat) {
+		mat->markAsUsed();
+	}
 }
+
 void r_surface_c::addWinding(const texturedVertex_c *pVerts, u32 numVerts) {
 	u32 firstVert = verts.size();
 	///u32 firstIndex = indices.getNumIndices();
@@ -1139,6 +1146,12 @@ r_model_c::r_model_c() {
 #include "rf_stencilShadowCaster.h"
 r_model_c::~r_model_c() {
 	clear();
+}
+// call markAsUsed on every referenced material
+void r_model_c::markMaterials() {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		surfs[i].markMaterials();
+	}
 }
 void r_model_c::precalculateStencilShadowCaster() {
 	if(ssvCaster) {

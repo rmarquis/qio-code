@@ -395,6 +395,8 @@ class mtrIMPL_c : public mtrAPI_i {
 	deformArray_c *deforms;
 	// for .vmt support, set by $compilesky key
 	bool bGenericSky;;
+	// for renderer clearup without vid_restart
+	bool bMarkedAsUsed;
 
 	void addDeformSprite();
 
@@ -650,6 +652,15 @@ public:
 		}
 		// all stages are using custom programs
 		return false;
+	}
+	virtual void markAsUsed() {
+		bMarkedAsUsed = true;
+	}
+	virtual void markAsNotUsed() {
+		bMarkedAsUsed = false;
+	}
+	bool isMarkedAsUsed() const {
+		return bMarkedAsUsed;
 	}
 	virtual float getPolygonOffset() const {
 		return polygonOffset;

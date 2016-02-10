@@ -231,6 +231,10 @@ public:
 	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum) {
 		RF_SetWorldSurfaceMaterial(areaNum,surfNum,matName);
 	}
+	virtual void markUsedMaterials() {
+		RF_MarkModelMaterials();
+	}
+
 	virtual class rDebugDrawer_i *getDebugDrawer() {
 		return r_dd;
 	}

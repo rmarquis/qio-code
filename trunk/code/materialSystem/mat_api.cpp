@@ -113,6 +113,12 @@ public:
 	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const {
 		return MAT_GetAllocatedMaterial(i);
 	}
+	virtual void clearMaterialInUseFlags() { 
+		MAT_ClearMaterialInUseFlags();
+	}
+	virtual void freeUnusedMaterials() {
+		MAT_FreeUnusedMaterials();
+	}
 };
 
 // interface manager (import)

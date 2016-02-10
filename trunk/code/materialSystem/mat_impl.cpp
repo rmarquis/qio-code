@@ -367,6 +367,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	bGenericSky = false;
 	bHasEditorTransparency = false;
 	editorTransparency = 1.f;;
+	bMarkedAsUsed = true;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();

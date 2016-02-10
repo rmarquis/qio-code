@@ -86,6 +86,14 @@ void model_c::initStaticModel(class r_model_c *myNewModelPtr) {
 	this->staticModel = myNewModelPtr;
 	this->bb = myNewModelPtr->getBounds();
 }
+// call markAsUsed on every referenced material
+void model_c::markModelMaterials() {
+	if(this->type == MOD_STATIC) {
+		this->staticModel->markMaterials();
+	} else {	
+		// TODO
+	}
+}
 void model_c::initSprite(const char *matName, float newSpriteRadius) {
 	this->type = MOD_SPRITE;
 	this->spriteMaterial = g_ms->registerMaterial(matName);
@@ -428,6 +436,12 @@ r_model_c *RF_LoadStaticModel(const char *modelName) {
 	return ret;
 }
 
+void RF_MarkModelMaterials() {
+	for(u32 i = 0; i < rf_models.size(); i++) {
+		model_c *m = rf_models[i];
+		m->markModelMaterials();
+	}
+}
 rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 	if(modNameWithParameters == 0)
 		return 0;

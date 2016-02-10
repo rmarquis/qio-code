@@ -197,6 +197,9 @@ public:
 	// for sprites
 	void initSprite(const char *matName, float newSpriteRadius);
 
+	// call markAsUsed on every referenced material
+	void markModelMaterials();
+
 	const r_model_c *getRModel() const {
 		if(type == MOD_STATIC) {
 			return staticModel;
@@ -230,6 +233,7 @@ friend void RF_ClearModels();
 friend model_c *RF_AllocModel(const char *modName);
 friend rModelAPI_i *RF_FindModel(const char *modName);
 friend rModelAPI_i *RF_RegisterModel(const char *modName);
+friend void RF_MarkModelMaterials();
 };
 
 #endif // __RF_MODEL_H__
