@@ -2835,7 +2835,14 @@ void CXYWnd::XY_Draw()
     Brush_DrawXY(brush, m_nViewType);
 	}
   
-  
+
+	
+	//for (entity_s *e = entities.getNextEntity(); e != &entities; e=e->getNextEntity())
+	//{
+	//	if(e->getREntity()) {
+	//		Brush_DrawXY(e->brushes.onext, m_nViewType);
+	//	}
+	//}
   if (m_bTiming)
 		end2 = Sys_DoubleTime();
 

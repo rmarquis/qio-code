@@ -149,7 +149,11 @@ void rEntityImpl_c::recalcABSBounds() {
 	}
 	aabb prevABSBounds = this->absBB;
 	// update abs bounds
-	if(myRagdollDef) {
+	if(model->isValid() == false) {
+		aabb bb;
+		bb.fromRadius(16.f);
+		matrix.transformAABB(bb,this->absBB);
+	} else if(myRagdollDef) {
 		this->absBB.fromHalfSize(999999.f); // TODO
 	} else if(instance) {
 		const aabb &bb = instance->getBounds();

@@ -220,6 +220,15 @@ void brush_c::setupBox(const vec3_c &mins, const vec3_c &maxs, const texdef_t *t
 	vec3_t	pts[4][2];
 	face_s	*f;
 
+	// free old faces
+	face_s *next;
+	for (face_s *f = brush_faces; f; f=next)
+	{
+		next = f->next;
+		delete f;
+	}
+	brush_faces = 0;
+
 	pts[0][0][0] = mins[0];
 	pts[0][0][1] = mins[1];
 	
