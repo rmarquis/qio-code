@@ -2188,21 +2188,33 @@ edBrush_c::edBrush_c(bool bIsLinkedListHeader) {
 		g_allocatedCounter_brush++;
 }
 edBrush_c::~edBrush_c() {
-	if(rData) {
-		rf->removeStaticModel(rData);
-		rData = 0;
-	}
+	freeBrushRenderData();
 	// allocated counter is only used for debugging
 	if(bIsLinkedListHeader==false) 
 		g_allocatedCounter_brush--;
 }
+void edBrush_c::freeBrushRenderData() {
+	if(rData) {
+		rf->removeStaticModel(rData);
+		rData = 0;
+	}
+}
 void edBrush_c::onBrushSelectedStateChanged(bool newBIsSelected) {
 	if(rData) {
 		float r[4] = { 1, 0.7, 0.7, 1 };
-		if(newBIsSelected) {
-			rData->setColor(r);
+		if(owner && owner->getEntityClass()->hasEditorFlagLight()) {
+			rData->clearStaticModelData();
+			if(newBIsSelected) {
+				rData->buildEditorLightDiamondShape(this->getBounds(),(vec3_c*)r);
+			} else {
+				rData->buildEditorLightDiamondShape(this->getBounds(),0);
+			}
 		} else {
-			rData->setColor(0);
+			if(newBIsSelected) {
+				rData->setColor(r);
+			} else {
+				rData->setColor(0);
+			}
 		}
 	} 
 	if(owner) {

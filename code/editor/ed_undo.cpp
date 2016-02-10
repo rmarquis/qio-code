@@ -349,6 +349,8 @@ void Undo_AddBrushList(edBrush_c *brushlist)
 			Undo_AddEntity( pBrush->owner );
 		//clone the brush
 		edBrush_c* pClone = pBrush->fullClone();
+		// V: HACK - don't display brushes stored in undo in renderer
+		pClone->freeBrushRenderData();
 		// V: don't store entity pointer because entity might be fried earlier...
 		pClone->owner = 0;
 		//save the ID of the owner entity
