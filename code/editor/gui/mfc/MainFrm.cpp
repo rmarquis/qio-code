@@ -1338,11 +1338,11 @@ void CMainFrame::OnDestroy()
   }
 
   while (active_brushes.next != &active_brushes)
-	  Brush_Free (active_brushes.next, false);
+	  Brush_Free (active_brushes.next);
 	while (selected_brushes.next != &selected_brushes)
-		Brush_Free (selected_brushes.next, false);
+		Brush_Free (selected_brushes.next);
 	while (filtered_brushes.next != &filtered_brushes)
-		Brush_Free (filtered_brushes.next, false);
+		Brush_Free (filtered_brushes.next);
 
 	while (entities.getNextEntity() != &entities)
 		delete entities.getNextEntity();

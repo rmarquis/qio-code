@@ -92,6 +92,8 @@ public:
 			return "";
 		return r;
 	}
+	// for model entities and logic entities like info_player_start...
+	void createGhostBrushForNonBrushEntity();
 	void onBrushSelectedStateChanged(bool newBIsSelected);
 	void trackMD3Angles(const char *key, const char *value);
 	void setKeyValue(const char *key, const char *value);

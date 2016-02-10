@@ -91,6 +91,7 @@ void entity_s::setKeyValue(const char *key, const char *value) {
 			}
 			rEnt->setModel(rf->registerModel(value));
 			rEnt->setOrigin(this->origin);
+			createGhostBrushForNonBrushEntity();
 		}
 	}
 
@@ -153,6 +154,64 @@ void Entity_RemoveFromList (entity_s *e)
 	e->next = e->prev = NULL;
 }
 
+void entity_s::createGhostBrushForNonBrushEntity() {
+	// create a custom brush
+	aabb bb;
+	//float a = 0;
+	if (eclass->hasEditorFlagMiscModel()) {
+		bb = this->getREntity()->getBoundsABS();
+	} else if (eclass->hasDefinedModel()) {
+		bb = this->getREntity()->getBoundsABS();
+	} else {
+		bb.fromTwoPoints(eclass->getEditorMins() + this->origin,eclass->getEditorMaxs() + this->origin);
+	}
+	if(bb.isValid () == false) {
+		bb.fromPointAndRadius(this->origin,16.f);
+	}
+	bool bWasSelected = false;
+	// V: NOTE: here is created a ghost brush for fixed-size entity
+	// GHOST BRUSH CREATION IS HERE!
+	texdef_t td;
+	td.setName(eclass->getEditorMaterialName());
+	
+	edBrush_c *b = 0;
+	if(this->brushes.onext != 0) {
+		if (this->brushes.onext != &this->brushes) {
+			//if(this->brushes.onext->se
+			b =this->brushes.onext;
+		}
+	}
+	if(b == 0) {
+		b = Brush_Create (bb.getMins(), bb.getMaxs(), &td);
+		b->onext = this->brushes.onext;
+		b->oprev = &this->brushes;
+		this->brushes.onext->oprev = b;
+	this->brushes.onext = b;
+	} else {
+		b->setupBox(bb.getMins(), bb.getMaxs(), &td);
+	}
+	b->owner = this;
+	Brush_Build(b);
+	//if (a)
+	//{
+	//	vec3_t vAngle;
+	//	vAngle[0] = vAngle[1] = 0;
+	//	vAngle[2] = a;
+	//	b->rotateBrush(vAngle, this->origin, false);
+	//}
+	//
+	//bool bOnList = false;
+	//for (edBrush_c *brush = active_brushes.next ; brush != &active_brushes ; brush=brush->next)
+	//{
+	//	if(brush == b)
+	//		bOnList = true;
+	//}
+	//if(bOnList == false) {
+	//	Brush_AddToList (b, &selected_brushes);
+	//}
+	
+	
+}
 entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 {
 	entity_s	*ent;
@@ -237,46 +296,13 @@ entity_s	*Entity_Parse (class parser_c &p, edBrush_c* pList)
 #endif
 			ent->brushes.next = ent->brushes.prev = &ent->brushes;
 		}
-		
-		// create a custom brush
-		float a = 0;
-		if (e->hasEditorFlagMiscModel()) {
+		if(e->hasDefinedModel()) {
+			ent->setKeyValue("model",e->getModelName());
+		} else {
 			const char *p = ent->getKeyValue( "model");
 			ent->setKeyValue("model",p);
-
-			mins = ent->getREntity()->getBoundsABS().getMins();
-			maxs = ent->getREntity()->getBoundsABS().getMaxs();
-		} else if (e->hasDefinedModel()) {
-			ent->setKeyValue("model",e->getModelName());
-
-			mins = ent->getREntity()->getBoundsABS().getMins();
-			maxs = ent->getREntity()->getBoundsABS().getMaxs();
-		} else {
-			mins = e->getEditorMins() + ent->origin;
-			maxs = e->getEditorMaxs() + ent->origin;
 		}
-		
-		// V: NOTE: here is created a ghost brush for fixed-size entity
-		// GHOST BRUSH CREATION IS HERE!
-				texdef_t td;
-				td.setName(e->getEditorMaterialName());
-		b = Brush_Create (mins, maxs, &td);
-		
-		if (a)
-		{
-			vec3_t vAngle;
-			vAngle[0] = vAngle[1] = 0;
-			vAngle[2] = a;
-			b->rotateBrush(vAngle, ent->origin, false);
-		}
-		
-		
-		b->owner = ent;
-		
-		b->onext = ent->brushes.onext;
-		b->oprev = &ent->brushes;
-		ent->brushes.onext->oprev = b;
-		ent->brushes.onext = b;
+		ent->createGhostBrushForNonBrushEntity();
 	}
 	else
 	{	// brush entity
@@ -554,33 +580,18 @@ entity_s	*Entity_Create (entityDeclAPI_i *c)
 		if (c->hasEditorFlagMiscModel()) {
 			const char *p = e->getKeyValue( "model");
 			e->setKeyValue("model",p);
-
-			mins = e->getREntity()->getBoundsABS().getMins();
-			maxs = e->getREntity()->getBoundsABS().getMaxs();
 		} else if (c->hasDefinedModel()) {
 			e->setKeyValue("model",c->getModelName());
-
-			mins = e->getREntity()->getBoundsABS().getMins();
-			maxs = e->getREntity()->getBoundsABS().getMaxs();
-		} else {
-			mins = c->getEditorMins() + e->origin;
-			maxs = c->getEditorMaxs() + e->origin;
 		}
-
-				texdef_t td;
-				td.setName(c->getEditorMaterialName());
-	  b = Brush_Create (mins, maxs, &td);
-
-	  e->linkBrush(b);
+		e->createGhostBrushForNonBrushEntity();
 
 		// delete the current selection
 		Select_Delete ();
 
+		b = e->brushes.onext;
 		// select the new brush
 		b->next = b->prev = &selected_brushes;
 		selected_brushes.next = selected_brushes.prev = b;
-
-		Brush_Build( b );
 	}
 	else
 	{

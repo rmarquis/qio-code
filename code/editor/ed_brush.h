@@ -102,7 +102,7 @@ friend edBrush_c*	Brush_Create (vec3_t mins, vec3_t maxs, texdef_t *texdef);
 friend void		Brush_Draw( edBrush_c *b, bool bIsSelected );
 friend void		Brush_DrawXY(edBrush_c *b, int nViewType);
 // set bRemoveNode to false to avoid trying to delete the item in group view tree control
-friend void		Brush_Free (edBrush_c *b, bool bRemoveNode = true);
+friend void		Brush_Free (edBrush_c *b, bool bFreeOwnerEntityRModel = true);
 friend int			Brush_MemorySize(edBrush_c *b);
 friend void		Brush_MakeSided (int sides);
 friend void		Brush_MakeSidedCone (int sides);

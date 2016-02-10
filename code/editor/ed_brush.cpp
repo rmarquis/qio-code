@@ -1492,13 +1492,15 @@ unless owner is the world.
 Removes from groups
 =============
 */
-void Brush_Free (edBrush_c *b, bool bRemoveNode)
+void Brush_Free (edBrush_c *b, bool bFreeOwnerEntityRModel)
 {
 	face_s	*f, *next;
 
 	// V: this is very dirty... remove rEntity if ghost brush is removed
-	if(b->owner && b->owner->getREntity()) {
-		b->owner->removeREntity();
+	if(bFreeOwnerEntityRModel) {
+		if(b->owner && b->owner->getREntity()) {
+			b->owner->removeREntity();
+		}
 	}
 
 	// free the patch if it's there

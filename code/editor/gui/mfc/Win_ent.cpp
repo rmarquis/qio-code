@@ -1071,32 +1071,35 @@ void AssignSound()
 
 void AssignModel()
 {
-	CString strBasePath = "baseqio/";//g_qeglobals.d_project_entity->getKeyValue("basepath");
-  AddSlash(strBasePath);
-  CString strPath = strBasePath;
-  strPath += "models\\";
+	char strBasePath[256];
+	strcpy(strBasePath,"baseqio/models/");
+	const char *filter = "Supported model files(*.md3;*.md2;*.md5mesh;*.smd;*.obj;*.psk)|*.md3;*.md2;*.md5mesh;*.smd;*.obj;*.psk|All files (*.*)|*.*";
+	//"Model files (*.md3)|*.md3|All Files (*.*)|*.*|"
+   /// CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	CFileDialog *dlgFile = new CFileDialog(TRUE, NULL, NULL, OFN_OVERWRITEPROMPT, filter, g_pParentWnd);
+	dlgFile->m_ofn.lpstrInitialDir = strBasePath;
+	// FIXME: it crashes if user clicks "Cancel" instead of selecting model
+	if (dlgFile->DoModal() == IDOK)
+	{
+		SendMessage(hwndEnt[EntKeyField], WM_SETTEXT, 0, (LPARAM)"model");
+		str txt = dlgFile->GetPathName().GetBuffer(0);
 
-  CFileDialog dlgFile(TRUE, NULL, NULL, OFN_OVERWRITEPROMPT, "Model files (*.md3)|*.md3||", g_pParentWnd);
-  dlgFile.m_ofn.lpstrInitialDir = strPath;
-  // FIXME: it crashes if user clicks "Cancel" instead of selecting model
-  if (dlgFile.DoModal() == IDOK)
-  {
-	  SendMessage(hwndEnt[EntKeyField], WM_SETTEXT, 0, (LPARAM)"model");
-    CString str = dlgFile.GetPathName().GetBuffer(0);
-    str.MakeLower();
-    strBasePath.MakeLower();
-    QE_ConvertDOSToUnixName(str.GetBuffer(0), str.GetBuffer(0));
-    QE_ConvertDOSToUnixName(strBasePath.GetBuffer(0), strBasePath.GetBuffer(0));
-    int n = str.Find(strBasePath);
-    if (n == 0)
-    {
-      str = str.Right(str.GetLength() - strBasePath.GetLength());
-    }
+		SendMessage(hwndEnt[EntValueField], WM_SETTEXT, 0, (LPARAM)txt.c_str());	
+		AddProp();
+		g_pParentWnd->GetXYWnd()->SetFocus();
+	}
+	else
+	{
+		//SendMessage(hwndEnt[EntKeyField], WM_SETTEXT, 0, (LPARAM)"model");
+		//SendMessage(hwndEnt[EntValueField], WM_SETTEXT, 0, (LPARAM)"notset");	
+		//AddProp();
+	}
+#if 0
+	/// CRASH HERE - google for mfc CFileDialog destructor CString crash
+	delete dlgFile;
+   //  CoUninitialize();
+#endif
 
-	  SendMessage(hwndEnt[EntValueField], WM_SETTEXT, 0, (LPARAM)str.GetBuffer(0));	
-    AddProp();
-    g_pParentWnd->GetXYWnd()->SetFocus();
-  }
 }
 
 BOOL CALLBACK EntityWndProc(
