@@ -65,6 +65,8 @@ public:
 
 	edBrush_c(bool bIsLinkedListHeader = true);
 	~edBrush_c();
+	void freeBrushRenderData();
+
 	void onBrushSelectedStateChanged(bool newBIsSelected);
 	friend edBrush_c *Brush_Parse (class parser_c &p);
 	void rotateBrush(vec3_t vAngle, vec3_t vOrigin, bool bBuild = true);
