@@ -85,6 +85,9 @@ public:
 	// areaNum is needed only for .proc world maps
 	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum = 0) = 0;
 
+	// call markAsUsed for every referenced material
+	virtual void markUsedMaterials() = 0;
+
 	virtual class rDebugDrawer_i *getDebugDrawer() = 0;
 	virtual u32 addDebugLine(const vec3_c &from, const vec3_c &to, const vec3_c &color, float life) = 0;
 

@@ -55,6 +55,9 @@ public:
 	r_surface_c();
 	~r_surface_c();
 
+	// call markAsUsed on every referenced material
+	void markMaterials();
+
 	void setVerts(const class rVertexBuffer_c &v) {
 		verts = v;
 	}
@@ -299,6 +302,9 @@ class r_model_c : public staticModelCreatorAPI_i {
 public:
 	r_model_c();
 	~r_model_c();
+
+	// call markAsUsed on every referenced material
+	void markMaterials();
 
 	const char *getName() const {
 		return name;

@@ -62,6 +62,8 @@ mtrAPI_i *MAT_GetAllocatedMaterial(u32 i);
 u32 MAT_GetNumCachedMaterialFiles();
 const char *MAT_GetMaterialFileName(u32 i);
 void MAT_CacheAllMaterialsFromMatFile(const char *fname);
+void MAT_ClearMaterialInUseFlags();
+void MAT_FreeUnusedMaterials();
 
 // mat_textures.cpp
 class textureAPI_i *MAT_GetDefaultTexture();

@@ -59,6 +59,15 @@ public:
 	// for Editor
 	virtual u32 getNumAllocatedMaterials() const = 0;
 	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const = 0;
+
+	// Freeing unused materials without doing a vid_restart
+	// First g_ms->clearMaterialInUseFlags() should be called to clear all inuse flags,
+	// then you can call mat->markAsUsed() on any material used outside renderer,
+	// and finally you call g_ms->freeUnusedMaterials(). 
+	// freeUnusedMaterials will free all materials that are not marked as "in use" 
+	// and are not used inside renderer.
+	virtual void clearMaterialInUseFlags() = 0;
+	virtual void freeUnusedMaterials() = 0;
 };
 
 extern materialSystemAPI_i *g_ms;

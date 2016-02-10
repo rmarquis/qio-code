@@ -86,6 +86,14 @@ public:
 	// returns false if all material stages are using "program" (or "vertexProgram"/"fragmentProgram") keyword
 	virtual bool hasStageWithoutCustomProgram() const = 0;
 
+	// Freeing unused materials without doing a vid_restart
+	// First g_ms->clearMaterialInUseFlags() should be called to clear all inuse flags,
+	// then you can call mat->markAsUsed() on any material used outside renderer,
+	// and finally you call g_ms->freeUnusedMaterials(). 
+	// freeUnusedMaterials will free all materials that are not marked as "in use" 
+	// and are not used inside renderer.
+	virtual void markAsUsed() = 0;
+
 	virtual float getPolygonOffset() const = 0;
 	// for editor
 	virtual bool hasEditorTransparency() const = 0;

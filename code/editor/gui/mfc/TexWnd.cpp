@@ -212,19 +212,20 @@ void	Texture_ShowInuse ()
 	g_qeglobals.d_texturewin.originy = 0;	
 
 	Texture_ClearInuse();
+	g_ms->clearMaterialInUseFlags();
 	Sys_Status("Selecting active textures\n", 0);
 
 	for (b=active_brushes.next ; b != NULL && b != &active_brushes ; b=b->next)
 	{
 		if (b->patchBrush)
 		{
-			QERApp_TryTextureForName(b->pPatch->d_texture->getName());
+			b->pPatch->d_texture->markAsUsed();
 		}
 		else
 		{
 			for (f=b->getFirstFace() ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->getMatName());
+				f->d_texture->markAsUsed();
 			}
 		}
 	}
@@ -233,16 +234,17 @@ void	Texture_ShowInuse ()
 	{
 		if (b->patchBrush)
 		{
-			QERApp_TryTextureForName(b->pPatch->d_texture->getName());
+			b->pPatch->d_texture->markAsUsed();
 		}
 		else
 		{
 			for (f=b->getFirstFace() ; f ; f=f->next)
 			{
-				QERApp_TryTextureForName (f->getMatName());
+				f->d_texture->markAsUsed();
 			}
 		}
 	}
+	g_ms->freeUnusedMaterials();
 
 	//SetInspectorMode(W_TEXTURE);
 	Sys_UpdateWindows (W_TEXTURE);

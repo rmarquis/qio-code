@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <api/rbAPI.h>
 #include <api/imgAPI.h>
+#include <api/rAPI.h>
 #include <shared/hashTableTemplate.h>
 #include <shared/autoCmd.h>
 #include <shared/tableList.h>
@@ -427,6 +428,33 @@ const char *MAT_GetMaterialFileName(u32 i) {
 void MAT_CacheMaterial(const char *fname) {
 	g_core->Print("Caching material %s...\n",fname);
 	MAT_RegisterMaterial(fname);
+}
+void MAT_ClearMaterialInUseFlags() {
+	for(u32 i = 0; i < materials.size(); i++) {
+		mtrIMPL_c *m = materials[i];
+		m->markAsNotUsed();
+	}
+}
+void MAT_FreeUnusedMaterials() {
+	// make sure that renderer materials are marked as used
+	rf->markUsedMaterials();
+
+	u32 c_removed = 0;
+	u32 c_left = 0;
+	for(int i = 0; i < materials.size(); i++) {
+		mtrIMPL_c *m = materials[i];
+		if(m->isMarkedAsUsed() == false) {
+			g_core->Print("MAT_FreeUnusedMaterials: material %s is not used - removing\n",m->getName());
+			materials.removeEntry(m);
+			i--;
+			delete m;
+			c_removed++;
+		} else {
+			g_core->Print("MAT_FreeUnusedMaterials: material %s is still used.\n",m->getName());
+			c_left++;
+		}
+	}
+	g_core->Print("MAT_FreeUnusedMaterials: %i removed, %i left\n",c_removed,c_left);
 }
 void MAT_CacheAllMaterialsFromMatFile(const char *fname) {
 	for(u32 i = 0; i < matFiles.size(); i++) {
