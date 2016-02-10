@@ -120,7 +120,13 @@ class textureAPI_i *MAT_GetDefaultTexture() {
 		mat_defaultTexture->setName("default");
 		byte *data;
 		u32 w, h;
-		g_img->getDefaultImage(&data,&w,&h);
+		if(g_img == 0) {
+			static byte tmp[4] = { 255, 255, 255, 255 };
+			h = w = 1;
+			data = tmp;
+		} else {
+			g_img->getDefaultImage(&data,&w,&h);
+		}
 		rb->uploadTextureRGBA(mat_defaultTexture,data,w,h);
 		// we must not free the *default* texture data
 	}
@@ -145,6 +151,10 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 		return ret;
 	}
 	if(!_stricmp(texString,"default")) {
+		return MAT_GetDefaultTexture();
+	}
+	// special case for image lib module not present
+	if(g_img == 0) {
 		return MAT_GetDefaultTexture();
 	}
 	byte *data = 0;

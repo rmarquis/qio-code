@@ -1513,7 +1513,11 @@ static moduleAPI_i *com_imageLib = 0;
 void Com_InitImageLib() {
 	com_imageLib = g_moduleMgr->load("imageLib");
 	if(com_imageLib == 0) {
-		Com_Error(ERR_DROP,"Cannot load imageLib DLL");
+		if(0) {
+			Com_Error(ERR_DROP,"Cannot load imageLib DLL");
+		} else {
+			g_core->RedWarning("Cannot load imageLib DLL\n");
+		}
 	}
 }
 bool Com_CanStartEngineWithoutCMModule() {

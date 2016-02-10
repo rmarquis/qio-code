@@ -230,6 +230,8 @@ public:
 		w = h = 0;
 	}
 	bool loadFromFile(const char *inName) {
+		if(g_img == 0)
+			return true;
 		this->fname = g_img->loadImage(inName,&data,&w,&h);
 		if(data == 0)
 			return true; // error

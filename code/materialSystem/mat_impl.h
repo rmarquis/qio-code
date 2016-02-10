@@ -475,6 +475,13 @@ public:
 		}
 		return 0;
 	}
+	virtual const class mtrStageAPI_i *getFirstEditorImageStage() const {
+		for(u32 i = 0; i < stages.size(); i++) {
+			if(stages[i]->getStageType() == ST_EDITORIMAGE)
+				return stages[i];
+		}
+		return 0;
+	}
 	virtual bool isPortalMaterial() const {
 		return this->bPortalMaterial;
 	}
