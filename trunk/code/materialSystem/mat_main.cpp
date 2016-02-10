@@ -418,6 +418,23 @@ void MAT_IterateAllAvailableMaterialFileNames(void (*callback)(const char *s)) {
 		callback(matFiles[i]->fname.c_str());
 	}
 }
+u32 MAT_GetNumCachedMaterialFiles() {
+	return matFiles.size();
+}
+const char *MAT_GetMaterialFileName(u32 i) {
+	return matFiles[i]->fname;
+}
+void MAT_CacheMaterial(const char *fname) {
+	g_core->Print("Caching material %s...\n",fname);
+	MAT_RegisterMaterial(fname);
+}
+void MAT_CacheAllMaterialsFromMatFile(const char *fname) {
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		if(!stricmp(matFiles[i]->fname,fname)) {
+			matFiles[i]->iterateAllAvailableMaterialNames(MAT_CacheMaterial);
+		}
+	}
+}
 class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
 	mtrIMPL_c *ret = materials.getEntry(newMatName);
 	if(ret == 0) {

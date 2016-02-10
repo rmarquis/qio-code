@@ -1579,6 +1579,12 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		mtrStage_c *colorMapStage = this->getFirstStageOfType(ST_COLORMAP);
 		if(colorMapStage==0) {
 			colorMapStage = this->getFirstStageOfType(ST_COLORMAP_LIGHTMAPPED);
+			if(colorMapStage == 0) {
+				colorMapStage = this->getFirstStageOfType(ST_NOT_SET);
+				if(colorMapStage) {
+					colorMapStage->setStageType(ST_COLORMAP_LIGHTMAPPED);
+				}
+			}
 		}
 		if(colorMapStage) {
 			mtrStage_c *bumpMapStage = this->getFirstStageOfType(ST_BUMPMAP);

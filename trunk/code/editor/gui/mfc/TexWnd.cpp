@@ -126,10 +126,21 @@ void FillTextureMenu (CStringArray* pArray)
 	for (i=0 ; i<texture_nummenus ; i++)
 		DeleteMenu (hmenu, CMD_TEXTUREWAD+i, MF_BYCOMMAND);
 
-  texture_nummenus = 0;
-const char *test = "test hello materials";
-		  AppendMenu (hmenu, MF_ENABLED|MF_STRING, CMD_TEXTUREWAD+texture_nummenus, (LPCTSTR)test);
-		  strcpy (texture_menunames[texture_nummenus], test);
+	HMENU hSubmenuFiles = CreatePopupMenu();
+	AppendMenu(hmenu, MF_POPUP | MF_STRING, (UINT_PTR)hSubmenuFiles, "Browse material (.mtr/.script) files: ");
+
+	u32 matFiles = g_ms->getNumCachedMaterialFiles();
+	texture_nummenus = 0;
+	for(u32 i = 0; i < matFiles; i++) {
+		const char *test = g_ms->getMaterialFileName(i);
+		AppendMenu (hSubmenuFiles, MF_ENABLED|MF_STRING, CMD_TEXTUREWAD+texture_nummenus, (LPCTSTR)test);
+		strcpy (texture_menunames[texture_nummenus], test);
+		texture_nummenus++;
+	}
+	HMENU hSubmenuKeywords = CreatePopupMenu();
+	AppendMenu(hmenu, MF_POPUP | MF_STRING, (UINT_PTR)hSubmenuKeywords, "Browse materials by keyword: ");
+	HMENU hSubmenuDirs = CreatePopupMenu();
+	AppendMenu(hmenu, MF_POPUP | MF_STRING, (UINT_PTR)hSubmenuKeywords, "Browse materials by directory: ");
 
 }
 
@@ -143,11 +154,10 @@ A new map is being loaded, so clear inuse markers
 */
 void Texture_ClearInuse ()
 {
-
 }
 
 
-
+void ED_PrepareMaterialsLoading();
 
 /*
 ==============
@@ -156,7 +166,9 @@ Texture_ShowDirectory
 */
 void	Texture_ShowDirectory (int menunum, bool bLinked)
 {
-
+	ED_PrepareMaterialsLoading();
+	const char *s = texture_menunames[menunum-CMD_TEXTUREWAD];
+	g_ms->cacheAllMaterialsFromMatFile(s);
 }
 
 
@@ -688,6 +700,10 @@ void Texture_Draw2 (int width, int height)
 
 			if(q->getFirstColorMapStage() && q->getFirstColorMapStage()->getTexture(0))
 				glBindTexture( GL_TEXTURE_2D, q->getFirstColorMapStage()->getTexture(0)->getInternalHandleU32());
+			else if(q->getFirstEditorImageStage() && q->getFirstEditorImageStage()->getTexture(0))
+				glBindTexture( GL_TEXTURE_2D, q->getFirstEditorImageStage()->getTexture(0)->getInternalHandleU32());
+			else
+				printf("missing texture colormap\n");
 			QE_CheckOpenGLForErrors();
 			glColor3f (1,1,1);
 			glBegin (GL_QUADS);

@@ -47,6 +47,9 @@ public:
 	// for console command autocompletion
 	virtual void iterateAllAvailableMaterialNames(void (*callback)(const char *s)) const = 0;
 	virtual void iterateAllAvailableMaterialFileNames(void (*callback)(const char *s)) const = 0;
+	virtual u32 getNumCachedMaterialFiles() const = 0;
+	virtual const char *getMaterialFileName(u32 i) const = 0;
+	virtual void cacheAllMaterialsFromMatFile(const char *fname) const = 0;
 	// creates new material for HL/Q1-bsp texture data
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
 	// Doom3 material tables interface

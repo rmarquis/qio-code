@@ -37,6 +37,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrStageAPI.h>
 #include <api/materialSystemAPI.h>
 
+void ED_PrepareMaterialsLoading() {
+
+	HDC currentHDC = wglGetCurrentDC();
+	HGLRC currentHGLRC = wglGetCurrentContext();
+
+	if (currentHDC != g_qeglobals.d_hdcBase || currentHGLRC != g_qeglobals.d_hglrcBase)
+		wglMakeCurrent( g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase );
+
+	glFinish();
+}
 // this is a modified version of QERApp_TryTextureForName
 mtrAPI_i *QERApp_TryTextureForName(const char* name)
 {
@@ -55,11 +65,7 @@ mtrAPI_i *QERApp_TryTextureForName(const char* name)
 	if(mat)
 		return mat;
 
-	HDC currentHDC = wglGetCurrentDC();
-	HGLRC currentHGLRC = wglGetCurrentContext();
-
-	if (currentHDC != g_qeglobals.d_hdcBase || currentHGLRC != g_qeglobals.d_hglrcBase)
-		wglMakeCurrent( g_qeglobals.d_hdcBase, g_qeglobals.d_hglrcBase );
+	ED_PrepareMaterialsLoading();
 
 	//++timo I don't set back the GL context .. I don't know how safe it is
 	//  wglMakeCurrent( currentHDC, currentHGLRC );

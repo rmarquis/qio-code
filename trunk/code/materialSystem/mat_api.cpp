@@ -86,6 +86,15 @@ public:
 	virtual void iterateAllAvailableMaterialFileNames(void (*callback)(const char *s)) const {
 		MAT_IterateAllAvailableMaterialFileNames(callback);
 	}
+	virtual u32 getNumCachedMaterialFiles() const {
+		return MAT_GetNumCachedMaterialFiles();
+	}
+	virtual const char *getMaterialFileName(u32 i) const {
+		return MAT_GetMaterialFileName(i);
+	}
+	virtual void cacheAllMaterialsFromMatFile(const char *fname) const {
+		return MAT_CacheAllMaterialsFromMatFile(fname);
+	}
 	// for Quake1 / HalfLife .wad / .bsp textures
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
 		return MAT_CreateHLBSPTexture(newMatName,pixels,width,height,palette);

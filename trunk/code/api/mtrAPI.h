@@ -62,6 +62,8 @@ public:
 	virtual bool hasAlphaTest() const = 0;
 	virtual const class mtrStageAPI_i *getFirstStageWithAlphaFunc() const = 0;
 	virtual const class mtrStageAPI_i *getFirstColorMapStage() const = 0;
+	virtual const class mtrStageAPI_i *getFirstEditorImageStage() const = 0;
+	
 	virtual bool isPortalMaterial() const = 0; // returns true if material definition had "portal" keyword
 	virtual bool isMirrorMaterial() const = 0; // returns true if material definition had "mirror" keyword
 	virtual bool hasDeforms() const = 0;
