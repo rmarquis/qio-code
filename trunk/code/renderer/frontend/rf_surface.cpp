@@ -661,7 +661,7 @@ void R_FastCalcTBNArray( plane_c *planes, rVert_c *verts, const int numVerts, co
 
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
-#if 0
+#if 1
 	const rIndexBuffer_c &pIndices = getIndices2();
 	if(rf_fastCalcTBN.getInt() && pIndices.is32Bit()==false) {
 		if(trianglePlanes.size() != getNumTris())
@@ -718,6 +718,9 @@ void r_surface_c::recalcTBN() {
 			(t2 * z1 - t1 * z2) * r);
 		vec3_c tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
 			(s1 * z2 - s2 * z1) * r);
+
+		//sdir.normalize();
+		//tdir.normalize();
 
 		v0.tan += sdir;
 		v1.tan += sdir;

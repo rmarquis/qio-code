@@ -155,6 +155,8 @@ bool kfModelImpl_c::loadMD3(const byte *buf, const u32 fileLen, const char *fnam
 			const md3Shader_s *shi = is->getShader(j);
 			if(j == 0) {
 				sf->matName = shi->name;
+				// avoid using image directly - always prefer material
+				sf->matName.stripExtension();
 //				sf->mat = g_ms->registerMaterial(sf->matName);
 			}
 		}
