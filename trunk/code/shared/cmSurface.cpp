@@ -63,9 +63,16 @@ bool cmSurface_c::parseDoom3ProcModelData(class parser_c &p, const char *fname) 
 				p.getFloatMat(tc,2);
 				p.getFloatMat(normal,3);
 				if(p.atWord(")")==false) {
-					g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' after vertex %i in file %s at line %i, found %s\n",
-						i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-					return true; // error
+					// for Q4 vertex colors
+					p.getFloat();
+					p.getFloat();
+					p.getFloat();
+					p.getFloat();
+					if(p.atWord(")")==false) {
+						g_core->RedWarning("cmSurface_c::loadDoom3ProcFileWorldModel: expected '(' after vertex %i in file %s at line %i, found %s\n",
+							i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+						return true; // error
+					}
 				}
 			}
 			// read triangles
