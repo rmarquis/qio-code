@@ -805,10 +805,17 @@ bool r_surface_c::parseProcSurface(class parser_c &p) {
 		p.getFloatMat(v->xyz,3);
 		p.getFloatMat(v->tc,2);
 		p.getFloatMat(v->normal,3);
-		if(p.atWord(")")==false) {
-			g_core->RedWarning("r_surface_c::parseProcSurface: expected '(' after vertex %i in file %s at line %i, found %s\n",
-				i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
-			return true; // error
+		if(p.atChar(')') == false) {
+			// for Q4 yan_test.pk3 - sky surfaces has RGBA colors (0-255 range)
+			float r = p.getFloat();
+			float g = p.getFloat();
+			float b = p.getFloat();
+			float a = p.getFloat();
+			if(p.atChar(')')==false) {
+				g_core->RedWarning("r_surface_c::parseProcSurface: expected '(' after vertex %i in file %s at line %i, found %s\n",
+					i,p.getDebugFileName(),p.getCurrentLineNumber(),p.getToken());
+				return true; // error
+			}
 		}
 	}
 	// read triangles
