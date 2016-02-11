@@ -248,7 +248,7 @@ struct QEGlobals_t
 //
 void Drag_Begin (int x, int y, int buttons,
 		   vec3_t xaxis, vec3_t yaxis,
-		   vec3_t origin, vec3_t dir);
+		   vec3_t origin, vec3_t dir, bool bFrom3DView);
 void Drag_MouseMoved (int x, int y, int buttons);
 void Drag_MouseUp (int nButtons = 0);
 
@@ -265,7 +265,8 @@ void CSG_Merge ();
 
 void SetupVertexSelection ();
 void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir);
-void SelectVertexByRay (const vec3_c &org, const vec3_c &dir);
+void SelectVertexByRay3D (const vec3_c &org, const vec3_c &dir);
+void SelectVertexByRay2D (const vec3_c &org, const vec3_c &dir);
 
 void ConnectEntities ();
 

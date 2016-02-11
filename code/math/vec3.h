@@ -526,6 +526,19 @@ public:
 		}
 		return 2;
 	}
+	int getLargestAxisAbs() const {
+		if(abs(x) >= abs(y)) {
+			if(abs(x) >= abs(z)) {
+				return 0;
+			}
+			return 2;
+		}
+		// y is larger than x
+		if(abs(y) > abs(z)) {
+			return 1;
+		}
+		return 2;
+	}
 	float getLargestAxisLen() const {
 		if(x >= y) {
 			if(x >= z) {

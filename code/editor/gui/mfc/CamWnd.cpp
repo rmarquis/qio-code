@@ -542,7 +542,7 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons)
     {
       // something global needs to track which window is responsible for stuff
       Patch_SetView(W_CAMERA);
-		  Drag_Begin (x, y, buttons, m_Camera.right, m_Camera.up,	m_Camera.origin, dir);
+		  Drag_Begin (x, y, buttons, m_Camera.right, m_Camera.up,	m_Camera.origin, dir,true);
     }
     return;
 	}

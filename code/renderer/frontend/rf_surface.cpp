@@ -1177,6 +1177,7 @@ void r_model_c::addWinding(class mtrAPI_i *mat, const texturedVertex_c *verts, u
 	r_surface_c *sf = registerSurf(mat->getName());
 	sf->addWinding(verts,numVerts);
 	sf->recalcBB();
+	bounds.addBox(sf->getBB());
 }
 void r_model_c::addTriangle(class mtrAPI_i *mat, const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
 							const vec3_c &v2, const vec2_c &t2) {

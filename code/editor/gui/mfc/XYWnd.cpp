@@ -1680,7 +1680,7 @@ void CXYWnd::XY_MouseDown (int x, int y, int buttons)
 		|| (buttons == (MK_LBUTTON | MK_CONTROL | MK_SHIFT)) )
 	{	
     Patch_SetView( (m_nViewType == XY) ? W_XY : (m_nViewType == YZ) ? W_YZ : W_XZ);
-		Drag_Begin (x, y, buttons, right, up,	origin, dir);
+		Drag_Begin (x, y, buttons, right, up,	origin, dir,false);
 		return;
 	}
 
