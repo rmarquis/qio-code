@@ -254,6 +254,8 @@ public:
 			for(u32 j = 0; j < stripGroup->numStrips; j++) {
 				const vtxStripHeader_s *strip = stripGroup->pStrip(j);
 				for(u32 k = 0; k < strip->numIndices; k+=3) {
+					// always 1
+					//g_core->Print("MDL strip flags: %i\n",strip->flags);
 					u32 i0 = sIndices[strip->ofsIndices+k];
 					u32 i1 = sIndices[strip->ofsIndices+k+1];
 					u32 i2 = sIndices[strip->ofsIndices+k+2];
@@ -288,6 +290,79 @@ public:
 		}
 	}
 };
+
+struct mdlTextureOld_s {
+	char name[64];
+	int flags;
+	int w;
+	int h;
+	int idx;
+};
+struct mdlBodyPartOld_s {
+	char bodyPartName[64];
+	int	numModels;
+	int ofs;
+	int ofsModels;
+};
+struct mdlModelOld_s {
+	char modelName[64];
+	int type;
+	float radius;
+	int numMeshes;
+	int ofsMeshes;
+	int numVerts;
+	int ofsBoneVerts;
+	int ofsVerts;
+	int numNormals;
+	int ofsBoneNormals;
+	int ofsNormals;
+};
+struct mdlHeaderOld_s {
+	int	ident;
+	int	version;
+
+	char name[64];
+	int filelen;
+
+	vec3_t eyePos;
+	vec3_t minmax[2];
+	vec3_t bbminmax[2];
+
+	int flags;
+
+	int numBones;
+	int ofsBones;
+
+	int numBoneControllers;
+	int ofsBoneControllers;
+
+	int numHitBoxes;
+	int ofsHitBoxes;
+
+	int numSeq;
+	int ofsSeq;
+
+	int numSeqGroups;
+	int ofsSeqGroups;
+
+	int numTextures;
+	int ofsTextures;
+	int ofsTextureData;
+
+	int numSkins;
+	int numSkinFmilies;
+	int ofsSkins;
+
+	int numBodyParts;
+	int ofsBodyParts;
+
+	const mdlTextureOld_s *getTextures() const {
+		return (const mdlTextureOld_s*)(((const byte*)this)+ofsTextures);
+	}
+	const mdlBodyPartOld_s *getBodyParts() const {
+		return (const mdlBodyPartOld_s*)(((const byte*)this)+ofsBodyParts);
+	}
+};
 hl2MDLReader_c::hl2MDLReader_c() {
 	vvd = 0;
 }
@@ -306,21 +381,30 @@ bool hl2MDLReader_c::beginReading(const char *fname) {
 	this->fileLen = data.getTotalLen();
 	const mdlHeader_s *h = (const mdlHeader_s*)data.getDataPtr();
 	this->version = h->version;
-	if(readMatNames()) {
-		return true;
-	}	
-	
-	if(version >= 44) {
-		// .vvd is not present in older .mdl formats
-		str vvdFileName = fname;
-		vvdFileName.setExtension("vvd");
-		vvdFileLen = g_vfs->FS_ReadFile(vvdFileName,(void**)&vvd);
-		if(vvd == 0) {
-			g_core->RedWarning("hl2MDLReader_c::beginReading: cannot open %s\n",vvdFileName.c_str());
-			return true; // error
+	if(this->version == 10) {
+		const mdlHeaderOld_s *hold = (const mdlHeaderOld_s*)h;
+		g_core->Print("hl2MDLReader_c::beginReading: old version, header nme %s\n",hold->name);
+		const mdlTextureOld_s *texs = hold->getTextures();
+		for(u32 i = 0; i < hold->numTextures; i++) {
+			g_core->Print("Texture %s\n",texs->name);
+			texs++;
+		}
+	} else {
+		if(readMatNames()) {
+			return true;
+		}	
+		
+		if(version >= 44) {
+			// .vvd is not present in older .mdl formats
+			str vvdFileName = fname;
+			vvdFileName.setExtension("vvd");
+			vvdFileLen = g_vfs->FS_ReadFile(vvdFileName,(void**)&vvd);
+			if(vvd == 0) {
+				g_core->RedWarning("hl2MDLReader_c::beginReading: cannot open %s\n",vvdFileName.c_str());
+				return true; // error
+			}
 		}
 	}
-
 	return false; // no error
 }
 bool hl2MDLReader_c::readMatNames() {
@@ -395,7 +479,24 @@ bool hl2MDLReader_c::readMatNames() {
 	return false; // no error
 }
 bool hl2MDLReader_c::getStaticModelData(class staticModelCreatorAPI_i *out) {
-	if(version == 44) {
+	if(version == 10) {
+		const mdlHeaderOld_s *hold = (const mdlHeaderOld_s*)data.getDataPtr();
+		const mdlBodyPartOld_s *bp = hold->getBodyParts();
+		for(u32 i = 0; i < hold->numBodyParts; i++) {
+			u32 bpAt = ((const byte*)bp)-((const byte*)data.getDataPtr());
+			g_core->Print("BodyPart name %s\n",bp->bodyPartName);
+			for(u32 j = 0; j < bp->numModels; j++) {
+				u32 modelOfs = bp->ofsModels;
+				const mdlModelOld_s *mod = (const mdlModelOld_s *)(((const byte*)data.getDataPtr())+modelOfs);
+				g_core->Print("modelName name %s\n",mod->modelName);
+				for(u32 k = 0; k < mod->numMeshes; k++) {
+					
+				}
+			}
+			bp++;
+		}
+		return false;
+	} else if(version == 44) {
 		data.setPos(232);
 	} else if(version == 37) {
 		data.setPos(252);
