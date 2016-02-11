@@ -121,6 +121,9 @@ public:
 
 		data.addSurface(mat,verts,pIndices);
 	}
+	void markStaticModelMaterials() {
+		data.markMaterials();
+	}
 	void addDrawCalls() {
 
 
@@ -155,6 +158,12 @@ void RF_RemoveStaticModel(class rStaticModelAPI_i *ent) {
 void RF_AddStaticModelDrawCalls() {
 	for(u32 i = 0; i < rf_staticModels.size(); i++) {
 		rf_staticModels[i]->addDrawCalls();
+	}
+}
+
+void RF_MarkStaticModelMaterials() {
+	for(u32 i = 0; i < rf_staticModels.size(); i++) {
+		rf_staticModels[i]->markStaticModelMaterials();
 	}
 }
 

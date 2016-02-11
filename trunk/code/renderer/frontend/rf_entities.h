@@ -200,6 +200,7 @@ public:
 		return staticDecals;
 	}
 
+	void markEntityMaterials();
 	const class r_model_c *getCurrentRModelInstance() const;
 
 	virtual void hideSurface(u32 surfNum);

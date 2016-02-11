@@ -55,6 +55,7 @@ class rEntityAPI_i *RFE_AllocEntity();
 void RFE_RemoveEntity(class rEntityAPI_i *ent);
 void RFE_AddEntityDrawCalls();
 void RFE_ClearEntities();
+void RFE_MarkEntityMaterials();
 void RFE_DrawEntityAbsBounds();
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels);
 bool RF_DoCameraTrace(class trace_c &tr, bool bSkipPlayerModels);
@@ -128,6 +129,7 @@ class cubeMapAPI_i *RF_FindNearestEnvCubeMap_Image(const class vec3_c &p);
 class rStaticModelAPI_i *RF_AllocStaticModel();
 void RF_RemoveStaticModel(class rStaticModelAPI_i *ent);
 void RF_AddStaticModelDrawCalls();
+void RF_MarkStaticModelMaterials();
 
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;

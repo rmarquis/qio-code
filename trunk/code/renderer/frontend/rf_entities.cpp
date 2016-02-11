@@ -497,6 +497,11 @@ const char *rEntityImpl_c::getModelName() const {
 		return "noModel";
 	return model->getName();
 }
+void rEntityImpl_c::markEntityMaterials() {
+	if(instance) {
+		instance->markMaterials();
+	}
+}
 const class r_model_c *rEntityImpl_c::getCurrentRModelInstance() const {
 	if(model == 0)
 		return 0;
@@ -1079,6 +1084,11 @@ void RFE_DrawEntityAbsBounds() {
 		rEntityImpl_c *ent = rf_entities[i];
 		const aabb &bb = ent->getBoundsABS();
 		rb->drawBBLines(bb);
+	}
+}
+void RFE_MarkEntityMaterials() {
+	for(u32 i = 0; i < rf_entities.size(); i++) {
+		rf_entities[i]->markEntityMaterials();
 	}
 }
 void RFE_ClearEntities() {
