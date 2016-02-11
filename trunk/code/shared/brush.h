@@ -69,6 +69,9 @@ public:
 	face_s *getFirstFace() {
 		return brush_faces;
 	}
+	const face_s *getFirstFace() const {
+		return brush_faces;
+	}
 };
 
 #endif // __SHARED_BRUSH_H__
