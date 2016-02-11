@@ -233,6 +233,8 @@ public:
 	}
 	virtual void markUsedMaterials() {
 		RF_MarkModelMaterials();
+		RFE_MarkEntityMaterials();
+		RF_MarkStaticModelMaterials();
 	}
 
 	virtual class rDebugDrawer_i *getDebugDrawer() {

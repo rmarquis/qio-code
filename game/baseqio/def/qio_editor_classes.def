@@ -11,6 +11,12 @@ entityDef misc_model
 	"bShouldHaveModel"	"1"
 }
 
+entityDef ModelEntity
+{
+	"bShouldHaveModel"	"1"
+}
+
+
 entityDef prop_physics
 {
 	"bShouldHaveModel"	"1"
