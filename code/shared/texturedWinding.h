@@ -43,6 +43,7 @@ public:
 	bool hasAnyCoordLargerThan(float val) const;
 	bool removePoint(int point);
 	texturedWinding_c *insertPoint(vec3_t point, int spot);
+	int findPoint(const vec3_c &p, float maxDist) const;
 	static int planesConcave(texturedWinding_c *w1, texturedWinding_c *w2, const vec3_c &normal1, const vec3_c &normal2, float dist1, float dist2);
 
 

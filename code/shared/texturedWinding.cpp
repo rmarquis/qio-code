@@ -36,6 +36,20 @@ bool texturedWinding_c::removePoint(int point) {
 	return false;
 }
 
+int texturedWinding_c::findPoint(const vec3_c &p, float maxDist) const {
+	if(points.size() == 0)
+		return -1;
+	int best = -1;
+	float bestDist = maxDist+1;
+	for(u32 i = 0; i < points.size(); i++) {
+		float d = points[i].getXYZ().dist(p);
+		if(d < bestDist) {
+			bestDist = d;
+			best = i;
+		}
+	}
+	return best;
+}
 texturedWinding_c *texturedWinding_c::insertPoint(vec3_t point, int spot) {
 	int i, j;
 	texturedWinding_c *neww;

@@ -78,7 +78,10 @@ public:
 	void splitBrushByFace (face_s *f, edBrush_c **front, edBrush_c **back);
 	edBrush_c *tryMergeWith(edBrush_c *brush2, int onlyshape);
 	int moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end, bool bSnap = true);
+	int removeVertices(const arraySTD_c<vec3_c> &vertices);
 
+	bool isBrushBehind(const plane_c &pl) const;
+	u32 getNumFaces() const;
 	bool isLinkedListHeader() const {
 		return bIsLinkedListHeader;
 	}

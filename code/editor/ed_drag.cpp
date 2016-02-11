@@ -537,17 +537,40 @@ void MoveSelection (vec3_t move)
 		//vertex selection
 		if (g_qeglobals.d_select_mode == sel_vertex)
 		{
-			for(u32 i = 0; i < g_qeglobals.d_num_move_points; i++) 
-			{
+			if(GetKeyState('F') & 0x8000) {
+				// V: remove vertices (usually two at once, selected in 2D view)
 				success = true;
+				arraySTD_c<vec3_c> pts;
+				for(u32 i = 0; i < g_qeglobals.d_num_move_points; i++) 
+				{
+					pts.push_back(g_qeglobals.d_move_points[i]);
+				}
 				for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
 				{
-					success &= b->moveVertex(g_qeglobals.d_move_points[i], move, end, true);
+					success &= b->removeVertices(pts);
 					// V: force updating Qio static model
 					b->rebuildRendererStaticModelData();
 				}
-				if (success)
-					*((vec3_c*)g_qeglobals.d_move_points[i]) = end;
+				if (success) {
+					g_qeglobals.d_num_move_points = 0;
+					SetupVertexSelection();
+				}
+				
+			}
+			else
+			{
+				for(u32 i = 0; i < g_qeglobals.d_num_move_points; i++) 
+				{
+					success = true;
+					for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
+					{
+						success &= b->moveVertex(g_qeglobals.d_move_points[i], move, end, true);
+						// V: force updating Qio static model
+						b->rebuildRendererStaticModelData();
+					}
+					if (success)
+						*((vec3_c*)g_qeglobals.d_move_points[i]) = end;
+				}
 			}
 			return;
 		}

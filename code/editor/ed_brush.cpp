@@ -782,6 +782,101 @@ int edBrush_c::moveVertex(const vec3_c &vertex, const vec3_c &delta, vec3_c &end
 	return result;
 }
 
+u32 edBrush_c::getNumFaces() const {
+	u32 count = 0;
+	const face_s *face;
+	for (face = this->getFirstFace(); face; face = face->next) {
+		count++;
+	}
+	return count;
+}
+bool edBrush_c::isBrushBehind(const plane_c &pl) const {
+	float max, min;
+	bool first = true;
+	const face_s *face;
+	for (face = this->getFirstFace(); face; face = face->next)
+	{
+		texturedWinding_c *tv = face->face_winding;
+		if(tv == 0)
+			continue;
+		for(u32 i = 0; i < tv->size(); i++) {
+			const vec3_c &p = tv->getXYZ(i);
+			float d = pl.norm.dotProduct(p) - pl.dist;
+			if(first) {
+				max = min = d;
+				first = false;
+			} else {
+				if(max < d)
+					max =d ;
+				if(min > d)
+					min = d;
+			}
+		}
+	}
+	if(max < 0.1f)
+		return true;
+	return false;
+}
+int edBrush_c::removeVertices(const arraySTD_c<vec3_c> &vertices) {
+	if(vertices.size() != 2)
+		return 0; // case not handled
+	if(getNumFaces() < 6) 
+		return 0; // case not handled
+	face_s *face;
+	arraySTD_c<face_s *> newFaces;
+	arraySTD_c<face_s *> removedFaces;
+	for (face = this->getFirstFace(); face; face = face->next)
+	{
+		texturedWinding_c *tv = face->face_winding;
+		if(tv == 0)
+			continue;
+		u32 removed = 0;
+		for(u32 j = 0; j < vertices.size(); j++) {
+			const vec3_c &vertex = vertices[j];
+			int index = tv->findPoint(vertex,1.f);
+			if(index == -1)
+				continue;
+			tv->removePoint(index);
+			removed++;
+		}
+		//isBrushBehind(face->plane);
+		u32 numPoints = tv->size();
+		g_core->Print("Removed %i - after remove: %i\n",removed,numPoints);
+		if(numPoints < 3) {
+			removedFaces.push_back(face);
+		} else {
+			newFaces.push_back(face);
+		}
+	}
+	vec3_c points[3] = { removedFaces[0]->face_winding->getXYZ(0),removedFaces[0]->face_winding->getXYZ(1),
+		removedFaces[1]->face_winding->getXYZ(0)
+	};
+	face_s *nf = new face_s();
+	for(u32 i = 0; i < 3; i++)
+		nf->planepts[i] = points[i];
+	nf->calculatePlaneFromPoints();
+	if(!isBrushBehind(nf->plane)) {
+		vec3_c tmp = points[0];
+		points[0] = points[2];
+		points[2] = tmp;
+		for(u32 i = 0; i < 3; i++)
+			nf->planepts[i] = points[i];
+		nf->calculatePlaneFromPoints();
+	}
+	nf->brushprimit_texdef = newFaces[0]->brushprimit_texdef;
+	nf->calculatePlaneFromPoints();
+	newFaces.push_back(nf);
+
+	this->brush_faces = newFaces[0];
+	for(u32 i = 0; i < newFaces.size()-1; i++) {
+		newFaces[i]->next = newFaces[i+1];
+	}
+	newFaces[newFaces.size()-1]->next = 0;
+
+	buildWindings();
+
+	return 1;
+}
 /*
 =================
 Brush_InsertVertexBetween
