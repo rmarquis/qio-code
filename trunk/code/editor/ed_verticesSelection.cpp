@@ -227,7 +227,7 @@ void SelectEdgeByRay (const vec3_c &org, const vec3_c &dir)
 
 }
 
-void SelectVertexByRay (const vec3_c &org, const vec3_c &dir)
+void SelectVertexByRay3D (const vec3_c &org, const vec3_c &dir)
 {
 	int		i, besti;
 	float	d, bestd;
@@ -261,6 +261,53 @@ void SelectVertexByRay (const vec3_c &org, const vec3_c &dir)
 	//SelectVertex (besti);
 }
 
+
+void SelectVertexByRay2D (const vec3_c &org, const vec3_c &dir)
+{
+	int		i, besti;
+	float	d, bestd;
+	vec3_c	temp;
+
+	// find the point closest to the ray
+	besti = -1;
+	bestd = 8;
+	arraySTD_c<int> bests;
+
+	int ax = dir.getLargestAxisAbs();
+
+	for (i=0 ; i<g_qeglobals.d_numpoints ; i++)
+	{
+		temp = g_qeglobals.d_points[i] - org;
+		d = temp.dotProduct(dir);
+		temp.vectorMA (org, d, dir);
+		temp = g_qeglobals.d_points[i] - temp;
+		temp[ax] = 0;
+		d = temp.vectorLength();
+		if(abs(d-bestd) < 1.f)
+		{
+			bests.push_back(i);
+		}
+		else if (d < bestd)
+		{
+			bests.clear();
+			bestd = d;
+			besti = i;
+			bests.push_back(i);
+		}
+	}
+
+	if (besti == -1)
+	{
+		Sys_Printf ("Click didn't hit a vertex\n");
+		return;
+	}
+	Sys_Printf ("hit 2d vertex\n");
+	for(u32 i = 0; i < bests.size(); i++)
+	{
+		g_qeglobals.d_move_points[g_qeglobals.d_num_move_points++] = g_qeglobals.d_points[bests[i]];
+		//SelectVertex (besti);
+	}
+}
 
 
 extern void AddPatchMovePoint(const vec3_c &v, bool bMulti, bool bFull);

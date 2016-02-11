@@ -84,7 +84,7 @@ void Z_MouseDown (int x, int y, int buttons)
 	{
 		Drag_Begin (x, y, buttons,
 			vright, vup,
-			org, dir);
+			org, dir,false);
 		return;
 	}
 

@@ -48,7 +48,7 @@ bool	drag_first;
 
 void Drag_Setup (int x, int y, int buttons,
 		   vec3_t xaxis, vec3_t yaxis,
-		   vec3_t origin, vec3_t dir)
+		   vec3_t origin, vec3_t dir, bool bFrom3DView)
 {
 	trace_t	t;
 	face_s	*f;
@@ -105,7 +105,11 @@ void Drag_Setup (int x, int y, int buttons,
 
 	if (g_qeglobals.d_select_mode == sel_vertex)
 	{
-		SelectVertexByRay (origin, dir);	
+		if(bFrom3DView) {
+			SelectVertexByRay3D (origin, dir);
+		} else {
+			SelectVertexByRay2D (origin, dir);
+		}
 		if (g_qeglobals.d_num_move_points)
 		{
 			drag_ok = true;
@@ -252,7 +256,7 @@ void UpdateTarget(vec3_t origin, vec3_t dir)
 //++timo test three button mouse and three button emulation here ?
 void Drag_Begin (int x, int y, int buttons,
 		   vec3_t xaxis, vec3_t yaxis,
-		   vec3_t origin, vec3_t dir)
+		   vec3_t origin, vec3_t dir, bool bFrom3DView)
 {
 	trace_t	t;
 	bool altdown;
@@ -299,7 +303,7 @@ void Drag_Begin (int x, int y, int buttons,
 	if (buttons & MK_LBUTTON)
 	{
 		//
-		Drag_Setup (x, y, buttons, xaxis, yaxis, origin, dir);
+		Drag_Setup (x, y, buttons, xaxis, yaxis, origin, dir, bFrom3DView);
 		return;
 	}
 
@@ -533,15 +537,18 @@ void MoveSelection (vec3_t move)
 		//vertex selection
 		if (g_qeglobals.d_select_mode == sel_vertex)
 		{
-			success = true;
-			for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
+			for(u32 i = 0; i < g_qeglobals.d_num_move_points; i++) 
 			{
-				success &= b->moveVertex(g_qeglobals.d_move_points[0], move, end, true);
-				// V: force updating Qio static model
-				b->rebuildRendererStaticModelData();
+				success = true;
+				for (b = selected_brushes.next; b != &selected_brushes; b = b->next)
+				{
+					success &= b->moveVertex(g_qeglobals.d_move_points[i], move, end, true);
+					// V: force updating Qio static model
+					b->rebuildRendererStaticModelData();
+				}
+				if (success)
+					*((vec3_c*)g_qeglobals.d_move_points[i]) = end;
 			}
-			if (success)
-				*((vec3_c*)g_qeglobals.d_move_points[0]) = end;
 			return;
 		}
 		//all other selection types
