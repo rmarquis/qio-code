@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/vfsAPI.h>
 #include <fileFormats/md3_file_format.h>
+#include <shared/str.h>
 
 bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out) {
 	byte *fileData;
@@ -73,7 +74,10 @@ bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out) {
 				out->setSurfaceVert(i,j,xyz->getPos(),st->st);
 			}
 			out->setSurfaceIndicesU32(i,sf->numTriangles*3,sf->getFirstIndex());
-			out->setSurfaceMaterial(i,sh->name);
+			str matName = sh->name;
+			// avoid using image directly - always prefer material
+			matName.stripExtension();
+			out->setSurfaceMaterial(i,matName);
 		}
 	} else {
 		for(u32 i = 0; i < h->numSurfaces; i++) {
@@ -104,7 +108,10 @@ bool MOD_LoadStaticMD3(const char *fname, staticModelCreatorAPI_i *out) {
 				v2.tc = st[i2].st;
 				out->addTriangle(sh->name,v0,v1,v2);
 			}
-			out->setSurfaceMaterial(i,sh->name);
+			str matName = sh->name;
+			// avoid using image directly - always prefer material
+			matName.stripExtension();
+			out->setSurfaceMaterial(i,matName);
 		}
 	}
 	out->recalcBoundingBoxes();
