@@ -102,7 +102,7 @@ void r_surface_c::addTriangle(const vec3_c &v0, const vec2_c &t0, const vec3_c &
 	addTriangle(verts[0],verts[1],verts[2]);
 }	
 void r_surface_c::addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2) {
-#if 0
+#if 1
 	// add a new triangle
 	indices.addIndex(verts.size());
 	indices.addIndex(verts.size()+1);
@@ -661,7 +661,7 @@ void R_FastCalcTBNArray( plane_c *planes, rVert_c *verts, const int numVerts, co
 
 #ifdef RVERT_STORE_TANGENTS
 void r_surface_c::recalcTBN() {
-#if 1
+#if 0
 	const rIndexBuffer_c &pIndices = getIndices2();
 	if(rf_fastCalcTBN.getInt() && pIndices.is32Bit()==false) {
 		if(trianglePlanes.size() != getNumTris())
@@ -744,8 +744,8 @@ void r_surface_c::recalcTBN() {
 		// calculate handedness
 		float w = (n.crossProduct(t).dotProduct(v.bin) < 0.0F) ? -1.0F : 1.0F;
 
-		//v.bin = v.tan.crossProduct(v.normal);
-		//v.bin *= w;
+		v.bin = v.tan.crossProduct(v.normal);
+		v.bin *= w;
 	}
 #endif
 }
