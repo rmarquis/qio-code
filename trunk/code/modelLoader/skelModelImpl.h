@@ -93,6 +93,8 @@ friend class skelModelIMPL_c;
 	bool compareVertexWeights(u32 v0, u32 v1) const;
 	void calcEqualPointsMapping(arraySTD_c<u16> &mapping);
 	void calcEdges();
+	u32 addVertex(const class texturedVertex_c &a);
+	void addTriangle(const class texturedVertex_c &a, const class texturedVertex_c &b, const class texturedVertex_c &c);
 public:
 	skelSurfIMPL_c();
 	~skelSurfIMPL_c();
@@ -181,6 +183,8 @@ public:
 	bool loadMDS(const char *fname);
 	// Source (intermediate)
 	bool loadSMD(const char *fname);
+	// Wolfenstein 2009
+	bool loadMD5R(const char *fname);
 	void recalcEdges();
 };
 

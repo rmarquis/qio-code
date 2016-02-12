@@ -326,6 +326,16 @@ void Cmd_CompleteMDLName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "mdl", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteMD5RName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "md5r", 0, 0, false, false );
+	}
+}
+void Cmd_CompleteOBJName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "obj", 0, 0, false, false );
+	}
+}
 /*
 ==================
 Cmd_CompletePSKName
@@ -450,6 +460,10 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "mdlpp_spawn", Cmd_CompleteMDLPPName );
 	Cmd_AddCommand ("mdl_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdl_spawn", Cmd_CompleteMDLName );
+	Cmd_AddCommand ("obj_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "obj_spawn", Cmd_CompleteOBJName );
+	Cmd_AddCommand ("md5r_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "md5r_spawn", Cmd_CompleteMD5RName );
 	Cmd_AddCommand ("psk_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("mdm_spawn", 0);

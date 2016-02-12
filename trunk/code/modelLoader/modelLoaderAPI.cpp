@@ -275,6 +275,9 @@ public:
 		// Source (intermediate)
 		if(!_stricmp(ext,"smd"))
 			return true;
+		// Wolfenstein 2009
+		if(!_stricmp(ext,"md5r"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -305,6 +308,11 @@ public:
 			}			
 		} else if(tmp.hasExt("smd")) {
 			if(skelModel->loadSMD(fname)) {
+				delete skelModel;
+				return 0;
+			}			
+		} else if(tmp.hasExt("md5r")) {
+			if(skelModel->loadMD5R(fname)) {
 				delete skelModel;
 				return 0;
 			}	

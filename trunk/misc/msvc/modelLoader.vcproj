@@ -422,6 +422,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\md5r_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\mdc_file_format.h"
 				>
 			</File>

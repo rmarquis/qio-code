@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileFormats/actorX_file_format.h>
 #include <fileFormats/mdm_file_format.h>
 #include <fileFormats/mds_file_format.h>
+#include <fileFormats/md5r_file_format.h>
 #include <math/quat.h>
 
 static stringRegister_c sk_boneNames;
@@ -91,6 +92,22 @@ void skelSurfIMPL_c::calcEqualPointsMapping(arraySTD_c<u16> &mapping) {
 		mapping[i] = i;
 	}
 	//g_core->Print("skelSurfIMPL_c::calcEqualPointsMapping: %i verts, %i alias\n",verts.size(),c_aliases);
+}
+u32 skelSurfIMPL_c::addVertex(const class texturedVertex_c &a) {
+	skelVert_s &v = verts.pushBack();
+	v.firstWeight = weights.size();
+	v.numWeights = 1;
+	skelWeight_s &w = weights.pushBack();
+	w.boneIndex = 0;
+	w.ofs = a.xyz;
+	w.weight = 1.f;
+	v.tc = a.st;
+	return verts.size()-1;
+}
+void skelSurfIMPL_c::addTriangle(const class texturedVertex_c &a, const class texturedVertex_c &b, const class texturedVertex_c &c) {
+	indices.push_back(addVertex(a));
+	indices.push_back(addVertex(b));
+	indices.push_back(addVertex(c));
 }
 void skelSurfIMPL_c::calcEdges() {
 	arraySTD_c<u16> mapping;
@@ -623,6 +640,142 @@ bool skelModelIMPL_c::loadSMD(const char *fname) {
 	return false;
 }
 
+bool skelModelIMPL_c::loadMD5R(const char *fname) {
+	this->name = fname;
+	parser_c p;
+	p.openFile(fname);
+
+	this->name = fname;
+
+	u32 memSize = 0;
+	u32 MD5RVersion = 0;
+	
+	md5rArray_c<md5rVertexBuffer_c> vertexBuffers;
+	md5rArray_c<md5rIndexBuffer_c> indexBuffers;
+	md5rArray_c<md5rMesh_c> meshes;
+	md5rSilhouetteEdgesArray_c silhouetteEdges;
+
+	while(p.atEOF() == false) {
+		if(p.atWord("MemSize")) {
+			memSize = p.getInteger();
+		} else if(p.atWord("MD5RVersion")) {
+			MD5RVersion = p.getInteger();
+		} else if(p.atWord_dontNeedWS("Joint")) {
+			if(p.atWord_dontNeedWS("[")) {
+
+			}
+			const char *s = p.getToken("]");
+			u32 numJoints = atoi(s);
+			if(p.atWord_dontNeedWS("]")) {
+
+			}
+			g_core->RedWarning("skelModel_c::loadMD5R: %i joints\n",numJoints);
+			if(p.atWord_dontNeedWS("{") == false) {
+				g_core->RedWarning("skelModel_c::loadMD5R: expected '{' at the beginning of Joints block at line %i of %s, found %s\n",
+					p.getCurrentLineNumber(),fname,p.getToken());
+				return true; // error
+			}
+			bones.resize(numJoints);
+			baseFrameABS.resize(numJoints);
+			boneDef_s *b = this->bones.getArray();
+			boneOr_s *bfb = this->baseFrameABS.getArray();
+			for(u32 i = 0; i < numJoints; i++, b++, bfb++) {
+				// "origin" -1  0 0 0  -0.5 -0.5 -0.5
+				// boneName, parentIndex, ofs, quatXYZ
+				const char *s = p.getToken();
+				g_core->Print("MD5R joint name: %s\n",s);
+				b->nameIndex = SK_RegisterString(s);
+				b->parentIndex = p.getInteger();
+				vec3_c pos;
+				quat_c quat;
+				p.getFloatMat(pos,3);
+				p.getFloatMat(quat,3); // fourth component, 'W', can be automatically computed
+				quat.calcW();
+				bfb->mat.fromQuatAndOrigin(quat,pos);
+			}
+			if(p.atWord_dontNeedWS("}") == false) {
+				g_core->RedWarning("skelModel_c::loadMD5R: expected '}' after the Joints block at line %i of %s, found %s\n",
+					p.getCurrentLineNumber(),fname,p.getToken());
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("VertexBuffer")) {
+			if(vertexBuffers.parse(p)) {
+				g_core->RedWarning("skelModel_c::loadMD5R: failed to parse VertexBufferArray. Cannot load %s\n",fname);
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("LevelOfDetail")) {
+			if(p.atWord_dontNeedWS("[")) {
+			}
+			const char *s = p.getToken("]");
+			u32 numLODs = atoi(s);
+			if(p.atWord_dontNeedWS("]")) {
+
+			}
+			if(p.atWord_dontNeedWS("{") == false) {
+				g_core->RedWarning("skelModel_c::loadMD5R: expected '{' at the beginning of LevelOfDetail block at line %i of %s, found %s\n",
+					p.getCurrentLineNumber(),fname,p.getToken());
+				return true; // error
+			}
+			for(u32 i = 0; i < numLODs; i++) {
+				p.getFloat();
+			}
+			if(p.atWord_dontNeedWS("}") == false) {
+				g_core->RedWarning("skelModel_c::loadMD5R: expected '}' after the VertexBffers block at line %i of %s, found %s\n",
+					p.getCurrentLineNumber(),fname,p.getToken());
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("IndexBuffer")) {
+			if(indexBuffers.parse(p)) {
+				g_core->RedWarning("skelModel_c::loadMD5R: failed to parse IndexBufferArray. Cannot load %s\n",fname);
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("SilhouetteEdge")) {
+			if(silhouetteEdges.parse(p)) {	
+				g_core->RedWarning("skelModel_c::loadMD5R: failed to parse SilhouetteEdges. Cannot load %s\n",fname);
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("Mesh")) {
+			if(meshes.parse(p)) {
+				g_core->RedWarning("skelModel_c::loadMD5R: failed to parse MeshArray. Cannot load %s\n",fname);
+				return true; // error
+			}
+		} else if(p.atWord_dontNeedWS("Bounds")) {
+			break;
+		}
+	}
+
+	surfs.resize(meshes.size());
+	for(u32 i = 0; i < meshes.size(); i++) {
+		const md5rMesh_c &in = meshes[i];
+		skelSurfIMPL_c &sf = surfs[i];
+		sf.setMaterial(in.getMatName());
+		for(u32 j = 0; j < in.getNumPrimBatches(); j++) {
+			const md5rPrimBatch_c &b = in.getPrimBatch(j);
+			const md5rVertexBuffer_c &verts = vertexBuffers[in.getDrawBuffers(0)];
+			const md5rIndexBuffer_c &indices = indexBuffers[in.getDrawBuffers(1)];
+			for(u32 k = 0; k < b.DrawIndexedTriList[3]; k++) {
+				u32 i0 = indices.getIndex(k*3+0+b.DrawIndexedTriList[2]);
+				u32 i1 = indices.getIndex(k*3+1+b.DrawIndexedTriList[2]);
+				u32 i2 = indices.getIndex(k*3+2+b.DrawIndexedTriList[2]);
+				if(i0 >= verts.size()) {
+					continue;
+				}
+				if(i1 >= verts.size()) {
+					continue;
+				}
+				if(i2 >= verts.size()) {
+					continue;
+				}
+				texturedVertex_c v0, v1,v2;
+				verts.getVertex(i0,v0);
+				verts.getVertex(i1,v1);
+				verts.getVertex(i2,v2);
+				sf.addTriangle(v0,v1,v2);
+			}
+		}
+	}
+	return false;
+}
 bool skelModelIMPL_c::loadMDS(const char *fname) {
 	this->name = fname;
 
