@@ -181,6 +181,13 @@ public:
 		return lastToken;
 	}
 	void skipLine();
+	void skipBytes(u32 numBytes) {
+		p += numBytes;
+	}
+	void readBytes(void *out, u32 numBytes) {
+		memcpy(out,p,numBytes);
+		p += numBytes;
+	}
 
 	const char *getDebugFileName() const {
 		return debugFileName;
