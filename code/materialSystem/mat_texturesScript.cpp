@@ -197,8 +197,7 @@ static void IMG_HeightmapToNormalMap( byte *data, int width, int height, float s
 }
 static void IMG_MakeAlpha( byte *data, int width, int height ) {
 	// average RGB into alpha, then set RGB to white
-	int		c;
-	c = width * height * 4;
+	int c = width * height * 4;
 	for (int i = 0 ; i < c ; i+=4) {
 		data[i+3] = ( data[i+0] + data[i+1] + data[i+2] ) / 3;
 		data[i+0] = 
@@ -206,10 +205,26 @@ static void IMG_MakeAlpha( byte *data, int width, int height ) {
 		data[i+2] = 255;
 	}
 }
+static void IMG_InvertColor( byte *data, int width, int height ) {
+	int c = width * height * 4;
+	for (int i = 0 ; i < c ; i+=4) {
+		data[i+0] = 255 - data[i+0];
+		data[i+1] = 255 - data[i+1];
+		data[i+2] = 255 - data[i+2];
+	}
+}
+static void IMG_Invert( byte *data, int width, int height ) {
+	int c = width * height * 4;
+	for (int i = 0 ; i < c ; i+=4) {
+		data[i+0] = 255 - data[i+0];
+		data[i+1] = 255 - data[i+1];
+		data[i+2] = 255 - data[i+2];
+		data[i+3] = 255 - data[i+3];
+	}
+}
 static void IMG_MakeIntensity( byte *data, int width, int height ) {
 	// copy red to green, blue, and alpha
-	int		c;
-	c = width * height * 4;
+	int c = width * height * 4;
 	for ( int i = 0 ; i < c ; i+=4 ) {
 		data[i+1] = 
 		data[i+2] = 
@@ -254,6 +269,12 @@ public:
 	}
 	void makeAlpha() {
 		IMG_MakeAlpha(data,w,h);
+	}
+	void invertColor() {
+		IMG_InvertColor(data,w,h);
+	}
+	void invert() {
+		IMG_Invert(data,w,h);
 	}
 	void makeIntensity() {
 		IMG_MakeIntensity(data,w,h);
@@ -343,6 +364,34 @@ image_c *MAT_ParseImageScript_r(parser_c &p) {
 		}
 		return alphaImage;	
 
+	} else if(p.atWord_dontNeedWS("invertColor")) {
+		if(p.atChar('(') == false) {
+			g_core->RedWarning("Expected '(' after \"invertColor\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		image_c *imageToInvert = MAT_ParseImageScript_r(p);
+		if(imageToInvert){
+			imageToInvert->invertColor();
+		}
+		if(p.atChar(')') == false) {
+			g_core->RedWarning("Expected ')' after \"invertColor\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		return imageToInvert;	
+	} else if(p.atWord_dontNeedWS("invert")) {
+		if(p.atChar('(') == false) {
+			g_core->RedWarning("Expected '(' after \"invert\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		image_c *imageToInvert = MAT_ParseImageScript_r(p);
+		if(imageToInvert){
+			imageToInvert->invert();
+		}
+		if(p.atChar(')') == false) {
+			g_core->RedWarning("Expected ')' after \"invert\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		return imageToInvert;	
 	} else if(p.atWord_dontNeedWS("makeintensity")) {
 		if(p.atChar('(') == false) {
 			g_core->RedWarning("Expected '(' after \"makeintensity\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
