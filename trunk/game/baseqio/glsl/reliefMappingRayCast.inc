@@ -15,8 +15,9 @@ vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
 #else
     float tHeight = texture2D(heightMap,tc).a;
 #endif
-   // vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA/ (ray.z);
-    vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA;
+   vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA/ ray.z;
+    //vec2 delta = vec2(-ray.x,-ray.y) * RELIEF_STEP_DELTA;
+
     
     for(int i=1; i<=numsteps;i++)
     {      
@@ -29,6 +30,11 @@ vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
 #else
             tHeight = texture2D(heightMap,tc-delta*height).a;
 #endif
+			// NOTE: if your relief mapped surface
+			// looks incorrectly, you might have 
+			// height values inversed.
+			// Fix it in image or .mtr file.
+			//tHeight = 1.0 - tHeight;
         }
     }
 
@@ -42,10 +48,15 @@ vec2 ReliefMappingRayCast(vec2 tc, vec3 ray)
 #ifdef HAS_BUMP_HEIGHTMAP_MAP
         tHeight= texture2D(bumpMap,tc-delta*height).a;
 #else
-        tHeight= texture2D(heightMap,tc-delta*height);
+        tHeight= texture2D(heightMap,tc-delta*height).a;
 #endif 
+		// NOTE: if your relief mapped surface
+		// looks incorrectly, you might have 
+		// height values inversed.
+		// Fix it in image or .mtr file.
+		//tHeight = 1.0 - tHeight;
     
-        if(tHeight.x >= height)
+        if(tHeight >= height)
         {   
             height+=step;              
         }
