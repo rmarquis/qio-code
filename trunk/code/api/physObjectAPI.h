@@ -42,6 +42,7 @@ public:
 	virtual const vec3_c getAngularVelocity() const = 0;
 	virtual void setAngularVelocity(const class vec3_c &newAVel) = 0;
 	// misc
+	virtual const vec3_c getTotalForce() const = 0;
 	virtual void setKinematic() = 0;
 	virtual bool isDynamic() const = 0;
 	virtual void setEntityPointer(class BaseEntity *ent) = 0;

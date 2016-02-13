@@ -2681,7 +2681,8 @@ void Brush_Move (edBrush_c *b, const vec3_t move, bool bSnap)
 	}
 
 	// PGM - keep the origin vector up to date on fixed size entities.
-	if(b->owner->getEntityClass()->isFixedSize())
+	if(b->owner->getEntityClass()->isFixedSize() || b->owner->getEntityClass()->hasDefinedModel()
+		|| b->owner->getEntityClass()->hasEditorFlagMiscModel())
 	{
 		b->owner->moveOrigin(move);
 	}

@@ -90,7 +90,7 @@ public:
 	virtual void setRenderModel(const char *newRModelName);
 	bool hasRenderModel(const char *checkRModelName) const;
 	bool setColModel(const char *newCModelName);
-	bool setColModel(class cMod_i *newCModel);
+	virtual bool setColModel(class cMod_i *newCModel);
 	void setRagdollName(const char *ragName);
 	void setRenderModelSkin(const char *newSkinName);
 	void setSpriteModel(const char *newSpriteMaterial, float newSpriteRadius);

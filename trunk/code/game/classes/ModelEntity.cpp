@@ -537,6 +537,11 @@ void ModelEntity::runPhysicsObject() {
 		matrix_c mat;
 		body->getCurrentMatrix(mat);
 		this->setMatrix(mat);
+
+		if(0) {
+			vec3_c tf = body->getTotalForce();
+			g_core->Print("Entity %i total force: %f %f %f\n",getEntNum(),tf.x,tf.y,tf.z);
+		}
 	} else if(ragdoll) {
 		ragdoll->updateWorldTransforms();
 		// copy current bodies transforms to entityState

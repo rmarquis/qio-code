@@ -66,7 +66,7 @@ void bulletRigidBody_c::init(class bulletColShape_c *newShape, const struct phys
 	bulletRigidBody = new btRigidBody(cInfo);
 	bulletRigidBody->setDamping(0.05, 0.85);
 	bulletRigidBody->setDeactivationTime(0.8);
-#define SLEEPING_THRESHOLDS_SCALE 10.f
+#define SLEEPING_THRESHOLDS_SCALE 1.f
 	bulletRigidBody->setSleepingThresholds(1.6*SLEEPING_THRESHOLDS_SCALE, 2.5*SLEEPING_THRESHOLDS_SCALE);
 	//btShape->setMargin(0.f);
 	bulletRigidBody->setWorldTransform(startTransform);
@@ -133,6 +133,12 @@ void bulletRigidBody_c::applyPointImpulse(const class vec3_c &val, const class v
 // linear velocity access (in Quake units)
 const class vec3_c bulletRigidBody_c::getLinearVelocity() const {
 	return vec3_c(bulletRigidBody->getLinearVelocity())*BULLET_TO_QIO;
+}
+const class vec3_c bulletRigidBody_c::getTotalForce() const {
+	//return vec3_c(bulletRigidBody->getPushVelocity())*BULLET_TO_QIO; // strange
+	//return vec3_c(bulletRigidBody->getTotalForce())*BULLET_TO_QIO; // zeroes
+	// the best so far but not good enough
+	return vec3_c(bulletRigidBody->internalGetDeltaLinearVelocity())*BULLET_TO_QIO;
 }
 void bulletRigidBody_c::setLinearVelocity(const class vec3_c &newVel) {
 	bulletRigidBody->setLinearVelocity((newVel*QIO_TO_BULLET).floatPtr());
