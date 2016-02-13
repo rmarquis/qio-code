@@ -382,6 +382,11 @@ void Cmd_CompleteSMDName( char *args, int argNum ) {
 	}
 }
 
+void Cmd_Complete3DSName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "3ds", 0, 0, false, false );
+	}
+}
 /*
 ==================
 Cmd_CompleteEmitterName
@@ -479,6 +484,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "mdc_spawn", Cmd_CompleteMDCName );
 	Cmd_AddCommand ("smd_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "smd_spawn", Cmd_CompleteSMDName );
+	Cmd_AddCommand ("3ds_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "3ds_spawn", Cmd_Complete3DSName );
 	Cmd_AddCommand ("cg_testEmitter", 0);
 	Cmd_SetCommandCompletionFunc( "cg_testEmitter", Cmd_CompleteEmitterName );
 	Cmd_AddCommand ("decl_cacheModel", Cmd_CacheDeclModel_f);

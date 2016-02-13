@@ -126,3 +126,8 @@ void readStream_c::readByteString(str &out) {
 	out.setFromTo((const char*)start,((const char*)fileData) + ofs);
 	ofs++;
 }
+const char *readStream_c::readByteString() {
+	static str tmp;
+	readByteString(tmp);
+	return tmp;
+}
