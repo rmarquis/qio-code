@@ -49,6 +49,9 @@ void entity_s::removeREntity() {
 }
 void entity_s::moveOrigin(const vec3_c &delta) {
 	origin += delta;
+	char s[256];
+	sprintf(s,"%f %f %f",origin.getX(),origin.getY(),origin.getZ());
+	keyValues.set("origin",s);
 	if(rEnt) {
 		rEnt->setOrigin(origin);
 	}
@@ -374,11 +377,11 @@ void Entity_Write (entity_s *e, FILE *f, bool use_region)
 		//	//VectorSubtract (e->brushes.onext->mins, e->md3Class->mins, origin);
 		//}
 		//else
-		{
-			origin = e->brushes.onext->getMins() - e->eclass->getEditorMins();
-		}
-		sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
-		e->setKeyValue( "origin", text);
+		//{
+		//	origin = e->brushes.onext->getMins() - e->eclass->getEditorMins();
+		//}
+		//sprintf (text, "%i %i %i", (int)origin[0], (int)origin[1], (int)origin[2]);
+		//e->setKeyValue( "origin", text);
 	}
 
 	fprintf (f, "{\n");

@@ -23,6 +23,16 @@ entityDef prop_physics
 }
 
 
+entityDef func_constraint
+{
+	"bFixedSize"	"1"
+}
+
+entityDef qio_spawner
+{
+	"bFixedSize"	"1"
+}
+
 
 entityDef prop_physics_brush
 {

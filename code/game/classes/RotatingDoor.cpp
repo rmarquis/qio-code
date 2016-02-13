@@ -35,6 +35,7 @@ DEFINE_CLASS_ALIAS(RotatingDoor, func_rotatingdoor);
 RotatingDoor::RotatingDoor() {
 	bRigidBodyPhysicsEnabled = true;
 	hinge = 0;
+	bUseRModelToCreateDynamicCVXShape = true;
 }
 RotatingDoor::~RotatingDoor() {
 	if(this->hinge) {

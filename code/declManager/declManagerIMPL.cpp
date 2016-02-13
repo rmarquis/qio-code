@@ -455,6 +455,9 @@ public:
 			bHasEditorFlagMiscModel = true;
 			bIsFixedSize = true;
 		}
+		if(entDef.getKeyInteger("bIsFixedSize") || entDef.getKeyInteger("bFixedSize")) {
+			bIsFixedSize = true;
+		}
 		model = entDef.getKeyValue("model");
 		if(model.size())
 			bIsFixedSize = true;

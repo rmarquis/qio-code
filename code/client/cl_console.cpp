@@ -331,6 +331,11 @@ void Cmd_CompleteMD5RName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "md5r", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteMD5MeshName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "md5mesh", 0, 0, false, false );
+	}
+}
 void Cmd_CompleteOBJName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		Field_CompleteFilename( "models", "obj", 0, 0, false, false );
@@ -464,6 +469,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "obj_spawn", Cmd_CompleteOBJName );
 	Cmd_AddCommand ("md5r_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "md5r_spawn", Cmd_CompleteMD5RName );
+	Cmd_AddCommand ("md5mesh_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "md5mesh_spawn", Cmd_CompleteMD5MeshName );
 	Cmd_AddCommand ("psk_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("mdm_spawn", 0);

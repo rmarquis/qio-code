@@ -514,7 +514,8 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || 
 		!_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") ||
 		!_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn") ||
-		!_stricmp(cmd,"obj_spawn") || !_stricmp(cmd,"md5r_spawn") 
+		!_stricmp(cmd,"obj_spawn") || !_stricmp(cmd,"md5r_spawn") ||
+		!_stricmp(cmd,"md5mesh_spawn") 
 		|| !_stricmp(cmd,"mdc_spawn") ) {
 		str model = g_core->Argv(1);
 		if(model.length()) {

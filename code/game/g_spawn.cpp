@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/loadingScreenMgrAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/entityDeclAPI.h>
+#include <api/vfsAPI.h>
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
 #include "classes/World.h"
@@ -76,6 +77,22 @@ BaseEntity *G_SpawnClass(const char *className) {
 	}
 	ent = G_SpawnEntityFromEntDecl(className);
 	return ent;
+}
+BaseEntity *G_SpawnGeneric(const char *classOrModelName) {
+	BaseEntity *e = G_SpawnClass(classOrModelName);
+	if(e)
+		return e;
+	if(g_vfs->FS_FileExists(classOrModelName)) {
+		e = G_SpawnClass("ModelEntity");
+		e->setRenderModel(classOrModelName);
+		str collisionModel = classOrModelName;
+		collisionModel.setExtension("map");
+		if(g_vfs->FS_FileExists(collisionModel)) {
+			e->setColModel(collisionModel);
+		}
+		e->postSpawn();
+	}
+	return e;
 }
 BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 	const char *className = entDef->getClassName();

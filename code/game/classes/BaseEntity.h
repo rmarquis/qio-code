@@ -115,6 +115,12 @@ public:
 
 	bool hasClassName(const char *className) const;
 
+	virtual bool setColModel(class cMod_i *newCModel) {
+		return true;
+	}
+	virtual bool setColModel(const char *s) {
+		return true;
+	}
 	// for Movers
 	virtual bool isMover() const {
 		return false;

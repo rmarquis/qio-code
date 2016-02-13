@@ -180,6 +180,7 @@ BaseEntity *G_SpawnFirstEntDefFromFile(const char *fileName);
 // spawn entity defined in .def file (Doom3 decls)
 BaseEntity *G_SpawnEntityFromEntDecl(const char *declName);
 BaseEntity *G_SpawnClass(const char *className);
+BaseEntity *G_SpawnGeneric(const char *classOrModelName);
 
 //
 // g_bullet_debugDraw.cpp

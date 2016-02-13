@@ -62,6 +62,7 @@ public:
 	virtual bool isDynamic() const;
 	virtual void setEntityPointer(class BaseEntity *ent);
 	virtual BaseEntity *getEntityPointer() const;
+	virtual const class vec3_c getTotalForce() const;
 	// water physics
 	virtual void runWaterPhysics(float curWaterLevel);
 

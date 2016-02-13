@@ -236,6 +236,9 @@ const vec3_c odeRigidBody_c::getAngularVelocity() const {
 void odeRigidBody_c::setAngularVelocity(const class vec3_c &newAVel) {
 	dBodySetAngularVel(body,newAVel.x,newAVel.y,newAVel.z);
 }
+const vec3_c odeRigidBody_c::getTotalForce() const {
+	return vec3_c(0,0,0); // TODO
+}
 void odeRigidBody_c::setKinematic() {
 	dBodySetKinematic(body);
 }

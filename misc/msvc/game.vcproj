@@ -691,6 +691,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\QioSpawner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\QioSpawner.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\RotatingDoor.cpp"
 				>
 			</File>
