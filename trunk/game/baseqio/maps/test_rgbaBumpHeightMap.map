@@ -149,9 +149,11 @@
 {
 "classname" "light"
 "origin" "-160 -96 88"
+"model" ""
 }
 // entity 2
 {
 "classname" "info_player_start"
 "origin" "152 -72 -48"
+"model" ""
 }
