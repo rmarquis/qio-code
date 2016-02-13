@@ -531,7 +531,13 @@ void ClientCommand( int clientNum ) {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
 			}
 		}
-	} else if(!_stricmp(cmd,"physics_spawn")) {
+	} else if(!_stricmp(cmd,"physics_spawn") ||
+		!_stricmp(cmd,"phys_spawn_mdl") || !_stricmp(cmd,"phys_spawn_psk") ||
+		!_stricmp(cmd,"phys_spawn_mdm") || !_stricmp(cmd,"phys_spawn_smd") ||
+		!_stricmp(cmd,"phys_spawn_obj") || !_stricmp(cmd,"phys_spawn_md5r") ||
+		!_stricmp(cmd,"phys_spawn_md5mesh") || !_stricmp(cmd,"phys_spawn_3ds") 
+		|| !_stricmp(cmd,"phys_spawn_mdc")
+		) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
