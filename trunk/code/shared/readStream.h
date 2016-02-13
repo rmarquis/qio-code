@@ -50,6 +50,10 @@ public:
 	virtual bool setPos(u32 newPosABS);
 	virtual u32 getTotalLen() const;	
 	virtual void readByteString(class str &out);
+	const char *readByteString();
+	const float *getDataPtrAsFloat() const {
+		return (const float*)getCurDataPtr();
+	}
 };
 
 #endif // __SHARED_READSTREAM_H__

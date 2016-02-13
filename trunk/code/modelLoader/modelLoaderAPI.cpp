@@ -135,6 +135,9 @@ public:
 		// models can be created by mdlpp script
 		if(!_stricmp(ext,"mdlpp"))
 			return true;
+		// 3ds, only for static models right now
+		if(!_stricmp(ext,"3ds"))
+			return true;
 		return false;
 	}
 	virtual bool loadStaticModelFile(const char *fileNameWithExtraCommands, class staticModelCreatorAPI_i *out)  {
@@ -198,6 +201,8 @@ public:
 			error = MOD_LoadStaticMD3(fname,out);
 		} else if(!_stricmp(ext,"lwo")) {
 			error = MOD_LoadLWO(fname,out);
+		} else if(!_stricmp(ext,"3ds")) {
+			error = MOD_Load3DS(fname,out);
 		} else if(!_stricmp(ext,"mdl")) {
 			hl2MDLReader_c r;
 			if(r.beginReading(fname) == false) {

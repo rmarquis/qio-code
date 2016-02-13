@@ -214,6 +214,10 @@
 			Name="StaticModelLoaders"
 			>
 			<File
+				RelativePath="..\..\code\modelLoader\staticModelLoaders\3dsLoader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\staticModelLoaders\aseLoader.cpp"
 				>
 			</File>
@@ -409,6 +413,10 @@
 		<Filter
 			Name="fileformats"
 			>
+			<File
+				RelativePath="..\..\code\fileformats\3ds_file_format.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\fileformats\actorX_file_format.h"
 				>
