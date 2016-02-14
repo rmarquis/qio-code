@@ -125,6 +125,26 @@ mtrStage_c::mtrStage_c() {
 	cubeMap = 0;
 	alphaGen = ALPHAGEN_NOT_SET;
 }
+mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
+	alphaFunc = AF_NONE;
+	texMods = 0;
+	tcGen = TCG_NONE;
+	rgbGen = 0;
+	type = ST_NOT_SET;
+	depthWrite = true;
+	bMarkedForDelete = false;
+	subStageBumpMap = 0;
+	subStageSpecularMap = 0;
+	subStageHeightMap = 0;
+	subStageBumpHeightMap = 0;
+	nextBundle = 0;
+	condition = 0;
+	alphaTestAST = 0;
+	cubeMap = 0;
+	alphaGen = ALPHAGEN_NOT_SET;
+
+	this->stageTexture.fromTexturePointer(tex);
+}
 mtrStage_c::~mtrStage_c() {
 	if(texMods) {
 		delete texMods;
@@ -428,6 +448,25 @@ void mtrIMPL_c::createFromImage() {
 		this->name.findToken("decal@",0,false)) {
 		this->polygonOffset = 0.1f;
 		this->stages[0]->setBlendDef(BM_SRC_ALPHA,BM_ONE_MINUS_SRC_ALPHA);
+	}
+	// automatically try to find bump/height maps
+	{
+		str bumpTextureName = this->name;
+		bumpTextureName.stripExtension();
+		bumpTextureName.append("_n");
+		textureAPI_i *bump = MAT_RegisterTexture(bumpTextureName,TWM_REPEAT);
+		if(bump && bump != MAT_GetDefaultTexture()) {
+			this->stages[0]->setSubStageBumpMap(new mtrStage_c(bump));
+		}
+	}
+	{
+		str heightTextureName = this->name;
+		heightTextureName.stripExtension();
+		heightTextureName.append("_h");
+		textureAPI_i *height = MAT_RegisterTexture(heightTextureName,TWM_REPEAT);
+		if(height && height != MAT_GetDefaultTexture()) {
+			this->stages[0]->setSubStageHeightMap(new mtrStage_c(height));
+		}
 	}
 }
 // Source Engine .vmt support (Valve MaTerials)

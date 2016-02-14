@@ -111,6 +111,7 @@ void RF_AddGenericDrawCalls() {
 	RF_AddWorldDrawCalls();
 	RFE_AddEntityDrawCalls();
 	RF_AddStaticModelDrawCalls();
+	RFT_AddTerrainDrawCalls();
 	RF_AddWorldDecalDrawCalls();
 	RF_AddWaterDrawCalls();
 	RF_AddExplosionDrawCalls();

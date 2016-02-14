@@ -200,6 +200,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	class cubeMapAPI_i *cubeMap;
 public:
 	mtrStage_c();
+	mtrStage_c(class textureAPI_i *tex);
 	~mtrStage_c();
 
 	virtual textureAPI_i *getTexture(float curTimeSec) const {

@@ -260,6 +260,7 @@ public:
 		rb->init(!bEditorMode);
 		RF_InitSky();
 		RF_InitDecals();
+		RFT_InitTerrain();
 	}
 	virtual void endRegistration() {
 

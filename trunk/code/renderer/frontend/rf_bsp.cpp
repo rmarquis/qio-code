@@ -646,6 +646,20 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		// TODO: convert content flags
 		bspMaterials[i].contentFlags = h->getMat(i)->contentFlags;
 	}
+	int maxLightmapIndex = -5;
+	for(u32 i = 0; i < numSurfs; i++) {
+		if(sf->lightmapNum > maxLightmapIndex) {
+			maxLightmapIndex = sf->lightmapNum;
+		}
+		sf = (const q3Surface_s *) (((const byte*)sf)+sizeofSurf);
+	}
+	bool bIsEverySecondLightmapDeluxeMap;
+	//if(maxLightmapIndex+1 < lightmaps.size()) {
+	//	bIsEverySecondLightmapDeluxeMap = true;
+	//} else {
+		bIsEverySecondLightmapDeluxeMap = false;
+	//}
+	sf = (const q3Surface_s *)h->getLumpData(lumpSurfs);
 	c_bezierPatches = 0;
 	c_flares = 0;
 	for(u32 i = 0; i < numSurfs; i++, out++) {
@@ -657,15 +671,25 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 			lightmap = 0;
 			deluxemap = 0;
 		} else {
-			if(sf->lightmapNum >= lightmaps.size()) {
-				lightmap = 0;
+			if(bIsEverySecondLightmapDeluxeMap) {
+				if(sf->lightmapNum >= lightmaps.size()) {
+					lightmap = 0;
+					deluxemap = 0;
+				} else {
+					lightmap = lightmaps[sf->lightmapNum*2];
+					deluxemap = lightmaps[sf->lightmapNum*2+1];
+				}
 			} else {
-				lightmap = lightmaps[sf->lightmapNum];
-			}
-			if(sf->lightmapNum >= deluxemaps.size()) {
-				deluxemap = 0;
-			} else {
-				deluxemap = deluxemaps[sf->lightmapNum];
+				if(sf->lightmapNum >= lightmaps.size()) {
+					lightmap = 0;
+				} else {
+					lightmap = lightmaps[sf->lightmapNum];
+				}
+				if(sf->lightmapNum >= deluxemaps.size()) {
+					deluxemap = 0;
+				} else {
+					deluxemap = deluxemaps[sf->lightmapNum];
+				}
 			}
 		}
 		out->bspMaterialIndex = sf->materialNum;
