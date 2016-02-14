@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
+#include <shared/parser.h>
 
 /*
 =============================================================================
@@ -3013,12 +3014,41 @@ static void FS_Startup( const char *gameName )
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
-	//FS_AddGameDirectory("E:/GAMES/Quake3/quake3","baseq3");
-	//FS_AddGameDirectory("E:/ENGINES/xreal-svn-3996-trunk/xreal","base");
-	//FS_AddGameDirectory("E:/GAMES/q4f","baseq4f");
-	//FS_AddGameDirectory("E:/GAMES/Doom3","base");
-	//FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","cstrike");
-	//FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","hl2");
+	// load custom gamedirs
+	if(1) {
+		FILE *f = fopen("system/gameDirs.cfg","rb");
+		if(f) {
+			fseek(f,0,SEEK_END);
+			u32 len = ftell(f);
+			char *tmp = (char*)malloc(len+1);
+			fseek(f,0,SEEK_SET);
+			fread(tmp,len,1,f);
+			tmp[len] = 0;
+			parser_c p;
+			p.setup(tmp);
+			
+		////FS_AddGameDirectory("E:/GAMES/Quake3/quake3","baseq3");
+		////FS_AddGameDirectory("E:/ENGINES/xreal-svn-3996-trunk/xreal","base");
+		////FS_AddGameDirectory("E:/GAMES/q4f","baseq4f");
+		////FS_AddGameDirectory("E:/GAMES/Doom3","base");
+		////FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","cstrike");
+		////FS_AddGameDirectory("D:/css_ns/Counter-Strike Source","hl2");
+		//// FS_AddGameDirectory("E:/GAMES/TCCQB","cqbtest");
+		////FS_AddGameDirectory("E:/GAMES/WET","etmain");
+		////FS_AddGameDirectory("E:/GAMES/RTCW","main");
+		//FS_AddGameDirectory("E:/GAMES/CS-16","cstrike");
+			while(p.atEOF()==false) {
+				str path = p.getToken();
+				str baseDir = p.getToken();
+				if(path.size() && baseDir.size()) {
+					FS_AddGameDirectory(path,baseDir);
+				}
+
+			}
+			fclose(f);
+			free(tmp);
+		}
+	}
 
 	// add search path elements in reverse priority order
 	if (fs_basepath->string[0]) {
