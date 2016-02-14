@@ -131,6 +131,11 @@ void RF_RemoveStaticModel(class rStaticModelAPI_i *ent);
 void RF_AddStaticModelDrawCalls();
 void RF_MarkStaticModelMaterials();
 
+// rf_terrain.cpp
+void RFT_InitTerrain();
+void RFT_AddTerrainDrawCalls();
+void RFT_ShutdownTerrain();
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;
