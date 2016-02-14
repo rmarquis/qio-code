@@ -39,6 +39,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 // original BSP structures designed by ID Software
 // used in their Quake3 game
 #define BSP_IDENT_IBSP	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
+// FAKK bsp ident
+#define BSP_IDENT_FAKK	(('K'<<24)+('K'<<16)+('A'<<8)+'F')
 // MoHAA bsp ident
 #define BSP_IDENT_2015	(('5'<<24)+('1'<<16)+('0'<<8)+'2')
 // MoHBT/MoHSH bsp ident
@@ -52,6 +54,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define BSP_IDENT_QIOBSP (('!'<<24)+('O'<<16)+('I'<<8)+'Q')
 #define BSP_VERSION_QIOBSP	1
 
+#define BSP_VERSION_FAKK	12
 #define BSP_VERSION_Q3		46
 #define BSP_VERSION_RTCW	47
 #define BSP_VERSION_ET		47
@@ -91,6 +94,11 @@ typedef struct {
 	int firstPoint;
 	int numPoints;
 } dareaPortal_t;
+
+// FAKK lumps
+
+#define FAKK_BRUSHSIDES			10
+#define FAKK_BRUSHES			11
 
 // MoHAA/MoHSH/MoHBT/MoHPA lumps
 #define MOH_SHADERS			0
@@ -414,6 +422,10 @@ struct q3Header_s {
 			if(this->version == BSP_VERSION_COD1) {
 				return true;
 			}	
+		} else if(this->ident == BSP_IDENT_FAKK) {
+			if(this->version == BSP_VERSION_FAKK) {
+				return true;
+			}
 		} else if(this->ident == BSP_IDENT_2015) {
 			if(this->version == BSP_VERSION_MOHAA) {
 				return true;
@@ -455,7 +467,7 @@ struct q3Header_s {
 		return false; // this bsp file format is not supported
 	}
 	const lump_s *getLumps() const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			// MoH maps have checksum integer before lumps
 			return ((const lump_s*)(((const byte*)&lumps[0])+4));
 		} else if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
@@ -470,7 +482,7 @@ struct q3Header_s {
 		if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
 			return 0;
 		}
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs);
 		} else {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[Q3_MODELS].fileOfs);
@@ -481,7 +493,7 @@ struct q3Header_s {
 		if(ident == BSP_VERSION_HL || ident == BSP_VERSION_QUAKE1) {
 			return 0;
 		}
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[MOH_MODELS].fileOfs+modelNum*sizeof(q3Model_s));
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return (const q3Model_s*)(((const byte*)this)+getLumps()[COD1_MODELS].fileOfs+modelNum*(sizeof(q3Model_s)+8));
@@ -506,7 +518,7 @@ struct q3Header_s {
 		return (const q3BSPMaterial_s*)(((const byte*)this)+getLumps()[Q3_SHADERS].fileOfs);
 	}
 	const q3Plane_s *getPlanes() const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Plane_s*)(((const byte*)this)+getLumps()[MOH_PLANES].fileOfs);
 		} else {
 			return (const q3Plane_s*)(((const byte*)this)+getLumps()[Q3_PLANES].fileOfs);
@@ -528,7 +540,9 @@ struct q3Header_s {
 			return 0;
 		}
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
-			return (const q3Brush_s*)(((const byte*)this)+getLumps()[MOH_BRUSHES].fileOfs);
+			return (const q3Brush_s*)(((const byte*)this)+getLumps()[MOH_BRUSHES].fileOfs);	
+		} else if(ident == BSP_IDENT_FAKK) {
+			return (const q3Brush_s*)(((const byte*)this)+getLumps()[FAKK_BRUSHES].fileOfs);		
 		} else {
 			return (const q3Brush_s*)(((const byte*)this)+getLumps()[Q3_BRUSHES].fileOfs);
 		}
@@ -536,12 +550,14 @@ struct q3Header_s {
 	u32 getNumBrushes() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return getLumps()[MOH_BRUSHES].fileLen / sizeof(q3Brush_s);
+		} else if(ident == BSP_IDENT_FAKK) {
+			return getLumps()[FAKK_BRUSHES].fileLen / sizeof(q3Brush_s);	
 		} else {
 			return getLumps()[Q3_BRUSHES].fileLen / sizeof(q3Brush_s);
 		}
 	}
 	const q3Vert_s *getVerts() const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Vert_s*)(((const byte*)this)+getLumps()[MOH_DRAWVERTS].fileOfs);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return (const q3Vert_s*)(((const byte*)this)+getLumps()[COD1_DRAWVERTS].fileOfs);
@@ -550,7 +566,7 @@ struct q3Header_s {
 		}
 	}
 	const u32 *getIndices() const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const u32*)(((const byte*)this)+getLumps()[MOH_DRAWINDEXES].fileOfs);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return (const u32*)(((const byte*)this)+getLumps()[COD1_DRAWINDEXES].fileOfs);
@@ -559,7 +575,7 @@ struct q3Header_s {
 		}
 	}
 	const q3Surface_s *getSurfaces() const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs);
 		} else {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[Q3_SURFACES].fileOfs);
@@ -569,7 +585,7 @@ struct q3Header_s {
 		return (const cod1Surface_s*)(((const byte*)this)+getLumps()[COD1_SURFACES].fileOfs);
 	}
 	const q3Surface_s *getNextSurface(const q3Surface_s *sf) const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Surface_s*)(((const byte*)sf)+(sizeof(q3Surface_s)+4));
 		} else {
 			return (const q3Surface_s*)(((const byte*)sf)+sizeof(q3Surface_s));
@@ -620,7 +636,7 @@ struct q3Header_s {
 		return 0;
 	}
 	const q3Surface_s *getSurface(u32 surfNum) const {
-		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA || ident == BSP_IDENT_FAKK) {
 			return (const q3Surface_s*)(((const byte*)this)+getLumps()[MOH_SURFACES].fileOfs+(sizeof(q3Surface_s)+4)*surfNum);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return 0; // dont use this function for CoD bsps
@@ -634,6 +650,10 @@ struct q3Header_s {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			// MoHAA has extended material struct
 			matSize = sizeof(q3BSPMaterial_s) + 64 + 4;
+			p = getLumpData(MOH_SHADERS);
+		} else if(ident == BSP_IDENT_FAKK) {
+			// FAKK has only subdivision field more
+			matSize = sizeof(q3BSPMaterial_s) + 4;
 			p = getLumpData(MOH_SHADERS);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			matSize = sizeof(q3BSPMaterial_s);
@@ -660,6 +680,10 @@ struct q3Header_s {
 			// MoHAA has extended brushSide struct (equationNum integer)
 			sideSize = sizeof(q3BrushSide_s) + 4;
 			p = getLumpData(MOH_BRUSHSIDES);
+		} else if(ident == BSP_IDENT_FAKK) {
+			// equationNumber is not here for FAKK
+			sideSize = sizeof(q3BrushSide_s);
+			p = getLumpData(FAKK_BRUSHSIDES);
 		} else {
 			sideSize = sizeof(q3BrushSide_s);
 			p = getLumpData(Q3_BRUSHSIDES);

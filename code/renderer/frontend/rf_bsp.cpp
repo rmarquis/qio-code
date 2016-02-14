@@ -1750,23 +1750,37 @@ bool rBspTree_c::load(const char *fname) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
-	} else if(h->ident == BSP_IDENT_2015|| h->ident == BSP_IDENT_EALA) {
-		// MoHAA/MoHBT/MoHSH bsp file
+	} else if(h->ident == BSP_IDENT_2015|| h->ident == BSP_IDENT_EALA|| h->ident == BSP_IDENT_FAKK) {
+		// FAKK/MoHAA/MoHBT/MoHSH bsp file
 		if(loadLightmaps(MOH_LIGHTMAPS)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
-		if(loadSurfs(MOH_SURFACES, sizeof(q3Surface_s)+4, MOH_DRAWINDEXES, MOH_DRAWVERTS, MOH_SHADERS, sizeof(q3BSPMaterial_s)+64+4)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
+		if(h->ident == BSP_IDENT_FAKK) {
+			if(loadSurfs(MOH_SURFACES, sizeof(q3Surface_s)+4, MOH_DRAWINDEXES, MOH_DRAWVERTS, MOH_SHADERS, sizeof(q3BSPMaterial_s)+4)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else {
+			if(loadSurfs(MOH_SURFACES, sizeof(q3Surface_s)+4, MOH_DRAWINDEXES, MOH_DRAWVERTS, MOH_SHADERS, sizeof(q3BSPMaterial_s)+64+4)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
 		}
 		if(loadModels(MOH_MODELS)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
-		if(loadNodesAndLeaves(MOH_NODES,MOH_LEAVES,sizeof(q3Leaf_s)+16)) {
-			g_vfs->FS_FreeFile(fileData);
-			return true; // error
+		if(h->ident == BSP_IDENT_FAKK) {
+			if(loadNodesAndLeaves(MOH_NODES,MOH_LEAVES,sizeof(q3Leaf_s))) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+		} else {
+			if(loadNodesAndLeaves(MOH_NODES,MOH_LEAVES,sizeof(q3Leaf_s)+16)) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
 		}
 		if(loadLeafIndexes(MOH_LEAFSURFACES)) {
 			g_vfs->FS_FreeFile(fileData);
@@ -2362,7 +2376,8 @@ void rBspTree_c::addDrawCalls() {
 			c_culledBatches++;
 			continue;
 		}
-	//	if(areaPortals.size() && (rf_bsp_rebuildBatchesOnAPVisChange.getInt() == false)) {
+		///if(areaPortals.size() && (rf_bsp_rebuildBatchesOnAPVisChange.getInt() == false)) {
+		if(areaPortals.size()) {
 			bool visible = false;
 			for(u32 j = 0; j < b->areas.size(); j++) {
 				if(frustumAreaBits.get(b->areas[j])==true) {
@@ -2372,7 +2387,7 @@ void rBspTree_c::addDrawCalls() {
 			}
 			if(visible == false)
 				continue;
-	//	}
+		}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
 			mtrAPI_i *material;
 			if(b->mat->isGenericSky()) {
