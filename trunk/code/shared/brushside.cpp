@@ -69,17 +69,17 @@ void face_s::calcTextureVectors(float STfromXYZ[2][4]) const  {
 	float		ns, nt;
 	int			i,j;
 
-	const texdef_t *td = &this->texdef;
+	 texdef_t *td = (texdef_t*)&this->texdef;
 	mtrAPI_i *q = this->d_texture;
 
 	memset (STfromXYZ, 0, 8*sizeof(float));
 
-	assert(td->scale[0] != 0.f);
-	assert(td->scale[1] != 0.f);
-	//if (!td->scale[0])
-	//	td->scale[0] =  0.5 ;
-	//if (!td->scale[1])
-	//	td->scale[1] = 0.5 ;
+	//assert(td->scale[0] != 0.f);
+	//assert(td->scale[1] != 0.f);
+	if (!td->scale[0])
+		td->scale[0] =  0.5 ;
+	if (!td->scale[1])
+		td->scale[1] = 0.5 ;
 
 	// get natural texture axis
 	MOD_TextureAxisFromNormal(this->plane.getNormal(), pvecs[0], pvecs[1]);

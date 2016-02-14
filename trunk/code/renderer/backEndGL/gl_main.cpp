@@ -2070,8 +2070,13 @@ public:
 				}
 				bool bindLightmapCoordinatesToFirstTextureSlot = false;
 				if(rb_showLightMaps.getInt() && lastLightmap) {
+					bumpMap = 0;
+					heightMap = 0;
+					lastDeluxemap = 0;
 					goto drawOnlyLightmap;
 				} else if(rb_showDeluxeMaps.getInt() && lastDeluxemap) {
+					bumpMap = 0;
+					heightMap = 0;
 					// bind lightmap coordinates to first texture slot.
 					// draw ONLY DELUXEMAP
 					if(lastDeluxemap) {
