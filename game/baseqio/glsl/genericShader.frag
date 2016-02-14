@@ -141,7 +141,8 @@ void main() {
 	// decode light direction from deluxeMap
 	vec3 deluxeLightDir = texture2D(deluxeMap, gl_TexCoord[1].xy);
 	deluxeLightDir = (deluxeLightDir - 0.5) * 2.0;
-	//deluxeLightDir *= -1;
+	// q3map2 was storing deluxemap normals inversed... 
+	deluxeLightDir *= -1;
 	
 	// decode bumpmap normal
 	vec3 bumpMapNormal = texture2D (bumpMap, texCoord);
