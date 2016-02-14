@@ -44,10 +44,22 @@ struct md5BoneVal_s {
 		quat[2] = f[2];
 		quat[3] = f[3];
 	}
+	void setQuat(float x, float y, float z, float w) {
+		quat[0] = x;
+		quat[1] = y;
+		quat[2] = z;
+		quat[3] = w;
+	}
 	void setVec3(const float *f) {
 		pos[0] = f[0];
 		pos[1] = f[1];
 		pos[2] = f[2];
+		pos[3] = 0;
+	}
+	void setVec3(float x, float y, float z) {
+		pos[0] = x;
+		pos[1] = y;
+		pos[2] = z;
 		pos[3] = 0;
 	}
 };
@@ -164,7 +176,7 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
-	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
+	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 public:
 	skelAnimMD5_c();
 	virtual ~skelAnimMD5_c();
@@ -268,7 +280,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	void buildSingleBone(int boneNum, const skelFrame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
-	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const;
+	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 
 	void addFrameRelative(const class boneOrArray_c &ors);
 public:
@@ -277,6 +289,7 @@ public:
 	bool loadMDXAnim(const char *fname);
 	bool loadMDSAnim(const char *fname);
 	bool loadSMDAnim(const char *fname);
+	bool loadSKAAnim(const char *fname);
 };
 
 #endif //__SKELANIMIMPL_H__

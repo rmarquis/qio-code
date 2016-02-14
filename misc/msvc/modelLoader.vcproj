@@ -450,6 +450,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\skab_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\vvdFileFormat.h"
 				>
 			</File>

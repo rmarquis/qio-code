@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileFormats/mdm_file_format.h>
 #include <fileFormats/mds_file_format.h>
 #include <fileFormats/md5r_file_format.h>
+#include <fileFormats/skab_file_format.h>
 #include <math/quat.h>
 
 static stringRegister_c sk_boneNames;
@@ -774,6 +775,110 @@ bool skelModelIMPL_c::loadMD5R(const char *fname) {
 			}
 		}
 	}
+	return false;
+}
+bool skelModelIMPL_c::loadSKB(const char *fname) {
+	this->name = fname;
+
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+	skbHeader_s *h = (skbHeader_s *) fileData;
+	
+	if(h->ident != SKB_IDENT) {
+		g_core->RedWarning("SKB file %s header has bad ident\n",fname);
+		return true;
+	}
+
+	if(h->version != SKB_VERSION && h->version != SKB_VERSION_EF2) {
+		g_core->RedWarning("SKB file %s header has bad version %i - should be %i or %i\n",fname,h->version,SKB_VERSION,SKB_VERSION_EF2);
+		return true;
+	}
+
+	this->name = fname;
+
+	this->bones.resize(h->numBones);
+	for(int i = 0; i < h->numBones; i++) {
+		const skbBone_s *ib = h->pBone(i);
+		boneDef_s *ob = &this->bones[i];
+		ob->nameIndex = SK_RegisterString(ib->name);
+		ob->parentIndex = ib->parent;
+	}
+
+	this->surfs.resize(h->numSurfaces);
+	for(int i = 0; i < h->numSurfaces; i++) {
+		const skbSurface_s *is = h->pSurf(i);
+		skelSurfIMPL_c *os = &this->surfs[i];
+		if(is->ident != SKB_IDENT) {
+			g_core->RedWarning("skb file %s surface %i (%s) has bad ident.\n",fname,i,is->name);
+			return true;
+		}
+
+		//g_core->RedWarning("SF name: %s\n",is->name);
+		os->surfName = is->name;
+
+		if(is->numTriangles == 0) {
+			g_core->RedWarning("skb file %s surface %i (%s) has 0 triangles.\n",fname,i,is->name);
+		} else {
+			os->indices.resize(is->numTriangles*3);
+			const u32 *inIndices = is->pIndices();
+#if 1
+			for(u32 j = 0; j < os->indices.size(); j++) {
+				os->indices[j] = inIndices[j];
+			}
+#else
+			memcpy(&os->indices[0],inIndices,is->numTriangles*sizeof(u32)*3);
+#endif
+		}
+
+		os->verts.resize(is->numVerts);
+		u32 needWeights = 0;
+		const skbVertex_s *vi = is->pVerts();
+		for(int j = 0; j < is->numVerts; j++) {
+			needWeights += vi->numWeights;
+			vi = vi->getNextVert();
+		}
+		os->weights.resize(needWeights);
+
+		u32 weightOfs = 0;
+		vi = is->pVerts();
+		for(int j = 0; j < is->numVerts; j++) {
+			skelVert_s *vo = &os->verts[j];
+			
+			vo->tc = vi->texCoords;
+			vo->n = vi->normal;
+
+			vo->firstWeight = weightOfs;
+			vo->numWeights = vi->numWeights;
+			weightOfs += vi->numWeights;
+			for(int k = 0; k < vi->numWeights; k++) {
+				skelWeight_s *wo = &os->weights[vo->firstWeight+k];
+				const skbWeight_s *wi = vi->pWeight(k);
+
+				wo->ofs = wi->offset;
+				wo->weight = wi->boneWeight;
+				wo->boneIndex = wi->boneIndex;
+			}
+
+			vi = vi->getNextVert();
+		}
+	}
+
+	// read baseframe (only for SKB 4 models - elite force)
+	//if(h->version == SKB_VERSION_EF2) {
+	//	const skbHeader4_s *h4 = (const skbHeader4_s*)h;
+	//	const skaBone_s *b = (const skaBone_s*)(((byte*)h)+h4->ofsBaseFrame);
+	//	u32 end = h4->ofsBaseFrame + sizeof(skaBone_s)*h->numBones;
+	//	assert(end==h4->ofsEnd);
+	//	for(u32 i = 0; i < h->numBones; i++, b++) {
+
+	//	}
+	//}
+
 	return false;
 }
 bool skelModelIMPL_c::loadMDS(const char *fname) {
