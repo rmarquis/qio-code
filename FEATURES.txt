@@ -11,7 +11,7 @@ cgame
  
 renderer
  - written from scratch in C++
- - Quake3, RTCW, ET, MoHAA bsp support with PVS and lightmapping
+ - Quake3, RTCW, ET, FAKK, MoHAA bsp support with PVS and lightmapping
  - partial Quake2 and Quake BSP support
  - partial COD bsp support
  - experimental Source Engine BSP support (HL2, Episodes, CS:Source) with displacements and static props 
@@ -37,7 +37,9 @@ modelLoader
  - RTCW .mds support (skeletal models)
  - RTCW .mdc support (compressed md3)
  - .LWO static models support
+ - .3DS static models support
  - Quake3 .md3 and Quake2 .md2 keyframed meshes support
+ - Source Engine .smd support (with animation)
  - unfinished Half Life2 .mdl loader (without animations)
  
 materialSystem
