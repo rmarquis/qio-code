@@ -2362,7 +2362,7 @@ void rBspTree_c::addDrawCalls() {
 			c_culledBatches++;
 			continue;
 		}
-		if(areaPortals.size() && (rf_bsp_rebuildBatchesOnAPVisChange.getInt() == false)) {
+	//	if(areaPortals.size() && (rf_bsp_rebuildBatchesOnAPVisChange.getInt() == false)) {
 			bool visible = false;
 			for(u32 j = 0; j < b->areas.size(); j++) {
 				if(frustumAreaBits.get(b->areas[j])==true) {
@@ -2372,7 +2372,7 @@ void rBspTree_c::addDrawCalls() {
 			}
 			if(visible == false)
 				continue;
-		}
+	//	}
 		if(rf_bsp_noSurfaces.getInt() == 0) {
 			mtrAPI_i *material;
 			if(b->mat->isGenericSky()) {
