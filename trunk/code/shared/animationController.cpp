@@ -148,7 +148,12 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		return;
 	}
 	if(anim == nextAnim) {
-		outLocalBones.resize(anim->getNumBones());
+		if(anim->getNumBones()) {
+			outLocalBones.resize(anim->getNumBones());
+		} else {
+			// for SKA animation which dont have bone parenting data
+			outLocalBones.resize(skelModel->getNumBones());
+		}
 		bool bAnimationShouldStopAtLastFrame = (anim->getBLoopLastFrame() || flags & ANIMFLAG_STOPATLASTFRAME);
 		if(bAnimationShouldStopAtLastFrame && (time > ((anim->getNumFrames()-1)*anim->getFrameTime()))) {
 			// build only last frame
@@ -161,7 +166,7 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 			//g_core->Print("From %i to %i - %f\n",lerp.from,lerp.to,lerp.frac);
 
 			//anim->buildFrameBonesLocal(lerp.from,bones);
-			anim->buildLoopAnimLerpFrameBonesLocal(lerp,outLocalBones);
+			anim->buildLoopAnimLerpFrameBonesLocal(lerp,outLocalBones,skelModel);
 		//	g_core->Print("skelAnimController_c::updateModelAnimationLocal: %i: lerping single anim %s (%i to %i)\n",
 		//		lastUpdateTime,anim->getName(),lerp.from,lerp.to);
 		}
@@ -192,7 +197,7 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 	u32 numAnimBones = anim->getNumBones();
 	// This is the case for SMD models which have different bones in animation and mesh files
 	// (not always)
-	if(numSkelModelBones != 0 && numSkelModelBones != numAnimBones) {
+	if(numAnimBones != 0 && numSkelModelBones != 0 && numSkelModelBones != numAnimBones) {
 		boneOrArray_c copy = outLocalBones;
 		outLocalBones.resize(numSkelModelBones);
 		for(u32 i = 0; i < numSkelModelBones; i++) {

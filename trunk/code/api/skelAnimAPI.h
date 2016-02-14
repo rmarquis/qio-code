@@ -54,7 +54,8 @@ public:
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const = 0;
 	// for looping animations
-	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const = 0;
+	// skelModel pointer is used here only for SKA animation which are missing bone parenting information
+	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const = 0;
 };
 
 #endif // __SKELANIMAPI_H__

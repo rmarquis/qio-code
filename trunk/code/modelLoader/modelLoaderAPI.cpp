@@ -283,6 +283,9 @@ public:
 		// Wolfenstein 2009
 		if(!_stricmp(ext,"md5r"))
 			return true;
+		// FAKK
+		if(!_stricmp(ext,"skb"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -320,6 +323,11 @@ public:
 			if(skelModel->loadMD5R(fname)) {
 				delete skelModel;
 				return 0;
+			}			
+		} else if(tmp.hasExt("skb")) {
+			if(skelModel->loadSKB(fname)) {
+				delete skelModel;
+				return 0;
 			}	
 		} else {
 			delete skelModel;
@@ -346,6 +354,8 @@ public:
 		if(!_stricmp(ext,"mds"))
 			return true;
 		if(!_stricmp(ext,"smd"))
+			return true;
+		if(!_stricmp(ext,"ska"))
 			return true;
 		return false;
 	}
@@ -384,6 +394,13 @@ public:
 				return 0;
 			}
 			ret = smdAnim;
+		} else if(!_stricmp(ext,"ska")) {
+			skelAnimGeneric_c *skaAnim = new skelAnimGeneric_c;
+			if(skaAnim->loadSKAAnim(fname)) {
+				delete skaAnim;
+				return 0;
+			}
+			ret = skaAnim;
 		} else {
 			return 0;
 		}

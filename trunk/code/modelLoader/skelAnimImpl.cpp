@@ -29,7 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/skelUtils.h> // boneOrArray_c
 #include <fileFormats/mdx_file_format.h>
 #include <fileFormats/mds_file_format.h>
+#include <fileFormats/skab_file_format.h>
 #include <api/vfsAPI.h>
+#include <api/skelModelAPI.h>
 
 skelAnimGeneric_c::skelAnimGeneric_c() {
 	animFlags = 0;
@@ -343,6 +345,88 @@ bool skelAnimGeneric_c::loadSMDAnim(const char *fname) {
 	this->frameRate = 1.f / this->frameTime;
 	return false;
 }
+//
+//	FAKK .ska files loading
+//
+bool skelAnimGeneric_c::loadSKAAnim(const char *fname) {
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+	skaHeader_s *h = (skaHeader_s *) fileData;
+	
+	if(h->ident != SKA_IDENT) {
+		g_core->RedWarning("ska file %s header has bad ident\n",fname);
+		return true;
+	}
+
+	if(h->version != SKA_VERSION && h->version != SKB_VERSION_EF2) {
+		g_core->RedWarning("ska file %s header has bad version %i - should be %i or %i\n",fname,h->version,SKA_VERSION, SKB_VERSION_EF2);
+		return true;
+	}
+
+	this->frameTime = h->frametime;
+
+	//if(skel) {
+	//	if(h->numBones != skel->getNumBones())
+	//	{
+	//		g_core->RedWarning("ska file %s header has bad bone count (%i should be %i to mach skb\n",
+	//			fname,h->numBones,skel->getNumBones());
+	//		return true;
+	//	}
+	//}
+
+	this->animFileName = fname;
+	if(h->version == SKA_VERSION) {
+		this->frames.resize(h->numFrames);
+		for(u32 i = 0; i < h->numFrames; i++) {
+			const skaFrame_s *f = h->pFrame(i);
+			skelFrame_c *of = &this->frames[i];
+			of->bones.resize(h->numBones);
+			md5BoneVal_s *out = of->bones.getArray();
+			for(u32 j = 0; j < h->numBones; j++) {
+				const skaBone_s *b = f->pBone(j);
+				out->setQuat(-float(b->shortQuat[0])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					-float(b->shortQuat[1])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					-float(b->shortQuat[2])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					float(b->shortQuat[3])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL);
+
+				out->setVec3(float(b->shortOffset[0])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL,
+					float(b->shortOffset[1])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL,
+					float(b->shortOffset[2])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL);
+				out++;
+			}
+		}
+	} else if(h->version == SKA_VERSION_EF2) {
+		const skaHeader4_s *h4 = (const skaHeader4_s*)h;
+		this->frames.resize(h->numFrames);
+		for(u32 i = 0; i < h->numFrames; i++) {
+			const skaFrame_s *f = h4->pFrame(i);
+			skelFrame_c *of = &this->frames[i];
+			of->bones.resize(h->numBones);
+			md5BoneVal_s *out = of->bones.getArray();
+			for(u32 j = 0; j < h->numBones; j++) {
+				const skaBone_s *b = f->pBone(j);
+				out->setQuat(-float(b->shortQuat[0])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					-float(b->shortQuat[1])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					-float(b->shortQuat[2])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL,
+					float(b->shortQuat[3])*SKA_BONE_QUAT_MULTIPLIER_RECIPROCAL);
+
+				out->setVec3(float(b->shortOffset[0])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL,
+					float(b->shortOffset[1])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL,
+					float(b->shortOffset[2])*SKA_BONE_OFFSET_MULTIPLIER_RECIPROCAL);
+				out++;
+			}
+		}
+	}
+
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
 skelAnimAPI_i *skelAnimGeneric_c::createSubAnim(u32 firstFrame, u32 numFrames) const {
 	skelAnimGeneric_c *copy = new skelAnimGeneric_c();
 	u32 lastFrame = firstFrame + numFrames;
@@ -385,7 +469,7 @@ void skelAnimGeneric_c::addFrameRelative(const class boneOrArray_c &ors) {
 	//f.bounds.fromRadius(16.f); // TODO?
 	frames.push_back(f);
 }
-void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
+void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
 	if(lerp.to >= this->frames.size()) {
 		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
 		return;
@@ -394,16 +478,25 @@ void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnim
 		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame index %i out of range <0,%i)\n",lerp.from,frames.size());
 		return;
 	}
+	u32 numBoneDefs;
+	const boneDef_s *boneDef;
+	if(bones.size()) {
+		boneDef = bones.getArray();
+		numBoneDefs = bones.size();
+	} else {
+		boneDef = skelModel->getBoneDefs()->getArray();
+		numBoneDefs = skelModel->getNumBones();
+	}
+
 	const skelFrame_c &from = this->frames[lerp.from];
 	const skelFrame_c &to = this->frames[lerp.to];
-	if(out.size() != bones.size()) {
+	if(out.size() != numBoneDefs) {
 		// reallocating array_c memory in another module might cause
 		// some issues (as long we dont have own memory system)
 		g_core->DropError("skelAnimMD5_c::buildFrameBonesLocal: out.size() != this->bones.size()\n");
 	}
-	const boneDef_s *boneDef = bones.getArray();
 	boneOr_s *outBone = out.getArray();
-	for(u32 i = 0; i < bones.size(); i++, boneDef++, outBone++) {
+	for(u32 i = 0; i < numBoneDefs; i++, boneDef++, outBone++) {
 		vec3_c posFrom, posTo;
 		quat_c quatFrom, quatTo;
 		buildSingleBone(i,from,posFrom,quatFrom);
@@ -642,7 +735,7 @@ void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) c
 	buildFrameBonesLocal(frameNum,out);
 	out.localBonesToAbsBones(&this->bones);
 }
-void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out) const {
+void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
 	if(lerp.to >= this->frames.size()) {
 		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
 		return;

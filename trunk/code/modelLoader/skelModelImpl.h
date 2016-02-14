@@ -185,6 +185,8 @@ public:
 	bool loadSMD(const char *fname);
 	// Wolfenstein 2009
 	bool loadMD5R(const char *fname);
+	// FAKK
+	bool loadSKB(const char *fname);
 	void recalcEdges();
 };
 
