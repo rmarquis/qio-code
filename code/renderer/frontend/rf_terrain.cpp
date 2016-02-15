@@ -461,7 +461,7 @@ r_terrain_c *RFT_AllocTerrain() {
 }
 void RFT_InitTerrain() {
 	heightmap_c h;
-	h.initFlat(16.f,16.f,512,512);
+	h.initFlat(16.f,16.f,256,256);
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
 	hi.addZ(10.f);
