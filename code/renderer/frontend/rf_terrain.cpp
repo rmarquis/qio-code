@@ -316,7 +316,7 @@ void lodTerrain_c::updateLOD(const vec3_c &cam) {
 		//	continue;
 		//}
 		d *= lodScale;
-		u32 lod = d / 400;
+		u32 lod = d / 800;
 		if(lod > maxLOD)
 			lod = maxLOD;
 		patches[i].curLOD = lod;
@@ -444,7 +444,7 @@ class r_terrain_c {
 public:
 	void initTerrain(const heightmapInstance_c &hi) {
 		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
-		lt.initLODTerrain(hi,4,true);
+		lt.initLODTerrain(hi,4,false);
 	}
 	void addTerrainDrawCalls() {
 		//sf.addDrawCall();
@@ -461,7 +461,7 @@ r_terrain_c *RFT_AllocTerrain() {
 }
 void RFT_InitTerrain() {
 	heightmap_c h;
-	h.initFlat(16.f,16.f,256,256);
+	h.initFlat(16.f,16.f,512,512);
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
 	hi.addZ(10.f);
@@ -469,12 +469,12 @@ void RFT_InitTerrain() {
 	hi.processTerrain(tm);
 	tm.setOrigin(vec3_c(64,64,64));
 	hi.processTerrain(tm);
-	for(u32 i = 0; i < 10; i++) {
+	for(u32 i = 0; i < 25; i++) {
 		vec3_c p;
 		hi.getBB().getRandomPointInside(p);
 		tm.setOrigin(p);
-		tm.setMaxDist(256+rand()%1024);
-		tm.setForce(512 - rand()%1024);
+		tm.setMaxDist(256+rand()%2048);
+		tm.setForce(512 - rand()%2048);
 		hi.processTerrain(tm);
 	}
 	RFT_AllocTerrain()->initTerrain(hi);

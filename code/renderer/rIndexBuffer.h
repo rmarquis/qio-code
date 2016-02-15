@@ -86,8 +86,15 @@ public:
 	void push_back(u32 nextIndex) {
 		ensureAllocated_indices(numIndices+1);
 		if(type == IBO_U16) {
-			((u16*)data.getArray())[numIndices] = nextIndex;
-			numIndices++;
+			if(nextIndex >= U16_MAX) {
+				convertToU32Buffer();
+				ensureAllocated_indices(numIndices+1);
+				((u32*)data.getArray())[numIndices] = nextIndex;
+				numIndices++;
+			} else {
+				((u16*)data.getArray())[numIndices] = nextIndex;
+				numIndices++;
+			}
 		} else if(type == IBO_U32) {
 			((u32*)data.getArray())[numIndices] = nextIndex;
 			numIndices++;
