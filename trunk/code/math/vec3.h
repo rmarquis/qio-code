@@ -58,6 +58,15 @@ public:
 	inline void setZ(float f) {
 		z = f;
 	}
+	inline void addX(float f) {
+		x += f;
+	}
+	inline void addY(float f) {
+		y += f;
+	}
+	inline void addZ(float f) {
+		z += f;
+	}
 	vec3_c() {
 		x = 0;
 		y = 0;

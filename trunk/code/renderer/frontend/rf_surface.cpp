@@ -837,6 +837,59 @@ u32 getQTIndex(u32 factor, u32 x, u32 y) {
 	u32 out = x * (factor + 1) + y;
 	return out;
 }
+u32 getTerIndex(u32 dim, u32 x, u32 y) {
+	u32 out = x * dim + y;
+	return out;
+}
+void r_surface_c::initTerrain(u32 w, u32 h, const vec3_c *xyzs, const vec2_c *tcs, const vec3_c *norms) {
+	verts.resize(w*h);
+	for(u32 i = 0; i < verts.size(); i++) {
+		verts[i].xyz = xyzs[i];
+		verts[i].tc = tcs[i];
+		verts[i].normal = norms[i];
+		bounds.addPoint(xyzs[i]);
+	}
+	// create indices
+	// quads
+	//u16 *indices16 = this->indices.initU16(Square(factor) * 4);
+	// triangle pairs
+	u32 *indices32 = this->indices.initU32(w*h * 6);
+	u32 i = 0;
+	for(int x = 1; x < w; x++) {
+		for(int y = 1; y < h; y++) {
+			u32 i0 = getTerIndex(h,x-1,y-1);;
+			u32 i1 = getTerIndex(h,x-1,y);
+			u32 i2 = getTerIndex(h,x,y);
+			u32 i3 = getTerIndex(h,x,y-1);
+#if 0
+			// quads (GL_QUADS)
+			indices16[i] = i0;
+			i++;
+			indices16[i] = i1;
+			i++;
+			indices16[i] = i2;
+			i++;
+			indices16[i] = i3;
+			i++;
+#else
+			// two triangles (GL_TRIANGLES)
+			indices32[i] = i0;
+			i++;
+			indices32[i] = i1;
+			i++;
+			indices32[i] = i2;
+			i++;
+
+			indices32[i] = i3;
+			i++;
+			indices32[i] = i0;
+			i++;
+			indices32[i] = i2;
+			i++;
+#endif
+		}
+	}
+}
 void r_surface_c::createFlatGrid(float size, int rows) {
 	float halfSize = size * 0.5f;
 

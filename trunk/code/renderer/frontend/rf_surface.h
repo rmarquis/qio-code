@@ -232,7 +232,8 @@ public:
 		createSphere(radius,polyCountX,polyCountY);
 		translateXYZ(center);
 	}
-
+	void initTerrain(u32 w, u32 h, const vec3_c *xyzs, const vec2_c *tcs, const vec3_c *norms);
+	
 	void scaleTexCoords(float tcScale) {
 		rVert_c *v = verts.getArray();
 		for(u32 i = 0; i < verts.size(); i++, v++) {
