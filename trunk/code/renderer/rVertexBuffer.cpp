@@ -49,6 +49,24 @@ void rVertexBuffer_c::calcEnvironmentTexCoordsForReferencedVertices(const class 
 	}
 }
 
+void rVertexBuffer_c::scaleTexCoords(float scale) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		v->tc *= scale;
+	}
+}
+void rVertexBuffer_c::scaleXYZ(float scaleX, float scaleY, float scaleZ) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		v->xyz.scaleXYZ(scaleX,scaleY,scaleZ);
+	}
+}
+void rVertexBuffer_c::scaleXYZ(float scale) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		v->xyz *= scale;
+	}
+}
 void rVertexBuffer_c::setVertexColorsToConstValue(byte val) {
 	rVert_c *v = this->getArray();
 	for(u32 i = 0; i < this->numVerts; i++, v++) {

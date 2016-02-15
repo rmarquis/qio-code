@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 #include "aabb.h"
+#include <stdlib.h>
 
 // cohen-sutherland clipping outcodes
 enum {
@@ -33,6 +34,15 @@ enum {
 	CLIP_BACK	=	(1<<5),
 };
 
+void aabb::getRandomPointInside(class vec3_c &o) const {
+	float fX = (rand()%1000) * 0.001f;
+	float fY = (rand()%1000) * 0.001f;
+	float fZ = (rand()%1000) * 0.001f;
+	vec3_c sizes = getSizes();
+	o.x = mins.x + sizes.x * fX;
+	o.y = mins.y + sizes.y * fY;
+	o.z = mins.z + sizes.z * fZ;
+}
 // calculates the cohen-sutherland outcode for a point and this bounding box.
 char aabb::calcOutCode( const vec3_c &point ) const {	
 	char outcode = 0;

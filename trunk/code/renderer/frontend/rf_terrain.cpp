@@ -23,7 +23,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_terrain.cpp
 #include "rf_surface.h"
+#include "rf_local.h"
+#include "rf_drawCall.h"
 #include <shared/array.h>
+#include <api/materialSystemAPI.h>
+#include <api/mtrAPI.h>
 
 
 void calcNormal(vec3_c &n, const vec3_c &a, const vec3_c &b, const vec3_c &c) {
@@ -43,6 +47,15 @@ public:
 	terrainMod_c() {
 		maxDist = 128.f;
 		force = 64.f;
+	}
+	void setForce(float f) {
+		force = f;
+	}
+	void setMaxDist(float f) {
+		maxDist = f;
+	}
+	void setOrigin(const vec3_c &no) {
+		center = no;
 	}
 	virtual void processVertex(float x, float y, float &z) const {
 		vec3_c v(x,y,z);
@@ -126,6 +139,9 @@ public:
 	const vec3_c *getNormals() const {
 		return normals.getArray();
 	}
+	const aabb &getBB() const {
+		return bb;
+	}
 };
 
 bool heightmapInstance_c::initInstance(const heightmap_c &h, bool bGenTexCoords, bool bGenNormals) {
@@ -186,31 +202,281 @@ bool heightmapInstance_c::initInstance(const heightmap_c &h, bool bGenTexCoords,
 
 	return false;
 }
-class rTerrainPatch_c {
-	r_surface_c sf;
+
+
+class lodTerrainPatch_c {
+friend class lodTerrain_c;
+	aabb bounds;
+	vec3_c center;
+	lodTerrainPatch_c *top, *bottom, *right, *left;
+	u32 curLOD;
+	rIndexBuffer_c curIndices;
+	// this is different only for border patches
+	u32 sizeX, sizeY;
 public:
-	void initTerrain(const heightmapInstance_c &hi) {
-		sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
-	}
-	void addTerrainDrawCalls() {
-		sf.addDrawCall();
+	lodTerrainPatch_c() {
+		curLOD = 0;
 	}
 };
-arraySTD_c<rTerrainPatch_c*> r_terrain;
+class lodTerrain_c {
+	arraySTD_c<lodTerrainPatch_c> patches;
+	rIndexBuffer_c curIndices;
+	rVertexBuffer_c verts;
+	u32 patchSizeEdges;
+	u32 patchSizeVerts;
+	u32 size;
+	u32 patchCount;
+	u32 maxLOD;
+	float lodScale;
+	class mtrAPI_i *mat;
 
-rTerrainPatch_c *RFT_AllocTerrain() {
-	rTerrainPatch_c *t = new rTerrainPatch_c();
+	u32 calcIndex(u32 patchX, u32 patchY, u32 patchIndex, u32 vertexX, u32 vertexY) const;
+	void calcPatchIndices(u32 patchX, u32 patchY);
+public:
+	lodTerrain_c();
+	bool initLODTerrain(const class heightmapInstance_c &h, u32 lodPower, bool bExactSize);
+	void scaleTexCoords(float s);
+	void scaleXYZ(float x, float y, float z);
+
+	void updateLOD(const class vec3_c &cam);
+	void setLODScale(float newScale) {
+		lodScale = newScale;
+	}
+	void addDrawCalls();
+};
+lodTerrain_c::lodTerrain_c() {
+	lodScale = 1.f;
+	mat = g_ms->registerMaterial("defaultTerrainMaterial");
+}
+void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
+
+	u32 index = patchX * patchCount + patchY;
+	const u32 step = 1 << patches[index].curLOD;
+
+	lodTerrainPatch_c &p = patches[index];
+	rIndexBuffer_c &indexBuffer = p.curIndices;
+	indexBuffer.setNullCount();
+	u32 x = 0;
+	u32 z = 0;
+	while (z < p.sizeY) {
+		const u32 index11 = calcIndex(patchY, patchX, index, x, z);
+		const u32 index21 = calcIndex(patchY, patchX, index, x + step, z);
+		const u32 index12 = calcIndex(patchY, patchX, index, x, z + step);
+		const u32 index22 = calcIndex(patchY, patchX, index, x + step, z + step);
+
+		if(index11 >= verts.getNumVerts() || index12 >= verts.getNumVerts() || index21 >= verts.getNumVerts() || index22 >= verts.getNumVerts()) {
+	//		printf("error");
+		} else {
+			indexBuffer.push_back(index12);
+			indexBuffer.push_back(index11);
+			indexBuffer.push_back(index22);
+			indexBuffer.push_back(index22);
+			indexBuffer.push_back(index11);
+			indexBuffer.push_back(index21);
+		}
+
+		x += step;
+
+		if (x >= patchSizeVerts) {
+			x = 0;
+			z += step;
+		}
+	}
+}
+void lodTerrain_c::scaleTexCoords(float s) {
+	verts.scaleTexCoords(s);
+}
+float g_randomColors[][3] = {
+	{ 1, 0, 0 },
+	{ 0, 1, 0 },
+	{ 0, 0, 1 },
+
+	{ 1, 1, 0 },
+	{ 0, 1, 1 },
+	{ 1, 0, 1 },
+
+	{ 0.5, 1, 0.5 },
+};
+u32 g_numRandomColors = sizeof(g_randomColors)/sizeof(g_randomColors[0]);
+void lodTerrain_c::scaleXYZ(float x, float y, float z) {
+	verts.scaleXYZ(x,y,z);
+	for(u32 i = 0; i < patches.size(); i++) {
+		patches[i].center.scaleXYZ(x,y,z);
+	}
+}
+void lodTerrain_c::updateLOD(const vec3_c &cam) {
+	for(u32 i = 0; i < patchCount*patchCount; i++) {	
+		const vec3_c &p = patches[i].center;
+		float d = p.dist(cam);
+		//if(1) {
+		//	if(d > 100)
+		//		patches[i].curLOD = 1;
+		//	else 
+		//		patches[i].curLOD = 0;
+		//	continue;
+		//}
+		d *= lodScale;
+		u32 lod = d / 400;
+		if(lod > maxLOD)
+			lod = maxLOD;
+		patches[i].curLOD = lod;
+	}
+	for(u32 i = 0; i < patchCount; i++) {		
+		for(u32 j = 0; j < patchCount; j++) {
+			calcPatchIndices(i,j);
+		}
+	}
+}
+u32 lodTerrain_c::calcIndex(u32 patchX, u32 patchY, u32 patchIndex, u32 localVertexX, u32 localVertexY) const {
+	if(patches[patchIndex].sizeX < localVertexY)
+		localVertexY = patches[patchIndex].sizeX;
+	if(patches[patchIndex].sizeY < localVertexX)
+		localVertexX = patches[patchIndex].sizeY;
+
+	if (localVertexY == 0) {
+		if (patches[patchIndex].top &&
+			patches[patchIndex].curLOD < patches[patchIndex].top->curLOD &&
+			(localVertexX % (1 << patches[patchIndex].top->curLOD)) != 0 ) {
+			localVertexX -= localVertexX % (1 << patches[patchIndex].top->curLOD);
+		}
+	} else if (localVertexY == (u32)patchSizeVerts) {
+		if (patches[patchIndex].bottom &&
+			patches[patchIndex].curLOD < patches[patchIndex].bottom->curLOD &&
+			(localVertexX % (1 << patches[patchIndex].bottom->curLOD)) != 0) {
+			localVertexX -= localVertexX % (1 << patches[patchIndex].bottom->curLOD);
+		}
+	}
+
+	if (localVertexX == 0) {
+		if (patches[patchIndex].left &&
+			patches[patchIndex].curLOD < patches[patchIndex].left->curLOD &&
+			(localVertexY % (1 << patches[patchIndex].left->curLOD)) != 0) {
+			localVertexY -= localVertexY % (1 << patches[patchIndex].left->curLOD);
+		}
+	} else if (localVertexX == (u32)patchSizeVerts) {
+		if (patches[patchIndex].right &&
+			patches[patchIndex].curLOD < patches[patchIndex].right->curLOD &&
+			(localVertexY % (1 << patches[patchIndex].right->curLOD)) != 0) {
+			localVertexY -= localVertexY % (1 << patches[patchIndex].right->curLOD);
+		}
+	}
+
+	if (localVertexY >= (u32)patchSizeEdges)
+		localVertexY = patchSizeVerts;
+
+	if (localVertexX >= (u32)patchSizeEdges)
+		localVertexX = patchSizeVerts;
+	
+	//if(patches[patchIndex].sizeX < localVertexX)
+	//	localVertexX = patches[patchIndex].sizeX;
+	//if(patches[patchIndex].sizeY < localVertexY)
+	//	localVertexY = patches[patchIndex].sizeY;
+
+	return (localVertexY + ((patchSizeVerts) * patchY)) * size +
+		(localVertexX + ((patchSizeVerts) * patchX));
+}
+bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPower, bool bExactSize) {
+	verts.clear();
+	patches.clear();
+
+	this->maxLOD = lodPower;
+	patchSizeVerts = 2 << maxLOD;
+	patchSizeEdges = patchSizeVerts + 1;
+	printf("Patch size verts: %i (for MAXLOD %i)\n",patchSizeVerts,maxLOD);
+	verts.resize(h.getNumVertices());
+	for(u32 i = 0; i < verts.size(); i++) {
+		verts[i].xyz = h.getXYZs()[i];
+		verts[i].tc = h.getTCs()[i];
+	}
+	if(bExactSize) {
+		patchCount = ((h.getW()-1) / patchSizeVerts)+1;
+	} else {
+		patchCount = ((h.getW()-1) / patchSizeVerts);
+	}
+//	u32 checkSize = patchSizeVerts*patchCount + 1;
+	size = h.getW();
+	patches.resize(patchCount*patchCount);
+	for(u32 i = 0; i < patchCount; i++) {
+		for(u32 j = 0; j < patchCount; j++) {
+			u32 index = i * patchCount + j;
+			lodTerrainPatch_c &p = patches[index];
+			u32 minX = i*patchSizeVerts;
+			u32 maxX = minX+patchSizeVerts;
+			u32 minY = j*patchSizeVerts;
+			u32 maxZ = minY+patchSizeVerts;
+			if(maxZ >= size) {
+				u32 overflowZ = maxZ - (size-1);
+				maxZ = size-1;
+				p.sizeY = patchSizeVerts - overflowZ;
+			} else {
+				p.sizeY = patchSizeVerts;
+			}
+			if(maxX >= size) {
+				u32 overflowX = maxX - (size-1);
+				maxX = size-1;
+				p.sizeX = patchSizeVerts - overflowX;
+			} else {
+				p.sizeX = patchSizeVerts;
+			}
+			for (u32 pX = minX; pX <= maxX; ++pX)
+				for (u32 pY = minY; pY <= maxZ; ++pY)
+					p.bounds.addPoint(verts.getXYZ(pX * size + pY));
+			p.center = p.bounds.getCenter();
+			p.top = i > 0 ? &patches[(i-1) * patchCount + j] : 0;
+			p.bottom = (i < patchCount - 1) ? &patches[(i+1) * patchCount + j] : 0;
+			p.left = (j > 0) ? &patches[i * patchCount + j - 1] : 0;
+			p.right = (j < patchCount - 1) ? &patches[i * patchCount + j + 1] : 0;
+		}
+	}
+	return false;
+}
+
+void lodTerrain_c::addDrawCalls() {
+
+	for(u32 i = 0; i < patches.size(); i++) {
+		lodTerrainPatch_c &lp = patches[i];
+		RF_AddDrawCall(&this->verts,&lp.curIndices,this->mat,0,this->mat->getSort(),0,0,0);
+	}
+}
+class r_terrain_c {
+	//r_surface_c sf;
+	lodTerrain_c lt;
+public:
+	void initTerrain(const heightmapInstance_c &hi) {
+		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
+		lt.initLODTerrain(hi,4,true);
+	}
+	void addTerrainDrawCalls() {
+		//sf.addDrawCall();
+		lt.updateLOD(rf_camera.getOrigin());
+		lt.addDrawCalls();
+	}
+};
+arraySTD_c<r_terrain_c*> r_terrain;
+
+r_terrain_c *RFT_AllocTerrain() {
+	r_terrain_c *t = new r_terrain_c();
 	r_terrain.push_back(t);
 	return t;
 }
 void RFT_InitTerrain() {
 	heightmap_c h;
-	h.initFlat(16.f,16.f,16,16);
+	h.initFlat(16.f,16.f,512,512);
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
 	hi.addZ(10.f);
 	terrainMod_c tm;
 	hi.processTerrain(tm);
+	tm.setOrigin(vec3_c(64,64,64));
+	hi.processTerrain(tm);
+	for(u32 i = 0; i < 10; i++) {
+		vec3_c p;
+		hi.getBB().getRandomPointInside(p);
+		tm.setOrigin(p);
+		tm.setMaxDist(256+rand()%1024);
+		tm.setForce(512 - rand()%1024);
+		hi.processTerrain(tm);
+	}
 	RFT_AllocTerrain()->initTerrain(hi);
 }
 void RFT_AddTerrainDrawCalls() {
