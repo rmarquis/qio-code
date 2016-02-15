@@ -42,6 +42,18 @@ public:
 		maxs = mins = p0;
 		addPoint(p1);
 	}
+	void addX(float f) {
+		mins.addX(f);
+		maxs.addX(f);
+	}
+	void addY(float f) {
+		mins.addY(f);
+		maxs.addY(f);
+	}
+	void addZ(float f) {
+		mins.addZ(f);
+		maxs.addZ(f);
+	}
 	void clear() {
 		maxs.set(-AABB_INFINITE, -AABB_INFINITE, -AABB_INFINITE);
 		mins.set(AABB_INFINITE, AABB_INFINITE, AABB_INFINITE);
