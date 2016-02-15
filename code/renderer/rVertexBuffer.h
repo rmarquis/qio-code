@@ -48,6 +48,11 @@ public:
 			unloadFromGPU();
 		}
 	}
+	void clear() {
+		unloadFromGPU();
+		data.clear();
+		numVerts = 0;
+	}
 	const rVert_c &getVert(u32 i) const {
 		return data[i];
 	}
@@ -108,6 +113,9 @@ public:
 		return numVerts*sizeof(rVert_c);
 	}
 	u32 size() const {
+		return numVerts;
+	}
+	u32 getNumVerts() const {
 		return numVerts;
 	}
 	const rVert_c &operator [] (u32 index) const {
@@ -217,6 +225,9 @@ public:
 		rgbVals[2] = vec3_255[2];
 		setVertexColorsToConstValues(rgbVals);
 	}
+	void scaleTexCoords(float scale);
+	void scaleXYZ(float scale);
+	void scaleXYZ(float scaleX, float scaleY, float scaleZ);
 	void setVertexAlphaToConstValue(byte val);
 
 	void transform(const class matrix_c &mat);
