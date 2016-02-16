@@ -673,6 +673,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\perlinNoise.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\perlinNoise.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\perStringCallback.h"
 				>
 			</File>
@@ -802,6 +810,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\mtrStageAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\noise2DAPI.h"
 				>
 			</File>
 			<File

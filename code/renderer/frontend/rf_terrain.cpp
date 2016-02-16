@@ -26,9 +26,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_local.h"
 #include "rf_drawCall.h"
 #include <shared/array.h>
+#include <shared/perlinNoise.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
+#include <shared/autocvar.h>
 
+static aCvar_c rf_skipTerrain("rf_skipTerrain","0");
 
 void calcNormal(vec3_c &n, const vec3_c &a, const vec3_c &b, const vec3_c &c) {
 	vec3_c e0 = a - b;
@@ -101,6 +104,21 @@ public:
 	bool initInstance(const heightmap_c &h, bool bGenTexCoords = false, bool bGenNormals = false);
 	bool samplePosition(const class vec3_c &at, vec3_c &o, class plane_c *op) const;
 
+	void applyNoise(class noise2DAPI_i *n, float scale) {
+		for(u32 i = 0; i < xyzs.size(); i++) {
+			vec3_c &v = xyzs[i];
+			v.z += n->sampleNoise2D(v.x*scale,v.y*scale);
+			bb.addPoint(v);
+		}
+	}
+	void centerize() { 
+		translate(-bb.getCenter());
+	}
+	void scaleTCs(float f) {
+		for(u32 i = 0; i < xyzs.size(); i++) {
+			tcs[i] *= (f);
+		}
+	}
 	void addZ(float f) {
 		for(u32 i = 0; i < xyzs.size(); i++) {
 			xyzs[i].addZ(f);
@@ -113,6 +131,12 @@ public:
 			m.processVertex(v.x,v.y,v.z);
 			bb.addPoint(v);
 		}
+	}
+	void translate(const vec3_c &v) {
+		for(u32 i = 0; i < xyzs.size(); i++) {
+			xyzs[i] += v;
+		}
+		bb.translate(v);
 	}
 	void scaleXYZ(float f) {
 		scale *= f;
@@ -179,10 +203,10 @@ bool heightmapInstance_c::initInstance(const heightmap_c &h, bool bGenTexCoords,
 				u32 i2 = (i) * this->h + j - 1;
 				u32 i1 = (i) * this->h + j;
 				u32 i0 = (i-1) * this->h + j;
-				const vec3_c &v0 = xyzs[i0];
-				const vec3_c &v1 = xyzs[i1];
-				const vec3_c &v2 = xyzs[i2];
-				const vec3_c &v3 = xyzs[i3];
+				const vec3_c &v0 = xyzs[i3];
+				const vec3_c &v1 = xyzs[i2];
+				const vec3_c &v2 = xyzs[i1];
+				const vec3_c &v3 = xyzs[i0];
 				vec3_c nA, nB;
 				calcNormal(nA,v0,v1,v2);
 				calcNormal(nB,v2,v3,v0);
@@ -209,13 +233,15 @@ friend class lodTerrain_c;
 	aabb bounds;
 	vec3_c center;
 	lodTerrainPatch_c *top, *bottom, *right, *left;
-	u32 curLOD;
+	int curLOD;
+	int savedLOD, savedLOD_top, savedLOD_bot, savedLOD_right, savedLOD_left;
 	rIndexBuffer_c curIndices;
 	// this is different only for border patches
 	u32 sizeX, sizeY;
 public:
 	lodTerrainPatch_c() {
 		curLOD = 0;
+		savedLOD = -1;
 	}
 };
 class lodTerrain_c {
@@ -246,14 +272,36 @@ public:
 };
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
-	mat = g_ms->registerMaterial("defaultTerrainMaterial");
+	mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
 }
 void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 
 	u32 index = patchX * patchCount + patchY;
+	lodTerrainPatch_c &p = patches[index];
+	// see if there is a change
+	int lod_bot = p.bottom != 0 ? p.bottom->curLOD : -1;
+	int lod_top = p.top != 0 ? p.top->curLOD : -1;
+	int lod_left = p.left != 0 ? p.left->curLOD : -1;
+	int lod_right = p.right != 0 ? p.right->curLOD : -1;
+	if(p.curLOD == p.savedLOD
+		&&
+		p.savedLOD_bot == lod_bot
+		&&
+		p.savedLOD_top == lod_top
+		&&
+		p.savedLOD_left == lod_left
+		&&
+		p.savedLOD_right == lod_right) {
+		return;
+	}
+	p.savedLOD = p.curLOD;
+	p.savedLOD_bot = lod_bot;
+	p.savedLOD_top = lod_top;
+	p.savedLOD_left = lod_left;
+	p.savedLOD_right = lod_right;
+
 	const u32 step = 1 << patches[index].curLOD;
 
-	lodTerrainPatch_c &p = patches[index];
 	rIndexBuffer_c &indexBuffer = p.curIndices;
 	indexBuffer.setNullCount();
 	u32 x = 0;
@@ -282,6 +330,7 @@ void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 			z += step;
 		}
 	}
+	indexBuffer.uploadToGPU();
 }
 void lodTerrain_c::scaleTexCoords(float s) {
 	verts.scaleTexCoords(s);
@@ -387,6 +436,7 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 	for(u32 i = 0; i < verts.size(); i++) {
 		verts[i].xyz = h.getXYZs()[i];
 		verts[i].tc = h.getTCs()[i];
+		verts[i].normal = h.getNormals()[i];
 	}
 	if(bExactSize) {
 		patchCount = ((h.getW()-1) / patchSizeVerts)+1;
@@ -428,6 +478,7 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 			p.right = (j < patchCount - 1) ? &patches[i * patchCount + j + 1] : 0;
 		}
 	}
+	verts.uploadToGPU();
 	return false;
 }
 
@@ -435,6 +486,8 @@ void lodTerrain_c::addDrawCalls() {
 
 	for(u32 i = 0; i < patches.size(); i++) {
 		lodTerrainPatch_c &lp = patches[i];
+		if(rf_camera.getFrustum().cull(lp.bounds)==CULL_OUT)
+			continue;
 		RF_AddDrawCall(&this->verts,&lp.curIndices,this->mat,0,this->mat->getSort(),0,0,0);
 	}
 }
@@ -444,7 +497,7 @@ class r_terrain_c {
 public:
 	void initTerrain(const heightmapInstance_c &hi) {
 		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
-		lt.initLODTerrain(hi,4,false);
+		lt.initLODTerrain(hi,5,false);
 	}
 	void addTerrainDrawCalls() {
 		//sf.addDrawCall();
@@ -461,25 +514,42 @@ r_terrain_c *RFT_AllocTerrain() {
 }
 void RFT_InitTerrain() {
 	heightmap_c h;
-	h.initFlat(16.f,16.f,512,512);
+	h.initFlat(16.f,16.f,128,128);
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
+#if 1
+	hi.centerize();
+#else
+	vec3_c tmp = hi.getBB().getSizes();
+	tmp.x = 0;
+	tmp.y *= -1;
+	tmp.z = 0;
+	hi.translate(tmp);
+#endif
+	hi.scaleTCs(100.f);
 	hi.addZ(10.f);
-	terrainMod_c tm;
-	hi.processTerrain(tm);
-	tm.setOrigin(vec3_c(64,64,64));
-	hi.processTerrain(tm);
-	for(u32 i = 0; i < 25; i++) {
-		vec3_c p;
-		hi.getBB().getRandomPointInside(p);
-		tm.setOrigin(p);
-		tm.setMaxDist(256+rand()%2048);
-		tm.setForce(512 - rand()%2048);
-		hi.processTerrain(tm);
-	}
+	pn_c pn;
+	pnDef_s pd;
+	pd.amp = 1024.f;
+	pn.setupPerlin(&pd);
+	hi.applyNoise(&pn,0.0001f);
+//	terrainMod_c tm;
+//	hi.processTerrain(tm);
+//	tm.setOrigin(vec3_c(64,64,64));
+//	hi.processTerrain(tm);
+	//for(u32 i = 0; i < 25; i++) {
+	//	vec3_c p;
+	//	hi.getBB().getRandomPointInside(p);
+	//	tm.setOrigin(p);
+	//	tm.setMaxDist(256+rand()%2048);
+	//	tm.setForce(512 - rand()%2048);
+	//	hi.processTerrain(tm);
+	//}
 	RFT_AllocTerrain()->initTerrain(hi);
 }
 void RFT_AddTerrainDrawCalls() {
+	if(rf_skipTerrain.getInt())
+		return;
 	for(u32 i = 0; i < r_terrain.size(); i++) {
 		r_terrain[i]->addTerrainDrawCalls();
 	}
