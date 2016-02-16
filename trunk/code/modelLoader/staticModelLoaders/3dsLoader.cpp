@@ -99,6 +99,7 @@ bool MOD_Load3DS(const char *fname, class staticModelCreatorAPI_i *out) {
 		g_core->RedWarning("MOD_Load3DS: %s has bad ident %i, should be %i\n",fname,h->ident,IDENT_3DS);
 		return true;
 	}
+	aabb allPointsBounds;
 	str dir = fname;
 	dir.toDir();
 	hashTableTemplateExt_c<tmp3DSMaterial_s> readMats;
@@ -241,6 +242,7 @@ bool MOD_Load3DS(const char *fname, class staticModelCreatorAPI_i *out) {
 										xyz.y = s.readFloat();
 										xyz.z = s.readFloat();
 										xyzs[i] = xyz;
+										allPointsBounds.addPoint(xyz);
 										//g_core->Print("Vert %i of %i - %f %f %f\n",i,numVerts,xyz.x,xyz.y,xyz.z);
 									}
 								} else if(meshc.ident == 0x4140) {
@@ -290,7 +292,15 @@ bool MOD_Load3DS(const char *fname, class staticModelCreatorAPI_i *out) {
 											tmp3DSMaterial_s *f = readMats.getEntry(mtlName);
 											u16 numEntries = s.readU16();
 											
-
+											str qioMatName;
+											if(f) {
+												qioMatName = f->qioMaterial;
+											} else {
+												qioMatName = "noMaterial";
+											}
+											if(tcs.size() == 0) {
+												g_core->RedWarning("3DS surface without texcoords - numTris %i, mtlName %s\n",numEntries,mtlName);
+											}
 											//g_core->Print("mtllist - numEtnries %i, mtlName %s\n",numEntries,mtlName);
 											for(u32 i = 0; i < numEntries; i++) {
 												u16 faceIndex = s.readU16();
@@ -298,15 +308,21 @@ bool MOD_Load3DS(const char *fname, class staticModelCreatorAPI_i *out) {
 												u32 v1 = indices[faceIndex*3+1];
 												u32 v2 = indices[faceIndex*3+2];
 												simpleVert_s sv0;
-												sv0.tc = tcs[v0];
 												sv0.xyz = xyzs[v0];
 												simpleVert_s sv1;
-												sv1.tc = tcs[v1];
 												sv1.xyz = xyzs[v1];
 												simpleVert_s sv2;
-												sv2.tc = tcs[v2];
 												sv2.xyz = xyzs[v2];
-												out->addTriangle(f->qioMaterial,sv2,sv1,sv0);
+												if(tcs.size()) {
+													sv2.tc = tcs[v2];
+													sv0.tc = tcs[v0];
+													sv1.tc = tcs[v1];
+												} else {
+													sv2.tc = vec2_c(0,0);
+													sv0.tc = vec2_c(0,0);
+													sv1.tc = vec2_c(0,0);
+												}
+												out->addTriangle(qioMatName,sv2,sv1,sv0);
 											//	g_core->Print("mtlist faceIndex - %i\n",faceIndex);
 											}
 										} else if(tric.ident == 0x4150) {
@@ -341,6 +357,8 @@ bool MOD_Load3DS(const char *fname, class staticModelCreatorAPI_i *out) {
 			}
 		}
 	}
+	vec3_c sizes = allPointsBounds.getSizes();
+	g_core->Print("3DS model %s sizes %f %f %f\n",fname,sizes.x,sizes.y,sizes.z);
 	for(u32 i = 0; i < readMats.size(); i++) {
 		delete readMats[i];
 	}
