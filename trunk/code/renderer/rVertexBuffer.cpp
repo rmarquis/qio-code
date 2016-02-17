@@ -27,7 +27,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <math/plane.h>
 #include <math/matrix.h>
 #include <math/aabb.h>
+#include <shared/texCoordCalc.h>
 
+void rVertexBuffer_c::calcTexCoords(const class texCoordCalc_c &tc) {
+	rVert_c *v = this->getArray();
+	for(u32 i = 0; i < this->numVerts; i++, v++) {
+		tc.calcTexCoord(v->xyz,v->tc);
+	}
+}
 void rVertexBuffer_c::calcEnvironmentTexCoords(const vec3_c &viewerOrigin) {
 	rVert_c *v = this->getArray();
 	for(u32 i = 0; i < this->numVerts; i++, v++) {

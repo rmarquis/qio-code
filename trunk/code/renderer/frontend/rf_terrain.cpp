@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_drawCall.h"
 #include <shared/array.h>
 #include <shared/perlinNoise.h>
+#include <shared/texCoordCalc.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <shared/autocvar.h>
@@ -119,6 +120,11 @@ public:
 	void scaleTCs(float f) {
 		for(u32 i = 0; i < xyzs.size(); i++) {
 			tcs[i] *= (f);
+		}
+	}
+	void calcTexCoords(const class texCoordCalc_c &tcc) {
+		for(u32 i = 0; i < xyzs.size(); i++) {
+			tcc.calcTexCoord(xyzs[i],tcs[i]);
 		}
 	}
 	void addZ(float f) {
@@ -273,6 +279,8 @@ public:
 		lodScale = newScale;
 	}
 	void addDrawCalls();
+	void setMaterial(mtrAPI_i *mat);
+	void setTexDef(const texCoordCalc_c &tc);
 };
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
@@ -491,6 +499,14 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 	return false;
 }
 
+void lodTerrain_c::setTexDef(const texCoordCalc_c &tc) {
+	verts.unloadFromGPU();
+	verts.calcTexCoords(tc);
+	verts.uploadToGPU();
+}
+void lodTerrain_c::setMaterial(mtrAPI_i *mat) {
+	this->mat = mat;
+}
 void lodTerrain_c::addDrawCalls() {
 
 	for(u32 i = 0; i < patches.size(); i++) {
@@ -508,10 +524,20 @@ public:
 		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
 		lt.initLODTerrain(hi,lodPower,false);
 	}
+	void setTexDef(const texCoordCalc_c &tc) {
+		lt.setTexDef(tc);
+	}
 	void addTerrainDrawCalls() {
 		//sf.addDrawCall();
 		lt.updateLOD(rf_camera.getOrigin());
 		lt.addDrawCalls();
+	}
+	void setMaterial(mtrAPI_i *mat) {
+		lt.setMaterial(mat);
+	}
+	void setMaterial(const char *matName) {
+		mtrAPI_i *mat = g_ms->registerMaterial(matName);
+		setMaterial(mat);
 	}
 };
 arraySTD_c<r_terrain_c*> r_terrain;
@@ -535,7 +561,11 @@ void RFT_CreateFlat(u32 patchSizePower, u32 patchCountX, u32 patchCountY) {
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
 	hi.centerize();
-	hi.scaleTCs(100.f);
+	//hi.scaleTCs(100.f);
+
+	texCoordCalc_c tc;
+	hi.calcTexCoords(tc);
+
 	RFT_AllocTerrain()->initTerrain(hi,patchSizePower);
 }
 void RFT_CreatePerlin(u32 patchSizePower, u32 patchCountX, u32 patchCountY, u32 octaves, u32 freq, u32 amp, u32 seed) {
@@ -552,7 +582,6 @@ void RFT_CreatePerlin(u32 patchSizePower, u32 patchCountX, u32 patchCountY, u32 
 	heightmapInstance_c hi;
 	hi.initInstance(h,true,true);
 	hi.centerize();
-	hi.scaleTCs(100.f);
 	pnDef_s pd;
 	pn_c pn;
 	pd.amp = amp;
@@ -605,6 +634,30 @@ void TER_HideLookAtPatch_f() {
 	//	return;
 	//}
 }
+void TER_All_SetMaterial_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: ter_all_setMaterial <matname>\n");
+		return;
+	}
+	const char *matName = g_core->Argv(1);
+	for(u32 i = 0; i < r_terrain.size(); i++) {
+		r_terrain[i]->setMaterial(matName);
+	}
+}
+void TER_All_SetTextureUnitsXY_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: TER_All_SetTextureUnitsXY <x_units_per_tile> <y_units_per_tile>\n");
+		return;
+	}
+	float unitsX = atof(g_core->Argv(1));
+	float unitsY = atof(g_core->Argv(2));
+	texCoordCalc_c tc;
+	tc.setTexScaleX(unitsX);
+	tc.setTexScaleY(unitsY);
+	for(u32 i = 0; i < r_terrain.size(); i++) {
+		r_terrain[i]->setTexDef(tc);
+	}
+}
 
 
 
@@ -612,6 +665,9 @@ static aCmd_c ter_spawnFlat("ter_spawnFlat",TER_SpawnFlat_f);
 static aCmd_c ter_spawnPerlin("ter_spawnPerlin",TER_SpawnPerlin_f);
 static aCmd_c ter_deleteAllPatches("ter_deleteAllPatches",TER_DeleteAllPatches_f);
 static aCmd_c ter_hideLookAtPatch("ter_hideLookAtPatch",TER_HideLookAtPatch_f);
+static aCmd_c ter_all_setMaterial("ter_all_setMaterial",TER_All_SetMaterial_f);
+static aCmd_c ter_all_setTextureUnitsXY("ter_all_setTextureUnitsXY",TER_All_SetTextureUnitsXY_f);
+
 void RFT_CreateTestTerrain() {
 	heightmap_c h;
 	h.initFlat(16.f,16.f,128,128);

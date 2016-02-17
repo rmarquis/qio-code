@@ -216,6 +216,7 @@ public:
 	// rVertexBuffer.cpp - CPU texgens/colorgens/texmods, etc
 	void calcEnvironmentTexCoords(const class vec3_c &viewerOrigin);
 	void calcEnvironmentTexCoordsForReferencedVertices(const class rIndexBuffer_c &ibo, const class vec3_c &viewerOrigin);
+	void calcTexCoords(const class texCoordCalc_c &tc);
 	void setVertexColorsToConstValue(byte val);
 	void setVertexColorsToConstValues(byte *rgbVals);
 	void setVertexColorsToConstValuesVec3255(const float *vec3_255) {
