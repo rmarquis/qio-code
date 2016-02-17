@@ -1456,6 +1456,15 @@ public:
 			if(newShader->sCubeMap != -1) {
 				glUniform1i(newShader->sCubeMap,0);
 			}
+			if(newShader->sBlendChannelRed != -1) {
+				glUniform1i(newShader->sBlendChannelRed,1);
+			}
+			if(newShader->sBlendChannelGreen != -1) {
+				glUniform1i(newShader->sBlendChannelGreen,2);
+			}
+			if(newShader->sBlendChannelBlue != -1) {
+				glUniform1i(newShader->sBlendChannelBlue,3);
+			}
 			// pass the sunlight (directional light) paremeters to shader
 			if(bHasSunLight) {
 				if(newShader->u_sunDirection != -1) {
@@ -1969,6 +1978,14 @@ public:
 						}
 					}
 				}
+
+				const mtrStageAPI_i *blendChannelRed;
+				const mtrStageAPI_i *blendChannelBlue;
+				const mtrStageAPI_i *blendChannelGeen;
+				blendChannelRed = s->getBlendChannelRed();
+				blendChannelBlue = s->getBlendChannelBlue();
+				blendChannelGeen = s->getBlendChannelGreen();
+
 				// get the specularmap substage of current stage
 				const mtrStageAPI_i *specularMap;
 				if(rb_ignoreSpecularMaps.getInt()) {
@@ -2086,6 +2103,24 @@ public:
 					}
 					bindLightmapCoordinatesToFirstTextureSlot = true;
 					unbindTex(1);
+				} else if(stageType == ST_BLENDMAP) {
+					textureAPI_i *t = getStageTextureInternal(s);
+					bindTex(0,t->getInternalHandleU32());
+					if(blendChannelRed) {
+						bindTex(1,getStageTextureInternal(blendChannelRed)->getInternalHandleU32());
+					} else {
+						unbindTex(1);
+					}
+					if(blendChannelGeen) {
+						bindTex(2,getStageTextureInternal(blendChannelGeen)->getInternalHandleU32());
+					} else {
+						unbindTex(2);
+					}
+					if(blendChannelBlue) {
+						bindTex(3,getStageTextureInternal(blendChannelBlue)->getInternalHandleU32());
+					} else {
+						unbindTex(3);
+					}
 				} else if(stageType == ST_COLORMAP_LIGHTMAPPED) {
 					// draw multitextured surface with
 					// - colormap at slot 0
@@ -2114,19 +2149,22 @@ drawOnlyLightmap:
 					bindTex(0,t->getInternalHandleU32());
 					unbindTex(1);
 				}
-				//if(bumpMap/* && curLight*/) {
-				if(bumpMap && (curLight || deluxeMap)) {
-					textureAPI_i *bumpMapTexture = bumpMap->getTexture(this->timeNowSeconds);
-					bindTex(2,bumpMapTexture->getInternalHandleU32());
-				} else {
-					unbindTex(2);
-				}
-				// using heightmap requires GLSL support
-				if(heightMap && glUseProgram) {
-					textureAPI_i *heightMapTexture = heightMap->getTexture(this->timeNowSeconds);
-					bindTex(3,heightMapTexture->getInternalHandleU32());
-				} else {
-					unbindTex(3);
+
+				if(stageType != ST_BLENDMAP) {
+					//if(bumpMap/* && curLight*/) {
+					if(bumpMap && (curLight || deluxeMap)) {
+						textureAPI_i *bumpMapTexture = bumpMap->getTexture(this->timeNowSeconds);
+						bindTex(2,bumpMapTexture->getInternalHandleU32());
+					} else {
+						unbindTex(2);
+					}
+					// using heightmap requires GLSL support
+					if(heightMap && glUseProgram) {
+						textureAPI_i *heightMapTexture = heightMap->getTexture(this->timeNowSeconds);
+						bindTex(3,heightMapTexture->getInternalHandleU32());
+					} else {
+						unbindTex(3);
+					}
 				}
 				// using deluxeMap requires GLSL support
 				if(deluxeMap && glUseProgram) {
@@ -2337,6 +2375,15 @@ drawOnlyLightmap:
 						bindShader(selectedShader);
 					} else {
 						g_core->RedWarning("Cannot render ST_CUBEMAP_REFLECTION because reflectionCubeMap shader is missing.\n");
+						continue;
+					}	
+				} else if(stageType == ST_BLENDMAP) {
+					glslPermutationFlags_s glslShaderDesc;
+					selectedShader = GL_RegisterShader("blendMap",&glslShaderDesc);
+					if(selectedShader) {
+						bindShader(selectedShader);
+					} else {
+						g_core->RedWarning("Cannot render ST_BLENDMAP because blendMap shader is missing.\n");
 						continue;
 					}	
 				} else if(curLight) {

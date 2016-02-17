@@ -109,7 +109,9 @@ friend class rbSDLOpenGL_c;
 	int sDeluxeMap; // deluxemap (lightmap with light directions - not colors)
 	// samplerCube locations
 	int sCubeMap;
-
+	int sBlendChannelRed;
+	int sBlendChannelGreen;
+	int sBlendChannelBlue;
 	// shadow mapping
 	int u_shadowMap[6]; // if we have six different depth textures
 	int u_shadowCubeMap; // if we have a single depth cubemap

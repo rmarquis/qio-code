@@ -1,0 +1,11 @@
+
+textures/qiotests/diffuseMapBlendingTest 
+{
+  {
+    stage blendMap
+	map textures/qiotests/blendmapTest/blendmap
+	blendChannelRed textures/qiotests/blendmapTest/grass
+	blendChannelBlue textures/qiotests/blendmapTest/rock
+	blendChannelGreen textures/qiotests/blendmapTest/sand
+  }
+}

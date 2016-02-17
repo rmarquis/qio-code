@@ -272,7 +272,8 @@ public:
 };
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
-	mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
+	///mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
+	mat = g_ms->registerMaterial("textures/qiotests/diffuseMapBlendingTest");
 }
 void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 
@@ -512,7 +513,7 @@ r_terrain_c *RFT_AllocTerrain() {
 	r_terrain.push_back(t);
 	return t;
 }
-void RFT_InitTerrain() {
+void RFT_CreateTestTerrain() {
 	heightmap_c h;
 	h.initFlat(16.f,16.f,128,128);
 	heightmapInstance_c hi;
@@ -546,6 +547,9 @@ void RFT_InitTerrain() {
 	//	hi.processTerrain(tm);
 	//}
 	RFT_AllocTerrain()->initTerrain(hi);
+}
+void RFT_InitTerrain() {
+	RFT_CreateTestTerrain();
 }
 void RFT_AddTerrainDrawCalls() {
 	if(rf_skipTerrain.getInt())
