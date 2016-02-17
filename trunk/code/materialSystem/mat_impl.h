@@ -190,6 +190,11 @@ class mtrStage_c : public mtrStageAPI_i {
 	mtrStage_c *subStageHeightMap;
 	mtrStage_c *subStageBumpHeightMap;
 	mtrStage_c *nextBundle;
+
+	mtrStage_c *blendChannelRed;
+	mtrStage_c *blendChannelGreen;
+	mtrStage_c *blendChannelBlue;
+
 	// "if" condition for Doom3 materials
 	class astAPI_i *condition;
 	// Doom3 replacements for alphaFunc_e 
@@ -229,6 +234,24 @@ public:
 	}
 	virtual mtrStageAPI_i *getBumpHeightMap() const {
 		return subStageBumpHeightMap;
+	}
+	virtual mtrStageAPI_i *getBlendChannelRed() const {
+		return blendChannelRed;
+	}
+	virtual mtrStageAPI_i *getBlendChannelBlue() const {
+		return blendChannelBlue;
+	}
+	virtual mtrStageAPI_i *getBlendChannelGreen() const {
+		return blendChannelGreen;
+	}
+	void setBlendChannelRed(mtrStage_c *s) {
+		blendChannelRed = s;
+	}
+	void setBlendChannelGreen(mtrStage_c *s) {
+		blendChannelGreen = s;
+	}
+	void setBlendChannelBlue(mtrStage_c *s) {
+		blendChannelBlue = s;
 	}
 	
 	virtual bool hasTexMods() const {

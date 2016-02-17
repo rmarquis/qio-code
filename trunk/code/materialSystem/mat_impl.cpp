@@ -1100,6 +1100,25 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					stage->setNextBundle(nextBundle);
 					stage = nextBundle;
 					bundleCount++;
+				
+				} else if(p.atWord("blendChannelRed")) {
+					// for Qio
+					mtrStage_c *subStage = new mtrStage_c();
+					subStage->getStageTexture().parseMap(p);
+					subStage->getStageTexture().uploadTexture();
+					stage->setBlendChannelRed(subStage);
+				} else if(p.atWord("blendChannelBlue")) {
+					// for Qio
+					mtrStage_c *subStage = new mtrStage_c();
+					subStage->getStageTexture().parseMap(p);
+					subStage->getStageTexture().uploadTexture();
+					stage->setBlendChannelBlue(subStage);
+				} else if(p.atWord("blendChannelGreen")) {
+					// for Qio
+					mtrStage_c *subStage = new mtrStage_c();
+					subStage->getStageTexture().parseMap(p);
+					subStage->getStageTexture().uploadTexture();
+					stage->setBlendChannelGreen(subStage);
 				} else if(p.atWord("alphaFunc")) {
 					if(p.atWord("GT0")) {
 						stage->setAlphaFunc(AF_GT0);
@@ -1169,6 +1188,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("reflectionMap")) {
 						// usefull for Doom3-style glass reflections
 						stage->setStageType(ST_CUBEMAP_REFLECTION);
+					} else if(p.atWord("blendMap")) {
+						// Qio...
+						stage->setStageType(ST_BLENDMAP);
 					} else {
 						u32 line = p.getCurrentLineNumber();
 						str token = p.getToken();

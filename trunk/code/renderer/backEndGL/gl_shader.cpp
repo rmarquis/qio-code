@@ -339,6 +339,9 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->sDeluxeMap = glGetUniformLocation(shader,"deluxeMap");
 	ret->sSpecularMap = glGetUniformLocation(shader,"specularMap");
 	ret->sCubeMap = glGetUniformLocation(shader,"cubeMap");
+	ret->sBlendChannelRed = glGetUniformLocation(shader,"blendChannelRed");
+	ret->sBlendChannelGreen = glGetUniformLocation(shader,"blendChannelGreen");
+	ret->sBlendChannelBlue = glGetUniformLocation(shader,"blendChannelBlue");
 	ret->uLightOrigin = glGetUniformLocation(shader,"u_lightOrigin");
 	ret->uLightRadius = glGetUniformLocation(shader,"u_lightRadius");
 	ret->uViewOrigin = glGetUniformLocation(shader,"u_viewOrigin");

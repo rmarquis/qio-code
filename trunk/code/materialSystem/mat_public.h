@@ -33,6 +33,8 @@ enum stageType_e {
 	ST_ENV_CUBEMAP,
 	// only for editor (qer_editorImage)
 	ST_EDITORIMAGE,
+	// for terrain... blending some textures together in pixel shader
+	ST_BLENDMAP,
 };
 
 // hardcoded alpha func test values (for non-blended transparency)

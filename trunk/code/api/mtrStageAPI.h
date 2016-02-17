@@ -97,6 +97,9 @@ public:
 	virtual class mtrStageAPI_i *getHeightMap() const = 0;
 	virtual class mtrStageAPI_i *getSpecularMap() const = 0;
 	virtual class mtrStageAPI_i *getBumpHeightMap() const = 0;
+	virtual class mtrStageAPI_i *getBlendChannelRed() const = 0;
+	virtual class mtrStageAPI_i *getBlendChannelBlue() const = 0;
+	virtual class mtrStageAPI_i *getBlendChannelGreen() const = 0;
 	virtual bool hasTexMods() const = 0;
 	virtual void applyTexMods(class matrix_c &out, float curTimeSec, const class astInputAPI_i *in) const = 0;
 	virtual bool hasTexGen() const = 0;
