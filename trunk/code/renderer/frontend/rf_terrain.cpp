@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <shared/autocvar.h>
+#include <api/coreAPI.h>
+#include <shared/autocmd.h>
 
 static aCvar_c rf_skipTerrain("rf_skipTerrain","0");
 
@@ -250,8 +252,10 @@ class lodTerrain_c {
 	rVertexBuffer_c verts;
 	u32 patchSizeEdges;
 	u32 patchSizeVerts;
-	u32 size;
-	u32 patchCount;
+	u32 sizeX;
+	u32 sizeY;
+	u32 patchCountX;
+	u32 patchCountY;
 	u32 maxLOD;
 	float lodScale;
 	class mtrAPI_i *mat;
@@ -277,7 +281,7 @@ lodTerrain_c::lodTerrain_c() {
 }
 void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 
-	u32 index = patchX * patchCount + patchY;
+	u32 index = patchX * patchCountY + patchY;
 	lodTerrainPatch_c &p = patches[index];
 	// see if there is a change
 	int lod_bot = p.bottom != 0 ? p.bottom->curLOD : -1;
@@ -355,7 +359,7 @@ void lodTerrain_c::scaleXYZ(float x, float y, float z) {
 	}
 }
 void lodTerrain_c::updateLOD(const vec3_c &cam) {
-	for(u32 i = 0; i < patchCount*patchCount; i++) {	
+	for(u32 i = 0; i < patchCountX*patchCountY; i++) {	
 		const vec3_c &p = patches[i].center;
 		float d = p.dist(cam);
 		//if(1) {
@@ -371,8 +375,8 @@ void lodTerrain_c::updateLOD(const vec3_c &cam) {
 			lod = maxLOD;
 		patches[i].curLOD = lod;
 	}
-	for(u32 i = 0; i < patchCount; i++) {		
-		for(u32 j = 0; j < patchCount; j++) {
+	for(u32 i = 0; i < patchCountX; i++) {		
+		for(u32 j = 0; j < patchCountY; j++) {
 			calcPatchIndices(i,j);
 		}
 	}
@@ -422,7 +426,7 @@ u32 lodTerrain_c::calcIndex(u32 patchX, u32 patchY, u32 patchIndex, u32 localVer
 	//if(patches[patchIndex].sizeY < localVertexY)
 	//	localVertexY = patches[patchIndex].sizeY;
 
-	return (localVertexY + ((patchSizeVerts) * patchY)) * size +
+	return (localVertexY + ((patchSizeVerts) * patchY)) * sizeX +
 		(localVertexX + ((patchSizeVerts) * patchX));
 }
 bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPower, bool bExactSize) {
@@ -440,43 +444,47 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 		verts[i].normal = h.getNormals()[i];
 	}
 	if(bExactSize) {
-		patchCount = ((h.getW()-1) / patchSizeVerts)+1;
+		patchCountX = ((h.getW()-1) / patchSizeVerts)+1;
+		patchCountY = ((h.getH()-1) / patchSizeVerts)+1;
 	} else {
-		patchCount = ((h.getW()-1) / patchSizeVerts);
+		patchCountX = ((h.getW()-1) / patchSizeVerts);
+		patchCountY = ((h.getH()-1) / patchSizeVerts);
 	}
+	printf("Patch count X: %i, Y %i\n",patchCountX, patchCountY);
 //	u32 checkSize = patchSizeVerts*patchCount + 1;
-	size = h.getW();
-	patches.resize(patchCount*patchCount);
-	for(u32 i = 0; i < patchCount; i++) {
-		for(u32 j = 0; j < patchCount; j++) {
-			u32 index = i * patchCount + j;
+	sizeX = h.getW();
+	sizeY = h.getH();
+	patches.resize(patchCountX*patchCountY);
+	for(u32 i = 0; i < patchCountX; i++) {
+		for(u32 j = 0; j < patchCountY; j++) {
+			u32 index = i * patchCountY + j;
 			lodTerrainPatch_c &p = patches[index];
 			u32 minX = i*patchSizeVerts;
 			u32 maxX = minX+patchSizeVerts;
 			u32 minY = j*patchSizeVerts;
 			u32 maxZ = minY+patchSizeVerts;
-			if(maxZ >= size) {
-				u32 overflowZ = maxZ - (size-1);
-				maxZ = size-1;
-				p.sizeY = patchSizeVerts - overflowZ;
-			} else {
+			//if(maxZ >= size) {
+			//	u32 overflowZ = maxZ - (size-1);
+			//	maxZ = size-1;
+			//	p.sizeY = patchSizeVerts - overflowZ;
+			//} else {
 				p.sizeY = patchSizeVerts;
-			}
-			if(maxX >= size) {
-				u32 overflowX = maxX - (size-1);
-				maxX = size-1;
-				p.sizeX = patchSizeVerts - overflowX;
-			} else {
+		//	}
+			//if(maxX >= size) {
+			//	u32 overflowX = maxX - (size-1);
+			//	maxX = size-1;
+			//	p.sizeX = patchSizeVerts - overflowX;
+			//} else {
 				p.sizeX = patchSizeVerts;
-			}
+	//		}
 			for (u32 pX = minX; pX <= maxX; ++pX)
 				for (u32 pY = minY; pY <= maxZ; ++pY)
-					p.bounds.addPoint(verts.getXYZ(pX * size + pY));
+					p.bounds.addPoint(verts.getXYZ(pX * sizeY + pY));
 			p.center = p.bounds.getCenter();
-			p.top = i > 0 ? &patches[(i-1) * patchCount + j] : 0;
-			p.bottom = (i < patchCount - 1) ? &patches[(i+1) * patchCount + j] : 0;
-			p.left = (j > 0) ? &patches[i * patchCount + j - 1] : 0;
-			p.right = (j < patchCount - 1) ? &patches[i * patchCount + j + 1] : 0;
+			p.top = i > 0 ? &patches[(i-1) * patchCountY + j] : 0;
+			p.bottom = (i < patchCountX - 1) ? &patches[(i+1) * patchCountY + j] : 0;
+			p.left = (j > 0) ? &patches[i * patchCountY + j - 1] : 0;
+			p.right = (j < patchCountY - 1) ? &patches[i * patchCountY + j + 1] : 0;
 		}
 	}
 	verts.uploadToGPU();
@@ -496,9 +504,9 @@ class r_terrain_c {
 	//r_surface_c sf;
 	lodTerrain_c lt;
 public:
-	void initTerrain(const heightmapInstance_c &hi) {
+	void initTerrain(const heightmapInstance_c &hi, u32 lodPower) {
 		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
-		lt.initLODTerrain(hi,5,false);
+		lt.initLODTerrain(hi,lodPower,false);
 	}
 	void addTerrainDrawCalls() {
 		//sf.addDrawCall();
@@ -513,6 +521,97 @@ r_terrain_c *RFT_AllocTerrain() {
 	r_terrain.push_back(t);
 	return t;
 }
+void RFT_CreateFlat(u32 patchSizePower, u32 patchCountX, u32 patchCountY) {
+	if(patchSizePower <= 1) {
+		g_core->RedWarning("Invalid patchSizePower %i - aborting.\n",patchSizePower);
+		return;
+	}
+	u32 patchSizeVerts = 2 << patchSizePower;
+	u32 vertsCountX = patchSizeVerts * patchCountX + 1;
+	u32 vertsCountY = patchSizeVerts * patchCountY + 1;
+	
+	heightmap_c h;
+	h.initFlat(16.f,16.f,vertsCountX,vertsCountY);
+	heightmapInstance_c hi;
+	hi.initInstance(h,true,true);
+	hi.centerize();
+	hi.scaleTCs(100.f);
+	RFT_AllocTerrain()->initTerrain(hi,patchSizePower);
+}
+void RFT_CreatePerlin(u32 patchSizePower, u32 patchCountX, u32 patchCountY, u32 octaves, u32 freq, u32 amp, u32 seed) {
+	if(patchSizePower <= 1) {
+		g_core->RedWarning("Invalid patchSizePower %i - aborting.\n",patchSizePower);
+		return;
+	}
+	u32 patchSizeVerts = 2 << patchSizePower;
+	u32 vertsCountX = patchSizeVerts * patchCountX + 1;
+	u32 vertsCountY = patchSizeVerts * patchCountY + 1;
+	
+	heightmap_c h;
+	h.initFlat(16.f,16.f,vertsCountX,vertsCountY);
+	heightmapInstance_c hi;
+	hi.initInstance(h,true,true);
+	hi.centerize();
+	hi.scaleTCs(100.f);
+	pnDef_s pd;
+	pn_c pn;
+	pd.amp = amp;
+	pd.octaves = octaves;
+	pd.freq = freq;
+	pd.seed = seed;
+	pn.setupPerlin(&pd);
+	hi.applyNoise(&pn,0.0001f);
+	RFT_AllocTerrain()->initTerrain(hi,patchSizePower);
+}
+// For in-game terrain creation and testing
+// ter_spawnFlat <patch_size_power> <patches_x> <patches_y>
+// ter_spawnPerlin <patch_size_power> <patches_x> <patches_y> <octaves> <freq> <amp> <seed>
+// ter_deleteAllPatches
+void TER_SpawnFlat_f() {
+	if(g_core->Argc() < 3) {
+		g_core->Print("Usage: ter_spawnFlat <patch_size_power> <patches_x> <patches_y>\n");
+		return;
+	}
+	u32 patchSizePower = atoi(g_core->Argv(1));
+	u32 patches_x = atoi(g_core->Argv(2));
+	u32 patches_y = atoi(g_core->Argv(3));
+	RFT_CreateFlat(patchSizePower,patches_x,patches_y);
+}
+void TER_SpawnPerlin_f() {
+	if(g_core->Argc() < 3) {
+		g_core->Print("Usage: ter_spawnPerlin <patch_size_power> <patches_x> <patches_y> <octaves> <freq> <amp> <seed>\n");
+		g_core->Print("Example: ter_spawnPerlin 5 2 2 2 4 512 123456\n");
+		g_core->Print("Example: ter_spawnPerlin 5 5 5 2 4 512 123456\n");
+		return;
+	}
+	u32 patchSizePower = atoi(g_core->Argv(1));
+	u32 patches_x = atoi(g_core->Argv(2));
+	u32 patches_y = atoi(g_core->Argv(3));
+	u32 octaves = atoi(g_core->Argv(4));
+	u32 freq = atoi(g_core->Argv(5));
+	u32 amp = atoi(g_core->Argv(6));
+	u32 seed = atoi(g_core->Argv(7));
+	RFT_CreatePerlin(patchSizePower,patches_x,patches_y,octaves,freq,amp,seed);
+}
+void TER_DeleteAllPatches_f() {
+	//RFT_DeleteAllPatches();
+	RFT_ShutdownTerrain();
+}
+void TER_HideLookAtPatch_f() {
+	//trace_c tr;
+	//RF_DoCameraTrace(tr,true);
+	//if(tr.hasHit() == false) {
+	//	out.clear();
+	//	return;
+	//}
+}
+
+
+
+static aCmd_c ter_spawnFlat("ter_spawnFlat",TER_SpawnFlat_f);
+static aCmd_c ter_spawnPerlin("ter_spawnPerlin",TER_SpawnPerlin_f);
+static aCmd_c ter_deleteAllPatches("ter_deleteAllPatches",TER_DeleteAllPatches_f);
+static aCmd_c ter_hideLookAtPatch("ter_hideLookAtPatch",TER_HideLookAtPatch_f);
 void RFT_CreateTestTerrain() {
 	heightmap_c h;
 	h.initFlat(16.f,16.f,128,128);
@@ -546,7 +645,7 @@ void RFT_CreateTestTerrain() {
 	//	tm.setForce(512 - rand()%2048);
 	//	hi.processTerrain(tm);
 	//}
-	RFT_AllocTerrain()->initTerrain(hi);
+	RFT_AllocTerrain()->initTerrain(hi,5);
 }
 void RFT_InitTerrain() {
 	//RFT_CreateTestTerrain();

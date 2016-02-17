@@ -102,6 +102,10 @@ bool RF_LoadWorldMap(const char *name) {
 		RF_CreateEmptyMap();
 		return false;
 	}
+	if(!_stricmp(name,"_new")) {
+		// nothing to do
+		return false;
+	}
 	const char *ext = G_strgetExt(name);
 	if(ext == 0) {
 		g_core->RedWarning("RF_LoadWorldMap: %s has no extension\n",name);

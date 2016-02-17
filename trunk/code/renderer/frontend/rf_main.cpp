@@ -318,8 +318,8 @@ void RF_OnRFUseProcDataToOptimizeLightingCvarModified(const class aCvar_c *cv) {
 }
 #include <shared/wolfAnimScript.h>
 void RF_InitMain() {
-	wolfAnimScript_c test;
-	test.parse("models/players/infantryss/wolfanim.script");
+//	wolfAnimScript_c test;
+//	test.parse("models/players/infantryss/wolfanim.script");
 	rf_shadows.setExtraModificationCallback(RF_OnRFShadowsCvarModified);
 	rf_enableMultipassRendering.setExtraModificationCallback(RF_OnRFEnableMultipassRenderingCvarModified);
 	rf_proc_useProcDataToOptimizeLighting.setExtraModificationCallback(RF_OnRFUseProcDataToOptimizeLightingCvarModified);
