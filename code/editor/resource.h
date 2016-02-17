@@ -1,27 +1,6 @@
-/*
-===========================================================================
-Copyright (C) 1999-2005 Id Software, Inc.
-
-This file is part of Quake III Arena source code.
-
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
-
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Foobar; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-===========================================================================
-*/
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by Radiant.rc
+// Microsoft Visual C++ generated include file.
+// Used by Editor.rc
 //
 #define IDSELECT                        2
 #define IDOK2                           2
@@ -84,6 +63,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDD_ADDCMD                      167
 #define IDD_DIALOG_TEXTURELIST          168
 #define IDD_DIALOG_NEWPATCH             169
+#define IDD_DIALOG_NEWTERRAINBLOCK      169
 #define IDR_MENU1                       170
 #define IDD_DIALOG_TEXTURELAYOUT        171
 #define IDR_POPUP_ENTITY                171
@@ -109,6 +89,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDD_DLG_CAMERA                  194
 #define IDD_DLG_CAMERAEVENT             195
 #define IDD_DLG_CAMERATARGET            196
+#define IDD_DIALOG_NEWPATCH1            197
 #define IDC_BTN_HIDE                    1000
 #define IDC_SPIN1                       1001
 #define IDC_SPIN2                       1002
@@ -126,7 +107,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_RADIO_VIEWTYPE4             1009
 #define IDC_EDIT_TOTALBRUSHES           1010
 #define IDC_RADIO_RUNQUAKE              1011
-//#define IDC_BTN_BROWSEPAK               1011
 #define IDC_RADIO_RUNQUAKE2             1012
 #define IDC_EDIT_PREFABPATH             1012
 #define IDC_RADIO_RUNQUAKE3             1013
@@ -381,7 +361,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_CHECK_SGIOPENGL             1126
 #define IDC_REMCMD                      1127
 #define IDC_PRJINTERVAL                 1128
-//#define IDC_CHECK_HICOLOR               1128
 #define IDC_PRJMAPSPATH                 1129
 #define IDC_CHECK_SHADERTEST            1129
 #define IDC_EDITCMD                     1130
@@ -392,6 +371,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDC_COMBO_HEIGHT                1137
 #define IDC_BTN_PATCHDETAILS            1137
 #define IDC_BTN_PATCHRESET              1138
+#define IDC_COMBO_WIDTH2                1138
 #define IDC_BTN_PATCHNATURAL            1139
 #define IDC_RADIO_CAP                   1139
 #define IDC_BTN_PATCHFIT                1140
@@ -650,6 +630,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ID_DROP_GROUP_NEWGROUP          33018
 #define ID_DROP_GROUP_NAME              33019
 #define ID_DROP_GROUP_ADDTO             33020
+#define ID_TERRAIN_TEST                 33024
+#define ID_TERRAIN_TEST33025            33025
+#define ID_TERRAIN_CREATEGLOBALTERRAIN  33026
 #define ID_POPUP_NEWCAMERA_INTERPOLATED 33034
 #define ID_POPUP_NEWCAMERA_SPLINE       33035
 #define ID_POPUP_NEWCAMERA_FIXED        33036
@@ -823,7 +806,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        192
-#define _APS_NEXT_COMMAND_VALUE         33024
+#define _APS_NEXT_COMMAND_VALUE         33027
 #define _APS_NEXT_CONTROL_VALUE         1160
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
