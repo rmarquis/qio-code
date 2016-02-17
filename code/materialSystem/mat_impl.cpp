@@ -164,6 +164,15 @@ mtrStage_c::~mtrStage_c() {
 	if(subStageBumpHeightMap) {
 		delete subStageBumpHeightMap;
 	}
+	if(blendChannelBlue) {
+		delete blendChannelBlue;
+	}
+	if(blendChannelRed) {
+		delete blendChannelRed;
+	}
+	if(blendChannelGreen) {
+		delete blendChannelGreen;
+	}
 	if(nextBundle) {
 		delete nextBundle;
 	}
