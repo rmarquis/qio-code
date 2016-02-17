@@ -741,6 +741,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\texCoordCalc.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\trace.cpp"
 				>
 			</File>
