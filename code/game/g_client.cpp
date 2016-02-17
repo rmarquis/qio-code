@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/VehicleCar.h"
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
+#include <api/cvarAPI.h>
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -178,6 +179,11 @@ void ClientSpawn(edict_s *ent) {
 	Player *pl = dynamic_cast<Player*>(ent->ent);
 	pl->ps.clientNum = index;
 
+	char mapName[512];
+	g_cvars->Cvar_VariableStringBuffer("mapname",mapName,sizeof(mapName));
+	if(!stricmp(mapName,"_new")) {
+		pl->noclip = true;
+	}
 	pl->setHealth(100);
 
 	vec3_c	spawnOrigin, spawnAngles;

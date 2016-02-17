@@ -189,6 +189,10 @@ bool btpStaticMapLoader_c::loadMap(const char *mapName, class bulletPhysicsWorld
 		createEmptyMap();
 		return false;
 	}
+	if(!_stricmp(mapName,"_new")) {
+		// nothing to do
+		return false;
+	}
 	str path = "maps/";
 	path.append(mapName);
 	path.setExtension("bsp");
