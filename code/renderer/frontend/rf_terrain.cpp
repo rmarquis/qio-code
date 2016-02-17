@@ -549,7 +549,7 @@ void RFT_CreateTestTerrain() {
 	RFT_AllocTerrain()->initTerrain(hi);
 }
 void RFT_InitTerrain() {
-	RFT_CreateTestTerrain();
+	//RFT_CreateTestTerrain();
 }
 void RFT_AddTerrainDrawCalls() {
 	if(rf_skipTerrain.getInt())

@@ -119,6 +119,9 @@ mtrStage_c::mtrStage_c() {
 	subStageSpecularMap = 0;
 	subStageHeightMap = 0;
 	subStageBumpHeightMap = 0;
+	blendChannelBlue = 0;
+	blendChannelRed = 0;
+	blendChannelGreen = 0;
 	nextBundle = 0;
 	condition = 0;
 	alphaTestAST = 0;
@@ -142,6 +145,9 @@ mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
 	alphaTestAST = 0;
 	cubeMap = 0;
 	alphaGen = ALPHAGEN_NOT_SET;
+	blendChannelBlue = 0;
+	blendChannelRed = 0;
+	blendChannelGreen = 0;
 
 	this->stageTexture.fromTexturePointer(tex);
 }
