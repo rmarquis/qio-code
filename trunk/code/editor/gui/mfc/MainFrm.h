@@ -466,6 +466,7 @@ public:
   void CheckTextureScale(int id);
 
 	DECLARE_MESSAGE_MAP()
+	afx_msg void OnTerrainCreateglobalterrain();
 };
 
 /////////////////////////////////////////////////////////////////////////////

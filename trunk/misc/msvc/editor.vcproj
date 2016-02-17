@@ -601,11 +601,91 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath="..\..\code\editor\res\BEVEL.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\BITMAP2.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\BMP00001.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\BMP00002.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\bmp00003.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\Editor.rc"
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\editor\res\ENDCAP.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\IBEVEL.BMP"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\editor\ICON1.ICO"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\icon2.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\IENDCAP.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\logo_sm3dfx.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\Q.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\Radiant.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\RadiantDoc.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\shaderdoc.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\shaderframe.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\Toolbar.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\TOOLBAR1.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\TOOLBAR2.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\VIEWDEFA.BMP"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\editor\res\VIEWOPPO.BMP"
 				>
 			</File>
 		</Filter>
@@ -697,7 +777,15 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\code\editor\resource.h"
+			>
+		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="\PROJECTS\qio\code\editor\Editor.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

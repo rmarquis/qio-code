@@ -588,7 +588,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
   ON_REGISTERED_MESSAGE(g_msgBSPStatus, OnBSPStatus)
   ON_MESSAGE(WM_DISPLAYCHANGE, OnDisplayChange)
 
-END_MESSAGE_MAP()
+  ON_COMMAND(ID_TERRAIN_CREATEGLOBALTERRAIN, OnTerrainCreateglobalterrain)
+  END_MESSAGE_MAP()
 
 static UINT indicators[] =
 {
@@ -4857,3 +4858,8 @@ void CMainFrame::OnSelectionInvert()
 
 
 
+
+void CMainFrame::OnTerrainCreateglobalterrain()
+{
+	
+}
