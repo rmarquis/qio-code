@@ -1110,6 +1110,9 @@ u32 RFE_BoxEntities(const class aabb &absBounds, arraySTD_c<rEntityImpl_c*> &out
 }
 bool RF_TraceSceneRay(class trace_c &tr, bool bSkipPlayerModels) {
 	bool bHit = RF_RayTraceWorld(tr);
+	if(RFT_RayTraceTerrain(tr)) {
+		bHit = true;
+	}
 	for(u32 i = 0; i < rf_entities.size(); i++) {
 		const rEntityImpl_c *ent = rf_entities[i];
 		if(bSkipPlayerModels && ent->isPlayerModel()) {

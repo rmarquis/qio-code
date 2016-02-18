@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,7 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// glsl/genericShader.frag
+// glsl/blendMap.frag
 
 // shader input
 uniform sampler2D colorMap;
@@ -34,7 +34,7 @@ void main() {
 	vec4 r = texture2D (blendChannelRed, texCoord);
 	vec4 g = texture2D (blendChannelGreen, texCoord);
 	vec4 b = texture2D (blendChannelBlue, texCoord);
-	vec4 blend = texture2D (colorMap, texCoord*0.05);
+	vec4 blend = texture2D (colorMap, texCoord);
 	vec4 f = (blend.x * r + blend.y * g + blend.z * b);
 	normalize(f);
 	gl_FragColor = f;

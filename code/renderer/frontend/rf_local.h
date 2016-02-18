@@ -135,6 +135,7 @@ void RF_MarkStaticModelMaterials();
 void RFT_InitTerrain();
 void RFT_AddTerrainDrawCalls();
 void RFT_ShutdownTerrain();
+bool RFT_RayTraceTerrain(class trace_c &tr);
 
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;

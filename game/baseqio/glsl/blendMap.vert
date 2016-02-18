@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,7 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// glsl/genericShader.vert
+// glsl/blendMap.vert
 
 
 

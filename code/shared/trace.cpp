@@ -30,12 +30,15 @@ trace_c::trace_c() {
 	this->sphereRadius = 0.f;
 	this->hitSurfaceNum = -1;
 	this->hitAreaNum = -1;
+	this->hitRTerrain = 0;
+	this->hitRTerrainPatch = 0;
 }
 void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->hitEntity = 0;
 	this->clEntity = 0;
 	this->hitREntity = 0;
 	this->hitRMaterial = 0;
+	this->hitRTerrainPatch = 0;
 	this->to = newTo;
 	this->from = newFrom;
 	this->hitPos = this->to;
@@ -43,6 +46,7 @@ void trace_c::setupRay(const vec3_c &newFrom, const vec3_c &newTo) {
 	this->fraction = 1.f;
 	this->traveled = this->len;
 	this->sphereRadius = 0.f;
+	this->hitRTerrain = 0;
 	recalcRayTraceBounds();
 }
 void trace_c::setHitPos(const vec3_c &newHitPos) {
