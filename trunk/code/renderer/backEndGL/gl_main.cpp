@@ -3374,6 +3374,26 @@ drawOnlyLightmap:
 		glDeleteTextures(1,&handle);
 		tex->setInternalHandleU32(0);
 	}
+	virtual bool readTextureDataRGBA(class textureAPI_i *tex, byte *out) {
+		unbindMaterial();
+		bindTex(0,tex->getInternalHandleU32());
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, out);
+		CHECK_GL_ERRORS;
+		return false; // error
+	}
+	virtual bool setTextureDataRGBA(class textureAPI_i *tex, byte *in) {
+		unbindMaterial();
+		bindTex(0,tex->getInternalHandleU32());
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexImage2D(GL_TEXTURE_2D, 0, 4, tex->getWidth(), tex->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, in);	
+		CHECK_GL_ERRORS;
+		return false; // error
+	}
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba) {
 		out->setWidth(w);
 		out->setHeight(h);

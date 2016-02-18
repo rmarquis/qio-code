@@ -77,6 +77,12 @@ public:
 	virtual void setHeight(u32 newHeight) {
 		h = newHeight;
 	}	
+	virtual bool readTextureDataRGBA(byte *out) { 
+		return rb->readTextureDataRGBA(this,out);
+	}
+	virtual bool setTextureDataRGBA(byte *out) { 
+		return rb->setTextureDataRGBA(this,out);
+	}
 	// TWM_CLAMP_TO_EDGE should be set to true for skybox textures
 	virtual textureWrapMode_e getWrapMode() const {
 		return wrapMode;
