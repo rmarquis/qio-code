@@ -231,6 +231,9 @@ void GL_AppendPermutationDefinesToString(str &out, const glslPermutationFlags_s 
 	if(p.hasLightColor) {
 		out.append("#define HAS_LIGHT_COLOR\n");
 	}
+	if(p.hasBlendBox) {
+		out.append("#define HAS_BLEND_BOX\n");
+	}
 }
 static glslPermutationFlags_s gl_defaultPermutations;
 glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s *permutations) {
@@ -372,6 +375,8 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_shadowMapLod1Maxs = glGetUniformLocation(shader,"u_shadowMapLod1Maxs");
 	ret->u_shadowMapSize = glGetUniformLocation(shader,"u_shadowMapSize");
 	ret->u_lightColor = glGetUniformLocation(shader,"u_lightColor");
+	ret->u_blendBoxMins = glGetUniformLocation(shader,"u_blendBoxMins");
+	ret->u_blendBoxMaxs = glGetUniformLocation(shader,"u_blendBoxMaxs");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

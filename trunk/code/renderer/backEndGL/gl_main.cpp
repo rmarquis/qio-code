@@ -361,6 +361,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	mtrAPI_i *lastMat;
 	textureAPI_i *lastLightmap;
 	textureAPI_i *lastDeluxemap;
+	textureAPI_i *lastBlendMap;
 	bool bindVertexColors;
 	bool bHasVertexColors;
 	drawCallSort_e curDrawCallSort;
@@ -456,6 +457,7 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		lastDeluxemap = 0;
+		lastBlendMap = 0;
 		bindVertexColors = 0;
 		curTexSlot = 0;
 		curTexCoordsSlot = 0;
@@ -928,12 +930,20 @@ public:
 		lastMat = 0;
 		lastLightmap = 0;
 		lastDeluxemap = 0;
+		lastBlendMap = 0;
 	}
 	virtual void beginDrawingSky() {
 		bDrawingSky = true;
 	}
 	virtual void endDrawingSky() {
 		bDrawingSky = false;
+	}
+	virtual void setBlendMap(class textureAPI_i *t) {
+		lastBlendMap = t;
+	}
+	aabb blendMapBounds;
+	virtual void setBlendMapBounds(const class aabb &bb) { 
+		blendMapBounds = bb;
 	}
 	virtual void setColor4f(float r, float g, float b, float a)  {
 		//if(lastSurfaceColor[0] == r && lastSurfaceColor[1] == g && lastSurfaceColor[2] == b && lastSurfaceColor[3] == a)
@@ -1465,6 +1475,14 @@ public:
 			if(newShader->sBlendChannelBlue != -1) {
 				glUniform1i(newShader->sBlendChannelBlue,3);
 			}
+			if(newShader->u_blendBoxMins != -1) {
+				glUniform3f(newShader->u_blendBoxMins,blendMapBounds.getMins().x,blendMapBounds.getMins().y,blendMapBounds.getMins().z);
+			}
+			if(newShader->u_blendBoxMaxs != -1) {
+				glUniform3f(newShader->u_blendBoxMaxs,blendMapBounds.getMaxs().x,blendMapBounds.getMaxs().y,blendMapBounds.getMaxs().z);
+			}
+
+			
 			// pass the sunlight (directional light) paremeters to shader
 			if(bHasSunLight) {
 				if(newShader->u_sunDirection != -1) {
@@ -2104,8 +2122,12 @@ public:
 					bindLightmapCoordinatesToFirstTextureSlot = true;
 					unbindTex(1);
 				} else if(stageType == ST_BLENDMAP) {
-					textureAPI_i *t = getStageTextureInternal(s);
-					bindTex(0,t->getInternalHandleU32());
+					if(lastBlendMap) {
+						bindTex(0,lastBlendMap->getInternalHandleU32());
+					} else {
+						textureAPI_i *t = getStageTextureInternal(s);
+						bindTex(0,t->getInternalHandleU32());
+					}
 					if(blendChannelRed) {
 						bindTex(1,getStageTextureInternal(blendChannelRed)->getInternalHandleU32());
 					} else {
@@ -2379,6 +2401,9 @@ drawOnlyLightmap:
 					}	
 				} else if(stageType == ST_BLENDMAP) {
 					glslPermutationFlags_s glslShaderDesc;
+					if(lastBlendMap) {
+						glslShaderDesc.hasBlendBox = true;
+					}
 					selectedShader = GL_RegisterShader("blendMap",&glslShaderDesc);
 					if(selectedShader) {
 						bindShader(selectedShader);

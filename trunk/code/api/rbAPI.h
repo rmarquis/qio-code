@@ -168,6 +168,9 @@ public:
 	virtual void endDrawingSky() {
 
 	}
+	// for terrain
+	virtual void setBlendMap(class textureAPI_i *t) { }
+	virtual void setBlendMapBounds(const class aabb &bb) { }
 
 	// V: bCreateWindow is for my built-in Radiant fork, which is using Qio's materialsystem
 	virtual void init(bool bCreateWindow = true) = 0;

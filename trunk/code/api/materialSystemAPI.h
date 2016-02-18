@@ -52,6 +52,9 @@ public:
 	virtual void cacheAllMaterialsFromMatFile(const char *fname) const = 0;
 	// creates new material for HL/Q1-bsp texture data
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;
+	// creates new, empty texture
+	virtual class textureAPI_i *createTexture(const char *newName, u32 width, u32 height, const byte *pixels = 0) = 0;
+	
 	// Doom3 material tables interface
 	virtual const class tableListAPI_i *getTablesAPI() const = 0;
 	// cubemap loader access (for "env_cubemap" handling in renderer)
