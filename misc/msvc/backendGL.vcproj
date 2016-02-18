@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="backendGL"
 	ProjectGUID="{B5D7E8CF-796B-4547-BE0A-A4A877A62456}"
 	RootNamespace="backendGL"
@@ -263,6 +263,14 @@
 		<Filter
 			Name="shaders"
 			>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\blendMap.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\game\baseqio\glsl\blendMap.vert"
+				>
+			</File>
 			<File
 				RelativePath="..\..\game\baseqio\glsl\bloom.frag"
 				>
