@@ -180,6 +180,27 @@ class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, 
 	if(ret) {
 		return ret;
 	}
+	arraySTD_c<byte> b;
+	if(picData == 0) {
+		b.resize(w*h*4);
+		for(u32 j = 0; j < w; j++) {
+			for(u32 i = 0; i < h; i++) {
+				u32 index = 4*(i * w + j);
+				if(i < w*0.1 || j < h*0.1 || i > w*0.9 || j > h*0.9) {
+					b[index+0] = 0;
+					b[index+1] = 255;
+					b[index+2] = 0;
+					b[index+3] = 255;
+				} else {
+					b[index+0] = 255;
+					b[index+1] = 0;
+					b[index+2] = 0;
+					b[index+3] = 255;
+				}
+			}
+		}
+		picData = b.getArray();
+	}
 	ret = new textureIMPL_c;
 	ret->setName(texName);
 	ret->setWrapMode(TWM_REPEAT);

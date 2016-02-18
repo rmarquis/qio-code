@@ -62,5 +62,9 @@ extern int rf_currentShadowMapLOD;
 // this could be placed somewhere else... in sunLight_c class?
 // sun shadowing bounds for all LODs
 extern aabb rf_sunShadowBounds[3];
+// for terrain...
+// for blendmap tex coord generation
+extern aabb rf_currBlendBounds;
+extern textureAPI_i *rf_currBlendMap;
 
 #endif // __RF_DRAWCALL_H__

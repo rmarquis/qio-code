@@ -248,12 +248,14 @@ friend class lodTerrain_c;
 	int curLOD;
 	int savedLOD, savedLOD_top, savedLOD_bot, savedLOD_right, savedLOD_left;
 	rIndexBuffer_c curIndices;
+	textureAPI_i *blendMap;
 	// this is different only for border patches
 	u32 sizeX, sizeY;
 public:
 	lodTerrainPatch_c() {
 		curLOD = 0;
 		savedLOD = -1;
+		blendMap = 0;
 	}
 };
 class lodTerrain_c {
@@ -292,7 +294,8 @@ public:
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
 	///mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
-	mat = g_ms->registerMaterial("textures/qiotests/diffuseMapBlendingTest");
+	//mat = g_ms->registerMaterial("textures/qiotests/diffuseMapBlendingTest");
+	mat = g_ms->registerMaterial("textures/qiotests/terrainBlendingTest");
 }
 void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 
@@ -504,6 +507,11 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 			p.bottom = (i < patchCountX - 1) ? &patches[(i+1) * patchCountY + j] : 0;
 			p.left = (j > 0) ? &patches[i * patchCountY + j - 1] : 0;
 			p.right = (j < patchCountY - 1) ? &patches[i * patchCountY + j + 1] : 0;
+
+			char name[256];
+			sprintf(name,"blendmap%i",index);
+			p.blendMap = g_ms->createTexture(name,1024,1024);
+
 		}
 	}
 	verts.uploadToGPU();
@@ -555,8 +563,12 @@ void lodTerrain_c::addDrawCalls() {
 		lodTerrainPatch_c &lp = patches[i];
 		if(rf_camera.getFrustum().cull(lp.bounds)==CULL_OUT)
 			continue;
+		
+		rf_currBlendBounds = lp.bounds;
+		rf_currBlendMap = lp.blendMap;
 		RF_AddDrawCall(&this->verts,&lp.curIndices,this->mat,0,this->mat->getSort(),0,0,0);
 	}
+	rf_currBlendMap = 0;
 }
 class r_terrain_c {
 	//r_surface_c sf;

@@ -61,6 +61,8 @@ struct glslPermutationFlags_s {
 	bool hasDirectionalShadowMapping; // #define HAS_DIRECTIONAL_SHADOW_MAPPING
 	bool bHasShadowMapLod1; // #define HAS_SHADOWMAP_LOD1
 	bool bHasShadowMapLod2; // #define HAS_SHADOWMAP_LOD2
+	// this is used for blendmap texcoords calculation
+	bool hasBlendBox; // #define HAS_BLEND_BOX
 	// lighting debug tools
 	bool debug_ignoreAngleFactor; // #define DEBUG_IGNOREANGLEFACTOR
 	bool debug_ignoreDistanceFactor; // #define DEBUG_IGNOREDISTANCEFACTOR
@@ -127,6 +129,9 @@ friend class rbSDLOpenGL_c;
 	int u_shadowMapLod0Mins;
 	int u_shadowMapLod1Maxs;
 	int u_shadowMapLod1Mins;
+	// for blendmap terrain
+	int u_blendBoxMins;
+	int u_blendBoxMaxs;
 
 	int atrTangents;
 	int atrBinormals;

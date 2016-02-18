@@ -3,7 +3,20 @@ textures/qiotests/diffuseMapBlendingTest
 {
   {
     stage blendMap
+	// This material is using user-generated image as blendmap
 	map textures/qiotests/blendmapTest/blendmap
+	blendChannelRed textures/qiotests/blendmapTest/grass
+	blendChannelBlue textures/qiotests/blendmapTest/rock
+	blendChannelGreen textures/qiotests/blendmapTest/sand
+  }
+}
+
+textures/qiotests/terrainBlendingTest
+{
+  {
+    stage blendMap
+	// This material is using auto-generated image as blendmap
+	map $blendmap
 	blendChannelRed textures/qiotests/blendmapTest/grass
 	blendChannelBlue textures/qiotests/blendmapTest/rock
 	blendChannelGreen textures/qiotests/blendmapTest/sand

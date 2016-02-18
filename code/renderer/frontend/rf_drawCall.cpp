@@ -68,6 +68,8 @@ public:
 	class mtrAPI_i *material;
 	class textureAPI_i *lightmap; // for bsp surfaces
 	class textureAPI_i *deluxemap; // for bsp surfaces
+	class textureAPI_i *blendMap; // for terrain surfaces
+	aabb blendMapBounds;
 	const class rVertexBuffer_c *verts;
 	const class rIndexBuffer_c *indices;
 	enum drawCallSort_e sort;
@@ -129,6 +131,8 @@ int rf_currentShadowMapH = 0;
 aabb rf_currentSunBounds;
 int rf_currentShadowMapLOD = -1;
 aabb rf_sunShadowBounds[3];
+aabb rf_currBlendBounds;
+textureAPI_i *rf_currBlendMap = 0;
 
 // -1 means that global material time will be used to select "animMap" frame
 void RF_SetForceSpecificMaterialFrame(int newFrameNum) {
@@ -221,6 +225,8 @@ void RF_AddDrawCall(const rVertexBuffer_c *verts, const rIndexBuffer_c *indices,
 	n->verts = verts;
 	n->indices = indices;
 	n->material = mat;
+	n->blendMap = rf_currBlendMap;
+	n->blendMapBounds = rf_currBlendBounds;
 	n->forceSpecificMaterialFrame = rf_forceSpecificMaterialFrame;
 	if(rf_noLightmaps.getInt()) {
 		n->lightmap = 0;
@@ -504,6 +510,8 @@ void RF_AssignDrawCall(class drawCall_c *c) {
 	rb->setBDrawOnlyOnDepthBuffer(c->drawOnlyOnDepthBuffer);
 	rb->setColor4(c->surfaceColor.toPointer());
 	rb->setMaterial(c->material,c->lightmap,c->deluxemap);
+	rb->setBlendMap(c->blendMap);
+	rb->setBlendMapBounds(c->blendMapBounds);
 	if(c->verts) {
 		// draw surface
 		rb->drawElements(*c->verts,*c->indices);

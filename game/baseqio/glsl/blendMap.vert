@@ -24,9 +24,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 // glsl/blendMap.vert
 
 
+varying vec3 v_vertXYZ;
 
 void main() {
 	gl_Position = ftransform();
+	v_vertXYZ = gl_Vertex.xyz;
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 }
 
