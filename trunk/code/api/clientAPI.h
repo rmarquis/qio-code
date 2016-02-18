@@ -34,14 +34,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 struct clAPI_s : public iFaceBase_i {
 	// the gamestate should be grabbed at startup, and whenever a
 	// configstring changes
-	void (*GetGameState)( gameState_s *gamestate );
+	void (*GetGameState)( struct gameState_s *gamestate );
 	// cgame will poll each frame to see if a newer snapshot has arrived
 	// that it is interested in.  The time is returned seperately so that
 	// snapshot latency can be calculated.
 	void (*GetCurrentSnapshotNumber)( int *snapshotNumber, int *serverTime );
 	// a snapshot get can fail if the snapshot (or the entties it holds) is so
 	// old that it has fallen out of the client system queue
-	bool (*GetSnapshot)( int snapshotNumber, snapshot_t *snapshot );
+	bool (*GetSnapshot)( int snapshotNumber, struct snapshot_t *snapshot );
 	// retrieve a text command from the server stream
 	// the current snapshot will hold the number of the most recent command
 	// false can be returned if the client system handled the command
@@ -52,7 +52,9 @@ struct clAPI_s : public iFaceBase_i {
 	// snapshot, and it may be quite a few higher if it is a fast computer on
 	// a lagged connection
 	int (*GetCurrentCmdNumber)( void );	
-	bool (*GetUserCmd)( int cmdNumber, userCmd_s *ucmd );
+	bool (*GetUserCmd)( int cmdNumber, struct userCmd_s *ucmd );
+	// input access
+	bool (*Key_IsDown)(int keyCode);
 };
 
 extern clAPI_s *g_client;

@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
 #include <api/ddAPI.h>
+#include <api/clientAPI.h>
 #include <api/imgAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/materialSystemAPI.h>
@@ -390,6 +391,7 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
+clAPI_s *g_client = 0;
 rbAPI_i *rb = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
 materialSystemAPI_i *g_ms = 0;
@@ -420,6 +422,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_client,CLIENT_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

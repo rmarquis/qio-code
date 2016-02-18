@@ -52,6 +52,9 @@ class trace_c {
 		struct centity_s *clEntity; // for cgame module
 		class rEntityAPI_i *hitREntity; // for cgame and renderer
 		class mtrAPI_i *hitRMaterial; // for cgame and renderer
+		// for renderer
+		class lodTerrain_c *hitRTerrain;
+		class lodTerrainPatch_c *hitRTerrainPatch;
 	//};
 	u32 hitTriangleIndex;
 	// -1 if not set
@@ -118,6 +121,13 @@ public:
 	}
 	void setHitREntity(class rEntityAPI_i *newHitREnt) {
 		hitREntity = newHitREnt;
+		hitRTerrain = 0;
+		hitRTerrainPatch = 0;
+	}
+	void setHitTerrain(class lodTerrain_c *nt, class lodTerrainPatch_c *np) {
+		hitREntity = 0;
+		hitRTerrain = nt;
+		hitRTerrainPatch = np;
 	}
 	void setHitRMaterial(class mtrAPI_i *newHitRMaterial) {
 		hitRMaterial = newHitRMaterial;
@@ -136,6 +146,9 @@ public:
 	}
 	class mtrAPI_i *getHitRMaterial() const {
 		return hitRMaterial;
+	}
+	class lodTerrain_c *getHitTerrain() const {
+		return hitRTerrain;
 	}
 	const vec3_c &getStartPos() const {
 		return from;

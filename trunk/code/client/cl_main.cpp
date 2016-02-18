@@ -2975,6 +2975,7 @@ void CL_InitClientAPI() {
 	g_staticClientAPI.GetSnapshot = CL_GetSnapshot;
 	g_staticClientAPI.GetServerCommand = CL_GetServerCommand;
 	g_staticClientAPI.GetUserCmd = CL_GetUserCmd;
+	g_staticClientAPI.Key_IsDown = Key_IsDown;
 
 	g_iFaceMan->registerInterface(&g_staticClientAPI,CLIENT_API_IDENTSTR);
 }

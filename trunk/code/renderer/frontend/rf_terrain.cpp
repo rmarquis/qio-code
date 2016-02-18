@@ -31,10 +31,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
 #include <shared/autocvar.h>
+#include <shared/trace.h>
 #include <api/coreAPI.h>
+#include <api/clientAPI.h>
 #include <shared/autocmd.h>
 
 static aCvar_c rf_skipTerrain("rf_skipTerrain","0");
+static aCvar_c ter_cvar_modForce("ter_cvar_modForce","16");
+static aCvar_c ter_cvar_modRadius("ter_cvar_modRadius","1024");
 
 void calcNormal(vec3_c &n, const vec3_c &a, const vec3_c &b, const vec3_c &c) {
 	vec3_c e0 = a - b;
@@ -281,6 +285,9 @@ public:
 	void addDrawCalls();
 	void setMaterial(mtrAPI_i *mat);
 	void setTexDef(const texCoordCalc_c &tc);
+	bool traceRay(class trace_c &tr);
+	void applyMod(const class terrainMod_c &m);
+	void recalcBounds();
 };
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
@@ -348,18 +355,6 @@ void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 void lodTerrain_c::scaleTexCoords(float s) {
 	verts.scaleTexCoords(s);
 }
-float g_randomColors[][3] = {
-	{ 1, 0, 0 },
-	{ 0, 1, 0 },
-	{ 0, 0, 1 },
-
-	{ 1, 1, 0 },
-	{ 0, 1, 1 },
-	{ 1, 0, 1 },
-
-	{ 0.5, 1, 0.5 },
-};
-u32 g_numRandomColors = sizeof(g_randomColors)/sizeof(g_randomColors[0]);
 void lodTerrain_c::scaleXYZ(float x, float y, float z) {
 	verts.scaleXYZ(x,y,z);
 	for(u32 i = 0; i < patches.size(); i++) {
@@ -386,6 +381,22 @@ void lodTerrain_c::updateLOD(const vec3_c &cam) {
 	for(u32 i = 0; i < patchCountX; i++) {		
 		for(u32 j = 0; j < patchCountY; j++) {
 			calcPatchIndices(i,j);
+		}
+	}
+}
+void lodTerrain_c::recalcBounds() {
+	for(u32 i = 0; i < patchCountX; i++) {
+		for(u32 j = 0; j < patchCountY; j++) {
+			u32 index = i * patchCountY + j;
+			lodTerrainPatch_c &p = patches[index];
+			p.bounds.clear();
+			u32 minX = i*patchSizeVerts;
+			u32 maxX = minX+patchSizeVerts;
+			u32 minY = j*patchSizeVerts;
+			u32 maxY = minY+patchSizeVerts;
+			for (u32 pX = minX; pX <= maxX; ++pX)
+				for (u32 pY = minY; pY <= maxY; ++pY)
+					p.bounds.addPoint(verts.getXYZ(pX * sizeY + pY));
 		}
 	}
 }
@@ -470,10 +481,10 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 			u32 minX = i*patchSizeVerts;
 			u32 maxX = minX+patchSizeVerts;
 			u32 minY = j*patchSizeVerts;
-			u32 maxZ = minY+patchSizeVerts;
-			//if(maxZ >= size) {
-			//	u32 overflowZ = maxZ - (size-1);
-			//	maxZ = size-1;
+			u32 maxY = minY+patchSizeVerts;
+			//if(maxY >= size) {
+			//	u32 overflowZ = maxY - (size-1);
+			//	maxY = size-1;
 			//	p.sizeY = patchSizeVerts - overflowZ;
 			//} else {
 				p.sizeY = patchSizeVerts;
@@ -486,7 +497,7 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 				p.sizeX = patchSizeVerts;
 	//		}
 			for (u32 pX = minX; pX <= maxX; ++pX)
-				for (u32 pY = minY; pY <= maxZ; ++pY)
+				for (u32 pY = minY; pY <= maxY; ++pY)
 					p.bounds.addPoint(verts.getXYZ(pX * sizeY + pY));
 			p.center = p.bounds.getCenter();
 			p.top = i > 0 ? &patches[(i-1) * patchCountY + j] : 0;
@@ -499,6 +510,37 @@ bool lodTerrain_c::initLODTerrain(const class heightmapInstance_c &h, u32 lodPow
 	return false;
 }
 
+bool lodTerrain_c::traceRay(class trace_c &tr) {
+	bool bHit = false;
+	for(u32 i = 0; i < patches.size(); i++) {
+		lodTerrainPatch_c &lp = patches[i];
+		if(tr.getTraceBounds().intersect(lp.bounds)==false)
+			continue;
+		for(u32 j = 0; j < lp.curIndices.getNumIndices(); j+= 3) {
+			u32 i0 = lp.curIndices[j+0];
+			u32 i1 = lp.curIndices[j+1];
+			u32 i2 = lp.curIndices[j+2];
+			const rVert_c &v0 = this->verts[i0];
+			const rVert_c &v1 = this->verts[i1];
+			const rVert_c &v2 = this->verts[i2];
+			if(tr.clipByTriangle(v0.xyz,v1.xyz,v2.xyz,true)) {
+				tr.setHitTerrain(this,&lp);
+				bHit = true;
+			}
+		}
+	}
+	return bHit;
+}
+void lodTerrain_c::applyMod(const class terrainMod_c &m) {
+	verts.unloadFromGPU();
+	rVert_c *p = verts.getArray();
+	for(u32 i = 0; i < verts.size(); i++, p++) {
+		m.processVertex(p->xyz.x,p->xyz.y,p->xyz.z);
+	}
+	// TODO do not recalculate entire boundss
+	recalcBounds();
+	verts.uploadToGPU();
+}
 void lodTerrain_c::setTexDef(const texCoordCalc_c &tc) {
 	verts.unloadFromGPU();
 	verts.calcTexCoords(tc);
@@ -531,6 +573,9 @@ public:
 		//sf.addDrawCall();
 		lt.updateLOD(rf_camera.getOrigin());
 		lt.addDrawCalls();
+	}
+	bool traceRay(class trace_c &tr) {
+		return lt.traceRay(tr);
 	}
 	void setMaterial(mtrAPI_i *mat) {
 		lt.setMaterial(mat);
@@ -627,12 +672,11 @@ void TER_DeleteAllPatches_f() {
 	RFT_ShutdownTerrain();
 }
 void TER_HideLookAtPatch_f() {
-	//trace_c tr;
-	//RF_DoCameraTrace(tr,true);
-	//if(tr.hasHit() == false) {
-	//	out.clear();
-	//	return;
-	//}
+	trace_c tr;
+	RF_DoCameraTrace(tr,true);
+	if(tr.hasHit() == false) {
+		return;
+	}
 }
 void TER_All_SetMaterial_f() {
 	if(g_core->Argc() < 2) {
@@ -659,6 +703,26 @@ void TER_All_SetTextureUnitsXY_f() {
 	}
 }
 
+void TER_All_SetVertexModRadius_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: ter_ed_setVertexModRadius <floatval>\n");
+		return;
+	}
+	const char *s = g_core->Argv(1);
+	float val = atof(s);
+	g_core->Print("Changing mod radius to %f (previous %f)\n",val,ter_cvar_modRadius.getFloat());
+	ter_cvar_modRadius.setFloat(val);
+}
+void TER_All_SetVertexModForce_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: ter_ed_setVertexModForce <floatval>\n");
+		return;
+	}
+	const char *s = g_core->Argv(1);
+	float val = atof(s);
+	g_core->Print("Changing mod force to %f (previous %f)\n",val,ter_cvar_modForce.getFloat());
+	ter_cvar_modForce.setFloat(val);
+}
 
 
 static aCmd_c ter_spawnFlat("ter_spawnFlat",TER_SpawnFlat_f);
@@ -667,6 +731,8 @@ static aCmd_c ter_deleteAllPatches("ter_deleteAllPatches",TER_DeleteAllPatches_f
 static aCmd_c ter_hideLookAtPatch("ter_hideLookAtPatch",TER_HideLookAtPatch_f);
 static aCmd_c ter_all_setMaterial("ter_all_setMaterial",TER_All_SetMaterial_f);
 static aCmd_c ter_all_setTextureUnitsXY("ter_all_setTextureUnitsXY",TER_All_SetTextureUnitsXY_f);
+static aCmd_c ter_ed_setVertexModRadius("ter_ed_setVertexModRadius",TER_All_SetVertexModRadius_f);
+static aCmd_c ter_ed_setVertexModForce("ter_ed_setVertexModForce",TER_All_SetVertexModForce_f);
 
 void RFT_CreateTestTerrain() {
 	heightmap_c h;
@@ -706,12 +772,43 @@ void RFT_CreateTestTerrain() {
 void RFT_InitTerrain() {
 	//RFT_CreateTestTerrain();
 }
+void RFT_ApplyMouseMod(float scale) {
+	trace_c tr;
+	RF_DoCameraTrace(tr,true);
+	if(tr.hasHit()) {
+		if(tr.getHitTerrain()) {
+			terrainMod_c tm;
+			tm.setMaxDist(ter_cvar_modRadius.getFloat());
+			tm.setForce(ter_cvar_modForce.getFloat()*scale);
+			tm.setOrigin(tr.getHitPos());
+			tr.getHitTerrain()->applyMod(tm);
+		}
+	}
+}
+#include <client/keyCodes.h>
 void RFT_AddTerrainDrawCalls() {
 	if(rf_skipTerrain.getInt())
 		return;
+	// Just for testing
+	//g_core->Print("LMB down: %i\n",g_client->Key_IsDown(K_MOUSE1));
+	if(g_client->Key_IsDown(K_MOUSE1)) {
+		RFT_ApplyMouseMod(1.f);
+	} else if(g_client->Key_IsDown(K_MOUSE2)) {
+		RFT_ApplyMouseMod(-1.f);
+	}
 	for(u32 i = 0; i < r_terrain.size(); i++) {
 		r_terrain[i]->addTerrainDrawCalls();
 	}
+}
+bool RFT_RayTraceTerrain(class trace_c &tr) {
+	bool bHit = false;
+	for(u32 i = 0; i < r_terrain.size(); i++) {
+		r_terrain_c *t = r_terrain[i];
+		if(t->traceRay(tr)) {
+			bHit = true;
+		}
+	}
+	return bHit;
 }
 void RFT_ShutdownTerrain() {
 	for(u32 i = 0; i < r_terrain.size(); i++) {

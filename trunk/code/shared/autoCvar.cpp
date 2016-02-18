@@ -49,6 +49,11 @@ void aCvar_c::setExtraModificationCallback(autoCvarModificationCallback_t newMod
 void aCvar_c::setString(const char *newStr) {
 	g_cvars->Cvar_Set(this->name,newStr);
 }
+void aCvar_c::setFloat(float f) {
+	char asString[256];
+	sprintf(asString,"%f",f);
+	g_cvars->Cvar_Set(this->name,asString);
+}
 void aCvar_c::onCvarModified(const char *newText) {
 	this->valStr = newText;
 	this->valFloat = atof(this->valStr);
