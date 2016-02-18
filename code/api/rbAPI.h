@@ -91,6 +91,12 @@ public:
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
+	virtual bool readTextureDataRGBA(class textureAPI_i *tex, byte *out) {
+		return true; // error
+	}
+	virtual bool setTextureDataRGBA(class textureAPI_i *tex, byte *out) {
+		return true; // error
+	}
 	// cubemap textures
 	virtual bool uploadCubeMap(class cubeMapAPI_i *out, const imageData_s *in) { return true; }
 	virtual void freeCubeMap(class cubeMapAPI_i *cm) { }

@@ -169,6 +169,12 @@ public:
 			maxs.y >= other.mins.y &&
 			maxs.z >= other.mins.z;
 	}
+	bool intersectXY(const aabb& other) const {
+		return mins.x <= other.maxs.x &&
+			mins.y <= other.maxs.y &&
+			maxs.x >= other.mins.x &&
+			maxs.y >= other.mins.y;
+	}
 	void getRandomPointInside(class vec3_c &o) const;
 	bool intersectExt(const vec3_c& oMins, const vec3_c &oMaxs, u32 nDim0, u32 nDim1) const {
 		return mins[nDim0] <= oMaxs[nDim0] &&

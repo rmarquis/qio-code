@@ -30,10 +30,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/texCoordCalc.h>
 #include <api/materialSystemAPI.h>
 #include <api/mtrAPI.h>
+#include <api/textureAPI.h>
 #include <shared/autocvar.h>
 #include <shared/trace.h>
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
+#include <api/imgAPI.h>
 #include <shared/autocmd.h>
 
 static aCvar_c rf_skipTerrain("rf_skipTerrain","0");
@@ -75,6 +77,12 @@ public:
 		}
 		float f = 1.f - dist / Square(maxDist);
 		z += f * force;
+	}
+	const vec3_c &getOrigin() const {
+		return center;
+	}
+	float getMaxDist() const {
+		return maxDist;
 	}
 };
 class hmDesc_c {
@@ -289,6 +297,7 @@ public:
 	void setTexDef(const texCoordCalc_c &tc);
 	bool traceRay(class trace_c &tr);
 	void applyMod(const class terrainMod_c &m);
+	void applyPaint(const vec3_c &p, const byte rgba[4]);
 	void recalcBounds();
 };
 lodTerrain_c::lodTerrain_c() {
@@ -539,8 +548,50 @@ bool lodTerrain_c::traceRay(class trace_c &tr) {
 	}
 	return bHit;
 }
+void lodTerrain_c::applyPaint(const vec3_c &p, const byte rgba[4]) {
+	aabb modBox;
+
+	float paintRadius = 64.f;
+	modBox.fromPointAndRadius(p,paintRadius);
+	for(u32 i = 0; i < patches.size(); i++) {
+		lodTerrainPatch_c &tp = patches[i];
+		if(modBox.intersectXY(tp.bounds)) {
+			u32 w = tp.blendMap->getWidth();	
+			u32 h = tp.blendMap->getHeight();
+			arraySTD_c<byte> data;
+			data.resize(w*h*4);
+			tp.blendMap->readTextureDataRGBA(data.getArray());
+			g_img->writeTGA("debugBlendMap.tga",data.getArray(),w,h,4);
+			vec3_c sizes = tp.bounds.getSizes();
+			for(u32 x = 0; x < w; x++) {
+				for(u32 y = 0; y < h; y++) {
+					float fy = float(x)/w;
+					float fx = float(y)/h;
+					//fx = 1.0 - fx;
+					//fy = 1.0 - fy;
+					vec3_c fakePos(
+						fx * sizes.x,
+						fy * sizes.y,
+						0
+						);
+					fakePos += tp.bounds.mins;
+					if(p.distXY(fakePos) < paintRadius) { 
+						u32 pi = x * h + y;
+						byte *ptr = data.getArray() + pi * 4;
+						ptr[0] = rgba[0];
+						ptr[1] = rgba[1];
+						ptr[2] = rgba[2];
+					}
+				}
+			}
+			tp.blendMap->setTextureDataRGBA(data.getArray());
+		}
+	}
+
+}
 void lodTerrain_c::applyMod(const class terrainMod_c &m) {
 	verts.unloadFromGPU();
+
 	rVert_c *p = verts.getArray();
 	for(u32 i = 0; i < verts.size(); i++, p++) {
 		m.processVertex(p->xyz.x,p->xyz.y,p->xyz.z);
@@ -797,6 +848,15 @@ void RFT_ApplyMouseMod(float scale) {
 		}
 	}
 }
+void RFT_ApplyTerrainPaint(byte rgba[4]) {
+	trace_c tr;
+	RF_DoCameraTrace(tr,true);
+	if(tr.hasHit()) {
+		if(tr.getHitTerrain()) {
+			tr.getHitTerrain()->applyPaint(tr.getHitPos(),rgba);
+		}
+	}
+}
 #include <client/keyCodes.h>
 void RFT_AddTerrainDrawCalls() {
 	if(rf_skipTerrain.getInt())
@@ -804,9 +864,13 @@ void RFT_AddTerrainDrawCalls() {
 	// Just for testing
 	//g_core->Print("LMB down: %i\n",g_client->Key_IsDown(K_MOUSE1));
 	if(g_client->Key_IsDown(K_MOUSE1)) {
-		RFT_ApplyMouseMod(1.f);
+		byte green[] = { 0, 255, 0, 0 };
+	//	RFT_ApplyMouseMod(1.f);
+		RFT_ApplyTerrainPaint(green);
 	} else if(g_client->Key_IsDown(K_MOUSE2)) {
-		RFT_ApplyMouseMod(-1.f);
+	//	RFT_ApplyMouseMod(-1.f);
+		byte blue[] = { 0, 0, 255, 0 };
+		RFT_ApplyTerrainPaint(blue);
 	}
 	for(u32 i = 0; i < r_terrain.size(); i++) {
 		r_terrain[i]->addTerrainDrawCalls();

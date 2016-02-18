@@ -43,6 +43,8 @@ public:
 	virtual u32 getHeight() const = 0;
 	virtual void setWidth(u32 newWidth) = 0;
 	virtual void setHeight(u32 newHeight) = 0;
+	virtual bool readTextureDataRGBA(byte *out) = 0;
+	virtual bool setTextureDataRGBA(byte *out) = 0;
 
 	// bClampToEdge should be set to true for skybox textures
 	virtual enum textureWrapMode_e getWrapMode() const = 0;

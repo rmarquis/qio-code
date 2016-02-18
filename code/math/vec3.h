@@ -344,6 +344,9 @@ public:
 	float len() const {
 		return sqrt(x*x + y*y + z*z);
 	}
+	float lenXY() const {
+		return sqrt(x*x + y*y);
+	}
 	// returns squared distance between two 3d points
 	float distSQ(const vec3_c &other) const {
 		return (*this - other).lenSQ();
@@ -351,6 +354,9 @@ public:
 	// returns distance between two 3d points
 	float dist(const vec3_c &other) const {
 		return (*this - other).len();
+	}
+	float distXY(const vec3_c &other) const {
+		return (*this - other).lenXY();
 	}
 	// sets this vector to the interpolation results of other two vectors
 	void lerpResult(const vec3_c &v0, const vec3_c &v1, const float f) {
