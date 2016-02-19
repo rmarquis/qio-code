@@ -60,4 +60,5 @@ void main() {
 	vec4 f = (blend.x * r + blend.y * g + blend.z * b);
 	normalize(f);
 	gl_FragColor = f;
+	//gl_FragColor = blend;
 }
