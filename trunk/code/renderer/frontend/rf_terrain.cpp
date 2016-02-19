@@ -297,7 +297,7 @@ public:
 	void setTexDef(const texCoordCalc_c &tc);
 	bool traceRay(class trace_c &tr);
 	void applyMod(const class terrainMod_c &m);
-	void applyPaint(const vec3_c &p, const byte rgba[4]);
+	void applyPaint(const vec3_c &p, const byte rgba[4], float innerRadius, float outerRadius);
 	void recalcBounds();
 };
 lodTerrain_c::lodTerrain_c() {
@@ -548,11 +548,10 @@ bool lodTerrain_c::traceRay(class trace_c &tr) {
 	}
 	return bHit;
 }
-void lodTerrain_c::applyPaint(const vec3_c &p, const byte rgba[4]) {
+void lodTerrain_c::applyPaint(const vec3_c &p, const byte rgba[4], float innerRadius, float outerRadius) {
 	aabb modBox;
 
-	float paintRadius = 64.f;
-	modBox.fromPointAndRadius(p,paintRadius);
+	modBox.fromPointAndRadius(p,outerRadius);
 	for(u32 i = 0; i < patches.size(); i++) {
 		lodTerrainPatch_c &tp = patches[i];
 		if(modBox.intersectXY(tp.bounds)) {
@@ -575,12 +574,52 @@ void lodTerrain_c::applyPaint(const vec3_c &p, const byte rgba[4]) {
 						0
 						);
 					fakePos += tp.bounds.mins;
-					if(p.distXY(fakePos) < paintRadius) { 
+					float dist = p.distXY(fakePos);
+					if(dist < outerRadius) { 
 						u32 pi = x * h + y;
 						byte *ptr = data.getArray() + pi * 4;
-						ptr[0] = rgba[0];
-						ptr[1] = rgba[1];
-						ptr[2] = rgba[2];
+						if(dist < innerRadius) { 
+							ptr[0] = rgba[0];
+							ptr[1] = rgba[1];
+							ptr[2] = rgba[2];
+						} else {
+							// sum and average?
+							float frac = (dist-innerRadius)/(outerRadius-innerRadius);
+							frac = 1.f-frac;
+#if 1
+							float fc[4] = { ptr[0], ptr[1], ptr[2], ptr[3] };
+							fc[0] += rgba[0]*frac;
+							fc[1] += rgba[1]*frac;
+							fc[2] += rgba[2]*frac;
+							float len = sqrt(fc[0]*fc[0] + fc[1]*fc[1]+fc[2]*fc[2]);
+							fc[0] /= len;
+							fc[1] /= len;
+							fc[2] /= len;
+							ptr[0] = fc[0]*255.f;
+							ptr[1] = fc[1]*255.f;
+							ptr[2] = fc[2]*255.f;
+#elif 0
+							vec3_c test(255.f*frac,255.f*(1.f-frac),0);
+							ptr[0] = test[0];
+							ptr[1] = test[1];
+							ptr[2] = test[2];
+#else
+							float fc[4] = { ptr[0], ptr[1], ptr[2], ptr[3] };
+							fc[0] += rgba[0];
+							fc[1] += rgba[1];
+							fc[2] += rgba[2];
+							fc[0] *= 0.5f;
+							fc[1] *= 0.5f;
+							fc[2] *= 0.5f;
+							for(u32 i = 0; i < 3; i++) {
+								if(fc[i] > 255.f)
+									fc[i] = 255.f;
+							}
+							ptr[0] = fc[0];
+							ptr[1] = fc[1];
+							ptr[2] = fc[2];
+#endif
+						}
 					}
 				}
 			}
@@ -848,12 +887,12 @@ void RFT_ApplyMouseMod(float scale) {
 		}
 	}
 }
-void RFT_ApplyTerrainPaint(byte rgba[4]) {
+void RFT_ApplyTerrainPaint(byte rgba[4], float innerRadius, float outerRadius) {
 	trace_c tr;
 	RF_DoCameraTrace(tr,true);
 	if(tr.hasHit()) {
 		if(tr.getHitTerrain()) {
-			tr.getHitTerrain()->applyPaint(tr.getHitPos(),rgba);
+			tr.getHitTerrain()->applyPaint(tr.getHitPos(),rgba, innerRadius, outerRadius);
 		}
 	}
 }
@@ -866,11 +905,11 @@ void RFT_AddTerrainDrawCalls() {
 	if(g_client->Key_IsDown(K_MOUSE1)) {
 		byte green[] = { 0, 255, 0, 0 };
 	//	RFT_ApplyMouseMod(1.f);
-		RFT_ApplyTerrainPaint(green);
+		RFT_ApplyTerrainPaint(green,32.f,96.f);
 	} else if(g_client->Key_IsDown(K_MOUSE2)) {
 	//	RFT_ApplyMouseMod(-1.f);
 		byte blue[] = { 0, 0, 255, 0 };
-		RFT_ApplyTerrainPaint(blue);
+		RFT_ApplyTerrainPaint(blue,64.f,96.f);
 	}
 	for(u32 i = 0; i < r_terrain.size(); i++) {
 		r_terrain[i]->addTerrainDrawCalls();
