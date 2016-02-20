@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="core"
 	ProjectGUID="{81CB51C4-B434-4E12-B69B-BAEE102F2852}"
 	RootNamespace="core"
@@ -1362,15 +1362,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\win32\win_local.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe"
-			>
-			<File
-				RelativePath="..\..\code\sys\win_resource.h"
 				>
 			</File>
 		</Filter>
