@@ -24,7 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __G_LUA_H__
 #define __G_LUA_H__
 
+extern "C" {
 #include <lua.h>
+}
 #include <math/math.h>
 #include "../g_local.h"
 

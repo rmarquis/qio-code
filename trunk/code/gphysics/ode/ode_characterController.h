@@ -39,6 +39,7 @@ class odeCharacterController_c : public physCharacterControllerAPI_i {
 	float characterWidth;
 public:
 	odeCharacterController_c();
+	~odeCharacterController_c();
 
 	virtual void setCharacterVelocity(const class vec3_c &newVel);
 	virtual void setCharacterEntity(class BaseEntity *ent);

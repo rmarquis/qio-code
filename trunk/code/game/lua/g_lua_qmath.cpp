@@ -24,9 +24,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef G_ENABLE_LUA_SCRIPTING
 
+extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+}
 #include "../g_local.h"
 
 static int qmath_abs(lua_State * L)

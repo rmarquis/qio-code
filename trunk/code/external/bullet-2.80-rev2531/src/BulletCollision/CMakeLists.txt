@@ -1,4 +1,4 @@
-INCLUDE_DIRECTORIES( ${BULLET_PHYSICS_SOURCE_DIR}/src  )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/code/external//bullet-2.80-rev2531/src  )
 
 SET(BulletCollision_SRCS
 	BroadphaseCollision/btAxisSweep3.cpp

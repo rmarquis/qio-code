@@ -1,3 +1,11 @@
+02-22-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Added cMake support for QIO (only for Windows at this moment)
+		- NOTE: There are some problems with compiling "QIOEditor" on VS2015 with WindowsSDK
+	* Fixed abstract classes for ODE physics
+	* Fixed compiling problems
+	* Added cMake support for SDL 1.2.15 and source files for it
+	* Added cMake support ODE Physics
+
 02-06-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Added Bullet multithreading support patch for references only 
 
