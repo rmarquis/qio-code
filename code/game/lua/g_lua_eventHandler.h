@@ -25,6 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __G_LUA_EVENTHANDLER_H__
 #define __G_LUA_EVENTHANDLER_H__
 
+extern "C" {
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
+
 #include <shared/array.h>
 
 class luaEventHandler_c {

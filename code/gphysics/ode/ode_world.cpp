@@ -32,11 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
 
-#ifdef _DEBUG
-#pragma comment( lib, "ode_singled.lib" )
-#else
-#pragma comment( lib, "ode_single.lib" )
-#endif
+#pragma comment( lib, "ode.lib" )
 
 odePhysicsWorld_c::odePhysicsWorld_c(const char *newDebugName) {
 	this->debugName = newDebugName;

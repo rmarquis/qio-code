@@ -1,7 +1,10 @@
-SUBDIRS( MiniCL BulletMultiThreaded BulletSoftBody BulletCollision BulletDynamics LinearMath )
+SET(BULLET_VERSION 2.80)
+
+SUBDIRS( BulletCollision BulletDynamics LinearMath )
 
 IF(INSTALL_LIBS)
 	#INSTALL of other files requires CMake 2.6
+	SET(INCLUDE_INSTALL_DIR "${LIB_DIR}/bullet-2.80-rev2531/src" CACHE PATH "The subdirectory to the header prefix")
 	IF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.5)
 		IF (APPLE AND BUILD_SHARED_LIBS AND FRAMEWORK)
 			# Don't actually need to install any common files, the frameworks include everything

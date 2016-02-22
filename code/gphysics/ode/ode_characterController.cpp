@@ -33,6 +33,9 @@ odeCharacterController_c::odeCharacterController_c() {
 	this->body = 0;
 	this->myWorld = 0;
 }
+odeCharacterController_c::~odeCharacterController_c() {
+	destroyCharacter();
+}
 void odeCharacterController_c::setCharacterVelocity(const class vec3_c &newVel) {
 
 }

@@ -74,8 +74,6 @@ static physDLLODE_c g_staticPhysDLLImpl;
 
 #include <float.h>
 
-double _HUGE = FLT_MAX;
-
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
