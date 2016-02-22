@@ -5,6 +5,8 @@
 	* Fixed compiling problems
 	* Added cMake support for SDL 1.2.15 and source files for it
 	* Added cMake support ODE Physics
+	* Fixed problems with compiling "QIOEditor" on Windows with Visual Studio
+	* Fixed problems with affects directory scope with includes while generating Visual Studio solution with cMake
 
 02-06-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Added Bullet multithreading support patch for references only 
