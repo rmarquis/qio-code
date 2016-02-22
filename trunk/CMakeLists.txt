@@ -4,116 +4,113 @@
 # cMake required (http://www.cmake.org/)
 #
 
-cmake_minimum_required( VERSION 3.0 )
+CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 MESSAGE( STATUS "Using cmake version ${CMAKE_VERSION}" )
 
-set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
-set( CMAKE_C_FLAGS_MINSIZEREL "-DNDEBUG -Os" CACHE STRING "" )
-set( CMAKE_C_FLAGS_RELEASE "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing" CACHE STRING "" )
-set( CMAKE_C_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -g" CACHE STRING "" )
-set( CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "" )
-set( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" )
-set( CMAKE_CXX_FLAGS_MINSIZEREL ${CMAKE_C_FLAGS_MINSIZEREL} CACHE STRING "" )
-set( CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} CACHE STRING "" )
-set( CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} CACHE STRING "" )
-set( CMAKE_CXX_STACK_SIZE "8388608" )
-set( CMAKE_BUILD_TYPE Release CACHE STRING "Build configuration (Debug, Release, RelWithDebInfo, MinSizeRel)" )
+SET( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
+SET( CMAKE_C_FLAGS_MINSIZEREL "-DNDEBUG -Os" CACHE STRING "" )
+SET( CMAKE_C_FLAGS_RELEASE "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing" CACHE STRING "" )
+SET( CMAKE_C_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -g" CACHE STRING "" )
+SET( CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "" )
+SET( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" )
+SET( CMAKE_CXX_FLAGS_MINSIZEREL ${CMAKE_C_FLAGS_MINSIZEREL} CACHE STRING "" )
+SET( CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} CACHE STRING "" )
+SET( CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} CACHE STRING "" )
+SET( CMAKE_CXX_STACK_SIZE "8388608" )
+SET( CMAKE_BUILD_TYPE Release CACHE STRING "Build configuration (Debug, Release, RelWithDebInfo, MinSizeRel)" )
 
 # This line has to appear before 'PROJECT' in order to be able to disable incremental linking
 SET( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
-set( MSVC_INCREMENTAL_DEFAULT ON )
+SET( MSVC_INCREMENTAL_DEFAULT ON )
 
-project( QIO C CXX ASM )
-set( CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER} )
-set( CMAKE_ASM_COMPILE_OBJECT ${CMAKE_C_COMPILE_OBJECT} )
-set( CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "" ) # Need this to get rid of -rdynamic linker flag set by default by cmake
+PROJECT( QIO C CXX ASM )
+SET( CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER} )
+SET( CMAKE_ASM_COMPILE_OBJECT ${CMAKE_C_COMPILE_OBJECT} )
+SET( CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "" ) # Need this to get rid of -rdynamic linker flag set by default by cmake
 
 # Options
-if (WIN32)
+IF( WIN32 )
 #Dushan // only on Windows platform
 #option( BUILD_DX12_RENDERER   "Build DirectX 12 renderer"                      OFF )
 #option( BUILD_DX11_RENDERER   "Build DirectX 11 renderer"                      OFF )
-option( BUILD_DX10_RENDERER   "Build DirectX 10 renderer"                      ON )
-option( BUILD_DX9_RENDERER    "Build DirectX 9 renderer"                       ON )
-endif(WIN32)
-option( BUILD_GL_RENDERER     "Build new renderer library"                     ON )
-option( BUILD_NULL_RENDERER   "Build new renderer library"                     ON )
-option( BUILD_RENDERER        "Build renderer library"                         ON )
-option( BUILD_MATERIALSYSTEM  "Build QIO material system library"              ON )
-option( BUILD_IMAGELIB        "Build QIO image library"                        ON )
-option( BUILD_MODELLOADER     "Build QIO model loader library"                 ON )
-option( BUILD_CORE            "Build QIO core library"                         ON )
-option( BUILD_CM              "Build QIO cm library"                           ON )
-option( BUILD_DECLMANAGER     "Build QUI decal manager libery"                 ON )
-option( BUILD_GAME            "Build QIO game module library"                  ON )
-option( BUILD_CGAME           "Build QIO cgame module library"                 ON )
-option( BUILD_ENGINE          "Build QIO engine binary"                        ON )
-if (WIN32)
-#Dushan - only on Windows at this moment
-#there are compiling problems with VS2015
-#option( BUILD_EDITOR          "Build QIO editor module library"                ON )
-endif(WIN32)
-option( BUILD_GPHYSICS_BULLET "Build QIO Bullet Physics module library"        ON )
-option( BUILD_GPHYSICS_ODE    "Build QIO ODE Physics module library"           ON )
-#option( BUILD_SOUND           "Build QIO sound module library"                OFF )
-#option( BUILD_GUI             "Build QIO GUI module library"                  OFF )
-#option( BUILD_RECAST          "Build QIO Recast module library"               OFF )
+OPTION( BUILD_DX10_RENDERER   "Build DirectX 10 renderer"                      ON )
+OPTION( BUILD_DX9_RENDERER    "Build DirectX 9 renderer"                       ON )
+ENDIF ( WIN32 )
+OPTION( BUILD_GL_RENDERER     "Build new renderer library"                     ON )
+OPTION( BUILD_NULL_RENDERER   "Build new renderer library"                     ON )
+OPTION( BUILD_RENDERER        "Build renderer library"                         ON )
+OPTION( BUILD_MATERIALSYSTEM  "Build QIO material system library"              ON )
+OPTION( BUILD_IMAGELIB        "Build QIO image library"                        ON )
+OPTION( BUILD_MODELLOADER     "Build QIO model loader library"                 ON )
+OPTION( BUILD_CORE            "Build QIO core library"                         ON )
+OPTION( BUILD_CM              "Build QIO cm library"                           ON )
+OPTION( BUILD_DECLMANAGER     "Build QUI decal manager libery"                 ON )
+OPTION( BUILD_GAME            "Build QIO game module library"                  ON )
+OPTION( BUILD_CGAME           "Build QIO cgame module library"                 ON )
+OPTION( BUILD_ENGINE          "Build QIO engine binary"                        ON )
+IF( WIN32 )
+OPTION( BUILD_EDITOR          "Build QIO editor module library"                ON )
+ENDIF( WIN32 )
+OPTION( BUILD_GPHYSICS_BULLET "Build QIO Bullet Physics module library"        ON )
+OPTION( BUILD_GPHYSICS_ODE    "Build QIO ODE Physics module library"           ON )
+#OPTION( BUILD_SOUND           "Build QIO sound module library"                OFF )
+#OPTION( BUILD_GUI             "Build QIO GUI module library"                  OFF )
+#OPTION( BUILD_RECAST          "Build QIO Recast module library"               OFF )
 
 # Determine arch.
 # Dushan - only x86 is supported at this moment
 SET( BUILD_ARCH "x86" )
 
 # Package info
-set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "QIO client" )
-set( CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README" )
-set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt" )
-include( CPack )
+SET( CPACK_PACKAGE_DESCRIPTION_SUMMARY "QIO client" )
+SET( CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README" )
+SET( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt" )
+INCLUDE( CPack )
 
-set( MOUNT_DIR ${CMAKE_SOURCE_DIR}/code/ )
-set( LIB_DIR ${CMAKE_SOURCE_DIR}/code/external )
-if ( WIN32 )
-set( REF_DIR ${CMAKE_SOURCE_DIR}/misc/msvc )
-endif( WIN32 )
-set( ENGINEBUILD_DIR ${CMAKE_SOURCE_DIR}/game/)
+SET( MOUNT_DIR ${CMAKE_SOURCE_DIR}/code/ )
+SET( LIB_DIR ${CMAKE_SOURCE_DIR}/code/external )
+IF( WIN32 )
+	SET( REF_DIR ${CMAKE_SOURCE_DIR}/misc/msvc )
+ENDIF( WIN32 )
+SET( ENGINEBUILD_DIR ${CMAKE_SOURCE_DIR}/game/)
 
 #Dushan - Add library modules provided by QIO Engine
 ADD_SUBDIRECTORY( ${LIB_DIR}/ )
 
-find_package( PkgConfig )
+FIND_PACKAGE( PkgConfig )
 
-if( WIN32 )
-  add_definitions( -D_CRT_SECURE_NO_WARNINGS )
-endif()
+IF( WIN32 )
+  ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
+ENDIF()
 
-set( CONSOLE "tty" )
+SET( CONSOLE "tty" )
 
 # Determine platform
-if( WIN32 )
-  set( PLATFORM "win32" )
-  set( CONSOLE "win32" )
-elseif( UNIX )
-  if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-    add_definitions( -DMACOS_X -DMACOS_X_ACCELERATION_HACK -D USE_FILE32API -DMACOS_X_CURSOR_HACK )
-  endif()
-  set( PLATFORM "unix" )
-endif()
+IF( WIN32 )
+  SET( PLATFORM "win32" )
+  SET( CONSOLE "win32" )
+ELSEIF( UNIX )
+  IF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+    ADD_DEFINITIONS( -DMACOS_X -DMACOS_X_ACCELERATION_HACK -D USE_FILE32API -DMACOS_X_CURSOR_HACK )
+  ENDIF()
+  SET( PLATFORM "unix" )
+ENDIF( )
 
-if( WIN32 )
-  add_definitions( -DWINVER=0x501 )
-  #set( OS_LIBRARIES m winmm wsock32 gdi32 ole32 ws2_32 psapi Iphlpapi advapi32 shell32 user32 )
-  set( OS_LIBRARIES m winmm ws2_32 psapi libz )
-  set( EXTRALIBS dinput dsound )
-elseif( UNIX )
-  if( CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" )
-    set( OS_LIBRARIES m z )
-  elseif( CMAKE_SYSTEM_NAME STREQUAL "Darwin" )
-    set( OS_LIBRARIES dl m z )
+IF( WIN32 )
+  #SET( OS_LIBRARIES m winmm wsock32 gdi32 ole32 ws2_32 psapi Iphlpapi advapi32 shell32 user32 )
+  SET( OS_LIBRARIES m winmm ws2_32 psapi libz )
+  SET( EXTRALIBS dinput dsound )
+ELSEIF( UNIX )
+  IF( CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" )
+    SET( OS_LIBRARIES m z )
+  ELSEIF( CMAKE_SYSTEM_NAME STREQUAL "Darwin" )
+    SET( OS_LIBRARIES dl m z )
     # FIXME This looks wrong.
-    set( OS_LIBRARIES ${OS_LIBRARIES} "-framework AGL -framework OpenGL -framework Carbon -framework IOKit" )
-  else()
-    set( OS_LIBRARIES ${CMAKE_DL_LIBS} m z rt )
-  endif()
-endif()
+    SET( OS_LIBRARIES ${OS_LIBRARIES} "-framework AGL -framework OpenGL -framework Carbon -framework IOKit" )
+  ELSE( )
+    SET( OS_LIBRARIES ${CMAKE_DL_LIBS} m z rt )
+  ENDIF( )
+ENDIF( )
 
 
 
@@ -121,11 +118,11 @@ endif()
 # Start of the list for Shared Build Files #
 ############################################
 
-set( MATHLIST_SOURCES
+SET( MATHLIST_SOURCES
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set( MATHLIST_HEADERS 
+SET( MATHLIST_HEADERS 
 	${MOUNT_DIR}/math/vec3.h
 )
 
@@ -135,7 +132,7 @@ set( MATHLIST_HEADERS
 # Start of the list for Material System Build Files #
 #####################################################
 
-set( SHAREDLIST_SOURCES
+SET( SHAREDLIST_SOURCES
 	${MOUNT_DIR}/shared/ast.cpp
 	${MOUNT_DIR}/shared/autoCmd.cpp
 	${MOUNT_DIR}/shared/autoCvar.cpp
@@ -145,7 +142,7 @@ set( SHAREDLIST_SOURCES
 	${MOUNT_DIR}/shared/waveForm.cpp
 )
 
-set( SHAREDLIST_HEADERS
+SET( SHAREDLIST_HEADERS
 	${MOUNT_DIR}/shared/array.h
 	${MOUNT_DIR}/shared/ast.h
 	${MOUNT_DIR}/shared/autoCmd.h
@@ -158,7 +155,7 @@ set( SHAREDLIST_HEADERS
 	${MOUNT_DIR}/shared/waveForm.h
 )
 
-set( MATERIALSYSTEMLIST_SOURCES
+SET( MATERIALSYSTEMLIST_SOURCES
 	${MOUNT_DIR}/materialSystem/mat_api.cpp
 	${MOUNT_DIR}/materialSystem/mat_cubeMap.cpp
 	${MOUNT_DIR}/materialSystem/mat_impl.cpp
@@ -170,7 +167,7 @@ set( MATERIALSYSTEMLIST_SOURCES
 	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
 )
 
-set( MATERIALSYSTEMLIST_HEADERS
+SET( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_cubeMap.h
 	${MOUNT_DIR}/materialSystem/mat_impl.h
 	${MOUNT_DIR}/materialSystem/mat_local.h
@@ -182,7 +179,7 @@ set( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
 )
 
-set( MATERIALSYSTEMLIST_HEADERS
+SET( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_cubeMap.h
 	${MOUNT_DIR}/materialSystem/mat_impl.h
 	${MOUNT_DIR}/materialSystem/mat_local.h
@@ -194,7 +191,7 @@ set( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
 )
 
-set( MATERIALSYSTEMLIST_HEADERS
+SET( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_cubeMap.h
 	${MOUNT_DIR}/materialSystem/mat_impl.h
 	${MOUNT_DIR}/materialSystem/mat_local.h
@@ -214,7 +211,7 @@ set( MATERIALSYSTEMLIST_HEADERS
 # Start of the list for Material System Build Files #
 #####################################################
 
-set( IMAGELIB_SOURCES
+SET( IMAGELIB_SOURCES
 	${MOUNT_DIR}/imageLib/img_api.cpp
 	${MOUNT_DIR}/imageLib/img_convert.cpp
 	${MOUNT_DIR}/imageLib/img_devil.cpp
@@ -224,7 +221,7 @@ set( IMAGELIB_SOURCES
 	${MOUNT_DIR}/imageLib/img_write.cpp
 )
 
-set( IMAGELIB_HEADERS 
+SET( IMAGELIB_HEADERS 
 	${MOUNT_DIR}/imageLib/img_local.h
 )
 
@@ -236,17 +233,17 @@ set( IMAGELIB_HEADERS
 # Start of the list for DirectX 10 Build Files #
 ################################################
 
-set( DIRECTX10LIB_SOURCES
+SET( DIRECTX10LIB_SOURCES
 	${MOUNT_DIR}/renderer/backEndDX10/backendDX10API.cpp
 )
 
-set( DIRECTXANDNULLRENDERER_SHARED_HEADERS
+SET( DIRECTXANDNULLRENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/math/matrix.h
 	${MOUNT_DIR}/qcommon/q_shared.h
 )
 
-set( DIRECTXANDNULLRENDERER_SHARED_SOURCES
+SET( DIRECTXANDNULLRENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/qcommon/q_shared.cpp
@@ -256,7 +253,7 @@ set( DIRECTXANDNULLRENDERER_SHARED_SOURCES
 # Start of the list for NULL renderer Build Files #
 ###################################################
 
-set( NULLRENDERER_SOURCES
+SET( NULLRENDERER_SOURCES
 	${MOUNT_DIR}/renderer/backEndNULL/backEndNULLAPI.cpp
 )
 
@@ -264,17 +261,17 @@ set( NULLRENDERER_SOURCES
 # Start of the list for DirectX 9 Build Files #
 ###############################################
 
-set( DIRECTX9LIB_HEADERS 
+SET( DIRECTX9LIB_HEADERS 
 	${MOUNT_DIR}/renderer/backEndDX9/dx9_local.h
 	${MOUNT_DIR}/renderer/backEndDX9/dx9_shader.h
 )
 
-set( DIRECTX9LIB_SOURCES
+SET( DIRECTX9LIB_SOURCES
 	${MOUNT_DIR}/renderer/backEndDX9/backendDX9API.cpp
 	${MOUNT_DIR}/renderer/backEndDX9/dx9_shader.cpp
 )
 
-set( DIRECTX9LIB_SHARED_HEADERS
+SET( DIRECTX9LIB_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/calcTBN.h
 	${MOUNT_DIR}/math/matrix.h
@@ -282,7 +279,7 @@ set( DIRECTX9LIB_SHARED_HEADERS
 	${MOUNT_DIR}/renderer/rVertexBuffer.h
 )
 
-set( DIRECTX9LIB_SHARED_SOURCES
+SET( DIRECTX9LIB_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/calcTBN.cpp
 	${MOUNT_DIR}/math/matrix.cpp
@@ -290,11 +287,11 @@ set( DIRECTX9LIB_SHARED_SOURCES
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 )
 
-set ( RENDERERGL_APIS_HEADERS
+SET ( RENDERERGL_APIS_HEADERS
 	${MOUNT_DIR}/api/tableListAPI.h
 )
 
-set ( RENDERERGL_SHARED_HEADERS
+SET ( RENDERERGL_SHARED_HEADERS
 	${MOUNT_DIR}/shared/ast_input.h
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/byteRGB.h
@@ -305,7 +302,7 @@ set ( RENDERERGL_SHARED_HEADERS
 	${MOUNT_DIR}/renderer/rVertexBuffer.h
 )
 
-set ( RENDERERGL_SHARED_SOURCES
+SET ( RENDERERGL_SHARED_SOURCES
 	${MOUNT_DIR}/shared/ast_input.cpp
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/calcTBN.cpp
@@ -314,22 +311,22 @@ set ( RENDERERGL_SHARED_SOURCES
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 )
 
-set ( RENDERERGL_HEADERS
+SET ( RENDERERGL_HEADERS
 	${MOUNT_DIR}/renderer/backEndGL/gl_local.h
 	${MOUNT_DIR}/renderer/backEndGL/gl_shader.h
 )
 
-set ( RENDERERGL_SOURCES
+SET ( RENDERERGL_SOURCES
 	${MOUNT_DIR}/renderer/backEndGL/backEndGLAPI.cpp
 	${MOUNT_DIR}/renderer/backEndGL/gl_main.cpp
 	${MOUNT_DIR}/renderer/backEndGL/gl_shader.cpp
 )
 
-set ( IMGLIB_HEADERS
+SET ( IMGLIB_HEADERS
 	${MOUNT_DIR}/imageLib/img_local.h
 )
 
-set ( IMGLIB_SOURCES
+SET ( IMGLIB_SOURCES
 	${MOUNT_DIR}/imageLib/img_api.cpp
 	${MOUNT_DIR}/imageLib/img_convert.cpp
 	${MOUNT_DIR}/imageLib/img_devil.cpp
@@ -338,7 +335,7 @@ set ( IMGLIB_SOURCES
 	${MOUNT_DIR}/imageLib/img_write.cpp
 )
 
-set ( RENDERERAPI_HEADERS
+SET ( RENDERERAPI_HEADERS
 	${MOUNT_DIR}/api/boxTrianglesCallback.h
 	${MOUNT_DIR}/api/cubeMapAPI.h
 	${MOUNT_DIR}/api/customRenderObjectAPI.h
@@ -353,14 +350,14 @@ set ( RENDERERAPI_HEADERS
 	${MOUNT_DIR}/api/rLightAPI.h
 )
 
-set ( RENDERERFILEFORMATS_HEADERS
+SET ( RENDERERFILEFORMATS_HEADERS
 	${MOUNT_DIR}/fileformats/bspFileFormat.h
 	${MOUNT_DIR}/fileformats/bspFileFormat_hl.h
 	${MOUNT_DIR}/fileformats/bspFileFormat_hl2.h
 	${MOUNT_DIR}/fileformats/bspFileFormat_q2.h
 )
 
-set ( RENDERER_HEADERS
+SET ( RENDERER_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/renderer/cameraDef.h
 	${MOUNT_DIR}/renderer/drawCallSort.h
@@ -395,7 +392,7 @@ set ( RENDERER_HEADERS
 	${MOUNT_DIR}/renderer/rVertexBuffer.h
 )
 
-set ( RENDERER_MATH_HEADERS
+SET ( RENDERER_MATH_HEADERS
 	${MOUNT_DIR}/math/aabb.h
 	${MOUNT_DIR}/math/axis.h
 	${MOUNT_DIR}/math/frustum.h
@@ -408,7 +405,7 @@ set ( RENDERER_MATH_HEADERS
 	${MOUNT_DIR}/math/vec3.h
 )
 
-set ( RENDERER_MATH_SOURCES
+SET ( RENDERER_MATH_SOURCES
 	${MOUNT_DIR}/math/aabb.cpp
 	${MOUNT_DIR}/math/axis.cpp
 	${MOUNT_DIR}/math/frustum.cpp
@@ -418,7 +415,7 @@ set ( RENDERER_MATH_SOURCES
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set ( RENDERER_SHARED_HEADERS
+SET ( RENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/afRagdollHelper.h
 	${MOUNT_DIR}/shared/animationController.h
 	${MOUNT_DIR}/shared/autoCmd.h
@@ -457,7 +454,7 @@ set ( RENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/wolfAnimScript.h
 )
 
-set ( RENDERER_SHARED_SOURCES
+SET ( RENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/afRagdollHelper.cpp
 	${MOUNT_DIR}/shared/animationController.cpp
@@ -487,7 +484,7 @@ set ( RENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/wolfAnimScript.cpp
 )
 
-set ( RENDERER_SOURCES
+SET ( RENDERER_SOURCES
 	${MOUNT_DIR}/renderer/frontend/rf_2d.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_anims.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_api.cpp
@@ -521,7 +518,7 @@ set ( RENDERER_SOURCES
 	${MOUNT_DIR}/renderer/frontend/rf_world.cpp
 )
 
-set ( MODELLOADER_API
+SET ( MODELLOADER_API
 	${MOUNT_DIR}/api/kfModelAPI.h
 	${MOUNT_DIR}/api/modelLoaderDLLAPI.h
 	${MOUNT_DIR}/api/skelAnimAPI.h
@@ -530,7 +527,7 @@ set ( MODELLOADER_API
 	${MOUNT_DIR}/api/staticModelCreatorAPI.h
 )
 
-set ( MODELLOADERFILEFORMATS 
+SET ( MODELLOADERFILEFORMATS 
 	${MOUNT_DIR}/fileformats/3ds_file_format.h
 	${MOUNT_DIR}/fileformats/actorX_file_format.h
 	${MOUNT_DIR}/fileformats/md2_file_format.h
@@ -544,19 +541,19 @@ set ( MODELLOADERFILEFORMATS
 	${MOUNT_DIR}/fileformats/vvdFileFormat.h
 )
 
-set ( MODELLOADER_HEADERS
+SET ( MODELLOADER_HEADERS
 	${MOUNT_DIR}/modelLoader/hl2MDLReader.h
 	${MOUNT_DIR}/modelLoader/modelLoaderLocal.h
 )
 
-set ( MODELLOADER_KEYFRAMEDMODELLOADERS_HEADERS
+SET ( MODELLOADER_KEYFRAMEDMODELLOADERS_HEADERS
 	${MOUNT_DIR}/modelLoader/keyFramedModelImpl.h
 )
-set ( MODELLOADER_KEYFRAMEDMODELLOADERS_SOURCES
+SET ( MODELLOADER_KEYFRAMEDMODELLOADERS_SOURCES
 	${MOUNT_DIR}/modelLoader/keyFramedModelImpl.cpp
 )
 
-set ( MODELLOADER_MATH_HEADERS
+SET ( MODELLOADER_MATH_HEADERS
 	${MOUNT_DIR}/math/aabb.h
 	${MOUNT_DIR}/math/axis.h
 	${MOUNT_DIR}/math/matrix.h
@@ -565,12 +562,12 @@ set ( MODELLOADER_MATH_HEADERS
 	${MOUNT_DIR}/math/vec3.h
 )
 
-set ( MODELLOADER_MATH_SOURCES
+SET ( MODELLOADER_MATH_SOURCES
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set ( MODELLOADER_SHARED_HEADERS
+SET ( MODELLOADER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/cmWinding.h
 	${MOUNT_DIR}/shared/extraSurfEdgesData.h
@@ -583,7 +580,7 @@ set ( MODELLOADER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/textureAxisFromNormal.h
 )
 
-set ( MODELLOADER_SHARED_SOURCES 
+SET ( MODELLOADER_SHARED_SOURCES 
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/cmWinding.cpp
 	${MOUNT_DIR}/shared/parser.cpp
@@ -593,7 +590,7 @@ set ( MODELLOADER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/textureAxisFromNormal.cpp
 )
 
-set ( MODELLOADER_SKELETALMODELLOADERS
+SET ( MODELLOADER_SKELETALMODELLOADERS
 	${MOUNT_DIR}/modelLoader/sk_local.h
 	${MOUNT_DIR}/modelLoader/skelAnimImpl.cpp
 	${MOUNT_DIR}/modelLoader/skelAnimImpl.h
@@ -601,18 +598,18 @@ set ( MODELLOADER_SKELETALMODELLOADERS
 	${MOUNT_DIR}/modelLoader/skelModelImpl.h
 )
 
-set ( MODELLOADER_SOURCES
+SET ( MODELLOADER_SOURCES
 	${MOUNT_DIR}/modelLoader/hl2MDLReader.cpp
 	${MOUNT_DIR}/modelLoader/mod_postProcess.cpp
 	${MOUNT_DIR}/modelLoader/modelLoaderAPI.cpp
 	${MOUNT_DIR}/modelLoader/skel_animPostProcess.cpp
 )
 
-set ( MODELLOADER_STATICMODELLOADERS_HEADERS
+SET ( MODELLOADER_STATICMODELLOADERS_HEADERS
 	${MOUNT_DIR}/modelLoader/staticModelLoaders/mtlFile.h
 )
 
-set ( MODELLOADER_STATICMODELLOADERS_SOURCES
+SET ( MODELLOADER_STATICMODELLOADERS_SOURCES
 	${MOUNT_DIR}/modelLoader/staticModelLoaders/3dsLoader.cpp
 	${MOUNT_DIR}/modelLoader/staticModelLoaders/aseLoader.cpp
 	${MOUNT_DIR}/modelLoader/staticModelLoaders/heightmapLoader.cpp
@@ -623,7 +620,7 @@ set ( MODELLOADER_STATICMODELLOADERS_SOURCES
 	${MOUNT_DIR}/modelLoader/staticModelLoaders/wavefrontOBJModelLoader.cpp
 )
 
-set ( CM_HEADERS 
+SET ( CM_HEADERS 
 	${MOUNT_DIR}/cm/cm_anims.h
 	${MOUNT_DIR}/cm/cm_helper.h
 	${MOUNT_DIR}/cm/cm_local.h
@@ -631,7 +628,7 @@ set ( CM_HEADERS
 	${MOUNT_DIR}/api/cmAPI.h
 )
 
-set ( CM_SHARED
+SET ( CM_SHARED
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.cpp
@@ -669,7 +666,7 @@ set ( CM_SHARED
 	${MOUNT_DIR}/api/writeStreamAPI.h
 )
 
-set ( CM_SOURCE
+SET ( CM_SOURCE
 	${MOUNT_DIR}/cm/cm_anims.cpp
 	${MOUNT_DIR}/cm/cm_api.cpp
 	${MOUNT_DIR}/cm/cm_cmds.cpp
@@ -683,7 +680,7 @@ set ( CM_SOURCE
 	${MOUNT_DIR}/cm/cm_world.cpp
 )
 
-set ( DECLMANAGER_API
+SET ( DECLMANAGER_API
 	${MOUNT_DIR}/api/afDeclAPI.h
 	${MOUNT_DIR}/api/declManagerAPI.h
 	${MOUNT_DIR}/api/entDefAPI.h
@@ -693,7 +690,7 @@ set ( DECLMANAGER_API
 	${MOUNT_DIR}/api/q3PlayerModelDeclAPI.h
 )
 
-set ( DECLMANAGER_HEADER
+SET ( DECLMANAGER_HEADER
 	${MOUNT_DIR}/declManager/articulatedFigure.h
 	${MOUNT_DIR}/declManager/declManagerIMPL.h
 	${MOUNT_DIR}/declManager/declRefState.h
@@ -701,7 +698,7 @@ set ( DECLMANAGER_HEADER
 	${MOUNT_DIR}/declManager/q3PlayerModelDecl.h
 )
 
-set ( DECLMANAGER_SHARED_HEADERS
+SET ( DECLMANAGER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/entDef.h
 	${MOUNT_DIR}/shared/ePairsList.h
@@ -714,7 +711,7 @@ set ( DECLMANAGER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/tagOr.h
 )
 
-set ( DECLMANAGER_SHARED_SOURCES
+SET ( DECLMANAGER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/entDef.cpp
 	${MOUNT_DIR}/shared/ePairsList.cpp
@@ -726,30 +723,30 @@ set ( DECLMANAGER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/tagOr.cpp
 )
 
-set ( DECLMANAGER_SOURCE
+SET ( DECLMANAGER_SOURCE
 	${MOUNT_DIR}/declManager/articulatedFigure.cpp
 	${MOUNT_DIR}/declManager/declManagerIMPL.cpp
 	${MOUNT_DIR}/declManager/particleDecl.cpp
 	${MOUNT_DIR}/declManager/q3PlayerModelDecl.cpp
 )
 
-set ( GAME_CLASSES_CSS_HEADERS
+SET ( GAME_CLASSES_CSS_HEADERS
 	${MOUNT_DIR}/game/classes/WeaponMP5.h
 )
 
-set ( GAME_CLASSES_CSS_SOURCES
+SET ( GAME_CLASSES_CSS_SOURCES
 	${MOUNT_DIR}/game/classes/WeaponMP5.cpp
 )
 
-set ( GAME_CLASSES_ET_HEADERS
+SET ( GAME_CLASSES_ET_HEADERS
 	${MOUNT_DIR}/game/classes/Corona.h
 )
 
-set ( GAME_CLASSES_ET_SOURCES
+SET ( GAME_CLASSES_ET_SOURCES
 	${MOUNT_DIR}/game/classes/Corona.cpp
 )
 
-set ( GAME_CLASSES_QUAKE3_HEADERS
+SET ( GAME_CLASSES_QUAKE3_HEADERS
 	${MOUNT_DIR}/game/classes/PortalCamera.h
 	${MOUNT_DIR}/game/classes/PortalSurface.h
 	${MOUNT_DIR}/game/classes/Q3Weapon.h
@@ -757,7 +754,7 @@ set ( GAME_CLASSES_QUAKE3_HEADERS
 	${MOUNT_DIR}/game/classes/TriggerTeleport.h
 )
 
-set ( GAME_CLASSES_QUAKE3_SOURCES
+SET ( GAME_CLASSES_QUAKE3_SOURCES
 	${MOUNT_DIR}/game/classes/PortalCamera.cpp
 	${MOUNT_DIR}/game/classes/PortalSurface.cpp
 	${MOUNT_DIR}/game/classes/Q3Weapon.cpp
@@ -765,19 +762,19 @@ set ( GAME_CLASSES_QUAKE3_SOURCES
 	${MOUNT_DIR}/game/classes/TriggerTeleport.cpp
 )
 
-set ( GAME_CLASSES_RTCW_HEADERS
+SET ( GAME_CLASSES_RTCW_HEADERS
 	${MOUNT_DIR}/game/classes/AI_Loper.h
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.h
 	${MOUNT_DIR}/game/classes/AI_Soldier.h
 )
 
-set ( GAME_CLASSES_RTCW_SOURCES
+SET ( GAME_CLASSES_RTCW_SOURCES
 	${MOUNT_DIR}/game/classes/AI_Loper.cpp
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.cpp
 	${MOUNT_DIR}/game/classes/AI_Soldier.cpp
 )
 
-set ( GAME_CLASSES_HEADERS
+SET ( GAME_CLASSES_HEADERS
 	${MOUNT_DIR}/game/classes/Actor.h
 	${MOUNT_DIR}/game/classes/BaseEntity.h
 	${MOUNT_DIR}/game/classes/Button.h
@@ -811,7 +808,7 @@ set ( GAME_CLASSES_HEADERS
 	${MOUNT_DIR}/game/classes/World.h
 )
 
-set ( GAME_CLASSES_SOURCES
+SET ( GAME_CLASSES_SOURCES
 	${MOUNT_DIR}/game/classes/Actor.cpp
 	${MOUNT_DIR}/game/classes/BaseEntity.cpp
 	${MOUNT_DIR}/game/classes/Button.cpp
@@ -845,7 +842,7 @@ set ( GAME_CLASSES_SOURCES
 	${MOUNT_DIR}/game/classes/World.cpp
 )
 
-set ( GAME_HEADERS
+SET ( GAME_HEADERS
 	${MOUNT_DIR}/game/bg_public.h
 	${MOUNT_DIR}/game/bt_include.h
 	${MOUNT_DIR}/game/explosionInfo.h
@@ -861,13 +858,13 @@ set ( GAME_HEADERS
 	${MOUNT_DIR}/qcommon/surfaceflags.h
 )
 
-set ( GAME_LUA_HEADERS
+SET ( GAME_LUA_HEADERS
 	${MOUNT_DIR}/game/lua/g_lua.h
 	${MOUNT_DIR}/game/lua/g_lua_eventHandler.h
 
 )
 
-set ( GAME_LUA_SOURCES
+SET ( GAME_LUA_SOURCES
 	${MOUNT_DIR}/game/lua/g_lua.cpp
 	${MOUNT_DIR}/game/lua/g_lua_entity.cpp
 	${MOUNT_DIR}/game/lua/g_lua_eventHandler.cpp
@@ -876,7 +873,7 @@ set ( GAME_LUA_SOURCES
 	${MOUNT_DIR}/game/lua/g_lua_vector.cpp
 )
 
-set ( GAME_LUALIBRARY
+SET ( GAME_LUALIBRARY
 	${LIB_DIR}/lua-5.1.5/src/lapi.c
 	${LIB_DIR}/lua-5.1.5/src/lapi.h
 	${LIB_DIR}/lua-5.1.5/src/lauxlib.c
@@ -932,19 +929,19 @@ set ( GAME_LUALIBRARY
 	${LIB_DIR}/lua-5.1.5/src/print.c
 )
 
-set ( GAME_MATH_HEADERS
+SET ( GAME_MATH_HEADERS
 	${MOUNT_DIR}/math/aabb.h
 	${MOUNT_DIR}/math/axis.h
 	${MOUNT_DIR}/math/matrix.h
 	${MOUNT_DIR}/math/vec3.h
 )
 
-set ( GAME_MATH_SOURCES
+SET ( GAME_MATH_SOURCES
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set ( GAME_PROTOCOL
+SET ( GAME_PROTOCOL
 	${MOUNT_DIR}/protocol/entityState.h
 	${MOUNT_DIR}/protocol/gameState.h
 	${MOUNT_DIR}/protocol/netLimits.h
@@ -954,7 +951,7 @@ set ( GAME_PROTOCOL
 	${MOUNT_DIR}/protocol/voipFlags.h
 )
 
-set ( GAME_SHARED_HEADERS
+SET ( GAME_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCmd.h
 	${MOUNT_DIR}/shared/afRagdollHelper.h
 	${MOUNT_DIR}/shared/autoCvar.h
@@ -981,7 +978,7 @@ set ( GAME_SHARED_HEADERS
 	${MOUNT_DIR}/shared/wolfScript.h
 )
 
-set ( GAME_SHARED_SOURCES
+SET ( GAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCmd.cpp
 	${MOUNT_DIR}/shared/afRagdollHelper.cpp
 	${MOUNT_DIR}/shared/autoCvar.cpp
@@ -1006,7 +1003,7 @@ set ( GAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/wolfScript.cpp
 )
 
-set ( GAME_SOURCE
+SET ( GAME_SOURCE
 	${MOUNT_DIR}/game/bg_misc.cpp
 	${MOUNT_DIR}/game/bt_vehicle.cpp
 	${MOUNT_DIR}/game/g_active.cpp
@@ -1031,7 +1028,7 @@ set ( GAME_SOURCE
 	${MOUNT_DIR}/game/g_weapons.cpp
 )
 
-set ( BUILD_GPHYSICS_BULLET_HEADERS
+SET ( BUILD_GPHYSICS_BULLET_HEADERS
 	${MOUNT_DIR}/gphysics/bullet/btp_characterController.h
 	${MOUNT_DIR}/gphysics/bullet/btp_cMod2BulletShape.h
 	${MOUNT_DIR}/gphysics/bullet/btp_constraint.h
@@ -1049,7 +1046,7 @@ set ( BUILD_GPHYSICS_BULLET_HEADERS
 	${MOUNT_DIR}/shared/physObjectDef.h
 )
 
-set ( BUILD_GPHYSICS_BULLET_SHARED_HEADERS
+SET ( BUILD_GPHYSICS_BULLET_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.h
 	${MOUNT_DIR}/shared/cmBezierPatch.h
@@ -1061,7 +1058,7 @@ set ( BUILD_GPHYSICS_BULLET_SHARED_HEADERS
 	${MOUNT_DIR}/shared/trace.h
 )
 
-set ( BUILD_GPHYSICS_BULLET_SHARED_SOURCES
+SET ( BUILD_GPHYSICS_BULLET_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.cpp
 	${MOUNT_DIR}/shared/cmBezierPatch.cpp
@@ -1073,7 +1070,7 @@ set ( BUILD_GPHYSICS_BULLET_SHARED_SOURCES
 	${MOUNT_DIR}/shared/trace.cpp
 )
 
-set ( BUILD_GPHYSICS_BULLET_SOURCES
+SET ( BUILD_GPHYSICS_BULLET_SOURCES
 	${MOUNT_DIR}/gphysics/bullet/btp_api.cpp
 	${MOUNT_DIR}/gphysics/bullet/btp_characterController.cpp
 	${MOUNT_DIR}/gphysics/bullet/btp_cMod2BulletShape.cpp
@@ -1085,7 +1082,7 @@ set ( BUILD_GPHYSICS_BULLET_SOURCES
 	${MOUNT_DIR}/gphysics/bullet/btp_world.cpp
 )
 
-set ( BUILD_CGAME_HEADER
+SET ( BUILD_CGAME_HEADER
 	${MOUNT_DIR}/game/bg_public.h
 	${MOUNT_DIR}/cgame/cg_emitter.h
 	${MOUNT_DIR}/cgame/cg_emitter_base.h
@@ -1096,18 +1093,18 @@ set ( BUILD_CGAME_HEADER
 	${MOUNT_DIR}/qcommon/surfaceflags.h
 )
 
-set ( BUILD_CGAME_MATH_HEADERS
+SET ( BUILD_CGAME_MATH_HEADERS
 	${MOUNT_DIR}/math/axis.h
 	${MOUNT_DIR}/math/matrix.h
 	${MOUNT_DIR}/math/vec3.h
 )
 
-set ( BUILD_CGAME_MATH_SOURCES
+SET ( BUILD_CGAME_MATH_SOURCES
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set ( BUILD_CGAME_PROTOCOL
+SET ( BUILD_CGAME_PROTOCOL
 	${MOUNT_DIR}/protocol/entityState.h
 	${MOUNT_DIR}/protocol/netLimits.h
 	${MOUNT_DIR}/protocol/playerState.h
@@ -1116,7 +1113,7 @@ set ( BUILD_CGAME_PROTOCOL
 	${MOUNT_DIR}/protocol/voipFlags.h
 )
 
-set ( BUILD_CGAME_SHARED_HEADERS
+SET ( BUILD_CGAME_SHARED_HEADERS
 	${MOUNT_DIR}/shared/animationFlags.h
 	${MOUNT_DIR}/shared/autoCmd.h
 	${MOUNT_DIR}/shared/autoCvar.h
@@ -1130,7 +1127,7 @@ set ( BUILD_CGAME_SHARED_HEADERS
 	${MOUNT_DIR}/shared/trace.h
 )
 
-set ( BUILD_CGAME_SHARED_SOURCES
+SET ( BUILD_CGAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCmd.cpp
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/collisionUtils.cpp
@@ -1140,7 +1137,7 @@ set ( BUILD_CGAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/trace.cpp
 )
 
-set ( BUILD_CGAME_SOURCE
+SET ( BUILD_CGAME_SOURCE
 	${MOUNT_DIR}/game/bg_misc.cpp
 	${MOUNT_DIR}/cgame/cg_api.cpp
 	${MOUNT_DIR}/cgame/cg_chat.cpp
@@ -1169,7 +1166,7 @@ set ( BUILD_CGAME_SOURCE
 
 )
 
-set ( GPHYSICS_ODE_HEADERS
+SET ( GPHYSICS_ODE_HEADERS
 	${MOUNT_DIR}/gphysics/ode/ode_characterController.h
 	${MOUNT_DIR}/gphysics/ode/ode_cMod2ODEGeom.h
 	${MOUNT_DIR}/gphysics/ode/ode_constraint.h
@@ -1186,7 +1183,7 @@ set ( GPHYSICS_ODE_HEADERS
 	${MOUNT_DIR}/shared/physObjectDef.h
 )
 
-set ( GPHYSICS_ODE_SHARED_HEADERS
+SET ( GPHYSICS_ODE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.h
 	${MOUNT_DIR}/shared/cmBezierPatch.h
 	${MOUNT_DIR}/shared/collisionUtils.h
@@ -1195,7 +1192,7 @@ set ( GPHYSICS_ODE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/trace.h
 )
 
-set ( GPHYSICS_ODE_SHARED_SOURCES
+SET ( GPHYSICS_ODE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.cpp
 	${MOUNT_DIR}/shared/cmBezierPatch.cpp
 	${MOUNT_DIR}/shared/collisionUtils.cpp
@@ -1204,7 +1201,7 @@ set ( GPHYSICS_ODE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/trace.cpp
 )
 
-set ( GPHYSICS_ODE_SOURCE
+SET ( GPHYSICS_ODE_SOURCE
 	${MOUNT_DIR}/gphysics/ode/ode_api.cpp
 	${MOUNT_DIR}/gphysics/ode/ode_characterController.cpp
 	${MOUNT_DIR}/gphysics/ode/ode_cMod2ODEGeom.cpp
@@ -1215,150 +1212,152 @@ set ( GPHYSICS_ODE_SOURCE
 	${MOUNT_DIR}/gphysics/ode/ode_world.cpp
 )
 
-SET ( EDITOR_API 
-	${MOUNT_DIR}/api/rStaticModelAPI.h
-)
+IF( WIN32 )
+	SET ( EDITOR_API 
+		${MOUNT_DIR}/api/rStaticModelAPI.h
+	)
 
-SET ( EDITOR_GUI_MFC_HEADERS
-	${MOUNT_DIR}/editor/gui/mfc/CamWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/CapDialog.h
-	${MOUNT_DIR}/editor/gui/mfc/CommandsDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/DialogInfo.h
-	${MOUNT_DIR}/editor/gui/mfc/DialogTextures.h
-	${MOUNT_DIR}/editor/gui/mfc/DialogThick.h
-	${MOUNT_DIR}/editor/gui/mfc/DlgEvent.h
-	${MOUNT_DIR}/editor/gui/mfc/EditWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/EntityListDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/ENTITYW.H
-	${MOUNT_DIR}/editor/gui/mfc/FindTextureDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/LstToolBar.h
-	${MOUNT_DIR}/editor/gui/mfc/MainFrm.h
-	${MOUNT_DIR}/editor/gui/mfc/MapInfo.h
-	${MOUNT_DIR}/editor/gui/mfc/MRU.H
-	${MOUNT_DIR}/editor/gui/mfc/NewProjDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/PatchDensityDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/PatchDialog.h
-	${MOUNT_DIR}/editor/gui/mfc/PrefsDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/QE3.H
-	${MOUNT_DIR}/editor/gui/mfc/QEDEFS.H
-	${MOUNT_DIR}/editor/gui/mfc/RADEditView.h
-	${MOUNT_DIR}/editor/gui/mfc/RADEditWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/Radiant.h
-	${MOUNT_DIR}/editor/gui/mfc/RotateDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/ScaleDialog.h
-	${MOUNT_DIR}/editor/gui/mfc/SurfaceDlg.h
-	${MOUNT_DIR}/editor/gui/mfc/TexEdit.h
-	${MOUNT_DIR}/editor/gui/mfc/TextureBar.h
-	${MOUNT_DIR}/editor/gui/mfc/TextureLayout.h
-	${MOUNT_DIR}/editor/gui/mfc/TextureLoad.h
-	${MOUNT_DIR}/editor/gui/mfc/TexWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/ToolWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/WaveOpen.h
-	${MOUNT_DIR}/editor/gui/mfc/XYWnd.h
-	${MOUNT_DIR}/editor/gui/mfc/ZView.h
-	${MOUNT_DIR}/editor/gui/mfc/ZWnd.h
-)
+	SET ( EDITOR_GUI_MFC_HEADERS
+		${MOUNT_DIR}/editor/gui/mfc/CamWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/CapDialog.h
+		${MOUNT_DIR}/editor/gui/mfc/CommandsDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/DialogInfo.h
+		${MOUNT_DIR}/editor/gui/mfc/DialogTextures.h
+		${MOUNT_DIR}/editor/gui/mfc/DialogThick.h
+		${MOUNT_DIR}/editor/gui/mfc/DlgEvent.h
+		${MOUNT_DIR}/editor/gui/mfc/EditWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/EntityListDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/ENTITYW.H
+		${MOUNT_DIR}/editor/gui/mfc/FindTextureDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/LstToolBar.h
+		${MOUNT_DIR}/editor/gui/mfc/MainFrm.h
+		${MOUNT_DIR}/editor/gui/mfc/MapInfo.h
+		${MOUNT_DIR}/editor/gui/mfc/MRU.H
+		${MOUNT_DIR}/editor/gui/mfc/NewProjDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/PatchDensityDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/PatchDialog.h
+		${MOUNT_DIR}/editor/gui/mfc/PrefsDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/QE3.H
+		${MOUNT_DIR}/editor/gui/mfc/QEDEFS.H
+		${MOUNT_DIR}/editor/gui/mfc/RADEditView.h
+		${MOUNT_DIR}/editor/gui/mfc/RADEditWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/Radiant.h
+		${MOUNT_DIR}/editor/gui/mfc/RotateDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/ScaleDialog.h
+		${MOUNT_DIR}/editor/gui/mfc/SurfaceDlg.h
+		${MOUNT_DIR}/editor/gui/mfc/TexEdit.h
+		${MOUNT_DIR}/editor/gui/mfc/TextureBar.h
+		${MOUNT_DIR}/editor/gui/mfc/TextureLayout.h
+		${MOUNT_DIR}/editor/gui/mfc/TextureLoad.h
+		${MOUNT_DIR}/editor/gui/mfc/TexWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/ToolWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/WaveOpen.h
+		${MOUNT_DIR}/editor/gui/mfc/XYWnd.h
+		${MOUNT_DIR}/editor/gui/mfc/ZView.h
+		${MOUNT_DIR}/editor/gui/mfc/ZWnd.h
+	)
 
-SET ( EDITOR_GUI_MFC_SOURCES
-	${MOUNT_DIR}/editor/gui/mfc/CamWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/CapDialog.cpp
-	${MOUNT_DIR}/editor/gui/mfc/CommandsDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/DialogInfo.cpp
-	${MOUNT_DIR}/editor/gui/mfc/DialogTextures.cpp
-	${MOUNT_DIR}/editor/gui/mfc/DialogThick.cpp
-	${MOUNT_DIR}/editor/gui/mfc/DlgEvent.cpp
-	${MOUNT_DIR}/editor/gui/mfc/EditWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/EntityListDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/FindTextureDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/LstToolBar.cpp
-	${MOUNT_DIR}/editor/gui/mfc/MainFrm.cpp
-	${MOUNT_DIR}/editor/gui/mfc/MapInfo.cpp
-	${MOUNT_DIR}/editor/gui/mfc/MRU.CPP
-	${MOUNT_DIR}/editor/gui/mfc/NewProjDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/PatchDensityDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/PatchDialog.cpp
-	${MOUNT_DIR}/editor/gui/mfc/PrefsDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/RADEditView.cpp
-	${MOUNT_DIR}/editor/gui/mfc/RADEditWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/Radiant.cpp
-	${MOUNT_DIR}/editor/gui/mfc/RotateDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/ScaleDialog.cpp
-	${MOUNT_DIR}/editor/gui/mfc/SurfaceDlg.cpp
-	${MOUNT_DIR}/editor/gui/mfc/TexEdit.cpp
-	${MOUNT_DIR}/editor/gui/mfc/TextureBar.cpp
-	${MOUNT_DIR}/editor/gui/mfc/TextureLayout.cpp
-	${MOUNT_DIR}/editor/gui/mfc/TextureLoad.cpp
-	${MOUNT_DIR}/editor/gui/mfc/TexWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/ToolWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/WaveOpen.cpp
-	${MOUNT_DIR}/editor/gui/mfc/WIN_DLG.CPP
-	${MOUNT_DIR}/editor/gui/mfc/Win_ent.cpp
-	${MOUNT_DIR}/editor/gui/mfc/Win_main.cpp
-	${MOUNT_DIR}/editor/gui/mfc/WIN_QE3.CPP
-	${MOUNT_DIR}/editor/gui/mfc/XYWnd.cpp
-	${MOUNT_DIR}/editor/gui/mfc/ZView.cpp
-	${MOUNT_DIR}/editor/gui/mfc/ZWnd.cpp
-)
+	SET ( EDITOR_GUI_MFC_SOURCES
+		${MOUNT_DIR}/editor/gui/mfc/CamWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/CapDialog.cpp
+		${MOUNT_DIR}/editor/gui/mfc/CommandsDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/DialogInfo.cpp
+		${MOUNT_DIR}/editor/gui/mfc/DialogTextures.cpp
+		${MOUNT_DIR}/editor/gui/mfc/DialogThick.cpp
+		${MOUNT_DIR}/editor/gui/mfc/DlgEvent.cpp
+		${MOUNT_DIR}/editor/gui/mfc/EditWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/EntityListDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/FindTextureDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/LstToolBar.cpp
+		${MOUNT_DIR}/editor/gui/mfc/MainFrm.cpp
+		${MOUNT_DIR}/editor/gui/mfc/MapInfo.cpp
+		${MOUNT_DIR}/editor/gui/mfc/MRU.CPP
+		${MOUNT_DIR}/editor/gui/mfc/NewProjDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/PatchDensityDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/PatchDialog.cpp
+		${MOUNT_DIR}/editor/gui/mfc/PrefsDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/RADEditView.cpp
+		${MOUNT_DIR}/editor/gui/mfc/RADEditWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/Radiant.cpp
+		${MOUNT_DIR}/editor/gui/mfc/RotateDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/ScaleDialog.cpp
+		${MOUNT_DIR}/editor/gui/mfc/SurfaceDlg.cpp
+		${MOUNT_DIR}/editor/gui/mfc/TexEdit.cpp
+		${MOUNT_DIR}/editor/gui/mfc/TextureBar.cpp
+		${MOUNT_DIR}/editor/gui/mfc/TextureLayout.cpp
+		${MOUNT_DIR}/editor/gui/mfc/TextureLoad.cpp
+		${MOUNT_DIR}/editor/gui/mfc/TexWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/ToolWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/WaveOpen.cpp
+		${MOUNT_DIR}/editor/gui/mfc/WIN_DLG.CPP
+		${MOUNT_DIR}/editor/gui/mfc/Win_ent.cpp
+		${MOUNT_DIR}/editor/gui/mfc/Win_main.cpp
+		${MOUNT_DIR}/editor/gui/mfc/WIN_QE3.CPP
+		${MOUNT_DIR}/editor/gui/mfc/XYWnd.cpp
+		${MOUNT_DIR}/editor/gui/mfc/ZView.cpp
+		${MOUNT_DIR}/editor/gui/mfc/ZWnd.cpp
+	)
 
-set ( EDITOR_MATH_HEADERS
-	${MOUNT_DIR}/math/aabb.h
-	${MOUNT_DIR}/math/vec3.h
-)
+	SET ( EDITOR_MATH_HEADERS
+		${MOUNT_DIR}/math/aabb.h
+		${MOUNT_DIR}/math/vec3.h
+	)
 
-set ( EDITOR_MATH_SOURCES
-	${MOUNT_DIR}/math/aabb.cpp
-	${MOUNT_DIR}/math/vec3.cpp
-)
+	SET ( EDITOR_MATH_SOURCES
+		${MOUNT_DIR}/math/aabb.cpp
+		${MOUNT_DIR}/math/vec3.cpp
+	)
 
-set ( EDITOR_SHARED_HEADERS
-	${MOUNT_DIR}/shared/brush.h
-	${MOUNT_DIR}/shared/brushside.h
-	${MOUNT_DIR}/qcommon/q_platform.h
-	${MOUNT_DIR}/qcommon/q_shared.h
-	${MOUNT_DIR}/shared/simpleModel.h
-	${MOUNT_DIR}/shared/textureAxisFromNormal.h
-	${MOUNT_DIR}/shared/texturedVertex.h
-	${MOUNT_DIR}/shared/texturedWinding.h
-)
+	SET ( EDITOR_SHARED_HEADERS
+		${MOUNT_DIR}/shared/brush.h
+		${MOUNT_DIR}/shared/brushside.h
+		${MOUNT_DIR}/qcommon/q_platform.h
+		${MOUNT_DIR}/qcommon/q_shared.h
+		${MOUNT_DIR}/shared/simpleModel.h
+		${MOUNT_DIR}/shared/textureAxisFromNormal.h
+		${MOUNT_DIR}/shared/texturedVertex.h
+		${MOUNT_DIR}/shared/texturedWinding.h
+	)
 
-set ( EDITOR_SHARED_SOURCES
-	${MOUNT_DIR}/shared/brush.cpp
-	${MOUNT_DIR}/shared/brushside.cpp
-	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
-	${MOUNT_DIR}/shared/textureAxisFromNormal.cpp
-	${MOUNT_DIR}/shared/texturedWinding.cpp
-)
+	SET ( EDITOR_SHARED_SOURCES
+		${MOUNT_DIR}/shared/brush.cpp
+		${MOUNT_DIR}/shared/brushside.cpp
+		${MOUNT_DIR}/shared/parser.cpp
+		${MOUNT_DIR}/qcommon/q_shared.cpp
+		${MOUNT_DIR}/shared/textureAxisFromNormal.cpp
+		${MOUNT_DIR}/shared/texturedWinding.cpp
+	)
 
-set ( EDITOR_HEADERS
-	${MOUNT_DIR}/editor/ed_bezierPatch.h
-	${MOUNT_DIR}/editor/ed_brush.h
-	${MOUNT_DIR}/editor/ed_entity.h
-	${MOUNT_DIR}/editor/ed_map.h
-	${MOUNT_DIR}/editor/ed_select.h
-	${MOUNT_DIR}/editor/ed_textures.h
-	${MOUNT_DIR}/editor/ed_undo.h
-	${MOUNT_DIR}/editor/ed_z.h
-	${MOUNT_DIR}/editor/StdAfx.h
-)
+	SET ( EDITOR_HEADERS
+		${MOUNT_DIR}/editor/ed_bezierPatch.h
+		${MOUNT_DIR}/editor/ed_brush.h
+		${MOUNT_DIR}/editor/ed_entity.h
+		${MOUNT_DIR}/editor/ed_map.h
+		${MOUNT_DIR}/editor/ed_select.h
+		${MOUNT_DIR}/editor/ed_textures.h
+		${MOUNT_DIR}/editor/ed_undo.h
+		${MOUNT_DIR}/editor/ed_z.h
+		${MOUNT_DIR}/editor/StdAfx.h
+	)
 
-set ( EDITOR_SOURCES
-	${MOUNT_DIR}/editor/ed_api.cpp
-	${MOUNT_DIR}/editor/ed_bezierPatch.cpp
-	${MOUNT_DIR}/editor/ed_brush.cpp
-	${MOUNT_DIR}/editor/ed_csg.cpp
-	${MOUNT_DIR}/editor/ed_drag.cpp
-	${MOUNT_DIR}/editor/ed_entity.cpp
-	${MOUNT_DIR}/editor/ed_main.cpp
-	${MOUNT_DIR}/editor/ed_map.cpp
-	${MOUNT_DIR}/editor/ed_select.cpp
-	${MOUNT_DIR}/editor/ed_undo.cpp
-	${MOUNT_DIR}/editor/ed_verticesSelection.cpp
-	${MOUNT_DIR}/editor/ed_z.cpp
-	${MOUNT_DIR}/editor/StdAfx.cpp
-)
+	SET ( EDITOR_SOURCES
+		${MOUNT_DIR}/editor/ed_api.cpp
+		${MOUNT_DIR}/editor/ed_bezierPatch.cpp
+		${MOUNT_DIR}/editor/ed_brush.cpp
+		${MOUNT_DIR}/editor/ed_csg.cpp
+		${MOUNT_DIR}/editor/ed_drag.cpp
+		${MOUNT_DIR}/editor/ed_entity.cpp
+		${MOUNT_DIR}/editor/ed_main.cpp
+		${MOUNT_DIR}/editor/ed_map.cpp
+		${MOUNT_DIR}/editor/ed_select.cpp
+		${MOUNT_DIR}/editor/ed_undo.cpp
+		${MOUNT_DIR}/editor/ed_verticesSelection.cpp
+		${MOUNT_DIR}/editor/ed_z.cpp
+		${MOUNT_DIR}/editor/StdAfx.cpp
+	)
+ENDIF()
 
-set ( CORE_APIS
+SET ( CORE_APIS
 	${MOUNT_DIR}/api/cgameAPI.h
 	${MOUNT_DIR}/api/clientAPI.h
 	${MOUNT_DIR}/api/cmAPI.h
@@ -1388,7 +1387,7 @@ set ( CORE_APIS
 	${MOUNT_DIR}/api/vfsAPI.h
 )
 
-set ( CORE_HEADER_FILES
+SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/shared/array.h
 	${MOUNT_DIR}/game/bg_public.h
 	${MOUNT_DIR}/cgame/cg_public.h
@@ -1412,7 +1411,7 @@ set ( CORE_HEADER_FILES
 	${MOUNT_DIR}/qcommon/q_shared.h
 )
 
-set ( CORE_MATH_HEADERS
+SET ( CORE_MATH_HEADERS
 	${MOUNT_DIR}/math/aabb.h
 	${MOUNT_DIR}/math/axis.h
 	${MOUNT_DIR}/math/math.h
@@ -1423,13 +1422,13 @@ set ( CORE_MATH_HEADERS
 	${MOUNT_DIR}/math/vec3.h
 )
 
-set ( CORE_MATH_SOURCES
+SET ( CORE_MATH_SOURCES
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/math/plane.cpp
 	${MOUNT_DIR}/math/vec3.cpp
 )
 
-set ( CORE_PROTOCOL
+SET ( CORE_PROTOCOL
 	${MOUNT_DIR}/protocol/entityState.h
 	${MOUNT_DIR}/protocol/gameState.h
 	${MOUNT_DIR}/protocol/netLimits.h
@@ -1439,16 +1438,16 @@ set ( CORE_PROTOCOL
 	${MOUNT_DIR}/protocol/voipFlags.h
 )
 
-set ( CORE_SDL_HEADERS
+SET ( CORE_SDL_HEADERS
 	${MOUNT_DIR}/sdl/sdl_glConfig.h
 )
 
-set ( CORE_SDL_SOURCES
+SET ( CORE_SDL_SOURCES
 	${MOUNT_DIR}/sdl/sdl_glimp.cpp
 	${MOUNT_DIR}/sdl/sdl_input.cpp
 )
 
-set ( CORE_SHARED_HEADERS
+SET ( CORE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/bitSet.h
 	${MOUNT_DIR}/shared/bspBoxDesc.h
@@ -1464,7 +1463,7 @@ set ( CORE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/keyCatchers.h
 )
 
-set ( CORE_SHARED_SOURCES
+SET ( CORE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/cmWinding.cpp
 	${MOUNT_DIR}/shared/colorTable.cpp
@@ -1474,7 +1473,7 @@ set ( CORE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/infoString.cpp
 )
 
-set ( CORE_SOURCE_FILES
+SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/client/cl_avi.cpp
 	${MOUNT_DIR}/client/cl_cgame.cpp
 	${MOUNT_DIR}/client/cl_cin.cpp
@@ -1521,7 +1520,7 @@ set ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/qcommon/unzip.c
 )
 
-set ( CORE_SPEEX_LIBRARY
+SET ( CORE_SPEEX_LIBRARY
 	${LIB_DIR}/libspeex/bits.c
 	${LIB_DIR}/libspeex/buffer.c
 	${LIB_DIR}/libspeex/cb_search.c
@@ -1565,7 +1564,7 @@ set ( CORE_SPEEX_LIBRARY
 	${LIB_DIR}/libspeex/window.c
 )
 
-set ( CORE_ZLIB_LIBRARY
+SET ( CORE_ZLIB_LIBRARY
 	${LIB_DIR}/zlib/adler32.c
 	${LIB_DIR}/zlib/compress.c
 	${LIB_DIR}/zlib/crc32.c
@@ -1594,8 +1593,8 @@ set ( CORE_ZLIB_LIBRARY
 	${LIB_DIR}/zlib/zutil.h
 )
 
-if( BUILD_MATERIALSYSTEM )
-	if( WIN32 )
+IF( BUILD_MATERIALSYSTEM )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${SHAREDLIST_HEADERS} )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${SHAREDLIST_SOURCES} )
@@ -1603,9 +1602,9 @@ if( BUILD_MATERIALSYSTEM )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${MATHLIST_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${MATERIALSYSTEMLIST_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${MATERIALSYSTEMLIST_SOURCES} )
-	endif()
+	ENDIF()
 
-	add_library( materialSystem 
+	ADD_LIBRARY( materialSystem 
 		SHARED 
 		${MATHLIST_SOURCES} 
 		${MATHLIST_HEADERS} 
@@ -1614,55 +1613,53 @@ if( BUILD_MATERIALSYSTEM )
 		${MATERIALSYSTEMLIST_SOURCES} 
 		${MATERIALSYSTEMLIST_HEADERS} 
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( materialSystem PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/materialSystem.def" OUTPUT_NAME "materialSystem${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( materialSystem PROPERTIES OUTPUT_NAME "materialSystemx${BUILD_ARCH}" PREFIX "" )
-	target_link_libraries( materialSystem )
-	endif()
-	set_target_properties( materialSystem PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( materialSystem PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( materialSystem PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/materialSystem.def" OUTPUT_NAME "materialSystem${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( materialSystem PROPERTIES OUTPUT_NAME "materialSystemx${BUILD_ARCH}" PREFIX "" )
+	TARGET_LINK_LIBRARIES( materialSystem )
+	ENDIF()
+	SET_TARGET_PROPERTIES( materialSystem PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_IMAGELIB )
+IF( BUILD_IMAGELIB )
 	# This section finds and provides REQUIRED dependencies to imageLib target
 	#find_package( libDevil REQUIRED )
 	#find_package( vtflib REQUIRED )
 
 	# Dushan - This is how Visual Studio directories (or filters) are generated
-	if( WIN32 )
+	IF( WIN32 )
 		SOURCE_GROUP( Header\ Files                         FILES ${IMAGELIB_HEADERS} )
 		SOURCE_GROUP( Source\ Files                         FILES ${IMAGELIB_SOURCES} )	
-	endif ( WIN32 )
+	ENDIF ( WIN32 )
 	
-	add_library( imageLib 
+	ADD_LIBRARY( imageLib 
 		SHARED 
 		${IMAGELIB_SOURCES}
 		${IMAGELIB_HEADERS}
 	)
-	include_directories( ${MOUNT_DIR} ${LIB_DIR}/il-1.7.8-x86/include ${LIB_DIR}/vtflib132-bin/lib ${LIB_DIR}/libwebp/include )
-	if( WIN32 )
-		set_target_properties( imageLib PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/imageLib.def" OUTPUT_NAME "imageLib${BUILD_ARCH}" PREFIX "" )
-		#link_directories( ${LIB_DIR}/vtflib132-bin/lib/x86/ )
-        #include_directories( ${LIB_DIR}/il-1.7.8-x86/include ${LIB_DIR}/vtflib132-bin/lib ${LIB_DIR}/libwebp/include )
-		target_link_libraries( imageLib ${LIB_DIR}/vtflib132-bin/lib/x86/VTFLib.lib ${LIB_DIR}/il-1.7.8-x86/lib/DevIL.lib ${LIB_DIR}/libwebp/Lib/libwebp.lib )
-	else()
-		set_target_properties( imageLib PROPERTIES OUTPUT_NAME "imageLibx${BUILD_ARCH}" PREFIX "" )
-		target_link_libraries( imageLib )
-	endif()
-	set_target_properties( imageLib PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( imageLib PRIVATE ${MOUNT_DIR} ${LIB_DIR}/il-1.7.8-x86/include ${LIB_DIR}/vtflib132-bin/lib ${LIB_DIR}/libwebp/include )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( imageLib PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/imageLib.def" OUTPUT_NAME "imageLib${BUILD_ARCH}" PREFIX "" )
+		TARGET_LINK_LIBRARIES( imageLib ${LIB_DIR}/vtflib132-bin/lib/x86/VTFLib.lib ${LIB_DIR}/il-1.7.8-x86/lib/DevIL.lib ${LIB_DIR}/libwebp/Lib/libwebp.lib )
+	ELSE()
+		SET_TARGET_PROPERTIES( imageLib PROPERTIES OUTPUT_NAME "imageLibx${BUILD_ARCH}" PREFIX "" )
+		TARGET_LINK_LIBRARIES( imageLib )
+	ENDIF()
+	SET_TARGET_PROPERTIES( imageLib PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( WIN32 )
-	if( BUILD_DX9_RENDERER )
+IF( WIN32 )
+	IF( BUILD_DX9_RENDERER )
 		# This section finds and provides REQUIRED dependencies to DirectX9 target
-		find_package( DirectX REQUIRED )
+		FIND_PACKAGE( DirectX REQUIRED )
 
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${DIRECTX9LIB_SHARED_HEADERS} )
@@ -1672,7 +1669,7 @@ if( WIN32 )
 		SOURCE_GROUP( Header\ Files                                        FILES ${DIRECTX9LIB_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${DIRECTX9LIB_SOURCES} )
 		
-		add_library( backendDX9 
+		ADD_LIBRARY( backendDX9 
 			SHARED 
 			${MATHLIST_SOURCES} 
 			${MATHLIST_HEADERS} 
@@ -1681,70 +1678,70 @@ if( WIN32 )
 			${DIRECTX9LIB_SHARED_HEADERS}
 			${DIRECTX9LIB_SHARED_SOURCES}
 		)
-		include_directories( ${MOUNT_DIR} ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
-		set_target_properties( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
-		target_link_libraries( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} SDL )
-		set_target_properties( backendDX9 PROPERTIES
+		TARGET_INCLUDE_DIRECTORIES( backendDX9 PRIVATE "${MOUNT_DIR}" "${DXSDK_INCLUDE_DIR}" "${LIB_DIR}/SDL12/include" )
+		SET_TARGET_PROPERTIES( backendDX9 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX9.def" OUTPUT_NAME "backendDX9${BUILD_ARCH}" PREFIX "" )
+		TARGET_LINK_LIBRARIES( backendDX9 ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} SDL )
+		SET_TARGET_PROPERTIES( backendDX9 PROPERTIES
 			RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 			RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 		)
-	endif()
+	ENDIF()
 
-	if( BUILD_DX10_RENDERER )
+	IF( BUILD_DX10_RENDERER )
 		# This section finds and provides REQUIRED dependencies to backendDX10 target
-		find_package( DirectX REQUIRED )
+		FIND_PACKAGE( DirectX REQUIRED )
 		
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${DIRECTXANDNULLRENDERER_SHARED_HEADERS} )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${DIRECTXANDNULLRENDERER_SHARED_SOURCES} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${DIRECTX10LIB_SOURCES} )
 
-		add_library( backendDX10
+		ADD_LIBRARY( backendDX10
 			SHARED 
 			${DIRECTX10LIB_SOURCES}
 			${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
 			${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
 		)
-		include_directories( ${MOUNT_DIR} ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
-		set_target_properties( backendDX10 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX10.def" OUTPUT_NAME "backendDX10${BUILD_ARCH}" PREFIX "" )
-		target_link_libraries( backendDX10 ${DXSDK_D3DX10_LIBRARY} ${DXSDK_D3D10_LIBRARY} SDL )
-		set_target_properties( backendDX10 PROPERTIES
+		TARGET_INCLUDE_DIRECTORIES( backendDX10 PRIVATE ${MOUNT_DIR} ${DXSDK_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+		SET_TARGET_PROPERTIES( backendDX10 PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendDX10.def" OUTPUT_NAME "backendDX10${BUILD_ARCH}" PREFIX "" )
+		TARGET_LINK_LIBRARIES( backendDX10 ${DXSDK_D3DX10_LIBRARY} ${DXSDK_D3D10_LIBRARY} SDL )
+		SET_TARGET_PROPERTIES( backendDX10 PROPERTIES
 			RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 			RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 		)
-	endif()
-endif() ## WIN32
+	ENDIF()
+ENDIF() ## WIN32
 
-if( BUILD_NULL_RENDERER )
-	if( WIN32 )
+IF( BUILD_NULL_RENDERER )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${DIRECTXANDNULLRENDERER_SHARED_HEADERS} )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${DIRECTXANDNULLRENDERER_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${DIRECTX9LIB_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${NULLRENDERER_SOURCES} )
-	endif()
+	ENDIF()
 		
-	add_library( backendNULL
+	ADD_LIBRARY( backendNULL
 		SHARED 
 		${NULLRENDERER_SOURCES}
 		${DIRECTXANDNULLRENDERER_SHARED_HEADERS}
 		${DIRECTXANDNULLRENDERER_SHARED_SOURCES}
 	)
-	include_directories( ${MOUNT_DIR} ${LIB_DIR}/SDL12/include )
-	set_target_properties( backendNULL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendNULL.def" OUTPUT_NAME "backendNULL${BUILD_ARCH}" PREFIX "" )
-	target_link_libraries( backendNULL ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY} SDL )
-	set_target_properties( backendNULL PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( backendNULL PRIVATE ${MOUNT_DIR} ${LIB_DIR}/SDL12/include )
+	SET_TARGET_PROPERTIES( backendNULL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendNULL.def" OUTPUT_NAME "backendNULL${BUILD_ARCH}" PREFIX "" )
+	TARGET_LINK_LIBRARIES( backendNULL SDL )
+	SET_TARGET_PROPERTIES( backendNULL PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_GL_RENDERER )
+IF( BUILD_GL_RENDERER )
 	# This section finds and provides REQUIRED dependencies to backEndGL target
-	find_package( GLEW REQUIRED )
-	find_package( GLUT REQUIRED )
+	FIND_PACKAGE( GLEW REQUIRED )
+	FIND_PACKAGE( GLUT REQUIRED )
 
-	if( WIN32 )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${RENDERERGL_APIS_HEADERS} )
 		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${MATHLIST_SOURCES} )
@@ -1753,9 +1750,9 @@ if( BUILD_GL_RENDERER )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${RENDERERGL_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${RENDERERGL_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${RENDERERGL_SOURCES} )
-	endif()
+	ENDIF()
 	
-	add_library( backendGL
+	ADD_LIBRARY( backendGL
 		SHARED 
 		${RENDERERGL_APIS_HEADERS}
 		${MATHLIST_SOURCES} 
@@ -1765,21 +1762,21 @@ if( BUILD_GL_RENDERER )
 		${RENDERERGL_HEADERS} 
 		${RENDERERGL_SOURCES} 
 	)
-	include_directories( ${MOUNT_DIR} ${GLEW_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
-	target_link_libraries( backendGL ${GLEW_LIBRARY} ${GLUT_glut_LIBRARY} SDL )
-	if( WIN32 )
-		set_target_properties( backendGL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendGL.def" OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( backendGL PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( backendGL PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( backendGL PRIVATE ${MOUNT_DIR} ${GLEW_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${LIB_DIR}/SDL12/include )
+	TARGET_LINK_LIBRARIES( backendGL ${GLEW_LIBRARY} ${GLUT_glut_LIBRARY} SDL )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( backendGL PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/backendGL.def" OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( backendGL PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( backendGL PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_RENDERER )
-	if( WIN32 )
+IF( BUILD_RENDERER )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${RENDERERAPI_HEADERS} )
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${RENDERER_SHARED_HEADERS} )
@@ -1789,9 +1786,9 @@ if( BUILD_RENDERER )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${RENDERER_MATH_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${RENDERER_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${RENDERER_SOURCES} )
-	endif()
+	ENDIF()
 
-	add_library( renderer
+	ADD_LIBRARY( renderer
 		SHARED 
 		${RENDERERAPI_HEADERS} 
 		${RENDERERFILEFORMATS_HEADERS} 
@@ -1802,21 +1799,20 @@ if( BUILD_RENDERER )
 		${RENDERER_SHARED_SOURCES}
 		${RENDERER_SOURCES}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( renderer PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/renderer.def" OUTPUT_NAME "renderer${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( renderer PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( renderer PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( renderer PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( renderer PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/renderer.def" OUTPUT_NAME "renderer${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( renderer PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( renderer PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_MODELLOADER )
-
-	if( WIN32 )
+IF( BUILD_MODELLOADER )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${MODELLOADER_API} )
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${MODELLOADER_SHARED_HEADERS} )
@@ -1830,9 +1826,9 @@ if( BUILD_MODELLOADER )
 		SOURCE_GROUP( StaticModelLoader\\Source\ Files                     FILES ${MODELLOADER_STATICMODELLOADERS_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${MODELLOADER_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${MODELLOADER_SOURCES} )
-	endif()
+	ENDIF()
 	
-	add_library( modelLoader
+	ADD_LIBRARY( modelLoader
 		SHARED 
 		${MODELLOADER_API}
 		${MODELLOADERFILEFORMATS}
@@ -1848,20 +1844,20 @@ if( BUILD_MODELLOADER )
 		${MODELLOADER_STATICMODELLOADERS_HEADERS}
 		${MODELLOADER_STATICMODELLOADERS_SOURCES}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( modelLoader PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/modelLoader.def" OUTPUT_NAME "modelLoader${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( modelLoader PROPERTIES OUTPUT_NAME "modelLoader${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( modelLoader PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( modelLoader PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( modelLoader PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/modelLoader.def" OUTPUT_NAME "modelLoader${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( modelLoader PROPERTIES OUTPUT_NAME "modelLoader${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( modelLoader PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_CM )
-	add_library( cm
+IF( BUILD_CM )
+	ADD_LIBRARY( cm
 		SHARED 
 		${CM_HEADERS}
 		${MATHLIST_SOURCES}
@@ -1869,20 +1865,20 @@ if( BUILD_CM )
 		${CM_SHARED}
 		${CM_SOURCE}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( cm PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/cm.def" OUTPUT_NAME "cm${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( cm PROPERTIES OUTPUT_NAME "cm${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( cm PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( cm PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( cm PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/cm.def" OUTPUT_NAME "cm${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( cm PROPERTIES OUTPUT_NAME "cm${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( cm PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if( BUILD_DECLMANAGER )
-	if( WIN32 )
+IF( BUILD_DECLMANAGER )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${DECLMANAGER_API} )
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${DECLMANAGER_SHARED_HEADERS} )
@@ -1891,9 +1887,9 @@ if( BUILD_DECLMANAGER )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${MATHLIST_HEADERS} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${DECLMANAGER_HEADER} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${DECLMANAGER_SOURCE} )
-	endif()
+	ENDIF()
 	
-	add_library( declManager
+	ADD_LIBRARY( declManager
 		SHARED 
 		${DECLMANAGER_API}
 		${DECLMANAGER_HEADER}
@@ -1903,20 +1899,20 @@ if( BUILD_DECLMANAGER )
 		${DECLMANAGER_SHARED_SOURCES}
 		${DECLMANAGER_SOURCE}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-set_target_properties( declManager PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/declManager.def" OUTPUT_NAME "declManager${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( declManager PROPERTIES OUTPUT_NAME "declManager${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( declManager PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( declManager PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( declManager PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/declManager.def" OUTPUT_NAME "declManager${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( declManager PROPERTIES OUTPUT_NAME "declManager${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( declManager PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
 IF( BUILD_GAME )
-	if( WIN32 )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Classes\\CSS\\Header\ Files                          FILES ${GAME_CLASSES_CSS_HEADERS} )
 		SOURCE_GROUP( Classes\\CSS\\Source\ Files                          FILES ${GAME_CLASSES_CSS_SOURCES} )
@@ -1938,9 +1934,9 @@ IF( BUILD_GAME )
 		SOURCE_GROUP( Source\ Files                                        FILES ${GAME_SOURCE} )
 		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${GAME_MATH_HEADERS} )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${GAME_MATH_SOURCES} )
-	endif()
+	ENDIF()
 	
-	add_library( qagame
+	ADD_LIBRARY( qagame
 		SHARED 
 		${GAME_CLASSES_CSS_HEADERS}
 		${GAME_CLASSES_CSS_SOURCES}
@@ -1963,23 +1959,24 @@ IF( BUILD_GAME )
 		${GAME_HEADERS}
 		${GAME_SOURCE}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( qagame PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/game.def" OUTPUT_NAME "qagame${BUILD_ARCH}" PREFIX "" )
-		include_directories( ${MOUNT_DIR} ${LIB_DIR}/lua-5.1.5/src )
+
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( qagame PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/game.def" OUTPUT_NAME "qagame${BUILD_ARCH}" PREFIX "" )
+		TARGET_INCLUDE_DIRECTORIES( qagame PRIVATE ${MOUNT_DIR} ${LIB_DIR}/lua-5.1.5/src )
 		SET_TARGET_PROPERTIES( qagame PROPERTIES COMPILE_FLAGS -DG_ENABLE_LUA_SCRIPTING )
-		target_link_libraries( qagame ${LIB_DIR}/lua-5.1.5/lib/lua5.1.lib )
-	else()
-		set_target_properties( qagame PROPERTIES OUTPUT_NAME "qagame${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( qagame PROPERTIES
+		TARGET_LINK_LIBRARIES( qagame ${LIB_DIR}/lua-5.1.5/lib/lua5.1.lib )
+	ELSE()
+		TARGET_INCLUDE_DIRECTORIES( qagame PRIVATE ${MOUNT_DIR} )
+		SET_TARGET_PROPERTIES( qagame PROPERTIES OUTPUT_NAME "qagame${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( qagame PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if ( BUILD_GPHYSICS_BULLET )
-	if( WIN32 )
+IF ( BUILD_GPHYSICS_BULLET )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${MATHLIST_HEADERS} )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${MATHLIST_SOURCES} )
@@ -1987,9 +1984,9 @@ if ( BUILD_GPHYSICS_BULLET )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${BUILD_GPHYSICS_BULLET_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${BUILD_GPHYSICS_BULLET_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${BUILD_GPHYSICS_BULLET_SOURCES} )
-	endif()
+	ENDIF()
 
-	add_library( gphysics_bullet
+	ADD_LIBRARY( gphysics_bullet
 		SHARED
 		${MATHLIST_HEADERS}
 		${MATHLIST_SOURCES}
@@ -1998,22 +1995,22 @@ if ( BUILD_GPHYSICS_BULLET )
 		${BUILD_GPHYSICS_BULLET_HEADERS}
 		${BUILD_GPHYSICS_BULLET_SOURCES}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
+	IF( WIN32 )
 		SET_TARGET_PROPERTIES( gphysics_bullet PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/game.def" OUTPUT_NAME "gphysics_bullet${BUILD_ARCH}" PREFIX "" )
-		INCLUDE_DIRECTORIES( ${MOUNT_DIR} ${LIB_DIR}/bullet-2.80-rev2531/src )
+		TARGET_INCLUDE_DIRECTORIES( gphysics_bullet PRIVATE ${MOUNT_DIR} ${LIB_DIR}/bullet-2.80-rev2531/src )
 		TARGET_LINK_LIBRARIES( gphysics_bullet BulletDynamics BulletCollision LinearMath)
-	else()
-		set_target_properties( gphysics_bullet PROPERTIES OUTPUT_NAME "gphysics_bullet${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( gphysics_bullet PROPERTIES
+	ELSE()
+		TARGET_INCLUDE_DIRECTORIES( gphysics_bullet PRIVATE ${MOUNT_DIR} )
+		SET_TARGET_PROPERTIES( gphysics_bullet PROPERTIES OUTPUT_NAME "gphysics_bullet${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( gphysics_bullet PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if ( BUILD_CGAME )
-	if( WIN32 )
+IF ( BUILD_CGAME )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${BUILD_CGAME_MATH_HEADERS} )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${BUILD_CGAME_MATH_SOURCES} )
@@ -2022,9 +2019,9 @@ if ( BUILD_CGAME )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${BUILD_CGAME_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${BUILD_CGAME_HEADER} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${BUILD_CGAME_SOURCE} )
-	endif()
+	ENDIF()
 
-	add_library( cgame
+	ADD_LIBRARY( cgame
 		SHARED
 		${BUILD_CGAME_MATH_HEADERS}
 		${BUILD_CGAME_MATH_SOURCES}
@@ -2034,49 +2031,50 @@ if ( BUILD_CGAME )
 		${BUILD_CGAME_HEADER}
 		${BUILD_CGAME_SOURCE}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( cgame PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/cgame.def" OUTPUT_NAME "cgame${BUILD_ARCH}" PREFIX "" )
-	else()
-		set_target_properties( cgame PROPERTIES OUTPUT_NAME "cgame${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( cgame PROPERTIES
+	TARGET_INCLUDE_DIRECTORIES( cgame PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( cgame PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/cgame.def" OUTPUT_NAME "cgame${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( cgame PROPERTIES OUTPUT_NAME "cgame${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( cgame PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if ( BUILD_GPHYSICS_ODE )
-	if( WIN32 )
+IF ( BUILD_GPHYSICS_ODE )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${GPHYSICS_ODE_SHARED_HEADERS} )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${GPHYSICS_ODE_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${GPHYSICS_ODE_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${GPHYSICS_ODE_SOURCE} )
-	endif()
-	add_library( gphysics_ode
+	ENDIF()
+	ADD_LIBRARY( gphysics_ode
 		SHARED
 		${GPHYSICS_ODE_SHARED_HEADERS}
 		${GPHYSICS_ODE_SHARED_SOURCES}
 		${GPHYSICS_ODE_HEADERS}
 		${GPHYSICS_ODE_SOURCE}
 	)
-	include_directories( ${MOUNT_DIR} )
-	if( WIN32 )
-		set_target_properties( gphysics_ode PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/gphysics_ode.def" OUTPUT_NAME "gphysics_ode${BUILD_ARCH}" PREFIX "" )
-		INCLUDE_DIRECTORIES( ${MOUNT_DIR} ${LIB_DIR}/ode-r1939/include )
-	else()
-		set_target_properties( gphysics_ode PROPERTIES OUTPUT_NAME "gphysics_ode${BUILD_ARCH}" PREFIX "" )
-	endif()
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( gphysics_ode PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/gphysics_ode.def" OUTPUT_NAME "gphysics_ode${BUILD_ARCH}" PREFIX "" )
+		TARGET_INCLUDE_DIRECTORIES( gphysics_ode PRIVATE ${MOUNT_DIR} ${LIB_DIR}/ode-r1939/include )
+	ELSE()
+		TARGET_INCLUDE_DIRECTORIES( gphysics_ode PRIVATE ${MOUNT_DIR} )
+		SET_TARGET_PROPERTIES( gphysics_ode PROPERTIES OUTPUT_NAME "gphysics_ode${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
 	TARGET_LINK_LIBRARIES( gphysics_ode ode )
-	set_target_properties( gphysics_ode PROPERTIES
+	SET_TARGET_PROPERTIES( gphysics_ode PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
 	)
-endif()
+ENDIF()
 
-if ( BUILD_EDITOR )
-	if( WIN32 )
+IF( WIN32 )
+	IF ( BUILD_EDITOR )
+		FIND_PACKAGE( GLUT REQUIRED )
 		
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${EDITOR_API} )
@@ -2088,32 +2086,33 @@ if ( BUILD_EDITOR )
 		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${EDITOR_SHARED_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${EDITOR_HEADERS} )
 		SOURCE_GROUP( Source\ Files                                        FILES ${EDITOR_SOURCES} )
-	endif()
 
-	add_library( editor
-		SHARED
-		${EDITOR_API}
-		${EDITOR_GUI_MFC_HEADERS}
-		${EDITOR_GUI_MFC_SOURCES}
-		${EDITOR_MATH_HEADERS}
-		${EDITOR_MATH_SOURCES}
-		${EDITOR_SHARED_HEADERS}
-		${EDITOR_SHARED_SOURCES}
-		${EDITOR_HEADERS}
-		${EDITOR_SOURCES}
-	)
-	set_target_properties( editor PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/editor.def" OUTPUT_NAME "editor${BUILD_ARCH}" PREFIX "" )
-	INCLUDE_DIRECTORIES( ${MOUNT_DIR} ${MOUNT_DIR}/editor/ ${MOUNT_DIR}/editor/gui/mfc ${LIB_DIR}/il-1.7.8-x86/include )
-	ADD_DEFINITIONS( -DWIN32 -D_AFXDLL -D_WINDOWS -DQUAKE3 -DQ3RADIANT -D_WIN32 -D_CRT_SECURE_NO_WARNINGS -DWINVER=0x0600 -DUSE_DEVIL_LIBRARY )
-	target_link_libraries( editor 	opengl32.lib ${LIB_DIR}/gl/lib/glu32.lib ${LIB_DIR}/il-1.7.8-x86/lib/DevIL.lib )
-	set_target_properties( editor PROPERTIES
-		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
-		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
-	)
-endif()
+		ADD_LIBRARY( editor
+			SHARED
+			${EDITOR_API}
+			${EDITOR_GUI_MFC_HEADERS}
+			${EDITOR_GUI_MFC_SOURCES}
+			${EDITOR_MATH_HEADERS}
+			${EDITOR_MATH_SOURCES}
+			${EDITOR_SHARED_HEADERS}
+			${EDITOR_SHARED_SOURCES}
+			${EDITOR_HEADERS}
+			${EDITOR_SOURCES}
+		)
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4996")
+		SET_TARGET_PROPERTIES( editor PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/editor.def" OUTPUT_NAME "editor${BUILD_ARCH}" PREFIX "" )
+		TARGET_INCLUDE_DIRECTORIES( editor PRIVATE ${MOUNT_DIR} ${GLUT_INCLUDE_DIR} ${MOUNT_DIR}/editor/ ${MOUNT_DIR}/editor/gui/mfc ${LIB_DIR}/il-1.7.8-x86/include ${MOUNT_DIR}/tools/radiantAFXInclude/MFC/Include )
+		ADD_DEFINITIONS( -DWIN32 -D_AFXDLL -D_WINDOWS -DQUAKE3 -DQ3RADIANT -D_WIN32 -D_CRT_SECURE_NO_WARNINGS -DUSE_DEVIL_LIBRARY )
+		TARGET_LINK_LIBRARIES( editor opengl32.lib ${LIB_DIR}/il-1.7.8-x86/lib/DevIL.lib winmm.lib ${GLUT_glut_LIBRARY} )
+		SET_TARGET_PROPERTIES( editor PROPERTIES
+			RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
+			RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
+		)
+	ENDIF()
+ENDIF()
 
-if ( BUILD_CORE )
-	if( WIN32 )
+IF( BUILD_CORE )
+	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
 		SOURCE_GROUP( API\\Header\ Files                                   FILES ${CORE_APIS} )
 		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${CORE_SHARED_HEADERS} )
@@ -2126,7 +2125,7 @@ if ( BUILD_CORE )
 		SOURCE_GROUP( SDL\\Source\ Files                                   FILES ${CORE_SDL_SOURCES} )
 		SOURCE_GROUP( Library\\Speex\ Files                                FILES ${CORE_SPEEX_LIBRARY} )
 		SOURCE_GROUP( Library\\zLib\ Files                                 FILES ${CORE_ZLIB_LIBRARY} )
-	endif()
+	ENDIF()
 
 	ADD_EXECUTABLE( qio  
 		${CORE_APIS} 
@@ -2142,24 +2141,24 @@ if ( BUILD_CORE )
 		${CORE_ZLIB_LIBRARY}
 	)
 
-	if( WIN32 )
-		include_directories( ${MOUNT_DIR} ${LIB_DIR}/SDL12/include ${LIB_DIR}/libcurl/ ${LIB_DIR}/libspeex/include ${LIB_DIR}/zlib )
-		set_target_properties( qio PROPERTIES OUTPUT_NAME "qio${BUILD_ARCH}" PREFIX "" )
+	IF( WIN32 )
+		TARGET_INCLUDE_DIRECTORIES( qio PRIVATE ${MOUNT_DIR} ${LIB_DIR}/SDL12/include ${LIB_DIR}/libcurl/ ${LIB_DIR}/libspeex/include ${LIB_DIR}/zlib )
+		SET_TARGET_PROPERTIES( qio PROPERTIES OUTPUT_NAME "qio${BUILD_ARCH}" PREFIX "" )
 		ADD_DEFINITIONS( -D_WIN32 -DWIN32 -D_WINDOWS -D_CRT_SECURE_NO_WARNINGS -DBOTLIB -DUSE_ICON -DUSE_CURL -DUSE_CURL_DLOPEN -DUSE_OPENAL -DUSE_OPENAL_DLOPEN -DUSE_VOIP -DHAVE_CONFIG_H -DUSE_INTERNAL_JPEG)
-		target_link_libraries( qio SDL SDLmain user32.lib advapi32.lib winmm.lib wsock32.lib ws2_32.lib msvcrt.lib psapi.lib Gdi32.lib )
+		TARGET_LINK_LIBRARIES( qio SDL SDLmain user32.lib advapi32.lib winmm.lib wsock32.lib ws2_32.lib msvcrt.lib psapi.lib Gdi32.lib )
 
-		set_target_properties(qio PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:windows")
-		set_target_properties(qio PROPERTIES COMPILE_DEFINITIONS_DEBUG "windows")
-		set_target_properties(qio PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:windows")
-		set_target_properties(qio PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "windows")
-		set_target_properties(qio PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:windows")
-		set_target_properties(qio PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:windows")
-	else()
-		include_directories( ${MOUNT_DIR} )
-		set_target_properties( qio PROPERTIES OUTPUT_NAME "qio${BUILD_ARCH}" PREFIX "" )
-	endif()
-	set_target_properties( qio PROPERTIES
+		SET_TARGET_PROPERTIES( qio PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:windows" )
+		SET_TARGET_PROPERTIES( qio PROPERTIES COMPILE_DEFINITIONS_DEBUG "windows" )
+		SET_TARGET_PROPERTIES( qio PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:windows" )
+		SET_TARGET_PROPERTIES( qio PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "windows" )
+		SET_TARGET_PROPERTIES( qio PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:windows" )
+		SET_TARGET_PROPERTIES( qio PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:windows" )
+	ELSE()
+		TARGET_INCLUDE_DIRECTORIES( qio PRIVATE ${MOUNT_DIR} )
+		SET_TARGET_PROPERTIES( qio PROPERTIES OUTPUT_NAME "qio${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( qio PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game
 	)
-endif()
+ENDIF()
