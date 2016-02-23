@@ -454,6 +454,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\fileformats\tan_file_format.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\fileformats\vvdFileFormat.h"
 				>
 			</File>

@@ -351,6 +351,11 @@ void Cmd_CompletePSKName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "psk", "pskx", 0, false, false );
 	}
 }
+void Cmd_CompleteTANName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "tan", 0, 0, false, false );
+	}
+}
 /*
 ==================
 Cmd_CompleteMDMName
@@ -482,6 +487,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "md5mesh_spawn", Cmd_CompleteMD5MeshName );
 	Cmd_AddCommand ("psk_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
+	Cmd_AddCommand ("tan_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "tan_spawn", Cmd_CompleteTANName );
 	Cmd_AddCommand ("phys_spawn_psk", 0);
 	Cmd_SetCommandCompletionFunc( "phys_spawn_psk", Cmd_CompletePSKName );
 	Cmd_AddCommand ("mdm_spawn", 0);

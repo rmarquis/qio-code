@@ -248,6 +248,10 @@ public:
 			// TODO: read the number of mdc frame?
 			return true;
 		}
+		if(!_stricmp(ext,"tan")) {
+			// TODO: read the number of tan frame?
+			return true;
+		}
 		return false;
 	}
 	virtual class kfModelAPI_i *loadKeyFramedModelFile(const char *fname) {

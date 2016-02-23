@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../fileFormats/md3_file_format.h"
 #include "../fileFormats/md2_file_format.h"
 #include "../fileFormats/mdc_file_format.h"
+#include "../fileFormats/tan_file_format.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -97,6 +98,8 @@ bool kfModelImpl_c::load(const char *fname) {
 		return loadMDC(fname);
 	} else if(!_stricmp(ext,"md2")) {
 		return loadMD2(fname);
+	} else if(!_stricmp(ext,"tan")) {
+		return loadTAN(fname);
 	} else {
 		g_core->RedWarning("kfModelImpl_c::load: %s has unknown extension\n",fname);
 	}
@@ -389,6 +392,70 @@ bool kfModelImpl_c::loadMDC(const byte *buf, const u32 fileLen, const char *fnam
 ///				o.pos = t->xyz;
 
 			}
+		}
+	}
+	return false; // no error
+}
+bool kfModelImpl_c::loadTAN(const char *fname) {
+	byte *buf;
+	u32 len = g_vfs->FS_ReadFile(fname,(void**)&buf);
+	if(buf == 0)
+		return true;
+	bool res = loadTAN(buf,len,fname);
+	g_vfs->FS_FreeFile(buf);
+	return res;
+}
+bool kfModelImpl_c::loadTAN(const byte *buf, const u32 fileLen, const char *fname) {
+	const tanHeader_s *h = (const tanHeader_s *) buf;
+	if(h->ident != TAN_IDENT) {
+		g_core->RedWarning("kfModel_c::loadTAN: %s has bad ident %i, should be \"TAN \"\n",fname,h->ident);
+		return true; // error
+	}
+	surfs.resize(h->numSurfaces);
+	kfSurf_c *sf = surfs.getArray();
+	for(u32 i = 0; i < surfs.size(); i++, sf++) {
+		const tanSurface_s *is = h->pSurf(i);
+		//if(is->ident != MD3_SURF_IDENT)
+		u32 numIndices = is->numTriangles*3;
+		u16 *indices = sf->indices.initU16(numIndices);
+		const u32 *firstIndex = is->getFirstIndex();
+		for(u32 j = 0; j < numIndices; j++) {
+			indices[j] = firstIndex[j];
+		}
+		sf->texCoords.resize(is->numVerts);
+		vec2_c *tc = sf->texCoords.getArray();
+		for(u32 j = 0; j < is->numVerts; j++, tc++) {
+			const tanSt_s *st = is->getSt(j);
+			tc->x = st->st[0];
+			tc->y = st->st[1];
+		}
+		sf->xyzFrames.resize(h->numFrames);
+		kfSurfFrame_c *f = sf->xyzFrames.getArray();
+		const tanXyzNormal_s *xyzNormal = is->getXYZNormal(0);
+		for(u32 j = 0; j < h->numFrames; j++, f++) {
+			f->verts.resize(is->numVerts);
+			kfVert_c *v = f->verts.getArray();
+			for(u32 k = 0; k < is->numVerts; k++, v++) {
+				v->xyz = xyzNormal->getPos();
+				xyzNormal++;
+			}
+		}
+		sf->name = is->name;
+	}
+	frames.resize(h->numFrames);
+	kfFrame_c *of = frames.getArray();
+	for(u32 i = 0; i < h->numFrames; i++, of++) {
+		const tanFrame_s *f = h->pFrame(i);
+		of->name = va("tan_frame_%i",i); // f->name;
+		of->bounds.fromTwoPoints(f->bounds[0],f->bounds[1]);
+		of->localOrigin = f->offset;
+		of->scale = f->scale;
+		of->radius = f->radius;
+	}
+	// load tags
+	for(u32 i = 0; i < h->numFrames; i++) {
+		for(u32 j = 0; j < h->numTags; j++) {
+
 		}
 	}
 	return false; // no error
