@@ -74,6 +74,8 @@ public:
 	aabb bounds;
 	float radius;
 	vec3_c localOrigin;
+	// added for TAN
+	vec3_c scale;
 };
 class kfTagFrame_c {
 public:
@@ -145,6 +147,9 @@ public:
 	// RTCW mdc (compressed md3)
 	bool loadMDC(const char *fname);
 	bool loadMDC(const byte *buf, const u32 fileLen, const char *fname);
+	// FAKK2 tan
+	bool loadTAN(const char *fname);
+	bool loadTAN(const byte *buf, const u32 fileLen, const char *fname);
 };
 
 kfModelImpl_c *KF_LoadKeyFramedModel(const char *fname);
