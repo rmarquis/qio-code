@@ -129,7 +129,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// init pathnodes
 	G_InitPathnodesSystem();
 	
+#ifdef G_ENABLE_LUA_SCRIPTING
 	G_InitLua();
+#endif
 
 	wsScript_c test;
 	test.loadScriptFile("maps/escape1.script");
@@ -151,7 +153,9 @@ void G_ShutdownGame( int restart ) {
 		delete e->ent;
 		e->ent = 0;
 	}
+#ifdef G_ENABLE_LUA_SCRIPTING
 	G_ShutdownLua();
+#endif
 	G_ShutdownPhysicsEngine();
 	G_ShutdownScriptedClasses();
 	G_ShutdownPathnodesSystem();
