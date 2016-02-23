@@ -1,3 +1,6 @@
+02-23-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Added missing LUA library file
+
 02-22-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Added cMake support for QIO (only for Windows at this moment)
 		- NOTE: There are some problems with compiling "QIOEditor" on VS2015 with WindowsSDK
