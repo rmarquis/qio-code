@@ -19,7 +19,7 @@ textures/common/mirror
 	qer_editorimage	textures/common/mirror.png
 	
 	{
-		map textures/common/mirror.png
+		map none
 		blendfunc GL_ONE GL_ONE_MINUS_SRC_ALPHA
 		depthWrite
 	}
