@@ -40,6 +40,16 @@ bool wsScript_c::parseScriptBlock(wsScriptBlock_c *o, class parser_c &p) {
 
 	return false;
 }
+const wsEntity_c *wsScript_c::findEntity(const char *name) const {
+	//for(u32 i = 0; i < entities.size(); i++) {
+	//	const wsEntity_c *e = entities[i];
+	//	if(!stricmp(e->getName(),name)) {
+	//		return e;
+	//	}
+	//}
+	//return 0;
+	return entities.getEntry(name);
+}
 bool wsScript_c::parseEntity(class parser_c &p, const char *entityName) {
 	if(!p.atChar('{')) {
 		g_core->RedWarning("wsScript_c::parseEntity: expected '{' after entity %s at line %i of %s - found %s\n",
@@ -66,12 +76,13 @@ bool wsScript_c::parseEntity(class parser_c &p, const char *entityName) {
 		} else if(p.atWord("trigger")) {
 			str triggerName;
 			p.getToken(triggerName);
-			wsScriptBlock_c *sb = new wsScriptBlock_c();
+			wsScriptBlockNamed_c *sb = new wsScriptBlockNamed_c();
 			if(parseScriptBlock(sb,p)) {
 				delete sb;
 				return true;
 			}
-			delete sb;
+			sb->name = triggerName;
+			e->triggers.push_back(sb);
 		} else if(p.atWord("stateChange")) {
 			str stateFrom, stateTo;
 			p.getToken(stateFrom);

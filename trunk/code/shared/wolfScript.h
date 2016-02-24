@@ -30,17 +30,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 class wsBlockStatement_c {
 friend class wsScript_c;
 	str txt;
+public:
+	const char *getText() const {
+		return txt;
+	}
 };
 class wsScriptBlock_c {
 friend class wsScript_c;
 	arraySTD_c<wsBlockStatement_c> statements;
-
+public:
+	u32 getNumStatements() const {
+		return statements.size();
+	}
+	const wsBlockStatement_c *getStatement(u32 i) const {
+		return &statements[i];
+	}
 };
-
+class wsScriptBlockNamed_c : public wsScriptBlock_c {
+friend class wsScript_c;
+	str name;
+public:
+	const char *getName() const {
+		return name;
+	}
+};
 class wsEntity_c {
+friend class wsScript_c;
 	str name;
 	wsEntity_c *hashNext;
-
+	arraySTD_c<wsScriptBlockNamed_c*> triggers;
+	
 
 public:
 	wsEntity_c(const char *nn) {
@@ -55,6 +74,13 @@ public:
 	wsEntity_c *getHashNext() const {
 		return hashNext;
 	}
+	const wsScriptBlockNamed_c *findLabel(const char *name) const {
+		for(u32 i = 0; i < triggers.size(); i++) {
+			if(!stricmp(triggers[i]->getName(),name))
+				return triggers[i];
+		}
+		return 0;
+	}
 };
 
 class wsScript_c {
@@ -63,6 +89,7 @@ class wsScript_c {
 	bool parseScriptBlock(wsScriptBlock_c *o, class parser_c &p);
 	bool parseEntity(class parser_c &p, const char *entityName);
 public:
+	const wsEntity_c *findEntity(const char *name) const;
 	
 	bool loadScriptFile(const char *fname);
 };

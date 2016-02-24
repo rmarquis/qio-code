@@ -44,6 +44,10 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	safePtr_c<BaseEntity> parent; // for children
 	str targetName; // name of this entity; set in radiant or trough script
 	str target; // entity's target - FIXME: use safePtr<BaseEntity> here instead of string?
+	// for ET/RTCW .script support
+	str scriptName;
+	// used to handle ET/RTCW script execution
+	class wsEntityInstance_c *wsScript;
 	// our own internal event system 
 	class eventList_c *eventList;
 	// LUA event callbacks
@@ -133,6 +137,10 @@ public:
 	const char *getTargetName() const;
 	void setTargetName(const char *newTargetName);
 	bool hasTargetName() const;
+	// "scriptname" field - for ET/RTCW
+	const char *getScriptName() const;
+	void setScriptName(const char *newTargetName);
+	bool hasScriptName() const;
 	// "target" field
 	const char *getTarget() const;
 	void setTarget(const char *newTarget);
@@ -217,6 +225,9 @@ public:
 	bool openAreaPortalIfPossible();
 	bool closeAreaPortalIfPossible();
 
+	// RTCW / ET scripting
+	void startWolfScript(const class wsScriptBlock_c *block);
+
 	// for lua wrapper
 	virtual bool addLuaEventHandler(struct lua_State *L, const char *eventName, int func);
 
@@ -233,6 +244,7 @@ public:
 	virtual void runFrame() {
 
 	}
+	void runWolfScript();
 	virtual bool doUse(class Player *activator) {
 		return false;
 	}

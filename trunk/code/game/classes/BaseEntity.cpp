@@ -37,6 +37,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/entDefAPI.h>
 #include <shared/entityType.h>
+#include <shared/wolfScript.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 // Quake3 "misc_teleporter_dest" for q3dm0 teleporter 
@@ -48,6 +49,50 @@ DEFINE_CLASS_ALIAS(BaseEntity, info_notnull);
 
 // used to debug setting BaseEntity keyValues
 static aCvar_c g_baseEntity_debugSetKeyValue("g_baseEntity_debugSetKeyValue","0");
+
+
+class wsEntityScriptInstance_c {
+friend class wsEntityInstance_c;
+	const class wsScriptBlock_c *block;
+	u32 statement;
+	int wait;
+public:
+	wsEntityScriptInstance_c(const class wsScriptBlock_c *b) {
+		this->block = b;
+		this->statement = 0;
+		this->wait = 0;
+	}
+};
+class wsEntityInstance_c {
+	class BaseEntity *ent;
+	arraySTD_c<wsEntityScriptInstance_c *> instances;
+public:
+	wsEntityInstance_c(BaseEntity *ne) {
+		ent = ne;
+	}
+	void startWolfScript(const class wsScriptBlock_c *b) {
+		instances.push_back(new wsEntityScriptInstance_c(b));
+	}
+	bool runInstance(wsEntityScriptInstance_c *i) {
+		const class wsScriptBlock_c *b = i->block;
+		while(i->statement < b->getNumStatements()) {
+			const str &txt = b->getStatement(i->statement)->getText();
+			str key;
+			const char *p = txt.getToken(key);
+			ent->setKeyValue(key,p);
+			i->statement++;
+		}
+		return true;
+	}
+	void runWolfScript() {
+		for(int i = 0; i < instances.size(); i++) {
+			if(runInstance(instances[i])) {
+				delete instances[i];
+				instances.erase(i);
+			}
+		}
+	}
+};
 
 // use this to force BaseEntity::ctor() to use a specific edict instead of allocating a new one
 static edict_s *be_forcedEdict = 0;
@@ -81,6 +126,7 @@ BaseEntity::BaseEntity() {
 	myEdict->ent = this;
 	parent = 0;
 	eventList = 0;
+	wsScript = 0;
 	matrix.identity();
 	bMarkedForDelete = false;
 }
@@ -103,6 +149,9 @@ BaseEntity::~BaseEntity() {
 	}
 	if(eventList) {
 		delete eventList;
+	}
+	if(wsScript) {
+		delete wsScript;
 	}
 	memset (myEdict, 0, sizeof(*myEdict));
 	myEdict->freetime = level.time;
@@ -130,6 +179,8 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		this->setAngles(vec3_c(0,angle,0));
 	} else if(!_stricmp(key,"targetname")) {
 		this->setTargetName(value);
+	} else if(!_stricmp(key,"scriptName")) {
+		this->setScriptName(value);
 	} else if(!_stricmp(key,"target")) {
 		this->setTarget(value);
 	} else if(!_stricmp(key,"parent")) {
@@ -161,6 +212,10 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 			g_core->Print("Passing \"%s %s\" keyvalue to attachemnt\n",newKey.c_str(),newValue);
 			be->setKeyValue(newKey.c_str(),newValue);
 		}
+#if 1
+	} else if(!_stricmp(key,"wm_announce")) {
+		g_core->Print("^2WM_ANNOUCE: %s\n",value);
+#endif
 	} else {
 
 	}
@@ -261,6 +316,17 @@ u32 BaseEntity::getEntNum() const {
 bool BaseEntity::hasClassName(const char *className) const {
 	const char *cn = getClassName();
 	return !_stricmp(cn,className);
+}
+const char *BaseEntity::getScriptName() const {
+	return scriptName;
+}
+void BaseEntity::setScriptName(const char *newScriptName) {
+	scriptName = newScriptName;
+}
+bool BaseEntity::hasScriptName() const {
+	if(scriptName.length())
+		return true;
+	return false;
 }
 const char *BaseEntity::getTargetName() const {
 	return targetName;
@@ -429,6 +495,16 @@ bool BaseEntity::closeAreaPortalIfPossible() {
 		return true;
 	}
 	return false;
+}
+void BaseEntity::startWolfScript(const class wsScriptBlock_c *block) {
+	if(wsScript == 0)
+		wsScript = new wsEntityInstance_c(this);;
+	wsScript->startWolfScript(block);
+}
+void BaseEntity::runWolfScript() {
+	if(wsScript == 0)
+		return;
+	wsScript->runWolfScript();
 }
 // for lua wrapper
 bool BaseEntity::addLuaEventHandler(struct lua_State *L, const char *eventName, int func) {
