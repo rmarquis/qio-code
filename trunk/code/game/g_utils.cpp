@@ -177,6 +177,19 @@ bool G_EntitiesFree( void ) {
 	return false;
 }
 
+u32 G_GetEntitiesWithTargetName(const char *targetName, arraySTD_c<class BaseEntity*> &out) {
+	edict_s	*e = &g_entities[MAX_CLIENTS];
+	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
+		if (e->s == 0) {
+			continue;
+		}
+		const char *entTN = e->ent->getTargetName();
+		if(!_stricmp(entTN,targetName)) {
+			out.push_back(e->ent);
+		}
+	}	
+	return out.size();
+}
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<BaseEntity*> &out) {
 	const char *className = G_TranslateClassAlias(classNameOrig);
 	edict_s	*e = &g_entities[MAX_CLIENTS];

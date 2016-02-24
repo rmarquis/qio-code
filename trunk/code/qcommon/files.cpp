@@ -2131,6 +2131,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 					if (pathLength) {
 						temp++;		// include the '/'
 					}
+				//	Com_Printf("Adding from pk3 - %s\n",name + temp);
 					nfiles = FS_AddFileToList( name + temp, list, nfiles );
 				}
 			}
@@ -2165,6 +2166,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 
 	listCopy = (char**)malloc( ( nfiles + 1 ) * sizeof( *listCopy ) );
 	for ( i = 0 ; i < nfiles ; i++ ) {
+		//Com_Printf("%s\n",list[i]);
 		listCopy[i] = list[i];
 	}
 	listCopy[i] = NULL;

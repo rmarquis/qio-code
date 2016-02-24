@@ -138,6 +138,11 @@ public:
 	void setTarget(const char *newTarget);
 	bool hasTarget() const;
 
+	// called by trigger on its targets
+	virtual void triggerBy(class BaseEntity *from, class BaseEntity *activator) {
+
+	}
+
 	virtual void setRenderModel(const char *newRModelName) {
 
 	}
