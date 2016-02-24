@@ -66,20 +66,35 @@ public:
 class wsEntityInstance_c {
 	class BaseEntity *ent;
 	arraySTD_c<wsEntityScriptInstance_c *> instances;
+	int wait_ms;
 public:
 	wsEntityInstance_c(BaseEntity *ne) {
 		ent = ne;
+		wait_ms = 0;
 	}
 	void startWolfScript(const class wsScriptBlock_c *b) {
 		instances.push_back(new wsEntityScriptInstance_c(b));
 	}
 	bool runInstance(wsEntityScriptInstance_c *i) {
+		if(wait_ms) {
+			wait_ms -= level.frameTimeMs;
+			if(wait_ms > 0)
+				return false;
+			if(wait_ms < 0)
+				wait_ms = 0;
+		}
 		const class wsScriptBlock_c *b = i->block;
 		while(i->statement < b->getNumStatements()) {
 			const str &txt = b->getStatement(i->statement)->getText();
 			str key;
 			const char *p = txt.getToken(key);
-			ent->setKeyValue(key,p);
+			if(!_stricmp(key,"wait")) {
+				wait_ms += atoi(p);
+				i->statement++;
+				return false; // stop and wait
+			} else {
+				ent->setKeyValue(key,p);
+			}
 			i->statement++;
 		}
 		return true;
