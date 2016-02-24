@@ -41,6 +41,7 @@ Mover::Mover() {
 	moverState = MOVER_POS1;
 	speed = 40.f;
 	mass = 0.f;
+	direction.set(1,0,0);
 }
 void Mover::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"angle")) {
