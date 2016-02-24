@@ -433,6 +433,10 @@
 				RelativePath="..\..\code\game\g_weapons.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\game\g_wolfScript.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

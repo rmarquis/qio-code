@@ -89,6 +89,7 @@ edict_s	*G_Spawn (void);
 bool G_EntitiesFree( void );
 u32 G_GetEntitiesOfClass(const char *classNameOrig, arraySTD_c<class BaseEntity*> &out);
 u32 G_GetEntitiesWithTargetName(const char *targetName, arraySTD_c<class BaseEntity*> &out);
+u32 G_GetEntitiesWithScriptName(const char *targetName, arraySTD_c<class BaseEntity*> &out);
 class BaseEntity *G_GetRandomEntityOfClass(const char *classNameOrig);
 class BaseEntity *G_FindFirstEntityWithTargetName(const char *targetName);
 void G_HideEntitiesWithTargetName(const char *targetName);
@@ -241,6 +242,7 @@ void G_InitAmmoTypes();
 //
 
 void G_InitWolfScripts(const char *mapName);
+void G_WolfScript_StartScript(const char *scriptName, const char *labelName);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];

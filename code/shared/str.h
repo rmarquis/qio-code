@@ -451,7 +451,7 @@ public:
 		}
 		return true;
 	}
-	const char *getToken(str &out, const char *p = 0) {
+	const char *getToken(str &out, const char *p = 0) const {
 		out.makeEmpty();
 		if(this->len == 0) {
 			return 0;

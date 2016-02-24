@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // TargetScriptTrigger.cpp
 #include "TargetScriptTrigger.h"
+#include "../g_local.h"
 #include <api/coreAPI.h>
 
 DEFINE_CLASS(TargetScriptTrigger, "BaseEntity");
@@ -33,6 +34,7 @@ TargetScriptTrigger::TargetScriptTrigger() {
 }
 void TargetScriptTrigger::triggerBy(class BaseEntity *from, class BaseEntity *activator) {
 	g_core->Print("TargetScriptTrigger::triggerBy: calling scriptname %s targetlabel %s\n",scriptName.c_str(),target.c_str());
+	G_WolfScript_StartScript(scriptName,target);
 }
 void TargetScriptTrigger::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"target")) {

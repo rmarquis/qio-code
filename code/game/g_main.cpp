@@ -307,6 +307,9 @@ void G_RunFrame( int levelTime ) {
 		if(g_printEntityClasses.getInt()) {
 			g_core->Print("Entity: %i (%s - %s) is at %f %f %f\n",e->getEntNum(),e->getClassName(),e->getRenderModelName(),e->getOrigin().x,e->getOrigin().y,e->getOrigin().z);
 		}
+		e->runWolfScript();
+		if(ed->ent == 0)
+			continue; // fried during runWolfScript
 		e->runFrame();
 		if(ed->ent == 0)
 			continue; // fried during runFrame
