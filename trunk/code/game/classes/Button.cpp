@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Button.cpp
 #include "Button.h"
+#include "Player.h"
 #include "../g_local.h"
 
 DEFINE_CLASS(Button, "Mover");
@@ -50,6 +51,14 @@ void Button::postSpawn() {
 	Mover::postSpawn();
 }
 bool Button::doUse(class Player *activator) {
+	// fire targets
+	arraySTD_c<BaseEntity *> ents;
+	G_GetEntitiesWithTargetName(getTarget(),ents);
+	for(u32 i = 0; i < ents.size(); i++) {
+		BaseEntity *e = ents[i];
+		e->triggerBy(this,activator);
+	}
+
 	Mover::doUse(activator);
 	//if(state == MOVER_POS1) {
 	//	if(g_mover_warp.getInt()) {
