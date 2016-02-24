@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Trigger.cpp - base class for all triggers
 #include "Trigger.h"
+#include "ModelEntity.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
 #include <api/coreAPI.h>
@@ -50,7 +51,13 @@ void Trigger::setTriggerModel(const char *modName) {
 	this->recalcABSBounds();
 }
 void Trigger::onTriggerContact(class ModelEntity *ent) {
-
+	// fire targets
+	arraySTD_c<BaseEntity *> ents;
+	G_GetEntitiesWithTargetName(getTarget(),ents);
+	for(u32 i = 0; i < ents.size(); i++) {
+		BaseEntity *e = ents[i];
+		e->triggerBy(this,ent);
+	}
 }
 void Trigger::setKeyValue(const char *key, const char *value) {
 	if(!_stricmp(key,"model")) {

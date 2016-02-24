@@ -21,48 +21,29 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// wolfScript.h - ET/RTCW script parser, used for both .ai and .script files
-#include <shared/array.h>
-#include <shared/str.h>
-#include <shared/hashTableTemplate.h>
+// TargetScriptTrigger.cpp
+#include "TargetScriptTrigger.h"
+#include <api/coreAPI.h>
 
+DEFINE_CLASS(TargetScriptTrigger, "BaseEntity");
+DEFINE_CLASS_ALIAS(TargetScriptTrigger, target_script_trigger);
+ 
+TargetScriptTrigger::TargetScriptTrigger() {
 
-class wsBlockStatement_c {
-friend class wsScript_c;
-	str txt;
-};
-class wsScriptBlock_c {
-friend class wsScript_c;
-	arraySTD_c<wsBlockStatement_c> statements;
-
-};
-
-class wsEntity_c {
-	str name;
-	wsEntity_c *hashNext;
-
-
-public:
-	wsEntity_c(const char *nn) {
-		name = nn;
+}
+void TargetScriptTrigger::triggerBy(class BaseEntity *from, class BaseEntity *activator) {
+	g_core->Print("TargetScriptTrigger::triggerBy: calling scriptname %s targetlabel %s\n",scriptName.c_str(),target.c_str());
+}
+void TargetScriptTrigger::setKeyValue(const char *key, const char *value) {
+	if(!stricmp(key,"target")) {
+		target = value;
+	} else if(!stricmp(key,"scriptname")) {
+		scriptName = value;
 	}
-	const char *getName() const {
-		return name;
-	}
-	void setHashNext(wsEntity_c *nhn) {
-		hashNext = nhn;
-	}
-	wsEntity_c *getHashNext() const {
-		return hashNext;
-	}
-};
+	BaseEntity::setKeyValue(key,value);
+}
+void TargetScriptTrigger::postSpawn() {
 
-class wsScript_c {
-	hashTableTemplateExt_c<wsEntity_c> entities;
+}
 
-	bool parseScriptBlock(wsScriptBlock_c *o, class parser_c &p);
-	bool parseEntity(class parser_c &p, const char *entityName);
-public:
-	
-	bool loadScriptFile(const char *fname);
-};
+

@@ -21,48 +21,27 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// wolfScript.h - ET/RTCW script parser, used for both .ai and .script files
-#include <shared/array.h>
-#include <shared/str.h>
-#include <shared/hashTableTemplate.h>
+// TargetScriptTrigger.h
+#ifndef __TARGETSCRIPTTRIGGER_H__
+#define __TARGETSCRIPTTRIGGER_H__
 
+#include "BaseEntity.h"
 
-class wsBlockStatement_c {
-friend class wsScript_c;
-	str txt;
-};
-class wsScriptBlock_c {
-friend class wsScript_c;
-	arraySTD_c<wsBlockStatement_c> statements;
-
-};
-
-class wsEntity_c {
-	str name;
-	wsEntity_c *hashNext;
-
-
+class TargetScriptTrigger : public BaseEntity {
+	// name of script that will be called. "trigger [target]"
+	str target; 
+	// name of script block where to look for target
+	str scriptName;
 public:
-	wsEntity_c(const char *nn) {
-		name = nn;
-	}
-	const char *getName() const {
-		return name;
-	}
-	void setHashNext(wsEntity_c *nhn) {
-		hashNext = nhn;
-	}
-	wsEntity_c *getHashNext() const {
-		return hashNext;
-	}
+	TargetScriptTrigger();
+
+	DECLARE_CLASS( TargetScriptTrigger );
+
+	virtual void triggerBy(class BaseEntity *from, class BaseEntity *activator);
+
+	virtual void postSpawn();
+
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-class wsScript_c {
-	hashTableTemplateExt_c<wsEntity_c> entities;
-
-	bool parseScriptBlock(wsScriptBlock_c *o, class parser_c &p);
-	bool parseEntity(class parser_c &p, const char *entityName);
-public:
-	
-	bool loadScriptFile(const char *fname);
-};
+#endif // __TARGETSCRIPTTRIGGER_H__

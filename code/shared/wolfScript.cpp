@@ -33,8 +33,9 @@ bool wsScript_c::parseScriptBlock(wsScriptBlock_c *o, class parser_c &p) {
 		return true;
 	}
 	while(!p.atChar('}')) {
-		p.skipLine();
-
+		wsBlockStatement_c s;
+		s.txt = p.getLine();
+		o->statements.push_back(s);
 	}
 
 	return false;
