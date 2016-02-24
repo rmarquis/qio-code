@@ -236,6 +236,12 @@ void            G_DumpLuaStack();
 //
 void G_InitAmmoTypes();
 
+//
+// g_wolfScript.cpp
+//
+
+void G_InitWolfScripts(const char *mapName);
+
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
 
