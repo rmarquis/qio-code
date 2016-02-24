@@ -266,6 +266,7 @@ void G_RunFrame( int levelTime ) {
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
+	level.frameTimeMs = (level.time-level.previousTime);
 	level.frameTime = (level.time-level.previousTime)*0.001f;
 
 	//G_TestSafePtrs();
