@@ -92,6 +92,11 @@ public:
 				wait_ms += atoi(p);
 				i->statement++;
 				return false; // stop and wait
+			} else if(!_stricmp(key,"trigger")) {
+				str scriptName, labelName;
+				p = txt.getToken(scriptName,p);
+				p = txt.getToken(labelName,p);
+				G_WolfScript_StartScript(scriptName,labelName);
 			} else {
 				ent->setKeyValue(key,p);
 			}

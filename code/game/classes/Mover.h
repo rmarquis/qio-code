@@ -71,6 +71,7 @@ public:
 
 	virtual bool doUse(class Player *activator);
 
+	void startMovementToEntity(const char *entName, float speed);
 
 	virtual bool isMover() const {
 		return true;
