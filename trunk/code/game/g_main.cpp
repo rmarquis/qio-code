@@ -31,7 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/World.h"
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
-#include <shared/wolfScript.h>
 #include "g_pathNodes.h"
 
 static aCvar_c g_printEntityPositions("g_printEntityPositions","0");
@@ -128,13 +127,15 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_SpawnMapEntities(mapName);
 	// init pathnodes
 	G_InitPathnodesSystem();
+	// init RTCW / ET scripts
+	G_InitWolfScripts(mapName);
 	
 #ifdef G_ENABLE_LUA_SCRIPTING
 	G_InitLua();
 #endif
 
-	wsScript_c test;
-	test.loadScriptFile("maps/escape1.script");
+	//wsScript_c test;
+	//test.loadScriptFile("maps/escape1.script");
 	G_Printf ("-----------------------------------\n");
 }
 
