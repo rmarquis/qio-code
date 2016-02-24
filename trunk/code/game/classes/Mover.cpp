@@ -24,12 +24,14 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Mover.cpp
 #include "Mover.h"
 #include <api/serverAPI.h>
+#include <api/coreAPI.h>
 #include <math/aabb.h>
 #include <shared/autoCvar.h>
 #include "../g_local.h"
 
 DEFINE_CLASS(Mover, "ModelEntity");
 DEFINE_CLASS_ALIAS(Mover, func_mover);
+DEFINE_CLASS_ALIAS(Mover, script_mover);
 
 static aCvar_c g_mover_warp("g_mover_warp","0");
 bool g_mover_callingMoverTeam = false;
@@ -42,6 +44,20 @@ Mover::Mover() {
 	speed = 40.f;
 	mass = 0.f;
 	direction.set(1,0,0);
+}
+void Mover::startMovementToEntity(const char *entName, float speed) {
+	BaseEntity *te = G_FindFirstEntityWithTargetName(entName);
+	if(te == 0) {
+		g_core->RedWarning("Mover::startMovementToEntity: target %s not found\n",entName);
+		return;
+	}
+	moverState = MOVER_1TO2;
+	this->speed = speed;
+	pos1 = getOrigin();
+	pos2 = te->getOrigin();
+	direction = (pos2-pos1);
+	distance = direction.normalize2();
+	lip = 0.f;
 }
 void Mover::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"angle")) {
@@ -60,6 +76,13 @@ void Mover::setKeyValue(const char *key, const char *value) {
 		lip = atof(value);
 	} else if(!stricmp(key,"team")) {
 		team = value;
+	} else if(!_stricmp(key,"gotomarker")) {
+		str args(value);
+		str targetName, speedStr;
+		const char *p = args.getToken(targetName);
+		args.getToken(speedStr,p);
+		float speed = atof(speedStr);
+		startMovementToEntity(targetName,speed);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
