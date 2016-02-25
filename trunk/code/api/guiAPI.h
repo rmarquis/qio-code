@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class guiAPI_i : public iFaceBase_i {
 public:
 	virtual void drawGUI() = 0;
+	virtual void onMouseMove(int dX, int dY) = 0;
 };
 
 extern guiAPI_i *gui;

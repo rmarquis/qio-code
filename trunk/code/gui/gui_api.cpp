@@ -35,8 +35,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class guiAPIImpl_c : public guiAPI_i {
 	urcMgr_c um;
+	int mouseX, mouseY;
 public:
 	guiAPIImpl_c() {
+		mouseX = 100;
+		mouseY = 100;
 	}
 	void init() {
 		um.precacheURCFiles();
@@ -44,6 +47,21 @@ public:
 	virtual void drawGUI() {
 		urc_c *u = um.registerURC("main");
 		u->drawURC();
+
+		float mouseSize = 30.f;
+		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");
+	}
+	virtual void onMouseMove(int dX, int dY) { 
+		mouseX += dX;
+		mouseY += dY;
+		if(mouseX < 0)
+			mouseX = 0;
+		if(mouseY < 0)
+			mouseY = 0;
+		if(mouseX > rf->getWinWidth())
+			mouseX = rf->getWinWidth();
+		if(mouseY > rf->getWinHeight())
+			mouseY = rf->getWinHeight();
 	}
 	~guiAPIImpl_c() {
 	}

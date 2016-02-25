@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_label.h"
 #include <shared/parser.h>
 #include <api/rAPI.h>
+#include <api/coreAPI.h>
 
 void urc_c::drawURC() {	
 	for(u32 i = 0; i < elements.size(); i++) {
@@ -33,6 +34,7 @@ void urc_c::drawURC() {
 		const rect_c &r = el->getRect();
 		const char *matName = el->getMatName();
 		if(matName[0]) {
+			g_core->Print("Material %s\n",matName);
 			rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 		}
 	}
