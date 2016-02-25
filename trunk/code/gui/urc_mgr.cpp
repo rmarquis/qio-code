@@ -56,8 +56,13 @@ void urcMgr_c::precacheURCFiles() {
 
 const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName) const {
 	const urcNameMappingCache_c *c = nameCache.getEntry(internalName);
-	if(c == 0)
-		return 0;
+	if(c == 0) {
+		static str tmp;
+		tmp = "ui/";
+		tmp.append(internalName);
+		tmp.append(".urc");
+		return tmp;
+	}
 	return c->getFName();
 }
 urc_c *urcMgr_c::registerURC(const char *internalName) {
