@@ -351,6 +351,20 @@ int ILTypeForExt(const char *s)
 }
 u32 img_numSupportedImageTypes = sizeof(img_types) / sizeof(img_types[0]);
 
+void IMG_CreateColorImage(float r, float g, float b, byte **imageData, u32 size) {
+	u32 numPixels = size*size;
+	byte *pic = (byte *)malloc (numPixels*4); 
+	byte rb = r * 255.f;
+	byte gb = g * 255.f;
+	byte bb = b * 255.f;
+	for(u32 i = 0; i < numPixels*4; i+=4) {
+		pic[i] = rb;
+		pic[i+1] = gb;
+		pic[i+2] = bb;
+		pic[i+3] = 255;
+	}
+	*imageData = pic;
+}
 char lastValidFName[256];
 const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *width, u32 *height ) {
 	*imageData = 0;
@@ -360,24 +374,21 @@ const char *IMG_LoadImageInternal( const char *fname, byte **imageData, u32 *wid
 	if(fname == 0 || fname[0] == 0)
 		return 0;
 
+	// for MoHAA .urc
+	if(!stricmp(fname,"$whiteimage")) {
+		u32 size = 16;
+		*width = size;
+		*height = size;
+		IMG_CreateColorImage(1,1,1,imageData,size);
+		return fname;
+	}
 	// support single-color images, like in the Radiant editor
 	float r, g, b;
 	if(sscanf(fname,"(%f %f %f)",&r,&g,&b)==3) {
 		u32 size = 16;
 		*width = size;
 		*height = size;
-		u32 numPixels = size*size;
-		byte *pic = (byte *)malloc (numPixels*4); 
-		byte rb = r * 255.f;
-		byte gb = g * 255.f;
-		byte bb = b * 255.f;
-		for(u32 i = 0; i < numPixels*4; i+=4) {
-			pic[i] = rb;
-			pic[i+1] = gb;
-			pic[i+2] = bb;
-			pic[i+3] = 255;
-		}
-		*imageData = pic;
+		IMG_CreateColorImage(r,g,b,imageData,size);
 		return fname;
 	}
 	const char *ext = G_strgetExt(fname);
