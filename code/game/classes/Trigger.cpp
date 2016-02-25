@@ -38,6 +38,7 @@ Trigger::Trigger() {
 	this->setEntityType(ET_TRIGGER);
 	g_triggers.push_back(this);
 	this->triggerModel = 0;
+	this->bTriggerable = true;
 }
 Trigger::~Trigger() {
 	g_triggers.remove(this);
@@ -51,6 +52,9 @@ void Trigger::setTriggerModel(const char *modName) {
 	this->recalcABSBounds();
 }
 void Trigger::onTriggerContact(class ModelEntity *ent) {
+	if(bTriggerable == false)
+		return;
+	bTriggerable = false;
 	// fire targets
 	arraySTD_c<BaseEntity *> ents;
 	G_GetEntitiesWithTargetName(getTarget(),ents);

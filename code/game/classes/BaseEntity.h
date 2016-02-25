@@ -129,6 +129,9 @@ public:
 	virtual bool isMover() const {
 		return false;
 	}
+	virtual bool isMoverMoving() const {
+		return false;
+	}
 	virtual const char *getMoverTeam() const {
 		return "";
 	}
