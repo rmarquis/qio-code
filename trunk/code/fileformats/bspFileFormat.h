@@ -700,7 +700,8 @@ struct q3Header_s {
 			const srcHeader_s *realH = getSourceBSPHeader();
 			return (const byte*)(((const byte*)this)+realH->lumps[lumpNum].fileOfs);
 		}
-		return (const byte*)(((const byte*)this)+getLumps()[lumpNum].fileOfs);
+		u32 ofs = getLumps()[lumpNum].fileOfs;
+		return (const byte*)(((const byte*)this)+ofs);
 	}
 	const u32 getLumpStructNum(u32 lumpNum, u32 structSize) const {
 		if(this->isBSPSource()) {

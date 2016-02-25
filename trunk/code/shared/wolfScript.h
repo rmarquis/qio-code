@@ -59,11 +59,12 @@ friend class wsScript_c;
 	str name;
 	wsEntity_c *hashNext;
 	arraySTD_c<wsScriptBlockNamed_c*> triggers;
-	
+	wsScriptBlock_c *spawn;
 
 public:
 	wsEntity_c(const char *nn) {
 		name = nn;
+		spawn = 0;
 	}
 	const char *getName() const {
 		return name;
@@ -73,6 +74,9 @@ public:
 	}
 	wsEntity_c *getHashNext() const {
 		return hashNext;
+	}
+	const wsScriptBlock_c *getSpawnScript() const {
+		return spawn;
 	}
 	const wsScriptBlockNamed_c *findLabel(const char *name) const {
 		for(u32 i = 0; i < triggers.size(); i++) {

@@ -44,6 +44,7 @@ Mover::Mover() {
 	speed = 40.f;
 	mass = 0.f;
 	direction.set(1,0,0);
+	bScriptedMove = false;
 }
 void Mover::startMovementToEntity(const char *entName, float speed) {
 	BaseEntity *te = G_FindFirstEntityWithTargetName(entName);

@@ -79,5 +79,26 @@ void G_WolfScript_StartScript(const char *scriptName, const char *labelName) {
 	for(u32 i = 0; i < ents.size(); i++) {
 		BaseEntity *e = ents[i];
 		e->startWolfScript(b);
+
+	//	break;
+	}
+}
+void G_WolfScript_StartScript_Spawn(const char *scriptName) {
+	const wsEntity_c *e = g_script.findEntity(scriptName);
+	if(e == 0) {
+		g_core->RedWarning("G_WolfScript_StartScript_Spawn: script %s not found (maybe wrong scriptName?)\n",scriptName);
+		return;
+	}
+	const wsScriptBlock_c *b = e->getSpawnScript();
+	if(b == 0) {
+		return;
+	}
+	arraySTD_c<BaseEntity *> ents;
+	G_GetEntitiesWithScriptName(scriptName,ents);
+	for(u32 i = 0; i < ents.size(); i++) {
+		BaseEntity *e = ents[i];
+		e->startWolfScript(b);
+
+		//break;
 	}
 }

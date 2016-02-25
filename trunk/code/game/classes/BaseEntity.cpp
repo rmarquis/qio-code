@@ -46,7 +46,10 @@ DEFINE_CLASS_ALIAS(BaseEntity, misc_teleporter_dest);
 DEFINE_CLASS_ALIAS(BaseEntity, target_position);
 // for light targets
 DEFINE_CLASS_ALIAS(BaseEntity, info_notnull);
+// for ET
 DEFINE_CLASS_ALIAS(BaseEntity, path_corner_2);
+DEFINE_CLASS_ALIAS(BaseEntity, path_corner);
+DEFINE_CLASS_ALIAS(BaseEntity, script_multiplayer);
 
 // used to debug setting BaseEntity keyValues
 static aCvar_c g_baseEntity_debugSetKeyValue("g_baseEntity_debugSetKeyValue","0");
@@ -102,16 +105,23 @@ public:
 			str key;
 			const char *p = txt.getToken(key);
 			if(!_stricmp(key,"wait")) {
-				wait_ms += atoi(p);
+				str waitVal;
+				p = txt.getToken(waitVal,p);
+				wait_ms += atoi(waitVal);
 				i->statement++;
 				return false; // stop and wait
 			} else if(!_stricmp(key,"trigger")) {
 				str scriptName, labelName;
 				p = txt.getToken(scriptName,p);
+				if(!stricmp(scriptName,"self")) {
+					scriptName = ent->getScriptName();
+				}
 				p = txt.getToken(labelName,p);
+				g_core->Print("Triggering %s - %s\n",scriptName.c_str(),labelName.c_str());
 				G_WolfScript_StartScript(scriptName,labelName);
 			} else if(!_stricmp(key,"gotomarker")) {
 				const char *savedP = p;
+				g_core->Print("Executing gotomarker %s\n",p);
 				str targetName, speedStr, waitFlag;
 				p = txt.getToken(targetName,p);
 				p = txt.getToken(speedStr,p);
@@ -129,7 +139,9 @@ public:
 					return false;
 				}
 			} else {
-				ent->setKeyValue(key,p);
+				str tmp = p;
+				tmp.stripTrailing(" \n\r\t");
+				ent->setKeyValue(key,tmp);
 			}
 			i->statement++;
 		}
@@ -266,6 +278,12 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 #if 1
 	} else if(!_stricmp(key,"wm_announce")) {
 		g_core->Print("^2WM_ANNOUCE: %s\n",value);
+	} else if(!_stricmp(key,"setPosition")) {
+		const char *posStr = value;
+		BaseEntity *e = G_FindFirstEntityWithTargetName(posStr);
+		if(e) {
+			this->setOrigin(e->getOrigin());
+		} 
 #endif
 	} else {
 
@@ -400,6 +418,11 @@ bool BaseEntity::hasTarget() const {
 	if(target.length())
 		return true;
 	return false;
+}
+void BaseEntity::postSpawn() {
+	if(scriptName.size()) {
+		G_WolfScript_StartScript_Spawn(scriptName);
+	}
 }
 u32 BaseEntity::processPendingEvents() {
 	if(eventList == 0)

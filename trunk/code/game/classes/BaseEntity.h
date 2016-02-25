@@ -183,9 +183,7 @@ public:
 
 	}
 	// used to create rigid bodies
-	virtual void postSpawn() {
-
-	}
+	virtual void postSpawn();
 	// used to create constraints linking rigid bodies
 	virtual void postSpawn2() {
 	

@@ -72,7 +72,7 @@ bool wsScript_c::parseEntity(class parser_c &p, const char *entityName) {
 				delete sb;
 				return true;
 			}
-			delete sb;
+			e->spawn = sb;
 		} else if(p.atWord("trigger")) {
 			str triggerName;
 			p.getToken(triggerName);

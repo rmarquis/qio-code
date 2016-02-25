@@ -54,6 +54,8 @@ protected:
 	vec3_c pos2;
 	// teams are used to group doors together
 	str team;
+	// true if movement is scripted, otherwise default mover logic is applied
+	bool bScriptedMove;
 
 	// callbacks
 	virtual void onMoverReachPos1() { }

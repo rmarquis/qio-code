@@ -650,6 +650,7 @@ void ModelEntity::postSpawn() {
 		this->setColModel(this->renderModelName);
 		initRigidBodyPhysics();
 	}
+	BaseEntity::postSpawn();
 }
 void ModelEntity::applyCentralForce(const vec3_c &forceToAdd) {
 	if(this->body == 0)
