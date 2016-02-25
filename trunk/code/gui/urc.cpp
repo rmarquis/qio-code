@@ -32,7 +32,9 @@ void urc_c::drawURC() {
 		urcElementBase_c *el = elements[i];
 		const rect_c &r = el->getRect();
 		const char *matName = el->getMatName();
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		if(matName[0]) {
+			rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		}
 	}
 }
 bool urc_c::loadURCFile() {
