@@ -21,22 +21,44 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// urc.cpp
+#include "urc.h"
+#include "urc_element_label.h"
+#include <shared/parser.h>
+#include <api/rAPI.h>
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
+void urc_c::drawURC() {	
+	for(u32 i = 0; i < elements.size(); i++) {
+		urcElementBase_c *el = elements[i];
+		const rect_c &r = el->getRect();
+		const char *matName = el->getMatName();
+		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+	}
+}
+bool urc_c::loadURCFile() {
+	parser_c p;
+	if(p.openFile(fname))
+		return true;
 
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
-public:
-	virtual void drawGUI() = 0;
-};
-
-extern guiAPI_i *gui;
-
-
-#endif // __GUI_API_H__
-
+	while(p.atEOF() == false) {
+		if(p.atWord("resource")) {
+			urcElementBase_c *el;
+			if(p.atWord("Label")) {
+				el = new urcElementLabel_c();
+			} else if(p.atWord("Button")) {
+				el = new urcElementLabel_c();
+			} else {
+				str type = p.getToken();
+				el = new urcElementLabel_c();
+			}
+			if(el->parseURCElement(p)) {
+				delete el;
+				return true;
+			}
+			elements.push_back(el);
+		} else {
+			p.getToken();
+		}
+	}
+	return false;
+}

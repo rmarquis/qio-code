@@ -21,22 +21,31 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// urc_mgr.h - Ultimate ResourCe manager
+#include <shared/hashTableTemplate.h>
+#include <shared/str.h>
+#include "urc.h"
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
+class urcNameMappingCache_c : public urcNameMapping_c {
+	urcNameMappingCache_c *hashNext;
 public:
-	virtual void drawGUI() = 0;
+	void setHashNext(urcNameMappingCache_c *h) {
+		hashNext = h;
+	}
+	urcNameMappingCache_c *getHashNext() {
+		return hashNext;
+	}
 };
+class urcMgr_c {
+	hashTableTemplateExt_c<urcNameMappingCache_c> nameCache;
+	hashTableTemplateExt_c<urc_c> loaded;
 
-extern guiAPI_i *gui;
+	void precacheURCFile(const char *fname);
+public:
+	void precacheURCFiles();
 
+	const char *getURCFileNameForURCInternalName(const char *internalName) const;
 
-#endif // __GUI_API_H__
-
+	// internal name is not a file name, it's a URC name specified inside URC file
+	urc_c *registerURC(const char *internalName);
+};

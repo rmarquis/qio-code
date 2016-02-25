@@ -28,13 +28,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/guiAPI.h>
+#include <api/rAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
+#include "urc_mgr.h"
 
 class guiAPIImpl_c : public guiAPI_i {
+	urcMgr_c um;
 public:
 	guiAPIImpl_c() {
-
+	}
+	void init() {
+		um.precacheURCFiles();
+	}
+	virtual void drawGUI() {
+		urc_c *u = um.registerURC("main");
+		u->drawURC();
 	}
 	~guiAPIImpl_c() {
 	}
@@ -46,6 +55,7 @@ class iFaceMgrAPI_i *g_iFaceMan = 0;
 vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
+rAPI_i *rf;
 modelLoaderDLLAPI_i *g_modelLoader = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
 
@@ -65,6 +75,9 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
+
+	g_staticGUIAPI.init();
 
 }
 

@@ -23,9 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 #include <api/rAPI.h>
+#include <api/guiAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include <shared/str.h>
 #include <shared/colorTable.h>
+#include <shared/keyCatchers.h>
 
 bool	scr_initialized;		// ready to draw
 
@@ -515,6 +517,10 @@ void SCR_DrawScreenField() {
 			// force menu up
 	//		S_StopAllSounds();
 //			VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+			if(gui) {
+				Key_SetCatcher(Key_GetCatcher() | KEYCATCH_UI);
+				gui->drawGUI();
+			}
 			break;
 		case CA_CONNECTING:
 		case CA_CHALLENGING:

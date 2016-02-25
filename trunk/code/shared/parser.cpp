@@ -238,12 +238,12 @@ bool parser_c::atWord(const char *word) {
 	}
 	u32 checkLen = strlen(word);
 	if(*p == '"') {
-		if(!Q_stricmpn(word,p+1,checkLen) && (p[checkLen+1]=='"')) {
+		if(!strnicmp(word,p+1,checkLen) && (p[checkLen+1]=='"')) {
 			p += checkLen + 1 + 1;
 			return true;
 		}
 	} else {
-		if(!Q_stricmpn(word,p,checkLen) && (G_isWS(p[checkLen]) || p[checkLen] == 0)) {
+		if(!strnicmp(word,p,checkLen) && (G_isWS(p[checkLen]) || p[checkLen] == 0)) {
 			p += checkLen;
 			return true;
 		}
@@ -256,7 +256,7 @@ bool parser_c::atWord_dontNeedWS(const char *word) {
 		return false;
 	}
 	u32 checkLen = strlen(word);
-	if(!Q_stricmpn(word,p,checkLen)/* && G_isWS(p[checkLen])*/) {
+	if(!strnicmp(word,p,checkLen)/* && G_isWS(p[checkLen])*/) {
 		p += checkLen;
 		return true;
 	}

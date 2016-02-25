@@ -21,22 +21,29 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// urc_element_label.h
+#include <shared/rect.h>
+#include <shared/str.h>
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
+class urcElementBase_c {
+	rect_c rect;
+	str matName;
 public:
-	virtual void drawGUI() = 0;
+	bool parseURCElement(class parser_c &p);
+
+
+	virtual bool parseURCProperty(class parser_c &p);
+
+
+	const rect_c &getRect() const {
+		return rect;
+	}
+	const char *getMatName() const {
+		return matName;
+	}
 };
-
-extern guiAPI_i *gui;
-
-
-#endif // __GUI_API_H__
-
+class urcElementLabel_c : public urcElementBase_c {
+public:
+	
+	virtual bool parseURCProperty(class parser_c &p);
+};
