@@ -51,7 +51,7 @@ next frame.  This allows commands like:
 bind g "cmd use rocket ; +attack ; wait ; -attack ; cmd use blaster"
 ============
 */
-void Cmd_Wait_f( void ) {
+void Cmd_Wait_f() {
 	if ( Cmd_Argc() == 2 ) {
 		cmd_wait = atoi( Cmd_Argv( 1 ) );
 		if ( cmd_wait < 0 )
@@ -266,7 +266,7 @@ void Cbuf_Execute (void)
 Cmd_Exec_f
 ===============
 */
-void Cmd_Exec_f( void ) {
+void Cmd_Exec_f() {
 	bool quiet;
 	union {
 		char	*c;
@@ -305,7 +305,7 @@ Cmd_Vstr_f
 Inserts the current value of a variable as command text
 ===============
 */
-void Cmd_Vstr_f( void ) {
+void Cmd_Vstr_f() {
 	char	*v;
 
 	if (Cmd_Argc () != 2) {
@@ -360,7 +360,7 @@ static	cmd_function_t	*cmd_functions;		// possible commands to execute
 Cmd_Argc
 ============
 */
-int		Cmd_Argc( void ) {
+int		Cmd_Argc() {
 	return cmd_argc;
 }
 
@@ -396,7 +396,7 @@ Cmd_Args
 Returns a single string containing argv(1) to argv(argc()-1)
 ============
 */
-char	*Cmd_Args( void ) {
+char	*Cmd_Args() {
 	static	char		cmd_args[MAX_STRING_CHARS];
 	int		i;
 
@@ -814,7 +814,7 @@ void	Cmd_ExecuteString( const char *text ) {
 	}
 
 	// check ui commands
-	if ( com_cl_running && com_cl_running->integer && UI_GameCommand() ) {
+	if ( com_cl_running && com_cl_running->integer && GUI_GameCommand() ) {
 		return;
 	}
 

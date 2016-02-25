@@ -40,7 +40,7 @@ struct cgameAPI_s : public iFaceBase_i {
 	// demos, tourney restarts, or vid_restarts
 	void (*Init)( int serverMessageNum, int serverCommandSequence, int clientNum );
 	// oportunity to flush and close any open files
-	void (*Shutdown)( void );
+	void (*Shutdown)();
 	// Generates and draws a game scene and status information at the given time.
 	// If demoPlayback is set, local movement prediction will not be enabled
 	void (*DrawActiveFrame)( int serverTime, bool demoPlayback );

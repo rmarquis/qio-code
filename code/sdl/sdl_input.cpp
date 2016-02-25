@@ -399,7 +399,7 @@ static io_connect_t IN_GetIOHandle(void) // mac os x mouse accel hack
 IN_GobbleMotionEvents
 ===============
 */
-static void IN_GobbleMotionEvents( void )
+static void IN_GobbleMotionEvents()
 {
 	SDL_Event dummy[ 1 ];
 
@@ -414,7 +414,7 @@ static void IN_GobbleMotionEvents( void )
 IN_ActivateMouse
 ===============
 */
-static void IN_ActivateMouse( void )
+static void IN_ActivateMouse()
 {
 	if (!mouseAvailable || !SDL_WasInit( SDL_INIT_VIDEO ) )
 		return;
@@ -490,7 +490,7 @@ static void IN_ActivateMouse( void )
 IN_DeactivateMouse
 ===============
 */
-static void IN_DeactivateMouse( void )
+static void IN_DeactivateMouse()
 {
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 		return;
@@ -576,7 +576,7 @@ struct
 IN_InitJoystick
 ===============
 */
-static void IN_InitJoystick( void )
+static void IN_InitJoystick()
 {
 	int i = 0;
 	int total = 0;
@@ -646,7 +646,7 @@ static void IN_InitJoystick( void )
 IN_ShutdownJoystick
 ===============
 */
-static void IN_ShutdownJoystick( void )
+static void IN_ShutdownJoystick()
 {
 	if (stick)
 	{
@@ -662,7 +662,7 @@ static void IN_ShutdownJoystick( void )
 IN_JoyMove
 ===============
 */
-static void IN_JoyMove( void )
+static void IN_JoyMove()
 {
 	bool joy_pressed[ARRAY_LEN(joy_keys)];
 	unsigned int axes = 0;
@@ -869,7 +869,7 @@ static void IN_JoyMove( void )
 IN_ProcessEvents
 ===============
 */
-static void IN_ProcessEvents( void )
+static void IN_ProcessEvents()
 {
 	SDL_Event e;
 	const char *character = NULL;
@@ -973,7 +973,7 @@ static void IN_ProcessEvents( void )
 IN_Frame
 ===============
 */
-void IN_Frame( void )
+void IN_Frame()
 {
 	bool loading;
 
@@ -1014,7 +1014,7 @@ void IN_Frame( void )
 IN_InitKeyLockStates
 ===============
 */
-void IN_InitKeyLockStates( void )
+void IN_InitKeyLockStates()
 {
 	unsigned char *keystate = SDL_GetKeyState(NULL);
 
@@ -1028,7 +1028,7 @@ void IN_InitKeyLockStates( void )
 IN_Init
 ===============
 */
-void IN_Init( void )
+void IN_Init()
 {
 	int appState;
 
@@ -1076,7 +1076,7 @@ void IN_Init( void )
 IN_Shutdown
 ===============
 */
-void IN_Shutdown( void )
+void IN_Shutdown()
 {
 	IN_DeactivateMouse( );
 	mouseAvailable = false;
@@ -1089,7 +1089,7 @@ void IN_Shutdown( void )
 IN_Restart
 ===============
 */
-void IN_Restart( void )
+void IN_Restart()
 {
 	IN_ShutdownJoystick( );
 	IN_Init( );

@@ -52,7 +52,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define MAX_VIDEO_HANDLES	16
 
 
-static void RoQ_init( void );
+static void RoQ_init();
 
 /******************************************************************************
 *
@@ -170,7 +170,7 @@ extern int CL_ScaledMilliseconds(void);
 //
 // Returns:		Nothing
 //-----------------------------------------------------------------------------
-static void RllSetupTable( void )
+static void RllSetupTable()
 {
 	int z;
 
@@ -505,7 +505,7 @@ int		spl;
 *
 ******************************************************************************/
 
-static void ROQ_GenYUVTables( void )
+static void ROQ_GenYUVTables()
 {
 	float t_ub,t_vr,t_ug,t_vg;
 	long i;
@@ -1034,7 +1034,7 @@ static void RoQPrepMcomp( long xoff, long yoff )
 *
 ******************************************************************************/
 
-static void initRoQ( void ) 
+static void initRoQ() 
 {
 	if (currentHandle < 0) return;
 
@@ -1068,7 +1068,7 @@ static byte* RoQFetchInterlaced( byte *source ) {
 	return cinTable[currentHandle].buf2;
 }
 */
-static void RoQReset( void ) {
+static void RoQReset() {
 	
 	if (currentHandle < 0) return;
 
@@ -1222,7 +1222,7 @@ redump:
 *
 ******************************************************************************/
 
-static void RoQ_init( void )
+static void RoQ_init()
 {
 	// we need to use CL_ScaledMilliseconds because of the smp mode calls from the renderer
 	cinTable[currentHandle].startTime = cinTable[currentHandle].lastTime = CL_ScaledMilliseconds()*com_timescale->value;
@@ -1254,7 +1254,7 @@ static void RoQ_init( void )
 *
 ******************************************************************************/
 
-static void RoQShutdown( void ) {
+static void RoQShutdown() {
 	const char *s;
 
 	if (!cinTable[currentHandle].buf) {

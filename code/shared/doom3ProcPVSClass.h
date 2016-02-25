@@ -62,11 +62,11 @@ typedef enum {
 
 class idPVS {
 public:
-						idPVS( void );
-						~idPVS( void );
+						idPVS();
+						~idPVS();
 						// setup for the given portalized BSP
 	void				Init( const class portalizedWorldAPI_i *newPortalWorld );
-	void				Shutdown( void );
+	void				Shutdown();
 						// get the area(s) the source is in
 	int					GetPVSArea( const class vec3_c &point ) const;		// returns the area number
 	int					GetPVSAreas( const class aabb &bounds, int *areas, int maxAreas ) const;	// returns number of areas
@@ -108,18 +108,18 @@ private:
 	struct pvsArea_s *	pvsAreas;
 
 private:
-	int					GetPortalCount( void ) const;
-	void				CreatePVSData( void );
-	void				DestroyPVSData( void );
-	void				CopyPortalPVSToMightSee( void ) const;
+	int					GetPortalCount() const;
+	void				CreatePVSData();
+	void				DestroyPVSData();
+	void				CopyPortalPVSToMightSee() const;
 	void				FloodFrontPortalPVS_r( struct pvsPortal_s *portal, int areaNum ) const;
-	void				FrontPortalPVS( void ) const;
+	void				FrontPortalPVS() const;
 	struct pvsStack_s *	FloodPassagePVS_r( struct pvsPortal_s *source, const struct pvsPortal_s *portal, struct pvsStack_s *prevStack ) const;
-	void				PassagePVS( void ) const;
+	void				PassagePVS() const;
 	void				AddPassageBoundaries( const class cmWinding_c &source, const cmWinding_c &pass, bool flipClip, class plane_c *bounds, int &numBounds, int maxBounds ) const;
-	void				CreatePassages( void ) const;
-	void				DestroyPassages( void ) const;
-	int					AreaPVSFromPortalPVS( void ) const;
+	void				CreatePassages() const;
+	void				DestroyPassages() const;
+	int					AreaPVSFromPortalPVS() const;
 	void				GetConnectedAreas( int srcArea, bool *connectedAreas ) const;
 	pvsHandle_t			AllocCurrentPVS( unsigned int h ) const;
 };

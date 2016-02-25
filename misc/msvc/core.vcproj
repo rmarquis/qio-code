@@ -347,6 +347,31 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\code\client\cl_gui.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BrowseInformation="1"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\code\client\cl_input.cpp"
 				>
 				<FileConfiguration
@@ -513,31 +538,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\client\cl_scrn.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\client\cl_ui.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1690,6 +1690,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\gameAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\guiAPI.h"
 				>
 			</File>
 			<File

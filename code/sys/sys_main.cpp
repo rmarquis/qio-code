@@ -112,7 +112,7 @@ Sys_In_Restart_f
 Restart the input subsystem
 =================
 */
-void Sys_In_Restart_f( void )
+void Sys_In_Restart_f()
 {
 	IN_Restart( );
 }
@@ -140,7 +140,7 @@ char *Sys_ConsoleInput(void)
 Sys_PIDFileName
 =================
 */
-static char *Sys_PIDFileName( void )
+static char *Sys_PIDFileName()
 {
 	const char *homePath = Sys_DefaultHomePath( );
 
@@ -157,7 +157,7 @@ Sys_WritePIDFile
 Return true if there is an existing stale PID file
 =================
 */
-bool Sys_WritePIDFile( void )
+bool Sys_WritePIDFile()
 {
 	char      *pidFile = Sys_PIDFileName( );
 	FILE      *f;
@@ -230,7 +230,7 @@ static __attribute__ ((noreturn)) void Sys_Exit( int exitCode )
 Sys_Quit
 =================
 */
-void Sys_Quit( void )
+void Sys_Quit()
 {
 	Sys_Exit( 0 );
 }
@@ -240,7 +240,7 @@ void Sys_Quit( void )
 Sys_GetProcessorFeatures
 =================
 */
-cpuFeatures_t Sys_GetProcessorFeatures( void )
+cpuFeatures_t Sys_GetProcessorFeatures()
 {
 	int features = 0;
 

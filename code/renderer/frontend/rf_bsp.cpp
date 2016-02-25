@@ -654,7 +654,7 @@ bool rBspTree_c::loadSurfs(u32 lumpSurfs, u32 sizeofSurf, u32 lumpIndexes, u32 l
 		sf = (const q3Surface_s *) (((const byte*)sf)+sizeofSurf);
 	}
 	bool bIsEverySecondLightmapDeluxeMap;
-	if(maxLightmapIndex+1 < lightmaps.size()) {
+	if(maxLightmapIndex*2 < lightmaps.size()) {
 		bIsEverySecondLightmapDeluxeMap = true;
 	} else {
 		bIsEverySecondLightmapDeluxeMap = false;

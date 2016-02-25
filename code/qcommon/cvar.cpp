@@ -757,7 +757,7 @@ Cvar_Command
 Handles variable inspection and changing from the console
 ============
 */
-bool Cvar_Command( void ) {
+bool Cvar_Command() {
 	cvar_s	*v;
 
 	// check variables
@@ -815,7 +815,7 @@ Toggles a cvar for easy single key binding, optionally through a list of
 given values
 ============
 */
-void Cvar_Toggle_f( void ) {
+void Cvar_Toggle_f() {
 	int		i, c = Cmd_Argc();
 	char		*curval;
 
@@ -859,7 +859,7 @@ Allows setting and defining of arbitrary cvars from console, even if they
 weren't declared in C code.
 ============
 */
-void Cvar_Set_f( void ) {
+void Cvar_Set_f() {
 	int		c;
 	const char	*cmd;
 	cvar_s	*v;
@@ -907,7 +907,7 @@ void Cvar_Set_f( void ) {
 Cvar_Reset_f
 ============
 */
-void Cvar_Reset_f( void ) {
+void Cvar_Reset_f() {
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf ("usage: reset <variable>\n");
 		return;
@@ -960,7 +960,7 @@ void Cvar_WriteVariables(fileHandle_t f)
 Cvar_List_f
 ============
 */
-void Cvar_List_f( void ) {
+void Cvar_List_f() {
 	cvar_s	*var;
 	int		i;
 	const char	*match;

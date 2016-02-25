@@ -129,8 +129,8 @@ char	com_errorMessage[MAXPRINTMSG];
 // this is NULL if client module is not running
 class materialSystemAPI_i *g_ms = 0;
 
-void Com_WriteConfig_f( void );
-void CIN_CloseAllVideos( void );
+void Com_WriteConfig_f();
+void CIN_CloseAllVideos();
 
 //============================================================================
 
@@ -362,7 +362,7 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f( void ) {
+void Com_Quit_f() {
 	// don't try to shutdown if we are in a recursive error
 	char *p = Cmd_Args( );
 	if ( !com_errorEntered ) {
@@ -442,7 +442,7 @@ Check for "safe" on the command line, which will
 skip loading of q3config.cfg
 ===================
 */
-bool Com_SafeMode( void ) {
+bool Com_SafeMode() {
 	int		i;
 
 	for ( i = 0 ; i < com_numConsoleLines ; i++ ) {
@@ -502,7 +502,7 @@ Returns true if any late commands were added, which
 will keep the demoloop from immediately starting
 =================
 */
-bool Com_AddStartupCommands( void ) {
+bool Com_AddStartupCommands() {
 	int		i;
 	bool	added;
 
@@ -739,9 +739,9 @@ int Com_RealTime(qtime_s *qtime) {
 	return t;
 }
 
-void CL_ShutdownCGame( void );
-void CL_ShutdownUI( void );
-void SV_ShutdownGameProgs( void );
+void CL_ShutdownCGame();
+void CL_ShutdownGUI();
+void SV_ShutdownGameProgs();
 
 /*
 =================
@@ -750,11 +750,11 @@ Hunk_Clear
 The server calls this before shutting down or loading a new map
 =================
 */
-void Hunk_Clear( void ) {
+void Hunk_Clear() {
 
 #ifndef DEDICATED
 	CL_ShutdownCGame();
-	CL_ShutdownUI();
+	CL_ShutdownGUI();
 #endif
 	SV_ShutdownGameProgs();
 #ifndef DEDICATED
@@ -782,7 +782,7 @@ static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 Com_InitJournaling
 =================
 */
-void Com_InitJournaling( void ) {
+void Com_InitJournaling() {
 	Com_StartupVariable( "journal" );
 	com_journal = Cvar_Get ("journal", "0", CVAR_INIT);
 	if ( !com_journal->integer ) {
@@ -869,7 +869,7 @@ Com_GetSystemEvent
 
 ================
 */
-sysEvent_t Com_GetSystemEvent( void )
+sysEvent_t Com_GetSystemEvent()
 {
 	sysEvent_t  ev;
 	char        *s;
@@ -913,7 +913,7 @@ sysEvent_t Com_GetSystemEvent( void )
 Com_GetRealEvent
 =================
 */
-sysEvent_t	Com_GetRealEvent( void ) {
+sysEvent_t	Com_GetRealEvent() {
 	int			r;
 	sysEvent_t	ev;
 
@@ -957,7 +957,7 @@ sysEvent_t	Com_GetRealEvent( void ) {
 Com_InitPushEvent
 =================
 */
-void Com_InitPushEvent( void ) {
+void Com_InitPushEvent() {
   // clear the static buffer array
   // this requires SE_NONE to be accepted as a valid but NOP event
   memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
@@ -1004,7 +1004,7 @@ void Com_PushEvent( sysEvent_t *event ) {
 Com_GetEvent
 =================
 */
-sysEvent_t	Com_GetEvent( void ) {
+sysEvent_t	Com_GetEvent() {
 	if ( com_pushedEventsHead > com_pushedEventsTail ) {
 		com_pushedEventsTail++;
 		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
@@ -1044,7 +1044,7 @@ Com_EventLoop
 Returns last event time
 =================
 */
-int Com_EventLoop( void ) {
+int Com_EventLoop() {
 	sysEvent_t	ev;
 	netadr_t	evFrom;
 	byte		bufData[MAX_MSGLEN];
@@ -1181,7 +1181,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void Com_Crash_f() {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
@@ -1841,7 +1841,7 @@ Com_ReadFromPipe
 Read whatever is in com_pipefile, if anything, and execute it
 ===============
 */
-void Com_ReadFromPipe( void )
+void Com_ReadFromPipe()
 {
 	static char buf[MAX_STRING_CHARS];
 	static int accu = 0;
@@ -1910,7 +1910,7 @@ Com_WriteConfiguration
 Writes key bindings and archived cvars to config file if modified
 ===============
 */
-void Com_WriteConfiguration( void ) {
+void Com_WriteConfiguration() {
 	// if we are quiting without fully initializing, make sure
 	// we don't write out anything
 	if ( !com_fullyInitialized ) {
@@ -1933,7 +1933,7 @@ Com_WriteConfig_f
 Write the config file to a specific name
 ===============
 */
-void Com_WriteConfig_f( void ) {
+void Com_WriteConfig_f() {
 	char	filename[MAX_QPATH];
 
 	if ( Cmd_Argc() != 2 ) {
@@ -2035,7 +2035,7 @@ bool COM_RunEditorFrame() {
 Com_Frame
 =================
 */
-void Com_Frame( void ) {
+void Com_Frame() {
 
 	int		msec, minMsec;
 	int		timeVal, timeValSV;
@@ -2361,7 +2361,7 @@ static char *Field_FindFirstSeparator( char *s )
 Field_Complete
 ===============
 */
-static bool Field_Complete( void )
+static bool Field_Complete()
 {
 	int completionOffset;
 
@@ -2393,7 +2393,7 @@ static bool Field_Complete( void )
 Field_CompleteKeyname
 ===============
 */
-void Field_CompleteKeyname( void )
+void Field_CompleteKeyname()
 {
 	matchCount = 0;
 	shortestMatch[ 0 ] = 0;

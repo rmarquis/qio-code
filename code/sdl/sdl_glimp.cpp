@@ -151,7 +151,7 @@ bool R_GetModeInfo( int *width, int *height, float *windowAspect, int mode ) {
 /*
 ** R_ModeList_f
 */
-static void R_ModeList_f( void )
+static void R_ModeList_f()
 {
 	int i;
 
@@ -168,7 +168,7 @@ static void R_ModeList_f( void )
 GLimp_Shutdown
 ===============
 */
-void GLimp_Shutdown( void )
+void GLimp_Shutdown()
 {
 	g_inputSystem->IN_Shutdown();
 
@@ -649,7 +649,7 @@ This routine is responsible for initializing the OS specific portions
 of OpenGL
 ===============
 */
-void GLimp_Init( void )
+void GLimp_Init()
 {
 	r_sdlDriver = g_cvars->Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
 	r_allowResize = g_cvars->Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
@@ -727,7 +727,7 @@ GLimp_EndFrame
 Responsible for doing a swapbuffers
 ===============
 */
-void GLimp_EndFrame( void )
+void GLimp_EndFrame()
 {
 	// don't flip if drawing to front buffer
 	//if ( Q_stricmp( r_drawBuffer->string, "GL_FRONT" ) != 0 )

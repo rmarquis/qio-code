@@ -68,11 +68,11 @@ kbutton_t	in_buttons[16];
 bool	in_mlooking;
 
 
-void IN_MLookDown( void ) {
+void IN_MLookDown() {
 	in_mlooking = true;
 }
 
-void IN_MLookUp( void ) {
+void IN_MLookUp() {
 	in_mlooking = false;
 	if ( !cl_freelook->integer ) {
 		IN_CenterView ();
@@ -302,7 +302,7 @@ CL_AdjustAngles
 Moves the local angle positions
 ================
 */
-void CL_AdjustAngles( void ) {
+void CL_AdjustAngles() {
 	float	speed;
 	
 	if ( in_speed.active ) {
@@ -601,7 +601,7 @@ void CL_FinishMove( userCmd_s *cmd ) {
 CL_CreateCmd
 =================
 */
-userCmd_s CL_CreateCmd( void ) {
+userCmd_s CL_CreateCmd() {
 	userCmd_s	cmd;
 
 	vec3_c		oldAngles = cl.viewangles;
@@ -653,7 +653,7 @@ CL_CreateNewCommands
 Create a new userCmd_s structure for this frame
 =================
 */
-void CL_CreateNewCommands( void ) {
+void CL_CreateNewCommands() {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
@@ -692,7 +692,7 @@ delivered in the next packet, but saving a header and
 getting more delta compression will reduce total bandwidth.
 =================
 */
-bool CL_ReadyToSendPacket( void ) {
+bool CL_ReadyToSendPacket() {
 	int		oldPacketNum;
 	int		delta;
 
@@ -763,7 +763,7 @@ During normal gameplay, a client packet will contain something like:
 
 ===================
 */
-void CL_WritePacket( void ) {
+void CL_WritePacket() {
 	msg_s		buf;
 	byte		data[MAX_MSGLEN];
 	int			i, j;
@@ -923,7 +923,7 @@ CL_SendCmd
 Called every frame to builds and sends a command packet to the server.
 =================
 */
-void CL_SendCmd( void ) {
+void CL_SendCmd() {
 	// don't send any message if not connected
 	if ( clc.state < CA_CONNECTED ) {
 		return;
@@ -953,7 +953,7 @@ void CL_SendCmd( void ) {
 CL_InitInput
 ============
 */
-void CL_InitInput( void ) {
+void CL_InitInput() {
 	Cmd_AddCommand ("centerview",IN_CenterView);
 
 	Cmd_AddCommand ("+moveup",IN_UpDown);

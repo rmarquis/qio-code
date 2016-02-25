@@ -145,7 +145,7 @@ int serverStatusCount;
 
 static int noGameRestart = false;
 
-void CL_CheckForResend( void );
+void CL_CheckForResend();
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
 void CL_ServerStatusResponse( netadr_t from, msg_s *msg );
@@ -220,7 +220,7 @@ void CL_UpdateVoipGain(const char *idstr, float gain)
 	}
 }
 
-void CL_Voip_f( void )
+void CL_Voip_f()
 {
 	const char *cmd = Cmd_Argv(1);
 	const char *reason = NULL;
@@ -505,7 +505,7 @@ void CL_AddReliableCommand(const char *cmd, bool isDisconnectCmd)
 CL_ChangeReliableCommand
 ======================
 */
-void CL_ChangeReliableCommand( void ) {
+void CL_ChangeReliableCommand() {
 	int index, l;
 
 	index = clc.reliableSequence & ( MAX_RELIABLE_COMMANDS - 1 );
@@ -555,7 +555,7 @@ CL_StopRecording_f
 stop recording a demo
 ====================
 */
-void CL_StopRecord_f( void ) {
+void CL_StopRecord_f() {
 	int		len;
 
 	if ( !clc.demorecording ) {
@@ -607,7 +607,7 @@ Begins recording a demo from the current position
 ====================
 */
 static char		demoName[MAX_QPATH];	// compiler bug workaround
-void CL_Record_f( void ) {
+void CL_Record_f() {
 	char		name[MAX_OSPATH];
 	byte		bufData[MAX_MSGLEN];
 	msg_s	buf;
@@ -744,7 +744,7 @@ CLIENT SIDE DEMO PLAYBACK
 CL_DemoFrameDurationSDev
 =================
 */
-static float CL_DemoFrameDurationSDev( void )
+static float CL_DemoFrameDurationSDev()
 {
 	int i;
 	int numFrames;
@@ -776,7 +776,7 @@ static float CL_DemoFrameDurationSDev( void )
 CL_DemoCompleted
 =================
 */
-void CL_DemoCompleted( void )
+void CL_DemoCompleted()
 {
 	char buffer[ MAX_STRING_CHARS ];
 
@@ -841,7 +841,7 @@ void CL_DemoCompleted( void )
 CL_ReadDemoMessage
 =================
 */
-void CL_ReadDemoMessage( void ) {
+void CL_ReadDemoMessage() {
 	int			r;
 	msg_s		buf;
 	byte		bufData[ MAX_MSGLEN ];
@@ -955,7 +955,7 @@ demo <demoname>
 
 ====================
 */
-void CL_PlayDemo_f( void ) {
+void CL_PlayDemo_f() {
 	char		name[MAX_OSPATH];
 	const char		*arg, *ext_test;
 	int			protocol, i;
@@ -1040,7 +1040,7 @@ CL_StartDemoLoop
 Closing the main menu will restart the demo loop
 ====================
 */
-void CL_StartDemoLoop( void ) {
+void CL_StartDemoLoop() {
 	// start the demo loop again
 	Cbuf_AddText ("d1\n");
 	Key_SetCatcher( 0 );
@@ -1054,7 +1054,7 @@ Called when a demo or cinematic finishes
 If the "nextdemo" cvar is set, that command will be issued
 ==================
 */
-void CL_NextDemo( void ) {
+void CL_NextDemo() {
 	char	v[MAX_STRING_CHARS];
 
 	Q_strncpyz( v, Cvar_VariableString ("nextdemo"), sizeof(v) );
@@ -1094,7 +1094,7 @@ void CL_ShutdownAll(bool shutdownRef)
 	// shutdown CGame
 	CL_ShutdownCGame();
 	// shutdown UI
-	CL_ShutdownUI();
+	CL_ShutdownGUI();
 
 	// shutdown the renderer
 	if(shutdownRef)
@@ -1156,7 +1156,7 @@ screen to let the user know about it, then dump all client
 memory on the hunk from cgame, ui, and renderer
 =====================
 */
-void CL_MapLoading( void ) {
+void CL_MapLoading() {
 	if ( com_dedicated->integer ) {
 		clc.state = CA_DISCONNECTED;
 		Key_SetCatcher( KEYCATCH_CONSOLE );
@@ -1395,7 +1395,7 @@ CL_RequestMotd
 
 ===================
 */
-void CL_RequestMotd( void ) {
+void CL_RequestMotd() {
 #ifdef UPDATE_SERVER_NAME
 	char		info[MAX_INFO_STRING];
 
@@ -1438,7 +1438,7 @@ CONSOLE COMMANDS
 CL_ForwardToServer_f
 ==================
 */
-void CL_ForwardToServer_f( void ) {
+void CL_ForwardToServer_f() {
 	if ( clc.state != CA_ACTIVE || clc.demoplaying ) {
 		Com_Printf ("Not connected to a server.\n");
 		return;
@@ -1455,7 +1455,7 @@ void CL_ForwardToServer_f( void ) {
 CL_Disconnect_f
 ==================
 */
-void CL_Disconnect_f( void ) {
+void CL_Disconnect_f() {
 	SCR_StopCinematic();
 	Cvar_Set("ui_singlePlayerActive", "0");
 	if ( clc.state != CA_DISCONNECTED && clc.state != CA_CINEMATIC ) {
@@ -1470,7 +1470,7 @@ CL_Reconnect_f
 
 ================
 */
-void CL_Reconnect_f( void ) {
+void CL_Reconnect_f() {
 	if ( !strlen( clc.servername ) || !strcmp( clc.servername, "localhost" ) ) {
 		Com_Printf( "Can't reconnect to localhost.\n" );
 		return;
@@ -1485,7 +1485,7 @@ CL_Connect_f
 
 ================
 */
-void CL_Connect_f( void ) {
+void CL_Connect_f() {
 	const char	*server;
 	const char	*serverString;
 	int argc = Cmd_Argc();
@@ -1598,7 +1598,7 @@ CL_Rcon_f
   an unconnected command.
 =====================
 */
-void CL_Rcon_f( void ) {
+void CL_Rcon_f() {
 	char	message[MAX_RCON_MESSAGE];
 	netadr_t	to;
 
@@ -1646,7 +1646,7 @@ void CL_Rcon_f( void ) {
 CL_SendPureChecksums
 =================
 */
-void CL_SendPureChecksums( void ) {
+void CL_SendPureChecksums() {
 	char cMsg[MAX_INFO_VALUE];
 
 	// if we are pure we need to send back a command with our referenced pk3 checksums
@@ -1660,7 +1660,7 @@ void CL_SendPureChecksums( void ) {
 CL_ResetPureClientAtServer
 =================
 */
-void CL_ResetPureClientAtServer( void ) {
+void CL_ResetPureClientAtServer() {
 	CL_AddReliableCommand("vdr", false);
 }
 
@@ -1674,7 +1674,7 @@ we also have to reload the UI and CGame because the renderer
 doesn't know what graphics to reload
 =================
 */
-void CL_Vid_Restart_f( void ) {
+void CL_Vid_Restart_f() {
 
 	// Settings may have changed so stop recording now
 	if( CL_VideoRecording( ) ) {
@@ -1702,7 +1702,7 @@ void CL_Vid_Restart_f( void ) {
 		}
 	
 		// shutdown the UI
-		CL_ShutdownUI();
+		CL_ShutdownGUI();
 		// shutdown the CGame
 		CL_ShutdownCGame();
 		// shutdown the renderer and clear the renderer interface
@@ -1772,7 +1772,7 @@ void CL_Snd_Restart_f(void)
 CL_PK3List_f
 ==================
 */
-void CL_OpenedPK3List_f( void ) {
+void CL_OpenedPK3List_f() {
 	Com_Printf("Opened PK3 Names: %s\n", FS_LoadedPakNames());
 }
 
@@ -1781,7 +1781,7 @@ void CL_OpenedPK3List_f( void ) {
 CL_PureList_f
 ==================
 */
-void CL_ReferencedPK3List_f( void ) {
+void CL_ReferencedPK3List_f() {
 	Com_Printf("Referenced PK3 Names: %s\n", FS_ReferencedPakNames());
 }
 
@@ -1790,7 +1790,7 @@ void CL_ReferencedPK3List_f( void ) {
 CL_Configstrings_f
 ==================
 */
-void CL_Configstrings_f( void ) {
+void CL_Configstrings_f() {
 	int		i;
 	int		ofs;
 
@@ -1813,7 +1813,7 @@ void CL_Configstrings_f( void ) {
 CL_Clientinfo_f
 ==============
 */
-void CL_Clientinfo_f( void ) {
+void CL_Clientinfo_f() {
 	Com_Printf( "--------- Client Information ---------\n" );
 	Com_Printf( "state: %i\n", clc.state );
 	Com_Printf( "Server: %s\n", clc.servername );
@@ -1832,7 +1832,7 @@ CL_DownloadsComplete
 Called when all downloading has been completed
 =================
 */
-void CL_DownloadsComplete( void ) {
+void CL_DownloadsComplete() {
 
 #ifdef USE_CURL
 	// if we downloaded with cURL
@@ -2089,7 +2089,7 @@ CL_CheckForResend
 Resend a connect message if the last one has timed out
 =================
 */
-void CL_CheckForResend( void ) {
+void CL_CheckForResend() {
 	int		port, i;
 	char	info[MAX_INFO_STRING];
 	char	data[MAX_INFO_STRING];
@@ -2593,7 +2593,7 @@ CL_CheckTimeout
 
 ==================
 */
-void CL_CheckTimeout( void ) {
+void CL_CheckTimeout() {
 	//
 	// check timeout
 	//
@@ -2635,7 +2635,7 @@ CL_CheckUserinfo
 
 ==================
 */
-void CL_CheckUserinfo( void ) {
+void CL_CheckUserinfo() {
 	// don't add reliable commands when not yet connected
 	if(clc.state < CA_CONNECTED)
 		return;
@@ -2833,7 +2833,7 @@ void CL_StartHunkUsers( bool rendererOnly ) {
 //===========================================================================================
 
 
-void CL_SetModel_f( void ) {
+void CL_SetModel_f() {
 	const char	*arg;
 	char	name[256];
 
@@ -2859,7 +2859,7 @@ video
 video [filename]
 ===============
 */
-void CL_Video_f( void )
+void CL_Video_f()
 {
   char  filename[ MAX_OSPATH ];
   int   i, last;
@@ -2914,7 +2914,7 @@ void CL_Video_f( void )
 CL_StopVideo_f
 ===============
 */
-void CL_StopVideo_f( void )
+void CL_StopVideo_f()
 {
   CL_CloseAVI( );
 }
@@ -2985,7 +2985,7 @@ void CL_InitClientAPI() {
 CL_Init
 ====================
 */
-void CL_Init( void ) {
+void CL_Init() {
 	Com_Printf( "----- Client Initialization -----\n" );
 
 	CL_InitClientAPI();
@@ -3202,6 +3202,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("forcedownload", CL_ForceDownload_f );
 	
 	CL_InitRef();
+
+	CL_InitGUI();
 
 	SCR_Init ();
 
@@ -3639,7 +3641,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_s *msg ) {
 CL_LocalServers_f
 ==================
 */
-void CL_LocalServers_f( void ) {
+void CL_LocalServers_f() {
 	char		*message;
 	int			i, j;
 	netadr_t	to;
@@ -3683,7 +3685,7 @@ void CL_LocalServers_f( void ) {
 CL_GlobalServers_f
 ==================
 */
-void CL_GlobalServers_f( void ) {
+void CL_GlobalServers_f() {
 	netadr_t	to;
 	int			count, i, masterNum;
 	char		command[1024], *masteraddress;
@@ -3830,7 +3832,7 @@ void CL_ClearPing( int n )
 CL_GetPingQueueCount
 ==================
 */
-int CL_GetPingQueueCount( void )
+int CL_GetPingQueueCount()
 {
 	int		i;
 	int		count;
@@ -3853,7 +3855,7 @@ int CL_GetPingQueueCount( void )
 CL_GetFreePing
 ==================
 */
-ping_t* CL_GetFreePing( void )
+ping_t* CL_GetFreePing()
 {
 	ping_t*	pingptr;
 	ping_t*	best;	
@@ -3910,7 +3912,7 @@ ping_t* CL_GetFreePing( void )
 CL_Ping_f
 ==================
 */
-void CL_Ping_f( void ) {
+void CL_Ping_f() {
 	netadr_t	to;
 	ping_t*		pingptr;
 	const char*		server;

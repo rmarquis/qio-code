@@ -70,7 +70,7 @@ bool CL_GetUserCmd( int cmdNumber, userCmd_s *ucmd ) {
 	return true;
 }
 
-int CL_GetCurrentCmdNumber( void ) {
+int CL_GetCurrentCmdNumber() {
 	return cl.cmdNumber;
 }
 
@@ -184,7 +184,7 @@ void CL_CgameError( const char *string ) {
 CL_ConfigstringModified
 =====================
 */
-void CL_ConfigstringModified( void ) {
+void CL_ConfigstringModified() {
 	char		*old, *s;
 	int			i, index;
 	char		*dup;
@@ -375,7 +375,7 @@ CL_ShutdownCGame
 
 ====================
 */
-void CL_ShutdownCGame( void ) {
+void CL_ShutdownCGame() {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 	cls.cgameStarted = false;
 	if ( !cl_cgameDLL ) {
@@ -392,7 +392,7 @@ CL_InitCGame
 Should only be called by CL_StartHunkUsers
 ====================
 */
-void CL_InitCGame( void ) {
+void CL_InitCGame() {
 	const char			*info;
 	const char			*mapname;
 	int					t1, t2;
@@ -456,7 +456,7 @@ CL_GameCommand
 See if the current console command is claimed by the cgame
 ====================
 */
-bool CL_GameCommand( void ) {
+bool CL_GameCommand() {
 	if ( !cl_cgameDLL ) {
 		return false;
 	}
@@ -498,7 +498,7 @@ or bursted delayed packets.
 
 #define	RESET_TIME	500
 
-void CL_AdjustTimeDelta( void ) {
+void CL_AdjustTimeDelta() {
 	int		newDelta;
 	int		deltaDelta;
 
@@ -553,7 +553,7 @@ void CL_AdjustTimeDelta( void ) {
 CL_FirstSnapshot
 ==================
 */
-void CL_FirstSnapshot( void ) {
+void CL_FirstSnapshot() {
 	// ignore snapshots that don't have entities
 	if ( cl.snap.snapFlags & SNAPFLAG_NOT_ACTIVE ) {
 		return;
@@ -627,7 +627,7 @@ void CL_FirstSnapshot( void ) {
 CL_SetCGameTime
 ==================
 */
-void CL_SetCGameTime( void ) {
+void CL_SetCGameTime() {
 	// getting a valid frame message ends the connection process
 	if ( clc.state != CA_ACTIVE ) {
 		if ( clc.state != CA_PRIMED ) {

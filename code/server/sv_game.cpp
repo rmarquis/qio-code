@@ -177,7 +177,7 @@ SV_ShutdownGameProgs
 Called every time a map changes
 ===============
 */
-void SV_ShutdownGameProgs( void ) {
+void SV_ShutdownGameProgs() {
 	if ( !sv_gameDLL ) {
 		return;
 	}
@@ -217,7 +217,7 @@ SV_RestartGameProgs
 Called on a map_restart, but not on a normal map change
 ===================
 */
-void SV_RestartGameProgs( void ) {
+void SV_RestartGameProgs() {
 	if ( !sv_gameDLL ) {
 		return;
 	}
@@ -239,7 +239,7 @@ SV_InitGameProgs
 Called on a normal map change, not on a map_restart
 ===============
 */
-void SV_InitGameProgs( void ) {
+void SV_InitGameProgs() {
 	// load the dll or bytecode
 	sv_gameDLL = g_moduleMgr->load("qagame");
 	if ( !sv_gameDLL ) {
@@ -264,7 +264,7 @@ SV_GameCommand
 See if the current console command is claimed by the game
 ====================
 */
-bool SV_GameCommand( void ) {
+bool SV_GameCommand() {
 	//if ( sv.state != SS_GAME ) {
 		return false;
 	//}
