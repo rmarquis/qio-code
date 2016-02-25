@@ -123,12 +123,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_InitAmmoTypes();
 	// load map for Bullet
 	G_LoadMap(mapName);
+	// init RTCW / ET scripts (must be done before spawning entities,
+	// so spawn events can be called later)
+	G_InitWolfScripts(mapName);
 	// load map entities and spawn them
 	G_SpawnMapEntities(mapName);
 	// init pathnodes
 	G_InitPathnodesSystem();
-	// init RTCW / ET scripts
-	G_InitWolfScripts(mapName);
 	
 #ifdef G_ENABLE_LUA_SCRIPTING
 	G_InitLua();
@@ -308,12 +309,12 @@ void G_RunFrame( int levelTime ) {
 		if(g_printEntityClasses.getInt()) {
 			g_core->Print("Entity: %i (%s - %s) is at %f %f %f\n",e->getEntNum(),e->getClassName(),e->getRenderModelName(),e->getOrigin().x,e->getOrigin().y,e->getOrigin().z);
 		}
-		e->runWolfScript();
-		if(ed->ent == 0)
-			continue; // fried during runWolfScript
 		e->runFrame();
 		if(ed->ent == 0)
 			continue; // fried during runFrame
+		e->runWolfScript();
+		if(ed->ent == 0)
+			continue; // fried during runWolfScript
 		e->runLuaFrameHandlers();
 	}
 

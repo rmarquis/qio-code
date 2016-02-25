@@ -244,6 +244,7 @@ void G_InitAmmoTypes();
 
 void G_InitWolfScripts(const char *mapName);
 void G_WolfScript_StartScript(const char *scriptName, const char *labelName);
+void G_WolfScript_StartScript_Spawn(const char *scriptName);
 
 extern	level_locals_t	level;
 extern	edict_s		g_entities[MAX_GENTITIES];
