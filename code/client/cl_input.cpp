@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <shared/autoCvar.h>
 #include <api/coreAPI.h>
+#include <api/guiAPI.h>
 #include <protocol/voipFlags.h>
 #include <shared/keyCatchers.h>
 
@@ -387,7 +388,9 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		if(cl_printMouseEvents.getInt()) {
 			Com_Printf("CL_MouseEvent: %i %i - %i, forwarded to UI\n",dx,dy,time);
 		}
-//		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
+		if(gui) {
+			gui->onMouseMove(dx,dy);
+		}
 	} else if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
 		if(cl_printMouseEvents.getInt()) {
 			Com_Printf("CL_MouseEvent: %i %i - %i, forwarded to cgame\n",dx,dy,time);
