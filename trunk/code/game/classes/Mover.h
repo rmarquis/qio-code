@@ -76,6 +76,13 @@ public:
 	virtual bool isMover() const {
 		return true;
 	}
+	virtual bool isMoverMoving() const {
+		if(moverState == MOVER_POS1)
+			return false;
+		if(moverState == MOVER_POS2)
+			return false;
+		return true;
+	}
 	virtual const char *getMoverTeam() const {
 		return team;
 	}

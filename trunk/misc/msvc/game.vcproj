@@ -866,6 +866,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\FuncInvisibleUser.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\FuncInvisibleUser.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\TargetScriptTrigger.cpp"
 					>
 				</File>

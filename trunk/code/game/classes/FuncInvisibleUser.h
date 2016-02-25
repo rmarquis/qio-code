@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,32 +21,27 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Trigger.h - base class for all triggers
+// FuncInvisibleUser.h
+#ifndef __FUNC_INVISIBLEUSER_H__
+#define __FUNC_INVISIBLEUSER_H__
 
-#ifndef __TRIGGER_H__
-#define __TRIGGER_H__
+#include "ModelEntity.h"
 
-#include "BaseEntity.h"
-
-class Trigger : public BaseEntity {
-	// trigger collision models
-	class cMod_i *triggerModel;
-	bool bTriggerable;
+class FuncInvisibleUser : public ModelEntity {
+	// name of script that will be called. "trigger [target]"
+	str target; 
+	// name of script block where to look for target
+	str scriptName;
 public:
-	Trigger();
-	~Trigger();
+	FuncInvisibleUser();
 
-	DECLARE_CLASS( Trigger );
+	DECLARE_CLASS( FuncInvisibleUser );
 
-	void setTriggerModel(const char *modName);
+	virtual bool doUse(class Player *activator);
 
-	virtual void onTriggerContact(class ModelEntity *ent);
+	virtual void postSpawn();
 
-	virtual void setKeyValue(const char *key, const char *value); 
-	virtual void getLocalBounds(aabb &out) const;
+	virtual void setKeyValue(const char *key, const char *value);
 };
 
-
-u32 G_BoxTriggers(const aabb &bb, arraySTD_c<class Trigger*> &out);
-
-#endif // __TRIGGER_H__
+#endif // __FUNC_INVISIBLEUSER_H__

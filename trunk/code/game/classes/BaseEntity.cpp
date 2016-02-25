@@ -46,6 +46,7 @@ DEFINE_CLASS_ALIAS(BaseEntity, misc_teleporter_dest);
 DEFINE_CLASS_ALIAS(BaseEntity, target_position);
 // for light targets
 DEFINE_CLASS_ALIAS(BaseEntity, info_notnull);
+DEFINE_CLASS_ALIAS(BaseEntity, path_corner_2);
 
 // used to debug setting BaseEntity keyValues
 static aCvar_c g_baseEntity_debugSetKeyValue("g_baseEntity_debugSetKeyValue","0");
@@ -63,14 +64,20 @@ public:
 		this->wait = 0;
 	}
 };
+enum wsWaitType_e {
+	WSW_NONE,
+	WSW_GOTOMARKER
+};
 class wsEntityInstance_c {
 	class BaseEntity *ent;
 	arraySTD_c<wsEntityScriptInstance_c *> instances;
 	int wait_ms;
+	wsWaitType_e waitingFor;
 public:
 	wsEntityInstance_c(BaseEntity *ne) {
 		ent = ne;
 		wait_ms = 0;
+		waitingFor = WSW_NONE;
 	}
 	void startWolfScript(const class wsScriptBlock_c *b) {
 		instances.push_back(new wsEntityScriptInstance_c(b));
@@ -82,6 +89,12 @@ public:
 				return false;
 			if(wait_ms < 0)
 				wait_ms = 0;
+		}
+		if(waitingFor != WSW_NONE) {
+			if(waitingFor == WSW_GOTOMARKER) {
+				if(ent->isMoverMoving())
+					return false;
+			}
 		}
 		const class wsScriptBlock_c *b = i->block;
 		while(i->statement < b->getNumStatements()) {
@@ -97,6 +110,24 @@ public:
 				p = txt.getToken(scriptName,p);
 				p = txt.getToken(labelName,p);
 				G_WolfScript_StartScript(scriptName,labelName);
+			} else if(!_stricmp(key,"gotomarker")) {
+				const char *savedP = p;
+				str targetName, speedStr, waitFlag;
+				p = txt.getToken(targetName,p);
+				p = txt.getToken(speedStr,p);
+				//bool bWait = false;
+				if(p) {
+					p = txt.getToken(waitFlag,p);
+					if(!_stricmp(waitFlag,"wait")) {
+						//bWait = true;
+						waitingFor = WSW_GOTOMARKER;
+					}
+				}
+				ent->setKeyValue(key,savedP);
+				if(waitingFor != WSW_NONE) {
+					i->statement++;
+					return false;
+				}
 			} else {
 				ent->setKeyValue(key,p);
 			}
