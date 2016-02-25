@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __G_LUA_EVENTHANDLER_H__
 #define __G_LUA_EVENTHANDLER_H__
 
+#ifdef G_ENABLE_LUA_SCRIPTING
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
@@ -55,5 +56,6 @@ public:
 	void addEventHandler(struct lua_State *L, int func);
 	void runCallbacks(const char *args, ...);
 };
+#endif 
 
 #endif // __G_LUA_EVENTHANDLER_H__

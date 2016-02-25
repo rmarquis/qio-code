@@ -50,8 +50,10 @@ class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	class wsEntityInstance_c *wsScript;
 	// our own internal event system 
 	class eventList_c *eventList;
+#ifdef G_ENABLE_LUA_SCRIPTING
 	// LUA event callbacks
 	luaEventHandlerList_c lua_runFrameHandlers;
+#endif
 	bool bMarkedForDelete;
 
 protected:
@@ -233,7 +235,9 @@ public:
 	virtual bool addLuaEventHandler(struct lua_State *L, const char *eventName, int func);
 
 	void runLuaFrameHandlers() {
+#ifdef G_ENABLE_LUA_SCRIPTING
 		lua_runFrameHandlers.runCallbacks("e",this->getEdict());
+#endif
 	}
 
 	virtual bool traceWorldRay(class trace_c &tr) {

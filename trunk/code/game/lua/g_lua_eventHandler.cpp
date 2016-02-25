@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // g_lua_eventHandler.cpp
+#ifdef G_ENABLE_LUA_SCRIPTING
 #include "g_lua_eventHandler.h"
 #include "g_lua.h"
 #include <lauxlib.h>
@@ -130,3 +131,4 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 		va_end(vl);
 	}
 }
+#endif

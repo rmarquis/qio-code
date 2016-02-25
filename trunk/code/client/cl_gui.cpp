@@ -43,6 +43,8 @@ void CL_InitGUI() {
 	g_iFaceMan->registerIFaceUser(&gui,GUI_API_IDENTSTR);
 }
 void CL_ShutdownGUI() {
+	if(cl_guiDLL == 0)
+		return;
 //	gui->shutdown();
 	// first unload frontend
 	g_moduleMgr->unload(&cl_guiDLL);

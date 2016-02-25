@@ -582,11 +582,15 @@ void BaseEntity::runWolfScript() {
 }
 // for lua wrapper
 bool BaseEntity::addLuaEventHandler(struct lua_State *L, const char *eventName, int func) {
+#ifdef G_ENABLE_LUA_SCRIPTING
 	if(!_stricmp(eventName,"runFrame")) {
 		lua_runFrameHandlers.addEventHandler(L,func);
 		return false;
 	} 
 	g_core->RedWarning("BaseEntity::addLuaEventHandler: unknown event name %s\n",eventName);
+#else
+	g_core->RedWarning("BaseEntity::addLuaEventHandler: LUA scripting disabled\n");
+#endif
 	return true;
 }
 #include <api/ddAPI.h>
