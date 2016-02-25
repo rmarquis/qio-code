@@ -55,6 +55,10 @@ public:
 	virtual void set2DColor(const float *rgba) = 0;	// NULL = 1,1,1,1
 	virtual void drawStretchPic(float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) = 0; // NULL = white
+	void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, const char *matName) {
+			drawStretchPic(x,y,w,h,s1,t1,s2,t2,registerMaterial(matName));
+	}
 	virtual void endFrame() = 0;
 
 	virtual bool rayTraceWorldMap(class trace_c &tr) = 0;

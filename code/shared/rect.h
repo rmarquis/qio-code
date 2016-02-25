@@ -21,22 +21,45 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// rect.h
+#ifndef __SHARED_RECT_H__
+#define __SHARED_RECT_H__
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
+class rect_c {
+	float min[2];
+	float max[2];
 public:
-	virtual void drawGUI() = 0;
+	void setMinX(float f) {
+		min[0] = f;
+	}
+	void setMinY(float f) {
+		min[1] = f;
+	}
+	void setMaxX(float f) {
+		max[0] = f;
+	}
+	void setMaxY(float f) {
+		max[1] = f;
+	}
+	void setW(float f) {
+		max[0] = min[0]+f;
+	}
+	void setH(float f) {
+		max[1] = min[1]+f;
+	}
+	float getX() const {
+		return min[0];
+	}
+	float getY() const {
+		return min[1];
+	}
+	float getW() const {
+		return max[0]-min[0];
+	}
+	float getH() const {
+		return max[1]-min[1];
+	}
 };
 
-extern guiAPI_i *gui;
-
-
-#endif // __GUI_API_H__
+#endif // __SHARED_RECT_H__
 

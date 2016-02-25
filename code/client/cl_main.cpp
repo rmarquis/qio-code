@@ -2808,6 +2808,7 @@ void CL_StartHunkUsers( bool rendererOnly ) {
 	if ( !cls.rendererStarted ) {
 		cls.rendererStarted = true;
 		CL_InitRenderer();
+		CL_InitGUI();
 	}
 
 	if ( rendererOnly ) {
@@ -3202,8 +3203,6 @@ void CL_Init() {
 	Cmd_AddCommand ("forcedownload", CL_ForceDownload_f );
 	
 	CL_InitRef();
-
-	CL_InitGUI();
 
 	SCR_Init ();
 

@@ -21,22 +21,39 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// urc_element_label.cpp
+#include "urc_element_label.h"
+#include <shared/parser.h>
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
-public:
-	virtual void drawGUI() = 0;
-};
-
-extern guiAPI_i *gui;
-
-
-#endif // __GUI_API_H__
-
+bool urcElementBase_c::parseURCElement(class parser_c &p) {
+	if(p.atChar('{')==false) {
+		return true;
+	}
+	while(p.atChar('}')==false) {
+		if(!parseURCProperty(p)) {
+			// maybe a common property
+			if(!urcElementBase_c::parseURCProperty(p)) {
+				p.skipLine();
+			}
+		}
+	}
+	return false;
+}
+bool urcElementBase_c::parseURCProperty(class parser_c &p) {
+	if(p.atWord("rect")) {
+		rect.setMinX(p.getFloat());
+		rect.setMinY(p.getFloat());
+		rect.setW(p.getFloat());
+		rect.setH(p.getFloat());
+		return true;
+	}
+	if(p.atWord("shader")) {
+		matName = p.getToken();
+		return true;
+	}
+	return false;
+}
+bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
+	
+	return false;
+}

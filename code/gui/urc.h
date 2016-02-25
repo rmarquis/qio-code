@@ -21,22 +21,42 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// urc.h
+#include <shared/str.h>
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
+// simple mapping between .urc file name and internal gui name
+class urcNameMapping_c {
+protected:
+	str fname;
+	str name;
 
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
 public:
-	virtual void drawGUI() = 0;
+	void setFName(const char *s) {
+		fname = s;
+	}
+	void setName(const char *s) {
+		name = s;
+	}
+	const char *getName() const {
+		return name;
+	}
+	const char *getFName() const {
+		return fname;
+	}
 };
 
-extern guiAPI_i *gui;
 
+class urc_c : public urcNameMapping_c {
+	urc_c *hashNext;
+	arraySTD_c<class urcElementBase_c*> elements;
+public:
+	void setHashNext(urc_c *h) {
+		hashNext = h;
+	}
+	urc_c *getHashNext() {
+		return hashNext;
+	}
 
-#endif // __GUI_API_H__
-
+	void drawURC();
+	bool loadURCFile();
+};
