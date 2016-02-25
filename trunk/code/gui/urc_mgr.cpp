@@ -65,6 +65,21 @@ const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName)
 	}
 	return c->getFName();
 }
+void urcMgr_c::drawURCs() {
+	for(int i = stack.size()-1; i>=0;i--) {
+		stack[i]->drawURC();
+	}
+}
+void urcMgr_c::popAllMenus() {
+	stack.clear();
+}
+void urcMgr_c::popMenu() {
+	stack.pop_back();
+}
+void urcMgr_c::pushMenu(const char *name) {
+	urc_c *urc = registerURC(name);
+	stack.push_back(urc);
+}
 urc_c *urcMgr_c::registerURC(const char *internalName) {
 	urc_c *urc = loaded.getEntry(internalName);
 	if(urc) {

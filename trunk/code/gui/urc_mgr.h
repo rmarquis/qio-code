@@ -39,6 +39,7 @@ public:
 class urcMgr_c {
 	hashTableTemplateExt_c<urcNameMappingCache_c> nameCache;
 	hashTableTemplateExt_c<urc_c> loaded;
+	arraySTD_c<urc_c*> stack;
 
 	void precacheURCFile(const char *fname);
 public:
@@ -48,4 +49,10 @@ public:
 
 	// internal name is not a file name, it's a URC name specified inside URC file
 	urc_c *registerURC(const char *internalName);
+
+	void drawURCs();
+
+	void popAllMenus();
+	void popMenu();
+	void pushMenu(const char *name);
 };

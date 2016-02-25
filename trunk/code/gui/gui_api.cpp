@@ -33,6 +33,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/moduleManagerAPI.h>
 #include "urc_mgr.h"
 
+void GUI_AddConsoleCommands();
+void GUI_RemoveConsoleCommands();
+
 class guiAPIImpl_c : public guiAPI_i {
 	urcMgr_c um;
 	int mouseX, mouseY;
@@ -43,10 +46,12 @@ public:
 	}
 	void init() {
 		um.precacheURCFiles();
+		GUI_AddConsoleCommands();
 	}
 	virtual void drawGUI() {
-		urc_c *u = um.registerURC("main");
-		u->drawURC();
+		//urc_c *u = um.registerURC("main");
+	//	u->drawURC();
+		um.drawURCs();
 
 		float mouseSize = 30.f;
 		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");
@@ -64,6 +69,17 @@ public:
 			mouseY = rf->getWinHeight();
 	}
 	~guiAPIImpl_c() {
+		//GUI_RemoveConsoleCommands();
+	}
+
+	void cmdPopAllMenus() {
+		um.popAllMenus();
+	}
+	void cmdPopMenu() {
+		um.popMenu();
+	}
+	void cmdPushMenu(const char *name) {
+		um.pushMenu(name);
 	}
 };
 
@@ -80,6 +96,31 @@ moduleManagerAPI_i *g_moduleMgr = 0;
 // exports
 static guiAPIImpl_c g_staticGUIAPI;
 guiAPI_i *gui = &g_staticGUIAPI;
+
+
+void GUI_PushMenu_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("Usage: pushmenu <urc name>\n");
+		return;
+	}
+	g_staticGUIAPI.cmdPushMenu(g_core->Argv(1));
+}
+void GUI_PopMenu_f() {
+	g_staticGUIAPI.cmdPopMenu();
+}
+void GUI_PopAllMenus_f() {
+	g_staticGUIAPI.cmdPopAllMenus();
+}
+void GUI_AddConsoleCommands() {
+	g_core->Cmd_AddCommand("pushmenu",GUI_PushMenu_f);
+	g_core->Cmd_AddCommand("popmenu",GUI_PopMenu_f);
+	g_core->Cmd_AddCommand("popallmenus",GUI_PopAllMenus_f);
+}
+void GUI_RemoveConsoleCommands() {
+	g_core->Cmd_RemoveCommand("pushmenu");
+	g_core->Cmd_RemoveCommand("popmenu");
+	g_core->Cmd_RemoveCommand("popallmenus");
+}
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
