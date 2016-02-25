@@ -84,7 +84,7 @@ void Sys_SetFloatEnv(void)
 Sys_DefaultHomePath
 ================
 */
-char *Sys_DefaultHomePath( void )
+char *Sys_DefaultHomePath()
 {
 #if 1
 	return 0;
@@ -179,7 +179,7 @@ bool Sys_RandomBytes( byte *string, int len )
 Sys_GetCurrentUser
 ================
 */
-char *Sys_GetCurrentUser( void )
+char *Sys_GetCurrentUser()
 {
 	static char s_userName[1024];
 	unsigned long size = sizeof( s_userName );
@@ -200,7 +200,7 @@ char *Sys_GetCurrentUser( void )
 Sys_GetClipboardData
 ================
 */
-char *Sys_GetClipboardData( void )
+char *Sys_GetClipboardData()
 {
 	char *data = NULL;
 	char *cliptext;
@@ -229,7 +229,7 @@ char *Sys_GetClipboardData( void )
 Sys_LowPhysicalMemory
 ==================
 */
-bool Sys_LowPhysicalMemory( void )
+bool Sys_LowPhysicalMemory()
 {
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus (&stat);
@@ -319,7 +319,7 @@ FILE *Sys_Mkfifo( const char *ospath )
 Sys_Cwd
 ==============
 */
-char *Sys_Cwd( void ) {
+char *Sys_Cwd() {
 	static char cwd[MAX_OSPATH];
 
 	_getcwd( cwd, sizeof( cwd ) - 1 );
@@ -671,7 +671,7 @@ Sys_GLimpSafeInit
 Windows specific "safe" GL implementation initialisation
 ==============
 */
-void Sys_GLimpSafeInit( void )
+void Sys_GLimpSafeInit()
 {
 #ifndef DEDICATED
 	if( !SDL_VIDEODRIVER_externallySet )
@@ -690,7 +690,7 @@ Sys_GLimpInit
 Windows specific GL implementation initialisation
 ==============
 */
-void Sys_GLimpInit( void )
+void Sys_GLimpInit()
 {
 #ifndef DEDICATED
 	if( !SDL_VIDEODRIVER_externallySet )
@@ -720,7 +720,7 @@ Sys_PlatformInit
 Windows specific initialisation
 ==============
 */
-void Sys_PlatformInit( void )
+void Sys_PlatformInit()
 {
 #ifndef DEDICATED
 	TIMECAPS ptc;
@@ -763,7 +763,7 @@ Sys_PlatformExit
 Windows specific initialisation
 ==============
 */
-void Sys_PlatformExit( void )
+void Sys_PlatformExit()
 {
 #ifndef DEDICATED
 	if(timerResolution)
@@ -791,7 +791,7 @@ void Sys_SetEnv(const char *name, const char *value)
 Sys_PID
 ==============
 */
-int Sys_PID( void )
+int Sys_PID()
 {
 	return GetCurrentProcessId( );
 }

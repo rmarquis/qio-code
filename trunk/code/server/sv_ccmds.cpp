@@ -41,7 +41,7 @@ SV_GetPlayerByHandle
 Returns the player with player id or name from Cmd_Argv(1)
 ==================
 */
-static client_t *SV_GetPlayerByHandle( void ) {
+static client_t *SV_GetPlayerByHandle() {
 	client_t	*cl;
 	int			i;
 	const char		*s;
@@ -104,7 +104,7 @@ SV_GetPlayerByNum
 Returns the player with idnum from Cmd_Argv(1)
 ==================
 */
-static client_t *SV_GetPlayerByNum( void ) {
+static client_t *SV_GetPlayerByNum() {
 	client_t	*cl;
 	int			i;
 	int			idnum;
@@ -152,7 +152,7 @@ SV_Map_f
 Restart the server on a different map
 ==================
 */
-static void SV_Map_f( void ) {
+static void SV_Map_f() {
 	const char		*cmd;
 	const char		*map;
 	bool	killBots, cheat;
@@ -245,7 +245,7 @@ Completely restarts a level, but doesn't send a new gamestate to the clients.
 This allows fair starts with variable load times.
 ================
 */
-static void SV_MapRestart_f( void ) {
+static void SV_MapRestart_f() {
 	int			i;
 	client_t	*client;
 	const char	*denied;
@@ -383,7 +383,7 @@ SV_Kick_f
 Kick a user off of the server
 ==================
 */
-static void SV_Kick_f( void ) {
+static void SV_Kick_f() {
 	client_t	*cl;
 	int			i;
 
@@ -442,7 +442,7 @@ SV_KickBots_f
 Kick all bots off of the server
 ==================
 */
-static void SV_KickBots_f( void ) {
+static void SV_KickBots_f() {
 	client_t	*cl;
 	int			i;
 
@@ -472,7 +472,7 @@ SV_KickAll_f
 Kick all users off of the server
 ==================
 */
-static void SV_KickAll_f( void ) {
+static void SV_KickAll_f() {
 	client_t *cl;
 	int i;
 
@@ -503,7 +503,7 @@ SV_KickNum_f
 Kick a user off of the server
 ==================
 */
-static void SV_KickNum_f( void ) {
+static void SV_KickNum_f() {
 	client_t	*cl;
 
 	// make sure server is running
@@ -1030,7 +1030,7 @@ static void SV_ExceptDel_f(void)
 SV_Status_f
 ================
 */
-static void SV_Status_f( void ) {
+static void SV_Status_f() {
 	int			i, j, l;
 	client_t	*cl;
 	playerState_s	*ps;
@@ -1180,7 +1180,7 @@ SV_Heartbeat_f
 Also called by SV_DropClient, SV_DirectConnect, and SV_SpawnServer
 ==================
 */
-void SV_Heartbeat_f( void ) {
+void SV_Heartbeat_f() {
 	svs.nextHeartbeatTime = -9999999;
 }
 
@@ -1192,7 +1192,7 @@ SV_Serverinfo_f
 Examine the serverinfo string
 ===========
 */
-static void SV_Serverinfo_f( void ) {
+static void SV_Serverinfo_f() {
 	Com_Printf ("Server info settings:\n");
 	Info_Print ( Cvar_InfoString( CVAR_SERVERINFO ) );
 }
@@ -1205,7 +1205,7 @@ SV_Systeminfo_f
 Examine or change the serverinfo string
 ===========
 */
-static void SV_Systeminfo_f( void ) {
+static void SV_Systeminfo_f() {
 	Com_Printf ("System info settings:\n");
 	Info_Print ( Cvar_InfoString( CVAR_SYSTEMINFO ) );
 }
@@ -1218,7 +1218,7 @@ SV_DumpUser_f
 Examine all a users info strings
 ===========
 */
-static void SV_DumpUser_f( void ) {
+static void SV_DumpUser_f() {
 	client_t	*cl;
 
 	// make sure server is running
@@ -1248,7 +1248,7 @@ static void SV_DumpUser_f( void ) {
 SV_KillServer
 =================
 */
-static void SV_KillServer_f( void ) {
+static void SV_KillServer_f() {
 	SV_Shutdown( "killserver" );
 }
 
@@ -1270,7 +1270,7 @@ static void SV_CompleteMapName( char *args, int argNum ) {
 SV_AddOperatorCommands
 ==================
 */
-void SV_AddOperatorCommands( void ) {
+void SV_AddOperatorCommands() {
 	static bool	initialized;
 
 	if ( initialized ) {
@@ -1319,7 +1319,7 @@ void SV_AddOperatorCommands( void ) {
 SV_RemoveOperatorCommands
 ==================
 */
-void SV_RemoveOperatorCommands( void ) {
+void SV_RemoveOperatorCommands() {
 #if 0
 	// removing these won't let the server start again
 	Cmd_RemoveCommand ("heartbeat");

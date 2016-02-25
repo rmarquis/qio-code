@@ -293,7 +293,7 @@ FS_Initialized
 ==============
 */
 
-bool FS_Initialized( void ) {
+bool FS_Initialized() {
 	return (fs_searchpaths != NULL);
 }
 
@@ -326,7 +326,7 @@ FS_LoadStack
 return load stack
 =================
 */
-int FS_LoadStack( void )
+int FS_LoadStack()
 {
 	return fs_loadStack;
 }
@@ -2426,7 +2426,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 FS_Dir_f
 ================
 */
-void FS_Dir_f( void ) {
+void FS_Dir_f() {
 	const char	*path;
 	const char	*extension;
 	char	**dirnames;
@@ -2543,7 +2543,7 @@ void FS_SortFileList(char **filelist, int numfiles) {
 FS_NewDir_f
 ================
 */
-void FS_NewDir_f( void ) {
+void FS_NewDir_f() {
 	const char	*filter;
 	char	**dirnames;
 	int		ndirs;
@@ -2577,7 +2577,7 @@ FS_Path_f
 
 ============
 */
-void FS_Path_f( void ) {
+void FS_Path_f() {
 	searchpath_t	*s;
 	int				i;
 
@@ -2611,7 +2611,7 @@ void FS_Path_f( void ) {
 FS_TouchFile_f
 ============
 */
-void FS_TouchFile_f( void ) {
+void FS_TouchFile_f() {
 	fileHandle_t	f;
 
 	if ( Cmd_Argc() != 2 ) {
@@ -2657,7 +2657,7 @@ bool FS_Which(const char *filename, void *searchPath)
 FS_Which_f
 ============
 */
-void FS_Which_f( void ) {
+void FS_Which_f() {
 	searchpath_t	*search;
 	const char		*filename;
 
@@ -2960,7 +2960,7 @@ NOTE TTimo: the reordering that happens here is not reflected in the cvars (\cva
   this can lead to misleading situations, see https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=540
 ================
 */
-static void FS_ReorderPurePaks( void )
+static void FS_ReorderPurePaks()
 {
 	searchpath_t *s;
 	int i;
@@ -3043,7 +3043,10 @@ static void FS_Startup( const char *gameName )
 				str path = p.getToken();
 				str baseDir = p.getToken();
 				if(path.size() && baseDir.size()) {
-					FS_AddGameDirectory(path,baseDir);
+					if(!strnicmp(path.c_str(),"//",2)) {
+					} else {
+						FS_AddGameDirectory(path,baseDir);
+					}
 				}
 
 			}
@@ -3124,7 +3127,7 @@ Returns a space separated string containing the checksums of all loaded pk3 file
 Servers with sv_pure set will get this string and pass it to clients.
 =====================
 */
-const char *FS_LoadedPakChecksums( void ) {
+const char *FS_LoadedPakChecksums() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
@@ -3150,7 +3153,7 @@ Returns a space separated string containing the names of all loaded pk3 files.
 Servers with sv_pure set will get this string and pass it to clients.
 =====================
 */
-const char *FS_LoadedPakNames( void ) {
+const char *FS_LoadedPakNames() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
@@ -3180,7 +3183,7 @@ Servers with sv_pure use these checksums to compare with the checksums the clien
 back to the server.
 =====================
 */
-const char *FS_LoadedPakPureChecksums( void ) {
+const char *FS_LoadedPakPureChecksums() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
@@ -3206,7 +3209,7 @@ Returns a space separated string containing the checksums of all referenced pk3 
 The server will send this to the clients so they can check which files should be auto-downloaded. 
 =====================
 */
-const char *FS_ReferencedPakChecksums( void ) {
+const char *FS_ReferencedPakChecksums() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t *search;
 
@@ -3235,7 +3238,7 @@ Servers with sv_pure set will get this string back from clients for pure validat
 The string has a specific order, "cgame ui @ ref1 ref2 ref3 ..."
 =====================
 */
-const char *FS_ReferencedPakPureChecksums( void ) {
+const char *FS_ReferencedPakPureChecksums() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 	int nFlags, numPaks, checksum;
@@ -3280,7 +3283,7 @@ Returns a space separated string containing the names of all referenced pk3 file
 The server will send this to the clients so they can check which files should be auto-downloaded. 
 =====================
 */
-const char *FS_ReferencedPakNames( void ) {
+const char *FS_ReferencedPakNames() {
 	static char	info[MAX_INFO_STRING];
 	searchpath_t	*search;
 
@@ -3464,7 +3467,7 @@ Called only at inital startup, not when the filesystem
 is resetting due to a game change
 ================
 */
-void FS_InitFilesystem( void ) {
+void FS_InitFilesystem() {
 	// allow command line parms to override our defaults
 	// we have to specially handle this, because normal command
 	// line variable sets don't happen until after the filesystem

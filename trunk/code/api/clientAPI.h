@@ -51,7 +51,7 @@ struct clAPI_s : public iFaceBase_i {
 	// this will always be at least one higher than the number in the current
 	// snapshot, and it may be quite a few higher if it is a fast computer on
 	// a lagged connection
-	int (*GetCurrentCmdNumber)( void );	
+	int (*GetCurrentCmdNumber)();	
 	bool (*GetUserCmd)( int cmdNumber, struct userCmd_s *ucmd );
 	// input access
 	bool (*Key_IsDown)(int keyCode);

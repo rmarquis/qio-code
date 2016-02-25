@@ -324,7 +324,7 @@ void SV_UpdateConfigstrings( client_t *client );
 void SV_SetUserinfo( int index, const char *val );
 void SV_GetUserinfo( int index, char *buffer, int bufferSize );
 
-void SV_ChangeMaxClients( void );
+void SV_ChangeMaxClients();
 void SV_SpawnServer( char *server, bool killBots );
 
 void SV_LoadMapVis(const char *mapName);
@@ -355,7 +355,7 @@ int SV_SendQueuedMessages(void);
 //
 // sv_ccmds.c
 //
-void SV_Heartbeat_f( void );
+void SV_Heartbeat_f();
 
 //
 // sv_snapshot.c
@@ -364,7 +364,7 @@ void SV_AddServerCommand( client_t *client, const char *cmd );
 void SV_UpdateServerCommandsToClient( client_t *client, msg_s *msg );
 void SV_WriteFrameToClient (client_t *client, msg_s *msg);
 void SV_SendMessageToClient( msg_s *msg, client_t *client );
-void SV_SendClientMessages( void );
+void SV_SendClientMessages();
 void SV_SendClientSnapshot( client_t *client );
 
 //
@@ -375,9 +375,9 @@ edict_s *SV_GentityNum( int num );
 playerState_s *SV_GameClientNum( int num );
 svEntity_t	*SV_SvEntityForGentity( edict_s *gEnt );
 edict_s *SV_GEntityForSvEntity( svEntity_t *svEnt );
-void		SV_InitGameProgs ( void );
-void		SV_ShutdownGameProgs ( void );
-void		SV_RestartGameProgs( void );
+void		SV_InitGameProgs ();
+void		SV_ShutdownGameProgs ();
+void		SV_RestartGameProgs();
 void SV_GameSendServerCommand( int clientNum, const char *text );
 void SV_GameDropClient( int clientNum, const char *reason );
 void SV_LocateGameData( edict_s *gEnts, int numGEntities );

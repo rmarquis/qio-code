@@ -94,9 +94,9 @@ extern const char *(*qcurl_multi_strerror)(CURLMcode);
 #define qcurl_multi_strerror curl_multi_strerror
 #endif
 
-bool CL_cURL_Init( void );
-void CL_cURL_Shutdown( void );
+bool CL_cURL_Init();
+void CL_cURL_Shutdown();
 void CL_cURL_BeginDownload( const char *localName, const char *remoteURL );
-void CL_cURL_PerformDownload( void );
-void CL_cURL_Cleanup( void );
+void CL_cURL_PerformDownload();
+void CL_cURL_Cleanup();
 #endif	// __QCURL_H__

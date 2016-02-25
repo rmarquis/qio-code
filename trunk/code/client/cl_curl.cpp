@@ -146,7 +146,7 @@ bool CL_cURL_Init()
 CL_cURL_Shutdown
 =================
 */
-void CL_cURL_Shutdown( void )
+void CL_cURL_Shutdown()
 {
 	CL_cURL_Cleanup();
 #ifdef USE_CURL_DLOPEN

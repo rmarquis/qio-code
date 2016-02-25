@@ -85,7 +85,7 @@ typedef struct pvsStack_s {
 idPVS::idPVS
 ================
 */
-idPVS::idPVS( void ) {
+idPVS::idPVS() {
 	int i;
 
 	portalWorld = 0;
@@ -112,7 +112,7 @@ idPVS::idPVS( void ) {
 idPVS::~idPVS
 ================
 */
-idPVS::~idPVS( void ) {
+idPVS::~idPVS() {
 	Shutdown();
 }
 
@@ -121,7 +121,7 @@ idPVS::~idPVS( void ) {
 idPVS::GetPortalCount
 ================
 */
-int idPVS::GetPortalCount( void ) const {
+int idPVS::GetPortalCount() const {
 	int i, na, np;
 
 	na = portalWorld->getNumAreas();
@@ -137,7 +137,7 @@ int idPVS::GetPortalCount( void ) const {
 idPVS::CreatePVSData
 ================
 */
-void idPVS::CreatePVSData( void ) {
+void idPVS::CreatePVSData() {
 	int i, j, n, cp;
 	const portalAPI_i *portal;
 	pvsArea_t *area;
@@ -201,7 +201,7 @@ void idPVS::CreatePVSData( void ) {
 idPVS::DestroyPVSData
 ================
 */
-void idPVS::DestroyPVSData( void ) {
+void idPVS::DestroyPVSData() {
 	int i;
 
 	if ( !pvsAreas ) {
@@ -262,7 +262,7 @@ void idPVS::FloodFrontPortalPVS_r( pvsPortal_t *portal, int areaNum ) const {
 idPVS::FrontPortalPVS
 ================
 */
-void idPVS::FrontPortalPVS( void ) const {
+void idPVS::FrontPortalPVS() const {
 	int i, j, k, n, p, side1, side2, areaSide;
 	pvsPortal_t *p1, *p2;
 	pvsArea_t *area;
@@ -435,7 +435,7 @@ pvsStack_t *idPVS::FloodPassagePVS_r( pvsPortal_t *source, const pvsPortal_t *po
 idPVS::PassagePVS
 ===============
 */
-void idPVS::PassagePVS( void ) const {
+void idPVS::PassagePVS() const {
 	int i;
 	pvsPortal_t *source;
 	pvsStack_t *stack, *s;
@@ -592,7 +592,7 @@ idPVS::CreatePassages
 */
 #define MAX_PASSAGE_BOUNDS		128
 
-void idPVS::CreatePassages( void ) const {
+void idPVS::CreatePassages() const {
 	int i, j, l, n, numBounds, front, passageMemory, byteNum, bitNum;
 	int sides[MAX_PASSAGE_BOUNDS];
 	plane_c passageBounds[MAX_PASSAGE_BOUNDS];
@@ -715,7 +715,7 @@ void idPVS::CreatePassages( void ) const {
 idPVS::DestroyPassages
 ================
 */
-void idPVS::DestroyPassages( void ) const {
+void idPVS::DestroyPassages() const {
 	int i, j;
 	pvsPortal_t *p;
 	pvsArea_t *area;
@@ -737,7 +737,7 @@ void idPVS::DestroyPassages( void ) const {
 idPVS::CopyPortalPVSToMightSee
 ================
 */
-void idPVS::CopyPortalPVSToMightSee( void ) const {
+void idPVS::CopyPortalPVSToMightSee() const {
 	int i;
 	pvsPortal_t *p;
 
@@ -752,7 +752,7 @@ void idPVS::CopyPortalPVSToMightSee( void ) const {
 idPVS::AreaPVSFromPortalPVS
 ================
 */
-int idPVS::AreaPVSFromPortalPVS( void ) const {
+int idPVS::AreaPVSFromPortalPVS() const {
 	int i, j, k, areaNum, totalVisibleAreas;
 	long *p1, *p2;
 	byte *pvs, *portalPVS;
@@ -884,7 +884,7 @@ void idPVS::Init(const class portalizedWorldAPI_i *newPortalWorld) {
 idPVS::Shutdown
 ================
 */
-void idPVS::Shutdown( void ) {
+void idPVS::Shutdown() {
 	if ( connectedAreas ) {
 		delete connectedAreas;
 		connectedAreas = NULL;

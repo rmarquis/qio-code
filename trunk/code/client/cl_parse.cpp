@@ -347,7 +347,7 @@ new information out of it.  This will happen at every
 gamestate, and possibly during gameplay.
 ==================
 */
-void CL_SystemInfoChanged( void ) {
+void CL_SystemInfoChanged() {
 	char			*systemInfo;
 	const char		*s, *t;
 	char			key[MAX_INFO_KEY];

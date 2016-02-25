@@ -759,7 +759,7 @@ void Message_Key( int key ) {
 //============================================================================
 
 
-bool Key_GetOverstrikeMode( void ) {
+bool Key_GetOverstrikeMode() {
 	return key_overstrikeMode;
 }
 
@@ -1036,7 +1036,7 @@ Key_Bindlist_f
 
 ============
 */
-void Key_Bindlist_f( void ) {
+void Key_Bindlist_f() {
 	int		i;
 
 	for ( i = 0 ; i < MAX_KEYS ; i++ ) {
@@ -1107,7 +1107,7 @@ static void Key_CompleteBind( char *args, int argNum )
 CL_InitKeyCommands
 ===================
 */
-void CL_InitKeyCommands( void ) {
+void CL_InitKeyCommands() {
 	// register our functions
 	Cmd_AddCommand ("bind",Key_Bind_f);
 	Cmd_SetCommandCompletionFunc( "bind", Key_CompleteBind );
@@ -1369,7 +1369,7 @@ static int keyCatchers = 0;
 Key_GetCatcher
 ====================
 */
-int Key_GetCatcher( void ) {
+int Key_GetCatcher() {
 	return keyCatchers;
 }
 
@@ -1399,7 +1399,7 @@ CL_LoadConsoleHistory
 Load the console history from cl_consoleHistory
 ================
 */
-void CL_LoadConsoleHistory( void )
+void CL_LoadConsoleHistory()
 {
 	char					*token, *text_p;
 	int						i, numChars, numLines = 0;
@@ -1468,7 +1468,7 @@ Save the console history into the cvar cl_consoleHistory
 so that it persists across invocations of q3
 ================
 */
-void CL_SaveConsoleHistory( void )
+void CL_SaveConsoleHistory()
 {
 	int						i;
 	int						lineLength, saveBufferLength, additionalLength;

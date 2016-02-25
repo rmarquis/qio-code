@@ -154,7 +154,7 @@ static int numIP;
 NET_ErrorString
 ====================
 */
-char *NET_ErrorString( void ) {
+char *NET_ErrorString() {
 #ifdef _WIN32
 	//FIXME: replace with FormatMessage?
 	switch( socketError ) {
@@ -1292,7 +1292,7 @@ static void NET_GetLocalAddress(void)
 	}
 }
 #else
-static void NET_GetLocalAddress( void ) {
+static void NET_GetLocalAddress() {
 	char				hostname[256];
 	struct addrinfo	hint;
 	struct addrinfo	*res = NULL;
@@ -1347,7 +1347,7 @@ static void NET_GetLocalAddress( void ) {
 NET_OpenIP
 ====================
 */
-void NET_OpenIP( void ) {
+void NET_OpenIP() {
 	int		i;
 	int		err;
 	int		port;
@@ -1415,7 +1415,7 @@ void NET_OpenIP( void ) {
 NET_GetCvars
 ====================
 */
-static bool NET_GetCvars( void ) {
+static bool NET_GetCvars() {
 	int modified;
 
 #ifdef DEDICATED
@@ -1570,7 +1570,7 @@ void NET_Config( bool enableNetworking ) {
 NET_Init
 ====================
 */
-void NET_Init( void ) {
+void NET_Init() {
 #ifdef _WIN32
 	int		r;
 
@@ -1595,7 +1595,7 @@ void NET_Init( void ) {
 NET_Shutdown
 ====================
 */
-void NET_Shutdown( void ) {
+void NET_Shutdown() {
 	if ( !networkingEnabled ) {
 		return;
 	}

@@ -31,9 +31,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/str.h>
 
-#include "../sys/sys_local.h"
-#include "../sys/sys_loadlib.h"
-
 static moduleAPI_i *cl_rendererDLL = 0;
 static moduleAPI_i *cl_rendererBackEndDLL = 0;
 rAPI_i *rf;
@@ -47,7 +44,7 @@ int CL_ScaledMilliseconds(void) {
 CL_InitRef
 ============
 */
-void CL_InitRef( void ) {
+void CL_InitRef() {
 	// new renderer initialization
 	Com_Printf( "----- Initializing Renderer BackEnd DLL ----\n" );
 	if ( cl_rendererBackEndDLL ) {
@@ -85,7 +82,7 @@ void CL_InitRef( void ) {
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
+void CL_ShutdownRef() {
 	if ( !cl_rendererDLL ) {
 		return;
 	}
@@ -101,7 +98,7 @@ void CL_ShutdownRef( void ) {
 CL_InitRenderer
 ============
 */
-void CL_InitRenderer( void ) {
+void CL_InitRenderer() {
 	rf->init();
 
 	// load character sets

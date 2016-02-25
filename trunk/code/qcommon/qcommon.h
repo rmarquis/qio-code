@@ -111,7 +111,7 @@ void MSG_WriteDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct p
 void MSG_ReadDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to );
 
 
-void MSG_ReportChangeVectors_f( void );
+void MSG_ReportChangeVectors_f();
 
 //============================================================================
 
@@ -168,9 +168,9 @@ typedef struct {
 	unsigned long	scope_id;	// Needed for IPv6 link-local addresses
 } netadr_t;
 
-void		NET_Init( void );
-void		NET_Shutdown( void );
-void		NET_Restart_f( void );
+void		NET_Init();
+void		NET_Shutdown();
+void		NET_Restart_f();
 void		NET_Config( bool enableNetworking );
 void		NET_FlushPacketQueue(void);
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
@@ -381,7 +381,7 @@ char	*Cmd_Args (void);
 char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
 char	*Cmd_Cmd (void);
-void	Cmd_Args_Sanitize( void );
+void	Cmd_Args_Sanitize();
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are allways safe.
@@ -468,10 +468,10 @@ void	Cvar_CommandCompletion( void(*callback)(const char *s) );
 void 	Cvar_Reset( const char *var_name );
 void 	Cvar_ForceReset(const char *var_name);
 
-void	Cvar_SetCheatState( void );
+void	Cvar_SetCheatState();
 // reset all testing vars to a safe value
 
-bool Cvar_Command( void );
+bool Cvar_Command();
 // called by Cmd_ExecuteString when Cmd_Argv(0) doesn't match a known
 // command.  Returns true if the command was a variable reference that
 // was handled. (print or change)
@@ -480,7 +480,7 @@ void 	Cvar_WriteVariables( fileHandle_t f );
 // writes lines containing "set variable value" for all variables
 // with the archive flag set to true.
 
-void	Cvar_Init( void );
+void	Cvar_Init();
 
 char	*Cvar_InfoString( int bit );
 // returns an info string containing all the cvars that have the given bit set
@@ -489,7 +489,7 @@ void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
 void Cvar_CheckRange( cvar_s *cv, float minVal, float maxVal, bool shouldBeIntegral );
 
 void	Cvar_Restart(bool unsetVM);
-void	Cvar_Restart_f( void );
+void	Cvar_Restart_f();
 
 void Cvar_CompleteCvarName( char *args, int argNum );
 
@@ -524,9 +524,9 @@ issues.
 #	define QIOCONFIG_CFG "qioconfig.cfg"
 #endif
 
-bool FS_Initialized( void );
+bool FS_Initialized();
 
-void	FS_InitFilesystem ( void );
+void	FS_InitFilesystem ();
 void	FS_Shutdown( bool closemfp );
 
 bool FS_ConditionalRestart(int checksumFeed, bool disconnect);
@@ -549,7 +549,7 @@ bool FS_CreatePath (char *OSPath);
 char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 bool FS_CompareZipChecksum(const char *zipfile);
 
-int		FS_LoadStack( void );
+int		FS_LoadStack();
 
 int		FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 int		FS_GetModList(  char *listbuf, int bufsize );
@@ -618,15 +618,15 @@ int		FS_Seek( fileHandle_t f, long offset, int origin );
 
 bool FS_FilenameCompare( const char *s1, const char *s2 );
 
-const char *FS_LoadedPakNames( void );
-const char *FS_LoadedPakChecksums( void );
-const char *FS_LoadedPakPureChecksums( void );
+const char *FS_LoadedPakNames();
+const char *FS_LoadedPakChecksums();
+const char *FS_LoadedPakPureChecksums();
 // Returns a space separated string containing the checksums of all loaded pk3 files.
 // Servers with sv_pure set will get this string and pass it to clients.
 
-const char *FS_ReferencedPakNames( void );
-const char *FS_ReferencedPakChecksums( void );
-const char *FS_ReferencedPakPureChecksums( void );
+const char *FS_ReferencedPakNames();
+const char *FS_ReferencedPakChecksums();
+const char *FS_ReferencedPakPureChecksums();
 // Returns a space separated string containing the checksums of all loaded 
 // AND referenced pk3 files. Servers with sv_pure set will get this string 
 // back from clients for pure validation 
@@ -673,7 +673,7 @@ typedef struct {
 
 void Field_Clear( field_t *edit );
 void Field_AutoComplete( field_t *edit );
-void Field_CompleteKeyname( void );
+void Field_CompleteKeyname();
 void Field_CompleteFilename( const char *dir,
 		const char *ext, const char *ext2, const char *ext3,
 		bool stripExt, bool allowNonPureFilesOnDisk );
@@ -748,27 +748,27 @@ typedef struct {
 } sysEvent_t;
 
 void		Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
-int			Com_EventLoop( void );
-sysEvent_t	Com_GetSystemEvent( void );
+int			Com_EventLoop();
+sysEvent_t	Com_GetSystemEvent();
 
 void		Info_Print( const char *s );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
-void		Com_EndRedirect( void );
+void		Com_EndRedirect();
 void 		QDECL Com_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void 		QDECL Com_RedWarning( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void 		QDECL Com_DPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__ ((noreturn, format(printf, 2, 3)));
-void 		Com_Quit_f( void ) __attribute__ ((noreturn));
+void 		Com_Quit_f() __attribute__ ((noreturn));
 void		Com_GameRestart(int checksumFeed, bool disconnect);
 
-int			Com_Milliseconds( void );	// will be journaled properly
+int			Com_Milliseconds();	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
 char		*Com_MD5File(const char *filename, int length, const char *prefix, int prefix_len);
 int			Com_Filter(const char *filter, char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_s *qtime);
-bool	Com_SafeMode( void );
+bool	Com_SafeMode();
 void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_s *buf);
 
 bool	Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientNum);
@@ -827,13 +827,13 @@ extern	fileHandle_t	com_journalDataFile;
 
 // commandLine should not include the executable name (argv[0])
 void Com_Init( char *commandLine );
-void Com_Frame( void );
-void Com_Shutdown( void );
+void Com_Frame();
+void Com_Shutdown();
 
 bool Com_InitEditorDLL();
 bool COM_RunEditorFrame();
 
-void Hunk_Clear( void );
+void Hunk_Clear();
 
 /*
 ==============================================================
@@ -846,15 +846,15 @@ CLIENT / SERVER SYSTEMS
 //
 // client interface
 //
-void CL_InitKeyCommands( void );
+void CL_InitKeyCommands();
 // the keyboard binding interface must be setup before execing
 // config files, but the rest of client startup will happen later
 
-void CL_Init( void );
+void CL_Init();
 void CL_Disconnect( bool showMainMenu );
 void CL_Shutdown(char *finalmsg, bool disconnect, bool quit);
 void CL_Frame( int msec );
-bool CL_GameCommand( void );
+bool CL_GameCommand();
 void CL_KeyEvent (int key, bool down, unsigned time);
 
 void CL_CharEvent( int key );
@@ -868,7 +868,7 @@ void CL_PacketEvent( netadr_t from, msg_s *msg );
 
 void CL_ConsolePrint( char *text );
 
-void CL_MapLoading( void );
+void CL_MapLoading();
 // do a screen update before starting to load a map
 // when the server is going to load a new map, the entire hunk
 // will be cleared, so the client must shutdown cgame, ui, and
@@ -879,10 +879,10 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_CDDialog( void );
+void CL_CDDialog();
 // bring up the "need a cd to play" dialog
 
-void CL_FlushMemory( void );
+void CL_FlushMemory();
 // dump all memory on an error
 
 void CL_ShutdownAll(bool shutdownRef);
@@ -903,7 +903,7 @@ void Key_KeynameCompletion( void(*callback)(const char *s) );
 void Key_WriteBindings( fileHandle_t f );
 // for writing the config files
 
-void S_ClearSoundBuffer( void );
+void S_ClearSoundBuffer();
 // call before filesystem access
 
 void SCR_DebugGraph (float value);	// FIXME: move logging to common?
@@ -914,18 +914,18 @@ void SCR_DebugGraph (float value);	// FIXME: move logging to common?
 //
 // server interface
 //
-void SV_Init( void );
+void SV_Init();
 void SV_Shutdown( char *finalmsg );
 void SV_Frame( int msec );
 void SV_PacketEvent( netadr_t from, msg_s *msg );
 int SV_FrameMsec(void);
-bool SV_GameCommand( void );
+bool SV_GameCommand();
 int SV_SendQueuedPackets(void);
 
 //
 // UI interface
 //
-bool UI_GameCommand( void );
+bool GUI_GameCommand();
 bool UI_usesUniqueCDKey(void);
 
 /*
@@ -945,24 +945,24 @@ void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(in
 				  intptr_t (QDECL *systemcalls)(intptr_t, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
-void	Sys_UnloadGame( void );
+void	Sys_UnloadGame();
 void	*Sys_GetGameAPI( void *parms );
 
-void	Sys_UnloadCGame( void );
-void	*Sys_GetCGameAPI( void );
+void	Sys_UnloadCGame();
+void	*Sys_GetCGameAPI();
 
-void	Sys_UnloadUI( void );
-void	*Sys_GetUIAPI( void );
+void	Sys_UnloadUI();
+void	*Sys_GetUIAPI();
 
 //bot libraries
-void	Sys_UnloadBotLib( void );
+void	Sys_UnloadBotLib();
 void	*Sys_GetBotLibAPI( void *parms );
 
-char	*Sys_GetCurrentUser( void );
+char	*Sys_GetCurrentUser();
 
 void	QDECL Sys_Error( const char *error, ...) __attribute__ ((noreturn, format (printf, 1, 2)));
 void	Sys_Quit (void) __attribute__ ((noreturn));
-char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
+char	*Sys_GetClipboardData();	// note that this isn't journaled...
 
 void	Sys_Print( const char *msg );
 
@@ -977,7 +977,7 @@ bool Sys_RandomBytes( byte *string, int len );
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( bool show );
 
-cpuFeatures_t Sys_GetProcessorFeatures( void );
+cpuFeatures_t Sys_GetProcessorFeatures();
 
 void	Sys_SetErrorText( const char *text );
 
@@ -991,7 +991,7 @@ void		Sys_ShowIP(void);
 
 bool Sys_Mkdir( const char *path );
 FILE	*Sys_Mkfifo( const char *ospath );
-char	*Sys_Cwd( void );
+char	*Sys_Cwd();
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
 
@@ -1009,7 +1009,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 void	Sys_FreeFileList( char **list );
 void	Sys_Sleep(int msec);
 
-bool Sys_LowPhysicalMemory( void );
+bool Sys_LowPhysicalMemory();
 
 void Sys_SetEnv(const char *name, const char *value);
 
@@ -1032,7 +1032,7 @@ typedef enum
 
 dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *title );
 
-bool Sys_WritePIDFile( void );
+bool Sys_WritePIDFile();
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

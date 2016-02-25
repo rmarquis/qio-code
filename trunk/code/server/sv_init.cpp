@@ -232,7 +232,7 @@ to the clients -- only the fields that differ from the
 baseline will be transmitted
 ================
 */
-static void SV_CreateBaseline( void ) {
+static void SV_CreateBaseline() {
 	edict_s *svent;
 	int				entnum;	
 
@@ -281,7 +281,7 @@ NOT cause this to be called, unless the game is exited to
 the menu system first.
 ===============
 */
-static void SV_Startup( void ) {
+static void SV_Startup() {
 	if ( svs.initialized ) {
 		Com_Error( ERR_FATAL, "SV_Startup: svs.initialized" );
 	}
@@ -313,7 +313,7 @@ static void SV_Startup( void ) {
 SV_ChangeMaxClients
 ==================
 */
-void SV_ChangeMaxClients( void ) {
+void SV_ChangeMaxClients() {
 	int		oldMaxClients;
 	int		i;
 	client_t	*oldClients;

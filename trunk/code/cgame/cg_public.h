@@ -119,7 +119,7 @@ typedef enum {
 	// demos, tourney restarts, or vid_restarts
 
 	CG_SHUTDOWN,
-//	void (*CG_Shutdown)( void );
+//	void (*CG_Shutdown)();
 	// oportunity to flush and close any open files
 
 	CG_DRAW_ACTIVE_FRAME,

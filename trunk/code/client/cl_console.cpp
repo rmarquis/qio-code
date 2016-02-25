@@ -199,7 +199,7 @@ void Con_Dump_f (void)
 Con_ClearNotify
 ================
 */
-void Con_ClearNotify( void ) {
+void Con_ClearNotify() {
 	int		i;
 	
 	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
@@ -898,7 +898,7 @@ void Con_DrawSolidConsole( float frac ) {
 Con_DrawConsole
 ==================
 */
-void Con_DrawConsole( void ) {
+void Con_DrawConsole() {
 	// check for console width changes from a vid mode change
 	Con_CheckResize ();
 
@@ -954,33 +954,33 @@ void Con_RunConsole (void) {
 }
 
 
-void Con_PageUp( void ) {
+void Con_PageUp() {
 	con.display -= 2;
 	if ( con.current - con.display >= con.totallines ) {
 		con.display = con.current - con.totallines + 1;
 	}
 }
 
-void Con_PageDown( void ) {
+void Con_PageDown() {
 	con.display += 2;
 	if (con.display > con.current) {
 		con.display = con.current;
 	}
 }
 
-void Con_Top( void ) {
+void Con_Top() {
 	con.display = con.totallines;
 	if ( con.current - con.display >= con.totallines ) {
 		con.display = con.current - con.totallines + 1;
 	}
 }
 
-void Con_Bottom( void ) {
+void Con_Bottom() {
 	con.display = con.current;
 }
 
 
-void Con_Close( void ) {
+void Con_Close() {
 	if ( !com_cl_running->integer ) {
 		return;
 	}
