@@ -36,6 +36,9 @@ public:
 	virtual bool parseURCProperty(class parser_c &p);
 
 
+	virtual bool isClickable() const {
+		return false;
+	}
 	const rect_c &getRect() const {
 		return rect;
 	}
@@ -45,9 +48,24 @@ public:
 	const char *getMatName() const {
 		return matName;
 	}
+	virtual const char *getStuffCommand() const {
+		return "";
+	}
 };
 class urcElementLabel_c : public urcElementBase_c {
 public:
 	
 	virtual bool parseURCProperty(class parser_c &p);
+};
+class urcElementButton_c : public urcElementBase_c {
+	str stuffCommand;
+public:
+	
+	virtual bool parseURCProperty(class parser_c &p);
+	virtual bool isClickable() const {
+		return true;
+	}
+	virtual const char *getStuffCommand() const {
+		return stuffCommand;
+	}
 };

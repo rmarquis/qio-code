@@ -61,3 +61,12 @@ bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 	
 	return false;
 }
+
+bool urcElementButton_c::parseURCProperty(class parser_c &p) {
+	if(p.atWord("stuffCommand")) {
+		stuffCommand = p.getToken();
+		return true;
+	}
+	
+	return false;
+}
