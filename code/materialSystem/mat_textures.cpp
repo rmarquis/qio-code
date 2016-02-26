@@ -181,13 +181,14 @@ class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapM
 	}
 	return ret;
 }
-class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h) {
+class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h, u32 bpp) {
 	textureIMPL_c *ret = mat_textures.getEntry(texName);
 	if(ret) {
 		return ret;
 	}
 	arraySTD_c<byte> b;
 	if(picData == 0) {
+		bpp = 4;
 		b.resize(w*h*4);
 		for(u32 j = 0; j < w; j++) {
 			for(u32 i = 0; i < h; i++) {
@@ -210,7 +211,27 @@ class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, 
 	ret = new textureIMPL_c;
 	ret->setName(texName);
 	ret->setWrapMode(TWM_REPEAT);
-	rb->uploadTextureRGBA(ret,picData,w,h);
+	if(bpp == 4) {
+		rb->uploadTextureRGBA(ret,picData,w,h);
+	} else {
+		arraySTD_c<byte> fixed;
+		u32 numPixels = w * h;
+		fixed.resize(numPixels*4);
+		byte *o = fixed.getArray();
+		const byte *in = picData;
+		for(u32 i = 0; i < numPixels; i++) {
+			*o = 255;
+			o++;
+			*o = 255;
+			o++;
+			*o = 255;
+			o++;
+			*o = *in;
+			o++; 
+			in++;
+		}
+		rb->uploadTextureRGBA(ret,fixed.getArray(),w,h);
+	}
 	if(mat_textures.addObject(ret)) {
 		g_core->Print("Warning: %s added more than once.\n",texName);
 		mat_textures.addObject(ret,true);

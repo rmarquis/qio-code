@@ -99,8 +99,8 @@ public:
 	virtual class mtrAPI_i *createHLBSPTexture(const char *newMatName, const byte *pixels, u32 width, u32 height, const byte *palette) {
 		return MAT_CreateHLBSPTexture(newMatName,pixels,width,height,palette);
 	}
-	virtual class textureAPI_i *createTexture(const char *newName, u32 width, u32 height, const byte *pixels) { 
-		return MAT_CreateTexture(newName,pixels,width,height);
+	virtual class textureAPI_i *createTexture(const char *newName, u32 width, u32 height, const byte *pixels, u32 bpp) { 
+		return MAT_CreateTexture(newName,pixels,width,height,bpp);
 	}
 	// Doom3 material tables interface
 	virtual const class tableListAPI_i *getTablesAPI() const {

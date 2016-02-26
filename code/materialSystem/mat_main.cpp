@@ -477,7 +477,7 @@ class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixel
 	byte *converted = 0;
 	u32 convertedW, convertedH;
 	g_img->convert8BitImageToRGBA32(&converted,&convertedW,&convertedH,pixels,width,height,palette);
-	textureAPI_i *tex = MAT_CreateTexture(newMatName,converted,convertedW,convertedH);
+	textureAPI_i *tex = MAT_CreateTexture(newMatName,converted,convertedW,convertedH,4);
 	g_img->freeImageData(converted);
 	ret->createFromTexturePointer(tex);
 	return ret;

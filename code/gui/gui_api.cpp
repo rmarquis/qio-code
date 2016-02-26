@@ -77,6 +77,10 @@ public:
 		if(f3) {
 			f3->drawString(50,150,"This is the font test!");
 		}
+		fontAPI_i *f4 = rf->registerFont("Arial");
+		if(f4) {
+			f4->drawString(50,200,"This is Arial font test!");
+		}
 		float mouseSize = 30.f;
 		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");
 	}

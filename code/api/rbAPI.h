@@ -89,6 +89,11 @@ public:
 
 	// 2D textures
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) = 0;
+	//virtual void uploadTexture8BitLuminance(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	//	// TODO stubs
+	//}
+
+	
 	virtual void uploadLightmap(class textureAPI_i *out, const byte *data, u32 w, u32 h, bool rgba = false) = 0;
 	virtual void freeTextureData(class textureAPI_i *tex) = 0;
 	virtual bool readTextureDataRGBA(class textureAPI_i *tex, byte *out) {
