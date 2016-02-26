@@ -49,6 +49,8 @@ public:
 class urc_c : public urcNameMapping_c {
 	urc_c *hashNext;
 	arraySTD_c<class urcElementBase_c*> elements;
+
+	bool parseURCFile(class parser_c &p);
 public:
 	void setHashNext(urc_c *h) {
 		hashNext = h;

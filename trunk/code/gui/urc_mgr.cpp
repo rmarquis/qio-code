@@ -83,6 +83,7 @@ void urcMgr_c::pushMenu(const char *name) {
 		g_core->RedWarning("Pushmenu: %s is not a valid menu\n",name);
 		return;
 	}
+	g_core->Print("Pushmenu: pushing %s\n",name);
 	stack.push_back(urc);
 }
 void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {

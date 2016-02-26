@@ -49,10 +49,7 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 		}
 	}
 }
-bool urc_c::loadURCFile() {
-	parser_c p;
-	if(p.openFile(fname))
-		return true;
+bool urc_c::parseURCFile(class parser_c &p) {
 
 	while(p.atEOF() == false) {
 		if(p.atWord("resource")) {
@@ -70,9 +67,25 @@ bool urc_c::loadURCFile() {
 				return true;
 			}
 			elements.push_back(el);
+		} else if(p.atWord("include")) {
+			parser_c inc;
+			const char *name = p.getToken();
+			if(inc.openFile(name)) {
+				g_core->RedWarning("urc_c::parseURCFile: failed to open include file %s (included in %s)\n",name,p.getDebugFileName());
+			} else {
+				if(parseURCFile(inc))
+					return true;
+			}
 		} else {
 			p.getToken();
 		}
 	}
 	return false;
+}
+bool urc_c::loadURCFile() {
+	parser_c p;
+	if(p.openFile(fname))
+		return true;
+
+	return parseURCFile(p);
 }
