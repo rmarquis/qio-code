@@ -56,6 +56,9 @@ public:
 	urc_c *getHashNext() {
 		return hashNext;
 	}
+	u32 getNumElements() const {
+		return elements.size();
+	}
 
 	void drawURC();
 	bool loadURCFile();

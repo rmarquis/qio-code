@@ -1494,6 +1494,7 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
 	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
+	g_staticCoreAPI.Cbuf_AddText = Cbuf_AddText;
 	g_staticCoreAPI.EditorInitRenderer = Com_EditorInitRenderer;
 
 	g_core = &g_staticCoreAPI;
