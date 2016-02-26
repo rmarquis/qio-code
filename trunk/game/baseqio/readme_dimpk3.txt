@@ -9,3 +9,6 @@ some have came from unknown games some from google and some created by DimStar.
 
 Hopefully, in time ALL content used in TC will be replaced with higher res textures and models
 //blah blah blah Dim........
+
+dim_things.pk3:
+scripts\cell
