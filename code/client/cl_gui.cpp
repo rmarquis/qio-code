@@ -45,7 +45,7 @@ void CL_InitGUI() {
 void CL_ShutdownGUI() {
 	if(cl_guiDLL == 0)
 		return;
-//	gui->shutdown();
+	gui->shutdownGUI();
 	// first unload frontend
 	g_moduleMgr->unload(&cl_guiDLL);
 }

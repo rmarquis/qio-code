@@ -137,6 +137,9 @@ void RFT_AddTerrainDrawCalls();
 void RFT_ShutdownTerrain();
 bool RFT_RayTraceTerrain(class trace_c &tr);
 
+// rf_font.cpp
+class fontAPI_i *RF_RegisterFont(const char *name);
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;

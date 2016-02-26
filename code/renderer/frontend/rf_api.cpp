@@ -185,6 +185,9 @@ public:
 	virtual class rStaticModelAPI_i *allocStaticModel() {
 		return RF_AllocStaticModel();
 	}
+	virtual class fontAPI_i *registerFont(const char *name) {
+		return RF_RegisterFont(name);
+	}
 	virtual void removeStaticModel(class rStaticModelAPI_i *m) {
 		RF_RemoveStaticModel(m);
 	}

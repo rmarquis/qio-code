@@ -53,6 +53,12 @@ public:
 	float getY() const {
 		return min[1];
 	}
+	float getMaxX() const {
+		return max[0];
+	}
+	float getMaxY() const {
+		return max[1];
+	}
 	float getW() const {
 		return max[0]-min[0];
 	}

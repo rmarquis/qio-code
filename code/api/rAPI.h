@@ -78,8 +78,12 @@ public:
 	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 	virtual void removeCustomRenderObject(class customRenderObjectAPI_i *api) = 0;
 
+	// static models
 	virtual class rStaticModelAPI_i *allocStaticModel() = 0;
 	virtual void removeStaticModel(class rStaticModelAPI_i *m) = 0;
+
+	// fonts system
+	virtual class fontAPI_i *registerFont(const char *name) = 0;
 
 	// env_cubemap system
 	virtual class cubeMapAPI_i *getNearestEnvCubeMapImage(const class vec3_c &p) = 0;

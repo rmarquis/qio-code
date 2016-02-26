@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // gui_api.cpp - GUI API implementation
 #include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
+#include <api/fontAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
@@ -55,11 +56,27 @@ public:
 		um.precacheURCFiles();
 		GUI_AddConsoleCommands();
 	}
+	virtual void shutdownGUI() {
+		GUI_RemoveConsoleCommands();
+	}
 	virtual void drawGUI() {
 		//urc_c *u = um.registerURC("main");
 	//	u->drawURC();
 		um.drawURCs();
 
+
+		fontAPI_i *f = rf->registerFont("facfont-20");
+		if(f) {
+			f->drawString(50,50,"This is the font test!");
+		}
+		fontAPI_i *f2 = rf->registerFont("courier-16");
+		if(f2) {
+			f2->drawString(50,100,"This is the font test!");
+		}
+		fontAPI_i *f3 = rf->registerFont("verdana-12");
+		if(f3) {
+			f3->drawString(50,150,"This is the font test!");
+		}
 		float mouseSize = 30.f;
 		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");
 	}

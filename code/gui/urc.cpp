@@ -27,9 +27,21 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 
+bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
+	if(!stricmp(el->getName(),"disconnect")) {
+		return true;
+	}
+	if(!stricmp(el->getName(),"backtogame")) {
+		return true;
+	}
+	return false;
+}
 void urc_c::drawURC() {	
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
+		// allow certain elements to be hidden
+		if(filterURCElement(el))
+			continue;
 		el->renderURCElement();
 	}
 }
@@ -38,6 +50,9 @@ void urc_c::onKeyDown(int keyCode) {
 void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
+		// allow certain elements to be hidden
+		if(filterURCElement(el))
+			continue;
 		if(el->isClickable()==false)
 			continue;
 		const rect_c &r = el->getRect();
