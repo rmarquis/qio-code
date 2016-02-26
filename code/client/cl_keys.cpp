@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
+#include <api/guiAPI.h>
 
 /*
 
@@ -1229,6 +1230,8 @@ void CL_KeyDownEvent( int key, unsigned time )
 		}
 
 //		VM_Call( uivm, UI_KEY_EVENT, key, true );
+		if(gui) {
+		}
 		return;
 	}
 
@@ -1239,6 +1242,9 @@ void CL_KeyDownEvent( int key, unsigned time )
 //		if ( uivm ) {
 //			VM_Call( uivm, UI_KEY_EVENT, key, true );
 //		} 
+		if(gui) {
+			gui->onKeyDown(key);
+		}
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {

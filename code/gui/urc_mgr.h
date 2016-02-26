@@ -55,4 +55,6 @@ public:
 	void popAllMenus();
 	void popMenu();
 	void pushMenu(const char *name);
+	void onKeyDown(int keyCode);
+	void onMouseDown(int keyCode, int mouseX, int mouseY);
 };

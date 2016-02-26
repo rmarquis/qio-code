@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
+#include <client/keyCodes.h>
 #include "urc_mgr.h"
 
 void GUI_AddConsoleCommands();
@@ -67,6 +68,14 @@ public:
 			mouseX = rf->getWinWidth();
 		if(mouseY > rf->getWinHeight())
 			mouseY = rf->getWinHeight();
+	}
+	virtual void onKeyDown(int keyCode) {
+		if(keyCode == K_MOUSE1) {
+			g_core->Print("LMB on GUI\n");
+			um.onMouseDown(keyCode,mouseX,mouseY);
+		} else {
+			um.onKeyDown(keyCode);
+		}
 	}
 	~guiAPIImpl_c() {
 		//GUI_RemoveConsoleCommands();

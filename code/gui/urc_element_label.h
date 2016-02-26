@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 
 class urcElementBase_c {
+	str name;
 	rect_c rect;
 	str matName;
 public:
@@ -37,6 +38,9 @@ public:
 
 	const rect_c &getRect() const {
 		return rect;
+	}
+	const char *getName() const {
+		return name;
 	}
 	const char *getMatName() const {
 		return matName;
