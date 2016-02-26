@@ -79,6 +79,10 @@ void urcMgr_c::popMenu() {
 }
 void urcMgr_c::pushMenu(const char *name) {
 	urc_c *urc = registerURC(name);
+	if(urc == 0 || urc->getNumElements() == 0) {
+		g_core->RedWarning("Pushmenu: %s is not a valid menu\n",name);
+		return;
+	}
 	stack.push_back(urc);
 }
 void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {

@@ -98,6 +98,10 @@ bool textureAnimation_c::loadAnimMapImagesFromDirectory(const char *dir) {
 		texNames.push_back(f);
 	}
 	g_vfs->FS_FreeFileList(list);
+	if(count == 0) {
+		g_core->RedWarning("textureAnimation_c::loadAnimMapImagesFromDirectory: no textures found in %s, animMap will not work.\n",dir);
+		return true;
+	}
 	return false;
 }
 bool textureAnimation_c::parseAnimMap(parser_c &p) {
@@ -125,6 +129,8 @@ textureAPI_i *textureAnimation_c::getTexture(u32 idx) {
 	return textures[idx];
 }
 textureAPI_i *textureAnimation_c::getTextureForTime(float time) {
+	if(textures.size() == 0)
+		return MAT_GetDefaultTexture();; // avoid integer division by 0
 	int idx = int(time * frequency * 1024);
 	idx >>= 10;
 	if(idx<0)

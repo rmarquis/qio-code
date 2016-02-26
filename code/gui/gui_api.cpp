@@ -45,6 +45,12 @@ public:
 		mouseX = 100;
 		mouseY = 100;
 	}
+	virtual int getMouseX() const {
+		return mouseX;
+	}
+	virtual int getMouseY() const {
+		return mouseY;
+	}
 	void init() {
 		um.precacheURCFiles();
 		GUI_AddConsoleCommands();
@@ -124,6 +130,8 @@ void GUI_AddConsoleCommands() {
 	g_core->Cmd_AddCommand("pushmenu",GUI_PushMenu_f);
 	g_core->Cmd_AddCommand("popmenu",GUI_PopMenu_f);
 	g_core->Cmd_AddCommand("popallmenus",GUI_PopAllMenus_f);
+	// TODO: what's the difference between pushmenu_sp and pushmenu?
+	g_core->Cmd_AddCommand("pushmenu_sp",GUI_PushMenu_f);
 }
 void GUI_RemoveConsoleCommands() {
 	g_core->Cmd_RemoveCommand("pushmenu");

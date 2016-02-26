@@ -25,20 +25,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc.h"
 #include "urc_element_label.h"
 #include <shared/parser.h>
-#include <api/rAPI.h>
 #include <api/coreAPI.h>
 
 void urc_c::drawURC() {	
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
-		const rect_c &r = el->getRect();
-		const char *matName = el->getMatName();
-		if(matName[0]) {
-			if(0) {
-				g_core->Print("Material %s\n",matName);
-			}
-			rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
-		}
+		el->renderURCElement();
 	}
 }
 void urc_c::onKeyDown(int keyCode) {
@@ -51,8 +43,8 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 		const rect_c &r = el->getRect();
 		if(r.isInside(mouseX,mouseY)) {
 			g_core->Print("Clicked element %s with material %s\n",el->getName(),el->getMatName());
-
-			g_core->Cbuf_ExecuteText(0,el->getStuffCommand());
+			// NOTE: multiple commands can be separated by ;
+			g_core->Cbuf_AddText(el->getStuffCommand());
 			break;
 		}
 	}

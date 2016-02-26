@@ -739,6 +739,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					}
 				} else if(p.atWord("surfaceparm")) {
 					p.getToken();
+				} else if(p.atWord("force32bit")) {
+					// used in MoHAA gui materials
 				} else if(p.atWord("skyparms")) {
 					// skyParms <farbox> <cloudheight> <nearbox>
 					str farBox, cloudHeight, nearBox;
