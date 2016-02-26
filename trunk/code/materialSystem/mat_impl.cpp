@@ -1585,6 +1585,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// for example, dim_terrblendtest.bsp
 					if(p.atWord("vertex")) {
 						stage->setAlphaGenVertex();
+					} else if(p.atWord("constant")) {
+						// used in MoHAA menu_button_trans from mohmenu.shader
+						float val = p.getFloat();
+						stage->setAlphaGenVertex();
 					} else {
 						p.skipLine();
 					}

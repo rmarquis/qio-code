@@ -46,9 +46,14 @@ void urc_c::onKeyDown(int keyCode) {
 void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
+		if(el->isClickable()==false)
+			continue;
 		const rect_c &r = el->getRect();
 		if(r.isInside(mouseX,mouseY)) {
 			g_core->Print("Clicked element %s with material %s\n",el->getName(),el->getMatName());
+
+			g_core->Cbuf_ExecuteText(0,el->getStuffCommand());
+			break;
 		}
 	}
 }
@@ -63,7 +68,7 @@ bool urc_c::loadURCFile() {
 			if(p.atWord("Label")) {
 				el = new urcElementLabel_c();
 			} else if(p.atWord("Button")) {
-				el = new urcElementLabel_c();
+				el = new urcElementButton_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();

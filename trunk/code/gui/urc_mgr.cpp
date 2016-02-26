@@ -66,7 +66,8 @@ const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName)
 	return c->getFName();
 }
 void urcMgr_c::drawURCs() {
-	for(int i = stack.size()-1; i>=0;i--) {
+	//for(int i = stack.size()-1; i>=0;i--) {
+	for(u32 i = 0; i < stack.size(); i++) {
 		stack[i]->drawURC();
 	}
 }
