@@ -81,6 +81,7 @@ enum rgbGen_e {
 enum alphaGen_e {
 	ALPHAGEN_NOT_SET,
 	ALPHAGEN_VERTEX,
+	ALPHAGEN_AST,
 };
 
 // blend modes; abstracted so they can apply to both opengl and dx

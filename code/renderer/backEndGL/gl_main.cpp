@@ -1298,7 +1298,12 @@ public:
 				setAlphaFunc(s->getAlphaFunc());
 				//const blendDef_s &bd = s->getBlendDef();
 				//setBlendFunc(bd.src,bd.dst);
-				
+				if(s->getAlphaGenType() == ALPHAGEN_AST) {
+					float a = s->evaluateAlphaGen(0);
+					setColor4f(1,1,1,a);
+				} else {
+					setColor4f(1,1,1,1);
+				}
 				if(s->hasTexMods()) {
 					matrix_c mat;
 					s->applyTexMods(mat,this->timeNowSeconds,&materialVarList);
