@@ -51,6 +51,7 @@ class urc_c : public urcNameMapping_c {
 	arraySTD_c<class urcElementBase_c*> elements;
 
 	bool parseURCFile(class parser_c &p);
+	bool filterURCElement(const class urcElementBase_c *el) const;
 public:
 	void setHashNext(urc_c *h) {
 		hashNext = h;

@@ -21,29 +21,14 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// guiAPI.h
-#ifndef __GUI_API_H__
-#define __GUI_API_H__
+// fontAPI.h
+#ifndef __API_FONTAPI_H__
+#define __API_FONTAPI_H__
 
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define GUI_API_IDENTSTR "GUI0001"
-
-class guiAPI_i : public iFaceBase_i {
+class fontAPI_i {
 public:
-	virtual void shutdownGUI() = 0;
-
-	virtual void drawGUI() = 0;
-	virtual void onMouseMove(int dX, int dY) = 0;
-	virtual void onKeyDown(int keyCode) = 0;
-	// this is not the same coordinate as windows mouse
-	virtual int getMouseX() const = 0;
-	virtual int getMouseY() const = 0;
+	virtual const char *getName() const = 0;
+	virtual void drawString(float x, float y, const char *s) const = 0;
 };
 
-extern guiAPI_i *gui;
-
-
-#endif // __GUI_API_H__
-
+#endif // __API_FONTAPI_H__

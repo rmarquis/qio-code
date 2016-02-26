@@ -75,6 +75,8 @@ void urcMgr_c::popAllMenus() {
 	stack.clear();
 }
 void urcMgr_c::popMenu() {
+	if(stack.size() == 0)
+		return;
 	stack.pop_back();
 }
 void urcMgr_c::pushMenu(const char *name) {
