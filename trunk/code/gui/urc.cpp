@@ -34,8 +34,21 @@ void urc_c::drawURC() {
 		const rect_c &r = el->getRect();
 		const char *matName = el->getMatName();
 		if(matName[0]) {
-			g_core->Print("Material %s\n",matName);
+			if(0) {
+				g_core->Print("Material %s\n",matName);
+			}
 			rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		}
+	}
+}
+void urc_c::onKeyDown(int keyCode) {
+}
+void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
+	for(u32 i = 0; i < elements.size(); i++) {
+		urcElementBase_c *el = elements[i];
+		const rect_c &r = el->getRect();
+		if(r.isInside(mouseX,mouseY)) {
+			g_core->Print("Clicked element %s with material %s\n",el->getName(),el->getMatName());
 		}
 	}
 }

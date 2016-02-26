@@ -34,6 +34,7 @@ class guiAPI_i : public iFaceBase_i {
 public:
 	virtual void drawGUI() = 0;
 	virtual void onMouseMove(int dX, int dY) = 0;
+	virtual void onKeyDown(int keyCode) = 0;
 };
 
 extern guiAPI_i *gui;

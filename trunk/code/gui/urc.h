@@ -59,4 +59,6 @@ public:
 
 	void drawURC();
 	bool loadURCFile();
+	void onKeyDown(int keyCode);
+	void onMouseDown(int keyCode, int mouseX, int mouseY);
 };

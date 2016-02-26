@@ -51,6 +51,10 @@ bool urcElementBase_c::parseURCProperty(class parser_c &p) {
 		matName = p.getToken();
 		return true;
 	}
+	if(p.atWord("name")) {
+		name = p.getToken();
+		return true;
+	}
 	return false;
 }
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {

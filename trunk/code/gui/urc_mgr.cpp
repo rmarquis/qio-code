@@ -80,6 +80,16 @@ void urcMgr_c::pushMenu(const char *name) {
 	urc_c *urc = registerURC(name);
 	stack.push_back(urc);
 }
+void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
+	if(stack.size()==0)
+		return;
+	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY);
+}
+void urcMgr_c::onKeyDown(int keyCode) {
+	if(stack.size()==0)
+		return;
+	stack[stack.size()-1]->onKeyDown(keyCode);
+}
 urc_c *urcMgr_c::registerURC(const char *internalName) {
 	urc_c *urc = loaded.getEntry(internalName);
 	if(urc) {

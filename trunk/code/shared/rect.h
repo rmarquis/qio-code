@@ -59,6 +59,17 @@ public:
 	float getH() const {
 		return max[1]-min[1];
 	}
+	bool isInside(int x, int y) const {
+		if(x < min[0])
+			return false;
+		if(y < min[1])
+			return false;
+		if(x > max[0])
+			return false;
+		if(y > max[1])
+			return false;
+		return true;
+	}
 };
 
 #endif // __SHARED_RECT_H__
