@@ -127,6 +127,7 @@ mtrStage_c::mtrStage_c() {
 	alphaTestAST = 0;
 	cubeMap = 0;
 	alphaGen = ALPHAGEN_NOT_SET;
+	alphaExp = 0;
 }
 mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
 	alphaFunc = AF_NONE;
@@ -148,6 +149,7 @@ mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
 	blendChannelBlue = 0;
 	blendChannelRed = 0;
 	blendChannelGreen = 0;
+	alphaExp = 0;
 
 	this->stageTexture.fromTexturePointer(tex);
 }
@@ -185,6 +187,10 @@ mtrStage_c::~mtrStage_c() {
 	if(condition) {
 		condition->destroyAST();
 		condition = 0;
+	}
+	if(alphaExp) {
+		alphaExp->destroyAST();
+		alphaExp = 0;
 	}
 	if(alphaTestAST) {
 		alphaTestAST->destroyAST();
@@ -294,6 +300,11 @@ float mtrStage_c::getRGBGenWaveValue(float curTimeSec) const {
 	float ret = rgbGen->getWaveForm().evaluate(curTimeSec);
 	return ret;
 }
+float mtrStage_c::evaluateAlphaGen(const class astInputAPI_i *in) const {
+	if(alphaExp == 0)
+		return 0; // errorr
+	return alphaExp->execute(in);
+}
 void mtrStage_c::evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const {
 	if(rgbGen == 0)
 		return; // errorr
@@ -378,12 +389,21 @@ void mtrStage_c::setAlphaAST(class astAPI_i *ast) {
 	if(alphaGen == 0)
 		alphaGen = new alphaGen_c;
 	alphaGen->setAlphaAST(ast);
+#elif 0
+	alphaAst = ast;
+	alphaGen = ALPHAGEN_AST;
 #else
 	delete ast;
 #endif
 }
 void mtrStage_c::setAlphaGenVertex() {
 	alphaGen = ALPHAGEN_VERTEX;
+}
+void mtrStage_c::setAlphaGenConst(float f) {
+	alphaGen = ALPHAGEN_AST;
+	char tmp[32];
+	sprintf(tmp,"%f",f);
+	alphaExp = AST_ParseExpression(tmp);
 }
 void mtrStage_c::setRGBAGenVertex() {
 	allocRGBGen();
@@ -1588,7 +1608,7 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					} else if(p.atWord("constant")) {
 						// used in MoHAA menu_button_trans from mohmenu.shader
 						float val = p.getFloat();
-						stage->setAlphaGenVertex();
+						stage->setAlphaGenConst(val);
 					} else {
 						p.skipLine();
 					}
