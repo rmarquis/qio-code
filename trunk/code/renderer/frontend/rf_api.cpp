@@ -265,6 +265,7 @@ public:
 		RF_InitSky();
 		RF_InitDecals();
 		RFT_InitTerrain();
+		RF_InitFonts();
 	}
 	virtual void endRegistration() {
 

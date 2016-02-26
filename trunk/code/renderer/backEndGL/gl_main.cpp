@@ -3340,6 +3340,9 @@ drawOnlyLightmap:
 	virtual void setBSkipStaticEnvCubeMapStages(bool newBSkipStaticEnvCubeMapStages) {
 		bSkipStaticEnvCubeMapStages = newBSkipStaticEnvCubeMapStages;
 	}
+	//virtual void uploadTexture8BitLuminance(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
+	//	// TODO stubs
+	//}
 	virtual void uploadTextureRGBA(class textureAPI_i *out, const byte *data, u32 w, u32 h) {
 		out->setWidth(w);
 		out->setHeight(h);

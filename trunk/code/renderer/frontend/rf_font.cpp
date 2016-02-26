@@ -33,6 +33,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#pragma comment(lib,"freetype.lib")
+
+FT_Library rf_ft;
+
 class fontBase_c : public fontAPI_i {
 	const str name;
 	fontBase_c *hashNext;
@@ -48,6 +54,50 @@ public:
 	}
 	fontBase_c *getHashNext() {
 		return hashNext;
+	}
+};
+class textureAllocator_c {
+	u32 maxTextureSize;
+	arraySTD_c<u32> allocated;
+public:
+	textureAllocator_c() {
+		setupTextureSize(64);
+	}
+	void setupTextureSize(u32 newSize) {
+		maxTextureSize = newSize;
+		allocated.resize(maxTextureSize);
+		allocated.nullMemory();
+	}
+	bool allocTextureBlock(const u32 inSizes[2], u32 outPos[2]) {
+		u32 margin = 1;
+		u32 sizes[2] = { inSizes[0]+margin, inSizes[1]+margin };
+		u32 best = maxTextureSize;
+		for(u32 i = 0; i <= maxTextureSize-sizes[0]; i++ ) {
+			u32 best2 = 0;
+			u32 j;
+			for(j = 0; j < sizes[0]; j++) {
+				if(allocated[i+j] >= best) {
+					break;
+				}
+				if(allocated[i+j] > best2) {
+					best2 = allocated[i+j];
+				}
+			}
+			if(j == sizes[0])	{	// this is a valid spot
+				outPos[0] = i;
+				outPos[1] = best = best2;
+			}
+		}
+
+		if(best + sizes[1] > maxTextureSize) {
+			return true;
+		}
+
+		for(u32 i = 0; i < sizes[0]; i++) {
+			allocated[outPos[0] + i] = best + sizes[1];
+		}
+
+		return false;
 	}
 };
 class fontRitual_c : public fontBase_c {
@@ -149,6 +199,163 @@ public:
 		}
 	}
 };
+
+struct glyphInfo_s {
+	float width;
+	float rows;
+	float left;
+	float top;
+	long advance_x;
+	long advance_y;
+	u32 sizes[2]; // = { width, rows }
+	u32 pos[2];
+	float s0, s1;
+	float t0, t1;
+};
+
+class image8bit_c {
+	byte *data;
+	u32 w, h;
+public:
+	image8bit_c() {
+		data = 0;
+	}
+	~image8bit_c() {
+		if(data) {
+			free(data);
+		}
+	}
+	void setSize(u32 newSize) {
+		w = h = newSize;
+		data = (byte*)malloc(newSize*newSize);
+		memset(data,0,newSize*newSize);
+	}
+	void setSubImage(u32 x, u32 y, u32 inW, u32 inH, const byte *ptr) {
+		for(u32 i = 0; i < inW; i++) {
+			for(u32 j = 0; j < inH; j++) {
+				u32 inIndex = inW * j + i;
+				u32 outIndex = w * (y+j) + x + i;
+				data[outIndex] = ptr[inIndex];
+			}
+		}
+	}
+	const byte *getData() const {
+		return data;
+	}
+	u32 getW() const {
+		return w;
+	}
+	u32 getH() const {
+		return h;
+	}
+};
+class fontFreeType_c : public fontBase_c {
+	glyphInfo_s glyphs[256];
+	mtrAPI_i *mat;
+public:
+	fontFreeType_c(const char *s, FT_Face face) : fontBase_c(s) {
+		FT_Set_Pixel_Sizes(face, 0, 14);
+
+		FT_GlyphSlot g = face->glyph;
+		float maxHeight = 0;
+
+		for(u32 i = 0; i < 128; i++) {
+			char ch = i;
+
+			if(ch == '\r') {
+				continue;
+			}
+
+			/* Try to load and render the character */
+			if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
+				continue;
+
+			glyphInfo_s &gl = glyphs[i];
+			gl.width = g->bitmap.width;
+			gl.rows = g->bitmap.rows;
+			gl.left = g->bitmap_left;
+			gl.top = g->bitmap_top;
+			gl.advance_x = g->advance.x;
+			gl.advance_y = g->advance.y;
+			gl.sizes[0] = gl.width;
+			gl.sizes[1] = gl.rows;
+
+			if(gl.rows > maxHeight) {
+				maxHeight = gl.rows;
+			}
+		}
+
+
+		textureAllocator_c allocator;
+
+		bool bFailed;
+		u32 textureSize;
+		for(textureSize = 128; textureSize <= 1024; textureSize *= 2) {
+			bFailed = false;
+			allocator.setupTextureSize(textureSize);
+			for(u32 i = 0; i < 128 && !bFailed; i++) {
+				char ch = i;
+
+				if(ch == '\r') {
+					continue;
+				}
+				glyphInfo_s &gl = glyphs[i];
+				if(allocator.allocTextureBlock(gl.sizes,gl.pos)) {
+					bFailed = true;
+					break;
+				}
+			}
+			if(!bFailed) {
+				break;
+			}
+		}
+
+
+		image8bit_c imgData;
+		imgData.setSize(textureSize);
+
+		for(u32 i = 0; i < 128; i++) {
+			char ch = i;
+
+			if(ch == '\r') {
+				continue;
+			}
+			/* Try to load and render the character */
+			if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
+				continue;
+
+			glyphInfo_s &gl = glyphs[i];
+
+			imgData.setSubImage(gl.pos[0],gl.pos[1],gl.sizes[0],gl.sizes[1],g->bitmap.buffer);
+
+			gl.s1 = float(gl.pos[0]+gl.sizes[0])/ float(textureSize);
+			gl.s0 = float(gl.pos[0])/ float(textureSize);
+			gl.t0 = float(gl.pos[1])/ float(textureSize);
+			gl.t1 = float(gl.pos[1]+gl.sizes[1])/ float(textureSize);
+		}
+		g_ms->createTexture(getName(),imgData.getW(),imgData.getH(),imgData.getData(),1);
+		mat = g_ms->registerMaterial(getName());
+	}
+	virtual void drawString(float x, float y, const char *s) const {
+
+		const char *p = s;
+		float nowX = x;
+		float nowY = y;
+		float w = 8.f;
+		float h = 16.f;
+		while(*p) {
+			int ch = *p;
+				float s0 = glyphs[ch].s0;
+				float t0 = glyphs[ch].t0;
+				float s1 = glyphs[ch].s1;
+				float t1 = glyphs[ch].t1;
+				rf->drawStretchPic(nowX,nowY,w,h,s0,t0,s1,t1,mat);
+		
+			nowX += w;
+			p++;
+		}
+	}
+};
 hashTableTemplateExt_c<fontBase_c> rf_fonts;
 
 fontAPI_i *RF_RegisterFont(const char *name) {
@@ -160,7 +367,25 @@ fontAPI_i *RF_RegisterFont(const char *name) {
 	path.append(".RitualFont");
 	if(g_vfs->FS_FileExists(path)) {
 		f = new fontRitual_c(name);
+	} else {
+		path = "C:/Windows/Fonts/";
+		path.append(name);
+		path.setExtension("ttf");
+		FT_Face face;
+		if(!FT_New_Face(rf_ft, path.c_str(), 0, &face)) {
+			// valid
+			f = new fontFreeType_c(name,face);
+		}
 	}
+	if(f == 0)
+		return 0;
 	rf_fonts.addObject(f);
 	return f;
+}
+void RF_InitFonts() {
+	if(FT_Init_FreeType(&rf_ft)) {
+		g_core->RedWarning("RF_InitFonts: FT_Init_FreeType failed. Cannot init fonts\n");
+		return;
+	}
+	g_core->RedWarning("RF_InitFonts: FreeType font library successfully loaded!\n");
 }

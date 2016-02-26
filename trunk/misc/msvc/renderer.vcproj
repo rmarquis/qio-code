@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\code\"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\freetype-2.3.5-1-bin\include\freetype2&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -60,6 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\rendererx86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\freetype-2.3.5-1-bin\lib\&quot;"
 				ModuleDefinitionFile=".\renderer.def"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -114,7 +115,7 @@
 				Optimization="3"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\code\"
+				AdditionalIncludeDirectories="..\..\code\;&quot;..\..\code\external\freetype-2.3.5-1-bin\include\freetype2&quot;"
 				PreprocessorDefinitions="_NDEBUG;NDEBUG;_CRT_SECURE_NO_WARNINGS;"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -135,6 +136,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="..\..\game\system\rendererx86.dll"
+				AdditionalLibraryDirectories="&quot;..\..\code\external\freetype-2.3.5-1-bin\lib\&quot;"
 				ModuleDefinitionFile=".\renderer.def"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

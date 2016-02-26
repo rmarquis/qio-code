@@ -457,7 +457,7 @@ class textureAPI_i *MAT_ParseImageScript(parser_c &p) {
 		}
 		return MAT_RegisterTexture(texName,TWM_REPEAT);
 	}
-	class textureAPI_i *ret = MAT_CreateTexture(texName, finalImage->getData(), finalImage->getW(), finalImage->getH());
+	class textureAPI_i *ret = MAT_CreateTexture(texName, finalImage->getData(), finalImage->getW(), finalImage->getH(),4);
 	delete finalImage;
 	return ret;
 }

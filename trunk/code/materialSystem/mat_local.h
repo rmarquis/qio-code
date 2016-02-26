@@ -69,7 +69,7 @@ void MAT_FreeUnusedMaterials();
 class textureAPI_i *MAT_GetDefaultTexture();
 class textureAPI_i *MAT_CreateLightmap(int index, const byte *data, u32 w, u32 h, bool rgba); // for lightmaps
 class textureAPI_i *MAT_RegisterTexture(const char *texString, enum textureWrapMode_e wrapMode);
-class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h);
+class textureAPI_i *MAT_CreateTexture(const char *texName, const byte *picData, u32 w, u32 h, u32 bpp);
 void MAT_FreeTexture(class textureAPI_i **p);
 void MAT_FreeAllTextures();
 void MAT_FreeAllMaterials();
