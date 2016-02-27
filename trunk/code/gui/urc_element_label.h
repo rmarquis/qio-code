@@ -30,19 +30,3 @@ public:
 	virtual bool parseURCProperty(class parser_c &p);
 	virtual void renderURCElement();
 };
-class urcElementButton_c : public urcElementBase_c {
-	// NOTE: multiple commands can be separated by ;
-	str stuffCommand;
-	// material to use when mouse cursor is inside this element rect
-	str hoverMaterial;
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
-	virtual bool isClickable() const {
-		return true;
-	}
-	virtual const char *getStuffCommand() const {
-		return stuffCommand;
-	}
-};
