@@ -57,5 +57,13 @@ bool urcElementBase_c::parseURCProperty(class parser_c &p) {
 		name = p.getToken();
 		return true;
 	}
+	if(p.atWord("linkcvar")) {
+		linkCvar = p.getToken();
+		return true;
+	}
+	if(p.atWord("linkcvartoshader")) {
+		linkCvarToMat = true;
+		return true;
+	}
 	return false;
 }

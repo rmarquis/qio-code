@@ -64,6 +64,28 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 		}
 	}
 }
+void urc_c::onMouseMove(int mouseX, int mouseY) {
+	for(u32 i = 0; i < elements.size(); i++) {
+		urcElementBase_c *el = elements[i];
+		// allow certain elements to be hidden
+		if(filterURCElement(el))
+			continue;
+		if(el->isClickable()==false)
+			continue;
+		const rect_c &r = el->getRect();
+		if(r.isInside(mouseX,mouseY)) {
+			const char *hcmd = el->getHoverCommand();
+			if(hcmd && hcmd[0]) {
+				if(1) {
+					g_core->Print("Executing hover command %s\n",hcmd);
+				}
+				// NOTE: multiple commands can be separated by ;
+				g_core->Cbuf_AddText(hcmd);
+			}
+			break;
+		}
+	}
+}
 bool urc_c::parseURCFile(class parser_c &p) {
 
 	while(p.atEOF() == false) {

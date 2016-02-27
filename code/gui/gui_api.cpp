@@ -101,6 +101,8 @@ public:
 			mouseX = rf->getWinWidth();
 		if(mouseY > rf->getWinHeight())
 			mouseY = rf->getWinHeight();
+
+		um.onMouseMove(mouseX,mouseY);
 	}
 	virtual void onKeyDown(int keyCode) {
 		if(keyCode == K_MOUSE1) {

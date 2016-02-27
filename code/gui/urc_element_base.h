@@ -26,12 +26,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 
 class urcElementBase_c {
+	// internal element name, never showed on screen
 	str name;
+	// 2d element coordinates
 	rect_c rect;
+	// default material name to use
 	str matName;
+	// related cvar
+	str linkCvar;
+	// if true, the cvar value is used instead of matname
+	int linkCvarToMat;
 public:
 	bool parseURCElement(class parser_c &p);
 
+	urcElementBase_c() {
+		linkCvarToMat = false;
+	}
 
 	virtual bool parseURCProperty(class parser_c &p);
 
@@ -49,6 +59,9 @@ public:
 		return matName;
 	}
 	virtual const char *getStuffCommand() const {
+		return "";
+	}
+	virtual const char *getHoverCommand() const {
 		return "";
 	}
 	virtual void renderURCElement() = 0;

@@ -93,6 +93,11 @@ void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 		return;
 	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY);
 }
+void urcMgr_c::onMouseMove(int mouseX, int mouseY) {
+	if(stack.size()==0)
+		return;
+	stack[stack.size()-1]->onMouseMove(mouseX,mouseY);
+}
 void urcMgr_c::onKeyDown(int keyCode) {
 	if(stack.size()==0)
 		return;
