@@ -195,6 +195,22 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\code\gui\urc_element_base.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_base.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_button.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_button.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\code\gui\urc_element_label.cpp"
 			>
 		</File>
