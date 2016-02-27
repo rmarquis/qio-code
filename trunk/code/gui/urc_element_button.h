@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 class urcElementButton_c : public urcElementBase_c {
 	// NOTE: multiple commands can be separated by ;
 	str stuffCommand;
+	// command to execute when cursor enters this element
+	str hoverCommand;
 	// material to use when mouse cursor is inside this element rect
 	str hoverMaterial;
 public:
@@ -38,5 +40,8 @@ public:
 	}
 	virtual const char *getStuffCommand() const {
 		return stuffCommand;
+	}
+	virtual const char *getHoverCommand() const {
+		return hoverCommand;
 	}
 };

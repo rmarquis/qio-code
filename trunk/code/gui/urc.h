@@ -67,4 +67,5 @@ public:
 	bool loadURCFile();
 	void onKeyDown(int keyCode);
 	void onMouseDown(int keyCode, int mouseX, int mouseY);
+	void onMouseMove(int mouseX, int mouseY);
 };

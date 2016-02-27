@@ -29,11 +29,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 bool urcElementButton_c::parseURCProperty(class parser_c &p) {
 	if(p.atWord("stuffCommand")) {
-		stuffCommand = p.getToken();
+		p.getToken(stuffCommand);
 		return true;
 	}
 	if(p.atWord("hoverShader")) {
-		hoverMaterial = p.getToken();
+		// hoverMaterial reference got screwed while passing to getToken
+		p.getToken(hoverMaterial);
+		return true;
+	}
+	if(p.atWord("hoverCommand")) {
+		p.getToken(hoverCommand);
 		return true;
 	}
 	return false;
