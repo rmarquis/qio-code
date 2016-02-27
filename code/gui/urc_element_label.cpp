@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
+#include <api/cvarAPI.h>
 
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 	
@@ -34,7 +35,15 @@ bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 
 void urcElementLabel_c::renderURCElement() {
 	const rect_c &r = this->getRect();
-	const char *matName = this->getMatName();
+
+	const char *matName;
+	char tmp[512];
+	if(linkCvarToMat) {
+		g_cvars->Cvar_VariableStringBuffer(linkCvar,tmp,sizeof(tmp));
+		matName = tmp;
+	} else {
+		matName = this->getMatName();
+	}
 	if(matName[0]) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
