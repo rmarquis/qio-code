@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 
 class urcElementBase_c {
+protected:
 	// internal element name, never showed on screen
 	str name;
 	// 2d element coordinates
