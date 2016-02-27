@@ -27,69 +27,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
 
-bool urcElementBase_c::parseURCElement(class parser_c &p) {
-	if(p.atChar('{')==false) {
-		return true;
-	}
-	while(p.atChar('}')==false) {
-		if(!parseURCProperty(p)) {
-			// maybe a common property
-			if(!urcElementBase_c::parseURCProperty(p)) {
-				p.skipLine();
-			}
-		}
-	}
-	return false;
-}
-bool urcElementBase_c::parseURCProperty(class parser_c &p) {
-	if(p.atWord("rect")) {
-		rect.setMinX(p.getFloat());
-		rect.setMinY(p.getFloat());
-		rect.setW(p.getFloat());
-		rect.setH(p.getFloat());
-		return true;
-	}
-	if(p.atWord("shader")) {
-		matName = p.getToken();
-		return true;
-	}
-	if(p.atWord("name")) {
-		name = p.getToken();
-		return true;
-	}
-	return false;
-}
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 	
 	return false;
-}
-
-bool urcElementButton_c::parseURCProperty(class parser_c &p) {
-	if(p.atWord("stuffCommand")) {
-		stuffCommand = p.getToken();
-		return true;
-	}
-	if(p.atWord("hoverShader")) {
-		hoverMaterial = p.getToken();
-		return true;
-	}
-	return false;
-}
-
-void urcElementButton_c::renderURCElement() {
-	int mX = gui->getMouseX();
-	int mY = gui->getMouseY();
-	const rect_c &r = this->getRect();
-	const char *matName = this->getMatName();
-	if(r.isInside(mX,mY) && hoverMaterial.size()) {
-		matName = hoverMaterial.c_str();
-	}
-	if(matName[0]) {
-		if(0) {
-			g_core->Print("Material %s\n",matName);
-		}
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
-	}
 }
 
 void urcElementLabel_c::renderURCElement() {

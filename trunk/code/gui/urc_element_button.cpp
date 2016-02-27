@@ -21,28 +21,37 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
-#include "urc_element_base.h"
+// urc_element_button.cpp
+#include "urc_element_button.h"
+#include <shared/parser.h>
+#include <api/rAPI.h>
+#include <api/guiAPI.h>
 
-class urcElementLabel_c : public urcElementBase_c {
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
-};
-class urcElementButton_c : public urcElementBase_c {
-	// NOTE: multiple commands can be separated by ;
-	str stuffCommand;
-	// material to use when mouse cursor is inside this element rect
-	str hoverMaterial;
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
-	virtual bool isClickable() const {
+bool urcElementButton_c::parseURCProperty(class parser_c &p) {
+	if(p.atWord("stuffCommand")) {
+		stuffCommand = p.getToken();
 		return true;
 	}
-	virtual const char *getStuffCommand() const {
-		return stuffCommand;
+	if(p.atWord("hoverShader")) {
+		hoverMaterial = p.getToken();
+		return true;
 	}
-};
+	return false;
+}
+
+void urcElementButton_c::renderURCElement() {
+	int mX = gui->getMouseX();
+	int mY = gui->getMouseY();
+	const rect_c &r = this->getRect();
+	const char *matName = this->getMatName();
+	if(r.isInside(mX,mY) && hoverMaterial.size()) {
+		matName = hoverMaterial.c_str();
+	}
+	if(matName[0]) {
+		if(0) {
+			g_core->Print("Material %s\n",matName);
+		}
+		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+	}
+}
+

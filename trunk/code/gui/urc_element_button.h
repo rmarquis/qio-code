@@ -21,15 +21,9 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
+// urc_element_button.h
 #include "urc_element_base.h"
 
-class urcElementLabel_c : public urcElementBase_c {
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
-};
 class urcElementButton_c : public urcElementBase_c {
 	// NOTE: multiple commands can be separated by ;
 	str stuffCommand;
