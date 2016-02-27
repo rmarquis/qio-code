@@ -252,12 +252,13 @@ public:
 class fontFreeType_c : public fontBase_c {
 	glyphInfo_s glyphs[256];
 	mtrAPI_i *mat;
+	float maxHeight;
 public:
 	fontFreeType_c(const char *s, FT_Face face) : fontBase_c(s) {
 		FT_Set_Pixel_Sizes(face, 0, 14);
 
 		FT_GlyphSlot g = face->glyph;
-		float maxHeight = 0;
+		maxHeight = 0;
 
 		for(u32 i = 0; i < 128; i++) {
 			char ch = i;
@@ -341,17 +342,28 @@ public:
 		const char *p = s;
 		float nowX = x;
 		float nowY = y;
-		float w = 8.f;
-		float h = 16.f;
+		float sx = 1.f;
+		float sy = 1.f;
 		while(*p) {
 			int ch = *p;
-				float s0 = glyphs[ch].s0;
-				float t0 = glyphs[ch].t0;
-				float s1 = glyphs[ch].s1;
-				float t1 = glyphs[ch].t1;
-				rf->drawStretchPic(nowX,nowY,w,h,s0,t0,s1,t1,mat);
 		
-			nowX += w;
+			const glyphInfo_s &gl = glyphs[ch];
+
+			float s0 = gl.s0;
+			float t0 = gl.t0;
+			float s1 = gl.s1;
+			float t1 = gl.t1;
+
+			
+			float w = gl.width * sx;
+			float h = gl.rows * sy;
+			float x2 = nowX + gl.left * sx;
+			float y2 = nowY - gl.top * sy + maxHeight;
+
+			rf->drawStretchPic(x2,y2,w,h,s0,t0,s1,t1,mat);
+		
+			nowX += (gl.advance_x >> 6) * sx;
+			nowY += (gl.advance_y >> 6) * sy;
 			p++;
 		}
 	}
