@@ -21,28 +21,35 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
-#include "urc_element_base.h"
+// urc_element_base.h
+#include <shared/rect.h>
+#include <shared/str.h>
 
-class urcElementLabel_c : public urcElementBase_c {
+class urcElementBase_c {
+	str name;
+	rect_c rect;
+	str matName;
 public:
-	
+	bool parseURCElement(class parser_c &p);
+
+
 	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
-};
-class urcElementButton_c : public urcElementBase_c {
-	// NOTE: multiple commands can be separated by ;
-	str stuffCommand;
-	// material to use when mouse cursor is inside this element rect
-	str hoverMaterial;
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
+
+
 	virtual bool isClickable() const {
-		return true;
+		return false;
+	}
+	const rect_c &getRect() const {
+		return rect;
+	}
+	const char *getName() const {
+		return name;
+	}
+	const char *getMatName() const {
+		return matName;
 	}
 	virtual const char *getStuffCommand() const {
-		return stuffCommand;
+		return "";
 	}
+	virtual void renderURCElement() = 0;
 };
