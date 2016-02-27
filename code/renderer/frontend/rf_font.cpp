@@ -371,6 +371,9 @@ public:
 hashTableTemplateExt_c<fontBase_c> rf_fonts;
 
 fontAPI_i *RF_RegisterFont(const char *name) {
+	if(0) {
+		return 0;
+	}
 	fontBase_c *f = rf_fonts.getEntry(name);
 	if(f)
 		return f;

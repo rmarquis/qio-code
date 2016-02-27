@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // urc.cpp
 #include "urc.h"
 #include "urc_element_label.h"
+#include "urc_element_button.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 

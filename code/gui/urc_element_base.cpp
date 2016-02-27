@@ -27,6 +27,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
 
+urcElementBase_c::urcElementBase_c() {
+	linkCvarToMat = false;
+}
+
 bool urcElementBase_c::parseURCElement(class parser_c &p) {
 	if(p.atChar('{')==false) {
 		return true;

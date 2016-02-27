@@ -22,6 +22,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // urc_element_base.h
+#ifndef __URC_ELEMENT_BASE_H__
+#define __URC_ELEMENT_BASE_H__
+
 #include <shared/rect.h>
 #include <shared/str.h>
 
@@ -37,11 +40,10 @@ class urcElementBase_c {
 	// if true, the cvar value is used instead of matname
 	int linkCvarToMat;
 public:
+	urcElementBase_c();
+
 	bool parseURCElement(class parser_c &p);
 
-	urcElementBase_c() {
-		linkCvarToMat = false;
-	}
 
 	virtual bool parseURCProperty(class parser_c &p);
 
@@ -66,3 +68,5 @@ public:
 	}
 	virtual void renderURCElement() = 0;
 };
+
+#endif // __URC_ELEMENT_BASE_H__

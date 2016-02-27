@@ -33,7 +33,6 @@ bool urcElementButton_c::parseURCProperty(class parser_c &p) {
 		return true;
 	}
 	if(p.atWord("hoverShader")) {
-		// hoverMaterial reference got screwed while passing to getToken
 		p.getToken(hoverMaterial);
 		return true;
 	}
