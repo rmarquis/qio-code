@@ -81,6 +81,12 @@ public:
 		if(f4) {
 			f4->drawString(50,200,"This is Arial font test!");
 		}
+		if(f4 && f3) {
+			if(rand()%2) 
+				f4->drawString(50,250,"This is random font test!");
+			else
+				f3->drawString(50,250,"This is random font test!");
+		}
 		float mouseSize = 30.f;
 		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");
 	}
