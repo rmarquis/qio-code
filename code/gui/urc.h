@@ -22,6 +22,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // urc.h
+#ifndef __URC_H__
+#define __URC_H__
+
 #include <shared/str.h>
 
 // simple mapping between .urc file name and internal gui name
@@ -66,6 +69,8 @@ public:
 	void drawURC();
 	bool loadURCFile();
 	void onKeyDown(int keyCode);
-	void onMouseDown(int keyCode, int mouseX, int mouseY);
+	void onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr);
 	void onMouseMove(int mouseX, int mouseY);
 };
+
+#endif // __URC_H__

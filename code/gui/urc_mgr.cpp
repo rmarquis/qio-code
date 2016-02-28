@@ -23,9 +23,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc_mgr.cpp - Ultimate ResourCe manager
 #include "urc_mgr.h"
+#include "urc_element_field.h"
 #include <api/vfsAPI.h>
 #include <shared/parser.h>
 
+urcMgr_c::urcMgr_c() {
+	activeField = 0;
+}
 void urcMgr_c::precacheURCFile(const char *fname) {
 	parser_c p;
 	if(p.openFile(fname))
@@ -73,11 +77,13 @@ void urcMgr_c::drawURCs() {
 }
 void urcMgr_c::popAllMenus() {
 	stack.clear();
+	setActiveField(0);
 }
 void urcMgr_c::popMenu() {
 	if(stack.size() == 0)
 		return;
 	stack.pop_back();
+	setActiveField(0);
 }
 void urcMgr_c::pushMenu(const char *name) {
 	urc_c *urc = registerURC(name);
@@ -87,11 +93,13 @@ void urcMgr_c::pushMenu(const char *name) {
 	}
 	g_core->Print("Pushmenu: pushing %s\n",name);
 	stack.push_back(urc);
+	// typing is no longer possible in the background menu
+	setActiveField(0);
 }
 void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 	if(stack.size()==0)
 		return;
-	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY);
+	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY, this);
 }
 void urcMgr_c::onMouseMove(int mouseX, int mouseY) {
 	if(stack.size()==0)
@@ -102,6 +110,9 @@ void urcMgr_c::onKeyDown(int keyCode) {
 	if(stack.size()==0)
 		return;
 	stack[stack.size()-1]->onKeyDown(keyCode);
+	if(activeField) {
+		activeField->onKeyDown(keyCode);
+	}
 }
 urc_c *urcMgr_c::registerURC(const char *internalName) {
 	urc_c *urc = loaded.getEntry(internalName);
