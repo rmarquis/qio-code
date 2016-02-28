@@ -21,62 +21,25 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_base.h
-#ifndef __URC_ELEMENT_BASE_H__
-#define __URC_ELEMENT_BASE_H__
+// urc_element_checkbox.h
+#include "urc_element_base.h"
 
-#include <shared/rect.h>
-#include <shared/str.h>
+class urcElementCheckbox_c : public urcElementBase_c {
+	// NOTE: multiple commands can be separated by ;
+	str checkCommand, uncheckCommand;
+	str checkedMaterial, uncheckedMaterial;
+	bool checkBoxState;
 
-class urcElementBase_c {
-protected:
-	// internal element name, never showed on screen
-	str name;
-	// 2d element coordinates
-	rect_c rect;
-	// default material name to use
-	str matName;
-	// related cvar
-	str linkCvar;
-	// if true, the cvar value is used instead of matname
-	int linkCvarToMat;
-
-	// called after element is parsed succesfully
-	virtual void onURCElementParsed() { }
+	virtual void onURCElementParsed();
 public:
-	urcElementBase_c();
-
-	bool parseURCElement(class parser_c &p);
-
-
+	
 	virtual bool parseURCProperty(class parser_c &p);
-
-
+	virtual void renderURCElement();
 	virtual bool isClickable() const {
-		return false;
-	}
-	virtual bool isField() const {
-		return false;
+		return true;
 	}
 	virtual bool isCheckBox() const {
-		return false;
+		return true;
 	}
-	const rect_c &getRect() const {
-		return rect;
-	}
-	const char *getName() const {
-		return name;
-	}
-	const char *getMatName() const {
-		return matName;
-	}
-	virtual const char *getStuffCommand() const {
-		return "";
-	}
-	virtual const char *getHoverCommand() const {
-		return "";
-	}
-	virtual void renderURCElement() = 0;
+	void toggleCheckBox();
 };
-
-#endif // __URC_ELEMENT_BASE_H__

@@ -53,6 +53,12 @@ public:
 	float getY() const {
 		return min[1];
 	}
+	float getCenterX() const {
+		return (min[0]+max[0])*0.5f;
+	}
+	float getCenterY() const {
+		return (min[1]+max[1])*0.5f;
+	}
 	float getMaxX() const {
 		return max[0];
 	}

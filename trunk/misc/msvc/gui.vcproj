@@ -211,6 +211,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\code\gui\urc_element_checkbox.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_checkbox.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\code\gui\urc_element_field.cpp"
 			>
 		</File>

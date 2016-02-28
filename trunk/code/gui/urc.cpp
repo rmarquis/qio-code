@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_label.h"
 #include "urc_element_button.h"
 #include "urc_element_field.h"
+#include "urc_element_checkbox.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 
@@ -66,6 +67,8 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr
 
 			if(el->isField()) {
 				mgr->setActiveField(dynamic_cast<urcElementField_c*>(el));
+			} else if(el->isCheckBox()) {
+				(dynamic_cast<urcElementCheckbox_c*>(el))->toggleCheckBox();
 			}
 			break;
 		}
@@ -104,6 +107,8 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementButton_c();
 			} else if(p.atWord("Field")) {
 				el = new urcElementField_c();
+			} else if(p.atWord("CheckBox")) {
+				el = new urcElementCheckbox_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();
