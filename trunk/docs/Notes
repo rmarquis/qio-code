@@ -9,3 +9,5 @@ V: Both Radiant, Doom3 editor and Qio's Radiant fork are not running correctly f
 
 V: I have tested Qio windows binaries (exe and dlls) under Ubuntu with Wine - they are working fine, except some GLSL shaders
 V: 2016 01 01: I have also tested Qio built-in editor (run engine exe with -editor parameter) under Ubuntu with Wine - it seems to be working fine.
+
+tested
