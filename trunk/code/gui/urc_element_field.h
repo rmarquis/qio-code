@@ -21,54 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_base.cpp
+// urc_element_field.h
 #include "urc_element_base.h"
-#include <shared/parser.h>
-#include <api/rAPI.h>
-#include <api/guiAPI.h>
 
-urcElementBase_c::urcElementBase_c() {
-	linkCvarToMat = false;
-}
+class urcElementField_c : public urcElementBase_c {
+	str currentText;
+	int currentCursor;
 
-bool urcElementBase_c::parseURCElement(class parser_c &p) {
-	if(p.atChar('{')==false) {
+	virtual void onURCElementParsed();
+public:
+	urcElementField_c();
+	virtual void onKeyDown(int keyCode);
+	virtual bool parseURCProperty(class parser_c &p);
+	virtual void renderURCElement();
+	virtual bool isClickable() const {
 		return true;
 	}
-	while(p.atChar('}')==false) {
-		if(!parseURCProperty(p)) {
-			// maybe a common property
-			if(!urcElementBase_c::parseURCProperty(p)) {
-				p.skipLine();
-			}
-		}
-	}
-	onURCElementParsed();
-	return false;
-}
-bool urcElementBase_c::parseURCProperty(class parser_c &p) {
-	if(p.atWord("rect")) {
-		rect.setMinX(p.getFloat());
-		rect.setMinY(p.getFloat());
-		rect.setW(p.getFloat());
-		rect.setH(p.getFloat());
+	virtual bool isField() const {
 		return true;
 	}
-	if(p.atWord("shader")) {
-		matName = p.getToken();
-		return true;
-	}
-	if(p.atWord("name")) {
-		name = p.getToken();
-		return true;
-	}
-	if(p.atWord("linkcvar")) {
-		linkCvar = p.getToken();
-		return true;
-	}
-	if(p.atWord("linkcvartoshader")) {
-		linkCvarToMat = true;
-		return true;
-	}
-	return false;
-}
+};

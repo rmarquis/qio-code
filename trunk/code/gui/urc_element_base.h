@@ -40,6 +40,9 @@ protected:
 	str linkCvar;
 	// if true, the cvar value is used instead of matname
 	int linkCvarToMat;
+
+	// called after element is parsed succesfully
+	virtual void onURCElementParsed() { }
 public:
 	urcElementBase_c();
 
@@ -50,6 +53,9 @@ public:
 
 
 	virtual bool isClickable() const {
+		return false;
+	}
+	virtual bool isField() const {
 		return false;
 	}
 	const rect_c &getRect() const {

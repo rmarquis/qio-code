@@ -23,8 +23,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc.cpp
 #include "urc.h"
+#include "urc_mgr.h"
 #include "urc_element_label.h"
 #include "urc_element_button.h"
+#include "urc_element_field.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 
@@ -48,7 +50,7 @@ void urc_c::drawURC() {
 }
 void urc_c::onKeyDown(int keyCode) {
 }
-void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
+void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr) {
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
 		// allow certain elements to be hidden
@@ -61,6 +63,10 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 			g_core->Print("Clicked element %s with material %s\n",el->getName(),el->getMatName());
 			// NOTE: multiple commands can be separated by ;
 			g_core->Cbuf_AddText(el->getStuffCommand());
+
+			if(el->isField()) {
+				mgr->setActiveField(dynamic_cast<urcElementField_c*>(el));
+			}
 			break;
 		}
 	}
@@ -96,6 +102,8 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementLabel_c();
 			} else if(p.atWord("Button")) {
 				el = new urcElementButton_c();
+			} else if(p.atWord("Field")) {
+				el = new urcElementField_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();

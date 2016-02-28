@@ -41,9 +41,17 @@ class urcMgr_c {
 	hashTableTemplateExt_c<urc_c> loaded;
 	arraySTD_c<urc_c*> stack;
 
+	class urcElementField_c *activeField;
+
 	void precacheURCFile(const char *fname);
 public:
+	urcMgr_c();
+
 	void precacheURCFiles();
+
+	void setActiveField(class urcElementField_c *f) {
+		activeField = f;
+	}
 
 	const char *getURCFileNameForURCInternalName(const char *internalName) const;
 
