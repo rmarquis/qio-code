@@ -37,6 +37,7 @@ public:
 	virtual void drawGUI() = 0;
 	virtual void onMouseMove(int dX, int dY) = 0;
 	virtual void onKeyDown(int keyCode) = 0;
+	virtual void onKeyUp(int keyCode) = 0;
 	// this is not the same coordinate as windows mouse
 	virtual int getMouseX() const = 0;
 	virtual int getMouseY() const = 0;

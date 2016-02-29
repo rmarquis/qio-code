@@ -107,9 +107,17 @@ public:
 
 		um.onMouseMove(mouseX,mouseY);
 	}
+	virtual void onKeyUp(int keyCode) {
+		if(keyCode == K_MOUSE1) {
+			g_core->Print("LMB up on GUI\n");
+			um.onMouseUp(keyCode,mouseX,mouseY);
+		} else {
+			//um.onKeyDown(keyCode);
+		}
+	}
 	virtual void onKeyDown(int keyCode) {
 		if(keyCode == K_MOUSE1) {
-			g_core->Print("LMB on GUI\n");
+			g_core->Print("LMB down on GUI\n");
 			um.onMouseDown(keyCode,mouseX,mouseY);
 		} else {
 			um.onKeyDown(keyCode);

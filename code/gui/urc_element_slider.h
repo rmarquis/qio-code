@@ -21,12 +21,20 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
+// urc_element_slider.h
 #include "urc_element_base.h"
 
-class urcElementLabel_c : public urcElementBase_c {
+class urcElementSlider_c : public urcElementBase_c {
+
+	virtual void onURCElementParsed();
 public:
-	
+	urcElementSlider_c();
 	virtual bool parseURCProperty(class parser_c &p);
 	virtual void renderURCElement(class urcMgr_c *pMgr);
+	virtual bool isClickable() const {
+		return true;
+	}
+	virtual bool isSlider() const {
+		return true;
+	}
 };

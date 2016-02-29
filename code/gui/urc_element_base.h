@@ -61,6 +61,12 @@ public:
 	virtual bool isCheckBox() const {
 		return false;
 	}
+	virtual bool isPullDown() const {
+		return false;
+	}
+	virtual bool isSlider() const {
+		return false;
+	}
 	const rect_c &getRect() const {
 		return rect;
 	}
@@ -76,7 +82,7 @@ public:
 	virtual const char *getHoverCommand() const {
 		return "";
 	}
-	virtual void renderURCElement() = 0;
+	virtual void renderURCElement(class urcMgr_c *pMgr) = 0;
 };
 
 #endif // __URC_ELEMENT_BASE_H__

@@ -34,7 +34,7 @@ class urcElementCheckbox_c : public urcElementBase_c {
 public:
 	
 	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
+	virtual void renderURCElement(class urcMgr_c *pMgr);
 	virtual bool isClickable() const {
 		return true;
 	}

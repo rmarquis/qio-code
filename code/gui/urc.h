@@ -66,7 +66,7 @@ public:
 		return elements.size();
 	}
 
-	void drawURC();
+	void drawURC(class urcMgr_c *pMgr);
 	bool loadURCFile();
 	void onKeyDown(int keyCode);
 	void onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr);

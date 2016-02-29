@@ -42,6 +42,7 @@ class urcMgr_c {
 	arraySTD_c<urc_c*> stack;
 
 	class urcElementField_c *activeField;
+	class urcElementPullDown_c *activePullDown;
 
 	void precacheURCFile(const char *fname);
 public:
@@ -51,6 +52,11 @@ public:
 
 	void setActiveField(class urcElementField_c *f) {
 		activeField = f;
+		activePullDown = 0;
+	}
+	void setActivePullDown(class urcElementPullDown_c *pd) {
+		activeField = 0;
+		activePullDown = pd;
 	}
 
 	const char *getURCFileNameForURCInternalName(const char *internalName) const;
@@ -65,5 +71,10 @@ public:
 	void pushMenu(const char *name);
 	void onKeyDown(int keyCode);
 	void onMouseDown(int keyCode, int mouseX, int mouseY);
+	void onMouseUp(int keyCode, int mouseX, int mouseY);
 	void onMouseMove(int mouseX, int mouseY);
+
+	const class urcElementPullDown_c *getActivePullDown() const {
+		return activePullDown;
+	}
 };
