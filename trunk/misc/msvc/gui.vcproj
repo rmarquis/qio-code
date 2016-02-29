@@ -170,6 +170,14 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\autoCvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>
@@ -232,6 +240,14 @@
 		</File>
 		<File
 			RelativePath="..\..\code\gui\urc_element_label.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_pulldown.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_pulldown.h"
 			>
 		</File>
 		<File
