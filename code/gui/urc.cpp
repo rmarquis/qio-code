@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_button.h"
 #include "urc_element_field.h"
 #include "urc_element_checkbox.h"
+#include "urc_element_pulldown.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 
@@ -109,6 +110,8 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementField_c();
 			} else if(p.atWord("CheckBox")) {
 				el = new urcElementCheckbox_c();
+			} else if(p.atWord("PulldownMenuContainer")) {
+				el = new urcElementPullDown_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();

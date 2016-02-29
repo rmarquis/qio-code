@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <client/keyCodes.h>
+#include <shared/autoCVar.h>
 #include "urc_mgr.h"
 
 void GUI_AddConsoleCommands();
@@ -55,9 +56,11 @@ public:
 	void init() {
 		um.precacheURCFiles();
 		GUI_AddConsoleCommands();
+		AUTOCVAR_RegisterAutoCvars();
 	}
 	virtual void shutdownGUI() {
 		GUI_RemoveConsoleCommands();
+		AUTOCVAR_UnregisterAutoCvars();
 	}
 	virtual void drawGUI() {
 		//urc_c *u = um.registerURC("main");
@@ -141,7 +144,13 @@ moduleManagerAPI_i *g_moduleMgr = 0;
 static guiAPIImpl_c g_staticGUIAPI;
 guiAPI_i *gui = &g_staticGUIAPI;
 
+static aCvar_c gui_connectIP("ui_connectIP","");
 
+void GUI_MenuConnect_f() {
+	str cmd = "connect ";
+	cmd.append(gui_connectIP.getStr());
+	g_core->Cbuf_AddText(cmd);
+}
 void GUI_PushMenu_f() {
 	if(g_core->Argc() < 2) {
 		g_core->Print("Usage: pushmenu <urc name>\n");
@@ -161,6 +170,8 @@ void GUI_AddConsoleCommands() {
 	g_core->Cmd_AddCommand("popallmenus",GUI_PopAllMenus_f);
 	// TODO: what's the difference between pushmenu_sp and pushmenu?
 	g_core->Cmd_AddCommand("pushmenu_sp",GUI_PushMenu_f);
+	// used to connect to server by IP specified in ui_connectIP cVar
+	g_core->Cmd_AddCommand("menuconnect",GUI_MenuConnect_f);
 }
 void GUI_RemoveConsoleCommands() {
 	g_core->Cmd_RemoveCommand("pushmenu");
