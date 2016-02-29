@@ -43,7 +43,7 @@ bool urcElementButton_c::parseURCProperty(class parser_c &p) {
 	return false;
 }
 
-void urcElementButton_c::renderURCElement() {
+void urcElementButton_c::renderURCElement(class urcMgr_c *pMgr) {
 	int mX = gui->getMouseX();
 	int mY = gui->getMouseY();
 	const rect_c &r = this->getRect();

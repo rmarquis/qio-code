@@ -33,7 +33,7 @@ public:
 	urcElementField_c();
 	virtual void onKeyDown(int keyCode);
 	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
+	virtual void renderURCElement(class urcMgr_c *pMgr);
 	virtual bool isClickable() const {
 		return true;
 	}

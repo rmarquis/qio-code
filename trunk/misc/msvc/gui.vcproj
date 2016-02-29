@@ -251,6 +251,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\code\gui\urc_element_slider.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_slider.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\code\gui\urc_mgr.cpp"
 			>
 		</File>

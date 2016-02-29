@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc_element_pulldown.cpp
 #include "urc_element_pulldown.h"
+#include "urc_mgr.h"
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
@@ -59,9 +60,13 @@ bool urcElementPullDown_c::parseURCProperty(class parser_c &p) {
 	}
 	return false;
 }
-void urcElementPullDown_c::renderURCElement() {
+void urcElementPullDown_c::renderURCElement(class urcMgr_c *pMgr) {
 	const rect_c &r = this->getRect();
-	const char *matName = menuMaterial;
+	const char *matName;
+	if(pMgr->getActivePullDown() == this)
+		matName = selMenuMaterial;
+	else
+		matName = menuMaterial;
 	if(matName[0]) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);

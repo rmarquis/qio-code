@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_field.h"
 #include "urc_element_checkbox.h"
 #include "urc_element_pulldown.h"
+#include "urc_element_slider.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 
@@ -41,13 +42,13 @@ bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	}
 	return false;
 }
-void urc_c::drawURC() {	
+void urc_c::drawURC(class urcMgr_c *pMgr) {	
 	for(u32 i = 0; i < elements.size(); i++) {
 		urcElementBase_c *el = elements[i];
 		// allow certain elements to be hidden
 		if(filterURCElement(el))
 			continue;
-		el->renderURCElement();
+		el->renderURCElement(pMgr);
 	}
 }
 void urc_c::onKeyDown(int keyCode) {
@@ -70,6 +71,8 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr
 				mgr->setActiveField(dynamic_cast<urcElementField_c*>(el));
 			} else if(el->isCheckBox()) {
 				(dynamic_cast<urcElementCheckbox_c*>(el))->toggleCheckBox();
+			} else if(el->isPullDown()) {
+				mgr->setActivePullDown(dynamic_cast<urcElementPullDown_c*>(el));
 			}
 			break;
 		}
@@ -112,6 +115,8 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementCheckbox_c();
 			} else if(p.atWord("PulldownMenuContainer")) {
 				el = new urcElementPullDown_c();
+			} else if(p.atWord("Slider")) {
+				el = new urcElementSlider_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();

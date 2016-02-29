@@ -1289,11 +1289,11 @@ void CL_KeyUpEvent( int key, unsigned time )
 	if( clc.state != CA_DISCONNECTED )
 		CL_ParseBinding( key, false, time );
 
-//	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
-//		VM_Call( uivm, UI_KEY_EVENT, key, false );
-//	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
-///
-//	}
+	if ( Key_GetCatcher( ) & KEYCATCH_UI && gui ) {
+		gui->onKeyUp(key);
+	//} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && g ) {
+
+	}
 }
 
 /*

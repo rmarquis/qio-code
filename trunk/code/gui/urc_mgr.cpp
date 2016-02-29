@@ -29,6 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 urcMgr_c::urcMgr_c() {
 	activeField = 0;
+	activePullDown = 0;
 }
 void urcMgr_c::precacheURCFile(const char *fname) {
 	parser_c p;
@@ -72,7 +73,7 @@ const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName)
 void urcMgr_c::drawURCs() {
 	//for(int i = stack.size()-1; i>=0;i--) {
 	for(u32 i = 0; i < stack.size(); i++) {
-		stack[i]->drawURC();
+		stack[i]->drawURC(this);
 	}
 }
 void urcMgr_c::popAllMenus() {
@@ -100,6 +101,11 @@ void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 	if(stack.size()==0)
 		return;
 	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY, this);
+}
+void urcMgr_c::onMouseUp(int keyCode, int mouseX, int mouseY) {
+	if(stack.size()==0)
+		return;
+	setActivePullDown(0);
 }
 void urcMgr_c::onMouseMove(int mouseX, int mouseY) {
 	if(stack.size()==0)

@@ -69,7 +69,7 @@ void urcElementField_c::onKeyDown(int keyCode) {
 		g_cvars->Cvar_Set(linkCvar,currentText);
 	}
 }
-void urcElementField_c::renderURCElement() {
+void urcElementField_c::renderURCElement(class urcMgr_c *pMgr) {
 	const rect_c &r = this->getRect();
 	const char *matName = this->getMatName();
 	if(matName[0]) {

@@ -38,9 +38,12 @@ public:
 	urcElementPullDown_c();
 
 	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement();
+	virtual void renderURCElement(class urcMgr_c *pMgr);
 
 	virtual bool isClickable() const {
+		return true;
+	}
+	virtual bool isPullDown() const {
 		return true;
 	}
 };
