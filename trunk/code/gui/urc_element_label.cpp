@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 	if(p.atWord("title")) {
 		p.getToken(title);
+		return true;
 	} else if(p.atWord("linkstring")) {
 		////linkString_s s;
 		//p.getToken(s.cvarValue);
@@ -40,6 +41,7 @@ bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 		p.getToken(cvarValue);
 		p.getToken(displayValue);
 		linkStrings.set(cvarValue,displayValue);
+		return true;
 	}
 	return false;
 }

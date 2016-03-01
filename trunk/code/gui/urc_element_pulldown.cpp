@@ -51,7 +51,7 @@ bool urcElementPullDown_c::parseURCProperty(class parser_c &p) {
 		p.getToken(); // "MENU"
 		p.getToken(pd.label);
 		if(p.atWord("command")) {
-			p.getToken(pd.command); // eg. "set cg_drawviewmodel 0"
+			p.getToken(pd.command,0,true); // eg. "set cg_drawviewmodel 0"
 			options.push_back(pd);
 		} else {
 
@@ -59,6 +59,17 @@ bool urcElementPullDown_c::parseURCProperty(class parser_c &p) {
 		return true;
 	}
 	return false;
+}
+void urcElementPullDown_c::drawActivePullDown() {
+	const rect_c &r = this->getRect();
+	u32 curY = r.getMaxY();
+	fontAPI_i *f = rf->registerFont("Arial");
+
+	for(u32 i = 0; i < options.size(); i++) {
+		const pullDownOption_c &pd = options[i];
+		f->drawString(r.getX(),curY,pd.label);
+		curY += 16;
+	}
 }
 void urcElementPullDown_c::renderURCElement(class urcMgr_c *pMgr) {
 	const rect_c &r = this->getRect();
@@ -73,16 +84,6 @@ void urcElementPullDown_c::renderURCElement(class urcMgr_c *pMgr) {
 			g_core->Print("Material %s\n",matName);
 		}
 		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
-	}
-	if(bIsActive) {
-		u32 curY = r.getMaxY();
-		fontAPI_i *f = rf->registerFont("Arial");
-
-		for(u32 i = 0; i < options.size(); i++) {
-			const pullDownOption_c &pd = options[i];
-			f->drawString(r.getX(),curY,pd.label);
-			curY += 16;
-		}
 	}
 }
 

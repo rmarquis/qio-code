@@ -101,7 +101,7 @@ bool parser_c::skipToNextToken() {
 	return false;
 }
 
-const char *parser_c::getToken(str &out, const char *stopSet) {
+const char *parser_c::getToken(str &out, const char *stopSet, bool bAllowStringEscaping) {
 	if(skipToNextToken()) {
 		printf("parser_c::getToken: EOF reached\n");
 		out.clear();
@@ -111,7 +111,16 @@ const char *parser_c::getToken(str &out, const char *stopSet) {
 	if(*p == '"') {
 		p++;
 		start = p;
-		while(*p != '"') {
+		while(1) {
+			if(*p == '"') {
+				if(bAllowStringEscaping) {
+					if(p[-1] != '\\') {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
 			if(*p == 0) {
 				printf("parser_c::getToken: unexpected end of file hit in quoted string\n");
 				break;
