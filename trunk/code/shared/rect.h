@@ -71,6 +71,10 @@ public:
 	float getH() const {
 		return max[1]-min[1];
 	}
+	float getXFrac(int ox) const {
+		int local = ox - min[0];
+		return float(local)/float(getW());
+	}	
 	bool isInside(int x, int y) const {
 		if(x < min[0])
 			return false;
@@ -81,6 +85,25 @@ public:
 		if(y > max[1])
 			return false;
 		return true;
+	}
+	void add(const rect_c &r) {
+		for(unsigned int i = 0; i < 2; i++) {
+			if(min[i] > r.min[i])
+				min[i] = r.min[i];
+			if(max[i] < r.max[i])
+				max[i] = r.max[i];
+
+		}
+	}
+	void clear() {
+		min[0] = min[1] = 9999999;
+		max[0] = max[1] = -9999999;
+	}	
+	void translate(int dX, int dY) {	
+		min[0] += dX;
+		max[0] += dX;
+		min[1] += dY;
+		max[1] += dY;
 	}
 };
 

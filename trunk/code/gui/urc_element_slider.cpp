@@ -30,7 +30,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 
 urcElementSlider_c::urcElementSlider_c() {
-//	currentCursor = 0;
+	currentFrac = 0;
+	rangeMin = 0.f;
+	rangeMax = 1.f;
+	stepSize = 0.1f;
 }
 void urcElementSlider_c::onURCElementParsed() {
 	// get linked cvar value and set field text
@@ -40,18 +43,33 @@ void urcElementSlider_c::onURCElementParsed() {
 		//this->currentText = tmp;
 	}
 }
+void urcElementSlider_c::setFraction(float f) {
+	currentFrac = f;
+	// map the [0,1] fraction to desired range
+	float range = rangeMax - rangeMin;
+	float fracStep = stepSize / range;
+	float clampedFrac = ceil(f/fracStep)*fracStep;
+	this->currentFrac = clampedFrac;
+	float val = rangeMin + currentFrac * range;
+	if(linkCvar.size()) {
+		char tmp[128];
+		sprintf(tmp,"%f",val);
+		g_cvars->Cvar_Set(linkCvar,tmp);
+	}
+}
 bool urcElementSlider_c::parseURCProperty(class parser_c &p) {
 	if(p.atWord("slidertype")) {
 		// slidertype float
 	} else if(p.atWord("setrange")) {
 		// setrange 0 1
+		rangeMin = p.getFloat();
+		rangeMax = p.getFloat();
 	} else if(p.atWord("stepsize")) {
 		// stepsize 0.1
+		stepSize = p.getFloat();
 	} else {
 
 	}
-setrange 0 1
-
 	return false;
 }
 void urcElementSlider_c::renderURCElement(class urcMgr_c *pMgr) {
@@ -61,8 +79,10 @@ void urcElementSlider_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
+		u32 sizeX = r.getW();
+		u32 ofsX = r.getX() + sizeX * currentFrac;
 		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
-		rf->drawStretchPic(r.getCenterX(),r.getY(),14,r.getH(),0,0,1,1,"textures/menu/slider_thumb");
+		rf->drawStretchPic(ofsX,r.getY(),14,r.getH(),0,0,1,1,"textures/menu/slider_thumb");
 	}
 }
 
