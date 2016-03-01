@@ -32,7 +32,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 	if(p.atWord("title")) {
 		p.getToken(title);
-	}	
+	} else if(p.atWord("linkstring")) {
+		////linkString_s s;
+		//p.getToken(s.cvarValue);
+		//p.getToken(s.displayValue);
+		str cvarValue, displayValue;
+		p.getToken(cvarValue);
+		p.getToken(displayValue);
+		linkStrings.set(cvarValue,displayValue);
+	}
 	return false;
 }
 
@@ -56,9 +64,14 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 	if(linkCvar.size() && !linkCvarToMat) {
 		// linkCvar settings overrides the title and displays the CVar value
 		g_cvars->Cvar_VariableStringBuffer(linkCvar,tmp,sizeof(tmp));
+		// translate CVar value to display value
+		const char *displayValue = linkStrings.findKeyValue(tmp);
+		if(displayValue == 0) {
+			displayValue = tmp;
+		}
 		fontAPI_i *f = rf->registerFont("Arial");
 		if(f) {
-			f->drawString(r.getX(),r.getY(),tmp);
+			f->drawString(r.getX(),r.getY(),displayValue);
 		}
 	} else if(title.size()) {
 		fontAPI_i *f = rf->registerFont("Arial");

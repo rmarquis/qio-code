@@ -21,24 +21,44 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
-#include "urc_element_base.h"
-#include <shared/ePairsList.h>
-// this is used when displaying a CVAR value with label,
-// so you can link an integer to label, so URC label
-// linked to "rf_shadows" with value "1" can display
-// "Stencil shadows" instead of "1".
-//struct linkString_s {
-//	str cvarValue; // eg. "1"
-//	str displayValue; // eg. "Stencil shadows."
-//};
+#include "textureAllocator.h"
 
-class urcElementLabel_c : public urcElementBase_c {
-	str title;
-	//arraySTD_c<linkString_s> linkStrings;
-	ePairList_c linkStrings;
-public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement(class urcMgr_c *pMgr);
-};
+textureAllocator_c::textureAllocator_c() {
+	setupTextureSize(64);
+}
+void textureAllocator_c::setupTextureSize(u32 newSize) {
+	maxTextureSize = newSize;
+	allocated.resize(maxTextureSize);
+	allocated.nullMemory();
+}
+bool textureAllocator_c::allocTextureBlock(const u32 inSizes[2], u32 outPos[2]) {
+	u32 margin = 1;
+	u32 sizes[2] = { inSizes[0]+margin, inSizes[1]+margin };
+	u32 best = maxTextureSize;
+	for(u32 i = 0; i <= maxTextureSize-sizes[0]; i++ ) {
+		u32 best2 = 0;
+		u32 j;
+		for(j = 0; j < sizes[0]; j++) {
+			if(allocated[i+j] >= best) {
+				break;
+			}
+			if(allocated[i+j] > best2) {
+				best2 = allocated[i+j];
+			}
+		}
+		if(j == sizes[0])	{	// this is a valid spot
+			outPos[0] = i;
+			outPos[1] = best = best2;
+		}
+	}
+
+	if(best + sizes[1] > maxTextureSize) {
+		return true;
+	}
+
+	for(u32 i = 0; i < sizes[0]; i++) {
+		allocated[outPos[0] + i] = best + sizes[1];
+	}
+
+	return false;
+}

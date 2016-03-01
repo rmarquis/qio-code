@@ -284,6 +284,7 @@ public:
 		RF_ShutdownWater();
 		RF_ShutdownExplosions();
 		RFT_ShutdownTerrain();
+		RF_ShutdownFonts();
 		unloadMaterialSystem();
 		if(g_declMgr) {
 			// g_declMgr is not necessary for engine to start.

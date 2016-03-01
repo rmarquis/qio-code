@@ -211,6 +211,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\code\gui\urc_element_bindList.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\code\gui\urc_element_bindList.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\code\gui\urc_element_button.cpp"
 			>
 		</File>

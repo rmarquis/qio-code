@@ -139,6 +139,7 @@ bool RFT_RayTraceTerrain(class trace_c &tr);
 
 // rf_font.cpp
 void RF_InitFonts();
+void RF_ShutdownFonts();
 class fontAPI_i *RF_RegisterFont(const char *name);
 
 extern class cameraDef_c rf_camera;
