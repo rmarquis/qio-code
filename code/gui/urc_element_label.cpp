@@ -26,10 +26,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
+#include <api/fontAPI.h>
 #include <api/cvarAPI.h>
 
 bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
-	
+	if(p.atWord("title")) {
+		p.getToken(title);
+	}	
 	return false;
 }
 
@@ -49,6 +52,19 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 			g_core->Print("Material %s\n",matName);
 		}
 		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+	}
+	if(linkCvar.size() && !linkCvarToMat) {
+		// linkCvar settings overrides the title and displays the CVar value
+		g_cvars->Cvar_VariableStringBuffer(linkCvar,tmp,sizeof(tmp));
+		fontAPI_i *f = rf->registerFont("Arial");
+		if(f) {
+			f->drawString(r.getX(),r.getY(),tmp);
+		}
+	} else if(title.size()) {
+		fontAPI_i *f = rf->registerFont("Arial");
+		if(f) {
+			f->drawString(r.getX(),r.getY(),title);
+		}
 	}
 }
 

@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __URC_H__
 
 #include <shared/str.h>
+#include <shared/rect.h>
 
 // simple mapping between .urc file name and internal gui name
 class urcNameMapping_c {
@@ -48,10 +49,29 @@ public:
 	}
 };
 
+enum verticalAlign_e {
+	VA_DEFAULT,
+	VA_TOP,
+	VA_BOTTOM,
+};
+enum horizontalAlign_e {
+	HA_DEFAULT,
+	HA_RIGHT,
+	HA_LEFT,
+};
 
 class urc_c : public urcNameMapping_c {
 	urc_c *hashNext;
 	arraySTD_c<class urcElementBase_c*> elements;
+	// aligns are not used for main-menu,
+	// only for in-game hud like healthbar
+	verticalAlign_e verticalAlign;
+	horizontalAlign_e horizontalAlign;
+	// calculated from rects of all elements
+	rect_c bounds;
+	// sizes specified in urc file
+	// (they are different from bounds!)
+	int sizeX, sizeY;
 
 	bool parseURCFile(class parser_c &p);
 	bool filterURCElement(const class urcElementBase_c *el) const;
@@ -65,6 +85,8 @@ public:
 	u32 getNumElements() const {
 		return elements.size();
 	}
+
+	void translate(int dX, int dY);
 
 	void drawURC(class urcMgr_c *pMgr);
 	bool loadURCFile();

@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_base.h"
 
 class urcElementLabel_c : public urcElementBase_c {
+	str title;
 public:
 	
 	virtual bool parseURCProperty(class parser_c &p);

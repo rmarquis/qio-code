@@ -48,6 +48,7 @@ public:
 
 	bool parseURCElement(class parser_c &p);
 
+	void translate(int dX, int dY);
 
 	virtual bool parseURCProperty(class parser_c &p);
 

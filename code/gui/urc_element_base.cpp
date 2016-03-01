@@ -30,12 +30,18 @@ or simply visit <http://www.gnu.org/licenses/>.
 urcElementBase_c::urcElementBase_c() {
 	linkCvarToMat = false;
 }
-
+void urcElementBase_c::translate(int dX, int dY) {
+	rect.translate(dX,dY);
+}
 bool urcElementBase_c::parseURCElement(class parser_c &p) {
 	if(p.atChar('{')==false) {
 		return true;
 	}
 	while(p.atChar('}')==false) {
+		if(p.atEOF()) {
+			g_core->RedWarning("urcElementBase_c::parseURCElement: unexpected EOF reached while parsing %s\n",p.getDebugFileName());
+			return true;
+		}
 		if(!parseURCProperty(p)) {
 			// maybe a common property
 			if(!urcElementBase_c::parseURCProperty(p)) {

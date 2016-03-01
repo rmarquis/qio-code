@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_slider.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
+#include <api/rAPI.h>
 
 bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	if(!stricmp(el->getName(),"disconnect")) {
@@ -73,6 +74,10 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr
 				(dynamic_cast<urcElementCheckbox_c*>(el))->toggleCheckBox();
 			} else if(el->isPullDown()) {
 				mgr->setActivePullDown(dynamic_cast<urcElementPullDown_c*>(el));
+			} else if(el->isSlider()) {
+				urcElementSlider_c *s = (dynamic_cast<urcElementSlider_c*>(el));
+				float f = s->getRect().getXFrac(mouseX);
+				s->setFraction(f);
 			}
 			break;
 		}
@@ -101,9 +106,35 @@ void urc_c::onMouseMove(int mouseX, int mouseY) {
 	}
 }
 bool urc_c::parseURCFile(class parser_c &p) {
+	if(p.atWord("menu")==false) {
+
+	}
+	p.getToken();
+	sizeX = p.getInteger();
+	sizeY = p.getInteger();
 
 	while(p.atEOF() == false) {
-		if(p.atWord("resource")) {
+		if(p.atWord("align")) {
+			// this is not used for fullscreen menus,
+			// it is used for. eg hud_health 
+			// (healthbar which is always in lower left corner)
+			if(p.atWord("right")) {	
+				horizontalAlign = HA_RIGHT;
+			} else if(p.atWord("left")) {
+				horizontalAlign = HA_LEFT;
+			} else {
+				g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
+			}
+
+			if(p.atWord("top")) {
+				verticalAlign = VA_TOP;
+			} else if(p.atWord("bottom")) {
+				verticalAlign = VA_BOTTOM;
+			} else {
+				g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
+			}
+			//g_core->Print("URC %s is using align keyword\n",getName());
+		} else if(p.atWord("resource")) {
 			urcElementBase_c *el;
 			if(p.atWord("Label")) {
 				el = new urcElementLabel_c();
@@ -117,6 +148,12 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementPullDown_c();
 			} else if(p.atWord("Slider")) {
 				el = new urcElementSlider_c();
+			} else if(p.atWord("FAKKBindList")) {
+				// special control for FAKK and MoHAA key bindings
+				el = new urcElementLabel_c();
+			} else if(p.atWord("FAKKLoadGameClass")) {
+				// special control for FAKK and MoHAA save games
+				el = new urcElementLabel_c();
 			} else {
 				str type = p.getToken();
 				el = new urcElementLabel_c();
@@ -141,10 +178,39 @@ bool urc_c::parseURCFile(class parser_c &p) {
 	}
 	return false;
 }
+void urc_c::translate(int dX, int dY) {	
+	for(u32 i = 0; i < elements.size(); i++) {
+		elements[i]->translate(dX,dY);
+	}	
+	bounds.translate(dX,dY);
+}
 bool urc_c::loadURCFile() {
 	parser_c p;
 	if(p.openFile(fname))
 		return true;
 
-	return parseURCFile(p);
+	if(parseURCFile(p))
+		return true;
+	
+	// calc bounds
+	bounds.clear();
+	for(u32 i = 0; i < elements.size(); i++) {
+		bounds.add(elements[i]->getRect());
+	}
+
+	if(verticalAlign != VA_DEFAULT) {
+		if(verticalAlign == VA_BOTTOM) {
+			int ofs = rf->getWinHeight()-sizeY;
+			translate(0,ofs);
+		}
+	}
+	if(horizontalAlign != HA_DEFAULT) {
+		if(horizontalAlign == HA_LEFT) {
+		} else if(horizontalAlign == HA_RIGHT) {
+			int ofs = rf->getWinWidth()-sizeX;
+			translate(ofs,0);
+		}
+	}
+
+	return false;
 }

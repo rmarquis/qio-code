@@ -105,7 +105,9 @@ void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 void urcMgr_c::onMouseUp(int keyCode, int mouseX, int mouseY) {
 	if(stack.size()==0)
 		return;
-	setActivePullDown(0);
+	if(activePullDown) {
+		setActivePullDown(0);
+	}
 }
 void urcMgr_c::onMouseMove(int mouseX, int mouseY) {
 	if(stack.size()==0)

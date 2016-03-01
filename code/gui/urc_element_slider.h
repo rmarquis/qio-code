@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_base.h"
 
 class urcElementSlider_c : public urcElementBase_c {
+	float rangeMin, rangeMax, stepSize;
+	float currentFrac;
 
 	virtual void onURCElementParsed();
 public:
@@ -37,4 +39,5 @@ public:
 	virtual bool isSlider() const {
 		return true;
 	}
+	void setFraction(float f);
 };
