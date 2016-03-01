@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // urc_element_checkbox.cpp
 #include "urc_element_checkbox.h"
 #include <shared/parser.h>
+#include "urc_mgr.h"
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
 #include <api/cvarAPI.h>
@@ -67,8 +68,7 @@ void urcElementCheckbox_c::toggleCheckBox() {
 	}
 }
 void urcElementCheckbox_c::renderURCElement(class urcMgr_c *pMgr) {
-	int mX = gui->getMouseX();
-	int mY = gui->getMouseY();
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const rect_c &r = this->getRect();
 	const char *matName;
 	if(checkBoxState) {
@@ -81,7 +81,7 @@ void urcElementCheckbox_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
-		rf->drawStretchPic(r.getX()+6,r.getCenterY()-checkboxSize/2,checkboxSize,checkboxSize,0,0,1,1,matName);
+		gr->drawStretchPic(r.getX()+6,r.getCenterY()-checkboxSize/2,checkboxSize,checkboxSize,0,0,1,1,matName);
 	}
 }
 

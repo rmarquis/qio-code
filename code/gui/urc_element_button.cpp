@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc_element_button.cpp
 #include "urc_element_button.h"
+#include "urc_mgr.h"
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
@@ -44,8 +45,9 @@ bool urcElementButton_c::parseURCProperty(class parser_c &p) {
 }
 
 void urcElementButton_c::renderURCElement(class urcMgr_c *pMgr) {
-	int mX = gui->getMouseX();
-	int mY = gui->getMouseY();
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
+	int mX = gr->getMouseX();
+	int mY = gr->getMouseY();
 	const rect_c &r = this->getRect();
 	const char *matName = this->getMatName();
 	if(r.isInside(mX,mY) && hoverMaterial.size()) {
@@ -55,7 +57,7 @@ void urcElementButton_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 	}
 }
 

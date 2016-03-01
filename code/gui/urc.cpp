@@ -38,6 +38,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 static aCvar_c urc_skipLabels("urc_skipLabels","0");
 
+urc_c::urc_c() {
+	bVirtualScreen = false;
+	verticalAlign = VA_DEFAULT;
+	horizontalAlign = HA_DEFAULT;
+}
 bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	if(!stricmp(el->getName(),"disconnect")) {
 		return true;
@@ -142,6 +147,8 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
 			}
 			//g_core->Print("URC %s is using align keyword\n",getName());
+		} else if(p.atWord("virtualscreen")) {
+			bVirtualScreen = p.getInteger();
 		} else if(p.atWord("resource")) {
 			urcElementBase_c *el;
 			if(p.atWord("Label")) {

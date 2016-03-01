@@ -26,11 +26,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_field.h"
 #include "urc_element_pulldown.h"
 #include <api/vfsAPI.h>
+#include <api/rAPI.h>
+#include <api/fontAPI.h>
+#include <api/guiAPI.h>
 #include <shared/parser.h>
 
 urcMgr_c::urcMgr_c() {
 	activeField = 0;
 	activePullDown = 0;
+	curGUIRenderer = 0;
 }
 void urcMgr_c::precacheURCFile(const char *fname) {
 	parser_c p;
@@ -71,9 +75,79 @@ const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName)
 	}
 	return c->getFName();
 }
+
+class guiRendererDefault_c : public guiRenderer_i {
+	float mX, mY;
+public:
+	void setMousePosReal(float x, float y) {
+		mX = x;
+		mY = y;
+	}
+	virtual void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, const char *matName) const {
+		rf->drawStretchPic(x,y,w,h,s1,t1,s2,t2,matName);	
+	}
+	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const {
+		f->drawString(x,y,s);
+	}
+	virtual float getMouseX() const {
+		return mX;
+	}
+	virtual float getMouseY() const {
+		return mY;
+	}
+};
+class guiRendererVirtualScreen_c : public guiRenderer_i {
+	float mX, mY;
+	float virtualHeight;
+	float virtualWidth;
+	float fracX;
+	float fracY;
+public:
+	guiRendererVirtualScreen_c(float w, float h) {
+		this->virtualHeight = h;
+		this->virtualWidth = w;
+		float rw = rf->getWinWidth();
+		float rh = rf->getWinHeight();
+		fracX = rw / w;
+		fracY = rh / h;
+	}
+	void setMousePosReal(float x, float y) {
+		mX = x/fracX;
+		mY = y/fracY;
+	}
+	virtual void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, const char *matName) const {
+		x *= fracX;
+		y *= fracY;
+		w *= fracX;
+		h *= fracY;;
+		rf->drawStretchPic(x,y,w,h,s1,t1,s2,t2,matName);	
+	}
+	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const {
+		x *= fracX;
+		y *= fracY;
+		f->drawString(x,y,s);
+	}
+	virtual float getMouseX() const {
+		return mX;
+	}
+	virtual float getMouseY() const {
+		return mY;
+	}
+};
+void urcMgr_c::setupGUIRendererFor(const class urc_c *urc) {
+	static guiRendererDefault_c rd;
+	curGUIRenderer = &rd;
+	static guiRendererVirtualScreen_c rv(640,480);
+	rv.setMousePosReal(gui->getMouseX(),gui->getMouseY());
+	curGUIRenderer = &rv;
+}
 void urcMgr_c::drawURCs() {
+
 	//for(int i = stack.size()-1; i>=0;i--) {
 	for(u32 i = 0; i < stack.size(); i++) {
+		setupGUIRendererFor(stack[i]);
 		stack[i]->drawURC(this);
 	}
 	// pull down list on top of everything
@@ -105,7 +179,11 @@ void urcMgr_c::pushMenu(const char *name) {
 void urcMgr_c::onMouseDown(int keyCode, int mouseX, int mouseY) {
 	if(stack.size()==0)
 		return;
-	stack[stack.size()-1]->onMouseDown(keyCode,mouseX,mouseY, this);
+	setupGUIRendererFor(stack[stack.size()-1]);
+	// transform from window coordinates to virtual screen coordinates (if needed)
+	float tranformedMouseX = curGUIRenderer->getMouseX();
+	float tranformedMouseY = curGUIRenderer->getMouseY();
+	stack[stack.size()-1]->onMouseDown(keyCode,tranformedMouseX,tranformedMouseY, this);
 }
 void urcMgr_c::onMouseUp(int keyCode, int mouseX, int mouseY) {
 	if(stack.size()==0)
