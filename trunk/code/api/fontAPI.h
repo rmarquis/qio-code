@@ -29,6 +29,8 @@ class fontAPI_i {
 public:
 	virtual const char *getName() const = 0;
 	virtual void drawString(float x, float y, const char *s) const = 0;
+	virtual float getStringWidth(const char *s) const = 0;
+	virtual float getStringHeight(const char *s) const = 0;
 };
 
 #endif // __API_FONTAPI_H__

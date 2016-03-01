@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "urc_element_checkbox.h"
 #include "urc_element_pulldown.h"
 #include "urc_element_slider.h"
+#include "urc_element_bindlist.h"
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
@@ -150,7 +151,7 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				el = new urcElementSlider_c();
 			} else if(p.atWord("FAKKBindList")) {
 				// special control for FAKK and MoHAA key bindings
-				el = new urcElementLabel_c();
+				el = new urcElementBindList_c();
 			} else if(p.atWord("FAKKLoadGameClass")) {
 				// special control for FAKK and MoHAA save games
 				el = new urcElementLabel_c();

@@ -21,24 +21,27 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
-#include "urc_element_base.h"
-#include <shared/ePairsList.h>
-// this is used when displaying a CVAR value with label,
-// so you can link an integer to label, so URC label
-// linked to "rf_shadows" with value "1" can display
-// "Stencil shadows" instead of "1".
-//struct linkString_s {
-//	str cvarValue; // eg. "1"
-//	str displayValue; // eg. "Stencil shadows."
-//};
+// urc_element_bindlist.cpp
+#include "urc_element_bindlist.h"
+#include <shared/parser.h>
+#include <api/rAPI.h>
+#include <api/guiAPI.h>
 
-class urcElementLabel_c : public urcElementBase_c {
-	str title;
-	//arraySTD_c<linkString_s> linkStrings;
-	ePairList_c linkStrings;
-public:
+bool urcElementBindList_c::parseURCProperty(class parser_c &p) {
 	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement(class urcMgr_c *pMgr);
-};
+	return false;
+}
+
+void urcElementBindList_c::renderURCElement(class urcMgr_c *pMgr) {
+	int mX = gui->getMouseX();
+	int mY = gui->getMouseY();
+	const rect_c &r = this->getRect();
+	const char *matName = this->getMatName();
+	if(matName[0]) {
+		if(0) {
+			g_core->Print("Material %s\n",matName);
+		}
+		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+	}
+}
+

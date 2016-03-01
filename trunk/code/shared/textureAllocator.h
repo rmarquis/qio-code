@@ -21,24 +21,19 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// urc_element_label.h
-#include "urc_element_base.h"
-#include <shared/ePairsList.h>
-// this is used when displaying a CVAR value with label,
-// so you can link an integer to label, so URC label
-// linked to "rf_shadows" with value "1" can display
-// "Stencil shadows" instead of "1".
-//struct linkString_s {
-//	str cvarValue; // eg. "1"
-//	str displayValue; // eg. "Stencil shadows."
-//};
+#ifndef __SHARED_TEXTUREALLOCATOR_H__
+#define __SHARED_TEXTUREALLOCATOR_H__
 
-class urcElementLabel_c : public urcElementBase_c {
-	str title;
-	//arraySTD_c<linkString_s> linkStrings;
-	ePairList_c linkStrings;
+#include <shared/typedefs.h>
+#include <shared/array.h>
+
+class textureAllocator_c {
+	u32 maxTextureSize;
+	arraySTD_c<u32> allocated;
 public:
-	
-	virtual bool parseURCProperty(class parser_c &p);
-	virtual void renderURCElement(class urcMgr_c *pMgr);
+	textureAllocator_c();
+	void setupTextureSize(u32 newSize);
+	bool allocTextureBlock(const u32 inSizes[2], u32 outPos[2]);
 };
+
+#endif // __SHARED_TEXTUREALLOCATOR_H__

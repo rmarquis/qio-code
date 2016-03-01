@@ -132,6 +132,12 @@ public:
 		ePair_c *p = pairs[idx];
 		return p->getValue();
 	}
+	const char *findKeyValue(const char *key, const char *defaultValue = 0) const {
+		const ePair_c *p = find(key);
+		if(p == 0)
+			return defaultValue;
+		return p->getValue();
+	}
 	void getKeyValue(u32 idx, const char **key, const char **value) const {
 		if(idx >= pairs.size()) {
 			// this should never happen
