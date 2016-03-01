@@ -40,6 +40,10 @@ public:
 	virtual bool parseURCProperty(class parser_c &p);
 	virtual void renderURCElement(class urcMgr_c *pMgr);
 
+	// called later than renderURCElement, so the drop down
+	// contents are drawn on top of everything
+	void drawActivePullDown();
+
 	virtual bool isClickable() const {
 		return true;
 	}

@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // urc_mgr.cpp - Ultimate ResourCe manager
 #include "urc_mgr.h"
 #include "urc_element_field.h"
+#include "urc_element_pulldown.h"
 #include <api/vfsAPI.h>
 #include <shared/parser.h>
 
@@ -74,6 +75,10 @@ void urcMgr_c::drawURCs() {
 	//for(int i = stack.size()-1; i>=0;i--) {
 	for(u32 i = 0; i < stack.size(); i++) {
 		stack[i]->drawURC(this);
+	}
+	// pull down list on top of everything
+	if(activePullDown) {
+		activePullDown->drawActivePullDown();
 	}
 }
 void urcMgr_c::popAllMenus() {

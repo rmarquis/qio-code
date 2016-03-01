@@ -34,6 +34,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
+#include <shared/autoCVar.h>
+
+static aCvar_c urc_skipLabels("urc_skipLabels","0");
 
 bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	if(!stricmp(el->getName(),"disconnect")) {
@@ -41,6 +44,10 @@ bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	}
 	if(!stricmp(el->getName(),"backtogame")) {
 		return true;
+	}
+	if(urc_skipLabels.getInt()) {
+		if(el->isLabel())
+			return true;
 	}
 	return false;
 }

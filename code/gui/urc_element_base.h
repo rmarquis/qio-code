@@ -56,6 +56,9 @@ public:
 	virtual bool isClickable() const {
 		return false;
 	}
+	virtual bool isLabel() const {
+		return false;
+	}
 	virtual bool isField() const {
 		return false;
 	}

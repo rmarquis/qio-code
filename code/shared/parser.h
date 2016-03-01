@@ -62,7 +62,7 @@ public:
 			return false;
 		return true;
 	}	
-	const char *getToken(str &out, const char *stopSet = 0);
+	const char *getToken(str &out, const char *stopSet = 0, bool bAllowStringEscaping = false);
 	const char *getToken(const char *stopSet = 0) {
 		return getToken(this->lastToken, stopSet);
 	}	
