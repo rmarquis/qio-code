@@ -28,6 +28,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/rect.h>
 #include <shared/str.h>
 
+class guiRenderer_i {
+public:
+	virtual void drawStretchPic(float x, float y, float w, float h,
+		float s1, float t1, float s2, float t2, const char *matName) const = 0;
+	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const = 0;
+	virtual float getMouseX() const = 0;
+	virtual float getMouseY() const = 0;
+};
+
 class urcElementBase_c {
 protected:
 	// internal element name, never showed on screen

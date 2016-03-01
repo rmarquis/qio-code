@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc_element_label.cpp
 #include "urc_element_label.h"
+#include "urc_mgr.h"
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
@@ -48,7 +49,7 @@ bool urcElementLabel_c::parseURCProperty(class parser_c &p) {
 
 void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 	const rect_c &r = this->getRect();
-
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const char *matName;
 	char tmp[512];
 	if(linkCvarToMat) {
@@ -61,7 +62,7 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 	}
 	if(linkCvar.size() && !linkCvarToMat) {
 		// linkCvar settings overrides the title and displays the CVar value
@@ -73,12 +74,12 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 		}
 		fontAPI_i *f = rf->registerFont("Arial");
 		if(f) {
-			f->drawString(r.getX(),r.getY(),displayValue);
+			gr->drawString(f,r.getX(),r.getY(),displayValue);
 		}
 	} else if(title.size()) {
 		fontAPI_i *f = rf->registerFont("Arial");
 		if(f) {
-			f->drawString(r.getX(),r.getY(),title);
+			gr->drawString(f,r.getX(),r.getY(),title);
 		}
 	}
 }

@@ -61,6 +61,7 @@ bool urcElementPullDown_c::parseURCProperty(class parser_c &p) {
 	return false;
 }
 void urcElementPullDown_c::drawActivePullDown() {
+//	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const rect_c &r = this->getRect();
 	u32 curY = r.getMaxY();
 	fontAPI_i *f = rf->registerFont("Arial");
@@ -72,6 +73,7 @@ void urcElementPullDown_c::drawActivePullDown() {
 	}
 }
 void urcElementPullDown_c::renderURCElement(class urcMgr_c *pMgr) {
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const rect_c &r = this->getRect();
 	const char *matName;
 	bool bIsActive = this == pMgr->getActivePullDown();
@@ -83,7 +85,7 @@ void urcElementPullDown_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 	}
 }
 

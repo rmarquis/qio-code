@@ -44,7 +44,11 @@ class urcMgr_c {
 	class urcElementField_c *activeField;
 	class urcElementPullDown_c *activePullDown;
 
+	const class guiRenderer_i *curGUIRenderer;
+
 	void precacheURCFile(const char *fname);
+
+	void setupGUIRendererFor(const class urc_c *urc);
 public:
 	urcMgr_c();
 
@@ -76,5 +80,8 @@ public:
 
 	const class urcElementPullDown_c *getActivePullDown() const {
 		return activePullDown;
+	}
+	const guiRenderer_i *getGUIRenderer() const {
+		return curGUIRenderer;
 	}
 };

@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // urc_element_slider.cpp
 #include "urc_element_slider.h"
+#include "urc_mgr.h"
 #include <shared/parser.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
@@ -73,6 +74,7 @@ bool urcElementSlider_c::parseURCProperty(class parser_c &p) {
 	return false;
 }
 void urcElementSlider_c::renderURCElement(class urcMgr_c *pMgr) {
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const rect_c &r = this->getRect();
 	const char *matName = this->getMatName();
 	if(matName[0]) {
@@ -81,8 +83,8 @@ void urcElementSlider_c::renderURCElement(class urcMgr_c *pMgr) {
 		}
 		u32 sizeX = r.getW();
 		u32 ofsX = r.getX() + sizeX * currentFrac;
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
-		rf->drawStretchPic(ofsX,r.getY(),14,r.getH(),0,0,1,1,"textures/menu/slider_thumb");
+		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		gr->drawStretchPic(ofsX,r.getY(),14,r.getH(),0,0,1,1,"textures/menu/slider_thumb");
 	}
 }
 

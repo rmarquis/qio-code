@@ -72,10 +72,14 @@ class urc_c : public urcNameMapping_c {
 	// sizes specified in urc file
 	// (they are different from bounds!)
 	int sizeX, sizeY;
+	// used to scale menu size with resolution
+	bool bVirtualScreen;
 
 	bool parseURCFile(class parser_c &p);
 	bool filterURCElement(const class urcElementBase_c *el) const;
 public:
+	urc_c();
+
 	void setHashNext(urc_c *h) {
 		hashNext = h;
 	}
