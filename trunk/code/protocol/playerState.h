@@ -90,5 +90,8 @@ struct playerState_s : public entityState_s {
 	bool isOnGround() const {
 		return (groundEntityNum != ENTITYNUM_NONE);
 	}
+	void toEntityState(entityState_s *s, bool snap);
+	// if a full pmove isn't done on the client, you can just update the angles
+	void updateViewAngles(const struct userCmd_s *cmd);
 };
 #endif // __PLAYERSTATE_H__

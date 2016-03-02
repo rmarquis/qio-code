@@ -304,7 +304,27 @@ public:
 		mat = g_ms->registerMaterial(getName());
 	}
 	virtual float getStringWidth(const char *s) const {
-		return 0; // TODO
+		const char *p = s;
+		float nowX = 0;
+		float nowY = 0;
+		while(*p) {
+			int ch = *p;
+			const glyphInfo_s &gl = glyphs[ch];
+
+			float sx = 1.f;
+			float sy = 1.f;
+			
+			float w = gl.width * sx;
+			float h = gl.rows * sy;
+			float x2 = nowX + gl.left * sx;
+			float y2 = nowY - gl.top * sy + maxHeight;
+
+		
+			nowX += (gl.advance_x >> 6) * sx;
+			nowY += (gl.advance_y >> 6) * sy;
+			p++;
+		}
+		return nowX;
 	}
 	virtual float getStringHeight(const char *s) const {
 		return 0; // TODO

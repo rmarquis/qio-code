@@ -57,7 +57,7 @@ static void CG_InterpolatePlayerState( bool grabAngles ) {
 		cmdNum = g_client->GetCurrentCmdNumber();
 		g_client->GetUserCmd( cmdNum, &cmd );
 
-		PM_UpdateViewAngles( out, &cmd );
+		out->updateViewAngles(&cmd);
 	}
 
 	//// if the next frame is a teleport, we can't lerp to it

@@ -262,20 +262,10 @@ void CG_CheckChangedPredictableEvents( playerState_s *ps );
 void CG_PredictPlayerState();
 
 //
-// cg_drawTools.c
-//
-void CG_DrawBigString( int x, int y, const char *s, float alpha );
-int CG_DrawStrlen( const char *str );
-void CG_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader );
-void CG_DrawSmallString( int x, int y, const char *s, float alpha );
-void CG_DrawSmallStringColor( int x, int y, const char *s, float color[4] );
-
-//
 // cg_draw.c
 //
 void CG_DrawActive();
 void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
-void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
 void CG_AddLagometerFrameInfo( void ) ;
 
 //

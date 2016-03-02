@@ -71,11 +71,4 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS
 #endif
 
-// if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( struct playerState_s *ps, const struct userCmd_s *cmd );
-
-//===================================================================================
-
-void	BG_PlayerStateToEntityState( struct playerState_s *ps, struct entityState_s *s, bool snap );
-
 #endif // __BG_PUBLIC_H__

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
+#include <api/fontAPI.h>
 #include <shared/colorTable.h>
 #include <protocol/userCmd.h>
 #include <protocol/snapFlags.h>
@@ -37,7 +38,7 @@ CG_DrawFPS
 ==================
 */
 #define	FPS_FRAMES	4
-static float CG_DrawFPS( float y ) {
+static void CG_DrawFPS( float y ) {
 	char		*s;
 	int			w;
 	static int	previousTimes[FPS_FRAMES];
@@ -55,6 +56,7 @@ static float CG_DrawFPS( float y ) {
 
 	previousTimes[index % FPS_FRAMES] = frameTime;
 	index++;
+	fontAPI_i *f = rf->registerFont("Arial");
 	if ( index > FPS_FRAMES ) {
 		// average multiple frames together to smooth changes out a bit
 		total = 0;
@@ -67,12 +69,10 @@ static float CG_DrawFPS( float y ) {
 		fps = 1000 * FPS_FRAMES / total;
 
 		s = va( "%ifps", fps );
-		w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		w = f->getStringWidth( s ) + 64;
 
-		CG_DrawBigString( 635 - w, y + 2, s, 1.0F);
+		f->drawString( rf->getWinWidth() - w, y + 2, s, 1.0F);
 	}
-
-	return y + BIGCHAR_HEIGHT + 4;
 }
 
 /*
@@ -173,21 +173,22 @@ static void CG_DrawDisconnect( void ) {
 		|| cmd.serverTime > cg.time ) {	// special check for map_restart
 		return;
 	}
+	fontAPI_i *f = rf->registerFont("Arial");
 
 	// also add text in center of screen
 	s = "Connection Interrupted";
-	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
-	CG_DrawBigString( 320 - w/2, 100, s, 1.0F);
+	w = f->getStringWidth( s );
+	f->drawString( rf->getWinWidth() * 0.5f - w/2, 100, s);
 
 	// blink the icon
 	if ( ( cg.time >> 9 ) & 1 ) {
 		return;
 	}
 
-	x = 640 - 48;
-	y = 480 - 48;
+	x = rf->getWinWidth() - 48;
+	y = rf->getWinHeight() - 48;
 
-	CG_DrawPic( x, y, 48, 48, rf->registerMaterial("gfx/2d/net.tga" ) );
+	rf->drawStretchPic( x, y, 48, 48, 0, 0,1,1, rf->registerMaterial("gfx/2d/net.tga" ) );
 }
 
 
@@ -200,7 +201,7 @@ CG_DrawLagometer
 ==============
 */
 static void CG_DrawLagometer( void ) {
-	int		a, x, y, i;
+	int		a, i;
 	float	v;
 	float	ax, ay, aw, ah, mid, range;
 	int		color;
@@ -214,22 +215,16 @@ static void CG_DrawLagometer( void ) {
 	//
 	// draw the graph
 	//
-#ifdef MISSIONPACK
-	x = 640 - 48;
-	y = 480 - 144;
-#else
-	x = 640 - 48;
-	y = 480 - 48;
-#endif
 
 	rf->set2DColor( NULL );
 	//CG_DrawPic( x, y, 48, 48, cgs.media.lagometerShader );
 
-	ax = x;
-	ay = y;
+	u32 ww = rf->getWinWidth();
+	u32 wh = rf->getWinHeight();
+	ax = ww - 64;
+	ay = wh - 64;
 	aw = 48;
 	ah = 48;
-	CG_AdjustFrom640( &ax, &ay, &aw, &ah );
 
 	color = -1;
 	range = ah / 3;
@@ -331,9 +326,10 @@ static void CG_Draw2D()
 	CG_DrawChat();
 
 	if(cg.snap) {
+		fontAPI_i *f = rf->registerFont("Arial");
 		const char *s = va("%i/%i", cg.snap->ps.viewWeaponCurClipSize, cg.snap->ps.viewWeaponMaxClipSize);
-		float w = CG_DrawStrlen(s) * BIGCHAR_WIDTH;
-		CG_DrawBigString(635 - w, 420, s, 1.0F);
+		float w = f->getStringWidth(s) + 64;
+		f->drawString(rf->getWinWidth() - w, rf->getWinHeight()-60, s);
 	}
 }
 
