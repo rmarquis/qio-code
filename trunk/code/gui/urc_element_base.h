@@ -49,6 +49,8 @@ protected:
 	str linkCvar;
 	// if true, the cvar value is used instead of matname
 	int linkCvarToMat;
+	// name of the font, RitualFont or FreeType
+	str font;
 
 	// called after element is parsed succesfully
 	virtual void onURCElementParsed() { }

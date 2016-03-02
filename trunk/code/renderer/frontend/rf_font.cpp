@@ -142,7 +142,7 @@ public:
 	virtual float getStringHeight(const char *s) const {
 		return 0; // TODO
 	}
-	virtual void drawString(float x, float y, const char *s) const {
+	virtual void drawString(float x, float y, const char *s, float scaleX = 1.f, float scaleY = 1.f) const {
 		if(bIsValid==false)
 			return;
 		const char *p = s;
@@ -309,13 +309,11 @@ public:
 	virtual float getStringHeight(const char *s) const {
 		return 0; // TODO
 	}
-	virtual void drawString(float x, float y, const char *s) const {
+	virtual void drawString(float x, float y, const char *s, float sx = 1.f, float sy = 1.f) const {
 
 		const char *p = s;
 		float nowX = x;
 		float nowY = y;
-		float sx = 1.f;
-		float sy = 1.f;
 		while(*p) {
 			int ch = *p;
 		

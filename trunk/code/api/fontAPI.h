@@ -28,7 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 class fontAPI_i {
 public:
 	virtual const char *getName() const = 0;
-	virtual void drawString(float x, float y, const char *s) const = 0;
+	virtual void drawString(float x, float y, const char *s, float scaleX = 1.f, float scaleY = 1.f) const = 0;
 	virtual float getStringWidth(const char *s) const = 0;
 	virtual float getStringHeight(const char *s) const = 0;
 };
