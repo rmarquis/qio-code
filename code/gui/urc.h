@@ -89,6 +89,9 @@ public:
 	u32 getNumElements() const {
 		return elements.size();
 	}
+	bool isUsingVirtualScreen() const {
+		return bVirtualScreen;
+	}
 
 	void translate(int dX, int dY);
 

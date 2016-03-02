@@ -127,7 +127,7 @@ public:
 	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const {
 		x *= fracX;
 		y *= fracY;
-		f->drawString(x,y,s);
+		f->drawString(x,y,s,fracX,fracY);
 	}
 	virtual float getMouseX() const {
 		return mX;
@@ -137,11 +137,15 @@ public:
 	}
 };
 void urcMgr_c::setupGUIRendererFor(const class urc_c *urc) {
-	static guiRendererDefault_c rd;
-	curGUIRenderer = &rd;
-	static guiRendererVirtualScreen_c rv(640,480);
-	rv.setMousePosReal(gui->getMouseX(),gui->getMouseY());
-	curGUIRenderer = &rv;
+	if(urc->isUsingVirtualScreen()) {
+		static guiRendererVirtualScreen_c rv(640,480);
+		rv.setMousePosReal(gui->getMouseX(),gui->getMouseY());
+		curGUIRenderer = &rv;
+	} else {
+		static guiRendererDefault_c rd;
+		rd.setMousePosReal(gui->getMouseX(),gui->getMouseY());
+		curGUIRenderer = &rd;
+	}
 }
 void urcMgr_c::drawURCs() {
 

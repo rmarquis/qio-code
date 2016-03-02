@@ -148,6 +148,10 @@ bool urc_c::parseURCFile(class parser_c &p) {
 			}
 			//g_core->Print("URC %s is using align keyword\n",getName());
 		} else if(p.atWord("virtualscreen")) {
+			// TODO: what is the difference between virtualScreen and virtualRes? 
+			bVirtualScreen = p.getInteger();
+		} else if(p.atWord("virtualres")) {
+			// TODO: what is the difference between virtualScreen and virtualRes? 
 			bVirtualScreen = p.getInteger();
 		} else if(p.atWord("resource")) {
 			urcElementBase_c *el;

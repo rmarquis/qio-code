@@ -72,6 +72,10 @@ bool urcElementBase_c::parseURCProperty(class parser_c &p) {
 		linkCvar = p.getToken();
 		return true;
 	}
+	if(p.atWord("font")) {
+		font = p.getToken();
+		return true;
+	}
 	if(p.atWord("linkcvartoshader")) {
 		linkCvarToMat = true;
 		return true;

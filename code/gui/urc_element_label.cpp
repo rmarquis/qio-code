@@ -72,12 +72,12 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 		if(displayValue == 0) {
 			displayValue = tmp;
 		}
-		fontAPI_i *f = rf->registerFont("Arial");
+		fontAPI_i *f = rf->registerFont(font);
 		if(f) {
 			gr->drawString(f,r.getX(),r.getY(),displayValue);
 		}
 	} else if(title.size()) {
-		fontAPI_i *f = rf->registerFont("Arial");
+		fontAPI_i *f = rf->registerFont(font);
 		if(f) {
 			gr->drawString(f,r.getX(),r.getY(),title);
 		}

@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/guiAPI.h>
 #include <api/fontAPI.h>
 #include <api/cvarAPI.h>
+#include "urc_mgr.h"
 
 urcElementField_c::urcElementField_c() {
 	currentCursor = 0;
@@ -70,19 +71,20 @@ void urcElementField_c::onKeyDown(int keyCode) {
 	}
 }
 void urcElementField_c::renderURCElement(class urcMgr_c *pMgr) {
+	const guiRenderer_i *gr = pMgr->getGUIRenderer();
 	const rect_c &r = this->getRect();
 	const char *matName = this->getMatName();
 	if(matName[0]) {
 		if(0) {
 			g_core->Print("Material %s\n",matName);
 		}
-		rf->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 	}
 	fontAPI_i *f = rf->registerFont("Arial");
 	if(f) {
 		str tmp = currentText;
 		tmp.insertAt(currentCursor,'|');
-		f->drawString(r.getX(),r.getY(),tmp);
+		gr->drawString(f,r.getX(),r.getY(),tmp);
 	}
 }
 
