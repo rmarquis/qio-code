@@ -47,7 +47,7 @@ FUNCTIONS CALLED EACH FRAME
 
 //=====================================================================
 
-static void CG_OnEntityOrientationChange(centity_t *cent) {
+static void CG_OnEntityOrientationChange(centity_s *cent) {
 	// NOTE: some centities might have both rEnt and rLight present
 	if(cent->rEnt) {
 		cent->rEnt->setOrigin(cent->lerpOrigin);
@@ -63,7 +63,7 @@ static void CG_OnEntityOrientationChange(centity_t *cent) {
 		cent->rLight->setBNoShadows(cent->currentState.lightFlags & LF_NOSHADOWS);
 		if(cent->currentState.lightFlags & LF_SPOTLIGHT) {
 			// see if the spotlight can find it's target
-			const centity_t *target = &cg_entities[cent->currentState.lightTarget];
+			const centity_s *target = &cg_entities[cent->currentState.lightTarget];
 			cent->rLight->setSpotRadius(cent->currentState.spotLightRadius);
 			cent->rLight->setLightType(LT_SPOTLIGHT);
 			if(target->currentValid == false) {
@@ -88,7 +88,7 @@ static void CG_OnEntityOrientationChange(centity_t *cent) {
 CG_InterpolateEntityPosition
 =============================
 */
-static void CG_InterpolateEntityPosition( centity_t *cent ) {
+static void CG_InterpolateEntityPosition( centity_s *cent ) {
 	float		f;
 
 	// it would be an internal error to find an entity that interpolates without
@@ -126,7 +126,7 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 }
 
 
-static void CG_RunCEntity( centity_t *cent );
+static void CG_RunCEntity( centity_s *cent );
 /*
 ===============
 CG_CalcEntityLerpPositions
@@ -135,13 +135,13 @@ CG_CalcEntityLerpPositions
 */
 #include <api/rAPI.h>
 #include <api/mtrAPI.h>
-static void CG_CalcEntityLerpPositions( centity_t *cent ) {
+static void CG_CalcEntityLerpPositions( centity_s *cent ) {
 	// fast test
 	if(cent->rEnt) {
 		cent->rEnt->setScale(cent->currentState.scale);
 	}
 	if(cent->currentState.parentNum != ENTITYNUM_NONE) {
-		centity_t *parent = &cg_entities[cent->currentState.parentNum];
+		centity_s *parent = &cg_entities[cent->currentState.parentNum];
 		if(parent->rEnt == 0)
 			return;
 		if(cg_printAttachedEntities.getInt()) {
@@ -176,7 +176,7 @@ static void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	}
 }
 
-static void CG_UpdateEntityEmitter( centity_t *cent ) {
+static void CG_UpdateEntityEmitter( centity_s *cent ) {
 	if(cent->currentState.isEmitterActive()) {
 		// get emitter name (it might be a material name or Doom3 particleDecl name)
 		const char *emitterName = CG_ConfigString(CS_MATERIALS+cent->currentState.trailEmitterMaterial);
@@ -224,7 +224,7 @@ CG_RunCEntity
 
 ===============
 */
-static void CG_RunCEntity( centity_t *cent ) {
+static void CG_RunCEntity( centity_s *cent ) {
 	if(cent->lastUpdateFrame == cg.clientFrame)
 		return; // it was already updated (this may happen for attachment parents)
 	cent->lastUpdateFrame = cg.clientFrame;
@@ -243,7 +243,7 @@ CG_AddPacketEntities
 */
 void CG_AddPacketEntities( void ) {
 	int					num;
-	centity_t			*cent;
+	centity_s			*cent;
 
 	// set cg.frameInterpolation
 	if ( cg.nextSnap ) {

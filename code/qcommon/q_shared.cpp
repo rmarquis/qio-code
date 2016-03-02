@@ -243,11 +243,6 @@ static	char	com_token[MAX_TOKEN_CHARS];
 static	char	com_parsename[MAX_TOKEN_CHARS];
 static	int		com_lines;
 
-void COM_BeginParseSession( const char *name )
-{
-	com_lines = 0;
-	Com_sprintf(com_parsename, sizeof(com_parsename), "%s", name);
-}
 
 char *COM_Parse( char **data_p )
 {

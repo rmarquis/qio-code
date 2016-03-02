@@ -1309,15 +1309,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\client\qal.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\qcommon.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\renderer\qgl.h"
 				>
 			</File>
 			<File
@@ -1341,19 +1333,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\renderer\tr_local.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\renderer\tr_public.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\shared\typedefs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\ui\ui_public.h"
 				>
 			</File>
 			<File

@@ -664,15 +664,15 @@ Edit fields and command line history/completion
 */
 
 #define	MAX_EDIT_LINE	256
-typedef struct {
+struct field_s {
 	int		cursor;
 	int		scroll;
 	int		widthInChars;
 	char	buffer[MAX_EDIT_LINE];
-} field_t;
+};
 
-void Field_Clear( field_t *edit );
-void Field_AutoComplete( field_t *edit );
+void Field_Clear( field_s *edit );
+void Field_AutoComplete( field_s *edit );
 void Field_CompleteKeyname();
 void Field_CompleteFilename( const char *dir,
 		const char *ext, const char *ext2, const char *ext3,

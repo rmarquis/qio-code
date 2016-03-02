@@ -30,14 +30,14 @@ key up events are sent even if in console mode
 
 */
 
-field_t	historyEditLines[COMMAND_HISTORY];
+field_s	historyEditLines[COMMAND_HISTORY];
 
 int			nextHistoryLine;		// the last line in the history buffer, not masked
 int			historyLine;	// the line being displayed from history buffer
 							// will be <= nextHistoryLine
 
-field_t		g_consoleField;
-field_t		chatField;
+field_s		g_consoleField;
+field_s		chatField;
 bool	chat_team;
 
 int			chat_playerNum;
@@ -46,7 +46,7 @@ int			chat_playerNum;
 bool	key_overstrikeMode;
 
 int				anykeydown;
-qkey_t		keys[MAX_KEYS];
+keyBind_s		keys[MAX_KEYS];
 
 
 typedef struct {
@@ -312,7 +312,7 @@ Handles horizontal scrolling and cursor blinking
 x, y, and width are in pixels
 ===================
 */
-void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, bool showCursor,
+void Field_VariableSizeDraw( field_s *edit, int x, int y, int width, int size, bool showCursor,
 		bool noColorEscape ) {
 	int		len;
 	int		drawLen;
@@ -385,12 +385,12 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, b
 	}
 }
 
-void Field_Draw( field_t *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
+void Field_Draw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
 {
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
-void Field_BigDraw( field_t *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
+void Field_BigDraw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
 {
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
@@ -400,7 +400,7 @@ void Field_BigDraw( field_t *edit, int x, int y, int width, bool showCursor, boo
 Field_Paste
 ================
 */
-void Field_Paste( field_t *edit ) {
+void Field_Paste( field_s *edit ) {
 	char	*cbd;
 	int		pasteLen, i;
 
@@ -429,7 +429,7 @@ in-game talk, and menu fields
 Key events are used for non-printable characters, others are gotten from char events.
 =================
 */
-void Field_KeyDownEvent( field_t *edit, int key ) {
+void Field_KeyDownEvent( field_s *edit, int key ) {
 	int		len;
 
 	// shift-insert is paste
@@ -490,7 +490,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 Field_CharEvent
 ==================
 */
-void Field_CharEvent( field_t *edit, int ch ) {
+void Field_CharEvent( field_s *edit, int ch ) {
 	int		len;
 
 	if ( ch == 'v' - 'a' + 1 ) {	// ctrl-v is paste
@@ -1454,7 +1454,7 @@ void CL_LoadConsoleHistory()
 		}
 
 		memmove( &historyEditLines[ 0 ], &historyEditLines[ i + 1 ],
-				numLines * sizeof( field_t ) );
+				numLines * sizeof( field_s ) );
 		for( i = numLines; i < COMMAND_HISTORY; i++ )
 			Field_Clear( &historyEditLines[ i ] );
 

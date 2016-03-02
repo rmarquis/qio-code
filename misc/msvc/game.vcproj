@@ -431,6 +431,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\edict.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\explosionInfo.h"
 				>
 			</File>
@@ -448,10 +452,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_physVehicleAPI.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\g_public.h"
 				>
 			</File>
 			<File
