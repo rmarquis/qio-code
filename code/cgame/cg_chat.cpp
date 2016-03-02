@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include <shared/array.h>
 #include <api/rAPI.h>
+#include <api/fontAPI.h>
 #include <shared/autoCvar.h>
 
 static aCvar_c cg_chatHeight("cg_chatHeight","300");
@@ -54,16 +55,19 @@ public:
 	}
 	void drawChat(u32 x, u32 y, u32 w, u32 h) {
 		y -= h;
-		u32 numLines = h / SMALLCHAR_HEIGHT;
+		float lineH = 16.f;
+		u32 numLines = h / lineH;
 		float color[4] = { 0, 0, 0, 1.f };
 		int index = lines.size() - numLines;
+		fontAPI_i *f = rf->registerFont("Arial");
 		if(index < 0)
 			index = 0;
 		for(u32 i = 0; i < numLines; i++) {
 			if(index >= lines.size())
 				break;
-			CG_DrawSmallStringColor(x,y,lines[index],color);
-			y += SMALLCHAR_HEIGHT;
+			// TODO: color
+			f->drawString(x,y,lines[index]);
+			y += lineH;
 			index++;
 		}
 	}

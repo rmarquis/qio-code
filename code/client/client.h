@@ -44,6 +44,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define QKEY_FILE "qkey"
 #define QKEY_SIZE 2048
 
+#define	SCREEN_WIDTH		640
+#define	SCREEN_HEIGHT		480
+#define SMALLCHAR_WIDTH		8
+#define SMALLCHAR_HEIGHT	16
+#define BIGCHAR_WIDTH		16
+#define BIGCHAR_HEIGHT		16
+
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
 // for server browser
@@ -601,7 +608,6 @@ void	SCR_DrawPic( float x, float y, float width, float height, class mtrAPI_i *h
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );
 
 void	SCR_DrawBigString( int x, int y, const char *s, float alpha, bool noColorEscape );			// draws a string with embedded color control characters with fade
-void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, bool noColorEscape );	// ignores embedded color control characters
 void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, bool forceColor, bool noColorEscape );
 void	SCR_DrawSmallChar( int x, int y, int ch );
 

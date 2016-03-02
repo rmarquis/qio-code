@@ -409,7 +409,7 @@ void Player::runPlayer() {
 			bool bJumped = false;
 			bool bLanding = false;
 			// update the viewangles
-			PM_UpdateViewAngles( &this->ps, ucmd );
+			ps.updateViewAngles(ucmd);
 			{
 				vec3_c v( 0, this->ps.viewangles[1], 0 );
 				vec3_c dir;;

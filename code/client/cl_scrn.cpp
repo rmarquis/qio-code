@@ -255,10 +255,6 @@ void SCR_DrawBigString( int x, int y, const char *s, float alpha, bool noColorEs
 	SCR_DrawStringExt( x, y, BIGCHAR_WIDTH, s, color, false, noColorEscape );
 }
 
-void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, bool noColorEscape ) {
-	SCR_DrawStringExt( x, y, BIGCHAR_WIDTH, s, color, true, noColorEscape );
-}
-
 
 /*
 ==================

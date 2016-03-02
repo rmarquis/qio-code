@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // DO NOT MODIFY THIS STRUCT
 // (unless you're able to rebuild both server and game)
 struct edict_s {
-	entityState_s *s;	// communicated by server to clients; this is non-zero only for active entities
+	struct entityState_s *s;	// communicated by server to clients; this is non-zero only for active entities
 	int freetime;	// level.time when the object was freed
 	// entity class for game-only usage
 	class BaseEntity *ent;

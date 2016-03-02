@@ -267,7 +267,7 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 	cg.snap = snap;
 
-	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, false );
+	snap->ps.toEntityState(&cg_entities[ snap->ps.clientNum ].currentState, false);
 	CG_NewEntity(snap->ps.clientNum);
 
 	// sort out solid entities
@@ -389,9 +389,9 @@ static void CG_TransitionSnapshot( void ) {
 	cg.snap = cg.nextSnap;
 
 	if(oldFrame == 0) {
-		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].currentState, false );
+		cg.snap->ps.toEntityState(&cg_entities[ cg.snap->ps.clientNum ].currentState, false );
 	} else {
-		BG_PlayerStateToEntityState( &cg.snap->ps, &cg_entities[ cg.snap->ps.clientNum ].nextState, false );
+		cg.snap->ps.toEntityState(&cg_entities[ cg.snap->ps.clientNum ].nextState, false );
 	}
 	cg_entities[ cg.snap->ps.clientNum ].interpolate = false;
 	if(cg_entities[cg.snap->ps.clientNum].rEnt) {
@@ -434,7 +434,7 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 
 	cg.nextSnap = snap;
 
-	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].nextState, false );
+	snap->ps.toEntityState(&cg_entities[ snap->ps.clientNum ].nextState, false );
 	cg_entities[ cg.snap->ps.clientNum ].interpolate = true;
 
 	// check for extrapolation errors

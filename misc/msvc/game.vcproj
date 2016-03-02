@@ -221,26 +221,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 			>
 			<File
-				RelativePath="..\..\code\game\bg_misc.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\code\game\bt_vehicle.cpp"
 				>
 			</File>
@@ -1392,6 +1372,10 @@
 			</File>
 			<File
 				RelativePath="..\..\code\protocol\netLimits.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\protocol\playerState.cpp"
 				>
 			</File>
 			<File
