@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_public.h"
 #include <math/vec3.h>
 #include <math/axis.h>
+#include <shared/autoCvar.h>
 
 
 // The entire cgame module is unloaded and reloaded on each level change,
@@ -47,9 +48,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //=================================================
 
 
-// centity_t have a direct corespondence with edict_s in the game, but
+// centity_s have a direct corespondence with edict_s in the game, but
 // only the entityState_s is directly communicated to the cgame
-typedef struct centity_s {
+struct centity_s {
 	entityState_s	currentState;	// from cg.frame
 	entityState_s	nextState;		// from cg.nextFrame, if available
 	bool		interpolate;	// true if next is valid to interpolate to
@@ -67,7 +68,7 @@ typedef struct centity_s {
 	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
 	class rLightAPI_i *rLight; // for ET_LIGHT and for all entities with entityState_t::lightRadius != 0.f
 	class emitterBase_c *emitter; // for all entities with entity emitter enabled
-} centity_t;
+};
 
 
 //======================================================================
@@ -78,7 +79,7 @@ typedef struct centity_s {
 // all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
-typedef struct {
+struct cg_t {
 	int			clientFrame;		// incremented each frame
 
 	int			clientNum;
@@ -105,7 +106,7 @@ typedef struct {
 
 	// prediction state
 	playerState_s	predictedPlayerState;
-	centity_t		predictedPlayerEntity;
+	centity_s		predictedPlayerEntity;
 	bool	validPPS;				// clear until the first call to CG_PredictPlayerState
 
 	float		stepChange;				// for stair up smoothing
@@ -135,26 +136,26 @@ typedef struct {
 	float farPlane;
 
 
-} cg_t;
+};
 
 
 // all of the model, shader, and sound references that are
 // loaded at gamestate time are stored in cgMedia_t
 // Other media that can be tied to clients, weapons, or items are
 // stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
-typedef struct {
+struct cgMedia_t {
 	class mtrAPI_i *charsetShader;
 	class mtrAPI_i *whiteShader;
 
 
-} cgMedia_t;
+};
 
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
 // be cleared when a tournement restart is done, allowing
 // all clients to begin playing instantly
-typedef struct {
+struct cgs_t {
 	gameState_s		gameState;			// gamestate from server
 	float			screenXScale;		// derived from renderer
 	float			screenYScale;
@@ -185,13 +186,13 @@ typedef struct {
 	// media
 	cgMedia_t		media;
 
-} cgs_t;
+};
 
 //==============================================================================
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
-extern	centity_t		cg_entities[MAX_GENTITIES];
+extern	centity_s		cg_entities[MAX_GENTITIES];
 
 extern	vmCvar_s		cg_lagometer;
 extern	vmCvar_s		cg_drawFPS;
@@ -226,7 +227,7 @@ void CG_DrawActiveFrame( int serverTime, bool demoPlayback );
 //
 // cg_player.c
 //
-void CG_Player( centity_t *cent );
+void CG_Player( centity_s *cent );
 
 //
 // cg_ents.c
@@ -312,24 +313,4 @@ void CG_RunTempLights();
 //
 void CG_DrawChat();
 void CG_AddChatMessage(const char *msg);
-
-//===============================================
-
-//
-// system traps
-// These functions are how the cgame communicates with the main game system
-//
-
-// add commands to the local console as if they were typed in
-// for map changing, etc.  The command is not executed immediately,
-// but will be executed in order the next time console commands
-// are processed
-void		trap_SendConsoleCommand( const char *text );
-
-// register a command name so the console can perform command completion.
-// FIXME: replace this with a normal console command "defineCommand"?
-void		trap_AddCommand( const char *cmdName );
-
-// send a string to the server over the network
-void		trap_SendClientCommand( const char *s );
 

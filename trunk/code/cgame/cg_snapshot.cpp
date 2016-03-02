@@ -49,7 +49,7 @@ static aCvar_c cg_printInitialSnapshots("cg_printInitialSnapshots","0");
 CG_ResetEntity
 ==================
 */
-static void CG_ResetEntity( centity_t *cent ) {
+static void CG_ResetEntity( centity_s *cent ) {
 	cent->lerpOrigin = cent->currentState.origin;
 	cent->lerpAngles = cent->currentState.angles;
 	if ( cent->currentState.eType == ET_PLAYER ) {
@@ -57,7 +57,7 @@ static void CG_ResetEntity( centity_t *cent ) {
 	}
 }
 
-static void CG_TransitionLight(centity_t *cent) {
+static void CG_TransitionLight(centity_s *cent) {
 	if(cg_ignoreBakedLights.getInt()) {
 		// ignore (don't add to renderer) lights that have lightmaps baked into BSP file
 		if(cent->currentState.lightFlags & LF_HASBSPLIGHTING) {
@@ -80,7 +80,7 @@ static void CG_TransitionLight(centity_t *cent) {
 	cent->rLight->setOrigin(cent->currentState.origin);
 	cent->rLight->setRadius(cent->currentState.lightRadius);
 }
-static void CG_TransitionModel(centity_t *cent) {
+static void CG_TransitionModel(centity_s *cent) {
 	if(cent->rEnt == 0) {
 		g_core->RedWarning("CG_TransitionModel: found entity without rEntity (entity %i)\n",cent->currentState.number);
 		// it still happens sometimes, let's fix it here for now.
@@ -151,7 +151,7 @@ CG_TransitionEntity
 cent->nextState is moved to cent->currentState and events are fired
 ===============
 */
-static void CG_TransitionEntity( centity_t *cent ) {
+static void CG_TransitionEntity( centity_s *cent ) {
 	entityState_s previousState = cent->currentState;
 	cent->currentState = cent->nextState;
 	cent->currentValid = true;
@@ -192,7 +192,7 @@ static void CG_TransitionEntity( centity_t *cent ) {
 }
 
 static void CG_RemoveEntity(u32 entNum) {
-	centity_t *cent = &cg_entities[entNum];
+	centity_s *cent = &cg_entities[entNum];
 //	if(cent->currentState.eType == ET_LIGHT) {
 		if(cent->rLight) {
 			rf->removeLight(cent->rLight);
@@ -210,7 +210,7 @@ static void CG_RemoveEntity(u32 entNum) {
 	}
 }
 static void CG_NewEntity(u32 entNum) {
-	centity_t *cent = &cg_entities[entNum];
+	centity_s *cent = &cg_entities[entNum];
 #if 1
 	if(cent->currentState.number != entNum) {
 		cent->currentState = cent->nextState;
@@ -222,14 +222,14 @@ static void CG_NewEntity(u32 entNum) {
 	if(cent->currentState.eType == ET_LIGHT) {
 		// new render light
 		if(cent->rLight) {
-			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rLight assigned\n",entNum);
+			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rLight assigned\n",entNum);
 			rf->removeLight(cent->rLight);
 		}
 		cent->rLight = rf->allocLight();
 	} else {
 		// new render entity
 		if(cent->rEnt) {
-			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rEntity assigned\n",entNum);
+			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rEntity assigned\n",entNum);
 			rf->removeEntity(cent->rEnt);
 		}
 		cent->rEnt = rf->allocEntity();
@@ -237,7 +237,7 @@ static void CG_NewEntity(u32 entNum) {
 		if(cent->currentState.lightRadius >= 0) {
 			// new render light
 			if(cent->rLight) {
-				CG_Printf(S_COLOR_RED"CG_NewEntity: centity_t %i already have rLight assigned\n",entNum);
+				CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rLight assigned\n",entNum);
 				rf->removeLight(cent->rLight);
 			}
 			cent->rLight = rf->allocLight();
@@ -258,7 +258,7 @@ FIXME: Also called by map_restart?
 */
 void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	int				i;
-	centity_t		*cent;
+	centity_s		*cent;
 	entityState_s	*state;
 
 	if(cg_printInitialSnapshots.getInt()) {
@@ -302,7 +302,7 @@ The transition point from snap to nextSnap has passed
 ===================
 */
 static void CG_TransitionSnapshot( void ) {
-	centity_t			*cent;
+	centity_s			*cent;
 	snapshot_t			*oldFrame;
 
 	if ( !cg.snap ) {
@@ -430,7 +430,7 @@ A new snapshot has just been read in from the client system.
 static void CG_SetNextSnap( snapshot_t *snap ) {
 	int					num;
 	entityState_s		*es;
-	centity_t			*cent;
+	centity_s			*cent;
 
 	cg.nextSnap = snap;
 

@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../qcommon/q_shared.h"
 #include "bg_public.h"
-#include "g_public.h"
+#include "edict.h"
 #include <shared/array.h>
 #include <math/vec3.h>
 
@@ -39,7 +39,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //============================================================================
 
-typedef struct {
+struct level_locals_t {
 	struct edict_s	*gentities;
 	int			gentitySize;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
@@ -51,7 +51,7 @@ typedef struct {
 	int			previousTime;			// so movers can back up when blocked
 
 	int			startTime;				// level.time the map was started
-} level_locals_t;
+};
 
 #include <shared/str.h>
 struct railgunAttackMaterials_s {

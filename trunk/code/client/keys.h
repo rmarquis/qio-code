@@ -23,26 +23,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <shared/str.h>
 
-typedef struct {
+struct keyBind_s {
 	bool	down;
 	int			repeats;		// if > 1, it is autorepeating
 	str		binding;
-} qkey_t;
+};
 
 extern	bool	key_overstrikeMode;
-extern	qkey_t		keys[MAX_KEYS];
+extern	keyBind_s		keys[MAX_KEYS];
 
-// NOTE TTimo the declaration of field_t and Field_Clear is now in qcommon/qcommon.h
-void Field_KeyDownEvent( field_t *edit, int key );
-void Field_CharEvent( field_t *edit, int ch );
-void Field_Draw( field_t *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
-void Field_BigDraw( field_t *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
+// NOTE TTimo the declaration of field_s and Field_Clear is now in qcommon/qcommon.h
+void Field_KeyDownEvent( field_s *edit, int key );
+void Field_CharEvent( field_s *edit, int ch );
+void Field_Draw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
+void Field_BigDraw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
 
 #define		COMMAND_HISTORY		32
-extern	field_t	historyEditLines[COMMAND_HISTORY];
+extern	field_s	historyEditLines[COMMAND_HISTORY];
 
-extern	field_t	g_consoleField;
-extern	field_t	chatField;
+extern	field_s	g_consoleField;
+extern	field_s	chatField;
 extern	int				anykeydown;
 extern	bool	chat_team;
 extern	int			chat_playerNum;
