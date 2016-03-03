@@ -1300,9 +1300,9 @@ public:
 				//setBlendFunc(bd.src,bd.dst);
 				if(s->getAlphaGenType() == ALPHAGEN_AST) {
 					float a = s->evaluateAlphaGen(0);
-					setColor4f(1,1,1,a);
+					setColor4f(lastSurfaceColor.r,lastSurfaceColor.g,lastSurfaceColor.b,a);
 				} else {
-					setColor4f(1,1,1,1);
+					setColor4f(lastSurfaceColor.r,lastSurfaceColor.g,lastSurfaceColor.b,lastSurfaceColor.a);
 				}
 				if(s->hasTexMods()) {
 					matrix_c mat;

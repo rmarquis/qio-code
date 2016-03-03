@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
+#include <api/fontAPI.h>
 #include <api/rbAPI.h>
 #include <api/ddAPI.h>
 #include <api/clientAPI.h>
@@ -148,6 +149,33 @@ public:
 	virtual void drawStretchPic(float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, class mtrAPI_i *material) {
 		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
+	}
+	fontAPI_i *getAnyWorkingFont() {
+		fontAPI_i *f = registerFont("Arial");
+		if(f == 0) {
+			f = registerFont("Times");
+		}
+		return f;
+	}
+	virtual float getStringWidth(const char *s) {
+		fontAPI_i *f = getAnyWorkingFont();
+		if(f) {
+			return f->getStringWidth(s);
+		}
+		return 0.f;
+	}
+	virtual float drawChar(float x, float y, char s) {
+		fontAPI_i *f = getAnyWorkingFont();
+		if(f) {
+			return f->drawChar(x,y,s);
+		}
+		return 0.f;
+	}
+	virtual void drawString(float x, float y, const char *s) {
+		fontAPI_i *f = getAnyWorkingFont();
+		if(f) {
+			f->drawString(x,y,s);
+		}
 	}
 	virtual void endFrame() {
 		setup2DView();

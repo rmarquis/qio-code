@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
 #include <api/guiAPI.h>
+#include <api/rAPI.h>
 
 /*
 
@@ -318,7 +319,7 @@ void Field_VariableSizeDraw( field_s *edit, int x, int y, int width, int size, b
 	int		drawLen;
 	int		prestep;
 	int		cursorChar;
-	char	str[MAX_STRING_CHARS];
+	char	pStr[MAX_STRING_CHARS];
 	int		i;
 
 	drawLen = edit->widthInChars - 1; // - 1 so there is always a space for the cursor
@@ -346,53 +347,34 @@ void Field_VariableSizeDraw( field_s *edit, int x, int y, int width, int size, b
 		Com_Error( ERR_DROP, "drawLen >= MAX_STRING_CHARS" );
 	}
 
-	memcpy( str, edit->buffer + prestep, drawLen );
-	str[ drawLen ] = 0;
+	memcpy( pStr, edit->buffer + prestep, drawLen );
+	pStr[ drawLen ] = 0;
 
 	// draw it
-	if ( size == SMALLCHAR_WIDTH ) {
 		float	color[4];
 
-		color[0] = color[1] = color[2] = color[3] = 1.0;
-		SCR_DrawSmallStringExt( x, y, str, color, false, noColorEscape );
-	} else {
-		// draw big string with drop shadow
-		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
-	}
-
 	// draw the cursor
-	if ( showCursor ) {
+	if ( !showCursor ) {
+		rf->drawString(x, y, pStr);
+	} else {
+		str tmp = pStr;
 		if ( (int)( cls.realtime >> 8 ) & 1 ) {
-			return;		// off blink
-		}
-
-		if ( key_overstrikeMode ) {
-			cursorChar = 11;
+			tmp.insertAt(edit->cursor,'|');
 		} else {
-			cursorChar = 10;
+			tmp.insertAt(edit->cursor,' ');
 		}
-
-		i = drawLen - strlen( str );
-
-		if ( size == SMALLCHAR_WIDTH ) {
-			SCR_DrawSmallChar( x + ( edit->cursor - prestep - i ) * size, y, cursorChar );
-		} else {
-			str[0] = cursorChar;
-			str[1] = 0;
-			SCR_DrawBigString( x + ( edit->cursor - prestep - i ) * size, y, str, 1.0, false );
-
-		}
+		rf->drawString(x, y, tmp);
 	}
 }
 
 void Field_Draw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
 {
-	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
+	Field_VariableSizeDraw( edit, x, y, width, 16, showCursor, noColorEscape );
 }
 
 void Field_BigDraw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape ) 
 {
-	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
+	Field_VariableSizeDraw( edit, x, y, width, 16, showCursor, noColorEscape );
 }
 
 /*

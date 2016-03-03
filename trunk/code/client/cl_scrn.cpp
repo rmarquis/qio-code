@@ -31,295 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 bool	scr_initialized;		// ready to draw
 
-cvar_s		*cl_timegraph;
-cvar_s		*cl_debuggraph;
-cvar_s		*cl_graphheight;
-cvar_s		*cl_graphscale;
-cvar_s		*cl_graphshift;
-
-/*
-================
-SCR_DrawNamedPic
-
-Coordinates are 640*480 virtual values
-=================
-*/
-void SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname ) {
-	mtrAPI_i *hShader;
-
-	assert( width != 0 );
-
-	hShader = rf->registerMaterial( picname );
-	SCR_AdjustFrom640( &x, &y, &width, &height );
-	rf->drawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
-}
-
-
-/*
-================
-SCR_AdjustFrom640
-
-Adjusted for resolution and screen aspect ratio
-================
-*/
-void SCR_AdjustFrom640( float *x, float *y, float *w, float *h ) {
-	float	xscale;
-	float	yscale;
-
-#if 0
-		// adjust for wide screens
-		if ( rf->getWinWidth() * 480 > rf->getWinHeight() * 640 ) {
-			*x += 0.5 * ( rf->getWinWidth() - ( rf->getWinHeight() * 640 / 480 ) );
-		}
-#endif
-
-	// scale for screen sizes
-	xscale = rf->getWinWidth() / 640.0;
-	yscale = rf->getWinHeight() / 480.0;
-	if ( x ) {
-		*x *= xscale;
-	}
-	if ( y ) {
-		*y *= yscale;
-	}
-	if ( w ) {
-		*w *= xscale;
-	}
-	if ( h ) {
-		*h *= yscale;
-	}
-}
-
-/*
-================
-SCR_FillRect
-
-Coordinates are 640*480 virtual values
-=================
-*/
-void SCR_FillRect( float x, float y, float width, float height, const float *color ) {
-	rf->set2DColor( color );
-
-	SCR_AdjustFrom640( &x, &y, &width, &height );
-	rf->drawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
-
-	rf->set2DColor( NULL );
-}
-
-
-/*
-================
-SCR_DrawPic
-
-Coordinates are 640*480 virtual values
-=================
-*/
-void SCR_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader ) {
-	SCR_AdjustFrom640( &x, &y, &width, &height );
-	rf->drawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
-}
-
-
-
-/*
-** SCR_DrawChar
-** chars are drawn at 640*480 virtual screen size
-*/
-static void SCR_DrawChar( int x, int y, float size, int ch ) {
-	int row, col;
-	float frow, fcol;
-	float	ax, ay, aw, ah;
-
-	ch &= 255;
-
-	if ( ch == ' ' ) {
-		return;
-	}
-
-	if ( y < -size ) {
-		return;
-	}
-
-	ax = x;
-	ay = y;
-	aw = size;
-	ah = size;
-	SCR_AdjustFrom640( &ax, &ay, &aw, &ah );
-
-	row = ch>>4;
-	col = ch&15;
-
-	frow = row*0.0625;
-	fcol = col*0.0625;
-	size = 0.0625;
-
-	rf->drawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
-					   cls.charSetShader );
-}
-
-/*
-** SCR_DrawSmallChar
-** small chars are drawn at native screen resolution
-*/
-void SCR_DrawSmallChar( int x, int y, int ch ) {
-	int row, col;
-	float frow, fcol;
-	float size;
-
-	ch &= 255;
-
-	if ( ch == ' ' ) {
-		return;
-	}
-
-	if ( y < -SMALLCHAR_HEIGHT ) {
-		return;
-	}
-
-	row = ch>>4;
-	col = ch&15;
-
-	frow = row*0.0625;
-	fcol = col*0.0625;
-	size = 0.0625;
-
-	rf->drawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
-					   cls.charSetShader );
-}
-
-
-/*
-==================
-SCR_DrawBigString[Color]
-
-Draws a multi-colored string with a drop shadow, optionally forcing
-to a fixed color.
-
-Coordinates are at 640 by 480 virtual resolution
-==================
-*/
-void SCR_DrawStringExt( int x, int y, float size, const char *string, float *setColor, bool forceColor,
-		bool noColorEscape ) {
-	vec4_t		color;
-	const char	*s;
-	int			xx;
-
-	// draw the drop shadow
-	color[0] = color[1] = color[2] = 0;
-	color[3] = setColor[3];
-	rf->set2DColor( color );
-	s = string;
-	xx = x;
-	while ( *s ) {
-		if ( !noColorEscape && Q_IsColorString( s ) ) {
-			s += 2;
-			continue;
-		}
-		SCR_DrawChar( xx+2, y+2, size, *s );
-		xx += size;
-		s++;
-	}
-
-
-	// draw the colored text
-	s = string;
-	xx = x;
-	rf->set2DColor( setColor );
-	while ( *s ) {
-		if ( !noColorEscape && Q_IsColorString( s ) ) {
-			if ( !forceColor ) {
-				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
-				color[3] = setColor[3];
-				rf->set2DColor( color );
-			}
-			s += 2;
-			continue;
-		}
-		SCR_DrawChar( xx, y, size, *s );
-		xx += size;
-		s++;
-	}
-	rf->set2DColor( NULL );
-}
-
-
-void SCR_DrawBigString( int x, int y, const char *s, float alpha, bool noColorEscape ) {
-	float	color[4];
-
-	color[0] = color[1] = color[2] = 1.0;
-	color[3] = alpha;
-	SCR_DrawStringExt( x, y, BIGCHAR_WIDTH, s, color, false, noColorEscape );
-}
-
-
-/*
-==================
-SCR_DrawSmallString[Color]
-
-Draws a multi-colored string with a drop shadow, optionally forcing
-to a fixed color.
-==================
-*/
-void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, bool forceColor,
-		bool noColorEscape ) {
-	vec4_t		color;
-	const char	*s;
-	int			xx;
-
-	// draw the colored text
-	s = string;
-	xx = x;
-	rf->set2DColor( setColor );
-	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
-			if ( !forceColor ) {
-				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
-				color[3] = setColor[3];
-				rf->set2DColor( color );
-			}
-			if ( !noColorEscape ) {
-				s += 2;
-				continue;
-			}
-		}
-		SCR_DrawSmallChar( xx, y, *s );
-		xx += SMALLCHAR_WIDTH;
-		s++;
-	}
-	rf->set2DColor( NULL );
-}
-
-
-
-/*
-** SCR_Strlen -- skips color escape codes
-*/
-static int SCR_Strlen( const char *str ) {
-	const char *s = str;
-	int count = 0;
-
-	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
-			s += 2;
-		} else {
-			count++;
-			s++;
-		}
-	}
-
-	return count;
-}
-
-/*
-** SCR_GetBigStringWidth
-*/ 
-int	SCR_GetBigStringWidth( const char *str ) {
-	return SCR_Strlen( str ) * BIGCHAR_WIDTH;
-}
 
 
 //===============================================================================
@@ -343,7 +54,9 @@ void SCR_DrawDemoRecording() {
 	pos = FS_FTell( clc.demofile );
 	sprintf( string, "RECORDING %s: %ik", clc.demoName, pos / 1024 );
 
-	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], true, false );
+	//SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], true, false );
+	// TODO
+	rf->drawString(300,300,string);
 }
 
 
@@ -382,83 +95,16 @@ void SCR_DrawVoipMeter() {
 	buffer[i] = '\0';
 
 	sprintf( string, "VoIP: [%s]", buffer );
-	SCR_DrawStringExt( 320 - strlen( string ) * 4, 10, 8, string, g_color_table[7], true, false );
+	//SCR_DrawStringExt( 320 - strlen( string ) * 4, 10, 8, string, g_color_table[7], true, false );
+	// TODO
+	rf->drawString(300,300,string);
 }
 #endif
 
 
 
 
-/*
-===============================================================================
-
-DEBUG GRAPH
-
-===============================================================================
-*/
-
-static	int			current;
-static	float		values[1024];
-
-/*
-==============
-SCR_DebugGraph
-==============
-*/
-void SCR_DebugGraph (float value)
-{
-	values[current] = value;
-	current = (current + 1) % ARRAY_LEN(values);
-}
-
-/*
-==============
-SCR_DrawDebugGraph
-==============
-*/
-void SCR_DrawDebugGraph (void)
-{
-	int		a, x, y, w, i, h;
-	float	v;
-
-	//
-	// draw the graph
-	//
-	w = rf->getWinWidth();
-	x = 0;
-	y = rf->getWinHeight();
-	rf->set2DColor( g_color_table[0] );
-	rf->drawStretchPic(x, y - cl_graphheight->integer, 
-		w, cl_graphheight->integer, 0, 0, 0, 0, cls.whiteShader );
-	rf->set2DColor( NULL );
-
-	for (a=0 ; a<w ; a++)
-	{
-		i = (ARRAY_LEN(values)+current-1-(a % ARRAY_LEN(values))) % ARRAY_LEN(values);
-		v = values[i];
-		v = v * cl_graphscale->integer + cl_graphshift->integer;
-		
-		if (v < 0)
-			v += cl_graphheight->integer * (1+(int)(-v / cl_graphheight->integer));
-		h = (int)v % cl_graphheight->integer;
-		rf->drawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls.whiteShader );
-	}
-}
-
-//=============================================================================
-
-/*
-==================
-SCR_Init
-==================
-*/
 void SCR_Init() {
-	cl_timegraph = Cvar_Get ("timegraph", "0", CVAR_CHEAT);
-	cl_debuggraph = Cvar_Get ("debuggraph", "0", CVAR_CHEAT);
-	cl_graphheight = Cvar_Get ("graphheight", "32", CVAR_CHEAT);
-	cl_graphscale = Cvar_Get ("graphscale", "1", CVAR_CHEAT);
-	cl_graphshift = Cvar_Get ("graphshift", "0", CVAR_CHEAT);
-
 	scr_initialized = true;
 }
 
@@ -558,14 +204,9 @@ void SCR_DrawScreenField() {
 
 	if(1 && clc.downloadName[0]) {
 		str txt = va("Downloading %s....\n",clc.downloadName);
-		SCR_DrawBigString(30,30,txt,1,false);
+		rf->drawString(30,30,txt);
 		txt = va("Block %i, count %i\n",clc.downloadBlock,clc.downloadCount);
-		SCR_DrawBigString(30,60,txt,1,false);
-	}
-
-	// debug graph can be drawn on top of anything
-	if ( cl_debuggraph->integer || cl_timegraph->integer || cl_debugMove->integer ) {
-		SCR_DrawDebugGraph ();
+		rf->drawString(30,60,txt);
 	}
 }
 

@@ -48,8 +48,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	SCREEN_HEIGHT		480
 #define SMALLCHAR_WIDTH		8
 #define SMALLCHAR_HEIGHT	16
-#define BIGCHAR_WIDTH		16
-#define BIGCHAR_HEIGHT		16
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -411,7 +409,6 @@ extern	clientStatic_t		cls;
 extern	cvar_s	*cl_nodelta;
 extern	cvar_s	*cl_debugMove;
 extern	cvar_s	*cl_noprint;
-extern	cvar_s	*cl_timegraph;
 extern	cvar_s	*cl_maxpackets;
 extern	cvar_s	*cl_packetdup;
 extern	cvar_s	*cl_shownet;
@@ -596,21 +593,6 @@ void CL_SaveConsoleHistory();
 //
 void	SCR_Init (void);
 void	SCR_UpdateScreen (void);
-
-void	SCR_DebugGraph (float value);
-
-int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coordinates
-
-void	SCR_AdjustFrom640( float *x, float *y, float *w, float *h );
-void	SCR_FillRect( float x, float y, float width, float height, 
-					 const float *color );
-void	SCR_DrawPic( float x, float y, float width, float height, class mtrAPI_i *hShader );
-void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );
-
-void	SCR_DrawBigString( int x, int y, const char *s, float alpha, bool noColorEscape );			// draws a string with embedded color control characters with fade
-void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, bool forceColor, bool noColorEscape );
-void	SCR_DrawSmallChar( int x, int y, int ch );
-
 
 //
 // cl_cin.c

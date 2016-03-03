@@ -59,6 +59,12 @@ public:
 		float s1, float t1, float s2, float t2, const char *matName) {
 			drawStretchPic(x,y,w,h,s1,t1,s2,t2,registerMaterial(matName));
 	}
+	// this will draw string with default font
+	virtual void drawString(float x, float y, const char *s) = 0;
+	virtual float getStringWidth(const char *s) = 0;
+	// this will return the character width
+	virtual float drawChar(float x, float y, char s) = 0;
+
 	virtual void endFrame() = 0;
 
 	virtual bool rayTraceWorldMap(class trace_c &tr) = 0;
