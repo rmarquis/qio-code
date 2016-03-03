@@ -32,6 +32,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define	MAX_CLIENTS			64		// absolute limit
 #define MAX_LOCATIONS		64
 
+#define	MAX_MAP_AREA_BYTES		32		// bit vector of area visibility
+
 #define	GENTITYNUM_BITS		12		// don't need to send any more
 #define	MAX_GENTITIES		(1<<GENTITYNUM_BITS)
 

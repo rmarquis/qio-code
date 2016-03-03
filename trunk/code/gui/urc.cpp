@@ -79,7 +79,9 @@ void urc_c::onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr
 		if(r.isInside(mouseX,mouseY)) {
 			g_core->Print("Clicked element %s with material %s\n",el->getName(),el->getMatName());
 			// NOTE: multiple commands can be separated by ;
+			g_core->Cbuf_AddText(";");
 			g_core->Cbuf_AddText(el->getStuffCommand());
+			g_core->Cbuf_AddText(";");
 
 			if(el->isField()) {
 				mgr->setActiveField(dynamic_cast<urcElementField_c*>(el));
@@ -112,7 +114,9 @@ void urc_c::onMouseMove(int mouseX, int mouseY) {
 					g_core->Print("Executing hover command %s\n",hcmd);
 				}
 				// NOTE: multiple commands can be separated by ;
+				g_core->Cbuf_AddText(";");
 				g_core->Cbuf_AddText(hcmd);
+				g_core->Cbuf_AddText(";");
 			}
 			break;
 		}

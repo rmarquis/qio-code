@@ -26,80 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
 
-/*
-============
-COM_SkipPath
-============
-*/
-char *COM_SkipPath (char *pathname)
-{
-	char	*last;
-	
-	last = pathname;
-	while (*pathname)
-	{
-		if (*pathname=='/')
-			last = pathname+1;
-		pathname++;
-	}
-	return last;
-}
 
-/*
-============
-COM_StripExtension
-============
-*/
-void COM_StripExtension( const char *in, char *out, int destsize )
-{
-	const char *dot = strrchr(in, '.'), *slash;
-	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
-		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
-	else
-		Q_strncpyz(out, in, destsize);
-}
-
-/*
-============
-COM_CompareExtension
-
-string compare the end of the strings and return true if strings match
-============
-*/
-bool COM_CompareExtension(const char *in, const char *ext)
-{
-	int inlen, extlen;
-	
-	inlen = strlen(in);
-	extlen = strlen(ext);
-	
-	if(extlen <= inlen)
-	{
-		in += inlen - extlen;
-		
-		if(!Q_stricmp(in, ext))
-			return true;
-	}
-	
-	return false;
-}
-
-/*
-==================
-COM_DefaultExtension
-
-if path doesn't have an extension, then append
- the specified one (which should include the .)
-==================
-*/
-void COM_DefaultExtension( char *path, int maxSize, const char *extension )
-{
-	const char *dot = strrchr(path, '.'), *slash;
-	if (dot && (!(slash = strrchr(path, '/')) || slash < dot))
-		return;
-	else
-		Q_strcat(path, maxSize, extension);
-}
 
 
 /*
@@ -149,33 +76,7 @@ int Com_HexStrToInt( const char *str )
 ============================================================================
 */
 
-int Q_isprint( int c )
-{
-	if ( c >= 0x20 && c <= 0x7E )
-		return ( 1 );
-	return ( 0 );
-}
 
-int Q_islower( int c )
-{
-	if (c >= 'a' && c <= 'z')
-		return ( 1 );
-	return ( 0 );
-}
-
-int Q_isupper( int c )
-{
-	if (c >= 'A' && c <= 'Z')
-		return ( 1 );
-	return ( 0 );
-}
-
-int Q_isalpha( int c )
-{
-	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-		return ( 1 );
-	return ( 0 );
-}
 
 bool Q_isanumber( const char *s )
 {
@@ -194,39 +95,6 @@ bool Q_isintegral( float f )
 {
 	return (int)f == f;
 }
-
-#ifdef _MSC_VER
-/*
-=============
-Q_vsnprintf
- 
-Special wrapper function for Microsoft's broken _vsnprintf() function.
-MinGW comes with its own snprintf() which is not broken.
-=============
-*/
-
-int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
-{
-	int retval;
-	
-	retval = _vsnprintf(str, size, format, ap);
-
-	if(retval < 0 || retval == size)
-	{
-		// Microsoft doesn't adhere to the C99 standard of vsnprintf,
-		// which states that the return value must be the number of
-		// bytes written if the output string had sufficient length.
-		//
-		// Obviously we cannot determine that value from Microsoft's
-		// implementation, so we have no choice but to return size.
-		
-		str[size - 1] = '\0';
-		return size;
-	}
-	
-	return retval;
-}
-#endif
 
 /*
 =============
@@ -471,7 +339,7 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 	va_list		argptr;
 
 	va_start (argptr,fmt);
-	len = Q_vsnprintf(dest, size, fmt, argptr);
+	len = _vsnprintf(dest, size, fmt, argptr);
 	va_end (argptr);
 
 	if(len >= size)
@@ -498,7 +366,7 @@ char	* QDECL va( char *format, ... ) {
 	index++;
 
 	va_start (argptr, format);
-	Q_vsnprintf (buf, sizeof(*string), format, argptr);
+	_vsnprintf (buf, sizeof(*string), format, argptr);
 	va_end (argptr);
 
 	return buf;

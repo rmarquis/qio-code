@@ -361,7 +361,7 @@ void Sys_Error( const char *error, ... )
 	char    string[1024];
 
 	va_start (argptr,error);
-	Q_vsnprintf (string, sizeof(string), error, argptr);
+	_vsnprintf (string, sizeof(string), error, argptr);
 	va_end (argptr);
 
 	Sys_ErrorDialog( string );
@@ -381,7 +381,7 @@ static __attribute__ ((format (printf, 1, 2))) void Sys_Warn( char *warning, ...
 	char    string[1024];
 
 	va_start (argptr,warning);
-	Q_vsnprintf (string, sizeof(string), warning, argptr);
+	_vsnprintf (string, sizeof(string), warning, argptr);
 	va_end (argptr);
 
 	CON_Print( va( "Warning: %s", string ) );

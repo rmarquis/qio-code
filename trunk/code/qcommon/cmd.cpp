@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qcommon.h"
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
+#include <shared/str.h>
+
 
 #define	MAX_CMD_BUFFER	16384
 #define	MAX_CMD_LINE	1024
@@ -272,7 +274,7 @@ void Cmd_Exec_f() {
 		char	*c;
 		void	*v;
 	} f;
-	char	filename[MAX_QPATH];
+	str	filename;
 
 	quiet = !Q_stricmp(Cmd_Argv(0), "execq");
 
@@ -282,15 +284,15 @@ void Cmd_Exec_f() {
 		return;
 	}
 
-	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+	filename = Cmd_Argv(1);
+	filename.defaultExtension(".cfg");
 	FS_ReadFile( filename, &f.v);
 	if (!f.c) {
-		Com_Printf ("couldn't exec %s\n", filename);
+		Com_Printf ("couldn't exec %s\n", filename.c_str());
 		return;
 	}
 	if (!quiet)
-		Com_Printf ("execing %s\n", filename);
+		Com_Printf ("execing %s\n", filename.c_str());
 	
 	Cbuf_InsertText (f.c);
 

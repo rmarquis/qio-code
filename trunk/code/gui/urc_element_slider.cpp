@@ -86,7 +86,7 @@ void urcElementSlider_c::renderURCElement(class urcMgr_c *pMgr) {
 		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
 		gr->drawStretchPic(ofsX,r.getY(),14,r.getH(),0,0,1,1,"textures/menu/slider_thumb");
 	} else {
-		gr->fillRectRGBA(r.getX(),r.getY(),r.getW(),r.getH(),bgColor.toPointer());
+		//gr->fillRectRGBA(r.getX(),r.getY(),r.getW(),r.getH(),bgColor.toPointer());
 	}
 }
 

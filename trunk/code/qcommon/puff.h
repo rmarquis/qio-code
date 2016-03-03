@@ -44,11 +44,9 @@
 
   // vsnprintf is ISO/IEC 9899:1999
   // abstracting this to make it portable
-  int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #else
   #include <stdint.h>
 
-  #define Q_vsnprintf vsnprintf
 #endif	/* for definitions of the <stdint.h> types */
 
 /*

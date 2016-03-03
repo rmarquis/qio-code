@@ -184,7 +184,7 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	int			j;
 	
 	va_start (argptr,fmt);
-	Q_vsnprintf ((char *)message, sizeof(message), fmt,argptr);
+	_vsnprintf ((char *)message, sizeof(message), fmt,argptr);
 	va_end (argptr);
 
 	// Fix to http://aluigi.altervista.org/adv/q3msgboom-adv.txt
