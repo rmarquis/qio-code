@@ -101,135 +101,7 @@ void COM_DefaultExtension( char *path, int maxSize, const char *extension )
 		Q_strcat(path, maxSize, extension);
 }
 
-/*
-============================================================================
 
-					BYTE ORDER FUNCTIONS
-
-============================================================================
-*/
-/*
-// can't just use function pointers, or dll linkage can
-// mess up when qcommon is included in multiple places
-static short	(*_BigShort) (short l);
-static short	(*_LittleShort) (short l);
-static int		(*_BigLong) (int l);
-static int		(*_LittleLong) (int l);
-static qint64	(*_BigLong64) (qint64 l);
-static qint64	(*_LittleLong64) (qint64 l);
-static float	(*_BigFloat) (const float *l);
-static float	(*_LittleFloat) (const float *l);
-
-short	BigShort(short l){return _BigShort(l);}
-short	LittleShort(short l) {return _LittleShort(l);}
-int		BigLong (int l) {return _BigLong(l);}
-int		LittleLong (int l) {return _LittleLong(l);}
-qint64 	BigLong64 (qint64 l) {return _BigLong64(l);}
-qint64 	LittleLong64 (qint64 l) {return _LittleLong64(l);}
-float	BigFloat (const float *l) {return _BigFloat(l);}
-float	LittleFloat (const float *l) {return _LittleFloat(l);}
-*/
-
-void CopyShortSwap(void *dest, void *src)
-{
-	byte *to = (byte*)dest, *from = (byte*)src;
-
-	to[0] = from[1];
-	to[1] = from[0];
-}
-
-void CopyLongSwap(void *dest, void *src)
-{
-	byte *to = (byte*)dest, *from = (byte*)src;
-
-	to[0] = from[3];
-	to[1] = from[2];
-	to[2] = from[1];
-	to[3] = from[0];
-}
-
-short   ShortSwap (short l)
-{
-	byte    b1,b2;
-
-	b1 = l&255;
-	b2 = (l>>8)&255;
-
-	return (b1<<8) + b2;
-}
-
-short	ShortNoSwap (short l)
-{
-	return l;
-}
-
-int    LongSwap (int l)
-{
-	byte    b1,b2,b3,b4;
-
-	b1 = l&255;
-	b2 = (l>>8)&255;
-	b3 = (l>>16)&255;
-	b4 = (l>>24)&255;
-
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
-}
-
-int	LongNoSwap (int l)
-{
-	return l;
-}
-
-float FloatSwap (const float *f) {
-	floatInt_u out;
-
-	out.f = *f;
-	out.ui = LongSwap(out.ui);
-
-	return out.f;
-}
-
-float FloatNoSwap (const float *f)
-{
-	return *f;
-}
-
-/*
-================
-Swap_Init
-================
-*/
-/*
-void Swap_Init ()
-{
-	byte	swaptest[2] = {1,0};
-
-// set the byte swapping variables in a portable manner	
-	if ( *(short *)swaptest == 1)
-	{
-		_BigShort = ShortSwap;
-		_LittleShort = ShortNoSwap;
-		_BigLong = LongSwap;
-		_LittleLong = LongNoSwap;
-		_BigLong64 = Long64Swap;
-		_LittleLong64 = Long64NoSwap;
-		_BigFloat = FloatSwap;
-		_LittleFloat = FloatNoSwap;
-	}
-	else
-	{
-		_BigShort = ShortNoSwap;
-		_LittleShort = ShortSwap;
-		_BigLong = LongNoSwap;
-		_LittleLong = LongSwap;
-		_BigLong64 = Long64NoSwap;
-		_LittleLong64 = Long64Swap;
-		_BigFloat = FloatNoSwap;
-		_LittleFloat = FloatSwap;
-	}
-
-}
-*/
 
 /*
 ============================================================================
@@ -641,17 +513,6 @@ char *Q_strlwr( char *s1 ) {
     return s1;
 }
 
-char *Q_strupr( char *s1 ) {
-    char	*s;
-
-    s = s1;
-	while ( *s ) {
-		*s = toupper(*s);
-		s++;
-	}
-    return s1;
-}
-
 
 // never goes past bounds or leaves without a terminating 0
 void Q_strcat( char *dest, int size, const char *src ) {
@@ -860,4 +721,14 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep )
 		return p;
 	else
 		return s;
+}
+
+short   ShortSwap (short l)
+{
+	byte    b1,b2;
+
+	b1 = l&255;
+	b2 = (l>>8)&255;
+
+	return (b1<<8) + b2;
 }

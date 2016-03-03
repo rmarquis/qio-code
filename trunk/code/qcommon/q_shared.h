@@ -130,11 +130,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../shared/typedefs.h"
 
-union floatInt_u {
-	float f;
-	int i;
-	unsigned int ui;
-};
+
 
 
 #ifndef NULL
@@ -183,20 +179,6 @@ enum errorParm_e {
 	ERR_DISCONNECT,				// client disconnected from the server
 };
 
-/*
-==============================================================
-
-MATHLIB
-
-==============================================================
-*/
-
-#include "../math/math.h"
-
-float AngleNormalize360 ( float angle );
-float AngleNormalize180 ( float angle );
-float AngleDelta ( float angle1, float angle2 );
-
 //=============================================
 
 char	*COM_SkipPath( char *pathname );
@@ -233,7 +215,6 @@ int		Q_stricmpn (const char *s1, const char *s2, int n);
 // V: this will treat '/' and '\' as equal
 int		Q_stricmpn_slashes(const char *s1, const char *s2, int n);
 char	*Q_strlwr( char *s1 );
-char	*Q_strupr( char *s1 );
 const char	*Q_stristr( const char *s, const char *find);
 
 // buffer size safe library replacements
@@ -248,76 +229,6 @@ int Q_CountChar(const char *string, char tocount);
 //=============================================
 
 char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
-
-//=============================================
-
-/*
-==========================================================
-
-CVARS (console variables)
-
-Many variables can be used for cheating purposes, so when
-cheats is zero, force all unspecified variables to their
-default values.
-==========================================================
-*/
-
-enum {
-	CVAR_ARCHIVE		=	0x0001,	// set to cause it to be saved to vars.rc
-							// used for system variables, not for player
-							// specific configurations
-	CVAR_USERINFO		=	0x0002,	// sent to server on connect or change
-	CVAR_SERVERINFO		=	0x0004,	// sent in response to front end requests
-	CVAR_SYSTEMINFO		=	0x0008,	// these cvars will be duplicated on all clients
-	CVAR_INIT			=	0x0010,	// don't allow change from console at all,
-							// but can be set from the command line
-	CVAR_LATCH			=	0x0020,	// will only change when C code next does
-							// a Cvar_Get(), so it can't be changed
-							// without proper initialization.  modified
-							// will be set, even though the value hasn't
-							// changed yet
-	CVAR_ROM			=	0x0040,	// display only, cannot be set by user at all
-	CVAR_USER_CREATED	=	0x0080,	// created by a set command
-	CVAR_TEMP			=	0x0100,	// can be set even when cheats are disabled, but is not archived
-	CVAR_CHEAT			=	0x0200,	// can not be changed if cheats are disabled
-	CVAR_NORESTART		=	0x0400,	// do not clear when a cvar_restart is issued
-
-	CVAR_SERVER_CREATED	=	0x0800,	// cvar was created by a server the client connected to.
-	CVAR_VM_CREATED		=	0x1000,	// cvar was created exclusively in one of the VMs.
-	CVAR_PROTECTED		=	0x2000,	// prevent modifying this var from VMs or the server
-// These flags are only returned by the Cvar_Flags() function
-	CVAR_MODIFIED		=	0x40000000,	// Cvar was modified
-	CVAR_NONEXISTENT	=	0x80000000,	// Cvar doesn't exist.
-};
-
-// nothing outside the Cvar_*() functions should modify these fields!
-struct cvar_s {
-	char			*name;
-	char			*string;
-	char			*resetString;		// cvar_restart will reset to this value
-	char			*latchedString;		// for CVAR_LATCH vars
-	int				flags;
-	bool	modified;			// set each time the cvar is changed
-	int				modificationCount;	// incremented each time the cvar is changed
-	float			value;				// atof( string )
-	int				integer;			// atoi( string )
-	bool	validate;
-	bool	integral;
-	float			min;
-	float			max;
-
-	class cvarModifyCallback_i *modificationCallback;
-
-	cvar_s *next;
-	cvar_s *prev;
-	cvar_s *hashNext;
-	cvar_s *hashPrev;
-	int			hashIndex;
-};
-
-#define	MAX_CVAR_VALUE_STRING	256
-
-typedef int	cvarHandle_t;
 
 //=====================================================================
 

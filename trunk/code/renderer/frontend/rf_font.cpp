@@ -43,6 +43,8 @@ FT_Library rf_ft;
 class fontBase_c : public fontAPI_i {
 	const str name;
 	fontBase_c *hashNext;
+protected:
+	bool bIsValid;
 public:
 	fontBase_c(const char *s) : name(s) {
 
@@ -59,13 +61,15 @@ public:
 	fontBase_c *getHashNext() {
 		return hashNext;
 	}
+	bool isValid() const {
+		return bIsValid;
+	}
 };
 class fontRitual_c : public fontBase_c {
 	int indirections[256];
 	rect_c rects[256];
 	float height;
 	mtrAPI_i *mat;
-	bool bIsValid;
 public:
 	fontRitual_c(const char *s) : fontBase_c(s) {
 		str path = "fonts/";
@@ -306,6 +310,7 @@ public:
 		}
 		g_ms->createTexture(getName(),imgData.getW(),imgData.getH(),imgData.getData(),1);
 		mat = g_ms->registerMaterial(getName());
+		bIsValid = true;
 	}
 	virtual float drawChar(float x, float y, char ch, float sx = 1.f, float sy = 1.f) const {
 		const glyphInfo_s &gl = glyphs[ch];
@@ -372,12 +377,18 @@ fontAPI_i *RF_RegisterFont(const char *name) {
 		return 0;
 	}
 	fontBase_c *f = rf_fonts.getEntry(name);
-	if(f)
+	if(f) {	
+		if(f->isValid() == false)
+			return 0;
 		return f;
+	}
+
 	str path = "fonts/";
 	path.append(name);
 	path.append(".RitualFont");
-	if(g_vfs->FS_FileExists(path)) {
+	str ritualFontMaterialPath = "gfx/fonts/";
+	ritualFontMaterialPath.append(name);
+	if(g_vfs->FS_FileExists(path) && g_ms->isMaterialOrImagePresent(ritualFontMaterialPath)) {
 		f = new fontRitual_c(name);
 	} else {
 		path = "C:/Windows/Fonts/";
@@ -392,6 +403,8 @@ fontAPI_i *RF_RegisterFont(const char *name) {
 	if(f == 0)
 		return 0;
 	rf_fonts.addObject(f);
+	if(f->isValid() == false)
+		return 0;
 	return f;
 }
 void RF_InitFonts() {

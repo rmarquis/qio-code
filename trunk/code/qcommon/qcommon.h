@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define _QCOMMON_H_
 
 #include <api/vfsAPI.h>
+#include <shared/cvarFlags.h>
+#include <shared/cvar.h>
 
 //Ignore __attribute__ on non-gcc platforms
 #ifndef __GNUC__
@@ -35,6 +37,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //#define	PRE_RELEASE_DEMO
 
 //============================================================================
+
+
 
 //
 // msg.c

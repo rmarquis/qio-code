@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // This cpp file must be included in EVERY module which is using automatic vars.
 #include "autoCvar.h"
 #include <api/cvarAPI.h>
+#include <shared/cvar.h>
 
 static aCvar_c *module_autoCvars = 0;
 

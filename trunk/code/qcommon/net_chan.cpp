@@ -387,7 +387,7 @@ bool Netchan_Process( netchan_t *chan, msg_s *msg ) {
 		// copy the full message over the partial fragment
 
 		// make sure the sequence number is still there
-		*(int *)msg->data = LittleLong( sequence );
+		*(int *)msg->data = sequence;
 
 		memcpy( msg->data + 4, chan->fragmentBuffer, chan->fragmentLength );
 		msg->cursize = chan->fragmentLength + 4;

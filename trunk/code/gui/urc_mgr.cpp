@@ -90,6 +90,11 @@ public:
 	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const {
 		f->drawString(x,y,s);
 	}
+	virtual void fillRectRGBA(float x, float y, float w, float h, const float *rgba) const {
+		rf->set2DColor(rgba);
+		rf->drawStretchPic(x,y,w,h,0,0,1,1,"(1 1 1)");
+		rf->set2DColor(0);
+	}	
 	virtual float getMouseX() const {
 		return mX;
 	}
@@ -121,8 +126,17 @@ public:
 		x *= fracX;
 		y *= fracY;
 		w *= fracX;
-		h *= fracY;;
+		h *= fracY;
 		rf->drawStretchPic(x,y,w,h,s1,t1,s2,t2,matName);	
+	}
+	virtual void fillRectRGBA(float x, float y, float w, float h, const float *rgba) const {
+		x *= fracX;
+		y *= fracY;
+		w *= fracX;
+		h *= fracY;
+		rf->set2DColor(rgba);
+		rf->drawStretchPic(x,y,w,h,0,0,1,1,"(1 1 1)");
+		rf->set2DColor(0);
 	}
 	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const {
 		x *= fracX;

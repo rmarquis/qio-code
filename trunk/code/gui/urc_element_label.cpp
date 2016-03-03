@@ -63,6 +63,8 @@ void urcElementLabel_c::renderURCElement(class urcMgr_c *pMgr) {
 			g_core->Print("Material %s\n",matName);
 		}
 		gr->drawStretchPic(r.getX(),r.getY(),r.getW(),r.getH(),0,0,1,1,matName);
+	} else {
+		gr->drawRectRGBA(r.getX(),r.getY(),r.getW(),r.getH(),bgColor.toPointer(),fgColor.toPointer(),2.f);
 	}
 	if(linkCvar.size() && !linkCvarToMat) {
 		// linkCvar settings overrides the title and displays the CVar value

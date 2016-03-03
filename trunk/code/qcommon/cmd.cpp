@@ -475,10 +475,6 @@ void Cmd_Args_Sanitize(void)
 	for(i = 1; i < cmd_argc; i++)
 	{
 		char *c = cmd_argv[i];
-		
-		if(strlen(c) > MAX_CVAR_VALUE_STRING - 1)
-			c[MAX_CVAR_VALUE_STRING - 1] = '\0';
-		
 		while ((c = strpbrk(c, "\n\r;"))) {
 			*c = ' ';
 			++c;

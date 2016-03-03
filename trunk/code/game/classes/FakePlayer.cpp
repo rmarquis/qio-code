@@ -139,6 +139,10 @@ float G_GetSign(float in) {
 		return -1.f;
 	return 1.f;
 }	
+float AngleNormalize360 ( float angle ) {
+	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
+}
+
 void FakePlayer::runFrame() {
 	//printDamageZones();
 	const float botYawRotationSpeed = 10.f;
