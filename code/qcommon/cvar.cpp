@@ -209,7 +209,7 @@ Cvar_Validate
 static const char *Cvar_Validate( cvar_s *var,
     const char *value, bool warn )
 {
-	static char s[ MAX_CVAR_VALUE_STRING ];
+	static char s[ MAX_STRING_CHARS ];
 	float valuef;
 	bool changed = false;
 

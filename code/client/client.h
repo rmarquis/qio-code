@@ -255,7 +255,7 @@ typedef struct {
 	CURLM		*downloadCURLM;
 #endif /* USE_CURL */
 	int		sv_allowDownload;
-	char		sv_dlURL[MAX_CVAR_VALUE_STRING];
+	char		sv_dlURL[MAX_STRING_CHARS];
 	int			downloadNumber;
 	int			downloadBlock;	// block we are waiting for
 	int			downloadCount;	// how many bytes we got

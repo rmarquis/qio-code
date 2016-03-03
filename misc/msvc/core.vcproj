@@ -952,26 +952,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_math.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\q_shared.cpp"
 				>
 				<FileConfiguration
@@ -1778,6 +1758,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\colorTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cvar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\cvarFlags.h"
 				>
 			</File>
 			<File

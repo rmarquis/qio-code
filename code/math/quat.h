@@ -24,6 +24,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 // quat.h - quaternion class for rotations
 #ifndef __QUAT_H__
 #define __QUAT_H__
+
+#include "math.h"
+
 // NOTE: w is a fourth component
 class quat_c {
 public:

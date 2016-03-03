@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "waveForm.h"
 #include <api/coreAPI.h> // only for Print/RedWarning
 #include <shared/parser.h>
+#include <math/math.h>
 
 float waveForm_c::sinTable[BASETABLE_SIZE];
 float waveForm_c::squareTable[BASETABLE_SIZE];

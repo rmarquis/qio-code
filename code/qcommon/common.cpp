@@ -40,6 +40,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/str.h>
 #include <shared/infoString.h>
+#include <math/math.h>
 
 #pragma comment(lib,"winmm.lib") 
 #pragma comment(lib,"opengl32.lib") 

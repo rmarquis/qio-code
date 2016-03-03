@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
+#include <shared/parser.h>
 #include <api/guiAPI.h>
 #include <api/rAPI.h>
 
@@ -1389,7 +1390,8 @@ Load the console history from cl_consoleHistory
 */
 void CL_LoadConsoleHistory()
 {
-	char					*token, *text_p;
+	const char					*token;
+	char *text_p;
 	int						i, numChars, numLines = 0;
 	fileHandle_t	f;
 
@@ -1403,34 +1405,43 @@ void CL_LoadConsoleHistory()
 	if( consoleSaveBufferSize <= MAX_CONSOLE_SAVE_BUFFER &&
 			FS_Read( consoleSaveBuffer, consoleSaveBufferSize, f ) == consoleSaveBufferSize )
 	{
-		text_p = consoleSaveBuffer;
-
+		parser_c p;
+		p.setup(consoleSaveBuffer);
+	
 		for( i = COMMAND_HISTORY - 1; i >= 0; i-- )
 		{
-			if( !*( token = COM_Parse( &text_p ) ) )
+			if( p.atEOF() )
 				break;
+
+			token = p.getToken();
 
 			historyEditLines[ i ].cursor = atoi( token );
 
-			if( !*( token = COM_Parse( &text_p ) ) )
+			if( p.atEOF() )
 				break;
+
+			token = p.getToken();
 
 			historyEditLines[ i ].scroll = atoi( token );
 
-			if( !*( token = COM_Parse( &text_p ) ) )
+			if( p.atEOF() )
 				break;
 
+			token = p.getToken();
+
 			numChars = atoi( token );
-			text_p++;
-			if( numChars > ( strlen( consoleSaveBuffer ) -	( text_p - consoleSaveBuffer ) ) )
+			p.skipToNextToken();
+
+			if( numChars > ( strlen( consoleSaveBuffer ) -	( p.getCurDataPtr() - consoleSaveBuffer ) ) )
 			{
 				Com_DPrintf( S_COLOR_YELLOW "WARNING: probable corrupt history\n" );
 				break;
 			}
+			const char *nowAt = p.getCurDataPtr();
 			memcpy( historyEditLines[ i ].buffer,
-					text_p, numChars );
+				nowAt, numChars );
 			historyEditLines[ i ].buffer[ numChars ] = '\0';
-			text_p += numChars;
+			p.skipBytes(numChars);
 
 			numLines++;
 		}

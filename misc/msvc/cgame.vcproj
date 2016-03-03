@@ -465,10 +465,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_math.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\q_shared.cpp"
 				>
 			</File>

@@ -68,39 +68,41 @@ public:
 		um.drawURCs();
 
 
-		fontAPI_i *f = rf->registerFont("facfont-20");
-		if(f) {
-			f->drawString(50,50,"This is facfont-20 font (RitualFont) test!");
-		}
-		fontAPI_i *f2 = rf->registerFont("courier-16");
-		if(f2) {
-			f2->drawString(50,100,"This is courier-16 font (RitualFont) test!");
-		}
-		fontAPI_i *f3 = rf->registerFont("verdana-12");
-		if(f3) {
-			f3->drawString(50,150,"This is verdana-12 font (RitualFont) test!");
-		}
-		fontAPI_i *f4 = rf->registerFont("Arial");
-		if(f4) {
-			f4->drawString(50,200,"This is Arial font (FreeType) test!");
-		}
-		if(f4 && f3) {
-			if(rand()%2) 
-				f4->drawString(50,250,"This is random font test!");
-			else
-				f3->drawString(50,250,"This is random font test!");
-		}
-		fontAPI_i *f5 = rf->registerFont("Verdana");
-		if(f5) {
-			f5->drawString(50,300,"This is Verdana font (FreeType) test!");
-		}
-		fontAPI_i *f6 = rf->registerFont("Times");
-		if(f6) {
-			f6->drawString(50,350,"This is Times New Roman font (FreeType) test!");
-		}
-		fontAPI_i *f7 = rf->registerFont("Timesbi");
-		if(f7) {
-			f7->drawString(50,400,"This is italic, bold Times New Roman font (FreeType) test!");
+		if(0) {
+			fontAPI_i *f = rf->registerFont("facfont-20");
+			if(f) {
+				f->drawString(50,50,"This is facfont-20 font (RitualFont) test!");
+			}
+			fontAPI_i *f2 = rf->registerFont("courier-16");
+			if(f2) {
+				f2->drawString(50,100,"This is courier-16 font (RitualFont) test!");
+			}
+			fontAPI_i *f3 = rf->registerFont("verdana-12");
+			if(f3) {
+				f3->drawString(50,150,"This is verdana-12 font (RitualFont) test!");
+			}
+			fontAPI_i *f4 = rf->registerFont("Arial");
+			if(f4) {
+				f4->drawString(50,200,"This is Arial font (FreeType) test!");
+			}
+			if(f4 && f3) {
+				if(rand()%2) 
+					f4->drawString(50,250,"This is random font test!");
+				else
+					f3->drawString(50,250,"This is random font test!");
+			}
+			fontAPI_i *f5 = rf->registerFont("Verdana");
+			if(f5) {
+				f5->drawString(50,300,"This is Verdana font (FreeType) test!");
+			}
+			fontAPI_i *f6 = rf->registerFont("Times");
+			if(f6) {
+				f6->drawString(50,350,"This is Times New Roman font (FreeType) test!");
+			}
+			fontAPI_i *f7 = rf->registerFont("Timesbi");
+			if(f7) {
+				f7->drawString(50,400,"This is italic, bold Times New Roman font (FreeType) test!");
+			}
 		}
 		float mouseSize = 30.f;
 		rf->drawStretchPic(mouseX,mouseY,mouseSize,mouseSize,0,0,1,1,"gfx/2d/mouse_cursor.tga");

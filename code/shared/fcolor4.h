@@ -68,6 +68,18 @@ public:
 		b = nb;
 		a = na;
 	}
+	void setR(float f) {
+		this->r = f;
+	}	
+	void setG(float f) {
+		this->g = f;
+	}	
+	void setB(float f) {
+		this->b = f;
+	}	
+	void setA(float f) {
+		this->a = f;
+	}	
 	void scaleRGB(float f) {
 		r *= f;
 		g *= f;

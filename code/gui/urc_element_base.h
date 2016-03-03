@@ -27,14 +27,33 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include <shared/rect.h>
 #include <shared/str.h>
+#include <shared/fcolor4.h>
 
 class guiRenderer_i {
 public:
 	virtual void drawStretchPic(float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, const char *matName) const = 0;
 	virtual void drawString(class fontAPI_i *f, float x, float y, const char *s) const = 0;
+	virtual void fillRectRGBA(float x, float y, float w, float h, const float *rgba) const = 0;
 	virtual float getMouseX() const = 0;
 	virtual float getMouseY() const = 0;
+
+
+	void drawRectRGBA(float x, float y, float w, float h, const float *bgColor, const float *fgColor, float margin) const {
+		float x2 = x + margin;
+		float y2 = y + margin;
+		float w2 = w - margin * 2;
+		float h2 = h - margin * 2;
+		fillRectRGBA(x,y,w,h,fgColor);
+		fillRectRGBA(x2,y2,w2,h2,bgColor);
+	}
+};
+
+enum borderStyle_e {
+	BS_NOT_SET,
+	BS_RAISED,
+	BS_3D,
+	BS_NONE,
 };
 
 class urcElementBase_c {
@@ -51,6 +70,12 @@ protected:
 	int linkCvarToMat;
 	// name of the font, RitualFont or FreeType
 	str font;
+	// background color (if material not set?)
+	fcolor4_c bgColor;
+	// foreground color 
+	fcolor4_c fgColor;
+	// borders style
+	borderStyle_e borderStyle;
 
 	// called after element is parsed succesfully
 	virtual void onURCElementParsed() { }

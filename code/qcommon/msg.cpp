@@ -32,6 +32,12 @@ static bool			msgInit = false;
 
 int pcount[256];
 
+union floatInt_u {
+	float f;
+	int i;
+	unsigned int ui;
+};
+
 /*
 ==============================================================================
 

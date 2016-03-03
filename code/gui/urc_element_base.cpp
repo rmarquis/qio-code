@@ -29,6 +29,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 urcElementBase_c::urcElementBase_c() {
 	linkCvarToMat = false;
+	// set default font
+	font = "Arial";
+	borderStyle = BS_NOT_SET;
 }
 void urcElementBase_c::translate(int dX, int dY) {
 	rect.translate(dX,dY);
@@ -80,5 +83,35 @@ bool urcElementBase_c::parseURCProperty(class parser_c &p) {
 		linkCvarToMat = true;
 		return true;
 	}
+	if(p.atWord("bgColor")) {
+		bgColor.setR(p.getFloat());
+		bgColor.setG(p.getFloat());
+		bgColor.setB(p.getFloat());
+		bgColor.setA(p.getFloat());
+		return true;
+	}
+	if(p.atWord("fgColor")) {
+		fgColor.setR(p.getFloat());
+		fgColor.setG(p.getFloat());
+		fgColor.setB(p.getFloat());
+		fgColor.setA(p.getFloat());
+		return true;
+	}
+	if(p.atWord("borderStyle")) {
+		if(p.atWord("RAISED")) {
+			borderStyle = BS_RAISED;
+		} else if(p.atWord("NONE")) {
+			borderStyle = BS_NONE;
+		} else if(p.atWord("3D_BORDER")) {
+			borderStyle = BS_3D;
+		} else {
+			g_core->RedWarning("Unknown border type %s in file %s at line %i\n",
+				p.getToken(),p.getDebugFileName(),p.getCurrentLineNumber());
+		}
+		return true;
+	}
+
+
+	
 	return false;
 }
