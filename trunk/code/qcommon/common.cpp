@@ -2548,7 +2548,11 @@ void Field_CompleteCommand( char *cmd,
 	int		completionArgument = 0;
 
 	// Skip leading whitespace and quotes
-	cmd = Com_SkipCharset( cmd, " \"" );
+	while(*cmd) {
+		if(*cmd != ' ' && *cmd != '\\' && *cmd != '/')
+			break;
+		cmd++;
+	}
 
 	Cmd_TokenizeStringIgnoreQuotes( cmd );
 	completionArgument = Cmd_Argc( );

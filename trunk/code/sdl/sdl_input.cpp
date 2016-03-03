@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/rAPI.h>
 #include <api/coreAPI.h>
 #include <shared/keyCatchers.h>
+#include <shared/parser.h>
 
 #ifdef MACOS_X
 // Mouse acceleration needs to be disabled
@@ -149,19 +150,18 @@ static bool IN_IsConsoleKey( keyNum_t key, const unsigned char character )
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
-		char *text_p, *token;
-
 		cl_consoleKeys->modified = false;
-		text_p = cl_consoleKeys->string;
 		numConsoleKeys = 0;
 
+		parser_c p;
+		p.setup(cl_consoleKeys->string);
 		while( numConsoleKeys < MAX_CONSOLE_KEYS )
 		{
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			token = COM_Parse( &text_p );
-			if( !token[ 0 ] )
+			const char *token = p.getToken();
+			if( token == 0 || !token[ 0 ] )
 				break;
 
 			if( strlen( token ) == 4 )
