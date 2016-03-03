@@ -128,23 +128,28 @@ bool urc_c::parseURCFile(class parser_c &p) {
 
 	while(p.atEOF() == false) {
 		if(p.atWord("align")) {
-			// this is not used for fullscreen menus,
-			// it is used for. eg hud_health 
-			// (healthbar which is always in lower left corner)
-			if(p.atWord("right")) {	
-				horizontalAlign = HA_RIGHT;
-			} else if(p.atWord("left")) {
-				horizontalAlign = HA_LEFT;
-			} else {
-				g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
-			}
-
-			if(p.atWord("top")) {
-				verticalAlign = VA_TOP;
-			} else if(p.atWord("bottom")) {
-				verticalAlign = VA_BOTTOM;
-			} else {
-				g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
+			// All of those combinations should be supported:
+			// align right
+			// align top right
+			// align right top
+			// They are used in MoHAA and FAKK
+			for(u32 i = 0; i < 2; i++) {
+				// this is not used for fullscreen menus,
+				// it is used for. eg hud_health 
+				// (healthbar which is always in lower left corner)
+				if(p.atWord("right")) {	
+					horizontalAlign = HA_RIGHT;
+				} else if(p.atWord("left")) {
+					horizontalAlign = HA_LEFT;
+				} else if(p.atWord("top")) {
+					verticalAlign = VA_TOP;
+				} else if(p.atWord("bottom")) {
+					verticalAlign = VA_BOTTOM;
+				} else {
+					g_core->RedWarning("URC %s has unknown align type %s at line %i\n",getName(),p.getToken(),p.getCurrentLineNumber());
+				}
+				if(p.isAtEOL())
+					break;
 			}
 			//g_core->Print("URC %s is using align keyword\n",getName());
 		} else if(p.atWord("virtualscreen")) {
