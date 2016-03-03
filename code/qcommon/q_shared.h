@@ -112,14 +112,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   typedef unsigned __int32 uint32_t;
   typedef unsigned __int16 uint16_t;
   typedef unsigned __int8 uint8_t;
-
-  // vsnprintf is ISO/IEC 9899:1999
-  // abstracting this to make it portable
-  int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #else
   #include <stdint.h>
 
-  #define Q_vsnprintf vsnprintf
 #endif
 
 
@@ -161,12 +156,6 @@ enum cbufExec_e {
 	EXEC_APPEND			// add to end of the command buffer (normal case)
 };
 
-
-//
-// these aren't needed by any of the VMs.  put in another header?
-//
-#define	MAX_MAP_AREA_BYTES		32		// bit vector of area visibility
-
 #ifdef ERR_FATAL
 #undef ERR_FATAL			// this is be defined in malloc.h
 #endif
@@ -181,11 +170,6 @@ enum errorParm_e {
 
 //=============================================
 
-char	*COM_SkipPath( char *pathname );
-void	COM_StripExtension(const char *in, char *out, int destsize);
-bool COM_CompareExtension(const char *in, const char *ext);
-void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
-
 int Com_HexStrToInt( const char *str );
 
 int QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
@@ -196,10 +180,6 @@ void Com_RandomBytes( byte *string, int len );
 
 //=============================================
 
-int Q_isprint( int c );
-int Q_islower( int c );
-int Q_isupper( int c );
-int Q_isalpha( int c );
 bool Q_isanumber( const char *s );
 bool Q_isintegral( float f );
 

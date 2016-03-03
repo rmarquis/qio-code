@@ -2651,6 +2651,34 @@ void CL_CheckUserinfo() {
 		CL_AddReliableCommand(va("userinfo \"%s\"", Cvar_InfoString( CVAR_USERINFO ) ), false);
 	}
 }
+char *COM_SkipPath (char *pathname)
+{
+	char	*last;
+	
+	last = pathname;
+	while (*pathname)
+	{
+		if (*pathname=='/')
+			last = pathname+1;
+		pathname++;
+	}
+	return last;
+}
+
+/*
+============
+COM_StripExtension
+============
+*/
+void COM_StripExtension( const char *in, char *out, int destsize )
+{
+	const char *dot = strrchr(in, '.'), *slash;
+	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
+		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
+	else
+		Q_strncpyz(out, in, destsize);
+}
+
 
 /*
 ==================

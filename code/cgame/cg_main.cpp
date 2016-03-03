@@ -66,7 +66,7 @@ void QDECL CG_Printf( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	g_core->Print( text );
@@ -77,7 +77,7 @@ void QDECL CG_Error( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	g_core->DropError( text );
@@ -88,7 +88,7 @@ void QDECL Com_Error( int level, const char *error, ... ) {
 	char		text[1024];
 
 	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof(text), error, argptr);
+	_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	g_core->Error( level, text );
@@ -99,7 +99,7 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	g_core->Print( text );

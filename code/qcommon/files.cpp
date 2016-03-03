@@ -520,6 +520,24 @@ bool FS_CreatePath (char *OSPath) {
 	return false;
 }
 
+bool COM_CompareExtension(const char *in, const char *ext)
+{
+	int inlen, extlen;
+	
+	inlen = strlen(in);
+	extlen = strlen(ext);
+	
+	if(extlen <= inlen)
+	{
+		in += inlen - extlen;
+		
+		if(!Q_stricmp(in, ext))
+			return true;
+	}
+	
+	return false;
+}
+
 /*
 =================
 FS_CheckFilenameIsNotExecutable
@@ -1478,7 +1496,7 @@ void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	FS_Write(msg, strlen(msg), h);
@@ -3657,7 +3675,6 @@ void	FS_FilenameCompletion( const char *dir, const char *ext,
 	char	**filenames;
 	int		nfiles;
 	int		i;
-	char	filename[ MAX_STRING_CHARS ];
 
 	filenames = FS_ListFilteredFiles( dir, ext, NULL, &nfiles, allowNonPureFilesOnDisk );
 
@@ -3665,13 +3682,13 @@ void	FS_FilenameCompletion( const char *dir, const char *ext,
 
 	for( i = 0; i < nfiles; i++ ) {
 		FS_ConvertPath( filenames[ i ] );
-		Q_strncpyz( filename, filenames[ i ], MAX_STRING_CHARS );
+		str fileName = filenames[ i ];
 
 		if( stripExt ) {
-			COM_StripExtension(filename, filename, sizeof(filename));
+			fileName.stripExtension();
 		}
 
-		callback( filename );
+		callback( fileName );
 	}
 	FS_FreeFileList( filenames );
 }

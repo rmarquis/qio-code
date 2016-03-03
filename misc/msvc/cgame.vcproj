@@ -498,10 +498,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\qcommon\surfaceflags.h"
 				>
 			</File>

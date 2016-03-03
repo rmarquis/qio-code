@@ -50,7 +50,7 @@ void fileStreamHelper_c::writeText(const char *fmt, ...) {
 
 	char msg[8192];
 	va_start (argptr,fmt);	
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	u32 len = strlen(msg);

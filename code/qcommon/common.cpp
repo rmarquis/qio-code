@@ -178,7 +178,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( rd_buffer ) {
@@ -246,7 +246,7 @@ void QDECL Com_RedWarning( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	Com_Printf("%s%s",S_COLOR_RED,msg);
 }
@@ -267,7 +267,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);	
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -306,7 +306,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	lastErrorTime = currentTime;
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
+	_vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
 	va_end (argptr);
 
 	if (code != ERR_DISCONNECT)
@@ -349,7 +349,7 @@ void QDECL Com_DropError(const char *error, ... ) {
 	char		text[1024];
 
 	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof(text), error, argptr);
+	_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Com_Error( ERR_DROP, text );
@@ -1936,16 +1936,16 @@ Write the config file to a specific name
 ===============
 */
 void Com_WriteConfig_f() {
-	char	filename[MAX_QPATH];
+	str	filename;
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "Usage: writeconfig <filename>\n" );
 		return;
 	}
 
-	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
-	Com_Printf( "Writing %s.\n", filename );
+	filename = Cmd_Argv(1);
+	filename.defaultExtension(".cfg");
+	Com_Printf( "Writing %s.\n", filename.c_str() );
 	Com_WriteConfigToFile( filename );
 }
 

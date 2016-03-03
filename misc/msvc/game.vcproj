@@ -463,10 +463,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\api\simplePathAPI.h"
 				>
 			</File>

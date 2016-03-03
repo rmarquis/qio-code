@@ -24,8 +24,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // urc_element_base.cpp
 #include "urc_element_base.h"
 #include <shared/parser.h>
+#include <shared/cvarFlags.h>
 #include <api/rAPI.h>
 #include <api/guiAPI.h>
+#include <api/cvarAPI.h>
 
 urcElementBase_c::urcElementBase_c() {
 	linkCvarToMat = false;
@@ -73,6 +75,8 @@ bool urcElementBase_c::parseURCProperty(class parser_c &p) {
 	}
 	if(p.atWord("linkcvar")) {
 		linkCvar = p.getToken();
+		// create CVar if not present
+		g_cvars->Cvar_Get(linkCvar,"",CVAR_ARCHIVE);
 		return true;
 	}
 	if(p.atWord("font")) {
