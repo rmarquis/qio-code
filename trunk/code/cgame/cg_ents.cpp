@@ -114,12 +114,7 @@ static void CG_InterpolateEntityPosition( centity_s *cent ) {
 	//BG_EvaluateTrajectory( &cent->currentState.apos, cg.snap->serverTime, current );
 	//BG_EvaluateTrajectory( &cent->nextState.apos, cg.nextSnap->serverTime, next );
 
-	current = cent->currentState.angles;
-	next = cent->nextState.angles;
-
-	cent->lerpAngles[0] = LerpAngle( current[0], next[0], f );
-	cent->lerpAngles[1] = LerpAngle( current[1], next[1], f );
-	cent->lerpAngles[2] = LerpAngle( current[2], next[2], f );
+	cent->lerpAngles = cent->currentState.angles.lerpDegrees(cent->nextState.angles, f);
 
 	// update render entity and/or render light
 	CG_OnEntityOrientationChange(cent);

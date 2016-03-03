@@ -390,7 +390,6 @@ typedef struct {
 	netadr_t	authorizeServer;
 
 	// rendering info
-//	glconfig_t	glconfig;
 	class mtrAPI_i *charSetShader;
 	class mtrAPI_i *whiteShader;
 	class mtrAPI_i *consoleShader;

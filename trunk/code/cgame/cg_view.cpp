@@ -92,15 +92,15 @@ static void CG_OffsetThirdPersonView( void ) {
 
 	cg.refdefViewAngles.angleVectors( forward, right, up );
 float thirdPersonRange = 128.f;
-	forwardScale = cos( cg_thirdPersonAngle.value / 180 * M_PI );
-	sideScale = sin( cg_thirdPersonAngle.value / 180 * M_PI );
+	forwardScale = cos( cg_thirdPersonAngle.getFloat() / 180 * M_PI );
+	sideScale = sin( cg_thirdPersonAngle.getFloat() / 180 * M_PI );
 	view.vectorMA(view,forward,-thirdPersonRange * forwardScale);
 	view.vectorMA(view,right,-thirdPersonRange * sideScale);
 
 	// trace a ray from the origin to the viewpoint to make sure the view isn't
 	// in a solid block.  Use an 8 by 8 block to prevent the view from near clipping anything
 
-//	if (!cg_cameraMode.integer)
+//	if (!cg_cameraMode.getInt())
 	{
 		trace_c trace;
 		trace.setupRay(cg.refdefViewOrigin,view);
@@ -130,7 +130,7 @@ float thirdPersonRange = 128.f;
 		focusDist = 1;	// should never happen
 	}
 	cg.refdefViewAngles[PITCH] = -180 / M_PI * atan2( focusPoint[2], focusDist );
-	cg.refdefViewAngles[YAW] -= cg_thirdPersonAngle.value;	
+	cg.refdefViewAngles[YAW] -= cg_thirdPersonAngle.getFloat();	
 }
 
 
@@ -168,10 +168,10 @@ static void CG_OffsetFirstPersonView( void ) {
 	predictedVelocity = cg.predictedPlayerState.velocity;;
 
 	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
-	//angles[PITCH] += delta * cg_runpitch.value;
+	//angles[PITCH] += delta * cg_runpitch.getFloat();
 	//
 	//delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
-	//angles[ROLL] -= delta * cg_runroll.value;
+	//angles[ROLL] -= delta * cg_runroll.getFloat();
 
 	// add angles based on bob
 
@@ -259,7 +259,7 @@ static int CG_CalcViewValues( void ) {
 	cg.refdefViewAngles = ps->viewangles;
 
 	// add first person / third person view offset
-	if ( cg_thirdPerson.integer ) {
+	if ( cg_thirdPerson.getInt() ) {
 		// back away from character
 		CG_OffsetThirdPersonView();
 	} else {
@@ -281,7 +281,7 @@ static int CG_CalcViewValues( void ) {
 		projDef.zFar = cg.farPlane;
 	}
 	rf->setupProjection3D(&projDef);
-	rf->setup3DView(cg.refdefViewOrigin,cg.refdefViewAngles,cg_thirdPerson.integer);
+	rf->setup3DView(cg.refdefViewOrigin,cg.refdefViewAngles,cg_thirdPerson.getInt());
 
 	return 0;
 }
@@ -303,9 +303,6 @@ void CG_DrawActiveFrame( int serverTime, bool demoPlayback ) {
 	cg.time = serverTime;
 
 	rf->setRenderTimeMsec(cg.time);
-
-	// update cvars
-	CG_UpdateCvars();
 
 	// clear all the render lists
 //	trap_R_ClearScene();
@@ -362,19 +359,19 @@ void CG_DrawActiveFrame( int serverTime, bool demoPlayback ) {
 		cg.oldTime = cg.time;
 		CG_AddLagometerFrameInfo();
 	//}
-	if (cg_timescale.value != cg_timescaleFadeEnd.value) {
-		if (cg_timescale.value < cg_timescaleFadeEnd.value) {
-			cg_timescale.value += cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
-			if (cg_timescale.value > cg_timescaleFadeEnd.value)
-				cg_timescale.value = cg_timescaleFadeEnd.value;
+	if (cg_timescale.getFloat() != cg_timescaleFadeEnd.getFloat()) {
+		if (cg_timescale.getFloat() < cg_timescaleFadeEnd.getFloat()) {
+			cg_timescale.addFloat(cg_timescaleFadeSpeed.getFloat() * ((float)cg.frametime) / 1000);
+			if (cg_timescale.getFloat() > cg_timescaleFadeEnd.getFloat())
+				cg_timescale.setFloat(cg_timescaleFadeEnd.getFloat());
 		}
 		else {
-			cg_timescale.value -= cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
-			if (cg_timescale.value < cg_timescaleFadeEnd.value)
-				cg_timescale.value = cg_timescaleFadeEnd.value;
+			cg_timescale.subFloat(cg_timescaleFadeSpeed.getFloat() * ((float)cg.frametime) / 1000);
+			if (cg_timescale.getFloat() < cg_timescaleFadeEnd.getFloat())
+				cg_timescale.setFloat(cg_timescaleFadeEnd.getFloat());
 		}
-		if (cg_timescaleFadeSpeed.value) {
-			g_cvars->Cvar_Set("timescale", va("%f", cg_timescale.value));
+		if (cg_timescaleFadeSpeed.getFloat()) {
+			g_cvars->Cvar_Set("timescale", va("%f", cg_timescale.getFloat()));
 		}
 	}
 

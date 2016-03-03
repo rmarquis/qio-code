@@ -750,7 +750,11 @@ void SV_Init (void)
 	sv_allowDownload = Cvar_Get ("sv_allowDownload", "1", CVAR_SERVERINFO);
 	Cvar_Get ("sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE);
 	
+#ifdef MASTER_SERVER_NAME
 	sv_master[0] = Cvar_Get("sv_master1", MASTER_SERVER_NAME, 0);
+#else
+	sv_master[0] = Cvar_Get("sv_master1", "notset", 0);
+#endif
 	sv_master[1] = Cvar_Get("sv_master2", "master.ioquake3.org", 0);
 	for(index = 2; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);

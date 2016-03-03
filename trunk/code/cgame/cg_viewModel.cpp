@@ -177,7 +177,7 @@ void CG_RunViewModel() {
 	}
 
 	int viewModelEntity = cg.snap->ps.curWeaponEntNum;
-	if(cg_thirdPerson.integer) {
+	if(cg_thirdPerson.getInt()) {
 		CG_FreeViewModelEntity();
 		if(viewModelEntity != ENTITYNUM_NONE && cg_entities[viewModelEntity].rEnt) {
 			cg_entities[viewModelEntity].rEnt->showModel();

@@ -194,16 +194,16 @@ extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_s		cg_entities[MAX_GENTITIES];
 
-extern	vmCvar_s		cg_lagometer;
-extern	vmCvar_s		cg_drawFPS;
-extern	vmCvar_s		cg_draw2D;
-extern	vmCvar_s		cg_fov;
-extern	vmCvar_s		cg_thirdPersonRange;
-extern	vmCvar_s		cg_thirdPersonAngle;
-extern	vmCvar_s		cg_thirdPerson;
-extern	vmCvar_s		cg_timescale;
-extern	vmCvar_s		cg_timescaleFadeEnd;
-extern	vmCvar_s		cg_timescaleFadeSpeed;
+extern	aCvar_c		cg_lagometer;
+extern	aCvar_c		cg_drawFPS;
+extern	aCvar_c		cg_draw2D;
+extern	aCvar_c		cg_fov;
+extern	aCvar_c		cg_thirdPersonRange;
+extern	aCvar_c		cg_thirdPersonAngle;
+extern	aCvar_c		cg_thirdPerson;
+extern	aCvar_c		cg_timescale;
+extern	aCvar_c		cg_timescaleFadeEnd;
+extern	aCvar_c		cg_timescaleFadeSpeed;
 
 //
 // cg_main.c

@@ -95,7 +95,24 @@ public:
 	vec3_c(const char *text) {
 		this->fromString(text);
 	}
-
+	static float lerpDegrees(float from, float to, float frac) {
+		float	a;
+		if (to - from > 180) {
+			to -= 360;
+		}
+		if (to - from < -180) {
+			to += 360;
+		}
+		a = from + frac * (to - from);
+		return a;
+	}
+	vec3_c lerpDegrees(const vec3_c &b, float f) const {
+		return vec3_c(
+			lerpDegrees(x,b.x,f),
+			lerpDegrees(y,b.y,f),
+			lerpDegrees(z,b.z,f)
+			);
+	}
 	float getMaxAbsCoord() const {
 		float ax = abs(x);
 		float ay = abs(y);
