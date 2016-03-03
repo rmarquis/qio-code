@@ -46,7 +46,7 @@ class clLoadingScreenMgrIMPL_c : public loadingScreenMgrAPI_i {
 					}
 					memcpy(buffer.getArray(),start,len);
 					buffer[len] = 0;
-					SCR_DrawSmallStringExt(x,y,buffer.getArray(),0,false,false);
+					rf->drawString(x,y,buffer.getArray());
 				}
 				if(*p == 0)
 					break;

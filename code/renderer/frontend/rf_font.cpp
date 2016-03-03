@@ -142,6 +142,10 @@ public:
 	virtual float getStringHeight(const char *s) const {
 		return 0; // TODO
 	}
+	virtual float drawChar(float x, float y, char s, float sx = 1.f, float sy = 1.f) const {
+
+		return 0.f; // TODO
+	}
 	virtual void drawString(float x, float y, const char *s, float scaleX = 1.f, float scaleY = 1.f) const {
 		if(bIsValid==false)
 			return;
@@ -303,6 +307,25 @@ public:
 		g_ms->createTexture(getName(),imgData.getW(),imgData.getH(),imgData.getData(),1);
 		mat = g_ms->registerMaterial(getName());
 	}
+	virtual float drawChar(float x, float y, char ch, float sx = 1.f, float sy = 1.f) const {
+		const glyphInfo_s &gl = glyphs[ch];
+
+		float s0 = gl.s0;
+		float t0 = gl.t0;
+		float s1 = gl.s1;
+		float t1 = gl.t1;
+
+		
+		float w = gl.width * sx;
+		float h = gl.rows * sy;
+		float x2 = x + gl.left * sx;
+		float y2 = y - gl.top * sy + maxHeight;
+
+		rf->drawStretchPic(x2,y2,w,h,s0,t0,s1,t1,mat);
+	
+
+		return (gl.advance_x >> 6) * sx;
+	}
 	virtual float getStringWidth(const char *s) const {
 		const char *p = s;
 		float nowX = 0;
@@ -336,24 +359,8 @@ public:
 		float nowY = y;
 		while(*p) {
 			int ch = *p;
-		
-			const glyphInfo_s &gl = glyphs[ch];
 
-			float s0 = gl.s0;
-			float t0 = gl.t0;
-			float s1 = gl.s1;
-			float t1 = gl.t1;
-
-			
-			float w = gl.width * sx;
-			float h = gl.rows * sy;
-			float x2 = nowX + gl.left * sx;
-			float y2 = nowY - gl.top * sy + maxHeight;
-
-			rf->drawStretchPic(x2,y2,w,h,s0,t0,s1,t1,mat);
-		
-			nowX += (gl.advance_x >> 6) * sx;
-			nowY += (gl.advance_y >> 6) * sy;
+			nowX += drawChar(nowX,nowY,ch);
 			p++;
 		}
 	}

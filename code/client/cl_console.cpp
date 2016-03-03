@@ -32,11 +32,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int g_console_field_width = 78;
 
 
-#define	NUM_CON_TIMES 4
+#define	NUM_CON_TIMES 8
 
 //#define		CON_TEXTSIZE	32768
 #define		CON_TEXTSIZE	524288
-typedef struct {
+struct console_t {
 	bool	initialized;
 
 	short	text[CON_TEXTSIZE];
@@ -57,7 +57,7 @@ typedef struct {
 	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
 								// for transparent notify lines
 	vec4_t	color;
-} console_t;
+};
 
 extern	console_t	con;
 
@@ -694,7 +694,7 @@ void Con_DrawInput (void) {
 
 	rf->set2DColor( con.color );
 
-	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
+	rf->drawChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
 	Field_Draw( &g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
 		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, true, true );
@@ -737,15 +737,16 @@ void Con_DrawNotify (void)
 			continue;
 		}
 
+		float curX = cl_conXOffset->integer + con.xadjust;
 		for (x = 0 ; x < con.linewidth ; x++) {
-			if ( ( text[x] & 0xff ) == ' ' ) {
-				continue;
-			}
+			//if ( ( text[x] & 0xff ) == ' ' ) {
+			//	continue;
+			//}
 			if ( ( (text[x]>>8)&7 ) != currentColor ) {
 				currentColor = (text[x]>>8)&7;
 				rf->set2DColor( g_color_table[currentColor] );
 			}
-			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
+			curX += rf->drawChar(curX, v, text[x] & 0xff );
 		}
 
 		v += SMALLCHAR_HEIGHT;
@@ -762,19 +763,19 @@ void Con_DrawNotify (void)
 	{
 		if (chat_team)
 		{
-			SCR_DrawBigString (8, v, "say_team:", 1.0f, false );
+			rf->drawString (8, v, "say_team:" );
 			skip = 10;
 		}
 		else
 		{
-			SCR_DrawBigString (8, v, "say:", 1.0f, false );
+			rf->drawString (8, v, "say:" );
 			skip = 5;
 		}
 
-		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, true, true );
+		Field_BigDraw( &chatField, skip * 16, v,
+			SCREEN_WIDTH - ( skip + 1 ) * 16, true, true );
 
-		v += BIGCHAR_HEIGHT;
+		v += 16;
 	}
 
 }
@@ -805,34 +806,28 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// on wide screens, we will center the text
 	con.xadjust = 0;
-	SCR_AdjustFrom640( &con.xadjust, NULL, NULL, NULL );
 
 	// draw the background
-	y = frac * SCREEN_HEIGHT;
+	y = frac * rf->getWinHeight();
 	if ( y < 1 ) {
 		y = 0;
 	}
 	else {
-		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader );
+		rf->drawStretchPic( 0, 0, rf->getWinWidth(), y, 0, 0, 1,1, cls.consoleShader );
 	}
 
 	color[0] = 1;
 	color[1] = 0;
 	color[2] = 0;
 	color[3] = 1;
-	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, color );
+	rf->drawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0,1,1,rf->registerMaterial("(0 0 0)"));
 
 
 	// draw the version number
 
 	rf->set2DColor( g_color_table[ColorIndex(COLOR_RED)] );
-
-	i = strlen( Q3_VERSION );
-
-	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( rf->getWinWidth() - ( i - x + 1 ) * SMALLCHAR_WIDTH,
-			lines - SMALLCHAR_HEIGHT, Q3_VERSION[x] );
-	}
+	x = rf->getWinWidth() - rf->getStringWidth(Q3_VERSION);
+	rf->drawString(x,lines - SMALLCHAR_HEIGHT,Q3_VERSION);
 
 
 	// draw the text
@@ -847,7 +842,7 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw arrows to show the buffer is backscrolled
 		rf->set2DColor( g_color_table[ColorIndex(COLOR_RED)] );
 		for (x=0 ; x<con.linewidth ; x+=4)
-			SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, '^' );
+			rf->drawChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, '^' );
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
@@ -872,16 +867,17 @@ void Con_DrawSolidConsole( float frac ) {
 
 		text = con.text + (row % con.totallines)*con.linewidth;
 
+		float curX = con.xadjust;
 		for (x=0 ; x<con.linewidth ; x++) {
-			if ( ( text[x] & 0xff ) == ' ' ) {
+	/*		if ( ( text[x] & 0xff ) == ' ' ) {
 				continue;
-			}
+			}*/
 
 			if ( ( (text[x]>>8)&7 ) != currentColor ) {
 				currentColor = (text[x]>>8)&7;
 				rf->set2DColor( g_color_table[currentColor] );
 			}
-			SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
+			curX += rf->drawChar(curX, y, text[x] & 0xff );
 		}
 	}
 

@@ -906,8 +906,6 @@ void Key_WriteBindings( fileHandle_t f );
 void S_ClearSoundBuffer();
 // call before filesystem access
 
-void SCR_DebugGraph (float value);	// FIXME: move logging to common?
-
 // AVI files have the start of pixel lines 4 byte-aligned
 #define AVI_LINE_PADDING 4
 

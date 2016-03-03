@@ -104,5 +104,5 @@ void CL_InitRenderer() {
 	// load character sets
 	cls.charSetShader = rf->registerMaterial( "gfx/2d/bigchars" );
 	cls.whiteShader = rf->registerMaterial( "white" );
-	cls.consoleShader = rf->registerMaterial( "console" );
+	cls.consoleShader = rf->registerMaterial( "qioconsole" );
 }

@@ -635,16 +635,6 @@ userCmd_s CL_CreateCmd() {
 	// store out the final values
 	CL_FinishMove( &cmd );
 
-	// draw debug graphs of turning for mouse testing
-	if ( cl_debugMove->integer ) {
-		if ( cl_debugMove->integer == 1 ) {
-			SCR_DebugGraph( abs(cl.viewangles[YAW] - oldAngles[YAW]) );
-		}
-		if ( cl_debugMove->integer == 2 ) {
-			SCR_DebugGraph( abs(cl.viewangles[PITCH] - oldAngles[PITCH]) );
-		}
-	}
-
 	return cmd;
 }
 
