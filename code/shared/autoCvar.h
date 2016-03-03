@@ -52,6 +52,12 @@ public:
 	void setExtraModificationCallback(autoCvarModificationCallback_t newModCallback);
 	void setString(const char *newStr);
 	void setFloat(float f);
+	void addFloat(float f) {
+		setFloat(this->valFloat + f);
+	}
+	void subFloat(float f) {
+		setFloat(this->valFloat - f);
+	}
 
 	int getInt() const {
 		return valInt;

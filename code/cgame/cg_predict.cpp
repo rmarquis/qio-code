@@ -71,13 +71,13 @@ static void CG_InterpolatePlayerState( bool grabAngles ) {
 
 	f = (float)( cg.time - prev->serverTime ) / ( next->serverTime - prev->serverTime );
 
+	if ( !grabAngles ) {
+		out->viewangles = prev->ps.viewangles.lerpDegrees(next->ps.viewangles, f);
+	}
 
 	for ( i = 0 ; i < 3 ; i++ ) {
 		out->origin[i] = prev->ps.origin[i] + f * (next->ps.origin[i] - prev->ps.origin[i] );
-		if ( !grabAngles ) {
-			out->viewangles[i] = LerpAngle( 
-				prev->ps.viewangles[i], next->ps.viewangles[i], f );
-		}
+
 		out->velocity[i] = prev->ps.velocity[i] + 
 			f * (next->ps.velocity[i] - prev->ps.velocity[i] );
 		out->scale[i] = prev->ps.scale[i] + 

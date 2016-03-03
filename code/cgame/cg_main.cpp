@@ -38,38 +38,16 @@ cg_t				cg;
 cgs_t				cgs;
 centity_s			cg_entities[MAX_GENTITIES];
 
-vmCvar_s		cg_lagometer;
-vmCvar_s		cg_drawFPS;
-vmCvar_s		cg_draw2D;
-vmCvar_s		cg_fov;
-vmCvar_s		cg_thirdPersonRange;
-vmCvar_s		cg_thirdPersonAngle;
-vmCvar_s		cg_thirdPerson;
-vmCvar_s		cg_timescale;
-vmCvar_s		cg_timescaleFadeEnd;
-vmCvar_s		cg_timescaleFadeSpeed;
-
-typedef struct {
-	vmCvar_s	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
-	int			cvarFlags;
-} cvarTable_t;
-
-static cvarTable_t cvarTable[] = {
-	{ &cg_fov, "cg_fov", "90", CVAR_ARCHIVE },
-	{ &cg_draw2D, "cg_draw2D", "1", CVAR_ARCHIVE  },
-	{ &cg_drawFPS, "cg_drawFPS", "0", CVAR_ARCHIVE  },
-	{ &cg_lagometer, "cg_lagometer", "1", CVAR_ARCHIVE },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "100", 0 },
-	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", 0 },
-	{ &cg_thirdPerson, "cg_thirdPerson", "0", 0 },
-	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
-	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
-	{ &cg_timescale, "timescale", "1", 0},
-};
-
-static int  cvarTableSize = ARRAY_LEN( cvarTable );
+aCvar_c		cg_lagometer("cg_lagometer","0");
+aCvar_c		cg_drawFPS("cg_drawFPS","0");
+aCvar_c		cg_draw2D("cg_draw2D","1");
+aCvar_c		cg_fov("cg_fov","90");
+aCvar_c		cg_thirdPersonRange("cg_thirdPersonRange","100");
+aCvar_c		cg_thirdPersonAngle("cg_thirdPersonAngle","0");
+aCvar_c		cg_thirdPerson("cg_thirdPerson","0");
+aCvar_c		cg_timescale("timescale","1");
+aCvar_c		cg_timescaleFadeEnd("cg_timescaleFadeEnd","1");
+aCvar_c		cg_timescaleFadeSpeed("cg_timescaleFadeSpeed","0");
 
 /*
 =================
@@ -77,40 +55,12 @@ CG_RegisterCvars
 =================
 */
 void CG_RegisterCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
 	char		var[MAX_TOKEN_CHARS];
-
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		g_cvars->Cvar_Register( cv->vmCvar, cv->cvarName,
-			cv->defaultString, cv->cvarFlags );
-	}
-
 	// see if we are also running the server on this machine
 	g_cvars->Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
 	cgs.localServer = atoi( var );
-
-
 }
 																															
-/*
-=================
-CG_UpdateCvars
-=================
-*/
-void CG_UpdateCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
-
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		g_cvars->Cvar_Update( cv->vmCvar );
-	}
-
-	// check for modications here
-
-
-}
-
 void QDECL CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];

@@ -255,13 +255,14 @@ PROTOCOL
 // NOTE: that stuff only works with two digits protocols
 extern int demo_protocols[];
 
-#if !defined UPDATE_SERVER_NAME && !defined STANDALONE
-#define	UPDATE_SERVER_NAME	"update.quake3arena.com"
-#endif
-// override on command line, config files etc.
-#ifndef MASTER_SERVER_NAME
-#define MASTER_SERVER_NAME	"master.quake3arena.com"
-#endif
+// we dont have anything like that now
+//#if !defined UPDATE_SERVER_NAME && !defined STANDALONE
+//#define	UPDATE_SERVER_NAME	"update.quake3arena.com"
+//#endif
+//// override on command line, config files etc.
+//#ifndef MASTER_SERVER_NAME
+//#define MASTER_SERVER_NAME	"master.quake3arena.com"
+//#endif
 
 
 #define	PORT_MASTER			27950
@@ -428,12 +429,6 @@ cvar_s *Cvar_Get( const char *var_name, const char *value, int flags );
 // if it exists, the value will not be changed, but flags will be ORed in
 // that allows variables to be unarchived without needing bitflags
 // if value is "", the value will not override a previously set value.
-
-void	Cvar_Register( vmCvar_s *vmCvar, const char *varName, const char *defaultValue, int flags );
-// basically a slightly modified Cvar_Get for the interpreted modules
-
-void	Cvar_Update( vmCvar_s *vmCvar );
-// updates an interpreted modules' version of a cvar
 
 void 	Cvar_Set( const char *var_name, const char *value );
 // will create the variable with no flags if it doesn't exist

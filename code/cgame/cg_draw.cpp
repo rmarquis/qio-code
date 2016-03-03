@@ -83,7 +83,7 @@ CG_DrawUpperRight
 */
 static void CG_DrawUpperRight()
 {
-	if (cg_drawFPS.integer) {
+	if (cg_drawFPS.getInt()) {
 		CG_DrawFPS( 0 );
 	}
 }
@@ -207,7 +207,7 @@ static void CG_DrawLagometer( void ) {
 	int		color;
 	float	vscale;
 
-	if ( !cg_lagometer.integer || cgs.localServer ) {
+	if ( !cg_lagometer.getInt() || cgs.localServer ) {
 		CG_DrawDisconnect();
 		return;
 	}
@@ -315,7 +315,7 @@ CG_Draw2D
 */
 static void CG_Draw2D()
 {
-	if ( cg_draw2D.integer == 0 ) {
+	if ( cg_draw2D.getInt() == 0 ) {
 		return;
 	}
 

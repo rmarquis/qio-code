@@ -1197,72 +1197,6 @@ void Cvar_CheckRange( cvar_s *var, float min, float max, bool integral )
 }
 
 /*
-=====================
-Cvar_Register
-
-basically a slightly modified Cvar_Get for the interpreted modules
-=====================
-*/
-void Cvar_Register(vmCvar_s *vmCvar, const char *varName, const char *defaultValue, int flags)
-{
-	cvar_s	*cv;
-
-	// There is code in Cvar_Get to prevent CVAR_ROM cvars being changed by the
-	// user. In other words CVAR_ARCHIVE and CVAR_ROM are mutually exclusive
-	// flags. Unfortunately some historical game code (including single player
-	// baseq3) sets both flags. We unset CVAR_ROM for such cvars.
-	if ((flags & (CVAR_ARCHIVE | CVAR_ROM)) == (CVAR_ARCHIVE | CVAR_ROM)) {
-		Com_DPrintf( S_COLOR_YELLOW "WARNING: Unsetting CVAR_ROM cvar '%s', "
-			"since it is also CVAR_ARCHIVE\n", varName );
-		flags &= ~CVAR_ROM;
-	}
-
-	cv = Cvar_Get(varName, defaultValue, flags | CVAR_VM_CREATED);
-
-	if (!vmCvar)
-		return;
-
-	vmCvar->handle = cv - cvar_indexes;
-	vmCvar->modificationCount = -1;
-	Cvar_Update( vmCvar );
-}
-
-
-/*
-=====================
-Cvar_Update
-
-updates an interpreted modules' version of a cvar
-=====================
-*/
-void	Cvar_Update( vmCvar_s *vmCvar ) {
-	cvar_s	*cv = NULL;
-	assert(vmCvar);
-
-	if ( (unsigned)vmCvar->handle >= cvar_numIndexes ) {
-		Com_Error( ERR_DROP, "Cvar_Update: handle out of range" );
-	}
-
-	cv = cvar_indexes + vmCvar->handle;
-
-	if ( cv->modificationCount == vmCvar->modificationCount ) {
-		return;
-	}
-	if ( !cv->string ) {
-		return;		// variable might have been cleared by a cvar_restart
-	}
-	vmCvar->modificationCount = cv->modificationCount;
-	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
-	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING",
-		     cv->string, 
-		     (unsigned int) strlen(cv->string));
-	Q_strncpyz( vmCvar->string, cv->string,  MAX_CVAR_VALUE_STRING ); 
-
-	vmCvar->value = cv->value;
-	vmCvar->integer = cv->integer;
-}
-
-/*
 ==================
 Cvar_CompleteCvarName
 ==================
@@ -1343,9 +1277,7 @@ void Cvar_Init (void)
 	g_staticCvarsAPI.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
 	g_staticCvarsAPI.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
 	g_staticCvarsAPI.Cvar_VariableValue = Cvar_VariableValue;
-	g_staticCvarsAPI.Cvar_Register = Cvar_Register;
 	g_staticCvarsAPI.Cvar_Set = Cvar_Set;
-	g_staticCvarsAPI.Cvar_Update = Cvar_Update;
 	g_staticCvarsAPI.Cvar_Get = Cvar_Get;
 	g_staticCvarsAPI.Cvar_AddModificationCallback = Cvar_AddModificationCallback;
 	g_staticCvarsAPI.Cvar_RemoveModificationCallback = Cvar_RemoveModificationCallback;

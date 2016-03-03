@@ -411,7 +411,7 @@ static void CG_TransitionSnapshot( void ) {
 
 		// if we are not doing client side movement prediction for any
 		// reason, then the client events and view changes will be issued now
-		//if ( cg_nopredict.integer || cg_synchronousClients.integer ) {
+		//if ( cg_nopredict.getInt() || cg_synchronousClients.getInt() ) {
 			CG_TransitionPlayerState( ps, ops );
 		//}
 		CG_TransitionEntity(&cg_entities[ps->clientNum]);

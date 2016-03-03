@@ -28,8 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // A user mod should never modify this file
 #define C_ONLY
 
-#define STANDALONE 1
-
 #define PRODUCT_NAME			"Qio"
 #define BASEGAME			"baseqio"
 #define CLIENT_WINDOW_TITLE     	"Qio"
@@ -143,12 +141,12 @@ union floatInt_u {
 #define NULL ((void *)0)
 #endif
 
+#define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
+
+
 #define STRING(s)			#s
 // expand constants before stringifying them
 #define XSTRING(s)			STRING(s)
-
-#define ARRAY_LEN(x)			(sizeof(x) / sizeof(*(x)))
-
 
 #define	MAX_QPATH			256		// max length of a quake game pathname
 #ifdef PATH_MAX
@@ -194,8 +192,6 @@ MATHLIB
 */
 
 #include "../math/math.h"
-
-float	LerpAngle (float from, float to, float frac);
 
 float AngleNormalize360 ( float angle );
 float AngleNormalize180 ( float angle );
@@ -244,8 +240,6 @@ const char	*Q_stristr( const char *s, const char *find);
 void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
 
-// strlen that discounts Quake color sequences
-int Q_PrintStrlen( const char *string );
 // removes color sequences from string
 char *Q_CleanStr( char *string );
 // Count the number of char tocount encountered in string
@@ -324,16 +318,6 @@ struct cvar_s {
 #define	MAX_CVAR_VALUE_STRING	256
 
 typedef int	cvarHandle_t;
-
-// the modules that run in the virtual machine can't access the cvar_s directly,
-// so they must ask for structured updates
-struct vmCvar_s {
-	cvarHandle_t	handle;
-	int			modificationCount;
-	float		value;
-	int			integer;
-	char		string[MAX_CVAR_VALUE_STRING];
-};
 
 //=====================================================================
 
