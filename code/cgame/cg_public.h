@@ -29,9 +29,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // multiple commands may be combined into a single packet, so this
 // needs to be larger than PACKET_BACKUP
 
-
-#define	MAX_ENTITIES_IN_SNAPSHOT	MAX_GENTITIES
-
 // snapshots are a view of the server at a given time
 
 // Snapshots are generated at regular time intervals by the server,
@@ -48,7 +45,7 @@ struct snapshot_t {
 	playerState_s	ps;						// complete information about the current player at this time
 
 	int				numEntities;			// all of the entities that need to be presented
-	entityState_s	entities[MAX_ENTITIES_IN_SNAPSHOT];	// at the time of this snapshot
+	entityState_s	entities[MAX_GENTITIES];	// at the time of this snapshot
 
 	int				numServerCommands;		// text based server commands to execute when this
 	int				serverCommandSequence;	// snapshot becomes current
