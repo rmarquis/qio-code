@@ -144,9 +144,9 @@ bool	CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 	memcpy( snapshot->areamask, clSnap->areamask, sizeof( snapshot->areamask ) );
 	snapshot->ps = clSnap->ps;
 	count = clSnap->numEntities;
-	if ( count > MAX_ENTITIES_IN_SNAPSHOT ) {
-		Com_DPrintf( "CL_GetSnapshot: truncated %i entities to %i\n", count, MAX_ENTITIES_IN_SNAPSHOT );
-		count = MAX_ENTITIES_IN_SNAPSHOT;
+	if ( count > MAX_GENTITIES ) {
+		Com_DPrintf( "CL_GetSnapshot: somehow snapshot entities count %i is higher than MAX_GENTITIES - %i\n", count, MAX_GENTITIES );
+		count = MAX_GENTITIES;
 	}
 	snapshot->numEntities = count;
 	for ( i = 0 ; i < count ; i++ ) {
