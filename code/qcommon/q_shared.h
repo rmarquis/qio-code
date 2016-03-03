@@ -186,16 +186,11 @@ void	COM_StripExtension(const char *in, char *out, int destsize);
 bool COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
-void	COM_BeginParseSession( const char *name );
-char	*COM_Parse( char **data_p );
-char	*COM_ParseExt( char **data_p, bool allowLineBreak );
-
 int Com_HexStrToInt( const char *str );
 
 int QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 
 char *Com_SkipTokens( char *s, int numTokens, char *sep );
-char *Com_SkipCharset( char *s, char *sep );
 
 void Com_RandomBytes( byte *string, int len );
 
