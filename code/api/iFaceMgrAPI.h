@@ -46,6 +46,7 @@ enum qioModule_e {
 	QMD_EDITOR,
 	QMD_RECASTNAVIGATION,
 	QMD_GUI,
+	QMD_TIKI,
 };
 
 inline bool QM_IsServerSide(qioModule_e m) {

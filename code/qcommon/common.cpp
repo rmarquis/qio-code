@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/declManagerAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/editorAPI.h>
+#include <api/tikiAPI.h>
 #include <shared/colorTable.h>
 #include <shared/str.h>
 #include <shared/infoString.h>
@@ -1534,6 +1535,10 @@ bool Com_CanStartEngineWithoutDeclManagerModule() {
 	//return false;
 	return true; // TODO: a developer cvar?
 }
+bool Com_CanStartEngineWithoutTIKIModule() {
+	//return false;
+	return true; // TODO: a developer cvar?
+}
 static moduleAPI_i *com_cmLib = 0;
 void Com_InitCMDLL() {
 	com_cmLib = g_moduleMgr->load("cm");
@@ -1555,6 +1560,32 @@ void Com_InitModelLoaderDLL() {
 			Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
 		}
 	}
+}
+
+
+static moduleAPI_i *com_tikiLib = 0;
+tikiAPI_i *tiki;
+void Com_InitTIKIDLL() {
+	com_tikiLib = g_moduleMgr->load("tiki");
+	if(com_tikiLib == 0) {
+		if(Com_CanStartEngineWithoutTIKIModule()) {
+			Com_Printf("WARNING: Cannot load TIKI DLL\n");
+			return;
+		} else {
+			Com_Error(ERR_DROP,"Cannot load TIKI DLL");
+		}
+	}
+	g_iFaceMan->registerIFaceUser(&tiki,TIKI_API_IDENTSTR);
+	tiki->init();
+}
+void Com_ShutdownTIKIDLL() {
+	if(com_tikiLib == 0) {
+		return;
+	}
+	if(tiki) {
+		tiki->shutdown();
+	}
+	g_moduleMgr->unload(&com_tikiLib);
 }
 static moduleAPI_i *com_declMgrLib = 0;
 declManagerAPI_i *g_declMgr;
@@ -1688,6 +1719,9 @@ void Com_Init( char *commandLine ) {
 	Com_InitModelLoaderDLL();
 
 	Com_InitDeclManagerDLL();
+
+	Com_InitTIKIDLL();
+
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);
@@ -2241,6 +2275,8 @@ void Com_Shutdown (void) {
 	Com_ShutdownCMDLL();
 	// shutdown model loader DLL
 	Com_ShutdownModelLoaderDLL();
+	// shutdown TIKI DLL
+	Com_ShutdownTIKIDLL();
 
 	if (logfile) {
 		FS_FCloseFile (logfile);

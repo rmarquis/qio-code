@@ -306,6 +306,10 @@ public:
 		maxs *= scale;
 		mins *= scale;
 	}
+	void scaleBB(const vec3_c &scale) {
+		maxs.scaleXYZ(scale);
+		mins.scaleXYZ(scale);
+	}
 	void swapYZ() {
 		maxs.swapYZ();
 		mins.swapYZ();
