@@ -411,6 +411,18 @@ bool kfModelImpl_c::loadTAN(const byte *buf, const u32 fileLen, const char *fnam
 		g_core->RedWarning("kfModel_c::loadTAN: %s has bad ident %i, should be \"TAN \"\n",fname,h->ident);
 		return true; // error
 	}
+	frames.resize(h->numFrames);
+	kfFrame_c *of = frames.getArray();
+	for(u32 i = 0; i < h->numFrames; i++, of++) {
+		const tanFrame_s *f = h->pFrame(i);
+		of->name = va("tan_frame_%i",i); // f->name;
+		of->bounds.fromTwoPoints(f->bounds[0],f->bounds[1]);
+		of->localOrigin = f->offset;
+		of->scale = f->scale;
+		of->radius = f->radius;
+		//of->bounds.translate(of->localOrigin);
+	//	of->bounds.scaleBB(f->scale);
+	}
 	surfs.resize(h->numSurfaces);
 	kfSurf_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
@@ -434,23 +446,16 @@ bool kfModelImpl_c::loadTAN(const byte *buf, const u32 fileLen, const char *fnam
 		const tanXyzNormal_s *xyzNormal = is->getXYZNormal(0);
 		for(u32 j = 0; j < h->numFrames; j++, f++) {
 			f->verts.resize(is->numVerts);
+			const kfFrame_c &kf = frames[j];
 			kfVert_c *v = f->verts.getArray();
 			for(u32 k = 0; k < is->numVerts; k++, v++) {
 				v->xyz = xyzNormal->getPos();
+				v->xyz += kf.localOrigin;
+				v->xyz.scaleXYZ(kf.scale*64.f);
 				xyzNormal++;
 			}
 		}
 		sf->name = is->name;
-	}
-	frames.resize(h->numFrames);
-	kfFrame_c *of = frames.getArray();
-	for(u32 i = 0; i < h->numFrames; i++, of++) {
-		const tanFrame_s *f = h->pFrame(i);
-		of->name = va("tan_frame_%i",i); // f->name;
-		of->bounds.fromTwoPoints(f->bounds[0],f->bounds[1]);
-		of->localOrigin = f->offset;
-		of->scale = f->scale;
-		of->radius = f->radius;
 	}
 	// load tags
 	for(u32 i = 0; i < h->numFrames; i++) {
