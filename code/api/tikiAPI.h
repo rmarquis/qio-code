@@ -39,7 +39,7 @@ class tikiAPI_i : public iFaceBase_i {
 public:
 	virtual void init() = 0;
 	virtual void shutdown() = 0;
-	virtual class cMod_i *registerModel(const char *modName) = 0;
+	virtual class tiki_i *registerModel(const char *modName) = 0;
 };
 
 extern tikiAPI_i *tiki;

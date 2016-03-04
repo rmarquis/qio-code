@@ -166,6 +166,18 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="shared"
+			>
+			<File
+				RelativePath="..\..\code\shared\parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\parser.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\code\tiki\tiki_api.cpp"
 			>

@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #include "skelAnimPostProcessFuncs.h"
 #include <shared/singleAnimLerp.h>
+#include <shared/array.h>
 
 enum {
 	AF_LOOP_LAST_FRAME = 1, // stop the animation at the last frame instead of looping it
