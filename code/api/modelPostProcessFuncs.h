@@ -63,6 +63,9 @@ public:
 	virtual void setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices)  {
 
 	}
+	virtual int findSurface(const char *surfName) const {
+		return -1;
+	}
 	virtual void setSurfaceMaterial(u32 surfNum, const char *material) {
 
 	}

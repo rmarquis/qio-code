@@ -364,6 +364,7 @@ public:
 	virtual void setSurfaceIndicesU32(u32 surfNum, u32 numIndices, const u32 *indices);
 	virtual void setSurfaceMaterial(u32 surfNum, const char *matName);
 	virtual void recalcBoundingBoxes();
+	virtual int findSurface(const char *surfName) const;
 	virtual void addAbsTag(const char *newTagName, const class vec3_c &newPos, const class vec3_c &newAngles); 
 	virtual bool hasPerSurfaceFunctionsImplemented() const {
 		return true;

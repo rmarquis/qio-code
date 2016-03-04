@@ -41,6 +41,8 @@ enum modelType_e {
 	MOD_Q3PLAYERMODEL, 
 	// single sprite, defined by material name and radius
 	MOD_SPRITE,
+	// FAKK/MoHAA .tik model
+	MOD_TIKI,
 	MOD_NUM_MODEL_TYPES,
 };
 
@@ -67,6 +69,7 @@ class model_c : public rModelAPI_i {
 			class mtrAPI_i *spriteMaterial;
 			float spriteRadius;
 		}; // only if this->type == MOD_SPRITE
+		class tiki_i *tiki;  // only if this->type == MOD_TIKI
 	};
 	aabb bb;
 	// RTCW wolfAnim.cfg extra animation data.
@@ -118,19 +121,13 @@ public:
 			return true;
 		return false;
 	}
-	virtual bool isSkeletal() const { 
-		if(type == MOD_SKELETAL)
-			return true;
-		if(type == MOD_DECL) {
-			return true; // FIXME?
-		}
-		return false;
-	}
-	virtual bool isKeyframed() const { 
-		if(type == MOD_KEYFRAMED)
+	virtual bool isTIKI() const {
+		if(type == MOD_TIKI)
 			return true;
 		return false;
 	}
+	virtual bool isSkeletal() const;
+	virtual bool isKeyframed() const;
 	virtual bool isQ3PlayerModel() const { 
 		if(type == MOD_Q3PLAYERMODEL)
 			return true;
@@ -213,6 +210,7 @@ public:
 
 	virtual class skelModelAPI_i *getSkelModelAPI() const;
 	virtual class modelDeclAPI_i *getDeclModelAPI() const;
+	virtual class tiki_i *getTIKI() const;
 	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const;
 	virtual class kfModelAPI_i *getKFModelAPI() const;
 	virtual const q3PlayerModelAPI_i *getQ3PlayerModelAPI() const;

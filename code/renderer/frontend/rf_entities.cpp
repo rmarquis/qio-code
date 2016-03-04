@@ -40,6 +40,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/kfModelAPI.h>
 #include <api/q3PlayerModelDeclAPI.h>
 #include <api/vfsAPI.h>
+#include <api/tikiAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/boneOrQP.h>
 #include <shared/afRagdollHelper.h>
@@ -323,7 +324,12 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 			instance->initSkelModelInstance(skelModel);
 			instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
 		} else if(newModel->isKeyframed()) {
-			const kfModelAPI_i *kfModel = newModel->getKFModelAPI();
+			const kfModelAPI_i *kfModel;
+			//if(newModel->isTIKI()) {
+			//	kfModel = newModel->getTIKI();
+			//} else {
+				kfModel = newModel->getKFModelAPI();
+			//}
 			instance = new r_model_c;
 			instance->initKeyframedModelInstance(kfModel);
 			instance->updateKeyframedModelInstance(kfModel,0);
@@ -338,6 +344,9 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 		}
 	}
 	model = newModel;
+	if(model->isTIKI() && instance) {
+		model->getTIKI()->applyMaterialRemapsTo(instance);
+	}
 	recalcABSBounds();
 	updateModelSkin();
 }

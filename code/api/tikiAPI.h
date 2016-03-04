@@ -33,6 +33,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class tiki_i {
 
+public:
+	virtual bool isSkeletal() const = 0;
+	virtual bool isKeyframed() const = 0;
+
+	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
+	// for keyframed TIKI models
+	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const = 0;
 };
 
 class tikiAPI_i : public iFaceBase_i {

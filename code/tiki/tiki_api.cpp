@@ -31,22 +31,25 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/tikiAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
+#include <api/modelPostProcessFuncs.h>
 #include <api/kfModelAPI.h>
 #include <api/skelAnimAPI.h>
 #include <shared/parser.h>
+#include <shared/ePairsList.h>
 
 class tikiBuilder_i {
 
 public:
 	virtual void addAnim(class tikiAnimBase_c *ta) = 0;
 	virtual void addSkelModel(const char *skelModel) = 0;
-	virtual void addRemap(const char *skelModel) = 0;
+	virtual void addRemap(const char *surf, const char *mat) = 0;
 };
 
 class tikiAnim_i {
 
 public:
 	virtual const char *getAlias() const = 0;
+	virtual class kfModelAPI_i *getKFModel() const = 0;
 };
 
 class tikiAnimBase_c : public tikiAnim_i {
@@ -62,20 +65,45 @@ public:
 	}
 
 };
-
+enum tikiType_e {
+	TT_BAD,
+	TT_SKELETAL,
+	TT_KEYFRAMED,
+};
 class simpleTIKI_c : public tiki_i, public tikiBuilder_i {
+	tikiType_e type;
 	arraySTD_c<tikiAnimBase_c*> anims;
-	
+	ePairList_c remaps;
 
 public:
+	virtual bool isSkeletal() const {
+		return type == TT_SKELETAL;
+	}
+	virtual bool isKeyframed() const {
+		return true;
+	}
+	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const {
+		for(u32 i = 0; i < remaps.size(); i++) {
+			const char *s, *m;
+			remaps.getKeyValue(i,&s,&m);
+			int sfIndex = out->findSurface(s);
+			if(sfIndex != -1)
+				out->setSurfaceMaterial(sfIndex,m);
+		}
+	}
+	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const {
+		if(animNum >= anims.size())
+			return 0;
+		return anims[animNum]->getKFModel();
+	}
 	virtual void addAnim(class tikiAnimBase_c *ta) {
 		anims.push_back(ta);
 	}
 	virtual void addSkelModel(const char *skelModel) {
 		
 	}
-	virtual void addRemap(const char *skelModel) {
-
+	virtual void addRemap(const char *surf, const char *mat) {
+		remaps.set(surf,mat);
 	}
 };
 class tikiAnimSkeletal_c : public tikiAnimBase_c {
@@ -88,6 +116,11 @@ public:
 	~tikiAnimSkeletal_c() {
 		delete skelAnim;
 	}
+
+
+	virtual class kfModelAPI_i *getKFModel() const {
+		return 0;
+	}
 };
 class tikiAnimKeyFramed_c : public tikiAnimBase_c {
 	class kfModelAPI_i *kfModel;
@@ -98,6 +131,11 @@ public:
 	}
 	~tikiAnimKeyFramed_c() {
 		delete kfModel;
+	}
+
+
+	virtual class kfModelAPI_i *getKFModel() const {
+		return kfModel;
 	}
 };
 
@@ -117,16 +155,23 @@ class tikiParser_c : public parser_c {
 				float sc = getFloat();
 			} else if(atWord("path")) {
 				curPath = getToken();
+				if(curPath.isLastChar('/')==false && curPath.isLastChar('\\')==false) {
+					curPath.appendChar('/');
+				}
+				curPath.backSlashesToSlashes();
 			} else if(atWord("skelmodel")) {
 				// used for skeletal TIKIs,
 				// this keyword should not be used
 				// when .md3/.tan files are used for animations
-				curPath = getToken();
+				getToken();
 			} else if(atWord("surface")) {
 				str surf, mat;
 				getToken(surf);
 				if(atWord("shader")) {
 					getToken(mat);
+					if(out) {
+						out->addRemap(surf,mat);
+					}
 				} else if(atWord("flags")) {
 					// models/julie_base.txt
 					getToken(mat);
@@ -156,14 +201,16 @@ class tikiParser_c : public parser_c {
 					alias.c_str(),file.c_str(),getCurrentLineNumber(),getDebugFileName());
 				return true;
 			}
+			str fullPath = curPath;
+			fullPath.append(file);
 			tikiAnimBase_c *ta;
-			if(g_modelLoader->isKeyFramedModelFile(file)) {
-				ta = new tikiAnimKeyFramed_c(file);
-			} else if(g_modelLoader->isSkelAnimFile(file)) {
-				ta = new tikiAnimSkeletal_c(file);
+			if(g_modelLoader->isKeyFramedModelFile(fullPath)) {
+				ta = new tikiAnimKeyFramed_c(fullPath);
+			} else if(g_modelLoader->isSkelAnimFile(fullPath)) {
+				ta = new tikiAnimSkeletal_c(fullPath);
 			} else {
 				g_core->RedWarning("tikiParser_c::parseAnimations: unsupported animation file type - alias '%s', file '%s' at line %i of %s\n",
-					alias.c_str(),file.c_str(),getCurrentLineNumber(),getDebugFileName());
+					alias.c_str(),fullPath.c_str(),getCurrentLineNumber(),getDebugFileName());
 				return true;
 			}
 			// parse optional animation flags/params
@@ -176,7 +223,7 @@ class tikiParser_c : public parser_c {
 					
 				} else {
 					g_core->RedWarning("tikiParser_c::parseAnimations: unexpected animation param %s for alias '%s', found '%s' at line %i of %s\n",
-						getToken(),alias.c_str(),file.c_str(),getCurrentLineNumber(),getDebugFileName());
+						getToken(),alias.c_str(),fullPath.c_str(),getCurrentLineNumber(),getDebugFileName());
 					return true;
 				}
 			}
