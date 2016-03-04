@@ -214,6 +214,8 @@ public:
 							return true; // EOF hit
 						} else if(tmp[0] == '*' && tmp[1] == '/') {
 							tmp += 2;
+							if(*tmp == 0)
+								return true; // is at eof
 							break;
 						} else {
 							tmp++;
