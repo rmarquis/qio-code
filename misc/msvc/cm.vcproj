@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="cm"
 	ProjectGUID="{FEFA37DE-66C8-4AF8-8D2D-1F441A543C59}"
 	RootNamespace="cm"
@@ -381,6 +381,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\readStream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 			<File

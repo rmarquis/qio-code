@@ -1796,6 +1796,18 @@
 				RelativePath="..\..\code\shared\keyCatchers.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="protocol"

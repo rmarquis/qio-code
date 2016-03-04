@@ -39,7 +39,7 @@ CG_DrawFPS
 */
 #define	FPS_FRAMES	4
 static void CG_DrawFPS( float y ) {
-	char		*s;
+	const char	*s;
 	int			w;
 	static int	previousTimes[FPS_FRAMES];
 	static int	index;

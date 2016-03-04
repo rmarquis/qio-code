@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/vfsAPI.h>
 #include <shared/cvarFlags.h>
 #include <shared/cvar.h>
+#include <shared/str.h>
 
 //Ignore __attribute__ on non-gcc platforms
 #ifndef __GNUC__
@@ -851,7 +852,7 @@ void CL_InitKeyCommands();
 
 void CL_Init();
 void CL_Disconnect( bool showMainMenu );
-void CL_Shutdown(char *finalmsg, bool disconnect, bool quit);
+void CL_Shutdown(const char *finalmsg, bool disconnect, bool quit);
 void CL_Frame( int msec );
 bool CL_GameCommand();
 void CL_KeyEvent (int key, bool down, unsigned time);
@@ -912,7 +913,7 @@ void S_ClearSoundBuffer();
 // server interface
 //
 void SV_Init();
-void SV_Shutdown( char *finalmsg );
+void SV_Shutdown(const char *finalmsg );
 void SV_Frame( int msec );
 void SV_PacketEvent( netadr_t from, msg_s *msg );
 int SV_FrameMsec(void);

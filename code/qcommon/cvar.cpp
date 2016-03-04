@@ -41,6 +41,11 @@ int			cvar_numIndexes;
 #define FILE_HASH_SIZE		256
 static	cvar_s	*hashTable[FILE_HASH_SIZE];
 
+bool IsInt(float f) {
+	return ((int)f) == f;
+}
+
+
 /*
 ================
 return a hash value for the filename
@@ -225,7 +230,7 @@ static const char *Cvar_Validate( cvar_s *var,
 
 		if( var->integral )
 		{
-			if( !Q_isintegral( valuef ) )
+			if( !IsInt( valuef ) )
 			{
 				if( warn )
 					Com_Printf( "WARNING: cvar '%s' must be integral", var->name );
@@ -253,7 +258,7 @@ static const char *Cvar_Validate( cvar_s *var,
 			else
 				Com_Printf( "WARNING: cvar '%s'", var->name );
 
-			if( Q_isintegral( var->min ) )
+			if( IsInt( var->min ) )
 				Com_Printf( " out of range (min %d)", (int)var->min );
 			else
 				Com_Printf( " out of range (min %f)", var->min );
@@ -271,7 +276,7 @@ static const char *Cvar_Validate( cvar_s *var,
 			else
 				Com_Printf( "WARNING: cvar '%s'", var->name );
 
-			if( Q_isintegral( var->max ) )
+			if( IsInt( var->max ) )
 				Com_Printf( " out of range (max %d)", (int)var->max );
 			else
 				Com_Printf( " out of range (max %f)", var->max );
@@ -283,7 +288,7 @@ static const char *Cvar_Validate( cvar_s *var,
 
 	if( changed )
 	{
-		if( Q_isintegral( valuef ) )
+		if( IsInt( valuef ) )
 		{
 			Com_sprintf( s, sizeof( s ), "%d", (int)valuef );
 
@@ -695,7 +700,7 @@ void Cvar_SetValueSafe( const char *var_name, float value )
 {
 	char val[32];
 
-	if( Q_isintegral( value ) )
+	if( IsInt( value ) )
 		Com_sprintf( val, sizeof(val), "%i", (int)value );
 	else
 		Com_sprintf( val, sizeof(val), "%f", value );

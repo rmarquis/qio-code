@@ -1752,7 +1752,7 @@ bool r_model_c::createDecal(class simpleDecalBatcher_c *out, const class vec3_c 
 r_surface_c *r_model_c::registerSurf(const char *matName) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
-		if(!Q_stricmp(sf->getMatName(),matName)) {
+		if(!_stricmp(sf->getMatName(),matName)) {
 			return sf;
 		}
 	}	
@@ -1764,7 +1764,7 @@ r_surface_c *r_model_c::registerPlanarSurf(const char *matName, const vec3_c &p0
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		// first check material
-		if(!Q_stricmp(sf->getMatName(),matName)) {
+		if(!_stricmp(sf->getMatName(),matName)) {
 			u32 count = sf->hasPoints(p0,p1,p2);
 			if(count >= 2) {
 				return sf;
@@ -1827,7 +1827,7 @@ void r_model_c::setSurfMaterial(const char *surfName, const char *matName) {
 	r_surface_c *sf = surfs.getArray();
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		if(!_stricmp(sf->getName(),surfName)) {
-		//if(!Q_stricmpn(sf->getName(),surfName,strlen(surfName))) {
+		//if(!_stricmpn(sf->getName(),surfName,strlen(surfName))) {
 			sf->setMaterial(matName);
 		}
 	}

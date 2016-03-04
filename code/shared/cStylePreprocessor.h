@@ -49,7 +49,7 @@ public:
 	// TODO: use hash table?
 	bool isDefined(const char *defineName) const {
 		for(u32 i = 0; i < data.size(); i++) {
-			if(!Q_stricmp(data[i].name,defineName)) {
+			if(!stricmp(data[i].name,defineName)) {
 				return true;
 			}
 		}

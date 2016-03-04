@@ -181,7 +181,6 @@ void Com_RandomBytes( byte *string, int len );
 //=============================================
 
 bool Q_isanumber( const char *s );
-bool Q_isintegral( float f );
 
 // portable case insensitive compare
 int		Q_stricmp (const char *s1, const char *s2);
@@ -200,10 +199,6 @@ void	Q_strcat( char *dest, int size, const char *src );
 char *Q_CleanStr( char *string );
 // Count the number of char tocount encountered in string
 int Q_CountChar(const char *string, char tocount);
-
-//=============================================
-
-char	* QDECL va(char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
 //=====================================================================
 

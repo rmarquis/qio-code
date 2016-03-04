@@ -62,7 +62,7 @@ bool rSkinRemap_c::fromSkinFile(const char *fname) {
 	}
 	while(p.atEOF() == false) {
 		str tok = p.getD3Token();
-		if(!Q_stricmpn(tok,"tag_",4)) {
+		if(!strnicmp(tok,"tag_",4)) {
 			continue;
 		}
 		str mat = p.getD3Token();
