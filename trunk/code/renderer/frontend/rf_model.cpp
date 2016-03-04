@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/q3PlayerModelDeclAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/vfsAPI.h>
+#include <api/tikiAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/wolfAnimCfg.h>
 #include <shared/etCharMgr.h>
@@ -197,6 +198,12 @@ class skelModelAPI_i *model_c::getSkelModelAPI() const {
 	}
 	return 0;
 }
+class tiki_i *model_c::getTIKI() const {  
+	if(type == MOD_TIKI) {
+		return tiki;
+	}
+	return 0;
+}
 class modelDeclAPI_i *model_c::getDeclModelAPI() const {  
 	if(type == MOD_DECL) {
 		return declModel;
@@ -212,6 +219,10 @@ const class skelAnimAPI_i *model_c::getDeclModelAFPoseAnim() const {
 class kfModelAPI_i *model_c::getKFModelAPI() const {
 	if(type == MOD_KEYFRAMED) {
 		return this->kfModel;
+	}
+	if(type == MOD_TIKI) {
+		// this is hacky
+		return this->tiki->getAnimKFModel(0);
 	}
 	return 0;
 }
@@ -282,6 +293,25 @@ bool model_c::hasStageWithoutBlendFunc() const {
 		return this->staticModel->hasStageWithoutBlendFunc();
 	} else {
 		// TODO?
+	}
+	return false;
+}
+bool model_c::isSkeletal() const { 
+	if(type == MOD_SKELETAL)
+		return true;
+	if(type == MOD_DECL) {
+		return true; // FIXME?
+	}
+	if(type == MOD_TIKI) {
+		return tiki->isSkeletal();
+	}
+	return false;
+}
+bool model_c::isKeyframed() const { 
+	if(type == MOD_KEYFRAMED)
+		return true;
+	if(type == MOD_TIKI) {
+		return tiki->isKeyframed();
 	}
 	return false;
 }
@@ -514,6 +544,14 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 			ret->type = MOD_SKELETAL;
 			ret->bb.fromRadius(96.f);
 			ret->etChar = etChar;
+		}
+	} else if(modName.hasExt("tik")) {
+		static etCharMgr_c test;
+		tiki_i *t = tiki->registerModel(modName);
+		if(t) {
+			ret->tiki = t;
+			ret->type = MOD_TIKI;
+			ret->bb.fromRadius(96.f);
 		}
 	} else if(g_declMgr) {
 		ret->declModel = g_declMgr->registerModelDecl(modName);

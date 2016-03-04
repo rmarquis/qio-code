@@ -46,6 +46,7 @@ public:
 	// this will return NULL if this model is not a skeletal model
 	virtual class skelModelAPI_i *getSkelModelAPI() const = 0;
 	virtual class modelDeclAPI_i *getDeclModelAPI() const = 0;
+	virtual class tiki_i *getTIKI() const = 0;
 	// this works only if this is a decl model
 	virtual const class skelAnimAPI_i *getDeclModelAFPoseAnim() const = 0;
 	virtual class kfModelAPI_i *getKFModelAPI() const = 0;
@@ -58,6 +59,7 @@ public:
 	virtual bool isKeyframed() const = 0;
 	virtual bool isQ3PlayerModel() const = 0;
 	virtual bool isSprite() const = 0;
+	virtual bool isTIKI() const = 0;
 	virtual float getSpriteRadius() const = 0;
 	virtual bool hasWolfAnimConfig() const = 0;
 	virtual bool hasCharacterFile() const = 0;

@@ -1444,6 +1444,13 @@ void r_model_c::setSurfaceMaterial(u32 surfNum, const char *matName) {
 	}
 	surfs[surfNum].setMaterial(matName);
 }	
+int r_model_c::findSurface(const char *surfName) const {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		if(!stricmp(surfs[i].getName(),surfName))
+			return i;
+	}
+	return -1;
+}
 void r_model_c::recalcBoundingBoxes() {
 	bounds.clear();
 	for(u32 i = 0; i < surfs.size(); i++) {
