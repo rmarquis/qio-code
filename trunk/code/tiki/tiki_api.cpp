@@ -31,12 +31,79 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/tikiAPI.h>
 #include <api/modelLoaderDLLAPI.h>
 #include <api/moduleManagerAPI.h>
+#include <api/kfModelAPI.h>
+#include <api/skelAnimAPI.h>
 #include <shared/parser.h>
 
+class tikiBuilder_i {
 
+public:
+	virtual void addAnim(class tikiAnimBase_c *ta) = 0;
+	virtual void addSkelModel(const char *skelModel) = 0;
+	virtual void addRemap(const char *skelModel) = 0;
+};
+
+class tikiAnim_i {
+
+public:
+	virtual const char *getAlias() const = 0;
+};
+
+class tikiAnimBase_c : public tikiAnim_i {
+protected:
+	str alias;
+	str fileName;
+public:
+	~tikiAnimBase_c() {
+
+	}
+	virtual const char *getAlias() const {
+		return alias;
+	}
+
+};
+
+class simpleTIKI_c : public tiki_i, public tikiBuilder_i {
+	arraySTD_c<tikiAnimBase_c*> anims;
+	
+
+public:
+	virtual void addAnim(class tikiAnimBase_c *ta) {
+		anims.push_back(ta);
+	}
+	virtual void addSkelModel(const char *skelModel) {
+		
+	}
+	virtual void addRemap(const char *skelModel) {
+
+	}
+};
+class tikiAnimSkeletal_c : public tikiAnimBase_c {
+	class skelAnimAPI_i *skelAnim;
+public:
+	tikiAnimSkeletal_c(const char *fname) {
+		this->fileName = fname;
+		skelAnim = g_modelLoader->loadSkelAnimFile(fname);
+	}
+	~tikiAnimSkeletal_c() {
+		delete skelAnim;
+	}
+};
+class tikiAnimKeyFramed_c : public tikiAnimBase_c {
+	class kfModelAPI_i *kfModel;
+public:
+	tikiAnimKeyFramed_c(const char *fname) {
+		this->fileName = fname;
+		kfModel = g_modelLoader->loadKeyFramedModelFile(fname);
+	}
+	~tikiAnimKeyFramed_c() {
+		delete kfModel;
+	}
+};
 
 class tikiParser_c : public parser_c {
 	str curPath;
+	tikiBuilder_i *out;
 
 	bool parseSetup() {
 		while(atChar('}')==false) {
@@ -89,6 +156,16 @@ class tikiParser_c : public parser_c {
 					alias.c_str(),file.c_str(),getCurrentLineNumber(),getDebugFileName());
 				return true;
 			}
+			tikiAnimBase_c *ta;
+			if(g_modelLoader->isKeyFramedModelFile(file)) {
+				ta = new tikiAnimKeyFramed_c(file);
+			} else if(g_modelLoader->isSkelAnimFile(file)) {
+				ta = new tikiAnimSkeletal_c(file);
+			} else {
+				g_core->RedWarning("tikiParser_c::parseAnimations: unsupported animation file type - alias '%s', file '%s' at line %i of %s\n",
+					alias.c_str(),file.c_str(),getCurrentLineNumber(),getDebugFileName());
+				return true;
+			}
 			// parse optional animation flags/params
 			while(isAtEOL()==false) {
 				if(atWord("default_angles")) {
@@ -105,10 +182,17 @@ class tikiParser_c : public parser_c {
 			}
 			// after animation alias-fname pair there is an optional commands block
 			if(atChar('{')) {
-				if(parseAnimationBlock()) {
+				if(parseAnimationBlock(ta)) {
+					delete ta;
 					return true;
 				}
 			}
+			if(out) {
+				out->addAnim(ta);
+			} else {
+				delete ta;
+			}
+			
 		}
 		return false;
 	}
@@ -122,7 +206,7 @@ class tikiParser_c : public parser_c {
 		}
 		return false;
 	}
-	bool parseAnimationBlock() {
+	bool parseAnimationBlock(class tikiAnimBase_c *ta) {
 
 		while(atChar('}')==false) {
 			if(atWord("server")) {
@@ -188,11 +272,12 @@ class tikiParser_c : public parser_c {
 		return false;
 	}
 public:
-	bool parseTIKI(const char *fname) {
+	bool parseTIKI(const char *fname, tikiBuilder_i *no = 0) {
 		if(openFile(fname)) {
 
 			return true;
 		}
+		this->out = no;
 		if(atWord("TIKI")) {
 
 		}
@@ -256,34 +341,36 @@ public:
 
 	virtual void init() {
 		g_core->Print("====== tikiAPIImpl_c::init() ===== \n");
-		tikiParser_c tp;
-		tp.parseTIKI("models/projectile_cluster.tik");
-		tp.parseTIKI("models/plant_tree.tik");
-		tp.parseTIKI("models/otto.tik");
-		tp.parseTIKI("models/plant_fruit3.tik");
-		tp.parseTIKI("models/shield.tik");
-		tp.parseTIKI("models/weapon_axe.tik");
-		tp.parseTIKI("models/weapon_firesword.tik");
-		tp.parseTIKI("models/shgliek.tik");
-		tp.parseTIKI("models/weapon_uzi.tik");
-		tp.parseTIKI("models/xyz.tik");
-		tp.parseTIKI("models/shgliek_noise.tik");
-		tp.parseTIKI("models/tr_vine.tik");
-		tp.parseTIKI("models/weapon_gun.tik");
-		tp.parseTIKI("models/lochnar.tik");
-		tp.parseTIKI("models/julie_alpha.tik");
-		tp.parseTIKI("models/julie_base.tik");
-		tp.parseTIKI("models/julie_battle.tik");
-		tp.parseTIKI("models/fx_fire3d.tik");
-		tp.parseTIKI("models/creeper.tik");
+		registerModel("models/projectile_cluster.tik");
+		registerModel("models/plant_tree.tik");
+		registerModel("models/otto.tik");
+		registerModel("models/plant_fruit3.tik");
+		registerModel("models/shield.tik");
+		registerModel("models/weapon_axe.tik");
+		registerModel("models/weapon_firesword.tik");
+		registerModel("models/shgliek.tik");
+		registerModel("models/weapon_uzi.tik");
+		registerModel("models/xyz.tik");
+		registerModel("models/shgliek_noise.tik");
+		registerModel("models/tr_vine.tik");
+		registerModel("models/weapon_gun.tik");
+		registerModel("models/lochnar.tik");
+		registerModel("models/julie_alpha.tik");
+		registerModel("models/julie_base.tik");
+		registerModel("models/julie_battle.tik");
+		registerModel("models/fx_fire3d.tik");
+		registerModel("models/creeper.tik");
 		g_core->Print("TIKI module ready!\n");
 	}
 	virtual void shutdown() {
 		g_core->Print("====== tikiAPIImpl_c::shutdown() ===== \n");
 	}
-	virtual class cMod_i *registerModel(const char *modName) {
+	virtual class tiki_i *registerModel(const char *modName) {
+		simpleTIKI_c *st = new simpleTIKI_c();
+		tikiParser_c tp;
+		tp.parseTIKI(modName,st);
 
-		return 0;
+		return st;
 	}
 };
 
