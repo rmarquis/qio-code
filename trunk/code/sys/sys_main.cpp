@@ -140,7 +140,7 @@ char *Sys_ConsoleInput(void)
 Sys_PIDFileName
 =================
 */
-static char *Sys_PIDFileName()
+static const char *Sys_PIDFileName()
 {
 	const char *homePath = Sys_DefaultHomePath( );
 
@@ -159,7 +159,7 @@ Return true if there is an existing stale PID file
 */
 bool Sys_WritePIDFile()
 {
-	char      *pidFile = Sys_PIDFileName( );
+	const char      *pidFile = Sys_PIDFileName( );
 	FILE      *f;
 	bool  stale = false;
 
@@ -214,7 +214,7 @@ static __attribute__ ((noreturn)) void Sys_Exit( int exitCode )
 	if( exitCode < 2 )
 	{
 		// Normal exit
-		char *pidFile = Sys_PIDFileName( );
+		const char *pidFile = Sys_PIDFileName( );
 
 		if( pidFile != NULL )
 			remove( pidFile );

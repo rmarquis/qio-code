@@ -30,7 +30,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <stdlib.h> // malloc, free
 #include <string.h> // strcpy, strcat
 #include <ctype.h> // isdigit
-#include "../qcommon/q_shared.h"
 #include "array.h"
 
 // returns true if a given char is whitespace
@@ -388,12 +387,12 @@ public:
 	}
 	bool contains(const char *other) const {
 		u32 oLen = strlen(other);
-		return !Q_stricmpn(this->data,other,oLen);
+		return !strnicmp(this->data,other,oLen);
 	}
 	bool matchesFilter(const char *strFilter) const {
 		u32 filterLen = strlen(strFilter);
 		for(u32 i = 0; i < this->len; i++) {
-			if(!Q_stricmpn(this->data + i,strFilter,filterLen)) {
+			if(!strnicmp(this->data + i,strFilter,filterLen)) {
 				return true;
 			}
 		}
@@ -530,7 +529,7 @@ public:
 		if(start == 0)
 			start = this->data;
 		while(*start) {
-			if(!Q_stricmpn(start, token, tokenLen) && (needWS==false || G_isWS(start[tokenLen]))) {
+			if(!strnicmp(start, token, tokenLen) && (needWS==false || G_isWS(start[tokenLen]))) {
 				return start;
 			}
 			start++;
@@ -561,7 +560,7 @@ public:
 			goto again;
 		}
 		u32 checkLen = strlen(check);
-		if(!Q_stricmpn(at, check, checkLen) && (needWS == false || G_isWS(at[checkLen]))) {
+		if(!strnicmp(at, check, checkLen) && (needWS == false || G_isWS(at[checkLen]))) {
 			return at + checkLen;
 		}
 		return 0;
@@ -666,5 +665,7 @@ public:
 		return data;
 	}
 };
+const char *va(const char *fmt, ...);
+
 
 #endif // __SHARED_STR_H__

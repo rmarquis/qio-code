@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // eventSystem.cpp
 #include "eventSystem.h"
 #include "eventReceiverAPI.h"
+#include <assert.h>
 
 event_c::event_c(int newExecTime, const char *eventName, const char *arg0, const char *arg1, const char *arg2, const char *arg3) {
 	this->prev = this->next = 0;

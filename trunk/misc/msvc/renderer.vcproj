@@ -695,14 +695,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\shared\r2dVert.h"
 				>
 			</File>
@@ -740,6 +732,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\skelUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 			<File

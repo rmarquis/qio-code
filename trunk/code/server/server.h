@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <protocol/userCmd.h>
 #include <protocol/playerState.h>
 #include <shared/infoString.h>
+#include <shared/str.h>
 
 //=============================================================================
 
@@ -301,7 +302,7 @@ extern	cvar_s	*sv_voip;
 //
 // sv_main.c
 //
-void SV_FinalMessage (char *message);
+void SV_FinalMessage (const char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 
 

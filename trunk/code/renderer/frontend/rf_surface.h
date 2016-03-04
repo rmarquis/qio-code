@@ -315,7 +315,7 @@ public:
 	}
 
 	bool isAreaModel() const {
-		if(!Q_stricmpn(name,"_area",5))
+		if(!strnicmp(name,"_area",5))
 			return true;
 		return false;
 	}

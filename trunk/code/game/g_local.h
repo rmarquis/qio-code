@@ -103,7 +103,6 @@ u32 G_FindMoversWithTeam(class arraySTD_c<class Mover*> &out, const char *team);
 //
 // g_client.c
 //
-void ClientRespawn(edict_s *ent);
 void ClientSpawn( edict_s *ent );
 
 //
@@ -113,8 +112,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
 void G_ProcessEntityEvents();
 void G_ShutdownGame( int restart );
-void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
-void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
+void G_Printf( const char *fmt, ... );
+void G_Error( const char *fmt, ... );
 
 //
 // g_client.c

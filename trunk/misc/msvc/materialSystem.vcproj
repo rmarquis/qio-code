@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="materialSystem"
 	ProjectGUID="{B93D05ED-C73C-4797-A47B-AC898ECF0459}"
 	RootNamespace="materialSystem"
@@ -307,6 +307,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\safePtr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 			<File

@@ -1627,7 +1627,7 @@ Com_Init
 =================
 */
 void Com_Init( char *commandLine ) {
-	char	*s;
+	const char	*s;
 	int	qport;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, __DATE__ );

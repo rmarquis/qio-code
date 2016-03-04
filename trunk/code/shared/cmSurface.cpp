@@ -122,7 +122,7 @@ bool cmSurface_c::loadDoom3ProcFileWorldModel(const char *fname) {
 				return true; // error
 			}
 			str modName = p.getToken();
-			if(Q_stricmpn(modName,"_area",5)) {
+			if(strnicmp(modName,"_area",5)) {
 				// skip curly braced block
 				p.skipCurlyBracedBlock(false);
 			} else {
