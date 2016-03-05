@@ -825,6 +825,18 @@ void RFL_AddLightInteractionsDrawCalls() {
 					continue;
 				}	
 			}
+			// extra .bsp tree lights culling
+			if(RF_IsWorldTypeBSP()) {
+				//arraySTD_c<u32> tmp;
+				//RF_BoxAreas(light->getABSBounds(),tmp);
+				if(RF_CullBoundsByPortals(light->getABSBounds())) {
+					c_lightsCulled++;
+					c_lightsCulledByAreas++;
+					g_core->Print("Culled light %i\n",i);
+					light->setCulled(true);
+					continue;
+				}
+			}
 		}
 		light->setCulled(false);
 
