@@ -900,16 +900,18 @@ void RFT_ApplyTerrainPaint(byte rgba[4], float innerRadius, float outerRadius) {
 void RFT_AddTerrainDrawCalls() {
 	if(rf_skipTerrain.getInt())
 		return;
-	// Just for testing
-	//g_core->Print("LMB down: %i\n",g_client->Key_IsDown(K_MOUSE1));
-	if(g_client->Key_IsDown(K_MOUSE1)) {
-		byte green[] = { 0, 255, 0, 0 };
-	//	RFT_ApplyMouseMod(1.f);
-		RFT_ApplyTerrainPaint(green,16.f,96.f);
-	} else if(g_client->Key_IsDown(K_MOUSE2)) {
-	//	RFT_ApplyMouseMod(-1.f);
-		byte blue[] = { 0, 0, 255, 0 };
-		RFT_ApplyTerrainPaint(blue,16.f,96.f);
+	if(g_client) {
+		// Just for testing
+		//g_core->Print("LMB down: %i\n",g_client->Key_IsDown(K_MOUSE1));
+		if(g_client->Key_IsDown(K_MOUSE1)) {
+			byte green[] = { 0, 255, 0, 0 };
+		//	RFT_ApplyMouseMod(1.f);
+			RFT_ApplyTerrainPaint(green,16.f,96.f);
+		} else if(g_client->Key_IsDown(K_MOUSE2)) {
+		//	RFT_ApplyMouseMod(-1.f);
+			byte blue[] = { 0, 0, 255, 0 };
+			RFT_ApplyTerrainPaint(blue,16.f,96.f);
+		}
 	}
 	for(u32 i = 0; i < r_terrain.size(); i++) {
 		r_terrain[i]->addTerrainDrawCalls();
