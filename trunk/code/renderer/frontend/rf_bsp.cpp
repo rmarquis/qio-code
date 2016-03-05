@@ -2832,6 +2832,40 @@ bool rBspTree_c::createInlineModelDecal(u32 inlineModelNum, class simpleDecalBat
 }
 #include "rf_lights.h"
 void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
+#if 1
+	int lightCluster = pointInCluster(l->getOrigin());
+	q3Leaf_s *leaf = leaves.getArray();
+	arraySTD_c<u32> sfNums;
+	for(u32 i = 0; i < leaves.size(); i++, leaf++) {
+		if(isClusterVisible(leaf->cluster,lightCluster) == false) {
+			//g_core->Print("Culled by leafvis\n");
+			continue; // skip leaves that are not visible
+		}
+		for(u32 j = 0; j < leaf->numLeafSurfaces; j++) {
+			u32 sfNum = leafSurfaces[leaf->firstLeafSurface+j];
+			sfNums.add_unique(sfNum);
+		}
+	}
+	for(u32 i = 0; i < sfNums.size(); i++) {
+		u32 surfaceIndex = sfNums[i];
+		class mtrAPI_i *mat = getSurfaceMaterial(surfaceIndex);
+		if(mat->isNeededForLightPass() == false)
+			continue;
+		const bspSurf_s &sf = surfs[surfaceIndex];
+		const aabb &sfBounds = sf.getBounds();
+		if(sfBounds.intersect(l->getABSBounds())==false) {
+			//g_core->Print("Culled by bounds\n");
+			continue;
+		}
+		if(l->isSpotLight()) {
+			const frustum_c &fr = l->getSpotLightFrustum();
+			if(fr.cull(sfBounds) == CULL_OUT) {
+				continue;
+			}
+		}
+		l->addBSPSurfaceInteraction(surfaceIndex);;
+	}
+#else
 	arraySTD_c<u32> sfNums;
 	boxSurfaces(l->getABSBounds(),sfNums);
 	for(u32 i = 0; i < sfNums.size(); i++) {
@@ -2849,6 +2883,7 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 		}
 		l->addBSPSurfaceInteraction(surfaceIndex);;
 	}
+#endif
 }
 void rBspTree_c::getReferencedMatNames(class perStringCallbackListener_i *callback) const {
 	for(u32 i = 0; i < surfs.size(); i++) {
