@@ -376,6 +376,11 @@ void Cmd_CompleteMDCName( char *args, int argNum ) {
 		Field_CompleteFilename( "models", "mdc", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteTIKName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "models", "tik", 0, 0, false, false );
+	}
+}
 /*
 ==================
 Cmd_CompleteSMDName
@@ -495,6 +500,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "mdm_spawn", Cmd_CompleteMDMName );
 	Cmd_AddCommand ("mdc_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdc_spawn", Cmd_CompleteMDCName );
+	Cmd_AddCommand ("tik_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "tik_spawn", Cmd_CompleteTIKName );
 	Cmd_AddCommand ("phys_spawn_mdc", 0);
 	Cmd_SetCommandCompletionFunc( "phys_spawn_mdc", Cmd_CompleteMDCName );
 	Cmd_AddCommand ("smd_spawn", 0);
