@@ -613,6 +613,10 @@ void rEntityImpl_c::updateInstanceAttachments() {
 void rEntityImpl_c::updateAnimatedEntity() {
 	if(model == 0)
 		return;
+	if(lastAnimatedEntityUpdateFrame == rf_draw3DViewCount)
+		return;
+	lastAnimatedEntityUpdateFrame = rf_draw3DViewCount;
+
 	absSilChangeCount++;
 	// we have an instance of dynamic model.
 	// It might be an instance of skeletal model (.md5mesh, etc)

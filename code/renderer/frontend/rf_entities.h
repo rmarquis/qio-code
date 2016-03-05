@@ -97,9 +97,12 @@ class rEntityImpl_c : public rEntityAPI_i {
 	vec3_c entityColor;
 	// model attachments are merged inside instance
 	arraySTD_c<rEntityAttachment_c> attachments;
+	// used to avoid updating animated entity several times in one frame
+	u32 lastAnimatedEntityUpdateFrame;
+
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
-
+	
 	u32 getEntityTriangleCount() const;
 public:
 	rEntityImpl_c();
