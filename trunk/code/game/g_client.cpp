@@ -512,7 +512,8 @@ void ClientCommand( int clientNum ) {
 		!_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn") ||
 		!_stricmp(cmd,"obj_spawn") || !_stricmp(cmd,"md5r_spawn") ||
 		!_stricmp(cmd,"md5mesh_spawn") || !_stricmp(cmd,"3ds_spawn") 
-		|| !_stricmp(cmd,"mdc_spawn") || !_stricmp(cmd,"tan_spawn") ) {
+		|| !_stricmp(cmd,"mdc_spawn") || !_stricmp(cmd,"tan_spawn")
+		|| !_stricmp(cmd,"tik_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
