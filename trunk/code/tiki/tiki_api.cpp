@@ -128,6 +128,9 @@ public:
 	tikiAnimKeyFramed_c(const char *fname) {
 		this->fileName = fname;
 		kfModel = g_modelLoader->loadKeyFramedModelFile(fname);
+		if(kfModel == 0) {
+			g_core->RedWarning("tikiAnimKeyFramed_c::tikiAnimKeyFramed_c: failed to load %s\n",fname);
+		}
 	}
 	~tikiAnimKeyFramed_c() {
 		delete kfModel;
@@ -188,6 +191,12 @@ class tikiParser_c : public parser_c {
 	}
 	bool parseAnimations() {
 		while(atChar('}')==false) {
+			//if(atWord("$include")) {
+			//	str fileName;
+			//	getToken(fileName);
+
+			//	continue;
+			//}
 			str alias, file;
 			getToken(alias);
 			if(alias[0] == '{' || alias[1] == '}') {
@@ -366,7 +375,18 @@ public:
 				getToken();
 				getToken();
 			} else if(atWord("$include")) {
-				getToken();
+				str fileName;
+				getToken(fileName);
+
+				g_core->Print("tikiParser_c::parseTIKI: including %s from %s\n",fileName.c_str(),fname);
+				tikiParser_c tp2;
+				// keep the path setting
+				// This is needed for eg. models/weapon_uzi.tik
+				tp2.curPath = this->curPath;
+				if(tp2.parseTIKI(fileName,this->out)) {
+
+				}
+
 			} else {
 				g_core->RedWarning("tikiParser_c::parseTIKI: unknown token '%s' at line %i of %s\n",
 					getToken(),getCurrentLineNumber(),getDebugFileName());

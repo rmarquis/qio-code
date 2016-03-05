@@ -1547,6 +1547,9 @@ void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const 
 	}
 }
 void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 firstSurface) {
+	if(kf == 0) {
+		return;
+	}
 	u32 numSurfs = kf->getNumSurfaces();
 	surfs.resize(firstSurface+numSurfs);
 	r_surface_c *sf = surfs.getArray()+firstSurface;
@@ -1556,6 +1559,9 @@ void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 fir
 	}
 }
 void r_model_c::updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum, u32 firstSurface) {
+	if(kf == 0) {
+		return;
+	}
 	u32 numSurfs = kf->getNumSurfaces();
 	u32 shouldHaveAtLeastSurfaces = numSurfs + firstSurface;
 	// see if we have to init first
