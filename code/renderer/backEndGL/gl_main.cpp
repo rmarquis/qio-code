@@ -423,6 +423,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	const rVertexBuffer_c *boundVBO;
 	// per-surface color
 	fcolor4_c lastSurfaceColor;
+	str gpuInfoString;
 
 	const class rIndexBuffer_c *boundIBO;
 	u32 boundGPUIBO;
@@ -3201,6 +3202,9 @@ drawOnlyLightmap:
 	virtual void disablePortalClipPlane() {
 		glDisable (GL_CLIP_PLANE0);	
 	}
+	virtual const char *getBackendInfoStr() const {
+		return gpuInfoString;
+	}
 	virtual void init(bool bCreateWindow)  {
 		if(backendInitialized) {
 			g_core->Error(ERR_DROP,"rbSDLOpenGL_c::init: already initialized\n");
@@ -3226,7 +3230,21 @@ drawOnlyLightmap:
 		g_core->Print("GL_VERSION: %s\n",glGetString(GL_VERSION));
 		// ensure that all the states are reset after vid_restart
 		///g_core->Print("sizeof(texStates) is: %i\n",sizeof(texStates));
-
+		gpuInfoString.append("GL_RENDERER: ");
+		gpuInfoString.append((const char*)glGetString(GL_RENDERER));
+		gpuInfoString.append("\n");
+		gpuInfoString.append("GL_VENDOR: ");
+		gpuInfoString.append((const char*)glGetString(GL_VENDOR));
+		gpuInfoString.append("\n");
+		gpuInfoString.append("GL_VERSION: ");
+		gpuInfoString.append((const char*)glGetString(GL_VERSION));
+		gpuInfoString.append("\n");
+		gpuInfoString.append("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: ");
+		gpuInfoString.appendInt(maxActiveTextureSlots);
+		gpuInfoString.append("\n");
+		gpuInfoString.append("GL_MAX_TEXTURE_COORDS: ");
+		gpuInfoString.appendInt(maxActiveTextureSlots);
+		gpuInfoString.append("\n");
 		// V: setting it to 0 causes GL_INVALID_OPERATION spam on backend start
 		//memset(texStates,0,sizeof(texStates));
 		// V: this fixes it

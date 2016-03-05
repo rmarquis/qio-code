@@ -179,6 +179,9 @@ public:
 	virtual void endDrawingSky() {
 
 	}
+	virtual const char *getBackendInfoStr() const {
+		return "BACKENDINFO_NOT_IMPLEMENTED";
+	}
 	// for terrain
 	virtual void setBlendMap(class textureAPI_i *t) { }
 	virtual void setBlendMapBounds(const class aabb &bb) { }

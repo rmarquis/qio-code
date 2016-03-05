@@ -418,6 +418,13 @@ public:
 		rb->drawElements(verts,pIndices);
 	}
 };
+void RF_PrintGFXInfo_f() {
+	const char *info = rb->getBackendInfoStr();
+	g_core->Print(info);
+}
+
+static aCmd_c rf_printGFXInfo("gfxInfo",RF_PrintGFXInfo_f);
+static aCmd_c rf_printGFXInfo2("printGFXInfo",RF_PrintGFXInfo_f);
 
 // interface manager (import)
 class iFaceMgrAPI_i *g_iFaceMan = 0;
