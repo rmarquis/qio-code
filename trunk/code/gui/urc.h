@@ -74,6 +74,8 @@ class urc_c : public urcNameMapping_c {
 	int sizeX, sizeY;
 	// used to scale menu size with resolution
 	bool bVirtualScreen;
+	// added for Qio
+	int virtualScreenW, virtualScreenH;
 
 	bool parseURCFile(class parser_c &p);
 	bool filterURCElement(const class urcElementBase_c *el) const;
@@ -100,6 +102,13 @@ public:
 	void onKeyDown(int keyCode);
 	void onMouseDown(int keyCode, int mouseX, int mouseY, class urcMgr_c *mgr);
 	void onMouseMove(int mouseX, int mouseY);
+
+	int getVirtualScreenW() const {
+		return virtualScreenW;
+	}
+	int getVirtualScreenH() const {
+		return virtualScreenH;
+	}
 };
 
 #endif // __URC_H__
