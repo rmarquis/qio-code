@@ -199,6 +199,11 @@ class tikiParser_c : public parser_c {
 				if(atWord("shader")) {
 					getToken(mat);
 					if(out) {
+						if(mat.findToken(".",0,false)) {
+							str tmp = curPath;
+							tmp.append(mat);
+							mat = tmp;
+						}
 						out->addRemap(surf,mat);
 					}
 				} else if(atWord("flags")) {
@@ -434,25 +439,27 @@ public:
 
 	virtual void init() {
 		g_core->Print("====== tikiAPIImpl_c::init() ===== \n");
-		registerModel("models/projectile_cluster.tik");
-		registerModel("models/plant_tree.tik");
-		registerModel("models/otto.tik");
-		registerModel("models/plant_fruit3.tik");
-		registerModel("models/shield.tik");
-		registerModel("models/weapon_axe.tik");
-		registerModel("models/weapon_firesword.tik");
-		registerModel("models/shgliek.tik");
-		registerModel("models/weapon_uzi.tik");
-		registerModel("models/xyz.tik");
-		registerModel("models/shgliek_noise.tik");
-		registerModel("models/tr_vine.tik");
-		registerModel("models/weapon_gun.tik");
-		registerModel("models/lochnar.tik");
-		registerModel("models/julie_alpha.tik");
-		registerModel("models/julie_base.tik");
-		registerModel("models/julie_battle.tik");
-		registerModel("models/fx_fire3d.tik");
-		registerModel("models/creeper.tik");
+		if(0) {
+			registerModel("models/projectile_cluster.tik");
+			registerModel("models/plant_tree.tik");
+			registerModel("models/otto.tik");
+			registerModel("models/plant_fruit3.tik");
+			registerModel("models/shield.tik");
+			registerModel("models/weapon_axe.tik");
+			registerModel("models/weapon_firesword.tik");
+			registerModel("models/shgliek.tik");
+			registerModel("models/weapon_uzi.tik");
+			registerModel("models/xyz.tik");
+			registerModel("models/shgliek_noise.tik");
+			registerModel("models/tr_vine.tik");
+			registerModel("models/weapon_gun.tik");
+			registerModel("models/lochnar.tik");
+			registerModel("models/julie_alpha.tik");
+			registerModel("models/julie_base.tik");
+			registerModel("models/julie_battle.tik");
+			registerModel("models/fx_fire3d.tik");
+			registerModel("models/creeper.tik");
+		}
 		g_core->Print("TIKI module ready!\n");
 	}
 	virtual void shutdown() {
