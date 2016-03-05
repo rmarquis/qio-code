@@ -40,6 +40,9 @@ public:
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
 	// for keyframed TIKI models
 	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const = 0;
+	// for skeletal TIKI models
+	virtual class skelModelAPI_i *getSkelModel() const = 0;
+	virtual class skelAnimAPI_i *getSkelAnim(u32 animNum) const = 0;
 };
 
 class tikiAPI_i : public iFaceBase_i {

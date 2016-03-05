@@ -50,6 +50,7 @@ class tikiAnim_i {
 public:
 	virtual const char *getAlias() const = 0;
 	virtual class kfModelAPI_i *getKFModel() const = 0;
+	virtual class skelAnimAPI_i *getSkelAnim() const = 0;
 };
 
 class tikiAnimBase_c : public tikiAnim_i {
@@ -65,22 +66,25 @@ public:
 	}
 
 };
-enum tikiType_e {
-	TT_BAD,
-	TT_SKELETAL,
-	TT_KEYFRAMED,
-};
+//enum tikiType_e {
+//	TT_BAD,
+//	TT_SKELETAL,
+//	TT_KEYFRAMED,
+//};
 class simpleTIKI_c : public tiki_i, public tikiBuilder_i {
-	tikiType_e type;
+//	tikiType_e type;
 	arraySTD_c<tikiAnimBase_c*> anims;
 	ePairList_c remaps;
-
+	skelModelAPI_i *skelModel;
 public:
+	simpleTIKI_c() {
+		skelModel = 0;
+	}
 	virtual bool isSkeletal() const {
-		return type == TT_SKELETAL;
+		return skelModel!=0;
 	}
 	virtual bool isKeyframed() const {
-		return true;
+		return skelModel==0;
 	}
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const {
 		for(u32 i = 0; i < remaps.size(); i++) {
@@ -91,6 +95,11 @@ public:
 				out->setSurfaceMaterial(sfIndex,m);
 		}
 	}
+	virtual class skelAnimAPI_i *getSkelAnim(u32 animNum) const {
+		if(animNum >= anims.size())
+			return 0;
+		return anims[animNum]->getSkelAnim();
+	}
 	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const {
 		if(animNum >= anims.size())
 			return 0;
@@ -99,11 +108,16 @@ public:
 	virtual void addAnim(class tikiAnimBase_c *ta) {
 		anims.push_back(ta);
 	}
-	virtual void addSkelModel(const char *skelModel) {
-		
+	virtual void addSkelModel(const char *skelModelName) {
+		if(skelModel)
+			return;
+		skelModel = g_modelLoader->loadSkelModelFile(skelModelName);
 	}
 	virtual void addRemap(const char *surf, const char *mat) {
 		remaps.set(surf,mat);
+	}
+	virtual class skelModelAPI_i *getSkelModel() const {
+		return skelModel;
 	}
 };
 class tikiAnimSkeletal_c : public tikiAnimBase_c {
@@ -118,6 +132,9 @@ public:
 	}
 
 
+	virtual class skelAnimAPI_i *getSkelAnim() const {
+		return skelAnim;
+	}
 	virtual class kfModelAPI_i *getKFModel() const {
 		return 0;
 	}
@@ -137,6 +154,9 @@ public:
 	}
 
 
+	virtual class skelAnimAPI_i *getSkelAnim() const {
+		return 0;
+	}
 	virtual class kfModelAPI_i *getKFModel() const {
 		return kfModel;
 	}
@@ -163,10 +183,16 @@ class tikiParser_c : public parser_c {
 				}
 				curPath.backSlashesToSlashes();
 			} else if(atWord("skelmodel")) {
+				str skelModelName;
 				// used for skeletal TIKIs,
 				// this keyword should not be used
 				// when .md3/.tan files are used for animations
-				getToken();
+				getToken(skelModelName);
+				str fp = curPath;
+				fp.append(skelModelName);
+				if(out) {
+					out->addSkelModel(fp);
+				}
 			} else if(atWord("surface")) {
 				str surf, mat;
 				getToken(surf);

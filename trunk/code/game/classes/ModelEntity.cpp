@@ -40,6 +40,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelAnimAPI.h>
 #include <api/entityDeclAPI.h>
 #include <api/entDefAPI.h>
+#include <api/vfsAPI.h>
 #include <shared/physObjectDef.h>
 #include <shared/keyValuesListener.h>
 #include <shared/boneOrQP.h>
@@ -399,6 +400,15 @@ void ModelEntity::printDamageZones() const {
 }
 void ModelEntity::setKeyValue(const char *key, const char *value) {
 	if(!_stricmp(key,"model") || !_stricmp(key,"rendermodel") || !_stricmp(key,"world_model") || !_stricmp(key,"model_world")) {
+		str fixed;
+		// this is a fix for FAKK and MoHAA - .tik model paths are set without "models/" directory
+		if(g_vfs->FS_FileExists(value)==false) {
+			fixed = "models/";
+			fixed.append(value);
+			if(g_vfs->FS_FileExists(fixed)) {
+				value = fixed;
+			}
+		}
 		this->setRenderModel(value);
 		if(value[0] == '*') {
 			this->setColModel(value);
