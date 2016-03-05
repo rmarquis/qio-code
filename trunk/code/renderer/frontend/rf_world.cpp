@@ -395,6 +395,11 @@ bool RF_IsWorldTypeProc()  {
 		return true;
 	return false;
 }
+bool RF_IsWorldTypeBSP() {
+	if(r_bspTree)
+		return true;
+	return false;
+}
 bool RF_IsWorldAreaVisible(int areaNum) {
 	if(r_procTree) {
 		return r_procTree->isAreaVisibleByPlayer(areaNum);

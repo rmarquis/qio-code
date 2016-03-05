@@ -314,6 +314,9 @@ public:
 	const aabb &getWorldBoundsWithoutSkyBox() const {
 		return worldBoundsWithoutSkyBox;
 	}
+	const bitSet_c &getFrustumAreaBits() const {
+		return frustumAreaBits;
+	}
 
 	void printBSPInfo();
 	void updateVisibility();

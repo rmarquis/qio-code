@@ -46,6 +46,7 @@ const class rVertexBuffer_c *RF_GetBSPVertices();
 const class r_model_c *RF_GetWorldModel();
 void RF_AddBSPSurfaceToShadowVolume(u32 sfNum, const vec3_c &light,class rIndexedShadowVolume_c *staticShadowVolume, float lightRadius);
 bool RF_IsWorldTypeProc();
+bool RF_IsWorldTypeBSP();
 bool RF_IsWorldAreaVisible(int areaNum);
 int RF_GetNumAreas();
 u32 RF_BoxAreas(const class aabb &absBB, arraySTD_c<u32> &out);
