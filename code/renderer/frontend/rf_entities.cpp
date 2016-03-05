@@ -726,6 +726,24 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				}
 			}
 #endif
+		} else if(model->isTIKI()) {
+			// skeletal TIKIs should always use first animation available,
+			// because it's not possible to build a valid .skb/.skd skeleton
+			// without an animation
+			skelAnimAPI_i *anim = model->getTIKI()->getSkelAnim(0);
+			if(anim) {
+				if(finalBones == 0) {
+					finalBones = new boneOrArray_c;
+				}
+				singleAnimLerp_s sl;
+				sl.frac = sl.from = sl.to = 0;
+				finalBones->resize(skelModel->getNumBones());
+				anim->buildLoopAnimLerpFrameBonesLocal(sl,*finalBones,skelModel);
+				finalBones->localBonesToAbsBones(skelModel->getBoneDefs());
+				// V: update vertex positions, normals, tangents and binormals (TBN approx)
+				instance->updateSkelModelInstance(skelModel,*finalBones);	
+				updateInstanceAttachments();	
+			}
 		}
 	} else if(model->isKeyframed()) {
 		const kfModelAPI_i *kfModel = model->getKFModelAPI();

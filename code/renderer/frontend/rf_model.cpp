@@ -196,6 +196,9 @@ class skelModelAPI_i *model_c::getSkelModelAPI() const {
 	if(type == MOD_DECL) {
 		return declModel->getSkelModel();
 	}
+	if(type == MOD_TIKI) {
+		return tiki->getSkelModel();
+	}
 	return 0;
 }
 class tiki_i *model_c::getTIKI() const {  
