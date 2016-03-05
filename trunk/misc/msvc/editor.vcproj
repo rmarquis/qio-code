@@ -122,7 +122,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\..\code\editor\;..\..\code\editor\gui\mfc\;..\..\code\tools\radiantAFXInclude\MFC\Include;..\..\code\;..\..\code\external\gl;&quot;..\..\code\external\il-1.7.8-x86\include&quot;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY;MSVC2008_EXPRESS_EDITION_HACK;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;QUAKE3;Q3RADIANT;_WIN32;_CRT_SECURE_NO_WARNINGS;WINVER=0x0600;USE_DEVIL_LIBRARY"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
