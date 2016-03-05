@@ -30,6 +30,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/fontAPI.h>
 #include <api/guiAPI.h>
 #include <shared/parser.h>
+#include <shared/autoCVar.h>
+
+static aCvar_c urc_printVirtualScreenSize("urc_printVirtualScreenSize","0");
 
 urcMgr_c::urcMgr_c() {
 	activeField = 0;
@@ -152,7 +155,11 @@ public:
 };
 void urcMgr_c::setupGUIRendererFor(const class urc_c *urc) {
 	if(urc->isUsingVirtualScreen()) {
-		static guiRendererVirtualScreen_c rv(640,480);
+		static guiRendererVirtualScreen_c rv(urc->getVirtualScreenW(),urc->getVirtualScreenH());
+		if(urc_printVirtualScreenSize.getInt()) {
+			g_core->Print("urcMgr_c::setupGUIRendererFor: urc %s (filename %s) is using virtual screen size %i %i\n",
+				urc->getName(),urc->getFName(),urc->getVirtualScreenW(),urc->getVirtualScreenH());
+		}
 		rv.setMousePosReal(gui->getMouseX(),gui->getMouseY());
 		curGUIRenderer = &rv;
 	} else {

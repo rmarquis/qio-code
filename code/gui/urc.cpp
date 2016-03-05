@@ -42,6 +42,8 @@ urc_c::urc_c() {
 	bVirtualScreen = false;
 	verticalAlign = VA_DEFAULT;
 	horizontalAlign = HA_DEFAULT;
+	virtualScreenW = 640;
+	virtualScreenH = 480;
 }
 bool urc_c::filterURCElement(const class urcElementBase_c *el) const {
 	if(!stricmp(el->getName(),"disconnect")) {
@@ -155,6 +157,10 @@ bool urc_c::parseURCFile(class parser_c &p) {
 				if(p.isAtEOL())
 					break;
 			}
+		} else if(p.atWord("virtualScreenSize")) {
+			// added for Qio
+			virtualScreenW = p.getInteger();
+			virtualScreenH = p.getInteger();
 			//g_core->Print("URC %s is using align keyword\n",getName());
 		} else if(p.atWord("virtualscreen")) {
 			// TODO: what is the difference between virtualScreen and virtualRes? 
