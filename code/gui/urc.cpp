@@ -163,10 +163,14 @@ bool urc_c::parseURCFile(class parser_c &p) {
 			virtualScreenH = p.getInteger();
 			//g_core->Print("URC %s is using align keyword\n",getName());
 		} else if(p.atWord("virtualscreen")) {
-			// TODO: what is the difference between virtualScreen and virtualRes? 
+			// TODO: what is the difference between virtualScreen and virtualRes and fullscreen? 
 			bVirtualScreen = p.getInteger();
 		} else if(p.atWord("virtualres")) {
-			// TODO: what is the difference between virtualScreen and virtualRes? 
+			// TODO: what is the difference between virtualScreen and virtualRes and fullscreen? 
+			bVirtualScreen = p.getInteger();
+		} else if(p.atWord("fullscreen")) {
+			// NOTE: in FAKK main.urc only the fullscreen 1 is used
+			// and the menu is still using virtualres, so force virtualScreen setting to 1
 			bVirtualScreen = p.getInteger();
 		} else if(p.atWord("resource")) {
 			urcElementBase_c *el;
