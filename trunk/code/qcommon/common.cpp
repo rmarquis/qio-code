@@ -2273,10 +2273,10 @@ void Com_Shutdown (void) {
 	Com_ShutdownDeclManagerDLL();
 	// shutdown CollisionModel library
 	Com_ShutdownCMDLL();
-	// shutdown model loader DLL
-	Com_ShutdownModelLoaderDLL();
 	// shutdown TIKI DLL
 	Com_ShutdownTIKIDLL();
+	// shutdown model loader DLL
+	Com_ShutdownModelLoaderDLL();
 
 	if (logfile) {
 		FS_FCloseFile (logfile);
