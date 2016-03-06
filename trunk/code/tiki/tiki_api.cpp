@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/skelAnimAPI.h>
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
+#include <shared/hashTableTemplate.h>
 
 class tikiBuilder_i {
 
@@ -58,7 +59,7 @@ protected:
 	str alias;
 	str fileName;
 public:
-	~tikiAnimBase_c() {
+	virtual ~tikiAnimBase_c() {
 
 	}
 	virtual const char *getAlias() const {
@@ -66,12 +67,33 @@ public:
 	}
 
 };
+
+class tikiBase_c : public tiki_i {
+	str fname;
+	tikiBase_c *hashNext;
+public:
+	virtual ~tikiBase_c() {
+
+	}
+	tikiBase_c *getHashNext() {
+		return hashNext;
+	}
+	void setName(const char *s) {
+		fname = s;
+	}
+	void setHashNext(tikiBase_c *hn) {
+		hashNext = hn;
+	}
+	const char *getName() const {
+		return fname;
+	}
+};
 //enum tikiType_e {
 //	TT_BAD,
 //	TT_SKELETAL,
 //	TT_KEYFRAMED,
 //};
-class simpleTIKI_c : public tiki_i, public tikiBuilder_i {
+class simpleTIKI_c : public tikiBase_c, public tikiBuilder_i {
 //	tikiType_e type;
 	arraySTD_c<tikiAnimBase_c*> anims;
 	ePairList_c remaps;
@@ -79,6 +101,14 @@ class simpleTIKI_c : public tiki_i, public tikiBuilder_i {
 public:
 	simpleTIKI_c() {
 		skelModel = 0;
+	}
+	virtual ~simpleTIKI_c() {
+		if(skelModel) {
+			delete skelModel;
+		}
+		for(u32 i = 0; i < anims.size(); i++) {
+			delete anims[i];
+		}
 	}
 	virtual bool isSkeletal() const {
 		return skelModel!=0;
@@ -127,7 +157,7 @@ public:
 		this->fileName = fname;
 		skelAnim = g_modelLoader->loadSkelAnimFile(fname);
 	}
-	~tikiAnimSkeletal_c() {
+	virtual ~tikiAnimSkeletal_c() {
 		delete skelAnim;
 	}
 
@@ -149,7 +179,7 @@ public:
 			g_core->RedWarning("tikiAnimKeyFramed_c::tikiAnimKeyFramed_c: failed to load %s\n",fname);
 		}
 	}
-	~tikiAnimKeyFramed_c() {
+	virtual ~tikiAnimKeyFramed_c() {
 		delete kfModel;
 	}
 
@@ -199,11 +229,11 @@ class tikiParser_c : public parser_c {
 				if(atWord("shader")) {
 					getToken(mat);
 					if(out) {
-						if(mat.findToken(".",0,false)) {
-							str tmp = curPath;
-							tmp.append(mat);
-							mat = tmp;
-						}
+						//if(mat.findToken(".",0,false)) {
+							//str tmp = curPath;
+							//tmp.append(mat);
+							//mat = tmp;
+						//}
 						out->addRemap(surf,mat);
 					}
 				} else if(atWord("flags")) {
@@ -430,6 +460,7 @@ public:
 };
 
 class tikiAPIImpl_c : public tikiAPI_i {
+	hashTableTemplateExt_c<tikiBase_c> loaded;
 public:
 	tikiAPIImpl_c() {
 
@@ -464,13 +495,21 @@ public:
 	}
 	virtual void shutdown() {
 		g_core->Print("====== tikiAPIImpl_c::shutdown() ===== \n");
+		for(u32 i = 0; i < loaded.size(); i++) {
+			delete loaded[i];
+		}
 	}
 	virtual class tiki_i *registerModel(const char *modName) {
-		simpleTIKI_c *st = new simpleTIKI_c();
-		tikiParser_c tp;
-		tp.parseTIKI(modName,st);
-
-		return st;
+		tikiBase_c *tb = loaded.getEntry(modName);
+		if(tb == 0) {
+			simpleTIKI_c *st = new simpleTIKI_c();
+			tikiParser_c tp;
+			tp.parseTIKI(modName,st);
+			tb = st;
+			tb->setName(modName);
+			loaded.addObject(tb);
+		}
+		return tb;
 	}
 };
 
