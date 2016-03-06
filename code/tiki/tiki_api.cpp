@@ -156,6 +156,9 @@ public:
 	tikiAnimSkeletal_c(const char *fname) {
 		this->fileName = fname;
 		skelAnim = g_modelLoader->loadSkelAnimFile(fname);
+		if(skelAnim == 0) {
+			g_core->RedWarning("tikiAnimSkeletal_c::tikiAnimSkeletal_c: failed to load %s\n",fname);
+		}
 	}
 	virtual ~tikiAnimSkeletal_c() {
 		delete skelAnim;
