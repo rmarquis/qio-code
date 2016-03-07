@@ -32,7 +32,28 @@ OPERATOR CONSOLE ONLY COMMANDS
 These commands can only be entered from stdin or by a remote operator datagram
 ===============================================================================
 */
+#include <shared/colorTable.h>
 
+char *RemoveColourCodesFromString( char *string ) {
+	char*	d;
+	char*	s;
+	int		c;
+
+	s = string;
+	d = string;
+	while ((c = *s) != 0 ) {
+		if ( Q_IsColorString( s ) ) {
+			s++;
+		}		
+		else if ( c >= 0x20 && c <= 0x7E ) {
+			*d++ = c;
+		}
+		s++;
+	}
+	*d = '\0';
+
+	return string;
+}
 
 /*
 ==================
@@ -86,7 +107,7 @@ static client_t *SV_GetPlayerByHandle() {
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
-		Q_CleanStr( cleanName );
+		RemoveColourCodesFromString( cleanName );
 		if ( !Q_stricmp( cleanName, s ) ) {
 			return cl;
 		}

@@ -594,7 +594,7 @@ void CL_ConsolePrint( char *txt ) {
 
 	// TTimo - prefix for text that shows up in console but not in notify
 	// backported from RTCW
-	if ( !Q_strncmp( txt, "[skipnotify]", 12 ) ) {
+	if ( !strncmp( txt, "[skipnotify]", 12 ) ) {
 		skipnotify = true;
 		txt += 12;
 	}
