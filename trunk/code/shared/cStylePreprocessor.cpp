@@ -64,16 +64,16 @@ bool cStylePreprocessor_c::skipIfBlock() {
 		if(checkComment(true)) {
 			continue;
 		} else 	if(p[0] == '#') {
-			if(!Q_stricmpn(p+1,"define",6) && G_isWS(p[7])) {
+			if(!_strnicmp(p+1,"define",6) && G_isWS(p[7])) {
 				p += 7; // skip "#define"
 				continue; // parsed "#define"
-			} else if(!Q_stricmpn(p+1,"ifdef",5) && G_isWS(p[6])) {
+			} else if(!_strnicmp(p+1,"ifdef",5) && G_isWS(p[6])) {
 				p += 6; // skip "#ifdef"
 				str token;
 				this->getToken(token);
 				level++;
 				continue; // parsed "#ifdef"
-			} else if(!Q_stricmpn(p+1,"endif",5)  && G_isWS(p[6])) {
+			} else if(!_strnicmp(p+1,"endif",5)  && G_isWS(p[6])) {
 				p += 6; // skip "#endif"
 				level--;
 				continue;
@@ -132,12 +132,12 @@ bool cStylePreprocessor_c::preprocessText(const char *rawTextData) {
 		} else 
 		// check for preprocessor commands
 		if(p[0] == '#') {
-			if(!Q_stricmpn(p+1,"define",6) && G_isWS(p[7])) {
+			if(!_strnicmp(p+1,"define",6) && G_isWS(p[7])) {
 				result.append(start,p);
 				p += 7; // skip "#define"
 
 				continue; // parsed "#define"
-			} else if(!Q_stricmpn(p+1,"ifdef",5) && G_isWS(p[6])) {
+			} else if(!_strnicmp(p+1,"ifdef",5) && G_isWS(p[6])) {
 				result.append(start,p);
 				p += 6; // skip "#ifdef"
 				str token;
@@ -150,7 +150,7 @@ bool cStylePreprocessor_c::preprocessText(const char *rawTextData) {
 				}
 				start = p;
 				continue; // parsed "#ifdef"
-			} else if(!Q_stricmpn(p+1,"endif",5)  && G_isWS(p[6])) {
+			} else if(!_strnicmp(p+1,"endif",5)  && G_isWS(p[6])) {
 				result.append(start,p);
 				p += 6; // skip "#endif"
 				start = p;

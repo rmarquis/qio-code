@@ -448,7 +448,7 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		this->setAnimation(value);
 	} else if(!_stricmp(key,"takeDamage")) {
 		this->bTakeDamage = atoi(value);
-	} else if(!Q_stricmpn(key,"_articulatedFigureBody",strlen("_articulatedFigureBody"))) {
+	} else if(!_strnicmp(key,"_articulatedFigureBody",strlen("_articulatedFigureBody"))) {
 		// this is a saved pos/quat of single AF (ragdoll) body
 		const char *p = key + strlen("_articulatedFigureBody");
 		const char *indexStr = p;

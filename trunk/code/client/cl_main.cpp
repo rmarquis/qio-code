@@ -978,7 +978,7 @@ void CL_PlayDemo_f() {
 	// check for an extension .DEMOEXT_?? (?? is protocol)
 	ext_test = strrchr(arg, '.');
 	
-	if(ext_test && !Q_stricmpn(ext_test + 1, DEMOEXT, ARRAY_LEN(DEMOEXT) - 1))
+	if(ext_test && !_strnicmp(ext_test + 1, DEMOEXT, ARRAY_LEN(DEMOEXT) - 1))
 	{
 		protocol = atoi(ext_test + ARRAY_LEN(DEMOEXT));
 

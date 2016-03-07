@@ -73,7 +73,7 @@ struct matFile_s {
 			if(p == 0 || *p == 0)
 				break;
 			// skip tables
-			if(!Q_stricmpn(p,"table",5) && G_isWS(p[5])) {
+			if(!_strnicmp(p,"table",5) && G_isWS(p[5])) {
 				p += 5; // skip 'table' token
 				p = G_SkipToNextToken(p);
 				// skip table name
@@ -126,7 +126,7 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 	const char *p = text;
 	while(*p) {
 #if 0
-		if(!Q_stricmpn(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
+		if(!_strnicmp(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
 			const char *matNameStart = p;
 			p += matNameLen;
 			p = G_SkipToNextToken(p);
@@ -213,10 +213,10 @@ const char *MAT_FindTableDefInText(const char *tableName, const char *text) {
 	u32 tableNameLen = strlen(tableName);
 	const char *p = text;
 	while(*p) {
-		if(!Q_stricmpn(p,"table",5) && G_isWS(p[5])) {
+		if(!_strnicmp(p,"table",5) && G_isWS(p[5])) {
 			p += 5;
 			p = G_SkipToNextToken(p);
-			if(!Q_stricmpn(p,tableName,tableNameLen) && G_isWS(p[tableNameLen])) {
+			if(!_strnicmp(p,tableName,tableNameLen) && G_isWS(p[tableNameLen])) {
 				const char *tableNameStart = p;
 				p += tableNameLen;
 				p = G_SkipToNextToken(p);

@@ -131,7 +131,7 @@ inline const char *G_strFind(const char *buf, const char *s) {
 	u32 sLen = strlen(s);
 	const char *p = buf;
 	while(*p) {
-		if(!Q_stricmpn(p,s,sLen))
+		if(!_strnicmp(p,s,sLen))
 			return p;
 		p++;
 	}

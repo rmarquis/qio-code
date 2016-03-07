@@ -732,7 +732,7 @@
 //}
 //#include <api/vfsAPI.h>
 //bool G_FixMapPath(str &out, const char *mapName) {
-//	if(Q_stricmpn(mapName,"maps/",5) && !Q_stricmpn(mapName,"maps\\",5)) {
+//	if(_strnicmp(mapName,"maps/",5) && !_strnicmp(mapName,"maps\\",5)) {
 //		out.append("maps/");
 //	}
 //	out.append(mapName);

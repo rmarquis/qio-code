@@ -27,7 +27,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "skelModelImpl.h"
 #include "skelAnimImpl.h"
 #include "hl2MDLReader.h"
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
@@ -39,8 +38,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
-
-int		Q_stricmpn (const char *s1, const char *s2, int n);
 
 void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int rings, unsigned int sectors) {
 	float const R = 1./(float)(rings-1);
@@ -152,7 +149,7 @@ public:
 		}
 		// see if it's a build-in model shape
 		if(fname[0] == '_') {
-			if(!Q_stricmpn(fname+1,"quadZ",5)) {
+			if(!_strnicmp(fname+1,"quadZ",5)) {
 				// it's a flat, Z-oriented quad
 				// (in Q3 Z axis is up-down)
 				float x,y;
@@ -172,7 +169,7 @@ public:
 					MOD_ApplyInlinePostProcess(inlinePostProcessCommandMarker,out);
 				}
 				return false; // no error
-			} else if(!Q_stricmpn(fname+1,"sphere",6)) {
+			} else if(!_strnicmp(fname+1,"sphere",6)) {
 				float radius;
 				sscanf(fname+1+6,"%f",&radius);
 				MOD_CreateSphere(out,radius,16,16);

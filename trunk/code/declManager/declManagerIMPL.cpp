@@ -509,7 +509,7 @@ const char *fileTextDataCache_c::findDeclInText(const char *declName, const char
 	while(*p) {
 		// the opening brace might be directly after decl name (without any whitespaces)
 		// eg: "entityDef viewStyle_pistol{"  ...
-		if(!Q_stricmpn(p,declName,declNameLen) && (G_isWS(p[declNameLen]) || p[declNameLen] == '{')) {
+		if(!_strnicmp(p,declName,declNameLen) && (G_isWS(p[declNameLen]) || p[declNameLen] == '{')) {
 			// check the decl type
 			const char *declTypeStringEnd = p;
 			while(G_isWS(*declTypeStringEnd)) {
@@ -526,7 +526,7 @@ const char *fileTextDataCache_c::findDeclInText(const char *declName, const char
 				p++;
 				continue;
 			}
-			if(Q_stricmpn(declTypeStringStart,declType,declTypeLen)) {
+			if(_strnicmp(declTypeStringStart,declType,declTypeLen)) {
 				p++;
 				continue; // decl type didnt match
 			}

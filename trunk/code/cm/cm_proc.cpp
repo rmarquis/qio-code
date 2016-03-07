@@ -55,7 +55,7 @@ bool CM_LoadProcSubModels(const char *mapName) {
 				return true; // error
 			}
 			str modName = p.getToken();
-			if(!Q_stricmpn(modName,"_area",5)) {
+			if(!_strnicmp(modName,"_area",5)) {
 				// skip curly braced block
 				p.skipCurlyBracedBlock(false);
 			} else {
