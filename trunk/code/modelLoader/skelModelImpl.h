@@ -187,6 +187,8 @@ public:
 	bool loadMD5R(const char *fname);
 	// FAKK
 	bool loadSKB(const char *fname);
+	// MoHAA
+	bool loadSKD(const char *fname);
 	void recalcEdges();
 };
 
