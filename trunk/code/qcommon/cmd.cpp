@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "q_shared.h"
 #include "qcommon.h"
+#include <api/coreAPI.h>
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
 #include <shared/str.h>
@@ -276,7 +277,7 @@ void Cmd_Exec_f() {
 	} f;
 	str	filename;
 
-	quiet = !Q_stricmp(Cmd_Argv(0), "execq");
+	quiet = !stricmp(Cmd_Argv(0), "execq");
 
 	if (Cmd_Argc () != 2) {
 		Com_Printf ("exec%s <filename> : execute a script file%s\n",
@@ -625,7 +626,7 @@ cmd_function_t *Cmd_FindCommand( const char *cmd_name )
 {
 	cmd_function_t *cmd;
 	for( cmd = cmd_functions; cmd; cmd = cmd->next )
-		if( !Q_stricmp( cmd_name, cmd->name ) )
+		if( !stricmp( cmd_name, cmd->name ) )
 			return cmd;
 	return NULL;
 }
@@ -670,7 +671,7 @@ void Cmd_SetCommandCompletionFunc( const char *command, completionFunc_t complet
 	cmd_function_t	*cmd;
 
 	for( cmd = cmd_functions; cmd; cmd = cmd->next ) {
-		if( !Q_stricmp( command, cmd->name ) ) {
+		if( !stricmp( command, cmd->name ) ) {
 			cmd->complete = complete;
 		}
 	}
@@ -752,7 +753,7 @@ void Cmd_CompleteArgument( const char *command, char *args, int argNum ) {
 	cmd_function_t	*cmd;
 
 	for( cmd = cmd_functions; cmd; cmd = cmd->next ) {
-		if( !Q_stricmp( command, cmd->name ) && cmd->complete ) {
+		if( !stricmp( command, cmd->name ) && cmd->complete ) {
 			cmd->complete( args, argNum );
 		}
 	}
@@ -778,7 +779,7 @@ void	Cmd_ExecuteString( const char *text ) {
 	// check registered command functions	
 	for ( prev = &cmd_functions ; *prev ; prev = &cmd->next ) {
 		cmd = *prev;
-		if ( !Q_stricmp( cmd_argv[0],cmd->name ) ) {
+		if ( !stricmp( cmd_argv[0],cmd->name ) ) {
 			// rearrange the links so that the command will be
 			// near the head of the list next time it is used
 			*prev = cmd->next;

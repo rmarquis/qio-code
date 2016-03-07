@@ -27,16 +27,36 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __COREAPI_H__
 
 #include "iFaceBase.h"
-#include "../qcommon/q_shared.h" // only for __attribute__
-
 #define CORE_API_IDENTSTR "CoreEngineAPI0001"
+
+
+// paramters for command buffer stuffing
+enum cbufExec_e {
+	EXEC_NOW,			// don't return until completed, a VM should NEVER use this,
+						// because some commands might cause the VM to be unloaded...
+	EXEC_INSERT,		// insert at current position, but don't run yet
+	EXEC_APPEND			// add to end of the command buffer (normal case)
+};
+
+#ifdef ERR_FATAL
+#undef ERR_FATAL			// this is be defined in malloc.h
+#endif
+
+// parameters to the main Error routine
+enum errorParm_e {
+	ERR_FATAL,					// exit the entire game with a popup window
+	ERR_DROP,					// print to console and disconnect from game
+	ERR_SERVERDISCONNECT,		// don't kill server
+	ERR_DISCONNECT,				// client disconnected from the server
+};
+
 
 // these are only temporary function pointers, TODO: rework them?
 struct coreAPI_s : public iFaceBase_i {
 	void (*Print)( const char *text, ... );
 	void (*RedWarning)( const char *text, ... );
-	void (*Error)( int level, const char *text, ... ) __attribute__((noreturn));
-	void (*DropError)( const char *text, ... ) __attribute__((noreturn));
+	void (*Error)( int level, const char *text, ... );
+	void (*DropError)( const char *text, ... );
 	// milliseconds should only be used for performance tuning, never
 	// for anything game related.
 	int  (*Milliseconds)();

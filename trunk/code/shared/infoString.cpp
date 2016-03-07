@@ -22,6 +22,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
+#include <qcommon/q_shared.h>
 #include "infoString.h"
 #include <api/coreAPI.h>
 #include <shared/colorTable.h>
@@ -81,7 +82,7 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 		}
 		*o = 0;
 
-		if (!Q_stricmp (key, pkey) )
+		if (!stricmp (key, pkey) )
 			return value[valueindex];
 
 		if (!*s)

@@ -526,7 +526,7 @@ public:
 				strcpy( s, "GL_OUT_OF_MEMORY" );
 				break;
 			default:
-				Com_sprintf( s, sizeof(s), "%i", err);
+				sprintf(s, "%i", err);
 				break;
 		}
 		g_core->Print("GL_CheckErrors (%s:%i): %s\n", functionName, line, s );

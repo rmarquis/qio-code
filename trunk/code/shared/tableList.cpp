@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // tableList.cpp - tables manager for Doom3 .mtr tables
+#include <math.h> // floor
 #include "tableList.h"
 #include "parser.h"
 

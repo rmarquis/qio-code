@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef USE_CURL
 #include "client.h"
+#include <api/coreAPI.h>
 
 #ifdef USE_CURL_DLOPEN
 #include "../sys/sys_loadlib.h"

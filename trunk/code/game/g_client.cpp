@@ -91,7 +91,7 @@ const char *ClientConnect( int clientNum, bool firstTime, bool isBot ) {
 	ent = &g_entities[ clientNum ];
 
 	if(ent->ent) {
-		G_Printf(S_COLOR_YELLOW"ClientBegin: freeing old player class\n");
+		g_core->Print(S_COLOR_YELLOW"ClientBegin: freeing old player class\n");
 		delete ent->ent;
 	}
 	// create a player class for given edict
@@ -102,7 +102,7 @@ const char *ClientConnect( int clientNum, bool firstTime, bool isBot ) {
 	pl->pers.connected = CON_CONNECTING;
 
 	// get and distribute relevent paramters
-	G_Printf( "ClientConnect: %i\n", clientNum );
+	g_core->Print( "ClientConnect: %i\n", clientNum );
 	ClientUserinfoChanged( clientNum );
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
@@ -143,7 +143,7 @@ void ClientBegin( int clientNum ) {
 
 	g_server->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", pl->getNetName()) );
 
-	G_Printf( "ClientBegin: %i\n", clientNum );
+	g_core->Print( "ClientBegin: %i\n", clientNum );
 
 }
 

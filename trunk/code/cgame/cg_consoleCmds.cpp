@@ -36,7 +36,7 @@ void CG_SetCrosshairSurfaceMaterial_f() {
 	rendererSurfaceRef_s ref;
 	rf->getLookatSurfaceInfo(ref);
 	// send remap command to server so it can broadcast it to all clients
-	g_core->Cbuf_ExecuteText(EXEC_APPEND,va("net_setWorldSurfaceMaterial %i %i %s",ref.areaNum,ref.surfaceNum,matName));
+	g_core->Cbuf_ExecuteText(0,va(";net_setWorldSurfaceMaterial %i %i %s;",ref.areaNum,ref.surfaceNum,matName));
 	//rf->setWorldSurfaceMaterial(matName,ref.surfaceNum,ref.areaNum);
 }
 

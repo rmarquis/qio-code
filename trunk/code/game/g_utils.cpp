@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/BaseEntity.h"
 #include "classes/Player.h"
 #include "classes/Mover.h"
+#include <api/coreAPI.h>
 #include <api/serverAPI.h>
 #include <shared/infoString.h>
 
@@ -68,7 +69,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, bool create )
 	}
 
 	if ( i == max ) {
-		G_Error( "G_FindConfigstringIndex: overflow" );
+		g_core->DropError( "G_FindConfigstringIndex: overflow" );
 	}
 
 	g_server->SetConfigstring( start + i, name );
@@ -146,9 +147,10 @@ edict_s *G_Spawn( void ) {
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL ) {
 		for (i = 0; i < MAX_GENTITIES; i++) {
-	//		G_Printf("%4i: %s\n", i, g_entities[i].classname);
+	//		g_core->Print("%4i: %s\n", i, g_entities[i].classname);
 		}
-		G_Error( "G_Spawn: no free entities" );
+		g_core->RedWarning( "G_Spawn: no free entities\n" );
+		return 0;
 	}
 	
 	// open up a new slot

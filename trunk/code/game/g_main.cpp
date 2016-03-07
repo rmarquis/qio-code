@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/World.h"
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
+#include <game/bg_public.h>
 #include "g_pathNodes.h"
 
 static aCvar_c g_printEntityPositions("g_printEntityPositions","0");
@@ -41,27 +42,6 @@ level_locals_t	level;
 
 edict_s		g_entities[MAX_GENTITIES];
 
-void QDECL G_Printf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, fmt);
-	_vsnprintf (text, sizeof(text), fmt, argptr);
-	va_end (argptr);
-
-	g_core->Print( text );
-}
-
-void QDECL G_Error( const char *fmt, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, fmt);
-	_vsnprintf (text, sizeof(text), fmt, argptr);
-	va_end (argptr);
-
-	g_core->DropError( text );
-}
 
 /*
 ============
@@ -72,9 +52,9 @@ G_InitGame
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	char mapName[128];
 
-	G_Printf ("------- Game Initialization -------\n");
-	G_Printf ("gamename: %s\n", GAMEVERSION);
-	G_Printf ("gamedate: %s\n", __DATE__);
+	g_core->Print ("------- Game Initialization -------\n");
+	g_core->Print ("gamename: %s\n", GAME_VERSION);
+	g_core->Print ("gamedate: %s\n", __DATE__);
 
 	srand( randomSeed );
 
@@ -137,7 +117,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//wsScript_c test;
 	//test.loadScriptFile("maps/escape1.script");
-	G_Printf ("-----------------------------------\n");
+	g_core->Print ("-----------------------------------\n");
 }
 
 /*
@@ -146,7 +126,7 @@ G_ShutdownGame
 =================
 */
 void G_ShutdownGame( int restart ) {
-	G_Printf ("==== ShutdownGame ====\n");
+	g_core->Print ("==== ShutdownGame ====\n");
 	for(u32 i = 0; i < level.num_entities; i++) {
 		edict_s *e = &g_entities[i];
 		if(e->s == 0)
@@ -169,32 +149,6 @@ void G_ShutdownGame( int restart ) {
 	}
 	AUTOCVAR_UnregisterAutoCvars();
 	AUTOCMD_UnregisterAutoConsoleCommands();
-}
-
-
-
-//===================================================================
-
-void QDECL Com_Error ( int level, const char *error, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, error);
-	_vsnprintf (text, sizeof(text), error, argptr);
-	va_end (argptr);
-
-	g_core->DropError( text );
-}
-
-void QDECL Com_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	_vsnprintf (text, sizeof(text), msg, argptr);
-	va_end (argptr);
-
-	g_core->Print( text );
 }
 
 void G_TestSafePtrs() {

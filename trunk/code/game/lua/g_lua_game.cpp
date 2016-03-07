@@ -60,7 +60,7 @@ static int game_Print(lua_State * L)
 		lua_pop(L, 1);			// pop result
 	}
 
-	G_Printf("%s\n", buf);
+	g_core->Print("%s\n", buf);
 	return 0;
 }
 

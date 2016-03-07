@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "World.h"
 #include "BaseEntity.h"
 #include "../g_local.h"
+#include <api/coreAPI.h>
 #include <api/serverAPI.h>
 #include <shared/autoCvar.h>
 #include <shared/keyValuesListener.h>
@@ -74,7 +75,7 @@ void World::runGlobalWaterPhysics() {
 		if(be->getOrigin().z > waterLevel)
 			continue;
 		if(g_printGlobalWaterForces.getInt()) {
-			G_Printf("World::runGlobalWaterPhysics: entity %i is in water\n",i);
+			g_core->Print("World::runGlobalWaterPhysics: entity %i is in water\n",i);
 		}
 		be->runWaterPhysics(waterLevel);
 	}

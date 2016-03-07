@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "server.h"
 #include <shared/autoCvar.h>
+#include <api/coreAPI.h>
 #include <shared/entityType.h>
 #include <protocol/snapFlags.h>
 #include <protocol/voipFlags.h>

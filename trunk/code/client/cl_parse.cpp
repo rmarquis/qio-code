@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 #include <api/rAPI.h>
+#include <api/coreAPI.h>
 #include <shared/colorTable.h>
 #include <protocol/voipFlags.h>
 
@@ -401,7 +402,7 @@ void CL_SystemInfoChanged() {
 		}
 		
 		// ehw!
-		if (!Q_stricmp(key, "fs_game"))
+		if (!stricmp(key, "fs_game"))
 		{
 			if(FS_CheckDirTraversal(value))
 			{
@@ -420,8 +421,8 @@ void CL_SystemInfoChanged() {
 			if(!(cvar_flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED | CVAR_USER_CREATED)))
 			{
 //#ifndef STANDALONE
-//				if(Q_stricmp(key, "g_synchronousClients") && Q_stricmp(key, "pmove_fixed") &&
-//				   Q_stricmp(key, "pmove_msec"))
+//				if(stricmp(key, "g_synchronousClients") && stricmp(key, "pmove_fixed") &&
+//				   stricmp(key, "pmove_msec"))
 //#endif
 				{
 					Com_Printf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", key, value);

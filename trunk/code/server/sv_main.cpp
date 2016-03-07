@@ -783,17 +783,17 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	c = Cmd_Argv(0);
 	Com_DPrintf ("SV packet %s : %s\n", NET_AdrToString(from), c);
 
-	if (!Q_stricmp(c, "getstatus")) {
+	if (!stricmp(c, "getstatus")) {
 		SVC_Status( from );
-  } else if (!Q_stricmp(c, "getinfo")) {
+  } else if (!stricmp(c, "getinfo")) {
 		SVC_Info( from );
-	} else if (!Q_stricmp(c, "getchallenge")) {
+	} else if (!stricmp(c, "getchallenge")) {
 		SV_GetChallenge(from);
-	} else if (!Q_stricmp(c, "connect")) {
+	} else if (!stricmp(c, "connect")) {
 		SV_DirectConnect( from );
-	} else if (!Q_stricmp(c, "rcon")) {
+	} else if (!stricmp(c, "rcon")) {
 		SVC_RemoteCommand( from, msg );
-	} else if (!Q_stricmp(c, "disconnect")) {
+	} else if (!stricmp(c, "disconnect")) {
 		// if a client starts up a local server, we may see some spurious
 		// server disconnect messages when their new server sees our final
 		// sequenced messages to the old client

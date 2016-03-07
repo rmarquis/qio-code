@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "q_shared.h"
 #include "qcommon.h"
+#include <api/coreAPI.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/cvarAPI.h>
 #include <shared/cvarModificationCallback.h>
@@ -100,7 +101,7 @@ static cvar_s *Cvar_FindVar( const char *var_name ) {
 	hash = generateHashValue(var_name);
 	
 	for (var=hashTable[hash] ; var ; var=var->hashNext) {
-		if (!Q_stricmp(var_name, var->name)) {
+		if (!stricmp(var_name, var->name)) {
 			return var;
 		}
 	}
@@ -487,7 +488,7 @@ void Cvar_Print( cvar_s *v ) {
 			v->name, v->string );
 
 	if ( !( v->flags & CVAR_ROM ) ) {
-		if ( !Q_stricmp( v->string, v->resetString ) ) {
+		if ( !stricmp( v->string, v->resetString ) ) {
 			Com_Printf (", the default" );
 		} else {
 			Com_Printf (" default:\"%s" S_COLOR_WHITE "\"",
@@ -935,7 +936,7 @@ void Cvar_WriteVariables(fileHandle_t f)
 
 	for (var = cvar_vars; var; var = var->next)
 	{
-		if(!var->name || Q_stricmp( var->name, "cl_cdkey" ) == 0)
+		if(!var->name || stricmp( var->name, "cl_cdkey" ) == 0)
 			continue;
 
 		if( var->flags & CVAR_ARCHIVE ) {

@@ -327,7 +327,7 @@ static int vector_NegateOperator(lua_State * L)
 
 static int vector_GC(lua_State * L)
 {
-//  G_Printf("Lua says bye to vector = %p\n", lua_getvector(L));
+//  g_core->Print("Lua says bye to vector = %p\n", lua_getvector(L));
 
 	return 0;
 }
