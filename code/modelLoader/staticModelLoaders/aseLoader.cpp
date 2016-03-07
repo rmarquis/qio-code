@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // aseLoader.cpp
+#include <assert.h>
 #include <shared/parser.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>

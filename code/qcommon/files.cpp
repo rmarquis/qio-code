@@ -531,7 +531,7 @@ bool COM_CompareExtension(const char *in, const char *ext)
 	{
 		in += inlen - extlen;
 		
-		if(!Q_stricmp(in, ext))
+		if(!stricmp(in, ext))
 			return true;
 	}
 	
@@ -717,7 +717,7 @@ long FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
 	if (!fsh[f].handleFiles.file.o)
 	{
 		// If fs_homepath == fs_basepath, don't bother
-		if (Q_stricmp(fs_homepath->string,fs_basepath->string))
+		if (stricmp(fs_homepath->string,fs_basepath->string))
 		{
 			// search basepath
 			ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
@@ -1024,7 +1024,7 @@ bool FS_IsExt(const char *filename, const char *ext, int namelen)
 
 	filename += namelen - extlen;
 
-	return !Q_stricmp(filename, ext);
+	return !stricmp(filename, ext);
 }
 
 /*
@@ -1214,7 +1214,7 @@ long FS_FOpenFileReadDir(const char *filename, searchpath_t *search, fileHandle_
 						   !FS_IsExt(filename, ".bot", len) &&
 						   !FS_IsExt(filename, ".arena", len) &&
 						   !FS_IsExt(filename, ".menu", len) &&
-						   Q_stricmp(filename, "qagame.qvm") != 0 &&
+						   stricmp(filename, "qagame.qvm") != 0 &&
 						   !strstr(filename, "levelshots"))
 						{
 							pak->referenced |= FS_GENERAL_REF;
@@ -1848,6 +1848,16 @@ ZIP FILE LOADING
 ==========================================================================
 */
 
+char *Q_strlwr( char *s1 ) {
+    char	*s;
+
+    s = s1;
+	while ( *s ) {
+		*s = tolower(*s);
+		s++;
+	}
+    return s1;
+}
 /*
 =================
 FS_LoadZipFile
@@ -1915,7 +1925,7 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 	Q_strncpyz( pack->pakBasename, basename, sizeof( pack->pakBasename ) );
 
 	// strip .pk3 if needed
-	if ( strlen( pack->pakBasename ) > 4 && !Q_stricmp( pack->pakBasename + strlen( pack->pakBasename ) - 4, ".pk3" ) ) {
+	if ( strlen( pack->pakBasename ) > 4 && !stricmp( pack->pakBasename + strlen( pack->pakBasename ) - 4, ".pk3" ) ) {
 		pack->pakBasename[strlen( pack->pakBasename ) - 4] = 0;
 	}
 
@@ -2045,7 +2055,7 @@ static int FS_AddFileToList( char *name, char *list[MAX_FOUND_FILES], int nfiles
 		return nfiles;
 	}
 	for ( i = 0 ; i < nfiles ; i++ ) {
-		if ( !Q_stricmp( name, list[i] ) ) {
+		if ( !stricmp( name, list[i] ) ) {
 			return nfiles;		// allready in list
 		}
 	}
@@ -2140,7 +2150,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 						continue;
 					}
 
-					if ( Q_stricmp( name + length - extensionLength, extension ) ) {
+					if ( stricmp( name + length - extensionLength, extension ) ) {
 						continue;
 					}
 					// unique the match
@@ -2238,7 +2248,7 @@ int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int
 	nFiles = 0;
 	nTotal = 0;
 
-	if (Q_stricmp(path, "$modlist") == 0) {
+	if (stricmp(path, "$modlist") == 0) {
 		return FS_GetModList(listbuf, bufsize);
 	}
 
@@ -2362,7 +2372,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 			bDrop = false;
 			for(j=0; j<i; j++)
 			{
-				if (Q_stricmp(pFiles[j],name)==0) {
+				if (stricmp(pFiles[j],name)==0) {
 					// this one can be dropped
 					bDrop = true;
 					break;
@@ -2373,7 +2383,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 			continue;
 		}
 		// we drop "baseq3" "." and ".."
-		if (Q_stricmp(name, com_basegame->string) && _strnicmp(name, ".", 1)) {
+		if (stricmp(name, com_basegame->string) && _strnicmp(name, ".", 1)) {
 			// now we need to find some .pk3 files to validate the mod
 			// NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
 			// we didn't keep the information when we merged the directory names, as to what OS Path it was found under
@@ -2734,7 +2744,7 @@ void FS_AddGameDirectory( const char *path, const char *dir ) {
 
 	// Unique
 	for ( sp = fs_searchpaths ; sp ; sp = sp->next ) {
-		if ( sp->dir && !Q_stricmp(sp->dir->path, path) && !Q_stricmp(sp->dir->gamedir, dir)) {
+		if ( sp->dir && !stricmp(sp->dir->path, path) && !stricmp(sp->dir->gamedir, dir)) {
 			return;			// we've already got this one
 		}
 	}
@@ -3086,27 +3096,27 @@ static void FS_Startup( const char *gameName )
 	#endif
 	
 	// NOTE: same filtering below for mods and basegame
-	//if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+	//if (fs_homepath->string[0] && stricmp(fs_homepath->string,fs_basepath->string)) {
 	//	FS_CreatePath ( fs_homepath->string );
 	//	FS_AddGameDirectory ( fs_homepath->string, gameName );
 	//}
 
 	// check for additional base game so mods can be based upon other mods
-	if ( fs_basegame->string[0] && Q_stricmp( fs_basegame->string, gameName ) ) {
+	if ( fs_basegame->string[0] && stricmp( fs_basegame->string, gameName ) ) {
 		if (fs_basepath->string[0]) {
 			FS_AddGameDirectory(fs_basepath->string, fs_basegame->string);
 		}
-		//if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+		//if (fs_homepath->string[0] && stricmp(fs_homepath->string,fs_basepath->string)) {
 		//	FS_AddGameDirectory(fs_homepath->string, fs_basegame->string);
 		//}
 	}
 
 	// check for additional game folder for mods
-	if ( fs_gamedirvar->string[0] && Q_stricmp( fs_gamedirvar->string, gameName ) ) {
+	if ( fs_gamedirvar->string[0] && stricmp( fs_gamedirvar->string, gameName ) ) {
 		if (fs_basepath->string[0]) {
 			FS_AddGameDirectory(fs_basepath->string, fs_gamedirvar->string);
 		}
-		//if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+		//if (fs_homepath->string[0] && stricmp(fs_homepath->string,fs_basepath->string)) {
 		//	FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
 		//}
 	}
@@ -3552,7 +3562,7 @@ void FS_Restart( int checksumFeed ) {
 		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
 	}
 
-	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
+	if ( stricmp(fs_gamedirvar->string, lastValidGame) ) {
 		// skip the qioconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
 			Cbuf_AddText ("exec " QIOCONFIG_CFG "\n");

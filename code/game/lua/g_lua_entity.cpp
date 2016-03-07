@@ -65,7 +65,7 @@ static int entity_Target(lua_State * L)
 	t = G_PickTarget(lent->e->target);
 	if(!t)
 	{
-		G_Printf("entity_Target: Couldn't find target %s\n", lent->e->target);
+		g_core->Print("entity_Target: Couldn't find target %s\n", lent->e->target);
 		return 0;
 	}
 
@@ -352,7 +352,7 @@ static int entity_Rotate(lua_State * L)
 
 static int entity_GC(lua_State * L)
 {
-//  G_Printf("Lua says bye to entity = %p\n", lua_getentity(L));
+//  g_core->Print("Lua says bye to entity = %p\n", lua_getentity(L));
 
 	return 0;
 }

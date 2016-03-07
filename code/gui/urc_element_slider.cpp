@@ -22,6 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // urc_element_slider.cpp
+#include <math.h>
 #include "urc_element_slider.h"
 #include "urc_mgr.h"
 #include <shared/parser.h>

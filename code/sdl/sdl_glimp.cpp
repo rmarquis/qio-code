@@ -730,7 +730,7 @@ Responsible for doing a swapbuffers
 void GLimp_EndFrame()
 {
 	// don't flip if drawing to front buffer
-	//if ( Q_stricmp( r_drawBuffer->string, "GL_FRONT" ) != 0 )
+	//if ( stricmp( r_drawBuffer->string, "GL_FRONT" ) != 0 )
 	//{
 		SDL_GL_SwapBuffers();
 	//}

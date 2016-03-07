@@ -43,7 +43,7 @@ void G_BulletAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSki
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
 	if(g_printBulletAttackCalls.getInt()) {
-		G_Printf("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+		g_core->Print("G_BulletAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
 	}
 	if(rf && g_showBulletTraces.getInt()) {
 		rf->addDebugLine(tr.getStartPos(),tr.getHitPos(),vec3_c(1,0,0),5.f);
@@ -71,7 +71,7 @@ void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSk
 	tr.setupRay(muzzle,muzzle + dir * 10000.f);
 	g_physWorld->traceRay(tr);
 	if(g_printRailgunAttackCalls.getInt()) {
-		G_Printf("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
+		g_core->Print("G_RailGunAttack: hit %f %f %f\n",tr.getHitPos().x,tr.getHitPos().y,tr.getHitPos().z);
 	}
 
 	railgunAttackMaterials_s defaultMats;

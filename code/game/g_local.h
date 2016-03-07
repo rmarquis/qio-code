@@ -112,8 +112,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
 void G_ProcessEntityEvents();
 void G_ShutdownGame( int restart );
-void G_Printf( const char *fmt, ... );
-void G_Error( const char *fmt, ... );
 
 //
 // g_client.c

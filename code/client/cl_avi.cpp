@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "client.h"
+#include <api/coreAPI.h>
 #include <api/rAPI.h>
 #include <shared/colorTable.h>
 
@@ -401,7 +402,7 @@ bool CL_OpenAVIForWriting( const char *fileName )
   {
     afd.audio = false;
   }
-  else if( Q_stricmp( Cvar_VariableString( "s_backend" ), "OpenAL" ) )
+  else if( stricmp( Cvar_VariableString( "s_backend" ), "OpenAL" ) )
   {
     if( afd.a.bits != 16 || afd.a.channels != 2 )
     {

@@ -47,32 +47,28 @@ and whenever the server updates any serverinfo flagged cvars
 */
 void CG_ParseServerinfo( void ) {
 	const char	*info;
-	char	*mapname;
+	const char	*mapName;
 
 	info = CG_ConfigString( CS_SERVERINFO );
 
 	cgs.maxclients = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
-	mapname = Info_ValueForKey( info, "mapname" );
+	mapName = Info_ValueForKey( info, "mapname" );
+	// NOTE: the order matters here! .map should always be last, 
+	// because .map file is somtimes present for .bsp files and such.
+	const char *supportedExtensions[] = { "bsp", "proc", "procb", "map" };
 	// fix and format the world map name
-	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	if(g_vfs->FS_FileExists(cgs.mapname) == false) {
-		// if there is no .bsp file, fall back to .proc (Doom3 .bsp tree with portals but without PVS)
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.proc", mapname );
-		if(g_vfs->FS_FileExists(cgs.mapname) == false) {	
-			// check for ET:QW proc binary
-			Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.procb", mapname );
-			if(g_vfs->FS_FileExists(cgs.mapname) == false) {
-				// and finally, if there is no .proc file fall back to .map
-				// (NOTE: .bsp files are a compiled .map files with some extra info
-				// like lightmaps, lightgrid, PVS, etc...)
-				Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.map", mapname );		
-				if(g_vfs->FS_FileExists(cgs.mapname) == false) {
-					strcpy(cgs.mapname,mapname);
-				}
-			}
+	for(u32 i = 0; i < sizeof(supportedExtensions)/sizeof(supportedExtensions[0]); i++) {
+		str fixed = "maps/";
+		fixed.append(mapName);
+		fixed.append(".");
+		fixed.append(supportedExtensions[i]);
+
+		if(g_vfs->FS_FileExists(fixed)) {
+			strcpy(cgs.mapname,fixed);
+			return;
 		}
 	}
-
+	g_core->RedWarning("CG_ParseServerInfo: failed to find world map file for mapname %s\n",mapName);
 }
 
 

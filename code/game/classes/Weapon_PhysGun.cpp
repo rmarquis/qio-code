@@ -99,10 +99,10 @@ void Weapon_PhysGun::tryToPickUpEntity() {
 	if(G_TraceRay(tr,owner)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
-			G_Printf("Weapon_PhysGun::tryToPickUpEntity: WARNING: null hit entity\n");
+			g_core->Print("Weapon_PhysGun::tryToPickUpEntity: WARNING: null hit entity\n");
 			return;
 		}
-		G_Printf("Weapon_PhysGun::tryToPickUpEntity: Use trace hit\n");
+		g_core->Print("Weapon_PhysGun::tryToPickUpEntity: Use trace hit\n");
 		if(hit->isDynamic()) {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->holdingEntity = me;
@@ -112,11 +112,11 @@ void Weapon_PhysGun::tryToPickUpEntity() {
 		if(G_TraceRay(tr,owner)) {
 			BaseEntity *hit = tr.getHitEntity();
 			if(hit == 0) {
-				G_Printf("Weapon_PhysGun::tryToPickUpEntity: WARNING: null hit entity\n");
+				g_core->Print("Weapon_PhysGun::tryToPickUpEntity: WARNING: null hit entity\n");
 				return;
 			}
 			float dist = tr.getHitPos().dist(muzzle);
-			G_Printf("Weapon_PhysGun::tryToPickUpEntity: Use trace hit\n");
+			g_core->Print("Weapon_PhysGun::tryToPickUpEntity: Use trace hit\n");
 			if(hit->isDynamic()) {
 				ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 				float frac;
@@ -142,10 +142,10 @@ void Weapon_PhysGun::addGravityImpulse() {
 	if(G_TraceRay(tr,owner)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
-			G_Printf("Weapon_PhysGun::addGravityImpulse: WARNING: null hit entity\n");
+			g_core->Print("Weapon_PhysGun::addGravityImpulse: WARNING: null hit entity\n");
 			return;
 		}
-		G_Printf("Weapon_PhysGun::addGravityImpulse: Use trace hit\n");
+		g_core->Print("Weapon_PhysGun::addGravityImpulse: Use trace hit\n");
 		vec3_c dir = (tr.getHitPos()-muzzle);
 		dir.normalize();
 		ModelEntity *me = dynamic_cast<ModelEntity*>(hit);

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"
+#include <api/coreAPI.h>
 #include <api/gameAPI.h>
 #include <shared/colorTable.h>
 #include <protocol/voipFlags.h>
@@ -223,19 +224,19 @@ void SV_GetChallenge(netadr_t from)
 //	s = Cmd_Argv( 2 );
 //	r = Cmd_Argv( 3 );			// reason
 //
-//	if ( !Q_stricmp( s, "demo" ) ) {
+//	if ( !stricmp( s, "demo" ) ) {
 //		// they are a demo client trying to connect to a real server
 //		NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\nServer is not a demo server\n" );
 //		// clear the challenge record so it won't timeout and let them through
 //		memset( challengeptr, 0, sizeof( *challengeptr ) );
 //		return;
 //	}
-//	if ( !Q_stricmp( s, "accept" ) ) {
+//	if ( !stricmp( s, "accept" ) ) {
 //		NET_OutOfBandPrint(NS_SERVER, challengeptr->adr,
 //			"challengeResponse %d %d %d", challengeptr->challenge, challengeptr->clientChallenge, com_protocol->integer);
 //		return;
 //	}
-//	if ( !Q_stricmp( s, "unknown" ) ) {
+//	if ( !stricmp( s, "unknown" ) ) {
 //		if (!r) {
 //			NET_OutOfBandPrint( NS_SERVER, challengeptr->adr, "print\nAwaiting CD key authorization\n" );
 //		} else {
@@ -914,7 +915,7 @@ int SV_WriteDownloadToClient(client_t *cl, msg_s *msg)
 			*pakptr = '\0';
 
 			// Check for pk3 filename extension
-			if(!Q_stricmp(pakptr + 1, "pk3"))
+			if(!stricmp(pakptr + 1, "pk3"))
 			{
 				const char *referencedPaks = FS_ReferencedPakNames();
 

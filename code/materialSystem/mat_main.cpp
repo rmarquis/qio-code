@@ -177,7 +177,7 @@ const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 		} else if(G_isWS(*p)) {
 			p++; // skip single whitespace
 			continue;
-		} else if(!Q_stricmpn_slashes(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
+		} else if(!stricmpn_slashes(p,matName,matNameLen) && G_isWS(p[matNameLen])) {
 			const char *matNameStart = p;
 			p += matNameLen;
 			p = G_SkipToNextToken(p);

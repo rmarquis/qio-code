@@ -25,6 +25,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __MODELLOADERDLLAPI_H__
 #define __MODELLOADERDLLAPI_H__
 
+#include <shared/typedefs.h>
+
 #define MODELLOADERDLL_API_IDENTSTR "ModelLoaderDLLAPI0001"
 
 class modelLoaderDLLAPI_i {

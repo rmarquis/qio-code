@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *****************************************************************************/
 
 #include "client.h"
+#include <api/coreAPI.h>
 
 #define MAXSIZE				8
 #define MINSIZE				4
@@ -1610,7 +1611,7 @@ void CL_PlayCinematic_f(void) {
 	arg = Cmd_Argv( 1 );
 	s = Cmd_Argv(2);
 
-	if ((s && s[0] == '1') || Q_stricmp(arg,"demoend.roq")==0 || Q_stricmp(arg,"end.roq")==0) {
+	if ((s && s[0] == '1') || stricmp(arg,"demoend.roq")==0 || stricmp(arg,"end.roq")==0) {
 		bits |= CIN_hold;
 	}
 	if (s && s[0] == '2') {

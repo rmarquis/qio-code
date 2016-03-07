@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/str.h>
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
+#include <api/coreAPI.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
@@ -1171,7 +1172,7 @@ void CL_MapLoading() {
 	Key_SetCatcher( 0 );
 
 	// if we are already connected to the local host, stay connected
-	if ( clc.state >= CA_CONNECTED && !Q_stricmp( clc.servername, "localhost" ) ) {
+	if ( clc.state >= CA_CONNECTED && !stricmp( clc.servername, "localhost" ) ) {
 		clc.state = CA_CONNECTED;		// so the connect screen is drawn
 		memset( cls.updateInfoString, 0, sizeof( cls.updateInfoString ) );
 		memset( clc.serverMessage, 0, sizeof( clc.serverMessage ) );
@@ -2387,7 +2388,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	Com_DPrintf ("CL packet %s: %s\n", NET_AdrToStringwPort(from), c);
 
 	// challenge from the server we are connecting to
-	if (!Q_stricmp(c, "challengeResponse"))
+	if (!stricmp(c, "challengeResponse"))
 	{
 		const char *strver;
 		int ver;
@@ -2433,7 +2434,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	}
 
 	// server connection
-	if ( !Q_stricmp(c, "connectResponse") ) {
+	if ( !stricmp(c, "connectResponse") ) {
 		if ( clc.state >= CA_CONNECTED ) {
 			Com_Printf ("Dup connect received. Ignored.\n");
 			return;
@@ -2472,37 +2473,37 @@ void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	}
 
 	// server responding to an info broadcast
-	if ( !Q_stricmp(c, "infoResponse") ) {
+	if ( !stricmp(c, "infoResponse") ) {
 		CL_ServerInfoPacket( from, msg );
 		return;
 	}
 
 	// server responding to a get playerlist
-	if ( !Q_stricmp(c, "statusResponse") ) {
+	if ( !stricmp(c, "statusResponse") ) {
 		CL_ServerStatusResponse( from, msg );
 		return;
 	}
 
 	// echo request from server
-	if ( !Q_stricmp(c, "echo") ) {
+	if ( !stricmp(c, "echo") ) {
 		NET_OutOfBandPrint( NS_CLIENT, from, "%s", Cmd_Argv(1) );
 		return;
 	}
 
 	// cd check
-	if ( !Q_stricmp(c, "keyAuthorize") ) {
+	if ( !stricmp(c, "keyAuthorize") ) {
 		// we don't use these now, so dump them on the floor
 		return;
 	}
 
 	// global MOTD from id
-	if ( !Q_stricmp(c, "motd") ) {
+	if ( !stricmp(c, "motd") ) {
 		CL_MotdPacket( from );
 		return;
 	}
 
 	// echo request from server
-	if(!Q_stricmp(c, "print")){
+	if(!stricmp(c, "print")){
 		s = MSG_ReadString( msg );
 		
 		Q_strncpyz( clc.serverMessage, s, sizeof( clc.serverMessage ) );

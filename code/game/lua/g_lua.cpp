@@ -129,7 +129,7 @@ void G_InitLua()
 {
 	char            buf[MAX_STRING_CHARS];
 
-	G_Printf("------- Game Lua Initialization -------\n");
+	g_core->Print("------- Game Lua Initialization -------\n");
 
 	g_luaState = lua_open();
 
@@ -149,16 +149,16 @@ void G_InitLua()
     lua_settable ( g_luaState, LUA_REGISTRYINDEX );
 
 	// load global scripts
-	G_Printf("global lua scripts:\n");
+	g_core->Print("global lua scripts:\n");
 	G_InitLua_Global();
 
 	// load map-specific lua scripts
-	G_Printf("map specific lua scripts:\n");
+	g_core->Print("map specific lua scripts:\n");
 	g_cvars->Cvar_VariableStringBuffer("mapname", buf, sizeof(buf));
 	G_InitLua_Local(buf);
 	G_LoadLuaScript(va("maps/%s.lua",buf));
 
-	G_Printf("-----------------------------------\n");
+	g_core->Print("-----------------------------------\n");
 
 	G_RunLuaFunction(g_luaState,"G_InitGame","");
 
@@ -173,7 +173,7 @@ G_ShutdownLua
 */
 void G_ShutdownLua()
 {
-	G_Printf("------- Game Lua Finalization -------\n");
+	g_core->Print("------- Game Lua Finalization -------\n");
 
 	if(g_luaState)
 	{
@@ -181,7 +181,7 @@ void G_ShutdownLua()
 		g_luaState = NULL;
 	}
 
-	G_Printf("-----------------------------------\n");
+	g_core->Print("-----------------------------------\n");
 }
 
 
@@ -196,7 +196,7 @@ void G_LoadLuaScript(const char *filename)
 	fileHandle_t    f;
 	char            buf[MAX_LUAFILE];
 
-	G_Printf("...loading '%s'\n", filename);
+	g_core->Print("...loading '%s'\n", filename);
 
 	len = g_vfs->FS_FOpenFile(filename, &f, FS_READ);
 	if(!f)
@@ -217,10 +217,10 @@ void G_LoadLuaScript(const char *filename)
 	g_vfs->FS_FCloseFile(f);
 
 	if(luaL_loadbuffer(g_luaState, buf, strlen(buf), filename))
-		G_Printf("G_RunLuaScript: cannot load lua file: %s\n", lua_tostring(g_luaState, -1));
+		g_core->Print("G_RunLuaScript: cannot load lua file: %s\n", lua_tostring(g_luaState, -1));
 
 	if(lua_pcall(g_luaState, 0, 0, 0))
-		G_Printf("G_RunLuaScript: cannot pcall: %s\n", lua_tostring(g_luaState, -1));
+		g_core->Print("G_RunLuaScript: cannot pcall: %s\n", lua_tostring(g_luaState, -1));
 }
 
 /*
@@ -277,7 +277,7 @@ void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 				goto endwhile;
 
 			default:
-				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+				g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 		}
 		narg++;
 		luaL_checkstack(L, 1, "too many arguments");
@@ -287,7 +287,7 @@ void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 	// do the call
 	nres = strlen(sig);			// number of expected results
 	if(lua_pcall(L, narg, nres, 0) != 0)	// do the call
-		G_Printf("G_RunLuaFunction: error running function `%s': %s\n", func, lua_tostring(L, -1));
+		g_core->Print("G_RunLuaFunction: error running function `%s': %s\n", func, lua_tostring(L, -1));
 
 	// retrieve results
 	nres = -nres;				// stack index of first result
@@ -299,7 +299,7 @@ void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 			case 'f':
 				// float result
 				if(!lua_isnumber(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, float *) = lua_tonumber(L, nres);
 
 				break;
@@ -307,7 +307,7 @@ void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 			case 'i':
 				// int result
 				if(!lua_isnumber(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, int *) = (int)lua_tonumber(L, nres);
 
 				break;
@@ -315,13 +315,13 @@ void G_RunLuaFunction(lua_State *L, const char *func, const char *sig, ...)
 			case 's':
 				// string result
 				if(!lua_isstring(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, const char **) = lua_tostring(L, nres);
 
 				break;
 
 			default:
-				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+				g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 		}
 		nres++;
 	}
@@ -375,7 +375,7 @@ void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
 				goto endwhile;
 
 			default:
-				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+				g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 		}
 		narg++;
 		luaL_checkstack(L, 1, "too many arguments");
@@ -385,7 +385,7 @@ void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
 	// do the call
 	nres = strlen(sig);			// number of expected results
 	if(lua_pcall(L, narg, nres, 0) != 0)	// do the call
-		G_Printf("G_RunLuaFunction: error running function `%i': %s\n", ref, lua_tostring(L, -1));
+		g_core->Print("G_RunLuaFunction: error running function `%i': %s\n", ref, lua_tostring(L, -1));
 
 	// retrieve results
 	nres = -nres;				// stack index of first result
@@ -397,7 +397,7 @@ void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
 			case 'f':
 				// float result
 				if(!lua_isnumber(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, float *) = lua_tonumber(L, nres);
 
 				break;
@@ -405,7 +405,7 @@ void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
 			case 'i':
 				// int result
 				if(!lua_isnumber(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, int *) = (int)lua_tonumber(L, nres);
 
 				break;
@@ -413,13 +413,13 @@ void G_RunLuaFunctionByRef(lua_State *L, int ref, const char *sig, ...)
 			case 's':
 				// string result
 				if(!lua_isstring(L, nres))
-					G_Printf("G_RunLuaFunction: wrong result type\n");
+					g_core->Print("G_RunLuaFunction: wrong result type\n");
 				*va_arg(vl, const char **) = lua_tostring(L, nres);
 
 				break;
 
 			default:
-				G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+				g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 		}
 		nres++;
 	}
@@ -447,28 +447,28 @@ void G_DumpLuaStack()
 		{
 			case LUA_TSTRING:
 				// strings
-				G_Printf("`%s'", lua_tostring(L, i));
+				g_core->Print("`%s'", lua_tostring(L, i));
 				break;
 
 			case LUA_TBOOLEAN:
 				// booleans
-				G_Printf(lua_toboolean(L, i) ? "true" : "false");
+				g_core->Print(lua_toboolean(L, i) ? "true" : "false");
 				break;
 
 			case LUA_TNUMBER:
 				// numbers
-				G_Printf("%g", lua_tonumber(L, i));
+				g_core->Print("%g", lua_tonumber(L, i));
 				break;
 
 			default:
 				// other values
-				G_Printf("%s", lua_typename(L, t));
+				g_core->Print("%s", lua_typename(L, t));
 				break;
 
 		}
-		G_Printf("  ");			// put a separator
+		g_core->Print("  ");			// put a separator
 	}
-	G_Printf("\n");				// end the listing
+	g_core->Print("\n");				// end the listing
 }
 
 #endif

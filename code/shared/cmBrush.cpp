@@ -162,7 +162,7 @@ bool cmBrush_c::traceAABB(class trace_c &tr) {
 }
 bool cmBrush_c::hasSideWithMaterial(const char *matName) const {
 	for(u32 i = 0; i < sides.size(); i++) {
-		if(!Q_stricmp(sides[i].matName,matName))
+		if(!stricmp(sides[i].matName,matName))
 			return true;
 	}
 	return false;

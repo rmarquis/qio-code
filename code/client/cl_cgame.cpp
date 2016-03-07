@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cl_cgame.c  -- client system interaction with client game
 
 #include "client.h"
+#include <api/coreAPI.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
 #include <api/cgameAPI.h>

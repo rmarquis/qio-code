@@ -800,7 +800,7 @@ int Key_StringToKeynum( const char *str ) {
 
 	// scan for a text match
 	for ( kn=keynames ; kn->name ; kn++ ) {
-		if ( !Q_stricmp( str,kn->name ) )
+		if ( !stricmp( str,kn->name ) )
 			return kn->keynum;
 	}
 
@@ -899,7 +899,7 @@ int Key_GetKey(const char *binding) {
 
   if (binding) {
   	for (i=0 ; i < MAX_KEYS ; i++) {
-      if (keys[i].binding.length() && Q_stricmp(binding, keys[i].binding) == 0) {
+      if (keys[i].binding.length() && stricmp(binding, keys[i].binding) == 0) {
         return i;
       }
     }

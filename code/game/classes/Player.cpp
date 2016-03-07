@@ -376,11 +376,11 @@ void Player::runPlayer() {
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {
 		ucmd->serverTime = level.time + 200;
-//		G_Printf("serverTime <<<<<\n" );
+//		g_core->Print("serverTime <<<<<\n" );
 	}
 	if ( ucmd->serverTime < level.time - 1000 ) {
 		ucmd->serverTime = level.time - 1000;
-//		G_Printf("serverTime >>>>>\n" );
+//		g_core->Print("serverTime >>>>>\n" );
 	} 
 
 	int msec = ucmd->serverTime - this->ps.commandTime;
@@ -417,7 +417,7 @@ void Player::runPlayer() {
 					dir.clear();
 				} else {
 					vec3_c f,r,u;
-					//G_Printf("Yaw %f\n",ent->client->ps.viewangles[1]);
+					//g_core->Print("Yaw %f\n",ent->client->ps.viewangles[1]);
 					v.angleVectors(f,r,u);
 					f *= level.frameTime*ucmd->forwardmove;
 					r *= level.frameTime*ucmd->rightmove;
@@ -474,7 +474,7 @@ void Player::runPlayer() {
 				tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
 //				BT_TraceRay(tr);
 				groundDist = tr.getTraveled();
-				//G_Printf("GroundDist: %f\n",groundDist);
+				//g_core->Print("GroundDist: %f\n",groundDist);
 				ps.groundEntityNum = ENTITYNUM_NONE;
 			} else {
 				ps.groundEntityNum = ENTITYNUM_WORLD; // fixme
@@ -542,15 +542,15 @@ void Player::runPlayer() {
 
 		if(noclip == false && this->pers.cmd.buttons & BUTTON_USE_HOLDABLE) {
 			if(useHeld) {
-				//G_Printf("Use held\n");
+				//g_core->Print("Use held\n");
 			} else {
-				//G_Printf("Use pressed\n");
+				//g_core->Print("Use pressed\n");
 				useHeld = true;
 				onUseKeyDown();
 			}
 		} else {
 			if(useHeld) {
-				//G_Printf("Use released\n");
+				//g_core->Print("Use released\n");
 				useHeld = false;
 			}
 		}
@@ -558,36 +558,36 @@ void Player::runPlayer() {
 		if(this->pers.cmd.buttons & BUTTON_ATTACK) {
 			if(fireHeld) {
 				if(g_printPlayerPrimaryFireState.getInt())
-					G_Printf("Fire held\n");
+					g_core->Print("Fire held\n");
 				onFireKeyHeld();
 			} else {
 				if(g_printPlayerPrimaryFireState.getInt())
-					G_Printf("Fire pressed\n");
+					g_core->Print("Fire pressed\n");
 				fireHeld = true;
 				onFireKeyDown();
 			}
 		} else {
 			if(fireHeld) {
 				if(g_printPlayerPrimaryFireState.getInt())
-					G_Printf("Fire released\n");
+					g_core->Print("Fire released\n");
 				fireHeld = false;
 			}
 		}
 		if(this->pers.cmd.buttons & BUTTON_ATTACK_SECONDARY) {
 			if(secondaryFireHeld) {
 				if(g_printPlayerSecondaryPrimaryFireState.getInt())
-					G_Printf("Secondary fire held\n");
+					g_core->Print("Secondary fire held\n");
 				onSecondaryFireKeyHeld();
 			} else {
 				if(g_printPlayerSecondaryPrimaryFireState.getInt())
-					G_Printf("Secondary fire pressed\n");
+					g_core->Print("Secondary fire pressed\n");
 				secondaryFireHeld = true;
 				onSecondaryFireKeyDown();
 			}
 		} else {
 			if(secondaryFireHeld) {
 				if(g_printPlayerSecondaryPrimaryFireState.getInt())
-					G_Printf("Secondary fire released\n");
+					g_core->Print("Secondary fire released\n");
 				secondaryFireHeld = false;
 				onSecondaryFireKeyUp();
 			}
@@ -614,10 +614,10 @@ void Player::runPlayer() {
 #endif
 
 	if(g_printPlayerPositions.getInt()) {
-		G_Printf("Player::runPlayer: client %i is at %f %f %f\n",myEdict->s->number,myEdict->s->origin[0],myEdict->s->origin[1],myEdict->s->origin[2]);
+		g_core->Print("Player::runPlayer: client %i is at %f %f %f\n",myEdict->s->number,myEdict->s->origin[0],myEdict->s->origin[1],myEdict->s->origin[2]);
 	}
 	if(g_printPlayersHealth.getInt()) {
-		G_Printf("Player::runPlayer: client %i health is %i\n",myEdict->s->number,this->health);
+		g_core->Print("Player::runPlayer: client %i health is %i\n",myEdict->s->number,this->health);
 	}
 	//if (g_smoothClients.integer) {
 	//	BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, true );
@@ -653,10 +653,10 @@ void Player::onUseKeyDown() {
 	if(G_TraceRay(tr,this)) {
 		BaseEntity *hit = tr.getHitEntity();
 		if(hit == 0) {
-			G_Printf("Player::onUseKeyDown: WARNING: null hit entity\n");
+			g_core->Print("Player::onUseKeyDown: WARNING: null hit entity\n");
 			return;
 		}
-		G_Printf("Use trace hit classname %s, entnum %i\n",hit->getClassName(),hit->getEntNum());
+		g_core->Print("Use trace hit classname %s, entnum %i\n",hit->getClassName(),hit->getEntNum());
 		if(hit->doUse(this) == false && hit->isDynamic()) {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->pickupPhysicsProp(me);

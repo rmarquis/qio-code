@@ -102,13 +102,13 @@ static client_t *SV_GetPlayerByHandle() {
 		if ( !cl->state ) {
 			continue;
 		}
-		if ( !Q_stricmp( cl->name, s ) ) {
+		if ( !stricmp( cl->name, s ) ) {
 			return cl;
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
 		RemoveColourCodesFromString( cleanName );
-		if ( !Q_stricmp( cleanName, s ) ) {
+		if ( !stricmp( cleanName, s ) ) {
 			return cl;
 		}
 	}
@@ -223,7 +223,7 @@ static void SV_Map_f() {
 		// may not set sv_maxclients directly, always set latched
 		Cvar_SetLatched( "sv_maxclients", "8" );
 		cmd += 2;
-		if (!Q_stricmp( cmd, "devmap" ) ) {
+		if (!stricmp( cmd, "devmap" ) ) {
 			cheat = true;
 		} else {
 			cheat = false;
@@ -231,7 +231,7 @@ static void SV_Map_f() {
 		killBots = true;
 	}
 	else {
-		if ( !Q_stricmp( cmd, "devmap" ) ) {
+		if ( !stricmp( cmd, "devmap" ) ) {
 			cheat = true;
 			killBots = true;
 		} else {
@@ -421,7 +421,7 @@ static void SV_Kick_f() {
 
 	cl = SV_GetPlayerByHandle();
 	if ( !cl ) {
-		if ( !Q_stricmp(Cmd_Argv(1), "all") ) {
+		if ( !stricmp(Cmd_Argv(1), "all") ) {
 			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
 				if ( !cl->state ) {
 					continue;
@@ -433,7 +433,7 @@ static void SV_Kick_f() {
 				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
 			}
 		}
-		else if ( !Q_stricmp(Cmd_Argv(1), "allbots") ) {
+		else if ( !stricmp(Cmd_Argv(1), "allbots") ) {
 			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
 				if ( !cl->state ) {
 					continue;

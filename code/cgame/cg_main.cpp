@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
+#include <game/bg_public.h>
 #include "cg_emitter_base.h"
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>
@@ -33,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
 #include <shared/infoString.h>
+#include <stdarg.h>
 
 cg_t				cg;
 cgs_t				cgs;
@@ -61,7 +63,7 @@ void CG_RegisterCvars( void ) {
 	cgs.localServer = atoi( var );
 }
 																															
-void QDECL CG_Printf( const char *msg, ... ) {
+void CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -72,7 +74,7 @@ void QDECL CG_Printf( const char *msg, ... ) {
 	g_core->Print( text );
 }
 
-void QDECL CG_Error( const char *msg, ... ) {
+void CG_Error( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -83,7 +85,7 @@ void QDECL CG_Error( const char *msg, ... ) {
 	g_core->DropError( text );
 }
 
-void QDECL Com_Error( int level, const char *error, ... ) {
+void Com_Error( int level, const char *error, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -94,7 +96,7 @@ void QDECL Com_Error( int level, const char *error, ... ) {
 	g_core->Error( level, text );
 }
 
-void QDECL Com_Printf( const char *msg, ... ) {
+void Com_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 

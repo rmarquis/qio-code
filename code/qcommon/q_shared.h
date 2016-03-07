@@ -148,26 +148,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MAX_NAME_LENGTH		64		// max length of a client name
 
-// paramters for command buffer stuffing
-enum cbufExec_e {
-	EXEC_NOW,			// don't return until completed, a VM should NEVER use this,
-						// because some commands might cause the VM to be unloaded...
-	EXEC_INSERT,		// insert at current position, but don't run yet
-	EXEC_APPEND			// add to end of the command buffer (normal case)
-};
-
-#ifdef ERR_FATAL
-#undef ERR_FATAL			// this is be defined in malloc.h
-#endif
-
-// parameters to the main Error routine
-enum errorParm_e {
-	ERR_FATAL,					// exit the entire game with a popup window
-	ERR_DROP,					// print to console and disconnect from game
-	ERR_SERVERDISCONNECT,		// don't kill server
-	ERR_DISCONNECT,				// client disconnected from the server
-};
-
 //=============================================
 
 int Com_HexStrToInt( const char *str );
@@ -182,11 +162,8 @@ void Com_RandomBytes( byte *string, int len );
 
 bool Q_isanumber( const char *s );
 
-// portable case insensitive compare
-int		Q_stricmp (const char *s1, const char *s2);
 // V: this will treat '/' and '\' as equal
-int		Q_stricmpn_slashes(const char *s1, const char *s2, int n);
-char	*Q_strlwr( char *s1 );
+int		stricmpn_slashes(const char *s1, const char *s2, int n);
 const char	*Q_stristr( const char *s, const char *find);
 
 // buffer size safe library replacements

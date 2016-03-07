@@ -80,7 +80,7 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 					goto endwhile;
 
 				default:
-					G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+					g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 			}
 			narg++;
 			luaL_checkstack(L, 1, "too many arguments");
@@ -90,7 +90,7 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 		// do the call
 		nres = strlen(sig);			// number of expected results
 		if(lua_pcall(L, narg, nres, 0) != 0)	// do the call
-			G_Printf("G_RunLuaFunction: error running function `%i': %s\n", ref, lua_tostring(L, -1));
+			g_core->Print("G_RunLuaFunction: error running function `%i': %s\n", ref, lua_tostring(L, -1));
 
 		// retrieve results
 		nres = -nres;				// stack index of first result
@@ -102,7 +102,7 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 				case 'f':
 					// float result
 					if(!lua_isnumber(L, nres))
-						G_Printf("G_RunLuaFunction: wrong result type\n");
+						g_core->Print("G_RunLuaFunction: wrong result type\n");
 					*va_arg(vl, float *) = lua_tonumber(L, nres);
 
 					break;
@@ -110,7 +110,7 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 				case 'i':
 					// int result
 					if(!lua_isnumber(L, nres))
-						G_Printf("G_RunLuaFunction: wrong result type\n");
+						g_core->Print("G_RunLuaFunction: wrong result type\n");
 					*va_arg(vl, int *) = (int)lua_tonumber(L, nres);
 
 					break;
@@ -118,13 +118,13 @@ void luaEventHandlerList_c::runCallbacks(const char *sig, ...) {
 				case 's':
 					// string result
 					if(!lua_isstring(L, nres))
-						G_Printf("G_RunLuaFunction: wrong result type\n");
+						g_core->Print("G_RunLuaFunction: wrong result type\n");
 					*va_arg(vl, const char **) = lua_tostring(L, nres);
 
 					break;
 
 				default:
-					G_Printf("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
+					g_core->Print("G_RunLuaFunction: invalid option (%c)\n", *(sig - 1));
 			}
 			nres++;
 		}
