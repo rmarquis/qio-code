@@ -287,6 +287,9 @@ public:
 		// FAKK
 		if(!_stricmp(ext,"skb"))
 			return true;
+		// MoHAA
+		if(!_stricmp(ext,"skd"))
+			return true;
 		return false;
 	}
 	virtual class skelModelAPI_i *loadSkelModelFile(const char *fname) {
@@ -329,7 +332,12 @@ public:
 			if(skelModel->loadSKB(fname)) {
 				delete skelModel;
 				return 0;
-			}	
+			}			
+		} else if(tmp.hasExt("skd")) {
+			if(skelModel->loadSKD(fname)) {
+				delete skelModel;
+				return 0;
+			}
 		} else {
 			delete skelModel;
 			return 0;
