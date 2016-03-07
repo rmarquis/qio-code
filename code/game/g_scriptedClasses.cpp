@@ -587,7 +587,7 @@ bool cStyleStructuresParser_c::parseStructDef(cStructDef_c **outNewStructPtr) {
 bool cStyleStructuresParser_c::parseTypedef() {
 	skipWhiteSpaces();
 	cStructDef_c *newStructPtr = 0;
-	if(!Q_stricmpn(p,"struct",6) && G_isWS(p[6])) {
+	if(!_strnicmp(p,"struct",6) && G_isWS(p[6])) {
 		p += 6;
 		parseStructDef(&newStructPtr);
 	} else {
@@ -610,10 +610,10 @@ bool cStyleStructuresParser_c::parseText(const char *rawTextData) {
 	outData = new cOutData_c;
 	while(*p) {
 		skipWhiteSpaces();
-		if(!Q_stricmpn(p,"typedef",7) && G_isWS(p[7])) {
+		if(!_strnicmp(p,"typedef",7) && G_isWS(p[7])) {
 			p += 7;
 			parseTypedef();
-		} else if(!Q_stricmpn(p,"struct",6) && G_isWS(p[6])) {
+		} else if(!_strnicmp(p,"struct",6) && G_isWS(p[6])) {
 			p += 6;
 			parseStructDef();
 		} else {

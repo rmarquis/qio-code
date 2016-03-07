@@ -516,7 +516,7 @@ bool Com_AddStartupCommands() {
 		}
 
 		// set commands already added with Com_StartupVariable
-		if ( !Q_stricmpn( com_consoleLines[i], "set", 3 ) ) {
+		if ( !_strnicmp( com_consoleLines[i], "set", 3 ) ) {
 			continue;
 		}
 
@@ -2327,7 +2327,7 @@ FindMatches
 static void FindMatches( const char *s ) {
 	int		i;
 
-	if ( Q_stricmpn( s, completionString, strlen( completionString ) ) ) {
+	if ( _strnicmp( s, completionString, strlen( completionString ) ) ) {
 		return;
 	}
 	matchCount++;
@@ -2356,7 +2356,7 @@ PrintMatches
 ===============
 */
 static void PrintMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !_strnicmp( s, shortestMatch, strlen( shortestMatch ) ) ) {
 		Com_Printf( "    %s\n", s );
 	}
 }
@@ -2370,7 +2370,7 @@ PrintCvarMatches
 static void PrintCvarMatches( const char *s ) {
 	str value;
 
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+	if ( !_strnicmp( s, shortestMatch, strlen( shortestMatch ) ) ) {
 		value.truncatePrintString(Cvar_VariableString( s ),64);
 		Com_Printf( "    %s = \"%s\"\n", s, value.c_str() );
 	}

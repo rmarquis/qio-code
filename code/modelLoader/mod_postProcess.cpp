@@ -35,7 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/vfsAPI.h>
 
-int		Q_stricmpn (const char *s1, const char *s2, int n);
+int		_strnicmp (const char *s1, const char *s2, int n);
 
 class simpleModel_c : public staticModelCreatorAPI_i {
 
@@ -159,11 +159,11 @@ bool MOD_ApplyInlinePostProcess(const char *cmdsText, class modelPostProcessFunc
 	const char *p = cmdsText;
 	str tmp;
 	while(p && *p) {
-		if(!Q_stricmpn(p,"scaleTexST",strlen("scaleTexST"))) {
+		if(!_strnicmp(p,"scaleTexST",strlen("scaleTexST"))) {
 			p += strlen("scaleTexST");
 			float stScale = MOD_GetInlineTextArgAsFloat(&p);
 			inout->multTexCoordsXY(stScale);
-		} else if(!Q_stricmpn(p,"material",strlen("material"))) {
+		} else if(!_strnicmp(p,"material",strlen("material"))) {
 			p += strlen("material");
 			MOD_GetInlineTextArg(tmp,&p);
 			inout->setAllSurfsMaterial(tmp);

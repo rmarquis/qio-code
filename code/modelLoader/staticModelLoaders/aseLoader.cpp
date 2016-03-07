@@ -58,23 +58,23 @@ struct aseMaterial_s {
 			return matName;
 		}
 		// Prey prefix
-		if(!Q_stricmpn(ase_preyPrefix,bitmapName,ase_preyPrefixLen)) {
+		if(!_strnicmp(ase_preyPrefix,bitmapName,ase_preyPrefixLen)) {
 			return bitmapName.c_str() + ase_preyPrefixLen;
 		}
 		// Prey prefix2
-		if(!Q_stricmpn(ase_prey2Prefix,bitmapName,ase_prey2PrefixLen)) {
+		if(!_strnicmp(ase_prey2Prefix,bitmapName,ase_prey2PrefixLen)) {
 			return bitmapName.c_str() + ase_prey2PrefixLen;
 		}
 		// Quake4 prefix
-		if(!Q_stricmpn(ase_q4Prefix,bitmapName,ase_q4PrefixLen)) {
+		if(!_strnicmp(ase_q4Prefix,bitmapName,ase_q4PrefixLen)) {
 			return bitmapName.c_str() + ase_q4PrefixLen;
 		}
 		// D3 prefix 1
-		if(!Q_stricmpn(ase_d3Prefix,bitmapName,ase_d3PrefixLen)) {
+		if(!_strnicmp(ase_d3Prefix,bitmapName,ase_d3PrefixLen)) {
 			return bitmapName.c_str() + ase_d3PrefixLen;
 		}
 		// Quake4 prefix 2
-		if(!Q_stricmpn(ase_q4Prefix2,bitmapName,ase_q4PrefixLen2)) {
+		if(!_strnicmp(ase_q4Prefix2,bitmapName,ase_q4PrefixLen2)) {
 			return bitmapName.c_str() + ase_q4PrefixLen2;
 		}
 		return bitmapName;

@@ -340,12 +340,12 @@ class cMod_i *CM_RegisterModel(const char *modName) {
 	// check for primitive models (procedurally generated)
 	if(modName[0] == '_') {
 		const char *t = modName+1;
-		if(!Q_stricmpn(t,"c",1)) {
+		if(!_strnicmp(t,"c",1)) {
 			// that's a capsule
 			float radius, height;
 			sscanf(modName,"_c%f_%f",&height,&radius);
 			return CM_RegisterCapsule(height,radius);
-		} else if(!Q_stricmpn(t,"bhe",3)) {
+		} else if(!_strnicmp(t,"bhe",3)) {
 			// that's a bb defined by halfsizes
 			vec3_c halfSizes;
 			sscanf(modName,"_bhe%f_%f_%f",&halfSizes.x,&halfSizes.y,&halfSizes.z);

@@ -185,7 +185,6 @@ bool Q_isanumber( const char *s );
 // portable case insensitive compare
 int		Q_stricmp (const char *s1, const char *s2);
 int		Q_strncmp (const char *s1, const char *s2, int n);
-int		Q_stricmpn (const char *s1, const char *s2, int n);
 // V: this will treat '/' and '\' as equal
 int		Q_stricmpn_slashes(const char *s1, const char *s2, int n);
 char	*Q_strlwr( char *s1 );

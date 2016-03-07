@@ -510,7 +510,7 @@ bool mtrIMPL_c::loadFromVMTFile() {
 	vmtName.defaultExtension("vmt");
 
 	// fix the strange .vmt paths
-	if(!Q_stricmpn(vmtName,"maps/",5)) {
+	if(!_strnicmp(vmtName,"maps/",5)) {
 		// fix the strange map-dependant file names
 		// change this:
 		// vmtName = {data=0x05517738 "materials/maps/d1_town_01/tile/tileroof004b_503_632_-2999.vmt" buffer=0x0018e91c "面面面面面面面面=" len=61 ...}
