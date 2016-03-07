@@ -184,7 +184,6 @@ bool Q_isanumber( const char *s );
 
 // portable case insensitive compare
 int		Q_stricmp (const char *s1, const char *s2);
-int		Q_strncmp (const char *s1, const char *s2, int n);
 // V: this will treat '/' and '\' as equal
 int		Q_stricmpn_slashes(const char *s1, const char *s2, int n);
 char	*Q_strlwr( char *s1 );
@@ -194,8 +193,6 @@ const char	*Q_stristr( const char *s, const char *find);
 void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
 
-// removes color sequences from string
-char *Q_CleanStr( char *string );
 // Count the number of char tocount encountered in string
 int Q_CountChar(const char *string, char tocount);
 

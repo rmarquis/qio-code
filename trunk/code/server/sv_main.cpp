@@ -110,7 +110,7 @@ static int SV_ReplacePendingServerCommands( client_t *client, const char *cmd ) 
 	for ( i = client->reliableSent+1; i <= client->reliableSequence; i++ ) {
 		index = i & ( MAX_RELIABLE_COMMANDS - 1 );
 		//
-		if ( !Q_strncmp(cmd, client->reliableCommands[ index ], strlen("cs")) ) {
+		if ( !strncmp(cmd, client->reliableCommands[ index ], strlen("cs")) ) {
 			sscanf(cmd, "cs %i", &csnum1);
 			sscanf(client->reliableCommands[ index ], "cs %i", &csnum2);
 			if ( csnum1 == csnum2 ) {
@@ -773,7 +773,7 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	MSG_BeginReadingOOB( msg );
 	MSG_ReadLong( msg );		// skip the -1 marker
 
-	if (!Q_strncmp("connect", (char *) &msg->data[4], 7)) {
+	if (!strncmp("connect", (char *) &msg->data[4], 7)) {
 		Huff_Decompress(msg, 12);
 	}
 

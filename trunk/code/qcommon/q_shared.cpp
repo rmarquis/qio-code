@@ -155,25 +155,6 @@ int Q_stricmpn_slashes(const char *s1, const char *s2, int n) {
 	return 0;		// strings are equal
 }
 
-int Q_strncmp (const char *s1, const char *s2, int n) {
-	int		c1, c2;
-	
-	do {
-		c1 = *s1++;
-		c2 = *s2++;
-
-		if (!n--) {
-			return 0;		// strings are equal until end point
-		}
-		
-		if (c1 != c2) {
-			return c1 < c2 ? -1 : 1;
-		}
-	} while (c1);
-	
-	return 0;		// strings are equal
-}
-
 int Q_stricmp (const char *s1, const char *s2) {
 	return (s1 && s2) ? _strnicmp (s1, s2, 99999) : -1;
 }
@@ -258,26 +239,7 @@ int Q_PrintStrlen( const char *string ) {
 }
 
 
-char *Q_CleanStr( char *string ) {
-	char*	d;
-	char*	s;
-	int		c;
 
-	s = string;
-	d = string;
-	while ((c = *s) != 0 ) {
-		if ( Q_IsColorString( s ) ) {
-			s++;
-		}		
-		else if ( c >= 0x20 && c <= 0x7E ) {
-			*d++ = c;
-		}
-		s++;
-	}
-	*d = '\0';
-
-	return string;
-}
 
 int Q_CountChar(const char *string, char tocount)
 {
