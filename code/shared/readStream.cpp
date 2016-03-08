@@ -23,7 +23,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // readStream.cpp - binary file reader
 #include "readStream.h"
-#include <qcommon/q_shared.h> // REMOVEME
 #include <api/vfsAPI.h>
 #include <shared/str.h>
 

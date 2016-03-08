@@ -55,10 +55,23 @@ public:
 };
 
 class tikiAnimBase_c : public tikiAnim_i {
+	tikiAnimBase_c *hashNext;
 protected:
 	str alias;
 	str fileName;
 public:
+	const char *getName() const {
+		return alias;
+	}
+	void setAlias(const char *a) {
+		this->alias = a;
+	}
+	void setHashNext(class tikiAnimBase_c *tb) {
+		hashNext = tb;
+	}
+	tikiAnimBase_c *getHashNext() const {
+		return hashNext;
+	}
 	virtual ~tikiAnimBase_c() {
 
 	}
@@ -87,6 +100,7 @@ public:
 	const char *getName() const {
 		return fname;
 	}
+	virtual bool isValid() const = 0;
 };
 //enum tikiType_e {
 //	TT_BAD,
@@ -95,6 +109,7 @@ public:
 //};
 class simpleTIKI_c : public tikiBase_c, public tikiBuilder_i {
 //	tikiType_e type;
+	//hashTableTemplateExt_c<tikiAnimBase_c> anims;
 	arraySTD_c<tikiAnimBase_c*> anims;
 	ePairList_c remaps;
 	skelModelAPI_i *skelModel;
@@ -115,6 +130,14 @@ public:
 	}
 	virtual bool isKeyframed() const {
 		return skelModel==0;
+	}
+	virtual int findAnim(const char *animAlias) const { 
+		for(u32 i = 0; i < anims.size(); i++) {
+			if(!stricmp(anims[i]->getAlias(),animAlias)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const {
 		for(u32 i = 0; i < remaps.size(); i++) {
@@ -148,6 +171,16 @@ public:
 	}
 	virtual class skelModelAPI_i *getSkelModel() const {
 		return skelModel;
+	}
+
+	virtual bool isValid() const {
+		if(skelModel)
+			return true;
+		if(remaps.size())
+			return true;
+		if(anims.size())
+			return true;
+		return false;
 	}
 };
 class tikiAnimSkeletal_c : public tikiAnimBase_c {
@@ -286,6 +319,7 @@ class tikiParser_c : public parser_c {
 					alias.c_str(),fullPath.c_str(),getCurrentLineNumber(),getDebugFileName());
 				return true;
 			}
+			ta->setAlias(alias);
 			// parse optional animation flags/params
 			while(isAtEOL()==false) {
 				if(atWord("default_angles")) {
@@ -512,6 +546,8 @@ public:
 			tb->setName(modName);
 			loaded.addObject(tb);
 		}
+		if(tb->isValid() == false)
+			return 0;
 		return tb;
 	}
 };
@@ -528,13 +564,13 @@ moduleManagerAPI_i *g_moduleMgr = 0;
 
 // exports
 static tikiAPIImpl_c g_staticTIKIAPI;
-tikiAPI_i *tiki = &g_staticTIKIAPI;
+tikiAPI_i *g_tikiMgr = &g_staticTIKIAPI;
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
 	// exports
-	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)tiki,TIKI_API_IDENTSTR);
+	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_tikiMgr,TIKI_API_IDENTSTR);
 
 	// imports
 	g_iFaceMan->registerIFaceUser(&g_vfs,VFS_API_IDENTSTR);

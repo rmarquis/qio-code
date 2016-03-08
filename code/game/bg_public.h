@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // from the server to all connected clients.
 //
 
-// CS_SERVERINFO and CS_SYSTEMINFO are defined in q_shared.h
+// CS_SERVERINFO and CS_SYSTEMINFO are defined elsewhere?
 
 
 #define	CS_GAME_VERSION			20

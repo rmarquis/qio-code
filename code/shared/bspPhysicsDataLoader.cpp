@@ -22,7 +22,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // bspPhysicsDataLoader.cpp
-#include <qcommon/q_shared.h>
 #include "bspPhysicsDataLoader.h"
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>

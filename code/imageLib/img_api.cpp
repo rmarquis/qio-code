@@ -24,7 +24,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // img_api.cpp - image loader interface
 
 #include "img_local.h"
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>

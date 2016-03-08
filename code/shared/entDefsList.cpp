@@ -23,7 +23,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // entDefsList.h - list of entity definitions (keyValues + primitives)
 #include "entDefsList.h"
-#include "../qcommon/q_shared.h"
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>
 #include <fileformats/bspFileFormat.h>

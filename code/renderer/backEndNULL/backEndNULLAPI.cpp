@@ -22,7 +22,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // backEndNULLAPI.cpp
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>

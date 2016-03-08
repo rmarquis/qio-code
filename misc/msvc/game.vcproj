@@ -1011,10 +1011,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\shared\quake3Anims.h"
 				>
 			</File>

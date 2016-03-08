@@ -22,7 +22,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // gui_api.cpp - GUI API implementation
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/fontAPI.h>
 #include <api/vfsAPI.h>

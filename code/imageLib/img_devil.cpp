@@ -25,7 +25,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "img_local.h"
 #include <shared/str.h>
 #include <api/coreAPI.h>
-#include <qcommon/q_shared.h>
 #include <api/vfsAPI.h>
 
 

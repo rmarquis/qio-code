@@ -23,7 +23,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // com_systemEventCaster.cpp - sysEventCasterAPI implementation
 
-#include "q_shared.h"
 #include "qcommon.h"
 #include <api/sysEventCasterAPI.h>
 #include <api/iFaceMgrAPI.h>

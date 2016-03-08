@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // client.h -- primary header for client
 
-#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "keys.h"
 #include "../cgame/cg_public.h"

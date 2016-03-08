@@ -550,7 +550,7 @@ rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 		}
 	} else if(modName.hasExt("tik")) {
 		static etCharMgr_c test;
-		tiki_i *t = tiki->registerModel(modName);
+		tiki_i *t = g_tikiMgr->registerModel(modName);
 		if(t) {
 			ret->tiki = t;
 			ret->type = MOD_TIKI;

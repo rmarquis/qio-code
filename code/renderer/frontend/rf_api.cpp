@@ -27,7 +27,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_drawCall.h"
 #include "rf_model.h"
 #include "rf_anims.h"
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>
@@ -441,7 +440,7 @@ modelLoaderDLLAPI_i *g_modelLoader = 0;
 gameAPI_s *g_game = 0;
 declManagerAPI_i *g_declMgr = 0;
 imgAPI_i *g_img = 0;
-tikiAPI_i *tiki = 0;
+tikiAPI_i *g_tikiMgr = 0;
 
 // exports
 static rAPIImpl_c g_staticRFAPI;
@@ -465,7 +464,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_client,CLIENT_API_IDENTSTR);
-	g_iFaceMan->registerIFaceUser(&tiki,TIKI_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_tikiMgr,TIKI_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

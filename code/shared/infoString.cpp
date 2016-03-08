@@ -22,7 +22,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-#include <qcommon/q_shared.h>
+#include <qcommon/qcommon.h>
 #include "infoString.h"
 #include <api/coreAPI.h>
 #include <shared/colorTable.h>

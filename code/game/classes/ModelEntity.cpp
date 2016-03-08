@@ -41,6 +41,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/entityDeclAPI.h>
 #include <api/entDefAPI.h>
 #include <api/vfsAPI.h>
+#include <api/tikiAPI.h>
 #include <shared/physObjectDef.h>
 #include <shared/keyValuesListener.h>
 #include <shared/boneOrQP.h>
@@ -143,6 +144,7 @@ ModelEntity::ModelEntity() {
 	body = 0;
 	cmod = 0;
 	cmSkel = 0;
+	tiki = 0;
 	ragdoll = 0;
 	health = 100;
 	modelDecl = 0;
@@ -200,10 +202,17 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 	renderModelName = newRModelName;
 	// decl models are present on both client and server
 	if(newRModelName[0] != '*') {
+		// try to load a decl model (Doom3, Quake4)
 		if(g_declMgr) {
 			this->modelDecl = g_declMgr->registerModelDecl(newRModelName);
 		} else {
 			this->modelDecl = 0;
+		}
+		// try to load a TIKI model (FAKK, MoHAA)
+		if(g_tikiMgr) {
+			this->tiki = g_tikiMgr->registerModel(newRModelName);
+		} else {
+			this->tiki = 0;
 		}
 	} else {
 		this->modelDecl = 0;
@@ -267,9 +276,13 @@ bool ModelEntity::hasDeclAnimation(const char *animName) const {
 // returns the animation index (for networking)
 int ModelEntity::findAnimationIndex(const char *newAnimName) {
 	int newAnimIndex;
-	if(this->modelDecl) {
+	if(this->tiki) {
+		// internal TIKI animation alias (eg. "walk" or "idle")
+		newAnimIndex = this->tiki->findAnim(newAnimName);
+	} else if(this->modelDecl) {
 		newAnimIndex = this->modelDecl->getAnimIndexForAnimAlias(newAnimName);
 	} else {
+		// this is a animation file path (eg. models/test/myanim.md5anim)
 		newAnimIndex = G_AnimationIndex(newAnimName);
 		// nothing else to do right now...
 	}
