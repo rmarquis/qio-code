@@ -2733,6 +2733,172 @@ bool Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientNum)
 	return false;
 }
 
+
+
+
+
+/*
+===================
+Com_HexStrToInt
+===================
+*/
+int Com_HexStrToInt( const char *str )
+{
+	if ( !str || !str[ 0 ] )
+		return -1;
+
+	// check for hex code
+	if( str[ 0 ] == '0' && str[ 1 ] == 'x' )
+	{
+		int i, n = 0;
+
+		for( i = 2; i < strlen( str ); i++ )
+		{
+			char digit;
+
+			n *= 16;
+
+			digit = tolower( str[ i ] );
+
+			if( digit >= '0' && digit <= '9' )
+				digit -= '0';
+			else if( digit >= 'a' && digit <= 'f' )
+				digit = digit - 'a' + 10;
+			else
+				return -1;
+
+			n += digit;
+		}
+
+		return n;
+	}
+
+	return -1;
+}
+
+/*
+============================================================================
+
+					LIBRARY REPLACEMENT FUNCTIONS
+
+============================================================================
+*/
+
+
+
+/*
+=============
+Q_strncpyz
+ 
+Safe strncpy that ensures a trailing zero
+=============
+*/
+void Q_strncpyz( char *dest, const char *src, int destsize ) {
+  if ( !dest ) {
+    g_core->Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+  }
+	if ( !src ) {
+		g_core->Error( ERR_FATAL, "Q_strncpyz: NULL src" );
+	}
+	if ( destsize < 1 ) {
+		g_core->Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+	}
+
+	strncpy( dest, src, destsize-1 );
+  dest[destsize-1] = 0;
+}
+    
+       
+
+
+
+// never goes past bounds or leaves without a terminating 0
+void Q_strcat( char *dest, int size, const char *src ) {
+	int		l1;
+
+	l1 = strlen( dest );
+	if ( l1 >= size ) {
+		g_core->Error( ERR_FATAL, "Q_strcat: already overflowed" );
+	}
+	Q_strncpyz( dest + l1, src, size - l1 );
+}
+
+
+int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
+{
+	int		len;
+	va_list		argptr;
+
+	va_start (argptr,fmt);
+	len = _vsnprintf(dest, size, fmt, argptr);
+	va_end (argptr);
+
+	if(len >= size)
+		g_core->Print("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
+	
+	return len;
+}
+
+
+//====================================================================
+
+/*
+==================
+Com_CharIsOneOfCharset
+==================
+*/
+static bool Com_CharIsOneOfCharset( char c, char *set )
+{
+	int i;
+
+	for( i = 0; i < strlen( set ); i++ )
+	{
+		if( set[ i ] == c )
+			return true;
+	}
+
+	return false;
+}
+
+/*
+==================
+Com_SkipTokens
+==================
+*/
+char *Com_SkipTokens( char *s, int numTokens, char *sep )
+{
+	int		sepCount = 0;
+	char	*p = s;
+
+	while( sepCount < numTokens )
+	{
+		if( Com_CharIsOneOfCharset( *p++, sep ) )
+		{
+			sepCount++;
+			while( Com_CharIsOneOfCharset( *p, sep ) )
+				p++;
+		}
+		else if( *p == '\0' )
+			break;
+	}
+
+	if( sepCount == numTokens )
+		return p;
+	else
+		return s;
+}
+
+short   ShortSwap (short l)
+{
+	byte    b1,b2;
+
+	b1 = l&255;
+	b2 = (l>>8)&255;
+
+	return (b1<<8) + b2;
+}
+
+
 qioModule_e IFM_GetCurModule() {
 	return QMD_CORE;
 }

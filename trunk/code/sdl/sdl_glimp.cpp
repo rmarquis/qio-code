@@ -630,15 +630,6 @@ static bool GLimp_StartDriverAndSetMode(int mode, bool fullscreen, bool noborder
 	return true;
 }
 
-static bool GLimp_HaveExtension(const char *ext)
-{
-	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
-	if (ptr == NULL)
-		return false;
-	ptr += strlen(ext);
-	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
-}
-
 #define R_MODE_FALLBACK 3 // 640 * 480
 
 /*

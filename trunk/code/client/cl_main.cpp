@@ -247,7 +247,8 @@ void CL_Voip_f()
 	} else if (strcmp(cmd, "gain") == 0) {
 		if (Cmd_Argc() > 3) {
 			CL_UpdateVoipGain(Cmd_Argv(2), atof(Cmd_Argv(3)));
-		} else if (Q_isanumber(Cmd_Argv(2))) {
+	//	} else if (Q_isanumber(Cmd_Argv(2))) {
+		} else if (Cmd_Argc() == 3) {
 			int id = atoi(Cmd_Argv(2));
 			if (id >= 0 && id < MAX_CLIENTS) {
 				Com_Printf("VoIP: current gain for player #%d "
