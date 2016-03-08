@@ -835,6 +835,8 @@ bool COM_RunEditorFrame();
 
 void Hunk_Clear();
 
+void Com_RandomBytes( byte *string, int len );
+
 /*
 ==============================================================
 

@@ -207,6 +207,20 @@ void Cvar_CommandCompletion(void (*callback)(const char *s))
 	}
 }
 
+
+bool Q_isanumber( const char *s )
+{
+	char *p;
+	double d;
+
+	if( *s == '\0' )
+		return false;
+
+	d = strtod( s, &p );
+
+	return *p == '\0';
+}
+
 /*
 ============
 Cvar_Validate

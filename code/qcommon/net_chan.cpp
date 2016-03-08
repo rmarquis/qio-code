@@ -622,6 +622,21 @@ void QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len
 	NET_SendPacket( sock, mbuf.cursize, mbuf.data, adr );
 }
 
+
+int Q_CountChar(const char *string, char tocount)
+{
+	int count;
+	
+	for(count = 0; *string; string++)
+	{
+		if(*string == tocount)
+			count++;
+	}
+	
+	return count;
+}
+
+
 /*
 =============
 NET_StringToAdr

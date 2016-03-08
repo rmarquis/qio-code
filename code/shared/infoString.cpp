@@ -295,7 +295,8 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 	if (!value || !strlen(value))
 		return;
 
-	Com_sprintf (newi, sizeof(newi), "\\%s\\%s", key, value);
+	// TODO: rewrite this code with better buffer handling
+	sprintf (newi, "\\%s\\%s", key, value);
 
 	if (strlen(newi) + strlen(s) >= MAX_INFO_STRING)
 	{

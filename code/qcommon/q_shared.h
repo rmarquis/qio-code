@@ -156,22 +156,10 @@ int QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__
 
 char *Com_SkipTokens( char *s, int numTokens, char *sep );
 
-void Com_RandomBytes( byte *string, int len );
-
-//=============================================
-
-bool Q_isanumber( const char *s );
-
-// V: this will treat '/' and '\' as equal
-int		stricmpn_slashes(const char *s1, const char *s2, int n);
-const char	*Q_stristr( const char *s, const char *find);
 
 // buffer size safe library replacements
 void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
-
-// Count the number of char tocount encountered in string
-int Q_CountChar(const char *string, char tocount);
 
 //=====================================================================
 
