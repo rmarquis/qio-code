@@ -454,6 +454,15 @@ void CCamWnd::Cam_MouseControl (float dtime)
 	xf = x - m_Camera.width/2;
 	yf = m_Camera.height/2 - y;
 
+	float maxa = 5.f;
+	if(xf > maxa)
+		xf = maxa;
+	else if(xf < -maxa)
+		xf = -maxa;
+	if(yf > maxa)
+		yf = maxa;
+	else if(yf < -maxa)
+		yf = -maxa;
   //Sys_Printf("xf-%f  yf-%f  xl-%i  xh-i%  yl-i%  yh-i%\n",xf,yf,xl,xh,yl,yh);
 #if 0
 	// strafe
