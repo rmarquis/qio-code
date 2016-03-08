@@ -590,7 +590,19 @@ static void MAT_PrintMaterialSourceFileName_f() {
 	const char *mtrFileName = g_core->Argv(1);
 	MAT_PrintMaterialSourceFileName(mtrFileName);
 }
+static void MAT_PrintLoadedMaterialNames_f() {
+	g_core->Print("%i materials loaded\n",materials.size());
+	for(u32 i = 0; i < materials.size(); i++) {
+		mtrIMPL_c *mat = materials[i];
+		g_core->Print("%i/%i - %s from %s\n",i,materials.size()
+			,mat->getName(),mat->getSourceFileName());
+	}
+	g_core->Print("%i materials loaded\n",materials.size());
+}
+
 static aCmd_c mat_refreshSingleMaterial_f("mat_refreshSingleMaterial",MAT_RefreshSingleMaterial_f);
 static aCmd_c mat_refreshMaterialSourceFile_f("mat_refreshMaterialSourceFile",MAT_RefreshMaterialSourceFile_f);
 static aCmd_c mat_printMaterialSourceFileName("mat_printMaterialSourceFileName",MAT_PrintMaterialSourceFileName_f);
+static aCmd_c mat_printLoadedMaterialNames("mat_printLoadedMaterialNames",MAT_PrintLoadedMaterialNames_f);
+
 
