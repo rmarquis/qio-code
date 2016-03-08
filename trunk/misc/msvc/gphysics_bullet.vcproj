@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="gphysics_bullet"
 	ProjectGUID="{7CADFBEB-B846-4BBA-856E-4F2D6E43FB9D}"
 	RootNamespace="gphysics_bullet"
@@ -336,14 +336,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
 			<File

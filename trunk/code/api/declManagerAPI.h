@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __DECLMANAGERAPI_H__
 #define __DECLMANAGERAPI_H__
 
+#include <shared/typedefs.h>
 #include "iFaceBase.h"
 #include "iFaceMgrAPI.h" // for IFM_GetCurModule
 

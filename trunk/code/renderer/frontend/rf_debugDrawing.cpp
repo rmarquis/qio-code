@@ -24,7 +24,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_debugDrawing.cpp
 #include "rf_local.h"
 #include "rf_world.h"
-#include <qcommon/q_shared.h>
 #include <shared/array.h>
 #include <shared/autoCvar.h>
 #include <shared/trace.h>

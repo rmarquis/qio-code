@@ -464,10 +464,6 @@
 				RelativePath="..\..\code\cgame\cg_viewModel.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

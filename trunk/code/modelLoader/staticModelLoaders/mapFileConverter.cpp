@@ -126,7 +126,6 @@ struct r_brushSide_s {
 	}
 };
 
-#include <qcommon/q_shared.h>
 inline const char *G_strFind(const char *buf, const char *s) {
 	u32 sLen = strlen(s);
 	const char *p = buf;

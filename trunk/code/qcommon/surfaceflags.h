@@ -25,8 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // contents flags are seperate bits
 // a given brush can contribute multiple content bits
 
-// these definitions also need to be in q_shared.h!
-
 #define	CONTENTS_SOLID			1		// an eye is never valid in a solid
 #define	CONTENTS_LAVA			8
 #define	CONTENTS_SLIME			16

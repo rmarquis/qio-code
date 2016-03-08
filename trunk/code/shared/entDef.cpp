@@ -23,7 +23,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // entDef.cpp
 #include "entDef.h"
-#include "../qcommon/q_shared.h"
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>
 #include <shared/parser.h>

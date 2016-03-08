@@ -2,6 +2,7 @@
 #define __IMG_LOCAL_H__
 
 #include <shared/typedefs.h>
+#include <stdlib.h> // free, malloc
 
 // img_main.cpp
 void IMG_GetDefaultImage(byte **outData, u32 *outW, u32 *outH);

@@ -37,6 +37,7 @@ public:
 	virtual bool isSkeletal() const = 0;
 	virtual bool isKeyframed() const = 0;
 
+	virtual int findAnim(const char *animAlias) const = 0;
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
 	// for keyframed TIKI models
 	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const = 0;
@@ -52,6 +53,6 @@ public:
 	virtual class tiki_i *registerModel(const char *modName) = 0;
 };
 
-extern tikiAPI_i *tiki;
+extern tikiAPI_i *g_tikiMgr;
 
 #endif // __API_TIKI_H__

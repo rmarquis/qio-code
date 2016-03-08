@@ -133,6 +133,7 @@ public:
 	virtual void setRagdoll(const class afDeclAPI_i *af);
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or);
 	virtual void setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags);
+	virtual void setTIKIModelAnimLocalIndex(int localAnimIndex, int newFlags);
 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex);
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex);
 	virtual void setSkin(const char *skinName);
@@ -164,6 +165,7 @@ public:
 		return false;
 	}
 	virtual bool hasDeclModel() const;
+	virtual bool hasTIKIModel() const;
 	virtual bool isQ3PlayerModel() const;
 	virtual bool isAnimated() const;
 	virtual bool isSprite() const;

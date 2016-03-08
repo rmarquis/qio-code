@@ -238,6 +238,9 @@ public:
 	TYPE* &operator [] (const u32 index) {
 		return ar[index];
 	}
+	const TYPE* operator [] (const u32 index) const {
+		return ar[index];
+	}
 };
 
 #endif // __HASHTABLETEMPLATE_H__

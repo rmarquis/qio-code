@@ -22,7 +22,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // declManagerIMPL.cpp
-#include <qcommon/q_shared.h>
 #include "declManagerIMPL.h"
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>

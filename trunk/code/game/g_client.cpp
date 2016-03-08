@@ -680,6 +680,36 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		e->setRenderModel("models/tests/smd_anim/Male_06_reference.smd");
 		e->setAnimation("models/tests/smd_anim/MP5_RunN.smd");
+	} else if(!_stricmp(cmd,"tik_julie_test")) {
+		// FAKK2 player model animation test
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/julie_alpha.tik");
+		e->setAnimation("walk_norm");
+	} else if(!_stricmp(cmd,"tik_julie_test2")) {
+		// FAKK2 player model animation test
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/julie_alpha.tik");
+		e->setAnimation("run_norm");
+	} else if(!_stricmp(cmd,"tik_julie_test3")) {
+		// FAKK2 player model animation test
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/julie_alpha.tik");
+		e->setAnimation("crouch_idle");
 	} else {
 		g_core->RedWarning("Unknown client command %s\n",cmd);
 		////vec3_c tmp(1400,1340,470);

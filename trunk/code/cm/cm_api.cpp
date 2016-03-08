@@ -23,7 +23,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // cm_api.cpp - CM API implementation
 #include "cm_local.h"
-#include <qcommon/q_shared.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>

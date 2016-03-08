@@ -22,8 +22,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // fileStreamHelper.cpp
+#include <shared/typedefs.h>
+#include <string.h>
 #include "fileStreamHelper.h"
-#include <qcommon/q_shared.h> // fileHandle_t
+#include <stdarg.h>
+#include <stdio.h>
 #include <api/vfsAPI.h>
 
 fileStreamHelper_c::fileStreamHelper_c() {

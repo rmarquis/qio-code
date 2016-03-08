@@ -24,7 +24,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // mat_main.cpp - renderer materials managment
 #include "mat_local.h"
 #include "mat_impl.h"
-#include <qcommon/q_shared.h>
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/rbAPI.h>

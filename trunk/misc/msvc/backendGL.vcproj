@@ -244,14 +244,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\rVertexBuffer.cpp"
 				>
 			</File>

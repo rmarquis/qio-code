@@ -45,6 +45,8 @@ protected:
 	class cmSkelModel_i *cmSkel;
 	// extra model decl access
 	class modelDeclAPI_i *modelDecl;
+	// extra model TIKI access
+	class tiki_i *tiki;
 	// ragdoll interface
 	str ragdollDefName; // set by "ragdoll" key in Doom3; the name of articulatedFigure decl
 	class ragdollAPI_i *ragdoll;

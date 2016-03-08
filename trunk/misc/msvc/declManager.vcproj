@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="declManager"
 	ProjectGUID="{20638E69-F228-4CC1-94CF-C7CE326D2D88}"
 	RootNamespace="declManager"
@@ -281,14 +281,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\shared\parser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
 				>
 			</File>
 			<File

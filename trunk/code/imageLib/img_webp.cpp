@@ -24,7 +24,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // img_webpp.cpp - webpp image format
 #include "img_local.h"
 #include <api/vfsAPI.h>
-#include <qcommon/q_shared.h>
 
 #include <webp/decode.h>
 

@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/entDefAPI.h>
 #include <shared/entityType.h>
 #include <shared/wolfScript.h>
+#include <assert.h>
 
 DEFINE_CLASS(BaseEntity, "None");
 // Quake3 "misc_teleporter_dest" for q3dm0 teleporter 

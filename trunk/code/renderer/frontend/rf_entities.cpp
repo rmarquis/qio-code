@@ -399,6 +399,14 @@ void rEntityImpl_c::setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags) 
 		skelAnimCtrlTorso->setNextAnim(anim,skelModel,rf_curTimeMsec,newFlags);
 	}
 }
+void rEntityImpl_c::setTIKIModelAnimLocalIndex(int localAnimIndex, int newFlags) {
+	if(model->isTIKI() == false) {
+		g_core->Print("rEntityImpl_c::setTIKIModelAnimLocalIndex: called on non-TIKI model %s\n",model->getName());
+		return;
+	}
+	const class skelAnimAPI_i *a = model->getTIKI()->getSkelAnim(localAnimIndex);
+	this->setAnim(a,newFlags);
+}
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags) {
 	if(model->isDeclModel() == false) {
 		g_core->Print("rEntityImpl_c::setDeclModelAnimLocalIndex: called on non-decl model %s\n",model->getName());
@@ -440,6 +448,13 @@ void rEntityImpl_c::hideModel() {
 void rEntityImpl_c::showModel() {
 	bHidden = false;
 }	
+bool rEntityImpl_c::hasTIKIModel() const {
+	if(model == 0)
+		return false;
+	if(model->isTIKI())
+		return true;
+	return false;
+}
 bool rEntityImpl_c::hasDeclModel() const {
 	if(model == 0)
 		return false;

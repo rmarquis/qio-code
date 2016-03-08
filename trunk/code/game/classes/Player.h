@@ -29,7 +29,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 #include "../../shared/str.h"
-#include "../../qcommon/q_shared.h" // for ucmd
 #include <protocol/userCmd.h>
 #include <protocol/playerState.h>
 
