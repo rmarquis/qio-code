@@ -70,6 +70,7 @@ enum weaponState_e {
 // except for 'client->pers' and 'client->sess'
 
 class Player : public ModelEntity {
+friend class playerConditionsHandler_c;
 	class physCharacterControllerAPI_i *characterController;
 	str netName;
 	safePtr_c<Weapon> curWeapon;
@@ -176,6 +177,8 @@ public:
 
 	bool hasUserCmdForward() const;
 	bool hasUserCmdBackward() const;
+	bool hasUserCmdLeft() const;
+	bool hasUserCmdRight() const;
 
 	void cmdSay(const char *msg);
 
