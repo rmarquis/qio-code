@@ -40,6 +40,12 @@ public:
 	stringList_c() {
 		bIgnoreDuplicates = false;
 	}
+	stringList_c(const stringList_c &other) {
+		list.resize(other.list.size());
+		for(u32 i = 0; i < other.list.size(); i++) {
+			list[i] = strdup(other.list[i]);
+		}
+	}
 	~stringList_c() {
 		freeMemory();
 	}

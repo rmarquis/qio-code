@@ -110,6 +110,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_SpawnMapEntities(mapName);
 	// init pathnodes
 	G_InitPathnodesSystem();
+	// init .st files manager
+	G_InitStateMachines();
 	
 #ifdef G_ENABLE_LUA_SCRIPTING
 	G_InitLua();

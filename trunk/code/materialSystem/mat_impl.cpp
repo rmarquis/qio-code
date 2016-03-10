@@ -1611,6 +1611,9 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						// used in MoHAA menu_button_trans from mohmenu.shader
 						float val = p.getFloat();
 						stage->setAlphaGenConst(val);
+					} else if(p.atWord("fromEntity")) {
+						// used in FAKK so cgame can set the Julie model transparency
+						stage->setAlphaGenConst(1.f);
 					} else {
 						p.skipLine();
 					}

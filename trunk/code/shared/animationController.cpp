@@ -81,9 +81,16 @@ void skelAnimController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const
 	if(anim_printAnimChange.getInt()) {
 		g_core->Print("setNextAnim: %i, %s\n",curGlobalTimeMSec,newAnim->getName());
 	}
+
 	// build previous bone state which we will use
 	// to interpolate between old animation state and newAnim
-	oldBonesState.resize(anim->getNumBones());
+	if(anim->getNumBones()) {
+		oldBonesState.resize(anim->getNumBones());
+	} else {
+		// for SKA animation which dont have bone parenting data
+		oldBonesState.resize(skelModel->getNumBones());
+	}
+
 	if(nextAnim != anim) {
 	//	g_core->RedWarning("skelAnimController_c::setNextAnim: havent finished lerping the previous animation change; jittering might be visible\n");
 		updateModelAnimationLocal(skelModel,oldBonesState);
@@ -97,7 +104,7 @@ void skelAnimController_c::setNextAnim(const class skelAnimAPI_i *newAnim, const
 			singleAnimLerp_s oldStateTMP;
 			getSingleLoopAnimLerpValuesForTime(oldStateTMP,anim,time);
 		//	g_core->Print("Building oldbonestate from frames %i %i\n",oldStateTMP.from,oldStateTMP.to);
-			anim->buildLoopAnimLerpFrameBonesLocal(oldStateTMP,oldBonesState);
+			anim->buildLoopAnimLerpFrameBonesLocal(oldStateTMP,oldBonesState,skelModel);
 		}
 	}
 	time = 0;
@@ -184,8 +191,13 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		
 		// build skeleton for the first frame of new animation
 		boneOrArray_c newBones;
-		newBones.resize(nextAnim->getNumBones());
-		nextAnim->buildFrameBonesLocal(0,newBones);
+		if(nextAnim->getNumBones()) {
+			newBones.resize(nextAnim->getNumBones());
+		} else {
+			// for SKA animation which dont have bone parenting data
+			newBones.resize(skelModel->getNumBones());
+		}
+		nextAnim->buildFrameBonesLocal(0,newBones,skelModel);
 		
 		// do the interpolation
 		float frac = this->time / this->blendTime;

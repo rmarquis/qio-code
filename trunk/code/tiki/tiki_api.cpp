@@ -132,6 +132,8 @@ public:
 		return skelModel==0;
 	}
 	virtual int findAnim(const char *animAlias) const { 
+		if(animAlias == 0)
+			return -1;
 		for(u32 i = 0; i < anims.size(); i++) {
 			if(!stricmp(anims[i]->getAlias(),animAlias)) {
 				return i;

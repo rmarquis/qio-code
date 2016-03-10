@@ -448,8 +448,25 @@ void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_
 	//if(bones[boneNum].parentIndex != -1)
 	//	quat.conjugate();
 }
-void skelAnimGeneric_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const {
-
+void skelAnimGeneric_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
+	const skelFrame_c &f = this->frames[frameNum];
+	const boneDef_s *boneDef;
+	u32 numBones;
+	if(bones.size()) {
+		boneDef = bones.getArray();
+		numBones = bones.size();
+	} else {
+		boneDef = skelModel->getBoneDefs()->getArray();
+		numBones = skelModel->getBoneDefs()->size();
+	}
+	boneOr_s *outBone = out.getArray();
+	for(u32 i = 0; i < numBones; i++, boneDef++, outBone++) {
+		quat_c quat;
+		vec3_c pos;
+		buildSingleBone(i,f,pos,quat);
+		outBone->boneName = boneDef->nameIndex;
+		outBone->mat.fromQuatAndOrigin(quat,pos);
+	}
 }
 void skelAnimGeneric_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
 
@@ -714,7 +731,7 @@ void skelAnimMD5_c::buildSingleBone(int boneNum, const md5Frame_c &f, vec3_c &po
 	}
 	quat.calcW();
 }
-void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const {
+void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
 	const md5Frame_c &f = this->frames[frameNum];
 	if(out.size() != bones.size()) {
 		// reallocating array_c memory in another module might cause
