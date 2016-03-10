@@ -282,6 +282,16 @@ bool Player::hasUserCmdBackward() const {
 		return true;
 	return false;
 }
+bool Player::hasUserCmdLeft() const {
+	if(pers.cmd.rightmove < 0)
+		return true;
+	return false;
+}
+bool Player::hasUserCmdRight() const {
+	if(pers.cmd.rightmove > 0)
+		return true;
+	return false;
+}
 void Player::toggleNoclip() {
 	noclip = !noclip;
 	if(noclip) {
@@ -453,10 +463,26 @@ public:
 			res = p->hasUserCmdForward();
 		if(!stricmp(conditionName,"BACKWARD"))
 			res = p->hasUserCmdBackward();
+		if(!stricmp(conditionName,"STRAFE_LEFT"))
+			res = p->hasUserCmdLeft();
+		if(!stricmp(conditionName,"STRAFE_RIGHT"))
+			res = p->hasUserCmdRight();
 		if(!stricmp(conditionName,"ONGROUND"))
-			res = true;	
+			res = p->onGround;	
+		if(!stricmp(conditionName,"FALLING"))
+			res = !p->onGround && p->getLinearVelocity().z < 0;	
 		if(!stricmp(conditionName,"CAN_MOVE_FORWARD"))
 			res = true;	
+		if(!stricmp(conditionName,"CAN_MOVE_BACKWARD"))
+			res = true;	
+		if(!stricmp(conditionName,"CAN_MOVE_RIGHT"))
+			res = true;	
+		if(!stricmp(conditionName,"CAN_MOVE_LEFT"))
+			res = true;	
+		//if(!stricmp(conditionName,"RUN"))
+		//	res = !(p->pers.cmd.buttons & BUTTON_WALKING);	
+		//if(!stricmp(conditionName,"JUMP"))
+		//	res = p->bJumped;	
 		
 		if(conditionType == CT_NEGATE)
 			return !res;
@@ -536,14 +562,14 @@ void Player::runPlayer() {
 					dir.scale(4.f);
 					newOrigin = ps.origin + dir;
 					ModelEntity::setOrigin(newOrigin);
-					ps.velocity = dir;
+					linearVelocity = ps.velocity = dir;
 					onGround = false;
 				} else {
 					dir[2] = 0;
 					dir *= 0.75f;
 					this->characterController->update(dir);
 					newOrigin = this->characterController->getPos();
-					ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
+					linearVelocity = ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
 					bool isNowOnGround = this->characterController->isOnGround();
 					if(isNowOnGround) {
 						if(ucmd->upmove) {
