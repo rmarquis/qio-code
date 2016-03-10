@@ -385,6 +385,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_stateMachines.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_utils.cpp"
 				>
 				<FileConfiguration
@@ -415,6 +419,22 @@
 			</File>
 			<File
 				RelativePath="..\..\code\game\g_wolfScript.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\stateMachine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\stateMachine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\stateMachineManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\stateMachineManager.h"
 				>
 			</File>
 		</Filter>
@@ -464,6 +484,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\api\simplePathAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\stateConditionsHandlerAPI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\api\stateMachineAPI.h"
 				>
 			</File>
 			<File

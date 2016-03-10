@@ -62,6 +62,16 @@ void parser_c::setup(const char *newText, const char *newP) {
 void parser_c::setDebugFileName(const char *newDebugFileName) {
 	this->debugFileName = newDebugFileName;
 }
+bool parser_c::isNextTokenInQuotationMarks() {
+	const char *savedP = p;
+	skipToNextToken();
+	if(*p == '"') {
+		p = savedP;
+		return true;
+	}
+	p = savedP;
+	return false;
+}
 bool parser_c::skipToNextToken() {
 	while(*p) {
 		if(p[0] == '/') {

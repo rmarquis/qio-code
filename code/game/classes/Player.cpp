@@ -36,6 +36,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/declManagerAPI.h>
 #include <api/entDefAPI.h>
 #include <api/entityDeclAPI.h>
+#include <api/stateMachineAPI.h>
+#include <api/stateConditionsHandlerAPI.h>
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 #include <shared/animationFlags.h>
@@ -190,6 +192,13 @@ Player::Player() {
 	bTakeDamage = true;
 	weaponState = WP_NONE;
 	lastPainTime = 0;
+	st_legs = 0;
+	st_torso = 0;
+	bJumped = false;
+	bLanding = false;
+	groundDist = 0.f;
+	st_curStateLegs = "STAND";
+	st_curStateTorso = "STAND";
 }
 Player::~Player() {
 	if(characterController) {
@@ -223,6 +232,9 @@ void Player::setVehicle(class VehicleCar *newVeh) {
 	vehicle = newVeh;
 	this->hideEntity();
 	disableCharacterController();
+}
+void Player::loadStateMachineLegs(const char *fname) {
+	st_legs = G_LoadStateMachine(fname);
 }
 void Player::setPlayerModel(const char *newPlayerModelName) {
 	this->disableCharacterController();
@@ -259,6 +271,16 @@ void Player::setPlayerModel(const char *newPlayerModelName) {
 	}
 	animHandler->setGameEntity(this);
 	animHandler->setModelName(newPlayerModelName);
+}
+bool Player::hasUserCmdForward() const {
+	if(pers.cmd.forwardmove > 0)
+		return true;
+	return false;
+}
+bool Player::hasUserCmdBackward() const {
+	if(pers.cmd.forwardmove < 0)
+		return true;
+	return false;
 }
 void Player::toggleNoclip() {
 	noclip = !noclip;
@@ -370,6 +392,89 @@ bool Player::isPainAnimActive() const {
 		return false;
 	return true;
 }
+void Player::runPlayerAnimation_gameCode() {
+	userCmd_s *ucmd = &this->pers.cmd;
+	// update animation
+	//if(0) {
+		//this->setAnimation("models/player/shina/attack.md5anim");
+	//} else if(bLanding) {
+	//	this->setAnimation("models/player/shina/run.md5anim");
+	//} else
+	if(isPainAnimActive()) {
+		setPlayerAnimBoth(G_FindSharedAnim(curPainAnimationName.c_str()));
+	} else if(bJumped) {
+		setPlayerAnimBoth(SGA_JUMP);
+		//this->setAnimation("models/player/shina/jump.md5anim");
+	} else if(groundDist > 32.f) {
+		setPlayerAnimBoth(SGA_JUMP);
+		//this->setAnimation("models/player/shina/jump.md5anim");
+	} else if(ucmd->hasMovement()) {
+		if(ucmd->forwardmove < 82) {
+			if(ucmd->forwardmove < 0) {
+				if(ucmd->forwardmove < -82) {
+					setPlayerAnimBoth(SGA_RUN_BACKWARDS);
+					//this->setAnimation("models/player/shina/run_backwards.md5anim");
+				} else {
+					setPlayerAnimBoth(SGA_WALK_BACKWARDS);
+					//this->setAnimation("models/player/shina/walk_backwards.md5anim");
+				}
+			} else {
+				setPlayerAnimBoth(SGA_WALK);
+				//this->setAnimation("models/player/shina/walk.md5anim");
+			}
+		} else {
+			setPlayerAnimBoth(SGA_RUN);
+			//this->setAnimation("models/player/shina/run.md5anim");
+		}
+	} else {
+		setPlayerAnimBoth(SGA_IDLE);
+		//this->setAnimation("models/player/shina/idle.md5anim");
+	}
+	//if(fireHeld) {
+	if(weaponState == WP_FIRING) {
+		setPlayerAnimTorso(SGA_ATTACK);
+	} else {
+		setPlayerAnimTorso(SGA_BAD);
+	}
+}
+
+class playerConditionsHandler_c : public stateConditionsHandler_i {
+	friend class Player;
+	Player *p;
+public:
+	virtual bool hasAnim(const char *animName) const {
+		return p->findAnimationIndex(animName) != -1;
+	}
+	virtual bool isConditionTrue(enum stConditionType_e conditionType, const char *conditionName, const class stringList_c *arguments, class patternMatcher_c *patternMatcher = 0) {
+		bool res = false;
+		if(!stricmp(conditionName,"DEFAULT"))
+			res = true;	
+		if(!stricmp(conditionName,"FORWARD"))
+			res = p->hasUserCmdForward();
+		if(!stricmp(conditionName,"BACKWARD"))
+			res = p->hasUserCmdBackward();
+		if(!stricmp(conditionName,"ONGROUND"))
+			res = true;	
+		if(!stricmp(conditionName,"CAN_MOVE_FORWARD"))
+			res = true;	
+		
+		if(conditionType == CT_NEGATE)
+			return !res;
+		return res;
+	}
+} g_playerConditionsHandler;
+
+// use .st files to select proper animation
+// (FAKK / MOHAA way)
+void Player::runPlayerAnimation_stateMachine() {
+	g_playerConditionsHandler.p = this;
+	const char *next = st_legs->transitionState(st_curStateLegs,&g_playerConditionsHandler);
+	if(next && next[0]) {
+		st_curStateLegs = next;
+	}
+	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,&g_playerConditionsHandler);
+	this->setAnimation(anim);
+}
 void Player::runPlayer() {
 	userCmd_s *ucmd = &this->pers.cmd;
 
@@ -406,8 +511,8 @@ void Player::runPlayer() {
 			vehicle->steerUCmd(ucmd);
 			//this->setClientViewAngle(vehicle->getAngles());
 		} else {
-			bool bJumped = false;
-			bool bLanding = false;
+			bJumped = false;
+			bLanding = false;
 			// update the viewangles
 			ps.updateViewAngles(ucmd);
 			{
@@ -468,7 +573,6 @@ void Player::runPlayer() {
 						ps.angles.y += 45;
 				}
 			}
-			float groundDist = 0.f;
 			if(onGround == false) {
 				trace_c tr;
 				tr.setupRay(this->getOrigin()+characterControllerOffset,this->getOrigin()-vec3_c(0,0,32.f));
@@ -477,51 +581,14 @@ void Player::runPlayer() {
 				//g_core->Print("GroundDist: %f\n",groundDist);
 				ps.groundEntityNum = ENTITYNUM_NONE;
 			} else {
+				groundDist = 0.f;
 				ps.groundEntityNum = ENTITYNUM_WORLD; // fixme
 			}
-			// update animation
-			//if(0) {
-				//this->setAnimation("models/player/shina/attack.md5anim");
-			//} else if(bLanding) {
-			//	this->setAnimation("models/player/shina/run.md5anim");
-			//} else
-			if(isPainAnimActive()) {
-				setPlayerAnimBoth(G_FindSharedAnim(curPainAnimationName.c_str()));
-			} else 
-			if(bJumped) {
-				setPlayerAnimBoth(SGA_JUMP);
-				//this->setAnimation("models/player/shina/jump.md5anim");
-			} else if(groundDist > 32.f) {
-				setPlayerAnimBoth(SGA_JUMP);
-				//this->setAnimation("models/player/shina/jump.md5anim");
-			} else if(ucmd->hasMovement()) {
-				if(ucmd->forwardmove < 82) {
-					if(ucmd->forwardmove < 0) {
-						if(ucmd->forwardmove < -82) {
-							setPlayerAnimBoth(SGA_RUN_BACKWARDS);
-							//this->setAnimation("models/player/shina/run_backwards.md5anim");
-						} else {
-							setPlayerAnimBoth(SGA_WALK_BACKWARDS);
-							//this->setAnimation("models/player/shina/walk_backwards.md5anim");
-						}
-					} else {
-						setPlayerAnimBoth(SGA_WALK);
-						//this->setAnimation("models/player/shina/walk.md5anim");
-					}
-				} else {
-					setPlayerAnimBoth(SGA_RUN);
-					//this->setAnimation("models/player/shina/run.md5anim");
-				}
+			if(st_legs) {
+				runPlayerAnimation_stateMachine();
 			} else {
-				setPlayerAnimBoth(SGA_IDLE);
-				//this->setAnimation("models/player/shina/idle.md5anim");
+				runPlayerAnimation_gameCode();
 			}
-		}
-		//if(fireHeld) {
-		if(weaponState == WP_FIRING) {
-			setPlayerAnimTorso(SGA_ATTACK);
-		} else {
-			setPlayerAnimTorso(SGA_BAD);
 		}
 
 		if(carryingEntity) {

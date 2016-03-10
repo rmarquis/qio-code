@@ -193,8 +193,12 @@ void ClientSpawn(edict_s *ent) {
 
 	// don't allow full run speed for a bit
 
-#if 1
+#if 0
+	// Qio player model
 	pl->setPlayerModel("models/player/shina/body.md5mesh");
+#elif 1
+	pl->setPlayerModel("models/julie_swamp.tik");
+	pl->loadStateMachineLegs("global/julie_legs.st");
 #else
 	// load q3 player model (three .md3's)
 	pl->setPlayerModel("$sarge");

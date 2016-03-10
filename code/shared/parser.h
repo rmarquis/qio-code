@@ -54,6 +54,9 @@ public:
 	void clear();
 	void setDebugFileName(const char *newDebugFileName);
 
+	// retusn true if next token is inside a pair of "
+	bool isNextTokenInQuotationMarks();
+
 	// returns true if eof is reached
 	bool skipToNextToken();
 	bool tryToGetNextToken(const char *stopSet = 0) {

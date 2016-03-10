@@ -52,7 +52,7 @@ public:
 	virtual int findBoneForBoneNameIndex(u32 boneNameIndex) const = 0;
 	virtual void addChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const = 0;
 	virtual void removeChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const = 0;
-	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out) const = 0;
+	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const = 0;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const = 0;
 	// for looping animations
 	// skelModel pointer is used here only for SKA animation which are missing bone parenting information

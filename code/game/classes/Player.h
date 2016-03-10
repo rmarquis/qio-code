@@ -83,6 +83,17 @@ class Player : public ModelEntity {
 	u32 lastPainTime;
 	u32 curPainAnimationTime;
 	str curPainAnimationName;
+	// movement events
+	bool bJumped;
+	bool bLanding;
+	float groundDist;
+	// FAKK / MoHAA player state machine
+	// Used to override game-code movement control.
+	class stateMachineAPI_i *st_legs;
+	class stateMachineAPI_i *st_torso;
+	// current states
+	str st_curStateLegs;
+	str st_curStateTorso;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
@@ -126,6 +137,10 @@ public:
 	void createCharacterControllerCapsule(float cHeight, float cRadius);
 	void touchTriggers();
 	void updatePlayerWeapon();
+	void runPlayerAnimation_gameCode();
+	// use .st files to select proper animation
+	// (FAKK / MOHAA way)
+	void runPlayerAnimation_stateMachine();
 	void runPlayer();
 	void onUseKeyDown();
 	void onFireKeyHeld();
@@ -151,12 +166,16 @@ public:
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	void setVehicle(class VehicleCar *newVeh);
 	void setPlayerModel(const char *newPlayerModelName);
+	void loadStateMachineLegs(const char *fname);
 	bool hasActiveWeapon() const {
 		if(curWeapon.getPtr())
 			return true;
 		return false;
 	}
 	void toggleNoclip();
+
+	bool hasUserCmdForward() const;
+	bool hasUserCmdBackward() const;
 
 	void cmdSay(const char *msg);
 

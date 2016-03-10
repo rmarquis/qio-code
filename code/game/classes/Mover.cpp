@@ -70,7 +70,7 @@ void Mover::setKeyValue(const char *key, const char *value) {
 		} else {
 			direction = vec3_c(0,f,0).getForward();
 		}
-		//g_logger->printMsg("Door %i angle %f\n",getEntNum(),f);
+		//g_core->RedWarning("Door %i angle %f\n",getEntNum(),f);
 	} else if(!stricmp(key,"angles")) {
 		direction = vec3_c(value).getForward();
 	} else if(!stricmp(key,"lip")) {
