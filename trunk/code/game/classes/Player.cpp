@@ -51,6 +51,7 @@ static aCvar_c g_printPlayerWeaponState("g_printPlayerWeaponState","0");
 static aCvar_c g_printPlayerPrimaryFireState("g_printPlayerPrimaryFireState","0");
 static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPrimaryFireState","0");
 static aCvar_c g_printPlayerLanding("g_printPlayerLanding","0");
+static aCvar_c g_printPlayerLegsStateChange("g_printPlayerLegsStateChange","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -706,17 +707,21 @@ void Player::runPlayerAnimation_stateMachine() {
 		st_handler = new playerConditionsHandler_c(&g_playerConditionsTable,this);
 	}
 	st_handler->updateFrame();
-	u32 maxStateChanges = 10;
-	for(u32 i = 0; i < maxStateChanges; i++) {
+	///u32 maxStateChanges = 10;
+	//for(u32 i = 0; i < maxStateChanges; i++) {
 		const char *next = st_legs->transitionState(st_curStateLegs,st_handler);
 		if(next && next[0]) {
-			g_core->Print("(Time %i): Changing legs state from %s to %s\n",level.time,st_curStateLegs.c_str(),next);
+			if(g_printPlayerLegsStateChange.getInt()) {
+				g_core->Print("(Time %i): Changing legs state from %s to %s\n",level.time,st_curStateLegs.c_str(),next);
+			}
 			st_curStateLegs = next;
-			continue;
+	//		continue;
 		}
-		break;
-	}
+	//	break;
+	//}
 	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
+	///anim = "stand_to_ready";
+	//anim = "ready_to_jump_up_to_rise";
 	this->setAnimation(anim);
 #endif
 }
@@ -733,6 +738,8 @@ void Player::runPlayer() {
 //		g_core->Print("serverTime >>>>>\n" );
 	} 
 
+
+	legsAnimationTime += level.frameTimeMs;
 	int msec = ucmd->serverTime - this->ps.commandTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
@@ -792,7 +799,12 @@ void Player::runPlayer() {
 					bool isNowOnGround = this->characterController->isOnGround();
 					if(isNowOnGround) {
 						if(ucmd->upmove) {
-							bJumped = this->characterController->tryToJump();
+							// jumping when using .st machine is handled other way
+							// There is a jump (jumpxy) event which should be
+							// called from .st or .tik animation script.
+							if(st_legs == false) {
+								bJumped = this->characterController->tryToJump();
+							}
 						}
 						if(onGround == false) {
 							bLanding = true;
@@ -1435,8 +1447,13 @@ bool Player::checkAnimDoneTorso(const class stringList_c *arguments, class patte
 	return false;
 }
 bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-	// TODO
-	return true;
+	int needed = getCurrentAnimationTotalTimeMs();
+	if(legsAnimationTime > needed) {
+		g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
+		return true;
+	}
+	g_core->Print("Anim not yet done... %i <= %i \n",legsAnimationTime,needed);
+	return false;
 }
 bool Player::checkIsWeaponActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(curWeapon == 0)
