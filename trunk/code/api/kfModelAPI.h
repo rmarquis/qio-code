@@ -43,6 +43,7 @@ public:
 	virtual const char *getName() const = 0;
 	virtual u32 getNumFrames() const = 0;
 	virtual u32 getNumSurfaces() const = 0;
+	virtual float getFrameTime() const = 0;
 	virtual u32 getNumTags() const = 0;
 	virtual u32 getTotalTriangleCount() const = 0;
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const = 0;

@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelPostProcessFuncs.h>
 #include <api/kfModelAPI.h>
 #include <api/skelAnimAPI.h>
+#include <shared/perStringCallback.h>
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
 #include <shared/hashTableTemplate.h>
@@ -46,21 +47,86 @@ public:
 	virtual void addRemap(const char *surf, const char *mat) = 0;
 };
 
-class tikiAnim_i {
-
-public:
-	virtual const char *getAlias() const = 0;
-	virtual class kfModelAPI_i *getKFModel() const = 0;
-	virtual class skelAnimAPI_i *getSkelAnim() const = 0;
-	virtual int getTotalTimeMs() const = 0;
+class tikiAnimCommand_c {
+friend class tikiAnimCommands_c;
+	int frameNum;
+	str commandText;
 };
-
+class tikiAnimCommands_c {
+	arraySTD_c<tikiAnimCommand_c> commands;
+public:
+	void addCommand(int frame, const char *txt) {
+		tikiAnimCommand_c c;
+		c.frameNum = frame;
+		c.commandText = txt;
+		c.commandText.stripTrailing("\r\n");
+		commands.push_back(c);
+	}
+	void executeCommands(int startFrame,int lastFrame,class perStringCallbackListener_i *cb) const {
+		for(u32 i = 0; i < commands.size(); i++) {
+			const tikiAnimCommand_c &c = commands[i];
+			if(c.frameNum >= lastFrame)
+				return;
+			if(c.frameNum >= startFrame) {
+				if(1) {
+					g_core->Print("Executing cmd %i of %i (%s) because frameNum %i is inside range <%i,%i)\n",
+						i,commands.size(),c.commandText.c_str(),c.frameNum,startFrame,lastFrame);
+				}
+				if(cb) {
+					cb->perStringCallback(c.commandText);
+				}
+			}
+		}
+	}
+};
 class tikiAnimBase_c : public tikiAnim_i {
 	tikiAnimBase_c *hashNext;
 protected:
 	str alias;
 	str fileName;
+	tikiAnimCommands_c *serverCommands;
+	tikiAnimCommands_c *clientCommands;
 public:
+	tikiAnimBase_c() {
+		serverCommands = 0;
+		clientCommands = 0;
+	}
+	virtual ~tikiAnimBase_c() {
+		if(clientCommands) {
+			delete clientCommands;
+		}
+		if(serverCommands) {
+			delete serverCommands;
+		}
+	}	
+	void iterateCommands(const tikiAnimCommands_c *s, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const {
+		if(endTime <= startTime)
+			return;
+		u32 startFrame = startTime / getFrameTimeMs();
+		u32 lastFrame = endTime / getFrameTimeMs();
+		s->executeCommands(startFrame,lastFrame,cb);
+	}
+	void iterateCommands(tikiCommandSide_e side, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const {
+		if(side == TCS_SERVER) {
+			if(serverCommands == 0)
+				return;
+			iterateCommands(serverCommands,startTime,endTime,cb);
+		} else if(side == TCS_CLIENT) {
+			if(clientCommands == 0)
+				return;
+			iterateCommands(clientCommands,startTime,endTime,cb);
+		}
+	}
+	tikiAnimCommands_c *allocServerCommands() {
+		if(serverCommands == 0)
+			serverCommands = new tikiAnimCommands_c();
+		return serverCommands;
+	}
+	tikiAnimCommands_c *allocClientCommands() {
+		if(clientCommands == 0)
+			clientCommands = new tikiAnimCommands_c();
+		return clientCommands;
+	}
 	const char *getName() const {
 		return alias;
 	}
@@ -72,9 +138,6 @@ public:
 	}
 	tikiAnimBase_c *getHashNext() const {
 		return hashNext;
-	}
-	virtual ~tikiAnimBase_c() {
-
 	}
 	virtual const char *getAlias() const {
 		return alias;
@@ -131,6 +194,13 @@ public:
 	}
 	virtual bool isKeyframed() const {
 		return skelModel==0;
+	}
+	virtual const class tikiAnim_i *getAnim(int animIndex) const {
+		if(animIndex < 0)
+			return 0;
+		if(animIndex >= anims.size())
+			return 0;
+		return anims[animIndex];
 	}
 	virtual int findAnim(const char *animAlias) const { 
 		if(animAlias == 0)
@@ -212,6 +282,16 @@ public:
 			return 0;
 		return skelAnim->getTotalTimeSec() * 1000;
 	}
+	virtual int getNumFrames() const {
+		if(skelAnim == 0)
+			return 0;
+		return skelAnim->getNumFrames();
+	}
+	virtual int getFrameTimeMs() const {
+		if(skelAnim == 0)
+			return 0;
+		return skelAnim->getFrameTime()*1000;
+	}
 
 	virtual class skelAnimAPI_i *getSkelAnim() const {
 		return skelAnim;
@@ -239,8 +319,19 @@ public:
 	virtual int getTotalTimeMs() const {
 		if(kfModel == 0)
 			return 0;
-		return 0; // TODO kfModel->getTotalTimeSec() * 1000;
+		return getNumFrames() * getFrameTimeMs();
 	}
+	virtual int getNumFrames() const {
+		if(kfModel == 0)
+			return 0;
+		return kfModel->getNumFrames();
+	}
+	virtual int getFrameTimeMs() const {
+		if(kfModel == 0)
+			return 0;
+		return kfModel->getFrameTime() * 1000;
+	}
+
 	virtual class skelAnimAPI_i *getSkelAnim() const {
 		return 0;
 	}
@@ -381,6 +472,27 @@ class tikiParser_c : public parser_c {
 		}
 		return false;
 	}
+	bool parseAnimCommands(class tikiAnimCommands_c *ac) {
+		while(atChar('}')==false) {
+			int frameNum;
+			if(atWord("entry")) {
+				frameNum = TF_ENTRY;
+			} else if(atWord("exit")) {
+				frameNum = TF_EXIT;
+			} else if(atWord("first")) {
+				frameNum = TF_FIRST;
+			} else if(atWord("last")) {
+				frameNum = TF_LAST;
+			} else {
+				frameNum = getInteger();
+			}
+			const char *l = getLine("}");
+			g_core->Print("parseAnimCommands: frame %i, cmd '%s'\n",
+				frameNum,l);
+			ac->addCommand(frameNum,l);
+		}
+		return false;
+	}
 	bool parseAnimationBlock(class tikiAnimBase_c *ta) {
 
 		while(atChar('}')==false) {
@@ -390,7 +502,7 @@ class tikiParser_c : public parser_c {
 						getToken(),getCurrentLineNumber(),getDebugFileName());
 					return true;
 				}
-				if(parseInitCommands()) {
+				if(parseAnimCommands(ta->allocServerCommands())) {
 					g_core->RedWarning("tikiParser_c::parseAnimationBlock: failed to parse 'server' section of %s\n",
 						getDebugFileName());
 					return true;
@@ -401,7 +513,7 @@ class tikiParser_c : public parser_c {
 						getToken(),getCurrentLineNumber(),getDebugFileName());
 					return true;
 				}
-				if(parseInitCommands()) {
+				if(parseAnimCommands(ta->allocClientCommands())) {
 					g_core->RedWarning("tikiParser_c::parseAnimationBlock: failed to parse 'client' section of %s\n",
 						getDebugFileName());
 					return true;

@@ -758,8 +758,19 @@ void ModelEntity::destroyPhysicsObject() {
 		this->myEdict->s->activeRagdollDefNameIndex = 0;
 	}
 }
+void ModelEntity::updateAnimations() {
+	u32 prevLegsAnimationTime = legsAnimationTime;
+	legsAnimationTime += level.frameTimeMs;
+	if(tiki) {
+		const tikiAnim_i *legsAnim = tiki->getAnim(this->myEdict->s->animIndex);
+		if(legsAnim) {
+			legsAnim->iterateCommands(TCS_SERVER,prevLegsAnimationTime,legsAnimationTime,0);
+		}
+	}
+}
 void ModelEntity::runFrame() {
 	runPhysicsObject();
+	updateAnimations();
 }
 void ModelEntity::getLocalBounds(aabb &out) const {
 	if(renderModelName.length() == 0) {

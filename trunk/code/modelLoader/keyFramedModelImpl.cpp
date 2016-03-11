@@ -412,6 +412,7 @@ bool kfModelImpl_c::loadTAN(const byte *buf, const u32 fileLen, const char *fnam
 		return true; // error
 	}
 	frames.resize(h->numFrames);
+	this->frameTime = h->totaltime / h->numFrames;
 	kfFrame_c *of = frames.getArray();
 	for(u32 i = 0; i < h->numFrames; i++, of++) {
 		const tanFrame_s *f = h->pFrame(i);

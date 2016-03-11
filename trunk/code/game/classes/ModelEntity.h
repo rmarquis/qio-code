@@ -81,6 +81,7 @@ protected:
 	virtual const char *getRenderModelName() const {
 		return renderModelName;
 	}
+	void updateAnimations();
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
