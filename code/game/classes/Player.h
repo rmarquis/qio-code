@@ -70,7 +70,7 @@ enum weaponState_e {
 // except for 'client->pers' and 'client->sess'
 
 class Player : public ModelEntity {
-friend class playerConditionsHandler_c;
+friend class testPlayerConditionsHandler_c;
 	class physCharacterControllerAPI_i *characterController;
 	str netName;
 	safePtr_c<Weapon> curWeapon;
@@ -95,6 +95,8 @@ friend class playerConditionsHandler_c;
 	// current states
 	str st_curStateLegs;
 	str st_curStateTorso;
+	// conditions handler
+	class playerConditionsHandler_c *st_handler;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
@@ -179,6 +181,8 @@ public:
 	bool hasUserCmdBackward() const;
 	bool hasUserCmdLeft() const;
 	bool hasUserCmdRight() const;
+	bool hasUserCmdUp() const;
+	bool hasUserCmdDown() const;
 
 	void cmdSay(const char *msg);
 
@@ -197,6 +201,48 @@ public:
 	bool canPickUpWeapon(class Weapon *newWeapon);
 
 	void dropCurrentWeapon();
+
+	//
+	// state conditions
+	// (for MoHAA/FAKK .st files support)
+	//
+	bool checkFalling(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkForward(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkBackward(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkStrafeRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkStrafeLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkRun(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHasVelocity(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkBlocked(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkDuckedViewInWater(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkCrouch(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkJump(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkLookingUp(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAtLadder(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkKilled(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHeight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkRunning(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAnimDoneTorso(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsWeaponActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsWeaponClassActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHasWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPutawayMain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsNewWeaponClass(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAttackPrimary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAttackSecondary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsWeaponSemiAuto(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsWeaponClassReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkMinChargeTimeMet(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool returnTrue(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) { return true; }
+	bool returnFalse(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) { return false; }
 };
 
 #endif // __PLAYER_H__
