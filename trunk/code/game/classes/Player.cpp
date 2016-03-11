@@ -41,6 +41,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 #include <shared/autoCvar.h>
 #include <shared/animationFlags.h>
+#include <shared/hashTableTemplate.h>
+#include <shared/stringList.h>
+
 
 static aCvar_c g_printPlayerPositions("g_printPlayerPositions","0");
 static aCvar_c g_printPlayersHealth("g_printPlayersHealth","0");
@@ -197,6 +200,7 @@ Player::Player() {
 	bJumped = false;
 	bLanding = false;
 	groundDist = 0.f;
+	st_handler = 0;
 	st_curStateLegs = "STAND";
 	st_curStateTorso = "STAND";
 }
@@ -289,6 +293,16 @@ bool Player::hasUserCmdLeft() const {
 }
 bool Player::hasUserCmdRight() const {
 	if(pers.cmd.rightmove > 0)
+		return true;
+	return false;
+}
+bool Player::hasUserCmdDown() const {
+	if(pers.cmd.upmove < 0)
+		return true;
+	return false;
+}
+bool Player::hasUserCmdUp() const {
+	if(pers.cmd.upmove > 0)
 		return true;
 	return false;
 }
@@ -448,7 +462,8 @@ void Player::runPlayerAnimation_gameCode() {
 	}
 }
 
-class playerConditionsHandler_c : public stateConditionsHandler_i {
+#if 0
+class testPlayerConditionsHandler_c : public stateConditionsHandler_i {
 	friend class Player;
 	Player *p;
 public:
@@ -489,10 +504,196 @@ public:
 		return res;
 	}
 } g_playerConditionsHandler;
+#endif
+
+struct conditionFunction_s {
+	const char *name;
+	//bool (BaseEntity::*func)();
+	s64 func;
+	conditionFunction_s *hashNext;
+	int index;
+
+	const char *getName() const {
+		return name;
+	}
+	conditionFunction_s *getHashNext() const {
+		return hashNext;
+	}	
+	void setHashNext(conditionFunction_s *newHashNext) {
+		hashNext = newHashNext;
+	}
+	bool isValid() const {
+		if(name == 0)
+			return false;
+		if(func == 0)
+			return false;
+		return true;
+	}
+};
+
+template <typename d, typename s>
+d &hack_cast(s &v) {
+  return reinterpret_cast<d&>(v);
+}
+//#define GETFUNC(name, ptr) { name, reinterpret_cast<s64>(&ptr), 0 },
+#define GETFUNC(name, ptr) { name, hack_cast<s64>(&ptr), 0 },
+conditionFunction_s g_playerConditions [] = {
+	// movement conditions
+	GETFUNC("FALLING",Player::checkFalling)
+	GETFUNC("ONGROUND",Player::checkOnGround)
+	GETFUNC("FORWARD",Player::checkForward)
+	GETFUNC("BACKWARD",Player::checkBackward)
+	GETFUNC("STRAFE_LEFT",Player::checkStrafeLeft)
+	GETFUNC("STRAFE_RIGHT",Player::checkStrafeRight)
+	GETFUNC("RUN",Player::checkRun)
+	GETFUNC("HAS_VELOCITY",Player::checkHasVelocity)
+	GETFUNC("BLOCKED",Player::checkBlocked)
+	GETFUNC("DUCKED_VIEW_IN_WATER",Player::checkDuckedViewInWater)
+	GETFUNC("CROUCH",Player::checkCrouch)
+	GETFUNC("CHECK_HEIGHT",Player::checkHeight)
+	GETFUNC("JUMP",Player::checkJump)
+	GETFUNC("LOOKING_UP",Player::checkLookingUp)
+	GETFUNC("AT_LADDER",Player::checkAtLadder)
+
+	
+	// damage stuff
+	GETFUNC("KILLED",Player::checkKilled)
+	GETFUNC("PAIN",Player::checkPain)
+	// anim conditions
+	GETFUNC("ANIMDONE_LEGS",Player::checkAnimDoneLegs)
+	GETFUNC("ANIMDONE_TORSO",Player::checkAnimDoneTorso)
+	// weapon conditions
+	GETFUNC("IS_WEAPON_ACTIVE",Player::checkIsWeaponActive)
+	GETFUNC("IS_WEAPONCLASS_ACTIVE",Player::checkIsWeaponClassActive)
+	GETFUNC("HAS_WEAPON",Player::checkHasWeapon)
+	GETFUNC("NEW_WEAPON",Player::checkNewWeapon)
+	GETFUNC("PUTAWAYMAIN",Player::checkPutawayMain)
+	// IS_NEW_WEAPONCLASS handname weaponclassname
+	// IS_NEW_WEAPON handname weaponname
+	GETFUNC("IS_NEW_WEAPONCLASS",Player::checkIsNewWeaponClass)
+	GETFUNC("IS_NEW_WEAPON",Player::checkIsNewWeapon)
+	GETFUNC("ATTACK_PRIMARY",Player::checkAttackPrimary)
+	GETFUNC("ATTACK_SECONDARY",Player::checkAttackSecondary)
+	GETFUNC("IS_WEAPON_SEMIAUTO",Player::checkIsWeaponSemiAuto)
+	GETFUNC("IS_WEAPON_READY_TO_FIRE",Player::checkIsWeaponReadyToFire)
+	GETFUNC("IS_WEAPONCLASS_READY_TO_FIRE",Player::checkIsWeaponClassReadyToFire)
+	GETFUNC("RELOAD",Player::checkReload)
+
+	// for grenades
+	// MIN_CHARGE_TIME_MET handname
+	GETFUNC("MIN_CHARGE_TIME_MET",Player::checkMinChargeTimeMet)
+
+	// generic conditions
+	GETFUNC("CHANCE",Player::checkChance)
+	
+
+	// FAKK
+	GETFUNC("CAN_MOVE_FORWARD",Player::returnTrue)
+	GETFUNC("CAN_MOVE_RIGHT",Player::returnTrue)
+	GETFUNC("CAN_MOVE_LEFT",Player::returnTrue)
+	GETFUNC("CAN_MOVE_BACKWARD",Player::returnTrue)
+	GETFUNC("FAKEPLAYERACTIVE",Player::returnFalse)
+	GETFUNC("BLOCKED",Player::returnFalse)
+	GETFUNC("CAN_FALL",Player::returnFalse)
+
+	{ 0, 0 }
+};
+
+
+class conditionsTable_c {
+	hashTableTemplateExt_c<conditionFunction_s> table;
+public:
+	conditionsTable_c(conditionFunction_s *funcs, u32 size) {
+		conditionFunction_s *f = funcs;
+		for(u32 i = 0; i < size; i++, f++) {
+			if(f->isValid()) {
+				f->index = table.size();
+				table.addObject(f);
+			}
+		}
+	}
+	const conditionFunction_s *findFunction(const char *name) const {
+		return table.getEntry(name);
+	}
+	u32 getSize() const {
+		return table.size();
+	}
+};
+conditionsTable_c g_playerConditionsTable(g_playerConditions,sizeof(g_playerConditions)/sizeof(g_playerConditions[0]));
+
+struct conditionState_s {
+	bool result;
+	bool prevResult;
+
+	void updateFrame() {
+		prevResult = result;
+	}
+};
+class playerConditionsHandler_c : public stateConditionsHandler_i {
+	const class conditionsTable_c *table;
+	arraySTD_c<conditionState_s> states;
+	Player *ent;
+
+	virtual bool hasAnim(const char *animName) const {
+		return ent->findAnimationIndex(animName)!=-1;
+	}
+	virtual bool isConditionTrue(enum stConditionType_e conditionType, const char *conditionName, const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+		if(!stricmp(conditionName,"default"))
+			return true;
+
+		const conditionFunction_s *f = table->findFunction(conditionName);
+		if(f == 0)
+			return false;
+		int index = f->index;
+		// the arguments are not taken into account while checking edgetrue/edgefalse stuff
+		conditionState_s &s = states[index];
+
+		union {
+			bool (Player::*pFunc)(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+			s64 p;
+			byte rawData[8];
+		};
+		p = f->func;
+		s.result = (ent->*pFunc)(arguments,patternMatcher);
+
+		if(conditionType == CT_NORMAL)
+			return s.result;
+		if(conditionType == CT_NEGATE)
+			return !s.result;
+		if(conditionType == CT_EDGEFALSE) {
+			if(!s.result && s.prevResult)
+				return true;
+			return false;
+		}
+		if(conditionType == CT_EDGETRUE) {
+			if(s.result && !s.prevResult)
+				return true;
+			return false;
+		}
+		return false;
+	}
+public:
+	playerConditionsHandler_c(const conditionsTable_c *pTable, Player *newEnt) {
+		table = pTable;
+		ent = newEnt;
+		states.resize(table->getSize());
+		states.nullMemory();
+	}
+	~playerConditionsHandler_c() {
+
+	}
+	void updateFrame() {
+		for(u32 i = 0; i < table->getSize(); i++) {
+			states[i].updateFrame();
+		}
+	}
+};
 
 // use .st files to select proper animation
 // (FAKK / MOHAA way)
 void Player::runPlayerAnimation_stateMachine() {
+#if 0
+	// simple old test - left for reference
 	g_playerConditionsHandler.p = this;
 	const char *next = st_legs->transitionState(st_curStateLegs,&g_playerConditionsHandler);
 	if(next && next[0]) {
@@ -500,6 +701,24 @@ void Player::runPlayerAnimation_stateMachine() {
 	}
 	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,&g_playerConditionsHandler);
 	this->setAnimation(anim);
+#else
+	if(st_handler == 0) {
+		st_handler = new playerConditionsHandler_c(&g_playerConditionsTable,this);
+	}
+	st_handler->updateFrame();
+	u32 maxStateChanges = 10;
+	for(u32 i = 0; i < maxStateChanges; i++) {
+		const char *next = st_legs->transitionState(st_curStateLegs,st_handler);
+		if(next && next[0]) {
+			g_core->Print("(Time %i): Changing legs state from %s to %s\n",level.time,st_curStateLegs.c_str(),next);
+			st_curStateLegs = next;
+			continue;
+		}
+		break;
+	}
+	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
+	this->setAnimation(anim);
+#endif
 }
 void Player::runPlayer() {
 	userCmd_s *ucmd = &this->pers.cmd;
@@ -566,7 +785,7 @@ void Player::runPlayer() {
 					onGround = false;
 				} else {
 					dir[2] = 0;
-					dir *= 0.75f;
+					//dir *= 0.75f;
 					this->characterController->update(dir);
 					newOrigin = this->characterController->getPos();
 					linearVelocity = ps.velocity = (newOrigin - ps.origin)-characterControllerOffset;
@@ -1109,4 +1328,191 @@ void Player::onDeath() {
 			animHandler->setAnimBoth(SGA_DEATH);
 		}
 	}
+}
+
+
+
+bool Player::checkFalling(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// we're not falling if we have a valid groundentitynum
+	if(this->ps.groundEntityNum != ENTITYNUM_NONE)
+		return false;
+	// TODO - check distance to floor?
+	if(this->ps.velocity.z > 0)
+		return false;
+	return true;
+}
+bool Player::checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// we're on ground if we have a groundentitynum
+	if(this->ps.groundEntityNum != ENTITYNUM_NONE)
+		return true;
+	return false;
+}
+bool Player::checkForward(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdForward())
+		return true;
+	return false;
+}
+bool Player::checkBackward(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdBackward())
+		return true;
+	return false;
+}
+bool Player::checkStrafeRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdRight())
+		return true;
+	return false;
+}
+bool Player::checkStrafeLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdLeft())
+		return true;
+	return false;
+}
+bool Player::checkRun(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(!(pers.cmd.buttons & BUTTON_WALKING))
+		return true;
+	return false;
+}
+bool Player::checkHasVelocity(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(ps.velocity.len() > 1.f)
+		return true;
+	return false;
+}
+bool Player::checkBlocked(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return false;
+}
+bool Player::checkDuckedViewInWater(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return false;
+}
+
+bool Player::checkCrouch(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdDown())
+		return true;
+	return false;
+}
+
+bool Player::checkJump(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(hasUserCmdUp())
+		return true;
+	return false;
+}
+bool Player::checkAtLadder(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
+	return false;
+}
+// this is used for ladders
+bool Player::checkLookingUp(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(arguments->size() == 0) {
+		return true;
+	}
+	const char *angleStr = arguments->getString(0);
+	float angle = atof(angleStr);
+	float viewAnglePitch = ps.viewangles.getX();
+	if(viewAnglePitch > 180)
+		viewAnglePitch -= 360;
+	if(0) {
+		g_core->Print("Player::checkLookingUp: angle %f, required minimum %f\n",-viewAnglePitch,angle);
+	}
+	if(-viewAnglePitch >= angle)
+		return true;
+	return false;
+}
+
+bool Player::checkHeight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return true;
+}
+
+bool Player::checkKilled(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(health <= 0)
+		return true;
+	return false;
+}
+bool Player::checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
+	return false;
+}
+bool Player::checkAnimDoneTorso(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
+	return false;
+}
+bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
+	return true;
+}
+bool Player::checkIsWeaponActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(curWeapon == 0)
+		return false;
+	// TODO
+	return false;
+}
+bool Player::checkIsWeaponClassActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(curWeapon == 0)
+		return false;
+	// TODO
+	return false;
+}
+bool Player::checkHasWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkPutawayMain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+
+bool Player::checkIsNewWeaponClass(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+
+bool Player::checkIsNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkAttackPrimary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkAttackSecondary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkIsWeaponSemiAuto(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkIsWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkIsWeaponClassReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkMinChargeTimeMet(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	// TODO
+	return false;
+}
+bool Player::checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	int val = atoi(arguments->getString(0));
+	return (rand()%100) < val;
 }
