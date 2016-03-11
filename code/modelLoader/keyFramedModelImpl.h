@@ -84,13 +84,20 @@ public:
 class kfModelImpl_c : public kfModelAPI_i {
 public:
 	str fname;
+	float frameTime;
 	arraySTD_c<kfSurf_c> surfs;
 	arraySTD_c<kfFrame_c> frames;
 	arraySTD_c<kfTagFrame_c> tagFrames;
 	arraySTD_c<str> tagNames;
 
+	kfModelImpl_c() {
+		frameTime = 0.5f;
+	}
 	virtual const char *getName() const {
 		return fname;
+	}
+	virtual float getFrameTime() const {
+		return frameTime;
 	}
 	virtual u32 getNumFrames() const {
 		return frames.size();

@@ -31,6 +31,28 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #define TIKI_API_IDENTSTR "TIKI0001"
 
+#define TF_ENTRY -1
+#define TF_EXIT -2
+#define TF_FIRST -3
+#define TF_LAST -4
+
+enum tikiCommandSide_e {
+	TCS_SERVER,
+	TCS_CLIENT
+};
+
+class tikiAnim_i {
+
+public:
+	virtual const char *getAlias() const = 0;
+	virtual class kfModelAPI_i *getKFModel() const = 0;
+	virtual class skelAnimAPI_i *getSkelAnim() const = 0;
+	virtual int getTotalTimeMs() const = 0;
+	virtual int getNumFrames() const = 0;
+	virtual int getFrameTimeMs() const = 0;
+	virtual void iterateCommands(tikiCommandSide_e side, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const = 0;
+};
+
 class tiki_i {
 
 public:
@@ -38,6 +60,7 @@ public:
 	virtual bool isKeyframed() const = 0;
 
 	virtual int findAnim(const char *animAlias) const = 0;
+	virtual const class tikiAnim_i *getAnim(int animIndex) const = 0;
 	virtual int getAnimTotalTimeMs(int animIndex) const = 0;
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
 	// for keyframed TIKI models

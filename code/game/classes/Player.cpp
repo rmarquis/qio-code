@@ -739,7 +739,6 @@ void Player::runPlayer() {
 	} 
 
 
-	legsAnimationTime += level.frameTimeMs;
 	int msec = ucmd->serverTime - this->ps.commandTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
@@ -802,7 +801,7 @@ void Player::runPlayer() {
 							// jumping when using .st machine is handled other way
 							// There is a jump (jumpxy) event which should be
 							// called from .st or .tik animation script.
-							if(st_legs == false) {
+							if(st_legs == 0) {
 								bJumped = this->characterController->tryToJump();
 							}
 						}
@@ -929,6 +928,7 @@ void Player::runPlayer() {
 		touchTriggers();
 	}
 	updatePlayerWeapon();
+	updateAnimations();
 
 #if 1
 	if(curWeapon) {
@@ -1449,10 +1449,12 @@ bool Player::checkAnimDoneTorso(const class stringList_c *arguments, class patte
 bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	int needed = getCurrentAnimationTotalTimeMs();
 	if(legsAnimationTime > needed) {
-		g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
+		if(0)
+			g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
 		return true;
 	}
-	g_core->Print("Anim not yet done... %i <= %i \n",legsAnimationTime,needed);
+	if(0) 
+		g_core->Print("Anim not yet done... %i <= %i \n",legsAnimationTime,needed);
 	return false;
 }
 bool Player::checkIsWeaponActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
