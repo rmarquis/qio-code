@@ -70,7 +70,10 @@ protected:
 	// they are set through key values from Doom3 entity defs
 	// Also used to choose the proper pain animation.
 	class damageZonesList_c *damageZones;
+	// elapsed time after animation change
+	u32 legsAnimationTime;
 
+	int getCurrentAnimationTotalTimeMs() const;
 	bool hasDamageZones() const;
 	int findBoneDamageZone(int boneNum) const;
 	const char *getDamageZoneName(int zoneNum) const;

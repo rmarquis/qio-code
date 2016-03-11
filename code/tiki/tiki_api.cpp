@@ -52,6 +52,7 @@ public:
 	virtual const char *getAlias() const = 0;
 	virtual class kfModelAPI_i *getKFModel() const = 0;
 	virtual class skelAnimAPI_i *getSkelAnim() const = 0;
+	virtual int getTotalTimeMs() const = 0;
 };
 
 class tikiAnimBase_c : public tikiAnim_i {
@@ -141,6 +142,13 @@ public:
 		}
 		return -1;
 	}
+	virtual int getAnimTotalTimeMs(int animIndex) const {
+		if(animIndex < 0)
+			return 0;
+		if(animIndex >= anims.size())
+			return 0;
+		return anims[animIndex]->getTotalTimeMs();
+	}
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const {
 		for(u32 i = 0; i < remaps.size(); i++) {
 			const char *s, *m;
@@ -199,6 +207,11 @@ public:
 		delete skelAnim;
 	}
 
+	virtual int getTotalTimeMs() const {
+		if(skelAnim == 0)
+			return 0;
+		return skelAnim->getTotalTimeSec() * 1000;
+	}
 
 	virtual class skelAnimAPI_i *getSkelAnim() const {
 		return skelAnim;
@@ -222,6 +235,12 @@ public:
 	}
 
 
+
+	virtual int getTotalTimeMs() const {
+		if(kfModel == 0)
+			return 0;
+		return 0; // TODO kfModel->getTotalTimeSec() * 1000;
+	}
 	virtual class skelAnimAPI_i *getSkelAnim() const {
 		return 0;
 	}

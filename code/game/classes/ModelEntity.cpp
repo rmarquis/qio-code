@@ -159,6 +159,7 @@ ModelEntity::ModelEntity() {
 	mass = 10.f;
 	physBounciness = 0.f;
 	damageZones = 0;
+	legsAnimationTime = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -292,10 +293,20 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 	if(g_verboseSetAnimationCalls.getInt()) {
 		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
 	}
-	// get the animation index (for networking)
-	this->myEdict->s->animIndex = findAnimationIndex(newAnimName);
+	int newIndex = findAnimationIndex(newAnimName);;
 	// save the animation string name
 	animName = newAnimName;
+	if(newIndex == this->myEdict->s->animIndex)
+		return;
+	legsAnimationTime = 0;
+	// get the animation index (for networking)
+	this->myEdict->s->animIndex = newIndex;
+}
+int ModelEntity::getCurrentAnimationTotalTimeMs() const {
+	if(tiki) {
+		return tiki->getAnimTotalTimeMs(this->myEdict->s->animIndex);
+	}
+	return 0; // TODO?
 }
 void ModelEntity::setTorsoAnimation(const char *newAnimName) {
 	if(g_verboseSetAnimationCalls.getInt()) {

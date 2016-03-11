@@ -38,6 +38,7 @@ public:
 	virtual bool isKeyframed() const = 0;
 
 	virtual int findAnim(const char *animAlias) const = 0;
+	virtual int getAnimTotalTimeMs(int animIndex) const = 0;
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
 	// for keyframed TIKI models
 	virtual class kfModelAPI_i *getAnimKFModel(u32 animNum) const = 0;
