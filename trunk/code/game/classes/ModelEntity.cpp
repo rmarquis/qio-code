@@ -161,6 +161,7 @@ ModelEntity::ModelEntity() {
 	physBounciness = 0.f;
 	damageZones = 0;
 	legsAnimationTime = 0;
+	torsoAnimationTime = 0;
 }
 ModelEntity::~ModelEntity() {
 	if(body) {
@@ -313,10 +314,15 @@ void ModelEntity::setTorsoAnimation(const char *newAnimName) {
 	if(g_verboseSetAnimationCalls.getInt()) {
 		g_core->Print("ModelEntity::setTorsoAnimation: %s\n",newAnimName);
 	}
-	// get the animation index (for networking)
-	this->myEdict->s->torsoAnim = findAnimationIndex(newAnimName);
+	
+	int newIndex = findAnimationIndex(newAnimName);;
 	// save the animation string name
 	torsoAnimName = newAnimName;
+	if(newIndex == this->myEdict->s->torsoAnim)
+		return;
+	torsoAnimationTime = 0;
+	// get the animation index (for networking)
+	this->myEdict->s->torsoAnim = newIndex;
 }
 void ModelEntity::getCurrentBonesArray(class boneOrArray_c &out) {
 	if(modelDecl) {
@@ -674,7 +680,28 @@ void ModelEntity::initRagdollPhysics() {
 		}
 	}
 }
+class tikiCommandExecution_c : public perStringCallbackListener_i {
+public:
+	ModelEntity *me;
+	virtual void perStringCallback(const char *s) {
+		const char *sep = strchr(s,' ');
+		if(sep) {
+			str tmp;
+			tmp.setFromTo(s,sep);
+			while(*sep == ' ')
+				sep++;
+			me->setKeyValue(tmp,sep);
+		} else {
+			me->setKeyValue(s,0);
+		}
+	}
+} g_tce;
+
 void ModelEntity::postSpawn() {
+	if(tiki) {
+		g_tce.me = this;
+		tiki->iterateInitCommands(TCS_SERVER,&g_tce);
+	}
 	if(this->ragdollDefName.length()) {
 		// create a networked ragdoll
 		this->initRagdollPhysics();
@@ -759,23 +786,6 @@ void ModelEntity::destroyPhysicsObject() {
 		this->myEdict->s->activeRagdollDefNameIndex = 0;
 	}
 }
-class tikiCommandExecution_c : public perStringCallbackListener_i {
-public:
-	ModelEntity *me;
-	virtual void perStringCallback(const char *s) {
-		const char *sep = strchr(s,' ');
-		if(sep) {
-			str tmp;
-			tmp.setFromTo(s,sep);
-			while(*sep == ' ')
-				sep++;
-			me->setKeyValue(tmp,sep);
-		} else {
-			me->setKeyValue(s,0);
-		}
-	}
-} g_tce;
-
 void ModelEntity::updateAnimations() {
 	u32 prevLegsAnimationTime = legsAnimationTime;
 	legsAnimationTime += level.frameTimeMs;

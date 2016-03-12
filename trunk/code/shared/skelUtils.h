@@ -71,6 +71,11 @@ public:
 struct boneDef_s {
 	u16 nameIndex;
 	short parentIndex;
+	int flags;
+
+	boneDef_s() {
+		flags = 0;
+	}
 };
 // array of bone definitions (name index + parent index)
 class boneDefArray_c :  public arraySTD_c<boneDef_s> {

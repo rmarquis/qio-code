@@ -143,6 +143,13 @@ skelModelIMPL_c::~skelModelIMPL_c() {
 	surfs.clear();
 	g_core->Print("Freeing skelModel %s\n",this->name.c_str());
 }
+void skelModelIMPL_c::addTorsoBoneIndices(arraySTD_c<u32> &out) const {
+	for(u32 i = 0; i < bones.size(); i++) {
+		if(bones[i].flags==0) {
+			out.add_unique(i);
+		}
+	}
+}
 void skelModelIMPL_c::printBoneNames() const {
 	for(u32 i = 0; i < bones.size(); i++) {
 		g_core->Print("%i/%i: %s (%i)\n",i,bones.size(),SK_GetString(bones[i].nameIndex),bones[i].nameIndex);
@@ -808,6 +815,7 @@ bool skelModelIMPL_c::loadSKB(const char *fname) {
 		boneDef_s *ob = &this->bones[i];
 		ob->nameIndex = SK_RegisterString(ib->name);
 		ob->parentIndex = ib->parent;
+		ob->flags = ib->flags;
 	}
 
 	this->surfs.resize(h->numSurfaces);

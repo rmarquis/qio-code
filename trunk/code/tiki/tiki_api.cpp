@@ -42,9 +42,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 class tikiBuilder_i {
 
 public:
+	virtual void setClassName(const char *s) = 0;
 	virtual void addAnim(class tikiAnimBase_c *ta) = 0;
 	virtual void addSkelModel(const char *skelModel) = 0;
 	virtual void addRemap(const char *surf, const char *mat) = 0;
+	virtual void addInitCommand(tikiCommandSide_e side, const char *txt) = 0;
 };
 
 class tikiAnimCommand_c {
@@ -76,6 +78,23 @@ public:
 					cb->perStringCallback(c.commandText);
 				}
 			}
+		}
+	}
+};
+
+class tikiCommands_c {
+	arraySTD_c<str> commands;
+public:
+	void addCommand(const char *txt) {
+		str &s = commands.pushBack();
+		s = txt;
+		s.stripTrailing("\r\n");
+	}
+	void executeCommands(class perStringCallbackListener_i *cb) const {
+		if(cb == 0)
+			return;
+		for(u32 i = 0; i < commands.size(); i++) {
+			cb->perStringCallback(commands[i]);
 		}
 	}
 };
@@ -172,14 +191,19 @@ public:
 //	TT_KEYFRAMED,
 //};
 class simpleTIKI_c : public tikiBase_c, public tikiBuilder_i {
+	str className;
 //	tikiType_e type;
 	//hashTableTemplateExt_c<tikiAnimBase_c> anims;
 	arraySTD_c<tikiAnimBase_c*> anims;
 	ePairList_c remaps;
 	skelModelAPI_i *skelModel;
+	tikiCommands_c *serverCommands;
+	tikiCommands_c *clientCommands;
 public:
 	simpleTIKI_c() {
 		skelModel = 0;
+		serverCommands = 0;
+		clientCommands = 0;
 	}
 	virtual ~simpleTIKI_c() {
 		if(skelModel) {
@@ -188,6 +212,25 @@ public:
 		for(u32 i = 0; i < anims.size(); i++) {
 			delete anims[i];
 		}
+		if(clientCommands) {
+			delete clientCommands;
+		}
+		if(serverCommands) {
+			delete serverCommands;
+		}
+	}
+	virtual void setClassName(const char *s) {
+		className = s;
+	}
+	tikiCommands_c *allocServerCommands() {
+		if(serverCommands == 0)
+			serverCommands = new tikiCommands_c();
+		return serverCommands;
+	}
+	tikiCommands_c *allocClientCommands() {
+		if(clientCommands == 0)
+			clientCommands = new tikiCommands_c();
+		return clientCommands;
 	}
 	virtual bool isSkeletal() const {
 		return skelModel!=0;
@@ -195,12 +238,26 @@ public:
 	virtual bool isKeyframed() const {
 		return skelModel==0;
 	}
+	virtual const char *getClassName() const {
+		return className;
+	}
 	virtual const class tikiAnim_i *getAnim(int animIndex) const {
 		if(animIndex < 0)
 			return 0;
 		if(animIndex >= anims.size())
 			return 0;
 		return anims[animIndex];
+	}
+	virtual void iterateInitCommands(tikiCommandSide_e side, class perStringCallbackListener_i *cb) const {
+		if(side == TCS_SERVER) {
+			if(serverCommands==0)
+				return;
+			serverCommands->executeCommands(cb);
+		} else if(side == TCS_CLIENT) {
+			if(clientCommands==0)
+				return;
+			clientCommands->executeCommands(cb);
+		}
 	}
 	virtual int findAnim(const char *animAlias) const { 
 		if(animAlias == 0)
@@ -248,6 +305,14 @@ public:
 	}
 	virtual void addRemap(const char *surf, const char *mat) {
 		remaps.set(surf,mat);
+	}
+	virtual void addInitCommand(tikiCommandSide_e side, const char *txt) {
+		tikiCommands_c *cmds;
+		if(side == TCS_SERVER)
+			cmds = allocServerCommands();
+		else
+			cmds = allocClientCommands();
+		cmds->addCommand(txt);
 	}
 	virtual class skelModelAPI_i *getSkelModel() const {
 		return skelModel;
@@ -462,12 +527,19 @@ class tikiParser_c : public parser_c {
 		}
 		return false;
 	}
-	bool parseInitCommands() {
+	bool parseInitCommands(tikiCommandSide_e side) {
 		while(atChar('}')==false) {
 			if(atWord("classname")) {
-				getToken();
+				str className;
+				getToken(className);
+				out->setClassName(className);
 			} else {
 				const char *eventStr = getLine();
+				if(side == TCS_SERVER) {
+					out->addInitCommand(TCS_SERVER,eventStr);
+				} else if(side == TCS_CLIENT) {
+					out->addInitCommand(TCS_CLIENT,eventStr);
+				}
 			}
 		}
 		return false;
@@ -534,7 +606,7 @@ class tikiParser_c : public parser_c {
 						getToken(),getCurrentLineNumber(),getDebugFileName());
 					return true;
 				}
-				if(parseInitCommands()) {
+				if(parseInitCommands(TCS_SERVER)) {
 					g_core->RedWarning("tikiParser_c::parseInit: failed to parse 'server' section of %s\n",
 						getDebugFileName());
 					return true;
@@ -545,7 +617,7 @@ class tikiParser_c : public parser_c {
 						getToken(),getCurrentLineNumber(),getDebugFileName());
 					return true;
 				}
-				if(parseInitCommands()) {
+				if(parseInitCommands(TCS_CLIENT)) {
 					g_core->RedWarning("tikiParser_c::parseInit: failed to parse 'client' section of %s\n",
 						getDebugFileName());
 					return true;

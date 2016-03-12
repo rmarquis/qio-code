@@ -199,6 +199,7 @@ void ClientSpawn(edict_s *ent) {
 #elif 1
 	pl->setPlayerModel("models/julie_swamp.tik");
 	pl->loadStateMachineLegs("global/julie_legs.st");
+	pl->loadStateMachineTorso("global/julie_torso.st");
 #else
 	// load q3 player model (three .md3's)
 	pl->setPlayerModel("$sarge");
@@ -511,13 +512,25 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
+	} else if(!_stricmp(cmd,"tik_spawn")) {
+		str model = g_core->Argv(1);
+		if(model.length()) {
+			if(FixRenderModelPath(model)) {
+				vec3_c p = pl->getOrigin();
+				p.z += pl->getViewHeight();
+				p += pl->getForward() * 64.f;
+				BaseEntity *e = G_SpawnGeneric(model);
+				e->setOrigin(p);
+			} else {
+				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
+			}
+		}
 	} else if(!_stricmp(cmd,"model_spawn") || !_stricmp(cmd,"mdlpp_spawn") || 
 		!_stricmp(cmd,"mdl_spawn") || !_stricmp(cmd,"psk_spawn") ||
 		!_stricmp(cmd,"mdm_spawn") || !_stricmp(cmd,"smd_spawn") ||
 		!_stricmp(cmd,"obj_spawn") || !_stricmp(cmd,"md5r_spawn") ||
 		!_stricmp(cmd,"md5mesh_spawn") || !_stricmp(cmd,"3ds_spawn") 
-		|| !_stricmp(cmd,"mdc_spawn") || !_stricmp(cmd,"tan_spawn")
-		|| !_stricmp(cmd,"tik_spawn")) {
+		|| !_stricmp(cmd,"mdc_spawn") || !_stricmp(cmd,"tan_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			if(model[0] == '_' || g_declMgr->registerModelDecl(model) || FixRenderModelPath(model)) {
@@ -528,6 +541,7 @@ void ClientCommand( int clientNum ) {
 				e->setRenderModel(model);
 				//e->setColModel(model);
 				e->setOrigin(p);
+				e->postSpawn();
 			} else {
 				g_core->RedWarning("%s is not a valid model file\n",model.c_str());
 			}

@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)_CM"
-			IntermediateDirectory="$(ConfigurationName)_CM"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)_GUI"
+			IntermediateDirectory="$(ConfigurationName)_GUI"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -90,7 +90,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)_CM"
-			IntermediateDirectory="$(ConfigurationName)_CM"
+			IntermediateDirectory="$(ConfigurationName)_GUI"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"

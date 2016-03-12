@@ -154,6 +154,8 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 		return bones[boneIndex].parentIndex;
 	}
 	virtual void printBoneNames() const;
+	// SKB models have torso bones marked
+	virtual void addTorsoBoneIndices(arraySTD_c<u32> &out) const;
 	// modelPostProcessFuncs_i impl
 	virtual void scaleXYZ(float scale);
 	virtual void swapYZ();
