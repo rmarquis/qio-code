@@ -165,6 +165,7 @@ public:
 	const vec3_c &getViewAngles() const {
 		return ps.viewangles;
 	}
+	virtual void setKeyValue(const char *key, const char *value);
 	virtual void setOrigin(const vec3_c &newXYZ);
 	virtual void setLinearVelocity(const vec3_c &newVel);
 	void setVehicle(class VehicleCar *newVeh);

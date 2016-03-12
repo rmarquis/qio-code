@@ -48,6 +48,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <shared/afRagdollHelper.h>
 #include <shared/skelUtils.h>
+#include <shared/perStringCallback.h>
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
@@ -758,13 +759,31 @@ void ModelEntity::destroyPhysicsObject() {
 		this->myEdict->s->activeRagdollDefNameIndex = 0;
 	}
 }
+class tikiCommandExecution_c : public perStringCallbackListener_i {
+public:
+	ModelEntity *me;
+	virtual void perStringCallback(const char *s) {
+		const char *sep = strchr(s,' ');
+		if(sep) {
+			str tmp;
+			tmp.setFromTo(s,sep);
+			while(*sep == ' ')
+				sep++;
+			me->setKeyValue(tmp,sep);
+		} else {
+			me->setKeyValue(s,0);
+		}
+	}
+} g_tce;
+
 void ModelEntity::updateAnimations() {
 	u32 prevLegsAnimationTime = legsAnimationTime;
 	legsAnimationTime += level.frameTimeMs;
 	if(tiki) {
 		const tikiAnim_i *legsAnim = tiki->getAnim(this->myEdict->s->animIndex);
 		if(legsAnim) {
-			legsAnim->iterateCommands(TCS_SERVER,prevLegsAnimationTime,legsAnimationTime,0);
+			g_tce.me = this;
+			legsAnim->iterateCommands(TCS_SERVER,prevLegsAnimationTime,legsAnimationTime,&g_tce);
 		}
 	}
 }

@@ -52,7 +52,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define TAGNUM_BITS			8
 #define MAX_BONES			(1<<TAGNUM_BITS)
 
-#define ANIMNUM_BITS		8
+// It can't be just 8 bits,
+// models/julie.tik from FAKK has more than 300 animations.
+// (NOTE: .tik animation names are not send through config strings)
+#define ANIMNUM_BITS		10
 #define MAX_ANIMATIONS		(1<<ANIMNUM_BITS)
 
 #define RAGDOLLDEFNUM_BITS	8
@@ -67,7 +70,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define MATERIALNUM_BITS	8
 #define MAX_MATERIALS		(1<<MATERIALNUM_BITS)
 
-#define	MAX_CONFIGSTRINGS	4096 // 2048
+#define	MAX_CONFIGSTRINGS	8192 // 2048
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
