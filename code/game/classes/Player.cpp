@@ -52,6 +52,7 @@ static aCvar_c g_printPlayerPrimaryFireState("g_printPlayerPrimaryFireState","0"
 static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPrimaryFireState","0");
 static aCvar_c g_printPlayerLanding("g_printPlayerLanding","0");
 static aCvar_c g_printPlayerLegsStateChange("g_printPlayerLegsStateChange","0");
+static aCvar_c g_printPlayerForceAnimation("g_printPlayerForceAnimation","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -215,6 +216,15 @@ Player::~Player() {
 	}
 	if(animHandler) {
 		delete animHandler;
+	}
+}
+void Player::setKeyValue(const char *key, const char *value) {
+ 	if(!stricmp(key,"jumpxy")) {
+		bJumped = this->characterController->tryToJump();
+	} else if(!stricmp(key,"jump")) {
+		bJumped = this->characterController->tryToJump();
+	} else {
+		ModelEntity::setKeyValue(key,value);
 	}
 }
 void Player::setOrigin(const vec3_c &newXYZ) {
@@ -722,6 +732,9 @@ void Player::runPlayerAnimation_stateMachine() {
 	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
 	///anim = "stand_to_ready";
 	//anim = "ready_to_jump_up_to_rise";
+	if(g_printPlayerForceAnimation.getStr()[0] != '0') {
+		anim = g_printPlayerForceAnimation.getStr();
+	}
 	this->setAnimation(anim);
 #endif
 }
@@ -1448,7 +1461,7 @@ bool Player::checkAnimDoneTorso(const class stringList_c *arguments, class patte
 }
 bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	int needed = getCurrentAnimationTotalTimeMs();
-	if(legsAnimationTime > needed) {
+	if(legsAnimationTime >= needed) {
 		if(0)
 			g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
 		return true;
