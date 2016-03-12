@@ -407,6 +407,14 @@ void rEntityImpl_c::setTIKIModelAnimLocalIndex(int localAnimIndex, int newFlags)
 	const class skelAnimAPI_i *a = model->getTIKI()->getSkelAnim(localAnimIndex);
 	this->setAnim(a,newFlags);
 }
+void rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex(int localAnimIndex, int newFlags) {
+	if(model->isTIKI() == false) {
+		g_core->Print("rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex: called on non-TIKI model %s\n",model->getName());
+		return;
+	}
+	const class skelAnimAPI_i *a = model->getTIKI()->getSkelAnim(localAnimIndex);
+	this->setTorsoAnim(a,newFlags);
+}
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags) {
 	if(model->isDeclModel() == false) {
 		g_core->Print("rEntityImpl_c::setDeclModelAnimLocalIndex: called on non-decl model %s\n",model->getName());
@@ -693,23 +701,30 @@ void rEntityImpl_c::updateAnimatedEntity() {
 #endif
 		} else if(skelAnimCtrl) {
 			skelAnimCtrl->runAnimController(rf_curTimeMsec);
-			skelAnimCtrl->updateModelAnimation(skelModel);
 			if(skelAnimCtrlTorso && skelAnimCtrlTorso->getAnim()) {
 				skelAnimCtrlTorso->runAnimController(rf_curTimeMsec);
-				skelAnimCtrlTorso->updateModelAnimation(skelModel);
+				skelAnimCtrlTorso->updateModelAnimation(skelModel,false);
 				if(skelAnimCtrlTorso->getAnim()) {
+					skelAnimCtrl->updateModelAnimation(skelModel,false);
 					arraySTD_c<u32> torsoBones;
+					torsoBones.reserve(skelModel->getNumBones()*2);
 					skelAnimCtrlTorso->getAnim()->addChildrenOf(torsoBones,"hip");
+					if(torsoBones.size() == 0) {
+						skelModel->addTorsoBoneIndices(torsoBones);
+					}
 					if(finalBones == 0) {
 						finalBones = new boneOrArray_c;
 					}
 					*finalBones = skelAnimCtrl->getCurBones();
 					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
+					// transform to abs
+					finalBones->localBonesToAbsBones(skelModel->getBoneDefs());
 					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,*finalBones);
 					// append .md3/.mdc attachments at the tags
 					updateInstanceAttachments();
 				} else {
+					skelAnimCtrl->updateModelAnimation(skelModel,true);
 					if(finalBones) {
 						delete finalBones;
 						finalBones = 0;
@@ -719,6 +734,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					updateInstanceAttachments();	
 				}
 			} else {
+				skelAnimCtrl->updateModelAnimation(skelModel,true);
 				if(finalBones) {
 					delete finalBones;
 					finalBones = 0;

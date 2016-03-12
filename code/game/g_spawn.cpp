@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/declManagerAPI.h>
 #include <api/entityDeclAPI.h>
 #include <api/vfsAPI.h>
+#include <api/tikiAPI.h>
 #include "classes/BaseEntity.h"
 #include "classes/ModelEntity.h"
 #include "classes/World.h"
@@ -83,12 +84,23 @@ BaseEntity *G_SpawnGeneric(const char *classOrModelName) {
 	if(e)
 		return e;
 	if(g_vfs->FS_FileExists(classOrModelName)) {
-		e = G_SpawnClass("ModelEntity");
-		e->setRenderModel(classOrModelName);
-		str collisionModel = classOrModelName;
-		collisionModel.setExtension("map");
-		if(g_vfs->FS_FileExists(collisionModel)) {
-			e->setColModel(collisionModel);
+		str tmp = classOrModelName;
+		if(tmp.hasExt("tik")) {
+			tiki_i *tiki = g_tikiMgr->registerModel(classOrModelName);
+			const char *className = tiki->getClassName();
+			if(className && className[0]) {
+				e = G_SpawnClass(className);
+			} else {
+				e = G_SpawnClass("ModelEntity");
+			}
+			e->setRenderModel(classOrModelName);
+		} else {
+			e = G_SpawnClass("ModelEntity");
+			e->setRenderModel(classOrModelName);
+			tmp.setExtension("map");
+			if(g_vfs->FS_FileExists(tmp)) {
+				e->setColModel(tmp);
+			}
 		}
 		e->postSpawn();
 	}

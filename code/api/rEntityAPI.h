@@ -43,6 +43,7 @@ public:
 	virtual void setRagdollBodyOr(u32 partIndex, const class boneOrQP_c &or) = 0;
 	virtual void setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags = 0) = 0;
 	virtual void setTIKIModelAnimLocalIndex(int localAnimIndex, int newFlags = 0) = 0;
+	virtual void setTIKIModelTorsoAnimLocalIndex(int localAnimIndex, int newFlags = 0) = 0;
 	virtual void setQ3LegsAnimLocalIndex(int localAnimIndex) = 0;
 	virtual void setQ3TorsoAnimLocalIndex(int localAnimIndex) = 0;
 	virtual void setSkin(const char *skinName) = 0;

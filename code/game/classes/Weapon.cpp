@@ -55,6 +55,7 @@ Weapon::Weapon() {
 	shotBulletCount = 1;
 	spreadDist = 1000.f;
 	maxSpread = 1.f;
+	weaponHand = WH_DUALHAND;
 }
 Weapon::~Weapon() {
 
@@ -74,6 +75,14 @@ void Weapon::setViewModel(const char *newViewModelName) {
 		if(reloadTime == 0) {
 			reloadTime = 10;
 		}
+	}
+}
+void Weapon::postSpawn() {
+	ModelEntity::postSpawn();
+	// make sure that player can pickup weapons
+	// They must have a cmod
+	if(cmod == 0) {
+		setKeyValue("size", "32 32 32");
 	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {
@@ -137,8 +146,25 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		maxSpread = atof(value);
 	} else if(!_stricmp(key,"spreadDist")) {
 		spreadDist = atof(value);
+	} else if(!_stricmp(key,"name") && tiki) {
+		// "name" is a weapon name event used in .tik files
+		// "name" is also a "targetname" in Doom3
+		// Avoid conflicts and use "name" here only if TIKI is set.
+		weaponName = value;
+	} else if(!_stricmp(key,"hand")) {
+		// used in FAKK2
+		setWeaponHand(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
+	}
+}
+void Weapon::setWeaponHand(const char *handName) {
+	if(!stricmp(handName,"dual")) {
+		weaponHand = WH_DUALHAND;
+	} else if(!stricmp(handName,"any")) {
+		weaponHand = WH_ANY;
+	} else {
+		g_core->RedWarning("Weapon::setWeaponHand: unknown weaponhand '%s'\n",handName);
 	}
 }
 bool Weapon::doUse(class Player *activator) {

@@ -74,8 +74,11 @@ friend class testPlayerConditionsHandler_c;
 	class physCharacterControllerAPI_i *characterController;
 	str netName;
 	safePtr_c<Weapon> curWeapon;
+	safePtr_c<Weapon> curWeaponLeft;
+	safePtr_c<Weapon> curWeaponRight;
 	safePtr_c<Weapon> nextWeapon;
-	weaponState_e weaponState;
+	enum weaponHand_e nextWeaponHand;
+	enum weaponState_e weaponState;
 	u32 weaponTime;
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
@@ -171,6 +174,7 @@ public:
 	void setVehicle(class VehicleCar *newVeh);
 	void setPlayerModel(const char *newPlayerModelName);
 	void loadStateMachineLegs(const char *fname);
+	void loadStateMachineTorso(const char *fname);
 	bool hasActiveWeapon() const {
 		if(curWeapon.getPtr())
 			return true;

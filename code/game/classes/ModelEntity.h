@@ -72,6 +72,7 @@ protected:
 	class damageZonesList_c *damageZones;
 	// elapsed time after animation change
 	u32 legsAnimationTime;
+	u32 torsoAnimationTime;
 
 	int getCurrentAnimationTotalTimeMs() const;
 	bool hasDamageZones() const;

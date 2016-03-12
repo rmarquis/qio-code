@@ -59,6 +59,10 @@ public:
 	virtual bool isSkeletal() const = 0;
 	virtual bool isKeyframed() const = 0;
 
+	virtual const char *getClassName() const = 0;
+
+	virtual void iterateInitCommands(tikiCommandSide_e side, class perStringCallbackListener_i *cb) const = 0;
+
 	virtual int findAnim(const char *animAlias) const = 0;
 	virtual const class tikiAnim_i *getAnim(int animIndex) const = 0;
 	virtual int getAnimTotalTimeMs(int animIndex) const = 0;

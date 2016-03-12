@@ -29,6 +29,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 #include "Player.h"
 
+// FAKK2 weapons system
+enum weaponHand_e {
+	WH_DUALHAND,
+	WH_ANY,
+};
+
 class Weapon : public ModelEntity {
 	// custom viewmodel for Doom3-style weapons
 	str model_view;
@@ -57,6 +63,7 @@ class Weapon : public ModelEntity {
 	u32 shotBulletCount;
 	float maxSpread;
 	float spreadDist;
+	weaponHand_e weaponHand;
 protected:
 	safePtr_c<Player> owner;
 
@@ -90,6 +97,9 @@ public:
 	void fillClip(u32 newCurClipSize) {
 		curClipSize = newCurClipSize;
 	}
+	weaponHand_e getWeaponHand() const {
+		return weaponHand;
+	}
 	virtual bool hasEmptyClip() const {
 		if(curClipSize == 0)
 			return true;
@@ -114,6 +124,7 @@ public:
 	virtual void doWeaponAttackSecondary();
 	bool canFireAgain() const;
 
+	void setWeaponHand(const char *handName);
 	bool hasCustomViewModel() const {
 		if(model_view.length())
 			return true;
@@ -135,6 +146,7 @@ public:
 
 	virtual void setKeyValue(const char *key, const char *value); 
 	virtual bool doUse(class Player *activator);
+	virtual void postSpawn();
 };
 
 #endif // __WEAPON_H__

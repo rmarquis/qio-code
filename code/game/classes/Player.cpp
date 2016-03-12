@@ -51,8 +51,8 @@ static aCvar_c g_printPlayerWeaponState("g_printPlayerWeaponState","0");
 static aCvar_c g_printPlayerPrimaryFireState("g_printPlayerPrimaryFireState","0");
 static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPrimaryFireState","0");
 static aCvar_c g_printPlayerLanding("g_printPlayerLanding","0");
-static aCvar_c g_printPlayerLegsStateChange("g_printPlayerLegsStateChange","0");
-static aCvar_c g_printPlayerForceAnimation("g_printPlayerForceAnimation","0");
+static aCvar_c g_printPlayerStateChange("g_printPlayerStateChange","0");
+static aCvar_c g_playerForceAnimation("g_playerForceAnimation","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -250,6 +250,9 @@ void Player::setVehicle(class VehicleCar *newVeh) {
 }
 void Player::loadStateMachineLegs(const char *fname) {
 	st_legs = G_LoadStateMachine(fname);
+}
+void Player::loadStateMachineTorso(const char *fname) {
+	st_torso = G_LoadStateMachine(fname);
 }
 void Player::setPlayerModel(const char *newPlayerModelName) {
 	this->disableCharacterController();
@@ -717,25 +720,40 @@ void Player::runPlayerAnimation_stateMachine() {
 		st_handler = new playerConditionsHandler_c(&g_playerConditionsTable,this);
 	}
 	st_handler->updateFrame();
-	///u32 maxStateChanges = 10;
-	//for(u32 i = 0; i < maxStateChanges; i++) {
-		const char *next = st_legs->transitionState(st_curStateLegs,st_handler);
-		if(next && next[0]) {
-			if(g_printPlayerLegsStateChange.getInt()) {
-				g_core->Print("(Time %i): Changing legs state from %s to %s\n",level.time,st_curStateLegs.c_str(),next);
+	stateMachineAPI_i *machines[2] = { st_legs, st_torso };
+	const char *names[2] = { "legs" , "torso" };
+	str *states[2] = { &st_curStateLegs, &st_curStateTorso };
+	for(u32 i = 0; i < 2; i++) {
+		stateMachineAPI_i *st = machines[i];
+		if(st == 0)
+			continue;
+		const char *name = names[i];
+		str *state = states[i];
+		///u32 maxStateChanges = 10;
+		//for(u32 i = 0; i < maxStateChanges; i++) {
+			const char *next = st->transitionState(*state,st_handler);
+			if(next && next[0]) {
+				if(g_printPlayerStateChange.getInt()) {
+					g_core->Print("(Time %i): Changing %s state from %s to %s\n",name,level.time,st_curStateLegs.c_str(),next);
+				}
+				*state = next;
+		//		continue;
 			}
-			st_curStateLegs = next;
-	//		continue;
-		}
-	//	break;
-	//}
+		//	break;
+		//}
+	}
 	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
+	if(anim == 0 || anim[0] == 0) {
+		g_core->Print("No animation found for state %s\n",st_curStateLegs.c_str());
+		return;
+	}
 	///anim = "stand_to_ready";
 	//anim = "ready_to_jump_up_to_rise";
-	if(g_printPlayerForceAnimation.getStr()[0] != '0') {
-		anim = g_printPlayerForceAnimation.getStr();
+	if(g_playerForceAnimation.getStr()[0] != '0') {
+		anim = g_playerForceAnimation.getStr();
 	}
 	this->setAnimation(anim);
+	this->setTorsoAnimation("raise_left_from_lowerback");
 #endif
 }
 void Player::runPlayer() {
@@ -940,9 +958,12 @@ void Player::runPlayer() {
 	if(noclip == false) {
 		touchTriggers();
 	}
-	updatePlayerWeapon();
+	if(st_legs == 0 && st_torso == 0) {
+		// default weapon logic
+		updatePlayerWeapon();
+	} 
 	updateAnimations();
-
+	
 #if 1
 	if(curWeapon) {
 		curWeapon->setOrigin(this->getEyePos());
@@ -1201,6 +1222,11 @@ void Player::updateCurWeaponClipSize() {
 	}
 }
 void Player::addWeapon(class Weapon *newWeapon) {
+	if(st_torso) {
+		nextWeaponHand = newWeapon->getWeaponHand();
+		nextWeapon = newWeapon;
+		return;
+	}
 #if 0
 	if(curWeapon) {
 		dropCurrentWeapon();
@@ -1488,8 +1514,8 @@ bool Player::checkHasWeapon(const class stringList_c *arguments, class patternMa
 	return false;
 }
 bool Player::checkNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
-	// TODO
+	if(nextWeapon.getPtr())
+		return true;
 	return false;
 }
 bool Player::checkPutawayMain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {

@@ -236,22 +236,24 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		}
 	}
 }
-void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel) {
+void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel, bool transformToABS) {
 	if(anim == 0)
 		return;
 	// create bone matrices (relative to their parents)
 	updateModelAnimationLocal(skelModel,currentBonesArray);
 	if(anim == 0)
 		return;
-	// convert relative bones matrices to absolute bone matrices
-	if(skelModel->getNumBones() && skelModel->getNumBones() != anim->getNumBones()) {
-		// SMD case...
-		currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
-	} else {
-		currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
-	}
-	if(skelModel->hasCustomScaling()) {
-		currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
+	if(transformToABS) {
+		// convert relative bones matrices to absolute bone matrices
+		if(skelModel->getNumBones() && skelModel->getNumBones() != anim->getNumBones()) {
+			// SMD case...
+			currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+		} else {
+			currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+		}
+		if(skelModel->hasCustomScaling()) {
+			currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());
+		}
 	}
 }
 const boneOrArray_c &skelAnimController_c::getCurBones() const {

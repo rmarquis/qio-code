@@ -106,6 +106,7 @@ static void CG_TransitionModel(centity_s *cent) {
 		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
 	} else if(cent->rEnt->hasTIKIModel()) {
 		cent->rEnt->setTIKIModelAnimLocalIndex(cent->currentState.animIndex);
+		cent->rEnt->setTIKIModelTorsoAnimLocalIndex(cent->currentState.torsoAnim);
 	} else if(cent->rEnt->isQ3PlayerModel()) {
 		cent->rEnt->setQ3LegsAnimLocalIndex(cent->currentState.animIndex);
 		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
