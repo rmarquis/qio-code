@@ -447,6 +447,10 @@ void BaseEntity::toggleEntityVisibility() {
 		myEdict->s->hideEntity();
 	}
 }
+void BaseEntity::setParent(BaseEntity *newParent, const char *tagName, bool enableLocalOffset) {
+	int tagNum = newParent->getBoneNumForName(tagName);
+	setParent(newParent,tagNum,enableLocalOffset);
+}
 void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOffset) {
 	if(parent) {
 		detachFromParent();

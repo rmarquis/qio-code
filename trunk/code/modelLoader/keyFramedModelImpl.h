@@ -118,6 +118,16 @@ public:
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const {
 		return &surfs[surfNum];
 	}
+	virtual void scale(float f) {
+		for(u32 i = 0; i < surfs.size(); i++) {
+			kfSurf_c &s = surfs[i];
+			for(u32 j = 0; j < s.xyzFrames.size(); j++) {
+				for(u32 k = 0; k < s.xyzFrames[j].verts.size(); k++) {
+					s.xyzFrames[j].verts[k].xyz *= f;
+				}
+			}
+		}
+	}
 	virtual u32 fixFrameNum(u32 inFrameNum) const {
 		if(inFrameNum >= frames.size())
 			return frames.size()-1;

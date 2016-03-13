@@ -246,8 +246,12 @@ void Player::activateNewWeapon() {
 	}
 	if(nextWeaponHand == WH_LEFT) {
 		curWeaponLeft = nextWeapon;
+		curWeaponLeft->showEntity();
+		curWeaponLeft->setParent(this,"tag_weapon_left");
 	} else if(nextWeaponHand == WH_RIGHT) {
 		curWeaponRight = nextWeapon;
+		curWeaponRight->showEntity();
+		curWeaponRight->setParent(this,"tag_weapon_right");
 	} else if(nextWeaponHand == WH_DUALHAND) {
 		curWeapon = nextWeapon;
 	} else {

@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/modelPostProcessFuncs.h>
 #include <api/kfModelAPI.h>
 #include <api/skelAnimAPI.h>
+#include <api/skelModelAPI.h>
 #include <shared/perStringCallback.h>
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
@@ -44,6 +45,7 @@ class tikiBuilder_i {
 public:
 	virtual void setClassName(const char *s) = 0;
 	virtual void addAnim(class tikiAnimBase_c *ta) = 0;
+	virtual void setScale(float f) = 0;
 	virtual void addSkelModel(const char *skelModel) = 0;
 	virtual void addRemap(const char *surf, const char *mat) = 0;
 	virtual void addInitCommand(tikiCommandSide_e side, const char *txt) = 0;
@@ -118,6 +120,7 @@ public:
 			delete serverCommands;
 		}
 	}	
+	virtual void scaleAnimation(float s) = 0;
 	void iterateCommands(const tikiAnimCommands_c *s, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const {
 		if(endTime <= startTime)
 			return;
@@ -199,11 +202,13 @@ class simpleTIKI_c : public tikiBase_c, public tikiBuilder_i {
 	skelModelAPI_i *skelModel;
 	tikiCommands_c *serverCommands;
 	tikiCommands_c *clientCommands;
+	float scale;
 public:
 	simpleTIKI_c() {
 		skelModel = 0;
 		serverCommands = 0;
 		clientCommands = 0;
+		scale = 1.f;
 	}
 	virtual ~simpleTIKI_c() {
 		if(skelModel) {
@@ -276,6 +281,12 @@ public:
 			return 0;
 		return anims[animIndex]->getTotalTimeMs();
 	}
+	virtual int getBoneNumForName(const char *boneName) const {
+		if(skelModel) {
+			return skelModel->getLocalBoneIndexForBoneName(boneName);
+		}
+		return -1;
+	}
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const {
 		for(u32 i = 0; i < remaps.size(); i++) {
 			const char *s, *m;
@@ -297,11 +308,18 @@ public:
 	}
 	virtual void addAnim(class tikiAnimBase_c *ta) {
 		anims.push_back(ta);
+		ta->scaleAnimation(scale);
+	}
+	virtual void setScale(float f) {
+		scale = f;
 	}
 	virtual void addSkelModel(const char *skelModelName) {
 		if(skelModel)
 			return;
 		skelModel = g_modelLoader->loadSkelModelFile(skelModelName);
+		if(skelModel) {
+			//skelModel->scale
+		}
 	}
 	virtual void addRemap(const char *surf, const char *mat) {
 		remaps.set(surf,mat);
@@ -340,6 +358,11 @@ public:
 	}
 	virtual ~tikiAnimSkeletal_c() {
 		delete skelAnim;
+	}	
+	virtual void scaleAnimation(float s) {
+		if(skelAnim) {
+			//skelAnim->scale(s);
+		}
 	}
 
 	virtual int getTotalTimeMs() const {
@@ -378,6 +401,12 @@ public:
 	virtual ~tikiAnimKeyFramed_c() {
 		delete kfModel;
 	}
+	virtual void scaleAnimation(float s) {
+		if(kfModel) {
+			kfModel->scale(s);
+		}
+	}
+
 
 
 
@@ -413,6 +442,9 @@ class tikiParser_c : public parser_c {
 		while(atChar('}')==false) {
 			if(atWord("scale")) {
 				float sc = getFloat();
+				if(out) {
+					out->setScale(sc);
+				}
 			} else if(atWord("lod_scale")) {
 				// models/obj_wrench.tik
 				float sc = getFloat();
