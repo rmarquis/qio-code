@@ -248,6 +248,9 @@ void ModelEntity::setSpriteModel(const char *newSpriteMaterial, float newSpriteR
 	this->setRenderModel(newRenderModelName);
 }
 int ModelEntity::getBoneNumForName(const char *boneName) {
+	if(this->tiki) {
+		return this->tiki->getBoneNumForName(boneName);
+	}
 	if(this->modelDecl) {
 		// this is working for tags as well
 		return this->modelDecl->getBoneNumForName(boneName);

@@ -107,7 +107,7 @@ public:
 	void setRenderModelAttachment(u32 index, const char*boneName, const char *modelName);
 
 	// for skeletal models
-	int getBoneNumForName(const char *boneName);
+	virtual int getBoneNumForName(const char *boneName);
 
 	int findAnimationIndex(const char *animName);
 

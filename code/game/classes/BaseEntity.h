@@ -200,6 +200,7 @@ public:
 	void toggleEntityVisibility();
 
 	void setParent(BaseEntity *newParent, int tagNum = -1, bool enableLocalOffset = false);
+	void setParent(BaseEntity *newParent, const char *tagName, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();
 	// "this" is an attachment (not parent)
@@ -234,6 +235,9 @@ public:
 	// for lua wrapper
 	virtual bool addLuaEventHandler(struct lua_State *L, const char *eventName, int func);
 
+	virtual int getBoneNumForName(const char *boneName) {
+		return -1;
+	}
 	void runLuaFrameHandlers() {
 #ifdef G_ENABLE_LUA_SCRIPTING
 		lua_runFrameHandlers.runCallbacks("e",this->getEdict());

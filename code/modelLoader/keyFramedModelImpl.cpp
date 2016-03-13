@@ -451,8 +451,8 @@ bool kfModelImpl_c::loadTAN(const byte *buf, const u32 fileLen, const char *fnam
 			kfVert_c *v = f->verts.getArray();
 			for(u32 k = 0; k < is->numVerts; k++, v++) {
 				v->xyz = xyzNormal->getPos();
-				v->xyz += kf.localOrigin;
 				v->xyz.scaleXYZ(kf.scale*64.f);
+				v->xyz += kf.localOrigin;
 				xyzNormal++;
 			}
 		}
