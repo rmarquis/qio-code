@@ -75,6 +75,7 @@ protected:
 	u32 torsoAnimationTime;
 
 	int getCurrentAnimationTotalTimeMs() const;
+	int getCurrentTorsoAnimationTotalTimeMs() const;
 	bool hasDamageZones() const;
 	int findBoneDamageZone(int boneNum) const;
 	const char *getDamageZoneName(int zoneNum) const;

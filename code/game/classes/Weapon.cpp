@@ -82,7 +82,7 @@ void Weapon::postSpawn() {
 	// make sure that player can pickup weapons
 	// They must have a cmod
 	if(cmod == 0) {
-		setKeyValue("size", "32 32 32");
+		setKeyValue("size", "64 64 64");
 	}
 }
 void Weapon::setKeyValue(const char *key, const char *value) {

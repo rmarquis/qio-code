@@ -110,11 +110,14 @@ bool stateCommandsList_c::parseCommandsList(class parser_c &p) {
 		g_core->Print("stateCommandsList_c::parseCommandsList: expected '{' to follow commands block,found %s at line %i of %s\n",token.c_str(),line,p.getDebugFileName());
 		return true; // error
 	}
+	bool bStop = false;
 	while(p.atWord_dontNeedWS("}") == false) {
 		str command = p.getToken();
 		str arguments;
 		if(p.isAtEOL()) {
 			arguments = "";
+		} else if(p.atChar('}')) {
+			bStop = true;
 		} else {
 			const char *line = p.getLine();
 			arguments = line;
@@ -130,6 +133,8 @@ bool stateCommandsList_c::parseCommandsList(class parser_c &p) {
 		} else {
 			//addCommand(command.c_str(),arguments.c_str());
 		}
+		if(bStop)
+			break;
 	}
 	return false; // ok
 }
@@ -221,6 +226,9 @@ const char *stState_c::getLegsAnim(class stateConditionsHandler_i *handler) cons
 const char *stState_c::getActionAnim(class stateConditionsHandler_i *handler) const {
 	return actions.selectAnimation(handler);
 }
+const char *stState_c::getTorsoAnim(class stateConditionsHandler_i *handler) const {
+	return torso.selectAnimation(handler);
+}
 void stState_c::iterateStateEntryCommands(class stCommandHandler_i *callback) const {
 //	entryCommands.executeCommandsOn(callback);
 }
@@ -297,6 +305,12 @@ const char *stateMachine_c::getStateActionAnim(const char *curStateName, class s
 	if(s == 0)
 		return 0;
 	return s->getActionAnim(handler);
+}
+const char *stateMachine_c::getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const {
+	const stState_c *s = states.getEntry(curStateName);
+	if(s == 0)
+		return 0;
+	return s->getTorsoAnim(handler);
 }
 void stateMachine_c::iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const {
 	const stState_c *s = states.getEntry(stateName);

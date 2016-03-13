@@ -79,6 +79,7 @@ friend class testPlayerConditionsHandler_c;
 	safePtr_c<Weapon> nextWeapon;
 	enum weaponHand_e nextWeaponHand;
 	enum weaponState_e weaponState;
+	bool bPutaway;
 	u32 weaponTime;
 	vec3_c characterControllerOffset;
 	bool onGround; // this is always false if player is using "noclip"
@@ -100,6 +101,8 @@ friend class testPlayerConditionsHandler_c;
 	str st_curStateTorso;
 	// conditions handler
 	class playerConditionsHandler_c *st_handler;
+	// holstered weapons
+	arraySTD_c<class Weapon*> weapons;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
@@ -110,6 +113,8 @@ friend class testPlayerConditionsHandler_c;
 
 	bool isPainAnimActive() const;
 
+	void deactivateWeapon(const char *handName);
+	void activateNewWeapon();
 protected:
 	void playPainAnimation(const char *newPainAnimationName, u32 animTime = 0);
 public:
@@ -154,6 +159,7 @@ public:
 	void onSecondaryFireKeyHeld();
 	void onSecondaryFireKeyDown();
 	void onSecondaryFireKeyUp();
+	void holsterWeapon();
 	void pickupPhysicsProp(class ModelEntity *ent);
 	bool isCarryingEntity() const;
 	void dropCarryingEntity();
@@ -243,6 +249,11 @@ public:
 	bool checkIsWeaponSemiAuto(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkIsWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkIsWeaponClassReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAttackRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAttackLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPutawayLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+
 	bool checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkMinChargeTimeMet(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
