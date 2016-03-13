@@ -90,6 +90,11 @@ BaseEntity *G_SpawnGeneric(const char *classOrModelName) {
 			const char *className = tiki->getClassName();
 			if(className && className[0]) {
 				e = G_SpawnClass(className);
+				if(e == 0) {
+					g_core->RedWarning("G_SpawnGeneric: TIKI %s has unknown classname %s, using ModelEntty\n",
+						classOrModelName,className);
+					e = G_SpawnClass("ModelEntity");
+				}
 			} else {
 				e = G_SpawnClass("ModelEntity");
 			}
