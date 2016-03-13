@@ -144,6 +144,7 @@ public:
 	bool parseState(class stateMachine_c *m, class parser_c &p);
 	const char *transitionState(class stateConditionsHandler_i *handler) const;	
 	const char *getLegsAnim(class stateConditionsHandler_i *handler) const;	
+	const char *getTorsoAnim(class stateConditionsHandler_i *handler) const;	
 	const char *getActionAnim(class stateConditionsHandler_i *handler) const;	
 	void iterateStateEntryCommands(class stCommandHandler_i *callback) const;
 	void iterateStateExitCommands(class stCommandHandler_i *callback) const;
@@ -161,6 +162,7 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual const char *transitionState(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateLegsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
+	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const;
 	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const;
 	virtual enum stMoveType_e getStateMoveType(const char *stateName) const;

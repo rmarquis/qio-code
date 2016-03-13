@@ -40,6 +40,7 @@ public:
 	virtual const char *transitionState(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
 	virtual const char *getStateLegsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
+	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
 	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
 	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
 	virtual enum stMoveType_e getStateMoveType(const char *curStateName) const = 0;

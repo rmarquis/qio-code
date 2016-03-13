@@ -512,6 +512,8 @@ void ClientCommand( int clientNum ) {
 	} else if(!_stricmp(cmd,"removentitiesofclass")) {
 		str className = g_core->Argv(1);
 		G_RemoveEntitiesOfClass(className);
+	} else if(!_stricmp(cmd,"wp_holster")) {
+		pl->holsterWeapon();
 	} else if(!_stricmp(cmd,"tik_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {

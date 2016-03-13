@@ -310,6 +310,12 @@ int ModelEntity::getCurrentAnimationTotalTimeMs() const {
 	}
 	return 0; // TODO?
 }
+int ModelEntity::getCurrentTorsoAnimationTotalTimeMs() const {
+	if(tiki) {
+		return tiki->getAnimTotalTimeMs(this->myEdict->s->torsoAnim);
+	}
+	return 0; // TODO?
+}
 void ModelEntity::setTorsoAnimation(const char *newAnimName) {
 	if(g_verboseSetAnimationCalls.getInt()) {
 		g_core->Print("ModelEntity::setTorsoAnimation: %s\n",newAnimName);
@@ -787,13 +793,26 @@ void ModelEntity::destroyPhysicsObject() {
 	}
 }
 void ModelEntity::updateAnimations() {
-	u32 prevLegsAnimationTime = legsAnimationTime;
-	legsAnimationTime += level.frameTimeMs;
-	if(tiki) {
-		const tikiAnim_i *legsAnim = tiki->getAnim(this->myEdict->s->animIndex);
-		if(legsAnim) {
-			g_tce.me = this;
-			legsAnim->iterateCommands(TCS_SERVER,prevLegsAnimationTime,legsAnimationTime,&g_tce);
+	{
+		u32 prevLegsAnimationTime = legsAnimationTime;
+		legsAnimationTime += level.frameTimeMs;
+		if(tiki) {
+			const tikiAnim_i *legsAnim = tiki->getAnim(this->myEdict->s->animIndex);
+			if(legsAnim) {
+				g_tce.me = this;
+				legsAnim->iterateCommands(TCS_SERVER,prevLegsAnimationTime,legsAnimationTime,&g_tce);
+			}
+		}
+	}
+	{
+		u32 prevTorsoAnimationTime = torsoAnimationTime;
+		torsoAnimationTime += level.frameTimeMs;
+		if(tiki) {
+			const tikiAnim_i *torsoAnim = tiki->getAnim(this->myEdict->s->torsoAnim);
+			if(torsoAnim) {
+				g_tce.me = this;
+				torsoAnim->iterateCommands(TCS_SERVER,prevTorsoAnimationTime,torsoAnimationTime,&g_tce);
+			}
 		}
 	}
 }

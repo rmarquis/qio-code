@@ -205,6 +205,7 @@ Player::Player() {
 	st_handler = 0;
 	st_curStateLegs = "STAND";
 	st_curStateTorso = "STAND";
+	bPutaway = false;
 }
 Player::~Player() {
 	if(characterController) {
@@ -218,11 +219,55 @@ Player::~Player() {
 		delete animHandler;
 	}
 }
+void Player::deactivateWeapon(const char *handName) {
+	if(bPutaway == false) {
+		g_core->RedWarning("Player::deactivateWeapon: ERROR, bPutaway flag not set!\n");
+	}
+	bPutaway = false;
+	if(!stricmp(handName,"left") || !stricmp(handName,"lefthand")) {
+		if(curWeaponLeft.getPtr() == 0) {
+			g_core->RedWarning("Player::deactivateWeapon: can't deactivate lefthand weapon because curWeaponLeft ptr is NULL\n");
+		}
+		curWeaponLeft = 0;
+	} else if(!stricmp(handName,"right") || !stricmp(handName,"righthand")) {
+		if(curWeaponRight.getPtr() == 0) {
+			g_core->RedWarning("Player::deactivateWeapon: can't deactivate righthand weapon because curWeaponRight ptr is NULL\n");
+		}
+		curWeaponRight = 0;
+	} else {
+		curWeapon = 0;
+	}
+	nextWeapon = 0;
+}
+void Player::activateNewWeapon() {
+	if(nextWeapon.getPtr() == 0) {
+		g_core->RedWarning("Player::activateNewWeapon: ERROR, nextWeapon not set!\n");
+		return;
+	}
+	if(nextWeaponHand == WH_LEFT) {
+		curWeaponLeft = nextWeapon;
+	} else if(nextWeaponHand == WH_RIGHT) {
+		curWeaponRight = nextWeapon;
+	} else if(nextWeaponHand == WH_DUALHAND) {
+		curWeapon = nextWeapon;
+	} else {
+
+	}
+	nextWeapon = 0;
+}
 void Player::setKeyValue(const char *key, const char *value) {
  	if(!stricmp(key,"jumpxy")) {
+		// called from .tik animation commands list
 		bJumped = this->characterController->tryToJump();
 	} else if(!stricmp(key,"jump")) {
+		// called from .tik animation commands list
 		bJumped = this->characterController->tryToJump();
+	} else if(!stricmp(key,"activatenewweapon")) {
+		// called from .tik animation commands list
+		activateNewWeapon();
+	} else if(!stricmp(key,"deactivateweapon")) {
+		// called from .tik animation commands list
+		deactivateWeapon(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -253,6 +298,7 @@ void Player::loadStateMachineLegs(const char *fname) {
 }
 void Player::loadStateMachineTorso(const char *fname) {
 	st_torso = G_LoadStateMachine(fname);
+	setTorsoAnimation(0); // FIXME
 }
 void Player::setPlayerModel(const char *newPlayerModelName) {
 	this->disableCharacterController();
@@ -602,6 +648,8 @@ conditionFunction_s g_playerConditions [] = {
 	
 
 	// FAKK
+	GETFUNC("PUTAWAYLEFT",Player::checkPutawayLeft)
+	GETFUNC("PUTAWAYRIGHT",Player::checkPutawayRight)
 	GETFUNC("CAN_MOVE_FORWARD",Player::returnTrue)
 	GETFUNC("CAN_MOVE_RIGHT",Player::returnTrue)
 	GETFUNC("CAN_MOVE_LEFT",Player::returnTrue)
@@ -609,7 +657,12 @@ conditionFunction_s g_playerConditions [] = {
 	GETFUNC("FAKEPLAYERACTIVE",Player::returnFalse)
 	GETFUNC("BLOCKED",Player::returnFalse)
 	GETFUNC("CAN_FALL",Player::returnFalse)
+	GETFUNC("ATTACKLEFT",Player::checkAttackLeft)
+	GETFUNC("ATTACKRIGHT",Player::checkAttackRight)
 
+
+
+	
 	{ 0, 0 }
 };
 
@@ -723,6 +776,7 @@ void Player::runPlayerAnimation_stateMachine() {
 	stateMachineAPI_i *machines[2] = { st_legs, st_torso };
 	const char *names[2] = { "legs" , "torso" };
 	str *states[2] = { &st_curStateLegs, &st_curStateTorso };
+	bool bChanged[2] = { false, false };
 	for(u32 i = 0; i < 2; i++) {
 		stateMachineAPI_i *st = machines[i];
 		if(st == 0)
@@ -734,9 +788,10 @@ void Player::runPlayerAnimation_stateMachine() {
 			const char *next = st->transitionState(*state,st_handler);
 			if(next && next[0]) {
 				if(g_printPlayerStateChange.getInt()) {
-					g_core->Print("(Time %i): Changing %s state from %s to %s\n",name,level.time,st_curStateLegs.c_str(),next);
+					g_core->Print("(Time %i): Changing %s state from %s to %s\n",level.time,name,state->c_str(),next);
 				}
 				*state = next;
+				bChanged[i] = true;
 		//		continue;
 			}
 		//	break;
@@ -753,7 +808,10 @@ void Player::runPlayerAnimation_stateMachine() {
 		anim = g_playerForceAnimation.getStr();
 	}
 	this->setAnimation(anim);
-	this->setTorsoAnimation("raise_left_from_lowerback");
+	if(bChanged[1]) {
+		const char *torsoAnim = st_torso->getStateTorsoAnim(st_curStateTorso,st_handler);
+		this->setTorsoAnimation(torsoAnim);
+	}
 #endif
 }
 void Player::runPlayer() {
@@ -1223,7 +1281,12 @@ void Player::updateCurWeaponClipSize() {
 }
 void Player::addWeapon(class Weapon *newWeapon) {
 	if(st_torso) {
+		weapons.push_back(newWeapon);
+
+		// unholster
 		nextWeaponHand = newWeapon->getWeaponHand();
+		if(nextWeaponHand == WH_ANY)
+			nextWeaponHand = WH_RIGHT;
 		nextWeapon = newWeapon;
 		return;
 	}
@@ -1267,6 +1330,35 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		weaponTime = level.time;
 	}
 #endif
+}
+void Player::holsterWeapon() {
+	// can't holster weapon while holstering/raising another one
+	if(nextWeapon.getPtr())
+		return;
+	// find weapon which we can hoslter
+	if(curWeaponLeft.getPtr()) {
+		nextWeapon = curWeaponLeft;
+		nextWeaponHand = WH_LEFT;
+		bPutaway = true;
+		return;
+	} else if(curWeaponRight.getPtr()) {
+		nextWeapon = curWeaponRight;
+		nextWeaponHand = WH_RIGHT;
+		bPutaway = true;
+		return;
+	} else if(curWeapon.getPtr()) {
+		nextWeapon = curWeapon;
+		nextWeaponHand = WH_DUALHAND;
+		bPutaway = true;
+		return;
+	}
+	// unholster weapon
+	if(weapons.size() == 0)
+		return;
+	nextWeaponHand = weapons[0]->getWeaponHand();
+	if(nextWeaponHand == WH_ANY)
+		nextWeaponHand = WH_RIGHT;
+	nextWeapon = weapons[0];
 }
 void Player::updatePlayerWeapon() {
 	if(weaponState == WP_NONE) {
@@ -1482,12 +1574,19 @@ bool Player::checkPain(const class stringList_c *arguments, class patternMatcher
 	return false;
 }
 bool Player::checkAnimDoneTorso(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-	// TODO
+	int needed = getCurrentTorsoAnimationTotalTimeMs();
+	if(torsoAnimationTime > needed) {
+		if(0)
+			g_core->Print("Anim done! %i > %i \n",torsoAnimationTime,needed);
+		return true;
+	}
+	if(0) 
+		g_core->Print("Anim not yet done... %i <= %i \n",torsoAnimationTime,needed);
 	return false;
 }
 bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	int needed = getCurrentAnimationTotalTimeMs();
-	if(legsAnimationTime >= needed) {
+	if(legsAnimationTime > needed) {
 		if(0)
 			g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
 		return true;
@@ -1497,9 +1596,29 @@ bool Player::checkAnimDoneLegs(const class stringList_c *arguments, class patter
 	return false;
 }
 bool Player::checkIsWeaponActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-	if(curWeapon == 0)
-		return false;
-	// TODO
+	const char *hand = arguments->getString(0);
+	if(!stricmp(hand,"lefthand")) {
+		// check if there is a weapon in lefthand
+		if(curWeaponLeft.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeaponLeft->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
+	if(!stricmp(hand,"righthand")) {
+		// check if there is a weapon in lefthand
+		if(curWeaponRight.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeaponRight->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
 	return false;
 }
 bool Player::checkIsWeaponClassActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -1509,8 +1628,8 @@ bool Player::checkIsWeaponClassActive(const class stringList_c *arguments, class
 	return false;
 }
 bool Player::checkHasWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
-	// TODO
+	if(curWeapon.getPtr() || curWeaponLeft.getPtr() || curWeaponRight.getPtr())
+		return true;
 	return false;
 }
 bool Player::checkNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -1519,8 +1638,24 @@ bool Player::checkNewWeapon(const class stringList_c *arguments, class patternMa
 	return false;
 }
 bool Player::checkPutawayMain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
-	// TODO
+	if(bPutaway == false)
+		return false;
+	if(nextWeaponHand == WH_DUALHAND)
+		return true;
+	return false;
+}
+bool Player::checkPutawayLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(bPutaway == false)
+		return false;
+	if(nextWeaponHand == WH_LEFT)
+		return true;
+	return false;
+}
+bool Player::checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(bPutaway == false)
+		return false;
+	if(nextWeaponHand == WH_RIGHT)
+		return true;
 	return false;
 }
 
@@ -1531,8 +1666,31 @@ bool Player::checkIsNewWeaponClass(const class stringList_c *arguments, class pa
 }
 
 bool Player::checkIsNewWeapon(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
+	if(nextWeapon.getPtr() == 0)
+		return false;
+	const char *hand = arguments->getString(0);
+	const char *weapon = arguments->getString(1);
+	if(!stricmp(hand,"lefthand")) {
+		if(nextWeaponHand != WH_LEFT)
+			return false;
+	} else if(!stricmp(hand,"rightthand")) {
+		if(nextWeaponHand != WH_RIGHT)
+			return false;
+	}
+	const char *checkName = nextWeapon->getWeaponName();
+	if(!stricmp(checkName,weapon))
+		return true;
 	// TODO
+	return false;
+}
+bool Player::checkAttackRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(pers.cmd.buttons & BUTTON_ATTACK)
+		return true;
+	return false;
+}
+bool Player::checkAttackLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(pers.cmd.buttons & BUTTON_ATTACK_SECONDARY)
+		return true;
 	return false;
 }
 bool Player::checkAttackPrimary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -1551,7 +1709,29 @@ bool Player::checkIsWeaponSemiAuto(const class stringList_c *arguments, class pa
 	return false;
 }
 bool Player::checkIsWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
+	const char *hand = arguments->getString(0);
+	if(!stricmp(hand,"lefthand")) {
+		// check if there is a weapon in lefthand
+		if(curWeaponLeft.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeaponLeft->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
+	if(!stricmp(hand,"righthand")) {
+		// check if there is a weapon in lefthand
+		if(curWeaponRight.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeaponRight->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
 	// TODO
 	return false;
 }

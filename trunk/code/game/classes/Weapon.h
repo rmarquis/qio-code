@@ -33,6 +33,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 enum weaponHand_e {
 	WH_DUALHAND,
 	WH_ANY,
+	WH_LEFT,
+	WH_RIGHT,
 };
 
 class Weapon : public ModelEntity {
@@ -99,6 +101,9 @@ public:
 	}
 	weaponHand_e getWeaponHand() const {
 		return weaponHand;
+	}
+	const char *getWeaponName() const {
+		return weaponName;
 	}
 	virtual bool hasEmptyClip() const {
 		if(curClipSize == 0)
