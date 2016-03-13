@@ -227,11 +227,17 @@ void Player::deactivateWeapon(const char *handName) {
 	if(!stricmp(handName,"left") || !stricmp(handName,"lefthand")) {
 		if(curWeaponLeft.getPtr() == 0) {
 			g_core->RedWarning("Player::deactivateWeapon: can't deactivate lefthand weapon because curWeaponLeft ptr is NULL\n");
+		} else {
+			curWeaponLeft->detachFromParent();
+			curWeaponLeft->hideEntity();
 		}
 		curWeaponLeft = 0;
 	} else if(!stricmp(handName,"right") || !stricmp(handName,"righthand")) {
 		if(curWeaponRight.getPtr() == 0) {
 			g_core->RedWarning("Player::deactivateWeapon: can't deactivate righthand weapon because curWeaponRight ptr is NULL\n");
+		} else {
+			curWeaponRight->detachFromParent();
+			curWeaponRight->hideEntity();
 		}
 		curWeaponRight = 0;
 	} else {
