@@ -669,6 +669,8 @@ conditionFunction_s g_playerConditions [] = {
 	GETFUNC("PUTAWAYLEFT",Player::checkPutawayLeft)
 	GETFUNC("PUTAWAYRIGHT",Player::checkPutawayRight)
 	GETFUNC("PUTAWAYBOTH",Player::checkPutawayBoth)
+
+	GETFUNC("IS_DUALWEAPON_READY_TO_FIRE",Player::checkIsDualhandWeaponReadyToFire)
 	
 	GETFUNC("CAN_MOVE_FORWARD",Player::returnTrue)
 	GETFUNC("CAN_MOVE_RIGHT",Player::returnTrue)
@@ -1703,6 +1705,21 @@ bool Player::checkPutawayBoth(const class stringList_c *arguments, class pattern
 		return true;
 	return false;
 }
+bool Player::checkIsDualhandWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(bPutaway)
+		return false;
+	if(curWeapon==0)
+		return false;
+	const char *fireMode = arguments->getString(0);
+	const char *weaponName = arguments->getString(1);
+	if(stricmp(curWeapon->getWeaponName(),weaponName))
+		return false;
+//	if(curWeapon->isReadyToFire()) {
+		return true;
+	//}
+	return false;
+}
+
 bool Player::checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(bPutaway == false)
 		return false;
