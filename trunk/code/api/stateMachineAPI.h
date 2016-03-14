@@ -27,6 +27,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 enum stMoveType_e {
 	EMT_BAD,
 	EMT_LEGS,
+	// for sword combo
+	EMT_ANIM,
 	// for ladder
 	EMT_CLIMBWALL,
 	// disable steering

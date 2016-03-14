@@ -154,6 +154,8 @@ bool stState_c::parseState(class stateMachine_c *m, class parser_c &p) {
 				moveType = EMT_NONE;
 			} else if(p.atWord("climbwall")) {
 				moveType = EMT_CLIMBWALL;
+			} else if(p.atWord("anim")) {
+				moveType = EMT_ANIM;
 			} else {
 				moveType = EMT_BAD;
 				p.getToken();

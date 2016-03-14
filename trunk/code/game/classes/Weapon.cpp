@@ -151,6 +151,7 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		// "name" is also a "targetname" in Doom3
 		// Avoid conflicts and use "name" here only if TIKI is set.
 		weaponName = value;
+		weaponName.removeCharacter('"');
 	} else if(!_stricmp(key,"hand")) {
 		// used in FAKK2
 		setWeaponHand(value);
@@ -162,7 +163,14 @@ void Weapon::setWeaponHand(const char *handName) {
 	if(!stricmp(handName,"dual")) {
 		weaponHand = WH_DUALHAND;
 	} else if(!stricmp(handName,"any")) {
+		// weapon_uzi.tik can be wielded in any hand
 		weaponHand = WH_ANY;
+	} else if(!stricmp(handName,"righthand")) {
+		// weapon_sword.tik can be only wielded in rigth hand
+		weaponHand = WH_RIGHT;
+	} else if(!stricmp(handName,"left")) {
+		// weapon_shield.tik can be only wielded in left hand
+		weaponHand = WH_LEFT;
 	} else {
 		g_core->RedWarning("Weapon::setWeaponHand: unknown weaponhand '%s'\n",handName);
 	}
