@@ -240,6 +240,9 @@ public:
 				return true;
 			}
 			if(G_isWS(*tmp) == false) {
+				// skip comments
+				if(tmp[0] == '/' && tmp[1] == '/')
+					return true; // single line comment is a end of line
 				return false;
 			}
 			tmp++;

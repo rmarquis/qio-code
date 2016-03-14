@@ -99,6 +99,8 @@ friend class testPlayerConditionsHandler_c;
 	// current states
 	str st_curStateLegs;
 	str st_curStateTorso;
+	// movement type
+	enum stMoveType_e stMoveType;
 	// conditions handler
 	class playerConditionsHandler_c *st_handler;
 	// holstered weapons
@@ -253,6 +255,7 @@ public:
 	bool checkAttackLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkPutawayLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPutawayBoth(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 
 	bool checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkMinChargeTimeMet(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);

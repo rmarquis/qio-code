@@ -886,6 +886,26 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="FAKK"
+				>
+				<File
+					RelativePath="..\..\code\game\classes\Shield.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Shield.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Sword.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Sword.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="shared"

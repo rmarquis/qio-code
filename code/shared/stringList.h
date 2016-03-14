@@ -82,6 +82,8 @@ public:
 		list.push_back(n);
 	}
 	const char *getString(u32 i) const {
+		if(list.size() <= i)
+			return "stringlist_index_out_of_range";
 		return list[i];
 	}
 	static int CompareStringQSort(const void *v0, const void *v1) {

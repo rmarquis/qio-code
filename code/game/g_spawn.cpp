@@ -85,8 +85,8 @@ BaseEntity *G_SpawnGeneric(const char *classOrModelName) {
 		return e;
 	if(g_vfs->FS_FileExists(classOrModelName)) {
 		str tmp = classOrModelName;
-		if(tmp.hasExt("tik")) {
-			tiki_i *tiki = g_tikiMgr->registerModel(classOrModelName);
+		tiki_i *tiki;
+		if(tmp.hasExt("tik") && (tiki = g_tikiMgr->registerModel(classOrModelName))) {
 			const char *className = tiki->getClassName();
 			if(className && className[0]) {
 				e = G_SpawnClass(className);

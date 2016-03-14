@@ -241,6 +241,12 @@ void Player::deactivateWeapon(const char *handName) {
 		}
 		curWeaponRight = 0;
 	} else {
+		if(curWeapon.getPtr() == 0) {
+			g_core->RedWarning("Player::deactivateWeapon: can't deactivate dualhand weapon because curWeapon ptr is NULL\n");
+		} else {
+			curWeapon->detachFromParent();
+			curWeapon->hideEntity();
+		}
 		curWeapon = 0;
 	}
 	nextWeapon = 0;
@@ -260,6 +266,8 @@ void Player::activateNewWeapon() {
 		curWeaponRight->setParent(this,"tag_weapon_right");
 	} else if(nextWeaponHand == WH_DUALHAND) {
 		curWeapon = nextWeapon;
+		curWeapon->showEntity();
+		curWeapon->setParent(this,"tag_weapon_right");
 	} else {
 
 	}
@@ -660,6 +668,8 @@ conditionFunction_s g_playerConditions [] = {
 	// FAKK
 	GETFUNC("PUTAWAYLEFT",Player::checkPutawayLeft)
 	GETFUNC("PUTAWAYRIGHT",Player::checkPutawayRight)
+	GETFUNC("PUTAWAYBOTH",Player::checkPutawayBoth)
+	
 	GETFUNC("CAN_MOVE_FORWARD",Player::returnTrue)
 	GETFUNC("CAN_MOVE_RIGHT",Player::returnTrue)
 	GETFUNC("CAN_MOVE_LEFT",Player::returnTrue)
@@ -669,6 +679,10 @@ conditionFunction_s g_playerConditions [] = {
 	GETFUNC("CAN_FALL",Player::returnFalse)
 	GETFUNC("ATTACKLEFT",Player::checkAttackLeft)
 	GETFUNC("ATTACKRIGHT",Player::checkAttackRight)
+	// what's the difference?
+	GETFUNC("ATTACKLEFTBUTTON",Player::checkAttackLeft)
+	GETFUNC("ATTACKRIGHTBUTTON",Player::checkAttackRight)
+
 
 
 
@@ -807,20 +821,28 @@ void Player::runPlayerAnimation_stateMachine() {
 		//	break;
 		//}
 	}
-	const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
-	if(anim == 0 || anim[0] == 0) {
-		g_core->Print("No animation found for state %s\n",st_curStateLegs.c_str());
-		return;
-	}
-	///anim = "stand_to_ready";
-	//anim = "ready_to_jump_up_to_rise";
-	if(g_playerForceAnimation.getStr()[0] != '0') {
-		anim = g_playerForceAnimation.getStr();
-	}
-	this->setAnimation(anim);
-	if(bChanged[1]) {
-		const char *torsoAnim = st_torso->getStateTorsoAnim(st_curStateTorso,st_handler);
-		this->setTorsoAnimation(torsoAnim);
+	stMoveType = st_torso->getStateMoveType(st_curStateTorso);
+	if(stMoveType == EMT_LEGS) {
+		// legs move type allows us to use animation from legs state
+		const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
+		if(anim == 0 || anim[0] == 0) {
+			g_core->Print("No animation found for state %s\n",st_curStateLegs.c_str());
+			return;
+		}
+		///anim = "stand_to_ready";
+		//anim = "ready_to_jump_up_to_rise";
+		if(g_playerForceAnimation.getStr()[0] != '0') {
+			anim = g_playerForceAnimation.getStr();
+		}
+		this->setAnimation(anim);
+		if(bChanged[1]) {
+			const char *torsoAnim = st_torso->getStateTorsoAnim(st_curStateTorso,st_handler);
+			this->setTorsoAnimation(torsoAnim);
+		}
+	} else {
+		const char *torsoAnim = st_torso->getStateLegsAnim(st_curStateTorso,st_handler);
+		this->setAnimation(torsoAnim);
+		this->setTorsoAnimation(0);
 	}
 #endif
 }
@@ -869,6 +891,8 @@ void Player::runPlayer() {
 				vec3_c v( 0, this->ps.viewangles[1], 0 );
 				vec3_c dir;;
 				if(isPainAnimActive()) {
+					dir.clear();
+				} else if(st_legs && stMoveType != EMT_LEGS) {
 					dir.clear();
 				} else {
 					vec3_c f,r,u;
@@ -1629,6 +1653,17 @@ bool Player::checkIsWeaponActive(const class stringList_c *arguments, class patt
 		}
 		return true; // TODO
 	}
+	if(!stricmp(hand,"dualhand")) {
+		// check if there is a weapon in mainhand
+		if(curWeapon.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeapon->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
 	return false;
 }
 bool Player::checkIsWeaponClassActive(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -1661,6 +1696,13 @@ bool Player::checkPutawayLeft(const class stringList_c *arguments, class pattern
 		return true;
 	return false;
 }
+bool Player::checkPutawayBoth(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(bPutaway == false)
+		return false;
+	if(nextWeaponHand == WH_DUALHAND)
+		return true;
+	return false;
+}
 bool Player::checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(bPutaway == false)
 		return false;
@@ -1685,6 +1727,9 @@ bool Player::checkIsNewWeapon(const class stringList_c *arguments, class pattern
 			return false;
 	} else if(!stricmp(hand,"rightthand")) {
 		if(nextWeaponHand != WH_RIGHT)
+			return false;
+	} else if(!stricmp(hand,"dualhand")) {
+		if(nextWeaponHand != WH_DUALHAND)
 			return false;
 	}
 	const char *checkName = nextWeapon->getWeaponName();
