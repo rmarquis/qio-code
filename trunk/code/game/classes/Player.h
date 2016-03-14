@@ -256,6 +256,7 @@ public:
 	bool checkPutawayRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkPutawayLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkPutawayBoth(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkIsDualhandWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 
 	bool checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkMinChargeTimeMet(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
