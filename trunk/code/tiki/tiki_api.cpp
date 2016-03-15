@@ -448,6 +448,11 @@ class tikiParser_c : public parser_c {
 			} else if(atWord("lod_scale")) {
 				// models/obj_wrench.tik
 				float sc = getFloat();
+			} else if(atWord("origin")) {
+				// models/weapon_shotgun.tik
+				float x = getFloat();
+				float y = getFloat();
+				float z = getFloat();
 			} else if(atWord("radius")) {
 				// models/otto.tik
 				float sc = getFloat();
