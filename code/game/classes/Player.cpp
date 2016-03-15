@@ -671,6 +671,7 @@ conditionFunction_s g_playerConditions [] = {
 	GETFUNC("PUTAWAYBOTH",Player::checkPutawayBoth)
 
 	GETFUNC("IS_DUALWEAPON_READY_TO_FIRE",Player::checkIsDualhandWeaponReadyToFire)
+	GETFUNC("HAS_AMMO",Player::checkHasAmmo)
 	
 	GETFUNC("CAN_MOVE_FORWARD",Player::returnTrue)
 	GETFUNC("CAN_MOVE_RIGHT",Player::returnTrue)
@@ -1705,15 +1706,48 @@ bool Player::checkPutawayBoth(const class stringList_c *arguments, class pattern
 		return true;
 	return false;
 }
+bool Player::checkHasAmmo(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	const char *handName = arguments->getString(0);
+	// "primary" or "secondary"
+	const char *fireType = arguments->getString(1);
+	
+	if(!stricmp(handName,"dualhand")) {
+		if(curWeapon == 0)
+			return false;
+		if(curWeapon->hasAmmoForFireType(fireType))
+			return true;
+		return false;
+	}
+	if(!stricmp(handName,"righthand")) {
+		if(curWeaponRight == 0)
+			return false;
+		if(curWeaponRight->hasAmmoForFireType(fireType))
+			return true;
+		return false;
+	}
+	if(!stricmp(handName,"lefthand")) {
+		if(curWeaponLeft == 0)
+			return false;
+		if(curWeaponLeft->hasAmmoForFireType(fireType))
+			return true;
+		return false;
+	}
+
+
+	return false;
+}
 bool Player::checkIsDualhandWeaponReadyToFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(bPutaway)
 		return false;
 	if(curWeapon==0)
 		return false;
 	const char *fireMode = arguments->getString(0);
-	const char *weaponName = arguments->getString(1);
-	if(stricmp(curWeapon->getWeaponName(),weaponName))
-		return false;
+
+	if(arguments->size() > 1) {
+		const char *weaponName = arguments->getString(1);
+		if(stricmp(curWeapon->getWeaponName(),weaponName))
+			return false;
+	}
 //	if(curWeapon->isReadyToFire()) {
 		return true;
 	//}

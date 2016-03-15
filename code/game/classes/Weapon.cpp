@@ -159,6 +159,10 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		ModelEntity::setKeyValue(key,value);
 	}
 }
+bool Weapon::hasAmmoForFireType(const char *fireType) const {
+
+	return true; // TODO
+}
 void Weapon::setWeaponHand(const char *handName) {
 	if(!stricmp(handName,"dual")) {
 		weaponHand = WH_DUALHAND;

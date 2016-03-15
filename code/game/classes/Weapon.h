@@ -128,7 +128,8 @@ public:
 	virtual void doWeaponAttack();
 	virtual void doWeaponAttackSecondary();
 	bool canFireAgain() const;
-
+	// fireType can be "primary" or "secondary"
+	bool hasAmmoForFireType(const char *fireType) const;
 	void setWeaponHand(const char *handName);
 	bool hasCustomViewModel() const {
 		if(model_view.length())
