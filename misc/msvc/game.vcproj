@@ -898,6 +898,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\SoulSucker.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\SoulSucker.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\Sword.cpp"
 					>
 				</File>
