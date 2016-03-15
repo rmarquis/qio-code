@@ -898,6 +898,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\Flashbang.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Flashbang.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\Shield.cpp"
 					>
 				</File>
