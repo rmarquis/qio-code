@@ -46,6 +46,9 @@ public:
 	const char *getValue() const {
 		return val;
 	}
+	bool valueHasExtension(const char *ext) const {
+		return val.hasExt(ext);
+	}
 };
 
 class ePairList_c {
@@ -172,6 +175,13 @@ public:
 			return p->getValue();
 		}
 		return 0;
+	}
+	bool keyValueHasExtension(const char *key, const char *ext) const {
+		const ePair_c *p = find(key);
+		if(p) {
+			return p->valueHasExtension(ext);
+		}
+		return false;
 	}
 	int getKeyInt(const char *key) const {
 		const ePair_c *p = find(key);

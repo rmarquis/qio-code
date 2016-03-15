@@ -184,7 +184,7 @@ public:
 	void setHashNext(tikiBase_c *hn) {
 		hashNext = hn;
 	}
-	const char *getName() const {
+	virtual const char *getName() const {
 		return fname;
 	}
 	virtual bool isValid() const = 0;

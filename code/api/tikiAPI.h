@@ -56,6 +56,8 @@ public:
 class tiki_i {
 
 public:
+	virtual const char *getName() const = 0;
+
 	virtual bool isSkeletal() const = 0;
 	virtual bool isKeyframed() const = 0;
 

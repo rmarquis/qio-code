@@ -91,6 +91,9 @@ public:
 	virtual const char *getKeyValue(const char *key) const {
 		return ePairs.getKeyValue(key);
 	}
+	virtual bool keyValueHasExtension(const char *key, const char *ext) const {
+		return ePairs.keyValueHasExtension(key,ext);
+	}
 	bool fromString(const char *txt);
 	bool readFirstEntDefFromFile(const char *fileName);
 	void fromOtherAPI(const class entDefAPI_i *p);
