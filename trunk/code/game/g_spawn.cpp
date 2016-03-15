@@ -133,7 +133,32 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 #else
 		if(entDef->hasKey("model")) {
 #endif
-			ModelEntity *mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
+			ModelEntity *mEnt;
+			if(entDef->keyValueHasExtension("model","tik")) {
+				const char *modelName = entDef->getKeyValue("model");
+				str tmp;
+				if(!g_vfs->FS_FileExists(modelName)) {
+					// try to add "models/" to the beginning of the path
+					tmp = "models/";
+					tmp.append(modelName);
+					if(g_vfs->FS_FileExists(tmp)) {
+						modelName = tmp;
+					}
+				}
+				tiki_i *tiki = g_tikiMgr->registerModel(modelName);
+				if(tiki == 0) {
+					mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
+				} else {
+					mEnt = (ModelEntity *)G_SpawnClassDef(tiki->getClassName());
+					if(mEnt == 0) {
+						g_core->RedWarning("G_SpawnEntDef: TIKI %s has unknown classname %s, using ModelEntty\n",
+							tiki->getName(),tiki->getClassName());
+						mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
+					}
+				}
+			} else {
+				mEnt = (ModelEntity *)G_SpawnClassDef("ModelEntity");
+			}
 			// make them immobile
 			mEnt->setRigidBodyPhysicsEnabled(false);
 			ent = mEnt;
