@@ -164,7 +164,9 @@ bool Weapon::hasAmmoForFireType(const char *fireType) const {
 	return true; // TODO
 }
 void Weapon::setWeaponHand(const char *handName) {
-	if(!stricmp(handName,"dual")) {
+	if(!stricmp(handName,"dual") || !stricmp(handName,"dualhand")) {
+		// NOTE: both "dual" and "dualhand" are used in FAKK
+		// "dualhand" is used weapon_axe.tik
 		weaponHand = WH_DUALHAND;
 	} else if(!stricmp(handName,"any")) {
 		// weapon_uzi.tik can be wielded in any hand
