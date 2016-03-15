@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/kfModelAPI.h>
 #include <api/skelAnimAPI.h>
 #include <api/skelModelAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/perStringCallback.h>
 #include <shared/parser.h>
 #include <shared/ePairsList.h>
@@ -292,8 +293,22 @@ public:
 			const char *s, *m;
 			remaps.getKeyValue(i,&s,&m);
 			int sfIndex = out->findSurface(s);
-			if(sfIndex != -1)
+			if(sfIndex != -1) {
+				// fix TIKI material names
+				// (only for FAKK?)
+				str tmp;
+				if(g_ms) {
+					if(skelModel && g_ms->isMaterialOrImagePresent(m)==false) {
+						tmp = skelModel->getName();
+						tmp.toDir();
+						tmp.append(m);
+						if(g_ms->isMaterialOrImagePresent(tmp)) {
+							m = tmp;
+						}
+					}
+				}
 				out->setSurfaceMaterial(sfIndex,m);
+			}
 		}
 	}
 	virtual class skelAnimAPI_i *getSkelAnim(u32 animNum) const {
@@ -801,6 +816,7 @@ vfsAPI_s *g_vfs = 0;
 cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
 cmAPI_i *cm = 0;
+materialSystemAPI_i *g_ms = 0;
 modelLoaderDLLAPI_i *g_modelLoader = 0;
 moduleManagerAPI_i *g_moduleMgr = 0;
 
@@ -821,6 +837,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&cm,CM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 
 	//TIKI_AddConsoleCommands();
 }
