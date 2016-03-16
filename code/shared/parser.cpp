@@ -182,6 +182,7 @@ const char *parser_c::getLine(str &out, const char *stopSet) {
 	}
 	end = p;
 	out.setFromTo(start,end);
+	out.stripTrailing("\r");
 	return out;
 }	
 const char *parser_c::getD3Token() {
