@@ -23,7 +23,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Actor.cpp
 #include "Actor.h"
+#include "../g_local.h"
 #include <api/serverAPI.h>
+#include <api/coreAPI.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
@@ -32,15 +34,22 @@ DEFINE_CLASS(Actor, "ModelEntity");
 Actor::Actor() {
 	health = 100;
 	bTakeDamage = true;
+	st = 0;
+}
+void Actor::loadAIStateMachine(const char *fname) {
+	st = G_LoadStateMachine(fname);
+	if(st == 0) {
+		g_core->RedWarning("Actor::loadAIStateMachine: failed to load %s\n",fname);
+	}
 }
 void Actor::setKeyValue(const char *key, const char *value) {
+	if(!stricmp("statemap",key)) {
+		loadAIStateMachine(value);
+	}
 	ModelEntity::setKeyValue(key,value);
 }
 void Actor::postSpawn() {
-	if(cmod) {
-		// create a rigid body (physics prop)
-		initRigidBodyPhysics();
-	}
+	ModelEntity::postSpawn();
 }
 
 

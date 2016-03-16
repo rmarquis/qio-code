@@ -511,14 +511,6 @@
 			Name="classes"
 			>
 			<File
-				RelativePath="..\..\code\game\classes\Actor.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\classes\Actor.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\game\classes\BaseEntity.cpp"
 				>
 			</File>
@@ -889,6 +881,14 @@
 			<Filter
 				Name="FAKK"
 				>
+				<File
+					RelativePath="..\..\code\game\classes\Actor.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Actor.h"
+					>
+				</File>
 				<File
 					RelativePath="..\..\code\game\classes\Flamethrower.cpp"
 					>
