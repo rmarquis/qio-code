@@ -28,6 +28,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class Actor : public ModelEntity {
+	class stateMachineAPI_i *st;
+
+	void loadAIStateMachine(const char *fname);
 public:
 	Actor();
 
