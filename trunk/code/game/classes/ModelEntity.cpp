@@ -295,10 +295,10 @@ int ModelEntity::findAnimationIndex(const char *newAnimName) {
 	return newAnimIndex;
 }
 void ModelEntity::setAnimation(const char *newAnimName) {
-	if(g_verboseSetAnimationCalls.getInt()) {
-		g_core->Print("ModelEntity::setAnimation: %s\n",newAnimName);
-	}
 	int newIndex = findAnimationIndex(newAnimName);;
+	if(g_verboseSetAnimationCalls.getInt()) {
+		g_core->Print("ModelEntity::setAnimation: %s (index %i)\n",newAnimName,newIndex);
+	}
 	// save the animation string name
 	animName = newAnimName;
 	if(newIndex == this->myEdict->s->animIndex)

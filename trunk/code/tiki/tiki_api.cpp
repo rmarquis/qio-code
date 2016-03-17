@@ -277,6 +277,30 @@ public:
 				return i;
 			}
 		}
+		// game code might request a random animation,
+		// for example, "idle" should return "idle1" or "idle2" randomly
+		char lastChar = animAlias[strlen(animAlias)-1];
+		if(isdigit(lastChar)==false) {
+#define MAX_RANDOM_ANIMS_PER_NAME 32
+			int candidates[MAX_RANDOM_ANIMS_PER_NAME];
+			u32 found = 0;
+			u32 aliasLen = strlen(animAlias);
+			for(u32 i = 0; i < anims.size(); i++) {
+				const char *alias = anims[i]->getAlias();
+				if(!strnicmp(alias,animAlias,aliasLen)
+					&& isdigit(alias[aliasLen]) && alias[aliasLen+1]==0) {
+					if(found < MAX_RANDOM_ANIMS_PER_NAME) {
+						candidates[found] = i;
+						found++;
+					}
+				}
+			}
+			if(found) {
+				//u32 chosen = rand() % found;
+				u32 chosen = 0; // TODO
+				return candidates[chosen];
+			}
+		}
 		return -1;
 	}
 	virtual int getAnimTotalTimeMs(int animIndex) const {

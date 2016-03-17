@@ -61,6 +61,8 @@ static aCvar_c rfe_drawPlayers("rfe_drawPlayers","1");
 static aCvar_c rfe_drawGeneral("rfe_drawGeneral","1");
 // usefull to see how ragdolls are slowing engine down
 static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","0");
+// TIKI debugging
+static aCvar_c rf_tiki_verboseSetTIKIModelAnimLocalIndex("rf_tiki_verboseSetTIKIModelAnimLocalIndex","0");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -405,6 +407,15 @@ void rEntityImpl_c::setTIKIModelAnimLocalIndex(int localAnimIndex, int newFlags)
 		return;
 	}
 	const class skelAnimAPI_i *a = model->getTIKI()->getSkelAnim(localAnimIndex);
+	if(rf_tiki_verboseSetTIKIModelAnimLocalIndex.getInt()) {
+		if(a) {
+			g_core->Print("rEntityImpl_c::setTIKIModelAnimLocalIndex: index %i returned %s anim from %s\n",
+				localAnimIndex,a->getName(),model->getName());
+		} else {
+			g_core->Print("rEntityImpl_c::setTIKIModelAnimLocalIndex: index %i returned NULL anim from %s\n",
+				localAnimIndex,model->getName());
+		}
+	}
 	this->setAnim(a,newFlags);
 }
 void rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex(int localAnimIndex, int newFlags) {

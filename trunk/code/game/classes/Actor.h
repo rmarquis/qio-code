@@ -26,9 +26,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #define __ACTOR_H__
 
 #include "ModelEntity.h"
+#include "../stateMachineShared.h"
 
 class Actor : public ModelEntity {
+	str st_curState;
 	class stateMachineAPI_i *st;
+	genericConditionsHandler_t<Actor> *st_handler;
+
 	class physCharacterControllerAPI_i *characterController;
 	vec3_c characterControllerOffset;
 
@@ -48,6 +52,12 @@ public:
 	virtual void setOrigin(const vec3_c &newXYZ);
 
 	virtual void setKeyValue(const char *key, const char *value);
+
+	//
+	// state conditions
+	// (for FAKK ai/*.st files support)
+	//
+	bool checkAnimDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 };
 
 #endif // __ACTOR_H__
