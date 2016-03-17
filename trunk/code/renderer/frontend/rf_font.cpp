@@ -26,9 +26,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/str.h>
 #include <shared/parser.h>
 #include <shared/rect.h>
+#include <shared/colorTable.h>
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>
 #include <api/rAPI.h>
+#include <api/rbAPI.h>
 #include <api/fontAPI.h>
 #include <api/mtrAPI.h>
 #include <api/materialSystemAPI.h>
@@ -54,6 +56,23 @@ public:
 	}
 	virtual const char *getName() const {
 		return name;
+	}
+	void setupColourCode(int c) const {
+		const float *f = g_color_table[c];
+		rb->setColor4(f);
+	}
+	const char *checkForColourCode(const char *p) const {
+		if(p[0] == '^' && p[1]) {
+			// skip p[0]
+			p++;
+			// get code
+			char colourCode = *p;
+			// skip colour code 
+			p++;
+			// setup
+			setupColourCode(colourCode);
+		}
+		return p;
 	}
 	void setHashNext(fontBase_c *fb) {
 		hashNext = fb;
@@ -150,7 +169,7 @@ public:
 
 		return 0.f; // TODO
 	}
-	virtual void drawString(float x, float y, const char *s, float scaleX = 1.f, float scaleY = 1.f) const {
+	virtual void drawString(float x, float y, const char *s, float scaleX = 1.f, float scaleY = 1.f, bool bUseColourCodes = true) const {
 		if(bIsValid==false)
 			return;
 		const char *p = s;
@@ -159,6 +178,11 @@ public:
 		float w = 8.f;
 		float h = 16.f;
 		while(*p) {
+			if(bUseColourCodes) {
+				p = checkForColourCode(p);
+				if(p == 0 || *p == 0)
+					break;
+			}
 			int ch = indirections[*p];
 			if(ch != -1) {
 				const rect_c &r = rects[ch];
@@ -170,6 +194,10 @@ public:
 			}
 			nowX += w;
 			p++;
+		}
+		if(bUseColourCodes) {
+			// set back the default colour (white)
+			rb->setColor4(0);
 		}
 	}
 };
@@ -357,16 +385,25 @@ public:
 	virtual float getStringHeight(const char *s) const {
 		return 0; // TODO
 	}
-	virtual void drawString(float x, float y, const char *s, float sx = 1.f, float sy = 1.f) const {
+	virtual void drawString(float x, float y, const char *s, float sx = 1.f, float sy = 1.f, bool bUseColourCodes = true) const {
 
 		const char *p = s;
 		float nowX = x;
 		float nowY = y;
 		while(*p) {
+			if(bUseColourCodes) {
+				p = checkForColourCode(p);
+				if(p == 0 || *p == 0)
+					break;
+			}
 			int ch = *p;
 
 			nowX += drawChar(nowX,nowY,ch);
 			p++;
+		}
+		if(bUseColourCodes) {
+			// set back the default colour (white)
+			rb->setColor4(0);
 		}
 	}
 };
