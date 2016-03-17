@@ -1819,14 +1819,27 @@ public:
 			if(lastMat->hasDeformOfType(DEFORM_AUTOSPRITE)) {
 				rVertexBuffer_c vertsCopy;
 				rIndexBuffer_c indicesCopy;
-				vertsCopy = verts;
+				if(verts.size() > indices.getNumIndices()) {
+					// extract the vertices we want
+					// The large VBO buffer is used by Qio to speed up rendering,
+					// but it's also making the support of old CPU vertex deforms more complicated.
+					u32 firstIndex = indices.getMinIndex();
+					u32 maxIndex = indices.getMaxIndex() + 1;
+					u32 count = maxIndex - firstIndex;
+					vertsCopy.resize(count);
+					for(u32 i = 0; i < count; i++) {
+						vertsCopy[i] = verts[firstIndex+i];
+					}
+				} else {
+					vertsCopy = verts;
+				}
 				vec3_c left = camMatrixInEntitySpace.getLeft();
 				vec3_c up = camMatrixInEntitySpace.getUp();
 				// see if we can apply the autosprite deform
 				if(vertsCopy.applyDeformAutoSprite(left,up)==false) {
 					// reorder indices, this is necessary in some cases
-					u16 *pIndices = indicesCopy.initU16((verts.size()/4)*6);
-					for(u32 i = 0; i < verts.size(); i += 4) {
+					u16 *pIndices = indicesCopy.initU16((vertsCopy.size()/4)*6);
+					for(u32 i = 0; i < vertsCopy.size(); i += 4) {
 						pIndices[6*(i>>2)+0] = i;
 						pIndices[6*(i>>2)+1] = i+1;
 						pIndices[6*(i>>2)+2] = i+2;

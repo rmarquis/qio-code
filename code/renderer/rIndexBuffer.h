@@ -252,6 +252,56 @@ public:
 	u32 getNumIndices() const {
 		return numIndices;
 	}
+	u32 getMinIndex() const {
+		if(numIndices == 0)
+			return 0;
+		if(type == IBO_U32) {
+			const u32 *p = getU32Ptr();
+			u32 min = p[0];
+			for(u32 i = 1; i < numIndices; i++) {
+				u32 idx = p[i];
+				if(idx < min)
+					min = idx;
+			}
+			return min;
+		}
+		if(type == IBO_U16) {
+			const u16 *p = getU16Ptr();
+			u16 min = p[0];
+			for(u16 i = 1; i < numIndices; i++) {
+				u16 idx = p[i];
+				if(idx < min)
+					min = idx;
+			}
+			return min;
+		}
+		return 0;
+	}
+	u32 getMaxIndex() const {
+		if(numIndices == 0)
+			return 0;
+		if(type == IBO_U32) {
+			const u32 *p = getU32Ptr();
+			u32 max = p[0];
+			for(u32 i = 1; i < numIndices; i++) {
+				u32 idx = p[i];
+				if(idx > max)
+					max = idx;
+			}
+			return max;
+		}
+		if(type == IBO_U16) {
+			const u16 *p = getU16Ptr();
+			u16 max = p[0];
+			for(u16 i = 1; i < numIndices; i++) {
+				u16 idx = p[i];
+				if(idx > max)
+					max = idx;
+			}
+			return max;
+		}
+		return 0;
+	}
 	u32 getNumTriangles() const {
 		return numIndices/3;
 	}
