@@ -189,6 +189,7 @@ public:
 		return false;
 	}
 	void toggleNoclip();
+	void cmdTestBulletAttack();
 
 	bool hasUserCmdForward() const;
 	bool hasUserCmdBackward() const;

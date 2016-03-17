@@ -97,6 +97,10 @@ public:
 		if(cb == 0)
 			return;
 		for(u32 i = 0; i < commands.size(); i++) {
+			if(0) {
+				g_core->Print("tikiCommands_c::executeCommands: this %i, cmd %i of %i, txt %s\n",
+					this,i,commands.size(),commands[i].c_str());
+			}
 			cb->perStringCallback(commands[i]);
 		}
 	}

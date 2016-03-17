@@ -24,8 +24,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 // Actor.cpp
 #include "Actor.h"
 #include "../g_local.h"
+#include <api/cmAPI.h>
 #include <api/serverAPI.h>
 #include <api/coreAPI.h>
+#include <api/physAPI.h>
+#include <api/physObjectAPI.h>
+#include <api/physCharacterControllerAPI.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
@@ -35,6 +39,67 @@ Actor::Actor() {
 	health = 100;
 	bTakeDamage = true;
 	st = 0;
+	this->characterController = 0;
+}
+Actor::~Actor() {
+	if(characterController) {
+		g_physWorld->freeCharacter(this->characterController);
+		characterController = 0;
+	}
+}
+
+void Actor::enableCharacterController() {
+	if(this->cmod == 0) {
+		return;
+	}
+	float h, r;
+	if(this->cmod->isCapsule()) {
+		cmCapsule_i *c = this->cmod->getCapsule();
+		h = c->getHeight();
+		r = c->getRadius();
+	} else if(this->cmod->isBBMinsMaxs()) {
+		aabb cb;
+		cmod->getBounds(cb);
+		vec3_c cbSizes = cb.getSizes();
+		h = cbSizes.z;
+		//r = sqrt(Square(cbSizes.x)+Square(cbSizes.y));
+		r = cbSizes.x*0.5f;
+		h -= r;
+		characterControllerOffset.set(0,0,h*0.5f+r);
+	} else {
+		return;
+	}
+	g_physWorld->freeCharacter(this->characterController);
+	this->characterController = g_physWorld->createCharacter(this->getOrigin()+characterControllerOffset, h, r);
+	if(this->characterController) {
+		this->characterController->setCharacterEntity(this);
+	}
+}
+void Actor::disableCharacterController() {
+	if(characterController) {
+		g_physWorld->freeCharacter(this->characterController);
+		characterController = 0;
+	}
+}
+void Actor::setOrigin(const vec3_c &newXYZ) {
+	ModelEntity::setOrigin(newXYZ);
+	if(characterController) {
+#if 0
+		BT_SetCharacterPos(characterController,newXYZ);
+#else
+		disableCharacterController();
+		enableCharacterController();
+#endif
+	}
+}
+void Actor::runFrame() {
+	vec3_c p = this->characterController->getPos() - characterControllerOffset;
+	myEdict->s->origin = p;
+	if(p.z < -10000) {
+		g_core->RedWarning("Actor::runFrame: actor %s has abnormal origin %f %f %f\n",
+			getRenderModelName(),p.x,p.y,p.z);
+	}
+	recalcABSBounds();
 }
 void Actor::loadAIStateMachine(const char *fname) {
 	st = G_LoadStateMachine(fname);
@@ -49,7 +114,8 @@ void Actor::setKeyValue(const char *key, const char *value) {
 	ModelEntity::setKeyValue(key,value);
 }
 void Actor::postSpawn() {
-	ModelEntity::postSpawn();
+	executeTIKIInitCommands();
+	enableCharacterController();
 }
 
 

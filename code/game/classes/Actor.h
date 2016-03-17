@@ -29,14 +29,22 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Actor : public ModelEntity {
 	class stateMachineAPI_i *st;
+	class physCharacterControllerAPI_i *characterController;
+	vec3_c characterControllerOffset;
 
 	void loadAIStateMachine(const char *fname);
 public:
 	Actor();
+	~Actor();
 
 	DECLARE_CLASS( Actor );
 
+	void disableCharacterController();
+	void enableCharacterController();
+
+	virtual void runFrame();
 	virtual void postSpawn();
+	virtual void setOrigin(const vec3_c &newXYZ);
 
 	virtual void setKeyValue(const char *key, const char *value);
 };

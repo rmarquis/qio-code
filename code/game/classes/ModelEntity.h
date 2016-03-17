@@ -140,6 +140,8 @@ public:
 	void initRagdollPhysics();
 	//void destroyPhysicsRagdoll();
 
+	void executeTIKIInitCommands();
+
 	// called after all of the key values are set
 	virtual void postSpawn();
 

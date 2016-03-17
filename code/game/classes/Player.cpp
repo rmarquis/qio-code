@@ -384,6 +384,11 @@ bool Player::hasUserCmdUp() const {
 		return true;
 	return false;
 }
+void Player::cmdTestBulletAttack() {
+	vec3_c p = getEyePos();
+	vec3_c f = getForward();
+	G_MultiBulletAttack(p,f,this,1,5.f,50.f);
+}
 void Player::toggleNoclip() {
 	noclip = !noclip;
 	if(noclip) {

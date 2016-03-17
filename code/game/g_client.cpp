@@ -427,6 +427,8 @@ void ClientCommand( int clientNum ) {
 				me->initRigidBodyPhysics();
 			}
 		}
+	} else if(!_stricmp(cmd,"testBulletAttack")) {
+		pl->cmdTestBulletAttack();
 	} else if(!_stricmp(cmd,"spawnStatic")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
