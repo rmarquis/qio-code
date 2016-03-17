@@ -30,15 +30,32 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physAPI.h>
 #include <api/physObjectAPI.h>
 #include <api/physCharacterControllerAPI.h>
+#include <api/stateMachineAPI.h>
+#include <api/stateConditionsHandlerAPI.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
 DEFINE_CLASS_ALIAS(Actor, idAI);
  
+
+conditionFunction_s g_actorConditions [] = {
+
+	GETFUNC("ANIM_DONE",Actor::checkAnimDone)
+	
+	{ 0, 0 }
+};
+
+
+conditionsTable_c g_actorConditionsTable(g_actorConditions,sizeof(g_actorConditions)/sizeof(g_actorConditions[0]));
+
+
+
 Actor::Actor() {
 	health = 100;
 	bTakeDamage = true;
 	st = 0;
+	st_curState = "IDLE";
+	st_handler = 0;
 	this->characterController = 0;
 }
 Actor::~Actor() {
@@ -94,8 +111,26 @@ void Actor::setOrigin(const vec3_c &newXYZ) {
 }
 void Actor::runActorStateMachines() {
 
+	if(st_handler == 0) {
+		st_handler = new genericConditionsHandler_t<Actor>(&g_actorConditionsTable,this);
+	}
+	st_handler->updateFrame();
+	const char *next = st->transitionState(st_curState,st_handler);
+	if(next && next[0]) {
+		st_curState = next;
+	}
+	const char *anim = st->getStateLegsAnim(st_curState,st_handler);
+	if(anim == 0 || anim[0] == 0) {
+		g_core->Print("No animation found for state %s\n",st_curState.c_str());
+		return;
+	}
+	g_core->Print("Actor::runActorStateMachines: selected anim %s for state %s\n",anim,st_curState.c_str());
+	//anim = "death";
+	this->setTorsoAnimation(0);
+	this->setAnimation(anim);
 }
 void Actor::runFrame() {
+	updateAnimations();
 	if(st) {
 		runActorStateMachines();
 	}
@@ -125,3 +160,14 @@ void Actor::postSpawn() {
 }
 
 
+bool Actor::checkAnimDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	int needed = getCurrentAnimationTotalTimeMs();
+	if(legsAnimationTime > needed) {
+		if(1)
+			g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
+		return true;
+	}
+	if(1) 
+		g_core->Print("Anim not yet done... %i <= %i \n",legsAnimationTime,needed);
+	return false;
+}
