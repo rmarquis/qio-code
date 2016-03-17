@@ -589,37 +589,6 @@ public:
 } g_playerConditionsHandler;
 #endif
 
-struct conditionFunction_s {
-	const char *name;
-	//bool (BaseEntity::*func)();
-	s64 func;
-	conditionFunction_s *hashNext;
-	int index;
-
-	const char *getName() const {
-		return name;
-	}
-	conditionFunction_s *getHashNext() const {
-		return hashNext;
-	}	
-	void setHashNext(conditionFunction_s *newHashNext) {
-		hashNext = newHashNext;
-	}
-	bool isValid() const {
-		if(name == 0)
-			return false;
-		if(func == 0)
-			return false;
-		return true;
-	}
-};
-
-template <typename d, typename s>
-d &hack_cast(s &v) {
-  return reinterpret_cast<d&>(v);
-}
-//#define GETFUNC(name, ptr) { name, reinterpret_cast<s64>(&ptr), 0 },
-#define GETFUNC(name, ptr) { name, hack_cast<s64>(&ptr), 0 },
 conditionFunction_s g_playerConditions [] = {
 	// movement conditions
 	GETFUNC("FALLING",Player::checkFalling)
@@ -699,94 +668,8 @@ conditionFunction_s g_playerConditions [] = {
 };
 
 
-class conditionsTable_c {
-	hashTableTemplateExt_c<conditionFunction_s> table;
-public:
-	conditionsTable_c(conditionFunction_s *funcs, u32 size) {
-		conditionFunction_s *f = funcs;
-		for(u32 i = 0; i < size; i++, f++) {
-			if(f->isValid()) {
-				f->index = table.size();
-				table.addObject(f);
-			}
-		}
-	}
-	const conditionFunction_s *findFunction(const char *name) const {
-		return table.getEntry(name);
-	}
-	u32 getSize() const {
-		return table.size();
-	}
-};
 conditionsTable_c g_playerConditionsTable(g_playerConditions,sizeof(g_playerConditions)/sizeof(g_playerConditions[0]));
 
-struct conditionState_s {
-	bool result;
-	bool prevResult;
-
-	void updateFrame() {
-		prevResult = result;
-	}
-};
-class playerConditionsHandler_c : public stateConditionsHandler_i {
-	const class conditionsTable_c *table;
-	arraySTD_c<conditionState_s> states;
-	Player *ent;
-
-	virtual bool hasAnim(const char *animName) const {
-		return ent->findAnimationIndex(animName)!=-1;
-	}
-	virtual bool isConditionTrue(enum stConditionType_e conditionType, const char *conditionName, const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-		if(!stricmp(conditionName,"default"))
-			return true;
-
-		const conditionFunction_s *f = table->findFunction(conditionName);
-		if(f == 0)
-			return false;
-		int index = f->index;
-		// the arguments are not taken into account while checking edgetrue/edgefalse stuff
-		conditionState_s &s = states[index];
-
-		union {
-			bool (Player::*pFunc)(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
-			s64 p;
-			byte rawData[8];
-		};
-		p = f->func;
-		s.result = (ent->*pFunc)(arguments,patternMatcher);
-
-		if(conditionType == CT_NORMAL)
-			return s.result;
-		if(conditionType == CT_NEGATE)
-			return !s.result;
-		if(conditionType == CT_EDGEFALSE) {
-			if(!s.result && s.prevResult)
-				return true;
-			return false;
-		}
-		if(conditionType == CT_EDGETRUE) {
-			if(s.result && !s.prevResult)
-				return true;
-			return false;
-		}
-		return false;
-	}
-public:
-	playerConditionsHandler_c(const conditionsTable_c *pTable, Player *newEnt) {
-		table = pTable;
-		ent = newEnt;
-		states.resize(table->getSize());
-		states.nullMemory();
-	}
-	~playerConditionsHandler_c() {
-
-	}
-	void updateFrame() {
-		for(u32 i = 0; i < table->getSize(); i++) {
-			states[i].updateFrame();
-		}
-	}
-};
 
 // use .st files to select proper animation
 // (FAKK / MOHAA way)
@@ -802,7 +685,7 @@ void Player::runPlayerAnimation_stateMachine() {
 	this->setAnimation(anim);
 #else
 	if(st_handler == 0) {
-		st_handler = new playerConditionsHandler_c(&g_playerConditionsTable,this);
+		st_handler = new genericConditionsHandler_t<Player>(&g_playerConditionsTable,this);
 	}
 	st_handler->updateFrame();
 	stateMachineAPI_i *machines[2] = { st_legs, st_torso };

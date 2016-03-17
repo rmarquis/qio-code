@@ -32,6 +32,7 @@ class Actor : public ModelEntity {
 	class physCharacterControllerAPI_i *characterController;
 	vec3_c characterControllerOffset;
 
+	void runActorStateMachines();
 	void loadAIStateMachine(const char *fname);
 public:
 	Actor();
