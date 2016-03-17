@@ -31,7 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 enum deformType_e {
 	DEFORM_BAD,
 	// Doom3 "sprite" deform
+	// Also used for Q3 "deformVertexes autosprite"
 	DEFORM_AUTOSPRITE,
+	// "deformVertexes autosprite2"
+	//DEFORM_AUTOSPRITE2,
 };
 
 class deformArrayAPI_i {

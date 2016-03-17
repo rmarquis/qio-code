@@ -830,7 +830,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					p.skipLine();	
 				} else if(p.atWord("deformVertexes")) {
 					// Quake3 vertex deform
-					p.skipLine();
+					if(p.atWord("autosprite")) {
+						// in FAKK there is a nice testing map "autosprite.bsp" with two autosprite materials
+						this->addDeformSprite();
+					} else if(p.atWord("autosprite2")) {
+						// in FAKK there is a nice testing map "autosprite.bsp" with two autosprite materials
+						this->addDeformSprite();
+					} else {
+						p.skipLine();
+					}
 				} else if(p.atWord("deform")) {
 					// Doom3/Quake4 vertex deform
 					if(p.atWord("sprite")) {

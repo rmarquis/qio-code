@@ -33,7 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
-//DEFINE_CLASS_ALIAS(Actor, idAI);
+DEFINE_CLASS_ALIAS(Actor, idAI);
  
 Actor::Actor() {
 	health = 100;
