@@ -92,7 +92,13 @@ void Actor::setOrigin(const vec3_c &newXYZ) {
 #endif
 	}
 }
+void Actor::runActorStateMachines() {
+
+}
 void Actor::runFrame() {
+	if(st) {
+		runActorStateMachines();
+	}
 	vec3_c p = this->characterController->getPos() - characterControllerOffset;
 	myEdict->s->origin = p;
 	if(p.z < -10000) {

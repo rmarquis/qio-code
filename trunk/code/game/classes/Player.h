@@ -31,6 +31,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../../shared/str.h"
 #include <protocol/userCmd.h>
 #include <protocol/playerState.h>
+#include "../stateMachineShared.h"
 
 typedef enum {
 	CON_DISCONNECTED,
@@ -102,7 +103,7 @@ friend class testPlayerConditionsHandler_c;
 	// movement type
 	enum stMoveType_e stMoveType;
 	// conditions handler
-	class playerConditionsHandler_c *st_handler;
+	class genericConditionsHandler_t<Player> *st_handler;
 	// holstered weapons
 	arraySTD_c<class Weapon*> weapons;
 
