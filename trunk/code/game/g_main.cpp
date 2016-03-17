@@ -101,6 +101,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_InitPhysicsEngine();
 	// load ammoTypes list from .def files	
 	G_InitAmmoTypes();
+	// init .st files manager (must be done before spawning entities)
+	G_InitStateMachines();
 	// load map for Bullet
 	G_LoadMap(mapName);
 	// init RTCW / ET scripts (must be done before spawning entities,
@@ -110,8 +112,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_SpawnMapEntities(mapName);
 	// init pathnodes
 	G_InitPathnodesSystem();
-	// init .st files manager
-	G_InitStateMachines();
 	
 #ifdef G_ENABLE_LUA_SCRIPTING
 	G_InitLua();

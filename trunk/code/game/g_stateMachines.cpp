@@ -38,5 +38,8 @@ void G_InitStateMachines() {
 	stateMachineAPI_i *shgliek = g_smm->registerStateMachine("ai/shgliek.st");
 }
 stateMachineAPI_i *G_LoadStateMachine(const char *fname) {
+	if(g_smm == 0) {
+		return 0;
+	}
 	return g_smm->registerStateMachine(fname);
 }

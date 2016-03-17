@@ -476,6 +476,24 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		} else {
 
 		}
+	} else if(!_stricmp(key,"setsize")) {
+		// used in TIKIs
+		if(cm) {
+			vec3_c mins, maxs;
+			str tmp = value;
+			tmp.removeCharacter('"');
+			if(sscanf(tmp.c_str(),"%f %f %f %f %f %f",
+				&mins.x,&mins.y,&mins.z,
+				&maxs.x,&maxs.y,&maxs.z)==6) {
+				aabb bb;
+				bb.maxs = maxs;
+				bb.mins = mins;
+				cMod_i *cmBB = cm->registerAABB(bb);
+				this->setColModel(cmBB);
+			} else {
+				g_core->RedWarning("setsize: invalid string %s\n",value);
+			}
+		}
 	} else if(!_stricmp(key,"ragdoll")) {
 		// Doom3 "ragdoll" keyword (name of ArticulatedFigure)
 		this->ragdollDefName = value;
@@ -706,10 +724,15 @@ public:
 	}
 } g_tce;
 
-void ModelEntity::postSpawn() {
+void ModelEntity::executeTIKIInitCommands() {
 	if(tiki) {
 		g_tce.me = this;
 		tiki->iterateInitCommands(TCS_SERVER,&g_tce);
+	}
+}
+void ModelEntity::postSpawn() {
+	if(tiki) {
+		executeTIKIInitCommands();
 	}
 	if(this->ragdollDefName.length()) {
 		// create a networked ragdoll
