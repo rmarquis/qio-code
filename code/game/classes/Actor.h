@@ -36,10 +36,13 @@ class Actor : public ModelEntity {
 	float st_passedTime;
 	class stateMachineAPI_i *st;
 	genericConditionsHandler_t<Actor> *st_handler;
+	class bhBase_c *behaviour;
+	class ModelEntity *enemy;
 
 	class physCharacterControllerAPI_i *characterController;
 	vec3_c characterControllerOffset;
 
+	float getDistanceToEnemy() const;
 	void resetStateTimer();
 	void runActorStateMachines();
 	void loadAIStateMachine(const char *fname);
@@ -50,6 +53,9 @@ public:
 
 	DECLARE_CLASS( Actor );
 
+	ModelEntity *getEnemy() {
+		return enemy;
+	}
 	void disableCharacterController();
 	void enableCharacterController();
 
@@ -69,6 +75,8 @@ public:
 	bool checkTimeDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 
 
 };

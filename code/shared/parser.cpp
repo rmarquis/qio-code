@@ -30,6 +30,11 @@ parser_c::parser_c() {
 	p = 0;
 	fileData = 0;
 }
+parser_c::parser_c(const char *rawTextData) {
+	base = rawTextData;
+	p = rawTextData;
+	fileData = 0;
+}
 parser_c::~parser_c() {
 	clear();
 }

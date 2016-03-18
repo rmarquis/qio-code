@@ -181,6 +181,7 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const;
 	virtual enum stMoveType_e getStateMoveType(const char *stateName) const;
 	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const;
+	virtual bool stateHasBehaviour(const char *stateName) const;
 public:
 	stateMachine_c();
 	~stateMachine_c();

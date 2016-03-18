@@ -327,6 +327,18 @@ const stTime_s *stateMachine_c::getStateTime(const char *curStateName) const {
 	if(s == 0)
 		return 0;
 	return s->getStateTime();
+}	
+bool stateMachine_c::stateHasBehaviour(const char *stateName) const {
+	const stState_c *s = states.getEntry(stateName);
+	if(s == 0) {
+		return false;
+	}
+	const char *n = s->getBehaviourName();
+	if(n == 0)
+		return false;
+	if(*n == 0)
+		return false;
+	return true;
 }
 void stateMachine_c::getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const {
 	const stState_c *s = states.getEntry(stateName);
