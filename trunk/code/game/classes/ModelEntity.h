@@ -90,6 +90,8 @@ public:
 
 	DECLARE_CLASS( ModelEntity );
 
+	int getAnimationTotalTimeMs(const char *animName) const;
+
 	virtual const class vec3_c &getPhysicsOrigin() const;
 
 	virtual void setOrigin(const class vec3_c &newXYZ);
@@ -109,7 +111,7 @@ public:
 	// for skeletal models
 	virtual int getBoneNumForName(const char *boneName);
 
-	int findAnimationIndex(const char *animName);
+	int findAnimationIndex(const char *animName) const;
 
 	void setAnimation(const char *animName);
 	void setInternalAnimationIndex(int newAnimIndex);

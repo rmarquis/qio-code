@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // Actor.cpp
 #include "Actor.h"
+#include "Player.h"
 #include "../g_local.h"
 #include <api/cmAPI.h>
 #include <api/serverAPI.h>
@@ -34,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/stateConditionsHandlerAPI.h>
 #include <shared/stringList.h>
 #include <shared/autoCvar.h>
+#include <shared/parser.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
@@ -49,6 +51,8 @@ conditionFunction_s g_actorConditions [] = {
 	GETFUNC("TIME_DONE",Actor::checkTimeDone)
 	GETFUNC("NAME",Actor::checkName)
 	GETFUNC("HAVE_ENEMY",Actor::checkHaveEnemy)
+	GETFUNC("RANGE",Actor::checkRange)
+	GETFUNC("DONE",Actor::checkDone)
 	
 	{ 0, 0 }
 };
@@ -57,20 +61,123 @@ conditionFunction_s g_actorConditions [] = {
 conditionsTable_c g_actorConditionsTable(g_actorConditions,sizeof(g_actorConditions)/sizeof(g_actorConditions[0]));
 
 class bhBase_c {
-	const Actor *self;
+protected:
+	Actor * const self;
+	float timeElapsed;
+public:
+	bhBase_c(Actor *a) : self(a) {
+		timeElapsed = 0.f;
+	}
+	virtual void advanceTime(float f) {
+		timeElapsed += f;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		return true;
+	}	
+	virtual const char *getAnimName() const {
+		return 0;
+	}
+	virtual bool isDone() const {
+		return false;
+	}
+	virtual ~bhBase_c() {
+
+	}
 };
 // GetCloseToEnemy behaviour
 class bhGetCloseToEnemy_c : public bhBase_c {
+	str animName;
+public:
+	bhGetCloseToEnemy_c(Actor *self, const char *args) : bhBase_c(self) {
+		animName = args;
+		animName.removeCharacter('"');
+	}
+	virtual const char *getAnimName() const {
+		return animName;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		if(self->getEnemy()) {
+			vec3_c d = self->getEnemy()->getOrigin()-self->getOrigin();
+			d.setZ(0);
+			d.normalize();
+			o = d;
+			self->setAngles(d.toAngles());
+		} else {
+			o.clear();
+		}
+		return true;
+	}
+	virtual ~bhGetCloseToEnemy_c() {
 
+	}
+};
+// Watch behaviour
+class bhWatch_c : public bhBase_c {
+
+public:
+	bhWatch_c(Actor *self, const char *args) : bhBase_c(self) {
+		str tmp = args;
+		tmp.removeCharacter('"');
+
+	}
+	virtual const char *getAnimName() const {
+		return 0;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		o.clear();
+		if(self->getEnemy()) {
+			vec3_c d = self->getEnemy()->getOrigin()-self->getOrigin();
+			d.setZ(0);
+			d.normalize();
+			self->setAngles(d.toAngles());
+		}
+		return true;
+	}
+	virtual ~bhWatch_c() {
+
+	}
+};
+// AimAndMelee behaviour
+class bhAimAndMelee_c : public bhBase_c {
+	str animName;
+	float timeNeeded;
+public:
+	bhAimAndMelee_c(Actor *self, const char *args) : bhBase_c(self) {
+		parser_c p(args);
+		animName = p.getToken();
+		timeNeeded = self->getAnimationTotalTimeMs(animName) * 0.001f;
+	}
+	virtual const char *getAnimName() const {
+		return animName;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		if(self->getEnemy()) {
+			vec3_c d = self->getEnemy()->getOrigin()-self->getOrigin();
+			d.setZ(0);
+			d.normalize();
+			self->setAngles(d.toAngles());
+		}
+		o.clear();
+		return true;
+	}
+	virtual bool isDone() const {
+		g_core->Print("Needed: %f, elapsed: %f\n",timeNeeded,timeElapsed);
+		return timeNeeded < timeElapsed;
+	}
+	virtual ~bhAimAndMelee_c() {
+
+	}
 };
 
 Actor::Actor() {
 	health = 100;
 	bTakeDamage = true;
 	st = 0;
+	behaviour = 0;
 	st_curState = "IDLE";
 	st_handler = 0;
 	this->characterController = 0;
+	this->enemy = 0;
 }
 Actor::~Actor() {
 	if(characterController) {
@@ -125,6 +232,28 @@ void Actor::setOrigin(const vec3_c &newXYZ) {
 }
 void Actor::setBehaviour(const char *behaviourName, const char *args) {
 
+	bhBase_c *nb;
+	if(!stricmp(behaviourName,"GetCloseToEnemy")) {
+		nb = new bhGetCloseToEnemy_c(this,args);
+	} else if(!stricmp(behaviourName,"Watch")) {
+		nb = new bhWatch_c(this,args);
+	} else if(!stricmp(behaviourName,"AimAndMelee")) {
+		nb = new bhAimAndMelee_c(this,args);
+	} else {
+		g_core->RedWarning("Actor::setBehaviour: unknown behaviour name '%s'\n",behaviourName);
+		nb = 0;
+	}
+	if(behaviour) {
+		delete behaviour;
+		behaviour = 0;
+	}
+	behaviour = nb;
+}
+float Actor::getDistanceToEnemy() const {
+	if(enemy == 0)
+		return -1;
+	vec3_c d = getOrigin()-enemy->getOrigin();
+	return d.len();
 }
 void Actor::resetStateTimer() {
 	const stTime_s *time = st->getStateTime(st_curState);
@@ -141,21 +270,33 @@ void Actor::runActorStateMachines() {
 		st_handler = new genericConditionsHandler_t<Actor>(&g_actorConditionsTable,this);
 	}
 	st_handler->updateFrame();
-	const char *next = st->transitionState(st_curState,st_handler);
-	if(next && next[0]) {
-		g_core->Print("Actor::runActorStateMachines: changing from %s to %s\n",st_curState.c_str(),next);
-		st_curState = next;
-		resetStateTimer();
+	bool bChanged = false;
+	for(u32 i = 0; i < 2; i++) {
+		const char *next = st->transitionState(st_curState,st_handler);
+		if(next && next[0]) {
+			g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
+			st_curState = next;
+			bChanged = true;
+			if(st->stateHasBehaviour(st_curState))
+				break;
+		}
 	}
-	const char *bName, *bArgs;
-	st->getStateBehaviour(st_curState,&bName,&bArgs);
-	if(bName) {
-		this->setBehaviour(bName,bArgs);
+	if(bChanged) {
+		resetStateTimer();
+		const char *bName, *bArgs;
+		st->getStateBehaviour(st_curState,&bName,&bArgs);
+		if(bName) {
+			this->setBehaviour(bName,bArgs);
+		}
 	}
 	const char *anim = st->getStateLegsAnim(st_curState,st_handler);
 	if(anim == 0 || anim[0] == 0) {
-		g_core->Print("No animation found for state %s\n",st_curState.c_str());
-		return;
+		//g_core->Print("No animation found for state %s\n",st_curState.c_str());
+		//return;
+		if(behaviour) {
+			anim = behaviour->getAnimName();
+			g_core->Print("Actor:: anm from behaviour: %s\n",anim);
+		}
 	}
 	if(0) {
 		g_core->Print("Actor::runActorStateMachines: selected anim %s for state %s\n",anim,st_curState.c_str());
@@ -174,13 +315,24 @@ void Actor::runFrame() {
 	if(st) {
 		runActorStateMachines();
 	}
-	vec3_c p = this->characterController->getPos() - characterControllerOffset;
-	myEdict->s->origin = p;
-	if(p.z < -10000) {
-		g_core->RedWarning("Actor::runFrame: actor %s has abnormal origin %f %f %f\n",
-			getRenderModelName(),p.x,p.y,p.z);
+	enemy = G_GetPlayer(0);
+	if(characterController) {
+		vec3_c dir(0,0,0);
+		if(behaviour) {
+			behaviour->setupMoveDir(dir);
+		}
+		this->characterController->update(dir);
+		vec3_c p = this->characterController->getPos() - characterControllerOffset;
+		myEdict->s->origin = p;
+		if(p.z < -10000) {
+			g_core->RedWarning("Actor::runFrame: actor %s has abnormal origin %f %f %f\n",
+				getRenderModelName(),p.x,p.y,p.z);
+		}
+		recalcABSBounds();
 	}
-	recalcABSBounds();
+	if(behaviour) {
+		behaviour->advanceTime(level.frameTime);
+	}
 }
 void Actor::loadAIStateMachine(const char *fname) {
 	st = G_LoadStateMachine(fname);
@@ -217,8 +369,23 @@ bool Actor::checkTimeDone(const class stringList_c *arguments, class patternMatc
 	return false;
 }	
 bool Actor::checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
+	if(enemy)
+		return true;
 	return false;
+}
+bool Actor::checkRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(enemy == 0)
+		return false;
+	float f = atof(arguments->getString(0));
+	float r = getDistanceToEnemy();
+	if(r < f) 
+		return true;
+	return false;
+}
+bool Actor::checkDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(behaviour == 0)
+		return true;
+	return behaviour->isDone();
 }
 bool Actor::checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	// TODO

@@ -48,6 +48,7 @@ class parser_c {
 	}
 public:
 	parser_c();
+	parser_c(const char *rawTextData);
 	~parser_c();
 	bool openFile(const char *fname);
 	void setup(const char *newText, const char *newP = 0);

@@ -280,7 +280,7 @@ bool ModelEntity::hasDeclAnimation(const char *animName) const {
 	return false; // animation not found
 }
 // returns the animation index (for networking)
-int ModelEntity::findAnimationIndex(const char *newAnimName) {
+int ModelEntity::findAnimationIndex(const char *newAnimName) const {
 	int newAnimIndex;
 	if(this->tiki) {
 		// internal TIKI animation alias (eg. "walk" or "idle")
@@ -306,6 +306,13 @@ void ModelEntity::setAnimation(const char *newAnimName) {
 	legsAnimationTime = 0;
 	// get the animation index (for networking)
 	this->myEdict->s->animIndex = newIndex;
+}
+int ModelEntity::getAnimationTotalTimeMs(const char *animName) const {
+	int animIndex = findAnimationIndex(animName);
+	if(tiki) {
+		return tiki->getAnimTotalTimeMs(animIndex);
+	}
+	return 0; // TODO?
 }
 int ModelEntity::getCurrentAnimationTotalTimeMs() const {
 	if(tiki) {
