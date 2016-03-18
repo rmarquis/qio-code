@@ -122,9 +122,22 @@ class stState_c {
 	// added for FAKK
 	stAnimsList_c torso;
 	arraySTD_c<stTransition_c> transitions;
+	// for AI states
+	stTime_s time;
+	str behaviourName;
+	str behaviourArguments;
 public:
 	stState_c() {
 		moveType = EMT_LEGS;
+	}
+	const char *getBehaviourName() const {
+		return behaviourName;
+	}
+	const char *getBehaviourArgs() const {
+		return behaviourArguments;
+	}
+	const stTime_s *getStateTime() const {
+		return &time;
 	}
 	static stState_c *newInstance() {
 		return new stState_c();
@@ -163,9 +176,11 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual const char *getStateLegsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
+	virtual const stTime_s *getStateTime(const char *curStateName) const;
 	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const;
 	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const;
 	virtual enum stMoveType_e getStateMoveType(const char *stateName) const;
+	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const;
 public:
 	stateMachine_c();
 	~stateMachine_c();

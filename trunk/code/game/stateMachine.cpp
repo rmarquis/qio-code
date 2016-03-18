@@ -199,10 +199,18 @@ bool stState_c::parseState(class stateMachine_c *m, class parser_c &p) {
 			}
 		} else if(p.atWord("behavior")) {
 			// FAKK state machine for AI
-			p.skipLine();
+			behaviourName = p.getToken();
+			if(p.isAtEOL() == false) {
+				behaviourArguments = p.getLine();
+			}
 		} else if(p.atWord("time")) {
 			// FAKK state machine for AI
-			p.skipLine();
+			time.time[0] = p.getFloat();
+			if(p.isAtEOL()) {
+				time.time[1] = time.time[0];
+			} else {
+				time.time[1] = p.getFloat();
+			}
 		} else {
 			int line = p.getCurrentLineNumber();
 			str token = p.getToken();
@@ -313,6 +321,22 @@ const char *stateMachine_c::getStateTorsoAnim(const char *curStateName, class st
 	if(s == 0)
 		return 0;
 	return s->getTorsoAnim(handler);
+}	
+const stTime_s *stateMachine_c::getStateTime(const char *curStateName) const {
+	const stState_c *s = states.getEntry(curStateName);
+	if(s == 0)
+		return 0;
+	return s->getStateTime();
+}
+void stateMachine_c::getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const {
+	const stState_c *s = states.getEntry(stateName);
+	if(s == 0) {
+		*bName = 0;
+		*bArgs = 0;
+		return;
+	}
+	*bName = s->getBehaviourName();
+	*bArgs = s->getBehaviourArgs();
 }
 void stateMachine_c::iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const {
 	const stState_c *s = states.getEntry(stateName);
