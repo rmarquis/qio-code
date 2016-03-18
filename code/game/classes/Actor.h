@@ -30,14 +30,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Actor : public ModelEntity {
 	str st_curState;
+	// selected time for current state (TIME_DONE condition)
+	float st_timeLimit;
+	// passed time
+	float st_passedTime;
 	class stateMachineAPI_i *st;
 	genericConditionsHandler_t<Actor> *st_handler;
 
 	class physCharacterControllerAPI_i *characterController;
 	vec3_c characterControllerOffset;
 
+	void resetStateTimer();
 	void runActorStateMachines();
 	void loadAIStateMachine(const char *fname);
+	void setBehaviour(const char *behaviourName, const char *args);
 public:
 	Actor();
 	~Actor();
@@ -58,6 +64,13 @@ public:
 	// (for FAKK ai/*.st files support)
 	//
 	bool checkAnimDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkMovingActorRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkTimeDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+
+
 };
 
 #endif // __ACTOR_H__

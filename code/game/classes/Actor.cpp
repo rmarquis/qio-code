@@ -32,15 +32,23 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/physCharacterControllerAPI.h>
 #include <api/stateMachineAPI.h>
 #include <api/stateConditionsHandlerAPI.h>
+#include <shared/stringList.h>
+#include <shared/autoCvar.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
 DEFINE_CLASS_ALIAS(Actor, idAI);
  
+static aCvar_c g_actor_st_debugAnimDone("g_actor_st_debugAnimDone","0");
 
 conditionFunction_s g_actorConditions [] = {
 
 	GETFUNC("ANIM_DONE",Actor::checkAnimDone)
+	GETFUNC("MOVING_ACTOR_RANGE",Actor::checkMovingActorRange)
+	GETFUNC("CHANCE",Actor::checkChance)
+	GETFUNC("TIME_DONE",Actor::checkTimeDone)
+	GETFUNC("NAME",Actor::checkName)
+	GETFUNC("HAVE_ENEMY",Actor::checkHaveEnemy)
 	
 	{ 0, 0 }
 };
@@ -48,7 +56,13 @@ conditionFunction_s g_actorConditions [] = {
 
 conditionsTable_c g_actorConditionsTable(g_actorConditions,sizeof(g_actorConditions)/sizeof(g_actorConditions[0]));
 
+class bhBase_c {
+	const Actor *self;
+};
+// GetCloseToEnemy behaviour
+class bhGetCloseToEnemy_c : public bhBase_c {
 
+};
 
 Actor::Actor() {
 	health = 100;
@@ -109,25 +123,51 @@ void Actor::setOrigin(const vec3_c &newXYZ) {
 #endif
 	}
 }
-void Actor::runActorStateMachines() {
+void Actor::setBehaviour(const char *behaviourName, const char *args) {
 
+}
+void Actor::resetStateTimer() {
+	const stTime_s *time = st->getStateTime(st_curState);
+	if(time) {
+		st_timeLimit = time->selectTime();
+	} else {
+		st_timeLimit = 0.f;
+	}
+	st_passedTime = 0.f; // reset timer
+}
+void Actor::runActorStateMachines() {
+	st_passedTime += level.frameTime;
 	if(st_handler == 0) {
 		st_handler = new genericConditionsHandler_t<Actor>(&g_actorConditionsTable,this);
 	}
 	st_handler->updateFrame();
 	const char *next = st->transitionState(st_curState,st_handler);
 	if(next && next[0]) {
+		g_core->Print("Actor::runActorStateMachines: changing from %s to %s\n",st_curState.c_str(),next);
 		st_curState = next;
+		resetStateTimer();
+	}
+	const char *bName, *bArgs;
+	st->getStateBehaviour(st_curState,&bName,&bArgs);
+	if(bName) {
+		this->setBehaviour(bName,bArgs);
 	}
 	const char *anim = st->getStateLegsAnim(st_curState,st_handler);
 	if(anim == 0 || anim[0] == 0) {
 		g_core->Print("No animation found for state %s\n",st_curState.c_str());
 		return;
 	}
-	g_core->Print("Actor::runActorStateMachines: selected anim %s for state %s\n",anim,st_curState.c_str());
+	if(0) {
+		g_core->Print("Actor::runActorStateMachines: selected anim %s for state %s\n",anim,st_curState.c_str());
+	}
 	//anim = "death";
 	this->setTorsoAnimation(0);
 	this->setAnimation(anim);
+
+	// reset timer, so TIMER_DONE CHANCE 0.5 won't get called over and over again every next frame
+	if(st_passedTime > st_timeLimit) {
+		resetStateTimer();
+	}
 }
 void Actor::runFrame() {
 	updateAnimations();
@@ -151,6 +191,7 @@ void Actor::loadAIStateMachine(const char *fname) {
 void Actor::setKeyValue(const char *key, const char *value) {
 	if(!stricmp("statemap",key)) {
 		loadAIStateMachine(value);
+	} else if(!stricmp("behaviour",key)) {
 	}
 	ModelEntity::setKeyValue(key,value);
 }
@@ -159,15 +200,39 @@ void Actor::postSpawn() {
 	enableCharacterController();
 }
 
+bool Actor::checkMovingActorRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	float range = atof(arguments->getString(0));
+	return false;
+}
+bool Actor::checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	float f = atof(arguments->getString(0));
+	float r = (rand() % 1000)*0.001f;
+	if(f > r)
+		return true;
+	return false;
+}
+bool Actor::checkTimeDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(st_passedTime > st_timeLimit)
+		return true;
+	return false;
+}	
+bool Actor::checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 
+	return false;
+}
+bool Actor::checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
+		return true;
+	return false;
+}
 bool Actor::checkAnimDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	int needed = getCurrentAnimationTotalTimeMs();
 	if(legsAnimationTime > needed) {
-		if(1)
+		if(g_actor_st_debugAnimDone.getInt())
 			g_core->Print("Anim done! %i > %i \n",legsAnimationTime,needed);
 		return true;
 	}
-	if(1) 
+	if(g_actor_st_debugAnimDone.getInt()) 
 		g_core->Print("Anim not yet done... %i <= %i \n",legsAnimationTime,needed);
 	return false;
 }

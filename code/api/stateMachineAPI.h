@@ -35,6 +35,20 @@ enum stMoveType_e {
 	EMT_NONE, 
 };
 
+// used only for AI state files
+struct stTime_s {
+	float time[2];
+
+	stTime_s() {
+		time[0] = time[1] = 0.f;
+	}
+	float selectTime() const {
+		float dif = time[1] - time[0];
+		float f = (rand()%10000)*0.0001f;
+		return time[0] + dif * f;
+	}
+};
+
 class stateMachineAPI_i {
 public:
 	virtual bool hasState(const char *stateName) const = 0;
@@ -46,6 +60,10 @@ public:
 	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
 	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
 	virtual enum stMoveType_e getStateMoveType(const char *curStateName) const = 0;
+	// for AI state machines
+	virtual const stTime_s *getStateTime(const char *curStateName) const = 0;
+	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const = 0;
+
 };
 
 #endif // __API_STATEMACHINE_H__
