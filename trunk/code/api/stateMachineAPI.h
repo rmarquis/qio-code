@@ -64,6 +64,7 @@ public:
 	virtual const stTime_s *getStateTime(const char *curStateName) const = 0;
 	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const = 0;
 	virtual bool stateHasBehaviour(const char *stateName) const = 0;
+	virtual bool hasBehaviorOfType(const char *stateName, const char *s) const = 0;
 
 };
 

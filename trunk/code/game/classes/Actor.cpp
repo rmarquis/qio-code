@@ -53,6 +53,16 @@ conditionFunction_s g_actorConditions [] = {
 	GETFUNC("HAVE_ENEMY",Actor::checkHaveEnemy)
 	GETFUNC("RANGE",Actor::checkRange)
 	GETFUNC("DONE",Actor::checkDone)
+	// is this the same?
+	GETFUNC("BEHAVIOR_DONE",Actor::checkDone)
+
+	
+	GETFUNC("CAN_SHOOT_ENEMY",Actor::checkCanShootEnemy)
+	// is health lower than given value
+	GETFUNC("HEALTH",Actor::checkHealth)
+	GETFUNC("ENEMY_RELATIVE_YAW",Actor::checkEnemyRelativeYaw)
+	GETFUNC("ALLOW_HANGBACK",Actor::checkAllowHangBack)
+	GETFUNC("ON_GROUND",Actor::checkOnGround)
 	
 	{ 0, 0 }
 };
@@ -169,6 +179,25 @@ public:
 	}
 };
 
+// Idle behaviour
+class bhIdle_c : public bhBase_c {
+public:
+	bhIdle_c(Actor *self, const char *args) : bhBase_c(self) {
+	}
+	virtual const char *getAnimName() const {
+		return 0;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		o.clear();
+		return true;
+	}
+	virtual bool isDone() const {
+		return 0;
+	}
+	virtual ~bhIdle_c() {
+
+	}
+};
 Actor::Actor() {
 	health = 100;
 	bTakeDamage = true;
@@ -239,6 +268,8 @@ void Actor::setBehaviour(const char *behaviourName, const char *args) {
 		nb = new bhWatch_c(this,args);
 	} else if(!stricmp(behaviourName,"AimAndMelee")) {
 		nb = new bhAimAndMelee_c(this,args);
+	} else if(!stricmp(behaviourName,"Idle")) {
+		nb = new bhIdle_c(this,args);
 	} else {
 		g_core->RedWarning("Actor::setBehaviour: unknown behaviour name '%s'\n",behaviourName);
 		nb = 0;
@@ -277,7 +308,7 @@ void Actor::runActorStateMachines() {
 			g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
 			st_curState = next;
 			bChanged = true;
-			if(st->stateHasBehaviour(st_curState))
+			if(st->stateHasBehaviour(st_curState) && st->hasBehaviorOfType(st_curState,"idle")==false)
 				break;
 		}
 	}
@@ -295,7 +326,7 @@ void Actor::runActorStateMachines() {
 		//return;
 		if(behaviour) {
 			anim = behaviour->getAnimName();
-			g_core->Print("Actor:: anm from behaviour: %s\n",anim);
+		//	g_core->Print("Actor:: anm from behaviour: %s\n",anim);
 		}
 	}
 	if(0) {
@@ -320,6 +351,7 @@ void Actor::runFrame() {
 		vec3_c dir(0,0,0);
 		if(behaviour) {
 			behaviour->setupMoveDir(dir);
+			dir *= 5.f;
 		}
 		this->characterController->update(dir);
 		vec3_c p = this->characterController->getPos() - characterControllerOffset;
@@ -387,6 +419,40 @@ bool Actor::checkDone(const class stringList_c *arguments, class patternMatcher_
 		return true;
 	return behaviour->isDone();
 }
+bool Actor::checkCanShootEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	return true;
+}
+bool Actor::checkHealth(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	float f = atof(arguments->getString(0));
+	if(health < f)
+		return true;
+	return false;
+}
+bool Actor::checkAllowHangBack(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return true;
+}
+bool Actor::checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return true;
+}
+bool Actor::checkEnemyRelativeYaw(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(enemy == 0)
+		return false;
+	float f = atof(arguments->getString(0));
+	vec3_c d = getOrigin() - enemy->getOrigin();
+	d.normalize();
+	vec3_c a = d.toAngles();
+	// yaw
+	float anglesDelta = enemy->getAngles().y - a.y;
+	if(anglesDelta > 180.f) {
+		anglesDelta -= 360.f;
+	}
+	g_core->Print("Angle: %f\n",anglesDelta);
+	if (anglesDelta < f)
+		return true;
+	return false;
+}
+
 bool Actor::checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	// TODO
 		return true;

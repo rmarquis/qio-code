@@ -328,6 +328,18 @@ const stTime_s *stateMachine_c::getStateTime(const char *curStateName) const {
 		return 0;
 	return s->getStateTime();
 }	
+bool stateMachine_c::hasBehaviorOfType(const char *stateName, const char *check) const {
+	const stState_c *s = states.getEntry(stateName);
+	if(s == 0) {
+		return false;
+	}
+	const char *n = s->getBehaviourName();
+	if(n == 0)
+		return false;
+	if(*n == 0)
+		return false;
+	return !stricmp(check,n);
+}
 bool stateMachine_c::stateHasBehaviour(const char *stateName) const {
 	const stState_c *s = states.getEntry(stateName);
 	if(s == 0) {
