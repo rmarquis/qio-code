@@ -1207,11 +1207,36 @@ void Player::updateCurWeaponClipSize() {
 void Player::addWeapon(class Weapon *newWeapon) {
 	if(st_torso) {
 		weapons.push_back(newWeapon);
-
+		weaponHand_e wh = newWeapon->getWeaponHand();
+		// see if we have a free hand
+		if(wh == WH_DUALHAND) {
+			// both must be free
+			if(curWeapon || curWeaponLeft || curWeaponRight)
+				return; 
+		} else if(wh == WH_RIGHT) {
+			// right must be free
+			if(curWeapon || curWeaponRight)
+				return; 
+		} else if(wh == WH_LEFT) {
+			// left must be free
+			if(curWeapon || curWeaponLeft)
+				return; 
+		} else if(wh == WH_ANY) {
+			// one of them must be free
+			if(curWeapon)
+				return; 
+			if(curWeaponRight && curWeaponLeft)
+				return; 
+		}
 		// unholster
 		nextWeaponHand = newWeapon->getWeaponHand();
-		if(nextWeaponHand == WH_ANY)
-			nextWeaponHand = WH_RIGHT;
+		if(nextWeaponHand == WH_ANY) {
+			if(curWeaponRight) {
+				nextWeaponHand = WH_LEFT;
+			} else {
+				nextWeaponHand = WH_RIGHT;
+			}
+		}
 		nextWeapon = newWeapon;
 		return;
 	}
@@ -1678,12 +1703,12 @@ bool Player::checkIsNewWeapon(const class stringList_c *arguments, class pattern
 	return false;
 }
 bool Player::checkAttackRight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-	if(pers.cmd.buttons & BUTTON_ATTACK)
+	if(pers.cmd.buttons & BUTTON_ATTACK_SECONDARY)
 		return true;
 	return false;
 }
 bool Player::checkAttackLeft(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-	if(pers.cmd.buttons & BUTTON_ATTACK_SECONDARY)
+	if(pers.cmd.buttons & BUTTON_ATTACK)
 		return true;
 	return false;
 }
