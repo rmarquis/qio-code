@@ -77,7 +77,11 @@ public:
 	bool checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
-
+	bool checkCanShootEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHealth(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkEnemyRelativeYaw(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkAllowHangBack(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 
 };
 

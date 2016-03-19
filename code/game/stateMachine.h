@@ -182,6 +182,7 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual enum stMoveType_e getStateMoveType(const char *stateName) const;
 	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const;
 	virtual bool stateHasBehaviour(const char *stateName) const;
+	virtual bool hasBehaviorOfType(const char *stateName, const char *s) const;
 public:
 	stateMachine_c();
 	~stateMachine_c();
