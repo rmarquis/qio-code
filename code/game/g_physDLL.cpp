@@ -73,7 +73,7 @@ public:
 	virtual const vec3_c &getGravity() const {
 		return g;
 	}
-	virtual bool traceRay(class trace_c &tr) {
+	virtual bool traceRay(class trace_c &tr, const BaseEntity *skip) {
 		return false;
 	}
 };
