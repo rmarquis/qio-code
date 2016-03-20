@@ -290,11 +290,13 @@ const vec3_c &bulletPhysicsWorld_c::getGravity() const {
 #include <shared/trace.h>
 class btRayCallback_c : public btCollisionWorld::RayResultCallback {
 public:
-	btRayCallback_c(const btVector3&	rayFromWorld,const btVector3&	rayToWorld)
+	btRayCallback_c(const btVector3&	rayFromWorld,const btVector3&	rayToWorld, const BaseEntity *skips)
 	:m_rayFromWorld(rayFromWorld),
-	m_rayToWorld(rayToWorld)
+	m_rayToWorld(rayToWorld),
+	skip(skips)
 	{
 	}
+	const BaseEntity *skip;
 
 	btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
 	btVector3	m_rayToWorld;
@@ -304,6 +306,10 @@ public:
 		
 	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 	{
+		class BaseEntity *ent = (BaseEntity*)rayResult.m_collisionObject->getUserPointer();
+		if(ent == skip)
+			return m_closestHitFraction;
+
 		//caller already does the filter on the m_closestHitFraction
 		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
 		
@@ -321,12 +327,12 @@ public:
 		return rayResult.m_hitFraction;
 	}
 };
-bool bulletPhysicsWorld_c::traceRay(class trace_c &tr) {
+bool bulletPhysicsWorld_c::traceRay(class trace_c &tr, const class BaseEntity *skip) {
 	btVector3 rayFrom;
 	rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_BULLET,tr.getStartPos().y*QIO_TO_BULLET,tr.getStartPos().z*QIO_TO_BULLET));
 	btVector3 rayTo;
 	rayTo = (btVector3(tr.getTo().x*QIO_TO_BULLET,tr.getTo().y*QIO_TO_BULLET,tr.getTo().z*QIO_TO_BULLET));
-	btRayCallback_c rayCallback(rayFrom,rayTo);
+	btRayCallback_c rayCallback(rayFrom,rayTo,skip);
 	dynamicsWorld->rayTest(rayFrom,rayTo,rayCallback);
 	if(rayCallback.hasHit()) {
 		tr.setHitPos(vec3_c(rayCallback.m_hitPointWorld.m_floats)*BULLET_TO_QIO);
