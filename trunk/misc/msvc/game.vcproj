@@ -837,6 +837,14 @@
 					RelativePath="..\..\code\game\classes\Corona.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\code\game\classes\MiscGameModel.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\MiscGameModel.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="RTCW"

@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2013 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,19 +21,23 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Prop_Physics.cpp
-#include "Prop_Physics.h"
+// MiscGameModel.h
+#ifndef __MISCGAMEMODEL_H__
+#define __MISCGAMEMODEL_H__
 
-DEFINE_CLASS(PropPhysics, "ModelEntity");
-DEFINE_CLASS_ALIAS(PropPhysics, prop_physics);
-DEFINE_CLASS_ALIAS(PropPhysics, prop_dynamic);
-DEFINE_CLASS_ALIAS(PropPhysics, physics_prop);
-// used eg. on de_dust2 of CSS
-DEFINE_CLASS_ALIAS(PropPhysics, prop_physics_multiplayer);
+#include "ModelEntity.h"
 
-PropPhysics::PropPhysics() {
-	bUseRModelToCreateDynamicCVXShape = true;
-	bUseDynamicConvexForTrimeshCMod = true;
-}
+class MiscGameModel : public ModelEntity {
+public:
+	MiscGameModel();
+
+	DECLARE_CLASS( MiscGameModel );
+
+
+	virtual void setKeyValue(const char *key, const char *value); 
+};
+
+#endif // __MISCGAMEMODEL_H__
+
 
 
