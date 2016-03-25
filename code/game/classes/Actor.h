@@ -47,6 +47,8 @@ class Actor : public ModelEntity {
 	void runActorStateMachines();
 	void loadAIStateMachine(const char *fname);
 	void setBehaviour(const char *behaviourName, const char *args);
+
+	bool canSee(BaseEntity *other) const;
 public:
 	Actor();
 	~Actor();

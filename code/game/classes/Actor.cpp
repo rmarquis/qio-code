@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/stringList.h>
 #include <shared/autoCvar.h>
 #include <shared/parser.h>
+#include <shared/trace.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
 // Doom3 AI
@@ -341,12 +342,33 @@ void Actor::runActorStateMachines() {
 		resetStateTimer();
 	}
 }
+bool Actor::canSee(BaseEntity *other) const {
+	if(other == 0)
+		return false;
+	trace_c tr;
+	tr.setupRay(getOrigin(),other->getOrigin());
+	if(g_physWorld) {
+		if(!g_physWorld->traceRay(tr,this)) {
+			g_core->Print("No hit\n");
+			return true;
+		}
+	}
+	if(tr.getHitEntity() == other) {
+		g_core->Print("Hit target\n");
+		return true;
+	}
+	g_core->Print("Hit obstacle\n");
+	return false;
+}
 void Actor::runFrame() {
 	updateAnimations();
 	if(st) {
 		runActorStateMachines();
 	}
 	enemy = G_GetPlayer(0);
+	if(canSee(enemy)==false)
+		enemy = 0;
+
 	if(characterController) {
 		vec3_c dir(0,0,0);
 		if(behaviour) {

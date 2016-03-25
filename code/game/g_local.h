@@ -189,7 +189,7 @@ void G_DoBulletDebugDrawing(class rDebugDrawer_i *dd);
 //
 // g_collision.cpp
 //
-bool G_TraceRay(class trace_c &tr, BaseEntity *baseSkip);
+bool G_TraceRay(class trace_c &tr, const BaseEntity *baseSkip);
 u32 G_BoxEntities(const class aabb &bb, arraySTD_c<class BaseEntity*> &out);
 
 //
