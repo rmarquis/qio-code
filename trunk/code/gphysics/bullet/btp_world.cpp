@@ -306,9 +306,11 @@ public:
 		
 	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 	{
-		class BaseEntity *ent = (BaseEntity*)rayResult.m_collisionObject->getUserPointer();
-		if(ent == skip)
-			return m_closestHitFraction;
+		if(rayResult.m_collisionObject) {
+			class BaseEntity *ent = (BaseEntity*)rayResult.m_collisionObject->getUserPointer();
+			if(ent == skip)
+				return m_closestHitFraction;
+		}
 
 		//caller already does the filter on the m_closestHitFraction
 		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
