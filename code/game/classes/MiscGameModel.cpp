@@ -21,19 +21,15 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Prop_Physics.cpp
-#include "Prop_Physics.h"
+// MiscGameModel.cpp
+#include "MiscGameModel.h"
 
-DEFINE_CLASS(PropPhysics, "ModelEntity");
-DEFINE_CLASS_ALIAS(PropPhysics, prop_physics);
-DEFINE_CLASS_ALIAS(PropPhysics, prop_dynamic);
-DEFINE_CLASS_ALIAS(PropPhysics, physics_prop);
-// used eg. on de_dust2 of CSS
-DEFINE_CLASS_ALIAS(PropPhysics, prop_physics_multiplayer);
+DEFINE_CLASS(MiscGameModel, "ModelEntity");
+DEFINE_CLASS_ALIAS(MiscGameModel, misc_gamemodel);
 
-PropPhysics::PropPhysics() {
-	bUseRModelToCreateDynamicCVXShape = true;
-	bUseDynamicConvexForTrimeshCMod = true;
+MiscGameModel::MiscGameModel() {
 }
 
-
+void MiscGameModel::setKeyValue(const char *key, const char *value) {
+	ModelEntity::setKeyValue(key,value);
+}
