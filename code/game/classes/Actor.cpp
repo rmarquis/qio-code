@@ -39,8 +39,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/trace.h>
 
 DEFINE_CLASS(Actor, "ModelEntity");
-// Doom3 AI
-DEFINE_CLASS_ALIAS(Actor, idAI);
  
 static aCvar_c g_actor_st_debugAnimDone("g_actor_st_debugAnimDone","0");
 

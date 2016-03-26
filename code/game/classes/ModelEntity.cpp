@@ -61,6 +61,8 @@ DEFINE_CLASS_ALIAS(ModelEntity, idMoveableItem);
 DEFINE_CLASS_ALIAS(ModelEntity, idAFEntity_Generic);
 DEFINE_CLASS_ALIAS(ModelEntity, idSpawnableEntity);
 DEFINE_CLASS_ALIAS(ModelEntity, idFuncSplat);
+// Doom3 AI
+DEFINE_CLASS_ALIAS(ModelEntity, idAI);
 
 static aCvar_c g_verboseSetAnimationCalls("g_verboseSetAnimationCalls","0");
 static aCvar_c g_verboseSetDamageZoneCalls("g_verboseSetDamageZoneCalls","0");
