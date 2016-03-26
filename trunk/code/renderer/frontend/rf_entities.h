@@ -99,6 +99,8 @@ class rEntityImpl_c : public rEntityAPI_i {
 	arraySTD_c<rEntityAttachment_c> attachments;
 	// used to avoid updating animated entity several times in one frame
 	u32 lastAnimatedEntityUpdateFrame;
+	// for keyframed models (md3, md2, mdc...)
+	int kfFrameNum;
 
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
@@ -117,6 +119,7 @@ public:
 	virtual void setAttachment(u32 which, const char *modelName, const char *boneName);
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setAnim(const char *animName, int newFlags);
+	virtual void setAnimationFrame(int frameNum);
 	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags);
 	virtual void setThirdPersonOnly(bool bOn) {
 		bThirdPersonOnly = bOn;
@@ -173,6 +176,8 @@ public:
 	virtual bool hasAnim(const char *animName) const;
 	virtual bool hasWolfAnimConfig() const;
 	virtual bool hasCharacterFile() const;
+	// for .md3/.md2/.mdc models
+	virtual bool isKeyframed() const;
 
 	bool hasStageWithoutBlendFunc() const;
 	u32 getSilChangeCount() const {
