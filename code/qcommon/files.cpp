@@ -1669,7 +1669,11 @@ long FS_ReadFileDir(const char *qpath, void *searchPath, bool unpure, void **buf
 	}
 
 	if ( !qpath || !qpath[0] ) {
-		Com_Error( ERR_FATAL, "FS_ReadFile with empty name" );
+		//Com_Error( ERR_FATAL, "FS_ReadFile with empty name" );
+		if(buffer) {
+			*buffer = 0;
+		}
+		return 0;
 	}
 
 	buf = NULL;	// quiet compiler warning
