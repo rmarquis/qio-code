@@ -36,6 +36,9 @@ void MiscGameModel::setKeyValue(const char *key, const char *value) {
 	g_core->Print("MiscGameModel::setKeyValue: key %s, value %s\n",key,value);
 	if(!stricmp(key,"frames")) {
 		numFrames = atoi(value);
+	} else if(!stricmp(key,"physics")) {
+		bUseRModelToCreateDynamicCVXShape = true;
+		bUseDynamicConvexForTrimeshCMod = true;
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -44,4 +47,6 @@ void MiscGameModel::setKeyValue(const char *key, const char *value) {
 void MiscGameModel::runFrame() {
 	this->myEdict->s->animIndex++;
 	this->myEdict->s->animIndex %= numFrames;
+
+	ModelEntity::runFrame();
 }
