@@ -54,6 +54,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 static aCvar_c rf_skipEntities("rf_skipEntities","0");
 static aCvar_c rf_noEntityDrawCalls("rf_noEntityDrawCalls","0");
 static aCvar_c rf_forceKFModelsFrame("rf_forceKFModelsFrame","-1");
+static aCvar_c rf_printKFModelsFrame("rf_printKFModelsFrame","0");
 static aCvar_c rf_cullEntities("rf_cullEntities","1");
 static aCvar_c rf_printEntityTriangleCounts("rf_printEntityTriangleCounts","0");
 static aCvar_c rfe_drawFuncStatic("rfe_drawFuncStatic","1");
@@ -108,6 +109,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	networkingEntityNumber = -1;
 	bHasGlobalColor = false;
 	scale.set(1,1,1);
+	kfFrameNum = -1;
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -366,6 +368,9 @@ void rEntityImpl_c::setAnim(const class skelAnimAPI_i *anim, int newFlags) {
 		skelAnimCtrl->setNextAnim(anim,skelModel,rf_curTimeMsec,newFlags);
 	}
 }
+void rEntityImpl_c::setAnimationFrame(int frameNum) {
+	kfFrameNum = frameNum;
+}
 void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	if(this->model == 0)
 		return; // ignore
@@ -501,6 +506,12 @@ bool rEntityImpl_c::isSprite() const {
 	if(model->isSprite())
 		return true;
 	return false;
+}
+// for .md3/.md2/.mdc models
+bool rEntityImpl_c::isKeyframed() const {
+	if(model == 0)
+		return false;
+	return model->isKeyframed();
 }
 bool rEntityImpl_c::hasCharacterFile() const {
 	if(model == 0)
@@ -797,7 +808,11 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
 			instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
 		} else {
-
+			u32 fixedFrameIndex = kfModel->fixFrameNum(kfFrameNum);
+			if(rf_printKFModelsFrame.getInt()) {
+				g_core->Print("Using frame %i for model %s\n",kfFrameNum,getModelName());
+			}
+			instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
 		}
 		// if model needs normals
 		if(1) {

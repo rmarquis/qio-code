@@ -36,6 +36,8 @@ public:
 	virtual void setAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
 	virtual void setAnim(const char *animName, int newFlags = 0) = 0;
 	virtual void setTorsoAnim(const class skelAnimAPI_i *anim, int newFlags = 0) = 0;
+	// for keyframed (md3,md2, mdc...) models
+	virtual void setAnimationFrame(int frameNum) = 0;
 	virtual void setThirdPersonOnly(bool bOn) = 0;
 	virtual void setFirstPersonOnly(bool bOn) = 0;
 	virtual void setIsPlayerModel(bool bNewIsPlayerModel) = 0;
@@ -67,6 +69,8 @@ public:
 	virtual bool hasTIKIModel() const = 0;
 	virtual bool isQ3PlayerModel() const = 0;
 	virtual bool isSprite() const = 0;
+	// for .md3/.md2/.mdc models
+	virtual bool isKeyframed() const = 0;
 
 	// returns true if entity model has wolfAnim.cfg
 	// (for RTCW player models)

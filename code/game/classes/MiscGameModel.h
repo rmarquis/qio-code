@@ -28,11 +28,13 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class MiscGameModel : public ModelEntity {
+	u32 numFrames;
 public:
 	MiscGameModel();
 
 	DECLARE_CLASS( MiscGameModel );
 
+	virtual void runFrame();
 
 	virtual void setKeyValue(const char *key, const char *value); 
 };

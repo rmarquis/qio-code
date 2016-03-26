@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // MiscGameModel.cpp
 #include "MiscGameModel.h"
+#include "../edict.h"
 
 DEFINE_CLASS(MiscGameModel, "ModelEntity");
 DEFINE_CLASS_ALIAS(MiscGameModel, misc_gamemodel);
@@ -31,5 +32,14 @@ MiscGameModel::MiscGameModel() {
 }
 
 void MiscGameModel::setKeyValue(const char *key, const char *value) {
-	ModelEntity::setKeyValue(key,value);
+	if(!stricmp(key,"frames")) {
+		numFrames = atoi(value);
+	} else {
+		ModelEntity::setKeyValue(key,value);
+	}
+}
+
+void MiscGameModel::runFrame() {
+	this->myEdict->s->animIndex++;
+	this->myEdict->s->animIndex %= numFrames;
 }

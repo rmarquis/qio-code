@@ -112,6 +112,8 @@ static void CG_TransitionModel(centity_s *cent) {
 		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
 	} else if(cent->rEnt->hasWolfAnimConfig() || cent->rEnt->hasCharacterFile()) {
 		cent->rEnt->setAnim(CG_ConfigString(CS_ANIMATIONS+cent->currentState.animIndex));
+	} else if(cent->rEnt->isKeyframed()) {
+		cent->rEnt->setAnimationFrame(cent->currentState.animIndex);
 	} else {
 		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
 		cent->rEnt->setTorsoAnim(cgs.gameAnims[cent->currentState.torsoAnim]);
