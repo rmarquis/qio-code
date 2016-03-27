@@ -1,6 +1,6 @@
 /*
 ============================================================================
-Copyright (C) 2012 V.
+Copyright (C) 2016 V.
 
 This file is part of Qio source code.
 
@@ -21,35 +21,14 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Trigger.h - base class for all triggers
+// TriggerOnce.cpp
+#include "TriggerOnce.h"
 
-#ifndef __TRIGGER_H__
-#define __TRIGGER_H__
+DEFINE_CLASS(TriggerOnce, "Trigger");
+DEFINE_CLASS_ALIAS(TriggerOnce, trigger_once);
+ 
+TriggerOnce::TriggerOnce() {
+	// -1 means "trigger only once"
+	delayBetweenTriggers = -1;
+}
 
-#include "BaseEntity.h"
-
-class Trigger : public BaseEntity {
-	// trigger collision models
-	class cMod_i *triggerModel;
-	bool bTriggerable;
-protected:
-	// -1 means "trigger once"
-	int delayBetweenTriggers;
-public:
-	Trigger();
-	~Trigger();
-
-	DECLARE_CLASS( Trigger );
-
-	void setTriggerModel(const char *modName);
-
-	virtual void onTriggerContact(class ModelEntity *ent);
-
-	virtual void setKeyValue(const char *key, const char *value); 
-	virtual void getLocalBounds(aabb &out) const;
-};
-
-
-u32 G_BoxTriggers(const aabb &bb, arraySTD_c<class Trigger*> &out);
-
-#endif // __TRIGGER_H__
