@@ -21,7 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// entityState.h - userCmd_s struct
+// entityState.h - entityState_s struct
 #ifndef __ENTITYSTATE_H__
 #define __ENTITYSTATE_H__
 
@@ -65,7 +65,7 @@ struct rAttachment_s {
 
 struct entityState_s {
 	int		number;			// entity index
-	int		eType;			// entityType_t
+	int		eType;			// entityType_e
 	int		eFlags;			// entityFlags_e
 
 	class vec3_c	origin;

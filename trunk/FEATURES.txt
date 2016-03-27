@@ -4,16 +4,20 @@ game
  - player movement is done by Bullet character controler
  - networked ragdoll system based on Doom3 ArticulatedFigures and Bullet physics
  - basic support for Quake3 / Doom3 weapon systems
+ - FAKK/MoHAA .st (state machine) support for player movement and actions control
+ - basic FAKK/MoHAA weapon system
  
 cgame 
  - cleared up code
  - better communication with renderer
+ - many usefull tools like cg_testModel, cg_testMaterial
  
 renderer
  - written from scratch in C++
  - Quake3, RTCW, ET, FAKK, MoHAA bsp support with PVS and lightmapping
  - partial Quake2 and Quake BSP support
  - partial COD bsp support
+ - BSP deluxemapping support
  - experimental Source Engine BSP support (HL2, Episodes, CS:Source) with displacements and static props 
  - Doom3/Quake4 .proc support with portal rendering system
  - ET:QW .procb support (without portals)
@@ -41,6 +45,9 @@ modelLoader
  - Quake3 .md3 and Quake2 .md2 keyframed meshes support
  - Source Engine .smd support (with animation)
  - unfinished Half Life2 .mdl loader (without animations)
+ - FAKK .tan support (similiar to md3)
+ - FAKK .skb/.ska support (skeletal models)
+ - basic MoHAA .skd loader (without animation)
  
 materialSystem
  - written from scratch in C++
@@ -53,6 +60,9 @@ declManager
  - Doom3 Articulated Figures (.af files - ragdoll definitions) support
  - Doom3 particle emitters support
  - Quake3 three part players model support
+ 
+gui
+ - MoHAA / FAKK .urc support
  
 common
  - interfaces system similiar to one in SourceEngine

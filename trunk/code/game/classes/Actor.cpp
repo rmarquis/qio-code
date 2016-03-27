@@ -41,6 +41,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 DEFINE_CLASS(Actor, "ModelEntity");
  
 static aCvar_c g_actor_st_debugAnimDone("g_actor_st_debugAnimDone","0");
+static aCvar_c g_actor_debugCanSee("g_actor_debugCanSee","0");
+static aCvar_c g_actor_printStateChange("g_actor_printStateChange","0");
+
 
 conditionFunction_s g_actorConditions [] = {
 
@@ -236,7 +239,7 @@ void Actor::enableCharacterController() {
 		return;
 	}
 	g_physWorld->freeCharacter(this->characterController);
-	this->characterController = g_physWorld->createCharacter(this->getOrigin()+characterControllerOffset, h, r);
+	this->characterController = g_physWorld->createCharacter(this->getOrigin()-characterControllerOffset, h, r);
 	if(this->characterController) {
 		this->characterController->setCharacterEntity(this);
 	}
@@ -304,7 +307,8 @@ void Actor::runActorStateMachines() {
 	for(u32 i = 0; i < 2; i++) {
 		const char *next = st->transitionState(st_curState,st_handler);
 		if(next && next[0]) {
-			g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
+			if(g_actor_printStateChange.getInt()) 
+				g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
 			st_curState = next;
 			bChanged = true;
 			if(st->stateHasBehaviour(st_curState) && st->hasBehaviorOfType(st_curState,"idle")==false)
@@ -344,18 +348,36 @@ bool Actor::canSee(BaseEntity *other) const {
 	if(other == 0)
 		return false;
 	trace_c tr;
-	tr.setupRay(getOrigin(),other->getOrigin());
-	if(g_physWorld) {
-		if(!g_physWorld->traceRay(tr,this)) {
-			g_core->Print("No hit\n");
+	for(u32 i = 0; i < 3; i++) {
+		if(i == 0) {
+			tr.setupRay(getCenter(),other->getCenter());
+		} else if(i == 1) {
+			vec3_c ofs(0,0,16);
+			tr.setupRay(getCenter()+ofs,other->getCenter()+ofs);
+		} else {
+			tr.setupRay(getOrigin(),other->getOrigin());
+		}
+		if(g_physWorld) {
+			if(!g_physWorld->traceRay(tr,this)) {
+				if(g_actor_debugCanSee.getInt()) {
+					g_core->Print("Actor::canSee (self %i, other %i): No hit\n",
+						getEntNum(),other->getEntNum());
+				}
+				return true;
+			}
+		}
+		if(tr.getHitEntity() == other) {
+			if(g_actor_debugCanSee.getInt()) {
+				g_core->Print("Actor::canSee (self %i, other %i): Hit target\n",
+					getEntNum(),other->getEntNum());
+			}
 			return true;
 		}
 	}
-	if(tr.getHitEntity() == other) {
-		g_core->Print("Hit target\n");
-		return true;
+	if(g_actor_debugCanSee.getInt()) {
+		g_core->Print("Actor::canSee (self %i, other %i): Hit obstacle\n",
+				getEntNum(),other->getEntNum());
 	}
-	g_core->Print("Hit obstacle\n");
 	return false;
 }
 void Actor::runFrame() {

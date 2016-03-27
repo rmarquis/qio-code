@@ -363,6 +363,9 @@ void BaseEntity::setMatrix(const class matrix_c &newMat) {
 	recalcABSBounds();
 	link();
 }
+class vec3_c BaseEntity::getCenter() const {
+	return myEdict->absBounds.getCenter();
+}
 const vec3_c &BaseEntity::getOrigin() const {
 	return myEdict->s->origin;
 }

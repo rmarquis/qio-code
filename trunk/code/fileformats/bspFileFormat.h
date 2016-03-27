@@ -504,6 +504,8 @@ struct q3Header_s {
 	u32 getNumModels() const {
 		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
 			return getLumps()[MOH_MODELS].fileLen/sizeof(q3Model_s);
+		} else if(ident == BSP_IDENT_FAKK) {
+			return getLumps()[MOH_MODELS].fileLen/sizeof(q3Model_s);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_COD1) {
 			return getLumps()[COD1_MODELS].fileLen/(sizeof(q3Model_s)+8);
 		} else if(ident == BSP_IDENT_IBSP && version == BSP_VERSION_Q2) {

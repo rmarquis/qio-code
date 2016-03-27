@@ -723,6 +723,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\TriggerOnce.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\TriggerOnce.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\TriggerSoundscape.cpp"
 				>
 			</File>
@@ -915,6 +923,14 @@
 				</File>
 				<File
 					RelativePath="..\..\code\game\classes\Flashbang.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\FuncSpawn.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\FuncSpawn.h"
 					>
 				</File>
 				<File

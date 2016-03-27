@@ -546,6 +546,7 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		const char *zoneName = key + 12;
 		setDamageZone(zoneName,value);
 	} else if(!_stricmp(key,"scale") || !_stricmp(key,"modelscale")) {
+		// "modelscale" is used usually with misc_gamemodel in ET
 		float f = atof(value);
 		this->myEdict->s->scale.set(f,f,f);
 	} else if(!_stricmp(key,"anim")) {

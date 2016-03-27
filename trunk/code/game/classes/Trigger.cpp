@@ -39,6 +39,7 @@ Trigger::Trigger() {
 	g_triggers.push_back(this);
 	this->triggerModel = 0;
 	this->bTriggerable = true;
+	this->delayBetweenTriggers = -1;
 }
 Trigger::~Trigger() {
 	g_triggers.remove(this);
@@ -54,7 +55,9 @@ void Trigger::setTriggerModel(const char *modName) {
 void Trigger::onTriggerContact(class ModelEntity *ent) {
 	if(bTriggerable == false)
 		return;
-	bTriggerable = false;
+	if(delayBetweenTriggers == -1) {
+		bTriggerable = false;
+	}
 	// fire targets
 	arraySTD_c<BaseEntity *> ents;
 	G_GetEntitiesWithTargetName(getTarget(),ents);

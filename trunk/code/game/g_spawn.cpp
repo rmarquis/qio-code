@@ -83,6 +83,16 @@ BaseEntity *G_SpawnGeneric(const char *classOrModelName) {
 	BaseEntity *e = G_SpawnClass(classOrModelName);
 	if(e)
 		return e;
+	// try to fix model path
+	// this is for .tik models (FAKK/MoHAA)
+	str fixed;
+	if(g_vfs->FS_FileExists(classOrModelName) == false) {
+		fixed = "models/";
+		fixed.append(classOrModelName);
+		if(g_vfs->FS_FileExists(fixed)) {
+			classOrModelName = fixed;
+		}
+	}
 	if(g_vfs->FS_FileExists(classOrModelName)) {
 		str tmp = classOrModelName;
 		tiki_i *tiki;

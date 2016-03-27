@@ -276,10 +276,18 @@ void Player::activateNewWeapon() {
 void Player::setKeyValue(const char *key, const char *value) {
  	if(!stricmp(key,"jumpxy")) {
 		// called from .tik animation commands list
-		bJumped = this->characterController->tryToJump();
+		if(this->characterController) {
+			bJumped = this->characterController->tryToJump();
+		} else {
+			bJumped = false;
+		}
 	} else if(!stricmp(key,"jump")) {
 		// called from .tik animation commands list
-		bJumped = this->characterController->tryToJump();
+		if(this->characterController) {
+			bJumped = this->characterController->tryToJump();
+		} else {
+			bJumped = false;
+		}
 	} else if(!stricmp(key,"activatenewweapon")) {
 		// called from .tik animation commands list
 		activateNewWeapon();

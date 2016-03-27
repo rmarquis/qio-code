@@ -37,8 +37,15 @@ void MiscGameModel::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"frames")) {
 		numFrames = atoi(value);
 	} else if(!stricmp(key,"physics")) {
-		bUseRModelToCreateDynamicCVXShape = true;
-		bUseDynamicConvexForTrimeshCMod = true;
+		if(atoi(value)) {
+			bUseRModelToCreateDynamicCVXShape = true;
+			bUseDynamicConvexForTrimeshCMod = true;
+		} else {
+			bUseRModelToCreateDynamicCVXShape = false;
+			bUseDynamicConvexForTrimeshCMod = false;
+		}
+	} else if(!stricmp(key,"fps")) {
+		atof(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
