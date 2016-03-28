@@ -231,7 +231,7 @@ void main() {
 #else
 	// simple height mapping
 #ifdef HAS_BUMP_HEIGHTMAP_MAP
-    vec4 offset = texture2D(bumpMap, gl_TexCoord[0].xy).a;
+    vec4 offset = texture2D(bumpMap, gl_TexCoord[0].xy);
 #else
     vec4 offset = texture2D(heightMap, gl_TexCoord[0].xy);
 #endif
