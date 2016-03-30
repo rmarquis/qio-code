@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
+#include <api/rbAPI.h>
 #include <shared/autoCvar.h>
 
 #include <time.h>
@@ -53,7 +54,16 @@ void GL_WriteGLSLErrorReport(const char *errorText, const char *shaderText) {
 	fileHandle_t handle = 0;
 	g_vfs->FS_FOpenFile(errorFile,&handle,FS_WRITE);
 	if(handle) {
-		g_vfs->FS_Write(errorText,strlen(errorText),handle);
+		str errorTextExtended = "";
+		if(rb) {
+			const char *gpuInfo = rb->getBackendInfoStr();
+			if(gpuInfo) {
+				errorTextExtended.append(gpuInfo);
+			}
+		}
+		errorTextExtended.append("\n============\n");
+		errorTextExtended.append(errorText);
+		g_vfs->FS_Write(errorTextExtended,strlen(errorTextExtended),handle);
 		g_vfs->FS_FCloseFile(handle);
 	}
 	g_vfs->FS_FOpenFile(sourceFile,&handle,FS_WRITE);
