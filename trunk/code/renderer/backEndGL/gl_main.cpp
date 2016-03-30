@@ -3243,6 +3243,7 @@ drawOnlyLightmap:
 		g_core->Print("GL_VERSION: %s\n",glGetString(GL_VERSION));
 		// ensure that all the states are reset after vid_restart
 		///g_core->Print("sizeof(texStates) is: %i\n",sizeof(texStates));
+		gpuInfoString = "";
 		gpuInfoString.append("GL_RENDERER: ");
 		gpuInfoString.append((const char*)glGetString(GL_RENDERER));
 		gpuInfoString.append("\n");
