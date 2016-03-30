@@ -254,6 +254,13 @@ public:
 		len = j;
 		data[j] = 0;
 	}
+	void replaceCharacter(char ch, char newChar) {
+		for(u32 i = 0; i < len; i++) {
+			if(data[i] == ch) {
+				data[i] = newChar;
+			}
+		}
+	}
 	void insertAt(int pos, char ch) {
 		if(pos == len) {
 			this->appendChar(ch);

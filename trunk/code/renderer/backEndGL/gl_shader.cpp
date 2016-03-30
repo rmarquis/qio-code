@@ -28,8 +28,40 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <shared/autoCvar.h>
 
+#include <time.h>
+
 static aCvar_c gl_saveGLSLErrorLogToFile("gl_saveGLSLErrorLogToFile","1");
 
+void GL_WriteGLSLErrorReport(const char *errorText, const char *shaderText) {
+	
+//////	time_t rawtime;
+///	struct tm * timeinfo;
+
+	//time ( &rawtime );
+	//timeinfo = localtime ( &rawtime );
+	//printf ( "Current local time and date: %s", asctime (timeinfo) );
+	str timeStr = "";//asctime (timeinfo);
+	timeStr.replaceCharacter(':','_');
+	timeStr.replaceCharacter(' ','_');
+	str baseName = "glslShaderError_";
+	baseName.append(timeStr);
+	str errorFile = baseName;
+	errorFile.append("_error.txt");
+	str sourceFile = baseName;
+	sourceFile.append("_source.txt");
+
+	fileHandle_t handle = 0;
+	g_vfs->FS_FOpenFile(errorFile,&handle,FS_WRITE);
+	if(handle) {
+		g_vfs->FS_Write(errorText,strlen(errorText),handle);
+		g_vfs->FS_FCloseFile(handle);
+	}
+	g_vfs->FS_FOpenFile(sourceFile,&handle,FS_WRITE);
+	if(handle) {
+		g_vfs->FS_Write(shaderText,strlen(shaderText),handle);
+		g_vfs->FS_FCloseFile(handle);
+	}
+}
 
 bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 	glShaderSourceARB(handle, 1,(const GLcharARB**) &source, 0);
@@ -44,12 +76,7 @@ bool GL_CompileShaderProgram(GLuint handle, const char *source) {
 			glGetInfoLogARB(handle, logLen, 0, tmp);
 			g_core->RedWarning(tmp);
 			if(gl_saveGLSLErrorLogToFile.getInt()) {
-				fileHandle_t handle = 0;
-				g_vfs->FS_FOpenFile("glslShaderError.txt",&handle,FS_WRITE);
-				if(handle) {
-					g_vfs->FS_Write(tmp,strlen(tmp),handle);
-					g_vfs->FS_FCloseFile(handle);
-				}
+				GL_WriteGLSLErrorReport(tmp,source);
 			}
 			free(tmp);
 		}
@@ -318,12 +345,11 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 			glGetInfoLogARB(shader, logLen, 0, tmp);
 			g_core->RedWarning(tmp);
 			if(gl_saveGLSLErrorLogToFile.getInt()) {
-				fileHandle_t handle = 0;
-				g_vfs->FS_FOpenFile("glslShaderError.txt",&handle,FS_WRITE);
-				if(handle) {
-					g_vfs->FS_Write(tmp,strlen(tmp),handle);
-					g_vfs->FS_FCloseFile(handle);
-				}
+				str source = vertexSource;
+				source.append("\n");
+				source.append("// FRAGMENT SOURCE NOW\n");
+				source.append(fragmentSource);
+				GL_WriteGLSLErrorReport(tmp,source);
 			}
 			free(tmp);
 		}

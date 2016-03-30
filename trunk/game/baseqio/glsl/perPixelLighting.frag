@@ -65,7 +65,6 @@ uniform vec3 u_lightColor;
 uniform float u_shadowMapSize;
 #endif
 
-#line 0
 
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
