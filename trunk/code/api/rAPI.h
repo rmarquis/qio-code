@@ -76,6 +76,7 @@ public:
 	// misc functions	
 	virtual void clearEntities() = 0;
 	virtual void loadWorldMap(const char *mapName) = 0;
+	virtual const char *getLoadedMapName() const = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;

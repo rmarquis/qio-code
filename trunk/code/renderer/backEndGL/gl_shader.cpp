@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/rbAPI.h>
+#include <api/rAPI.h>
 #include <shared/autoCvar.h>
 
 #include <time.h>
@@ -56,12 +57,28 @@ void GL_WriteGLSLErrorReport(const char *errorText, const char *shaderText) {
 	if(handle) {
 		str errorTextExtended = "";
 		if(rb) {
+			errorTextExtended.append("\n");
+			errorTextExtended.append("// ============\n");
+			errorTextExtended.append("// GPU INFO\n");
+			errorTextExtended.append("// ============\n");
 			const char *gpuInfo = rb->getBackendInfoStr();
 			if(gpuInfo) {
 				errorTextExtended.append(gpuInfo);
 			}
 		}
-		errorTextExtended.append("\n============\n");
+
+		errorTextExtended.append("// ============\n");
+		errorTextExtended.append("// SCENE INFO\n");
+		errorTextExtended.append("// ============\n");
+		errorTextExtended.append("Mapname: ");
+		errorTextExtended.append(rf->getLoadedMapName());
+		errorTextExtended.append("\n");
+
+
+
+		errorTextExtended.append("// ============\n");
+		errorTextExtended.append("// GLSL SHADER ERROR\n");
+		errorTextExtended.append("// ============\n");
 		errorTextExtended.append(errorText);
 		g_vfs->FS_Write(errorTextExtended,strlen(errorTextExtended),handle);
 		g_vfs->FS_FCloseFile(handle);

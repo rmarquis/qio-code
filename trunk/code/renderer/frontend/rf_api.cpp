@@ -192,6 +192,9 @@ public:
 			RF_LoadWorldMapCubeMaps(mapName);
 		}
 	}
+	virtual const char *getLoadedMapName() const {
+		return RF_GetWorldMapName();
+	}
 	virtual bool rayTraceWorldMap(class trace_c &tr) {
 		return RF_RayTraceWorld(tr);
 	}	
