@@ -307,6 +307,9 @@ u32 MAT_GetNumAllocatedMaterials() {
 mtrAPI_i *MAT_GetAllocatedMaterial(u32 i) {
 	return materials[i];
 }
+const char *MAT_GetAllocatedMaterialName(u32 i) {
+	return materials[i]->getName();
+}
 const class tableListAPI_i *MAT_GetTablesAPI() {
 	return &mat_tableList;
 }

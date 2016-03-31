@@ -62,6 +62,7 @@ public:
 	// for Editor
 	virtual u32 getNumAllocatedMaterials() const = 0;
 	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const = 0;
+	virtual const char *getAllocatedMaterialName(u32 i) const = 0;
 
 	// Freeing unused materials without doing a vid_restart
 	// First g_ms->clearMaterialInUseFlags() should be called to clear all inuse flags,

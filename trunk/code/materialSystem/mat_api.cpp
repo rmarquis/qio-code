@@ -115,6 +115,9 @@ public:
 	virtual mtrAPI_i *getAllocatedMaterial(u32 i) const {
 		return MAT_GetAllocatedMaterial(i);
 	}
+	virtual const char *getAllocatedMaterialName(u32 i) const {
+		return MAT_GetAllocatedMaterialName(i);
+	}
 	virtual void clearMaterialInUseFlags() { 
 		MAT_ClearMaterialInUseFlags();
 	}

@@ -72,6 +72,9 @@ void RFL_AddLightInteractionsDrawCalls();
 void RFL_RecalculateLightsInteractions();
 void RFL_FreeAllLights();
 void RFL_RemoveAllReferencesToEntity(class rEntityImpl_c *ent);
+u32 RFL_GetNumAllocatedLights();
+class rLightAPI_i *RFL_GetLight(u32 i);
+
  // called when depth pass if done
 void RFL_AssignLightOcclusionQueries();
 bool RFL_GPUOcclusionQueriesForLightsEnabled();

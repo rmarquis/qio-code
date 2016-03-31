@@ -45,6 +45,8 @@ public:
 
 	virtual class rLightAPI_i *allocLight() = 0;
 	virtual void removeLight(class rLightAPI_i *light) = 0;
+	virtual u32 getNumAllocatedLights() const = 0;
+	virtual class rLightAPI_i *getLight(u32 i) = 0;
 
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) = 0;
 	virtual u32 addExplosion(const vec3_c &pos, float radius, const char *matName) = 0;
@@ -80,6 +82,8 @@ public:
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
 	virtual class rModelAPI_i *registerModel(const char *modName) = 0;
+	virtual u32 getNumAllocatedModels() const = 0;
+	virtual const char *getAllocatedModelName(u32 i) const = 0;
 	virtual const class skelAnimAPI_i *registerAnimation_getAPI(const char *animName) = 0;
 
 	virtual void addCustomRenderObject(class customRenderObjectAPI_i *api) = 0;

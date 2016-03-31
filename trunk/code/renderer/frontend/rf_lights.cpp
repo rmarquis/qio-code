@@ -747,6 +747,12 @@ void RFL_RemoveAllReferencesToEntity(class rEntityImpl_c *ent) {
 		rf_lights[i]->removeEntityFromInteractionsList(ent);
 	}
 }
+u32 RFL_GetNumAllocatedLights() {
+	return rf_lights.size();
+}
+class rLightAPI_i *RFL_GetLight(u32 i) {
+	return rf_lights[i];
+}
 
 static aCvar_c rf_redrawEntireSceneForEachLight("rf_redrawEntireSceneForEachLight","0");
 static aCvar_c light_printCullStats("light_printCullStats","0");
