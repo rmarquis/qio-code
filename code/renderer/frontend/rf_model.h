@@ -232,6 +232,8 @@ friend model_c *RF_AllocModel(const char *modName);
 friend rModelAPI_i *RF_FindModel(const char *modName);
 friend rModelAPI_i *RF_RegisterModel(const char *modName);
 friend void RF_MarkModelMaterials();
+friend u32 RF_GetNumAllocatedModels();
+friend const char *RF_GetAllocatedModelName(u32 i);
 };
 
 #endif // __RF_MODEL_H__

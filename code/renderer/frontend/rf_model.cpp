@@ -468,7 +468,12 @@ r_model_c *RF_LoadStaticModel(const char *modelName) {
 	ret->createVBOsAndIBOs();
 	return ret;
 }
-
+u32 RF_GetNumAllocatedModels() {
+	return rf_models.size();
+}
+const char *RF_GetAllocatedModelName(u32 i) {
+	return rf_models[i]->getName();
+}
 void RF_MarkModelMaterials() {
 	for(u32 i = 0; i < rf_models.size(); i++) {
 		model_c *m = rf_models[i];

@@ -28,7 +28,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <api/rbAPI.h>
 #include <api/rAPI.h>
+#include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
+#include <api/rLightAPI.h> // only for debug scene output
+#include <math/vec3.h> // only for debug scene output
 
 #include <time.h>
 
@@ -36,14 +39,16 @@ static aCvar_c gl_saveGLSLErrorLogToFile("gl_saveGLSLErrorLogToFile","1");
 
 void GL_WriteGLSLErrorReport(const char *errorText, const char *shaderText) {
 	
-//////	time_t rawtime;
-///	struct tm * timeinfo;
+	time_t rawtime;
+	struct tm * timeinfo;
 
 	//time ( &rawtime );
-	//timeinfo = localtime ( &rawtime );
+	//timeinfo = localtime ( 0 );
 	//printf ( "Current local time and date: %s", asctime (timeinfo) );
-	str timeStr = "";//asctime (timeinfo);
-	timeStr.replaceCharacter(':','_');
+	char buffer[128] = { 0 };
+	//strftime (buffer,sizeof(buffer),"%D_%T",timeinfo);
+	str timeStr = buffer;
+//	timeStr.replaceCharacter(':','_');
 	timeStr.replaceCharacter(' ','_');
 	str baseName = "glslShaderError_";
 	baseName.append(timeStr);
@@ -73,8 +78,46 @@ void GL_WriteGLSLErrorReport(const char *errorText, const char *shaderText) {
 		errorTextExtended.append("Mapname: ");
 		errorTextExtended.append(rf->getLoadedMapName());
 		errorTextExtended.append("\n");
+		// dump cached materials
+		if(g_ms) {
+			u32 totalMats = g_ms->getNumAllocatedMaterials();
+			errorTextExtended.append(va("Total %i materials cached.\n",totalMats));
+			for(u32 i = 0; i < totalMats; i++) {
+				const char *matName = g_ms->getAllocatedMaterialName(i);
+				errorTextExtended.append(va("\tMaterial %i of %i is %s\n",i,totalMats,matName));
+			}
+		}
+		// dump cached models
+		if(rf) {
+			u32 totalMods = rf->getNumAllocatedModels();
+			errorTextExtended.append(va("Total %i models cached.\n",totalMods));
+			for(u32 i = 0; i < totalMods; i++) {
+				const char *modName = rf->getAllocatedModelName(i);
+				errorTextExtended.append(va("\tModel %i of %i is %s\n",i,totalMods,modName));
+			}
+		}
+		// dump allocated lights
+		if(rf) {
+			u32 totalLights = rf->getNumAllocatedLights();
+			errorTextExtended.append(va("Total %i lights allocated.\n",totalLights));
+			for(u32 i = 0; i < totalLights; i++) {
+				rLightAPI_i *light = rf->getLight(i);
+				const vec3_c &at = light->getOrigin();
+				float radius = light->getRadius();
+				const char *typeStr;
+				if(light->getLightType() == LT_POINT)
+					typeStr = "Point";
+				else if(light->getLightType() == LT_SPOTLIGHT)
+					typeStr = "Spot";
+				else 
+					typeStr = "Unknown";
 
-
+				//const char *modName = rf->getAllocatedModelName(i);
+				errorTextExtended.append(va("\tLight %i of %i is at %f %f %f, radius %f, type %s\n",
+					i,totalLights,at.x,at.y,at.z,radius,typeStr));
+			}
+		}
+		errorTextExtended.append("\n");
 
 		errorTextExtended.append("// ============\n");
 		errorTextExtended.append("// GLSL SHADER ERROR\n");

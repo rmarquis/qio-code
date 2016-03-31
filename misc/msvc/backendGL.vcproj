@@ -251,6 +251,14 @@
 				RelativePath="..\..\code\renderer\rVertexBuffer.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="shaders"

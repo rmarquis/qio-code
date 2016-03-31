@@ -228,6 +228,12 @@ public:
 	virtual void removeLight(class rLightAPI_i *ent) {
 		RFL_RemoveLight(ent);
 	}
+	virtual u32 getNumAllocatedLights() const {
+		return RFL_GetNumAllocatedLights();
+	}
+	virtual class rLightAPI_i *getLight(u32 i) {
+		return RFL_GetLight(i);
+	}
 	virtual int addWorldMapDecal(const vec3_c &pos, const vec3_c &normal, float radius, class mtrAPI_i *material) {
 		return RF_AddWorldMapDecal(pos,normal,radius,material);
 	}
@@ -243,6 +249,12 @@ public:
 		if(g_ms == 0)
 			return false;
 		return g_ms->isMaterialOrImagePresent(matName);
+	}
+	virtual u32 getNumAllocatedModels() const {
+		return RF_GetNumAllocatedModels();
+	}
+	virtual const char *getAllocatedModelName(u32 i) const {
+		return RF_GetAllocatedModelName(i);
 	}
 	virtual class rModelAPI_i *registerModel(const char *modName) {
 		return RF_RegisterModel(modName);

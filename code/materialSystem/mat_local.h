@@ -59,6 +59,7 @@ class mtrAPI_i *MAT_CreateHLBSPTexture(const char *newMatName, const byte *pixel
 const class tableListAPI_i *MAT_GetTablesAPI();
 u32 MAT_GetNumAllocatedMaterials();
 mtrAPI_i *MAT_GetAllocatedMaterial(u32 i);
+const char *MAT_GetAllocatedMaterialName(u32 i);
 u32 MAT_GetNumCachedMaterialFiles();
 const char *MAT_GetMaterialFileName(u32 i);
 void MAT_CacheAllMaterialsFromMatFile(const char *fname);
