@@ -84,7 +84,7 @@ public:
 
 	virtual void setGravity(const vec3_c &newGravity);
 	virtual const vec3_c &getGravity() const;
-	virtual bool traceRay(class trace_c &tr);
+	virtual bool traceRay(class trace_c &tr, const class BaseEntity *skip);
 
 	dWorldID getODEWorld() {
 		return world;

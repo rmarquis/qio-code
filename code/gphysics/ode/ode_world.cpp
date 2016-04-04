@@ -315,7 +315,7 @@ const vec3_c &odePhysicsWorld_c::getGravity() const {
 	return gravity;
 }
 #include <shared/trace.h>
-bool odePhysicsWorld_c::traceRay(class trace_c &tr) {
+bool odePhysicsWorld_c::traceRay(class trace_c &tr, const class BaseEntity *skip) {
 	//btVector3 rayFrom;
 	//rayFrom = (btVector3(tr.getStartPos().x*QIO_TO_ODE,tr.getStartPos().y*QIO_TO_ODE,tr.getStartPos().z*QIO_TO_ODE));
 	//btVector3 rayTo;

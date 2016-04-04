@@ -29,7 +29,9 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 }
+
 #include "../g_local.h"
+#include <api/coreAPI.h>
 #include <api/serverAPI.h>
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
@@ -55,7 +57,7 @@ static int game_Print(lua_State * L)
 		if(s == NULL)
 			return luaL_error(L, "`tostring' must return a string to `print'");
 
-		Q_strcat(buf, sizeof(buf), s);
+		strcat(buf, s);
 
 		lua_pop(L, 1);			// pop result
 	}
@@ -85,7 +87,7 @@ static int game_Broadcast(lua_State * L)
 		if(s == NULL)
 			return luaL_error(L, "`tostring' must return a string to `print'");
 
-		Q_strcat(buf, sizeof(buf), s);
+		strcat(buf, s);
 
 		lua_pop(L, 1);			// pop result
 	}
@@ -105,7 +107,7 @@ int luaopen_game(lua_State * L)
 	luaL_register(L, "game", gamelib);
 
 	lua_pushliteral(L, "_GAMEVERSION");
-	lua_pushliteral(L, GAMEVERSION);
+	//lua_pushliteral(L, GAMEVERSION);
 
 	return 1;
 }

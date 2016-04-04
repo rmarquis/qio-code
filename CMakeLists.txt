@@ -8,9 +8,10 @@ CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 MESSAGE( STATUS "Using cmake version ${CMAKE_VERSION}" )
 
 SET( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
+SET( CMAKE_C_FLAGS_DEBUG "-DDEBUG" CACHE STRING "" )
 SET( CMAKE_C_FLAGS_MINSIZEREL "-DNDEBUG -Os" CACHE STRING "" )
-SET( CMAKE_C_FLAGS_RELEASE "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing" CACHE STRING "" )
-SET( CMAKE_C_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -g" CACHE STRING "" )
+SET( CMAKE_C_FLAGS_RELEASE "-DNDEBUG" CACHE STRING "" )
+SET( CMAKE_C_FLAGS_RELWITHDEBINFO "-DNDEBUG" CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_MINSIZEREL ${CMAKE_C_FLAGS_MINSIZEREL} CACHE STRING "" )
@@ -54,7 +55,8 @@ ENDIF( WIN32 )
 OPTION( BUILD_GPHYSICS_BULLET "Build QIO Bullet Physics module library"        ON )
 OPTION( BUILD_GPHYSICS_ODE    "Build QIO ODE Physics module library"           ON )
 #OPTION( BUILD_SOUND           "Build QIO sound module library"                OFF )
-#OPTION( BUILD_GUI             "Build QIO GUI module library"                  OFF )
+OPTION( BUILD_GUI             "Build QIO GUI module library"                   ON )
+OPTION( BUILD_TIKI            "Build QIO TIKI module library"                  ON )
 #OPTION( BUILD_RECAST          "Build QIO Recast module library"               OFF )
 
 # Determine arch.
@@ -132,24 +134,24 @@ SET( MATHLIST_HEADERS
 # Start of the list for Material System Build Files #
 #####################################################
 
-SET( SHAREDLIST_SOURCES
+SET( MATERIALSHAREDLIST_SOURCES
 	${MOUNT_DIR}/shared/ast.cpp
 	${MOUNT_DIR}/shared/autoCmd.cpp
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/tableList.cpp
 	${MOUNT_DIR}/shared/waveForm.cpp
 )
 
-SET( SHAREDLIST_HEADERS
+SET( MATERIALSHAREDLIST_HEADERS
 	${MOUNT_DIR}/shared/array.h
 	${MOUNT_DIR}/shared/ast.h
 	${MOUNT_DIR}/shared/autoCmd.h
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/hashTableTemplate.h
 	${MOUNT_DIR}/shared/parser.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/safePtr.h
 	${MOUNT_DIR}/shared/tableList.h
 	${MOUNT_DIR}/shared/waveForm.h
@@ -172,36 +174,11 @@ SET( MATERIALSYSTEMLIST_HEADERS
 	${MOUNT_DIR}/materialSystem/mat_impl.h
 	${MOUNT_DIR}/materialSystem/mat_local.h
 	${MOUNT_DIR}/materialSystem/mat_public.h
-	${MOUNT_DIR}/materialSystem/mat_rgbGen.cpp
-	${MOUNT_DIR}/materialSystem/mat_stageTexture.cpp
-	${MOUNT_DIR}/materialSystem/mat_texMods.cpp
-	${MOUNT_DIR}/materialSystem/mat_textures.cpp
-	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
+	${MOUNT_DIR}/materialSystem/mat_rgbGen.h
+	${MOUNT_DIR}/materialSystem/mat_stageTexture.h
+	${MOUNT_DIR}/materialSystem/mat_texMods.h
 )
 
-SET( MATERIALSYSTEMLIST_HEADERS
-	${MOUNT_DIR}/materialSystem/mat_cubeMap.h
-	${MOUNT_DIR}/materialSystem/mat_impl.h
-	${MOUNT_DIR}/materialSystem/mat_local.h
-	${MOUNT_DIR}/materialSystem/mat_public.h
-	${MOUNT_DIR}/materialSystem/mat_rgbGen.cpp
-	${MOUNT_DIR}/materialSystem/mat_stageTexture.cpp
-	${MOUNT_DIR}/materialSystem/mat_texMods.cpp
-	${MOUNT_DIR}/materialSystem/mat_textures.cpp
-	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
-)
-
-SET( MATERIALSYSTEMLIST_HEADERS
-	${MOUNT_DIR}/materialSystem/mat_cubeMap.h
-	${MOUNT_DIR}/materialSystem/mat_impl.h
-	${MOUNT_DIR}/materialSystem/mat_local.h
-	${MOUNT_DIR}/materialSystem/mat_public.h
-	${MOUNT_DIR}/materialSystem/mat_rgbGen.cpp
-	${MOUNT_DIR}/materialSystem/mat_stageTexture.cpp
-	${MOUNT_DIR}/materialSystem/mat_texMods.cpp
-	${MOUNT_DIR}/materialSystem/mat_textures.cpp
-	${MOUNT_DIR}/materialSystem/mat_texturesScript.cpp
-)
 
 ########################################################
 # End of the file list for Material System Build Files #
@@ -240,13 +217,13 @@ SET( DIRECTX10LIB_SOURCES
 SET( DIRECTXANDNULLRENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/math/matrix.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 )
 
 SET( DIRECTXANDNULLRENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/math/matrix.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 )
 
 ###################################################
@@ -275,7 +252,7 @@ SET( DIRECTX9LIB_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
 	${MOUNT_DIR}/shared/calcTBN.h
 	${MOUNT_DIR}/math/matrix.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/renderer/rVertexBuffer.h
 )
 
@@ -283,7 +260,7 @@ SET( DIRECTX9LIB_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/calcTBN.cpp
 	${MOUNT_DIR}/math/matrix.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 )
 
@@ -298,7 +275,7 @@ SET ( RENDERERGL_SHARED_HEADERS
 	${MOUNT_DIR}/shared/calcTBN.h
 	${MOUNT_DIR}/shared/cullType.h
 	${MOUNT_DIR}/math/matrix.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/renderer/rVertexBuffer.h
 )
 
@@ -307,7 +284,7 @@ SET ( RENDERERGL_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/calcTBN.cpp
 	${MOUNT_DIR}/math/matrix.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 )
 
@@ -339,6 +316,7 @@ SET ( RENDERERAPI_HEADERS
 	${MOUNT_DIR}/api/boxTrianglesCallback.h
 	${MOUNT_DIR}/api/cubeMapAPI.h
 	${MOUNT_DIR}/api/customRenderObjectAPI.h
+	${MOUNT_DIR}/api/fontAPI.h
 	${MOUNT_DIR}/api/mtrAPI.h
 	${MOUNT_DIR}/api/mtrStageAPI.h
 	${MOUNT_DIR}/api/noise2DAPI.h
@@ -427,6 +405,7 @@ SET ( RENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/cmTriSoupOctTree.h
 	${MOUNT_DIR}/shared/cmWinding.h
 	${MOUNT_DIR}/shared/collisionUtils.h
+	${MOUNT_DIR}/shared/colorTable.h
 	${MOUNT_DIR}/shared/cullResult.h
 	${MOUNT_DIR}/shared/displacementBuilder.h
 	${MOUNT_DIR}/shared/entDefsList.h
@@ -439,7 +418,7 @@ SET ( RENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/perlinNoise.h
 	${MOUNT_DIR}/shared/perStringCallback.h
 	${MOUNT_DIR}/shared/planeArray.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/r2dVert.h
 	${MOUNT_DIR}/shared/readStream.h
 	${MOUNT_DIR}/renderer/rfSurfFlags.h
@@ -447,7 +426,9 @@ SET ( RENDERER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/simpleVert.h
 	${MOUNT_DIR}/shared/singleAnimLerp.h
 	${MOUNT_DIR}/shared/skelUtils.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/texCoordCalc.h
+	${MOUNT_DIR}/shared/textureAllocator.h
 	${MOUNT_DIR}/shared/trace.h
 	${MOUNT_DIR}/shared/vec3hash.h
 	${MOUNT_DIR}/shared/wolfAnimCfg.h
@@ -466,6 +447,7 @@ SET ( RENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/cmTriSoupOctTree.cpp
 	${MOUNT_DIR}/shared/cmWinding.cpp
 	${MOUNT_DIR}/shared/collisionUtils.cpp
+	${MOUNT_DIR}/shared/colorTable.cpp
 	${MOUNT_DIR}/shared/displacementBuilder.cpp
 	${MOUNT_DIR}/shared/entDefsList.cpp
 	${MOUNT_DIR}/shared/ePairsList.cpp
@@ -473,12 +455,14 @@ SET ( RENDERER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/mapBezierPatch.cpp
 	${MOUNT_DIR}/shared/parser.cpp
 	${MOUNT_DIR}/shared/perlinNoise.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/readStream.cpp
 	${MOUNT_DIR}/shared/readStream.cpp
 	${MOUNT_DIR}/renderer/rVertexBuffer.cpp
 	${MOUNT_DIR}/shared/skelUtils.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/tagOr.cpp
+	${MOUNT_DIR}/shared/textureAllocator.cpp
 	${MOUNT_DIR}/shared/trace.cpp
 	${MOUNT_DIR}/shared/wolfAnimCfg.cpp
 	${MOUNT_DIR}/shared/wolfAnimScript.cpp
@@ -499,6 +483,7 @@ SET ( RENDERER_SOURCES
 	${MOUNT_DIR}/renderer/frontend/rf_drawCall.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_entities.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_explosions.cpp
+	${MOUNT_DIR}/renderer/frontend/rf_font.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_lightGrid.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_lightGrid_debug.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_lights.cpp
@@ -538,6 +523,8 @@ SET ( MODELLOADERFILEFORMATS
 	${MOUNT_DIR}/fileformats/mds_file_format.h
 	${MOUNT_DIR}/fileformats/mdx_file_format.h
 	${MOUNT_DIR}/fileformats/skab_file_format.h
+	${MOUNT_DIR}/fileformats/skd_file_format.h
+	${MOUNT_DIR}/fileformats/tan_file_format.h
 	${MOUNT_DIR}/fileformats/vvdFileFormat.h
 )
 
@@ -572,7 +559,7 @@ SET ( MODELLOADER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/cmWinding.h
 	${MOUNT_DIR}/shared/extraSurfEdgesData.h
 	${MOUNT_DIR}/shared/parser.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/readStream.h
 	${MOUNT_DIR}/shared/skelUtils.h
 	${MOUNT_DIR}/shared/stringHashTable.h
@@ -584,7 +571,7 @@ SET ( MODELLOADER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/autoCvar.cpp
 	${MOUNT_DIR}/shared/cmWinding.cpp
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/readStream.cpp
 	${MOUNT_DIR}/shared/skelUtils.cpp
 	${MOUNT_DIR}/shared/textureAxisFromNormal.cpp
@@ -628,42 +615,45 @@ SET ( CM_HEADERS
 	${MOUNT_DIR}/api/cmAPI.h
 )
 
-SET ( CM_SHARED
-	${MOUNT_DIR}/shared/autoCvar.cpp
+SET ( CM_SHARED_HEADERS
 	${MOUNT_DIR}/shared/autoCvar.h
-	${MOUNT_DIR}/shared/bspPhysicsDataLoader.cpp
 	${MOUNT_DIR}/shared/bspPhysicsDataLoader.h
-	${MOUNT_DIR}/shared/cmBezierPatch.cpp
 	${MOUNT_DIR}/shared/cmBezierPatch.h
-	${MOUNT_DIR}/shared/cmBrush.cpp
 	${MOUNT_DIR}/shared/cmBrush.h
-	${MOUNT_DIR}/shared/cmSurface.cpp
 	${MOUNT_DIR}/shared/cmSurface.h
-	${MOUNT_DIR}/shared/cmTriSoupOctTree.cpp
 	${MOUNT_DIR}/shared/cmTriSoupOctTree.h
-	${MOUNT_DIR}/shared/cmWinding.cpp
 	${MOUNT_DIR}/shared/cmWinding.h
-	${MOUNT_DIR}/shared/collisionUtils.cpp
 	${MOUNT_DIR}/shared/collisionUtils.h
 	${MOUNT_DIR}/api/colMeshBuilderAPI.h
-	${MOUNT_DIR}/shared/displacementBuilder.cpp
 	${MOUNT_DIR}/shared/displacementBuilder.h
-	${MOUNT_DIR}/shared/ePairsList.cpp
 	${MOUNT_DIR}/shared/ePairsList.h
+	${MOUNT_DIR}/shared/parser.h
+	${MOUNT_DIR}/shared/fileStreamHelper.h
+	${MOUNT_DIR}/shared/perPlaneCallback.h
+	${MOUNT_DIR}/shared/str.h
+	${MOUNT_DIR}/shared/readStream.h
+	${MOUNT_DIR}/shared/trace.h
+	${MOUNT_DIR}/api/writeStreamAPI.h
+)
+
+SET ( CM_SHARED_SOURCES
+	${MOUNT_DIR}/shared/autoCvar.cpp
+	${MOUNT_DIR}/shared/bspPhysicsDataLoader.cpp
+	${MOUNT_DIR}/shared/cmBezierPatch.cpp
+	${MOUNT_DIR}/shared/cmBrush.cpp
+	${MOUNT_DIR}/shared/cmSurface.cpp
+	${MOUNT_DIR}/shared/cmTriSoupOctTree.cpp
+	${MOUNT_DIR}/shared/cmWinding.cpp
+	${MOUNT_DIR}/shared/collisionUtils.cpp
+	${MOUNT_DIR}/shared/displacementBuilder.cpp
+	${MOUNT_DIR}/shared/ePairsList.cpp
 	${MOUNT_DIR}/shared/mapBezierPatch.cpp
 	${MOUNT_DIR}/shared/mapBezierPatch.h
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/shared/parser.h
 	${MOUNT_DIR}/shared/fileStreamHelper.cpp
-	${MOUNT_DIR}/shared/fileStreamHelper.h
-	${MOUNT_DIR}/shared/perPlaneCallback.h
-	${MOUNT_DIR}/qcommon/q_shared.cpp
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/readStream.cpp
-	${MOUNT_DIR}/shared/readStream.h
 	${MOUNT_DIR}/shared/trace.cpp
-	${MOUNT_DIR}/shared/trace.h
-	${MOUNT_DIR}/api/writeStreamAPI.h
 )
 
 SET ( CM_SOURCE
@@ -704,7 +694,7 @@ SET ( DECLMANAGER_SHARED_HEADERS
 	${MOUNT_DIR}/shared/ePairsList.h
 	${MOUNT_DIR}/math/matrix.h
 	${MOUNT_DIR}/shared/parser.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/quake3AnimationConfig.h
 	${MOUNT_DIR}/shared/random.h
 	${MOUNT_DIR}/shared/stringList.h
@@ -717,7 +707,7 @@ SET ( DECLMANAGER_SHARED_SOURCES
 	${MOUNT_DIR}/shared/ePairsList.cpp
 	${MOUNT_DIR}/math/matrix.cpp
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/quake3AnimationConfig.cpp
 	${MOUNT_DIR}/shared/random.cpp
 	${MOUNT_DIR}/shared/tagOr.cpp
@@ -740,10 +730,12 @@ SET ( GAME_CLASSES_CSS_SOURCES
 
 SET ( GAME_CLASSES_ET_HEADERS
 	${MOUNT_DIR}/game/classes/Corona.h
+	${MOUNT_DIR}/game/classes/MiscGameModel.h
 )
 
 SET ( GAME_CLASSES_ET_SOURCES
 	${MOUNT_DIR}/game/classes/Corona.cpp
+	${MOUNT_DIR}/game/classes/MiscGameModel.cpp
 )
 
 SET ( GAME_CLASSES_QUAKE3_HEADERS
@@ -766,16 +758,39 @@ SET ( GAME_CLASSES_RTCW_HEADERS
 	${MOUNT_DIR}/game/classes/AI_Loper.h
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.h
 	${MOUNT_DIR}/game/classes/AI_Soldier.h
+	${MOUNT_DIR}/game/classes/FuncInvisibleUser.h
+	${MOUNT_DIR}/game/classes/TargetScriptTrigger.h
 )
 
 SET ( GAME_CLASSES_RTCW_SOURCES
 	${MOUNT_DIR}/game/classes/AI_Loper.cpp
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.cpp
 	${MOUNT_DIR}/game/classes/AI_Soldier.cpp
+	${MOUNT_DIR}/game/classes/FuncInvisibleUser.cpp
+	${MOUNT_DIR}/game/classes/TargetScriptTrigger.cpp
+)
+
+SET ( GAME_CLASSES_FAKK_HEADERS
+	${MOUNT_DIR}/game/classes/Actor.h
+	${MOUNT_DIR}/game/classes/Shield.h
+	${MOUNT_DIR}/game/classes/Sword.h
+	${MOUNT_DIR}/game/classes/SoulSucker.h
+	${MOUNT_DIR}/game/classes/Flamethrower.h
+	${MOUNT_DIR}/game/classes/Flashbang.h
+	${MOUNT_DIR}/game/classes/FuncSpawn.h
+)
+
+SET ( GAME_CLASSES_FAKK_SOURCES
+	${MOUNT_DIR}/game/classes/Actor.cpp
+	${MOUNT_DIR}/game/classes/Shield.cpp
+	${MOUNT_DIR}/game/classes/Sword.cpp
+	${MOUNT_DIR}/game/classes/SoulSucker.cpp
+	${MOUNT_DIR}/game/classes/Flamethrower.cpp
+	${MOUNT_DIR}/game/classes/Flashbang.cpp
+	${MOUNT_DIR}/game/classes/FuncSpawn.cpp
 )
 
 SET ( GAME_CLASSES_HEADERS
-	${MOUNT_DIR}/game/classes/Actor.h
 	${MOUNT_DIR}/game/classes/BaseEntity.h
 	${MOUNT_DIR}/game/classes/Button.h
 	${MOUNT_DIR}/game/classes/Constraint.h
@@ -800,6 +815,7 @@ SET ( GAME_CLASSES_HEADERS
 	${MOUNT_DIR}/game/classes/RotatingDoor.h
 	${MOUNT_DIR}/game/classes/Terrain.h
 	${MOUNT_DIR}/game/classes/Trigger.h
+	${MOUNT_DIR}/game/classes/TriggerOnce.h
 	${MOUNT_DIR}/game/classes/VehicleCar.h
 	${MOUNT_DIR}/game/classes/TriggerSoundscape.h
 	${MOUNT_DIR}/game/classes/Weapon.h
@@ -809,7 +825,6 @@ SET ( GAME_CLASSES_HEADERS
 )
 
 SET ( GAME_CLASSES_SOURCES
-	${MOUNT_DIR}/game/classes/Actor.cpp
 	${MOUNT_DIR}/game/classes/BaseEntity.cpp
 	${MOUNT_DIR}/game/classes/Button.cpp
 	${MOUNT_DIR}/game/classes/Constraint.cpp
@@ -834,6 +849,7 @@ SET ( GAME_CLASSES_SOURCES
 	${MOUNT_DIR}/game/classes/RotatingDoor.cpp
 	${MOUNT_DIR}/game/classes/Terrain.cpp
 	${MOUNT_DIR}/game/classes/Trigger.cpp
+	${MOUNT_DIR}/game/classes/TriggerOnce.cpp
 	${MOUNT_DIR}/game/classes/TriggerSoundscape.cpp
 	${MOUNT_DIR}/game/classes/VehicleCar.cpp
 	${MOUNT_DIR}/game/classes/Weapon.cpp
@@ -845,16 +861,21 @@ SET ( GAME_CLASSES_SOURCES
 SET ( GAME_HEADERS
 	${MOUNT_DIR}/game/bg_public.h
 	${MOUNT_DIR}/game/bt_include.h
+	${MOUNT_DIR}/game/edict.h
 	${MOUNT_DIR}/game/explosionInfo.h
 	${MOUNT_DIR}/game/g_classes.h
 	${MOUNT_DIR}/game/g_local.h
 	${MOUNT_DIR}/game/g_pathNodes.h
 	${MOUNT_DIR}/game/g_physVehicleAPI.h
-	${MOUNT_DIR}/game/g_public.h
 	${MOUNT_DIR}/game/g_ragdoll.h
 	${MOUNT_DIR}/game/g_scriptedClasses.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/api/simplePathAPI.h
+	${MOUNT_DIR}/api/stateConditionsHandlerAPI.h
+	${MOUNT_DIR}/api/stateMachineAPI.h
+	${MOUNT_DIR}/game/stateMachine.h
+	${MOUNT_DIR}/game/stateMachineShared.h
+	${MOUNT_DIR}/game/stateMachineManager.h
 	${MOUNT_DIR}/qcommon/surfaceflags.h
 )
 
@@ -945,6 +966,7 @@ SET ( GAME_PROTOCOL
 	${MOUNT_DIR}/protocol/entityState.h
 	${MOUNT_DIR}/protocol/gameState.h
 	${MOUNT_DIR}/protocol/netLimits.h
+	${MOUNT_DIR}/protocol/playerState.cpp
 	${MOUNT_DIR}/protocol/playerState.h
 	${MOUNT_DIR}/protocol/snapFlags.h
 	${MOUNT_DIR}/protocol/userCmd.h
@@ -974,6 +996,7 @@ SET ( GAME_SHARED_HEADERS
 	${MOUNT_DIR}/shared/parser.h
 	${MOUNT_DIR}/shared/quake3Anims.h
 	${MOUNT_DIR}/shared/skelUtils.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/trace.h
 	${MOUNT_DIR}/shared/wolfScript.h
 )
@@ -996,15 +1019,14 @@ SET ( GAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/infoString.cpp
 	${MOUNT_DIR}/shared/mapFileWriter.cpp
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_math.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/skelUtils.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/trace.cpp
 	${MOUNT_DIR}/shared/wolfScript.cpp
 )
 
 SET ( GAME_SOURCE
-	${MOUNT_DIR}/game/bg_misc.cpp
 	${MOUNT_DIR}/game/bt_vehicle.cpp
 	${MOUNT_DIR}/game/g_active.cpp
 	${MOUNT_DIR}/game/g_ammo.cpp
@@ -1024,8 +1046,12 @@ SET ( GAME_SOURCE
 	${MOUNT_DIR}/game/g_saveMapFile.cpp
 	${MOUNT_DIR}/game/g_scriptedClasses.cpp
 	${MOUNT_DIR}/game/g_spawn.cpp
+	${MOUNT_DIR}/game/g_stateMachines.cpp
 	${MOUNT_DIR}/game/g_utils.cpp
 	${MOUNT_DIR}/game/g_weapons.cpp
+	${MOUNT_DIR}/game/g_wolfScript.cpp
+	${MOUNT_DIR}/game/stateMachine.cpp
+	${MOUNT_DIR}/game/stateMachineManager.cpp
 )
 
 SET ( BUILD_GPHYSICS_BULLET_HEADERS
@@ -1054,7 +1080,7 @@ SET ( BUILD_GPHYSICS_BULLET_SHARED_HEADERS
 	${MOUNT_DIR}/shared/collisionUtils.h
 	${MOUNT_DIR}/shared/displacementBuilder.h
 	${MOUNT_DIR}/shared/parser.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/trace.h
 )
 
@@ -1066,7 +1092,7 @@ SET ( BUILD_GPHYSICS_BULLET_SHARED_SOURCES
 	${MOUNT_DIR}/shared/collisionUtils.cpp
 	${MOUNT_DIR}/shared/displacementBuilder.cpp
 	${MOUNT_DIR}/shared/parser.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/trace.cpp
 )
 
@@ -1089,7 +1115,7 @@ SET ( BUILD_CGAME_HEADER
 	${MOUNT_DIR}/cgame/cg_emitter_d3.h
 	${MOUNT_DIR}/cgame/cg_local.h
 	${MOUNT_DIR}/cgame/cg_public.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/qcommon/surfaceflags.h
 )
 
@@ -1107,6 +1133,7 @@ SET ( BUILD_CGAME_MATH_SOURCES
 SET ( BUILD_CGAME_PROTOCOL
 	${MOUNT_DIR}/protocol/entityState.h
 	${MOUNT_DIR}/protocol/netLimits.h
+	${MOUNT_DIR}/protocol/playerState.cpp
 	${MOUNT_DIR}/protocol/playerState.h
 	${MOUNT_DIR}/protocol/snapFlags.h
 	${MOUNT_DIR}/protocol/userCmd.h
@@ -1124,6 +1151,7 @@ SET ( BUILD_CGAME_SHARED_HEADERS
 	${MOUNT_DIR}/protocol/gameState.h
 	${MOUNT_DIR}/shared/infoString.h
 	${MOUNT_DIR}/shared/random.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/trace.h
 )
 
@@ -1134,11 +1162,11 @@ SET ( BUILD_CGAME_SHARED_SOURCES
 	${MOUNT_DIR}/shared/colorTable.cpp
 	${MOUNT_DIR}/shared/infoString.cpp
 	${MOUNT_DIR}/shared/random.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/trace.cpp
 )
 
 SET ( BUILD_CGAME_SOURCE
-	${MOUNT_DIR}/game/bg_misc.cpp
 	${MOUNT_DIR}/cgame/cg_api.cpp
 	${MOUNT_DIR}/cgame/cg_chat.cpp
 	${MOUNT_DIR}/cgame/cg_collision.cpp
@@ -1153,7 +1181,6 @@ SET ( BUILD_CGAME_SOURCE
 	${MOUNT_DIR}/cgame/cg_predict.cpp
 	${MOUNT_DIR}/cgame/cg_serverCmds.cpp
 	${MOUNT_DIR}/cgame/cg_snapshot.cpp
-	${MOUNT_DIR}/cgame/cg_syscalls.cpp
 	${MOUNT_DIR}/cgame/cg_tempLights.cpp
 	${MOUNT_DIR}/cgame/cg_testEmitter.cpp
 	${MOUNT_DIR}/cgame/cg_testMaterial.cpp
@@ -1161,8 +1188,7 @@ SET ( BUILD_CGAME_SOURCE
 	${MOUNT_DIR}/cgame/cg_tracer.cpp
 	${MOUNT_DIR}/cgame/cg_view.cpp
 	${MOUNT_DIR}/cgame/cg_viewModel.cpp
-	${MOUNT_DIR}/qcommon/q_math.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 
 )
 
@@ -1312,7 +1338,7 @@ IF( WIN32 )
 		${MOUNT_DIR}/shared/brush.h
 		${MOUNT_DIR}/shared/brushside.h
 		${MOUNT_DIR}/qcommon/q_platform.h
-		${MOUNT_DIR}/qcommon/q_shared.h
+		${MOUNT_DIR}/shared/str.h
 		${MOUNT_DIR}/shared/simpleModel.h
 		${MOUNT_DIR}/shared/textureAxisFromNormal.h
 		${MOUNT_DIR}/shared/texturedVertex.h
@@ -1323,7 +1349,7 @@ IF( WIN32 )
 		${MOUNT_DIR}/shared/brush.cpp
 		${MOUNT_DIR}/shared/brushside.cpp
 		${MOUNT_DIR}/shared/parser.cpp
-		${MOUNT_DIR}/qcommon/q_shared.cpp
+		${MOUNT_DIR}/shared/str.cpp
 		${MOUNT_DIR}/shared/textureAxisFromNormal.cpp
 		${MOUNT_DIR}/shared/texturedWinding.cpp
 	)
@@ -1393,13 +1419,12 @@ SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/cgame/cg_public.h
 	${MOUNT_DIR}/client/cl_curl.h
 	${MOUNT_DIR}/client/client.h
-	${MOUNT_DIR}/game/g_public.h
 	${MOUNT_DIR}/api/iFaceBase.h
 	${MOUNT_DIR}/api/iFaceMgrAPI.h
 	${MOUNT_DIR}/client/keys.h
 	${MOUNT_DIR}/shared/lightFlags.h
 	${MOUNT_DIR}/qcommon/puff.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/qcommon/qcommon.h
 	${MOUNT_DIR}/server/server.h
 	${MOUNT_DIR}/qcommon/surfaceflags.h
@@ -1408,7 +1433,7 @@ SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/server/sv_vis.h
 	${MOUNT_DIR}/sys/sys_loadlib.h
 	${MOUNT_DIR}/sys/sys_local.h
-	${MOUNT_DIR}/qcommon/q_shared.h
+	${MOUNT_DIR}/shared/str.h
 )
 
 SET ( CORE_MATH_HEADERS
@@ -1453,6 +1478,8 @@ SET ( CORE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/bspBoxDesc.h
 	${MOUNT_DIR}/shared/cmWinding.h
 	${MOUNT_DIR}/shared/colorTable.h
+	${MOUNT_DIR}/shared/cvar.h
+	${MOUNT_DIR}/shared/cvarFlags.h
 	${MOUNT_DIR}/shared/cvarModificationCallback.h
 	${MOUNT_DIR}/shared/doom3ProcPVSClass.h
 	${MOUNT_DIR}/shared/parser.h
@@ -1470,6 +1497,7 @@ SET ( CORE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/doom3ProcPVSClass.cpp
 	${MOUNT_DIR}/shared/parser.cpp
 	${MOUNT_DIR}/shared/portalizedBSPTree.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/infoString.cpp
 )
 
@@ -1487,7 +1515,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/client/cl_parse.cpp
 	${MOUNT_DIR}/client/cl_renderer.cpp
 	${MOUNT_DIR}/client/cl_scrn.cpp
-	${MOUNT_DIR}/client/cl_ui.cpp
+	${MOUNT_DIR}/client/cl_gui.cpp
 	${MOUNT_DIR}/qcommon/cmd.cpp
 	${MOUNT_DIR}/qcommon/com_systemEventCaster.cpp
 	${MOUNT_DIR}/qcommon/common.cpp
@@ -1505,8 +1533,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/qcommon/net_chan.cpp
 	${MOUNT_DIR}/qcommon/net_ip.cpp
 	${MOUNT_DIR}/qcommon/puff.c
-	${MOUNT_DIR}/qcommon/q_math.cpp
-	${MOUNT_DIR}/qcommon/q_shared.cpp
+	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/server/sv_ccmds.cpp
 	${MOUNT_DIR}/server/sv_client.cpp
 	${MOUNT_DIR}/server/sv_game.cpp
@@ -1593,11 +1620,67 @@ SET ( CORE_ZLIB_LIBRARY
 	${LIB_DIR}/zlib/zutil.h
 )
 
+SET ( GUI_SHARED_HEADERS
+	${MOUNT_DIR}/shared/autoCvar.h
+	${MOUNT_DIR}/shared/parser.h
+	${MOUNT_DIR}/shared/rect.h
+)
+
+SET ( GUI_SHARED_SOURCES
+	${MOUNT_DIR}/shared/autoCvar.cpp
+	${MOUNT_DIR}/shared/parser.cpp
+)
+
+SET ( GUI_HEADERS
+	${MOUNT_DIR}/gui/urc_element_base.h
+	${MOUNT_DIR}/gui/urc_element_bindList.h
+	${MOUNT_DIR}/gui/urc_element_button.h
+	${MOUNT_DIR}/gui/urc_element_checkbox.h
+	${MOUNT_DIR}/gui/urc_element_field.h
+	${MOUNT_DIR}/gui/urc_element_label.h
+	${MOUNT_DIR}/gui/urc_element_pulldown.h
+	${MOUNT_DIR}/gui/urc_element_slider.h
+	${MOUNT_DIR}/gui/urc_mgr.h
+	${MOUNT_DIR}/gui/urc.h
+)
+
+SET ( GUI_SOURCES
+	${MOUNT_DIR}/gui/urc_element_base.cpp
+	${MOUNT_DIR}/gui/urc_element_bindList.cpp
+	${MOUNT_DIR}/gui/urc_element_button.cpp
+	${MOUNT_DIR}/gui/urc_element_checkbox.cpp
+	${MOUNT_DIR}/gui/urc_element_field.cpp
+	${MOUNT_DIR}/gui/urc_element_label.cpp
+	${MOUNT_DIR}/gui/urc_element_pulldown.cpp
+	${MOUNT_DIR}/gui/urc_element_slider.cpp
+	${MOUNT_DIR}/gui/urc_mgr.cpp
+	${MOUNT_DIR}/gui/urc.cpp
+	${MOUNT_DIR}/gui/gui_api.cpp
+)
+
+SET ( TIKI_SHARED_HEADERS
+	${MOUNT_DIR}/shared/parser.h
+)
+
+SET ( TIKI_SHARED_SOURCES
+	${MOUNT_DIR}/shared/parser.cpp
+)
+
+SET ( TIKI_HEADERS
+	${MOUNT_DIR}/tiki/tiki_local.h
+	${MOUNT_DIR}/api/tikiAPI.h
+)
+
+SET ( TIKI_SOURCES
+	${MOUNT_DIR}/tiki/tiki_api.cpp
+)
+
+
 IF( BUILD_MATERIALSYSTEM )
 	IF( WIN32 )
 		# Dushan - This is how Visual Studio directories (or filters) are generated
-		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${SHAREDLIST_HEADERS} )
-		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${SHAREDLIST_SOURCES} )
+		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${MATERIALSHAREDLIST_HEADERS} )
+		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${MATERIALSHAREDLIST_SOURCES} )
 		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${MATHLIST_HEADERS} )
 		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${MATHLIST_SOURCES} )
 		SOURCE_GROUP( Header\ Files                                        FILES ${MATERIALSYSTEMLIST_HEADERS} )
@@ -1606,10 +1689,10 @@ IF( BUILD_MATERIALSYSTEM )
 
 	ADD_LIBRARY( materialSystem 
 		SHARED 
-		${MATHLIST_SOURCES} 
+		${MATERIALSHAREDLIST_HEADERS} 
+		${MATERIALSHAREDLIST_SOURCES} 
 		${MATHLIST_HEADERS} 
-		${SHAREDLIST_SOURCES} 
-		${SHAREDLIST_HEADERS} 
+		${MATHLIST_SOURCES} 
 		${MATERIALSYSTEMLIST_SOURCES} 
 		${MATERIALSYSTEMLIST_HEADERS} 
 	)
@@ -1802,8 +1885,10 @@ IF( BUILD_RENDERER )
 	TARGET_INCLUDE_DIRECTORIES( renderer PRIVATE ${MOUNT_DIR} )
 	IF( WIN32 )
 		SET_TARGET_PROPERTIES( renderer PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/renderer.def" OUTPUT_NAME "renderer${BUILD_ARCH}" PREFIX "" )
+		TARGET_INCLUDE_DIRECTORIES( renderer PRIVATE ${LIB_DIR}/freetype-2.3.5-1-bin/include/freetype2 )
+		TARGET_LINK_LIBRARIES( renderer ${LIB_DIR}/freetype-2.3.5-1-bin/lib/freetype.lib )
 	ELSE()
-		SET_TARGET_PROPERTIES( renderer PROPERTIES OUTPUT_NAME "backendGL${BUILD_ARCH}" PREFIX "" )
+		SET_TARGET_PROPERTIES( renderer PROPERTIES OUTPUT_NAME "renderer${BUILD_ARCH}" PREFIX "" )
 	ENDIF()
 	SET_TARGET_PROPERTIES( renderer PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
@@ -1857,12 +1942,23 @@ IF( BUILD_MODELLOADER )
 ENDIF()
 
 IF( BUILD_CM )
+	IF( WIN32 )
+		# Dushan - This is how Visual Studio directories (or filters) are generated
+		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${CM_SHARED_HEADERS} )
+		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${CM_SHARED_SOURCES} )
+		SOURCE_GROUP( Math\ Files\\Header\ Files                           FILES ${MATHLIST_SOURCES} )
+		SOURCE_GROUP( Math\ Files\\Source\ Files                           FILES ${MATHLIST_HEADERS} )
+		SOURCE_GROUP( Header\ Files                                        FILES ${CM_HEADERS} )
+		SOURCE_GROUP( Source\ Files                                        FILES ${CM_SOURCE} )
+	ENDIF()
+
 	ADD_LIBRARY( cm
 		SHARED 
-		${CM_HEADERS}
+		${CM_SHARED_HEADERS}
+		${CM_SHARED_SOURCES}
 		${MATHLIST_SOURCES}
 		${MATHLIST_HEADERS}
-		${CM_SHARED}
+		${CM_HEADERS}
 		${CM_SOURCE}
 	)
 	TARGET_INCLUDE_DIRECTORIES( cm PRIVATE ${MOUNT_DIR} )
@@ -1922,6 +2018,8 @@ IF( BUILD_GAME )
 		SOURCE_GROUP( Classes\\Quake3\\Source\ Files                       FILES ${GAME_CLASSES_QUAKE3_SOURCES} )
 		SOURCE_GROUP( Classes\\RTCW\\Header\ Files                         FILES ${GAME_CLASSES_RTCW_HEADERS} )
 		SOURCE_GROUP( Classes\\RTCW\\Source\ Files                         FILES ${GAME_CLASSES_RTCW_SOURCES} )
+		SOURCE_GROUP( Classes\\FAKK\\Header\ Files                         FILES ${GAME_CLASSES_FAKK_HEADERS} )
+		SOURCE_GROUP( Classes\\FAKK\\Source\ Files                         FILES ${GAME_CLASSES_FAKK_SOURCES} )
 		SOURCE_GROUP( Classes\\Header\ Files                               FILES ${GAME_CLASSES_HEADERS} )
 		SOURCE_GROUP( Classes\\Source\ Files                               FILES ${GAME_CLASSES_SOURCES} )
 		SOURCE_GROUP( LUA\\Header\ Files                                   FILES ${GAME_LUA_HEADERS} )
@@ -1946,6 +2044,8 @@ IF( BUILD_GAME )
 		${GAME_CLASSES_QUAKE3_SOURCES}
 		${GAME_CLASSES_RTCW_HEADERS}
 		${GAME_CLASSES_RTCW_SOURCES}
+		${GAME_CLASSES_FAKK_HEADERS}
+		${GAME_CLASSES_FAKK_SOURCES}
 		${GAME_CLASSES_HEADERS}
 		${GAME_CLASSES_SOURCES}
 		${GAME_LUA_HEADERS}
@@ -2161,4 +2261,60 @@ IF( BUILD_CORE )
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game
 		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game
 	)
+ENDIF()
+
+IF( BUILD_TIKI )
+	IF( WIN32 )
+		# Dushan - This is how Visual Studio directories (or filters) are generated
+		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${TIKI_SHARED_HEADERS} )
+		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${TIKI_SHARED_SOURCES} )
+		SOURCE_GROUP( Header\ Files                                        FILES ${TIKI_HEADERS} )
+		SOURCE_GROUP( Source\ Files                                        FILES ${TIKI_SOURCES} )
+	ENDIF()
+
+	ADD_LIBRARY( tiki
+		SHARED 
+		${TIKI_SHARED_HEADERS}
+		${TIKI_SHARED_SOURCES}
+		${TIKI_HEADERS}
+		${TIKI_SOURCES}
+	)
+	TARGET_INCLUDE_DIRECTORIES( tiki PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( tiki PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/tiki.def" OUTPUT_NAME "tiki${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( tiki PROPERTIES OUTPUT_NAME "tiki${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( tiki PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
+		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
+	)	
+ENDIF()
+
+IF( BUILD_GUI )
+	IF( WIN32 )
+		# Dushan - This is how Visual Studio directories (or filters) are generated
+		SOURCE_GROUP( Shared\ Files\\Header\ Files                         FILES ${GUI_SHARED_HEADERS} )
+		SOURCE_GROUP( Shared\ Files\\Source\ Files                         FILES ${GUI_SHARED_SOURCES} )
+		SOURCE_GROUP( Header\ Files                                        FILES ${GUI_HEADERS} )
+		SOURCE_GROUP( Source\ Files                                        FILES ${GUI_SOURCES} )
+	ENDIF()
+
+	ADD_LIBRARY( gui
+		SHARED 
+		${GUI_SHARED_HEADERS}
+		${GUI_SHARED_SOURCES}
+		${GUI_HEADERS}
+		${GUI_SOURCES}
+	)
+	TARGET_INCLUDE_DIRECTORIES( gui PRIVATE ${MOUNT_DIR} )
+	IF( WIN32 )
+		SET_TARGET_PROPERTIES( gui PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/gui.def" OUTPUT_NAME "gui${BUILD_ARCH}" PREFIX "" )
+	ELSE()
+		SET_TARGET_PROPERTIES( gui PROPERTIES OUTPUT_NAME "gui${BUILD_ARCH}" PREFIX "" )
+	ENDIF()
+	SET_TARGET_PROPERTIES( gui PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_SOURCE_DIR}/game/system
+		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/game/system
+	)	
 ENDIF()

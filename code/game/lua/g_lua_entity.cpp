@@ -100,7 +100,7 @@ static int entity_Find(lua_State * L)
 		if(!t->ent)
 			continue;
 
-		if(Q_stricmp(t->ent->getTargetName(), s) == 0)
+		if(_stricmp(t->ent->getTargetName(), s) == 0)
 		{
 			lent->e = t;
 			break;
@@ -254,7 +254,7 @@ static int entity_Print(lua_State * L)
 		if(s == NULL)
 			return luaL_error(L, "`tostring' must return a string to `print'");
 
-		Q_strcat(buf, sizeof(buf), s);
+		strcat(buf, s);
 
 		lua_pop(L, 1);			// pop result
 	}
@@ -290,7 +290,7 @@ static int entity_CenterPrint(lua_State * L)
 		if(s == NULL)
 			return luaL_error(L, "`tostring' must return a string to `print'");
 
-		Q_strcat(buf, sizeof(buf), s);
+		strcat(buf, s);
 
 		lua_pop(L, 1);			// pop result
 	}
@@ -365,7 +365,7 @@ static int entity_ToString(lua_State * L)
 
 	lent = lua_getentity(L, 1);
 	gent = lent->e;
-	Com_sprintf(buf, sizeof(buf), "entity: class=%s name=%s id=%i pointer=%p\n", gent->ent->getClassName(), gent->ent->getTargetName(), gent - g_entities,
+	g_core->Print(buf, sizeof(buf), "entity: class=%s name=%s id=%i pointer=%p\n", gent->ent->getClassName(), gent->ent->getTargetName(), gent - g_entities,
 				gent);
 	lua_pushstring(L, buf);
 
