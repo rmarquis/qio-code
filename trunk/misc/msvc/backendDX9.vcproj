@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="backendDX9"
 	ProjectGUID="{F707693F-7261-4CD5-AC1A-6D2B56BE9B52}"
 	RootNamespace="backendDX9"
@@ -224,19 +224,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\renderer\rVertexBuffer.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\code\renderer\rVertexBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 		</Filter>

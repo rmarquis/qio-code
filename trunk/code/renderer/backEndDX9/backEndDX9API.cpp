@@ -22,7 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // backEndDX9API.cpp - DirectX9 renderer backend
-#include <qcommon/q_shared.h>
+#include <shared/str.h>
 #include <api/iFaceMgrAPI.h>
 #include <api/vfsAPI.h>
 #include <api/cvarAPI.h>

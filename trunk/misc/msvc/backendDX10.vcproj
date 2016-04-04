@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="backendDX10"
 	ProjectGUID="{C04471A6-13A6-418B-8D96-A4929C67FAA8}"
 	RootNamespace="backendDX10"
@@ -198,11 +198,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.cpp"
+				RelativePath="..\..\code\shared\str.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\q_shared.h"
+				RelativePath="..\..\code\shared\str.h"
 				>
 			</File>
 		</Filter>
