@@ -239,7 +239,7 @@ void Actor::enableCharacterController() {
 		return;
 	}
 	g_physWorld->freeCharacter(this->characterController);
-	this->characterController = g_physWorld->createCharacter(this->getOrigin()-characterControllerOffset, h, r);
+	this->characterController = g_physWorld->createCharacter(this->getOrigin()+characterControllerOffset, h, r);
 	if(this->characterController) {
 		this->characterController->setCharacterEntity(this);
 	}

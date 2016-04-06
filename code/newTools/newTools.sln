@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "objFileExplorer", "objFileExplorer\objFileExplorer.csproj", "{AF4DB024-4896-4EFF-91FF-EC449193DB66}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapFileExplorer", "mapFileExplorer\mapFileExplorer.csproj", "{5FEFE4EB-0922-4FF8-99EE-DDBE23BAD070}"
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "md5animFileExplorer", "md5animFileExplorer\md5animFileExplorer.csproj", "{E33ECAEC-C3BD-4AF0-B687-7595D07E0924}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "md5Viewer", "md5Viewer\md5Viewer.csproj", "{6D5ED17B-5324-4A22-A11B-A998EEAC7122}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mtrGenSimple", "mtrGenSimple\mtrGenSimple.csproj", "{B3C993F8-A6AB-43AC-9448-7281C98E2E92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,6 +111,14 @@ Global
 		{6D5ED17B-5324-4A22-A11B-A998EEAC7122}.Release|x64.Build.0 = Release|x64
 		{6D5ED17B-5324-4A22-A11B-A998EEAC7122}.Release|x86.ActiveCfg = Release|x86
 		{6D5ED17B-5324-4A22-A11B-A998EEAC7122}.Release|x86.Build.0 = Release|x86
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3C993F8-A6AB-43AC-9448-7281C98E2E92}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
