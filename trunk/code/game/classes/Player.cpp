@@ -1005,7 +1005,7 @@ void Player::onUseKeyDown() {
 			g_core->Print("Player::onUseKeyDown: WARNING: null hit entity\n");
 			return;
 		}
-		g_core->Print("Use trace hit classname %s, entnum %i\n",hit->getClassName(),hit->getEntNum());
+		g_core->Print("Use trace hit classname %s, modelname %s, entnum %i\n",hit->getClassName(),hit->getRenderModelName(),hit->getEntNum());
 		if(hit->doUse(this) == false && hit->isDynamic()) {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->pickupPhysicsProp(me);
