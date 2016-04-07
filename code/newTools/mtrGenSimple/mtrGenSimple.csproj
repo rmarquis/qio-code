@@ -44,6 +44,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\tShared\Parser.cs">
+      <Link>Parser.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\AABB.cs">
+      <Link>AABB.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Plane.cs">
+      <Link>Plane.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Quaternion.cs">
+      <Link>Quaternion.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Vec2.cs">
+      <Link>Vec2.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMath\Vec3.cs">
+      <Link>Vec3.cs</Link>
+    </Compile>
     <Compile Include="FormMtrGenSimple.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -168,12 +168,18 @@ namespace mtrGenSimple
         private string MergePaths(String a, String b)
         {
             // remove slash from b
-            if (b[0] == '/' || b[0] == '\\')
-                b = b.Substring(1);
-            // add to a
-            if(a[a.Length-1] != '/' && a[a.Length-1] != '\\')
+            if (b.Length != 0)
             {
-                a += "/";
+                if (b[0] == '/' || b[0] == '\\')
+                    b = b.Substring(1);
+            }
+            if (a.Length != 0)
+            {
+                // add to a
+                if (a[a.Length - 1] != '/' && a[a.Length - 1] != '\\')
+                {
+                    a += "/";
+                }
             }
             return a + b;
         }
@@ -183,7 +189,7 @@ namespace mtrGenSimple
             cbMatFile.Items.Clear();
             FindMaterialFiles(MergePaths(tbBasePath.Text,"scripts\\"), "shader");
             FindMaterialFiles(MergePaths(tbBasePath.Text,"materials\\"), "mtr");
-          //  PrecacheMaterialFiles();
+            PrecacheMaterialFiles();
         }
         private void FillImageTypes(ComboBox cb)
         {
