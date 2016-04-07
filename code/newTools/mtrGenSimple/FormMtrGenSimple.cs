@@ -189,7 +189,7 @@ namespace mtrGenSimple
             cbMatFile.Items.Clear();
             FindMaterialFiles(MergePaths(tbBasePath.Text,"scripts\\"), "shader");
             FindMaterialFiles(MergePaths(tbBasePath.Text,"materials\\"), "mtr");
-            PrecacheMaterialFiles();
+         //   PrecacheMaterialFiles();
         }
         private void FillImageTypes(ComboBox cb)
         {
