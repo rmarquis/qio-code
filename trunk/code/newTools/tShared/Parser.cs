@@ -53,10 +53,12 @@ namespace shared
                 {
                     // skip comment
                     r += 2;
-                    while (text[r] != '\n')
+                    while (r < text.Length && text[r] != '\n')
                     {
                         r++;
                     }
+                    if (r >= text.Length)
+                        return r;
                     r++; // skip '\n'
                     continue;
                 }
