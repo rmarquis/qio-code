@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,6 +140,35 @@ namespace mtrGenSimple
             cb.Items.Add("HeightMap");
             cb.SelectedIndex = 0;
         }
+        static void SendUdp(int srcPort, string dstIp, int dstPort, byte[] data)
+        {
+            using (UdpClient c = new UdpClient(srcPort))
+                c.Send(data, data.Length, dstIp, dstPort);
+        }
+        private void sendCommandToGame(string command)
+        {
+            MemoryStream m = new MemoryStream();
+            m.WriteByte(0xff);
+            m.WriteByte(0xff);
+            m.WriteByte(0xff);
+            m.WriteByte(0xff);
+            byte[] data = Encoding.ASCII.GetBytes("stufftext " + command);
+            m.Write(data,0,data.Length);
+            SendUdp(22000, "127.0.0.1", 27960, m.GetBuffer());
+            //Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,
+            //ProtocolType.Udp);
+
+            //IPAddress serverAddr = IPAddress.Parse("127.0.0.1");
+
+            //IPEndPoint endPoint = new IPEndPoint(serverAddr, 11000);
+
+            //string text = "Hello";
+            //byte[] send_buffer = Encoding.ASCII.GetBytes(text);
+
+            //sock.SendTo(send_buffer, endPoint);
+
+
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             AutoFindBasePath();
@@ -147,8 +177,13 @@ namespace mtrGenSimple
             FillImageTypes(cbType1);
             FillImageTypes(cbType2);
             FillImageTypes(cbType3);
-
+            cbType1.SelectedIndex = 0;
+            cbType2.SelectedIndex = 1;
+            cbType3.SelectedIndex = 2;
             tbMatName.Text = "textures/mtrGenTests/testMat" + r.Next() % 100000 + "" + r.Next() % 100000;
+
+            // test
+           // sendCommandToGame("devmap test_physics");
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
@@ -257,9 +292,17 @@ namespace mtrGenSimple
             }
             return null;
         }
+        private string getCurrentMatFileComboText()
+        {
+            if (cbMatFile.SelectedItem != null)
+            {
+                return cbMatFile.SelectedItem.ToString(); ;
+            }
+            return cbMatFile.Text;
+        }
         private string getCurrentMatFileNamePath()
         {
-            String name = cbMatFile.SelectedItem.ToString();
+            String name = getCurrentMatFileComboText();
             // dirty solution
             String ret = "";
             string[] dirs = { "scripts/", "materials/" };
@@ -297,16 +340,19 @@ namespace mtrGenSimple
             string mtrFile = getCurrentMatFileNamePath();
             String dateStr = getCurDateTimeStringForFileName();
 
-            // backup material file first
-            String bpName = mtrFile + dateStr + ".bak";
-            try
+            if (File.Exists(mtrFile))
             {
-                File.Copy(mtrFile, bpName);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to create material file backup ('"+bpName+"'). Aborting operation...");
-                return;
+                // backup material file first
+                String bpName = mtrFile + dateStr + ".bak";
+                try
+                {
+                    File.Copy(mtrFile, bpName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to create material file backup ('" + bpName + "'). Aborting operation...");
+                    return;
+                }
             }
 
             // create path for images if not exist
@@ -368,7 +414,7 @@ namespace mtrGenSimple
                         }
                         break;
                 }
-                string ext = ".png"; // TODO
+                string ext = Path.GetExtension(mi.sourcePath);
                 mi.targetPath = tbBasePath.Text + tbMatName.Text + suffix + ext;
                 if (IsURL(mi.sourcePath))
                 {
@@ -435,6 +481,9 @@ namespace mtrGenSimple
 
 
             MessageBox.Show("Successfully added new material text to " + mtrFile);
+
+            sendCommandToGame("mat_refreshMaterialSourceFile " + getCurrentMatFileComboText());
+            sendCommandToGame("cg_testMaterial " + tbMatName.Text);
 
         }
 

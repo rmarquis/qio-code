@@ -797,6 +797,13 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 		// if a client starts up a local server, we may see some spurious
 		// server disconnect messages when their new server sees our final
 		// sequenced messages to the old client
+	} else if (!stricmp(c, "stufftext")) {
+	// command for our new development tools, 
+	// should be ignored if not running in dev mode?
+		const char *args = Cmd_Args();
+		Com_Printf("NewTools command received: %s\n",args);
+		Cbuf_AddText(args);
+		Cbuf_AddText(";");
 	} else {
 		Com_DPrintf ("bad connectionless packet from %s:\n%s\n",
 			NET_AdrToString (from), s);
