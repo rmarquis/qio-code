@@ -395,6 +395,16 @@ namespace mtrGenSimple
         }
         private void button2_Click(object sender, EventArgs e)
         {
+            if (tbBasePath.Text.Length == 0)
+            {
+                MessageBox.Show("Please enter basepath before generating the material. Example basepath: 'C:/GAMES/Qio/game/baseqio/'");
+                return;
+            }
+            if (!Directory.Exists(tbBasePath.Text))
+            {
+                MessageBox.Show("Basepath directory does not exist. Did you enter a valid path?");
+                return;
+            }
             // for material name like "textures/testGen/testMat123"
             // we want to create:
             // 1. "textures/" dir if not exists
