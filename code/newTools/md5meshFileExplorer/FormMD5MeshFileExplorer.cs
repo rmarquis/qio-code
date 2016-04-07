@@ -74,13 +74,20 @@ namespace md5meshFileExplorer
         }
         private void viewMd5Mesh(string name)
         {
-            md5model = new MD5Model();
-            if (md5model.loadMD5MeshFile(name))
+            MD5Model nm;
+            try
             {
-                md5model = null;
+                nm = new MD5Model();
+                if (nm.loadMD5MeshFile(name))
+                {
+                    return;
+                }
+            }
+            catch (System.IO.DirectoryNotFoundException ex)
+            {
+                MessageBox.Show("Failed to load .md5mesh file '" + name + "' - directory not found exception.");
                 return;
             }
-
             refreshTreeView();
         }
         private void exportObjFile(string fileName)

@@ -66,10 +66,16 @@ namespace shared
         }
         public bool beginParsingFile(string fileName)
         {
-            StreamReader streamReader = new StreamReader(fileName);
-            text = streamReader.ReadToEnd();
-            streamReader.Close();
-            return false;
+            //try
+            //{
+                StreamReader streamReader = new StreamReader(fileName);
+                text = streamReader.ReadToEnd();
+                streamReader.Close();
+                return false;
+            //}
+        //    catch(Exception ex)
+          //  {
+
         }
         public bool beginParsingText(string newText)
         {

@@ -51,7 +51,19 @@ namespace mapFileExplorer
         private void viewMapFile(string mapName)
         {
             MapFileParser p = new MapFileParser();
-            p.loadMapFile(mapName);
+            try
+            {
+                if (p.loadMapFile(mapName))
+                {
+                    MessageBox.Show("Failed to load .map file '" + mapName + "'");
+                    return;
+                }
+            }
+            catch (System.IO.DirectoryNotFoundException ex)
+            {
+                MessageBox.Show("Failed to load .map file '" + mapName + "' - directory not found exception.");
+                return;
+            }
             map = p.getMapFile();
             map.setTreeView(treeView1);
             /*
