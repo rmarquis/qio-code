@@ -26,12 +26,21 @@ namespace md5animFileExplorer
         }
         private void viewMd5Anim(string name)
         {
-            md5anim = new MD5Anim();
-            if (md5anim.loadMD5AnimFile(name))
+            MD5Anim na;
+            try
             {
-                md5anim = null;
+                na = new MD5Anim();
+                if (na.loadMD5AnimFile(name))
+                {
+                    return;
+                } 
+            }
+            catch (System.IO.DirectoryNotFoundException ex)
+            {
+                MessageBox.Show("Failed to load .md5anim file '" + name + "' - directory not found exception.");
                 return;
             }
+            md5anim = na;
 
             refreshTreeView();
         }
