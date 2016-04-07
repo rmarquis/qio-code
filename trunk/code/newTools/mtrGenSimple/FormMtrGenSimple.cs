@@ -277,6 +277,11 @@ namespace mtrGenSimple
         {
             return s.Substring(tbBasePath.Text.Length);
         }
+        private string getCurDateTimeStringForFileName()
+        {
+            String dateStr = DateTime.Now.ToString("yyyy-M-d_HH-mm-ss");
+            return dateStr;
+        }
         private void button2_Click(object sender, EventArgs e)
         {
             // for material name like "textures/testGen/testMat123"
@@ -290,7 +295,7 @@ namespace mtrGenSimple
             // 7. material text inside .mtr file
 
             string mtrFile = getCurrentMatFileNamePath();
-            String dateStr = DateTime.Now.ToString("yyyy-M-d_HH-mm-ss");
+            String dateStr = getCurDateTimeStringForFileName();
 
             // backup material file first
             String bpName = mtrFile + dateStr + ".bak";
@@ -300,7 +305,7 @@ namespace mtrGenSimple
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to create material file backup. Aborting operation...");
+                MessageBox.Show("Failed to create material file backup ('"+bpName+"'). Aborting operation...");
                 return;
             }
 
@@ -478,10 +483,35 @@ namespace mtrGenSimple
                     StartImageLoading(txt);
                 }
             }
+            else if (Clipboard.ContainsImage())
+            {
+                pb.Image = Clipboard.GetImage();
+                // also save in temp path
+                String p = Path.GetTempPath();
+                p += "clipboardImage" + getCurDateTimeStringForFileName() + " " + r.Next() % 1000 + ".png";
+                pb.Image.Save(p);
+                pb.ImageLocation = p;
+            }
         }
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             pasteImage(curPb);
+        }
+
+        private void pictureBox2_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                contextMenuStrip1.Show(pictureBox2, e.Location);
+            }
+        }
+
+        private void pictureBox3_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                contextMenuStrip1.Show(pictureBox3, e.Location);
+            }
         }
     }
 }
