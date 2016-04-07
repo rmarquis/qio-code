@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +28,12 @@ namespace mtrGenSimple
             InitializeComponent();
         }
 
+        private void StartImageLoading(String filename)
+        {
+            path = filename;
+            getImageThread = new Thread(new ThreadStart(LoadImage));
+            getImageThread.Start();
+        }
         private void Form1_DragEnter(object sender, DragEventArgs e)
         {
             if (curPb == null)
@@ -34,9 +42,7 @@ namespace mtrGenSimple
             validData = GetFilename(out filename, e);
             if (validData)
             {
-                path = filename;
-                getImageThread = new Thread(new ThreadStart(LoadImage));
-                getImageThread.Start();
+                StartImageLoading(filename);
                 e.Effect = DragDropEffects.Copy;
             }
             else
@@ -82,7 +88,14 @@ namespace mtrGenSimple
         }
         protected void LoadImage()
         {
-            image = new Bitmap(path);
+            try
+            {
+                image = new Bitmap(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load image from path '" + path + "'");
+            }
         }
 
         private void AutoFindBasePath()
@@ -213,7 +226,17 @@ namespace mtrGenSimple
         }
         private MaterialImageRole Combo2Role(ComboBox cb)
         {
-
+            if (cb.SelectedValue == null)
+                return MaterialImageRole.DIFFUSE;
+            String s = cb.SelectedValue.ToString().ToLower();
+            if(s.IndexOf("diffuse")!=-1 || s.IndexOf("color") != -1)
+                return MaterialImageRole.DIFFUSE;
+            if(s.IndexOf("specular")!=-1)
+                return MaterialImageRole.SPECULAR;
+            if(s.IndexOf("normal")!=-1 || s.IndexOf("bump") != -1)
+                return MaterialImageRole.NORMAL;
+            if (s.IndexOf("height") != -1)
+                return MaterialImageRole.HEIGHT;
             return MaterialImageRole.DIFFUSE;
         }
         private MaterialImage getPictureBoxImage(PictureBox pb,ComboBox imgType)
@@ -281,7 +304,6 @@ namespace mtrGenSimple
                 return;
             }
 
-
             // create path for images if not exist
             string matDir = FilePath2DirPath(tbMatName.Text);
             string fullPath = tbBasePath.Text + matDir;
@@ -343,14 +365,30 @@ namespace mtrGenSimple
                 }
                 string ext = ".png"; // TODO
                 mi.targetPath = tbBasePath.Text + tbMatName.Text + suffix + ext;
-                try
+                if (IsURL(mi.sourcePath))
                 {
-                    File.Copy(mi.sourcePath, mi.targetPath);
+                    try
+                    {
+                        using (WebClient wc = new WebClient())
+                            wc.DownloadFile(mi.sourcePath, mi.targetPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to download '" + mi.sourcePath + "' to '" + mi.targetPath + "'");
+                        return; // abort
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("Failed to copy '" + mi.sourcePath + "' to '" + mi.targetPath + "'");
-                    return; // abort
+                    try
+                    {
+                        File.Copy(mi.sourcePath, mi.targetPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to copy '" + mi.sourcePath + "' to '" + mi.targetPath + "'");
+                        return; // abort
+                    }
                 }
             }
 
@@ -393,6 +431,57 @@ namespace mtrGenSimple
 
             MessageBox.Show("Successfully added new material text to " + mtrFile);
 
+        }
+
+        private void btViewRawMtrFile_Click(object sender, EventArgs e)
+        {
+            String fname = getCurrentMatFileNamePath();
+            Process.Start(fname);
+        }
+
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                contextMenuStrip1.Show(pictureBox1, e.Location);
+            }
+        }
+        private bool IsURL(String s)
+        {
+            Uri uriResult;
+            bool result = Uri.TryCreate(s, UriKind.Absolute, out uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            return result;
+        }
+        private void pasteImage(PictureBox pb)
+        {
+            if (Clipboard.ContainsText(TextDataFormat.Text))
+            {
+                String txt = Clipboard.GetText(TextDataFormat.Text);
+                bool result = IsURL(txt);
+                if (result)
+                {
+                    pb.ImageLocation = txt;
+                }
+                else
+                {
+                    StartImageLoading(txt);
+                }
+            }
+        }
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pasteImage(curPb);
         }
     }
 }

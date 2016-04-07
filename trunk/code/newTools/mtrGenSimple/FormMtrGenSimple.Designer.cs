@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
@@ -43,9 +44,13 @@
             this.cbType2 = new System.Windows.Forms.ComboBox();
             this.cbType3 = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.btViewRawMtrFile = new System.Windows.Forms.Button();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -57,6 +62,8 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
             this.pictureBox1.MouseEnter += new System.EventHandler(this.pictureBox1_MouseEnter);
             // 
             // pictureBox2
@@ -99,9 +106,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(352, 3);
+            this.button1.Location = new System.Drawing.Point(352, 9);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(54, 23);
+            this.button1.Size = new System.Drawing.Size(61, 23);
             this.button1.TabIndex = 5;
             this.button1.Text = "Change";
             this.button1.UseVisualStyleBackColor = true;
@@ -187,12 +194,38 @@
             this.label4.Text = "Drag and drop image files here. NOTE: Do not put them in baseqio directory.\r\nTool" +
     " will automatically copy and rename them.";
             // 
+            // btViewRawMtrFile
+            // 
+            this.btViewRawMtrFile.Location = new System.Drawing.Point(352, 39);
+            this.btViewRawMtrFile.Name = "btViewRawMtrFile";
+            this.btViewRawMtrFile.Size = new System.Drawing.Size(61, 23);
+            this.btViewRawMtrFile.TabIndex = 15;
+            this.btViewRawMtrFile.Text = "View raw";
+            this.btViewRawMtrFile.UseVisualStyleBackColor = true;
+            this.btViewRawMtrFile.Click += new System.EventHandler(this.btViewRawMtrFile_Click);
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.pasteToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(230, 48);
+            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+            // 
+            // pasteToolStripMenuItem
+            // 
+            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.pasteToolStripMenuItem.Text = "Paste (from path or web URL)";
+            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
+            // 
             // FormMtrGenSimple
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(425, 344);
+            this.Controls.Add(this.btViewRawMtrFile);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.cbType3);
             this.Controls.Add(this.cbType2);
@@ -216,6 +249,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -238,6 +272,9 @@
         private System.Windows.Forms.ComboBox cbType2;
         private System.Windows.Forms.ComboBox cbType3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btViewRawMtrFile;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
     }
 }
 
