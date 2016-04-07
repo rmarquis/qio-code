@@ -169,6 +169,13 @@ namespace mtrGenSimple
 
 
         }
+        void setBasePath(String s)
+        {
+            tbBasePath.Text = s;
+            cbMatFile.SelectedIndex = -1;
+            cbMatFile.Items.Clear();
+            FindMaterialFiles();
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             AutoFindBasePath();
@@ -560,6 +567,16 @@ namespace mtrGenSimple
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
                 contextMenuStrip1.Show(pictureBox3, e.Location);
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                setBasePath(fbd.SelectedPath);
             }
         }
     }
