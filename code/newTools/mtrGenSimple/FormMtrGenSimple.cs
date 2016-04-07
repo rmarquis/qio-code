@@ -140,12 +140,13 @@ namespace mtrGenSimple
                     {
                         string tabName;
                         p.readString(out tabName);
+                        p.skipCurlyBracedBlock();
                     }
                     else
                     {
                         string matName;
                         p.readString(out matName);
-
+                        p.skipCurlyBracedBlock();
                     }
                 }
             }
@@ -189,7 +190,7 @@ namespace mtrGenSimple
             cbMatFile.Items.Clear();
             FindMaterialFiles(MergePaths(tbBasePath.Text,"scripts\\"), "shader");
             FindMaterialFiles(MergePaths(tbBasePath.Text,"materials\\"), "mtr");
-         //   PrecacheMaterialFiles();
+            PrecacheMaterialFiles();
         }
         private void FillImageTypes(ComboBox cb)
         {
@@ -326,9 +327,9 @@ namespace mtrGenSimple
         }
         private MaterialImageRole Combo2Role(ComboBox cb)
         {
-            if (cb.SelectedValue == null)
+            if (cb.SelectedItem == null)
                 return MaterialImageRole.DIFFUSE;
-            String s = cb.SelectedValue.ToString().ToLower();
+            String s = cb.SelectedItem.ToString().ToLower();
             if(s.IndexOf("diffuse")!=-1 || s.IndexOf("color") != -1)
                 return MaterialImageRole.DIFFUSE;
             if(s.IndexOf("specular")!=-1)
@@ -515,7 +516,7 @@ namespace mtrGenSimple
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Failed to copy '" + mi.sourcePath + "' to '" + mi.targetPath + "'");
+                        MessageBox.Show("Failed to copy '" + mi.sourcePath + "' to '" + mi.targetPath + "'. Exception text: "+ex.ToString());
                         return; // abort
                     }
                 }
@@ -543,7 +544,7 @@ namespace mtrGenSimple
             {
                 mtrText += "\tnormalMap " + getLocalPath(normalMap.targetPath) + Environment.NewLine;
             }
-            if (specularMap != null)
+            if (heightMap != null)
             {
                 mtrText += "\theightMap " + getLocalPath(heightMap.targetPath) + Environment.NewLine;
             }
