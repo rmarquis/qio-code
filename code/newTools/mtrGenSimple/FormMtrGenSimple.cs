@@ -1,4 +1,5 @@
-﻿using System;
+﻿using shared;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -126,10 +127,63 @@ namespace mtrGenSimple
             }
             cbMatFile.SelectedIndex = 0;
         }
+        class MtrFile
+        {
+
+            public MtrFile(String fname)
+            {
+                Parser p = new Parser();
+                p.beginParsingFile(fname);
+                while (p.isAtEOF() == false)
+                {
+                    if (p.isAtToken("table"))
+                    {
+                        string tabName;
+                        p.readString(out tabName);
+                    }
+                    else
+                    {
+                        string matName;
+                        p.readString(out matName);
+
+                    }
+                }
+            }
+        }
+        private void PrecacheMaterialFiles()
+        {
+            for (int i = 0; i < cbMatFile.Items.Count; i++)
+            {
+                String name = cbMatFile.Items[i].ToString();
+                String path = getAbsoluteMaterialFilePath(name);
+                MtrFile mf;
+                mf = new MtrFile(path);
+            }
+        }
+        // All cases should be supported:
+        // C:/Qio/baseqio + textures/test = C:/Qio/baseqio/textures/test
+        // C:/Qio/baseqio/ + textures/test = C:/Qio/baseqio/textures/test
+        // C:/Qio/baseqio/ + /textures/test = C:/Qio/baseqio/textures/test
+        // C:/Qio/baseqio + /textures/test = C:/Qio/baseqio/textures/test
+        private string MergePaths(String a, String b)
+        {
+            // remove slash from b
+            if (b[0] == '/' || b[0] == '\\')
+                b = b.Substring(1);
+            // add to a
+            if(a[a.Length-1] != '/' && a[a.Length-1] != '\\')
+            {
+                a += "/";
+            }
+            return a + b;
+        }
         private void FindMaterialFiles()
         {
-            FindMaterialFiles(tbBasePath.Text + "scripts\\", "shader");
-            FindMaterialFiles(tbBasePath.Text + "materials\\", "mtr");
+            cbMatFile.SelectedIndex = -1;
+            cbMatFile.Items.Clear();
+            FindMaterialFiles(MergePaths(tbBasePath.Text,"scripts\\"), "shader");
+            FindMaterialFiles(MergePaths(tbBasePath.Text,"materials\\"), "mtr");
+          //  PrecacheMaterialFiles();
         }
         private void FillImageTypes(ComboBox cb)
         {
@@ -172,8 +226,6 @@ namespace mtrGenSimple
         void setBasePath(String s)
         {
             tbBasePath.Text = s;
-            cbMatFile.SelectedIndex = -1;
-            cbMatFile.Items.Clear();
             FindMaterialFiles();
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -307,21 +359,24 @@ namespace mtrGenSimple
             }
             return cbMatFile.Text;
         }
-        private string getCurrentMatFileNamePath()
+        private string getAbsoluteMaterialFilePath(String name)
         {
-            String name = getCurrentMatFileComboText();
             // dirty solution
             String ret = "";
             string[] dirs = { "scripts/", "materials/" };
             for (int i = 0; i < 2; i++)
             {
-                ret = tbBasePath.Text;
-                ret += dirs[i];
+                ret = MergePaths(tbBasePath.Text,dirs[i]);
                 ret += name;
                 if (File.Exists(ret))
                     return ret;
             }
             return ret;
+        }
+        private string getCurrentMatFileNamePath()
+        {
+            String name = getCurrentMatFileComboText();
+            return getAbsoluteMaterialFilePath(name); ;
         }
         private string getLocalPath(string s)
         {
@@ -364,7 +419,7 @@ namespace mtrGenSimple
 
             // create path for images if not exist
             string matDir = FilePath2DirPath(tbMatName.Text);
-            string fullPath = tbBasePath.Text + matDir;
+            string fullPath = MergePaths(tbBasePath.Text,matDir);
             CreateDirs(fullPath);
             // copy and rename images
             List<MaterialImage> images = new List<MaterialImage>();
@@ -422,7 +477,7 @@ namespace mtrGenSimple
                         break;
                 }
                 string ext = Path.GetExtension(mi.sourcePath);
-                mi.targetPath = tbBasePath.Text + tbMatName.Text + suffix + ext;
+                mi.targetPath = MergePaths(tbBasePath.Text,tbMatName.Text) + suffix + ext;
                 if (IsURL(mi.sourcePath))
                 {
                     try
