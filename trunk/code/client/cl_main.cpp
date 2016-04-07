@@ -2524,7 +2524,15 @@ void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 		CL_ServersResponsePacket( &from, msg, true );
 		return;
 	}
-
+	// command for our new development tools, 
+	// should be ignored if not running in dev mode?
+	if (!stricmp(c, "stufftext"))
+	{
+		const char *args = Cmd_Args();
+		Com_Printf("NewTools command received: %s\n",args);
+		Cbuf_AddText(args);
+		Cbuf_AddText(";");
+	}
 	Com_DPrintf ("Unknown connectionless packet command.\n");
 }
 

@@ -109,16 +109,17 @@ struct matFile_s {
 static hashTableTemplateExt_c<mtrIMPL_c> materials;
 static arraySTD_c<matFile_s*> matFiles;
 
-void MAT_CacheMatFileText(const char *fname) {
+bool MAT_CacheMatFileText(const char *fname) {
 	char *data;
 	u32 len = g_vfs->FS_ReadFile(fname,(void**)&data);
 	if(data == 0)
-		return;
+		return true;
 	matFile_s *mf = new matFile_s;
 	mf->fname = fname;
 	mf->text = data;
 	g_vfs->FS_FreeFile(data);
 	matFiles.push_back(mf);
+	return false;
 }
 
 
@@ -442,15 +443,31 @@ void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName) {
 				c_reloadedMats++;
 			}
 		}
+		// if none found, try to assume that user skipped the directory name
+		if(c_reloadedMats == 0) {
+			for(u32 i = 0; i < materials.size(); i++) {
+				mtrIMPL_c *m = materials[i];
+				const char *fname = m->getSourceFileName();
+				const char *p = strchr(fname,'/');
+				if(!_stricmp(p,mtrSourceFileName)) {
+					MAT_ReloadSingleMaterial_internal(m);
+					c_reloadedMats++;
+				}
+			}
+		}
 		g_core->Print("MAT_ReloadMaterialFileSource: reloaded %i materials for source file %s\n",c_reloadedMats,mtrSourceFileName);
-	} else if(g_vfs->FS_FileExists(mtrSourceFileName)) {
+	} else {
 		g_core->Print("MAT_ReloadMaterialFileSource: loading NEW materials source file %s\n",mtrSourceFileName);
 		// add a NEW material file
-		MAT_CacheMatFileText(mtrSourceFileName);
-		return; // nothing else to do:
-	} else {
-		g_core->RedWarning("MAT_ReloadMaterialFileSource: %s does not exist\n",mtrSourceFileName);
-		return;
+		if(MAT_CacheMatFileText(mtrSourceFileName)) {
+			// try to fix the path
+			str np = "materials/";
+			np.append(mtrSourceFileName);
+			if(MAT_CacheMatFileText(np)) {
+				g_core->RedWarning("MAT_ReloadMaterialFileSource: %s does not exist\n",mtrSourceFileName);
+				return;
+			}
+		}
 	}
 }
 void MAT_IterateAllAvailableMaterialNames(void (*callback)(const char *s)) {
