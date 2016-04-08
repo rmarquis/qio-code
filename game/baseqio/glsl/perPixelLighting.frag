@@ -36,6 +36,7 @@ uniform float u_lightRadius;
 // shader varying variables
 varying vec3 v_vertXYZ;
 varying vec3 v_vertNormal; 
+uniform vec3 u_viewOrigin;
 
 #if defined(HAS_BUMP_MAP) || defined(HAS_HEIGHT_MAP)
 //Dushan - only supported in vertex shader
@@ -148,7 +149,6 @@ uniform mat4 u_entityMatrix;
 		return ret;
 	}
 #endif
-uniform vec3 u_viewOrigin;
 float computeShadow(vec3 lightToVertDirection) {
 	float shadow = 0.0;
 #ifdef USE_SHADOW_CUBEMAP
@@ -310,8 +310,34 @@ void main() {
 // 	}
 // #endif
 
+    
 	// calculate the final color
 	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
+	
+
+#ifndef DEBUG_SKIP_SPECULAR
+	vec3 lightToView = u_viewOrigin - v_vertXYZ;
+	vec3 r = -reflect(lightDirection, useNormal);
+	r = normalize(r);
+	vec3 v = normalize(lightToView);
+
+	vec4 specular;
+	float shininess = 64.0;
+#ifdef HAS_SPECULAR_MAP
+	vec4 specularColor = texture2D (s_specularMap, useTexCoord);
+#else
+	vec4 specularColor = vec4(0.2, 0.2, 0.2, 1.0);
+#endif
+  	vec4 specularFinal;
+	if (shininess != 0.0) {
+		specularFinal = specularColor * pow(max(0.0,dot(r, v)), shininess);
+	} else {
+		specularFinal = vec4(0.0, 0.0, 0.0, 0.0);
+	}
+	gl_FragColor += specularFinal;
+#endif
+
+	
 #ifdef HAS_LIGHT_COLOR
 	gl_FragColor.xyz *= u_lightColor;
 #endif
