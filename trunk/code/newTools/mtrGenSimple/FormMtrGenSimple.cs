@@ -102,6 +102,7 @@ namespace mtrGenSimple
 
         private void AutoFindBasePath()
         {
+#if false
             String cur = Directory.GetCurrentDirectory();
             //MessageBox.Show("Current working irectory: " + cur);
             int at = cur.IndexOf("Qio\\");
@@ -113,6 +114,26 @@ namespace mtrGenSimple
                 return;
             tbBasePath.Text = s;
             //CreateDirs(tbBasePath.Text);
+#else
+            // Omg, Dim has Qio stuff inside "Qiowc" directory, the autofind should be improved
+
+            String cur = Directory.GetCurrentDirectory();
+            while (true)
+            {
+                int p = cur.LastIndexOfAny(new char[] { '\\', '/' });
+                if (p == -1)
+                    break;
+                cur = cur.Substring(0, p);
+                String test = cur + "/Qio.exe";
+                String testbase = cur + "/baseqio";
+                if (File.Exists(test) && Directory.Exists(testbase))
+                {
+                    tbBasePath.Text = testbase;
+                    return;
+                }
+            }
+            MessageBox.Show("Basepath not found. Please manually enter path to baseqio/ directory.");
+#endif
         }
         private string removeLastDir(string s)
         {
