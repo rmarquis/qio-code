@@ -127,38 +127,149 @@ namespace mtrGenSimple
             }
             cbMatFile.SelectedIndex = 0;
         }
+        class MaterialDef
+        {
+            private string matName;
+            // after mat name, before {
+            private int matDefStart;
+            private int matDefEnd;
+
+            public MaterialDef(string matName, int start, int end)
+            {
+                this.matName = matName;
+                this.matDefStart = start;
+                this.matDefEnd = end;
+
+              //  MessageBox.Show("New material name " + matName);
+            }
+            public string getName()
+            {
+                return matName;
+            }
+        }
         class MtrFile
         {
+            private string name;
+            private Parser p;
+            private List<MaterialDef> materials;
 
-            public MtrFile(String fname)
+            public string getName()
             {
-                Parser p = new Parser();
-                p.beginParsingFile(fname);
+                return name;
+            }
+            public MaterialDef findMaterialDef(string name)
+            {
+                foreach (MaterialDef md in materials)
+                {
+                    if (name.Equals(md.getName()))
+                    {
+                        return md;
+                    }
+                }
+                return null;
+            }
+            public void precacheMtrFile()
+            {
+                materials = new List<MaterialDef>();
+                p = new Parser();
+                p.beginParsingFile(name);
                 while (p.isAtEOF() == false)
                 {
                     if (p.isAtToken("table"))
                     {
                         string tabName;
-                        p.readString(out tabName);
+                        p.readString(out tabName,"{");
+                        if (p.isAtToken("{", false) == false)
+                        {
+                            MessageBox.Show("Material file parse error: Expected '{' to follow table name " + tabName + " in mat file " + name);
+                            return; // error
+                        }
                         p.skipCurlyBracedBlock();
                     }
                     else
                     {
                         string matName;
-                        p.readString(out matName);
+                        p.readString(out matName, "{");
+                        int start = p.getPos();
+                        if (p.isAtToken("{", false) == false)
+                        {
+                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            return; // error
+                        }
                         p.skipCurlyBracedBlock();
+                        int end = p.getPos();
+                        materials.Add(new MaterialDef(matName, start, end));
                     }
                 }
+            }
+            public MtrFile(String fname)
+            {
+                this.name = fname;
+                precacheMtrFile();
+            }
+        }
+        private List<MtrFile> matFiles;
+
+        private MaterialDef findMaterialDef(string name)
+        {
+            foreach (MtrFile f in matFiles)
+            {
+                MaterialDef md = f.findMaterialDef(name);
+                if (md != null)
+                    return md;
+            }
+            return null;
+        }
+        private bool materialExists(string name)
+        {
+            if (findMaterialDef(name) != null)
+                return true;
+            return false;
+        }
+        private MtrFile findMtrFile(string name)
+        {
+            foreach (MtrFile f in matFiles)
+            {
+                if(name.CompareTo(f.getName())==0)
+                {
+                    return f;
+                }
+            }
+            return null;
+        }
+        private void loadOrReloadMaterialFile(string name)
+        {
+            // see if its loaded
+            MtrFile f = findMtrFile(name);
+            if (f != null)
+            {
+                f.precacheMtrFile();
+                return;
+            }
+            // if not, load new
+            loadNewMtrFile(name);
+        }
+        private void loadNewMtrFile(string path)
+        {
+            try
+            {
+                MtrFile mf;
+                mf = new MtrFile(path);
+                matFiles.Add(mf);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to precache material file " + path);
             }
         }
         private void PrecacheMaterialFiles()
         {
+            matFiles = new List<MtrFile>();
             for (int i = 0; i < cbMatFile.Items.Count; i++)
             {
                 String name = cbMatFile.Items[i].ToString();
                 String path = getAbsoluteMaterialFilePath(name);
-                MtrFile mf;
-                mf = new MtrFile(path);
+                loadNewMtrFile(path);
             }
         }
         // All cases should be supported:
@@ -406,6 +517,11 @@ namespace mtrGenSimple
                 MessageBox.Show("Basepath directory does not exist. Did you enter a valid path?");
                 return;
             }
+            if (materialExists(tbMatName.Text))
+            {
+                MessageBox.Show("Material with given name already exists. Please use different name.");
+                return;
+            }
             // for material name like "textures/testGen/testMat123"
             // we want to create:
             // 1. "textures/" dir if not exists
@@ -560,6 +676,8 @@ namespace mtrGenSimple
 
 
             MessageBox.Show("Successfully added new material text to " + mtrFile);
+
+            loadOrReloadMaterialFile(mtrFile);
 
             sendCommandToGame("mat_refreshMaterialSourceFile " + getCurrentMatFileComboText());
             sendCommandToGame("cg_testMaterial " + tbMatName.Text);
