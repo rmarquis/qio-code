@@ -777,11 +777,11 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 		Huff_Decompress(msg, 12);
 	}
 
-	s = MSG_ReadStringLine( msg );
+	s = MSG_ReadString( msg );
 	Cmd_TokenizeString( s );
 
 	c = Cmd_Argv(0);
-	Com_DPrintf ("SV packet %s : %s\n", NET_AdrToString(from), c);
+	Com_DPrintf ("SV packet %s : %s\n", NET_AdrToString(from), s);
 
 	if (!stricmp(c, "getstatus")) {
 		SVC_Status( from );

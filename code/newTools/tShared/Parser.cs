@@ -37,7 +37,7 @@ namespace shared
         private string text;
         private int pos;
 
-        private int skipWhiteSpaces()
+        public int skipWhiteSpaces()
         {
             int r = pos;
             while (true)
@@ -65,6 +65,10 @@ namespace shared
                 break;
             }
             return r;
+        }
+        public string getData()
+        {
+            return text;
         }
         public bool beginParsingFile(string fileName)
         {
