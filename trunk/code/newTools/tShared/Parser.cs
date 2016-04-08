@@ -111,7 +111,7 @@ namespace shared
             }
             return false;
         }
-        public bool isAtToken(string tok)
+        public bool isAtToken(string tok, bool bNeedWSAfter = true)
         {
             int p = skipWhiteSpaces();
             if (tok.Length + p > text.Length)
@@ -125,11 +125,14 @@ namespace shared
                 if (char.ToLower(at) != char.ToLower(tok[i]))
                     return false;
             }
-            // next character must be a whitespace (unless expected token is directly at the end of the buffer)
-            if (p + tok.Length < text.Length)
+            if (bNeedWSAfter)
             {
-                if (Char.IsWhiteSpace(text[p + tok.Length]) == false)
-                    return false;
+                // next character must be a whitespace (unless expected token is directly at the end of the buffer)
+                if (p + tok.Length < text.Length)
+                {
+                    if (Char.IsWhiteSpace(text[p + tok.Length]) == false)
+                        return false;
+                }
             }
             pos = p + tok.Length;
             return true;
@@ -172,7 +175,7 @@ namespace shared
             pos = p;
             return false;
         }
-        public bool readString(out string s)
+        public bool readString(out string s, string stopSet = null)
         {
             int p = skipWhiteSpaces();
             if (p >= text.Length)
@@ -183,6 +186,11 @@ namespace shared
             int start = p;
             while (Char.IsWhiteSpace(text[p]) == false)
             {
+                if (stopSet != null)
+                {
+                    if (stopSet.IndexOf(text[p]) != -1)
+                        break;
+                }
                 p++;
             }
             s = text.Substring(start, p - start);
@@ -328,6 +336,9 @@ namespace shared
             }
             return ret;
         }
-
+        public int getPos()
+        {
+            return pos;
+        }
     }
 }
