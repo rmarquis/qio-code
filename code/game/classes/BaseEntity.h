@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <protocol/entityState.h>
 // LUA event callbacks
 #include "../lua/g_lua_eventHandler.h"
+#include <api/serverAPI.h>
 
 class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)

@@ -57,10 +57,10 @@ struct conditionFunction_s {
 };
 
 template <typename d, typename s>
-d &hack_cast(s &v) {
+d &hack_cast(s v) {
   return reinterpret_cast<d&>(v);
 }
-//#define GETFUNC(name, ptr) { name, reinterpret_cast<s64>(&ptr), 0 },
+//#define GETFUNC(name, ptr) { name, reinterpret_cast<s64>(&ptr^), 0 },
 #define GETFUNC(name, ptr) { name, hack_cast<s64>(&ptr), 0 },
 
 
