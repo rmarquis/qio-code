@@ -1649,7 +1649,7 @@ CL_SendPureChecksums
 =================
 */
 void CL_SendPureChecksums() {
-	char cMsg[MAX_INFO_VALUE];
+	char cMsg[MAX_INFO_STRING];
 
 	// if we are pure we need to send back a command with our referenced pk3 checksums
 	Com_sprintf(cMsg, sizeof(cMsg), "cp %d %s", cl.serverId, FS_ReferencedPakPureChecksums());

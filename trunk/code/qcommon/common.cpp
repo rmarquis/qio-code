@@ -531,8 +531,8 @@ bool Com_AddStartupCommands() {
 //============================================================================
 
 void Info_Print( const char *s ) {
-	char	key[MAX_INFO_KEY];
-	char	value[MAX_INFO_VALUE];
+	char	key[MAX_INFO_STRING];
+	char	value[MAX_INFO_STRING];
 	char	*o;
 	int		l;
 
@@ -608,7 +608,7 @@ Com_Filter
 */
 int Com_Filter(const char *filter, char *name, int casesensitive)
 {
-	char buf[MAX_TOKEN_CHARS];
+	char buf[MAX_STRING_CHARS];
 	char *ptr;
 	int i, found;
 
@@ -2314,7 +2314,7 @@ void Field_Clear( field_s *edit ) {
 }
 
 static const char *completionString;
-static char shortestMatch[MAX_TOKEN_CHARS];
+static char shortestMatch[MAX_STRING_CHARS];
 static int	matchCount;
 // field we are working on, passed to Field_AutoComplete(&g_consoleCommand for instance)
 static field_s *completionField;
