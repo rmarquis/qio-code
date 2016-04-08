@@ -677,6 +677,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	parser_c p;
 	p.setup(txt.textBase,txt.p);
 	p.setDebugFileName(txt.sourceFile);
+	// just in case
+	if(p.atWord(this->name)) {
+		// silentnly ignore matname
+	}
 	str qerAlphaFuncType;
 	float qerAlphaFuncRefValue;
 	if(p.atChar('{') == false) {

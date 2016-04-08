@@ -868,6 +868,8 @@ void RFL_AddLightInteractionsDrawCalls() {
 			// blend light interactions (surfaces intersecting light bounds) with drawn world
 			light->addLightInteractionDrawCalls();
 		}
+		// TODO
+		RF_AddCustomDrawCalls();
 	}
 	rf_curLightAPI = 0;
 	if(light_printCullStats.getInt()) {

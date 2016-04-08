@@ -634,6 +634,7 @@ static void MAT_PreviewMaterialText_f() {
 	const char *matName = g_core->Argv(1);
 	g_core->Print("Previewing new text of material %s\n",matName);
 	const char *txt = g_core->ArgsFrom(2);
+	g_core->Print("Text %s\n",txt);
 	//MAT_SetMaterialText(matName,txt);
 	MAT_ReloadSingleMaterial(matName,txt);
 }

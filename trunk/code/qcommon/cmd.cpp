@@ -533,7 +533,16 @@ static void Cmd_TokenizeString2( const char *text_in, bool ignoreQuotes ) {
 
 			// skip // comments
 			if ( text[0] == '/' && text[1] == '/' ) {
-				return;			// all tokens parsed
+				// V: IOQ3 did not support multine-line commands, but this engine is.
+				text+=2;
+				while(1) {
+					if(*text == 0)
+						return; // end hit
+					if(*text == '\n')
+						break;
+					text++;
+				}
+				continue;
 			}
 
 			// skip /* */ comments

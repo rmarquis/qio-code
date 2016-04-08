@@ -114,6 +114,30 @@ namespace mtrGenSimple
             tbBasePath.Text = s;
             //CreateDirs(tbBasePath.Text);
         }
+        private string removeLastDir(string s)
+        {
+            if (s.Length == 0)
+                return s;
+            if (s[s.Length - 1] == '/' || s[s.Length - 1] == '\\')
+                s = s.Substring(0, s.Length - 1);
+            int i = s.LastIndexOfAny(new char []{ '/', '\\' });
+            if(i == -1)
+                return "";
+            s = s.Substring(0,i);
+            return s;
+        }
+        private string getEnginePath()
+        {
+            string basePath = tbBasePath.Text;
+            string up = removeLastDir(basePath);
+            string exePath = MergePaths(up, "qio.exe");
+            return exePath;
+        }
+        private void startEngineWithCommand(string s)
+        {
+            string exePath = getEnginePath();
+            Process.Start(exePath,s);
+        }
         private void FindMaterialFiles(string path, string ext)
         {
             if (Directory.Exists(path) == false)
@@ -142,6 +166,14 @@ namespace mtrGenSimple
 
               //  MessageBox.Show("New material name " + matName);
             }
+            public int getStart()
+            {
+                return matDefStart;
+            }
+            public int getEnd()
+            {
+                return matDefEnd;
+            }
             public string getName()
             {
                 return matName;
@@ -156,6 +188,18 @@ namespace mtrGenSimple
             public string getName()
             {
                 return name;
+            }
+            public List<MaterialDef> getDefs()
+            {
+                return materials;
+            }
+            public string getMaterialDefText(string name)
+            {
+                MaterialDef md = findMaterialDef(name);
+                if (md == null)
+                    return null;
+                string d = p.getData();
+                return d.Substring(md.getStart(), md.getEnd() - md.getStart());
             }
             public MaterialDef findMaterialDef(string name)
             {
@@ -189,8 +233,9 @@ namespace mtrGenSimple
                     else
                     {
                         string matName;
-                        p.readString(out matName, "{");
+                        p.skipWhiteSpaces();
                         int start = p.getPos();
+                        p.readString(out matName, "{");
                         if (p.isAtToken("{", false) == false)
                         {
                             MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
@@ -228,6 +273,8 @@ namespace mtrGenSimple
         }
         private MtrFile findMtrFile(string name)
         {
+            if (matFiles == null)
+                return null;
             foreach (MtrFile f in matFiles)
             {
                 if(name.CompareTo(f.getName())==0)
@@ -271,6 +318,7 @@ namespace mtrGenSimple
                 String path = getAbsoluteMaterialFilePath(name);
                 loadNewMtrFile(path);
             }
+            cbMatFile_SelectedIndexChanged(null, null); // HACK
         }
         // All cases should be supported:
         // C:/Qio/baseqio + textures/test = C:/Qio/baseqio/textures/test
@@ -361,6 +409,8 @@ namespace mtrGenSimple
 
             // test
            // sendCommandToGame("devmap test_physics");
+
+         //   startEngineWithCommand("devmap test_physics");
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
@@ -767,6 +817,79 @@ namespace mtrGenSimple
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 setBasePath(fbd.SelectedPath);
+            }
+        }
+
+        private void btUpdateExistingMaterial_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cbMatFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+           string path = getCurrentMatFileNamePath();
+           MtrFile mf = findMtrFile(path);
+           cbMaterialsFromMatFile.Items.Clear();
+           if (mf == null)
+               return;
+           foreach (MaterialDef md in mf.getDefs())
+           {
+               cbMaterialsFromMatFile.Items.Add(md.getName());
+           }
+           if (cbMaterialsFromMatFile.Items.Count != 0)
+           {
+               cbMaterialsFromMatFile.SelectedIndex = 0;
+           }
+        }
+
+        private void cbMaterialsFromMatFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string path = getCurrentMatFileNamePath();
+            MtrFile mf = findMtrFile(path);
+            if (mf == null)
+                return;
+            string matName = cbMaterialsFromMatFile.Text;
+            MaterialDef md = mf.findMaterialDef(matName);
+            if (md == null)
+            {
+                return;
+            }
+            string txt = mf.getMaterialDefText(matName);
+            tbMaterialText.Text = txt;
+        }
+        private bool isEngineRunning()
+        {
+            Process[] pname = Process.GetProcessesByName("qio");
+            if (pname.Length == 0)
+                return false;
+            return true;
+        }
+        private void btViewCreatedMaterialInQio_Click(object sender, EventArgs e)
+        {
+            if (isEngineRunning())
+            {
+
+            }
+            else
+            {
+
+            }
+        }
+
+        private void btPreviewChanges_Click(object sender, EventArgs e)
+        {
+            string matName = cbMaterialsFromMatFile.Text;
+          ///  string mtrText = tbMaterialText.Text.Substring(matName.Length);
+            string mtrText = tbMaterialText.Text;
+            string baseCmd = "mat_previewMaterialText " + matName + " " + mtrText + "; cg_testMaterial " + matName;
+            baseCmd = baseCmd.Replace("\r", "");
+            if (isEngineRunning())
+            {
+                sendCommandToGame(baseCmd);
+            }
+            else
+            {
+                startEngineWithCommand("devmap test_physics; rf_enableMultipassRendering 1;" + baseCmd);
             }
         }
     }
