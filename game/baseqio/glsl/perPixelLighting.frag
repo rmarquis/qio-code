@@ -334,7 +334,7 @@ void main() {
 	} else {
 		specularFinal = vec4(0.0, 0.0, 0.0, 0.0);
 	}
-	gl_FragColor += specularFinal;
+	gl_FragColor += specularFinal * distanceFactor * angleFactor;
 #endif
 
 	
