@@ -340,7 +340,7 @@ void MAT_ScanForMaterialFiles() {
 	MAT_ScanForFiles("scripts/",".shader");
 	MAT_ScanForFiles("materials/",".mtr");
 }
-void MAT_LoadMaterial(class mtrIMPL_c *mat) {
+void MAT_LoadMaterial(class mtrIMPL_c *mat, const char *alternateText = 0) {
 	if(mat == 0) {
 		// this should never happen
 		g_core->RedWarning("MAT_LoadMaterial: NULL material pointer\n");
@@ -353,7 +353,12 @@ void MAT_LoadMaterial(class mtrIMPL_c *mat) {
 	}
 	// try to load from material text (.shader/.mtr files)
 	matTextDef_s text;
-	if(MAT_FindMaterialText(mat->getName(),text)) {
+	if(alternateText) {
+		text.p = alternateText;
+		text.sourceFile = "memory";
+		text.textBase = alternateText;
+		mat->loadFromText(text);
+	} else if(MAT_FindMaterialText(mat->getName(),text)) {
 		mat->loadFromText(text);
 	} else {
 		if(mat->isVMTMaterial()) {
@@ -389,11 +394,11 @@ mtrIMPL_c *MAT_RegisterMaterial(const char *inMatName) {
 	MAT_LoadMaterial(ret);
 	return ret;
 }
-void MAT_ReloadSingleMaterial_internal(mtrIMPL_c *mat) {
+void MAT_ReloadSingleMaterial_internal(mtrIMPL_c *mat, const char *alternateText = 0) {
 	// free old material data (but dont reset material name)
 	mat->clear();
 	// load material once again
-	MAT_LoadMaterial(mat);
+	MAT_LoadMaterial(mat, alternateText);
 }
 
 void MAT_PrintMaterialSourceFileName(const char *matName) {
@@ -409,21 +414,23 @@ void MAT_PrintMaterialSourceFileName(const char *matName) {
 // reload entire material source text 
 // but recreate only material with given name
 // (matName is the name of single material)
-void MAT_ReloadSingleMaterial(const char *matName) {
+void MAT_ReloadSingleMaterial(const char *matName, const char *alternateText) {
 	mtrIMPL_c *mat = materials.getEntry(matName);
 	if(mat == 0) {
 		g_core->RedWarning("MAT_ReloadMaterial: material %s was not loaded.\n",matName);
 		return;
 	}
-	// see if we have to reload entire .mtr text file
-	const char *sourceFileName = mat->getSourceFileName();
-	matFile_s *mtrTextFile = MAT_FindMatFileForName(sourceFileName);
-	if(mtrTextFile) {
-		// reload mtr text file
-		mtrTextFile->reloadMaterialSourceText();
+	if(alternateText == 0) {
+		// see if we have to reload entire .mtr text file
+		const char *sourceFileName = mat->getSourceFileName();
+		matFile_s *mtrTextFile = MAT_FindMatFileForName(sourceFileName);
+		if(mtrTextFile) {
+			// reload mtr text file
+			mtrTextFile->reloadMaterialSourceText();
+		}
 	}
 	// reparse specified material text / reload its single image
-	MAT_ReloadSingleMaterial_internal(mat);
+	MAT_ReloadSingleMaterial_internal(mat,alternateText);
 }
 // reload entire material source text
 // and recreate all of the present materials using it
@@ -619,10 +626,22 @@ static void MAT_PrintLoadedMaterialNames_f() {
 	}
 	g_core->Print("%i materials loaded\n",materials.size());
 }
+static void MAT_PreviewMaterialText_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("usage: \"mat_previewMaterialText <matName> <text>\"\n");
+		return;
+	}
+	const char *matName = g_core->Argv(1);
+	g_core->Print("Previewing new text of material %s\n",matName);
+	const char *txt = g_core->ArgsFrom(2);
+	//MAT_SetMaterialText(matName,txt);
+	MAT_ReloadSingleMaterial(matName,txt);
+}
 
 static aCmd_c mat_refreshSingleMaterial_f("mat_refreshSingleMaterial",MAT_RefreshSingleMaterial_f);
 static aCmd_c mat_refreshMaterialSourceFile_f("mat_refreshMaterialSourceFile",MAT_RefreshMaterialSourceFile_f);
 static aCmd_c mat_printMaterialSourceFileName("mat_printMaterialSourceFileName",MAT_PrintMaterialSourceFileName_f);
 static aCmd_c mat_printLoadedMaterialNames("mat_printLoadedMaterialNames",MAT_PrintLoadedMaterialNames_f);
+static aCmd_c mat_previewMaterialText("mat_previewMaterialText",MAT_PreviewMaterialText_f);
 
 

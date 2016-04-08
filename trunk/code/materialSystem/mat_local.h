@@ -50,7 +50,7 @@ class mtrAPI_i *MAT_FindLoadedMaterialAPI(const char *matName);
 bool MAT_IsMaterialOrImagePresent(const char *matName);
 // returns true if material text is found
 bool MAT_FindMaterialText(const char *matName, matTextDef_s &out);
-void MAT_ReloadSingleMaterial(const char *matName);
+void MAT_ReloadSingleMaterial(const char *matName, const char *alternateText = 0);
 void MAT_ReloadMaterialFileSource(const char *mtrSourceFileName);
 void MAT_IterateAllAvailableMaterialNames(void (*callback)(const char *s));
 void MAT_IterateAllAvailableMaterialFileNames(void (*callback)(const char *s));
