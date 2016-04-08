@@ -130,6 +130,7 @@ static aCvar_c rb_wireframeColormapLightmappedStages("rb_wireframeColormapLightm
 static aCvar_c rb_wireframeSkyBoxCubeMapStages("rb_wireframeSkyBoxCubeMapStages","0");
 static aCvar_c rb_wireframeEditorImageStages("rb_wireframeEditorImageStages","0");
 static aCvar_c rb_printBumpHeightMapMaterials("rb_printBumpHeightMapMaterials","0");
+static aCvar_c rb_skipSpecular("rb_skipSpecular","0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -2459,6 +2460,7 @@ drawOnlyLightmap:
 					pf.enableShadowMappingBlur = rb_shadowMapBlur.getInt();
 					pf.useShadowCubeMap = rb_useDepthCubeMap.getInt();
 					pf.isTwoSided = this->prevCullType == CT_TWO_SIDED;
+					pf.debug_ignoreSpecular = rb_skipSpecular.getInt();
 					/*if(prevAlphaFunc == AF_D3_ALPHATEST) {
 						pf.hasDoom3AlphaTest = true;
 						pf.alphaTestValue = alphaFuncCustomValue;
