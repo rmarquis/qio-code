@@ -351,8 +351,8 @@ gamestate, and possibly during gameplay.
 void CL_SystemInfoChanged() {
 	char			*systemInfo;
 	const char		*s, *t;
-	char			key[MAX_INFO_KEY];
-	char			value[MAX_INFO_VALUE];
+	char			key[MAX_INFO_STRING];
+	char			value[MAX_INFO_STRING];
 	bool		gameSet;
 
 	systemInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SYSTEMINFO ];

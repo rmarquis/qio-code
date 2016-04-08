@@ -45,8 +45,8 @@ FIXME: overflow check?
 ===============
 */
 char *Info_ValueForKey( const char *s, const char *key ) {
-	char	pkey[MAX_INFO_KEY];
-	static	char value[2][MAX_INFO_VALUE];	// use two buffers so compares
+	char	pkey[MAX_INFO_STRING];
+	static	char value[2][MAX_INFO_STRING];	// use two buffers so compares
 											// work without stomping on each other
 	static	int	valueindex = 0;
 	char	*o;
@@ -142,8 +142,8 @@ Info_RemoveKey
 */
 void Info_RemoveKey( char *s, const char *key ) {
 	char	*start;
-	char	pkey[MAX_INFO_KEY];
-	char	value[MAX_INFO_VALUE];
+	char	pkey[MAX_INFO_STRING];
+	char	value[MAX_INFO_STRING];
 	char	*o;
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
@@ -198,8 +198,8 @@ Info_RemoveKey_Big
 */
 void Info_RemoveKey_Big( char *s, const char *key ) {
 	char	*start;
-	char	pkey[MAX_INFO_KEY];
-	char	value[MAX_INFO_VALUE];
+	char	pkey[MAX_INFO_STRING];
+	char	value[MAX_INFO_STRING];
 	char	*o;
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {

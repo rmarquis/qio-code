@@ -57,7 +57,7 @@ CG_RegisterCvars
 =================
 */
 void CG_RegisterCvars( void ) {
-	char		var[MAX_TOKEN_CHARS];
+	char var[64];
 	// see if we are also running the server on this machine
 	g_cvars->Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
 	cgs.localServer = atoi( var );

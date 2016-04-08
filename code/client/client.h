@@ -383,7 +383,7 @@ typedef struct {
 
 	// update server info
 	netadr_t	updateServer;
-	char		updateChallenge[MAX_TOKEN_CHARS];
+	char		updateChallenge[MAX_STRING_CHARS];
 	char		updateInfoString[MAX_INFO_STRING];
 
 	netadr_t	authorizeServer;
