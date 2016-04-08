@@ -913,5 +913,19 @@ namespace mtrGenSimple
                 startEngineWithCommand("devmap test_physics; rf_enableMultipassRendering 1;" + baseCmd);
             }
         }
+
+        private void buttonApplyToLookatSurface_Click(object sender, EventArgs e)
+        {
+            string matName = cbMaterialsFromMatFile.Text;
+            string baseCmd = "rf_setCrosshairSurfaceMaterial " + matName;
+            if (isEngineRunning())
+            {
+                sendCommandToGame(baseCmd);
+            }
+            else
+            {
+                startEngineWithCommand("devmap test_physics; rf_enableMultipassRendering 1;" + baseCmd);
+            }
+        }
     }
 }
