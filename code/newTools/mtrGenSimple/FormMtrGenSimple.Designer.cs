@@ -56,6 +56,7 @@
             this.tbSaveChanges = new System.Windows.Forms.Button();
             this.btPreviewChanges = new System.Windows.Forms.Button();
             this.btViewCreatedMaterialInQio = new System.Windows.Forms.Button();
+            this.buttonApplyToLookatSurface = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -279,6 +280,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.buttonApplyToLookatSurface);
             this.tabPage2.Controls.Add(this.btPreviewChanges);
             this.tabPage2.Controls.Add(this.tbSaveChanges);
             this.tabPage2.Controls.Add(this.tbMaterialText);
@@ -336,6 +338,16 @@
             this.btViewCreatedMaterialInQio.Text = "View created material in Qio";
             this.btViewCreatedMaterialInQio.UseVisualStyleBackColor = true;
             this.btViewCreatedMaterialInQio.Click += new System.EventHandler(this.btViewCreatedMaterialInQio_Click);
+            // 
+            // buttonApplyToLookatSurface
+            // 
+            this.buttonApplyToLookatSurface.Location = new System.Drawing.Point(200, 269);
+            this.buttonApplyToLookatSurface.Name = "buttonApplyToLookatSurface";
+            this.buttonApplyToLookatSurface.Size = new System.Drawing.Size(168, 23);
+            this.buttonApplyToLookatSurface.TabIndex = 4;
+            this.buttonApplyToLookatSurface.Text = "Apply to lookat surface in Qio";
+            this.buttonApplyToLookatSurface.UseVisualStyleBackColor = true;
+            this.buttonApplyToLookatSurface.Click += new System.EventHandler(this.buttonApplyToLookatSurface_Click);
             // 
             // FormMtrGenSimple
             // 
@@ -398,6 +410,7 @@
         private System.Windows.Forms.Button tbSaveChanges;
         private System.Windows.Forms.Button btPreviewChanges;
         private System.Windows.Forms.Button btViewCreatedMaterialInQio;
+        private System.Windows.Forms.Button buttonApplyToLookatSurface;
     }
 }
 
