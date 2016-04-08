@@ -1492,6 +1492,8 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Argv = Cmd_Argv;
 	g_staticCoreAPI.ArgvBuffer = Cmd_ArgvBuffer;
 	g_staticCoreAPI.Args = Cmd_ArgsBuffer;
+	g_staticCoreAPI.ArgsFrom = Cmd_ArgsFrom;
+	
 	g_staticCoreAPI.Cmd_AddCommand = Cmd_AddCommand;
 	g_staticCoreAPI.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
