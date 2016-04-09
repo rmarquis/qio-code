@@ -220,6 +220,7 @@ class astNode_c {
 	operator_e opType; // for ANT_OPERATOR
 	float value;
 	str varName;
+	static u32 c_nullNodeCounter;
 public:
 	astNode_c() {
 		children[0] = children[1] = 0;
@@ -230,10 +231,17 @@ public:
 		if(children[1])
 			delete children[1];
 	}
+	static void resetNullNodeCounter() {
+		c_nullNodeCounter = 0;
+	}
+	static bool hasNullNodes() {
+		return c_nullNodeCounter;
+	}
 	float execute_r(const class astInputAPI_i *in) const {
 		if(this == 0) {
 			// this should never happen unless AST is invalid
 			g_core->RedWarning("astNode_c::execute_r: called on NULL node\n");
+			c_nullNodeCounter++;
 			return 0.f;
 		}
 		if(type == ANT_NUMBER) {
@@ -559,7 +567,7 @@ public:
 					p++;
 				}
 			} else if(parseState == PS_TOKEN) {
-				if(isWhiteSpace(*p) || *p == '[' || *p == ']' || OperatorForString(p,0) != OP_BAD) {
+				if(isWhiteSpace(*p) || *p == '[' || *p == ']' || *p == '(' || *p == ')' || OperatorForString(p,0) != OP_BAD) {
 					tmp.setFromTo(start,p);
 					addTokenLexem(tmp);
 					parseState = PS_WHITESPACES;
@@ -589,6 +597,8 @@ public:
 		return ret;
 	}
 };
+u32 astNode_c::c_nullNodeCounter;
+
 // Doom3 expression usage examples:
 // "scroll		time, 0"
 // "rgb			sintable[time]"
@@ -601,7 +611,6 @@ public:
 // "scale		1 / 32 , 1"	
 // "if			( parm7 == 0 )"	
 // "if			( ( time * 38 ) % 16 == 11 )"	
-							
 class astAPI_i *AST_ParseExpression(const char *s) {
 	if(ast_printParsedExpressions.getInt()) {
 		g_core->Print("AST_ParseExpression: %s\n",s);
@@ -616,5 +625,13 @@ class astAPI_i *AST_ParseExpression(const char *s) {
 		ret->setSourceString(s);
 	}
 #endif
+	if(ret) {
+		astNode_c::resetNullNodeCounter();
+		ret->execute(0);
+		if(astNode_c::hasNullNodes()) {
+			g_core->RedWarning("AST '%s' has null nodes\n",s);
+			system("pause");
+		}
+	}
 	return ret;
 }
