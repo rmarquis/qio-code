@@ -1767,5 +1767,6 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 	//	}
 	//	p = G_SkipToNextToken(p);
 	//}
+	AST_ParseExpression("0.3 * (time - parm7)");
 	return false; // ok
 }

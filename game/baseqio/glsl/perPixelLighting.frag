@@ -50,6 +50,9 @@ uniform sampler2D bumpMap;
 #ifdef HAS_HEIGHT_MAP
 uniform sampler2D heightMap;
 #endif
+#ifdef HAS_SPECULAR_MAP
+uniform sampler2D specularMap;
+#endif
 
 #if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
 varying vec3 v_tbnEyeDir;
@@ -310,11 +313,6 @@ void main() {
 // 	}
 // #endif
 
-    
-	// calculate the final color
-	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
-	
-
 #ifndef DEBUG_SKIP_SPECULAR
 	vec3 lightToView = u_viewOrigin - v_vertXYZ;
 	vec3 r = -reflect(lightDirection, useNormal);
@@ -322,9 +320,9 @@ void main() {
 	vec3 v = normalize(lightToView);
 
 	vec4 specular;
-	float shininess = 64.0;
+	float shininess = 32.0;
 #ifdef HAS_SPECULAR_MAP
-	vec4 specularColor = texture2D (s_specularMap, useTexCoord);
+	vec4 specularColor = texture2D (specularMap, texCoord);
 #else
 	vec4 specularColor = vec4(0.2, 0.2, 0.2, 1.0);
 #endif
@@ -334,8 +332,13 @@ void main() {
 	} else {
 		specularFinal = vec4(0.0, 0.0, 0.0, 0.0);
 	}
-	gl_FragColor += specularFinal * distanceFactor * angleFactor;
+	// calculate the final color
+	gl_FragColor = (specularFinal+textureColor) * angleFactor * distanceFactor * shadow;
+#else
+	// calculate the final color
+	gl_FragColor = textureColor * angleFactor * distanceFactor * shadow;
 #endif
+
 
 	
 #ifdef HAS_LIGHT_COLOR
