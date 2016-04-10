@@ -1401,6 +1401,10 @@ int FS_Read( void *buffer, int len, fileHandle_t f ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization" );
 	}
 
+	if ( f <= 0 || f >= MAX_FILE_HANDLES ) {
+		Com_Error(ERR_FATAL, "FS_Read: Invalid handle %d\n", f);
+	}
+
 	if ( !f ) {
 		return 0;
 	}
@@ -1900,6 +1904,10 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 		if (err != UNZ_OK) {
 			break;
 		}
+		if ( file_info.size_filename > MAX_QPATH ) {
+			Com_Error( ERR_FATAL, "ERROR: filename length > MAX_QPATH ( strlen(%s) = %d) \n", 
+				filename_inzip, file_info.size_filename );
+		}
 		len += strlen(filename_inzip) + 1;
 		unzGoToNextFile(uf);
 	}
@@ -1918,6 +1926,7 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 	}
 
 	pack = (pack_t*)malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *) );
+	memset( pack, 0, sizeof( pack_t ) + i * sizeof( fileInPack_t* ) );
 	pack->hashSize = i;
 	pack->hashTable = (fileInPack_t **) (((char *) pack) + sizeof( pack_t ));
 	for(i = 0; i < pack->hashSize; i++) {
@@ -3532,7 +3541,7 @@ void FS_InitFilesystem() {
 FS_Restart
 ================
 */
-void FS_Restart( int checksumFeed ) {
+void FS_Restart( int checksumFeed ) { 
 
 	// free anything we currently have loaded
 	FS_Shutdown(false);
