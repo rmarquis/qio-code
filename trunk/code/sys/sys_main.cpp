@@ -43,6 +43,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "sys_local.h"
 #include "sys_loadlib.h"
+#ifdef _WIN32
+#include "sys_win32.h"
+#endif
 
 #include "../qcommon/qcommon.h"
 #include <shared/colorTable.h>
@@ -114,18 +117,6 @@ Restart the input subsystem
 void Sys_In_Restart_f()
 {
 	IN_Restart( );
-}
-
-/*
-=================
-Sys_ConsoleInput
-
-Handle new console input
-=================
-*/
-char *Sys_ConsoleInput(void)
-{
-	return CON_Input( );
 }
 
 #ifdef DEDICATED
@@ -262,8 +253,15 @@ cpuFeatures_t Sys_GetProcessorFeatures()
 Sys_Init
 =================
 */
+#if defined _WIN32
+extern void Sys_ClearViewlog_f(void);
+#endif
+
 void Sys_Init(void)
 {
+#if defined (_WIN32) 
+	Cmd_AddCommand("clearviewlog", Sys_ClearViewlog_f);
+#endif
 	Cmd_AddCommand( "in_restart", Sys_In_Restart_f );
 	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 	Cvar_Set( "username", Sys_GetCurrentUser( ) );
@@ -345,8 +343,12 @@ Sys_Print
 */
 void Sys_Print( const char *msg )
 {
-	CON_LogWrite( msg );
-	CON_Print( msg );
+#if defined (_WIN32)
+	Conbuf_AppendText( msg );
+#else
+	CON_LogWrite(msg);
+	CON_Print(msg);
+#endif
 }
 
 /*
@@ -358,11 +360,44 @@ void Sys_Error( const char *error, ... )
 {
 	va_list argptr;
 	char    string[1024];
+#if defined (_WIN32) && !defined (_DEBUG)
+	MSG		msg;
+#endif
 
 	va_start (argptr,error);
 	_vsnprintf (string, sizeof(string), error, argptr);
 	va_end (argptr);
 
+#if defined (_WIN32) && !defined (_DEBUG)
+	Conbuf_AppendText(string);
+	Conbuf_AppendText("\n");
+#else
+	// Print text in the console window/box
+	Sys_Print(string);
+	Sys_Print("\n");
+#endif
+
+#if defined (_WIN32) && !defined (_DEBUG)
+	Sys_SetErrorText( string );
+	Sys_ShowConsole( 1, true );
+
+	timeEndPeriod(1);
+
+	IN_Shutdown();
+
+	// wait for the user to quit
+	while (1) {
+		if (!GetMessage(&msg, NULL, 0, 0)) {
+			Com_Quit_f();
+		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	Sys_DestroyConsole();
+#endif
+
+	CL_Shutdown(va("Client fatal crashed: %s", string), true, true);
 	Sys_ErrorDialog( string );
 
 	Sys_Exit( 3 );

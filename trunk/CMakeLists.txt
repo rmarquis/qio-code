@@ -10,6 +10,7 @@ MESSAGE( STATUS "Using cmake version ${CMAKE_VERSION}" )
 SET( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
 SET( CMAKE_C_FLAGS_DEBUG "-DDEBUG" CACHE STRING "" )
 SET( CMAKE_C_FLAGS_RELEASE "-DNDEBUG" CACHE STRING "" )
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 SET( CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} CACHE STRING "" )
@@ -81,8 +82,6 @@ IF( WIN32 )
   ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
 ENDIF()
 
-SET( CONSOLE "tty" )
-
 # Determine platform
 IF( WIN32 )
   SET( PLATFORM "win32" )
@@ -92,6 +91,7 @@ ELSEIF( UNIX )
     ADD_DEFINITIONS( -DMACOS_X -DMACOS_X_ACCELERATION_HACK -D USE_FILE32API -DMACOS_X_CURSOR_HACK )
   ENDIF()
   SET( PLATFORM "unix" )
+  SET( CONSOLE "tty" )
 ENDIF( )
 
 IF( WIN32 )
@@ -1429,6 +1429,8 @@ SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/server/sv_vis.h
 	${MOUNT_DIR}/sys/sys_loadlib.h
 	${MOUNT_DIR}/sys/sys_local.h
+	${MOUNT_DIR}/sys/sys_win32.h
+	${MOUNT_DIR}/sys/resource.h
 	${MOUNT_DIR}/shared/str.h
 )
 
@@ -1516,7 +1518,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/qcommon/com_systemEventCaster.cpp
 	${MOUNT_DIR}/qcommon/common.cpp
 	${MOUNT_DIR}/sys/con_log.cpp
-	${MOUNT_DIR}/sys/con_passive.cpp
+	${MOUNT_DIR}/sys/con_win32.cpp
 	${MOUNT_DIR}/qcommon/cvar.cpp
 	${MOUNT_DIR}/qcommon/files.cpp
 	${MOUNT_DIR}/qcommon/huffman.cpp
@@ -1540,6 +1542,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/server/sv_vis.cpp
 	${MOUNT_DIR}/sys/sys_main.cpp
 	${MOUNT_DIR}/sys/sys_win32.cpp
+	${MOUNT_DIR}/sys/sys_win32_con.cpp
 	${MOUNT_DIR}/qcommon/unzip.c
 )
 

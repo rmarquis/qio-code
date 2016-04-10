@@ -20,8 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#ifdef _WIN32
+
 #include "../qcommon/qcommon.h"
 #include "sys_local.h"
+#include "sys_win32.h"
+#include <shared/infoString.h>
 
 #include <windows.h>
 #include <lmerr.h>
@@ -40,6 +44,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
+static char sys_exitstr[MAX_STRING_CHARS];
 
 #ifndef DEDICATED
 static UINT timerResolution = 0;
@@ -820,3 +825,65 @@ bool Sys_PIDIsRunning( int pid )
 
 	return false;
 }
+
+/*
+==================
+WinMain
+==================
+*/
+WinVars_t g_WinV;
+static char sys_cmdline[MAX_STRING_CHARS];
+int totalMsec, countMsec;
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	char	cwd[MAX_OSPATH];
+	s32		startTime, endTime;
+
+	if (hPrevInstance) {
+		return 0;
+	}
+
+	g_WinV.hInstance = hInstance;
+	Q_strncpyz(sys_cmdline, lpCmdLine, sizeof(sys_cmdline));
+
+	Sys_CreateConsole();
+
+	SetErrorMode(SEM_FAILCRITICALERRORS);
+
+	Sys_Milliseconds();
+
+	Com_Init(sys_cmdline);
+	NET_Init();
+
+#ifndef DEDICATED
+	IN_Init();
+#endif
+
+	_getcwd(cwd, sizeof(cwd));
+	Com_Printf("Working directory: %s\n", cwd);
+
+	if (!com_dedicated->integer && !com_viewlog->integer) {
+		Sys_ShowConsole(0, false);
+	}
+
+	SetFocus(g_WinV.hWnd);
+
+	while (1) {
+		if (g_WinV.isMinimized || (com_dedicated && com_dedicated->integer)) {
+			Sleep(5);
+		}
+
+		startTime = Sys_Milliseconds();
+
+		IN_Frame();
+		Com_Frame();
+
+		endTime = Sys_Milliseconds();
+		totalMsec += endTime - startTime;
+		countMsec++;
+	}
+
+	// never gets here
+}
+
+#endif

@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/stat.h> // umask
 #else
 #include <winsock.h>
+#include "sys/sys_win32.h"
 #endif
 #include <api/iFaceMgrAPI.h>
 #include <api/moduleManagerAPI.h>
@@ -68,6 +69,7 @@ static fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
 fileHandle_t	com_journalDataFile;		// config files are written here
 
+cvar_s	*com_viewlog;
 cvar_s	*com_speeds;
 cvar_s	*com_developer;
 cvar_s	*com_dedicated;
@@ -174,8 +176,7 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-  static bool opening_qconsole = false;
-
+	static bool opening_qconsole = false;
 
 	va_start (argptr,fmt);
 	_vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -208,7 +209,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			struct tm *newtime;
 			time_t aclock;
 
-      opening_qconsole = true;
+			opening_qconsole = true;
 
 			time( &aclock );
 			newtime = localtime( &aclock );
@@ -232,8 +233,9 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 				Cvar_SetValue("logfile", 0);
 			}
 
-      opening_qconsole = false;
+			opening_qconsole = false;
 		}
+
 		if ( logfile && FS_Initialized()) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
@@ -872,6 +874,9 @@ Com_GetSystemEvent
 */
 sysEvent_t Com_GetSystemEvent()
 {
+#if defined(_WIN32)
+	MSG         msg;
+#endif
 	sysEvent_t  ev;
 	char        *s;
 
@@ -881,6 +886,20 @@ sysEvent_t Com_GetSystemEvent()
 		eventTail++;
 		return eventQueue[ ( eventTail - 1 ) & MASK_QUEUED_EVENTS ];
 	}
+
+#if defined(_WIN32)
+	//Dushan - push test from console to engine
+	while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+		if (!GetMessage(&msg, NULL, 0, 0)) {
+			Com_Quit_f();
+		}
+
+		g_WinV.sysMsgTime = msg.time;
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+#endif
 
 	// check for console commands
 	s = Sys_ConsoleInput();
@@ -1770,6 +1789,7 @@ void Com_Init( char *commandLine ) {
 	com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT | CVAR_SYSTEMINFO );
 	com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 	com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
+	com_viewlog = Cvar_Get("viewlog", "1", CVAR_CHEAT);
 	com_speeds = Cvar_Get ("com_speeds", "0", 0);
 	com_timedemo = Cvar_Get ("timedemo", "0", CVAR_CHEAT);
 	com_cameraMode = Cvar_Get ("com_cameraMode", "0", CVAR_CHEAT);
@@ -1791,6 +1811,12 @@ void Com_Init( char *commandLine ) {
 	Cvar_Get("com_errorMessage", "", CVAR_ROM | CVAR_NORESTART);
 
 	com_introPlayed = Cvar_Get( "com_introplayed", "0", CVAR_ARCHIVE);
+
+	if (com_dedicated->integer) {
+		if (!com_viewlog->integer) {
+			Cvar_Set("viewlog", "1");
+		}
+	}
 
 	s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 	com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1823,6 +1849,9 @@ void Com_Init( char *commandLine ) {
 		com_dedicated->modified = false;
 #ifndef DEDICATED
 		CL_Init();
+#if defined (_WIN32)
+		Sys_ShowConsole(com_viewlog->integer, false);
+#endif
 #endif
 	}
 
@@ -1846,6 +1875,11 @@ void Com_Init( char *commandLine ) {
 	// start in full screen ui mode
 	Cvar_Set("r_uiFullScreen", "1");
 
+	if (!com_dedicated->integer) {
+#if defined (_WIN32)
+		Sys_ShowConsole(com_viewlog->integer, false);
+#endif
+	}
 	
 	if(com_bEditorMode == false) {
 		CL_StartHunkUsers( false );
@@ -2097,6 +2131,16 @@ void Com_Frame() {
 
 	// write config file if anything changed
 	Com_WriteConfiguration(); 
+
+	// if "viewlog" has been modified, show or hide the log console
+	if (com_viewlog->modified) {
+#if defined (_WIN32)
+		if (!com_dedicated->value) {
+			Sys_ShowConsole(com_viewlog->integer, false);
+		}
+#endif
+		com_viewlog->modified = false;
+	}
 
 	//
 	// main event loop

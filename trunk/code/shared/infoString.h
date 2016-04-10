@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // exceed MAX_STRING_CHARS
 #define	MAX_STRING_CHARS	2048	// max length of a string passed to Cmd_TokenizeString
 #define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
+#define MAX_TOKEN_CHARS     1024    // max length of an individual token
 
 #define	MAX_INFO_STRING		8192
 

@@ -21,6 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
+
 // mat_main.cpp - renderer materials managment
 #include "mat_local.h"
 #include "mat_impl.h"
@@ -32,21 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/hashTableTemplate.h>
 #include <shared/autoCmd.h>
 #include <shared/tableList.h>
-
-const char *STR_SkipCurlyBracedSection(const char *p) {
-	u32 level = 1;
-	while(level) {
-		p = G_SkipToNextToken(p);
-		if(p == 0 || *p == 0)
-			return 0; // EOF hit
-		if(*p == '{') 
-			level++;
-		else if(*p == '}')
-			level--;
-		p++;
-	}
-	return p;
-}
+#include <shared/str.h>
 
 struct matFile_s {
 	str fname;
@@ -122,47 +109,6 @@ bool MAT_CacheMatFileText(const char *fname) {
 	return false;
 }
 
-
-// V: this will treat '/' and '\' as equal
-int stricmpn_slashes(const char *s1, const char *s2, int n) {
-	int		c1, c2;
-
-        if ( s1 == NULL ) {
-           if ( s2 == NULL )
-             return 0;
-           else
-             return -1;
-        }
-        else if ( s2==NULL )
-          return 1;
-
-
-	
-	do {
-		c1 = *s1++;
-		c2 = *s2++;
-
-		if (!n--) {
-			return 0;		// strings are equal until end point
-		}
-		
-		if (c1 != c2) {
-			if((c1 == '/'  || c1 == '\\') && (c2 == '/'  || c2 == '\\'))
-				continue; // OK, slashes
-			if (c1 >= 'a' && c1 <= 'z') {
-				c1 -= ('a' - 'A');
-			}
-			if (c2 >= 'a' && c2 <= 'z') {
-				c2 -= ('a' - 'A');
-			}
-			if (c1 != c2) {
-				return c1 < c2 ? -1 : 1;
-			}
-		}
-	} while (c1);
-	
-	return 0;		// strings are equal
-}
 const char *MAT_FindMaterialDefInText(const char *matName, const char *text) {
 	u32 matNameLen = strlen(matName);
 	const char *p = text;
