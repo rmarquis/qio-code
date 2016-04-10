@@ -2,6 +2,7 @@
 	* Replaced old terminal based console with new GUI based
 	* Updated cMake
 	* Fixed bug with multiple video restarting on engine load
+	* Write info about files with invalid handle and files what filename have more length then what it is permitted 
 
 04-05-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Cleanded cMake
