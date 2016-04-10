@@ -673,6 +673,8 @@ public:
 	}
 };
 const char *va(const char *fmt, ...);
+int stricmpn_slashes(const char *s1, const char *s2, int n);
+const char *STR_SkipCurlyBracedSection(const char *p);
 
 
 #endif // __SHARED_STR_H__

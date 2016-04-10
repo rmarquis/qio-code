@@ -661,7 +661,8 @@ void GLimp_Init()
 	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
 #endif
 
-	//Sys_GLimpInit( ); // TODO
+	//Dushan - we need this little sucker
+	Sys_GLimpInit();
 
 	// Create the window and set up the context
 	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, /*r_noborder->integer*/0))

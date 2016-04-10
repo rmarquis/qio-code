@@ -1,4 +1,9 @@
-08-05-2016 Dusan Jocic <dusanjocic@msn.com>
+04-10-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Replaced old terminal based console with new GUI based
+	* Updated cMake
+	* Fixed bug with multiple video restarting on engine load
+
+04-05-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Cleanded cMake
 	* Fixed converting argument
 	

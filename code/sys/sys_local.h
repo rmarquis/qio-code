@@ -57,3 +57,9 @@ void Sys_AnsiColorPrint( const char *msg );
 
 int Sys_PID( void );
 bool Sys_PIDIsRunning( int pid );
+
+#if defined(_WIN32)
+void Conbuf_AppendText(const char *msg);
+void Sys_DestroyConsole(void);
+#endif
+

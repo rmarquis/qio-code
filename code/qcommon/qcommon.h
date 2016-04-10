@@ -922,6 +922,7 @@ extern	cvar_s	*com_speeds;
 extern	cvar_s	*com_timescale;
 extern	cvar_s	*com_sv_running;
 extern	cvar_s	*com_cl_running;
+extern	cvar_s	*com_viewlog;
 extern	cvar_s	*com_version;
 extern	cvar_s	*com_blood;
 extern	cvar_s	*com_journal;

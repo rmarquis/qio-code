@@ -452,6 +452,8 @@ Con_Init
 void Con_Init (void) {
 	int		i;
 
+	Com_Printf("\n----- Console Initialization -------\n");
+
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 
@@ -527,6 +529,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "rf_setSkyMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshSingleMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshMaterialSourceFile", Cmd_CompleteMaterialFileName );
+
+	Com_Printf("Console initialized.\n");
 }
 
 /*
