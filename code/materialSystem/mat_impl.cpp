@@ -128,6 +128,7 @@ mtrStage_c::mtrStage_c() {
 	cubeMap = 0;
 	alphaGen = ALPHAGEN_NOT_SET;
 	alphaExp = 0;
+	shininessExp = 0;
 }
 mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
 	alphaFunc = AF_NONE;
@@ -150,6 +151,7 @@ mtrStage_c::mtrStage_c(class textureAPI_i *tex) {
 	blendChannelRed = 0;
 	blendChannelGreen = 0;
 	alphaExp = 0;
+	shininessExp = 0;
 
 	this->stageTexture.fromTexturePointer(tex);
 }
@@ -191,6 +193,10 @@ mtrStage_c::~mtrStage_c() {
 	if(alphaExp) {
 		alphaExp->destroyAST();
 		alphaExp = 0;
+	}
+	if(shininessExp) {
+		shininessExp->destroyAST();
+		shininessExp = 0;
 	}
 	if(alphaTestAST) {
 		alphaTestAST->destroyAST();
@@ -299,6 +305,11 @@ float mtrStage_c::getRGBGenWaveValue(float curTimeSec) const {
 		return 0; // error
 	float ret = rgbGen->getWaveForm().evaluate(curTimeSec);
 	return ret;
+}
+float mtrStage_c::evaluateShininess(const class astInputAPI_i *in) const {
+	if(shininessExp == 0)
+		return 0; // errorr
+	return shininessExp->execute(in);
 }
 float mtrStage_c::evaluateAlphaGen(const class astInputAPI_i *in) const {
 	if(alphaExp == 0)
@@ -1441,6 +1452,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
 					}
 #endif
+				} else if(p.atWord_dontNeedWS("shininess")) {
+					// Qio-specific
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						stage->setShininessExp(ast);
+					} else {
+						g_core->RedWarning("Failed to parse stage shininess AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("glowStage")) {
 
 				} else if(p.atWord("vertexcolor")) {

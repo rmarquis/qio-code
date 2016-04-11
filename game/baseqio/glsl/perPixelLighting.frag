@@ -52,6 +52,7 @@ uniform sampler2D heightMap;
 #endif
 #ifdef HAS_SPECULAR_MAP
 uniform sampler2D specularMap;
+uniform float u_shininess;
 #endif
 
 #if (defined(HAS_HEIGHT_MAP) || defined(HAS_BUMP_HEIGHTMAP_MAP))
@@ -68,7 +69,6 @@ uniform vec3 u_lightColor;
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 uniform float u_shadowMapSize;
 #endif
-
 
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
@@ -319,16 +319,11 @@ void main() {
 	r = normalize(r);
 	vec3 v = normalize(lightToView);
 
-	vec4 specular;
-	float shininess = 32.0;
 #ifdef HAS_SPECULAR_MAP
 	vec4 specularColor = texture2D (specularMap, texCoord);
-#else
-	vec4 specularColor = vec4(0.2, 0.2, 0.2, 1.0);
-#endif
   	vec4 specularFinal;
-	if (shininess != 0.0) {
-		specularFinal = specularColor * pow(max(0.0,dot(r, v)), shininess);
+	if (u_shininess != 0.0) {
+		specularFinal = specularColor * pow(max(0.0,dot(r, v)), u_shininess);
 	} else {
 		specularFinal = vec4(0.0, 0.0, 0.0, 0.0);
 	}

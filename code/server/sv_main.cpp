@@ -800,7 +800,12 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	} else if (!stricmp(c, "stufftext")) {
 	// command for our new development tools, 
 	// should be ignored if not running in dev mode?
+		// Cmd_Args would destroy the quotation marks
+#if 0
+		const char *args = (const char*)msg->data + 4 + strlen("stufftext");//Cmd_Args();
+#else
 		const char *args = Cmd_Args();
+#endif
 		Com_Printf("NewTools command received: %s\n",args);
 		Cbuf_AddText(args);
 		Cbuf_AddText(";");

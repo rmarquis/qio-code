@@ -476,6 +476,7 @@ glShader_c *GL_RegisterShader(const char *baseName, const glslPermutationFlags_s
 	ret->u_lightColor = glGetUniformLocation(shader,"u_lightColor");
 	ret->u_blendBoxMins = glGetUniformLocation(shader,"u_blendBoxMins");
 	ret->u_blendBoxMaxs = glGetUniformLocation(shader,"u_blendBoxMaxs");
+	ret->u_shininess = glGetUniformLocation(shader,"u_shininess");
 
 	ret->atrTangents = glGetAttribLocation(shader,"atrTangents");
 	ret->atrBinormals = glGetAttribLocation(shader,"atrBinormals");

@@ -113,6 +113,8 @@ public:
 	virtual bool getDepthWrite() const = 0;
 	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const = 0;
 	virtual float evaluateAlphaGen(const class astInputAPI_i *in) const = 0;
+	// for Qio specular mapping
+	virtual float evaluateShininess(const class astInputAPI_i *in) const = 0;
 	// return true if stage is conditional (has Doom3 'if' condition)
 	virtual bool hasIFCondition() const = 0;
 	// return true if drawing condition is met for given input variables
