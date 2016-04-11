@@ -449,6 +449,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	int iCubeMapCounter;
 	// for Doom3 material expressions
 	astInput_c materialVarList;
+	float lastStageShininess;
 
 	// counters
 	u32 c_frame_vbsReusedByDifferentDrawCall;
@@ -486,6 +487,9 @@ public:
 		bHasSunLight = false;
 		bSavingDepthShadowMapsToFile = false;
 		iCubeMapCounter = 0;
+		// NOTE: it works only when specularmap is present
+		// but procedural image can be used for specularmap
+		lastStageShininess = 32.f;
 	}
 	virtual void setBDrawEditorImageStages(bool newBDraw) {
 		bDrawEditorImageStages = newBDraw;
@@ -1520,6 +1524,10 @@ public:
 				if(newShader->uLightRadius != -1) {
 					glUniform1f(newShader->uLightRadius,curLight->getRadius());
 				}
+				if(newShader->u_shininess != -1) {
+					glUniform1f(newShader->u_shininess,lastStageShininess);
+					g_core->Print("Sending shininess to shader - %f\n",lastStageShininess);
+				}
 				if(newShader->u_lightDir != -1) {
 					const vec3_c &xyz = curLight->getSpotLightDir();
 					vec3_c xyzLocal;
@@ -2030,6 +2038,9 @@ public:
 					specularMap = 0;
 				} else {
 					specularMap = s->getSpecularMap();
+				}
+				if(specularMap) {
+					lastStageShininess = specularMap->evaluateShininess(&materialVarList);
 				}
 				// get the heightmap substage of current stage
 				const mtrStageAPI_i *heightMap;

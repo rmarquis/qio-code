@@ -181,6 +181,7 @@ class mtrStage_c : public mtrStageAPI_i {
 	class rgbGen_c *rgbGen;
 	enum alphaGen_e alphaGen;
 	class astAPI_i *alphaExp;
+	class astAPI_i *shininessExp; // Qio-specific
 	bool depthWrite; // glDepthMask(stage->depthWrite); (true by default)
 	// custom per-stage RGBA masking for Doom3 materials
 	maskState_s colorMask;
@@ -271,6 +272,7 @@ public:
 	virtual float getRGBGenWaveValue(float curTimeSec) const;
 	virtual void evaluateRGBGen(const class astInputAPI_i *in, float *out3Floats) const;
 	virtual float evaluateAlphaGen(const class astInputAPI_i *in) const;
+	virtual float evaluateShininess(const class astInputAPI_i *in) const;
 	virtual bool getDepthWrite() const {
 		return depthWrite;
 	}
@@ -371,6 +373,10 @@ public:
 	void setStageCondition(class astAPI_i *newCondition) {
 		condition = newCondition;
 	}
+	void setShininessExp(class astAPI_i *ne) {
+		shininessExp = ne;
+	}
+	
 	// return true if stage is conditional (has Doom3 'if' condition)
 	virtual bool hasIFCondition() const;
 	// return true if drawing condition is met for given input variables

@@ -101,7 +101,8 @@ friend class rbSDLOpenGL_c;
 	int u_shadowMapSize;
 	// RGB light color
 	int u_lightColor;
-
+	// for specular mapping
+	int u_shininess;
 	// sampler2D locations
 	int sColorMap; // main diffuse texture
 	int sColorMap2; // uses the same slot as lightmap

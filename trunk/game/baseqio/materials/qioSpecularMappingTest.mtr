@@ -1,0 +1,49 @@
+
+// TODO: how is shininess defined in other engines? D3? Q4? 
+textures/qiotests/specularColorWhite32
+{
+	colormap textures/qiotests/rockwall_d.png
+	{
+		stage specularmap
+		// You can use any image file here, but I will use the procedural single-color bitmap.
+		map makeRGB(1,1,1)
+		shininess 32
+	}
+}
+
+textures/qiotests/specularColorWhite8
+{
+	colormap textures/qiotests/rockwall_d.png
+	{
+		stage specularmap
+		// You can use any image file here, but I will use the procedural single-color bitmap.
+		map makeRGB(1,1,1)
+		shininess 8
+	}
+}
+
+textures/qiotests/specularColorRed32
+{
+	colormap textures/qiotests/rockwall_d.png
+	{
+		stage specularmap
+		// You can use any image file here, but I will use the procedural single-color bitmap.
+		map makeRGB(1,0,0)
+		shininess 32
+	}
+}
+
+// material script expressions are supported for shininess parameter
+textures/qiotests/specularColorRedExp
+{
+	colormap textures/qiotests/rockwall_d.png
+	{
+		stage specularmap
+		// You can use any image file here, but I will use the procedural single-color bitmap.
+		map makeRGB(1,0,0)
+		shininess 32+(time*1000)%64
+	}
+}
+
+
+

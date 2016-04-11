@@ -46,6 +46,11 @@ const char *imageOps [] = {
 u32 numImageOps = sizeof(imageOps)/sizeof(imageOps[0]);
 
 inline void parseTextureName(str &out, parser_c &p) {
+	// special case for eg. "(1 1 1)" single-colro images (Qio-specific?)
+	if(p.isNextTokenInQuotationMarks()) {
+		out = p.getToken();
+		return;
+	}
 	// first check for image operator commands which may have whitespaces in syntex
 	// (they were added for Doom3)
 	for(u32 i = 0; i < numImageOps; i++) {

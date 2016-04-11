@@ -270,6 +270,10 @@ public:
 	void makeAlpha() {
 		IMG_MakeAlpha(data,w,h);
 	}
+	//void makeRGB(byte r, byte g, byte b) {
+	//	w = h = 16;
+	//	data = 
+	//}
 	void invertColor() {
 		IMG_InvertColor(data,w,h);
 	}
@@ -438,6 +442,36 @@ image_c *MAT_ParseImageScript_r(parser_c &p) {
 			return 0; // error
 		}
 		return ret;
+	} else if(p.atWord_dontNeedWS("makeRGB")) {
+		if(p.atChar('(') == false) {
+			g_core->RedWarning("Expected '(' after \"makeRGB\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+			return 0; // error
+		}
+		// makeRGB(1,1,1)
+		float val[3];
+		for(u32 i = 0; i < 3; i++) {
+			if(i == 2) {		
+				const char *s = p.getToken(")");	
+				val[i] = atof(s);
+				if(!p.atChar(')')) {		
+					g_core->RedWarning("Expected ')' after \"makeRGB\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+				}
+			} else {
+				const char *s = p.getToken(",");
+				val[i] = atof(s);
+				if(!p.atChar(',')) {
+					g_core->RedWarning("Expected ',' inside \"makeRGB\" at line %i of %s, found %s\n",p.getCurrentLineNumber(),p.getDebugFileName(),p.getToken());
+				}
+			}
+		}
+		image_c *rgbImage = new image_c;
+		if(rgbImage){
+			// hack
+			char tmp[128];
+			sprintf(tmp,"(%f %f %f)",val[0],val[1],val[2]);
+			rgbImage->loadFromFile(tmp);
+		}
+		return rgbImage;	
 	} else {
 		str texName = p.getToken(",)");
 		image_c *newImage = IMG_LoadImage(texName);
@@ -445,6 +479,11 @@ image_c *MAT_ParseImageScript_r(parser_c &p) {
 	}
 }
 class textureAPI_i *MAT_ParseImageScript(parser_c &p) {
+	// special case for eg. "(1 1 1)" single-colro images (Qio-specific?)
+	if(p.isNextTokenInQuotationMarks()) {
+		str texName = p.getToken();
+		return MAT_RegisterTexture(texName,TWM_REPEAT);
+	}
 	const char *startPos = p.getCurDataPtr();
 	image_c *finalImage = MAT_ParseImageScript_r(p);
 	const char *endPos = p.getCurDataPtr();
