@@ -313,13 +313,15 @@ void main() {
 // 	}
 // #endif
 
-#ifndef DEBUG_SKIP_SPECULAR
+#ifdef DEBUG_SKIP_SPECULAR
+#undef HAS_SPECULAR_MAP
+#endif
+#ifdef HAS_SPECULAR_MAP
 	vec3 lightToView = u_viewOrigin - v_vertXYZ;
 	vec3 r = -reflect(lightDirection, useNormal);
 	r = normalize(r);
 	vec3 v = normalize(lightToView);
 
-#ifdef HAS_SPECULAR_MAP
 	vec4 specularColor = texture2D (specularMap, texCoord);
   	vec4 specularFinal;
 	if (u_shininess != 0.0) {
