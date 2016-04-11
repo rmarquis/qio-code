@@ -2264,23 +2264,24 @@ void CXYWnd::DrawCameraIcon()
 {
 	float	x, y, a;
 
+	CCamWnd *cam = g_pParentWnd->GetCamera();
   if (m_nViewType == XY)
   {
-    x = g_pParentWnd->GetCamera()->Camera().origin[0];
-		y = g_pParentWnd->GetCamera()->Camera().origin[1];
-	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[YAW]);;
+    x = cam->Camera().origin[0];
+		y = cam->Camera().origin[1];
+	  a = DEG2RAD(cam->Camera().angles[YAW]);;
   }
   else if (m_nViewType == YZ)
   {
-	  x = g_pParentWnd->GetCamera()->Camera().origin[1];
-		y = g_pParentWnd->GetCamera()->Camera().origin[2];
-	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
+	  x = cam->Camera().origin[1];
+		y = cam->Camera().origin[2];
+	  a = DEG2RAD(cam->Camera().angles[PITCH]);
   }
   else
   {
-	  x = g_pParentWnd->GetCamera()->Camera().origin[0];
-		y = g_pParentWnd->GetCamera()->Camera().origin[2];
-	  a = DEG2RAD(g_pParentWnd->GetCamera()->Camera().angles[PITCH]);
+	  x = cam->Camera().origin[0];
+		y = cam->Camera().origin[2];
+	  a = DEG2RAD(cam->Camera().angles[PITCH]);
   }
 
 	glColor3f (0.0, 0.0, 1.0);
@@ -2302,7 +2303,7 @@ void CXYWnd::DrawCameraIcon()
 #if 0
   char text[128];
 	glRasterPos2f (x+64, y+64);
-	sprintf (text, "%f",g_pParentWnd->GetCamera()->Camera().angles[YAW]);
+	sprintf (text, "%f",cam->Camera().angles[YAW]);
 	glCallLists (strlen(text), GL_UNSIGNED_BYTE, text);
 #endif
 
