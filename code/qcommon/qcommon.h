@@ -231,7 +231,7 @@ int		MSG_ReadShort (msg_s *sb);
 int		MSG_ReadUShort (msg_s *sb);
 int		MSG_ReadLong (msg_s *sb);
 float	MSG_ReadFloat (msg_s *sb);
-char	*MSG_ReadString (msg_s *sb);
+char	*MSG_ReadString (msg_s *sb, bool bFixFormatChars = true);
 char	*MSG_ReadBigString (msg_s *sb);
 char	*MSG_ReadStringLine (msg_s *sb);
 float	MSG_ReadAngle16 (msg_s *sb);

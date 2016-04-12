@@ -462,7 +462,7 @@ float MSG_ReadFloat( msg_s *msg ) {
 	return dat.f;	
 }
 
-char *MSG_ReadString( msg_s *msg ) {
+char *MSG_ReadString( msg_s *msg, bool bFixFormatChars ) {
 	static char	string[MAX_STRING_CHARS];
 	int		l,c;
 	
@@ -473,7 +473,7 @@ char *MSG_ReadString( msg_s *msg ) {
 			break;
 		}
 		// translate all fmt spec to avoid crash bugs
-		if ( c == '%' ) {
+		if ( bFixFormatChars && c == '%' ) {
 			c = '.';
 		}
 		// don't allow higher ascii values

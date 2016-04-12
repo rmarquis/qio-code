@@ -777,7 +777,8 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 		Huff_Decompress(msg, 12);
 	}
 
-	s = MSG_ReadString( msg );
+	bool bFixFormatChars = strnicmp((const char*)msg->data+4,"stufftext",9);
+	s = MSG_ReadString( msg, bFixFormatChars );
 	Cmd_TokenizeString( s );
 
 	c = Cmd_Argv(0);
