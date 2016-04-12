@@ -2380,7 +2380,8 @@ void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 	MSG_BeginReadingOOB( msg );
 	MSG_ReadLong( msg );	// skip the -1
 
-	s = MSG_ReadString( msg );
+	bool bFixFormatChars = strnicmp((const char*)msg->data+4,"stufftext",9);
+	s = MSG_ReadString( msg, bFixFormatChars );
 
 	Cmd_TokenizeString( s );
 
