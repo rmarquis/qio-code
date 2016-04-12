@@ -6,6 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -371,6 +372,8 @@ namespace mtrGenSimple
             FindMaterialFiles(MergePaths(tbBasePath.Text,"scripts\\"), "shader");
             FindMaterialFiles(MergePaths(tbBasePath.Text,"materials\\"), "mtr");
             PrecacheMaterialFiles();
+            PaksList pks = new PaksList();
+            pks.cacheDirectory(tbBasePath.Text);
         }
         private void FillImageTypes(ComboBox cb)
         {
@@ -721,6 +724,7 @@ namespace mtrGenSimple
             mtrText += "\t// generated on " + dateStr + Environment.NewLine;
             if (diffuseMap != null)
             {
+                mtrText += "\tqer_editorImage " + getLocalPath(diffuseMap.targetPath) + Environment.NewLine;
                 mtrText += "\tdiffuseMap " + getLocalPath(diffuseMap.targetPath) + Environment.NewLine;
             }
             if (specularMap != null)
@@ -840,7 +844,47 @@ namespace mtrGenSimple
                 setBasePath(fbd.SelectedPath);
             }
         }
+        class PakFile
+        {
+            private String path;
+            private ZipArchive zip;
 
+            public PakFile(String path)
+            {
+                this.path = path;
+                this.zip = ZipFile.Open(path, ZipArchiveMode.Read);
+            }
+        }
+        class PaksList
+        {
+            private List<PakFile> paks;
+
+            private void cachePak(string path)
+            {
+            //    using (ZipArchive zip = ZipFile.Open(path, ZipArchiveMode.Read))
+            //        foreach (ZipArchiveEntry entry in zip.Entries)
+            //            if (entry.Name == "myfile")
+            //                entry.ExtractToFile("myfile");
+                paks.Add(new PakFile(path));
+            }
+            private void findPakFiles(string path, string ext)
+            {
+                if (Directory.Exists(path) == false)
+                    return;
+                string[] files = Directory.GetFiles(path, "*." + ext, SearchOption.AllDirectories);
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string fullPath = files[i];
+                    cachePak(fullPath);
+                }
+            }
+            public void cacheDirectory(string path)
+            {
+                paks = new List<PakFile>();
+                findPakFiles(path, "pk3");
+                findPakFiles(path, "pk4");
+            }
+        }
         private void btUpdateExistingMaterial_Click(object sender, EventArgs e)
         {
 
