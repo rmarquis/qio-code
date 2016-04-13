@@ -47,4 +47,9 @@ typedef double				f64;
 // boleans
 typedef s32					b32; // 32 bit boolean
 
+// null
+#ifndef NULL
+#define NULL 0
+#endif
+
 #endif //__TYPEDEFS_H__

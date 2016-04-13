@@ -641,7 +641,7 @@ Sys_Dialog
 Display a win32 dialog box
 ==============
 */
-dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *title )
+dialogResult_e Sys_Dialog( dialogType_e type, const char *message, const char *title )
 {
 	UINT uType;
 
@@ -836,7 +836,7 @@ WinVars_t g_WinV;
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	char	cwd[MAX_OSPATH];
-	s32		startTime, endTime, i, totalMsec, countMsec;
+	s32		startTime, endTime, i, totalMsec = 0, countMsec = 0;
 	char	commandLine[MAX_STRING_CHARS] = { 0 };
 
 	if (hPrevInstance) {
