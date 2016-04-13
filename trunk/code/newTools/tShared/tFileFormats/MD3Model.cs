@@ -558,18 +558,18 @@ namespace fileFormats
             // skins count
             w.writeInt(0);
             int ofsFrames = 108;
-            int ofsTags = ofsFrames + frames.Count * 52;
+            int ofsTags = ofsFrames + frames.Count * 56;
             int ofsSurfaces = ofsTags + tags.Count * 110;
             // sanity check
-            if (ofsTags != w.getPos())
-            {
-                MessageBox.Show("OfsTags mismatch.",
-                "MD3 write error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Exclamation,
-                MessageBoxDefaultButton.Button1);
-                return true;
-            }
+            //if (ofsTags != w.getPos())
+            //{
+            //    MessageBox.Show("OfsTags mismatch.",
+            //    "MD3 write error",
+            //    MessageBoxButtons.OK,
+            //    MessageBoxIcon.Exclamation,
+            //    MessageBoxDefaultButton.Button1);
+            //    return true;
+            //}
             // offset to first frame
             w.writeInt(ofsFrames);
             // offset to first tag
@@ -596,7 +596,7 @@ namespace fileFormats
             // sanity check
             if (ofsTags != w.getPos())
             {
-                MessageBox.Show("OfsTags mismatch.",
+                MessageBox.Show("OfsTags mismatch ("+ofsTags + " vs pos " + w.getPos() + ".",
                 "MD3 write error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Exclamation,

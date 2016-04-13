@@ -34,5 +34,10 @@ namespace mapFileExplorer
                 treeView1.Nodes.Add(nodeClass);
             }
         }
+
+        private void FormModelUsersStats_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
