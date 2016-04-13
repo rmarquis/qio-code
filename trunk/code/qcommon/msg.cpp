@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/animationFlags.h>
 #include <shared/infoString.h>
 
-static huffman_t		msgHuff;
+static huffman_s		msgHuff;
 
 static bool			msgInit = false;
 
