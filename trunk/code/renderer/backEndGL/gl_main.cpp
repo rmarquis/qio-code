@@ -131,7 +131,7 @@ static aCvar_c rb_wireframeSkyBoxCubeMapStages("rb_wireframeSkyBoxCubeMapStages"
 static aCvar_c rb_wireframeEditorImageStages("rb_wireframeEditorImageStages","0");
 static aCvar_c rb_printBumpHeightMapMaterials("rb_printBumpHeightMapMaterials","0");
 static aCvar_c rb_skipSpecular("rb_skipSpecular","0");
-
+static aCvar_c rb_printBoundShininess("rb_printBoundShininess", "0");
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1526,7 +1526,9 @@ public:
 				}
 				if(newShader->u_shininess != -1) {
 					glUniform1f(newShader->u_shininess,lastStageShininess);
-					g_core->Print("Sending shininess to shader - %f\n",lastStageShininess);
+					if (rb_printBoundShininess.getInt()) {
+						g_core->Print("Sending shininess to shader - %f\n", lastStageShininess);
+					}
 				}
 				if(newShader->u_lightDir != -1) {
 					const vec3_c &xyz = curLight->getSpotLightDir();
