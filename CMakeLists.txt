@@ -10,7 +10,7 @@ MESSAGE( STATUS "Using cmake version ${CMAKE_VERSION}" )
 SET( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
 SET( CMAKE_C_FLAGS_DEBUG "-DDEBUG" CACHE STRING "" )
 SET( CMAKE_C_FLAGS_RELEASE "-DNDEBUG" CACHE STRING "" )
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc" )
 SET( CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" )
 SET( CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} CACHE STRING "" )
@@ -1486,6 +1486,7 @@ SET ( CORE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/str.h
 	${MOUNT_DIR}/shared/infoString.h
 	${MOUNT_DIR}/shared/keyCatchers.h
+	${MOUNT_DIR}/shared/huffman.h
 )
 
 SET ( CORE_SHARED_SOURCES
@@ -1497,6 +1498,7 @@ SET ( CORE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/portalizedBSPTree.cpp
 	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/shared/infoString.cpp
+	${MOUNT_DIR}/shared/huffman.cpp
 )
 
 SET ( CORE_SOURCE_FILES
@@ -1521,7 +1523,6 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/sys/con_win32.cpp
 	${MOUNT_DIR}/qcommon/cvar.cpp
 	${MOUNT_DIR}/qcommon/files.cpp
-	${MOUNT_DIR}/qcommon/huffman.cpp
 	${MOUNT_DIR}/qcommon/iFaceMgrIMPL.cpp
 	${MOUNT_DIR}/qcommon/ioapi.c
 	${MOUNT_DIR}/qcommon/md4.cpp
@@ -2254,7 +2255,7 @@ IF( WIN32 )
 			${EDITOR_HEADERS}
 			${EDITOR_SOURCES}
 		)
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4996")
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /I4996")
 		SET_TARGET_PROPERTIES( editor PROPERTIES LINK_FLAGS "/DEF:\"${REF_DIR}/editor.def" OUTPUT_NAME "editor${BUILD_ARCH}" PREFIX "" )
 		TARGET_INCLUDE_DIRECTORIES( editor PRIVATE ${MOUNT_DIR} ${GLUT_INCLUDE_DIR} ${MOUNT_DIR}/editor/ ${MOUNT_DIR}/editor/gui/mfc ${LIB_DIR}/il-1.7.8-x86/include ${MOUNT_DIR}/tools/radiantAFXInclude/MFC/Include )
 		SET_TARGET_PROPERTIES( editor PROPERTIES
