@@ -774,7 +774,7 @@ static void SV_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 	MSG_ReadLong( msg );		// skip the -1 marker
 
 	if (!strncmp("connect", (char *) &msg->data[4], 7)) {
-		Huff_Decompress(msg, 12);
+		msg->decompress(12);
 	}
 
 	bool bFixFormatChars = strnicmp((const char*)msg->data+4,"stufftext",9);

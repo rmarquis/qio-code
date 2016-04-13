@@ -190,6 +190,9 @@ struct msg_s {
 	int		cursize;
 	int		readcount;
 	int		bit;				// for bitwise reads and writes
+
+	void compress(int ofs);
+	void decompress(int ofs);
 };
 
 void MSG_Init (msg_s *buf, byte *data, int length);
@@ -1138,53 +1141,6 @@ enum dialogType_e
 dialogResult_e Sys_Dialog( dialogType_e type, const char *message, const char *title );
 
 bool Sys_WritePIDFile();
-
-/* This is based on the Adaptive Huffman algorithm described in Sayood's Data
- * Compression book.  The ranks are not actually stored, but implicitly defined
- * by the location of a node within a doubly-linked list */
-
-#define NYT HMAX					/* NYT = Not Yet Transmitted */
-#define INTERNAL_NODE (HMAX+1)
-
-struct huffNode_s {
-	struct	huffNode_s *left, *right, *parent; /* tree structure */
-	struct	huffNode_s *next, *prev; /* doubly-linked list */
-	struct	huffNode_s **head; /* highest ranked node in block */
-	int		weight;
-	int		symbol;
-};
-
-#define HMAX 256 /* Maximum symbol */
-
-struct huff_s {
-	int			blocNode;
-	int			blocPtrs;
-
-	huffNode_s*		tree;
-	huffNode_s*		lhead;
-	huffNode_s*		ltail;
-	huffNode_s*		loc[HMAX+1];
-	huffNode_s**	freelist;
-
-	huffNode_s		nodeList[768];
-	huffNode_s*		nodePtrs[768];
-};
-
-struct huffman_s {
-	huff_s		compressor;
-	huff_s		decompressor;
-};
-
-void	Huff_Compress(msg_s *buf, int offset);
-void	Huff_Decompress(msg_s *buf, int offset);
-void	Huff_Init(huffman_s *huff);
-void	Huff_addRef(huff_s* huff, byte ch);
-int		Huff_Receive (huffNode_s *node, int *ch, byte *fin);
-void	Huff_transmit (huff_s *huff, int ch, byte *fout);
-void	Huff_offsetReceive (huffNode_s *node, int *ch, byte *fin, int *offset);
-void	Huff_offsetTransmit (huff_s *huff, int ch, byte *fout, int *offset);
-void	Huff_putBit( int bit, byte *fout, int *offset);
-int		Huff_getBit( byte *fout, int *offset);
 
 // flags for sv_allowDownload and cl_allowDownload
 #define DLF_ENABLE 1
