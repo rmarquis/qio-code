@@ -36,7 +36,7 @@ typedef enum {
 	FS_WRITE,
 	FS_APPEND,
 	FS_APPEND_SYNC
-} fsMode_t;
+} fsMode_e;
 
 typedef enum {
 	FS_SEEK_CUR,
@@ -48,7 +48,7 @@ typedef enum {
 
 // these are only temporary function pointers, TODO: rework them?
 struct vfsAPI_s : public iFaceBase_i {
-	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_t mode );
+	int (*FS_FOpenFile)( const char *qpath, fileHandle_t *f, fsMode_e mode );
 	int (*FS_Read)( void *buffer, int len, fileHandle_t f );
 	int (*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void (*FS_FCloseFile)( fileHandle_t f );

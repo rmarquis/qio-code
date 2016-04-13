@@ -84,7 +84,7 @@ Netchan_Setup
 called to open a channel to a remote system
 ==============
 */
-void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, int challenge, bool compat)
+void Netchan_Setup(netSrc_e sock, netchan_t *chan, netAdr_s adr, int qport, int challenge, bool compat)
 {
 	memset (chan, 0, sizeof(*chan));
 	
@@ -439,7 +439,7 @@ typedef struct {
 loopback_t	loopbacks[2];
 
 
-bool	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_s *net_message)
+bool	NET_GetLoopPacket (netSrc_e sock, netAdr_s *net_from, msg_s *net_message)
 {
 	int		i;
 	loopback_t	*loop;
@@ -464,7 +464,7 @@ bool	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_s *net_message)
 }
 
 
-void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t to)
+void NET_SendLoopPacket (netSrc_e sock, int length, const void *data, netAdr_s to)
 {
 	int		i;
 	loopback_t	*loop;
@@ -484,13 +484,13 @@ typedef struct packetQueue_s {
         struct packetQueue_s *next;
         int length;
         byte *data;
-        netadr_t to;
+        netAdr_s to;
         int release;
 } packetQueue_t;
 
 packetQueue_t *packetQueue = NULL;
 
-static void NET_QueuePacket( int length, const void *data, netadr_t to,
+static void NET_QueuePacket( int length, const void *data, netAdr_s to,
 	int offset )
 {
 	packetQueue_t *neww, *next = packetQueue;
@@ -537,7 +537,7 @@ void NET_FlushPacketQueue(void)
 	}
 }
 
-void NET_SendPacket( netsrc_t sock, int length, const void *data, netadr_t to ) {
+void NET_SendPacket( netSrc_e sock, int length, const void *data, netAdr_s to ) {
 
 	// sequenced packets are shown in netchan, so just show oob
 	if ( showpackets->integer && *(int *)data == -1 )	{
@@ -573,7 +573,7 @@ NET_OutOfBandPrint
 Sends a text message in an out-of-band datagram
 ================
 */
-void QDECL NET_OutOfBandPrint( netsrc_t sock, netadr_t adr, const char *format, ... ) {
+void QDECL NET_OutOfBandPrint( netSrc_e sock, netAdr_s adr, const char *format, ... ) {
 	va_list		argptr;
 	char		string[MAX_MSGLEN];
 
@@ -599,7 +599,7 @@ NET_OutOfBandPrint
 Sends a data message in an out-of-band datagram (only used for "connect")
 ================
 */
-void QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len ) {
+void QDECL NET_OutOfBandData( netSrc_e sock, netAdr_s adr, byte *format, int len ) {
 	byte		string[MAX_MSGLEN*2];
 	int			i;
 	msg_s		mbuf;
@@ -644,7 +644,7 @@ Traps "localhost" for loopback, passes everything else to system
 return 0 on address not found, 1 on address found with port, 2 on address found without port.
 =============
 */
-int NET_StringToAdr( const char *s, netadr_t *a, netadrtype_t family )
+int NET_StringToAdr( const char *s, netAdr_s *a, netAdrType_e family )
 {
 	char	base[MAX_STRING_CHARS], *search;
 	char	*port = NULL;

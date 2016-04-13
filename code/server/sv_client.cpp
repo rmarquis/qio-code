@@ -55,7 +55,7 @@ as well as IPv6 connections, since there is no way to use the
 v4-only auth server for these new types of connections.
 =================
 */
-void SV_GetChallenge(netadr_t from)
+void SV_GetChallenge(netAdr_s from)
 {
 	int		i;
 	int		oldest;
@@ -193,7 +193,7 @@ void SV_GetChallenge(netadr_t from)
 //challengeResponse to it
 //====================
 //*/
-//void SV_AuthorizeIpPacket( netadr_t from ) {
+//void SV_AuthorizeIpPacket( netAdr_s from ) {
 //	int		challenge;
 //	int		i;
 //	char	*s;
@@ -267,7 +267,7 @@ Check whether a certain address is banned
 ==================
 */
 
-static bool SV_IsBanned(netadr_t *from, bool isexception)
+static bool SV_IsBanned(netAdr_s *from, bool isexception)
 {
 	int index;
 	serverBan_t *curban;
@@ -301,7 +301,7 @@ A "connect" OOB command has been received
 ==================
 */
 
-void SV_DirectConnect( netadr_t from ) {
+void SV_DirectConnect( netAdr_s from ) {
 	char		userinfo[MAX_INFO_STRING];
 	int			i;
 	client_t	*cl, *newcl;

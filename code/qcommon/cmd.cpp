@@ -341,13 +341,13 @@ void Cmd_Echo_f (void)
 =============================================================================
 */
 
-typedef struct cmd_function_s
+struct cmdFunction_s
 {
-	struct cmd_function_s	*next;
+	struct cmdFunction_s	*next;
 	char					*name;
 	xcommand_t				function;
 	completionFunc_t	complete;
-} cmd_function_t;
+};
 
 
 static	int			cmd_argc;
@@ -355,7 +355,7 @@ static	char		*cmd_argv[MAX_STRING_TOKENS];		// points into cmd_tokenized
 static	char		cmd_tokenized[MAX_INFO_STRING+MAX_STRING_TOKENS];	// will have 0 bytes inserted
 static	char		cmd_cmd[MAX_INFO_STRING]; // the original command we received (no token processing)
 
-static	cmd_function_t	*cmd_functions;		// possible commands to execute
+static	cmdFunction_s	*cmd_functions;		// possible commands to execute
 
 /*
 ============
@@ -630,9 +630,9 @@ void Cmd_TokenizeStringIgnoreQuotes( const char *text_in ) {
 Cmd_FindCommand
 ============
 */
-cmd_function_t *Cmd_FindCommand( const char *cmd_name )
+cmdFunction_s *Cmd_FindCommand( const char *cmd_name )
 {
-	cmd_function_t *cmd;
+	cmdFunction_s *cmd;
 	for( cmd = cmd_functions; cmd; cmd = cmd->next )
 		if( !stricmp( cmd_name, cmd->name ) )
 			return cmd;
@@ -645,7 +645,7 @@ Cmd_AddCommand
 ============
 */
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
-	cmd_function_t	*cmd;
+	cmdFunction_s	*cmd;
 	
 	cmd = Cmd_FindCommand( cmd_name );
 	// fail if the command already exists
@@ -662,7 +662,7 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	}
 
 	// use a small malloc to avoid zone fragmentation
-	cmd = (cmd_function_t*)malloc (sizeof(cmd_function_t));
+	cmd = (cmdFunction_s*)malloc (sizeof(cmdFunction_s));
 	cmd->name = _strdup( cmd_name );
 	cmd->function = function;
 	cmd->complete = NULL;
@@ -676,7 +676,7 @@ Cmd_SetCommandCompletionFunc
 ============
 */
 void Cmd_SetCommandCompletionFunc( const char *command, completionFunc_t complete ) {
-	cmd_function_t	*cmd;
+	cmdFunction_s	*cmd;
 
 	for( cmd = cmd_functions; cmd; cmd = cmd->next ) {
 		if( !stricmp( command, cmd->name ) ) {
@@ -691,7 +691,7 @@ Cmd_RemoveCommand
 ============
 */
 void	Cmd_RemoveCommand( const char *cmd_name ) {
-	cmd_function_t	*cmd, **back;
+	cmdFunction_s	*cmd, **back;
 
 	back = &cmd_functions;
 	while( 1 ) {
@@ -725,7 +725,7 @@ Only remove commands with no associated function
 */
 void Cmd_RemoveCommandSafe( const char *cmd_name )
 {
-	cmd_function_t *cmd = Cmd_FindCommand( cmd_name );
+	cmdFunction_s *cmd = Cmd_FindCommand( cmd_name );
 
 	if( !cmd )
 		return;
@@ -745,7 +745,7 @@ Cmd_CommandCompletion
 ============
 */
 void	Cmd_CommandCompletion( void(*callback)(const char *s) ) {
-	cmd_function_t	*cmd;
+	cmdFunction_s	*cmd;
 	
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next) {
 		callback( cmd->name );
@@ -758,7 +758,7 @@ Cmd_CompleteArgument
 ============
 */
 void Cmd_CompleteArgument( const char *command, char *args, int argNum ) {
-	cmd_function_t	*cmd;
+	cmdFunction_s	*cmd;
 
 	for( cmd = cmd_functions; cmd; cmd = cmd->next ) {
 		if( !stricmp( command, cmd->name ) && cmd->complete ) {
@@ -776,7 +776,7 @@ A complete command line has been parsed, so try to execute it
 ============
 */
 void	Cmd_ExecuteString( const char *text ) {	
-	cmd_function_t	*cmd, **prev;
+	cmdFunction_s	*cmd, **prev;
 
 	// execute the command line
 	Cmd_TokenizeString( text );		
@@ -837,7 +837,7 @@ Cmd_List_f
 */
 void Cmd_List_f (void)
 {
-	cmd_function_t	*cmd;
+	cmdFunction_s	*cmd;
 	int				i;
 	const char			*match;
 

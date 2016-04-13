@@ -696,11 +696,11 @@ static bool SV_DelBanEntryFromList(int index)
 ==================
 SV_ParseCIDRNotation
 
-Parse a CIDR notation type string and return a netadr_t and suffix by reference
+Parse a CIDR notation type string and return a netAdr_s and suffix by reference
 ==================
 */
 
-static bool SV_ParseCIDRNotation(netadr_t *dest, int *mask, const char *adrstroriginal)
+static bool SV_ParseCIDRNotation(netAdr_s *dest, int *mask, const char *adrstroriginal)
 {
 	char adrstr[MAX_STRING_CHARS];
 	Q_strncpyz(adrstr,adrstroriginal, sizeof(adrstr));
@@ -752,7 +752,7 @@ static void SV_AddBanToList(bool isexception)
 {
 	const char *banstring;
 	char addy2[NET_ADDRSTRMAXLEN];
-	netadr_t ip;
+	netAdr_s ip;
 	int index, argc, mask;
 	serverBan_t *curban;
 	
@@ -894,7 +894,7 @@ Remove a ban or an exception from the list.
 static void SV_DelBanFromList(bool isexception)
 {
 	int index, count = 0, todel, mask;
-	netadr_t ip;
+	netAdr_s ip;
 	const char *banstring;
 	
 	if(Cmd_Argc() != 2)

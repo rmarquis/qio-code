@@ -215,7 +215,7 @@ typedef struct {
 	int			lastPacketTime;				// for timeouts
 
 	char		servername[MAX_OSPATH];		// name of server from original connect (used by reconnect)
-	netadr_t	serverAddress;
+	netAdr_s	serverAddress;
 	int			connectTime;				// for connection retransmits
 	int			connectPacketCount;			// for display on connection dialog
 	char		serverMessage[MAX_STRING_TOKENS];	// for display on connection dialog
@@ -327,14 +327,14 @@ no client connection is active at all
 */
 
 typedef struct {
-	netadr_t	adr;
+	netAdr_s	adr;
 	int			start;
 	int			time;
 	char		info[MAX_INFO_STRING];
 } ping_t;
 
 typedef struct {
-	netadr_t	adr;
+	netAdr_s	adr;
 	char	  	hostName[MAX_NAME_LENGTH];
 	char	  	mapName[MAX_NAME_LENGTH];
 	char	  	game[MAX_NAME_LENGTH];
@@ -371,7 +371,7 @@ typedef struct {
 	serverInfo_t  globalServers[MAX_GLOBAL_SERVERS];
 	// additional global servers
 	int			numGlobalServerAddresses;
-	netadr_t		globalServerAddresses[MAX_GLOBAL_SERVERS];
+	netAdr_s		globalServerAddresses[MAX_GLOBAL_SERVERS];
 
 	int			numfavoriteservers;
 	serverInfo_t	favoriteServers[MAX_OTHER_SERVERS];
@@ -382,11 +382,11 @@ typedef struct {
 	bool	oldGameSet;
 
 	// update server info
-	netadr_t	updateServer;
+	netAdr_s	updateServer;
 	char		updateChallenge[MAX_STRING_CHARS];
 	char		updateInfoString[MAX_INFO_STRING];
 
-	netadr_t	authorizeServer;
+	netAdr_s	authorizeServer;
 
 	// rendering info
 	class mtrAPI_i *charSetShader;
@@ -555,7 +555,7 @@ void CL_ParseServerMessage( msg_s *msg );
 
 //====================================================================
 
-void	CL_ServerInfoPacket( netadr_t from, msg_s *msg );
+void	CL_ServerInfoPacket( netAdr_s from, msg_s *msg );
 void	CL_LocalServers_f();
 void	CL_GlobalServers_f();
 void	CL_FavoriteServers_f();

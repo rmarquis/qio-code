@@ -48,26 +48,26 @@ typedef struct voipServerPacket_s
 } voipServerPacket_t;
 #endif
 
-typedef struct svEntity_s {
+struct svEntity_s {
 	struct worldSector_s *worldSector;
 	struct svEntity_s *nextEntityInWorldSector;
 	
 	entityState_s	baseline;		// for delta compression of initial sighting
 	int			numClusters;		// if -1, use headnode instead
-	int			clusternums[MAX_ENT_CLUSTERS];
-	int			lastCluster;		// if all the clusters don't fit in clusternums
+	int			clusterNums[MAX_ENT_CLUSTERS];
+	int			lastCluster;		// if all the clusters don't fit in clusterNums
 	int			areanum, areanum2;
 	int			snapshotCounter;	// used to prevent double adding from portal views
-} svEntity_t;
+};
 
-typedef enum {
+enum serverState_s {
 	SS_DEAD,			// no map loaded
 	SS_LOADING,			// spawning level entities
 	SS_GAME				// actively running
-} serverState_t;
+};
 
-typedef struct {
-	serverState_t	state;
+struct server_s {
+	serverState_s	state;
 	bool		restarting;			// if true, send configstring changes during SS_LOADING
 	int				serverId;			// changes each server start
 	int				restartedServerId;	// serverId before a map_restart
@@ -80,7 +80,7 @@ typedef struct {
 	int				nextFrameTime;		// when time > nextFrameTime, process world
 	struct cmodel_s	*models[MAX_MODELS];
 	char			*configstrings[MAX_CONFIGSTRINGS];
-	svEntity_t		svEntities[MAX_GENTITIES];
+	svEntity_s		svEntities[MAX_GENTITIES];
 
 	// the game virtual machine will update these on init and changes
 	edict_s	*gentities;
@@ -88,13 +88,13 @@ typedef struct {
 
 	int				restartTime;
 	int				time;
-} server_t;
+};
 
 
 
 
 
-typedef struct {
+struct clientSnapshot_s {
 	int				areabytes;
 	byte			areabits[MAX_MAP_AREA_BYTES];		// portalarea visibility bits
 	playerState_s	ps;
@@ -105,28 +105,28 @@ typedef struct {
 	int				messageSent;		// time the message was transmitted
 	int				messageAcked;		// time the message was acked
 	int				messageSize;		// used to rate drop packets
-} clientSnapshot_t;
+};
 
-typedef enum {
+enum clientState_e {
 	CS_FREE,		// can be reused for a new connection
 	CS_ZOMBIE,		// client has been disconnected, but don't reuse
 					// connection for a couple seconds
 	CS_CONNECTED,	// has been assigned to a client_t, but no gamestate yet
 	CS_PRIMED,		// gamestate has been sent, but client hasn't sent a usercmd
 	CS_ACTIVE		// client is fully in game
-} clientState_t;
+};
 
-typedef struct netchan_buffer_s {
+struct netchan_buffer_s {
 	msg_s           msg;
 	byte            msgBuffer[MAX_MSGLEN];
 #ifdef LEGACY_PROTOCOL
 	char		clientCommandString[MAX_STRING_CHARS];	// valid command string for SV_Netchan_Encode
 #endif
 	struct netchan_buffer_s *next;
-} netchan_buffer_t;
+};
 
 typedef struct client_s {
-	clientState_t	state;
+	clientState_e	state;
 	char			userinfo[MAX_INFO_STRING];		// name, etc
 
 	char			reliableCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
@@ -165,7 +165,7 @@ typedef struct client_s {
 	int				lastSnapshotTime;	// svs.time of last sent snapshot
 	bool		rateDelayed;		// true if nextSnapshotTime was set based on rate instead of snapshotMsec
 	int				timeoutCount;		// must timeout a few frames in a row so debugging doesn't break
-	clientSnapshot_t	frames[PACKET_BACKUP];	// updates can be delta'd from here
+	clientSnapshot_s	frames[PACKET_BACKUP];	// updates can be delta'd from here
 	int				ping;
 	int				rate;				// bytes / second
 	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
@@ -176,8 +176,8 @@ typedef struct client_s {
 	// queuing outgoing fragmented messages to send them properly, without udp packet bursts
 	// in case large fragmented messages are stacking up
 	// buffer them into this queue, and hand them out to netchan as needed
-	netchan_buffer_t *netchan_start_queue;
-	netchan_buffer_t **netchan_end_queue;
+	netchan_buffer_s *netchan_start_queue;
+	netchan_buffer_s **netchan_end_queue;
 
 #ifdef USE_VOIP
 	bool hasVoip;
@@ -207,7 +207,7 @@ typedef struct client_s {
 #define	AUTHORIZE_TIMEOUT	5000
 
 typedef struct {
-	netadr_t	adr;
+	netAdr_s	adr;
 	int			challenge;
 	int			clientChallenge;		// challenge number coming from the client
 	int			time;				// time the last packet was sent to the autherize server
@@ -231,16 +231,16 @@ typedef struct {
 	entityState_s	*snapshotEntities;		// [numSnapshotEntities]
 	int			nextHeartbeatTime;
 	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
-	netadr_t	redirectAddress;			// for rcon return messages
+	netAdr_s	redirectAddress;			// for rcon return messages
 
-	netadr_t	authorizeAddress;			// for rcon return messages
+	netAdr_s	authorizeAddress;			// for rcon return messages
 } serverStatic_t;
 
 #define SERVER_MAXBANS	1024
 // Structure for managing bans
 typedef struct
 {
-	netadr_t ip;
+	netAdr_s ip;
 	// For a CIDR-Notation type suffix
 	int subnet;
 	
@@ -250,7 +250,7 @@ typedef struct
 //=============================================================================
 
 extern	serverStatic_t	svs;				// persistant server info across maps
-extern	server_t		sv;					// cleared each map
+extern	server_s		sv;					// cleared each map
 
 // ===== serverside entity culling =====
 // ...for .bsp world maps (Quake3, ET, RTCW, MoHAA, CoD)
@@ -333,9 +333,9 @@ void SV_FreeMap();
 //
 // sv_client.c
 //
-void SV_GetChallenge(netadr_t from);
+void SV_GetChallenge(netAdr_s from);
 
-void SV_DirectConnect( netadr_t from );
+void SV_DirectConnect( netAdr_s from );
 
 void SV_ExecuteClientMessage( client_t *cl, msg_s *msg );
 void SV_UserinfoChanged( client_t *cl );
@@ -373,8 +373,8 @@ void SV_SendClientSnapshot( client_t *client );
 int	SV_NumForGentity( edict_s *ent );
 edict_s *SV_GentityNum( int num );
 playerState_s *SV_GameClientNum( int num );
-svEntity_t	*SV_SvEntityForGentity( edict_s *gEnt );
-edict_s *SV_GEntityForSvEntity( svEntity_t *svEnt );
+svEntity_s	*SV_SvEntityForGentity( edict_s *gEnt );
+edict_s *SV_GEntityForSvEntity( svEntity_s *svEnt );
 void		SV_InitGameProgs ();
 void		SV_ShutdownGameProgs ();
 void		SV_RestartGameProgs();

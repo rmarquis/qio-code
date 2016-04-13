@@ -28,7 +28,7 @@ cvar_s *sv_voip;
 #endif
 
 serverStatic_t	svs;				// persistant server info
-server_t		sv;					// local server
+server_s		sv;					// local server
 
 cvar_s	*sv_fps = NULL;			// time rate for running non-clients
 cvar_s	*sv_timeout;			// seconds without any message
@@ -234,7 +234,7 @@ but not on every player enter or exit.
 #define	HEARTBEAT_MSEC	300*1000
 void SV_MasterHeartbeat(const char *message)
 {
-	static netadr_t	adr[MAX_MASTER_SERVERS][2]; // [2] for v4 and v6 address for the same address string.
+	static netAdr_s	adr[MAX_MASTER_SERVERS][2]; // [2] for v4 and v6 address for the same address string.
 	int			i;
 	int			res;
 	int			netenabled;
@@ -353,7 +353,7 @@ CONNECTIONLESS COMMANDS
 
 typedef struct leakyBucket_s leakyBucket_t;
 struct leakyBucket_s {
-	netadrtype_t	type;
+	netAdrType_e	type;
 
 	union {
 		byte	_4[4];
@@ -381,7 +381,7 @@ static leakyBucket_t outboundLeakyBucket;
 SVC_HashForAddress
 ================
 */
-static long SVC_HashForAddress( netadr_t address ) {
+static long SVC_HashForAddress( netAdr_s address ) {
 	byte 		*ip = NULL;
 	size_t	size = 0;
 	int			i;
@@ -410,7 +410,7 @@ SVC_BucketForAddress
 Find or allocate a bucket for an address
 ================
 */
-static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period ) {
+static leakyBucket_t *SVC_BucketForAddress( netAdr_s address, int burst, int period ) {
 	leakyBucket_t	*bucket = NULL;
 	int						i;
 	long					hash = SVC_HashForAddress( address );
@@ -523,7 +523,7 @@ SVC_RateLimitAddress
 Rate limit for a particular address
 ================
 */
-static bool SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
+static bool SVC_RateLimitAddress( netAdr_s from, int burst, int period ) {
 	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period );
 
 	return SVC_RateLimit( bucket, burst, period );
@@ -538,7 +538,7 @@ and all connected players.  Used for getting detailed information after
 the simple info query.
 ================
 */
-static void SVC_Status( netadr_t from ) {
+static void SVC_Status( netAdr_s from ) {
 	char	status[MAX_MSGLEN];
 	int		statusLength;
 	char	infostring[MAX_INFO_STRING];
@@ -592,7 +592,7 @@ Responds with a short info message that should be enough to determine
 if a user is interested in a server to do a full status
 ================
 */
-void SVC_Info( netadr_t from ) {
+void SVC_Info( netAdr_s from ) {
 	int		i, count, humans;
 	char	*gamedir;
 	char	infostring[MAX_INFO_STRING];
@@ -690,7 +690,7 @@ Shift down the remaining args
 Redirect all printfs
 ===============
 */
-static void SVC_RemoteCommand( netadr_t from, msg_s *msg ) {
+static void SVC_RemoteCommand( netAdr_s from, msg_s *msg ) {
 	bool	valid;
 	char		remaining[1024];
 	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
@@ -766,7 +766,7 @@ Clients that are in the game can still send
 connectionless packets.
 =================
 */
-static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
+static void SV_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 	const char	*s;
 	const char	*c;
 
@@ -823,7 +823,7 @@ static void SV_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
 SV_PacketEvent
 =================
 */
-void SV_PacketEvent( netadr_t from, msg_s *msg ) {
+void SV_PacketEvent( netAdr_s from, msg_s *msg ) {
 	int			i;
 	client_t	*cl;
 	int			qport;

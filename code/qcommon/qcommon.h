@@ -282,7 +282,7 @@ NET
 
 #define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
 
-enum netadrtype_t {
+enum netAdrType_e {
 	NA_BAD = 0,					// an address lookup failed
 	NA_BOT,
 	NA_LOOPBACK,
@@ -293,14 +293,14 @@ enum netadrtype_t {
 	NA_UNSPEC
 };
 
-enum netsrc_t {
+enum netSrc_e {
 	NS_CLIENT,
 	NS_SERVER
 };
 
 #define NET_ADDRSTRMAXLEN 48	// maximum length of an IPv6 address string including trailing '\0'
-struct netadr_t {
-	netadrtype_t	type;
+struct netAdr_s {
+	netAdrType_e	type;
 
 	byte	ip[4];
 	byte	ip6[16];
@@ -314,18 +314,18 @@ void		NET_Shutdown();
 void		NET_Restart_f();
 void		NET_Config( bool enableNetworking );
 void		NET_FlushPacketQueue(void);
-void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
-void		QDECL NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...) __attribute__ ((format (printf, 3, 4)));
-void		QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
+void		NET_SendPacket (netSrc_e sock, int length, const void *data, netAdr_s to);
+void		QDECL NET_OutOfBandPrint( netSrc_e net_socket, netAdr_s adr, const char *format, ...) __attribute__ ((format (printf, 3, 4)));
+void		QDECL NET_OutOfBandData( netSrc_e sock, netAdr_s adr, byte *format, int len );
 
-bool	NET_CompareAdr (netadr_t a, netadr_t b);
-bool	NET_CompareBaseAdrMask(netadr_t a, netadr_t b, int netmask);
-bool	NET_CompareBaseAdr (netadr_t a, netadr_t b);
-bool	NET_IsLocalAddress (netadr_t adr);
-const char	*NET_AdrToString (netadr_t a);
-const char	*NET_AdrToStringwPort (netadr_t a);
-int		NET_StringToAdr ( const char *s, netadr_t *a, netadrtype_t family);
-bool	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_s *net_message);
+bool	NET_CompareAdr (netAdr_s a, netAdr_s b);
+bool	NET_CompareBaseAdrMask(netAdr_s a, netAdr_s b, int netmask);
+bool	NET_CompareBaseAdr (netAdr_s a, netAdr_s b);
+bool	NET_IsLocalAddress (netAdr_s adr);
+const char	*NET_AdrToString (netAdr_s a);
+const char	*NET_AdrToStringwPort (netAdr_s a);
+int		NET_StringToAdr ( const char *s, netAdr_s *a, netAdrType_e family);
+bool	NET_GetLoopPacket (netSrc_e sock, netAdr_s *net_from, msg_s *net_message);
 void		NET_JoinMulticast6(void);
 void		NET_LeaveMulticast6(void);
 void		NET_Sleep(int msec);
@@ -345,11 +345,11 @@ Netchan handles packet fragmentation and out of order / duplicate suppression
 */
 
 struct netchan_t  {
-	netsrc_t	sock;
+	netSrc_e	sock;
 
 	int			dropped;			// between last packet and previous
 
-	netadr_t	remoteAddress;
+	netAdr_s	remoteAddress;
 	int			qport;				// qport value to write when transmitting
 
 	// sequencing variables
@@ -374,7 +374,7 @@ struct netchan_t  {
 };
 
 void Netchan_Init( int qport );
-void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, int challenge, bool compat);
+void Netchan_Setup(netSrc_e sock, netchan_t *chan, netAdr_s adr, int qport, int challenge, bool compat);
 
 void Netchan_Transmit( netchan_t *chan, int length, const byte *data );
 void Netchan_TransmitNextFragment( netchan_t *chan );
@@ -746,7 +746,7 @@ void	FS_Flush( fileHandle_t f );
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... ) __attribute__ ((format (printf, 2, 3)));
 // like fprintf
 
-int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
+int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_e mode );
 // opens a file for reading, writing, or appending depending on the value of mode
 
 int		FS_Seek( fileHandle_t f, long offset, int origin );
@@ -861,7 +861,7 @@ struct qtime_s {
 	int tm_isdst;   /* daylight savings time flag */
 };
 
-enum sysEventType_t {
+enum sysEventType_e {
 	// SE_NONE must be zero
 	SE_NONE = 0,		// evTime is still valid
 	SE_KEY,			// evValue is a key code, evValue2 is the down flag
@@ -871,17 +871,17 @@ enum sysEventType_t {
 	SE_CONSOLE		// evPtr is a char*
 };
 
-struct sysEvent_t {
+struct sysEvent_s {
 	int				evTime;
-	sysEventType_t	evType;
+	sysEventType_e	evType;
 	int				evValue, evValue2;
 	int				evPtrLength;	// bytes of data pointed to by evPtr, for journaling
 	void			*evPtr;			// this must be manually freed if not NULL
 };
 
-void		Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
+void		Com_QueueEvent( int time, sysEventType_e type, int value, int value2, int ptrLength, void *ptr );
 int			Com_EventLoop();
-sysEvent_t	Com_GetSystemEvent();
+sysEvent_s	Com_GetSystemEvent();
 
 void		Info_Print( const char *s );
 
@@ -901,7 +901,7 @@ int			Com_Filter(const char *filter, char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_s *qtime);
 bool	Com_SafeMode();
-void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_s *buf);
+void		Com_RunAndTimeServerPacket(netAdr_s *evFrom, msg_s *buf);
 
 bool	Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientNum);
 
@@ -999,7 +999,7 @@ void CL_MouseEvent( int dx, int dy, int time );
 
 void CL_JoystickEvent( int axis, int value, int time );
 
-void CL_PacketEvent( netadr_t from, msg_s *msg );
+void CL_PacketEvent( netAdr_s from, msg_s *msg );
 
 void CL_ConsolePrint( char *text );
 
@@ -1044,7 +1044,7 @@ void Key_WriteBindings( fileHandle_t f );
 void SV_Init();
 void SV_Shutdown(const char *finalmsg );
 void SV_Frame( int msec );
-void SV_PacketEvent( netadr_t from, msg_s *msg );
+void SV_PacketEvent( netAdr_s from, msg_s *msg );
 int SV_FrameMsec(void);
 bool SV_GameCommand();
 int SV_SendQueuedPackets(void);
@@ -1086,12 +1086,12 @@ cpuFeatures_t Sys_GetProcessorFeatures();
 
 void	Sys_SetErrorText( const char *text );
 
-void	Sys_SendPacket( int length, const void *data, netadr_t to );
+void	Sys_SendPacket( int length, const void *data, netAdr_s to );
 
-bool	Sys_StringToAdr( const char *s, netadr_t *a, netadrtype_t family );
+bool	Sys_StringToAdr( const char *s, netAdr_s *a, netAdrType_e family );
 //Does NOT parse port numbers, only base addresses.
 
-bool	Sys_IsLANAddress (netadr_t adr);
+bool	Sys_IsLANAddress (netAdr_s adr);
 void		Sys_ShowIP(void);
 
 bool Sys_Mkdir( const char *path );
