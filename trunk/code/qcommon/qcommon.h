@@ -236,7 +236,6 @@ char	*MSG_ReadBigString (msg_s *sb);
 char	*MSG_ReadStringLine (msg_s *sb);
 float	MSG_ReadAngle16 (msg_s *sb);
 void	MSG_ReadData (msg_s *sb, void *buffer, int size);
-int		MSG_LookaheadByte (msg_s *msg);
 
 void MSG_WriteDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
 void MSG_ReadDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
@@ -283,7 +282,7 @@ NET
 
 #define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
 
-typedef enum {
+enum netadrtype_t {
 	NA_BAD = 0,					// an address lookup failed
 	NA_BOT,
 	NA_LOOPBACK,
@@ -292,15 +291,15 @@ typedef enum {
 	NA_IP6,
 	NA_MULTICAST6,
 	NA_UNSPEC
-} netadrtype_t;
+};
 
-typedef enum {
+enum netsrc_t {
 	NS_CLIENT,
 	NS_SERVER
-} netsrc_t;
+};
 
 #define NET_ADDRSTRMAXLEN 48	// maximum length of an IPv6 address string including trailing '\0'
-typedef struct {
+struct netadr_t {
 	netadrtype_t	type;
 
 	byte	ip[4];
@@ -308,7 +307,7 @@ typedef struct {
 
 	unsigned short	port;
 	unsigned long	scope_id;	// Needed for IPv6 link-local addresses
-} netadr_t;
+};
 
 void		NET_Init();
 void		NET_Shutdown();
@@ -345,7 +344,7 @@ void		NET_Sleep(int msec);
 Netchan handles packet fragmentation and out of order / duplicate suppression
 */
 
-typedef struct {
+struct netchan_t  {
 	netsrc_t	sock;
 
 	int			dropped;			// between last packet and previous
@@ -372,7 +371,7 @@ typedef struct {
 	int			challenge;
 	int		lastSentTime;
 	int		lastSentSize;
-} netchan_t;
+};
 
 void Netchan_Init( int qport );
 void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, int challenge, bool compat);
@@ -831,10 +830,6 @@ MISC
 ==============================================================
 */
 
-// centralizing the declarations for cl_cdkey
-// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=470
-extern char cl_cdkey[34];
-
 // returned by Sys_GetProcessorFeatures
 typedef enum
 {
@@ -866,7 +861,7 @@ struct qtime_s {
 	int tm_isdst;   /* daylight savings time flag */
 };
 
-typedef enum {
+enum sysEventType_t {
 	// SE_NONE must be zero
 	SE_NONE = 0,		// evTime is still valid
 	SE_KEY,			// evValue is a key code, evValue2 is the down flag
@@ -874,15 +869,15 @@ typedef enum {
 	SE_MOUSE,		// evValue and evValue2 are relative signed x / y moves
 	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
 	SE_CONSOLE		// evPtr is a char*
-} sysEventType_t;
+};
 
-typedef struct {
+struct sysEvent_t {
 	int				evTime;
 	sysEventType_t	evType;
 	int				evValue, evValue2;
 	int				evPtrLength;	// bytes of data pointed to by evPtr, for journaling
 	void			*evPtr;			// this must be manually freed if not NULL
-} sysEvent_t;
+};
 
 void		Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 int			Com_EventLoop();
@@ -1019,9 +1014,6 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_CDDialog();
-// bring up the "need a cd to play" dialog
-
 void CL_FlushMemory();
 // dump all memory on an error
 
@@ -1043,9 +1035,6 @@ void Key_KeynameCompletion( void(*callback)(const char *s) );
 void Key_WriteBindings( fileHandle_t f );
 // for writing the config files
 
-void S_ClearSoundBuffer();
-// call before filesystem access
-
 // AVI files have the start of pixel lines 4 byte-aligned
 #define AVI_LINE_PADDING 4
 
@@ -1064,7 +1053,6 @@ int SV_SendQueuedPackets(void);
 // UI interface
 //
 bool GUI_GameCommand();
-bool UI_usesUniqueCDKey(void);
 
 /*
 ==============================================================
@@ -1078,23 +1066,7 @@ NON-PORTABLE SYSTEM SERVICES
 
 void	Sys_Init (void);
 
-// general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...),
-				  intptr_t (QDECL *systemcalls)(intptr_t, ...) );
 void	Sys_UnloadDll( void *dllHandle );
-
-void	Sys_UnloadGame();
-void	*Sys_GetGameAPI( void *parms );
-
-void	Sys_UnloadCGame();
-void	*Sys_GetCGameAPI();
-
-void	Sys_UnloadUI();
-void	*Sys_GetUIAPI();
-
-//bot libraries
-void	Sys_UnloadBotLib();
-void	*Sys_GetBotLibAPI( void *parms );
 
 char	*Sys_GetCurrentUser();
 
@@ -1108,12 +1080,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (void);
 
-void	Sys_SnapVector( float *v );
-
 bool Sys_RandomBytes( byte *string, int len );
-
-// the system console is shown when a dedicated server is running
-void	Sys_DisplaySystemConsole( bool show );
 
 cpuFeatures_t Sys_GetProcessorFeatures();
 
@@ -1151,22 +1118,22 @@ bool Sys_LowPhysicalMemory();
 
 void Sys_SetEnv(const char *name, const char *value);
 
-typedef enum
+enum dialogResult_t
 {
 	DR_YES = 0,
 	DR_NO = 1,
 	DR_OK = 0,
 	DR_CANCEL = 1
-} dialogResult_t;
+};
 
-typedef enum
+enum dialogType_t
 {
 	DT_INFO,
 	DT_WARNING,
 	DT_ERROR,
 	DT_YES_NO,
 	DT_OK_CANCEL
-} dialogType_t;
+};
 
 dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *title );
 
@@ -1189,7 +1156,7 @@ typedef struct nodetype {
 
 #define HMAX 256 /* Maximum symbol */
 
-typedef struct {
+struct huff_t {
 	int			blocNode;
 	int			blocPtrs;
 
@@ -1201,12 +1168,12 @@ typedef struct {
 
 	node_t		nodeList[768];
 	node_t*		nodePtrs[768];
-} huff_t;
+};
 
-typedef struct {
+struct huffman_t {
 	huff_t		compressor;
 	huff_t		decompressor;
-} huffman_t;
+};
 
 void	Huff_Compress(msg_s *buf, int offset);
 void	Huff_Decompress(msg_s *buf, int offset);
