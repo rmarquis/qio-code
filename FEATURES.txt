@@ -67,6 +67,9 @@ gui
 common
  - interfaces system similiar to one in SourceEngine
  - engine core based on IOQuake3 code
+
+network
+ - zlib compression for larger packets
  
 shared
  - many math, geometry and util C++ classes
@@ -75,8 +78,11 @@ shared
 editor
  - merged codebase with main engine; type "editor" in console to run (Doom3 style)
  - realtime materials preview (texmods, animmaps etc. are working in 3d view)
+
+NewTools
+ - dedicated material creator/editor with realtime material preview inside engine
  
- q3map
+q3map
  - custom QioBSP format that provides extra areaPortals data (similiar to one present in Doom3 proc files)
  - ???
  
