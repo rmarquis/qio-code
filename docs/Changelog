@@ -1,3 +1,7 @@
+04-13-2016 Dusan Jocic <dusanjocic@msn.com>
+	* Fixed passing arguments to WinMain
+	* Fixed problems with loading editor
+
 04-10-2016 Dusan Jocic <dusanjocic@msn.com>
 	* Replaced old terminal based console with new GUI based
 	* Updated cMake

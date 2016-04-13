@@ -41,6 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shlobj.h>
 #include <psapi.h>
 #include <float.h>
+#include <vector>
 
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
@@ -832,19 +833,20 @@ WinMain
 ==================
 */
 WinVars_t g_WinV;
-static char sys_cmdline[MAX_STRING_CHARS];
-int totalMsec, countMsec;
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	char	cwd[MAX_OSPATH];
-	s32		startTime, endTime;
+	s32		startTime, endTime, i, totalMsec, countMsec;
+	char	commandLine[MAX_STRING_CHARS] = { 0 };
 
 	if (hPrevInstance) {
 		return 0;
 	}
 
 	g_WinV.hInstance = hInstance;
-	Q_strncpyz(sys_cmdline, lpCmdLine, sizeof(sys_cmdline));
+	Q_strncpyz(commandLine, lpCmdLine, sizeof(commandLine));
+
+	Sys_PlatformInit();
 
 	Sys_CreateConsole();
 
@@ -852,7 +854,36 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 	Sys_Milliseconds();
 
-	Com_Init(sys_cmdline);
+	Sys_ParseArgs(__argc, __argv);
+	Sys_SetBinaryPath(Sys_Dirname(__argv[0]));
+	Sys_SetDefaultInstallPath(DEFAULT_BASEDIR);
+	
+	// Concatenate the command line for passing to Com_Init
+	for (i = 1; i < __argc; i++)
+	{
+		const bool containsSpaces = strchr(__argv[i], ' ') != NULL;
+		if (containsSpaces)
+			Q_strcat(commandLine, sizeof(commandLine), "\"");
+
+		Q_strcat(commandLine, sizeof(commandLine), __argv[i]);
+
+		if (containsSpaces)
+			Q_strcat(commandLine, sizeof(commandLine), "\"");
+
+		Q_strcat(commandLine, sizeof(commandLine), " ");
+	}
+
+	Com_Init( commandLine );
+
+	if (com_bEditorMode == true) {
+		Com_InitEditorDLL();
+
+		while (COM_RunEditorFrame() == false) {
+
+		}
+		Com_Shutdown();
+		return 0;
+	}
 	NET_Init();
 
 #ifndef DEDICATED
@@ -885,5 +916,4 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 	// never gets here
 }
-
 #endif

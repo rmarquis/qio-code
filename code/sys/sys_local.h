@@ -43,6 +43,18 @@ unsigned int CON_LogSize( void );
 unsigned int CON_LogWrite( const char *in );
 unsigned int CON_LogRead( char *out, unsigned int outSize );
 
+void Sys_ParseArgs(int argc, char **argv);
+void Sys_SetBinaryPath(const char *path);
+char *Sys_BinaryPath(void);
+
+#ifndef DEFAULT_BASEDIR
+#	ifdef MACOS_X
+#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+#	endif
+#endif
+
 #ifdef MACOS_X
 char *Sys_StripAppBundle( char *pwd );
 #endif

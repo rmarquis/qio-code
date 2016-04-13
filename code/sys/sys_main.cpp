@@ -546,14 +546,6 @@ void Sys_ParseArgs( int argc, char **argv )
 	}
 }
 
-#ifndef DEFAULT_BASEDIR
-#	ifdef MACOS_X
-#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
-#	else
-#		define DEFAULT_BASEDIR Sys_BinaryPath()
-#	endif
-#endif
-
 /*
 =================
 Sys_SigHandler
@@ -670,7 +662,7 @@ int test()
 main
 =================
 */
-int main( int argc, char **argv )
+int main( int argc,  char **argv )
 {
 	int   i;
 	char  commandLine[ MAX_STRING_CHARS ] = { 0 };
