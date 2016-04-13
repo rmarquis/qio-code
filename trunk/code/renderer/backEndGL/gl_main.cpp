@@ -278,7 +278,7 @@ public:
 
 		if (Status != GL_FRAMEBUFFER_COMPLETE) {
 			destroy();
-			printf("FB error, status: 0x%x\n", Status);
+			g_core->RedWarning("FB error, status: 0x%x\n", Status);
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
