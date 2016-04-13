@@ -47,6 +47,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -173,16 +174,24 @@
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.copyToolStripMenuItem});
+            this.copyToolStripMenuItem,
+            this.addNewVariableToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(103, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(175, 70);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            // 
+            // addNewVariableToolStripMenuItem
+            // 
+            this.addNewVariableToolStripMenuItem.Name = "addNewVariableToolStripMenuItem";
+            this.addNewVariableToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.addNewVariableToolStripMenuItem.Text = "Add new variable...";
+            this.addNewVariableToolStripMenuItem.Click += new System.EventHandler(this.addNewVariableToolStripMenuItem_Click);
             // 
             // FormMapFileExplorer
             // 
@@ -223,6 +232,7 @@
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem wavefrontOBJToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewVariableToolStripMenuItem;
     }
 }
 

@@ -42,6 +42,7 @@ namespace mapFileExplorer
     {
         private MapFile map;
         private TreeNode contextMenuNode;
+        private MapEntity lastClickedNodeMapEntity;
 
         public FormMapFileExplorer()
         {
@@ -249,7 +250,10 @@ namespace mapFileExplorer
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (map == null)
+            {
+                MessageBox.Show("No map loaded.");
                 return;
+            }
             saveFileDialog1.Filter = "Map files|*.map";
             saveFileDialog1.Title = "Write a map file";
             if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -258,7 +262,16 @@ namespace mapFileExplorer
                 writer.writeMapFile(map,saveFileDialog1.FileName);
             }
         }
-
+        private void findClickedNodeMapEntity_r(TreeNode n)
+        {
+            if (n == null)
+                return;
+            if (n.Tag is MapEntity)
+            {
+                lastClickedNodeMapEntity = n.Tag as MapEntity;
+            }
+            findClickedNodeMapEntity_r(n.Parent);
+        }
         private void treeView1_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -277,9 +290,18 @@ namespace mapFileExplorer
                 if (treeView1.SelectedNode == treeView1.GetNodeAt(e.Location))
                 {
                     contextMenuNode = treeView1.GetNodeAt(e.Location);
+                    lastClickedNodeMapEntity = null;
                     if (contextMenuNode == null)
                         return;
-                    contextMenuStrip1.Show(PointToScreen(e.Location));
+                 //   if (contextMenuNode.Text.CompareTo("Variables") == 0)
+                 //   {
+
+                 //   }
+                 //   else
+                  //  {
+                        findClickedNodeMapEntity_r(contextMenuNode);
+                        contextMenuStrip1.Show(PointToScreen(e.Location));
+                  //  }
                 }
             }
         }
@@ -401,6 +423,14 @@ namespace mapFileExplorer
             {
                 exportObjFile(saveFileDialog1.FileName);
             }
+        }
+
+        private void addNewVariableToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (lastClickedNodeMapEntity == null)
+                return;
+            FormAddNewKeyValue f = new FormAddNewKeyValue(this, lastClickedNodeMapEntity);
+            f.ShowDialog();
         }
     }
 }

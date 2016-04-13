@@ -112,6 +112,12 @@ namespace md3FileExplorer
             root.Nodes.Add(frames);
             treeView1.Nodes.Add(root);
         }
+        private void saveModel(string fileName)
+        {
+            if (md3Model == null)
+                return;
+            md3Model.writeMD3Model(fileName);
+        }
         private void viewMD3Model(string name)
         {
             md3Model = new MD3Model();
@@ -136,6 +142,21 @@ namespace md3FileExplorer
             {
                 viewMD3Model(openFileDialog1.FileName);
             }  
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.Filter = "Quake3 MD3 |*.md3|All files (*.*)|*.*";
+            saveFileDialog1.Title = "Save current model.";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                saveModel(saveFileDialog1.FileName);
+            }
+        }
+
+        private void fileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
