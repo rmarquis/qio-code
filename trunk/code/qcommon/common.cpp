@@ -778,7 +778,7 @@ journaled file
 #define	MAX_PUSHED_EVENTS	            1024
 static int com_pushedEventsHead = 0;
 static int com_pushedEventsTail = 0;
-static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
+static sysEvent_s	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
 =================
@@ -821,7 +821,7 @@ EVENT LOOP
 #define MAX_QUEUED_EVENTS  256
 #define MASK_QUEUED_EVENTS ( MAX_QUEUED_EVENTS - 1 )
 
-static sysEvent_t  eventQueue[ MAX_QUEUED_EVENTS ];
+static sysEvent_s  eventQueue[ MAX_QUEUED_EVENTS ];
 static int         eventHead = 0;
 static int         eventTail = 0;
 
@@ -834,9 +834,9 @@ Ptr should either be null, or point to a block of data that can
 be freed by the game later.
 ================
 */
-void Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr )
+void Com_QueueEvent( int time, sysEventType_e type, int value, int value2, int ptrLength, void *ptr )
 {
-	sysEvent_t  *ev;
+	sysEvent_s  *ev;
 
 	ev = &eventQueue[ eventHead & MASK_QUEUED_EVENTS ];
 
@@ -872,12 +872,12 @@ Com_GetSystemEvent
 
 ================
 */
-sysEvent_t Com_GetSystemEvent()
+sysEvent_s Com_GetSystemEvent()
 {
 #if defined(_WIN32)
 	MSG         msg;
 #endif
-	sysEvent_t  ev;
+	sysEvent_s  ev;
 	char        *s;
 
 	// return if we have data
@@ -933,9 +933,9 @@ sysEvent_t Com_GetSystemEvent()
 Com_GetRealEvent
 =================
 */
-sysEvent_t	Com_GetRealEvent() {
+sysEvent_s	Com_GetRealEvent() {
 	int			r;
-	sysEvent_t	ev;
+	sysEvent_s	ev;
 
 	// either get an event from the system or the journal file
 	if ( com_journal->integer == 2 ) {
@@ -993,8 +993,8 @@ void Com_InitPushEvent() {
 Com_PushEvent
 =================
 */
-void Com_PushEvent( sysEvent_t *event ) {
-	sysEvent_t		*ev;
+void Com_PushEvent( sysEvent_s *event ) {
+	sysEvent_s		*ev;
 	static int printedWarning = 0;
 
 	ev = &com_pushedEvents[ com_pushedEventsHead & (MAX_PUSHED_EVENTS-1) ];
@@ -1024,7 +1024,7 @@ void Com_PushEvent( sysEvent_t *event ) {
 Com_GetEvent
 =================
 */
-sysEvent_t	Com_GetEvent() {
+sysEvent_s	Com_GetEvent() {
 	if ( com_pushedEventsHead > com_pushedEventsTail ) {
 		com_pushedEventsTail++;
 		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
@@ -1037,7 +1037,7 @@ sysEvent_t	Com_GetEvent() {
 Com_RunAndTimeServerPacket
 =================
 */
-void Com_RunAndTimeServerPacket( netadr_t *evFrom, msg_s *buf ) {
+void Com_RunAndTimeServerPacket( netAdr_s *evFrom, msg_s *buf ) {
 	int		t1, t2, msec;
 
 	t1 = 0;
@@ -1065,8 +1065,8 @@ Returns last event time
 =================
 */
 int Com_EventLoop() {
-	sysEvent_t	ev;
-	netadr_t	evFrom;
+	sysEvent_s	ev;
+	netAdr_s	evFrom;
 	byte		bufData[MAX_MSGLEN];
 	msg_s		buf;
 
@@ -1133,7 +1133,7 @@ Can be used for profiling, but will be journaled accurately
 ================
 */
 int Com_Milliseconds (void) {
-	sysEvent_t	ev;
+	sysEvent_s	ev;
 
 	// get events and push them until we get a null event with the current time
 	do {
@@ -1691,7 +1691,7 @@ void Com_Init( char *commandLine ) {
 	Com_InitCoreAPI();
 
 	// Clear queues
-	memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_t ) );
+	memset( &eventQueue[ 0 ], 0, MAX_QUEUED_EVENTS * sizeof( sysEvent_s ) );
 
 	// initialize the weak pseudo-random number generator for use later.
 	Com_InitRand();

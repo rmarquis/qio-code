@@ -140,7 +140,7 @@ SV_Netchan_FreeQueue
 */
 void SV_Netchan_FreeQueue(client_t *client)
 {
-	netchan_buffer_t *netbuf, *next;
+	netchan_buffer_s *netbuf, *next;
 	
 	for(netbuf = client->netchan_start_queue; netbuf; netbuf = next)
 	{
@@ -159,7 +159,7 @@ SV_Netchan_TransmitNextInQueue
 */
 void SV_Netchan_TransmitNextInQueue(client_t *client)
 {
-	netchan_buffer_t *netbuf;
+	netchan_buffer_s *netbuf;
 		
 	Com_DPrintf("#462 Netchan_TransmitNextFragment: popping a queued message for transmit\n");
 	netbuf = client->netchan_start_queue;
@@ -259,9 +259,9 @@ void SV_Netchan_Transmit( client_t *client, msg_s *msg)
 
 	if(client->netchan.unsentFragments || client->netchan_start_queue)
 	{
-		netchan_buffer_t *netbuf;
+		netchan_buffer_s *netbuf;
 		Com_DPrintf("#462 SV_Netchan_Transmit: unsent fragments, stacked\n");
-		netbuf = (netchan_buffer_t *) malloc(sizeof(netchan_buffer_t));
+		netbuf = (netchan_buffer_s *) malloc(sizeof(netchan_buffer_s));
 		// store the msg, we can't store it encoded, as the encoding depends on stuff we still have to finish sending
 		MSG_Copy(&netbuf->msg, netbuf->msgBuffer, sizeof( netbuf->msgBuffer ), msg);
 #ifdef LEGACY_PROTOCOL

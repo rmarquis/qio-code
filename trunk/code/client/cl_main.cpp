@@ -130,7 +130,7 @@ ping_t	cl_pinglist[MAX_PINGREQUESTS];
 typedef struct serverStatus_s
 {
 	char string[MAX_INFO_STRING];
-	netadr_t address;
+	netAdr_s address;
 	int time, startTime;
 	bool pending;
 	bool print;
@@ -149,7 +149,7 @@ static int noGameRestart = false;
 void CL_CheckForResend();
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
-void CL_ServerStatusResponse( netadr_t from, msg_s *msg );
+void CL_ServerStatusResponse( netAdr_s from, msg_s *msg );
 
 #ifdef USE_MUMBLE
 static
@@ -1491,7 +1491,7 @@ void CL_Connect_f() {
 	const char	*server;
 	const char	*serverString;
 	int argc = Cmd_Argc();
-	netadrtype_t family = NA_UNSPEC;
+	netAdrType_e family = NA_UNSPEC;
 
 	if ( argc != 2 && argc != 3 ) {
 		Com_Printf( "usage: connect [-4|-6] server\n");
@@ -1602,7 +1602,7 @@ CL_Rcon_f
 */
 void CL_Rcon_f() {
 	char	message[MAX_RCON_MESSAGE];
-	netadr_t	to;
+	netAdr_s	to;
 
 	if ( !rcon_client_password->string ) {
 		Com_Printf ("You must set 'rconpassword' before\n"
@@ -2169,7 +2169,7 @@ to the server, the server will send out of band disconnect packets
 to the client so it doesn't have to wait for the full timeout period.
 ===================
 */
-void CL_DisconnectPacket( netadr_t from ) {
+void CL_DisconnectPacket( netAdr_s from ) {
 	if ( clc.state < CA_AUTHORIZING ) {
 		return;
 	}
@@ -2198,7 +2198,7 @@ CL_MotdPacket
 
 ===================
 */
-void CL_MotdPacket( netadr_t from ) {
+void CL_MotdPacket( netAdr_s from ) {
 #ifdef UPDATE_SERVER_NAME
 	char	*challenge;
 	char	*info;
@@ -2228,7 +2228,7 @@ void CL_MotdPacket( netadr_t from ) {
 CL_InitServerInfo
 ===================
 */
-void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
+void CL_InitServerInfo( serverInfo_t *server, netAdr_s *address ) {
 	server->adr = *address;
 	server->clients = 0;
 	server->hostName[0] = '\0';
@@ -2249,9 +2249,9 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 CL_ServersResponsePacket
 ===================
 */
-void CL_ServersResponsePacket( const netadr_t* from, msg_s *msg, bool extended ) {
+void CL_ServersResponsePacket( const netAdr_s* from, msg_s *msg, bool extended ) {
 	int				i, j, count, total;
-	netadr_t addresses[MAX_SERVERSPERPACKET];
+	netAdr_s addresses[MAX_SERVERSPERPACKET];
 	int				numservers;
 	byte*			buffptr;
 	byte*			buffend;
@@ -2372,7 +2372,7 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
-void CL_ConnectionlessPacket( netadr_t from, msg_s *msg ) {
+void CL_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 	char	*s;
 	const char	*c;
 	int challenge = 0;
@@ -2545,7 +2545,7 @@ CL_PacketEvent
 A packet has arrived from the main event loop
 =================
 */
-void CL_PacketEvent( netadr_t from, msg_s *msg ) {
+void CL_PacketEvent( netAdr_s from, msg_s *msg ) {
 	int		headerBytes;
 
 	clc.lastPacketTime = cls.realtime;
@@ -3341,7 +3341,7 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 	}
 }
 
-static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping) {
+static void CL_SetServerInfoByAddress(netAdr_s from, const char *info, int ping) {
 	int i;
 
 	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
@@ -3369,7 +3369,7 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 CL_ServerInfoPacket
 ===================
 */
-void CL_ServerInfoPacket( netadr_t from, msg_s *msg ) {
+void CL_ServerInfoPacket( netAdr_s from, msg_s *msg ) {
 	int		i, type;
 	char	info[MAX_INFO_STRING];
 	char	*infoString;
@@ -3486,7 +3486,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_s *msg ) {
 CL_GetServerStatus
 ===================
 */
-serverStatus_t *CL_GetServerStatus( netadr_t from ) {
+serverStatus_t *CL_GetServerStatus( netAdr_s from ) {
 	int i, oldest, oldestTime;
 
 	for (i = 0; i < MAX_SERVERSTATUSREQUESTS; i++) {
@@ -3521,7 +3521,7 @@ CL_ServerStatus
 */
 int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen ) {
 	int i;
-	netadr_t	to;
+	netAdr_s	to;
 	serverStatus_t *serverStatus;
 
 	// if no server address then reset all server status requests
@@ -3582,7 +3582,7 @@ int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen )
 CL_ServerStatusResponse
 ===================
 */
-void CL_ServerStatusResponse( netadr_t from, msg_s *msg ) {
+void CL_ServerStatusResponse( netAdr_s from, msg_s *msg ) {
 	char	*s;
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;
@@ -3678,7 +3678,7 @@ CL_LocalServers_f
 void CL_LocalServers_f() {
 	char		*message;
 	int			i, j;
-	netadr_t	to;
+	netAdr_s	to;
 
 	Com_Printf( "Scanning for servers on the local network...\n");
 
@@ -3720,7 +3720,7 @@ CL_GlobalServers_f
 ==================
 */
 void CL_GlobalServers_f() {
-	netadr_t	to;
+	netAdr_s	to;
 	int			count, i, masterNum;
 	char		command[1024], *masteraddress;
 	
@@ -3947,11 +3947,11 @@ CL_Ping_f
 ==================
 */
 void CL_Ping_f() {
-	netadr_t	to;
+	netAdr_s	to;
 	ping_t*		pingptr;
 	const char*		server;
 	int			argc;
-	netadrtype_t	family = NA_UNSPEC;
+	netAdrType_e	family = NA_UNSPEC;
 
 	argc = Cmd_Argc();
 
@@ -3974,7 +3974,7 @@ void CL_Ping_f() {
 		server = Cmd_Argv(2);
 	}
 
-	memset( &to, 0, sizeof(netadr_t) );
+	memset( &to, 0, sizeof(netAdr_s) );
 
 	if ( !NET_StringToAdr( server, &to, family ) ) {
 		return;
@@ -3982,7 +3982,7 @@ void CL_Ping_f() {
 
 	pingptr = CL_GetFreePing();
 
-	memcpy( &pingptr->adr, &to, sizeof (netadr_t) );
+	memcpy( &pingptr->adr, &to, sizeof (netAdr_s) );
 	pingptr->start = Sys_Milliseconds();
 	pingptr->time  = 0;
 
@@ -4053,7 +4053,7 @@ bool CL_UpdateVisiblePings_f(int source) {
 								break;
 							}
 						}
-						memcpy(&cl_pinglist[j].adr, &server[i].adr, sizeof(netadr_t));
+						memcpy(&cl_pinglist[j].adr, &server[i].adr, sizeof(netAdr_s));
 						cl_pinglist[j].start = Sys_Milliseconds();
 						cl_pinglist[j].time = 0;
 						NET_OutOfBandPrint( NS_CLIENT, cl_pinglist[j].adr, "getinfo xxx" );
@@ -4101,11 +4101,11 @@ CL_ServerStatus_f
 ==================
 */
 void CL_ServerStatus_f(void) {
-	netadr_t	to, *toptr = NULL;
+	netAdr_s	to, *toptr = NULL;
 	const char		*server;
 	serverStatus_t *serverStatus;
 	int			argc;
-	netadrtype_t	family = NA_UNSPEC;
+	netAdrType_e	family = NA_UNSPEC;
 
 	argc = Cmd_Argc();
 
@@ -4123,7 +4123,7 @@ void CL_ServerStatus_f(void) {
 	
 	if(!toptr)
 	{
-		memset( &to, 0, sizeof(netadr_t) );
+		memset( &to, 0, sizeof(netAdr_s) );
 	
 		if(argc == 2)
 			server = Cmd_Argv(1);

@@ -3625,7 +3625,7 @@ Handle based file calls for virtual machines
 ========================================================================================
 */
 
-int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
+int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_e mode ) {
 	int		r;
 	bool	sync;
 
