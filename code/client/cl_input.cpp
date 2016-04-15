@@ -774,26 +774,26 @@ void CL_WritePacket() {
 	memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;
 
-	MSG_Init( &buf, data, sizeof(data) );
+	buf.init(data, sizeof(data) );
 
-	MSG_Bitstream( &buf );
+	buf.bitstream();
 	// write the current serverId so the server
 	// can tell if this is from the current gameState
-	MSG_WriteLong( &buf, cl.serverId );
+	buf.writeLong(cl.serverId );
 
 	// write the last message we received, which can
 	// be used for delta compression, and is also used
 	// to tell if we dropped a gamestate
-	MSG_WriteLong( &buf, clc.serverMessageSequence );
+	buf.writeLong(clc.serverMessageSequence );
 
 	// write the last reliable message we received
-	MSG_WriteLong( &buf, clc.serverCommandSequence );
+	buf.writeLong(clc.serverCommandSequence );
 
 	// write any unacknowledged clientCommands
 	for ( i = clc.reliableAcknowledge + 1 ; i <= clc.reliableSequence ; i++ ) {
-		MSG_WriteByte( &buf, clc_clientCommand );
-		MSG_WriteLong( &buf, i );
-		MSG_WriteString( &buf, clc.reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
+		buf.writeByte(clc_clientCommand );
+		buf.writeLong(i );
+		buf.writeString(clc.reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
 	}
 
 	// we want to send all the usercmds that were generated in the last
@@ -816,14 +816,14 @@ void CL_WritePacket() {
 	{
 		if((clc.voipFlags & VOIP_SPATIAL) || Com_IsVoipTarget(clc.voipTargets, sizeof(clc.voipTargets), -1))
 		{
-			MSG_WriteByte (&buf, clc_voip);
-			MSG_WriteByte (&buf, clc.voipOutgoingGeneration);
-			MSG_WriteLong (&buf, clc.voipOutgoingSequence);
-			MSG_WriteByte (&buf, clc.voipOutgoingDataFrames);
-			MSG_WriteData (&buf, clc.voipTargets, sizeof(clc.voipTargets));
-			MSG_WriteByte(&buf, clc.voipFlags);
-			MSG_WriteShort (&buf, clc.voipOutgoingDataSize);
-			MSG_WriteData (&buf, clc.voipOutgoingData, clc.voipOutgoingDataSize);
+			buf.writeByte(clc_voip);
+			buf.writeByte(clc.voipOutgoingGeneration);
+			buf.writeLong(clc.voipOutgoingSequence);
+			buf.writeByte(clc.voipOutgoingDataFrames);
+			buf.writeData(clc.voipTargets, sizeof(clc.voipTargets));
+			buf.writeByte(clc.voipFlags);
+			buf.writeShort(clc.voipOutgoingDataSize);
+			buf.writeData(clc.voipOutgoingData, clc.voipOutgoingDataSize);
 
 			// If we're recording a demo, we have to fake a server packet with
 			//  this VoIP data so it gets to disk; the server doesn't send it
@@ -834,17 +834,17 @@ void CL_WritePacket() {
 				const int voipSize = clc.voipOutgoingDataSize;
 				msg_s fakemsg;
 				byte fakedata[MAX_MSGLEN];
-				MSG_Init (&fakemsg, fakedata, sizeof (fakedata));
-				MSG_Bitstream (&fakemsg);
-				MSG_WriteLong (&fakemsg, clc.reliableAcknowledge);
-				MSG_WriteByte (&fakemsg, svc_voip);
-				MSG_WriteShort (&fakemsg, clc.clientNum);
-				MSG_WriteByte (&fakemsg, clc.voipOutgoingGeneration);
-				MSG_WriteLong (&fakemsg, clc.voipOutgoingSequence);
-				MSG_WriteByte (&fakemsg, clc.voipOutgoingDataFrames);
-				MSG_WriteShort (&fakemsg, clc.voipOutgoingDataSize );
-				MSG_WriteData (&fakemsg, clc.voipOutgoingData, voipSize);
-				MSG_WriteByte (&fakemsg, svc_EOF);
+				fakemsg.init(fakedata, sizeof (fakedata));
+				fakemsg.bitstream();
+				fakemsg.writeLong(clc.reliableAcknowledge);
+				fakemsg.writeByte(svc_voip);
+				fakemsg.writeShort(clc.clientNum);
+				fakemsg.writeByte(clc.voipOutgoingGeneration);
+				fakemsg.writeLong(clc.voipOutgoingSequence);
+				fakemsg.writeByte(clc.voipOutgoingDataFrames);
+				fakemsg.writeShort(clc.voipOutgoingDataSize );
+				fakemsg.writeData(clc.voipOutgoingData, voipSize);
+				fakemsg.writeByte(svc_EOF);
 				CL_WriteDemoMessage (&fakemsg, 0);
 			}
 
@@ -869,13 +869,13 @@ void CL_WritePacket() {
 		// begin a client move command
 		if ( cl_nodelta->integer || !cl.snap.valid || clc.demowaiting
 			|| clc.serverMessageSequence != cl.snap.messageNum ) {
-			MSG_WriteByte (&buf, clc_moveNoDelta);
+			buf.writeByte(clc_moveNoDelta);
 		} else {
-			MSG_WriteByte (&buf, clc_move);
+			buf.writeByte(clc_move);
 		}
 
 		// write the command count
-		MSG_WriteByte( &buf, count );
+		buf.writeByte(count );
 
 		// use the checksum feed in the key
 		key = clc.checksumFeed;

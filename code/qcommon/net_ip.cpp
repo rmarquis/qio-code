@@ -1624,7 +1624,7 @@ void NET_Event(fd_set *fdr)
 	
 	while(1)
 	{
-		MSG_Init(&netmsg, bufData, sizeof(bufData));
+		netmsg.init(bufData, sizeof(bufData));
 
 		if(NET_GetPacket(&from, &netmsg, fdr))
 		{

@@ -770,15 +770,15 @@ static void SV_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 	const char	*s;
 	const char	*c;
 
-	MSG_BeginReadingOOB( msg );
-	MSG_ReadLong( msg );		// skip the -1 marker
+	msg->beginReadingOOB();
+	msg->readLong();		// skip the -1 marker
 
 	if (!strncmp("connect", (char *) &msg->data[4], 7)) {
 		msg->decompress(12);
 	}
 
 	bool bFixFormatChars = strnicmp((const char*)msg->data+4,"stufftext",9);
-	s = MSG_ReadString( msg, bFixFormatChars );
+	s = msg->readString(bFixFormatChars );
 	Cmd_TokenizeString( s );
 
 	c = Cmd_Argv(0);
@@ -836,9 +836,9 @@ void SV_PacketEvent( netAdr_s from, msg_s *msg ) {
 
 	// read the qport out of the message so we can fix up
 	// stupid address translating routers
-	MSG_BeginReadingOOB( msg );
-	MSG_ReadLong( msg );				// sequence number
-	qport = MSG_ReadShort( msg ) & 0xffff;
+	msg->beginReadingOOB();
+	msg->readLong();				// sequence number
+	qport = msg->readShort() & 0xffff;
 
 	// find which client the message is from
 	for (i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
