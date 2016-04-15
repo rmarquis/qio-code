@@ -1070,7 +1070,7 @@ int Com_EventLoop() {
 	byte		bufData[MAX_MSGLEN];
 	msg_s		buf;
 
-	MSG_Init( &buf, bufData, sizeof( bufData ) );
+	buf.init(bufData, sizeof( bufData ) );
 
 	while ( 1 ) {
 		ev = Com_GetEvent();

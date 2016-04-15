@@ -679,14 +679,14 @@ void CL_Record_f() {
 	clc.demowaiting = true;
 
 	// write out the gamestate message
-	MSG_Init (&buf, bufData, sizeof(bufData));
-	MSG_Bitstream(&buf);
+	buf.init(bufData, sizeof(bufData));
+	buf.bitstream();
 
 	// NOTE, MRE: all server->client messages now acknowledge
-	MSG_WriteLong( &buf, clc.reliableSequence );
+	buf.writeLong(clc.reliableSequence );
 
-	MSG_WriteByte (&buf, svc_gamestate);
-	MSG_WriteLong (&buf, clc.serverCommandSequence );
+	buf.writeByte(svc_gamestate);
+	buf.writeLong(clc.serverCommandSequence );
 
 	// configstrings
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
@@ -694,9 +694,9 @@ void CL_Record_f() {
 			continue;
 		}
 		s = cl.gameState.stringData + cl.gameState.stringOffsets[i];
-		MSG_WriteByte (&buf, svc_configstring);
-		MSG_WriteShort (&buf, i);
-		MSG_WriteBigString (&buf, s);
+		buf.writeByte(svc_configstring);
+		buf.writeShort(i);
+		buf.writeBigString(s);
 	}
 
 	// baselines
@@ -706,21 +706,21 @@ void CL_Record_f() {
 		if ( !ent->number ) {
 			continue;
 		}
-		MSG_WriteByte (&buf, svc_baseline);		
+		buf.writeByte(svc_baseline);		
 		MSG_WriteDeltaEntity (&buf, &nullstate, ent, true );
 	}
 
-	MSG_WriteByte( &buf, svc_EOF );
+	buf.writeByte(svc_EOF );
 	
 	// finished writing the gamestate stuff
 
 	// write the client num
-	MSG_WriteLong(&buf, clc.clientNum);
+	buf.writeLong(clc.clientNum);
 	// write the checksum feed
-	MSG_WriteLong(&buf, clc.checksumFeed);
+	buf.writeLong(clc.checksumFeed);
 
 	// finished writing the client packet
-	MSG_WriteByte( &buf, svc_EOF );
+	buf.writeByte(svc_EOF );
 
 	// write it to the demo file
 	len = LittleLong( clc.serverMessageSequence - 1 );
@@ -863,7 +863,7 @@ void CL_ReadDemoMessage() {
 	clc.serverMessageSequence = LittleLong( s );
 
 	// init the message
-	MSG_Init( &buf, bufData, sizeof( bufData ) );
+	buf.init(bufData, sizeof( bufData ) );
 
 	// get the length
 	r = FS_Read (&buf.cursize, 4, clc.demofile);
@@ -2377,11 +2377,11 @@ void CL_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 	const char	*c;
 	int challenge = 0;
 
-	MSG_BeginReadingOOB( msg );
-	MSG_ReadLong( msg );	// skip the -1
+	msg->beginReadingOOB();
+	msg->readLong();	// skip the -1
 
 	bool bFixFormatChars = strnicmp((const char*)msg->data+4,"stufftext",9);
-	s = MSG_ReadString( msg, bFixFormatChars );
+	s = msg->readString(bFixFormatChars );
 
 	Cmd_TokenizeString( s );
 
@@ -2506,7 +2506,7 @@ void CL_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 
 	// echo request from server
 	if(!stricmp(c, "print")){
-		s = MSG_ReadString( msg );
+		s = msg->readString();
 		
 		Q_strncpyz( clc.serverMessage, s, sizeof( clc.serverMessage ) );
 		Com_Printf( "%s", s );
@@ -3377,7 +3377,7 @@ void CL_ServerInfoPacket( netAdr_s from, msg_s *msg ) {
 	char	*gamename;
 	bool gameMismatch;
 
-	infoString = MSG_ReadString( msg );
+	infoString = msg->readString();
 
 	// if this isn't the correct gamename, ignore it
 	gamename = Info_ValueForKey( infoString, "gamename" );
@@ -3472,7 +3472,7 @@ void CL_ServerInfoPacket( netAdr_s from, msg_s *msg ) {
 	cls.localServers[i].g_humanplayers = 0;
 	cls.localServers[i].g_needpass = 0;
 									 
-	Q_strncpyz( info, MSG_ReadString( msg ), MAX_INFO_STRING );
+	Q_strncpyz( info, msg->readString(), MAX_INFO_STRING );
 	if (strlen(info)) {
 		if (info[strlen(info)-1] != '\n') {
 			strncat(info, "\n", sizeof(info) - 1);
@@ -3601,7 +3601,7 @@ void CL_ServerStatusResponse( netAdr_s from, msg_s *msg ) {
 		return;
 	}
 
-	s = MSG_ReadStringLine( msg );
+	s = msg->readStringLine();
 
 	len = 0;
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "%s", s);
@@ -3641,7 +3641,7 @@ void CL_ServerStatusResponse( netAdr_s from, msg_s *msg ) {
 		Com_Printf("\nPlayers:\n");
 		Com_Printf("num: score: ping: name:\n");
 	}
-	for (i = 0, s = MSG_ReadStringLine( msg ); *s; s = MSG_ReadStringLine( msg ), i++) {
+	for (i = 0, s = msg->readStringLine(); *s; s = msg->readStringLine(), i++) {
 
 		len = strlen(serverStatus->string);
 		Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\%s", s);

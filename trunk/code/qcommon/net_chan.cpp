@@ -114,20 +114,20 @@ void Netchan_TransmitNextFragment( netchan_t *chan ) {
 	int			outgoingSequence;
 
 	// write the packet header
-	MSG_InitOOB (&send, send_buf, sizeof(send_buf));				// <-- only do the oob here
+	send.initOOB(send_buf, sizeof(send_buf));				// <-- only do the oob here
 
 	outgoingSequence = chan->outgoingSequence | FRAGMENT_BIT;
-	MSG_WriteLong(&send, outgoingSequence);
+	send.writeLong(outgoingSequence);
 
 	// send the qport if we are a client
 	if ( chan->sock == NS_CLIENT ) {
-		MSG_WriteShort( &send, qport->integer );
+		send.writeShort(qport->integer );
 	}
 
 #ifdef LEGACY_PROTOCOL
 	if(!chan->compat)
 #endif
-		MSG_WriteLong(&send, NETCHAN_GENCHECKSUM(chan->challenge, chan->outgoingSequence));
+		send.writeLong(NETCHAN_GENCHECKSUM(chan->challenge, chan->outgoingSequence));
 
 	// copy the reliable message to the packet first
 	fragmentLength = FRAGMENT_SIZE;
@@ -135,9 +135,9 @@ void Netchan_TransmitNextFragment( netchan_t *chan ) {
 		fragmentLength = chan->unsentLength - chan->unsentFragmentStart;
 	}
 
-	MSG_WriteLong( &send, chan->unsentFragmentStart );
-	MSG_WriteShort( &send, fragmentLength );
-	MSG_WriteData( &send, chan->unsentBuffer + chan->unsentFragmentStart, fragmentLength );
+	send.writeLong(chan->unsentFragmentStart );
+	send.writeShort(fragmentLength );
+	send.writeData(chan->unsentBuffer + chan->unsentFragmentStart, fragmentLength );
 
 	// send the datagram
 	NET_SendPacket(chan->sock, send.cursize, send.data, chan->remoteAddress);
@@ -197,22 +197,22 @@ void Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 	}
 
 	// write the packet header
-	MSG_InitOOB (&send, send_buf, sizeof(send_buf));
+	send.initOOB(send_buf, sizeof(send_buf));
 
-	MSG_WriteLong( &send, chan->outgoingSequence );
+	send.writeLong(chan->outgoingSequence );
 
 	// send the qport if we are a client
 	if(chan->sock == NS_CLIENT)
-		MSG_WriteShort(&send, qport->integer);
+		send.writeShort(qport->integer);
 
 #ifdef LEGACY_PROTOCOL
 	if(!chan->compat)
 #endif
-		MSG_WriteLong(&send, NETCHAN_GENCHECKSUM(chan->challenge, chan->outgoingSequence));
+		send.writeLong(NETCHAN_GENCHECKSUM(chan->challenge, chan->outgoingSequence));
 
 	chan->outgoingSequence++;
 
-	MSG_WriteData( &send, data, length );
+	send.writeData(data, length );
 
 	// send the datagram
 	NET_SendPacket( chan->sock, send.cursize, send.data, chan->remoteAddress );
@@ -251,8 +251,8 @@ bool Netchan_Process( netchan_t *chan, msg_s *msg ) {
 //	Netchan_UnScramblePacket( msg );
 
 	// get sequence numbers		
-	MSG_BeginReadingOOB( msg );
-	sequence = MSG_ReadLong( msg );
+	msg->beginReadingOOB();
+	sequence = msg->readLong();
 
 	// check for fragment information
 	if ( sequence & FRAGMENT_BIT ) {
@@ -264,14 +264,14 @@ bool Netchan_Process( netchan_t *chan, msg_s *msg ) {
 
 	// read the qport if we are a server
 	if ( chan->sock == NS_SERVER ) {
-		MSG_ReadShort( msg );
+		msg->readShort();
 	}
 
 #ifdef LEGACY_PROTOCOL
 	if(!chan->compat)
 #endif
 	{
-		int checksum = MSG_ReadLong(msg);
+		int checksum = msg->readLong();
 
 		// UDP spoofing protection
 		if(NETCHAN_GENCHECKSUM(chan->challenge, sequence) != checksum)
@@ -282,8 +282,8 @@ bool Netchan_Process( netchan_t *chan, msg_s *msg ) {
 	if ( fragmented ) {
 		// NOTE: MSG_ReadShort returns negative number
 		// when a fragmentStart is higher than 32768
-		fragmentStart = MSG_ReadLong( msg );
-		fragmentLength = MSG_ReadUShort( msg );
+		fragmentStart = msg->readLong();
+		fragmentLength = msg->readUShort();
 	} else {
 		fragmentStart = 0;		// stop warning message
 		fragmentLength = 0;

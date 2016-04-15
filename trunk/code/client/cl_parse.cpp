@@ -117,7 +117,7 @@ void CL_ParsePacketEntities( msg_s *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 
 	while ( 1 ) {
 		// read the entity index number
-		newnum = MSG_ReadBits( msg, GENTITYNUM_BITS );
+		newnum = msg->readBits(GENTITYNUM_BITS );
 
 		if ( newnum == (MAX_GENTITIES-1) ) {
 			break;
@@ -214,7 +214,7 @@ void CL_ParseSnapshot( msg_s *msg ) {
 
 	// get the reliable sequence acknowledge number
 	// NOTE: now sent with all server to client messages
-	//clc.reliableAcknowledge = MSG_ReadLong( msg );
+	//clc.reliableAcknowledge = msg->readLong();
 
 	// read in the new snapshot to a temporary buffer
 	// we will only copy to cl.snap if it is valid
@@ -224,7 +224,7 @@ void CL_ParseSnapshot( msg_s *msg ) {
 	// message before we got to svc_snapshot
 	newSnap.serverCommandNum = clc.serverCommandSequence;
 
-	newSnap.serverTime = MSG_ReadLong( msg );
+	newSnap.serverTime = msg->readLong();
 
 	// if we were just unpaused, we can only *now* really let the
 	// change come into effect or the client hangs.
@@ -232,13 +232,13 @@ void CL_ParseSnapshot( msg_s *msg ) {
 
 	newSnap.messageNum = clc.serverMessageSequence;
 
-	deltaNum = MSG_ReadByte( msg );
+	deltaNum = msg->readByte();
 	if ( !deltaNum ) {
 		newSnap.deltaNum = -1;
 	} else {
 		newSnap.deltaNum = newSnap.messageNum - deltaNum;
 	}
-	newSnap.snapFlags = MSG_ReadByte( msg );
+	newSnap.snapFlags = msg->readByte();
 
 	// If the frame is delta compressed from data that we
 	// no longer have available, we must suck up the rest of
@@ -267,7 +267,7 @@ void CL_ParseSnapshot( msg_s *msg ) {
 	}
 
 	// read areamask
-	len = MSG_ReadByte( msg );
+	len = msg->readByte();
 	
 	if(len > sizeof(newSnap.areamask))
 	{
@@ -275,7 +275,7 @@ void CL_ParseSnapshot( msg_s *msg ) {
 		return;
 	}
 	
-	MSG_ReadData( msg, &newSnap.areamask, len);
+	msg->readData(&newSnap.areamask, len);
 	if(rf) {
 		rf->setAreaBits(newSnap.areamask,len);
 	}
@@ -481,12 +481,12 @@ void CL_ParseGamestate( msg_s *msg ) {
 	CL_ClearState();
 
 	// a gamestate always marks a server command sequence
-	clc.serverCommandSequence = MSG_ReadLong( msg );
+	clc.serverCommandSequence = msg->readLong();
 
 	// parse all the configstrings and baselines
 	cl.gameState.dataCount = 1;	// leave a 0 at the beginning for uninitialized configstrings
 	while ( 1 ) {
-		cmd = MSG_ReadByte( msg );
+		cmd = msg->readByte();
 
 		if ( cmd == svc_EOF ) {
 			break;
@@ -495,11 +495,11 @@ void CL_ParseGamestate( msg_s *msg ) {
 		if ( cmd == svc_configstring ) {
 			int		len;
 
-			i = MSG_ReadShort( msg );
+			i = msg->readShort();
 			if ( i < 0 || i >= MAX_CONFIGSTRINGS ) {
 				Com_Error( ERR_DROP, "configstring > MAX_CONFIGSTRINGS" );
 			}
-			s = MSG_ReadBigString( msg );
+			s = msg->readBigString();
 			len = strlen( s );
 
 			if ( len + 1 + cl.gameState.dataCount > MAX_GAMESTATE_CHARS ) {
@@ -511,7 +511,7 @@ void CL_ParseGamestate( msg_s *msg ) {
 			memcpy( cl.gameState.stringData + cl.gameState.dataCount, s, len + 1 );
 			cl.gameState.dataCount += len + 1;
 		} else if ( cmd == svc_baseline ) {
-			newnum = MSG_ReadBits( msg, GENTITYNUM_BITS );
+			newnum = msg->readBits(GENTITYNUM_BITS );
 			if ( newnum < 0 || newnum >= MAX_GENTITIES ) {
 				Com_Error( ERR_DROP, "Baseline number out of range: %i", newnum );
 			}
@@ -523,9 +523,9 @@ void CL_ParseGamestate( msg_s *msg ) {
 		}
 	}
 
-	clc.clientNum = MSG_ReadLong(msg);
+	clc.clientNum = msg->readLong();
 	// read the checksum feed
-	clc.checksumFeed = MSG_ReadLong( msg );
+	clc.checksumFeed = msg->readLong();
 
 	// save old gamedir
 	Cvar_VariableStringBuffer("fs_game", oldGame, sizeof(oldGame));
@@ -579,30 +579,30 @@ void CL_ParseDownload ( msg_s *msg ) {
 	}
 
 	// read the data
-	block = MSG_ReadShort ( msg );
+	block = msg->readShort();
 
 	if(!block && !clc.downloadBlock)
 	{
 		// block zero is special, contains file size
-		clc.downloadSize = MSG_ReadLong ( msg );
+		clc.downloadSize = msg->readLong();
 
 		Cvar_SetValue( "cl_downloadSize", clc.downloadSize );
 
 		if (clc.downloadSize < 0)
 		{
-			Com_Error( ERR_DROP, "%s", MSG_ReadString( msg ) );
+			Com_Error( ERR_DROP, "%s", msg->readString() );
 			return;
 		}
 	}
 
-	size = MSG_ReadShort ( msg );
+	size = msg->readShort();
 	if (size < 0 || size > sizeof(data))
 	{
 		Com_Error(ERR_DROP, "CL_ParseDownload: Invalid size %d for download chunk", size);
 		return;
 	}
 	
-	MSG_ReadData(msg, data, size);
+	msg->readData(data, size);
 
 	if((clc.downloadBlock & 0xFFFF) != block)
 	{
@@ -708,12 +708,12 @@ static
 void CL_ParseVoip ( msg_s *msg ) {
 	static short decoded[4096];  // !!! FIXME: don't hardcode.
 
-	const int sender = MSG_ReadShort(msg);
-	const int generation = MSG_ReadByte(msg);
-	const int sequence = MSG_ReadLong(msg);
-	const int frames = MSG_ReadByte(msg);
-	const int packetsize = MSG_ReadShort(msg);
-	const int flags = MSG_ReadBits(msg, VOIP_FLAGCNT);
+	const int sender = msg->readShort();
+	const int generation = msg->readByte();
+	const int sequence = msg->readLong();
+	const int frames = msg->readByte();
+	const int packetsize = msg->readShort();
+	const int flags = msg->readBits(VOIP_FLAGCNT);
 	char encoded[1024];
 	int seqdiff = sequence - clc.voipIncomingSequence[sender];
 	int written = 0;
@@ -738,20 +738,20 @@ void CL_ParseVoip ( msg_s *msg ) {
 			int br = bytesleft;
 			if (br > sizeof (encoded))
 				br = sizeof (encoded);
-			MSG_ReadData(msg, encoded, br);
+			msg->readData(encoded, br);
 			bytesleft -= br;
 		}
 		return;   // overlarge packet, bail.
 	}
 
 	if (!clc.speexInitialized) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
+		msg->readData(encoded, packetsize);  // skip payload.
 		return;   // can't handle VoIP without libspeex!
 	} else if (sender >= MAX_CLIENTS) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
+		msg->readData(encoded, packetsize);  // skip payload.
 		return;   // bogus sender.
 	} else if (CL_ShouldIgnoreVoipSender(sender)) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
+		msg->readData(encoded, packetsize);  // skip payload.
 		return;   // Channel is muted, bail.
 	}
 
@@ -793,12 +793,12 @@ void CL_ParseVoip ( msg_s *msg ) {
 
 	for (i = 0; i < frames; i++) {
 		char encoded[256];
-		const int len = MSG_ReadByte(msg);
+		const int len = msg->readByte();
 		if (len < 0) {
 			Com_DPrintf("VoIP: Short packet!\n");
 			break;
 		}
-		MSG_ReadData(msg, encoded, len);
+		msg->readData(encoded, len);
 
 		// shouldn't happen, but just in case...
 		if ((written + clc.speexFrameSize) * 2 > sizeof (decoded)) {
@@ -849,8 +849,8 @@ void CL_ParseCommandString( msg_s *msg ) {
 	int		seq;
 	int		index;
 
-	seq = MSG_ReadLong( msg );
-	s = MSG_ReadString( msg );
+	seq = msg->readLong();
+	s = msg->readString();
 
 	// see if we have already executed stored it off
 	if ( clc.serverCommandSequence >= seq ) {
@@ -879,7 +879,7 @@ void CL_ParseServerMessage( msg_s *msg ) {
 	}
 
 	msg->oob = true;
-	byte compressionMarker = MSG_ReadByte( msg );
+	byte compressionMarker = msg->readByte();
 	if(compressionMarker == 1) {
 		static char dst[MAX_MSGLEN];
 		uLongf dstLen = sizeof(dst);
@@ -895,11 +895,11 @@ void CL_ParseServerMessage( msg_s *msg ) {
 			Com_Printf("Decompression of zlib packet failed (zlib error %i)\n",result);
 		}
 	} else {
-		MSG_Bitstream(msg);
+		msg->bitstream();
 	}
 
 	// get the reliable sequence acknowledge number
-	clc.reliableAcknowledge = MSG_ReadLong( msg );
+	clc.reliableAcknowledge = msg->readLong();
 	// 
 	if ( clc.reliableAcknowledge < clc.reliableSequence - MAX_RELIABLE_COMMANDS ) {
 		clc.reliableAcknowledge = clc.reliableSequence;
@@ -914,7 +914,7 @@ void CL_ParseServerMessage( msg_s *msg ) {
 			break;
 		}
 
-		cmd = MSG_ReadByte( msg );
+		cmd = msg->readByte();
 
 		if (cmd == svc_EOF) {
 			SHOWNET( msg, "END OF MESSAGE" );

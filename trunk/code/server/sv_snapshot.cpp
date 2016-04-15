@@ -127,7 +127,7 @@ static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to,
 		}
 	}
 
-	MSG_WriteBits( msg, (MAX_GENTITIES-1), GENTITYNUM_BITS );	// end of packetentities
+	msg->writeBits((MAX_GENTITIES-1), GENTITYNUM_BITS );	// end of packetentities
 }
 
 
@@ -170,11 +170,11 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 		}
 	}
 
-	MSG_WriteByte (msg, svc_snapshot);
+	msg->writeByte(svc_snapshot);
 
 	// NOTE, MRE: now sent at the start of every message from server to client
 	// let the client know which reliable clientCommands we have received
-	//MSG_WriteLong( msg, client->lastClientCommand );
+	//msg->writeLong(client->lastClientCommand );
 
 	// send over the current server time so the client can drift
 	// its view of time to try to match
@@ -185,13 +185,13 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 		// the client's perspective this time is strictly speaking
 		// incorrect, but since it'll be busy loading a map at
 		// the time it doesn't really matter.
-		MSG_WriteLong (msg, sv.time + client->oldServerTime);
+		msg->writeLong( sv.time + client->oldServerTime);
 	} else {
-		MSG_WriteLong (msg, sv.time);
+		msg->writeLong( sv.time);
 	}
 
 	// what we are delta'ing from
-	MSG_WriteByte (msg, lastframe);
+	msg->writeByte(lastframe);
 
 	snapFlags = svs.snapFlagServerBit;
 	if ( client->rateDelayed ) {
@@ -201,11 +201,11 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 		snapFlags |= SNAPFLAG_NOT_ACTIVE;
 	}
 
-	MSG_WriteByte (msg, snapFlags);
+	msg->writeByte(snapFlags);
 
 	// send over the areabits
-	MSG_WriteByte (msg, frame->areabytes);
-	MSG_WriteData (msg, frame->areabits, frame->areabytes);
+	msg->writeByte(frame->areabytes);
+	msg->writeData(frame->areabits, frame->areabytes);
 
 	// delta encode the playerstate
 	if ( oldframe ) {
@@ -220,7 +220,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 	// padding for rate debugging
 	if ( sv_padPackets->integer ) {
 		for ( i = 0 ; i < sv_padPackets->integer ; i++ ) {
-			MSG_WriteByte (msg, svc_nop);
+			msg->writeByte(svc_nop);
 		}
 	}
 }
@@ -238,9 +238,9 @@ void SV_UpdateServerCommandsToClient( client_t *client, msg_s *msg ) {
 
 	// write any unacknowledged serverCommands
 	for ( i = client->reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
-		MSG_WriteByte( msg, svc_serverCommand );
-		MSG_WriteLong( msg, i );
-		MSG_WriteString( msg, client->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
+		msg->writeByte(svc_serverCommand );
+		msg->writeLong(i );
+		msg->writeString(client->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
 	}
 	client->reliableSent = client->reliableSequence;
 }
@@ -525,14 +525,14 @@ static void SV_WriteVoipToClient(client_t *cl, msg_s *msg)
 	        		if (totalbytes > (msg->maxsize - msg->cursize) / 2)
 		        		break;
 
-        			MSG_WriteByte(msg, svc_voip);
-        			MSG_WriteShort(msg, packet->sender);
-	        		MSG_WriteByte(msg, (byte) packet->generation);
-		        	MSG_WriteLong(msg, packet->sequence);
-		        	MSG_WriteByte(msg, packet->frames);
-        			MSG_WriteShort(msg, packet->len);
-        			MSG_WriteBits(msg, packet->flags, VOIP_FLAGCNT);
-	        		MSG_WriteData(msg, packet->data, packet->len);
+        			msg->writeByte(svc_voip);
+        			msg->writeShort(packet->sender);
+	        		msg->writeByte((byte) packet->generation);
+		        	msg->writeLong(packet->sequence);
+		        	msg->writeByte(packet->frames);
+        			msg->writeShort(packet->len);
+        			msg->writeBits(packet->flags, VOIP_FLAGCNT);
+	        		msg->writeData(packet->data, packet->len);
                         }
 
 			free(packet);
@@ -585,17 +585,17 @@ void SV_SendClientSnapshot( client_t *client ) {
 	//	return;
 	//}
 
-	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
+	msg.init(msg_buf, sizeof(msg_buf));
 	msg.allowoverflow = true;
 
 	// compression byte is the first byte in all server->client messages
 	msg.oob = true;
-	MSG_WriteByte(&msg,0);
+	msg.writeByte(0);
 	msg.oob = false;
 
 	// NOTE, MRE: all server->client messages now acknowledge
 	// let the client know which reliable clientCommands we have received
-	MSG_WriteLong( &msg, client->lastClientCommand );
+	msg.writeLong(client->lastClientCommand );
 
 	// (re)send any reliable server commands
 	SV_UpdateServerCommandsToClient( client, &msg );
@@ -611,7 +611,7 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// check for overflow
 	if ( msg.overflowed ) {
 		Com_Printf ("WARNING: msg overflowed for %s\n", client->name);
-		MSG_Clear (&msg);
+		msg.clear();
 	}
 
 	SV_SendMessageToClient( &msg, client );

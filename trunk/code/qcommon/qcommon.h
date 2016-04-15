@@ -193,13 +193,46 @@ struct msg_s {
 
 	void compress(int ofs);
 	void decompress(int ofs);
+
+
+	void init(byte *data, int length);
+	void initOOB(byte *data, int length);
+	void clear();
+	void bitstream();
+	void beginReading();
+	void beginReadingOOB();
+
+	void writeBits(int value, int bits);
+	int readBits(int bits);
+
+
+	void writeChar(int c);
+	void writeByte(int c);
+	void writeData(const void *data, int length);
+	void writeShort(int c);
+	void writeLong(int c);
+	void writeFloat( float f);
+	void writeString(const char *s);
+	void writeBigString(const char *s);
+	void writeAngle(float f);
+	void writeAngle16(float f);
+
+
+
+	// returns -1 if no more characters are available
+	int readChar();
+	int readByte();
+	int readShort();
+	int readUShort();
+	int readLong();
+	float readFloat();
+	char *readString(bool bFixFormatChars = true);
+	char *readBigString();
+	char *readStringLine();
+	float readAngle16();
+	void readData(void *data, int len);
 };
 
-void MSG_Init (msg_s *buf, byte *data, int length);
-void MSG_InitOOB( msg_s *buf, byte *data, int length );
-void MSG_Clear (msg_s *buf);
-void MSG_WriteData (msg_s *buf, const void *data, int length);
-void MSG_Bitstream( msg_s *buf );
 
 // TTimo
 // copy a msg_s in case we need to store it as is for a bit
@@ -211,34 +244,7 @@ struct userCmd_s;
 struct entityState_s;
 struct playerState_s;
 
-void MSG_WriteBits( msg_s *msg, int value, int bits );
-
-void MSG_WriteChar (msg_s *sb, int c);
-void MSG_WriteByte (msg_s *sb, int c);
-void MSG_WriteShort (msg_s *sb, int c);
-void MSG_WriteLong (msg_s *sb, int c);
-void MSG_WriteFloat (msg_s *sb, float f);
-void MSG_WriteString (msg_s *sb, const char *s);
-void MSG_WriteBigString (msg_s *sb, const char *s);
-void MSG_WriteAngle16 (msg_s *sb, float f);
 int MSG_HashKey(const char *string, int maxlen);
-
-void	MSG_BeginReading (msg_s *sb);
-void	MSG_BeginReadingOOB(msg_s *sb);
-
-int		MSG_ReadBits( msg_s *msg, int bits );
-
-int		MSG_ReadChar (msg_s *sb);
-int		MSG_ReadByte (msg_s *sb);
-int		MSG_ReadShort (msg_s *sb);
-int		MSG_ReadUShort (msg_s *sb);
-int		MSG_ReadLong (msg_s *sb);
-float	MSG_ReadFloat (msg_s *sb);
-char	*MSG_ReadString (msg_s *sb, bool bFixFormatChars = true);
-char	*MSG_ReadBigString (msg_s *sb);
-char	*MSG_ReadStringLine (msg_s *sb);
-float	MSG_ReadAngle16 (msg_s *sb);
-void	MSG_ReadData (msg_s *sb, void *buffer, int size);
 
 void MSG_WriteDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
 void MSG_ReadDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
