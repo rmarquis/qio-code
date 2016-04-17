@@ -1,0 +1,8 @@
+dd001_asphalt
+dd001_clay
+dd001_concrete
+dd001_metal
+dd001_nature
+dd001_plaster
+dd001_stone
+dd001_wood
