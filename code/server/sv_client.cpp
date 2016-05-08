@@ -673,7 +673,7 @@ the wrong gamestate.
 static void SV_SendClientGameState( client_t *client ) {
 	int			start;
 	entityState_s	*base, nullstate;
-	msg_s		msg;
+	msg_c		msg;
 	byte		msgBuffer[MAX_MSGLEN];
 
  	Com_DPrintf ("SV_SendClientGameState() for %s\n", client->name);
@@ -726,7 +726,7 @@ static void SV_SendClientGameState( client_t *client ) {
 			continue;
 		}
 		msg.writeByte(svc_baseline );
-		MSG_WriteDeltaEntity( &msg, &nullstate, base, true );
+		msg.writeDeltaEntity(&nullstate, base, true );
 	}
 
 	msg.writeByte(svc_EOF );
@@ -891,7 +891,7 @@ Check to see if the client wants a file, open it if needed and start pumping the
 Fill up msg with data, return number of download blocks added
 ==================
 */
-int SV_WriteDownloadToClient(client_t *cl, msg_s *msg)
+int SV_WriteDownloadToClient(client_t *cl, msg_c *msg)
 {
 	int curindex;
 	int unreferenced = 1;
@@ -1129,7 +1129,7 @@ int SV_SendDownloadMessages(void)
 {
 	int i, numDLs = 0, retval;
 	client_t *cl;
-	msg_s msg;
+	msg_c msg;
 	byte msgBuffer[MAX_MSGLEN];
 	
 	for(i=0; i < sv_maxclients->integer; i++)
@@ -1547,7 +1547,7 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, bool clientOK ) {
 SV_ClientCommand
 ===============
 */
-static bool SV_ClientCommand( client_t *cl, msg_s *msg ) {
+static bool SV_ClientCommand( client_t *cl, msg_c *msg ) {
 	int		seq;
 	const char	*s;
 	bool clientOk = true;
@@ -1629,7 +1629,7 @@ On very fast clients, there may be multiple usercmd packed into
 each of the backup packets.
 ==================
 */
-static void SV_UserMove( client_t *cl, msg_s *msg, bool delta ) {
+static void SV_UserMove( client_t *cl, msg_c *msg, bool delta ) {
 	int			i, key;
 	int			cmdCount;
 	userCmd_s	nullcmd;
@@ -1665,7 +1665,7 @@ static void SV_UserMove( client_t *cl, msg_s *msg, bool delta ) {
 	oldcmd = &nullcmd;
 	for ( i = 0 ; i < cmdCount ; i++ ) {
 		cmd = &cmds[i];
-		MSG_ReadDeltaUsercmdKey( msg, key, oldcmd, cmd );
+		msg->readDeltaUsercmdKey( key, oldcmd, cmd );
 		oldcmd = cmd;
 	}
 
@@ -1748,7 +1748,7 @@ static bool SV_ShouldIgnoreVoipSender(const client_t *cl)
 }
 
 static
-void SV_UserVoip(client_t *cl, msg_s *msg)
+void SV_UserVoip(client_t *cl, msg_c *msg)
 {
 	int sender, generation, sequence, frames, packetsize;
 	uint8_t recips[(MAX_CLIENTS + 7) / 8];
@@ -1852,7 +1852,7 @@ SV_ExecuteClientMessage
 Parse a client packet
 ===================
 */
-void SV_ExecuteClientMessage( client_t *cl, msg_s *msg ) {
+void SV_ExecuteClientMessage( client_t *cl, msg_c *msg ) {
 	int			c;
 	int			serverId;
 

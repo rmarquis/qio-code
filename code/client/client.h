@@ -551,11 +551,11 @@ void CL_Voip_f();
 #endif
 
 void CL_SystemInfoChanged();
-void CL_ParseServerMessage( msg_s *msg );
+void CL_ParseServerMessage( msg_c *msg );
 
 //====================================================================
 
-void	CL_ServerInfoPacket( netAdr_s from, msg_s *msg );
+void	CL_ServerInfoPacket( netAdr_s from, msg_c *msg );
 void	CL_LocalServers_f();
 void	CL_GlobalServers_f();
 void	CL_FavoriteServers_f();
@@ -647,8 +647,8 @@ void CL_InitRef();
 //
 // cl_net_chan.c
 //
-void CL_Netchan_Transmit( netchan_t *chan, msg_s* msg);	//int length, const byte *data );
-bool CL_Netchan_Process( netchan_t *chan, msg_s *msg );
+void CL_Netchan_Transmit( netchan_t *chan, msg_c* msg);	//int length, const byte *data );
+bool CL_Netchan_Process( netchan_t *chan, msg_c *msg );
 
 //
 // cl_avi.c
@@ -663,7 +663,7 @@ bool CL_VideoRecording();
 //
 // cl_main.c
 //
-void CL_WriteDemoMessage ( msg_s *msg, int headerBytes );
+void CL_WriteDemoMessage ( msg_c *msg, int headerBytes );
 
 //
 // cl_loadingScreenMgr.cpp

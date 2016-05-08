@@ -58,7 +58,7 @@ SV_EmitPacketEntities
 Writes a delta update of an entityState_s list to the message.
 =============
 */
-static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to, msg_s *msg ) {
+static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to, msg_c *msg ) {
 	entityState_s	*oldent, *newent;
 	int		oldindex, newindex;
 	int		oldnum, newnum;
@@ -98,7 +98,7 @@ static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to,
 			// delta update from old position
 			// because the force parm is false, this will not result
 			// in any bytes being emited if the entity has not changed at all
-			MSG_WriteDeltaEntity (msg, oldent, newent, false );
+			msg->writeDeltaEntity( oldent, newent, false );
 			oldindex++;
 			newindex++;
 			continue;
@@ -110,7 +110,7 @@ static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to,
 					newnum,to->ps.number);
 			}
 			// this is a new entity, send it from the baseline
-			MSG_WriteDeltaEntity (msg, &sv.svEntities[newnum].baseline, newent, true );
+			msg->writeDeltaEntity(&sv.svEntities[newnum].baseline, newent, true );
 			newindex++;
 			continue;
 		}
@@ -121,7 +121,7 @@ static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to,
 					oldnum,to->ps.number);
 			}
 			// the old entity isn't present in the new message
-			MSG_WriteDeltaEntity (msg, oldent, NULL, true );
+			msg->writeDeltaEntity(oldent, NULL, true );
 			oldindex++;
 			continue;
 		}
@@ -137,7 +137,7 @@ static void SV_EmitPacketEntities( clientSnapshot_s *from, clientSnapshot_s *to,
 SV_WriteSnapshotToClient
 ==================
 */
-static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
+static void SV_WriteSnapshotToClient( client_t *client, msg_c *msg ) {
 	clientSnapshot_s	*frame, *oldframe;
 	int					lastframe;
 	int					i;
@@ -209,9 +209,9 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_s *msg ) {
 
 	// delta encode the playerstate
 	if ( oldframe ) {
-		MSG_WriteDeltaPlayerstate( msg, &oldframe->ps, &frame->ps );
+		msg->writeDeltaPlayerstate(&oldframe->ps, &frame->ps );
 	} else {
-		MSG_WriteDeltaPlayerstate( msg, NULL, &frame->ps );
+		msg->writeDeltaPlayerstate(NULL, &frame->ps );
 	}
 
 	// delta encode the entities
@@ -233,7 +233,7 @@ SV_UpdateServerCommandsToClient
 (re)send all server commands the client hasn't acknowledged yet
 ==================
 */
-void SV_UpdateServerCommandsToClient( client_t *client, msg_s *msg ) {
+void SV_UpdateServerCommandsToClient( client_t *client, msg_c *msg ) {
 	int		i;
 
 	// write any unacknowledged serverCommands
@@ -506,7 +506,7 @@ SV_WriteVoipToClient
 Check to see if there is any VoIP queued for a client, and send if there is.
 ==================
 */
-static void SV_WriteVoipToClient(client_t *cl, msg_s *msg)
+static void SV_WriteVoipToClient(client_t *cl, msg_c *msg)
 {
 	int totalbytes = 0;
 	int i;
@@ -552,7 +552,7 @@ SV_SendMessageToClient
 Called by SV_SendClientSnapshot and SV_SendClientGameState
 =======================
 */
-void SV_SendMessageToClient(msg_s *msg, client_t *client)
+void SV_SendMessageToClient(msg_c *msg, client_t *client)
 {
 	// record information about the message
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSize = msg->cursize;
@@ -574,7 +574,7 @@ Also called by SV_FinalMessage
 */
 void SV_SendClientSnapshot( client_t *client ) {
 	byte		msg_buf[MAX_MSGLEN];
-	msg_s		msg;
+	msg_c		msg;
 
 	// build the snapshot
 	SV_BuildClientSnapshot( client );

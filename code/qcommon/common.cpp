@@ -1037,7 +1037,7 @@ sysEvent_s	Com_GetEvent() {
 Com_RunAndTimeServerPacket
 =================
 */
-void Com_RunAndTimeServerPacket( netAdr_s *evFrom, msg_s *buf ) {
+void Com_RunAndTimeServerPacket( netAdr_s *evFrom, msg_c *buf ) {
 	int		t1, t2, msec;
 
 	t1 = 0;
@@ -1068,7 +1068,7 @@ int Com_EventLoop() {
 	sysEvent_s	ev;
 	netAdr_s	evFrom;
 	byte		bufData[MAX_MSGLEN];
-	msg_s		buf;
+	msg_c		buf;
 
 	buf.init(bufData, sizeof( bufData ) );
 

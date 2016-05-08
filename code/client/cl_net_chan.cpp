@@ -44,7 +44,7 @@ bool CL_Netchan_TransmitNextFragment(netchan_t *chan)
 CL_Netchan_Transmit
 ================
 */
-void CL_Netchan_Transmit( netchan_t *chan, msg_s* msg ) {
+void CL_Netchan_Transmit( netchan_t *chan, msg_c* msg ) {
 	msg->writeByte(clc_EOF );
 
 	Netchan_Transmit(chan, msg->cursize, msg->data);
@@ -61,7 +61,7 @@ void CL_Netchan_Transmit( netchan_t *chan, msg_s* msg ) {
 CL_Netchan_Process
 =================
 */
-bool CL_Netchan_Process( netchan_t *chan, msg_s *msg ) {
+bool CL_Netchan_Process( netchan_t *chan, msg_c *msg ) {
 	int ret;
 
 	ret = Netchan_Process( chan, msg );

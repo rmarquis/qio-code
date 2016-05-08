@@ -149,7 +149,7 @@ static int noGameRestart = false;
 void CL_CheckForResend();
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
-void CL_ServerStatusResponse( netAdr_s from, msg_s *msg );
+void CL_ServerStatusResponse( netAdr_s from, msg_c *msg );
 
 #ifdef USE_MUMBLE
 static
@@ -535,7 +535,7 @@ Dumps the current net message, prefixed by the length
 ====================
 */
 
-void CL_WriteDemoMessage ( msg_s *msg, int headerBytes ) {
+void CL_WriteDemoMessage ( msg_c *msg, int headerBytes ) {
 	int		len, swlen;
 
 	// write the packet sequence
@@ -612,7 +612,7 @@ static char		demoName[MAX_QPATH];	// compiler bug workaround
 void CL_Record_f() {
 	char		name[MAX_OSPATH];
 	byte		bufData[MAX_MSGLEN];
-	msg_s	buf;
+	msg_c	buf;
 	int			i;
 	int			len;
 	entityState_s	*ent;
@@ -707,7 +707,7 @@ void CL_Record_f() {
 			continue;
 		}
 		buf.writeByte(svc_baseline);		
-		MSG_WriteDeltaEntity (&buf, &nullstate, ent, true );
+		buf.writeDeltaEntity (&nullstate, ent, true );
 	}
 
 	buf.writeByte(svc_EOF );
@@ -845,7 +845,7 @@ CL_ReadDemoMessage
 */
 void CL_ReadDemoMessage() {
 	int			r;
-	msg_s		buf;
+	msg_c		buf;
 	byte		bufData[ MAX_MSGLEN ];
 	int			s;
 
@@ -2249,7 +2249,7 @@ void CL_InitServerInfo( serverInfo_t *server, netAdr_s *address ) {
 CL_ServersResponsePacket
 ===================
 */
-void CL_ServersResponsePacket( const netAdr_s* from, msg_s *msg, bool extended ) {
+void CL_ServersResponsePacket( const netAdr_s* from, msg_c *msg, bool extended ) {
 	int				i, j, count, total;
 	netAdr_s addresses[MAX_SERVERSPERPACKET];
 	int				numservers;
@@ -2372,7 +2372,7 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
-void CL_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
+void CL_ConnectionlessPacket( netAdr_s from, msg_c *msg ) {
 	char	*s;
 	const char	*c;
 	int challenge = 0;
@@ -2545,7 +2545,7 @@ CL_PacketEvent
 A packet has arrived from the main event loop
 =================
 */
-void CL_PacketEvent( netAdr_s from, msg_s *msg ) {
+void CL_PacketEvent( netAdr_s from, msg_c *msg ) {
 	int		headerBytes;
 
 	clc.lastPacketTime = cls.realtime;
@@ -3369,7 +3369,7 @@ static void CL_SetServerInfoByAddress(netAdr_s from, const char *info, int ping)
 CL_ServerInfoPacket
 ===================
 */
-void CL_ServerInfoPacket( netAdr_s from, msg_s *msg ) {
+void CL_ServerInfoPacket( netAdr_s from, msg_c *msg ) {
 	int		i, type;
 	char	info[MAX_INFO_STRING];
 	char	*infoString;
@@ -3582,7 +3582,7 @@ int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen )
 CL_ServerStatusResponse
 ===================
 */
-void CL_ServerStatusResponse( netAdr_s from, msg_s *msg ) {
+void CL_ServerStatusResponse( netAdr_s from, msg_c *msg ) {
 	char	*s;
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;
