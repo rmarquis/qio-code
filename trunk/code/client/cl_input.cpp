@@ -757,7 +757,7 @@ During normal gameplay, a client packet will contain something like:
 ===================
 */
 void CL_WritePacket() {
-	msg_s		buf;
+	msg_c		buf;
 	byte		data[MAX_MSGLEN];
 	int			i, j;
 	userCmd_s	*cmd, *oldcmd;
@@ -832,7 +832,7 @@ void CL_WritePacket() {
 			if(clc.demorecording && !clc.demowaiting)
 			{
 				const int voipSize = clc.voipOutgoingDataSize;
-				msg_s fakemsg;
+				msg_c fakemsg;
 				byte fakedata[MAX_MSGLEN];
 				fakemsg.init(fakedata, sizeof (fakedata));
 				fakemsg.bitstream();
@@ -888,7 +888,7 @@ void CL_WritePacket() {
 		for ( i = 0 ; i < count ; i++ ) {
 			j = (cl.cmdNumber - count + i + 1) & CMD_MASK;
 			cmd = &cl.cmds[j];
-			MSG_WriteDeltaUsercmdKey (&buf, key, oldcmd, cmd);
+			buf.writeDeltaUsercmdKey (key, oldcmd, cmd);
 			oldcmd = cmd;
 		}
 	}

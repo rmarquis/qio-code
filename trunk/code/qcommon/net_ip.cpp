@@ -520,7 +520,7 @@ NET_GetPacket
 Receive one packet
 ==================
 */
-bool NET_GetPacket(netAdr_s *net_from, msg_s *net_message, fd_set *fdr)
+bool NET_GetPacket(netAdr_s *net_from, msg_c *net_message, fd_set *fdr)
 {
 	int 	ret;
 	struct sockaddr_storage from;
@@ -1620,7 +1620,7 @@ void NET_Event(fd_set *fdr)
 {
 	byte bufData[MAX_MSGLEN + 1];
 	netAdr_s from;
-	msg_s netmsg;
+	msg_c netmsg;
 	
 	while(1)
 	{

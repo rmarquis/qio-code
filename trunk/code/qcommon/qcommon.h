@@ -181,7 +181,8 @@ void	Q_strcat( char *dest, int size, const char *src );
 //
 // msg.c
 //
-struct msg_s {
+class msg_c {
+public:
 	bool	allowoverflow;	// if false, do a Com_Error
 	bool	overflowed;		// set to true if the buffer size failed (with allowoverflow set)
 	bool	oob;			// set to true if the buffer size failed (with allowoverflow set)
@@ -231,34 +232,37 @@ struct msg_s {
 	char *readStringLine();
 	float readAngle16();
 	void readData(void *data, int len);
+
+
+
+
+	void writeDeltaUsercmd(struct userCmd_s *from, struct userCmd_s *to);
+	void readDeltaUsercmd(struct userCmd_s *from, struct userCmd_s *to);
+
+	void writeDeltaUsercmdKey(int key, userCmd_s *from, userCmd_s *to);
+	void readDeltaUsercmdKey(int key, userCmd_s *from, userCmd_s *to);
+
+	void writeDeltaEntity(struct entityState_s *from, struct entityState_s *to, bool force);
+	void readDeltaEntity(entityState_s *from, entityState_s *to, int number);
+
+	void writeDeltaPlayerstate(struct playerState_s *from, struct playerState_s *to);
+	void readDeltaPlayerstate(struct playerState_s *from, struct playerState_s *to);
 };
 
 
+
+
 // TTimo
-// copy a msg_s in case we need to store it as is for a bit
-// (as I needed this to keep an msg_s from a static var for later use)
+// copy a msg_c in case we need to store it as is for a bit
+// (as I needed this to keep an msg_c from a static var for later use)
 // sets data buffer as MSG_Init does prior to do the copy
-void MSG_Copy(msg_s *buf, byte *data, int length, msg_s *src);
+void MSG_Copy(msg_c *buf, byte *data, int length, msg_c *src);
 
 struct userCmd_s;
 struct entityState_s;
 struct playerState_s;
 
 int MSG_HashKey(const char *string, int maxlen);
-
-void MSG_WriteDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
-void MSG_ReadDeltaUsercmd( msg_s *msg, struct userCmd_s *from, struct userCmd_s *to );
-
-void MSG_WriteDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to );
-void MSG_ReadDeltaUsercmdKey( msg_s *msg, int key, userCmd_s *from, userCmd_s *to );
-
-void MSG_WriteDeltaEntity( msg_s *msg, struct entityState_s *from, struct entityState_s *to
-						   , bool force );
-void MSG_ReadDeltaEntity( msg_s *msg, entityState_s *from, entityState_s *to, 
-						 int number );
-
-void MSG_WriteDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to );
-void MSG_ReadDeltaPlayerstate( msg_s *msg, struct playerState_s *from, struct playerState_s *to );
 
 
 void MSG_ReportChangeVectors_f();
@@ -334,7 +338,7 @@ bool	NET_IsLocalAddress (netAdr_s adr);
 const char	*NET_AdrToString (netAdr_s a);
 const char	*NET_AdrToStringwPort (netAdr_s a);
 int		NET_StringToAdr ( const char *s, netAdr_s *a, netAdrType_e family);
-bool	NET_GetLoopPacket (netSrc_e sock, netAdr_s *net_from, msg_s *net_message);
+bool	NET_GetLoopPacket (netSrc_e sock, netAdr_s *net_from, msg_c *net_message);
 void		NET_JoinMulticast6(void);
 void		NET_LeaveMulticast6(void);
 void		NET_Sleep(int msec);
@@ -388,7 +392,7 @@ void Netchan_Setup(netSrc_e sock, netchan_t *chan, netAdr_s adr, int qport, int 
 void Netchan_Transmit( netchan_t *chan, int length, const byte *data );
 void Netchan_TransmitNextFragment( netchan_t *chan );
 
-bool Netchan_Process( netchan_t *chan, msg_s *msg );
+bool Netchan_Process( netchan_t *chan, msg_c *msg );
 
 
 /*
@@ -910,7 +914,7 @@ int			Com_Filter(const char *filter, char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_s *qtime);
 bool	Com_SafeMode();
-void		Com_RunAndTimeServerPacket(netAdr_s *evFrom, msg_s *buf);
+void		Com_RunAndTimeServerPacket(netAdr_s *evFrom, msg_c *buf);
 
 bool	Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientNum);
 
@@ -1008,7 +1012,7 @@ void CL_MouseEvent( int dx, int dy, int time );
 
 void CL_JoystickEvent( int axis, int value, int time );
 
-void CL_PacketEvent( netAdr_s from, msg_s *msg );
+void CL_PacketEvent( netAdr_s from, msg_c *msg );
 
 void CL_ConsolePrint( char *text );
 
@@ -1053,7 +1057,7 @@ void Key_WriteBindings( fileHandle_t f );
 void SV_Init();
 void SV_Shutdown(const char *finalmsg );
 void SV_Frame( int msec );
-void SV_PacketEvent( netAdr_s from, msg_s *msg );
+void SV_PacketEvent( netAdr_s from, msg_c *msg );
 int SV_FrameMsec(void);
 bool SV_GameCommand();
 int SV_SendQueuedPackets(void);

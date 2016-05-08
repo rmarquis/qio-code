@@ -112,7 +112,7 @@ then buffer them and make sure they get sent in correct order
 aCvar_c sv_compressPackets("sv_compressPackets","1");
 aCvar_c sv_printCompressedPacketSize("sv_printCompressedPacketSize","0");
 
-void SV_Netchan_Transmit( client_t *client, msg_s *msg)
+void SV_Netchan_Transmit( client_t *client, msg_c *msg)
 {
 	msg->writeByte(svc_EOF );
 
@@ -177,7 +177,7 @@ void SV_Netchan_Transmit( client_t *client, msg_s *msg)
 Netchan_SV_Process
 =================
 */
-bool SV_Netchan_Process( client_t *client, msg_s *msg ) {
+bool SV_Netchan_Process( client_t *client, msg_c *msg ) {
 	int ret;
 	ret = Netchan_Process( &client->netchan, msg );
 	if (!ret)

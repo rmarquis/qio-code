@@ -42,7 +42,7 @@ char *svc_strings[256] = {
 	"svc_voip",
 };
 
-void SHOWNET( msg_s *msg, char *s) {
+void SHOWNET( msg_c *msg, char *s) {
 	if ( cl_shownet->integer >= 2) {
 		Com_Printf ("%3i:%s\n", msg->readcount-1, s);
 	}
@@ -65,7 +65,7 @@ Parses deltas from the given base and adds the resulting entity
 to the current frame
 ==================
 */
-void CL_DeltaEntity (msg_s *msg, clSnapshot_t *frame, int newnum, entityState_s *old, 
+void CL_DeltaEntity (msg_c *msg, clSnapshot_t *frame, int newnum, entityState_s *old, 
 					 bool unchanged) {
 	entityState_s	*state;
 
@@ -76,7 +76,7 @@ void CL_DeltaEntity (msg_s *msg, clSnapshot_t *frame, int newnum, entityState_s 
 	if ( unchanged ) {
 		*state = *old;
 	} else {
-		MSG_ReadDeltaEntity( msg, old, state, newnum );
+		msg->readDeltaEntity(old, state, newnum );
 	}
 
 	if ( state->number == (MAX_GENTITIES-1) ) {
@@ -92,7 +92,7 @@ CL_ParsePacketEntities
 
 ==================
 */
-void CL_ParsePacketEntities( msg_s *msg, clSnapshot_t *oldframe, clSnapshot_t *newframe) {
+void CL_ParsePacketEntities( msg_c *msg, clSnapshot_t *oldframe, clSnapshot_t *newframe) {
 	int			newnum;
 	entityState_s	*oldstate;
 	int			oldindex, oldnum;
@@ -204,7 +204,7 @@ cl.snap and saved in cl.snapshots[].  If the snapshot is invalid
 for any reason, no changes to the state will be made at all.
 ================
 */
-void CL_ParseSnapshot( msg_s *msg ) {
+void CL_ParseSnapshot( msg_c *msg ) {
 	int			len;
 	clSnapshot_t	*old;
 	clSnapshot_t	newSnap;
@@ -283,9 +283,9 @@ void CL_ParseSnapshot( msg_s *msg ) {
 	// read playerinfo
 	SHOWNET( msg, "playerstate" );
 	if ( old ) {
-		MSG_ReadDeltaPlayerstate( msg, &old->ps, &newSnap.ps );
+		msg->readDeltaPlayerstate(&old->ps, &newSnap.ps );
 	} else {
-		MSG_ReadDeltaPlayerstate( msg, NULL, &newSnap.ps );
+		msg->readDeltaPlayerstate(NULL, &newSnap.ps );
 	}
 
 	// read packet entities
@@ -464,7 +464,7 @@ static void CL_ParseServerInfo(void)
 CL_ParseGamestate
 ==================
 */
-void CL_ParseGamestate( msg_s *msg ) {
+void CL_ParseGamestate( msg_c *msg ) {
 	int				i;
 	entityState_s	*es;
 	int				newnum;
@@ -517,7 +517,7 @@ void CL_ParseGamestate( msg_s *msg ) {
 			}
 			memset (&nullstate, 0, sizeof(nullstate));
 			es = &cl.entityBaselines[ newnum ];
-			MSG_ReadDeltaEntity( msg, &nullstate, es, newnum );
+			msg->readDeltaEntity( &nullstate, es, newnum );
 		} else {
 			Com_Error( ERR_DROP, "CL_ParseGamestate: bad command byte" );
 		}
@@ -567,7 +567,7 @@ CL_ParseDownload
 A download message has been received from the server
 =====================
 */
-void CL_ParseDownload ( msg_s *msg ) {
+void CL_ParseDownload ( msg_c *msg ) {
 	int		size;
 	unsigned char data[MAX_MSGLEN];
 	uint16_t block;
@@ -705,7 +705,7 @@ A VoIP message has been received from the server
 =====================
 */
 static
-void CL_ParseVoip ( msg_s *msg ) {
+void CL_ParseVoip ( msg_c *msg ) {
 	static short decoded[4096];  // !!! FIXME: don't hardcode.
 
 	const int sender = msg->readShort();
@@ -844,7 +844,7 @@ Command strings are just saved off until cgame asks for them
 when it transitions a snapshot
 =====================
 */
-void CL_ParseCommandString( msg_s *msg ) {
+void CL_ParseCommandString( msg_c *msg ) {
 	char	*s;
 	int		seq;
 	int		index;
@@ -869,7 +869,7 @@ CL_ParseServerMessage
 =====================
 */
 #include <zlib.h>
-void CL_ParseServerMessage( msg_s *msg ) {
+void CL_ParseServerMessage( msg_c *msg ) {
 	int			cmd;
 
 	if ( cl_shownet->integer == 1 ) {

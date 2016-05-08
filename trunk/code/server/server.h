@@ -117,7 +117,7 @@ enum clientState_e {
 };
 
 struct netchan_buffer_s {
-	msg_s           msg;
+	msg_c           msg;
 	byte            msgBuffer[MAX_MSGLEN];
 #ifdef LEGACY_PROTOCOL
 	char		clientCommandString[MAX_STRING_CHARS];	// valid command string for SV_Netchan_Encode
@@ -337,7 +337,7 @@ void SV_GetChallenge(netAdr_s from);
 
 void SV_DirectConnect( netAdr_s from );
 
-void SV_ExecuteClientMessage( client_t *cl, msg_s *msg );
+void SV_ExecuteClientMessage( client_t *cl, msg_c *msg );
 void SV_UserinfoChanged( client_t *cl );
 
 void SV_ClientEnterWorld( client_t *client, userCmd_s *cmd );
@@ -347,7 +347,7 @@ void SV_DropClient( client_t *drop, const char *reason );
 void SV_ExecuteClientCommand( client_t *cl, const char *s, bool clientOK );
 void SV_ClientThink (client_t *cl, userCmd_s *cmd);
 
-int SV_WriteDownloadToClient(client_t *cl , msg_s *msg);
+int SV_WriteDownloadToClient(client_t *cl , msg_c *msg);
 int SV_SendDownloadMessages(void);
 int SV_SendQueuedMessages(void);
 
@@ -361,9 +361,9 @@ void SV_Heartbeat_f();
 // sv_snapshot.c
 //
 void SV_AddServerCommand( client_t *client, const char *cmd );
-void SV_UpdateServerCommandsToClient( client_t *client, msg_s *msg );
-void SV_WriteFrameToClient (client_t *client, msg_s *msg);
-void SV_SendMessageToClient( msg_s *msg, client_t *client );
+void SV_UpdateServerCommandsToClient( client_t *client, msg_c *msg );
+void SV_WriteFrameToClient (client_t *client, msg_c *msg);
+void SV_SendMessageToClient( msg_c *msg, client_t *client );
 void SV_SendClientMessages();
 void SV_SendClientSnapshot( client_t *client );
 
@@ -391,7 +391,7 @@ void SV_AdjustAreaPortalState(int area0, int area1, bool open);
 //
 // sv_net_chan.c
 //
-void SV_Netchan_Transmit( client_t *client, msg_s *msg);
+void SV_Netchan_Transmit( client_t *client, msg_c *msg);
 int SV_Netchan_TransmitNextFragment(client_t *client);
-bool SV_Netchan_Process( client_t *client, msg_s *msg );
+bool SV_Netchan_Process( client_t *client, msg_c *msg );
 void SV_Netchan_FreeQueue(client_t *client);

@@ -30,6 +30,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // which is: "flareShader"
 #include "Corona.h"
 #include <shared/entityType.h>
+#include "../edict.h"
 
 DEFINE_CLASS(Corona, "ModelEntity");
 
@@ -52,6 +53,8 @@ void Corona::setKeyValue(const char *key, const char *value){
 
 	} else if(!stricmp(key,"scale")) {
 		scale = atof(value);
+	} else if (!stricmp(key, "color")) {
+	//	sscanf(value,"%f %f %f",myEdict->s.lightColor.x, myEdict->s.lightColor.y, myEdict->s.lightColor.z);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}

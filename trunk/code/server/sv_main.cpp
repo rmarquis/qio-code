@@ -690,7 +690,7 @@ Shift down the remaining args
 Redirect all printfs
 ===============
 */
-static void SVC_RemoteCommand( netAdr_s from, msg_s *msg ) {
+static void SVC_RemoteCommand( netAdr_s from, msg_c *msg ) {
 	bool	valid;
 	char		remaining[1024];
 	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
@@ -766,7 +766,7 @@ Clients that are in the game can still send
 connectionless packets.
 =================
 */
-static void SV_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
+static void SV_ConnectionlessPacket( netAdr_s from, msg_c *msg ) {
 	const char	*s;
 	const char	*c;
 
@@ -823,7 +823,7 @@ static void SV_ConnectionlessPacket( netAdr_s from, msg_s *msg ) {
 SV_PacketEvent
 =================
 */
-void SV_PacketEvent( netAdr_s from, msg_s *msg ) {
+void SV_PacketEvent( netAdr_s from, msg_c *msg ) {
 	int			i;
 	client_t	*cl;
 	int			qport;
