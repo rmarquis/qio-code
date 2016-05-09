@@ -8,6 +8,7 @@
 
 textures/dd001_plaster/plaster_damaged001
 {
+	qer_editorimage	textures/dd001_plaster/plaster_damaged001_d.webp
 	qer_keyword	plaster
 	qer_keyword	damaged
 
@@ -16,6 +17,7 @@ textures/dd001_plaster/plaster_damaged001
 }
 textures/dd001_plaster/plaster_damaged002
 {
+	qer_editorimage	textures/dd001_plaster/plaster_damaged002_d.webp
 	qer_keyword	plaster
 	qer_keyword	damaged
 
@@ -24,6 +26,7 @@ textures/dd001_plaster/plaster_damaged002
 }
 textures/dd001_plaster/plaster_damaged003
 {
+	qer_editorimage	textures/dd001_plaster/plaster_damaged003_d.webp
 	qer_keyword	plaster
 	qer_keyword	damaged
 
@@ -33,6 +36,7 @@ textures/dd001_plaster/plaster_damaged003
 }
 textures/dd001_plaster/plaster_damaged004
 {
+	qer_editorimage	textures/dd001_plaster/plaster_damaged004_d.webp
 	qer_keyword	plaster
 	qer_keyword	damaged
 
@@ -47,6 +51,7 @@ textures/dd001_plaster/plaster_damaged004
 
 textures/dd001_plaster/plaster_surface001
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface001_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -55,6 +60,7 @@ textures/dd001_plaster/plaster_surface001
 }
 textures/dd001_plaster/plaster_surface002
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface002_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -63,6 +69,7 @@ textures/dd001_plaster/plaster_surface002
 }
 textures/dd001_plaster/plaster_surface003
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface003_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -71,6 +78,7 @@ textures/dd001_plaster/plaster_surface003
 }
 textures/dd001_plaster/plaster_surface004
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface004_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -79,6 +87,7 @@ textures/dd001_plaster/plaster_surface004
 }
 textures/dd001_plaster/plaster_surface005
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface005_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -87,6 +96,7 @@ textures/dd001_plaster/plaster_surface005
 }
 textures/dd001_plaster/plaster_surface006
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface006_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -95,6 +105,7 @@ textures/dd001_plaster/plaster_surface006
 }
 textures/dd001_plaster/plaster_surface007
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface007_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -103,6 +114,7 @@ textures/dd001_plaster/plaster_surface007
 }
 textures/dd001_plaster/plaster_surface008
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface008_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -111,6 +123,7 @@ textures/dd001_plaster/plaster_surface008
 }
 textures/dd001_plaster/plaster_surface009
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface009_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -119,6 +132,7 @@ textures/dd001_plaster/plaster_surface009
 }
 textures/dd001_plaster/plaster_surface010
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface010_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -127,6 +141,7 @@ textures/dd001_plaster/plaster_surface010
 }
 textures/dd001_plaster/plaster_surface011
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface011_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -135,6 +150,7 @@ textures/dd001_plaster/plaster_surface011
 }
 textures/dd001_plaster/plaster_surface012
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface012_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 
@@ -143,6 +159,7 @@ textures/dd001_plaster/plaster_surface012
 }
 textures/dd001_plaster/plaster_surface013
 {
+	qer_editorimage	textures/dd001_plaster/plaster_surface013_d.webp
 	qer_keyword	plaster
 	qer_keyword	surface
 

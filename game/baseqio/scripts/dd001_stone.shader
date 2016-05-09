@@ -8,6 +8,7 @@
 
 textures/dd001_stone/stone_bricks001
 {
+	qer_editorimage	textures/dd001_stone/stone_bricks001_d.webp
 	qer_keyword	stone
 	qer_keyword	bricks
 
@@ -17,6 +18,7 @@ textures/dd001_stone/stone_bricks001
 }
 textures/dd001_stone/stone_bricks002
 {
+	qer_editorimage	textures/dd001_stone/stone_bricks002_d.webp
 	qer_keyword	stone
 	qer_keyword	bricks
 
@@ -26,6 +28,7 @@ textures/dd001_stone/stone_bricks002
 }
 textures/dd001_stone/stone_bricks003
 {
+	qer_editorimage	textures/dd001_stone/stone_bricks003_d.webp
 	qer_keyword	stone
 	qer_keyword	bricks
 
@@ -35,6 +38,7 @@ textures/dd001_stone/stone_bricks003
 }
 textures/dd001_stone/stone_bricks004
 {
+	qer_editorimage	textures/dd001_stone/stone_bricks004_d.webp
 	qer_keyword	stone
 	qer_keyword	bricks
 
@@ -50,6 +54,7 @@ textures/dd001_stone/stone_bricks004
 
 textures/dd001_stone/stone_tiles001
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles001_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
@@ -58,6 +63,7 @@ textures/dd001_stone/stone_tiles001
 }
 textures/dd001_stone/stone_tiles002
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles002_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
@@ -67,6 +73,7 @@ textures/dd001_stone/stone_tiles002
 }
 textures/dd001_stone/stone_tiles003
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles003_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
@@ -75,6 +82,7 @@ textures/dd001_stone/stone_tiles003
 }
 textures/dd001_stone/stone_tiles004
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles004_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
@@ -84,6 +92,7 @@ textures/dd001_stone/stone_tiles004
 }
 textures/dd001_stone/stone_tiles005
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles005_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
@@ -93,6 +102,7 @@ textures/dd001_stone/stone_tiles005
 }
 textures/dd001_stone/stone_tiles006
 {
+	qer_editorimage	textures/dd001_stone/stone_tiles006_d.webp
 	qer_keyword	stone
 	qer_keyword	tiles
 
