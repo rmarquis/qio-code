@@ -12,6 +12,7 @@
 
 textures/dd001_wood/wood_damaged001
 {
+	qer_editorimage	textures/dd001_wood/wood_damaged001_d.webp
 	qer_keyword	wood
 	qer_keyword	damaged
 
@@ -20,6 +21,7 @@ textures/dd001_wood/wood_damaged001
 }
 textures/dd001_wood/wood_damaged002
 {
+	qer_editorimage	textures/dd001_wood/wood_damaged002_d.webp
 	qer_keyword	wood
 	qer_keyword	damaged
 
@@ -34,6 +36,7 @@ textures/dd001_wood/wood_damaged002
 
 textures/dd001_wood/wood_logs001
 {
+	qer_editorimage	textures/dd001_wood/wood_logs001_d.webp
 	qer_keyword	wood
 	qer_keyword	logs
 
@@ -44,6 +47,7 @@ textures/dd001_wood/wood_logs001
 }
 textures/dd001_wood/wood_logs002
 {
+	qer_editorimage	textures/dd001_wood/wood_logs002_d.webp
 	qer_keyword	wood
 	qer_keyword	logs
 
@@ -60,6 +64,7 @@ textures/dd001_wood/wood_logs002
 
 textures/dd001_wood/wood_parquet001
 {
+	qer_editorimage	textures/dd001_wood/wood_parquet001_d.webp
 	qer_keyword	wood
 	qer_keyword	parquet
 
@@ -69,6 +74,7 @@ textures/dd001_wood/wood_parquet001
 }
 textures/dd001_wood/wood_parquet002
 {
+	qer_editorimage	textures/dd001_wood/wood_parquet002_d.webp
 	qer_keyword	wood
 	qer_keyword	parquet
 
@@ -78,6 +84,7 @@ textures/dd001_wood/wood_parquet002
 }
 textures/dd001_wood/wood_parquet001
 {
+	qer_editorimage	textures/dd001_wood/wood_parquet003_d.webp
 	qer_keyword	wood
 	qer_keyword	parquet
 
@@ -87,6 +94,7 @@ textures/dd001_wood/wood_parquet001
 }
 textures/dd001_wood/wood_parquet004
 {
+	qer_editorimage	textures/dd001_wood/wood_parquet004_d.webp
 	qer_keyword	wood
 	qer_keyword	parquet
 
@@ -96,6 +104,7 @@ textures/dd001_wood/wood_parquet004
 }
 textures/dd001_wood/wood_parquet005
 {
+	qer_editorimage	textures/dd001_wood/wood_parquet005_d.webp
 	qer_keyword	wood
 	qer_keyword	parquet
 
@@ -111,6 +120,7 @@ textures/dd001_wood/wood_parquet005
 
 textures/dd001_wood/wood_particleboard001
 {
+	qer_editorimage	textures/dd001_wood/wood_particleboard001_d.webp
 	qer_keyword	wood
 	qer_keyword	particleboard
 
@@ -119,6 +129,7 @@ textures/dd001_wood/wood_particleboard001
 }
 textures/dd001_wood/wood_particleboard002
 {
+	qer_editorimage	textures/dd001_wood/wood_particleboard002_d.webp
 	qer_keyword	wood
 	qer_keyword	particleboard
 
@@ -133,6 +144,7 @@ textures/dd001_wood/wood_particleboard002
 
 textures/dd001_wood/wood_planks001
 {
+	qer_editorimage	textures/dd001_wood/wood_planks001_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -142,6 +154,7 @@ textures/dd001_wood/wood_planks001
 }
 textures/dd001_wood/wood_planks002
 {
+	qer_editorimage	textures/dd001_wood/wood_planks002_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -152,6 +165,7 @@ textures/dd001_wood/wood_planks002
 }
 textures/dd001_wood/wood_planks003
 {
+	qer_editorimage	textures/dd001_wood/wood_planks003_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -161,6 +175,7 @@ textures/dd001_wood/wood_planks003
 }
 textures/dd001_wood/wood_planks004
 {
+	qer_editorimage	textures/dd001_wood/wood_planks004_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -170,6 +185,7 @@ textures/dd001_wood/wood_planks004
 }
 textures/dd001_wood/wood_planks005
 {
+	qer_editorimage	textures/dd001_wood/wood_planks005_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -180,6 +196,7 @@ textures/dd001_wood/wood_planks005
 }
 textures/dd001_wood/wood_planks006
 {
+	qer_editorimage	textures/dd001_wood/wood_planks006_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -190,6 +207,7 @@ textures/dd001_wood/wood_planks006
 }
 textures/dd001_wood/wood_planks007
 {
+	qer_editorimage	textures/dd001_wood/wood_planks007_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -200,6 +218,7 @@ textures/dd001_wood/wood_planks007
 }
 textures/dd001_wood/wood_planks008
 {
+	qer_editorimage	textures/dd001_wood/wood_planks008_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -209,6 +228,7 @@ textures/dd001_wood/wood_planks008
 }
 textures/dd001_wood/wood_planks009
 {
+	qer_editorimage	textures/dd001_wood/wood_planks009_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -218,6 +238,7 @@ textures/dd001_wood/wood_planks009
 }
 textures/dd001_wood/wood_planks010
 {
+	qer_editorimage	textures/dd001_wood/wood_planks010_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -227,6 +248,7 @@ textures/dd001_wood/wood_planks010
 }
 textures/dd001_wood/wood_planks011
 {
+	qer_editorimage	textures/dd001_wood/wood_planks011_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -236,6 +258,7 @@ textures/dd001_wood/wood_planks011
 }
 textures/dd001_wood/wood_planks012
 {
+	qer_editorimage	textures/dd001_wood/wood_planks012_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -245,6 +268,7 @@ textures/dd001_wood/wood_planks012
 }
 textures/dd001_wood/wood_planks013
 {
+	qer_editorimage	textures/dd001_wood/wood_planks013_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -254,6 +278,7 @@ textures/dd001_wood/wood_planks013
 }
 textures/dd001_wood/wood_planks014
 {
+	qer_editorimage	textures/dd001_wood/wood_planks014_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -262,6 +287,7 @@ textures/dd001_wood/wood_planks014
 }
 textures/dd001_wood/wood_planks015
 {
+	qer_editorimage	textures/dd001_wood/wood_planks015_d.webp
 	qer_keyword	wood
 	qer_keyword	planks
 
@@ -277,6 +303,7 @@ textures/dd001_wood/wood_planks015
 
 textures/dd001_wood/wood_surface001
 {
+	qer_editorimage	textures/dd001_wood/wood_surface001_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface001_d.webp
@@ -285,6 +312,7 @@ textures/dd001_wood/wood_surface001
 }
 textures/dd001_wood/wood_surface002
 {
+	qer_editorimage	textures/dd001_wood/wood_surface002_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface002_d.webp
@@ -293,6 +321,7 @@ textures/dd001_wood/wood_surface002
 }
 textures/dd001_wood/wood_surface003
 {
+	qer_editorimage	textures/dd001_wood/wood_surface003_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface003_d.webp
@@ -301,6 +330,7 @@ textures/dd001_wood/wood_surface003
 }
 textures/dd001_wood/wood_surface004
 {
+	qer_editorimage	textures/dd001_wood/wood_surface004_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface004_d.webp
@@ -309,6 +339,7 @@ textures/dd001_wood/wood_surface004
 }
 textures/dd001_wood/wood_surface005
 {
+	qer_editorimage	textures/dd001_wood/wood_surface005_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface005_d.webp
@@ -317,6 +348,7 @@ textures/dd001_wood/wood_surface005
 }
 textures/dd001_wood/wood_surface006
 {
+	qer_editorimage	textures/dd001_wood/wood_surface006_d.webp
 	qer_keyword	wood
 
 	colormap	textures/dd001_wood/wood_surface006_d.webp

@@ -8,6 +8,7 @@
 
 textures/dd001_concrete/concrete_surface001
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface001_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface001_d.webp
@@ -15,6 +16,7 @@ textures/dd001_concrete/concrete_surface001
 }
 textures/dd001_concrete/concrete_surface002
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface002_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface002_d.webp
@@ -22,6 +24,7 @@ textures/dd001_concrete/concrete_surface002
 }
 textures/dd001_concrete/concrete_surface003
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface003_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface003_d.webp
@@ -29,6 +32,7 @@ textures/dd001_concrete/concrete_surface003
 }
 textures/dd001_concrete/concrete_surface004
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface004_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface004_d.webp
@@ -36,6 +40,7 @@ textures/dd001_concrete/concrete_surface004
 }
 textures/dd001_concrete/concrete_surface005
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface005_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface005_d.webp
@@ -43,6 +48,7 @@ textures/dd001_concrete/concrete_surface005
 }
 textures/dd001_concrete/concrete_surface006
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface006_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface006_d.webp
@@ -50,6 +56,7 @@ textures/dd001_concrete/concrete_surface006
 }
 textures/dd001_concrete/concrete_surface007
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface007_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface007_d.webp
@@ -57,6 +64,7 @@ textures/dd001_concrete/concrete_surface007
 }
 textures/dd001_concrete/concrete_surface008
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface008_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface008_d.webp
@@ -64,6 +72,7 @@ textures/dd001_concrete/concrete_surface008
 }
 textures/dd001_concrete/concrete_surface009
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface009_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface009_d.webp
@@ -71,6 +80,7 @@ textures/dd001_concrete/concrete_surface009
 }
 textures/dd001_concrete/concrete_surface010
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface010_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface010_d.webp
@@ -78,6 +88,7 @@ textures/dd001_concrete/concrete_surface010
 }
 textures/dd001_concrete/concrete_surface011
 {
+	qer_editorimage	textures/dd001_concrete/concrete_surface011_d.webp
 	qer_keyword	concrete
 
 	colormap	textures/dd001_concrete/concrete_surface011_d.webp
@@ -91,6 +102,7 @@ textures/dd001_concrete/concrete_surface011
 
 textures/dd001_concrete/concrete_tile001
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile001_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -99,6 +111,7 @@ textures/dd001_concrete/concrete_tile001
 }
 textures/dd001_concrete/concrete_tile002
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile002_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -107,6 +120,7 @@ textures/dd001_concrete/concrete_tile002
 }
 textures/dd001_concrete/concrete_tile003
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile003_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -116,6 +130,7 @@ textures/dd001_concrete/concrete_tile003
 }
 textures/dd001_concrete/concrete_tile004
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile004_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -125,6 +140,7 @@ textures/dd001_concrete/concrete_tile004
 }
 textures/dd001_concrete/concrete_tile005
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile005_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -134,6 +150,7 @@ textures/dd001_concrete/concrete_tile005
 }
 textures/dd001_concrete/concrete_tile006
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile006_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -143,6 +160,7 @@ textures/dd001_concrete/concrete_tile006
 }
 textures/dd001_concrete/concrete_tile007
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile007_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -152,6 +170,7 @@ textures/dd001_concrete/concrete_tile007
 }
 textures/dd001_concrete/concrete_tile008
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile008_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 
@@ -161,6 +180,7 @@ textures/dd001_concrete/concrete_tile008
 }
 textures/dd001_concrete/concrete_tile009
 {
+	qer_editorimage	textures/dd001_concrete/concrete_tile009_d.webp
 	qer_keyword	concrete
 	qer_keyword	tile
 

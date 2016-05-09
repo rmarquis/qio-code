@@ -9,6 +9,7 @@
 
 textures/dd001_metal/metal_floor001
 {
+	qer_editorimage	textures/dd001_metal/metal_floor001_d.webp
 	qer_keyword	metal
 	qer_keyword	floor
 
@@ -19,6 +20,7 @@ textures/dd001_metal/metal_floor001
 }
 textures/dd001_metal/metal_floor002
 {
+	qer_editorimage	textures/dd001_metal/metal_floor002_d.webp
 	qer_keyword	metal
 	qer_keyword	floor
 
@@ -29,6 +31,7 @@ textures/dd001_metal/metal_floor002
 }
 textures/dd001_metal/metal_floor003
 {
+	qer_editorimage	textures/dd001_metal/metal_floor003_d.webp
 	qer_keyword	metal
 	qer_keyword	floor
 
@@ -39,6 +42,7 @@ textures/dd001_metal/metal_floor003
 }
 textures/dd001_metal/metal_floor004
 {
+	qer_editorimage	textures/dd001_metal/metal_floor004_d.webp
 	qer_keyword	metal
 	qer_keyword	floor
 
@@ -49,6 +53,7 @@ textures/dd001_metal/metal_floor004
 }
 textures/dd001_metal/metal_floor005
 {
+	qer_editorimage	textures/dd001_metal/metal_floor005_d.webp
 	qer_keyword	metal
 	qer_keyword	floor
 
@@ -65,6 +70,7 @@ textures/dd001_metal/metal_floor005
 
 textures/dd001_metal/metal_sheet001
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet001_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -75,6 +81,7 @@ textures/dd001_metal/metal_sheet001
 }
 textures/dd001_metal/metal_sheet001a
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet001a_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -85,6 +92,7 @@ textures/dd001_metal/metal_sheet001a
 }
 textures/dd001_metal/metal_sheet002
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet002_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -95,6 +103,7 @@ textures/dd001_metal/metal_sheet002
 }
 textures/dd001_metal/metal_sheet003
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet003_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -105,6 +114,7 @@ textures/dd001_metal/metal_sheet003
 }
 textures/dd001_metal/metal_sheet004
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet004_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -115,6 +125,7 @@ textures/dd001_metal/metal_sheet004
 }
 textures/dd001_metal/metal_sheet005
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet005_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -125,6 +136,7 @@ textures/dd001_metal/metal_sheet005
 }
 textures/dd001_metal/metal_sheet006
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet006_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -135,6 +147,7 @@ textures/dd001_metal/metal_sheet006
 }
 textures/dd001_metal/metal_sheet007
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet007_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -145,6 +158,7 @@ textures/dd001_metal/metal_sheet007
 }
 textures/dd001_metal/metal_sheet008
 {
+	qer_editorimage	textures/dd001_metal/metal_sheet008_d.webp
 	qer_keyword	metal
 	qer_keyword	sheet
 
@@ -161,6 +175,7 @@ textures/dd001_metal/metal_sheet008
 
 textures/dd001_metal/metal_surface001
 {
+	qer_editorimage	textures/dd001_metal/metal_surface001_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -170,6 +185,7 @@ textures/dd001_metal/metal_surface001
 }
 textures/dd001_metal/metal_surface002
 {
+	qer_editorimage	textures/dd001_metal/metal_surface002_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -179,6 +195,7 @@ textures/dd001_metal/metal_surface002
 }
 textures/dd001_metal/metal_surface003
 {
+	qer_editorimage	textures/dd001_metal/metal_surface003_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -187,6 +204,7 @@ textures/dd001_metal/metal_surface003
 }
 textures/dd001_metal/metal_surface004
 {
+	qer_editorimage	textures/dd001_metal/metal_surface004_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -196,6 +214,7 @@ textures/dd001_metal/metal_surface004
 }
 textures/dd001_metal/metal_surface005
 {
+	qer_editorimage	textures/dd001_metal/metal_surface005_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -205,6 +224,7 @@ textures/dd001_metal/metal_surface005
 }
 textures/dd001_metal/metal_surface006
 {
+	qer_editorimage	textures/dd001_metal/metal_surface006_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -214,6 +234,7 @@ textures/dd001_metal/metal_surface006
 }
 textures/dd001_metal/metal_surface007
 {
+	qer_editorimage	textures/dd001_metal/metal_surface007_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 
@@ -223,6 +244,7 @@ textures/dd001_metal/metal_surface007
 }
 textures/dd001_metal/metal_surface008
 {
+	qer_editorimage	textures/dd001_metal/metal_surface008_d.webp
 	qer_keyword	metal
 	qer_keyword	surface
 

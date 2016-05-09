@@ -14,6 +14,7 @@
 
 textures/dd001_nature/dirt_surface001
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -23,6 +24,7 @@ textures/dd001_nature/dirt_surface001
 }
 textures/dd001_nature/dirt_surface002
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -31,6 +33,7 @@ textures/dd001_nature/dirt_surface002
 }
 textures/dd001_nature/dirt_surface003
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -39,6 +42,7 @@ textures/dd001_nature/dirt_surface003
 }
 textures/dd001_nature/dirt_surface004
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface004_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -47,6 +51,7 @@ textures/dd001_nature/dirt_surface004
 }
 textures/dd001_nature/dirt_surface005
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface005_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -55,6 +60,7 @@ textures/dd001_nature/dirt_surface005
 }
 textures/dd001_nature/dirt_surface006
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface006_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -63,6 +69,7 @@ textures/dd001_nature/dirt_surface006
 }
 textures/dd001_nature/dirt_surface007
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface007_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -73,6 +80,7 @@ textures/dd001_nature/dirt_surface007
 }
 textures/dd001_nature/dirt_surface008
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface008_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -82,6 +90,7 @@ textures/dd001_nature/dirt_surface008
 }
 textures/dd001_nature/dirt_surface009
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface009_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -91,6 +100,7 @@ textures/dd001_nature/dirt_surface009
 }
 textures/dd001_nature/dirt_surface010
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface010_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -99,6 +109,7 @@ textures/dd001_nature/dirt_surface010
 }
 textures/dd001_nature/dirt_surface011
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface011_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -108,6 +119,7 @@ textures/dd001_nature/dirt_surface011
 }
 textures/dd001_nature/dirt_surface012
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface012_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -116,6 +128,7 @@ textures/dd001_nature/dirt_surface012
 }
 textures/dd001_nature/dirt_surface013
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface013_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -124,6 +137,7 @@ textures/dd001_nature/dirt_surface013
 }
 textures/dd001_nature/dirt_surface014
 {
+	qer_editorimage	textures/dd001_nature/dirt_surface014_d.webp
 	qer_keyword	nature
 	qer_keyword	dirt
 
@@ -138,6 +152,7 @@ textures/dd001_nature/dirt_surface014
 
 textures/dd001_nature/grass_surface001
 {
+	qer_editorimage	textures/dd001_nature/grass_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	grass
 
@@ -147,6 +162,7 @@ textures/dd001_nature/grass_surface001
 }
 textures/dd001_nature/grass_surface002
 {
+	qer_editorimage	textures/dd001_nature/grass_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	grass
 
@@ -156,6 +172,7 @@ textures/dd001_nature/grass_surface002
 }
 textures/dd001_nature/grass_surface003
 {
+	qer_editorimage	textures/dd001_nature/grass_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	grass
 
@@ -165,6 +182,7 @@ textures/dd001_nature/grass_surface003
 }
 textures/dd001_nature/grass_surface004
 {
+	qer_editorimage	textures/dd001_nature/grass_surface004_d.webp
 	qer_keyword	nature
 	qer_keyword	grass
 
@@ -180,6 +198,7 @@ textures/dd001_nature/grass_surface004
 
 textures/dd001_nature/gravel_surface001
 {
+	qer_editorimage	textures/dd001_nature/gravel_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	gravel
 
@@ -189,6 +208,7 @@ textures/dd001_nature/gravel_surface001
 }
 textures/dd001_nature/gravel_surface002
 {
+	qer_editorimage	textures/dd001_nature/gravel_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	gravel
 
@@ -204,6 +224,7 @@ textures/dd001_nature/gravel_surface002
 
 textures/dd001_nature/ice_surface001
 {
+	qer_editorimage	textures/dd001_nature/ice_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	ice
 
@@ -213,6 +234,7 @@ textures/dd001_nature/ice_surface001
 }
 textures/dd001_nature/ice_surface002
 {
+	qer_editorimage	textures/dd001_nature/ice_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	ice
 
@@ -228,6 +250,7 @@ textures/dd001_nature/ice_surface002
 
 textures/dd001_nature/mud_surface001
 {
+	qer_editorimage	textures/dd001_nature/mud_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	mud
 
@@ -237,6 +260,7 @@ textures/dd001_nature/mud_surface001
 }
 textures/dd001_nature/mud_surface002
 {
+	qer_editorimage	textures/dd001_nature/mud_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	mud
 
@@ -246,6 +270,7 @@ textures/dd001_nature/mud_surface002
 }
 textures/dd001_nature/mud_surface003
 {
+	qer_editorimage	textures/dd001_nature/mud_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	mud
 
@@ -255,6 +280,7 @@ textures/dd001_nature/mud_surface003
 }
 textures/dd001_nature/mud_surface004
 {
+	qer_editorimage	textures/dd001_nature/mud_surface004_d.webp
 	qer_keyword	nature
 	qer_keyword	mud
 
@@ -270,6 +296,7 @@ textures/dd001_nature/mud_surface004
 
 textures/dd001_nature/rock_surface001
 {
+	qer_editorimage	textures/dd001_nature/rock_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -280,6 +307,7 @@ textures/dd001_nature/rock_surface001
 }
 textures/dd001_nature/rock_surface002
 {
+	qer_editorimage	textures/dd001_nature/rock_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -289,6 +317,7 @@ textures/dd001_nature/rock_surface002
 }
 textures/dd001_nature/rock_surface003
 {
+	qer_editorimage	textures/dd001_nature/rock_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -299,6 +328,7 @@ textures/dd001_nature/rock_surface003
 }
 textures/dd001_nature/rock_surface004
 {
+	qer_editorimage	textures/dd001_nature/rock_surface004_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -308,6 +338,7 @@ textures/dd001_nature/rock_surface004
 }
 textures/dd001_nature/rock_surface005
 {
+	qer_editorimage	textures/dd001_nature/rock_surface005_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -318,6 +349,7 @@ textures/dd001_nature/rock_surface005
 }
 textures/dd001_nature/rock_surface006
 {
+	qer_editorimage	textures/dd001_nature/rock_surface006_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -327,6 +359,7 @@ textures/dd001_nature/rock_surface006
 }
 textures/dd001_nature/rock_surface007
 {
+	qer_editorimage	textures/dd001_nature/rock_surface007_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -336,6 +369,7 @@ textures/dd001_nature/rock_surface007
 }
 textures/dd001_nature/rock_surface008
 {
+	qer_editorimage	textures/dd001_nature/rock_surface008_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -346,6 +380,7 @@ textures/dd001_nature/rock_surface008
 }
 textures/dd001_nature/rock_surface009
 {
+	qer_editorimage	textures/dd001_nature/rock_surface009_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -356,6 +391,7 @@ textures/dd001_nature/rock_surface009
 }
 textures/dd001_nature/rock_surface010
 {
+	qer_editorimage	textures/dd001_nature/rock_surface010_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -366,6 +402,7 @@ textures/dd001_nature/rock_surface010
 }
 textures/dd001_nature/rock_surface011
 {
+	qer_editorimage	textures/dd001_nature/rock_surface011_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -376,6 +413,7 @@ textures/dd001_nature/rock_surface011
 }
 textures/dd001_nature/rock_surface012
 {
+	qer_editorimage	textures/dd001_nature/rock_surface012_d.webp
 	qer_keyword	nature
 	qer_keyword	rock
 
@@ -392,6 +430,7 @@ textures/dd001_nature/rock_surface012
 
 textures/dd001_nature/sand_surface001
 {
+	qer_editorimage	textures/dd001_nature/sand_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -402,6 +441,7 @@ textures/dd001_nature/sand_surface001
 }
 textures/dd001_nature/sand_surface002
 {
+	qer_editorimage	textures/dd001_nature/sand_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -411,6 +451,7 @@ textures/dd001_nature/sand_surface002
 }
 textures/dd001_nature/sand_surface003
 {
+	qer_editorimage	textures/dd001_nature/sand_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -420,6 +461,7 @@ textures/dd001_nature/sand_surface003
 }
 textures/dd001_nature/sand_surface004
 {
+	qer_editorimage	textures/dd001_nature/sand_surface004_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -429,6 +471,7 @@ textures/dd001_nature/sand_surface004
 }
 textures/dd001_nature/sand_surface005
 {
+	qer_editorimage	textures/dd001_nature/sand_surface005_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -439,6 +482,7 @@ textures/dd001_nature/sand_surface005
 }
 textures/dd001_nature/sand_surface006
 {
+	qer_editorimage	textures/dd001_nature/sand_surface006_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -449,6 +493,7 @@ textures/dd001_nature/sand_surface006
 }
 textures/dd001_nature/sand_surface007
 {
+	qer_editorimage	textures/dd001_nature/sand_surface007_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -459,6 +504,7 @@ textures/dd001_nature/sand_surface007
 }
 textures/dd001_nature/sand_surface008
 {
+	qer_editorimage	textures/dd001_nature/sand_surface008_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -469,6 +515,7 @@ textures/dd001_nature/sand_surface008
 }
 textures/dd001_nature/sand_surface009
 {
+	qer_editorimage	textures/dd001_nature/sand_surface009_d.webp
 	qer_keyword	nature
 	qer_keyword	sand
 
@@ -485,6 +532,7 @@ textures/dd001_nature/sand_surface009
 
 textures/dd001_nature/snow_surface001
 {
+	qer_editorimage	textures/dd001_nature/snow_surface001_d.webp
 	qer_keyword	nature
 	qer_keyword	snow
 
@@ -494,6 +542,7 @@ textures/dd001_nature/snow_surface001
 }
 textures/dd001_nature/snow_surface002
 {
+	qer_editorimage	textures/dd001_nature/snow_surface002_d.webp
 	qer_keyword	nature
 	qer_keyword	snow
 
@@ -503,6 +552,7 @@ textures/dd001_nature/snow_surface002
 }
 textures/dd001_nature/snow_surface003
 {
+	qer_editorimage	textures/dd001_nature/snow_surface003_d.webp
 	qer_keyword	nature
 	qer_keyword	snow
 
