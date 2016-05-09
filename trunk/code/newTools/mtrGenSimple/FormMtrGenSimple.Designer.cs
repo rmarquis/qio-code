@@ -50,13 +50,15 @@
             this.btUpdateExistingMaterial = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.cbMaterialsFromMatFile = new System.Windows.Forms.ComboBox();
-            this.tbMaterialText = new System.Windows.Forms.TextBox();
-            this.tbSaveChanges = new System.Windows.Forms.Button();
-            this.btPreviewChanges = new System.Windows.Forms.Button();
             this.btViewCreatedMaterialInQio = new System.Windows.Forms.Button();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonApplyToLookatSurface = new System.Windows.Forms.Button();
+            this.btPreviewChanges = new System.Windows.Forms.Button();
+            this.tbSaveChanges = new System.Windows.Forms.Button();
+            this.tbMaterialText = new System.Windows.Forms.TextBox();
+            this.cbMaterialsFromMatFile = new System.Windows.Forms.ComboBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.buttonGenQerEditorImages = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -64,6 +66,7 @@
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -250,6 +253,7 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(15, 68);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -278,6 +282,16 @@
             this.tabPage1.Text = "Create...";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btViewCreatedMaterialInQio
+            // 
+            this.btViewCreatedMaterialInQio.Location = new System.Drawing.Point(6, 274);
+            this.btViewCreatedMaterialInQio.Name = "btViewCreatedMaterialInQio";
+            this.btViewCreatedMaterialInQio.Size = new System.Drawing.Size(192, 36);
+            this.btViewCreatedMaterialInQio.TabIndex = 17;
+            this.btViewCreatedMaterialInQio.Text = "View created material in Qio";
+            this.btViewCreatedMaterialInQio.UseVisualStyleBackColor = true;
+            this.btViewCreatedMaterialInQio.Click += new System.EventHandler(this.btViewCreatedMaterialInQio_Click);
+            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.buttonApplyToLookatSurface);
@@ -293,31 +307,15 @@
             this.tabPage2.Text = "Edit...";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // cbMaterialsFromMatFile
+            // buttonApplyToLookatSurface
             // 
-            this.cbMaterialsFromMatFile.FormattingEnabled = true;
-            this.cbMaterialsFromMatFile.Location = new System.Drawing.Point(7, 7);
-            this.cbMaterialsFromMatFile.Name = "cbMaterialsFromMatFile";
-            this.cbMaterialsFromMatFile.Size = new System.Drawing.Size(405, 21);
-            this.cbMaterialsFromMatFile.TabIndex = 0;
-            this.cbMaterialsFromMatFile.SelectedIndexChanged += new System.EventHandler(this.cbMaterialsFromMatFile_SelectedIndexChanged);
-            // 
-            // tbMaterialText
-            // 
-            this.tbMaterialText.Location = new System.Drawing.Point(7, 35);
-            this.tbMaterialText.Multiline = true;
-            this.tbMaterialText.Name = "tbMaterialText";
-            this.tbMaterialText.Size = new System.Drawing.Size(405, 228);
-            this.tbMaterialText.TabIndex = 1;
-            // 
-            // tbSaveChanges
-            // 
-            this.tbSaveChanges.Location = new System.Drawing.Point(7, 269);
-            this.tbSaveChanges.Name = "tbSaveChanges";
-            this.tbSaveChanges.Size = new System.Drawing.Size(90, 23);
-            this.tbSaveChanges.TabIndex = 2;
-            this.tbSaveChanges.Text = "Save changes";
-            this.tbSaveChanges.UseVisualStyleBackColor = true;
+            this.buttonApplyToLookatSurface.Location = new System.Drawing.Point(200, 269);
+            this.buttonApplyToLookatSurface.Name = "buttonApplyToLookatSurface";
+            this.buttonApplyToLookatSurface.Size = new System.Drawing.Size(168, 23);
+            this.buttonApplyToLookatSurface.TabIndex = 4;
+            this.buttonApplyToLookatSurface.Text = "Apply to lookat surface in Qio";
+            this.buttonApplyToLookatSurface.UseVisualStyleBackColor = true;
+            this.buttonApplyToLookatSurface.Click += new System.EventHandler(this.buttonApplyToLookatSurface_Click);
             // 
             // btPreviewChanges
             // 
@@ -329,25 +327,51 @@
             this.btPreviewChanges.UseVisualStyleBackColor = true;
             this.btPreviewChanges.Click += new System.EventHandler(this.btPreviewChanges_Click);
             // 
-            // btViewCreatedMaterialInQio
+            // tbSaveChanges
             // 
-            this.btViewCreatedMaterialInQio.Location = new System.Drawing.Point(6, 274);
-            this.btViewCreatedMaterialInQio.Name = "btViewCreatedMaterialInQio";
-            this.btViewCreatedMaterialInQio.Size = new System.Drawing.Size(192, 36);
-            this.btViewCreatedMaterialInQio.TabIndex = 17;
-            this.btViewCreatedMaterialInQio.Text = "View created material in Qio";
-            this.btViewCreatedMaterialInQio.UseVisualStyleBackColor = true;
-            this.btViewCreatedMaterialInQio.Click += new System.EventHandler(this.btViewCreatedMaterialInQio_Click);
+            this.tbSaveChanges.Location = new System.Drawing.Point(7, 269);
+            this.tbSaveChanges.Name = "tbSaveChanges";
+            this.tbSaveChanges.Size = new System.Drawing.Size(90, 23);
+            this.tbSaveChanges.TabIndex = 2;
+            this.tbSaveChanges.Text = "Save changes";
+            this.tbSaveChanges.UseVisualStyleBackColor = true;
             // 
-            // buttonApplyToLookatSurface
+            // tbMaterialText
             // 
-            this.buttonApplyToLookatSurface.Location = new System.Drawing.Point(200, 269);
-            this.buttonApplyToLookatSurface.Name = "buttonApplyToLookatSurface";
-            this.buttonApplyToLookatSurface.Size = new System.Drawing.Size(168, 23);
-            this.buttonApplyToLookatSurface.TabIndex = 4;
-            this.buttonApplyToLookatSurface.Text = "Apply to lookat surface in Qio";
-            this.buttonApplyToLookatSurface.UseVisualStyleBackColor = true;
-            this.buttonApplyToLookatSurface.Click += new System.EventHandler(this.buttonApplyToLookatSurface_Click);
+            this.tbMaterialText.Location = new System.Drawing.Point(7, 35);
+            this.tbMaterialText.Multiline = true;
+            this.tbMaterialText.Name = "tbMaterialText";
+            this.tbMaterialText.Size = new System.Drawing.Size(405, 228);
+            this.tbMaterialText.TabIndex = 1;
+            // 
+            // cbMaterialsFromMatFile
+            // 
+            this.cbMaterialsFromMatFile.FormattingEnabled = true;
+            this.cbMaterialsFromMatFile.Location = new System.Drawing.Point(7, 7);
+            this.cbMaterialsFromMatFile.Name = "cbMaterialsFromMatFile";
+            this.cbMaterialsFromMatFile.Size = new System.Drawing.Size(405, 21);
+            this.cbMaterialsFromMatFile.TabIndex = 0;
+            this.cbMaterialsFromMatFile.SelectedIndexChanged += new System.EventHandler(this.cbMaterialsFromMatFile_SelectedIndexChanged);
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.buttonGenQerEditorImages);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(418, 316);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Utils";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // buttonGenQerEditorImages
+            // 
+            this.buttonGenQerEditorImages.Location = new System.Drawing.Point(3, 3);
+            this.buttonGenQerEditorImages.Name = "buttonGenQerEditorImages";
+            this.buttonGenQerEditorImages.Size = new System.Drawing.Size(261, 23);
+            this.buttonGenQerEditorImages.TabIndex = 0;
+            this.buttonGenQerEditorImages.Text = "Autogenerate qer_editorImage lines";
+            this.buttonGenQerEditorImages.UseVisualStyleBackColor = true;
+            this.buttonGenQerEditorImages.Click += new System.EventHandler(this.buttonGenQerEditorImages_Click);
             // 
             // FormMtrGenSimple
             // 
@@ -376,6 +400,7 @@
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -411,6 +436,8 @@
         private System.Windows.Forms.Button btPreviewChanges;
         private System.Windows.Forms.Button btViewCreatedMaterialInQio;
         private System.Windows.Forms.Button buttonApplyToLookatSurface;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Button buttonGenQerEditorImages;
     }
 }
 

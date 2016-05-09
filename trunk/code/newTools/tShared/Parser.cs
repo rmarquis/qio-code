@@ -66,6 +66,10 @@ namespace shared
             }
             return r;
         }
+        public void setData(string s)
+        {
+            text = s;
+        }
         public string getData()
         {
             return text;
@@ -339,6 +343,10 @@ namespace shared
                 i++;
             }
             return ret;
+        }
+        public void setPos(int i)
+        {
+            pos = i;
         }
         public int getPos()
         {

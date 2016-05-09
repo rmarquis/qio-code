@@ -223,6 +223,10 @@ namespace mtrGenSimple
                 string d = p.getData();
                 return d.Substring(md.getStart(), md.getEnd() - md.getStart());
             }
+            public string getRawText()
+            {
+                return p.getData();
+            }
             public MaterialDef findMaterialDef(string name)
             {
                 foreach (MaterialDef md in materials)
@@ -266,6 +270,83 @@ namespace mtrGenSimple
                         p.skipCurlyBracedBlock();
                         int end = p.getPos();
                         materials.Add(new MaterialDef(matName, start, end));
+                    }
+                }
+            }
+            static int STR_SkipOf(string s, int at, string skip)
+            {
+                while(at < s.Length)
+                {
+                    char ch = s[at];
+                    if (skip.IndexOf(ch) == -1)
+                        return at;
+                    at++;
+                }
+                return at;
+            }
+            private void autoGenerateQerEditorImageLineForMaterial(String matName, int start, int end)
+            {
+                // get material text
+                String mtrText = p.getData().Substring(start, end - start);
+                // check is there already a qer_editorImage
+                if(mtrText.IndexOf("qer_editorImage", StringComparison.InvariantCultureIgnoreCase) != -1)
+                {
+                    return;
+                }
+                int br = mtrText.IndexOf('{');
+                if(br == -1)
+                {
+                    MessageBox.Show("Unexpected error - '{' not found in material text");
+                    return;
+                }
+                br++; // skip '{'
+                int at = STR_SkipOf(mtrText,br," \t");
+                at = STR_SkipOf(mtrText, at, "\n\r");
+                string editorImageName = matName;
+                string textToInsert = "\tqer_editorImage " + editorImageName + "\r\n";
+                p.setData(p.getData().Insert(start+at, textToInsert));
+            }
+            public void autoGenerateQerEditorImageLines()
+            {
+                p = new Parser();
+                p.beginParsingFile(name);
+                while (p.isAtEOF() == false)
+                {
+                    if (p.isAtToken("table"))
+                    {
+                        string tabName;
+                        p.readString(out tabName, "{");
+                        if (p.isAtToken("{", false) == false)
+                        {
+                            MessageBox.Show("Material file parse error: Expected '{' to follow table name " + tabName + " in mat file " + name);
+                            return; // error
+                        }
+                        p.skipCurlyBracedBlock();
+                    }
+                    else
+                    {
+                        string matName;
+                        p.skipWhiteSpaces();
+                        int start = p.getPos();
+                        p.readString(out matName, "{");
+                        if (p.isAtToken("{", false) == false)
+                        {
+                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            return; // error
+                        }
+
+                        p.skipCurlyBracedBlock();
+                        int end = p.getPos();
+                        autoGenerateQerEditorImageLineForMaterial(matName, start, end);
+                        // after generating end offset might have changed
+                        p.setPos(start);
+                        p.readString(out matName, "{");
+                        if (p.isAtToken("{", false) == false)
+                        {
+                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            return; // error
+                        }
+                        p.skipCurlyBracedBlock();
                     }
                 }
             }
@@ -579,6 +660,24 @@ namespace mtrGenSimple
             String dateStr = DateTime.Now.ToString("yyyy-M-d_HH-mm-ss");
             return dateStr;
         }
+        private void backupMaterialFile(string mtrFile)
+        {
+            String dateStr = getCurDateTimeStringForFileName();
+            if (File.Exists(mtrFile))
+            {
+                // backup material file first
+                String bpName = mtrFile + dateStr + ".bak";
+                try
+                {
+                    File.Copy(mtrFile, bpName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to create material file backup ('" + bpName + "'). Aborting operation...");
+                    return;
+                }
+            }
+        }
         private void button2_Click(object sender, EventArgs e)
         {
             if (tbBasePath.Text.Length == 0)
@@ -607,22 +706,9 @@ namespace mtrGenSimple
             // 7. material text inside .mtr file
 
             string mtrFile = getCurrentMatFileNamePath();
-            String dateStr = getCurDateTimeStringForFileName();
+          
 
-            if (File.Exists(mtrFile))
-            {
-                // backup material file first
-                String bpName = mtrFile + dateStr + ".bak";
-                try
-                {
-                    File.Copy(mtrFile, bpName);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to create material file backup ('" + bpName + "'). Aborting operation...");
-                    return;
-                }
-            }
+            backupMaterialFile(mtrFile);
 
             // create path for images if not exist
             string matDir = FilePath2DirPath(tbMatName.Text);
@@ -718,6 +804,8 @@ namespace mtrGenSimple
             MaterialImage specularMap = findImageOfRole(images, MaterialImageRole.SPECULAR);
             MaterialImage normalMap = findImageOfRole(images, MaterialImageRole.NORMAL);
             MaterialImage heightMap = findImageOfRole(images, MaterialImageRole.HEIGHT);
+
+            String dateStr = getCurDateTimeStringForFileName();
 
             string mtrText = tbMatName.Text + Environment.NewLine;
             mtrText += "{" + Environment.NewLine;
@@ -970,6 +1058,41 @@ namespace mtrGenSimple
             {
                 startEngineWithCommand("devmap test_physics; rf_enableMultipassRendering 1;" + baseCmd);
             }
+        }
+
+        private void buttonGenQerEditorImages_Click(object sender, EventArgs e)
+        {
+#if false
+            string matFile = cbMatFile.Text;
+            string baseCmd = "mat_autoGenerateQerEditorImageLines " + matFile;
+            if (isEngineRunning())
+            {
+                sendCommandToGame(baseCmd);
+            }
+            else
+            {
+                startEngineWithCommand(baseCmd);
+            }
+#else
+            string path = getCurrentMatFileNamePath();
+            MtrFile f = findMtrFile(path);
+            if(f == null)
+            {
+                MessageBox.Show("Error - material file not precached");
+                return;
+            }
+            backupMaterialFile(path);
+            f.autoGenerateQerEditorImageLines();
+            // append text
+            try
+            {
+                File.WriteAllText(path, f.getRawText());
+            }
+            catch(Exception ex)
+            {
+
+            }
+#endif
         }
     }
 }
