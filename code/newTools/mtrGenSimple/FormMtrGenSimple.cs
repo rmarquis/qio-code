@@ -97,7 +97,10 @@ namespace mtrGenSimple
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to load image from path '" + path + "'");
+                MessageBox.Show("Image loading error.","Failed to load image from path '" + path + "'",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
             }
         }
 
@@ -133,7 +136,10 @@ namespace mtrGenSimple
                     return;
                 }
             }
-            MessageBox.Show("Basepath not found. Please manually enter path to baseqio/ directory.");
+            MessageBox.Show("Basepath autodetection failed!","Basepath not found. Please manually enter path to baseqio/ directory.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
 #endif
         }
         private string removeLastDir(string s)
@@ -251,7 +257,11 @@ namespace mtrGenSimple
                         p.readString(out tabName,"{");
                         if (p.isAtToken("{", false) == false)
                         {
-                            MessageBox.Show("Material file parse error: Expected '{' to follow table name " + tabName + " in mat file " + name);
+                            MessageBox.Show("Material file parse error.",
+                                "Expected '{' to follow table name " + tabName + " in mat file " + name + " at line " + p.getCurrentLineNumber(),
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                             return; // error
                         }
                         p.skipCurlyBracedBlock();
@@ -264,7 +274,11 @@ namespace mtrGenSimple
                         p.readString(out matName, "{");
                         if (p.isAtToken("{", false) == false)
                         {
-                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            MessageBox.Show("Material file parse error!",
+                                "Expected '{' to follow material name " + matName + " in mat file " + name + " at line " + p.getCurrentLineNumber(),
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Exclamation,
+                            MessageBoxDefaultButton.Button1);
                             return; // error
                         }
                         p.skipCurlyBracedBlock();
@@ -284,30 +298,68 @@ namespace mtrGenSimple
                 }
                 return at;
             }
-            private void autoGenerateQerEditorImageLineForMaterial(String matName, int start, int end)
+            private int autoGenerateQerEditorImageLineForMaterial(String matName, int start, int end)
             {
                 // get material text
                 String mtrText = p.getData().Substring(start, end - start);
                 // check is there already a qer_editorImage
                 if(mtrText.IndexOf("qer_editorImage", StringComparison.InvariantCultureIgnoreCase) != -1)
                 {
-                    return;
+                    return 0;
                 }
                 int br = mtrText.IndexOf('{');
                 if(br == -1)
                 {
-                    MessageBox.Show("Unexpected error - '{' not found in material text");
-                    return;
+                    MessageBox.Show("Material parse error","Unexpected error - '{' not found in material text",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
+                    return 0;
                 }
                 br++; // skip '{'
                 int at = STR_SkipOf(mtrText,br," \t");
                 at = STR_SkipOf(mtrText, at, "\n\r");
-                string editorImageName = matName;
+                //string editorImageName = matName;
+                string editorImageName = findDiffuseMapValue(mtrText);
+                if(editorImageName == null)
+                {
+                    editorImageName = matName;
+                }
+                else
+                {
+                    int d = editorImageName.LastIndexOf('.');
+                    if(d != -1)
+                    {
+                        editorImageName = editorImageName.Substring(0, d);
+                    }
+                }
                 string textToInsert = "\tqer_editorImage " + editorImageName + "\r\n";
+                int insertedLen = textToInsert.Length;
                 p.setData(p.getData().Insert(start+at, textToInsert));
+                return insertedLen;
+            }
+            public static string findDiffuseMapValue(String materialText)
+            {
+                string s;
+                Parser p = new Parser();
+                p.beginParsingText(materialText);
+                while(p.isAtEOF()== false)
+                {
+                    if(p.isAtToken("diffusemap") || p.isAtToken("colormap"))
+                    {
+                        p.readToken(out s);
+                        return s;
+                    }
+                    else
+                    {
+                        p.readToken(out s);
+                    }
+                }
+                return null;
             }
             public void autoGenerateQerEditorImageLines()
             {
+                int changedMaterialDefs = 0;
                 p = new Parser();
                 p.beginParsingFile(name);
                 while (p.isAtEOF() == false)
@@ -318,7 +370,10 @@ namespace mtrGenSimple
                         p.readString(out tabName, "{");
                         if (p.isAtToken("{", false) == false)
                         {
-                            MessageBox.Show("Material file parse error: Expected '{' to follow table name " + tabName + " in mat file " + name);
+                            MessageBox.Show("Material file parse error.","Expected '{' to follow table name " + tabName + " in mat file " + name,
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Exclamation,
+                            MessageBoxDefaultButton.Button1);
                             return; // error
                         }
                         p.skipCurlyBracedBlock();
@@ -331,24 +386,41 @@ namespace mtrGenSimple
                         p.readString(out matName, "{");
                         if (p.isAtToken("{", false) == false)
                         {
-                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            MessageBox.Show("Material file parse error", "Expected '{' to follow material name " + matName + " in mat file " + name,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                             return; // error
                         }
 
                         p.skipCurlyBracedBlock();
                         int end = p.getPos();
-                        autoGenerateQerEditorImageLineForMaterial(matName, start, end);
+                        int insertedLen = autoGenerateQerEditorImageLineForMaterial(matName, start, end);
+                        if(insertedLen != 0)
+                        {
+                            changedMaterialDefs++;
+                        }
                         // after generating end offset might have changed
                         p.setPos(start);
                         p.readString(out matName, "{");
                         if (p.isAtToken("{", false) == false)
                         {
-                            MessageBox.Show("Material file parse error: Expected '{' to follow material name " + matName + " in mat file " + name);
+                            MessageBox.Show("Material file parse error.","Expected '{' to follow material name " + matName + " in mat file " + name,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                             return; // error
                         }
                         p.skipCurlyBracedBlock();
                     }
                 }
+                // reload all material definitions
+                precacheMtrFile();
+                MessageBox.Show("Autogeneration done.",
+                    "Updated " + changedMaterialDefs + " material definitions out of " + materials.Count + " total.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
             }
             public MtrFile(String fname)
             {
@@ -409,7 +481,10 @@ namespace mtrGenSimple
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to precache material file " + path);
+                MessageBox.Show("Precache failed.","Failed to precache material file " + path,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
             }
         }
         private void PrecacheMaterialFiles()
@@ -673,7 +748,11 @@ namespace mtrGenSimple
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Failed to create material file backup ('" + bpName + "'). Aborting operation...");
+                    MessageBox.Show("Backup failed.",
+                        "Failed to create material file backup ('" + bpName + "'). Aborting operation...",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                     return;
                 }
             }
@@ -682,17 +761,26 @@ namespace mtrGenSimple
         {
             if (tbBasePath.Text.Length == 0)
             {
-                MessageBox.Show("Please enter basepath before generating the material. Example basepath: 'C:/GAMES/Qio/game/baseqio/'");
+                MessageBox.Show("Basepath not set","Please enter basepath before generating the material. Example basepath: 'C:/GAMES/Qio/game/baseqio/'",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                 return;
             }
             if (!Directory.Exists(tbBasePath.Text))
             {
-                MessageBox.Show("Basepath directory does not exist. Did you enter a valid path?");
+                MessageBox.Show("Invalid basepath","Basepath directory does not exist. Did you enter a valid path?",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                 return;
             }
             if (materialExists(tbMatName.Text))
             {
-                MessageBox.Show("Material with given name already exists. Please use different name.");
+                MessageBox.Show("Name already used","Material with given name already exists. Please use different name.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                 return;
             }
             // for material name like "textures/testGen/testMat123"
@@ -780,7 +868,10 @@ namespace mtrGenSimple
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Failed to download '" + mi.sourcePath + "' to '" + mi.targetPath + "'");
+                        MessageBox.Show("Download failed.","Failed to download '" + mi.sourcePath + "' to '" + mi.targetPath + "'. Check your web connection.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                         return; // abort
                     }
                 }
@@ -834,17 +925,16 @@ namespace mtrGenSimple
             {
                 sw.Write(mtrText);
             }
-            MessageBox.Show("Generated text " + mtrText);
+            //MessageBox.Show("Generated text " + mtrText);
 
 
 
-            MessageBox.Show("Successfully added new material text to " + mtrFile);
+            MessageBox.Show("Material creation success.","Successfully added new material text to " + mtrFile + ". Generated text lenght: "+mtrText.Length+".");
 
             loadOrReloadMaterialFile(mtrFile);
 
             sendCommandToGame("mat_refreshMaterialSourceFile " + getCurrentMatFileComboText());
             sendCommandToGame("cg_testMaterial " + tbMatName.Text);
-
         }
 
         private void btViewRawMtrFile_Click(object sender, EventArgs e)
@@ -1078,7 +1168,10 @@ namespace mtrGenSimple
             MtrFile f = findMtrFile(path);
             if(f == null)
             {
-                MessageBox.Show("Error - material file not precached");
+                MessageBox.Show("Material file not precached","Material file must be precached or created first.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation,
+                        MessageBoxDefaultButton.Button1);
                 return;
             }
             backupMaterialFile(path);
