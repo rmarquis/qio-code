@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "keycodes.h"
 #include <api/vfsAPI.h>
 #include <shared/str.h>
+#include <shared/field.h>
 
 struct keyBind_s {
 	bool	down;
@@ -29,14 +30,7 @@ struct keyBind_s {
 	str		binding;
 };
 
-extern	bool	key_overstrikeMode;
 extern	keyBind_s		keys[MAX_KEYS];
-
-// NOTE TTimo the declaration of field_s and Field_Clear is now in qcommon/qcommon.h
-void Field_KeyDownEvent( field_s *edit, int key );
-void Field_CharEvent( field_s *edit, int ch );
-void Field_Draw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
-void Field_BigDraw( field_s *edit, int x, int y, int width, bool showCursor, bool noColorEscape );
 
 #define		COMMAND_HISTORY		32
 extern	field_s	historyEditLines[COMMAND_HISTORY];
@@ -51,7 +45,5 @@ void Key_WriteBindings( fileHandle_t f );
 void Key_SetBinding( int keynum, const char *binding );
 const char *Key_GetBinding( int keynum );
 bool Key_IsDown( int keynum );
-bool Key_GetOverstrikeMode();
-void Key_SetOverstrikeMode( bool state );
 void Key_ClearStates();
 int Key_GetKey(const char *binding);

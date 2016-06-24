@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
+#include <qcommon/autocompletion.h>
 
 int g_console_field_width = 78;
 
@@ -80,7 +81,7 @@ void Con_ToggleConsole_f (void) {
 		return;
 	}
 
-	Field_Clear( &g_consoleField );
+	g_consoleField.clear();
 	g_consoleField.widthInChars = g_console_field_width;
 
 	Con_ClearNotify ();
@@ -95,7 +96,7 @@ Con_MessageMode_f
 void Con_MessageMode_f (void) {
 	chat_playerNum = -1;
 	chat_team = false;
-	Field_Clear( &chatField );
+	chatField.clear();
 	chatField.widthInChars = 30;
 
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -109,7 +110,7 @@ Con_MessageMode2_f
 void Con_MessageMode2_f (void) {
 	chat_playerNum = -1;
 	chat_team = true;
-	Field_Clear( &chatField );
+	chatField.clear();
 	chatField.widthInChars = 25;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
@@ -281,7 +282,7 @@ Cmd_CompleteTxtName
 */
 void Cmd_CompleteTxtName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "", "txt", 0, 0, false, true );
+		AC_CompleteFilename( "", "txt", 0, 0, false, true );
 	}
 }
 
@@ -292,141 +293,89 @@ CL_AutocompleteSpawnCommand
 */
 void CL_AutocompleteSpawnCommand( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteEntityDefName();
+		AC_CompleteEntityDefName();
 	}
 }
 
-/*
-==================
-Cmd_CompleteModelName
-==================
-*/
 void Cmd_CompleteModelName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "md3", "md5mesh", "obj", false, false );
+		AC_CompleteFilename( "models", "md3", "md5mesh", "obj", false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteMDLPPName
-==================
-*/
 void Cmd_CompleteMDLPPName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "mdlpp", 0, 0, false, false );
+		AC_CompleteFilename( "models", "mdlpp", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteMDLName
-==================
-*/
 void Cmd_CompleteMDLName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "mdl", 0, 0, false, false );
+		AC_CompleteFilename( "models", "mdl", 0, 0, false, false );
 	}
 }
 void Cmd_CompleteMD5RName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "md5r", 0, 0, false, false );
+		AC_CompleteFilename( "models", "md5r", 0, 0, false, false );
 	}
 }
 void Cmd_CompleteMD5MeshName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "md5mesh", 0, 0, false, false );
+		AC_CompleteFilename( "models", "md5mesh", 0, 0, false, false );
 	}
 }
 void Cmd_CompleteOBJName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "obj", 0, 0, false, false );
+		AC_CompleteFilename( "models", "obj", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompletePSKName
-==================
-*/
 void Cmd_CompletePSKName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "psk", "pskx", 0, false, false );
+		AC_CompleteFilename( "models", "psk", "pskx", 0, false, false );
 	}
 }
 void Cmd_CompleteTANName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "tan", 0, 0, false, false );
+		AC_CompleteFilename( "models", "tan", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteMDMName
-==================
-*/
 void Cmd_CompleteMDMName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "mdm", 0, 0, false, false );
+		AC_CompleteFilename( "models", "mdm", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteMDCName
-==================
-*/
 void Cmd_CompleteMDCName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "mdc", 0, 0, false, false );
+		AC_CompleteFilename( "models", "mdc", 0, 0, false, false );
 	}
 }
 void Cmd_CompleteTIKName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "tik", 0, 0, false, false );
+		AC_CompleteFilename( "models", "tik", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteSMDName
-==================
-*/
 void Cmd_CompleteSMDName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "smd", 0, 0, false, false );
+		AC_CompleteFilename( "models", "smd", 0, 0, false, false );
 	}
 }
 
 void Cmd_Complete3DSName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "models", "3ds", 0, 0, false, false );
+		AC_CompleteFilename( "models", "3ds", 0, 0, false, false );
 	}
 }
-/*
-==================
-Cmd_CompleteEmitterName
-==================
-*/
 void Cmd_CompleteEmitterName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteEmitterName();
+		AC_CompleteEmitterName();
 	}
 }
-
-/*
-==================
-Cmd_CompleteMaterialName
-==================
-*/
 void Cmd_CompleteMaterialName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteMaterialName();
+		AC_CompleteMaterialName();
 	}
 }
-
-/*
-==================
-Cmd_CompleteMaterialFileName
-==================
-*/
 void Cmd_CompleteMaterialFileName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteMaterialFileName();
+		AC_CompleteMaterialFileName();
 	}
 }
 
@@ -457,10 +406,10 @@ void Con_Init (void) {
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 
-	Field_Clear( &g_consoleField );
+	g_consoleField.clear();
 	g_consoleField.widthInChars = g_console_field_width;
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
-		Field_Clear( &historyEditLines[i] );
+		historyEditLines[i].clear();
 		historyEditLines[i].widthInChars = g_console_field_width;
 	}
 	CL_LoadConsoleHistory( );
@@ -707,8 +656,8 @@ void Con_DrawInput (void) {
 
 	rf->drawChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
-	Field_Draw( &g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
-		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, true, true );
+	g_consoleField.draw(con.xadjust + 2 * SMALLCHAR_WIDTH, y,
+		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, true, true);
 }
 
 
@@ -783,8 +732,8 @@ void Con_DrawNotify (void)
 			skip = 5;
 		}
 
-		Field_BigDraw( &chatField, skip * 16, v,
-			SCREEN_WIDTH - ( skip + 1 ) * 16, true, true );
+		chatField.draw(skip * 16, v,
+			SCREEN_WIDTH - ( skip + 1 ) * 16, true, true);
 
 		v += 16;
 	}
@@ -991,7 +940,7 @@ void Con_Close() {
 	if ( !com_cl_running->integer ) {
 		return;
 	}
-	Field_Clear( &g_consoleField );
+	g_consoleField.clear();
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
 	con.finalFrac = 0;				// none visible

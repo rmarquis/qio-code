@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
 #include <api/coreAPI.h>
+#include <qcommon/autocompletion.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
@@ -945,7 +946,7 @@ static void CL_CompleteDemoName( char *args, int argNum )
 		char demoExt[ 16 ];
 
 		Com_sprintf(demoExt, sizeof(demoExt), ".%s%d", DEMOEXT, com_protocol->integer);
-		Field_CompleteFilename( "demos", demoExt, 0, 0, true, true );
+		AC_CompleteFilename( "demos", demoExt, 0, 0, true, true );
 	}
 }
 
@@ -1588,7 +1589,7 @@ static void CL_CompleteRcon( char *args, int argNum )
 		char *p = Com_SkipTokens( args, 1, " " );
 
 		if( p > args )
-			Field_CompleteCommand( p, true, true );
+			AC_CompleteCommand( p, true, true );
 	}
 }
 
