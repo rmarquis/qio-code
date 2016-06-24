@@ -807,37 +807,6 @@ bool FS_Which(const char *filename, void *searchPath);
 /*
 ==============================================================
 
-Edit fields and command line history/completion
-
-==============================================================
-*/
-
-#define	MAX_EDIT_LINE	256
-struct field_s {
-	int		cursor;
-	int		scroll;
-	int		widthInChars;
-	char	buffer[MAX_EDIT_LINE];
-};
-
-void Field_Clear( field_s *edit );
-void Field_AutoComplete( field_s *edit );
-void Field_CompleteKeyname();
-void Field_CompleteFilename( const char *dir,
-		const char *ext, const char *ext2, const char *ext3,
-		bool stripExt, bool allowNonPureFilesOnDisk );
-
-void Field_CompleteCommand( char *cmd,
-		bool doCommands, bool doCvars );
-
-void Field_CompleteEntityDefName();
-void Field_CompleteEmitterName();
-void Field_CompleteMaterialName();
-void Field_CompleteMaterialFileName();
-
-/*
-==============================================================
-
 MISC
 
 ==============================================================

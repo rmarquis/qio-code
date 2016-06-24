@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "server.h"
 #include <api/gameAPI.h>
 #include <protocol/snapFlags.h>
+#include <qcommon/autocompletion.h>
 
 /*
 ===============================================================================
@@ -1282,7 +1283,7 @@ SV_CompleteMapName
 */
 static void SV_CompleteMapName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "maps", "bsp", "map", "ent", true, false );
+		AC_CompleteFilename( "maps", "bsp", "map", "ent", true, false );
 	}
 }
 

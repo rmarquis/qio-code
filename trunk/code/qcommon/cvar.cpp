@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/autoCvar.h>
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
+#include <qcommon/autocompletion.h>
 
 cvar_s		*cvar_vars = NULL;
 cvar_s		*cvar_cheats;
@@ -1228,7 +1229,7 @@ void Cvar_CompleteCvarName( char *args, int argNum )
 		char *p = Com_SkipTokens( args, 1, " " );
 
 		if( p > args )
-			Field_CompleteCommand( p, false, true );
+			AC_CompleteCommand( p, false, true );
 	}
 }
 

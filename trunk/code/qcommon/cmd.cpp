@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/infoString.h>
 #include <shared/str.h>
+#include <qcommon/autocompletion.h>
 
 
 #define	MAX_CMD_BUFFER	16384
@@ -864,7 +865,7 @@ Cmd_CompleteCfgName
 */
 void Cmd_CompleteCfgName( char *args, int argNum ) {
 	if( argNum == 2 ) {
-		Field_CompleteFilename( "", "cfg", 0, 0, false, true );
+		AC_CompleteFilename( "", "cfg", 0, 0, false, true );
 	}
 }
 

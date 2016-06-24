@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../qcommon/qcommon.h"
 #include "sys_local.h"
 #include "windows.h"
+#include <shared/field.h>
+#include <qcommon/autocompletion.h>
 
 #define CONSOLE_HISTORY 32
 
@@ -343,7 +345,7 @@ char *CON_Input( void )
 
 			Q_strncpyz( f.buffer, console_line,
 				sizeof( f.buffer ) );
-			Field_AutoComplete( &f );
+			AC_AutoComplete(f.buffer,f.getMaxSize(),f.getCursorPtr());
 			Q_strncpyz( console_line, f.buffer,
 				sizeof( console_line ) );
 			console_linelen = strlen( console_line );

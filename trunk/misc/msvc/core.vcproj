@@ -233,6 +233,26 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 			>
 			<File
+				RelativePath="..\..\code\qcommon\autocompletion.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\code\client\cl_avi.cpp"
 				>
 				<FileConfiguration
@@ -655,6 +675,14 @@
 			<File
 				RelativePath="..\..\code\sys\con_win32.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
@@ -1142,6 +1170,14 @@
 				RelativePath="..\..\code\sys\sys_win32.cpp"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -1153,6 +1189,14 @@
 			<File
 				RelativePath="..\..\code\sys\sys_win32_con.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
@@ -1194,6 +1238,10 @@
 			>
 			<File
 				RelativePath="..\..\code\shared\array.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\qcommon\autocompletion.h"
 				>
 			</File>
 			<File
@@ -1721,8 +1769,40 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\field.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\field.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\huffman.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>

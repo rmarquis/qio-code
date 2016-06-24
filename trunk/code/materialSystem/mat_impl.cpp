@@ -1750,6 +1750,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 		this->removeAllStagesOfType(ST_SPECULARMAP);
 		this->removeAllStagesOfType(ST_HEIGHTMAP);
 
+		for(int i = 0; i < stages.size(); i++) {
+			mtrStage_c *s = stages[i];
+			if(s->hasIFCondition()) {
+				stages.remove(s);
+				delete s;
+				i--;
+			}
+		}
 		if(mat_collapseMaterialStages.getInt()) {
 			mtrStage_c *lightmapped = this->getFirstStageOfType(ST_LIGHTMAP);
 			if(lightmapped) {
