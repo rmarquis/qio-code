@@ -1424,6 +1424,7 @@ SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/qcommon/surfaceflags.h
 	${MOUNT_DIR}/shared/typedefs.h
 	${MOUNT_DIR}/qcommon/unzip.h
+	${MOUNT_DIR}/qcommon/autocompletion.h
 	${MOUNT_DIR}/server/sv_vis.h
 	${MOUNT_DIR}/sys/sys_loadlib.h
 	${MOUNT_DIR}/sys/sys_local.h
@@ -1482,6 +1483,7 @@ SET ( CORE_SHARED_HEADERS
 	${MOUNT_DIR}/shared/portalizedBSPTree.h
 	${MOUNT_DIR}/shared/shared.h
 	${MOUNT_DIR}/shared/str.h
+	${MOUNT_DIR}/shared/field.h
 	${MOUNT_DIR}/shared/infoString.h
 	${MOUNT_DIR}/shared/keyCatchers.h
 	${MOUNT_DIR}/shared/huffman.h
@@ -1495,6 +1497,7 @@ SET ( CORE_SHARED_SOURCES
 	${MOUNT_DIR}/shared/parser.cpp
 	${MOUNT_DIR}/shared/portalizedBSPTree.cpp
 	${MOUNT_DIR}/shared/str.cpp
+	${MOUNT_DIR}/shared/field.cpp
 	${MOUNT_DIR}/shared/infoString.cpp
 	${MOUNT_DIR}/shared/huffman.cpp
 )
@@ -1517,6 +1520,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/qcommon/cmd.cpp
 	${MOUNT_DIR}/qcommon/com_systemEventCaster.cpp
 	${MOUNT_DIR}/qcommon/common.cpp
+	${MOUNT_DIR}/qcommon/autocompletion.cpp
 	${MOUNT_DIR}/sys/con_log.cpp
 	${MOUNT_DIR}/sys/con_win32.cpp
 	${MOUNT_DIR}/qcommon/cvar.cpp
@@ -1530,7 +1534,6 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/qcommon/net_chan.cpp
 	${MOUNT_DIR}/qcommon/net_ip.cpp
 	${MOUNT_DIR}/qcommon/puff.c
-	${MOUNT_DIR}/shared/str.cpp
 	${MOUNT_DIR}/server/sv_ccmds.cpp
 	${MOUNT_DIR}/server/sv_client.cpp
 	${MOUNT_DIR}/server/sv_game.cpp
