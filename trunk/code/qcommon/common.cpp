@@ -179,7 +179,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	static bool opening_qconsole = false;
 
 	va_start (argptr,fmt);
-	_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( rd_buffer ) {
@@ -248,7 +248,7 @@ void QDECL Com_RedWarning( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	Com_Printf("%s%s",S_COLOR_RED,msg);
 }
@@ -269,7 +269,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);	
-	_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -308,7 +308,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	lastErrorTime = currentTime;
 
 	va_start (argptr,fmt);
-	_vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
+	vsnprintf (com_errorMessage, sizeof(com_errorMessage),fmt,argptr);
 	va_end (argptr);
 
 	if (code != ERR_DISCONNECT)
@@ -351,7 +351,7 @@ void QDECL Com_DropError(const char *error, ... ) {
 	char		text[1024];
 
 	va_start (argptr, error);
-	_vsnprintf (text, sizeof(text), error, argptr);
+	vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Com_Error( ERR_DROP, text );
@@ -2488,7 +2488,7 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 	va_list		argptr;
 
 	va_start (argptr,fmt);
-	len = _vsnprintf(dest, size, fmt, argptr);
+	len = vsnprintf(dest, size, fmt, argptr);
 	va_end (argptr);
 
 	if(len >= size)

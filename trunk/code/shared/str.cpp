@@ -35,7 +35,7 @@ const char *va(const char *fmt, ...) {
 	which = !which;
 
 	va_start (args, fmt);
-	_vsnprintf (selected, sizeof(*string), fmt, args);
+	vsnprintf (selected, sizeof(*string), fmt, args);
 	va_end (args);
 
 	return selected;
