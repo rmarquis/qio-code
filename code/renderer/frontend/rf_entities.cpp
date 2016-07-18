@@ -326,7 +326,12 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 			}
 			instance = new r_model_c;
 			instance->initSkelModelInstance(skelModel);
-			instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
+			// TIKI models has no baseframe (FAKK/MoHAA)
+			// I think the TIKIs of EF2 have baseframe
+			// (the .skb format of EF2 is newer and has extra baseframe data)
+			if(skelModel->getBaseFrameABS().size() != 0) {
+				instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
+			}
 		} else if(newModel->isKeyframed()) {
 			const kfModelAPI_i *kfModel;
 			//if(newModel->isTIKI()) {

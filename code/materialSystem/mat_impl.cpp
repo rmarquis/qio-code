@@ -36,6 +36,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/ast.h>
 
 static aCvar_c mat_collapseMaterialStages("mat_collapseMaterialStages","1");
+static aCvar_c mat_forceMinShadow("mat_forceMinShadow","-1");
 
 // skybox
 void skyBox_c::setBaseName(const char *newBaseName) {
@@ -466,6 +467,19 @@ void mtrIMPL_c::clear() {
 	// but don't clear material name and this->hashNext pointer...
 }
 
+
+bool mtrIMPL_c::hasMinShadow() const {
+	if(mat_forceMinShadow.getFloat() >= 0) {
+		return true;
+	}
+	return false; // TODO
+}
+float mtrIMPL_c::getMinShadow() const {
+	if(mat_forceMinShadow.getFloat() >= 0) {
+		return mat_forceMinShadow.getFloat();
+	}
+	return false; // TODO
+}
 void mtrIMPL_c::createFromImage() {
 	textureAPI_i *tex = MAT_RegisterTexture(this->name,TWM_REPEAT);
 	// save the source file name
