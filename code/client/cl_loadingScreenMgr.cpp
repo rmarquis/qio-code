@@ -66,7 +66,7 @@ class clLoadingScreenMgrIMPL_c : public loadingScreenMgrAPI_i {
 		char	msg[MAXPRINTMSG];
 
 		va_start (argptr,fmt);
-		vsnprintf (msg, sizeof(msg), fmt, argptr);
+		Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 		va_end (argptr);
 
 		text.append(msg);
