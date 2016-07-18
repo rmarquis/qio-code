@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // fileStreamHelper.cpp
 #include <shared/typedefs.h>
+#include <shared/str.h>
 #include <string.h>
 #include "fileStreamHelper.h"
 #include <stdarg.h>
@@ -53,7 +54,7 @@ void fileStreamHelper_c::writeText(const char *fmt, ...) {
 
 	char msg[8192];
 	va_start (argptr,fmt);	
-	vsnprintf (msg, sizeof(msg), fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	u32 len = strlen(msg);

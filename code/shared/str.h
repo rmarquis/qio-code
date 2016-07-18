@@ -89,6 +89,8 @@ inline const char *G_SkipToNextToken(const char *p) {
 	return p;
 }
 
+int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
 class str {
 	char *data;
 	char buffer[16];

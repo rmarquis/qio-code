@@ -35,12 +35,39 @@ const char *va(const char *fmt, ...) {
 	which = !which;
 
 	va_start (args, fmt);
-	vsnprintf (selected, sizeof(*string), fmt, args);
+	Q_vsnprintf (selected, sizeof(*string), fmt, args);
 	va_end (args);
 
 	return selected;
 }
 
+/*
+Q_vsnprintf
+Special wrapper function for Microsoft's broken _vsnprintf() function.
+MinGW comes with its own snprintf() which is not broken.
+// V: we still need this function to avoid crashes on Wine
+*/
+int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
+{
+	int retval;
+	
+	retval = _vsnprintf(str, size, format, ap);
+
+	if(retval < 0 || retval == size)
+	{
+		// Microsoft doesn't adhere to the C99 standard of vsnprintf,
+		// which states that the return value must be the number of
+		// bytes written if the output string had sufficient length.
+		//
+		// Obviously we cannot determine that value from Microsoft's
+		// implementation, so we have no choice but to return size.
+		
+		str[size - 1] = '\0';
+		return size;
+	}
+	
+	return retval;
+}
 // V: this will treat '/' and '\' as equal
 int stricmpn_slashes(const char *s1, const char *s2, int n) {
 	int		c1, c2;
