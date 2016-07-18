@@ -2237,6 +2237,10 @@ void rBspTree_c::markAreas() {
 	markAreas_r(camArea,baseFrustum,0);
 }
 void rBspTree_c::printBSPInfo() {
+	g_core->Print("BSP vertices count: %i\n",verts.size());
+	g_core->Print("BSP surfaces count: %i (world surfaces %i)\n",surfs.size(),numWorldSurfs);
+	g_core->Print("BSP materials count: %i\n",bspMaterials.size());
+	g_core->Print("BSP areas count: %i\n",areas.size());
 	if(vis) {
 		g_core->Print("BSP vis data: clusters %i, clusterBytes %i, total size: %i\n",
 			vis->numClusters,vis->clusterSize,vis->numClusters*vis->clusterSize);

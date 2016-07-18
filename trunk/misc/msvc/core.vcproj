@@ -2173,6 +2173,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\game\system\gameDirs.cfg"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

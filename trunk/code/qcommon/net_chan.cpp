@@ -585,7 +585,7 @@ void QDECL NET_OutOfBandPrint( netSrc_e sock, netAdr_s adr, const char *format, 
 	string[3] = -1;
 
 	va_start( argptr, format );
-	vsnprintf( string+4, sizeof(string)-4, format, argptr );
+	Q_vsnprintf( string+4, sizeof(string)-4, format, argptr );
 	va_end( argptr );
 
 	// send the datagram
