@@ -393,6 +393,7 @@ class rbSDLOpenGL_c : public rbAPI_i {
 	bool bHasSunLight;
 	class vec3_c sunColor;
 	class vec3_c sunDirection;
+	float sunMinShadow;
 	aabb sunLightBounds;
 	int shadowMapLOD;
 	// matrices
@@ -925,6 +926,11 @@ public:
 			lastLightmap = lightmap;
 		}
 		lastDeluxemap = deluxemap;
+		if(lastMat != 0) {
+			if(lastMat->getSunParms()) {
+				sunMinShadow = lastMat->getMinShadow();
+			}
+		}
 	}
 	virtual void unbindMaterial() {
 		disableAllTextures();
@@ -1486,6 +1492,9 @@ public:
 			if(newShader->sBlendChannelBlue != -1) {
 				glUniform1i(newShader->sBlendChannelBlue,3);
 			}
+			if(newShader->u_minShadow != -1) {
+				glUniform1f(newShader->u_minShadow,lastMat->getMinShadow());
+			}
 			if(newShader->u_blendBoxMins != -1) {
 				glUniform3f(newShader->u_blendBoxMins,blendMapBounds.getMins().x,blendMapBounds.getMins().y,blendMapBounds.getMins().z);
 			}
@@ -1507,6 +1516,9 @@ public:
 				}
 				if(newShader->u_sunColor != -1) {
 					glUniform3f(newShader->u_sunColor,sunColor.x,sunColor.y,sunColor.z);
+				}
+				if(newShader->u_minShadow != -1) {
+					glUniform1f(newShader->u_minShadow,sunMinShadow);
 				}
 			}
 			// pass the point/spot light parameters to shader
@@ -2533,6 +2545,9 @@ drawOnlyLightmap:
 							if(bDepthFBOLod2DrawnThisFrame) {
 								glslShaderDesc.bHasShadowMapLod2 = true;
 							}
+						}
+						if(sunMinShadow > 0.f) {
+							glslShaderDesc.bHasMinShadow = true;
 						}
 					}
 					glslShaderDesc.enableShadowMappingBlur = rb_shadowMapBlur.getInt();

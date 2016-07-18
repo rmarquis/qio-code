@@ -627,6 +627,8 @@ public:
 	virtual const class sunParmsAPI_i *getSunParms() const {
 		return sunParms;
 	}
+	virtual bool hasMinShadow() const;
+	virtual float getMinShadow() const;
 	// TODO: precalculate stage->sort once and just return the stored value here?
 	virtual enum drawCallSort_e getSort() const { 
 		if(bPortalMaterial) {

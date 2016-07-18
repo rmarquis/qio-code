@@ -73,7 +73,7 @@ public:
 			if(c.frameNum >= lastFrame)
 				return;
 			if(c.frameNum >= startFrame) {
-				if(1) {
+				if(0) {
 					g_core->Print("Executing cmd %i of %i (%s) because frameNum %i is inside range <%i,%i)\n",
 						i,commands.size(),c.commandText.c_str(),c.frameNum,startFrame,lastFrame);
 				}
@@ -639,8 +639,10 @@ class tikiParser_c : public parser_c {
 				frameNum = getInteger();
 			}
 			const char *l = getLine("}");
-			g_core->Print("parseAnimCommands: frame %i, cmd '%s'\n",
-				frameNum,l);
+			if(0) {
+				g_core->Print("parseAnimCommands: frame %i, cmd '%s'\n",
+					frameNum,l);
+			}
 			ac->addCommand(frameNum,l);
 		}
 		return false;
