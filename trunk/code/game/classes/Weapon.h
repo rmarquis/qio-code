@@ -37,6 +37,18 @@ enum weaponHand_e {
 	WH_RIGHT,
 };
 
+enum fireType_e {
+	FT_BULLET,
+	FT_PROJECTILE,
+};
+// bullet/projectiles emitter
+// Separated from Weapon class, so Weapon can have multiple firemodes
+class shooter_c {
+	fireType_e fireType;
+	str projectile;
+public:
+};
+
 class Weapon : public ModelEntity {
 	// custom viewmodel for Doom3-style weapons
 	str model_view;
@@ -66,6 +78,9 @@ class Weapon : public ModelEntity {
 	float maxSpread;
 	float spreadDist;
 	weaponHand_e weaponHand;
+	// --- for TIKI weapons
+	// Loop firing after "fire" event until "stopfire" is cast
+	bool bLoopFire;
 protected:
 	safePtr_c<Player> owner;
 
@@ -78,6 +93,9 @@ public:
 
 	DECLARE_CLASS( Weapon );
 
+	bool getBLoopFire() const {
+			return bLoopFire;
+	}
 	u32 getRaiseTime() const {
 		return raiseTime;
 	}
@@ -127,6 +145,10 @@ public:
 
 	virtual void doWeaponAttack();
 	virtual void doWeaponAttackSecondary();
+
+	// TIKI system - "fire" event from Player class
+	void fireEvent();
+
 	bool canFireAgain() const;
 	// fireType can be "primary" or "secondary"
 	bool hasAmmoForFireType(const char *fireType) const;

@@ -39,6 +39,10 @@ Projectile::Projectile() {
 	lifeTime = -1;
 	projLaunchTime = level.time;
 	bHasStartVelocitySet = false;
+	// rocket projectiles (like Q3 rocket launcher rocket or MoH/FAKK rockets) 
+	// should have physics disabled.
+	// Grenade projectiles (Q3 grenade launcher) should have physics enabled.
+	bRigidBodyPhysicsEnabled = false;
 }
 void Projectile::setKeyValue(const char *key, const char *value) {
 	if(!_stricmp(key,"model_detonate")) {

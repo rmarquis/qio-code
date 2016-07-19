@@ -36,8 +36,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // LUA event callbacks
 #include "../lua/g_lua_eventHandler.h"
 #include <api/serverAPI.h>
+#include <api/keyValueSetter.h>
 
-class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i {
+
+class BaseEntity : public safePtrObject_c, public eventReceiverBaseAPI_i, public keyValueSetter_i {
 	struct entityState_s *_myEntityState; // this is NULL only for players !!! (they are using playerState_s instead)
 	matrix_c matrix;
 	// for entity attaching

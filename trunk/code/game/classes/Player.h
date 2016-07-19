@@ -106,6 +106,10 @@ friend class testPlayerConditionsHandler_c;
 	class genericConditionsHandler_t<Player> *st_handler;
 	// holstered weapons
 	arraySTD_c<class Weapon*> weapons;
+	// TIKI fire loops (FAKK)
+	bool bLoopFire;
+	bool bLoopFireRight;
+	bool bLoopFireLeft;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
@@ -116,6 +120,9 @@ friend class testPlayerConditionsHandler_c;
 
 	bool isPainAnimActive() const;
 
+	// TIKI weapons system
+	void fireWeapon(const char *handName);
+	void stopFiringWeapon(const char *handName);
 	void deactivateWeapon(const char *handName);
 	void activateNewWeapon();
 protected:

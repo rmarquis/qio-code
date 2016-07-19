@@ -56,6 +56,7 @@ Weapon::Weapon() {
 	spreadDist = 1000.f;
 	maxSpread = 1.f;
 	weaponHand = WH_DUALHAND;
+	bLoopFire = false;
 }
 Weapon::~Weapon() {
 
@@ -147,14 +148,39 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 	} else if(!_stricmp(key,"spreadDist")) {
 		spreadDist = atof(value);
 	} else if(!_stricmp(key,"name") && tiki) {
-		// "name" is a weapon name event used in .tik files
+		// TIKI - "name" is a weapon name event used in .tik files
 		// "name" is also a "targetname" in Doom3
 		// Avoid conflicts and use "name" here only if TIKI is set.
 		weaponName = value;
 		weaponName.removeCharacter('"');
 	} else if(!_stricmp(key,"hand")) {
-		// used in FAKK2
+		// TIKI - used in FAKK2
 		setWeaponHand(value);
+	} else if(!_stricmp(key,"fireType")) {
+		// TIKI - FAKK/MoHAA fireType (bullet, projectile)
+	} else if(!_stricmp(key,"projectile")) {
+		// TIKI - FAKK/MoHAA projectile tiki
+		def_projectile = value; // PLACEHOLDER
+	} else if(!_stricmp(key,"autoaim")) {
+		// TIKI FAKK auto aim
+	} else if(!_stricmp(key,"alternate")) {
+		// TIKI firemodes
+		// for primary fire: "fireType projectile"
+		// for alternate fire: "alternate fireType projectile"
+		// Just remember that we're setting alternate fire and pass the event again
+		str tmp = value;
+		str newKey, newValue;
+		const char *p = tmp.getToken(newKey);
+		newValue = p;
+		this->setKeyValue(newKey,newValue);
+	} else if(!_stricmp(key,"startammo")) {
+		// TIKI
+	} else if(!_stricmp(key,"loopFire")) {
+		// TIKI
+		bLoopFire = true;
+	} else if(!_stricmp(key,"coolitem")) {
+		// FAKK-only, ignore
+
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -224,6 +250,9 @@ void Weapon::onSecondaryFireKeyUp() {
 
 }
 
+void Weapon::fireEvent() {
+	doWeaponAttack();
+}
 void Weapon::doWeaponAttack() {
 	vec3_c muzzlePos, muzzleDir;
 	BaseEntity *skip;

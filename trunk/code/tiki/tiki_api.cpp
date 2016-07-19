@@ -70,9 +70,20 @@ public:
 	void executeCommands(int startFrame,int lastFrame,class perStringCallbackListener_i *cb) const {
 		for(u32 i = 0; i < commands.size(); i++) {
 			const tikiAnimCommand_c &c = commands[i];
-			if(c.frameNum >= lastFrame)
+
+			// HACK? 
+			// What about TF_LAST?
+			int fixedFrameNum;
+			if(c.frameNum == TF_FIRST)
+				fixedFrameNum = 0;
+			//else if(c.frameNum == TF_LAST)
+			//	fixedFrameNum = getNumFrames();
+			else 
+				fixedFrameNum = c.frameNum;
+
+			if(fixedFrameNum >= lastFrame)
 				return;
-			if(c.frameNum >= startFrame) {
+			if(fixedFrameNum >= startFrame) {
 				if(0) {
 					g_core->Print("Executing cmd %i of %i (%s) because frameNum %i is inside range <%i,%i)\n",
 						i,commands.size(),c.commandText.c_str(),c.frameNum,startFrame,lastFrame);

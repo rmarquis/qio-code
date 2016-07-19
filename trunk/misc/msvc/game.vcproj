@@ -1091,6 +1091,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\api\keyValueSetter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\keyValuesListener.h"
 				>
 			</File>

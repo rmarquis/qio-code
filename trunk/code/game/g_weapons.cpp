@@ -93,7 +93,9 @@ void G_RailGunAttack(const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSk
 	}
 }
 void G_FireProjectile(const char *projectileDefName, const vec3_c &muzzle, const vec3_c &dir, BaseEntity *baseSkip) {
-	BaseEntity *e = G_SpawnClass(projectileDefName);
+//	BaseEntity *e = G_SpawnClass(projectileDefName);
+	// Use SpawnGeneric because it's more generic and support TIKIs
+	BaseEntity *e = G_SpawnGeneric(projectileDefName);
 	Projectile *p = dynamic_cast<Projectile*>(e);
 	if(p == 0) {
 		g_core->RedWarning("G_FireProjectile: spawned entity was not a subclass of projectile\n");
