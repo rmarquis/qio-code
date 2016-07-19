@@ -431,6 +431,9 @@ class mtrIMPL_c : public mtrAPI_i {
 	bool bGenericSky;;
 	// for renderer clearup without vid_restart
 	bool bMarkedAsUsed;
+	// Qio-specific, 
+	// it should be also possible to set it globally for sun from Worldspawn?
+	class astAPI_i *minShadow;
 
 	void addDeformSprite();
 
@@ -628,7 +631,7 @@ public:
 		return sunParms;
 	}
 	virtual bool hasMinShadow() const;
-	virtual float getMinShadow() const;
+	virtual float getMinShadow(const class astInputAPI_i *in) const;
 	// TODO: precalculate stage->sort once and just return the stored value here?
 	virtual enum drawCallSort_e getSort() const { 
 		if(bPortalMaterial) {

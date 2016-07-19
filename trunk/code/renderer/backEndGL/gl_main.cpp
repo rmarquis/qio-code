@@ -927,8 +927,8 @@ public:
 		}
 		lastDeluxemap = deluxemap;
 		if(lastMat != 0) {
-			if(lastMat->getSunParms()) {
-				sunMinShadow = lastMat->getMinShadow();
+			if(lastMat->getSunParms() && lastMat->hasMinShadow()) {
+				sunMinShadow = lastMat->getMinShadow(&materialVarList);
 			}
 		}
 	}
@@ -1492,9 +1492,9 @@ public:
 			if(newShader->sBlendChannelBlue != -1) {
 				glUniform1i(newShader->sBlendChannelBlue,3);
 			}
-			if(newShader->u_minShadow != -1) {
-				glUniform1f(newShader->u_minShadow,lastMat->getMinShadow());
-			}
+			//if(newShader->u_minShadow != -1) {
+			//	glUniform1f(newShader->u_minShadow,lastMat->getMinShadow());
+			//}
 			if(newShader->u_blendBoxMins != -1) {
 				glUniform3f(newShader->u_blendBoxMins,blendMapBounds.getMins().x,blendMapBounds.getMins().y,blendMapBounds.getMins().z);
 			}

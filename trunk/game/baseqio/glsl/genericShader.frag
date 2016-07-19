@@ -83,6 +83,10 @@ uniform vec3 u_shadowMapLod1Maxs;
 varying vec3 v_vertXYZ;
 #endif
 
+#ifdef HAS_MIN_SHADOW
+uniform float u_minShadow;
+#endif
+
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
 #ifdef ENABLE_SHADOW_MAPPING_BLUR
 float doShadowBlurSample(sampler2DShadow map, vec4 coord)
@@ -168,7 +172,29 @@ void main() {
     float angleFactor = dot(v_vertNormal, u_sunDirection);
     if(angleFactor < 0) {
 		// light is behind the surface
+#ifdef HAS_MIN_SHADOW
+
+  // calculate the final color
+#ifdef HAS_LIGHTMAP
+#ifdef HAS_VERTEXCOLORS
+	  gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st)*v_color4;
+#else
+	  gl_FragColor = texture2D (colorMap, texCoord)*texture2D (lightMap, gl_TexCoord[1].st);
+#endif // HAS_VERTEXCOLORS
+#else
+#ifdef HAS_VERTEXCOLORS
+	  gl_FragColor = texture2D (colorMap, texCoord)*v_color4;
+#else
+	  gl_FragColor = texture2D (colorMap, texCoord);
+#endif // HAS_VERTEXCOLORS
+#endif // HAS_LIGHTMAP
+#ifdef HAS_MATERIAL_COLOR
+		gl_FragColor *= u_materialColor;
+#endif
+		gl_FragColor *= u_minShadow;
+#else
 		gl_FragColor = vec4(0,0,0,0); // need to set default color for some GPUs
+#endif
 		return;
     }
 #endif   
@@ -267,6 +293,12 @@ void main() {
     gl_FragColor *= angleFactor;
 #endif   
 #ifdef HAS_DIRECTIONAL_SHADOW_MAPPING
+
+#ifdef HAS_MIN_SHADOW
+	if(shadow < u_minShadow) {
+		shadow = u_minShadow;
+	}
+#endif // HAS_MIN_SHADOW
     gl_FragColor *= shadow;
 #endif 
 #ifdef DEBUG_SHADOWMAPPING_SHOW_SPLITS

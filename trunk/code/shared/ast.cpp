@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ast.h"
 #include "autoCvar.h"
 #include <api/coreAPI.h>
+#include <math.h>
 
 static aCvar_c ast_printParsedExpressions("ast_printParsedExpressions","0");
 
@@ -114,6 +115,12 @@ struct astLexem_s {
 		if(type == LEX_BRACKET_LEFT)
 			return true;
 		if(type == LEX_BRACKET_RIGHT)
+			return true;
+		return false;
+	}
+	// array brackets: '[', ']'
+	bool isLeftBracketArray() const {
+		if(type == LEX_ARRAY_BRACKET_LEFT)
 			return true;
 		return false;
 	}
@@ -211,7 +218,10 @@ enum astNodeType_e {
 	ANT_OPERATOR,
 	ANT_NUMBER,
 	ANT_VARIABLE,
+	// for Doom3 tables
 	ANT_GETARRAYELEMENT,
+	// for math functions
+	ANT_FUNCTION,
 };
 
 class astNode_c {
@@ -260,6 +270,24 @@ public:
 			float idx = children[0]->execute_r(in);
 			return in->getTableValue(varName,idx);
 		}
+		if(type == ANT_FUNCTION) {
+			if(in == 0) {
+				return 0.f;
+			}
+			float idx = children[0]->execute_r(in);
+#if 0
+			return in->getFunctionValue(varName,idx);
+#else
+			if(!stricmp(varName,"sin")) {
+				return sin(idx);
+			}
+			if(!stricmp(varName,"abs")) {
+				return abs(idx);
+			}
+			return 0.f;
+#endif
+		}
+		
 		if(type == ANT_OPERATOR) {
 			float a = children[0]->execute_r(in);
 			float b = children[1]->execute_r(in);
@@ -478,7 +506,11 @@ class astParser_c {
 			astNode_c *arrayIndex = buildNode_r(left+1,right,recursionDepth+1);
 			astNode_c *ret = new astNode_c;
 			ret->setVariable(lex.value);
-			ret->setType(ANT_GETARRAYELEMENT);
+			if(lexems[left].isLeftBracketArray()) {
+				ret->setType(ANT_GETARRAYELEMENT);
+			} else {
+				ret->setType(ANT_FUNCTION);
+			}
 			ret->setChild(0,arrayIndex);
 			return ret;
 		}

@@ -435,6 +435,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	bHasEditorTransparency = false;
 	editorTransparency = 1.f;;
 	bMarkedAsUsed = true;
+	minShadow = 0;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -457,6 +458,10 @@ void mtrIMPL_c::clear() {
 		delete deforms;
 		deforms = 0;
 	}
+	if(minShadow) {
+		delete minShadow;
+		minShadow = 0;
+	}
 	// reset variables to their default values
 	polygonOffset = 0;
 	cullType = CT_FRONT_SIDED;
@@ -472,13 +477,18 @@ bool mtrIMPL_c::hasMinShadow() const {
 	if(mat_forceMinShadow.getFloat() >= 0) {
 		return true;
 	}
-	return false; // TODO
+	if(minShadow)
+		return true;
+	return false;
 }
-float mtrIMPL_c::getMinShadow() const {
+float mtrIMPL_c::getMinShadow(const class astInputAPI_i *in) const {
 	if(mat_forceMinShadow.getFloat() >= 0) {
 		return mat_forceMinShadow.getFloat();
 	}
-	return false; // TODO
+	if(minShadow == 0) {
+		return 0.f;
+	}
+	return minShadow->execute(in); // TODO
 }
 void mtrIMPL_c::createFromImage() {
 	textureAPI_i *tex = MAT_RegisterTexture(this->name,TWM_REPEAT);
@@ -1028,6 +1038,14 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 						g_core->RedWarning("mtrIMPL_c::loadFromText: failed to read color vec3 of sunParms - check line %i of %s in material %s\n",line,txt.sourceFile,this->getName());			
 					}
 					sunParms->setFromColorAndAngles(color,angles);
+				} else if(p.atWord_dontNeedWS("minShadow")) {
+					astAPI_i *ast = MAT_ParseExpression(p);
+					if(ast) {
+						this->minShadow = ast;
+					} else {
+						g_core->RedWarning("Failed to parse minShadow ('if') AST in material %s in file %s at line %i\n",
+							this->name.c_str(),p.getDebugFileName(),p.getCurrentLineNumber());
+					}
 				} else if(p.atWord("collision")) {
 					// Id Tech 4 token
 				} else if(p.atWord("matter_metal")) {
