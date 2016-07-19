@@ -116,3 +116,90 @@ textures/hipshot_sky/violentdays
 		cubeMap cubemaps/hipshot/violentdays/violentdays
 	}
 }
+
+textures/hipshot_sky/violentdays_min02
+{
+	qer_editorimage cubemaps/hipshot/violentdays/violentdays_ny.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	// V: how bright should be shadowed surfaces
+	// Soon it should be also possible to set it from Worldspawn
+	minShadow 0.2
+
+//	xmap_sun	todo
+//	xmap_skylight	todo
+
+	xmap_sun 1.0 1.0 1.0 125 315 45
+	xmap_skylight 125 3
+	
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/violentdays/violentdays
+	}
+}
+
+
+textures/hipshot_sky/violentdays_min06
+{
+	qer_editorimage cubemaps/hipshot/violentdays/violentdays_ny.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	// V: how bright should be shadowed surfaces
+	// Soon it should be also possible to set it from Worldspawn
+	minShadow 0.6
+
+//	xmap_sun	todo
+//	xmap_skylight	todo
+
+	xmap_sun 1.0 1.0 1.0 125 315 45
+	xmap_skylight 125 3
+	
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/violentdays/violentdays
+	}
+}
+
+
+textures/hipshot_sky/violentdays_minExp
+{
+	qer_editorimage cubemaps/hipshot/violentdays/violentdays_ny.png
+
+	noFragment
+	noshadows
+	forceOpaque				
+	noimpact
+	sky
+	nolightmap
+
+	// V: how bright should be shadowed surfaces
+	// Soon it should be also possible to set it from Worldspawn
+	minShadow abs(sin(time))*0.5+0.2
+
+//	xmap_sun	todo
+//	xmap_skylight	todo
+
+	xmap_sun 1.0 1.0 1.0 125 315 45
+	xmap_skylight 125 3
+	
+	{ 
+		stage skyboxMap
+		noPicMip
+		cubeMap cubemaps/hipshot/violentdays/violentdays
+	}
+}
+
