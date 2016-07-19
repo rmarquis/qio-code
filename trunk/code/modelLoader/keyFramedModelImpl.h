@@ -141,11 +141,16 @@ public:
 		}
 		return -1;
 	}
-	virtual const tagOr_c *getTagOrientation(u32 tagNum, u32 frameNum) const {
+	virtual const tagOr_c *getTagOrientation(int tagNum, u32 frameNum) const {
+		if(tagNum < 0)
+			return 0;
 		if(frameNum >= frames.size()) {
 			frameNum = frames.size()-1;
 		}
-		return &tagFrames[frameNum].tags[tagNum];
+		const kfTagFrame_c &tf = tagFrames[frameNum];
+		if(tagNum >= tf.tags.size())
+			return 0;
+		return &tf.tags[tagNum];
 	}
 	virtual const class tagOr_c *getTagOrientation(const char *tagName, u32 frameNum) const {
 		int index = getTagIndexForName(tagName);

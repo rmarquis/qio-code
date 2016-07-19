@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/skc.h>
 
 void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int rings, unsigned int sectors) {
 	float const R = 1./(float)(rings-1);
@@ -342,7 +343,7 @@ public:
 			delete skelModel;
 			return 0;
 		}
-		skelModel->recalcEdges();
+	//	skelModel->recalcEdges();
 		//if(skelModel) {
 			// apply model postprocess steps (scaling, rotating, etc)
 			// defined in optional .mdlpp file
@@ -365,6 +366,11 @@ public:
 		if(!_stricmp(ext,"smd"))
 			return true;
 		if(!_stricmp(ext,"ska"))
+			return true;
+		// psk has a baseframe which can be used as single-frame animation
+		if(!_stricmp(ext,"psk"))
+			return true;
+		if(!_stricmp(ext,"psa"))
 			return true;
 		return false;
 	}
@@ -410,6 +416,13 @@ public:
 				return 0;
 			}
 			ret = skaAnim;
+		} else if(!_stricmp(ext,"psk")) {
+			skelAnimGeneric_c *pskAnim = new skelAnimGeneric_c;
+			if(pskAnim->loadPSKAnim(fname)) {
+				delete pskAnim;
+				return 0;
+			}
+			ret = pskAnim;
 		} else {
 			return 0;
 		}
@@ -436,6 +449,21 @@ rbAPI_i *rb = 0;
 static modelLoaderDLLIMPL_c g_staticModelLoaderDLLAPI;
 modelLoaderDLLAPI_i *g_modelLoader = &g_staticModelLoaderDLLAPI;
 
+void SKC_TestAllFiles() {
+	skc_c test;
+	test.loadSKC("models/human/animation/weapon_mp44/mp44_reload.skc");
+
+
+	int numSkcs;
+	char **skcNames = g_vfs->FS_ListFiles( "models/", "skc", &numSkcs );
+	for (u32 i = 0; i < numSkcs; i++) {
+		str fn = "models/";
+		fn.append(skcNames[i]);
+		test.loadSKC(fn);
+	}
+	g_vfs->FS_FreeFileList( skcNames );
+}
+
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
@@ -450,6 +478,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
+
 }
 
 qioModule_e IFM_GetCurModule() {

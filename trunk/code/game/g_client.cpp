@@ -375,6 +375,8 @@ void ClientCommand( int clientNum ) {
 		e->setOrigin(p);
 		//e->setAngles(rot);
 		e->initRigidBodyPhysics();
+	} else if(!_stricmp(cmd,"testSarge")) {
+		pl->setPlayerModel("$sarge");
 	} else if(!_stricmp(cmd,"spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {

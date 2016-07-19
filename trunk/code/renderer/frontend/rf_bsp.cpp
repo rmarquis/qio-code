@@ -2853,6 +2853,8 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 	for(u32 i = 0; i < sfNums.size(); i++) {
 		u32 surfaceIndex = sfNums[i];
 		class mtrAPI_i *mat = getSurfaceMaterial(surfaceIndex);
+		if(mat == 0)
+			continue;
 		if(mat->isNeededForLightPass() == false)
 			continue;
 		const bspSurf_s &sf = surfs[surfaceIndex];

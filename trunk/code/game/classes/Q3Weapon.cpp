@@ -46,6 +46,9 @@ enum quake3WeaponType_e {
 Q3Weapon::Q3Weapon() {
 	q3WeaponType = EQ3WPN_BAD;
 	railMats = 0;
+	// let Q3 weapons always have physics
+	bRigidBodyPhysicsEnabled = true;
+	bUseRModelToCreateDynamicCVXShape = true;
 }
 Q3Weapon::~Q3Weapon() {
 	if(railMats)
@@ -87,6 +90,7 @@ void Q3Weapon::runFrame() {
 			destroyPhysicsObject();
 		}
 	}
+	Weapon::runFrame();
 }
 void Q3Weapon::doWeaponAttack() {
 	if(q3WeaponType == EQ3WPN_PLASMAGUN) {

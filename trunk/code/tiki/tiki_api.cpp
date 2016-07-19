@@ -546,6 +546,12 @@ class tikiParser_c : public parser_c {
 				} else {
 
 				}
+			} else if(atWord("thirdPersonModel")) {
+				// for MSR.
+				skipLine();
+			} else if(atWord("firstpersonmodel")) {
+				// for MSR.
+				skipLine();
 			} else {
 				g_core->RedWarning("tikiParser_c::parseSetup: unknown token '%s' at line %i of %s\n",
 					getToken(),getCurrentLineNumber(),getDebugFileName());

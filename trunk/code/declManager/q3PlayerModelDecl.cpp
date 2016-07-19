@@ -86,7 +86,7 @@ bool q3PlayerModelDecl_c::getTagOrientation(int tagNum, const struct singleAnimL
 			return true; // torso tag not found? error
 		matrix_c torsoTagMat;
 		torsoTag->toMatrix(torsoTagMat);
-		u32 localTagNum = tagNum - legsModel->getNumTags();
+		int localTagNum = tagNum - legsModel->getNumTags();
 		const tagOr_c *tag = torsoModel->getTagOrientation(localTagNum,torsoModel->fixFrameNum(torso.from));
 		if(tag == 0) {
 			return true; // tag not found? error

@@ -66,6 +66,7 @@ DEFINE_CLASS_ALIAS(ModelEntity, idAI);
 
 static aCvar_c g_verboseSetAnimationCalls("g_verboseSetAnimationCalls","0");
 static aCvar_c g_verboseSetDamageZoneCalls("g_verboseSetDamageZoneCalls","0");
+static aCvar_c g_verboseInitRigidBodyPhysicsCalls("g_verboseInitRigidBodyPhysicsCalls","0");
 
 class damageZonesList_c {
 	class dmgZone_c {
@@ -653,10 +654,19 @@ bool ModelEntity::initRagdollRenderAndPhysicsObject(const char *afName) {
 }
 void ModelEntity::initRigidBodyPhysics() {
 	if(this->cmod == 0) {
+		if(g_verboseInitRigidBodyPhysicsCalls.getInt()) {
+			g_core->Print("ModelEntity::initRigidBodyPhysics: entity %i (%s) - not creating because cmod is null\n",getEntNum(),getRenderModelName());
+		}
 		return;
 	}
 	if(this->bRigidBodyPhysicsEnabled == false) {
+		if(g_verboseInitRigidBodyPhysicsCalls.getInt()) {
+			g_core->Print("ModelEntity::initRigidBodyPhysics: entity %i (%s) - not creating because rigid body physics is disabled\n",getEntNum(),getRenderModelName());
+		}
 		return; // rigid body physics was disabled for this entity
+	}
+	if(g_verboseInitRigidBodyPhysicsCalls.getInt()) {
+		g_core->Print("ModelEntity::initRigidBodyPhysics: entity %i (%s) - creating rigid body...\n",getEntNum(),getRenderModelName());
 	}
 	if(body) {
 		destroyPhysicsObject();

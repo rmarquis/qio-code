@@ -1312,6 +1312,7 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 	for(u32 i = 0; i < numMaterials; i++) {
 		const axMaterial_t *ti = matSection->getMat(i);
 		surfs[i].matName = ti->name;
+		surfs[i].surfName = ti->name;
 	}
 	for(u32 i = 0; i < numTris; i++) {
 		const axTriangle_t *ti = triSection->getTri(i);

@@ -2,6 +2,7 @@
 #define __SHARED_H__
 
 #include "typedefs.h"
+#include <string.h> // memcpy
 
 inline void memcpy_strided(void *_dest, const void *_src, int elementCount, int elementSize, int destStride, int sourceStride) {
 	byte *dest = (byte*) _dest;
