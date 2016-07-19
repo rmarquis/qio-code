@@ -57,8 +57,8 @@ public:
 	virtual const char *getStateLegsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
 	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;
-	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
-	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const = 0;
+	virtual void iterateStateEntryCommands(const char *stateName, class keyValueSetter_i *callback) const = 0;
+	virtual void iterateStateExitCommands(const char *stateName, class keyValueSetter_i *callback) const = 0;
 	virtual enum stMoveType_e getStateMoveType(const char *curStateName) const = 0;
 	// for AI state machines
 	virtual const stTime_s *getStateTime(const char *curStateName) const = 0;

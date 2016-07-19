@@ -25,8 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/parser.h>
 #include <api/coreAPI.h>
 #include <api/stateConditionsHandlerAPI.h>
-
-
+#include <api/keyValueSetter.h>
 
 stAnim_c::stAnim_c() {
 	bIsPattern = false;
@@ -103,6 +102,11 @@ const char *stAnimsList_c::selectAnimation(class stateConditionsHandler_i *handl
 	return 0;
 }
 
+void stateCommandsList_c::executeCommandsOn(class keyValueSetter_i *p) const {
+	for(u32 i = 0; i < cmds.size(); i++) {
+		p->setKeyValue(cmds[i].cmd,cmds[i].args);
+	}
+}
 bool stateCommandsList_c::parseCommandsList(class parser_c &p) {
 	if(p.atWord_dontNeedWS("{") == false) {
 		int line = p.getCurrentLineNumber();
@@ -129,9 +133,9 @@ bool stateCommandsList_c::parseCommandsList(class parser_c &p) {
 				s.append("\n");
 			}
 			s.append(" )");
-			//addCommand(command.c_str(),s.c_str());
+			addCommand(command.c_str(),s.c_str());
 		} else {
-			//addCommand(command.c_str(),arguments.c_str());
+			addCommand(command.c_str(),arguments.c_str());
 		}
 		if(bStop)
 			break;
@@ -239,11 +243,11 @@ const char *stState_c::getActionAnim(class stateConditionsHandler_i *handler) co
 const char *stState_c::getTorsoAnim(class stateConditionsHandler_i *handler) const {
 	return torso.selectAnimation(handler);
 }
-void stState_c::iterateStateEntryCommands(class stCommandHandler_i *callback) const {
-//	entryCommands.executeCommandsOn(callback);
+void stState_c::iterateStateEntryCommands(class keyValueSetter_i *callback) const {
+	entryCommands.executeCommandsOn(callback);
 }
-void stState_c::iterateStateExitCommands(class stCommandHandler_i *callback) const {
-//	exitCommands.executeCommandsOn(callback);
+void stState_c::iterateStateExitCommands(class keyValueSetter_i *callback) const {
+	exitCommands.executeCommandsOn(callback);
 }
 stateMachine_c::stateMachine_c() {
 	hashNext = 0;
@@ -362,13 +366,13 @@ void stateMachine_c::getStateBehaviour(const char *stateName, const char **bName
 	*bName = s->getBehaviourName();
 	*bArgs = s->getBehaviourArgs();
 }
-void stateMachine_c::iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const {
+void stateMachine_c::iterateStateEntryCommands(const char *stateName, class keyValueSetter_i *callback) const {
 	const stState_c *s = states.getEntry(stateName);
 	if(s == 0)
 		return;
 	return s->iterateStateEntryCommands(callback);
 }
-void stateMachine_c::iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const {
+void stateMachine_c::iterateStateExitCommands(const char *stateName, class keyValueSetter_i *callback) const {
 	const stState_c *s = states.getEntry(stateName);
 	if(s == 0)
 		return;

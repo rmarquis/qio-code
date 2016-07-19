@@ -101,11 +101,25 @@ public:
 		return conditions;
 	}
 };
+class stCommand_c {
+friend class stateCommandsList_c;
+	str cmd;
+	str args;
+};
 class stateCommandsList_c {
+	arraySTD_c<stCommand_c> cmds;
 public:
 //	~stateCommandsList_c();
 
+	void addCommand(const char *cmd, const char *args) {
+		stCommand_c c;
+		c.cmd = cmd;
+		c.args = args;
+		cmds.push_back(c);
+	}
 
+
+	void executeCommandsOn(class keyValueSetter_i *p) const;
 	bool parseCommandsList(class parser_c &p);
 };
 class stState_c {
@@ -159,8 +173,8 @@ public:
 	const char *getLegsAnim(class stateConditionsHandler_i *handler) const;	
 	const char *getTorsoAnim(class stateConditionsHandler_i *handler) const;	
 	const char *getActionAnim(class stateConditionsHandler_i *handler) const;	
-	void iterateStateEntryCommands(class stCommandHandler_i *callback) const;
-	void iterateStateExitCommands(class stCommandHandler_i *callback) const;
+	void iterateStateEntryCommands(class keyValueSetter_i *callback) const;
+	void iterateStateExitCommands(class keyValueSetter_i *callback) const;
 };
 
 
@@ -177,8 +191,8 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const stTime_s *getStateTime(const char *curStateName) const;
-	virtual void iterateStateEntryCommands(const char *stateName, class stCommandHandler_i *callback) const;
-	virtual void iterateStateExitCommands(const char *stateName, class stCommandHandler_i *callback) const;
+	virtual void iterateStateEntryCommands(const char *stateName, class keyValueSetter_i *callback) const;
+	virtual void iterateStateExitCommands(const char *stateName, class keyValueSetter_i *callback) const;
 	virtual enum stMoveType_e getStateMoveType(const char *stateName) const;
 	virtual void getStateBehaviour(const char *stateName, const char **bName, const char **bArgs) const;
 	virtual bool stateHasBehaviour(const char *stateName) const;

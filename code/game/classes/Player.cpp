@@ -191,6 +191,9 @@ Player::Player() {
 	useHeld = false;
 	fireHeld = false;
 	onGround = false;
+	bLoopFire = false;
+	bLoopFireRight = false;
+	bLoopFireLeft = false;
 	vehicle = 0;
 	curWeapon = 0;
 	animHandler = 0;
@@ -217,6 +220,60 @@ Player::~Player() {
 	}
 	if(animHandler) {
 		delete animHandler;
+	}
+}
+
+void Player::stopFiringWeapon(const char *handName) {
+	if(bPutaway) {
+		g_core->RedWarning("Player::stopFiringWeapon: ERROR, bPutaway flag set, can't stopFire during putaway!\n");
+		return;
+	}
+	if(!stricmp(handName,"left") || !stricmp(handName,"lefthand")) {
+		if(curWeaponLeft.getPtr() == 0) {
+			g_core->RedWarning("Player::stopFiringWeapon: can't stopFire lefthand weapon because curWeaponLeft ptr is NULL\n");
+		} else {
+		}
+		bLoopFireLeft = false;
+	} else if(!stricmp(handName,"right") || !stricmp(handName,"righthand")) {
+		if(curWeaponRight.getPtr() == 0) {
+			g_core->RedWarning("Player::stopFiringWeapon: can't stopFire righthand weapon because curWeaponRight ptr is NULL\n");
+		} else {
+		}
+		bLoopFireRight = false;
+	} else {
+		if(curWeapon.getPtr() == 0) {
+			g_core->RedWarning("Player::stopFiringWeapon: can't stopFire dualhand weapon because curWeapon ptr is NULL\n");
+		} else {
+		}
+		bLoopFire = false;
+	}
+}
+void Player::fireWeapon(const char *handName) {
+	if(bPutaway) {
+		g_core->RedWarning("Player::deactivateWeapon: ERROR, bPutaway flag set, can't fire during putaway!\n");
+		return;
+	}
+	if(!stricmp(handName,"left") || !stricmp(handName,"lefthand")) {
+		if(curWeaponLeft.getPtr() == 0) {
+			g_core->RedWarning("Player::fireWeapon: can't fire lefthand weapon because curWeaponLeft ptr is NULL\n");
+		} else {
+			curWeaponLeft->fireEvent();
+			bLoopFireLeft = curWeaponLeft->getBLoopFire();
+		}
+	} else if(!stricmp(handName,"right") || !stricmp(handName,"righthand")) {
+		if(curWeaponRight.getPtr() == 0) {
+			g_core->RedWarning("Player::fireWeapon: can't fire righthand weapon because curWeaponRight ptr is NULL\n");
+		} else {
+			curWeaponRight->fireEvent();
+			bLoopFireRight = curWeaponRight->getBLoopFire();
+		}
+	} else {
+		if(curWeapon.getPtr() == 0) {
+			g_core->RedWarning("Player::fireWeapon: can't fire dualhand weapon because curWeapon ptr is NULL\n");
+		} else {
+			curWeapon->fireEvent();
+			bLoopFire = curWeapon->getBLoopFire();
+		}
 	}
 }
 void Player::deactivateWeapon(const char *handName) {
@@ -294,6 +351,15 @@ void Player::setKeyValue(const char *key, const char *value) {
 	} else if(!stricmp(key,"deactivateweapon")) {
 		// called from .tik animation commands list
 		deactivateWeapon(value);
+	} else if(!stricmp(key,"fire")) {
+		// called from .tik animatiom commands list
+		// NOTE: it seems that Weapons with "loopfire" key should fire until "stopfire" event is received
+		g_core->Print("Fire event on player\n");
+		fireWeapon(value);
+	} else if(!stricmp(key,"stopfire")) {
+		// Called from state file exitCommands block
+		g_core->Print("Stop event on player\n");
+		stopFiringWeapon(value);
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
@@ -713,6 +779,8 @@ void Player::runPlayerAnimation_stateMachine() {
 				if(g_printPlayerStateChange.getInt()) {
 					g_core->Print("(Time %i): Changing %s state from %s to %s\n",level.time,name,state->c_str(),next);
 				}
+				// leaving state, so execute exit commnads
+				st->iterateStateExitCommands(state->c_str(),this);
 				*state = next;
 				bChanged[i] = true;
 		//		continue;
@@ -899,7 +967,18 @@ void Player::runPlayer() {
 				useHeld = false;
 			}
 		}
+		// run TIKI loop fires
+		if(curWeaponLeft && bLoopFireLeft && curWeaponLeft->canFireAgain()) {
+			curWeaponLeft->fireEvent();
+		}
+		if(curWeaponRight && bLoopFireRight && curWeaponRight->canFireAgain()) {
+			curWeaponRight->fireEvent();
+		}
+		if(curWeapon && bLoopFire && curWeapon->canFireAgain()) {
+			curWeapon->fireEvent();
+		}
 
+		// hardcoded weapons system for old weapons (Quake 3, etc)
 		if(this->pers.cmd.buttons & BUTTON_ATTACK) {
 			if(fireHeld) {
 				if(g_printPlayerPrimaryFireState.getInt())
