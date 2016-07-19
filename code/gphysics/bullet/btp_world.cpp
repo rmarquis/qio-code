@@ -306,10 +306,13 @@ public:
 		
 	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 	{
-		if(rayResult.m_collisionObject) {
-			class BaseEntity *ent = (BaseEntity*)rayResult.m_collisionObject->getUserPointer();
-			if(ent == skip)
-				return m_closestHitFraction;
+		// we can skip certain entities while doing raycast
+		if(skip) {
+			if(rayResult.m_collisionObject) {
+				class BaseEntity *ent = (BaseEntity*)rayResult.m_collisionObject->getUserPointer();
+				if(ent == skip)
+					return m_closestHitFraction;
+			}
 		}
 
 		//caller already does the filter on the m_closestHitFraction

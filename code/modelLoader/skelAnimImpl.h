@@ -290,6 +290,9 @@ public:
 	bool loadMDSAnim(const char *fname);
 	bool loadSMDAnim(const char *fname);
 	bool loadSKAAnim(const char *fname);
+	bool loadPSKAnim(const char *fname);
+
+	bool getSKCData(class skc_c *out) const;
 };
 
 #endif //__SKELANIMIMPL_H__

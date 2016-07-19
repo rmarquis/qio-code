@@ -50,7 +50,7 @@ public:
 	virtual u32 fixFrameNum(u32 inFrameNum) const = 0;
 	virtual void scale(float f) = 0;
 	virtual int getTagIndexForName(const char *tagName) const = 0;
-	virtual const class tagOr_c *getTagOrientation(u32 tagNum, u32 frameNum) const = 0;
+	virtual const class tagOr_c *getTagOrientation(int tagNum, u32 frameNum) const = 0;
 	virtual const class tagOr_c *getTagOrientation(const char *tagName, u32 frameNum) const = 0;
 };
 

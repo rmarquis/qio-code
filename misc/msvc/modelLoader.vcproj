@@ -290,6 +290,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\skc.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\skc.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\skelUtils.cpp"
 				>
 			</File>
@@ -451,6 +459,14 @@
 			</File>
 			<File
 				RelativePath="..\..\code\fileformats\skab_file_format.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\fileformats\skc_file_format.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\fileformats\skd_file_format.h"
 				>
 			</File>
 			<File

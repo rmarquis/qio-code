@@ -30,11 +30,16 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileFormats/mdx_file_format.h>
 #include <fileFormats/mds_file_format.h>
 #include <fileFormats/skab_file_format.h>
+#include <fileFormats/actorX_file_format.h>
 #include <api/vfsAPI.h>
 #include <api/skelModelAPI.h>
+#include <shared/skc.h>
 
 skelAnimGeneric_c::skelAnimGeneric_c() {
 	animFlags = 0;
+	frameTime = 1.f;
+	frameRate = 1.f;
+	totalTime = 1.f;
 }
 skelAnimGeneric_c::~skelAnimGeneric_c() {
 	frames.clear();
@@ -343,6 +348,128 @@ bool skelAnimGeneric_c::loadSMDAnim(const char *fname) {
 	this->frameTime = 0.2f;
 	this->totalTime = this->frameTime * this->frames.size();
 	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
+//
+//	ActorX .psk files loading
+//
+bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
+	if(h->hasIdent(PSK_IDENT_HEADER)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong ident %s, should be %s\n",fname,h->ident,PSK_IDENT_HEADER);
+		return true; // error
+	}
+	const axChunkHeader_t *s;
+
+	s = h->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_POINTS)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_POINTS);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axPoint_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axPoint_t));
+		return true; // error
+	}
+	const axChunkHeader_t *pSection = s;
+	// do nothing for points
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_VERTS)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_VERTS);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axVertex_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axVertex_t));
+		return true; // error
+	}
+	const axChunkHeader_t *vertSection = s;
+	// do nothing for verts
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_FACES)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_FACES);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axTriangle_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axTriangle_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	const axChunkHeader_t *triSection = s;
+	// do nothin for tris
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_MATS)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_MATS);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axMaterial_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axMaterial_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	const axChunkHeader_t *matSection = s;
+	// do nothing for materials
+	s = s->getNextHeader();
+	if(s->hasIdent(PSK_IDENT_REFS)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_REFS);
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axReferenceBone_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axReferenceBone_t));
+		g_vfs->FS_FreeFile(fileData);
+		return true; // error
+	}
+	u32 nj = s->numData;
+	this->bones.resize(nj);
+	boneOrArray_c baseFrameABS;
+	baseFrameABS.resize(nj);
+	boneOrArray_c baseFrameRelative;
+	baseFrameRelative.resize(nj);
+	for(u32 i = 0; i < nj; i++) {
+		const axReferenceBone_t *bi = s->getBone(i);
+		if(0) {
+			g_core->RedWarning("Bone %i name %s\n",i,bi->name);
+		}
+
+		bones[i].nameIndex = SK_RegisterString(bi->name);
+		bones[i].parentIndex = bi->parentIndex;
+		if(i == 0)
+			bones[i].parentIndex--;
+
+		const axBone_t *or = &bi->bone;
+		quat_c q;
+		q = or->quat;
+		if(i == 0) {
+			// negate y only
+			//q.setY(-q.getY());
+		} else {
+			// negate x,y,z
+			q.conjugate();
+		}
+		vec3_c pos = or->position;
+		baseFrameRelative[i].mat.fromQuatAndOrigin(q,pos);
+		baseFrameRelative[i].boneName = bones[i].nameIndex;
+	}
+	baseFrameABS = baseFrameRelative;
+	baseFrameABS.localBonesToAbsBones(&bones);
+	boneOrArray_c baseFrameABSInverse = baseFrameABS.getInversed();
+	
+	// just set a single frame with baseframe
+	frames.resize(1);
+	frames[0].setOrs(baseFrameRelative);
+
+	this->frameTime = 1.f;
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+
 	return false;
 }
 //
@@ -783,4 +910,30 @@ void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp
 		outBone->boneName = boneDef->nameIndex;
 		outBone->mat.fromQuatAndOrigin(quat,pos);
 	}
+}
+bool skelAnimGeneric_c::getSKCData(class skc_c *out) const {
+	out->resizeFrames(frames.size());
+	out->resizeChannels(bones.size()*2);
+	for(u32 i = 0; i < bones.size(); i++) {
+		u32 c0 = i*2;
+		u32 c1 = c0 + 1;
+		const char *boneName = SK_GetString(bones[i].nameIndex);
+		str rotName = boneName;
+		rotName.append(" rot");
+		str posName = boneName;
+		posName.append(" pos");
+		out->setChannelName(c0,rotName);
+		out->setChannelName(c1,posName);
+	}
+	for(u32 i = 0; i < frames.size(); i++) {
+		const skelFrame_c &f = frames[i];
+		for(u32 j = 0; j < bones.size(); j++) {
+			const md5BoneVal_s &bv = f.bones[j];
+			u32 c0 = j*2;
+			u32 c1 = c0 + j;
+			out->setFrameChannel(i,c0,bv.quat);
+			out->setFrameChannel(i,c1,bv.pos);
+		}
+	}
+	return false;
 }
