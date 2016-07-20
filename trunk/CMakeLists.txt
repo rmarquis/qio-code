@@ -575,6 +575,8 @@ SET ( MODELLOADER_SKELETALMODELLOADERS
 	${MOUNT_DIR}/modelLoader/sk_local.h
 	${MOUNT_DIR}/modelLoader/skelAnimImpl.cpp
 	${MOUNT_DIR}/modelLoader/skelAnimImpl.h
+	${MOUNT_DIR}/modelLoader/skelAnimMD5.cpp
+	${MOUNT_DIR}/modelLoader/skelAnimMD5.h
 	${MOUNT_DIR}/modelLoader/skelModelImpl.cpp
 	${MOUNT_DIR}/modelLoader/skelModelImpl.h
 )

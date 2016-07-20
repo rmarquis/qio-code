@@ -21,31 +21,75 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// skelAnimImpl.h - implementation of skelAnimAPI_i
-#ifndef __SKELANIMIMPL_H__
-#define __SKELANIMIMPL_H__
+// skelAnimMD5.h - implementation of skelAnimAPI_i
+#ifndef __SKELANIMMD5_H__
+#define __SKELANIMMD5_H__
 
 #include "sk_local.h"
 #include <api/skelAnimAPI.h>
 #include <math/aabb.h>
 #include <shared/array.h>
 #include <shared/str.h>
-#include "skelAnimMD5.h"
 
-class skelFrame_c {
-friend class skelAnimGeneric_c;
-	arraySTD_c<md5BoneVal_s> bones;
-	aabb bounds;
+struct md5BoneVal_s {
+	float pos[4];
+	float quat[4]; // W component will be calculated
 
-	void setOrs(const class boneOrArray_c &ors);
+	void clearPosition() {
+		pos[0] = pos[1] = pos[2] = pos[3] = 0.f;
+	}
+	void setQuat(const float *f) {
+		quat[0] = f[0];
+		quat[1] = f[1];
+		quat[2] = f[2];
+		quat[3] = f[3];
+	}
+	void setQuat(float x, float y, float z, float w) {
+		quat[0] = x;
+		quat[1] = y;
+		quat[2] = z;
+		quat[3] = w;
+	}
+	void setVec3(const float *f) {
+		pos[0] = f[0];
+		pos[1] = f[1];
+		pos[2] = f[2];
+		pos[3] = 0;
+	}
+	void setVec3(float x, float y, float z) {
+		pos[0] = x;
+		pos[1] = y;
+		pos[2] = z;
+		pos[3] = 0;
+	}
 };
-class skelAnimGeneric_c : public skelAnimAPI_i {
+struct md5AnimBone_s {
+	short firstComponent;
+	short componentFlags;
+};
+
+enum {
+	COMPONENT_BIT_TX = 1 << 0,
+	COMPONENT_BIT_TY = 1 << 1,
+	COMPONENT_BIT_TZ = 1 << 2,
+	COMPONENT_BIT_QX = 1 << 3,
+	COMPONENT_BIT_QY = 1 << 4,
+	COMPONENT_BIT_QZ = 1 << 5
+};
+
+class md5Frame_c {
+friend class skelAnimMD5_c;
+	arraySTD_c<float> components;
+	aabb bounds;
+};
+class skelAnimMD5_c : public skelAnimAPI_i {
 	str animFileName;
 	float frameRate; // fps
 	float frameTime; // 1 / fps
 	float totalTime; // frameTime * frames.size()
-	arraySTD_c<skelFrame_c> frames;
+	arraySTD_c<md5Frame_c> frames;
 	boneDefArray_c bones;
+	arraySTD_c<md5AnimBone_s> md5AnimBones;
 	arraySTD_c<md5BoneVal_s> baseFrame;
 	int animFlags;
 
@@ -62,19 +106,22 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual const class boneDefArray_c *getBoneDefs() const {
 		return &bones;
 	}
+	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const {
+		return 0; // TODO
+	}
 	virtual float getFrameTime() const {
 		return frameTime;
 	}
 	virtual float getTotalTimeSec() const {
 		return totalTime;
 	}
-	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const;
 	// anim post process funcs impl
 	virtual void scaleAnimationSpeed(float scale) {
 		frameTime *= scale;
 		frameRate = 1.f / frameTime;
 		totalTime = frames.size() * frameTime;
 	}
+	virtual void clearMD5BoneComponentFlags(const char *boneName);
 	virtual void setLoopLastFrame(bool bLoopLastFrame) {
 		if(bLoopLastFrame) {
 			animFlags |= AF_LOOP_LAST_FRAME;
@@ -126,22 +173,14 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 			}
 		}
 	}
-	void buildSingleBone(int boneNum, const skelFrame_c &f, class vec3_c &pos, class quat_c &quat) const;
+	void buildSingleBone(int boneNum, const md5Frame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
-
-	void addFrameRelative(const class boneOrArray_c &ors);
 public:
-	skelAnimGeneric_c();
-	virtual ~skelAnimGeneric_c();
-	bool loadMDXAnim(const char *fname);
-	bool loadMDSAnim(const char *fname);
-	bool loadSMDAnim(const char *fname);
-	bool loadSKAAnim(const char *fname);
-	bool loadPSKAnim(const char *fname);
-
-	bool getSKCData(class skc_c *out) const;
+	skelAnimMD5_c();
+	virtual ~skelAnimMD5_c();
+	bool loadMD5Anim(const char *fname);
 };
 
-#endif //__SKELANIMIMPL_H__
+#endif //__SKELANIMMD5_H__
