@@ -54,6 +54,7 @@ public:
 	void setBones(const boneOrArray_c &from, const arraySTD_c<u32> &bonesToSet);	
 	u32 findNearestBone(const vec3_c &pos, float *outDist) const;
 	void inverse();
+	void identity();
 
 	void transform(const matrix_c &ofs);
 	void scale(float scale);

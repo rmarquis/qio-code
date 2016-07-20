@@ -95,6 +95,11 @@ void boneOrArray_c::setBones(const boneOrArray_c &from, const arraySTD_c<u32> &b
 		(*this)[boneIndex] = from[boneIndex];
 	}
 }
+void boneOrArray_c::identity() {
+	for(u32 i = 0; i < size(); i++) {
+		(*this)[i].mat.identity();
+	}
+}
 void boneOrArray_c::inverse() {
 	for(u32 i = 0; i < size(); i++) {
 		(*this)[i].mat.inverse();
