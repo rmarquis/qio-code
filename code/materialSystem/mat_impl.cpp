@@ -1184,6 +1184,10 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// V: added for Qio
 					stage->getStageTexture().parseAnimMapDir(p);
 					stage->getStageTexture().uploadTexture();
+				} else if(p.atWord("animmapphase")) {
+					// added for MoHAA, used on eg. m5l1a
+					stage->getStageTexture().parseAnimMap(p,true);
+					stage->getStageTexture().uploadTexture();
 				} else if(p.atWord("animmap")) {
 					stage->getStageTexture().parseAnimMap(p);
 					stage->getStageTexture().uploadTexture();

@@ -33,13 +33,15 @@ class textureAnimation_c {
 	arraySTD_c<str> texNames;
 	arraySTD_c<class textureAPI_i *> textures;
 	float frequency;
+	// added for MoHAA animMapPhase
+	float phase;
 public:
 	
 	void uploadTextures();
 	void unloadTextures();
 	~textureAnimation_c();
 	bool loadAnimMapImagesFromDirectory(const char *dir);
-	bool parseAnimMap(class parser_c &p);
+	bool parseAnimMap(class parser_c &p, bool bAnimMapPhase = false);
 	bool parseAnimMapDir(class parser_c &p);
 	textureAPI_i *getTexture(u32 idx);
 	textureAPI_i *getTextureForTime(float time);
@@ -63,7 +65,7 @@ public:
 	bool isAnimated() const;
 	bool hasTexture() const;
 	bool parseMap(parser_c &p);
-	bool parseAnimMap(parser_c &p);
+	bool parseAnimMap(parser_c &p, bool bAnimMapPhase = false);
 	bool parseAnimMapDir(parser_c &p);
 	bool isLightmap() const;
 	void setDefaultTexture();
