@@ -168,6 +168,13 @@ public:
 		}
 		allocated = newSize + 8;
 	}
+	bool endsWith(const char *s) const {
+		u32 sl = strlen(s);
+		if(sl > len)
+			return false;
+		const char *p = c_str()+(len-sl);
+		return !stricmp(p,s);
+	}
 	void allocEmptyString(u32 stringLen) {
 		ensureAllocated(stringLen+1);
 		for(u32 i = 0; i < stringLen; i++) {
