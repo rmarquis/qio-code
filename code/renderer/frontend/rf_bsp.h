@@ -206,9 +206,12 @@ class rBspTree_c {
 	arraySTD_c<bspModel_s> models;
 	arraySTD_c<bspPlane_s> planes;
 	arraySTD_c<q3Node_s> nodes;
-	arraySTD_c<q3Leaf_s> leaves;
+	arraySTD_c<mohLeaf_s> leaves;
 	arraySTD_c<u32> leafSurfaces;
 	arraySTD_c<bspMaterial_s> bspMaterials;
+	// MoHAA
+	arraySTD_c<u16> leafTerrainPatches;
+	arraySTD_c<u16> leafStaticModels;
 	// Qio bsp data
 	arraySTD_c<vec3_c> points;
 	// areaPortals data loaded directly from Qio BSP (LUMP_AREAPORTALS)
@@ -272,7 +275,10 @@ class rBspTree_c {
 	void addPortalToArea(u32 areaNum, u32 portalNum);
 	bool loadQioAreaPortals(u32 lumpNum);
 	bool loadQioPoints(u32 lumpNum);
+	// MoHAA/MoHSH/MoHBT
 	bool loadStaticModels();
+	bool loadLeafTerrainPatches();
+	bool loadLeafStaticModels();
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);

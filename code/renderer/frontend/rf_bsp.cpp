@@ -114,7 +114,7 @@ void rBspTree_c::writeBSPDataToOBJ(const char *fname) const {
 }
 void rBspTree_c::getSurfaceAreas(u32 surfNum, arraySTD_c<u32> &out) {
 	for(u32 i = 0; i < leaves.size(); i++) {
-		const q3Leaf_s &l = leaves[i];
+		const mohLeaf_s &l = leaves[i];
 		if(l.area < 0)
 			continue;
 		for(u32 j = 0; j < l.numLeafSurfaces; j++) {
@@ -368,7 +368,7 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 		}
 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
 		leaves.resize(numLeaves);
-		q3Leaf_s *l = leaves.getArray();
+		mohLeaf_s *l = leaves.getArray();
 		const cod1Leaf_s *il = (const cod1Leaf_s*)h->getLumpData(COD1_LEAFS);
 		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 			l->area = il->area;
@@ -377,6 +377,8 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 			l->firstLeafSurface = il->firstLeafSurface;
 			l->numLeafBrushes = il->numLeafBrushes;
 			l->numLeafSurfaces = il->numLeafSurfaces;
+			l->numStaticModels = 0;
+			l->numTerraPatches = 0;
 		}
 	} else {
 		const lump_s &ll = h->getLumps()[lumpLeaves];
@@ -386,7 +388,11 @@ bool rBspTree_c::loadNodesAndLeaves(u32 lumpNodes, u32 lumpLeaves, u32 sizeOfLea
 		}
 		u32 numLeaves = ll.fileLen / sizeOfLeaf;
 		leaves.resize(numLeaves);
-		memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(q3Leaf_s),sizeOfLeaf);
+		if(h->isBSPMOH()) {
+			memcpy(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves*sizeOfLeaf);
+		} else {
+			memcpy_strided(leaves.getArray(),h->getLumpData(lumpLeaves),numLeaves,sizeof(q3Leaf_s),sizeof(mohLeaf_s),sizeOfLeaf);
+		}
 	}
 	return false; // OK
 }
@@ -412,7 +418,7 @@ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 	}
 	u32 numLeaves = ll.fileLen / sizeof(q2Leaf_s);
 	leaves.resize(numLeaves);
-	q3Leaf_s *l = leaves.getArray();
+	mohLeaf_s *l = leaves.getArray();
 	const q2Leaf_s *il = (const q2Leaf_s*)h->getLumpData(lumpLeaves);
 	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 		l->area = il->area;
@@ -427,6 +433,8 @@ bool rBspTree_c::loadNodesAndLeavesQ2(u32 lumpNodes, u32 lumpLeaves) {
 		l->firstLeafSurface = il->firstLeafSurface;
 		l->numLeafBrushes = il->numLeafBrushes;
 		l->numLeafSurfaces = il->numLeafSurfaces;
+		l->numStaticModels = 0;
+		l->numTerraPatches = 0;
 	}
 	
 	return false; // OK
@@ -455,7 +463,7 @@ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 	}
 	u32 numLeaves = ll.fileLen / sizeof(hlLeaf_s);
 	leaves.resize(numLeaves);
-	q3Leaf_s *l = leaves.getArray();
+	mohLeaf_s *l = leaves.getArray();
 	const hlLeaf_s *il = (const hlLeaf_s*)h->getLumpData(lumpLeaves);
 	for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 		// there are no areas in HL bsps
@@ -476,6 +484,9 @@ bool rBspTree_c::loadNodesAndLeavesHL(u32 lumpNodes, u32 lumpLeaves) {
 		// there are no brush data in HL bsps
 		l->firstLeafBrush = 0;
 		l->numLeafBrushes = 0;
+		// same for MoH data
+		l->numStaticModels = 0;
+		l->numTerraPatches = 0;
 	}
 	
 	return false; // OK
@@ -509,7 +520,7 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 		}
 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_s);
 		leaves.resize(numLeaves);
-		q3Leaf_s *l = leaves.getArray();
+		mohLeaf_s *l = leaves.getArray();
 		const srcLeaf_s *il = (const srcLeaf_s*)srcH->getLumpData(SRC_LEAFS);
 		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 			l->area = il->area;
@@ -534,7 +545,7 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 		}
 		u32 numLeaves = ll.fileLen / sizeof(srcLeaf_noLightCube_s);
 		leaves.resize(numLeaves);
-		q3Leaf_s *l = leaves.getArray();
+		mohLeaf_s *l = leaves.getArray();
 		const srcLeaf_noLightCube_s *il = (const srcLeaf_noLightCube_s*)srcH->getLumpData(SRC_LEAFS);
 		for(u32 i = 0; i < numLeaves; i++, l++, il++) {
 			l->area = il->area;
@@ -550,6 +561,8 @@ bool rBspTree_c::loadNodesAndLeavesSE() {
 			l->numLeafSurfaces = il->numLeafSurfaces;
 			l->firstLeafBrush = il->firstLeafBrush;
 			l->numLeafBrushes = il->numLeafBrushes;
+			l->numStaticModels = 0;
+			l->numTerraPatches = 0;
 		}
 	}
 	return false; // OK
@@ -1541,6 +1554,28 @@ bool rBspTree_c::loadLeafIndexes(u32 leafSurfsLump) {
 	memcpy(leafSurfaces.getArray(),h->getLumpData(leafSurfsLump),sl.fileLen);
 	return false;
 }
+bool rBspTree_c::loadLeafTerrainPatches() {
+	const lump_s &sl = h->getLumps()[MOH_TERRAININDEXES];
+	if(sl.fileLen % sizeof(u16)) {
+		g_core->RedWarning("rBspTree_c::loadLeafTerrainPatches: invalid leafTerrainPatches lump size\n");
+		return true; // error
+	}	
+	u32 numLeafTerrainPatches = sl.fileLen / sizeof(u16);
+	leafTerrainPatches.resize(numLeafTerrainPatches);
+	memcpy(leafTerrainPatches.getArray(),h->getLumpData(MOH_TERRAININDEXES),sl.fileLen);
+	return false;
+}
+bool rBspTree_c::loadLeafStaticModels() {
+	const lump_s &sl = h->getLumps()[MOH_STATICMODELINDEXES];
+	if(sl.fileLen % sizeof(u16)) {
+		g_core->RedWarning("rBspTree_c::loadLeafStaticModels: invalid leafStaticModels lump size\n");
+		return true; // error
+	}	
+	u32 numLeafStaticModels = sl.fileLen / sizeof(u16);
+	leafStaticModels.resize(numLeafStaticModels);
+	memcpy(leafStaticModels.getArray(),h->getLumpData(MOH_STATICMODELINDEXES),sl.fileLen);
+	return false;
+}
 bool rBspTree_c::loadLeafIndexes16Bit(u32 leafSurfsLump) {
 	u32 lumpLen = h->getLumpSize(leafSurfsLump);
 	if(lumpLen % sizeof(u16)) {
@@ -1846,6 +1881,14 @@ bool rBspTree_c::load(const char *fname) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}
+			if(loadLeafStaticModels()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadLeafTerrainPatches()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
 		}
 	} else if(h->ident == BSP_VERSION_HL || h->ident == BSP_VERSION_QUAKE1) {
 		// Half Life and Counter Strike 1.6 bsps (de_dust2, etc)
@@ -2125,7 +2168,7 @@ void rBspTree_c::boxSurfaces_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum
 		}
 	}
 	int leafNum = -nodeNum - 1;
-	const q3Leaf_s &l = leaves[leafNum];
+	const mohLeaf_s &l = leaves[leafNum];
 	for(u32 i = 0; i < l.numLeafSurfaces; i++) {
 		u32 sfNum = this->leafSurfaces[l.firstLeafSurface+i];
 		if(this->surfs[sfNum].isFlare() == false && bb.intersect(this->surfs[sfNum].getBounds())) {
@@ -2168,7 +2211,7 @@ void rBspTree_c::boxAreas_r(const aabb &bb, arraySTD_c<u32> &out, int nodeNum) c
 		}
 	}
 	int leafNum = -nodeNum - 1;
-	const q3Leaf_s &l = leaves[leafNum];
+	const mohLeaf_s &l = leaves[leafNum];
 	if(l.area >= 0) {
 		out.add_unique(l.area);
 	}
@@ -2316,7 +2359,7 @@ void rBspTree_c::updateVisibility() {
 		}
 		return;
 	}
-	q3Leaf_s *l = leaves.getArray();
+	mohLeaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
 	int c_leavesCulledByAreaBits = 0;
 	if(rf_bsp_forceEverythingVisible.getInt() || (this->leafSurfaces.size()==0)) {
@@ -2770,7 +2813,7 @@ bool rBspTree_c::traceSurfaceRay(u32 surfNum, class trace_c &out) {
 void rBspTree_c::traceNodeRay_r(int nodeNum, class trace_c &out) {
 	if(nodeNum < 0) {
 		// that's a leaf
-		const q3Leaf_s &l = leaves[(-nodeNum-1)];
+		const mohLeaf_s &l = leaves[(-nodeNum-1)];
 		for(u32 i = 0; i < l.numLeafSurfaces; i++) {
 			u32 surfNum = this->leafSurfaces[l.firstLeafSurface + i];
 			traceSurfaceRay(surfNum,out);
@@ -2867,7 +2910,7 @@ bool rBspTree_c::createInlineModelDecal(u32 inlineModelNum, class simpleDecalBat
 void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 #if 1
 	int lightCluster = pointInCluster(l->getOrigin());
-	q3Leaf_s *leaf = leaves.getArray();
+	mohLeaf_s *leaf = leaves.getArray();
 	arraySTD_c<u32> sfNums;
 	for(u32 i = 0; i < leaves.size(); i++, leaf++) {
 		if(isClusterVisible(leaf->cluster,lightCluster) == false) {
