@@ -64,6 +64,7 @@ static aCvar_c rfe_drawGeneral("rfe_drawGeneral","1");
 static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","0");
 // TIKI debugging
 static aCvar_c rf_tiki_verboseSetTIKIModelAnimLocalIndex("rf_tiki_verboseSetTIKIModelAnimLocalIndex","0");
+static aCvar_c rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag("rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag","0");
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -108,6 +109,7 @@ rEntityImpl_c::rEntityImpl_c() {
 	finalBones = 0;
 	networkingEntityNumber = -1;
 	bHasGlobalColor = false;
+	bDontUpdateAnimation = false;
 	scale.set(1,1,1);
 	kfFrameNum = -1;
 }
@@ -674,6 +676,13 @@ void rEntityImpl_c::updateAnimatedEntity() {
 	if(lastAnimatedEntityUpdateFrame == rf_draw3DViewCount)
 		return;
 	lastAnimatedEntityUpdateFrame = rf_draw3DViewCount;
+	if(bDontUpdateAnimation) {
+		if(rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag.getInt()) {
+			g_core->Print("[%i] Skipping %s at %f %f %f\n",
+				rf_draw3DViewCount,getModelName(),origin.getX(),origin.getY(),origin.getZ());
+		}
+		return;
+	}
 
 	absSilChangeCount++;
 	// we have an instance of dynamic model.

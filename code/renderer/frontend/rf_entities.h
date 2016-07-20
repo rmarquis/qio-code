@@ -73,6 +73,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	class boneOrQPArray_t *ragOrs;
 	// V :used to avoid rebuilding ragdoll surfaces when no bones has moved
 	bool bRagdollOrientationDirty;
+	// if true, animation wont be automatically updated
+	bool bDontUpdateAnimation;
+
 	class boneOrArray_c *finalBones;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
 	// for each ragdoll body - a list of connected bone
@@ -154,6 +157,9 @@ public:
 	virtual int addDecalWorldSpace(const class vec3_c &pos, 
 		const class vec3_c &normal, float radius, class mtrAPI_i *material);
 
+	virtual void setBDontUpdateAnimation(bool b) {
+		bDontUpdateAnimation = b;
+	}
 	bool isFirstPersonOnly() const {
 		return bFirstPersonOnly;
 	}
@@ -219,7 +225,7 @@ public:
 	// update .md3/.mdc attachments at the bones
 	// in RTCW/ET player head is md3 and body is mds
 	void updateInstanceAttachments();
-	void updateAnimatedEntity();
+	virtual void updateAnimatedEntity();
 	void addDrawCalls();
 
 	virtual bool rayTraceLocal(class trace_c &tr) const;

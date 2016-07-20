@@ -372,7 +372,7 @@ public:
 			return;
 		skelModel = g_modelLoader->loadSkelModelFile(skelModelName);
 		if(skelModel) {
-			//skelModel->scale
+			skelModel->scaleXYZ(scale);
 		}
 	}
 	virtual void addRemap(const char *surf, const char *mat) {
@@ -415,7 +415,7 @@ public:
 	}	
 	virtual void scaleAnimation(float s) {
 		if(skelAnim) {
-			//skelAnim->scale(s);
+			skelAnim->scaleAnimation(s);
 		}
 	}
 

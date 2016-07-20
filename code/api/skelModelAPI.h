@@ -75,6 +75,7 @@ public:
 	virtual const class boneDefArray_c *getBoneDefs() const = 0;
 	virtual bool hasCustomScaling() const = 0;
 	virtual const vec3_c& getScaleXYZ() const = 0;
+	virtual void scaleXYZ(float scale) = 0;
 	virtual int getLocalBoneIndexForBoneName(const char *nameStr) const = 0;
 	virtual const char *getBoneName(u32 boneIndex) const = 0;
 	virtual u32 getBoneNameIndex(u32 boneIndex) const = 0;

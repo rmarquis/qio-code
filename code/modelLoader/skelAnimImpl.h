@@ -131,7 +131,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
-
+	virtual void scaleAnimation(float s);
 	void addFrameRelative(const class boneOrArray_c &ors);
 public:
 	skelAnimGeneric_c();

@@ -52,6 +52,7 @@ public:
 	virtual void setNetworkingEntityNumber(int newNetEntNum) = 0;
 	virtual void setEntityType(int newEntityType) = 0;
 	virtual void setColor(const float *rgba) = 0;
+	virtual void setBDontUpdateAnimation(bool b) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const char *getModelName() const = 0;
@@ -87,6 +88,8 @@ public:
 	// this will automatically transform ray from world to this entity
 	// coordinates and call "rayTraceLocal"
 	virtual bool rayTraceWorld(class trace_c &tr) const = 0;
+
+	virtual void updateAnimatedEntity() = 0;
 
 	/// for skeletal models
 	// NOTE: this will force bones recalculation if skeleton is not up to date!

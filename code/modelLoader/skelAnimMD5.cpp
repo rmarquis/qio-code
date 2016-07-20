@@ -259,6 +259,9 @@ void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out,
 void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
 	buildFrameBonesLocal(frameNum,out);
 	out.localBonesToAbsBones(&this->bones);
+}	
+void skelAnimMD5_c::scaleAnimation(float s) {
+
 }
 void skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
 	if(lerp.to >= this->frames.size()) {

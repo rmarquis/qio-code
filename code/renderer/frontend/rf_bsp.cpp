@@ -32,6 +32,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/materialSystemAPI.h>
 #include <api/rbAPI.h>
 #include <api/textureAPI.h>
+#include <api/rEntityAPI.h>
 #include <fileformats/bspFileFormat.h>
 #include <fileformats/bspFileFormat_q2.h>
 #include <shared/shared.h>
@@ -1607,6 +1608,28 @@ bool rBspTree_c::loadQioAreaPortals(u32 lumpNum) {
 	}
 	return false; // no error
 }
+bool rBspTree_c::loadStaticModels() {
+	const lump_s &sml = h->getLumps()[MOH_STATICMODELDEF];
+	if(sml.fileLen % sizeof(mohStaticModel_s)) {
+		g_core->RedWarning("rBspTree_c::loadStaticModels: invalid planes lump size\n");
+		return true; // error
+	}
+	u32 numStaticModels = sml.fileLen / sizeof(mohStaticModel_s);
+	g_core->Print("%i static models\n",numStaticModels);
+	const mohStaticModel_s *ms = h->getStaticModels();
+	for(u32 i = 0; i < numStaticModels; i++) {
+		const mohStaticModel_s &s = ms[i];
+		g_core->Print("Static model %i - %s\n",i,s.model);
+		rEntityAPI_i *re = RFE_AllocEntity();
+		re->setOrigin(s.origin);
+		re->setAngles(s.angles);
+		re->setScale(vec3_c(s.scale,s.scale,s.scale));
+		re->setModel(RF_RegisterModel(str("models/")+s.model));
+		re->updateAnimatedEntity();
+		re->setBDontUpdateAnimation(true);
+	}
+	return false; // error
+}
 bool rBspTree_c::loadQioPoints(u32 lumpNum) {
 	const lump_s &vl = h->getLumps()[lumpNum];
 	if(vl.fileLen == 0) {
@@ -1817,6 +1840,12 @@ bool rBspTree_c::load(const char *fname) {
 		if(loadVisibility(MOH_VISIBILITY)) {
 			g_vfs->FS_FreeFile(fileData);
 			return true; // error
+		}
+		if(h->ident != BSP_IDENT_FAKK) {
+			if(loadStaticModels()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
 		}
 	} else if(h->ident == BSP_VERSION_HL || h->ident == BSP_VERSION_QUAKE1) {
 		// Half Life and Counter Strike 1.6 bsps (de_dust2, etc)
