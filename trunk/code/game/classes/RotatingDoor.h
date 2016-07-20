@@ -29,6 +29,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class RotatingDoor : public ModelEntity {
 	class physConstraintAPI_i *hinge;
+	float closedYaw;
+	bool bClosed;
 public:
 	RotatingDoor();
 	~RotatingDoor();
@@ -36,6 +38,8 @@ public:
 	DECLARE_CLASS( RotatingDoor );
 
 	virtual void postSpawn();
+
+	virtual void runFrame();
 
 	virtual void setKeyValue(const char *key, const char *value);
 };

@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/coreAPI.h>
 #include <protocol/userCmd.h>
 #include <shared/skelUtils.h>
+#include <math/math.h>
 #include "../g_pathNodes.h"
 #include "../g_local.h"
 
@@ -134,15 +135,6 @@ FakePlayer::~FakePlayer() {
 	if(nav)
 		delete nav;
 }
-float G_GetSign(float in) {
-	if(in < 0.f)
-		return -1.f;
-	return 1.f;
-}	
-float AngleNormalize360 ( float angle ) {
-	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
-}
-
 void FakePlayer::runFrame() {
 	//printDamageZones();
 	const float botYawRotationSpeed = 10.f;
