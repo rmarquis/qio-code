@@ -305,6 +305,28 @@ struct cod1Leaf_s {
 }; // sizeof(cod1Leaf_s) == 36
 
 
+struct mohLeaf_s {
+	int			cluster;			// -1 = opaque cluster (do I still store these?)
+	int			area;
+
+	int			mins[3];			// for frustum culling
+	int			maxs[3];
+
+	int			firstLeafSurface;
+	int			numLeafSurfaces;
+
+	int			firstLeafBrush;
+	int			numLeafBrushes;
+
+	//added for mohaa
+	int			firstTerraPatch;
+	int			numTerraPatches;
+
+	int			firstStaticModel;
+	int			numStaticModels;
+};
+
+
 struct q3BrushSide_s {
 	int			planeNum;			// positive plane side faces out of the leaf
 	int			materialNum;
@@ -742,6 +764,11 @@ struct q3Header_s {
 			return true;
 		// quake1 bsps are similiar to HL ones
 		if(ident == BSP_VERSION_QUAKE1)
+			return true;
+		return false;
+	}
+	bool isBSPMOH() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA)
 			return true;
 		return false;
 	}
