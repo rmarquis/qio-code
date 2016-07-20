@@ -272,6 +272,7 @@ class rBspTree_c {
 	void addPortalToArea(u32 areaNum, u32 portalNum);
 	bool loadQioAreaPortals(u32 lumpNum);
 	bool loadQioPoints(u32 lumpNum);
+	bool loadStaticModels();
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);

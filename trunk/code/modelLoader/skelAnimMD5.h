@@ -68,6 +68,11 @@ struct md5BoneVal_s {
 		this->quat[2] = -this->quat[2];
 		//this->w = this->w;
 	}
+	void scalePos(float f) {
+		pos[0] *= f;
+		pos[1] *= f;
+		pos[2] *= f;
+	}
 };
 struct md5AnimBone_s {
 	short firstComponent;
@@ -183,6 +188,7 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
+	virtual void scaleAnimation(float s);
 public:
 	skelAnimMD5_c();
 	virtual ~skelAnimMD5_c();

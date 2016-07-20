@@ -388,6 +388,15 @@ struct cod1Surface_s {
 	u32			firstIndex;
 };
 
+struct mohStaticModel_s {
+	char model[128];
+	vec3_t origin;
+	vec3_t angles;
+	float scale;
+	int firstVertexData;
+	short numVertexData;
+};
+
 struct visHeader_s {
 	int numClusters;
 	int clusterSize; // in bytes
@@ -696,6 +705,9 @@ struct q3Header_s {
 		if(this->isBSPSource() == false)
 			return 0;
 		return ((const srcHeader_s*)this);
+	}
+	const mohStaticModel_s *getStaticModels() const {
+		return (const mohStaticModel_s*)getLumpData(MOH_STATICMODELDEF);
 	}
 	const byte *getLumpData(u32 lumpNum) const {
 		if(this->isBSPSource()) {

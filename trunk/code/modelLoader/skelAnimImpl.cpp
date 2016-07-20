@@ -674,7 +674,15 @@ void skelFrame_c::setOrs(const class boneOrArray_c &ors) {
 		v.setQuat(m.getQuat());
 		v.setVec3(m.getOrigin());
 	}
-}	
+}		
+void skelAnimGeneric_c::scaleAnimation(float s) {
+	for(u32 i = 0; i < frames.size(); i++) {
+		skelFrame_c &f = frames[i];
+		for(u32 j = 0; j < f.bones.size(); j++) {
+			f.bones[j].scalePos(s);
+		}
+	}
+}
 void skelAnimGeneric_c::addFrameRelative(const class boneOrArray_c &ors) {
 	skelFrame_c f;
 	f.setOrs(ors);
