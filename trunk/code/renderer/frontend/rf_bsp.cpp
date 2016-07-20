@@ -1652,6 +1652,7 @@ bool rBspTree_c::loadStaticModels() {
 	u32 numStaticModels = sml.fileLen / sizeof(mohStaticModel_s);
 	g_core->Print("%i static models\n",numStaticModels);
 	const mohStaticModel_s *ms = h->getStaticModels();
+	staticModelEntities.resize(numStaticModels);
 	for(u32 i = 0; i < numStaticModels; i++) {
 		const mohStaticModel_s &s = ms[i];
 		g_core->Print("Static model %i - %s\n",i,s.model);
@@ -1662,6 +1663,7 @@ bool rBspTree_c::loadStaticModels() {
 		re->setModel(RF_RegisterModel(str("models/")+s.model));
 		re->updateAnimatedEntity();
 		re->setBDontUpdateAnimation(true);
+		staticModelEntities[i] = re;
 	}
 	return false; // error
 }
@@ -2357,7 +2359,13 @@ void rBspTree_c::updateVisibility() {
 		for(u32 i = 0; i < surfs.size(); i++) {
 			this->surfs[i].lastVisCount = this->visCounter;
 		}
+		for(u32 i = 0; i < staticModelEntities.size(); i++) {
+			staticModelEntities[i]->showModel();
+		}
 		return;
+	}
+	for(u32 i = 0; i < staticModelEntities.size(); i++) {
+		staticModelEntities[i]->hideModel();
 	}
 	mohLeaf_s *l = leaves.getArray();
 	int c_leavesCulledByPVS = 0;
@@ -2387,6 +2395,14 @@ void rBspTree_c::updateVisibility() {
 					g_core->RedWarning("rBspTree_c::updateVisibility: Surface index %i out of range <0,%i)\n",sfNum,this->surfs.size());
 				} else {
 					this->surfs[sfNum].lastVisCount = this->visCounter;
+				}
+			}
+			for(u32 j = 0; j < l->numStaticModels; j++) {
+				u32 smNum = this->leafStaticModels[l->firstStaticModel + j];
+				if(smNum >= this->staticModelEntities.size()) {
+					g_core->RedWarning("rBspTree_c::updateVisibility: StaticModel index %i out of range <0,%i)\n",smNum,this->staticModelEntities.size());
+				} else {
+					this->staticModelEntities[smNum]->showModel();
 				}
 			}
 		}

@@ -53,6 +53,9 @@ public:
 	virtual void setEntityType(int newEntityType) = 0;
 	virtual void setColor(const float *rgba) = 0;
 	virtual void setBDontUpdateAnimation(bool b) = 0;
+	//// All rEntities are by default enabled.
+	//// Disabled rEntity is not drawn and not updated.
+	//virtual void setEnabled(bool bEnabled) = 0;
 
 	virtual class rModelAPI_i *getModel() const = 0;
 	virtual const char *getModelName() const = 0;

@@ -212,6 +212,7 @@ class rBspTree_c {
 	// MoHAA
 	arraySTD_c<u16> leafTerrainPatches;
 	arraySTD_c<u16> leafStaticModels;
+	arraySTD_c<class rEntityAPI_i*> staticModelEntities;
 	// Qio bsp data
 	arraySTD_c<vec3_c> points;
 	// areaPortals data loaded directly from Qio BSP (LUMP_AREAPORTALS)
@@ -219,7 +220,7 @@ class rBspTree_c {
 	// view frustums stored for each traversed portal
 	arraySTD_c<bspPortalData_c> areaPortalFrustums;
 	arraySTD_c<bspArea_c> areas;
-	// static props (models)
+	// Source Engine: static props (models)
 	arraySTD_c<bspStaticProp_c> staticProps;
 
 	u32 numWorldSurfs; // models[0].numSurfs
