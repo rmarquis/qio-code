@@ -109,11 +109,17 @@ bool textureAnimation_c::loadAnimMapImagesFromDirectory(const char *dir) {
 	}
 	return false;
 }
-bool textureAnimation_c::parseAnimMap(parser_c &p) {
+bool textureAnimation_c::parseAnimMap(parser_c &p, bool bAnimMapPhase) {
 	frequency = p.getFloat();
 	if(frequency == 0) {
 		g_core->RedWarning("textureAnimation_c::parseAnimMap: frequency is %s (see line %i of file %s)\n",p.getLastStoredToken(),p.getCurrentLineNumber(),p.getDebugFileName());
 		return true; // error
+	}
+	// MoHAA animMapPhase
+	if(bAnimMapPhase) {
+		phase = p.getFloat();
+	} else {
+		phase = 0.f;
 	}
 	while(p.getNextWordInLine()) {
 		const char *imgName = p.getLastStoredToken();
@@ -136,6 +142,7 @@ textureAPI_i *textureAnimation_c::getTexture(u32 idx) {
 textureAPI_i *textureAnimation_c::getTextureForTime(float time) {
 	if(textures.size() == 0)
 		return MAT_GetDefaultTexture();; // avoid integer division by 0
+	time += phase; // not sure if that's right
 	int idx = int(time * frequency * 1024);
 	idx >>= 10;
 	if(idx<0)
@@ -200,11 +207,11 @@ bool stageTexture_c::parseMap(parser_c &p) {
 #endif
 	return false; // no error
 }
-bool stageTexture_c::parseAnimMap(parser_c &p) {
+bool stageTexture_c::parseAnimMap(parser_c &p, bool bAnimMapPhase) {
 	if(animated == 0) {
 		animated = new textureAnimation_c;
 	}
-	return animated->parseAnimMap(p);	
+	return animated->parseAnimMap(p,bAnimMapPhase);	
 }
 bool stageTexture_c::parseAnimMapDir(parser_c &p) {
 	if(animated == 0) {
