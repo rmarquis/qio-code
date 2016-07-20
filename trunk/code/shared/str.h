@@ -646,6 +646,11 @@ public:
 			out.push_back(getToken(&p));
 		}
 	}
+	str operator+(const char *s) const {
+		str r = *this;
+		r.append(s);
+		return r;
+	}
 	void operator = (const str &other) {
 		this->len = other.len;
 		ensureAllocated(this->len+1);
