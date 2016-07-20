@@ -393,6 +393,20 @@ void Cmd_CacheDeclModel_f() {
 
 }
 
+void Cmd_TestModel_f() {
+	if (Cmd_Argc() != 2){
+		Com_Printf ("Not enough arguments\n");
+		return;
+	}
+	str modelName = Cmd_Argv(1);
+	if(g_vfs && g_vfs->FS_FileExists(str("models/")+modelName)) {
+		modelName = str("models/")+modelName;
+		g_core->Print("Fixed path to %s\n",modelName.c_str());
+	}
+	Cvar_Set("cg_testModel",modelName);
+}
+
+
 /*
 ================
 Con_Init
@@ -478,6 +492,10 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "rf_setSkyMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshSingleMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshMaterialSourceFile", Cmd_CompleteMaterialFileName );
+
+	// test model
+	Cmd_AddCommand ("testModelTIKI", Cmd_TestModel_f);
+	Cmd_SetCommandCompletionFunc( "testModelTIKI", Cmd_CompleteTIKName );
 
 	Com_Printf("Console initialized.\n");
 }

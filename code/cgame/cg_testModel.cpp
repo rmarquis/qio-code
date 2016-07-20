@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/autoCvar.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
+#include <api/coreAPI.h>
 #include <renderer/rModelAPI.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -41,6 +42,7 @@ static aCvar_c cg_testModelAttached_extraX("cg_testModelAttached_extraX","0");
 static aCvar_c cg_testModelAttached_extraY("cg_testModelAttached_extraY","0");
 static aCvar_c cg_testModelAttached_extraZ("cg_testModelAttached_extraZ","0");
 static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","1");
+static aCvar_c cg_testModel_printNumTris("cg_testModel_printNumTris","0");
 
 static rEntityAPI_i *cg_testModelEntity = 0;
 
@@ -86,6 +88,9 @@ void CG_RunTestModel() {
 		usePos += cg.refdefViewAxis.getUp() * cg_testModelAttached_extraZ.getFloat();
 		cg_testModelEntity->setOrigin(usePos);
 		cg_testModelEntity->setAngles(cg.refdefViewAngles);
+	}
+	if(cg_testModel_printNumTris.getInt()) {
+		g_core->Print("Testmodel has %i triangles\n",cg_testModelEntity->getEntityTriangleCount());
 	}
 	//cg_testModelEntity->hideSurface(2);
 	//cg_testModelEntity->hideSurface(3);

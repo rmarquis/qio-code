@@ -105,7 +105,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	// this is called when a model skin, or a model itself is changed
 	void updateModelSkin();
 	
-	u32 getEntityTriangleCount() const;
+	virtual u32 getEntityTriangleCount() const;
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();

@@ -372,6 +372,8 @@ public:
 			return true;
 		if(!_stricmp(ext,"psa"))
 			return true;
+		if(!_stricmp(ext,"skc"))
+			return true;
 		return false;
 	}
 	virtual class skelAnimAPI_i *loadSkelAnimFile(const char *fname) {
@@ -380,7 +382,7 @@ public:
 			return 0;
 		}
 		ext++; // skip '.'
-		skelAnimAPI_i *ret;
+		skelAnimAPI_i *ret = 0;
 		if(!_stricmp(ext,"md5anim")) {
 			skelAnimMD5_c *md5Anim = new skelAnimMD5_c;
 			if(md5Anim->loadMD5Anim(fname)) {
@@ -423,6 +425,13 @@ public:
 				return 0;
 			}
 			ret = pskAnim;
+		} else if(!_stricmp(ext,"skc")) {
+			//skelAnimChannels_c *skcAnim = new skelAnimChannels_c;
+			//if(skcAnim->loadSKCAnim(fname)) {
+			//	delete skcAnim;
+			//	return 0;
+			//}
+			//ret = skcAnim;
 		} else {
 			return 0;
 		}
