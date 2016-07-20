@@ -57,6 +57,9 @@ static void CG_DrawFPS( float y ) {
 	previousTimes[index % FPS_FRAMES] = frameTime;
 	index++;
 	fontAPI_i *f = rf->registerFont("Arial");
+	if(f == 0) {
+		return;
+	}	
 	if ( index > FPS_FRAMES ) {
 		// average multiple frames together to smooth changes out a bit
 		total = 0;
@@ -174,6 +177,8 @@ static void CG_DrawDisconnect( void ) {
 		return;
 	}
 	fontAPI_i *f = rf->registerFont("Arial");
+	if(f == 0)
+		return;
 
 	// also add text in center of screen
 	s = "Connection Interrupted";
@@ -327,9 +332,11 @@ static void CG_Draw2D()
 
 	if(cg.snap) {
 		fontAPI_i *f = rf->registerFont("Arial");
-		const char *s = va("%i/%i", cg.snap->ps.viewWeaponCurClipSize, cg.snap->ps.viewWeaponMaxClipSize);
-		float w = f->getStringWidth(s) + 64;
-		f->drawString(rf->getWinWidth() - w, rf->getWinHeight()-60, s);
+		if(f) {
+			const char *s = va("%i/%i", cg.snap->ps.viewWeaponCurClipSize, cg.snap->ps.viewWeaponMaxClipSize);
+			float w = f->getStringWidth(s) + 64;
+			f->drawString(rf->getWinWidth() - w, rf->getWinHeight()-60, s);
+		}
 	}
 }
 

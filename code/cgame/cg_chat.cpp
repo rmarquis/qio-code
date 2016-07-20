@@ -60,6 +60,9 @@ public:
 		float color[4] = { 0, 0, 0, 1.f };
 		int index = lines.size() - numLines;
 		fontAPI_i *f = rf->registerFont("Arial");
+		if(f == 0) {
+			return;
+		}
 		if(index < 0)
 			index = 0;
 		for(u32 i = 0; i < numLines; i++) {
