@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "RotatingDoor.h"
 #include <api/serverAPI.h>
 #include <api/physAPI.h>
+#include <math/math.h>
 
 DEFINE_CLASS(RotatingDoor, "ModelEntity");
 // RTCW rotating door
@@ -50,9 +51,27 @@ void RotatingDoor::setKeyValue(const char *key, const char *value) {
 		ModelEntity::setKeyValue(key,value);
 	}
 }
+void RotatingDoor::runFrame() {
+	// Check how wide the doors are open.
+	// This is needed because doors angle is controlled by physics simulation,
+	// so our doors can interact with rigid bodies
+	float minAngle = 5.f;
+	bool bNowClosed = abs(AngleNormalize360(closedYaw)-AngleNormalize360(getAngles()[YAW])) < minAngle;
+	if(bNowClosed != bClosed) {
+		if(bNowClosed) {
+			closeAreaPortalIfPossible();
+		} else {
+			openAreaPortalIfPossible();
+		}
+		bClosed = bNowClosed;
+	}
+	ModelEntity::runFrame();
+}
 void RotatingDoor::postSpawn() {
 	ModelEntity::postSpawn();
 
+	bClosed = true;
+	closedYaw = getAngles()[YAW];
 
 	vec3_c axis(0,0,1);
 	hinge = g_physWorld->createConstraintHinge(this->getOrigin(),axis,this->getRigidBody(),0);

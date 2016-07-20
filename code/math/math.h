@@ -182,4 +182,13 @@ inline void G_GetInterpolated_quadraticn(int rows, float *out, const float *v1, 
 	}
 }
 
+inline float G_GetSign(float in) {
+	if(in < 0.f)
+		return -1.f;
+	return 1.f;
+}	
+inline float AngleNormalize360 ( float angle ) {
+	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
+}
+
 #endif // __MATH_MATH_H__
