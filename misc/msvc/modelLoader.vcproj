@@ -346,6 +346,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\modelLoader\skelAnimMD5.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\modelLoader\skelAnimMD5.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\modelLoader\skelModelImpl.cpp"
 				>
 			</File>
