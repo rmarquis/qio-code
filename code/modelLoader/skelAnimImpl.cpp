@@ -638,6 +638,13 @@ skelAnimAPI_i *skelAnimGeneric_c::createSubAnim(u32 firstFrame, u32 numFrames) c
 	return copy;
 }
 void skelAnimGeneric_c::buildSingleBone(int boneNum, const skelFrame_c &f, vec3_c &pos, quat_c &quat) const {
+	if(boneNum < 0 || boneNum >= f.bones.size()) {
+		pos.clear();
+		quat.identity();
+		g_core->RedWarning("skelAnimGeneric_c::buildSingleBone: bone index %i out of range <0,%i) for %s\n",
+			boneNum,bones.size(),getName());
+		return;
+	}
 	pos = f.bones[boneNum].pos;
 	quat = f.bones[boneNum].quat;
 	//if(bones[boneNum].parentIndex != -1)
