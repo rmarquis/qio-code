@@ -39,6 +39,7 @@ friend class skc_c;
 class skc_c {
 	arraySTD_c<skcFrame_c> frames;
 	arraySTD_c<str> channelNames;
+	float frameTime;
 public:
 	bool loadSKC(const char *fname);
 
@@ -64,6 +65,19 @@ public:
 	void setFrameChannel(u32 f, u32 c, const float *xyzw) {
 		frames[f].values[c].set(xyzw);
 	}	
-
-	
+	float getFrameTime() const {
+		return frameTime;
+	}
+	u32 getNumFrames() const {
+		return frames.size();
+	}
+	u32 getNumChannels() const {
+		return channelNames.size();
+	}
+	const char *getChannelName(u32 i) const {
+		return channelNames[i];
+	}
+	const float *getFrameChannel(u32 f, u32 c) const {
+		return frames[f].values[c].data;
+	}
 };

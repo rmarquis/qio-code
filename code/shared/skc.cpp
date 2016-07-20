@@ -61,6 +61,7 @@ bool skc_c::loadSKC(const char *fname) {
 		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
+	this->frameTime = h->frameTime;
 	channelNames.resize(h->numChannels);
 	for(u32 i = 0; i < channelNames.size(); i++) {
 		channelNames[i] = h->pChannel(i);

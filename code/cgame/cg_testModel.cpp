@@ -41,7 +41,7 @@ static aCvar_c cg_testModelAttached_extraRoll("cg_testModelAttached_extraRoll","
 static aCvar_c cg_testModelAttached_extraX("cg_testModelAttached_extraX","0");
 static aCvar_c cg_testModelAttached_extraY("cg_testModelAttached_extraY","0");
 static aCvar_c cg_testModelAttached_extraZ("cg_testModelAttached_extraZ","0");
-static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","1");
+static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","0");
 static aCvar_c cg_testModel_printNumTris("cg_testModel_printNumTris","0");
 
 static rEntityAPI_i *cg_testModelEntity = 0;

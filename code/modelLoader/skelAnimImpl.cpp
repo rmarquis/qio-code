@@ -554,6 +554,74 @@ bool skelAnimGeneric_c::loadSKAAnim(const char *fname) {
 	this->frameRate = 1.f / this->frameTime;
 	return false;
 }
+int skelAnimGeneric_c::registerBone(const char *boneName) {
+	int r = getLocalBoneIndexForBoneName(boneName);
+	if(r != -1)
+		return r;
+	boneDef_s nb;
+	nb.parentIndex = -1;
+	nb.nameIndex = SK_RegisterString(boneName);
+	r = bones.size();
+	bones.push_back(nb);
+	return r;
+}
+//
+//	MoHAA .skc files loading
+//
+bool skelAnimGeneric_c::loadSKCAnim(const char *fname) {
+	skc_c skc;
+	if(skc.loadSKC(fname)) {
+		return true;
+	}
+
+	for(u32 i = 0; i < skc.getNumChannels(); i++) {
+		str channelName = skc.getChannelName(i);
+		if(channelName.endsWith(" rot")) {
+			str boneName = channelName;
+			boneName.capLen(boneName.length()-4);
+			registerBone(boneName);
+		} else if(channelName.endsWith(" pos")) {
+			str boneName = channelName;
+			boneName.capLen(boneName.length()-4);
+			registerBone(boneName);
+		}
+	}
+	frames.resize(skc.getNumFrames());
+	for(u32 f = 0; f < frames.size(); f++) {
+		frames[f].bones.resize(bones.size());
+	}
+	for(u32 i = 0; i < skc.getNumChannels(); i++) {
+		str channelName = skc.getChannelName(i);
+		if(channelName.endsWith(" rot")) {
+			str boneName = channelName;
+			boneName.capLen(boneName.length()-4);
+			int boneIndex = registerBone(boneName);
+			for(u32 f = 0; f < frames.size(); f++) {
+				skelFrame_c &sf = frames[f];
+				const float *val = skc.getFrameChannel(f,i);
+				sf.bones[boneIndex].setQuat(val);
+				sf.bones[boneIndex].conjugateQuat();
+			}
+		} else if(channelName.endsWith(" pos")) {
+			str boneName = channelName;
+			boneName.capLen(boneName.length()-4);
+			int boneIndex = registerBone(boneName);
+			for(u32 f = 0; f < frames.size(); f++) {
+				skelFrame_c &sf = frames[f];
+				const float *val = skc.getFrameChannel(f,i);
+				sf.bones[boneIndex].setVec3(val);
+			}
+		}
+	}
+
+
+	bones.clear();
+
+	this->frameTime = skc.getFrameTime();
+	this->totalTime = this->frameTime * this->frames.size();
+	this->frameRate = 1.f / this->frameTime;
+	return false;
+}
 skelAnimAPI_i *skelAnimGeneric_c::createSubAnim(u32 firstFrame, u32 numFrames) const {
 	skelAnimGeneric_c *copy = new skelAnimGeneric_c();
 	u32 lastFrame = firstFrame + numFrames;

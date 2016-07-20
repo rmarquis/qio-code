@@ -62,6 +62,12 @@ struct md5BoneVal_s {
 		pos[2] = z;
 		pos[3] = 0;
 	}
+	void conjugateQuat() {
+		this->quat[0] = -this->quat[0];
+		this->quat[1] = -this->quat[1];
+		this->quat[2] = -this->quat[2];
+		//this->w = this->w;
+	}
 };
 struct md5AnimBone_s {
 	short firstComponent;

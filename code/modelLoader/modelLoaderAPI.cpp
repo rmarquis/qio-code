@@ -426,12 +426,21 @@ public:
 			}
 			ret = pskAnim;
 		} else if(!_stricmp(ext,"skc")) {
+#if 0
 			//skelAnimChannels_c *skcAnim = new skelAnimChannels_c;
 			//if(skcAnim->loadSKCAnim(fname)) {
 			//	delete skcAnim;
 			//	return 0;
 			//}
 			//ret = skcAnim;
+#else
+			skelAnimGeneric_c *skcAnim = new skelAnimGeneric_c;
+			if(skcAnim->loadSKCAnim(fname)) {
+				delete skcAnim;
+				return 0;
+			}
+			ret = skcAnim;
+#endif
 		} else {
 			return 0;
 		}

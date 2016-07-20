@@ -126,6 +126,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 			}
 		}
 	}
+	int registerBone(const char *boneName);
 	void buildSingleBone(int boneNum, const skelFrame_c &f, class vec3_c &pos, class quat_c &quat) const;
 	virtual void buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
@@ -140,6 +141,8 @@ public:
 	bool loadSMDAnim(const char *fname);
 	bool loadSKAAnim(const char *fname);
 	bool loadPSKAnim(const char *fname);
+	// not fully supported
+	bool loadSKCAnim(const char *fname);
 
 	bool getSKCData(class skc_c *out) const;
 };
