@@ -332,6 +332,14 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 			if(skelModel->getBaseFrameABS().size() != 0) {
 				instance->updateSkelModelInstance(skelModel,skelModel->getBaseFrameABS());
 			}
+#if 1
+			else {
+				boneOrArray_c nullBones;
+				nullBones.resize(skelModel->getNumBones());
+				nullBones.identity();
+				instance->updateSkelModelInstance(skelModel,nullBones);
+			}
+#endif
 		} else if(newModel->isKeyframed()) {
 			const kfModelAPI_i *kfModel;
 			//if(newModel->isTIKI()) {
