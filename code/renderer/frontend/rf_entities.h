@@ -75,6 +75,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	bool bRagdollOrientationDirty;
 	// if true, animation wont be automatically updated
 	bool bDontUpdateAnimation;
+	//// All rEntities are by default enabled.
+	//// Disabled rEntity is not drawn and not updated.
+	//bool bEnabled;
 
 	class boneOrArray_c *finalBones;
 	arraySTD_c<matrix_c> boneParentBody2Bone;
@@ -160,6 +163,11 @@ public:
 	virtual void setBDontUpdateAnimation(bool b) {
 		bDontUpdateAnimation = b;
 	}
+	//// All rEntities are by default enabled.
+	//// Disabled rEntity is not drawn and not updated.
+	//virtual void setEnabled(bool nbEnabled) {
+	//	this->bEnabled = nbEnabled;
+	//}
 	bool isFirstPersonOnly() const {
 		return bFirstPersonOnly;
 	}
