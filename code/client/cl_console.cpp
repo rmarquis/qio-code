@@ -497,6 +497,9 @@ void Con_Init (void) {
 	Cmd_AddCommand ("testModelTIKI", Cmd_TestModel_f);
 	Cmd_SetCommandCompletionFunc( "testModelTIKI", Cmd_CompleteTIKName );
 
+	Cmd_AddCommand ("testModelMD5Mesh", Cmd_TestModel_f);
+	Cmd_SetCommandCompletionFunc( "testModelMD5Mesh", Cmd_CompleteMD5MeshName );
+
 	Com_Printf("Console initialized.\n");
 }
 

@@ -196,7 +196,7 @@ public:
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	bool createDecalInternal(class decalProjector_c &proj);
 	// skeletal models instancing
-	void initSkelSurfInstance(const class skelSurfaceAPI_i *skelSF);
+	void initSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class skelModelAPI_i *skelModel);
 	void updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, const class boneOrArray_c &bones);
 	// keyframed models instancing
 	void initKeyframedSurfaceInstance(const class kfSurfAPI_i *sfApi);

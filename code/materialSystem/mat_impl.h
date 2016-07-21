@@ -434,6 +434,7 @@ class mtrIMPL_c : public mtrAPI_i {
 	// Qio-specific, 
 	// it should be also possible to set it globally for sun from Worldspawn?
 	class astAPI_i *minShadow;
+	bool bValid;
 
 	void addDeformSprite();
 
@@ -712,6 +713,10 @@ public:
 	}
 	bool isVMTMaterial() const {
 		return name.hasExt("vmt");
+	}
+	// invalid materials have default texture, they are used when material def and image are not found
+	virtual bool isValidMaterial() const {
+		return bValid;
 	}
 
 	void createFromImage();

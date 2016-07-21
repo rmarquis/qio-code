@@ -98,6 +98,7 @@ public:
 	// freeUnusedMaterials will free all materials that are not marked as "in use" 
 	// and are not used inside renderer.
 	virtual void markAsUsed() = 0;
+	virtual bool isValidMaterial() const = 0;
 
 	virtual float getPolygonOffset() const = 0;
 	// for editor
