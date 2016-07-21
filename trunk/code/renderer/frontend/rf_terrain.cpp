@@ -25,6 +25,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_surface.h"
 #include "rf_local.h"
 #include "rf_drawCall.h"
+#include "rf_terrain.h"
 #include <shared/array.h>
 #include <shared/perlinNoise.h>
 #include <shared/texCoordCalc.h>
@@ -248,58 +249,6 @@ bool heightmapInstance_c::initInstance(const heightmap_c &h, bool bGenTexCoords,
 }
 
 
-class lodTerrainPatch_c {
-friend class lodTerrain_c;
-	aabb bounds;
-	vec3_c center;
-	lodTerrainPatch_c *top, *bottom, *right, *left;
-	int curLOD;
-	int savedLOD, savedLOD_top, savedLOD_bot, savedLOD_right, savedLOD_left;
-	rIndexBuffer_c curIndices;
-	textureAPI_i *blendMap;
-	// this is different only for border patches
-	u32 sizeX, sizeY;
-public:
-	lodTerrainPatch_c() {
-		curLOD = 0;
-		savedLOD = -1;
-		blendMap = 0;
-	}
-};
-class lodTerrain_c {
-	arraySTD_c<lodTerrainPatch_c> patches;
-	rIndexBuffer_c curIndices;
-	rVertexBuffer_c verts;
-	u32 patchSizeEdges;
-	u32 patchSizeVerts;
-	u32 sizeX;
-	u32 sizeY;
-	u32 patchCountX;
-	u32 patchCountY;
-	u32 maxLOD;
-	float lodScale;
-	class mtrAPI_i *mat;
-
-	u32 calcIndex(u32 patchX, u32 patchY, u32 patchIndex, u32 vertexX, u32 vertexY) const;
-	void calcPatchIndices(u32 patchX, u32 patchY);
-public:
-	lodTerrain_c();
-	bool initLODTerrain(const class heightmapInstance_c &h, u32 lodPower, bool bExactSize);
-	void scaleTexCoords(float s);
-	void scaleXYZ(float x, float y, float z);
-
-	void updateLOD(const class vec3_c &cam);
-	void setLODScale(float newScale) {
-		lodScale = newScale;
-	}
-	void addDrawCalls();
-	void setMaterial(mtrAPI_i *mat);
-	void setTexDef(const texCoordCalc_c &tc);
-	bool traceRay(class trace_c &tr);
-	void applyMod(const class terrainMod_c &m);
-	void applyPaint(const vec3_c &p, const byte rgba[4], float innerRadius, float outerRadius);
-	void recalcBounds();
-};
 lodTerrain_c::lodTerrain_c() {
 	lodScale = 1.f;
 	///mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
@@ -374,7 +323,7 @@ void lodTerrain_c::scaleXYZ(float x, float y, float z) {
 	}
 }
 void lodTerrain_c::updateLOD(const vec3_c &cam) {
-	for(u32 i = 0; i < patchCountX*patchCountY; i++) {	
+	for(u32 i = 0; i < patches.size(); i++) {	
 		const vec3_c &p = patches[i].center;
 		float d = p.dist(cam);
 		//if(1) {
@@ -660,33 +609,30 @@ void lodTerrain_c::addDrawCalls() {
 	}
 	rf_currBlendMap = 0;
 }
-class r_terrain_c {
-	//r_surface_c sf;
-	lodTerrain_c lt;
-public:
-	void initTerrain(const heightmapInstance_c &hi, u32 lodPower) {
-		//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
-		lt.initLODTerrain(hi,lodPower,false);
-	}
-	void setTexDef(const texCoordCalc_c &tc) {
-		lt.setTexDef(tc);
-	}
-	void addTerrainDrawCalls() {
-		//sf.addDrawCall();
-		lt.updateLOD(rf_camera.getOrigin());
-		lt.addDrawCalls();
-	}
-	bool traceRay(class trace_c &tr) {
-		return lt.traceRay(tr);
-	}
-	void setMaterial(mtrAPI_i *mat) {
-		lt.setMaterial(mat);
-	}
-	void setMaterial(const char *matName) {
-		mtrAPI_i *mat = g_ms->registerMaterial(matName);
-		setMaterial(mat);
-	}
-};
+
+void r_terrain_c::initTerrain(const heightmapInstance_c &hi, u32 lodPower) {
+	//sf.initTerrain(hi.getW(),hi.getH(),hi.getXYZs(),hi.getTCs(),hi.getNormals());
+	lt.initLODTerrain(hi,lodPower,false);
+}
+void r_terrain_c::setTexDef(const texCoordCalc_c &tc) {
+	lt.setTexDef(tc);
+}
+void r_terrain_c::addTerrainDrawCalls() {
+	//sf.addDrawCall();
+	lt.updateLOD(rf_camera.getOrigin());
+	lt.addDrawCalls();
+}
+bool r_terrain_c::traceRay(class trace_c &tr) {
+	return lt.traceRay(tr);
+}
+void r_terrain_c::setMaterial(mtrAPI_i *mat) {
+	lt.setMaterial(mat);
+}
+void r_terrain_c::setMaterial(const char *matName) {
+	mtrAPI_i *mat = g_ms->registerMaterial(matName);
+	setMaterial(mat);
+}
+
 arraySTD_c<r_terrain_c*> r_terrain;
 
 r_terrain_c *RFT_AllocTerrain() {

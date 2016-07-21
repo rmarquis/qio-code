@@ -280,6 +280,7 @@ class rBspTree_c {
 	bool loadStaticModels();
 	bool loadLeafTerrainPatches();
 	bool loadLeafStaticModels();
+	bool loadTerrainPatches();
 
 	bool traceSurfaceRay(u32 surfNum, class trace_c &out);
 	void traceNodeRay_r(int nodeNum, class trace_c &out);
