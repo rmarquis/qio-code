@@ -139,6 +139,7 @@ void RFT_InitTerrain();
 void RFT_AddTerrainDrawCalls();
 void RFT_ShutdownTerrain();
 bool RFT_RayTraceTerrain(class trace_c &tr);
+class r_terrain_c *RFT_AllocTerrain();
 
 // rf_font.cpp
 void RF_InitFonts();

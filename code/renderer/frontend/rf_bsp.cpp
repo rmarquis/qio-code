@@ -27,6 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "rf_bezier.h"
 #include "rf_drawCall.h"
 #include "rf_model.h"
+#include "rf_terrain.h"
 #include <api/coreAPI.h>
 #include <api/vfsAPI.h>
 #include <api/materialSystemAPI.h>
@@ -1643,10 +1644,51 @@ bool rBspTree_c::loadQioAreaPortals(u32 lumpNum) {
 	}
 	return false; // no error
 }
+bool rBspTree_c::loadTerrainPatches() {
+	const lump_s &tpl = h->getLumps()[MOH_TERRAIN];
+	if(tpl.fileLen % sizeof(mohStaticModel_s)) {
+		g_core->RedWarning("rBspTree_c::loadTerrainPatches: invalid terrain lump size\n");
+		return true; // error
+	}
+	u32 numTerrainPatches = tpl.fileLen / sizeof(mohTerrainPatch_s);
+	g_core->Print("%i terrain patches\n",numTerrainPatches);
+	if(numTerrainPatches == 0)
+		return false;
+	r_terrain_c *ot = RFT_AllocTerrain();
+
+	const mohTerrainPatch_s *tr = h->getTerrainPatches();
+	for(u32 i = 0; i < numTerrainPatches; i++) {
+		const mohTerrainPatch_s &t = tr[i];
+		vec3_c origin(t.x*64.f,t.y*64.f,t.baseZ);
+		float newTexCoords[8];
+		for (int x = 0; x < 8; x += 2)
+			newTexCoords[x] = t.texCoords[x];
+		newTexCoords[1] = ((float)t.lmCoords[0] + 0.5) / 128.f;
+		newTexCoords[3] = ((float)t.lmCoords[1] + 0.5) / 128.f;
+		newTexCoords[5] = ((float)t.lmCoords[0] + 16.5) / 128.f;
+		newTexCoords[7] = ((float)t.lmCoords[1] + 16.5) / 128.f;
+		float distU = newTexCoords[4] - newTexCoords[0];
+		float distV = newTexCoords[2] - newTexCoords[6];
+		for(u32 x = 0; x < 9; x++) {
+			for(u32 y = 0; y < 9; y++) {
+				vec3_c local(x*64,y*64,t.heightmap[y][x] * 2.f);
+				vec3_c abs = origin + local;
+
+				float fx = x / 8.f;
+				float fy = y / 8.f;
+			//	//outVert->setTC(newTexCoords[0] + fx * distU, newTexCoords[6] + fy * distV);
+				//outVert->setLC(newTexCoords[1] + fx * (16.f / 128.f), newTexCoords[3] + fy * (16.f / 128.f));
+
+
+			}
+		}	
+	}
+	return false;
+}
 bool rBspTree_c::loadStaticModels() {
 	const lump_s &sml = h->getLumps()[MOH_STATICMODELDEF];
 	if(sml.fileLen % sizeof(mohStaticModel_s)) {
-		g_core->RedWarning("rBspTree_c::loadStaticModels: invalid planes lump size\n");
+		g_core->RedWarning("rBspTree_c::loadStaticModels: invalid staticModels lump size\n");
 		return true; // error
 	}
 	u32 numStaticModels = sml.fileLen / sizeof(mohStaticModel_s);
@@ -1895,6 +1937,10 @@ bool rBspTree_c::load(const char *fname) {
 				return true; // error
 			}
 			if(loadLeafTerrainPatches()) {
+				g_vfs->FS_FreeFile(fileData);
+				return true; // error
+			}
+			if(loadTerrainPatches()) {
 				g_vfs->FS_FreeFile(fileData);
 				return true; // error
 			}

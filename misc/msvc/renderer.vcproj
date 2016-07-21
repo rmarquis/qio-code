@@ -401,6 +401,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\renderer\frontend\rf_terrain.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\renderer\rfSurfsFlagsArray.h"
 				>
 			</File>

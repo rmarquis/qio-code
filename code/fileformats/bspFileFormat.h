@@ -418,6 +418,24 @@ struct mohStaticModel_s {
 	int firstVertexData;
 	short numVertexData;
 };
+struct mohTerrainPatch_s {
+	byte flags;
+	byte scale;
+	byte lmCoords[2];
+	float texCoords[8];
+	char x;
+	char y;
+	short baseZ;
+	unsigned short shader;
+	short lightmap;
+	// neightboor patch indexes
+	short north;
+	short east;
+	short south;
+	short west;
+	short vertFlags[2][63];
+	byte heightmap[9][9];
+};
 
 struct visHeader_s {
 	int numClusters;
@@ -506,6 +524,21 @@ struct q3Header_s {
 			return ((const lump_s*)(((const byte*)&lumps[0])-4));
 		} else {
 			return &lumps[0];
+		}
+	}
+	
+	u32 getNumTerrainPatches() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return getLumps()[MOH_TERRAIN].fileLen / (sizeof(mohTerrainPatch_s));
+		} else {
+			return 0;
+		}
+	}
+	const mohTerrainPatch_s *getTerrainPatches() const {
+		if(ident == BSP_IDENT_2015 || ident == BSP_IDENT_EALA) {
+			return (const mohTerrainPatch_s*)(((const byte*)this)+getLumps()[MOH_TERRAIN].fileOfs);
+		} else {
+			return 0;
 		}
 	}
 	const q3Model_s *getModels() const {
