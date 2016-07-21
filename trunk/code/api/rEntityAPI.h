@@ -66,6 +66,7 @@ public:
 	virtual const class aabb &getBoundsABS() const = 0;
 	virtual int getNetworkingEntityNumber() const = 0;
 	virtual u32 getEntityTriangleCount() const = 0;
+	virtual u32 getEntityVertexCount() const = 0;
 
 	virtual void hideModel() = 0;
 	virtual void showModel() = 0;

@@ -112,6 +112,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	void updateModelSkin();
 	
 	virtual u32 getEntityTriangleCount() const;
+	virtual u32 getEntityVertexCount() const;
 public:
 	rEntityImpl_c();
 	~rEntityImpl_c();

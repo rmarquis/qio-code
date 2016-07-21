@@ -26,6 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/array.h>
 #include <api/rAPI.h>
 #include <api/fontAPI.h>
+#include <api/coreAPI.h>
 #include <shared/autoCvar.h>
 
 static aCvar_c cg_chatHeight("cg_chatHeight","300");
@@ -59,7 +60,7 @@ public:
 		u32 numLines = h / lineH;
 		float color[4] = { 0, 0, 0, 1.f };
 		int index = lines.size() - numLines;
-		fontAPI_i *f = rf->registerFont("Arial");
+		fontAPI_i *f = g_core->GetDefaultFont();
 		if(f == 0) {
 			return;
 		}

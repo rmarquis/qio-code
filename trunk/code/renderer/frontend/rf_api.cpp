@@ -151,10 +151,7 @@ public:
 		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
 	}
 	fontAPI_i *getAnyWorkingFont() {
-		fontAPI_i *f = registerFont("Arial");
-		if(f == 0) {
-			f = registerFont("Times");
-		}
+		fontAPI_i *f = g_core->GetDefaultFont();
 		return f;
 	}
 	virtual float getStringWidth(const char *s) {

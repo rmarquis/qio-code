@@ -258,6 +258,16 @@ public:
 		}
 		return 0;
 	}
+	virtual u32 getTotalVertexCount() {
+		precache();
+		if(skelModel) {
+			return skelModel->getTotalVertexCount();
+		}
+		if(q3PlayerModel) {
+			return q3PlayerModel->getTotalVertexCount();
+		}
+		return 0;
+	}
 	virtual u32 getTotalTriangleCount() {
 		precache();
 		if(skelModel) {

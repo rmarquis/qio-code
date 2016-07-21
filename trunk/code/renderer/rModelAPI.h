@@ -89,6 +89,7 @@ public:
 	virtual int findBone(const char *boneName) const = 0;
 	// returns the total number of triangles in model
 	virtual u32 getTotalTriangleCount() const = 0;
+	virtual u32 getTotalVertexCount() const = 0;
 	virtual bool hasStageWithoutBlendFunc() const = 0;
 };
 
