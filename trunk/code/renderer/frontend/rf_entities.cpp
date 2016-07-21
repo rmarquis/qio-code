@@ -487,6 +487,12 @@ void rEntityImpl_c::hideModel() {
 void rEntityImpl_c::showModel() {
 	bHidden = false;
 }	
+void rEntityImpl_c::setVertexColorsRGB(const byte *p) {
+	if(instance) {
+		instance->setVertexColorsRGB(p);
+	} else {
+	}
+}
 bool rEntityImpl_c::hasTIKIModel() const {
 	if(model == 0)
 		return false;

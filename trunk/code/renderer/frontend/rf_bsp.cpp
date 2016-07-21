@@ -1653,6 +1653,7 @@ bool rBspTree_c::loadStaticModels() {
 	g_core->Print("%i static models\n",numStaticModels);
 	const mohStaticModel_s *ms = h->getStaticModels();
 	staticModelEntities.resize(numStaticModels);
+	const byte *vertexData = h->getLumpData(MOH_STATICMODELDATA);
 	for(u32 i = 0; i < numStaticModels; i++) {
 		const mohStaticModel_s &s = ms[i];
 		g_core->Print("Static model %i - %s\n",i,s.model);
@@ -1663,6 +1664,7 @@ bool rBspTree_c::loadStaticModels() {
 		re->setModel(RF_RegisterModel(str("models/")+s.model));
 		re->updateAnimatedEntity();
 		re->setBDontUpdateAnimation(true);
+		re->setVertexColorsRGB(vertexData + s.firstVertexData);
 		staticModelEntities[i] = re;
 	}
 	return false; // error

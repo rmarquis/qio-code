@@ -407,6 +407,25 @@ public:
 		}
 	}
 };
+
+class fontBad_c : public fontBase_c {
+public:
+	fontBad_c(const char *s) : fontBase_c(s) {
+		bIsValid = false;
+	}
+	virtual float drawChar(float x, float y, char ch, float sx = 1.f, float sy = 1.f) const {
+		return 0.f;
+	}
+	virtual float getStringWidth(const char *s) const {
+		return 0.f;
+	}
+	virtual float getStringHeight(const char *s) const {
+		return 0; // TODO
+	}
+	virtual void drawString(float x, float y, const char *s, float sx = 1.f, float sy = 1.f, bool bUseColourCodes = true) const {
+
+	}
+};
 hashTableTemplateExt_c<fontBase_c> rf_fonts;
 
 fontAPI_i *RF_RegisterFont(const char *name) {
@@ -428,17 +447,34 @@ fontAPI_i *RF_RegisterFont(const char *name) {
 	if(g_vfs->FS_FileExists(path) && g_ms->isMaterialOrImagePresent(ritualFontMaterialPath)) {
 		f = new fontRitual_c(name);
 	} else {
-		path = "C:/Windows/Fonts/";
-		path.append(name);
-		path.setExtension("ttf");
-		FT_Face face;
-		if(!FT_New_Face(rf_ft, path.c_str(), 0, &face)) {
-			// valid
-			f = new fontFreeType_c(name,face);
+		if(rf_ft) {
+			const char *fontDirs[] = {
+				"Fonts/",
+				"C:/Windows/Fonts/",
+			};
+			u32 numFontDirs = sizeof(fontDirs)/sizeof(fontDirs[0]);
+			for(u32 i = 0; i < numFontDirs; i++) {
+				path = fontDirs[i];
+				path.append(name);
+				path.setExtension("ttf");
+				FT_Face face;
+				if(!FT_New_Face(rf_ft, path.c_str(), 0, &face)) {
+					// valid
+					g_core->Print("RF_RegisterFont: loaded font from %s\n",path.c_str());
+					f = new fontFreeType_c(name,face);
+					break;
+				}
+			}
 		}
 	}
+#if 0
 	if(f == 0)
 		return 0;
+#else
+	if(f == 0) {
+		f = new fontBad_c(name);
+	}
+#endif
 	rf_fonts.addObject(f);
 	if(f->isValid() == false)
 		return 0;

@@ -141,6 +141,7 @@ public:
 	void setIndicesU32(u32 newNumIndices, const u32 *newFirstIndex) {
 		indices.fromU32Array(newNumIndices,newFirstIndex);
 	}
+	void setVertexColorsRGB(const byte *p);
 	void addTriangle(const struct simpleVert_s &v0, const struct simpleVert_s &v1, const struct simpleVert_s &v2);
 	void addTriangle(const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
 							const vec3_c &v2, const vec2_c &t2);
@@ -326,6 +327,7 @@ public:
 		return atoi(num);
 	}
 	void iterateMaterialNames(class perStringCallbackListener_i *cb) const;
+	void setVertexColorsRGB(const byte *p);
 	// staticModelCreatorAPI_i implementation
 	virtual void addTriangle(const char *matName, const struct simpleVert_s &v0,
 		const struct simpleVert_s &v1, const struct simpleVert_s &v2);
