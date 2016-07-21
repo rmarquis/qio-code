@@ -163,6 +163,7 @@ public:
 	virtual void setBDontUpdateAnimation(bool b) {
 		bDontUpdateAnimation = b;
 	}
+	virtual void setVertexColorsRGB(const byte *p);
 	//// All rEntities are by default enabled.
 	//// Disabled rEntity is not drawn and not updated.
 	//virtual void setEnabled(bool nbEnabled) {

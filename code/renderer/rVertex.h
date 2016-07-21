@@ -89,6 +89,12 @@ public:
 		tc[0] = u;
 		tc[1] = v;
 	}
+	void setRGBA(byte r, byte g, byte b, byte a) {
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
+		color[3] = a;
+	}
 	void setColor(int newColorAsInt) {
 		colorAsInt = newColorAsInt;
 	}

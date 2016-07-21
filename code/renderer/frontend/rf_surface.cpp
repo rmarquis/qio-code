@@ -88,6 +88,12 @@ void r_surface_c::addWinding(const texturedVertex_c *pVerts, u32 numVerts) {
 		indices.addIndex(firstVert+i);
 	}
 }
+void r_surface_c::setVertexColorsRGB(const byte *p) {
+	for(u32 i = 0; i < verts.size(); i++) {
+		verts[i].setRGBA(p[0],p[1],p[2],255);
+		p+=3;
+	}
+}
 void r_surface_c::addTriangle(const vec3_c &v0, const vec2_c &t0, const vec3_c &v1, const vec2_c &t1, 
 		const vec3_c &v2, const vec2_c &t2) {
 	simpleVert_s verts[3];
@@ -1223,6 +1229,12 @@ void r_model_c::precalculateStencilShadowCaster() {
 	ssvCaster = new r_stencilShadowCaster_c;
 	ssvCaster->addRModel(this);
 	ssvCaster->calcEdges();
+}
+void r_model_c::setVertexColorsRGB(const byte *p) {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		surfs[i].setVertexColorsRGB(p);
+		p += (3*surfs[i].getNumVerts());
+	}
 }
 void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) const {
 	for(u32 i = 0; i < surfs.size(); i++) {

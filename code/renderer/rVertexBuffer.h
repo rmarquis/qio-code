@@ -124,6 +124,9 @@ public:
 	void setXYZ(u32 i, const vec3_c &p) {
 		data[i].xyz = p;
 	}
+	void setRGBA(u32 i, byte r, byte g, byte b, byte a) {
+		data[i].setRGBA(r,g,b,a);
+	}
 	void setTC(u32 i, const vec2_c &p) {
 		data[i].tc = p;
 	}
